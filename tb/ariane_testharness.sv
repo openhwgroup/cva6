@@ -529,6 +529,8 @@ module ariane_testharness #(
   // ---------------
   // AXI Xbar
   // ---------------
+  typedef logic [ariane_soc::NrRegion-1:0][ariane_soc::NB_PERIPHERALS-1:0][AXI_ADDRESS_WIDTH-1:0] addr_map_t;
+  
   axi_node_intf_wrap #(
     .NB_SLAVE           ( ariane_soc::NrSlaves       ),
     .NB_MASTER          ( ariane_soc::NB_PERIPHERALS ),
@@ -545,28 +547,30 @@ module ariane_testharness #(
     .test_en_i    ( test_en    ),
     .slave        ( slave      ),
     .master       ( master     ),
-    .start_addr_i ({
+    .start_addr_i (addr_map_t'({
       ariane_soc::DebugBase,
       ariane_soc::ROMBase,
       ariane_soc::CLINTBase,
       ariane_soc::PLICBase,
       ariane_soc::UARTBase,
+      ariane_soc::TimerBase,
       ariane_soc::SPIBase,
       ariane_soc::EthernetBase,
       ariane_soc::GPIOBase,
       ariane_soc::DRAMBase
-    }),
-    .end_addr_i   ({
+    })),
+    .end_addr_i   (addr_map_t'({
       ariane_soc::DebugBase    + ariane_soc::DebugLength - 1,
       ariane_soc::ROMBase      + ariane_soc::ROMLength - 1,
       ariane_soc::CLINTBase    + ariane_soc::CLINTLength - 1,
       ariane_soc::PLICBase     + ariane_soc::PLICLength - 1,
       ariane_soc::UARTBase     + ariane_soc::UARTLength - 1,
+      ariane_soc::TimerBase    + ariane_soc::TimerLength - 1,
       ariane_soc::SPIBase      + ariane_soc::SPILength - 1,
       ariane_soc::EthernetBase + ariane_soc::EthernetLength -1,
       ariane_soc::GPIOBase     + ariane_soc::GPIOLength - 1,
       ariane_soc::DRAMBase     + ariane_soc::DRAMLength - 1
-    }),
+    })),
     .valid_rule_i (ariane_soc::ValidRule)
   );
 
@@ -630,6 +634,7 @@ module ariane_testharness #(
     .uart      ( master[ariane_soc::UART]     ),
     .spi       ( master[ariane_soc::SPI]      ),
     .ethernet  ( master[ariane_soc::Ethernet] ),
+    .timer     ( master[ariane_soc::Timer]    ),
     .irq_o     ( irqs                         ),
     .rx_i      ( rx                           ),
     .tx_o      ( tx                           ),

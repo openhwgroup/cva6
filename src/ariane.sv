@@ -29,6 +29,10 @@ module ariane #(
   // Timer facilities
   input  logic                         time_irq_i,   // timer interrupt in (async)
   input  logic                         debug_req_i,  // debug request (async)
+`ifdef FIRESIM_TRACE
+  // firesim trace port
+  output traced_instr_pkg::trace_port_t trace_o,
+`endif
 `ifdef PITON_ARIANE
   // L15 (memory side)
   output wt_cache_pkg::l15_req_t       l15_req_o,
@@ -47,15 +51,15 @@ module ariane #(
   riscv::priv_lvl_t           priv_lvl;
   exception_t                 ex_commit; // exception from commit stage
   bp_resolve_t                resolved_branch;
-  logic [63:0]                pc_commit;
+  logic [riscv::VLEN-1:0]     pc_commit;
   logic                       eret;
   logic [NR_COMMIT_PORTS-1:0] commit_ack;
 
   // --------------
   // PCGEN <-> CSR
   // --------------
-  logic [63:0]              trap_vector_base_commit_pcgen;
-  logic [63:0]              epc_commit_pcgen;
+  logic [riscv::VLEN-1:0]     trap_vector_base_commit_pcgen;
+  logic [riscv::VLEN-1:0]     epc_commit_pcgen;
   // --------------
   // IF <-> ID
   // --------------
@@ -75,7 +79,7 @@ module ariane #(
   // ISSUE <-> EX
   // --------------
   fu_data_t                 fu_data_id_ex;
-  logic [63:0]              pc_id_ex;
+  logic [riscv::VLEN-1:0]   pc_id_ex;
   logic                     is_compressed_instr_id_ex;
   // fixed latency units
   logic                     flu_ready_ex_id;
@@ -125,6 +129,7 @@ module ariane #(
   // LSU Commit
   logic                     lsu_commit_commit_ex;
   logic                     lsu_commit_ready_ex_commit;
+  logic [TRANS_ID_BITS-1:0] lsu_commit_trans_id;
   logic                     no_st_pending_ex;
   logic                     no_st_pending_commit;
   logic                     amo_valid_commit;
@@ -276,7 +281,8 @@ module ariane #(
   // ---------
   issue_stage #(
     .NR_ENTRIES                 ( NR_SB_ENTRIES                ),
-    .NR_WB_PORTS                ( NR_WB_PORTS                  )
+    .NR_WB_PORTS                ( NR_WB_PORTS                  ),
+    .NR_COMMIT_PORTS            ( NR_COMMIT_PORTS              )
   ) issue_stage_i (
     .clk_i,
     .rst_ni,
@@ -376,6 +382,7 @@ module ariane #(
 
     .lsu_commit_i           ( lsu_commit_commit_ex        ), // from commit
     .lsu_commit_ready_o     ( lsu_commit_ready_ex_commit  ), // to commit
+    .commit_tran_id_i       ( lsu_commit_trans_id         ), // from commit
     .no_st_pending_o        ( no_st_pending_ex            ),
     // FPU
     .fpu_ready_o            ( fpu_ready_ex_id             ),
@@ -408,7 +415,8 @@ module ariane #(
     .icache_areq_o          ( icache_areq_ex_cache        ),
     // DCACHE interfaces
     .dcache_req_ports_i     ( dcache_req_ports_cache_ex   ),
-    .dcache_req_ports_o     ( dcache_req_ports_ex_cache   )
+    .dcache_req_ports_o     ( dcache_req_ports_ex_cache   ),
+    .dcache_wbuffer_empty_i ( dcache_commit_wbuffer_empty )
   );
 
   // ---------
@@ -419,7 +427,9 @@ module ariane #(
   // used e.g. for fence instructions.
   assign no_st_pending_commit = no_st_pending_ex & dcache_commit_wbuffer_empty;
 
-  commit_stage commit_stage_i (
+  commit_stage #(
+    .NR_COMMIT_PORTS ( NR_COMMIT_PORTS )
+  ) commit_stage_i (
     .clk_i,
     .rst_ni,
     .halt_i                 ( halt_ctrl                     ),
@@ -436,6 +446,7 @@ module ariane #(
     .we_fpr_o               ( we_fpr_commit_id              ),
     .commit_lsu_o           ( lsu_commit_commit_ex          ),
     .commit_lsu_ready_i     ( lsu_commit_ready_ex_commit    ),
+    .commit_tran_id_o       ( lsu_commit_trans_id           ),
     .amo_valid_commit_o     ( amo_valid_commit              ),
     .amo_resp_i             ( amo_resp                      ),
     .commit_csr_o           ( csr_commit_commit_ex          ),
@@ -457,12 +468,14 @@ module ariane #(
   // ---------
   csr_regfile #(
     .AsidWidth              ( ASID_WIDTH                    ),
-    .DmBaseAddress          ( ArianeCfg.DmBaseAddress       )
+    .DmBaseAddress          ( ArianeCfg.DmBaseAddress       ),
+    .NrCommitPorts          ( NR_COMMIT_PORTS               )
   ) csr_regfile_i (
     .flush_o                ( flush_csr_ctrl                ),
     .halt_csr_o             ( halt_csr_ctrl                 ),
     .commit_instr_i         ( commit_instr_id_commit        ),
     .commit_ack_i           ( commit_ack                    ),
+    .boot_addr_i            ( boot_addr_i                   ),
     .ex_i                   ( ex_commit                     ),
     .csr_op_i               ( csr_op_commit_csr             ),
     .csr_write_fflags_i     ( csr_write_fflags_commit_cs    ),
@@ -506,7 +519,6 @@ module ariane #(
     .time_irq_i,
     .*
   );
-
   // ------------------------
   // Performance Counters
   // ------------------------
@@ -657,13 +669,30 @@ module ariane #(
   // -------------------
   // Instruction Tracer
   // -------------------
+
+  // Instruction trace port (used for FireSim)
+`ifdef FIRESIM_TRACE
+  for (genvar i = 0; i < NR_COMMIT_PORTS; i++) begin : gen_tp_connect
+    assign trace_o[i].clock = clk_i;
+    assign trace_o[i].reset = rst_ni;
+    assign trace_o[i].valid = commit_ack[i] & ~commit_instr_id_commit[i].ex.valid;
+    assign trace_o[i].iaddr = commit_instr_id_commit[i].pc;
+    assign trace_o[i].insn = commit_instr_id_commit[i].ex.tval[31:0];
+    assign trace_o[i].priv = priv_lvl;
+    assign trace_o[i].exception = commit_ack[i] & commit_instr_id_commit[i].ex.valid & ~commit_instr_id_commit[i].ex.cause[63];
+    assign trace_o[i].interrupt = commit_ack[i] & commit_instr_id_commit[i].ex.valid & commit_instr_id_commit[i].ex.cause[63];
+    assign trace_o[i].cause = commit_instr_id_commit[i].ex.cause;
+    assign trace_o[i].tval = commit_instr_id_commit[i].ex.tval[31:0];
+  end
+`endif
+
   //pragma translate_off
 `ifdef PITON_ARIANE
   localparam PC_QUEUE_DEPTH = 16;
 
   logic        piton_pc_vld;
-  logic [63:0] piton_pc;
-  logic [NR_COMMIT_PORTS-1:0][63:0] pc_data;
+  logic [riscv::VLEN-1:0] piton_pc;
+  logic [NR_COMMIT_PORTS-1:0][riscv::VLEN-1:0] pc_data;
   logic [NR_COMMIT_PORTS-1:0] pc_pop, pc_empty;
 
   for (genvar i = 0; i < NR_COMMIT_PORTS; i++) begin : gen_pc_fifo
@@ -795,4 +824,3 @@ module ariane #(
 //pragma translate_on
 
 endmodule // ariane
-

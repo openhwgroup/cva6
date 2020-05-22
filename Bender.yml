@@ -111,6 +111,8 @@ sources:
     - fpga/src/axi_slice/src/axi_ar_buffer.sv
     - fpga/src/axi_slice/src/axi_r_buffer.sv
     - fpga/src/axi_slice/src/axi_aw_buffer.sv
+    - fpga/src/apb_timer/apb_timer.sv
+    - fpga/src/apb_timer/timer.sv
     - src/axi_node/src/axi_regs_top.sv
     - src/axi_node/src/axi_BR_allocator.sv
     - src/axi_node/src/axi_BW_allocator.sv

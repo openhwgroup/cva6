@@ -17,7 +17,8 @@ module ariane_peripherals #(
     parameter bit InclUART     = 1,
     parameter bit InclSPI      = 0,
     parameter bit InclEthernet = 0,
-    parameter bit InclGPIO     = 0
+    parameter bit InclGPIO     = 0,
+    parameter bit InclTimer    = 1
 ) (
     input  logic       clk_i           , // Clock
     input  logic       rst_ni          , // Asynchronous reset active low
@@ -25,6 +26,7 @@ module ariane_peripherals #(
     AXI_BUS.Slave      uart            ,
     AXI_BUS.Slave      spi             ,
     AXI_BUS.Slave      ethernet        ,
+    AXI_BUS.Slave      timer           ,
     output logic [1:0] irq_o           ,
     // UART
     input  logic       rx_i            ,
@@ -280,7 +282,6 @@ module ariane_peripherals #(
     end else begin
         assign irq_sources[0] = 1'b0;
         /* pragma translate_off */
-        `ifndef VERILATOR
         mock_uart i_mock_uart (
             .clk_i     ( clk_i        ),
             .rst_ni    ( rst_ni       ),
@@ -293,7 +294,6 @@ module ariane_peripherals #(
             .pready_o  ( uart_pready  ),
             .pslverr_o ( uart_pslverr )
         );
-        `endif
         /* pragma translate_on */
     end
 
@@ -514,5 +514,102 @@ module ariane_peripherals #(
         assign ethernet.r_resp = axi_pkg::RESP_SLVERR;
         assign ethernet.r_data = 'hdeadbeef;
         assign ethernet.r_last = 1'b1;
+    end
+
+    // ---------------
+    // 5. Timer
+    // ---------------
+    if (InclTimer) begin : gen_timer
+        logic         timer_penable;
+        logic         timer_pwrite;
+        logic [31:0]  timer_paddr;
+        logic         timer_psel;
+        logic [31:0]  timer_pwdata;
+        logic [31:0]  timer_prdata;
+        logic         timer_pready;
+        logic         timer_pslverr;
+
+        axi2apb_64_32 #(
+            .AXI4_ADDRESS_WIDTH ( AxiAddrWidth ),
+            .AXI4_RDATA_WIDTH   ( AxiDataWidth ),
+            .AXI4_WDATA_WIDTH   ( AxiDataWidth ),
+            .AXI4_ID_WIDTH      ( AxiIdWidth   ),
+            .AXI4_USER_WIDTH    ( AxiUserWidth ),
+            .BUFF_DEPTH_SLAVE   ( 2            ),
+            .APB_ADDR_WIDTH     ( 32           )
+        ) i_axi2apb_64_32_timer (
+            .ACLK      ( clk_i           ),
+            .ARESETn   ( rst_ni          ),
+            .test_en_i ( 1'b0            ),
+            .AWID_i    ( timer.aw_id     ),
+            .AWADDR_i  ( timer.aw_addr   ),
+            .AWLEN_i   ( timer.aw_len    ),
+            .AWSIZE_i  ( timer.aw_size   ),
+            .AWBURST_i ( timer.aw_burst  ),
+            .AWLOCK_i  ( timer.aw_lock   ),
+            .AWCACHE_i ( timer.aw_cache  ),
+            .AWPROT_i  ( timer.aw_prot   ),
+            .AWREGION_i( timer.aw_region ),
+            .AWUSER_i  ( timer.aw_user   ),
+            .AWQOS_i   ( timer.aw_qos    ),
+            .AWVALID_i ( timer.aw_valid  ),
+            .AWREADY_o ( timer.aw_ready  ),
+            .WDATA_i   ( timer.w_data    ),
+            .WSTRB_i   ( timer.w_strb    ),
+            .WLAST_i   ( timer.w_last    ),
+            .WUSER_i   ( timer.w_user    ),
+            .WVALID_i  ( timer.w_valid   ),
+            .WREADY_o  ( timer.w_ready   ),
+            .BID_o     ( timer.b_id      ),
+            .BRESP_o   ( timer.b_resp    ),
+            .BVALID_o  ( timer.b_valid   ),
+            .BUSER_o   ( timer.b_user    ),
+            .BREADY_i  ( timer.b_ready   ),
+            .ARID_i    ( timer.ar_id     ),
+            .ARADDR_i  ( timer.ar_addr   ),
+            .ARLEN_i   ( timer.ar_len    ),
+            .ARSIZE_i  ( timer.ar_size   ),
+            .ARBURST_i ( timer.ar_burst  ),
+            .ARLOCK_i  ( timer.ar_lock   ),
+            .ARCACHE_i ( timer.ar_cache  ),
+            .ARPROT_i  ( timer.ar_prot   ),
+            .ARREGION_i( timer.ar_region ),
+            .ARUSER_i  ( timer.ar_user   ),
+            .ARQOS_i   ( timer.ar_qos    ),
+            .ARVALID_i ( timer.ar_valid  ),
+            .ARREADY_o ( timer.ar_ready  ),
+            .RID_o     ( timer.r_id      ),
+            .RDATA_o   ( timer.r_data    ),
+            .RRESP_o   ( timer.r_resp    ),
+            .RLAST_o   ( timer.r_last    ),
+            .RUSER_o   ( timer.r_user    ),
+            .RVALID_o  ( timer.r_valid   ),
+            .RREADY_i  ( timer.r_ready   ),
+            .PENABLE   ( timer_penable   ),
+            .PWRITE    ( timer_pwrite    ),
+            .PADDR     ( timer_paddr     ),
+            .PSEL      ( timer_psel      ),
+            .PWDATA    ( timer_pwdata    ),
+            .PRDATA    ( timer_prdata    ),
+            .PREADY    ( timer_pready    ),
+            .PSLVERR   ( timer_pslverr   )
+        );
+
+        apb_timer #(
+                .APB_ADDR_WIDTH ( 32 ),
+                .TIMER_CNT      ( 2  )
+        ) i_timer (
+            .HCLK    ( clk_i            ),
+            .HRESETn ( rst_ni           ),
+            .PSEL    ( timer_psel       ),
+            .PENABLE ( timer_penable    ),
+            .PWRITE  ( timer_pwrite     ),
+            .PADDR   ( timer_paddr      ),
+            .PWDATA  ( timer_pwdata     ),
+            .PRDATA  ( timer_prdata     ),
+            .PREADY  ( timer_pready     ),
+            .PSLVERR ( timer_pslverr    ),
+            .irq_o   ( irq_sources[6:3] )
+        );
     end
 endmodule

@@ -24,7 +24,7 @@ module ex_stage #(
     input  logic                                   debug_mode_i,
 
     input  fu_data_t                               fu_data_i,
-    input  logic [63:0]                            pc_i,                  // PC of current instruction
+    input  logic [riscv::VLEN-1:0]                 pc_i,                  // PC of current instruction
     input  logic                                   is_compressed_instr_i, // we need to know if this was a compressed instruction
                                                                           // in order to calculate the next PC on a mis-predict
     // Fixed latency unit(s)
@@ -62,6 +62,7 @@ module ex_stage #(
 
     input  logic                                   lsu_commit_i,
     output logic                                   lsu_commit_ready_o, // commit queue is ready to accept another commit request
+    input  logic [TRANS_ID_BITS-1:0]               commit_tran_id_i,
     output logic                                   no_st_pending_o,
     input  logic                                   amo_valid_commit_i,
     // FPU
@@ -93,6 +94,7 @@ module ex_stage #(
     // interface to dcache
     input  dcache_req_o_t [2:0]                    dcache_req_ports_i,
     output dcache_req_i_t [2:0]                    dcache_req_ports_o,
+    input  logic                                   dcache_wbuffer_empty_i,
     output amo_req_t                               amo_req_o,          // request to cache subsytem
     input  amo_resp_t                              amo_resp_i,         // response from cache subsystem
     // Performance counters
@@ -122,7 +124,8 @@ module ex_stage #(
 
     // from ALU to branch unit
     logic alu_branch_res; // branch comparison result
-    logic [63:0] alu_result, branch_result, csr_result, mult_result;
+    logic [63:0] alu_result, csr_result, mult_result;
+    logic [riscv::VLEN-1:0] branch_result;
     logic csr_ready, mult_ready;
     logic [TRANS_ID_BITS-1:0] mult_trans_id;
     logic mult_valid;
@@ -179,7 +182,7 @@ module ex_stage #(
     // result MUX
     always_comb begin
         // Branch result as default case
-        flu_result_o = branch_result;
+        flu_result_o = {{64-riscv::VLEN{1'b0}}, branch_result};
         flu_trans_id_o = fu_data_i.trans_id;
         // ALU result
         if (alu_valid_i) begin
@@ -275,6 +278,7 @@ module ex_stage #(
         .store_exception_o,
         .commit_i              ( lsu_commit_i       ),
         .commit_ready_o        ( lsu_commit_ready_o ),
+        .commit_tran_id_i,
         .enable_translation_i,
         .en_ld_st_translation_i,
         .icache_areq_i,
@@ -290,6 +294,7 @@ module ex_stage #(
         .dtlb_miss_o,
         .dcache_req_ports_i,
         .dcache_req_ports_o,
+        .dcache_wbuffer_empty_i,
         .amo_valid_commit_i,
         .amo_req_o,
         .amo_resp_i

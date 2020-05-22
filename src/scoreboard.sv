@@ -85,8 +85,10 @@ module scoreboard #(
 
   // output commit instruction directly
   always_comb begin : commit_ports
-    for (int unsigned i = 0; i < NR_COMMIT_PORTS; i++)
+    for (int unsigned i = 0; i < NR_COMMIT_PORTS; i++) begin
       commit_instr_o[i] = mem_q[commit_pointer_q[i]].sbe;
+      commit_instr_o[i].trans_id = commit_pointer_q[i];
+    end
   end
 
   // an instruction is ready for issue if we have place in the issue FIFO and it the decoder says it is valid
@@ -116,6 +118,15 @@ module scoreboard #(
                                 ariane_pkg::is_rd_fpr(decoded_instr_i.op), // whether rd goes to the fpr
                                 decoded_instr_i                            // decoded instruction record
                                 };
+    end
+
+    // ------------
+    // FU NONE
+    // ------------
+    for (int unsigned i = 0; i < NR_ENTRIES; i++) begin
+      // The FU is NONE -> this instruction is valid immediately
+      if (mem_q[i].sbe.fu == ariane_pkg::NONE && mem_q[i].issued)
+        mem_n[i].sbe.valid = 1'b1;
     end
 
     // ------------
@@ -316,6 +327,8 @@ module scoreboard #(
     .idx_o   (             )
   );
 
+  logic [63:0] rs3;
+
   rr_arb_tree #(
     .NumIn(NR_ENTRIES+NR_WB_PORTS),
     .DataWidth(64),
@@ -331,9 +344,11 @@ module scoreboard #(
     .data_i  ( rs_data     ),
     .gnt_i   ( 1'b1        ),
     .req_o   ( rs3_valid_o ),
-    .data_o  ( rs3_o       ),
+    .data_o  ( rs3         ),
     .idx_o   (             )
   );
+
+  assign rs3_o = rs3[ariane_pkg::FLEN-1:0];
 
   // sequential process
   always_ff @(posedge clk_i or negedge rst_ni) begin : regs

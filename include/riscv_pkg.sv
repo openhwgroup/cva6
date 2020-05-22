@@ -16,6 +16,15 @@
  */
 package riscv;
 
+    // ----------------------
+    // Address length
+    // ----------------------
+    // PLEN configures physical address length
+    // VLEN configures virtual address length
+    // Warning: When using STD_CACHE, configuration must be PLEN=56 and VLEN=64
+    localparam PLEN = 56;
+    localparam VLEN = 64;
+
     // --------------------
     // Privilege Spec
     // --------------------
@@ -261,7 +270,7 @@ package riscv;
     // memory management, pte
     typedef struct packed {
         logic [9:0]  reserved;
-        logic [43:0] ppn;
+        logic [PLEN-12-1:0] ppn;
         logic [1:0]  rsw;
         logic d;
         logic a;
@@ -622,7 +631,7 @@ package riscv;
     endfunction
     // pragma translate_on
 
-    typedef struct packed {
+    typedef struct {
         byte priv;
         longint unsigned pc;
         byte is_fp;

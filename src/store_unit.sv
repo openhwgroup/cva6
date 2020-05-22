@@ -19,6 +19,7 @@ module store_unit (
     input  logic                     rst_ni,  // Asynchronous reset active low
     input  logic                     flush_i,
     output logic                     no_st_pending_o,
+    output logic                     store_buffer_empty_o,
     // store unit input port
     input  logic                     valid_i,
     input  lsu_ctrl_t                lsu_ctrl_i,
@@ -33,8 +34,8 @@ module store_unit (
     output exception_t               ex_o,
     // MMU -> Address Translation
     output logic                     translation_req_o, // request address translation
-    output logic [63:0]              vaddr_o,           // virtual address out
-    input  logic [63:0]              paddr_i,           // physical address in
+    output logic [riscv::VLEN-1:0]   vaddr_o,           // virtual address out
+    input  logic [riscv::PLEN-1:0]   paddr_i,           // physical address in
     input  exception_t               ex_i,
     input  logic                     dtlb_hit_i,       // will be one in the same cycle translation_req was asserted if it hits
     // address checker
@@ -217,6 +218,7 @@ module store_unit (
         .rst_ni,
         .flush_i,
         .no_st_pending_o,
+        .store_buffer_empty_o,
         .page_offset_i,
         .page_offset_matches_o,
         .commit_i,

@@ -41,7 +41,7 @@ module issue_read_operands #(
     input  fu_t [2**REG_ADDR_SIZE-1:0]             rd_clobber_fpr_i,
     // To FU, just single issue for now
     output fu_data_t                               fu_data_o,
-    output logic [63:0]                            pc_o,
+    output logic [riscv::VLEN-1:0]                 pc_o,
     output logic                                   is_compressed_instr_o,
     // ALU 1
     input  logic                                   flu_ready_i,      // Fixed latency unit ready to accept a new request
@@ -214,7 +214,7 @@ module issue_read_operands #(
 
         // use the PC as operand a
         if (issue_instr_i.use_pc) begin
-            operand_a_n = issue_instr_i.pc;
+            operand_a_n = {{64-riscv::VLEN{issue_instr_i.pc[riscv::VLEN-1]}}, issue_instr_i.pc};
         end
 
         // use the zimm as operand a
@@ -349,9 +349,11 @@ module issue_read_operands #(
     logic [NR_COMMIT_PORTS-1:0][63:0] wdata_pack;
     logic [NR_COMMIT_PORTS-1:0]       we_pack;
     assign raddr_pack = {issue_instr_i.rs2[4:0], issue_instr_i.rs1[4:0]};
-    assign waddr_pack = {waddr_i[1],  waddr_i[0]};
-    assign wdata_pack = {wdata_i[1],  wdata_i[0]};
-    assign we_pack    = {we_gpr_i[1], we_gpr_i[0]};
+    for (genvar i = 0; i < NR_COMMIT_PORTS; i++) begin : gen_write_back_port
+        assign waddr_pack[i] = waddr_i[i];
+        assign wdata_pack[i] = wdata_i[i];
+        assign we_pack[i]    = we_gpr_i[i];
+    end
 
     ariane_regfile #(
         .DATA_WIDTH     ( 64              ),
@@ -380,7 +382,9 @@ module issue_read_operands #(
     generate
         if (FP_PRESENT) begin : float_regfile_gen
             assign fp_raddr_pack = {issue_instr_i.result[4:0], issue_instr_i.rs2[4:0], issue_instr_i.rs1[4:0]};
-            assign fp_wdata_pack = {wdata_i[1][FLEN-1:0], wdata_i[0][FLEN-1:0]};
+            for (genvar i = 0; i < NR_COMMIT_PORTS; i++) begin : gen_fp_wdata_pack
+                assign fp_wdata_pack[i] = {wdata_i[i][FLEN-1:0]};
+            end
 
             ariane_regfile #(
                 .DATA_WIDTH     ( FLEN            ),
@@ -418,7 +422,7 @@ module issue_read_operands #(
             trans_id_q            <= '0;
             pc_o                  <= '0;
             is_compressed_instr_o <= 1'b0;
-            branch_predict_o      <= '{default: 0};
+            branch_predict_o      <= {cf_t'(0), 64'd0};
         end else begin
             operand_a_q           <= operand_a_n;
             operand_b_q           <= operand_b_n;
@@ -438,9 +442,6 @@ module issue_read_operands #(
         @(posedge clk_i) (branch_valid_q) |-> (!$isunknown(operand_a_q) && !$isunknown(operand_b_q)))
         else $warning ("Got unknown value in one of the operands");
 
-    initial begin
-        assert (NR_COMMIT_PORTS == 2) else $error("Only two commit ports are supported at the moment!");
-    end
     `endif
     //pragma translate_on
 endmodule

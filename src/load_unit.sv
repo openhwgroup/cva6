@@ -13,9 +13,9 @@
 // Date: 15.08.2018
 // Description: Load Unit, takes care of all load requests
 
-import ariane_pkg::*;
-
-module load_unit (
+module load_unit import ariane_pkg::*; #(
+    parameter ariane_pkg::ariane_cfg_t ArianeCfg = ariane_pkg::ArianeDefaultConfig
+) (
     input  logic                     clk_i,    // Clock
     input  logic                     rst_ni,   // Asynchronous reset active low
     input  logic                     flush_i,
@@ -30,19 +30,23 @@ module load_unit (
     output exception_t               ex_o,
     // MMU -> Address Translation
     output logic                     translation_req_o,   // request address translation
-    output logic [63:0]              vaddr_o,             // virtual address out
-    input  logic [63:0]              paddr_i,             // physical address in
+    output logic [riscv::VLEN-1:0]   vaddr_o,             // virtual address out
+    input  logic [riscv::PLEN-1:0]   paddr_i,             // physical address in
     input  exception_t               ex_i,                // exception which may has happened earlier. for example: mis-aligned exception
     input  logic                     dtlb_hit_i,          // hit on the dtlb, send in the same cycle as the request
     // address checker
     output logic [11:0]              page_offset_o,
     input  logic                     page_offset_matches_i,
+    input  logic                     store_buffer_empty_i, // the entire store-buffer is empty
+    input  logic [TRANS_ID_BITS-1:0] commit_tran_id_i,
     // D$ interface
     input dcache_req_o_t             req_port_i,
-    output dcache_req_i_t            req_port_o
+    output dcache_req_i_t            req_port_o,
+    input  logic                     dcache_wbuffer_empty_i
 );
-    enum logic [2:0] { IDLE, WAIT_GNT, SEND_TAG, WAIT_PAGE_OFFSET,
-                       ABORT_TRANSACTION, WAIT_TRANSLATION, WAIT_FLUSH
+    enum logic [3:0] { IDLE, WAIT_GNT, SEND_TAG, WAIT_PAGE_OFFSET,
+                       ABORT_TRANSACTION, ABORT_TRANSACTION_NC, WAIT_TRANSLATION, WAIT_FLUSH,
+                       WAIT_WB_EMPTY
                      } state_d, state_q;
     // in order to decouple the response interface from the request interface we need a
     // a queue which can hold all outstanding memory requests
@@ -70,6 +74,14 @@ module load_unit (
                                               ariane_pkg::DCACHE_INDEX_WIDTH];
     // directly output an exception
     assign ex_o = ex_i;
+
+    logic stall_nc;  // stall because of non-empty WB and address within non-cacheable region.
+    // should we stall the request e.g.: is it withing a non-cacheable region
+    // and the write buffer (in the cache and in the core) is not empty so that we don't forward anything
+    // from the write buffer (e.g. it would essentially be cached).
+    assign stall_nc = (~(dcache_wbuffer_empty_i | store_buffer_empty_i) & is_inside_cacheable_regions(ArianeCfg, paddr_i))
+                    // this guards the load to be executed non-speculatively (we wait until our transaction id is on port 0
+                    | (commit_tran_id_i != lsu_ctrl_i.trans_id & is_inside_nonidempotent_regions(ArianeCfg, paddr_i));
 
     // ---------------
     // Load Control
@@ -102,12 +114,16 @@ module load_unit (
                         if (!req_port_i.data_gnt) begin
                             state_d = WAIT_GNT;
                         end else begin
-                            if (dtlb_hit_i) begin
+                            if (dtlb_hit_i && !stall_nc) begin
                                 // we got a grant and a hit on the DTLB so we can send the tag in the next cycle
                                 state_d = SEND_TAG;
                                 pop_ld_o = 1'b1;
-                            end else
+                            // translation valid but this is to NC and the WB is not yet empty.
+                            end else if (dtlb_hit_i && stall_nc) begin
+                                state_d = ABORT_TRANSACTION_NC;
+                            end else begin
                                 state_d = ABORT_TRANSACTION;
+                            end
                         end
                     end else begin
                         // wait for the store buffer to train and the page offset to not match anymore
@@ -127,11 +143,17 @@ module load_unit (
             // abort the previous request - free the D$ arbiter
             // we are here because of a TLB miss, we need to abort the current request and give way for the
             // PTW walker to satisfy the TLB miss
-            ABORT_TRANSACTION: begin
+            ABORT_TRANSACTION, ABORT_TRANSACTION_NC: begin
                 req_port_o.kill_req  = 1'b1;
                 req_port_o.tag_valid = 1'b1;
-                // redo the request by going back to the wait gnt state
-                state_d = WAIT_TRANSLATION;
+                // either re-do the request or wait until the WB is empty (depending on where we came from).
+                state_d = (state_q == ABORT_TRANSACTION_NC) ? WAIT_WB_EMPTY :  WAIT_TRANSLATION;
+            end
+
+            // Wait until the write-back buffer is empty in the data cache.
+            WAIT_WB_EMPTY: begin
+                // the write buffer is empty, so lets go and re-do the translation.
+                if (dcache_wbuffer_empty_i) state_d = WAIT_TRANSLATION;
             end
 
             WAIT_TRANSLATION: begin
@@ -149,11 +171,16 @@ module load_unit (
                 // we finally got a data grant
                 if (req_port_i.data_gnt) begin
                     // so we send the tag in the next cycle
-                    if (dtlb_hit_i) begin
+                    if (dtlb_hit_i && !stall_nc) begin
                         state_d = SEND_TAG;
                         pop_ld_o = 1'b1;
-                    end else // should we not have hit on the TLB abort this transaction an retry later
+                    // translation valid but this is to NC and the WB is not yet empty.
+                    end else if (dtlb_hit_i && stall_nc) begin
+                        state_d = ABORT_TRANSACTION_NC;
+                    end else begin
+                    // should we not have hit on the TLB abort this transaction an retry later
                         state_d = ABORT_TRANSACTION;
+                    end
                 end
                 // otherwise we keep waiting on our grant
             end
@@ -175,12 +202,16 @@ module load_unit (
                             state_d = WAIT_GNT;
                         end else begin
                             // we got a grant so we can send the tag in the next cycle
-                            if (dtlb_hit_i) begin
+                            if (dtlb_hit_i && !stall_nc) begin
                                 // we got a grant and a hit on the DTLB so we can send the tag in the next cycle
                                 state_d = SEND_TAG;
                                 pop_ld_o = 1'b1;
-                            end else // we missed on the TLB -> wait for the translation
-                                state_d = ABORT_TRANSACTION;
+                            // translation valid but this is to NC and the WB is not yet empty.
+                            end else if (dtlb_hit_i && stall_nc) begin
+                                state_d = ABORT_TRANSACTION_NC;
+                            end else begin
+                                state_d = ABORT_TRANSACTION;// we missed on the TLB -> wait for the translation
+                            end
                         end
                     end else begin
                         // wait for the store buffer to train and the page offset to not match anymore
@@ -204,7 +235,6 @@ module load_unit (
                 // we've killed the current request so we can go back to idle
                 state_d = IDLE;
             end
-
         endcase
 
         // we got an exception
@@ -256,7 +286,6 @@ module load_unit (
         end else if (state_q == WAIT_TRANSLATION) begin
             valid_o = 1'b0;
         end
-
     end
 
 

@@ -40,6 +40,7 @@ module load_store_unit #(
 
     input  logic                     commit_i,                 // commit the pending store
     output logic                     commit_ready_o,           // commit queue is ready to accept another commit request
+    input  logic [TRANS_ID_BITS-1:0] commit_tran_id_i,
 
     input  logic                     enable_translation_i,     // enable virtual memory translation
     input  logic                     en_ld_st_translation_i,   // enable virtual memory translation for load/stores
@@ -62,6 +63,7 @@ module load_store_unit #(
     // interface to dcache
     input  dcache_req_o_t [2:0]      dcache_req_ports_i,
     output dcache_req_i_t [2:0]      dcache_req_ports_o,
+    input  logic                     dcache_wbuffer_empty_i,
     // AMO interface
     output amo_req_t                 amo_req_o,
     input  amo_resp_t                amo_resp_i
@@ -82,21 +84,26 @@ module load_store_unit #(
     // Address Generation Unit (AGU)
     // ------------------------------
     // virtual address as calculated by the AGU in the first cycle
-    logic [63:0] vaddr_i;
-    logic [7:0]  be_i;
+    logic [riscv::VLEN-1:0]   vaddr_i;
+    logic [63:0]              vaddr64;
+    logic                     overflow;
+    logic [7:0]               be_i;
 
-    assign vaddr_i = $unsigned($signed(fu_data_i.imm) + $signed(fu_data_i.operand_a));
+    assign vaddr64 = $unsigned($signed(fu_data_i.imm) + $signed(fu_data_i.operand_a));
+    assign vaddr_i = vaddr64[riscv::VLEN-1:0];
+    // we work with SV39, so if VM is enabled, check that all bits [64:riscv::38] are equal
+    assign overflow = !((&vaddr64[63:riscv::VLEN-1]) == 1'b1 || (|vaddr64[63:riscv::VLEN-1]) == 1'b0);
 
     logic                     st_valid_i;
     logic                     ld_valid_i;
     logic                     ld_translation_req;
     logic                     st_translation_req;
-    logic [63:0]              ld_vaddr;
-    logic [63:0]              st_vaddr;
+    logic [riscv::VLEN-1:0]   ld_vaddr;
+    logic [riscv::VLEN-1:0]   st_vaddr;
     logic                     translation_req;
     logic                     translation_valid;
-    logic [63:0]              mmu_vaddr;
-    logic [63:0]              mmu_paddr;
+    logic [riscv::VLEN-1:0]   mmu_vaddr;
+    logic [riscv::PLEN-1:0]   mmu_paddr;
     exception_t               mmu_exception;
     logic                     dtlb_hit;
 
@@ -140,6 +147,7 @@ module load_store_unit #(
         .icache_areq_o          ( icache_areq_o          ),
         .*
     );
+    logic store_buffer_empty;
     // ------------------
     // Store Unit
     // ------------------
@@ -148,6 +156,7 @@ module load_store_unit #(
         .rst_ni,
         .flush_i,
         .no_st_pending_o,
+        .store_buffer_empty_o  ( store_buffer_empty   ),
 
         .valid_i               ( st_valid_i           ),
         .lsu_ctrl_i            ( lsu_ctrl             ),
@@ -180,7 +189,9 @@ module load_store_unit #(
     // ------------------
     // Load Unit
     // ------------------
-    load_unit i_load_unit (
+    load_unit #(
+        .ArianeCfg ( ArianeCfg )
+    ) i_load_unit (
         .valid_i               ( ld_valid_i           ),
         .lsu_ctrl_i            ( lsu_ctrl             ),
         .pop_ld_o              ( pop_ld               ),
@@ -198,9 +209,12 @@ module load_store_unit #(
         // to store unit
         .page_offset_o         ( page_offset          ),
         .page_offset_matches_i ( page_offset_matches  ),
+        .store_buffer_empty_i  ( store_buffer_empty   ),
         // to memory arbiter
         .req_port_i            ( dcache_req_ports_i [1] ),
         .req_port_o            ( dcache_req_ports_o [1] ),
+        .dcache_wbuffer_empty_i,
+        .commit_tran_id_i,
         .*
     );
 
@@ -234,7 +248,7 @@ module load_store_unit #(
         st_valid_i = 1'b0;
 
         translation_req      = 1'b0;
-        mmu_vaddr            = 64'b0;
+        mmu_vaddr            = {riscv::VLEN{1'b0}};
 
         // check the operator to activate the right functional unit accordingly
         unique case (lsu_ctrl.fu)
@@ -318,33 +332,32 @@ module load_store_unit #(
             if (lsu_ctrl.fu == LOAD) begin
                 misaligned_exception = {
                     riscv::LD_ADDR_MISALIGNED,
-                    lsu_ctrl.vaddr,
+                    {{64-riscv::VLEN{1'b0}},lsu_ctrl.vaddr},
                     1'b1
                 };
 
             end else if (lsu_ctrl.fu == STORE) begin
                 misaligned_exception = {
                     riscv::ST_ADDR_MISALIGNED,
-                    lsu_ctrl.vaddr,
+                    {{64-riscv::VLEN{1'b0}},lsu_ctrl.vaddr},
                     1'b1
                 };
             end
         end
 
-        // we work with SV39, so if VM is enabled, check that all bits [63:38] are equal
-        if (en_ld_st_translation_i && !((&lsu_ctrl.vaddr[63:38]) == 1'b1 || (|lsu_ctrl.vaddr[63:38]) == 1'b0)) begin
+        if (en_ld_st_translation_i && lsu_ctrl.overflow) begin
 
             if (lsu_ctrl.fu == LOAD) begin
                 misaligned_exception = {
                     riscv::LD_ACCESS_FAULT,
-                    lsu_ctrl.vaddr,
+                    {{64-riscv::VLEN{1'b0}},lsu_ctrl.vaddr},
                     1'b1
                 };
 
             end else if (lsu_ctrl.fu == STORE) begin
                 misaligned_exception = {
                     riscv::ST_ACCESS_FAULT,
-                    lsu_ctrl.vaddr,
+                    {{64-riscv::VLEN{1'b0}},lsu_ctrl.vaddr},
                     1'b1
                 };
             end
@@ -357,7 +370,7 @@ module load_store_unit #(
     // new data arrives here
     lsu_ctrl_t lsu_req_i;
 
-    assign lsu_req_i = {lsu_valid_i, vaddr_i, fu_data_i.operand_b, be_i, fu_data_i.fu, fu_data_i.operator, fu_data_i.trans_id};
+    assign lsu_req_i = {lsu_valid_i, vaddr_i, overflow, fu_data_i.operand_b, be_i, fu_data_i.fu, fu_data_i.operator, fu_data_i.trans_id};
 
     lsu_bypass lsu_bypass_i (
         .lsu_req_i          ( lsu_req_i   ),

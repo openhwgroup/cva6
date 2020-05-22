@@ -34,7 +34,7 @@ BOARD          ?= genesys2
 mkfile_path := $(abspath $(lastword $(MAKEFILE_LIST)))
 root-dir := $(dir $(mkfile_path))
 
-support_verilator_4 := $(shell (verilator --version | grep '4\.') &> /dev/null; echo $$?)
+support_verilator_4 := $(shell ($(verilator) --version | grep '4\.') &> /dev/null; echo $$?)
 ifeq ($(support_verilator_4), 0)
 	verilator_threads := 2
 endif
@@ -131,6 +131,7 @@ src :=  $(filter-out src/ariane_regfile.sv, $(wildcard src/*.sv))              \
         $(wildcard bootrom/*.sv)                                               \
         $(wildcard src/clint/*.sv)                                             \
         $(wildcard fpga/src/axi2apb/src/*.sv)                                  \
+        $(wildcard fpga/src/apb_timer/*.sv)                                    \
         $(wildcard fpga/src/axi_slice/src/*.sv)                                \
         $(wildcard src/axi_node/src/*.sv)                                      \
         $(wildcard src/axi_riscv_atomics/src/*.sv)                             \
@@ -370,6 +371,7 @@ verilate_command := $(verilator)                                                
                     $(filter-out src/fpu_wrap.sv, $(filter-out %.vhd, $(src)))                                   \
                     +define+$(defines)                                                                           \
                     src/util/sram.sv                                                                             \
+                    tb/common/mock_uart.sv                                                                       \
                     +incdir+src/axi_node                                                                         \
                     $(if $(verilator_threads), --threads $(verilator_threads))                                   \
                     --unroll-count 256                                                                           \

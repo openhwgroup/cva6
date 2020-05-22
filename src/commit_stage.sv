@@ -35,7 +35,7 @@ module commit_stage #(
     // Atomic memory operations
     input  amo_resp_t                               amo_resp_i,         // result of AMO operation
     // to CSR file and PC Gen (because on certain CSR instructions we'll need to flush the whole pipeline)
-    output logic [63:0]                             pc_o,
+    output logic [riscv::VLEN-1:0]                  pc_o,
     // to/from CSR file
     output fu_op                                    csr_op_o,           // decoded CSR operation
     output logic [63:0]                             csr_wdata_o,        // data to write to CSR
@@ -45,6 +45,7 @@ module commit_stage #(
     // commit signals to ex
     output logic                                    commit_lsu_o,       // commit the pending store
     input  logic                                    commit_lsu_ready_i, // commit buffer of LSU is ready
+    output logic [TRANS_ID_BITS-1:0]                commit_tran_id_o,   // transaction id of first commit port
     output logic                                    amo_valid_commit_o, // valid AMO in commit stage
     input  logic                                    no_st_pending_i,    // there is no store pending
     output logic                                    commit_csr_o,       // commit the pending CSR instruction
@@ -68,9 +69,9 @@ module commit_stage #(
 //     .probe9(1'b0) // input wire [0:0]  probe9
 // );
 
-    // TODO make these parametric with NR_COMMIT_PORTS
-    assign waddr_o[0] = commit_instr_i[0].rd[4:0];
-    assign waddr_o[1] = commit_instr_i[1].rd[4:0];
+    for (genvar i = 0; i < NR_COMMIT_PORTS; i++) begin : gen_waddr
+      assign waddr_o[i] = commit_instr_i[i].rd[4:0];
+    end
 
     assign pc_o       = commit_instr_i[0].pc;
     // Dirty the FP state if we are committing anything related to the FPU
@@ -80,6 +81,8 @@ module commit_stage #(
         dirty_fp_state_o |= commit_ack_o[i] & (commit_instr_i[i].fu inside {FPU, FPU_VEC} || is_rd_fpr(commit_instr_i[i].op));
       end
     end
+
+    assign commit_tran_id_o = commit_instr_i[0].trans_id;
 
     logic instr_0_is_amo;
     assign instr_0_is_amo = is_amo(commit_instr_i[0].op);
@@ -159,18 +162,6 @@ module commit_stage #(
                   we_gpr_o[0] = 1'b0;
                 end
             end
-            // ---------
-            // CSR Logic
-            // ---------
-            // check whether the instruction we retire was a CSR instruction
-            // interrupts are never taken on CSR instructions
-            if (commit_instr_i[0].fu == CSR) begin
-                // write the CSR file
-                commit_csr_o = 1'b1;
-                wdata_o[0]   = csr_rdata_i;
-                csr_op_o     = commit_instr_i[0].op;
-                csr_wdata_o  = commit_instr_i[0].result;
-            end
             // ------------------
             // SFENCE.VMA Logic
             // ------------------
@@ -218,38 +209,40 @@ module commit_stage #(
             end
         end
 
-        // -----------------
-        // Commit Port 2
-        // -----------------
-        // check if the second instruction can be committed as well and the first wasn't a CSR instruction
-        // also if we are in single step mode don't retire the second instruction
-        if (commit_ack_o[0] && commit_instr_i[1].valid
-                            && !halt_i
-                            && !(commit_instr_i[0].fu inside {CSR})
-                            && !flush_dcache_i
-                            && !instr_0_is_amo
-                            && !single_step_i) begin
-            // only if the first instruction didn't throw an exception and this instruction won't throw an exception
-            // and the functional unit is of type ALU, LOAD, CTRL_FLOW, MULT, FPU or FPU_VEC
-            if (!exception_o.valid && !commit_instr_i[1].ex.valid
-                                   && (commit_instr_i[1].fu inside {ALU, LOAD, CTRL_FLOW, MULT, FPU, FPU_VEC})) begin
+        if (NR_COMMIT_PORTS > 1) begin
+            // -----------------
+            // Commit Port 2
+            // -----------------
+            // check if the second instruction can be committed as well and the first wasn't a CSR instruction
+            // also if we are in single step mode don't retire the second instruction
+            if (commit_ack_o[0] && commit_instr_i[1].valid
+                                && !halt_i
+                                && !(commit_instr_i[0].fu inside {CSR})
+                                && !flush_dcache_i
+                                && !instr_0_is_amo
+                                && !single_step_i) begin
+                // only if the first instruction didn't throw an exception and this instruction won't throw an exception
+                // and the functional unit is of type ALU, LOAD, CTRL_FLOW, MULT, FPU or FPU_VEC
+                if (!exception_o.valid && !commit_instr_i[1].ex.valid
+                                       && (commit_instr_i[1].fu inside {ALU, LOAD, CTRL_FLOW, MULT, FPU, FPU_VEC})) begin
 
-                if (is_rd_fpr(commit_instr_i[1].op))
-                    we_fpr_o[1] = 1'b1;
-                else
-                    we_gpr_o[1] = 1'b1;
-
-                commit_ack_o[1] = 1'b1;
-
-                // additionally check if we are retiring an FPU instruction because we need to make sure that we write all
-                // exception flags
-                if (commit_instr_i[1].fu inside {FPU, FPU_VEC}) begin
-                    if (csr_write_fflags_o)
-                        csr_wdata_o = {59'b0, (commit_instr_i[0].ex.cause[4:0] | commit_instr_i[1].ex.cause[4:0])};
+                    if (is_rd_fpr(commit_instr_i[1].op))
+                        we_fpr_o[1] = 1'b1;
                     else
-                        csr_wdata_o = {59'b0, commit_instr_i[1].ex.cause[4:0]};
+                        we_gpr_o[1] = 1'b1;
 
-                    csr_write_fflags_o = 1'b1;
+                    commit_ack_o[1] = 1'b1;
+
+                    // additionally check if we are retiring an FPU instruction because we need to make sure that we write all
+                    // exception flags
+                    if (commit_instr_i[1].fu inside {FPU, FPU_VEC}) begin
+                        if (csr_write_fflags_o)
+                            csr_wdata_o = {59'b0, (commit_instr_i[0].ex.cause[4:0] | commit_instr_i[1].ex.cause[4:0])};
+                        else
+                            csr_wdata_o = {59'b0, commit_instr_i[1].ex.cause[4:0]};
+
+                        csr_write_fflags_o = 1'b1;
+                    end
                 end
             end
         end

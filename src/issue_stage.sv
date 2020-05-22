@@ -33,7 +33,7 @@ module issue_stage #(
     output logic                                     decoded_instr_ack_o,
     // to EX
     output fu_data_t                                 fu_data_o,
-    output logic [63:0]                              pc_o,
+    output logic [riscv::VLEN-1:0]                   pc_o,
     output logic                                     is_compressed_instr_o,
     input  logic                                     flu_ready_i,
     output logic                                     alu_valid_o,
@@ -118,7 +118,8 @@ module issue_stage #(
     // ---------------------------------------------------------
     scoreboard #(
         .NR_ENTRIES (NR_ENTRIES ),
-        .NR_WB_PORTS(NR_WB_PORTS)
+        .NR_WB_PORTS(NR_WB_PORTS),
+        .NR_COMMIT_PORTS(NR_COMMIT_PORTS)
     ) i_scoreboard (
         .sb_full_o             ( sb_full_o                                 ),
         .unresolved_branch_i   ( 1'b0                                      ),
@@ -151,7 +152,9 @@ module issue_stage #(
     // ---------------------------------------------------------
     // 3. Issue instruction and read operand, also commit
     // ---------------------------------------------------------
-    issue_read_operands i_issue_read_operands  (
+    issue_read_operands #(
+      .NR_COMMIT_PORTS ( NR_COMMIT_PORTS )
+    )i_issue_read_operands  (
         .flush_i             ( flush_unissued_instr_i          ),
         .issue_instr_i       ( issue_instr_sb_iro              ),
         .issue_instr_valid_i ( issue_instr_valid_sb_iro        ),
