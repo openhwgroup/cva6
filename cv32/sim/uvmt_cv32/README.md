@@ -148,7 +148,7 @@ Custom Test Programs
 --------------------
 The `uvmt_cv32` environment supports the ability to run any arbitrary test program that can run on the cv32e40p core, as long as it has
 been pre-compiled into a hex-file.  These are called `Type 1` tests in the
-[Verification Strategy](https://github.com/openhwgroup/core-v-docs/blob/master/verif/Common/OpenHWGroup_CORE-V_Verif_Strategy.pdf).
+[Verification Strategy](https://core-v-docs-verif-strat.readthedocs.io/en/latest/sim_tests.html#test-program).
 <br><br>
 The Makefile implements a rule called `custom` that will compile a test-program and pass it to the SystemVerilog simulation.  The user
 must specify `CUSTOM_DIR`, the _absolute_ path to the compiled program, and `CUSTOM_PROG`, the filename of the test program (no extension).
