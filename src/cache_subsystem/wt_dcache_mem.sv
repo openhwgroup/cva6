@@ -221,12 +221,13 @@ module wt_dcache_mem #(
     .empty_o (                  )
   );
 
+  wire rd_miss;
   lzc #(
     .WIDTH ( DCACHE_SET_ASSOC )
   ) i_lzc_rd_hit (
     .in_i    ( rd_hit_oh_o  ),
     .cnt_o   ( rd_hit_idx   ),
-    .empty_o (              )
+    .empty_o ( rd_miss      )
   );
 
   assign wbuffer_rdata = wbuffer_data_i[wbuffer_hit_idx].data;
