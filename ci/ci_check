@@ -32,6 +32,7 @@
 #     - Blindly uses .metrics.json wih no ability for user over-ride.
 #
 # TODO:
+#      0. Command-line argument to select the simulator.
 #      1. Automatically check results using the "isPass" key.
 #      2. Create a "sanity-regression" in .metrics.json and use that here.
 #      3. Don't assume DSIM_WORK and DSIM_RESULTS are always at the end of the
