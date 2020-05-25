@@ -1,9 +1,9 @@
 # core-v-verif
 Functional verification project for the CORE-V family of RISC-V cores. This project is under active development.
-***This branch is being used to facilitate a significant integration - please do not use it unless specifically directed to.***
 
-## NEWS FLASH
-The OpenHW Group CV32E40P is now live!<br>This repository no longer contains a local copy of the RTL.  The RTL is cloned from the appropriate [core-v-cores](https://github.com/openhwgroup/core-v-cores) repository as needed.  The specific branch and hash of the RTL is controlled by a set of variables in `cv32/sim/Common.mk`.
+## NEWS UPDATES:
+**2020-05-25:** The [Imperas OVPsim Instruction Set Generator](http://www.ovpworld.org/) has been integrated into the UVM environment as the Referenece Model for the CV32E40(P).  To enable it, set a shell ENV variable USE_ISS to "YES".<br>
+**2020-02-28:** The OpenHW Group CV32E40P is now live!<br>This repository no longer contains a local copy of the RTL.  The RTL is cloned from the appropriate [core-v-cores](https://github.com/openhwgroup/core-v-cores) repository as needed.  The specific branch and hash of the RTL is controlled by a set of variables in `cv32/sim/Common.mk`.
 
 ## Getting Started
 First, have a look at the [OpenHW Group's website](https://www.openhwgroup.org) to learn a bit more about who we are and what we are doing.  
@@ -28,7 +28,7 @@ Verification Environments, testbenches, testcases and simulation Makefiles for t
 Verification Environments, testbenches, testcases and simulation Makefiles for the CV64A cores.
 
 ### doc
-Empty.  Please see the [CORE-V-DOCS](https://github.com/openhwgroup/core-v-docs) repository.
+Mostly empty.  Contains a pointer to the [CORE-V-DOCS](https://github.com/openhwgroup/core-v-docs) repository.
 
 ### lib
 Common components for the CV32 and CV64 verification environments.
