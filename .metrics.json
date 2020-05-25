@@ -1,71 +1,71 @@
 {
     "builds": {
       "list": [{
-        "name": "cv32",
-        "image": "cv32-verif-toolchain:06122019",
-        "cmd": "cd cv32/tests/core; make dsimify DSIM_WORK=/mux-flow/build/repo/dsim_work",
-        "wavesCmd": "cd cv32/tests/core; make dsimify DSIM_WORK=/mux-flow/build/repo/dsim_work WAVES=1"
+        "name":     "uvmt_cv32",
+        "image":    "cv32-verif-toolchain:06122019",
+        "cmd":      "cd cv32/sim/uvmt_cv32; make comp SIMULATOR=dsim USE_ISS=YES DSIM_WORK=/mux-flow/build/repo/dsim_work",
+        "wavescmd": "cd cv32/sim/uvmt_cv32; make comp SIMULATOR=dsim USE_ISS=YES DSIM_WORK=/mux-flow/build/repo/dsim_work WAVES=1"
       }]
     },
     "regressions": [{
-      "name": "hello_world",
-      "description": "Sanity test for CV32",
+      "name":        "hello-world",
+      "description": "Hello World test for CV32",
       "tests": {
           "resultsDir": "/mux-flow/build/results/hello_world",
-          "builds": ["cv32"],
+          "builds":    ["uvmt_cv32"],
 	  "list": [
 	      {
-		  "name": "hello_world_test",
-		  "build": "cv32",
-		  "cmd": "cd cv32/tests/core; make dsim-hello_world DSIM_WORK=/mux-flow/build/repo/dsim_work DSIM_RESULTS=/mux-flow/build/results",
-		  "wavesCmd": "cd cv32/tests/core; make dsim-hello_world DSIM_WORK=/mux-flow/build/repo/dsim_work DSIM_RESULTS=/mux-flow/build/results WAVES=1",
-		  "logFile": "dsim-hello_world.log",
-		  "wavesFile": "waves.vcd",
+		  "name":        "hello_world_test",
+		  "build":       "uvmt_cv32",
+		  "cmd":         "cd cv32/sim/uvmt_cv32; make hello-world SIMULATOR=dsim USE_ISS=YES DSIM_WORK=/mux-flow/build/repo/dsim_work DSIM_RESULTS=/mux-flow/build/results",
+		  "wavesCmd":    "cd cv32/sim/uvmt_cv32; make hello-world SIMULATOR=dsim USE_ISS=YES DSIM_WORK=/mux-flow/build/repo/dsim_work DSIM_RESULTS=/mux-flow/build/results WAVES=1",
+		  "logFile":     "dsim-hello_world.log",
+		  "wavesFile":   "waves.vcd",
 		  "metricsFile": "metrics.xml",
-		  "isPass": "EXIT SUCCESS",
+		  "isPass":      "Simulation PASSED",
 		  "seed": 1
 	      }
 	  ]
        }
     },
     {
-      "name": "riscv_compliance_cv32",
-      "description": "RISC-V compliance tests",
+      "name":        "cv32-riscv-tests",
+      "description": "CV32E40(P)-specific compliance tests",
       "verbose": "true",	
       "tests": {
-          "resultsDir": "/mux-flow/build/results/riscv-compliance",
-          "builds": ["cv32"],
+          "resultsDir": "/mux-flow/build/results/cv32-riscv-tests",
+          "builds":    ["uvmt_cv32"],
 	  "list": [
 	      {
-		  "name": "riscv_compliance_tests_cv32",
-		  "build": "cv32",
-		  "cmd": "cd cv32/tests/core; make dsim-cv32_riscv_compliance_tests DSIM_WORK=/mux-flow/build/repo/dsim_work DSIM_RESULTS=/mux-flow/build/results",
-		  "wavesCmd": "cd cv32/tests/core; make dsim-cv32_riscv_compliance_tests DSIM_WORK=/mux-flow/build/repo/dsim_work DSIM_RESULTS=/mux-flow/build/results WAVES=1",
-		  "logFile": "dsim-riscv_compliance_tests.log",
-		  "wavesFile": "waves.vcd",
+		  "name":        "cv32-riscv-tests",
+		  "build":       "uvmt_cv32",
+		  "cmd":         "cd cv32/sim/uvmt_cv32; make cv32-riscv-tests SIMULATOR=dsim USE_ISS=YES DSIM_WORK=/mux-flow/build/repo/dsim_work DSIM_RESULTS=/mux-flow/build/results",
+		  "wavesCmd":    "cd cv32/sim/uvmt_cv32; make cv32-riscv-tests SIMULATOR=dsim USE_ISS=YES DSIM_WORK=/mux-flow/build/repo/dsim_work DSIM_RESULTS=/mux-flow/build/results WAVES=1",
+		  "logFile":     "dsim-riscv_tests.log",
+		  "wavesFile":   "waves.vcd",
 		  "metricsFile": "metrics.xml",
-		  "isFail": "Simulation terminated by \\$fatal",
+		  "isPass":      "Simulation PASSED",
 		  "seed": 1
 	      }
 	  ]
        }
     },
     {
-      "name": "riscv_tests_cv32",
-      "description": "RISC-V ISA tests",
+      "name":        "cv32-riscv-compliance-tests",
+      "description": "RISC-V Foundation ISA tests",
       "tests": {
-          "resultsDir": "/mux-flow/build/results/riscv-tests",
-          "builds": ["cv32"],
+          "resultsDir": "/mux-flow/build/results/cv32-riscv-compilance-tests",
+          "builds":    ["uvmt_cv32"],
 	  "list": [
 	      {
-		  "name": "riscv_isa_tests_cv32",
-		  "build": "cv32",
-		  "cmd": "cd cv32/tests/core; make dsim-cv32_riscv_tests DSIM_WORK=/mux-flow/build/repo/dsim_work DSIM_RESULTS=/mux-flow/build/results",
-		  "wavesCmd": "cd cv32/tests/core; make dsim-cv32_riscv_tests DSIM_WORK=/mux-flow/build/repo/dsim_work DSIM_RESULTS=/mux-flow/build/results WAVES=1",
-		  "logFile": "dsim-riscv_tests.log",
-		  "wavesFile": "waves.vcd",
+		  "name":        "cv32-rsicv-compliance-tests",
+		  "build":       "uvmt_cv32",
+		  "cmd":         "cd cv32/sim/uvmt_cv32; make cv32-riscv-compliance-tests SIMULATOR=dsim USE_ISS=YES DSIM_WORK=/mux-flow/build/repo/dsim_work DSIM_RESULTS=/mux-flow/build/results",
+		  "wavesCmd":    "cd cv32/sim/uvmt_cv32; make cv32-riscv-compliance-tests SIMULATOR=dsim USE_ISS=YES DSIM_WORK=/mux-flow/build/repo/dsim_work DSIM_RESULTS=/mux-flow/build/results WAVES=1",
+		  "logFile":     "dsim-riscv_compliance_tests.log",
+		  "wavesFile":   "waves.vcd",
 		  "metricsFile": "metrics.xml",
-		  "isPass": "ALL TESTS PASSED",
+		  "isPass":      "Simulation PASSED",
 		  "seed": 1
 	      }
 	  ]
