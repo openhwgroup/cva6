@@ -343,7 +343,7 @@ module wt_dcache_missunit #(
   assign wr_cl_data_o    = mem_rtrn_i.data;
   assign wr_cl_data_be_o = (cl_write_en) ? '1 : '0;// we only write complete cachelines into the memory
 
-  // only NC responses write to the cache
+  // only non-NC responses write to the cache
   assign cl_write_en     = load_ack & ~mshr_q.nc;
 
 ///////////////////////////////////////////////////////
