@@ -22,7 +22,7 @@
 		  "logFile":     "dsim-hello_world.log",
 		  "wavesFile":   "waves.vcd",
 		  "metricsFile": "metrics.xml",
-		  "isPass":      "Simulation PASSED",
+		  "isPass":      "SIMULATION PASSED",
 		  "seed": 1
 	      }
 	  ]
@@ -44,7 +44,7 @@
 		  "logFile":     "dsim-riscv_tests.log",
 		  "wavesFile":   "waves.vcd",
 		  "metricsFile": "metrics.xml",
-		  "isPass":      "Simulation PASSED",
+		  "isPass":      "SIMULATION PASSED",
 		  "seed": 1
 	      }
 	  ]
@@ -65,10 +65,98 @@
 		  "logFile":     "dsim-riscv_compliance_tests.log",
 		  "wavesFile":   "waves.vcd",
 		  "metricsFile": "metrics.xml",
-		  "isPass":      "Simulation PASSED",
+		  "isPass":      "SIMULATION PASSED",
 		  "seed": 1
 	      }
 	  ]
       }
+    },
+    {
+      "name":        "illegal-riscv-tests",
+      "description": "Inherited from PULP-Platform",
+      "verbose": "true",	
+      "tests": {
+          "resultsDir": "/mux-flow/build/results/illegal-riscv-tests",
+          "builds":    ["uvmt_cv32"],
+	  "list": [
+	      {
+      "name":        "illegal-riscv-tests",
+		  "build":       "uvmt_cv32",
+		  "cmd":         "cd cv32/sim/uvmt_cv32; make custom CUSTOM_PROG=illegal SIMULATOR=dsim USE_ISS=YES DSIM_WORK=/mux-flow/build/repo/dsim_work DSIM_RESULTS=/mux-flow/build/results",
+		  "wavesCmd":    "cd cv32/sim/uvmt_cv32; make custom CUSTOM_PROG=illegal SIMULATOR=dsim USE_ISS=YES DSIM_WORK=/mux-flow/build/repo/dsim_work DSIM_RESULTS=/mux-flow/build/results WAVES=1",
+		  "logFile":     "dsim-illegal_riscv_tests.log",
+		  "wavesFile":   "waves.vcd",
+		  "metricsFile": "metrics.xml",
+		  "isPass":      "SIMULATION PASSED",
+		  "seed": 1
+	      }
+	  ]
+       }
+    },
+    {
+      "name":        "fibonacci-test",
+      "description": "Calculates and prints Fibonacci sequence. Inherited from PULP-Platform",
+      "verbose": "true",	
+      "tests": {
+          "resultsDir": "/mux-flow/build/results/fibonacci-test",
+          "builds":    ["uvmt_cv32"],
+	  "list": [
+	      {
+      "name":        "fibonacci-test",
+		  "build":       "uvmt_cv32",
+		  "cmd":         "cd cv32/sim/uvmt_cv32; make custom CUSTOM_PROG=fibonacci SIMULATOR=dsim USE_ISS=YES DSIM_WORK=/mux-flow/build/repo/dsim_work DSIM_RESULTS=/mux-flow/build/results",
+		  "wavesCmd":    "cd cv32/sim/uvmt_cv32; make custom CUSTOM_PROG=fibonacci SIMULATOR=dsim USE_ISS=YES DSIM_WORK=/mux-flow/build/repo/dsim_work DSIM_RESULTS=/mux-flow/build/results WAVES=1",
+		  "logFile":     "dsim-fibonacci_test.log",
+		  "wavesFile":   "waves.vcd",
+		  "metricsFile": "metrics.xml",
+		  "isPass":      "SIMULATION PASSED",
+		  "seed": 1
+	      }
+	  ]
+       }
+    },
+    {
+      "name":        "misalign-test",
+      "description": "Misaligned accesses to memory. Inherited from PULP-Platform",
+      "verbose": "true",	
+      "tests": {
+          "resultsDir": "/mux-flow/build/results/misalign-test",
+          "builds":    ["uvmt_cv32"],
+	  "list": [
+	      {
+      "name":        "misalign-test",
+		  "build":       "uvmt_cv32",
+		  "cmd":         "cd cv32/sim/uvmt_cv32; make custom CUSTOM_PROG=misalign SIMULATOR=dsim USE_ISS=YES DSIM_WORK=/mux-flow/build/repo/dsim_work DSIM_RESULTS=/mux-flow/build/results",
+		  "wavesCmd":    "cd cv32/sim/uvmt_cv32; make custom CUSTOM_PROG=misalign SIMULATOR=dsim USE_ISS=YES DSIM_WORK=/mux-flow/build/repo/dsim_work DSIM_RESULTS=/mux-flow/build/results WAVES=1",
+		  "logFile":     "dsim-misalign_test.log",
+		  "wavesFile":   "waves.vcd",
+		  "metricsFile": "metrics.xml",
+		  "isPass":      "SIMULATION PASSED",
+		  "seed": 1
+	      }
+	  ]
+       }
+    },
+    {
+      "name":        "dhrystone-test",
+      "description": "Dhrystone test. Inherited from PULP-Platform",
+      "verbose": "true",	
+      "tests": {
+          "resultsDir": "/mux-flow/build/results/dhrystone-test",
+          "builds":    ["uvmt_cv32"],
+	  "list": [
+	      {
+      "name":        "dhrystone-test",
+		  "build":       "uvmt_cv32",
+		  "cmd":         "cd cv32/sim/uvmt_cv32; make custom CUSTOM_PROG=dhrystone SIMULATOR=dsim USE_ISS=YES DSIM_WORK=/mux-flow/build/repo/dsim_work DSIM_RESULTS=/mux-flow/build/results",
+		  "wavesCmd":    "cd cv32/sim/uvmt_cv32; make custom CUSTOM_PROG=dhrystone SIMULATOR=dsim USE_ISS=YES DSIM_WORK=/mux-flow/build/repo/dsim_work DSIM_RESULTS=/mux-flow/build/results WAVES=1",
+		  "logFile":     "dsim-dhrystone_test.log",
+		  "wavesFile":   "waves.vcd",
+		  "metricsFile": "metrics.xml",
+		  "isPass":      "SIMULATION PASSED",
+		  "seed": 1
+	      }
+	  ]
+       }
     }]
 }

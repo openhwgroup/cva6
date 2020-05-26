@@ -37,13 +37,14 @@
 #      2. Create a "sanity-regression" in .metrics.json and use that here.
 #      3. Don't assume DSIM_WORK and DSIM_RESULTS are always at the end of the
 #         "cmd" key.
-#      4. IS it safe to assume p3 is located at /usr/bin/python3?
+#      4. Is it safe to assume p3 is located at /usr/bin/python3?
 ################################################################################
 
 import json
 import sys
 import os
 import argparse
+import subprocess
 
 # Command-line arguments
 parser = argparse.ArgumentParser()
@@ -133,5 +134,8 @@ for key in metrics_dict:
 
 # TODO:
 #check_results()
+#result = subprocess.Popen(['grep', 'PASSED', '-R', '-I', '../cv32/sim/uvmt_cv32'], stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+#stdout,stderr = result.communicate()
+#print (stdout)
 
 ## end ##
