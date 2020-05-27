@@ -126,7 +126,7 @@ comp: mk_results $(CV32E40P_PKG) $(OVP_MODEL_DPI)
 #      $ make custom CUSTOM_PROG=<my_custom_test_program>
 #
 custom: comp $(CUSTOM_DIR)/$(CUSTOM_PROG).hex
-	mkdir -p $(DSIM_RESULTS)/$(CUSTOM_DIR) && cd $(DSIM_RESULTS)/$(CUSTOM_DIR)  && \
+	mkdir -p $(DSIM_RESULTS)/$(CUSTOM_PROG) && cd $(DSIM_RESULTS)/$(CUSTOM_PROG)  && \
 	$(DSIM) -l dsim-$(CUSTOM_PROG).log -image $(DSIM_IMAGE) \
 		-work $(DSIM_WORK) $(DSIM_RUN_FLAGS) $(DSIM_DMP_FLAGS) \
 		-sv_lib $(UVM_HOME)/src/dpi/libuvm_dpi.so \

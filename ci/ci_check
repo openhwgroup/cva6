@@ -26,14 +26,14 @@
 # Author: Mike Thompson
 #  email: mike@openhwgroup.org
 #
-# Written in Python 3.6.9 on Ubuntu 18.04.  Your python mileage may vary.
+# Written with Python 3.6.9 on Ubuntu 18.04.  Your python mileage may vary.
 #
 # Restriction:
 #     - Needs to be launched from the ci directory.
 #     - Blindly uses .metrics.json wih no ability for user over-ride.
 #
 # TODO:
-#      1. Automatically check results using the "isPass" key.
+#      1. Check results using the "isPass" key.
 #      2. Create a "sanity-regression" in .metrics.json and use that here.
 #      3. Don't assume DSIM_WORK and DSIM_RESULTS are always at the end of the
 #         "cmd" key.
@@ -45,12 +45,55 @@ import sys
 import os
 import argparse
 import subprocess
+import re
 
+################################################################################
+# Methods....
+
+# Check results and print something useful
+# TODO: fix this! (its so ugly I'm embarassed to check it in)
+def check_results():
+    fail_count = 0;
+
+    fails = subprocess.Popen('grep "SIMULATION FAILED" -R -I ../cv32/sim/uvmt_cv32',
+                              stdout=subprocess.PIPE,
+                              stderr=subprocess.STDOUT,
+                              shell="TRUE")
+    passes = subprocess.Popen('grep "SIMULATION PASSED" -R -I ../cv32/sim/uvmt_cv32',
+                              stdout=subprocess.PIPE,
+                              stderr=subprocess.STDOUT,
+                              shell="TRUE")
+
+    for line in fails.stdout.readlines():
+        failed = line.decode('utf-8').rstrip()
+        print (failed)
+        fail_count += 1
+
+    for line in passes.stdout.readlines():
+        print (line.decode('utf-8').rstrip())
+
+    if (fail_count == 0):
+        print ('\nCI Check PASSED with no failures.\n')
+    elif (fail_count == 1 and re.search('riscv_compliance_tests', failed)):
+        print ('\nCI Check PASSED with known failure.\n')
+    else:
+        print ('\nCI Check FAILED with unknown failures.')
+        print ('Please fix before issuing a pull-request.\n')
+
+def ask_user():
+    txt = input("Is this what you want [Y/N]? ")
+    if (txt != 'Y'):
+        exit(1)
+
+################################################################################
 # Command-line arguments
+
 parser = argparse.ArgumentParser()
-parser.add_argument("-s", "--simulator",     help="SystemVerilog simulator", choices=['dsim', 'xrun', 'vsim', 'vcs'])
-parser.add_argument("-d", "--debug",         help="Display debug messages",               action="store_true")
-parser.add_argument("-p", "--print_command", help="Print commands to stdout, do not run", action="store_true")
+parser.add_argument("-s", "--simulator",     help="SystemVerilog simulator (dsim is default)", choices=['dsim', 'xrun', 'vsim', 'vcs'])
+parser.add_argument("-d", "--debug",         help="Display debug messages",                    action="store_true")
+parser.add_argument("-p", "--print_command", help="Print commands to stdout, do not run",      action="store_true")
+parser.add_argument("-c", "--check_only",    help="Check previosu results (do not run)",       action="store_true")
+parser.add_argument("-k", "--keep",          help="Keep previous cloned or generated files",   action="store_true")
 
 args   = parser.parse_args()
 debug  = 0       # warning, too much info!
@@ -66,6 +109,22 @@ if (args.simulator == None):
 else:
     svtool = args.simulator
 
+if (args.check_only):
+    check_results()
+    exit(0)
+
+if (args.keep):
+    print ('Keeping previously cloned version of the RTL plus any previously generated files')
+    ask_user()
+else:
+    print ('This will delete your previously cloned RTL repo plus all previously generated files')
+    ask_user()
+    os.chdir('../cv32/sim/uvmt_cv32')
+    os.system('make clean_all')
+    os.chdir('../../../ci')
+
+################################################################################
+# script starts here
 
 # This script is run from the "ci" directory, but the paths used by simulator
 # commands assume we are at the root of the repo.
@@ -132,10 +191,8 @@ for key in metrics_dict:
                     print ('ERROR: cannot find run command in .metrics.json')
                     exit(0)
 
-# TODO:
-#check_results()
-#result = subprocess.Popen(['grep', 'PASSED', '-R', '-I', '../cv32/sim/uvmt_cv32'], stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
-#stdout,stderr = result.communicate()
-#print (stdout)
+# Grep results out of the logfiles and print to stdout
+os.chdir('ci')
+check_results()
 
 ## end ##
