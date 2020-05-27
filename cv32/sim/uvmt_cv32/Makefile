@@ -59,7 +59,7 @@ UVM_PLUSARGS ?=
 SIMULATOR    ?= unsim
 
 # Optionally exclude the OVPsim (not recommended)
-USE_ISS      ?= NO
+USE_ISS      ?= YES
 
 # UVM Environment
 export DV_UVMT_CV32_PATH    = $(PROJ_ROOT_DIR)/$(COREV_PROJ)/tb/uvmt_cv32
