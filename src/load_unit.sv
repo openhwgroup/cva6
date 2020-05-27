@@ -79,9 +79,9 @@ module load_unit import ariane_pkg::*; #(
     // should we stall the request e.g.: is it withing a non-cacheable region
     // and the write buffer (in the cache and in the core) is not empty so that we don't forward anything
     // from the write buffer (e.g. it would essentially be cached).
-    assign stall_nc = (~(dcache_wbuffer_empty_i | store_buffer_empty_i) & is_inside_cacheable_regions(ArianeCfg, paddr_i))
-                    // this guards the load to be executed non-speculatively (we wait until our transaction id is on port 0
-                    | (commit_tran_id_i != lsu_ctrl_i.trans_id & is_inside_nonidempotent_regions(ArianeCfg, paddr_i));
+    assign stall_nc = ( (!dcache_wbuffer_empty_i || !store_buffer_empty_i) && !is_inside_cacheable_regions(ArianeCfg, paddr_i)) |
+                      // this guards the load to be executed non-speculatively (we wait until our transaction id is on port 0
+                      (commit_tran_id_i != lsu_ctrl_i.trans_id & is_inside_nonidempotent_regions(ArianeCfg, paddr_i));
 
     // ---------------
     // Load Control
@@ -114,14 +114,11 @@ module load_unit import ariane_pkg::*; #(
                         if (!req_port_i.data_gnt) begin
                             state_d = WAIT_GNT;
                         end else begin
-                            if (dtlb_hit_i && !stall_nc) begin
+                            if (dtlb_hit_i) begin
                                 // we got a grant and a hit on the DTLB so we can send the tag in the next cycle
                                 state_d = SEND_TAG;
                                 pop_ld_o = 1'b1;
-                            // translation valid but this is to NC and the WB is not yet empty.
-                            end else if (dtlb_hit_i && stall_nc) begin
-                                state_d = ABORT_TRANSACTION_NC;
-                            end else begin
+                            end else begin //TLB miss
                                 state_d = ABORT_TRANSACTION;
                             end
                         end
@@ -187,45 +184,47 @@ module load_unit import ariane_pkg::*; #(
             // we know for sure that the tag we want to send is valid
             SEND_TAG: begin
                 req_port_o.tag_valid = 1'b1;
-                state_d = IDLE;
-                // we can make a new request here if we got one
-                if (valid_i) begin
-                    // start the translation process even though we do not know if the addresses match
-                    // this should ease timing
-                    translation_req_o = 1'b1;
-                    // check if the page offset matches with a store, if it does stall and wait
-                    if (!page_offset_matches_i) begin
-                        // make a load request to memory
-                        req_port_o.data_req = 1'b1;
-                        // we got no data grant so wait for the grant before sending the tag
-                        if (!req_port_i.data_gnt) begin
-                            state_d = WAIT_GNT;
-                        end else begin
-                            // we got a grant so we can send the tag in the next cycle
-                            if (dtlb_hit_i && !stall_nc) begin
-                                // we got a grant and a hit on the DTLB so we can send the tag in the next cycle
-                                state_d = SEND_TAG;
-                                pop_ld_o = 1'b1;
-                            // translation valid but this is to NC and the WB is not yet empty.
-                            end else if (dtlb_hit_i && stall_nc) begin
-                                state_d = ABORT_TRANSACTION_NC;
-                            end else begin
-                                state_d = ABORT_TRANSACTION;// we missed on the TLB -> wait for the translation
-                            end
-                        end
-                    end else begin
-                        // wait for the store buffer to train and the page offset to not match anymore
-                        state_d = WAIT_PAGE_OFFSET;
-                    end
-                end
                 // ----------
                 // Exception
                 // ----------
                 // if we got an exception we need to kill the request immediately
                 if (ex_i.valid) begin
                     req_port_o.kill_req = 1'b1;
-                end
-            end
+                    state_d = IDLE;
+                // translation valid but this is to NC and the WB is not yet empty.
+                end else if (stall_nc) begin
+                    state_d = ABORT_TRANSACTION_NC;
+                else begin
+                    state_d = IDLE;
+                    // we can make a new request here if we got one
+                    if (valid_i) begin
+                        // start the translation process even though we do not know if the addresses match
+                        // this should ease timing
+                        translation_req_o = 1'b1;
+                        // check if the page offset matches with a store, if it does stall and wait
+                        if (!page_offset_matches_i) begin
+                            // make a load request to memory
+                            req_port_o.data_req = 1'b1;
+                            // we got no data grant so wait for the grant before sending the tag
+                            if (!req_port_i.data_gnt) begin
+                                state_d = WAIT_GNT;
+                            end else begin
+                                // we got a grant so we can send the tag in the next cycle
+                                if (dtlb_hit_i) begin
+                                    // we got a grant and a hit on the DTLB so we can send the tag in the next cycle
+                                    state_d = SEND_TAG;
+                                    pop_ld_o = 1'b1;
+                                end else begin
+                                    state_d = ABORT_TRANSACTION;// we missed on the TLB -> wait for the translation
+                                end
+                            end
+                        end else begin
+                            // wait for the store buffer to train and the page offset to not match anymore
+                            state_d = WAIT_PAGE_OFFSET;
+                        end
+                    end //end valid_i (new transaction)
+                end // end !stall_nc
+            end //end case SEND_TAG
 
             WAIT_FLUSH: begin
                 // the D$ arbiter will take care of presenting this to the memory only in case we

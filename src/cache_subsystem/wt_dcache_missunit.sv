@@ -186,7 +186,7 @@ module wt_dcache_missunit #(
   end
 
   // read/write collision, stalls the corresponding request
-  // write collides with MSHR
+  // write port[NumPorts-1] collides with MSHR_Q
   assign mshr_rdwr_collision = (mshr_q.paddr[riscv::PLEN-1:DCACHE_OFFSET_WIDTH] == miss_paddr_i[NumPorts-1][riscv::PLEN-1:DCACHE_OFFSET_WIDTH]) && mshr_vld_q;
 
   // read collides with inflight TX

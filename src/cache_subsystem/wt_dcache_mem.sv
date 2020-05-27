@@ -209,6 +209,7 @@ module wt_dcache_mem #(
   end
 
   for(genvar k=0; k<DCACHE_WBUF_DEPTH; k++) begin : gen_wbuffer_hit
+    //Only bypass data from WB if the load is not a NI operation
     assign wbuffer_hit_oh[k] = (|wbuffer_data_i[k].valid) & (wbuffer_data_i[k].wtag == (wbuffer_cmp_addr >> 3));
   end
 
