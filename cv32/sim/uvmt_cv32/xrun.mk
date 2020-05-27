@@ -67,33 +67,7 @@ comp: mk_xrun_dir $(CV32E40P_PKG) $(OVP_MODEL_DPI)
 		-elaborate
 
 ################################################################################
-# Running custom test-programs':
-#   The "custom" target provides the ability to specify both the testcase run by
-#   the UVM environment and a C or assembly test-program to be executed by the
-#   core. Note that the UVM testcase is required to load the compiled program
-#   into the core's memory.
-#
-# User defined variables used by this target:
-#   CUSTOM_DIR:   Absolute, not relative, path to the custom C program. Default
-#                 is `pwd`/../../tests/core/custom.
-#   CUSTOM_PROG:  C or assembler test-program that executes on the core. Default
-#                 is hello_world.c.
-#   UVM_TESTNAME: Class identifer (not file path) of the UVM testcase run by
-#                 environment. Default is uvmt_cv32_firmware_test_c.
-#
-# Use cases:
-#   1: Full specification of the hello-world test:
-#      $ make custom SIMULATOR=dsim CUSTOM_DIR=`pwd`/../../tests/core/custom CUSTOM_PROG=hello_world UVM_TESTNAME=uvmt_cv32_firmware_test_c
-#
-#   2: Same thing, using the defaults in these Makefiles:
-#      $ make custom
-#
-#   3: Run ../../tests/core/custom/fibonacci.c
-#      $ make custom CUSTOM_PROG=fibonacci
-#
-#   4: Run your own "custom program" located in ../../tests/core/custom
-#      $ make custom CUSTOM_PROG=<my_custom_test_program>
-#
+# Custom test-programs.  See comment in dsim.mk for more info
 custom: comp $(CUSTOM_DIR)/$(CUSTOM_PROG).hex
 	$(XRUN) -l xrun-$(CUSTOM_PROG).log $(XRUN_RUN_FLAGS) \
 		+elf_file=$(CUSTOM_DIR)/$(CUSTOM_PROG).elf \
@@ -101,13 +75,9 @@ custom: comp $(CUSTOM_DIR)/$(CUSTOM_PROG).hex
 		+UVM_TESTNAME=uvmt_cv32_firmware_test_c \
 		+firmware=$(CUSTOM_DIR)/$(CUSTOM_PROG).hex
 
-################################################################################
-# 'Custom test'.  See comment in dsim.mk for more info
-custom: comp $(CUSTOM_DIR)/$(CUSTOM_PROG).hex
-	$(XRUN) -R -l xrun-$(CUSTOM_PROG).log \
-		+UVM_TESTNAME=$(UVM_TESTNAME) \
-		+firmware=$(CUSTOM_DIR)/$(CUSTOM_PROG).hex
 
+################################################################################
+# Explicit target tests
 hello-world: comp $(CUSTOM)/hello_world.hex
 	$(XRUN) -l xrun-hello-world.log $(XRUN_RUN_FLAGS) \
 		+elf_file=$(CUSTOM)/hello_world.elf \
