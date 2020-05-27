@@ -47,7 +47,9 @@ import argparse
 import subprocess
 import re
 
-if (not sys.version_info[:1] != 3):
+#print (sys.version_info)
+
+if (sys.version_info < (3,0,0)):
     print ('Requires python 3')
     exit(1)
 
