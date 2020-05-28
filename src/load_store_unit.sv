@@ -106,6 +106,7 @@ module load_store_unit #(
     logic [riscv::PLEN-1:0]   mmu_paddr;
     exception_t               mmu_exception;
     logic                     dtlb_hit;
+    logic [riscv::PLEN-13:0]  dtlb_ppn;
 
     logic                     ld_valid;
     logic [TRANS_ID_BITS-1:0] ld_trans_id;
@@ -139,6 +140,7 @@ module load_store_unit #(
         .lsu_paddr_o            ( mmu_paddr              ),
         .lsu_exception_o        ( mmu_exception          ),
         .lsu_dtlb_hit_o         ( dtlb_hit               ), // send in the same cycle as the request
+        .lsu_dtlb_ppn_o         ( dtlb_ppn               ), // send in the same cycle as the request
         // connecting PTW to D$ IF
         .req_port_i             ( dcache_req_ports_i [0] ),
         .req_port_o             ( dcache_req_ports_o [0] ),
@@ -206,6 +208,7 @@ module load_store_unit #(
         .paddr_i               ( mmu_paddr            ),
         .ex_i                  ( mmu_exception        ),
         .dtlb_hit_i            ( dtlb_hit             ),
+        .dtlb_ppn_i            ( dtlb_ppn             ),
         // to store unit
         .page_offset_o         ( page_offset          ),
         .page_offset_matches_i ( page_offset_matches  ),
