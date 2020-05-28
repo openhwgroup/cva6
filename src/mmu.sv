@@ -87,7 +87,6 @@ module mmu #(
     // Assignments
     assign itlb_lu_access = icache_areq_i.fetch_req;
     assign dtlb_lu_access = lsu_req_i;
-    assign lsu_dtlb_ppn_o = dtlb_content.ppn;
 
 
     tlb #(
@@ -276,6 +275,7 @@ module mmu #(
         dtlb_is_1G_n          = dtlb_is_1G;
 
         lsu_paddr_o           = lsu_vaddr_q[riscv::PLEN-1:0];
+        lsu_dtlb_ppn_o        = lsu_vaddr_n[riscv::PLEN-1:12];
         lsu_valid_o           = lsu_req_q;
         lsu_exception_o       = misaligned_ex_q;
         // mute misaligned exceptions if there is no request otherwise they will throw accidental exceptions
@@ -290,13 +290,16 @@ module mmu #(
             lsu_valid_o = 1'b0;
             // 4K page
             lsu_paddr_o = {dtlb_pte_q.ppn, lsu_vaddr_q[11:0]};
+            lsu_dtlb_ppn_o = dtlb_content.ppn;
             // Mega page
             if (dtlb_is_2M_q) begin
               lsu_paddr_o[20:12] = lsu_vaddr_q[20:12];
+              lsu_dtlb_ppn_o[20:12] = lsu_vaddr_n[20:12];
             end
             // Giga page
             if (dtlb_is_1G_q) begin
                 lsu_paddr_o[29:12] = lsu_vaddr_q[29:12];
+                lsu_dtlb_ppn_o[29:12] = lsu_vaddr_n[29:12];
             end
             // ---------
             // DTLB Hit
