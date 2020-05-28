@@ -113,6 +113,13 @@ dhrystone: comp $(CUSTOM)/dhrystone.hex
 		+UVM_TESTNAME=uvmt_cv32_firmware_test_c \
 		+firmware=$(CUSTOM)/dhrystone.hex
 
+riscv_ebreak_test_0: comp $(CUSTOM)/riscv_ebreak_test_0.hex
+	$(XRUN) -l xrun-riscv_ebreak_test_0.log $(XRUN_RUN_FLAGS) \
+                +elf_file=$(CUSTOM)/riscv_ebreak_test_0.elf \
+                +nm_file=$(CUSTOM)/riscv_ebreak_test_0.nm \
+                +UVM_TESTNAME=uvmt_cv32_firmware_test_c \
+                +firmware=$(CUSTOM)/riscv_ebreak_test_0.hex
+
 # Runs tests in cv32_riscv_tests/ only
 cv32-riscv-tests: comp $(CV32_RISCV_TESTS_FIRMWARE)/cv32_riscv_tests_firmware.hex
 	$(XRUN) -l xrun-riscv-tests.log $(XRUN_RUN_FLAGS) \

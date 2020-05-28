@@ -122,7 +122,7 @@ OVP_CTRL_FILE   = $(DV_OVPM_DESIGN)/riscv_CV32E40P.ic
 #
 # riscv toolchain install path
 RISCV            ?= /opt/riscv
-RISCV_EXE_PREFIX  = $(RISCV)/bin/riscv32-unknown-elf-
+RISCV_EXE_PREFIX ?= $(RISCV)/bin/riscv32-unknown-elf-
 
 # CORE FIRMWARE vars. All of the C and assembler programs under CORE_TEST_DIR
 # are collectively known as "Core Firmware".  Yes, this is confusing because
@@ -203,7 +203,7 @@ sanity: hello-world
 # We link with our custom crt0.s and syscalls.c against newlib so that we can
 # use the c standard library
 $(CUSTOM_DIR)/$(CUSTOM_PROG).elf: $(CUSTOM_DIR)/$(CUSTOM_PROG).c
-	$(RISCV_EXE_PREFIX)gcc -march=rv32imc -o $@ -w -Os -g -nostdlib \
+	$(RISCV_EXE_PREFIX)gcc -mabi=ilp32 -march=rv32imc -o $@ -w -Os -g -nostdlib \
 		-T $(CUSTOM_DIR)/link.ld  \
 		-static \
 		$(CUSTOM_DIR)/crt0.S \
@@ -262,6 +262,18 @@ $(CUSTOM)/dhrystone.elf: $(CUSTOM)/dhrystone.c
 		-I $(RISCV)/riscv32-unknown-elf/include \
 		-L $(RISCV)/riscv32-unknown-elf/lib \
 		-lc -lm -lgcc
+
+$(CUSTOM)/riscv_ebreak_test_0.elf: $(CUSTOM)/riscv_ebreak_test_0.S
+		@   echo "Compiling riscv_ebreak_test_0.S"
+		$(RISCV_EXE_PREFIX)gcc -mabi=ilp32 -march=rv32imc -c -o $(CUSTOM)/riscv_ebreak_test_0.o \
+		$(CUSTOM)/riscv_ebreak_test_0.S -DRISCV32GC -O0 -nostdlib -nostartfiles \
+		-I $(CUSTOM)
+		@   echo "Linking riscv_ebreak_test_0.o"
+		$(RISCV_EXE_PREFIX)gcc -mabi=ilp32 -march=rv32imc \
+		-o $(CUSTOM)/riscv_ebreak_test_0.elf \
+		$(CUSTOM)/riscv_ebreak_test_0.o -nostdlib -nostartfiles \
+		-T $(CUSTOM)/link.ld
+
 custom-clean:
 	rm -rf $(CUSTOM)/hello_world.elf $(CUSTOM)/hello_world.hex
 
