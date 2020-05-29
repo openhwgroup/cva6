@@ -198,8 +198,7 @@ module wt_dcache_mem #(
   assign cmp_en_d = (|vld_req) & ~vld_we;
 
   // word tag comparison in write buffer, only wb bypass with rd port
-  // rd port is disabled when wr_cl, so no need to mux the addr with wr_cl port's
-  assign wbuffer_cmp_addr = {rd_tag, bank_idx_q, bank_off_q};
+  assign wbuffer_cmp_addr = (wr_cl_vld_i) ? {wr_cl_tag_i, wr_cl_idx_i, wr_cl_off_i} : {rd_tag, bank_idx_q, bank_off_q};
   // hit generation
   for (genvar i=0;i<DCACHE_SET_ASSOC;i++) begin : gen_tag_cmpsel
     // tag comparison of ways >0
@@ -231,9 +230,18 @@ module wt_dcache_mem #(
     .empty_o ( rd_miss      )
   );
 
+  logic [DCACHE_OFFSET_WIDTH-1:0] wr_cl_off;
+
   assign wbuffer_rdata = wbuffer_data_i[wbuffer_hit_idx].data;
   assign wbuffer_be    = !wbuffer_miss && wbuffer_data_i[wbuffer_hit_idx].valid;
-  assign rdata         = rdata_cl[rd_hit_idx];
+  
+  if (Axi64BitCompliant) begin : gen_axi_off		
+      assign wr_cl_off     = (wr_cl_nc_i) ? '0 : wr_cl_off_i[DCACHE_OFFSET_WIDTH-1:3];		
+  end else begin  : gen_piton_off		
+      assign wr_cl_off     = wr_cl_off_i[DCACHE_OFFSET_WIDTH-1:3];		
+  end		
+
+  assign rdata = (wr_cl_vld_i) ? wr_cl_data_i[wr_cl_off*64 +: 64] : rdata_cl[rd_hit_idx];
 
   // overlay bytes that hit in the write buffer
   for(genvar k=0; k<8; k++) begin : gen_rd_data
