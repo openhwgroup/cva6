@@ -82,17 +82,23 @@ def check_results():
         print (line.decode('utf-8').rstrip())
         pass_count += 1
 
+    ########
+    # Temporary hack:
+    #    The riscv_compliance_test is known to fail
+    #    TODO: what if riscv_compliance_tests passes, but some other test fails?
     if (pass_count == 0):
         print ('\nNo logfiles found.\n')
     elif ((fail_count == 0) and (pass_count >=3)):
-        print ('\nCI Check PASSED with no failures.\n')
+        print ('\nCI Check PASSED with no failures.')
+        print ('OK to issue a pull-request.\n')
     elif (fail_count == 1 and re.search('riscv_compliance_tests', failed)):
-        #TODO: what if riscv_compliance_tests passes, but some other test fails?
-        print ('\nCI Check PASSED with known failure.\n')
+        print ('\nCI Check PASSED with known failure.')
+        print ('OK to issue a pull-request.\n')
     else:
         print ('\nCI Check FAILED with unknown failures.')
         print ('Please fix before issuing a pull-request.\n')
 
+# This script may do some unexpected things, so give the user an escape hatch.
 def ask_user():
     txt = input("Is this what you want [Y/N]? ")
     if not ((txt == 'Y') or (txt == 'y')):
@@ -117,25 +123,28 @@ if (args.debug):
 if (args.print_command):
     prcmd = 1
 
+if (args.check_only):
+    check_results()
+    exit(0)
+
+# --print_command is set: do not actually _do_ anything
+if not (prcmd):
+    if (args.keep):
+        print ('Keeping previously cloned version of the RTL plus any previously generated files')
+        ask_user()
+    else:
+        print ('This will delete your previously cloned RTL repo plus all previously generated files')
+        ask_user()
+        os.chdir('../cv32/sim/uvmt_cv32')
+        os.system('make clean_all')
+        os.chdir('../../../ci')
+
 if (args.simulator == None):
     print ('Must specify a simulator.  Type `ci_check -h` to see how')
     exit(0)
 else:
     svtool = args.simulator
 
-if (args.check_only):
-    check_results()
-    exit(0)
-
-if (args.keep):
-    print ('Keeping previously cloned version of the RTL plus any previously generated files')
-    ask_user()
-else:
-    print ('This will delete your previously cloned RTL repo plus all previously generated files')
-    ask_user()
-    os.chdir('../cv32/sim/uvmt_cv32')
-    os.system('make clean_all')
-    os.chdir('../../../ci')
 
 ################################################################################
 # script starts here
@@ -205,8 +214,10 @@ for key in metrics_dict:
                     print ('ERROR: cannot find run command in .metrics.json')
                     exit(0)
 
-# Grep results out of the logfiles and print to stdout
+# Unless this is just a run to dump simulation commands (--print_commands),
+# grep results out of the logfiles and print to stdout
 os.chdir('ci')
-check_results()
+if not (prcmd):
+    check_results()
 
 ## end ##
