@@ -58,7 +58,8 @@ module wt_dcache_wbuffer #(
   input  logic                               rst_ni,         // Asynchronous reset active low
 
   input  logic                               cache_en_i,     // writes are treated as NC if disabled
-  output logic                               empty_o,        // asserted if no ni data is present in write buffer
+  output logic                               empty_o,        // asserted if no data is present in write buffer
+  output logic                               not_ni_o,    // asserted if no ni data is present in write buffer
    // core request ports
   input  dcache_req_i_t                      req_port_i,
   output dcache_req_o_t                      req_port_o,
@@ -392,7 +393,8 @@ module wt_dcache_wbuffer #(
   
   wire ni_inside = |ni_pending_q;
   wire ni_conflict = is_ni_i && ni_inside;
-  assign empty_o    = !ni_inside;//~(|valid);
+  assign not_ni_o = !ni_inside;
+  assign empty_o    = !(|valid);
 
   // TODO: rewrite and separate into MUXES and write strobe logic
   always_comb begin : p_buffer

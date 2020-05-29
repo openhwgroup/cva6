@@ -43,7 +43,7 @@ module load_unit import ariane_pkg::*; #(
     // D$ interface
     input dcache_req_o_t             req_port_i,
     output dcache_req_i_t            req_port_o,
-    input  logic                     dcache_wbuffer_empty_i
+    input  logic                     dcache_wbuffer_not_ni_i
 );
     enum logic [3:0] { IDLE, WAIT_GNT, SEND_TAG, WAIT_PAGE_OFFSET,
                        ABORT_TRANSACTION, ABORT_TRANSACTION_NC, WAIT_TRANSLATION, WAIT_FLUSH,
@@ -80,7 +80,7 @@ module load_unit import ariane_pkg::*; #(
     //wire paddr_nc = !is_inside_cacheable_regions(ArianeCfg, paddr_pre);
     wire paddr_ni = is_inside_nonidempotent_regions(ArianeCfg, paddr_pre);
     wire not_commit_time = commit_tran_id_i != lsu_ctrl_i.trans_id;
-    wire inflight_stores = (!dcache_wbuffer_empty_i || !store_buffer_empty_i);
+    wire inflight_stores = (!dcache_wbuffer_not_ni_i || !store_buffer_empty_i);
     logic stall_nc;  // stall because of non-empty WB and address within non-cacheable region.
     // should we stall the request e.g.: is it withing a non-cacheable region
     // and the write buffer (in the cache and in the core) is not empty so that we don't forward anything
@@ -157,7 +157,7 @@ module load_unit import ariane_pkg::*; #(
             // Wait until the write-back buffer is empty in the data cache.
             WAIT_WB_EMPTY: begin
                 // the write buffer is empty, so lets go and re-do the translation.
-                if (dcache_wbuffer_empty_i) state_d = WAIT_TRANSLATION;
+                if (dcache_wbuffer_not_ni_i) state_d = WAIT_TRANSLATION;
             end
 
             WAIT_TRANSLATION: begin

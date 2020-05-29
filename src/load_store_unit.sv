@@ -64,6 +64,7 @@ module load_store_unit #(
     input  dcache_req_o_t [2:0]      dcache_req_ports_i,
     output dcache_req_i_t [2:0]      dcache_req_ports_o,
     input  logic                     dcache_wbuffer_empty_i,
+    input  logic                     dcache_wbuffer_not_ni_i,
     // AMO interface
     output amo_req_t                 amo_req_o,
     input  amo_resp_t                amo_resp_i
@@ -216,7 +217,7 @@ module load_store_unit #(
         // to memory arbiter
         .req_port_i            ( dcache_req_ports_i [1] ),
         .req_port_o            ( dcache_req_ports_o [1] ),
-        .dcache_wbuffer_empty_i,
+        .dcache_wbuffer_not_ni_i,
         .commit_tran_id_i,
         .*
     );
