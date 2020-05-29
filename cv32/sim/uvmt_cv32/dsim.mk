@@ -23,12 +23,21 @@
 
 DSIM                    = dsim
 DSIM_HOME              ?= /tools/Metrics/dsim
-DSIM_CMP_FLAGS         ?= $(TIMESCALE) $(SV_CMP_FLAGS)
+DSIM_CMP_FLAGS         ?= $(TIMESCALE) $(SV_CMP_FLAGS) -top uvmt_cv32_tb
 DSIM_UVM_ARGS          ?= +incdir+$(UVM_HOME)/src $(UVM_HOME)/src/uvm_pkg.sv
 DSIM_RESULTS           ?= $(PWD)/dsim_results
 DSIM_WORK              ?= $(DSIM_RESULTS)/dsim_work
 DSIM_IMAGE             ?= dsim.out
 DSIM_RUN_FLAGS         ?=
+DSIM_USE_ISS           ?= YES
+
+DSIM_FILE_LIST ?= -f $(DV_UVMT_CV32_PATH)/uvmt_cv32.flist
+ifeq ($(USE_ISS),YES)
+    DSIM_FILE_LIST         += -f $(DV_UVMT_CV32_PATH)/imperas_iss.flist
+    DSIM_USER_COMPILE_ARGS += "+define+ISS"
+    DSIM_RUN_FLAGS         +="+USE_ISS"
+endif
+
 
 # Variables to control wave dumping from command the line
 # Humans _always_ forget the "S", so you can have it both ways...
@@ -49,7 +58,6 @@ DSIM_ACC_FLAGS ?= +acc
 DSIM_DMP_FILE  ?= dsim.fst
 DSIM_DMP_FLAGS ?= -waves $(DSIM_DMP_FILE)
 endif
-
 
 .PHONY: sim
 
@@ -72,16 +80,17 @@ mk_results:
 
 # DSIM compile target
 #      - TODO: cd $(DSIM_RESULTS) - incompatible with pkg file
-comp: mk_results $(CV32E40P_PKG)
+comp: mk_results $(CV32E40P_PKG) $(OVP_MODEL_DPI)
+	#make -C $(OVPM_DIR) compileOVPmodel 
 	$(DSIM) \
 		$(DSIM_CMP_FLAGS) \
 		$(DSIM_UVM_ARGS) \
 		$(DSIM_ACC_FLAGS) \
-		-sv_lib $(UVM_HOME)/src/dpi/libuvm_dpi.so \
+		$(DSIM_USER_COMPILE_ARGS) \
 		+incdir+$(DV_UVME_CV32_PATH) \
 		+incdir+$(DV_UVMT_CV32_PATH) \
 		-f $(CV32E40P_MANIFEST) \
-		-f $(DV_UVMT_CV32_PATH)/uvmt_cv32.flist \
+		$(DSIM_FILE_LIST) \
 		-work $(DSIM_WORK) \
 		+$(UVM_PLUSARGS) \
 		-genimage $(DSIM_IMAGE)
@@ -121,7 +130,6 @@ custom: comp $(CUSTOM_DIR)/$(CUSTOM_PROG).hex
 	mkdir -p $(DSIM_RESULTS)/hello_world && cd $(DSIM_RESULTS)/hello_world  && \
 	$(DSIM) -l dsim-$(CUSTOM_PROG).log -image $(DSIM_IMAGE) \
 		-work $(DSIM_WORK) $(DSIM_RUN_FLAGS) $(DSIM_DMP_FLAGS) \
-		-sv_lib $(UVM_HOME)/src/dpi/libuvm_dpi.so \
 		+UVM_TESTNAME=$(UVM_TESTNAME) \
 		+firmware=$(CUSTOM_DIR)/$(CUSTOM_PROG).hex
 
@@ -133,8 +141,11 @@ hello-world: comp $(CUSTOM)/hello_world.hex
 	$(DSIM) -l dsim-hello_world.log -image $(DSIM_IMAGE) \
 		-work $(DSIM_WORK) $(DSIM_RUN_FLAGS) $(DSIM_DMP_FLAGS) \
 		-sv_lib $(UVM_HOME)/src/dpi/libuvm_dpi.so \
+		-sv_lib $(OVP_MODEL_DPI) \
 		+UVM_TESTNAME=uvmt_cv32_firmware_test_c \
-		+firmware=$(CUSTOM)/hello_world.hex
+		+firmware=$(CUSTOM)/hello_world.hex \
+		+elf_file=$(CUSTOM)/hello_world.elf
+#		+nm_file=$(CUSTOM)/hello_world.nm
 #		+verbose
 
 # Runs tests in riscv_tests/ only
@@ -143,8 +154,10 @@ cv32-riscv-tests: comp $(CV32_RISCV_TESTS_FIRMWARE)/cv32_riscv_tests_firmware.he
 	$(DSIM) -l dsim-riscv_tests.log -image $(DSIM_IMAGE) \
 		-work $(DSIM_WORK) $(DSIM_RUN_FLAGS) $(DSIM_DMP_FLAGS) \
 		-sv_lib $(UVM_HOME)/src/dpi/libuvm_dpi.so \
+		-sv_lib $(OVP_MODEL_DPI) \
 		+UVM_TESTNAME=uvmt_cv32_firmware_test_c \
-		+firmware=$(CV32_RISCV_TESTS_FIRMWARE)/cv32_riscv_tests_firmware.hex
+		+firmware=$(CV32_RISCV_TESTS_FIRMWARE)/cv32_riscv_tests_firmware.hex \
+		+elf_file=$(CV32_RISCV_TESTS_FIRMWARE)/cv32_riscv_tests_firmware.elf
 
 # Runs tests in riscv_compliance_tests/ only
 cv32-riscv-compliance-tests: comp $(CV32_RISCV_COMPLIANCE_TESTS_FIRMWARE)/cv32_riscv_compliance_tests_firmware.hex
@@ -152,8 +165,10 @@ cv32-riscv-compliance-tests: comp $(CV32_RISCV_COMPLIANCE_TESTS_FIRMWARE)/cv32_r
 	$(DSIM) -l dsim-riscv_compliance_tests.log -image $(DSIM_IMAGE) \
 		-work $(DSIM_WORK) $(DSIM_RUN_FLAGS) $(DSIM_DMP_FLAGS) \
 		-sv_lib $(UVM_HOME)/src/dpi/libuvm_dpi.so \
+		-sv_lib $(OVP_MODEL_DPI) \
 		+UVM_TESTNAME=uvmt_cv32_firmware_test_c \
-		+firmware=$(CV32_RISCV_COMPLIANCE_TESTS_FIRMWARE)/cv32_riscv_compliance_tests_firmware.hex
+		+firmware=$(CV32_RISCV_COMPLIANCE_TESTS_FIRMWARE)/cv32_riscv_compliance_tests_firmware.hex \
+		+elf_file=$(CV32_RISCV_COMPLIANCE_TESTS_FIRMWARE)/cv32_riscv_compliance_tests_firmware.elf
 
 # Runs all tests in riscv_tests/ and riscv_compliance_tests/
 cv32-firmware: comp $(FIRMWARE)/firmware.hex
@@ -161,8 +176,10 @@ cv32-firmware: comp $(FIRMWARE)/firmware.hex
 	$(DSIM) -l dsim-firmware.log -image $(DSIM_IMAGE) \
 		-work $(DSIM_WORK) $(DSIM_RUN_FLAGS) $(DSIM_DMP_FLAGS) \
 		-sv_lib $(UVM_HOME)/src/dpi/libuvm_dpi.so \
+		-sv_lib $(OVP_MODEL_DPI) \
 		+UVM_TESTNAME=uvmt_cv32_firmware_test_c \
-		+firmware=$(FIRMWARE)/firmware.hex
+		+firmware=$(FIRMWARE)/firmware.hex \
+		+elf_file=$(FIRMWARE)/firmware.elf
 
 ###############################################################################
 # DSIM UNIT TESTS: run each test individually.
@@ -174,8 +191,10 @@ dsim-firmware-unit-test: comp
 	$(DSIM) -l dsim-$(UNIT_TEST).log -image $(DSIM_IMAGE) \
 		-work $(DSIM_WORK) $(DSIM_RUN_FLAGS) $(DSIM_DMP_FLAGS) \
 		-sv_lib $(UVM_HOME)/src/dpi/libuvm_dpi.so \
+		-sv_lib $(OVP_MODEL_DPI) \
 		+UVM_TESTNAME=uvmt_cv32_firmware_test_c \
-		+firmware=$(FIRMWARE)/firmware_unit_test.hex
+		+firmware=$(FIRMWARE)/firmware_unit_test.hex \
+		+elf_file=$(FIRMWARE)/firmware_unit_test.elf
 
 # Aliases for 'dsim-unit-test' (defined in ../Common.mk)
 .PHONY: unit-test

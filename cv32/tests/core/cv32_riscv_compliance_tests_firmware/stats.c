@@ -30,6 +30,7 @@ void init_stats(void)
 {
     unsigned int inhibit = 0; /* cycles and instr count enable */
     __asm__ volatile("csrw 0x320, %0" ::"r"(inhibit));
+
 }
 
 void stats(void)

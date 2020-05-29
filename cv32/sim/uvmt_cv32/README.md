@@ -6,8 +6,9 @@ use test programs found in `cv32/tests/core`).  See the README in those
 directories for more information.
 <br><br>
 To run the testcases you will need a SystemVerilog simulator, the UVM-1.2
-library, the RISC-V GCC compiler and at least some familiarity with
-[Make](https://www.gnu.org/software/make/manual/) and Makefiles.
+library, the RISC-V GCC compiler, a run-time license for the Imperas OVPsim
+Instruction Set Simulator (free to OpenHW Group members) and at least some
+familiarity with [Make](https://www.gnu.org/software/make/manual/) and Makefiles.
 
 SystemVerilog Simulators
 ----------------------------------
@@ -40,6 +41,13 @@ does not support the custom PULP instructions.
 <br><br>
 **IMPORTANT:** Once the toolchain is set up, define a shell environment
 variable `RISCV` to the path of your RISC-V toolchain (e.g. `export RISCV=/opt/riscv`).
+
+Imperas OVPsim Instruction Set Simulator
+----------------------------------------
+The UVM verification environment uses the Imperas OVPsim Instruction Set Simulator
+(ISS) as a reference model.   The run-time license for this ISS is free to OpenHW
+Group members).  Go to the [Imperas website](http://www.imperas.com/) for
+installation instructions.
 
 Makefiles
 -----------
@@ -140,7 +148,7 @@ Custom Test Programs
 --------------------
 The `uvmt_cv32` environment supports the ability to run any arbitrary test program that can run on the cv32e40p core, as long as it has
 been pre-compiled into a hex-file.  These are called `Type 1` tests in the
-[Verification Strategy](https://github.com/openhwgroup/core-v-docs/blob/master/verif/Common/OpenHWGroup_CORE-V_Verif_Strategy.pdf).
+[Verification Strategy](https://core-v-docs-verif-strat.readthedocs.io/en/latest/sim_tests.html#test-program).
 <br><br>
 The Makefile implements a rule called `custom` that will compile a test-program and pass it to the SystemVerilog simulation.  The user
 must specify `CUSTOM_DIR`, the _absolute_ path to the compiled program, and `CUSTOM_PROG`, the filename of the test program (no extension).

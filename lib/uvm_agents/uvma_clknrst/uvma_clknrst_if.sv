@@ -66,7 +66,7 @@ interface uvma_clknrst_if ();
     * Sets clk_active to 1
     */
    function void start_clk();
-      `uvm_info("CLKNRST", "Starting clock generation", UVM_LOW)
+      `uvm_info("CLKNRST", "Starting clock generation", UVM_HIGH)
       clk_active = 1;
    endfunction : start_clk
    
@@ -74,7 +74,7 @@ interface uvma_clknrst_if ();
     * Sets clk_active to 0
     */
    function void stop_clk();
-      `uvm_info("CLKNRST", "Stopping clock generation", UVM_LOW)
+      `uvm_info("CLKNRST", "Stopping clock generation", UVM_HIGH)
       clk_active = 0;
    endfunction : stop_clk
    

@@ -40,10 +40,11 @@
  */
 module uvmt_cv32_dut_wrap #(// DUT (riscv_core) parameters.
                             // https://github.com/openhwgroup/core-v-docs/blob/master/cores/cv32e40p/CV32E40P_and%20CV32E40_Features_Parameters.pdf
-                            parameter PULP_CLUSTER        =   0, //changed
-                                      FPU                 =   0,
-                                      PULP_ZFINX          =   0,
-                                      DM_HALTADDRESS      =  32'h1A110800,
+                            parameter PULP_HWLP           =  0,
+                                      PULP_CLUSTER        =  0,
+                                      FPU                 =  0,
+                                      PULP_ZFINX          =  0,
+                                      NUM_MHPMCOUNTERS    =  1,
                             // Remaining parameters are used by TB components only
                                       INSTR_ADDR_WIDTH    =  32,
                                       INSTR_RDATA_WIDTH   =  32,
@@ -83,7 +84,8 @@ module uvmt_cv32_dut_wrap #(// DUT (riscv_core) parameters.
     initial begin: load_instruction_memory
       string firmware;
       int    fd;
-
+       int   fill_cnt;
+       bit [7:0] rnd_byte;
       `uvm_info("DUT_WRAP", "waiting for load_instr_mem to be asserted.", UVM_DEBUG)
       wait(core_cntrl_if.load_instr_mem !== 1'bX);
       if(core_cntrl_if.load_instr_mem === 1'b1) begin
@@ -99,6 +101,19 @@ module uvmt_cv32_dut_wrap #(// DUT (riscv_core) parameters.
           // Now load it...
           `uvm_info("DUT_WRAP", $sformatf("loading firmware %0s", firmware), UVM_NONE)
           $readmemh(firmware, uvmt_cv32_tb.dut_wrap.ram_i.dp_ram_i.mem);
+          `ifdef ISS
+             // If using ISS for any location in RTL mem = X fill RTL and ISS memory with same random value
+             fill_cnt = 0;
+             for (int index=0; index < 2**RAM_ADDR_WIDTH; index++) begin
+                if (uvmt_cv32_tb.dut_wrap.ram_i.dp_ram_i.mem[index] === 8'hXX) begin
+                    fill_cnt++;
+                   rnd_byte = $random();
+                   uvmt_cv32_tb.dut_wrap.ram_i.dp_ram_i.mem[index]=rnd_byte;
+                   uvmt_cv32_tb.iss_wrap.ram.mem[index/4][((((index%4)+1)*8)-1)-:8]=rnd_byte; // convert byte to 32-bit addressing
+                end
+             end
+             `uvm_info("DUT_WRAP", $sformatf("Filled 0d%0d RTL and ISS memory bytes with random values", fill_cnt), UVM_HIGH)
+          `endif
         end
         else begin
           `uvm_error("DUT_WRAP", "No firmware specified!")
@@ -111,10 +126,11 @@ module uvmt_cv32_dut_wrap #(// DUT (riscv_core) parameters.
 
     // instantiate the core
     riscv_core #(
-                 .PULP_CLUSTER    (PULP_CLUSTER),
-                 .FPU             (FPU),
-                 .PULP_ZFINX      (PULP_ZFINX),
-                 .DM_HALTADDRESS  (DM_HALTADDRESS)
+                 .PULP_HWLP        (PULP_HWLP),
+                 .PULP_CLUSTER     (PULP_CLUSTER),
+                 .FPU              (FPU),
+                 .PULP_ZFINX       (PULP_ZFINX),
+                 .NUM_MHPMCOUNTERS (NUM_MHPMCOUNTERS)
                 )
     riscv_core_i
         (
@@ -122,13 +138,11 @@ module uvmt_cv32_dut_wrap #(// DUT (riscv_core) parameters.
          .rst_ni                 ( clknrst_if.reset_n             ),
 
          .clock_en_i             ( core_cntrl_if.clock_en         ),
-         .test_en_i              ( core_cntrl_if.test_en          ),
-
-         .fregfile_disable_i     ( core_cntrl_if.fregfile_disable ),
+         .scan_cg_en_i           ( core_cntrl_if.scan_cg_en       ),
 
          .boot_addr_i            ( core_cntrl_if.boot_addr        ),
-         .core_id_i              ( core_cntrl_if.core_id          ),
-         .cluster_id_i           ( core_cntrl_if.cluster_id       ),
+         .dm_halt_addr_i         ( core_cntrl_if.dm_halt_addr     ),
+         .hart_id_i              ( core_cntrl_if.hart_id          ),
 
          .instr_req_o            ( instr_req                      ),
          .instr_gnt_i            ( instr_gnt                      ),

@@ -99,14 +99,13 @@ endinterface : uvmt_cv32_vp_status_if
  */
 interface uvmt_cv32_core_cntrl_if (
                                     output logic        fetch_en,
-                                    output logic        fregfile_disable,
                                     output logic        ext_perf_counters,
                                     // quasi static values
                                     output logic        clock_en,
-                                    output logic        test_en,
+                                    output logic        scan_cg_en,
                                     output logic [31:0] boot_addr,
-                                    output logic [ 3:0] core_id,
-                                    output logic [ 5:0] cluster_id,
+                                    output logic [31:0] dm_halt_addr,
+                                    output logic [31:0] hart_id,
                                     // To be driven by future debug module (DM)
                                     output logic        debug_req,
                                     // Testcase asserts this to load memory (not really a core control signal)
@@ -117,19 +116,18 @@ interface uvmt_cv32_core_cntrl_if (
 
   initial begin: static_controls
     fetch_en          = 1'b0; // Enabled by go_fetch(), below
-    fregfile_disable  = 1'b0;
     ext_perf_counters = 1'b0; // TODO: set proper width (currently 0 in the RTL)
   end
 
-  // TODO: randomize core_id and cluster_id (should have no affect?).
+  // TODO: randomize hart_id (should have no affect?).
   //       randomize boot_addr (need to sync with the start address of the test program.
   //       figure out what to do with test_en.
   initial begin: quasi_static_controls
-    clock_en   = 1'b1;
-    test_en    = 1'b0;
-    boot_addr  = 32'h80;
-    core_id    = 4'h0;
-    cluster_id = 6'b00_0000;
+    clock_en      = 1'b1;
+    scan_cg_en    = 1'b0;
+    boot_addr     = 32'h0000_0080;
+    dm_halt_addr  = 32'h1A11_0800;
+    hart_id       = 32'h0000_0000;
   end
 
   // TODO: waiting for the User Manual to provide some guidance here...
@@ -192,5 +190,58 @@ interface uvmt_cv32_core_status_if (
   import uvm_pkg::*;
 
 endinterface : uvmt_cv32_core_status_if
+
+/**
+ * Step and compare interface
+ * Xcelium does not support event types in the module port list
+ */
+interface uvmt_cv32_step_compare_if;
+
+  import uvm_pkg::*;
+
+  // From RTL riscv_tracer.sv
+  typedef struct {
+     logic [ 5:0] addr;
+     logic [31:0] value;
+   } reg_t;
+
+   event        ovp_cpu_retire; // Was ovp.cpu.Retire
+   event        riscv_retire;   // Was riscv_core.riscv_tracer_i.retire
+   bit   [31:0] ovp_cpu_PCr;    // Was iss_wrap.cpu.PCr
+   logic [31:0] insn_pc;
+   bit         ovp_b1_Step;    // Was ovp.b1.Step = 0;
+   bit         ovp_b1_Stepping; // Was ovp.b1.Stepping = 1;
+   event       ovp_cpu_busWait;  // Was call to ovp.cpu.busWait();
+   logic   [31:0] ovp_cpu_GPR[32];
+   logic [31:0][31:0] riscy_GPR; // packed dimensions, register index by data width
+
+   int  num_pc_checks;
+   int  num_gpr_checks;
+   int  num_csr_checks;
+
+   // Report on the checkers at the end of simulation
+   function void report_step_compare();
+      if (num_pc_checks > 0) begin
+         `uvm_info("step_compare", $sformatf("Checked PC 0d%0d times", num_pc_checks), UVM_LOW);
+      end
+      else begin
+         `uvm_error("step_compare", "PC was checked 0 times!");
+      end
+      if (num_gpr_checks > 0) begin
+         `uvm_info("step_compare", $sformatf("Checked GPR 0d%0d times", num_gpr_checks), UVM_LOW);
+      end
+      else begin
+         `uvm_error("step_compare", "GPR was checked 0 times!");
+      end
+      if (num_csr_checks > 0) begin
+         `uvm_info("step_compare", $sformatf("Checked CSR 0d%0d times", num_csr_checks), UVM_LOW);
+      end
+      else begin
+         `uvm_error("step_compare", "CSR was checked 0 times!");
+      end
+   endfunction // report_step_compare
+   
+endinterface: uvmt_cv32_step_compare_if
+
 
 `endif // __UVMT_CV32_TB_IFS_SV__

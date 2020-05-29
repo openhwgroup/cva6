@@ -10,7 +10,7 @@ means.
 OUTPUT_FORMAT("elf32-littleriscv", "elf32-littleriscv",
 	      "elf32-littleriscv")
 OUTPUT_ARCH(riscv)
-ENTRY(__mem_start)
+ENTRY(__boot_addr)
 MEMORY
 {
 	/* the memory in the testbench is 1024k in size;
