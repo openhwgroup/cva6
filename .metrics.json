@@ -23,6 +23,7 @@
             "build":       "uvmt_cv32",
             "cmd":         "cd cv32/sim/uvmt_cv32; make hello-world SIMULATOR=dsim USE_ISS=YES DSIM_WORK=/mux-flow/build/repo/dsim_work DSIM_RESULTS=/mux-flow/build/results",
             "wavesCmd":    "cd cv32/sim/uvmt_cv32; make hello-world SIMULATOR=dsim USE_ISS=YES DSIM_WORK=/mux-flow/build/repo/dsim_work DSIM_RESULTS=/mux-flow/build/results WAVES=1",
+            "metricsFile": "metrics.db",
             "isPass":      "SIMULATION PASSED",
             "seed":        1
 	        },
@@ -31,6 +32,7 @@
             "build":       "uvmt_cv32",
             "cmd":         "cd cv32/sim/uvmt_cv32; make cv32-riscv-tests SIMULATOR=dsim USE_ISS=YES DSIM_WORK=/mux-flow/build/repo/dsim_work DSIM_RESULTS=/mux-flow/build/results",
             "wavesCmd":    "cd cv32/sim/uvmt_cv32; make cv32-riscv-tests SIMULATOR=dsim USE_ISS=YES DSIM_WORK=/mux-flow/build/repo/dsim_work DSIM_RESULTS=/mux-flow/build/results WAVES=1",
+            "metricsFile": "metrics.db",
             "isPass":      "SIMULATION PASSED",
             "seed":        1
           },
@@ -39,6 +41,7 @@
             "build":       "uvmt_cv32",
             "cmd":         "cd cv32/sim/uvmt_cv32; make cv32-riscv-compliance-tests SIMULATOR=dsim USE_ISS=YES DSIM_WORK=/mux-flow/build/repo/dsim_work DSIM_RESULTS=/mux-flow/build/results",
             "wavesCmd":    "cd cv32/sim/uvmt_cv32; make cv32-riscv-compliance-tests SIMULATOR=dsim USE_ISS=YES DSIM_WORK=/mux-flow/build/repo/dsim_work DSIM_RESULTS=/mux-flow/build/results WAVES=1",
+            "metricsFile": "metrics.db",
             "isPass":      "SIMULATION PASSED",
             "seed":        1
           },
@@ -47,6 +50,7 @@
             "build":       "uvmt_cv32",
             "cmd":         "cd cv32/sim/uvmt_cv32; make custom CUSTOM_PROG=illegal SIMULATOR=dsim USE_ISS=YES DSIM_WORK=/mux-flow/build/repo/dsim_work DSIM_RESULTS=/mux-flow/build/results",
             "wavesCmd":    "cd cv32/sim/uvmt_cv32; make custom CUSTOM_PROG=illegal SIMULATOR=dsim USE_ISS=YES DSIM_WORK=/mux-flow/build/repo/dsim_work DSIM_RESULTS=/mux-flow/build/results WAVES=1",
+            "metricsFile": "metrics.db",
             "isPass":      "SIMULATION PASSED",
             "seed":        1
           },
@@ -55,6 +59,7 @@
             "build":       "uvmt_cv32",
             "cmd":         "cd cv32/sim/uvmt_cv32; make custom CUSTOM_PROG=fibonacci SIMULATOR=dsim USE_ISS=YES DSIM_WORK=/mux-flow/build/repo/dsim_work DSIM_RESULTS=/mux-flow/build/results",
             "wavesCmd":    "cd cv32/sim/uvmt_cv32; make custom CUSTOM_PROG=fibonacci SIMULATOR=dsim USE_ISS=YES DSIM_WORK=/mux-flow/build/repo/dsim_work DSIM_RESULTS=/mux-flow/build/results WAVES=1",
+            "metricsFile": "metrics.db",
             "isPass":      "SIMULATION PASSED",
             "seed":        1
           },
@@ -63,6 +68,7 @@
             "build":       "uvmt_cv32",
             "cmd":         "cd cv32/sim/uvmt_cv32; make custom CUSTOM_PROG=misalign SIMULATOR=dsim USE_ISS=YES DSIM_WORK=/mux-flow/build/repo/dsim_work DSIM_RESULTS=/mux-flow/build/results",
             "wavesCmd":    "cd cv32/sim/uvmt_cv32; make custom CUSTOM_PROG=misalign SIMULATOR=dsim USE_ISS=YES DSIM_WORK=/mux-flow/build/repo/dsim_work DSIM_RESULTS=/mux-flow/build/results WAVES=1",
+            "metricsFile": "metrics.db",
             "isPass":      "SIMULATION PASSED",
             "seed":        1
           },
@@ -71,6 +77,7 @@
             "build":       "uvmt_cv32",
             "cmd":         "cd cv32/sim/uvmt_cv32; make custom CUSTOM_PROG=dhrystone SIMULATOR=dsim USE_ISS=YES DSIM_WORK=/mux-flow/build/repo/dsim_work DSIM_RESULTS=/mux-flow/build/results",
             "wavesCmd":    "cd cv32/sim/uvmt_cv32; make custom CUSTOM_PROG=dhrystone SIMULATOR=dsim USE_ISS=YES DSIM_WORK=/mux-flow/build/repo/dsim_work DSIM_RESULTS=/mux-flow/build/results WAVES=1",
+            "metricsFile": "metrics.db",
             "isPass":      "SIMULATION PASSED",
             "seed":        1
           }
