@@ -48,14 +48,13 @@
 #                Set to 'master' to pull the master branch.
 #      *_HASH:   Value of the specific hash you wish to clone;
 #                Set to 'head' to pull the head of the branch you want.
-#      *_TAG:    Not yet supported (coming soon).
+#      *_TAG:    Not yet supported (TODO).
 #                
-#CV32E40P_REPO   ?= https://github.com/openhwgroup/cv32e40p
-#CV32E40P_BRANCH ?= master
-#CV32E40P_HASH   ?= head
+
+# Head of the master branch as of 2020-05-29
 CV32E40P_REPO   ?= https://github.com/openhwgroup/cv32e40p
 CV32E40P_BRANCH ?= master
-CV32E40P_HASH   ?= 744e507907cb9af832a9573314e16f55ef4264b9
+CV32E40P_HASH    ?= 9135b2f8caf7364141fbb70358badbdc86162d77
 
 FPNEW_REPO      ?= https://github.com/pulp-platform/fpnew
 FPNEW_BRANCH    ?= master
