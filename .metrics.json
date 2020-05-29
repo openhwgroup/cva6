@@ -19,7 +19,7 @@
       "description": "Nightly sanity for CV32",
       "verbose":     "true",
       "tests": {
-        "resultsDir": "/mux-flow/build/results/cv32_sanity_regression",
+        "resultsDir": "/mux-flow/build/results",
         "builds":    ["uvmt_cv32"],
         "list": [
           {
