@@ -233,7 +233,7 @@ module wt_dcache_mem #(
   logic [DCACHE_OFFSET_WIDTH-1:0] wr_cl_off;
 
   assign wbuffer_rdata = wbuffer_data_i[wbuffer_hit_idx].data;
-  assign wbuffer_be    = !wbuffer_miss && wbuffer_data_i[wbuffer_hit_idx].valid;
+  assign wbuffer_be    = (wbuffer_miss) ? '0 : wbuffer_data_i[wbuffer_hit_idx].valid;
   
   if (Axi64BitCompliant) begin : gen_axi_off		
       assign wr_cl_off     = (wr_cl_nc_i) ? '0 : wr_cl_off_i[DCACHE_OFFSET_WIDTH-1:3];		

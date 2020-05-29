@@ -76,14 +76,19 @@ module load_unit import ariane_pkg::*; #(
     // directly output an exception
     assign ex_o = ex_i;
 
-    logic [riscv::PLEN-1:0] paddr_pre = {dtlb_ppn_i, 12'd0};
+    wire [riscv::PLEN-1:0] paddr_pre = {dtlb_ppn_i, 12'd0};
+    wire paddr_nc = !is_inside_cacheable_regions(ArianeCfg, paddr_pre);
+    wire paddr_ni = is_inside_nonidempotent_regions(ArianeCfg, paddr_pre);
+    wire not_commit_time = commit_tran_id_i != lsu_ctrl_i.trans_id;
+    wire inflight_stores = (!dcache_wbuffer_empty_i || !store_buffer_empty_i);
     logic stall_nc;  // stall because of non-empty WB and address within non-cacheable region.
     // should we stall the request e.g.: is it withing a non-cacheable region
     // and the write buffer (in the cache and in the core) is not empty so that we don't forward anything
     // from the write buffer (e.g. it would essentially be cached).
-    assign stall_nc = ( (!dcache_wbuffer_empty_i || !store_buffer_empty_i) && !is_inside_cacheable_regions(ArianeCfg, paddr_pre)) |
-                      // this guards the load to be executed non-speculatively (we wait until our transaction id is on port 0
-                      (commit_tran_id_i != lsu_ctrl_i.trans_id & is_inside_nonidempotent_regions(ArianeCfg, paddr_pre));
+    assign stall_nc = inflight_stores && paddr_nc || not_commit_time && paddr_ni;
+    //assign stall_nc = (~(dcache_wbuffer_empty_i | store_buffer_empty_i) & is_inside_cacheable_regions(ArianeCfg, paddr_i))
+    //                // this guards the load to be executed non-speculatively (we wait until our transaction id is on port 0	
+    //                | (commit_tran_id_i != lsu_ctrl_i.trans_id & is_inside_nonidempotent_regions(ArianeCfg, paddr_i));                    
 
     // ---------------
     // Load Control
