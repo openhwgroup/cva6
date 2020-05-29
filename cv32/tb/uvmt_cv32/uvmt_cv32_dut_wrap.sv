@@ -40,10 +40,11 @@
  */
 module uvmt_cv32_dut_wrap #(// DUT (riscv_core) parameters.
                             // https://github.com/openhwgroup/core-v-docs/blob/master/cores/cv32e40p/CV32E40P_and%20CV32E40_Features_Parameters.pdf
-                            parameter PULP_CLUSTER        =   0, //changed
-                                      FPU                 =   0,
-                                      PULP_ZFINX          =   0,
-                                      DM_HALTADDRESS      =  32'h1A110800,
+                            parameter PULP_HWLP           =  0,
+                                      PULP_CLUSTER        =  0,
+                                      FPU                 =  0,
+                                      PULP_ZFINX          =  0,
+                                      NUM_MHPMCOUNTERS    =  1,
                             // Remaining parameters are used by TB components only
                                       INSTR_ADDR_WIDTH    =  32,
                                       INSTR_RDATA_WIDTH   =  32,
@@ -125,10 +126,11 @@ module uvmt_cv32_dut_wrap #(// DUT (riscv_core) parameters.
 
     // instantiate the core
     riscv_core #(
-                 .PULP_CLUSTER    (PULP_CLUSTER),
-                 .FPU             (FPU),
-                 .PULP_ZFINX      (PULP_ZFINX),
-                 .DM_HALTADDRESS  (DM_HALTADDRESS)
+                 .PULP_HWLP        (PULP_HWLP),
+                 .PULP_CLUSTER     (PULP_CLUSTER),
+                 .FPU              (FPU),
+                 .PULP_ZFINX       (PULP_ZFINX),
+                 .NUM_MHPMCOUNTERS (NUM_MHPMCOUNTERS)
                 )
     riscv_core_i
         (
@@ -136,13 +138,11 @@ module uvmt_cv32_dut_wrap #(// DUT (riscv_core) parameters.
          .rst_ni                 ( clknrst_if.reset_n             ),
 
          .clock_en_i             ( core_cntrl_if.clock_en         ),
-         .test_en_i              ( core_cntrl_if.test_en          ),
-
-         .fregfile_disable_i     ( core_cntrl_if.fregfile_disable ),
+         .scan_cg_en_i           ( core_cntrl_if.scan_cg_en       ),
 
          .boot_addr_i            ( core_cntrl_if.boot_addr        ),
-         .core_id_i              ( core_cntrl_if.core_id          ),
-         .cluster_id_i           ( core_cntrl_if.cluster_id       ),
+         .dm_halt_addr_i         ( core_cntrl_if.dm_halt_addr     ),
+         .hart_id_i              ( core_cntrl_if.hart_id          ),
 
          .instr_req_o            ( instr_req                      ),
          .instr_gnt_i            ( instr_gnt                      ),

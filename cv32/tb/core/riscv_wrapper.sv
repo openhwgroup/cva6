@@ -12,13 +12,18 @@
 // Contributor: Robert Balas <balasr@student.ethz.ch>
 
 module riscv_wrapper
-    #(parameter INSTR_RDATA_WIDTH = 32,
+    #(parameter // Parameters used by TB
+                INSTR_RDATA_WIDTH = 32,
                 RAM_ADDR_WIDTH    = 20,
                 BOOT_ADDR         = 'h80,
+                DM_HALTADDRESS    = 32'h1A11_0800,
+                HARD_ID           = 32'h0000_0000,
+                // Parameters used by DUT
+                PULP_HWLP         = 0,
                 PULP_CLUSTER      = 0,
                 FPU               = 0,
                 PULP_ZFINX        = 0,
-                DM_HALTADDRESS    = 32'h1A110800
+                NUM_MHPMCOUNTERS  = 1
     )
     (input logic         clk_i,
      input logic         rst_ni,
@@ -63,10 +68,11 @@ module riscv_wrapper
 
     // instantiate the core
     riscv_core #(
-                 .PULP_CLUSTER    (PULP_CLUSTER),
-                 .FPU             (FPU),
-                 .PULP_ZFINX      (PULP_ZFINX),
-                 .DM_HALTADDRESS  (DM_HALTADDRESS)
+                 .PULP_HWLP        (PULP_HWLP),
+                 .PULP_CLUSTER     (PULP_CLUSTER),
+                 .FPU              (FPU),
+                 .PULP_ZFINX       (PULP_ZFINX),
+                 .NUM_MHPMCOUNTERS (NUM_MHPMCOUNTERS)
                 )
     riscv_core_i
         (
@@ -74,13 +80,11 @@ module riscv_wrapper
          .rst_ni                 ( rst_ni                ),
 
          .clock_en_i             ( '1                    ),
-         .test_en_i              ( '0                    ),
-
-         .fregfile_disable_i     ( '0                    ),
+         .scan_cg_en_i           ( '0                    ),
 
          .boot_addr_i            ( BOOT_ADDR             ),
-         .core_id_i              ( 4'h0                  ),
-         .cluster_id_i           ( 6'h0                  ),
+         .dm_halt_addr_i         ( DM_HALTADDRESS        ),
+         .hart_id_i              ( HART_ID               ),
 
          .instr_req_o            ( instr_req             ),
          .instr_gnt_i            ( instr_gnt             ),
