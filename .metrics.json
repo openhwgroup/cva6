@@ -1,4 +1,8 @@
 {
+    "variables": {
+	"RISCV": "/mux-flow/tools/riscv",
+	"LM_LICENSE_FILE": "2700@license-1"
+    },
   "builds": {
     "list": [
       {
