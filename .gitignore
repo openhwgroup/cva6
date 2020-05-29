@@ -9,6 +9,8 @@
 *.gtkw
 *.vcd
 dsim.env
+dsim.log
+dsim_results
 *.swp
 /.cproject
 /.project
