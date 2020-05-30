@@ -142,8 +142,8 @@ custom: comp $(CUSTOM_DIR)/$(CUSTOM_PROG).hex
 #      custom target.
 #
 hello-world: comp $(CUSTOM)/hello_world.hex
-	mkdir -p $(DSIM_RESULTS)/hello_world && cd $(DSIM_RESULTS)/hello_world  && \
-	$(DSIM) -l dsim-hello_world.log -image $(DSIM_IMAGE) \
+	mkdir -p $(DSIM_RESULTS)/hello-world && cd $(DSIM_RESULTS)/hello-world  && \
+	$(DSIM) -l dsim-hello-world.log -image $(DSIM_IMAGE) \
 		-work $(DSIM_WORK) $(DSIM_RUN_FLAGS) $(DSIM_DMP_FLAGS) \
 		-sv_lib $(UVM_HOME)/src/dpi/libuvm_dpi.so \
 		-sv_lib $(OVP_MODEL_DPI) \
@@ -155,7 +155,7 @@ hello-world: comp $(CUSTOM)/hello_world.hex
 
 # Runs tests in riscv_tests/ only
 cv32-riscv-tests: comp $(CV32_RISCV_TESTS_FIRMWARE)/cv32_riscv_tests_firmware.hex
-	mkdir -p $(DSIM_RESULTS)/riscv-tests && cd $(DSIM_RESULTS)/riscv-tests && \
+	mkdir -p $(DSIM_RESULTS)/cv32-riscv-tests && cd $(DSIM_RESULTS)/cv32-riscv-tests && \
 	$(DSIM) -l dsim-riscv_tests.log -image $(DSIM_IMAGE) \
 		-work $(DSIM_WORK) $(DSIM_RUN_FLAGS) $(DSIM_DMP_FLAGS) \
 		-sv_lib $(UVM_HOME)/src/dpi/libuvm_dpi.so \
@@ -166,7 +166,7 @@ cv32-riscv-tests: comp $(CV32_RISCV_TESTS_FIRMWARE)/cv32_riscv_tests_firmware.he
 
 # Runs tests in riscv_compliance_tests/ only
 cv32-riscv-compliance-tests: comp $(CV32_RISCV_COMPLIANCE_TESTS_FIRMWARE)/cv32_riscv_compliance_tests_firmware.hex
-	mkdir -p $(DSIM_RESULTS)/riscv-compliance && cd $(DSIM_RESULTS)/riscv-compliance && \
+	mkdir -p $(DSIM_RESULTS)/cv32-riscv-compliance-tests && cd $(DSIM_RESULTS)/cv32-riscv-compliance-tests && \
 	$(DSIM) -l dsim-riscv_compliance_tests.log -image $(DSIM_IMAGE) \
 		-work $(DSIM_WORK) $(DSIM_RUN_FLAGS) $(DSIM_DMP_FLAGS) \
 		-sv_lib $(UVM_HOME)/src/dpi/libuvm_dpi.so \
