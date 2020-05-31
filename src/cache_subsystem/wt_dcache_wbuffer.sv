@@ -455,8 +455,8 @@ module wt_dcache_wbuffer #(
 
     // write new word into the buffer
     if (req_port_i.data_req && rdy) begin
-      // in case we have an NC address, need to drain the buffer first
-      // in case we are serving an NC address,  we block until it is written to memory
+      // in case we have an NI address, need to drain the buffer first
+      // in case we are serving an NI address,  we block until it is written to memory
       if (!ni_conflict) begin //empty of NI operations
         wbuffer_wren              = 1'b1;
 

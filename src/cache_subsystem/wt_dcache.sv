@@ -217,7 +217,7 @@ module wt_dcache #(
     .clk_i           ( clk_i               ),
     .rst_ni          ( rst_ni              ),
     .empty_o         ( wbuffer_empty_o     ),
-    .not_ni_o        ( wbuffer_not_ni_o     ),
+    .not_ni_o        ( wbuffer_not_ni_o    ),
     // TODO: fix this
     .cache_en_i      ( cache_en            ),
     // .cache_en_i      ( '0                  ),

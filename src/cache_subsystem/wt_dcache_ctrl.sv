@@ -114,7 +114,7 @@ module wt_dcache_ctrl #(
         IDLE: begin
           if (req_port_i.data_req) begin
             rd_req_o = 1'b1;
-            //if read ack then ack the req_port_o, and start READ state
+            // if read ack then ack the `req_port_o`, and goto `READ` state
             if (rd_ack_i) begin
               state_d = READ;
               req_port_o.data_gnt = 1'b1;

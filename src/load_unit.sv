@@ -76,7 +76,7 @@ module load_unit import ariane_pkg::*; #(
     // directly output an exception
     assign ex_o = ex_i;
 
-    wire [riscv::PLEN-1:0] paddr_pre = {dtlb_ppn_i, 12'd0};
+    wire [riscv::PLEN-1:0] paddr_early = {dtlb_ppn_i, 12'd0};
     //wire paddr_nc = !is_inside_cacheable_regions(ArianeCfg, paddr_pre);
     wire paddr_ni = is_inside_nonidempotent_regions(ArianeCfg, paddr_pre);
     wire not_commit_time = commit_tran_id_i != lsu_ctrl_i.trans_id;
@@ -125,7 +125,7 @@ module load_unit import ariane_pkg::*; #(
                             // translation valid but this is to NC and the WB is not yet empty.
                             end else if (dtlb_hit_i && stall_nc) begin
                                 state_d = ABORT_TRANSACTION_NC;
-                            end else begin //TLB miss
+                            end else begin // TLB miss
                                 state_d = ABORT_TRANSACTION;
                             end
                         end
