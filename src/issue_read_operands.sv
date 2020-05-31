@@ -220,7 +220,7 @@ module issue_read_operands #(
         // use the zimm as operand a
         if (issue_instr_i.use_zimm) begin
             // zero extend operand a
-            operand_a_n = {52'b0, issue_instr_i.rs1[4:0]};
+            operand_a_n = {59'b0, issue_instr_i.rs1[4:0]};
         end
         // or is it an immediate (including PC), this is not the case for a store and control flow instructions
         // also make sure operand B is not already used as an FP operand
