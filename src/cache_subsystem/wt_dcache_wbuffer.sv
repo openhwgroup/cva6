@@ -135,11 +135,14 @@ module wt_dcache_wbuffer #(
 ///////////////////////////////////////////////////////
 // misc
 ///////////////////////////////////////////////////////
-  wire [ariane_pkg::DCACHE_TAG_WIDTH-1:0] miss_tag = miss_paddr_o[ariane_pkg::DCACHE_INDEX_WIDTH+:ariane_pkg::DCACHE_TAG_WIDTH];
-  wire is_nc_miss = !ariane_pkg::is_inside_cacheable_regions(ArianeCfg, {{64-DCACHE_TAG_WIDTH{1'b0}}, miss_tag, {DCACHE_INDEX_WIDTH{1'b0}}});
+  logic [ariane_pkg::DCACHE_TAG_WIDTH-1:0] miss_tag;
+  logic is_nc_miss;
+  logic is_ni;
+  assign miss_tag = miss_paddr_o[ariane_pkg::DCACHE_INDEX_WIDTH+:ariane_pkg::DCACHE_TAG_WIDTH];
+  assign is_nc_miss = !ariane_pkg::is_inside_cacheable_regions(ArianeCfg, {{64-DCACHE_TAG_WIDTH{1'b0}}, miss_tag, {DCACHE_INDEX_WIDTH{1'b0}}});
   assign miss_nc_o = !cache_en_i || is_nc_miss; 
-  // noncacheable if request goes to I/O space, or if cache is disabled
-  wire is_ni_i = ariane_pkg::is_inside_nonidempotent_regions(ArianeCfg, {{64-DCACHE_TAG_WIDTH{1'b0}}, req_port_i.address_tag, {DCACHE_INDEX_WIDTH{1'b0}}});
+  // Non-idempotent if request goes to NI region
+  assign is_ni = ariane_pkg::is_inside_nonidempotent_regions(ArianeCfg, {{64-DCACHE_TAG_WIDTH{1'b0}}, req_port_i.address_tag, {DCACHE_INDEX_WIDTH{1'b0}}});
 
   assign miss_we_o       = 1'b1;
   assign miss_vld_bits_o = '0;
@@ -390,9 +393,10 @@ module wt_dcache_wbuffer #(
   assign req_port_o.data_rdata  = '0;
 
   assign rd_hit_oh_d = rd_hit_oh_i;
-  
-  wire ni_inside = |ni_pending_q;
-  wire ni_conflict = is_ni_i && ni_inside;
+ 
+  logic ni_inside,ni_conflict; 
+  assign ni_inside = |ni_pending_q;
+  assign ni_conflict = is_ni && ni_inside;
   assign not_ni_o = !ni_inside;
   assign empty_o    = !(|valid);
 
@@ -461,7 +465,7 @@ module wt_dcache_wbuffer #(
         wbuffer_wren              = 1'b1;
 
         req_port_o.data_gnt       = 1'b1;
-        ni_pending_d[wr_ptr]      = is_ni_i;
+        ni_pending_d[wr_ptr]      = is_ni;
 
         wbuffer_d[wr_ptr].checked = 1'b0;
         wbuffer_d[wr_ptr].wtag    = {req_port_i.address_tag, req_port_i.address_index[DCACHE_INDEX_WIDTH-1:3]};

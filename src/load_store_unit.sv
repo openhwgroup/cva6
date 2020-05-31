@@ -387,33 +387,6 @@ module load_store_unit #(
         .*
     );
 
-genvar j;
-wire [NR_SB_ENTRIES-1:0]       ld_new;
-wire [NR_SB_ENTRIES-1:0]       ld_end;
-reg  [NR_SB_ENTRIES-1:0]       ld_ongoing;
-reg  [NR_SB_ENTRIES-1:0][31:0] ld_cy_counter;
-reg  [NR_SB_ENTRIES-1:0][15:0] ld_trans_counter;
-wire [31:0] ld_cycles = ld_cy_counter[0] + ld_cy_counter[1] + ld_cy_counter[2] + ld_cy_counter[3] +
-                        ld_cy_counter[4] + ld_cy_counter[5] + ld_cy_counter[6] + ld_cy_counter[7];
-wire [31:0] ld_trans  = ld_trans_counter[0] + ld_trans_counter[1] + ld_trans_counter[2] + ld_trans_counter[3] +
-                        ld_trans_counter[4] + ld_trans_counter[5] + ld_trans_counter[6] + ld_trans_counter[7];
-
-generate for (j=0;j<NR_SB_ENTRIES;j++) begin : gen_counter
-    assign ld_new[j] = ld_valid_i && pop_ld && (lsu_ctrl.trans_id == j[TRANS_ID_BITS-1:0]);
-    assign ld_end[j] = load_valid_o && (load_trans_id_o == j[TRANS_ID_BITS-1:0]);
-    always @(posedge clk_i) begin
-        if (!rst_ni) begin
-            ld_ongoing[j] <= 1'b0;
-            ld_cy_counter[j] <= 32'b0;
-            ld_trans_counter[j] <= 16'b0;
-        end else begin
-            ld_ongoing[j] <= ld_new[j] || ld_ongoing[j] && !ld_end[j];
-            ld_cy_counter[j] <= ld_ongoing[j] ? ld_cy_counter[j] + 32'd1 : ld_cy_counter[j];
-            ld_trans_counter[j] <= ld_new[j] ? ld_trans_counter[j] + 16'd1 : ld_trans_counter[j];
-        end
-    end
-
-end endgenerate
 endmodule
 
 // ------------------

@@ -152,7 +152,7 @@ module wt_dcache_mem #(
     .data_o (              ),
     .idx_o  (vld_sel_d     )
   );
-  // Read ports only ACK when there is not wrote into the cache
+  // Read port is only acked when there is not a cache line write
   assign rd_acked = rd_req & ~wr_cl_vld_i;
 
   always_comb begin : p_bank_req
@@ -192,13 +192,15 @@ module wt_dcache_mem #(
 // tag comparison, hit generatio, readoud muxes
 ///////////////////////////////////////////////////////
 
+  logic [DCACHE_OFFSET_WIDTH-1:0] wr_cl_off;
   logic [$clog2(DCACHE_WBUF_DEPTH)-1:0] wbuffer_hit_idx;
   logic [$clog2(DCACHE_SET_ASSOC)-1:0]  rd_hit_idx;
 
   assign cmp_en_d = (|vld_req) & ~vld_we;
 
-  // word tag comparison in write buffer, only wb bypass with rd port
-  assign wbuffer_cmp_addr = (wr_cl_vld_i) ? {wr_cl_tag_i, wr_cl_idx_i, wr_cl_off_i} : {rd_tag, bank_idx_q, bank_off_q};
+  // word tag comparison in write buffer
+  assign wbuffer_cmp_addr = (wr_cl_vld_i) ? {wr_cl_tag_i, wr_cl_idx_i, wr_cl_off_i} : 
+                                            {rd_tag, bank_idx_q, bank_off_q};
   // hit generation
   for (genvar i=0;i<DCACHE_SET_ASSOC;i++) begin : gen_tag_cmpsel
     // tag comparison of ways >0
@@ -212,7 +214,9 @@ module wt_dcache_mem #(
     assign wbuffer_hit_oh[k] = (|wbuffer_data_i[k].valid) & (wbuffer_data_i[k].wtag == (wbuffer_cmp_addr >> 3));
   end
 
-  wire wbuffer_miss;
+  logic wbuffer_miss;
+  logic rd_miss;
+
   lzc #(
     .WIDTH ( DCACHE_WBUF_DEPTH )
   ) i_lzc_wbuffer_hit (
@@ -221,7 +225,6 @@ module wt_dcache_mem #(
     .empty_o ( wbuffer_miss     )
   );
 
-  wire rd_miss;
   lzc #(
     .WIDTH ( DCACHE_SET_ASSOC )
   ) i_lzc_rd_hit (
@@ -230,7 +233,6 @@ module wt_dcache_mem #(
     .empty_o ( rd_miss      )
   );
 
-  logic [DCACHE_OFFSET_WIDTH-1:0] wr_cl_off;
 
   assign wbuffer_rdata = wbuffer_data_i[wbuffer_hit_idx].data;
   assign wbuffer_be    = (wbuffer_miss) ? '0 : wbuffer_data_i[wbuffer_hit_idx].valid;
@@ -241,7 +243,8 @@ module wt_dcache_mem #(
       assign wr_cl_off     = wr_cl_off_i[DCACHE_OFFSET_WIDTH-1:3];		
   end		
 
-  assign rdata = (wr_cl_vld_i) ? wr_cl_data_i[wr_cl_off*64 +: 64] : rdata_cl[rd_hit_idx];
+  assign rdata = (wr_cl_vld_i) ? wr_cl_data_i[wr_cl_off*64 +: 64] : 
+                                 rdata_cl[rd_hit_idx];
 
   // overlay bytes that hit in the write buffer
   for(genvar k=0; k<8; k++) begin : gen_rd_data

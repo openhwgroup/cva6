@@ -46,7 +46,7 @@ module load_unit import ariane_pkg::*; #(
     input  logic                     dcache_wbuffer_not_ni_i
 );
     enum logic [3:0] { IDLE, WAIT_GNT, SEND_TAG, WAIT_PAGE_OFFSET,
-                       ABORT_TRANSACTION, ABORT_TRANSACTION_NC, WAIT_TRANSLATION, WAIT_FLUSH,
+                       ABORT_TRANSACTION, ABORT_TRANSACTION_NI, WAIT_TRANSLATION, WAIT_FLUSH,
                        WAIT_WB_EMPTY
                      } state_d, state_q;
     // in order to decouple the response interface from the request interface we need a
@@ -76,16 +76,15 @@ module load_unit import ariane_pkg::*; #(
     // directly output an exception
     assign ex_o = ex_i;
 
-    wire [riscv::PLEN-1:0] paddr_early = {dtlb_ppn_i, 12'd0};
-    //wire paddr_nc = !is_inside_cacheable_regions(ArianeCfg, paddr_pre);
-    wire paddr_ni = is_inside_nonidempotent_regions(ArianeCfg, paddr_pre);
-    wire not_commit_time = commit_tran_id_i != lsu_ctrl_i.trans_id;
-    wire inflight_stores = (!dcache_wbuffer_not_ni_i || !store_buffer_empty_i);
-    logic stall_nc;  // stall because of non-empty WB and address within non-cacheable region.
-    // should we stall the request e.g.: is it withing a non-cacheable region
-    // and the write buffer (in the cache and in the core) is not empty so that we don't forward anything
-    // from the write buffer (e.g. it would essentially be cached).
-    assign stall_nc = (inflight_stores || not_commit_time) && paddr_ni;
+    // Check that NI operations follow the necessary conditions
+    logic paddr_ni;
+    logic not_commit_time;
+    logic inflight_stores;
+    logic stall_ni;
+    assign paddr_ni = is_inside_nonidempotent_regions(ArianeCfg, {dtlb_ppn_i,12'd0});
+    assign not_commit_time = commit_tran_id_i != lsu_ctrl_i.trans_id;
+    assign inflight_stores = (!dcache_wbuffer_not_ni_i || !store_buffer_empty_i);
+    assign stall_ni = (inflight_stores || not_commit_time) && paddr_ni;
 
     // ---------------
     // Load Control
@@ -118,13 +117,13 @@ module load_unit import ariane_pkg::*; #(
                         if (!req_port_i.data_gnt) begin
                             state_d = WAIT_GNT;
                         end else begin
-                            if (dtlb_hit_i && !stall_nc) begin
+                            if (dtlb_hit_i && !stall_ni) begin
                                 // we got a grant and a hit on the DTLB so we can send the tag in the next cycle
                                 state_d = SEND_TAG;
                                 pop_ld_o = 1'b1;
                             // translation valid but this is to NC and the WB is not yet empty.
-                            end else if (dtlb_hit_i && stall_nc) begin
-                                state_d = ABORT_TRANSACTION_NC;
+                            end else if (dtlb_hit_i && stall_ni) begin
+                                state_d = ABORT_TRANSACTION_NI;
                             end else begin // TLB miss
                                 state_d = ABORT_TRANSACTION;
                             end
@@ -147,11 +146,11 @@ module load_unit import ariane_pkg::*; #(
             // abort the previous request - free the D$ arbiter
             // we are here because of a TLB miss, we need to abort the current request and give way for the
             // PTW walker to satisfy the TLB miss
-            ABORT_TRANSACTION, ABORT_TRANSACTION_NC: begin
+            ABORT_TRANSACTION, ABORT_TRANSACTION_NI: begin
                 req_port_o.kill_req  = 1'b1;
                 req_port_o.tag_valid = 1'b1;
                 // either re-do the request or wait until the WB is empty (depending on where we came from).
-                state_d = (state_q == ABORT_TRANSACTION_NC) ? WAIT_WB_EMPTY :  WAIT_TRANSLATION;
+                state_d = (state_q == ABORT_TRANSACTION_NI) ? WAIT_WB_EMPTY :  WAIT_TRANSLATION;
             end
 
             // Wait until the write-back buffer is empty in the data cache.
@@ -175,12 +174,12 @@ module load_unit import ariane_pkg::*; #(
                 // we finally got a data grant
                 if (req_port_i.data_gnt) begin
                     // so we send the tag in the next cycle
-                    if (dtlb_hit_i && !stall_nc) begin
+                    if (dtlb_hit_i && !stall_ni) begin
                         state_d = SEND_TAG;
                         pop_ld_o = 1'b1;
                     // translation valid but this is to NC and the WB is not yet empty.
-                    end else if (dtlb_hit_i && stall_nc) begin
-                        state_d = ABORT_TRANSACTION_NC;
+                    end else if (dtlb_hit_i && stall_ni) begin
+                        state_d = ABORT_TRANSACTION_NI;
                     end else begin
                     // should we not have hit on the TLB abort this transaction an retry later
                         state_d = ABORT_TRANSACTION;
@@ -206,13 +205,13 @@ module load_unit import ariane_pkg::*; #(
                             state_d = WAIT_GNT;
                         end else begin
                             // we got a grant so we can send the tag in the next cycle
-                            if (dtlb_hit_i && !stall_nc) begin
+                            if (dtlb_hit_i && !stall_ni) begin
                                 // we got a grant and a hit on the DTLB so we can send the tag in the next cycle
                                 state_d = SEND_TAG;
                                 pop_ld_o = 1'b1;
                             // translation valid but this is to NC and the WB is not yet empty.
-                            end else if (dtlb_hit_i && stall_nc) begin
-                                state_d = ABORT_TRANSACTION_NC;
+                            end else if (dtlb_hit_i && stall_ni) begin
+                                state_d = ABORT_TRANSACTION_NI;
                             end else begin
                                 state_d = ABORT_TRANSACTION;// we missed on the TLB -> wait for the translation
                             end
