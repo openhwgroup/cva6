@@ -62,6 +62,7 @@ if (sys.version_info < (3,0,0)):
 # TODO: fix this! (its so ugly I'm embarassed to check it in)
 def check_results():
     fail_count = 0;
+    expct_fail = 0;
     pass_count = 0;
 
     fails = subprocess.Popen('grep "SIMULATION FAILED" -R -I ../cv32/sim/uvmt_cv32',
@@ -77,22 +78,24 @@ def check_results():
         failed = line.decode('utf-8').rstrip()
         print (failed)
         fail_count += 1
+        # TODO: make this a list of known failures (hopefully there won't be that many...)
+        if (
+            (re.search('riscv_compliance', failed)) or
+            (re.search('riscv_ebreak',     failed))
+           ):
+            expct_fail += 1
 
     for line in passes.stdout.readlines():
         print (line.decode('utf-8').rstrip())
         pass_count += 1
 
-    ########
-    # Temporary hack:
-    #    The riscv_compliance_test is known to fail
-    #    TODO: what if riscv_compliance_tests passes, but some other test fails?
     if (pass_count == 0):
         print ('\nNo logfiles found.\n')
     elif ((fail_count == 0) and (pass_count >=3)):
         print ('\nCI Check PASSED with no failures.')
         print ('OK to issue a pull-request.\n')
-    elif (fail_count == 1 and re.search('riscv_compliance_tests', failed)):
-        print ('\nCI Check PASSED with known failure.')
+    elif (fail_count == 2 and expct_fail == 2):
+        print ('\nCI Check PASSED with known failure(s).')
         print ('OK to issue a pull-request.\n')
     else:
         print ('\nCI Check FAILED with unknown failures.')

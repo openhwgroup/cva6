@@ -32,6 +32,15 @@
             "seed":        1
 	        },
           {
+            "name":        "Previously generated riscv-dv test",
+            "build":       "uvmt_cv32",
+            "cmd":         "cd cv32/sim/uvmt_cv32; make asm ASM_PROG=riscv_ebreak_test_0 SIMULATOR=dsim USE_ISS=YES DSIM_WORK=/mux-flow/build/repo/dsim_work DSIM_RESULTS=/mux-flow/build/results",
+            "wavesCmd":    "cd cv32/sim/uvmt_cv32; make asm ASM_PROG=riscv_ebreak_test_0 SIMULATOR=dsim USE_ISS=YES DSIM_WORK=/mux-flow/build/repo/dsim_work DSIM_RESULTS=/mux-flow/build/results WAVES=1",
+            "metricsFile": "hello-world/metrics.db",
+            "isPass":      "SIMULATION PASSED",
+            "seed":        1
+	        },
+          {
             "name":        "cv32-riscv-tests",
             "build":       "uvmt_cv32",
             "cmd":         "cd cv32/sim/uvmt_cv32; make cv32-riscv-tests SIMULATOR=dsim USE_ISS=YES DSIM_WORK=/mux-flow/build/repo/dsim_work DSIM_RESULTS=/mux-flow/build/results",
