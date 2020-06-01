@@ -135,6 +135,16 @@ custom: comp $(CUSTOM_DIR)/$(CUSTOM_PROG).hex
 		+firmware=$(CUSTOM_DIR)/$(CUSTOM_PROG).hex \
 		+elf_file=$(CUSTOM_DIR)/$(CUSTOM_PROG).elf
 
+# Similar to above, but for the ASM directory.
+asm: comp $(ASM_DIR)/$(ASM_PROG).hex
+	mkdir -p $(DSIM_RESULTS)/$(ASM_PROG) && cd $(DSIM_RESULTS)/$(ASM_PROG)  && \
+	$(DSIM) -l dsim-$(ASM_PROG).log -image $(DSIM_IMAGE) \
+		-work $(DSIM_WORK) $(DSIM_RUN_FLAGS) $(DSIM_DMP_FLAGS) \
+		-sv_lib $(UVM_HOME)/src/dpi/libuvm_dpi.so \
+		-sv_lib $(OVP_MODEL_DPI) \
+		+UVM_TESTNAME=$(UVM_TESTNAME) \
+		+firmware=$(ASM_DIR)/$(ASM_PROG).hex \
+		+elf_file=$(ASM_DIR)/$(ASM_PROG).elf
 
 ################################################################################
 # Commonly used targets:

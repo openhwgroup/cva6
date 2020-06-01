@@ -171,10 +171,12 @@ clean_core_tests:
 	find $(CORE_TEST_DIR) -name *.map -exec rm {} \;
 
 clean_test_programs:
-	find ../../tests/uvmt_cv32/test-programs -name *.o   -exec rm {} \;
-	find ../../tests/uvmt_cv32/test-programs -name *.hex -exec rm {} \;
-	find ../../tests/uvmt_cv32/test-programs -name *.elf -exec rm {} \;
-	find ../../tests/uvmt_cv32/test-programs -name *.map -exec rm {} \;
+	find ../../tests/uvmt_cv32/test-programs -name *.o       -exec rm {} \;
+	find ../../tests/uvmt_cv32/test-programs -name *.hex     -exec rm {} \;
+	find ../../tests/uvmt_cv32/test-programs -name *.elf     -exec rm {} \;
+	find ../../tests/uvmt_cv32/test-programs -name *.map     -exec rm {} \;
+	find ../../tests/uvmt_cv32/test-programs -name *.readelf -exec rm {} \;
+	find ../../tests/uvmt_cv32/test-programs -name *.objdump -exec rm {} \;
 
 clean_riscvdv:
 	rm -rf $(RISCVDV_PKG)

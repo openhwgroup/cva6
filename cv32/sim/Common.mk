@@ -137,6 +137,9 @@ CUSTOM                               = $(CORE_TEST_DIR)/custom
 CUSTOM_DIR                          ?= $(CUSTOM)
 CUSTOM_PROG                         ?= my_hello_world
 VERI_CUSTOM                          = ../../tests/core/custom
+ASM                                  = $(CORE_TEST_DIR)/asm
+ASM_DIR                             ?= $(ASM)
+ASM_PROG                            ?= my_hello_world
 CV32_RISCV_TESTS_FIRMWARE            = $(CORE_TEST_DIR)/cv32_riscv_tests_firmware
 CV32_RISCV_COMPLIANCE_TESTS_FIRMWARE = $(CORE_TEST_DIR)/cv32_riscv_compliance_tests_firmware
 RISCV_TESTS                          = $(CORE_TEST_DIR)/riscv_tests
@@ -210,6 +213,18 @@ $(CUSTOM_DIR)/$(CUSTOM_PROG).elf: $(CUSTOM_DIR)/$(CUSTOM_PROG).c
 		-I $(RISCV)/riscv32-unknown-elf/include \
 		-L $(RISCV)/riscv32-unknown-elf/lib \
 		-lc -lm -lgcc
+
+# Similaro to CUSTOM (above), this time with ASM directory
+$(ASM)/$(ASM_PROG).elf: $(ASM)/$(ASM_PROG).S
+		@   echo "Compiling $(ASM_PROG).S"
+		$(RISCV_EXE_PREFIX)gcc -mabi=ilp32 -march=rv32imc -c -o $(ASM)/$(ASM_PROG).o \
+		$(ASM)/$(ASM_PROG).S -DRISCV32GC -O0 -nostdlib -nostartfiles \
+		-I $(ASM)
+		@   echo "Linking $(ASM_PROG).o"
+		$(RISCV_EXE_PREFIX)gcc -mabi=ilp32 -march=rv32imc \
+		-o $(ASM)/$(ASM_PROG).elf \
+		$(ASM)/$(ASM_PROG).o -nostdlib -nostartfiles \
+		-T $(ASM)/link.ld
 
 # HELLO WORLD: custom/hello_world.elf: ../../tests/core/custom/hello_world.c
 $(CUSTOM)/hello_world.elf: $(CUSTOM)/hello_world.c
