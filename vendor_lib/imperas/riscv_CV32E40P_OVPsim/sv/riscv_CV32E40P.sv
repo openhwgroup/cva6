@@ -120,9 +120,9 @@ module CPU
     endfunction
         
     function automatic void setDECODE (input string value);
-        if (mode_disass == 1) begin
+        //if (mode_disass == 1) begin
             Decode = value;
-        end
+        //end
     endfunction
     
     function automatic void setFetchDECODE ();

@@ -27,6 +27,10 @@ XRUN_COMP_FLAGS       ?= -64bit -disable_sem2009 -access +rwc -q -clean -sv -uvm
 XRUN_DIR         ?= xcelium.d
 XRUN_GUI         ?=
 
+#XRUN_VELABCOVERAGE = -covdut uvmt_cv32_tb -coverage function
+#XRUN_VRUNCOVERAGE  = -covoverwrite -covtest uvmt_cv32_tb -covscope uvmt_cv32_tb
+# VCOVERAGE     = imc -load cov_work/$(TESTBENCH)/$(TESTBENCH) -execcmd "report -summary"
+
 XRUN_FILE_LIST ?= -f $(DV_UVMT_CV32_PATH)/uvmt_cv32.flist
 ifeq ($(USE_ISS),YES)
     XRUN_FILE_LIST += -f $(DV_UVMT_CV32_PATH)/imperas_iss.flist
@@ -65,6 +69,7 @@ comp: mk_xrun_dir $(CV32E40P_PKG) $(OVP_MODEL_DPI)
                 $(XRUN_FILE_LIST) \
 		$(UVM_PLUSARGS) \
 		-elaborate
+#		$(XRUN_VELABCOVERAGE)
 
 # 'Custom test'.  See comment in dsim.mk for more info
 custom: comp $(CUSTOM_DIR)/$(CUSTOM_PROG).hex
@@ -78,6 +83,7 @@ hello-world: comp $(CUSTOM)/hello_world.hex
 		+nm_file=$(CUSTOM)/hello_world.nm \
 		+UVM_TESTNAME=uvmt_cv32_firmware_test_c \
 		+firmware=$(CUSTOM)/hello_world.hex
+#		$(XRUN_VRUNCOVERAGE)
 
 misalign: comp $(CUSTOM)/misalign.hex
 	$(XRUN) -l xrun-misalign.log $(XRUN_RUN_FLAGS) \
