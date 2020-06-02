@@ -1,15 +1,16 @@
 {
-    "variables": {
-	"RISCV": "/mux-flow/tools/riscv",
-	"LM_LICENSE_FILE": "2700@license-1"
-    },
+  "variables": {
+    "RISCV": "/mux-flow/tools/riscv",
+    "LM_LICENSE_FILE": "2700@license-1",
+    "IMPERAS_QUEUE_LICENSE" : "1"
+  },
   "builds": {
     "list": [
       {
         "name":     "uvmt_cv32",
         "image":    "cv32-simulation-tools:20200316.10.0",
         "cmd":      "cd cv32/sim/uvmt_cv32; make comp SIMULATOR=dsim USE_ISS=YES DSIM_WORK=/mux-flow/build/repo/dsim_work",
-        "wavescmd": "cd cv32/sim/uvmt_cv32; make comp SIMULATOR=dsim USE_ISS=YES DSIM_WORK=/mux-flow/build/repo/dsim_work WAVES=1"
+        "wavesCmd": "cd cv32/sim/uvmt_cv32; make comp SIMULATOR=dsim USE_ISS=YES DSIM_WORK=/mux-flow/build/repo/dsim_work WAVES=1"
       }
     ]
   },
@@ -36,7 +37,7 @@
             "build":       "uvmt_cv32",
             "cmd":         "cd cv32/sim/uvmt_cv32; make asm ASM_PROG=riscv_ebreak_test_0 SIMULATOR=dsim USE_ISS=YES DSIM_WORK=/mux-flow/build/repo/dsim_work DSIM_RESULTS=/mux-flow/build/results",
             "wavesCmd":    "cd cv32/sim/uvmt_cv32; make asm ASM_PROG=riscv_ebreak_test_0 SIMULATOR=dsim USE_ISS=YES DSIM_WORK=/mux-flow/build/repo/dsim_work DSIM_RESULTS=/mux-flow/build/results WAVES=1",
-            "metricsFile": "hello-world/metrics.db",
+            "metricsFile": "riscv_ebreak_test_0/metrics.db",
             "isPass":      "SIMULATION PASSED",
             "seed":        1
 	        },
@@ -45,7 +46,7 @@
             "build":       "uvmt_cv32",
             "cmd":         "cd cv32/sim/uvmt_cv32; make cv32-riscv-tests SIMULATOR=dsim USE_ISS=YES DSIM_WORK=/mux-flow/build/repo/dsim_work DSIM_RESULTS=/mux-flow/build/results",
             "wavesCmd":    "cd cv32/sim/uvmt_cv32; make cv32-riscv-tests SIMULATOR=dsim USE_ISS=YES DSIM_WORK=/mux-flow/build/repo/dsim_work DSIM_RESULTS=/mux-flow/build/results WAVES=1",
-            "metricsFile": "cv32-rsicv-tests/metrics.db",
+            "metricsFile": "cv32-riscv-tests/metrics.db",
             "isPass":      "SIMULATION PASSED",
             "seed":        1
           },

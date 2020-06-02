@@ -124,19 +124,19 @@ interface uvmt_cv32_core_cntrl_if (
       bins disabled = {1'b0};
     }
     boot_address: coverpoint boot_addr {
-      bins low  = {32'h0000_0000, 32'h0000_FFFF};
-      bins med  = {32'h0001_0000, 32'hEFFF_FFFF};
-      bins high = {32'hF000_0000, 32'hFFFF_FFFF};
+      bins low  = {[32'h0000_0000 : 32'h0000_FFFF]};
+      bins med  = {[32'h0001_0000 : 32'hEFFF_FFFF]};
+      bins high = {[32'hF000_0000 : 32'hFFFF_FFFF]};
     }
     debug_module_halt_address: coverpoint dm_halt_addr {
-      bins low  = {32'h0000_0000, 32'h0000_FFFF};
-      bins med  = {32'h0001_0000, 32'hEFFF_FFFF};
-      bins high = {32'hF000_0000, 32'hFFFF_FFFF};
+      bins low  = {[32'h0000_0000 : 32'h0000_FFFF]};
+      bins med  = {[32'h0001_0000 : 32'hEFFF_FFFF]};
+      bins high = {[32'hF000_0000 : 32'hFFFF_FFFF]};
     }
     hart_id: coverpoint hart_id {
-      bins low  = {32'h0000_0000, 32'h0000_FFFF};
-      bins med  = {32'h0001_0000, 32'hEFFF_FFFF};
-      bins high = {32'hF000_0000, 32'hFFFF_FFFF};
+      bins low  = {[32'h0000_0000 : 32'h0000_FFFF]};
+      bins med  = {[32'h0001_0000 : 32'hEFFF_FFFF]};
+      bins high = {[32'hF000_0000 : 32'hFFFF_FFFF]};
     }
   endgroup: core_cntrl_cg
 
