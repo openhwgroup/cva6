@@ -49,3 +49,6 @@
 [submodule "fpga/src/apb_timer"]
 	path = fpga/src/apb_timer
 	url = https://github.com/pulp-platform/apb_timer.git
+[submodule "tb/dromajo"]
+	path = tb/dromajo
+	url = https://github.com/kabylkas/dromajo.git

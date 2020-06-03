@@ -44,12 +44,14 @@ static vluint64_t main_time = 0;
 
 static const char *verilog_plusargs[] = {"jtag_rbb_enable"};
 
+#ifndef DROMAJO
 extern dtm_t* dtm;
 extern remote_bitbang_t * jtag;
 
 void handle_sigterm(int sig) {
   dtm->stop();
 }
+#endif
 
 // Called by $time in Verilog converts to double, to match what SystemC does
 double sc_time_stamp () {
@@ -246,9 +248,11 @@ done_processing:
   const char *vcd_file = NULL;
   Verilated::commandArgs(argc, argv);
 
+#ifndef DROMAJO
   jtag = new remote_bitbang_t(rbb_port);
   dtm = new dtm_t(htif_argc, htif_argv);
   signal(SIGTERM, handle_sigterm);
+#endif
 
   std::unique_ptr<Variane_testharness> top(new Variane_testharness);
 
@@ -279,7 +283,12 @@ done_processing:
   }
   top->rst_ni = 1;
 
+#ifndef DROMAJO
   while (!dtm->done() && !jtag->done()) {
+#else
+  // the simulation gets killed by dromajo
+  while (true) {
+#endif
     top->clk_i = 0;
     top->eval();
 #if VM_TRACE
@@ -308,6 +317,7 @@ done_processing:
     fclose(vcdfile);
 #endif
 
+#ifndef DROMAJO
   if (dtm->exit_code()) {
     fprintf(stderr, "%s *** FAILED *** (code = %d) after %ld cycles\n", htif_argv[1], dtm->exit_code(), main_time);
     ret = dtm->exit_code();
@@ -320,6 +330,7 @@ done_processing:
 
   if (dtm) delete dtm;
   if (jtag) delete jtag;
+#endif
 
   std::clock_t c_end = std::clock();
   auto t_end = std::chrono::high_resolution_clock::now();
