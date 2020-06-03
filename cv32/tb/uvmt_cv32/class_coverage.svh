@@ -201,14 +201,14 @@ class coverage;
     endfunction
 
     covergroup add_cg with function sample(ins_t ins);
-        option.per_instance = 1;
+        //option.per_instance = 1;
         cp_rd    : coverpoint get_gpr_name(ins.ops[0].val, ins.ops[0].key, "add");
         cp_rs1    : coverpoint get_gpr_name(ins.ops[1].val, ins.ops[1].key, "add");
         cp_rs2    : coverpoint get_gpr_name(ins.ops[2].val, ins.ops[2].key, "add");
     endgroup
 
     covergroup addi_cg with function sample(ins_t ins);
-        option.per_instance = 1;
+        //option.per_instance = 1;
         cp_rd    : coverpoint get_gpr_name(ins.ops[0].val, ins.ops[0].key, "addi");
         cp_rs1    : coverpoint get_gpr_name(ins.ops[1].val, ins.ops[1].key, "addi");
         cp_imm11   : coverpoint get_imm(ins.ops[2].val,"addi" ) {
@@ -219,14 +219,14 @@ class coverage;
     endgroup
 
     covergroup and_cg with function sample(ins_t ins);
-        option.per_instance = 1;
+        //option.per_instance = 1;
         cp_rd    : coverpoint get_gpr_name(ins.ops[0].val, ins.ops[0].key, "and");
         cp_rs1    : coverpoint get_gpr_name(ins.ops[1].val, ins.ops[1].key, "and");
         cp_rs2    : coverpoint get_gpr_name(ins.ops[2].val, ins.ops[2].key, "and");
     endgroup
 
     covergroup andi_cg with function sample(ins_t ins);
-        option.per_instance = 1;
+        //option.per_instance = 1;
         cp_rd    : coverpoint get_gpr_name(ins.ops[0].val, ins.ops[0].key, "andi");
         cp_rs1    : coverpoint get_gpr_name(ins.ops[1].val, ins.ops[1].key, "andi");
         cp_imm11   : coverpoint get_imm(ins.ops[2].val,"andi" ) {
@@ -237,7 +237,7 @@ class coverage;
     endgroup
 
     covergroup auipc_cg with function sample(ins_t ins);
-        option.per_instance = 1;
+        //option.per_instance = 1;
         cp_rd    : coverpoint get_gpr_name(ins.ops[0].val, ins.ops[0].key, "auipc");
         cp_uimm20   : coverpoint get_imm(ins.ops[1].val,"auipc" ) {
             bins neg  = {[$:-1]};
@@ -247,7 +247,7 @@ class coverage;
     endgroup
 
     covergroup beq_cg with function sample(ins_t ins);
-        option.per_instance = 1;
+        //option.per_instance = 1;
         cp_rs1    : coverpoint get_gpr_name(ins.ops[0].val, ins.ops[0].key, "beq");
         cp_rs2    : coverpoint get_gpr_name(ins.ops[1].val, ins.ops[1].key, "beq");
         cp_bra12   : coverpoint get_imm(ins.ops[2].val,"beq" ) {
@@ -258,7 +258,7 @@ class coverage;
     endgroup
 
     covergroup beqz_cg with function sample(ins_t ins);
-        option.per_instance = 1;
+        //option.per_instance = 1;
         cp_rs1    : coverpoint get_gpr_name(ins.ops[0].val, ins.ops[0].key, "beqz");
         cp_bra12   : coverpoint get_imm(ins.ops[1].val,"beqz" ) {
             bins neg  = {[$:-1]};
@@ -268,7 +268,7 @@ class coverage;
     endgroup
 
     covergroup bge_cg with function sample(ins_t ins);
-        option.per_instance = 1;
+        //option.per_instance = 1;
         cp_rs1    : coverpoint get_gpr_name(ins.ops[0].val, ins.ops[0].key, "bge");
         cp_rs2    : coverpoint get_gpr_name(ins.ops[1].val, ins.ops[1].key, "bge");
         cp_bra12   : coverpoint get_imm(ins.ops[2].val,"bge" ) {
@@ -279,7 +279,7 @@ class coverage;
     endgroup
 
     covergroup bgeu_cg with function sample(ins_t ins);
-        option.per_instance = 1;
+        //option.per_instance = 1;
         cp_rs1    : coverpoint get_gpr_name(ins.ops[0].val, ins.ops[0].key, "bgeu");
         cp_rs2    : coverpoint get_gpr_name(ins.ops[1].val, ins.ops[1].key, "bgeu");
         cp_bra12   : coverpoint get_imm(ins.ops[2].val,"bgeu" ) {
@@ -290,7 +290,7 @@ class coverage;
     endgroup
 
     covergroup bgez_cg with function sample(ins_t ins);
-        option.per_instance = 1;
+        //option.per_instance = 1;
         cp_rs1    : coverpoint get_gpr_name(ins.ops[0].val, ins.ops[0].key, "bgez");
         cp_bra12   : coverpoint get_imm(ins.ops[1].val,"bgez" ) {
             bins neg  = {[$:-1]};
@@ -300,7 +300,7 @@ class coverage;
     endgroup
 
     covergroup bgt_cg with function sample(ins_t ins);
-        option.per_instance = 1;
+        //option.per_instance = 1;
         cp_rs2    : coverpoint get_gpr_name(ins.ops[0].val, ins.ops[0].key, "bgt");
         cp_rs1    : coverpoint get_gpr_name(ins.ops[1].val, ins.ops[1].key, "bgt");
         cp_bra12   : coverpoint get_imm(ins.ops[2].val,"bgt" ) {
@@ -311,7 +311,7 @@ class coverage;
     endgroup
 
     covergroup bgtu_cg with function sample(ins_t ins);
-        option.per_instance = 1;
+        //option.per_instance = 1;
         cp_rs2    : coverpoint get_gpr_name(ins.ops[0].val, ins.ops[0].key, "bgtu");
         cp_rs1    : coverpoint get_gpr_name(ins.ops[1].val, ins.ops[1].key, "bgtu");
         cp_bra12   : coverpoint get_imm(ins.ops[2].val,"bgtu" ) {
@@ -322,7 +322,7 @@ class coverage;
     endgroup
 
     covergroup bgtz_cg with function sample(ins_t ins);
-        option.per_instance = 1;
+        //option.per_instance = 1;
         cp_rs1    : coverpoint get_gpr_name(ins.ops[0].val, ins.ops[0].key, "bgtz");
         cp_bra12   : coverpoint get_imm(ins.ops[1].val,"bgtz" ) {
             bins neg  = {[$:-1]};
@@ -332,7 +332,7 @@ class coverage;
     endgroup
 
     covergroup ble_cg with function sample(ins_t ins);
-        option.per_instance = 1;
+        //option.per_instance = 1;
         cp_rs2    : coverpoint get_gpr_name(ins.ops[0].val, ins.ops[0].key, "ble");
         cp_rs1    : coverpoint get_gpr_name(ins.ops[1].val, ins.ops[1].key, "ble");
         cp_bra12   : coverpoint get_imm(ins.ops[2].val,"ble" ) {
@@ -343,7 +343,7 @@ class coverage;
     endgroup
 
     covergroup bleu_cg with function sample(ins_t ins);
-        option.per_instance = 1;
+        //option.per_instance = 1;
         cp_rs2    : coverpoint get_gpr_name(ins.ops[0].val, ins.ops[0].key, "bleu");
         cp_rs1    : coverpoint get_gpr_name(ins.ops[1].val, ins.ops[1].key, "bleu");
         cp_bra12   : coverpoint get_imm(ins.ops[2].val,"bleu" ) {
@@ -354,7 +354,7 @@ class coverage;
     endgroup
 
     covergroup blez_cg with function sample(ins_t ins);
-        option.per_instance = 1;
+        //option.per_instance = 1;
         cp_rs1    : coverpoint get_gpr_name(ins.ops[0].val, ins.ops[0].key, "blez");
         cp_bra12   : coverpoint get_imm(ins.ops[1].val,"blez" ) {
             bins neg  = {[$:-1]};
@@ -364,7 +364,7 @@ class coverage;
     endgroup
 
     covergroup blt_cg with function sample(ins_t ins);
-        option.per_instance = 1;
+        //option.per_instance = 1;
         cp_rs1    : coverpoint get_gpr_name(ins.ops[0].val, ins.ops[0].key, "blt");
         cp_rs2    : coverpoint get_gpr_name(ins.ops[1].val, ins.ops[1].key, "blt");
         cp_bra12   : coverpoint get_imm(ins.ops[2].val,"blt" ) {
@@ -375,7 +375,7 @@ class coverage;
     endgroup
 
     covergroup bltu_cg with function sample(ins_t ins);
-        option.per_instance = 1;
+        //option.per_instance = 1;
         cp_rs1    : coverpoint get_gpr_name(ins.ops[0].val, ins.ops[0].key, "bltu");
         cp_rs2    : coverpoint get_gpr_name(ins.ops[1].val, ins.ops[1].key, "bltu");
         cp_bra12   : coverpoint get_imm(ins.ops[2].val,"bltu" ) {
@@ -386,7 +386,7 @@ class coverage;
     endgroup
 
     covergroup bltz_cg with function sample(ins_t ins);
-        option.per_instance = 1;
+        //option.per_instance = 1;
         cp_rs1    : coverpoint get_gpr_name(ins.ops[0].val, ins.ops[0].key, "bltz");
         cp_bra12   : coverpoint get_imm(ins.ops[1].val,"bltz" ) {
             bins neg  = {[$:-1]};
@@ -396,7 +396,7 @@ class coverage;
     endgroup
 
     covergroup bne_cg with function sample(ins_t ins);
-        option.per_instance = 1;
+        //option.per_instance = 1;
         cp_rs1    : coverpoint get_gpr_name(ins.ops[0].val, ins.ops[0].key, "bne");
         cp_rs2    : coverpoint get_gpr_name(ins.ops[1].val, ins.ops[1].key, "bne");
         cp_bra12   : coverpoint get_imm(ins.ops[2].val,"bne" ) {
@@ -407,7 +407,7 @@ class coverage;
     endgroup
 
     covergroup bnez_cg with function sample(ins_t ins);
-        option.per_instance = 1;
+        //option.per_instance = 1;
         cp_rs1    : coverpoint get_gpr_name(ins.ops[0].val, ins.ops[0].key, "bnez");
         cp_bra12   : coverpoint get_imm(ins.ops[1].val,"bnez" ) {
             bins neg  = {[$:-1]};
@@ -417,35 +417,35 @@ class coverage;
     endgroup
 
     covergroup ebreak_cg with function sample(ins_t ins);
-        option.per_instance = 1;
+        //option.per_instance = 1;
         cp_asm   : coverpoint ins.asm == EBREAK {
             ignore_bins zero = {0};
         }
     endgroup
 
     covergroup ecall_cg with function sample(ins_t ins);
-        option.per_instance = 1;
+        //option.per_instance = 1;
         cp_asm   : coverpoint ins.asm == ECALL {
             ignore_bins zero = {0};
         }
     endgroup
 
     covergroup fence_cg with function sample(ins_t ins);
-        option.per_instance = 1;
+        //option.per_instance = 1;
         cp_asm   : coverpoint ins.asm == FENCE {
             ignore_bins zero = {0};
         }
     endgroup
 
     covergroup illegal_cg with function sample(ins_t ins);
-        option.per_instance = 1;
+        //option.per_instance = 1;
         cp_asm   : coverpoint ins.asm == ILLEGAL {
             ignore_bins zero = {0};
         }
     endgroup
 
     covergroup j_cg with function sample(ins_t ins);
-        option.per_instance = 1;
+        //option.per_instance = 1;
         cp_jmp19   : coverpoint get_imm(ins.ops[0].val,"j" ) {
             bins neg  = {[$:-1]};
             bins zero = {0};
@@ -454,7 +454,7 @@ class coverage;
     endgroup
 
     covergroup jal_cg with function sample(ins_t ins);
-        option.per_instance = 1;
+        //option.per_instance = 1;
         cp_rd    : coverpoint get_gpr_name(ins.ops[0].val, ins.ops[0].key, "jal");
         cp_jmp19   : coverpoint get_imm(ins.ops[1].val,"jal" ) {
             bins neg  = {[$:-1]};
@@ -464,7 +464,7 @@ class coverage;
     endgroup
 
     covergroup jalr_cg with function sample(ins_t ins, gpr_name_t r0, gpr_name_t r1);
-        option.per_instance = 1;
+        //option.per_instance = 1;
         cp_r0    : coverpoint r0 iff (ins.ops[0].key[0] == "R");
         cp_r1    : coverpoint r1 iff (ins.ops[1].key[0] == "R");
         cp_imm0   : coverpoint get_imm(ins.ops[0].val,"jalr" ) iff (ins.ops[0].key[0] == "C") {
@@ -480,7 +480,7 @@ class coverage;
     endgroup
 
     covergroup jr_cg with function sample(ins_t ins, gpr_name_t r0, gpr_name_t r1);
-        option.per_instance = 1;
+        //option.per_instance = 1;
         cp_r0    : coverpoint r0 iff (ins.ops[0].key[0] == "R");
         cp_r1    : coverpoint r1 iff (ins.ops[1].key[0] == "R");
         cp_imm0   : coverpoint get_imm(ins.ops[0].val,"jr" ) iff (ins.ops[0].key[0] == "C") {
@@ -496,7 +496,7 @@ class coverage;
     endgroup
 
     covergroup lb_cg with function sample(ins_t ins);
-        option.per_instance = 1;
+        //option.per_instance = 1;
         cp_rd    : coverpoint get_gpr_name(ins.ops[0].val, ins.ops[0].key, "lb");
         cp_imm    : coverpoint get_imm(ins.ops[1].val, "lb") {
             bins neg  = {[$:-1]};
@@ -507,7 +507,7 @@ class coverage;
     endgroup
 
     covergroup lbu_cg with function sample(ins_t ins);
-        option.per_instance = 1;
+        //option.per_instance = 1;
         cp_rd    : coverpoint get_gpr_name(ins.ops[0].val, ins.ops[0].key, "lbu");
         cp_imm    : coverpoint get_imm(ins.ops[1].val, "lbu") {
             bins neg  = {[$:-1]};
@@ -518,7 +518,7 @@ class coverage;
     endgroup
 
     covergroup lh_cg with function sample(ins_t ins);
-        option.per_instance = 1;
+        //option.per_instance = 1;
         cp_rd    : coverpoint get_gpr_name(ins.ops[0].val, ins.ops[0].key, "lh");
         cp_imm    : coverpoint get_imm(ins.ops[1].val, "lh") {
             bins neg  = {[$:-1]};
@@ -529,7 +529,7 @@ class coverage;
     endgroup
 
     covergroup lhu_cg with function sample(ins_t ins);
-        option.per_instance = 1;
+        //option.per_instance = 1;
         cp_rd    : coverpoint get_gpr_name(ins.ops[0].val, ins.ops[0].key, "lhu");
         cp_imm    : coverpoint get_imm(ins.ops[1].val, "lhu") {
             bins neg  = {[$:-1]};
@@ -540,7 +540,7 @@ class coverage;
     endgroup
 
     covergroup lui_cg with function sample(ins_t ins);
-        option.per_instance = 1;
+        //option.per_instance = 1;
         cp_rd    : coverpoint get_gpr_name(ins.ops[0].val, ins.ops[0].key, "lui");
         cp_uimm20   : coverpoint get_imm(ins.ops[1].val,"lui" ) {
             bins neg  = {[$:-1]};
@@ -550,7 +550,7 @@ class coverage;
     endgroup
 
     covergroup lw_cg with function sample(ins_t ins);
-        option.per_instance = 1;
+        //option.per_instance = 1;
         cp_rd    : coverpoint get_gpr_name(ins.ops[0].val, ins.ops[0].key, "lw");
         cp_imm    : coverpoint get_imm(ins.ops[1].val, "lw") {
             bins neg  = {[$:-1]};
@@ -561,45 +561,45 @@ class coverage;
     endgroup
 
     covergroup mv_cg with function sample(ins_t ins);
-        option.per_instance = 1;
+        //option.per_instance = 1;
         cp_rd    : coverpoint get_gpr_name(ins.ops[0].val, ins.ops[0].key, "mv");
         cp_rs1    : coverpoint get_gpr_name(ins.ops[1].val, ins.ops[1].key, "mv");
     endgroup
 
     covergroup neg_cg with function sample(ins_t ins);
-        option.per_instance = 1;
+        //option.per_instance = 1;
         cp_rd    : coverpoint get_gpr_name(ins.ops[0].val, ins.ops[0].key, "neg");
         cp_rs1    : coverpoint get_gpr_name(ins.ops[1].val, ins.ops[1].key, "neg");
     endgroup
 
     covergroup negw_cg with function sample(ins_t ins);
-        option.per_instance = 1;
+        //option.per_instance = 1;
         cp_rd    : coverpoint get_gpr_name(ins.ops[0].val, ins.ops[0].key, "negw");
         cp_rs1    : coverpoint get_gpr_name(ins.ops[1].val, ins.ops[1].key, "negw");
     endgroup
 
     covergroup nop_cg with function sample(ins_t ins);
-        option.per_instance = 1;
+        //option.per_instance = 1;
         cp_asm   : coverpoint ins.asm == NOP {
             ignore_bins zero = {0};
         }
     endgroup
 
     covergroup not_cg with function sample(ins_t ins);
-        option.per_instance = 1;
+        //option.per_instance = 1;
         cp_rd    : coverpoint get_gpr_name(ins.ops[0].val, ins.ops[0].key, "not");
         cp_rs1    : coverpoint get_gpr_name(ins.ops[1].val, ins.ops[1].key, "not");
     endgroup
 
     covergroup or_cg with function sample(ins_t ins);
-        option.per_instance = 1;
+        //option.per_instance = 1;
         cp_rd    : coverpoint get_gpr_name(ins.ops[0].val, ins.ops[0].key, "or");
         cp_rs1    : coverpoint get_gpr_name(ins.ops[1].val, ins.ops[1].key, "or");
         cp_rs2    : coverpoint get_gpr_name(ins.ops[2].val, ins.ops[2].key, "or");
     endgroup
 
     covergroup ori_cg with function sample(ins_t ins);
-        option.per_instance = 1;
+        //option.per_instance = 1;
         cp_rd    : coverpoint get_gpr_name(ins.ops[0].val, ins.ops[0].key, "ori");
         cp_rs1    : coverpoint get_gpr_name(ins.ops[1].val, ins.ops[1].key, "ori");
         cp_imm11   : coverpoint get_imm(ins.ops[2].val,"ori" ) {
@@ -610,14 +610,14 @@ class coverage;
     endgroup
 
     covergroup ret_cg with function sample(ins_t ins);
-        option.per_instance = 1;
+        //option.per_instance = 1;
         cp_asm   : coverpoint ins.asm == RET {
             ignore_bins zero = {0};
         }
     endgroup
 
     covergroup sb_cg with function sample(ins_t ins);
-        option.per_instance = 1;
+        //option.per_instance = 1;
         cp_rs2    : coverpoint get_gpr_name(ins.ops[0].val, ins.ops[0].key, "sb");
         cp_imm    : coverpoint get_imm(ins.ops[1].val, "sb") {
             bins neg  = {[$:-1]};
@@ -628,19 +628,19 @@ class coverage;
     endgroup
 
     covergroup seqz_cg with function sample(ins_t ins);
-        option.per_instance = 1;
+        //option.per_instance = 1;
         cp_rd    : coverpoint get_gpr_name(ins.ops[0].val, ins.ops[0].key, "seqz");
         cp_rs1    : coverpoint get_gpr_name(ins.ops[1].val, ins.ops[1].key, "seqz");
     endgroup
 
     covergroup sgtz_cg with function sample(ins_t ins);
-        option.per_instance = 1;
+        //option.per_instance = 1;
         cp_rd    : coverpoint get_gpr_name(ins.ops[0].val, ins.ops[0].key, "sgtz");
         cp_rs1    : coverpoint get_gpr_name(ins.ops[1].val, ins.ops[1].key, "sgtz");
     endgroup
 
     covergroup sh_cg with function sample(ins_t ins);
-        option.per_instance = 1;
+        //option.per_instance = 1;
         cp_rs2    : coverpoint get_gpr_name(ins.ops[0].val, ins.ops[0].key, "sh");
         cp_imm    : coverpoint get_imm(ins.ops[1].val, "sh") {
             bins neg  = {[$:-1]};
@@ -651,14 +651,14 @@ class coverage;
     endgroup
 
     covergroup sll_cg with function sample(ins_t ins);
-        option.per_instance = 1;
+        //option.per_instance = 1;
         cp_rd    : coverpoint get_gpr_name(ins.ops[0].val, ins.ops[0].key, "sll");
         cp_rs1    : coverpoint get_gpr_name(ins.ops[1].val, ins.ops[1].key, "sll");
         cp_rs2    : coverpoint get_gpr_name(ins.ops[2].val, ins.ops[2].key, "sll");
     endgroup
 
     covergroup slli_cg with function sample(ins_t ins);
-        option.per_instance = 1;
+        //option.per_instance = 1;
         cp_rd    : coverpoint get_gpr_name(ins.ops[0].val, ins.ops[0].key, "slli");
         cp_rs1    : coverpoint get_gpr_name(ins.ops[1].val, ins.ops[1].key, "slli");
         cp_shamt5   : coverpoint get_imm(ins.ops[2].val,"slli" ) {
@@ -669,14 +669,14 @@ class coverage;
     endgroup
 
     covergroup slt_cg with function sample(ins_t ins);
-        option.per_instance = 1;
+        //option.per_instance = 1;
         cp_rd    : coverpoint get_gpr_name(ins.ops[0].val, ins.ops[0].key, "slt");
         cp_rs1    : coverpoint get_gpr_name(ins.ops[1].val, ins.ops[1].key, "slt");
         cp_rs2    : coverpoint get_gpr_name(ins.ops[2].val, ins.ops[2].key, "slt");
     endgroup
 
     covergroup slti_cg with function sample(ins_t ins);
-        option.per_instance = 1;
+        //option.per_instance = 1;
         cp_rd    : coverpoint get_gpr_name(ins.ops[0].val, ins.ops[0].key, "slti");
         cp_rs1    : coverpoint get_gpr_name(ins.ops[1].val, ins.ops[1].key, "slti");
         cp_imm11   : coverpoint get_imm(ins.ops[2].val,"slti" ) {
@@ -687,7 +687,7 @@ class coverage;
     endgroup
 
     covergroup sltiu_cg with function sample(ins_t ins);
-        option.per_instance = 1;
+        //option.per_instance = 1;
         cp_rd    : coverpoint get_gpr_name(ins.ops[0].val, ins.ops[0].key, "sltiu");
         cp_rs1    : coverpoint get_gpr_name(ins.ops[1].val, ins.ops[1].key, "sltiu");
         cp_imm11   : coverpoint get_imm(ins.ops[2].val,"sltiu" ) {
@@ -698,33 +698,33 @@ class coverage;
     endgroup
 
     covergroup sltu_cg with function sample(ins_t ins);
-        option.per_instance = 1;
+        //option.per_instance = 1;
         cp_rd    : coverpoint get_gpr_name(ins.ops[0].val, ins.ops[0].key, "sltu");
         cp_rs1    : coverpoint get_gpr_name(ins.ops[1].val, ins.ops[1].key, "sltu");
         cp_rs2    : coverpoint get_gpr_name(ins.ops[2].val, ins.ops[2].key, "sltu");
     endgroup
 
     covergroup sltz_cg with function sample(ins_t ins);
-        option.per_instance = 1;
+        //option.per_instance = 1;
         cp_rd    : coverpoint get_gpr_name(ins.ops[0].val, ins.ops[0].key, "sltz");
         cp_rs1    : coverpoint get_gpr_name(ins.ops[1].val, ins.ops[1].key, "sltz");
     endgroup
 
     covergroup snez_cg with function sample(ins_t ins);
-        option.per_instance = 1;
+        //option.per_instance = 1;
         cp_rd    : coverpoint get_gpr_name(ins.ops[0].val, ins.ops[0].key, "snez");
         cp_rs1    : coverpoint get_gpr_name(ins.ops[1].val, ins.ops[1].key, "snez");
     endgroup
 
     covergroup sra_cg with function sample(ins_t ins);
-        option.per_instance = 1;
+        //option.per_instance = 1;
         cp_rd    : coverpoint get_gpr_name(ins.ops[0].val, ins.ops[0].key, "sra");
         cp_rs1    : coverpoint get_gpr_name(ins.ops[1].val, ins.ops[1].key, "sra");
         cp_rs2    : coverpoint get_gpr_name(ins.ops[2].val, ins.ops[2].key, "sra");
     endgroup
 
     covergroup srai_cg with function sample(ins_t ins);
-        option.per_instance = 1;
+        //option.per_instance = 1;
         cp_rd    : coverpoint get_gpr_name(ins.ops[0].val, ins.ops[0].key, "srai");
         cp_rs1    : coverpoint get_gpr_name(ins.ops[1].val, ins.ops[1].key, "srai");
         cp_shamt5   : coverpoint get_imm(ins.ops[2].val,"srai" ) {
@@ -735,14 +735,14 @@ class coverage;
     endgroup
 
     covergroup srl_cg with function sample(ins_t ins);
-        option.per_instance = 1;
+        //option.per_instance = 1;
         cp_rd    : coverpoint get_gpr_name(ins.ops[0].val, ins.ops[0].key, "srl");
         cp_rs1    : coverpoint get_gpr_name(ins.ops[1].val, ins.ops[1].key, "srl");
         cp_rs2    : coverpoint get_gpr_name(ins.ops[2].val, ins.ops[2].key, "srl");
     endgroup
 
     covergroup srli_cg with function sample(ins_t ins);
-        option.per_instance = 1;
+        //option.per_instance = 1;
         cp_rd    : coverpoint get_gpr_name(ins.ops[0].val, ins.ops[0].key, "srli");
         cp_rs1    : coverpoint get_gpr_name(ins.ops[1].val, ins.ops[1].key, "srli");
         cp_shamt5   : coverpoint get_imm(ins.ops[2].val,"srli" ) {
@@ -753,14 +753,14 @@ class coverage;
     endgroup
 
     covergroup sub_cg with function sample(ins_t ins);
-        option.per_instance = 1;
+        //option.per_instance = 1;
         cp_rd    : coverpoint get_gpr_name(ins.ops[0].val, ins.ops[0].key, "sub");
         cp_rs1    : coverpoint get_gpr_name(ins.ops[1].val, ins.ops[1].key, "sub");
         cp_rs2    : coverpoint get_gpr_name(ins.ops[2].val, ins.ops[2].key, "sub");
     endgroup
 
     covergroup sw_cg with function sample(ins_t ins);
-        option.per_instance = 1;
+        //option.per_instance = 1;
         cp_rs2    : coverpoint get_gpr_name(ins.ops[0].val, ins.ops[0].key, "sw");
         cp_imm    : coverpoint get_imm(ins.ops[1].val, "sw") {
             bins neg  = {[$:-1]};
@@ -771,14 +771,14 @@ class coverage;
     endgroup
 
     covergroup xor_cg with function sample(ins_t ins);
-        option.per_instance = 1;
+        //option.per_instance = 1;
         cp_rd    : coverpoint get_gpr_name(ins.ops[0].val, ins.ops[0].key, "xor");
         cp_rs1    : coverpoint get_gpr_name(ins.ops[1].val, ins.ops[1].key, "xor");
         cp_rs2    : coverpoint get_gpr_name(ins.ops[2].val, ins.ops[2].key, "xor");
     endgroup
 
     covergroup xori_cg with function sample(ins_t ins);
-        option.per_instance = 1;
+        //option.per_instance = 1;
         cp_rd    : coverpoint get_gpr_name(ins.ops[0].val, ins.ops[0].key, "xori");
         cp_rs1    : coverpoint get_gpr_name(ins.ops[1].val, ins.ops[1].key, "xori");
         cp_imm11   : coverpoint get_imm(ins.ops[2].val,"xori" ) {
@@ -789,7 +789,7 @@ class coverage;
     endgroup
 
     covergroup not_yet_included_cg with function sample(ins_t ins);
-        option.per_instance = 1;
+        //option.per_instance = 1;
         cp_asm   : coverpoint ins.asm == NOT_YET_INCLUDED {
             ignore_bins zero = {0};
         }
