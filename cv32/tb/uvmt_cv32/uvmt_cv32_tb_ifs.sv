@@ -114,6 +114,34 @@ interface uvmt_cv32_core_cntrl_if (
 
   import uvm_pkg::*;
 
+  covergroup core_cntrl_cg;
+    clock_enable: coverpoint clock_en {
+      bins enabled  = {1'b1};
+      bins disabled = {1'b0};
+    }
+    scan_enable: coverpoint scan_cg_en {
+      bins enabled  = {1'b1};
+      bins disabled = {1'b0};
+    }
+    boot_address: coverpoint boot_addr {
+      bins low  = {[32'h0000_0000 : 32'h0000_FFFF]};
+      bins med  = {[32'h0001_0000 : 32'hEFFF_FFFF]};
+      bins high = {[32'hF000_0000 : 32'hFFFF_FFFF]};
+    }
+    debug_module_halt_address: coverpoint dm_halt_addr {
+      bins low  = {[32'h0000_0000 : 32'h0000_FFFF]};
+      bins med  = {[32'h0001_0000 : 32'hEFFF_FFFF]};
+      bins high = {[32'hF000_0000 : 32'hFFFF_FFFF]};
+    }
+    hart_id: coverpoint hart_id {
+      bins low  = {[32'h0000_0000 : 32'h0000_FFFF]};
+      bins med  = {[32'h0001_0000 : 32'hEFFF_FFFF]};
+      bins high = {[32'hF000_0000 : 32'hFFFF_FFFF]};
+    }
+  endgroup: core_cntrl_cg
+
+  core_cntrl_cg core_cntrl_cg_inst;
+
   initial begin: static_controls
     fetch_en          = 1'b0; // Enabled by go_fetch(), below
     ext_perf_counters = 1'b0; // TODO: set proper width (currently 0 in the RTL)
@@ -139,6 +167,8 @@ interface uvmt_cv32_core_cntrl_if (
   function void go_fetch();
     fetch_en = 1'b1;
     `uvm_info("CORE_CNTRL_IF", "uvmt_cv32_core_cntrl_if.go_fetch() called", UVM_DEBUG)
+    core_cntrl_cg_inst = new();
+    core_cntrl_cg_inst.sample();
   endfunction : go_fetch
 
 endinterface : uvmt_cv32_core_cntrl_if

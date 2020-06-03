@@ -71,12 +71,18 @@ comp: mk_xrun_dir $(CV32E40P_PKG) $(OVP_MODEL_DPI)
 		-elaborate
 #		$(XRUN_VELABCOVERAGE)
 
-# 'Custom test'.  See comment in dsim.mk for more info
+################################################################################
+# Custom test-programs.  See comment in dsim.mk for more info
 custom: comp $(CUSTOM_DIR)/$(CUSTOM_PROG).hex
-	$(XRUN) -R -l xrun-$(CUSTOM_PROG).log \
-		+UVM_TESTNAME=$(UVM_TESTNAME) \
+	$(XRUN) -l xrun-$(CUSTOM_PROG).log $(XRUN_RUN_FLAGS) \
+		+elf_file=$(CUSTOM_DIR)/$(CUSTOM_PROG).elf \
+		+nm_file=$(CUSTOM_DIR)/$(CUSTOM_PROG).nm \
+		+UVM_TESTNAME=uvmt_cv32_firmware_test_c \
 		+firmware=$(CUSTOM_DIR)/$(CUSTOM_PROG).hex
 
+
+################################################################################
+# Explicit target tests
 hello-world: comp $(CUSTOM)/hello_world.hex
 	$(XRUN) -l xrun-hello-world.log $(XRUN_RUN_FLAGS) \
 		+elf_file=$(CUSTOM)/hello_world.elf \
@@ -112,6 +118,13 @@ dhrystone: comp $(CUSTOM)/dhrystone.hex
 		+nm_file=$(CUSTOM)/dhrystone.nm \
 		+UVM_TESTNAME=uvmt_cv32_firmware_test_c \
 		+firmware=$(CUSTOM)/dhrystone.hex
+
+riscv_ebreak_test_0: comp $(CUSTOM)/riscv_ebreak_test_0.hex
+	$(XRUN) -l xrun-riscv_ebreak_test_0.log $(XRUN_RUN_FLAGS) \
+                +elf_file=$(CUSTOM)/riscv_ebreak_test_0.elf \
+                +nm_file=$(CUSTOM)/riscv_ebreak_test_0.nm \
+                +UVM_TESTNAME=uvmt_cv32_firmware_test_c \
+                +firmware=$(CUSTOM)/riscv_ebreak_test_0.hex
 
 # Runs tests in cv32_riscv_tests/ only
 cv32-riscv-tests: comp $(CV32_RISCV_TESTS_FIRMWARE)/cv32_riscv_tests_firmware.hex

@@ -16,7 +16,7 @@ If you want to run a simulation there are two options:
 
 ## Directory Structure of this Repo
 ### ci
-Explainer for the CI flow used by CORE-V-VERIF.
+Scriptware for user regression tests and an explainer for the Metrics continuous integration flow used by CORE-V-VERIF.
 
 ### core-v-cores
 Empty sub-directory into which the RTL from one or more of the [CORE-V-CORES](https://github.com/openhwgroup/core-v-cores) repositories is cloned.
@@ -28,7 +28,7 @@ Verification Environments, testbenches, testcases and simulation Makefiles for t
 Verification Environments, testbenches, testcases and simulation Makefiles for the CV64A cores.
 
 ### doc
-Mostly empty.  Contains a pointer to the [CORE-V-DOCS](https://github.com/openhwgroup/core-v-docs) repository.
+Contains a pointer to the [CORE-V-DOCS](https://github.com/openhwgroup/core-v-docs) repository.
 
 ### lib
 Common components for the CV32 and CV64 verification environments.

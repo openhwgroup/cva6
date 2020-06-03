@@ -1,130 +1,223 @@
-/*
-* Copyright 2019 Clifford Wolf
-* Copyright 2019 Robert Balas
-*
-* Permission to use, copy, modify, and/or distribute this software for any
-* purpose with or without fee is hereby granted, provided that the above
-* copyright notice and this permission notice appear in all copies.
-*
-* THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES WITH
-* REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF MERCHANTABILITY
-* AND FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR ANY SPECIAL, DIRECT,
-* INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES WHATSOEVER RESULTING FROM
-* LOSS OF USE, DATA OR PROFITS, WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE OR
-* OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
-* PERFORMANCE OF THIS SOFTWARE.
-*/
-
-/* from the picorv32 project */
-/* Default linker script, for normal executables */
-/* Copyright (C) 2014-2017 Free Software Foundation, Inc.
+/* Script for -z combreloc: combine and sort reloc sections */
+/* Copyright (C) 2014-2018 Free Software Foundation, Inc.
+   Copyright (C) 2019 ETH Zürich and University of Bologna
    Copying and distribution of this script, with or without modification,
    are permitted in any medium without royalty provided the copyright
    notice and this notice are preserved.  */
+
+/* This linker script is derived from the default linker script of the RISC-V
+   gcc compiler. We have made a few changes to make it suitable for linking bare
+   metal programs. These are mostly removing dynamic linking related sections and
+   putting sections into our memory regions. */
+
 OUTPUT_FORMAT("elf32-littleriscv", "elf32-littleriscv",
 	      "elf32-littleriscv")
 OUTPUT_ARCH(riscv)
 ENTRY(_start)
+
+MEMORY
+{
+	/* Our testbench is a bit weird in that we initialize the RAM (thus
+	   allowing initialized sections to be placed there). Infact we dump all
+	   sections to ram. */
+
+	ram (rwxai) : ORIGIN = 0x00000000, LENGTH = 0x400000
+}
+
 SECTIONS
 {
-  . = 0x00000000;
-  .boot_spike :
+  /* we want a fixed entry point */
+  PROVIDE(__boot_address = 0x80);
+
+  /* stack and heap related settings */
+  __stack_size = DEFINED(__stack_size) ? __stack_size : 0x400;
+  PROVIDE(__stack_size = __stack_size);
+  __heap_size = DEFINED(__heap_size) ? __heap_size : 0x400;
+
+
+  /* Read-only sections, merged into text segment: */
+  PROVIDE (__executable_start = SEGMENT_START("text-segment", 0x10000)); . = SEGMENT_START("text-segment", 0x10000) + SIZEOF_HEADERS;
+
+
+  /* We don't do any dynamic linking so we remove everything related to it */
+/*
+  .interp         : { *(.interp) }
+  .note.gnu.build-id : { *(.note.gnu.build-id) }
+  .hash           : { *(.hash) }
+  .gnu.hash       : { *(.gnu.hash) }
+  .dynsym         : { *(.dynsym) }
+  .dynstr         : { *(.dynstr) }
+  .gnu.version    : { *(.gnu.version) }
+  .gnu.version_d  : { *(.gnu.version_d) }
+  .gnu.version_r  : { *(.gnu.version_r) }
+  .rela.dyn       :
+    {
+      *(.rela.init)
+      *(.rela.text .rela.text.* .rela.gnu.linkonce.t.*)
+      *(.rela.fini)
+      *(.rela.rodata .rela.rodata.* .rela.gnu.linkonce.r.*)
+      *(.rela.data .rela.data.* .rela.gnu.linkonce.d.*)
+      *(.rela.tdata .rela.tdata.* .rela.gnu.linkonce.td.*)
+      *(.rela.tbss .rela.tbss.* .rela.gnu.linkonce.tb.*)
+      *(.rela.ctors)
+      *(.rela.dtors)
+      *(.rela.got)
+      *(.rela.sdata .rela.sdata.* .rela.gnu.linkonce.s.*)
+      *(.rela.sbss .rela.sbss.* .rela.gnu.linkonce.sb.*)
+      *(.rela.sdata2 .rela.sdata2.* .rela.gnu.linkonce.s2.*)
+      *(.rela.sbss2 .rela.sbss2.* .rela.gnu.linkonce.sb2.*)
+      *(.rela.bss .rela.bss.* .rela.gnu.linkonce.b.*)
+      PROVIDE_HIDDEN (__rela_iplt_start = .);
+      *(.rela.iplt)
+      PROVIDE_HIDDEN (__rela_iplt_end = .);
+    }
+  .rela.plt       :
+    {
+      *(.rela.plt)
+    }
+*/
+
+  /* interrupt vectors */
+  .vectors (ORIGIN(ram)):
   {
-    *(.boot_spike)
-  }
-  . = 0x00000080;
-  .boot_riscy :
+    PROVIDE(__vector_start = .);
+    KEEP(*(.vectors));
+  } >ram
+
+  /* crt0 init code */
+  .init (__boot_address):
   {
-    *(.boot_riscy)
-  }
-  . = 0x00000100;
-  .vectors :
-  {
-    *(.vectors)
-  }
-  . = 0x000000200;
-  .start :
-  {
-    *(.text.start)
-  }
-  /* temporary hack to redirect control flow when PULP_SECURE=0 */
-  . = 0x8000;
-  .legacy_irq :
-  {
-    KEEP(*(.legacy_irq));
-  }
-  application_entry_point = 0x00010000;
-  . = 0x00010000;
+    KEEP (*(SORT_NONE(.init)))
+    KEEP (*(.text.start))
+  } >ram
+
+
+  /* More dynamic linking sections */
+/*
+  .plt            : { *(.plt) }
+  .iplt           : { *(.iplt) }
+*/
+
+
+  /* the bulk of the program: main, libc, functions etc. */
   .text           :
   {
-    *(.text)
     *(.text.unlikely .text.*_unlikely .text.unlikely.*)
     *(.text.exit .text.exit.*)
     *(.text.startup .text.startup.*)
     *(.text.hot .text.hot.*)
-    *(.stub .text.* .gnu.linkonce.t.*)
+    *(.text .stub .text.* .gnu.linkonce.t.*)
     /* .gnu.warning sections are handled specially by elf32.em.  */
     *(.gnu.warning)
-  }
-  .init           :
-  {
-    KEEP (*(SORT_NONE(.init)))
-  }
-  .plt            : { *(.plt) }
-  .iplt           : { *(.iplt) }
+  } >ram
+
+
+  /* not used by RISC-V*/
   .fini           :
   {
     KEEP (*(SORT_NONE(.fini)))
-  }
+  } >ram
+
   PROVIDE (__etext = .);
   PROVIDE (_etext = .);
   PROVIDE (etext = .);
-  .rodata         : { *(.rodata .rodata.* .gnu.linkonce.r.*) }
-  .rodata1        : { *(.rodata1) }
-  .sdata2         :
+
+
+  /* read-only sections */
+  .rodata         :
   {
-    *(.sdata2 .sdata2.* .gnu.linkonce.s2.*)
-  }
-  .sbss2          : { *(.sbss2 .sbss2.* .gnu.linkonce.sb2.*) }
-  .eh_frame_hdr : { *(.eh_frame_hdr) *(.eh_frame_entry .eh_frame_entry.*) }
-  .eh_frame       : ONLY_IF_RO { KEEP (*(.eh_frame)) *(.eh_frame.*) }
-  .gcc_except_table   : ONLY_IF_RO { *(.gcc_except_table
-  .gcc_except_table.*) }
-  .gnu_extab   : ONLY_IF_RO { *(.gnu_extab*) }
+    *(.rodata .rodata.* .gnu.linkonce.r.*)
+  } >ram
+  .rodata1        :
+  {
+    *(.rodata1)
+  } >ram
+
+
+  /* second level sbss and sdata, I don't think we need this */
+  /* .sdata2         : {*(.sdata2 .sdata2.* .gnu.linkonce.s2.*)} */
+  /* .sbss2          : { *(.sbss2 .sbss2.* .gnu.linkonce.sb2.*) } */
+
+
+  /* gcc language agnostic exception related sections (try-catch-finally) */
+  .eh_frame_hdr :
+  {
+    *(.eh_frame_hdr) *(.eh_frame_entry .eh_frame_entry.*)
+  } >ram
+  .eh_frame       : ONLY_IF_RO
+  {
+    KEEP (*(.eh_frame)) *(.eh_frame.*)
+  } >ram
+  .gcc_except_table   : ONLY_IF_RO
+  {
+    *(.gcc_except_table .gcc_except_table.*)
+  } >ram
+  .gnu_extab   : ONLY_IF_RO
+  {
+    *(.gnu_extab*)
+  } >ram
   /* These sections are generated by the Sun/Oracle C++ compiler.  */
+  /*
   .exception_ranges   : ONLY_IF_RO { *(.exception_ranges
   .exception_ranges*) }
+  */
   /* Adjust the address for the data segment.  We want to adjust up to
      the same address within the page on the next page up.  */
   . = DATA_SEGMENT_ALIGN (CONSTANT (MAXPAGESIZE), CONSTANT (COMMONPAGESIZE));
+
+
   /* Exception handling  */
-  .eh_frame       : ONLY_IF_RW { KEEP (*(.eh_frame)) *(.eh_frame.*) }
-  .gnu_extab      : ONLY_IF_RW { *(.gnu_extab) }
-  .gcc_except_table   : ONLY_IF_RW { *(.gcc_except_table .gcc_except_table.*) }
-  .exception_ranges   : ONLY_IF_RW { *(.exception_ranges .exception_ranges*) }
+  .eh_frame       : ONLY_IF_RW
+  {
+    KEEP (*(.eh_frame)) *(.eh_frame.*)
+  } >ram
+  .gnu_extab      : ONLY_IF_RW
+  {
+    *(.gnu_extab)
+  } >ram
+  .gcc_except_table   : ONLY_IF_RW
+  {
+    *(.gcc_except_table .gcc_except_table.*)
+  } >ram
+  .exception_ranges   : ONLY_IF_RW
+  {
+    *(.exception_ranges .exception_ranges*)
+  } >ram
+
+
   /* Thread Local Storage sections  */
-  .tdata	  : { *(.tdata .tdata.* .gnu.linkonce.td.*) }
-  .tbss		  : { *(.tbss .tbss.* .gnu.linkonce.tb.*) *(.tcommon) }
+  .tdata	  :
+  {
+    PROVIDE_HIDDEN (__tdata_start = .);
+    *(.tdata .tdata.* .gnu.linkonce.td.*)
+  } >ram
+  .tbss		  :
+  {
+    *(.tbss .tbss.* .gnu.linkonce.tb.*) *(.tcommon)
+  } >ram
+
+
+  /* initialization and termination routines */
   .preinit_array     :
   {
     PROVIDE_HIDDEN (__preinit_array_start = .);
     KEEP (*(.preinit_array))
     PROVIDE_HIDDEN (__preinit_array_end = .);
-  }
+  } >ram
   .init_array     :
   {
     PROVIDE_HIDDEN (__init_array_start = .);
     KEEP (*(SORT_BY_INIT_PRIORITY(.init_array.*) SORT_BY_INIT_PRIORITY(.ctors.*)))
     KEEP (*(.init_array EXCLUDE_FILE (*crtbegin.o *crtbegin?.o *crtend.o *crtend?.o ) .ctors))
     PROVIDE_HIDDEN (__init_array_end = .);
-  }
+  } >ram
   .fini_array     :
   {
     PROVIDE_HIDDEN (__fini_array_start = .);
     KEEP (*(SORT_BY_INIT_PRIORITY(.fini_array.*) SORT_BY_INIT_PRIORITY(.dtors.*)))
     KEEP (*(.fini_array EXCLUDE_FILE (*crtbegin.o *crtbegin?.o *crtend.o *crtend?.o ) .dtors))
     PROVIDE_HIDDEN (__fini_array_end = .);
-  }
+  } >ram
   .ctors          :
   {
     /* gcc uses crtbegin.o to find the start of
@@ -145,7 +238,7 @@ SECTIONS
     KEEP (*(EXCLUDE_FILE (*crtend.o *crtend?.o ) .ctors))
     KEEP (*(SORT(.ctors.*)))
     KEEP (*(.ctors))
-  }
+  } >ram
   .dtors          :
   {
     KEEP (*crtbegin.o(.dtors))
@@ -153,36 +246,50 @@ SECTIONS
     KEEP (*(EXCLUDE_FILE (*crtend.o *crtend?.o ) .dtors))
     KEEP (*(SORT(.dtors.*)))
     KEEP (*(.dtors))
-  }
-  .jcr            : { KEEP (*(.jcr)) }
-  .data.rel.ro : { *(.data.rel.ro.local* .gnu.linkonce.d.rel.ro.local.*) *(.data.rel.ro .data.rel.ro.* .gnu.linkonce.d.rel.ro.*) }
-  .dynamic        : { *(.dynamic) }
+  } >ram
+
+  /* .jcr            : { KEEP (*(.jcr)) } */
+  /* .data.rel.ro : { *(.data.rel.ro.local* .gnu.linkonce.d.rel.ro.local.*) *(.data.rel.ro .data.rel.ro.* .gnu.linkonce.d.rel.ro.*) } */
+  /* .dynamic        : { *(.dynamic) } */
   . = DATA_SEGMENT_RELRO_END (0, .);
+
+
+  /* data sections for initalized data */
   .data           :
   {
+    __DATA_BEGIN__ = .;
     *(.data .data.* .gnu.linkonce.d.*)
     SORT(CONSTRUCTORS)
-  }
-  .data1          : { *(.data1) }
-  .got            : { *(.got.plt) *(.igot.plt) *(.got) *(.igot) }
+  } >ram
+  .data1          :
+  {
+    *(.data1)
+  } > ram
+
+  /* no dynamic linking, no object tables required */
+  /* .got            : { *(.got.plt) *(.igot.plt) *(.got) *(.igot) } */
+
   /* We want the small data sections together, so single-instruction offsets
      can access them all, and initialized data all before uninitialized, so
      we can shorten the on-disk segment size.  */
   .sdata          :
   {
-    __global_pointer$ = . + 0x800;
+    __SDATA_BEGIN__ = .;
     *(.srodata.cst16) *(.srodata.cst8) *(.srodata.cst4) *(.srodata.cst2) *(.srodata .srodata.*)
     *(.sdata .sdata.* .gnu.linkonce.s.*)
-  }
+  } >ram
   _edata = .; PROVIDE (edata = .);
   . = .;
+
+
+  /* zero initialized sections */
   __bss_start = .;
   .sbss           :
   {
     *(.dynsbss)
     *(.sbss .sbss.* .gnu.linkonce.sb.*)
     *(.scommon)
-  }
+  } >ram
   .bss            :
   {
    *(.dynbss)
@@ -194,12 +301,41 @@ SECTIONS
       FIXME: Why do we need it? When there is no .bss section, we don't
       pad the .data section.  */
    . = ALIGN(. != 0 ? 32 / 8 : 1);
-  }
+  } >ram
   . = ALIGN(32 / 8);
   . = SEGMENT_START("ldata-segment", .);
   . = ALIGN(32 / 8);
+  __BSS_END__ = .;
+  __bss_end = .;
+
+  /* The compiler uses this to access data in the .sdata, .data, .sbss and .bss
+     sections with fewer instructions (relaxation). This reduces code size. */
+    __global_pointer$ = MIN(__SDATA_BEGIN__ + 0x800,
+			    MAX(__DATA_BEGIN__ + 0x800, __BSS_END__ - 0x800));
   _end = .; PROVIDE (end = .);
   . = DATA_SEGMENT_END (.);
+
+
+  /* heap: we should consider putting this to the bottom of the address space */
+  .heap          :
+  {
+   PROVIDE(__heap_start = .);
+   . = __heap_size;
+   PROVIDE(__heap_end = .);
+  } >ram
+
+
+  /* stack: we should consider putting this further to the top of the address
+    space */
+  .stack         : ALIGN(16) /* this is a requirement of the ABI(?) */
+  {
+   PROVIDE(__stack_start = .);
+   . = __stack_size;
+   PROVIDE(_sp = .);
+   PROVIDE(__stack_end = .);
+  } >ram
+
+
   /* Stabs debugging sections.  */
   .stab          0 : { *(.stab) }
   .stabstr       0 : { *(.stabstr) }
