@@ -1,13 +1,25 @@
 Simulation Directory for CV32E UVM Verification Environment
 ==================================
 This is the directory in which you should run all tests of the UVM environment.
-The testcases are at `../../tests/uvmt_cv32` (note that some of these testcases
-use test programs found in `cv32/tests/core`).  See the README in those
-directories for more information.
+The UVM testcases are at `../../tests/uvmt_cv32`, and the test-programs can be
+found in `cv32/tests/core`.  See the README in those directories for more information.
 <br><br>
-To run the testcases you will need a SystemVerilog simulator, the UVM-1.2
-library, the RISC-V GCC compiler and at least some familiarity with
-[Make](https://www.gnu.org/software/make/manual/) and Makefiles.
+Please refer to the [Verification Strategy](https://core-v-docs-verif-strat.readthedocs.io/en/latest/sim_tests.html#simulation-tests-in-the-uvm-environments)
+for a discussion on the distinction between a _testcase_ and a _test-program_ in this environment.
+<br><br>
+To run the UVM environment you will need:
+- a run-time license for the Imperas OVPsim Instruction Set Simulator
+(free to OpenHW Group members),
+- a SystemVerilog simulator,
+- the UVM-1.2 library,
+- the RISC-V GCC compiler, and
+- at least some familiarity with [Make](https://www.gnu.org/software/make/manual/) and Makefiles.
+
+Imperas OVPsim Instruction Set Simulator
+----------------------------------------
+This UVM verification environment uses the Imperas OVPsim Instruction Set Simulator
+(ISS) as a reference model.   The run-time license for this ISS is free to OpenHW
+Group members.  Go to the [Imperas website](http://www.imperas.com/) for installation instructions.
 
 SystemVerilog Simulators
 ----------------------------------
@@ -140,7 +152,7 @@ Custom Test Programs
 --------------------
 The `uvmt_cv32` environment supports the ability to run any arbitrary test program that can run on the cv32e40p core, as long as it has
 been pre-compiled into a hex-file.  These are called `Type 1` tests in the
-[Verification Strategy](https://github.com/openhwgroup/core-v-docs/blob/master/verif/Common/OpenHWGroup_CORE-V_Verif_Strategy.pdf).
+[Verification Strategy](https://core-v-docs-verif-strat.readthedocs.io/en/latest/sim_tests.html#test-program).
 <br><br>
 The Makefile implements a rule called `custom` that will compile a test-program and pass it to the SystemVerilog simulation.  The user
 must specify `CUSTOM_DIR`, the _absolute_ path to the compiled program, and `CUSTOM_PROG`, the filename of the test program (no extension).

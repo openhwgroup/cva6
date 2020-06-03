@@ -44,6 +44,7 @@ class uvmt_cv32_base_test_c extends uvm_test;
    // Handles testbench interfaces
    virtual uvmt_cv32_vp_status_if  vp_status_vif;  // virtual peripheral status
    virtual uvmt_cv32_core_cntrl_if core_cntrl_vif; // control inputs to the core
+   virtual uvmt_cv32_step_compare_if step_compare_vif;
    
    // Default sequences
    rand uvme_cv32_reset_vseq_c  reset_vseq;
@@ -192,6 +193,7 @@ function uvmt_cv32_base_test_c::new(string name="uvmt_cv32_base_test", uvm_compo
    // Gives you short-and-sweet looger messages like this:
    //        UVM_INFO @ 9.750 ns : uvmt_cv32_dut_wrap.sv(79) reporter [DUT_WRAP] load_instr_mem asserted!
    rs = new("rs");
+   rs.set_max_quit_count(.count(10), .overridable(0));
    uvm_report_server::set_server(rs);
    reset_vseq = uvme_cv32_reset_vseq_c::type_id::create("reset_vseq");
    
@@ -323,6 +325,9 @@ function void uvmt_cv32_base_test_c::phase_ended(uvm_phase phase);
      end
      //
 
+      // Report on number of ISS step and compare checks if the ISS is used
+      `ifdef ISS step_compare_vif.report_step_compare(); `endif
+
      /* This does not work because the vp_status signals are all pulses.
      * TODO: add logic to latch pulses and used the latched values here.
      // Use the DUT Wrapper Virtual Peripheral's status outputs to update report server status.
@@ -358,6 +363,13 @@ function void uvmt_cv32_base_test_c::retrieve_vifs();
    else begin
       `uvm_info("VIF", $sformatf("Found core_cntrl_vif handle of type %s in uvm_config_db", $typename(core_cntrl_vif)), UVM_DEBUG)
    end
+
+   if (!uvm_config_db#(virtual uvmt_cv32_step_compare_if)::get(this, "", "step_compare_vif", step_compare_vif)) begin
+      `uvm_fatal("VIF", $sformatf("Could not find step_compare_vif handle of type %s in uvm_config_db", $typename(step_compare_vif)))
+   end
+   else begin
+      `uvm_info("VIF", $sformatf("Found step_compare_vif handle of type %s in uvm_config_db", $typename(step_compare_vif)), UVM_DEBUG)
+   end   
    
 endfunction : retrieve_vifs
 

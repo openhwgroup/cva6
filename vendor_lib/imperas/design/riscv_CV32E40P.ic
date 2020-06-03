@@ -1,0 +1,18 @@
+# Control file for RI5CY configuration
+--output simulate.log
+# --showoverrides
+
+#
+# taken from riscv_cs_registers.sv MISA_VALUE
+#
+#--override root/cpu0/variant=RVB32I
+#--override root/cpu0/add_Extensions="CMUX"
+#--override root/cpu0/misa_Extensions_mask=0
+
+# MTVEC Behavior
+#--override root/cpu0/mtvec=0x1
+#--override root/cpu0/mtvec_mask=0xFFFFFF00
+
+# TIME undefined
+#--override root/cpu0/time_undefined=T
+# --override root/cpu0/CLICLEVELS=2

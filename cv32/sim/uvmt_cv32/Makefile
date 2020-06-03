@@ -55,8 +55,11 @@ SV_CMP_FLAGS ?=
 TIMESCALE    ?= -timescale 1ns/1ps
 UVM_PLUSARGS ?=
 
-# User selectable simulator targets/rules
-SIMULATOR    ?= unsim 
+# User selectable SystemVerilog simulator targets/rules
+SIMULATOR    ?= unsim
+
+# Optionally exclude the OVPsim (not recommended)
+USE_ISS      ?= YES
 
 # UVM Environment
 export DV_UVMT_CV32_PATH    = $(PROJ_ROOT_DIR)/$(COREV_PROJ)/tb/uvmt_cv32
@@ -66,6 +69,11 @@ export DV_UVMA_CLKNRST_PATH = $(PROJ_ROOT_DIR)/lib/uvm_agents/uvma_clknrst
 export DV_UVML_TRN_PATH     = $(PROJ_ROOT_DIR)/lib/uvm_libs/uvml_trn
 export DV_UVML_LOGS_PATH    = $(PROJ_ROOT_DIR)/lib/uvm_libs/uvml_logs
 export DV_UVML_SB_PATH      = $(PROJ_ROOT_DIR)/lib/uvm_libs/uvml_sb
+
+export DV_OVPM_HOME         = $(PROJ_ROOT_DIR)/vendor_lib/imperas
+export DV_OVPM_MODEL        = $(DV_OVPM_HOME)/riscv_CV32E40P_OVPsim
+export DV_OVPM_DESIGN       = $(DV_OVPM_HOME)/verilog/design
+
 DV_UVMT_CV32_SRCS  = $(wildcard $(DV_UVMT_CV32_PATH)/*.sv))
 
 # Testcase name: must be the CLASS name of the testcase (not the filename).
@@ -76,18 +84,19 @@ UVM_TESTNAME ?= uvmt_cv32_firmware_test_c
 RISCVDV_PKG  := $(PROJ_ROOT_DIR)/cv32/env/uvme_cv32/riscv-dv
 
 # TB source files for the CV32E core
+TBSRC_TOP   := $(TBSRC_HOME)/uvmt_cv32/uvmt_cv32_tb.sv
 TBSRC_HOME  := $(PROJ_ROOT_DIR)/$(COREV_PROJ)/tb
 export TBSRC_HOME  = $(PROJ_ROOT_DIR)/$(COREV_PROJ)/tb
-TBSRC_PKG   := $(TBSRC_HOME)/tb_riscv/include/perturbation_defines.sv
-TBSRC_TOP   := $(TBSRC_HOME)/uvmt_cv32/uvmt_cv32_tb.sv
-TBSRC       := $(TBSRC_HOME)/uvmt_cv32/uvmt_cv32_tb.sv \
-               $(TBSRC_HOME)/uvmt_cv32/uvmt_cv32_dut_wrap.sv \
-               $(TBSRC_HOME)/core/tb_top.sv \
-               $(TBSRC_HOME)/core/riscv_wrapper.sv \
-               $(TBSRC_HOME)/core/mm_ram.sv \
-               $(TBSRC_HOME)/core/dp_ram.sv \
-               $(TBSRC_HOME)/tb_riscv/riscv_random_stall.sv \
-               $(TBSRC_HOME)/tb_riscv/riscv_random_interrupt_generator.sv
+# Looks like these are redundant redundant
+#TBSRC_PKG   := $(TBSRC_HOME)/core/tb_riscv/include/perturbation_defines.sv
+#TBSRC       := $(TBSRC_HOME)/uvmt_cv32/uvmt_cv32_tb.sv \
+#               $(TBSRC_HOME)/uvmt_cv32/uvmt_cv32_dut_wrap.sv \
+#               $(TBSRC_HOME)/core/tb_top.sv \
+#               $(TBSRC_HOME)/core/riscv_wrapper.sv \
+#               $(TBSRC_HOME)/core/mm_ram.sv \
+#               $(TBSRC_HOME)/core/dp_ram.sv \
+#               $(TBSRC_HOME)/core/tb_riscv/riscv_random_stall.sv \
+#               $(TBSRC_HOME)/core/tb_riscv/riscv_random_interrupt_generator.sv
 
 SIM_LIBS    := $(PROJ_ROOT_DIR)/lib/sim_libs
 
@@ -162,10 +171,12 @@ clean_core_tests:
 	find $(CORE_TEST_DIR) -name *.map -exec rm {} \;
 
 clean_test_programs:
-	find ../../tests/uvmt_cv32/test-programs -name *.o   -exec rm {} \;
-	find ../../tests/uvmt_cv32/test-programs -name *.hex -exec rm {} \;
-	find ../../tests/uvmt_cv32/test-programs -name *.elf -exec rm {} \;
-	find ../../tests/uvmt_cv32/test-programs -name *.map -exec rm {} \;
+	find ../../tests/uvmt_cv32/test-programs -name *.o       -exec rm {} \;
+	find ../../tests/uvmt_cv32/test-programs -name *.hex     -exec rm {} \;
+	find ../../tests/uvmt_cv32/test-programs -name *.elf     -exec rm {} \;
+	find ../../tests/uvmt_cv32/test-programs -name *.map     -exec rm {} \;
+	find ../../tests/uvmt_cv32/test-programs -name *.readelf -exec rm {} \;
+	find ../../tests/uvmt_cv32/test-programs -name *.objdump -exec rm {} \;
 
 clean_riscvdv:
 	rm -rf $(RISCVDV_PKG)

@@ -1,7 +1,16 @@
 *~
+*.nm
 *.elf
 *.hex
 *.map
 *.o
+*.objdump
+*.readelf
+*.gtkw
+*.vcd
 dsim.env
+dsim.log
+dsim_results
 *.swp
+/.cproject
+/.project
