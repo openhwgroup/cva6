@@ -121,6 +121,10 @@ TBSRC       := $(TBSRC_CORE)/tb_top.sv \
                $(TBSRC_CORE)/dp_ram.sv \
                $(TBSRC_CORE)/tb_riscv/riscv_random_stall.sv \
                $(TBSRC_CORE)/tb_riscv/riscv_random_interrupt_generator.sv
+
+RTLSRC_VLOG_TB_TOP	:= $(basename $(notdir $(TBSRC_TOP)))
+RTLSRC_VOPT_TB_TOP	:= $(addsuffix _vopt, $(RTLSRC_VLOG_TB_TOP))
+
 #OVPMSRC     := $(DV_OVPM_DESIGN)/typedefs.sv \
 #               $(DV_OVPM_DESIGN)/interface.sv \
 #               $(DV_OVPM_DESIGN)/ram.sv \
@@ -160,36 +164,6 @@ include $(PROJ_ROOT_DIR)/cv32/sim/Common.mk
 
 all: clean_all sanity-veri-run dsim-sanity
 
-###############################################################################
-# VSIM
-#
-# TODO: clean this up
-RTLSRC_VLOG_TB_TOP	:= $(basename $(notdir $(TBSRC_TOP)))
-RTLSRC_VOPT_TB_TOP	:= $(addsuffix _vopt, $(RTLSRC_VLOG_TB_TOP))
-
-# vsim testbench compilation and optimization
-vlib: .lib-rtl
-
-.lib-rtl:
-	$(VLIB) $(VWORK)
-	touch .lib-rtl
-
-# rebuild if we change some sourcefile
-.build-rtl: .lib-rtl $(RTLSRC_PKG) $(RTLSRC) $(TBSRC_PKG) $(TBSRC)
-	$(VLOG) -work $(VWORK) +incdir+$(RTLSRC_INCDIR) $(VLOG_FLAGS) \
-	$(RTLSRC_PKG) $(RTLSRC) $(TBSRC_PKG) $(TBSRC)
-	touch .build-rtl
-
-vsim-all: $(CV32E40P_PKG) .opt-rtl
-
-.opt-rtl: .build-rtl
-	$(VOPT) -work $(VWORK) $(VOPT_FLAGS) $(RTLSRC_VLOG_TB_TOP) -o \
-	$(RTLSRC_VOPT_TB_TOP)
-	touch .opt-rtl
-
-.PHONY: dpiheader
-dpiheader: .build-tb
-	$(VLOG) -work $(VWORK) -l $(VLOG_LOG) -dpiheader $(DPINAME) $(DPISRC)
 
 ###############################################################################
 # VCS testbench compilation
@@ -320,25 +294,25 @@ dsim-clean: tc-clean
 # Mentor Questasim
 
 
-#.lib-rtl:
-#	$(VLIB) $(VWORK)
-#	touch .lib-rtl
+.lib-rtl:
+	$(VLIB) $(VWORK)
+	touch .lib-rtl
 
 
-#.build-rtl: .lib-rtl $(CV32E40P_PKG) $(TBSRC_PKG) $(TBSRC)
-#	$(VLOG) \
-#		-work $(VWORK) \
-#		$(VLOG_FLAGS) \
-#		-f $(CV32E40P_MANIFEST) \
-#		$(TBSRC_PKG) $(TBSRC) 
+.build-rtl: .lib-rtl $(CV32E40P_PKG) $(TBSRC_PKG) $(TBSRC)
+	$(VLOG) \
+		-work $(VWORK) \
+		$(VLOG_FLAGS) \
+		-f $(CV32E40P_MANIFEST) \
+		$(TBSRC_PKG) $(TBSRC) 
 		
 
-#vsim-all:  .opt-rtl
+vsim-all:  .opt-rtl
 	
 
-#.opt-rtl: .build-rtl
-#	$(VOPT) -work $(VWORK) $(VOPT_FLAGS) $(RTLSRC_VLOG_TB_TOP) -o $(RTLSRC_VOPT_TB_TOP)
-#	touch .opt-rtl
+.opt-rtl: .build-rtl
+	$(VOPT) -work $(VWORK) $(VOPT_FLAGS) $(RTLSRC_VLOG_TB_TOP) -o $(RTLSRC_VOPT_TB_TOP)
+	touch .opt-rtl
 
 # run tb and exit
 .PHONY: vsim-run
