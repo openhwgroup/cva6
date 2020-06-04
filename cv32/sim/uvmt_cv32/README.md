@@ -56,7 +56,7 @@ variable `RISCV` to the path of your RISC-V toolchain (e.g. `export RISCV=/opt/r
 Makefiles
 -----------
 `Make` is used to generate the command-lines that compile and run simulations.
-Your cwd is `cv32/sim/uvmt_cv32` and the **Makefile** at this location is the
+The cwd of this README is `cv32/sim/uvmt_cv32` and the **Makefile** at this location is the
 'root' Makefile.  `../Common.mk` supports all common variables, rules
 and targets, including specific targets to clone the RTL from
 [cv32e40p](https://github.com/openhwgroup/cv32e40p) and
@@ -75,11 +75,16 @@ cv32/sim/
 ```
 The goal of this structure is to minimize the amount of redundant code in the
 Makefiles and ease the maintance of a given simulator's specific variables,
-rules and targets.<br><br>
+rules and targets.
+<br><br>
 The basic usage is: `make SIMULATOR=<sim> <target>` where `sim` is vsim, dsim
-or xrun and `target` selects a specific testcase or other rule (e.g. "clean").<br><br>
+or xrun and `target` selects a specific testcase or other rule (e.g. "clean").
+<br><br>
 **Hint**: define shell ENV variable "SIMULATOR" to match one of the supported
 simulator-specific Makefiles (e.g. vsim) to save yourself a lot of typing.
+<br><br>
+To run your own test-program use the `custom` target.  For example `make custom CUSTOM_PROG=illegal`
+will run illegal.c from the cv32/tests/core/custom directory.
 
 Running the envrionment with Metrics [dsim](https://metrics.ca)
 ----------------------
@@ -113,13 +118,9 @@ Running the environment with Mentor Graphics [Questa](https://www.mentor.com/pro
 ----------------------
 The command **make SIMULATOR=vsim sanity** will run the sanity testcase using _vsim_.
 Set the shell variable SIMULATOR to `vsim` to simply that to **make <target>**.
-<br><br>
-**Note for Mentor Graphics users:** This testbench has not been compiled/run
-with _vsim_ in several weeks.  If you need to update the Makefiles, please do
-so and issue a Pull Request.
 
-Available Tests
----------------
+SANITY
+-------
 The `make` commands here assume you have set your shell SIMULATION
 environment variable to your specific simulator (see above).
 <br><br>
@@ -134,14 +135,17 @@ stress the RTL improves.  Running sanity is trivial:
 <br><br>
 Before issuing a pull-request for either the RTL or verification code, please
 re-run the sanity test.   Your pull-request will be rejected if sanity does not
-compile and run successfully.
-<br><br>
-Below is an _almost_ complete list of available tests (which assumes the shell environment variable SIMULATOR is set properly):
+compile and run successfully.   For extra points, go to the `ci` directory at the
+top of this repository and run `ci_check`.
+
+Available Test Programs
+-----------------------
+The `make` commands here assume you have set your shell SIMULATION
+There are three targets that can run a specific test-program by name:
 * **make hello-world**:<br>run the hello_world program found at `../../tests/core/custom`.
 * **make cv32-riscv-tests**:<br>run the CV32-specific RISC-V tests found at `../../tests/core/cv32_riscv_tests_firmware`
 * **make cv32-riscv-compilance-tests**:<br>run the CV32-specific RISC-V tests found at `../../tests/core/cv32_riscv_compliance_tests_firmware`
-* **make cv32-firmware**:<br>run all the programs found at `../../tests/core/firmware`.
-Some tests are simulator specific:
+Some targets are simulator specific:
 * **make make dsim-unit-test <prog>**:<br>run one <prog> from the firmware suite
 of tests.  For example: `make SIMULATOR=dsim dsim-unit-test addi`.
 <br><br>
