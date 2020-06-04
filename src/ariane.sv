@@ -12,6 +12,16 @@
 // Date: 19.03.2017
 // Description: Ariane Top-level module
 
+`ifdef DROMAJO
+import "DPI-C" function void dromajo_trap(int     hart_id,
+                                          longint cause);
+import "DPI-C" function void dromajo_step(int     hart_id,
+                                          longint pc,
+                                          int     insn,
+                                          longint wdata, longint cycle);
+import "DPI-C" function void init_dromajo(string cfg_f_name);
+`endif
+
 import ariane_pkg::*;
 
 module ariane #(

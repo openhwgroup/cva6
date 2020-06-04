@@ -53,8 +53,7 @@ extern "C" void dromajo_step(int      hart_id,
                              uint32_t insn,
                              uint64_t wdata,
                              uint64_t cycle) {
-  bool check = true;
-  exit_code = dromajo_cosim_step(dromajo_pointer, hart_id, pc, insn, wdata, 0, check);
+  int exit_code = dromajo_cosim_step(dromajo_pointer, hart_id, pc, insn, wdata, 0, true);
 
   if (exit_code != 0) {
     kill_soon = true;
@@ -65,7 +64,7 @@ extern "C" void dromajo_step(int      hart_id,
       std::cout << "Cosim failed!" << std::endl;
       abort();
     } else {
-      std::cout << "Let's let it run for a couple of instructions"
+      std::cout << "Let's let it run for a couple of instructions" << std::endl;
     }
     counter--;
   }
