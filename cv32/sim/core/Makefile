@@ -469,6 +469,13 @@ hello-world-veri-run: verilate $(CUSTOM)/hello_world.hex
 		"+firmware=$(VERI_CUSTOM)/hello_world.hex" \
 		| tee $(VERI_LOG_DIR)/hello-world-veri-run.log
 
+.PHONY: bsp-example-veri-run
+bsp-example-veri-run: verilate $(CUSTOM)/bsp_example.hex
+	mkdir -p $(VERI_LOG_DIR)
+	./testbench_verilator $(VERI_FLAGS) \
+		"+firmware=$(VERI_CUSTOM)/bsp_example.hex" \
+		| tee $(VERI_LOG_DIR)/bsp-example-veri-run.log
+
 
 # verilator specific cleanup
 veri-clean: verilate-clean
