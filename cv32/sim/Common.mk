@@ -131,6 +131,7 @@ RISCV_EXE_PREFIX ?= $(RISCV)/bin/riscv32-unknown-elf-
 # locations, so all of these paths are absolute, except those used by Verilator.
 # TODO: clean this mess up!
 CORE_TEST_DIR                        = $(PROJ_ROOT_DIR)/cv32/tests/core
+BSP                                  = $(PROJ_ROOT_DIR)/cv32/bsp
 FIRMWARE                             = $(CORE_TEST_DIR)/firmware
 VERI_FIRMWARE                        = ../../tests/core/firmware
 CUSTOM                               = $(CORE_TEST_DIR)/custom
@@ -200,6 +201,12 @@ sanity: hello-world
 	$(RISCV_EXE_PREFIX)objcopy -O verilog $< $@
 	$(RISCV_EXE_PREFIX)readelf -a $< > $*.readelf
 	$(RISCV_EXE_PREFIX)objdump -D $*.elf > $*.objdump
+
+bsp:
+	make -C $(BSP)
+
+clean-bsp:
+	make clean -C $(BSP)
 
 # Running custom programs:
 # We link with our custom crt0.s and syscalls.c against newlib so that we can
@@ -287,6 +294,12 @@ $(CUSTOM)/riscv_ebreak_test_0.elf: $(CUSTOM)/riscv_ebreak_test_0.S
 		-o $(CUSTOM)/riscv_ebreak_test_0.elf \
 		$(CUSTOM)/riscv_ebreak_test_0.o -nostdlib -nostartfiles \
 		-T $(CUSTOM)/link.ld
+
+$(CUSTOM)/bsp_example.elf: $(CUSTOM)/bsp_example.c
+	make bsp
+	$(RISCV_EXE_PREFIX)gcc -mabi=ilp32 -march=rv32imc -o $@ \
+		-Wall -pedantic -Os -g -nostartfiles -static \
+		$^ -T $(BSP)/link.ld -L $(BSP) -lcv-verif
 
 custom-clean:
 	rm -rf $(CUSTOM)/hello_world.elf $(CUSTOM)/hello_world.hex
