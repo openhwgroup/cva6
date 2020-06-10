@@ -526,6 +526,9 @@ module ariane_testharness #(
 
   sram #(
     .DATA_WIDTH ( AXI_DATA_WIDTH ),
+`ifdef DROMAJO
+    .DROMAJO_RAM (1),
+`endif
     .NUM_WORDS  ( NUM_WORDS      )
   ) i_sram (
     .clk_i      ( clk_i                                                                       ),

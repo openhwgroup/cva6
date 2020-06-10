@@ -21,7 +21,8 @@
 module sram #(
     parameter DATA_WIDTH = 64,
     parameter NUM_WORDS  = 1024,
-    parameter OUT_REGS   = 0    // enables output registers in FPGA macro (read lat = 2)
+    parameter OUT_REGS   = 0,    // enables output registers in FPGA macro (read lat = 2)
+    parameter DROMAJO_RAM  = 0
 )(
    input  logic                          clk_i,
    input  logic                          rst_ni,
@@ -53,6 +54,22 @@ end
 genvar k;
 generate
     for (k = 0; k<(DATA_WIDTH+63)/64; k++) begin
+      if (DROMAJO_RAM) begin
+        dromajo_ram #(
+          .ADDR_WIDTH($clog2(NUM_WORDS)),
+          .DATA_DEPTH(NUM_WORDS),
+          .OUT_REGS (0)
+        ) i_ram (
+           .Clk_CI    ( clk_i                     ),
+           .Rst_RBI   ( rst_ni                    ),
+           .CSel_SI   ( req_i                     ),
+           .WrEn_SI   ( we_i                      ),
+           .BEn_SI    ( be_aligned[k*8 +: 8]      ),
+           .WrData_DI ( wdata_aligned[k*64 +: 64] ),
+           .Addr_DI   ( addr_i                    ),
+           .RdData_DO ( rdata_aligned[k*64 +: 64] )
+        );
+      end else begin
         // unused byte-enable segments (8bits) are culled by the tool
         SyncSpRamBeNx64 #(
           .ADDR_WIDTH($clog2(NUM_WORDS)),
@@ -71,7 +88,7 @@ generate
            .Addr_DI   ( addr_i                    ),
            .RdData_DO ( rdata_aligned[k*64 +: 64] )
         );
+      end
     end
 endgenerate
-
 endmodule : sram
