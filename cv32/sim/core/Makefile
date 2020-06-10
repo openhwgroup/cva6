@@ -476,6 +476,12 @@ bsp-example-veri-run: verilate $(CUSTOM)/bsp_example.hex
 		"+firmware=$(VERI_CUSTOM)/bsp_example.hex" \
 		| tee $(VERI_LOG_DIR)/bsp-example-veri-run.log
 
+custom: verilate $(VERI_CUSTOM)/$(CUSTOM_PROG).hex
+	mkdir -p $(VERI_LOG_DIR)
+	./testbench_verilator $(VERI_FLAGS) \
+		"+firmware=$(VERI_CUSTOM)/$(CUSTOM_PROG).hex" \
+		| tee $(VERI_LOG_DIR)/$(CUSTOM_PROG).log
+
 
 # verilator specific cleanup
 veri-clean: verilate-clean
@@ -507,10 +513,12 @@ $(CV32E40P_PKG):
 	
 # clean up toolchain generated files (CORE_TEST_DIR defined in ../Common.mk)
 tc-clean:
-	find $(CORE_TEST_DIR) -name *.o   -exec rm {} \;
-	find $(CORE_TEST_DIR) -name *.hex -exec rm {} \;
-	find $(CORE_TEST_DIR) -name *.elf -exec rm {} \;
-	find $(CORE_TEST_DIR) -name *.map -exec rm {} \;
+	find $(CORE_TEST_DIR) -name *.o       -exec rm {} \;
+	find $(CORE_TEST_DIR) -name *.hex     -exec rm {} \;
+	find $(CORE_TEST_DIR) -name *.elf     -exec rm {} \;
+	find $(CORE_TEST_DIR) -name *.readelf -exec rm {} \;
+	find $(CORE_TEST_DIR) -name *.objdump -exec rm {} \;
+	find $(CORE_TEST_DIR) -name *.map     -exec rm {} \;
 
 .PHONY: clean clean_all distclean
 clean: clean_questa tc-clean verilate-clean vcs-clean firmware-clean custom-clean dsim-clean xrun-clean
