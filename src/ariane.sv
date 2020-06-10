@@ -791,9 +791,50 @@ module ariane #(
   int f;
   logic [63:0] cycles;
 
+`ifdef DROMAJO
+  initial begin
+    string f_name;
+    if ($value$plusargs("checkpoint=%s", f_name)) begin
+      init_dromajo({f_name, ".cfg"});
+      $display("Done initing dromajo...");
+    end else begin
+      $display("Failed initing dromajo. Provide checkpoint name.");
+    end
+  end
+`endif
+
   initial begin
     f = $fopen("trace_hart_00.dasm", "w");
   end
+
+`ifdef DROMAJO
+  always_ff @(posedge clk_i) begin
+      for (int i = 0; i < NR_COMMIT_PORTS; i++) begin
+        if (commit_instr_id_commit[i].ex.valid) begin
+          dromajo_trap(hart_id_i,
+                       commit_instr_id_commit[i].ex.cause);
+        end
+      end
+  end
+
+  always_ff @(posedge clk_i) begin
+    for (int i = 0; i < NR_COMMIT_PORTS; i++) begin
+      if (commit_ack[i] && !commit_instr_id_commit[i].ex.valid) begin
+        if (csr_op_commit_csr == 0) begin
+          dromajo_step(hart_id_i,
+                       commit_instr_id_commit[i].pc,
+                       commit_instr_id_commit[i].ex.tval[31:0],
+                       commit_instr_id_commit[i].result, cycles);
+        end else begin
+          dromajo_step(hart_id_i,
+                       commit_instr_id_commit[i].pc,
+                       commit_instr_id_commit[i].ex.tval[31:0],
+                       csr_rdata_csr_commit, cycles);
+        end
+      end
+    end
+  end
+`endif
 
   always_ff @(posedge clk_i or negedge rst_ni) begin
     if (~rst_ni) begin
