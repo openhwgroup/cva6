@@ -989,7 +989,11 @@ module csr_regfile #(
             // floating-point registers
             fcsr_q                 <= 64'b0;
             // debug signals
+`ifdef DROMAJO
+            debug_mode_q           <= 1'b1;
+`else
             debug_mode_q           <= 1'b0;
+`endif
             dcsr_q                 <= '0;
             dcsr_q.prv             <= riscv::PRIV_LVL_M;
             dpc_q                  <= 64'b0;

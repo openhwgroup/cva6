@@ -152,6 +152,9 @@ int main(int argc, char **argv) {
       case 'r': rbb_port = atoi(optarg);    break;
       case 'V': verbose = true;             break;
       case 'p': perf = true;                break;
+#ifdef DROMAJO
+			case 'D': break;
+#endif
 #if VM_TRACE
       case 'v': {
         vcdfile = strcmp(optarg, "-") == 0 ? stdout : fopen(optarg, "w");
@@ -177,6 +180,12 @@ int main(int argc, char **argv) {
           c = 'm';
           optarg = optarg+12;
         }
+#ifdef DROMAJO
+        else if (arg.substr(0, 12) == "+checkpoint=") {
+          c = 'D';
+          optarg = optarg+12;
+        }
+#endif
 #if VM_TRACE
         else if (arg.substr(0, 12) == "+dump-start=") {
           c = 'x';
@@ -235,11 +244,15 @@ int main(int argc, char **argv) {
   }
 
 done_processing:
+// allow proceeding without a binary if DROMAJO set,
+// binary will be loaded through checkpoint
+#ifndef DROMAJO
   if (optind == argc) {
     std::cerr << "No binary specified for emulator\n";
     usage(argv[0]);
     return 1;
   }
+#endif
   int htif_argc = 1 + argc - optind;
   htif_argv = (char **) malloc((htif_argc) * sizeof (char *));
   htif_argv[0] = argv[0];
