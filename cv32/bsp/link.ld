@@ -241,9 +241,9 @@ SECTIONS
   . = ALIGN(32 / 8);
   . = SEGMENT_START("ldata-segment", .);
   . = ALIGN(32 / 8);
-  __BSS_END__ = .;
+  __bss_end = .;
     __global_pointer$ = MIN(__SDATA_BEGIN__ + 0x800,
-		            MAX(__DATA_BEGIN__ + 0x800, __BSS_END__ - 0x800));
+		            MAX(__DATA_BEGIN__ + 0x800, __bss_end - 0x800));
   _end = .; PROVIDE (end = .);
   . = DATA_SEGMENT_END (.);
 

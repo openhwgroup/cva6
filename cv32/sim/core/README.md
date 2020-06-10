@@ -39,20 +39,22 @@ in the Makefile on how to compile and link this program can be found under `Runn
 custom programs`.  Make sure you have a working C compiler (see above) and keep in
 mind that you are running on a very basic machine.
 
-Running your own Assembler programs
----------------------
-Admittedly, this needs work.  Check out the Makefile for `+firmware=path_to_firmware`
-to load a specific firmware. It is a bit tricky to build and link your own program.
-Have a look at `picorv_firmware/start.S` and `picorv_firmware/link.ld` for more insight.
-This will be cleaned up in the future.
-
 Running the testbench with [verilator](https://www.veripool.org/wiki/verilator)
 ----------------------
-Point your environment variable `RISCV` to your RISC-V toolchain. Call `make
-firmware-veri-run` or just `make` to build the testbench and the firmware, and
-run it. Use `VERI_FLAGS` to configure verilator e.g. `make firmware-veri-run
-VERI_FLAGS="+firmware=path_to_firmware"`.  You can clean up the mess you made
-with `make veri-clean` (yes, it is amusing to say that).
+Point your environment variable `RISCV` to your RISC-V toolchain. Call `make`
+to run the default test (hello_world).
+
+Running your own Assembler programs
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Admittedly, this needs work. If you have a C or assembly program in `../../tests/core/custom`
+then the following will work with Verilator:<br>
+```
+make custom CUSTOM_PROG=dhrystone
+make custom CUSTOM_PROG=misalign
+make custom CUSTOM_PROG=fibonacci
+make custom CUSTOM_PROG=illegal
+make custom CUSTOM_PROG=riscv_ebreak_test_0
+```
 
 Running the testbench with Metrics [dsim](https://metrics.ca)
 ----------------------

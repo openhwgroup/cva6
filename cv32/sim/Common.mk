@@ -296,13 +296,19 @@ clean-bsp:
 #		$(CUSTOM)/riscv_ebreak_test_0.o -nostdlib -nostartfiles \
 #		-T $(CUSTOM)/link.ld
 
-#$(CUSTOM)/bsp_example.elf: $(CUSTOM)/bsp_example.c
+# Patterned targets to generate ELF.  Used only if explicit targets do not match.
+# $@ is the file being generated.
+# $< is first prerequiste.
+# $^ is all prerequistes.
+#
+# This target selected if both %.c and %.S exist
 %.elf: %.c
 	make bsp
 	$(RISCV_EXE_PREFIX)gcc -mabi=ilp32 -march=rv32imc -o $@ \
 		-Wall -pedantic -Os -g -nostartfiles -static \
 		$^ -T $(BSP)/link.ld -L $(BSP) -lcv-verif
 
+# This target selected if only %.S exists
 %.elf: %.S
 	make bsp
 	$(RISCV_EXE_PREFIX)gcc -mabi=ilp32 -march=rv32imc -o $@ \
@@ -310,14 +316,18 @@ clean-bsp:
 		-I $(ASM) \
 		$^ -T $(BSP)/link.ld -L $(BSP) -lcv-verif
 
-custom-clean:
-	rm -rf $(CUSTOM)/hello_world.elf $(CUSTOM)/hello_world.hex
-
-
 
 # compile and dump RISCV_TESTS only
-$(CV32_RISCV_TESTS_FIRMWARE)/cv32_riscv_tests_firmware.elf: $(CV32_RISCV_TESTS_FIRMWARE_OBJS) $(RISCV_TESTS_OBJS) \
-							$(CV32_RISCV_TESTS_FIRMWARE)/link.ld
+#$(CV32_RISCV_TESTS_FIRMWARE)/cv32_riscv_tests_firmware.elf: $(CV32_RISCV_TESTS_FIRMWARE_OBJS) $(RISCV_TESTS_OBJS) \
+#							$(CV32_RISCV_TESTS_FIRMWARE)/link.ld
+#	$(RISCV_EXE_PREFIX)gcc -g -Os -mabi=ilp32 -march=rv32imc -ffreestanding -nostdlib -o $@ \
+#		$(RISCV_TEST_INCLUDES) \
+#		-Wl,-Bstatic,-T,$(CV32_RISCV_TESTS_FIRMWARE)/link.ld,-Map,$(CV32_RISCV_TESTS_FIRMWARE)/cv32_riscv_tests_firmware.map,--strip-debug \
+#		$(CV32_RISCV_TESTS_FIRMWARE_OBJS) $(RISCV_TESTS_OBJS) -lgcc
+
+#$(CV32_RISCV_TESTS_FIRMWARE)/cv32_riscv_tests_firmware.elf: $(CV32_RISCV_TESTS_FIRMWARE_OBJS) $(RISCV_TESTS_OBJS) \
+#							$(CV32_RISCV_TESTS_FIRMWARE)/link.ld
+../../tests/core/cv32_riscv_tests_firmware/cv32_riscv_tests_firmware.elf: $(CV32_RISCV_TESTS_FIRMWARE_OBJS) $(RISCV_TESTS_OBJS)
 	$(RISCV_EXE_PREFIX)gcc -g -Os -mabi=ilp32 -march=rv32imc -ffreestanding -nostdlib -o $@ \
 		$(RISCV_TEST_INCLUDES) \
 		-Wl,-Bstatic,-T,$(CV32_RISCV_TESTS_FIRMWARE)/link.ld,-Map,$(CV32_RISCV_TESTS_FIRMWARE)/cv32_riscv_tests_firmware.map,--strip-debug \
@@ -441,6 +451,10 @@ firmware-vcs-run-gui: vcsify $(FIRMWARE)/firmware.hex
 
 ###############################################################################
 # house-cleaning for unit-testing
+custom-clean:
+	rm -rf $(CUSTOM)/hello_world.elf $(CUSTOM)/hello_world.hex
+
+
 .PHONY: firmware-clean
 firmware-clean:
 	rm -vrf $(addprefix $(FIRMWARE)/firmware., elf bin hex map) \
