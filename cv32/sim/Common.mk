@@ -234,6 +234,7 @@ clean-bsp:
 #		-T $(ASM)/link.ld
 
 # HELLO WORLD: custom/hello_world.elf: ../../tests/core/custom/hello_world.c
+
 #$(CUSTOM)/hello_world.elf: $(CUSTOM)/hello_world.c
 #	$(RISCV_EXE_PREFIX)gcc -mabi=ilp32 -march=rv32imc -o $@ -w -Os -g -nostdlib \
 #		-T $(CUSTOM)/link.ld  \
