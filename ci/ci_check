@@ -1,0 +1,226 @@
+#! /usr/bin/python3
+################################################################################
+#
+# Copyright 2020 OpenHW Group
+# 
+# Licensed under the Solderpad Hardware Licence, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+# 
+#     https://solderpad.org/licenses/
+# 
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#
+# SPDX-License-Identifier:Apache-2.0 WITH SHL-2.0
+# 
+################################################################################
+#
+# ci_check: python script to run a sanity regression.  Intended to be used
+#           to check updates prior to a pull-request. Uses the same
+#           .metrics.json control script as the Metrics CI tool-chain.
+#           Compiles and executes whatever is listed in the "regressions"
+#           list-of-dictionaries.
+#
+# Author: Mike Thompson
+#  email: mike@openhwgroup.org
+#
+# Written with Python 3.6.9 on Ubuntu 18.04.  Your python mileage may vary.
+#
+# Restriction:
+#     - Needs to be launched from the ci directory.
+#     - Blindly uses .metrics.json wih no ability for user over-ride.
+#
+# TODO:
+#      1. Check results using the "isPass" key.
+#      2. Create a "sanity-regression" in .metrics.json and use that here.
+#      3. Don't assume DSIM_WORK and DSIM_RESULTS are always at the end of the
+#         "cmd" key.
+#      4. Is it safe to assume p3 is located at /usr/bin/python3?
+################################################################################
+
+import json
+import sys
+import os
+import argparse
+import subprocess
+import re
+
+#print (sys.version_info)
+
+if (sys.version_info < (3,0,0)):
+    print ('Requires python 3')
+    exit(1)
+
+################################################################################
+# Methods....
+
+# Check results and print something useful
+# TODO: fix this! (its so ugly I'm embarassed to check it in)
+def check_results():
+    fail_count = 0;
+    expct_fail = 0;
+    pass_count = 0;
+
+    fails = subprocess.Popen('grep "SIMULATION FAILED" -R -I ../cv32/sim/uvmt_cv32',
+                              stdout=subprocess.PIPE,
+                              stderr=subprocess.STDOUT,
+                              shell="TRUE")
+    passes = subprocess.Popen('grep "SIMULATION PASSED" -R -I ../cv32/sim/uvmt_cv32',
+                              stdout=subprocess.PIPE,
+                              stderr=subprocess.STDOUT,
+                              shell="TRUE")
+
+    for line in fails.stdout.readlines():
+        failed = line.decode('utf-8').rstrip()
+        print (failed)
+        fail_count += 1
+        # TODO: make this a list of known failures (hopefully there won't be that many...)
+        if (
+            (re.search('riscv_compliance', failed)) or
+            (re.search('riscv_ebreak',     failed))
+           ):
+            expct_fail += 1
+
+    for line in passes.stdout.readlines():
+        print (line.decode('utf-8').rstrip())
+        pass_count += 1
+
+    if (pass_count == 0):
+        print ('\nNo logfiles found.\n')
+    elif ((fail_count == 0) and (pass_count >=3)):
+        print ('\nCI Check PASSED with no failures.')
+        print ('OK to issue a pull-request.\n')
+    elif (fail_count == 2 and expct_fail == 2):
+        print ('\nCI Check PASSED with known failure(s).')
+        print ('OK to issue a pull-request.\n')
+    else:
+        print ('\nCI Check FAILED with unknown failures.')
+        print ('Please fix before issuing a pull-request.\n')
+
+# This script may do some unexpected things, so give the user an escape hatch.
+def ask_user():
+    txt = input("Is this what you want [Y/N]? ")
+    if not ((txt == 'Y') or (txt == 'y')):
+        exit(1)
+
+################################################################################
+# Command-line arguments
+
+parser = argparse.ArgumentParser()
+parser.add_argument("-s", "--simulator",     help="SystemVerilog simulator",                   choices=['dsim', 'xrun', 'vsim', 'vcs'])
+parser.add_argument("-d", "--debug",         help="Display debug messages",                    action="store_true")
+parser.add_argument("-p", "--print_command", help="Print commands to stdout, do not run",      action="store_true")
+parser.add_argument("-c", "--check_only",    help="Check previosu results (do not run)",       action="store_true")
+parser.add_argument("-k", "--keep",          help="Keep previous cloned or generated files",   action="store_true")
+
+args   = parser.parse_args()
+debug  = 0       # warning, too much info!
+prcmd  = 0       # prints cmds to stdout
+if (args.debug):
+    debug = 1
+
+if (args.print_command):
+    prcmd = 1
+
+if (args.check_only):
+    check_results()
+    exit(0)
+
+# --print_command is set: do not actually _do_ anything
+if not (prcmd):
+    if (args.keep):
+        print ('Keeping previously cloned version of the RTL plus any previously generated files')
+        ask_user()
+    else:
+        print ('This will delete your previously cloned RTL repo plus all previously generated files')
+        ask_user()
+        os.chdir('../cv32/sim/uvmt_cv32')
+        os.system('make clean_all')
+        os.chdir('../../../ci')
+
+if (args.simulator == None):
+    print ('Must specify a simulator.  Type `ci_check -h` to see how')
+    exit(0)
+else:
+    svtool = args.simulator
+
+
+################################################################################
+# script starts here
+
+# This script is run from the "ci" directory, but the paths used by simulator
+# commands assume we are at the root of the repo.
+os.chdir('../')
+topdir = os.getcwd()
+
+# .metrics.json is the CI regression config used by Metrics Ci tools.
+with open('.metrics.json') as f:
+  metrics_dict = json.load(f)
+
+# Get the build command
+for key in metrics_dict:
+    if (key == 'builds'):
+        builds_dict = metrics_dict['builds']
+        if (debug):
+            print (json.dumps(builds_dict, indent=2, sort_keys=True))
+        for key in builds_dict:
+            if (key == 'list'):
+               list_dict = builds_dict['list']
+               if (debug):
+                   print (json.dumps(list_dict, indent=2, sort_keys=True))
+        for key in list_dict:
+            build_cmd_list = (key['cmd']).split()
+            build_cmd = ' '.join(build_cmd_list[0:-1]) # See TODO #3
+            if (build_cmd != ''):
+                build_cmd = build_cmd.replace('dsim', svtool)
+                if (prcmd or debug):
+                    print(build_cmd)
+                else:
+                    os.system(build_cmd)
+                    os.chdir(topdir)      # cmd in .metrics.json assumes all cmds start from here
+            else:
+                print ('ERROR: cannot find build command in .metrics.json')
+                exit(0)
+
+# Get the simulation command(s)
+for key in metrics_dict:
+    if (key == 'regressions'):
+        regressions_dict = metrics_dict['regressions']
+        if (debug):
+            print (json.dumps(regressions_dict, indent=2))
+        for item in regressions_dict:
+            if (debug):
+                print(item['tests'])
+            tests_dict = item['tests']
+            if (debug):
+               print (json.dumps(tests_dict, indent=2))
+            for key in tests_dict:
+                if (key == 'list'):
+                   lists_dict = tests_dict['list']
+                   if (debug):
+                       print (json.dumps(lists_dict, indent=2))
+            for key in lists_dict:
+                run_cmd_list = (key['cmd']).split()
+                run_cmd = ' '.join(run_cmd_list[0:-2]) # See TODO #3
+                if (run_cmd != ''):
+                    run_cmd = run_cmd.replace('dsim', svtool)
+                    if (prcmd or debug):
+                        print(run_cmd)
+                    else:
+                        os.system(run_cmd)
+                        os.chdir(topdir)      # cmd in .metrics.json assumes all cmds start from here
+                else:
+                    print ('ERROR: cannot find run command in .metrics.json')
+                    exit(0)
+
+# Unless this is just a run to dump simulation commands (--print_commands),
+# grep results out of the logfiles and print to stdout
+os.chdir('ci')
+if not (prcmd):
+    check_results()
+
+## end ##

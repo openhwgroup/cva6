@@ -165,10 +165,11 @@ module uvmt_cv32_step_compare
                                     $root.uvmt_cv32_tb.dut_wrap.riscv_core_i.cs_registers_i.mip.irq_software,
                                     3'b0}; // [2:0] not defined
              "mipx"    : csr_val = $root.uvmt_cv32_tb.dut_wrap.riscv_core_i.cs_registers_i.mipx;
-             "mhartid" : csr_val = {21'b0, 
-                                    $root.uvmt_cv32_tb.dut_wrap.riscv_core_i.cs_registers_i.cluster_id_i[5:0], 
-                                    1'b0, 
-                                    $root.uvmt_cv32_tb.dut_wrap.riscv_core_i.cs_registers_i.core_id_i[3:0]};
+             "mhartid" : csr_val = $root.uvmt_cv32_tb.dut_wrap.riscv_core_i.cs_registers_i.hart_id_i; 
+             //"mhartid" : csr_val = {21'b0, 
+             //                       $root.uvmt_cv32_tb.dut_wrap.riscv_core_i.cs_registers_i.cluster_id_i[5:0], 
+             //                       1'b0, 
+             //                       $root.uvmt_cv32_tb.dut_wrap.riscv_core_i.cs_registers_i.core_id_i[3:0]};
              "dcsr"      : csr_val = $root.uvmt_cv32_tb.dut_wrap.riscv_core_i.cs_registers_i.dcsr_q;     
              "dpc"       : csr_val = $root.uvmt_cv32_tb.dut_wrap.riscv_core_i.cs_registers_i.depc_q;       
              "dscratch0" : csr_val = $root.uvmt_cv32_tb.dut_wrap.riscv_core_i.cs_registers_i.dscratch0_q;

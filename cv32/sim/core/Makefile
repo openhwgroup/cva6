@@ -121,6 +121,10 @@ TBSRC       := $(TBSRC_CORE)/tb_top.sv \
                $(TBSRC_CORE)/dp_ram.sv \
                $(TBSRC_CORE)/tb_riscv/riscv_random_stall.sv \
                $(TBSRC_CORE)/tb_riscv/riscv_random_interrupt_generator.sv
+
+RTLSRC_VLOG_TB_TOP	:= $(basename $(notdir $(TBSRC_TOP)))
+RTLSRC_VOPT_TB_TOP	:= $(addsuffix _vopt, $(RTLSRC_VLOG_TB_TOP))
+
 #OVPMSRC     := $(DV_OVPM_DESIGN)/typedefs.sv \
 #               $(DV_OVPM_DESIGN)/interface.sv \
 #               $(DV_OVPM_DESIGN)/ram.sv \
@@ -160,36 +164,6 @@ include $(PROJ_ROOT_DIR)/cv32/sim/Common.mk
 
 all: clean_all sanity-veri-run dsim-sanity
 
-###############################################################################
-# VSIM
-#
-# TODO: clean this up
-RTLSRC_VLOG_TB_TOP	:= $(basename $(notdir $(TBSRC_TOP)))
-RTLSRC_VOPT_TB_TOP	:= $(addsuffix _vopt, $(RTLSRC_VLOG_TB_TOP))
-
-# vsim testbench compilation and optimization
-vlib: .lib-rtl
-
-.lib-rtl:
-	$(VLIB) $(VWORK)
-	touch .lib-rtl
-
-# rebuild if we change some sourcefile
-.build-rtl: .lib-rtl $(RTLSRC_PKG) $(RTLSRC) $(TBSRC_PKG) $(TBSRC)
-	$(VLOG) -work $(VWORK) +incdir+$(RTLSRC_INCDIR) $(VLOG_FLAGS) \
-	$(RTLSRC_PKG) $(RTLSRC) $(TBSRC_PKG) $(TBSRC)
-	touch .build-rtl
-
-vsim-all: $(CV32E40P_PKG) .opt-rtl
-
-.opt-rtl: .build-rtl
-	$(VOPT) -work $(VWORK) $(VOPT_FLAGS) $(RTLSRC_VLOG_TB_TOP) -o \
-	$(RTLSRC_VOPT_TB_TOP)
-	touch .opt-rtl
-
-.PHONY: dpiheader
-dpiheader: .build-tb
-	$(VLOG) -work $(VWORK) -l $(VLOG_LOG) -dpiheader $(DPINAME) $(DPISRC)
 
 ###############################################################################
 # VCS testbench compilation
@@ -320,25 +294,25 @@ dsim-clean: tc-clean
 # Mentor Questasim
 
 
-#.lib-rtl:
-#	$(VLIB) $(VWORK)
-#	touch .lib-rtl
+.lib-rtl:
+	$(VLIB) $(VWORK)
+	touch .lib-rtl
 
 
-#.build-rtl: .lib-rtl $(CV32E40P_PKG) $(TBSRC_PKG) $(TBSRC)
-#	$(VLOG) \
-#		-work $(VWORK) \
-#		$(VLOG_FLAGS) \
-#		-f $(CV32E40P_MANIFEST) \
-#		$(TBSRC_PKG) $(TBSRC) 
+.build-rtl: .lib-rtl $(CV32E40P_PKG) $(TBSRC_PKG) $(TBSRC)
+	$(VLOG) \
+		-work $(VWORK) \
+		$(VLOG_FLAGS) \
+		-f $(CV32E40P_MANIFEST) \
+		$(TBSRC_PKG) $(TBSRC) 
 		
 
-#vsim-all:  .opt-rtl
+vsim-all:  .opt-rtl
 	
 
-#.opt-rtl: .build-rtl
-#	$(VOPT) -work $(VWORK) $(VOPT_FLAGS) $(RTLSRC_VLOG_TB_TOP) -o $(RTLSRC_VOPT_TB_TOP)
-#	touch .opt-rtl
+.opt-rtl: .build-rtl
+	$(VOPT) -work $(VWORK) $(VOPT_FLAGS) $(RTLSRC_VLOG_TB_TOP) -o $(RTLSRC_VOPT_TB_TOP)
+	touch .opt-rtl
 
 # run tb and exit
 .PHONY: vsim-run
@@ -495,6 +469,19 @@ hello-world-veri-run: verilate $(CUSTOM)/hello_world.hex
 		"+firmware=$(VERI_CUSTOM)/hello_world.hex" \
 		| tee $(VERI_LOG_DIR)/hello-world-veri-run.log
 
+.PHONY: bsp-example-veri-run
+bsp-example-veri-run: verilate $(CUSTOM)/bsp_example.hex
+	mkdir -p $(VERI_LOG_DIR)
+	./testbench_verilator $(VERI_FLAGS) \
+		"+firmware=$(VERI_CUSTOM)/bsp_example.hex" \
+		| tee $(VERI_LOG_DIR)/bsp-example-veri-run.log
+
+custom: verilate $(VERI_CUSTOM)/$(CUSTOM_PROG).hex
+	mkdir -p $(VERI_LOG_DIR)
+	./testbench_verilator $(VERI_FLAGS) \
+		"+firmware=$(VERI_CUSTOM)/$(CUSTOM_PROG).hex" \
+		| tee $(VERI_LOG_DIR)/$(CUSTOM_PROG).log
+
 
 # verilator specific cleanup
 veri-clean: verilate-clean
@@ -526,10 +513,12 @@ $(CV32E40P_PKG):
 	
 # clean up toolchain generated files (CORE_TEST_DIR defined in ../Common.mk)
 tc-clean:
-	find $(CORE_TEST_DIR) -name *.o   -exec rm {} \;
-	find $(CORE_TEST_DIR) -name *.hex -exec rm {} \;
-	find $(CORE_TEST_DIR) -name *.elf -exec rm {} \;
-	find $(CORE_TEST_DIR) -name *.map -exec rm {} \;
+	find $(CORE_TEST_DIR) -name *.o       -exec rm {} \;
+	find $(CORE_TEST_DIR) -name *.hex     -exec rm {} \;
+	find $(CORE_TEST_DIR) -name *.elf     -exec rm {} \;
+	find $(CORE_TEST_DIR) -name *.readelf -exec rm {} \;
+	find $(CORE_TEST_DIR) -name *.objdump -exec rm {} \;
+	find $(CORE_TEST_DIR) -name *.map     -exec rm {} \;
 
 .PHONY: clean clean_all distclean
 clean: clean_questa tc-clean verilate-clean vcs-clean firmware-clean custom-clean dsim-clean xrun-clean

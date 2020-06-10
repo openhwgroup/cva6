@@ -99,14 +99,13 @@ endinterface : uvmt_cv32_vp_status_if
  */
 interface uvmt_cv32_core_cntrl_if (
                                     output logic        fetch_en,
-                                    output logic        fregfile_disable,
                                     output logic        ext_perf_counters,
                                     // quasi static values
                                     output logic        clock_en,
-                                    output logic        test_en,
+                                    output logic        scan_cg_en,
                                     output logic [31:0] boot_addr,
-                                    output logic [ 3:0] core_id,
-                                    output logic [ 5:0] cluster_id,
+                                    output logic [31:0] dm_halt_addr,
+                                    output logic [31:0] hart_id,
                                     // To be driven by future debug module (DM)
                                     output logic        debug_req,
                                     // Testcase asserts this to load memory (not really a core control signal)
@@ -115,21 +114,48 @@ interface uvmt_cv32_core_cntrl_if (
 
   import uvm_pkg::*;
 
+  covergroup core_cntrl_cg;
+    clock_enable: coverpoint clock_en {
+      bins enabled  = {1'b1};
+      bins disabled = {1'b0};
+    }
+    scan_enable: coverpoint scan_cg_en {
+      bins enabled  = {1'b1};
+      bins disabled = {1'b0};
+    }
+    boot_address: coverpoint boot_addr {
+      bins low  = {[32'h0000_0000 : 32'h0000_FFFF]};
+      bins med  = {[32'h0001_0000 : 32'hEFFF_FFFF]};
+      bins high = {[32'hF000_0000 : 32'hFFFF_FFFF]};
+    }
+    debug_module_halt_address: coverpoint dm_halt_addr {
+      bins low  = {[32'h0000_0000 : 32'h0000_FFFF]};
+      bins med  = {[32'h0001_0000 : 32'hEFFF_FFFF]};
+      bins high = {[32'hF000_0000 : 32'hFFFF_FFFF]};
+    }
+    hart_id: coverpoint hart_id {
+      bins low  = {[32'h0000_0000 : 32'h0000_FFFF]};
+      bins med  = {[32'h0001_0000 : 32'hEFFF_FFFF]};
+      bins high = {[32'hF000_0000 : 32'hFFFF_FFFF]};
+    }
+  endgroup: core_cntrl_cg
+
+  core_cntrl_cg core_cntrl_cg_inst;
+
   initial begin: static_controls
     fetch_en          = 1'b0; // Enabled by go_fetch(), below
-    fregfile_disable  = 1'b0;
     ext_perf_counters = 1'b0; // TODO: set proper width (currently 0 in the RTL)
   end
 
-  // TODO: randomize core_id and cluster_id (should have no affect?).
+  // TODO: randomize hart_id (should have no affect?).
   //       randomize boot_addr (need to sync with the start address of the test program.
   //       figure out what to do with test_en.
   initial begin: quasi_static_controls
-    clock_en   = 1'b1;
-    test_en    = 1'b0;
-    boot_addr  = 32'h80;
-    core_id    = 4'h0;
-    cluster_id = 6'b00_0000;
+    clock_en      = 1'b1;
+    scan_cg_en    = 1'b0;
+    boot_addr     = 32'h0000_0080;
+    dm_halt_addr  = 32'h1A11_0800;
+    hart_id       = 32'h0000_0000;
   end
 
   // TODO: waiting for the User Manual to provide some guidance here...
@@ -141,6 +167,8 @@ interface uvmt_cv32_core_cntrl_if (
   function void go_fetch();
     fetch_en = 1'b1;
     `uvm_info("CORE_CNTRL_IF", "uvmt_cv32_core_cntrl_if.go_fetch() called", UVM_DEBUG)
+    core_cntrl_cg_inst = new();
+    core_cntrl_cg_inst.sample();
   endfunction : go_fetch
 
 endinterface : uvmt_cv32_core_cntrl_if
