@@ -62,7 +62,7 @@ module dromajo_ram
       hex_file = $fopen({f_name,".mainram.hex"}, "r");
       while (!$feof(hex_file)) begin
         num_bytes = $fscanf(hex_file, "%d %h\n", address, value);
-        $display("%d %h", address, value);
+        //$display("%d %h", address, value);
         Mem_DP[address] = value;
       end
       $display("Done syncing RAM with dromajo...\n");

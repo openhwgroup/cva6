@@ -29,7 +29,7 @@ module dromajo_bootrom (
         hex_file = $fopen({f_name,".bootram.hex"}, "r");
         while (!$feof(hex_file)) begin
           num_bytes = $fscanf(hex_file, "%d %h\n", address, value);
-          $display("%d %h", address, value);
+          //$display("%d %h", address, value);
           mem[address] = value;
         end
         $display("Done syncing boot ROM with dromajo...\n");
