@@ -213,7 +213,7 @@ endinterface : uvmt_cv32_core_interrupts_if
  * Core status signals.
  */
 interface uvmt_cv32_core_status_if (
-                                    input  logic       core_busy,
+                                    input  wire        core_busy,
                                     input  logic       sec_lvl
                                    );
 
