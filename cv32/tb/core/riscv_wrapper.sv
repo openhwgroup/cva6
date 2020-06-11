@@ -17,7 +17,7 @@ module riscv_wrapper
                 RAM_ADDR_WIDTH    = 20,
                 BOOT_ADDR         = 'h80,
                 DM_HALTADDRESS    = 32'h1A11_0800,
-                HARD_ID           = 32'h0000_0000,
+                HART_ID           = 32'h0000_0000,
                 // Parameters used by DUT
                 PULP_HWLP         = 0,
                 PULP_CLUSTER      = 0,

@@ -398,25 +398,6 @@ $(RISCV_COMPLIANCE_TESTS)/%.o: $(RISCV_COMPLIANCE_TESTS)/%.S $(RISCV_COMPLIANCE_
 		-DTEST_FUNC_TXT='"$(notdir $(subst -,_,$(basename $<)))"' \
 		-DTEST_FUNC_RET=$(notdir $(subst -,_,$(basename $<)))_ret $<
 
-# in vsim
-.PHONY: firmware-vsim-run
-firmware-vsim-run: vsim-all $(FIRMWARE)/firmware.hex
-firmware-vsim-run: ALL_VSIM_FLAGS += "+firmware=$(FIRMWARE)/firmware.hex"
-firmware-vsim-run: vsim-run
-
-.PHONY: vsim-firmware-unit-test 
-vsim-firmware-unit-test:  firmware-unit-test-clean 
-vsim-firmware-unit-test:  $(FIRMWARE)/firmware_unit_test.hex 
-vsim-firmware-unit-test: ALL_VSIM_FLAGS += "+firmware=$(FIRMWARE)/firmware_unit_test.hex"
-vsim-firmware-unit-test: vsim-run
-
-.PHONY: firmware-vsim-run-gui
-firmware-vsim-run-gui: vsim-all $(FIRMWARE)/firmware.hex
-firmware-vsim-run-gui: ALL_VSIM_FLAGS += "+firmware=$(FIRMWARE)/firmware.hex"
-firmware-vsim-run-gui: vsim-run-gui
-
-# in questa
-
 
 
 # in dsim
