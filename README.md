@@ -44,6 +44,7 @@ Table of Contents
       * [Going Beyond](#going-beyond)
          * [CI Testsuites and Randomized Constrained Testing with Torture](#ci-testsuites-and-randomized-constrained-testing-with-torture)
          * [Re-generating the Bootcode (ZSBL)](#re-generating-the-bootcode-zsbl)
+         * [Co-simulation with Dromajo](#co-simulation-with-dromajo)
    * [Contributing](#contributing)
    * [Acknowledgements](#acknowledgements)
 
@@ -336,6 +337,14 @@ There are a couple of caveats:
 The zero stage bootloader (ZSBL) for RTL simulation lives in `bootrom/` while the bootcode for the FPGA is in `fpga/src/bootrom`. The RTL bootcode simply jumps to the base of the DRAM where the FSBL takes over. For the FPGA the ZSBL performs additional housekeeping. Both bootloader pass the hartid as well as address to the device tree in argumen register `a0` and `a1` respectively.
 
 To re-generate the bootcode you can use the existing makefile within those directories. To generate the SystemVerilog files you will need the `bitstring` python package installed on your system.
+
+### Co-simulation with Dromajo
+Ariane can be co-simulated with [Dromajo](https://github.com/chipsalliance/dromajo) (currently in the verilator model). 
+
+```
+make verilate DROMAJO=1
+make run-dromajo-verilator BIN=/path/to/elf
+```
 
 # Contributing
 
