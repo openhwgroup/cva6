@@ -141,18 +141,18 @@ module uvmt_cv32_dut_wrap #(// DUT (riscv_core) parameters.
         $fclose(dbg_fd);
         // Now load it...
         `uvm_info("DUT_WRAP", $sformatf("loading debugger %0s", debugger_code), UVM_NONE)
-        $readmemh(debugger_code, uvmt_cv32_tb.dut_wrap.ram_i.dbg_dp_ram_i.mem);
+        //$readmemh(debugger_code, uvmt_cv32_tb.dut_wrap.ram_i.dbg_dp_ram_i.mem);
       end
       else begin
         `uvm_info("DUT_WRAP", "No debugger code specified. Populate debugger ram with 'dret' instruction", UVM_NONE)
         // debugger return instruction (dret) =  0x7b200073
-        uvmt_cv32_tb.dut_wrap.ram_i.dbg_dp_ram_i.mem[0] = 8'h73;
-        uvmt_cv32_tb.dut_wrap.ram_i.dbg_dp_ram_i.mem[1] = 8'h00;
-        uvmt_cv32_tb.dut_wrap.ram_i.dbg_dp_ram_i.mem[2] = 8'h20;
-        uvmt_cv32_tb.dut_wrap.ram_i.dbg_dp_ram_i.mem[3] = 8'h7b;
+        //uvmt_cv32_tb.dut_wrap.ram_i.dbg_dp_ram_i.mem[0] = 8'h73;
+        //uvmt_cv32_tb.dut_wrap.ram_i.dbg_dp_ram_i.mem[1] = 8'h00;
+        //uvmt_cv32_tb.dut_wrap.ram_i.dbg_dp_ram_i.mem[2] = 8'h20;
+        //uvmt_cv32_tb.dut_wrap.ram_i.dbg_dp_ram_i.mem[3] = 8'h7b;
         // pad with something to prevent X's being read during prefetch
-        for(int i=4; i<32; i++)
-          uvmt_cv32_tb.dut_wrap.ram_i.dbg_dp_ram_i.mem[i] = 8'h00;
+        //for(int i=4; i<32; i++)
+        //  uvmt_cv32_tb.dut_wrap.ram_i.dbg_dp_ram_i.mem[i] = 8'h00;
       end
     end // block: load_debugger_code
 

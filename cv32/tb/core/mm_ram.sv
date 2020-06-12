@@ -519,7 +519,7 @@ module mm_ram
 
     // -------------------------------------------------------------
     // instantiate the debbuger ram
-
+`ifdef DEBUGGER_SUPPORT
     dp_ram
         #(.ADDR_WIDTH (DBG_ADDR_WIDTH),
           .INSTR_RDATA_WIDTH(INSTR_RDATA_WIDTH))
@@ -540,7 +540,7 @@ module mm_ram
          .rdata_b_o ( dbg_data_rdata                       ),
          .we_b_i    ( ram_data_we                          ),
          .be_b_i    ( ram_data_be                          ));
-
+`endif // DEBUGGER_SUPPORT
     // adjust debugger access address to beginning of dbg_dp_ram
     assign dbg_instr_addr = ram_instr_addr - DBG_START_ADDR;
     assign dbg_data_addr  = ram_data_addr  - DBG_START_ADDR;
