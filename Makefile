@@ -400,7 +400,7 @@ verilate_command := $(verilator)                                                
 dromajo:
 	cd ./tb/dromajo/src && make
 
-run_dromajo:
+run-dromajo-verilator:
 	$(if $(BIN), $(MAKE) checkpoint_dromajo, $(error "Please provide absolute path to the binary. Usage: make run_dromajo BIN=/absolute/path/to/binary"))
 
 checkpoint_dromajo:
