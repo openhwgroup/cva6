@@ -147,7 +147,8 @@ module uvmt_cv32_step_compare
                                     3'b0,
                                     $root.uvmt_cv32_tb.dut_wrap.riscv_core_i.cs_registers_i.mie_q.irq_software,
                                     3'b0};
-             "miex"    : csr_val = $root.uvmt_cv32_tb.dut_wrap.riscv_core_i.cs_registers_i.miex_q;
+             // MT: 2020-06-11
+             //"miex"    : csr_val = $root.uvmt_cv32_tb.dut_wrap.riscv_core_i.cs_registers_i.miex_q;
              "mtvec"   : csr_val = {$root.uvmt_cv32_tb.dut_wrap.riscv_core_i.cs_registers_i.mtvec_q, 6'h0, 2'b01};
              "mtvecx"  : csr_val = {$root.uvmt_cv32_tb.dut_wrap.riscv_core_i.cs_registers_i.mtvec_q, 6'h0, 2'b01};
              "mscratch": csr_val = $root.uvmt_cv32_tb.dut_wrap.riscv_core_i.cs_registers_i.mscratch_q;
@@ -155,16 +156,17 @@ module uvmt_cv32_step_compare
              "mcause"  : csr_val = {$root.uvmt_cv32_tb.dut_wrap.riscv_core_i.cs_registers_i.mcause_q[6], 
                                     25'b0, 
                                     $root.uvmt_cv32_tb.dut_wrap.riscv_core_i.cs_registers_i.mcause_q[5:0]};
-             "mip"     : csr_val = {$root.uvmt_cv32_tb.dut_wrap.riscv_core_i.cs_registers_i.mip.irq_nmi,  
-                                    $root.uvmt_cv32_tb.dut_wrap.riscv_core_i.cs_registers_i.mip.irq_fast,
-                                    4'b0, // [15:12] not defined
-                                    $root.uvmt_cv32_tb.dut_wrap.riscv_core_i.cs_registers_i.mip.irq_external,
-                                    3'b0, // [10:8] not defined
-                                    $root.uvmt_cv32_tb.dut_wrap.riscv_core_i.cs_registers_i.mip.irq_timer,
-                                    3'b0, // [6:4] not defined
-                                    $root.uvmt_cv32_tb.dut_wrap.riscv_core_i.cs_registers_i.mip.irq_software,
-                                    3'b0}; // [2:0] not defined
-             "mipx"    : csr_val = $root.uvmt_cv32_tb.dut_wrap.riscv_core_i.cs_registers_i.mipx;
+             // MT: 2020-06-11
+             //"mip"     : csr_val = {$root.uvmt_cv32_tb.dut_wrap.riscv_core_i.cs_registers_i.mip.irq_nmi,  
+             //                       $root.uvmt_cv32_tb.dut_wrap.riscv_core_i.cs_registers_i.mip.irq_fast,
+             //                       4'b0, // [15:12] not defined
+             //                       $root.uvmt_cv32_tb.dut_wrap.riscv_core_i.cs_registers_i.mip.irq_external,
+             //                       3'b0, // [10:8] not defined
+             //                       $root.uvmt_cv32_tb.dut_wrap.riscv_core_i.cs_registers_i.mip.irq_timer,
+             //                       3'b0, // [6:4] not defined
+             //                       $root.uvmt_cv32_tb.dut_wrap.riscv_core_i.cs_registers_i.mip.irq_software,
+             //                       3'b0}; // [2:0] not defined
+             //"mipx"    : csr_val = $root.uvmt_cv32_tb.dut_wrap.riscv_core_i.cs_registers_i.mipx;
              "mhartid" : csr_val = $root.uvmt_cv32_tb.dut_wrap.riscv_core_i.cs_registers_i.hart_id_i; 
              //"mhartid" : csr_val = {21'b0, 
              //                       $root.uvmt_cv32_tb.dut_wrap.riscv_core_i.cs_registers_i.cluster_id_i[5:0], 
@@ -180,7 +182,7 @@ module uvmt_cv32_step_compare
              "pmpcfg3"   : csr_val = $root.uvmt_cv32_tb.dut_wrap.riscv_core_i.cs_registers_i.pmp_reg_q.pmpcfg_packed[3];
              "time"   : ignore = 1;
              default: begin
-                $display("%0t: ERROR: index=%s does not match a CSR name", $time, index);
+                `uvm_error("STEP_COMPARE", $sformatf("index=%s does not match a CSR name", index))
                 ignore = 1;
              end
            endcase // case (index)

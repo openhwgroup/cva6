@@ -77,7 +77,7 @@ module uvmt_cv32_dut_wrap #(// DUT (riscv_core) parameters.
     logic [31:0]                  data_rdata;
     logic [31:0]                  data_wdata;
 
-    logic [ 4:0]                  irq_id_out;
+    logic [ 5:0]                  irq_id_out;
     logic [ 4:0]                  irq_id_in;
 
     // Load the Instruction Memory 
@@ -125,7 +125,7 @@ module uvmt_cv32_dut_wrap #(// DUT (riscv_core) parameters.
     end
 
     // instantiate the core
-    riscv_core #(
+    cv32e40p_core #(
                  .PULP_HWLP        (PULP_HWLP),
                  .PULP_CLUSTER     (PULP_CLUSTER),
                  .FPU              (FPU),
@@ -182,8 +182,8 @@ module uvmt_cv32_dut_wrap #(// DUT (riscv_core) parameters.
          .irq_timer_i            ( core_interrupts_if.irq_timer      ),
          .irq_external_i         ( core_interrupts_if.irq_external   ),
          .irq_fast_i             ( core_interrupts_if.irq_fast       ),
-         .irq_nmi_i              ( core_interrupts_if.irq_nmi        ),
-         .irq_fastx_i            ( core_interrupts_if.irq_fastx      ),
+         //.irq_nmi_i              ( core_interrupts_if.irq_nmi        ),
+         //.irq_fastx_i            ( core_interrupts_if.irq_fastx      ),
 
          .debug_req_i            ( core_cntrl_if.debug_req           ),
 
@@ -214,7 +214,7 @@ module uvmt_cv32_dut_wrap #(// DUT (riscv_core) parameters.
          .data_rvalid_o  ( data_rvalid                    ),
          .data_gnt_o     ( data_gnt                       ),
 
-         .irq_id_i       ( irq_id_out                     ),
+         .irq_id_i       ( irq_id_out[4:0]                ),
          .irq_ack_i      ( irq_ack                        ),
          .irq_id_o       ( irq_id_in                      ),
          .irq_o          ( irq                            ),
