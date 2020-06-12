@@ -1,6 +1,7 @@
 # CV32: Verification Environment for the CV32 CORE-V processor core.
 
 ## Directories:
+- **bsp**:   the "board support package" for test-programs compiled for the core.
 - **env**:   the UVM environment class and its associated infrastrucutre.
 - **sim**:   directory where you run the simulations.
 - **tb**:    the Testbench module that instanitates the core.

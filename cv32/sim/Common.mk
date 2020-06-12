@@ -131,6 +131,7 @@ RISCV_EXE_PREFIX ?= $(RISCV)/bin/riscv32-unknown-elf-
 # locations, so all of these paths are absolute, except those used by Verilator.
 # TODO: clean this mess up!
 CORE_TEST_DIR                        = $(PROJ_ROOT_DIR)/cv32/tests/core
+BSP                                  = $(PROJ_ROOT_DIR)/cv32/bsp
 FIRMWARE                             = $(CORE_TEST_DIR)/firmware
 VERI_FIRMWARE                        = ../../tests/core/firmware
 CUSTOM                               = $(CORE_TEST_DIR)/custom
@@ -201,101 +202,132 @@ sanity: hello-world
 	$(RISCV_EXE_PREFIX)readelf -a $< > $*.readelf
 	$(RISCV_EXE_PREFIX)objdump -D $*.elf > $*.objdump
 
+bsp:
+	make -C $(BSP)
+
+clean-bsp:
+	make clean -C $(BSP)
+
 # Running custom programs:
 # We link with our custom crt0.s and syscalls.c against newlib so that we can
 # use the c standard library
-$(CUSTOM_DIR)/$(CUSTOM_PROG).elf: $(CUSTOM_DIR)/$(CUSTOM_PROG).c
-	$(RISCV_EXE_PREFIX)gcc -mabi=ilp32 -march=rv32imc -o $@ -w -Os -g -nostdlib \
-		-T $(CUSTOM_DIR)/link.ld  \
-		-static \
-		$(CUSTOM_DIR)/crt0.S \
-		$^ $(CUSTOM_DIR)/syscalls.c $(CUSTOM_DIR)/vectors.S \
-		-I $(RISCV)/riscv32-unknown-elf/include \
-		-L $(RISCV)/riscv32-unknown-elf/lib \
-		-lc -lm -lgcc
+#$(CUSTOM_DIR)/$(CUSTOM_PROG).elf: $(CUSTOM_DIR)/$(CUSTOM_PROG).c
+#	$(RISCV_EXE_PREFIX)gcc -mabi=ilp32 -march=rv32imc -o $@ -w -Os -g -nostdlib \
+#		-T $(CUSTOM_DIR)/link.ld  \
+#		-static \
+#		$(CUSTOM_DIR)/crt0.S \
+#		$^ $(CUSTOM_DIR)/syscalls.c $(CUSTOM_DIR)/vectors.S \
+#		-I $(RISCV)/riscv32-unknown-elf/include \
+#		-L $(RISCV)/riscv32-unknown-elf/lib \
+#		-lc -lm -lgcc
 
 # Similaro to CUSTOM (above), this time with ASM directory
-$(ASM)/$(ASM_PROG).elf: $(ASM)/$(ASM_PROG).S
-		@   echo "Compiling $(ASM_PROG).S"
-		$(RISCV_EXE_PREFIX)gcc -mabi=ilp32 -march=rv32imc -c -o $(ASM)/$(ASM_PROG).o \
-		$(ASM)/$(ASM_PROG).S -DRISCV32GC -O0 -nostdlib -nostartfiles \
-		-I $(ASM)
-		@   echo "Linking $(ASM_PROG).o"
-		$(RISCV_EXE_PREFIX)gcc -mabi=ilp32 -march=rv32imc \
-		-o $(ASM)/$(ASM_PROG).elf \
-		$(ASM)/$(ASM_PROG).o -nostdlib -nostartfiles \
-		-T $(ASM)/link.ld
+#$(ASM)/$(ASM_PROG).elf: $(ASM)/$(ASM_PROG).S
+#		@   echo "Compiling $(ASM_PROG).S"
+#		$(RISCV_EXE_PREFIX)gcc -mabi=ilp32 -march=rv32imc -c -o $(ASM)/$(ASM_PROG).o \
+#		$(ASM)/$(ASM_PROG).S -DRISCV32GC -O0 -nostdlib -nostartfiles \
+#		-I $(ASM)
+#		@   echo "Linking $(ASM_PROG).o"
+#		$(RISCV_EXE_PREFIX)gcc -mabi=ilp32 -march=rv32imc \
+#		-o $(ASM)/$(ASM_PROG).elf \
+#		$(ASM)/$(ASM_PROG).o -nostdlib -nostartfiles \
+#		-T $(ASM)/link.ld
 
 # HELLO WORLD: custom/hello_world.elf: ../../tests/core/custom/hello_world.c
-$(CUSTOM)/hello_world.elf: $(CUSTOM)/hello_world.c
-	$(RISCV_EXE_PREFIX)gcc -mabi=ilp32 -march=rv32imc -o $@ -w -Os -g -nostdlib \
-		-T $(CUSTOM)/link.ld  \
-		-static \
-		$(CUSTOM)/crt0.S \
-		$^ $(CUSTOM)/syscalls.c $(CUSTOM)/vectors.S \
-		-I $(RISCV)/riscv32-unknown-elf/include \
-		-L $(RISCV)/riscv32-unknown-elf/lib \
-		-lc -lm -lgcc
 
-$(CUSTOM)/misalign.elf: $(CUSTOM)/misalign.c
-	$(RISCV_EXE_PREFIX)gcc -mabi=ilp32 -march=rv32imc -o $@ -w -Os -g -nostdlib \
-		-T $(CUSTOM)/link.ld  \
-		-static \
-		$(CUSTOM)/crt0.S \
-		$^ $(CUSTOM)/syscalls.c $(CUSTOM)/vectors.S \
-		-I $(RISCV)/riscv32-unknown-elf/include \
-		-L $(RISCV)/riscv32-unknown-elf/lib \
-		-lc -lm -lgcc
+#$(CUSTOM)/hello_world.elf: $(CUSTOM)/hello_world.c
+#	$(RISCV_EXE_PREFIX)gcc -mabi=ilp32 -march=rv32imc -o $@ -w -Os -g -nostdlib \
+#		-T $(CUSTOM)/link.ld  \
+#		-static \
+#		$(CUSTOM)/crt0.S \
+#		$^ $(CUSTOM)/syscalls.c $(CUSTOM)/vectors.S \
+#		-I $(RISCV)/riscv32-unknown-elf/include \
+#		-L $(RISCV)/riscv32-unknown-elf/lib \
+#		-lc -lm -lgcc
 
-$(CUSTOM)/illegal.elf: $(CUSTOM)/illegal.c
-	$(RISCV_EXE_PREFIX)gcc -mabi=ilp32 -march=rv32imc -o $@ -w -Os -g -nostdlib \
-		-T $(CUSTOM)/link.ld  \
-		-static \
-		$(CUSTOM)/crt0.S \
-		$^ $(CUSTOM)/syscalls.c $(CUSTOM)/vectors.S \
-		-I $(RISCV)/riscv32-unknown-elf/include \
-		-L $(RISCV)/riscv32-unknown-elf/lib \
-		-lc -lm -lgcc
+#$(CUSTOM)/misalign.elf: $(CUSTOM)/misalign.c
+#	$(RISCV_EXE_PREFIX)gcc -mabi=ilp32 -march=rv32imc -o $@ -w -Os -g -nostdlib \
+#		-T $(CUSTOM)/link.ld  \
+#		-static \
+#		$(CUSTOM)/crt0.S \
+#		$^ $(CUSTOM)/syscalls.c $(CUSTOM)/vectors.S \
+#		-I $(RISCV)/riscv32-unknown-elf/include \
+#		-L $(RISCV)/riscv32-unknown-elf/lib \
+#		-lc -lm -lgcc
 
-$(CUSTOM)/fibonacci.elf: $(CUSTOM)/fibonacci.c
-	$(RISCV_EXE_PREFIX)gcc -mabi=ilp32 -march=rv32imc -o $@ -w -Os -g -nostdlib \
-		-T $(CUSTOM)/link.ld  \
-		-static \
-		$(CUSTOM)/crt0.S \
-		$^ $(CUSTOM)/syscalls.c $(CUSTOM)/vectors.S \
-		-I $(RISCV)/riscv32-unknown-elf/include \
-		-L $(RISCV)/riscv32-unknown-elf/lib \
-		-lc -lm -lgcc
+#$(CUSTOM)/illegal.elf: $(CUSTOM)/illegal.c
+#	$(RISCV_EXE_PREFIX)gcc -mabi=ilp32 -march=rv32imc -o $@ -w -Os -g -nostdlib \
+#		-T $(CUSTOM)/link.ld  \
+#		-static \
+#		$(CUSTOM)/crt0.S \
+#		$^ $(CUSTOM)/syscalls.c $(CUSTOM)/vectors.S \
+#		-I $(RISCV)/riscv32-unknown-elf/include \
+#		-L $(RISCV)/riscv32-unknown-elf/lib \
+#		-lc -lm -lgcc
 
-$(CUSTOM)/dhrystone.elf: $(CUSTOM)/dhrystone.c
-	$(RISCV_EXE_PREFIX)gcc -mabi=ilp32 -march=rv32imc -o $@ -w -Os -g -nostdlib \
-		-T $(CUSTOM)/link.ld  \
-		-static \
-		$(CUSTOM)/crt0.S \
-		$^ $(CUSTOM)/syscalls.c $(CUSTOM)/vectors.S \
-		-I $(RISCV)/riscv32-unknown-elf/include \
-		-L $(RISCV)/riscv32-unknown-elf/lib \
-		-lc -lm -lgcc
+#$(CUSTOM)/fibonacci.elf: $(CUSTOM)/fibonacci.c
+#	$(RISCV_EXE_PREFIX)gcc -mabi=ilp32 -march=rv32imc -o $@ -w -Os -g -nostdlib \
+#		-T $(CUSTOM)/link.ld  \
+#		-static \
+#		$(CUSTOM)/crt0.S \
+#		$^ $(CUSTOM)/syscalls.c $(CUSTOM)/vectors.S \
+#		-I $(RISCV)/riscv32-unknown-elf/include \
+#		-L $(RISCV)/riscv32-unknown-elf/lib \
+#		-lc -lm -lgcc
 
-$(CUSTOM)/riscv_ebreak_test_0.elf: $(CUSTOM)/riscv_ebreak_test_0.S
-		@   echo "Compiling riscv_ebreak_test_0.S"
-		$(RISCV_EXE_PREFIX)gcc -mabi=ilp32 -march=rv32imc -c -o $(CUSTOM)/riscv_ebreak_test_0.o \
-		$(CUSTOM)/riscv_ebreak_test_0.S -DRISCV32GC -O0 -nostdlib -nostartfiles \
-		-I $(CUSTOM)
-		@   echo "Linking riscv_ebreak_test_0.o"
-		$(RISCV_EXE_PREFIX)gcc -mabi=ilp32 -march=rv32imc \
-		-o $(CUSTOM)/riscv_ebreak_test_0.elf \
-		$(CUSTOM)/riscv_ebreak_test_0.o -nostdlib -nostartfiles \
-		-T $(CUSTOM)/link.ld
+#$(CUSTOM)/dhrystone.elf: $(CUSTOM)/dhrystone.c
+#	$(RISCV_EXE_PREFIX)gcc -mabi=ilp32 -march=rv32imc -o $@ -w -Os -g -nostdlib \
+#		-T $(CUSTOM)/link.ld  \
+#		-static \
+#		$(CUSTOM)/crt0.S \
+#		$^ $(CUSTOM)/syscalls.c $(CUSTOM)/vectors.S \
+#		-I $(RISCV)/riscv32-unknown-elf/include \
+#		-L $(RISCV)/riscv32-unknown-elf/lib \
+#		-lc -lm -lgcc
 
-custom-clean:
-	rm -rf $(CUSTOM)/hello_world.elf $(CUSTOM)/hello_world.hex
+#$(CUSTOM)/riscv_ebreak_test_0.elf: $(CUSTOM)/riscv_ebreak_test_0.S
+#		@   echo "Compiling riscv_ebreak_test_0.S"
+#		$(RISCV_EXE_PREFIX)gcc -mabi=ilp32 -march=rv32imc -c -o $(CUSTOM)/riscv_ebreak_test_0.o \
+#		$(CUSTOM)/riscv_ebreak_test_0.S -DRISCV32GC -O0 -nostdlib -nostartfiles \
+#		-I $(CUSTOM)
+#		@   echo "Linking riscv_ebreak_test_0.o"
+#		$(RISCV_EXE_PREFIX)gcc -mabi=ilp32 -march=rv32imc \
+#		-o $(CUSTOM)/riscv_ebreak_test_0.elf \
+#		$(CUSTOM)/riscv_ebreak_test_0.o -nostdlib -nostartfiles \
+#		-T $(CUSTOM)/link.ld
 
+# Patterned targets to generate ELF.  Used only if explicit targets do not match.
+# $@ is the file being generated.
+# $< is first prerequiste.
+# $^ is all prerequistes.
+#
+# This target selected if both %.c and %.S exist
+%.elf: %.c
+	make bsp
+	$(RISCV_EXE_PREFIX)gcc -mabi=ilp32 -march=rv32imc -o $@ \
+		-Wall -pedantic -Os -g -nostartfiles -static \
+		$^ -T $(BSP)/link.ld -L $(BSP) -lcv-verif
+
+# This target selected if only %.S exists
+%.elf: %.S
+	make bsp
+	$(RISCV_EXE_PREFIX)gcc -mabi=ilp32 -march=rv32imc -o $@ \
+		-Wall -pedantic -Os -g -nostartfiles -static \
+		-I $(ASM) \
+		$^ -T $(BSP)/link.ld -L $(BSP) -lcv-verif
 
 
 # compile and dump RISCV_TESTS only
-$(CV32_RISCV_TESTS_FIRMWARE)/cv32_riscv_tests_firmware.elf: $(CV32_RISCV_TESTS_FIRMWARE_OBJS) $(RISCV_TESTS_OBJS) \
-							$(CV32_RISCV_TESTS_FIRMWARE)/link.ld
+#$(CV32_RISCV_TESTS_FIRMWARE)/cv32_riscv_tests_firmware.elf: $(CV32_RISCV_TESTS_FIRMWARE_OBJS) $(RISCV_TESTS_OBJS) \
+#							$(CV32_RISCV_TESTS_FIRMWARE)/link.ld
+#	$(RISCV_EXE_PREFIX)gcc -g -Os -mabi=ilp32 -march=rv32imc -ffreestanding -nostdlib -o $@ \
+#		$(RISCV_TEST_INCLUDES) \
+#		-Wl,-Bstatic,-T,$(CV32_RISCV_TESTS_FIRMWARE)/link.ld,-Map,$(CV32_RISCV_TESTS_FIRMWARE)/cv32_riscv_tests_firmware.map,--strip-debug \
+#		$(CV32_RISCV_TESTS_FIRMWARE_OBJS) $(RISCV_TESTS_OBJS) -lgcc
+
+#$(CV32_RISCV_TESTS_FIRMWARE)/cv32_riscv_tests_firmware.elf: $(CV32_RISCV_TESTS_FIRMWARE_OBJS) $(RISCV_TESTS_OBJS) \
+#							$(CV32_RISCV_TESTS_FIRMWARE)/link.ld
+../../tests/core/cv32_riscv_tests_firmware/cv32_riscv_tests_firmware.elf: $(CV32_RISCV_TESTS_FIRMWARE_OBJS) $(RISCV_TESTS_OBJS)
 	$(RISCV_EXE_PREFIX)gcc -g -Os -mabi=ilp32 -march=rv32imc -ffreestanding -nostdlib -o $@ \
 		$(RISCV_TEST_INCLUDES) \
 		-Wl,-Bstatic,-T,$(CV32_RISCV_TESTS_FIRMWARE)/link.ld,-Map,$(CV32_RISCV_TESTS_FIRMWARE)/cv32_riscv_tests_firmware.map,--strip-debug \
@@ -419,6 +451,10 @@ firmware-vcs-run-gui: vcsify $(FIRMWARE)/firmware.hex
 
 ###############################################################################
 # house-cleaning for unit-testing
+custom-clean:
+	rm -rf $(CUSTOM)/hello_world.elf $(CUSTOM)/hello_world.hex
+
+
 .PHONY: firmware-clean
 firmware-clean:
 	rm -vrf $(addprefix $(FIRMWARE)/firmware., elf bin hex map) \

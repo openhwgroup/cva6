@@ -58,7 +58,7 @@ module uvmt_cv32_tb;
    uvmt_cv32_dut_wrap  #(
                          .INSTR_ADDR_WIDTH  (32),
                          .INSTR_RDATA_WIDTH (32),
-                         .RAM_ADDR_WIDTH    (20)
+                         .RAM_ADDR_WIDTH    (22)
                         )
                         dut_wrap (.*);
    

@@ -25,6 +25,47 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
+#include <machine/syscall.h>
+
+#define STDOUT_FILENO 1
+
+#if __NEWLIB__ >= 3
+extern long __syscall_error (long);
+
+/* __internal_syscall is useful for testing the handling of ecall.  In older
+   newlib it is available in machine/syscall.h, however, newer newlib does not
+   make it available externally.  */
+static inline long
+__internal_syscall(long n, long _a0, long _a1, long _a2, long _a3)
+{
+  register long a0 asm("a0") = _a0;
+  register long a1 asm("a1") = _a1;
+  register long a2 asm("a2") = _a2;
+  register long a3 asm("a3") = _a3;
+  register long a7 asm("a7") = n;
+
+  asm volatile ("ecall"
+    : "+r"(a0) : "r"(a1), "r"(a2), "r"(a3), "r"(a7));
+
+  if (a0 < 0)
+    return __syscall_error (a0);
+  else
+    return a0;
+}
+#endif
+
+void test_handlers () {
+    const char *str = "Testing write syscall\n";
+
+    asm volatile("ebreak");
+    asm volatile("ebreak");
+    asm volatile("ebreak");
+
+    /* Unmplemented syscall.  */
+    __internal_syscall (0, 0, 0, 0, 0);
+    __internal_syscall (SYS_write, STDOUT_FILENO, (long) str, strlen(str), 0);
+}
 
 int main(int argc, char *argv[])
 {
@@ -34,7 +75,6 @@ int main(int argc, char *argv[])
     mxl = 0; reserved = 0; tentative = 0; nonstd = 0; user = 0; super = 0;
 
     /* inline assembly: read mvendorid and misa */
-    asm volatile("ecall");
     // __asm__ volatile("csrr %0, 0xF11" : "=r"(mvendorid_rval));
     __asm__ volatile("csrr %0, 0x301" : "=r"(misa_rval));
 
@@ -43,6 +83,8 @@ int main(int argc, char *argv[])
       printf("\tERROR: CSR MISA returned zero!\n\n");
       return EXIT_FAILURE;
     }
+
+    test_handlers ();
 
     /* Print a banner to stdout and interpret MISA CSR */
     printf("\nHELLO WORLD!!!\n");
