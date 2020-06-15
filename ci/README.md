@@ -7,7 +7,14 @@ To maximize the liklihood of a clean outcome for a pull-request, you can run a u
 directory).  This script runs a sub-set of the tests defined in the simulation CI regression scripts.  If your pull-request passes the ci_check, it is considered safe to merge into a branch of the [core-v-verif](https://github.com/openhwgroup/core-v-verif)
 repository.
 <br><br>
-The command `./ci_check -h` should tell you everything you need to know to run a user-level regression.  If it doesn't create an issue and assign it to @mikeopenhwgroup.
+The command `./ci_check -h` should tell you everything you need to know to run
+a user-level regression.  Note that the script has the ability to specify the
+URL, branch and hash of the RTL to be regressed (usually this is picked up in
+`../cv32/sim/Common.mk`.  An example command is:
+<br>
+`./ci_check -s xrun --repo https://github.com/MikeOpenHWGroup/cv32e40p --branch dev1 --hash=12345` 
+<br>
+If ci_check is not working for you, create an issue and assign it to @mikeopenhwgroup.
 <br><br>
 At the completion of ci_check the script will print a message to stdout indicating whether it is OK to issue a pull-request based on the outcome of the regression.  Note that some of the tests in a regression may have known failuresi and the script will
 compensate for them. A typical example is:
