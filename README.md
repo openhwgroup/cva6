@@ -44,6 +44,7 @@ Table of Contents
       * [Going Beyond](#going-beyond)
          * [CI Testsuites and Randomized Constrained Testing with Torture](#ci-testsuites-and-randomized-constrained-testing-with-torture)
          * [Re-generating the Bootcode (ZSBL)](#re-generating-the-bootcode-zsbl)
+         * [Co-simulation with Dromajo](#co-simulation-with-dromajo)
    * [Contributing](#contributing)
    * [Acknowledgements](#acknowledgements)
 
@@ -336,6 +337,22 @@ There are a couple of caveats:
 The zero stage bootloader (ZSBL) for RTL simulation lives in `bootrom/` while the bootcode for the FPGA is in `fpga/src/bootrom`. The RTL bootcode simply jumps to the base of the DRAM where the FSBL takes over. For the FPGA the ZSBL performs additional housekeeping. Both bootloader pass the hartid as well as address to the device tree in argumen register `a0` and `a1` respectively.
 
 To re-generate the bootcode you can use the existing makefile within those directories. To generate the SystemVerilog files you will need the `bitstring` python package installed on your system.
+
+### Co-simulation with Dromajo
+Ariane can be co-simulated with [Dromajo](https://github.com/chipsalliance/dromajo) (currently in the verilator model). 
+
+```
+make verilate DROMAJO=1
+make run-dromajo-verilator BIN=/path/to/elf
+```
+
+The co-simulation flow is depicted in the figure below.
+![image](https://user-images.githubusercontent.com/8511359/84510824-7ceb3b80-ac7a-11ea-9530-24c428ee87d9.png)
+1. Load the binary of interest into Dromajo.
+2. Run Dromajo stand alone and let a couple of instructions to complete.
+3. Dump the checkpoint. This is the whole architectural state of the reference model. Dromajo dumps the main and boot memories. In addition, it generates a boot code. If you were to run that code it will restore the whole architectural state. This means that you can bring any two or more cores into complete synced architectural state by running this piece of code.
+4. Load the checkpoint into the RTL memory and the instance of Dromajo in RTL. Dromajo gets linked to a simulator as a shared library. RTL communicates to Dromajo through set of DPI calls.
+5. Run the RTL simulation and perform co-simulation.
 
 # Contributing
 

@@ -400,8 +400,6 @@ module csr_regfile #(
                     dcsr_d = csr_wdata[31:0];
                     // debug is implemented
                     dcsr_d.xdebugver = 4'h4;
-                    // privilege level
-                    dcsr_d.prv = priv_lvl_q;
                     // currently not supported
                     dcsr_d.nmip      = 1'b0;
                     dcsr_d.stopcount = 1'b0;
@@ -662,6 +660,7 @@ module csr_regfile #(
 
             // caused by a breakpoint
             if (ex_i.valid && ex_i.cause == riscv::BREAKPOINT) begin
+                dcsr_d.prv = priv_lvl_o;
                 // check that we actually want to enter debug depending on the privilege level we are currently in
                 unique case (priv_lvl_o)
                     riscv::PRIV_LVL_M: begin
@@ -685,6 +684,7 @@ module csr_regfile #(
 
             // we've got a debug request
             if (ex_i.valid && ex_i.cause == riscv::DEBUG_REQUEST) begin
+                dcsr_d.prv = priv_lvl_o;
                 // save the PC
                 dpc_d = {{64-riscv::VLEN{pc_i[riscv::VLEN-1]}},pc_i};
                 // enter debug mode
@@ -697,6 +697,7 @@ module csr_regfile #(
 
             // single step enable and we just retired an instruction
             if (dcsr_q.step && commit_ack_i[0]) begin
+                dcsr_d.prv = priv_lvl_o;
                 // valid CTRL flow change
                 if (commit_instr_i[0].fu == CTRL_FLOW) begin
                     // we saved the correct target address during execute
@@ -989,7 +990,11 @@ module csr_regfile #(
             // floating-point registers
             fcsr_q                 <= 64'b0;
             // debug signals
+`ifdef DROMAJO
+            debug_mode_q           <= 1'b1;
+`else
             debug_mode_q           <= 1'b0;
+`endif
             dcsr_q                 <= '0;
             dcsr_q.prv             <= riscv::PRIV_LVL_M;
             dpc_q                  <= 64'b0;
