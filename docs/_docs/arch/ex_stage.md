@@ -285,6 +285,33 @@ The page table walker gives precedence to DTLB misses. The page table
 walking process is described in more detail in the RISC-V Privileged
 Architecture.
 
+#### PMA/PMP Checks
+
+The core supports PMA and PMP checks in physical mode as well as with 
+virtual memory enabled. PMA checks are performed only on the final 
+access to the (translated) physical address. However, PMPs must be 
+checked during the page table walk as well. During a page walk, all 
+memory access must pass the PMP rules. 
+
+The amount of entries is parametrizable under the 
+`ArianeCfg.NrPMPEntries` parameter. However, the core only supports 
+granularity 8 (G=8). This simplifies the implementation since we do 
+not have to worry about any unaligned accesses. There are a total of 
+three distinct PMP units in the design. They verify instruction 
+accesses, data loads and stores, and the page table walk respectively.
+
+#### MMU Implementation Details
+
+The MMU prioritizes instruction address translations to data address
+translations. The behavior of the MMU is described in the following:
+1.  As soon as a request from the instruction fetch stage arrives, the 
+ITLB checked for a cached entry (combinatorial path). Upon a cache miss, 
+the PTW is invoked.
+2.  The PTW will perform the page table walk in multiple cycles. During 
+this walk, the PTW will update the content of the ITLB. The MMU checks 
+every cycle if a cache hit in the ITLB exists, and therefore, the page 
+table walk has concluded.
+
 #### Multiplier {#ssub:multiplier}
 
 The multiplier contains a division and multiplication unit. Multiplication
