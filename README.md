@@ -346,6 +346,14 @@ make verilate DROMAJO=1
 make run-dromajo-verilator BIN=/path/to/elf
 ```
 
+The co-simulation flow is depicted in the figure below.
+![image](https://user-images.githubusercontent.com/8511359/84510824-7ceb3b80-ac7a-11ea-9530-24c428ee87d9.png)
+1. Load the binary of interest into Dromajo.
+2. Run Dromajo stand alone and let a couple of instructions to complete.
+3. Dump the checkpoint. This is the whole architectural state of the reference model. Dromajo dumps the main and boot memories. In addition, it generates a boot code. If you were to run that code it will restore the whole architectural state. This means that you can bring any two or more cores into complete synced architectural state by running this piece of code.
+4. Load the checkpoint into the RTL memory and the instance of Dromajo in RTL. Dromajo gets linked to a simulator as a shared library. RTL communicates to Dromajo through set of DPI calls.
+5. Run the RTL simulation and perform co-simulation.
+
 # Contributing
 
 Check out the [contribution guide](CONTRIBUTING.md)
