@@ -1,5 +1,5 @@
 RISCV            ?= /opt/riscv
-RISCV_EXE_PREFIX  = $(RISCV)/bin/riscv32-unknown-elf-
+RISCV_EXE_PREFIX ?= $(RISCV)/bin/riscv32-unknown-elf-
 RISCV_GCC = $(RISCV_EXE_PREFIX)gcc
 RISCV_AR = $(RISCV_EXE_PREFIX)ar
 SRC = crt0.S handlers.S syscalls.c vectors.S
