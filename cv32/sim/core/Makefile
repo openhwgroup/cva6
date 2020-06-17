@@ -106,10 +106,6 @@ VERI_OBJ_DIR       ?= cobj_dir
 VERI_LOG_DIR       ?= cobj_dir/logs
 VERI_CFLAGS        += -O2
 
-#DV_OVPM_HOME        = $(PROJ_ROOT_DIR)/vendor_lib/imperas
-#DV_OVPM_MODEL       = $(DV_OVPM_HOME)/riscv_CV32E40P_OVPsim
-#DV_OVPM_DESIGN      = $(DV_OVPM_HOME)/verilog/design
-
 # TB source files for the CV32E core
 TBSRC_HOME  := $(PROJ_ROOT_DIR)/$(COREV_PROJ)/tb
 TBSRC_TOP   := $(TBSRC_HOME)/core/tb_top.sv
@@ -124,12 +120,6 @@ TBSRC       := $(TBSRC_CORE)/tb_top.sv \
 
 RTLSRC_VLOG_TB_TOP	:= $(basename $(notdir $(TBSRC_TOP)))
 RTLSRC_VOPT_TB_TOP	:= $(addsuffix _vopt, $(RTLSRC_VLOG_TB_TOP))
-
-#OVPMSRC     := $(DV_OVPM_DESIGN)/typedefs.sv \
-#               $(DV_OVPM_DESIGN)/interface.sv \
-#               $(DV_OVPM_DESIGN)/ram.sv \
-#               $(DV_OVPM_DESIGN)/monitor.sv \
-#               $(DV_OVPM_MODEL)/sv/riscv_CV32E40P.sv
 
 TBSRC_VERI  := $(TBSRC_CORE)/tb_top_verilator.sv \
                $(TBSRC_CORE)/riscv_wrapper.sv \
@@ -438,7 +428,8 @@ endif
 
 verilate: testbench_verilator
 
-sanity-veri-run: hello-world-veri-run
+sanity-veri-run:
+	make custom CUSTOM_PROG=hello_world
 
 testbench_verilator: $(CV32E40P_PKG) $(TBSRC_VERI) $(TBSRC_PKG)
 	$(VERILATOR) --cc --sv --exe \
@@ -453,21 +444,17 @@ testbench_verilator: $(CV32E40P_PKG) $(TBSRC_VERI) $(TBSRC_PKG)
 	$(MAKE) -C $(VERI_OBJ_DIR) -f Vtb_top_verilator.mk
 	cp $(VERI_OBJ_DIR)/Vtb_top_verilator testbench_verilator
 
-# run picorv firmware in verilator
-.PHONY: firmware-veri-run
-firmware-veri-run: verilate $(FIRMWARE)/firmware.hex
+custom: verilate $(VERI_CUSTOM)/$(CUSTOM_PROG).hex
 	mkdir -p $(VERI_LOG_DIR)
 	./testbench_verilator $(VERI_FLAGS) \
-		"+firmware=$(VERI_FIRMWARE)/firmware.hex" \
-		| tee $(VERI_LOG_DIR)/firmware-veri-run.log
+		"+firmware=$(VERI_CUSTOM)/$(CUSTOM_PROG).hex" \
+		| tee $(VERI_LOG_DIR)/$(CUSTOM_PROG).log
 
-# run hello_world in verilator
-.PHONY: hello-world-veri-run
-hello-world-veri-run: verilate $(CUSTOM)/hello_world.hex
+cv32-riscv-tests: verilate ../../tests/core/cv32_riscv_tests_firmware/cv32_riscv_tests_firmware.hex
 	mkdir -p $(VERI_LOG_DIR)
 	./testbench_verilator $(VERI_FLAGS) \
-		"+firmware=$(VERI_CUSTOM)/hello_world.hex" \
-		| tee $(VERI_LOG_DIR)/hello-world-veri-run.log
+		"+firmware=../../tests/core/cv32_riscv_tests_firmware/cv32_riscv_tests_firmware.hex" \
+		| tee $(VERI_LOG_DIR)/$(cv32-riscv-tests).log
 
 
 # verilator specific cleanup
@@ -500,10 +487,12 @@ $(CV32E40P_PKG):
 	
 # clean up toolchain generated files (CORE_TEST_DIR defined in ../Common.mk)
 tc-clean:
-	find $(CORE_TEST_DIR) -name *.o   -exec rm {} \;
-	find $(CORE_TEST_DIR) -name *.hex -exec rm {} \;
-	find $(CORE_TEST_DIR) -name *.elf -exec rm {} \;
-	find $(CORE_TEST_DIR) -name *.map -exec rm {} \;
+	find $(CORE_TEST_DIR) -name *.o       -exec rm {} \;
+	find $(CORE_TEST_DIR) -name *.hex     -exec rm {} \;
+	find $(CORE_TEST_DIR) -name *.elf     -exec rm {} \;
+	find $(CORE_TEST_DIR) -name *.readelf -exec rm {} \;
+	find $(CORE_TEST_DIR) -name *.objdump -exec rm {} \;
+	find $(CORE_TEST_DIR) -name *.map     -exec rm {} \;
 
 .PHONY: clean clean_all distclean
 clean: clean_questa tc-clean verilate-clean vcs-clean firmware-clean custom-clean dsim-clean xrun-clean

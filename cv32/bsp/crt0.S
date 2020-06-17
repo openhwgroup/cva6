@@ -8,6 +8,8 @@
  * A PARTICULAR PURPOSE.  A copy of this license is available at
  * http://www.opensource.org/licenses.
  */
+/* Make sure the vector table gets linked into the binary.  */
+.global vector_table
 
 /* Entry point for bare metal programs */
 .section .text.start
@@ -23,15 +25,16 @@ _start:
 .option pop
 
 /* initialize stack pointer */
-	la sp, _sp
+	la sp, __stack_end
 
 /* set vector table address */
 	la a0, __vector_start
+	ori a0, a0, 1 /*vector mode = vectored */
 	csrw mtvec, a0
 
 /* clear the bss segment */
-	la a0, __bss_start
-	la a2, __bss_end
+	la a0, _edata
+	la a2, _end
 	sub a2, a2, a0
 	li a1, 0
 	call memset

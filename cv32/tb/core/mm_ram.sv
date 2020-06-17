@@ -19,14 +19,16 @@ module mm_ram
  #(
      parameter RAM_ADDR_WIDTH    =  16,
                INSTR_RDATA_WIDTH = 128, // width of read_data on instruction bus
-               DATA_RDATA_WIDTH  =  32  // width of read_data on data bus
+               DATA_RDATA_WIDTH  =  32,  // width of read_data on data bus
+               DBG_START_ADDR    =  32'h1A110800, // Debug start address
+               DBG_ADDR_WIDTH    =  11
   )
   (
      input logic                          clk_i,
      input logic                          rst_ni,
 
      input logic                          instr_req_i,
-     input logic [RAM_ADDR_WIDTH-1:0]     instr_addr_i,
+     input logic [31:0]                   instr_addr_i,
      output logic [INSTR_RDATA_WIDTH-1:0] instr_rdata_o,
      output logic                         instr_rvalid_o,
      output logic                         instr_gnt_o,
@@ -47,6 +49,8 @@ module mm_ram
 
      input logic [31:0]                   pc_core_id_i,
 
+     output logic                         debug_req_o,
+   
      output logic                         tests_passed_o,
      output logic                         tests_failed_o,
      output logic                         exit_valid_o,
@@ -75,7 +79,7 @@ module mm_ram
 
     // signals to ram
     logic                          ram_data_req;
-    logic [RAM_ADDR_WIDTH-1:0]     ram_data_addr;
+    logic [31:0]                   ram_data_addr;
     logic [31:0]                   ram_data_wdata;
     logic [31:0]                   ram_data_rdata;
     logic                          ram_data_we;
@@ -83,17 +87,29 @@ module mm_ram
     logic                          ram_data_gnt;
     logic                          ram_data_valid;
 
+    logic                          dbg_data_req;
+    logic                          dbg_data_req_q;
+    logic [31:0]                   dbg_data_rdata;
+    logic [31:0]                   muxed_data_rdata;
+    logic [31:0]                   dbg_data_addr;
+
     logic                          data_req_dec;
     logic [31:0]                   data_wdata_dec;
-    logic [RAM_ADDR_WIDTH-1:0]     data_addr_dec;
+    logic [31:0]                   data_addr_dec;
     logic                          data_we_dec;
     logic [3:0]                    data_be_dec;
 
     logic [INSTR_RDATA_WIDTH-1:0]  ram_instr_rdata;
     logic                          ram_instr_req;
-    logic [RAM_ADDR_WIDTH-1:0]     ram_instr_addr;
+    logic [31:0]                   ram_instr_addr;
     logic                          ram_instr_gnt;
     logic                          ram_instr_valid;
+
+    logic                          dbg_instr_req;
+    logic                          dbg_instr_req_q;
+    logic [INSTR_RDATA_WIDTH-1:0]  dbg_instr_rdata;
+    logic [INSTR_RDATA_WIDTH-1:0]  muxed_instr_rdata;
+    logic [31:0]                   dbg_instr_addr;
 
     // signals to print peripheral
     logic [31:0]                   print_wdata;
@@ -111,6 +127,10 @@ module mm_ram
     logic                          timer_val_valid;
     logic [31:0]                   timer_wdata;
 
+    // debugger control signals
+    logic [31:0]                   debugger_wdata;
+    logic                          debugger_valid;
+ 
     // signals to rnd_stall
     logic [31:0]                   rnd_stall_regs [0:RND_STALL_REGS-1];
 
@@ -122,13 +142,13 @@ module mm_ram
 
     //signal delayed by random stall
     logic                          rnd_stall_instr_req;
-    logic [RAM_ADDR_WIDTH-1:0]     rnd_stall_instr_addr;
+    logic [31:0]                   rnd_stall_instr_addr;
     logic                          rnd_stall_instr_gnt;
     logic                          rnd_stall_instr_valid;
     logic [INSTR_RDATA_WIDTH-1:0]  rnd_stall_instr_rdata;
 
     logic                          rnd_stall_data_req;
-    logic [RAM_ADDR_WIDTH-1:0]     rnd_stall_data_addr;
+    logic [31:0]                   rnd_stall_data_addr;
     logic                          rnd_stall_data_gnt;
     logic                          rnd_stall_data_valid;
     logic [31:0]                   rnd_stall_data_rdata;
@@ -138,8 +158,8 @@ module mm_ram
 
     //random or monitor interrupt request
     logic rnd_irq;
-
-    // uhh, align?
+   
+   // uhh, align?
     always_comb data_addr_aligned = {data_addr_i[31:2], 2'b0};
 
     // handle the mapping of read and writes to either memory or pseudo
@@ -159,6 +179,8 @@ module mm_ram
         timer_wdata         = '0;
         timer_reg_valid     = '0;
         timer_val_valid     = '0;
+        debugger_wdata      = '0;
+        debugger_valid      = '0;
         sig_end_d           = sig_end_q;
         sig_begin_d         = sig_begin_q;
         rnd_stall_req       = '0;
@@ -170,9 +192,12 @@ module mm_ram
 
         if (data_req_i) begin
             if (data_we_i) begin // handle writes
-                if (data_addr_i < 2 ** RAM_ADDR_WIDTH) begin
+                if ( (data_addr_i < 2 ** RAM_ADDR_WIDTH) ||
+                     ( (data_addr_i >= DBG_START_ADDR) &&
+                       (data_addr_i < (DBG_START_ADDR + (2 ** DBG_ADDR_WIDTH)) ))
+                    ) begin
                     data_req_dec   = data_req_i;
-                    data_addr_dec  = data_addr_i[RAM_ADDR_WIDTH-1:0];
+                    data_addr_dec  = data_addr_i;
                     data_wdata_dec = data_wdata_i;
                     data_we_dec    = data_we_i;
                     data_be_dec    = data_be_i;
@@ -249,6 +274,10 @@ module mm_ram
                     timer_wdata = data_wdata_i;
                     timer_val_valid = '1;
 
+                end else if (data_addr_i == 32'h1500_0008) begin
+                    debugger_wdata = data_wdata_i;
+                    debugger_valid = '1;
+
                 end else if (data_addr_i[31:16] == 16'h1600) begin
                     rnd_stall_req   = data_req_i;
                     rnd_stall_wdata = data_wdata_i;
@@ -259,11 +288,14 @@ module mm_ram
                 end
 
             end else begin // handle reads
-                if (data_addr_i < 2 ** RAM_ADDR_WIDTH) begin
+                if ( (data_addr_i < 2 ** RAM_ADDR_WIDTH) ||
+                     ( (data_addr_i >= DBG_START_ADDR) &&
+                       (data_addr_i < (DBG_START_ADDR + (2 ** DBG_ADDR_WIDTH))) )
+                    ) begin
                     select_rdata_d = RAM;
 
                     data_req_dec   = data_req_i;
-                    data_addr_dec  = data_addr_i[RAM_ADDR_WIDTH-1:0];
+                    data_addr_dec  = data_addr_i;
                     data_wdata_dec = data_wdata_i;
                     data_we_dec    = data_we_i;
                     data_be_dec    = data_be_i;
@@ -287,9 +319,12 @@ module mm_ram
     out_of_bounds_write: assert property
     (@(posedge clk_i) disable iff (~rst_ni)
      (data_req_i && data_we_i |-> data_addr_i < 2 ** RAM_ADDR_WIDTH
+      || ( (data_addr_i >= DBG_START_ADDR) &&
+           (data_addr_i < (DBG_START_ADDR + (2 ** DBG_ADDR_WIDTH)) ) )
       || data_addr_i == 32'h1000_0000
       || data_addr_i == 32'h1500_0000
       || data_addr_i == 32'h1500_0004
+      || data_addr_i == 32'h1500_0008
       || data_addr_i == 32'h2000_0000
       || data_addr_i == 32'h2000_0004
       || data_addr_i == 32'h2000_0008
@@ -375,7 +410,7 @@ module mm_ram
 
                 if(timer_cnt_q == 1)
                     irq_q <= 1'b1 && timer_irq_mask_q[TIMER_IRQ_ID];
-
+                   
                 if(irq_ack_i == 1'b1 && irq_id_i == TIMER_IRQ_ID)
                     irq_q <= '0;
 
@@ -383,6 +418,83 @@ module mm_ram
         end
     end
 
+   // -------------------------------------------------------------
+   // Control debug_req. Writing to this address will change or create 
+   // a debug_req pulse. The debug_req can be a pulse or level change,
+   // can have a delay when to assert, and also have pulse duration
+   // determined by the values in the wdata field:
+   //
+   // wdata[31]    = debug_req signal value
+   // wdata[30]    = debug request mode, 0= level, 1= pulse
+   // wdata[29]    = debug pulse duration random
+   // wdata[28:16] = debug pulse duration or pulse random max range
+   // wdata[15]    = random start
+   // wdata[14:0]  = start delay or start random max range
+
+   logic [14:0] debugger_start_cnt_q;
+   logic        debug_req_value_q;
+   logic [12:0] debug_req_duration_q;
+    always_ff @(posedge clk_i, negedge rst_ni) begin: tb_debugger
+        if(~rst_ni) begin
+           debugger_start_cnt_q <= '0;
+           debug_req_value_q    <= '0;
+           debug_req_duration_q <= '0;
+           debug_req_o          <= '0;
+        end else begin
+
+            if(debugger_valid && (debugger_start_cnt_q==0) && (debug_req_duration_q==0)) begin
+               if(debugger_wdata[15]) //If random start
+                 // then set max random delay range to wdata[14:0]
+                 // note, if wdata[14:0] == 0, then assign max random range to 128
+`ifndef VERILATOR
+                 debugger_start_cnt_q <= $urandom_range(1,~|debugger_wdata[14:0] ? 128 : debugger_wdata[14:0]);
+`else
+                 debugger_start_cnt_q <= 1;
+`endif
+               else
+                 // else, the delay is determined by wdata[14:0]
+                 //  note, if wdata[14:0] == 0, then assign value to 1
+                 debugger_start_cnt_q <= ~|debugger_wdata[14:0] ? 1 : debugger_wdata[14:0];
+
+               debug_req_value_q <= debugger_wdata[31]; // value to be applied to debug_req
+               
+               if(!debugger_wdata[30]) // If mode is level then set duration to 0
+                 debug_req_duration_q <= 'b0;
+               else // Else mode is pulse
+                 if(debugger_wdata[29]) // If random pulse width
+                   // then set max random pulse width to wdata[28:16]
+                   //  note, if wdata[28:16] ==0, then assign max to 128
+`ifndef VERILATOR
+                   debug_req_duration_q <= $urandom_range(1,~|debugger_wdata[28:16] ? 128 : debugger_wdata[28:16]);
+`else
+                   debugger_start_cnt_q <= 1;
+`endif
+                 else
+                   // else, the pulse is determined by wdata[28:16]
+                   //  note, if wdata[28:16]==0, then set pulse width to 1
+                   debug_req_duration_q <= ~|debugger_wdata[28:16] ? 1 : debugger_wdata[28:16];
+                 
+            end else begin
+                // Count down the delay to start
+                if(debugger_start_cnt_q > 0)begin
+                    debugger_start_cnt_q <= debugger_start_cnt_q - 1;
+                   // At count == 1, then assert the debug_req
+                   if(debugger_start_cnt_q == 1) 
+                     debug_req_o <= debug_req_value_q;
+                end
+                // Count down debug_req pulse duration
+                else if(debug_req_duration_q > 0)begin
+                   debug_req_duration_q <= debug_req_duration_q - 1;
+                   // At count == 1, then de-assert debug_req
+                   if(debug_req_duration_q == 1) 
+                     debug_req_o <= !debug_req_value_q;
+                end
+               
+            end
+        end
+    end
+   
+    // -------------------------------------------------------------
     // show writes if requested
     always_ff @(posedge clk_i, negedge rst_ni) begin: verbose_writes
         if ($test$plusargs("verbose") && data_req_i && data_we_i)
@@ -390,29 +502,58 @@ module mm_ram
                      data_addr_i, data_wdata_i);
     end
 
+    // -------------------------------------------------------------
     // instantiate the ram
     dp_ram
         #(.ADDR_WIDTH (RAM_ADDR_WIDTH),
           .INSTR_RDATA_WIDTH(INSTR_RDATA_WIDTH))
     dp_ram_i
         (
-         .clk_i     ( clk_i           ),
+         .clk_i     ( clk_i                               ),
 
-         .en_a_i    ( ram_instr_req   ),
-         .addr_a_i  ( ram_instr_addr  ),
-         .wdata_a_i ( '0              ),	// Not writing so ignored
-         .rdata_a_o ( ram_instr_rdata ),
-         .we_a_i    ( '0              ),
-         .be_a_i    ( 4'b1111         ),	// Always want 32-bits
+         .en_a_i    ( ram_instr_req                       ),
+         .addr_a_i  ( ram_instr_addr[RAM_ADDR_WIDTH-1:0]  ),
+         .wdata_a_i ( '0                                  ),	// Not writing so ignored
+         .rdata_a_o ( ram_instr_rdata                     ),
+         .we_a_i    ( '0                                  ),
+         .be_a_i    ( 4'b1111                             ),	// Always want 32-bits
 
-         .en_b_i    ( ram_data_req    ),
-         .addr_b_i  ( ram_data_addr   ),
-         .wdata_b_i ( ram_data_wdata  ),
-         .rdata_b_o ( ram_data_rdata  ),
-         .we_b_i    ( ram_data_we     ),
-         .be_b_i    ( ram_data_be     ));
+         .en_b_i    ( ram_data_req                        ),
+         .addr_b_i  ( ram_data_addr[RAM_ADDR_WIDTH-1:0]   ),
+         .wdata_b_i ( ram_data_wdata                      ),
+         .rdata_b_o ( ram_data_rdata                      ),
+         .we_b_i    ( ram_data_we                         ),
+         .be_b_i    ( ram_data_be                         ));
 
+    // -------------------------------------------------------------
+    // instantiate the debbuger ram
+`ifdef DEBUGGER_SUPPORT
+    dp_ram
+        #(.ADDR_WIDTH (DBG_ADDR_WIDTH),
+          .INSTR_RDATA_WIDTH(INSTR_RDATA_WIDTH))
+    dbg_dp_ram_i
+        (
+         .clk_i     ( clk_i                                ),
 
+         .en_a_i    ( dbg_instr_req                        ),
+         .addr_a_i  ( dbg_instr_addr[DBG_ADDR_WIDTH-1:0]   ),
+         .wdata_a_i ( '0                                   ),	// Not writing so ignored
+         .rdata_a_o ( dbg_instr_rdata                      ),
+         .we_a_i    ( '0                                   ),
+         .be_a_i    ( 4'b1111                              ),	// Always want 32-bits
+
+         .en_b_i    ( dbg_data_req                         ),
+         .addr_b_i  ( dbg_data_addr[DBG_ADDR_WIDTH-1:0]    ),
+         .wdata_b_i ( ram_data_wdata                       ),
+         .rdata_b_o ( dbg_data_rdata                       ),
+         .we_b_i    ( ram_data_we                          ),
+         .be_b_i    ( ram_data_be                          ));
+`endif // DEBUGGER_SUPPORT
+    // adjust debugger access address to beginning of dbg_dp_ram
+    assign dbg_instr_addr = ram_instr_addr - DBG_START_ADDR;
+    assign dbg_data_addr  = ram_data_addr  - DBG_START_ADDR;
+
+    // -------------------------------------------------------------
     // signature range
     always_ff @(posedge clk_i, negedge rst_ni) begin
         if (~rst_ni) begin
@@ -422,8 +563,6 @@ module mm_ram
             sig_end_q   <= sig_end_d;
             sig_begin_q <= sig_begin_d;
         end
-
-
     end
 
     always_ff @(posedge clk_i, negedge rst_ni) begin
@@ -435,8 +574,8 @@ module mm_ram
 
         end else begin
             select_rdata_q <= select_rdata_d;
-            data_rvalid_q  <= ram_data_req;
-            instr_rvalid_q <= ram_instr_req;
+            data_rvalid_q  <= ram_data_req  | dbg_data_req ;
+            instr_rvalid_q <= ram_instr_req | dbg_instr_req;
             state_valid_q  <= state_valid_n;
 
         end
@@ -529,34 +668,62 @@ module mm_ram
     assign instr_rvalid_o = ram_instr_valid;
     assign instr_rdata_o  = core_instr_rdata;
 
+  // create delayed request to mux read data between
+  // main ram and debug ram
+  always_ff @(posedge clk_i, negedge rst_ni) begin
+     if(!rst_ni) begin
+       dbg_instr_req_q <= '0;
+       dbg_data_req_q  <= '0;
+     end
+     else begin
+       dbg_instr_req_q <= dbg_instr_req ;
+       dbg_data_req_q  <= dbg_data_req  ;
+     end
+  end
+   
+  assign muxed_instr_rdata  = dbg_instr_req_q ? dbg_instr_rdata : ram_instr_rdata ;
+  assign muxed_data_rdata   = dbg_data_req_q  ? dbg_data_rdata  : ram_data_rdata ;
 
   always_comb
   begin
-    ram_instr_req    = instr_req_i;
+
+    dbg_instr_req    = instr_req_i &&
+                       (instr_addr_i >= DBG_START_ADDR) &&
+                       (instr_addr_i < (DBG_START_ADDR + 2 ** DBG_ADDR_WIDTH) );
+    ram_instr_req    = instr_req_i && !dbg_instr_req;
     ram_instr_addr   = instr_addr_i;
     ram_instr_gnt    = instr_req_i;
     ram_instr_valid  = instr_rvalid_q;
-    core_instr_rdata = ram_instr_rdata;
+    core_instr_rdata = muxed_instr_rdata;
 
-    ram_data_req     = data_req_dec;
+    dbg_data_req     = data_req_dec &&
+                       (data_addr_dec >= DBG_START_ADDR) &&
+                       (data_addr_dec < (DBG_START_ADDR + 2 ** DBG_ADDR_WIDTH) );
+    ram_data_req     = data_req_i && !dbg_data_req;
     ram_data_addr    = data_addr_dec;
     ram_data_gnt     = data_req_dec;
     ram_data_valid   = data_rvalid_q;
-    core_data_rdata  = ram_data_rdata;
+    core_data_rdata  = muxed_data_rdata;
     ram_data_wdata   = data_wdata_dec;
     ram_data_we      = data_we_dec;
     ram_data_be      = data_be_dec;
 
 `ifndef VERILATOR
     if(rnd_stall_regs[0]) begin
-        ram_instr_req    = rnd_stall_instr_req;
+        dbg_instr_req    = rnd_stall_instr_req &&
+                           (rnd_stall_instr_addr >= DBG_START_ADDR) && 
+                           (rnd_stall_instr_addr < (DBG_START_ADDR + 2 ** DBG_ADDR_WIDTH) );
+        ram_instr_req    = rnd_stall_instr_req && !dbg_instr_req;
         ram_instr_addr   = rnd_stall_instr_addr;
         ram_instr_gnt    = rnd_stall_instr_gnt;
         ram_instr_valid  = rnd_stall_instr_valid;
         core_instr_rdata = rnd_stall_instr_rdata;
     end
     if(rnd_stall_regs[1]) begin
-        ram_data_req     = rnd_stall_data_req;
+        dbg_data_req     = rnd_stall_data_req &&
+                           (rnd_stall_data_addr >= DBG_START_ADDR) &&
+                           (rnd_stall_data_addr < (DBG_START_ADDR + 2 ** DBG_ADDR_WIDTH) );;
+        ram_data_req     = rnd_stall_data_req && !dbg_data_req;
         ram_data_addr    = rnd_stall_data_addr;
         ram_data_gnt     = rnd_stall_data_gnt;
         ram_data_valid   = rnd_stall_data_valid;
@@ -572,7 +739,7 @@ module mm_ram
   riscv_random_stall
   #(
     .DATA_WIDTH     (INSTR_RDATA_WIDTH),
-    .RAM_ADDR_WIDTH (RAM_ADDR_WIDTH   )
+    .RAM_ADDR_WIDTH (32   )
    )
   instr_random_stalls
   (
@@ -581,7 +748,7 @@ module mm_ram
 
     .grant_mem_i        ( rnd_stall_instr_req    ),
     .rvalid_mem_i       ( instr_rvalid_q         ),
-    .rdata_mem_i        ( ram_instr_rdata        ),
+    .rdata_mem_i        ( muxed_instr_rdata      ),
 
     .grant_core_o       ( rnd_stall_instr_gnt    ),
     .rvalid_core_o      ( rnd_stall_instr_valid  ),
@@ -611,7 +778,7 @@ module mm_ram
   riscv_random_stall
   #(
     .DATA_WIDTH     (DATA_RDATA_WIDTH),
-    .RAM_ADDR_WIDTH (RAM_ADDR_WIDTH  )
+    .RAM_ADDR_WIDTH (32  )
    )
   data_random_stalls
   (
@@ -620,7 +787,7 @@ module mm_ram
 
     .grant_mem_i        ( rnd_stall_data_req     ),
     .rvalid_mem_i       ( data_rvalid_q          ),
-    .rdata_mem_i        ( ram_data_rdata         ),
+    .rdata_mem_i        ( muxed_data_rdata       ),
 
     .grant_core_o       ( rnd_stall_data_gnt     ),
     .rvalid_core_o      ( rnd_stall_data_valid   ),
