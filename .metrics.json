@@ -34,7 +34,7 @@
             "seed":        1
 	        },
           {
-            "name":        "Previously generated riscv-dv test",
+            "name":        "Manually generated riscv-dv test",
             "build":       "uvmt_cv32",
             "cmd":         "cd cv32/sim/uvmt_cv32; make asm ASM_PROG=riscv_ebreak_test_0 SIMULATOR=dsim USE_ISS=YES DSIM_WORK=/mux-flow/build/repo/dsim_work DSIM_RESULTS=/mux-flow/build/results",
             "wavesCmd":    "cd cv32/sim/uvmt_cv32; make asm ASM_PROG=riscv_ebreak_test_0 SIMULATOR=dsim USE_ISS=YES DSIM_WORK=/mux-flow/build/repo/dsim_work DSIM_RESULTS=/mux-flow/build/results WAVES=1 DSIM_DMP_FILE=riscv_ebreak_test_0.vcd",
@@ -43,16 +43,6 @@
             "isPass":      "SIMULATION PASSED",
             "seed":        1
 	        },
-          {
-            "name":        "cv32-riscv-tests",
-            "build":       "uvmt_cv32",
-            "cmd":         "cd cv32/sim/uvmt_cv32; make cv32-riscv-tests SIMULATOR=dsim USE_ISS=YES DSIM_WORK=/mux-flow/build/repo/dsim_work DSIM_RESULTS=/mux-flow/build/results",
-            "wavesCmd":    "cd cv32/sim/uvmt_cv32; make cv32-riscv-tests SIMULATOR=dsim USE_ISS=YES DSIM_WORK=/mux-flow/build/repo/dsim_work DSIM_RESULTS=/mux-flow/build/results WAVES=1 DSIM_DMP_FILE=cv32-riscv-tests.vcd",
-            "metricsFile": "cv32-riscv-tests/metrics.db",
-            "wavesFile" :  "cv32-riscv-tests/cv32-riscv-tests.vcd",
-            "isPass":      "SIMULATION PASSED",
-            "seed":        1
-          },
           {
             "name":        "cv32-riscv-compliance-tests",
             "build":       "uvmt_cv32",
