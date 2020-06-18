@@ -26,10 +26,6 @@
 `include "uvml_logs_macros.sv"
 `include "uvmt_cv32_macros.sv"
 
-// Time units and precision for this test bench
-timeunit       1ns;
-timeprecision  1ps;
-
 // All Interfaces used by the CV32 TB are here
 `include "uvmt_cv32_tb_ifs.sv"
 

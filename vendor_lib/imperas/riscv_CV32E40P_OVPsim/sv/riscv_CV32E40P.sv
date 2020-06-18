@@ -26,7 +26,7 @@ module CPU
     BUS SysBus
 );
 
-    import "DPI-C" context task ovpEntry(input int, input string, input string);
+    import "DPI-C" context task ovpEntry(input int i, input string s1, input string s2);
 
     export "DPI-C" task     busLoad;
     export "DPI-C" task     busStore;
