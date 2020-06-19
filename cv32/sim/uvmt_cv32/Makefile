@@ -165,10 +165,12 @@ endif
 #      Note: CORE_TEST_DIR is defined in ../Common.mk
 #   2. Simulator-specific clean targets are in ./<simulator>.mk
 clean_core_tests:
-	find $(CORE_TEST_DIR) -name *.o   -exec rm {} \;
-	find $(CORE_TEST_DIR) -name *.hex -exec rm {} \;
-	find $(CORE_TEST_DIR) -name *.elf -exec rm {} \;
-	find $(CORE_TEST_DIR) -name *.map -exec rm {} \;
+	find $(CORE_TEST_DIR) -name *.o       -exec rm {} \;
+	find $(CORE_TEST_DIR) -name *.hex     -exec rm {} \;
+	find $(CORE_TEST_DIR) -name *.elf     -exec rm {} \;
+	find $(CORE_TEST_DIR) -name *.map     -exec rm {} \;
+	find $(CORE_TEST_DIR) -name *.readelf -exec rm {} \;
+	find $(CORE_TEST_DIR) -name *.objdump -exec rm {} \;
 
 clean_test_programs:
 	find ../../tests/uvmt_cv32/test-programs -name *.o       -exec rm {} \;
