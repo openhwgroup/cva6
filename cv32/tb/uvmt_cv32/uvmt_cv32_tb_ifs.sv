@@ -179,8 +179,8 @@ endinterface : uvmt_cv32_core_cntrl_if
  */
 interface uvmt_cv32_core_interrupts_if
  #(
-   parameter NUM_FAST_INTR   = 15, //TODO: pass these in from the TB/DUT_WRAP
-             NUM_XFASTX_INTR = 32  // _XFASTX_ deliberately choosen to make it visually distinct from _FAST_
+   parameter NUM_FAST_INTR   = 48 //TODO: pass these in from the TB/DUT_WRAP
+             //NUM_XFASTX_INTR = 32  // _XFASTX_ deliberately choosen to make it visually distinct from _FAST_
   )
   (
    input  logic                       irq_ack,        // dut output
@@ -189,9 +189,9 @@ interface uvmt_cv32_core_interrupts_if
    output logic                       irq_software,   // dut input
    output logic                       irq_timer,      // dut input
    output logic                       irq_external,   // dut input
-   output logic [NUM_FAST_INTR-1:0]   irq_fast,       // dut input
-   output logic                       irq_nmi,        // dut input
-   output logic [NUM_XFASTX_INTR-1:0] irq_fastx       // dut input
+   output logic [NUM_FAST_INTR-1:0]   irq_fast        // dut input
+   //output logic                       irq_nmi,        // dut input
+   //output logic [NUM_XFASTX_INTR-1:0] irq_fastx       // dut input
   );
 
   import uvm_pkg::*;
@@ -202,8 +202,8 @@ interface uvmt_cv32_core_interrupts_if
     irq_timer    = 1'b0;
     irq_external = 1'b0;
     irq_fast     = {NUM_FAST_INTR{1'b0}};
-    irq_nmi      = 1'b0;
-    irq_fastx    = {NUM_XFASTX_INTR{1'b0}};
+    //irq_nmi      = 1'b0;
+    //irq_fastx    = {NUM_XFASTX_INTR{1'b0}};
     `uvm_info("CORE_INTERRUPT_IF", "Interrupt inputs to CORE all tied low (for now).", UVM_NONE)
   end
 
