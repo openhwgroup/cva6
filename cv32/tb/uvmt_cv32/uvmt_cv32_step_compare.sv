@@ -103,13 +103,13 @@ module uvmt_cv32_step_compare
       // Compare GPR's
       // Assuming that $root.uvmt_cv32_tb.dut_wrap.riscv_core_i.riscv_tracer_i.insn_regs_write size is never > 1.  Check this.
       // Note that dut_wrap is found 1 level up
-      insn_regs_write_size = $root.uvmt_cv32_tb.dut_wrap.riscv_core_i.riscv_tracer_i.insn_regs_write.size();
+      insn_regs_write_size = $root.uvmt_cv32_tb.dut_wrap.riscv_core_i.tracer_i.insn_regs_write.size();
       if (insn_regs_write_size > 1) begin
         `uvm_error("Step-and-Compare",  $sformatf("Assume insn_regs_write size is 0 or 1 but is %0d", insn_regs_write_size));
       end
       else if (insn_regs_write_size == 1) begin // Get $root.uvmt_cv32_tb.dut_wrap.riscv_core_i.riscv_tracer_i.insn_regs_write fields if size is 1
-         insn_regs_write_addr = $root.uvmt_cv32_tb.dut_wrap.riscv_core_i.riscv_tracer_i.insn_regs_write[0].addr;
-         insn_regs_write_value = $root.uvmt_cv32_tb.dut_wrap.riscv_core_i.riscv_tracer_i.insn_regs_write[0].value;
+         insn_regs_write_addr = $root.uvmt_cv32_tb.dut_wrap.riscv_core_i.tracer_i.insn_regs_write[0].addr;
+         insn_regs_write_value = $root.uvmt_cv32_tb.dut_wrap.riscv_core_i.tracer_i.insn_regs_write[0].value;
          `uvm_info("Step-and-Compare", $sformatf("insn_regs_write queue[0] addr=0x%0x, value=0x%0x", insn_regs_write_addr, insn_regs_write_value), UVM_DEBUG);
       end
       

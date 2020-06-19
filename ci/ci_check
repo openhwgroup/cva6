@@ -81,8 +81,8 @@ def check_uvm_results():
         fail_count += 1
         # TODO: make this a list of known failures (hopefully there won't be that many...)
         if (
-            (re.search('riscv_compliance', failed)) or
-            (re.search('riscv_ebreak',     failed))
+            (re.search('riscv_compliance', failed))
+            # or (re.search('riscv_ebreak', failed))
            ):
             expct_fail += 1
 
@@ -95,7 +95,7 @@ def check_uvm_results():
     elif ((fail_count == 0) and (pass_count >=3)):
         print ('\nCI Check PASSED with no failures.')
         print ('OK to issue a pull-request.\n')
-    elif (fail_count == 2 and expct_fail == 2):
+    elif (fail_count == expct_fail):
         print ('\nCI Check PASSED with known failure(s).')
         print ('OK to issue a pull-request.\n')
     else:

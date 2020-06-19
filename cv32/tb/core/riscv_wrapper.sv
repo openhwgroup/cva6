@@ -57,7 +57,7 @@ module riscv_wrapper
     logic                         irq;
     logic [0:4]                   irq_id_in;
     logic                         irq_ack;
-    logic [0:4]                   irq_id_out;
+    logic [0:5]                   irq_id_out;
     logic                         irq_sec;
 
 
@@ -65,7 +65,7 @@ module riscv_wrapper
     assign irq_sec     = '0;
 
     // instantiate the core
-    riscv_core #(
+    cv32e40p_core #(
                  .PULP_HWLP        (PULP_HWLP),
                  .PULP_CLUSTER     (PULP_CLUSTER),
                  .FPU              (FPU),
@@ -110,14 +110,16 @@ module riscv_wrapper
          .apu_master_result_i    (                       ),
          .apu_master_flags_i     (                       ),
 
+         // TODO: Interrupts need to be re-done
+         .irq_i                  ( {64{1'b0}}            ),
          .irq_ack_o              ( irq_ack               ),
          .irq_id_o               ( irq_id_out            ),
-         .irq_software_i         (1'b0                   ),
-         .irq_timer_i            (1'b0                   ),
-         .irq_external_i         (1'b0                   ),
-         .irq_fast_i             ({15{1'b0}}             ),
-         .irq_nmi_i              (1'b0                   ),
-         .irq_fastx_i            ({32{1'b0}}             ),
+         //.irq_software_i         (1'b0                   ),
+         //.irq_timer_i            (1'b0                   ),
+         //.irq_external_i         (1'b0                   ),
+         //.irq_fast_i             ({15{1'b0}}             ),
+         //.irq_nmi_i              (1'b0                   ),
+         //.irq_fastx_i            ({32{1'b0}}             ),
 
          .debug_req_i            ( debug_req             ),
 
@@ -148,7 +150,8 @@ module riscv_wrapper
          .data_rvalid_o  ( data_rvalid                    ),
          .data_gnt_o     ( data_gnt                       ),
 
-         .irq_id_i       ( irq_id_out                     ),
+         // TODO: Interrupts need to be re-done
+         .irq_id_i       ( irq_id_out[0:4]                ),
          .irq_ack_i      ( irq_ack                        ),
          .irq_id_o       ( irq_id_in                      ),
          .irq_o          ( irq                            ),
