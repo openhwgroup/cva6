@@ -52,12 +52,14 @@ module mmu #(
     // input logic flag_mprv_i,
     input logic [43:0]                      satp_ppn_i,
     input logic [ASID_WIDTH-1:0]            asid_i,
-    input logic                             flush_tlb_i,
-    // Performance counters
-    output logic                            itlb_miss_o,
-    output logic                            dtlb_miss_o,
-    // PTW memory interface
-    input  dcache_req_o_t                   req_port_i,
+		input logic [ASID_WIDTH-1:0] asid_to_be_flushed,
+	    input logic [63:0] vaddr_to_be_flushed,
+        input logic                             flush_tlb_i,
+        // Performance counters
+        output logic                            itlb_miss_o,
+        output logic                            dtlb_miss_o,
+        // PTW memory interface
+        input  dcache_req_o_t                   req_port_i,
     output dcache_req_i_t                   req_port_o,
     // PMP
     input  riscv::pmpcfg_t [ArianeCfg.NrPMPEntries-1:0] pmpcfg_i,
@@ -105,6 +107,8 @@ module mmu #(
 
         .lu_access_i      ( itlb_lu_access             ),
         .lu_asid_i        ( asid_i                     ),
+		.asid_to_be_flushed ( asid_to_be_flushed ),
+		.vaddr_to_be_flushed ( vaddr_to_be_flushed ),
         .lu_vaddr_i       ( icache_areq_i.fetch_vaddr  ),
         .lu_content_o     ( itlb_content               ),
 
@@ -125,6 +129,8 @@ module mmu #(
 
         .lu_access_i      ( dtlb_lu_access              ),
         .lu_asid_i        ( asid_i                      ),
+		.asid_to_be_flushed ( asid_to_be_flushed ),
+		.vaddr_to_be_flushed ( vaddr_to_be_flushed ),
         .lu_vaddr_i       ( lsu_vaddr_i                 ),
         .lu_content_o     ( dtlb_content                ),
 
