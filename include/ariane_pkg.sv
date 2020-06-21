@@ -684,7 +684,7 @@ package ariane_pkg;
         amo_t        amo_op;    // atomic memory operation to perform
         logic [1:0]  size;      // 2'b10 --> word operation, 2'b11 --> double word operation
         logic [63:0] operand_a; // address
-        logic [63:0] operand_b; // data as layuoted in the register
+        logic [63:0] operand_b; // data as layouted in the register
     } amo_req_t;
 
     // AMO response coming from cache.
