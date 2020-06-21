@@ -88,6 +88,9 @@ module ariane #(
   // --------------
   // ISSUE <-> EX
   // --------------
+   logic [63:0] rs1_forwarding_id_ex; // unregistered version of fu_data_o.operanda 
+   logic [63:0] rs2_forwarding_id_ex; // unregistered version of fu_data_o.operandb 
+
   fu_data_t                 fu_data_id_ex;
   logic [riscv::VLEN-1:0]   pc_id_ex;
   logic                     is_compressed_instr_id_ex;
@@ -167,7 +170,7 @@ module ariane #(
   logic                     sum_csr_ex;
   logic                     mxr_csr_ex;
   logic [43:0]              satp_ppn_csr_ex;
-  logic [0:0]               asid_csr_ex;
+  logic [ASID_WIDTH-1:0]               asid_csr_ex;
   logic [11:0]              csr_addr_ex_csr;
   fu_op                     csr_op_commit_csr;
   logic [63:0]              csr_wdata_commit_csr;
@@ -305,6 +308,8 @@ module ariane #(
     .is_ctrl_flow_i             ( is_ctrl_fow_id_issue         ),
     .decoded_instr_ack_o        ( issue_instr_issue_id         ),
     // Functional Units
+	.rs1_forwarding_o (rs1_forwarding_id_ex), 
+	.rs2_forwarding_o (rs2_forwarding_id_ex), 
     .fu_data_o                  ( fu_data_id_ex                ),
     .pc_o                       ( pc_id_ex                     ),
     .is_compressed_instr_o      ( is_compressed_instr_id_ex    ),
@@ -348,12 +353,15 @@ module ariane #(
   // EX
   // ---------
   ex_stage #(
+             .ASID_WIDTH ( ASID_WIDTH ),
     .ArianeCfg ( ArianeCfg )
   ) ex_stage_i (
     .clk_i                  ( clk_i                       ),
     .rst_ni                 ( rst_ni                      ),
     .debug_mode_i           ( debug_mode                  ),
     .flush_i                ( flush_ctrl_ex               ),
+	.rs1_forwarding_i (rs1_forwarding_id_ex), 
+	.rs2_forwarding_i (rs2_forwarding_id_ex), 
     .fu_data_i              ( fu_data_id_ex               ),
     .pc_i                   ( pc_id_ex                    ),
     .is_compressed_instr_i  ( is_compressed_instr_id_ex   ),
