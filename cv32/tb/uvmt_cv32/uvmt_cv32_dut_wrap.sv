@@ -77,11 +77,17 @@ module uvmt_cv32_dut_wrap #(// DUT (riscv_core) parameters.
     logic [31:0]                  data_rdata;
     logic [31:0]                  data_wdata;
 
-    logic [ 4:0]                  irq_id_out;
     logic [ 4:0]                  irq_id_in;
+
+    logic [63:0]                  irq64;
+    logic                         irq_ack;
+    logic [ 5:0]                  irq_id6;
 
     logic                         debug_req;
    
+    // Hold interrupts idle for now
+    assign irq64 = {64{1'b0}};
+
     // Load the Instruction Memory 
     initial begin: load_instruction_memory
       string firmware;
@@ -158,7 +164,7 @@ module uvmt_cv32_dut_wrap #(// DUT (riscv_core) parameters.
 
     // --------------------------------------------
     // instantiate the core
-    riscv_core #(
+    cv32e40p_core #(
                  .PULP_HWLP        (PULP_HWLP),
                  .PULP_CLUSTER     (PULP_CLUSTER),
                  .FPU              (FPU),
@@ -206,17 +212,17 @@ module uvmt_cv32_dut_wrap #(// DUT (riscv_core) parameters.
          // TODO: interrupts significantly updated for CV32E40P
          //       Connect all interrupt signals to an SV interface
          //       and pass to ENV for an INTERRUPT AGENT to drive/monitor.
-         //.irq_i                  ( irq                            ),
+         .irq_i                  ( irq64                            ),
+         .irq_ack_o              ( irq_ack                          ),
+         .irq_id_o               ( irq_id6                          ),
          //.irq_id_i               ( irq_id_in                      ),
          //.irq_sec_i              ( (core_interrupts_if.irq_sec||irq) ),
-         .irq_ack_o              ( irq_ack                           ),
-         .irq_id_o               ( irq_id_out                        ),
-         .irq_software_i         ( core_interrupts_if.irq_software   ),
-         .irq_timer_i            ( core_interrupts_if.irq_timer      ),
-         .irq_external_i         ( core_interrupts_if.irq_external   ),
-         .irq_fast_i             ( core_interrupts_if.irq_fast       ),
-         .irq_nmi_i              ( core_interrupts_if.irq_nmi        ),
-         .irq_fastx_i            ( core_interrupts_if.irq_fastx      ),
+         //.irq_software_i         ( core_interrupts_if.irq_software   ),
+         //.irq_timer_i            ( core_interrupts_if.irq_timer      ),
+         //.irq_external_i         ( core_interrupts_if.irq_external   ),
+         //.irq_fast_i             ( core_interrupts_if.irq_fast       ),
+         //.irq_nmi_i              ( core_interrupts_if.irq_nmi        ),
+         //.irq_fastx_i            ( core_interrupts_if.irq_fastx      ),
 
          .debug_req_i            ( debug_req                         ),
 
@@ -247,7 +253,7 @@ module uvmt_cv32_dut_wrap #(// DUT (riscv_core) parameters.
          .data_rvalid_o  ( data_rvalid                    ),
          .data_gnt_o     ( data_gnt                       ),
 
-         .irq_id_i       ( irq_id_out                     ),
+         .irq_id_i       ( 5'b00000                       ),
          .irq_ack_i      ( irq_ack                        ),
          .irq_id_o       ( irq_id_in                      ),
          .irq_o          ( irq                            ),

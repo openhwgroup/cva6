@@ -22,9 +22,8 @@
 //                                                                                                              //
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-import riscv_defines::*;
+//import riscv_defines::*;
 import perturbation_defines::*;
-`include "riscv_config.sv"
 
 module riscv_random_stall
 

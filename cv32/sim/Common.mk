@@ -54,11 +54,14 @@
 # Head of the master branch as of 2020-05-29
 CV32E40P_REPO   ?= https://github.com/openhwgroup/cv32e40p
 CV32E40P_BRANCH ?= master
-CV32E40P_HASH    ?= 9135b2f8caf7364141fbb70358badbdc86162d77
+CV32E40P_HASH   ?= 8e22c994198ad08f4cacf239d56d98e1cc25627b
 
 FPNEW_REPO      ?= https://github.com/pulp-platform/fpnew
 FPNEW_BRANCH    ?= master
-FPNEW_HASH      ?= c15c54887b3bc6d0965606c487e9f1bf43237e45
+#Note: this is one merge behind the head (as of 2020-06-11)
+FPNEW_HASH      ?= f108dfdd84f7c24dcdefb35790fafb3905bce552
+#Note: this is head (as of 2020-06-11).  Can't use it because of the worm
+#FPNEW_HASH      ?= babffe88fcf6d2931a7afa8d121b6a6ba4f532f7
 
 RISCVDV_REPO    ?= https://github.com/google/riscv-dv
 RISCVDV_BRANCH  ?= master
