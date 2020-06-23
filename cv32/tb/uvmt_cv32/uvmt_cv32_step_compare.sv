@@ -253,6 +253,7 @@ module uvmt_cv32_step_compare
    // Any time the RTL flags retire, stop the clock
    // Then wait for the next compare event and start the clocks again
    initial begin
+      static integer instruction_count = 0;
       @(negedge clknrst_if.reset_n) ;// To allow uvmt_cv32_base_test_c::reset_phase to execute and set clk_period
       clknrst_if.start_clk();
       forever begin
@@ -260,6 +261,13 @@ module uvmt_cv32_step_compare
          clknrst_if.stop_clk();
          @(ev_compare);
          clknrst_if.start_clk();
+         instruction_count += 1;
+         if (!(instruction_count % 10000)) begin
+            `uvm_info("Step-and-Compare", $sformatf("Compared %0d instructions", instruction_count), UVM_NONE)
+         end
+         if (instruction_count >= 100000) begin
+            `uvm_fatal("Step-and-Compare", $sformatf("Compared %0d instructions - that's too long!", instruction_count))
+         end
       end
    end
 

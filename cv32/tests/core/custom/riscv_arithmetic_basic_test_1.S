@@ -1,7 +1,25 @@
+# BEGIN: riscv-dv
+#.include "user_define.h"
+#.globl _start
+#.section .text
+#_start:           
+# END: riscv-dv
+# BEGIN: gtumbush
 .include "user_define.h"
+.section .text.start
 .globl _start
 .section .text
-_start:           
+.type _start, @function
+
+_start:
+
+    j _start_main
+
+.globl _start_main
+.section .text
+_start_main:          
+# END: gtumbush
+# BEGIN: riscv-dv
                   csrr x5, mhartid
                   li x6, 0
                   beq x5, x6, 0f
