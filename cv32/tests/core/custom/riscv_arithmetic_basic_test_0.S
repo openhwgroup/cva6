@@ -11,6 +11,7 @@
 .section .text
 .type _start, @function
 
+
 _start:
 
     j _start_main
@@ -11285,6 +11286,32 @@ main:             li         s0, 0x0 #start riscv_int_numeric_corner_stream_39
                   srai       s10, s1, 24
                   remu       s5, s11, t1
                   addi       a7, t2, -784
+                  j fast_exit
+
+#Start: Extracted from riscv_compliance_tests/riscv_test.h
+fast_exit:
+                  /* print "\nDONE\n\n" */
+                  lui a0,print_port>>12
+                  addi a1,zero,'D'
+                  addi a2,zero,'O'
+                  addi a3,zero,'N'
+                  addi a4,zero,'E'
+                  addi a5,zero,'\n'
+                  sw a5,0(a0)
+                  sw a1,0(a0)
+                  sw a2,0(a0)
+                  sw a3,0(a0)
+                  sw a4,0(a0)
+                  sw a5,0(a0)
+                  sw a5,0(a0)
+
+                  li a0, test_ret_val
+                  lw a1, test_results /* report result */
+                  sw a1,0(a0)
+
+                  wfi  /* we are done */
+##End: Extracted from riscv_compliance_tests/riscv_test.h
+
                   j test_done
 test_done:        
                   li gp, 1
