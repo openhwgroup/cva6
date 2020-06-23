@@ -24,9 +24,11 @@
 VCS_OVP_MODEL_DPI = $(OVP_MODEL_DPI:.so=)                    # remove extension as VCS adds it
 VCS_TIMESCALE = $(shell echo "$(TIMESCALE)" | tr ' ' '=')    # -timescale=1ns/1ps
 
+UVM_HOME ?= /opt/uvm/1800.2-2017-0.9/
 
+VCS_VERSION           ?= O-2018.09-SP1-1
+VCS_HOME              ?= /opt/synopsys/vcs-mx/$(VCS_VERSION)
 VCS                   ?= vcs
-VCS_HOME              ?= /opt/synopsys/vcs
 VCS_CMP_FLAGS         ?= $(VCS_TIMESCALE) $(SV_CMP_FLAGS) -sverilog -top uvmt_cv32_tb
 VCS_UVM_ARGS          ?= +incdir+$(UVM_HOME)/src $(UVM_HOME)/src/uvm_pkg.sv -ntb_opts uvm-1.2
 VCS_RESULTS           ?= $(PWD)/vcs_results
@@ -65,6 +67,7 @@ comp: mk_results $(CV32E40P_PKG) $(OVPM_DIR)
 	$(VCS) \
 		$(VCS_CMP_FLAGS) \
 		$(VCS_UVM_ARGS) \
+		-assert svaext -race=all -ignore unique_checks -full64 \
 		+incdir+$(DV_UVME_CV32_PATH) \
 		+incdir+$(DV_UVMT_CV32_PATH) \
 		-f $(CV32E40P_MANIFEST) \

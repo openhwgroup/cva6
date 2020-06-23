@@ -9,9 +9,9 @@ To run the testcases you will need a SystemVerilog simulator and RISC-V GCC comp
 Supported SystemVerilog Simulators
 ----------------------------------
 At the time of this writting (2020-02-14) **_Verilator_**, the Metrics
-**_dsim_**, Mentor's **_Questa_** and Cadence **_Xcelium_** simulators are
-supported.  Support for other SystemVerilog simulators such as Synopsys
-**_vcs_** and Aldec's **_Riviera-PRO_** is contingent on community interest.
+**_dsim_**, Mentor's **_Questa_**, Cadence **_Xcelium_** and Synopsys **_vcs_** 
+simulators are supported.  Support for other SystemVerilog simulators such as 
+Aldec's **_Riviera-PRO_** is contingent on community interest.
 Note that **_Icarus_** verilog cannot compile the RTL and there are no plans
 to support Icarus in the future.  On-going support for Verilator is not guaranteed.
 
@@ -93,7 +93,7 @@ to run the ADD IMMEDIATE test from riscv_tests:
 <br>To run I-LBU-01.S from the riscv_compliance_tests:
 * `make questa-unit-test I_LBU_01`
 
-Running the testbench with vcs (included in the Makefile, but not known to work)
+Running the testbench with VCS (vcs)
 ----------------------
 Point your environment variable `RISCV` to your RISC-V toolchain.
 Call `make firmware-vcs-run` to build the testbench and the firmware, and run it.
