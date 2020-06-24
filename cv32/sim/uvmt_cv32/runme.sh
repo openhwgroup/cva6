@@ -10,34 +10,42 @@ function assemble_me() {
   make bsp
 
   /opt/riscv/bin/riscv32-unknown-elf-gcc -Os -g -static -mabi=ilp32 -march=rv32imc -Wall -pedantic \
-	  -o ../../tests/core/custom/$1.elf \
+	  -o ../../tests/core/$1/$2.elf \
 	  -nostartfiles \
-	  -I ../../tests/core/asm ../../tests/core/custom/$1.S \
+	  -I ../../tests/core/$1 \
+	  ../../tests/core/$1/$2.S \
 	  -T ../../bsp/link.ld \
 	  -L ../../bsp \
 	  -lcv-verif
 
   /opt/riscv/bin/riscv32-unknown-elf-objcopy \
 	  -O verilog \
-	  ../../tests/core/custom/$1.elf \
-	  ../../tests/core/custom/$1.hex
+	  ../../tests/core/$1/$2.elf \
+	  ../../tests/core/$1/$2.hex
 
   /opt/riscv/bin/riscv32-unknown-elf-readelf \
 	  -a \
-	  ../../tests/core/custom/$1.elf > \
-	  ../../tests/core/custom/$1.readelf
+	  ../../tests/core/$1/$2.elf > \
+	  ../../tests/core/$1/$2.readelf
 
   /opt/riscv/bin/riscv32-unknown-elf-objdump \
 	  -D \
-	  ../../tests/core/custom/$1.elf > \
-	  ../../tests/core/custom/$1.objdump
+	  ../../tests/core/$1/$2.elf > \
+	  ../../tests/core/$1/$2.objdump
 }
 
 make clean_core_tests
 ls -l ../../tests/core/custom
-assemble_me riscv_ebreak_test_0
-assemble_me riscv_arithmetic_basic_test_0
+assemble_me custom riscv_ebreak_test_0
+assemble_me custom riscv_arithmetic_basic_test_0
 ls -l ../../tests/core/custom
 grep -i entry ../../tests/core/custom/*.readelf
+echo ""
+echo ""
+ls -l ../../tests/core/google-riscv-dv
+assemble_me google-riscv-dv riscv_arithmetic_basic_test_0
+assemble_me google-riscv-dv riscv_arithmetic_basic_test_1
+ls -l ../../tests/core/google-riscv-dv
+grep -i entry ../../tests/core/google-riscv-dv/*.readelf
 
 #end#end#
