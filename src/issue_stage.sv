@@ -58,13 +58,13 @@ module issue_stage #(
     // write back port
     input logic [NR_WB_PORTS-1:0][TRANS_ID_BITS-1:0] trans_id_i,
     input bp_resolve_t                               resolved_branch_i,
-    input logic [NR_WB_PORTS-1:0][63:0]              wbdata_i,
+    input logic [NR_WB_PORTS-1:0][riscv::XLEN-1:0]   wbdata_i,
     input exception_t [NR_WB_PORTS-1:0]              ex_ex_i, // exception from execute stage
     input logic [NR_WB_PORTS-1:0]                    wt_valid_i,
 
     // commit port
     input  logic [NR_COMMIT_PORTS-1:0][4:0]          waddr_i,
-    input  logic [NR_COMMIT_PORTS-1:0][63:0]         wdata_i,
+    input  logic [NR_COMMIT_PORTS-1:0][riscv::XLEN-1:0] wdata_i,
     input  logic [NR_COMMIT_PORTS-1:0]               we_gpr_i,
     input  logic [NR_COMMIT_PORTS-1:0]               we_fpr_i,
 
@@ -78,11 +78,11 @@ module issue_stage #(
     fu_t  [2**REG_ADDR_SIZE-1:0] rd_clobber_fpr_sb_iro;
 
     logic [REG_ADDR_SIZE-1:0]  rs1_iro_sb;
-    logic [63:0]               rs1_sb_iro;
+    logic [riscv::XLEN-1:0]    rs1_sb_iro;
     logic                      rs1_valid_sb_iro;
 
     logic [REG_ADDR_SIZE-1:0]  rs2_iro_sb;
-    logic [63:0]               rs2_sb_iro;
+    logic [riscv::XLEN-1:0]    rs2_sb_iro;
     logic                      rs2_valid_iro_sb;
 
     logic [REG_ADDR_SIZE-1:0]  rs3_iro_sb;

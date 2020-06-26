@@ -22,9 +22,9 @@ module multiplier (
     input  logic [TRANS_ID_BITS-1:0] trans_id_i,
     input  logic                     mult_valid_i,
     input  fu_op                     operator_i,
-    input  logic [63:0]              operand_a_i,
-    input  logic [63:0]              operand_b_i,
-    output logic [63:0]              result_o,
+    input  logic [riscv::XLEN-1:0]              operand_a_i,
+    input  logic [riscv::XLEN-1:0]              operand_b_i,
+    output logic [riscv::XLEN-1:0]              result_o,
     output logic                     mult_valid_o,
     output logic                     mult_ready_o,
     output logic [TRANS_ID_BITS-1:0] mult_trans_id_o
@@ -33,7 +33,7 @@ module multiplier (
     logic [TRANS_ID_BITS-1:0]    trans_id_q;
     logic                        mult_valid_q;
     fu_op                        operator_d, operator_q;
-    logic [127:0] mult_result_d, mult_result_q;
+    logic [riscv::XLEN*2-1:0] mult_result_d, mult_result_q;
 
     // control registers
     logic                       sign_a, sign_b;
@@ -46,8 +46,8 @@ module multiplier (
 
     assign mult_valid      = mult_valid_i && (operator_i inside {MUL, MULH, MULHU, MULHSU, MULW});
     // datapath
-    logic [127:0] mult_result;
-    assign mult_result   = $signed({operand_a_i[63] & sign_a, operand_a_i}) * $signed({operand_b_i[63] & sign_b, operand_b_i});
+    logic [riscv::XLEN*2-1:0] mult_result;
+    assign mult_result   = $signed({operand_a_i[riscv::XLEN-1] & sign_a, operand_a_i}) * $signed({operand_b_i[riscv::XLEN-1] & sign_b, operand_b_i});
 
     // Sign Select MUX
     always_comb begin
@@ -70,17 +70,17 @@ module multiplier (
 
 
     // single stage version
-    assign mult_result_d   = $signed({operand_a_i[63] & sign_a, operand_a_i}) *
-                             $signed({operand_b_i[63] & sign_b, operand_b_i});
+    assign mult_result_d   = $signed({operand_a_i[riscv::XLEN-1] & sign_a, operand_a_i}) *
+                             $signed({operand_b_i[riscv::XLEN-1] & sign_b, operand_b_i});
 
 
     assign operator_d = operator_i;
     always_comb begin : p_selmux
         unique case (operator_q)
-            MULH, MULHU, MULHSU: result_o = mult_result_q[127:64];
+            MULH, MULHU, MULHSU: result_o = mult_result_q[riscv::XLEN*2-1:riscv::XLEN];
             MULW:                result_o = sext32(mult_result_q[31:0]);
             // MUL performs an XLEN-bit×XLEN-bit multiplication and places the lower XLEN bits in the destination register
-            default:             result_o = mult_result_q[63:0];// including MUL
+            default:             result_o = mult_result_q[riscv::XLEN-1:0];// including MUL
         endcase
     end
 

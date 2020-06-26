@@ -30,7 +30,7 @@ module store_unit (
     // store unit output port
     output logic                     valid_o,
     output logic [TRANS_ID_BITS-1:0] trans_id_o,
-    output logic [63:0]              result_o,
+    output logic [riscv::XLEN-1:0]   result_o,
     output exception_t               ex_o,
     // MMU -> Address Translation
     output logic                     translation_req_o, // request address translation
@@ -48,7 +48,7 @@ module store_unit (
     output dcache_req_i_t            req_port_o
 );
     // it doesn't matter what we are writing back as stores don't return anything
-    assign result_o = 64'b0;
+    assign result_o = 'h0;
 
     enum logic [1:0] {
         IDLE,
@@ -64,7 +64,7 @@ module store_unit (
     logic instr_is_amo;
     assign instr_is_amo = is_amo(lsu_ctrl_i.operator);
     // keep the data and the byte enable for the second cycle (after address translation)
-    logic [63:0]  st_data_n,      st_data_q;
+    logic [riscv::XLEN-1:0] st_data_n, st_data_q;
     logic [7:0]   st_be_n,        st_be_q;
     logic [1:0]   st_data_size_n, st_data_size_q;
     amo_t         amo_op_d,       amo_op_q;
@@ -181,8 +181,8 @@ module store_unit (
     always_comb begin
         st_be_n   = lsu_ctrl_i.be;
         // don't shift the data if we are going to perform an AMO as we still need to operate on this data
-        st_data_n = instr_is_amo ? lsu_ctrl_i.data
-                                 : data_align(lsu_ctrl_i.vaddr[2:0], lsu_ctrl_i.data);
+        st_data_n = instr_is_amo ? lsu_ctrl_i.data[riscv::XLEN-1:0]
+                                 : data_align(lsu_ctrl_i.vaddr[2:0], {{64-riscv::XLEN{1'b0}}, lsu_ctrl_i.data[riscv::XLEN-1:0]});
         st_data_size_n = extract_transfer_size(lsu_ctrl_i.operator);
         // save AMO op for next cycle
         case (lsu_ctrl_i.operator)

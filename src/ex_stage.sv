@@ -28,7 +28,7 @@ module ex_stage #(
     input  logic                                   is_compressed_instr_i, // we need to know if this was a compressed instruction
                                                                           // in order to calculate the next PC on a mis-predict
     // Fixed latency unit(s)
-    output logic [63:0]                            flu_result_o,
+    output logic [riscv::XLEN-1:0]                 flu_result_o,
     output logic [TRANS_ID_BITS-1:0]               flu_trans_id_o,        // ID of scoreboard entry at which to write back
     output exception_t                             flu_exception_o,
     output logic                                   flu_ready_o,           // FLU is ready
@@ -52,11 +52,11 @@ module ex_stage #(
     input  logic                                   lsu_valid_i,        // Input is valid
 
     output logic                                   load_valid_o,
-    output logic [63:0]                            load_result_o,
+    output logic [riscv::XLEN-1:0]                 load_result_o,
     output logic [TRANS_ID_BITS-1:0]               load_trans_id_o,
     output exception_t                             load_exception_o,
     output logic                                   store_valid_o,
-    output logic [63:0]                            store_result_o,
+    output logic [riscv::XLEN-1:0]                 store_result_o,
     output logic [TRANS_ID_BITS-1:0]               store_trans_id_o,
     output exception_t                             store_exception_o,
 
@@ -73,7 +73,7 @@ module ex_stage #(
     input  logic [2:0]                             fpu_frm_i,        // FP frm csr
     input  logic [6:0]                             fpu_prec_i,       // FP precision control
     output logic [TRANS_ID_BITS-1:0]               fpu_trans_id_o,
-    output logic [63:0]                            fpu_result_o,
+    output logic [riscv::XLEN-1:0]                 fpu_result_o,
     output logic                                   fpu_valid_o,
     output exception_t                             fpu_exception_o,
     // Memory Management
@@ -85,7 +85,7 @@ module ex_stage #(
     input  riscv::priv_lvl_t                       ld_st_priv_lvl_i,
     input  logic                                   sum_i,
     input  logic                                   mxr_i,
-    input  logic [43:0]                            satp_ppn_i,
+    input  logic [riscv::PpnW-1:0]                 satp_ppn_i,
     input  logic [ASID_WIDTH-1:0]                  asid_i,
     // icache translation requests
     input  icache_areq_o_t                         icache_areq_i,
@@ -124,7 +124,7 @@ module ex_stage #(
 
     // from ALU to branch unit
     logic alu_branch_res; // branch comparison result
-    logic [63:0] alu_result, csr_result, mult_result;
+    logic [riscv::XLEN-1:0] alu_result, csr_result, mult_result;
     logic [riscv::VLEN-1:0] branch_result;
     logic csr_ready, mult_ready;
     logic [TRANS_ID_BITS-1:0] mult_trans_id;
@@ -182,7 +182,7 @@ module ex_stage #(
     // result MUX
     always_comb begin
         // Branch result as default case
-        flu_result_o = {{64-riscv::VLEN{1'b0}}, branch_result};
+        flu_result_o = {{riscv::XLEN-riscv::VLEN{1'b0}}, branch_result};
         flu_trans_id_o = fu_data_i.trans_id;
         // ALU result
         if (alu_valid_i) begin

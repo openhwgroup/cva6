@@ -50,7 +50,7 @@ module mmu #(
         input logic                             sum_i,
         input logic                             mxr_i,
         // input logic flag_mprv_i,
-        input logic [43:0]                      satp_ppn_i,
+        input logic [riscv::PpnW-1:0]           satp_ppn_i,
         input logic [ASID_WIDTH-1:0]            asid_i,
         input logic                             flush_tlb_i,
         // Performance counters
@@ -198,9 +198,9 @@ module mmu #(
         // AXI decode error), or when PTW performs walk due to ITLB miss and raises
         // an error.
         if (enable_translation_i) begin
-            // we work with SV39, so if VM is enabled, check that all bits [riscv::VLEN-1:38] are equal
-            if (icache_areq_i.fetch_req && !((&icache_areq_i.fetch_vaddr[riscv::VLEN-1:38]) == 1'b1 || (|icache_areq_i.fetch_vaddr[riscv::VLEN-1:38]) == 1'b0)) begin
-                icache_areq_o.fetch_exception = {riscv::INSTR_ACCESS_FAULT, {{64-riscv::VLEN{1'b0}}, icache_areq_i.fetch_vaddr}, 1'b1};
+            // we work with SV39 or SV32, so if VM is enabled, check that all bits [riscv::VLEN-1:riscv::SV-1] are equal
+            if (icache_areq_i.fetch_req && !((&icache_areq_i.fetch_vaddr[riscv::VLEN-1:riscv::SV-1]) == 1'b1 || (|icache_areq_i.fetch_vaddr[riscv::VLEN-1:riscv::SV-1]) == 1'b0)) begin
+                icache_areq_o.fetch_exception = {riscv::INSTR_ACCESS_FAULT, {{riscv::XLEN-riscv::VLEN{1'b0}}, icache_areq_i.fetch_vaddr}, 1'b1};
             end
 
             icache_areq_o.fetch_valid = 1'b0;
@@ -225,7 +225,7 @@ module mmu #(
                 // we got an access error
                 if (iaccess_err) begin
                     // throw a page fault
-                    icache_areq_o.fetch_exception = {riscv::INSTR_PAGE_FAULT, {{64-riscv::VLEN{1'b0}}, icache_areq_i.fetch_vaddr}, 1'b1};
+                    icache_areq_o.fetch_exception = {riscv::INSTR_PAGE_FAULT, {{riscv::XLEN-riscv::VLEN{1'b0}}, icache_areq_i.fetch_vaddr}, 1'b1};
                 end
             end else
             // ---------
@@ -234,12 +234,12 @@ module mmu #(
             // watch out for exceptions happening during walking the page table
             if (ptw_active && walking_instr) begin
                 icache_areq_o.fetch_valid = ptw_error;
-                icache_areq_o.fetch_exception = {riscv::INSTR_PAGE_FAULT, {{64-riscv::VLEN{1'b0}}, update_vaddr}, 1'b1};
+                icache_areq_o.fetch_exception = {riscv::INSTR_PAGE_FAULT, {{riscv::XLEN-riscv::VLEN{1'b0}}, update_vaddr}, 1'b1};
             end
         end
         // if it didn't match any execute region throw an `Instruction Access Fault`
         if (!match_any_execute_region) begin
-          icache_areq_o.fetch_exception = {riscv::INSTR_ACCESS_FAULT, {{64-riscv::PLEN{1'b0}}, icache_areq_o.fetch_paddr}, 1'b1};
+          icache_areq_o.fetch_exception = {riscv::INSTR_ACCESS_FAULT, {{riscv::XLEN-riscv::PLEN{1'b0}}, icache_areq_o.fetch_paddr}, 1'b1};
         end
     end
 
@@ -306,12 +306,12 @@ module mmu #(
                     // check if the page is write-able and we are not violating privileges
                     // also check if the dirty flag is set
                     if (!dtlb_pte_q.w || daccess_err || !dtlb_pte_q.d) begin
-                        lsu_exception_o = {riscv::STORE_PAGE_FAULT, {{64-riscv::VLEN{lsu_vaddr_q[riscv::VLEN-1]}},lsu_vaddr_q}, 1'b1};
+                        lsu_exception_o = {riscv::STORE_PAGE_FAULT, {{riscv::XLEN-riscv::VLEN{lsu_vaddr_q[riscv::VLEN-1]}},lsu_vaddr_q}, 1'b1};
                     end
 
                 // this is a load, check for sufficient access privileges - throw a page fault if necessary
                 end else if (daccess_err) begin
-                    lsu_exception_o = {riscv::LOAD_PAGE_FAULT, {{64-riscv::VLEN{lsu_vaddr_q[riscv::VLEN-1]}},lsu_vaddr_q}, 1'b1};
+                    lsu_exception_o = {riscv::LOAD_PAGE_FAULT, {{riscv::XLEN-riscv::VLEN{lsu_vaddr_q[riscv::VLEN-1]}},lsu_vaddr_q}, 1'b1};
                 end
             end else
 
@@ -326,9 +326,9 @@ module mmu #(
                     lsu_valid_o = 1'b1;
                     // the page table walker can only throw page faults
                     if (lsu_is_store_q) begin
-                        lsu_exception_o = {riscv::STORE_PAGE_FAULT, {{64-riscv::VLEN{lsu_vaddr_q[riscv::VLEN-1]}},update_vaddr}, 1'b1};
+                        lsu_exception_o = {riscv::STORE_PAGE_FAULT, {{riscv::XLEN-riscv::VLEN{lsu_vaddr_q[riscv::VLEN-1]}},update_vaddr}, 1'b1};
                     end else begin
-                        lsu_exception_o = {riscv::LOAD_PAGE_FAULT, {{64-riscv::VLEN{lsu_vaddr_q[riscv::VLEN-1]}},update_vaddr}, 1'b1};
+                        lsu_exception_o = {riscv::LOAD_PAGE_FAULT, {{riscv::XLEN-riscv::VLEN{lsu_vaddr_q[riscv::VLEN-1]}},update_vaddr}, 1'b1};
                     end
                 end
             end

@@ -7,7 +7,7 @@ module mult (
     input  logic                     flush_i,
     input  fu_data_t                 fu_data_i,
     input  logic                     mult_valid_i,
-    output logic [63:0]              result_o,
+    output logic [riscv::XLEN-1:0]   result_o,
     output logic                     mult_valid_o,
     output logic                     mult_ready_o,
     output logic [TRANS_ID_BITS-1:0] mult_trans_id_o
@@ -17,8 +17,8 @@ module mult (
     logic                     div_ready_i; // receiver of division result is able to accept the result
     logic [TRANS_ID_BITS-1:0] mul_trans_id;
     logic [TRANS_ID_BITS-1:0] div_trans_id;
-    logic [63:0]              mul_result;
-    logic [63:0]              div_result;
+    logic [riscv::XLEN-1:0]   mul_result;
+    logic [riscv::XLEN-1:0]   div_result;
 
     logic                     div_valid_op;
     logic                     mul_valid_op;
@@ -57,8 +57,8 @@ module mult (
     // ---------------------
     // Division
     // ---------------------
-    logic [63:0] operand_b, operand_a;  // input operands after input MUX (input silencing, word operations or full inputs)
-    logic [63:0] result;                // result before result mux
+    logic [riscv::XLEN-1:0] operand_b, operand_a;  // input operands after input MUX (input silencing, word operations or full inputs)
+    logic [riscv::XLEN-1:0] result;                // result before result mux
 
     logic        div_signed;            // signed or unsigned division
     logic        rem;                   // is it a reminder (or not a reminder e.g.: a division)
@@ -105,7 +105,7 @@ module mult (
     // Serial Divider
     // ---------------------
     serdiv #(
-        .WIDTH       ( 64 )
+        .WIDTH       ( riscv::XLEN )
     ) i_div (
         .clk_i       ( clk_i                ),
         .rst_ni      ( rst_ni               ),

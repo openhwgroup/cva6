@@ -38,7 +38,7 @@ module tlb #(
     // SV39 defines three levels of page tables
     struct packed {
       logic [ASID_WIDTH-1:0] asid;
-      logic [8:0]            vpn2;
+      logic [riscv::VPN2:0]  vpn2;
       logic [8:0]            vpn1;
       logic [8:0]            vpn0;
       logic                  is_2M;
@@ -47,7 +47,8 @@ module tlb #(
     } [TLB_ENTRIES-1:0] tags_q, tags_n;
 
     riscv::pte_t [TLB_ENTRIES-1:0] content_q, content_n;
-    logic [8:0] vpn0, vpn1, vpn2;
+    logic [8:0] vpn0, vpn1;
+    logic [riscv::VPN2:0] vpn2;
     logic [TLB_ENTRIES-1:0] lu_hit;     // to replacement logic
     logic [TLB_ENTRIES-1:0] replace_en; // replace the following entry, set by replacement strategy
     //-------------
@@ -56,7 +57,7 @@ module tlb #(
     always_comb begin : translation
         vpn0 = lu_vaddr_i[20:12];
         vpn1 = lu_vaddr_i[29:21];
-        vpn2 = lu_vaddr_i[38:30];
+        vpn2 = lu_vaddr_i[30+riscv::VPN2:30];
 
         // default assignment
         lu_hit       = '{default: 0};
@@ -109,7 +110,7 @@ module tlb #(
                 // update tag array
                 tags_n[i] = '{
                     asid:  update_i.asid,
-                    vpn2:  update_i.vpn [26:18],
+                    vpn2:  update_i.vpn [18+riscv::VPN2:18],
                     vpn1:  update_i.vpn [17:9],
                     vpn0:  update_i.vpn [8:0],
                     is_1G: update_i.is_1G,
