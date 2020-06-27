@@ -49,3 +49,7 @@ ls -l ../../tests/core/google-riscv-dv
 grep -i entry ../../tests/core/google-riscv-dv/*.readelf
 
 #end#end#
+
+# $ make corev-dv 
+# $ make custom CUSTOM_DIR=/data/mike/GitHubRepos/openhwgroup/core-v-verif/isg_tests/cv32/tests/core/google-riscv-dv CUSTOM_PROG=corev_asm_test_0
+# $ make custom CUSTOM_DIR=/data/mike/GitHubRepos/openhwgroup/core-v-verif/isg_tests/cv32/tests/core/google-riscv-dv CUSTOM_PROG=corev_asm_test_1

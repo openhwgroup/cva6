@@ -44,6 +44,7 @@
 MAKE           = make
 COREV_PROJ     = cv32
 PROJ_ROOT_DIR  = $(PWD)/../../..
+DATE           = $(shell date +%F)
 .DEFAULT_GOAL := no_rule 
 
 # Useful commands
@@ -81,8 +82,10 @@ DV_UVMT_CV32_SRCS  = $(wildcard $(DV_UVMT_CV32_PATH)/*.sv))
 UVM_TESTNAME ?= uvmt_cv32_firmware_test_c
 
 # Google's random instruction generator
-RISCVDV_PKG  := $(PROJ_ROOT_DIR)/vendor_lib/google/riscv-dv
+RISCVDV_PKG   := $(PROJ_ROOT_DIR)/vendor_lib/google/riscv-dv
+COREVDV_PKG   := $(PROJ_ROOT_DIR)/vendor_lib/google/corev-dv
 export RISCV_DV_ROOT = $(RISCVDV_PKG)
+export COREV_DV_ROOT = $(COREVDV_PKG)
 
 # TB source files for the CV32E core
 TBSRC_TOP   := $(TBSRC_HOME)/uvmt_cv32/uvmt_cv32_tb.sv
@@ -104,6 +107,16 @@ export DESIGN_RTL_DIR = $(CV32E40P_PKG)/rtl
 RTLSRC_HOME   := $(CV32E40P_PKG)/rtl
 RTLSRC_INCDIR := $(RTLSRC_HOME)/include
 
+###############################################################################
+# Seed management for constrained-random sims
+SEED    ?= one
+RNDSEED ?= 
+
+ifeq ($(SEED),random)
+RNDSEED = $(shell date +%N)
+else
+RNDSEED = 1
+endif
 
 ###############################################################################
 # Common Makefile:
@@ -126,7 +139,6 @@ clone_riscv-dv:
 $(CV32E40P_PKG):
 	$(CLONE_CV32E40P_CMD)
 	$(CLONE_FPNEW_CMD)
-	$(CLONE_RISCVDV_CMD)
 
 
 ###############################################################################
@@ -155,47 +167,6 @@ endif
 
 
 ###############################################################################
-# Use Google instruction stream generator (RISCV-DV) to create new test-programs
-#riscv-dv: clone_riscv-dv
-riscv-dv:
-	mkdir -p $(RISCVDV_PKG)/out_2020-06-24/dsim
-	dsim -sv \
-		-work $(RISCVDV_PKG)/out_2020-06-24/dsim \
-		-genimage image \
-		+incdir+$(UVM_HOME)/src \
-		$(UVM_HOME)/src/uvm_pkg.sv \
-		+define+DSIM \
-		-suppress EnumMustBePositive \
-		+incdir+$(RISCVDV_PKG)/target/rv32imc \
-		+incdir+$(RISCVDV_PKG)/user_extension \
-		-f $(RISCVDV_PKG)/files.f \
-		-l $(RISCVDV_PKG)/out_2020-06-24/dsim/compile.log 
-
-#riscv-test: riscv-dv
-#		+asm_file_name=$(RISCVDV_PKG)/out_2020-06-24/asm_tests/riscv_arithmetic_basic_test  \
-
-riscv-test:
-	dsim -sv_seed 1994630249 \
-		-sv_lib $(UVM_HOME)/src/dpi/libuvm_dpi.so \
-		+acc+rwb \
-		-image image \
-		-work $(RISCVDV_PKG)/out_2020-06-24/dsim \
-		+UVM_TESTNAME=riscv_instr_base_test  \
-		+num_of_tests=2  \
-		+start_idx=0  \
-		+asm_file_name=../../tests/core/google-riscv-dv/riscv_arithmetic_basic_test  \
-		-l $(RISCVDV_PKG)/out_2020-06-24/sim_riscv_arithmetic_basic_test_0.log \
-		+instr_cnt=10000 \
-		+num_of_sub_program=0 \
-		+directed_instr_0=riscv_int_numeric_corner_stream,4 \
-		+no_fence=1 \
-		+no_data_page=1 \
-		+no_branch_jump=1 \
-		+boot_mode=m \
-		+no_csr_instr=1
-
-
-###############################################################################
 # Clean up your mess!
 #   1. Clean all generated files of the C and assembler tests in tests/core
 #      Note: CORE_TEST_DIR is defined in ../Common.mk
@@ -218,5 +189,6 @@ clean_test_programs:
 
 clean_riscv-dv:
 	rm -rf $(RISCVDV_PKG)
-	rm ../../tests/core/google-riscv-dv/*.S 
+	rm -rf $(COREDV_PKG)/out_*
+	find ../../tests/core/google-riscv-dv -name "*.S" -exec rm {} \;
 

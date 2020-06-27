@@ -63,8 +63,8 @@ FPNEW_HASH      ?= f108dfdd84f7c24dcdefb35790fafb3905bce552
 #Note: this is head (as of 2020-06-11).  Can't use it because of the worm
 #FPNEW_HASH      ?= babffe88fcf6d2931a7afa8d121b6a6ba4f532f7
 
-#RISCVDV_REPO    ?= https://github.com/google/riscv-dv
-RISCVDV_REPO    ?= https://github.com/MikeOpenHWGroup/riscv-dv
+RISCVDV_REPO    ?= https://github.com/google/riscv-dv
+#RISCVDV_REPO    ?= https://github.com/MikeOpenHWGroup/riscv-dv
 RISCVDV_BRANCH  ?= master
 RISCVDV_HASH    ?= head
 
