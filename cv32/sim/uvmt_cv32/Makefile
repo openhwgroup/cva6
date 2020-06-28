@@ -189,6 +189,6 @@ clean_test_programs:
 
 clean_riscv-dv:
 	rm -rf $(RISCVDV_PKG)
-	rm -rf $(COREDV_PKG)/out_*
+	rm -rf $(COREVDV_PKG)/out_*
 	find ../../tests/core/google-riscv-dv -name "*.S" -exec rm {} \;
 

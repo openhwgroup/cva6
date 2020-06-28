@@ -270,7 +270,7 @@ gen_riscv-dv:
 		+no_branch_jump=1 \
 		+boot_mode=m \
 		+no_csr_instr=1
-	mv *.S $(CORE_TEST_DIR)/google-riscv-dv \
+	mv *.S $(CORE_TEST_DIR)/custom
 
 corev-dv: clean_riscv-dv clone_riscv-dv comp_riscv-dv gen_riscv-dv
 

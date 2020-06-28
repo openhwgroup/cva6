@@ -7,6 +7,12 @@
   "builds": {
     "list": [
       {
+        "name":     "corev-dv",
+        "image":    "cv32-simulation-tools:20200316.10.0",
+        "cmd":      "cd cv32/sim/uvmt_cv32; make corev-dv SIMULATOR=dsim DSIM_WORK=/mux-flow/build/repo/dsim_work",
+        "wavesCmd": "cd cv32/sim/uvmt_cv32; make corev-dv SIMULATOR=dsim DSIM_WORK=/mux-flow/build/repo/dsim_work WAVES=1"
+      },
+      {
         "name":     "uvmt_cv32",
         "image":    "cv32-simulation-tools:20200316.10.0",
         "cmd":      "cd cv32/sim/uvmt_cv32; make comp SIMULATOR=dsim USE_ISS=YES DSIM_WORK=/mux-flow/build/repo/dsim_work",
@@ -34,7 +40,7 @@
             "seed":        1
 	        },
           {
-            "name":        "Manually generated riscv-dv test",
+            "name":        "Static riscv-dv ebreak test",
             "build":       "uvmt_cv32",
             "cmd":         "cd cv32/sim/uvmt_cv32; make custom CUSTOM_PROG=riscv_ebreak_test_0 SIMULATOR=dsim USE_ISS=YES DSIM_WORK=/mux-flow/build/repo/dsim_work DSIM_RESULTS=/mux-flow/build/results",
             "wavesCmd":    "cd cv32/sim/uvmt_cv32; make custom CUSTOM_PROG=riscv_ebreak_test_0 SIMULATOR=dsim USE_ISS=YES DSIM_WORK=/mux-flow/build/repo/dsim_work DSIM_RESULTS=/mux-flow/build/results WAVES=1 DSIM_DMP_FILE=riscv_ebreak_test_0.vcd",
@@ -44,7 +50,7 @@
             "seed":        1
 	        },
           {
-            "name":        "Arithmetic riscv-dv test 0",
+            "name":        "Static riscv-dv arithmetic test 0",
             "build":       "uvmt_cv32",
             "cmd":         "cd cv32/sim/uvmt_cv32; make custom CUSTOM_PROG=riscv_arithmetic_basic_test_0 SIMULATOR=dsim USE_ISS=YES DSIM_WORK=/mux-flow/build/repo/dsim_work DSIM_RESULTS=/mux-flow/build/results",
             "wavesCmd":    "cd cv32/sim/uvmt_cv32; make custom CUSTOM_PROG=riscv_arithmetic_basic_test_0 SIMULATOR=dsim USE_ISS=YES DSIM_WORK=/mux-flow/build/repo/dsim_work DSIM_RESULTS=/mux-flow/build/results WAVES=1 DSIM_DMP_FILE=riscv_arithmetic_basic_test_0.vcd",
@@ -54,12 +60,32 @@
             "seed":        1
 	        },
           {
-            "name":        "Arithmetic riscv-dv test 1",
+            "name":        "Static riscv-dv arithmetic test 1",
             "build":       "uvmt_cv32",
             "cmd":         "cd cv32/sim/uvmt_cv32; make custom CUSTOM_PROG=riscv_arithmetic_basic_test_1 SIMULATOR=dsim USE_ISS=YES DSIM_WORK=/mux-flow/build/repo/dsim_work DSIM_RESULTS=/mux-flow/build/results",
             "wavesCmd":    "cd cv32/sim/uvmt_cv32; make custom CUSTOM_PROG=riscv_arithmetic_basic_test_1 SIMULATOR=dsim USE_ISS=YES DSIM_WORK=/mux-flow/build/repo/dsim_work DSIM_RESULTS=/mux-flow/build/results WAVES=1 DSIM_DMP_FILE=riscv_arithmetic_basic_test_1.vcd",
             "metricsFile": "riscv_arithmetic_basic_test_1/metrics.db",
             "wavesFile" :  "riscv_arithmetic_basic_test_1/riscv_arithmetic_basic_test_1.vcd",
+            "isPass":      "SIMULATION PASSED",
+            "seed":        1
+	        },
+          {
+            "name":        "Generated riscv-dv arithmetic test 0",
+            "build":       "uvmt_cv32",
+            "cmd":         "cd cv32/sim/uvmt_cv32; make custom CUSTOM_PROG=corev_asm_test_0 SIMULATOR=dsim USE_ISS=YES DSIM_WORK=/mux-flow/build/repo/dsim_work DSIM_RESULTS=/mux-flow/build/results",
+            "wavesCmd":    "cd cv32/sim/uvmt_cv32; make custom CUSTOM_PROG=corev_asm_test_0 SIMULATOR=dsim USE_ISS=YES DSIM_WORK=/mux-flow/build/repo/dsim_work DSIM_RESULTS=/mux-flow/build/results WAVES=1 DSIM_DMP_FILE=corev_asm_test_0.vcd",
+            "metricsFile": "corev_asm_test_0/metrics.db",
+            "wavesFile" :  "corev_asm_test_0/corev_asm_test_0.vcd",
+            "isPass":      "SIMULATION PASSED",
+            "seed":        1
+	        },
+          {
+            "name":        "Generated riscv-dv arithmetic test 1",
+            "build":       "uvmt_cv32",
+            "cmd":         "cd cv32/sim/uvmt_cv32; make custom CUSTOM_PROG=corev_asm_test_1 SIMULATOR=dsim USE_ISS=YES DSIM_WORK=/mux-flow/build/repo/dsim_work DSIM_RESULTS=/mux-flow/build/results",
+            "wavesCmd":    "cd cv32/sim/uvmt_cv32; make custom CUSTOM_PROG=corev_asm_test_1 SIMULATOR=dsim USE_ISS=YES DSIM_WORK=/mux-flow/build/repo/dsim_work DSIM_RESULTS=/mux-flow/build/results WAVES=1 DSIM_DMP_FILE=corev_asm_test_1.vcd",
+            "metricsFile": "corev_asm_test_1/metrics.db",
+            "wavesFile" :  "corev_asm_test_1/corev_asm_test_1.vcd",
             "isPass":      "SIMULATION PASSED",
             "seed":        1
 	        },
