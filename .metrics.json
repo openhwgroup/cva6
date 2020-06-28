@@ -7,16 +7,10 @@
   "builds": {
     "list": [
       {
-        "name":     "corev-dv",
-        "image":    "cv32-simulation-tools:20200316.10.0",
-        "cmd":      "cd cv32/sim/uvmt_cv32; make corev-dv SIMULATOR=dsim DSIM_WORK=/mux-flow/build/repo/dsim_work",
-        "wavesCmd": "cd cv32/sim/uvmt_cv32; make corev-dv SIMULATOR=dsim DSIM_WORK=/mux-flow/build/repo/dsim_work WAVES=1"
-      },
-      {
         "name":     "uvmt_cv32",
         "image":    "cv32-simulation-tools:20200316.10.0",
-        "cmd":      "cd cv32/sim/uvmt_cv32; make comp SIMULATOR=dsim USE_ISS=YES DSIM_WORK=/mux-flow/build/repo/dsim_work",
-        "wavesCmd": "cd cv32/sim/uvmt_cv32; make comp SIMULATOR=dsim USE_ISS=YES DSIM_WORK=/mux-flow/build/repo/dsim_work WAVES=1"
+        "cmd":      "cd cv32/sim/uvmt_cv32; make corev-dv SIMULATOR=dsim DSIM_WORK=/mux-flow/build/repo/dsim_work; make comp SIMULATOR=dsim USE_ISS=YES DSIM_WORK=/mux-flow/build/repo/dsim_work",
+        "wavesCmd": "cd cv32/sim/uvmt_cv32; make corev-dv SIMULATOR=dsim DSIM_WORK=/mux-flow/build/repo/dsim_work; make comp SIMULATOR=dsim USE_ISS=YES DSIM_WORK=/mux-flow/build/repo/dsim_work WAVES=1"
       }
     ]
   },
@@ -27,7 +21,7 @@
       "verbose":     "true",
       "tests": {
         "resultsDir": "/mux-flow/build/results",
-        "builds":    ["corev-dv", "uvmt_cv32"],
+        "builds":    ["uvmt_cv32"],
         "list": [
           {
             "name":        "uvm_hello_world_test",
