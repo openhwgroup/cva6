@@ -27,7 +27,7 @@
       "verbose":     "true",
       "tests": {
         "resultsDir": "/mux-flow/build/results",
-        "builds":    ["uvmt_cv32"],
+        "builds":    ["corev-dv", "uvmt_cv32"],
         "list": [
           {
             "name":        "uvm_hello_world_test",
