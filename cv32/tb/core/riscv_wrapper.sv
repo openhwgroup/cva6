@@ -134,7 +134,7 @@ module riscv_wrapper
     ram_i
         (.clk_i          ( clk_i                          ),
          .rst_ni         ( rst_ni                         ),
-         .dm_halt_addr_i ( core_cntrl_if.dm_halt_addr     ),
+         .dm_halt_addr_i ( DM_HALTADDRESS                 ),
 
          .instr_req_i    ( instr_req                      ),
          .instr_addr_i   ( instr_addr[RAM_ADDR_WIDTH-1:0] ),
