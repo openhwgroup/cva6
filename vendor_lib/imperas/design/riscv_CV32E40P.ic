@@ -1,6 +1,18 @@
-# Control file for RI5CY configuration
---output simulate.log
-# --showoverrides
+# Control file for CV32E40P configuration
+--output ovpsim_simulate.log
+# Specify how Debug mode is implemented (none, vector, interrupt or halt)
+--override root/cpu0/debug_mode=halt
+# Specify address to which to jump to enter debug in vectored mode (Uns64)
+--override root/cpu0/debug_address=0x1A110800
+# Specify address to which to jump on debug exception in vectored mode (Uns64)
+--override root/cpu0/dexc_address=0
+# Specify verbose output messages (Boolean: F or T)
+--override root/cpu0/verbose=T
+# This shows *all* parameters that can be overridden.
+# Is there a way to dump only the parameter that were
+# actually overridden?
+#--showoverrides
+
 
 #
 # taken from riscv_cs_registers.sv MISA_VALUE
