@@ -204,12 +204,14 @@ sanity: hello-world
 
 ###############################################################################
 # Rule to generate hex (loadable by simulators) from elf
+# Relocate debugger to last 16KB of mm_ram
 #    $@ is the file being generated.
 #    $< is first prerequiste.
 #    $^ is all prerequistes.
 #    $* is file_name (w/o extension) of target
 %.hex: %.elf
-	$(RISCV_EXE_PREFIX)objcopy -O verilog $< $@
+	$(RISCV_EXE_PREFIX)objcopy -O verilog $< $@ \
+		--change-section-address  .debugger=0x3FC000
 	$(RISCV_EXE_PREFIX)readelf -a $< > $*.readelf
 	$(RISCV_EXE_PREFIX)objdump -D $*.elf > $*.objdump
 
@@ -218,6 +220,35 @@ bsp:
 
 clean-bsp:
 	make clean -C $(BSP)
+
+##############################################################################
+# Special debug_test build
+# keep raw elf files to generate helpful debugging files such as dissambler
+.PRECIOUS : %debug_test.elf
+
+# Prepare file list for .elf
+# Get the source file names from the BSP directory
+PREREQ_BSP_FILES  = $(filter %.c %.S %.ld,$(wildcard $(BSP)/*))
+BSP_SOURCE_FILES  = $(notdir $(filter %.c %.S ,$(PREREQ_BSP_FILES)))
+
+# Let the user override BSP files
+# The following will build a list of BSP files that are not in test directory
+BSP_FILES = $(foreach BSP_FILE, $(BSP_SOURCE_FILES), \
+	       $(if $(wildcard  $(addprefix $(dir $*), $(BSP_FILE))),,\
+	          $(wildcard $(addprefix $(BSP)/, $(BSP_FILE))) ) \
+	     )
+
+# Get Test Files
+#  Note, the prerequisite uses '%', while the recipe uses '$*'
+PREREQ_TEST_FILES = $(filter %.c %.S,$(wildcard $(dir %)*))
+TEST_FILES        = $(filter %.c %.S,$(wildcard $(dir $*)*))
+
+%debug_test.elf:
+	$(RISCV_EXE_PREFIX)gcc -mabi=ilp32 -march=rv32imc -o $@ \
+		-Wall -pedantic -Os -g -nostartfiles -static \
+		$(BSP_FILES) \
+		$(TEST_FILES) \
+		-T $(BSP)/link.ld
 
 # Patterned targets to generate ELF.  Used only if explicit targets do not match.
 #

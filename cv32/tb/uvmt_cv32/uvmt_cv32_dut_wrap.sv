@@ -133,36 +133,6 @@ module uvmt_cv32_dut_wrap #(// DUT (riscv_core) parameters.
     end
 
     // --------------------------------------------
-    // Load the Debugger Code
-    initial begin: load_debugger_code
-      string debugger_code;
-      int    dbg_fd;
-
-      // Load the pre-compiled debugger code
-      if($value$plusargs("debugger=%s", debugger_code)) begin
-        // First, check if it exists...
-        dbg_fd = $fopen (debugger_code, "r");
-        if (dbg_fd)  `uvm_info ("DUT_WRAP", $sformatf("%s was opened successfully : (dbg_fd=%0d)", debugger_code, dbg_fd), UVM_DEBUG)
-        else     `uvm_fatal("DUT_WRAP", $sformatf("%s was NOT opened successfully : (dbg_fd=%0d)", debugger_code, dbg_fd))
-        $fclose(dbg_fd);
-        // Now load it...
-        `uvm_info("DUT_WRAP", $sformatf("loading debugger %0s", debugger_code), UVM_NONE)
-        //$readmemh(debugger_code, uvmt_cv32_tb.dut_wrap.ram_i.dbg_dp_ram_i.mem);
-      end
-      else begin
-        `uvm_info("DUT_WRAP", "No debugger code specified. Populate debugger ram with 'dret' instruction", UVM_NONE)
-        // debugger return instruction (dret) =  0x7b200073
-        //uvmt_cv32_tb.dut_wrap.ram_i.dbg_dp_ram_i.mem[0] = 8'h73;
-        //uvmt_cv32_tb.dut_wrap.ram_i.dbg_dp_ram_i.mem[1] = 8'h00;
-        //uvmt_cv32_tb.dut_wrap.ram_i.dbg_dp_ram_i.mem[2] = 8'h20;
-        //uvmt_cv32_tb.dut_wrap.ram_i.dbg_dp_ram_i.mem[3] = 8'h7b;
-        // pad with something to prevent X's being read during prefetch
-        //for(int i=4; i<32; i++)
-        //  uvmt_cv32_tb.dut_wrap.ram_i.dbg_dp_ram_i.mem[i] = 8'h00;
-      end
-    end // block: load_debugger_code
-
-    // --------------------------------------------
     // instantiate the core
     cv32e40p_core #(
                  .PULP_HWLP        (PULP_HWLP),
@@ -237,6 +207,7 @@ module uvmt_cv32_dut_wrap #(// DUT (riscv_core) parameters.
     ram_i
         (.clk_i          ( clknrst_if.clk                 ),
          .rst_ni         ( clknrst_if.reset_n             ),
+         .dm_halt_addr_i ( core_cntrl_if.dm_halt_addr     ),
 
          .instr_req_i    ( instr_req                      ),
          .instr_addr_i   ( instr_addr                     ),

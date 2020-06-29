@@ -39,7 +39,9 @@ ifeq ($(USE_ISS),YES)
 #     XRUN_PLUSARGS += +USE_ISS +ovpcfg="--controlfile $(OVP_CTRL_FILE)"
 endif
 
-XRUN_RUN_FLAGS   ?= -64bit -R $(XRUN_GUI) +UVM_VERBOSITY=$(XRUN_UVM_VERBOSITY) $(XRUN_PLUSARGS) -sv_lib $(OVP_MODEL_DPI)
+XRUN_RUN_BASE_FLAGS   ?= -64bit $(XRUN_GUI) +UVM_VERBOSITY=$(XRUN_UVM_VERBOSITY) $(XRUN_PLUSARGS) -sv_lib $(OVP_MODEL_DPI)
+# Simulate using latest elab
+XRUN_RUN_FLAGS        ?= -R $(XRUN_BASE_FLAGS)
 
 no_rule:
 	@echo 'makefile: SIMULATOR is set to $(SIMULATOR), but no rule/target specified.'
@@ -59,17 +61,22 @@ cv32_riscv_tests: cv32-riscv-tests
 
 cv32_riscv_compliance_tests: cv32-riscv-compliance-tests 
 
-comp: mk_xrun_dir $(CV32E40P_PKG) $(OVP_MODEL_DPI)
-	$(XRUN) \
-		$(XRUN_COMP_FLAGS) \
-                $(XRUN_USER_COMPILE_ARGS) \
+XRUN_COMP = 	$(XRUN_COMP_FLAGS) \
+		$(XRUN_USER_COMPILE_ARGS) \
 		+incdir+$(DV_UVME_CV32_PATH) \
 		+incdir+$(DV_UVMT_CV32_PATH) \
 		-f $(CV32E40P_MANIFEST) \
-                $(XRUN_FILE_LIST) \
-		$(UVM_PLUSARGS) \
+		$(XRUN_FILE_LIST) \
+		$(UVM_PLUSARGS)
+
+
+comp: mk_xrun_dir $(CV32E40P_PKG) $(OVP_MODEL_DPI)
+	$(XRUN) \
+		$(XRUN_COMP) \
 		-elaborate
 #		$(XRUN_VELABCOVERAGE)
+
+XRUN_COMP_RUN = $(XRUN_COMP_ARGS) $(XRUN_RUN_BASE_FLAGS)
 
 ################################################################################
 # Custom test-programs.  See comment in dsim.mk for more info
@@ -125,6 +132,14 @@ riscv_ebreak_test_0: comp $(CUSTOM)/riscv_ebreak_test_0.hex
                 +nm_file=$(CUSTOM)/riscv_ebreak_test_0.nm \
                 +UVM_TESTNAME=uvmt_cv32_firmware_test_c \
                 +firmware=$(CUSTOM)/riscv_ebreak_test_0.hex
+
+debug_test:  $(CORE_TEST_DIR)/debug_test/debug_test.hex
+	$(XRUN) -l xrun-riscv_debug_test.log $(XRUN_RUN_FLAGS) \
+                +elf_file=$(CORE_TEST_DIR)/debug_test/debug_test.elf \
+                +nm_file=$(CORE_TEST_DIR)/debug_test/debug_test.nm \
+                +UVM_TESTNAME=uvmt_cv32_firmware_test_c \
+                +firmware=$(CORE_TEST_DIR)/debug_test/debug_test.hex
+
 
 # Runs tests in cv32_riscv_tests/ only
 cv32-riscv-tests: comp $(CV32_RISCV_TESTS_FIRMWARE)/cv32_riscv_tests_firmware.hex
