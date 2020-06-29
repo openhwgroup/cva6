@@ -64,6 +64,7 @@ FPNEW_HASH      ?= f108dfdd84f7c24dcdefb35790fafb3905bce552
 #FPNEW_HASH      ?= babffe88fcf6d2931a7afa8d121b6a6ba4f532f7
 
 RISCVDV_REPO    ?= https://github.com/google/riscv-dv
+#RISCVDV_REPO    ?= https://github.com/MikeOpenHWGroup/riscv-dv
 RISCVDV_BRANCH  ?= master
 RISCVDV_HASH    ?= head
 
@@ -201,8 +202,13 @@ FIRMWARE_UNIT_TEST_OBJS   =  	$(addsuffix .o, \
 # must be able to run (and pass!) prior to generating a pull-request.
 sanity: hello-world
 
-# rules to generate hex (loadable by simulators) from elf
-# relocate debugger to last 16KB of mm_ram
+###############################################################################
+# Rule to generate hex (loadable by simulators) from elf
+# Relocate debugger to last 16KB of mm_ram
+#    $@ is the file being generated.
+#    $< is first prerequiste.
+#    $^ is all prerequistes.
+#    $* is file_name (w/o extension) of target
 %.hex: %.elf
 	$(RISCV_EXE_PREFIX)objcopy -O verilog $< $@ \
 		--change-section-address  .debugger=0x3FC000
@@ -214,95 +220,6 @@ bsp:
 
 clean-bsp:
 	make clean -C $(BSP)
-
-# Running custom programs:
-# We link with our custom crt0.s and syscalls.c against newlib so that we can
-# use the c standard library
-#$(CUSTOM_DIR)/$(CUSTOM_PROG).elf: $(CUSTOM_DIR)/$(CUSTOM_PROG).c
-#	$(RISCV_EXE_PREFIX)gcc -mabi=ilp32 -march=rv32imc -o $@ -w -Os -g -nostdlib \
-#		-T $(CUSTOM_DIR)/link.ld  \
-#		-static \
-#		$(CUSTOM_DIR)/crt0.S \
-#		$^ $(CUSTOM_DIR)/syscalls.c $(CUSTOM_DIR)/vectors.S \
-#		-I $(RISCV)/riscv32-unknown-elf/include \
-#		-L $(RISCV)/riscv32-unknown-elf/lib \
-#		-lc -lm -lgcc
-
-# Similaro to CUSTOM (above), this time with ASM directory
-#$(ASM)/$(ASM_PROG).elf: $(ASM)/$(ASM_PROG).S
-#		@   echo "Compiling $(ASM_PROG).S"
-#		$(RISCV_EXE_PREFIX)gcc -mabi=ilp32 -march=rv32imc -c -o $(ASM)/$(ASM_PROG).o \
-#		$(ASM)/$(ASM_PROG).S -DRISCV32GC -O0 -nostdlib -nostartfiles \
-#		-I $(ASM)
-#		@   echo "Linking $(ASM_PROG).o"
-#		$(RISCV_EXE_PREFIX)gcc -mabi=ilp32 -march=rv32imc \
-#		-o $(ASM)/$(ASM_PROG).elf \
-#		$(ASM)/$(ASM_PROG).o -nostdlib -nostartfiles \
-#		-T $(ASM)/link.ld
-
-# HELLO WORLD: custom/hello_world.elf: ../../tests/core/custom/hello_world.c
-
-#$(CUSTOM)/hello_world.elf: $(CUSTOM)/hello_world.c
-#	$(RISCV_EXE_PREFIX)gcc -mabi=ilp32 -march=rv32imc -o $@ -w -Os -g -nostdlib \
-#		-T $(CUSTOM)/link.ld  \
-#		-static \
-#		$(CUSTOM)/crt0.S \
-#		$^ $(CUSTOM)/syscalls.c $(CUSTOM)/vectors.S \
-#		-I $(RISCV)/riscv32-unknown-elf/include \
-#		-L $(RISCV)/riscv32-unknown-elf/lib \
-#		-lc -lm -lgcc
-
-#$(CUSTOM)/misalign.elf: $(CUSTOM)/misalign.c
-#	$(RISCV_EXE_PREFIX)gcc -mabi=ilp32 -march=rv32imc -o $@ -w -Os -g -nostdlib \
-#		-T $(CUSTOM)/link.ld  \
-#		-static \
-#		$(CUSTOM)/crt0.S \
-#		$^ $(CUSTOM)/syscalls.c $(CUSTOM)/vectors.S \
-#		-I $(RISCV)/riscv32-unknown-elf/include \
-#		-L $(RISCV)/riscv32-unknown-elf/lib \
-#		-lc -lm -lgcc
-
-#$(CUSTOM)/illegal.elf: $(CUSTOM)/illegal.c
-#	$(RISCV_EXE_PREFIX)gcc -mabi=ilp32 -march=rv32imc -o $@ -w -Os -g -nostdlib \
-#		-T $(CUSTOM)/link.ld  \
-#		-static \
-#		$(CUSTOM)/crt0.S \
-#		$^ $(CUSTOM)/syscalls.c $(CUSTOM)/vectors.S \
-#		-I $(RISCV)/riscv32-unknown-elf/include \
-#		-L $(RISCV)/riscv32-unknown-elf/lib \
-#		-lc -lm -lgcc
-
-#$(CUSTOM)/fibonacci.elf: $(CUSTOM)/fibonacci.c
-#	$(RISCV_EXE_PREFIX)gcc -mabi=ilp32 -march=rv32imc -o $@ -w -Os -g -nostdlib \
-#		-T $(CUSTOM)/link.ld  \
-#		-static \
-#		$(CUSTOM)/crt0.S \
-#		$^ $(CUSTOM)/syscalls.c $(CUSTOM)/vectors.S \
-#		-I $(RISCV)/riscv32-unknown-elf/include \
-#		-L $(RISCV)/riscv32-unknown-elf/lib \
-#		-lc -lm -lgcc
-
-#$(CUSTOM)/dhrystone.elf: $(CUSTOM)/dhrystone.c
-#	$(RISCV_EXE_PREFIX)gcc -mabi=ilp32 -march=rv32imc -o $@ -w -Os -g -nostdlib \
-#		-T $(CUSTOM)/link.ld  \
-#		-static \
-#		$(CUSTOM)/crt0.S \
-#		$^ $(CUSTOM)/syscalls.c $(CUSTOM)/vectors.S \
-#		-I $(RISCV)/riscv32-unknown-elf/include \
-#		-L $(RISCV)/riscv32-unknown-elf/lib \
-#		-lc -lm -lgcc
-
-#$(CUSTOM)/riscv_ebreak_test_0.elf: $(CUSTOM)/riscv_ebreak_test_0.S
-#		@   echo "Compiling riscv_ebreak_test_0.S"
-#		$(RISCV_EXE_PREFIX)gcc -mabi=ilp32 -march=rv32imc -c -o $(CUSTOM)/riscv_ebreak_test_0.o \
-#		$(CUSTOM)/riscv_ebreak_test_0.S -DRISCV32GC -O0 -nostdlib -nostartfiles \
-#		-I $(CUSTOM)
-#		@   echo "Linking riscv_ebreak_test_0.o"
-#		$(RISCV_EXE_PREFIX)gcc -mabi=ilp32 -march=rv32imc \
-#		-o $(CUSTOM)/riscv_ebreak_test_0.elf \
-#		$(CUSTOM)/riscv_ebreak_test_0.o -nostdlib -nostartfiles \
-#		-T $(CUSTOM)/link.ld
-
 
 ##############################################################################
 # Special debug_test build
@@ -334,9 +251,6 @@ TEST_FILES        = $(filter %.c %.S,$(wildcard $(dir $*)*))
 		-T $(BSP)/link.ld
 
 # Patterned targets to generate ELF.  Used only if explicit targets do not match.
-# $@ is the file being generated.
-# $< is first prerequiste.
-# $^ is all prerequistes.
 #
 # This target selected if both %.c and %.S exist
 %.elf: %.c

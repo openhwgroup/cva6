@@ -44,6 +44,7 @@
 MAKE           = make
 COREV_PROJ     = cv32
 PROJ_ROOT_DIR  = $(PWD)/../../..
+DATE           = $(shell date +%F)
 .DEFAULT_GOAL := no_rule 
 
 # Useful commands
@@ -81,22 +82,15 @@ DV_UVMT_CV32_SRCS  = $(wildcard $(DV_UVMT_CV32_PATH)/*.sv))
 UVM_TESTNAME ?= uvmt_cv32_firmware_test_c
 
 # Google's random instruction generator
-RISCVDV_PKG  := $(PROJ_ROOT_DIR)/cv32/env/uvme_cv32/riscv-dv
+RISCVDV_PKG   := $(PROJ_ROOT_DIR)/vendor_lib/google/riscv-dv
+COREVDV_PKG   := $(PROJ_ROOT_DIR)/vendor_lib/google/corev-dv
+export RISCV_DV_ROOT = $(RISCVDV_PKG)
+export COREV_DV_ROOT = $(COREVDV_PKG)
 
 # TB source files for the CV32E core
 TBSRC_TOP   := $(TBSRC_HOME)/uvmt_cv32/uvmt_cv32_tb.sv
 TBSRC_HOME  := $(PROJ_ROOT_DIR)/$(COREV_PROJ)/tb
 export TBSRC_HOME  = $(PROJ_ROOT_DIR)/$(COREV_PROJ)/tb
-# Looks like these are redundant redundant
-#TBSRC_PKG   := $(TBSRC_HOME)/core/tb_riscv/include/perturbation_defines.sv
-#TBSRC       := $(TBSRC_HOME)/uvmt_cv32/uvmt_cv32_tb.sv \
-#               $(TBSRC_HOME)/uvmt_cv32/uvmt_cv32_dut_wrap.sv \
-#               $(TBSRC_HOME)/core/tb_top.sv \
-#               $(TBSRC_HOME)/core/riscv_wrapper.sv \
-#               $(TBSRC_HOME)/core/mm_ram.sv \
-#               $(TBSRC_HOME)/core/dp_ram.sv \
-#               $(TBSRC_HOME)/core/tb_riscv/riscv_random_stall.sv \
-#               $(TBSRC_HOME)/core/tb_riscv/riscv_random_interrupt_generator.sv
 
 SIM_LIBS    := $(PROJ_ROOT_DIR)/lib/sim_libs
 
@@ -113,6 +107,16 @@ export DESIGN_RTL_DIR = $(CV32E40P_PKG)/rtl
 RTLSRC_HOME   := $(CV32E40P_PKG)/rtl
 RTLSRC_INCDIR := $(RTLSRC_HOME)/include
 
+###############################################################################
+# Seed management for constrained-random sims
+SEED    ?= one
+RNDSEED ?= 
+
+ifeq ($(SEED),random)
+RNDSEED = $(shell date +%N)
+else
+RNDSEED = 1
+endif
 
 ###############################################################################
 # Common Makefile:
@@ -129,10 +133,12 @@ clone_cv32e40p_rtl:
 clone_fpnew_rtl: clone_cv32e40p_rtl
 	$(CLONE_FPNEW_CMD)
 
+clone_riscv-dv:
+	$(CLONE_RISCVDV_CMD)
+
 $(CV32E40P_PKG):
 	$(CLONE_CV32E40P_CMD)
 	$(CLONE_FPNEW_CMD)
-#	$(CLONE_RISCVDV_CMD)
 
 
 ###############################################################################
@@ -159,16 +165,19 @@ endif
 endif
 #endif
 
+
 ###############################################################################
 # Clean up your mess!
 #   1. Clean all generated files of the C and assembler tests in tests/core
 #      Note: CORE_TEST_DIR is defined in ../Common.mk
 #   2. Simulator-specific clean targets are in ./<simulator>.mk
 clean_core_tests:
-	find $(CORE_TEST_DIR) -name *.o   -exec rm {} \;
-	find $(CORE_TEST_DIR) -name *.hex -exec rm {} \;
-	find $(CORE_TEST_DIR) -name *.elf -exec rm {} \;
-	find $(CORE_TEST_DIR) -name *.map -exec rm {} \;
+	find $(CORE_TEST_DIR) -name *.o       -exec rm {} \;
+	find $(CORE_TEST_DIR) -name *.hex     -exec rm {} \;
+	find $(CORE_TEST_DIR) -name *.elf     -exec rm {} \;
+	find $(CORE_TEST_DIR) -name *.map     -exec rm {} \;
+	find $(CORE_TEST_DIR) -name *.readelf -exec rm {} \;
+	find $(CORE_TEST_DIR) -name *.objdump -exec rm {} \;
 
 clean_test_programs:
 	find ../../tests/uvmt_cv32/test-programs -name *.o       -exec rm {} \;
@@ -178,6 +187,8 @@ clean_test_programs:
 	find ../../tests/uvmt_cv32/test-programs -name *.readelf -exec rm {} \;
 	find ../../tests/uvmt_cv32/test-programs -name *.objdump -exec rm {} \;
 
-clean_riscvdv:
+clean_riscv-dv:
 	rm -rf $(RISCVDV_PKG)
+	rm -rf $(COREVDV_PKG)/out_*
+	find ../../tests/core/google-riscv-dv -name "*.S" -exec rm {} \;
 

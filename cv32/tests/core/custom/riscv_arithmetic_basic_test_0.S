@@ -1,40 +1,48 @@
-.include "user_define.h"
+# BEGIN: riscv-dv
+#.include "user_define.h"
 #.globl _start
 #.section .text
 #_start:           
-#                  csrr x5, mhartid
-#                  li x6, 0
-#                  beq x5, x6, 0f
-#
-#0: j h0_start
-#h0_start:
-#                  li x30, 0x40001104
-#                  csrw misa, x30
-#kernel_sp:        
-#                  la x13, kernel_stack_end
-#
-#trap_vec_init:    
-#                  la x30, mtvec_handler
-#                  ori x30, x30, 1
-#                  csrw 0x305, x30 # MTVEC
-#
-#mepc_setup:       
-#                  la x30, init
-#                  csrw mepc, x30
-#                  j init_machine_mode
-
-#init:             
+# END: riscv-dv
+# BEGIN: gtumbush
+.include "user_define.h"
 .section .text.start
-.global _start
+.globl _start
+.section .text
 .type _start, @function
 
-_start:
-    j _start_main
 
+_start:
+
+    j _start_main
 
 .globl _start_main
 .section .text
-_start_main:
+_start_main:          
+# END: gtumbush
+# BEGIN: riscv-dv
+                  csrr x5, mhartid
+                  li x6, 0
+                  beq x5, x6, 0f
+
+0: j h0_start
+h0_start:
+                  li x30, 0x40001104
+                  csrw misa, x30
+kernel_sp:        
+                  la x13, kernel_stack_end
+
+trap_vec_init:    
+                  la x30, mtvec_handler
+                  ori x30, x30, 1
+                  csrw 0x305, x30 # MTVEC
+
+mepc_setup:       
+                  la x30, init
+                  csrw mepc, x30
+                  j init_machine_mode
+
+init:             
                   li x0, 0xffae545d
                   li x1, 0xf
                   li x2, 0xfaea503e
@@ -11278,6 +11286,32 @@ main:             li         s0, 0x0 #start riscv_int_numeric_corner_stream_39
                   srai       s10, s1, 24
                   remu       s5, s11, t1
                   addi       a7, t2, -784
+                  j fast_exit
+
+#Start: Extracted from riscv_compliance_tests/riscv_test.h
+fast_exit:
+                  /* print "\nDONE\n\n" */
+                  lui a0,print_port>>12
+                  addi a1,zero,'D'
+                  addi a2,zero,'O'
+                  addi a3,zero,'N'
+                  addi a4,zero,'E'
+                  addi a5,zero,'\n'
+                  sw a5,0(a0)
+                  sw a1,0(a0)
+                  sw a2,0(a0)
+                  sw a3,0(a0)
+                  sw a4,0(a0)
+                  sw a5,0(a0)
+                  sw a5,0(a0)
+
+                  li a0, test_ret_val
+                  lw a1, test_results /* report result */
+                  sw a1,0(a0)
+
+                  wfi  /* we are done */
+##End: Extracted from riscv_compliance_tests/riscv_test.h
+
                   j test_done
 test_done:        
                   li gp, 1

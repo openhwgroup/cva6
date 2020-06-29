@@ -35,7 +35,7 @@ DSIM_FILE_LIST ?= -f $(DV_UVMT_CV32_PATH)/uvmt_cv32.flist
 ifeq ($(USE_ISS),YES)
     DSIM_FILE_LIST         += -f $(DV_UVMT_CV32_PATH)/imperas_iss.flist
     DSIM_USER_COMPILE_ARGS += "+define+ISS"
-    DSIM_RUN_FLAGS         +="+USE_ISS"
+    DSIM_RUN_FLAGS         += +ovpcfg="--controlfile $(OVP_CTRL_FILE)"
 endif
 
 
@@ -227,6 +227,53 @@ dsim-firmware-unit-test: comp
 .PHONY: unit-test
 unit-test: dsim-unit-test
 
+
+###############################################################################
+# Use Google instruction stream generator (RISCV-DV) to create new test-programs
+#riscv-dv: clone_riscv-dv
+comp_riscv-dv:
+	mkdir -p $(COREVDV_PKG)/out_$(DATE)/dsim
+	dsim -sv \
+		-work $(COREVDV_PKG)/out_$(DATE)/dsim \
+		-genimage image \
+		+incdir+$(UVM_HOME)/src \
+		$(UVM_HOME)/src/uvm_pkg.sv \
+		+define+DSIM \
+		-suppress EnumMustBePositive \
+		-suppress SliceOOB \
+		+incdir+$(RISCVDV_PKG)/target/rv32imc \
+		+incdir+$(RISCVDV_PKG)/user_extension \
+		+incdir+$(RISCVDV_PKG)/tests \
+		+incdir+$(COREVDV_PKG) \
+		-f $(COREVDV_PKG)/manifest.f \
+		-l $(COREVDV_PKG)/out_$(DATE)/dsim/compile.log 
+
+#riscv-test: riscv-dv
+#		+asm_file_name=$(RISCVDV_PKG)/out_2020-06-24/asm_tests/riscv_arithmetic_basic_test  \
+
+gen_riscv-dv:
+	dsim -sv_seed $(RNDSEED) \
+		-sv_lib $(UVM_HOME)/src/dpi/libuvm_dpi.so \
+		+acc+rwb \
+		-image image \
+		-work $(COREVDV_PKG)/out_$(DATE)/dsim \
+		+UVM_TESTNAME=corev_instr_base_test  \
+		+num_of_tests=2  \
+		+start_idx=0  \
+		+asm_file_name=$(CORE_TEST_DIR)/google-riscv-dv  \
+		-l $(COREVDV_PKG)/out_$(DATE)/sim_riscv_arithmetic_basic_test_0.log \
+		+instr_cnt=10000 \
+		+num_of_sub_program=0 \
+		+directed_instr_0=riscv_int_numeric_corner_stream,4 \
+		+no_fence=1 \
+		+no_data_page=1 \
+		+no_branch_jump=1 \
+		+boot_mode=m \
+		+no_csr_instr=1
+	mv *.S $(CORE_TEST_DIR)/custom
+
+corev-dv: clean_riscv-dv clone_riscv-dv comp_riscv-dv gen_riscv-dv
+
 ###############################################################################
 # Clean up your mess!
 
@@ -244,5 +291,5 @@ clean:
 	rm -rf $(DSIM_RESULTS)
 
 # All generated files plus the clone of the RTL
-clean_all: clean clean_core_tests clean_riscvdv clean_test_programs
+clean_all: clean clean_core_tests clean_riscv-dv clean_test_programs
 	rm -rf $(CV32E40P_PKG)
