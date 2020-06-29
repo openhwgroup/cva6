@@ -220,6 +220,7 @@ if (uvm):
             for key in list_dict:
                 build_cmd_list = (key['cmd']).split()
                 build_cmd = ' '.join(build_cmd_list[0:-1]) # See TODO #3
+                build_cmd = build_cmd.replace(' DSIM_WORK=/mux-flow/build/repo/dsim_work', '')
                 if (build_cmd != ''):
                     build_cmd = build_cmd.replace('dsim', svtool)
                     if (args.repo):
