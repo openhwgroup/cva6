@@ -193,7 +193,9 @@ function uvmt_cv32_base_test_c::new(string name="uvmt_cv32_base_test", uvm_compo
    // Gives you short-and-sweet looger messages like this:
    //        UVM_INFO @ 9.750 ns : uvmt_cv32_dut_wrap.sv(79) reporter [DUT_WRAP] load_instr_mem asserted!
    rs = new("rs");
-   rs.set_max_quit_count(.count(10), .overridable(0));
+   
+   // Terminate simulation after a "reasonable" number of errors
+   rs.set_max_quit_count(.count(5), .overridable(0));
    uvm_report_server::set_server(rs);
    reset_vseq = uvme_cv32_reset_vseq_c::type_id::create("reset_vseq");
    

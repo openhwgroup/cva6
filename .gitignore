@@ -11,6 +11,8 @@
 dsim.env
 dsim.log
 dsim_results
+metrics.db
+metrics_history.db
 *.swp
 /.cproject
 /.project
