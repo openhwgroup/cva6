@@ -41,7 +41,7 @@ endif
 
 XRUN_RUN_BASE_FLAGS   ?= -64bit $(XRUN_GUI) +UVM_VERBOSITY=$(XRUN_UVM_VERBOSITY) $(XRUN_PLUSARGS) -sv_lib $(OVP_MODEL_DPI)
 # Simulate using latest elab
-XRUN_RUN_FLAGS        ?= -R $(XRUN_BASE_FLAGS)
+XRUN_RUN_FLAGS        ?= -R $(XRUN_RUN_BASE_FLAGS)
 
 no_rule:
 	@echo 'makefile: SIMULATOR is set to $(SIMULATOR), but no rule/target specified.'
@@ -133,7 +133,7 @@ riscv_ebreak_test_0: comp $(CUSTOM)/riscv_ebreak_test_0.hex
                 +UVM_TESTNAME=uvmt_cv32_firmware_test_c \
                 +firmware=$(CUSTOM)/riscv_ebreak_test_0.hex
 
-debug_test:  $(CORE_TEST_DIR)/debug_test/debug_test.hex
+debug_test: comp $(CORE_TEST_DIR)/debug_test/debug_test.hex
 	$(XRUN) -l xrun-riscv_debug_test.log $(XRUN_RUN_FLAGS) \
                 +elf_file=$(CORE_TEST_DIR)/debug_test/debug_test.elf \
                 +nm_file=$(CORE_TEST_DIR)/debug_test/debug_test.nm \
