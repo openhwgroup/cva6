@@ -163,6 +163,16 @@ hello-world: comp $(CUSTOM)/hello_world.hex $(CUSTOM)/hello_world.elf
 #		+nm_file=$(CUSTOM)/hello_world.nm
 #		+verbose
 
+debug_test:  $(CORE_TEST_DIR)/debug_test/debug_test.hex
+	mkdir -p $(DSIM_RESULTS)/debug_test && cd $(DSIM_RESULTS)/debug_test  && \
+	$(DSIM) -l dsim-debug_test.log -image $(DSIM_IMAGE) \
+		-work $(DSIM_WORK) $(DSIM_RUN_FLAGS) $(DSIM_DMP_FLAGS) \
+		-sv_lib $(UVM_HOME)/src/dpi/libuvm_dpi.so \
+		-sv_lib $(OVP_MODEL_DPI) \
+    +UVM_TESTNAME=uvmt_cv32_firmware_test_c \
+    +firmware=$(CORE_TEST_DIR)/debug_test/debug_test.hex \
+    +elf_file=$(CORE_TEST_DIR)/debug_test/debug_test.elf \
+
 # Runs tests in riscv_tests/ only
 cv32-riscv-tests: comp $(CV32_RISCV_TESTS_FIRMWARE)/cv32_riscv_tests_firmware.hex $(CV32_RISCV_TESTS_FIRMWARE)/cv32_riscv_tests_firmware.elf
 	mkdir -p $(DSIM_RESULTS)/cv32-riscv-tests && cd $(DSIM_RESULTS)/cv32-riscv-tests && \
