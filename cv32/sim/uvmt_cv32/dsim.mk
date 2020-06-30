@@ -163,7 +163,7 @@ hello-world: comp $(CUSTOM)/hello_world.hex $(CUSTOM)/hello_world.elf
 #		+nm_file=$(CUSTOM)/hello_world.nm
 #		+verbose
 
-debug_test:  $(CORE_TEST_DIR)/debug_test/debug_test.hex
+debug_test: comp $(CORE_TEST_DIR)/debug_test/debug_test.hex
 	mkdir -p $(DSIM_RESULTS)/debug_test && cd $(DSIM_RESULTS)/debug_test  && \
 	$(DSIM) -l dsim-debug_test.log -image $(DSIM_IMAGE) \
 		-work $(DSIM_WORK) $(DSIM_RUN_FLAGS) $(DSIM_DMP_FLAGS) \
