@@ -41,7 +41,7 @@ endif
 
 XRUN_RUN_BASE_FLAGS   ?= -64bit $(XRUN_GUI) +UVM_VERBOSITY=$(XRUN_UVM_VERBOSITY) $(XRUN_PLUSARGS) -sv_lib $(OVP_MODEL_DPI)
 # Simulate using latest elab
-XRUN_RUN_FLAGS        ?= -R $(XRUN_BASE_FLAGS)
+XRUN_RUN_FLAGS        ?= -R $(XRUN_RUN_BASE_FLAGS)
 
 no_rule:
 	@echo 'makefile: SIMULATOR is set to $(SIMULATOR), but no rule/target specified.'
