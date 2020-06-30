@@ -178,6 +178,39 @@ cv32-firmware: comp $(FIRMWARE)/firmware.hex
 #		+firmware=$(FIRMWARE)/firmware_unit_test.hex
 
 ###############################################################################
+# Use Google instruction stream generator (RISCV-DV) to create new test-programs
+comp_riscv-dv:
+	$(XRUN) $(XRUN_COMP_FLAGS) \
+		$(XRUN_USER_COMPILE_ARGS) \
+		-elaborate \
+		+incdir+$(RISCVDV_PKG)/target/rv32imc \
+		+incdir+$(RISCVDV_PKG)/user_extension \
+		+incdir+$(RISCVDV_PKG)/tests \
+		+incdir+$(COREVDV_PKG) \
+		-f $(COREVDV_PKG)/manifest.f \
+		-l $(COREVDV_PKG)/out_$(DATE)/run/compile.log 
+
+gen_riscv-dv:
+	$(XRUN) $(XRUN_RUN_FLAGS) \
+		-xceligen rand_struct \
+		+UVM_TESTNAME=corev_instr_base_test  \
+		+num_of_tests=2  \
+		+start_idx=0  \
+		+asm_file_name=$(CORE_TEST_DIR)/google-riscv-dv  \
+		-l $(COREVDV_PKG)/out_$(DATE)/sim_riscv_arithmetic_basic_test_0.log \
+		+instr_cnt=10000 \
+		+num_of_sub_program=0 \
+		+directed_instr_0=riscv_int_numeric_corner_stream,4 \
+		+no_fence=1 \
+		+no_data_page=1 \
+		+no_branch_jump=1 \
+		+boot_mode=m \
+		+no_csr_instr=1
+	mv *.S $(CORE_TEST_DIR)/custom
+
+corev-dv: clean_riscv-dv clone_riscv-dv comp_riscv-dv gen_riscv-dv
+
+###############################################################################
 # Clean up your mess!
 
 clean:
@@ -195,6 +228,6 @@ clean_eclipse:
 	rm  -rf workspace
 
 # All generated files plus the clone of the RTL
-clean_all: clean clean_eclipse clean_core_tests clean_riscvdv clean_test_programs
+clean_all: clean clean_eclipse clean_core_tests clean_riscv-dv clean_test_programs
 	rm -rf $(CV32E40P_PKG)
 
