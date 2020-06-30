@@ -20,7 +20,8 @@ RISC-V GCC Compilers
 Compiling the riscv-tests and riscv-compliance-tests requires a cross-compiler,
 often refered to as the "toolchain".  It is recommended that you use the
 [PULP RISCV GNU Toolchain](https://github.com/pulp-platform/pulp-riscv-gnu-toolchain)
-from the Pulp Platform team.
+from the Pulp Platform team.  See [TOOLCHAIN](https://github.com/openhwgroup/core-v-verif/blob/master/cv32/sim/TOOLCHAIN.md)
+for detailed installation instructions.
 <br><br>
 Some teams use the [riscv-gcc](https://github.com/riscv/riscv-gcc) toolchain, but this
 does not support the custom PULP instructions.
