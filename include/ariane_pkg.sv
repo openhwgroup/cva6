@@ -23,8 +23,6 @@
   `include "l15.tmp.h"
 `endif
 
-import riscv::*;
-
 package ariane_pkg;
 
     // ---------------
