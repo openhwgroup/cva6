@@ -25,8 +25,8 @@ SystemVerilog Simulators
 ----------------------------------
 Any SystemVerilog simulator that implements complete support for [IEEE-1800-2017](https://ieeexplore.ieee.org/document/8299595)
 will be able to compile and run this verification environment. At the time of this writting
-(2020-02-08) the Metrics **_dsim_**, Cadence **_Xcelium_** and Mentor's **_Questa_** simulators are supported by the Makefiles. 
-If you have access to other SystemVerilog simulators such as Synopsys **_VCS_**, Aldec **_RivieraPRO_** or some other simulator
+(2020-02-08) the Metrics **_dsim_**, Cadence **_Xcelium_**, Mentor's **_Questa_**  and Synopsys **_VCS_** simulators are supported by the Makefiles. 
+If you have access to other SystemVerilog simulators such as Aldec **_RivieraPRO_** or some other simulator
 not listed here and would like to add support to the Makefile, your pull-request will be graciously accepted!
 
 UVM-1.2 Libraries
@@ -69,6 +69,7 @@ cv32/sim/
       +--- Common.mk                        # Common variables and targets
       +--- uvmt_cv32/
               +--- Makefile                 # 'Root' Makefile
+              +--- vcs.mk                   # Synopsys VCS
               +--- vsim.mk                  # Mentor Questa
               +--- dsim.mk                  # Metrics dsim
               +--- xrun.mk                  # Cadance Xcelium
@@ -120,8 +121,17 @@ Running the environment with Mentor Graphics [Questa](https://www.mentor.com/pro
 The command **make SIMULATOR=vsim sanity** will run the sanity testcase using _vsim_.
 Set the shell variable SIMULATOR to `vsim` to simply that to **make <target>**.
 
-SANITY
--------
+Running the environment with Synopsys VCS [VCS](https://www.synopsys.com/verification/simulation/vcs.html) (vcs)
+----------------------
+The command **make SIMULATOR=vcs sanity** will run the sanity testcase using _vsim_.
+Set the shell variable SIMULATOR to `vcs` to simply that to **make <target>**.
+<br><br>
+**Note for Synopsys users:** This testbench has not been compiled/run
+with _vcs_ in several weeks.  If you need to update the Makefiles, please do
+so and issue a Pull Request.
+
+Available Tests
+---------------
 The `make` commands here assume you have set your shell SIMULATION
 environment variable to your specific simulator (see above).
 <br><br>

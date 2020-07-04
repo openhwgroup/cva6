@@ -178,7 +178,7 @@ COMPLIANCE_TEST_OBJS     = $(addsuffix .o, \
 
 # Thales verilator testbench compilation start
 
-SUPPORTED_COMMANDS := vsim-firmware-unit-test questa-unit-test questa-unit-test-gui dsim-unit-test 
+SUPPORTED_COMMANDS := vsim-firmware-unit-test questa-unit-test questa-unit-test-gui dsim-unit-test vcs-unit-test
 SUPPORTS_MAKE_ARGS := $(findstring $(firstword $(MAKECMDGOALS)), $(SUPPORTED_COMMANDS))
 
 ifneq "$(SUPPORTS_MAKE_ARGS)" ""
@@ -401,6 +401,12 @@ firmware-vcs-run: vcsify $(FIRMWARE)/firmware.hex
 firmware-vcs-run-gui: VCS_FLAGS+=-debug_all
 firmware-vcs-run-gui: vcsify $(FIRMWARE)/firmware.hex
 	./simv $(SIMV_FLAGS) -gui "+firmware=$(FIRMWARE)/firmware.hex"
+
+.PHONY: vcs-unit-test
+vcs-unit-test:  firmware-unit-test-clean
+vcs-unit-test:  $(FIRMWARE)/firmware_unit_test.hex 
+vcs-unit-test:  vcsify $(FIRMWARE)/firmware_unit_test.hex
+vcs-unit-test:  vcs-run
 
 ###############################################################################
 # house-cleaning for unit-testing

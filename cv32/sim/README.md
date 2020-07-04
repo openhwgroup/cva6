@@ -39,5 +39,8 @@ Cadence Xcelium Tcl scripts for GUI and waveform viewing support.
 #### questa
 Mentor Questa Tcl scripts for GUI and waveform viewing support.
 
+#### vcs
+Synopsys VCS Tcl scripts for GUI and waveform viewing support.
+
 #### mcy
 Setup and configuration for [Mutual Coverage with Yosys](https://github.com/YosysHQ/mcy) from [SymbioticEDA](https://www.symbioticeda.com/).

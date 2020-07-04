@@ -71,10 +71,15 @@ VSIM_SCRIPT_DIR	  = ../questa
 VSIM_SCRIPT       = $(VSIM_SCRIPT_DIR)/vsim.tcl
 
 # vcs configuration (hopelessly out of date)
-VCS               = vcs-2017.03-kgf vcs
-VCS_HOME          = /usr/pack/vcs-2017.03-kgf 
-VCS_FLAGS         =
-SIMV_FLAGS        =
+VCS_VERSION             = O-2018.09-SP1-1
+VCS_HOME                = /opt/synopsys/vcs-mx/$(VCS_VERSION)
+VCS                     = vcs
+VCS_FLAGS               ?= # user defined
+ALL_VCS_FLAGS               = $(VCS_FLAGS)
+VCS_SCRIPT_DIR	        = ../vcs
+VCS_SCRIPT              = $(VCS_SCRIPT_DIR)/vcs_batch.tcl
+VCS_SCRIPT_GUI          = $(VCS_SCRIPT_DIR)/vcs.tcl
+SIMV                    = ./simv
 
 # dsim is the Metrics Technologies SystemVerilog simulator  (https://metrics.ca/)
 DSIM                    = dsim
@@ -130,6 +135,13 @@ SIM_LIBS    := $(PROJ_ROOT_DIR)/lib/sim_libs
 # RTL source files for the CV32E core
 # DESIGN_RTL_DIR is used by CV32E40P_MANIFEST file
 CV32E40P_PKG         := $(PROJ_ROOT_DIR)/core-v-cores/cv32e40p
+CV32E40P_RTLSRC_INCDIR  := $(CV32E40P_PKG)/rtl/include
+CV32E40P_RTLSRC_PKG  := $(CV32E40P_PKG)/rtl/fpnew/src/fpnew_pkg.sv \
+				$(addprefix $(CV32E40P_RTLSRC_INCDIR)/,\
+				cv32e40p_apu_core_package.sv cv32e40p_defines.sv \
+				cv32e40p_tracer_defines.sv)
+CV32E40P_RTLSRC  := $(filter-out $(CV32E40P_PKG)/rtl/cv32e40p_register_file_latch.sv, \
+                $(wildcard $(CV32E40P_PKG)/rtl/*.sv))
 FPNEW_PKG            := $(CV32E40P_PKG)/rtl/fpnew
 CV32E40P_MANIFEST    := $(CV32E40P_PKG)/cv32e40p_manifest.flist
 export DESIGN_RTL_DIR = $(CV32E40P_PKG)/rtl
@@ -141,6 +153,36 @@ tbsrc_pkg: $(TBSRC_PKG)
 
 tbsrc: $(TBSRC)
 
+###############################################################################
+
+SIMULATOR ?= vcs
+
+.PHONY: hello_world
+hello-world: $(SIMULATOR)-hello_world
+
+.PHONY: cv32_riscv_tests
+cv32_riscv_tests: $(SIMULATOR)-cv32_riscv_tests
+
+.PHONY: cv32_riscv_tests-gui
+cv32_riscv_tests-gui: $(SIMULATOR)-cv32_riscv_tests-gui
+
+.PHONY: cv32_riscv_compliance_tests
+cv32_riscv_compliance_tests: $(SIMULATOR)-cv32_riscv_compliance_tests
+
+.PHONY: cv32_riscv_compliance_tests-gui
+cv32_riscv_compliance_tests-gui: $(SIMULATOR)-cv32_riscv_compliance_tests-gui
+
+.PHONY: firmware
+firmware: $(SIMULATOR)-firmware
+
+.PHONY: firmware-gui
+firmware-gui: $(SIMULATOR)-firmware-gui
+
+.PHONY: unit-test
+unit-test: $(SIMULATOR)-unit-test
+
+.PHONY: unit-test-gui
+unit-test-gui: $(SIMULATOR)-unit-test-gui
 
 ###############################################################################
 # Common Makefile:
@@ -153,27 +195,6 @@ include $(PROJ_ROOT_DIR)/cv32/sim/Common.mk
 .DEFAULT_GOAL := sanity-veri-run
 
 all: clean_all sanity-veri-run dsim-sanity
-
-
-###############################################################################
-# VCS testbench compilation
-
-vcsify: $(CV32E40P_PKG) $(FPNEW_PKG) $(RTLSRC_PKG) $(RTLSRC) $(TBSRC_PKG) $(TBSRC)
-	$(VCS) +vc -sverilog -race=all -ignore unique_checks -full64 \
-		-timescale=1ns/1ps \
-		-CC "-I$(VCS_HOME)/include -O3 -march=native" $(VCS_FLAGS) \
-		$(RTLSRC_PKG) $(RTLSRC) $(TBSRC_PKG) $(TBSRC) \
-		+incdir+$(RTLSRC_INCDIR)
-
-vcs-run: vcsify $(FIRMWARE)/firmware.hex
-	./simv $(SIMV_FLAGS)
-
-vcs-run-gui: VCS_FLAGS+=-debug_all
-vcs-run-gui: vcsify $(FIRMWARE)/firmware.hex
-	./simv $(SIMV_FLAGS) -gui
-
-vcs-clean:
-	rm -rf simv* *.daidir *.vpd *.db csrc ucli.key vc_hdrs.h
 
 ###############################################################################
 # Metrics DSIM 
@@ -375,7 +396,7 @@ questa-unit-test-gui:  $(FIRMWARE)/firmware_unit_test.hex
 questa-unit-test-gui: ALL_VSIM_FLAGS += "+firmware=$(FIRMWARE)/firmware_unit_test.hex"
 questa-unit-test-gui: vsim-run-gui
 
-clean_questa:
+questa-clean:
 	if [ -d $(VWORK) ]; then rm -r $(VWORK); fi
 	rm -f transcript vsim.wlf vsim.dbg trace_core*.log \
 	.build-rtl .opt-rtl .lib-rtl *.vcd objdump
@@ -468,6 +489,75 @@ verilate-clean: tc-clean
 
 
 ###############################################################################
+# Synopsys VCS
+
+vcsify: $(CV32E40P_PKG) $(FPNEW_PKG) $(CV32E40P_RTLSRC_PKG) $(CV32E40P_RTLSRC) $(TBSRC_PKG) $(TBSRC)
+	$(VCS) +vc -sverilog -race=all -ignore unique_checks -full64 \
+		-timescale=1ns/1ps \
+		-assert svaext \
+		-CC "-I$(VCS_HOME)/include -O3 -march=native" $(VCS_FLAGS) \
+		$(CV32E40P_RTLSRC_PKG) $(CV32E40P_RTLSRC) $(TBSRC_PKG) $(TBSRC) \
+		+incdir+$(CV32E40P_RTLSRC_INCDIR)
+
+RTLSRC_TB_TOP	:= $(basename $(notdir $(TBSRC_TOP)))
+
+vcs-run: vcsify
+	$(SIMV) $(ALL_VCS_FLAGS) -ucli -do $(VCS_SCRIPT)
+
+vcs-run-gui: vcsify
+	$(SIMV) $(ALL_VCS_FLAGS) -gui -do $(VCS_SCRIPT_GUI)
+
+.PHONY: vcs-hello_world
+vcs-hello_world: vcsify $(CUSTOM)/hello_world.hex
+vcs-hello_world: ALL_VCS_FLAGS += +firmware=$(CUSTOM)/hello_world.hex
+vcs-hello_world: vcs-run
+
+.PHONY: vcs-cv32_riscv_tests
+vcs-cv32_riscv_tests: vcsify $(CV32_RISCV_TESTS_FIRMWARE)/cv32_riscv_tests_firmware.hex
+vcs-cv32_riscv_tests: ALL_VCS_FLAGS += +firmware=$(CV32_RISCV_TESTS_FIRMWARE)/cv32_riscv_tests_firmware.hex
+vcs-cv32_riscv_tests: vcs-run
+
+.PHONY: vcs-cv32_riscv_tests-gui
+vcs-cv32_riscv_tests-gui: vcsify $(CV32_RISCV_TESTS_FIRMWARE)/cv32_riscv_tests_firmware.hex
+vcs-cv32_riscv_tests-gui: ALL_VCS_FLAGS += +firmware=$(CV32_RISCV_TESTS_FIRMWARE)/cv32_riscv_tests_firmware.hex
+vcs-cv32_riscv_tests-gui: vcs-run-gui
+
+.PHONY: vcs-cv32_riscv_compliance_tests
+vcs-cv32_riscv_compliance_tests: vcsify $(CV32_RISCV_COMPLIANCE_TESTS_FIRMWARE)/cv32_riscv_compliance_tests_firmware.hex
+vcs-cv32_riscv_compliance_tests: ALL_VCS_FLAGS += +firmware=$(CV32_RISCV_COMPLIANCE_TESTS_FIRMWARE)/cv32_riscv_compliance_tests_firmware.hex
+vcs-cv32_riscv_compliance_tests: vcs-run
+
+.PHONY: vcs-cv32_riscv_compliance_tests-gui
+vcs-cv32_riscv_compliance_tests-gui: vcsify $(CV32_RISCV_COMPLIANCE_TESTS_FIRMWARE)/cv32_riscv_compliance_tests_firmware.hex
+vcs-cv32_riscv_compliance_tests-gui: ALL_VCS_FLAGS += +firmware=$(CV32_RISCV_COMPLIANCE_TESTS_FIRMWARE)/cv32_riscv_compliance_tests_firmware.hex
+vcs-cv32_riscv_compliance_tests-gui: vcs-run-gui
+
+.PHONY: vcs-firmware
+vcs-firmware: vcsify $(FIRMWARE)/firmware.hex
+vcs-firmware: ALL_VCS_FLAGS += +firmware=$(FIRMWARE)/firmware.hex
+vcs-firmware: vcs-run
+
+.PHONY: vcs-firmware-gui
+vcs-firmware-gui: vcsify $(FIRMWARE)/firmware.hex
+vcs-firmware-gui: ALL_VCS_FLAGS += +firmware=$(FIRMWARE)/firmware.hex
+vcs-firmware-gui: vcs-run-gui
+
+.PHONY: vcs-unit-test 
+vcs-unit-test:  firmware-unit-test-clean 
+vcs-unit-test:  $(FIRMWARE)/firmware_unit_test.hex 
+vcs-unit-test: ALL_VCS_FLAGS += "+firmware=$(FIRMWARE)/firmware_unit_test.hex"
+vcs-unit-test: vcs-run
+
+.PHONY: vcs-unit-test-gui 
+vcs-unit-test-gui:  firmware-unit-test-clean 
+vcs-unit-test-gui:  $(FIRMWARE)/firmware_unit_test.hex 
+vcs-unit-test-gui: ALL_VCS_FLAGS += "+firmware=$(FIRMWARE)/firmware_unit_test.hex"
+vcs-unit-test-gui: vcs-run-gui
+
+vcs-clean:
+	rm -rf simv* *.daidir *.vpd *.db csrc ucli.key vc_hdrs.h
+
+###############################################################################
 # CV32E40P RTL dependencies
 
 clone_cv32e40p_rtl:
@@ -495,7 +585,7 @@ tc-clean:
 	find $(CORE_TEST_DIR) -name *.map     -exec rm {} \;
 
 .PHONY: clean clean_all distclean
-clean: clean_questa tc-clean verilate-clean vcs-clean firmware-clean custom-clean dsim-clean xrun-clean
+clean: questa-clean tc-clean verilate-clean vcs-clean firmware-clean custom-clean dsim-clean xrun-clean vcs-clean
 
 distclean: clean
 	rm -rf riscv-fesvr riscv-isa-sim $(CV32E40P_PKG) work
