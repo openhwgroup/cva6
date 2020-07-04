@@ -199,7 +199,7 @@ FIRMWARE_UNIT_TEST_OBJS   =  	$(addsuffix .o, \
 ###############################################################################
 # The sanity rule runs whatever is currently deemed to be the minimal test that
 # must be able to run (and pass!) prior to generating a pull-request.
-sanity: hello_world
+sanity: hello-world
 
 # rules to generate hex (loadable by simulators) from elf
 %.hex: %.elf

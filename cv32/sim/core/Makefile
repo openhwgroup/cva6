@@ -158,7 +158,7 @@ tbsrc: $(TBSRC)
 SIMULATOR ?= vcs
 
 .PHONY: hello_world
-hello_world: $(SIMULATOR)-hello_world
+hello-world: $(SIMULATOR)-hello_world
 
 .PHONY: cv32_riscv_tests
 cv32_riscv_tests: $(SIMULATOR)-cv32_riscv_tests
