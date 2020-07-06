@@ -242,7 +242,7 @@ class coverage;
 // TODO : missing coverage of all combinations of source and destination operands.
 // TODO : missing check of overflow/underflow
     covergroup add_cg with function sample(ins_t ins);
-        option.per_instance = 1;
+        //option.per_instance = 1;
         cp_rd    : coverpoint get_gpr_name(ins.ops[0].val, ins.ops[0].key, "add");
         cp_rs1    : coverpoint get_gpr_name(ins.ops[1].val, ins.ops[1].key, "add");
         cp_rs2    : coverpoint get_gpr_name(ins.ops[2].val, ins.ops[2].key, "add");
@@ -252,7 +252,7 @@ class coverage;
 // TODO : missing check of overflow/underflow
 // TODO : NOP covered by nop_cg cover group
     covergroup addi_cg with function sample(ins_t ins);
-        option.per_instance = 1;
+        //option.per_instance = 1;
         cp_rd    : coverpoint get_gpr_name(ins.ops[0].val, ins.ops[0].key, "addi");
         cp_rs1    : coverpoint get_gpr_name(ins.ops[1].val, ins.ops[1].key, "addi");
         cp_imm11   : coverpoint get_imm(ins.ops[2].val,"addi" ) {
@@ -264,7 +264,7 @@ class coverage;
 
 // TODO : missing coverage of all combinations of source and destination operands.
     covergroup and_cg with function sample(ins_t ins);
-        option.per_instance = 1;
+        //option.per_instance = 1;
         cp_rd    : coverpoint get_gpr_name(ins.ops[0].val, ins.ops[0].key, "and");
         cp_rs1    : coverpoint get_gpr_name(ins.ops[1].val, ins.ops[1].key, "and");
         cp_rs2    : coverpoint get_gpr_name(ins.ops[2].val, ins.ops[2].key, "and");
@@ -272,7 +272,7 @@ class coverage;
 
 // TODO : missing coverage of all combinations of source and destination operands.
     covergroup andi_cg with function sample(ins_t ins);
-        option.per_instance = 1;
+        //option.per_instance = 1;
         cp_rd    : coverpoint get_gpr_name(ins.ops[0].val, ins.ops[0].key, "andi");
         cp_rs1    : coverpoint get_gpr_name(ins.ops[1].val, ins.ops[1].key, "andi");
         cp_imm11   : coverpoint get_imm(ins.ops[2].val,"andi" ) {
@@ -284,7 +284,7 @@ class coverage;
 
 // TODO : missing coverage of all immediate values and destination registers.
     covergroup auipc_cg with function sample(ins_t ins);
-        option.per_instance = 1;
+        //option.per_instance = 1;
         cp_rd    : coverpoint get_gpr_name(ins.ops[0].val, ins.ops[0].key, "auipc");
         cp_uimm20   : coverpoint get_imm(ins.ops[1].val,"auipc" ) {
             bins neg  = {[$:-1]};
@@ -296,7 +296,7 @@ class coverage;
 // TODO : missing check of arbitrary positive and negative immediate values
 // TODO : missing check of maximum positive and negative immediate values
     covergroup beq_cg with function sample(ins_t ins);
-        option.per_instance = 1;
+        //option.per_instance = 1;
         cp_rs1    : coverpoint get_gpr_name(ins.ops[0].val, ins.ops[0].key, "beq");
         cp_rs2    : coverpoint get_gpr_name(ins.ops[1].val, ins.ops[1].key, "beq");
         cp_bra12   : coverpoint get_imm(ins.ops[2].val,"beq" ) {
@@ -309,7 +309,7 @@ class coverage;
 // TODO : missing check of arbitrary positive and negative immediate values
 // TODO : missing check of maximum positive and negative immediate values
     covergroup bge_cg with function sample(ins_t ins);
-        option.per_instance = 1;
+        //option.per_instance = 1;
         cp_rs1    : coverpoint get_gpr_name(ins.ops[0].val, ins.ops[0].key, "bge");
         cp_rs2    : coverpoint get_gpr_name(ins.ops[1].val, ins.ops[1].key, "bge");
         cp_bra12   : coverpoint get_imm(ins.ops[2].val,"bge" ) {
@@ -321,7 +321,7 @@ class coverage;
 
 // TODO : missing check of maximum immediate value
     covergroup bgeu_cg with function sample(ins_t ins);
-        option.per_instance = 1;
+        //option.per_instance = 1;
         cp_rs1    : coverpoint get_gpr_name(ins.ops[0].val, ins.ops[0].key, "bgeu");
         cp_rs2    : coverpoint get_gpr_name(ins.ops[1].val, ins.ops[1].key, "bgeu");
         cp_bra12   : coverpoint get_imm(ins.ops[2].val,"bgeu" ) {
@@ -334,7 +334,7 @@ class coverage;
 // TODO : missing check of arbirary positive and negative immediate values
 // TODO : missing check of maximum positive and negative immediate values
     covergroup blt_cg with function sample(ins_t ins);
-        option.per_instance = 1;
+        //option.per_instance = 1;
         cp_rs1    : coverpoint get_gpr_name(ins.ops[0].val, ins.ops[0].key, "blt");
         cp_rs2    : coverpoint get_gpr_name(ins.ops[1].val, ins.ops[1].key, "blt");
         cp_bra12   : coverpoint get_imm(ins.ops[2].val,"blt" ) {
@@ -346,7 +346,7 @@ class coverage;
 
 // TODO : missing check of maximum of immediate value
     covergroup bltu_cg with function sample(ins_t ins);
-        option.per_instance = 1;
+        //option.per_instance = 1;
         cp_rs1    : coverpoint get_gpr_name(ins.ops[0].val, ins.ops[0].key, "bltu");
         cp_rs2    : coverpoint get_gpr_name(ins.ops[1].val, ins.ops[1].key, "bltu");
         cp_bra12   : coverpoint get_imm(ins.ops[2].val,"bltu" ) {
@@ -359,7 +359,7 @@ class coverage;
 // TODO : missing check of arbirary positive and negative immediate values
 // TODO : missing check of maximum positive and negative immediate values
     covergroup bne_cg with function sample(ins_t ins);
-        option.per_instance = 1;
+        //option.per_instance = 1;
         cp_rs1    : coverpoint get_gpr_name(ins.ops[0].val, ins.ops[0].key, "bne");
         cp_rs2    : coverpoint get_gpr_name(ins.ops[1].val, ins.ops[1].key, "bne");
         cp_bra12   : coverpoint get_imm(ins.ops[2].val,"bne" ) {
@@ -372,7 +372,7 @@ class coverage;
 // TODO : only counting occurrence, ignoring when not called.
 // TODO : verification goal not specified in test plan
     covergroup ebreak_cg with function sample(ins_t ins);
-        option.per_instance = 1;
+        //option.per_instance = 1;
         cp_asm   : coverpoint ins.asm == EBREAK {
             ignore_bins zero = {0};
         }
@@ -381,7 +381,7 @@ class coverage;
 // TODO : only counting occurrence, ignoring when not called.
 // TODO : verification goal not specified in test plan
     covergroup ecall_cg with function sample(ins_t ins);
-        option.per_instance = 1;
+        //option.per_instance = 1;
         cp_asm   : coverpoint ins.asm == ECALL {
             ignore_bins zero = {0};
         }
@@ -390,7 +390,7 @@ class coverage;
 // TODO : only counting occurence, ignoring when not called.
 // TODO : verification goal not specified in test plan
     covergroup fence_cg with function sample(ins_t ins);
-        option.per_instance = 1;
+        //option.per_instance = 1;
         cp_asm   : coverpoint ins.asm == FENCE {
             ignore_bins zero = {0};
         }
@@ -398,7 +398,7 @@ class coverage;
 
 // TODO : case when rd = x0 counted but not singled out
     covergroup jal_cg with function sample(ins_t ins);
-        option.per_instance = 1;
+        //option.per_instance = 1;
         cp_rd    : coverpoint get_gpr_name(ins.ops[0].val, ins.ops[0].key, "jal");
         cp_jmp19   : coverpoint get_imm(ins.ops[1].val,"jal" ) {
             bins neg  = {[$:-1]};
@@ -412,7 +412,7 @@ class coverage;
 // TODO : missing check of arbirary positive and negative immediate values
 // TODO : missing check of maximum positive and negative immediate values
     covergroup jalr_cg with function sample(ins_t ins, gpr_name_t r0, gpr_name_t r1);
-        option.per_instance = 1;
+        //option.per_instance = 1;
         cp_r0    : coverpoint r0 iff (ins.ops[0].key[0] == "R");
         cp_r1    : coverpoint r1 iff (ins.ops[1].key[0] == "R");
         cp_imm0   : coverpoint get_imm(ins.ops[0].val,"jalr" ) iff (ins.ops[0].key[0] == "C") {
@@ -433,7 +433,7 @@ class coverage;
 // TODO : missing check of arbirary positive and negative immediate values
 // TODO : missing check of maximum positive and negative immediate values
     covergroup lb_cg with function sample(ins_t ins);
-        option.per_instance = 1;
+        //option.per_instance = 1;
         cp_rd    : coverpoint get_gpr_name(ins.ops[0].val, ins.ops[0].key, "lb");
         cp_imm    : coverpoint get_imm(ins.ops[1].val, "lb") {
             bins neg  = {[$:-1]};
@@ -449,7 +449,7 @@ class coverage;
 // TODO : missing check of arbirary positive and negative immediate values
 // TODO : missing check of maximum positive and negative immediate values
     covergroup lbu_cg with function sample(ins_t ins);
-        option.per_instance = 1;
+        //option.per_instance = 1;
         cp_rd    : coverpoint get_gpr_name(ins.ops[0].val, ins.ops[0].key, "lbu");
         cp_imm    : coverpoint get_imm(ins.ops[1].val, "lbu") {
             bins neg  = {[$:-1]};
@@ -464,7 +464,7 @@ class coverage;
 // TODO : missing check of arbirary positive and negative immediate values
 // TODO : missing check of maximum positive and negative immediate values
     covergroup lh_cg with function sample(ins_t ins);
-        option.per_instance = 1;
+        //option.per_instance = 1;
         cp_rd    : coverpoint get_gpr_name(ins.ops[0].val, ins.ops[0].key, "lh");
         cp_imm    : coverpoint get_imm(ins.ops[1].val, "lh") {
             bins neg  = {[$:-1]};
@@ -479,7 +479,7 @@ class coverage;
 // TODO : missing check of arbirary positive and negative immediate values
 // TODO : missing check of maximum positive and negative immediate values
     covergroup lhu_cg with function sample(ins_t ins);
-        option.per_instance = 1;
+        //option.per_instance = 1;
         cp_rd    : coverpoint get_gpr_name(ins.ops[0].val, ins.ops[0].key, "lhu");
         cp_imm    : coverpoint get_imm(ins.ops[1].val, "lhu") {
             bins neg  = {[$:-1]};
@@ -491,7 +491,7 @@ class coverage;
 
 // TODO : missing coverage of all immediate values and destination registers.
     covergroup lui_cg with function sample(ins_t ins);
-        option.per_instance = 1;
+        //option.per_instance = 1;
         cp_rd    : coverpoint get_gpr_name(ins.ops[0].val, ins.ops[0].key, "lui");
         cp_uimm20   : coverpoint get_imm(ins.ops[1].val,"lui" ) {
             bins neg  = {[$:-1]};
@@ -505,7 +505,7 @@ class coverage;
 // TODO : missing check of arbirary positive and negative immediate values
 // TODO : missing check of maximum positive and negative immediate values
     covergroup lw_cg with function sample(ins_t ins);
-        option.per_instance = 1;
+        //option.per_instance = 1;
         cp_rd    : coverpoint get_gpr_name(ins.ops[0].val, ins.ops[0].key, "lw");
         cp_imm    : coverpoint get_imm(ins.ops[1].val, "lw") {
             bins neg  = {[$:-1]};
@@ -517,7 +517,7 @@ class coverage;
 
 // TODO : cover group for NOP (addi x0, x0, imm), may need to be merged into addi_cg
     covergroup nop_cg with function sample(ins_t ins);
-        option.per_instance = 1;
+        //option.per_instance = 1;
         cp_asm   : coverpoint ins.asm == NOP {
             ignore_bins zero = {0};
         }
@@ -525,7 +525,7 @@ class coverage;
 
 // TODO : missing coverage of all combinations of source and destination operands.
     covergroup or_cg with function sample(ins_t ins);
-        option.per_instance = 1;
+        //option.per_instance = 1;
         cp_rd    : coverpoint get_gpr_name(ins.ops[0].val, ins.ops[0].key, "or");
         cp_rs1    : coverpoint get_gpr_name(ins.ops[1].val, ins.ops[1].key, "or");
         cp_rs2    : coverpoint get_gpr_name(ins.ops[2].val, ins.ops[2].key, "or");
@@ -533,7 +533,7 @@ class coverage;
 
 // TODO : missing coverage of all combinations of source and destination operands.
     covergroup ori_cg with function sample(ins_t ins);
-        option.per_instance = 1;
+        //option.per_instance = 1;
         cp_rd    : coverpoint get_gpr_name(ins.ops[0].val, ins.ops[0].key, "ori");
         cp_rs1    : coverpoint get_gpr_name(ins.ops[1].val, ins.ops[1].key, "ori");
         cp_imm11   : coverpoint get_imm(ins.ops[2].val,"ori" ) {
@@ -565,7 +565,7 @@ class coverage;
 // TODO : missing check of maximum values of rs1 and imm
 // TODO " missing check of overflow conditions
     covergroup sh_cg with function sample(ins_t ins);
-        option.per_instance = 1;
+        //option.per_instance = 1;
         cp_rs2    : coverpoint get_gpr_name(ins.ops[0].val, ins.ops[0].key, "sh");
         cp_imm    : coverpoint get_imm(ins.ops[1].val, "sh") {
             bins neg  = {[$:-1]};
@@ -577,7 +577,7 @@ class coverage;
 
 // TODO : missing coverage of all combinations of source and destination operands.
     covergroup sll_cg with function sample(ins_t ins);
-        option.per_instance = 1;
+        //option.per_instance = 1;
         cp_rd    : coverpoint get_gpr_name(ins.ops[0].val, ins.ops[0].key, "sll");
         cp_rs1    : coverpoint get_gpr_name(ins.ops[1].val, ins.ops[1].key, "sll");
         cp_rs2    : coverpoint get_gpr_name(ins.ops[2].val, ins.ops[2].key, "sll");
@@ -585,7 +585,7 @@ class coverage;
 
 // TODO : missing coverage of all combinations of source and destination operands.
     covergroup slli_cg with function sample(ins_t ins);
-        option.per_instance = 1;
+        //option.per_instance = 1;
         cp_rd    : coverpoint get_gpr_name(ins.ops[0].val, ins.ops[0].key, "slli");
         cp_rs1    : coverpoint get_gpr_name(ins.ops[1].val, ins.ops[1].key, "slli");
         cp_shamt5   : coverpoint get_imm(ins.ops[2].val,"slli" ) {
@@ -597,7 +597,7 @@ class coverage;
 
 // TODO : missing coverage of all combinations of source and destination operands.
     covergroup slt_cg with function sample(ins_t ins);
-        option.per_instance = 1;
+        //option.per_instance = 1;
         cp_rd    : coverpoint get_gpr_name(ins.ops[0].val, ins.ops[0].key, "slt");
         cp_rs1    : coverpoint get_gpr_name(ins.ops[1].val, ins.ops[1].key, "slt");
         cp_rs2    : coverpoint get_gpr_name(ins.ops[2].val, ins.ops[2].key, "slt");
@@ -605,7 +605,7 @@ class coverage;
 
 // TODO : missing coverage of all combinations of source and destination operands.
     covergroup slti_cg with function sample(ins_t ins);
-        option.per_instance = 1;
+        //option.per_instance = 1;
         cp_rd    : coverpoint get_gpr_name(ins.ops[0].val, ins.ops[0].key, "slti");
         cp_rs1    : coverpoint get_gpr_name(ins.ops[1].val, ins.ops[1].key, "slti");
         cp_imm11   : coverpoint get_imm(ins.ops[2].val,"slti" ) {
@@ -618,7 +618,7 @@ class coverage;
 // TODO : missing coverage of all combinations of source and destination operands.
 // TODO : missing check of arbirary positive and negative immediate values
     covergroup sltiu_cg with function sample(ins_t ins);
-        option.per_instance = 1;
+        //option.per_instance = 1;
         cp_rd    : coverpoint get_gpr_name(ins.ops[0].val, ins.ops[0].key, "sltiu");
         cp_rs1    : coverpoint get_gpr_name(ins.ops[1].val, ins.ops[1].key, "sltiu");
         cp_imm11   : coverpoint get_imm(ins.ops[2].val,"sltiu" ) {
@@ -630,7 +630,7 @@ class coverage;
 
 // TODO : missing coverage of all combinations of source and destination operands.
     covergroup sltu_cg with function sample(ins_t ins);
-        option.per_instance = 1;
+        //option.per_instance = 1;
         cp_rd    : coverpoint get_gpr_name(ins.ops[0].val, ins.ops[0].key, "sltu");
         cp_rs1    : coverpoint get_gpr_name(ins.ops[1].val, ins.ops[1].key, "sltu");
         cp_rs2    : coverpoint get_gpr_name(ins.ops[2].val, ins.ops[2].key, "sltu");
@@ -640,7 +640,7 @@ class coverage;
 // TODO : missing check of arbirary positive and negative immediate values
 // TODO : missing check of maximum positive and negative immediate values
     covergroup sra_cg with function sample(ins_t ins);
-        option.per_instance = 1;
+        //option.per_instance = 1;
         cp_rd    : coverpoint get_gpr_name(ins.ops[0].val, ins.ops[0].key, "sra");
         cp_rs1    : coverpoint get_gpr_name(ins.ops[1].val, ins.ops[1].key, "sra");
         cp_rs2    : coverpoint get_gpr_name(ins.ops[2].val, ins.ops[2].key, "sra");
@@ -649,7 +649,7 @@ class coverage;
 // TODO : missing coverage of all combinations of source and destination operands.
 // TODO : missing check of arbirary positive and negative immediate values
     covergroup srai_cg with function sample(ins_t ins);
-        option.per_instance = 1;
+        //option.per_instance = 1;
         cp_rd    : coverpoint get_gpr_name(ins.ops[0].val, ins.ops[0].key, "srai");
         cp_rs1    : coverpoint get_gpr_name(ins.ops[1].val, ins.ops[1].key, "srai");
         cp_shamt5   : coverpoint get_imm(ins.ops[2].val,"srai" ) {
@@ -661,7 +661,7 @@ class coverage;
 
 // TODO : missing coverage of all combinations of source and destination operands.
     covergroup srl_cg with function sample(ins_t ins);
-        option.per_instance = 1;
+        //option.per_instance = 1;
         cp_rd    : coverpoint get_gpr_name(ins.ops[0].val, ins.ops[0].key, "srl");
         cp_rs1    : coverpoint get_gpr_name(ins.ops[1].val, ins.ops[1].key, "srl");
         cp_rs2    : coverpoint get_gpr_name(ins.ops[2].val, ins.ops[2].key, "srl");
@@ -669,7 +669,7 @@ class coverage;
 
 // TODO : missing coverage of all combinations of source and destination operands.
     covergroup srli_cg with function sample(ins_t ins);
-        option.per_instance = 1;
+        //option.per_instance = 1;
         cp_rd    : coverpoint get_gpr_name(ins.ops[0].val, ins.ops[0].key, "srli");
         cp_rs1    : coverpoint get_gpr_name(ins.ops[1].val, ins.ops[1].key, "srli");
         cp_shamt5   : coverpoint get_imm(ins.ops[2].val,"srli" ) {
@@ -682,7 +682,7 @@ class coverage;
 // TODO : missing coverage of all combinations of source and destination operands.
 // TODO : missing check of underflow
     covergroup sub_cg with function sample(ins_t ins);
-        option.per_instance = 1;
+        //option.per_instance = 1;
         cp_rd    : coverpoint get_gpr_name(ins.ops[0].val, ins.ops[0].key, "sub");
         cp_rs1    : coverpoint get_gpr_name(ins.ops[1].val, ins.ops[1].key, "sub");
         cp_rs2    : coverpoint get_gpr_name(ins.ops[2].val, ins.ops[2].key, "sub");
@@ -694,7 +694,7 @@ class coverage;
 // TODO : missing check of maximum values of rs1 and imm
 // TODO " missing check of overflow conditions
     covergroup sw_cg with function sample(ins_t ins);
-        option.per_instance = 1;
+        //option.per_instance = 1;
         cp_rs2    : coverpoint get_gpr_name(ins.ops[0].val, ins.ops[0].key, "sw");
         cp_imm    : coverpoint get_imm(ins.ops[1].val, "sw") {
             bins neg  = {[$:-1]};
@@ -707,7 +707,7 @@ class coverage;
 // TODO : missing coverage of all combinations of source and destination operands.
 // TODO : mising specific cases where one of the sources is -1 (bitwise NOT)
     covergroup xor_cg with function sample(ins_t ins);
-        option.per_instance = 1;
+        //option.per_instance = 1;
         cp_rd    : coverpoint get_gpr_name(ins.ops[0].val, ins.ops[0].key, "xor");
         cp_rs1    : coverpoint get_gpr_name(ins.ops[1].val, ins.ops[1].key, "xor");
         cp_rs2    : coverpoint get_gpr_name(ins.ops[2].val, ins.ops[2].key, "xor");
@@ -716,7 +716,7 @@ class coverage;
 // TODO : missing coverage of all combinations of source and destination operands.
 // TODO : mising specific cases where one of the sources is -1 (bitwise NOT)
     covergroup xori_cg with function sample(ins_t ins);
-        option.per_instance = 1;
+        //option.per_instance = 1;
         cp_rd    : coverpoint get_gpr_name(ins.ops[0].val, ins.ops[0].key, "xori");
         cp_rs1    : coverpoint get_gpr_name(ins.ops[1].val, ins.ops[1].key, "xori");
         cp_imm11   : coverpoint get_imm(ins.ops[2].val,"xori" ) {
@@ -728,7 +728,7 @@ class coverage;
 
 // this additional virtuaql group is kept for now waiting for review and debug of rest
     covergroup not_yet_included_cg with function sample(ins_t ins);
-        option.per_instance = 1;
+        //option.per_instance = 1;
         cp_asm   : coverpoint ins.asm == NOT_YET_INCLUDED {
             ignore_bins zero = {0};
         }
