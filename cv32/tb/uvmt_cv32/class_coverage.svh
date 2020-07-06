@@ -727,12 +727,12 @@ class coverage;
     endgroup
 
 // this additional virtuaql group is kept for now waiting for review and debug of rest
-    covergroup not_yet_included_cg with function sample(ins_t ins);
-        //option.per_instance = 1;
-        cp_asm   : coverpoint ins.asm == NOT_YET_INCLUDED {
-            ignore_bins zero = {0};
-        }
-    endgroup
+//    covergroup not_yet_included_cg with function sample(ins_t ins);
+//        //option.per_instance = 1;
+//        cp_asm   : coverpoint ins.asm == NOT_YET_INCLUDED {
+//            ignore_bins zero = {0};
+//        }
+//    endgroup
 
 // The following cover groups have been removed:
 // BEQZ, BGEZ, BGT,BGTU,BGTZ, BLE,BLEU,BLEZ,BLTZ, BNEZ, ILLEGAL
@@ -779,7 +779,7 @@ class coverage;
         sw_cg = new();
         xor_cg = new();
         xori_cg = new();
-        not_yet_included_cg = new();
+        //not_yet_included_cg = new();
     endfunction
 
 // The following pseudo-instructions have been removed:
@@ -840,7 +840,7 @@ class coverage;
             "sw"    : begin ins.asm=SW; sw_cg.sample(ins); end
             "xor"    : begin ins.asm=XOR; xor_cg.sample(ins); end
             "xori"    : begin ins.asm=XORI; xori_cg.sample(ins); end
-            default: begin ins.asm=NOT_YET_INCLUDED; not_yet_included_cg.sample(ins); /*$display("Coverage warning: ins [%0s] not yet included in being covered", ins.ins_str);*/ end
+            default: begin ins.asm=NOT_YET_INCLUDED; /*not_yet_included_cg.sample(ins);*/ /*$display("Coverage warning: ins [%0s] not yet included in being covered", ins.ins_str);*/ end
         endcase
     endfunction
 
