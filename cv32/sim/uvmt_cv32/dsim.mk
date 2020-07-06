@@ -261,7 +261,7 @@ comp_riscv-dv:
 #riscv-test: riscv-dv
 #		+asm_file_name=$(RISCVDV_PKG)/out_2020-06-24/asm_tests/riscv_arithmetic_basic_test  \
 
-gen_riscv-dv:
+gen_corev_arithmetic_base_test:
 	dsim -sv_seed $(RNDSEED) \
 		-sv_lib $(UVM_HOME)/src/dpi/libuvm_dpi.so \
 		+acc+rwb \
@@ -270,7 +270,7 @@ gen_riscv-dv:
 		+UVM_TESTNAME=corev_instr_base_test  \
 		+num_of_tests=2  \
 		+start_idx=0  \
-		+asm_file_name=$(CORE_TEST_DIR)/google-riscv-dv  \
+		+asm_file_name_opts=corev_arithmetic_base_test  \
 		-l $(COREVDV_PKG)/out_$(DATE)/sim_riscv_arithmetic_basic_test_0.log \
 		+instr_cnt=10000 \
 		+num_of_sub_program=0 \
@@ -282,7 +282,50 @@ gen_riscv-dv:
 		+no_csr_instr=1
 	mv *.S $(CORE_TEST_DIR)/custom
 
-corev-dv: clean_riscv-dv clone_riscv-dv comp_riscv-dv gen_riscv-dv
+gen_corev_rand_instr_test:
+	dsim  -sv_seed $(RNDSEED) \
+		-sv_lib $(UVM_HOME)/src/dpi/libuvm_dpi.so \
+		+acc+rwb \
+		-image image \
+		-work $(COREVDV_PKG)/out_$(DATE)/dsim \
+	 	+UVM_TESTNAME=corev_instr_base_test \
+		+num_of_tests=2  \
+		+start_idx=0  \
+		+asm_file_name_opts=corev_rand_instr_test  \
+		-l $(COREVDV_PKG)/out_$(DATE)/sim_riscv_rand_instr_test_0.log \
+    +instr_cnt=10000 \
+    +num_of_sub_program=5 \
+    +directed_instr_0=riscv_load_store_rand_instr_stream,4 \
+    +directed_instr_1=riscv_loop_instr,4 \
+    +directed_instr_2=riscv_hazard_instr_stream,4 \
+    +directed_instr_3=riscv_load_store_hazard_instr_stream,4 \
+    +directed_instr_4=riscv_multi_page_load_store_instr_stream,4 \
+    +directed_instr_5=riscv_mem_region_stress_test,4 \
+    +directed_instr_6=riscv_jal_instr,4
+	mv *.S $(CORE_TEST_DIR)/custom
+
+gen_corev_jump_stress_test:
+	dsim  -sv_seed $(RNDSEED) \
+		-sv_lib $(UVM_HOME)/src/dpi/libuvm_dpi.so \
+		+acc+rwb \
+		-image image \
+		-work $(COREVDV_PKG)/out_$(DATE)/dsim \
+	 	+UVM_TESTNAME=corev_instr_base_test \
+		+num_of_tests=2  \
+		+start_idx=0  \
+		+asm_file_name_opts=corev_jump_stress_test  \
+		-l $(COREVDV_PKG)/out_$(DATE)/sim_riscv_jump_stress_test_0.log \
+		+instr_cnt=5000 \
+		+num_of_sub_program=5 \
+		+directed_instr_1=riscv_jal_instr,20
+	mv *.S $(CORE_TEST_DIR)/custom
+
+corev-dv: clean_riscv-dv \
+	        clone_riscv-dv \
+	        comp_riscv-dv \
+	        gen_corev_arithmetic_base_test \
+	        gen_corev_rand_instr_test \
+	        gen_corev_jump_stress_test
 
 ###############################################################################
 # Clean up your mess!

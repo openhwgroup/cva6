@@ -66,7 +66,8 @@ FPNEW_HASH      ?= f108dfdd84f7c24dcdefb35790fafb3905bce552
 RISCVDV_REPO    ?= https://github.com/google/riscv-dv
 #RISCVDV_REPO    ?= https://github.com/MikeOpenHWGroup/riscv-dv
 RISCVDV_BRANCH  ?= master
-RISCVDV_HASH    ?= head
+# May 2 version of riscv-dv.  Later versions have know randomization errors (TODO: file a bug report)
+RISCVDV_HASH    ?= c37c5f3f57ac61991aa5abd614badb367c5d025d
 
 # Generate command to clone the CV32E40P RTL
 ifeq ($(CV32E40P_BRANCH), master)

@@ -24,7 +24,9 @@
 
 class corev_instr_base_test extends riscv_instr_base_test;
 
-  string                  asm_file_name = "corev_asm_test";
+  string                  default_asm_file_name = "corev_asm_test";
+  string                  asm_file_name_opts;
+  string                  asm_file_name;
   corev_asm_program_gen   asm_gen;
 
   `uvm_component_utils(corev_instr_base_test)
@@ -49,10 +51,16 @@ class corev_instr_base_test extends riscv_instr_base_test;
       asm_gen = corev_asm_program_gen::type_id::create("asm_gen", , `gfn);
       asm_gen.cfg = cfg;
       asm_gen.get_directed_instr_stream();
-      test_name = $sformatf("%0s_%0d.S", asm_file_name, i+start_idx);
+      if ($value$plusargs("asm_file_name_opts=%s", asm_file_name)) begin
+        test_name = $sformatf("%0s_%0d.S", asm_file_name, i+start_idx);
+      end
+      else begin
+        test_name = $sformatf("%0s_%0d.S", default_asm_file_name, i+start_idx);
+      end
       apply_directed_instr();
-      `uvm_info(`gfn, "All directed instruction is applied", UVM_LOW)
+      `uvm_info(`gfn, "All directed instructions are applied", UVM_LOW)
       asm_gen.gen_program();
+      `uvm_info(`gfn, $sformatf("Generating %s", test_name), UVM_LOW)
       asm_gen.gen_test_file(test_name);
     end
   endtask
