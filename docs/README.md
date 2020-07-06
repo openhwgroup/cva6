@@ -17,7 +17,7 @@ bundle install
 # run jekyll with dependencies
 bundle exec jekyll serve
 ```
-
+and then open URL which list in the `Server address` entry.
 ## Jekyll Doc Theme License
 
 Released under [the MIT license](LICENSE).
