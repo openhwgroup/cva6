@@ -146,7 +146,7 @@ module uvmt_cv32_dut_wrap #(// DUT (riscv_core) parameters.
          .clk_i                  ( clknrst_if.clk                 ),
          .rst_ni                 ( clknrst_if.reset_n             ),
 
-         .clock_en_i             ( core_cntrl_if.clock_en         ),
+         .pulp_clock_en_i        ( core_cntrl_if.clock_en         ),
          .scan_cg_en_i           ( core_cntrl_if.scan_cg_en       ),
 
          .boot_addr_i            ( core_cntrl_if.boot_addr        ),
@@ -197,7 +197,7 @@ module uvmt_cv32_dut_wrap #(// DUT (riscv_core) parameters.
          .debug_req_i            ( debug_req                         ),
 
          .fetch_enable_i         ( core_cntrl_if.fetch_en            ),
-         .core_busy_o            ( core_status_if.core_busy          )
+         .core_sleep_o           ( core_status_if.core_busy          )
         ); //riscv_core_i
 
     // this handles read to RAM and memory mapped virtual (pseudo) peripherals

@@ -77,7 +77,7 @@ module riscv_wrapper
          .clk_i                  ( clk_i                 ),
          .rst_ni                 ( rst_ni                ),
 
-         .clock_en_i             ( '1                    ),
+         .pulp_clock_en_i        ( '1                    ),
          .scan_cg_en_i           ( '0                    ),
 
          .boot_addr_i            ( BOOT_ADDR             ),
@@ -124,7 +124,7 @@ module riscv_wrapper
          .debug_req_i            ( debug_req             ),
 
          .fetch_enable_i         ( fetch_enable_i        ),
-         .core_busy_o            ( core_busy_o           )
+         .core_sleep_o           ( core_sleep_o          )
        );
 
     // this handles read to RAM and memory mapped pseudo peripherals

@@ -168,6 +168,12 @@ questa-unit-test-gui:  $(FIRMWARE)/firmware_unit_test.hex
 questa-unit-test-gui: ALL_VSIM_FLAGS += "+firmware=$(FIRMWARE)/firmware_unit_test.hex"
 questa-unit-test-gui: vsim-run-gui
 
+##############################################################################
+# Placeholder for future testing via Google ISG (riscv-dv)
+# These targets are defined in ./Makefile
+corev-dv: clean_riscv-dv \
+	  clone_riscv-dv
+
 ###############################################################################
 # Clean up your mess!
 

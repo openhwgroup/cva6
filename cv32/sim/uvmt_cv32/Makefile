@@ -178,6 +178,7 @@ clean_core_tests:
 	find $(CORE_TEST_DIR) -name *.map     -exec rm {} \;
 	find $(CORE_TEST_DIR) -name *.readelf -exec rm {} \;
 	find $(CORE_TEST_DIR) -name *.objdump -exec rm {} \;
+	find $(CORE_TEST_DIR) -name corev_*.S -exec rm {} \;
 
 clean_test_programs:
 	find ../../tests/uvmt_cv32/test-programs -name *.o       -exec rm {} \;

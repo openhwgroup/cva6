@@ -321,11 +321,11 @@ gen_corev_jump_stress_test:
 	mv *.S $(CORE_TEST_DIR)/custom
 
 corev-dv: clean_riscv-dv \
-	        clone_riscv-dv \
-	        comp_riscv-dv \
-	        gen_corev_arithmetic_base_test \
-	        gen_corev_rand_instr_test \
-	        gen_corev_jump_stress_test
+	  clone_riscv-dv \
+	  comp_riscv-dv \
+	  gen_corev_arithmetic_base_test \
+	  gen_corev_rand_instr_test \
+	  gen_corev_jump_stress_test
 
 ###############################################################################
 # Clean up your mess!
