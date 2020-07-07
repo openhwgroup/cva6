@@ -9,10 +9,10 @@ repository.
 <br><br>
 The command `./ci_check -h` should tell you everything you need to know to run
 a user-level regression.  Note that the script has the ability to specify the
-URL, branch and hash of the RTL to be regressed (usually this is picked up in
-`../cv32/sim/Common.mk`.  An example command is:
+URL, branch and hash of the RTL to be regressed (the defaults for this are defined in
+`../cv32/sim/Common.mk`).  An example command is:
 <br>
-`./ci_check -s xrun --repo https://github.com/MikeOpenHWGroup/cv32e40p --branch dev1 --hash=12345` 
+`./ci_check -s xrun --repo https://github.com/MikeOpenHWGroup/cv32e40p --branch dev1 --hash=1234567` 
 <br>
 If ci_check is not working for you, create an issue and assign it to @mikeopenhwgroup.
 <br><br>
