@@ -159,6 +159,11 @@ cv32-firmware: comp $(FIRMWARE)/firmware.hex $(FIRMWARE)/firmware.elf
 		+firmware=$(FIRMWARE)/firmware.hex \
 		+elf_file=$(FIRMWARE)/firmware.elf
 
+# Placeholder for future testing via Google ISG (riscv-dv)
+# These targets are defined in ./Makefile
+corev-dv: clean_riscv-dv \
+	  clone_riscv-dv
+
 clean:
 	rm -f simv
 	rm -rf simv.*
