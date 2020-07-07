@@ -36,6 +36,9 @@ Contains a pointer to the [CORE-V-DOCS](https://github.com/openhwgroup/core-v-do
 ### lib
 Common components for the CV32 and CV64 verification environments.
 
+### vendor_lib
+Verification components supported by third-parties.
+
 ## Contributing
 We highly appreciate community contributions. You can get a sense of our current needs by reviewing the GitHub
 [projects](https://github.com/openhwgroup/core-v-verif/projects) associated with this repository.   Individual work-items
