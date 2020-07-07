@@ -4,7 +4,7 @@ Functional verification project for the CORE-V family of RISC-V cores. This proj
 ## NEWS UPDATES:
 **2020-06-12**: a new "Board Support Package" for CV32E40P simulations is installed at `cv32/bsp`.  This BSP should be used to compile/assemble your [test-programs](https://core-v-docs-verif-strat.readthedocs.io/en/latest/test_program_environment.html).  The Makefiles for both the CORE testbench and UVM verification environment have been updated to use this BSP.
 <br>
-**2020-06-02:** The [Imperas OVPsim Instruction Set Generator](http://www.ovpworld.org/) has been integrated into the UVM environment as the Referenece Model for the CV32E40(P).  You will need to option a license from Imperas to use it.
+**2020-06-02:** The [Imperas OVPsim Instruction Set Generator](http://www.ovpworld.org/) has been integrated into the UVM environment as the Referenece Model for the CV32E40(P).  You will need to obtain a license from Imperas to use it.
 <br>
 **2020-02-28:** The OpenHW Group CV32E40P is now live!<br>This repository no longer contains a local copy of the RTL.  The RTL is cloned from the appropriate [core-v-cores](https://github.com/openhwgroup/core-v-cores) repository as needed.  The specific branch and hash of the RTL is controlled by a set of variables in `cv32/sim/Common.mk`.
 
