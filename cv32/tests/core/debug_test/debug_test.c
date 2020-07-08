@@ -40,6 +40,7 @@ volatile int glb_expect_debug_exception = 0;
 #define TEST_PASSED  *(volatile int *)0x20000000 = 123456789
 
 extern int __stack_start; 
+extern int _trigger_code;
 
 typedef union {
   struct {
@@ -84,12 +85,13 @@ typedef union {
   unsigned int bits;
 }  mstatus_t;
 
+extern void _trigger_test(int d);
 
 // Tag is simply to help debug and determine where the failure came from
 void check_debug_status(int tag, int value)
 {
   if(glb_debug_status != value){
-    printf("ERROR: check_debug_status(%d, %d): Tag=% status=%d, exp=%d \n\n",
+    printf("ERROR: check_debug_status(%d, %d): Tag=%d status=%d, exp=%d \n\n",
            tag, value, tag, glb_debug_status, value);
     TEST_FAILED;
   }
@@ -97,7 +99,7 @@ void check_debug_status(int tag, int value)
 void check_debug_exception_status(int tag, int value)
 {
   if(glb_debug_exception_status != value){
-    printf("ERROR: check_debug_exception_status(%d, %d): Tag=% status=%d, exp=%d \n\n",
+    printf("ERROR: check_debug_exception_status(%d, %d): Tag=%d status=%d, exp=%d \n\n",
            tag, value, tag, glb_debug_exception_status, value);
     TEST_FAILED;
   }
@@ -105,7 +107,7 @@ void check_debug_exception_status(int tag, int value)
 void check_hart_status(int tag, int value)
 {
   if(glb_hart_status != value){
-    printf("ERROR: check_hart_status(%d, %d): Tag=% status=%d, exp=%d \n\n",
+    printf("ERROR: check_hart_status(%d, %d): Tag=%d status=%d, exp=%d \n\n",
            tag, value, tag, glb_hart_status, value);
     TEST_FAILED;
   }
@@ -113,7 +115,7 @@ void check_hart_status(int tag, int value)
 void check_ebreak_status(int tag, int value)
 {
   if(glb_ebreak_status != value){
-    printf("ERROR: check_ebreak_status(%d, %d): Tag=% status=%d, exp=%d \n\n",
+    printf("ERROR: check_ebreak_status(%d, %d): Tag=%d status=%d, exp=%d \n\n",
            tag, value, tag, glb_ebreak_status, value);
     TEST_FAILED;
   }
@@ -121,7 +123,7 @@ void check_ebreak_status(int tag, int value)
 void check_illegal_insn_status(int tag, int value)
 {
   if(glb_illegal_insn_status != value){
-    printf("ERROR: check_illegal_insn_status(%d, %d): Tag=% status=%d, exp=%d \n\n",
+    printf("ERROR: check_illegal_insn_status(%d, %d): Tag=%d status=%d, exp=%d \n\n",
            tag, value, tag, glb_illegal_insn_status, value);
     TEST_FAILED;
   }
@@ -131,7 +133,7 @@ void check_illegal_insn_status(int tag, int value)
 #define MACHINE 3
 int main(int argc, char *argv[])
 {
-    unsigned int temp,temp1,temp2,temp3;
+  unsigned int temp,temp1,temp2;
 
     debug_req_control_t debug_req_control;
     mstatus_t mstatus, mstatus_cmp;
@@ -149,17 +151,30 @@ int main(int argc, char *argv[])
     __asm__ volatile("csrr %0, mstatus" : "=r"(mstatus.bits));
     __asm__ volatile("csrr %0, mie" : "=r"(temp));
     __asm__ volatile("csrw mie, %0 " : "=r"(temp1));
-    __asm__ volatile("csrr %0, mie" : "=r"(temp1));
+    __asm__ volatile("csrr %0, mie" : "=r"(temp2));
     printf("\tmstats_rval = 0x%0x 0x%0x 0x%0x 0x%0x\n",temp2,mstatus.bits,temp,temp1);
     
     check_debug_status(0,0);
     printf("------------------------\n");
-    printf(" Test2: check access to Debug and Trigger registers\n");
+    printf(" Test2.1: check access to Debug and Trigger registers\n");
     // debug specifcation 13.2: 4.8 Core Debug Registers are not accessable unless in debug mode
-    // Trigger Registers are not accessable due to dmode==DEBUG access only
 
-    // Attempt to access each debug and trigger csr. We should expect an illegal instruction
-    // on each access attempt. The illegal instruction will increment the glb_illegal_insn_status.
+    // ----------------------
+    // Check Debug Write Access
+    temp = 0xFFFFFFFF;
+    temp1 = glb_illegal_insn_status+1;
+    glb_expect_illegal_insn = 1;
+    __asm__ volatile("csrw  dcsr, %0"     : "=r"(temp)); // Debug DCSR
+    check_illegal_insn_status(11,temp1++);
+    glb_expect_illegal_insn = 1;
+    __asm__ volatile("csrw  dpc, %0"      : "=r"(temp)); // Debug DPC
+    check_illegal_insn_status(12,temp1++);
+    glb_expect_illegal_insn = 1;
+    __asm__ volatile("csrw  dscratch, %0" : "=r"(temp)); // Debug DSCRATCH0
+    check_illegal_insn_status(13,temp1++);
+    glb_expect_illegal_insn = 1;
+    __asm__ volatile("csrw  0x7b3, %0" : "=r"(temp));    // Debug DSCRATCH1
+    check_illegal_insn_status(14,temp1++);
 
     // Check Read Access
     temp1 = glb_illegal_insn_status+1;
@@ -177,60 +192,47 @@ int main(int argc, char *argv[])
     __asm__ volatile("csrr %0, 0x7b3"   : "=r"(temp)); // Debug DSCRATCH1
     check_illegal_insn_status(4,temp1++);
 
-//   glb_expect_illegal_insn = 1;
-//   __asm__ volatile("csrr %0, 0x7a0"   : "=r"(temp)); // Trigger TSELECT
-//   check_illegal_insn_status(5,temp1++);
-//   glb_expect_illegal_insn = 1;
-//   __asm__ volatile("csrr %0, 0x7a1"   : "=r"(temp)); // Trigger TDATA1
-//   check_illegal_insn_status(6,temp1++);
-//   glb_expect_illegal_insn = 1;
-//   __asm__ volatile("csrr %0, 0x7a2"   : "=r"(temp)); // Trigger TDATA2
-//   check_illegal_insn_status(7,temp1++);
-//   glb_expect_illegal_insn = 1;
-//   __asm__ volatile("csrr %0, 0x7a3"   : "=r"(temp)); // Trigger TDATA3
-//   check_illegal_insn_status(8,temp1++);
-//   glb_expect_illegal_insn = 1;
-//   __asm__ volatile("csrr %0, 0x7a8"   : "=r"(temp)); // Trigger MCONTEXT
-//   check_illegal_insn_status(9,temp1++);
-//   glb_expect_illegal_insn = 1;
-//   __asm__ volatile("csrr %0, 0x7aa"   : "=r"(temp)); // Trigger SCONTEXT
-//   check_illegal_insn_status(10,temp1++);
-//
-//   // ----------------------
-//   // Check Write Access
-//   temp = 0xFFFFFFFF;
-//   glb_expect_illegal_insn = 1;
-//   __asm__ volatile("csrw  dcsr, %0"     : "=r"(temp)); // Debug DCSR     
-//    check_illegal_insn_status(11,temp1++);
-//   glb_expect_illegal_insn = 1;
-//   __asm__ volatile("csrw  dpc, %0"      : "=r"(temp)); // Debug DPC      
-//   check_illegal_insn_status(12,temp1++);
-//   glb_expect_illegal_insn = 1;
-//   __asm__ volatile("csrw  dscratch, %0" : "=r"(temp)); // Debug DSCRATCH0
-//   check_illegal_insn_status(13,temp1++);
-//   glb_expect_illegal_insn = 1;
-//   __asm__ volatile("csrw  0x7b3, %0" : "=r"(temp));    // Debug DSCRATCH1
-//   check_illegal_insn_status(14,temp1++);
-//
-//   glb_expect_illegal_insn = 1;
-//   __asm__ volatile("csrw  0x7a0, %0"     : "=r"(temp)); // Trigger TSELECT
-//   check_illegal_insn_status(15,temp1++);
-//   glb_expect_illegal_insn = 1;
-//   __asm__ volatile("csrw  0x7a1, %0"     : "=r"(temp)); // Trigger TDATA1
-//   check_illegal_insn_status(16,temp1++);
-//   glb_expect_illegal_insn = 1;
-//   __asm__ volatile("csrw  0x7a2, %0"     : "=r"(temp)); // Trigger TDATA2
-//   check_illegal_insn_status(17,temp1++);
-//   glb_expect_illegal_insn = 1;
-//   __asm__ volatile("csrw  0x7a3, %0"     : "=r"(temp)); // Trigger TDATA3
-//   check_illegal_insn_status(18,temp1++);
-//   glb_expect_illegal_insn = 1;
-//   __asm__ volatile("csrw  0x7a8, %0"     : "=r"(temp)); // Trigger MCONTEXT
-//   check_illegal_insn_status(19,temp1++);
-//    glb_expect_illegal_insn = 1;
-//  __asm__ volatile("csrw  0x7aa, %0"     : "=r"(temp)); // Trigger SCONTEXT
-//   check_illegal_insn_status(20,temp1++);
-//   // Do not expect or allow any more illegal instructions
+    printf("------------------------\n");
+    printf(" Test2.2: check access to Trigger registers\n");
+    // Writes are ignored
+    temp = 0xFFFFFFFF;
+    __asm__ volatile("csrw  0x7a0, %0"     : "=r"(temp)); // Trigger TSELECT
+    __asm__ volatile("csrw  0x7a1, %0"     : "=r"(temp)); // Trigger TDATA1
+    __asm__ volatile("csrw  0x7a2, %0"     : "=r"(temp)); // Trigger TDATA2
+    __asm__ volatile("csrw  0x7a3, %0"     : "=r"(temp)); // Trigger TDATA3
+    __asm__ volatile("csrw  0x7a8, %0"     : "=r"(temp)); // Trigger MCONTEXT
+    __asm__ volatile("csrw  0x7aa, %0"     : "=r"(temp)); // Trigger SCONTEXT
+
+    // Read default value
+    __asm__ volatile("csrr %0, 0x7a0"   : "=r"(temp)); // Trigger TSELECT
+    if(temp != 0x0){printf("ERROR: TSELET Read\n");TEST_FAILED;}
+
+    __asm__ volatile("csrr %0, 0x7a1"   : "=r"(temp)); // Trigger TDATA1
+    //   31:28 type      = 2
+    //      27 dmode     = 1
+    //   15:12 action    = 1
+    //      6  m(achine) = 1
+    if(temp !=  (2<<28 | 1<<27 | 1<<12 | 1<<6)){printf("ERROR: TDATA1 Read\n");TEST_FAILED;}
+
+    __asm__ volatile("csrr %0, 0x7a2"   : "=r"(temp)); // Trigger TDATA2
+    if(temp != 0x0){printf("ERROR: TDATA2 Read\n");TEST_FAILED;}
+
+    __asm__ volatile("csrr %0, 0x7a3"   : "=r"(temp)); // Trigger TDATA3
+    if(temp != 0x0){printf("ERROR: TDATA3 Read\n");TEST_FAILED;}
+
+    __asm__ volatile("csrr %0, 0x7a4"   : "=r"(temp)); // Trigger TDATA3
+    // tmatch = 1<<2
+    if(temp != 1<<2){printf("ERROR: TINFO Read %d \n",temp);TEST_FAILED;}
+
+    __asm__ volatile("csrr %0, 0x7a8"   : "=r"(temp)); // Trigger MCONTEXT
+    if(temp != 0x0){printf("ERROR: MCONTEXT Read\n");TEST_FAILED;}
+
+    __asm__ volatile("csrr %0, 0x7aa"   : "=r"(temp)); // Trigger SCONTEXT
+    if(temp != 0x0){printf("ERROR: SCONTEXT Read\n");TEST_FAILED;}
+
+
+
+   // Do not expect or allow any more illegal instructions
 
 
     mstatus_cmp = (mstatus_t) {
@@ -306,6 +308,14 @@ int main(int argc, char *argv[])
       printf("Wait for Debugger\n");
     }
     check_debug_status(72,glb_hart_status);
+    __asm__ volatile("csrr %0, 0x7a1"   : "=r"(temp)); // Trigger TDATA1
+    //   31:28 type      = 2
+    //      27 dmode     = 1
+    //   15:12 action    = 1
+    //      6  m(achine) = 1
+    if(temp !=  (2<<28 | 1<<27 | 1<<12 | 1<<6| 1 <<2)){printf("ERROR: TDATA1 Read 2\n");TEST_FAILED;}
+    __asm__ volatile("csrr %0, 0x7a2"   : "=r"(temp)); // Trigger TDATA2
+    if(temp != (int) (&_trigger_code) ){printf("ERROR: TDATA2 Read 2 %x %x \n", (int) (&_trigger_code),temp);TEST_FAILED;}
 
     printf("  test7.3: Expect Trigger\n");
     glb_hart_status = 8;
