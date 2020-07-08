@@ -236,10 +236,7 @@ module uvmt_cv32_step_compare
 
     always @(ev_ovp or ev_rtl) begin
         if (ret_ovp && ret_rtl) begin
-            fork
-                ->step_compare_if.ovp_cpu_busWait;
-                #60ns;
-            join_any;
+            ->step_compare_if.ovp_cpu_busWait;
             compare();
             ret_rtl  = 0;
             step_rtl = 1;
