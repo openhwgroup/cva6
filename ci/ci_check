@@ -66,11 +66,11 @@ def check_uvm_results():
     expct_fail = 0;
     pass_count = 0;
 
-    fails = subprocess.Popen('grep "SIMULATION FAILED" -R -I ../cv32/sim/uvmt_cv32',
+    fails = subprocess.Popen('grep "SIMULATION FAILED" `find ../cv32/sim/uvmt_cv32 -name "*.log" -print`',
                               stdout=subprocess.PIPE,
                               stderr=subprocess.STDOUT,
                               shell="TRUE")
-    passes = subprocess.Popen('grep "SIMULATION PASSED" -R -I ../cv32/sim/uvmt_cv32',
+    passes = subprocess.Popen('grep "SIMULATION PASSED" `find ../cv32/sim/uvmt_cv32 -name "*.log" -print`',
                               stdout=subprocess.PIPE,
                               stderr=subprocess.STDOUT,
                               shell="TRUE")
@@ -158,9 +158,15 @@ if (args.debug):
 if (args.print_command):
     prcmd = 1
 
+if (not args.verilator and args.no_uvm):
+    print ('Specifying --no_uvm without --verilator means I do nothing...  Type `ci_check -h` for usage.')
+    exit(1)
+
 if (args.check_only):
-    check_core_results()
-    check_uvm_results()
+    if (args.verilator):
+        check_core_results()
+    if not (args.no_uvm):
+        check_uvm_results()
     exit(0)
 
 if (args.verilator):

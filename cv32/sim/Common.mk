@@ -54,9 +54,10 @@
 # Head of the master branch as of 2020-05-29
 CV32E40P_REPO   ?= https://github.com/openhwgroup/cv32e40p
 CV32E40P_BRANCH ?= master
-#CV32E40P_HASH   ?= 8e22c994198ad08f4cacf239d56d98e1cc25627b
 #2020-07-07
-CV32E40P_HASH   ?= 8a3345cd80db4097cd007697233e54f020245bfb
+#CV32E40P_HASH   ?= 8a3345cd80db4097cd007697233e54f020245bfb
+#2020-07-09
+CV32E40P_HASH   ?= 63b5a87d49072b5ea0574d354128d621ee95d7f6
 
 FPNEW_REPO      ?= https://github.com/pulp-platform/fpnew
 FPNEW_BRANCH    ?= master

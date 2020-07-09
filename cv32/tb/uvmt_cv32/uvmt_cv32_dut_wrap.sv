@@ -80,13 +80,16 @@ module uvmt_cv32_dut_wrap #(// DUT (riscv_core) parameters.
     logic [ 4:0]                  irq_id_in;
 
     logic [63:0]                  irq64;
+    logic [31:0]                  irq32;
     logic                         irq_ack;
     logic [ 5:0]                  irq_id6;
+    logic [ 4:0]                  irq_id5;
 
     logic                         debug_req;
    
     // Hold interrupts idle for now
     assign irq64 = {64{1'b0}};
+    assign irq32 = {32{1'b0}};
 
     // Load the Instruction Memory 
     initial begin: load_instruction_memory
@@ -182,22 +185,14 @@ module uvmt_cv32_dut_wrap #(// DUT (riscv_core) parameters.
          // TODO: interrupts significantly updated for CV32E40P
          //       Connect all interrupt signals to an SV interface
          //       and pass to ENV for an INTERRUPT AGENT to drive/monitor.
-         .irq_i                  ( irq64                            ),
-         .irq_ack_o              ( irq_ack                          ),
-         .irq_id_o               ( irq_id6                          ),
-         //.irq_id_i               ( irq_id_in                      ),
-         //.irq_sec_i              ( (core_interrupts_if.irq_sec||irq) ),
-         //.irq_software_i         ( core_interrupts_if.irq_software   ),
-         //.irq_timer_i            ( core_interrupts_if.irq_timer      ),
-         //.irq_external_i         ( core_interrupts_if.irq_external   ),
-         //.irq_fast_i             ( core_interrupts_if.irq_fast       ),
-         //.irq_nmi_i              ( core_interrupts_if.irq_nmi        ),
-         //.irq_fastx_i            ( core_interrupts_if.irq_fastx      ),
+         .irq_i                  ( irq32                          ),
+         .irq_ack_o              ( irq_ack                        ),
+         .irq_id_o               ( irq_id5                        ),
 
-         .debug_req_i            ( debug_req                         ),
+         .debug_req_i            ( debug_req                      ),
 
-         .fetch_enable_i         ( core_cntrl_if.fetch_en            ),
-         .core_sleep_o           ( core_status_if.core_busy          )
+         .fetch_enable_i         ( core_cntrl_if.fetch_en         ),
+         .core_sleep_o           ( core_status_if.core_busy       )
         ); //riscv_core_i
 
     // this handles read to RAM and memory mapped virtual (pseudo) peripherals

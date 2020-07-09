@@ -141,19 +141,22 @@ module uvmt_cv32_step_compare
                                    2'b0,
                                    $root.uvmt_cv32_tb.dut_wrap.riscv_core_i.cs_registers_i.mstatus_q.uie};
              "misa"    : csr_val = $root.uvmt_cv32_tb.dut_wrap.riscv_core_i.cs_registers_i.MISA_VALUE;
-             "mie"     : csr_val = {$root.uvmt_cv32_tb.dut_wrap.riscv_core_i.cs_registers_i.mie_q.irq_external,
-                                    3'b0,
-                                    $root.uvmt_cv32_tb.dut_wrap.riscv_core_i.cs_registers_i.mie_q.irq_timer,
-                                    3'b0,
-                                    $root.uvmt_cv32_tb.dut_wrap.riscv_core_i.cs_registers_i.mie_q.irq_software,
-                                    3'b0};
+             // MT: 2020-07-09
+             "mie"     : csr_val = $root.uvmt_cv32_tb.dut_wrap.riscv_core_i.cs_registers_i.mie_q;
+             //"mie"     : csr_val = {$root.uvmt_cv32_tb.dut_wrap.riscv_core_i.cs_registers_i.mie_q.irq_external,
+             //                       3'b0,
+             //                       $root.uvmt_cv32_tb.dut_wrap.riscv_core_i.cs_registers_i.mie_q.irq_timer,
+             //                       3'b0,
+             //                       $root.uvmt_cv32_tb.dut_wrap.riscv_core_i.cs_registers_i.mie_q.irq_software,
+             //                       3'b0};
+
              // MT: 2020-06-11
              //"miex"    : csr_val = $root.uvmt_cv32_tb.dut_wrap.riscv_core_i.cs_registers_i.miex_q;
              "mtvec"   : csr_val = {$root.uvmt_cv32_tb.dut_wrap.riscv_core_i.cs_registers_i.mtvec_q, 6'h0, 2'b01};
              "mtvecx"  : csr_val = {$root.uvmt_cv32_tb.dut_wrap.riscv_core_i.cs_registers_i.mtvec_q, 6'h0, 2'b01};
              "mscratch": csr_val = $root.uvmt_cv32_tb.dut_wrap.riscv_core_i.cs_registers_i.mscratch_q;
              "mepc"    : csr_val = $root.uvmt_cv32_tb.dut_wrap.riscv_core_i.cs_registers_i.mepc_q;
-             "mcause"  : csr_val = {$root.uvmt_cv32_tb.dut_wrap.riscv_core_i.cs_registers_i.mcause_q[6], 
+             "mcause"  : csr_val = {$root.uvmt_cv32_tb.dut_wrap.riscv_core_i.cs_registers_i.mcause_q[5], 
                                     25'b0, 
                                     $root.uvmt_cv32_tb.dut_wrap.riscv_core_i.cs_registers_i.mcause_q[5:0]};
              // MT: 2020-06-11
