@@ -26,7 +26,7 @@ XRUN_UVMHOME_ARG ?= CDNS-1.2-ML
 XRUN_COMP_FLAGS       ?= -64bit -disable_sem2009 -access +rwc -q -clean -sv -uvm -uvmhome $(XRUN_UVMHOME_ARG) $(TIMESCALE) $(SV_CMP_FLAGS)
 XRUN_DIR         ?= xcelium.d
 XRUN_GUI         ?=
-
+XRUN_SINGLE_STEP ?=
 #XRUN_VELABCOVERAGE = -covdut uvmt_cv32_tb -coverage function
 #XRUN_VRUNCOVERAGE  = -covoverwrite -covtest uvmt_cv32_tb -covscope uvmt_cv32_tb
 # VCOVERAGE     = imc -load cov_work/$(TESTBENCH)/$(TESTBENCH) -execcmd "report -summary"
@@ -76,12 +76,19 @@ comp: mk_xrun_dir $(CV32E40P_PKG) $(OVP_MODEL_DPI)
 		-elaborate
 #		$(XRUN_VELABCOVERAGE)
 
-XRUN_COMP_RUN = $(XRUN_COMP_ARGS) $(XRUN_RUN_BASE_FLAGS)
+
+XRUN_SIM_PREREQ = comp
+XRUN_COMP_RUN = $(XRUN_RUN_FLAGS)
+
+ifeq ($(XRUN_SINGLE_STEP), YES)
+	XRUN_SIM_PREREQ = mk_xrun_dir $(CV32E40P_PKG) $(OVP_MODEL_DPI)
+	XRUN_COMP_RUN = $(XRUN_COMP) $(XRUN_RUN_BASE_FLAGS)
+endif
 
 ################################################################################
 # Custom test-programs.  See comment in dsim.mk for more info
-custom: comp $(CUSTOM_DIR)/$(CUSTOM_PROG).hex
-	$(XRUN) -l xrun-$(CUSTOM_PROG).log $(XRUN_RUN_FLAGS) \
+custom: $(XRUN_SIM_PREREQ) $(CUSTOM_DIR)/$(CUSTOM_PROG).hex
+	$(XRUN) -l xrun-$(CUSTOM_PROG).log $(XRUN_COMP_RUN) \
 		+elf_file=$(CUSTOM_DIR)/$(CUSTOM_PROG).elf \
 		+nm_file=$(CUSTOM_DIR)/$(CUSTOM_PROG).nm \
 		+UVM_TESTNAME=uvmt_cv32_firmware_test_c \
@@ -90,51 +97,51 @@ custom: comp $(CUSTOM_DIR)/$(CUSTOM_PROG).hex
 
 ################################################################################
 # Explicit target tests
-hello-world: comp $(CUSTOM)/hello_world.hex
-	$(XRUN) -l xrun-hello-world.log $(XRUN_RUN_FLAGS) \
+hello-world:  $(XRUN_SIM_PREREQ) $(CUSTOM)/hello_world.hex
+	$(XRUN) -l xrun-hello-world.log $(XRUN_COMP_RUN) \
 		+elf_file=$(CUSTOM)/hello_world.elf \
 		+nm_file=$(CUSTOM)/hello_world.nm \
 		+UVM_TESTNAME=uvmt_cv32_firmware_test_c \
 		+firmware=$(CUSTOM)/hello_world.hex
 #		$(XRUN_VRUNCOVERAGE)
 
-misalign: comp $(CUSTOM)/misalign.hex
-	$(XRUN) -l xrun-misalign.log $(XRUN_RUN_FLAGS) \
+misalign: $(XRUN_SIM_PREREQ) $(CUSTOM)/misalign.hex
+	$(XRUN) -l xrun-misalign.log $(XRUN_COMP_RUN) \
 		+elf_file=$(CUSTOM)/misalign.elf \
 		+nm_file=$(CUSTOM)/misalign.nm \
 		+UVM_TESTNAME=uvmt_cv32_firmware_test_c \
 		+firmware=$(CUSTOM)/misalign.hex
 
-illegal: comp $(CUSTOM)/illegal.hex
-	$(XRUN) -l xrun-illegal.log $(XRUN_RUN_FLAGS) \
+illegal: $(XRUN_SIM_PREREQ) $(CUSTOM)/illegal.hex
+	$(XRUN) -l xrun-illegal.log $(XRUN_COMP_RUN) \
 		+elf_file=$(CUSTOM)/illegal.elf \
 		+nm_file=$(CUSTOM)/illegal.nm \
 		+UVM_TESTNAME=uvmt_cv32_firmware_test_c \
 		+firmware=$(CUSTOM)/illegal.hex
 
-fibonacci: comp $(CUSTOM)/fibonacci.hex
-	$(XRUN) -l xrun-fibonacci.log $(XRUN_RUN_FLAGS) \
+fibonacci: $(XRUN_SIM_PREREQ) $(CUSTOM)/fibonacci.hex
+	$(XRUN) -l xrun-fibonacci.log $(XRUN_COMP_RUN) \
 		+elf_file=$(CUSTOM)/fibonacci.elf \
 		+nm_file=$(CUSTOM)/fibonacci.nm \
 		+UVM_TESTNAME=uvmt_cv32_firmware_test_c \
 		+firmware=$(CUSTOM)/fibonacci.hex
 
-dhrystone: comp $(CUSTOM)/dhrystone.hex
-	$(XRUN) -l xrun-dhrystone.log $(XRUN_RUN_FLAGS) \
+dhrystone: $(XRUN_SIM_PREREQ) $(CUSTOM)/dhrystone.hex
+	$(XRUN) -l xrun-dhrystone.log $(XRUN_COMP_RUN) \
 		+elf_file=$(CUSTOM)/dhrystone.elf \
 		+nm_file=$(CUSTOM)/dhrystone.nm \
 		+UVM_TESTNAME=uvmt_cv32_firmware_test_c \
 		+firmware=$(CUSTOM)/dhrystone.hex
 
-riscv_ebreak_test_0: comp $(CUSTOM)/riscv_ebreak_test_0.hex
-	$(XRUN) -l xrun-riscv_ebreak_test_0.log $(XRUN_RUN_FLAGS) \
+riscv_ebreak_test_0: $(XRUN_SIM_PREREQ) $(CUSTOM)/riscv_ebreak_test_0.hex
+	$(XRUN) -l xrun-riscv_ebreak_test_0.log $(XRUN_COMP_RUN) \
                 +elf_file=$(CUSTOM)/riscv_ebreak_test_0.elf \
                 +nm_file=$(CUSTOM)/riscv_ebreak_test_0.nm \
                 +UVM_TESTNAME=uvmt_cv32_firmware_test_c \
                 +firmware=$(CUSTOM)/riscv_ebreak_test_0.hex
 
-debug_test: comp $(CORE_TEST_DIR)/debug_test/debug_test.hex
-	$(XRUN) -l xrun-riscv_debug_test.log $(XRUN_RUN_FLAGS) \
+debug_test: $(XRUN_SIM_PREREQ) $(CORE_TEST_DIR)/debug_test/debug_test.hex
+	$(XRUN) -l xrun-riscv_debug_test.log $(XRUN_COMP_RUN) \
                 +elf_file=$(CORE_TEST_DIR)/debug_test/debug_test.elf \
                 +nm_file=$(CORE_TEST_DIR)/debug_test/debug_test.nm \
                 +UVM_TESTNAME=uvmt_cv32_firmware_test_c \
@@ -142,15 +149,15 @@ debug_test: comp $(CORE_TEST_DIR)/debug_test/debug_test.hex
 
 
 # Runs tests in cv32_riscv_tests/ only
-cv32-riscv-tests: comp $(CV32_RISCV_TESTS_FIRMWARE)/cv32_riscv_tests_firmware.hex
-	$(XRUN) -l xrun-riscv-tests.log $(XRUN_RUN_FLAGS) \
+cv32-riscv-tests: $(XRUN_SIM_PREREQ) $(CV32_RISCV_TESTS_FIRMWARE)/cv32_riscv_tests_firmware.hex
+	$(XRUN) -l xrun-riscv-tests.log $(XRUN_COMP_RUN) \
 		+elf_file=$(CV32_RISCV_TESTS_FIRMWARE)/cv32_riscv_tests_firmware.elf \
 		+nm_file=$(CV32_RISCV_TESTS_FIRMWARE)/cv32_riscv_tests_firmware.nm \
 		+UVM_TESTNAME=uvmt_cv32_firmware_test_c \
 		+firmware=$(CV32_RISCV_TESTS_FIRMWARE)/cv32_riscv_tests_firmware.hex
 
 # Runs tests in cv32_riscv_compliance_tests/ only
-cv32-riscv-compliance-tests: comp $(CV32_RISCV_COMPLIANCE_TESTS_FIRMWARE)/cv32_riscv_compliance_tests_firmware.hex
+cv32-riscv-compliance-tests: $(XRUN_SIM_PREREQ)  $(CV32_RISCV_COMPLIANCE_TESTS_FIRMWARE)/cv32_riscv_compliance_tests_firmware.hex
 	$(XRUN) -l xrun-riscv_compliance_tests.log $(XRUN_RUN_FLAGS) \
 		+elf_file=$(CV32_RISCV_COMPLIANCE_TESTS_FIRMWARE)/cv32_riscv_compliance_tests_firmware.elf \
 		+nm_file=$(CV32_RISCV_COMPLIANCE_TESTS_FIRMWARE)/cv32_riscv_compliance_tests_firmware.nm \
