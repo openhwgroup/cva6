@@ -76,14 +76,13 @@ comp: mk_xrun_dir $(CV32E40P_PKG) $(OVP_MODEL_DPI)
 		-elaborate
 #		$(XRUN_VELABCOVERAGE)
 
-XRUN_COMP_RUN = $(XRUN_COMP) $(XRUN_RUN_BASE_FLAGS)
+
+XRUN_SIM_PREREQ = comp
+XRUN_COMP_RUN = $(XRUN_RUN_FLAGS)
 
 ifeq ($(XRUN_SINGLE_STEP), YES)
 	XRUN_SIM_PREREQ = mk_xrun_dir $(CV32E40P_PKG) $(OVP_MODEL_DPI)
 	XRUN_COMP_RUN = $(XRUN_COMP) $(XRUN_RUN_BASE_FLAGS)
-else
-	XRUN_SIM_PREREQ = comp
-	XRUN_COMP_RUN = $(XRUN_RUN_FLAGS)
 endif
 
 ################################################################################
