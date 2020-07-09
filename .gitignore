@@ -16,3 +16,9 @@ metrics_history.db
 *.swp
 /.cproject
 /.project
+.dvt/
+dvt_build.log
+xrun.history
+xrun.log
+xcelium.d/
+

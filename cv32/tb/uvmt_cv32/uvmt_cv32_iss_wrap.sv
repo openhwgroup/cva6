@@ -1,18 +1,18 @@
 //
 // Copyright 2020 OpenHW Group
-// 
+//
 // Licensed under the Solderpad Hardware Licence, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
-// 
+//
 //     https://solderpad.org/licenses/
-// 
+//
 // Unless required by applicable law or agreed to in writing, software
 // distributed under the License is distributed on an "AS IS" BASIS,
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
-// 
+//
 //
 
 `define COVERAGE
@@ -23,7 +23,8 @@
 
 
 `ifdef COVERAGE
-`include "class_coverage.svh" 
+//`include "class_coverage.svh"
+`include "uvmt_rv32isa_covg.svh"
 `endif
 
 /**
@@ -51,13 +52,13 @@ module uvmt_cv32_iss_wrap
    );
 
     BUS         b1();
-    
+
     MONITOR     mon(b1);
     RAM         #(
                 .ROM_START_ADDR(ROM_START_ADDR),
                 .ROM_BYTE_SIZE(ROM_BYTE_SIZE),
                 .RAM_BYTE_SIZE(RAM_BYTE_SIZE)) ram(b1);
-   
+
     CPU #(.ID(ID)) cpu(b1);
 
    assign b1.Clk = clknrst_if.clk;
@@ -105,7 +106,8 @@ module uvmt_cv32_iss_wrap
    always @(cpu.Retire) -> step_compare_if.ovp_cpu_retire;
 
 `ifdef COVERAGE
-    coverage cov1;
+    //coverage cov1;
+    riscv_32isa_coverage cov1;
     initial begin
         cov1 = new();
     end
@@ -139,18 +141,18 @@ module uvmt_cv32_iss_wrap
         end
         cov1.sample (ins);
     endfunction
-    
+
    always @(cpu.Retire) begin
        sample();
    end
 `endif
-   
+
    initial begin
       #1;  // time for clknrst_if_dut to set the clk_period
       clknrst_if.set_period(clk_period);
       clknrst_if.start_clk();
    end
-   
+
 endmodule : uvmt_cv32_iss_wrap
 
 `endif // __UVMT_CV32_ISS_WRAP_SV__
