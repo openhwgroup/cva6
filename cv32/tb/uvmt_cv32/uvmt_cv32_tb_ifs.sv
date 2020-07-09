@@ -104,6 +104,7 @@ interface uvmt_cv32_core_cntrl_if (
                                     output logic        clock_en,
                                     output logic        scan_cg_en,
                                     output logic [31:0] boot_addr,
+                                    output logic [31:0] mtvec_addr,
                                     output logic [31:0] dm_halt_addr,
                                     output logic [31:0] hart_id,
                                     // To be driven by future debug module (DM)
@@ -128,6 +129,11 @@ interface uvmt_cv32_core_cntrl_if (
       bins med  = {[32'h0001_0000 : 32'hEFFF_FFFF]};
       bins high = {[32'hF000_0000 : 32'hFFFF_FFFF]};
     }
+    mtvec_address: coverpoint mtvec_addr {
+      bins low  = {[32'h0000_0000 : 32'h0000_FFFF]};
+      bins med  = {[32'h0001_0000 : 32'hEFFF_FFFF]};
+      bins high = {[32'hF000_0000 : 32'hFFFF_FFFF]};
+    }
     debug_module_halt_address: coverpoint dm_halt_addr {
       bins low  = {[32'h0000_0000 : 32'h0000_FFFF]};
       bins med  = {[32'h0001_0000 : 32'hEFFF_FFFF]};
@@ -148,12 +154,13 @@ interface uvmt_cv32_core_cntrl_if (
   end
 
   // TODO: randomize hart_id (should have no affect?).
-  //       randomize boot_addr (need to sync with the start address of the test program.
+  //       randomize boot_addr and mtvec addr (need to sync with the start address of the test program.
   //       figure out what to do with test_en.
   initial begin: quasi_static_controls
     clock_en      = 1'b1;
     scan_cg_en    = 1'b0;
     boot_addr     = 32'h0000_0080;
+    mtvec_addr    = 32'h0000_0000;
     dm_halt_addr  = 32'h1A11_0800;
     hart_id       = 32'h0000_0000;
   end

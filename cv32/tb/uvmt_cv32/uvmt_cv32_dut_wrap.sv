@@ -153,6 +153,7 @@ module uvmt_cv32_dut_wrap #(// DUT (riscv_core) parameters.
          .scan_cg_en_i           ( core_cntrl_if.scan_cg_en       ),
 
          .boot_addr_i            ( core_cntrl_if.boot_addr        ),
+         .mtvec_addr_i           ( core_cntrl_if.mtvec_addr       ),
          .dm_halt_addr_i         ( core_cntrl_if.dm_halt_addr     ),
          .hart_id_i              ( core_cntrl_if.hart_id          ),
 
