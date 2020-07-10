@@ -37,8 +37,10 @@
 // The following pseudo-instructions have been removed:
 // BEQZ, BGEZ, BGT,BGTU,BGTZ, BLE,BLEU,BLEZ,BLTZ, BNEZ, ILLEGAL
 // J, JR, MV, NOT, NEG, NEGW, RET, SEQZ, SGTZ, SLTZ, SNEZ
+// C_J, C_JR, C_BEQZ, C_BNEZ, C_MV,
 // The following instructions have been added:
 // FENCE
+
 typedef enum {
     ADD,ADDI,AND,ANDI,AUIPC,BEQ,BGE,BGEU
     ,BLTU,BNE,BLT, FENCE, EBREAK,ECALL
@@ -49,7 +51,16 @@ typedef enum {
     ,SRL,SRLI,SUB,SW,XOR,XORI
     ,MUL,MULH,MULHU,MULHSU
     ,DIV,REM,DIVU,REMU
+    ,C_LWSP,C_FLWSP,C_FLDSP,C_SWSP
+    ,C_FSWSP,C_FSDSP,C_LW,C_FLW
+    ,C_FLD,C_SW,C_FSW,C_FSD
+    ,C_JAL,C_JALR,C_LI,C_LUI,C_ADDI
+    ,C_ADDI16SP,C_ADDI4SPN,C_SLLI
+    ,C_SRLI,C_SRAI,C_ANDI,C_ADD,C_AND
+    ,C_OR,C_XOR,C_SUB,C_NOP,C_EBREAK
+    ,C_SLLI64,C_SRLI64,C_SRAI64
 } instr_name_t; // assembler
+
 
 // The following CSR ABI names are not currently included:
 // fp, pc
@@ -941,8 +952,42 @@ class riscv_32isa_coverage;
             "rem"    : begin ins.asm=REM; rem_cg.sample(ins); end
             "divu"    : begin ins.asm=DIVU; divu_cg.sample(ins); end
             "remu"    : begin ins.asm=REMU; remu_cg.sample(ins); end
+//            "c."    : begin ins.asm=C_LWSP; _cg.sample(ins); end
+//            "c."    : begin ins.asm=C_FLWSP; _cg.sample(ins); end
+//            "c."    : begin ins.asm=C_FLDSP; _cg.sample(ins); end
+//            "c."    : begin ins.asm=C_SWSP; _cg.sample(ins); end
+//            "c."    : begin ins.asm=C_FSWSP; _cg.sample(ins); end
+//            "c."    : begin ins.asm=C_FSDSP; _cg.sample(ins); end
+//            "c."    : begin ins.asm=C_LW; _cg.sample(ins); end
+//            "c."    : begin ins.asm=C_FLW; _cg.sample(ins); end
+//            "c."    : begin ins.asm=C_FLD; _cg.sample(ins); end
+//            "c."    : begin ins.asm=C_SW; _cg.sample(ins); end
+//            "c."    : begin ins.asm=C_FSW; _cg.sample(ins); end
+//            "c."    : begin ins.asm=C_FSD; _cg.sample(ins); end
+//            "c."    : begin ins.asm=C_JAL; _cg.sample(ins); end
+//            "c."    : begin ins.asm=C_JALR; _cg.sample(ins); end
+//            "c."    : begin ins.asm=C_LI; _cg.sample(ins); end
+//            "c."    : begin ins.asm=C_LUI; _cg.sample(ins); end
+//            "c."    : begin ins.asm=C_ADDI; _cg.sample(ins); end
+//            "c."    : begin ins.asm=C_ADDI16SP; _cg.sample(ins); end
+//            "c."    : begin ins.asm=C_ADDI4SPN; _cg.sample(ins); end
+//            "c."    : begin ins.asm=C_SLLI; _cg.sample(ins); end
+//            "c."    : begin ins.asm=C_SRLI; _cg.sample(ins); end
+//            "c."    : begin ins.asm=C_SRAI; _cg.sample(ins); end
+//            "c."    : begin ins.asm=C_ANDI; _cg.sample(ins); end
+//            "c."    : begin ins.asm=C_ADD; _cg.sample(ins); end
+//            "c."    : begin ins.asm=C_AND; _cg.sample(ins); end
+//            "c."    : begin ins.asm=C_OR; _cg.sample(ins); end
+//            "c."    : begin ins.asm=C_XOR; _cg.sample(ins); end
+//            "c."    : begin ins.asm=C_SUB; _cg.sample(ins); end
+//            "c."    : begin ins.asm=C_NOP; _cg.sample(ins); end
+//            "c."    : begin ins.asm=C_EBREAK; _cg.sample(ins); end
+//            "c."    : begin ins.asm=C_SLLI64; _cg.sample(ins); end
+//            "c."    : begin ins.asm=C_SRLI64; _cg.sample(ins); end
+//            "c."    : begin ins.asm=C_SRAI64; _cg.sample(ins); end
             default: begin ins.asm=NOP; end //NOT_YET_INCLUDED; /*not_yet_included_cg.sample(ins);*/ /*$display("Coverage warning: ins [%0s] not yet included in being covered", ins.ins_str);*/ end
         endcase
     endfunction
+
 
 endclass
