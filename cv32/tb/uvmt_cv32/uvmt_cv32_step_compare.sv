@@ -53,13 +53,7 @@
   `define T0_TYPE "RV32IMC"
 `endif
 
-//import params_pkg::*;
-//import compare_pkg::*;
 import uvm_pkg::*;      // needed for the UVM messaging service (`uvm_info(), etc.)
-
-
-//`define RTL
-//`define ISS 
 
 `include "uvm_macros.svh"
 module uvmt_cv32_step_compare
@@ -79,9 +73,9 @@ module uvmt_cv32_step_compare
       end
       if (expected !== actual) begin
         miscompare = 1;
-        `uvm_error("Step-and-Compare", $sformatf("%s expected=0x%8h and actual=0x%8h PC=0x%8h", compared, expected, actual, step_compare_if.ovp_cpu_PCr));
+        `uvm_error("Step-and-Compare", $sformatf("%s expected=0x%8h and actual=0x%8h PC=0x%8h", compared, expected, actual, step_compare_if.ovp_cpu_PCr))
       end else begin
-        `uvm_info("Step-and-Compare", $sformatf("%s expected=0x%8h==actual", compared, actual), UVM_DEBUG);
+        `uvm_info("Step-and-Compare", $sformatf("%s expected=0x%8h==actual", compared, actual), UVM_DEBUG)
       end
    endfunction // check_32bit
    
@@ -105,12 +99,12 @@ module uvmt_cv32_step_compare
       // Note that dut_wrap is found 1 level up
       insn_regs_write_size = $root.uvmt_cv32_tb.dut_wrap.riscv_core_i.tracer_i.insn_regs_write.size();
       if (insn_regs_write_size > 1) begin
-        `uvm_error("Step-and-Compare",  $sformatf("Assume insn_regs_write size is 0 or 1 but is %0d", insn_regs_write_size));
+        `uvm_error("Step-and-Compare",  $sformatf("Assume insn_regs_write size is 0 or 1 but is %0d", insn_regs_write_size))
       end
       else if (insn_regs_write_size == 1) begin // Get $root.uvmt_cv32_tb.dut_wrap.riscv_core_i.riscv_tracer_i.insn_regs_write fields if size is 1
          insn_regs_write_addr = $root.uvmt_cv32_tb.dut_wrap.riscv_core_i.tracer_i.insn_regs_write[0].addr;
          insn_regs_write_value = $root.uvmt_cv32_tb.dut_wrap.riscv_core_i.tracer_i.insn_regs_write[0].value;
-         `uvm_info("Step-and-Compare", $sformatf("insn_regs_write queue[0] addr=0x%0x, value=0x%0x", insn_regs_write_addr, insn_regs_write_value), UVM_DEBUG);
+         `uvm_info("Step-and-Compare", $sformatf("insn_regs_write queue[0] addr=0x%0x, value=0x%0x", insn_regs_write_addr, insn_regs_write_value), UVM_DEBUG)
       end
       
       // Ignore insn_regs_write_addr=0 just like in riscv_tracer.sv
