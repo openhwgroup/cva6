@@ -390,8 +390,11 @@ module std_icache (
         end
 
         // if we are killing we can never give a valid response
-        if (dreq_i.kill_s2)
+        // and we should stop an ongoing request to the MMU
+        if (dreq_i.kill_s2) begin
             dreq_o.valid = 1'b0;
+            areq_o.fetch_req = 1'b0;
+        end
 
         if (flush_i) begin
             flushing_d = 1'b1;
