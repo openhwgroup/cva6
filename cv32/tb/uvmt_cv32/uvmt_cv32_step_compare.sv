@@ -53,13 +53,7 @@
   `define T0_TYPE "RV32IMC"
 `endif
 
-//import params_pkg::*;
-//import compare_pkg::*;
 import uvm_pkg::*;      // needed for the UVM messaging service (`uvm_info(), etc.)
-
-
-//`define RTL
-//`define ISS 
 
 `include "uvm_macros.svh"
 module uvmt_cv32_step_compare
