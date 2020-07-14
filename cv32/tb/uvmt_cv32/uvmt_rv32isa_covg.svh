@@ -955,6 +955,8 @@ class riscv_32isa_coverage;
         }
     endgroup
 
+    // MikeT - 20200714: c_addi_cg redefined to reflect single register,
+    //                   single immediate op-codes
     //covergroup c_addi_cg     with function sample(ins_t ins);
     //    cp_rd    : coverpoint get_gpr_name(ins.ops[0].val, ins.ops[0].key, "c.addi");
     //    cp_rs1   : coverpoint get_gpr_name(ins.ops[1].val, ins.ops[1].key, "c.addi");
@@ -972,7 +974,10 @@ class riscv_32isa_coverage;
             bins pos  = {[1:$]};
         }
     endgroup
+    // MikeT - 20200714
 
+    // MikeT - 20200714: c_addi16sp_cg redefined to reflect single register,
+    //                   single immediate op-codes
     //covergroup c_addi16sp_cg with function sample(ins_t ins);
     //    cp_rd    : coverpoint get_gpr_name(ins.ops[0].val, ins.ops[0].key, "c.addi16sp");
     //    cp_rs1   : coverpoint get_gpr_name(ins.ops[1].val, ins.ops[1].key, "c.addi16sp");
@@ -989,7 +994,10 @@ class riscv_32isa_coverage;
             bins pos  = {[1:$]};
         }
     endgroup
+    // MikeT - 20200714
 
+    // MikeT - 20200714: c_addi4sp_cg redefined to reflect single register,
+    //                   single immediate op-codes
     //covergroup c_addi4sp_cg  with function sample(ins_t ins);
     //    cp_rd    : coverpoint get_gpr_name(ins.ops[0].val, ins.ops[0].key, "c.addi4sp");
     //    cp_rs1   : coverpoint get_gpr_name(ins.ops[1].val, ins.ops[1].key, "c.addi4sp");
@@ -1006,6 +1014,7 @@ class riscv_32isa_coverage;
             bins pos  = {[1:$]};
         }
     endgroup
+    // MikeT - 20200714
 
     covergroup c_slli_cg     with function sample(ins_t ins);
         cp_rd    : coverpoint get_gpr_name(ins.ops[0].val, ins.ops[0].key, "c.slli");
@@ -1043,6 +1052,8 @@ class riscv_32isa_coverage;
         }
     endgroup
 
+    // MikeT - 20200714: c_addi_cg redefined to reflect single destination register,
+    //                   single source register op-codes
     //covergroup c_add_cg      with function sample(ins_t ins);
     //    cp_rd    : coverpoint get_gpr_name(ins.ops[0].val, ins.ops[0].key, "c.add");
     //    cp_rs1   : coverpoint get_gpr_name(ins.ops[1].val, ins.ops[1].key, "c.add");
@@ -1054,9 +1065,9 @@ class riscv_32isa_coverage;
 
     covergroup c_add_cg with function sample(ins_t ins);
         cp_rd     : coverpoint get_gpr_name(ins.ops[0].val, ins.ops[0].key, "add");
-        //cp_rs1    : coverpoint get_gpr_name(ins.ops[1].val, ins.ops[1].key, "add");
         cp_rs2    : coverpoint get_gpr_name(ins.ops[2].val, ins.ops[2].key, "add");
     endgroup
+    // MikeT - 20200714
 
     covergroup c_and_cg      with function sample(ins_t ins);
         cp_rd    : coverpoint get_gpr_name(ins.ops[0].val, ins.ops[0].key, "c.and");
@@ -1162,10 +1173,34 @@ class riscv_32isa_coverage;
         rem_cg = new();
         divu_cg = new();
         remu_cg = new();
-        c_add_cg = new();
-        c_addi_cg = new();
+        // The "c_add*_cg are remapped versions of their uncompressed source"
+        c_add_cg      = new();
+        c_addi_cg     = new();
         c_addi16sp_cg = new();
         c_addi4spn_cg = new();
+        // The c_*_cg below are unmodified from the original
+        c_or_cg       = new();
+        c_lwsp_cg     = new();
+        c_flwsp_cg    = new();
+        c_swsp_cg     = new();
+        c_fswsp_cg    = new();
+        c_lw_cg       = new();
+        c_flw_cg      = new();
+        c_sw_cg       = new();
+        c_fsw_cg      = new();
+        c_jal_cg      = new();
+        c_jalr_cg     = new();
+        c_li_cg       = new();
+        c_lui_cg      = new();
+        c_slli_cg     = new();
+        c_srli_cg     = new();
+        c_srai_cg     = new();
+        c_andi_cg     = new();
+        c_and_cg      = new();
+        c_xor_cg      = new();
+        c_sub_cg      = new();
+        c_nop_cg      = new();
+        c_ebreak_cg   = new();
     endfunction: new
 
     function void check_compressed(input ins_t ins);
