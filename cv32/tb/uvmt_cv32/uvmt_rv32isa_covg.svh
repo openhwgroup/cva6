@@ -955,28 +955,53 @@ class riscv_32isa_coverage;
         }
     endgroup
 
-    covergroup c_addi_cg     with function sample(ins_t ins);
-        cp_rd    : coverpoint get_gpr_name(ins.ops[0].val, ins.ops[0].key, "c.addi");
-        cp_rs1   : coverpoint get_gpr_name(ins.ops[1].val, ins.ops[1].key, "c.addi");
-        cp_rs2   : coverpoint get_gpr_name(ins.ops[2].val, ins.ops[2].key, "c.addi" ) {
+    //covergroup c_addi_cg     with function sample(ins_t ins);
+    //    cp_rd    : coverpoint get_gpr_name(ins.ops[0].val, ins.ops[0].key, "c.addi");
+    //    cp_rs1   : coverpoint get_gpr_name(ins.ops[1].val, ins.ops[1].key, "c.addi");
+    //    cp_rs2   : coverpoint get_gpr_name(ins.ops[2].val, ins.ops[2].key, "c.addi" ) {
+    //        bins zero = {0};
+    //        bins pos  = {[1:$]};
+    //    }
+    //endgroup
+
+    covergroup c_addi_cg with function sample(ins_t ins);
+        cp_rd    : coverpoint get_gpr_name(ins.ops[0].val, ins.ops[0].key, "addi");
+        cp_imm6  : coverpoint get_imm(ins.ops[2].val,"addi" ) {
+            bins neg  = {[$:-1]};
             bins zero = {0};
             bins pos  = {[1:$]};
         }
     endgroup
+
+    //covergroup c_addi16sp_cg with function sample(ins_t ins);
+    //    cp_rd    : coverpoint get_gpr_name(ins.ops[0].val, ins.ops[0].key, "c.addi16sp");
+    //    cp_rs1   : coverpoint get_gpr_name(ins.ops[1].val, ins.ops[1].key, "c.addi16sp");
+    //    cp_rs2   : coverpoint get_gpr_name(ins.ops[2].val, ins.ops[2].key, "c.addi16sp" ) {
+    //        bins zero = {0};
+    //        bins pos  = {[1:$]};
+    //    }
+    //endgroup
 
     covergroup c_addi16sp_cg with function sample(ins_t ins);
         cp_rd    : coverpoint get_gpr_name(ins.ops[0].val, ins.ops[0].key, "c.addi16sp");
-        cp_rs1   : coverpoint get_gpr_name(ins.ops[1].val, ins.ops[1].key, "c.addi16sp");
-        cp_rs2   : coverpoint get_gpr_name(ins.ops[2].val, ins.ops[2].key, "c.addi16sp" ) {
+        cp_imm6  : coverpoint get_gpr_name(ins.ops[2].val, ins.ops[2].key, "c.addi16sp" ) {
             bins zero = {0};
             bins pos  = {[1:$]};
         }
     endgroup
 
-    covergroup c_addi4sp_cg  with function sample(ins_t ins);
+    //covergroup c_addi4sp_cg  with function sample(ins_t ins);
+    //    cp_rd    : coverpoint get_gpr_name(ins.ops[0].val, ins.ops[0].key, "c.addi4sp");
+    //    cp_rs1   : coverpoint get_gpr_name(ins.ops[1].val, ins.ops[1].key, "c.addi4sp");
+    //    cp_rs2   : coverpoint get_gpr_name(ins.ops[2].val, ins.ops[2].key, "c.addi4sp" ) {
+    //        bins zero = {0};
+    //        bins pos  = {[1:$]};
+    //    }
+    //endgroup
+
+    covergroup c_addi4spn_cg  with function sample(ins_t ins);
         cp_rd    : coverpoint get_gpr_name(ins.ops[0].val, ins.ops[0].key, "c.addi4sp");
-        cp_rs1   : coverpoint get_gpr_name(ins.ops[1].val, ins.ops[1].key, "c.addi4sp");
-        cp_rs2   : coverpoint get_gpr_name(ins.ops[2].val, ins.ops[2].key, "c.addi4sp" ) {
+        cp_imm8  : coverpoint get_gpr_name(ins.ops[2].val, ins.ops[2].key, "c.addi4sp" ) {
             bins zero = {0};
             bins pos  = {[1:$]};
         }
@@ -1018,13 +1043,19 @@ class riscv_32isa_coverage;
         }
     endgroup
 
-    covergroup c_add_cg      with function sample(ins_t ins);
-        cp_rd    : coverpoint get_gpr_name(ins.ops[0].val, ins.ops[0].key, "c.add");
-        cp_rs1   : coverpoint get_gpr_name(ins.ops[1].val, ins.ops[1].key, "c.add");
-        cp_rs2   : coverpoint get_gpr_name(ins.ops[2].val, ins.ops[2].key, "c.add" ) {
-            bins zero = {0};
-            bins pos  = {[1:$]};
-        }
+    //covergroup c_add_cg      with function sample(ins_t ins);
+    //    cp_rd    : coverpoint get_gpr_name(ins.ops[0].val, ins.ops[0].key, "c.add");
+    //    cp_rs1   : coverpoint get_gpr_name(ins.ops[1].val, ins.ops[1].key, "c.add");
+    //    cp_rs2   : coverpoint get_gpr_name(ins.ops[2].val, ins.ops[2].key, "c.add" ) {
+    //        bins zero = {0};
+    //        bins pos  = {[1:$]};
+    //    }
+    //endgroup
+
+    covergroup c_add_cg with function sample(ins_t ins);
+        cp_rd     : coverpoint get_gpr_name(ins.ops[0].val, ins.ops[0].key, "add");
+        //cp_rs1    : coverpoint get_gpr_name(ins.ops[1].val, ins.ops[1].key, "add");
+        cp_rs2    : coverpoint get_gpr_name(ins.ops[2].val, ins.ops[2].key, "add");
     endgroup
 
     covergroup c_and_cg      with function sample(ins_t ins);
@@ -1131,9 +1162,30 @@ class riscv_32isa_coverage;
         rem_cg = new();
         divu_cg = new();
         remu_cg = new();
-    endfunction
+        c_add_cg = new();
+        c_addi_cg = new();
+        c_addi16sp_cg = new();
+        c_addi4spn_cg = new();
+    endfunction: new
+
+    function void check_compressed(input ins_t ins);
+        case (ins.ins_str)
+            "add"      : if ( get_gpr_name(ins.ops[0].val, ins.ops[0].key, "add")  == get_gpr_name(ins.ops[1].val, ins.ops[1].key, "add") ) c_add_cg.sample(ins);
+
+            "addi"     : if ( get_gpr_name(ins.ops[0].val, ins.ops[0].key, "addi") == get_gpr_name(ins.ops[1].val, ins.ops[1].key, "addi")) c_addi_cg.sample(ins);
+
+            "addi16sp" : if ( get_gpr_name(ins.ops[0].val, ins.ops[0].key, "addi") == get_gpr_name(ins.ops[1].val, ins.ops[1].key, "addi") && 
+                              get_gpr_name(ins.ops[0].val, ins.ops[0].key, "addi") == "x2") c_addi16sp_cg.sample(ins);
+
+            "addi4spn" : if ( get_gpr_name(ins.ops[0].val, ins.ops[0].key, "addi") == get_gpr_name(ins.ops[1].val, ins.ops[1].key, "addi") && 
+                              get_gpr_name(ins.ops[1].val, ins.ops[1].key, "addi") == "x2") c_addi4spn_cg.sample(ins);
+ 
+            default: `uvm_info("RV32ISA Coverage", $sformatf("check_compressed(): ins [%0s] not yet checked", ins.ins_str), UVM_HIGH)
+        endcase
+    endfunction: check_compressed
 
     function void sample(input ins_t ins);
+        check_compressed(ins);
         case (ins.ins_str)
             "add"    : begin ins.asm=ADD; add_cg.sample(ins); end
             "addi"    : begin ins.asm=ADDI; addi_cg.sample(ins); end
@@ -1222,7 +1274,7 @@ class riscv_32isa_coverage;
             "c.lui"    : begin ins.asm=C_LUI; c_lui_cg.sample(ins); end
             "c.addi"    : begin ins.asm=C_ADDI; c_addi_cg.sample(ins); end
             "c.addi16sp"    : begin ins.asm=C_ADDI16SP; c_addi16sp_cg.sample(ins); end
-            "c.addi4sp"    : begin ins.asm=C_ADDI4SPN; c_addi4sp_cg.sample(ins); end
+            "c.addi4spn"    : begin ins.asm=C_ADDI4SPN; c_addi4spn_cg.sample(ins); end
             "c.slli"    : begin ins.asm=C_SLLI; c_slli_cg.sample(ins); end
             "c.srli"    : begin ins.asm=C_SRLI; c_srli_cg.sample(ins); end
             "c.srai"    : begin ins.asm=C_SRAI; c_srai_cg.sample(ins); end
@@ -1236,7 +1288,7 @@ class riscv_32isa_coverage;
             "c.ebreak"    : begin ins.asm=C_EBREAK; c_ebreak_cg.sample(ins); end
             default: begin ins.asm=NOP; end /*$display("Coverage warning: ins [%0s] not yet included in being covered", ins.ins_str);*/ //end
         endcase
-    endfunction
+    endfunction: sample
 
 
 endclass
