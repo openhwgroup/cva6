@@ -110,7 +110,7 @@ to dsim at run-time.  For example:
 Running the environment with Cadence [Xcelium](https://www.cadence.com/en_US/home/tools/system-design-and-verification/simulation-and-testbench-verification/xcelium-parallel-simulator.html) (xrun)
 ----------------------
 The command **make SIMULATOR=xrun sanity** will run the sanity testcase
-using _xrun_.  Set the shell variable SIMULATOR to `xrun` to simply that to **make <target>**.
+using _xrun_.  Set the shell variable SIMULATOR to `xrun` to simply run **`make <target>`**.
 <br><br>
 **Note for Cadence users:** This testbench is known to require Xcelium 19.09 or
 later.  See [Issue 11](https://github.com/openhwgroup/core-v-verif/issues/11)
@@ -119,12 +119,12 @@ for more info.
 Running the environment with Mentor Graphics [Questa](https://www.mentor.com/products/fv/questa/) (vsim)
 ----------------------
 The command **make SIMULATOR=vsim sanity** will run the sanity testcase using _vsim_.
-Set the shell variable SIMULATOR to `vsim` to simply that to **make <target>**.
+Set the shell variable SIMULATOR to `vsim` to simply run **`make <target>`**.
 
 Running the environment with Synopsys VCS [VCS](https://www.synopsys.com/verification/simulation/vcs.html) (vcs)
 ----------------------
 The command **make SIMULATOR=vcs sanity** will run the sanity testcase using _vsim_.
-Set the shell variable SIMULATOR to `vcs` to simply that to **make <target>**.
+Set the shell variable SIMULATOR to `vcs` to simply run **`make <target>`**.
 <br><br>
 **Note for Synopsys users:** This testbench has not been compiled/run
 with _vcs_ in several weeks.  If you need to update the Makefiles, please do
