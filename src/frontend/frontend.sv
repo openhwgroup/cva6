@@ -230,7 +230,8 @@ module frontend #(
     // or reduce struct
     always_comb begin
       bp_valid = 1'b0;
-      for (int i = 0; i < INSTR_PER_FETCH; i++) bp_valid |= (cf_type[i] != NoCF);
+      // BP cannot be valid if we have a return instruction and the RAS is not giving a valid address
+      for (int i = 0; i < INSTR_PER_FETCH; i++) bp_valid |= ((cf_type[i] != NoCF && cf_type[i] != ariane_pkg::Return) || (cf_type[i] == ariane_pkg::Return && ras_predict.valid==1'b1));
     end
     assign is_mispredict = resolved_branch_i.valid & resolved_branch_i.is_mispredict;
 
