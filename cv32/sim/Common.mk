@@ -136,6 +136,10 @@ RISCV_EXE_PREFIX ?= $(RISCV)/bin/riscv32-unknown-elf-
 
 CFLAGS ?= -Os -g -static -mabi=ilp32 -march=rv32imc -Wall -pedantic
 
+ifeq ($(firstword $(subst _, ,$(CUSTOM_PROG))),pulp)
+  CFLAGS = -Os -g -D__riscv__=1 -D__LITTLE_ENDIAN__=1 -march=rv32imcxpulpv2 -Wa,-march=rv32imcxpulpv2 -fdata-sections -ffunction-sections -fdiagnostics-color=always
+endif
+
 # CORE FIRMWARE vars. All of the C and assembler programs under CORE_TEST_DIR
 # are collectively known as "Core Firmware".  Yes, this is confusing because
 # one of sub-directories of CORE_TEST_DIR is called "firmware".
