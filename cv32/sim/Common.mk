@@ -261,6 +261,7 @@ TEST_FILES        = $(filter %.c %.S,$(wildcard $(dir $*)*))
 # Patterned targets to generate ELF.  Used only if explicit targets do not match.
 #
 # This target selected if both %.c and %.S exist
+.PRECIOUS : %.elf
 %.elf: %.c
 	make clean-bsp
 	make bsp
