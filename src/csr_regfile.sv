@@ -864,7 +864,10 @@ module csr_regfile #(
     // ----------------------
     always_comb begin : exception_ctrl
         csr_exception_o = {
-            {riscv::XLEN{1'b0}}, {riscv::XLEN{1'b0}}, 1'b0
+            cause: '0,
+            tval: '0,
+            valid : 1'b0
+        }
         };
         // ----------------------------------
         // Illegal Access (decode exception)
