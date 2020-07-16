@@ -25,7 +25,7 @@ package riscv;
     localparam VLEN       = (XLEN == 32) ? 32 : 64;    // virtual address length
     localparam PLEN       = (XLEN == 32) ? 32 : 56;    // physical address length
 
-    localparam XLEN64_bit = (XLEN == 32) ? 1'b0 : 1'b1;
+    localparam IS_XLEN64  = (XLEN == 32) ? 1'b0 : 1'b1;
     localparam ModeW      = (XLEN == 32) ? 1 : 4;
     localparam AsidW      = (XLEN == 32) ? 9 : 16;
     localparam PpnW       = (XLEN == 32) ? 22 : 44;
@@ -484,8 +484,8 @@ package riscv;
     localparam logic [63:0] MSTATUS_TVM  = 'h00100000;
     localparam logic [63:0] MSTATUS_TW   = 'h00200000;
     localparam logic [63:0] MSTATUS_TSR  = 'h00400000;
-    localparam logic [63:0] MSTATUS_UXL  = {30'h0000000, XLEN64_bit, XLEN64_bit, 32'h00000000};
-    localparam logic [63:0] MSTATUS_SXL  = {28'h0000000, XLEN64_bit, XLEN64_bit, 34'h00000000};
+    localparam logic [63:0] MSTATUS_UXL  = {30'h0000000, IS_XLEN64, IS_XLEN64, 32'h00000000};
+    localparam logic [63:0] MSTATUS_SXL  = {28'h0000000, IS_XLEN64, IS_XLEN64, 34'h00000000};
     localparam logic [63:0] MSTATUS_SD   = 64'h8000000000000000;
 
     typedef enum logic [2:0] {

@@ -155,12 +155,12 @@ package ariane_pkg;
 
 `ifdef PITON_ARIANE
     // Floating-point extensions configuration
-    localparam bit RVF = riscv::XLEN64_bit; // Is F extension enabled
-    localparam bit RVD = riscv::XLEN64_bit; // Is D extension enabled
+    localparam bit RVF = riscv::IS_XLEN64; // Is F extension enabled
+    localparam bit RVD = riscv::IS_XLEN64; // Is D extension enabled
 `else
     // Floating-point extensions configuration
-    localparam bit RVF = riscv::XLEN64_bit; // Is F extension enabled
-    localparam bit RVD = riscv::XLEN64_bit; // Is D extension enabled
+    localparam bit RVF = riscv::IS_XLEN64; // Is F extension enabled
+    localparam bit RVD = riscv::IS_XLEN64; // Is D extension enabled
 `endif
     localparam bit RVA = 1'b1; // Is A extension enabled
 
@@ -739,7 +739,7 @@ package ariane_pkg;
     // align data to address e.g.: shift data to be naturally 64
     function automatic logic [riscv::XLEN-1:0] data_align (logic [2:0] addr, logic [63:0] data);
         // Set addr[2] to 1'b0 when 32bits
-        logic [2:0] addr_tmp = {(addr[2] && riscv::XLEN64_bit), addr[1:0]};
+        logic [2:0] addr_tmp = {(addr[2] && riscv::IS_XLEN64), addr[1:0]};
         logic [63:0] data_tmp = {64{1'b0}};
         case (addr_tmp)
             3'b000: data_tmp[riscv::XLEN-1:0] = {data[riscv::XLEN-1:0]};
