@@ -48,7 +48,7 @@ module store_unit (
     output dcache_req_i_t            req_port_o
 );
     // it doesn't matter what we are writing back as stores don't return anything
-    assign result_o = 'h0;
+    assign result_o = '0;
 
     enum logic [1:0] {
         IDLE,
