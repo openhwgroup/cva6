@@ -22,9 +22,9 @@ module multiplier (
     input  logic [TRANS_ID_BITS-1:0] trans_id_i,
     input  logic                     mult_valid_i,
     input  fu_op                     operator_i,
-    input  logic [riscv::XLEN-1:0]              operand_a_i,
-    input  logic [riscv::XLEN-1:0]              operand_b_i,
-    output logic [riscv::XLEN-1:0]              result_o,
+    input  riscv::xlen_t             operand_a_i,
+    input  riscv::xlen_t             operand_b_i,
+    output riscv::xlen_t             result_o,
     output logic                     mult_valid_o,
     output logic                     mult_ready_o,
     output logic [TRANS_ID_BITS-1:0] mult_trans_id_o

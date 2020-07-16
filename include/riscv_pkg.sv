@@ -34,6 +34,8 @@ package riscv;
     localparam VPN2       = (riscv::VLEN-31 < 8) ? riscv::VLEN-31 : 8;
     localparam logic[ModeW-1:0] MODE_OFF = '0;
 
+    typedef logic [riscv::XLEN-1:0] xlen_t;
+
     // --------------------
     // Privilege Spec
     // --------------------
@@ -48,7 +50,7 @@ package riscv;
         XLEN_32  = 2'b01,
         XLEN_64  = 2'b10,
         XLEN_128 = 2'b11
-    } xlen_t;
+    } xlen_enum_t;
 
     typedef enum logic [1:0] {
         Off     = 2'b00,
@@ -60,8 +62,8 @@ package riscv;
     typedef struct packed {
         logic         sd;     // signal dirty state - read-only
         logic [62:36] wpri4;  // writes preserved reads ignored
-        xlen_t        sxl;    // variable supervisor mode xlen - hardwired to zero
-        xlen_t        uxl;    // variable user mode xlen - hardwired to zero
+        xlen_enum_t   sxl;    // variable supervisor mode xlen - hardwired to zero
+        xlen_enum_t   uxl;    // variable user mode xlen - hardwired to zero
         logic [8:0]   wpri3;  // writes preserved reads ignored
         logic         tsr;    // trap sret
         logic         tw;     // time wait

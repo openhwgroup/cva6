@@ -30,7 +30,7 @@ module store_unit (
     // store unit output port
     output logic                     valid_o,
     output logic [TRANS_ID_BITS-1:0] trans_id_o,
-    output logic [riscv::XLEN-1:0]   result_o,
+    output riscv::xlen_t             result_o,
     output exception_t               ex_o,
     // MMU -> Address Translation
     output logic                     translation_req_o, // request address translation
@@ -64,7 +64,7 @@ module store_unit (
     logic instr_is_amo;
     assign instr_is_amo = is_amo(lsu_ctrl_i.operator);
     // keep the data and the byte enable for the second cycle (after address translation)
-    logic [riscv::XLEN-1:0] st_data_n, st_data_q;
+    riscv::xlen_t st_data_n, st_data_q;
     logic [7:0]   st_be_n,        st_be_q;
     logic [1:0]   st_data_size_n, st_data_size_q;
     amo_t         amo_op_d,       amo_op_q;

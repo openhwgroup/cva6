@@ -29,11 +29,11 @@ module scoreboard #(
 
   // regfile like interface to operand read stage
   input  logic [ariane_pkg::REG_ADDR_SIZE-1:0]                  rs1_i,
-  output logic [riscv::XLEN-1:0]                                rs1_o,
+  output riscv::xlen_t                                          rs1_o,
   output logic                                                  rs1_valid_o,
 
   input  logic [ariane_pkg::REG_ADDR_SIZE-1:0]                  rs2_i,
-  output logic [riscv::XLEN-1:0]                                rs2_o,
+  output riscv::xlen_t                                          rs2_o,
   output logic                                                  rs2_valid_o,
 
   input  logic [ariane_pkg::REG_ADDR_SIZE-1:0]                  rs3_i,
@@ -327,7 +327,7 @@ module scoreboard #(
     .idx_o   (             )
   );
 
-  logic [riscv::XLEN-1:0] rs3;
+  riscv::xlen_t           rs3;
 
   rr_arb_tree #(
     .NumIn(NR_ENTRIES+NR_WB_PORTS),

@@ -78,11 +78,11 @@ module issue_stage #(
     fu_t  [2**REG_ADDR_SIZE-1:0] rd_clobber_fpr_sb_iro;
 
     logic [REG_ADDR_SIZE-1:0]  rs1_iro_sb;
-    logic [riscv::XLEN-1:0]    rs1_sb_iro;
+    riscv::xlen_t              rs1_sb_iro;
     logic                      rs1_valid_sb_iro;
 
     logic [REG_ADDR_SIZE-1:0]  rs2_iro_sb;
-    logic [riscv::XLEN-1:0]    rs2_sb_iro;
+    riscv::xlen_t              rs2_sb_iro;
     logic                      rs2_valid_iro_sb;
 
     logic [REG_ADDR_SIZE-1:0]  rs3_iro_sb;

@@ -23,7 +23,7 @@ module amo_buffer (
     output logic             ready_o,            // AMO unit is ready
     input  ariane_pkg::amo_t amo_op_i,           // AMO Operation
     input  logic [riscv::PLEN-1:0]      paddr_i,            // physical address of store which needs to be placed in the queue
-    input  logic [riscv::XLEN-1:0]      data_i,             // data which is placed in the queue
+    input  riscv::xlen_t     data_i,             // data which is placed in the queue
     input  logic [1:0]       data_size_i,        // type of request we are making (e.g.: bytes to write)
     // D$
     output ariane_pkg::amo_req_t  amo_req_o,          // request to cache subsytem
@@ -38,7 +38,7 @@ module amo_buffer (
     typedef struct packed {
         ariane_pkg::amo_t        op;
         logic [riscv::PLEN-1:0] paddr;
-        logic [riscv::XLEN-1:0] data;
+        riscv::xlen_t data;
         logic [1:0]  size;
     } amo_op_t ;
 

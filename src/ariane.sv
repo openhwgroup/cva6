@@ -95,7 +95,7 @@ module ariane #(
   logic                     flu_ready_ex_id;
   logic [TRANS_ID_BITS-1:0] flu_trans_id_ex_id;
   logic                     flu_valid_ex_id;
-  logic [riscv::XLEN-1:0]   flu_result_ex_id;
+  riscv::xlen_t             flu_result_ex_id;
   exception_t               flu_exception_ex_id;
   // ALU
   logic                     alu_valid_id_ex;
@@ -109,11 +109,11 @@ module ariane #(
   logic                     lsu_ready_ex_id;
 
   logic [TRANS_ID_BITS-1:0] load_trans_id_ex_id;
-  logic [riscv::XLEN-1:0]   load_result_ex_id;
+  riscv::xlen_t             load_result_ex_id;
   logic                     load_valid_ex_id;
   exception_t               load_exception_ex_id;
 
-  logic [riscv::XLEN-1:0]   store_result_ex_id;
+  riscv::xlen_t             store_result_ex_id;
   logic [TRANS_ID_BITS-1:0] store_trans_id_ex_id;
   logic                     store_valid_ex_id;
   exception_t               store_exception_ex_id;
@@ -125,7 +125,7 @@ module ariane #(
   logic [1:0]               fpu_fmt_id_ex;
   logic [2:0]               fpu_rm_id_ex;
   logic [TRANS_ID_BITS-1:0] fpu_trans_id_ex_id;
-  logic [riscv::XLEN-1:0]   fpu_result_ex_id;
+  riscv::xlen_t             fpu_result_ex_id;
   logic                     fpu_valid_ex_id;
   exception_t               fpu_exception_ex_id;
   // CSR
@@ -170,8 +170,8 @@ module ariane #(
   logic [0:0]               asid_csr_ex;
   logic [11:0]              csr_addr_ex_csr;
   fu_op                     csr_op_commit_csr;
-  logic [riscv::XLEN-1:0]   csr_wdata_commit_csr;
-  logic [riscv::XLEN-1:0]   csr_rdata_csr_commit;
+  riscv::xlen_t             csr_wdata_commit_csr;
+  riscv::xlen_t             csr_rdata_csr_commit;
   exception_t               csr_exception_csr_commit;
   logic                     tvm_csr_id;
   logic                     tw_csr_id;
@@ -186,7 +186,7 @@ module ariane #(
   // Performance Counters <-> *
   // ----------------------------
   logic [4:0]               addr_csr_perf;
-  logic [riscv::XLEN-1:0]   data_csr_perf, data_perf_csr;
+  riscv::xlen_t             data_csr_perf, data_perf_csr;
   logic                     we_csr_perf;
 
   logic                     icache_flush_ctrl_cache;

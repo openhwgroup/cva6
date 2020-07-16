@@ -28,10 +28,10 @@ module issue_read_operands #(
     output logic                                   issue_ack_o,
     // lookup rd in scoreboard
     output logic [REG_ADDR_SIZE-1:0]               rs1_o,
-    input  logic [riscv::XLEN-1:0]                 rs1_i,
+    input  riscv::xlen_t                           rs1_i,
     input  logic                                   rs1_valid_i,
     output logic [REG_ADDR_SIZE-1:0]               rs2_o,
-    input  logic [riscv::XLEN-1:0]                 rs2_i,
+    input  riscv::xlen_t                           rs2_i,
     input  logic                                   rs2_valid_i,
     output logic [REG_ADDR_SIZE-1:0]               rs3_o,
     input  logic [FLEN-1:0]                        rs3_i,
@@ -73,10 +73,10 @@ module issue_read_operands #(
 );
     logic stall;   // stall signal, we do not want to fetch any more entries
     logic fu_busy; // functional unit is busy
-    logic [riscv::XLEN-1:0] operand_a_regfile, operand_b_regfile;  // operands coming from regfile
+    riscv::xlen_t    operand_a_regfile, operand_b_regfile;  // operands coming from regfile
     logic [FLEN-1:0] operand_c_regfile; // third operand only from fp regfile
     // output flipflop (ID <-> EX)
-    logic [riscv::XLEN-1:0] operand_a_n, operand_a_q,
+    riscv::xlen_t operand_a_n, operand_a_q,
                  operand_b_n, operand_b_q,
                  imm_n, imm_q;
 

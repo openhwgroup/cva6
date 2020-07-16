@@ -26,7 +26,7 @@ module load_unit import ariane_pkg::*; #(
     // load unit output port
     output logic                     valid_o,
     output logic [TRANS_ID_BITS-1:0] trans_id_o,
-    output logic [riscv::XLEN-1:0]   result_o,
+    output riscv::xlen_t             result_o,
     output exception_t               ex_o,
     // MMU -> Address Translation
     output logic                     translation_req_o,   // request address translation

@@ -23,11 +23,11 @@ module alu (
     input  logic                     clk_i,          // Clock
     input  logic                     rst_ni,         // Asynchronous reset active low
     input  fu_data_t                 fu_data_i,
-    output logic [riscv::XLEN-1:0]   result_o,
+    output riscv::xlen_t             result_o,
     output logic                     alu_branch_res_o
 );
 
-    logic [riscv::XLEN-1:0] operand_a_rev;
+    riscv::xlen_t operand_a_rev;
     logic [31:0] operand_a_rev32;
     logic [riscv::XLEN:0] operand_b_neg;
     logic [riscv::XLEN+1:0] adder_result_ext_o;
@@ -49,7 +49,7 @@ module alu (
     logic        adder_op_b_negate;
     logic        adder_z_flag;
     logic [riscv::XLEN:0] adder_in_a, adder_in_b;
-    logic [riscv::XLEN-1:0] adder_result;
+    riscv::xlen_t adder_result;
 
     always_comb begin
       adder_op_b_negate = 1'b0;
@@ -96,17 +96,17 @@ module alu (
     logic        shift_left;          // should we shift left
     logic        shift_arithmetic;
 
-    logic [riscv::XLEN-1:0] shift_amt;           // amount of shift, to the right
-    logic [riscv::XLEN-1:0] shift_op_a;          // input of the shifter
+    riscv::xlen_t shift_amt;           // amount of shift, to the right
+    riscv::xlen_t shift_op_a;          // input of the shifter
     logic [31:0] shift_op_a32;        // input to the 32 bit shift operation
 
-    logic [riscv::XLEN-1:0] shift_result;
+    riscv::xlen_t shift_result;
     logic [31:0] shift_result32;
 
     logic [riscv::XLEN:0] shift_right_result;
     logic [32:0] shift_right_result32;
 
-    logic [riscv::XLEN-1:0] shift_left_result;
+    riscv::xlen_t shift_left_result;
     logic [31:0] shift_left_result32;
 
     assign shift_amt = fu_data_i.operand_b;

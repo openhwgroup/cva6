@@ -201,9 +201,9 @@ package ariane_pkg;
     // ^^^^ until here ^^^^
     // ---------------------
 
-    localparam logic [riscv::XLEN-1:0] ARIANE_MARCHID = {{riscv::XLEN-32{1'b0}}, 32'd3};
+    localparam riscv::xlen_t ARIANE_MARCHID = {{riscv::XLEN-32{1'b0}}, 32'd3};
 
-    localparam logic [riscv::XLEN-1:0] ISA_CODE = (RVA <<  0)  // A - Atomic Instructions extension
+    localparam riscv::xlen_t ISA_CODE = (RVA <<  0)  // A - Atomic Instructions extension
                                      | (1   <<  2)  // C - Compressed extension
                                      | (RVD <<  3)  // D - Double precsision floating-point extension
                                      | (RVF <<  5)  // F - Single precsision floating-point extension
@@ -283,8 +283,8 @@ package ariane_pkg;
     // Only use struct when signals have same direction
     // exception
     typedef struct packed {
-         logic [riscv::XLEN-1:0] cause; // cause of exception
-         logic [riscv::XLEN-1:0] tval;  // additional information of causing exception (e.g.: instruction causing it),
+         riscv::xlen_t       cause; // cause of exception
+         riscv::xlen_t       tval;  // additional information of causing exception (e.g.: instruction causing it),
                              // address of LD/ST fault
          logic        valid;
     } exception_t;
@@ -365,9 +365,9 @@ package ariane_pkg;
     // All information needed to determine whether we need to associate an interrupt
     // with the corresponding instruction or not.
     typedef struct packed {
-      logic [riscv::XLEN-1:0] mie;
-      logic [riscv::XLEN-1:0] mip;
-      logic [riscv::XLEN-1:0] mideleg;
+      riscv::xlen_t       mie;
+      riscv::xlen_t       mip;
+      riscv::xlen_t       mideleg;
       logic        sie;
       logic        global_enable;
     } irq_ctrl_t;
@@ -471,9 +471,9 @@ package ariane_pkg;
     typedef struct packed {
         fu_t                      fu;
         fu_op                     operator;
-        logic [riscv::XLEN-1:0]   operand_a;
-        logic [riscv::XLEN-1:0]   operand_b;
-        logic [riscv::XLEN-1:0]   imm;
+        riscv::xlen_t             operand_a;
+        riscv::xlen_t             operand_b;
+        riscv::xlen_t             imm;
         logic [TRANS_ID_BITS-1:0] trans_id;
     } fu_data_t;
 
@@ -593,7 +593,7 @@ package ariane_pkg;
         logic [REG_ADDR_SIZE-1:0] rs1;           // register source address 1
         logic [REG_ADDR_SIZE-1:0] rs2;           // register source address 2
         logic [REG_ADDR_SIZE-1:0] rd;            // register destination address
-        logic [riscv::XLEN-1:0]   result;        // for unfinished instructions this field also holds the immediate,
+        riscv::xlen_t             result;        // for unfinished instructions this field also holds the immediate,
                                                  // for unfinished floating-point that are partly encoded in rs2, this field also holds rs2
                                                  // for unfinished floating-point fused operations (FMADD, FMSUB, FNMADD, FNMSUB)
                                                  // this field holds the address of the third operand from the floating-point register file
@@ -714,7 +714,7 @@ package ariane_pkg;
     // ----------------------
     // Arithmetic Functions
     // ----------------------
-    function automatic logic [riscv::XLEN-1:0] sext32 (logic [31:0] operand);
+    function automatic riscv::xlen_t sext32 (logic [31:0] operand);
         return {{riscv::XLEN-32{operand[31]}}, operand[31:0]};
     endfunction
 
@@ -737,7 +737,7 @@ package ariane_pkg;
     // LSU Functions
     // ----------------------
     // align data to address e.g.: shift data to be naturally 64
-    function automatic logic [riscv::XLEN-1:0] data_align (logic [2:0] addr, logic [63:0] data);
+    function automatic riscv::xlen_t data_align (logic [2:0] addr, logic [63:0] data);
         // Set addr[2] to 1'b0 when 32bits
         logic [2:0] addr_tmp = {(addr[2] && riscv::IS_XLEN64), addr[1:0]};
         logic [63:0] data_tmp = {64{1'b0}};

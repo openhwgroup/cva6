@@ -35,7 +35,7 @@ module store_buffer (
     input  logic         valid_without_flush_i, // just tell if the address is valid which we are current putting and do not take any further action
 
     input  logic [riscv::PLEN-1:0]  paddr_i,         // physical address of store which needs to be placed in the queue
-    input  logic [riscv::XLEN-1:0]  data_i,          // data which is placed in the queue
+    input  riscv::xlen_t            data_i,          // data which is placed in the queue
     input  logic [7:0]   be_i,            // byte enable in
     input  logic [1:0]   data_size_i,     // type of request we are making (e.g.: bytes to write)
 
@@ -49,7 +49,7 @@ module store_buffer (
     // 2. Commit queue which is non-speculative, e.g.: the store will definitely happen.
     struct packed {
         logic [riscv::PLEN-1:0] address;
-        logic [riscv::XLEN-1:0] data;
+        riscv::xlen_t           data;
         logic [7:0]             be;
         logic [1:0]             data_size;
         logic                   valid;     // this entry is valid, we need this for checking if the address offset matches

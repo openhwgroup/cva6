@@ -87,7 +87,7 @@ module csr_regfile #(
     // internal signal to keep track of access exceptions
     logic        read_access_exception, update_access_exception, privilege_violation;
     logic        csr_we, csr_read;
-    logic [riscv::XLEN-1:0] csr_wdata, csr_rdata;
+    riscv::xlen_t csr_wdata, csr_rdata;
     riscv::priv_lvl_t   trap_to_priv_lvl;
     // register for enabling load store address translation, this is critical, hence the register
     logic        en_ld_st_translation_d, en_ld_st_translation_q;
@@ -107,33 +107,33 @@ module csr_regfile #(
     logic        debug_mode_q, debug_mode_d;
     logic        mtvec_rst_load_q;// used to determine whether we came out of reset
 
-    logic [riscv::XLEN-1:0] dpc_q,       dpc_d;
-    logic [riscv::XLEN-1:0] dscratch0_q, dscratch0_d;
-    logic [riscv::XLEN-1:0] dscratch1_q, dscratch1_d;
-    logic [riscv::XLEN-1:0] mtvec_q,     mtvec_d;
-    logic [riscv::XLEN-1:0] medeleg_q,   medeleg_d;
-    logic [riscv::XLEN-1:0] mideleg_q,   mideleg_d;
-    logic [riscv::XLEN-1:0] mip_q,       mip_d;
-    logic [riscv::XLEN-1:0] mie_q,       mie_d;
-    logic [riscv::XLEN-1:0] mcounteren_q,mcounteren_d;
-    logic [riscv::XLEN-1:0] mscratch_q,  mscratch_d;
-    logic [riscv::XLEN-1:0] mepc_q,      mepc_d;
-    logic [riscv::XLEN-1:0] mcause_q,    mcause_d;
-    logic [riscv::XLEN-1:0] mtval_q,     mtval_d;
+    riscv::xlen_t dpc_q,       dpc_d;
+    riscv::xlen_t dscratch0_q, dscratch0_d;
+    riscv::xlen_t dscratch1_q, dscratch1_d;
+    riscv::xlen_t mtvec_q,     mtvec_d;
+    riscv::xlen_t medeleg_q,   medeleg_d;
+    riscv::xlen_t mideleg_q,   mideleg_d;
+    riscv::xlen_t mip_q,       mip_d;
+    riscv::xlen_t mie_q,       mie_d;
+    riscv::xlen_t mcounteren_q,mcounteren_d;
+    riscv::xlen_t mscratch_q,  mscratch_d;
+    riscv::xlen_t mepc_q,      mepc_d;
+    riscv::xlen_t mcause_q,    mcause_d;
+    riscv::xlen_t mtval_q,     mtval_d;
 
-    logic [riscv::XLEN-1:0] stvec_q,     stvec_d;
-    logic [riscv::XLEN-1:0] scounteren_q,scounteren_d;
-    logic [riscv::XLEN-1:0] sscratch_q,  sscratch_d;
-    logic [riscv::XLEN-1:0] sepc_q,      sepc_d;
-    logic [riscv::XLEN-1:0] scause_q,    scause_d;
-    logic [riscv::XLEN-1:0] stval_q,     stval_d;
-    logic [riscv::XLEN-1:0] dcache_q,    dcache_d;
-    logic [riscv::XLEN-1:0] icache_q,    icache_d;
+    riscv::xlen_t stvec_q,     stvec_d;
+    riscv::xlen_t scounteren_q,scounteren_d;
+    riscv::xlen_t sscratch_q,  sscratch_d;
+    riscv::xlen_t sepc_q,      sepc_d;
+    riscv::xlen_t scause_q,    scause_d;
+    riscv::xlen_t stval_q,     stval_d;
+    riscv::xlen_t dcache_q,    dcache_d;
+    riscv::xlen_t icache_q,    icache_d;
 
     logic        wfi_d,       wfi_q;
 
-    logic [riscv::XLEN-1:0] cycle_q,     cycle_d;
-    logic [riscv::XLEN-1:0] instret_q,   instret_d;
+    riscv::xlen_t cycle_q,     cycle_d;
+    riscv::xlen_t instret_q,   instret_d;
 
     riscv::fcsr_t fcsr_q, fcsr_d;
     // ----------------
@@ -275,7 +275,7 @@ module csr_regfile #(
     logic [63:0] mask;
     always_comb begin : csr_update
         automatic riscv::satp_t sapt;
-        automatic logic [riscv::XLEN-1:0] instret;
+        automatic riscv::xlen_t instret;
 
 
         sapt = satp_q;
