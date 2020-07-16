@@ -988,7 +988,7 @@ module csr_regfile #(
         if (~rst_ni) begin
             priv_lvl_q             <= riscv::PRIV_LVL_M;
             // floating-point registers
-            fcsr_q                 <= {riscv::XLEN{1'b0}};
+            fcsr_q                 <= '0;
             // debug signals
 `ifdef DROMAJO
             debug_mode_q           <= 1'b1;
