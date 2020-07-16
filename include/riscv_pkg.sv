@@ -452,7 +452,6 @@ package riscv;
         CSR_HPM_COUNTER_31 = 12'hC1F  // reserved
     } csr_reg_t;
 
-    localparam logic XLEN64 = 1'b1;
     localparam logic [63:0] SSTATUS_UIE  = 'h00000001;
     localparam logic [63:0] SSTATUS_SIE  = 'h00000002;
     localparam logic [63:0] SSTATUS_SPIE = 'h00000020;
@@ -463,7 +462,7 @@ package riscv;
     localparam logic [63:0] SSTATUS_MXR  = 'h00080000;
     localparam logic [63:0] SSTATUS_UPIE = 'h00000010;
     localparam logic [63:0] SSTATUS_UXL  = 64'h0000000300000000;
-    localparam logic [63:0] SSTATUS_SD   = 64'h8000000000000000;
+    localparam logic [63:0] SSTATUS_SD   = {IS_XLEN64, 31'h00000000, ~IS_XLEN64, 31'h00000000};
 
     localparam logic [63:0] MSTATUS_UIE  = 'h00000001;
     localparam logic [63:0] MSTATUS_SIE  = 'h00000002;
@@ -486,7 +485,7 @@ package riscv;
     localparam logic [63:0] MSTATUS_TSR  = 'h00400000;
     localparam logic [63:0] MSTATUS_UXL  = {30'h0000000, IS_XLEN64, IS_XLEN64, 32'h00000000};
     localparam logic [63:0] MSTATUS_SXL  = {28'h0000000, IS_XLEN64, IS_XLEN64, 34'h00000000};
-    localparam logic [63:0] MSTATUS_SD   = 64'h8000000000000000;
+    localparam logic [63:0] MSTATUS_SD   = {IS_XLEN64, 31'h00000000, ~IS_XLEN64, 31'h00000000};
 
     typedef enum logic [2:0] {
         CSRRW  = 3'h1,
