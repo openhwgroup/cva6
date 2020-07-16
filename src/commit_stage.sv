@@ -257,8 +257,8 @@ module commit_stage #(
         // priority order: external interrupts, software interrupts, timer interrupts, then finally any synchronous traps. (1.10 p.30)
         // interrupts are correctly prioritized in the CSR reg file, exceptions are prioritized here
         exception_o.valid = 1'b0;
-        exception_o.cause = {riscv::XLEN{1'b0}};
-        exception_o.tval  = {riscv::XLEN{1'b0}};
+        exception_o.cause = '0;
+        exception_o.tval  = '0;
         // we need a valid instruction in the commit stage
         if (commit_instr_i[0].valid) begin
             // ------------------------
