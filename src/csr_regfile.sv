@@ -224,7 +224,7 @@ module csr_regfile #(
                 riscv::CSR_MCAUSE:             csr_rdata = mcause_q;
                 riscv::CSR_MTVAL:              csr_rdata = mtval_q;
                 riscv::CSR_MIP:                csr_rdata = mip_q;
-                riscv::CSR_MVENDORID:          csr_rdata = {riscv::XLEN{1'b0}}; // not implemented
+                riscv::CSR_MVENDORID:          csr_rdata = '0; // not implemented
                 riscv::CSR_MARCHID:            csr_rdata = ARIANE_MARCHID;
                 riscv::CSR_MIMPID:             csr_rdata = {riscv::XLEN{1'b0}}; // not implemented
                 riscv::CSR_MHARTID:            csr_rdata = hart_id_i;
