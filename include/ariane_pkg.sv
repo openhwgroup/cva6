@@ -636,9 +636,6 @@ package ariane_pkg;
         riscv::pte_t           content;
     } tlb_update_t;
 
-    localparam logic [3:0] MODE_SV39 = 4'h8;
-    localparam logic [3:0] MODE_OFF = 4'h0;
-
     // Bits required for representation of physical address space as 4K pages
     // (e.g. 27*4K == 39bit address space).
     localparam PPN4K_WIDTH = 38;

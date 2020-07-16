@@ -19,9 +19,19 @@ package riscv;
     // ----------------------
     // Data and Address length
     // ----------------------
+    typedef enum logic [ModeW-1:0] {
+       ModeOff  = 0,
+       ModeSv32 = 1,
+       ModeSv39 = 8,
+       ModeSv48 = 9,
+       ModeSv57 = 10,
+       ModeSv64 = 11
+    } vm_mode_t;
+
     localparam XLEN = 64;
 
     // Warning: When using STD_CACHE, configuration must be PLEN=56 and VLEN=64
+    // Warning: VLEN must be superior or equal to PLEN
     localparam VLEN       = (XLEN == 32) ? 32 : 64;    // virtual address length
     localparam PLEN       = (XLEN == 32) ? 32 : 56;    // physical address length
 
@@ -29,10 +39,9 @@ package riscv;
     localparam ModeW      = (XLEN == 32) ? 1 : 4;
     localparam ASIDW      = (XLEN == 32) ? 9 : 16;
     localparam PPNW       = (XLEN == 32) ? 22 : 44;
-    localparam SV         = (XLEN == 32) ? 32 : 39;
-    localparam MODE_SV    = (SV == 32) ? 1'b1 : 4'h8;
+    localparam logic [ModeW-1:0] MODE_SV = (XLEN == 32) ? ModeSv32 : ModeSv39;
+    localparam SV         = (MODE_SV == ModeSv32) ? 32 : 39;
     localparam VPN2       = (riscv::VLEN-31 < 8) ? riscv::VLEN-31 : 8;
-    localparam logic[ModeW-1:0] MODE_OFF = '0;
 
     typedef logic [riscv::XLEN-1:0] xlen_t;
 

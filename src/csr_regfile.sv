@@ -453,7 +453,7 @@ module csr_regfile #(
                         // only make ASID_LEN - 1 bit stick, that way software can figure out how many ASID bits are supported
                         sapt.asid = sapt.asid & {{(riscv::ASIDW-AsidWidth){1'b0}}, {AsidWidth{1'b1}}};
                         // only update if we actually support this mode
-                        if (sapt.mode == riscv::MODE_OFF || sapt.mode == riscv::MODE_SV) satp_d = sapt;
+                        if (sapt.mode == riscv::ModeOff || sapt.mode == riscv::MODE_SV) satp_d = sapt;
                     end
                     // changing the mode can have side-effects on address translation (e.g.: other instructions), re-fetch
                     // the next instruction by executing a flush
