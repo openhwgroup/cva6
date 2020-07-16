@@ -532,7 +532,7 @@ module decoder (
                             {7'b000_0001, 3'b111}: instruction_o.op = ariane_pkg::REMUW;
                             default: illegal_instr = 1'b1;
                         endcase
-                      else illegal_instr = 1'b1;
+                      end else illegal_instr = 1'b1;
                 end
                 // --------------------------------
                 // Reg-Immediate Operations
