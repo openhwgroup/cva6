@@ -34,7 +34,7 @@ DSIM_USE_ISS           ?= YES
 DSIM_FILE_LIST ?= -f $(DV_UVMT_CV32_PATH)/uvmt_cv32.flist
 ifeq ($(USE_ISS),YES)
     DSIM_FILE_LIST         += -f $(DV_UVMT_CV32_PATH)/imperas_iss.flist
-    DSIM_USER_COMPILE_ARGS += "+define+ISS"
+    DSIM_USER_COMPILE_ARGS += "+define+ISS+CV32E40P_TRACE_EXECUTION"
     DSIM_RUN_FLAGS         += +ovpcfg="--controlfile $(OVP_CTRL_FILE)"
 endif
 

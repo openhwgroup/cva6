@@ -40,7 +40,7 @@
  */
 module uvmt_cv32_dut_wrap #(// DUT (riscv_core) parameters.
                             // https://github.com/openhwgroup/core-v-docs/blob/master/cores/cv32e40p/CV32E40P_and%20CV32E40_Features_Parameters.pdf
-                            parameter PULP_HWLP           =  0,
+                            parameter PULP_XPULP          =  1,
                                       PULP_CLUSTER        =  0,
                                       FPU                 =  0,
                                       PULP_ZFINX          =  0,
@@ -137,14 +137,15 @@ module uvmt_cv32_dut_wrap #(// DUT (riscv_core) parameters.
 
     // --------------------------------------------
     // instantiate the core
-    cv32e40p_core #(
-                 .PULP_HWLP        (PULP_HWLP),
+    cv32e40p_wrapper #(
+                 .PULP_XPULP       (PULP_XPULP),
                  .PULP_CLUSTER     (PULP_CLUSTER),
                  .FPU              (FPU),
                  .PULP_ZFINX       (PULP_ZFINX),
                  .NUM_MHPMCOUNTERS (NUM_MHPMCOUNTERS)
                 )
-    riscv_core_i
+    //riscv_core_i
+    cv32e40p_wrapper_i
         (
          .clk_i                  ( clknrst_if.clk                 ),
          .rst_ni                 ( clknrst_if.reset_n             ),
@@ -156,6 +157,7 @@ module uvmt_cv32_dut_wrap #(// DUT (riscv_core) parameters.
          .mtvec_addr_i           ( core_cntrl_if.mtvec_addr       ),
          .dm_halt_addr_i         ( core_cntrl_if.dm_halt_addr     ),
          .hart_id_i              ( core_cntrl_if.hart_id          ),
+         .dm_exception_addr_i    ( 32'h1A11_0C00                  ),
 
          .instr_req_o            ( instr_req                      ),
          .instr_gnt_i            ( instr_gnt                      ),
@@ -201,38 +203,38 @@ module uvmt_cv32_dut_wrap #(// DUT (riscv_core) parameters.
              .INSTR_RDATA_WIDTH (INSTR_RDATA_WIDTH)
             )
     ram_i
-        (.clk_i          ( clknrst_if.clk                 ),
-         .rst_ni         ( clknrst_if.reset_n             ),
-         .dm_halt_addr_i ( core_cntrl_if.dm_halt_addr     ),
+        (.clk_i          ( clknrst_if.clk                  ),
+         .rst_ni         ( clknrst_if.reset_n              ),
+         .dm_halt_addr_i ( core_cntrl_if.dm_halt_addr      ),
 
-         .instr_req_i    ( instr_req                      ),
-         .instr_addr_i   ( instr_addr                     ),
-         .instr_rdata_o  ( instr_rdata                    ),
-         .instr_rvalid_o ( instr_rvalid                   ),
-         .instr_gnt_o    ( instr_gnt                      ),
+         .instr_req_i    ( instr_req                       ),
+         .instr_addr_i   ( instr_addr                      ),
+         .instr_rdata_o  ( instr_rdata                     ),
+         .instr_rvalid_o ( instr_rvalid                    ),
+         .instr_gnt_o    ( instr_gnt                       ),
 
-         .data_req_i     ( data_req                       ),
-         .data_addr_i    ( data_addr                      ),
-         .data_we_i      ( data_we                        ),
-         .data_be_i      ( data_be                        ),
-         .data_wdata_i   ( data_wdata                     ),
-         .data_rdata_o   ( data_rdata                     ),
-         .data_rvalid_o  ( data_rvalid                    ),
-         .data_gnt_o     ( data_gnt                       ),
+         .data_req_i     ( data_req                        ),
+         .data_addr_i    ( data_addr                       ),
+         .data_we_i      ( data_we                         ),
+         .data_be_i      ( data_be                         ),
+         .data_wdata_i   ( data_wdata                      ),
+         .data_rdata_o   ( data_rdata                      ),
+         .data_rvalid_o  ( data_rvalid                     ),
+         .data_gnt_o     ( data_gnt                        ),
 
-         .irq_id_i       ( 5'b00000                       ),
-         .irq_ack_i      ( irq_ack                        ),
-         .irq_id_o       ( irq_id_in                      ),
-         .irq_o          ( irq                            ),
+         .irq_id_i       ( 5'b00000                        ),
+         .irq_ack_i      ( irq_ack                         ),
+         .irq_id_o       ( irq_id_in                       ),
+         .irq_o          ( irq                             ),
 
-         .debug_req_o    ( debug_req                      ),
+         .debug_req_o    ( debug_req                       ),
 
-         .pc_core_id_i   ( riscv_core_i.pc_id             ),
+         .pc_core_id_i   ( cv32e40p_wrapper_i.core_i.pc_id ),
 
-         .tests_passed_o ( vp_status_if.tests_passed      ),
-         .tests_failed_o ( vp_status_if.tests_failed      ),
-         .exit_valid_o   ( vp_status_if.exit_valid        ),
-         .exit_value_o   ( vp_status_if.exit_value        )
+         .tests_passed_o ( vp_status_if.tests_passed       ),
+         .tests_failed_o ( vp_status_if.tests_failed       ),
+         .exit_valid_o   ( vp_status_if.exit_valid         ),
+         .exit_value_o   ( vp_status_if.exit_value         )
         ); //ram_i
 
 endmodule : uvmt_cv32_dut_wrap

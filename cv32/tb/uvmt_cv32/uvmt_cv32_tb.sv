@@ -80,10 +80,11 @@ module uvmt_cv32_tb;
       uvmt_cv32_step_compare step_compare (.clknrst_if(clknrst_if),
                                            .step_compare_if(step_compare_if) );
 
-      always @(dut_wrap.riscv_core_i.tracer_i.retire) -> step_compare_if.riscv_retire;
-      assign step_compare_if.insn_pc = dut_wrap.riscv_core_i.tracer_i.insn_pc;
-      assign step_compare_if.riscy_GPR = dut_wrap.riscv_core_i.id_stage_i.registers_i.register_file_i.mem;
+      always @(dut_wrap.cv32e40p_wrapper_i.core_i.tracer_i.retire) -> step_compare_if.riscv_retire;
+      assign step_compare_if.insn_pc   = dut_wrap.cv32e40p_wrapper_i.core_i.tracer_i.insn_pc;
+      assign step_compare_if.riscy_GPR = dut_wrap.cv32e40p_wrapper_i.core_i.id_stage_i.registers_i.register_file_i.mem;
     `endif
+
    /**
     * Test bench entry point.
     */
