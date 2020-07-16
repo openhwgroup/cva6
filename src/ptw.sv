@@ -53,7 +53,7 @@ module ptw #(
     input  logic                    dtlb_hit_i,
     input  logic [riscv::VLEN-1:0]  dtlb_vaddr_i,
     // from CSR file
-    input  logic [riscv::PpnW-1:0]  satp_ppn_i, // ppn from satp
+    input  logic [riscv::PPNW-1:0]  satp_ppn_i, // ppn from satp
     input  logic                    mxr_i,
     // Performance counters
     output logic                    itlb_miss_o,

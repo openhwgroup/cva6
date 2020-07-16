@@ -27,8 +27,8 @@ package riscv;
 
     localparam IS_XLEN64  = (XLEN == 32) ? 1'b0 : 1'b1;
     localparam ModeW      = (XLEN == 32) ? 1 : 4;
-    localparam AsidW      = (XLEN == 32) ? 9 : 16;
-    localparam PpnW       = (XLEN == 32) ? 22 : 44;
+    localparam ASIDW      = (XLEN == 32) ? 9 : 16;
+    localparam PPNW       = (XLEN == 32) ? 22 : 44;
     localparam SV         = (XLEN == 32) ? 32 : 39;
     localparam MODE_SV    = (SV == 32) ? 1'b1 : 4'h8;
     localparam VPN2       = (riscv::VLEN-31 < 8) ? riscv::VLEN-31 : 8;
@@ -110,8 +110,8 @@ package riscv;
 
     typedef struct packed {
         logic [ModeW-1:0] mode;
-        logic [AsidW-1:0] asid;
-        logic [PpnW-1:0]  ppn;
+        logic [ASIDW-1:0] asid;
+        logic [PPNW-1:0]  ppn;
     } satp_t;
 
     // --------------------

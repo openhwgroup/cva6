@@ -50,7 +50,7 @@ module mmu #(
         input logic                             sum_i,
         input logic                             mxr_i,
         // input logic flag_mprv_i,
-        input logic [riscv::PpnW-1:0]           satp_ppn_i,
+        input logic [riscv::PPNW-1:0]           satp_ppn_i,
         input logic [ASID_WIDTH-1:0]            asid_i,
         input logic                             flush_tlb_i,
         // Performance counters

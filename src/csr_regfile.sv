@@ -62,7 +62,7 @@ module csr_regfile #(
     output riscv::priv_lvl_t      ld_st_priv_lvl_o,           // Privilege level at which load and stores should happen
     output logic                  sum_o,
     output logic                  mxr_o,
-    output logic[riscv::PpnW-1:0] satp_ppn_o,
+    output logic[riscv::PPNW-1:0] satp_ppn_o,
     output logic [AsidWidth-1:0] asid_o,
     // external interrupts
     input  logic [1:0]            irq_i,                      // external interrupt in
@@ -451,7 +451,7 @@ module csr_regfile #(
                     else begin
                         sapt      = riscv::satp_t'(csr_wdata);
                         // only make ASID_LEN - 1 bit stick, that way software can figure out how many ASID bits are supported
-                        sapt.asid = sapt.asid & {{(riscv::AsidW-AsidWidth){1'b0}}, {AsidWidth{1'b1}}};
+                        sapt.asid = sapt.asid & {{(riscv::ASIDW-AsidWidth){1'b0}}, {AsidWidth{1'b1}}};
                         // only update if we actually support this mode
                         if (sapt.mode == riscv::MODE_OFF || sapt.mode == riscv::MODE_SV) satp_d = sapt;
                     end

@@ -166,7 +166,7 @@ module ariane #(
   riscv::priv_lvl_t         ld_st_priv_lvl_csr_ex;
   logic                     sum_csr_ex;
   logic                     mxr_csr_ex;
-  logic [riscv::PpnW-1:0]   satp_ppn_csr_ex;
+  logic [riscv::PPNW-1:0]   satp_ppn_csr_ex;
   logic [0:0]               asid_csr_ex;
   logic [11:0]              csr_addr_ex_csr;
   fu_op                     csr_op_commit_csr;

@@ -53,7 +53,7 @@ module load_store_unit #(
     input  riscv::priv_lvl_t         ld_st_priv_lvl_i,         // From CSR register file
     input  logic                     sum_i,                    // From CSR register file
     input  logic                     mxr_i,                    // From CSR register file
-    input  logic [riscv::PpnW-1:0]   satp_ppn_i,               // From CSR register file
+    input  logic [riscv::PPNW-1:0]   satp_ppn_i,               // From CSR register file
     input  logic [ASID_WIDTH-1:0]    asid_i,                   // From CSR register file
     input  logic                     flush_tlb_i,
     // Performance counters
