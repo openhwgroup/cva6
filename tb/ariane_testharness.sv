@@ -102,6 +102,7 @@ module ariane_testharness #(
 
   initial begin
     if (!$value$plusargs("jtag_rbb_enable=%b", jtag_enable)) jtag_enable = 'h0;
+    if (riscv::XLEN != 32 & riscv::XLEN != 64) $error("XLEN different from 32 and 64");
   end
 
   // debug if MUX
