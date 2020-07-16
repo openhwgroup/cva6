@@ -19,35 +19,20 @@ package riscv;
     // ----------------------
     // Data and Address length
     // ----------------------
-    // XLEN configures data length, can be 32 or 64 bits
-    //`define XLEN32bits
-    // PLEN configures physical address length
-    // VLEN configures virtual address length
-    // Warning: When using STD_CACHE, configuration must be PLEN=56 and VLEN=64
-    `ifdef XLEN32bits
-      localparam XLEN = 32;
-      localparam PLEN = 32;
-      localparam VLEN = 32;
-      localparam MODE_SV = 1'b1;  //SV32
-      localparam logic MODE_OFF = 1'b0;
-      localparam logic XLEN64_bit = 1'b0;
-      localparam ModeW = 1;
-      localparam AsidW = 9;
-      localparam PpnW = 22;
-    `else
-      localparam XLEN = 64;
-      localparam PLEN = 56;
-      localparam VLEN = 64;
-      localparam MODE_SV = 4'h8;  //SV39
-      localparam logic[3:0] MODE_OFF = 4'h0;
-      localparam logic XLEN64_bit = 1'b1;
-      localparam ModeW = 4;
-      localparam AsidW = 16;
-      localparam PpnW = 44;
-    `endif
+    localparam XLEN = 64;
 
-    localparam SV = (MODE_SV == 1'b1) ? 32 : 39;
-    localparam VPN2 = (riscv::VLEN-31 < 8) ? riscv::VLEN-31 : 8;
+    // Warning: When using STD_CACHE, configuration must be PLEN=56 and VLEN=64
+    localparam VLEN       = (XLEN == 32) ? 32 : 64;    // virtual address length
+    localparam PLEN       = (XLEN == 32) ? 32 : 56;    // physical address length
+
+    localparam XLEN64_bit = (XLEN == 32) ? 1'b0 : 1'b1;
+    localparam ModeW      = (XLEN == 32) ? 1 : 4;
+    localparam AsidW      = (XLEN == 32) ? 9 : 16;
+    localparam PpnW       = (XLEN == 32) ? 22 : 44;
+    localparam SV         = (XLEN == 32) ? 32 : 39;
+    localparam MODE_SV    = (SV == 32) ? 1'b1 : 4'h8;
+    localparam VPN2       = (riscv::VLEN-31 < 8) ? riscv::VLEN-31 : 8;
+    localparam logic[ModeW-1:0] MODE_OFF = '0;
 
     // --------------------
     // Privilege Spec
