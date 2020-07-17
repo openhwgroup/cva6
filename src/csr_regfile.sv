@@ -276,7 +276,7 @@ module csr_regfile #(
     // ---------------------------
     // CSR Write and update logic
     // ---------------------------
-    logic [63:0] mask;
+    riscv::xlen_t mask;
     always_comb begin : csr_update
         automatic riscv::satp_t sapt;
         automatic riscv::xlen_t instret;
@@ -419,8 +419,8 @@ module csr_regfile #(
                 riscv::CSR_TDATA3:;  // not implemented
                 // sstatus is a subset of mstatus - mask it accordingly
                 riscv::CSR_SSTATUS: begin
-                    mask = ariane_pkg::SMODE_STATUS_WRITE_MASK;
-                    mstatus_d = (mstatus_q & ~mask) | ({{64-riscv::XLEN{1'b0}}, csr_wdata} & mask);
+                    mask = ariane_pkg::SMODE_STATUS_WRITE_MASK[riscv::XLEN-1:0];
+                    mstatus_d = (mstatus_q & ~mask) | (csr_wdata & mask);
                     // hardwire to zero if floating point extension is not present
                     if (!FP_PRESENT) begin
                         mstatus_d.fs = riscv::Off;
@@ -437,8 +437,8 @@ module csr_regfile #(
 
                 riscv::CSR_SIP: begin
                     // only the supervisor software interrupt is write-able, iff delegated
-                    mask = {{64-riscv::XLEN{1'b0}}, riscv::MIP_SSIP & mideleg_q};
-                    mip_d = (mip_q & ~mask[riscv::XLEN-1:0]) | (csr_wdata & mask[riscv::XLEN-1:0]);
+                    mask = riscv::MIP_SSIP & mideleg_q;
+                    mip_d = (mip_q & ~mask) | (csr_wdata & mask);
                 end
 
                 riscv::CSR_STVEC:              stvec_d     = {csr_wdata[riscv::XLEN-1:2], 1'b0, csr_wdata[0]};
@@ -486,18 +486,18 @@ module csr_regfile #(
                            (1 << riscv::INSTR_PAGE_FAULT) |
                            (1 << riscv::LOAD_PAGE_FAULT) |
                            (1 << riscv::STORE_PAGE_FAULT);
-                    medeleg_d = (medeleg_q & ~mask[riscv::XLEN-1:0]) | (csr_wdata & mask[riscv::XLEN-1:0]);
+                    medeleg_d = (medeleg_q & ~mask) | (csr_wdata & mask);
                 end
                 // machine interrupt delegation register
                 // we do not support user interrupt delegation
                 riscv::CSR_MIDELEG: begin
-                    mask = {{64-riscv::XLEN{1'b0}}, riscv::MIP_SSIP | riscv::MIP_STIP | riscv::MIP_SEIP};
-                    mideleg_d = (mideleg_q & ~mask[riscv::XLEN-1:0]) | (csr_wdata & mask[riscv::XLEN-1:0]);
+                    mask = riscv::MIP_SSIP | riscv::MIP_STIP | riscv::MIP_SEIP;
+                    mideleg_d = (mideleg_q & ~mask) | (csr_wdata & mask);
                 end
                 // mask the register so that unsupported interrupts can never be set
                 riscv::CSR_MIE: begin
-                    mask = {{64-riscv::XLEN{1'b0}}, riscv::MIP_SSIP | riscv::MIP_STIP | riscv::MIP_SEIP | riscv::MIP_MSIP | riscv::MIP_MTIP | riscv::MIP_MEIP};
-                    mie_d = (mie_q & ~mask[riscv::XLEN-1:0]) | (csr_wdata & mask[riscv::XLEN-1:0]); // we only support supervisor and M-mode interrupts
+                    mask = riscv::MIP_SSIP | riscv::MIP_STIP | riscv::MIP_SEIP | riscv::MIP_MSIP | riscv::MIP_MTIP | riscv::MIP_MEIP;
+                    mie_d = (mie_q & ~mask) | (csr_wdata & mask); // we only support supervisor and M-mode interrupts
                 end
 
                 riscv::CSR_MTVEC: begin
@@ -513,8 +513,8 @@ module csr_regfile #(
                 riscv::CSR_MCAUSE:             mcause_d    = csr_wdata;
                 riscv::CSR_MTVAL:              mtval_d     = csr_wdata;
                 riscv::CSR_MIP: begin
-                    mask = {{64-riscv::XLEN{1'b0}}, riscv::MIP_SSIP | riscv::MIP_STIP | riscv::MIP_SEIP};
-                    mip_d = (mip_q & ~mask[riscv::XLEN-1:0]) | (csr_wdata & mask[riscv::XLEN-1:0]);
+                    mask = riscv::MIP_SSIP | riscv::MIP_STIP | riscv::MIP_SEIP;
+                    mip_d = (mip_q & ~mask) | (csr_wdata & mask);
                 end
                 // performance counters
                 riscv::CSR_MCYCLE:             cycle_d     = csr_wdata;
