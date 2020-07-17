@@ -15,17 +15,11 @@
 //
 //
 
-`define COVERAGE
-
-
 `ifndef __UVMT_CV32_ISS_WRAP_SV__
 `define __UVMT_CV32_ISS_WRAP_SV__
 
 
-`ifdef COVERAGE
-//`include "class_coverage.svh"
 `include "uvmt_rv32isa_covg.svh"
-`endif
 
 /**
  * Module wrapper for Imperas ISS.
@@ -105,7 +99,6 @@ module uvmt_cv32_iss_wrap
    always @(step_compare_if.ovp_cpu_busWait) cpu.busWait();
    always @(cpu.Retire) -> step_compare_if.ovp_cpu_retire;
 
-`ifdef COVERAGE
     //coverage cov1;
     riscv_32isa_coverage cov1;
     initial begin
@@ -145,7 +138,6 @@ module uvmt_cv32_iss_wrap
    always @(cpu.Retire) begin
        sample();
    end
-`endif
 
    initial begin
       #1;  // time for clknrst_if_dut to set the clk_period

@@ -51,7 +51,6 @@
 #      *_TAG:    Not yet supported (TODO).
 #                
 
-# Head of the master branch as of 2020-05-29
 CV32E40P_REPO   ?= https://github.com/openhwgroup/cv32e40p
 CV32E40P_BRANCH ?= master
 #2020-07-07
