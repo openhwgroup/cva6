@@ -19,7 +19,7 @@ package riscv;
     // ----------------------
     // Data and Address length
     // ----------------------
-    typedef enum logic [ModeW-1:0] {
+    typedef enum logic [3:0] {
        ModeOff  = 0,
        ModeSv32 = 1,
        ModeSv39 = 8,
@@ -39,8 +39,8 @@ package riscv;
     localparam ModeW      = (XLEN == 32) ? 1 : 4;
     localparam ASIDW      = (XLEN == 32) ? 9 : 16;
     localparam PPNW       = (XLEN == 32) ? 22 : 44;
-    localparam logic [ModeW-1:0] MODE_SV = (XLEN == 32) ? ModeSv32 : ModeSv39;
-    localparam SV         = (MODE_SV == ModeSv32) ? 32 : 39;
+    localparam logic [ModeW-1:0] MODE_SV = (XLEN == 32) ? ModeSv32[ModeW-1:0] : ModeSv39[ModeW-1:0];
+    localparam SV         = (MODE_SV == ModeSv32[ModeW-1:0]) ? 32 : 39;
     localparam VPN2       = (riscv::VLEN-31 < 8) ? riscv::VLEN-31 : 8;
 
     typedef logic [riscv::XLEN-1:0] xlen_t;
