@@ -420,7 +420,7 @@ module csr_regfile #(
                 // sstatus is a subset of mstatus - mask it accordingly
                 riscv::CSR_SSTATUS: begin
                     mask = ariane_pkg::SMODE_STATUS_WRITE_MASK[riscv::XLEN-1:0];
-                    mstatus_d = (mstatus_q & ~mask) | (csr_wdata & mask);
+                    mstatus_d = (mstatus_q & ~{{64-riscv::XLEN{1'b0}}, mask}) | {{64-riscv::XLEN{1'b0}}, (csr_wdata & mask)};
                     // hardwire to zero if floating point extension is not present
                     if (!FP_PRESENT) begin
                         mstatus_d.fs = riscv::Off;
@@ -457,7 +457,7 @@ module csr_regfile #(
                         // only make ASID_LEN - 1 bit stick, that way software can figure out how many ASID bits are supported
                         sapt.asid = sapt.asid & {{(riscv::ASIDW-AsidWidth){1'b0}}, {AsidWidth{1'b1}}};
                         // only update if we actually support this mode
-                        if (sapt.mode == riscv::ModeOff || sapt.mode == riscv::MODE_SV) satp_d = sapt;
+                        if (sapt.mode == riscv::ModeOff[riscv::ModeW-1:0] || sapt.mode == riscv::MODE_SV) satp_d = sapt;
                     end
                     // changing the mode can have side-effects on address translation (e.g.: other instructions), re-fetch
                     // the next instruction by executing a flush
