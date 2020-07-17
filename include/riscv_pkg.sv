@@ -93,31 +93,7 @@ package riscv;
         logic         wpri0;  // writes preserved reads ignored
         logic         sie;    // supervisor interrupts enable
         logic         uie;    // user interrupts enable - hardwired to zero
-    } status_rv64_t;
-
-    typedef struct packed {
-        logic         sd;     // signal dirty - read-only - hardwired zero
-        logic [7:0]   wpri3;  // writes preserved reads ignored
-        logic         tsr;    // trap sret
-        logic         tw;     // time wait
-        logic         tvm;    // trap virtual memory
-        logic         mxr;    // make executable readable
-        logic         sum;    // permit supervisor user memory access
-        logic         mprv;   // modify privilege - privilege level for ld/st
-        logic [1:0]   xs;     // extension register - hardwired to zero
-        logic [1:0]   fs;     // extension register - hardwired to zero
-        priv_lvl_t    mpp;    // holds the previous privilege mode up to machine
-        logic [1:0]   wpri2;  // writes preserved reads ignored
-        logic         spp;    // holds the previous privilege mode up to supervisor
-        logic         mpie;   // machine interrupts enable bit active prior to trap
-        logic         wpri1;  // writes preserved reads ignored
-        logic         spie;   // supervisor interrupts enable bit active prior to trap
-        logic         upie;   // user interrupts enable bit active prior to trap - hardwired to zero
-        logic         mie;    // machine interrupts enable
-        logic         wpri0;  // writes preserved reads ignored
-        logic         sie;    // supervisor interrupts enable
-        logic         uie;    // user interrupts enable - hardwired to zero
-    } status_rv32_t;
+    } status_rv_t;
 
     typedef struct packed {
         logic [ModeW-1:0] mode;

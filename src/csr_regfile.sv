@@ -97,7 +97,8 @@ module csr_regfile #(
     logic  dret;  // return from debug mode
     // CSR write causes us to mark the FPU state as dirty
     logic  dirty_fp_state_csr;
-    riscv::status_rv64_t  mstatus_q,  mstatus_d;
+    riscv::status_rv_t    mstatus_q,  mstatus_d;
+    riscv::xlen_t         mstatus_q_toberead;
     riscv::satp_t         satp_q, satp_d;
     riscv::dcsr_t         dcsr_q,     dcsr_d;
     riscv::csr_t  csr_addr;
@@ -144,6 +145,9 @@ module csr_regfile #(
     // ----------------
     // CSR Read logic
     // ----------------
+    assign mstatus_q_toberead = (riscv::XLEN == 64) ? mstatus_q[riscv::XLEN-1:0] :
+                              {mstatus_q.sd, mstatus_q.wpri3[7:0], mstatus_q[22:0]};
+
     always_comb begin : csr_read_process
         // a read access exception can only occur if we attempt to read a CSR which does not exist
         read_access_exception = 1'b0;
@@ -193,7 +197,7 @@ module csr_regfile #(
                 riscv::CSR_TDATA3:;  // not implemented
                 // supervisor registers
                 riscv::CSR_SSTATUS: begin
-                    csr_rdata = mstatus_q[riscv::XLEN-1:0] & ariane_pkg::SMODE_STATUS_READ_MASK[riscv::XLEN-1:0];
+                    csr_rdata = mstatus_q_toberead & ariane_pkg::SMODE_STATUS_READ_MASK[riscv::XLEN-1:0];
                 end
                 riscv::CSR_SIE:                csr_rdata = mie_q & mideleg_q;
                 riscv::CSR_SIP:                csr_rdata = mip_q & mideleg_q;
@@ -212,7 +216,7 @@ module csr_regfile #(
                     end
                 end
                 // machine mode registers
-                riscv::CSR_MSTATUS:            csr_rdata = mstatus_q[riscv::XLEN-1:0];
+                riscv::CSR_MSTATUS:            csr_rdata = mstatus_q_toberead;
                 riscv::CSR_MISA:               csr_rdata = ISA_CODE;
                 riscv::CSR_MEDELEG:            csr_rdata = medeleg_q;
                 riscv::CSR_MIDELEG:            csr_rdata = mideleg_q;
@@ -864,10 +868,7 @@ module csr_regfile #(
     // ----------------------
     always_comb begin : exception_ctrl
         csr_exception_o = {
-            cause: '0,
-            tval: '0,
-            valid : 1'b0
-        }
+            '0, '0, 1'b0
         };
         // ----------------------------------
         // Illegal Access (decode exception)
