@@ -144,7 +144,6 @@ module uvmt_cv32_dut_wrap #(// DUT (riscv_core) parameters.
                  .PULP_ZFINX       (PULP_ZFINX),
                  .NUM_MHPMCOUNTERS (NUM_MHPMCOUNTERS)
                 )
-    //riscv_core_i
     cv32e40p_wrapper_i
         (
          .clk_i                  ( clknrst_if.clk                 ),
