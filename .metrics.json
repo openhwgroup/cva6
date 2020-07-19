@@ -283,7 +283,18 @@
             "wavesFile" :  "dhrystone/dhrystone.vcd",
             "isPass":      "SIMULATION PASSED",
             "seed":        1
-          },
+          }
+        ]
+      }
+    },
+    {
+      "name":        "cv32_xpulp_isa_regression",
+      "description": "XPULP ISA test-programs",
+      "verbose":     "true",
+      "tests": {
+        "resultsDir": "/mux-flow/build/results",
+        "builds":    ["uvmt_cv32"],
+        "list": [
           {
             "name":        "pulp_general_alu",
             "build":       "uvmt_cv32",
