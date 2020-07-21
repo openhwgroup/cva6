@@ -24,7 +24,7 @@ import "DPI-C" function void init_dromajo(string cfg_f_name);
 
 import ariane_pkg::*;
 
-module ariane #(
+module ariane  #(
   parameter ariane_pkg::ariane_cfg_t ArianeCfg     = ariane_pkg::ArianeDefaultConfig
 ) (
   input  logic                         clk_i,
