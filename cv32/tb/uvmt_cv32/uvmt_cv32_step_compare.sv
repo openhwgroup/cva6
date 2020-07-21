@@ -56,10 +56,13 @@
 import uvm_pkg::*;      // needed for the UVM messaging service (`uvm_info(), etc.)
 
 `include "uvm_macros.svh"
+`define CV32E40P_CORE   $root.uvmt_cv32_tb.dut_wrap.cv32e40p_wrapper_i.core_i
+`define CV32E40P_TRACER $root.uvmt_cv32_tb.dut_wrap.cv32e40p_wrapper_i.core_i.tracer_i
+
 module uvmt_cv32_step_compare
-  (
-   uvma_clknrst_if    clknrst_if,
-   uvmt_cv32_step_compare_if step_compare_if
+(
+   uvma_clknrst_if            clknrst_if,
+   uvmt_cv32_step_compare_if  step_compare_if
 );
 
    bit  Clk;
@@ -95,15 +98,16 @@ module uvmt_cv32_step_compare
       step_compare_if.num_pc_checks++;
 
       // Compare GPR's
-      // Assuming that $root.uvmt_cv32_tb.dut_wrap.riscv_core_i.riscv_tracer_i.insn_regs_write size is never > 1.  Check this.
+      // Assuming that `CV32E40P_TRACER.insn_regs_write size is never > 1.  Check this.
       // Note that dut_wrap is found 1 level up
-      insn_regs_write_size = $root.uvmt_cv32_tb.dut_wrap.riscv_core_i.tracer_i.insn_regs_write.size();
+      //insn_regs_write_size = `CV32E40P_TRACER.insn_regs_write.size();
+      insn_regs_write_size = `CV32E40P_TRACER.insn_regs_write.size();
       if (insn_regs_write_size > 1) begin
         `uvm_error("Step-and-Compare",  $sformatf("Assume insn_regs_write size is 0 or 1 but is %0d", insn_regs_write_size))
       end
-      else if (insn_regs_write_size == 1) begin // Get $root.uvmt_cv32_tb.dut_wrap.riscv_core_i.riscv_tracer_i.insn_regs_write fields if size is 1
-         insn_regs_write_addr = $root.uvmt_cv32_tb.dut_wrap.riscv_core_i.tracer_i.insn_regs_write[0].addr;
-         insn_regs_write_value = $root.uvmt_cv32_tb.dut_wrap.riscv_core_i.tracer_i.insn_regs_write[0].value;
+      else if (insn_regs_write_size == 1) begin // Get `CV32E40P_TRACER.insn_regs_write fields if size is 1
+         insn_regs_write_addr  = `CV32E40P_TRACER.insn_regs_write[0].addr;
+         insn_regs_write_value = `CV32E40P_TRACER.insn_regs_write[0].value;
          `uvm_info("Step-and-Compare", $sformatf("insn_regs_write queue[0] addr=0x%0x, value=0x%0x", insn_regs_write_addr, insn_regs_write_value), UVM_DEBUG)
       end
       
@@ -124,59 +128,59 @@ module uvmt_cv32_step_compare
            ignore = 0;
            csr_val = 0;
            case (index)
-             "mstatus": csr_val = {$root.uvmt_cv32_tb.dut_wrap.riscv_core_i.cs_registers_i.mstatus_q.mprv, // Not documented in Rev 4.5 of user_manual.doc but is in the design
+             "mstatus": csr_val = {`CV32E40P_CORE.cs_registers_i.mstatus_q.mprv, // Not documented in Rev 4.5 of user_manual.doc but is in the design
                                    4'b0,
-                                   $root.uvmt_cv32_tb.dut_wrap.riscv_core_i.cs_registers_i.mstatus_q.mpp,
+                                   `CV32E40P_CORE.cs_registers_i.mstatus_q.mpp,
                                    3'b0,
-                                   $root.uvmt_cv32_tb.dut_wrap.riscv_core_i.cs_registers_i.mstatus_q.mpie,
+                                   `CV32E40P_CORE.cs_registers_i.mstatus_q.mpie,
                                    2'b0,
-                                   $root.uvmt_cv32_tb.dut_wrap.riscv_core_i.cs_registers_i.mstatus_q.upie,
-                                   $root.uvmt_cv32_tb.dut_wrap.riscv_core_i.cs_registers_i.mstatus_q.mie,
+                                   `CV32E40P_CORE.cs_registers_i.mstatus_q.upie,
+                                   `CV32E40P_CORE.cs_registers_i.mstatus_q.mie,
                                    2'b0,
-                                   $root.uvmt_cv32_tb.dut_wrap.riscv_core_i.cs_registers_i.mstatus_q.uie};
-             "misa"    : csr_val = $root.uvmt_cv32_tb.dut_wrap.riscv_core_i.cs_registers_i.MISA_VALUE;
+                                   `CV32E40P_CORE.cs_registers_i.mstatus_q.uie};
+             "misa"    : csr_val = `CV32E40P_CORE.cs_registers_i.MISA_VALUE;
              // MT: 2020-07-09
-             "mie"     : csr_val = $root.uvmt_cv32_tb.dut_wrap.riscv_core_i.cs_registers_i.mie_q;
-             //"mie"     : csr_val = {$root.uvmt_cv32_tb.dut_wrap.riscv_core_i.cs_registers_i.mie_q.irq_external,
+             "mie"     : csr_val = `CV32E40P_CORE.cs_registers_i.mie_q;
+             //"mie"     : csr_val = {`CV32E40P_CORE.cs_registers_i.mie_q.irq_external,
              //                       3'b0,
-             //                       $root.uvmt_cv32_tb.dut_wrap.riscv_core_i.cs_registers_i.mie_q.irq_timer,
+             //                       `CV32E40P_CORE.cs_registers_i.mie_q.irq_timer,
              //                       3'b0,
-             //                       $root.uvmt_cv32_tb.dut_wrap.riscv_core_i.cs_registers_i.mie_q.irq_software,
+             //                       `CV32E40P_CORE.cs_registers_i.mie_q.irq_software,
              //                       3'b0};
 
              // MT: 2020-06-11
-             //"miex"    : csr_val = $root.uvmt_cv32_tb.dut_wrap.riscv_core_i.cs_registers_i.miex_q;
-             "mtvec"   : csr_val = {$root.uvmt_cv32_tb.dut_wrap.riscv_core_i.cs_registers_i.mtvec_q, 6'h0, 2'b01};
-             "mtvecx"  : csr_val = {$root.uvmt_cv32_tb.dut_wrap.riscv_core_i.cs_registers_i.mtvec_q, 6'h0, 2'b01};
-             "mscratch": csr_val = $root.uvmt_cv32_tb.dut_wrap.riscv_core_i.cs_registers_i.mscratch_q;
-             "mepc"    : csr_val = $root.uvmt_cv32_tb.dut_wrap.riscv_core_i.cs_registers_i.mepc_q;
-             "mcause"  : csr_val = {$root.uvmt_cv32_tb.dut_wrap.riscv_core_i.cs_registers_i.mcause_q[5], 
+             //"miex"    : csr_val = `CV32E40P_CORE.cs_registers_i.miex_q;
+             "mtvec"   : csr_val = {`CV32E40P_CORE.cs_registers_i.mtvec_q, 6'h0, 2'b01};
+             "mtvecx"  : csr_val = {`CV32E40P_CORE.cs_registers_i.mtvec_q, 6'h0, 2'b01};
+             "mscratch": csr_val = `CV32E40P_CORE.cs_registers_i.mscratch_q;
+             "mepc"    : csr_val = `CV32E40P_CORE.cs_registers_i.mepc_q;
+             "mcause"  : csr_val = {`CV32E40P_CORE.cs_registers_i.mcause_q[5], 
                                     25'b0, 
-                                    $root.uvmt_cv32_tb.dut_wrap.riscv_core_i.cs_registers_i.mcause_q[5:0]};
+                                    `CV32E40P_CORE.cs_registers_i.mcause_q[5:0]};
              // MT: 2020-06-11
-             //"mip"     : csr_val = {$root.uvmt_cv32_tb.dut_wrap.riscv_core_i.cs_registers_i.mip.irq_nmi,  
-             //                       $root.uvmt_cv32_tb.dut_wrap.riscv_core_i.cs_registers_i.mip.irq_fast,
+             //"mip"     : csr_val = {`CV32E40P_CORE.cs_registers_i.mip.irq_nmi,  
+             //                       `CV32E40P_CORE.cs_registers_i.mip.irq_fast,
              //                       4'b0, // [15:12] not defined
-             //                       $root.uvmt_cv32_tb.dut_wrap.riscv_core_i.cs_registers_i.mip.irq_external,
+             //                       `CV32E40P_CORE.cs_registers_i.mip.irq_external,
              //                       3'b0, // [10:8] not defined
-             //                       $root.uvmt_cv32_tb.dut_wrap.riscv_core_i.cs_registers_i.mip.irq_timer,
+             //                       `CV32E40P_CORE.cs_registers_i.mip.irq_timer,
              //                       3'b0, // [6:4] not defined
-             //                       $root.uvmt_cv32_tb.dut_wrap.riscv_core_i.cs_registers_i.mip.irq_software,
+             //                       `CV32E40P_CORE.cs_registers_i.mip.irq_software,
              //                       3'b0}; // [2:0] not defined
-             //"mipx"    : csr_val = $root.uvmt_cv32_tb.dut_wrap.riscv_core_i.cs_registers_i.mipx;
-             "mhartid" : csr_val = $root.uvmt_cv32_tb.dut_wrap.riscv_core_i.cs_registers_i.hart_id_i; 
+             //"mipx"    : csr_val = `CV32E40P_CORE.cs_registers_i.mipx;
+             "mhartid" : csr_val = `CV32E40P_CORE.cs_registers_i.hart_id_i; 
              //"mhartid" : csr_val = {21'b0, 
-             //                       $root.uvmt_cv32_tb.dut_wrap.riscv_core_i.cs_registers_i.cluster_id_i[5:0], 
+             //                       `CV32E40P_CORE.cs_registers_i.cluster_id_i[5:0], 
              //                       1'b0, 
-             //                       $root.uvmt_cv32_tb.dut_wrap.riscv_core_i.cs_registers_i.core_id_i[3:0]};
-             "dcsr"      : csr_val = $root.uvmt_cv32_tb.dut_wrap.riscv_core_i.cs_registers_i.dcsr_q;     
-             "dpc"       : csr_val = $root.uvmt_cv32_tb.dut_wrap.riscv_core_i.cs_registers_i.depc_q;       
-             "dscratch0" : csr_val = $root.uvmt_cv32_tb.dut_wrap.riscv_core_i.cs_registers_i.dscratch0_q;
-             "dscratch1" : csr_val = $root.uvmt_cv32_tb.dut_wrap.riscv_core_i.cs_registers_i.dscratch1_q;
-             "pmpcfg0"   : csr_val = $root.uvmt_cv32_tb.dut_wrap.riscv_core_i.cs_registers_i.pmp_reg_q.pmpcfg_packed[0];
-             "pmpcfg1"   : csr_val = $root.uvmt_cv32_tb.dut_wrap.riscv_core_i.cs_registers_i.pmp_reg_q.pmpcfg_packed[1];
-             "pmpcfg2"   : csr_val = $root.uvmt_cv32_tb.dut_wrap.riscv_core_i.cs_registers_i.pmp_reg_q.pmpcfg_packed[2];
-             "pmpcfg3"   : csr_val = $root.uvmt_cv32_tb.dut_wrap.riscv_core_i.cs_registers_i.pmp_reg_q.pmpcfg_packed[3];
+             //                       `CV32E40P_CORE.cs_registers_i.core_id_i[3:0]};
+             "dcsr"      : csr_val = `CV32E40P_CORE.cs_registers_i.dcsr_q;     
+             "dpc"       : csr_val = `CV32E40P_CORE.cs_registers_i.depc_q;       
+             "dscratch0" : csr_val = `CV32E40P_CORE.cs_registers_i.dscratch0_q;
+             "dscratch1" : csr_val = `CV32E40P_CORE.cs_registers_i.dscratch1_q;
+             "pmpcfg0"   : csr_val = `CV32E40P_CORE.cs_registers_i.pmp_reg_q.pmpcfg_packed[0];
+             "pmpcfg1"   : csr_val = `CV32E40P_CORE.cs_registers_i.pmp_reg_q.pmpcfg_packed[1];
+             "pmpcfg2"   : csr_val = `CV32E40P_CORE.cs_registers_i.pmp_reg_q.pmpcfg_packed[2];
+             "pmpcfg3"   : csr_val = `CV32E40P_CORE.cs_registers_i.pmp_reg_q.pmpcfg_packed[3];
              "time"   : ignore = 1;
              default: begin
                 `uvm_error("STEP_COMPARE", $sformatf("index=%s does not match a CSR name", index))

@@ -38,7 +38,7 @@ VCS_USE_ISS           ?= YES
 VCS_FILE_LIST ?= -f $(DV_UVMT_CV32_PATH)/uvmt_cv32.flist
 ifeq ($(VCS_USE_ISS),YES)
     VCS_FILE_LIST         += -f $(DV_UVMT_CV32_PATH)/imperas_iss.flist
-    VCS_USER_COMPILE_ARGS += "+define+ISS"
+    VCS_USER_COMPILE_ARGS += "+define+ISS+CV32E40P_TRACE_EXECUTION"
     VCS_RUN_FLAGS         +="+USE_ISS"
 endif
 

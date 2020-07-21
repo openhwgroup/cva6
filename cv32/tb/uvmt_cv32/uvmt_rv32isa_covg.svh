@@ -1222,106 +1222,113 @@ class riscv_32isa_coverage;
     function void sample(input ins_t ins);
         check_compressed(ins);
         case (ins.ins_str)
-            "add"    : begin ins.asm=ADD; add_cg.sample(ins); end
-            "addi"    : begin ins.asm=ADDI; addi_cg.sample(ins); end
-            "and"    : begin ins.asm=AND; and_cg.sample(ins); end
-            "andi"    : begin ins.asm=ANDI; andi_cg.sample(ins); end
-            "auipc"    : begin ins.asm=AUIPC; auipc_cg.sample(ins); end
-            "beq"    : begin ins.asm=BEQ; beq_cg.sample(ins); end
-            "bge"    : begin ins.asm=BGE; bge_cg.sample(ins); end
-            "bgeu"    : begin ins.asm=BGEU; bgeu_cg.sample(ins); end
-            "blt"    : begin ins.asm=BLT; blt_cg.sample(ins); end
-            "bltu"    : begin ins.asm=BLTU; bltu_cg.sample(ins); end
-            "bne"    : begin ins.asm=BNE; bne_cg.sample(ins); end
-            "ebreak"    : begin ins.asm=EBREAK; ebreak_cg.sample(ins); end
-            "ecall"    : begin ins.asm=ECALL; ecall_cg.sample(ins); end
-            "fence"    : begin ins.asm=FENCE; fence_cg.sample(ins); end
-            "jal"    : begin ins.asm=JAL; jal_cg.sample(ins); end
-            "jalr"    : begin
-                gpr_name_t r0, r1;
-                ins.asm=JALR;
-                if (ins.ops[0].key[0] == "R")
-                    r0 = get_gpr_name(ins.ops[0].val, ins.ops[0].key, "jalr");
-                else
-                    r0 = gpr_none;
-                if (ins.ops[1].key[1] == "R")
-                    r1 = get_gpr_name(ins.ops[1].val, ins.ops[1].key, "jalr");
-                else
-                    r1 = gpr_none;
-                jalr_cg.sample(ins, r0, r1);
-            end
-            "lb"    : begin ins.asm=LB; lb_cg.sample(ins); end
-            "lbu"    : begin ins.asm=LBU; lbu_cg.sample(ins); end
-            "lh"    : begin ins.asm=LH; lh_cg.sample(ins); end
-            "lhu"    : begin ins.asm=LHU; lhu_cg.sample(ins); end
-            "lui"    : begin ins.asm=LUI; lui_cg.sample(ins); end
-            "lw"    : begin ins.asm=LW; lw_cg.sample(ins); end
-            "nop"    : begin ins.asm=NOP; nop_cg.sample(ins); end
-            "or"    : begin ins.asm=OR; or_cg.sample(ins); end
-            "ori"    : begin ins.asm=ORI; ori_cg.sample(ins); end
-            "sb"    : begin ins.asm=SH; sb_cg.sample(ins); end
-            "sh"    : begin ins.asm=SH; sh_cg.sample(ins); end
-            "sll"    : begin ins.asm=SLL; sll_cg.sample(ins); end
-            "slli"    : begin ins.asm=SLLI; slli_cg.sample(ins); end
-            "slt"    : begin ins.asm=SLT; slt_cg.sample(ins); end
-            "slti"    : begin ins.asm=SLTI; slti_cg.sample(ins); end
-            "sltiu"    : begin ins.asm=SLTIU; sltiu_cg.sample(ins); end
-            "sltu"    : begin ins.asm=SLTU; sltu_cg.sample(ins); end
-            "sra"    : begin ins.asm=SRA; sra_cg.sample(ins); end
-            "srai"    : begin ins.asm=SRAI; srai_cg.sample(ins); end
-            "srl"    : begin ins.asm=SRL; srl_cg.sample(ins); end
-            "srli"    : begin ins.asm=SRLI; srli_cg.sample(ins); end
-            "sub"    : begin ins.asm=SUB; sub_cg.sample(ins); end
-            "sw"    : begin ins.asm=SW; sw_cg.sample(ins); end
-            "xor"    : begin ins.asm=XOR; xor_cg.sample(ins); end
-            "xori"    : begin ins.asm=XORI; xori_cg.sample(ins); end
-            "mul"    : begin ins.asm=MUL; mul_cg.sample(ins); end
-            "mulh"    : begin ins.asm=MULH; mulh_cg.sample(ins); end
-            "mulhu"    : begin ins.asm=MULHU; mulhu_cg.sample(ins); end
-            "mulhsu"    : begin ins.asm=MULHSU; mulhsu_cg.sample(ins); end
-            "div"    : begin ins.asm=DIV; div_cg.sample(ins); end
-            "rem"    : begin ins.asm=REM; rem_cg.sample(ins); end
-            "divu"    : begin ins.asm=DIVU; divu_cg.sample(ins); end
-            "remu"    : begin ins.asm=REMU; remu_cg.sample(ins); end
-            "c.lwsp"    : begin ins.asm=C_LWSP; c_lwsp_cg.sample(ins); end
+            "add"        : begin
+                             ins.asm=ADD;
+                             add_cg.sample(ins);
+                             `uvm_info("RV32ISA Coverage", $sformatf("Coverage note: ins [%0s] being covered", ins.ins_str), UVM_HIGH)
+                           end
+            "addi"       : begin ins.asm=ADDI;    addi_cg.sample(ins);   end
+            "and"        : begin ins.asm=AND;     and_cg.sample(ins);    end
+            "andi"       : begin ins.asm=ANDI;    andi_cg.sample(ins);   end
+            "auipc"      : begin ins.asm=AUIPC;   auipc_cg.sample(ins);  end
+            "beq"        : begin ins.asm=BEQ;     beq_cg.sample(ins);    end
+            "bge"        : begin ins.asm=BGE;     bge_cg.sample(ins);    end
+            "bgeu"       : begin ins.asm=BGEU;    bgeu_cg.sample(ins);   end
+            "blt"        : begin ins.asm=BLT;     blt_cg.sample(ins);    end
+            "bltu"       : begin ins.asm=BLTU;    bltu_cg.sample(ins);   end
+            "bne"        : begin ins.asm=BNE;     bne_cg.sample(ins);    end
+            "ebreak"     : begin ins.asm=EBREAK;  ebreak_cg.sample(ins); end
+            "ecall"      : begin ins.asm=ECALL;   ecall_cg.sample(ins);  end
+            "fence"      : begin ins.asm=FENCE;   fence_cg.sample(ins);  end
+            "jal"        : begin ins.asm=JAL;     jal_cg.sample(ins);    end
+            "jalr"       : begin
+                            gpr_name_t r0, r1;
+                            ins.asm=JALR;
+                            if (ins.ops[0].key[0] == "R")
+                              r0 = get_gpr_name(ins.ops[0].val, ins.ops[0].key, "jalr");
+                            else
+                              r0 = gpr_none;
+                            if (ins.ops[1].key[1] == "R")
+                              r1 = get_gpr_name(ins.ops[1].val, ins.ops[1].key, "jalr");
+                            else
+                              r1 = gpr_none;
+                            jalr_cg.sample(ins, r0, r1);
+                           end
+            "lb"         : begin ins.asm=LB;      lb_cg.sample(ins);      end
+            "lbu"        : begin ins.asm=LBU;     lbu_cg.sample(ins);     end
+            "lh"         : begin ins.asm=LH;      lh_cg.sample(ins);      end
+            "lhu"        : begin ins.asm=LHU;     lhu_cg.sample(ins);     end
+            "lui"        : begin ins.asm=LUI;     lui_cg.sample(ins);     end
+            "lw"         : begin ins.asm=LW;      lw_cg.sample(ins);      end
+            "nop"        : begin ins.asm=NOP;     nop_cg.sample(ins);     end
+            "or"         : begin ins.asm=OR;      or_cg.sample(ins);      end
+            "ori"        : begin ins.asm=ORI;     ori_cg.sample(ins);     end
+            "sb"         : begin ins.asm=SH;      sb_cg.sample(ins);      end
+            "sh"         : begin ins.asm=SH;      sh_cg.sample(ins);      end
+            "sll"        : begin ins.asm=SLL;     sll_cg.sample(ins);     end
+            "slli"       : begin ins.asm=SLLI;    slli_cg.sample(ins);    end
+            "slt"        : begin ins.asm=SLT;     slt_cg.sample(ins);     end
+            "slti"       : begin ins.asm=SLTI;    slti_cg.sample(ins);    end
+            "sltiu"      : begin ins.asm=SLTIU;   sltiu_cg.sample(ins);   end
+            "sltu"       : begin ins.asm=SLTU;    sltu_cg.sample(ins);    end
+            "sra"        : begin ins.asm=SRA;     sra_cg.sample(ins);     end
+            "srai"       : begin ins.asm=SRAI;    srai_cg.sample(ins);    end
+            "srl"        : begin ins.asm=SRL;     srl_cg.sample(ins);     end
+            "srli"       : begin ins.asm=SRLI;    srli_cg.sample(ins);    end
+            "sub"        : begin ins.asm=SUB;     sub_cg.sample(ins);     end
+            "sw"         : begin ins.asm=SW;      sw_cg.sample(ins);      end
+            "xor"        : begin ins.asm=XOR;     xor_cg.sample(ins);     end
+            "xori"       : begin ins.asm=XORI;    xori_cg.sample(ins);    end
+            "mul"        : begin ins.asm=MUL;     mul_cg.sample(ins);     end
+            "mulh"       : begin ins.asm=MULH;    mulh_cg.sample(ins);    end
+            "mulhu"      : begin ins.asm=MULHU;   mulhu_cg.sample(ins);   end
+            "mulhsu"     : begin ins.asm=MULHSU;  mulhsu_cg.sample(ins);  end
+            "div"        : begin ins.asm=DIV;     div_cg.sample(ins);     end
+            "rem"        : begin ins.asm=REM;     rem_cg.sample(ins);     end
+            "divu"       : begin ins.asm=DIVU;    divu_cg.sample(ins);    end
+            "remu"       : begin ins.asm=REMU;    remu_cg.sample(ins);    end
+            "c.lwsp"     : begin ins.asm=C_LWSP;  c_lwsp_cg.sample(ins);  end
             "c.flwsp"    : begin ins.asm=C_FLWSP; c_flwsp_cg.sample(ins); end
-            "c.swsp"    : begin ins.asm=C_SWSP; c_swsp_cg.sample(ins); end
+            "c.swsp"     : begin ins.asm=C_SWSP;  c_swsp_cg.sample(ins);  end
             "c.fswsp"    : begin ins.asm=C_FSWSP; c_fswsp_cg.sample(ins); end
-            "c.lw"    : begin ins.asm=C_LW; c_lw_cg.sample(ins); end
-            "c.flw"    : begin ins.asm=C_FLW; c_flw_cg.sample(ins); end
-            "c.sw"    : begin ins.asm=C_SW; c_sw_cg.sample(ins); end
-            "c.fsw"    : begin ins.asm=C_FSW; c_fsw_cg.sample(ins); end
-            "c.jal"    : begin ins.asm=C_JAL; c_jal_cg.sample(ins); end
-            "c.jalr"    : begin
-                gpr_name_t r0, r1;
-                ins.asm=C_JALR;
-                if (ins.ops[0].key[0] == "R")
-                    r0 = get_gpr_name(ins.ops[0].val, ins.ops[0].key, "c.jalr");
-                else
-                    r0 = gpr_none;
-                if (ins.ops[1].key[1] == "R")
-                    r1 = get_gpr_name(ins.ops[1].val, ins.ops[1].key, "c.jalr");
-                else
-                    r1 = gpr_none;
-                c_jalr_cg.sample(ins, r0, r1);
-            end
-            "c.li"    : begin ins.asm=C_LI; c_li_cg.sample(ins); end
-            "c.lui"    : begin ins.asm=C_LUI; c_lui_cg.sample(ins); end
-            "c.addi"    : begin ins.asm=C_ADDI; c_addi_cg.sample(ins); end
-            "c.addi16sp"    : begin ins.asm=C_ADDI16SP; c_addi16sp_cg.sample(ins); end
-            "c.addi4spn"    : begin ins.asm=C_ADDI4SPN; c_addi4spn_cg.sample(ins); end
-            "c.slli"    : begin ins.asm=C_SLLI; c_slli_cg.sample(ins); end
-            "c.srli"    : begin ins.asm=C_SRLI; c_srli_cg.sample(ins); end
-            "c.srai"    : begin ins.asm=C_SRAI; c_srai_cg.sample(ins); end
-            "c.andi"    : begin ins.asm=C_ANDI; c_andi_cg.sample(ins); end
-            "c.add"    : begin ins.asm=C_ADD; c_add_cg.sample(ins); end
-            "c.and"    : begin ins.asm=C_AND; c_and_cg.sample(ins); end
-            "c.or"    : begin ins.asm=C_OR; c_or_cg.sample(ins); end
-            "c.xor"    : begin ins.asm=C_XOR; c_xor_cg.sample(ins); end
-            "c.sub"    : begin ins.asm=C_SUB; c_sub_cg.sample(ins); end
-            "c.nop"    : begin ins.asm=C_NOP; c_nop_cg.sample(ins); end
-            "c.ebreak"    : begin ins.asm=C_EBREAK; c_ebreak_cg.sample(ins); end
-            default: begin ins.asm=NOP; end /*$display("Coverage warning: ins [%0s] not yet included in being covered", ins.ins_str);*/ //end
+            "c.lw"       : begin ins.asm=C_LW;    c_lw_cg.sample(ins);    end
+            "c.flw"      : begin ins.asm=C_FLW;   c_flw_cg.sample(ins);   end
+            "c.sw"       : begin ins.asm=C_SW;    c_sw_cg.sample(ins);    end
+            "c.fsw"      : begin ins.asm=C_FSW;   c_fsw_cg.sample(ins);   end
+            "c.jal"      : begin ins.asm=C_JAL;   c_jal_cg.sample(ins);   end
+            "c.jalr"     : begin
+                             gpr_name_t r0, r1;
+                             ins.asm=C_JALR;
+                             if (ins.ops[0].key[0] == "R")
+                               r0 = get_gpr_name(ins.ops[0].val, ins.ops[0].key, "c.jalr");
+                             else
+                               r0 = gpr_none;
+                             if (ins.ops[1].key[1] == "R")
+                               r1 = get_gpr_name(ins.ops[1].val, ins.ops[1].key, "c.jalr");
+                             else
+                               r1 = gpr_none;
+                            c_jalr_cg.sample(ins, r0, r1);
+                           end
+            "c.li"       : begin ins.asm=C_LI;       c_li_cg.sample(ins);       end
+            "c.lui"      : begin ins.asm=C_LUI;      c_lui_cg.sample(ins);      end
+            "c.addi"     : begin ins.asm=C_ADDI;     c_addi_cg.sample(ins);     end
+            "c.addi16sp" : begin ins.asm=C_ADDI16SP; c_addi16sp_cg.sample(ins); end
+            "c.addi4spn" : begin ins.asm=C_ADDI4SPN; c_addi4spn_cg.sample(ins); end
+            "c.slli"     : begin ins.asm=C_SLLI;     c_slli_cg.sample(ins);     end
+            "c.srli"     : begin ins.asm=C_SRLI;     c_srli_cg.sample(ins);     end
+            "c.srai"     : begin ins.asm=C_SRAI;     c_srai_cg.sample(ins);     end
+            "c.andi"     : begin ins.asm=C_ANDI;     c_andi_cg.sample(ins);     end
+            "c.add"      : begin ins.asm=C_ADD;      c_add_cg.sample(ins);      end
+            "c.and"      : begin ins.asm=C_AND;      c_and_cg.sample(ins);      end
+            "c.or"       : begin ins.asm=C_OR;       c_or_cg.sample(ins);       end
+            "c.xor"      : begin ins.asm=C_XOR;      c_xor_cg.sample(ins);      end
+            "c.sub"      : begin ins.asm=C_SUB;      c_sub_cg.sample(ins);      end
+            "c.nop"      : begin ins.asm=C_NOP;      c_nop_cg.sample(ins);      end
+            "c.ebreak"   : begin ins.asm=C_EBREAK;   c_ebreak_cg.sample(ins);   end
+            default      : begin
+                             //ins.asm=NOP;
+                             `uvm_info("RV32ISA Coverage", $sformatf("Coverage warning: ins [%0s] not yet included in being covered", ins.ins_str), UVM_HIGH)
+                           end
         endcase
     endfunction: sample
 

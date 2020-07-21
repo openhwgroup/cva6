@@ -23,7 +23,9 @@
 
 XRUN              = xrun
 XRUN_UVMHOME_ARG ?= CDNS-1.2-ML
-XRUN_COMP_FLAGS       ?= -64bit -disable_sem2009 -access +rwc -q -clean -sv -uvm -uvmhome $(XRUN_UVMHOME_ARG) $(TIMESCALE) $(SV_CMP_FLAGS)
+XRUN_COMP_FLAGS  ?= -64bit -disable_sem2009 -access +rwc -q -clean \
+                   -top uvmt_cv32_tb -sv -uvm -uvmhome $(XRUN_UVMHOME_ARG) \
+                   $(TIMESCALE) $(SV_CMP_FLAGS)
 XRUN_DIR         ?= xcelium.d
 XRUN_GUI         ?=
 XRUN_SINGLE_STEP ?=
@@ -34,7 +36,7 @@ XRUN_SINGLE_STEP ?=
 XRUN_FILE_LIST ?= -f $(DV_UVMT_CV32_PATH)/uvmt_cv32.flist
 ifeq ($(USE_ISS),YES)
     XRUN_FILE_LIST += -f $(DV_UVMT_CV32_PATH)/imperas_iss.flist
-    XRUN_USER_COMPILE_ARGS += "+define+ISS"
+    XRUN_USER_COMPILE_ARGS += "+define+ISS+CV32E40P_TRACE_EXECUTION"
     XRUN_PLUSARGS +="+USE_ISS"
 #     XRUN_PLUSARGS += +USE_ISS +ovpcfg="--controlfile $(OVP_CTRL_FILE)"
 endif
