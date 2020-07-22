@@ -139,7 +139,7 @@ int main(int argc, char *argv[])
       printf("ERROR: CSR MIE not 0x0!\n\n");
       ++err_cnt;
     }
-    if (mtvec_rval != 0x0) {
+    if (mtvec_rval != 0x0001) {
       printf("ERROR: CSR MTVEC not 0x0!\n\n");
       ++err_cnt;
     }
@@ -149,27 +149,23 @@ int main(int argc, char *argv[])
     __asm__ volatile("csrr %0, 0xF13" : "=r"(mimpid_rval));
     __asm__ volatile("csrr %0, 0xF14" : "=r"(mhartid_rval));
 
-    /* Check MVENDOR CSR: should be 0 */
-    if (mvendorid_rval != 0x0) {
+    if (mvendorid_rval != 0x0602) {
       printf("ERROR: CSR MVENDOR not zero!\n\n");
       ++err_cnt;
     }
 
-    /* Check MARCHID CSR: should be 0 */
     if (marchid_rval != 0x0) {
       printf("ERROR: CSR MARCHID not zero!\n\n");
       ++err_cnt;
     }
 
-    /* Check MIMPLID CSR: should be 0 */
     if (mimpid_rval != 0x0) {
       printf("ERROR: CSR MIMPLID not zero!\n\n");
       ++err_cnt;
     }
 
-    /* Check MHARTID CSR: fail if its zero, */
-    if (mhartid_rval == 0x0) {
-      printf("ERROR: CSR MHARTID returned zero!\n\n");
+    if (mhartid_rval != 0x0) {
+      printf("ERROR: CSR MHARTID not zero!\n\n");
       ++err_cnt;
     }
 
@@ -195,6 +191,7 @@ int main(int argc, char *argv[])
 	if (!err_cnt) {
       return EXIT_SUCCESS;
 	} else {
+	  // TODO: drive virtual peripheral in TB to signal testcase failure
       return EXIT_FAILURE;
 	}
 

@@ -8,10 +8,12 @@
 // CONDITIONS OF ANY KIND, either express or implied. See the License for the
 // specific language governing permissions and limitations under the License.
 
-// Wrapper for a RI5CY testbench, containing RI5CY, Memory and stdout peripheral
+// Wrapper for a CV32E40P testbench, containing CV32E40P, Memory and stdout peripheral
 // Contributor: Robert Balas <balasr@student.ethz.ch>
+// Module renamed from riscv_wrapper to cv32e40p_tb_wrapper because (1) the
+// name of the core changed, and (2) the design has a cv32e40p_wrapper module.
 
-module riscv_wrapper
+module cv32e40p_tb_wrapper
     #(parameter // Parameters used by TB
                 INSTR_RDATA_WIDTH = 32,
                 RAM_ADDR_WIDTH    = 20,
@@ -166,4 +168,4 @@ module riscv_wrapper
          .exit_valid_o   ( exit_valid_o                   ),
          .exit_value_o   ( exit_value_o                   ));
 
-endmodule // riscv_wrapper
+endmodule // cv32e40p_tb_wrapper
