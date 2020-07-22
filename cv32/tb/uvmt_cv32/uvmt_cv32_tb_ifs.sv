@@ -172,7 +172,7 @@ interface uvmt_cv32_core_cntrl_if (
     mtvec_addr        = 32'h0000_0000;
     dm_halt_addr      = 32'h1A11_0800;
     dm_exception_addr = 32'h1A11_0C00;
-    hart_id           = 32'h5555_AAAA;
+    hart_id           = 32'h0000_0000;
 
     qsc_stat_str =                $sformatf("\tclock_en          = %0d\n", clock_en);
     qsc_stat_str = {qsc_stat_str, $sformatf("\tscan_cg_en        = %0d\n", scan_cg_en)};
