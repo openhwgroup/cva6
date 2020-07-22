@@ -156,7 +156,7 @@ module uvmt_cv32_dut_wrap #(// DUT (riscv_core) parameters.
          .mtvec_addr_i           ( core_cntrl_if.mtvec_addr       ),
          .dm_halt_addr_i         ( core_cntrl_if.dm_halt_addr     ),
          .hart_id_i              ( core_cntrl_if.hart_id          ),
-         .dm_exception_addr_i    ( 32'h1A11_0C00                  ),
+         .dm_exception_addr_i    ( core_cntrl_if.dm_exception_addr),
 
          .instr_req_o            ( instr_req                      ),
          .instr_gnt_i            ( instr_gnt                      ),

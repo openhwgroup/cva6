@@ -106,6 +106,7 @@ interface uvmt_cv32_core_cntrl_if (
                                     output logic [31:0] boot_addr,
                                     output logic [31:0] mtvec_addr,
                                     output logic [31:0] dm_halt_addr,
+                                    output logic [31:0] dm_exception_addr,
                                     output logic [31:0] hart_id,
                                     // To be driven by future debug module (DM)
                                     output logic        debug_req,
@@ -114,6 +115,8 @@ interface uvmt_cv32_core_cntrl_if (
                                   );
 
   import uvm_pkg::*;
+
+  string qsc_stat_str; //Quasi Static Control Status
 
   covergroup core_cntrl_cg;
     clock_enable: coverpoint clock_en {
@@ -139,6 +142,11 @@ interface uvmt_cv32_core_cntrl_if (
       bins med  = {[32'h0001_0000 : 32'hEFFF_FFFF]};
       bins high = {[32'hF000_0000 : 32'hFFFF_FFFF]};
     }
+    debug_module_exception_address: coverpoint dm_exception_addr {
+      bins low  = {[32'h0000_0000 : 32'h0000_FFFF]};
+      bins med  = {[32'h0001_0000 : 32'hEFFF_FFFF]};
+      bins high = {[32'hF000_0000 : 32'hFFFF_FFFF]};
+    }
     hart_id: coverpoint hart_id {
       bins low  = {[32'h0000_0000 : 32'h0000_FFFF]};
       bins med  = {[32'h0001_0000 : 32'hEFFF_FFFF]};
@@ -157,12 +165,24 @@ interface uvmt_cv32_core_cntrl_if (
   //       randomize boot_addr and mtvec addr (need to sync with the start address of the test program.
   //       figure out what to do with test_en.
   initial begin: quasi_static_controls
-    clock_en      = 1'b1;
-    scan_cg_en    = 1'b0;
-    boot_addr     = 32'h0000_0080;
-    mtvec_addr    = 32'h0000_0000;
-    dm_halt_addr  = 32'h1A11_0800;
-    hart_id       = 32'h0000_0000;
+
+    clock_en          = 1'b1;
+    scan_cg_en        = 1'b0;
+    boot_addr         = 32'h0000_0080;
+    mtvec_addr        = 32'h0000_0000;
+    dm_halt_addr      = 32'h1A11_0800;
+    dm_exception_addr = 32'h1A11_0C00;
+    hart_id           = 32'h5555_AAAA;
+
+    qsc_stat_str =                $sformatf("\tclock_en          = %0d\n", clock_en);
+    qsc_stat_str = {qsc_stat_str, $sformatf("\tscan_cg_en        = %0d\n", scan_cg_en)};
+    qsc_stat_str = {qsc_stat_str, $sformatf("\tboot_addr         = %8h\n", boot_addr)};
+    qsc_stat_str = {qsc_stat_str, $sformatf("\tmtvec_addr        = %8h\n", mtvec_addr)};
+    qsc_stat_str = {qsc_stat_str, $sformatf("\tdm_halt_addr      = %8h\n", dm_halt_addr)};
+    qsc_stat_str = {qsc_stat_str, $sformatf("\tdm_exception_addr = %8h\n", dm_exception_addr)};
+    qsc_stat_str = {qsc_stat_str, $sformatf("\thart_id           = %8h\n", hart_id)};
+
+    `uvm_info("CORE_CNTRL_IF", $sformatf("Quasi-static CORE control inputs:\n%s", qsc_stat_str), UVM_NONE)
   end
 
   // TODO: waiting for the User Manual to provide some guidance here...
