@@ -43,6 +43,7 @@
 MAKE          = make
 WAVES         = 0
 COREV_PROJ    = cv32
+MAKE_DIR      = $(PWD)
 PROJ_ROOT_DIR = $(PWD)/../../..
 
 # Compile compile flags for all simulators
@@ -216,7 +217,7 @@ dsim-comp: mk_results cv32e40p_pkg tbsrc_pkg tbsrc
 		$(DSIM) \
 		$(DSIM_CMP_FLAGS) \
 		$(DSIM_UVM_ARGS) \
-		-f $(CV32E40P_MANIFEST) \
+		-f $(MAKE_DIR)/$(CV32E40P_MANIFEST) \
 		$(TBSRC_PKG) \
 		$(TBSRC) \
 		-work $(DSIM_WORK) \
