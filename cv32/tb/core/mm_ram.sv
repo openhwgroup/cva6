@@ -20,8 +20,9 @@ module mm_ram
      parameter RAM_ADDR_WIDTH    =  16,
                INSTR_RDATA_WIDTH = 128, // width of read_data on instruction bus
                DATA_RDATA_WIDTH  =  32, // width of read_data on data bus
-               DBG_ADDR_WIDTH    =  14  // POT ammount of emmory allocated for debugger
+               DBG_ADDR_WIDTH    =  14, // POT ammount of emmory allocated for debugger
                                         // physically located at end of memory
+               IRQ_WIDTH         =  32  // IRQ vector width
   )
   (
      input logic                          clk_i,
@@ -45,8 +46,7 @@ module mm_ram
 
      input logic [4:0]                    irq_id_i,
      input logic                          irq_ack_i,
-     output logic [4:0]                   irq_id_o,
-     output logic                         irq_o,
+     output logic [IRQ_WIDTH-1:0]         irq_o,
 
      input logic [31:0]                   pc_core_id_i,
 
@@ -57,7 +57,6 @@ module mm_ram
      output logic                         exit_valid_o,
      output logic [31:0]                  exit_value_o);
 
-    localparam int                        TIMER_IRQ_ID   = 3;
     localparam int                        RND_STALL_REGS = 16;
     localparam int                        RND_IRQ_ID     = 31;
 
@@ -110,9 +109,9 @@ module mm_ram
     logic [31:0]                   sig_begin_d, sig_begin_q;
 
     // signals to timer
-    logic [31:0]                   timer_irq_mask_q;
+    logic [IRQ_WIDTH-1:0]          timer_irq_mask_q;
     logic [31:0]                   timer_cnt_q;
-    logic                          irq_q;
+    logic [IRQ_WIDTH-1:0]          irq_q;
     logic                          timer_reg_valid;
     logic                          timer_val_valid;
     logic [31:0]                   timer_wdata;
@@ -379,53 +378,51 @@ module mm_ram
         end
     end
 
+    assign irq_o    = irq_q | rnd_irq << RND_IRQ_ID;
 
-    assign irq_id_o = irq_q ? TIMER_IRQ_ID : RND_IRQ_ID;
-    assign irq_o    = irq_q | rnd_irq;
-
-    // Control timer. We need one to have some kind of timeout for tests that
-    // get stuck in some loop. The riscv-tests also mandate that. Enable timer
-    // interrupt by writing 1 to timer_irq_mask_q. Write initial value to
-    // timer_cnt_q which gets counted down each cycle. When it transitions from
-    // 1 to 0, and interrupt request (irq_q) is made (masked by timer_irq_mask_q).
-    always_ff @(posedge clk_i, negedge rst_ni) begin: tb_timer
+    // Set irq vector to timer_irq_mask_q when timer counts down
+    // irq bit cleared when acknowledged
+    always_ff @(posedge clk_i, negedge rst_ni) begin: tb_irq_timer
         if(~rst_ni) begin
             timer_irq_mask_q <= '0;
             timer_cnt_q      <= '0;
             irq_q            <= '0;
-            for(int i=0; i<RND_STALL_REGS; i++) begin
-                rnd_stall_regs[i] <= '0;
-            end
-            rnd_stall_rdata  <= '0;
         end else begin
-            // set timer irq mask
-            if(timer_reg_valid) begin
-                timer_irq_mask_q <= timer_wdata;
+          // set timer irq mask
+          if(timer_reg_valid)
+            timer_irq_mask_q <= timer_wdata;
 
-            // write timer value
-            end else if(timer_val_valid) begin
-                timer_cnt_q <= timer_wdata;
+          // write timer value
+          if(timer_val_valid)
+            timer_cnt_q <= timer_wdata;
+          else if(timer_cnt_q > 0)
+            timer_cnt_q <= timer_cnt_q - 1;
 
-            end else if(rnd_stall_req) begin
-                if(rnd_stall_we)
-                    rnd_stall_regs[rnd_stall_addr[5:2]] <= rnd_stall_wdata;
-                else
-                    rnd_stall_rdata <= rnd_stall_regs[rnd_stall_addr[5:2]];
-            end else begin
-                if(timer_cnt_q > 0)
-                    timer_cnt_q <= timer_cnt_q - 1;
+          // set/clear irq
+          if(timer_cnt_q == 1)
+            irq_q <= timer_irq_mask_q ;
+          else if(irq_ack_i)
+            irq_q[irq_id_i] <= 1'b0;
 
-                if(timer_cnt_q == 1)
-                    irq_q <= 1'b1 && timer_irq_mask_q[TIMER_IRQ_ID];
-                   
-                if(irq_ack_i == 1'b1 && irq_id_i == TIMER_IRQ_ID)
-                    irq_q <= '0;
+        end // else: !if(~rst_ni)
+    end // block: tb_irq_timer
 
-            end
+
+    // Update random stall control
+    always_ff @(posedge clk_i, negedge rst_ni) begin: tb_stall
+        if(~rst_ni) begin
+          rnd_stall_rdata  <= '0;
+        end else begin
+          if(rnd_stall_req) begin
+            if(rnd_stall_we)
+              rnd_stall_regs[rnd_stall_addr[5:2]] <= rnd_stall_wdata;
+            else
+              rnd_stall_rdata <= rnd_stall_regs[rnd_stall_addr[5:2]];
+          end
         end
-    end
-
-   // -------------------------------------------------------------
+    end // block: tb_stall
+  
+    // -------------------------------------------------------------
    // Control debug_req. Writing to this alias will change or create
    // a debug_req pulse. The debug_req can be a pulse or level change,
    // can have a delay when to assert, and also have pulse duration
