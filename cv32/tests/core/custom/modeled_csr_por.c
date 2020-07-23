@@ -16,13 +16,11 @@
 ** 
 *******************************************************************************
 **
-** CSR power-on-reset test:   Reads the CSRs and prints some useful (?)
-**                            messages to stdout.  Will fail if read value does
-**                            not match the documented PoR value.
-**
-** Note: this test-program accesses CSRs that are not currently modeled by the
-**       Reference Model.  Use the Makefile variable USE_ISS to disable the RM
-**       for this test.
+** Modeled CSR power-on-reset test:
+**    Reads the CSRs modeled by the Imperas OVPsim Reference Model and prints
+**    some useful (?) messages to stdout.  Will fail for one of two reasons:
+**       1. Step-and-compare against RM mismatch.
+**       2. read value does not match the documented PoR value.
 **
 ** This is a manually written prototype of a (planned) generated test-program.
 ** The primary goals of this test-program is to get proof of life from all CV32E40P
@@ -80,7 +78,9 @@ int main(int argc, char *argv[])
   }
 	*/
 
+  /*
   // lpstat0/1, lpend0/1 and lpcount0/1 present when PULP_XPULP=1
+  // Not currently modeled.
   __asm__ volatile("csrr %0, 0x7C0" : "=r"(lpstart0_rval));
   __asm__ volatile("csrr %0, 0x7C1" : "=r"(lpend0_rval));
   __asm__ volatile("csrr %0, 0x7C2" : "=r"(lpcount0_rval));
@@ -112,15 +112,17 @@ int main(int argc, char *argv[])
     printf("ERROR: CSR LPCOUNT1 not zero!\n\n");
     ++err_cnt;
   }
+	*/
 
-  //__asm__ volatile("csrr %0, 0x006" : "=r"(fprec_rval));    // not present because FP=0
+  /*
+  __asm__ volatile("csrr %0, 0x006" : "=r"(fprec_rval));    // not present because FP=0
   __asm__ volatile("csrr %0, 0xC10" : "=r"(privlv_rval));   // not modeled by the Imperas RM
   __asm__ volatile("csrr %0, 0x014" : "=r"(uhartid_rval));  // present because PULP_XPULP=1
 
-  //if (fprec_rval != 0x0) {
-  //  printf("ERROR: CSR FPREC not zero!\n\n");
-  //  ++err_cnt;
-  //}
+  if (fprec_rval != 0x0) {
+    printf("ERROR: CSR FPREC not zero!\n\n");
+    ++err_cnt;
+  }
   if (privlv_rval != 0x3) {
     printf("ERROR: CSR PRIVLV not 0x3!\n\n");
     ++err_cnt;
@@ -129,6 +131,7 @@ int main(int argc, char *argv[])
     printf("ERROR: CSR UHARTID not equal to hart_id_i!\n\n");
     ++err_cnt;
   }
+	*/
 
   __asm__ volatile("csrr %0, 0x300" : "=r"(mstatus_rval));
   __asm__ volatile("csrr %0, 0x301" : "=r"(misa_rval));
@@ -152,17 +155,17 @@ int main(int argc, char *argv[])
     ++err_cnt;
   }
 
-	__asm__ volatile("csrr %0, 0x306" : "=r"(mcounteren_rval));    // Not currently modeled
-  __asm__ volatile("csrr %0, 0x320" : "=r"(mcountinhibit_rval)); // Modeled, but cannot override PoR 
+	//__asm__ volatile("csrr %0, 0x306" : "=r"(mcounteren_rval));    // Not currently modeled
+  //__asm__ volatile("csrr %0, 0x320" : "=r"(mcountinhibit_rval)); // Modeled, but cannot override PoR 
 
-  if (mcounteren_rval != 0x0) {
-    printf("ERROR: CSR MCOUNTEREN not 0x0!\n\n");
-    ++err_cnt;
-  }
-  if (mcountinhibit_rval != 0xD) {
-    printf("ERROR: CSR MCOUNTINHIBIT not 0xD!\n\n");
-    ++err_cnt;
-  }
+  //if (mcounteren_rval != 0x0) {
+  //  printf("ERROR: CSR MCOUNTEREN not 0x0!\n\n");
+  //  ++err_cnt;
+  //}
+  //if (mcountinhibit_rval != 0xD) {
+  //  printf("ERROR: CSR MCOUNTINHIBIT not 0xD!\n\n");
+  //  ++err_cnt;
+  //}
 
   // This doesn't work because __asm__ is a macro (sigh)
   //num = (int)strtol(addr, NULL, 16);
@@ -240,12 +243,13 @@ int main(int argc, char *argv[])
     ++err_cnt;
   }
 
-  __asm__ volatile("csrr %0, 0x7A0" : "=r"(tselect_rval)); // unimplemented in model, hardwired to zero
-  __asm__ volatile("csrr %0, 0x7A1" : "=r"(tdata1_rval));  // unimplemented in model, hardwired to zero
-  __asm__ volatile("csrr %0, 0x7A2" : "=r"(tdata2_rval));  // unimplemented in model, hardwired to zero
-  __asm__ volatile("csrr %0, 0x7A3" : "=r"(tdata3_rval));  // unimplemented in model, hardwired to zero
-  __asm__ volatile("csrr %0, 0x7A4" : "=r"(tinfo_rval));   // unimplemented in model
+  //__asm__ volatile("csrr %0, 0x7A0" : "=r"(tselect_rval)); // unimplemented in model, hardwired to zero
+  //__asm__ volatile("csrr %0, 0x7A1" : "=r"(tdata1_rval));  // unimplemented in model, hardwired to zero
+  //__asm__ volatile("csrr %0, 0x7A2" : "=r"(tdata2_rval));  // unimplemented in model, hardwired to zero
+  //__asm__ volatile("csrr %0, 0x7A3" : "=r"(tdata3_rval));  // unimplemented in model, hardwired to zero
+  //__asm__ volatile("csrr %0, 0x7A4" : "=r"(tinfo_rval));   // unimplemented in model
 
+  /*
   if (tselect_rval != 0x0) {
     printf("ERROR: CSR TSELECT not zero!\n\n");
     ++err_cnt;
@@ -270,14 +274,16 @@ int main(int argc, char *argv[])
     printf("ERROR: CSR TINFO not 0x0!\n\n");
     ++err_cnt;
   }
+  */
 
-  __asm__ volatile("csrr %0, 0x7A8" : "=r"(mcontext_rval));  // unimplemented in model
-  __asm__ volatile("csrr %0, 0x7AA" : "=r"(scontext_rval));  // unimplemented in model
+  //__asm__ volatile("csrr %0, 0x7A8" : "=r"(mcontext_rval));  // unimplemented in model
+  //__asm__ volatile("csrr %0, 0x7AA" : "=r"(scontext_rval));  // unimplemented in model
   //__asm__ volatile("csrr %0, 0x7B0" : "=r"(dcsr_rval));      // only accessible in Debug mode
   //__asm__ volatile("csrr %0, 0x7B1" : "=r"(dpc_rval));       // only accessible in Debug mode
   //__asm__ volatile("csrr %0, 0x7B2" : "=r"(dscratch0_rval)); // only accessible in Debug mode
   //__asm__ volatile("csrr %0, 0x7B3" : "=r"(dscratch1_rval)); // only accessible in Debug mode
 
+  /*
   if (mcontext_rval != 0x0) {
     printf("ERROR: CSR MCONTEXT not 0x0!\n\n");
     ++err_cnt;
@@ -288,7 +294,6 @@ int main(int argc, char *argv[])
     ++err_cnt;
   }
 
-  /*
   if (dcsr_rval != 0x0) {
     printf("ERROR: CSR DCSR not 0x0!\n\n");
     ++err_cnt;
@@ -310,9 +315,9 @@ int main(int argc, char *argv[])
   }
   */
 
-  __asm__ volatile("csrr %0, 0xB00" : "=r"(mcycle_rval));         // CSR unimplemented in the model
-  __asm__ volatile("csrr %0, 0xB02" : "=r"(minstret_rval));       // CSR unimplmented in the model
-
+  //__asm__ volatile("csrr %0, 0xB00" : "=r"(mcycle_rval));         // CSR unimplemented in the model
+  //__asm__ volatile("csrr %0, 0xB02" : "=r"(minstret_rval));       // CSR unimplmented in the model
+  /*
   if (mcycle_rval != 0x0) {
     printf("ERROR: CSR MCYCLE not 0x0!\n\n");
     ++err_cnt;
@@ -322,6 +327,7 @@ int main(int argc, char *argv[])
     printf("ERROR: CSR MINSTRET not 0x0!\n\n");
     ++err_cnt;
   }
+  */
 
   __asm__ volatile("csrr %0, 0xB03" : "=r"(mhpmcounter_rval[3]));
   __asm__ volatile("csrr %0, 0xB04" : "=r"(mhpmcounter_rval[4]));
@@ -362,19 +368,21 @@ int main(int argc, char *argv[])
     ++err_cnt;
   }
 
-  __asm__ volatile("csrr %0, 0xB80" : "=r"(mcycleh_rval));   // CSR unimplemented in the model
-
+  //__asm__ volatile("csrr %0, 0xB80" : "=r"(mcycleh_rval));       // CSR unimplemented in the model
+  /*
   if (mcycleh_rval != 0x0) {
     printf("ERROR: CSR MCYCLEH not 0x0!\n\n");
     ++err_cnt;
   }
+  */
 
-  __asm__ volatile("csrr %0, 0xB82" : "=r"(minstreth_rval)); // CSR unimplemented in the model
-
+  //__asm__ volatile("csrr %0, 0xB82" : "=r"(minstreth_rval)); // CSR unimplemented in the model
+  /*
   if (minstreth_rval != 0x0) {
     printf("ERROR: CSR MINSTRETH not 0x0!\n\n");
     ++err_cnt;
   }
+  */
 
   __asm__ volatile("csrr %0, 0xB83" : "=r"(mhpmcounterh[3]));
   __asm__ volatile("csrr %0, 0xB84" : "=r"(mhpmcounterh[4]));
@@ -445,20 +453,20 @@ int main(int argc, char *argv[])
   //printf("\tfflags        = 0x%0x\n", fflags_rval);
   //printf("\tfrm           = 0x%0x\n", frm_rval);
   //printf("\tfcsr          = 0x%0x\n", fcsr_rval);
-  printf("\tlpstart0      = 0x%0x\n", lpstart0_rval);
-  printf("\tlpend0        = 0x%0x\n", lpend0_rval);
-  printf("\tlpcount0      = 0x%0x\n", lpcount0_rval);
-  printf("\tlpstart1      = 0x%0x\n", lpstart1_rval);
-  printf("\tlpend1        = 0x%0x\n", lpend1_rval);
-  printf("\tlpcount1      = 0x%0x\n", lpcount1_rval);
-  printf("\tprivlv        = 0x%0x\n", privlv_rval);
-  printf("\tuhartid       = 0x%0x\n", uhartid_rval);
+  //printf("\tlpstart0      = 0x%0x\n", lpstart0_rval);
+  //printf("\tlpend0        = 0x%0x\n", lpend0_rval);
+  //printf("\tlpcount0      = 0x%0x\n", lpcount0_rval);
+  //printf("\tlpstart1      = 0x%0x\n", lpstart1_rval);
+  //printf("\tlpend1        = 0x%0x\n", lpend1_rval);
+  //printf("\tlpcount1      = 0x%0x\n", lpcount1_rval);
+  //printf("\tprivlv        = 0x%0x\n", privlv_rval);
+  //printf("\tuhartid       = 0x%0x\n", uhartid_rval);
   printf("\tmstatus       = 0x%0x\n", mstatus_rval);
   printf("\tmisa          = 0x%0x\n", misa_rval);
   printf("\tmie           = 0x%0x\n", mie_rval);
   printf("\tmtvec         = 0x%0x\n", mtvec_rval);
-	printf("\tmcounteren    = 0x%0x\n", mcounteren_rval);
-  printf("\tmcountinhibit = 0x%0x\n", mcountinhibit_rval);
+	//printf("\tmcounteren    = 0x%0x\n", mcounteren_rval);
+  //printf("\tmcountinhibit = 0x%0x\n", mcountinhibit_rval);
   printf("\tmphmevent3    = 0x%0x\n", mphmevent_rval[3]);
   printf("\tmphmevent31   = 0x%0x\n", mphmevent_rval[31]);
   printf("\tmscratch      = 0x%0x\n", mscratch_rval);
@@ -466,23 +474,23 @@ int main(int argc, char *argv[])
   printf("\tmcause        = 0x%0x\n", mcause_rval);
   printf("\tmtval         = 0x%0x\n", mtval_rval);
   printf("\tmip           = 0x%0x\n", mip_rval);
-  printf("\ttselect       = 0x%0x\n", tselect_rval);
-  printf("\ttdata1        = 0x%0x\n", tdata1_rval);
-  printf("\ttdata2        = 0x%0x\n", tdata2_rval);
-  printf("\ttdata3        = 0x%0x\n", tdata3_rval);
-  printf("\ttinfo         = 0x%0x\n", tinfo_rval);
-  printf("\tmcontext      = 0x%0x\n", mcontext_rval);
-  printf("\tscontext      = 0x%0x\n", scontext_rval);
+  //printf("\ttselect       = 0x%0x\n", tselect_rval);
+  //printf("\ttdata1        = 0x%0x\n", tdata1_rval);
+  //printf("\ttdata2        = 0x%0x\n", tdata2_rval);
+  //printf("\ttdata3        = 0x%0x\n", tdata3_rval);
+  //printf("\ttinfo         = 0x%0x\n", tinfo_rval);
+  //printf("\tmcontext      = 0x%0x\n", mcontext_rval);
+  //printf("\tscontext      = 0x%0x\n", scontext_rval);
   //printf("\tdcsr          = 0x%0x\n", dcsr_rval);
   //printf("\tdpc           = 0x%0x\n", dpc_rval);
   //printf("\tdscratch0     = 0x%0x\n", dscratch0_rval);
   //printf("\tdscratch1     = 0x%0x\n", dscratch1_rval);
-  printf("\tmcycle        = 0x%0x\n", mcycle_rval);
-  printf("\tminstret      = 0x%0x\n", minstret_rval);
+  //printf("\tmcycle        = 0x%0x\n", mcycle_rval);
+  //printf("\tminstret      = 0x%0x\n", minstret_rval);
   printf("\tmhpmcounter3  = 0x%0x\n", mhpmcounter_rval[3]);
   printf("\tmhpmcounter31 = 0x%0x\n", mhpmcounter_rval[31]);
-  printf("\tmcycleh       = 0x%0x\n", mcycleh_rval);
-  printf("\tminstreth     = 0x%0x\n", minstreth_rval);
+  //printf("\tmcycleh       = 0x%0x\n", mcycleh_rval);
+  //printf("\tminstreth     = 0x%0x\n", minstreth_rval);
   printf("\tmhpmcounterh3 = 0x%0x\n", mhpmcounterh[3]);
   printf("\tmhpmcounterh31= 0x%0x\n", mhpmcounterh[31]);
   printf("\tmvendorid     = 0x%0x\n", mvendorid_rval);

@@ -8,9 +8,13 @@
 --override root/cpu0/dexc_address=0
 # Specify verbose output messages (Boolean: F or T)
 --override root/cpu0/verbose=T
-# This shows *all* parameters that can be overridden.
-# Is there a way to dump only the parameter that were
-# actually overridden?
+# CV32E40P specific CSR overrides
+--override root/cpu0/mvendorid=0x00000602
+#--override root/cpu0/mcountinhibit=0x0000000d
+--override root/cpu0/marchid=0
+--override root/cpu0/mimpid=0
+
+# This shows *all* parameters that can be overridden (a LOT).
 #--showoverrides
 
 

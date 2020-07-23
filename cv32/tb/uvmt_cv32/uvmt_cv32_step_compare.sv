@@ -128,60 +128,61 @@ module uvmt_cv32_step_compare
            ignore = 0;
            csr_val = 0;
            case (index)
-             "mstatus": csr_val = {`CV32E40P_CORE.cs_registers_i.mstatus_q.mprv, // Not documented in Rev 4.5 of user_manual.doc but is in the design
-                                   4'b0,
-                                   `CV32E40P_CORE.cs_registers_i.mstatus_q.mpp,
-                                   3'b0,
-                                   `CV32E40P_CORE.cs_registers_i.mstatus_q.mpie,
-                                   2'b0,
-                                   `CV32E40P_CORE.cs_registers_i.mstatus_q.upie,
-                                   `CV32E40P_CORE.cs_registers_i.mstatus_q.mie,
-                                   2'b0,
-                                   `CV32E40P_CORE.cs_registers_i.mstatus_q.uie};
-             "misa"    : csr_val = `CV32E40P_CORE.cs_registers_i.MISA_VALUE;
+             "mvendorid" : csr_val = {cv32e40p_pkg::MVENDORID_BANK, cv32e40p_pkg::MVENDORID_OFFSET};
+             "mstatus"   : csr_val = {`CV32E40P_CORE.cs_registers_i.mstatus_q.mprv, // Not documented in Rev 4.5 of user_manual.doc but is in the design
+                                      4'b0,
+                                      `CV32E40P_CORE.cs_registers_i.mstatus_q.mpp,
+                                      3'b0,
+                                      `CV32E40P_CORE.cs_registers_i.mstatus_q.mpie,
+                                      2'b0,
+                                      `CV32E40P_CORE.cs_registers_i.mstatus_q.upie,
+                                      `CV32E40P_CORE.cs_registers_i.mstatus_q.mie,
+                                      2'b0,
+                                      `CV32E40P_CORE.cs_registers_i.mstatus_q.uie};
+             "misa"       : csr_val = `CV32E40P_CORE.cs_registers_i.MISA_VALUE;
              // MT: 2020-07-09
-             "mie"     : csr_val = `CV32E40P_CORE.cs_registers_i.mie_q;
-             //"mie"     : csr_val = {`CV32E40P_CORE.cs_registers_i.mie_q.irq_external,
-             //                       3'b0,
-             //                       `CV32E40P_CORE.cs_registers_i.mie_q.irq_timer,
-             //                       3'b0,
-             //                       `CV32E40P_CORE.cs_registers_i.mie_q.irq_software,
-             //                       3'b0};
+             "mie"        : csr_val = `CV32E40P_CORE.cs_registers_i.mie_q;
+             //"mie"        : csr_val = {`CV32E40P_CORE.cs_registers_i.mie_q.irq_external,
+             //                          3'b0,
+             //                          `CV32E40P_CORE.cs_registers_i.mie_q.irq_timer,
+             //                          3'b0,
+             //                          `CV32E40P_CORE.cs_registers_i.mie_q.irq_software,
+             //                          3'b0};
 
              // MT: 2020-06-11
-             //"miex"    : csr_val = `CV32E40P_CORE.cs_registers_i.miex_q;
-             "mtvec"   : csr_val = {`CV32E40P_CORE.cs_registers_i.mtvec_q, 6'h0, 2'b01};
-             "mtvecx"  : csr_val = {`CV32E40P_CORE.cs_registers_i.mtvec_q, 6'h0, 2'b01};
-             "mscratch": csr_val = `CV32E40P_CORE.cs_registers_i.mscratch_q;
-             "mepc"    : csr_val = `CV32E40P_CORE.cs_registers_i.mepc_q;
-             "mcause"  : csr_val = {`CV32E40P_CORE.cs_registers_i.mcause_q[5], 
-                                    25'b0, 
-                                    `CV32E40P_CORE.cs_registers_i.mcause_q[5:0]};
+             //"miex"       : csr_val = `CV32E40P_CORE.cs_registers_i.miex_q;
+             "mtvec"      : csr_val = {`CV32E40P_CORE.cs_registers_i.mtvec_q, 6'h0, 2'b01};
+             "mtvecx"     : csr_val = {`CV32E40P_CORE.cs_registers_i.mtvec_q, 6'h0, 2'b01};
+             "mscratch"   : csr_val = `CV32E40P_CORE.cs_registers_i.mscratch_q;
+             "mepc"       : csr_val = `CV32E40P_CORE.cs_registers_i.mepc_q;
+             "mcause"     : csr_val = {`CV32E40P_CORE.cs_registers_i.mcause_q[5], 
+                                       25'b0, 
+                                       `CV32E40P_CORE.cs_registers_i.mcause_q[5:0]};
              // MT: 2020-06-11
-             //"mip"     : csr_val = {`CV32E40P_CORE.cs_registers_i.mip.irq_nmi,  
-             //                       `CV32E40P_CORE.cs_registers_i.mip.irq_fast,
-             //                       4'b0, // [15:12] not defined
-             //                       `CV32E40P_CORE.cs_registers_i.mip.irq_external,
-             //                       3'b0, // [10:8] not defined
-             //                       `CV32E40P_CORE.cs_registers_i.mip.irq_timer,
-             //                       3'b0, // [6:4] not defined
-             //                       `CV32E40P_CORE.cs_registers_i.mip.irq_software,
-             //                       3'b0}; // [2:0] not defined
-             //"mipx"    : csr_val = `CV32E40P_CORE.cs_registers_i.mipx;
-             "mhartid" : csr_val = `CV32E40P_CORE.cs_registers_i.hart_id_i; 
-             //"mhartid" : csr_val = {21'b0, 
-             //                       `CV32E40P_CORE.cs_registers_i.cluster_id_i[5:0], 
-             //                       1'b0, 
-             //                       `CV32E40P_CORE.cs_registers_i.core_id_i[3:0]};
-             "dcsr"      : csr_val = `CV32E40P_CORE.cs_registers_i.dcsr_q;     
-             "dpc"       : csr_val = `CV32E40P_CORE.cs_registers_i.depc_q;       
-             "dscratch0" : csr_val = `CV32E40P_CORE.cs_registers_i.dscratch0_q;
-             "dscratch1" : csr_val = `CV32E40P_CORE.cs_registers_i.dscratch1_q;
-             "pmpcfg0"   : csr_val = `CV32E40P_CORE.cs_registers_i.pmp_reg_q.pmpcfg_packed[0];
-             "pmpcfg1"   : csr_val = `CV32E40P_CORE.cs_registers_i.pmp_reg_q.pmpcfg_packed[1];
-             "pmpcfg2"   : csr_val = `CV32E40P_CORE.cs_registers_i.pmp_reg_q.pmpcfg_packed[2];
-             "pmpcfg3"   : csr_val = `CV32E40P_CORE.cs_registers_i.pmp_reg_q.pmpcfg_packed[3];
-             "time"   : ignore = 1;
+             //"mip"        : csr_val = {`CV32E40P_CORE.cs_registers_i.mip.irq_nmi,  
+             //                          `CV32E40P_CORE.cs_registers_i.mip.irq_fast,
+             //                          4'b0, // [15:12] not defined
+             //                          `CV32E40P_CORE.cs_registers_i.mip.irq_external,
+             //                          3'b0, // [10:8] not defined
+             //                          `CV32E40P_CORE.cs_registers_i.mip.irq_timer,
+             //                          3'b0, // [6:4] not defined
+             //                          `CV32E40P_CORE.cs_registers_i.mip.irq_software,
+             //                          3'b0}; // [2:0] not defined
+             //"mipx"       : csr_val = `CV32E40P_CORE.cs_registers_i.mipx;
+             "mhartid"    : csr_val = `CV32E40P_CORE.cs_registers_i.hart_id_i; 
+             //"mhartid"    : csr_val = {21'b0, 
+             //                          `CV32E40P_CORE.cs_registers_i.cluster_id_i[5:0], 
+             //                          1'b0, 
+             //                          `CV32E40P_CORE.cs_registers_i.core_id_i[3:0]};
+             "dcsr"         : csr_val = `CV32E40P_CORE.cs_registers_i.dcsr_q;     
+             "dpc"          : csr_val = `CV32E40P_CORE.cs_registers_i.depc_q;       
+             "dscratch0"    : csr_val = `CV32E40P_CORE.cs_registers_i.dscratch0_q;
+             "dscratch1"    : csr_val = `CV32E40P_CORE.cs_registers_i.dscratch1_q;
+             "pmpcfg0"      : csr_val = `CV32E40P_CORE.cs_registers_i.pmp_reg_q.pmpcfg_packed[0];
+             "pmpcfg1"      : csr_val = `CV32E40P_CORE.cs_registers_i.pmp_reg_q.pmpcfg_packed[1];
+             "pmpcfg2"      : csr_val = `CV32E40P_CORE.cs_registers_i.pmp_reg_q.pmpcfg_packed[2];
+             "pmpcfg3"      : csr_val = `CV32E40P_CORE.cs_registers_i.pmp_reg_q.pmpcfg_packed[3];
+             "time"         : ignore = 1;
              default: begin
                 `uvm_error("STEP_COMPARE", $sformatf("index=%s does not match a CSR name", index))
                 ignore = 1;
