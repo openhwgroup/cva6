@@ -145,6 +145,26 @@
             "seed":        1
           },
           {
+            "name":        "Modeled CSR PoR test",
+            "build":       "uvmt_cv32",
+            "cmd":         "cd cv32/sim/uvmt_cv32; make custom CUSTOM_PROG=modeled_csr_por SIMULATOR=dsim USE_ISS=YES DSIM_WORK=/mux-flow/build/repo/dsim_work DSIM_RESULTS=/mux-flow/build/results",
+            "wavesCmd":    "cd cv32/sim/uvmt_cv32; make custom CUSTOM_PROG=modeled_csr_por SIMULATOR=dsim USE_ISS=YES DSIM_WORK=/mux-flow/build/repo/dsim_work DSIM_RESULTS=/mux-flow/build/results WAVES=1 DSIM_DMP_FILE=modeled_csr_por.vcd",
+            "metricsFile": "modeled_csr_por/metrics.db",
+            "wavesFile" :  "modeled_csr_por/modeled_csr_por.vcd",
+            "isPass":      "SIMULATION PASSED",
+            "seed":        1
+          },
+          {
+            "name":        "CSR PoR test",
+            "build":       "uvmt_cv32",
+            "cmd":         "cd cv32/sim/uvmt_cv32; make custom CUSTOM_PROG=csr_por SIMULATOR=dsim USE_ISS=NO DSIM_WORK=/mux-flow/build/repo/dsim_work DSIM_RESULTS=/mux-flow/build/results",
+            "wavesCmd":    "cd cv32/sim/uvmt_cv32; make custom CUSTOM_PROG=csr_por SIMULATOR=dsim USE_ISS=NO DSIM_WORK=/mux-flow/build/repo/dsim_work DSIM_RESULTS=/mux-flow/build/results WAVES=1 DSIM_DMP_FILE=csr_por.vcd",
+            "metricsFile": "csr_por/metrics.db",
+            "wavesFile" :  "csr_por/csr_por.vcd",
+            "isPass":      "SIMULATION PASSED",
+            "seed":        1
+          },
+          {
             "name":        "Static riscv-dv ebreak test",
             "build":       "uvmt_cv32",
             "cmd":         "cd cv32/sim/uvmt_cv32; make custom CUSTOM_PROG=riscv_ebreak_test_0 SIMULATOR=dsim USE_ISS=YES DSIM_WORK=/mux-flow/build/repo/dsim_work DSIM_RESULTS=/mux-flow/build/results",

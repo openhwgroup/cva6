@@ -266,8 +266,8 @@ int main(int argc, char *argv[])
     ++err_cnt;
   }
 
-  if (tinfo_rval != 0x0) {
-    printf("ERROR: CSR TINFO not 0x0!\n\n");
+  if (tinfo_rval != 0x4) {
+    printf("ERROR: CSR TINFO not 0x4!\n\n");
     ++err_cnt;
   }
 
