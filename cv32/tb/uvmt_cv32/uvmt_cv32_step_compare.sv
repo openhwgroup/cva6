@@ -128,6 +128,12 @@ module uvmt_cv32_step_compare
            ignore = 0;
            csr_val = 0;
            case (index)
+             "minstret"      : csr_val = `CV32E40P_CORE.cs_registers_i.mhpmcounter_q[`CV32E40P_CORE.cs_registers_i.csr_addr_i[4:0]][31:0];
+             "minstreth"     : csr_val = `CV32E40P_CORE.cs_registers_i.mhpmcounter_q[`CV32E40P_CORE.cs_registers_i.csr_addr_i[4:0]][63:32];
+             "mcycle"        : csr_val = `CV32E40P_CORE.cs_registers_i.mhpmcounter_q[`CV32E40P_CORE.cs_registers_i.csr_addr_i[4:0]][31:0];
+             "mcycleh"       : csr_val = `CV32E40P_CORE.cs_registers_i.mhpmcounter_q[`CV32E40P_CORE.cs_registers_i.csr_addr_i[4:0]][63:32];
+             "mcountinhibit" : csr_val = `CV32E40P_CORE.cs_registers_i.mcountinhibit_q;
+
              "mvendorid" : csr_val = {cv32e40p_pkg::MVENDORID_BANK, cv32e40p_pkg::MVENDORID_OFFSET};
              "mstatus"   : csr_val = {`CV32E40P_CORE.cs_registers_i.mstatus_q.mprv, // Not documented in Rev 4.5 of user_manual.doc but is in the design
                                       4'b0,
