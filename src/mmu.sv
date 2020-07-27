@@ -35,14 +35,14 @@ module mmu #(
     // in the LSU as we distinguish load and stores, what we do here is simple address translation
     input  exception_t                      misaligned_ex_i,
     input  logic                            lsu_req_i,        // request address translation
-    input  logic [63:0]                     lsu_vaddr_i,      // virtual address in
+    input  logic [riscv::VLEN-1:0]          lsu_vaddr_i,      // virtual address in
     input  logic                            lsu_is_store_i,   // the translation is requested by a store
     // if we need to walk the page table we can't grant in the same cycle
     // Cycle 0
     output logic                            lsu_dtlb_hit_o,   // sent in the same cycle as the request if translation hits in the DTLB
     // Cycle 1
     output logic                            lsu_valid_o,      // translation is valid
-    output logic [63:0]                     lsu_paddr_o,      // translated address
+    output logic [riscv::PLEN-1:0]          lsu_paddr_o,      // translated address
     output exception_t                      lsu_exception_o,  // address translation threw an exception
     // General control signals
     input riscv::priv_lvl_t                 priv_lvl_i,
@@ -64,13 +64,13 @@ module mmu #(
     input  logic [ArianeCfg.NrPMPEntries-1:0][53:0]     pmpaddr_i
 );
 
-    logic        iaccess_err;   // insufficient privilege to access this instruction page
-    logic        daccess_err;   // insufficient privilege to access this data page
-    logic        ptw_active;    // PTW is currently walking a page table
-    logic        walking_instr; // PTW is walking because of an ITLB miss
-    logic        ptw_error;     // PTW threw an exception
-    logic        ptw_access_exception; // PTW threw an access exception (PMPs)
-    logic [63:0] ptw_bad_paddr; // PTW PMP exception bad physical addr
+    logic                   iaccess_err;   // insufficient privilege to access this instruction page
+    logic                   daccess_err;   // insufficient privilege to access this data page
+    logic                   ptw_active;    // PTW is currently walking a page table
+    logic                   walking_instr; // PTW is walking because of an ITLB miss
+    logic                   ptw_error;     // PTW threw an exception
+    logic                   ptw_access_exception; // PTW threw an access exception (PMPs)
+    logic [riscv::PLEN-1:0] ptw_bad_paddr; // PTW PMP exception bad physical addr
 
     logic [riscv::VLEN-1:0] update_vaddr;
     tlb_update_t update_ptw_itlb, update_ptw_dtlb;
@@ -264,8 +264,8 @@ module mmu #(
 
     // Instruction fetch
     pmp #(
-        .XLEN       ( 64                     ),
-        .PMP_LEN    ( 54                     ),
+        .PLEN       ( riscv::PLEN            ),
+        .PMP_LEN    ( riscv::PLEN - 2        ),
         .NR_ENTRIES ( ArianeCfg.NrPMPEntries )
     ) i_pmp_if (
         .addr_i        ( icache_areq_o.fetch_paddr ),
@@ -403,8 +403,8 @@ module mmu #(
 
     // Load/store PMP check
     pmp #(
-        .XLEN       ( 64                     ),
-        .PMP_LEN    ( 54                     ),
+        .PLEN       ( riscv::PLEN            ),
+        .PMP_LEN    ( riscv::PLEN - 2        ),
         .NR_ENTRIES ( ArianeCfg.NrPMPEntries )
     ) i_pmp_data (
         .addr_i        ( lsu_paddr_o         ),

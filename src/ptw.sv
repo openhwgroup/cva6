@@ -63,7 +63,7 @@ module ptw #(
     // PMP
     input  riscv::pmpcfg_t [ArianeCfg.NrPMPEntries-1:0]  pmpcfg_i,
     input  logic [ArianeCfg.NrPMPEntries-1:0][53:0]      pmpaddr_i,
-    output logic [63:0]             bad_paddr_o
+    output logic [riscv::PLEN-1:0]  bad_paddr_o
 
 );
 
@@ -98,7 +98,7 @@ module ptw #(
     // register the VPN we need to walk, SV39 defines a 39 bit virtual address
     logic [riscv::VLEN-1:0] vaddr_q,   vaddr_n;
     // 4 byte aligned physical pointer
-    logic[55:0] ptw_pptr_q, ptw_pptr_n;
+    logic [riscv::PLEN-1:0] ptw_pptr_q, ptw_pptr_n;
 
     // Assignments
     assign update_vaddr_o  = vaddr_q;
@@ -133,22 +133,22 @@ module ptw #(
 
     logic allow_access;
 
-    assign bad_paddr_o = ptw_access_exception_o ? {8'b0, ptw_pptr_q} : 64'b0;
+    assign bad_paddr_o = ptw_access_exception_o ? ptw_pptr_q : 'b0;
 
     pmp #(
-        .XLEN       ( 64                     ),
-        .PMP_LEN    ( 54                     ),
+        .PLEN       ( riscv::PLEN            ),
+        .PMP_LEN    ( riscv::PLEN - 2        ),
         .NR_ENTRIES ( ArianeCfg.NrPMPEntries )
     ) i_pmp_ptw (
-        .addr_i        ( {8'b0, ptw_pptr_q}        ),
+        .addr_i        ( ptw_pptr_q         ),
         // PTW access are always checked as if in S-Mode...
-        .priv_lvl_i    ( riscv::PRIV_LVL_S         ),
+        .priv_lvl_i    ( riscv::PRIV_LVL_S  ),
         // ...and they are always loads
-        .access_type_i ( riscv::ACCESS_READ        ),
+        .access_type_i ( riscv::ACCESS_READ ),
         // Configuration
-        .conf_addr_i   ( pmpaddr_i                 ),
-        .conf_i        ( pmpcfg_i                  ),
-        .allow_o       ( allow_access              )
+        .conf_addr_i   ( pmpaddr_i          ),
+        .conf_i        ( pmpcfg_i           ),
+        .allow_o       ( allow_access       )
     );
 
     //-------------------

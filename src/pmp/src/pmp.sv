@@ -13,12 +13,12 @@
 // Description: purely combinatorial PMP unit (with extraction for more complex configs such as NAPOT)
 
 module pmp #(
-    parameter int unsigned XLEN = 32,       // rv64: 64
+    parameter int unsigned PLEN = 34,       // rv64: 56
     parameter int unsigned PMP_LEN = 32,    // rv64: 54
     parameter int unsigned NR_ENTRIES = 4
 ) (
     // Input
-    input logic [XLEN-1:0] addr_i,
+    input logic [PLEN-1:0] addr_i,
     input riscv::pmp_access_t access_type_i,
     input riscv::priv_lvl_t priv_lvl_i,
     // Configuration
@@ -33,7 +33,7 @@ module pmp #(
 
         for (genvar i = 0; i < NR_ENTRIES; i++) begin
             pmp_entry #(
-                .XLEN    ( XLEN    ),
+                .PLEN    ( PLEN    ),
                 .PMP_LEN ( PMP_LEN )
             ) i_pmp_entry(
                 .addr_i           ( addr_i                         ),
