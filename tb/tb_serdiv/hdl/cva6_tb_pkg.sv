@@ -15,7 +15,7 @@
 // Description: testbench package with some helper functions.
 //
 
-package tb_pkg;
+package cva6_tb_pkg;
 
   // // for abs(double) function
   // import mti_cstdlib::*;
@@ -144,5 +144,5 @@ package tb_pkg;
 
   endclass : progress
 
-endpackage : tb_pkg
+endpackage : cva6_tb_pkg
 

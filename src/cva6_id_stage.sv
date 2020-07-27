@@ -13,27 +13,27 @@
 // Description: Instruction decode, contains the logic for decode,
 //              issue and read operands.
 
-module id_stage (
+module cva6_id_stage (
     input  logic                          clk_i,
     input  logic                          rst_ni,
 
     input  logic                          flush_i,
     input  logic                          debug_req_i,
     // from IF
-    input  ariane_pkg::fetch_entry_t      fetch_entry_i,
+    input  cva6_pkg::fetch_entry_t      fetch_entry_i,
     input  logic                          fetch_entry_valid_i,
     output logic                          fetch_entry_ready_o, // acknowledge the instruction (fetch entry)
     // to ID
-    output ariane_pkg::scoreboard_entry_t issue_entry_o,       // a decoded instruction
+    output cva6_pkg::scoreboard_entry_t issue_entry_o,       // a decoded instruction
     output logic                          issue_entry_valid_o, // issue entry is valid
     output logic                          is_ctrl_flow_o,      // the instruction we issue is a ctrl flow instructions
     input  logic                          issue_instr_ack_i,   // issue stage acknowledged sampling of instructions
     // from CSR file
-    input  riscv::priv_lvl_t              priv_lvl_i,          // current privilege level
-    input  riscv::xs_t                    fs_i,                // floating point extension status
+    input  cva6_riscv::priv_lvl_t              priv_lvl_i,          // current privilege level
+    input  cva6_riscv::xs_t                    fs_i,                // floating point extension status
     input  logic [2:0]                    frm_i,               // floating-point dynamic rounding mode
     input  logic [1:0]                    irq_i,
-    input  ariane_pkg::irq_ctrl_t         irq_ctrl_i,
+    input  cva6_pkg::irq_ctrl_t         irq_ctrl_i,
     input  logic                          debug_mode_i,        // we are in debug mode
     input  logic                          tvm_i,
     input  logic                          tw_i,
@@ -42,12 +42,12 @@ module id_stage (
     // ID/ISSUE register stage
     struct packed {
         logic                          valid;
-        ariane_pkg::scoreboard_entry_t sbe;
+        cva6_pkg::scoreboard_entry_t sbe;
         logic                          is_ctrl_flow;
     } issue_n, issue_q;
 
     logic                            is_control_flow_instr;
-    ariane_pkg::scoreboard_entry_t   decoded_instruction;
+    cva6_pkg::scoreboard_entry_t   decoded_instruction;
 
     logic                is_illegal;
     logic                [31:0] instruction;
@@ -56,7 +56,7 @@ module id_stage (
     // ---------------------------------------------------------
     // 1. Check if they are compressed and expand in case they are
     // ---------------------------------------------------------
-    compressed_decoder compressed_decoder_i (
+    cva6_compressed_decoder cva6_compressed_decoder_i (
         .instr_i                 ( fetch_entry_i.instruction   ),
         .instr_o                 ( instruction                 ),
         .illegal_instr_o         ( is_illegal                  ),
@@ -65,7 +65,7 @@ module id_stage (
     // ---------------------------------------------------------
     // 2. Decode and emit instruction to issue stage
     // ---------------------------------------------------------
-    decoder decoder_i (
+    cva6_decoder cva6_decoder_i (
         .debug_req_i,
         .irq_ctrl_i,
         .irq_i,

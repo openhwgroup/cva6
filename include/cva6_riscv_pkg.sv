@@ -14,7 +14,7 @@
  *
  * Description: Common RISC-V definitions.
  */
-package riscv;
+package cva6_riscv;
 
     // ----------------------
     // Address length

@@ -16,7 +16,7 @@
 /// A leading-one finder / leading zero counter.
 /// Set FLIP to 0 for find_first_one => first_one_o is the index of the first one (from the LSB)
 /// Set FLIP to 1 for leading zero counter => first_one_o is the number of leading zeroes (from the MSB)
-module find_first_one #(
+module cva6_find_first_one #(
     /// The width of the input vector.
     parameter int WIDTH = -1,
     parameter int FLIP = 0

@@ -2,8 +2,8 @@ VIVADO ?= vivado
 VIVADOFLAGS ?= -nojournal -mode batch -source scripts/prologue.tcl
 
 work-dir := work-fpga
-bit := $(work-dir)/ariane_xilinx.bit
-mcs := $(work-dir)/ariane_xilinx.mcs
+bit := $(work-dir)/cva6_xilinx.bit
+mcs := $(work-dir)/cva6_xilinx.mcs
 ip-dir := xilinx
 ips := xlnx_axi_clock_converter.xci  \
        xlnx_axi_dwidth_converter.xci \
@@ -24,7 +24,7 @@ $(mcs): $(bit)
 $(bit): $(ips)
 	mkdir -p $(work-dir)
 	$(VIVADO) $(VIVADOFLAGS) -source scripts/run.tcl
-	cp ariane.runs/impl_1/ariane_xilinx* ./$(work-dir)
+	cp cva6.runs/impl_1/cva6_xilinx* ./$(work-dir)
 
 $(ips): %.xci :
 	mkdir -p $(work-dir)
@@ -38,7 +38,7 @@ program:
 	$(VIVADO) $(VIVADOFLAGS) -source scripts/program.tcl
 
 clean:
-	rm -rf *.log *.jou *.str *.mif *.xpr $(work-dir) ariane.cache ariane.hw ariane.ip_user_files
+	rm -rf *.log *.jou *.str *.mif *.xpr $(work-dir) cva6.cache cva6.hw cva6.ip_user_files
 
 .PHONY:
 	clean

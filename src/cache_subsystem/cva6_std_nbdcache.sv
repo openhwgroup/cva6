@@ -12,9 +12,9 @@
 // Date: 13.10.2017
 // Description: Nonblocking private L1 dcache
 
-import ariane_pkg::*;
+import cva6_pkg::*;
 
-module std_nbdcache import std_cache_pkg::*; #(
+module cva6_std_nbdcache import cva6_std_cache_pkg::*; #(
     parameter logic [63:0] CACHE_START_ADDR = 64'h8000_0000
 )(
     input  logic                           clk_i,       // Clock
@@ -31,13 +31,13 @@ module std_nbdcache import std_cache_pkg::*; #(
     input  dcache_req_i_t [2:0]            req_ports_i,  // request ports
     output dcache_req_o_t [2:0]            req_ports_o,  // request ports
     // Cache AXI refill port
-    output ariane_axi::req_t               axi_data_o,
-    input  ariane_axi::resp_t              axi_data_i,
-    output ariane_axi::req_t               axi_bypass_o,
-    input  ariane_axi::resp_t              axi_bypass_i
+    output cva6_axi::req_t               axi_data_o,
+    input  cva6_axi::resp_t              axi_data_i,
+    output cva6_axi::req_t               axi_bypass_o,
+    input  cva6_axi::resp_t              axi_bypass_i
 );
 
-import std_cache_pkg::*;
+import cva6_std_cache_pkg::*;
 
     // -------------------------------
     // Controller <-> Arbiter
@@ -88,9 +88,9 @@ import std_cache_pkg::*;
     // ------------------
     generate
         for (genvar i = 0; i < 3; i++) begin : master_ports
-            cache_ctrl  #(
+            cva6_cache_ctrl  #(
                 .CACHE_START_ADDR      ( CACHE_START_ADDR     )
-            ) i_cache_ctrl (
+            ) i_cva6_cache_ctrl (
                 .bypass_i              ( ~enable_i            ),
                 .busy_o                ( busy            [i]  ),
                 // from core
@@ -127,9 +127,9 @@ import std_cache_pkg::*;
     // ------------------
     // Miss Handling Unit
     // ------------------
-    miss_handler #(
+    cva6_miss_handler #(
         .NR_PORTS               ( 3                    )
-    ) i_miss_handler (
+    ) i_cva6_miss_handler (
         .flush_i                ( flush_i              ),
         .busy_i                 ( |busy                ),
         // AMOs
@@ -165,10 +165,10 @@ import std_cache_pkg::*;
     // Memory Arrays
     // --------------
     for (genvar i = 0; i < DCACHE_SET_ASSOC; i++) begin : sram_block
-        sram #(
+        cva6_sram #(
             .DATA_WIDTH ( DCACHE_LINE_WIDTH                 ),
             .NUM_WORDS  ( DCACHE_NUM_WORDS                  )
-        ) data_sram (
+        ) cva6_data_sram (
             .req_i   ( req_ram [i]                          ),
             .rst_ni  ( rst_ni                               ),
             .we_i    ( we_ram                               ),
@@ -179,10 +179,10 @@ import std_cache_pkg::*;
             .*
         );
 
-        sram #(
+        cva6_sram #(
             .DATA_WIDTH ( DCACHE_TAG_WIDTH                  ),
             .NUM_WORDS  ( DCACHE_NUM_WORDS                  )
-        ) tag_sram (
+        ) cva6_tag_sram (
             .req_i   ( req_ram [i]                          ),
             .rst_ni  ( rst_ni                               ),
             .we_i    ( we_ram                               ),
@@ -211,10 +211,10 @@ import std_cache_pkg::*;
         assign rdata_ram[i].valid = dirty_rdata[8*i+1];
     end
 
-    sram #(
+    cva6_sram #(
         .DATA_WIDTH ( 4*DCACHE_DIRTY_WIDTH             ),
         .NUM_WORDS  ( DCACHE_NUM_WORDS                 )
-    ) valid_dirty_sram (
+    ) cva6_valid_dirty_sram (
         .clk_i   ( clk_i                               ),
         .rst_ni  ( rst_ni                              ),
         .req_i   ( |req_ram                            ),
@@ -228,11 +228,11 @@ import std_cache_pkg::*;
     // ------------------------------------------------
     // Tag Comparison and memory arbitration
     // ------------------------------------------------
-    tag_cmp #(
+    cva6_tag_cmp #(
         .NR_PORTS           ( 4                  ),
         .ADDR_WIDTH         ( DCACHE_INDEX_WIDTH ),
         .DCACHE_SET_ASSOC   ( DCACHE_SET_ASSOC   )
-    ) i_tag_cmp (
+    ) i_cva6_tag_cmp (
         .req_i              ( req         ),
         .gnt_o              ( gnt         ),
         .addr_i             ( addr        ),
@@ -255,7 +255,7 @@ import std_cache_pkg::*;
 
 //pragma translate_off
     initial begin
-        assert ($bits(axi_data_o.aw.addr) == 64) else $fatal(1, "Ariane needs a 64-bit bus");
+        assert ($bits(axi_data_o.aw.addr) == 64) else $fatal(1, "Cva6 needs a 64-bit bus");
         assert (DCACHE_LINE_WIDTH/64 inside {2, 4, 8, 16}) else $fatal(1, "Cache line size needs to be a power of two multiple of 64");
     end
 //pragma translate_on

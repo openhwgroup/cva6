@@ -2,7 +2,7 @@ bootrom_img = bootrom.img bootrom.sv
 
 GCC=riscv64-unknown-elf-gcc
 OBJCOPY=riscv64-unknown-elf-objcopy
-DTB=ariane.dtb
+DTB=cva6.dtb
 PYTHON=python
 
 all: $(bootrom_img)

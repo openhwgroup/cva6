@@ -13,13 +13,13 @@
 // ------------------------------
 // Instruction Cache
 // ------------------------------
-import ariane_pkg::*;
-import std_cache_pkg::*;
+import cva6_pkg::*;
+import cva6_std_cache_pkg::*;
 
-module std_icache (
+module cva6_std_icache (
     input  logic                     clk_i,
     input  logic                     rst_ni,
-    input riscv::priv_lvl_t          priv_lvl_i,
+    input cva6_riscv::priv_lvl_t          priv_lvl_i,
 
     input  logic                     flush_i,          // flush the icache, flush and kill have to be asserted together
     input  logic                     en_i,             // enable icache
@@ -31,8 +31,8 @@ module std_icache (
     input  icache_dreq_i_t           dreq_i,
     output icache_dreq_o_t           dreq_o,
     // AXI refill port
-    output ariane_axi::req_t         axi_req_o,
-    input  ariane_axi::resp_t        axi_resp_i
+    output cva6_axi::req_t         axi_req_o,
+    input  cva6_axi::resp_t        axi_resp_i
 );
 
     localparam int unsigned ICACHE_BYTE_OFFSET = $clog2(ICACHE_LINE_WIDTH/8); // 3
@@ -79,11 +79,11 @@ module std_icache (
         // ------------
         // Tag RAM
         // ------------
-        sram #(
+        cva6_sram #(
             // tag + valid bit
             .DATA_WIDTH ( ICACHE_TAG_WIDTH + 1   ),
             .NUM_WORDS  ( ICACHE_NUM_WORD )
-        ) tag_sram (
+        ) cva6_tag_sram (
             .clk_i     ( clk_i            ),
             .rst_ni    ( rst_ni           ),
             .req_i     ( vld_req[i]       ),
@@ -96,10 +96,10 @@ module std_icache (
         // ------------
         // Data RAM
         // ------------
-        sram #(
+        cva6_sram #(
             .DATA_WIDTH ( ICACHE_LINE_WIDTH ),
             .NUM_WORDS  ( ICACHE_NUM_WORD   )
-        ) data_sram (
+        ) cva6_data_sram (
             .clk_i     ( clk_i              ),
             .rst_ni    ( rst_ni             ),
             .req_i     ( req[i]             ),
@@ -449,7 +449,7 @@ module std_icache (
 `ifndef VERILATOR
 initial begin
     assert ($bits(axi_req_o.aw.addr) == 64)
-        else $fatal(1, "[icache] Ariane needs a 64-bit bus");
+        else $fatal(1, "[icache] Cva6 needs a 64-bit bus");
 end
 
 // assert that cache only hits on one way

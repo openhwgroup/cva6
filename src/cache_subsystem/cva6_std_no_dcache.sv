@@ -11,7 +11,7 @@
 // Author: Florian Zaruba, ETH Zurich
 // Description: Bypass version of data cache
 
-module std_nbdcache #(
+module cva6_std_nbdcache #(
     parameter logic [63:0] CACHE_START_ADDR = 64'h8000_0000
 ) (
     input  logic                            clk_i,       // Clock
@@ -22,11 +22,11 @@ module std_nbdcache #(
     output logic                            flush_ack_o, // send a single cycle acknowledge signal when the cache is flushed
     output logic                            miss_o,      // we missed on a LD/ST
     // AMOs
-    input  ariane_pkg::amo_req_t            amo_req_i,
-    output ariane_pkg::amo_resp_t           amo_resp_o,
+    input  cva6_pkg::amo_req_t            amo_req_i,
+    output cva6_pkg::amo_resp_t           amo_resp_o,
     // Request ports
-    input  ariane_pkg::dcache_req_i_t [2:0] req_ports_i,  // request ports
-    output ariane_pkg::dcache_req_o_t [2:0] req_ports_o,  // request ports
+    input  cva6_pkg::dcache_req_i_t [2:0] req_ports_i,  // request ports
+    output cva6_pkg::dcache_req_o_t [2:0] req_ports_o,  // request ports
     // Cache AXI refill port
     AXI_BUS.Master                          data_if,
     AXI_BUS.Master                          bypass_if
@@ -71,7 +71,7 @@ module std_nbdcache #(
     assign bypass_if.r_ready = 1'b1;
 
     // AMOs
-    ariane_pkg::amo_t amo_op;
+    cva6_pkg::amo_t amo_op;
     logic [63:0] amo_operand_a, amo_operand_b, amo_result_o;
 
     logic [63:0] load_data;
@@ -129,13 +129,13 @@ module std_nbdcache #(
                 // PTW
                 if (req_ports_i[PTW].data_req) begin
                     state_d = SampleTagPTW;
-                    req_d.addr[ariane_pkg::DCACHE_INDEX_WIDTH-1:0] = req_ports_i[PTW].address_index;
+                    req_d.addr[cva6_pkg::DCACHE_INDEX_WIDTH-1:0] = req_ports_i[PTW].address_index;
                     req_d.size = req_ports_i[PTW].data_size;
                     req_ports_o[PTW].data_gnt = 1'b1;
                 // Load
                 end else if (req_ports_i[LOAD].data_req) begin
                     state_d = SampleTagLoad;
-                    req_d.addr[ariane_pkg::DCACHE_INDEX_WIDTH-1:0] = req_ports_i[LOAD].address_index;
+                    req_d.addr[cva6_pkg::DCACHE_INDEX_WIDTH-1:0] = req_ports_i[LOAD].address_index;
                     req_d.size = req_ports_i[LOAD].data_size;
                     req_ports_o[LOAD].data_gnt = 1'b1;
                 // Store
@@ -149,7 +149,7 @@ module std_nbdcache #(
             end
 
             SampleTagPTW: begin
-                req_d.addr[ariane_pkg::DCACHE_TAG_WIDTH+ariane_pkg::DCACHE_INDEX_WIDTH-1:ariane_pkg::DCACHE_INDEX_WIDTH] = req_ports_i[PTW].address_tag;
+                req_d.addr[cva6_pkg::DCACHE_TAG_WIDTH+cva6_pkg::DCACHE_INDEX_WIDTH-1:cva6_pkg::DCACHE_INDEX_WIDTH] = req_ports_i[PTW].address_tag;
 
                 if (req_ports_i[PTW].kill_req) begin
                     state_d = Idle;
@@ -161,7 +161,7 @@ module std_nbdcache #(
             end
 
             SampleTagLoad: begin
-                req_d.addr[ariane_pkg::DCACHE_TAG_WIDTH+ariane_pkg::DCACHE_INDEX_WIDTH-1:ariane_pkg::DCACHE_INDEX_WIDTH] = req_ports_i[LOAD].address_tag;
+                req_d.addr[cva6_pkg::DCACHE_TAG_WIDTH+cva6_pkg::DCACHE_INDEX_WIDTH-1:cva6_pkg::DCACHE_INDEX_WIDTH] = req_ports_i[LOAD].address_tag;
 
                 if (req_ports_i[LOAD].kill_req) begin
                     state_d = Idle;
@@ -249,7 +249,7 @@ module std_nbdcache #(
                 end
 
                 // place a reservation on the memory and bail out
-                if (amo_req_i.amo_op == ariane_pkg::AMO_LR) begin
+                if (amo_req_i.amo_op == cva6_pkg::AMO_LR) begin
                     state_d = Idle;
                     reservation_d.address = amo_req_i.operand_a[63:3];
                     reservation_d.valid = 1'b1;
@@ -307,7 +307,7 @@ module std_nbdcache #(
     // -----------------
     // AMO ALU
     // -----------------
-    amo_alu i_amo_alu (
+    cva6_amo_alu i_cva6_amo_alu (
         .amo_op_i        ( amo_op        ),
         .amo_operand_a_i ( amo_operand_a ),
         .amo_operand_b_i ( amo_operand_b ),

@@ -18,7 +18,7 @@
 // inferrable RAMS with byte enable. define `FPGA_TARGET_XILINX or
 // `FPGA_TARGET_ALTERA in your build environment (default is ALTERA)
 
-module sram #(
+module cva6_sram #(
     parameter DATA_WIDTH = 64,
     parameter NUM_WORDS  = 1024,
     parameter OUT_REGS   = 0,    // enables output registers in FPGA macro (read lat = 2)
@@ -55,11 +55,11 @@ genvar k;
 generate
     for (k = 0; k<(DATA_WIDTH+63)/64; k++) begin
       if (DROMAJO_RAM) begin
-        dromajo_ram #(
+        cva6_dromajo_ram #(
           .ADDR_WIDTH($clog2(NUM_WORDS)),
           .DATA_DEPTH(NUM_WORDS),
           .OUT_REGS (0)
-        ) i_ram (
+        ) i_cva6_ram (
            .Clk_CI    ( clk_i                     ),
            .Rst_RBI   ( rst_ni                    ),
            .CSel_SI   ( req_i                     ),
@@ -91,4 +91,4 @@ generate
       end
     end
 endgenerate
-endmodule : sram
+endmodule : cva6_sram

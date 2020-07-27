@@ -12,9 +12,9 @@
 // Date: 22.05.2017
 // Description: Store Unit, takes care of all store requests and atomic memory operations (AMOs)
 
-import ariane_pkg::*;
+import cva6_pkg::*;
 
-module store_unit (
+module cva6_store_unit (
     input  logic                     clk_i,    // Clock
     input  logic                     rst_ni,  // Asynchronous reset active low
     input  logic                     flush_i,
@@ -34,8 +34,8 @@ module store_unit (
     output exception_t               ex_o,
     // MMU -> Address Translation
     output logic                     translation_req_o, // request address translation
-    output logic [riscv::VLEN-1:0]   vaddr_o,           // virtual address out
-    input  logic [riscv::PLEN-1:0]   paddr_i,           // physical address in
+    output logic [cva6_riscv::VLEN-1:0]   vaddr_o,           // virtual address out
+    input  logic [cva6_riscv::PLEN-1:0]   paddr_i,           // physical address in
     input  exception_t               ex_i,
     input  logic                     dtlb_hit_i,       // will be one in the same cycle translation_req was asserted if it hits
     // address checker
@@ -213,7 +213,7 @@ module store_unit (
     // ---------------
     // Store Queue
     // ---------------
-    store_buffer store_buffer_i (
+    cva6_store_buffer cva6_store_buffer_i (
         .clk_i,
         .rst_ni,
         .flush_i,
@@ -239,7 +239,7 @@ module store_unit (
         .req_port_o            ( req_port_o             )
     );
 
-    amo_buffer i_amo_buffer (
+    cva6_amo_buffer i_cva6_amo_buffer (
         .clk_i,
         .rst_ni,
         .flush_i,

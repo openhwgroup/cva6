@@ -4,7 +4,7 @@
 // Date: 24.02.2020
 // Description: Traced Instruction and Port (using in Rocket Chip based systems)
 
-package traced_instr_pkg;
+package cva6_traced_instr_pkg;
 
   typedef struct packed {
       logic clock;
@@ -19,6 +19,6 @@ package traced_instr_pkg;
       logic [63:0] tval;
   } traced_instr_t;
 
-  typedef traced_instr_t [ariane_pkg::NR_COMMIT_PORTS-1:0] trace_port_t;
+  typedef traced_instr_t [cva6_pkg::NR_COMMIT_PORTS-1:0] trace_port_t;
 
 endpackage

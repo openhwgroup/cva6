@@ -1,0 +1,7 @@
+../../include/cva6_riscv_pkg.sv
+../../src/riscv-dbg/src/dm_pkg.sv
+../../include/cva6_pkg.sv
+../../src/common_cells/src/lzc.sv
+../../src/cva6_serdiv.sv
+hdl/cva6_tb_pkg.sv
+hdl/cva6_tb.sv

@@ -15,11 +15,11 @@
 // Author: Florian Zaruba <zaruabf@iis.ee.ethz.ch>
 //
 // Date: 19.03.2017
-// Description: Ariane ALU based on RI5CY's ALU
+// Description: Cva6 ALU based on RI5CY's ALU
 
-import ariane_pkg::*;
+import cva6_pkg::*;
 
-module alu (
+module cva6_alu (
     input  logic                     clk_i,          // Clock
     input  logic                     rst_ni,         // Asynchronous reset active low
     input  fu_data_t                 fu_data_i,

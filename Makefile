@@ -1,6 +1,6 @@
 # Author: Florian Zaruba, ETH Zurich
 # Date: 03/19/2017
-# Description: Makefile for linting and testing Ariane.
+# Description: Makefile for linting and testing CVA6.
 
 # questa library
 library        ?= work
@@ -9,7 +9,7 @@ ver-library    ?= work-ver
 # library for DPI
 dpi-library    ?= work-dpi
 # Top level module to compile
-top_level      ?= ariane_tb
+top_level      ?= cva6_tb
 # Maximum amount of cycles for a successful simulation run
 max_cycles     ?= 10000000
 # Test case to run
@@ -70,31 +70,31 @@ endif
 
 # Sources
 # Package files -> compile first
-ariane_pkg := include/riscv_pkg.sv                          \
+cva6_pkg := include/cva6_riscv_pkg.sv                          \
               src/riscv-dbg/src/dm_pkg.sv                   \
-              include/ariane_pkg.sv                         \
-              include/std_cache_pkg.sv                      \
-              include/wt_cache_pkg.sv                       \
+              include/cva6_pkg.sv                         \
+              include/cva6_std_cache_pkg.sv                      \
+              include/cva6_wt_cache_pkg.sv                       \
               src/axi/src/axi_pkg.sv                        \
               src/register_interface/src/reg_intf.sv        \
               src/register_interface/src/reg_intf_pkg.sv    \
-              include/axi_intf.sv                           \
-              tb/ariane_soc_pkg.sv                          \
-              include/ariane_axi_pkg.sv                     \
+              include/cva6_axi_intf.sv                           \
+              tb/cva6_soc_pkg.sv                          \
+              include/cva6_axi_pkg.sv                     \
               src/fpu/src/fpnew_pkg.sv                      \
               src/fpu/src/fpu_div_sqrt_mvp/hdl/defs_div_sqrt_mvp.sv
-ariane_pkg := $(addprefix $(root-dir), $(ariane_pkg))
+cva6_pkg := $(addprefix $(root-dir), $(cva6_pkg))
 
 # utility modules
-util := include/instr_tracer_pkg.sv                         \
-        src/util/instr_tracer_if.sv                         \
-        src/util/instr_tracer.sv                            \
+util := include/cva6_instr_tracer_pkg.sv                         \
+        src/util/cva6_instr_tracer_if.sv                         \
+        src/util/cva6_instr_tracer.sv                            \
         src/tech_cells_generic/src/cluster_clock_gating.sv  \
-        tb/common/mock_uart.sv                              \
-        src/util/sram.sv
+        tb/common/cva6_mock_uart.sv                              \
+        src/util/cva6_sram.sv
 
 ifdef spike-tandem
-    util += tb/common/spike.sv
+    util += tb/common/cva6_spike.sv
 endif
 
 util := $(addprefix $(root-dir), $(util))
@@ -128,12 +128,12 @@ ifdef spike-tandem
 endif
 
 # this list contains the standalone components
-src :=  $(filter-out src/ariane_regfile.sv, $(wildcard src/*.sv))              \
+src :=  $(filter-out src/cva6_regfile.sv, $(wildcard src/*.sv))              \
         $(filter-out src/fpu/src/fpnew_pkg.sv, $(wildcard src/fpu/src/*.sv))   \
         $(filter-out src/fpu/src/fpu_div_sqrt_mvp/hdl/defs_div_sqrt_mvp.sv,    \
         $(wildcard src/fpu/src/fpu_div_sqrt_mvp/hdl/*.sv))                     \
         $(wildcard src/frontend/*.sv)                                          \
-        $(filter-out src/cache_subsystem/std_no_dcache.sv,                     \
+        $(filter-out src/cache_subsystem/cva6_std_no_dcache.sv,                     \
         $(wildcard src/cache_subsystem/*.sv))                                  \
         $(wildcard bootrom/*.sv)                                               \
         $(wildcard src/clint/*.sv)                                             \
@@ -166,10 +166,10 @@ src :=  $(filter-out src/ariane_regfile.sv, $(wildcard src/*.sv))              \
         src/common_cells/src/stream_mux.sv                                     \
         src/common_cells/src/stream_demux.sv                                   \
         src/common_cells/src/exp_backoff.sv                                    \
-        src/util/axi_master_connect.sv                                         \
-        src/util/axi_slave_connect.sv                                          \
-        src/util/axi_master_connect_rev.sv                                     \
-        src/util/axi_slave_connect_rev.sv                                      \
+        src/util/cva6_axi_master_connect.sv                                         \
+        src/util/cva6_axi_slave_connect.sv                                          \
+        src/util/cva6_axi_master_connect_rev.sv                                     \
+        src/util/cva6_axi_slave_connect_rev.sv                                      \
         src/axi/src/axi_cut.sv                                                 \
         src/axi/src/axi_join.sv                                                \
         src/axi/src/axi_delayer.sv                                             \
@@ -199,11 +199,11 @@ src :=  $(filter-out src/ariane_regfile.sv, $(wildcard src/*.sv))              \
         src/tech_cells_generic/src/pulp_clock_gating.sv                        \
         src/tech_cells_generic/src/cluster_clock_inverter.sv                   \
         src/tech_cells_generic/src/pulp_clock_mux2.sv                          \
-        tb/ariane_testharness.sv                                               \
-        tb/ariane_peripherals.sv                                               \
-        tb/common/uart.sv                                                      \
-        tb/common/SimDTM.sv                                                    \
-        tb/common/SimJTAG.sv
+        tb/cva6_testharness.sv                                               \
+        tb/cva6_peripherals.sv                                               \
+        tb/common/cva6_uart.sv                                                      \
+        tb/common/cva6_SimDTM.sv                                                    \
+        tb/common/cva6_SimJTAG.sv
 
 src := $(addprefix $(root-dir), $(src))
 
@@ -214,7 +214,7 @@ fpga_src :=  $(wildcard fpga/src/*.sv) $(wildcard fpga/src/bootrom/*.sv) $(wildc
 fpga_src := $(addprefix $(root-dir), $(fpga_src))
 
 # look for testbenches
-tbs := tb/ariane_tb.sv tb/ariane_testharness.sv
+tbs := tb/cva6_tb.sv tb/cva6_testharness.sv
 # RISCV asm tests and benchmark setup (used for CI)
 # there is a definesd test-list with selected CI tests
 riscv-test-dir            := tmp/riscv-tests/build/isa/
@@ -274,14 +274,14 @@ else
 endif
 
 # Build the TB and module using QuestaSim
-build: $(library) $(library)/.build-srcs $(library)/.build-tb $(dpi-library)/ariane_dpi.so
+build: $(library) $(library)/.build-srcs $(library)/.build-tb $(dpi-library)/acva6_dpi.so
 	# Optimize top level
 	vopt$(questa_version) $(compile_flag) -work $(library)  $(top_level) -o $(top_level)_optimized +acc -check_synthesis
 
 # src files
 $(library)/.build-srcs: $(util) $(library)
-	vlog$(questa_version) $(compile_flag) -work $(library) $(filter %.sv,$(ariane_pkg)) $(list_incdir) -suppress 2583
-	# vcom$(questa_version) $(compile_flag_vhd) -work $(library) -pedanticerrors $(filter %.vhd,$(ariane_pkg))
+	vlog$(questa_version) $(compile_flag) -work $(library) $(filter %.sv,$(cva6_pkg)) $(list_incdir) -suppress 2583
+	# vcom$(questa_version) $(compile_flag_vhd) -work $(library) -pedanticerrors $(filter %.vhd,$(cva6_pkg))
 	vlog$(questa_version) $(compile_flag) -work $(library) $(filter %.sv,$(util)) $(list_incdir) -suppress 2583
 	# Suppress message that always_latch may not be checked thoroughly by QuestaSim.
 	vcom$(questa_version) $(compile_flag_vhd) -work $(library) -pedanticerrors $(filter %.vhd,$(uart_src))
@@ -303,10 +303,10 @@ $(dpi-library)/%.o: tb/dpi/%.cc $(dpi_hdr)
 	mkdir -p $(dpi-library)
 	$(CXX) -shared -fPIC -std=c++0x -Bsymbolic $(CFLAGS) -c $< -o $@
 
-$(dpi-library)/ariane_dpi.so: $(dpi)
+$(dpi-library)/cva6_dpi.so: $(dpi)
 	mkdir -p $(dpi-library)
 	# Compile C-code and generate .so file
-	$(CXX) -shared -m64 -o $(dpi-library)/ariane_dpi.so $? -L$(RISCV)/lib -Wl,-rpath,$(RISCV)/lib -lfesvr
+	$(CXX) -shared -m64 -o $(dpi-library)/cva6_dpi.so $? -L$(RISCV)/lib -Wl,-rpath,$(RISCV)/lib -lfesvr
 
 # single test runs on Questa can be started by calling make <testname>, e.g. make towers.riscv
 # the test names are defined in ci/riscv-asm-tests.list, and in ci/riscv-benchmarks.list
@@ -314,32 +314,32 @@ $(dpi-library)/ariane_dpi.so: $(dpi)
 # alternatively you can call make sim elf-bin=<path/to/elf-bin> in order to load an arbitrary binary
 sim: build
 	vsim${questa_version} +permissive $(questa-flags) $(questa-cmd) -lib $(library) +MAX_CYCLES=$(max_cycles) +UVM_TESTNAME=$(test_case) \
-	+BASEDIR=$(riscv-test-dir) $(uvm-flags) $(QUESTASIM_FLAGS) -gblso $(RISCV)/lib/libfesvr.so -sv_lib $(dpi-library)/ariane_dpi  \
+	+BASEDIR=$(riscv-test-dir) $(uvm-flags) $(QUESTASIM_FLAGS) -gblso $(RISCV)/lib/libfesvr.so -sv_lib $(dpi-library)/cva6_dpi  \
 	${top_level}_optimized +permissive-off ++$(elf-bin) ++$(target-options) | tee sim.log
 
 $(riscv-asm-tests): build
 	vsim${questa_version} +permissive $(questa-flags) $(questa-cmd) -lib $(library) +max-cycles=$(max_cycles) +UVM_TESTNAME=$(test_case) \
-	+BASEDIR=$(riscv-test-dir) $(uvm-flags) +jtag_rbb_enable=0  -gblso $(RISCV)/lib/libfesvr.so -sv_lib $(dpi-library)/ariane_dpi        \
+	+BASEDIR=$(riscv-test-dir) $(uvm-flags) +jtag_rbb_enable=0  -gblso $(RISCV)/lib/libfesvr.so -sv_lib $(dpi-library)/cva6_dpi        \
 	${top_level}_optimized $(QUESTASIM_FLAGS) +permissive-off ++$(riscv-test-dir)/$@ ++$(target-options) | tee tmp/riscv-asm-tests-$@.log
 
 $(riscv-amo-tests): build
 	vsim${questa_version} +permissive $(questa-flags) $(questa-cmd) -lib $(library) +max-cycles=$(max_cycles) +UVM_TESTNAME=$(test_case) \
-	+BASEDIR=$(riscv-test-dir) $(uvm-flags) +jtag_rbb_enable=0  -gblso $(RISCV)/lib/libfesvr.so -sv_lib $(dpi-library)/ariane_dpi        \
+	+BASEDIR=$(riscv-test-dir) $(uvm-flags) +jtag_rbb_enable=0  -gblso $(RISCV)/lib/libfesvr.so -sv_lib $(dpi-library)/cva6_dpi        \
 	${top_level}_optimized $(QUESTASIM_FLAGS) +permissive-off ++$(riscv-test-dir)/$@ ++$(target-options) | tee tmp/riscv-amo-tests-$@.log
 
 $(riscv-mul-tests): build
 	vsim${questa_version} +permissive $(questa-flags) $(questa-cmd) -lib $(library) +max-cycles=$(max_cycles) +UVM_TESTNAME=$(test_case) \
-	+BASEDIR=$(riscv-test-dir) $(uvm-flags) +jtag_rbb_enable=0  -gblso $(RISCV)/lib/libfesvr.so -sv_lib $(dpi-library)/ariane_dpi        \
+	+BASEDIR=$(riscv-test-dir) $(uvm-flags) +jtag_rbb_enable=0  -gblso $(RISCV)/lib/libfesvr.so -sv_lib $(dpi-library)/cva6_dpi        \
 	${top_level}_optimized $(QUESTASIM_FLAGS) +permissive-off ++$(riscv-test-dir)/$@ ++$(target-options) | tee tmp/riscv-mul-tests-$@.log
 
 $(riscv-fp-tests): build
 	vsim${questa_version} +permissive $(questa-flags) $(questa-cmd) -lib $(library) +max-cycles=$(max_cycles) +UVM_TESTNAME=$(test_case) \
-	+BASEDIR=$(riscv-test-dir) $(uvm-flags) +jtag_rbb_enable=0  -gblso $(RISCV)/lib/libfesvr.so -sv_lib $(dpi-library)/ariane_dpi        \
+	+BASEDIR=$(riscv-test-dir) $(uvm-flags) +jtag_rbb_enable=0  -gblso $(RISCV)/lib/libfesvr.so -sv_lib $(dpi-library)/cva6_dpi        \
 	${top_level}_optimized $(QUESTASIM_FLAGS) +permissive-off ++$(riscv-test-dir)/$@ ++$(target-options) | tee tmp/riscv-fp-tests-$@.log
 
 $(riscv-benchmarks): build
 	vsim${questa_version} +permissive $(questa-flags) $(questa-cmd) -lib $(library) +max-cycles=$(max_cycles) +UVM_TESTNAME=$(test_case) \
-	+BASEDIR=$(riscv-benchmarks-dir) $(uvm-flags) +jtag_rbb_enable=0 -gblso $(RISCV)/lib/libfesvr.so -sv_lib $(dpi-library)/ariane_dpi   \
+	+BASEDIR=$(riscv-benchmarks-dir) $(uvm-flags) +jtag_rbb_enable=0 -gblso $(RISCV)/lib/libfesvr.so -sv_lib $(dpi-library)/cva6_dpi   \
 	${top_level}_optimized $(QUESTASIM_FLAGS) +permissive-off ++$(riscv-benchmarks-dir)/$@ ++$(target-options) | tee tmp/riscv-benchmarks-$@.log
 
 # can use -jX to run ci tests in parallel using X processes
@@ -376,11 +376,11 @@ check-benchmarks:
 
 # verilator-specific
 verilate_command := $(verilator)                                                                                 \
-                    $(filter-out %.vhd, $(ariane_pkg))                                                           \
+                    $(filter-out %.vhd, $(cva6_pkg))                                                           \
                     $(filter-out src/fpu_wrap.sv, $(filter-out %.vhd, $(src)))                                   \
                     +define+$(defines)                                                                           \
-                    src/util/sram.sv                                                                             \
-                    tb/common/mock_uart.sv                                                                       \
+                    src/util/cva6_sram.sv                                                                             \
+                    tb/common/cva6_mock_uart.sv                                                                       \
                     +incdir+src/axi_node                                                                         \
                     $(if $(verilator_threads), --threads $(verilator_threads))                                   \
                     --unroll-count 256                                                                           \
@@ -399,9 +399,9 @@ verilate_command := $(verilator)                                                
                     $(if $(DEBUG),--trace --trace-structs,)                                                      \
                     -LDFLAGS "-L$(RISCV)/lib -Wl,-rpath,$(RISCV)/lib -lfesvr$(if $(PROFILE), -g -pg,) $(if $(DROMAJO), -L../tb/dromajo/src -ldromajo_cosim,) -lpthread" \
                     -CFLAGS "$(CFLAGS)$(if $(PROFILE), -g -pg,) $(if $(DROMAJO), -DDROMAJO=1,)" -Wall --cc  --vpi \
-                    $(list_incdir) --top-module ariane_testharness                                               \
+                    $(list_incdir) --top-module cva6_testharness                                               \
                     --Mdir $(ver-library) -O3                                                                    \
-                    --exe tb/ariane_tb.cpp tb/dpi/SimDTM.cc tb/dpi/SimJTAG.cc                                    \
+                    --exe tb/cva6_tb.cpp tb/dpi/SimDTM.cc tb/dpi/SimJTAG.cc                                    \
 					tb/dpi/remote_bitbang.cc tb/dpi/msim_helper.cc $(if $(DROMAJO), tb/dpi/dromajo_cosim_dpi.cc,)
 
 dromajo:
@@ -461,32 +461,32 @@ checkpoint_dromajo:
   }" > "$(notdir $(BIN)).cfg" && \
   ../../../src/dromajo --save=$(notdir $(BIN)) --save_format=1 ./$(notdir $(BIN))_boot.cfg && \
   cd ../../../../../ && \
-	./work-ver/Variane_testharness +checkpoint=$(shell pwd)/tb/dromajo/run/checkpoints/$(notdir $(BIN))/$(notdir $(BIN))
+	./work-ver/Vcva6_testharness +checkpoint=$(shell pwd)/tb/dromajo/run/checkpoints/$(notdir $(BIN))/$(notdir $(BIN))
 
 
 # User Verilator, at some point in the future this will be auto-generated
 verilate: $(if $(DROMAJO), dromajo,)
 	@echo "[Verilator] Building Model$(if $(PROFILE), for Profiling,)"
 	$(verilate_command)
-	cd $(ver-library) && $(MAKE) -j${NUM_JOBS} -f Variane_testharness.mk
+	cd $(ver-library) && $(MAKE) -j${NUM_JOBS} -f Vcva6_testharness.mk
 
 sim-verilator: verilate
-	$(ver-library)/Variane_testharness $(elf-bin)
+	$(ver-library)/Vcva6_testharness $(elf-bin)
 
 $(addsuffix -verilator,$(riscv-asm-tests)): verilate
-	$(ver-library)/Variane_testharness $(riscv-test-dir)/$(subst -verilator,,$@)
+	$(ver-library)/Vcva6_testharness $(riscv-test-dir)/$(subst -verilator,,$@)
 
 $(addsuffix -verilator,$(riscv-amo-tests)): verilate
-	$(ver-library)/Variane_testharness $(riscv-test-dir)/$(subst -verilator,,$@)
+	$(ver-library)/Vcva6_testharness $(riscv-test-dir)/$(subst -verilator,,$@)
 
 $(addsuffix -verilator,$(riscv-mul-tests)): verilate
-	$(ver-library)/Variane_testharness $(riscv-test-dir)/$(subst -verilator,,$@)
+	$(ver-library)/Vcva6_testharness $(riscv-test-dir)/$(subst -verilator,,$@)
 
 $(addsuffix -verilator,$(riscv-fp-tests)): verilate
-	$(ver-library)/Variane_testharness $(riscv-test-dir)/$(subst -verilator,,$@)
+	$(ver-library)/Vcva6_testharness $(riscv-test-dir)/$(subst -verilator,,$@)
 
 $(addsuffix -verilator,$(riscv-benchmarks)): verilate
-	$(ver-library)/Variane_testharness $(riscv-benchmarks-dir)/$(subst -verilator,,$@)
+	$(ver-library)/Vcva6_testharness $(riscv-benchmarks-dir)/$(subst -verilator,,$@)
 
 run-asm-tests-verilator: $(addsuffix -verilator, $(riscv-asm-tests)) $(addsuffix -verilator, $(riscv-amo-tests)) $(addsuffix -verilator, $(riscv-fp-tests)) $(addsuffix -verilator, $(riscv-fp-tests))
 
@@ -560,12 +560,12 @@ torture-rtest-verilator: verilate
 
 run-torture: build
 	vsim${questa_version} +permissive $(questa-flags) $(questa-cmd) -lib $(library) +max-cycles=$(max_cycles)+UVM_TESTNAME=$(test_case)                                  \
-	+BASEDIR=$(riscv-torture-dir) $(uvm-flags) +jtag_rbb_enable=0 -gblso $(RISCV)/lib/libfesvr.so -sv_lib $(dpi-library)/ariane_dpi                                      \
+	+BASEDIR=$(riscv-torture-dir) $(uvm-flags) +jtag_rbb_enable=0 -gblso $(RISCV)/lib/libfesvr.so -sv_lib $(dpi-library)/cva6_dpi                                      \
 	${top_level}_optimized +permissive-off +signature=$(riscv-torture-dir)/$(test-location).rtlsim.sig ++$(riscv-torture-dir)/$(test-location) ++$(target-options)
 
 run-torture-log: build
 	vsim${questa_version} +permissive $(questa-flags) $(questa-cmd) -lib $(library) +max-cycles=$(max_cycles)+UVM_TESTNAME=$(test_case)                                  \
-	+BASEDIR=$(riscv-torture-dir) $(uvm-flags) +jtag_rbb_enable=0 -gblso $(RISCV)/lib/libfesvr.so -sv_lib $(dpi-library)/ariane_dpi                                      \
+	+BASEDIR=$(riscv-torture-dir) $(uvm-flags) +jtag_rbb_enable=0 -gblso $(RISCV)/lib/libfesvr.so -sv_lib $(dpi-library)/cva6_dpi                                      \
 	${top_level}_optimized +permissive-off +signature=$(riscv-torture-dir)/$(test-location).rtlsim.sig ++$(riscv-torture-dir)/$(test-location) ++$(target-options)
 	cp vsim.wlf $(riscv-torture-dir)/$(test-location).wlf
 	cp trace_hart_0000.log $(riscv-torture-dir)/$(test-location).trace
@@ -573,7 +573,7 @@ run-torture-log: build
 	cp transcript $(riscv-torture-dir)/$(test-location).transcript
 
 run-torture-verilator: verilate
-	$(ver-library)/Variane_testharness +max-cycles=$(max_cycles) +signature=$(riscv-torture-dir)/output/test.rtlsim.sig $(riscv-torture-dir)/output/test
+	$(ver-library)/Vcva6_testharness +max-cycles=$(max_cycles) +signature=$(riscv-torture-dir)/output/test.rtlsim.sig $(riscv-torture-dir)/output/test
 
 check-torture:
 	grep 'All signatures match for $(test-location)' $(riscv-torture-dir)/$(test-location).log
@@ -586,10 +586,10 @@ fpga_filter += $(addprefix $(root-dir), src/util/instr_trace_item.sv)
 fpga_filter += $(addprefix $(root-dir), src/util/instr_tracer_if.sv)
 fpga_filter += $(addprefix $(root-dir), src/util/instr_tracer.sv)
 
-fpga: $(ariane_pkg) $(util) $(src) $(fpga_src) $(uart_src)
+fpga: $(cva6_pkg) $(util) $(src) $(fpga_src) $(uart_src)
 	@echo "[FPGA] Generate sources"
 	@echo read_vhdl        {$(uart_src)}    > fpga/scripts/add_sources.tcl
-	@echo read_verilog -sv {$(ariane_pkg)} >> fpga/scripts/add_sources.tcl
+	@echo read_verilog -sv {$(cva6_pkg)} >> fpga/scripts/add_sources.tcl
 	@echo read_verilog -sv {$(filter-out $(fpga_filter), $(util))}     >> fpga/scripts/add_sources.tcl
 	@echo read_verilog -sv {$(filter-out $(fpga_filter), $(src))} 	   >> fpga/scripts/add_sources.tcl
 	@echo read_verilog -sv {$(fpga_src)}   >> fpga/scripts/add_sources.tcl

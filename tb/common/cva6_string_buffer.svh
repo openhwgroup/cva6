@@ -12,7 +12,7 @@
 // Date: 13.07.2017
 // Description: Buffers a string until a new line appears.
 
-class string_buffer extends uvm_component;
+class cva6_string_buffer extends uvm_component;
 
     /*-------------------------------------------------------------------------------
     -- Interface, port, fields

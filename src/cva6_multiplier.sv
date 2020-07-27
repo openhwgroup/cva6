@@ -14,9 +14,9 @@
 //              This unit relies on retiming features of the synthesizer
 //
 
-import ariane_pkg::*;
+import cva6_pkg::*;
 
-module multiplier (
+module cva6_multiplier (
     input  logic                     clk_i,
     input  logic                     rst_ni,
     input  logic [TRANS_ID_BITS-1:0] trans_id_i,

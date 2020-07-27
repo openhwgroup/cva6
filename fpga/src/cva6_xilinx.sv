@@ -11,7 +11,7 @@
 // Description: Xilinx FPGA top-level
 // Author: Florian Zaruba <zarubaf@iis.ee.ethz.ch>
 
-module ariane_xilinx (
+module cva6_xilinx (
 `ifdef GENESYSII
   input  logic         sys_clk_p   ,
   input  logic         sys_clk_n   ,
@@ -154,7 +154,7 @@ module ariane_xilinx (
 );
 // 24 MByte in 8 byte words
 localparam NumWords = (24 * 1024 * 1024) / 8;
-localparam NBSlave = 2; // debug, ariane
+localparam NBSlave = 2; // debug, cva6
 localparam AxiAddrWidth = 64;
 localparam AxiDataWidth = 64;
 localparam AxiIdWidthMaster = 4;
@@ -173,7 +173,7 @@ AXI_BUS #(
     .AXI_DATA_WIDTH ( AxiDataWidth     ),
     .AXI_ID_WIDTH   ( AxiIdWidthSlaves ),
     .AXI_USER_WIDTH ( AxiUserWidth     )
-) master[ariane_soc::NB_PERIPHERALS-1:0]();
+) master[cva6_soc::NB_PERIPHERALS-1:0]();
 
 // disable test-enable
 logic test_en;
@@ -247,10 +247,10 @@ assign rst = ddr_sync_reset;
 // AXI Xbar
 // ---------------
 axi_node_wrap_with_slices #(
-    // three ports from Ariane (instruction, data and bypass)
+    // three ports from Cva6 (instruction, data and bypass)
     .NB_SLAVE           ( NBSlave                    ),
-    .NB_MASTER          ( ariane_soc::NB_PERIPHERALS ),
-    .NB_REGION          ( ariane_soc::NrRegion       ),
+    .NB_MASTER          ( cva6_soc::NB_PERIPHERALS ),
+    .NB_REGION          ( cva6_soc::NrRegion       ),
     .AXI_ADDR_WIDTH     ( AxiAddrWidth               ),
     .AXI_DATA_WIDTH     ( AxiDataWidth               ),
     .AXI_USER_WIDTH     ( AxiUserWidth               ),
@@ -264,30 +264,30 @@ axi_node_wrap_with_slices #(
     .slave        ( slave      ),
     .master       ( master     ),
     .start_addr_i ({
-        ariane_soc::DebugBase,
-        ariane_soc::ROMBase,
-        ariane_soc::CLINTBase,
-        ariane_soc::PLICBase,
-        ariane_soc::UARTBase,
-        ariane_soc::TimerBase,
-        ariane_soc::SPIBase,
-        ariane_soc::EthernetBase,
-        ariane_soc::GPIOBase,
-        ariane_soc::DRAMBase
+        cva6_soc::DebugBase,
+        cva6_soc::ROMBase,
+        cva6_soc::CLINTBase,
+        cva6_soc::PLICBase,
+        cva6_soc::UARTBase,
+        cva6_soc::TimerBase,
+        cva6_soc::SPIBase,
+        cva6_soc::EthernetBase,
+        cva6_soc::GPIOBase,
+        cva6_soc::DRAMBase
     }),
     .end_addr_i   ({
-        ariane_soc::DebugBase    + ariane_soc::DebugLength - 1,
-        ariane_soc::ROMBase      + ariane_soc::ROMLength - 1,
-        ariane_soc::CLINTBase    + ariane_soc::CLINTLength - 1,
-        ariane_soc::PLICBase     + ariane_soc::PLICLength - 1,
-        ariane_soc::UARTBase     + ariane_soc::UARTLength - 1,
-        ariane_soc::TimerBase    + ariane_soc::TimerLength - 1,
-        ariane_soc::SPIBase      + ariane_soc::SPILength - 1,
-        ariane_soc::EthernetBase + ariane_soc::EthernetLength -1,
-        ariane_soc::GPIOBase     + ariane_soc::GPIOLength - 1,
-        ariane_soc::DRAMBase     + ariane_soc::DRAMLength - 1
+        cva6_soc::DebugBase    + cva6_soc::DebugLength - 1,
+        cva6_soc::ROMBase      + cva6_soc::ROMLength - 1,
+        cva6_soc::CLINTBase    + cva6_soc::CLINTLength - 1,
+        cva6_soc::PLICBase     + cva6_soc::PLICLength - 1,
+        cva6_soc::UARTBase     + cva6_soc::UARTLength - 1,
+        cva6_soc::TimerBase    + cva6_soc::TimerLength - 1,
+        cva6_soc::SPIBase      + cva6_soc::SPILength - 1,
+        cva6_soc::EthernetBase + cva6_soc::EthernetLength -1,
+        cva6_soc::GPIOBase     + cva6_soc::GPIOLength - 1,
+        cva6_soc::DRAMBase     + cva6_soc::DRAMLength - 1
     }),
-    .valid_rule_i (ariane_soc::ValidRule)
+    .valid_rule_i (cva6_soc::ValidRule)
 );
 
 // ---------------
@@ -312,8 +312,8 @@ dmi_jtag i_dmi_jtag (
     .tdo_oe_o             (        )
 );
 
-ariane_axi::req_t    dm_axi_m_req;
-ariane_axi::resp_t   dm_axi_m_resp;
+cva6_axi::req_t    dm_axi_m_req;
+cva6_axi::resp_t   dm_axi_m_resp;
 
 logic                dm_slave_req;
 logic                dm_slave_we;
@@ -344,7 +344,7 @@ dm_top #(
     .dmactive_o       ( dmactive          ), // active debug session
     .debug_req_o      ( debug_req_irq     ),
     .unavailable_i    ( '0                ),
-    .hartinfo_i       ( {ariane_pkg::DebugHartInfo} ),
+    .hartinfo_i       ( {cva6_pkg::DebugHartInfo} ),
     .slave_req_i      ( dm_slave_req      ),
     .slave_we_i       ( dm_slave_we       ),
     .slave_addr_i     ( dm_slave_addr     ),
@@ -376,7 +376,7 @@ axi2mem #(
 ) i_dm_axi2mem (
     .clk_i      ( clk                       ),
     .rst_ni     ( rst_n                     ),
-    .slave      ( master[ariane_soc::Debug] ),
+    .slave      ( master[cva6_soc::Debug] ),
     .req_o      ( dm_slave_req              ),
     .we_o       ( dm_slave_we               ),
     .addr_o     ( dm_slave_addr             ),
@@ -385,19 +385,19 @@ axi2mem #(
     .data_i     ( dm_slave_rdata            )
 );
 
-axi_master_connect i_dm_axi_master_connect (
+cva6_axi_master_connect i_cva6_dm_axi_master_connect (
   .axi_req_i(dm_axi_m_req),
   .axi_resp_o(dm_axi_m_resp),
   .master(slave[1])
 );
 
-axi_adapter #(
+cva6_axi_adapter #(
     .DATA_WIDTH            ( AxiDataWidth              )
-) i_dm_axi_master (
+) i_cva6_dm_axi_master (
     .clk_i                 ( clk                       ),
     .rst_ni                ( rst_n                     ),
     .req_i                 ( dm_master_req             ),
-    .type_i                ( ariane_axi::SINGLE_REQ    ),
+    .type_i                ( cva6_axi::SINGLE_REQ    ),
     .gnt_o                 ( dm_master_gnt             ),
     .gnt_id_o              (                           ),
     .addr_i                ( dm_master_add             ),
@@ -418,25 +418,25 @@ axi_adapter #(
 // ---------------
 // Core
 // ---------------
-ariane_axi::req_t    axi_ariane_req;
-ariane_axi::resp_t   axi_ariane_resp;
+cva6_axi::req_t    axi_cva6_req;
+cva6_axi::resp_t   axi_cva6_resp;
 
-ariane #(
-    .ArianeCfg ( ariane_soc::ArianeSocCfg )
-) i_ariane (
+cva6 #(
+    .Cva6Cfg ( cva6_soc::Cva6_SocCfg )
+) i_cva6 (
     .clk_i        ( clk                 ),
     .rst_ni       ( ndmreset_n          ),
-    .boot_addr_i  ( ariane_soc::ROMBase ), // start fetching from ROM
+    .boot_addr_i  ( cva6_soc::ROMBase ), // start fetching from ROM
     .hart_id_i    ( '0                  ),
     .irq_i        ( irq                 ),
     .ipi_i        ( ipi                 ),
     .time_irq_i   ( timer_irq           ),
     .debug_req_i  ( debug_req_irq       ),
-    .axi_req_o    ( axi_ariane_req      ),
-    .axi_resp_i   ( axi_ariane_resp     )
+    .axi_req_o    ( axi_cva6_req      ),
+    .axi_resp_i   ( axi_cva6_resp     )
 );
 
-axi_master_connect i_axi_master_connect_ariane (.axi_req_i(axi_ariane_req), .axi_resp_o(axi_ariane_resp), .master(slave[0]));
+cva6_axi_master_connect i_cva6_axi_master_connect_cva6 (.axi_req_i(axi_cva6_req), .axi_resp_o(axi_cva6_resp), .master(slave[0]));
 
 // ---------------
 // CLINT
@@ -450,15 +450,15 @@ always_ff @(posedge clk or negedge ndmreset_n) begin
   end
 end
 
-ariane_axi::req_t    axi_clint_req;
-ariane_axi::resp_t   axi_clint_resp;
+cva6_axi::req_t    axi_clint_req;
+cva6_axi::resp_t   axi_clint_resp;
 
-clint #(
+cva6_clint #(
     .AXI_ADDR_WIDTH ( AxiAddrWidth     ),
     .AXI_DATA_WIDTH ( AxiDataWidth     ),
     .AXI_ID_WIDTH   ( AxiIdWidthSlaves ),
     .NR_CORES       ( 1                )
-) i_clint (
+) i_cva6_clint (
     .clk_i       ( clk            ),
     .rst_ni      ( ndmreset_n     ),
     .testmode_i  ( test_en        ),
@@ -469,7 +469,7 @@ clint #(
     .ipi_o       ( ipi            )
 );
 
-axi_slave_connect i_axi_slave_connect_clint (.axi_req_o(axi_clint_req), .axi_resp_i(axi_clint_resp), .slave(master[ariane_soc::CLINT]));
+cva6_axi_slave_connect i_cva6_axi_slave_connect_clint (.axi_req_o(axi_clint_req), .axi_resp_i(axi_clint_resp), .slave(master[cva6_soc::CLINT]));
 
 // ---------------
 // ROM
@@ -482,7 +482,7 @@ axi2mem #(
 ) i_axi2rom (
     .clk_i  ( clk                     ),
     .rst_ni ( ndmreset_n              ),
-    .slave  ( master[ariane_soc::ROM] ),
+    .slave  ( master[cva6_soc::ROM] ),
     .req_o  ( rom_req                 ),
     .we_o   (                         ),
     .addr_o ( rom_addr                ),
@@ -506,7 +506,7 @@ bootrom i_bootrom (
   logic [3:0] unused_switches = 4'b0000;
 `endif
 
-ariane_peripherals #(
+cva6_peripherals #(
     .AxiAddrWidth ( AxiAddrWidth     ),
     .AxiDataWidth ( AxiDataWidth     ),
     .AxiIdWidth   ( AxiIdWidthSlaves ),
@@ -526,17 +526,17 @@ ariane_peripherals #(
     .InclSPI      ( 1'b0         ),
     .InclEthernet ( 1'b0         )
     `endif
-) i_ariane_peripherals (
+) i_cva6_peripherals (
     .clk_i        ( clk                          ),
     .clk_200MHz_i ( ddr_clock_out                ),
     .rst_ni       ( ndmreset_n                   ),
-    .plic         ( master[ariane_soc::PLIC]     ),
-    .uart         ( master[ariane_soc::UART]     ),
-    .spi          ( master[ariane_soc::SPI]      ),
-    .gpio         ( master[ariane_soc::GPIO]     ),
+    .plic         ( master[cva6_soc::PLIC]     ),
+    .uart         ( master[cva6_soc::UART]     ),
+    .spi          ( master[cva6_soc::SPI]      ),
+    .gpio         ( master[cva6_soc::GPIO]     ),
     .eth_clk_i    ( eth_clk                      ),
-    .ethernet     ( master[ariane_soc::Ethernet] ),
-    .timer        ( master[ariane_soc::Timer]    ),
+    .ethernet     ( master[cva6_soc::Ethernet] ),
+    .timer        ( master[cva6_soc::Timer]    ),
     .irq_o        ( irq                          ),
     .rx_i         ( rx                           ),
     .tx_o         ( tx                           ),
@@ -628,7 +628,7 @@ axi_riscv_atomics_wrap #(
 ) i_axi_riscv_atomics (
     .clk_i  ( clk                      ),
     .rst_ni ( ndmreset_n               ),
-    .slv    ( master[ariane_soc::DRAM] ),
+    .slv    ( master[cva6_soc::DRAM] ),
     .mst    ( dram                     )
 );
 
@@ -787,7 +787,7 @@ xlnx_clk_gen i_xlnx_clk_gen (
 );
 
 `ifdef KINTEX7
-fan_ctrl i_fan_ctrl (
+cva6_fan_ctrl i_cva6_fan_ctrl (
     .clk_i         ( clk        ),
     .rst_ni        ( ndmreset_n ),
     .pwm_setting_i ( '1         ),
@@ -864,7 +864,7 @@ xlnx_mig_7_ddr3 i_ddr (
     .sys_rst             ( cpu_resetn )
 );
 `elsif VC707
-fan_ctrl i_fan_ctrl (
+cva6_fan_ctrl i_cva6_fan_ctrl (
     .clk_i         ( clk        ),
     .rst_ni        ( ndmreset_n ),
     .pwm_setting_i ( '1         ),

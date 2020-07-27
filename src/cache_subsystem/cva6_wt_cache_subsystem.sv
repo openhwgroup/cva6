@@ -10,7 +10,7 @@
 //
 // Author: Michael Schaffner <schaffner@iis.ee.ethz.ch>, ETH Zurich
 // Date: 15.08.2018
-// Description: Ariane cache subsystem that is compatible with the OpenPiton
+// Description: Cva6 cache subsystem that is compatible with the OpenPiton
 //              coherent memory system.
 //
 //              Define PITON_ARIANE if you want to use this cache.
@@ -18,11 +18,11 @@
 //              with a standard 64 bit AXI interface instead of the OpenPiton
 //              L1.5 interface.
 
-import ariane_pkg::*;
-import wt_cache_pkg::*;
+import cva6_pkg::*;
+import cva6_wt_cache_pkg::*;
 
-module wt_cache_subsystem #(
-  parameter ariane_pkg::ariane_cfg_t ArianeCfg       = ariane_pkg::ArianeDefaultConfig  // contains cacheable regions
+module cva6_wt_cache_subsystem #(
+  parameter cva6_pkg::cva6_cfg_t Cva6Cfg       = cva6_pkg::Cva6DefaultConfig  // contains cacheable regions
 ) (
   input logic                            clk_i,
   input logic                            rst_ni,
@@ -56,26 +56,26 @@ module wt_cache_subsystem #(
   input  l15_rtrn_t                      l15_rtrn_i
 `else
   // memory side
-  output ariane_axi::req_t               axi_req_o,
-  input  ariane_axi::resp_t              axi_resp_i
+  output cva6_axi::req_t               axi_req_o,
+  input  cva6_axi::resp_t              axi_resp_i
 `endif
   // TODO: interrupt interface
 );
 
   logic icache_adapter_data_req, adapter_icache_data_ack, adapter_icache_rtrn_vld;
-  wt_cache_pkg::icache_req_t  icache_adapter;
-  wt_cache_pkg::icache_rtrn_t adapter_icache;
+  cva6_wt_cache_pkg::icache_req_t  icache_adapter;
+  cva6_wt_cache_pkg::icache_rtrn_t adapter_icache;
 
 
   logic dcache_adapter_data_req, adapter_dcache_data_ack, adapter_dcache_rtrn_vld;
-  wt_cache_pkg::dcache_req_t  dcache_adapter;
-  wt_cache_pkg::dcache_rtrn_t adapter_dcache;
+  cva6_wt_cache_pkg::dcache_req_t  dcache_adapter;
+  cva6_wt_cache_pkg::dcache_rtrn_t adapter_dcache;
 
-  wt_icache #(
+  cva6_wt_icache #(
     // use ID 0 for icache reads
     .RdTxId             ( 0             ),
-    .ArianeCfg          ( ArianeCfg     )
-  ) i_wt_icache (
+    .Cva6Cfg          ( Cva6Cfg     )
+  ) i_cva6_wt_icache (
     .clk_i              ( clk_i                   ),
     .rst_ni             ( rst_ni                  ),
     .flush_i            ( icache_flush_i          ),
@@ -97,12 +97,12 @@ module wt_cache_subsystem #(
   // Ports 0/1 for PTW and LD unit are read only.
   // they have equal prio and are RR arbited
   // Port 2 is write only and goes into the merging write buffer
-  wt_dcache #(
+  cva6_wt_dcache #(
     // use ID 1 for dcache reads and amos. note that the writebuffer
     // uses all IDs up to DCACHE_MAX_TX-1 for write transactions.
     .RdAmoTxId       ( 1             ),
-    .ArianeCfg       ( ArianeCfg     )
-  ) i_wt_dcache (
+    .Cva6Cfg       ( Cva6Cfg     )
+  ) i_cva6_wt_dcache (
     .clk_i           ( clk_i                   ),
     .rst_ni          ( rst_ni                  ),
     .enable_i        ( dcache_enable_i         ),
@@ -128,9 +128,9 @@ module wt_cache_subsystem #(
 ///////////////////////////////////////////////////////
 
 `ifdef PITON_ARIANE
-  wt_l15_adapter #(
-    .SwapEndianess   ( ArianeCfg.SwapEndianess )
-  ) i_adapter (
+  cva6_wt_l15_adapter #(
+    .SwapEndianess   ( Cva6Cfg.SwapEndianess )
+  ) i_cva6_adapter (
     .clk_i              ( clk_i                   ),
     .rst_ni             ( rst_ni                  ),
     .icache_data_req_i  ( icache_adapter_data_req ),
@@ -147,7 +147,7 @@ module wt_cache_subsystem #(
     .l15_rtrn_i         ( l15_rtrn_i              )
   );
 `else
-  wt_axi_adapter i_adapter (
+  cva6_wt_axi_adapter i_cva6_adapter (
     .clk_i              ( clk_i                   ),
     .rst_ni             ( rst_ni                  ),
     .icache_data_req_i  ( icache_adapter_data_req ),

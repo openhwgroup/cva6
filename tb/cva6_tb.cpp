@@ -15,11 +15,11 @@
 // specific language governing permissions and limitations
 // under the License.
 
-#include "Variane_testharness.h"
+#include "Vcva6_testharness.h"
 #include "verilator.h"
 #include "verilated.h"
 #include "verilated_vcd_c.h"
-#include "Variane_testharness__Dpi.h"
+#include "Vcva6_testharness__Dpi.h"
 
 #include <stdio.h>
 #include <iostream>
@@ -62,7 +62,7 @@ static void usage(const char * program_name) {
   printf("Usage: %s [EMULATOR OPTION]... [VERILOG PLUSARG]... [HOST OPTION]... BINARY [TARGET OPTION]...\n",
          program_name);
   fputs("\
-Run a BINARY on the Ariane emulator.\n\
+Run a BINARY on the cva6 emulator.\n\
 \n\
 Mandatory arguments to long options are mandatory for short options too.\n\
 \n\
@@ -267,7 +267,7 @@ done_processing:
   signal(SIGTERM, handle_sigterm);
 #endif
 
-  std::unique_ptr<Variane_testharness> top(new Variane_testharness);
+  std::unique_ptr<Vcva6_testharness> top(new Vcva6_testharness);
 
 #if VM_TRACE
   Verilated::traceEverOn(true); // Verilator must compute traced signals

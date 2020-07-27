@@ -12,9 +12,9 @@
 // Date: 08.05.2017
 // Description: Flush controller
 
-import ariane_pkg::*;
+import cva6_pkg::*;
 
-module controller (
+module cva6_controller (
     input  logic            clk_i,
     input  logic            rst_ni,
     output logic            set_pc_commit_o,        // Set PC om PC Gen

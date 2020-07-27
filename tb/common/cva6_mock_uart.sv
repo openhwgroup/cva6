@@ -12,7 +12,7 @@
 // Date: 28/09/2018
 // Description: Mock replacement for UART in testbench (not synthesiesable!)
 
-module mock_uart (
+module cva6_mock_uart (
     input  logic          clk_i,
     input  logic          rst_ni,
     input  logic          penable_i,

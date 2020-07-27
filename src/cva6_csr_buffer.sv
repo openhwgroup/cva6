@@ -13,9 +13,9 @@
 // Description: Buffer to hold CSR address, this acts like a functional unit
 //              to the scoreboard.
 
-import ariane_pkg::*;
+import cva6_pkg::*;
 
-module csr_buffer (
+module cva6_csr_buffer (
     input  logic                     clk_i,          // Clock
     input  logic                     rst_ni,         // Asynchronous reset active low
     input  logic                     flush_i,

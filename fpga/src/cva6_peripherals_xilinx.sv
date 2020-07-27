@@ -10,7 +10,7 @@
 
 // Xilinx Peripehrals
 
-module ariane_peripherals #(
+module cva6_peripherals #(
     parameter int AxiAddrWidth = -1,
     parameter int AxiDataWidth = -1,
     parameter int AxiIdWidth   = -1,
@@ -61,7 +61,7 @@ module ariane_peripherals #(
     // ---------------
     // 1. PLIC
     // ---------------
-    logic [ariane_soc::NumSources-1:0] irq_sources;
+    logic [cva6_soc::NumSources-1:0] irq_sources;
 
     REG_BUS #(
         .ADDR_WIDTH ( 32 ),
@@ -171,9 +171,9 @@ module ariane_peripherals #(
     assign reg_bus.ready = plic_resp.ready;
 
     plic_top #(
-      .N_SOURCE    ( ariane_soc::NumSources  ),
-      .N_TARGET    ( ariane_soc::NumTargets  ),
-      .MAX_PRIO    ( ariane_soc::MaxPriority )
+      .N_SOURCE    ( cva6_soc::NumSources  ),
+      .N_TARGET    ( cva6_soc::NumTargets  ),
+      .MAX_PRIO    ( cva6_soc::MaxPriority )
     ) i_plic (
       .clk_i,
       .rst_ni,
@@ -289,7 +289,7 @@ module ariane_peripherals #(
     end else begin
         /* pragma translate_off */
         `ifndef VERILATOR
-        mock_uart i_mock_uart (
+        cva6_mock_uart i_cva6_mock_uart (
             .clk_i     ( clk_i        ),
             .rst_ni    ( rst_ni       ),
             .penable_i ( uart_penable ),

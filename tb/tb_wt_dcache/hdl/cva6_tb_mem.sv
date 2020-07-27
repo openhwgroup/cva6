@@ -14,13 +14,13 @@
 //
 
 
-`include "tb.svh"
+`include "cva6_tb.svh"
 
-import ariane_pkg::*;
-import wt_cache_pkg::*;
-import tb_pkg::*;
+import cva6_pkg::*;
+import cva6_wt_cache_pkg::*;
+import cva6_tb_pkg::*;
 
-module tb_mem #(
+module cva6_tb_mem #(
   parameter string MemName             = "TB_MEM",
   parameter MemRandHitRate             = 10, //in percent
   parameter MemRandInvRate             = 5,  //in percent

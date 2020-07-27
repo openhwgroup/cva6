@@ -28,29 +28,29 @@ interface instr_tracer_if (
     logic             fetch_ack;
     // Issue stage
     logic                           issue_ack; // issue acknowledged
-    ariane_pkg::scoreboard_entry_t  issue_sbe; // issue scoreboard entry
+    cva6_pkg::scoreboard_entry_t  issue_sbe; // issue scoreboard entry
     // WB stage
     logic [1:0][4:0]  waddr;
     logic [1:0][63:0] wdata;
     logic [1:0]       we_gpr;
     logic [1:0]       we_fpr;
     // commit stage
-    ariane_pkg::scoreboard_entry_t [1:0] commit_instr; // commit instruction
+    cva6_pkg::scoreboard_entry_t [1:0] commit_instr; // commit instruction
     logic                          [1:0] commit_ack;
     // address translation
     // stores
     logic                         st_valid;
-    logic [riscv::PLEN-1:0]       st_paddr;
+    logic [cva6_riscv::PLEN-1:0]       st_paddr;
     // loads
     logic                         ld_valid;
     logic                         ld_kill;
-    logic [riscv::PLEN-1:0]       ld_paddr;
+    logic [cva6_riscv::PLEN-1:0]       ld_paddr;
     // misprediction
-    ariane_pkg::bp_resolve_t resolve_branch;
+    cva6_pkg::bp_resolve_t resolve_branch;
     // exceptions
-    ariane_pkg::exception_t  exception;
+    cva6_pkg::exception_t  exception;
     // current privilege level
-    riscv::priv_lvl_t  priv_lvl;
+    cva6_riscv::priv_lvl_t  priv_lvl;
     logic              debug_mode;
     // the tracer just has a passive interface we do not drive anything with it
 

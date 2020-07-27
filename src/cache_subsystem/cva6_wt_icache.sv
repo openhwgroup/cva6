@@ -24,12 +24,12 @@
 // 3) NC accesses to I/O space are expected to return 32bit from memory.
 //
 
-import ariane_pkg::*;
-import wt_cache_pkg::*;
+import cva6_pkg::*;
+import cva6_wt_cache_pkg::*;
 
-module wt_icache  #(
+module cva6_wt_icache  #(
   parameter logic [CACHE_ID_WIDTH-1:0]  RdTxId             = 0,                                  // ID to be used for read transactions
-  parameter ariane_pkg::ariane_cfg_t    ArianeCfg          = ariane_pkg::ArianeDefaultConfig     // contains cacheable regions
+  parameter cva6_pkg::cva6_cfg_t    Cva6Cfg          = cva6_pkg::Cva6DefaultConfig     // contains cacheable regions
 ) (
   input  logic                      clk_i,
   input  logic                      rst_ni,
@@ -53,7 +53,7 @@ module wt_icache  #(
 
   // signals
   logic                                 cache_en_d, cache_en_q;       // cache is enabled
-  logic [riscv::VLEN-1:0]               vaddr_d, vaddr_q;
+  logic [cva6_riscv::VLEN-1:0]               vaddr_d, vaddr_q;
   logic                                 paddr_is_nc;                  // asserted if physical address is non-cacheable
   logic [ICACHE_SET_ASSOC-1:0]          cl_hit;                       // hit from tag compare
   logic                                 cache_rden;                   // triggers cache lookup
@@ -101,7 +101,7 @@ module wt_icache  #(
   assign cl_tag_d  = (areq_i.fetch_valid) ? areq_i.fetch_paddr[ICACHE_TAG_WIDTH+ICACHE_INDEX_WIDTH-1:ICACHE_INDEX_WIDTH] : cl_tag_q;
 
   // noncacheable if request goes to I/O space, or if cache is disabled
-  assign paddr_is_nc = (~cache_en_q) | (~ariane_pkg::is_inside_cacheable_regions(ArianeCfg, {{64-ICACHE_TAG_WIDTH{1'b0}}, cl_tag_d, {ICACHE_INDEX_WIDTH{1'b0}}}));
+  assign paddr_is_nc = (~cache_en_q) | (~cva6_pkg::is_inside_cacheable_regions(Cva6Cfg, {{64-ICACHE_TAG_WIDTH{1'b0}}, cl_tag_d, {ICACHE_INDEX_WIDTH{1'b0}}}));
 
   // pass exception through
   assign dreq_o.ex = areq_i.fetch_exception;
@@ -115,7 +115,7 @@ module wt_icache  #(
   assign cl_index    = vaddr_d[ICACHE_INDEX_WIDTH-1:ICACHE_OFFSET_WIDTH];
 
 
-  if (ArianeCfg.Axi64BitCompliant) begin : gen_axi_offset
+  if (Cva6Cfg.Axi64BitCompliant) begin : gen_axi_offset
     // if we generate a noncacheable access, the word will be at offset 0 or 4 in the cl coming from memory
     assign cl_offset_d = ( dreq_o.ready & dreq_i.req)      ? {dreq_i.vaddr>>2, 2'b0} :
                          ( paddr_is_nc  & mem_data_req_o ) ? cl_offset_q[2]<<2 : // needed since we transfer 32bit over a 64bit AXI bus in this case
@@ -439,11 +439,11 @@ end else begin : gen_piton_offset
 
   for (genvar i = 0; i < ICACHE_SET_ASSOC; i++) begin : gen_sram
     // Tag RAM
-    sram #(
+    cva6_sram #(
       // tag + valid bit
       .DATA_WIDTH ( ICACHE_TAG_WIDTH+1 ),
       .NUM_WORDS  ( ICACHE_NUM_WORDS   )
-    ) tag_sram (
+    ) cva6_tag_sram (
       .clk_i     ( clk_i                    ),
       .rst_ni    ( rst_ni                   ),
       .req_i     ( vld_req[i]               ),
@@ -460,10 +460,10 @@ end else begin : gen_piton_offset
     assign vld_rdata[i]    = cl_tag_valid_rdata[i][ICACHE_TAG_WIDTH];
 
     // Data RAM
-    sram #(
+    cva6_sram #(
       .DATA_WIDTH ( ICACHE_LINE_WIDTH ),
       .NUM_WORDS  ( ICACHE_NUM_WORDS  )
-    ) data_sram (
+    ) cva6_data_sram (
       .clk_i     ( clk_i               ),
       .rst_ni    ( rst_ni              ),
       .req_i     ( cl_req[i]           ),
@@ -523,9 +523,9 @@ end else begin : gen_piton_offset
       else $fatal(1,"[l1 icache] cl_hit signal must be hot1");
 
   // this is only used for verification!
-  logic                                    vld_mirror[wt_cache_pkg::ICACHE_NUM_WORDS-1:0][ariane_pkg::ICACHE_SET_ASSOC-1:0];
-  logic [ariane_pkg::ICACHE_TAG_WIDTH-1:0] tag_mirror[wt_cache_pkg::ICACHE_NUM_WORDS-1:0][ariane_pkg::ICACHE_SET_ASSOC-1:0];
-  logic [ariane_pkg::ICACHE_SET_ASSOC-1:0] tag_write_duplicate_test;
+  logic                                    vld_mirror[cva6_wt_cache_pkg::ICACHE_NUM_WORDS-1:0][cva6_pkg::ICACHE_SET_ASSOC-1:0];
+  logic [cva6_pkg::ICACHE_TAG_WIDTH-1:0] tag_mirror[cva6_wt_cache_pkg::ICACHE_NUM_WORDS-1:0][cva6_pkg::ICACHE_SET_ASSOC-1:0];
+  logic [cva6_pkg::ICACHE_SET_ASSOC-1:0] tag_write_duplicate_test;
 
   always_ff @(posedge clk_i or negedge rst_ni) begin : p_mirror
     if(!rst_ni) begin

@@ -16,12 +16,12 @@
 // A couple of notes:
 //
 // 1) the L15 has been designed for an OpenSparc T1 core with 2 threads and can serve only
-//    1 ld and rd request per thread. Ariane has only one hart, but the LSU can issue several write
+//    1 ld and rd request per thread. Cva6 has only one hart, but the LSU can issue several write
 //    requests to optimize bandwidth. hence, we reuse the threadid field to issue and track multiple
 //    requests (up to 2 in this case).
 //
 // 2) the CSM (clumped shared memory = coherence domain restriction in OpenPiton)
-//    feature is currently not supported by Ariane.
+//    feature is currently not supported by Cva6.
 //
 // 3) some features like blockinitstore, prefetch, ECC errors are not used (see interface below)
 //
@@ -38,7 +38,7 @@
 //
 // 8) L1I$ fill requests are always complete cache lines at the moment
 //
-// 9) the adapter converts from little endian (Ariane) to big endian (openpiton), and vice versa.
+// 9) the adapter converts from little endian (Cva6) to big endian (openpiton), and vice versa.
 //
 // 10) L1I$ requests to I.O space (bit39 of address = 1'b1) always return 32bit nc data
 //
@@ -48,10 +48,10 @@
 //           https://parallel.princeton.edu/openpiton/docs/micro_arch.pdf
 //
 
-import ariane_pkg::*;
-import wt_cache_pkg::*;
+import cva6_pkg::*;
+import cva6_wt_cache_pkg::*;
 
-module wt_l15_adapter #(
+module cva6_wt_l15_adapter #(
   parameter bit          SwapEndianess = 1
 ) (
   input logic                  clk_i,
@@ -102,11 +102,11 @@ l15_rtrn_t rtrn_fifo_data;
   // logic                              l15_req_o.l15_nc;                    // non-cacheable bit
   // logic [2:0]                        l15_req_o.l15_size;                  // transaction size: 000=Byte 001=2Byte; 010=4Byte; 011=8Byte; 111=Cache line (16/32Byte)
   // logic [L15_TID_WIDTH-1:0]          l15_req_o.l15_threadid;              // currently 0 or 1
-  // logic                              l15_req_o.l15_invalidate_cacheline;  // unused by Ariane as L1 has no ECC at the moment
+  // logic                              l15_req_o.l15_invalidate_cacheline;  // unused by Cva6 as L1 has no ECC at the moment
   // logic [L15_WAY_WIDTH-1:0]          l15_req_o.l15_l1rplway;              // way to replace
   // logic [39:0]                       l15_req_o.l15_address;               // physical address
   // logic [63:0]                       l15_req_o.l15_data;                  // word to write
-  // logic [63:0]                       l15_req_o.l15_data_next_entry;       // unused in Ariane (only used for CAS atomic requests)
+  // logic [63:0]                       l15_req_o.l15_data_next_entry;       // unused in Cva6 (only used for CAS atomic requests)
   // logic [L15_TLB_CSM_WIDTH-1:0]      l15_req_o.l15_csm_data;
 
 
@@ -120,7 +120,7 @@ l15_rtrn_t rtrn_fifo_data;
                                               (icache_data.nc) ? 3'b010            : 3'b111;
   assign l15_req_o.l15_threadid             = (arb_idx)        ? dcache_data.tid   : icache_data.tid;
   assign l15_req_o.l15_prefetch             = '0; // unused in openpiton
-  assign l15_req_o.l15_invalidate_cacheline = '0; // unused by Ariane as L1 has no ECC at the moment
+  assign l15_req_o.l15_invalidate_cacheline = '0; // unused by Cva6 as L1 has no ECC at the moment
   assign l15_req_o.l15_blockstore           = '0; // unused in openpiton
   assign l15_req_o.l15_blockinitstore       = '0; // unused in openpiton
   assign l15_req_o.l15_l1rplway             = (arb_idx) ? dcache_data.way   : icache_data.way;
@@ -128,8 +128,8 @@ l15_rtrn_t rtrn_fifo_data;
   assign l15_req_o.l15_address              = (arb_idx) ? dcache_data.paddr :
                                                           icache_data.paddr;
 
-  assign l15_req_o.l15_data_next_entry      = '0; // unused in Ariane (only used for CAS atomic requests)
-  assign l15_req_o.l15_csm_data             = '0; // unused in Ariane (only used for coherence domain restriction features)
+  assign l15_req_o.l15_data_next_entry      = '0; // unused in Cva6 (only used for CAS atomic requests)
+  assign l15_req_o.l15_csm_data             = '0; // unused in Cva6 (only used for coherence domain restriction features)
   assign l15_req_o.l15_amo_op               = dcache_data.amo_op;
 
 

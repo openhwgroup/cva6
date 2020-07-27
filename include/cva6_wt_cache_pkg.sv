@@ -13,14 +13,14 @@
 // Description: Package for OpenPiton compatible L1 cache subsystem
 
 // this is needed to propagate the
-// configuration in case Ariane is
+// configuration in case Cva6 is
 // instantiated in OpenPiton
 `ifdef PITON_ARIANE
   `include "l15.tmp.h"
   `include "define.tmp.h"
 `endif
 
-package wt_cache_pkg;
+package cva6_wt_cache_pkg;
 
   // these parames need to coincide with the
   // L1.5 parameterization, do not change
@@ -43,13 +43,13 @@ package wt_cache_pkg;
   localparam L15_TID_WIDTH           = `L15_THREADID_WIDTH;
   localparam L15_TLB_CSM_WIDTH       = `TLB_CSM_WIDTH;
 `else
-  localparam L15_SET_ASSOC           = ariane_pkg::DCACHE_SET_ASSOC;// align with dcache for compatibility with the standard Ariane setup
+  localparam L15_SET_ASSOC           = cva6_pkg::DCACHE_SET_ASSOC;// align with dcache for compatibility with the standard Cva6 setup
   localparam L15_TID_WIDTH           = 2;
   localparam L15_TLB_CSM_WIDTH       = 33;
 `endif
   localparam L15_WAY_WIDTH           = $clog2(L15_SET_ASSOC);
-  localparam L1I_WAY_WIDTH           = $clog2(ariane_pkg::ICACHE_SET_ASSOC);
-  localparam L1D_WAY_WIDTH           = $clog2(ariane_pkg::DCACHE_SET_ASSOC);
+  localparam L1I_WAY_WIDTH           = $clog2(cva6_pkg::ICACHE_SET_ASSOC);
+  localparam L1D_WAY_WIDTH           = $clog2(cva6_pkg::DCACHE_SET_ASSOC);
 
   // FIFO depths of L15 adapter
   localparam ADAPTER_REQ_FIFO_DEPTH  = 2;
@@ -57,15 +57,15 @@ package wt_cache_pkg;
 
 
   // Calculated parameter
-  localparam ICACHE_OFFSET_WIDTH     = $clog2(ariane_pkg::ICACHE_LINE_WIDTH/8);
-  localparam ICACHE_NUM_WORDS        = 2**(ariane_pkg::ICACHE_INDEX_WIDTH-ICACHE_OFFSET_WIDTH);
+  localparam ICACHE_OFFSET_WIDTH     = $clog2(cva6_pkg::ICACHE_LINE_WIDTH/8);
+  localparam ICACHE_NUM_WORDS        = 2**(cva6_pkg::ICACHE_INDEX_WIDTH-ICACHE_OFFSET_WIDTH);
   localparam ICACHE_CL_IDX_WIDTH     = $clog2(ICACHE_NUM_WORDS);// excluding byte offset
 
-  localparam DCACHE_OFFSET_WIDTH     = $clog2(ariane_pkg::DCACHE_LINE_WIDTH/8);
-  localparam DCACHE_NUM_WORDS        = 2**(ariane_pkg::DCACHE_INDEX_WIDTH-DCACHE_OFFSET_WIDTH);
+  localparam DCACHE_OFFSET_WIDTH     = $clog2(cva6_pkg::DCACHE_LINE_WIDTH/8);
+  localparam DCACHE_NUM_WORDS        = 2**(cva6_pkg::DCACHE_INDEX_WIDTH-DCACHE_OFFSET_WIDTH);
   localparam DCACHE_CL_IDX_WIDTH     = $clog2(DCACHE_NUM_WORDS);// excluding byte offset
 
-  localparam DCACHE_NUM_BANKS        = ariane_pkg::DCACHE_LINE_WIDTH/64;
+  localparam DCACHE_NUM_BANKS        = cva6_pkg::DCACHE_LINE_WIDTH/64;
   localparam DCACHE_NUM_BANKS_WIDTH  = $clog2(DCACHE_NUM_BANKS);
 
   // write buffer parameterization
@@ -75,13 +75,13 @@ package wt_cache_pkg;
 
 
   typedef struct packed {
-    logic [ariane_pkg::DCACHE_INDEX_WIDTH+ariane_pkg::DCACHE_TAG_WIDTH-1:0] wtag;
+    logic [cva6_pkg::DCACHE_INDEX_WIDTH+cva6_pkg::DCACHE_TAG_WIDTH-1:0] wtag;
     logic [63:0]                                                            data;
     logic [7:0]                                                             dirty;   // byte is dirty
     logic [7:0]                                                             valid;   // byte is valid
     logic [7:0]                                                             txblock; // byte is part of transaction in-flight
     logic                                                                   checked; // if cache state of this word has been checked
-    logic [ariane_pkg::DCACHE_SET_ASSOC-1:0]                                hit_oh;  // valid way in the cache
+    logic [cva6_pkg::DCACHE_SET_ASSOC-1:0]                                hit_oh;  // valid way in the cache
   } wbuffer_t;
 
   // TX status registers are indexed with the transaction ID
@@ -117,23 +117,23 @@ package wt_cache_pkg;
   typedef struct packed {
     logic                                            vld;         // invalidate only affected way
     logic                                            all;         // invalidate all ways
-    logic [ariane_pkg::ICACHE_INDEX_WIDTH-1:0]       idx;         // physical address to invalidate
+    logic [cva6_pkg::ICACHE_INDEX_WIDTH-1:0]       idx;         // physical address to invalidate
     logic [L15_WAY_WIDTH-1:0]                        way;         // way to invalidate
   } cache_inval_t;
 
   // icache interface
   typedef struct packed {
-    logic [$clog2(ariane_pkg::ICACHE_SET_ASSOC)-1:0] way;         // way to replace
-    logic [riscv::PLEN-1:0]                          paddr;       // physical address
+    logic [$clog2(cva6_pkg::ICACHE_SET_ASSOC)-1:0] way;         // way to replace
+    logic [cva6_riscv::PLEN-1:0]                          paddr;       // physical address
     logic                                            nc;          // noncacheable
-    logic [CACHE_ID_WIDTH-1:0]                       tid;         // threadi id (used as transaction id in Ariane)
+    logic [CACHE_ID_WIDTH-1:0]                       tid;         // threadi id (used as transaction id in Cva6)
   } icache_req_t;
 
   typedef struct packed {
     icache_in_t                                      rtype;       // see definitions above
-    logic [ariane_pkg::ICACHE_LINE_WIDTH-1:0]        data;        // full cache line width
+    logic [cva6_pkg::ICACHE_LINE_WIDTH-1:0]        data;        // full cache line width
     cache_inval_t                                    inv;         // invalidation vector
-    logic [CACHE_ID_WIDTH-1:0]                       tid;         // threadi id (used as transaction id in Ariane)
+    logic [CACHE_ID_WIDTH-1:0]                       tid;         // threadi id (used as transaction id in Cva6)
   } icache_rtrn_t;
 
   // dcache interface
@@ -141,18 +141,18 @@ package wt_cache_pkg;
     dcache_out_t                                     rtype;       // see definitions above
     logic [2:0]                                      size;        // transaction size: 000=Byte 001=2Byte; 010=4Byte; 011=8Byte; 111=Cache line (16/32Byte)
     logic [L1D_WAY_WIDTH-1:0]                        way;         // way to replace
-    logic [riscv::PLEN-1:0]                          paddr;       // physical address
+    logic [cva6_riscv::PLEN-1:0]                          paddr;       // physical address
     logic [63:0]                                     data;        // word width of processor (no block stores at the moment)
     logic                                            nc;          // noncacheable
-    logic [CACHE_ID_WIDTH-1:0]                       tid;         // threadi id (used as transaction id in Ariane)
-    ariane_pkg::amo_t                                amo_op;      // amo opcode
+    logic [CACHE_ID_WIDTH-1:0]                       tid;         // threadi id (used as transaction id in Cva6)
+    cva6_pkg::amo_t                                amo_op;      // amo opcode
   } dcache_req_t;
 
   typedef struct packed {
     dcache_in_t                                      rtype;       // see definitions above
-    logic [ariane_pkg::DCACHE_LINE_WIDTH-1:0]        data;        // full cache line width
+    logic [cva6_pkg::DCACHE_LINE_WIDTH-1:0]        data;        // full cache line width
     cache_inval_t                                    inv;         // invalidation vector
-    logic [CACHE_ID_WIDTH-1:0]                       tid;         // threadi id (used as transaction id in Ariane)
+    logic [CACHE_ID_WIDTH-1:0]                       tid;         // threadi id (used as transaction id in Cva6)
   } dcache_rtrn_t;
 
 
@@ -204,14 +204,14 @@ package wt_cache_pkg;
     logic [2:0]                        l15_size;                  // transaction size: 000=Byte 001=2Byte; 010=4Byte; 011=8Byte; 111=Cache line (16/32Byte)
     logic [L15_TID_WIDTH-1:0]          l15_threadid;              // currently 0 or 1
     logic                              l15_prefetch;              // unused in openpiton
-    logic                              l15_invalidate_cacheline;  // unused by Ariane as L1 has no ECC at the moment
+    logic                              l15_invalidate_cacheline;  // unused by Cva6 as L1 has no ECC at the moment
     logic                              l15_blockstore;            // unused in openpiton
     logic                              l15_blockinitstore;        // unused in openpiton
     logic [L15_WAY_WIDTH-1:0]          l15_l1rplway;              // way to replace
     logic [39:0]                       l15_address;               // physical address
     logic [63:0]                       l15_data;                  // word to write
-    logic [63:0]                       l15_data_next_entry;       // unused in Ariane (only used for CAS atomic requests)
-    logic [L15_TLB_CSM_WIDTH-1:0]      l15_csm_data;              // unused in Ariane
+    logic [63:0]                       l15_data_next_entry;       // unused in Cva6 (only used for CAS atomic requests)
+    logic [L15_TLB_CSM_WIDTH-1:0]      l15_csm_data;              // unused in Cva6
     logic [3:0]                        l15_amo_op;                // atomic operation type
   } l15_req_t;
 
@@ -220,7 +220,7 @@ package wt_cache_pkg;
     logic                              l15_header_ack;            // ack for request struct
     logic                              l15_val;                   // valid signal for return struct
     l15_rtrntypes_t                    l15_returntype;            // see below for encoding
-    logic                              l15_l2miss;                // unused in Ariane
+    logic                              l15_l2miss;                // unused in Cva6
     logic [1:0]                        l15_error;                 // unused in openpiton
     logic                              l15_noncacheable;          // non-cacheable bit
     logic                              l15_atomic;                // asserted in load return and store ack packets of atomic tx
@@ -251,19 +251,19 @@ package wt_cache_pkg;
     return out;
   endfunction
 
-  function automatic logic [ariane_pkg::ICACHE_SET_ASSOC-1:0] icache_way_bin2oh (
+  function automatic logic [cva6_pkg::ICACHE_SET_ASSOC-1:0] icache_way_bin2oh (
     input logic [L1I_WAY_WIDTH-1:0] in
   );
-    logic [ariane_pkg::ICACHE_SET_ASSOC-1:0] out;
+    logic [cva6_pkg::ICACHE_SET_ASSOC-1:0] out;
     out     = '0;
     out[in] = 1'b1;
     return out;
   endfunction
 
-  function automatic logic [ariane_pkg::DCACHE_SET_ASSOC-1:0] dcache_way_bin2oh (
+  function automatic logic [cva6_pkg::DCACHE_SET_ASSOC-1:0] dcache_way_bin2oh (
     input logic [L1D_WAY_WIDTH-1:0] in
   );
-    logic [ariane_pkg::DCACHE_SET_ASSOC-1:0] out;
+    logic [cva6_pkg::DCACHE_SET_ASSOC-1:0] out;
     out     = '0;
     out[in] = 1'b1;
     return out;
@@ -342,11 +342,11 @@ package wt_cache_pkg;
   // 010: word
   // 011: dword
   // 111: DCACHE line
-  function automatic logic [riscv::PLEN-1:0] paddrSizeAlign(
-    input logic [riscv::PLEN-1:0] paddr,
+  function automatic logic [cva6_riscv::PLEN-1:0] paddrSizeAlign(
+    input logic [cva6_riscv::PLEN-1:0] paddr,
     input logic [2:0]  size
   );
-    logic [riscv::PLEN-1:0] out;
+    logic [cva6_riscv::PLEN-1:0] out;
     out = paddr;
     unique case (size)
       3'b001: out[0:0]                     = '0;

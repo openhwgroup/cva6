@@ -8,14 +8,14 @@
  * CONDITIONS OF ANY KIND, either express or implied. See the License for the
  * specific language governing permissions and limitations under the License.
  *
- * File:   ariane_axi_pkg.sv
+ * File:   cva6_axi_pkg.sv
  * Author: Florian Zaruba <zarubaf@iis.ee.ethz.ch>
  * Date:   17.8.2018
  *
- * Description: Contains Ariane's AXI ports, does not contain user ports
+ * Description: Contains Cva6's AXI ports, does not contain user ports
  */
 
-package ariane_axi;
+package cva6_axi;
 
     // used in axi_adapter.sv
     typedef enum logic { SINGLE_REQ, CACHE_LINE_REQ } ad_req_t;
@@ -25,8 +25,8 @@ package ariane_axi;
     localparam DataWidth = 64;
     localparam StrbWidth = DataWidth / 8;
 
-    typedef logic [ariane_soc::IdWidth-1:0]      id_t;
-    typedef logic [ariane_soc::IdWidthSlave-1:0] id_slv_t;
+    typedef logic [cva6_soc::IdWidth-1:0]      id_t;
+    typedef logic [cva6_soc::IdWidthSlave-1:0] id_slv_t;
     typedef logic [AddrWidth-1:0] addr_t;
     typedef logic [DataWidth-1:0] data_t;
     typedef logic [StrbWidth-1:0] strb_t;

@@ -15,13 +15,13 @@
 // Description: testbench for serial 64bit divider
 //
 
-`include "tb.svh"
+`include "cva6_tb.svh"
 
-import ariane_pkg::*;
-import tb_pkg::*;
+import cva6_pkg::*;
+import cva6_tb_pkg::*;
 
 // tb package
-module tb;
+module cva6_tb;
 
 ///////////////////////////////////////////////////////////////////////////////
 // config
@@ -134,22 +134,22 @@ module tb;
     ///////////////////////////////////////////////
     // unsigned division test
 
-    `include "tb_udiv.sv"
+    `include "cva6_tb_udiv.sv"
 
     ///////////////////////////////////////////////
     // unsigned modulo test
 
-    `include "tb_urem.sv"
+    `include "cva6_tb_urem.sv"
 
     ///////////////////////////////////////////////
     // signed division test
 
-    `include "tb_div.sv"
+    `include "cva6_tb_div.sv"
 
     ///////////////////////////////////////////////
     // signed modulo test
 
-    `include "tb_rem.sv"
+    `include "cva6_tb_rem.sv"
 
     ///////////////////////////////////////////////
 

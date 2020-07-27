@@ -1,0 +1,14 @@
+../../include/cva6_riscv_pkg.sv
+../../src/riscv-dbg/src/dm_pkg.sv
+../../include/cva6_pkg.sv
+../../include/cva6_wt_cache_pkg.sv
+../../src/fpga-support/rtl/SyncSpRamBeNx64.sv
+../../src/cache_subsystem/cva6_wt_icache.sv
+../../src/common_cells/src/lfsr_8bit.sv
+../../src/common_cells/src/fifo_v3.sv
+../../src/common_cells/src/lzc.sv
+../../src/util/cva6_sram.sv
+hdl/cva6_mem_emul.sv
+hdl/cva6_tlb_emul.sv
+hdl/cva6_tb_pkg.sv
+hdl/cva6_tb.sv

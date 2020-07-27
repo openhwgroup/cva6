@@ -16,12 +16,12 @@
 //pragma translate_off
 import uvm_pkg::*;
 `include "uvm_macros.svh"
-`include "ex_trace_item.svh"
-`include "instr_trace_item.svh"
+`include "cva6_ex_trace_item.svh"
+`include "cva6_instr_trace_item.svh"
 //pragma translate_on
 
-module instr_tracer (
-  instr_tracer_if   tracer_if,
+module cva6_instr_tracer (
+  cva6_instr_tracer_if   tracer_if,
   input logic[63:0] hart_id_i
 );
 
@@ -30,10 +30,10 @@ module instr_tracer (
   // keep the issued instructions in a queue
   logic [31:0] issue_queue [$];
   // issue scoreboard entries
-  ariane_pkg::scoreboard_entry_t issue_sbe_queue [$];
-  ariane_pkg::scoreboard_entry_t issue_sbe;
+  cva6_pkg::scoreboard_entry_t issue_sbe_queue [$];
+  cva6_pkg::scoreboard_entry_t issue_sbe;
   // store resolved branches, get (mis-)predictions
-  ariane_pkg::bp_resolve_t bp [$];
+  cva6_pkg::bp_resolve_t bp [$];
   // shadow copy of the register files
   logic [63:0] gp_reg_file [32];
   logic [63:0] fp_reg_file [32];
@@ -53,18 +53,18 @@ module instr_tracer (
     $display("[TRACER] Output filename is: %s", fn);
 
     f = $fopen(fn,"w");
-    if (ariane_pkg::ENABLE_SPIKE_COMMIT_LOG) commit_log = $fopen(fn_commit_log, "w");
+    if (cva6_pkg::ENABLE_SPIKE_COMMIT_LOG) commit_log = $fopen(fn_commit_log, "w");
   endfunction : create_file
 
   task trace();
     automatic logic [31:0] decode_instruction, issue_instruction, issue_commit_instruction;
-    automatic ariane_pkg::scoreboard_entry_t commit_instruction;
+    automatic cva6_pkg::scoreboard_entry_t commit_instruction;
     // initialize register 0
     gp_reg_file  = '{default:0};
     fp_reg_file  = '{default:0};
 
     forever begin
-      automatic ariane_pkg::bp_resolve_t bp_instruction = '0;
+      automatic cva6_pkg::bp_resolve_t bp_instruction = '0;
       // new cycle, we are only interested if reset is de-asserted
       @(tracer_if.pck iff tracer_if.pck.rstn);
       // increment clock tick
@@ -87,7 +87,7 @@ module instr_tracer (
         issue_instruction = decode_queue.pop_front();
         issue_queue.push_back(issue_instruction);
         // also save the scoreboard entry to a separate issue queue
-        issue_sbe_queue.push_back(ariane_pkg::scoreboard_entry_t'(tracer_if.pck.issue_sbe));
+        issue_sbe_queue.push_back(cva6_pkg::scoreboard_entry_t'(tracer_if.pck.issue_sbe));
       end
 
       // --------------------
@@ -112,23 +112,23 @@ module instr_tracer (
       // we are committing an instruction
       for (int i = 0; i < 2; i++) begin
         if (tracer_if.pck.commit_ack[i]) begin
-          commit_instruction = ariane_pkg::scoreboard_entry_t'(tracer_if.pck.commit_instr[i]);
+          commit_instruction = cva6_pkg::scoreboard_entry_t'(tracer_if.pck.commit_instr[i]);
           issue_commit_instruction = issue_queue.pop_front();
           issue_sbe = issue_sbe_queue.pop_front();
           // check if the instruction retiring is a load or store, get the physical address accordingly
-          if (tracer_if.pck.commit_instr[i].fu == ariane_pkg::LOAD)
+          if (tracer_if.pck.commit_instr[i].fu == cva6_pkg::LOAD)
             address_mapping = load_mapping.pop_front();
-          else if (tracer_if.pck.commit_instr[i].fu == ariane_pkg::STORE)
+          else if (tracer_if.pck.commit_instr[i].fu == cva6_pkg::STORE)
             address_mapping = store_mapping.pop_front();
 
-          if (tracer_if.pck.commit_instr[i].fu == ariane_pkg::CTRL_FLOW)
+          if (tracer_if.pck.commit_instr[i].fu == cva6_pkg::CTRL_FLOW)
             bp_instruction = bp.pop_front();
           // the scoreboards issue entry still contains the immediate value as a result
           // check if the write back is valid, if not we need to source the result from the register file
           // as the most recent version of this register will be there.
           if (tracer_if.pck.we_gpr[i] || tracer_if.pck.we_fpr[i]) begin
             printInstr(issue_sbe, issue_commit_instruction, tracer_if.pck.wdata[i], address_mapping, tracer_if.pck.priv_lvl, tracer_if.pck.debug_mode, bp_instruction);
-          end else if (ariane_pkg::is_rd_fpr(commit_instruction.op)) begin
+          end else if (cva6_pkg::is_rd_fpr(commit_instruction.op)) begin
             printInstr(issue_sbe, issue_commit_instruction, fp_reg_file[commit_instruction.rd], address_mapping, tracer_if.pck.priv_lvl, tracer_if.pck.debug_mode, bp_instruction);
           end else begin
             printInstr(issue_sbe, issue_commit_instruction, gp_reg_file[commit_instruction.rd], address_mapping, tracer_if.pck.priv_lvl, tracer_if.pck.debug_mode, bp_instruction);
@@ -138,7 +138,7 @@ module instr_tracer (
       // --------------
       // Exceptions
       // --------------
-      if (tracer_if.pck.exception.valid && !(tracer_if.pck.debug_mode && tracer_if.pck.exception.cause == riscv::BREAKPOINT)) begin
+      if (tracer_if.pck.exception.valid && !(tracer_if.pck.debug_mode && tracer_if.pck.exception.cause == cva6_riscv::BREAKPOINT)) begin
         // print exception
         printException(tracer_if.pck.commit_instr[0].pc, tracer_if.pck.exception.cause, tracer_if.pck.exception.tval);
       end
@@ -186,19 +186,19 @@ module instr_tracer (
   endfunction
 
   // pragma translate_off
-  function void printInstr(ariane_pkg::scoreboard_entry_t sbe, logic [31:0] instr, logic [63:0] result, logic [riscv::PLEN-1:0] paddr, riscv::priv_lvl_t priv_lvl, logic debug_mode, ariane_pkg::bp_resolve_t bp);
+  function void printInstr(cva6_pkg::scoreboard_entry_t sbe, logic [31:0] instr, logic [63:0] result, logic [cva6_riscv::PLEN-1:0] paddr, cva6_riscv::priv_lvl_t priv_lvl, logic debug_mode, cva6_pkg::bp_resolve_t bp);
     automatic instr_trace_item iti = new ($time, clk_ticks, sbe, instr, gp_reg_file, fp_reg_file, result, paddr, priv_lvl, debug_mode, bp);
     // print instruction to console
     automatic string print_instr = iti.printInstr();
-    if (ariane_pkg::ENABLE_SPIKE_COMMIT_LOG && !debug_mode) begin
-      $fwrite(commit_log, riscv::spikeCommitLog(sbe.pc, priv_lvl, instr, sbe.rd, result, ariane_pkg::is_rd_fpr(sbe.op)));
+    if (cva6_pkg::ENABLE_SPIKE_COMMIT_LOG && !debug_mode) begin
+      $fwrite(commit_log, cva6_riscv::spikeCommitLog(sbe.pc, priv_lvl, instr, sbe.rd, result, cva6_pkg::is_rd_fpr(sbe.op)));
     end
     uvm_report_info( "Tracer",  print_instr, UVM_HIGH);
     $fwrite(f, {print_instr, "\n"});
   endfunction
 
-  function void printException(logic [riscv::VLEN-1:0] pc, logic [63:0] cause, logic [63:0] tval);
-    automatic ex_trace_item eti = new (pc, cause, tval);
+  function void printException(logic [cva6_riscv::VLEN-1:0] pc, logic [63:0] cause, logic [63:0] tval);
+    automatic cva6_ex_trace_item eti = new (pc, cause, tval);
     automatic string print_ex = eti.printException();
     uvm_report_info( "Tracer",  print_ex, UVM_HIGH);
     $fwrite(f, {print_ex, "\n"});
@@ -206,7 +206,7 @@ module instr_tracer (
 
   function void close();
     if (f) $fclose(f);
-    if (ariane_pkg::ENABLE_SPIKE_COMMIT_LOG && commit_log) $fclose(commit_log);
+    if (cva6_pkg::ENABLE_SPIKE_COMMIT_LOG && commit_log) $fclose(commit_log);
   endfunction
 
 
@@ -221,5 +221,5 @@ module instr_tracer (
   end
   // pragma translate_on
 
-endmodule : instr_tracer
+endmodule : cva6_instr_tracer
 `endif

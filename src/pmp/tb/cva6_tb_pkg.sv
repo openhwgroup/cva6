@@ -12,7 +12,7 @@
 // Date: 2.10.2019
 // Description: 
 
-package tb_pkg;
+package cva6_tb_pkg;
 
     class P #(parameter WIDTH=32, parameter PMP_LEN=32);
         static function logic[PMP_LEN-1:0] base_to_conf(logic[WIDTH-1:0] base, int unsigned size_i);

@@ -12,9 +12,9 @@
 // Date: 2.10.2019
 // Description: 
 
-import tb_pkg::*;
+import cva6_tb_pkg::*;
 
-module pmp_tb;
+module cva6_pmp_tb;
     timeunit 1ns;
     timeprecision 1ps;
 
@@ -23,11 +23,11 @@ module pmp_tb;
     localparam int unsigned NR_ENTRIES = 4;
 
     logic [WIDTH-1:0] addr;
-    riscv::pmp_access_t access_type;
+    cva6_riscv::pmp_access_t access_type;
     
     // Configuration
     logic [NR_ENTRIES-1:0][PMP_LEN-1:0] conf_addr;
-    riscv::pmpcfg_t [NR_ENTRIES-1:0] conf;
+    cva6_riscv::pmpcfg_t [NR_ENTRIES-1:0] conf;
 
     // Output
     logic allow;
@@ -36,14 +36,14 @@ module pmp_tb;
     logic[WIDTH-1:0] base;
     int unsigned size;
 
-    pmp #(
+    cva6_pmp #(
         .XLEN(WIDTH),
         .PMP_LEN(PMP_LEN),
         .NR_ENTRIES(NR_ENTRIES)
-    ) i_pmp(
+    ) i_cva6_pmp(
         .addr_i        ( addr              ),
         .access_type_i ( access_type       ),
-        .priv_lvl_i    ( riscv::PRIV_LVL_U ),
+        .priv_lvl_i    ( cva6_riscv::PRIV_LVL_U ),
         .conf_addr_i   ( conf_addr         ),
         .conf_i        ( conf              ),
         .allow_o       ( allow             )
@@ -53,19 +53,19 @@ module pmp_tb;
     initial begin
         // set all pmps to disabled initially
         for (int i = 0; i < NR_ENTRIES; i++) begin
-            conf[i].addr_mode = riscv::OFF;
+            conf[i].addr_mode = cva6_riscv::OFF;
         end
 
         // test napot 1
         addr = 16'b00011001_10111010;
-        access_type = riscv::ACCESS_READ;
+        access_type = cva6_riscv::ACCESS_READ;
         
         // pmp 3
         base = 16'b00011001_00000000;
         size = 8;
         conf_addr[2] = P#(.WIDTH(WIDTH), .PMP_LEN(PMP_LEN))::base_to_conf(base, size);
-        conf[2].addr_mode = riscv::NAPOT;
-        conf[2].access_type = riscv::ACCESS_READ | riscv::ACCESS_WRITE | riscv::ACCESS_EXEC;
+        conf[2].addr_mode = cva6_riscv::NAPOT;
+        conf[2].access_type = cva6_riscv::ACCESS_READ | cva6_riscv::ACCESS_WRITE | cva6_riscv::ACCESS_EXEC;
 
         #5ns;
         assert(allow == 1);
@@ -76,7 +76,7 @@ module pmp_tb;
         base = 16'b00011001_10110000;
         size = 4;
         conf_addr[1] = P#(.WIDTH(WIDTH), .PMP_LEN(PMP_LEN))::base_to_conf(base, size);
-        conf[1].addr_mode = riscv::NAPOT;
+        conf[1].addr_mode = cva6_riscv::NAPOT;
         conf[1].access_type = '0;
 
         #5ns;
@@ -88,8 +88,8 @@ module pmp_tb;
         base = 16'b00011001_10111000;
         size = 3;
         conf_addr[0] = P#(.WIDTH(WIDTH), .PMP_LEN(PMP_LEN))::base_to_conf(base, size);
-        conf[0].addr_mode = riscv::NAPOT;
-        conf[0].access_type = riscv::ACCESS_READ;
+        conf[0].addr_mode = cva6_riscv::NAPOT;
+        conf[0].access_type = cva6_riscv::ACCESS_READ;
 
         #5ns;
         assert(allow == 1);

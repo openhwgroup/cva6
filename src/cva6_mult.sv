@@ -1,7 +1,7 @@
 
-import ariane_pkg::*;
+import cva6_pkg::*;
 
-module mult (
+module cva6_mult (
     input  logic                     clk_i,
     input  logic                     rst_ni,
     input  logic                     flush_i,
@@ -40,7 +40,7 @@ module mult (
     // ---------------------
     // Multiplication
     // ---------------------
-    multiplier i_multiplier (
+    cva6_multiplier i_cva6_multiplier (
         .clk_i,
         .rst_ni,
         .trans_id_i        ( fu_data_i.trans_id  ),
@@ -104,9 +104,9 @@ module mult (
     // ---------------------
     // Serial Divider
     // ---------------------
-    serdiv #(
+    cva6_serdiv #(
         .WIDTH       ( 64 )
-    ) i_div (
+    ) i_cva6_div (
         .clk_i       ( clk_i                ),
         .rst_ni      ( rst_ni               ),
         .id_i        ( fu_data_i.trans_id   ),

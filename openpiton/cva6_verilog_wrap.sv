@@ -13,7 +13,7 @@
 // Description: Ariane Top-level wrapper to break out SV structs to logic vectors.
 
 
-module ariane_verilog_wrap #(
+module cva6_verilog_wrap #(
   parameter int unsigned               RASDepth              = 2,
   parameter int unsigned               BTBEntries            = 32,
   parameter int unsigned               BHTEntries            = 128,
@@ -52,26 +52,26 @@ module ariane_verilog_wrap #(
 
 `ifdef PITON_ARIANE
   // L15 (memory side)
-  output [$size(wt_cache_pkg::l15_req_t)-1:0]  l15_req_o,
-  input  [$size(wt_cache_pkg::l15_rtrn_t)-1:0] l15_rtrn_i
+  output [$size(cva6_wt_cache_pkg::l15_req_t)-1:0]  l15_req_o,
+  input  [$size(cva6_wt_cache_pkg::l15_rtrn_t)-1:0] l15_rtrn_i
 `else
   // AXI (memory side)
-  output [$size(ariane_axi::req_t)-1:0]             axi_req_o,
-  input  [$size(ariane_axi::resp_t)-1:0]            axi_resp_i
+  output [$size(cva6_axi::req_t)-1:0]             axi_req_o,
+  input  [$size(cva6_axi::resp_t)-1:0]            axi_resp_i
 `endif
  );
 
 // assign bitvector to packed struct and vice versa
 `ifdef PITON_ARIANE
   // L15 (memory side)
-  wt_cache_pkg::l15_req_t  l15_req;
-  wt_cache_pkg::l15_rtrn_t l15_rtrn;
+  cva6_wt_cache_pkg::l15_req_t  l15_req;
+  cva6_wt_cache_pkg::l15_rtrn_t l15_rtrn;
 
   assign l15_req_o = l15_req;
   assign l15_rtrn  = l15_rtrn_i;
 `else
-  ariane_axi::req_t             axi_req;
-  ariane_axi::resp_t            axi_resp;
+  cva6_axi::req_t             axi_req;
+  cva6_axi::resp_t            axi_resp;
 
   assign axi_req_o = axi_req;
   assign axi_resp  = axi_resp_i;
@@ -165,10 +165,10 @@ module ariane_verilog_wrap #(
   );
 
   /////////////////////////////
-  // ariane instance
+  // cva6 instance
   /////////////////////////////
 
-  localparam ariane_pkg::ariane_cfg_t ArianeOpenPitonCfg = '{
+  localparam cva6_pkg::cva6_cfg_t Cva6OpenPitonCfg = '{
     RASDepth:              RASDepth,
     BTBEntries:            BTBEntries,
     BHTEntries:            BHTEntries,
@@ -191,9 +191,9 @@ module ariane_verilog_wrap #(
     NrPMPEntries:          NrPMPEntries
   };
 
-  ariane #(
-    .ArianeCfg ( ArianeOpenPitonCfg )
-  ) ariane (
+  cva6 #(
+    .Cva6Cfg ( Cva6OpenPitonCfg )
+  ) cva6 (
     .clk_i       ( clk_i      ),
     .rst_ni      ( spc_grst_l ),
     .boot_addr_i              ,// constant
@@ -211,4 +211,4 @@ module ariane_verilog_wrap #(
 `endif
   );
 
-endmodule // ariane_verilog_wrap
+endmodule // cva6_verilog_wrap

@@ -1,4 +1,4 @@
-# First Stage Bootloader for Ariane
+# First Stage Bootloader for CVA6
 
 ## How-To prepare SD card
 The bootloader requires a GPT partition table so you first have to create one with gdisk.

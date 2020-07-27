@@ -8,28 +8,28 @@
  * CONDITIONS OF ANY KIND, either express or implied. See the License for the
  * specific language governing permissions and limitations under the License.
  *
- * File:   ariane_pkg.sv
+ * File:   cva6_pkg.sv
  * Author: Florian Zaruba <zarubaf@iis.ee.ethz.ch>
  * Date:   8.4.2017
  *
- * Description: Contains all the necessary defines for Ariane
+ * Description: Contains all the necessary defines for Cva6
  *              in one package.
  */
 
 // this is needed to propagate the
-// configuration in case Ariane is
+// configuration in case Cva6 is
 // instantiated in OpenPiton
 `ifdef PITON_ARIANE
   `include "l15.tmp.h"
 `endif
 
-package ariane_pkg;
+package cva6_pkg;
 
     // ---------------
     // Global Config
     // ---------------
     // This is the new user config interface system. If you need to parameterize something
-    // within Ariane add a field here and assign a default value to the config. Please make
+    // within Cva6 add a field here and assign a default value to the config. Please make
     // sure to add a propper parameter check to the `check_cfg` function.
     localparam NrMaxRules = 16;
 
@@ -53,9 +53,9 @@ package ariane_pkg;
       //
       logic [63:0]                      DmBaseAddress;         // offset of the debug module
       int unsigned                      NrPMPEntries;          // Number of PMP entries
-    } ariane_cfg_t;
+    } cva6_cfg_t;
 
-    localparam ariane_cfg_t ArianeDefaultConfig = '{
+    localparam cva6_cfg_t Cva6DefaultConfig = '{
       RASDepth: 2,
       BTBEntries: 32,
       BHTEntries: 128,
@@ -80,7 +80,7 @@ package ariane_pkg;
     };
 
     // Function being called to check parameters
-    function automatic void check_cfg (ariane_cfg_t Cfg);
+    function automatic void check_cfg (cva6_cfg_t Cfg);
       // pragma translate_off
       `ifndef VERILATOR
         assert(Cfg.RASDepth > 0);
@@ -99,7 +99,7 @@ package ariane_pkg;
       return (address >= base) && (address < (base+len));
     endfunction : range_check
 
-    function automatic logic is_inside_nonidempotent_regions (ariane_cfg_t Cfg, logic[63:0] address);
+    function automatic logic is_inside_nonidempotent_regions (cva6_cfg_t Cfg, logic[63:0] address);
       logic[NrMaxRules-1:0] pass;
       pass = '0;
       for (int unsigned k = 0; k < Cfg.NrNonIdempotentRules; k++) begin
@@ -108,7 +108,7 @@ package ariane_pkg;
       return |pass;
     endfunction : is_inside_nonidempotent_regions
 
-    function automatic logic is_inside_execute_regions (ariane_cfg_t Cfg, logic[63:0] address);
+    function automatic logic is_inside_execute_regions (cva6_cfg_t Cfg, logic[63:0] address);
       // if we don't specify any region we assume everything is accessible
       logic[NrMaxRules-1:0] pass;
       pass = '0;
@@ -118,7 +118,7 @@ package ariane_pkg;
       return |pass;
     endfunction : is_inside_execute_regions
 
-    function automatic logic is_inside_cacheable_regions (ariane_cfg_t Cfg, logic[63:0] address);
+    function automatic logic is_inside_cacheable_regions (cva6_cfg_t Cfg, logic[63:0] address);
       automatic logic[NrMaxRules-1:0] pass;
       pass = '0;
       for (int unsigned k = 0; k < Cfg.NrCachedRegionRules; k++) begin
@@ -205,7 +205,7 @@ package ariane_pkg;
     // ^^^^ until here ^^^^
     // ---------------------
 
-    localparam logic [63:0] ARIANE_MARCHID = 64'd3;
+    localparam logic [63:0] CVA6_MARCHID = 64'd3;
 
     localparam logic [63:0] ISA_CODE = (RVA <<  0)  // A - Atomic Instructions extension
                                      | (1   <<  2)  // C - Compressed extension
@@ -255,25 +255,25 @@ package ariane_pkg;
     localparam bit ZERO_TVAL = 1'b0;
 `endif
     // read mask for SSTATUS over MMSTATUS
-    localparam logic [63:0] SMODE_STATUS_READ_MASK = riscv::SSTATUS_UIE
-                                                   | riscv::SSTATUS_SIE
-                                                   | riscv::SSTATUS_SPIE
-                                                   | riscv::SSTATUS_SPP
-                                                   | riscv::SSTATUS_FS
-                                                   | riscv::SSTATUS_XS
-                                                   | riscv::SSTATUS_SUM
-                                                   | riscv::SSTATUS_MXR
-                                                   | riscv::SSTATUS_UPIE
-                                                   | riscv::SSTATUS_SPIE
-                                                   | riscv::SSTATUS_UXL
-                                                   | riscv::SSTATUS64_SD;
+    localparam logic [63:0] SMODE_STATUS_READ_MASK = cva6_riscv::SSTATUS_UIE
+                                                   | cva6_riscv::SSTATUS_SIE
+                                                   | cva6_riscv::SSTATUS_SPIE
+                                                   | cva6_riscv::SSTATUS_SPP
+                                                   | cva6_riscv::SSTATUS_FS
+                                                   | cva6_riscv::SSTATUS_XS
+                                                   | cva6_riscv::SSTATUS_SUM
+                                                   | cva6_riscv::SSTATUS_MXR
+                                                   | cva6_riscv::SSTATUS_UPIE
+                                                   | cva6_riscv::SSTATUS_SPIE
+                                                   | cva6_riscv::SSTATUS_UXL
+                                                   | cva6_riscv::SSTATUS64_SD;
 
-    localparam logic [63:0] SMODE_STATUS_WRITE_MASK = riscv::SSTATUS_SIE
-                                                    | riscv::SSTATUS_SPIE
-                                                    | riscv::SSTATUS_SPP
-                                                    | riscv::SSTATUS_FS
-                                                    | riscv::SSTATUS_SUM
-                                                    | riscv::SSTATUS_MXR;
+    localparam logic [63:0] SMODE_STATUS_WRITE_MASK = cva6_riscv::SSTATUS_SIE
+                                                    | cva6_riscv::SSTATUS_SPIE
+                                                    | cva6_riscv::SSTATUS_SPP
+                                                    | cva6_riscv::SSTATUS_FS
+                                                    | cva6_riscv::SSTATUS_SUM
+                                                    | cva6_riscv::SSTATUS_MXR;
     // ---------------
     // Fetch Stage
     // ---------------
@@ -307,8 +307,8 @@ package ariane_pkg;
     // bp_resolve_t
     typedef struct packed {
         logic                   valid;           // prediction with all its values is valid
-        logic [riscv::VLEN-1:0] pc;              // PC of predict or mis-predict
-        logic [riscv::VLEN-1:0] target_address;  // target address at which to jump, or not
+        logic [cva6_riscv::VLEN-1:0] pc;              // PC of predict or mis-predict
+        logic [cva6_riscv::VLEN-1:0] target_address;  // target address at which to jump, or not
         logic                   is_mispredict;   // set if this was a mis-predict
         logic                   is_taken;        // branch is taken
         cf_t                    cf_type;         // Type of control flow change
@@ -319,28 +319,28 @@ package ariane_pkg;
     // units towards the correct branch decision and resolve
     typedef struct packed {
         cf_t                    cf;              // type of control flow prediction
-        logic [riscv::VLEN-1:0] predict_address; // target address at which to jump, or not
+        logic [cva6_riscv::VLEN-1:0] predict_address; // target address at which to jump, or not
     } branchpredict_sbe_t;
 
     typedef struct packed {
         logic                   valid;
-        logic [riscv::VLEN-1:0] pc;             // update at PC
-        logic [riscv::VLEN-1:0] target_address;
+        logic [cva6_riscv::VLEN-1:0] pc;             // update at PC
+        logic [cva6_riscv::VLEN-1:0] target_address;
     } btb_update_t;
 
     typedef struct packed {
         logic                   valid;
-        logic [riscv::VLEN-1:0] target_address;
+        logic [cva6_riscv::VLEN-1:0] target_address;
     } btb_prediction_t;
 
     typedef struct packed {
         logic                   valid;
-        logic [riscv::VLEN-1:0] ra;
+        logic [cva6_riscv::VLEN-1:0] ra;
     } ras_t;
 
     typedef struct packed {
         logic                   valid;
-        logic [riscv::VLEN-1:0] pc;          // update at PC
+        logic [cva6_riscv::VLEN-1:0] pc;          // update at PC
         logic                   taken;
     } bht_update_t;
 
@@ -411,22 +411,22 @@ package ariane_pkg;
     localparam int unsigned ICACHE_LINE_WIDTH  = `CONFIG_L1I_CACHELINE_WIDTH;
     localparam int unsigned ICACHE_SET_ASSOC   = `CONFIG_L1I_ASSOCIATIVITY;
     localparam int unsigned ICACHE_INDEX_WIDTH = $clog2(`CONFIG_L1I_SIZE / ICACHE_SET_ASSOC);
-    localparam int unsigned ICACHE_TAG_WIDTH   = riscv::PLEN - ICACHE_INDEX_WIDTH;
+    localparam int unsigned ICACHE_TAG_WIDTH   = cva6_riscv::PLEN - ICACHE_INDEX_WIDTH;
     // D$
     localparam int unsigned DCACHE_LINE_WIDTH  = `CONFIG_L1D_CACHELINE_WIDTH;
     localparam int unsigned DCACHE_SET_ASSOC   = `CONFIG_L1D_ASSOCIATIVITY;
     localparam int unsigned DCACHE_INDEX_WIDTH = $clog2(`CONFIG_L1D_SIZE / DCACHE_SET_ASSOC);
-    localparam int unsigned DCACHE_TAG_WIDTH   = riscv::PLEN - DCACHE_INDEX_WIDTH;
+    localparam int unsigned DCACHE_TAG_WIDTH   = cva6_riscv::PLEN - DCACHE_INDEX_WIDTH;
 `else
     // align to openpiton for the time being (this should be more configurable in the future)
      // I$
     localparam int unsigned ICACHE_INDEX_WIDTH = 12;  // in bit
-    localparam int unsigned ICACHE_TAG_WIDTH   = riscv::PLEN-ICACHE_INDEX_WIDTH;  // in bit
+    localparam int unsigned ICACHE_TAG_WIDTH   = cva6_riscv::PLEN-ICACHE_INDEX_WIDTH;  // in bit
     localparam int unsigned ICACHE_LINE_WIDTH  = 128; // in bit
     localparam int unsigned ICACHE_SET_ASSOC   = 4;
     // D$
     localparam int unsigned DCACHE_INDEX_WIDTH = 12;  // in bit
-    localparam int unsigned DCACHE_TAG_WIDTH   = riscv::PLEN-DCACHE_INDEX_WIDTH;  // in bit
+    localparam int unsigned DCACHE_TAG_WIDTH   = cva6_riscv::PLEN-DCACHE_INDEX_WIDTH;  // in bit
     localparam int unsigned DCACHE_LINE_WIDTH  = 128; // in bit
     localparam int unsigned DCACHE_SET_ASSOC   = 8;
 `endif
@@ -565,7 +565,7 @@ package ariane_pkg;
 
     typedef struct packed {
         logic                     valid;
-        logic [riscv::VLEN-1:0]   vaddr;
+        logic [cva6_riscv::VLEN-1:0]   vaddr;
         logic                     overflow;
         logic [63:0]              data;
         logic [7:0]               be;
@@ -579,7 +579,7 @@ package ariane_pkg;
     // ---------------
     // store the decompressed instruction
     typedef struct packed {
-        logic [riscv::VLEN-1:0] address;        // the address of the instructions from below
+        logic [cva6_riscv::VLEN-1:0] address;        // the address of the instructions from below
         logic [31:0]            instruction;    // instruction word
         branchpredict_sbe_t     branch_predict; // this field contains branch prediction information regarding the forward branch path
         exception_t             ex;             // this field contains exceptions which might have happened earlier, e.g.: fetch exceptions
@@ -589,7 +589,7 @@ package ariane_pkg;
     // ID/EX/WB Stage
     // ---------------
     typedef struct packed {
-        logic [riscv::VLEN-1:0]   pc;            // PC of instruction
+        logic [cva6_riscv::VLEN-1:0]   pc;            // PC of instruction
         logic [TRANS_ID_BITS-1:0] trans_id;      // this can potentially be simplified, we could index the scoreboard entry
                                                  // with the transaction id in any case make the width more generic
         fu_t                      fu;            // functional unit to use
@@ -637,7 +637,7 @@ package ariane_pkg;
         logic                  is_1G;      //
         logic [26:0]           vpn;
         logic [ASID_WIDTH-1:0] asid;
-        riscv::pte_t           content;
+        cva6_riscv::pte_t           content;
     } tlb_update_t;
 
     localparam logic [3:0] MODE_SV39 = 4'h8;
@@ -659,13 +659,13 @@ package ariane_pkg;
     // I$ address translation requests
     typedef struct packed {
         logic                     fetch_valid;     // address translation valid
-        logic [riscv::PLEN-1:0]   fetch_paddr;     // physical address in
+        logic [cva6_riscv::PLEN-1:0]   fetch_paddr;     // physical address in
         exception_t               fetch_exception; // exception occurred during fetch
     } icache_areq_i_t;
 
     typedef struct packed {
         logic                     fetch_req;       // address translation request
-        logic [riscv::VLEN-1:0]   fetch_vaddr;     // virtual address out
+        logic [cva6_riscv::VLEN-1:0]   fetch_vaddr;     // virtual address out
     } icache_areq_o_t;
 
     // I$ data requests
@@ -673,14 +673,14 @@ package ariane_pkg;
         logic                     req;                    // we request a new word
         logic                     kill_s1;                // kill the current request
         logic                     kill_s2;                // kill the last request
-        logic [riscv::VLEN-1:0]   vaddr;                  // 1st cycle: 12 bit index is taken for lookup
+        logic [cva6_riscv::VLEN-1:0]   vaddr;                  // 1st cycle: 12 bit index is taken for lookup
     } icache_dreq_i_t;
 
     typedef struct packed {
         logic                     ready;                  // icache is ready
         logic                     valid;                  // signals a valid read
         logic [FETCH_WIDTH-1:0]   data;                   // 2+ cycle out: tag
-        logic [riscv::VLEN-1:0]   vaddr;                  // virtual address out
+        logic [cva6_riscv::VLEN-1:0]   vaddr;                  // virtual address out
         exception_t               ex;                     // we've encountered an exception
     } icache_dreq_o_t;
 
@@ -731,16 +731,16 @@ package ariane_pkg;
     // ----------------------
     // Immediate functions
     // ----------------------
-    function automatic logic [riscv::VLEN-1:0] uj_imm (logic [31:0] instruction_i);
-        return { {44+riscv::VLEN-64 {instruction_i[31]}}, instruction_i[19:12], instruction_i[20], instruction_i[30:21], 1'b0 };
+    function automatic logic [cva6_riscv::VLEN-1:0] uj_imm (logic [31:0] instruction_i);
+        return { {44+cva6_riscv::VLEN-64 {instruction_i[31]}}, instruction_i[19:12], instruction_i[20], instruction_i[30:21], 1'b0 };
     endfunction
 
-    function automatic logic [riscv::VLEN-1:0] i_imm (logic [31:0] instruction_i);
-        return { {52+riscv::VLEN-64 {instruction_i[31]}}, instruction_i[31:20] };
+    function automatic logic [cva6_riscv::VLEN-1:0] i_imm (logic [31:0] instruction_i);
+        return { {52+cva6_riscv::VLEN-64 {instruction_i[31]}}, instruction_i[31:20] };
     endfunction
 
-    function automatic logic [riscv::VLEN-1:0] sb_imm (logic [31:0] instruction_i);
-        return { {51+riscv::VLEN-64 {instruction_i[31]}}, instruction_i[31], instruction_i[7], instruction_i[30:25], instruction_i[11:8], 1'b0 };
+    function automatic logic [cva6_riscv::VLEN-1:0] sb_imm (logic [31:0] instruction_i);
+        return { {51+cva6_riscv::VLEN-64 {instruction_i[31]}}, instruction_i[31], instruction_i[7], instruction_i[30:25], instruction_i[11:8], 1'b0 };
     endfunction
 
     // ----------------------

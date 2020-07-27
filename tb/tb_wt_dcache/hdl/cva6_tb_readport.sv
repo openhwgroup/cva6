@@ -15,13 +15,13 @@
 // the expected responses coming directly from the emulated memory (tb_mem).
 //
 
-`include "tb.svh"
+`include "cva6_tb.svh"
 
-import ariane_pkg::*;
-import wt_cache_pkg::*;
-import tb_pkg::*;
+import cva6_pkg::*;
+import cva6_wt_cache_pkg::*;
+import cva6_tb_pkg::*;
 
-program tb_readport  #(
+program cva6_tb_readport  #(
   parameter string       PortName      = "read port 0",
   parameter              FlushRate     = 1,
   parameter              KillRate      = 5,

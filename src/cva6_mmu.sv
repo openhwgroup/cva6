@@ -10,17 +10,17 @@
 //
 // Author: Florian Zaruba, ETH Zurich
 // Date: 19/04/2017
-// Description: Memory Management Unit for Ariane, contains TLB and
+// Description: Memory Management Unit for Cva6, contains TLB and
 //              address translation unit. SV39 as defined in RISC-V
 //              privilege specification 1.11-WIP
 
-import ariane_pkg::*;
+import cva6_pkg::*;
 
-module mmu #(
+module cva6_mmu #(
     parameter int unsigned INSTR_TLB_ENTRIES     = 4,
     parameter int unsigned DATA_TLB_ENTRIES      = 4,
     parameter int unsigned ASID_WIDTH            = 1,
-    parameter ariane_pkg::ariane_cfg_t ArianeCfg = ariane_pkg::ArianeDefaultConfig
+    parameter cva6_pkg::cva6_cfg_t Cva6Cfg = cva6_pkg::Cva6DefaultConfig
 ) (
     input  logic                            clk_i,
     input  logic                            rst_ni,
@@ -45,8 +45,8 @@ module mmu #(
     output logic [63:0]                     lsu_paddr_o,      // translated address
     output exception_t                      lsu_exception_o,  // address translation threw an exception
     // General control signals
-    input riscv::priv_lvl_t                 priv_lvl_i,
-    input riscv::priv_lvl_t                 ld_st_priv_lvl_i,
+    input cva6_riscv::priv_lvl_t                 priv_lvl_i,
+    input cva6_riscv::priv_lvl_t                 ld_st_priv_lvl_i,
     input logic                             sum_i,
     input logic                             mxr_i,
     // input logic flag_mprv_i,
@@ -60,8 +60,8 @@ module mmu #(
     input  dcache_req_o_t                   req_port_i,
     output dcache_req_i_t                   req_port_o,
     // PMP
-    input  riscv::pmpcfg_t [ArianeCfg.NrPMPEntries-1:0] pmpcfg_i,
-    input  logic [ArianeCfg.NrPMPEntries-1:0][53:0]     pmpaddr_i
+    input  cva6_riscv::pmpcfg_t [Cva6Cfg.NrPMPEntries-1:0] pmpcfg_i,
+    input  logic [Cva6Cfg.NrPMPEntries-1:0][53:0]     pmpaddr_i
 );
 
     logic        iaccess_err;   // insufficient privilege to access this instruction page
@@ -72,17 +72,17 @@ module mmu #(
     logic        ptw_access_exception; // PTW threw an access exception (PMPs)
     logic [63:0] ptw_bad_paddr; // PTW PMP exception bad physical addr
 
-    logic [riscv::VLEN-1:0] update_vaddr;
+    logic [cva6_riscv::VLEN-1:0] update_vaddr;
     tlb_update_t update_ptw_itlb, update_ptw_dtlb;
 
     logic        itlb_lu_access;
-    riscv::pte_t itlb_content;
+    cva6_riscv::pte_t itlb_content;
     logic        itlb_is_2M;
     logic        itlb_is_1G;
     logic        itlb_lu_hit;
 
     logic        dtlb_lu_access;
-    riscv::pte_t dtlb_content;
+    cva6_riscv::pte_t dtlb_content;
     logic        dtlb_is_2M;
     logic        dtlb_is_1G;
     logic        dtlb_lu_hit;
@@ -93,10 +93,10 @@ module mmu #(
     assign dtlb_lu_access = lsu_req_i;
 
 
-    tlb #(
+    cva6_tlb #(
         .TLB_ENTRIES      ( INSTR_TLB_ENTRIES          ),
         .ASID_WIDTH       ( ASID_WIDTH                 )
-    ) i_itlb (
+    ) i_cva6_itlb (
         .clk_i            ( clk_i                      ),
         .rst_ni           ( rst_ni                     ),
         .flush_i          ( flush_tlb_i                ),
@@ -113,10 +113,10 @@ module mmu #(
         .lu_hit_o         ( itlb_lu_hit                )
     );
 
-    tlb #(
+    cva6_tlb #(
         .TLB_ENTRIES     ( DATA_TLB_ENTRIES             ),
         .ASID_WIDTH      ( ASID_WIDTH                   )
-    ) i_dtlb (
+    ) i_cva6_dtlb (
         .clk_i            ( clk_i                       ),
         .rst_ni           ( rst_ni                      ),
         .flush_i          ( flush_tlb_i                 ),
@@ -134,10 +134,10 @@ module mmu #(
     );
 
 
-    ptw  #(
+    cva6_ptw  #(
         .ASID_WIDTH             ( ASID_WIDTH            ),
-        .ArianeCfg              ( ArianeCfg             )
-    ) i_ptw (
+        .Cva6Cfg              ( Cva6Cfg             )
+    ) i_cva6_ptw (
         .clk_i                  ( clk_i                 ),
         .rst_ni                 ( rst_ni                ),
         .ptw_active_o           ( ptw_active            ),
@@ -195,14 +195,14 @@ module mmu #(
     always_comb begin : instr_interface
         // MMU disabled: just pass through
         icache_areq_o.fetch_valid  = icache_areq_i.fetch_req;
-        icache_areq_o.fetch_paddr  = icache_areq_i.fetch_vaddr[riscv::PLEN-1:0]; // play through in case we disabled address translation
+        icache_areq_o.fetch_paddr  = icache_areq_i.fetch_vaddr[cva6_riscv::PLEN-1:0]; // play through in case we disabled address translation
         // two potential exception sources:
         // 1. HPTW threw an exception -> signal with a page fault exception
         // 2. We got an access error because of insufficient permissions -> throw an access exception
         icache_areq_o.fetch_exception      = '0;
         // Check whether we are allowed to access this memory region from a fetch perspective
-        iaccess_err   = icache_areq_i.fetch_req && (((priv_lvl_i == riscv::PRIV_LVL_U) && ~itlb_content.u)
-                                                 || ((priv_lvl_i == riscv::PRIV_LVL_S) && itlb_content.u));
+        iaccess_err   = icache_areq_i.fetch_req && (((priv_lvl_i == cva6_riscv::PRIV_LVL_U) && ~itlb_content.u)
+                                                 || ((priv_lvl_i == cva6_riscv::PRIV_LVL_S) && itlb_content.u));
 
         // MMU enabled: address from TLB, request delayed until hit. Error when TLB
         // hit and no access right or TLB hit and translated address not valid (e.g.
@@ -210,8 +210,8 @@ module mmu #(
         // an error.
         if (enable_translation_i) begin
             // we work with SV39, so if VM is enabled, check that all bits [riscv::VLEN-1:38] are equal
-            if (icache_areq_i.fetch_req && !((&icache_areq_i.fetch_vaddr[riscv::VLEN-1:38]) == 1'b1 || (|icache_areq_i.fetch_vaddr[riscv::VLEN-1:38]) == 1'b0)) begin
-                icache_areq_o.fetch_exception = {riscv::INSTR_ACCESS_FAULT, {{64-riscv::VLEN{1'b0}}, icache_areq_i.fetch_vaddr}, 1'b1};
+            if (icache_areq_i.fetch_req && !((&icache_areq_i.fetch_vaddr[cva6_riscv::VLEN-1:38]) == 1'b1 || (|icache_areq_i.fetch_vaddr[cva6_riscv::VLEN-1:38]) == 1'b0)) begin
+                icache_areq_o.fetch_exception = {cva6_riscv::INSTR_ACCESS_FAULT, {{64-cva6_riscv::VLEN{1'b0}}, icache_areq_i.fetch_vaddr}, 1'b1};
             end
 
             icache_areq_o.fetch_valid = 1'b0;
@@ -236,9 +236,9 @@ module mmu #(
                 // we got an access error
                 if (iaccess_err) begin
                     // throw a page fault
-                    icache_areq_o.fetch_exception = {riscv::INSTR_PAGE_FAULT, {{64-riscv::VLEN{1'b0}}, icache_areq_i.fetch_vaddr}, 1'b1};
+                    icache_areq_o.fetch_exception = {cva6_riscv::INSTR_PAGE_FAULT, {{64-cva6_riscv::VLEN{1'b0}}, icache_areq_i.fetch_vaddr}, 1'b1};
                 end else if (!pmp_instr_allow) begin
-                    icache_areq_o.fetch_exception = {riscv::INSTR_ACCESS_FAULT, {{64-riscv::PLEN{1'b0}}, icache_areq_i.fetch_vaddr}, 1'b1};
+                    icache_areq_o.fetch_exception = {cva6_riscv::INSTR_ACCESS_FAULT, {{64-cva6_riscv::PLEN{1'b0}}, icache_areq_i.fetch_vaddr}, 1'b1};
                 end
             end else
             // ---------
@@ -247,31 +247,31 @@ module mmu #(
             // watch out for exceptions happening during walking the page table
             if (ptw_active && walking_instr) begin
                 icache_areq_o.fetch_valid = ptw_error | ptw_access_exception;
-                if (ptw_error) icache_areq_o.fetch_exception = {riscv::INSTR_PAGE_FAULT, {{64-riscv::VLEN{1'b0}}, update_vaddr}, 1'b1};
+                if (ptw_error) icache_areq_o.fetch_exception = {cva6_riscv::INSTR_PAGE_FAULT, {{64-cva6_riscv::VLEN{1'b0}}, update_vaddr}, 1'b1};
                 // TODO(moschn,zarubaf): What should the value of tval be in this case?
-                else icache_areq_o.fetch_exception = {riscv::INSTR_ACCESS_FAULT, {{64-riscv::VLEN{1'b0}}, ptw_bad_paddr}, 1'b1};
+                else icache_areq_o.fetch_exception = {cva6_riscv::INSTR_ACCESS_FAULT, {{64-cva6_riscv::VLEN{1'b0}}, ptw_bad_paddr}, 1'b1};
             end
         end
         // if it didn't match any execute region throw an `Instruction Access Fault`
         // or: if we are not translating, check PMPs immediately on the paddr
         if (!match_any_execute_region || (!enable_translation_i && !pmp_instr_allow)) begin
-          icache_areq_o.fetch_exception = {riscv::INSTR_ACCESS_FAULT, {{64-riscv::PLEN{1'b0}}, icache_areq_o.fetch_paddr}, 1'b1};
+          icache_areq_o.fetch_exception = {cva6_riscv::INSTR_ACCESS_FAULT, {{64-cva6_riscv::PLEN{1'b0}}, icache_areq_o.fetch_paddr}, 1'b1};
         end
     end
 
     // check for execute flag on memory
-    assign match_any_execute_region = ariane_pkg::is_inside_execute_regions(ArianeCfg, {{64-riscv::PLEN{1'b0}}, icache_areq_o.fetch_paddr});
+    assign match_any_execute_region = cva6_pkg::is_inside_execute_regions(Cva6Cfg, {{64-cva6_riscv::PLEN{1'b0}}, icache_areq_o.fetch_paddr});
 
     // Instruction fetch
-    pmp #(
+    cva6_pmp #(
         .XLEN       ( 64                     ),
         .PMP_LEN    ( 54                     ),
-        .NR_ENTRIES ( ArianeCfg.NrPMPEntries )
-    ) i_pmp_if (
+        .NR_ENTRIES ( Cva6Cfg.NrPMPEntries )
+    ) i_cva6_pmp_if (
         .addr_i        ( icache_areq_o.fetch_paddr ),
         .priv_lvl_i,
         // we will always execute on the instruction fetch port
-        .access_type_i ( riscv::ACCESS_EXEC        ),
+        .access_type_i ( cva6_riscv::ACCESS_EXEC        ),
         // Configuration
         .conf_addr_i   ( pmpaddr_i                 ),
         .conf_i        ( pmpcfg_i                  ),
@@ -281,8 +281,8 @@ module mmu #(
     //-----------------------
     // Data Interface
     //-----------------------
-    logic [riscv::VLEN-1:0] lsu_vaddr_n,     lsu_vaddr_q;
-    riscv::pte_t dtlb_pte_n,      dtlb_pte_q;
+    logic [cva6_riscv::VLEN-1:0] lsu_vaddr_n,     lsu_vaddr_q;
+    cva6_riscv::pte_t dtlb_pte_n,      dtlb_pte_q;
     exception_t  misaligned_ex_n, misaligned_ex_q;
     logic        lsu_req_n,       lsu_req_q;
     logic        lsu_is_store_n,  lsu_is_store_q;
@@ -294,7 +294,7 @@ module mmu #(
     assign lsu_dtlb_hit_o = (en_ld_st_translation_i) ? dtlb_lu_hit :  1'b1;
 
     // Wires to PMP checks
-    riscv::pmp_access_t pmp_access_type;
+    cva6_riscv::pmp_access_t pmp_access_type;
     logic        pmp_data_allow;
     // The data interface is simpler and only consists of a request/response interface
     always_comb begin : data_interface
@@ -308,18 +308,18 @@ module mmu #(
         dtlb_is_2M_n          = dtlb_is_2M;
         dtlb_is_1G_n          = dtlb_is_1G;
 
-        lsu_paddr_o           = lsu_vaddr_q[riscv::PLEN-1:0];
+        lsu_paddr_o           = lsu_vaddr_q[cva6_riscv::PLEN-1:0];
         lsu_valid_o           = lsu_req_q;
         lsu_exception_o       = misaligned_ex_q;
-        pmp_access_type       = lsu_is_store_q ? riscv::ACCESS_WRITE : riscv::ACCESS_READ;
+        pmp_access_type       = lsu_is_store_q ? cva6_riscv::ACCESS_WRITE : cva6_riscv::ACCESS_READ;
 
         // mute misaligned exceptions if there is no request otherwise they will throw accidental exceptions
         misaligned_ex_n.valid = misaligned_ex_i.valid & lsu_req_i;
 
         // Check if the User flag is set, then we may only access it in supervisor mode
         // if SUM is enabled
-        daccess_err = (ld_st_priv_lvl_i == riscv::PRIV_LVL_S && !sum_i && dtlb_pte_q.u) || // SUM is not set and we are trying to access a user page in supervisor mode
-                      (ld_st_priv_lvl_i == riscv::PRIV_LVL_U && !dtlb_pte_q.u);            // this is not a user page but we are in user mode and trying to access it
+        daccess_err = (ld_st_priv_lvl_i == cva6_riscv::PRIV_LVL_S && !sum_i && dtlb_pte_q.u) || // SUM is not set and we are trying to access a user page in supervisor mode
+                      (ld_st_priv_lvl_i == cva6_riscv::PRIV_LVL_U && !dtlb_pte_q.u);            // this is not a user page but we are in user mode and trying to access it
         // translation is enabled and no misaligned exception occurred
         if (en_ld_st_translation_i && !misaligned_ex_q.valid) begin
             lsu_valid_o = 1'b0;
@@ -348,20 +348,20 @@ module mmu #(
                     // check if the page is write-able and we are not violating privileges
                     // also check if the dirty flag is set
                     if (!dtlb_pte_q.w || daccess_err || !dtlb_pte_q.d) begin
-                        lsu_exception_o = {riscv::STORE_PAGE_FAULT, {{64-riscv::VLEN{lsu_vaddr_q[riscv::VLEN-1]}},lsu_vaddr_q}, 1'b1};
+                        lsu_exception_o = {cva6_riscv::STORE_PAGE_FAULT, {{64-cva6_riscv::VLEN{lsu_vaddr_q[cva6_riscv::VLEN-1]}},lsu_vaddr_q}, 1'b1};
                     // Check if any PMPs are violated
                     end else if (!pmp_data_allow) begin
-                        lsu_exception_o = {riscv::ST_ACCESS_FAULT, {{64-riscv::PLEN{1'b0}}, lsu_paddr_o}, 1'b1};
+                        lsu_exception_o = {cva6_riscv::ST_ACCESS_FAULT, {{64-cva6_riscv::PLEN{1'b0}}, lsu_paddr_o}, 1'b1};
                     end
 
                 // this is a load
                 end else begin
                     // check for sufficient access privileges - throw a page fault if necessary
                     if (daccess_err) begin
-                        lsu_exception_o = {riscv::LOAD_PAGE_FAULT, {{64-riscv::VLEN{lsu_vaddr_q[riscv::VLEN-1]}},lsu_vaddr_q}, 1'b1};
+                        lsu_exception_o = {cva6_riscv::LOAD_PAGE_FAULT, {{64-cva6_riscv::VLEN{lsu_vaddr_q[cva6_riscv::VLEN-1]}},lsu_vaddr_q}, 1'b1};
                     // Check if any PMPs are violated
                     end else if (!pmp_data_allow) begin
-                        lsu_exception_o = {riscv::LD_ACCESS_FAULT, {{64-riscv::PLEN{1'b0}}, lsu_paddr_o}, 1'b1};
+                        lsu_exception_o = {cva6_riscv::LD_ACCESS_FAULT, {{64-cva6_riscv::PLEN{1'b0}}, lsu_paddr_o}, 1'b1};
                     end
                 end
             end else
@@ -377,9 +377,9 @@ module mmu #(
                     lsu_valid_o = 1'b1;
                     // the page table walker can only throw page faults
                     if (lsu_is_store_q) begin
-                        lsu_exception_o = {riscv::STORE_PAGE_FAULT, {{64-riscv::VLEN{lsu_vaddr_q[riscv::VLEN-1]}},update_vaddr}, 1'b1};
+                        lsu_exception_o = {cva6_riscv::STORE_PAGE_FAULT, {{64-cva6_riscv::VLEN{lsu_vaddr_q[cva6_riscv::VLEN-1]}},update_vaddr}, 1'b1};
                     end else begin
-                        lsu_exception_o = {riscv::LOAD_PAGE_FAULT, {{64-riscv::VLEN{lsu_vaddr_q[riscv::VLEN-1]}},update_vaddr}, 1'b1};
+                        lsu_exception_o = {cva6_riscv::LOAD_PAGE_FAULT, {{64-cva6_riscv::VLEN{lsu_vaddr_q[cva6_riscv::VLEN-1]}},update_vaddr}, 1'b1};
                     end
                 end
 
@@ -387,26 +387,26 @@ module mmu #(
                     // an error makes the translation valid
                     lsu_valid_o = 1'b1;
                     // the page table walker can only throw page faults
-                    lsu_exception_o = {riscv::LD_ACCESS_FAULT, ptw_bad_paddr, 1'b1};
+                    lsu_exception_o = {cva6_riscv::LD_ACCESS_FAULT, ptw_bad_paddr, 1'b1};
                 end
             end
         end
         // If translation is not enabled, check the paddr immediately against PMPs
         else if (lsu_req_q && !misaligned_ex_q.valid && !pmp_data_allow) begin
             if (lsu_is_store_q) begin
-                lsu_exception_o = {riscv::ST_ACCESS_FAULT, lsu_paddr_o, 1'b1};
+                lsu_exception_o = {cva6_riscv::ST_ACCESS_FAULT, lsu_paddr_o, 1'b1};
             end else begin
-                lsu_exception_o = {riscv::LD_ACCESS_FAULT, lsu_paddr_o, 1'b1};
+                lsu_exception_o = {cva6_riscv::LD_ACCESS_FAULT, lsu_paddr_o, 1'b1};
             end
         end
     end
 
     // Load/store PMP check
-    pmp #(
+    cva6_pmp #(
         .XLEN       ( 64                     ),
         .PMP_LEN    ( 54                     ),
-        .NR_ENTRIES ( ArianeCfg.NrPMPEntries )
-    ) i_pmp_data (
+        .NR_ENTRIES ( Cva6Cfg.NrPMPEntries )
+    ) i_cva6_pmp_data (
         .addr_i        ( lsu_paddr_o         ),
         .priv_lvl_i    ( ld_st_priv_lvl_i    ),
         .access_type_i ( pmp_access_type     ),

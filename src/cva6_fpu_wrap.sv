@@ -12,9 +12,9 @@
 // Date: 12.04.2018
 // Description: Wrapper for the floating-point unit
 
-import ariane_pkg::*;
+import cva6_pkg::*;
 
-module fpu_wrap (
+module cva6_fpu_wrap (
   input  logic                     clk_i,
   input  logic                     rst_ni,
   input  logic                     flush_i,
@@ -53,7 +53,7 @@ module fpu_wrap (
     // Features (enabled formats, vectors etc.)
     localparam fpnew_pkg::fpu_features_t FPU_FEATURES = '{
       Width:         64,
-      EnableVectors: ariane_pkg::XFVEC,
+      EnableVectors: cva6_pkg::XFVEC,
       EnableNanBox:  1'b1,
       FpFmtMask:     {RVF, RVD, XF16, XF8, XF16ALT},
       IntFmtMask:    {XFVEC && XF8, XFVEC && (XF16 || XF16ALT), 1'b1, 1'b1}

@@ -17,10 +17,10 @@
 //
 // Description: Cache controller
 
-import ariane_pkg::*;
-import std_cache_pkg::*;
+import cva6_pkg::*;
+import cva6_std_cache_pkg::*;
 
-module cache_ctrl #(
+module cva6_cache_ctrl #(
     parameter logic [63:0] CACHE_START_ADDR  = 64'h4000_0000
 ) (
     input  logic                                 clk_i,     // Clock

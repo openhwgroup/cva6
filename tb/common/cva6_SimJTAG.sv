@@ -10,7 +10,7 @@ import "DPI-C" function int jtag_tick
  input bit  jtag_TDO
 );
 
-module SimJTAG #(
+module cva6_SimJTAG #(
                  parameter TICK_DELAY = 50
                  )(
 

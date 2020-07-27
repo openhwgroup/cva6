@@ -43,7 +43,7 @@ uint32_t counter = 0;
  * @param config (.cfg) file with the configurations
  */
 extern "C" void init_dromajo(char* cfg_f_name) {
-  char *argv[] = {(char*)"Variane", cfg_f_name};
+  char *argv[] = {(char*)"Vcva6", cfg_f_name};
 
   dromajo_pointer = dromajo_cosim_init(2, argv);
 }

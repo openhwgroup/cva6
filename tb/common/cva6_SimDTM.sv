@@ -15,7 +15,7 @@ import "DPI-C" function int debug_tick
   input  int        debug_resp_bits_data
 );
 
-module SimDTM(
+module cva6_SimDTM(
   input clk,
   input reset,
 

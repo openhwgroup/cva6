@@ -10,7 +10,7 @@
 //
 // Author: Florian Zaruba, ETH Zurich
 // Date: 19.03.2017
-// Description: Ariane Top-level module
+// Description: Cva6 Top-level module
 
 `ifdef DROMAJO
 import "DPI-C" function void dromajo_trap(int     hart_id,
@@ -22,10 +22,10 @@ import "DPI-C" function void dromajo_step(int     hart_id,
 import "DPI-C" function void init_dromajo(string cfg_f_name);
 `endif
 
-import ariane_pkg::*;
+import cva6_pkg::*;
 
-module ariane #(
-  parameter ariane_pkg::ariane_cfg_t ArianeCfg     = ariane_pkg::ArianeDefaultConfig
+module cva6 #(
+  parameter cva6_pkg::cva6_cfg_t Cva6Cfg     = cva6_pkg::Cva6DefaultConfig
 ) (
   input  logic                         clk_i,
   input  logic                         rst_ni,
@@ -49,8 +49,8 @@ module ariane #(
   input  wt_cache_pkg::l15_rtrn_t      l15_rtrn_i
 `else
   // memory side, AXI Master
-  output ariane_axi::req_t             axi_req_o,
-  input  ariane_axi::resp_t            axi_resp_i
+  output cva6_axi::req_t             axi_req_o,
+  input  cva6_axi::resp_t            axi_resp_i
 `endif
 );
 
@@ -58,18 +58,18 @@ module ariane #(
   // Global Signals
   // Signals connecting more than one module
   // ------------------------------------------
-  riscv::priv_lvl_t           priv_lvl;
+  cva6_riscv::priv_lvl_t           priv_lvl;
   exception_t                 ex_commit; // exception from commit stage
   bp_resolve_t                resolved_branch;
-  logic [riscv::VLEN-1:0]     pc_commit;
+  logic [cva6_riscv::VLEN-1:0]     pc_commit;
   logic                       eret;
   logic [NR_COMMIT_PORTS-1:0] commit_ack;
 
   // --------------
   // PCGEN <-> CSR
   // --------------
-  logic [riscv::VLEN-1:0]     trap_vector_base_commit_pcgen;
-  logic [riscv::VLEN-1:0]     epc_commit_pcgen;
+  logic [cva6_riscv::VLEN-1:0]     trap_vector_base_commit_pcgen;
+  logic [cva6_riscv::VLEN-1:0]     epc_commit_pcgen;
   // --------------
   // IF <-> ID
   // --------------
@@ -89,7 +89,7 @@ module ariane #(
   // ISSUE <-> EX
   // --------------
   fu_data_t                 fu_data_id_ex;
-  logic [riscv::VLEN-1:0]   pc_id_ex;
+  logic [cva6_riscv::VLEN-1:0]   pc_id_ex;
   logic                     is_compressed_instr_id_ex;
   // fixed latency units
   logic                     flu_ready_ex_id;
@@ -158,12 +158,12 @@ module ariane #(
   // CSR <-> *
   // --------------
   logic [4:0]               fflags_csr_commit;
-  riscv::xs_t               fs;
+  cva6_riscv::xs_t               fs;
   logic [2:0]               frm_csr_id_issue_ex;
   logic [6:0]               fprec_csr_ex;
   logic                     enable_translation_csr_ex;
   logic                     en_ld_st_translation_csr_ex;
-  riscv::priv_lvl_t         ld_st_priv_lvl_csr_ex;
+  cva6_riscv::priv_lvl_t         ld_st_priv_lvl_csr_ex;
   logic                     sum_csr_ex;
   logic                     mxr_csr_ex;
   logic [43:0]              satp_ppn_csr_ex;
@@ -182,8 +182,8 @@ module ariane #(
   logic                     icache_en_csr;
   logic                     debug_mode;
   logic                     single_step_csr_commit;
-  riscv::pmpcfg_t [ArianeCfg.NrPMPEntries-1:0] pmpcfg;
-  logic [ArianeCfg.NrPMPEntries-1:0][53:0]     pmpaddr;
+  cva6_riscv::pmpcfg_t [Cva6Cfg.NrPMPEntries-1:0] pmpcfg;
+  logic [Cva6Cfg.NrPMPEntries-1:0][53:0]     pmpaddr;
   // ----------------------------
   // Performance Counters <-> *
   // ----------------------------
@@ -236,9 +236,9 @@ module ariane #(
   // --------------
   // Frontend
   // --------------
-  frontend #(
-    .ArianeCfg ( ArianeCfg )
-  ) i_frontend (
+  cva6_frontend #(
+    .Cva6Cfg ( Cva6Cfg )
+  ) i_cva6_frontend (
     .flush_i             ( flush_ctrl_if                 ), // not entirely correct
     .flush_bp_i          ( 1'b0                          ),
     .debug_mode_i        ( debug_mode                    ),
@@ -262,7 +262,7 @@ module ariane #(
   // ---------
   // ID
   // ---------
-  id_stage id_stage_i (
+  cva6_id_stage cva6_id_stage_i (
     .clk_i,
     .rst_ni,
     .flush_i                    ( flush_ctrl_if              ),
@@ -291,11 +291,11 @@ module ariane #(
   // ---------
   // Issue
   // ---------
-  issue_stage #(
+  cva6_issue_stage #(
     .NR_ENTRIES                 ( NR_SB_ENTRIES                ),
     .NR_WB_PORTS                ( NR_WB_PORTS                  ),
     .NR_COMMIT_PORTS            ( NR_COMMIT_PORTS              )
-  ) issue_stage_i (
+  ) cva6_issue_stage_i (
     .clk_i,
     .rst_ni,
     .sb_full_o                  ( sb_full                      ),
@@ -349,9 +349,9 @@ module ariane #(
   // ---------
   // EX
   // ---------
-  ex_stage #(
-    .ArianeCfg ( ArianeCfg )
-  ) ex_stage_i (
+  cva6_ex_stage #(
+    .Cva6Cfg ( Cva6Cfg )
+  ) cva6_ex_stage_i (
     .clk_i                  ( clk_i                       ),
     .rst_ni                 ( rst_ni                      ),
     .debug_mode_i           ( debug_mode                  ),
@@ -442,9 +442,9 @@ module ariane #(
   // used e.g. for fence instructions.
   assign no_st_pending_commit = no_st_pending_ex & dcache_commit_wbuffer_empty;
 
-  commit_stage #(
+  cva6_commit_stage #(
     .NR_COMMIT_PORTS ( NR_COMMIT_PORTS )
-  ) commit_stage_i (
+  ) cva6_commit_stage_i (
     .clk_i,
     .rst_ni,
     .halt_i                 ( halt_ctrl                     ),
@@ -481,12 +481,12 @@ module ariane #(
   // ---------
   // CSR
   // ---------
-  csr_regfile #(
+  cva6_csr_regfile #(
     .AsidWidth              ( ASID_WIDTH                    ),
-    .DmBaseAddress          ( ArianeCfg.DmBaseAddress       ),
+    .DmBaseAddress          ( Cva6Cfg.DmBaseAddress       ),
     .NrCommitPorts          ( NR_COMMIT_PORTS               ),
-    .NrPMPEntries           ( ArianeCfg.NrPMPEntries        )
-  ) csr_regfile_i (
+    .NrPMPEntries           ( Cva6Cfg.NrPMPEntries        )
+  ) cva6_csr_regfile_i (
     .flush_o                ( flush_csr_ctrl                ),
     .halt_csr_o             ( halt_csr_ctrl                 ),
     .commit_instr_i         ( commit_instr_id_commit        ),
@@ -540,7 +540,7 @@ module ariane #(
   // ------------------------
   // Performance Counters
   // ------------------------
-  perf_counters i_perf_counters (
+  cva6_perf_counters i_cva6_perf_counters (
     .clk_i             ( clk_i                  ),
     .rst_ni            ( rst_ni                 ),
     .debug_mode_i      ( debug_mode             ),
@@ -565,7 +565,7 @@ module ariane #(
   // ------------
   // Controller
   // ------------
-  controller controller_i (
+  cva6_controller cva6_controller_i (
     // flush ports
     .set_pc_commit_o        ( set_pc_ctrl_pcgen             ),
     .flush_unissued_instr_o ( flush_unissued_instr_ctrl_id  ),
@@ -600,9 +600,9 @@ module ariane #(
 
 `ifdef WT_DCACHE
   // this is a cache subsystem that is compatible with OpenPiton
-  wt_cache_subsystem #(
-    .ArianeCfg            ( ArianeCfg     )
-  ) i_cache_subsystem (
+  cva6_wt_cache_subsystem #(
+    .Cva6Cfg            ( Cva6Cfg     )
+  ) i_cva6_cache_subsystem (
     // to D$
     .clk_i                 ( clk_i                       ),
     .rst_ni                ( rst_ni                      ),
@@ -638,12 +638,12 @@ module ariane #(
   );
 `else
 
-  std_cache_subsystem #(
+  cva6_std_cache_subsystem #(
     // note: this only works with one cacheable region
     // not as important since this cache subsystem is about to be
     // deprecated
-    .CACHE_START_ADDR    ( ArianeCfg.CachedRegionAddrBase )
-  ) i_cache_subsystem (
+    .CACHE_START_ADDR    ( Cva6Cfg.CachedRegionAddrBase )
+  ) i_cva6_cache_subsystem (
     // to D$
     .clk_i                 ( clk_i                       ),
     .rst_ni                ( rst_ni                      ),
@@ -680,7 +680,7 @@ module ariane #(
   // -------------------
   // pragma translate_off
   `ifndef VERILATOR
-  initial ariane_pkg::check_cfg(ArianeCfg);
+  initial cva6_pkg::check_cfg(Cva6Cfg);
   `endif
   // pragma translate_on
 
@@ -709,8 +709,8 @@ module ariane #(
   localparam PC_QUEUE_DEPTH = 16;
 
   logic        piton_pc_vld;
-  logic [riscv::VLEN-1:0] piton_pc;
-  logic [NR_COMMIT_PORTS-1:0][riscv::VLEN-1:0] pc_data;
+  logic [cva6_riscv::VLEN-1:0] piton_pc;
+  logic [NR_COMMIT_PORTS-1:0][cva6_riscv::VLEN-1:0] pc_data;
   logic [NR_COMMIT_PORTS-1:0] pc_pop, pc_empty;
 
   for (genvar i = 0; i < NR_COMMIT_PORTS; i++) begin : gen_pc_fifo
@@ -751,7 +751,7 @@ module ariane #(
 `endif // PITON_ARIANE
 
 `ifndef VERILATOR
-  instr_tracer_if tracer_if (clk_i);
+  cva6_instr_tracer_if tracer_if (clk_i);
   // assign instruction tracer interface
   // control signals
   assign tracer_if.rstn              = rst_ni;
@@ -788,7 +788,7 @@ module ariane #(
   assign tracer_if.priv_lvl          = priv_lvl;
   assign tracer_if.debug_mode        = debug_mode;
 
-  instr_tracer instr_tracer_i (
+  cva6_instr_tracer cva6_instr_tracer_i (
     .tracer_if(tracer_if),
     .hart_id_i
   );
@@ -852,9 +852,9 @@ module ariane #(
       if (debug_mode) mode = "D";
       else begin
         case (priv_lvl)
-        riscv::PRIV_LVL_M: mode = "M";
-        riscv::PRIV_LVL_S: mode = "S";
-        riscv::PRIV_LVL_U: mode = "U";
+        cva6_riscv::PRIV_LVL_M: mode = "M";
+        cva6_riscv::PRIV_LVL_S: mode = "S";
+        cva6_riscv::PRIV_LVL_U: mode = "U";
         endcase
       end
       for (int i = 0; i < NR_COMMIT_PORTS; i++) begin
@@ -882,4 +882,4 @@ module ariane #(
 `endif // VERILATOR
 //pragma translate_on
 
-endmodule // ariane
+endmodule // cva6

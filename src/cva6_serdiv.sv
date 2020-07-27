@@ -14,9 +14,9 @@
 // Date: 18.10.2018
 // Description: simple 64bit serial divider
 
-import ariane_pkg::*;
+import cva6_pkg::*;
 
-module serdiv #(
+module cva6_serdiv #(
   parameter WIDTH       = 64
 ) (
   input  logic                      clk_i,

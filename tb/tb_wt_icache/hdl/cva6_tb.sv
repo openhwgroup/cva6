@@ -21,13 +21,13 @@
 // note that we use a simplified address translation scheme to emulate the TLB.
 // (random offsets).
 
-import ariane_pkg::*;
-import wt_cache_pkg::*;
-import tb_pkg::*;
+import cva6_pkg::*;
+import cva6_wt_cache_pkg::*;
+import cva6_tb_pkg::*;
 
-`include "tb.svh"
+`include "cva6_tb.svh"
 
-module tb;
+module cva6_tb;
 
   // leave this
   timeunit 1ps;
@@ -39,7 +39,7 @@ module tb;
   parameter logic [63:0] CachedAddrBeg = MemBytes/4;
   parameter logic [63:0] CachedAddrEnd = 64'hFFFF_FFFF_FFFF_FFFF;
 
-  localparam ariane_cfg_t Cfg = '{
+  localparam cva6_cfg_t Cfg = '{
     RASDepth:              2,
     BTBEntries:            32,
     BHTEntries:            128,
@@ -219,9 +219,9 @@ module tb;
 // TLB and memory emulation
 ///////////////////////////////////////////////////////////////////////////////
 
-  tlb_emul #(
+  cva6_tlb_emul #(
     .TlbRandHitRate(TlbRandHitRate)
-  ) i_tlb_emul (
+  ) i_cva6_tlb_emul (
     .clk_i          ( clk_i        ),
     .rst_ni         ( rst_ni       ),
     .tlb_rand_en_i  ( tlb_rand_en  ),
@@ -232,12 +232,12 @@ module tb;
     .req_o          ( areq_i       )
   );
 
-  mem_emul #(
+  cva6_mem_emul #(
     .MemRandHitRate ( MemRandHitRate ),
     .MemRandInvRate ( MemRandInvRate ),
     .MemWords       ( MemWords       ),
     .CachedAddrBeg  ( CachedAddrBeg  )
-  ) i_mem_emul (
+  ) i_cva6_mem_emul (
     .clk_i          ( clk_i          ),
     .rst_ni         ( rst_ni         ),
     .mem_rand_en_i  ( mem_rand_en    ),
@@ -263,9 +263,9 @@ module tb;
 // MUT
 ///////////////////////////////////////////////////////////////////////////////
 
-  wt_icache  #(
-    .ArianeCfg(Cfg)
-    ) dut (
+  cva6_wt_icache  #(
+    .Cva6Cfg(Cfg)
+    ) cva6_dut (
     .clk_i          ( clk_i          ),
     .rst_ni         ( rst_ni         ),
     .flush_i        ( flush_i        ),

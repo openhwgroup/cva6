@@ -10,7 +10,7 @@
 //
 // Author: Michael Schaffner <schaffner@iis.ee.ethz.ch>, ETH Zurich
 // Date: 14.11.2018
-// Description: Ariane chipset for OpenPiton that includes two bootroms
+// Description: Cva6 chipset for OpenPiton that includes two bootroms
 // (linux, baremetal, both with DTB), debug module, clint and plic.
 //
 // Note that direct system bus accesses are not yet possible due to a missing
@@ -25,7 +25,7 @@
 // PLIC     0xfff1100000 <length 0x4000000>
 //
 
-module riscv_peripherals #(
+module cva6_riscv_peripherals #(
     parameter int unsigned DataWidth       = 64,
     parameter int unsigned NumHarts        =  1,
     parameter int unsigned NumSources      =  1,
@@ -41,35 +41,35 @@ module riscv_peripherals #(
     input                               testmode_i,
     // connections to OpenPiton NoC filters
     // Debug/JTAG
-    input  [DataWidth-1:0]              buf_ariane_debug_noc2_data_i,
-    input                               buf_ariane_debug_noc2_valid_i,
-    output                              ariane_debug_buf_noc2_ready_o,
-    output [DataWidth-1:0]              ariane_debug_buf_noc3_data_o,
-    output                              ariane_debug_buf_noc3_valid_o,
-    input                               buf_ariane_debug_noc3_ready_i,
+    input  [DataWidth-1:0]              buf_cva6_debug_noc2_data_i,
+    input                               buf_cva6_debug_noc2_valid_i,
+    output                              cva6_debug_buf_noc2_ready_o,
+    output [DataWidth-1:0]              cva6_debug_buf_noc3_data_o,
+    output                              cva6_debug_buf_noc3_valid_o,
+    input                               buf_cva6_debug_noc3_ready_i,
     // Bootrom
-    input  [DataWidth-1:0]              buf_ariane_bootrom_noc2_data_i,
-    input                               buf_ariane_bootrom_noc2_valid_i,
-    output                              ariane_bootrom_buf_noc2_ready_o,
-    output [DataWidth-1:0]              ariane_bootrom_buf_noc3_data_o,
-    output                              ariane_bootrom_buf_noc3_valid_o,
-    input                               buf_ariane_bootrom_noc3_ready_i,
+    input  [DataWidth-1:0]              buf_cva6_bootrom_noc2_data_i,
+    input                               buf_cva6_bootrom_noc2_valid_i,
+    output                              cva6_bootrom_buf_noc2_ready_o,
+    output [DataWidth-1:0]              cva6_bootrom_buf_noc3_data_o,
+    output                              cva6_bootrom_buf_noc3_valid_o,
+    input                               buf_cva6_bootrom_noc3_ready_i,
     // CLINT
-    input  [DataWidth-1:0]              buf_ariane_clint_noc2_data_i,
-    input                               buf_ariane_clint_noc2_valid_i,
-    output                              ariane_clint_buf_noc2_ready_o,
-    output [DataWidth-1:0]              ariane_clint_buf_noc3_data_o,
-    output                              ariane_clint_buf_noc3_valid_o,
-    input                               buf_ariane_clint_noc3_ready_i,
+    input  [DataWidth-1:0]              buf_cva6_clint_noc2_data_i,
+    input                               buf_cva6_clint_noc2_valid_i,
+    output                              cva6_clint_buf_noc2_ready_o,
+    output [DataWidth-1:0]              cva6_clint_buf_noc3_data_o,
+    output                              cva6_clint_buf_noc3_valid_o,
+    input                               buf_cva6_clint_noc3_ready_i,
     // PLIC
-    input [DataWidth-1:0]               buf_ariane_plic_noc2_data_i,
-    input                               buf_ariane_plic_noc2_valid_i,
-    output                              ariane_plic_buf_noc2_ready_o,
-    output [DataWidth-1:0]              ariane_plic_buf_noc3_data_o,
-    output                              ariane_plic_buf_noc3_valid_o,
-    input                               buf_ariane_plic_noc3_ready_i,
+    input [DataWidth-1:0]               buf_cva6_plic_noc2_data_i,
+    input                               buf_cva6_plic_noc2_valid_i,
+    output                              cva6_plic_buf_noc2_ready_o,
+    output [DataWidth-1:0]              cva6_plic_buf_noc3_data_o,
+    output                              cva6_plic_buf_noc3_valid_o,
+    input                               buf_cva6_plic_noc3_ready_i,
     // This selects either the BM or linux bootrom
-    input                               ariane_boot_sel_i,
+    input                               cva6_boot_sel_i,
     // Debug sigs to cores
     output                              ndmreset_o,    // non-debug module reset
     output                              dmactive_o,    // debug module is active
@@ -121,7 +121,7 @@ module riscv_peripherals #(
   logic [1:0] debug_req_bits_op;
   assign dmi_req.op = dm::dtm_op_t'(debug_req_bits_op);
 
-  SimDTM i_SimDTM (
+  cva6_SimDTM i_cva6_SimDTM (
     .clk                  ( clk_i                ),
     .reset                ( ~rst_ni              ),
     .debug_req_valid      ( debug_req_valid      ),
@@ -168,7 +168,7 @@ module riscv_peripherals #(
   // SiFive's SimJTAG Module
   // Converts to DPI calls
   logic [31:0] sim_exit; // TODO: wire this up in the testbench
-  SimJTAG i_SimJTAG (
+  cva6_SimJTAG i_cva6_SimJTAG (
     .clock                ( clk_i                ),
     .reset                ( ~rst_ni              ),
     .enable               ( jtag_enable[0]       ),
@@ -226,7 +226,7 @@ module riscv_peripherals #(
     .dmactive_o                                   , // active debug session
     .debug_req_o                                  ,
     .unavailable_i                                ,
-    .hartinfo_i           ( {NumHarts{ariane_pkg::DebugHartInfo}} ),
+    .hartinfo_i           ( {NumHarts{cva6_pkg::DebugHartInfo}} ),
     .slave_req_i          ( dm_slave_req         ),
     .slave_we_i           ( dm_slave_we          ),
     .slave_addr_i         ( dm_slave_addr        ),
@@ -281,12 +281,12 @@ module riscv_peripherals #(
     .clk                    ( clk_i                         ),
     .rst                    ( ~rst_ni                       ),
     // to/from NOC
-    .splitter_bridge_val    ( buf_ariane_debug_noc2_valid_i ),
-    .splitter_bridge_data   ( buf_ariane_debug_noc2_data_i  ),
-    .bridge_splitter_rdy    ( ariane_debug_buf_noc2_ready_o ),
-    .bridge_splitter_val    ( ariane_debug_buf_noc3_valid_o ),
-    .bridge_splitter_data   ( ariane_debug_buf_noc3_data_o  ),
-    .splitter_bridge_rdy    ( buf_ariane_debug_noc3_ready_i ),
+    .splitter_bridge_val    ( buf_cva6_debug_noc2_valid_i ),
+    .splitter_bridge_data   ( buf_cva6_debug_noc2_data_i  ),
+    .bridge_splitter_rdy    ( cva6_debug_buf_noc2_ready_o ),
+    .bridge_splitter_val    ( cva6_debug_buf_noc3_valid_o ),
+    .bridge_splitter_data   ( cva6_debug_buf_noc3_data_o  ),
+    .splitter_bridge_rdy    ( buf_cva6_debug_noc3_ready_i ),
     //axi lite signals
     //write address channel
     .m_axi_awaddr           ( dm_master.aw_addr             ),
@@ -391,7 +391,7 @@ module riscv_peripherals #(
   );
 
   // we want to run in baremetal mode when using pitonstream
-  assign rom_rdata = (ariane_boot_sel_i) ? rom_rdata_bm : rom_rdata_linux;
+  assign rom_rdata = (cva6_boot_sel_i) ? rom_rdata_bm : rom_rdata_linux;
 
   noc_axilite_bridge #(
     .SLAVE_RESP_BYTEWIDTH   ( 8             ),
@@ -400,12 +400,12 @@ module riscv_peripherals #(
     .clk                    ( clk_i                           ),
     .rst                    ( ~rst_ni                         ),
     // to/from NOC
-    .splitter_bridge_val    ( buf_ariane_bootrom_noc2_valid_i ),
-    .splitter_bridge_data   ( buf_ariane_bootrom_noc2_data_i  ),
-    .bridge_splitter_rdy    ( ariane_bootrom_buf_noc2_ready_o ),
-    .bridge_splitter_val    ( ariane_bootrom_buf_noc3_valid_o ),
-    .bridge_splitter_data   ( ariane_bootrom_buf_noc3_data_o  ),
-    .splitter_bridge_rdy    ( buf_ariane_bootrom_noc3_ready_i ),
+    .splitter_bridge_val    ( buf_cva6_bootrom_noc2_valid_i ),
+    .splitter_bridge_data   ( buf_cva6_bootrom_noc2_data_i  ),
+    .bridge_splitter_rdy    ( cva6_bootrom_buf_noc2_ready_o ),
+    .bridge_splitter_val    ( cva6_bootrom_buf_noc3_valid_o ),
+    .bridge_splitter_data   ( cva6_bootrom_buf_noc3_data_o  ),
+    .splitter_bridge_rdy    ( buf_cva6_bootrom_noc3_ready_i ),
     //axi lite signals
     //write address channel
     .m_axi_awaddr           ( br_master.aw_addr               ),
@@ -459,15 +459,15 @@ module riscv_peripherals #(
   // CLINT
   /////////////////////////////
 
-  ariane_axi::req_t    clint_axi_req;
-  ariane_axi::resp_t   clint_axi_resp;
+  cva6_axi::req_t    clint_axi_req;
+  cva6_axi::resp_t   clint_axi_resp;
 
-  clint #(
+  cva6_clint #(
     .AXI_ADDR_WIDTH ( AxiAddrWidth ),
     .AXI_DATA_WIDTH ( AxiDataWidth ),
     .AXI_ID_WIDTH   ( AxiIdWidth   ),
     .NR_CORES       ( NumHarts     )
-  ) i_clint (
+  ) i_cva6_clint (
     .clk_i                         ,
     .rst_ni                        ,
     .testmode_i                    ,
@@ -485,12 +485,12 @@ module riscv_peripherals #(
     .clk                    ( clk_i                         ),
     .rst                    ( ~rst_ni                       ),
     // to/from NOC
-    .splitter_bridge_val    ( buf_ariane_clint_noc2_valid_i ),
-    .splitter_bridge_data   ( buf_ariane_clint_noc2_data_i  ),
-    .bridge_splitter_rdy    ( ariane_clint_buf_noc2_ready_o ),
-    .bridge_splitter_val    ( ariane_clint_buf_noc3_valid_o ),
-    .bridge_splitter_data   ( ariane_clint_buf_noc3_data_o  ),
-    .splitter_bridge_rdy    ( buf_ariane_clint_noc3_ready_i ),
+    .splitter_bridge_val    ( buf_cva6_clint_noc2_valid_i ),
+    .splitter_bridge_data   ( buf_cva6_clint_noc2_data_i  ),
+    .bridge_splitter_rdy    ( cva6_clint_buf_noc2_ready_o ),
+    .bridge_splitter_val    ( cva6_clint_buf_noc3_valid_o ),
+    .bridge_splitter_data   ( cva6_clint_buf_noc3_data_o  ),
+    .splitter_bridge_rdy    ( buf_cva6_clint_noc3_ready_i ),
     //axi lite signals
     //write address channel
     .m_axi_awaddr           ( clint_axi_req.aw.addr         ),
@@ -565,12 +565,12 @@ module riscv_peripherals #(
     .clk                    ( clk_i                        ),
     .rst                    ( ~rst_ni                      ),
     // to/from NOC
-    .splitter_bridge_val    ( buf_ariane_plic_noc2_valid_i ),
-    .splitter_bridge_data   ( buf_ariane_plic_noc2_data_i  ),
-    .bridge_splitter_rdy    ( ariane_plic_buf_noc2_ready_o ),
-    .bridge_splitter_val    ( ariane_plic_buf_noc3_valid_o ),
-    .bridge_splitter_data   ( ariane_plic_buf_noc3_data_o  ),
-    .splitter_bridge_rdy    ( buf_ariane_plic_noc3_ready_i ),
+    .splitter_bridge_val    ( buf_cva6_plic_noc2_valid_i ),
+    .splitter_bridge_data   ( buf_cva6_plic_noc2_data_i  ),
+    .bridge_splitter_rdy    ( cva6_plic_buf_noc2_ready_o ),
+    .bridge_splitter_val    ( cva6_plic_buf_noc3_valid_o ),
+    .bridge_splitter_data   ( cva6_plic_buf_noc3_data_o  ),
+    .splitter_bridge_rdy    ( buf_cva6_plic_noc3_ready_i ),
     //axi lite signals
     //write address channel
     .m_axi_awaddr           ( plic_master.aw_addr               ),

@@ -18,9 +18,9 @@
 // University of Bologna.
 //
 
-import ariane_pkg::*;
+import cva6_pkg::*;
 
-module re_name (
+module cva6_re_name (
     input  logic                                   clk_i,    // Clock
     input  logic                                   rst_ni,   // Asynchronous reset active low
     input  logic                                   flush_i,  // Flush renaming state

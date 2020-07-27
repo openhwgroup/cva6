@@ -1,7 +1,7 @@
 # questa library
 library        ?= work
 # Top level module to compile
-top_level      ?= pmp_tb
+top_level      ?= cva6_pmp_tb
 # QuestaSim Version
 questa_version ?= # -10.7b
 

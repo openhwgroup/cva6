@@ -11,18 +11,18 @@
 // Author: Florian Zaruba    <zarubaf@iis.ee.ethz.ch>, ETH Zurich
 //         Michael Schaffner <schaffner@iis.ee.ethz.ch>, ETH Zurich
 // Date: 15.08.2018
-// Description: Standard Ariane cache subsystem with instruction cache and
+// Description: Standard Cva6 cache subsystem with instruction cache and
 //              write-back data cache.
 
-import ariane_pkg::*;
-import std_cache_pkg::*;
+import cva6_pkg::*;
+import cva6_std_cache_pkg::*;
 
-module std_cache_subsystem #(
+module cva6_std_cache_subsystem #(
   parameter logic [63:0] CACHE_START_ADDR = 64'h4000_0000
 ) (
     input logic                            clk_i,
     input logic                            rst_ni,
-    input riscv::priv_lvl_t                priv_lvl_i,
+    input cva6_riscv::priv_lvl_t                priv_lvl_i,
     // I$
     input  logic                           icache_en_i,            // enable icache (or bypass e.g: in debug mode)
     input  logic                           icache_flush_i,         // flush the icache, flush and kill have to be asserted together
@@ -47,20 +47,20 @@ module std_cache_subsystem #(
     input  dcache_req_i_t   [2:0]          dcache_req_ports_i,     // to/from LSU
     output dcache_req_o_t   [2:0]          dcache_req_ports_o,     // to/from LSU
     // memory side
-    output ariane_axi::req_t               axi_req_o,
-    input  ariane_axi::resp_t              axi_resp_i
+    output cva6_axi::req_t               axi_req_o,
+    input  cva6_axi::resp_t              axi_resp_i
 );
 
   assign wbuffer_empty_o = 1'b1;
 
-    ariane_axi::req_t  axi_req_icache;
-    ariane_axi::resp_t axi_resp_icache;
-    ariane_axi::req_t  axi_req_bypass;
-    ariane_axi::resp_t axi_resp_bypass;
-    ariane_axi::req_t  axi_req_data;
-    ariane_axi::resp_t axi_resp_data;
+    cva6_axi::req_t  axi_req_icache;
+    cva6_axi::resp_t axi_resp_icache;
+    cva6_axi::req_t  axi_req_bypass;
+    cva6_axi::resp_t axi_resp_bypass;
+    cva6_axi::req_t  axi_req_data;
+    cva6_axi::resp_t axi_resp_data;
 
-    std_icache i_icache (
+    cva6_std_icache i_cva6_icache (
         .clk_i      ( clk_i                 ),
         .rst_ni     ( rst_ni                ),
         .priv_lvl_i ( priv_lvl_i            ),
@@ -79,9 +79,9 @@ module std_cache_subsystem #(
    // Port 0: PTW
    // Port 1: Load Unit
    // Port 2: Store Unit
-   std_nbdcache #(
+   cva6_std_nbdcache #(
       .CACHE_START_ADDR ( CACHE_START_ADDR )
-   ) i_nbdcache (
+   ) i_cva6_nbdcache (
       .clk_i,
       .rst_ni,
       .enable_i     ( dcache_enable_i        ),
@@ -107,7 +107,7 @@ module std_cache_subsystem #(
 
     // AR Channel
     stream_arbiter #(
-        .DATA_T ( ariane_axi::ar_chan_t ),
+        .DATA_T ( cva6_axi::ar_chan_t ),
         .N_INP  ( 3                     )
     ) i_stream_arbiter_ar (
         .clk_i,
@@ -122,7 +122,7 @@ module std_cache_subsystem #(
 
     // AW Channel
     stream_arbiter #(
-        .DATA_T ( ariane_axi::aw_chan_t ),
+        .DATA_T ( cva6_axi::aw_chan_t ),
         .N_INP  ( 3                     )
     ) i_stream_arbiter_aw (
         .clk_i,
@@ -174,7 +174,7 @@ module std_cache_subsystem #(
     assign w_select_arbiter = (w_fifo_empty) ? 0 : w_select_fifo;
 
     stream_mux #(
-        .DATA_T ( ariane_axi::w_chan_t ),
+        .DATA_T ( cva6_axi::w_chan_t ),
         .N_INP  ( 3                    )
     ) i_stream_mux_w (
         .inp_data_i  ( {axi_req_data.w, axi_req_bypass.w, axi_req_icache.w} ),

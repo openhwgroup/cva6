@@ -1,8 +1,8 @@
 [![Build Status](https://travis-ci.org/pulp-platform/ariane.svg?branch=master)](https://travis-ci.org/pulp-platform/ariane)
 
-# Ariane RISC-V CPU
+# Cva6 RISC-V CPU
 
-Ariane is a 6-stage, single issue, in-order CPU which implements the 64-bit RISC-V instruction set. It fully implements I, M, A and C extensions as specified in Volume I: User-Level ISA V 2.3 as well as the draft privilege extension 1.10. It implements three privilege levels M, S, U to fully support a Unix-like operating system. Furthermore it is compliant to the draft external debug spec 0.13.
+Cva6 is a 6-stage, single issue, in-order CPU which implements the 64-bit RISC-V instruction set. It fully implements I, M, A and C extensions as specified in Volume I: User-Level ISA V 2.3 as well as the draft privilege extension 1.10. It implements three privilege levels M, S, U to fully support a Unix-like operating system. Furthermore it is compliant to the draft external debug spec 0.13.
 
 It has configurable size, separate TLBs, a hardware PTW and branch-prediction (branch target buffer and branch history table). The primary design goal was on reducing critical path length.
 
@@ -10,7 +10,7 @@ It has configurable size, separate TLBs, a hardware PTW and branch-prediction (b
 
 ## Publication
 
-If you use Ariane in your academic work you can cite us:
+If you use Cva6 in your academic work you can cite us:
 
 ```
 @article{8777130,
@@ -30,7 +30,7 @@ If you use Ariane in your academic work you can cite us:
 Table of Contents
 =================
 
-   * [Ariane RISC-V CPU](#ariane-risc-v-cpu)
+   * [Cva6 RISC-V CPU](#ariane-risc-v-cpu)
    * [Table of Contents](#table-of-contents)
       * [Getting Started](#getting-started)
          * [Running User-Space Applications](#running-user-space-applications)
@@ -60,7 +60,7 @@ $ git clone https://github.com/pulp-platform/ariane.git
 $ git submodule update --init --recursive
 ```
 
-Build the Verilator model of Ariane by using the Makefile:
+Build the Verilator model of cva6 by using the Makefile:
 ```
 $ make verilate
 ```
@@ -73,7 +73,7 @@ $ make verilate DEBUG=1
 This will create a C++ model of the core including a SystemVerilog wrapper and link it against a C++ testbench (in the `tb` subfolder). The binary can be found in the `work-ver` and accepts a RISC-V ELF binary as an argument, e.g.:
 
 ```
-$ work-ver/Variane_testharness rv64um-v-divuw
+$ work-ver/Vcva6_testharness rv64um-v-divuw
 ```
 
 The Verilator testbench makes use of the `riscv-fesvr`. This means that you can use the `riscv-tests` repository as well as `riscv-pk` out-of-the-box. As a general rule of thumb the Verilator model will behave like Spike (exception for being orders of magnitudes slower).
@@ -86,7 +86,7 @@ $ spike-dasm < trace_hart_00.dasm > logfile.txt
 
 ### Running User-Space Applications
 
-It is possible to run user-space binaries on Ariane with `riscv-pk` ([link](https://github.com/riscv/riscv-pk)).
+It is possible to run user-space binaries on cva6 with `riscv-pk` ([link](https://github.com/riscv/riscv-pk)).
 
 ```
 $ mkdir build
@@ -103,7 +103,7 @@ $ echo '
 #include <stdio.h>
 
 int main(int argc, char const *argv[]) {
-    printf("Hello Ariane!\\n");
+    printf("Hello cva6!\\n");
     return 0;
 }' > hello.c
 $ riscv64-unknown-elf-gcc hello.c -o hello.elf
@@ -111,7 +111,7 @@ $ riscv64-unknown-elf-gcc hello.c -o hello.elf
 
 ```
 $ make verilate
-$ work-ver/Variane_testharness $RISCV/riscv64-unknown-elf/bin/pk hello.elf
+$ work-ver/Vcva6_testharness $RISCV/riscv64-unknown-elf/bin/pk hello.elf
 ```
 
 If you want to use QuestaSim to run it you can use the following command:
@@ -143,7 +143,7 @@ Tested on Vivado 2018.2. The FPGA SoC currently contains the following periphera
 - Open the hardware manager and open the target board (Genesys II - `xc7k325t`)
 - Tools - Add Configuration Memory Device
 - Select the following Spansion SPI flash `s25fl256xxxxxx0`
-- Add `ariane_xilinx.mcs`
+- Add `cva6_xilinx.mcs`
 - Press Ok. Flashing will take a couple of minutes.
 - Right click on the FPGA device - Boot from Configuration Memory Device (or press the program button on the FPGA)
 
@@ -187,10 +187,10 @@ Once attached to your system, the FTDI chip should be listed when you type `lsus
 Bus 005 Device 019: ID 0403:6010 Future Technology Devices International, Ltd FT2232C/D/H Dual UART/FIFO IC
 ```
 
-If this is the case, you can go on and start openocd with the `fpga/ariane.cfg` configuration file:
+If this is the case, you can go on and start openocd with the `fpga/cva6.cfg` configuration file:
 
 ```
-$ openocd -f fpga/ariane.cfg
+$ openocd -f fpga/cva6.cfg
 Open On-Chip Debugger 0.10.0+dev-00195-g933cb87 (2018-09-14-19:32)
 Licensed under GNU GPL v2
 For bug reports, read
@@ -240,9 +240,9 @@ You can read or write device memory by using:
 
 ### Preliminary Support for OpenPiton Cache System
 
-Ariane has preliminary support for the OpenPiton distributed cache system from Princeton University. To this end, a different L1 cache subsystem (`src/cache_subsystem/wt_cache_subsystem.sv`) has been developed that follows a write-through protocol and that has support for cache invalidations and atomics.
+Cva6 has preliminary support for the OpenPiton distributed cache system from Princeton University. To this end, a different L1 cache subsystem (`src/cache_subsystem/wt_cache_subsystem.sv`) has been developed that follows a write-through protocol and that has support for cache invalidations and atomics.
 
-The corresponding integration patches will be released on [OpenPiton GitHub repository](https://github.com/PrincetonUniversity/openpiton). Check the `README` in that repository to see how to use Ariane in the OpenPiton setting.
+The corresponding integration patches will be released on [OpenPiton GitHub repository](https://github.com/PrincetonUniversity/openpiton). Check the `README` in that repository to see how to use cva6 in the OpenPiton setting.
 
 To activate the different cache system, compile your code with the macro `WT_DCACHE` (set by default).
 
@@ -285,7 +285,7 @@ $ make torture-rtest-verilator
 ```
 This runs the randomized program on Spike and on the RTL target, and checks whether the two signatures match. The random instruction mix can be configured in the `./tmp/riscv-torture/config/default.config` file.
 
-Ariane can dump a trace-log in Questa which can be easily diffed against Spike with commit log enabled. In `include/ariane_pkg.sv` set:
+cva6 can dump a trace-log in Questa which can be easily diffed against Spike with commit log enabled. In `include/cva6_pkg.sv` set:
 
 ```verilog
 localparam bit ENABLE_SPIKE_COMMIT_LOG = 1'b1;
@@ -328,7 +328,7 @@ There are a couple of caveats:
 - There is no end of test signaling at the moment. You are supposed to kill the simulation when sufficiently long run.
 - You need to use the modified Spike version in the `tb` subdirectory.
 - The RTC clock needs to be sufficiently slow (e.g.: 32 kHz seems to work). This is needed as otherwise there will be a difference when reading the `mtime` register as the RTL simulation takes more time to propagate the information through the system.
-- All traps except memory traps need to zero the `tval` register. There is a switch you can set in `ariane_pkg`.
+- All traps except memory traps need to zero the `tval` register. There is a switch you can set in `cva6_pkg`.
 - `mcycle` needs to be incremented with `instret` to be similar to the performance counters found in Spike (IPC = 1)
  -->
 
@@ -339,7 +339,7 @@ The zero stage bootloader (ZSBL) for RTL simulation lives in `bootrom/` while th
 To re-generate the bootcode you can use the existing makefile within those directories. To generate the SystemVerilog files you will need the `bitstring` python package installed on your system.
 
 ### Co-simulation with Dromajo
-Ariane can be co-simulated with [Dromajo](https://github.com/chipsalliance/dromajo) (currently in the verilator model). 
+cva6 can be co-simulated with [Dromajo](https://github.com/chipsalliance/dromajo) (currently in the verilator model). 
 
 ```
 make verilate DROMAJO=1

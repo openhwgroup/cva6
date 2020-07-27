@@ -16,7 +16,7 @@
 // Platforms provide a real-time counter, exposed as a memory-mapped machine-mode register, mtime. mtime must run at
 // constant frequency, and the platform must provide a mechanism for determining the timebase of mtime (device tree).
 
-module clint #(
+module cva6_clint #(
     parameter int unsigned AXI_ADDR_WIDTH = 64,
     parameter int unsigned AXI_DATA_WIDTH = 64,
     parameter int unsigned AXI_ID_WIDTH   = 10,
@@ -25,8 +25,8 @@ module clint #(
     input  logic                clk_i,       // Clock
     input  logic                rst_ni,      // Asynchronous reset active low
     input  logic                testmode_i,
-    input  ariane_axi::req_t    axi_req_i,
-    output ariane_axi::resp_t   axi_resp_o,
+    input  cva6_axi::req_t    axi_req_i,
+    output cva6_axi::resp_t   axi_resp_o,
     input  logic                rtc_i,       // Real-time clock in (usually 32.768 kHz)
     output logic [NR_CORES-1:0] timer_irq_o, // Timer interrupts
     output logic [NR_CORES-1:0] ipi_o        // software interrupt (a.k.a inter-process-interrupt)
@@ -58,11 +58,11 @@ module clint #(
     // -----------------------------
     // AXI Interface Logic
     // -----------------------------
-    axi_lite_interface #(
+    cva6_axi_lite_interface #(
         .AXI_ADDR_WIDTH ( AXI_ADDR_WIDTH ),
         .AXI_DATA_WIDTH ( AXI_DATA_WIDTH ),
         .AXI_ID_WIDTH   ( AXI_ID_WIDTH    )
-    ) axi_lite_interface_i (
+    ) cva6_axi_lite_interface_i (
         .clk_i      ( clk_i      ),
         .rst_ni     ( rst_ni     ),
         .axi_req_i  ( axi_req_i  ),
@@ -151,7 +151,7 @@ module clint #(
     // -----------------------------
     // 1. Put the RTC input through a classic two stage edge-triggered synchronizer to filter out any
     //    metastability effects (or at least make them unlikely :-))
-    clint_sync_wedge i_sync_edge (
+    cva6_clint_sync_wedge i_cva6_sync_edge (
         .clk_i,
         .rst_ni,
         .serial_i  ( rtc_i          ),
@@ -190,7 +190,7 @@ module clint #(
 endmodule
 
 // TODO(zarubaf): Replace by common-cells 2.0
-module clint_sync_wedge #(
+module cva6_clint_sync_wedge #(
     parameter int unsigned STAGES = 2
 ) (
     input  logic clk_i,
@@ -206,9 +206,9 @@ module clint_sync_wedge #(
     assign f_edge_o = (~serial) & serial_q;
     assign r_edge_o =  serial & (~serial_q);
 
-    clint_sync #(
+    cva6_clint_sync #(
         .STAGES (STAGES)
-    ) i_sync (
+    ) i_cva6_sync (
         .clk_i,
         .rst_ni,
         .serial_i,
@@ -224,7 +224,7 @@ module clint_sync_wedge #(
     end
 endmodule
 
-module clint_sync #(
+module cva6_clint_sync #(
     parameter int unsigned STAGES = 2
 ) (
     input  logic clk_i,

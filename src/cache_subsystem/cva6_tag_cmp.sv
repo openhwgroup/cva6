@@ -15,11 +15,11 @@
 // Description: Arbitrates access to cache memories, simplified request grant protocol
 //              checks for hit or miss on cache
 //
-module tag_cmp #(
+module cva6_tag_cmp #(
     parameter int unsigned NR_PORTS          = 3,
     parameter int unsigned ADDR_WIDTH        = 64,
-    parameter type l_data_t                  = std_cache_pkg::cache_line_t,
-    parameter type l_be_t                    = std_cache_pkg::cl_be_t,
+    parameter type l_data_t                  = cva6_std_cache_pkg::cache_line_t,
+    parameter type l_be_t                    = cva6_std_cache_pkg::cl_be_t,
     parameter int unsigned DCACHE_SET_ASSOC = 8
 ) (
     input  logic                                          clk_i,
@@ -32,7 +32,7 @@ module tag_cmp #(
     input  logic    [NR_PORTS-1:0]                                   we_i,
     input  l_be_t   [NR_PORTS-1:0]                                   be_i,
     output l_data_t               [DCACHE_SET_ASSOC-1:0]             rdata_o,
-    input  logic    [NR_PORTS-1:0][ariane_pkg::DCACHE_TAG_WIDTH-1:0] tag_i, // tag in - comes one cycle later
+    input  logic    [NR_PORTS-1:0][cva6_pkg::DCACHE_TAG_WIDTH-1:0] tag_i, // tag in - comes one cycle later
     output logic                  [DCACHE_SET_ASSOC-1:0]             hit_way_o, // we've got a hit on the corresponding way
 
 
@@ -47,7 +47,7 @@ module tag_cmp #(
     assign rdata_o = rdata_i;
     // one hot encoded
     logic [NR_PORTS-1:0] id_d, id_q;
-    logic [ariane_pkg::DCACHE_TAG_WIDTH-1:0] sel_tag;
+    logic [cva6_pkg::DCACHE_TAG_WIDTH-1:0] sel_tag;
 
     always_comb begin : tag_sel
         sel_tag = '0;

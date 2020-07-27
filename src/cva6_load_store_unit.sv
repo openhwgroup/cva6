@@ -12,11 +12,11 @@
 // Date: 19.04.2017
 // Description: Load Store Unit, handles address calculation and memory interface signals
 
-import ariane_pkg::*;
+import cva6_pkg::*;
 
-module load_store_unit #(
+module cva6_load_store_unit #(
     parameter int unsigned ASID_WIDTH = 1,
-    parameter ariane_pkg::ariane_cfg_t ArianeCfg = ariane_pkg::ArianeDefaultConfig
+    parameter cva6_pkg::cva6_cfg_t Cva6Cfg = cva6_pkg::Cva6DefaultConfig
 )(
     input  logic                     clk_i,
     input  logic                     rst_ni,
@@ -49,8 +49,8 @@ module load_store_unit #(
     input  icache_areq_o_t           icache_areq_i,
     output icache_areq_i_t           icache_areq_o,
 
-    input  riscv::priv_lvl_t         priv_lvl_i,               // From CSR register file
-    input  riscv::priv_lvl_t         ld_st_priv_lvl_i,         // From CSR register file
+    input  cva6_riscv::priv_lvl_t         priv_lvl_i,               // From CSR register file
+    input  cva6_riscv::priv_lvl_t         ld_st_priv_lvl_i,         // From CSR register file
     input  logic                     sum_i,                    // From CSR register file
     input  logic                     mxr_i,                    // From CSR register file
     input  logic [43:0]              satp_ppn_i,               // From CSR register file
@@ -68,8 +68,8 @@ module load_store_unit #(
     output amo_req_t                 amo_req_o,
     input  amo_resp_t                amo_resp_i,
     // PMP
-    input  riscv::pmpcfg_t [ArianeCfg.NrPMPEntries-1:0] pmpcfg_i,
-    input  logic [ArianeCfg.NrPMPEntries-1:0][53:0]     pmpaddr_i
+    input  cva6_riscv::pmpcfg_t [Cva6Cfg.NrPMPEntries-1:0] pmpcfg_i,
+    input  logic [Cva6Cfg.NrPMPEntries-1:0][53:0]     pmpaddr_i
 );
     // data is misaligned
     logic data_misaligned;
@@ -87,26 +87,26 @@ module load_store_unit #(
     // Address Generation Unit (AGU)
     // ------------------------------
     // virtual address as calculated by the AGU in the first cycle
-    logic [riscv::VLEN-1:0]   vaddr_i;
+    logic [cva6_riscv::VLEN-1:0]   vaddr_i;
     logic [63:0]              vaddr64;
     logic                     overflow;
     logic [7:0]               be_i;
 
     assign vaddr64 = $unsigned($signed(fu_data_i.imm) + $signed(fu_data_i.operand_a));
-    assign vaddr_i = vaddr64[riscv::VLEN-1:0];
+    assign vaddr_i = vaddr64[cva6_riscv::VLEN-1:0];
     // we work with SV39, so if VM is enabled, check that all bits [64:riscv::38] are equal
-    assign overflow = !((&vaddr64[63:riscv::VLEN-1]) == 1'b1 || (|vaddr64[63:riscv::VLEN-1]) == 1'b0);
+    assign overflow = !((&vaddr64[63:cva6_riscv::VLEN-1]) == 1'b1 || (|vaddr64[63:cva6_riscv::VLEN-1]) == 1'b0);
 
     logic                     st_valid_i;
     logic                     ld_valid_i;
     logic                     ld_translation_req;
     logic                     st_translation_req;
-    logic [riscv::VLEN-1:0]   ld_vaddr;
-    logic [riscv::VLEN-1:0]   st_vaddr;
+    logic [cva6_riscv::VLEN-1:0]   ld_vaddr;
+    logic [cva6_riscv::VLEN-1:0]   st_vaddr;
     logic                     translation_req;
     logic                     translation_valid;
-    logic [riscv::VLEN-1:0]   mmu_vaddr;
-    logic [riscv::PLEN-1:0]   mmu_paddr;
+    logic [cva6_riscv::VLEN-1:0]   mmu_vaddr;
+    logic [cva6_riscv::PLEN-1:0]   mmu_paddr;
     exception_t               mmu_exception;
     logic                     dtlb_hit;
 
@@ -127,12 +127,12 @@ module load_store_unit #(
     // -------------------
     // MMU e.g.: TLBs/PTW
     // -------------------
-    mmu #(
+    cva6_mmu #(
         .INSTR_TLB_ENTRIES      ( 16                     ),
         .DATA_TLB_ENTRIES       ( 16                     ),
         .ASID_WIDTH             ( ASID_WIDTH             ),
-        .ArianeCfg              ( ArianeCfg              )
-    ) i_mmu (
+        .Cva6Cfg              ( Cva6Cfg              )
+    ) i_cva6_mmu (
             // misaligned bypass
         .misaligned_ex_i        ( misaligned_exception   ),
         .lsu_is_store_i         ( st_translation_req     ),
@@ -156,7 +156,7 @@ module load_store_unit #(
     // ------------------
     // Store Unit
     // ------------------
-    store_unit i_store_unit (
+    cva6_store_unit i_cva6_store_unit (
         .clk_i,
         .rst_ni,
         .flush_i,
@@ -194,9 +194,9 @@ module load_store_unit #(
     // ------------------
     // Load Unit
     // ------------------
-    load_unit #(
-        .ArianeCfg ( ArianeCfg )
-    ) i_load_unit (
+    cva6_load_unit #(
+        .Cva6Cfg ( Cva6Cfg )
+    ) i_cva6_load_unit (
         .valid_i               ( ld_valid_i           ),
         .lsu_ctrl_i            ( lsu_ctrl             ),
         .pop_ld_o              ( pop_ld               ),
@@ -253,7 +253,7 @@ module load_store_unit #(
         st_valid_i = 1'b0;
 
         translation_req      = 1'b0;
-        mmu_vaddr            = {riscv::VLEN{1'b0}};
+        mmu_vaddr            = {cva6_riscv::VLEN{1'b0}};
 
         // check the operator to activate the right functional unit accordingly
         unique case (lsu_ctrl.fu)
@@ -336,15 +336,15 @@ module load_store_unit #(
 
             if (lsu_ctrl.fu == LOAD) begin
                 misaligned_exception = {
-                    riscv::LD_ADDR_MISALIGNED,
-                    {{64-riscv::VLEN{1'b0}},lsu_ctrl.vaddr},
+                    cva6_riscv::LD_ADDR_MISALIGNED,
+                    {{64-cva6_riscv::VLEN{1'b0}},lsu_ctrl.vaddr},
                     1'b1
                 };
 
             end else if (lsu_ctrl.fu == STORE) begin
                 misaligned_exception = {
-                    riscv::ST_ADDR_MISALIGNED,
-                    {{64-riscv::VLEN{1'b0}},lsu_ctrl.vaddr},
+                    cva6_riscv::ST_ADDR_MISALIGNED,
+                    {{64-cva6_riscv::VLEN{1'b0}},lsu_ctrl.vaddr},
                     1'b1
                 };
             end
@@ -354,15 +354,15 @@ module load_store_unit #(
 
             if (lsu_ctrl.fu == LOAD) begin
                 misaligned_exception = {
-                    riscv::LD_ACCESS_FAULT,
-                    {{64-riscv::VLEN{1'b0}},lsu_ctrl.vaddr},
+                    cva6_riscv::LD_ACCESS_FAULT,
+                    {{64-cva6_riscv::VLEN{1'b0}},lsu_ctrl.vaddr},
                     1'b1
                 };
 
             end else if (lsu_ctrl.fu == STORE) begin
                 misaligned_exception = {
-                    riscv::ST_ACCESS_FAULT,
-                    {{64-riscv::VLEN{1'b0}},lsu_ctrl.vaddr},
+                    cva6_riscv::ST_ACCESS_FAULT,
+                    {{64-cva6_riscv::VLEN{1'b0}},lsu_ctrl.vaddr},
                     1'b1
                 };
             end
@@ -377,7 +377,7 @@ module load_store_unit #(
 
     assign lsu_req_i = {lsu_valid_i, vaddr_i, overflow, fu_data_i.operand_b, be_i, fu_data_i.fu, fu_data_i.operator, fu_data_i.trans_id};
 
-    lsu_bypass lsu_bypass_i (
+    cva6_lsu_bypass cva6_lsu_bypass_i (
         .lsu_req_i          ( lsu_req_i   ),
         .lus_req_valid_i    ( lsu_valid_i ),
         .pop_ld_i           ( pop_ld      ),
@@ -400,7 +400,7 @@ endmodule
 // the LSU control should sample it and store it for later application to the units. It does so, by storing it in a
 // two element FIFO. This is necessary as we only know very late in the cycle whether the load/store will succeed (address check,
 // TLB hit mainly). So we better unconditionally allow another request to arrive and store this request in case we need to.
-module lsu_bypass (
+module cva6_lsu_bypass (
     input  logic      clk_i,
     input  logic      rst_ni,
     input  logic      flush_i,

@@ -10,7 +10,7 @@
 //
 // Author: Florian Zaruba, ETH Zurich
 // Description: Contains SoC information as constants
-package ariane_soc;
+package cva6_soc;
   // M-Mode Hart, S-Mode Hart
   localparam int unsigned NumTargets = 2;
   // Uart, SPI, Ethernet, reserved
@@ -69,7 +69,7 @@ package ariane_soc;
   localparam NrRegion = 1;
   localparam logic [NrRegion-1:0][NB_PERIPHERALS-1:0] ValidRule = {{NrRegion * NB_PERIPHERALS}{1'b1}};
 
-  localparam ariane_pkg::ariane_cfg_t ArianeSocCfg = '{
+  localparam cva6_pkg::cva6_cfg_t Cva6SocCfg = '{
     RASDepth: 2,
     BTBEntries: 32,
     BHTEntries: 128,

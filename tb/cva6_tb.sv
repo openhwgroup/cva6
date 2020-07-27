@@ -14,7 +14,7 @@
 //              the virtual interfaces and starts the test passed by +UVM_TEST+
 
 
-import ariane_pkg::*;
+import cva6_pkg::*;
 import uvm_pkg::*;
 
 `include "uvm_macros.svh"
@@ -25,7 +25,7 @@ import "DPI-C" function read_elf(input string filename);
 import "DPI-C" function byte get_section(output longint address, output longint len);
 import "DPI-C" context function byte read_section(input longint address, inout byte buffer[]);
 
-module ariane_tb;
+module cva6_tb;
 
     static uvm_cmdline_processor uvcl = uvm_cmdline_processor::get_inst();
 
@@ -45,12 +45,12 @@ module ariane_tb;
 
     string binary = "";
 
-    ariane_testharness #(
+    cva6_testharness #(
         .NUM_WORDS         ( NUM_WORDS ),
         .InclSimDTM        ( 1'b1      ),
         .StallRandomOutput ( 1'b1      ),
         .StallRandomInput  ( 1'b1      )
-    ) dut (
+    ) cva6_dut (
         .clk_i,
         .rst_ni,
         .rtc_i,
@@ -58,18 +58,18 @@ module ariane_tb;
     );
 
 `ifdef SPIKE_TANDEM
-    spike #(
+    cva6_spike #(
         .Size ( NUM_WORDS * 8 )
     ) i_spike (
         .clk_i,
         .rst_ni,
         .clint_tick_i   ( rtc_i                               ),
-        .commit_instr_i ( dut.i_ariane.commit_instr_id_commit ),
-        .commit_ack_i   ( dut.i_ariane.commit_ack             ),
-        .exception_i    ( dut.i_ariane.ex_commit              ),
-        .waddr_i        ( dut.i_ariane.waddr_commit_id        ),
-        .wdata_i        ( dut.i_ariane.wdata_commit_id        ),
-        .priv_lvl_i     ( dut.i_ariane.priv_lvl               )
+        .commit_instr_i ( cva6_dut.i_cva6.commit_instr_id_commit ),
+        .commit_ack_i   ( cva6_dut.i_cva6.commit_ack             ),
+        .exception_i    ( cva6_dut.i_cva6.ex_commit              ),
+        .waddr_i        ( cva6_dut.i_cva6.waddr_commit_id        ),
+        .wdata_i        ( cva6_dut.i_cva6.wdata_commit_id        ),
+        .priv_lvl_i     ( cva6_dut.i_cva6.priv_lvl               )
     );
     initial begin
         $display("Running binary in tandem mode");

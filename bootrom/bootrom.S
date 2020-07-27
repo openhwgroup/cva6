@@ -21,4 +21,4 @@ _hang:
 .globl _dtb
 .align 5, 0
 _dtb:
-.incbin "ariane.dtb"
+.incbin "cva6.dtb"

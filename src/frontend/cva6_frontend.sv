@@ -10,14 +10,14 @@
 //
 // Author: Florian Zaruba, ETH Zurich
 // Date: 08.02.2018
-// Description: Ariane Instruction Fetch Frontend
+// Description: Cva6 Instruction Fetch Frontend
 //
 // This module interfaces with the instruction cache, handles control
 // change request from the back-end and does branch prediction.
-import ariane_pkg::*;
+import cva6_pkg::*;
 
-module frontend #(
-  parameter ariane_pkg::ariane_cfg_t ArianeCfg = ariane_pkg::ArianeDefaultConfig
+module cva6_frontend #(
+  parameter cva6_pkg::cva6_cfg_t Cva6Cfg = cva6_pkg::Cva6DefaultConfig
 ) (
   input  logic               clk_i,              // Clock
   input  logic               rst_ni,             // Asynchronous reset active low
@@ -31,11 +31,11 @@ module frontend #(
   input  bp_resolve_t        resolved_branch_i,  // from controller signaling a branch_predict -> update BTB
   // from commit, when flushing the whole pipeline
   input  logic               set_pc_commit_i,    // Take the PC from commit stage
-  input  logic [riscv::VLEN-1:0] pc_commit_i,        // PC of instruction in commit stage
+  input  logic [cva6_riscv::VLEN-1:0] pc_commit_i,        // PC of instruction in commit stage
   // CSR input
-  input  logic [riscv::VLEN-1:0] epc_i,              // exception PC which we need to return to
+  input  logic [cva6_riscv::VLEN-1:0] epc_i,              // exception PC which we need to return to
   input  logic               eret_i,             // return from exception
-  input  logic [riscv::VLEN-1:0] trap_vector_base_i, // base of trap vector
+  input  logic [cva6_riscv::VLEN-1:0] trap_vector_base_i, // base of trap vector
   input  logic               ex_valid_i,         // exception is valid - from commit
   input  logic               set_debug_pc_i,     // jump to debug address
   // Instruction Fetch
@@ -49,27 +49,27 @@ module frontend #(
     // Instruction Cache Registers, from I$
     logic [FETCH_WIDTH-1:0] icache_data_q;
     logic                   icache_valid_q;
-    ariane_pkg::frontend_exception_t icache_ex_valid_q;
+    cva6_pkg::frontend_exception_t icache_ex_valid_q;
     logic [63:0]            icache_vaddr_q;
     logic                   instr_queue_ready;
-    logic [ariane_pkg::INSTR_PER_FETCH-1:0] instr_queue_consumed;
+    logic [cva6_pkg::INSTR_PER_FETCH-1:0] instr_queue_consumed;
     // upper-most branch-prediction from last cycle
     btb_prediction_t        btb_q;
     bht_prediction_t        bht_q;
     // instruction fetch is ready
     logic                   if_ready;
-    logic [riscv::VLEN-1:0] npc_d, npc_q; // next PC
+    logic [cva6_riscv::VLEN-1:0] npc_d, npc_q; // next PC
 
     // indicates whether we come out of reset (then we need to load boot_addr_i)
     logic                   npc_rst_load_q;
 
     logic                   replay;
-    logic [riscv::VLEN-1:0] replay_addr;
+    logic [cva6_riscv::VLEN-1:0] replay_addr;
 
     // shift amount
-    logic [$clog2(ariane_pkg::INSTR_PER_FETCH)-1:0] shamt;
+    logic [$clog2(cva6_pkg::INSTR_PER_FETCH)-1:0] shamt;
     // address will always be 16 bit aligned, make this explicit here
-    assign shamt = icache_dreq_i.vaddr[$clog2(ariane_pkg::INSTR_PER_FETCH):1];
+    assign shamt = icache_dreq_i.vaddr[$clog2(cva6_pkg::INSTR_PER_FETCH):1];
 
     // -----------------------
     // Ctrl Flow Speculation
@@ -77,14 +77,14 @@ module frontend #(
     // RVI ctrl flow prediction
     logic [INSTR_PER_FETCH-1:0]       rvi_return, rvi_call, rvi_branch,
                                       rvi_jalr, rvi_jump;
-    logic [INSTR_PER_FETCH-1:0][riscv::VLEN-1:0] rvi_imm;
+    logic [INSTR_PER_FETCH-1:0][cva6_riscv::VLEN-1:0] rvi_imm;
     // RVC branching
     logic [INSTR_PER_FETCH-1:0]       rvc_branch, rvc_jump, rvc_jr, rvc_return,
                                       rvc_jalr, rvc_call;
-    logic [INSTR_PER_FETCH-1:0][riscv::VLEN-1:0] rvc_imm;
+    logic [INSTR_PER_FETCH-1:0][cva6_riscv::VLEN-1:0] rvc_imm;
     // re-aligned instruction and address (coming from cache - combinationally)
     logic [INSTR_PER_FETCH-1:0][31:0] instr;
-    logic [INSTR_PER_FETCH-1:0][riscv::VLEN-1:0] addr;
+    logic [INSTR_PER_FETCH-1:0][cva6_riscv::VLEN-1:0] addr;
     logic [INSTR_PER_FETCH-1:0]       instruction_valid;
     // BHT, BTB and RAS prediction
     bht_prediction_t [INSTR_PER_FETCH-1:0] bht_prediction;
@@ -96,17 +96,17 @@ module frontend #(
     // branch-predict update
     logic            is_mispredict;
     logic            ras_push, ras_pop;
-    logic [riscv::VLEN-1:0]     ras_update;
+    logic [cva6_riscv::VLEN-1:0]     ras_update;
 
     // Instruction FIFO
-    logic [riscv::VLEN-1:0]                 predict_address;
-    cf_t  [ariane_pkg::INSTR_PER_FETCH-1:0] cf_type;
-    logic [ariane_pkg::INSTR_PER_FETCH-1:0] taken_rvi_cf;
-    logic [ariane_pkg::INSTR_PER_FETCH-1:0] taken_rvc_cf;
+    logic [cva6_riscv::VLEN-1:0]                 predict_address;
+    cf_t  [cva6_pkg::INSTR_PER_FETCH-1:0] cf_type;
+    logic [cva6_pkg::INSTR_PER_FETCH-1:0] taken_rvi_cf;
+    logic [cva6_pkg::INSTR_PER_FETCH-1:0] taken_rvc_cf;
 
     logic serving_unaligned;
     // Re-align instructions
-    instr_realign i_instr_realign (
+    cva6_instr_realign i_cva6_instr_realign (
       .clk_i               ( clk_i                 ),
       .rst_ni              ( rst_ni                ),
       .flush_i             ( icache_dreq_o.kill_s2 ),
@@ -161,7 +161,7 @@ module frontend #(
       taken_rvc_cf = '0;
       predict_address = '0;
 
-      for (int i = 0; i < INSTR_PER_FETCH; i++)  cf_type[i] = ariane_pkg::NoCF;
+      for (int i = 0; i < INSTR_PER_FETCH; i++)  cf_type[i] = cva6_pkg::NoCF;
 
       ras_push = 1'b0;
       ras_pop = 1'b0;
@@ -177,7 +177,7 @@ module frontend #(
             ras_push = 1'b0;
             if (btb_prediction_shifted[i].valid) begin
               predict_address = btb_prediction_shifted[i].target_address;
-              cf_type[i] = ariane_pkg::JumpR;
+              cf_type[i] = cva6_pkg::JumpR;
             end
           end
           // its an unconditional jump to an immediate
@@ -186,7 +186,7 @@ module frontend #(
             ras_push = 1'b0;
             taken_rvi_cf[i] = rvi_jump[i];
             taken_rvc_cf[i] = rvc_jump[i];
-            cf_type[i] = ariane_pkg::Jump;
+            cf_type[i] = cva6_pkg::Jump;
           end
           // return
           4'b0100: begin
@@ -194,7 +194,7 @@ module frontend #(
             ras_pop = ras_predict.valid & instr_queue_consumed[i];
             ras_push = 1'b0;
             predict_address = ras_predict.ra;
-            cf_type[i] = ariane_pkg::Return;
+            cf_type[i] = cva6_pkg::Return;
           end
           // branch prediction
           4'b1000: begin
@@ -207,10 +207,10 @@ module frontend #(
             // otherwise default to static prediction
             end else begin
               // set if immediate is negative - static prediction
-              taken_rvi_cf[i] = rvi_branch[i] & rvi_imm[i][riscv::VLEN-1];
-              taken_rvc_cf[i] = rvc_branch[i] & rvc_imm[i][riscv::VLEN-1];
+              taken_rvi_cf[i] = rvi_branch[i] & rvi_imm[i][cva6_riscv::VLEN-1];
+              taken_rvc_cf[i] = rvc_branch[i] & rvc_imm[i][cva6_riscv::VLEN-1];
             end
-            if (taken_rvi_cf[i] || taken_rvc_cf[i]) cf_type[i] = ariane_pkg::Branch;
+            if (taken_rvi_cf[i] || taken_rvc_cf[i]) cf_type[i] = cva6_pkg::Branch;
           end
           default:;
             // default: $error("Decoded more than one control flow");
@@ -254,13 +254,13 @@ module frontend #(
     btb_update_t btb_update;
 
     assign bht_update.valid = resolved_branch_i.valid
-                                & (resolved_branch_i.cf_type == ariane_pkg::Branch);
+                                & (resolved_branch_i.cf_type == cva6_pkg::Branch);
     assign bht_update.pc    = resolved_branch_i.pc;
     assign bht_update.taken = resolved_branch_i.is_taken;
     // only update mispredicted branches e.g. no returns from the RAS
     assign btb_update.valid = resolved_branch_i.valid
                                 & resolved_branch_i.is_mispredict
-                                & (resolved_branch_i.cf_type == ariane_pkg::JumpR);
+                                & (resolved_branch_i.cf_type == cva6_pkg::JumpR);
     assign btb_update.pc    = resolved_branch_i.pc;
     assign btb_update.target_address = resolved_branch_i.target_address;
 
@@ -277,7 +277,7 @@ module frontend #(
     // Mis-predict handling is a little bit different
     // select PC a.k.a PC Gen
     always_comb begin : npc_select
-      automatic logic [riscv::VLEN-1:0] fetch_address;
+      automatic logic [cva6_riscv::VLEN-1:0] fetch_address;
       // check whether we come out of reset
       // this is a workaround. some tools have issues
       // having boot_addr_i in the asynchronous
@@ -285,8 +285,8 @@ module frontend #(
       // boot_addr_i will be assigned a constant
       // on the top-level.
       if (npc_rst_load_q) begin
-        npc_d         = boot_addr_i[riscv::VLEN-1:0];
-        fetch_address = boot_addr_i[riscv::VLEN-1:0];
+        npc_d         = boot_addr_i[cva6_riscv::VLEN-1:0];
+        fetch_address = boot_addr_i[cva6_riscv::VLEN-1:0];
       end else begin
         fetch_address    = npc_q;
         // keep stable by default
@@ -298,7 +298,7 @@ module frontend #(
         npc_d = predict_address;
       end
       // 1. Default assignment
-      if (if_ready) npc_d = {fetch_address[riscv::VLEN-1:2], 2'b0}  + 'h4;
+      if (if_ready) npc_d = {fetch_address[cva6_riscv::VLEN-1:2], 2'b0}  + 'h4;
       // 2. Replay instruction fetch
       if (replay) npc_d = replay_addr;
       // 3. Control flow change request
@@ -314,10 +314,10 @@ module frontend #(
       // as CSR or AMO instructions do not exist in a compressed form
       // we can unconditionally do PC + 4 here
       // TODO(zarubaf) This adder can at least be merged with the one in the csr_regfile stage
-      if (set_pc_commit_i) npc_d = pc_commit_i + {{riscv::VLEN-3{1'b0}}, 3'b100};
+      if (set_pc_commit_i) npc_d = pc_commit_i + {{cva6_riscv::VLEN-3{1'b0}}, 3'b100};
       // 7. Debug
       // enter debug on a hard-coded base-address
-      if (set_debug_pc_i) npc_d = ArianeCfg.DmBaseAddress[riscv::VLEN-1:0] + dm::HaltAddress[riscv::VLEN-1:0];
+      if (set_debug_pc_i) npc_d = Cva6Cfg.DmBaseAddress[cva6_riscv::VLEN-1:0] + dm::HaltAddress[cva6_riscv::VLEN-1:0];
       icache_dreq_o.vaddr = fetch_address;
     end
 
@@ -332,7 +332,7 @@ module frontend #(
         icache_data_q     <= '0;
         icache_valid_q    <= 1'b0;
         icache_vaddr_q    <= 'b0;
-        icache_ex_valid_q <= ariane_pkg::FE_NONE;
+        icache_ex_valid_q <= cva6_pkg::FE_NONE;
         btb_q             <= '0;
         bht_q             <= '0;
       end else begin
@@ -343,11 +343,11 @@ module frontend #(
           icache_data_q        <= icache_data;
           icache_vaddr_q       <= icache_dreq_i.vaddr;
           // Map the only three exceptions which can occur in the frontend to a two bit enum
-          if (icache_dreq_i.ex.cause == riscv::INSTR_PAGE_FAULT) begin
-            icache_ex_valid_q <= ariane_pkg::FE_INSTR_PAGE_FAULT;
-          end else if (icache_dreq_i.ex.cause == riscv::INSTR_ACCESS_FAULT) begin
-            icache_ex_valid_q <= ariane_pkg::FE_INSTR_ACCESS_FAULT;
-          end else icache_ex_valid_q <= ariane_pkg::FE_NONE;
+          if (icache_dreq_i.ex.cause == cva6_riscv::INSTR_PAGE_FAULT) begin
+            icache_ex_valid_q <= cva6_pkg::FE_INSTR_PAGE_FAULT;
+          end else if (icache_dreq_i.ex.cause == cva6_riscv::INSTR_ACCESS_FAULT) begin
+            icache_ex_valid_q <= cva6_pkg::FE_INSTR_ACCESS_FAULT;
+          end else icache_ex_valid_q <= cva6_pkg::FE_NONE;
           // save the uppermost prediction
           btb_q                <= btb_prediction[INSTR_PER_FETCH-1];
           bht_q                <= bht_prediction[INSTR_PER_FETCH-1];
@@ -355,9 +355,9 @@ module frontend #(
       end
     end
 
-    ras #(
-      .DEPTH  ( ArianeCfg.RASDepth  )
-    ) i_ras (
+    cva6_ras #(
+      .DEPTH  ( Cva6Cfg.RASDepth  )
+    ) i_cva6_ras (
       .clk_i,
       .rst_ni,
       .flush_i( flush_bp_i  ),
@@ -367,9 +367,9 @@ module frontend #(
       .data_o ( ras_predict )
     );
 
-    btb #(
-      .NR_ENTRIES       ( ArianeCfg.BTBEntries   )
-    ) i_btb (
+    cva6_btb #(
+      .NR_ENTRIES       ( Cva6Cfg.BTBEntries   )
+    ) i_cva6_btb (
       .clk_i,
       .rst_ni,
       .flush_i          ( flush_bp_i       ),
@@ -379,9 +379,9 @@ module frontend #(
       .btb_prediction_o ( btb_prediction   )
     );
 
-    bht #(
-      .NR_ENTRIES       ( ArianeCfg.BHTEntries   )
-    ) i_bht (
+    cva6_bht #(
+      .NR_ENTRIES       ( Cva6Cfg.BHTEntries   )
+    ) i_cva6_bht (
       .clk_i,
       .rst_ni,
       .flush_i          ( flush_bp_i       ),
@@ -394,7 +394,7 @@ module frontend #(
     // we need to inspect up to INSTR_PER_FETCH instructions for branches
     // and jumps
     for (genvar i = 0; i < INSTR_PER_FETCH; i++) begin : gen_instr_scan
-      instr_scan i_instr_scan (
+      cva6_instr_scan i_cva6_instr_scan (
         .instr_i      ( instr[i]      ),
         .rvi_return_o ( rvi_return[i] ),
         .rvi_call_o   ( rvi_call[i]   ),
@@ -412,7 +412,7 @@ module frontend #(
       );
     end
 
-    instr_queue i_instr_queue (
+    cva6_instr_queue i_cva6_instr_queue (
       .clk_i               ( clk_i                ),
       .rst_ni              ( rst_ni               ),
       .flush_i             ( flush_i              ),

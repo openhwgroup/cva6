@@ -12,15 +12,15 @@
 // Date: 13.09.2018
 // Description: Instruction cache that is compatible with openpiton.
 
-import ariane_pkg::*;
-import wt_cache_pkg::*;
+import cva6_pkg::*;
+import cva6_wt_cache_pkg::*;
 
-module wt_dcache #(
+module cva6_wt_dcache #(
   // ID to be used for read and AMO transactions.
   // note that the write buffer uses all IDs up to DCACHE_MAX_TX-1 for write transactions
   parameter logic [CACHE_ID_WIDTH-1:0]   RdAmoTxId          = 1,
   // contains cacheable regions
-  parameter ariane_pkg::ariane_cfg_t     ArianeCfg          = ariane_pkg::ArianeDefaultConfig
+  parameter cva6_pkg::cva6_cfg_t     Cva6Cfg          = cva6_pkg::Cva6DefaultConfig
 ) (
   input  logic                           clk_i,       // Clock
   input  logic                           rst_ni,      // Asynchronous reset active low
@@ -76,7 +76,7 @@ module wt_dcache #(
   logic [NumPorts-1:0]                          miss_nc;
   logic [NumPorts-1:0]                          miss_we;
   logic [NumPorts-1:0][63:0]                    miss_wdata;
-  logic [NumPorts-1:0][riscv::PLEN-1:0]         miss_paddr;
+  logic [NumPorts-1:0][cva6_riscv::PLEN-1:0]         miss_paddr;
   logic [NumPorts-1:0][DCACHE_SET_ASSOC-1:0]    miss_vld_bits;
   logic [NumPorts-1:0][2:0]                     miss_size;
   logic [NumPorts-1:0][CACHE_ID_WIDTH-1:0]      miss_id;
@@ -97,7 +97,7 @@ module wt_dcache #(
   logic [DCACHE_SET_ASSOC-1:0]                  rd_hit_oh;
 
   // miss unit <-> wbuffer
-  logic [DCACHE_MAX_TX-1:0][riscv::PLEN-1:0]    tx_paddr;
+  logic [DCACHE_MAX_TX-1:0][cva6_riscv::PLEN-1:0]    tx_paddr;
   logic [DCACHE_MAX_TX-1:0]                     tx_vld;
 
   // wbuffer <-> memory
@@ -108,11 +108,11 @@ module wt_dcache #(
 // miss handling unit
 ///////////////////////////////////////////////////////
 
-  wt_dcache_missunit #(
-    .Axi64BitCompliant ( ArianeCfg.Axi64BitCompliant ),
+  cva6_wt_dcache_missunit #(
+    .Axi64BitCompliant ( Cva6Cfg.Axi64BitCompliant ),
     .AmoTxId           ( RdAmoTxId                   ),
     .NumPorts          ( NumPorts                    )
-  ) i_wt_dcache_missunit (
+  ) i_cva6_wt_dcache_missunit (
     .clk_i              ( clk_i              ),
     .rst_ni             ( rst_ni             ),
     .enable_i           ( enable_i           ),
@@ -167,10 +167,10 @@ module wt_dcache #(
     // set these to high prio ports
     assign rd_prio[k] = 1'b1;
 
-    wt_dcache_ctrl #(
+    cva6_wt_dcache_ctrl #(
       .RdTxId        ( RdAmoTxId     ),
-      .ArianeCfg     ( ArianeCfg     )
-    ) i_wt_dcache_ctrl (
+      .Cva6Cfg     ( Cva6Cfg     )
+    ) i_cva6_wt_dcache_ctrl (
       .clk_i           ( clk_i             ),
       .rst_ni          ( rst_ni            ),
       .cache_en_i      ( cache_en          ),
@@ -210,9 +210,9 @@ module wt_dcache #(
   // set read port to low priority
   assign rd_prio[2] = 1'b0;
 
-  wt_dcache_wbuffer #(
-    .ArianeCfg     ( ArianeCfg     )
-  ) i_wt_dcache_wbuffer (
+  cva6_wt_dcache_wbuffer #(
+    .Cva6Cfg     ( Cva6Cfg     )
+  ) i_cva6_wt_dcache_wbuffer (
     .clk_i           ( clk_i               ),
     .rst_ni          ( rst_ni              ),
     .empty_o         ( wbuffer_empty_o     ),
@@ -264,10 +264,10 @@ module wt_dcache #(
 // memory arrays, arbitration and tag comparison
 ///////////////////////////////////////////////////////
 
-  wt_dcache_mem #(
-    .Axi64BitCompliant ( ArianeCfg.Axi64BitCompliant ),
+  cva6_wt_dcache_mem #(
+    .Axi64BitCompliant ( Cva6Cfg.Axi64BitCompliant ),
     .NumPorts          ( NumPorts                    )
-  ) i_wt_dcache_mem (
+  ) i_cva6_wt_dcache_mem (
     .clk_i             ( clk_i              ),
     .rst_ni            ( rst_ni             ),
     // read ports

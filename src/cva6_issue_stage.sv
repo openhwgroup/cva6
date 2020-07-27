@@ -13,9 +13,9 @@
 // Description: Issue stage dispatches instructions to the FUs and keeps track of them
 //              in a scoreboard like data-structure.
 
-import ariane_pkg::*;
+import cva6_pkg::*;
 
-module issue_stage #(
+module cva6_issue_stage #(
     parameter int unsigned NR_ENTRIES = 8,
     parameter int unsigned NR_WB_PORTS = 4,
     parameter int unsigned NR_COMMIT_PORTS = 2
@@ -33,7 +33,7 @@ module issue_stage #(
     output logic                                     decoded_instr_ack_o,
     // to EX
     output fu_data_t                                 fu_data_o,
-    output logic [riscv::VLEN-1:0]                   pc_o,
+    output logic [cva6_riscv::VLEN-1:0]                   pc_o,
     output logic                                     is_compressed_instr_o,
     input  logic                                     flu_ready_i,
     output logic                                     alu_valid_o,
@@ -100,7 +100,7 @@ module issue_stage #(
     // ---------------------------------------------------------
     // 1. Re-name
     // ---------------------------------------------------------
-    re_name i_re_name (
+    cva6_re_name i_cva6_re_name (
         .clk_i                  ( clk_i                        ),
         .rst_ni                 ( rst_ni                       ),
         .flush_i                ( flush_i                      ),
@@ -116,11 +116,11 @@ module issue_stage #(
     // ---------------------------------------------------------
     // 2. Manage instructions in a scoreboard
     // ---------------------------------------------------------
-    scoreboard #(
+    cva6_scoreboard #(
         .NR_ENTRIES (NR_ENTRIES ),
         .NR_WB_PORTS(NR_WB_PORTS),
         .NR_COMMIT_PORTS(NR_COMMIT_PORTS)
-    ) i_scoreboard (
+    ) i_cva6_scoreboard (
         .sb_full_o             ( sb_full_o                                 ),
         .unresolved_branch_i   ( 1'b0                                      ),
         .rd_clobber_gpr_o      ( rd_clobber_gpr_sb_iro                     ),
@@ -152,9 +152,9 @@ module issue_stage #(
     // ---------------------------------------------------------
     // 3. Issue instruction and read operand, also commit
     // ---------------------------------------------------------
-    issue_read_operands #(
+    cva6_issue_read_operands #(
       .NR_COMMIT_PORTS ( NR_COMMIT_PORTS )
-    )i_issue_read_operands  (
+    )i_cva6_issue_read_operands  (
         .flush_i             ( flush_unissued_instr_i          ),
         .issue_instr_i       ( issue_instr_sb_iro              ),
         .issue_instr_valid_i ( issue_instr_valid_sb_iro        ),

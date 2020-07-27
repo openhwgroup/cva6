@@ -58,9 +58,9 @@ end while(SIG == 1'b0);
 
 `define APPL_WAIT_CYC(CLK, N)       \
 repeat(N) @(posedge(CLK));          \
-#(tb_pkg::APPL_DEL);
+#(cva6_tb_pkg::APPL_DEL);
 
 `define ACQ_WAIT_CYC(CLK, N)        \
 repeat(N) @(posedge(CLK));          \
-#(tb_pkg::ACQ_DEL);
+#(cva6_tb_pkg::ACQ_DEL);
 

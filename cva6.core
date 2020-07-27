@@ -1,49 +1,49 @@
 CAPI=2:
-name : ::ariane:0
+name : ::cva6:0
 
 filesets:
   rtl:
     files:
-      - include/ariane_pkg.sv
-      - include/nbdcache_pkg.sv
-      - src/alu.sv
-      - src/ariane.sv
-      - src/ariane_wrapped.sv
-      - src/branch_unit.sv
-      - src/btb.sv
-      - src/cache_ctrl.sv
-      - src/commit_stage.sv
-      - src/compressed_decoder.sv
-      - src/controller.sv
-      - src/csr_buffer.sv
-      - src/csr_regfile.sv
-      - src/debug_unit.sv
-      - src/decoder.sv
-      - src/ex_stage.sv
-      - src/fetch_fifo.sv
-      - src/fifo.sv
-      - src/icache.sv
-      - src/id_stage.sv
-      - src/if_stage.sv
-      - src/instr_realigner.sv
-      - src/issue_read_operands.sv
-      - src/issue_stage.sv
-      - src/lfsr.sv
-      - src/load_unit.sv
-      - src/lsu_arbiter.sv
-      - src/lsu.sv
-      - src/miss_handler.sv
-      - src/mmu.sv
-      - src/mult.sv
-      - src/nbdcache.sv
-      - src/pcgen_stage.sv
-      - src/perf_counters.sv
-      - src/ptw.sv
-      - src/regfile_ff.sv
-      - src/scoreboard.sv
-      - src/store_buffer.sv
-      - src/store_unit.sv
-      - src/tlb.sv
+      - include/cva6_pkg.sv
+      - include/cva6_nbdcache_pkg.sv
+      - src/cva6_alu.sv
+      - src/cva6.sv
+      - src/cva6_wrapped.sv
+      - src/cva6_branch_unit.sv
+      - src/cva6_btb.sv
+      - src/cva6_cache_ctrl.sv
+      - src/cva6_commit_stage.sv
+      - src/cva6_compressed_decoder.sv
+      - src/cva6_controller.sv
+      - src/cva6_csr_buffer.sv
+      - src/cva6_csr_regfile.sv
+      - src/cva6_debug_unit.sv
+      - src/cva6_decoder.sv
+      - src/cva6_ex_stage.sv
+      - src/cva6_fetch_fifo.sv
+      - src/cva6_fifo.sv
+      - src/cva6_icache.sv
+      - src/cva6_id_stage.sv
+      - src/cva6_if_stage.sv
+      - src/cva6_instr_realigner.sv
+      - src/cva6_issue_read_operands.sv
+      - src/cva6_issue_stage.sv
+      - src/cva6_lfsr.sv
+      - src/cva6_load_unit.sv
+      - src/cva6_lsu_arbiter.sv
+      - src/cva6_lsu.sv
+      - src/cva6_miss_handler.sv
+      - src/cva6_mmu.sv
+      - src/cva6_mult.sv
+      - src/cva6_nbdcache.sv
+      - src/cva6_pcgen_stage.sv
+      - src/cva6_perf_counters.sv
+      - src/cva6_ptw.sv
+      - src/cva6_regfile_ff.sv
+      - src/cva6_scoreboard.sv
+      - src/cva6_store_buffer.sv
+      - src/cva6_store_unit.sv
+      - src/cva6_tlb.sv
     file_type : systemVerilogSource
     depend :
       - pulp-platform.org::axi_mem_if
@@ -69,4 +69,4 @@ targets:
           - "-std=c++11"
           - -Wall
           - --trace
-    toplevel : [ariane_wrapped]
+    toplevel : [cva6_wrapped]

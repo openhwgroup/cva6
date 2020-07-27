@@ -12,7 +12,7 @@
 // Date: 23.05.2017
 // Description: Load Store Unit, handles address calculation and memory interface signals
 
-module core_mem #(
+module cva6_core_mem #(
         parameter logic [63:0] DRAM_BASE = 64'h80000000
     )(
     input logic                      clk_i,   // Clock
@@ -37,10 +37,10 @@ module core_mem #(
     // look at the address of the previous cycle to determine what to return
     assign data_if_data_rdata_o = (data_address_q >= DRAM_BASE) ? data_ram : data_rom;
 
-    dp_ram  #(
+    cva6_dp_ram  #(
         .ADDR_WIDTH    ( ADDRESS_WIDTH                                      ),
         .DATA_WIDTH    ( 64                                                 )
-    ) ram_i (
+    ) cva6_ram_i (
         .clk           ( clk_i                                              ),
         .en_a_i        ( 1'b0                                               ),
         .addr_a_i      (                                                    ),

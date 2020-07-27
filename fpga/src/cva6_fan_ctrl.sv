@@ -11,7 +11,7 @@
 // Description: PWM Fan Control for Genesys II board
 // Author: Florian Zaruba, zarubaf@iis.ee.ethz.ch
 
-module fan_ctrl (
+module cva6_fan_ctrl (
     input  logic       clk_i,
     input  logic       rst_ni,
     input  logic [3:0] pwm_setting_i,

@@ -14,13 +14,13 @@
 // randomized or linear read sequences.
 //
 
-`include "tb.svh"
+`include "cva6_tb.svh"
 
-import ariane_pkg::*;
-import wt_cache_pkg::*;
-import tb_pkg::*;
+import cva6_pkg::*;
+import cva6_wt_cache_pkg::*;
+import cva6_tb_pkg::*;
 
-program tb_writeport  #(
+program cva6_tb_writeport  #(
   parameter string       PortName      = "write port 0",
   parameter              MemWords      = 1024*1024,// in 64bit words
   parameter logic [63:0] CachedAddrBeg = 0,

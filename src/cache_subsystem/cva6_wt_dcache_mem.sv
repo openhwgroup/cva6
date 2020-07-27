@@ -25,10 +25,10 @@
 //        4) Read ports with same priority are RR arbited. but high prio ports (rd_prio_i[port_nr] = '1b1) will stall
 //           low prio ports (rd_prio_i[port_nr] = '1b0)
 
-import ariane_pkg::*;
-import wt_cache_pkg::*;
+import cva6_pkg::*;
+import cva6_wt_cache_pkg::*;
 
-module wt_dcache_mem #(
+module cva6_wt_dcache_mem #(
   parameter bit          Axi64BitCompliant  = 1'b0, // set this to 1 when using in conjunction with 64bit AXI bus adapter
   parameter int unsigned NumPorts           = 3
 ) (
@@ -254,10 +254,10 @@ module wt_dcache_mem #(
 
   for (genvar k = 0; k < DCACHE_NUM_BANKS; k++) begin : gen_data_banks
     // Data RAM
-    sram #(
-      .DATA_WIDTH ( ariane_pkg::DCACHE_SET_ASSOC * 64 ),
-      .NUM_WORDS  ( wt_cache_pkg::DCACHE_NUM_WORDS    )
-    ) i_data_sram (
+    cva6_sram #(
+      .DATA_WIDTH ( cva6_pkg::DCACHE_SET_ASSOC * 64 ),
+      .NUM_WORDS  ( cva6_wt_cache_pkg::DCACHE_NUM_WORDS    )
+    ) i_cva6_data_sram (
       .clk_i      ( clk_i               ),
       .rst_ni     ( rst_ni              ),
       .req_i      ( bank_req   [k]      ),
@@ -275,11 +275,11 @@ module wt_dcache_mem #(
     assign rd_vld_bits_o[i] = vld_tag_rdata[i][DCACHE_TAG_WIDTH];
 
     // Tag RAM
-    sram #(
+    cva6_sram #(
       // tag + valid bit
-      .DATA_WIDTH ( ariane_pkg::DCACHE_TAG_WIDTH + 1 ),
-      .NUM_WORDS  ( wt_cache_pkg::DCACHE_NUM_WORDS   )
-    ) i_tag_sram (
+      .DATA_WIDTH ( cva6_pkg::DCACHE_TAG_WIDTH + 1 ),
+      .NUM_WORDS  ( cva6_wt_cache_pkg::DCACHE_NUM_WORDS   )
+    ) i_cva6_tag_sram (
       .clk_i     ( clk_i               ),
       .rst_ni    ( rst_ni              ),
       .req_i     ( vld_req[i]          ),
@@ -325,9 +325,9 @@ module wt_dcache_mem #(
       else $fatal(1,"[l1 dcache] wbuffer_hit_oh signal must be hot1");
 
   // this is only used for verification!
-  logic                                    vld_mirror[wt_cache_pkg::DCACHE_NUM_WORDS-1:0][ariane_pkg::DCACHE_SET_ASSOC-1:0];
-  logic [ariane_pkg::DCACHE_TAG_WIDTH-1:0] tag_mirror[wt_cache_pkg::DCACHE_NUM_WORDS-1:0][ariane_pkg::DCACHE_SET_ASSOC-1:0];
-  logic [ariane_pkg::DCACHE_SET_ASSOC-1:0] tag_write_duplicate_test;
+  logic                                    vld_mirror[cva6_wt_cache_pkg::DCACHE_NUM_WORDS-1:0][cva6_pkg::DCACHE_SET_ASSOC-1:0];
+  logic [cva6_pkg::DCACHE_TAG_WIDTH-1:0] tag_mirror[cva6_wt_cache_pkg::DCACHE_NUM_WORDS-1:0][cva6_pkg::DCACHE_SET_ASSOC-1:0];
+  logic [cva6_pkg::DCACHE_SET_ASSOC-1:0] tag_write_duplicate_test;
 
   always_ff @(posedge clk_i or negedge rst_ni) begin : p_mirror
     if(!rst_ni) begin

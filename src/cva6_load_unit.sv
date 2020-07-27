@@ -13,8 +13,8 @@
 // Date: 15.08.2018
 // Description: Load Unit, takes care of all load requests
 
-module load_unit import ariane_pkg::*; #(
-    parameter ariane_pkg::ariane_cfg_t ArianeCfg = ariane_pkg::ArianeDefaultConfig
+module cva6_load_unit import cva6_pkg::*; #(
+    parameter cva6_pkg::cva6_cfg_t Cva6Cfg = cva6_pkg::Cva6DefaultConfig
 ) (
     input  logic                     clk_i,    // Clock
     input  logic                     rst_ni,   // Asynchronous reset active low
@@ -30,8 +30,8 @@ module load_unit import ariane_pkg::*; #(
     output exception_t               ex_o,
     // MMU -> Address Translation
     output logic                     translation_req_o,   // request address translation
-    output logic [riscv::VLEN-1:0]   vaddr_o,             // virtual address out
-    input  logic [riscv::PLEN-1:0]   paddr_i,             // physical address in
+    output logic [cva6_riscv::VLEN-1:0]   vaddr_o,             // virtual address out
+    input  logic [cva6_riscv::PLEN-1:0]   paddr_i,             // physical address in
     input  exception_t               ex_i,                // exception which may has happened earlier. for example: mis-aligned exception
     input  logic                     dtlb_hit_i,          // hit on the dtlb, send in the same cycle as the request
     // address checker
@@ -67,11 +67,11 @@ module load_unit import ariane_pkg::*; #(
     assign in_data = {lsu_ctrl_i.trans_id, lsu_ctrl_i.vaddr[2:0], lsu_ctrl_i.operator};
     // output address
     // we can now output the lower 12 bit as the index to the cache
-    assign req_port_o.address_index = lsu_ctrl_i.vaddr[ariane_pkg::DCACHE_INDEX_WIDTH-1:0];
+    assign req_port_o.address_index = lsu_ctrl_i.vaddr[cva6_pkg::DCACHE_INDEX_WIDTH-1:0];
     // translation from last cycle, again: control is handled in the FSM
-    assign req_port_o.address_tag   = paddr_i[ariane_pkg::DCACHE_TAG_WIDTH     +
-                                              ariane_pkg::DCACHE_INDEX_WIDTH-1 :
-                                              ariane_pkg::DCACHE_INDEX_WIDTH];
+    assign req_port_o.address_tag   = paddr_i[cva6_pkg::DCACHE_TAG_WIDTH     +
+                                              cva6_pkg::DCACHE_INDEX_WIDTH-1 :
+                                              cva6_pkg::DCACHE_INDEX_WIDTH];
     // directly output an exception
     assign ex_o = ex_i;
 
@@ -79,9 +79,9 @@ module load_unit import ariane_pkg::*; #(
     // should we stall the request e.g.: is it withing a non-cacheable region
     // and the write buffer (in the cache and in the core) is not empty so that we don't forward anything
     // from the write buffer (e.g. it would essentially be cached).
-    assign stall_nc = (~(dcache_wbuffer_empty_i | store_buffer_empty_i) & is_inside_cacheable_regions(ArianeCfg, paddr_i))
+    assign stall_nc = (~(dcache_wbuffer_empty_i | store_buffer_empty_i) & is_inside_cacheable_regions(Cva6Cfg, paddr_i))
                     // this guards the load to be executed non-speculatively (we wait until our transaction id is on port 0
-                    | (commit_tran_id_i != lsu_ctrl_i.trans_id & is_inside_nonidempotent_regions(ArianeCfg, paddr_i));
+                    | (commit_tran_id_i != lsu_ctrl_i.trans_id & is_inside_nonidempotent_regions(Cva6Cfg, paddr_i));
 
     // ---------------
     // Load Control
@@ -329,10 +329,10 @@ module load_unit import ariane_pkg::*; #(
 
 
     // prepare these signals for faster selection in the next cycle
-    assign signed_d  = load_data_d.operator  inside {ariane_pkg::LW,  ariane_pkg::LH,  ariane_pkg::LB};
-    assign fp_sign_d = load_data_d.operator  inside {ariane_pkg::FLW, ariane_pkg::FLH, ariane_pkg::FLB};
-    assign idx_d     = (load_data_d.operator inside {ariane_pkg::LW,  ariane_pkg::FLW}) ? load_data_d.address_offset + 3 :
-                       (load_data_d.operator inside {ariane_pkg::LH,  ariane_pkg::FLH}) ? load_data_d.address_offset + 1 :
+    assign signed_d  = load_data_d.operator  inside {cva6_pkg::LW,  cva6_pkg::LH,  cva6_pkg::LB};
+    assign fp_sign_d = load_data_d.operator  inside {cva6_pkg::FLW, cva6_pkg::FLH, cva6_pkg::FLB};
+    assign idx_d     = (load_data_d.operator inside {cva6_pkg::LW,  cva6_pkg::FLW}) ? load_data_d.address_offset + 3 :
+                       (load_data_d.operator inside {cva6_pkg::LH,  cva6_pkg::FLH}) ? load_data_d.address_offset + 1 :
                                                                                           load_data_d.address_offset;
 
 
@@ -352,9 +352,9 @@ module load_unit import ariane_pkg::*; #(
     // result mux
     always_comb begin
         unique case (load_data_q.operator)
-            ariane_pkg::LW, ariane_pkg::LWU, ariane_pkg::FLW:    result_o = {{32{sign_bit}}, shifted_data[31:0]};
-            ariane_pkg::LH, ariane_pkg::LHU, ariane_pkg::FLH:    result_o = {{48{sign_bit}}, shifted_data[15:0]};
-            ariane_pkg::LB, ariane_pkg::LBU, ariane_pkg::FLB:    result_o = {{56{sign_bit}}, shifted_data[7:0]};
+            cva6_pkg::LW, cva6_pkg::LWU, cva6_pkg::FLW:    result_o = {{32{sign_bit}}, shifted_data[31:0]};
+            cva6_pkg::LH, cva6_pkg::LHU, cva6_pkg::FLH:    result_o = {{48{sign_bit}}, shifted_data[15:0]};
+            cva6_pkg::LB, cva6_pkg::LBU, cva6_pkg::FLB:    result_o = {{56{sign_bit}}, shifted_data[7:0]};
             default:    result_o = shifted_data;
         endcase
     end
@@ -380,11 +380,11 @@ module load_unit import ariane_pkg::*; #(
 `ifndef VERILATOR
     // check invalid offsets
     addr_offset0: assert property (@(posedge clk_i) disable iff (~rst_ni)
-        valid_o |->  (load_data_q.operator inside {ariane_pkg::LW, ariane_pkg::LWU}) |-> load_data_q.address_offset < 5) else $fatal (1,"invalid address offset used with {LW, LWU}");
+        valid_o |->  (load_data_q.operator inside {cva6_pkg::LW, cva6_pkg::LWU}) |-> load_data_q.address_offset < 5) else $fatal (1,"invalid address offset used with {LW, LWU}");
     addr_offset1: assert property (@(posedge clk_i) disable iff (~rst_ni)
-        valid_o |->  (load_data_q.operator inside {ariane_pkg::LH, ariane_pkg::LHU}) |-> load_data_q.address_offset < 7) else $fatal (1,"invalid address offset used with {LH, LHU}");
+        valid_o |->  (load_data_q.operator inside {cva6_pkg::LH, cva6_pkg::LHU}) |-> load_data_q.address_offset < 7) else $fatal (1,"invalid address offset used with {LH, LHU}");
     addr_offset2: assert property (@(posedge clk_i) disable iff (~rst_ni)
-        valid_o |->  (load_data_q.operator inside {ariane_pkg::LB, ariane_pkg::LBU}) |-> load_data_q.address_offset < 8) else $fatal (1,"invalid address offset used with {LB, LBU}");
+        valid_o |->  (load_data_q.operator inside {cva6_pkg::LB, cva6_pkg::LBU}) |-> load_data_q.address_offset < 8) else $fatal (1,"invalid address offset used with {LB, LBU}");
 `endif
 //pragma translate_on
 

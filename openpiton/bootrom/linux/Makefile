@@ -22,7 +22,7 @@ MAIN_SV = $(MAIN:.elf=.sv)
 
 #.PHONY: clean
 
-$(MAIN): ariane.dtb $(OBJS_C) $(OBJS_S) linker.lds
+$(MAIN): cva6.dtb $(OBJS_C) $(OBJS_S) linker.lds
 	$(CC) $(CFLAGS) $(LDFLAGS) $(INCLUDES) -Tlinker.lds $(OBJS_S) $(OBJS_C) -o $(MAIN)
 	@echo "LD    >= $(MAIN)"
 

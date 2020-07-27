@@ -13,10 +13,10 @@
 // Date: 19.04.2017
 // Description: Instantiation of all functional units residing in the execute stage
 
-import ariane_pkg::*;
+import cva6_pkg::*;
 
-module ex_stage #(
-    parameter ariane_pkg::ariane_cfg_t ArianeCfg = ariane_pkg::ArianeDefaultConfig
+module cva6_ex_stage #(
+    parameter cva6_pkg::cva6_cfg_t Cva6Cfg = cva6_pkg::Cva6DefaultConfig
 ) (
     input  logic                                   clk_i,    // Clock
     input  logic                                   rst_ni,   // Asynchronous reset active low
@@ -24,7 +24,7 @@ module ex_stage #(
     input  logic                                   debug_mode_i,
 
     input  fu_data_t                               fu_data_i,
-    input  logic [riscv::VLEN-1:0]                 pc_i,                  // PC of current instruction
+    input  logic [cva6_riscv::VLEN-1:0]                 pc_i,                  // PC of current instruction
     input  logic                                   is_compressed_instr_i, // we need to know if this was a compressed instruction
                                                                           // in order to calculate the next PC on a mis-predict
     // Fixed latency unit(s)
@@ -81,8 +81,8 @@ module ex_stage #(
     input  logic                                   en_ld_st_translation_i,
     input  logic                                   flush_tlb_i,
 
-    input  riscv::priv_lvl_t                       priv_lvl_i,
-    input  riscv::priv_lvl_t                       ld_st_priv_lvl_i,
+    input  cva6_riscv::priv_lvl_t                       priv_lvl_i,
+    input  cva6_riscv::priv_lvl_t                       ld_st_priv_lvl_i,
     input  logic                                   sum_i,
     input  logic                                   mxr_i,
     input  logic [43:0]                            satp_ppn_i,
@@ -101,8 +101,8 @@ module ex_stage #(
     output logic                                   itlb_miss_o,
     output logic                                   dtlb_miss_o,
     // PMPs
-    input  riscv::pmpcfg_t [ArianeCfg.NrPMPEntries-1:0]  pmpcfg_i,
-    input  logic[ArianeCfg.NrPMPEntries-1:0][53:0]       pmpaddr_i
+    input  cva6_riscv::pmpcfg_t [Cva6Cfg.NrPMPEntries-1:0]  pmpcfg_i,
+    input  logic[Cva6Cfg.NrPMPEntries-1:0][53:0]       pmpaddr_i
 );
 
     // -------------------------
@@ -128,7 +128,7 @@ module ex_stage #(
     // from ALU to branch unit
     logic alu_branch_res; // branch comparison result
     logic [63:0] alu_result, csr_result, mult_result;
-    logic [riscv::VLEN-1:0] branch_result;
+    logic [cva6_riscv::VLEN-1:0] branch_result;
     logic csr_ready, mult_ready;
     logic [TRANS_ID_BITS-1:0] mult_trans_id;
     logic mult_valid;
@@ -138,7 +138,7 @@ module ex_stage #(
     fu_data_t alu_data;
     assign alu_data = (alu_valid_i | branch_valid_i) ? fu_data_i  : '0;
 
-    alu alu_i (
+    cva6_alu cva6_alu_i (
         .clk_i,
         .rst_ni,
         .fu_data_i        ( alu_data       ),
@@ -149,7 +149,7 @@ module ex_stage #(
     // 2. Branch Unit (combinatorial)
     // we don't silence the branch unit as this is already critical and we do
     // not want to add another layer of logic
-    branch_unit branch_unit_i (
+    cva6_branch_unit cva6_branch_unit_i (
         .clk_i,
         .rst_ni,
         .debug_mode_i,
@@ -168,7 +168,7 @@ module ex_stage #(
     );
 
     // 3. CSR (sequential)
-    csr_buffer csr_buffer_i (
+    cva6_csr_buffer cva6_csr_buffer_i (
         .clk_i,
         .rst_ni,
         .flush_i,
@@ -185,7 +185,7 @@ module ex_stage #(
     // result MUX
     always_comb begin
         // Branch result as default case
-        flu_result_o = {{64-riscv::VLEN{1'b0}}, branch_result};
+        flu_result_o = {{64-cva6_riscv::VLEN{1'b0}}, branch_result};
         flu_trans_id_o = fu_data_i.trans_id;
         // ALU result
         if (alu_valid_i) begin
@@ -209,7 +209,7 @@ module ex_stage #(
     // input silencing of multiplier
     assign mult_data  = mult_valid_i ? fu_data_i  : '0;
 
-    mult i_mult (
+    cva6_mult i_cva6_mult (
         .clk_i,
         .rst_ni,
         .flush_i,
@@ -229,7 +229,7 @@ module ex_stage #(
             fu_data_t fpu_data;
             assign fpu_data  = fpu_valid_i ? fu_data_i  : '0;
 
-            fpu_wrap fpu_i (
+            cva6_fpu_wrap cva6_fpu_i (
                 .clk_i,
                 .rst_ni,
                 .flush_i,
@@ -261,9 +261,9 @@ module ex_stage #(
 
     assign lsu_data  = lsu_valid_i ? fu_data_i  : '0;
 
-    load_store_unit #(
-      .ArianeCfg ( ArianeCfg )
-    ) lsu_i (
+    cva6_load_store_unit #(
+      .Cva6Cfg ( Cva6Cfg )
+    ) cva6_lsu_i (
         .clk_i,
         .rst_ni,
         .flush_i,

@@ -10,10 +10,10 @@
 //
 // Author: Florian Zaruba, ETH Zurich
 // Date: 19.03.2017
-// Description: Test-harness for Ariane
+// Description: Test-harness for Cva6
 //              Instantiates an AXI-Bus and memories
 
-module ariane_testharness #(
+module cva6_testharness #(
   parameter int unsigned AXI_USER_WIDTH    = 1,
   parameter int unsigned AXI_ADDRESS_WIDTH = 64,
   parameter int unsigned AXI_DATA_WIDTH    = 64,
@@ -76,16 +76,16 @@ module ariane_testharness #(
   AXI_BUS #(
     .AXI_ADDR_WIDTH ( AXI_ADDRESS_WIDTH   ),
     .AXI_DATA_WIDTH ( AXI_DATA_WIDTH      ),
-    .AXI_ID_WIDTH   ( ariane_soc::IdWidth ),
+    .AXI_ID_WIDTH   ( cva6_soc::IdWidth ),
     .AXI_USER_WIDTH ( AXI_USER_WIDTH      )
-  ) slave[ariane_soc::NrSlaves-1:0]();
+  ) slave[cva6_soc::NrSlaves-1:0]();
 
   AXI_BUS #(
     .AXI_ADDR_WIDTH ( AXI_ADDRESS_WIDTH        ),
     .AXI_DATA_WIDTH ( AXI_DATA_WIDTH           ),
-    .AXI_ID_WIDTH   ( ariane_soc::IdWidthSlave ),
+    .AXI_ID_WIDTH   ( cva6_soc::IdWidthSlave ),
     .AXI_USER_WIDTH ( AXI_USER_WIDTH           )
-  ) master[ariane_soc::NB_PERIPHERALS-1:0]();
+  ) master[cva6_soc::NB_PERIPHERALS-1:0]();
 
   rstgen i_rstgen_main (
     .clk_i        ( clk_i                ),
@@ -114,7 +114,7 @@ module ariane_testharness #(
 
   // SiFive's SimJTAG Module
   // Converts to DPI calls
-  SimJTAG i_SimJTAG (
+  cva6_SimJTAG i_cva6_SimJTAG (
     .clock                ( clk_i                ),
     .reset                ( ~rst_ni              ),
     .enable               ( jtag_enable[0]       ),
@@ -153,7 +153,7 @@ module ariane_testharness #(
   assign dmi_req.op = dm::dtm_op_e'(debug_req_bits_op);
 
   if (InclSimDTM) begin
-    SimDTM i_SimDTM (
+    cva6_SimDTM i_cva6_SimDTM (
       .clk                  ( clk_i                 ),
       .reset                ( ~rst_ni               ),
       .debug_req_valid      ( dmi_req_valid         ),
@@ -194,8 +194,8 @@ module ariane_testharness #(
     end
   end
 
-  ariane_axi::req_t    dm_axi_m_req;
-  ariane_axi::resp_t   dm_axi_m_resp;
+  cva6_axi::req_t    dm_axi_m_req;
+  cva6_axi::resp_t   dm_axi_m_resp;
 
   logic                dm_slave_req;
   logic                dm_slave_we;
@@ -226,7 +226,7 @@ module ariane_testharness #(
     .dmactive_o           (                             ), // active debug session
     .debug_req_o          ( debug_req_core_ungtd        ),
     .unavailable_i        ( '0                          ),
-    .hartinfo_i           ( {ariane_pkg::DebugHartInfo} ),
+    .hartinfo_i           ( {cva6_pkg::DebugHartInfo} ),
     .slave_req_i          ( dm_slave_req                ),
     .slave_we_i           ( dm_slave_we                 ),
     .slave_addr_i         ( dm_slave_addr               ),
@@ -252,14 +252,14 @@ module ariane_testharness #(
 
 
   axi2mem #(
-    .AXI_ID_WIDTH   ( ariane_soc::IdWidthSlave ),
+    .AXI_ID_WIDTH   ( cva6_soc::IdWidthSlave ),
     .AXI_ADDR_WIDTH ( AXI_ADDRESS_WIDTH        ),
     .AXI_DATA_WIDTH ( AXI_DATA_WIDTH           ),
     .AXI_USER_WIDTH ( AXI_USER_WIDTH           )
   ) i_dm_axi2mem (
     .clk_i      ( clk_i                     ),
     .rst_ni     ( rst_ni                    ),
-    .slave      ( master[ariane_soc::Debug] ),
+    .slave      ( master[cva6_soc::Debug] ),
     .req_o      ( dm_slave_req              ),
     .we_o       ( dm_slave_we               ),
     .addr_o     ( dm_slave_addr             ),
@@ -268,19 +268,19 @@ module ariane_testharness #(
     .data_i     ( dm_slave_rdata            )
   );
 
-  axi_master_connect i_dm_axi_master_connect (
+  cva6_axi_master_connect i_cva6_dm_axi_master_connect (
     .axi_req_i(dm_axi_m_req),
     .axi_resp_o(dm_axi_m_resp),
     .master(slave[1])
   );
 
-  axi_adapter #(
+  cva6_axi_adapter #(
     .DATA_WIDTH            ( AXI_DATA_WIDTH            )
-  ) i_dm_axi_master (
+  ) i_cva6_dm_axi_master (
     .clk_i                 ( clk_i                     ),
     .rst_ni                ( rst_ni                    ),
     .req_i                 ( dm_master_req             ),
-    .type_i                ( ariane_axi::SINGLE_REQ    ),
+    .type_i                ( cva6_axi::SINGLE_REQ    ),
     .gnt_o                 ( dm_master_gnt             ),
     .gnt_id_o              (                           ),
     .addr_i                ( dm_master_add             ),
@@ -307,14 +307,14 @@ module ariane_testharness #(
   logic [AXI_DATA_WIDTH-1:0]    rom_rdata;
 
   axi2mem #(
-    .AXI_ID_WIDTH   ( ariane_soc::IdWidthSlave ),
+    .AXI_ID_WIDTH   ( cva6_soc::IdWidthSlave ),
     .AXI_ADDR_WIDTH ( AXI_ADDRESS_WIDTH        ),
     .AXI_DATA_WIDTH ( AXI_DATA_WIDTH           ),
     .AXI_USER_WIDTH ( AXI_USER_WIDTH           )
   ) i_axi2rom (
     .clk_i  ( clk_i                   ),
     .rst_ni ( ndmreset_n              ),
-    .slave  ( master[ariane_soc::ROM] ),
+    .slave  ( master[cva6_soc::ROM] ),
     .req_o  ( rom_req                 ),
     .we_o   (                         ),
     .addr_o ( rom_addr                ),
@@ -344,7 +344,7 @@ module ariane_testharness #(
   AXI_BUS #(
     .AXI_ADDR_WIDTH ( AXI_ADDRESS_WIDTH        ),
     .AXI_DATA_WIDTH ( AXI_DATA_WIDTH           ),
-    .AXI_ID_WIDTH   ( ariane_soc::IdWidthSlave ),
+    .AXI_ID_WIDTH   ( cva6_soc::IdWidthSlave ),
     .AXI_USER_WIDTH ( AXI_USER_WIDTH           )
   ) dram();
 
@@ -358,41 +358,41 @@ module ariane_testharness #(
   axi_riscv_atomics_wrap #(
     .AXI_ADDR_WIDTH ( AXI_ADDRESS_WIDTH        ),
     .AXI_DATA_WIDTH ( AXI_DATA_WIDTH           ),
-    .AXI_ID_WIDTH   ( ariane_soc::IdWidthSlave ),
+    .AXI_ID_WIDTH   ( cva6_soc::IdWidthSlave ),
     .AXI_USER_WIDTH ( AXI_USER_WIDTH           ),
     .AXI_MAX_WRITE_TXNS ( 1  ),
     .RISCV_WORD_WIDTH   ( 64 )
   ) i_axi_riscv_atomics (
     .clk_i,
     .rst_ni ( ndmreset_n               ),
-    .slv    ( master[ariane_soc::DRAM] ),
+    .slv    ( master[cva6_soc::DRAM] ),
     .mst    ( dram                     )
   );
 
   AXI_BUS #(
     .AXI_ADDR_WIDTH ( AXI_ADDRESS_WIDTH        ),
     .AXI_DATA_WIDTH ( AXI_DATA_WIDTH           ),
-    .AXI_ID_WIDTH   ( ariane_soc::IdWidthSlave ),
+    .AXI_ID_WIDTH   ( cva6_soc::IdWidthSlave ),
     .AXI_USER_WIDTH ( AXI_USER_WIDTH           )
   ) dram_delayed();
 
-  ariane_axi::aw_chan_slv_t aw_chan_i;
-  ariane_axi::w_chan_t      w_chan_i;
-  ariane_axi::b_chan_slv_t  b_chan_o;
-  ariane_axi::ar_chan_slv_t ar_chan_i;
-  ariane_axi::r_chan_slv_t  r_chan_o;
-  ariane_axi::aw_chan_slv_t aw_chan_o;
-  ariane_axi::w_chan_t      w_chan_o;
-  ariane_axi::b_chan_slv_t  b_chan_i;
-  ariane_axi::ar_chan_slv_t ar_chan_o;
-  ariane_axi::r_chan_slv_t  r_chan_i;
+  cva6_axi::aw_chan_slv_t aw_chan_i;
+  cva6_axi::w_chan_t      w_chan_i;
+  cva6_axi::b_chan_slv_t  b_chan_o;
+  cva6_axi::ar_chan_slv_t ar_chan_i;
+  cva6_axi::r_chan_slv_t  r_chan_o;
+  cva6_axi::aw_chan_slv_t aw_chan_o;
+  cva6_axi::w_chan_t      w_chan_o;
+  cva6_axi::b_chan_slv_t  b_chan_i;
+  cva6_axi::ar_chan_slv_t ar_chan_o;
+  cva6_axi::r_chan_slv_t  r_chan_i;
 
   axi_delayer #(
-    .aw_t              ( ariane_axi::aw_chan_slv_t ),
-    .w_t               ( ariane_axi::w_chan_t      ),
-    .b_t               ( ariane_axi::b_chan_slv_t  ),
-    .ar_t              ( ariane_axi::ar_chan_slv_t ),
-    .r_t               ( ariane_axi::r_chan_slv_t  ),
+    .aw_t              ( cva6_axi::aw_chan_slv_t ),
+    .w_t               ( cva6_axi::w_chan_t      ),
+    .b_t               ( cva6_axi::b_chan_slv_t  ),
+    .ar_t              ( cva6_axi::ar_chan_slv_t ),
+    .r_t               ( cva6_axi::r_chan_slv_t  ),
     .StallRandomOutput ( StallRandomOutput         ),
     .StallRandomInput  ( StallRandomInput          ),
     .FixedDelayInput   ( 0                         ),
@@ -508,7 +508,7 @@ module ariane_testharness #(
   assign dram.b_user = '0;
 
   axi2mem #(
-    .AXI_ID_WIDTH   ( ariane_soc::IdWidthSlave ),
+    .AXI_ID_WIDTH   ( cva6_soc::IdWidthSlave ),
     .AXI_ADDR_WIDTH ( AXI_ADDRESS_WIDTH        ),
     .AXI_DATA_WIDTH ( AXI_DATA_WIDTH           ),
     .AXI_USER_WIDTH ( AXI_USER_WIDTH           )
@@ -524,13 +524,13 @@ module ariane_testharness #(
     .data_i ( rdata        )
   );
 
-  sram #(
+  cva6_sram #(
     .DATA_WIDTH ( AXI_DATA_WIDTH ),
 `ifdef DROMAJO
     .DROMAJO_RAM (1),
 `endif
     .NUM_WORDS  ( NUM_WORDS      )
-  ) i_sram (
+  ) i_cva6_sram (
     .clk_i      ( clk_i                                                                       ),
     .rst_ni     ( rst_ni                                                                      ),
     .req_i      ( req                                                                         ),
@@ -544,16 +544,16 @@ module ariane_testharness #(
   // ---------------
   // AXI Xbar
   // ---------------
-  typedef logic [ariane_soc::NrRegion-1:0][ariane_soc::NB_PERIPHERALS-1:0][AXI_ADDRESS_WIDTH-1:0] addr_map_t;
+  typedef logic [cva6_soc::NrRegion-1:0][cva6_soc::NB_PERIPHERALS-1:0][AXI_ADDRESS_WIDTH-1:0] addr_map_t;
   
   axi_node_intf_wrap #(
-    .NB_SLAVE           ( ariane_soc::NrSlaves       ),
-    .NB_MASTER          ( ariane_soc::NB_PERIPHERALS ),
-    .NB_REGION          ( ariane_soc::NrRegion       ),
+    .NB_SLAVE           ( cva6_soc::NrSlaves       ),
+    .NB_MASTER          ( cva6_soc::NB_PERIPHERALS ),
+    .NB_REGION          ( cva6_soc::NrRegion       ),
     .AXI_ADDR_WIDTH     ( AXI_ADDRESS_WIDTH          ),
     .AXI_DATA_WIDTH     ( AXI_DATA_WIDTH             ),
     .AXI_USER_WIDTH     ( AXI_USER_WIDTH             ),
-    .AXI_ID_WIDTH       ( ariane_soc::IdWidth        )
+    .AXI_ID_WIDTH       ( cva6_soc::IdWidth        )
     // .MASTER_SLICE_DEPTH ( 0                          ),
     // .SLAVE_SLICE_DEPTH  ( 0                          )
   ) i_axi_xbar (
@@ -563,30 +563,30 @@ module ariane_testharness #(
     .slave        ( slave      ),
     .master       ( master     ),
     .start_addr_i (addr_map_t'({
-      ariane_soc::DebugBase,
-      ariane_soc::ROMBase,
-      ariane_soc::CLINTBase,
-      ariane_soc::PLICBase,
-      ariane_soc::UARTBase,
-      ariane_soc::TimerBase,
-      ariane_soc::SPIBase,
-      ariane_soc::EthernetBase,
-      ariane_soc::GPIOBase,
-      ariane_soc::DRAMBase
+      cva6_soc::DebugBase,
+      cva6_soc::ROMBase,
+      cva6_soc::CLINTBase,
+      cva6_soc::PLICBase,
+      cva6_soc::UARTBase,
+      cva6_soc::TimerBase,
+      cva6_soc::SPIBase,
+      cva6_soc::EthernetBase,
+      cva6_soc::GPIOBase,
+      cva6_soc::DRAMBase
     })),
     .end_addr_i   (addr_map_t'({
-      ariane_soc::DebugBase    + ariane_soc::DebugLength - 1,
-      ariane_soc::ROMBase      + ariane_soc::ROMLength - 1,
-      ariane_soc::CLINTBase    + ariane_soc::CLINTLength - 1,
-      ariane_soc::PLICBase     + ariane_soc::PLICLength - 1,
-      ariane_soc::UARTBase     + ariane_soc::UARTLength - 1,
-      ariane_soc::TimerBase    + ariane_soc::TimerLength - 1,
-      ariane_soc::SPIBase      + ariane_soc::SPILength - 1,
-      ariane_soc::EthernetBase + ariane_soc::EthernetLength -1,
-      ariane_soc::GPIOBase     + ariane_soc::GPIOLength - 1,
-      ariane_soc::DRAMBase     + ariane_soc::DRAMLength - 1
+      cva6_soc::DebugBase    + cva6_soc::DebugLength - 1,
+      cva6_soc::ROMBase      + cva6_soc::ROMLength - 1,
+      cva6_soc::CLINTBase    + cva6_soc::CLINTLength - 1,
+      cva6_soc::PLICBase     + cva6_soc::PLICLength - 1,
+      cva6_soc::UARTBase     + cva6_soc::UARTLength - 1,
+      cva6_soc::TimerBase    + cva6_soc::TimerLength - 1,
+      cva6_soc::SPIBase      + cva6_soc::SPILength - 1,
+      cva6_soc::EthernetBase + cva6_soc::EthernetLength -1,
+      cva6_soc::GPIOBase     + cva6_soc::GPIOLength - 1,
+      cva6_soc::DRAMBase     + cva6_soc::DRAMLength - 1
     })),
-    .valid_rule_i (ariane_soc::ValidRule)
+    .valid_rule_i (cva6_soc::ValidRule)
   );
 
   // ---------------
@@ -595,15 +595,15 @@ module ariane_testharness #(
   logic ipi;
   logic timer_irq;
 
-  ariane_axi::req_t    axi_clint_req;
-  ariane_axi::resp_t   axi_clint_resp;
+  cva6_axi::req_t    axi_clint_req;
+  cva6_axi::resp_t   axi_clint_resp;
 
-  clint #(
+  cva6_clint #(
     .AXI_ADDR_WIDTH ( AXI_ADDRESS_WIDTH        ),
     .AXI_DATA_WIDTH ( AXI_DATA_WIDTH           ),
-    .AXI_ID_WIDTH   ( ariane_soc::IdWidthSlave ),
+    .AXI_ID_WIDTH   ( cva6_soc::IdWidthSlave ),
     .NR_CORES       ( 1                        )
-  ) i_clint (
+  ) i_cva6_clint (
     .clk_i       ( clk_i          ),
     .rst_ni      ( ndmreset_n     ),
     .testmode_i  ( test_en        ),
@@ -614,10 +614,10 @@ module ariane_testharness #(
     .ipi_o       ( ipi            )
   );
 
-  axi_slave_connect i_axi_slave_connect_clint (
+  cva6_axi_slave_connect i_cva6_axi_slave_connect_clint (
     .axi_req_o(axi_clint_req),
     .axi_resp_i(axi_clint_resp),
-    .slave(master[ariane_soc::CLINT])
+    .slave(master[cva6_soc::CLINT])
   );
 
   // ---------------
@@ -626,10 +626,10 @@ module ariane_testharness #(
   logic tx, rx;
   logic [1:0] irqs;
 
-  ariane_peripherals #(
+  cva6_peripherals #(
     .AxiAddrWidth ( AXI_ADDRESS_WIDTH        ),
     .AxiDataWidth ( AXI_DATA_WIDTH           ),
-    .AxiIdWidth   ( ariane_soc::IdWidthSlave ),
+    .AxiIdWidth   ( cva6_soc::IdWidthSlave ),
 `ifndef VERILATOR
   // disable UART when using Spike, as we need to rely on the mockuart
   `ifdef SPIKE_TANDEM
@@ -642,14 +642,14 @@ module ariane_testharness #(
 `endif
     .InclSPI      ( 1'b0                     ),
     .InclEthernet ( 1'b0                     )
-  ) i_ariane_peripherals (
+  ) i_cva6_peripherals (
     .clk_i     ( clk_i                        ),
     .rst_ni    ( ndmreset_n                   ),
-    .plic      ( master[ariane_soc::PLIC]     ),
-    .uart      ( master[ariane_soc::UART]     ),
-    .spi       ( master[ariane_soc::SPI]      ),
-    .ethernet  ( master[ariane_soc::Ethernet] ),
-    .timer     ( master[ariane_soc::Timer]    ),
+    .plic      ( master[cva6_soc::PLIC]     ),
+    .uart      ( master[cva6_soc::UART]     ),
+    .spi       ( master[cva6_soc::SPI]      ),
+    .ethernet  ( master[cva6_soc::Ethernet] ),
+    .timer     ( master[cva6_soc::Timer]    ),
     .irq_o     ( irqs                         ),
     .rx_i      ( rx                           ),
     .tx_o      ( tx                           ),
@@ -670,20 +670,20 @@ module ariane_testharness #(
     .spi_ss    ( )
   );
 
-  uart_bus #(.BAUD_RATE(115200), .PARITY_EN(0)) i_uart_bus (.rx(tx), .tx(rx), .rx_en(1'b1));
+  cva6_uart_bus #(.BAUD_RATE(115200), .PARITY_EN(0)) i_cva6_uart_bus (.rx(tx), .tx(rx), .rx_en(1'b1));
 
   // ---------------
   // Core
   // ---------------
-  ariane_axi::req_t    axi_ariane_req;
-  ariane_axi::resp_t   axi_ariane_resp;
+  cva6_axi::req_t    axi_cva6_req;
+  cva6_axi::resp_t   axi_cva6_resp;
 
-  ariane #(
-    .ArianeCfg  ( ariane_soc::ArianeSocCfg )
-  ) i_ariane (
+  cva6 #(
+    .Cva6Cfg  ( cva6_soc::Cva6SocCfg )
+  ) i_cva6 (
     .clk_i                ( clk_i               ),
     .rst_ni               ( ndmreset_n          ),
-    .boot_addr_i          ( ariane_soc::ROMBase ), // start fetching from ROM
+    .boot_addr_i          ( cva6_soc::ROMBase ), // start fetching from ROM
     .hart_id_i            ( '0                  ),
     .irq_i                ( irqs                ),
     .ipi_i                ( ipi                 ),
@@ -694,13 +694,13 @@ module ariane_testharness #(
 `else
     .debug_req_i          ( debug_req_core      ),
 `endif
-    .axi_req_o            ( axi_ariane_req      ),
-    .axi_resp_i           ( axi_ariane_resp     )
+    .axi_req_o            ( axi_cva6_req      ),
+    .axi_resp_i           ( axi_cva6_resp     )
   );
 
-  axi_master_connect i_axi_master_connect_ariane (
-    .axi_req_i(axi_ariane_req),
-    .axi_resp_o(axi_ariane_resp),
+  cva6_axi_master_connect i_cva6_axi_master_connect_cva6 (
+    .axi_req_i(axi_cva6_req),
+    .axi_resp_o(axi_cva6_resp),
     .master(slave[0])
   );
 
@@ -709,14 +709,14 @@ module ariane_testharness #(
   // -------------
   // check for response errors
   always_ff @(posedge clk_i) begin : p_assert
-    if (axi_ariane_req.r_ready &&
-      axi_ariane_resp.r_valid &&
-      axi_ariane_resp.r.resp inside {axi_pkg::RESP_DECERR, axi_pkg::RESP_SLVERR}) begin
+    if (axi_cva6_req.r_ready &&
+      axi_cva6_resp.r_valid &&
+      axi_cva6_resp.r.resp inside {axi_pkg::RESP_DECERR, axi_pkg::RESP_SLVERR}) begin
       $warning("R Response Errored");
     end
-    if (axi_ariane_req.b_ready &&
-      axi_ariane_resp.b_valid &&
-      axi_ariane_resp.b.resp inside {axi_pkg::RESP_DECERR, axi_pkg::RESP_SLVERR}) begin
+    if (axi_cva6_req.b_ready &&
+      axi_cva6_resp.b_valid &&
+      axi_cva6_resp.b.resp inside {axi_pkg::RESP_DECERR, axi_pkg::RESP_SLVERR}) begin
       $warning("B Response Errored");
     end
   end
@@ -725,15 +725,15 @@ module ariane_testharness #(
   // AXI 4 Assertion IP integration - You will need to get your own copy of this IP if you want
   // to use it
   Axi4PC #(
-    .DATA_WIDTH(ariane_axi::DataWidth),
-    .WID_WIDTH(ariane_soc::IdWidthSlave),
-    .RID_WIDTH(ariane_soc::IdWidthSlave),
-    .AWUSER_WIDTH(ariane_axi::UserWidth),
-    .WUSER_WIDTH(ariane_axi::UserWidth),
-    .BUSER_WIDTH(ariane_axi::UserWidth),
-    .ARUSER_WIDTH(ariane_axi::UserWidth),
-    .RUSER_WIDTH(ariane_axi::UserWidth),
-    .ADDR_WIDTH(ariane_axi::AddrWidth)
+    .DATA_WIDTH(cva6_axi::DataWidth),
+    .WID_WIDTH(cva6_soc::IdWidthSlave),
+    .RID_WIDTH(cva6_soc::IdWidthSlave),
+    .AWUSER_WIDTH(cva6_axi::UserWidth),
+    .WUSER_WIDTH(cva6_axi::UserWidth),
+    .BUSER_WIDTH(cva6_axi::UserWidth),
+    .ARUSER_WIDTH(cva6_axi::UserWidth),
+    .RUSER_WIDTH(cva6_axi::UserWidth),
+    .ADDR_WIDTH(cva6_axi::AddrWidth)
   ) i_Axi4PC (
     .ACLK(clk_i),
     .ARESETn(ndmreset_n),

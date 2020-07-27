@@ -15,7 +15,7 @@
 // include KINTEX7 specific code (relevant for KC705, GENESYSII,...)
 `define KINTEX7
 
-`define ARIANE_DATA_WIDTH 64
+`define CVA6_DATA_WIDTH 64
 
 // Instantiate protocl checker
 // `define PROTOCOL_CHECKER

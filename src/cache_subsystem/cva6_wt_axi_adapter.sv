@@ -13,12 +13,12 @@
 // Description: adapter module to connect the L1D$ and L1I$ to a 64bit AXI bus.
 //
 
-import ariane_pkg::*;
-import wt_cache_pkg::*;
+import cva6_pkg::*;
+import cva6_wt_cache_pkg::*;
 
-module wt_axi_adapter #(
+module cva6_wt_axi_adapter #(
   parameter int unsigned ReqFifoDepth  = 2,
-  parameter int unsigned MetaFifoDepth = wt_cache_pkg::DCACHE_MAX_TX
+  parameter int unsigned MetaFifoDepth = cva6_wt_cache_pkg::DCACHE_MAX_TX
 ) (
   input logic                  clk_i,
   input logic                  rst_ni,
@@ -40,13 +40,13 @@ module wt_axi_adapter #(
   output dcache_rtrn_t         dcache_rtrn_o,
 
   // AXI port
-  output ariane_axi::req_t    axi_req_o,
-  input  ariane_axi::resp_t   axi_resp_i
+  output cva6_axi::req_t    axi_req_o,
+  input  cva6_axi::resp_t   axi_resp_i
 );
 
   // support up to 512bit cache lines
-  localparam AxiNumWords = (ariane_pkg::ICACHE_LINE_WIDTH/64) * (ariane_pkg::ICACHE_LINE_WIDTH > ariane_pkg::DCACHE_LINE_WIDTH)  +
-                           (ariane_pkg::DCACHE_LINE_WIDTH/64) * (ariane_pkg::ICACHE_LINE_WIDTH <= ariane_pkg::DCACHE_LINE_WIDTH) ;
+  localparam AxiNumWords = (cva6_pkg::ICACHE_LINE_WIDTH/64) * (cva6_pkg::ICACHE_LINE_WIDTH > cva6_pkg::DCACHE_LINE_WIDTH)  +
+                           (cva6_pkg::DCACHE_LINE_WIDTH/64) * (cva6_pkg::ICACHE_LINE_WIDTH <= cva6_pkg::DCACHE_LINE_WIDTH) ;
 
 
   ///////////////////////////////////////////////////////
@@ -78,9 +78,9 @@ module wt_axi_adapter #(
   // AMO generates r beat
   logic amo_gen_r_d, amo_gen_r_q;
 
-  logic [wt_cache_pkg::CACHE_ID_WIDTH-1:0] icache_rtrn_tid_d, icache_rtrn_tid_q;
-  logic [wt_cache_pkg::CACHE_ID_WIDTH-1:0] dcache_rtrn_tid_d, dcache_rtrn_tid_q;
-  logic [wt_cache_pkg::CACHE_ID_WIDTH-1:0] dcache_rtrn_rd_tid, dcache_rtrn_wr_tid;
+  logic [cva6_wt_cache_pkg::CACHE_ID_WIDTH-1:0] icache_rtrn_tid_d, icache_rtrn_tid_q;
+  logic [cva6_wt_cache_pkg::CACHE_ID_WIDTH-1:0] dcache_rtrn_tid_d, dcache_rtrn_tid_q;
+  logic [cva6_wt_cache_pkg::CACHE_ID_WIDTH-1:0] dcache_rtrn_rd_tid, dcache_rtrn_wr_tid;
   logic dcache_rd_pop, dcache_wr_pop;
   logic icache_rd_full, icache_rd_empty;
   logic dcache_rd_full, dcache_rd_empty;
@@ -122,7 +122,7 @@ module wt_axi_adapter #(
     // write channel
     axi_wr_id_in = arb_idx;
     axi_wr_data  = dcache_data.data;
-    axi_wr_addr  = {{64-riscv::PLEN{1'b0}}, dcache_data.paddr};
+    axi_wr_addr  = {{64-cva6_riscv::PLEN{1'b0}}, dcache_data.paddr};
     axi_wr_size  = dcache_data.size[1:0];
     axi_wr_req   = 1'b0;
     axi_wr_blen  = '0;// single word writes
@@ -140,16 +140,16 @@ module wt_axi_adapter #(
 
     // arbiter mux
     if (arb_idx) begin
-      axi_rd_addr  = {{64-riscv::PLEN{1'b0}}, dcache_data.paddr};
+      axi_rd_addr  = {{64-cva6_riscv::PLEN{1'b0}}, dcache_data.paddr};
       axi_rd_size  = dcache_data.size[1:0];
       if (dcache_data.size[2]) begin
-        axi_rd_blen = ariane_pkg::DCACHE_LINE_WIDTH/64-1;
+        axi_rd_blen = cva6_pkg::DCACHE_LINE_WIDTH/64-1;
       end
     end else begin
-      axi_rd_addr  = {{64-riscv::PLEN{1'b0}}, icache_data.paddr};
+      axi_rd_addr  = {{64-cva6_riscv::PLEN{1'b0}}, icache_data.paddr};
       axi_rd_size  = 2'b11;// always request 64bit words in case of ifill
       if (!icache_data.nc) begin
-        axi_rd_blen = ariane_pkg::ICACHE_LINE_WIDTH/64-1;
+        axi_rd_blen = cva6_pkg::ICACHE_LINE_WIDTH/64-1;
       end
     end
 
@@ -167,16 +167,16 @@ module wt_axi_adapter #(
       end else begin
         unique case (dcache_data.rtype)
           //////////////////////////////////////
-          wt_cache_pkg::DCACHE_LOAD_REQ: begin
+          cva6_wt_cache_pkg::DCACHE_LOAD_REQ: begin
             axi_rd_req   = 1'b1;
           end
           //////////////////////////////////////
-          wt_cache_pkg::DCACHE_STORE_REQ: begin
+          cva6_wt_cache_pkg::DCACHE_STORE_REQ: begin
             axi_wr_req   = 1'b1;
-            axi_wr_be    = wt_cache_pkg::toByteEnable8(dcache_data.paddr[2:0], dcache_data.size[1:0]);
+            axi_wr_be    = cva6_wt_cache_pkg::toByteEnable8(dcache_data.paddr[2:0], dcache_data.size[1:0]);
           end
           //////////////////////////////////////
-          wt_cache_pkg::DCACHE_ATOMIC_REQ: begin
+          cva6_wt_cache_pkg::DCACHE_ATOMIC_REQ: begin
             // default
             // push back an invalidation here.
             // since we only keep one read tx in flight, and since
@@ -184,7 +184,7 @@ module wt_axi_adapter #(
             // an atomic, this is safe.
             invalidate   = arb_gnt;
             axi_wr_req   = 1'b1;
-            axi_wr_be    = wt_cache_pkg::toByteEnable8(dcache_data.paddr[2:0], dcache_data.size[1:0]);
+            axi_wr_be    = cva6_wt_cache_pkg::toByteEnable8(dcache_data.paddr[2:0], dcache_data.size[1:0]);
             amo_gen_r_d  = 1'b1;
             // need to use a separate ID here, so concat an additional bit
             axi_wr_id_in[1] = 1'b1;
@@ -273,7 +273,7 @@ module wt_axi_adapter #(
   logic icache_rtrn_vld_d, icache_rtrn_vld_q, dcache_rtrn_vld_d, dcache_rtrn_vld_q;
 
   fifo_v3 #(
-    .DATA_WIDTH ( wt_cache_pkg::CACHE_ID_WIDTH ),
+    .DATA_WIDTH ( cva6_wt_cache_pkg::CACHE_ID_WIDTH ),
     .DEPTH      ( MetaFifoDepth                )
   ) i_rd_icache_id (
     .clk_i      ( clk_i                   ),
@@ -290,7 +290,7 @@ module wt_axi_adapter #(
   );
 
   fifo_v3 #(
-    .DATA_WIDTH ( wt_cache_pkg::CACHE_ID_WIDTH ),
+    .DATA_WIDTH ( cva6_wt_cache_pkg::CACHE_ID_WIDTH ),
     .DEPTH      ( MetaFifoDepth                )
   ) i_rd_dcache_id (
     .clk_i      ( clk_i                   ),
@@ -307,7 +307,7 @@ module wt_axi_adapter #(
   );
 
   fifo_v3 #(
-    .DATA_WIDTH ( wt_cache_pkg::CACHE_ID_WIDTH ),
+    .DATA_WIDTH ( cva6_wt_cache_pkg::CACHE_ID_WIDTH ),
     .DEPTH      ( MetaFifoDepth                 )
   ) i_wr_dcache_id (
     .clk_i      ( clk_i                   ),
@@ -357,14 +357,14 @@ module wt_axi_adapter #(
   logic icache_first_d, icache_first_q, dcache_first_d, dcache_first_q;
   logic [ICACHE_LINE_WIDTH/64-1:0][63:0] icache_rd_shift_d, icache_rd_shift_q;
   logic [DCACHE_LINE_WIDTH/64-1:0][63:0] dcache_rd_shift_d, dcache_rd_shift_q;
-  wt_cache_pkg::dcache_in_t dcache_rtrn_type_d, dcache_rtrn_type_q;
-  wt_cache_pkg::cache_inval_t dcache_rtrn_inv_d, dcache_rtrn_inv_q;
+  cva6_wt_cache_pkg::dcache_in_t dcache_rtrn_type_d, dcache_rtrn_type_q;
+  cva6_wt_cache_pkg::cache_inval_t dcache_rtrn_inv_d, dcache_rtrn_inv_q;
   logic dcache_sc_rtrn, axi_rd_last;
 
   always_comb begin : p_axi_rtrn_shift
     // output directly from regs
     icache_rtrn_o              = '0;
-    icache_rtrn_o.rtype        = wt_cache_pkg::ICACHE_IFILL_ACK;
+    icache_rtrn_o.rtype        = cva6_wt_cache_pkg::ICACHE_IFILL_ACK;
     icache_rtrn_o.tid          = icache_rtrn_tid_q;
     icache_rtrn_o.data         = icache_rd_shift_q;
     icache_rtrn_vld_o          = icache_rtrn_vld_q;
@@ -426,7 +426,7 @@ module wt_axi_adapter #(
     dcache_rd_pop       = 1'b0;
     dcache_wr_pop       = 1'b0;
     dcache_rtrn_inv_d   = '0;
-    dcache_rtrn_type_d  = wt_cache_pkg::DCACHE_LOAD_ACK;
+    dcache_rtrn_type_d  = cva6_wt_cache_pkg::DCACHE_LOAD_ACK;
     b_pop               = 1'b0;
     dcache_sc_rtrn      = 1'b0;
 
@@ -439,11 +439,11 @@ module wt_axi_adapter #(
     // write-through cache architecture, which is aligned with the openpiton
     // cache subsystem.
     if (invalidate) begin
-        dcache_rtrn_type_d     = wt_cache_pkg::DCACHE_INV_REQ;
+        dcache_rtrn_type_d     = cva6_wt_cache_pkg::DCACHE_INV_REQ;
         dcache_rtrn_vld_d      = 1'b1;
 
         dcache_rtrn_inv_d.all  = 1'b1;
-        dcache_rtrn_inv_d.idx  = dcache_data.paddr[ariane_pkg::DCACHE_INDEX_WIDTH-1:0];
+        dcache_rtrn_inv_d.idx  = dcache_data.paddr[cva6_pkg::DCACHE_INDEX_WIDTH-1:0];
     //////////////////////////////////////
     // read responses
     // note that in case of atomics, the dcache sequentializes requests and
@@ -454,7 +454,7 @@ module wt_axi_adapter #(
 
       // if this was an atomic op
       if (axi_rd_id_out[1]) begin
-        dcache_rtrn_type_d     = wt_cache_pkg::DCACHE_ATOMIC_ACK;
+        dcache_rtrn_type_d     = cva6_wt_cache_pkg::DCACHE_ATOMIC_ACK;
 
         // check if transaction was issued over write channel and pop that ID
         if (!dcache_wr_empty) begin
@@ -473,7 +473,7 @@ module wt_axi_adapter #(
 
       // this was an atomic
       if (wr_id_out[1]) begin
-        dcache_rtrn_type_d = wt_cache_pkg::DCACHE_ATOMIC_ACK;
+        dcache_rtrn_type_d = cva6_wt_cache_pkg::DCACHE_ATOMIC_ACK;
 
         // silently discard b response if we already popped the fifo
         // with a R beat (iff the amo transaction generated an R beat)
@@ -484,7 +484,7 @@ module wt_axi_adapter #(
         end
       end else begin
         // regular response
-        dcache_rtrn_type_d = wt_cache_pkg::DCACHE_STORE_ACK;
+        dcache_rtrn_type_d = cva6_wt_cache_pkg::DCACHE_STORE_ACK;
         dcache_rtrn_vld_d  = 1'b1;
         dcache_wr_pop      = 1'b1;
       end
@@ -514,7 +514,7 @@ module wt_axi_adapter #(
       dcache_rtrn_vld_q  <= '0;
       icache_rtrn_tid_q  <= '0;
       dcache_rtrn_tid_q  <= '0;
-      dcache_rtrn_type_q <= wt_cache_pkg::DCACHE_LOAD_ACK;
+      dcache_rtrn_type_q <= cva6_wt_cache_pkg::DCACHE_LOAD_ACK;
       dcache_rtrn_inv_q  <= '0;
       amo_off_q          <= '0;
       amo_gen_r_q        <= 1'b0;
@@ -539,7 +539,7 @@ module wt_axi_adapter #(
 // axi protocol shim
 ///////////////////////////////////////////////////////
 
-  axi_shim #(
+  cva6_axi_shim #(
     .AxiNumWords     ( AxiNumWords            ),
     .AxiIdWidth      ( $size(axi_resp_i.r.id) )
   ) i_axi_shim (

@@ -14,8 +14,8 @@
 
 
 library      ?= work
-toplevel     ?= tb
-src-list     := tb.list
+toplevel     ?= cva6_tb
+src-list     := cva6_tb.list
 src          := $(shell xargs printf '\n%s' < $(src-list)  | cut -b 1-)
 compile_flag += +cover+/dut -incr -64 -nologo
 sim_opts     += -64 -coverage -classdebug -voptargs="+acc"

@@ -8,12 +8,12 @@
 // CONDITIONS OF ANY KIND, either express or implied. See the License for the
 // specific language governing permissions and limitations under the License.
 //
-// Description: Connects SV AXI interface to structs used by Ariane
+// Description: Connects SV AXI interface to structs used by Cva6
 // Author: Florian Zaruba <zarubaf@iis.ee.ethz.ch>
 
-module axi_slave_connect (
-    output ariane_axi::req_t    axi_req_o,
-    input  ariane_axi::resp_t   axi_resp_i,
+module cva6_axi_slave_connect (
+    output cva6_axi::req_t    axi_req_o,
+    input  cva6_axi::resp_t   axi_resp_i,
     AXI_BUS.Slave slave
 );
 

@@ -12,7 +12,7 @@
 // Date: 2.10.2019
 // Description: PMP package
 
-package riscv;
+package cva6_riscv;
     // --------------------
     // Privilege Spec
     // --------------------

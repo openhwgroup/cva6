@@ -21,13 +21,13 @@
 // note that we use a simplified address translation scheme to emulate the TLB.
 // (random offsets).
 
-`include "tb.svh"
+`include "cva6_tb.svh"
 
-import ariane_pkg::*;
-import wt_cache_pkg::*;
-import tb_pkg::*;
+import cva6_pkg::*;
+import cva6_wt_cache_pkg::*;
+import cva6_tb_pkg::*;
 
-module tb;
+module cva6_tb;
 
   // leave this
   timeunit 1ps;
@@ -40,7 +40,7 @@ module tb;
   parameter logic [63:0] CachedAddrBeg = MemBytes>>3;//1/8th of the memory is NC
   parameter logic [63:0] CachedAddrEnd = 64'hFFFF_FFFF_FFFF_FFFF;
 
-  localparam ariane_cfg_t ArianeDefaultConfig = '{
+  localparam cva6_cfg_t Cva6DefaultConfig = '{
     RASDepth: 2,
     BTBEntries: 32,
     BHTEntries: 128,
@@ -193,13 +193,13 @@ module tb;
 // memory emulation
 ///////////////////////////////////////////////////////////////////////////////
 
-  tb_mem #(
+  cva6_tb_mem #(
     .MemRandHitRate ( MemRandHitRate ),
     .MemRandInvRate ( MemRandInvRate ),
     .MemWords       ( MemWords       ),
     .CachedAddrBeg  ( CachedAddrBeg  ),
     .CachedAddrEnd  ( CachedAddrEnd  )
-  ) i_tb_mem (
+  ) i_cva6_tb_mem (
     .clk_i          ( clk_i          ),
     .rst_ni         ( rst_ni         ),
     .mem_rand_en_i  ( mem_rand_en    ),
@@ -227,9 +227,9 @@ module tb;
 // MUT
 ///////////////////////////////////////////////////////////////////////////////
 
-  wt_dcache  #(
-    .ArianeCfg ( ArianeDefaultConfig )
-  ) i_dut (
+  cva6_wt_dcache  #(
+    .Cva6Cfg ( Cva6DefaultConfig )
+  ) i_cva6_dut (
     .clk_i           ( clk_i           ),
     .rst_ni          ( rst_ni          ),
     .flush_i         ( flush_i         ),
@@ -289,7 +289,7 @@ module tb;
     end
   endgenerate
 
-  tb_readport #(
+  cva6_tb_readport #(
     .PortName      ( "RD0"         ),
     .FlushRate     ( FlushRate     ),
     .KillRate      ( KillRate      ),
@@ -299,7 +299,7 @@ module tb;
     .CachedAddrEnd ( CachedAddrEnd ),
     .RndSeed       ( 5555555       ),
     .Verbose       ( Verbose       )
-  ) i_tb_readport0 (
+  ) i_cva6_tb_readport0 (
     .clk_i           ( clk_i               ),
     .rst_ni          ( rst_ni              ),
     .test_name_i     ( test_name           ),
@@ -322,7 +322,7 @@ module tb;
     .dut_req_port_i  ( req_ports_o[0]      )
     );
 
-  tb_readport #(
+  cva6_tb_readport #(
     .PortName      ( "RD1"         ),
     .FlushRate     ( FlushRate     ),
     .KillRate      ( KillRate      ),
@@ -332,7 +332,7 @@ module tb;
     .CachedAddrEnd ( CachedAddrEnd ),
     .RndSeed       ( 3333333       ),
     .Verbose       ( Verbose       )
-  ) i_tb_readport1 (
+  ) i_cva6_tb_readport1 (
     .clk_i           ( clk_i               ),
     .rst_ni          ( rst_ni              ),
     .test_name_i     ( test_name           ),
@@ -355,14 +355,14 @@ module tb;
     .dut_req_port_i  ( req_ports_o[1]      )
   );
 
-  tb_writeport #(
+  cva6_tb_writeport #(
     .PortName      ( "WR0"         ),
     .MemWords      ( MemWords      ),
     .CachedAddrBeg ( CachedAddrBeg ),
     .CachedAddrEnd ( CachedAddrEnd ),
     .RndSeed       ( 7777777       ),
     .Verbose       ( Verbose       )
-  ) i_tb_writeport (
+  ) i_cva6_tb_writeport (
     .clk_i          ( clk_i               ),
     .rst_ni         ( rst_ni              ),
     .test_name_i    ( test_name           ),

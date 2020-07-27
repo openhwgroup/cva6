@@ -18,9 +18,9 @@
  * 
  */
 
-import std_cache_pkg::*;
+import cva6_std_cache_pkg::*;
 
-module axi_shim #(
+module cva6_axi_shim #(
     parameter int unsigned AxiNumWords       = 4, // data width in dwords, this is also the maximum burst length, must be >=2
     parameter int unsigned AxiIdWidth        = 4  // stick to the spec
 ) (
@@ -59,8 +59,8 @@ module axi_shim #(
     output logic [AxiIdWidth-1:0]           wr_id_o,
     output logic                            wr_exokay_o, // indicates whether exclusive tx succeeded
     // AXI port
-    output ariane_axi::req_t                axi_req_o,
-    input  ariane_axi::resp_t               axi_resp_i
+    output cva6_axi::req_t                axi_req_o,
+    input  cva6_axi::resp_t               axi_resp_i
 );
     localparam AddrIndex = ($clog2(AxiNumWords) > 0) ? $clog2(AxiNumWords) : 1;
 

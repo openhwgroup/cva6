@@ -13,10 +13,10 @@
 // Description: simple emulation layer for the memory subsystem.
 //
 
-import ariane_pkg::*;
-import wt_cache_pkg::*;
+import cva6_pkg::*;
+import cva6_wt_cache_pkg::*;
 
-module mem_emul #(
+module cva6_mem_emul #(
   parameter              MemRandHitRate = 10, //in percent
   parameter              MemRandInvRate = 5,  //in percent
   parameter              MemWords       = 1024*1024,// in 32bit words

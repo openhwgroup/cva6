@@ -3,8 +3,8 @@
 / {
   #address-cells = <2>;
   #size-cells = <2>;
-  compatible = "eth,ariane-bare-dev";
-  model = "eth,ariane-bare";
+  compatible = "eth,cva6-bare-dev";
+  model = "eth,cva6-bare";
   cpus {
     #address-cells = <1>;
     #size-cells = <0>;
@@ -14,7 +14,7 @@
       device_type = "cpu";
       reg = <0>;
       status = "okay";
-      compatible = "eth, ariane", "riscv";
+      compatible = "eth, cva6", "riscv";
       riscv,isa = "rv64imafdc";
       mmu-type = "riscv,sv39";
       tlb-split;
@@ -33,7 +33,7 @@
   soc {
     #address-cells = <2>;
     #size-cells = <2>;
-    compatible = "eth,ariane-bare-soc", "simple-bus";
+    compatible = "eth,cva6-bare-soc", "simple-bus";
     ranges;
     clint@2000000 {
       compatible = "riscv,clint0";

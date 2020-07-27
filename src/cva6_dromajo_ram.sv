@@ -16,7 +16,7 @@
  * - Nursultan Kabylkas
  */
 
-module dromajo_ram
+module cva6_dromajo_ram
 #(
   parameter ADDR_WIDTH = 10,
   parameter DATA_DEPTH = 1024, // usually 2**ADDR_WIDTH, but can be lower
