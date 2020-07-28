@@ -179,6 +179,8 @@ module MONITOR
     bit MEInt, UEInt, SEInt;
     bit reset, nmi, nmigen;
     
+    bit DebugHlt, DebugResetHlt ;
+    
     int int_nmi_cnt;
     int int_machine_external_cnt;
     int int_machine_software_cnt;
@@ -206,6 +208,9 @@ module MONITOR
         MEInt  = SysBus.MExternalInterrupt;
         UEInt  = SysBus.UExternalInterrupt;
         SEInt  = SysBus.SExternalInterrupt;
+        
+        DebugHlt      = SysBus.haltreq;
+        DebugResetHlt = SysBus.resethaltreq;
 
         IF     = (SysBus.Ird==1);
         LD     = (SysBus.Drd==1);

@@ -46,7 +46,11 @@ interface BUS;
     bit     MExternalInterrupt;
     bit     UExternalInterrupt;
     bit     SExternalInterrupt;
-    
+
+    // Debug Mode
+    bit     haltreq ;
+    bit     resethaltreq ;
+
     //
     // Bus helpers
     //

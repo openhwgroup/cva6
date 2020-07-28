@@ -26,7 +26,8 @@ module CPU
     BUS SysBus
 );
 
-    import "DPI-C" context task ovpEntry(input int i, input string s1, input string s2);
+    import "DPI-C" context task ovpEntry(input int, input string, input string);
+    import "DPI-C" context function ovpExit(input int);
 
     export "DPI-C" task     busLoad;
     export "DPI-C" task     busStore;
@@ -103,6 +104,9 @@ module CPU
             output int _MExternalInterrupt,
             output int _UExternalInterrupt,
             output int _SExternalInterrupt);
+            output int _haltreq;
+            output int _resethaltreq;
+
 
         _terminate          = SysBus.Shutdown;
         _reset              = SysBus.reset;
@@ -117,12 +121,13 @@ module CPU
         _MExternalInterrupt = SysBus.MExternalInterrupt;
         _UExternalInterrupt = SysBus.UExternalInterrupt;
         _SExternalInterrupt = SysBus.SExternalInterrupt;
+
+        _haltreq            = SysBus.haltreq ;
+        _resethaltreq       = SysBus.resethaltreq ;
     endfunction
         
     function automatic void setDECODE (input string value);
-        //if (mode_disass == 1) begin
-            Decode = value;
-        //end
+        Decode = value;
     endfunction
     
     function automatic void setFetchDECODE ();
@@ -486,6 +491,10 @@ module CPU
         cpu_cfg();
         ovpEntry(ID, ovpcfg, elf_file);
         $finish;
+    end
+    
+    final begin
+        ovpExit(ID);
     end
  
 endmodule
