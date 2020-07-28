@@ -31,7 +31,6 @@ XRUN_COMP_FLAGS  ?= -64bit -disable_sem2009 -access +rwc -q -clean \
                    -top uvmt_cv32_tb -sv -uvm -uvmhome $(XRUN_UVMHOME_ARG) \
                    $(TIMESCALE) $(SV_CMP_FLAGS)
 XRUN_GUI         ?=
-XRUN_COMP_FLAGS  ?= -64bit -disable_sem2009 -access +rwc -q -clean -sv -uvm -uvmhome $(XRUN_UVMHOME_ARG) $(TIMESCALE) $(SV_CMP_FLAGS)
 XRUN_RESULTS     ?= $(PWD)/xrun_results
 XRUN_RISCVDV_RESULTS ?= $(XRUN_RESULTS)/riscv-dv
 XRUN_DIR         ?= $(XRUN_RESULTS)/xcelium.d
@@ -116,7 +115,8 @@ ifeq ($(call IS_YES,$(USE_ISS)),YES)
 #     XRUN_PLUSARGS += +USE_ISS +ovpcfg="--controlfile $(OVP_CTRL_FILE)"
 endif
 
-XRUN_RUN_BASE_FLAGS   ?= -64bit $(XRUN_GUI) +UVM_VERBOSITY=$(XRUN_UVM_VERBOSITY) $(XRUN_PLUSARGS) -sv_lib $(OVP_MODEL_DPI)
+XRUN_RUN_BASE_FLAGS   ?= -64bit $(XRUN_GUI) +UVM_VERBOSITY=$(XRUN_UVM_VERBOSITY) \
+                         $(XRUN_PLUSARGS) -svseed $(RNDSEED) -sv_lib $(OVP_MODEL_DPI)
 # Simulate using latest elab
 XRUN_RUN_FLAGS        ?= -R -xmlibdirname ../xcelium.d 
 XRUN_RUN_FLAGS        += $(XRUN_RUN_BASE_FLAGS)
