@@ -1,0 +1,78 @@
+[*]
+[*] GTKWave Analyzer v3.3.104 (w)1999-2020 BSI
+[*] Tue Jul 28 17:14:14 2020
+[*]
+[dumpfile] "/data/mike/GitHubRepos/openhwgroup/core-v-verif/master/cv32/sim/uvmt_cv32/dsim_results/corev_arithmetic_base_test_0/dsim.fst"
+[dumpfile_mtime] "Mon Jul 27 20:32:31 2020"
+[dumpfile_size] 5859591
+[savefile] "/data/mike/GitHubRepos/openhwgroup/core-v-verif/master/cv32/sim/tools/gtk/cv32e40p_core_IO.gtkw"
+[timestart] 0
+[size] 1900 940
+[pos] -1 -338
+*-13.000000 12000 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1
+[treeopen] uvmt_cv32_tb.
+[treeopen] uvmt_cv32_tb.dut_wrap.
+[treeopen] uvmt_cv32_tb.dut_wrap.cv32e40p_wrapper_i.
+[treeopen] uvmt_cv32_tb.dut_wrap.cv32e40p_wrapper_i.core_i.
+[sst_width] 434
+[signals_width] 346
+[sst_expanded] 1
+[sst_vpaned_height] 276
+@28
+uvmt_cv32_tb.dut_wrap.cv32e40p_wrapper_i.core_i.clk_i
+uvmt_cv32_tb.dut_wrap.cv32e40p_wrapper_i.core_i.rst_ni
+@22
+uvmt_cv32_tb.dut_wrap.cv32e40p_wrapper_i.core_i.boot_addr_i[31:0]
+uvmt_cv32_tb.dut_wrap.cv32e40p_wrapper_i.core_i.hart_id_i[31:0]
+uvmt_cv32_tb.dut_wrap.cv32e40p_wrapper_i.core_i.dm_halt_addr_i[31:0]
+uvmt_cv32_tb.dut_wrap.cv32e40p_wrapper_i.core_i.dm_exception_addr_i[31:0]
+uvmt_cv32_tb.dut_wrap.cv32e40p_wrapper_i.core_i.mtvec_addr_i[31:0]
+@29
+uvmt_cv32_tb.dut_wrap.cv32e40p_wrapper_i.core_i.fetch_enable_i
+@28
+uvmt_cv32_tb.dut_wrap.cv32e40p_wrapper_i.core_i.debug_req_i
+uvmt_cv32_tb.dut_wrap.cv32e40p_wrapper_i.core_i.pulp_clock_en_i
+uvmt_cv32_tb.dut_wrap.cv32e40p_wrapper_i.core_i.scan_cg_en_i
+uvmt_cv32_tb.dut_wrap.cv32e40p_wrapper_i.core_i.core_sleep_o
+@22
+uvmt_cv32_tb.dut_wrap.cv32e40p_wrapper_i.core_i.data_addr_o[31:0]
+uvmt_cv32_tb.dut_wrap.cv32e40p_wrapper_i.core_i.data_be_o[3:0]
+@28
+uvmt_cv32_tb.dut_wrap.cv32e40p_wrapper_i.core_i.data_gnt_i
+@22
+uvmt_cv32_tb.dut_wrap.cv32e40p_wrapper_i.core_i.data_rdata_i[31:0]
+@28
+uvmt_cv32_tb.dut_wrap.cv32e40p_wrapper_i.core_i.data_req_o
+uvmt_cv32_tb.dut_wrap.cv32e40p_wrapper_i.core_i.data_rvalid_i
+@22
+uvmt_cv32_tb.dut_wrap.cv32e40p_wrapper_i.core_i.data_wdata_o[31:0]
+@28
+uvmt_cv32_tb.dut_wrap.cv32e40p_wrapper_i.core_i.data_we_o
+@22
+uvmt_cv32_tb.dut_wrap.cv32e40p_wrapper_i.core_i.instr_addr_o[31:0]
+@28
+uvmt_cv32_tb.dut_wrap.cv32e40p_wrapper_i.core_i.instr_gnt_i
+@22
+uvmt_cv32_tb.dut_wrap.cv32e40p_wrapper_i.core_i.instr_rdata_i[31:0]
+@28
+uvmt_cv32_tb.dut_wrap.cv32e40p_wrapper_i.core_i.instr_req_o
+uvmt_cv32_tb.dut_wrap.cv32e40p_wrapper_i.core_i.instr_rvalid_i
+uvmt_cv32_tb.dut_wrap.cv32e40p_wrapper_i.core_i.irq_ack_o
+@22
+uvmt_cv32_tb.dut_wrap.cv32e40p_wrapper_i.core_i.irq_i[31:0]
+uvmt_cv32_tb.dut_wrap.cv32e40p_wrapper_i.core_i.irq_id_o[4:0]
+@28
+uvmt_cv32_tb.dut_wrap.cv32e40p_wrapper_i.core_i.apu_master_valid_i
+uvmt_cv32_tb.dut_wrap.cv32e40p_wrapper_i.core_i.apu_master_gnt_i
+@22
+uvmt_cv32_tb.dut_wrap.cv32e40p_wrapper_i.core_i.apu_master_result_i[31:0]
+uvmt_cv32_tb.dut_wrap.cv32e40p_wrapper_i.core_i.apu_master_flags_i[4:0]
+uvmt_cv32_tb.dut_wrap.cv32e40p_wrapper_i.core_i.apu_master_flags_o[14:0]
+uvmt_cv32_tb.dut_wrap.cv32e40p_wrapper_i.core_i.apu_master_op_o[5:0]
+uvmt_cv32_tb.dut_wrap.cv32e40p_wrapper_i.core_i.apu_master_operands_o[95:0]
+@28
+uvmt_cv32_tb.dut_wrap.cv32e40p_wrapper_i.core_i.apu_master_ready_o
+uvmt_cv32_tb.dut_wrap.cv32e40p_wrapper_i.core_i.apu_master_req_o
+uvmt_cv32_tb.dut_wrap.cv32e40p_wrapper_i.core_i.apu_master_type_o
+[pattern_trace] 1
+[pattern_trace] 0
