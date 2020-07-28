@@ -15,7 +15,8 @@ Date 2020-July-28
    - Add tinfo register writes ignored / read zero
 - CSR Registers
    - mcycle, mintret, mcycleh, mintreth behaviour write ignored / read zero
-   - Set PMP undefined
+   - cycle, intret, cycleh, intereth  behaviour write ignored / read zero
+   - Set PMP undefined to remove pmpcfgN registers
 
 Date 2020-July-23
 ===
