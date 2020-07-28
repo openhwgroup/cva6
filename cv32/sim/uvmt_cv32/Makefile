@@ -43,7 +43,7 @@
 # "Constants"
 MAKE           = make
 COREV_PROJ     = cv32
-PROJ_ROOT_DIR  = $(PWD)/../../..
+PROJ_ROOT_DIR  = $(abspath $(PWD)/../../..)
 DATE           = $(shell date +%F)
 .DEFAULT_GOAL := no_rule 
 
@@ -57,7 +57,8 @@ TIMESCALE    ?= -timescale 1ns/1ps
 UVM_PLUSARGS ?=
 
 # User selectable SystemVerilog simulator targets/rules
-SIMULATOR    ?= unsim
+CV_SIMULATOR ?= unsim
+SIMULATOR    ?= $(CV_SIMULATOR)
 
 # Optionally exclude the OVPsim (not recommended)
 USE_ISS      ?= YES

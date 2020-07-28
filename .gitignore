@@ -13,6 +13,7 @@ dsim.log
 dsim_results
 metrics.db
 metrics_history.db
+xrun_results
 *.swp
 /.cproject
 /.project

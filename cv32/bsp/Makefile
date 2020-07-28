@@ -1,4 +1,5 @@
-RISCV            ?= /opt/riscv
+CV_SW_TOOLCHAIN  ?= /opt/riscv
+RISCV            ?= $(CV_SW_TOOLCHAIN)
 RISCV_EXE_PREFIX ?= $(RISCV)/bin/riscv32-unknown-elf-
 RISCV_GCC = $(RISCV_EXE_PREFIX)gcc
 RISCV_AR = $(RISCV_EXE_PREFIX)ar
