@@ -5,7 +5,15 @@ Copyright (c) 2005-2020 Imperas Software Ltd., www.imperas.com
 This CHANGELOG contains information for the Imperas OVP OpenHW CV32E40P fixed platform which includes information of the OVP Simulator and RISCV processor model
 
 ---
+Date 2020-July-29
+Version 20200728.2
+===
+- CSR Registers
+   - cycle, intret, cycleh, intereth illegal instruction exception on access
+
+
 Date 2020-July-28
+Version 20200728.1
 ===
 
 - Add Debug Module
