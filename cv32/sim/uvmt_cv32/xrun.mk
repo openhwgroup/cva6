@@ -57,9 +57,9 @@ endif
 # ADV_DEBUG=YES will enable Indago waves, default is to generate SimVision waves
 ifeq ($(call IS_YES,$(WAVES)),YES)
 ifeq ($(call IS_YES,$(ADV_DEBUG)),YES)
-XRUN_RUN_WAVES_FLAGS = -input ../../../xrun/indago.tcl
+XRUN_RUN_WAVES_FLAGS = -input ../../../tools/xrun/indago.tcl
 else
-XRUN_RUN_WAVES_FLAGS = -input ../../../xrun/probe.tcl
+XRUN_RUN_WAVES_FLAGS = -input ../../../tools/xrun/probe.tcl
 endif
 endif
 
