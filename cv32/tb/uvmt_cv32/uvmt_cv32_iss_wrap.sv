@@ -15,11 +15,11 @@
 //
 //
 
-`ifndef __UVMT_CV32_ISS_WRAP_SV__
-`define __UVMT_CV32_ISS_WRAP_SV__
-
 
 `include "uvmt_rv32isa_covg.svh"
+
+`ifndef __UVMT_CV32_ISS_WRAP_SV__
+`define __UVMT_CV32_ISS_WRAP_SV__
 
 /**
  * Module wrapper for Imperas ISS.
