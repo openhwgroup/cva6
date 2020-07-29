@@ -29,7 +29,7 @@ module CPU
     import uvm_pkg::*;
 
     import "DPI-C" context task ovpEntry(input int, input string, input string);
-    //import "DPI-C" context function ovpExit(input int);
+    import "DPI-C" context function void ovpExit(input int);
 
     export "DPI-C" task     busLoad;
     export "DPI-C" task     busStore;
