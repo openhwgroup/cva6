@@ -8,11 +8,11 @@ export_include_dirs:
 
 sources:
   # packages
-  - include/riscv.sv
+  - include/cva6_riscv.sv
   # sources
-  - src/pmp_entry.sv
-  - src/pmp.sv
+  - src/cva6_pmp_entry.sv
+  - src/cva6_pmp.sv
 
   - target: simulation
     files:
-      - tb/pmp_tb.sv
+      - tb/cva6_pmp_tb.sv

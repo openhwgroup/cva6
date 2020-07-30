@@ -45,8 +45,8 @@ module cva6 #(
 `endif
 `ifdef PITON_ARIANE
   // L15 (memory side)
-  output wt_cache_pkg::l15_req_t       l15_req_o,
-  input  wt_cache_pkg::l15_rtrn_t      l15_rtrn_i
+  output cva6_wt_cache_pkg::l15_req_t       l15_req_o,
+  input  cva6_wt_cache_pkg::l15_rtrn_t      l15_rtrn_i
 `else
   // memory side, AXI Master
   output cva6_axi::req_t             axi_req_o,
