@@ -222,12 +222,12 @@ module cva6_instr_queue (
     fetch_entry_o.branch_predict.cf = cva6_pkg::NoCF;
     // output mux select
     for (int unsigned i = 0; i < cva6_pkg::INSTR_PER_FETCH; i++) begin
-      if (instr_data_out[i].ex == cva6_pkg::FE_INSTR_ACCESS_FAULT) begin
-          fetch_entry_o.ex.cause = cva6_riscv::INSTR_ACCESS_FAULT;
-      end else begin
-          fetch_entry_o.ex.cause = cva6_riscv::INSTR_PAGE_FAULT;
-      end
       if (idx_ds_q[i]) begin
+        if (instr_data_out[i].ex == cva6_pkg::FE_INSTR_ACCESS_FAULT) begin
+            fetch_entry_o.ex.cause = cva6_riscv::INSTR_ACCESS_FAULT;
+        end else begin
+            fetch_entry_o.ex.cause = cva6_riscv::INSTR_PAGE_FAULT;
+        end
         fetch_entry_o.instruction = instr_data_out[i].instr;
         fetch_entry_o.ex.valid = instr_data_out[i].ex != cva6_pkg::FE_NONE;
         // TODO(zarubaf,moschn): Might need some fixes with illegal access exceptions

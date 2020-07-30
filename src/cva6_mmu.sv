@@ -264,8 +264,8 @@ module cva6_mmu #(
 
     // Instruction fetch
     cva6_pmp #(
-        .XLEN       ( 64                     ),
-        .PMP_LEN    ( 54                     ),
+        .PLEN       ( cva6_riscv::PLEN            ),
+        .PMP_LEN    ( cva6_riscv::PLEN - 2        ),
         .NR_ENTRIES ( Cva6Cfg.NrPMPEntries )
     ) i_cva6_pmp_if (
         .addr_i        ( icache_areq_o.fetch_paddr ),
@@ -403,8 +403,8 @@ module cva6_mmu #(
 
     // Load/store PMP check
     cva6_pmp #(
-        .XLEN       ( 64                     ),
-        .PMP_LEN    ( 54                     ),
+        .PLEN       ( cva6_riscv::PLEN            ),
+        .PMP_LEN    ( cva6_riscv::PLEN - 2        ),
         .NR_ENTRIES ( Cva6Cfg.NrPMPEntries )
     ) i_cva6_pmp_data (
         .addr_i        ( lsu_paddr_o         ),

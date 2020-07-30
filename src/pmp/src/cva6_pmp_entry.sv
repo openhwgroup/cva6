@@ -13,11 +13,11 @@
 // Description: single PMP entry
 
 module cva6_pmp_entry #(
-    parameter int unsigned XLEN = 64,
+    parameter int unsigned PLEN = 56,
     parameter int unsigned PMP_LEN = 54
 ) (
     // Input
-    input logic [XLEN-1:0] addr_i,
+    input logic [PLEN-1:0] addr_i,
 
     // Configuration
     input logic [PMP_LEN-1:0] conf_addr_i,
@@ -27,10 +27,10 @@ module cva6_pmp_entry #(
     // Output
     output logic match_o
 );
-    logic [XLEN-1:0] conf_addr_n;
-    logic [$clog2(XLEN)-1:0] trail_ones;
+    logic [PLEN-1:0] conf_addr_n;
+    logic [$clog2(PLEN)-1:0] trail_ones;
     assign conf_addr_n = ~conf_addr_i;
-    lzc #(.WIDTH(XLEN), .MODE(1'b0)) i_lzc(
+    lzc #(.WIDTH(PLEN), .MODE(1'b0)) i_lzc(
         .in_i    ( conf_addr_n ),
         .cnt_o   ( trail_ones  ),
         .empty_o (             )
@@ -54,8 +54,8 @@ module cva6_pmp_entry #(
                 `endif
             end
             cva6_riscv::NA4, cva6_riscv::NAPOT:   begin
-                logic [XLEN-1:0] base;
-                logic [XLEN-1:0] mask;
+                logic [PLEN-1:0] base;
+                logic [PLEN-1:0] mask;
                 int unsigned size;
 
                 if (conf_addr_mode_i == cva6_riscv::NA4) size = 2;
@@ -81,7 +81,7 @@ module cva6_pmp_entry #(
                     end
                 end
 
-                if (size < XLEN-1) begin
+                if (size < PLEN-1) begin
                     if (base + 2**size > base) begin // check for overflow
                         if (match_o == 0) begin
                             assert(addr_i >= base + 2**size || addr_i < base);

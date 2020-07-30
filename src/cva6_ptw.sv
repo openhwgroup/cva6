@@ -63,8 +63,7 @@ module cva6_ptw #(
     // PMP
     input  cva6_riscv::pmpcfg_t [Cva6Cfg.NrPMPEntries-1:0]  pmpcfg_i,
     input  logic [Cva6Cfg.NrPMPEntries-1:0][53:0]      pmpaddr_i,
-    output logic [63:0]             bad_paddr_o
-
+    output logic [cva6_riscv::PLEN-1:0]  bad_paddr_o
 );
 
     // input registers
@@ -98,7 +97,7 @@ module cva6_ptw #(
     // register the VPN we need to walk, SV39 defines a 39 bit virtual address
     logic [cva6_riscv::VLEN-1:0] vaddr_q,   vaddr_n;
     // 4 byte aligned physical pointer
-    logic[55:0] ptw_pptr_q, ptw_pptr_n;
+    logic [cva6_riscv::PLEN-1:0] ptw_pptr_q, ptw_pptr_n;
 
     // Assignments
     assign update_vaddr_o  = vaddr_q;
@@ -133,22 +132,22 @@ module cva6_ptw #(
 
     logic allow_access;
 
-    assign bad_paddr_o = ptw_access_exception_o ? {8'b0, ptw_pptr_q} : 64'b0;
+    assign bad_paddr_o = ptw_access_exception_o ? ptw_pptr_q : 'b0;
 
     cva6_pmp #(
-        .XLEN       ( 64                     ),
-        .PMP_LEN    ( 54                     ),
+        .PLEN       ( cva6_riscv::PLEN            ),
+        .PMP_LEN    ( cva6_riscv::PLEN - 2        ),
         .NR_ENTRIES ( Cva6Cfg.NrPMPEntries )
     ) i_cva6_pmp_ptw (
-        .addr_i        ( {8'b0, ptw_pptr_q}        ),
+        .addr_i        ( ptw_pptr_q         ),
         // PTW access are always checked as if in S-Mode...
-        .priv_lvl_i    ( cva6_riscv::PRIV_LVL_S         ),
+        .priv_lvl_i    ( cva6_riscv::PRIV_LVL_S  ),
         // ...and they are always loads
-        .access_type_i ( cva6_riscv::ACCESS_READ        ),
+        .access_type_i ( cva6_riscv::ACCESS_READ ),
         // Configuration
-        .conf_addr_i   ( pmpaddr_i                 ),
-        .conf_i        ( pmpcfg_i                  ),
-        .allow_o       ( allow_access              )
+        .conf_addr_i   ( pmpaddr_i          ),
+        .conf_i        ( pmpcfg_i           ),
+        .allow_o       ( allow_access       )
     );
 
     //-------------------
