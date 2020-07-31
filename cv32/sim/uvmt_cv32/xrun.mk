@@ -28,7 +28,9 @@ XRUN_COMP_FLAGS  ?= -64bit -disable_sem2009 -access +rwc -q -clean \
                    $(TIMESCALE) $(SV_CMP_FLAGS)
 XRUN_DIR         ?= xcelium.d
 XRUN_GUI         ?=
-XRUN_SINGLE_STEP ?=
+XRUN_SINGLE_STEP ?=a
+#COVERAGE = YES
+#USE_ISS = YES
 #XRUN_VELABCOVERAGE = -covdut uvmt_cv32_tb -coverage function
 #XRUN_VRUNCOVERAGE  = -covoverwrite -covtest uvmt_cv32_tb -covscope uvmt_cv32_tb
 # VCOVERAGE     = imc -load cov_work/$(TESTBENCH)/$(TESTBENCH) -execcmd "report -summary"
@@ -39,6 +41,13 @@ ifeq ($(USE_ISS),YES)
     XRUN_USER_COMPILE_ARGS += "+define+ISS+CV32E40P_TRACE_EXECUTION"
     XRUN_PLUSARGS +="+USE_ISS"
 #     XRUN_PLUSARGS += +USE_ISS +ovpcfg="--controlfile $(OVP_CTRL_FILE)"
+endif
+
+ifeq ($(COVERAGE),YES)
+    XRUN_VELABCOVERAGE = -covdut uvmt_cv32_tb -coverage u #-cov_cgsample -cov_debuglog -write_metrics 
+    XRUN_VRUNCOVERAGE  = -covoverwrite #-covtest uvmt_cv32_tb -covscope uvmt_cv32_tb
+    #VCOVERAGE     = imc -load cov_work/$(TESTBENCH)/$(TESTBENCH) -execcmd "report -summary"
+    XRUN_PLUSARGS +="+COVERAGE"
 endif
 
 XRUN_RUN_BASE_FLAGS   ?= -64bit $(XRUN_GUI) +UVM_VERBOSITY=$(XRUN_UVM_VERBOSITY) $(XRUN_PLUSARGS) -sv_lib $(OVP_MODEL_DPI)
@@ -69,8 +78,8 @@ XRUN_COMP = 	$(XRUN_COMP_FLAGS) \
 		+incdir+$(DV_UVMT_CV32_PATH) \
 		-f $(CV32E40P_MANIFEST) \
 		$(XRUN_FILE_LIST) \
-		$(UVM_PLUSARGS)
-
+		$(UVM_PLUSARGS) \
+		$(XRUN_VELABCOVERAGE)
 
 comp: mk_xrun_dir $(CV32E40P_PKG) $(OVP_MODEL_DPI)
 	$(XRUN) \
@@ -104,8 +113,8 @@ hello-world:  $(XRUN_SIM_PREREQ) $(CUSTOM)/hello_world.hex
 		+elf_file=$(CUSTOM)/hello_world.elf \
 		+nm_file=$(CUSTOM)/hello_world.nm \
 		+UVM_TESTNAME=uvmt_cv32_firmware_test_c \
-		+firmware=$(CUSTOM)/hello_world.hex
-#		$(XRUN_VRUNCOVERAGE)
+		+firmware=$(CUSTOM)/hello_world.hex \
+		$(XRUN_VRUNCOVERAGE)
 
 misalign: $(XRUN_SIM_PREREQ) $(CUSTOM)/misalign.hex
 	$(XRUN) -l xrun-misalign.log $(XRUN_COMP_RUN) \

@@ -16,7 +16,7 @@
 //
 
 
-`include "uvmt_rv32isa_covg.svh"
+`include "uvmt_rv32isa_covg.sv"
 
 `ifndef __UVMT_CV32_ISS_WRAP_SV__
 `define __UVMT_CV32_ISS_WRAP_SV__
