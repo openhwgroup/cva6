@@ -40,9 +40,10 @@ module mmu #(
         // if we need to walk the page table we can't grant in the same cycle
         // Cycle 0
         output logic                            lsu_dtlb_hit_o,   // sent in the same cycle as the request if translation hits in the DTLB
+        output logic [riscv::PLEN-13:0]         lsu_dtlb_ppn_o,        // ppn (send same cycle as hit)
         // Cycle 1
         output logic                            lsu_valid_o,      // translation is valid
-        output logic [riscv::PLEN-1:0]          lsu_paddr_o,      // translated address
+        output logic [riscv::PLEN-1:0]          lsu_paddr_o,      // translated address (send cycle after hit)
         output exception_t                      lsu_exception_o,  // address translation threw an exception
         // General control signals
         input riscv::priv_lvl_t                 priv_lvl_i,
@@ -274,6 +275,7 @@ module mmu #(
         dtlb_is_1G_n          = dtlb_is_1G;
 
         lsu_paddr_o           = lsu_vaddr_q[riscv::PLEN-1:0];
+        lsu_dtlb_ppn_o        = lsu_vaddr_n[riscv::PLEN-1:12];
         lsu_valid_o           = lsu_req_q;
         lsu_exception_o       = misaligned_ex_q;
         // mute misaligned exceptions if there is no request otherwise they will throw accidental exceptions
@@ -288,13 +290,16 @@ module mmu #(
             lsu_valid_o = 1'b0;
             // 4K page
             lsu_paddr_o = {dtlb_pte_q.ppn, lsu_vaddr_q[11:0]};
+            lsu_dtlb_ppn_o = dtlb_content.ppn;
             // Mega page
             if (dtlb_is_2M_q) begin
               lsu_paddr_o[20:12] = lsu_vaddr_q[20:12];
+              lsu_dtlb_ppn_o[20:12] = lsu_vaddr_n[20:12];
             end
             // Giga page
             if (dtlb_is_1G_q) begin
                 lsu_paddr_o[29:12] = lsu_vaddr_q[29:12];
+                lsu_dtlb_ppn_o[29:12] = lsu_vaddr_n[29:12];
             end
             // ---------
             // DTLB Hit
