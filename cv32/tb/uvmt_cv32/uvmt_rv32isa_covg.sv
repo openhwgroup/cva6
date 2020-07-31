@@ -1286,19 +1286,25 @@ class riscv_32isa_coverage extends uvm_component;
     endgroup
 
 // TODO : missing coverage of all combinations of source and destination operands.
-// TODO : missing check of arbirary positive and negative immediate values
+// TODO : missing check of arbirary positive and negative immediate values (MIKE: immediate is unsigned)
 // FIXME: DONE
     covergroup c_srai_cg     with function sample(ins_t ins);
         option.per_instance = 1;
         cp_rd    : coverpoint get_gpr_name(ins.ops[0].val, ins.ops[0].key, "c.srai") {
             bins gprval[] = {[s0:a5]};
         }
-        cp_rs1    : coverpoint get_gpr_name(ins.ops[1].val, ins.ops[1].key, "c.srai"){
-            bins neg  = {[$:-1]};
-            bins zero = {0};
-            bins pos  = {[1:$]};
+        cp_uimm6 : coverpoint get_imm(ins.ops[2].val,"c.srai" ) {
+            bins zero = {6'b00_0000};
+            bins max  = {6'b11_1111};
+            bins low  = {[6'b00_0001 : 6'b01_1111]};
+            bins hi   = {[6'b10_0000 : 6'b11_1110]};
         }
-        cp_shamt5   : coverpoint get_imm(ins.ops[2].val,"c.srai" );
+        //cp_rs1    : coverpoint get_gpr_name(ins.ops[1].val, ins.ops[1].key, "c.srai"){
+        //    bins neg  = {[$:-1]};
+        //    bins zero = {0};
+        //    bins pos  = {[1:$]};
+        //}
+        //cp_shamt5   : coverpoint get_imm(ins.ops[2].val,"c.srai" );
     endgroup
 
 // TODO : missing coverage of all combinations of source and destination operands.
@@ -1561,6 +1567,9 @@ class riscv_32isa_coverage extends uvm_component;
                 if ( get_gpr_name(ins.ops[0].val, ins.ops[0].key, "c.srai") == get_gpr_name(ins.ops[1].val, ins.ops[1].key, "c.srai")) begin
                     ins.asm=C_SRAI;
                     c_srai_cg.sample(ins);
+                    `uvm_info("RV32ISA Functional Coverage", $sformatf("c_srai_cg: ins.ops[0].val = %0s", ins.ops[0].val), UVM_HIGH)
+                    `uvm_info("RV32ISA Functional Coverage", $sformatf("c_srai_cg: ins.ops[1].val = %0s", ins.ops[1].val), UVM_HIGH)
+                    `uvm_info("RV32ISA Functional Coverage", $sformatf("c_srai_cg: ins.ops[2].val = %0s", ins.ops[2].val), UVM_HIGH)
                 end
             end
             "andi"    : begin
