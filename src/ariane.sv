@@ -540,7 +540,9 @@ module ariane #(
   // ------------------------
   // Performance Counters
   // ------------------------
-  perf_counters i_perf_counters (
+  perf_counters #(
+    .CounterWidth ( MHPMCounterWidth )
+  ) i_perf_counters (
     .clk_i             ( clk_i                  ),
     .rst_ni            ( rst_ni                 ),
     .debug_mode_i      ( debug_mode             ),

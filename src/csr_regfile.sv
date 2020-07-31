@@ -280,7 +280,7 @@ module csr_regfile #(
                 riscv::CSR_PMPCFG0:          csr_rdata = pmpcfg_q[7:0];
                 riscv::CSR_PMPCFG2:          csr_rdata = pmpcfg_q[15:8];
                 // PMPADDR
-                // Important: we only support granularity 8 bytes (G=2) 
+                // Important: we only support granularity 8 bytes (G=2)
                 // -> last bit of pmpaddr must be set 0/1 based on the mode:
                 // NA4, NAPOT: 1
                 // TOR, OFF:   0
