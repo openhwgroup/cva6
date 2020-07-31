@@ -77,19 +77,12 @@ module uvmt_cv32_dut_wrap #(// DUT (riscv_core) parameters.
     logic [31:0]                  data_rdata;
     logic [31:0]                  data_wdata;
 
-    logic [ 4:0]                  irq_id_in;
-
-    logic [63:0]                  irq64;
-    logic [31:0]                  irq32;
+    logic [31:0]                  irq;
     logic                         irq_ack;
-    logic [ 5:0]                  irq_id6;
-    logic [ 4:0]                  irq_id5;
+    logic [ 4:0]                  irq_id;
 
     logic                         debug_req;
    
-    // Hold interrupts idle for now
-    assign irq64 = {64{1'b0}};
-    assign irq32 = {32{1'b0}};
 
     // Load the Instruction Memory 
     initial begin: load_instruction_memory
@@ -187,9 +180,9 @@ module uvmt_cv32_dut_wrap #(// DUT (riscv_core) parameters.
          // TODO: interrupts significantly updated for CV32E40P
          //       Connect all interrupt signals to an SV interface
          //       and pass to ENV for an INTERRUPT AGENT to drive/monitor.
-         .irq_i                  ( irq32                          ),
+         .irq_i                  ( irq                            ),
          .irq_ack_o              ( irq_ack                        ),
-         .irq_id_o               ( irq_id5                        ),
+         .irq_id_o               ( irq_id                         ),
 
          .debug_req_i            ( debug_req                      ),
 
@@ -221,9 +214,8 @@ module uvmt_cv32_dut_wrap #(// DUT (riscv_core) parameters.
          .data_rvalid_o  ( data_rvalid                     ),
          .data_gnt_o     ( data_gnt                        ),
 
-         .irq_id_i       ( 5'b00000                        ),
+         .irq_id_i       ( irq_id                          ),
          .irq_ack_i      ( irq_ack                         ),
-         .irq_id_o       ( irq_id_in                       ),
          .irq_o          ( irq                             ),
 
          .debug_req_o    ( debug_req                       ),
