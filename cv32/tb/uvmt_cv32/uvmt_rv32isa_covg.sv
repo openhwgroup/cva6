@@ -99,45 +99,45 @@ typedef struct {
     ops_t ops[4];
 } ins_t;
 
-class riscv_32isa_coverage;
+class riscv_32isa_coverage extends uvm_component;
 
 // The following CSR ABI names are not currently included:
 // fp, pc
     function gpr_name_t get_gpr_name (string s, r, asm);
         `uvm_info("RV32ISA Coverage", $sformatf("get_gpr_name(): GPR [%0s] used by ins %s being validated", s, asm), UVM_HIGH)
         case (s)
-            "zero": return gpr_name_t'(zero);
-            "ra": return gpr_name_t'(ra);
-            "sp": return gpr_name_t'(sp);
-            "gp": return gpr_name_t'(gp);
-            "tp": return gpr_name_t'(tp);
-            "t0": return gpr_name_t'(t0);
-            "t1": return gpr_name_t'(t1);
-            "t2": return gpr_name_t'(t2);
-            "s0": return gpr_name_t'(s0);
-            "s1": return gpr_name_t'(s1);
-            "a0": return gpr_name_t'(a0);
-            "a1": return gpr_name_t'(a1);
-            "a2": return gpr_name_t'(a2);
-            "a3": return gpr_name_t'(a3);
-            "a4": return gpr_name_t'(a4);
-            "a5": return gpr_name_t'(a5);
-            "a6": return gpr_name_t'(a6);
-            "a7": return gpr_name_t'(a7);
-            "s2": return gpr_name_t'(s2);
-            "s3": return gpr_name_t'(s3);
-            "s4": return gpr_name_t'(s4);
-            "s5": return gpr_name_t'(s5);
-            "s6": return gpr_name_t'(s6);
-            "s7": return gpr_name_t'(s7);
-            "s8": return gpr_name_t'(s8);
-            "s9": return gpr_name_t'(s9);
-            "s10": return gpr_name_t'(s10);
-            "s11": return gpr_name_t'(s11);
-            "t3": return gpr_name_t'(t3);
-            "t4": return gpr_name_t'(t4);
-            "t5": return gpr_name_t'(t5);
-            "t6": return gpr_name_t'(t6);
+            "zero" : return gpr_name_t'(zero);
+            "ra"   : return gpr_name_t'(ra);
+            "sp"   : return gpr_name_t'(sp);
+            "gp"   : return gpr_name_t'(gp);
+            "tp"   : return gpr_name_t'(tp);
+            "t0"   : return gpr_name_t'(t0);
+            "t1"   : return gpr_name_t'(t1);
+            "t2"   : return gpr_name_t'(t2);
+            "s0"   : return gpr_name_t'(s0);
+            "s1"   : return gpr_name_t'(s1);
+            "a0"   : return gpr_name_t'(a0);
+            "a1"   : return gpr_name_t'(a1);
+            "a2"   : return gpr_name_t'(a2);
+            "a3"   : return gpr_name_t'(a3);
+            "a4"   : return gpr_name_t'(a4);
+            "a5"   : return gpr_name_t'(a5);
+            "a6"   : return gpr_name_t'(a6);
+            "a7"   : return gpr_name_t'(a7);
+            "s2"   : return gpr_name_t'(s2);
+            "s3"   : return gpr_name_t'(s3);
+            "s4"   : return gpr_name_t'(s4);
+            "s5"   : return gpr_name_t'(s5);
+            "s6"   : return gpr_name_t'(s6);
+            "s7"   : return gpr_name_t'(s7);
+            "s8"   : return gpr_name_t'(s8);
+            "s9"   : return gpr_name_t'(s9);
+            "s10"  : return gpr_name_t'(s10);
+            "s11"  : return gpr_name_t'(s11);
+            "t3"   : return gpr_name_t'(t3);
+            "t4"   : return gpr_name_t'(t4);
+            "t5"   : return gpr_name_t'(t5);
+            "t6"   : return gpr_name_t'(t6);
             default: begin
                 `uvm_info("RV32ISA Coverage", $sformatf("get_gpr_name(): GPR [%0s] used by ins %s not recognized!", s, asm), UVM_HIGH)
             end
@@ -168,76 +168,76 @@ class riscv_32isa_coverage;
 // mhpmcounter3h, ..., mhpmcounter31h,
     function csr_name_t get_csr_name (string s, r, asm);
         case (s)
-            "marchid": return csr_name_t'(marchid);
-            "mcause": return csr_name_t'(mcause);
-            "mcounteren": return csr_name_t'(mcounteren);
+            "marchid"      : return csr_name_t'(marchid);
+            "mcause"       : return csr_name_t'(mcause);
+            "mcounteren"   : return csr_name_t'(mcounteren);
             "mcountinhibit": return csr_name_t'(mcountinhibit);
-            "mcycle": return csr_name_t'(mcycle);
-            "mcycleh": return csr_name_t'(mcycleh);
-            "medeleg": return csr_name_t'(medeleg);
-            "mepc": return csr_name_t'(mepc);
-            "mhartid": return csr_name_t'(mhartid);
-            "mhpmevent10": return csr_name_t'(mhpmevent10);
-            "mhpmevent11": return csr_name_t'(mhpmevent11);
-            "mhpmevent12": return csr_name_t'(mhpmevent12);
-            "mhpmevent13": return csr_name_t'(mhpmevent13);
-            "mhpmevent14": return csr_name_t'(mhpmevent14);
-            "mhpmevent15": return csr_name_t'(mhpmevent15);
-            "mhpmevent16": return csr_name_t'(mhpmevent16);
-            "mhpmevent17": return csr_name_t'(mhpmevent17);
-            "mhpmevent18": return csr_name_t'(mhpmevent18);
-            "mhpmevent19": return csr_name_t'(mhpmevent19);
-            "mhpmevent20": return csr_name_t'(mhpmevent20);
-            "mhpmevent21": return csr_name_t'(mhpmevent21);
-            "mhpmevent22": return csr_name_t'(mhpmevent22);
-            "mhpmevent23": return csr_name_t'(mhpmevent23);
-            "mhpmevent24": return csr_name_t'(mhpmevent24);
-            "mhpmevent25": return csr_name_t'(mhpmevent25);
-            "mhpmevent26": return csr_name_t'(mhpmevent26);
-            "mhpmevent27": return csr_name_t'(mhpmevent27);
-            "mhpmevent28": return csr_name_t'(mhpmevent28);
-            "mhpmevent29": return csr_name_t'(mhpmevent29);
-            "mhpmevent3": return csr_name_t'(mhpmevent3);
-            "mhpmevent30": return csr_name_t'(mhpmevent30);
-            "mhpmevent31": return csr_name_t'(mhpmevent31);
-            "mhpmevent4": return csr_name_t'(mhpmevent4);
-            "mhpmevent5": return csr_name_t'(mhpmevent5);
-            "mhpmevent6": return csr_name_t'(mhpmevent6);
-            "mhpmevent7": return csr_name_t'(mhpmevent7);
-            "mhpmevent8": return csr_name_t'(mhpmevent8);
-            "mhpmevent9": return csr_name_t'(mhpmevent9);
-            "mideleg": return csr_name_t'(mideleg);
-            "mie": return csr_name_t'(mie);
-            "mimpid": return csr_name_t'(mimpid);
-            "minstret": return csr_name_t'(minstret);
-            "minstreth": return csr_name_t'(minstreth);
-            "mip": return csr_name_t'(mip);
-            "misa": return csr_name_t'(misa);
-            "mscratch": return csr_name_t'(mscratch);
-            "mstatus": return csr_name_t'(mstatus);
-            "mtval": return csr_name_t'(mtval);
-            "mtvec": return csr_name_t'(mtvec);
-            "mvendorid": return csr_name_t'(mvendorid);
-            "pmpaddr0": return csr_name_t'(pmpaddr0);
-            "pmpaddr1": return csr_name_t'(pmpaddr1);
-            "pmpaddr10": return csr_name_t'(pmpaddr10);
-            "pmpaddr11": return csr_name_t'(pmpaddr11);
-            "pmpaddr12": return csr_name_t'(pmpaddr12);
-            "pmpaddr13": return csr_name_t'(pmpaddr13);
-            "pmpaddr14": return csr_name_t'(pmpaddr14);
-            "pmpaddr15": return csr_name_t'(pmpaddr15);
-            "pmpaddr2": return csr_name_t'(pmpaddr2);
-            "pmpaddr3": return csr_name_t'(pmpaddr3);
-            "pmpaddr4": return csr_name_t'(pmpaddr4);
-            "pmpaddr5": return csr_name_t'(pmpaddr5);
-            "pmpaddr6": return csr_name_t'(pmpaddr6);
-            "pmpaddr7": return csr_name_t'(pmpaddr7);
-            "pmpaddr8": return csr_name_t'(pmpaddr8);
-            "pmpaddr9": return csr_name_t'(pmpaddr9);
-            "pmpcfg0": return csr_name_t'(pmpcfg0);
-            "pmpcfg1": return csr_name_t'(pmpcfg1);
-            "pmpcfg2": return csr_name_t'(pmpcfg2);
-            "pmpcfg3": return csr_name_t'(pmpcfg3);
+            "mcycle"       : return csr_name_t'(mcycle);
+            "mcycleh"      : return csr_name_t'(mcycleh);
+            "medeleg"      : return csr_name_t'(medeleg);
+            "mepc"         : return csr_name_t'(mepc);
+            "mhartid"      : return csr_name_t'(mhartid);
+            "mhpmevent10"  : return csr_name_t'(mhpmevent10);
+            "mhpmevent11"  : return csr_name_t'(mhpmevent11);
+            "mhpmevent12"  : return csr_name_t'(mhpmevent12);
+            "mhpmevent13"  : return csr_name_t'(mhpmevent13);
+            "mhpmevent14"  : return csr_name_t'(mhpmevent14);
+            "mhpmevent15"  : return csr_name_t'(mhpmevent15);
+            "mhpmevent16"  : return csr_name_t'(mhpmevent16);
+            "mhpmevent17"  : return csr_name_t'(mhpmevent17);
+            "mhpmevent18"  : return csr_name_t'(mhpmevent18);
+            "mhpmevent19"  : return csr_name_t'(mhpmevent19);
+            "mhpmevent20"  : return csr_name_t'(mhpmevent20);
+            "mhpmevent21"  : return csr_name_t'(mhpmevent21);
+            "mhpmevent22"  : return csr_name_t'(mhpmevent22);
+            "mhpmevent23"  : return csr_name_t'(mhpmevent23);
+            "mhpmevent24"  : return csr_name_t'(mhpmevent24);
+            "mhpmevent25"  : return csr_name_t'(mhpmevent25);
+            "mhpmevent26"  : return csr_name_t'(mhpmevent26);
+            "mhpmevent27"  : return csr_name_t'(mhpmevent27);
+            "mhpmevent28"  : return csr_name_t'(mhpmevent28);
+            "mhpmevent29"  : return csr_name_t'(mhpmevent29);
+            "mhpmevent3"   : return csr_name_t'(mhpmevent3);
+            "mhpmevent30"  : return csr_name_t'(mhpmevent30);
+            "mhpmevent31"  : return csr_name_t'(mhpmevent31);
+            "mhpmevent4"   : return csr_name_t'(mhpmevent4);
+            "mhpmevent5"   : return csr_name_t'(mhpmevent5);
+            "mhpmevent6"   : return csr_name_t'(mhpmevent6);
+            "mhpmevent7"   : return csr_name_t'(mhpmevent7);
+            "mhpmevent8"   : return csr_name_t'(mhpmevent8);
+            "mhpmevent9"   : return csr_name_t'(mhpmevent9);
+            "mideleg"      : return csr_name_t'(mideleg);
+            "mie"          : return csr_name_t'(mie);
+            "mimpid"       : return csr_name_t'(mimpid);
+            "minstret"     : return csr_name_t'(minstret);
+            "minstreth"    : return csr_name_t'(minstreth);
+            "mip"          : return csr_name_t'(mip);
+            "misa"         : return csr_name_t'(misa);
+            "mscratch"     : return csr_name_t'(mscratch);
+            "mstatus"      : return csr_name_t'(mstatus);
+            "mtval"        : return csr_name_t'(mtval);
+            "mtvec"        : return csr_name_t'(mtvec);
+            "mvendorid"    : return csr_name_t'(mvendorid);
+            "pmpaddr0"     : return csr_name_t'(pmpaddr0);
+            "pmpaddr1"     : return csr_name_t'(pmpaddr1);
+            "pmpaddr10"    : return csr_name_t'(pmpaddr10);
+            "pmpaddr11"    : return csr_name_t'(pmpaddr11);
+            "pmpaddr12"    : return csr_name_t'(pmpaddr12);
+            "pmpaddr13"    : return csr_name_t'(pmpaddr13);
+            "pmpaddr14"    : return csr_name_t'(pmpaddr14);
+            "pmpaddr15"    : return csr_name_t'(pmpaddr15);
+            "pmpaddr2"     : return csr_name_t'(pmpaddr2);
+            "pmpaddr3"     : return csr_name_t'(pmpaddr3);
+            "pmpaddr4"     : return csr_name_t'(pmpaddr4);
+            "pmpaddr5"     : return csr_name_t'(pmpaddr5);
+            "pmpaddr6"     : return csr_name_t'(pmpaddr6);
+            "pmpaddr7"     : return csr_name_t'(pmpaddr7);
+            "pmpaddr8"     : return csr_name_t'(pmpaddr8);
+            "pmpaddr9"     : return csr_name_t'(pmpaddr9);
+            "pmpcfg0"      : return csr_name_t'(pmpcfg0);
+            "pmpcfg1"      : return csr_name_t'(pmpcfg1);
+            "pmpcfg2"      : return csr_name_t'(pmpcfg2);
+            "pmpcfg3"      : return csr_name_t'(pmpcfg3);
             default: begin
                 `uvm_error("RV32ISA Coverage", $sformatf("get_csr_name(): CSR [%0s] not recognized!", s))
             end
@@ -1326,7 +1326,6 @@ class riscv_32isa_coverage;
         cp_rd     : coverpoint get_gpr_name(ins.ops[0].val, ins.ops[0].key, "c.add");
         cp_rs2    : coverpoint get_gpr_name(ins.ops[2].val, ins.ops[2].key, "c.add");
     endgroup
-    // MikeT - 20200714
 
 // TODO : missing coverage of all combinations of source and destination operands.
 // FIXME: DONE
@@ -1396,57 +1395,57 @@ class riscv_32isa_coverage;
     endgroup
 
 // TODO : review by 20-July-2020
-    function new();
-        add_cg = new();
-        addi_cg = new();
-        and_cg = new();
-        andi_cg = new();
-        auipc_cg = new();
-        beq_cg = new();
-        bge_cg = new();
-        bgeu_cg = new();
-        blt_cg = new();
-        bltu_cg = new();
-        bne_cg = new();
-        ebreak_cg = new();
-        ecall_cg = new();
-        fence_cg = new();
-        jal_cg = new();
-        jalr_cg = new();
-        lb_cg = new();
-        lbu_cg = new();
-        lh_cg = new();
-        lhu_cg = new();
-        lui_cg = new();
-        lw_cg = new();
-        nop_cg = new();
-        or_cg = new();
-        ori_cg = new();
-        sb_cg = new();
-        sh_cg = new();
-        sll_cg = new();
-        slli_cg = new();
-        slt_cg = new();
-        slti_cg = new();
-        sltiu_cg = new();
-        sltu_cg = new();
-        sra_cg = new();
-        srai_cg = new();
-        srl_cg = new();
-        srli_cg = new();
-        sub_cg = new();
-        sw_cg = new();
-        xor_cg = new();
-        xori_cg = new();
-        mul_cg = new();
-        mulh_cg = new();
-        mulhu_cg = new();
-        mulhsu_cg = new();
-        div_cg = new();
-        rem_cg = new();
-        divu_cg = new();
-        remu_cg = new();
-        // The c_*_cg below are unmodified from the original
+    function new(string name="rv32isa_covg", uvm_component parent=null);
+        super.new("parent", parent);
+        add_cg        = new();
+        addi_cg       = new();
+        and_cg        = new();
+        andi_cg       = new();
+        auipc_cg      = new();
+        beq_cg        = new();
+        bge_cg        = new();
+        bgeu_cg       = new();
+        blt_cg        = new();
+        bltu_cg       = new();
+        bne_cg        = new();
+        ebreak_cg     = new();
+        ecall_cg      = new();
+        fence_cg      = new();
+        jal_cg        = new();
+        jalr_cg       = new();
+        lb_cg         = new();
+        lbu_cg        = new();
+        lh_cg         = new();
+        lhu_cg        = new();
+        lui_cg        = new();
+        lw_cg         = new();
+        nop_cg        = new();
+        or_cg         = new();
+        ori_cg        = new();
+        sb_cg         = new();
+        sh_cg         = new();
+        sll_cg        = new();
+        slli_cg       = new();
+        slt_cg        = new();
+        slti_cg       = new();
+        sltiu_cg      = new();
+        sltu_cg       = new();
+        sra_cg        = new();
+        srai_cg       = new();
+        srl_cg        = new();
+        srli_cg       = new();
+        sub_cg        = new();
+        sw_cg         = new();
+        xor_cg        = new();
+        xori_cg       = new();
+        mul_cg        = new();
+        mulh_cg       = new();
+        mulhu_cg      = new();
+        mulhsu_cg     = new();
+        div_cg        = new();
+        rem_cg        = new();
+        divu_cg       = new();
+        remu_cg       = new();
         c_lwsp_cg     = new();
         c_swsp_cg     = new();
         c_lw_cg       = new();
@@ -1455,18 +1454,14 @@ class riscv_32isa_coverage;
         c_jalr_cg     = new();
         c_li_cg       = new();
         c_lui_cg      = new();
-        // The "c_add*_cg are remapped versions of their uncompressed source"
         c_addi_cg     = new();
         c_addi16sp_cg = new();
         c_addi4spn_cg = new();
-        // The c_*_cg below are unmodified from the original
         c_slli_cg     = new();
         c_srli_cg     = new();
         c_srai_cg     = new();
         c_andi_cg     = new();
-        // The "c_add*_cg are remapped versions of their uncompressed source"
         c_add_cg      = new();
-        // The c_*_cg below are unmodified from the original
         c_and_cg      = new();
         c_or_cg       = new();
         c_xor_cg      = new();
@@ -1501,7 +1496,8 @@ class riscv_32isa_coverage;
                 end
              end
             "jal"   :  begin
-//                `uvm_info("RV32ISA Coverage", $sformatf("check_compressed( %0s ): checking ins %0s %0s %0s(%0s)", ins.asm.name, ins.ins_str, ins.ops[0].val, ins.ops[2].val, ins.ops[1].val), UVM_NONE) //HIGH)
+                `uvm_info("RV32ISA Coverage", $sformatf("check_compressed( %0s ): checking ins %0s %0s %0s(%0s)",
+                                                         ins.asm.name, ins.ins_str, ins.ops[0].val, ins.ops[2].val, ins.ops[1].val), UVM_HIGH)
                 if ((get_gpr_name(ins.ops[0].val, ins.ops[0].key, "c.jal") == gpr_name_t'(sp))
                   && c_check_imm(ins.ops[1].val, "c.jal")) begin
                     ins.asm=C_JAL;
@@ -1509,7 +1505,8 @@ class riscv_32isa_coverage;
                 end
              end
             "jalr"  :   begin
-//                `uvm_info("RV32ISA Coverage", $sformatf("check_compressed( %0s ): checking ins %0s %0s %0s(%0s)", ins.asm.name, ins.ins_str, ins.ops[0].val, ins.ops[2].val, ins.ops[1].val), UVM_NONE) //HIGH)
+                `uvm_info("RV32ISA Coverage", $sformatf("check_compressed( %0s ): checking ins %0s %0s %0s(%0s)",
+                                                         ins.asm.name, ins.ins_str, ins.ops[0].val, ins.ops[2].val, ins.ops[1].val), UVM_HIGH)
                 if (  ( get_gpr_name(ins.ops[0].val, ins.ops[0].key, "c.jalr") == gpr_name_t'(ra)) && c_check_gpr_name(ins.ops[1].val, ins.ops[1].key, "c.jalr") ) begin
                     gpr_name_t r0, r1;
                     ins.asm=JALR;
@@ -1526,7 +1523,6 @@ class riscv_32isa_coverage;
                         c_jalr_cg.sample(ins, r0, r1);
                 end
             end
-//    C_LUI
             "c.lui"   : begin ins.asm=C_LUI; c_lui_cg.sample(ins); end
             "addi"    : begin
                 `uvm_info("rv32isa_covg", $sformatf("EXPECTING ADDI: ins.ops[0].val = %0s, ins.ops[1].val = %0s", ins.ops[0].val, ins.ops[1].val), UVM_HIGH)
@@ -1570,7 +1566,7 @@ class riscv_32isa_coverage;
             "andi"    : begin
                 if ( get_gpr_name(ins.ops[0].val, ins.ops[0].key, "c.andi")  == get_gpr_name(ins.ops[1].val, ins.ops[1].key, "c.andi") ) begin
                     ins.asm=C_ANDI;
-                  c_andi_cg.sample(ins);
+                    c_andi_cg.sample(ins);
                 end
             end
             "add"      : begin
@@ -1580,55 +1576,55 @@ class riscv_32isa_coverage;
                 end
             end
 //    ,C_AND,C_OR,C_XOR,C_SUB,C_NOP,C_EBREAK
-            "and"    : begin
+            "and"         : begin
                 if ( get_gpr_name(ins.ops[0].val, ins.ops[0].key, "c.and")  == get_gpr_name(ins.ops[1].val, ins.ops[1].key, "c.and") ) begin
                     ins.asm=C_AND;
                     c_and_cg.sample(ins);
                 end
             end
-            "or"    : begin
+            "or"          : begin
                 if ( get_gpr_name(ins.ops[0].val, ins.ops[0].key, "c.or")  == get_gpr_name(ins.ops[1].val, ins.ops[1].key, "c.or") ) begin
                     ins.asm=C_OR;
-                  c_or_cg.sample(ins);
+                    c_or_cg.sample(ins);
                 end
             end
-            "xor"    : begin
+            "xor"         : begin
                 if ( get_gpr_name(ins.ops[0].val, ins.ops[0].key, "c.xor")  == get_gpr_name(ins.ops[1].val, ins.ops[1].key, "c.xor") ) begin
                     ins.asm=C_XOR;
-                  c_xor_cg.sample(ins);
+                    c_xor_cg.sample(ins);
                 end
             end
-            "sub"    : begin
+            "sub"         : begin
                 if ( get_gpr_name(ins.ops[0].val, ins.ops[0].key, "c.sub")  == get_gpr_name(ins.ops[1].val, ins.ops[1].key, "c.sub") ) begin
                     ins.asm=C_SUB;
-                  c_sub_cg.sample(ins);
+                    c_sub_cg.sample(ins);
                 end
             end
-            "c.nop"    : begin ins.asm=C_NOP; c_nop_cg.sample(ins); end
+            "c.nop"       : begin ins.asm=C_NOP; c_nop_cg.sample(ins); end
             "c.ebreak"    : begin ins.asm=C_EBREAK; c_ebreak_cg.sample(ins); end
-            default: `uvm_info("RV32ISA Coverage", $sformatf("check_compressed(): ins [%0s] not yet checked", ins.ins_str), UVM_HIGH)
+            default:        `uvm_info("RV32ISA Coverage", $sformatf("check_compressed(): ins [%0s] not yet checked", ins.ins_str), UVM_HIGH)
         endcase
     endfunction: check_compressed
 
     function void sample(input ins_t ins);
         check_compressed(ins);
         case (ins.ins_str)
-            "add"    : begin ins.asm=ADD; add_cg.sample(ins); end
-            "addi"    : begin ins.asm=ADDI; addi_cg.sample(ins); end
-            "and"    : begin ins.asm=AND; and_cg.sample(ins); end
-            "andi"    : begin ins.asm=ANDI; andi_cg.sample(ins); end
-            "auipc"    : begin ins.asm=AUIPC; auipc_cg.sample(ins); end
-            "beq"    : begin ins.asm=BEQ; beq_cg.sample(ins); end
-            "bge"    : begin ins.asm=BGE; bge_cg.sample(ins); end
-            "bgeu"    : begin ins.asm=BGEU; bgeu_cg.sample(ins); end
-            "blt"    : begin ins.asm=BLT; blt_cg.sample(ins); end
-            "bltu"    : begin ins.asm=BLTU; bltu_cg.sample(ins); end
-            "bne"    : begin ins.asm=BNE; bne_cg.sample(ins); end
+            "add"       : begin ins.asm=ADD;    add_cg.sample(ins);    end
+            "addi"      : begin ins.asm=ADDI;   addi_cg.sample(ins);   end
+            "and"       : begin ins.asm=AND;    and_cg.sample(ins);    end
+            "andi"      : begin ins.asm=ANDI;   andi_cg.sample(ins);   end
+            "auipc"     : begin ins.asm=AUIPC;  auipc_cg.sample(ins);  end
+            "beq"       : begin ins.asm=BEQ;    beq_cg.sample(ins);    end
+            "bge"       : begin ins.asm=BGE;    bge_cg.sample(ins);    end
+            "bgeu"      : begin ins.asm=BGEU;   bgeu_cg.sample(ins);   end
+            "blt"       : begin ins.asm=BLT;    blt_cg.sample(ins);    end
+            "bltu"      : begin ins.asm=BLTU;   bltu_cg.sample(ins);   end
+            "bne"       : begin ins.asm=BNE;    bne_cg.sample(ins);    end
             "ebreak"    : begin ins.asm=EBREAK; ebreak_cg.sample(ins); end
-            "ecall"    : begin ins.asm=ECALL; ecall_cg.sample(ins); end
-            "fence"    : begin ins.asm=FENCE; fence_cg.sample(ins); end
-            "jal"    : begin ins.asm=JAL; jal_cg.sample(ins); end
-            "jalr"    : begin
+            "ecall"     : begin ins.asm=ECALL;  ecall_cg.sample(ins);  end
+            "fence"     : begin ins.asm=FENCE;  fence_cg.sample(ins);  end
+            "jal"       : begin ins.asm=JAL;    jal_cg.sample(ins);    end
+            "jalr"      : begin
                 gpr_name_t r0, r1;
                 ins.asm=JALR;
                 if (ins.ops[0].key[0] == "R")
@@ -1641,42 +1637,45 @@ class riscv_32isa_coverage;
                     r1 = gpr_none;
                 jalr_cg.sample(ins, r0, r1);
             end
-            "lb"    : begin ins.asm=LB; lb_cg.sample(ins); end
-            "lbu"    : begin ins.asm=LBU; lbu_cg.sample(ins); end
-            "lh"    : begin ins.asm=LH; lh_cg.sample(ins); end
-            "lhu"    : begin ins.asm=LHU; lhu_cg.sample(ins); end
-            "lui"    : begin ins.asm=LUI; lui_cg.sample(ins); end
-            "lw"    : begin ins.asm=LW; lw_cg.sample(ins); end
-            "nop"    : begin ins.asm=NOP; nop_cg.sample(ins); end
-            "or"    : begin ins.asm=OR; or_cg.sample(ins); end
-            "ori"    : begin ins.asm=ORI; ori_cg.sample(ins); end
-            "sb"    : begin ins.asm=SH; sb_cg.sample(ins); end
-            "sh"    : begin ins.asm=SH; sh_cg.sample(ins); end
-            "sll"    : begin ins.asm=SLL; sll_cg.sample(ins); end
-            "slli"    : begin ins.asm=SLLI; slli_cg.sample(ins); end
-            "slt"    : begin ins.asm=SLT; slt_cg.sample(ins); end
-            "slti"    : begin ins.asm=SLTI; slti_cg.sample(ins); end
-            "sltiu"    : begin ins.asm=SLTIU; sltiu_cg.sample(ins); end
-            "sltu"    : begin ins.asm=SLTU; sltu_cg.sample(ins); end
-            "sra"    : begin ins.asm=SRA; sra_cg.sample(ins); end
-            "srai"    : begin ins.asm=SRAI; srai_cg.sample(ins); end
-            "srl"    : begin ins.asm=SRL; srl_cg.sample(ins); end
-            "srli"    : begin ins.asm=SRLI; srli_cg.sample(ins); end
-            "sub"    : begin ins.asm=SUB; sub_cg.sample(ins); end
-            "sw"    : begin ins.asm=SW; sw_cg.sample(ins); end
-            "xor"    : begin ins.asm=XOR; xor_cg.sample(ins); end
-            "xori"    : begin ins.asm=XORI; xori_cg.sample(ins); end
-            "mul"    : begin ins.asm=MUL; mul_cg.sample(ins); end
-            "mulh"    : begin ins.asm=MULH; mulh_cg.sample(ins); end
-            "mulhu"    : begin ins.asm=MULHU; mulhu_cg.sample(ins); end
+            "lb"        : begin ins.asm=LB;     lb_cg.sample(ins);     end
+            "lbu"       : begin ins.asm=LBU;    lbu_cg.sample(ins);    end
+            "lh"        : begin ins.asm=LH;     lh_cg.sample(ins);     end
+            "lhu"       : begin ins.asm=LHU;    lhu_cg.sample(ins);    end
+            "lui"       : begin ins.asm=LUI;    lui_cg.sample(ins);    end
+            "lw"        : begin ins.asm=LW;     lw_cg.sample(ins);     end
+            "nop"       : begin ins.asm=NOP;    nop_cg.sample(ins);    end
+            "or"        : begin ins.asm=OR;     or_cg.sample(ins);     end
+            "ori"       : begin ins.asm=ORI;    ori_cg.sample(ins);    end
+            "sb"        : begin ins.asm=SH;     sb_cg.sample(ins);     end
+            "sh"        : begin ins.asm=SH;     sh_cg.sample(ins);     end
+            "sll"       : begin ins.asm=SLL;    sll_cg.sample(ins);    end
+            "slli"      : begin ins.asm=SLLI;   slli_cg.sample(ins);   end
+            "slt"       : begin ins.asm=SLT;    slt_cg.sample(ins);    end
+            "slti"      : begin ins.asm=SLTI;   slti_cg.sample(ins);   end
+            "sltiu"     : begin ins.asm=SLTIU;  sltiu_cg.sample(ins);  end
+            "sltu"      : begin ins.asm=SLTU;   sltu_cg.sample(ins);   end
+            "sra"       : begin ins.asm=SRA;    sra_cg.sample(ins);    end
+            "srai"      : begin ins.asm=SRAI;   srai_cg.sample(ins);   end
+            "srl"       : begin ins.asm=SRL;    srl_cg.sample(ins);    end
+            "srli"      : begin ins.asm=SRLI;   srli_cg.sample(ins);   end
+            "sub"       : begin ins.asm=SUB;    sub_cg.sample(ins);    end
+            "sw"        : begin ins.asm=SW;     sw_cg.sample(ins);     end
+            "xor"       : begin ins.asm=XOR;    xor_cg.sample(ins);    end
+            "xori"      : begin ins.asm=XORI;   xori_cg.sample(ins);   end
+            "mul"       : begin ins.asm=MUL;    mul_cg.sample(ins);    end
+            "mulh"      : begin ins.asm=MULH;   mulh_cg.sample(ins);   end
+            "mulhu"     : begin ins.asm=MULHU;  mulhu_cg.sample(ins);  end
             "mulhsu"    : begin ins.asm=MULHSU; mulhsu_cg.sample(ins); end
-            "div"    : begin ins.asm=DIV; div_cg.sample(ins); end
-            "rem"    : begin ins.asm=REM; rem_cg.sample(ins); end
-            "divu"    : begin ins.asm=DIVU; divu_cg.sample(ins); end
-            "remu"    : begin ins.asm=REMU; remu_cg.sample(ins); end
-            default: begin ins.asm=NOP; end /*$display("Coverage warning: ins [%0s] not yet included in being covered", ins.ins_str);*/ //end
+            "div"       : begin ins.asm=DIV;    div_cg.sample(ins);    end
+            "rem"       : begin ins.asm=REM;    rem_cg.sample(ins);    end
+            "divu"      : begin ins.asm=DIVU;   divu_cg.sample(ins);   end
+            "remu"      : begin ins.asm=REMU;   remu_cg.sample(ins);   end
+            default: begin
+              ins.asm = NOP;
+              `uvm_info("RV32ISA Coverage", $sformatf("Coverage warning: ins [%0s] not yet included in being covered", ins.ins_str), UVM_HIGH)
+            end
         endcase
     endfunction: sample
 
 
-endclass
+endclass : riscv_32isa_coverage
