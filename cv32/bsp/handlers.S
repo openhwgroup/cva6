@@ -23,11 +23,108 @@
 .global __no_irq_handler
 .global sw_irq_handler
 .global verification_irq_handler
+.global software_irq_handler
+.global timer_irq_handler
+.global external_irq_handler
+.global fast0_irq_handler
+.global fast1_irq_handler
+.global fast2_irq_handler
+.global fast3_irq_handler
+.global fast4_irq_handler
+.global fast5_irq_handler
+.global fast6_irq_handler
+.global fast7_irq_handler
+.global fast8_irq_handler
+.global fast9_irq_handler
+.global fast10_irq_handler
+.global fast11_irq_handler
+.global fast12_irq_handler
+.global fast13_irq_handler
+.global fast14_irq_handler
+.global fast15_irq_handler
+
+.weak software_irq_handler
+.weak timer_irq_handler
+.weak external_irq_handler
+.weak fast0_irq_handler
+.weak fast1_irq_handler
+.weak fast2_irq_handler
+.weak fast3_irq_handler
+.weak fast4_irq_handler
+.weak fast5_irq_handler
+.weak fast6_irq_handler
+.weak fast7_irq_handler
+.weak fast8_irq_handler
+.weak fast9_irq_handler
+.weak fast10_irq_handler
+.weak fast11_irq_handler
+.weak fast12_irq_handler
+.weak fast13_irq_handler
+.weak fast14_irq_handler
+.weak fast15_irq_handler
+
 
 /* exception handling */
 __no_irq_handler:
 	la a0, no_exception_handler_msg
 	jal ra, puts
+	j __no_irq_handler
+
+software_irq_handler:
+	j __no_irq_handler
+
+timer_irq_handler:
+	j __no_irq_handler
+
+external_irq_handler:
+	j __no_irq_handler
+
+fast0_irq_handler:
+	j __no_irq_handler
+
+fast1_irq_handler:
+	j __no_irq_handler
+
+fast2_irq_handler:
+	j __no_irq_handler
+
+fast3_irq_handler:
+	j __no_irq_handler
+
+fast4_irq_handler:
+	j __no_irq_handler
+
+fast5_irq_handler:
+	j __no_irq_handler
+
+fast6_irq_handler:
+	j __no_irq_handler
+
+fast7_irq_handler:
+	j __no_irq_handler
+
+fast8_irq_handler:
+	j __no_irq_handler
+
+fast9_irq_handler:
+	j __no_irq_handler
+
+fast10_irq_handler:
+	j __no_irq_handler
+
+fast11_irq_handler:
+	j __no_irq_handler
+
+fast12_irq_handler:
+	j __no_irq_handler
+
+fast13_irq_handler:
+	j __no_irq_handler
+
+fast14_irq_handler:
+	j __no_irq_handler
+
+fast15_irq_handler:
 	j __no_irq_handler
 
 sw_irq_handler:

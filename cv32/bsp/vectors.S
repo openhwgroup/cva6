@@ -22,32 +22,33 @@ vector_table:
 	j sw_irq_handler
 	j __no_irq_handler
 	j __no_irq_handler
+	j software_irq_handler
+	j __no_irq_handler
+	j __no_irq_handler
+	j __no_irq_handler
+	j timer_irq_handler
+	j __no_irq_handler
+	j __no_irq_handler
+	j __no_irq_handler
+	j external_irq_handler
 	j __no_irq_handler
 	j __no_irq_handler
 	j __no_irq_handler
 	j __no_irq_handler
-	j __no_irq_handler
-	j __no_irq_handler
-	j __no_irq_handler
-	j __no_irq_handler
-	j __no_irq_handler
-	j __no_irq_handler
-	j __no_irq_handler
-	j __no_irq_handler
-	j __no_irq_handler
-	j __no_irq_handler
-	j __no_irq_handler
-	j __no_irq_handler
-	j __no_irq_handler
-	j __no_irq_handler
-	j __no_irq_handler
-	j __no_irq_handler
-	j __no_irq_handler
-	j __no_irq_handler
-	j __no_irq_handler
-	j __no_irq_handler
-	j __no_irq_handler
-	j __no_irq_handler
-	j __no_irq_handler
-	j __no_irq_handler
-	j verification_irq_handler
+	j fast0_irq_handler
+	j fast1_irq_handler
+	j fast2_irq_handler
+	j fast3_irq_handler
+	j fast4_irq_handler
+	j fast5_irq_handler
+	j fast6_irq_handler
+	j fast7_irq_handler
+	j fast8_irq_handler
+	j fast9_irq_handler
+	j fast10_irq_handler
+	j fast11_irq_handler
+	j fast12_irq_handler
+	j fast13_irq_handler
+	j fast14_irq_handler
+	j fast15_irq_handler
+
