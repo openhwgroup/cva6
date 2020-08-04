@@ -138,7 +138,7 @@ module uvmt_cv32_tb;
        end
        if (vp_status_if.exit_valid) begin
          evalue <= vp_status_if.exit_value;
-         uvm_config_db#(bit[31:0])::set(.cntxt(null), .inst_name("*"), .field_name("evalue"), .value(evalue));
+         uvm_config_db#(bit[31:0])::set(.cntxt(null), .inst_name("*"), .field_name("evalue"), .value(vp_status_if.exit_value));
        end
      end
    end
