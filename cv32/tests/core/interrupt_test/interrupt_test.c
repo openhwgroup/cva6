@@ -2,141 +2,18 @@
 #include <stdlib.h>
 #include <time.h>
 
-#include "isr.h"
-#include "matrix.h"
+#include "interrupt_test.h"
 
-#define ERR_CODE_TEST_2      2
-#define ERR_CODE_TEST_3      3
-#define ERR_CODE_TEST_5      5
-
-#define OUTPORT 0x10000000
-
-#define RND_STALL_REG_10       0x16000028 // irq_mode
-#define RND_STALL_REG_11       0x1600002C // irq_min_cycles
-#define RND_STALL_REG_12       0x16000030 // irq_max_cycles
-#define RND_STALL_REG_13       0x16000034 // irq_pc_trig
-#define RND_STALL_REG_14       0x16000038 // irq_lines
-#define RND_STALL_REG_15       0x1600003C // irq_linesx
-
-#define IRQ_MODE_STD     1
-#define IRQ_MODE_RND     2
-#define IRQ_MODE_PC_TRIG 3
-#define IRQ_MODE_SD      4
-
-#define MSTATUS_MIE_BIT 3
-
-#define IRQ_NUM 51
-#define STD_IRQ_MASK 0xFFFF0888 // this accounts for non implemented irqs
-
-#define SOFTWARE_IRQ_ID  3
-#define TIMER_IRQ_ID     7
-#define EXTERNAL_IRQ_ID  11
-#define FAST0_IRQ_ID     16
-#define FAST1_IRQ_ID     17
-#define FAST2_IRQ_ID     18
-#define FAST3_IRQ_ID     19
-#define FAST4_IRQ_ID     20
-#define FAST5_IRQ_ID     21
-#define FAST6_IRQ_ID     22
-#define FAST7_IRQ_ID     23
-#define FAST8_IRQ_ID     24
-#define FAST9_IRQ_ID     25
-#define FAST10_IRQ_ID    26
-#define FAST11_IRQ_ID    27
-#define FAST12_IRQ_ID    28
-#define FAST13_IRQ_ID    29
-#define FAST14_IRQ_ID    30
-#define FAST15_IRQ_ID    31
-#define FAST16_IRQ_ID    32
-#define FAST17_IRQ_ID    33
-#define FAST18_IRQ_ID    34
-#define FAST19_IRQ_ID    35
-#define FAST20_IRQ_ID    36
-#define FAST21_IRQ_ID    37
-#define FAST22_IRQ_ID    38
-#define FAST23_IRQ_ID    39
-#define FAST24_IRQ_ID    40
-#define FAST25_IRQ_ID    41
-#define FAST26_IRQ_ID    42
-#define FAST27_IRQ_ID    43
-#define FAST28_IRQ_ID    44
-#define FAST29_IRQ_ID    45
-#define FAST30_IRQ_ID    46
-#define FAST31_IRQ_ID    47
-#define FAST32_IRQ_ID    48
-#define FAST33_IRQ_ID    49
-#define FAST34_IRQ_ID    50
-#define FAST35_IRQ_ID    51
-#define FAST36_IRQ_ID    52
-#define FAST37_IRQ_ID    53
-#define FAST38_IRQ_ID    54
-#define FAST39_IRQ_ID    55
-#define FAST40_IRQ_ID    56
-#define FAST41_IRQ_ID    57
-#define FAST42_IRQ_ID    58
-#define FAST43_IRQ_ID    59
-#define FAST44_IRQ_ID    60
-#define FAST45_IRQ_ID    61
-#define FAST46_IRQ_ID    62
-#define FAST47_IRQ_ID    63
-
-#define RND_IRQ_NUM        50
-#define RND_IE_NUM         50
-#define RND_IRQ_MIN_CYCLES 100
-#define RND_IRQ_MAX_CYCLES 200
-
-volatile uint32_t irq_processed           = 1;
 volatile uint32_t irq_id                  = 0;
-volatile uint64_t irq_pending             = 0;
-volatile uint32_t irq_pending32_std       = 0;
-volatile uint32_t irq_pending32_1         = 0;
-volatile uint32_t irq_to_test32_std       = 0;
-volatile uint32_t irq_to_test32_1         = 0;
-volatile uint64_t prev_irq_pending        = 0;
-volatile uint32_t prev_irq_pending32_std  = 0;
-volatile uint32_t prev_irq_pending32_1    = 0;
-volatile uint32_t first_irq_pending32_std = 0;
-volatile uint32_t first_irq_pending32_1   = 0;
-volatile uint32_t ie_mask32_std           = 0;
-volatile uint32_t ie_mask32_1             = 0;
-volatile uint32_t mmstatus                = 0;
-volatile uint32_t bit_to_set              = 0;
-volatile uint32_t irq_mode                = 0;
+volatile uint32_t irq_id_q[IRQ_NUM];
+volatile uint32_t irq_id_q_ptr            = 0;
+volatile uint32_t mmcause                 = 0;
+volatile uint32_t active_test             = 0;
+volatile uint32_t nested_irq              = 0;
+volatile uint32_t nested_irq_valid        = 0;
+volatile uint32_t in_direct_handler       = 0;
 
-uint32_t IRQ_ID_PRIORITY [IRQ_NUM] =
-{
-    FAST47_IRQ_ID   ,
-    FAST46_IRQ_ID   ,
-    FAST45_IRQ_ID   ,
-    FAST44_IRQ_ID   ,
-    FAST43_IRQ_ID   ,
-    FAST42_IRQ_ID   ,
-    FAST41_IRQ_ID   ,
-    FAST40_IRQ_ID   ,
-    FAST39_IRQ_ID   ,
-    FAST38_IRQ_ID   ,
-    FAST37_IRQ_ID   ,
-    FAST36_IRQ_ID   ,
-    FAST35_IRQ_ID   ,
-    FAST34_IRQ_ID   ,
-    FAST33_IRQ_ID   ,
-    FAST32_IRQ_ID   ,
-    FAST31_IRQ_ID   ,
-    FAST30_IRQ_ID   ,
-    FAST29_IRQ_ID   ,
-    FAST28_IRQ_ID   ,
-    FAST27_IRQ_ID   ,
-    FAST26_IRQ_ID   ,
-    FAST25_IRQ_ID   ,
-    FAST24_IRQ_ID   ,
-    FAST23_IRQ_ID   ,
-    FAST22_IRQ_ID   ,
-    FAST21_IRQ_ID   ,
-    FAST20_IRQ_ID   ,
-    FAST19_IRQ_ID   ,
-    FAST18_IRQ_ID   ,
-    FAST17_IRQ_ID   ,
-    FAST16_IRQ_ID   ,
+uint32_t IRQ_ID_PRIORITY [IRQ_NUM] = {
     FAST15_IRQ_ID   ,
     FAST14_IRQ_ID   ,
     FAST13_IRQ_ID   ,
@@ -158,724 +35,304 @@ uint32_t IRQ_ID_PRIORITY [IRQ_NUM] =
     TIMER_IRQ_ID
 };
 
-
-// macro to print out a variable as binary
-#define PRINTF_BINARY_PATTERN_INT8 "%c%c%c%c%c%c%c%c"
-#define PRINTF_BYTE_TO_BINARY_INT8(i)    \
-    (((i) & 0x80ll) ? '1' : '0'), \
-    (((i) & 0x40ll) ? '1' : '0'), \
-    (((i) & 0x20ll) ? '1' : '0'), \
-    (((i) & 0x10ll) ? '1' : '0'), \
-    (((i) & 0x08ll) ? '1' : '0'), \
-    (((i) & 0x04ll) ? '1' : '0'), \
-    (((i) & 0x02ll) ? '1' : '0'), \
-    (((i) & 0x01ll) ? '1' : '0')
-
-#define PRINTF_BINARY_PATTERN_INT16 \
-    PRINTF_BINARY_PATTERN_INT8              PRINTF_BINARY_PATTERN_INT8
-#define PRINTF_BYTE_TO_BINARY_INT16(i) \
-    PRINTF_BYTE_TO_BINARY_INT8((i) >> 8),   PRINTF_BYTE_TO_BINARY_INT8(i)
-#define PRINTF_BINARY_PATTERN_INT32 \
-    PRINTF_BINARY_PATTERN_INT16             PRINTF_BINARY_PATTERN_INT16
-#define PRINTF_BYTE_TO_BINARY_INT32(i) \
-    PRINTF_BYTE_TO_BINARY_INT16((i) >> 16), PRINTF_BYTE_TO_BINARY_INT16(i)
-#define PRINTF_BINARY_PATTERN_INT64    \
-    PRINTF_BINARY_PATTERN_INT32             PRINTF_BINARY_PATTERN_INT32
-#define PRINTF_BYTE_TO_BINARY_INT64(i) \
-    PRINTF_BYTE_TO_BINARY_INT32((i) >> 32), PRINTF_BYTE_TO_BINARY_INT32(i)
-
-/*R/W to memory*/
-
-void writew(uint32_t val, volatile uint32_t *addr)
-{
-    asm volatile("sw %0, 0(%1)" : : "r"(val), "r"(addr));
+// FIXME: Create VP register for a timer on reliable time-base (i.e. cpu clock)
+// FIXME: Add to common infrastructure
+void delay(int count) {
+    for (volatile int d = 0; d < count; d++);
 }
 
-
-uint32_t irq_served = 0;
-
-#define FAST_IRQ_GENERIC(id)                                                        \
-do {                                                                                \
-    irq_id = id;                                                                    \
-    if (irq_mode == IRQ_MODE_RND)                                                   \
-    {                                                                               \
-        asm volatile("csrr %0, 0x344": "=r" (irq_pending32_std));                   \
-        asm volatile("csrr %0, 0x7D1": "=r" (irq_pending32_1));                     \
-    }                                                                               \
-    if (irq_id > 31)                                                                \
-    { irq_pending32_1 &= (~(1 << irq_id)); }                                        \
-    else                                                                            \
-    { irq_pending32_std &= (~(1 << irq_id)); }                                      \
-    writew(irq_pending32_std, RND_STALL_REG_14);                                    \
-    writew(irq_pending32_1, RND_STALL_REG_15);                                      \
-    if (irq_mode == IRQ_MODE_RND)                                                   \
-    {                                                                               \
-        irq_served++;                                                               \
-        irq_mode = IRQ_MODE_STD;                                                    \
-        writew(irq_mode, RND_STALL_REG_10);                                         \
-        irq_mode = IRQ_MODE_RND;                                                    \
-        writew(irq_mode, RND_STALL_REG_10);                                         \
-    }                                                                               \
-    else                                                                            \
-    {                                                                               \
-        asm volatile("csrr %0, mstatus": "=r" (mmstatus));                          \
-        mmstatus &= (~(1 << 7));                                                    \
-        asm volatile("csrw mstatus, %[mmstatus]" : : [mmstatus] "r" (mmstatus));    \
-    }                                                                               \
-} while(0)
-
-void software_irq_handler(void)
-{
-    FAST_IRQ_GENERIC(SOFTWARE_IRQ_ID);
+void mstatus_mie_enable() {
+    int mie_bit = 0x1 << MSTATUS_MIE_BIT;
+    asm volatile("csrrs x0, mstatus, %0" : : "r" (mie_bit));
 }
 
-void timer_irq_handler(void) //TODO: do this here
-{
-    FAST_IRQ_GENERIC(TIMER_IRQ_ID);
+void mstatus_mie_disable() {
+    int mie_bit = 0x1 << MSTATUS_MIE_BIT;
+    asm volatile("csrrc x0, mstatus, %0" : : "r" (mie_bit));
 }
 
-void external_irq_handler(void)
-{
-    FAST_IRQ_GENERIC(EXTERNAL_IRQ_ID);
+void mie_enable_all() {
+    uint32_t mie_mask = (uint32_t) -1;
+    asm volatile("csrrs x0, mie, %0" : : "r" (mie_mask));
 }
 
-void fast0_irq_handler(void)
-{
-    FAST_IRQ_GENERIC(FAST0_IRQ_ID);
+void mie_disable_all() {
+    uint32_t mie_mask = (uint32_t) -1;
+    asm volatile("csrrc x0, mie, %0" : : "r" (mie_mask));
 }
 
-void fast1_irq_handler(void)
-{
-    FAST_IRQ_GENERIC(FAST1_IRQ_ID);
+void mie_enable(uint32_t irq) {
+    // Enable the interrupt irq in MIE
+    uint32_t mie_bit = 0x1 << irq;
+    asm volatile("csrrs x0, mie, %0" : : "r" (mie_bit));
 }
 
-void fast2_irq_handler(void)
-{
-    FAST_IRQ_GENERIC(FAST2_IRQ_ID);
+void mie_disable(uint32_t irq) {
+    // Disable the interrupt irq in MIE
+    uint32_t mie_bit = 0x1 << irq;
+    asm volatile("csrrc x0, mie, %0" : : "r" (mie_bit));
 }
 
-void fast3_irq_handler(void)
-{
-    FAST_IRQ_GENERIC(FAST3_IRQ_ID);
+void mm_ram_assert_irq(uint32_t mask, uint32_t cycle_delay) {
+    *TIMER_REG_ADDR = mask;
+    *TIMER_VAL_ADDR = 1 + cycle_delay;
 }
 
-void fast4_irq_handler(void)
-{
-    FAST_IRQ_GENERIC(FAST4_IRQ_ID);
-}
-
-void fast5_irq_handler(void)
-{
-    FAST_IRQ_GENERIC(FAST5_IRQ_ID);
-}
-
-void fast6_irq_handler(void)
-{
-    FAST_IRQ_GENERIC(FAST6_IRQ_ID);
-}
-
-void fast7_irq_handler(void)
-{
-    FAST_IRQ_GENERIC(FAST7_IRQ_ID);
-}
-
-void fast8_irq_handler(void)
-{
-    FAST_IRQ_GENERIC(FAST8_IRQ_ID);
-}
-
-void fast9_irq_handler(void)
-{
-    FAST_IRQ_GENERIC(FAST9_IRQ_ID);
-}
-
-void fast10_irq_handler(void)
-{
-    FAST_IRQ_GENERIC(FAST10_IRQ_ID);
-}
-
-void fast11_irq_handler(void)
-{
-    FAST_IRQ_GENERIC(FAST11_IRQ_ID);
-}
-
-void fast12_irq_handler(void)
-{
-    FAST_IRQ_GENERIC(FAST12_IRQ_ID);
-}
-
-void fast13_irq_handler(void)
-{
-    FAST_IRQ_GENERIC(FAST13_IRQ_ID);
-}
-
-void fast14_irq_handler(void)
-{
-    FAST_IRQ_GENERIC(FAST14_IRQ_ID);
-}
-
-void fast15_irq_handler(void)
-{
-    FAST_IRQ_GENERIC(FAST15_IRQ_ID);
-}
-
-void fast16_irq_handler(void)
-{
-    FAST_IRQ_GENERIC(FAST16_IRQ_ID);
-}
-
-void fast17_irq_handler(void)
-{
-    FAST_IRQ_GENERIC(FAST17_IRQ_ID);
-}
-
-void fast18_irq_handler(void)
-{
-    FAST_IRQ_GENERIC(FAST18_IRQ_ID);
-}
-
-void fast19_irq_handler(void)
-{
-    FAST_IRQ_GENERIC(FAST19_IRQ_ID);
-}
-
-void fast20_irq_handler(void)
-{
-    FAST_IRQ_GENERIC(FAST20_IRQ_ID);
-}
-
-void fast21_irq_handler(void)
-{
-    FAST_IRQ_GENERIC(FAST21_IRQ_ID);
-}
-
-void fast22_irq_handler(void)
-{
-    FAST_IRQ_GENERIC(FAST22_IRQ_ID);
-}
-
-void fast23_irq_handler(void)
-{
-    FAST_IRQ_GENERIC(FAST23_IRQ_ID);
-}
-
-void fast24_irq_handler(void)
-{
-    FAST_IRQ_GENERIC(FAST24_IRQ_ID);
-}
-
-void fast25_irq_handler(void)
-{
-    FAST_IRQ_GENERIC(FAST25_IRQ_ID);
-}
-
-void fast26_irq_handler(void)
-{
-    FAST_IRQ_GENERIC(FAST26_IRQ_ID);
-}
-
-void fast27_irq_handler(void)
-{
-    FAST_IRQ_GENERIC(FAST27_IRQ_ID);
-}
-
-void fast28_irq_handler(void)
-{
-    FAST_IRQ_GENERIC(FAST28_IRQ_ID);
-}
-
-void fast29_irq_handler(void)
-{
-    FAST_IRQ_GENERIC(FAST29_IRQ_ID);
-}
-
-void fast30_irq_handler(void)
-{
-    FAST_IRQ_GENERIC(FAST30_IRQ_ID);
-}
-
-void fast31_irq_handler(void)
-{
-    FAST_IRQ_GENERIC(FAST31_IRQ_ID);
-}
-
-void fast32_irq_handler(void)
-{
-    FAST_IRQ_GENERIC(FAST32_IRQ_ID);
-}
-
-void fast33_irq_handler(void)
-{
-    FAST_IRQ_GENERIC(FAST33_IRQ_ID);
-}
-
-void fast34_irq_handler(void)
-{
-    FAST_IRQ_GENERIC(FAST34_IRQ_ID);
-}
-
-void fast35_irq_handler(void)
-{
-    FAST_IRQ_GENERIC(FAST35_IRQ_ID);
-}
-
-void fast36_irq_handler(void)
-{
-    FAST_IRQ_GENERIC(FAST36_IRQ_ID);
-}
-
-void fast37_irq_handler(void)
-{
-    FAST_IRQ_GENERIC(FAST37_IRQ_ID);
-}
-
-void fast38_irq_handler(void)
-{
-    FAST_IRQ_GENERIC(FAST38_IRQ_ID);
-}
-
-void fast39_irq_handler(void)
-{
-    FAST_IRQ_GENERIC(FAST39_IRQ_ID);
-}
-
-void fast40_irq_handler(void)
-{
-    FAST_IRQ_GENERIC(FAST40_IRQ_ID);
-}
-
-void fast41_irq_handler(void)
-{
-    FAST_IRQ_GENERIC(FAST41_IRQ_ID);
-}
-
-void fast42_irq_handler(void)
-{
-    FAST_IRQ_GENERIC(FAST42_IRQ_ID);
-}
-
-void fast43_irq_handler(void)
-{
-    FAST_IRQ_GENERIC(FAST43_IRQ_ID);
-}
-
-void fast44_irq_handler(void)
-{
-    FAST_IRQ_GENERIC(FAST44_IRQ_ID);
-}
-
-void fast45_irq_handler(void)
-{
-    FAST_IRQ_GENERIC(FAST45_IRQ_ID);
-}
-
-void fast46_irq_handler(void)
-{
-    FAST_IRQ_GENERIC(FAST46_IRQ_ID);
-}
-
-void fast47_irq_handler(void)
-{
-    FAST_IRQ_GENERIC(FAST47_IRQ_ID);
-}
-
-uint32_t random_num(uint32_t upper_bound, uint32_t lower_bound)
-{
-
-    uint32_t random_num = *((int *)0x15001000);
+uint32_t random_num(uint32_t upper_bound, uint32_t lower_bound) {
+    uint32_t random_num = *((volatile int *)0x15001000);
     uint32_t num = (random_num  % (upper_bound - lower_bound + 1)) + lower_bound;
     return num;
 }
-void mstatus_enable(uint32_t bit_enabled)
-{
-    asm volatile("csrr %0, mstatus": "=r" (mmstatus));
-    mmstatus |= (1 << bit_enabled);
-    asm volatile("csrw mstatus, %[mmstatus]" : : [mmstatus] "r" (mmstatus));
+
+uint32_t random_num32() {
+    uint32_t num = *((volatile int *)0x15001000);
+    return num;
 }
 
-void mstatus_disable(uint32_t bit_disabled)
-{
-    asm volatile("csrr %0, mstatus": "=r" (mmstatus));
-    mmstatus &= (~(1 << bit_disabled));
-    asm volatile("csrw mstatus, %[mmstatus]" : : [mmstatus] "r" (mmstatus));
+extern void __no_irq_handler();
+
+void nested_irq_handler(uint32_t id) {
+    // First stack mie, mepc and mstatus
+    // Must be done in critical section with MSTATUS.MIE == 0
+    volatile uint32_t mie, mepc, mstatus;    
+    asm volatile("csrr %0, mie" : "=r" (mie));
+    asm volatile("csrr %0, mepc" :"=r" (mepc));
+    asm volatile("csrr %0, mstatus" : "=r" (mstatus));
+
+    // Re enable interrupts and create window to enable nested irqs
+    mstatus_mie_enable();
+    for (volatile int i = 0; i < 20; i++);
+
+    // Disable MSTATUS.MIE and restore from critical section
+    mstatus_mie_disable();
+    asm volatile("csrw mie, %0" : : "r" (mie));
+    asm volatile("csrw mepc, %0" : : "r" (mepc));
+    asm volatile("csrw mstatus, %0" : : "r" (mstatus));
 }
 
-// integer matrix multiplication
-void mat_mult(uint32_t mat1[MAT_DIM][MAT_DIM], uint32_t mat2[MAT_DIM][MAT_DIM], uint32_t res[MAT_DIM][MAT_DIM])
-{
-    uint32_t i, j, k;
-    for (i = 0; i < MAT_DIM; i++)
-    {
-        for (j = 0; j < MAT_DIM; j++)
-        {
-            res[i][j] = 0;
-            for (k = 0; k < MAT_DIM; k++)
-                res[i][j] += mat1[i][k] * mat2[k][j];
+void generic_irq_handler(uint32_t id) {
+    asm volatile("csrr %0, mcause": "=r" (mmcause));
+    irq_id = id;
+
+    if (active_test == 2 || active_test == 3 || active_test == 4) {
+        irq_id_q[irq_id_q_ptr++] = id;
+    } 
+    if (active_test == 3) {
+        if (nested_irq_valid) {
+            nested_irq_valid = 0;
+            mm_ram_assert_irq(0x1 << nested_irq, random_num(10,0));
         }
-    }
+        nested_irq_handler(id);
+    }    
 }
 
-int main(int argc, char *argv[])
-{
-    printf("TEST 1 - TRIGGER ALL IRQS IN SEQUENCE: ");
-
-    // Enable all mie (need to store)
-    ie_mask32_std = 0xFFFFFFFF;
-    ie_mask32_1   = 0xFFFFFFFF;
-
-    asm volatile("csrw 0x304, %[ie_mask32_std]"
-                  : : [ie_mask32_std] "r" (ie_mask32_std));
-    asm volatile("csrw 0x7D0, %[ie_mask32_1]"
-                  : : [ie_mask32_1] "r" (ie_mask32_1));
-
-    // software defined irq gen mode
-    writew(IRQ_MODE_SD, RND_STALL_REG_10);
-
-    // disable mstatues.mie
-    mstatus_disable(MSTATUS_MIE_BIT);
-
-    for (int i = 32; i < IRQ_NUM; i++)
-    {
-        // add new pending irq
-        if (IRQ_ID_PRIORITY[i] > 31)
-        {
-            irq_pending32_1 |= (1 << IRQ_ID_PRIORITY[i]);
-        }
-        else
-        {
-            irq_pending32_std |= (1 << IRQ_ID_PRIORITY[i]);
-        }
-
-        prev_irq_pending32_std = irq_pending32_std;
-        prev_irq_pending32_1 = irq_pending32_1;
-        writew(irq_pending32_std, RND_STALL_REG_14);
-        writew(irq_pending32_1, RND_STALL_REG_15);
-
-        // enable mstatus.mie
-        mstatus_enable(MSTATUS_MIE_BIT);
-
-        // wait for the irq to be served
-        while(prev_irq_pending32_std == irq_pending32_std && prev_irq_pending32_1 == irq_pending32_1);
-
-        // irq_id sampling and testing
-        if(IRQ_ID_PRIORITY[i] != irq_id)
-        {
-            printf("\nERR: IRQ served in wrong order %d %d\n", IRQ_ID_PRIORITY[i], irq_id);
-            return -1;
-        }
-    };
-
-    printf("OK\n");
-
-    // TODO: needs to make sure preivous test finished
-
-    //-------------------------------------------------------------------------------------------------------------------------------------------
-    //-------------------------------------------------------------------------------------------------------------------------------------------
-
-    //////////////////////
-    // All IRQS AT ONCE //
-    //////////////////////
-
-    // Test 2 is a test where the core is stressed:
-    // words are generated:
-    // - all irqs are triggered at the same time
-    // - all irqs are enabled
-    // We expect the core to serve them one after the oteher
-    // in the correct priority order
-
-    printf("TEST 2 - TRIGGER ALL IRQS AT ONCE: ");
-
-    // Enable all mie (need to store)
-    ie_mask32_std = 0xFFFFFFFF;
-    ie_mask32_1   = 0xFFFFFFFF;
-
-    asm volatile("csrw 0x304, %[ie_mask32_std]"
-                  : : [ie_mask32_std] "r" (ie_mask32_std));
-    asm volatile("csrw 0x7D0, %[ie_mask32_1]"
-                  : : [ie_mask32_1] "r" (ie_mask32_1));
-
-    // Multiple interrupts at a time
-    irq_pending32_1   = 0xFFFFFFFF;
-    irq_pending32_std = 0xFFFFFFFF;
-
-    // disable mstatues.mie
-    mstatus_disable(MSTATUS_MIE_BIT);
-
-    // for this test we only write once
-    writew(irq_pending32_1, RND_STALL_REG_15);
-    writew(irq_pending32_std, RND_STALL_REG_14);
-
-    for (int i = 0; i < IRQ_NUM; i++)
-    {
-        // sample irq_pending
-        prev_irq_pending32_std = irq_pending32_std;
-        prev_irq_pending32_1   = irq_pending32_1;
-
-        // enable mstatus.mie
-        mstatus_enable(MSTATUS_MIE_BIT);
-
-        // wait for nex irq to be served
-        while(prev_irq_pending32_std == irq_pending32_std && prev_irq_pending32_1 == irq_pending32_1);
-
-        // irq_id sampling and testing
-        if(IRQ_ID_PRIORITY[i] != irq_id)
-        {
-            printf("\nERR: IRQ served in wrong order %d %d\n", IRQ_ID_PRIORITY[i], irq_id);
-            return ERR_CODE_TEST_2;
-        }
-    }
-    printf("OK\n");
-
-    //-------------------------------------------------------------------------------------------------------------------------------------------
-    //-------------------------------------------------------------------------------------------------------------------------------------------
-
-    printf("TEST 3 - RANDOMIZE: "); //TODO: improve messages
-
-    ///////////////////////////////
-    // Random test with masking  //
-    ///////////////////////////////
-
-    // Test 3 is a random test where two 32 bit-wide
-    // words are generated:
-    // - a mask (rnd_ie_mask)
-    // - and a value for the irq_pending
-    //
-    //
-
-    irq_processed     = 1;
-    irq_id            = 0;
-    ie_mask32_1   = 0;
-    irq_pending32_1   = 0;
-    ie_mask32_std = 0;
-    irq_pending32_std = 0;
-
-    // build ie word randomly
-    for (int i = 0; i < RND_IE_NUM; ++i)
-    {
-        // todo here we can set to 1 irqs already set
-        bit_to_set = random_num(63, 0);
-        if (bit_to_set > 31)
-        {
-            ie_mask32_1   |= (1 << bit_to_set);
-        }
-        else
-        {
-            ie_mask32_std |= (1 << bit_to_set);
-        }
-    }
-
-    // mask to consider only implemented irqs
-    ie_mask32_std = ie_mask32_std & STD_IRQ_MASK;
-
-    // write the mask to mie
-    asm volatile("csrw 0x304, %[ie_mask32_std]" : : [ie_mask32_std] "r" (ie_mask32_std));
-    asm volatile("csrw 0x7D0, %[ie_mask32_1]" : : [ie_mask32_1] "r" (ie_mask32_1));
-
-
-    // build irq word randomly
-    for (int i = 0; i < RND_IRQ_NUM; ++i)
-    {
-        // todo here we can set to 1 also non-implemented irqs + irqs already set
-        bit_to_set = random_num(63, 0);
-        if (bit_to_set > 31)
-        {
-            irq_pending32_1   |= (1 << bit_to_set);
-        }
-        else
-        {
-            irq_pending32_std |= (1 << bit_to_set);
-        }
-    }
-
-    // mask to consider only implemented irqs
-    irq_pending32_std = irq_pending32_std & STD_IRQ_MASK;
-
-    first_irq_pending32_std = irq_pending32_std;
-    first_irq_pending32_1   = irq_pending32_1;
-
-    uint32_t irq_to_serve_num = 0;
-    uint32_t irq_served_num = 0;
-
-    // build words to be tested
-    for (int i = 0; i < 32; ++i)
-    {
-        if ((1 << i) & first_irq_pending32_1 & ie_mask32_1)
-        {
-            irq_to_test32_1 |= (1 << i);
-        }
-
-        if ((1 << i) & first_irq_pending32_std & ie_mask32_std)
-        {
-            irq_to_test32_std |= (1 << i);
-        }
-
-    }
-
-    // disable mstatues.mie
-    mstatus_disable(MSTATUS_MIE_BIT);
-
-    // for this test we only write once
-    writew(irq_pending32_1, RND_STALL_REG_15);
-    writew(irq_pending32_std, RND_STALL_REG_14);
-
-    for (int i = 0; i < IRQ_NUM; ++i)
-    {
-        if (IRQ_ID_PRIORITY[i] > 31 && (1 << IRQ_ID_PRIORITY[i] & irq_to_test32_1))
-        {
-            // sample irq_pending
-            prev_irq_pending32_1 = irq_pending32_1;
-
-            // enable mstatus.mie
-            mstatus_enable(MSTATUS_MIE_BIT);
-
-            // wait for next irq to be served
-            while(prev_irq_pending32_1 == irq_pending32_1);
-            //{ printf("waiting for irq %u \n", IRQ_ID_PRIORITY[i]);}
-
-            // irq_id sampling and testing
-            if(IRQ_ID_PRIORITY[i] != irq_id)
-            {
-                printf("\nERR: IRQ served in wrong order %d %d\n", IRQ_ID_PRIORITY[i], irq_id);
-                return ERR_CODE_TEST_3;
-            }
-        }
-        else if (IRQ_ID_PRIORITY[i] <= 31 && (1 << IRQ_ID_PRIORITY[i] & irq_to_test32_std))
-        {
-            // sample irq_pending
-            prev_irq_pending32_std = irq_pending32_std;
-
-            // enable mstatus.mie
-            mstatus_enable(MSTATUS_MIE_BIT);
-
-            // wait for next irq to be served
-            while(prev_irq_pending32_std == irq_pending32_std);
-            //{ printf("waiting for irq %u \n", IRQ_ID_PRIORITY[i]);}
-
-            // irq_id sampling and testing
-            if(IRQ_ID_PRIORITY[i] != irq_id)
-            {
-                printf("\nERR: IRQ served in wrong order %d %d\n", IRQ_ID_PRIORITY[i], irq_id);
-                return ERR_CODE_TEST_3;
-            }
-        }
-    }
-
-    if(irq_pending32_std != ((~ie_mask32_std) & first_irq_pending32_std))
-    {
-        printf("\nERR: wrong number of irq served\n"
-            "first_irq_pending32_std: "PRINTF_BINARY_PATTERN_INT32"\n"
-            "ie_mask32_std:           "PRINTF_BINARY_PATTERN_INT32"\n"
-            "irq_to_test32_std:       "PRINTF_BINARY_PATTERN_INT32"\n"
-            "irq_pending32_std:       "PRINTF_BINARY_PATTERN_INT32"\n",
-            PRINTF_BYTE_TO_BINARY_INT32(first_irq_pending32_std),
-            PRINTF_BYTE_TO_BINARY_INT32(ie_mask32_std),
-            PRINTF_BYTE_TO_BINARY_INT32(irq_to_test32_std),
-            PRINTF_BYTE_TO_BINARY_INT32(irq_pending32_std));
-        return ERR_CODE_TEST_3;
-    }
-
-    if(irq_pending32_1   != ((~ie_mask32_1) & first_irq_pending32_1))
-    {
-        printf("\nERR: wrong number of irq served\n"
-            "first_irq_pending32_1: "PRINTF_BINARY_PATTERN_INT32"\n"
-            "ie_mask32_1:           "PRINTF_BINARY_PATTERN_INT32"\n"
-            "irq_to_test32_1:       "PRINTF_BINARY_PATTERN_INT32"\n"
-            "irq_pending32_1:       "PRINTF_BINARY_PATTERN_INT32"\n",
-            PRINTF_BYTE_TO_BINARY_INT32(first_irq_pending32_1),
-            PRINTF_BYTE_TO_BINARY_INT32(ie_mask32_1),
-            PRINTF_BYTE_TO_BINARY_INT32(irq_to_test32_1),
-            PRINTF_BYTE_TO_BINARY_INT32(irq_pending32_1));
-        return ERR_CODE_TEST_3;
-    }
-    printf("OK\n");
-
-    // ///////////////////////////////
-    // // TEST 4: PC Trig Test      //
-    // ///////////////////////////////
-
-    // // Test 4: a software interrupt (id = 3) is raised
-    // // as the program counter assumes a desired value
-
-
-    // printf("\nTEST 4: PC TRIG\n");
-
-    // // Enable all mie (need to store)
-    // regVal = 0xFFFFFFFF;
-    // asm volatile("csrw 0x304, %[regVal]"
-    //               : : [regVal] "r" (regVal));
-
-    // // set desired PC value
-    // writew(0x0000043e, RND_STALL_REG_13);
-    // // switch to PC_TRIG mode
-    // writew(IRQ_MODE_PC_TRIG, RND_STALL_REG_10);
-
-    // mstatus_enable(MSTATUS_MIE_BIT);
-
-    // mat_mult(mat1, mat2, res);
-
-    // printf("\nResult matrix is\n");
-    // for (int i = 0; i < MAT_DIM; i++)
-    // {
-    //     // mstatus_enable(MSTATUS_MIE_BIT);
-    //     for (int j = 0; j < MAT_DIM; j++)
-    //     {
-    //         print_dec(res[i][j]);
-    //         mstatus_enable(MSTATUS_MIE_BIT);
-    //         print_chr(' ');
-    //     }
-    //     printf("\n");
-    // }
-
-    /////////////////////////////////
-    // TEST 5: Random IRQs bombing //
-    /////////////////////////////////
-
-    // Test 5: random irqs arrive randomly
-    // while the core is executing some task (e.g. matrix mult)
-
-    printf("\nTEST 5 - RANDOM IRQS BOMBING: \n");
-
-    mstatus_disable(MSTATUS_MIE_BIT);
-
-    // Enable all mie and miex bits
-    ie_mask32_std = 0xFFFFFFFF;
-    ie_mask32_1   = 0xFFFFFFFF;
-
-    asm volatile("csrw 0x304, %[ie_mask32_std]" : : [ie_mask32_std] "r" (ie_mask32_std));
-    asm volatile("csrw 0x7D0, %[ie_mask32_1]"   : : [ie_mask32_1]   "r" (ie_mask32_1));
-
-    writew(RND_IRQ_MIN_CYCLES, RND_STALL_REG_11);
-    writew(RND_IRQ_MAX_CYCLES, RND_STALL_REG_12);
-
-    // random irq gen mode:
-    // the random interrupt generator will
-    // keep on generating random interrupt vectors
-    irq_mode = IRQ_MODE_RND;
-    writew(irq_mode, RND_STALL_REG_10);
-
-    irq_served = 0;
-
-    mstatus_enable(MSTATUS_MIE_BIT);
-
-    mat_mult(mat1, mat2, res);
-
-    // disable irqs and check the result
-    mstatus_disable(MSTATUS_MIE_BIT);
-
-    printf("%d IRQ SERVED\n", irq_served);
-
-     irq_served = 0;
-
-
-    for (int i = 0; i < MAT_DIM; i++)
-    {
-        // mstatus_enable(MSTATUS_MIE_BIT);
-        for (int j = 0; j < MAT_DIM; j++)
-        {
-            if(res[i][j] != res_expected[i][j])
-            {
-                printf("\nERR: wrong\nExpected %d Got %d at address %x\n", res_expected[i][j], res[i][j], &res[i][j]);
-                return ERR_CODE_TEST_5;
+void m_software_irq_handler(void) { generic_irq_handler(SOFTWARE_IRQ_ID); }
+void m_timer_irq_handler(void) { generic_irq_handler(TIMER_IRQ_ID); }
+void m_external_irq_handler(void) { generic_irq_handler(EXTERNAL_IRQ_ID); }
+void m_fast0_irq_handler(void) { generic_irq_handler(FAST0_IRQ_ID); }
+void m_fast1_irq_handler(void) { generic_irq_handler(FAST1_IRQ_ID); }
+void m_fast2_irq_handler(void) { generic_irq_handler(FAST2_IRQ_ID); }
+void m_fast3_irq_handler(void) { generic_irq_handler(FAST3_IRQ_ID); }
+void m_fast4_irq_handler(void) { generic_irq_handler(FAST4_IRQ_ID); }
+void m_fast5_irq_handler(void) { generic_irq_handler(FAST5_IRQ_ID); }
+void m_fast6_irq_handler(void) { generic_irq_handler(FAST6_IRQ_ID); }
+void m_fast7_irq_handler(void) { generic_irq_handler(FAST7_IRQ_ID); }
+void m_fast8_irq_handler(void) { generic_irq_handler(FAST8_IRQ_ID); }
+void m_fast9_irq_handler(void) { generic_irq_handler(FAST9_IRQ_ID); }
+void m_fast10_irq_handler(void) { generic_irq_handler(FAST10_IRQ_ID); }
+void m_fast11_irq_handler(void) { generic_irq_handler(FAST11_IRQ_ID); }
+void m_fast12_irq_handler(void) { generic_irq_handler(FAST12_IRQ_ID); }
+void m_fast13_irq_handler(void) { generic_irq_handler(FAST13_IRQ_ID); }
+void m_fast14_irq_handler(void) { generic_irq_handler(FAST14_IRQ_ID); }
+void m_fast15_irq_handler(void) { generic_irq_handler(FAST15_IRQ_ID); }
+
+// A Special version of the SW Handler (vector 0) used in the direct mode
+__attribute__((interrupt ("machine"))) void u_sw_direct_irq_handler(void)  {
+    in_direct_handler = 1;
+    asm volatile("csrr %0, mcause" : "=r" (mmcause));
+}
+
+    asm (
+        ".global alt_vector_table\n"
+        ".option norvc\n"
+        ".align 8\n"
+        "alt_vector_table:\n"
+	    "j u_sw_irq_handler\n"
+	    "j __no_irq_handler\n"
+	    "j __no_irq_handler\n"
+	    "j m_software_irq_handler\n"
+	    "j __no_irq_handler\n"        
+        "j __no_irq_handler\n"
+	    "j __no_irq_handler\n"
+	    "j m_timer_irq_handler\n"
+	    "j __no_irq_handler\n"
+	    "j __no_irq_handler\n"
+	    "j __no_irq_handler\n"
+	    "j m_external_irq_handler\n"
+	    "j __no_irq_handler\n"
+	    "j __no_irq_handler\n"
+	    "j __no_irq_handler\n"
+	    "j __no_irq_handler\n"
+	    "j m_fast0_irq_handler\n"
+	    "j m_fast1_irq_handler\n"
+	    "j m_fast2_irq_handler\n"
+	    "j m_fast3_irq_handler\n"
+	    "j m_fast4_irq_handler\n"
+	    "j m_fast5_irq_handler\n"
+	    "j m_fast6_irq_handler\n"
+	    "j m_fast7_irq_handler\n"
+	    "j m_fast8_irq_handler\n"
+	    "j m_fast9_irq_handler\n"
+	    "j m_fast10_irq_handler\n"
+	    "j m_fast11_irq_handler\n"
+	    "j m_fast12_irq_handler\n"
+	    "j m_fast13_irq_handler\n"
+	    "j m_fast14_irq_handler\n"
+	    "j m_fast15_irq_handler\n"
+    );
+
+    asm (
+        ".global alt_direct_vector_table\n"
+        ".option norvc\n"
+        ".align 8\n"
+        "alt_direct_vector_table:\n"
+	    "j u_sw_direct_irq_handler\n"	
+    );
+
+int main(int argc, char *argv[]) {
+    int retval;
+
+    // Test 1
+    retval = test1();
+    if (retval != EXIT_SUCCESS)
+        return retval;
+
+    // Test 2
+    retval = test2();
+    if (retval != EXIT_SUCCESS)
+        return retval;
+
+    // Test 3
+    retval = test3();
+    if (retval != EXIT_SUCCESS)
+        return retval;
+
+    // Test 4
+    retval = test4();
+    if (retval != EXIT_SUCCESS)
+        return retval;
+
+    // Test 5
+    retval = test5();
+    if (retval != EXIT_SUCCESS)
+        return retval;
+
+    // Test 6
+    retval = test6();
+    if (retval != EXIT_SUCCESS)
+        return retval;
+
+    // Repeat test1 (restore vector mode)
+    retval = test7();
+    if (retval != EXIT_SUCCESS)
+        return retval;
+
+    return EXIT_SUCCESS;
+}
+
+// Test 1 will issue individual interrupts one at a time and ensure that each ISR is entered
+int test1() {
+    printf("TEST 1 - TRIGGER ALL IRQS IN SEQUENCE:\n");
+
+    active_test = 1;
+
+    if (test1_impl(0) != EXIT_SUCCESS)
+        return ERR_CODE_TEST_1;
+
+    return EXIT_SUCCESS;
+}
+
+// To share implementation of basic interrupt test with vector relocation tests,
+// break out the test 1 implementation here
+int test1_impl(int direct_mode) {
+    for (uint32_t i = 0; i < 32; i++) {
+#ifdef DEBUG_MSG
+        printf("Test1 -> Testing interrupt %lu\n", i);
+#endif
+        for (uint32_t gmie = 0; gmie <= 1; gmie++) {
+            for (uint32_t mie = 0; mie <= 1; mie++) {
+                uint32_t mip;
+
+                // Set global MIE
+                if (gmie) mstatus_mie_enable();
+                else mstatus_mie_disable();
+
+                // Set individual mie
+                if (mie) mie_enable(i);
+                else mie_disable(i);
+
+                in_direct_handler = 0;
+                mmcause = 0;
+                mm_ram_assert_irq(0x1 << i, 1);    
+
+                if (((0x1 << i) & IRQ_MASK) && mie && gmie) {
+                    // Interrupt is valid and enabled 
+                    // wait for the irq to be served
+                    while (!mmcause);
+                
+                    if ((mmcause & (0x1 << 31)) == 0) {
+                        printf("MCAUSE[31] was not set: mmcause = 0x%08lx\n", (uint32_t) mmcause);
+
+                        return ERR_CODE_TEST_1;
+                    }
+                    if ((mmcause & MCAUSE_IRQ_MASK) != i) {
+                        printf("MCAUSE reported wrong irq, exp = %lu, act = 0x%08lx", i, mmcause);
+
+                        return ERR_CODE_TEST_1;                    
+                    }                    
+                } else {
+                    // Unimplemented interrupts, or is a masked irq, delay a bit, waiting for any mmcause
+                    for (int j = 0; j < 20; j++) {
+                        if (mmcause != 0) {
+                            printf("MMCAUSE = 0x%08lx when unimplmented interrupt %lu first", mmcause, i);
+                            return ERR_CODE_TEST_1;
+                        }
+                    }                    
+                }
+                
+                // Check MIP
+                // For unimplemented irqs, this should always be 0
+                // For masked irqs, this should always be 0
+                // If the IRQ occurred then acking will cause it to clear by here, so do not check
+                __asm__ volatile ("csrr %0,mip" : "=r" (mip));
+                if (((0x1 << i) & IRQ_MASK) && (!mie || !gmie)) {
+                    // Implemented, masked IRQ
+                    if (!(mip & (0x1 << i))) {
+                        printf("MIP for IRQ[%lu] not set\n", i);
+                        return ERR_CODE_TEST_1;
+                    }
+                } else {
+                    // Unimplemented IRQ
+                    if (mip & (0x1 << i)) {
+                        printf("MIP for unimplemented IRQ[%lu] set\n", i);
+                        return ERR_CODE_TEST_1;
+                    }                    
+                }
+
+                // Check flag at direct mode handler
+                if (((0x1 << i) & IRQ_MASK) && mie && gmie) {
+                    if (direct_mode && !in_direct_handler) {
+                        printf("In direct mode, the direct sw handler was not entered, irq: %lu\n", i);
+                        return ERR_CODE_TEST_1;
+                    }
+                    if (!direct_mode && in_direct_handler) {
+                        printf("In vector mode, the direct sw handler was entered, irq: %lu\n", i);
+                        return ERR_CODE_TEST_1;
+                    }
+                }
+
+                // Clear vp irq
+                mm_ram_assert_irq(0, 0);   
             }
         }
     }
@@ -883,7 +340,207 @@ int main(int argc, char *argv[])
     return EXIT_SUCCESS;
 }
 
+    //-------------------------------------------------------------------------------------------------------------------------------------------
+    //-------------------------------------------------------------------------------------------------------------------------------------------
 
+// Test 2 will issue all interrupts at once and check that all interrupt are serviced in priority order
+int test2() {
+    printf("TEST 2 - TRIGGER ALL IRQS AT ONCE:\n");
+    active_test = 2;
+    
+    // Clear VP irq
+    mm_ram_assert_irq(0, 0); 
+    
+    // Enable all interrupts (MIE and MSTATUS.MIE)
+    uint32_t mie = (uint32_t) -1;
+    asm volatile("csrw mie, %0" : : "r" (mie));            
+    mstatus_mie_enable();
+    irq_id_q_ptr = 0;
 
+    // Fire all IRQs and give time for them to be handled
+    mm_ram_assert_irq((uint32_t) -1, 0);
 
+    delay(100);
 
+    for (int i = 0; i < IRQ_NUM; i++) {
+        // The irq_id_q should now contain interrupt IDs in the same order as IRQ_ID_PRIORITY
+        if (IRQ_ID_PRIORITY[i] != irq_id_q[i]) {
+            printf("priority mismatch, index %d, exp %lu, act %lu\n",
+                    i, IRQ_ID_PRIORITY[i], irq_id_q[i]);
+            return ERR_CODE_TEST_2;
+        }
+    }
+
+    return EXIT_SUCCESS;
+}
+
+    //-------------------------------------------------------------------------------------------------------------------------------------------
+    //-------------------------------------------------------------------------------------------------------------------------------------------
+
+// Test 3 will create nested interrupts
+int test3() {
+    printf("TEST 3 - NESTED INTERRUPTS:\n"); 
+    
+    // Test 3 is a nested interrupt test
+    active_test = 3;
+
+    // Enable all interrupts
+    mm_ram_assert_irq(0, 0);
+    mie_enable_all();
+    mstatus_mie_enable();
+
+    // Set 2 interrupts
+    for (uint32_t loop = 0; loop < 100; loop++) {
+        uint32_t irq[2];
+
+        // Pick 2 random interrupts
+        irq[0] = IRQ_ID_PRIORITY[random_num(IRQ_NUM-1, 0)];
+        irq[1] = IRQ_ID_PRIORITY[random_num(IRQ_NUM-1, 0)];
+
+        irq_id_q_ptr = 0;
+        nested_irq = irq[1];
+        nested_irq_valid = 1;    
+
+#ifdef DEBUG_MSG
+        printf("TEST3: Test nested irqs %lu and %lu\n", irq[0], irq[1]);
+#endif
+
+        mm_ram_assert_irq(0x1 << irq[0], 0);
+
+        delay(50);
+
+        if (irq_id_q[0] != irq[0]) {
+            printf("TEST3, first interrupt exp %lu act %lu\n", irq[0], irq_id_q[0]);
+            return ERR_CODE_TEST_3;
+        }
+        if (irq_id_q[1] != irq[1]) {
+            printf("TEST3, second interrupt exp %lu act %lu\n", irq[1], irq_id_q[1]);
+            return ERR_CODE_TEST_3;
+        }
+    }
+
+    return EXIT_SUCCESS;
+}
+
+    //-------------------------------------------------------------------------------------------------------------------------------------------
+    //-------------------------------------------------------------------------------------------------------------------------------------------
+
+// Test 4 will test WFI mode
+// Ensures that only MIE-enabled interrupts wake WFI
+// Tests that WFI works regardless of MSTATUS.MIE
+// Tests that IRQ handler is not entered after WFI unless MSTATUS.MIE is set
+int test4() {
+    printf("TEST 4 - WFI\n");
+    
+    // Test 4 is a WFI test
+    active_test = 4;
+
+    // Iterate through multiple loops
+    for (int irq = 0; irq < 32; irq++) {
+        if (!(((0x1 << irq) & IRQ_MASK))) 
+            continue;
+
+        for (uint32_t gmie = 0; gmie <= 1; gmie++) {
+            uint32_t rand_irq;
+
+            // Clear MIE and all pending irqs
+            mie_disable_all();
+            mm_ram_assert_irq(0, 0);
+
+            // Select a wakeup interrupt and enable only it            
+            mie_enable(irq);
+
+            // Prep the IRQ ID Q to be empty, we need to detect if any interrupts (or none) taken
+            irq_id_q[0] = -1;
+            irq_id_q_ptr = 0;
+
+            // Set the global MSTATUS.MIE
+            // Note that WFI should ignore this (but subsequent ISR will not be taken if MSTATUS.MIE == 0)
+            if (gmie)
+                mstatus_mie_enable();
+            else
+                mstatus_mie_disable();
+
+            // Assert random batch of irqs (w/o selected irq)
+            rand_irq = random_num32() & ~(0x1 << irq);
+            mm_ram_assert_irq(rand_irq, 0);
+
+            delay(2);
+
+            // Random assert "enabled" irq
+            mm_ram_assert_irq(rand_irq | (0x1 << irq), random_num32() & 0x3f);
+            asm volatile("wfi");
+        
+            if (gmie) {
+                // Expected an interrupt taken
+                if (irq_id_q[0] != irq) {
+                    printf("After WFI, expected to hit an interrupt, but irq_id_q is empty\n");
+                    return ERR_CODE_TEST_4;
+                }
+            } else {
+                // Expected no interrupt taken
+                if (irq_id_q[0] != -1) {
+                    printf("After WFI with MSTATUS.MIE == 0, interrupt was taken: %lu\n", irq_id_q[0]);
+                    return ERR_CODE_TEST_4;
+                }
+            }
+        }
+    }
+    return EXIT_SUCCESS;
+}
+
+// Test 5 will repeat the basic interrupt test in test 1
+// But with a relocated vector table via mtvec CSR
+int test5() {
+    volatile uint32_t save_mtvec;
+    int retval;
+
+    printf("TEST 5 - TRIGGER ALL IRQS IN SEQUENCE (RELOCATED MTVEC):\n");
+
+    active_test = 5;
+
+    asm volatile("csrr %0, mtvec" : "=r" (save_mtvec));
+    asm volatile("csrw mtvec, %0" : : "r" ((uint32_t) alt_vector_table | (save_mtvec & 0x3)));
+
+    retval = test1_impl(0);
+    asm volatile("csrw mtvec, %0" : : "r" (save_mtvec)); 
+    if (retval != EXIT_SUCCESS) {
+        return ERR_CODE_TEST_5;
+    }
+
+    return EXIT_SUCCESS;
+}
+
+// Test 6 will repeat the basic interrupt test in test 1
+// But with a relocated vector table via mtvec CSR and DIRECT vector mode
+int test6() {
+    volatile uint32_t save_mtvec;
+    int retval;
+
+    printf("TEST 6 - TRIGGER ALL IRQS IN SEQUENCE (DIRECT-MODE MTVEC):\n");
+
+    active_test = 5;
+
+    asm volatile("csrr %0, mtvec" : "=r" (save_mtvec));
+    asm volatile("csrw mtvec, %0" : : "r" ((uint32_t) alt_direct_vector_table)); // Leave mode at 0
+
+    retval = test1_impl(1);
+    asm volatile("csrw mtvec, %0" : : "r" (save_mtvec)); 
+    if (retval != EXIT_SUCCESS) {
+        return ERR_CODE_TEST_6;
+    }
+
+    return EXIT_SUCCESS;
+}
+
+// Test 7 is a direct repeat of test 1 in vectored mode
+int test7() {
+    printf("TEST 7 - TRIGGER ALL IRQS IN SEQUENCE: (REPEAT VECTOR MODE)\n");
+
+    active_test = 1;
+
+    if (test1_impl(0) != EXIT_SUCCESS)
+        return ERR_CODE_TEST_7;
+
+    return EXIT_SUCCESS;
+}
