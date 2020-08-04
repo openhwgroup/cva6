@@ -61,7 +61,7 @@ module mm_ram
     localparam int                        RND_IRQ_ID     = 31;
 
     // mux for read and writes
-    enum logic [1:0]{RAM, MM, RND_STALL, ERR} select_rdata_d, select_rdata_q;
+    enum logic [2:0]{RAM, MM, RND_STALL, ERR, RND_NUM} select_rdata_d, select_rdata_q;
 
     enum logic {T_RAM, T_PER} transaction;
 
@@ -145,6 +145,10 @@ module mm_ram
     logic                          rnd_stall_data_we;
     logic [3:0]                    rnd_stall_data_be;
 
+    // random number generation
+    logic                          rnd_num_req;
+    logic [31:0]                   rnd_num;
+
     //random or monitor interrupt request
     logic rnd_irq;
    
@@ -176,6 +180,7 @@ module mm_ram
         rnd_stall_addr      = '0;
         rnd_stall_wdata     = '0;
         rnd_stall_we        = '0;
+        rnd_num_req         = '0;
         select_rdata_d      = RAM;
         transaction         = T_PER;
 
@@ -312,6 +317,9 @@ module mm_ram
                     rnd_stall_wdata    = data_wdata_i;
                     rnd_stall_addr     = data_addr_i;
                     rnd_stall_we       = data_we_i;
+                end else if (data_addr_i[31:0] == 32'h1500_1000) begin
+                    rnd_num_req = 1'b1;
+                    select_rdata_d = RND_NUM;
                 end else
                     select_rdata_d = ERR;
 
@@ -354,6 +362,9 @@ module mm_ram
             $display("out of bounds read from %08x\nRandom stall generator is not supported with Verilator", data_addr_i);
             $fatal(2);
 `endif
+        
+        end else if (select_rdata_q == RND_NUM) begin
+            data_rdata_o = rnd_num;    
         end else if (select_rdata_q == ERR) begin
             $display("out of bounds read from %08x", data_addr_i);
             $fatal(2);
@@ -422,7 +433,16 @@ module mm_ram
         end
     end // block: tb_stall
   
-    // -------------------------------------------------------------
+   // -------------------------------------------------------------
+   // Generate a random number using the SystemVerilog random number function
+   always_ff @(posedge clk_i, negedge rst_ni) begin : rnd_num_gen
+        if (!rst_ni) 
+            rnd_num <= 32'h0;
+        else if (rnd_num_req)
+            rnd_num <= $urandom();
+   end
+
+   // -------------------------------------------------------------
    // Control debug_req. Writing to this alias will change or create
    // a debug_req pulse. The debug_req can be a pulse or level change,
    // can have a delay when to assert, and also have pulse duration
