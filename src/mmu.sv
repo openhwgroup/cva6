@@ -60,8 +60,8 @@ module mmu #(
     input  dcache_req_o_t                   req_port_i,
     output dcache_req_i_t                   req_port_o,
     // PMP
-    input  riscv::pmpcfg_t [ArianeCfg.NrPMPEntries-1:0] pmpcfg_i,
-    input  logic [ArianeCfg.NrPMPEntries-1:0][53:0]     pmpaddr_i
+    input  riscv::pmpcfg_t [15:0]           pmpcfg_i,
+    input  logic [15:0][53:0]               pmpaddr_i
 );
 
     logic                   iaccess_err;   // insufficient privilege to access this instruction page
