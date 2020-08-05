@@ -439,7 +439,11 @@ module mm_ram
         if (!rst_ni) 
             rnd_num <= 32'h0;
         else if (rnd_num_req)
+`ifndef VERILATOR
             rnd_num <= $urandom();
+`else
+            rnd_num <= 32'h0;
+`endif
    end
 
    // -------------------------------------------------------------
