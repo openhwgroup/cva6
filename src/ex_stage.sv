@@ -100,7 +100,10 @@ module ex_stage #(
     input  amo_resp_t                              amo_resp_i,         // response from cache subsystem
     // Performance counters
     output logic                                   itlb_miss_o,
-    output logic                                   dtlb_miss_o
+    output logic                                   dtlb_miss_o,
+    // PMPs
+    input  riscv::pmpcfg_t [ArianeCfg.NrPMPEntries-1:0]  pmpcfg_i,
+    input  logic[ArianeCfg.NrPMPEntries-1:0][53:0]       pmpaddr_i
 );
 
     // -------------------------
@@ -299,7 +302,9 @@ module ex_stage #(
         .dcache_wbuffer_not_ni_i,
         .amo_valid_commit_i,
         .amo_req_o,
-        .amo_resp_i
+        .amo_resp_i,
+        .pmpcfg_i,
+        .pmpaddr_i
     );
 
 endmodule

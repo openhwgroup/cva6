@@ -17,7 +17,8 @@ import ariane_pkg::*;
 module csr_regfile #(
     parameter logic [63:0] DmBaseAddress   = 64'h0, // debug module base address
     parameter int          AsidWidth       = 1,
-    parameter int unsigned NrCommitPorts   = 2
+    parameter int unsigned NrCommitPorts   = 2,
+    parameter int unsigned NrPMPEntries    = 8
 ) (
     input  logic                  clk_i,                      // Clock
     input  logic                  rst_ni,                     // Asynchronous reset active low
@@ -82,7 +83,10 @@ module csr_regfile #(
     output logic  [4:0]           perf_addr_o,                // read/write address to performance counter module (up to 29 aux counters possible in riscv encoding.h)
     output logic  [63:0]          perf_data_o,                // write data to performance counter module
     input  logic  [63:0]          perf_data_i,                // read data from performance counter module
-    output logic                  perf_we_o
+    output logic                  perf_we_o,
+    // PMPs
+    output riscv::pmpcfg_t [NrPMPEntries-1:0] pmpcfg_o,   // PMP configuration containing pmpcfg for max 16 PMPs
+    output logic [NrPMPEntries-1:0][53:0]     pmpaddr_o   // PMP addresses
 );
     // internal signal to keep track of access exceptions
     logic        read_access_exception, update_access_exception, privilege_violation;
@@ -134,6 +138,13 @@ module csr_regfile #(
 
     logic [63:0] cycle_q,     cycle_d;
     logic [63:0] instret_q,   instret_d;
+
+    riscv::pmpcfg_t [15:0]    pmpcfg_q,  pmpcfg_d;
+    logic [15:0][53:0]        pmpaddr_q,  pmpaddr_d;
+
+
+    assign pmpcfg_o = pmpcfg_q[NrPMPEntries-1:0];
+    assign pmpaddr_o = pmpaddr_q;
 
     riscv::fcsr_t fcsr_q, fcsr_d;
     // ----------------
@@ -263,8 +274,32 @@ module csr_regfile #(
                 riscv::CSR_MHPM_COUNTER_30,
                 riscv::CSR_MHPM_COUNTER_31:           csr_rdata   = perf_data_i;
                 // custom (non RISC-V) cache control
-                riscv::CSR_DCACHE:             csr_rdata = dcache_q;
-                riscv::CSR_ICACHE:             csr_rdata = icache_q;
+                riscv::CSR_DCACHE:           csr_rdata = dcache_q;
+                riscv::CSR_ICACHE:           csr_rdata = icache_q;
+                // PMPs
+                riscv::CSR_PMPCFG0:          csr_rdata = pmpcfg_q[7:0];
+                riscv::CSR_PMPCFG2:          csr_rdata = pmpcfg_q[15:8];
+                // PMPADDR
+                // Important: we only support granularity 8 bytes (G=2) 
+                // -> last bit of pmpaddr must be set 0/1 based on the mode:
+                // NA4, NAPOT: 1
+                // TOR, OFF:   0
+                riscv::CSR_PMPADDR0:         csr_rdata = {10'b0, pmpaddr_q[0][53:1], (pmpcfg_q[0].addr_mode[1] == 1'b1 ? 1'b1 : 1'b0)};
+                riscv::CSR_PMPADDR1:         csr_rdata = {10'b0, pmpaddr_q[1][53:1], (pmpcfg_q[1].addr_mode[1] == 1'b1 ? 1'b1 : 1'b0)};
+                riscv::CSR_PMPADDR2:         csr_rdata = {10'b0, pmpaddr_q[2][53:1], (pmpcfg_q[2].addr_mode[1] == 1'b1 ? 1'b1 : 1'b0)};
+                riscv::CSR_PMPADDR3:         csr_rdata = {10'b0, pmpaddr_q[3][53:1], (pmpcfg_q[3].addr_mode[1] == 1'b1 ? 1'b1 : 1'b0)};
+                riscv::CSR_PMPADDR4:         csr_rdata = {10'b0, pmpaddr_q[4][53:1], (pmpcfg_q[4].addr_mode[1] == 1'b1 ? 1'b1 : 1'b0)};
+                riscv::CSR_PMPADDR5:         csr_rdata = {10'b0, pmpaddr_q[5][53:1], (pmpcfg_q[5].addr_mode[1] == 1'b1 ? 1'b1 : 1'b0)};
+                riscv::CSR_PMPADDR6:         csr_rdata = {10'b0, pmpaddr_q[6][53:1], (pmpcfg_q[6].addr_mode[1] == 1'b1 ? 1'b1 : 1'b0)};
+                riscv::CSR_PMPADDR7:         csr_rdata = {10'b0, pmpaddr_q[7][53:1], (pmpcfg_q[7].addr_mode[1] == 1'b1 ? 1'b1 : 1'b0)};
+                riscv::CSR_PMPADDR8:         csr_rdata = {10'b0, pmpaddr_q[8][53:1], (pmpcfg_q[8].addr_mode[1] == 1'b1 ? 1'b1 : 1'b0)};
+                riscv::CSR_PMPADDR9:         csr_rdata = {10'b0, pmpaddr_q[9][53:1], (pmpcfg_q[9].addr_mode[1] == 1'b1 ? 1'b1 : 1'b0)};
+                riscv::CSR_PMPADDR10:        csr_rdata = {10'b0, pmpaddr_q[10][53:1], (pmpcfg_q[10].addr_mode[1] == 1'b1 ? 1'b1 : 1'b0)};
+                riscv::CSR_PMPADDR11:        csr_rdata = {10'b0, pmpaddr_q[11][53:1], (pmpcfg_q[11].addr_mode[1] == 1'b1 ? 1'b1 : 1'b0)};
+                riscv::CSR_PMPADDR12:        csr_rdata = {10'b0, pmpaddr_q[12][53:1], (pmpcfg_q[12].addr_mode[1] == 1'b1 ? 1'b1 : 1'b0)};
+                riscv::CSR_PMPADDR13:        csr_rdata = {10'b0, pmpaddr_q[13][53:1], (pmpcfg_q[13].addr_mode[1] == 1'b1 ? 1'b1 : 1'b0)};
+                riscv::CSR_PMPADDR14:        csr_rdata = {10'b0, pmpaddr_q[14][53:1], (pmpcfg_q[14].addr_mode[1] == 1'b1 ? 1'b1 : 1'b0)};
+                riscv::CSR_PMPADDR15:        csr_rdata = {10'b0, pmpaddr_q[15][53:1], (pmpcfg_q[15].addr_mode[1] == 1'b1 ? 1'b1 : 1'b0)};
                 default: read_access_exception = 1'b1;
             endcase
         end
@@ -351,6 +386,9 @@ module csr_regfile #(
         en_ld_st_translation_d  = en_ld_st_translation_q;
         dirty_fp_state_csr      = 1'b0;
 
+        pmpcfg_d                = pmpcfg_q;
+        pmpaddr_d               = pmpaddr_q;
+
         // check for correct access rights and that we are writing
         if (csr_we) begin
             unique case (csr_addr.address)
@@ -400,8 +438,6 @@ module csr_regfile #(
                     dcsr_d = csr_wdata[31:0];
                     // debug is implemented
                     dcsr_d.xdebugver = 4'h4;
-                    // privilege level
-                    dcsr_d.prv = priv_lvl_q;
                     // currently not supported
                     dcsr_d.nmip      = 1'b0;
                     dcsr_d.stopcount = 1'b0;
@@ -550,8 +586,30 @@ module csr_regfile #(
                                         perf_we_o   = 1'b1;
                 end
 
-                riscv::CSR_DCACHE:             dcache_d    = csr_wdata[0]; // enable bit
-                riscv::CSR_ICACHE:             icache_d    = csr_wdata[0]; // enable bit
+                riscv::CSR_DCACHE:             dcache_d       = csr_wdata[0]; // enable bit
+                riscv::CSR_ICACHE:             icache_d       = csr_wdata[0]; // enable bit
+                // PMP locked logic
+                // 1. refuse to update any locked entry
+                // 2. also refuse to update the entry below a locked TOR entry
+                // Note that writes to pmpcfg below a locked TOR entry are valid
+                riscv::CSR_PMPCFG0: for (int i = 0; i < 8; i++) if (!pmpcfg_q[i].locked) pmpcfg_d[i]  = csr_wdata[i*8+:8];
+                riscv::CSR_PMPCFG2: for (int i = 0; i < 8; i++) if (!pmpcfg_q[i+8].locked) pmpcfg_d[i+8]  = csr_wdata[i*8+:8];
+                riscv::CSR_PMPADDR0:   if (!pmpcfg_q[ 0].locked && !(pmpcfg_q[ 1].locked && pmpcfg_q[ 1].addr_mode == riscv::TOR))  pmpaddr_d[0]   = csr_wdata[53:0];
+                riscv::CSR_PMPADDR1:   if (!pmpcfg_q[ 1].locked && !(pmpcfg_q[ 2].locked && pmpcfg_q[ 2].addr_mode == riscv::TOR))  pmpaddr_d[1]   = csr_wdata[53:0];
+                riscv::CSR_PMPADDR2:   if (!pmpcfg_q[ 2].locked && !(pmpcfg_q[ 3].locked && pmpcfg_q[ 3].addr_mode == riscv::TOR))  pmpaddr_d[2]   = csr_wdata[53:0];
+                riscv::CSR_PMPADDR3:   if (!pmpcfg_q[ 3].locked && !(pmpcfg_q[ 4].locked && pmpcfg_q[ 4].addr_mode == riscv::TOR))  pmpaddr_d[3]   = csr_wdata[53:0];
+                riscv::CSR_PMPADDR4:   if (!pmpcfg_q[ 4].locked && !(pmpcfg_q[ 5].locked && pmpcfg_q[ 5].addr_mode == riscv::TOR))  pmpaddr_d[4]   = csr_wdata[53:0];
+                riscv::CSR_PMPADDR5:   if (!pmpcfg_q[ 5].locked && !(pmpcfg_q[ 6].locked && pmpcfg_q[ 6].addr_mode == riscv::TOR))  pmpaddr_d[5]   = csr_wdata[53:0];
+                riscv::CSR_PMPADDR6:   if (!pmpcfg_q[ 6].locked && !(pmpcfg_q[ 7].locked && pmpcfg_q[ 7].addr_mode == riscv::TOR))  pmpaddr_d[6]   = csr_wdata[53:0];
+                riscv::CSR_PMPADDR7:   if (!pmpcfg_q[ 7].locked && !(pmpcfg_q[ 8].locked && pmpcfg_q[ 8].addr_mode == riscv::TOR))  pmpaddr_d[7]   = csr_wdata[53:0];
+                riscv::CSR_PMPADDR8:   if (!pmpcfg_q[ 8].locked && !(pmpcfg_q[ 9].locked && pmpcfg_q[ 9].addr_mode == riscv::TOR))  pmpaddr_d[8]   = csr_wdata[53:0];
+                riscv::CSR_PMPADDR9:   if (!pmpcfg_q[ 9].locked && !(pmpcfg_q[10].locked && pmpcfg_q[10].addr_mode == riscv::TOR))  pmpaddr_d[9]   = csr_wdata[53:0];
+                riscv::CSR_PMPADDR10:  if (!pmpcfg_q[10].locked && !(pmpcfg_q[11].locked && pmpcfg_q[11].addr_mode == riscv::TOR))  pmpaddr_d[10]  = csr_wdata[53:0];
+                riscv::CSR_PMPADDR11:  if (!pmpcfg_q[11].locked && !(pmpcfg_q[12].locked && pmpcfg_q[12].addr_mode == riscv::TOR))  pmpaddr_d[11]  = csr_wdata[53:0];
+                riscv::CSR_PMPADDR12:  if (!pmpcfg_q[12].locked && !(pmpcfg_q[13].locked && pmpcfg_q[13].addr_mode == riscv::TOR))  pmpaddr_d[12]  = csr_wdata[53:0];
+                riscv::CSR_PMPADDR13:  if (!pmpcfg_q[13].locked && !(pmpcfg_q[14].locked && pmpcfg_q[14].addr_mode == riscv::TOR))  pmpaddr_d[13]  = csr_wdata[53:0];
+                riscv::CSR_PMPADDR14:  if (!pmpcfg_q[14].locked && !(pmpcfg_q[15].locked && pmpcfg_q[15].addr_mode == riscv::TOR))  pmpaddr_d[14]  = csr_wdata[53:0];
+                riscv::CSR_PMPADDR15:  if (!pmpcfg_q[15].locked)  pmpaddr_d[15]  = csr_wdata[53:0];
                 default: update_access_exception = 1'b1;
             endcase
         end
@@ -662,6 +720,7 @@ module csr_regfile #(
 
             // caused by a breakpoint
             if (ex_i.valid && ex_i.cause == riscv::BREAKPOINT) begin
+                dcsr_d.prv = priv_lvl_o;
                 // check that we actually want to enter debug depending on the privilege level we are currently in
                 unique case (priv_lvl_o)
                     riscv::PRIV_LVL_M: begin
@@ -685,6 +744,7 @@ module csr_regfile #(
 
             // we've got a debug request
             if (ex_i.valid && ex_i.cause == riscv::DEBUG_REQUEST) begin
+                dcsr_d.prv = priv_lvl_o;
                 // save the PC
                 dpc_d = {{64-riscv::VLEN{pc_i[riscv::VLEN-1]}},pc_i};
                 // enter debug mode
@@ -697,6 +757,7 @@ module csr_regfile #(
 
             // single step enable and we just retired an instruction
             if (dcsr_q.step && commit_ack_i[0]) begin
+                dcsr_d.prv = priv_lvl_o;
                 // valid CTRL flow change
                 if (commit_instr_i[0].fu == CTRL_FLOW) begin
                     // we saved the correct target address during execute
@@ -989,7 +1050,11 @@ module csr_regfile #(
             // floating-point registers
             fcsr_q                 <= 64'b0;
             // debug signals
+`ifdef DROMAJO
+            debug_mode_q           <= 1'b1;
+`else
             debug_mode_q           <= 1'b0;
+`endif
             dcsr_q                 <= '0;
             dcsr_q.prv             <= riscv::PRIV_LVL_M;
             dpc_q                  <= 64'b0;
@@ -1026,6 +1091,9 @@ module csr_regfile #(
             en_ld_st_translation_q <= 1'b0;
             // wait for interrupt
             wfi_q                  <= 1'b0;
+            // pmp
+            pmpcfg_q               <= '0;
+            pmpaddr_q              <= '0;
         end else begin
             priv_lvl_q             <= priv_lvl_d;
             // floating-point registers
@@ -1066,6 +1134,14 @@ module csr_regfile #(
             en_ld_st_translation_q <= en_ld_st_translation_d;
             // wait for interrupt
             wfi_q                  <= wfi_d;
+            // pmp
+            if (NrPMPEntries > 0) begin
+                pmpcfg_q[NrPMPEntries-1:0]  <= pmpcfg_d[NrPMPEntries-1:0];
+                pmpaddr_q[NrPMPEntries-1:0] <= pmpaddr_d[NrPMPEntries-1:0];
+            end else begin
+                pmpcfg_q <= '0;
+                pmpaddr_q <= '0;
+            end
         end
     end
 

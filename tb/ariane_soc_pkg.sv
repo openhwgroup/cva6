@@ -88,7 +88,8 @@ package ariane_soc;
     Axi64BitCompliant:      1'b1,
     SwapEndianess:          1'b0,
     // debug
-    DmBaseAddress:          DebugBase
+    DmBaseAddress:          DebugBase,
+    NrPMPEntries:           8
   };
 
 endpackage
