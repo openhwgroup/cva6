@@ -220,7 +220,8 @@ int main(int argc, char *argv[])
   __asm__ volatile("csrr %0, 0x340" : "=r"(mscratch_rval));
   __asm__ volatile("csrr %0, 0x341" : "=r"(mepc_rval));
   __asm__ volatile("csrr %0, 0x342" : "=r"(mcause_rval));
-  __asm__ volatile("csrr %0, 0x343" : "=r"(mtval_rval));
+  __asm__ volatile("csrr %0, 0x343" : "=r"(mtval_rval));  // UM says "writes are ignored, reads return 0x0"
+                                                          // RM says "mtval: Unimplemented CSR (hardwired to zero)"
   __asm__ volatile("csrr %0, 0x344" : "=r"(mip_rval));
 
   if (mscratch_rval != 0x0) {
