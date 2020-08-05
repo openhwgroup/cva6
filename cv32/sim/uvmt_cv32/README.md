@@ -9,7 +9,7 @@ for a discussion on the distinction between a _testcase_ and a _test-program_ in
 <br><br>
 To run the UVM environment you will need:
 - a run-time license for the Imperas OVPsim Instruction Set Simulator
-(free to OpenHW Group members),
+(free to OpenHW Group Contributors),
 - a SystemVerilog simulator,
 - the UVM-1.2 library,
 - the RISC-V GCC compiler, and
@@ -19,7 +19,8 @@ Imperas OVPsim Instruction Set Simulator
 ----------------------------------------
 This UVM verification environment uses the Imperas OVPsim Instruction Set Simulator
 (ISS) as a reference model.   The run-time license for this ISS is free to OpenHW
-Group members.  Go to the [Imperas website](http://www.imperas.com/) for installation instructions.
+Group Contributors.  Please contact @MikeOpenHWGroup to be added as a Contributor and
+go to the [Imperas website](http://www.imperas.com/) for installation instructions.
 
 SystemVerilog Simulators
 ----------------------------------
