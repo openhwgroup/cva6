@@ -1135,12 +1135,14 @@ module csr_regfile #(
             // wait for interrupt
             wfi_q                  <= wfi_d;
             // pmp
-            if (NrPMPEntries > 0) begin
-                pmpcfg_q[NrPMPEntries-1:0]  <= pmpcfg_d[NrPMPEntries-1:0];
-                pmpaddr_q[NrPMPEntries-1:0] <= pmpaddr_d[NrPMPEntries-1:0];
-            end else begin
-                pmpcfg_q <= '0;
-                pmpaddr_q <= '0;
+            for(int i = 0; i < 16; i++) begin
+                if(i < NrPMPEntries) begin
+                    pmpcfg_q[i] <= pmpcfg_d[i];
+                    pmpaddr_q[i] <= pmpaddr_d[i];
+                end else begin
+                    pmpcfg_q[i] <= '0;
+                    pmpaddr_q[i] <= '0;
+                end
             end
         end
     end
