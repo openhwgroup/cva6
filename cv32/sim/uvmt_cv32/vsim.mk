@@ -62,7 +62,7 @@ VSIM_FLAGS       ?=  # user defined
 ALL_VSIM_FLAGS    = $(VSIM_FLAGS)
 VSIM_DEBUG_FLAGS  = -debugdb
 VSIM_GUI_FLAGS    = -gui -debugdb
-VSIM_SCRIPT_DIR	  = ../questa
+VSIM_SCRIPT_DIR	  = ../tools/questa
 VSIM_SCRIPT       = $(VSIM_SCRIPT_DIR)/vsim.tcl
 
 VSIM_UVM_ARGS           = +incdir+$(UVM_HOME)/src $(UVM_HOME)/src/uvm_pkg.sv
