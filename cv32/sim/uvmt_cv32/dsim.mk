@@ -171,7 +171,7 @@ debug_test: comp $(CORE_TEST_DIR)/debug_test/debug_test.hex
 		-sv_lib $(OVP_MODEL_DPI) \
     +UVM_TESTNAME=uvmt_cv32_firmware_test_c \
     +firmware=$(CORE_TEST_DIR)/debug_test/debug_test.hex \
-    +elf_file=$(CORE_TEST_DIR)/debug_test/debug_test.elf \
+    +elf_file=$(CORE_TEST_DIR)/debug_test/debug_test.elf
 
 # Runs tests in riscv_tests/ only
 cv32-riscv-tests: comp $(CV32_RISCV_TESTS_FIRMWARE)/cv32_riscv_tests_firmware.hex $(CV32_RISCV_TESTS_FIRMWARE)/cv32_riscv_tests_firmware.elf

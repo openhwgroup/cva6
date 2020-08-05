@@ -156,7 +156,7 @@ module cv32e40p_tb_wrapper
          // TODO: Interrupts need to be re-done
          .irq_id_i       ( irq_id_out[0:4]                ),
          .irq_ack_i      ( irq_ack                        ),
-         .irq_id_o       ( irq_id_in                      ),
+         //.irq_id_o       ( irq_id_in                      ),
          .irq_o          ( irq                            ),
 
          .debug_req_o    ( debug_req                      ),
