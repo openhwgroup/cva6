@@ -38,19 +38,19 @@ interface BUS;
     
     bit     nmi;
     bit     MSWInterrupt;
-    bit     USWInterrupt;
-    bit     SSWInterrupt;
     bit     MTimerInterrupt;
-    bit     UTimerInterrupt;
-    bit     STimerInterrupt;
     bit     MExternalInterrupt;
-    bit     UExternalInterrupt;
-    bit     SExternalInterrupt;
 
-    // Debug Mode
-    bit     haltreq ;
-    bit     resethaltreq ;
+    // Local Interrupts
+    bit [15:0] LocalInterrupt;
+    bit        IrqAck;
+    bit [7:0]  IrqId;
 
+    // Debug
+    bit     haltreq;
+    bit     resethaltreq;
+    bit     DM;
+    
     //
     // Bus helpers
     //

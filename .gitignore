@@ -24,4 +24,6 @@ dvt_build.log
 xrun.history
 xrun.log
 xcelium.d/
-
+waves.shm/
+*.log
+stdout.txt

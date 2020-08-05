@@ -189,6 +189,9 @@ module uvmt_cv32_step_compare
              "pmpcfg2"      : csr_val = `CV32E40P_CORE.cs_registers_i.pmp_reg_q.pmpcfg_packed[2];
              "pmpcfg3"      : csr_val = `CV32E40P_CORE.cs_registers_i.pmp_reg_q.pmpcfg_packed[3];
              "time"         : ignore = 1;
+             // TODO: Fix the following registers for step and compare
+             "tdata1"       : ignore = 1;
+             "tinfo"        : ignore = 1;
              default: begin
                 `uvm_error("STEP_COMPARE", $sformatf("index=%s does not match a CSR name", index))
                 ignore = 1;

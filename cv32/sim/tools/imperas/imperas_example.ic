@@ -1,2 +1,6 @@
---trace
---mpdegui
+# Instruction level tracing
+#--trace --tracechange --traceshowicount
+# Logging
+--output imperas.log
+# eGui Eclipse Debugger
+# --mpdegui

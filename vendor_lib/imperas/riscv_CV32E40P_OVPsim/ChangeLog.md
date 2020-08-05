@@ -5,6 +5,18 @@ Copyright (c) 2005-2020 Imperas Software Ltd., www.imperas.com
 This CHANGELOG contains information for the Imperas OVP OpenHW CV32E40P fixed platform which includes information of the OVP Simulator and RISCV processor model
 
 ---
+
+Date 2020-August-04
+Version 20200804.0
+===
+- Trigger Module Registers
+  - Initial registers added for tselect, tdata1, tdata2, tdata3, tinfo
+- Local Interrupt
+  - 16 local interrupts are enabled
+  - Interrupt acknowledge and Interrupt Id provided
+- CSR Registers
+  - Add mtval, mcontext, scontext write ignored and read zero
+
 Date 2020-July-29
 Version 20200728.2
 ===

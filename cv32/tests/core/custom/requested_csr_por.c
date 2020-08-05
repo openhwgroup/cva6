@@ -281,10 +281,11 @@ int main(int argc, char *argv[])
 
   __asm__ volatile("csrr %0, 0x7A8" : "=r"(mcontext_rval));  // unimplemented in model
   __asm__ volatile("csrr %0, 0x7AA" : "=r"(scontext_rval));  // unimplemented in model
-  //__asm__ volatile("csrr %0, 0x7B0" : "=r"(dcsr_rval));      // only accessible in Debug mode
-  //__asm__ volatile("csrr %0, 0x7B1" : "=r"(dpc_rval));       // only accessible in Debug mode
-  //__asm__ volatile("csrr %0, 0x7B2" : "=r"(dscratch0_rval)); // only accessible in Debug mode
-  //__asm__ volatile("csrr %0, 0x7B3" : "=r"(dscratch1_rval)); // only accessible in Debug mode
+  // IMPERAS - Debug mode enabled
+  __asm__ volatile("csrr %0, 0x7B0" : "=r"(dcsr_rval));      // only accessible in Debug mode
+  __asm__ volatile("csrr %0, 0x7B1" : "=r"(dpc_rval));       // only accessible in Debug mode
+  __asm__ volatile("csrr %0, 0x7B2" : "=r"(dscratch0_rval)); // only accessible in Debug mode
+  __asm__ volatile("csrr %0, 0x7B3" : "=r"(dscratch1_rval)); // only accessible in Debug mode
 
   if (mcontext_rval != 0x0) {
     printf("ERROR: CSR MCONTEXT not 0x0!\n\n");
@@ -296,7 +297,6 @@ int main(int argc, char *argv[])
     ++err_cnt;
   }
 
-  /*
   if (dcsr_rval != 0x0) {
     printf("ERROR: CSR DCSR not 0x0!\n\n");
     ++err_cnt;
@@ -316,7 +316,6 @@ int main(int argc, char *argv[])
     printf("ERROR: CSR DSCRATCH1 not 0x0!\n\n");
     ++err_cnt;
   }
-  */
 
   __asm__ volatile("csrr %0, 0xB00" : "=r"(mcycle_rval));         // CSR unimplemented in the model
   __asm__ volatile("csrr %0, 0xB02" : "=r"(minstret_rval));       // CSR unimplmented in the model
@@ -481,10 +480,10 @@ int main(int argc, char *argv[])
   printf("\ttinfo         = 0x%0x\n", tinfo_rval);
   printf("\tmcontext      = 0x%0x\n", mcontext_rval);
   printf("\tscontext      = 0x%0x\n", scontext_rval);
-  //printf("\tdcsr          = 0x%0x\n", dcsr_rval);
-  //printf("\tdpc           = 0x%0x\n", dpc_rval);
-  //printf("\tdscratch0     = 0x%0x\n", dscratch0_rval);
-  //printf("\tdscratch1     = 0x%0x\n", dscratch1_rval);
+  printf("\tdcsr          = 0x%0x\n", dcsr_rval);
+  printf("\tdpc           = 0x%0x\n", dpc_rval);
+  printf("\tdscratch0     = 0x%0x\n", dscratch0_rval);
+  printf("\tdscratch1     = 0x%0x\n", dscratch1_rval);
   printf("\tmcycle        = 0x%0x\n", mcycle_rval);
   printf("\tminstret      = 0x%0x\n", minstret_rval);
   printf("\tmhpmcounter3  = 0x%0x\n", mhpmcounter_rval[3]);

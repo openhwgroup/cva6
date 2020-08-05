@@ -174,9 +174,9 @@ module MONITOR
     bit [3:0]  Dbe, Ibe;
     bit [2:0]  DSize, ISize;
     bit RD, WR, IF, LD, ST;
-    bit MSWInt, USWInt, SSWInt;
-    bit MTInt, UTInt, STInt;
-    bit MEInt, UEInt, SEInt;
+    bit MSWInt;
+    bit MTInt;
+    bit MEInt;
     bit reset, nmi, nmigen;
     
     bit DebugHlt, DebugResetHlt ;
@@ -200,14 +200,8 @@ module MONITOR
         nmi    = SysBus.nmi;
         nmigen = SysBus.nmigen;
         MSWInt = SysBus.MSWInterrupt;
-        USWInt = SysBus.USWInterrupt;
-        SSWInt = SysBus.SSWInterrupt;
         MTInt  = SysBus.MTimerInterrupt;
-        UTInt  = SysBus.UTimerInterrupt;
-        STInt  = SysBus.STimerInterrupt;
         MEInt  = SysBus.MExternalInterrupt;
-        UEInt  = SysBus.UExternalInterrupt;
-        SEInt  = SysBus.SExternalInterrupt;
         
         DebugHlt      = SysBus.haltreq;
         DebugResetHlt = SysBus.resethaltreq;

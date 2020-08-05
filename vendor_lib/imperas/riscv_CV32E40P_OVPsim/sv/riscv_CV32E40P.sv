@@ -18,6 +18,7 @@
  
 `include "interface.sv"
 //`define DEBUG
+//`define UVM
 module CPU 
 #(
     parameter int ID = 0
@@ -30,8 +31,10 @@ module CPU
     import uvm_pkg::*;
 `endif
 
-    import "DPI-C" context task ovpEntry(input int, input string, input string);
+    import "DPI-C" context task ovpEntry(input int i, input string s1, input string s2);
+    `ifndef UVM
     import "DPI-C" context function void ovpExit(input int);
+    `endif
 
     export "DPI-C" task     busLoad;
     export "DPI-C" task     busStore;
@@ -110,14 +113,24 @@ module CPU
             output int _nmi,
             output int _deferint,
             output int _MSWInterrupt,
-            output int _USWInterrupt,
-            output int _SSWInterrupt,
             output int _MTimerInterrupt,
-            output int _UTimerInterrupt,
-            output int _STimerInterrupt,
             output int _MExternalInterrupt,
-            output int _UExternalInterrupt,
-            output int _SExternalInterrupt,
+            output int _LocalInterrupt0,
+            output int _LocalInterrupt1,
+            output int _LocalInterrupt2,
+            output int _LocalInterrupt3,
+            output int _LocalInterrupt4,
+            output int _LocalInterrupt5,
+            output int _LocalInterrupt6,
+            output int _LocalInterrupt7,
+            output int _LocalInterrupt8,
+            output int _LocalInterrupt9,
+            output int _LocalInterrupt10,
+            output int _LocalInterrupt11,
+            output int _LocalInterrupt12,
+            output int _LocalInterrupt13,
+            output int _LocalInterrupt14,
+            output int _LocalInterrupt15,
             output int _haltreq,
             output int _resethaltreq);
 
@@ -127,14 +140,24 @@ module CPU
         _nmi                = SysBus.nmi;
         _deferint           = SysBus.deferint;
         _MSWInterrupt       = SysBus.MSWInterrupt;
-        _USWInterrupt       = SysBus.USWInterrupt;
-        _SSWInterrupt       = SysBus.SSWInterrupt;
         _MTimerInterrupt    = SysBus.MTimerInterrupt;
-        _UTimerInterrupt    = SysBus.UTimerInterrupt;
-        _STimerInterrupt    = SysBus.STimerInterrupt;
         _MExternalInterrupt = SysBus.MExternalInterrupt;
-        _UExternalInterrupt = SysBus.UExternalInterrupt;
-        _SExternalInterrupt = SysBus.SExternalInterrupt;
+        _LocalInterrupt0    = SysBus.LocalInterrupt[0];
+        _LocalInterrupt1    = SysBus.LocalInterrupt[1];
+        _LocalInterrupt2    = SysBus.LocalInterrupt[2];
+        _LocalInterrupt3    = SysBus.LocalInterrupt[3];
+        _LocalInterrupt4    = SysBus.LocalInterrupt[4];
+        _LocalInterrupt5    = SysBus.LocalInterrupt[5];
+        _LocalInterrupt6    = SysBus.LocalInterrupt[6];
+        _LocalInterrupt7    = SysBus.LocalInterrupt[7];
+        _LocalInterrupt8    = SysBus.LocalInterrupt[8];
+        _LocalInterrupt9    = SysBus.LocalInterrupt[9];
+        _LocalInterrupt10   = SysBus.LocalInterrupt[10];
+        _LocalInterrupt11   = SysBus.LocalInterrupt[11];
+        _LocalInterrupt12   = SysBus.LocalInterrupt[12];
+        _LocalInterrupt13   = SysBus.LocalInterrupt[13];
+        _LocalInterrupt14   = SysBus.LocalInterrupt[14];
+        _LocalInterrupt15   = SysBus.LocalInterrupt[15];
 
         _haltreq            = SysBus.haltreq ;
         _resethaltreq       = SysBus.resethaltreq ;
