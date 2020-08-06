@@ -21,47 +21,46 @@
 
 .section .text.handlers
 .global __no_irq_handler
-.global sw_irq_handler
-.global verification_irq_handler
-.global software_irq_handler
-.global timer_irq_handler
-.global external_irq_handler
-.global fast0_irq_handler
-.global fast1_irq_handler
-.global fast2_irq_handler
-.global fast3_irq_handler
-.global fast4_irq_handler
-.global fast5_irq_handler
-.global fast6_irq_handler
-.global fast7_irq_handler
-.global fast8_irq_handler
-.global fast9_irq_handler
-.global fast10_irq_handler
-.global fast11_irq_handler
-.global fast12_irq_handler
-.global fast13_irq_handler
-.global fast14_irq_handler
-.global fast15_irq_handler
+.global u_sw_irq_handler
+.global m_software_irq_handler
+.global m_timer_irq_handler
+.global m_external_irq_handler
+.global m_fast0_irq_handler
+.global m_fast1_irq_handler
+.global m_fast2_irq_handler
+.global m_fast3_irq_handler
+.global m_fast4_irq_handler
+.global m_fast5_irq_handler
+.global m_fast6_irq_handler
+.global m_fast7_irq_handler
+.global m_fast8_irq_handler
+.global m_fast9_irq_handler
+.global m_fast10_irq_handler
+.global m_fast11_irq_handler
+.global m_fast12_irq_handler
+.global m_fast13_irq_handler
+.global m_fast14_irq_handler
+.global m_fast15_irq_handler
 
-.weak software_irq_handler
-.weak timer_irq_handler
-.weak external_irq_handler
-.weak fast0_irq_handler
-.weak fast1_irq_handler
-.weak fast2_irq_handler
-.weak fast3_irq_handler
-.weak fast4_irq_handler
-.weak fast5_irq_handler
-.weak fast6_irq_handler
-.weak fast7_irq_handler
-.weak fast8_irq_handler
-.weak fast9_irq_handler
-.weak fast10_irq_handler
-.weak fast11_irq_handler
-.weak fast12_irq_handler
-.weak fast13_irq_handler
-.weak fast14_irq_handler
-.weak fast15_irq_handler
+.weak m_software_irq_handler
+.weak m_timer_irq_handler
+.weak m_external_irq_handler
+.weak m_fast0_irq_handler
+.weak m_fast1_irq_handler
+.weak m_fast2_irq_handler
+.weak m_fast3_irq_handler
+.weak m_fast4_irq_handler
+.weak m_fast5_irq_handler
+.weak m_fast6_irq_handler
+.weak m_fast7_irq_handler
+.weak m_fast8_irq_handler
+.weak m_fast9_irq_handler
+.weak m_fast10_irq_handler
+.weak m_fast11_irq_handler
+.weak m_fast12_irq_handler
+.weak m_fast13_irq_handler
+.weak m_fast14_irq_handler
+.weak m_fast15_irq_handler
 
 
 /* exception handling */
@@ -70,64 +69,64 @@ __no_irq_handler:
 	jal ra, puts
 	j __no_irq_handler
 
-software_irq_handler:
+m_software_irq_handler:
 	j __no_irq_handler
 
-timer_irq_handler:
+m_timer_irq_handler:
 	j __no_irq_handler
 
-external_irq_handler:
+m_external_irq_handler:
 	j __no_irq_handler
 
-fast0_irq_handler:
+m_fast0_irq_handler:
 	j __no_irq_handler
 
-fast1_irq_handler:
+m_fast1_irq_handler:
 	j __no_irq_handler
 
-fast2_irq_handler:
+m_fast2_irq_handler:
 	j __no_irq_handler
 
-fast3_irq_handler:
+m_fast3_irq_handler:
 	j __no_irq_handler
 
-fast4_irq_handler:
+m_fast4_irq_handler:
 	j __no_irq_handler
 
-fast5_irq_handler:
+m_fast5_irq_handler:
 	j __no_irq_handler
 
-fast6_irq_handler:
+m_fast6_irq_handler:
 	j __no_irq_handler
 
-fast7_irq_handler:
+m_fast7_irq_handler:
 	j __no_irq_handler
 
-fast8_irq_handler:
+m_fast8_irq_handler:
 	j __no_irq_handler
 
-fast9_irq_handler:
+m_fast9_irq_handler:
 	j __no_irq_handler
 
-fast10_irq_handler:
+m_fast10_irq_handler:
 	j __no_irq_handler
 
-fast11_irq_handler:
+m_fast11_irq_handler:
 	j __no_irq_handler
 
-fast12_irq_handler:
+m_fast12_irq_handler:
 	j __no_irq_handler
 
-fast13_irq_handler:
+m_fast13_irq_handler:
 	j __no_irq_handler
 
-fast14_irq_handler:
+m_fast14_irq_handler:
 	j __no_irq_handler
 
-fast15_irq_handler:
+m_fast15_irq_handler:
 	j __no_irq_handler
 
-sw_irq_handler:
+u_sw_irq_handler:
 	/* While we are still using puts in handlers, save all caller saved
 	   regs.  Eventually, some of these saves could be deferred.  */
 	addi sp,sp,-64
@@ -208,10 +207,6 @@ end_handler_ret:
 	lw t5, 56(sp)
 	lw t6, 60(sp)
 	addi sp,sp,64
-	mret
-/* this interrupt can be generated for verification purposes, random or when the
-   PC is equal to a given value*/
-verification_irq_handler:
 	mret
 
 .section .rodata
