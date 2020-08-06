@@ -42,10 +42,12 @@
 int main(int argc, char *argv[])
 {
   // User CSRs
-  unsigned int fflags_rval, frm_rval, fcsr_rval;
+// Not in RM
+//    unsigned int fflags_rval, frm_rval, fcsr_rval;
   // User Custom CSRs
-  unsigned int lpstart0_rval, lpend0_rval, lpcount0_rval, lpstart1_rval, lpend1_rval, lpcount1_rval;
-  unsigned int fprec_rval, privlv_rval, uhartid_rval;
+// Not in RM
+//  unsigned int lpstart0_rval, lpend0_rval, lpcount0_rval, lpstart1_rval, lpend1_rval, lpcount1_rval;
+//  unsigned int fprec_rval, privlv_rval, uhartid_rval;
   // Machine CSRs
   unsigned int mstatus_rval, misa_rval, mie_rval, mtvec_rval;
   unsigned int mcounteren_rval, mcountinhibit_rval, mphmevent_rval[32];
@@ -260,8 +262,8 @@ int main(int argc, char *argv[])
     ++err_cnt;
   }
 
-  if (tdata1_rval != 0x28001000) {
-    printf("ERROR: CSR TDATA1 not 0x28001000!\n\n");
+  if (tdata1_rval != 0x28001040) {
+    printf("ERROR: CSR TDATA1 not 0x28001040!\n\n");
     ++err_cnt;
   }
 
