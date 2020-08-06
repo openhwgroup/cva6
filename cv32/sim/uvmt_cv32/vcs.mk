@@ -20,149 +20,330 @@
 #
 ###############################################################################
 
+VCS              = $(CV_SIM_PREFIX)vcs
+SIMV             = $(CV_TOOL_PREFIX)simv
+#VERDI            = $(CV_TOOL_PREFIX)verdi
+URG               = $(CV_SIM_PREFIX)urg
+
 # modifications to already defined variables to take into account VCS
 VCS_OVP_MODEL_DPI = $(OVP_MODEL_DPI:.so=)                    # remove extension as VCS adds it
 VCS_TIMESCALE = $(shell echo "$(TIMESCALE)" | tr ' ' '=')    # -timescale=1ns/1ps
 
-UVM_HOME ?= /opt/uvm/1800.2-2017-0.9/
+#VCS_UVMHOME_ARG ?= /opt/uvm/1800.2-2017-0.9/
+VCS_UVMHOME_ARG ?= /opt/synopsys/vcs-mx/O-2018.09-SP1-1/etc/uvm
+VCS_UVM_ARGS          ?= +incdir+$(VCS_UVMHOME_ARG)/src $(VCS_UVMHOME_ARG)/src/uvm_pkg.sv -ntb_opts uvm-1.2
 
-VCS_VERSION           ?= O-2018.09-SP1-1
-VCS_HOME              ?= /opt/synopsys/vcs-mx/$(VCS_VERSION)
-VCS                   ?= vcs
-VCS_CMP_FLAGS         ?= $(VCS_TIMESCALE) $(SV_CMP_FLAGS) -sverilog -top uvmt_cv32_tb
-VCS_UVM_ARGS          ?= +incdir+$(UVM_HOME)/src $(UVM_HOME)/src/uvm_pkg.sv -ntb_opts uvm-1.2
-VCS_RESULTS           ?= $(PWD)/vcs_results
-VCS_WORK              ?= $(VCS_RESULTS)/vcs_work
-VCS_USE_ISS           ?= YES
+VCS_COMP_FLAGS  ?= -lca -sverilog -top uvmt_cv32_tb \
+										$(SV_CMP_FLAGS) $(VCS_UVM_ARGS) $(VCS_TIMESCALE) \
+										-assert svaext -race=all -ignore unique_checks -full64
+VCS_GUI         ?=
+VCS_RESULTS     ?= $(PWD)/vcs_results
+VCS_RISCVDV_RESULTS ?= $(VCS_RESULTS)/riscv-dv
+VCS_DIR         ?= $(VCS_RESULTS)/vcs.d
+VCS_ELAB_COV     = -cm line+cond+tgl+fsm+branch+assert
+VCS_RUN_COV      = -cm line+cond+tgl+fsm+branch+assert
+NUM_TEST         ?= 2
 
-VCS_FILE_LIST ?= -f $(DV_UVMT_CV32_PATH)/uvmt_cv32.flist
-ifeq ($(VCS_USE_ISS),YES)
-    VCS_FILE_LIST         += -f $(DV_UVMT_CV32_PATH)/imperas_iss.flist
-    VCS_USER_COMPILE_ARGS += "+define+ISS+CV32E40P_TRACE_EXECUTION"
-    VCS_RUN_FLAGS         +="+USE_ISS"
+################################################################################
+# GUI interactive simulation
+# GUI=YES enables interactive mode
+# ADV_DEBUG=YES will enable Indago, default is to use SimVision
+ifeq ($(call IS_YES,$(GUI)),YES)
+VCS_GUI += -gui
+VCS_USER_COMPILE_ARGS += -linedebug
+ifeq ($(call IS_YES,$(ADV_DEBUG)),YES)
+$(error ADV_DEBUG not yet supported by VCS )
+#VCS_GUI += -indago
+endif
 endif
 
+################################################################################
+# Waveform generation
+# WAVES=YES enables waveform generation for entire testbench
+# ADV_DEBUG=YES will enable Indago waves, default is to generate SimVision waves
+ifeq ($(call IS_YES,$(WAVES)),YES)
+ifeq ($(call IS_YES,$(ADV_DEBUG)),YES)
+$(error ADV_DEBUG not yet supported by VCS )
+#VCS_RUN_WAVES_FLAGS = -input ../../../tools/xrun/indago.tcl
+else
+VCS_RUN_WAVES_FLAGS = -input ../../../tools/xrun/probe.tcl
+endif
+endif
 
-.PHONY: sim
-		+elf_file=$(CUSTOM)/$(TYPE1_TEST_PROGRAM).elf
+################################################################################
+# Waveform (post-process) command line
+ifeq ($(call IS_YES,$(ADV_DEBUG)),YES)
+$(error ADV_DEBUG not yet supported by VCS )
+#WAVES_CMD = cd $(VCS_RESULTS)/$(TEST) && $(INDAGO) -db ida.db
+else
+WAVES_CMD = cd $(VCS_RESULTS)/$(TEST) && $(SIMVISION) waves.shm
+endif
+
+################################################################################
+# Coverage options
+# COV=YES generates coverage database, must be specified for comp and run
+URG_MERGE_ARGS = -dbname merged.vdb -group lrm_bin_name -flex_merge union
+#URG_REPORT_ARGS = report_metrics -summary -overwrite -out cov_report
+MERGED_COV_DIR ?= merged_cov
+
+ifeq ($(call IS_YES,$(COV)),YES)
+VCS_USER_COMPILE_ARGS += $(VCS_ELAB_COV)
+VCS_RUN_COV_FLAGS += $(VCS_RUN_COV)
+endif
+
+# list all vbd files
+COV_RESULTS_LIST = $(wildcard *.vdb)
+
+ifeq ($(call IS_YES,$(MERGE)),YES)
+COV_MERGE = cov_merge
+TEST = $(MERGED_COV_DIR)
+else
+COV_MERGE =
+endif
+
+ifeq ($(call IS_YES,$(MERGE)),YES)
+COV_ARGS = -load cov_work/scope/merged
+else
+COV_ARGS = -load cov_work/uvmt_cv32_tb/$(TEST)
+endif
+
+#ifeq ($(call IS_YES,$(GUI)),YES)
+#COV_ARGS += -gui
+#else
+#COV_ARGS += -execcmd "$(IMC_REPORT_ARGS)"
+#endif
+
+################################################################################
+
+VCS_FILE_LIST ?= -f $(DV_UVMT_CV32_PATH)/uvmt_cv32.flist
+ifeq ($(call IS_YES,$(USE_ISS)),YES)
+    VCS_FILE_LIST += -f $(DV_UVMT_CV32_PATH)/imperas_iss.flist
+    VCS_USER_COMPILE_ARGS += "+define+ISS+CV32E40P_TRACE_EXECUTION"
+    VCS_PLUSARGS +="+USE_ISS"
+endif
+
+VCS_RUN_BASE_FLAGS   ?= $(VCS_GUI) +UVM_VERBOSITY=$(VCS_UVM_VERBOSITY) \
+                         $(VCS_PLUSARGS) +ntb_random_seed=$(RNDSEED) -sv_lib $(VCS_OVP_MODEL_DPI)
+# Simulate using latest elab
+VCS_RUN_FLAGS        ?= 
+VCS_RUN_FLAGS        += $(VCS_RUN_BASE_FLAGS)
+VCS_RUN_FLAGS        += $(VCS_RUN_WAVES_FLAGS)
+VCS_RUN_FLAGS        += $(VCS_RUN_COV_FLAGS)
 
 no_rule:
 	@echo 'makefile: SIMULATOR is set to $(SIMULATOR), but no rule/target specified.'
 	@echo 'try "make SIMULATOR=vcs sanity" (or just "make sanity" if shell ENV variable SIMULATOR is already set).'
 
-# The sanity test is defined in ../Common.mk and will change over time
-#sanity: hello-world
+.PHONY: comp hello_world hello-world
 
-all: clean_all sanity
+mk_vcs_dir:
+	$(MKDIR_P) $(VCS_DIR)
 
-help:
-	vcs -help
+hello_world: hello-world
 
-mk_results:
-	$(MKDIR_P) $(VCS_RESULTS)
-	$(MKDIR_P) $(VCS_WORK)
+cv32_riscv_tests: cv32-riscv-tests
 
-# VCS compile target
-comp: mk_results $(CV32E40P_PKG) $(OVPM_DIR)
-	$(VCS) \
-		$(VCS_CMP_FLAGS) \
+cv32_riscv_compliance_tests: cv32-riscv-compliance-tests
+
+VCS_COMP = $(VCS_COMP_FLAGS) \
 		$(VCS_UVM_ARGS) \
-		-assert svaext -race=all -ignore unique_checks -full64 \
+		$(VCS_USER_COMPILE_ARGS) \
 		+incdir+$(DV_UVME_CV32_PATH) \
 		+incdir+$(DV_UVMT_CV32_PATH) \
 		-f $(CV32E40P_MANIFEST) \
-		$(VCS_FILE_LIST)
+		$(VCS_FILE_LIST) \
+		$(UVM_PLUSARGS)
 
+comp: mk_vcs_dir $(CV32E40P_PKG) $(OVP_MODEL_DPI)
+	cd $(VCS_RESULTS) && $(VCS) $(VCS_COMP)
+	@echo "$(BANNER)"
+	@echo "* $(,maSIMULATOR) compile complete"
+	@echo "* Log: $(VCS_RESULTS)/vcs.log"
+	@echo "$(BANNER)"
 
-################################################################################
-# Running custom test-programs':
-#   The "custom" target provides the ability to specify both the testcase run by
-#   the UVM environment and a C or assembly test-program to be executed by the
-#   core. Note that the UVM testcase is required to load the compiled program
-#   into the core's memory.
-#
-# User defined variables used by this target:
-#   CUSTOM_DIR:   Absolute, not relative, path to the custom C program. Default
-#                 is `pwd`/../../tests/core/custom.
-#   CUSTOM_PROG:  C or assembler test-program that executes on the core. Default
-#                 is hello_world.c.
-#   UVM_TESTNAME: Class identifer (not file path) of the UVM testcase run by
-#                 environment. Default is uvmt_cv32_firmware_test_c.
-#
-# Use cases:
-#   1: Full specification of the hello-world test:
-#      $ make custom SIMULATOR=vcs CUSTOM_DIR=`pwd`/../../tests/core/custom CUSTOM_PROG=hello_world UVM_TESTNAME=uvmt_cv32_firmware_test_c
-#
-#   2: Same thing, using the defaults in these Makefiles:
-#      $ make custom
-#
-#   3: Run ../../tests/core/custom/fibonacci.c
-#      $ make custom CUSTOM_PROG=fibonacci
-#
-#   4: Run your own "custom program" located in ../../tests/core/custom
-#      $ make custom CUSTOM_PROG=<my_custom_test_program>
-#
-custom: comp $(CUSTOM_DIR)/$(CUSTOM_PROG).hex $(CUSTOM_DIR)/$(CUSTOM_PROG).elf
-	mkdir -p $(VCS_RESULTS)/$(CUSTOM_PROG) && cd $(VCS_RESULTS)/$(CUSTOM_PROG)  && \
-	$(VCS_RESULTS)/../simv -l vcs-$(CUSTOM_PROG).log \
-		-sv_lib $(VCS_OVP_MODEL_DPI) \
-		+UVM_TESTNAME=$(UVM_TESTNAME) \
-		+firmware=$(CUSTOM_DIR)/$(CUSTOM_PROG).hex \
-		+elf_file=$(CUSTOM_DIR)/$(CUSTOM_PROG).elf
+ifneq ($(call IS_NO,$(COMP)),NO)
+VCS_SIM_PREREQ = comp
+endif
+VCS_COMP_RUN = $(VCS_RUN_FLAGS)
 
-# Similar to above, but for the ASM directory.
-asm: comp $(ASM_DIR)/$(ASM_PROG).hex $(ASM_DIR)/$(ASM_PROG).elf
-	mkdir -p $(VCS_RESULTS)/$(ASM_PROG) && cd $(VCS_RESULTS)/$(ASM_PROG)  && \
-	$(VCS_RESULTS)/../simv -l vcs-$(CUSTOM_PROG).log \
-		-sv_lib $(VCS_OVP_MODEL_DPI) \
-		+UVM_TESTNAME=$(UVM_TESTNAME) \
-		+firmware=$(ASM_DIR)/$(ASM_PROG).hex \
-		+elf_file=$(ASM_DIR)/$(ASM_PROG).elf
+ifeq ($(call IS_YES,$(XRUN_SINGLE_STEP)), YES)
+	XRUN_SIM_PREREQ = mk_xrun_dir $(CV32E40P_PKG) $(OVP_MODEL_DPI)
+	XRUN_COMP_RUN = $(XRUN_COMP) $(XRUN_RUN_BASE_FLAGS)
+endif
 
 ################################################################################
-# Commonly used targets:
-#      Here for historical reasons - mostly (completely?) superceeded by the
-#      custom target.
-#
-hello-world: comp $(CUSTOM)/hello_world.hex $(CUSTOM)/hello_world.elf
-	mkdir -p $(VCS_RESULTS)/hello-world && cd $(VCS_RESULTS)/hello-world  && \
-	$(VCS_RESULTS)/../simv -l vcs-hello-world.log \
-		-sv_lib $(VCS_OVP_MODEL_DPI) \
+# Custom test-programs.  See comment in dsim.mk for more info
+custom: $(VCS_SIM_PREREQ) $(CUSTOM_DIR)/$(CUSTOM_PROG).hex
+	mkdir -p $(VCS_RESULTS)/$(CUSTOM_PROG) && cd $(VCS_RESULTS)/$(CUSTOM_PROG) && \
+	$(VCS_RESULTS)/$(SIMV) -l vcs-$(CUSTOM_PROG).log -cm_test $(CUSTOM_PROG) $(VCS_COMP_RUN) \
 		+UVM_TESTNAME=uvmt_cv32_firmware_test_c \
-		+firmware=$(CUSTOM)/hello_world.hex \
-		+elf_file=$(CUSTOM)/hello_world.elf
+		+elf_file=$(CUSTOM_DIR)/$(CUSTOM_PROG).elf \
+		+firmware=$(CUSTOM_DIR)/$(CUSTOM_PROG).hex
 
-# Runs tests in riscv_tests/ only
-cv32-riscv-tests: comp $(CV32_RISCV_TESTS_FIRMWARE)/cv32_riscv_tests_firmware.hex $(CV32_RISCV_TESTS_FIRMWARE)/cv32_riscv_tests_firmware.elf
+################################################################################
+# Explicit target tests
+hello-world:  $(VCS_SIM_PREREQ) $(CUSTOM)/hello_world.hex
+	mkdir -p $(VCS_RESULTS)/hello-world && cd $(VCS_RESULTS)/hello-world && \
+	$(VCS_RESULTS)/$(SIMV) -l vcs-hello-world.log -cm_name hello-world $(VCS_COMP_RUN) \
+		+elf_file=$(CUSTOM)/hello_world.elf \
+		+UVM_TESTNAME=uvmt_cv32_firmware_test_c \
+		+firmware=$(CUSTOM)/hello_world.hex
+
+misalign: $(VCS_SIM_PREREQ) $(CUSTOM)/misalign.hex
+	mkdir -p $(VCS_RESULTS)/misalign && cd $(VCS_RESULTS)/misalign && \
+	$(VCS_RESULTS)/$(SIMV) -l vcs-misalign.log -cm_name misalign $(VCS_COMP_RUN) \
+		+elf_file=$(CUSTOM)/misalign.elf \
+		+UVM_TESTNAME=uvmt_cv32_firmware_test_c \
+		+firmware=$(CUSTOM)/misalign.hex
+
+illegal: $(VCS_SIM_PREREQ) $(CUSTOM)/illegal.hex
+	mkdir -p $(VCS_RESULTS)/illegal && cd $(VCS_RESULTS)/illegal && \
+	$(VCS_RESULTS)/$(SIMV) -l vcs-illegal.log -cm_name illegal $(VCS_COMP_RUN) \
+		+elf_file=$(CUSTOM)/illegal.elf \
+		+UVM_TESTNAME=uvmt_cv32_firmware_test_c \
+		+firmware=$(CUSTOM)/illegal.hex
+
+fibonacci: $(VCS_SIM_PREREQ) $(CUSTOM)/fibonacci.hex
+	mkdir -p $(VCS_RESULTS)/fibonacci && cd $(VCS_RESULTS)/fibonacci && \
+	$(VCS_RESULTS)/$(SIMV) -l vcs-fibonacci.log -cm_name fibonacci $(VCS_COMP_RUN) \
+		+elf_file=$(CUSTOM)/fibonacci.elf \
+		+UVM_TESTNAME=uvmt_cv32_firmware_test_c \
+		+firmware=$(CUSTOM)/fibonacci.hex
+
+dhrystone: $(VCS_SIM_PREREQ) $(CUSTOM)/dhrystone.hex
+	mkdir -p $(VCS_RESULTS)/dhrystone && cd $(VCS_RESULTS)/dhrystone && \
+	$(VCS_RESULTS)/$(SIMV) -l vcs-dhrystonelog -cm_name dhrystone $(VCS_COMP_RUN) \
+		+elf_file=$(CUSTOM)/dhrystone.elf \
+		+UVM_TESTNAME=uvmt_cv32_firmware_test_c \
+		+firmware=$(CUSTOM)/dhrystone.hex
+
+riscv_ebreak_test_0: $(VCS_SIM_PREREQ) $(CUSTOM)/riscv_ebreak_test_0.hex
+	mkdir -p $(VCS_RESULTS)/riscv_ebreak_test_0 && cd $(VCS_RESULTS)/riscv_ebreak_test_0 && \
+	$(VCS_RESULTS)/$(SIMV) -l vcs-riscv_ebreak_test_0log -cm_name riscv_ebreak_test_0 $(VCS_COMP_RUN) \
+                +elf_file=$(CUSTOM)/riscv_ebreak_test_0.elf \
+                +UVM_TESTNAME=uvmt_cv32_firmware_test_c \
+                +firmware=$(CUSTOM)/riscv_ebreak_test_0.hex
+
+debug_test: $(VCS_SIM_PREREQ) $(CORE_TEST_DIR)/debug_test/debug_test.hex
+	mkdir -p $(VCS_RESULTS)/debug_test && cd $(VCS_RESULTS)/debug_test && \
+	$(VCS_RESULTS)/$(SIMV) -l vcs-riscv_debug_test.log -cm_name debug_test $(VCS_COMP_RUN) \
+                +elf_file=$(CORE_TEST_DIR)/debug_test/debug_test.elf \
+                +UVM_TESTNAME=uvmt_cv32_firmware_test_c \
+                +firmware=$(CORE_TEST_DIR)/debug_test/debug_test.hex
+
+# Runs tests in cv32_riscv_tests/ only
+cv32-riscv-tests: $(VCS_SIM_PREREQ) $(CV32_RISCV_TESTS_FIRMWARE)/cv32_riscv_tests_firmware.hex
 	mkdir -p $(VCS_RESULTS)/cv32-riscv-tests && cd $(VCS_RESULTS)/cv32-riscv-tests && \
-	$(VCS_RESULTS)/../simv -l vcs-riscv_tests.log \
-		-sv_lib $(VCS_OVP_MODEL_DPI) \
+	$(VCS_RESULTS)/$(SIMV) -l vcs-cv32-riscv-tests.log $(VCS_COMP_RUN) \
+		+elf_file=$(CV32_RISCV_TESTS_FIRMWARE)/cv32_riscv_tests_firmware.elf \
 		+UVM_TESTNAME=uvmt_cv32_firmware_test_c \
-		+firmware=$(CV32_RISCV_TESTS_FIRMWARE)/cv32_riscv_tests_firmware.hex \
-		+elf_file=$(CV32_RISCV_TESTS_FIRMWARE)/cv32_riscv_tests_firmware.elf
+		+firmware=$(CV32_RISCV_TESTS_FIRMWARE)/cv32_riscv_tests_firmware.hex
 
-# Runs tests in riscv_compliance_tests/ only
-cv32-riscv-compliance-tests: comp $(CV32_RISCV_COMPLIANCE_TESTS_FIRMWARE)/cv32_riscv_compliance_tests_firmware.hex $(CV32_RISCV_COMPLIANCE_TESTS_FIRMWARE)/cv32_riscv_compliance_tests_firmware.elf
+# Runs tests in cv32_riscv_compliance_tests/ only
+cv32-riscv-compliance-tests: $(VCS_SIM_PREREQ)  $(CV32_RISCV_COMPLIANCE_TESTS_FIRMWARE)/cv32_riscv_compliance_tests_firmware.hex
 	mkdir -p $(VCS_RESULTS)/cv32-riscv-compliance-tests && cd $(VCS_RESULTS)/cv32-riscv-compliance-tests && \
-	$(VCS_RESULTS)/../simv -l vcs-riscv_compliance_tests.log \
-		-sv_lib $(VCS_OVP_MODEL_DPI) \
+	$(VCS) -l vcs-cv32-riscv_compliance_tests.log -cm_name cv32-riscv-compliance-tests $(VCS_RUN_FLAGS) \
+		+elf_file=$(CV32_RISCV_COMPLIANCE_TESTS_FIRMWARE)/cv32_riscv_compliance_tests_firmware.elf \
 		+UVM_TESTNAME=uvmt_cv32_firmware_test_c \
-		+firmware=$(CV32_RISCV_COMPLIANCE_TESTS_FIRMWARE)/cv32_riscv_compliance_tests_firmware.hex \
-		+elf_file=$(CV32_RISCV_COMPLIANCE_TESTS_FIRMWARE)/cv32_riscv_compliance_tests_firmware.elf
+		+firmware=$(CV32_RISCV_COMPLIANCE_TESTS_FIRMWARE)/cv32_riscv_compliance_tests_firmware.hex
+
+unit-test:  firmware-unit-test-clean
+unit-test:  $(FIRMWARE)/firmware_unit_test.hex
+unit-test: ALL_VSIM_FLAGS += "+firmware=$(FIRMWARE)/firmware_unit_test.hex"
+unit-test: vcs-firmware-unit-test
+
 
 # Runs all tests in riscv_tests/ and riscv_compliance_tests/
-cv32-firmware: comp $(FIRMWARE)/firmware.hex $(FIRMWARE)/firmware.elf
-	mkdir -p $(VCS_RESULTS)/firmware && cd $(VCS_RESULTS)/firmware && \
-	$(VCS_RESULTS)/../simv -l vcs-firmware.log \
-		-sv_lib $(VCS_OVP_MODEL_DPI) \
+cv32-firmware: comp $(FIRMWARE)/firmware.hex
+	$(VCS_RESULTS)/$(SIMV) -l vcs-firmware.log \
 		+UVM_TESTNAME=uvmt_cv32_firmware_test_c \
-		+firmware=$(FIRMWARE)/firmware.hex \
-		+elf_file=$(FIRMWARE)/firmware.elf
+		+firmware=$(FIRMWARE)/firmware.hex
 
-# Placeholder for future testing via Google ISG (riscv-dv)
-# These targets are defined in ./Makefile
+# VCS UNIT TESTS: run each test individually. See comment header for dsim-unit-test for more info.
+# TODO: update ../Common.mk to create "vcs-firmware-unit-test" target.
+# Example: to run the ADDI test `make vcs-unit-test addi`
+#vcs-unit-test: comp
+#	$(VCS) -R -l vcs-$(UNIT_TEST).log \
+#		+UVM_TESTNAME=uvmt_cv32_firmware_test_c \
+#		+firmware=$(FIRMWARE)/firmware_unit_test.hex
+
+###############################################################################
+# Use Google instruction stream generator (RISCV-DV) to create new test-programs
+comp_riscv-dv:
+	mkdir -p $(VCS_RISCVDV_RESULTS)
+	mkdir -p $(COREVDV_PKG)/out_$(DATE)/run
+	cd $(VCS_RISCVDV_RESULTS) && \
+	$(VCS) $(VCS_COMP_FLAGS) \
+		$(VCS_USER_COMPILE_ARGS) \
+		+incdir+$(RISCVDV_PKG)/target/rv32imc \
+		+incdir+$(RISCVDV_PKG)/user_extension \
+		+incdir+$(RISCVDV_PKG)/tests \
+		+incdir+$(COREVDV_PKG) \
+		-f $(COREVDV_PKG)/manifest.f \
+		-l $(COREVDV_PKG)/out_$(DATE)/run/compile.log 
+
+gen_corev_arithmetic_base_test:
+	mkdir -p $(VCS_RISCVDV_RESULTS)/corev_arithmetic_base_test	
+	cd $(VCS_RISCVDV_RESULTS)/corev_arithmetic_base_test && \
+	$(VCS_RESULTS)/$(SIMV) $(VCS_RUN_FLAGS) \
+		+UVM_TESTNAME=corev_instr_base_test  \
+		+num_of_tests=2  \
+		+start_idx=0  \
+		+asm_file_name_opts=riscv_arithmetic_basic_test  \
+		-l $(COREVDV_PKG)/out_$(DATE)/sim_riscv_arithmetic_basic_test_0.log \
+		+instr_cnt=10000 \
+		+num_of_sub_program=0 \
+		+directed_instr_0=riscv_int_numeric_corner_stream,4 \
+		+no_fence=1 \
+		+no_data_page=1 \
+		+no_branch_jump=1 \
+		+boot_mode=m \
+		+no_csr_instr=1
+	cp $(VCS_RISCVDV_RESULTS)/corev_arithmetic_base_test/*.S $(CORE_TEST_DIR)/custom
+
+gen_corev_rand_instr_test:
+	mkdir -p $(VCS_RISCVDV_RESULTS)/corev_rand_instr_test	
+	cd $(VCS_RISCVDV_RESULTS)/corev_rand_instr_test && \
+	$(VCS_RESULTS)/$(SIMV) $(VCS_RUN_FLAGS) \
+	 	+UVM_TESTNAME=corev_instr_base_test \
+		+num_of_tests=$(NUM_TESTS) \
+		+start_idx=0  \
+		+asm_file_name_opts=corev_rand_instr_test  \
+		-l $(COREVDV_PKG)/out_$(DATE)/sim_riscv_rand_instr_test_0.log \
+    +instr_cnt=10000 \
+    +num_of_sub_program=5 \
+    +directed_instr_0=riscv_load_store_rand_instr_stream,4 \
+    +directed_instr_1=riscv_loop_instr,4 \
+    +directed_instr_2=riscv_hazard_instr_stream,4 \
+    +directed_instr_3=riscv_load_store_hazard_instr_stream,4 \
+    +directed_instr_4=riscv_multi_page_load_store_instr_stream,4 \
+    +directed_instr_5=riscv_mem_region_stress_test,4 \
+    +directed_instr_6=riscv_jal_instr,4
+	cp $(VCS_RISCVDV_RESULTS)/corev_rand_instr_test/*.S $(CORE_TEST_DIR)/custom
+
 corev-dv: clean_riscv-dv \
-	  clone_riscv-dv
+	clone_riscv-dv \
+	comp_riscv-dv \
+	gen_corev_arithmetic_base_test
+
+################################################################################
+# Invoke post-process waveform viewer
+waves:
+	$(WAVES_CMD)
+
+################################################################################
+# Invoke post-process coverage viewer
+cov_merge:
+	$(MKDIR_P) $(VCS_RESULTS)/$(MERGED_COV_DIR)
+	rm -rf $(VCS_RESULTS)/$(MERGED_COV_DIR)/*
+	cd $(VCS_RESULTS)/$(MERGED_COV_DIR) && \
+	$(URG) -dir $(COV_RESULTS_LIST) $(URG_MERGE_ARGS)
+
+cov: $(COV_MERGE)
+	cd $(VCS_RESULTS)/$(TEST) && $(URG) $(COV_ARGS)
+
+###############################################################################
+# Clean up your mess!
 
 clean:
 	rm -f simv
@@ -174,3 +355,4 @@ clean:
 # All generated files plus the clone of the RTL
 clean_all: clean clean_core_tests clean_riscvdv clean_test_programs
 	rm -rf $(CV32E40P_PKG)
+

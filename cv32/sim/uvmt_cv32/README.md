@@ -141,7 +141,7 @@ Current supported simulators: <i>Note that eventually all simulators will be sup
 |dsim       | No        |
 |xrun       | Yes       |
 |questa     | No        |
-|vcs        | No        |
+|vcs        | Yes       |
 
 For certain simulators multiple debug tools are available that enable advanced debug capabilities but generally require respective licenses from the vendor.  By default all debug-related commands in this section will support a standard debug tool with the simulator.   However support is provided for advanced debug tools when avaiable.  The advanced debug tool is selected with each make command by setting the **ADV_DEBUG=YES** flag.
 
@@ -208,7 +208,7 @@ Invoke GUI coverage browser for the hello-world test:
 
 An additional option to the **make cov** target exists to <i>merge</i> coverage.  To merge coverage the makefiles will look in **all** existing test results directories <i>for the selected simulator</i> and generate a merged coverage report in <i>&lt;simulator>_results/merged_cov</i>.  The respective coverage report of GUI invocation will use that directory as the coverage database.  Coverage merging is selected by setting the <i>MERGE=1</i> flag.
 
-Generate coverrage report for all executed tests with coverage databases.
+Generate coverage report for all executed tests with coverage databases.
 
 **make cov MERGE=1**
 
