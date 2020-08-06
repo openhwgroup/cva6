@@ -6,11 +6,19 @@ This CHANGELOG contains information for the Imperas OVP OpenHW CV32E40P fixed pl
 
 ---
 
-Date 2020-August-04
-Version 20200804.0
+Date 2020-August-06
+Version 20200805.1
+===
+- Trigger Module Behaviour
+  - tdata1 execute bit enables address fetch trap on value in tdata2
+  - trap causes entry to debug mode and execution from debug vector
+
+Date 2020-August-05
+Version 20200805.0
 ===
 - Trigger Module Registers
   - Initial registers added for tselect, tdata1, tdata2, tdata3, tinfo
+  - No trigger behaviour added
 - Local Interrupt
   - 16 local interrupts are enabled
   - Interrupt acknowledge and Interrupt Id provided
