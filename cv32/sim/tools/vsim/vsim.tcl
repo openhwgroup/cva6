@@ -11,7 +11,5 @@
 # Author: Robert Balas (balasr@student.ethz.ch)
 # Description: TCL scripts to facilitate simulations
 
-set NoQuitOnFinish 1
-source ../questa/software.tcl
-source ../questa/waves.tcl
 run -all
+exit
