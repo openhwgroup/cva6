@@ -20,14 +20,6 @@
 **                            messages to stdout.  Will fail if read value does
 **                            not match the documented PoR value.
 **
-** Note: this test-program accesses all CV32E40P CSRs that are requested to be
-**       supported by the Reference Model.  Until such time as the RM is
-**       complete, this test will fail.  You can use the Makefile variable USE_ISS
-**       to disable the RM as an aid to debug/development.
-**
-**       One the RM is complete, this test should run to completion with no
-**       errors with the RM enabled (it is enabled by default).
-**
 ** This is a manually written prototype of a (planned) generated test-program.
 ** The primary goals of this test-program is to get proof of life from all CV32E40P
 ** CSRs and asertain the status of CSR modeling in the OVPsim Reference Model.
@@ -42,12 +34,12 @@
 int main(int argc, char *argv[])
 {
   // User CSRs
-// Not in RM
-//    unsigned int fflags_rval, frm_rval, fcsr_rval;
+  // Not in RM
+  // unsigned int fflags_rval, frm_rval, fcsr_rval;
   // User Custom CSRs
-// Not in RM
-//  unsigned int lpstart0_rval, lpend0_rval, lpcount0_rval, lpstart1_rval, lpend1_rval, lpcount1_rval;
-//  unsigned int fprec_rval, privlv_rval, uhartid_rval;
+  // Not in RM
+  // unsigned int lpstart0_rval, lpend0_rval, lpcount0_rval, lpstart1_rval, lpend1_rval, lpcount1_rval;
+  // unsigned int fprec_rval, privlv_rval, uhartid_rval;
   // Machine CSRs
   unsigned int mstatus_rval, misa_rval, mie_rval, mtvec_rval;
   unsigned int mcounteren_rval, mcountinhibit_rval, mphmevent_rval[32];
@@ -262,8 +254,12 @@ int main(int argc, char *argv[])
     ++err_cnt;
   }
 
-  if (tdata1_rval != 0x28001040) {
-    printf("ERROR: CSR TDATA1 not 0x28001040!\n\n");
+  // Note: the value read from the RTL (0x2800140) is correct, but it does not
+  //       match the value specified in the User Manual, so this tests will
+  //       fail until the User Manual is updated.
+  //       https://github.com/openhwgroup/core-v-docs/issues/143
+  if (tdata1_rval != 0x28001000) {
+    printf("ERROR: CSR TDATA1 not 0x28001000!\n\n");
     ++err_cnt;
   }
 
@@ -504,7 +500,6 @@ int main(int argc, char *argv[])
 	if (!err_cnt) {
     return EXIT_SUCCESS;
 	} else {
-	  // TODO: drive virtual peripheral in TB to signal testcase failure
     return EXIT_FAILURE;
 	}
 
