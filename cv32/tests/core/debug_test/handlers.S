@@ -28,6 +28,7 @@
 .global glb_ebreak_status
 .global glb_expect_illegal_insn
 .global glb_expect_ebreak_handler
+.global glb_exception_ebreak_status
 .set test_ret_val, 0x20000000
 .set test_fail, 0x1
 
@@ -118,6 +119,20 @@ cont_illegal_insn:
         lw t0, 0(a0)
         addi t0,t0,1
         sw t0, 0(a0)
+
+        // Check if we are expected to execute ebreak
+        la a0, glb_exception_ebreak_status
+        lw t0, 0(a0)
+        //  End handler if no ebreak is to be executed
+        beq t0, x0, end_handler_incr_mepc
+       
+        // Clear ebreak flag
+        sw x0, 0(a0) 
+        // Execute ebreak
+        ebreak    
+        // Exit handler
+    	j end_handler_incr_mepc
+
 	j end_handler_incr_mepc
 
 

@@ -28,7 +28,11 @@ volatile int glb_debug_status = 0; // Written by debug code only, read by main c
 volatile int glb_ebreak_status = 0; // Written by ebreak code only, read by main code
 volatile int glb_illegal_insn_status = 0; // Written by illegal instruction code only, read by main code
 volatile int glb_debug_exception_status = 0; // Written by debug code during exception only
+volatile int glb_exception_ebreak_status = 0; // Written by main code, read by exception handler
 
+volatile int glb_previous_dpc = 0; // holds last dpc, used for checking correctness of stepping
+volatile int glb_step_info = 0; // info to dbg code about actions to take on stepping
+volatile int glb_step_count = 0; //  Written by debug code for each time single step is entered
 // Expectation flags. Raise an error if handler or routine is enterred when not expected,
 volatile int glb_expect_illegal_insn    = 0;
 volatile int glb_expect_ebreak_handler  = 0;
@@ -55,8 +59,6 @@ typedef union {
 }  debug_req_control_t;
 
 #define DEBUG_REQ_CONTROL_REG *(volatile int *)0x15000008
-
-
 
 typedef union {
   struct {
@@ -86,7 +88,7 @@ typedef union {
 }  mstatus_t;
 
 extern void _trigger_test(int d);
-
+extern void _single_step(int d);
 // Tag is simply to help debug and determine where the failure came from
 void check_debug_status(int tag, int value)
 {
@@ -128,7 +130,6 @@ void check_illegal_insn_status(int tag, int value)
     TEST_FAILED;
   }
 }
-
 
 #define MACHINE 3
 int main(int argc, char *argv[])
@@ -236,7 +237,7 @@ int main(int argc, char *argv[])
 
 
     mstatus_cmp = (mstatus_t) {
-    .fields.mpp   = MACHINE  // 
+    .fields.mpp   = MACHINE  //
     };
     if(mstatus_cmp.bits != mstatus.bits) {printf("ERROR: init mstatus mismatch exp=%x val=%x\n",
                                            mstatus_cmp.bits, mstatus.bits); TEST_FAILED;}
@@ -384,6 +385,72 @@ int main(int argc, char *argv[])
     check_debug_status(113,glb_hart_status);
     check_debug_exception_status(113,glb_hart_status);
     //FIXME TBD BUG : need to update test to check actual csrs not modified.
+
+    printf("------------------------\n");
+    printf(" Test14: Check exception ebreak enters debug mode\n");
+    glb_hart_status = 14;
+    glb_expect_illegal_insn = 1;
+    glb_exception_ebreak_status = 1;
+    glb_expect_debug_entry = 1;
+
+    // DCSR read will cause illegal instruction. 
+    // Exception routine reads glb_exception_ebreak_status=1 and executes c.ebreak
+    __asm__ volatile("csrr %0, dcsr"    : "=r"(temp)); // Debug DCSR
+
+    while(glb_debug_status != glb_hart_status){
+        printf("Wait for Debugger\n");
+    } 
+   
+    check_illegal_insn_status(114,temp1++);
+    check_debug_status(114, glb_hart_status);
+
+    printf("------------------------\n");
+    printf("Test 15: trigger match in debug mode\n");
+    glb_hart_status = 15;
+    glb_expect_debug_entry = 1;
+
+    // Request debug
+    DEBUG_REQ_CONTROL_REG = debug_req_control.bits;
+    
+    while(glb_debug_status != glb_hart_status){
+        printf("Wait for Debugger\n");
+    } 
+
+    check_debug_status(115, glb_hart_status);
+
+    printf("----------------------\n");
+    printf("Test 16: dret in m-mode causes exception\n");
+    
+    glb_expect_illegal_insn = 1;
+    __asm__ volatile("dret");
+    check_illegal_insn_status(16, temp1++); 
+
+    printf("------------------------\n");
+    printf("Test 17: WFI before debug_req_i and WFI in debug mode\n");
+    printf("If test hangs, WFI is NOT converted to NOP\n");
+    
+    glb_expect_debug_entry = 1;
+    glb_hart_status = 17;
+    // start_delay is set to 200, should get the wfi executing before dbg request is asserted
+    DEBUG_REQ_CONTROL_REG = debug_req_control.bits;
+
+    // Execute WFI, when debug is asserted, it will act as NOP and enter debug mode
+    // If not, test will hang
+    __asm__ volatile("wfi");
+    check_debug_status(117, glb_hart_status);
+
+    printf("------------------------\n");
+    printf("Test 18: Single stepping\n");
+    glb_hart_status = 18;
+
+    // Run single step code (in single_step.S)
+    _single_step(0); 
+
+    // Single step code should generate 1 illegal insn
+    check_illegal_insn_status(118, temp1++);
+    check_debug_status(118, glb_hart_status);
+
+    printf("Stepped %d times\n", glb_step_count);    
 
     //--------------------------------
     //return EXIT_FAILURE;
