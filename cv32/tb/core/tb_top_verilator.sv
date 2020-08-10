@@ -68,18 +68,18 @@ module tb_top_verilator
     // check if we succeded
     always_ff @(posedge clk_i, negedge rst_ni) begin
         if (tests_passed_o) begin
-            $display("ALL TESTS PASSED");
+            $display("%m @ %0t: ALL TESTS PASSED", $time);
             $finish;
         end
         if (tests_failed_o) begin
-            $display("TEST(S) FAILED!");
+            $display("%m @ %0t: TEST(S) FAILED!", $time);
             $finish;
         end
         if (exit_valid) begin
             if (exit_value == 0)
-                $display("EXIT SUCCESS");
+                $display("%m @ %0t: EXIT SUCCESS", $time);
             else
-                $display("EXIT FAILURE: %d", exit_value);
+                $display("%m @ %0t: EXIT FAILURE: %d", exit_value, $time);
             $finish;
         end
     end
