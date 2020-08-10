@@ -45,6 +45,7 @@ WAVES         = 0
 COREV_PROJ    = cv32
 MAKE_DIR      = $(PWD)
 PROJ_ROOT_DIR = $(PWD)/../../..
+CUSTOM_PROG  ?= requested_csr_por
 
 # Compile compile flags for all simulators
 SV_CMP_FLAGS = 
@@ -244,9 +245,17 @@ dsim-hello_world: dsim-comp $(CUSTOM)/hello_world.hex
 		-sv_lib $(UVM_HOME)/src/dpi/libuvm_dpi.so \
 		-sv_lib $(OVP_MODEL_DPI)  \
 		+firmware=$(CUSTOM)/hello_world.hex \
-		+elf_file=$(CUSTOM)/hello_world.elf \
-		+nm_file=$(CUSTOM)/hello_world.nm
+		+elf_file=$(CUSTOM)/hello_world.elf
 #		+verbose
+
+dsim-custom: dsim-comp $(CUSTOM)/$(CUSTOM_PROG).hex
+	mkdir -p $(DSIM_RESULTS)/$(CUSTOM_PROG) && cd $(DSIM_RESULTS)/$(CUSTOM_PROG)  && \
+	$(DSIM) -l dsim-requested_csr_por.log -image $(DSIM_IMAGE) \
+		-work $(DSIM_WORK) $(DSIM_RUN_FLAGS) \
+		-sv_lib $(UVM_HOME)/src/dpi/libuvm_dpi.so \
+		-sv_lib $(OVP_MODEL_DPI)  \
+		+firmware=$(CUSTOM)/$(CUSTOM_PROG).hex \
+		+elf_file=$(CUSTOM)/$(CUSTOM_PROG).elf
 
 # Runs tests in riscv_tests/ only
 dsim-cv32_riscv_tests: dsim-comp $(CV32_RISCV_TESTS_FIRMWARE)/cv32_riscv_tests_firmware.hex
@@ -256,8 +265,7 @@ dsim-cv32_riscv_tests: dsim-comp $(CV32_RISCV_TESTS_FIRMWARE)/cv32_riscv_tests_f
 		-sv_lib $(UVM_HOME)/src/dpi/libuvm_dpi.so \
 		-sv_lib $(OVP_MODEL_DPI)  \
 		+firmware=$(CV32_RISCV_TESTS_FIRMWARE)/cv32_riscv_tests_firmware.hex \
-		+elf_file=$(CV32_RISCV_TESTS_FIRMWARE)/cv32_riscv_tests_firmware.elf \
-		+nm_file=$(CV32_RISCV_TESTS_FIRMWARE)/cv32_riscv_tests_firmware.nm
+		+elf_file=$(CV32_RISCV_TESTS_FIRMWARE)/cv32_riscv_tests_firmware.elf
 
 # Runs tests in riscv_compliance_tests/ only
 dsim-cv32_riscv_compliance_tests: dsim-comp $(CV32_RISCV_COMPLIANCE_TESTS_FIRMWARE)/cv32_riscv_compliance_tests_firmware.hex
@@ -267,8 +275,7 @@ dsim-cv32_riscv_compliance_tests: dsim-comp $(CV32_RISCV_COMPLIANCE_TESTS_FIRMWA
 		-sv_lib $(UVM_HOME)/src/dpi/libuvm_dpi.so \
 		-sv_lib $(OVP_MODEL_DPI)  \
 		+firmware=$(CV32_RISCV_COMPLIANCE_TESTS_FIRMWARE)/cv32_riscv_compliance_tests_firmware.hex \
-		+elf_file=$(CV32_RISCV_COMPLIANCE_TESTS_FIRMWARE)/cv32_riscv_compliance_tests_firmware.elf \
-		+nm_file=$(CV32_RISCV_COMPLIANCE_TESTS_FIRMWARE)/cv32_riscv_compliance_tests_firmware.nm
+		+elf_file=$(CV32_RISCV_COMPLIANCE_TESTS_FIRMWARE)/cv32_riscv_compliance_tests_firmware.elf
 
 # Runs all tests in riscv_tests/ and riscv_compliance_tests/
 dsim-firmware: dsim-comp $(FIRMWARE)/firmware.hex
@@ -278,8 +285,7 @@ dsim-firmware: dsim-comp $(FIRMWARE)/firmware.hex
 		-sv_lib $(UVM_HOME)/src/dpi/libuvm_dpi.so \
 		-sv_lib $(OVP_MODEL_DPI)  \
 		+firmware=$(FIRMWARE)/firmware.hex \
-		+elf_file=$(FIRMWARE)/firmware.elf \
-		+nm_file=$(FIRMWARE)/firmware.nm
+		+elf_file=$(FIRMWARE)/firmware.elf
 
 # Runs a "unit-test" (see rule dsim-unit-test in ../Common.mk)
 dsim-firmware-unit-test: dsim-comp
@@ -289,8 +295,7 @@ dsim-firmware-unit-test: dsim-comp
 		-sv_lib $(UVM_HOME)/src/dpi/libuvm_dpi.so \
 		-sv_lib $(OVP_MODEL_DPI)  \
 		+firmware=$(FIRMWARE)/firmware_unit_test.hex \
-		+elf_file=$(FIRMWARE)/firmware_unit_test.elf \
-		+nm_file=$(FIRMWARE)/firmware_unit_test.nm
+		+elf_file=$(FIRMWARE)/firmware_unit_test.elf
 
 # Metrics dsim cleanup
 .PHONY: dsim-clean
@@ -496,13 +501,13 @@ verilate-clean: tc-clean
 ###############################################################################
 # Synopsys VCS
 
-vcsify: $(CV32E40P_PKG) $(FPNEW_PKG) $(CV32E40P_RTLSRC_PKG) $(CV32E40P_RTLSRC) $(TBSRC_PKG) $(TBSRC)
+vcsify: cv32e40p_pkg tbsrc_pkg tbsrc
 	$(VCS) +vc -sverilog -race=all -ignore unique_checks -full64 \
 		-timescale=1ns/1ps \
 		-assert svaext \
 		-CC "-I$(VCS_HOME)/include -O3 -march=native" $(VCS_FLAGS) \
-		$(CV32E40P_RTLSRC_PKG) $(CV32E40P_RTLSRC) $(TBSRC_PKG) $(TBSRC) \
-		+incdir+$(CV32E40P_RTLSRC_INCDIR)
+		-f $(MAKE_DIR)/$(CV32E40P_MANIFEST) \
+		$(TBSRC_PKG) $(TBSRC)
 
 RTLSRC_TB_TOP	:= $(basename $(notdir $(TBSRC_TOP)))
 
@@ -516,6 +521,11 @@ vcs-run-gui: vcsify
 vcs-hello_world: vcsify $(CUSTOM)/hello_world.hex
 vcs-hello_world: ALL_VCS_FLAGS += +firmware=$(CUSTOM)/hello_world.hex
 vcs-hello_world: vcs-run
+
+.PHONY: vcs-custom
+vcs-custom: vcsify $(CUSTOM)/$(CUSTOM_PROG).hex
+vcs-custom: ALL_VCS_FLAGS += +firmware=$(CUSTOM)/$(CUSTOM_PROG).hex
+vcs-custom: vcs-run
 
 .PHONY: vcs-cv32_riscv_tests
 vcs-cv32_riscv_tests: vcsify $(CV32_RISCV_TESTS_FIRMWARE)/cv32_riscv_tests_firmware.hex
