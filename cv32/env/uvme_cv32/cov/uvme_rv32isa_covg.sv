@@ -36,7 +36,53 @@
 
 class uvme_rv32isa_covg extends uvm_component;
 
+<<<<<<< HEAD:cv32/env/uvme_cv32/cov/uvme_rv32isa_covg.sv
     uvme_cv32_cntxt_c cntxt;
+=======
+
+// The following CSR ABI names are not currently included:
+// fp, pc
+//"gpr_none" CSR ABI name added for JALR instruction check:
+typedef enum {
+    zero,ra,sp,gp,tp,t0,t1,t2,s0
+    ,s1,a0,a1,a2,a3,a4,a5,a6
+    ,a7,s2,s3,s4,s5,s6,s7,s8
+    ,s9,s10,s11,t3,t4,t5,t6
+    ,gpr_none
+} gpr_name_t; // ABI name
+
+// The following CSRs are not currently included:
+// mstatush, mtinst, mtval2, mhpmcounter3, ..., mhpmcounter31,
+// mhpmcounter3h, ..., mhpmcounter31h,
+//The following CSRs have been removed:
+// satp (supervisor-mode address translation and protection)
+typedef enum {
+    mcause,mcounteren,mcountinhibit,mcycle,mcycleh,mepc,mhartid
+    ,mhpmevent10,mhpmevent11,mhpmevent12,mhpmevent13,mhpmevent14,mhpmevent15,mhpmevent16,mhpmevent17
+    ,mhpmevent18,mhpmevent19,mhpmevent20,mhpmevent21,mhpmevent22,mhpmevent23,mhpmevent24,mhpmevent25
+    ,mhpmevent26,mhpmevent27,mhpmevent28,mhpmevent29,mhpmevent3,mhpmevent30,mhpmevent31,mhpmevent4
+    ,mhpmevent5,mhpmevent6,mhpmevent7,mhpmevent8,mhpmevent9,mie
+    ,minstret,minstreth,mip,misa,mscratch,mstatus,mtval,mtvec,mvendorid
+    // Not supported by CV32E40P
+    //,mideleg, medeleg, mimpid. marchid
+    //,pmpaddr0,pmpaddr1,pmpaddr10,pmpaddr11,pmpaddr12,pmpaddr13,pmpaddr14
+    //,pmpaddr15,pmpaddr2,pmpaddr3,pmpaddr4,pmpaddr5,pmpaddr6,pmpaddr7,pmpaddr8
+    //,pmpaddr9,pmpcfg0,pmpcfg1,pmpcfg2,pmpcfg3
+} csr_name_t;
+
+typedef struct {
+    string key;
+    string val;
+} ops_t;
+
+typedef struct {
+    string ins_str;
+    instr_name_t asm;
+    ops_t ops[4];
+} ins_t;
+
+class riscv_32isa_coverage extends uvm_component;
+>>>>>>> Remove unused CSRs:cv32/tb/uvmt_cv32/uvmt_rv32isa_covg.sv
 
 // The following CSR ABI names are not currently included:
 // fp, pc
@@ -105,15 +151,19 @@ class uvme_rv32isa_covg extends uvm_component;
 // mhpmcounter3h, ..., mhpmcounter31h,
     function csr_name_t get_csr_name (string s, r, asm);
         case (s)
-            "marchid"      : return csr_name_t'(marchid);
             "mcause"       : return csr_name_t'(mcause);
             "mcounteren"   : return csr_name_t'(mcounteren);
             "mcountinhibit": return csr_name_t'(mcountinhibit);
             "mcycle"       : return csr_name_t'(mcycle);
             "mcycleh"      : return csr_name_t'(mcycleh);
-            "medeleg"      : return csr_name_t'(medeleg);
             "mepc"         : return csr_name_t'(mepc);
             "mhartid"      : return csr_name_t'(mhartid);
+            "mhpmevent4"   : return csr_name_t'(mhpmevent4);
+            "mhpmevent5"   : return csr_name_t'(mhpmevent5);
+            "mhpmevent6"   : return csr_name_t'(mhpmevent6);
+            "mhpmevent7"   : return csr_name_t'(mhpmevent7);
+            "mhpmevent8"   : return csr_name_t'(mhpmevent8);
+            "mhpmevent9"   : return csr_name_t'(mhpmevent9);
             "mhpmevent10"  : return csr_name_t'(mhpmevent10);
             "mhpmevent11"  : return csr_name_t'(mhpmevent11);
             "mhpmevent12"  : return csr_name_t'(mhpmevent12);
@@ -137,15 +187,7 @@ class uvme_rv32isa_covg extends uvm_component;
             "mhpmevent3"   : return csr_name_t'(mhpmevent3);
             "mhpmevent30"  : return csr_name_t'(mhpmevent30);
             "mhpmevent31"  : return csr_name_t'(mhpmevent31);
-            "mhpmevent4"   : return csr_name_t'(mhpmevent4);
-            "mhpmevent5"   : return csr_name_t'(mhpmevent5);
-            "mhpmevent6"   : return csr_name_t'(mhpmevent6);
-            "mhpmevent7"   : return csr_name_t'(mhpmevent7);
-            "mhpmevent8"   : return csr_name_t'(mhpmevent8);
-            "mhpmevent9"   : return csr_name_t'(mhpmevent9);
-            "mideleg"      : return csr_name_t'(mideleg);
             "mie"          : return csr_name_t'(mie);
-            "mimpid"       : return csr_name_t'(mimpid);
             "minstret"     : return csr_name_t'(minstret);
             "minstreth"    : return csr_name_t'(minstreth);
             "mip"          : return csr_name_t'(mip);
@@ -155,26 +197,31 @@ class uvme_rv32isa_covg extends uvm_component;
             "mtval"        : return csr_name_t'(mtval);
             "mtvec"        : return csr_name_t'(mtvec);
             "mvendorid"    : return csr_name_t'(mvendorid);
-            "pmpaddr0"     : return csr_name_t'(pmpaddr0);
-            "pmpaddr1"     : return csr_name_t'(pmpaddr1);
-            "pmpaddr10"    : return csr_name_t'(pmpaddr10);
-            "pmpaddr11"    : return csr_name_t'(pmpaddr11);
-            "pmpaddr12"    : return csr_name_t'(pmpaddr12);
-            "pmpaddr13"    : return csr_name_t'(pmpaddr13);
-            "pmpaddr14"    : return csr_name_t'(pmpaddr14);
-            "pmpaddr15"    : return csr_name_t'(pmpaddr15);
-            "pmpaddr2"     : return csr_name_t'(pmpaddr2);
-            "pmpaddr3"     : return csr_name_t'(pmpaddr3);
-            "pmpaddr4"     : return csr_name_t'(pmpaddr4);
-            "pmpaddr5"     : return csr_name_t'(pmpaddr5);
-            "pmpaddr6"     : return csr_name_t'(pmpaddr6);
-            "pmpaddr7"     : return csr_name_t'(pmpaddr7);
-            "pmpaddr8"     : return csr_name_t'(pmpaddr8);
-            "pmpaddr9"     : return csr_name_t'(pmpaddr9);
-            "pmpcfg0"      : return csr_name_t'(pmpcfg0);
-            "pmpcfg1"      : return csr_name_t'(pmpcfg1);
-            "pmpcfg2"      : return csr_name_t'(pmpcfg2);
-            "pmpcfg3"      : return csr_name_t'(pmpcfg3);
+            // These CSRs are not supported by CV32E40P
+            //"marchid"      : return csr_name_t'(marchid);
+            //"mimpid"       : return csr_name_t'(mimpid);
+            //"mideleg"      : return csr_name_t'(mideleg);
+            //"medeleg"      : return csr_name_t'(medeleg);
+            //"pmpaddr0"     : return csr_name_t'(pmpaddr0);
+            //"pmpaddr1"     : return csr_name_t'(pmpaddr1);
+            //"pmpaddr10"    : return csr_name_t'(pmpaddr10);
+            //"pmpaddr11"    : return csr_name_t'(pmpaddr11);
+            //"pmpaddr12"    : return csr_name_t'(pmpaddr12);
+            //"pmpaddr13"    : return csr_name_t'(pmpaddr13);
+            //"pmpaddr14"    : return csr_name_t'(pmpaddr14);
+            //"pmpaddr15"    : return csr_name_t'(pmpaddr15);
+            //"pmpaddr2"     : return csr_name_t'(pmpaddr2);
+            //"pmpaddr3"     : return csr_name_t'(pmpaddr3);
+            //"pmpaddr4"     : return csr_name_t'(pmpaddr4);
+            //"pmpaddr5"     : return csr_name_t'(pmpaddr5);
+            //"pmpaddr6"     : return csr_name_t'(pmpaddr6);
+            //"pmpaddr7"     : return csr_name_t'(pmpaddr7);
+            //"pmpaddr8"     : return csr_name_t'(pmpaddr8);
+            //"pmpaddr9"     : return csr_name_t'(pmpaddr9);
+            //"pmpcfg0"      : return csr_name_t'(pmpcfg0);
+            //"pmpcfg1"      : return csr_name_t'(pmpcfg1);
+            //"pmpcfg2"      : return csr_name_t'(pmpcfg2);
+            //"pmpcfg3"      : return csr_name_t'(pmpcfg3);
             default: begin
                 `uvm_error("RV32ISA Coverage", $sformatf("get_csr_name(): CSR [%0s] not recognized!", s))
             end
