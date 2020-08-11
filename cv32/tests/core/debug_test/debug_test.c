@@ -38,14 +38,14 @@ volatile int glb_expect_illegal_insn    = 0;
 volatile int glb_expect_ebreak_handler  = 0;
 volatile int glb_expect_debug_entry     = 0;
 volatile int glb_expect_debug_exception = 0;
-
-
+volatile int glb_expect_irq_entry = 0; 
+volatile int glb_irq_timeout = 0;
 #define TEST_FAILED  *(volatile int *)0x20000000 = 1
 #define TEST_PASSED  *(volatile int *)0x20000000 = 123456789
 
 extern int __stack_start; 
 extern int _trigger_code;
-
+extern int _trigger_code_wfi;
 typedef union {
   struct {
     unsigned int start_delay      : 15; // 14: 0
@@ -59,6 +59,8 @@ typedef union {
 }  debug_req_control_t;
 
 #define DEBUG_REQ_CONTROL_REG *(volatile int *)0x15000008
+#define TIMER_REG_ADDR         ((volatile uint32_t *) 0x15000000)  
+#define TIMER_VAL_ADDR         ((volatile uint32_t *) 0x15000004) 
 
 typedef union {
   struct {
@@ -88,6 +90,7 @@ typedef union {
 }  mstatus_t;
 
 extern void _trigger_test(int d);
+extern void _trigger_test_wfi(int d);
 extern void _single_step(int d);
 // Tag is simply to help debug and determine where the failure came from
 void check_debug_status(int tag, int value)
@@ -129,6 +132,46 @@ void check_illegal_insn_status(int tag, int value)
            tag, value, tag, glb_illegal_insn_status, value);
     TEST_FAILED;
   }
+}
+void delay(int count) {
+    for (volatile int d = 0; d < count; d++);
+}
+
+void mstatus_mie_enable() {
+    int mie_bit = 0x1 << 3;
+    asm volatile("csrrs x0, mstatus, %0" : : "r" (mie_bit));
+}
+
+void mstatus_mie_disable() {
+    int mie_bit = 0x1 << 3;
+    asm volatile("csrrc x0, mstatus, %0" : : "r" (mie_bit));
+}
+
+void mie_enable_all() {
+    uint32_t mie_mask = (uint32_t) -1;
+    asm volatile("csrrs x0, mie, %0" : : "r" (mie_mask));
+}
+
+void mie_disable_all() {
+    uint32_t mie_mask = (uint32_t) -1;
+    asm volatile("csrrc x0, mie, %0" : : "r" (mie_mask));
+}
+
+void mie_enable(uint32_t irq) {
+    // Enable the interrupt irq in MIE
+    uint32_t mie_bit = 0x1 << irq;
+    asm volatile("csrrs x0, mie, %0" : : "r" (mie_bit));
+}
+
+void mie_disable(uint32_t irq) {
+    // Disable the interrupt irq in MIE
+    uint32_t mie_bit = 0x1 << irq;
+    asm volatile("csrrc x0, mie, %0" : : "r" (mie_bit));
+}
+
+void mm_ram_assert_irq(uint32_t mask, uint32_t cycle_delay) {
+    *TIMER_REG_ADDR = mask;
+    *TIMER_VAL_ADDR = 1 + cycle_delay;
 }
 
 #define MACHINE 3
@@ -325,6 +368,16 @@ int main(int argc, char *argv[])
     // We should have also incremented debug status
     check_debug_status(73,glb_hart_status);
 
+    
+    // Following test commented out. 
+    // // With timing = 0, the WFI will not execute
+    // before entring debug, and hang on resume
+    
+    //printf("  test7.5: Trigger on WFI\n");
+    //glb_hart_status=81;
+    //glb_expect_debug_entry = 1;
+    //_trigger_test_wfi(1);
+    //check_debug_status(76, glb_hart_status);
 
     printf("  test7.4: Disable Trigger\n");
     glb_hart_status = 9;
@@ -339,7 +392,7 @@ int main(int argc, char *argv[])
     // Don't expect to enter debug (debug status stays the same value)
     check_debug_status(75,glb_hart_status);
 
-
+    
     printf("------------------------\n");
     printf(" Test10: check hart ebreak executes debugger code\n");
     glb_hart_status = 10;
@@ -439,6 +492,19 @@ int main(int argc, char *argv[])
     __asm__ volatile("wfi");
     check_debug_status(117, glb_hart_status);
 
+    printf("----------------------\n");
+    printf("Checking interrupt, as this is needed by later tests\n");
+
+    // Assert and check irq, as this is needed by some tests.
+    mstatus_mie_enable();
+    mie_enable(15);
+    glb_expect_irq_entry = 1;
+    mm_ram_assert_irq(-1, 1);
+    while(glb_expect_irq_entry == 1);
+    mm_ram_assert_irq(0,0);
+    printf("Irq check done\n");
+    
+
     printf("------------------------\n");
     printf("Test 18: Single stepping\n");
     glb_hart_status = 18;
@@ -451,6 +517,28 @@ int main(int argc, char *argv[])
     check_debug_status(118, glb_hart_status);
 
     printf("Stepped %d times\n", glb_step_count);    
+
+    printf("------------------------\n");
+    printf("Test 19: irq in debug\n");
+    glb_hart_status = 19;
+    glb_expect_debug_entry = 1;
+
+    // Does not expect irq to be taken while in debug mode
+    // but it will be taken when we exit from debug.
+    // Timeout added in debug code to check for taken irq or not
+    glb_expect_irq_entry = 1;
+    DEBUG_REQ_CONTROL_REG=debug_req_control.bits;
+   
+    while(glb_debug_status != glb_hart_status){
+        printf("Wait for Debugger\n");
+    } 
+   
+    check_debug_status(119, glb_hart_status);
+    if(glb_irq_timeout != 0) {
+        printf("glb_irq_timeout != 0, interrupt taken in debug.\n");
+        TEST_FAILED;
+    } 
+ 
 
     //--------------------------------
     //return EXIT_FAILURE;

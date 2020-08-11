@@ -171,7 +171,7 @@ interface uvmt_cv32_core_cntrl_if (
     boot_addr         = 32'h0000_0080;
     mtvec_addr        = 32'h0000_0000;
     dm_halt_addr      = 32'h1A11_0800;
-    dm_exception_addr = 32'h1A11_0C00;
+    dm_exception_addr = 32'h1A11_1000;
     hart_id           = 32'h0000_0000;
 
     qsc_stat_str =                $sformatf("\tclock_en          = %0d\n", clock_en);

@@ -29,14 +29,68 @@
 .global glb_expect_illegal_insn
 .global glb_expect_ebreak_handler
 .global glb_exception_ebreak_status
+.global glb_expect_irq_entry
 .set test_ret_val, 0x20000000
 .set test_fail, 0x1
 
 /* exception handling */
 __no_irq_handler:
+	addi sp,sp,-64
+	sw ra, 0(sp)
+	sw a0, 4(sp)
+	sw a1, 8(sp)
+	sw a2, 12(sp)
+	sw a3, 16(sp)
+	sw a4, 20(sp)
+	sw a5, 24(sp)
+	sw a6, 28(sp)
+	sw a7, 32(sp)
+	sw t0, 36(sp)
+	sw t1, 40(sp)
+	sw t2, 44(sp)
+	sw t3, 48(sp)
+	sw t4, 52(sp)
+	sw t5, 56(sp)
+	sw t6, 60(sp)
+
 	la a0, no_exception_handler_msg
 	jal ra, puts
-	j __no_irq_handler
+    
+    // Check if we expected to enter irq
+    la a1, glb_expect_irq_entry
+    lw t0, 0(a1)
+    beq t0, x0, _irq_fail
+
+    // Clear entry flag
+    li t0, 0
+    sw t0, 0(a1)
+	//j __no_irq_handler
+    
+    // Return
+    lw ra, 0(sp)
+	lw a0, 4(sp)
+	lw a1, 8(sp)
+	lw a2, 12(sp)
+	lw a3, 16(sp)
+	lw a4, 20(sp)
+	lw a5, 24(sp)
+	lw a6, 28(sp)
+	lw a7, 32(sp)
+	lw t0, 36(sp)
+	lw t1, 40(sp)
+	lw t2, 44(sp)
+	lw t3, 48(sp)
+	lw t4, 52(sp)
+	lw t5, 56(sp)
+	lw t6, 60(sp)
+	addi sp,sp,64
+	mret
+ 
+_irq_fail:
+    li a0, test_ret_val
+    li t0, test_fail
+    sw t0, 0(a0)
+    ret
 
 sw_irq_handler:
 	/* While we are still using puts in handlers, save all caller saved

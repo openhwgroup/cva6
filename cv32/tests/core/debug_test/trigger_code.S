@@ -5,7 +5,25 @@
 .global _trigger_exit
 .global _trigger_test
 .global _trigger_code
+.global _trigger_test_wfi
+.global _trigger_code_wfi
 .type _trigger_code, @function
+.type _trigger_code_wfi, @function
+_trigger_code_wfi:
+    wfi
+    ret
+
+_trigger_test_wfi:
+    addi sp,sp,-30
+    sw t0, 0(sp)
+    sw t1, 4(sp)
+    sw a0, 8(sp)
+    sw a1, 12(sp)
+    sw a2, 16(sp)
+    sw ra, 20(sp)
+
+    jal ra, _trigger_code_wfi
+    j __trigger_done
      // We will trigger on the _trigger_code addess
 	// We should not expect the first instruction to execute
 	// The debugger code will move the PC to the trigger_exit_code

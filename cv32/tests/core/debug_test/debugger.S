@@ -28,7 +28,10 @@
 .global glb_step_info
 .global glb_previous_dpc
 .global glb_step_count
+.global glb_irq_timeout
 .global _step_trig_point
+.global _trigger_code
+.global _trigger_code_wfi
 .global __debugger_stack_start
 .global _debugger_fail
 .global _debugger_end
@@ -76,6 +79,8 @@ _debugger_start:
 	li t0,8
 	beq t2,t0,_debugger_trigger_match    // Test 8
 
+    li t0, 81
+    beq t2,t0, _debugger_trigger_match_wfi 
 	li t0,9
 	beq t2,t0,_debugger_trigger_disable    // Test 9
 
@@ -103,6 +108,31 @@ _debugger_start:
     li t0,18
     beq t2, t0, _debugger_single_step
 
+    li t0, 19
+    beq t2, t0, _debugger_irq
+
+_debugger_irq:
+    // Assert irq
+    li a1, 0x15000000
+    li t0, 0xffffffff
+    sw t0, 0(a1)
+    li a1, 0x15000004
+    li t0, 2
+    sw t0, 0(a1)
+
+    li t1, 1000
+// Wait for 1000 cycles, then timeout
+_irq_wait_loop:
+    la a1, glb_expect_irq_entry
+    lw t0, 0(a1);
+    beq t1, x0, _irq_loop_end
+    addi t1, t1, -1
+    bne t0, x0, _irq_wait_loop
+_irq_loop_end:
+    la a1, glb_irq_timeout
+    sw t1, 0(a1) 
+    j _debugger_end
+
 _debugger_single_step:
     // Copy step_info
     la a1, glb_step_info
@@ -120,9 +150,16 @@ _debugger_single_step:
     beq t0, t1, _debugger_single_step_basic
     li t1, 4
     beq t0, t1, _debugger_single_step_trig_setup
-
+    li t1, 5
+    beq t0, t1, _debugger_single_step_stepie_enable
     j _debugger_fail
 
+_debugger_single_step_stepie_enable:
+    // enable stepi
+    li t0, 4<<28 | 1<<15 | 1<<2 | 1<<11
+    csrw dcsr, t0
+
+    j _debugger_single_step_end
 _debugger_single_step_enable:
      // Check dcsr
     csrr t0, dcsr
@@ -173,13 +210,16 @@ _debugger_single_step_end:
     addi t0, t0, 1
     sw t0, 0(a1)
     
-    // Clear step info if not 3 (exception)
+    // Clear step info if not 3 (exception) or 5 (irq while stepping)
+    // 
     // In exception test we expect jumps
     // to mtvec and other places, so keep
     // step info to waive dpc checks
     la a1, glb_step_info
     lw t0, 0(a1)
     li t1, 3
+    beq t0, t1, _debugger_end
+    li t1, 5
     beq t0, t1, _debugger_end
     li t1, 0
     sw t1, 0(a1)
@@ -355,6 +395,27 @@ _debugger_trigger_match:
 	bne  a1,a2,_debugger_fail
 	la   a1,_trigger_exit
 	csrw dpc,a1
+    
+    // Setup match addr for next match: wfi
+    la a1, _trigger_code_wfi
+    csrw tdata2, a1
+	j   _debugger_end
+_debugger_trigger_match_wfi:
+	// Expect DCSR
+	//   31:28 XDEBUGER Version = 4
+	//    8:6   Cause           = 2 Trigger
+	//    1:0   Privelege       = 3 Machine
+	// TBD FIXME BUG documentation update needed
+	li   t1, 4<<28 | 2<<6 | 3<<0 | 1<<15
+	csrr t2,dcsr
+	bne  t1,t2,_debugger_fail
+
+	la   a1,_trigger_code_wfi
+	csrr a2,dpc
+	bne  a1,a2,_debugger_fail
+
+    // Disable trigger
+    csrw tdata1, x0
 	j   _debugger_end
 _debugger_trigger_disable:
 	// Expect DCSR
