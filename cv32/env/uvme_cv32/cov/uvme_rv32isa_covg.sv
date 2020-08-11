@@ -993,85 +993,103 @@ class uvme_rv32isa_covg extends uvm_component;
     covergroup csrr_cg with function sample(ins_t ins);
         option.per_instance = 1;
         cp_rd    : coverpoint get_gpr_name(ins.ops[0].val, ins.ops[0].key, "csrr");
-        cp_csr   : coverpoint get_gpr_name(ins.ops[1].val, ins.ops[1].key, "csrr");
+        cp_csr   : coverpoint get_csr_name(ins.ops[1].val, ins.ops[1].key, "csrr");
     endgroup
 
     covergroup csrc_cg with function sample(ins_t ins);
         option.per_instance = 1;
-        cp_csr   : coverpoint get_gpr_name(ins.ops[0].val, ins.ops[0].key, "csrc");
+        cp_csr   : coverpoint get_csr_name(ins.ops[0].val, ins.ops[0].key, "csrc");
         cp_rs    : coverpoint get_gpr_name(ins.ops[1].val, ins.ops[1].key, "csrc");
     endgroup
 
     covergroup csrci_cg with function sample(ins_t ins);
         option.per_instance = 1;
-        cp_csr   : coverpoint get_gpr_name(ins.ops[0].val, ins.ops[0].key, "csrci");
-        cp_zimm  : coverpoint get_gpr_name(ins.ops[1].val, ins.ops[1].key, "csrci");
+        cp_csr   : coverpoint get_csr_name(ins.ops[0].val, ins.ops[0].key, "csrci");
+        cp_zimm  : coverpoint get_imm(ins.ops[1].val, "csrci") {
+          bins low  = {[5'b00000:5'b10000]};
+          bins high = {[5'b10001:5'b11111]};
+        }
     endgroup
 
     covergroup csrrc_cg with function sample(ins_t ins);
         option.per_instance = 1;
         cp_rd    : coverpoint get_gpr_name(ins.ops[0].val, ins.ops[0].key, "csrrc");
-        cp_csr   : coverpoint get_gpr_name(ins.ops[1].val, ins.ops[1].key, "csrrc");
+        cp_csr   : coverpoint get_csr_name(ins.ops[1].val, ins.ops[1].key, "csrrc");
         cp_rs1   : coverpoint get_gpr_name(ins.ops[2].val, ins.ops[2].key, "csrrc");
     endgroup
 
     covergroup csrrci_cg with function sample(ins_t ins);
         option.per_instance = 1;
         cp_rd    : coverpoint get_gpr_name(ins.ops[0].val, ins.ops[0].key, "csrrci");
-        cp_csr   : coverpoint get_gpr_name(ins.ops[1].val, ins.ops[1].key, "csrrci");
-        cp_zimm  : coverpoint get_gpr_name(ins.ops[2].val, ins.ops[2].key, "csrrci");
+        cp_csr   : coverpoint get_csr_name(ins.ops[1].val, ins.ops[1].key, "csrrci");
+        cp_zimm  : coverpoint get_imm(ins.ops[2].val, "csrrci") {
+          bins low  = {[5'b00000:5'b10000]};
+          bins high = {[5'b10001:5'b11111]};
+        }
     endgroup
 
     covergroup csrrs_cg with function sample(ins_t ins);
         option.per_instance = 1;
         cp_rd    : coverpoint get_gpr_name(ins.ops[0].val, ins.ops[0].key, "csrrs");
-        cp_csr   : coverpoint get_gpr_name(ins.ops[1].val, ins.ops[1].key, "csrrs");
+        cp_csr   : coverpoint get_csr_name(ins.ops[1].val, ins.ops[1].key, "csrrs");
         cp_rs1   : coverpoint get_gpr_name(ins.ops[2].val, ins.ops[2].key, "csrrs");
     endgroup
 
     covergroup csrrsi_cg with function sample(ins_t ins);
         option.per_instance = 1;
         cp_rd    : coverpoint get_gpr_name(ins.ops[0].val, ins.ops[0].key, "csrrsi");
-        cp_csr   : coverpoint get_gpr_name(ins.ops[1].val, ins.ops[1].key, "csrrsi");
-        cp_zimm  : coverpoint get_gpr_name(ins.ops[2].val, ins.ops[2].key, "csrrsi");
+        cp_csr   : coverpoint get_csr_name(ins.ops[1].val, ins.ops[1].key, "csrrsi");
+        cp_zimm  : coverpoint get_imm(ins.ops[2].val, "csrrsi") {
+          bins low  = {[5'b00000:5'b10000]};
+          bins high = {[5'b10001:5'b11111]};
+        }
     endgroup
 
     covergroup csrrw_cg with function sample(ins_t ins);
         option.per_instance = 1;
         cp_rd    : coverpoint get_gpr_name(ins.ops[0].val, ins.ops[0].key, "csrrw");
-        cp_csr   : coverpoint get_gpr_name(ins.ops[1].val, ins.ops[1].key, "csrrw");
+        cp_csr   : coverpoint get_csr_name(ins.ops[1].val, ins.ops[1].key, "csrrw");
         cp_rs1   : coverpoint get_gpr_name(ins.ops[2].val, ins.ops[2].key, "csrrw");
     endgroup
 
     covergroup csrrwi_cg with function sample(ins_t ins);
         option.per_instance = 1;
         cp_rd    : coverpoint get_gpr_name(ins.ops[0].val, ins.ops[0].key, "csrrwi");
-        cp_csr   : coverpoint get_gpr_name(ins.ops[1].val, ins.ops[1].key, "csrrwi");
-        cp_zimm  : coverpoint get_gpr_name(ins.ops[2].val, ins.ops[2].key, "csrrwi");
+        cp_csr   : coverpoint get_csr_name(ins.ops[1].val, ins.ops[1].key, "csrrwi");
+        cp_zimm  : coverpoint get_imm(ins.ops[2].val, "csrrwi") {
+          bins low  = {[5'b00000:5'b10000]};
+          bins high = {[5'b10001:5'b11111]};
+        }
     endgroup
 
     covergroup csrs_cg with function sample(ins_t ins);
         option.per_instance = 1;
-        cp_csr   : coverpoint get_gpr_name(ins.ops[0].val, ins.ops[0].key, "csrs");
+        cp_csr   : coverpoint get_csr_name(ins.ops[0].val, ins.ops[0].key, "csrs");
         cp_rs1   : coverpoint get_gpr_name(ins.ops[1].val, ins.ops[1].key, "csrs");
     endgroup
 
     covergroup csrsi_cg with function sample(ins_t ins);
         option.per_instance = 1;
-        cp_csr   : coverpoint get_gpr_name(ins.ops[0].val, ins.ops[0].key, "csrsi");
-        cp_zimm  : coverpoint get_gpr_name(ins.ops[1].val, ins.ops[1].key, "csrsi");
+        cp_csr   : coverpoint get_csr_name(ins.ops[0].val, ins.ops[0].key, "csrsi");
+        cp_zimm  : coverpoint get_imm(ins.ops[1].val, "csrsi") {
+          bins low  = {[5'b00000:5'b10000]};
+          bins high = {[5'b10001:5'b11111]};
+        }
     endgroup
 
     covergroup csrw_cg with function sample(ins_t ins);
         option.per_instance = 1;
-        cp_csr   : coverpoint get_gpr_name(ins.ops[0].val, ins.ops[0].key, "csrw");
+        cp_csr   : coverpoint get_csr_name(ins.ops[0].val, ins.ops[0].key, "csrw");
         cp_rs1   : coverpoint get_gpr_name(ins.ops[1].val, ins.ops[1].key, "csrw");
     endgroup
 
     covergroup csrwi_cg with function sample(ins_t ins);
         option.per_instance = 1;
-        cp_csr   : coverpoint get_gpr_name(ins.ops[0].val, ins.ops[0].key, "csrwi");
-        cp_zimm  : coverpoint get_gpr_name(ins.ops[1].val, ins.ops[1].key, "csrwi");
+        cp_csr   : coverpoint get_csr_name(ins.ops[0].val, ins.ops[0].key, "csrwi");
+        cp_zimm  : coverpoint get_imm(ins.ops[1].val, "csrwi") {
+          bins low  = {[5'b00000:5'b10000]};
+          bins high = {[5'b10001:5'b11111]};
+        }
     endgroup
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -1735,19 +1753,19 @@ class uvme_rv32isa_covg extends uvm_component;
             "rem"       : begin ins.asm=REM;    rem_cg.sample(ins);    end
             "divu"      : begin ins.asm=DIVU;   divu_cg.sample(ins);   end
             "remu"      : begin ins.asm=REMU;   remu_cg.sample(ins);   end
-            "csrr"      : begin ins.asm=CSRR;   csrr_cg.sample(ins);   `uvm_info("RV32ISA Coverage", $sformatf("Instruction: %0s %0s %0s %0s", ins.ins_str, ins.ops[0].val, ins.ops[1].val, ins.ops[2].val), UVM_LOW) end
-            "csrc"      : begin ins.asm=CSRC;   csrc_cg.sample(ins);   `uvm_info("RV32ISA Coverage", $sformatf("Instruction: %0s %0s %0s %0s", ins.ins_str, ins.ops[0].val, ins.ops[1].val, ins.ops[2].val), UVM_LOW) end
-            "csrci"     : begin ins.asm=CSRCI;  csrci_cg.sample(ins);  `uvm_info("RV32ISA Coverage", $sformatf("Instruction: %0s %0s %0s %0s", ins.ins_str, ins.ops[0].val, ins.ops[1].val, ins.ops[2].val), UVM_LOW) end
-            "csrrc"     : begin ins.asm=CSRRC;  csrrc_cg.sample(ins);  `uvm_info("RV32ISA Coverage", $sformatf("Instruction: %0s %0s %0s %0s", ins.ins_str, ins.ops[0].val, ins.ops[1].val, ins.ops[2].val), UVM_LOW) end
-            "csrrci"    : begin ins.asm=CSRRCI; csrrci_cg.sample(ins); `uvm_info("RV32ISA Coverage", $sformatf("Instruction: %0s %0s %0s %0s", ins.ins_str, ins.ops[0].val, ins.ops[1].val, ins.ops[2].val), UVM_LOW) end
-            "csrrs"     : begin ins.asm=CSRRS;  csrrs_cg.sample(ins);  `uvm_info("RV32ISA Coverage", $sformatf("Instruction: %0s %0s %0s %0s", ins.ins_str, ins.ops[0].val, ins.ops[1].val, ins.ops[2].val), UVM_LOW) end
-            "csrrsi"    : begin ins.asm=CSRRSI; csrrsi_cg.sample(ins); `uvm_info("RV32ISA Coverage", $sformatf("Instruction: %0s %0s %0s %0s", ins.ins_str, ins.ops[0].val, ins.ops[1].val, ins.ops[2].val), UVM_LOW) end
-            "csrrw"     : begin ins.asm=CSRRW;  csrrw_cg.sample(ins);  `uvm_info("RV32ISA Coverage", $sformatf("Instruction: %0s %0s %0s %0s", ins.ins_str, ins.ops[0].val, ins.ops[1].val, ins.ops[2].val), UVM_LOW) end
-            "csrrwi"    : begin ins.asm=CSRRWI; csrrwi_cg.sample(ins); `uvm_info("RV32ISA Coverage", $sformatf("Instruction: %0s %0s %0s %0s", ins.ins_str, ins.ops[0].val, ins.ops[1].val, ins.ops[2].val), UVM_LOW) end
-            "csrs"      : begin ins.asm=CSRRS;  csrrs_cg.sample(ins);  `uvm_info("RV32ISA Coverage", $sformatf("Instruction: %0s %0s %0s %0s", ins.ins_str, ins.ops[0].val, ins.ops[1].val, ins.ops[2].val), UVM_LOW) end
-            "csrsi"     : begin ins.asm=CSRRSI; csrrsi_cg.sample(ins); `uvm_info("RV32ISA Coverage", $sformatf("Instruction: %0s %0s %0s %0s", ins.ins_str, ins.ops[0].val, ins.ops[1].val, ins.ops[2].val), UVM_LOW) end
-            "csrw"      : begin ins.asm=CSRRW;  csrrw_cg.sample(ins);  `uvm_info("RV32ISA Coverage", $sformatf("Instruction: %0s %0s %0s %0s", ins.ins_str, ins.ops[0].val, ins.ops[1].val, ins.ops[2].val), UVM_LOW) end
-            "csrwi"     : begin ins.asm=CSRRWI; csrrwi_cg.sample(ins); `uvm_info("RV32ISA Coverage", $sformatf("Instruction: %0s %0s %0s %0s", ins.ins_str, ins.ops[0].val, ins.ops[1].val, ins.ops[2].val), UVM_LOW) end
+            "csrr"      : begin ins.asm=CSRR;   csrr_cg.sample(ins);   `uvm_info("RV32ISA Coverage", $sformatf("Instruction: %0s %0s %0s %0s", ins.ins_str, ins.ops[0].val, ins.ops[1].val, ins.ops[2].val), UVM_HIGH) end
+            "csrc"      : begin ins.asm=CSRC;   csrc_cg.sample(ins);   `uvm_info("RV32ISA Coverage", $sformatf("Instruction: %0s %0s %0s %0s", ins.ins_str, ins.ops[0].val, ins.ops[1].val, ins.ops[2].val), UVM_HIGH) end
+            "csrci"     : begin ins.asm=CSRCI;  csrci_cg.sample(ins);  `uvm_info("RV32ISA Coverage", $sformatf("Instruction: %0s %0s %0s %0s", ins.ins_str, ins.ops[0].val, ins.ops[1].val, ins.ops[2].val), UVM_HIGH) end
+            "csrrc"     : begin ins.asm=CSRRC;  csrrc_cg.sample(ins);  `uvm_info("RV32ISA Coverage", $sformatf("Instruction: %0s %0s %0s %0s", ins.ins_str, ins.ops[0].val, ins.ops[1].val, ins.ops[2].val), UVM_HIGH) end
+            "csrrci"    : begin ins.asm=CSRRCI; csrrci_cg.sample(ins); `uvm_info("RV32ISA Coverage", $sformatf("Instruction: %0s %0s %0s %0s", ins.ins_str, ins.ops[0].val, ins.ops[1].val, ins.ops[2].val), UVM_HIGH) end
+            "csrrs"     : begin ins.asm=CSRRS;  csrrs_cg.sample(ins);  `uvm_info("RV32ISA Coverage", $sformatf("Instruction: %0s %0s %0s %0s", ins.ins_str, ins.ops[0].val, ins.ops[1].val, ins.ops[2].val), UVM_HIGH) end
+            "csrrsi"    : begin ins.asm=CSRRSI; csrrsi_cg.sample(ins); `uvm_info("RV32ISA Coverage", $sformatf("Instruction: %0s %0s %0s %0s", ins.ins_str, ins.ops[0].val, ins.ops[1].val, ins.ops[2].val), UVM_HIGH) end
+            "csrrw"     : begin ins.asm=CSRRW;  csrrw_cg.sample(ins);  `uvm_info("RV32ISA Coverage", $sformatf("Instruction: %0s %0s %0s %0s", ins.ins_str, ins.ops[0].val, ins.ops[1].val, ins.ops[2].val), UVM_HIGH) end
+            "csrrwi"    : begin ins.asm=CSRRWI; csrrwi_cg.sample(ins); `uvm_info("RV32ISA Coverage", $sformatf("Instruction: %0s %0s %0s %0s", ins.ins_str, ins.ops[0].val, ins.ops[1].val, ins.ops[2].val), UVM_HIGH) end
+            "csrs"      : begin ins.asm=CSRS;   csrs_cg.sample(ins);   `uvm_info("RV32ISA Coverage", $sformatf("Instruction: %0s %0s %0s %0s", ins.ins_str, ins.ops[0].val, ins.ops[1].val, ins.ops[2].val), UVM_HIGH) end
+            "csrsi"     : begin ins.asm=CSRRSI; csrsi_cg.sample(ins);  `uvm_info("RV32ISA Coverage", $sformatf("Instruction: %0s %0s %0s %0s", ins.ins_str, ins.ops[0].val, ins.ops[1].val, ins.ops[2].val), UVM_HIGH) end
+            "csrw"      : begin ins.asm=CSRRW;  csrw_cg.sample(ins);   `uvm_info("RV32ISA Coverage", $sformatf("Instruction: %0s %0s %0s %0s", ins.ins_str, ins.ops[0].val, ins.ops[1].val, ins.ops[2].val), UVM_HIGH) end
+            "csrwi"     : begin ins.asm=CSRWI;  csrwi_cg.sample(ins);  `uvm_info("RV32ISA Coverage", $sformatf("Instruction: %0s %0s %0s %0s", ins.ins_str, ins.ops[0].val, ins.ops[1].val, ins.ops[2].val), UVM_HIGH) end
             default: begin
               ins.asm = NOP;
               `uvm_info("RV32ISA Coverage", $sformatf("Coverage warning: ins [%0s] not yet included in being covered", ins.ins_str), UVM_DEBUG)
