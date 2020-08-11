@@ -165,6 +165,16 @@
             "seed":        1
           },
           {
+            "name":        "CSR Access Mode Test",
+            "build":       "uvmt_cv32",
+            "cmd":         "cd cv32/sim/uvmt_cv32; make custom CUSTOM_PROG=cv32e40p_csr_access_test SIMULATOR=dsim USE_ISS=YES DSIM_WORK=/mux-flow/build/repo/dsim_work DSIM_RESULTS=/mux-flow/build/results",
+            "wavesCmd":    "cd cv32/sim/uvmt_cv32; make custom CUSTOM_PROG=cv32e40p_csr_access_test SIMULATOR=dsim USE_ISS=YES DSIM_WORK=/mux-flow/build/repo/dsim_work DSIM_RESULTS=/mux-flow/build/results WAVES=1 DSIM_DMP_FILE=cv32e40p_csr_access_test.vcd",
+            "metricsFile": "cv32e40p_csr_access_test/metrics.db",
+            "wavesFile" :  "cv32e40p_csr_access_test/cv32e40p_csr_access_test.vcd",
+            "isPass":      "SIMULATION PASSED",
+            "seed":        1
+          },
+          {
             "name":        "CSR PoR Test",
             "build":       "uvmt_cv32",
             "cmd":         "cd cv32/sim/uvmt_cv32; make custom CUSTOM_PROG=requested_csr_por SIMULATOR=dsim USE_ISS=YES DSIM_WORK=/mux-flow/build/repo/dsim_work DSIM_RESULTS=/mux-flow/build/results",
