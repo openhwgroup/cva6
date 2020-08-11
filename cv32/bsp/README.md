@@ -45,7 +45,7 @@ exception code `0`, they jump to the same location as exceptions, therefore the
 user software interrupt handler must also handle exceptions.
 
 The vector table is defined in `vectors.S` and may jump to one of the
-following three interrupt request handlers in `handlers.S`:
+following interrupt request handlers in `handlers.S`:
   * `u_sw_irq_handler` - handles user software interrupts and all exceptions.
   Saves all caller saved registers then checks `mcause` and jumps to the
   appropriate handler as follows:
