@@ -13,12 +13,11 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-#
-# Base CSR template that should be followed when describing all processor
-# supported CSRs to enable correct generation of directed test sequences
+################################################################################
 #
 # CSR definitions for the CV32E40P CORE-V proessor core (an RV32IMCZ machine).
 #
+################################################################################
 #- csr: CSR_NAME
 #  description: >
 #    BRIEF_DESCRIPTION
@@ -52,51 +51,6 @@
 #      - description: ...
 #      - type: ...
 #      - ...
-
-
-# Example template, using the CSR misa
-# Note: assume the processor supports only the RISC-V I/C extensions
-#- csr: mstatus
-#  description: >
-#    Machine Status Register
-#  address: 0x300
-#  privilege_mode: M
-#  rv32:
-#    - field_name: MPP
-#      description: >
-#          Machine Previous Privilege
-#      type: R
-#      reset_val: 0x3
-#      msb: 12
-#      lsb: 11
-#    - field_name: MPIE
-#      description: >
-#          Machine Previous Interrupt Enable
-#      type: R
-#      reset_val: 0
-#      msb: 7
-#      lsb: 7
-#    - field_name: UPIE
-#      description: >
-#          User Previous Interrupt Enable
-#      type: R
-#      reset_val: 0
-#      msb: 4
-#      lsb: 4
-#    - field_name: MIE
-#      description: >
-#          Machine Interrupt Enable
-#      type: WARL
-#      reset_val: 0
-#      msb: 3
-#      lsb: 3
-#    - field_name: UIE
-#      description: >
-#          User Interrupt Enable
-#      type: R
-#      reset_val: 0
-#      msb: 0
-#      lsb: 0
 - csr: mstatus
   description: >
     Machine ISA Register
@@ -158,6 +112,40 @@
       reset_val: 0x801104
       msb: 25
       lsb: 0
+- csr: mie
+  description: >
+    Machine Interrupt Enable
+  address: 0x304
+  privilege_mode: M
+  rv32:
+    - field_name: MFIE
+      description: >
+        Machine Fast Interrupt Enables
+      type: WARL
+      reset_val: 0
+      msb: 31
+      lsb: 16
+    - field_name: MEIE
+      description: >
+        Machine External Interrupt Enable
+      type: WARL 
+      reset_val: 0
+      msb: 11
+      lsb: 11 
+    - field_name: MTIE
+      description: >
+        Machine Timer Interrupt Enable
+      type: WARL 
+      reset_val: 0
+      msb: 7
+      lsb: 7 
+    - field_name: MSIE
+      description: >
+        Machine Software Interrupt Enable
+      type: WARL 
+      reset_val: 0
+      msb: 3
+      lsb: 3 
 - csr: mscratch
   description: >
     Machine Scratch-pad Register
