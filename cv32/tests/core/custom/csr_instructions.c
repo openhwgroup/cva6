@@ -87,6 +87,23 @@ int main(int argc, char *argv[])
   // pseudoinstruction: expands to csrrwi x0, csr, rs1
   __asm__ volatile("csrwi 0x340, 0xF");
 
+  printf("\n\nMSTATUS (0x300) CSR Write-Read Test\n");
+  // Control and Status Register Read
+  // pseudoinstruction: expands to csrrs rd, csr, x0
+  __asm__ volatile("csrr %0, 0x300" : "=r"(readd));
+  printf("MSTATUS Read Value is %0x\n", readd);
+  // Control and Status Register Write
+  // pseudoinstruction: expands to csrrw x0, csr, rs1
+  mask = 0xFFFFFFFF;
+  __asm__ volatile("li a5, 0x0");
+  __asm__ volatile("li a5,0xFFFFFFFF");
+  __asm__ volatile("csrw 0x300, a5");
+  // Control and Status Register Read
+  // pseudoinstruction: expands to csrrs rd, csr, x0
+  __asm__ volatile("csrr %0, 0x300" : "=r"(readd));
+  printf("MSTATUS Read Value is %0x\n", readd);
+
+
 
   printf("DONE!\n\n");
 
