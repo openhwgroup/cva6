@@ -82,6 +82,7 @@ module cache_ctrl import ariane_pkg::*; import std_cache_pkg::*; #(
     logic [DCACHE_SET_ASSOC-1:0] hit_way_d, hit_way_q;
 
     assign busy_o = (state_q != IDLE);
+    assign tag_o  = mem_req_d.tag;
 
     mem_req_t mem_req_d, mem_req_q;
 
@@ -119,9 +120,7 @@ module cache_ctrl import ariane_pkg::*; import std_cache_pkg::*; #(
         addr_o = req_port_i.address_index;
         data_o = '0;
         be_o   = '0;
-        tag_o  = '0;
         we_o   = '0;
-        tag_o  = 'b0;
 
         mem_req_d.killed |= req_port_i.kill_req;
 
@@ -135,7 +134,6 @@ module cache_ctrl import ariane_pkg::*; import std_cache_pkg::*; #(
 
                     // save index, be and we
                     mem_req_d.index = req_port_i.address_index;
-                    mem_req_d.tag   = req_port_i.address_tag;
                     mem_req_d.be    = req_port_i.data_be;
                     mem_req_d.size  = req_port_i.data_size;
                     mem_req_d.we    = req_port_i.data_we;
@@ -144,7 +142,7 @@ module cache_ctrl import ariane_pkg::*; import std_cache_pkg::*; #(
 
                     // Bypass mode, check for uncacheable address here as well
                     if (bypass_i) begin
-                        state_d = (req_port_i.data_we) ? WAIT_REFILL_GNT : WAIT_TAG_BYPASSED;
+                        state_d = WAIT_TAG_BYPASSED;
                         // grant this access only if it was a load
                         req_port_o.data_gnt = (req_port_i.data_we) ? 1'b0 : 1'b1;
                         mem_req_d.bypass = 1'b1;
@@ -166,17 +164,16 @@ module cache_ctrl import ariane_pkg::*; import std_cache_pkg::*; #(
 
             // cache enabled and waiting for tag
             WAIT_TAG, WAIT_TAG_SAVED: begin
-                // depending on where we come from
-                // For the store case the tag comes in the same cycle
-                tag_o = (state_q == WAIT_TAG_SAVED || mem_req_q.we) ? mem_req_q.tag
-                                                                    : req_port_i.address_tag;
-                // we speculatively request another transfer
-                if (req_port_i.data_req && !flush_i) begin
-                    req_o = '1;
-                end
-
-                // check that the client really wants to do the request
-                if (!req_port_i.kill_req) begin
+                // check that the client really wants to do the request and that we have a valid tag
+                if (!req_port_i.kill_req && (req_port_i.tag_valid || state_d == WAIT_TAG_SAVED)) begin
+                    // save tag if we didn't already save it
+                    if (state_d != WAIT_TAG_SAVED) begin
+                        mem_req_d.tag = req_port_i.address_tag;
+                    end
+                    // we speculatively request another transfer
+                    if (req_port_i.data_req && !flush_i) begin
+                        req_o = '1;
+                    end
                     // ------------
                     // HIT CASE
                     // ------------
@@ -220,8 +217,6 @@ module cache_ctrl import ariane_pkg::*; import std_cache_pkg::*; #(
                     // MISS CASE
                     // ------------
                     end else begin
-                        // also save the tag
-                        mem_req_d.tag = req_port_i.address_tag;
                         // make a miss request
                         state_d = WAIT_REFILL_GNT;
                     end
@@ -248,17 +243,12 @@ module cache_ctrl import ariane_pkg::*; import std_cache_pkg::*; #(
                     //    req_port_o.data_rvalid will be de-asserted.
                     if ((mshr_index_matches_i && mem_req_q.we) || mshr_addr_matches_i) begin
                         state_d = WAIT_MSHR;
-                        // save tag if we didn't already save it e.g.: we are not in in the Tag saved state
-                        if (state_q != WAIT_TAG_SAVED) begin
-                            mem_req_d.tag = req_port_i.address_tag;
-                        end
                     end
 
                     // -------------------------
                     // Check for cache-ability
                     // -------------------------
                     if (tag_o < CACHE_START_ADDR[DCACHE_TAG_WIDTH+DCACHE_INDEX_WIDTH-1:DCACHE_INDEX_WIDTH]) begin
-                        mem_req_d.tag = req_port_i.address_tag;
                         mem_req_d.bypass = 1'b1;
                         state_d = WAIT_REFILL_GNT;
                     end
@@ -312,8 +302,8 @@ module cache_ctrl import ariane_pkg::*; import std_cache_pkg::*; #(
 
             // its for sure a miss
             WAIT_TAG_BYPASSED: begin
-                // the request was killed
-                if (!req_port_i.kill_req) begin
+                // check that the client really wants to do the request and that we have a valid tag
+                if (!req_port_i.kill_req & req_port_i.tag_valid) begin
                     // save tag
                     mem_req_d.tag = req_port_i.address_tag;
                     state_d = WAIT_REFILL_GNT;
