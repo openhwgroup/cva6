@@ -76,6 +76,7 @@ module cache_ctrl import ariane_pkg::*; import std_cache_pkg::*; #(
         logic                   we;
         logic [63:0]            wdata;
         logic                   bypass;
+        logic                   killed;
     } mem_req_t;
 
     logic [DCACHE_SET_ASSOC-1:0] hit_way_d, hit_way_q;
@@ -122,6 +123,8 @@ module cache_ctrl import ariane_pkg::*; import std_cache_pkg::*; #(
         we_o   = '0;
         tag_o  = 'b0;
 
+        mem_req_d.killed |= req_port_i.kill_req;
+
         case (state_q)
 
             IDLE: begin
@@ -137,6 +140,7 @@ module cache_ctrl import ariane_pkg::*; import std_cache_pkg::*; #(
                     mem_req_d.size  = req_port_i.data_size;
                     mem_req_d.we    = req_port_i.data_we;
                     mem_req_d.wdata = req_port_i.data_wdata;
+                    mem_req_d.killed = req_port_i.kill_req;
 
                     // Bypass mode, check for uncacheable address here as well
                     if (bypass_i) begin
@@ -185,7 +189,7 @@ module cache_ctrl import ariane_pkg::*; import std_cache_pkg::*; #(
                             mem_req_d.size   = req_port_i.data_size;
                             mem_req_d.we     = req_port_i.data_we;
                             mem_req_d.wdata  = req_port_i.data_wdata;
-                            mem_req_d.tag    = req_port_i.address_tag;
+                            mem_req_d.killed = req_port_i.kill_req;
                             mem_req_d.bypass = 1'b0;
 
                             req_port_o.data_gnt = gnt_i;
@@ -362,7 +366,7 @@ module cache_ctrl import ariane_pkg::*; import std_cache_pkg::*; #(
                 end
 
                 if (critical_word_valid_i) begin
-                    req_port_o.data_rvalid = 1'b1;
+                    req_port_o.data_rvalid = ~mem_req_q.killed;
                     req_port_o.data_rdata = critical_word_i;
                     // we can make another request
                     if (req_port_i.data_req) begin
@@ -372,7 +376,7 @@ module cache_ctrl import ariane_pkg::*; import std_cache_pkg::*; #(
                         mem_req_d.size  = req_port_i.data_size;
                         mem_req_d.we    = req_port_i.data_we;
                         mem_req_d.wdata = req_port_i.data_wdata;
-                        mem_req_d.tag   = req_port_i.address_tag;
+                        mem_req_d.killed = req_port_i.kill_req;
 
                         state_d = IDLE;
 
@@ -392,15 +396,19 @@ module cache_ctrl import ariane_pkg::*; import std_cache_pkg::*; #(
                 // got a valid answer
                 if (bypass_valid_i) begin
                     req_port_o.data_rdata = bypass_data_i;
-                    req_port_o.data_rvalid = 1'b1;
+                    req_port_o.data_rvalid = ~mem_req_q.killed;
                     state_d = IDLE;
                 end
             end
         endcase
 
         if (req_port_i.kill_req) begin
-            state_d = IDLE;
             req_port_o.data_rvalid = 1'b1;
+            if (!(state_q inside {
+                                  WAIT_REFILL_GNT,
+                                  WAIT_CRITICAL_WORD})) begin
+                state_d = IDLE;
+            end
         end
     end
 
