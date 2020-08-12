@@ -70,11 +70,11 @@ Please refer to the help utility of *cv_regress* for more details on the utility
 
 The following describes the YAML format for regression testlists.  
 
-><*Required*: the name of the testlist><br>
+>\<*Required*: the name of the testlist><br>
 name: \<string\><br>
-<*Required*: human-readable description to specify the intent of the testlist><br>
+\<*Required*: human-readable description to specify the intent of the testlist><br>
 description: \<string><br>
-<br>
+><br>
 \# List of builds, this can include SystemVerilog compiles and riscv-dv compiles<br>
 \# Multiple builds may be defined<br>
 builds:<br>
@@ -83,7 +83,7 @@ builds:<br>
 &nbsp;&nbsp;&nbsp;&nbsp;cmd: make comp<br>
 &nbsp;&nbsp;&nbsp;&nbsp;<*Required*: make directory for the build><br>
 &nbsp;&nbsp;&nbsp;&nbsp;dir: cv32/sim/uvmt_cv32<br>
-<br>
+><br>
 \# List of tests<br>
 \# Multiple tests can be defined<br>
 tests:<br>
@@ -100,4 +100,5 @@ tests:<br>
 &nbsp;&nbsp;&nbsp;&nbsp;cmd: \<string><br>
 &nbsp;&nbsp;&nbsp;&nbsp;<*Optional*: The number of test iterations to run.  Note that all runs will receive a random seed><br>
 &nbsp;&nbsp;&nbsp;&nbsp;num: \<number>
+
 
