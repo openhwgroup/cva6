@@ -111,10 +111,23 @@ _debugger_start:
     li t0, 19
     beq t2, t0, _debugger_irq
 
+    li t0, 20
+    beq t2, t0, _debugger_req_and_irq
+
+_debugger_req_and_irq:
+    // Debug was requested at the same cycle as irq
+    // Check dpc to see that pc is not at irq handler
+    // IRQ used was 30, so addr would be 30*4=120, 0x78
+    csrr t0, dpc
+    li t1, 0x78
+    beq t0, t1, _debugger_fail
+    j _debugger_end
+
+
 _debugger_irq:
     // Assert irq
     li a1, 0x15000000
-    li t0, 0xffffffff
+    li t0, 0x40000000
     sw t0, 0(a1)
     li a1, 0x15000004
     li t0, 2

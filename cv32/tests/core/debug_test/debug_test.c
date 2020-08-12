@@ -497,9 +497,9 @@ int main(int argc, char *argv[])
 
     // Assert and check irq, as this is needed by some tests.
     mstatus_mie_enable();
-    mie_enable(15);
+    mie_enable(30);
     glb_expect_irq_entry = 1;
-    mm_ram_assert_irq(-1, 1);
+    mm_ram_assert_irq(0x40000000, 1);
     while(glb_expect_irq_entry == 1);
     mm_ram_assert_irq(0,0);
     printf("Irq check done\n");
@@ -539,7 +539,21 @@ int main(int argc, char *argv[])
         TEST_FAILED;
     } 
  
+    // Test debug req vs irq timing
+    printf("-----------------------\n");
+    printf("Test 20: Asserting debug_req and irq at the same cycle\n");
+    glb_expect_debug_entry = 1;
+    glb_expect_irq_entry = 1;
 
+    DEBUG_REQ_CONTROL_REG = debug_req_control.bits;
+    // 170 halts on first instuction in interrupt handler
+    // 175 gives same timing for interrupt and debug_req_i
+    mm_ram_assert_irq(0x40000000, 175);
+
+    while(glb_debug_status != glb_hart_status){
+        printf("Wait for Debugger\n");
+    }
+    check_debug_status(120, glb_hart_status);
     //--------------------------------
     //return EXIT_FAILURE;
     printf("------------------------\n");

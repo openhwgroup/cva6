@@ -22,6 +22,7 @@
 ###############################################################################
 
 XRUN              = xrun
+XRUN_DMP_FILE    ?= xrun_dump_all.tcl
 XRUN_UVMHOME_ARG ?= CDNS-1.2-ML
 XRUN_COMP_FLAGS  ?= -64bit -disable_sem2009 -access +rwc -q -clean \
                    -top uvmt_cv32_tb -sv -uvm -uvmhome $(XRUN_UVMHOME_ARG) \
@@ -50,9 +51,28 @@ ifeq ($(COVERAGE),YES)
     XRUN_PLUSARGS +="+COVERAGE"
 endif
 
+# Variables to control wave dumping from command the line
+# Humans _always_ forget the "S", so you can have it both ways...
+WAVES                  ?= 0
+WAVE                   ?= 0
+DUMP_WAVES             := 0
+
+ifneq ($(WAVES), 0)
+DUMP_WAVES = 1
+endif
+
+ifneq ($(WAVE), 0)
+DUMP_WAVES = 1
+endif
+
+ifneq ($(DUMP_WAVES), 0)
+XRUN_DMP_FLAGS ?= -input $(XRUN_DMP_FILE)
+endif
+
+
 XRUN_RUN_BASE_FLAGS   ?= -64bit $(XRUN_GUI) +UVM_VERBOSITY=$(XRUN_UVM_VERBOSITY) $(XRUN_PLUSARGS) -sv_lib $(OVP_MODEL_DPI)
 # Simulate using latest elab
-XRUN_RUN_FLAGS        ?= -R $(XRUN_RUN_BASE_FLAGS)
+XRUN_RUN_FLAGS        ?= -R $(XRUN_RUN_BASE_FLAGS) $(XRUN_DMP_FLAGS)
 
 no_rule:
 	@echo 'makefile: SIMULATOR is set to $(SIMULATOR), but no rule/target specified.'

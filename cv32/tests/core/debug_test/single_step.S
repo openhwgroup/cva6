@@ -89,7 +89,7 @@ _step_trig_exit:
     
     // Assert irq
     li a1, 0x15000000
-    li t0, 0xffffffff
+    li t0, 0x40000000
     sw t0, 0(a1)
     li a1, 0x15000004
     li t0, 2
