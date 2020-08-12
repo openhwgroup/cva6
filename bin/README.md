@@ -8,8 +8,8 @@ Unless otherwise noted all utilities in this directory should be agnostic to $CW
 should be able to run the utilities via a PATH from any directory.  The utilities will be able to 
 determine their own directory based on the implementation langugage hooks available.
 
-For example from a bash-type shell:
-export PATH=./core-v-verif/bin:$PATH
+For example from a bash-type shell:<br>
+> % export PATH=./core-v-verif/bin:$PATH
 
 Utility Documentation
 ==================================
