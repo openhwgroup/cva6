@@ -57,6 +57,9 @@ if (sys.version_info < (3,0,0)):
 ################################################################################
 # Gobals....
 name_of_ci_check_regression = 'cv32_ci_check_regression' # must match the name of one regression list in .metrics.json
+# This script is run from the "ci" directory, but the paths used by simulator
+# commands assume we are at the root of the repo.
+topdir = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
 
 ################################################################################
 # Methods....
@@ -68,11 +71,11 @@ def check_uvm_results():
     expct_fail = 0;
     pass_count = 0;
 
-    fails = subprocess.Popen('grep "SIMULATION FAILED" `find ../cv32/sim/uvmt_cv32 -name "*.log" -print`',
+    fails = subprocess.Popen('grep "SIMULATION FAILED" `find ../cv32/sim/uvmt_cv32/{}_results -name "*.log" -print`'.format(args.simulator),
                               stdout=subprocess.PIPE,
                               stderr=subprocess.STDOUT,
                               shell="TRUE")
-    passes = subprocess.Popen('grep "SIMULATION PASSED" `find ../cv32/sim/uvmt_cv32 -name "*.log" -print`',
+    passes = subprocess.Popen('grep "SIMULATION PASSED" `find ../cv32/sim/uvmt_cv32/{}_results -name "*.log" -print`'.format(args.simulator),
                               stdout=subprocess.PIPE,
                               stderr=subprocess.STDOUT,
                               shell="TRUE")
@@ -191,11 +194,11 @@ if not (prcmd):
     else:
         print ('This will delete your previously cloned RTL repo plus all previously generated files')
         ask_user()
-        os.chdir('../cv32/sim/uvmt_cv32')
+        os.chdir(os.path.join(topdir, 'cv32/sim/uvmt_cv32'))
         os.system('make clean_all')
-        os.chdir('../core')
+        os.chdir(os.path.join(topdir, 'cv32/sim/core'))
         os.system('make clean_all')
-        os.chdir('../../../ci')
+        os.chdir(os.path.join(topdir, 'ci'))
 
 
 ################################################################################
@@ -203,15 +206,14 @@ if not (prcmd):
 
 # This script is run from the "ci" directory, but the paths used by simulator
 # commands assume we are at the root of the repo.
-os.chdir('../')
-topdir = os.getcwd()
+os.chdir(topdir)
 
 #
 # Step 1: Run the User Regression for the UVM verification environment.
 #
 # .metrics.json is the CI regression config used by Metrics CI tools.
 if (uvm):
-    with open('.metrics.json') as f:
+    with open(os.path.join(os.path.dirname(os.path.realpath(__file__)), '..', '.metrics.json')) as f:
       metrics_dict = json.load(f)
 
     # Get the build command
@@ -301,7 +303,7 @@ if  (veril):
     print ('Running Verilator tests on CORE testbench...')
     if (debug):
         print('cv32/sim/core')
-    os.chdir('cv32/sim/core')
+    os.chdir(ps.path.join(topdir,'cv32/sim/core'))
 
     if (prcmd or debug):
         print('make')

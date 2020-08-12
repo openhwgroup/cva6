@@ -1,0 +1,166 @@
+#!/usr/bin/env python3
+
+################################################################################
+#
+# Copyright 2020 OpenHW Group
+# 
+# Licensed under the Solderpad Hardware Licence, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+# 
+#     https://solderpad.org/licenses/
+# 
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#
+# SPDX-License-Identifier:Apache-2.0 WITH SHL-2.0
+# 
+################################################################################
+#
+# cv32_regress: python script to generate a tool-specific regression based
+#               upon YAML specifications of regressions
+#
+# Author: Steve Richmond
+#  email: steve.richmond@silabs.com
+#
+# Written with Python 3.5.1 on RHEL 7.7.  Your python mileage may vary.
+#
+# Restriction:
+#     - Needs to be launched from the ci directory.
+#     - Blindly uses .metrics.json wih no ability for user over-ride.
+#
+# TODO:
+################################################################################
+
+import argparse
+import yaml
+import logging
+import sys
+import os
+import jinja2
+import pprint
+from collections import OrderedDict
+
+sys.path.append(os.path.join(os.path.dirname(__file__), 'lib'))
+
+import cv_regression
+
+logger = logging.getLogger(__name__)
+
+if (sys.version_info < (3,0,0)):
+    print ('Requires python 3')
+    exit(1)
+
+def get_regress_path(project):
+    '''Fetch regression path using project'''
+    return os.path.abspath(os.path.join(os.path.dirname(__file__), '..', project, 'regress'))
+
+def read_file(args, file):
+    '''Read a YAML definition filelist'''
+    full_regress_file = os.path.join(get_regress_path(args.project), file)
+    stream = open(full_regress_file, 'r')
+    logger.info('Reading regression: {}'.format(full_regress_file))
+    testlist = yaml.load(stream)
+    stream.close()
+
+    pp = pprint.PrettyPrinter()
+    logger.debug('Read YAML:')
+    logger.debug(pp.pformat(testlist))
+
+    # Basic validation
+    assert 'name' in testlist, 'Must specify a testlist name in YAML header'
+    assert 'description' in testlist, 'Must specify a testlist description in YAML header'
+    assert 'tests' in testlist, 'A test section with at least one test must be defined'
+    for b, d in testlist['builds'].items():
+        assert 'cmd' in d, 'cmd must be specified in test: ' + b
+        assert 'dir' in d, 'dir must be specified in test: ' + b        
+    for t, d in testlist['tests'].items():
+        assert 'build' in d, 'build must be specified in test: ' + t
+        assert 'description' in d, 'description must be specified in test: ' + t
+        assert 'cmd' in d, 'cmd must be specified in test: ' + t
+        assert 'dir' in d, 'dir must be specified in test: ' + t
+        
+    # Construct a proper regression object
+    regression = cv_regression.Regression(name=testlist['name'],
+                                          description=testlist['description'])
+    for k in testlist['builds']:
+        b = testlist['builds'][k]    
+        build = cv_regression.Build(name=k, simulator=args.simulator, **b)
+        regression.add_build(build)
+
+    for k in testlist['tests']:
+        t = testlist['tests'][k]
+        
+        try:
+            if args.simulator in t['skip_sim']:
+                continue
+        except KeyError:
+            pass
+        test = cv_regression.Test(name=k, simulator=args.simulator, **t)
+        regression.add_test(test)
+
+    return regression
+
+# Start of script
+VALID_SIMULATORS = ('dsim', 'vsim', 'vcs', 'xrun')
+DEFAULT_SIMULATOR = 'dsim'
+VALID_PROJECTS = ('cv32', 'cv64')
+DEFAULT_PROJECT = 'cv32'
+
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
+
+parser = argparse.ArgumentParser(formatter_class=argparse.ArgumentDefaultsHelpFormatter)
+parser.add_argument('-f', '--file', action='append', help='One or more input regression YAML lists to read')
+parser.add_argument('-p', '--project', default=DEFAULT_PROJECT, choices=VALID_PROJECTS, help='Select CV32 for regression')
+parser.add_argument('-o', '--outfile', default='regress.out', help='Output file')
+parser.add_argument('-d', '--debug', help='Emit debug messages from logger', action='store_true')
+parser.add_argument('-m', '--metrics', help='Select Metrics waves output', action='store_true')
+parser.add_argument('--sh', help='Select bash shell script output', action='store_true')
+parser.add_argument('-s', '--simulator', help='Select simulator', choices=VALID_SIMULATORS, default=DEFAULT_SIMULATOR)
+
+args = parser.parse_args()
+
+if args.debug:
+    logger.setLevel(logging.DEBUG)
+
+if not args.file:
+    logger.fatal('Must specify a regression definition YAML file with -f or --f')
+    os.sys.exit(2)
+
+regressions = []
+unique_builds = OrderedDict()
+for f in args.file:
+    r = read_file(args, f)
+    regressions.append(r)
+    for b in r.builds.values():
+        if not b.name in unique_builds:
+            unique_builds[b.name] = b
+    
+# Generate output product
+env = jinja2.Environment(loader=jinja2.FileSystemLoader(os.path.join(os.path.dirname(__file__),                                                         
+                                                        'templates')), trim_blocks=True)
+
+# Output generation
+if args.sh: 
+    # Generate shell script (--script)
+    template = env.get_template('regress_sh.j2')
+    logger.info('Rendering template: regress_sh.j2 into: {}'.format(args.outfile))
+    out_fh = open(args.outfile, 'w')
+    out_fh.write(template.render(regressions=regressions,
+                                 unique_builds=unique_builds))
+    out_fh.close()
+    os.chmod(args.outfile, 0o775)
+elif args.metrics:
+    # Generate a metrics-compatible JSON file (--metrics)
+    template = env.get_template('metrics.json.j2')
+    logger.info('Rendering template: metrics.json.j2 into: {}'.format(args.outfile))
+    out_fh = open(args.outfile, 'w')
+    out_fh.write(template.render(regressions=regressions,
+                                 unique_builds=unique_builds))
+    out_fh.close()
+    os.chmod(args.outfile, 0o775)
+

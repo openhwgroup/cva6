@@ -1,0 +1,30 @@
+name: cv32_full_regression
+description: Full regression (all tests) for CV32
+
+builds: 
+  corev-dv:
+    cmd: make corev-dv
+    dir: cv32/sim/uvmt_cv32
+  uvmt_cv32:
+    cmd: make comp
+    dir: cv32/sim/uvmt_cv32
+    
+tests:
+  hello-world:
+    build: uvmt_cv32
+    description: UVM hello world test
+    dir: cv32/sim/uvmt_cv32
+    cmd: make hello-world
+
+  modeled_csr_por:
+    build: uvmt_cv32
+    description: Modeled CSR PoR test
+    dir: cv32/sim/uvmt_cv32
+    cmd: make custom CUSTOM_PROG=modeled_csr_por
+
+  riscv_ebreak_test_0:
+    build: uvmt_cv32
+    description: Static riscv-dv ebreak test
+    dir: cv32/sim/uvmt_cv32
+    cmd: make custom CUSTOM_PROG=riscv_ebreak_test_0
+

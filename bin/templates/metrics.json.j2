@@ -1,0 +1,72 @@
+{#
+################################################################################
+#
+# Copyright 2020 OpenHW Group
+# 
+# Licensed under the Solderpad Hardware Licence, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+# 
+#     https://solderpad.org/licenses/
+# 
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#
+# SPDX-License-Identifier:Apache-2.0 WITH SHL-2.0
+# 
+################################################################################
+# metrics.json.j2: Jinja2 template for rendering metrics.json files for cv_regress
+
+#}
+
+{% import 'regress_macros.j2' as regress_macros %}
+
+{
+    "variables": {
+        "RISCV": "/mux-flow/tools/riscv",
+        "LM_LICENSE_FILE": "2700@license-1",
+        "IMPERAS_QUEUE_LICENSE" : "1"
+    },
+    "builds": {
+        "list:" [
+{% for b in unique_builds.values() %}
+            {
+                "name":     "{{b.name}}",
+                "image":    "cv32-simulation-tools:20200316.10.0",
+                "cmd":      "cd {{b.dir}}; {{b.cmd}} SIMULATOR={{b.simulator}} DSIM_WORK=/mux-flow/build/repo/dsim_work",
+                "wavesCmd": "cd {{b.dir}}; {{b.cmd}} SIMULATOR={{b.simulator}} DSIM_WORK=/mux-flow/build/repo/dsim_work WAVES=1",
+            }
+{% endfor %}
+        ],
+    }
+    "regressions": [
+{% for r in regressions %}
+        {
+            "name": "{{r.name}}",
+            "description": "{{r.description}}",
+            "verbose" : "true",
+            "tests": {
+                "resultsDir": "/mux-flow/build/results",
+                "builds": "[ {% for b in r.builds.values() %}"{{b.name}}",{% endfor %} ]",
+                "list": [
+                    { 
+{% for t in r.tests.values() %}
+                        "name": "{{t.name}}" ,
+                        "build": "{{t.build}}",
+                        "cmd": "cd {{t.dir}}; {{t.cmd}} SIMULATOR={{t.simulator}} USE_ISS={{regress_macros.yesorno(t.ss)}}",
+                        "wavesCmd": "cd {{t.dir}}; {{t.cmd}} SIMULATOR={{t.simulator}} USE_ISS={{regress_macros.yesorno(t.ss)}} WAVES=1",
+                        "metricsFile": "{{t.name}}/metrics.db",
+                        "wavesFile": "{{t.name}}/{{t.name}}.vcd",
+                        "isPass": "{{t.simulation_passed}}",
+                    },                
+{% endfor %}
+                ],
+            },
+        },
+{% endfor %}
+    ]
+}
+

@@ -15,6 +15,7 @@ metrics.db
 metrics_history.db
 xrun_results
 vsim_results
+__pycache__
 *.swp
 /.cproject
 /.project

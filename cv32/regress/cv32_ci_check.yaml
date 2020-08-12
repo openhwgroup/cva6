@@ -1,0 +1,50 @@
+# YAML file to specify a regression testlist
+---
+# Header
+name: cv32_ci_check
+description: Commit sanity for the cv32
+
+# List of builds
+builds:
+  corev-dv:
+    # required: Make the corev-dv infrastructure    
+    cmd: make corev-dv
+    dir: cv32/sim/uvmt_cv32
+  uvmt_cv32:
+    # required: the make command to create the build
+    cmd: make comp
+    dir: cv32/sim/uvmt_cv32
+
+# List of tests
+tests:
+  hello-world:
+    build: uvmt_cv32
+    description: UVM Hello World Test
+    dir: cv32/sim/uvmt_cv32
+    cmd: make hello-world
+    
+  riscv_ebreak_test_0:
+    build: uvmt_cv32
+    description: Static riscv-dv ebreak test
+    dir: cv32/sim/uvmt_cv32
+    cmd: make custom CUSTOM_PROG=riscv_ebreak_test_0
+
+  illegal:
+    build: uvmt_cv32
+    description: Illegal instruction RISCV test
+    dir: cv32/sim/uvmt_cv32
+    cmd: make custom CUSTOM_PROG=illegal
+
+  interrupt_test:
+    build: uvmt_cv32
+    description: Interrupt directed test
+    dir: cv32/sim/uvmt_cv32
+    iss: no
+    cmd: make interrupt_test
+    skip_sim: [xrun, vsim]
+
+  riscv_arithmetic_basic_test_0:
+    build: uvmt_cv32
+    description: riscv-dv basic math test
+    dir: cv32/sim/uvmt_cv32
+    cmd: make custom CUSTOM_PROG=riscv_arithmetic_basic_test_0

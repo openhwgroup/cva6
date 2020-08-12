@@ -1,0 +1,6 @@
+#!/bin/bash
+
+CV32_MAKE=$(dirname $0)/../cv32/sim/uvmt_cv32
+echo ${CV32_MAKE}
+
+cd ${CV32_MAKE} && make "$@"
