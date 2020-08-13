@@ -121,7 +121,7 @@ void CheckError()
 
 void TestNone(int reg)
 {
-	printf("TestNone: 0x%0x\n", reg);
+	  printf("TestNone: 0x%0x\n", reg);
     gActiveRegister = reg;
     gErrorExpected = 1;
     csr_read(reg);
@@ -134,7 +134,7 @@ void TestNone(int reg)
 
 void TestReadOnly(int reg)
 {
-	printf("TestReadOnly: 0x%0x\n", reg);
+	  printf("TestReadOnly: 0x%0x\n", reg);
     gActiveRegister = reg;
     gErrorExpected = 0;
     csr_read(reg);
@@ -147,7 +147,7 @@ void TestReadOnly(int reg)
 
 void TestWriteOnly(int reg)
 {
-	printf("TestWriteOnly: 0x%0x\n", reg);
+	  printf("TestWriteOnly: 0x%0x\n", reg);
     gActiveRegister = reg;
     gErrorExpected = 1;
     csr_read(reg);
@@ -160,7 +160,7 @@ void TestWriteOnly(int reg)
 
 void TestReadWrite(int reg)
 {
-	printf("TestReadWrite: 0x%0x\n", reg);
+	  printf("TestReadWrite: 0x%0x\n", reg);
     gActiveRegister = reg;
     gErrorExpected = 0;
     uint32_t value = csr_read(reg);
@@ -293,13 +293,13 @@ int main()
     }
 #endif // TEST_DEAD_SPACE
 
-    TestReadWrite(0x300); // mstatus
-    TestReadWrite(0x301); // misa
+    TestReadWrite(0x300); // mstatus (fails with ISS)
+    TestReadWrite(0x301); // misa (fails with ISS)
     TestNone(0x302);      // medeleg
     TestNone(0x303);      // mideleg
-    TestReadWrite(0x304); // mie
-    TestReadWrite(0x305); // mtvec
-    TestReadWrite(0x306); // mcounteren
+    TestReadWrite(0x304); // mie (fails with ISS)
+    TestReadWrite(0x305); // mtvec (fails with ISS)
+    TestReadWrite(0x306); // mcounteren (fails with ISS)
     TestNone(0x307);      // mtvt (clic)
 
 #if 1 == TEST_DEAD_SPACE
@@ -309,10 +309,10 @@ int main()
     }
 #endif // TEST_DEAD_SPACE
 
-    TestReadWrite(0x320); // mcountinhibit
+    TestReadWrite(0x320); // mcountinhibit (fails with ISS)
     TestNone(0x321);
     TestNone(0x322);
-    TestReadWrite(0x323); // mhpmevent3
+    TestReadWrite(0x323); // mhpmevent3 (all fail with ISS)
     TestReadWrite(0x324); // mhpmevent4
     TestReadWrite(0x325); // mhpmevent5
     TestReadWrite(0x326); // mhpmevent6
@@ -342,16 +342,16 @@ int main()
     TestReadWrite(0x33E); // mhpmevent30
     TestReadWrite(0x33F); // mhpmevent31
 
-    TestReadWrite(0x340); // mscratch
+    TestReadWrite(0x340); // mscratch (fails with ISS)
     TestReadWrite(0x341); // mepc
     TestReadWrite(0x342); // mcause
     TestReadWrite(0x343); // mtval
     TestReadWrite(0x344); // mip
-    TestNone(0x345);      // mnxti (clic)
-    //TestReadWrite(0x346); // mintstatus (clic)
-    TestNone(0x347);      // mintthresh (clic)
-    TestNone(0x348);      // mscratchsw (clic)
-    TestNone(0x349);      // mscratchswl (clic)
+    //TestNone(0x345);      // mnxti (clic)       (not in CV32E40P)
+    //TestReadWrite(0x346); // mintstatus (clic)  (not in CV32E40P)
+    //TestNone(0x347);      // mintthresh (clic)  (not in CV32E40P)
+    //TestNone(0x348);      // mscratchsw (clic)  (not in CV32E40P)
+    //TestNone(0x349);      // mscratchswl (clic) (not in CV32E40P)
 
 #if 1 == TEST_DEAD_SPACE
     for (int i = 0x34A; i < 0x3A0; ++i)
