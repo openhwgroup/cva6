@@ -121,6 +121,7 @@ void CheckError()
 
 void TestNone(int reg)
 {
+	printf("TestNone: 0x%0x\n", reg);
     gActiveRegister = reg;
     gErrorExpected = 1;
     csr_read(reg);
@@ -133,6 +134,7 @@ void TestNone(int reg)
 
 void TestReadOnly(int reg)
 {
+	printf("TestReadOnly: 0x%0x\n", reg);
     gActiveRegister = reg;
     gErrorExpected = 0;
     csr_read(reg);
@@ -145,6 +147,7 @@ void TestReadOnly(int reg)
 
 void TestWriteOnly(int reg)
 {
+	printf("TestWriteOnly: 0x%0x\n", reg);
     gActiveRegister = reg;
     gErrorExpected = 1;
     csr_read(reg);
@@ -157,6 +160,7 @@ void TestWriteOnly(int reg)
 
 void TestReadWrite(int reg)
 {
+	printf("TestReadWrite: 0x%0x\n", reg);
     gActiveRegister = reg;
     gErrorExpected = 0;
     uint32_t value = csr_read(reg);
