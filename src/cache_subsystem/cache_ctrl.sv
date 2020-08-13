@@ -165,9 +165,9 @@ module cache_ctrl import ariane_pkg::*; import std_cache_pkg::*; #(
             // cache enabled and waiting for tag
             WAIT_TAG, WAIT_TAG_SAVED: begin
                 // check that the client really wants to do the request and that we have a valid tag
-                if (!req_port_i.kill_req && (req_port_i.tag_valid || state_d == WAIT_TAG_SAVED)) begin
+                if (!req_port_i.kill_req && (req_port_i.tag_valid || state_q == WAIT_TAG_SAVED)) begin
                     // save tag if we didn't already save it
-                    if (state_d != WAIT_TAG_SAVED) begin
+                    if (state_q != WAIT_TAG_SAVED) begin
                         mem_req_d.tag = req_port_i.address_tag;
                     end
                     // we speculatively request another transfer
