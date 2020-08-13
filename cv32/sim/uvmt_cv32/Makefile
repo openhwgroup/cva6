@@ -42,8 +42,9 @@
 
 # "Constants"
 MAKE           = make
+MAKE_PATH     := $(shell dirname $(realpath $(firstword $(MAKEFILE_LIST))))
 COREV_PROJ     = cv32
-PROJ_ROOT_DIR  = $(PWD)/../../..
+PROJ_ROOT_DIR  = $(abspath $(MAKE_PATH)/../../..)
 DATE           = $(shell date +%F)
 .DEFAULT_GOAL := no_rule 
 
@@ -57,7 +58,8 @@ TIMESCALE    ?= -timescale 1ns/1ps
 UVM_PLUSARGS ?=
 
 # User selectable SystemVerilog simulator targets/rules
-SIMULATOR    ?= unsim
+CV_SIMULATOR ?= unsim
+SIMULATOR    ?= $(CV_SIMULATOR)
 
 # Optionally exclude the OVPsim (not recommended)
 USE_ISS      ?= YES
@@ -122,7 +124,7 @@ endif
 # Common Makefile:
 #    - Core Firmware and the RISCV GCC Toolchain (SDK)
 #    - Variables for RTL dependencies
-include ../Common.mk
+include $(MAKE_PATH)/../Common.mk
 
 
 ###############################################################################
@@ -147,18 +149,18 @@ $(CV32E40P_PKG):
 #include unsim.mk
 #else
 ifeq ($(SIMULATOR), dsim)
-include dsim.mk
+include $(MAKE_PATH)/dsim.mk
 else
 ifeq ($(SIMULATOR), xrun)
-include xrun.mk
+include $(MAKE_PATH)/xrun.mk
 else
 ifeq ($(SIMULATOR), vsim)
-include vsim.mk
+include $(MAKE_PATH)/vsim.mk
 else
 ifeq ($(SIMULATOR), vcs)
-include vcs.mk
+include $(MAKE_PATH)/vcs.mk
 else
-include unsim.mk
+include $(MAKE_PATH)/unsim.mk
 endif
 endif
 endif
@@ -181,12 +183,12 @@ clean_core_tests:
 	find $(CORE_TEST_DIR) -name corev_*.S -exec rm {} \;
 
 clean_test_programs:
-	find ../../tests/uvmt_cv32/test-programs -name *.o       -exec rm {} \;
-	find ../../tests/uvmt_cv32/test-programs -name *.hex     -exec rm {} \;
-	find ../../tests/uvmt_cv32/test-programs -name *.elf     -exec rm {} \;
-	find ../../tests/uvmt_cv32/test-programs -name *.map     -exec rm {} \;
-	find ../../tests/uvmt_cv32/test-programs -name *.readelf -exec rm {} \;
-	find ../../tests/uvmt_cv32/test-programs -name *.objdump -exec rm {} \;
+	find $(PROJ_ROOT_DIR)/cv32/tests/uvmt_cv32/test-programs -name *.o       -exec rm {} \;
+	find $(PROJ_ROOT_DIR)/cv32/tests/uvmt_cv32/test-programs -name *.hex     -exec rm {} \;
+	find $(PROJ_ROOT_DIR)/cv32/tests/uvmt_cv32/test-programs -name *.elf     -exec rm {} \;
+	find $(PROJ_ROOT_DIR)/cv32/tests/uvmt_cv32/test-programs -name *.map     -exec rm {} \;
+	find $(PROJ_ROOT_DIR)/cv32/tests/uvmt_cv32/test-programs -name *.readelf -exec rm {} \;
+	find $(PROJ_ROOT_DIR)/cv32/tests/uvmt_cv32/test-programs -name *.objdump -exec rm {} \;
 
 clean_riscv-dv:
 	rm -rf $(RISCVDV_PKG)

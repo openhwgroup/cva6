@@ -9,7 +9,7 @@ for a discussion on the distinction between a _testcase_ and a _test-program_ in
 <br><br>
 To run the UVM environment you will need:
 - a run-time license for the Imperas OVPsim Instruction Set Simulator
-(free to OpenHW Group members),
+(free to OpenHW Group Contributors),
 - a SystemVerilog simulator,
 - the UVM-1.2 library,
 - the RISC-V GCC compiler, and
@@ -19,7 +19,8 @@ Imperas OVPsim Instruction Set Simulator
 ----------------------------------------
 This UVM verification environment uses the Imperas OVPsim Instruction Set Simulator
 (ISS) as a reference model.   The run-time license for this ISS is free to OpenHW
-Group members.  Go to the [Imperas website](http://www.imperas.com/) for installation instructions.
+Group Contributors.  Please contact @MikeOpenHWGroup to be added as a Contributor and
+go to the [Imperas website](http://www.imperas.com/) for installation instructions.
 
 SystemVerilog Simulators
 ----------------------------------
@@ -129,6 +130,92 @@ Set the shell variable SIMULATOR to `vcs` to simply run **`make <target>`**.
 **Note for Synopsys users:** This testbench has not been compiled/run
 with _vcs_ in several weeks.  If you need to update the Makefiles, please do
 so and issue a Pull Request.
+
+Common Makefile Flags
+---------------
+For all tests in the <i>uvmt_cv32</i> directory the following flags and targets are supported for common operations with the simulators.  For all flags and targets described in this section it is assumed that the user will supply a SIMULATOR setting on the make command line or populate the CV_SIMULATOR environment variable.
+
+Current supported simulators: <i>Note that eventually all simulators will be supported</i>
+
+| SIMULATOR | Supported |
+|-----------|-----------|
+|dsim       | No        |
+|xrun       | Yes       |
+|questa     | No        |
+|vcs        | No        |
+
+For certain simulators multiple debug tools are available that enable advanced debug capabilities but generally require respective licenses from the vendor.  By default all debug-related commands in this section will support a standard debug tool with the simulator.   However support is provided for advanced debug tools when avaiable.  The advanced debug tool is selected with each make command by setting the **ADV_DEBUG=YES** flag.
+
+| SIMULATOR | Standard Debug Tool | Advanced Debug Tool |
+|-----------|---------------------|---------------------|
+| dsim      | N/A                 | N/A                 |
+| xrun      | SimVision           | Indago              |
+| questa    | Questa Tk GUI       | Visualizer          |
+| vcs       | DVE                 | Verdi               |
+
+### Interactive Simulation
+
+To run a simulation in interactive mode (to enable single-stepping, breakpoints, restarting), use the GUI=1 command when running a test.  
+
+If applicable for a simulator, line debugging will be enabled in the compile to enable single-stepping.
+
+**make hello-world GUI=1**
+
+### Post-process Waveform Debug
+
+There are flags and targets defined to support generating waveforms during simulation and viewing those waveforms in a post-process debug tool specific to the respective simulator used.<br>
+
+To create waves during simulation, set the **WAVES=YES** flag.<br>
+
+The waveform dump will include all signals in the <i>uvmt_tb32</i> testbench and recursively throughout the hierarchy.
+
+**make hello-world WAVES=1**
+
+If applicable for a simulator, dumping waves for an advanced debug tool is available.
+
+**make hello-world WAVES=1 ADV_DEBUG=1**
+
+To invoke the debug tool itself use the **make waves** target.  Note that the test must be provided.  Additionally the advanced debug tool flag must match the setting used during waveform generation.
+
+Invoke debug tool on hello-world test using the standard debug tool.
+
+**make waves TEST=hello-world**
+
+Invoke debug tool on hello-world test using the advanced debug tool.
+
+**make waves TEST=hello-world ADV_DEBUG=1**
+
+### Coverage
+
+The makefile supports the generation of coverage databases during simulation and invoking simulator-specific coverage reporting and browsing tools.
+
+By default coverage information is not generated during a simulation for <i>xrun, questa, and vcs.</i>  Therefore a flag was added to the makefiles to enable generation of a coverage database during simulation.  The coverage database will include line, expression, toggle, functional and assertion coverage in the generated database.
+
+To generate coverage database, set **COV=1**.
+
+**make hello-world COV=1**
+
+To view coverage results a new target **cov** was added to the makefiles.  By default the target will generate a coverage report in the same directory as the output log files and the coverage database.<br>
+
+The user can invoke the GUI coverage browsing tool specific to the simulator by setting **GUI=1** on the **make cov** command line.
+
+Generate coverage report for the hello-world test
+
+**make cov TEST=hello-world**
+
+Invoke GUI coverage browser for the hello-world test:
+
+**make cov TEST=hello-world GUI=1**
+
+An additional option to the **make cov** target exists to <i>merge</i> coverage.  To merge coverage the makefiles will look in **all** existing test results directories <i>for the selected simulator</i> and generate a merged coverage report in <i>&lt;simulator>_results/merged_cov</i>.  The respective coverage report of GUI invocation will use that directory as the coverage database.  Coverage merging is selected by setting the <i>MERGE=1</i> flag.
+
+Generate coverrage report for all executed tests with coverage databases.
+
+**make cov MERGE=1**
+
+Invoke GUI coverage browser for all executed tests with coverage databases.
+
+**make cov MERGE=1 GUI=1**
 
 Available Tests
 ---------------
