@@ -252,6 +252,12 @@ module cache_ctrl import ariane_pkg::*; import std_cache_pkg::*; #(
                         mem_req_d.bypass = 1'b1;
                         state_d = WAIT_REFILL_GNT;
                     end
+
+                // we are still waiting for a valid tag
+                end else begin
+                    // request cache line for saved index
+                    addr_o = mem_req_q.index;
+                    req_o  = '1;
                 end
             end
 
