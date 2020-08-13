@@ -60,12 +60,14 @@ module cache_ctrl import ariane_pkg::*; import std_cache_pkg::*; #(
         IDLE,               // 0
         WAIT_TAG,           // 1
         WAIT_TAG_BYPASSED,  // 2
-        STORE_REQ,          // 3
-        WAIT_REFILL_VALID,  // 4
-        WAIT_REFILL_GNT,    // 5
-        WAIT_TAG_SAVED,     // 6
-        WAIT_MSHR,          // 7
-        WAIT_CRITICAL_WORD  // 8
+        WAIT_GNT,           // 3
+        WAIT_GNT_SAVED,     // 4
+        STORE_REQ,          // 5
+        WAIT_REFILL_VALID,  // 6
+        WAIT_REFILL_GNT,    // 7
+        WAIT_TAG_SAVED,     // 8
+        WAIT_MSHR,          // 9
+        WAIT_CRITICAL_WORD  // 10
     } state_d, state_q;
 
     typedef struct packed {
@@ -258,6 +260,29 @@ module cache_ctrl import ariane_pkg::*; import std_cache_pkg::*; #(
                     // request cache line for saved index
                     addr_o = mem_req_q.index;
                     req_o  = '1;
+
+                    // check that we still have a memory grant
+                    if (!gnt_i) begin
+                        state_d = WAIT_GNT;
+                    end
+                end
+            end
+
+            // ~> we already granted the request but lost the memory grant while waiting for the tag
+            WAIT_GNT, WAIT_GNT_SAVED: begin
+                // request cache line for saved index
+                addr_o = mem_req_q.index;
+                req_o  = '1;
+
+                // if we get a valid tag while waiting for the memory grant, save it
+                if (req_port_i.tag_valid) begin
+                    mem_req_d.tag = req_port_i.address_tag;
+                    state_d = WAIT_GNT_SAVED;
+                end
+
+                // we have a memory grant again ~> go back to WAIT_TAG
+                if (gnt_i) begin
+                    state_d = (state_d == WAIT_GNT) ? WAIT_TAG : WAIT_TAG_SAVED;
                 end
             end
 
