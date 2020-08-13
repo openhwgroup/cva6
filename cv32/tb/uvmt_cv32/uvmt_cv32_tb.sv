@@ -101,6 +101,50 @@ module uvmt_cv32_tb;
       always @(dut_wrap.cv32e40p_wrapper_i.core_i.tracer_i.retire) -> step_compare_if.riscv_retire;
       assign step_compare_if.insn_pc   = dut_wrap.cv32e40p_wrapper_i.core_i.tracer_i.insn_pc;
       assign step_compare_if.riscy_GPR = dut_wrap.cv32e40p_wrapper_i.core_i.id_stage_i.registers_i.register_file_i.mem;
+      assign clknrst_if_iss.reset_n = clknrst_if.reset_n;
+
+      always @(posedge clknrst_if_iss.clk or negedge clknrst_if_iss.reset_n) begin
+        if (!clknrst_if_iss.reset_n)
+          iss_wrap.b1.deferint <= 1'b1;
+        else if (dut_wrap.cv32e40p_wrapper_i.core_i.id_stage_i.controller_i.ctrl_fsm_cs == 5'b00110) 
+          iss_wrap.b1.deferint <= 1'b0;
+      end
+      
+      always @(posedge clknrst_if_iss.clk or negedge clknrst_if_iss.reset_n) begin
+        if (!clknrst_if_iss.reset_n) begin
+          iss_wrap.b1.MSWInterrupt <= 1'b0;
+          iss_wrap.b1.MTimerInterrupt <= 1'b0;
+          iss_wrap.b1.MExternalInterrupt <= 1'b0;
+        end
+        else begin
+          // MExternalInterrupt
+          if (dut_wrap.cv32e40p_wrapper_i.irq_i[11]) 
+            iss_wrap.b1.MExternalInterrupt <= 1'b1;
+          else if (iss_wrap.b1.deferint == 1)
+            iss_wrap.b1.MExternalInterrupt <= 1'b0;
+
+          // MSWInterrupt            
+          if (dut_wrap.cv32e40p_wrapper_i.irq_i[3]) 
+            iss_wrap.b1.MSWInterrupt <= 1'b1;
+          else if (iss_wrap.b1.deferint == 1)
+            iss_wrap.b1.MSWInterrupt <= 1'b0;
+
+          // MTimerInterrupt
+          if (dut_wrap.cv32e40p_wrapper_i.irq_i[7]) 
+            iss_wrap.b1.MTimerInterrupt <= 1'b1;
+          else if (iss_wrap.b1.deferint == 1)
+            iss_wrap.b1.MTimerInterrupt <= 1'b0;
+        end
+      end
+
+      always @(negedge step_compare_if.ovp_b1_Step) begin
+        if (iss_wrap.b1.deferint == 0) begin          
+          iss_wrap.b1.MExternalInterrupt <= 1'b0;
+          iss_wrap.b1.MSWInterrupt <= 1'b0;
+          iss_wrap.b1.MTimerInterrupt <= 1'b0;
+          iss_wrap.b1.deferint <= 1'b1;
+        end
+      end
     `endif
 
    /**
