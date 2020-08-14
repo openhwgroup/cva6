@@ -35,6 +35,7 @@ XRUN_UVMHOME_ARG ?= CDNS-1.2-ML
 
 # Flags
 XRUN_COMP_FLAGS  ?= -64bit -disable_sem2009 -access +rwc \
+                    -nowarn UEXPSC \
                     -sv -uvm -uvmhome $(XRUN_UVMHOME_ARG) \
                     $(TIMESCALE) $(SV_CMP_FLAGS)
 XRUN_RUN_BASE_FLAGS   ?= -64bit $(XRUN_GUI) +UVM_VERBOSITY=$(XRUN_UVM_VERBOSITY) \
@@ -134,6 +135,7 @@ XRUN_RUN_FLAGS        ?= -R -xmlibdirname ../xcelium.d
 XRUN_RUN_FLAGS        += $(XRUN_RUN_BASE_FLAGS)
 XRUN_RUN_FLAGS        += $(XRUN_RUN_WAVES_FLAGS)
 XRUN_RUN_FLAGS        += $(XRUN_RUN_COV_FLAGS)
+XRUN_RUN_FLAGS        += $(XRUN_USER_RUN_FLAGS)
 
 no_rule:
 	@echo 'makefile: SIMULATOR is set to $(SIMULATOR), but no rule/target specified.'
@@ -352,6 +354,29 @@ gen_corev_rand_instr_test:
     +directed_instr_5=riscv_mem_region_stress_test,4 \
     +directed_instr_6=riscv_jal_instr,4
 	cp $(XRUN_RISCVDV_RESULTS)/corev_rand_instr_test/*.S $(CORE_TEST_DIR)/custom
+
+gen_corev_rand_interrupt_test:
+	mkdir -p $(XRUN_RISCVDV_RESULTS)/corev_rand_interrupt_test	
+	cd $(XRUN_RISCVDV_RESULTS)/corev_rand_interrupt_test && \
+	$(XRUN) -R $(XRUN_RUN_FLAGS) \
+		-xceligen rand_struct \
+		-l $(COREVDV_PKG)/out_$(DATE)/sim_riscv_rand_interrupt_test_0.log \
+		+UVM_TESTNAME=corev_instr_base_test  \
+		+num_of_tests=$(NUM_TESTS)  \
+		+start_idx=0  \
+		+asm_file_name_opts=corev_rand_interrupt_test  \
+		+instr_cnt=50000 \
+		+num_of_sub_program=5 \
+        +directed_instr_0=riscv_load_store_rand_instr_stream,4 \
+        +directed_instr_1=riscv_loop_instr,4 \
+        +directed_instr_2=riscv_hazard_instr_stream,4 \
+        +directed_instr_3=riscv_load_store_hazard_instr_stream,4 \
+		+no_fence=1 \
+        +enable_interrupt=1 \
+        +randomize_csr=1 \
+		+boot_mode=m \
+		+no_csr_instr=1
+	cp $(XRUN_RISCVDV_RESULTS)/corev_rand_interrupt_test/*.S $(CORE_TEST_DIR)/custom
 
 corev-dv: clean_riscv-dv \
 	clone_riscv-dv \

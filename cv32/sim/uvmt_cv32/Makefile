@@ -65,17 +65,18 @@ SIMULATOR    ?= $(CV_SIMULATOR)
 USE_ISS      ?= YES
 
 # UVM Environment
-export DV_UVMT_CV32_PATH    = $(PROJ_ROOT_DIR)/$(COREV_PROJ)/tb/uvmt_cv32
-export DV_UVME_CV32_PATH    = $(PROJ_ROOT_DIR)/$(COREV_PROJ)/env/uvme_cv32
-export DV_UVML_HRTBT_PATH   = $(PROJ_ROOT_DIR)/lib/uvm_libs/uvml_hrtbt
-export DV_UVMA_CLKNRST_PATH = $(PROJ_ROOT_DIR)/lib/uvm_agents/uvma_clknrst
-export DV_UVML_TRN_PATH     = $(PROJ_ROOT_DIR)/lib/uvm_libs/uvml_trn
-export DV_UVML_LOGS_PATH    = $(PROJ_ROOT_DIR)/lib/uvm_libs/uvml_logs
-export DV_UVML_SB_PATH      = $(PROJ_ROOT_DIR)/lib/uvm_libs/uvml_sb
-
-export DV_OVPM_HOME         = $(PROJ_ROOT_DIR)/vendor_lib/imperas
-export DV_OVPM_MODEL        = $(DV_OVPM_HOME)/riscv_CV32E40P_OVPsim
-export DV_OVPM_DESIGN       = $(DV_OVPM_HOME)/verilog/design
+export DV_UVMT_CV32_PATH      = $(PROJ_ROOT_DIR)/$(COREV_PROJ)/tb/uvmt_cv32
+export DV_UVME_CV32_PATH      = $(PROJ_ROOT_DIR)/$(COREV_PROJ)/env/uvme_cv32
+export DV_UVML_HRTBT_PATH     = $(PROJ_ROOT_DIR)/lib/uvm_libs/uvml_hrtbt
+export DV_UVMA_CLKNRST_PATH   = $(PROJ_ROOT_DIR)/lib/uvm_agents/uvma_clknrst
+export DV_UVMA_INTERRUPT_PATH = $(PROJ_ROOT_DIR)/lib/uvm_agents/uvma_interrupt
+export DV_UVML_TRN_PATH       = $(PROJ_ROOT_DIR)/lib/uvm_libs/uvml_trn
+export DV_UVML_LOGS_PATH      = $(PROJ_ROOT_DIR)/lib/uvm_libs/uvml_logs
+export DV_UVML_SB_PATH        = $(PROJ_ROOT_DIR)/lib/uvm_libs/uvml_sb
+  
+export DV_OVPM_HOME           = $(PROJ_ROOT_DIR)/vendor_lib/imperas
+export DV_OVPM_MODEL          = $(DV_OVPM_HOME)/riscv_CV32E40P_OVPsim
+export DV_OVPM_DESIGN         = $(DV_OVPM_HOME)/verilog/design
 
 DV_UVMT_CV32_SRCS  = $(wildcard $(DV_UVMT_CV32_PATH)/*.sv))
 
@@ -111,13 +112,18 @@ RTLSRC_INCDIR := $(RTLSRC_HOME)/include
 
 ###############################################################################
 # Seed management for constrained-random sims
-SEED    ?= one
+SEED    ?= 1
 RNDSEED ?= 
 
 ifeq ($(SEED),random)
 RNDSEED = $(shell date +%N)
 else
+ifeq ($(SEED),)
+# Empty SEED variable selects 1
 RNDSEED = 1
+else
+RNDSEED = $(SEED)
+endif
 endif
 
 ###############################################################################

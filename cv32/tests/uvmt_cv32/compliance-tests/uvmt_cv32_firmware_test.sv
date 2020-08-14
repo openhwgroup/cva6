@@ -65,6 +65,11 @@ class uvmt_cv32_firmware_test_c extends uvmt_cv32_base_test_c;
     */
    extern virtual task run_phase(uvm_phase phase);
    
+   /**
+    *  Start the interrupt sequencer to apply random interrupts during test
+    */
+   extern virtual task irq_noise();
+
 endclass : uvmt_cv32_firmware_test_c
 
 
@@ -118,6 +123,12 @@ task uvmt_cv32_firmware_test_c::run_phase(uvm_phase phase);
    // start_clk() and watchdog_timer() are called in the base_test
    super.run_phase(phase);
    
+   if ($test$plusargs("gen_irq_noise")) begin
+    fork    
+      irq_noise();
+    join_none
+   end
+
    phase.raise_objection(this);
    @(posedge env_cntxt.clknrst_cntxt.vif.reset_n);
    repeat (33) @(posedge env_cntxt.clknrst_cntxt.vif.clk);
@@ -135,6 +146,21 @@ task uvmt_cv32_firmware_test_c::run_phase(uvm_phase phase);
    phase.drop_objection(this);
    
 endtask : run_phase
+
+task uvmt_cv32_firmware_test_c::irq_noise();
+  `uvm_info("TEST", "Starting IRQ Noise thread in UVM test", UVM_NONE);
+  while (1) begin
+    uvme_cv32_interrupt_noise_c interrupt_noise_vseq;
+
+    repeat (100) @(env_cntxt.interrupt_cntxt.vif.mon_cb);
+    interrupt_noise_vseq = uvme_cv32_interrupt_noise_c::type_id::create("interrupt_noise_vseqr");
+    assert(interrupt_noise_vseq.randomize() with {
+      reserved_irq_mask == 32'h0000_f777;
+    });
+    interrupt_noise_vseq.start(vsequencer);
+    break;
+  end
+endtask : irq_noise
 
 
 `endif // __UVMT_CV32_FIRMWARE_TEST_SV__

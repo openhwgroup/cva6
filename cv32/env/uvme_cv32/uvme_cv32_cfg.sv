@@ -34,7 +34,8 @@ class uvme_cv32_cfg_c extends uvm_object;
    //rand int unsigned             debug_clk_period;
    
    // Agent cfg handles
-   rand uvma_clknrst_cfg_c  clknrst_cfg;
+   rand uvma_clknrst_cfg_c    clknrst_cfg;
+   rand uvma_interrupt_cfg_c  interrupt_cfg;
    //rand uvma_debug_cfg_c    debug_cfg;
    
    // Objects
@@ -54,6 +55,7 @@ class uvme_cv32_cfg_c extends uvm_object;
       //`uvm_field_int (                         debug_clk_period            , UVM_DEFAULT + UVM_DEC)
       
       `uvm_field_object(clknrst_cfg, UVM_DEFAULT)
+      `uvm_field_object(interrupt_cfg, UVM_DEFAULT)
       //`uvm_field_object(debug_cfg  , UVM_DEFAULT)
       
       //`uvm_field_object(ral, UVM_DEFAULT)
@@ -76,20 +78,22 @@ class uvme_cv32_cfg_c extends uvm_object;
    constraint agent_cfg_cons {
       if (enabled) {
          clknrst_cfg.enabled == 1;
+         interrupt_cfg.enabled == 1;
          //debug_cfg.enabled == 1;
       }
       
       if (is_active == UVM_ACTIVE) {
          clknrst_cfg.is_active == UVM_ACTIVE;
+         interrupt_cfg.is_active == UVM_ACTIVE;
          //debug_cfg.is_active == UVM_ACTIVE;
       }
       
       if (trn_log_enabled) {
          clknrst_cfg.trn_log_enabled == 1;
+         interrupt_cfg.trn_log_enabled == 1;
          //debug_cfg.trn_log_enabled == 1;
       }
-   }
-   
+   }   
    
    /**
     * Creates sub-configuration objects.
@@ -104,6 +108,7 @@ function uvme_cv32_cfg_c::new(string name="uvme_cv32_cfg");
    super.new(name);
    
    clknrst_cfg = uvma_clknrst_cfg_c::type_id::create("clknrst_cfg");
+   interrupt_cfg = uvma_interrupt_cfg_c::type_id::create("interrupt_cfg");
    //debug_cfg = uvma_debug_cfg_c    ::type_id::create("debug_cfg");
    
    ral = uvme_cv32_ral_c::type_id::create("ral");

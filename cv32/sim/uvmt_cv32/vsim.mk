@@ -45,6 +45,7 @@ VSIM_COV 				?= -coverage
 VOPT_WAVES_ADV_DEBUG    ?= -designfile design.bin
 VSIM_WAVES_ADV_DEBUG    ?= -qwavedb=+signal+assertion+ignoretxntime+msgmode=both
 VSIM_WAVES_DO           ?= $(VSIM_SCRIPT_DIR)/waves.tcl
+NUM_TESTS               ?= 2
 
 # Common QUIET flag defaults to -quiet unless VERBOSE is set
 ifeq ($(call IS_YES,$(VERBOSE)),YES)
@@ -102,6 +103,7 @@ VOPT_FLAGS    ?= -debugdb \
 ###############################################################################
 # VSIM (Simulaion)
 VSIM_FLAGS        += $(VSIM_USER_FLAGS)
+VSIM_FLAGS        += -sv_seed $(RNDSEED)
 VSIM_DEBUG_FLAGS  ?= -debugdb
 VSIM_GUI_FLAGS    ?= -gui -debugdb
 VSIM_SCRIPT_DIR	   = $(abspath $(MAKE_PATH)/../tools/vsim)
@@ -130,11 +132,14 @@ endif
 # Waveform generation
 ifeq ($(call IS_YES,$(WAVES)),YES)
 ifeq ($(call IS_YES,$(ADV_DEBUG)),YES)
-VOPT_FLAGS += $(VOPT_WAVES_ADV_DEBUG)
 VSIM_FLAGS += $(VSIM_WAVES_ADV_DEBUG)
 else
 VSIM_FLAGS += -do $(VSIM_WAVES_DO)
 endif
+endif
+
+ifeq ($(call IS_YES,$(ADV_DEBUG)),YES)
+VOPT_FLAGS += $(VOPT_WAVES_ADV_DEBUG)
 endif
 
 ################################################################################
@@ -231,7 +236,7 @@ vlog_riscv-dv:
 			$(VLOG_FLAGS) \
 			+incdir+$(UVM_HOME) \
 			$(UVM_HOME)/uvm_pkg.sv \
-			+incdir+$(RISCVDV_PKG)/target/rv32imc \
+			+incdir+$(COREVDV_PKG)/target/cv32e40p \
 			+incdir+$(RISCVDV_PKG)/user_extension \
 			+incdir+$(RISCVDV_PKG)/tests \
 			+incdir+$(COREVDV_PKG) \
@@ -255,10 +260,8 @@ gen_corev_arithmetic_base_test:
 		$(VMAP) work ../work
 	cd $(VSIM_RISCVDV_RESULTS)/corev_arithmetic_base_test && \
 		$(VSIM) $(VSIM_FLAGS) \
-			-batch \
 			corev_instr_gen_tb_top_vopt \
 			$(DPILIB_VSIM_OPT) \
-			-do 'source $(VSIM_SCRIPT_DIR)/vsim.tcl; exit -f' \
 			+UVM_TESTNAME=corev_instr_base_test  \
 			+num_of_tests=2  \
 			+start_idx=0  \
@@ -280,10 +283,8 @@ gen_corev_rand_instr_test:
 		$(VMAP) work ../work
 	cd $(VSIM_RISCVDV_RESULTS)/corev_rand_instr_test && \
 		$(VSIM) $(VSIM_FLAGS) \
-			-batch \
 			corev_instr_gen_tb_top_vopt \
 			$(DPILIB_VSIM_OPT) \
-			-do 'source $(VSIM_COREDV_SCRIPT); exit -f' \
 			+UVM_TESTNAME=corev_instr_base_test  \
 			+num_of_tests=2  \
 			+start_idx=0  \
@@ -299,9 +300,40 @@ gen_corev_rand_instr_test:
 			+no_csr_instr=1
 	cp $(VSIM_RISCVDV_RESULTS)/corev_rand_instr_test/*.S $(CORE_TEST_DIR)/custom
 
-corev-dv: clean_riscv-dv \
+gen_corev_rand_interrupt_test:
+	mkdir -p $(VSIM_RISCVDV_RESULTS)/corev_rand_interrupt_test	
+	cd $(VSIM_RISCVDV_RESULTS)/corev_rand_interrupt_test && \
+		$(VMAP) work ../work
+	cd $(VSIM_RISCVDV_RESULTS)/corev_rand_interrupt_test && \
+		$(VSIM) $(VSIM_FLAGS) \
+			corev_instr_gen_tb_top_vopt \
+			$(DPILIB_VSIM_OPT) \
+			+UVM_TESTNAME=corev_instr_base_test  \
+			+num_of_tests=$(NUM_TESTS)  \
+			+start_idx=0  \
+			+asm_file_name_opts=corev_rand_interrupt_test  \
+			-l $(COREVDV_PKG)/out_$(DATE)/sim_corev_rand_interrupt_test_0.log \
+			+instr_cnt=50000 \
+			+num_of_sub_program=5 \
+            +directed_instr_0=riscv_load_store_rand_instr_stream,4 \
+            +directed_instr_1=riscv_loop_instr,4 \
+            +directed_instr_2=riscv_hazard_instr_stream,4 \
+            +directed_instr_3=riscv_load_store_hazard_instr_stream,4 \
+            +directed_instr_4=riscv_multi_page_load_store_instr_stream,4 \
+            +directed_instr_5=riscv_mem_region_stress_test,4 \
+            +directed_instr_6=riscv_jal_instr,4 \
+			+no_fence=1 \
+            +enable_interrupt=1 \
+            +randomize_csr=1 \
+			+boot_mode=m \
+			+no_csr_instr=1
+	cp $(VSIM_RISCVDV_RESULTS)/corev_rand_interrupt_test/*.S $(CORE_TEST_DIR)/custom
+
+comp_corev-dv: clean_riscv-dv \
 	clone_riscv-dv \
-	comp_riscv-dv \
+	comp_riscv-dv 
+
+corev-dv: comp_corev-dv \
 	gen_corev_arithmetic_base_test \
 	gen_corev_rand_instr_test
 
@@ -314,7 +346,7 @@ mk_vsim_dir:
 # Target to create work directory in $(VSIM_RESULTS)/
 lib: mk_vsim_dir $(CV32E40P_PKG) $(TBSRC_PKG) $(TBSRC)
 	if [ ! -d "$(VSIM_RESULTS)/$(VWORK)" ]; then \
-		$(VLIB) $(VWORK); \
+		$(VLIB) $(VSIM_RESULTS)/$(VWORK); \
 	fi
 
 # Target to run vlog over SystemVerilog source in $(VSIM_RESULTS)/
