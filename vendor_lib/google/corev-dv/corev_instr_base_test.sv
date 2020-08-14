@@ -36,7 +36,22 @@ class corev_instr_base_test extends riscv_instr_base_test;
   endfunction
 
   virtual function void build_phase(uvm_phase phase);
+    apply_gen_config();
+    apply_privil_reg();
+
     super.build_phase(phase);
+  endfunction
+
+  virtual function void apply_gen_config();
+    `uvm_info("COREVTEST", "I be here", UVM_NONE);
+    uvm_factory::get().set_type_override_by_type(riscv_instr_gen_config::get_type(),
+                                                 corev_instr_gen_config::get_type());
+  endfunction
+
+  virtual function void apply_privil_reg();
+    `uvm_info("COREVTEST", "I be here", UVM_NONE);
+    uvm_factory::get().set_type_override_by_type(riscv_privil_reg::get_type(),
+                                                 corev_privil_reg::get_type());
   endfunction
 
   virtual function void apply_directed_instr();
