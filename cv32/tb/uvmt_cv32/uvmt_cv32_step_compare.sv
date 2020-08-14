@@ -147,8 +147,7 @@ module uvmt_cv32_step_compare
                                           `CV32E40P_CORE.cs_registers_i.mstatus_q.uie};
              "misa"          : csr_val = `CV32E40P_CORE.cs_registers_i.MISA_VALUE;
              "mie"           : csr_val = `CV32E40P_CORE.cs_registers_i.mie_q;
-             "mtvec"         : csr_val = {`CV32E40P_CORE.cs_registers_i.mtvec_q, 6'h0, 2'b01};
-             "mtvecx"        : csr_val = {`CV32E40P_CORE.cs_registers_i.mtvec_q, 6'h0, 2'b01};
+             "mtvec"         : csr_val = {`CV32E40P_CORE.cs_registers_i.mtvec_q, 6'h0, `CV32E40P_CORE.cs_registers_i.mtvec_mode_q};
              "mscratch"      : csr_val = `CV32E40P_CORE.cs_registers_i.mscratch_q;
              "mepc"          : csr_val = `CV32E40P_CORE.cs_registers_i.mepc_q;
              "mcause"        : csr_val = {`CV32E40P_CORE.cs_registers_i.mcause_q[5], 
