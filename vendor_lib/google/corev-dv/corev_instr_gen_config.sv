@@ -25,8 +25,7 @@
 class corev_instr_gen_config extends riscv_instr_gen_config;
 
   // CV32E40P requires the MTVEC table to be aligned to 256KB boundaries
-  constraint mtvec_c {
-    //tvec_alignment inside {[9:9]};
+  constraint mtvec_c {    
     tvec_alignment == 8;
   }
 
