@@ -241,7 +241,7 @@ sanity: hello-world
 %.hex: %.elf
 	$(RISCV_EXE_PREFIX)objcopy -O verilog $< $@ \
 		--change-section-address  .debugger=0x3FC000 \
-		--change-section-address  .debugger_exception=0x3FC400
+		--change-section-address  .debugger_exception=0x3FC800
 	$(RISCV_EXE_PREFIX)readelf -a $< > $*.readelf
 	$(RISCV_EXE_PREFIX)objdump -D $*.elf > $*.objdump
 

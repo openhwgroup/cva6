@@ -25,6 +25,13 @@
 .global glb_debug_status
 .global glb_hart_status
 .global glb_expect_debug_entry
+.global glb_step_info
+.global glb_previous_dpc
+.global glb_step_count
+.global glb_irq_timeout
+.global _step_trig_point
+.global _trigger_code
+.global _trigger_code_wfi
 .global __debugger_stack_start
 .global _debugger_fail
 .global _debugger_end
@@ -57,7 +64,7 @@ _debugger_start:
 
 	// For all other tests,
 	// Set debug status = hart status
-        la a1, glb_debug_status
+    la a1, glb_debug_status
 	sw t2, 0(a1)
 
 	li t0, 4
@@ -72,6 +79,8 @@ _debugger_start:
 	li t0,8
 	beq t2,t0,_debugger_trigger_match    // Test 8
 
+    li t0, 81
+    beq t2,t0, _debugger_trigger_match_wfi 
 	li t0,9
 	beq t2,t0,_debugger_trigger_disable    // Test 9
 
@@ -87,6 +96,196 @@ _debugger_start:
 	li t0,13
 	beq t2,t0,_debugger_mret_call    // Test 13
 
+    li t0,14
+    beq t2,t0, _debugger_ebreak_entry // Test 14
+
+    li t0,15
+    beq t2,t0, _debugger_trigger_in_debug // Test 15
+    
+    li t0,17
+    beq t2,t0, _debugger_wfi_test // Test 17
+
+    li t0,18
+    beq t2, t0, _debugger_single_step
+
+    li t0, 19
+    beq t2, t0, _debugger_irq
+
+    li t0, 20
+    beq t2, t0, _debugger_req_and_irq
+
+_debugger_req_and_irq:
+    // Debug was requested at the same cycle as irq
+    // Check dpc to see that pc is not at irq handler
+    // IRQ used was 30, so addr would be 30*4=120, 0x78
+    csrr t0, dpc
+    li t1, 0x78
+    beq t0, t1, _debugger_fail
+    j _debugger_end
+
+
+_debugger_irq:
+    // Assert irq
+    li a1, 0x15000000
+    li t0, 0x40000000
+    sw t0, 0(a1)
+    li a1, 0x15000004
+    li t0, 2
+    sw t0, 0(a1)
+
+    li t1, 1000
+// Wait for 1000 cycles, then timeout
+_irq_wait_loop:
+    la a1, glb_expect_irq_entry
+    lw t0, 0(a1);
+    beq t1, x0, _irq_loop_end
+    addi t1, t1, -1
+    bne t0, x0, _irq_wait_loop
+_irq_loop_end:
+    la a1, glb_irq_timeout
+    sw t1, 0(a1) 
+    j _debugger_end
+
+_debugger_single_step:
+    // Copy step_info
+    la a1, glb_step_info
+    lw t0, 0(a1)
+    
+    // Check action to take
+    li t1, 0
+    beq t0, t1, _debugger_single_step_basic
+    li t1, 1
+    beq t0, t1, _debugger_single_step_enable
+    li t1, 2
+    beq t0, t1, _debugger_single_step_disable
+    li t1, 3
+    //beq t0, t1, _debugger_single_step_illegal_insn
+    beq t0, t1, _debugger_single_step_basic
+    li t1, 4
+    beq t0, t1, _debugger_single_step_trig_setup
+    li t1, 5
+    beq t0, t1, _debugger_single_step_stepie_enable
+    j _debugger_fail
+
+_debugger_single_step_stepie_enable:
+    // enable stepi
+    li t0, 4<<28 | 1<<15 | 1<<2 | 1<<11
+    csrw dcsr, t0
+
+    j _debugger_single_step_end
+_debugger_single_step_enable:
+     // Check dcsr
+    csrr t0, dcsr
+    li t1, 4<<28 | 1<<15 | 1<<6 | 3<<0
+    bne t0, t1, _debugger_fail
+
+    // Enable step bit in dcsr and disable ebreakm
+    li t0, 4<<28 | 0<<15 | 1<<2 
+    csrw dcsr, t0
+
+    // ebreak used to enter single step test, incr dpc
+    csrr t0, dpc
+    addi t0, t0, 2
+    csrw dpc, t0
+    j _debugger_single_step_end
+
+_debugger_single_step_disable:
+    // Turn off single stepping
+    li t0, 1<<15
+    csrw dcsr, t0
+    // Clear glb_expect_debug entry
+    // as this will not be done in
+    // _debugger_end for single step
+    la a1, glb_expect_debug_entry
+    sw x0, 0(a1)
+    j _debugger_end
+ 
+_debugger_single_step_trig_setup:
+    // Set trigger to match on _step_trig_point
+    la t0, _step_trig_point
+	csrw tdata2,t0
+	li   t1, 1<<2
+	csrw tdata1,t1
+	li   t1, 2<<28 | 1<<27 | 1<<12 | 1<<6 | 1 <<2
+	csrr t2,tdata1
+	bne  t1,t2,_debugger_fail
+    j _debugger_single_step_basic
+
+_debugger_single_step_end:
+    // Store dpc to variable for checking in next step
+    la a1, glb_previous_dpc
+    csrr t0, dpc
+    sw t0, 0(a1)
+
+    // Increase step count
+    la a1, glb_step_count
+    lw t0, 0(a1)
+    addi t0, t0, 1
+    sw t0, 0(a1)
+    
+    // Clear step info if not 3 (exception) or 5 (irq while stepping)
+    // 
+    // In exception test we expect jumps
+    // to mtvec and other places, so keep
+    // step info to waive dpc checks
+    la a1, glb_step_info
+    lw t0, 0(a1)
+    li t1, 3
+    beq t0, t1, _debugger_end
+    li t1, 5
+    beq t0, t1, _debugger_end
+    li t1, 0
+    sw t1, 0(a1)
+
+    // return to m-mode
+    j _debugger_end
+
+_debugger_single_step_illegal_insn:
+    // Check dcsr
+    //            ebreakm   step  stepen
+    li t1, 4<<28 | 0<<15 | 4<<6 | 1<<2 | 3<<0
+    csrr t2, dcsr
+    bne t1, t2, _debugger_fail
+    // read dpc and mtvec
+    //csrr t0, dpc 
+    //csrr t1, mtvec
+    //andi t1, t1, 0xffffff00
+    //bne t0, t1, _debugger_fail
+    j _debugger_single_step_end
+
+_debugger_step_trig_entry:
+   // Advance dpc to skip first match instruction
+    csrr t0, dpc
+    la a1, _step_trig_exit
+    csrw dpc, a1
+    j _debugger_single_step_end 
+
+_debugger_single_step_basic:
+    // Check dcsr, jump to match-in-step if flagged in dcsr
+    li t1, 4<<28 | 0<<15 | 2<<6 | 1<<2 | 3<<0
+    csrr t2, dcsr
+    beq t1, t2, _debugger_step_trig_entry
+    
+//            ebreakm   step  stepen
+    li t1, 4<<28 | 0<<15 | 4<<6 | 1<<2 | 3<<0
+    bne t1, t2, _debugger_fail
+    // Check that dpc increased by 2 or 4
+    csrr t0, dpc
+    la a1, glb_previous_dpc
+    lw t1, 0(a1)
+    sub t0, t0, t1
+    li t1, 2
+    beq t0, t1, _debugger_single_step_end
+    li t1, 4
+    beq t0, t1, _debugger_single_step_end
+
+    // Waive dpc errors if we expect illegal instruction
+    la a1, glb_step_info
+    lw t0, 0(a1)
+    li t1, 3
+//    bne t0, t1, _debugger_fail
+    j _debugger_single_step_end
+    
 _debugger_csr_exception:
 	csrr t2,0xea8 // illegal insn
 
@@ -97,7 +296,7 @@ _debugger_mret_call:
 	mret // will invoke debugger exception routine
 
 _debugger_ebreak_entry:
-        la a1, glb_debug_status
+    la a1, glb_debug_status
 	li   t1, 4<<28 | 1<<6 | 3<<0 | 1<<15
 	csrr t2,dcsr
 	bne  t1,t2,_debugger_fail
@@ -108,11 +307,15 @@ _debugger_ebreak_entry:
         j  _debugger_end
 
 _debugger_simple:
-        la a1, glb_debug_status
+    // Check cause 0x3, debugger
+    csrr t2,dcsr
+    li t1, 4<<28 | 3<<6 | 3<<0
+    bne t1, t2, _debugger_fail
+ 
 	//csrr t2,0xea8 // illegal insn
-        li t1, 1
-        //sw t1, 0(a1)
-        j  _debugger_end
+    li t1, 1
+    //sw t1, 0(a1)
+    j  _debugger_end
 
 _debugger_csr:
 	// Check CSR access
@@ -205,6 +408,27 @@ _debugger_trigger_match:
 	bne  a1,a2,_debugger_fail
 	la   a1,_trigger_exit
 	csrw dpc,a1
+    
+    // Setup match addr for next match: wfi
+    la a1, _trigger_code_wfi
+    csrw tdata2, a1
+	j   _debugger_end
+_debugger_trigger_match_wfi:
+	// Expect DCSR
+	//   31:28 XDEBUGER Version = 4
+	//    8:6   Cause           = 2 Trigger
+	//    1:0   Privelege       = 3 Machine
+	// TBD FIXME BUG documentation update needed
+	li   t1, 4<<28 | 2<<6 | 3<<0 | 1<<15
+	csrr t2,dcsr
+	bne  t1,t2,_debugger_fail
+
+	la   a1,_trigger_code_wfi
+	csrr a2,dpc
+	bne  a1,a2,_debugger_fail
+
+    // Disable trigger
+    csrw tdata1, x0
 	j   _debugger_end
 _debugger_trigger_disable:
 	// Expect DCSR
@@ -223,6 +447,9 @@ _debugger_trigger_disable:
 	j    _debugger_end
 
 _debugger_ebreak:
+    li t0, 4<<28 | 3<<6 | 3<<0
+    csrr t1, dcsr
+    bne t0, t1, _debugger_fail 
         // Increment glb_debug_status
         la a1, glb_debug_status
         lw t1, 0(a1)
@@ -239,10 +466,54 @@ _debugger_ebreak:
         lw   a2, 16(a0)
         csrr a0, dscratch
         ebreak
+
+_debugger_trigger_in_debug:
+    // setup address to trigger on
+	la   a1, _debugger_trig_point
+	csrw tdata2,a1
+	li   t1, 1<<2
+	csrw tdata1,t1
+	li   t1, 2<<28 | 1<<27 | 1<<12 | 1<<6 | 1 <<2
+	csrr t2,tdata1
+	bne  t1,t2,_debugger_fail
+    
+    // Clear glb_expect_debug_entry
+    // If we trig, we'll reenter debug and
+    // test will fail due to 0 flag
+    la a1, glb_expect_debug_entry
+    li t1, 0
+    sw t1, 0(a1)
+_debugger_trig_point:     
+    // Should _not_trig here
+    nop
+    // Clear trigger
+    li t1, 0<<2
+    csrw tdata1, t1
+    j _debugger_end    
+
+_debugger_wfi_test:
+    la a1, glb_debug_status
+    csrr t2,dcsr
+    // ebreakm is set by previous test
+    li t1, 4<<28 | 3<<6 | 3<<0 | 1<<15
+    bne t1, t2, _debugger_fail
+        
+    // If the following wfi is not converted
+    // to a nop, test will hang
+    wfi
+    j  _debugger_end
+
 _debugger_end:	
+    // If single stepping, do not clear
+    la a1, glb_hart_status
+    lw t0, 0(a1)
+    li t1, 18
+    beq t0, t1, _debugger_end_continue
+
         // Clear debug entry expectation flag
         la a1, glb_expect_debug_entry
         sw x0, 0(a1)
+_debugger_end_continue:
         // Debugger Un-Stack
         //lw t0, 0(a0)
         csrr t0, 0x7b3

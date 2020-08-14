@@ -23,7 +23,7 @@ MEMORY
 	   sections to ram. */
 
 	ram (rwxai) : ORIGIN = 0x00000000, LENGTH = 0x400000
-	dbg (rwxai) : ORIGIN = 0x1A110800, LENGTH = 0x800
+	dbg (rwxai) : ORIGIN = 0x1A110800, LENGTH = 0x1000
 }
 
 SECTIONS
@@ -34,7 +34,7 @@ SECTIONS
   {
     KEEP(*(.debugger));
   } >dbg
-  .debugger_exception (0x1A110C00):
+  .debugger_exception (0x1A111000):
   {
     KEEP(*(.debugger_exception));
   } >dbg
