@@ -204,9 +204,9 @@ hello-world:  $(XRUN_SIM_PREREQ) $(CUSTOM)/hello_world.hex
 		+UVM_TESTNAME=uvmt_cv32_firmware_test_c \
 		+firmware=$(CUSTOM)/hello_world.hex
 
-interrupt:  $(XRUN_SIM_PREREQ) $(CORE_TEST_DIR)/interrupt_test/interrupt_test.hex
-	mkdir -p $(XRUN_RESULTS)/interrupt && cd $(XRUN_RESULTS)/interrupt && \
-	$(XRUN) -l xrun-interrupt.log -covtest interrupt $(XRUN_COMP_RUN) \
+interrupt_test:  $(XRUN_SIM_PREREQ) $(CORE_TEST_DIR)/interrupt_test/interrupt_test.hex
+	mkdir -p $(XRUN_RESULTS)/interrupt_test && cd $(XRUN_RESULTS)/interrupt_test && \
+	$(XRUN) -l xrun-interrupt_test.log -covtest interrupt_test $(XRUN_COMP_RUN) \
 		+elf_file=$(CORE_TEST_DIR)/interrupt_test/interrupt_test.elf \
 		+nm_file=$(CORE_TEST_DIR)/interrupt_test/interrupt_test.nm \
 		+UVM_TESTNAME=uvmt_cv32_firmware_test_c \
