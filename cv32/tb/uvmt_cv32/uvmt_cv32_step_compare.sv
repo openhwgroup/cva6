@@ -157,7 +157,7 @@ module uvmt_cv32_step_compare
 
              // MT: 2020-06-11
              //"miex"       : csr_val = `CV32E40P_CORE.cs_registers_i.miex_q;
-             "mtvec"      : csr_val = {`CV32E40P_CORE.cs_registers_i.mtvec_q, 6'h0, 2'b01};
+             "mtvec"      : csr_val = {`CV32E40P_CORE.cs_registers_i.mtvec_q, 6'h0, `CV32E40P_CORE.cs_registers_i.mtvec_mode_q}; 
              "mtvecx"     : csr_val = {`CV32E40P_CORE.cs_registers_i.mtvec_q, 6'h0, 2'b01};
              "mscratch"   : csr_val = `CV32E40P_CORE.cs_registers_i.mscratch_q;
              "mepc"       : csr_val = `CV32E40P_CORE.cs_registers_i.mepc_q;

@@ -29,8 +29,8 @@
 
 #define MCAUSE_IRQ_MASK 0x1f
 
-#define IRQ_NUM 19
-#define IRQ_MASK 0xFFFF0888
+#define IRQ_NUM  3
+#define IRQ_MASK 0x00000888
 
 #define SOFTWARE_IRQ_ID  3
 #define TIMER_IRQ_ID     7

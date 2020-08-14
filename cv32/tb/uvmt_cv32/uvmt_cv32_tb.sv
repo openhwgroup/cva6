@@ -106,7 +106,8 @@ module uvmt_cv32_tb;
       always @(posedge clknrst_if_iss.clk or negedge clknrst_if_iss.reset_n) begin
         if (!clknrst_if_iss.reset_n)
           iss_wrap.b1.deferint <= 1'b1;
-        else if (dut_wrap.cv32e40p_wrapper_i.core_i.id_stage_i.controller_i.ctrl_fsm_cs == 5'b00110) 
+        else if (dut_wrap.cv32e40p_wrapper_i.core_i.id_stage_i.controller_i.ctrl_fsm_cs inside {cv32e40p_pkg::IRQ_TAKEN_ID,
+                                                                                                cv32e40p_pkg::IRQ_TAKEN_IF})
           iss_wrap.b1.deferint <= 1'b0;
       end
       
