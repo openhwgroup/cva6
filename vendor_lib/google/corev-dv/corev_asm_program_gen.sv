@@ -35,7 +35,7 @@ class corev_asm_program_gen extends riscv_asm_program_gen;
     instr_stream.push_back(".include \"user_define.h\"");
     instr_stream.push_back(".section .text.start");
     instr_stream.push_back(".globl _start");
-    instr_stream.push_back(".section .text");
+    instr_stream.push_back(".section .init");
     if (cfg.disable_compressed_instr) begin
       instr_stream.push_back(".option norvc;");
     end

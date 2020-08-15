@@ -19,7 +19,9 @@
 // CORE-V instruction generator base test:
 //     - extension of the RISC-V instruction generator base test.
 //
-// Uses the factory to replace riscv_asm_program_gen with corev_asm_program_gen.
+// - Uses the factory to replace riscv_asm_program_gen with corev_asm_program_gen.
+// - Uses the factory to replace riscv_privil_reg with corev_privil_reg which
+//        adds platform-specific fields
 //------------------------------------------------------------------------------
 
 class corev_instr_base_test extends riscv_instr_base_test;
@@ -36,7 +38,20 @@ class corev_instr_base_test extends riscv_instr_base_test;
   endfunction
 
   virtual function void build_phase(uvm_phase phase);
+    override_gen_config();
+    override_privil_reg();
+
     super.build_phase(phase);
+  endfunction
+
+  virtual function void override_gen_config();    
+    uvm_factory::get().set_type_override_by_type(riscv_instr_gen_config::get_type(),
+                                                 corev_instr_gen_config::get_type());
+  endfunction
+
+  virtual function void override_privil_reg();    
+    uvm_factory::get().set_type_override_by_type(riscv_privil_reg::get_type(),
+                                                 corev_privil_reg::get_type());
   endfunction
 
   virtual function void apply_directed_instr();
