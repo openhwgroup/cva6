@@ -530,9 +530,11 @@ _debugger_end:
     lw t2, 0(a1)
     sub t1, t1, t2
     beq t1, x0, _debugger_fail
+
     csrr t1, minstret
     la a1, glb_minstret_start
     lw t2, 0(a1)
+    sub t1, t1, t2
     beq t1, x0, _debugger_fail
 
     // If single stepping, do not clear
