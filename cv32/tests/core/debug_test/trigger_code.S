@@ -1,3 +1,20 @@
+#Copyright 202[x] Silicon Labs, Inc.
+#  
+#This file, and derivatives thereof are licensed under the
+#Solderpad License, Version 2.0 (the "License");
+#Use of this file means you agree to the terms and conditions
+#of the license and are in full compliance with the License.
+#You may obtain a copy of the License at
+#  
+#    https://solderpad.org/licenses/SHL-2.0/
+#  
+#Unless required by applicable law or agreed to in writing, software
+#and hardware implementations thereof
+#distributed under the License is distributed on an "AS IS" BASIS,
+#WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, EITHER EXPRESSED OR IMPLIED.
+#See the License for the specific language governing permissions and
+#limitations under the License.
+
 .section .trigger_code_sect, "ax"
 .set test_ret_val, 0x20000000
 .set test_fail, 0x1
@@ -5,7 +22,25 @@
 .global _trigger_exit
 .global _trigger_test
 .global _trigger_code
+.global _trigger_test_wfi
+.global _trigger_code_wfi
 .type _trigger_code, @function
+.type _trigger_code_wfi, @function
+_trigger_code_wfi:
+    wfi
+    ret
+
+_trigger_test_wfi:
+    addi sp,sp,-30
+    sw t0, 0(sp)
+    sw t1, 4(sp)
+    sw a0, 8(sp)
+    sw a1, 12(sp)
+    sw a2, 16(sp)
+    sw ra, 20(sp)
+
+    jal ra, _trigger_code_wfi
+    j __trigger_done
      // We will trigger on the _trigger_code addess
 	// We should not expect the first instruction to execute
 	// The debugger code will move the PC to the trigger_exit_code

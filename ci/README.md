@@ -16,7 +16,7 @@ URL, branch and hash of the RTL to be regressed (the defaults for this are defin
 <br>
 If ci_check is not working for you, create an issue and assign it to @mikeopenhwgroup.
 <br><br>
-At the completion of ci_check the script will print a message to stdout indicating whether it is OK to issue a pull-request based on the outcome of the regression.  Note that some of the tests in a regression may have known failuresi and the script will
+At the completion of ci_check the script will print a message to stdout indicating whether it is OK to issue a pull-request based on the outcome of the regression.  Note that some of the tests in a regression may have known failures and the script will
 compensate for them. A typical example is:
 ```
 CI Check PASSED with known failure(s).

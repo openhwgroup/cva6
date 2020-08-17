@@ -21,23 +21,37 @@
 #
 ###############################################################################
 
+# Executables
 XRUN              = $(CV_SIM_PREFIX) xrun
 SIMVISION         = $(CV_TOOL_PREFIX) simvision
 INDAGO            = $(CV_TOOL_PREFIX) indago
 IMC               = $(CV_SIM_PREFIX) imc
 
-XRUN_UVMHOME_ARG ?= CDNS-1.2-ML
-XRUN_COMP_FLAGS  ?= -64bit -disable_sem2009 -access +rwc -q -clean \
-                   -top uvmt_cv32_tb -sv -uvm -uvmhome $(XRUN_UVMHOME_ARG) \
-                   $(TIMESCALE) $(SV_CMP_FLAGS)
-XRUN_GUI         ?=
+# Paths
 XRUN_RESULTS     ?= $(PWD)/xrun_results
 XRUN_RISCVDV_RESULTS ?= $(XRUN_RESULTS)/riscv-dv
 XRUN_DIR         ?= $(XRUN_RESULTS)/xcelium.d
+XRUN_UVMHOME_ARG ?= CDNS-1.2-ML
+
+# Flags
+XRUN_COMP_FLAGS  ?= -64bit -disable_sem2009 -access +rwc \
+                    -sv -uvm -uvmhome $(XRUN_UVMHOME_ARG) \
+                    $(TIMESCALE) $(SV_CMP_FLAGS)
+XRUN_RUN_BASE_FLAGS   ?= -64bit $(XRUN_GUI) +UVM_VERBOSITY=$(XRUN_UVM_VERBOSITY) \
+                         $(XRUN_PLUSARGS) -svseed $(RNDSEED) -sv_lib $(OVP_MODEL_DPI)
+XRUN_GUI         ?=
 XRUN_SINGLE_STEP ?=
 XRUN_ELAB_COV     = -covdut uvmt_cv32_tb -coverage b:e:f:t:u
 XRUN_RUN_COV      = -covoverwrite -covscope uvmt_cv32_tb
-NUM_TEST         ?= 2
+NUM_TESTS        ?= 2
+XRUN_UVM_VERBOSITY ?= UVM_MEDIUM
+
+# Common QUIET flag defaults to -quiet unless VERBOSE is set
+ifeq ($(call IS_YES,$(VERBOSE)),YES)
+QUIET=
+else
+QUIET=-quiet
+endif
 
 ################################################################################
 # GUI interactive simulation
@@ -115,8 +129,6 @@ ifeq ($(call IS_YES,$(USE_ISS)),YES)
 #     XRUN_PLUSARGS += +USE_ISS +ovpcfg="--controlfile $(OVP_CTRL_FILE)"
 endif
 
-XRUN_RUN_BASE_FLAGS   ?= -64bit $(XRUN_GUI) +UVM_VERBOSITY=$(XRUN_UVM_VERBOSITY) \
-                         $(XRUN_PLUSARGS) -svseed $(RNDSEED) -sv_lib $(OVP_MODEL_DPI)
 # Simulate using latest elab
 XRUN_RUN_FLAGS        ?= -R -xmlibdirname ../xcelium.d 
 XRUN_RUN_FLAGS        += $(XRUN_RUN_BASE_FLAGS)
@@ -142,6 +154,7 @@ cv32_riscv_tests: cv32-riscv-tests
 cv32_riscv_compliance_tests: cv32-riscv-compliance-tests 
 
 XRUN_COMP = $(XRUN_COMP_FLAGS) \
+		$(QUIET) \
 		$(XRUN_USER_COMPILE_ARGS) \
 		+incdir+$(DV_UVME_CV32_PATH) \
 		+incdir+$(DV_UVMT_CV32_PATH) \
@@ -150,18 +163,20 @@ XRUN_COMP = $(XRUN_COMP_FLAGS) \
 		$(UVM_PLUSARGS)
 
 comp: mk_xrun_dir $(CV32E40P_PKG) $(OVP_MODEL_DPI)
-	cd $(XRUN_RESULTS) && $(XRUN) \
-		$(XRUN_COMP) \
-		-l xrun.log \
-		-elaborate
 	@echo "$(BANNER)"
-	@echo "* $(,maSIMULATOR) compile complete"
+	@echo "* Compiling xrun in $(XRUN_RESULTS)"
 	@echo "* Log: $(XRUN_RESULTS)/xrun.log"
 	@echo "$(BANNER)"
+	cd $(XRUN_RESULTS) && $(XRUN) \
+		$(XRUN_COMP) \
+		-top $(RTLSRC_VLOG_TB_TOP) \
+		-l xrun.log \
+		-elaborate
 
 ifneq ($(call IS_NO,$(COMP)),NO)
 XRUN_SIM_PREREQ = comp
 endif
+
 XRUN_COMP_RUN = $(XRUN_RUN_FLAGS)
 
 ifeq ($(call IS_YES,$(XRUN_SINGLE_STEP)), YES)
@@ -188,6 +203,14 @@ hello-world:  $(XRUN_SIM_PREREQ) $(CUSTOM)/hello_world.hex
 		+nm_file=$(CUSTOM)/hello_world.nm \
 		+UVM_TESTNAME=uvmt_cv32_firmware_test_c \
 		+firmware=$(CUSTOM)/hello_world.hex
+
+interrupt_test:  $(XRUN_SIM_PREREQ) $(CORE_TEST_DIR)/interrupt_test/interrupt_test.hex
+	mkdir -p $(XRUN_RESULTS)/interrupt_test && cd $(XRUN_RESULTS)/interrupt_test && \
+	$(XRUN) -l xrun-interrupt_test.log -covtest interrupt_test $(XRUN_COMP_RUN) \
+		+elf_file=$(CORE_TEST_DIR)/interrupt_test/interrupt_test.elf \
+		+nm_file=$(CORE_TEST_DIR)/interrupt_test/interrupt_test.nm \
+		+UVM_TESTNAME=uvmt_cv32_firmware_test_c \
+		+firmware=$(CORE_TEST_DIR)/interrupt_test/interrupt_test.hex
 
 misalign: $(XRUN_SIM_PREREQ) $(CUSTOM)/misalign.hex
 	mkdir -p $(XRUN_RESULTS)/misalign && cd $(XRUN_RESULTS)/misalign && \
@@ -260,7 +283,6 @@ unit-test:  $(FIRMWARE)/firmware_unit_test.hex
 unit-test: ALL_VSIM_FLAGS += "+firmware=$(FIRMWARE)/firmware_unit_test.hex"
 unit-test: dsim-firmware-unit-test
 
-
 # Runs all tests in riscv_tests/ and riscv_compliance_tests/
 cv32-firmware: comp $(FIRMWARE)/firmware.hex
 	$(XRUN) -R -l xrun-firmware.log \
@@ -296,7 +318,7 @@ gen_corev_arithmetic_base_test:
 	$(XRUN) -R $(XRUN_RUN_FLAGS) \
 		-xceligen rand_struct \
 		+UVM_TESTNAME=corev_instr_base_test  \
-		+num_of_tests=2  \
+		+num_of_tests=$(NUM_TESTS)  \
 		+start_idx=0  \
 		+asm_file_name_opts=riscv_arithmetic_basic_test  \
 		-l $(COREVDV_PKG)/out_$(DATE)/sim_riscv_arithmetic_basic_test_0.log \
@@ -356,14 +378,8 @@ cov: $(COV_MERGE)
 ###############################################################################
 # Clean up your mess!
 
-clean:
-	rm -vrf $(XRUN_DIR)
-	rm -rf $(XRUN_RESULTS)
-	rm -f  xrun.history xrun*.log xrun.log xrun.key trace_core_00_0.log
-	rm -f  stdout.txt
-	rm -rf .simvision *.shm
-	rm -rf lwdgen.log ida*.log indago_logs .ida* .indago*
-	rm -rf imc.log cov_work mdv.log
+clean:	
+	rm -rf $(XRUN_RESULTS)	
 
 # Files created by Eclipse when using the Imperas ISS + debugger
 clean_eclipse:

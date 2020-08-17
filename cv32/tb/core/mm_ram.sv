@@ -20,8 +20,9 @@ module mm_ram
      parameter RAM_ADDR_WIDTH    =  16,
                INSTR_RDATA_WIDTH = 128, // width of read_data on instruction bus
                DATA_RDATA_WIDTH  =  32, // width of read_data on data bus
-               DBG_ADDR_WIDTH    =  14  // POT ammount of emmory allocated for debugger
+               DBG_ADDR_WIDTH    =  14, // POT ammount of emmory allocated for debugger
                                         // physically located at end of memory
+               IRQ_WIDTH         =  32  // IRQ vector width
   )
   (
      input logic                          clk_i,
@@ -45,8 +46,7 @@ module mm_ram
 
      input logic [4:0]                    irq_id_i,
      input logic                          irq_ack_i,
-     output logic [4:0]                   irq_id_o,
-     output logic                         irq_o,
+     output logic [IRQ_WIDTH-1:0]         irq_o,
 
      input logic [31:0]                   pc_core_id_i,
 
@@ -57,12 +57,11 @@ module mm_ram
      output logic                         exit_valid_o,
      output logic [31:0]                  exit_value_o);
 
-    localparam int                        TIMER_IRQ_ID   = 3;
     localparam int                        RND_STALL_REGS = 16;
     localparam int                        RND_IRQ_ID     = 31;
 
     // mux for read and writes
-    enum logic [1:0]{RAM, MM, RND_STALL, ERR} select_rdata_d, select_rdata_q;
+    enum logic [2:0]{RAM, MM, RND_STALL, ERR, RND_NUM} select_rdata_d, select_rdata_q;
 
     enum logic {T_RAM, T_PER} transaction;
 
@@ -110,9 +109,9 @@ module mm_ram
     logic [31:0]                   sig_begin_d, sig_begin_q;
 
     // signals to timer
-    logic [31:0]                   timer_irq_mask_q;
+    logic [IRQ_WIDTH-1:0]          timer_irq_mask_q;
     logic [31:0]                   timer_cnt_q;
-    logic                          irq_q;
+    logic [IRQ_WIDTH-1:0]          irq_q;
     logic                          timer_reg_valid;
     logic                          timer_val_valid;
     logic [31:0]                   timer_wdata;
@@ -146,6 +145,10 @@ module mm_ram
     logic                          rnd_stall_data_we;
     logic [3:0]                    rnd_stall_data_be;
 
+    // random number generation
+    logic                          rnd_num_req;
+    logic [31:0]                   rnd_num;
+
     //random or monitor interrupt request
     logic rnd_irq;
    
@@ -177,6 +180,7 @@ module mm_ram
         rnd_stall_addr      = '0;
         rnd_stall_wdata     = '0;
         rnd_stall_we        = '0;
+        rnd_num_req         = '0;
         select_rdata_d      = RAM;
         transaction         = T_PER;
 
@@ -313,6 +317,9 @@ module mm_ram
                     rnd_stall_wdata    = data_wdata_i;
                     rnd_stall_addr     = data_addr_i;
                     rnd_stall_we       = data_we_i;
+                end else if (data_addr_i[31:0] == 32'h1500_1000) begin
+                    rnd_num_req = 1'b1;
+                    select_rdata_d = RND_NUM;
                 end else
                     select_rdata_d = ERR;
 
@@ -355,6 +362,9 @@ module mm_ram
             $display("out of bounds read from %08x\nRandom stall generator is not supported with Verilator", data_addr_i);
             $fatal(2);
 `endif
+        
+        end else if (select_rdata_q == RND_NUM) begin
+            data_rdata_o = rnd_num;    
         end else if (select_rdata_q == ERR) begin
             $display("out of bounds read from %08x", data_addr_i);
             $fatal(2);
@@ -379,51 +389,62 @@ module mm_ram
         end
     end
 
+    assign irq_o    = irq_q | rnd_irq << RND_IRQ_ID;
 
-    assign irq_id_o = irq_q ? TIMER_IRQ_ID : RND_IRQ_ID;
-    assign irq_o    = irq_q | rnd_irq;
-
-    // Control timer. We need one to have some kind of timeout for tests that
-    // get stuck in some loop. The riscv-tests also mandate that. Enable timer
-    // interrupt by writing 1 to timer_irq_mask_q. Write initial value to
-    // timer_cnt_q which gets counted down each cycle. When it transitions from
-    // 1 to 0, and interrupt request (irq_q) is made (masked by timer_irq_mask_q).
-    always_ff @(posedge clk_i, negedge rst_ni) begin: tb_timer
+    // Set irq vector to timer_irq_mask_q when timer counts down
+    // irq bit cleared when acknowledged
+    always_ff @(posedge clk_i, negedge rst_ni) begin: tb_irq_timer
         if(~rst_ni) begin
             timer_irq_mask_q <= '0;
             timer_cnt_q      <= '0;
             irq_q            <= '0;
-            for(int i=0; i<RND_STALL_REGS; i++) begin
-                rnd_stall_regs[i] <= '0;
-            end
-            rnd_stall_rdata  <= '0;
         end else begin
-            // set timer irq mask
-            if(timer_reg_valid) begin
-                timer_irq_mask_q <= timer_wdata;
+          // set timer irq mask
+          if(timer_reg_valid)
+            timer_irq_mask_q <= timer_wdata;
 
-            // write timer value
-            end else if(timer_val_valid) begin
-                timer_cnt_q <= timer_wdata;
+          // write timer value
+          if(timer_val_valid)
+            timer_cnt_q <= timer_wdata;
+          else if(timer_cnt_q > 0)
+            timer_cnt_q <= timer_cnt_q - 1;
 
-            end else if(rnd_stall_req) begin
-                if(rnd_stall_we)
-                    rnd_stall_regs[rnd_stall_addr[5:2]] <= rnd_stall_wdata;
-                else
-                    rnd_stall_rdata <= rnd_stall_regs[rnd_stall_addr[5:2]];
-            end else begin
-                if(timer_cnt_q > 0)
-                    timer_cnt_q <= timer_cnt_q - 1;
+          // set/clear irq
+          if(timer_cnt_q == 1)
+            irq_q <= timer_irq_mask_q ;
+          else if(irq_ack_i)
+            irq_q[irq_id_i] <= 1'b0;
 
-                if(timer_cnt_q == 1)
-                    irq_q <= 1'b1 && timer_irq_mask_q[TIMER_IRQ_ID];
-                   
-                if(irq_ack_i == 1'b1 && irq_id_i == TIMER_IRQ_ID)
-                    irq_q <= '0;
+        end // else: !if(~rst_ni)
+    end // block: tb_irq_timer
 
-            end
+
+    // Update random stall control
+    always_ff @(posedge clk_i, negedge rst_ni) begin: tb_stall
+        if(~rst_ni) begin
+          rnd_stall_rdata  <= '0;
+        end else begin
+          if(rnd_stall_req) begin
+            if(rnd_stall_we)
+              rnd_stall_regs[rnd_stall_addr[5:2]] <= rnd_stall_wdata;
+            else
+              rnd_stall_rdata <= rnd_stall_regs[rnd_stall_addr[5:2]];
+          end
         end
-    end
+    end // block: tb_stall
+  
+   // -------------------------------------------------------------
+   // Generate a random number using the SystemVerilog random number function
+   always_ff @(posedge clk_i, negedge rst_ni) begin : rnd_num_gen
+        if (!rst_ni) 
+            rnd_num <= 32'h0;
+        else if (rnd_num_req)
+`ifndef VERILATOR
+            rnd_num <= $urandom();
+`else
+            rnd_num <= 32'h0;
+`endif
+   end
 
    // -------------------------------------------------------------
    // Control debug_req. Writing to this alias will change or create

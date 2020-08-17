@@ -20,6 +20,8 @@ package corev_instr_test_pkg;
   import riscv_instr_pkg::*;
   import riscv_instr_test_pkg::*;
 
+  `include "corev_privil_reg.sv"
+  `include "corev_instr_gen_config.sv"
   `include "corev_asm_program_gen.sv"
   `include "corev_instr_base_test.sv"
 

@@ -45,19 +45,55 @@ exception code `0`, they jump to the same location as exceptions, therefore the
 user software interrupt handler must also handle exceptions.
 
 The vector table is defined in `vectors.S` and may jump to one of the
-following three interrupt request handlers in `handlers.S`:
-  * `sw_irq_handler` - handles user software interrupts and all exceptions.
+following interrupt request handlers in `handlers.S`:
+  * `u_sw_irq_handler` - handles user software interrupts and all exceptions.
   Saves all caller saved registers then checks `mcause` and jumps to the
   appropriate handler as follows:
     - Breakpoint: jump to `handle_ebreak`.
     - Illegal instruction: jump to `handle_illegal`.
     - Environment call from M-mode: jump to `handle_ecall`.
     - Any other exception or user software interrupt: jump to `handle_unknown`.
-  * `verification_irq_handler` - calls `mret`. Usage of this interrupt is
-  still under discussion.
+  * `m_software_irq_handler` - handles machine-mode software interrupts
+    - Currently jumps to `__no_irq_handler`.  Behavior to be defined in future commit.
+  * `m_timer_irq_handler` - handles machine-mode timer interrupts
+    - Currently jumps to `__no_irq_handler`.  Behavior to be defined in future commit.
+  * `m_external_irq_handler` - handles machine-mode external interrupts
+    - Currently jumps to `__no_irq_handler`.  Behavior to be defined in future commit.
+  * `m_fast0_irq_handler` - handles machine-mode fast external interrupts (platform extension for CV32)  
+    - Currently jumps to `__no_irq_handler`.  Behavior to be defined in future commit.
+  * `m_fast1_irq_handler` - handles machine-mode fast external interrupts (platform extension for CV32)
+    - Currently jumps to `__no_irq_handler`.  Behavior to be defined in future commit.
+  * `m_fast2_irq_handler` - handles machine-mode fast external interrupts (platform extension for CV32)
+    - Currently jumps to `__no_irq_handler`.  Behavior to be defined in future commit.
+  * `m_fast3_irq_handler` - handles machine-mode fast external interrupts (platform extension for CV32)
+    - Currently jumps to `__no_irq_handler`.  Behavior to be defined in future commit.
+  * `m_fast4_irq_handler` - handles machine-mode fast external interrupts (platform extension for CV32)
+    - Currently jumps to `__no_irq_handler`.  Behavior to be defined in future commit.
+  * `m_fast5_irq_handler` - handles machine-mode fast external interrupts (platform extension for CV32)
+    - Currently jumps to `__no_irq_handler`.  Behavior to be defined in future commit.
+  * `m_fast6_irq_handler` - handles machine-mode fast external interrupts (platform extension for CV32)
+    - Currently jumps to `__no_irq_handler`.  Behavior to be defined in future commit.
+  * `m_fast7_irq_handler` - handles machine-mode fast external interrupts (platform extension for CV32)
+    - Currently jumps to `__no_irq_handler`.  Behavior to be defined in future commit.
+  * `m_fast8_irq_handler` - handles machine-mode fast external interrupts (platform extension for CV32)
+    - Currently jumps to `__no_irq_handler`.  Behavior to be defined in future commit.
+  * `m_fast9_irq_handler` - handles machine-mode fast external interrupts (platform extension for CV32)
+    - Currently jumps to `__no_irq_handler`.  Behavior to be defined in future commit.
+  * `m_fast10_irq_handler` - handles machine-mode fast external interrupts (platform extension for CV32)
+    - Currently jumps to `__no_irq_handler`.  Behavior to be defined in future commit.
+  * `m_fast11_irq_handler` - handles machine-mode fast external interrupts (platform extension for CV32)
+    - Currently jumps to `__no_irq_handler`.  Behavior to be defined in future commit.
+  * `m_fast12_irq_handler` - handles machine-mode fast external interrupts (platform extension for CV32)
+    - Currently jumps to `__no_irq_handler`.  Behavior to be defined in future commit.
+  * `m_fast13_irq_handler` - handles machine-mode fast external interrupts (platform extension for CV32)
+    - Currently jumps to `__no_irq_handler`.  Behavior to be defined in future commit.
+  * `m_fast14_irq_handler` - handles machine-mode fast external interrupts (platform extension for CV32)
+    - Currently jumps to `__no_irq_handler`.  Behavior to be defined in future commit.
+  * `m_fast15_irq_handler` - handles machine-mode fast external interrupts (platform extension for CV32)
+    - Currently jumps to `__no_irq_handler`.  Behavior to be defined in future commit.
   * `__no_irq_handler` - loops printing "no exception handler installed".
 
-The following exception handlers may be called from `sw_irq_handler`:
+The following exception handlers may be called from `u_sw_irq_handler`:
   * `handle_ecall` - calls `handle_syscall` which checks the syscall number and
   calls the corresponding syscall function.
   * `handle_ebreak` - currently just prints "ebreak exception handler entered"
@@ -67,7 +103,7 @@ The following exception handlers may be called from `sw_irq_handler`:
   exception. This is the only case where `mepc` is not incremented, because we
   do not know the appropiate action to take.
 
-Returning from the `sw_irq_handler`. All handlers called by `sw_irq_handler`
+Returning from the `u_sw_irq_handler`. All handlers called by `u_sw_irq_handler`
 increment `mepc` before calling `mret`, except for `unknown_handler`. Handlers
 that require `mepc` to be incremented jump to `end_handler_incr_mepc` otherwise
 they jump to `end_handler_ret`. All caller saved registers are restored before
