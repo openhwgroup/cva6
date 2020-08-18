@@ -284,7 +284,7 @@ test31:
     li x19, 0xe093a374
     li x17, 0x68c48474
     li x18, 0xb5a735b7
-    .word 0x572889d7    #pv.cplxmul.r x19, x17, x18
+    .word 0x552889d7    #pv.cplxmul.r x19, x17, x18
     li x20, 0xe0930901
     beq x20, x19, test32
     c.addi x15, 0x1
@@ -292,7 +292,7 @@ test32:
     li x19, 0xbb90ae84
     li x17, 0x3862897a
     li x18, 0xae76a3dc
-    .word 0x572889d7    #pv.cplxmul.r x19, x17, x18
+    .word 0x552889d7    #pv.cplxmul.r x19, x17, x18
     li x20, 0xbb90793c
     beq x20, x19, test33
     c.addi x15, 0x1
@@ -300,7 +300,7 @@ test33:
     li x19, 0x25cc94b3
     li x17, 0xb7cbb7dc
     li x18, 0x71df311a
-    .word 0x572889d7    #pv.cplxmul.r x19, x17, x18
+    .word 0x552889d7    #pv.cplxmul.r x19, x17, x18
     li x20, 0x25cc2490
     beq x20, x19, test34
     c.addi x15, 0x1
@@ -308,7 +308,7 @@ test34:
     li x19, 0x4b0b9796
     li x17, 0xee3c5a30
     li x18, 0x9629081b
-    .word 0x572889d7    #pv.cplxmul.r x19, x17, x18
+    .word 0x552889d7    #pv.cplxmul.r x19, x17, x18
     li x20, 0x4b0bf705
     beq x20, x19, test35
     c.addi x15, 0x1
@@ -316,7 +316,7 @@ test35:
     li x19, 0x0e7c05a1
     li x17, 0xfa556505
     li x18, 0x1e1e9e99
-    .word 0x572889d7    #pv.cplxmul.r x19, x17, x18
+    .word 0x552889d7    #pv.cplxmul.r x19, x17, x18
     li x20, 0x0e7cb476
     beq x20, x19, test36
     c.addi x15, 0x1
@@ -324,7 +324,7 @@ test36:
     li x19, 0x0c50fd6d
     li x17, 0x1c198900
     li x18, 0x16a779a5
-    .word 0x572889d7    #pv.cplxmul.r x19, x17, x18
+    .word 0x552889d7    #pv.cplxmul.r x19, x17, x18
     li x20, 0x0c5089ef
     beq x20, x19, test37
     c.addi x15, 0x1
@@ -334,7 +334,7 @@ test37:
     li x19, 0xf2d306f0
     li x17, 0xb188c359
     li x18, 0x58ba54ab
-    .word 0x5728a9d7    #pv.cplxmul.r.div2 x19, x17, x18
+    .word 0x5528a9d7    #pv.cplxmul.r.div2 x19, x17, x18
     li x20, 0xf2d30722
     beq x20, x19, test38
     c.addi x15, 0x1
@@ -342,7 +342,7 @@ test38:
     li x19, 0x7c9674fd
     li x17, 0xa1441f2b
     li x18, 0xad8ac34a
-    .word 0x5728a9d7    #pv.cplxmul.r.div2 x19, x17, x18
+    .word 0x5528a9d7    #pv.cplxmul.r.div2 x19, x17, x18
     li x20, 0x7c96da17
     beq x20, x19, test39
     c.addi x15, 0x1
@@ -350,7 +350,7 @@ test39:
     li x19, 0x2d033231
     li x17, 0x5480e56e
     li x18, 0x829107fb
-    .word 0x5728a9d7    #pv.cplxmul.r.div2 x19, x17, x18
+    .word 0x5528a9d7    #pv.cplxmul.r.div2 x19, x17, x18
     li x20, 0x2d032893
     beq x20, x19, test40
     c.addi x15, 0x1
@@ -358,7 +358,7 @@ test40:
     li x19, 0xec097a26
     li x17, 0x7737ce12
     li x18, 0x5af57d71
-    .word 0x5728a9d7    #pv.cplxmul.r.div2 x19, x17, x18
+    .word 0x5528a9d7    #pv.cplxmul.r.div2 x19, x17, x18
     li x20, 0xec09bd2d
     beq x20, x19, test41
     c.addi x15, 0x1
@@ -366,7 +366,7 @@ test41:
     li x19, 0x68ef850a
     li x17, 0x7e7caf49
     li x18, 0x48b48c84
-    .word 0x5728a9d7    #pv.cplxmul.r.div2 x19, x17, x18
+    .word 0x5528a9d7    #pv.cplxmul.r.div2 x19, x17, x18
     li x20, 0x68ef007d
     beq x20, x19, test42
     c.addi x15, 0x1
@@ -374,7 +374,7 @@ test42:
     li x19, 0x2e16d229
     li x17, 0x09f38f2a
     li x18, 0x67e4f120
-    .word 0x5728a9d7    #pv.cplxmul.r.div2 x19, x17, x18
+    .word 0x5528a9d7    #pv.cplxmul.r.div2 x19, x17, x18
     li x20, 0x2e160284
     beq x20, x19, test43
     c.addi x15, 0x1
@@ -384,23 +384,23 @@ test43:
     li x19, 0x68dc4d8d
     li x17, 0xd81aa079
     li x18, 0x1b333d39
-    .word 0x5728c9d7    #pv.cplxmul.r.div4 x19, x17, x18
-    li x20, 0x68dc01eb
+    .word 0x5528c9d7    #pv.cplxmul.r.div4 x19, x17, x18
+    li x20, 0x68dcf6b2
     beq x20, x19, test44
     c.addi x15, 0x1
 test44:
     li x19, 0xcaac8fcb
     li x17, 0xb7062e88
     li x18, 0x804905e9
-    .word 0x5728c9d7    #pv.cplxmul.r.div4 x19, x17, x18
-    li x20, 0xcaac097a
+    .word 0x5528c9d7    #pv.cplxmul.r.div4 x19, x17, x18
+    li x20, 0xcaacee55
     beq x20, x19, test45
     c.addi x15, 0x1
 test45:
     li x19, 0x1301e0bb
     li x17, 0xa54d96d4
     li x18, 0x327ac09b
-    .word 0x5728c9d7    #pv.cplxmul.r.div4 x19, x17, x18
+    .word 0x5528c9d7    #pv.cplxmul.r.div4 x19, x17, x18
     li x20, 0x130115f6
     beq x20, x19, test46
     c.addi x15, 0x1
@@ -408,7 +408,7 @@ test46:
     li x19, 0xf8bda6a1
     li x17, 0xad3b3d23
     li x18, 0xf388c2ac
-    .word 0x5728c9d7    #pv.cplxmul.r.div4 x19, x17, x18
+    .word 0x5528c9d7    #pv.cplxmul.r.div4 x19, x17, x18
     li x20, 0xf8bdf6a9
     beq x20, x19, test47
     c.addi x15, 0x1
@@ -416,16 +416,16 @@ test47:
     li x19, 0x1b17aad1
     li x17, 0x02cda197
     li x18, 0xc953f6b1
-    .word 0x5728c9d7    #pv.cplxmul.r.div4 x19, x17, x18
-    li x20, 0x1b17
+    .word 0x5528c9d7    #pv.cplxmul.r.div4 x19, x17, x18
+    li x20, 0x1b170203
     beq x20, x19, test48
     c.addi x15, 0x1
 test48:
     li x19, 0x7dad1aac
     li x17, 0xeb187f17
     li x18, 0xfc758e75
-    .word 0x5728c9d7    #pv.cplxmul.r.div4 x19, x17, x18
-    li x20, 0x7dad
+    .word 0x5528c9d7    #pv.cplxmul.r.div4 x19, x17, x18
+    li x20, 0x7dade3ab
     beq x20, x19, test49
     c.addi x15, 0x1
 #tests49-54 test the pv.cplxmul.r.div8 instruction. values loaded in and compared to are expected output values
@@ -434,48 +434,48 @@ test49:
     li x19, 0x52271eb6
     li x17, 0xec34072f
     li x18, 0xe05ad5c9
-    .word 0x5728e9d7    #pv.cplxmul.r.div8 x19, x17, x18
-    li x20, 0x5227
+    .word 0x5528e9d7    #pv.cplxmul.r.div8 x19, x17, x18
+    li x20, 0x5227ff17
     beq x20, x19, test50
     c.addi x15, 0x1
 test50:
     li x19, 0xa25b2a08
     li x17, 0x4a0eed30
     li x18, 0x641bea8e
-    .word 0x5728e9d7    #pv.cplxmul.r.div8 x19, x17, x18
-    li x20, 0xa25b
+    .word 0x5528e9d7    #pv.cplxmul.r.div8 x19, x17, x18
+    li x20, 0xa25bf927
     beq x20, x19, test51
     c.addi x15, 0x1
 test51:
     li x19, 0x83407d59
     li x17, 0x3a940235
     li x18, 0x8fcc3806
-    .word 0x5728e9d7    #pv.cplxmul.r.div8 x19, x17, x18
-    li x20, 0x8340
+    .word 0x5528e9d7    #pv.cplxmul.r.div8 x19, x17, x18
+    li x20, 0x8340068a
     beq x20, x19, test52
     c.addi x15, 0x1
 test52:
     li x19, 0x23a5a7b8
     li x17, 0xe447bb1a
     li x18, 0xcec233e9
-    .word 0x5728e9d7    #pv.cplxmul.r.div8 x19, x17, x18
-    li x20, 0x23a5
+    .word 0x5528e9d7    #pv.cplxmul.r.div8 x19, x17, x18
+    li x20, 0x23a5fb2c
     beq x20, x19, test53
     c.addi x15, 0x1
 test53:
     li x19, 0x9f032bb7
     li x17, 0x4c06d0db
     li x18, 0x49c9231d
-    .word 0x5728e9d7    #pv.cplxmul.r.div8 x19, x17, x18
-    li x20, 0x9f03
+    .word 0x5528e9d7    #pv.cplxmul.r.div8 x19, x17, x18
+    li x20, 0x9f03f8e7
     beq x20, x19, test54
     c.addi x15, 0x1
 test54:
     li x19, 0xb03076a9
     li x17, 0x5b349c89
     li x18, 0x16d3f8c5
-    .word 0x5728e9d7    #pv.cplxmul.r.div8 x19, x17, x18
-    li x20, 0xb030
+    .word 0x5528e9d7    #pv.cplxmul.r.div8 x19, x17, x18
+    li x20, 0xb030feab
     beq x20, x19, test55
     c.addi x15, 0x1
 #tests55-60 test the pv.cplxmul.i instruction. values loaded in and compared to are expected output values
@@ -484,7 +484,7 @@ test55:
     li x19, 0x74f95d16
     li x17, 0x13c99767
     li x18, 0x49fdbc20
-    .word 0x552889d7    #pv.cplxmul.i x19, x17, x18
+    .word 0x572889d7    #pv.cplxmul.i x19, x17, x18
     li x20, 0xb90c5d16
     beq x20, x19, test56
     c.addi x15, 0x1
@@ -492,7 +492,7 @@ test56:
     li x19, 0x89b50197
     li x17, 0xc8de8cef
     li x18, 0xb46b8232
-    .word 0x552889d7    #pv.cplxmul.i x19, x17, x18
+    .word 0x572889d7    #pv.cplxmul.i x19, x17, x18
     li x20, 0x7a210197
     beq x20, x19, test57
     c.addi x15, 0x1
@@ -500,7 +500,7 @@ test57:
     li x19, 0xd927e9de
     li x17, 0x0dd4ce08
     li x18, 0xf258bdea
-    .word 0x552889d7    #pv.cplxmul.i x19, x17, x18
+    .word 0x572889d7    #pv.cplxmul.i x19, x17, x18
     li x20, 0xfe31e9de
     beq x20, x19, test58
     c.addi x15, 0x1
@@ -508,7 +508,7 @@ test58:
     li x19, 0x9e9eb3ef
     li x17, 0x6d97b987
     li x18, 0x1bf24f6e
-    .word 0x552889d7    #pv.cplxmul.i x19, x17, x18
+    .word 0x572889d7    #pv.cplxmul.i x19, x17, x18
     li x20, 0x349eb3ef
     beq x20, x19, test59
     c.addi x15, 0x1
@@ -516,7 +516,7 @@ test59:
     li x19, 0x1630bd14
     li x17, 0x158ea724
     li x18, 0x7ea93025
-    .word 0x552889d7    #pv.cplxmul.i x19, x17, x18
+    .word 0x572889d7    #pv.cplxmul.i x19, x17, x18
     li x20, 0xb02dbd14
     beq x20, x19, test60
     c.addi x15, 0x1
@@ -524,7 +524,7 @@ test60:
     li x19, 0xc43932b4
     li x17, 0xf67d173b
     li x18, 0x8c470b5b
-    .word 0x552889d7    #pv.cplxmul.i x19, x17, x18
+    .word 0x572889d7    #pv.cplxmul.i x19, x17, x18
     li x20, 0xea2732b4
     beq x20, x19, test61
     c.addi x15, 0x1
@@ -534,15 +534,15 @@ test61:
     li x19, 0x93da3581
     li x17, 0xf58e6a19
     li x18, 0xbd76f586
-    .word 0x5528a9d7    #pv.cplxmul.i.div2 x19, x17, x18
-    li x20, 0xead93581
+    .word 0x5728a9d7    #pv.cplxmul.i.div2 x19, x17, x18
+    li x20, 0xe4d93581
     beq x20, x19, test62
     c.addi x15, 0x1
 test62:
     li x19, 0x2feac4d4
     li x17, 0xb7d1d296
     li x18, 0xe603c7b5
-    .word 0x5528a9d7    #pv.cplxmul.i.div2 x19, x17, x18
+    .word 0x5728a9d7    #pv.cplxmul.i.div2 x19, x17, x18
     li x20, 0x147bc4d4
     beq x20, x19, test63
     c.addi x15, 0x1
@@ -550,7 +550,7 @@ test63:
     li x19, 0x2c645321
     li x17, 0xea6727f5
     li x18, 0x2394b319
-    .word 0x5528a9d7    #pv.cplxmul.i.div2 x19, x17, x18
+    .word 0x5728a9d7    #pv.cplxmul.i.div2 x19, x17, x18
     li x20, 0x0c0a5321
     beq x20, x19, test64
     c.addi x15, 0x1
@@ -558,7 +558,7 @@ test64:
     li x19, 0xc4b99188
     li x17, 0xb62f1e31
     li x18, 0x3af596fa
-    .word 0x5528a9d7    #pv.cplxmul.i.div2 x19, x17, x18
+    .word 0x5728a9d7    #pv.cplxmul.i.div2 x19, x17, x18
     li x20, 0x253c9188
     beq x20, x19, test65
     c.addi x15, 0x1
@@ -566,7 +566,7 @@ test65:
     li x19, 0x0ec2cba9
     li x17, 0xc3fb0f53
     li x18, 0x984b363b
-    .word 0x5528a9d7    #pv.cplxmul.i.div2 x19, x17, x18
+    .word 0x5728a9d7    #pv.cplxmul.i.div2 x19, x17, x18
     li x20, 0xed13cba9
     beq x20, x19, test66
     c.addi x15, 0x1
@@ -574,7 +574,7 @@ test66:
     li x19, 0xd212d156
     li x17, 0x9e5dfeb9
     li x18, 0x5f95a943
-    .word 0x5528a9d7    #pv.cplxmul.i.div2 x19, x17, x18
+    .word 0x5728a9d7    #pv.cplxmul.i.div2 x19, x17, x18
     li x20, 0x209ad156
     beq x20, x19, test67
     c.addi x15, 0x1
@@ -584,7 +584,7 @@ test67:
     li x19, 0x3d497610
     li x17, 0xe61d23c5
     li x18, 0x07764e8c
-    .word 0x5528c9d7    #pv.cplxmul.i.div4 x19, x17, x18
+    .word 0x5728c9d7    #pv.cplxmul.i.div4 x19, x17, x18
     li x20, 0xfc8c7610
     beq x20, x19, test68
     c.addi x15, 0x1
@@ -592,7 +592,7 @@ test68:
     li x19, 0xb15f4484
     li x17, 0xd11f623c
     li x18, 0xcb030d7d
-    .word 0x5528c9d7    #pv.cplxmul.i.div4 x19, x17, x18
+    .word 0x5728c9d7    #pv.cplxmul.i.div4 x19, x17, x18
     li x20, 0xf4994484
     beq x20, x19, test69
     c.addi x15, 0x1
@@ -600,15 +600,15 @@ test69:
     li x19, 0x1a3c19f8
     li x17, 0x746bbe56
     li x18, 0x86370b92
-    .word 0x5528c9d7    #pv.cplxmul.i.div4 x19, x17, x18
-    li x20, 0x0f9e19f8
+    .word 0x5728c9d7    #pv.cplxmul.i.div4 x19, x17, x18
+    li x20, 0x123f19f8
     beq x20, x19, test70
     c.addi x15, 0x1
 test70:
     li x19, 0xbbaf71d3
     li x17, 0x88547464
     li x18, 0x5c5c8b42
-    .word 0x5528c9d7    #pv.cplxmul.i.div4 x19, x17, x18
+    .word 0x5728c9d7    #pv.cplxmul.i.div4 x19, x17, x18
     li x20, 0x304871d3
     beq x20, x19, test71
     c.addi x15, 0x1
@@ -616,7 +616,7 @@ test71:
     li x19, 0x68960022
     li x17, 0xbb7a7372
     li x18, 0x3447029e
-    .word 0x5528c9d7    #pv.cplxmul.i.div4 x19, x17, x18
+    .word 0x5728c9d7    #pv.cplxmul.i.div4 x19, x17, x18
     li x20, 0x0b6f0022
     beq x20, x19, test72
     c.addi x15, 0x1
@@ -624,7 +624,7 @@ test72:
     li x19, 0xd1af248d
     li x17, 0x95c7029d
     li x18, 0x0457e346
-    .word 0x5528c9d7    #pv.cplxmul.i.div4 x19, x17, x18
+    .word 0x5728c9d7    #pv.cplxmul.i.div4 x19, x17, x18
     li x20, 0x05fb248d
     beq x20, x19, test73
     c.addi x15, 0x1
@@ -634,7 +634,7 @@ test73:
     li x19, 0x9dd06f4f
     li x17, 0x80356c34
     li x18, 0x4dcf2b10
-    .word 0x5528e9d7    #pv.cplxmul.i.div8 x19, x17, x18
+    .word 0x5728e9d7    #pv.cplxmul.i.div8 x19, x17, x18
     li x20, 0x02d96f4f
     beq x20, x19, test74
     c.addi x15, 0x1
@@ -642,7 +642,7 @@ test74:
     li x19, 0x8bb89d46
     li x17, 0x2bd857cb
     li x18, 0xdfb54df1
-    .word 0x5528e9d7    #pv.cplxmul.i.div8 x19, x17, x18
+    .word 0x5728e9d7    #pv.cplxmul.i.div8 x19, x17, x18
     li x20, 0x00919d46
     beq x20, x19, test75
     c.addi x15, 0x1
@@ -650,7 +650,7 @@ test75:
     li x19, 0xee4604ec
     li x17, 0xc7b2c6ec
     li x18, 0x9f2505fb
-    .word 0x5528e9d7    #pv.cplxmul.i.div8 x19, x17, x18
+    .word 0x5728e9d7    #pv.cplxmul.i.div8 x19, x17, x18
     li x20, 0x051104ec
     beq x20, x19, test76
     c.addi x15, 0x1
@@ -658,7 +658,7 @@ test76:
     li x19, 0x68619b42
     li x17, 0xa102a05e
     li x18, 0x604a0eb0
-    .word 0x5528e9d7    #pv.cplxmul.i.div8 x19, x17, x18
+    .word 0x5728e9d7    #pv.cplxmul.i.div8 x19, x17, x18
     li x20, 0xf5a59b42
     beq x20, x19, test77
     c.addi x15, 0x1
@@ -666,7 +666,7 @@ test77:
     li x19, 0x52d8aa89
     li x17, 0xea6ac15d
     li x18, 0x707ad99d
-    .word 0x5528e9d7    #pv.cplxmul.i.div8 x19, x17, x18
+    .word 0x5728e9d7    #pv.cplxmul.i.div8 x19, x17, x18
     li x20, 0xf9edaa89
     beq x20, x19, test78
     c.addi x15, 0x1
@@ -674,7 +674,7 @@ test78:
     li x19, 0xf6489edd
     li x17, 0x0b5fab1d
     li x18, 0xe22b4542
-    .word 0x5528e9d7    #pv.cplxmul.i.div8 x19, x17, x18
+    .word 0x5728e9d7    #pv.cplxmul.i.div8 x19, x17, x18
     li x20, 0x033d9edd
     beq x20, x19, exit_check
     c.addi x15, 0x1
