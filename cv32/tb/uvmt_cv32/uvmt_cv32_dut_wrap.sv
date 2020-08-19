@@ -53,10 +53,11 @@ module uvmt_cv32_dut_wrap #(// DUT (riscv_core) parameters.
 
                            (
                             uvma_clknrst_if              clknrst_if,
+                            uvma_interrupt_if            interrupt_if,
                             uvmt_cv32_vp_status_if       vp_status_if,
                             uvmt_cv32_core_cntrl_if      core_cntrl_if,
-                            uvmt_cv32_core_status_if     core_status_if,
-                            uvmt_cv32_core_interrupts_if core_interrupts_if
+                            uvmt_cv32_core_status_if     core_status_if
+                            // FIXME:uvmt_cv32_core_interrupts_if core_interrupts_if
                            );
 
     import uvm_pkg::*; // needed for the UVM messaging service (`uvm_info(), etc.)
@@ -77,6 +78,8 @@ module uvmt_cv32_dut_wrap #(// DUT (riscv_core) parameters.
     logic [31:0]                  data_rdata;
     logic [31:0]                  data_wdata;
 
+    logic [31:0]                  irq_vp;
+    logic [31:0]                  irq_uvma;
     logic [31:0]                  irq;
     logic                         irq_ack;
     logic [ 4:0]                  irq_id;
@@ -127,6 +130,16 @@ module uvmt_cv32_dut_wrap #(// DUT (riscv_core) parameters.
         `uvm_info("DUT_WRAP", "NO TEST PROGRAM", UVM_NONE)
       end
     end
+
+    // --------------------------------------------
+    // Connect to uvma_interrupt_if
+    assign interrupt_if.clk     = clknrst_if.clk;
+    assign interrupt_if.reset_n = clknrst_if.reset_n;
+    assign irq_uvma             = interrupt_if.irq;
+    assign interrupt_if.irq_id  = irq_id;
+    assign interrupt_if.irq_ack = irq_ack;
+
+    assign irq = irq_uvma | irq_vp;
 
     // --------------------------------------------
     // instantiate the core
@@ -216,7 +229,7 @@ module uvmt_cv32_dut_wrap #(// DUT (riscv_core) parameters.
 
          .irq_id_i       ( irq_id                          ),
          .irq_ack_i      ( irq_ack                         ),
-         .irq_o          ( irq                             ),
+         .irq_o          ( irq_vp                          ),
 
          .debug_req_o    ( debug_req                       ),
 
@@ -231,4 +244,5 @@ module uvmt_cv32_dut_wrap #(// DUT (riscv_core) parameters.
 endmodule : uvmt_cv32_dut_wrap
 
 `endif // __UVMT_CV32_DUT_WRAP_SV__
+
 
