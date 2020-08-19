@@ -3,7 +3,12 @@
 .section .text.start, "ax", @progbits
 .globl _start
 _start:
-  li s0, DRAM_BASE
+# bootrom.sv need to be functional in 64 and 32 bits,
+# li s0, DRAM_BASE creates instructions not compatible with both
+# versions. That's why we have replaced it by li and slli instructions 
+# to generates code compatible with both versions.
+  li s0, 1
+  slli s0, s0, 31
   csrr a0, mhartid
   la a1, _dtb
   jr s0
