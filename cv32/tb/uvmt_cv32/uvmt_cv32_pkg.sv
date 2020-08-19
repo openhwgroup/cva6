@@ -26,8 +26,6 @@
 `include "uvml_logs_macros.sv"
 `include "uvmt_cv32_macros.sv"
 
-// All Interfaces used by the CV32 TB are here
-`include "uvmt_cv32_tb_ifs.sv"
 
 
 /**
@@ -66,5 +64,7 @@ package uvmt_cv32_pkg;
 
 endpackage : uvmt_cv32_pkg
 
+// All Interfaces used by the CV32 TB are here
+`include "uvmt_cv32_tb_ifs.sv"
 
 `endif // __UVMT_CV32_PKG_SV__
