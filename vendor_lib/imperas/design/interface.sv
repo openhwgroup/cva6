@@ -32,24 +32,18 @@ interface BUS;
     bit     [2:0]  ISize;   // Instruction Bus Size of transfer 1-4 bytes
     bit            Ird;     // Instruction Bus read
     
-    bit     reset;
-    bit     nmigen;
-    bit     deferint;
+    bit            reset;
+    bit            nmigen;
+    bit            deferint;
     
-    bit     nmi;
-    bit     MSWInterrupt;
-    bit     MTimerInterrupt;
-    bit     MExternalInterrupt;
-
-    // Local Interrupts
-    bit [15:0] LocalInterrupt;
-    bit        IrqAck;
-    bit [7:0]  IrqId;
-
-    // Debug
-    bit     haltreq;
-    bit     resethaltreq;
-    bit     DM;
+    bit            nmi;
+    bit            MSWInterrupt;
+    bit            MTimerInterrupt;
+    bit            MExternalInterrupt;
+    bit     [15:0] LocalInterrupt;
+    
+    bit            haltreq;
+    bit            resethaltreq;
     
     //
     // Bus helpers

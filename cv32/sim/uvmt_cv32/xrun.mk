@@ -291,6 +291,18 @@ cv32-firmware: comp $(FIRMWARE)/firmware.hex
 		+UVM_TESTNAME=uvmt_cv32_firmware_test_c \
 		+firmware=$(FIRMWARE)/firmware.hex
 
+################################################################################
+# Called from external compliance framework providing ELF, HEX, NM
+COMPLIANCE ?= missing
+riscv-compliance: $(XRUN_SIM_PREREQ) $(COMPLIANCE).elf
+	mkdir -p $(XRUN_RESULTS)/$(@) && cd $(XRUN_RESULTS)/$(@) && \
+	$(XRUN) -l xrun-$(@).log -covtest riscv-compliance $(XRUN_COMP_RUN) \
+		+UVM_TESTNAME=uvmt_cv32_firmware_test_c \
+		+elf_file=$(COMPLIANCE).elf \
+		+nm_file=$(COMPLIANCE).nm \
+		+firmware=$(COMPLIANCE).hex \
+		+signature=$(COMPLIANCE).signature.output
+
 # XRUN UNIT TESTS: run each test individually. See comment header for dsim-unit-test for more info.
 # TODO: update ../Common.mk to create "xrun-firmware-unit-test" target.
 # Example: to run the ADDI test `make xrun-unit-test addi`
