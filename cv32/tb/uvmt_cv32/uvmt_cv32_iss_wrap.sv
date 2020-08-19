@@ -15,9 +15,6 @@
 //
 //
 
-
-`include "uvmt_rv32isa_covg.sv"
-
 `ifndef __UVMT_CV32_ISS_WRAP_SV__
 `define __UVMT_CV32_ISS_WRAP_SV__
 
@@ -39,7 +36,8 @@ module uvmt_cv32_iss_wrap
    (
     input realtime      clk_period,
     uvma_clknrst_if clknrst_if,
-    uvmt_cv32_step_compare_if step_compare_if
+    uvmt_cv32_step_compare_if step_compare_if,
+    uvmt_cv32_isa_covg_if     isa_covg_if
 //    input bit           Step,
 //    input bit           Stepping,
 //    output logic [31:0] PCr
@@ -99,12 +97,6 @@ module uvmt_cv32_iss_wrap
    always @(step_compare_if.ovp_cpu_busWait) cpu.busWait();
    always @(cpu.Retire) -> step_compare_if.ovp_cpu_retire;
 
-    //coverage cov1;
-    riscv_32isa_coverage cov1;
-    initial begin
-        cov1 = new();
-    end
-
     function void split(input string in_s, output string s1, s2);
         automatic int i;
         for (i=0; i<in_s.len(); i++) begin
@@ -119,20 +111,19 @@ module uvmt_cv32_iss_wrap
          s2 = in_s.substr(i+1,in_s.len()-1);
     endfunction
 
-
     function automatic void sample();
-        string decode = uvmt_cv32_tb.iss_wrap.cpu.Decode;
+        string decode = cpu.Decode;
         string ins_str, op[4], key, val;
         int i;
-        ins_t ins;
+
         int num = $sscanf (decode, "%s %s %s %s %s", ins_str, op[0], op[1], op[2], op[3]);
-        ins.ins_str = ins_str;
+        isa_covg_if.ins.ins_str = ins_str;
         for (i=0; i<num-1; i++) begin
             split(op[i], key, val);
-            ins.ops[i].key=key;
-            ins.ops[i].val=val;
+            isa_covg_if.ins.ops[i].key=key;
+            isa_covg_if.ins.ops[i].val=val;
         end
-        cov1.sample (ins);
+        ->isa_covg_if.ins_valid;
     endfunction
 
    always @(cpu.Retire) begin

@@ -23,7 +23,10 @@
  * (uvme_cv32_env_c) components.
  */
 class uvme_cv32_cntxt_c extends uvm_object;
-   
+
+   // Virtual interface for ISA coverage
+   virtual uvmt_cv32_isa_covg_if isa_covg_vif;
+
    // Agent context handles
    uvma_clknrst_cntxt_c    clknrst_cntxt;
    uvma_interrupt_cntxt_c  interrupt_cntxt;

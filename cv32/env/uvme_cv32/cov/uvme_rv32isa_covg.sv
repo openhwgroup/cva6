@@ -36,7 +36,8 @@
 
 class uvme_rv32isa_covg extends uvm_component;
 
-    
+    uvme_cv32_cntxt_c cntxt;
+
 // The following CSR ABI names are not currently included:
 // fp, pc
     function gpr_name_t get_gpr_name (string s, r, asm);
@@ -1336,9 +1337,11 @@ class uvme_rv32isa_covg extends uvm_component;
         }
     endgroup
 
+    `uvm_component_utils(uvme_rv32isa_covg)
+
 // TODO : review by 20-July-2020
     function new(string name="rv32isa_covg", uvm_component parent=null);
-        super.new("parent", parent);
+        super.new(name, parent);
         add_cg        = new();
         addi_cg       = new();
         and_cg        = new();
@@ -1415,7 +1418,7 @@ class uvme_rv32isa_covg extends uvm_component;
     function void build_phase(uvm_phase phase);
         super.build_phase(phase);
 
-        void'(uvm_config_db#(uvme_cv32_cntxt_c)::get(this, "", "cntxt", cntxt);
+        void'(uvm_config_db#(uvme_cv32_cntxt_c)::get(this, "", "cntxt", cntxt));
         if (cntxt == null) begin
             `uvm_fatal("RV32ISACOVG", "No cntxt object passed to model");
         end
@@ -1423,6 +1426,13 @@ class uvme_rv32isa_covg extends uvm_component;
 
     task run_phase(uvm_phase phase);
         super.run_phase(phase);
+
+        `uvm_info("rv32isa_covg", "The RV32ISA coverage model is running", UVM_LOW);
+
+        while (1) begin
+           @(cntxt.isa_covg_vif.ins_valid);
+           sample(cntxt.isa_covg_vif.ins);
+        end
     endtask
 
     function void check_compressed(input ins_t ins);
@@ -1636,4 +1646,4 @@ class uvme_rv32isa_covg extends uvm_component;
     endfunction: sample
 
 
-endclass : riscv_32isa_coverage
+endclass : uvme_rv32isa_covg

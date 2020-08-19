@@ -35,7 +35,8 @@ class uvme_cv32_cov_model_c extends uvm_component;
    // TODO Add Input TLM to uvme_cv32_cov_model_c
    //      Ex: uvm_analysis_port    #(uvma_debug_mon_trn_c)  debug_export;
    //          uvm_tlm_analysis_fifo#(uvma_debug_mon_trn_c)  debug_fifo;
-   
+
+   uvme_rv32isa_covg isa_covg;   
    
    `uvm_component_utils_begin(uvme_cv32_cov_model_c)
       `uvm_field_object(cfg  , UVM_DEFAULT)
@@ -120,6 +121,9 @@ function void uvme_cv32_cov_model_c::build_phase(uvm_phase phase);
    if (!cntxt) begin
       `uvm_fatal("CNTXT", "Context handle is null")
    end
+
+   isa_covg = uvme_rv32isa_covg::type_id::create("isa_covg", this);
+   uvm_config_db#(uvme_cv32_cntxt_c)::set(this, "isa_covg", "cntxt", cntxt);
    
    // TODO Build Input TLM
    //      Ex: debug_export = new("debug_export", this);
