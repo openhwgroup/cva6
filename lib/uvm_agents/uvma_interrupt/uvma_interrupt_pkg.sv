@@ -1,6 +1,7 @@
 // 
 // Copyright 2020 OpenHW Group
 // Copyright 2020 Datum Technology Corporation
+// Copyright 2020 Silicon Labs, Inc.
 // 
 // Licensed under the Solderpad Hardware Licence, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -27,19 +28,12 @@
 
 // Interface(s) / Module(s) / Checker(s)
 `include "uvma_interrupt_if.sv"
-`ifdef UVMA_INTERRUPT_INC_IF_CHK
-`include "uvma_interrupt_if_chk.sv"
-`endif
-
 
 /**
  * Encapsulates all the types needed for an UVM agent capable of driving and/or
  * monitoring Clock & Reset.
  */
 package uvma_interrupt_pkg;
-
-   timeunit 1ns;
-   timeprecision 1ps;
 
    import uvm_pkg       ::*;
    import uvml_hrtbt_pkg::*;
