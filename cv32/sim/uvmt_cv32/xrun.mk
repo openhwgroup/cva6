@@ -307,7 +307,7 @@ comp_riscv-dv:
 	$(XRUN) $(XRUN_COMP_FLAGS) \
 		$(XRUN_USER_COMPILE_ARGS) \
 		-elaborate \
-		+incdir+$(RISCVDV_PKG)/target/rv32imc \
+		+incdir+$(COREVDV_PKG)/target/cv32e40p \
 		+incdir+$(RISCVDV_PKG)/user_extension \
 		+incdir+$(RISCVDV_PKG)/tests \
 		+incdir+$(COREVDV_PKG) \
