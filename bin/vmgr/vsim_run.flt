@@ -1,0 +1,60 @@
+### scan script filter file for Questa-specific errors and warnings
+
+### syntax
+#
+# add_filter(attr-name, priority, match-regexp, replacement, else-replacement)
+#
+# failure(ref, tool, kind, severity, description, time, module, context)
+
+## Seed handling
+
+add_filter ("questa_svseed", 2,
+            '-sv_seed\s+(-?)([0-9]+)',
+            'sv_seed: \"$1$2\" ; '
+           );
+
+
+## Questa Errors
+# ** Error: (vlog|vopt-num) .* File(line): (descr)
+add_filter("questa_vsim_early_error", 2,
+               '\*\*\s+Error\s+(?:\(suppressible\))?\:\s+\(([\w\-]+)\)\s+(.*?)\n',
+               failure(1,        # ref
+                       'questa', # tool
+                       '$1',     # kind
+                       'error',  # severity
+                       '$2',     # description
+                       undef,    # time
+                       undef,    # module
+                       undef,    # context
+                       )
+               );
+
+add_filter("questa_error", 1,
+               '\*\*\s+Error:\s+\(([\w\-]+)\)\s+([\w\/\.\(\)]+):\s+(.*?)\n',
+               failure(1,        # ref
+                       'questa', # tool
+                       '$1',     # kind
+                       'error',  # severity
+                       '$3',     # description
+                       undef,    # time
+                       undef,    # module
+                       '$2',     # context
+                       )
+               );
+
+# Assertion
+# ** Error: Assertion error.
+#    Time: 1817903696 ps Started: 1817803696 ps  Scope: tb.dut.gen_ramif_array_0[0].u_arbiter.u_arb_core.a_grant_priority_next File: /work/strichmo/ip_mcu_32bit/mdx_sbox_mpahbram/modules/dig_mpahbram/views/rtl/dig_mpahbram_arbiter_core.sv Line: 619
+add_filter("questa_assert", 2,
+           '\*\*\s+Error:\s+Assertion error.\s*\n'.
+           '\s+Time:\s+(\d+)\s+\w+\s+\w+:\s+\d+\s+\w+\s+Scope\:\s+(\S+)\s+File:\s+(\S+)\s+Line:\s+(\d+)',
+           failure(1,
+                   'questa',
+                   'assertion',
+                   'error',
+                   '$2',
+                   '$1',
+                   '',
+                   '$3'.','.'$4')
+           );
+

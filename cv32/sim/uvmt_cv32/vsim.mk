@@ -45,7 +45,8 @@ VSIM_COV 				?= -coverage
 VOPT_WAVES_ADV_DEBUG    ?= -designfile design.bin
 VSIM_WAVES_ADV_DEBUG    ?= -qwavedb=+signal+assertion+ignoretxntime+msgmode=both
 VSIM_WAVES_DO           ?= $(VSIM_SCRIPT_DIR)/waves.tcl
-NUM_TESTS               ?= 2
+NUM_TESTS               ?= 1
+START_INDEX             ?= 0
 
 # Common QUIET flag defaults to -quiet unless VERBOSE is set
 ifeq ($(call IS_YES,$(VERBOSE)),YES)
@@ -105,6 +106,7 @@ VOPT_FLAGS    ?= -debugdb \
 VSIM_FLAGS        += $(VSIM_USER_FLAGS)
 VSIM_FLAGS        += $(USER_RUN_FLAGS)
 VSIM_FLAGS        += -sv_seed $(RNDSEED)
+VSIM_FLAGS        += -suppress 7031
 VSIM_DEBUG_FLAGS  ?= -debugdb
 VSIM_GUI_FLAGS    ?= -gui -debugdb
 VSIM_SCRIPT_DIR	   = $(abspath $(MAKE_PATH)/../tools/vsim)
@@ -253,7 +255,6 @@ vopt-riscv-dv:
 			-o corev_instr_gen_tb_top_vopt \
 			-l $(COREVDV_PKG)/out_$(DATE)/run/vopt.log
 
-comp_riscv-dv: vlog_riscv-dv vopt-riscv-dv
 
 gen_corev_arithmetic_base_test:
 	mkdir -p $(VSIM_RISCVDV_RESULTS)/corev_arithmetic_base_test	
@@ -330,11 +331,39 @@ gen_corev_rand_interrupt_test:
 			+no_csr_instr=1
 	cp $(VSIM_RISCVDV_RESULTS)/corev_rand_interrupt_test/*.S $(CORE_TEST_DIR)/custom
 
+gen_riscv-dv: 
+	mkdir -p $(VSIM_RISCVDV_RESULTS)/$(TEST)
+	# Clean old assembler generated tests in results
+	for (( idx=${START_INDEX}; idx < $$((${START_INDEX} + ${NUM_TESTS})); idx++ )); do \
+		rm -f ${VSIM_RISCVDV_RESULTS}/${TEST}/${TEST}_$$idx.S; \
+	done
+	cd $(VSIM_RISCVDV_RESULTS)/$(TEST) && \
+		$(VMAP) work ../work
+	cd  $(VSIM_RISCVDV_RESULTS)/$(TEST) && \
+		$(VSIM) \
+			$(VSIM_FLAGS) \
+			corev_instr_gen_tb_top_vopt \
+			$(DPILIB_VSIM_OPT) \
+			+UVM_TESTNAME=$(GEN_UVM_TEST) \
+			+num_of_tests=$(NUM_TESTS)  \
+			-l $(TEST)_$(START_INDEX)_$(NUM_TESTS).log \
+			+start_idx=$(START_INDEX) \
+			+num_of_tests=$(NUM_TESTS) \
+			+UVM_TESTNAME=$(GEN_UVM_TEST) \
+			+asm_file_name_opts=$(TEST) \
+			$(GEN_PLUSARGS)
+	# Copy out final assembler files to test directory
+	for (( idx=${START_INDEX}; idx < $$((${START_INDEX} + ${NUM_TESTS})); idx++ )); do \
+		cp ${VSIM_RISCVDV_RESULTS}/${TEST}/${TEST}_$$idx.S ${GEN_TEST_DIR}; \
+	done
+
+comp_riscv-dv: $(RISCVDV_PKG) vlog_riscv-dv vopt-riscv-dv
+
 comp_corev-dv: clean_riscv-dv \
 	clone_riscv-dv \
 	comp_riscv-dv 
 
-corev-dv: comp_corev-dv \
+corev-dv: clone_riscv-dv comp_riscv-dv \
 	gen_corev_arithmetic_base_test \
 	gen_corev_rand_instr_test
 
@@ -398,8 +427,9 @@ run: $(VSIM_RUN_PREREQ)
 			$(VSIM_FLAGS) \
 			-l vsim-$(VSIM_TEST).log \
 			$(DPILIB_VSIM_OPT) \
-			+UVM_TESTNAME=uvmt_cv32_firmware_test_c \
-			$(RTLSRC_VOPT_TB_TOP)
+			+UVM_TESTNAME=$(TEST_UVM_TEST) \
+			$(RTLSRC_VOPT_TB_TOP) \
+			$(TEST_PLUSARGS)
 
 ################################################################################
 # Test targets
@@ -408,27 +438,39 @@ run: $(VSIM_RUN_PREREQ)
 
 hello-world: VSIM_TEST=hello-world
 hello-world: VSIM_FLAGS += +firmware=$(CUSTOM)/hello_world.hex +elf_file=$(CUSTOM)/hello_world.elf
+hello-world: TEST_UVM_TEST=uvmt_cv32_firmware_test_c
 hello-world: $(CUSTOM)/hello_world.hex run
 
 interrupt_test: VSIM_TEST=interrupt_test
 interrupt_test: VSIM_FLAGS += +firmware=$(CORE_TEST_DIR)/interrupt_test/interrupt_test.hex +elf_file=$(CORE_TEST_DIR)/interrupt_test/interrupt_test.elf
+interrupt_test: TEST_UVM_TEST=uvmt_cv32_firmware_test_c
 interrupt_test: $(CORE_TEST_DIR)/interrupt_test/interrupt_test.hex run
 
 misalign: VSIM_TEST=misalign
 misalign: VSIM_FLAGS += +firmware=$(CUSTOM)/misalign.hex +elf_file=$(CUSTOM)/misalign.elf
+misalign: TEST_UVM_TEST=uvmt_cv32_firmware_test_c
 misalign: $(CUSTOM)/misalign.hex run
 
 fibonacci: VSIM_TEST=fibonacci
 fibonacci: VSIM_FLAGS += +firmware=$(CUSTOM)/fibonacci.hex +elf_file=$(CUSTOM)/fibonacci.elf
+fibonacci: TEST_UVM_TEST=uvmt_cv32_firmware_test_c
 fibonacci: $(CUSTOM)/fibonacci.hex run
 
 dhrystone: VSIM_TEST=dhrystone
 dhrystone: VSIM_FLAGS += +firmware=$(CUSTOM)/dhrystone.hex +elf_file=$(CUSTOM)/dhrystone.elf
+dhrystone: TEST_UVM_TEST=uvmt_cv32_firmware_test_c
 dhrystone: $(CUSTOM)/dhrystone.hex run
 
 custom: VSIM_TEST=$(CUSTOM_PROG)
 custom: VSIM_FLAGS += +firmware=$(CUSTOM_DIR)/$(CUSTOM_PROG).hex +elf_file=$(CUSTOM_DIR)/$(CUSTOM_PROG).elf
+custom: TEST_UVM_TEST=uvmt_cv32_firmware_test_c
 custom: $(CUSTOM_DIR)/$(CUSTOM_PROG).hex run
+
+################################################################################
+# The new general test target
+test: VSIM_TEST=$(TEST_NAME)
+test: VSIM_FLAGS += +firmware=$(TEST_TEST_DIR)/$(TEST_NAME).hex +elf_file=$(TEST_TEST_DIR)/$(TEST_NAME).elf
+test: $(TEST_TEST_DIR)/$(TEST_NAME).hex run
 
 ################################################################################
 # Invoke post-process waveform viewer

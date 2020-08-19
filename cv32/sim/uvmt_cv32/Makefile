@@ -148,6 +148,8 @@ $(CV32E40P_PKG):
 	$(CLONE_CV32E40P_CMD)
 	$(CLONE_FPNEW_CMD)
 
+$(RISCVDV_PKG):
+	$(CLONE_RISCVDV_CMD)	
 
 ###############################################################################
 # Include the targets/rules for the selected SystemVerilog simulator
