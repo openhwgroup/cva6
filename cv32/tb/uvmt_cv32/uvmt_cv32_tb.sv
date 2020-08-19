@@ -50,6 +50,7 @@ module uvmt_cv32_tb;
 
    // Step and compare interface
   uvmt_cv32_step_compare_if step_compare_if();
+  uvmt_cv32_isa_covg_if     isa_covg_if();
    
   /**
    * DUT WRAPPER instance:
