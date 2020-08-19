@@ -53,6 +53,7 @@ package uvme_cv32_pkg;
    `include "uvme_cv32_prd.sv"
    
    // Environment components
+   `include "uvme_rv32isa_covg.sv"
    `include "uvme_cv32_cov_model.sv"
    `include "uvme_cv32_sb.sv"
    `include "uvme_cv32_vsqr.sv"

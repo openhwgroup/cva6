@@ -49,7 +49,8 @@ module uvmt_cv32_tb;
 
    // Step and compare interface
    uvmt_cv32_step_compare_if step_compare_if();
-    
+   uvmt_cv32_isa_covg_if     isa_covg_if();
+
   /**
    * DUT WRAPPER instance:
    * This is an update of the riscv_wrapper.sv from PULP-Platform RI5CY project with
@@ -72,7 +73,8 @@ module uvmt_cv32_tb;
                            )
                            iss_wrap ( .clk_period(clknrst_if.clk_period),
                                       .clknrst_if(clknrst_if_iss),
-                                      .step_compare_if(step_compare_if)
+                                      .step_compare_if(step_compare_if),
+                                      .isa_covg_if(isa_covg_if)
                              );
      /**
       * Step-and-Compare logic 
@@ -100,6 +102,7 @@ module uvmt_cv32_tb;
      uvm_config_db#(virtual uvmt_cv32_core_status_if    )::set(.cntxt(null), .inst_name("*"), .field_name("core_status_vif"),     .value(core_status_if)    );
      uvm_config_db#(virtual uvmt_cv32_core_interrupts_if)::set(.cntxt(null), .inst_name("*"), .field_name("core_interrupts_vif"), .value(core_interrupts_if));
      uvm_config_db#(virtual uvmt_cv32_step_compare_if   )::set(.cntxt(null), .inst_name("*"), .field_name("step_compare_vif"),    .value(step_compare_if));
+     uvm_config_db#(virtual uvmt_cv32_isa_covg_if       )::set(.cntxt(null), .inst_name("*"), .field_name("isa_covg_vif"),        .value(isa_covg_if));
       
      // Make the DUT Wrapper Virtual Peripheral's status outputs available to the base_test
      uvm_config_db#(bit      )::set(.cntxt(null), .inst_name("*"), .field_name("tp"),     .value(1'b0)        );

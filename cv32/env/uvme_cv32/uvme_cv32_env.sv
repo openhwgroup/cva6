@@ -42,7 +42,6 @@ class uvme_cv32_env_c extends uvm_env;
    uvma_clknrst_agent_c  clknrst_agent;
    //uvma_debug_agent_c  debug_agent;
    
-   
    `uvm_component_utils_begin(uvme_cv32_env_c)
       `uvm_field_object(cfg  , UVM_DEFAULT)
       `uvm_field_object(cntxt, UVM_DEFAULT)
@@ -250,11 +249,13 @@ function void uvme_cv32_env_c::create_vsequencer();
    
 endfunction: create_vsequencer
 
-
 function void uvme_cv32_env_c::create_cov_model();
    
    cov_model = uvme_cv32_cov_model_c::type_id::create("cov_model", this);
-   
+   void'(uvm_config_db#(virtual uvmt_cv32_isa_covg_if)::get(this, "", "isa_covg_vif", cntxt.isa_covg_vif));
+   if (cntxt.isa_covg_vif == null) begin
+      `uvm_fatal("CNTXT", $sformatf("No uvmt_cv32_isa_covg_if found in config database"))
+   end
 endfunction: create_cov_model
 
 
