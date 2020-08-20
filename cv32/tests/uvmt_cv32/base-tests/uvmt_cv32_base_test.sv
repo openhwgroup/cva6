@@ -42,8 +42,8 @@ class uvmt_cv32_base_test_c extends uvm_test;
    uvme_cv32_vsqr_c  vsequencer;
    
    // Handles testbench interfaces
-   virtual uvmt_cv32_vp_status_if  vp_status_vif;  // virtual peripheral status
-   virtual uvmt_cv32_core_cntrl_if core_cntrl_vif; // control inputs to the core
+   virtual uvmt_cv32_vp_status_if    vp_status_vif;  // virtual peripheral status
+   virtual uvmt_cv32_core_cntrl_if   core_cntrl_vif; // control inputs to the core
    virtual uvmt_cv32_step_compare_if step_compare_vif;
    
    // Default sequences

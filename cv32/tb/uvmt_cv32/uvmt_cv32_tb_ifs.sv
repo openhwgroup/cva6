@@ -249,6 +249,20 @@ interface uvmt_cv32_core_status_if (
 endinterface : uvmt_cv32_core_status_if
 
 /**
+ * ISA coverage interface
+ * ISS wrapper will fill in ins (instruction) and fire ins_valid event
+ */
+interface uvmt_cv32_isa_covg_if;
+
+  import uvm_pkg::*;
+  import uvme_cv32_pkg::*;
+
+  event ins_valid;
+  ins_t ins;
+
+endinterface : uvmt_cv32_isa_covg_if
+
+/**
  * Step and compare interface
  * Xcelium does not support event types in the module port list
  */

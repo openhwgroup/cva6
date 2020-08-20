@@ -299,7 +299,7 @@
     },
     {
       "name":        "cv32_xpulp_isa_regression",
-      "description": "XPULP ISA test-programs",
+      "description": "XPULP ISA test-programs (and a few other tests that run with the RM disabled)",
       "verbose":     "true",
       "tests": {
         "resultsDir": "/mux-flow/build/results",
@@ -492,6 +492,16 @@
             "wavesCmd":    "cd cv32/sim/uvmt_cv32; make custom CUSTOM_PROG=pulp_vectorial_bitwise SIMULATOR=dsim USE_ISS=NO DSIM_WORK=/mux-flow/build/repo/dsim_work DSIM_RESULTS=/mux-flow/build/results WAVES=1 DSIM_DMP_FILE=pulp_vectorial_bitwise.vcd",
             "metricsFile": "pulp_vectorial_bitwise/metrics.db",
             "wavesFile" :  "pulp_vectorial_bitwise/pulp_vectorial_bitwise.vcd",
+            "isPass":      "SIMULATION PASSED",
+            "seed":        1
+          },
+          {
+            "name":        "Debug Test 1",
+            "build":       "uvmt_cv32",
+            "cmd":         "cd cv32/sim/uvmt_cv32; make debug_test SIMULATOR=dsim USE_ISS=NO DSIM_WORK=/mux-flow/build/repo/dsim_work DSIM_RESULTS=/mux-flow/build/results",
+            "wavesCmd":    "cd cv32/sim/uvmt_cv32; make debug_test SIMULATOR=dsim USE_ISS=NO DSIM_WORK=/mux-flow/build/repo/dsim_work DSIM_RESULTS=/mux-flow/build/results WAVES=1 DSIM_DMP_FILE=debug_test.vcd",
+            "metricsFile": "debug_test/metrics.db",
+            "wavesFile" :  "debug_test/debug_test.vcd",
             "isPass":      "SIMULATION PASSED",
             "seed":        1
           }

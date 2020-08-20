@@ -430,11 +430,11 @@ typedef struct record
 
 
 
-#define NUM_RUNS (1)
+#define NUM_RUNS (100)
 #ifdef CONSTANT
 #define NUM_RUNS (CONSTANT)
 #else
-#define NUM_RUNS (1)
+#define NUM_RUNS (100)
 #endif
 #define DLX_FREQ 200  /* in MHz */
 #define PROC_6 0
