@@ -20,15 +20,23 @@
 #
 ###############################################################################
 
+# Executables
 VCS              = $(CV_SIM_PREFIX)vcs
 SIMV             = $(CV_TOOL_PREFIX)simv
 #VERDI            = $(CV_TOOL_PREFIX)verdi
 URG               = $(CV_SIM_PREFIX)urg
 
+# Paths
+VCS_RESULTS     ?= $(PWD)/vcs_results
+VCS_RISCVDV_RESULTS ?= $(VCS_RESULTS)/riscv-dv
+VCS_DIR         ?= $(VCS_RESULTS)/vcs.d
+VCS_ELAB_COV     = -cm line+cond+tgl+fsm+branch+assert  -cm_dir $(MAKECMDGOALS)/$(MAKECMDGOALS).vdb
+
 # modifications to already defined variables to take into account VCS
 VCS_OVP_MODEL_DPI = $(OVP_MODEL_DPI:.so=)                    # remove extension as VCS adds it
 VCS_TIMESCALE = $(shell echo "$(TIMESCALE)" | tr ' ' '=')    # -timescale=1ns/1ps
 
+# Flags
 #VCS_UVMHOME_ARG ?= /opt/uvm/1800.2-2017-0.9/
 VCS_UVMHOME_ARG ?= /opt/synopsys/vcs-mx/O-2018.09-SP1-1/etc/uvm
 VCS_UVM_ARGS          ?= +incdir+$(VCS_UVMHOME_ARG)/src $(VCS_UVMHOME_ARG)/src/uvm_pkg.sv -ntb_opts uvm-1.2
@@ -37,12 +45,15 @@ VCS_COMP_FLAGS  ?= -lca -sverilog -top uvmt_cv32_tb \
 										$(SV_CMP_FLAGS) $(VCS_UVM_ARGS) $(VCS_TIMESCALE) \
 										-assert svaext -race=all -ignore unique_checks -full64
 VCS_GUI         ?=
-VCS_RESULTS     ?= $(PWD)/vcs_results
-VCS_RISCVDV_RESULTS ?= $(VCS_RESULTS)/riscv-dv
-VCS_DIR         ?= $(VCS_RESULTS)/vcs.d
-VCS_ELAB_COV     = -cm line+cond+tgl+fsm+branch+assert
-VCS_RUN_COV      = -cm line+cond+tgl+fsm+branch+assert
+VCS_RUN_COV      = -cm line+cond+tgl+fsm+branch+assert -cm_dir $(MAKECMDGOALS).vdb
 NUM_TEST         ?= 2
+
+# Common QUIET flag defaults to -quiet unless VERBOSE is set
+ifeq ($(call IS_YES,$(VERBOSE)),YES)
+QUIET=
+else
+QUIET=-q
+endif
 
 ################################################################################
 # GUI interactive simulation
@@ -66,7 +77,7 @@ ifeq ($(call IS_YES,$(ADV_DEBUG)),YES)
 $(error ADV_DEBUG not yet supported by VCS )
 #VCS_RUN_WAVES_FLAGS = -input ../../../tools/xrun/indago.tcl
 else
-VCS_RUN_WAVES_FLAGS = -input ../../../tools/xrun/probe.tcl
+#VCS_RUN_WAVES_FLAGS = -input ../../../tools/xrun/probe.tcl
 endif
 endif
 
@@ -76,7 +87,7 @@ ifeq ($(call IS_YES,$(ADV_DEBUG)),YES)
 $(error ADV_DEBUG not yet supported by VCS )
 #WAVES_CMD = cd $(VCS_RESULTS)/$(TEST) && $(INDAGO) -db ida.db
 else
-WAVES_CMD = cd $(VCS_RESULTS)/$(TEST) && $(SIMVISION) waves.shm
+#WAVES_CMD = cd $(VCS_RESULTS)/$(TEST) && $(SIMVISION) waves.shm
 endif
 
 ################################################################################
@@ -92,7 +103,7 @@ VCS_RUN_COV_FLAGS += $(VCS_RUN_COV)
 endif
 
 # list all vbd files
-COV_RESULTS_LIST = $(wildcard *.vdb)
+COV_RESULTS_LIST = $(wildcard $(VCS_RESULTS)/*/*.vdb)
 
 ifeq ($(call IS_YES,$(MERGE)),YES)
 COV_MERGE = cov_merge
@@ -102,9 +113,9 @@ COV_MERGE =
 endif
 
 ifeq ($(call IS_YES,$(MERGE)),YES)
-COV_ARGS = -load cov_work/scope/merged
+COV_ARGS = -dir cov_work/scope/merged
 else
-COV_ARGS = -load cov_work/uvmt_cv32_tb/$(TEST)
+COV_ARGS = -dir $(TEST).vdb
 endif
 
 #ifeq ($(call IS_YES,$(GUI)),YES)
@@ -353,6 +364,5 @@ clean:
 	rm -rf $(VCS_RESULTS)
 
 # All generated files plus the clone of the RTL
-clean_all: clean clean_core_tests clean_riscvdv clean_test_programs
+clean_all: clean clean_core_tests clean_riscv-dv clean_test_programs
 	rm -rf $(CV32E40P_PKG)
-
