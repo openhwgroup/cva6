@@ -305,7 +305,7 @@ comp_riscv-dv:
 	$(XRUN) $(XRUN_COMP_FLAGS) \
 		$(XRUN_USER_COMPILE_ARGS) \
 		-elaborate \
-		+incdir+$(RISCVDV_PKG)/target/rv32imc \
+		+incdir+$(COREVDV_PKG)/target/cv32e40p \
 		+incdir+$(RISCVDV_PKG)/user_extension \
 		+incdir+$(RISCVDV_PKG)/tests \
 		+incdir+$(COREVDV_PKG) \
@@ -352,6 +352,27 @@ gen_corev_rand_instr_test:
     +directed_instr_5=riscv_mem_region_stress_test,4 \
     +directed_instr_6=riscv_jal_instr,4
 	cp $(XRUN_RISCVDV_RESULTS)/corev_rand_instr_test/*.S $(CORE_TEST_DIR)/custom
+
+gen_corev_rand_debug_test:
+	mkdir -p $(XRUN_RISCVDV_RESULTS)/corev_arithmetic_base_test	
+	cd $(XRUN_RISCVDV_RESULTS)/corev_arithmetic_base_test && \
+	$(XRUN) -R $(XRUN_RUN_FLAGS) \
+		-xceligen rand_struct \
+		+UVM_TESTNAME=corev_instr_base_test  \
+		+num_of_tests=$(NUM_TESTS)  \
+		+start_idx=0  \
+		+asm_file_name_opts=riscv_arithmetic_basic_test  \
+		-l $(COREVDV_PKG)/out_$(DATE)/sim_riscv_arithmetic_basic_test_0.log \
+		+instr_cnt=10000 \
+		+num_of_sub_program=0 \
+		+directed_instr_0=riscv_int_numeric_corner_stream,4 \
+		+no_fence=1 \
+		+no_data_page=1 \
+		+no_branch_jump=1 \
+		+boot_mode=m \
+		+no_csr_instr=1 \
+		+gen_debug_section=1
+	cp $(XRUN_RISCVDV_RESULTS)/corev_arithmetic_base_test/*.S $(CORE_TEST_DIR)/custom
 
 corev-dv: clean_riscv-dv \
 	clone_riscv-dv \
