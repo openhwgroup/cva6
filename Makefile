@@ -267,7 +267,7 @@ else
 endif
 
 # Build the TB and module using QuestaSim
-build: $(library) $(library)/.build-srcs $(library)/.build-tb $(dpi-library)/ariane_dpi.so dm_rtl_modif
+build: $(library) $(library)/.build-srcs $(library)/.build-tb $(dpi-library)/ariane_dpi.so
 	# Optimize top level
 	vopt$(questa_version) $(compile_flag) -work $(library)  $(top_level) -o $(top_level)_optimized +acc -check_synthesis
 
@@ -300,15 +300,6 @@ $(dpi-library)/ariane_dpi.so: $(dpi)
 	mkdir -p $(dpi-library)
 	# Compile C-code and generate .so file
 	$(CXX) -shared -m64 -o $(dpi-library)/ariane_dpi.so $? -L$(RISCV)/lib -Wl,-rpath,$(RISCV)/lib -lfesvr
-
-GREP_FINDINGS := $(shell grep 'XLEN' src/riscv-dbg/src/dm_mem.sv)
-dm_rtl_modif:
-ifeq ($(GREP_FINDINGS), )
-	@echo "Nothing was found for current dm_mem.sv"
-	sed -i -e 's/MaxAar = (BusWidth == 64) ? 4 : 3/MaxAar = (BusWidth == 64 \& riscv::XLEN == 64) ? 4 : 3/' src/riscv-dbg/src/dm_mem.sv
-else
-	@echo "***Found XLEN in dm_mem.sv***"
-endif
 
 # single test runs on Questa can be started by calling make <testname>, e.g. make towers.riscv
 # the test names are defined in ci/riscv-asm-tests.list, and in ci/riscv-benchmarks.list
@@ -467,7 +458,7 @@ checkpoint_dromajo:
 
 
 # User Verilator, at some point in the future this will be auto-generated
-verilate: $(if $(DROMAJO), dromajo,) dm_rtl_modif
+verilate: $(if $(DROMAJO), dromajo,)
 	@echo "[Verilator] Building Model$(if $(PROFILE), for Profiling,)"
 	$(verilate_command)
 	cd $(ver-library) && $(MAKE) -j${NUM_JOBS} -f Variane_testharness.mk
