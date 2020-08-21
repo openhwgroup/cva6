@@ -1,6 +1,7 @@
 // Copyright 2020 OpenHW Group
 // Copyright 2020 Datum Technology Corporation
-// 
+// Copyright 2020 Silicon Labs, Inc.
+//
 // Licensed under the Solderpad Hardware Licence, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
@@ -36,7 +37,7 @@ package uvme_cv32_pkg;
    import uvml_hrtbt_pkg  ::*;
    import uvml_sb_pkg     ::*;
    import uvma_clknrst_pkg::*;
-   //import uvma_debug_pkg::*;
+   import uvma_debug_pkg::*;
    
    // Constants / Structs / Enums
    `include "uvme_cv32_constants.sv"
@@ -65,7 +66,7 @@ package uvme_cv32_pkg;
    `include "uvme_cv32_reg_bit_bash_vseq.sv"
    `include "uvme_cv32_reg_hw_reset_vseq.sv"
    `include "uvme_cv32_vseq_lib.sv"
-   
+   `include "uvme_cv32_random_debug_vseq.sv" 
 endpackage : uvme_cv32_pkg
 
 

@@ -1,6 +1,7 @@
 //
 // Copyright 2020 OpenHW Group
 // Copyright 2020 Datum Technology Corporation
+// Copyright 2020 Silicon Labs, Inc.
 // 
 // Licensed under the Solderpad Hardware Licence, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -64,6 +65,11 @@ class uvmt_cv32_firmware_test_c extends uvmt_cv32_base_test_c;
     *  Enable program execution, wait for completion.
     */
    extern virtual task run_phase(uvm_phase phase);
+
+   /**
+   * Start random debug sequencer
+   */
+    extern virtual task random_debug();
    
 endclass : uvmt_cv32_firmware_test_c
 
@@ -118,6 +124,12 @@ task uvmt_cv32_firmware_test_c::run_phase(uvm_phase phase);
    // start_clk() and watchdog_timer() are called in the base_test
    super.run_phase(phase);
    
+   if ($test$plusargs("gen_random_debug")) begin
+    fork
+      random_debug();
+    join_none
+   end
+
    phase.raise_objection(this);
    @(posedge env_cntxt.clknrst_cntxt.vif.reset_n);
    repeat (33) @(posedge env_cntxt.clknrst_cntxt.vif.clk);
@@ -136,5 +148,15 @@ task uvmt_cv32_firmware_test_c::run_phase(uvm_phase phase);
    
 endtask : run_phase
 
-
+task uvmt_cv32_firmware_test_c::random_debug();
+    `uvm_info("TEST", "Starting random debug in thread UVM test", UVM_NONE); 
+    while (1) begin
+        uvme_cv32_random_debug_c debug_vseq;
+        repeat (100) @(env_cntxt.debug_cntxt.vif.mon_cb);
+        debug_vseq = uvme_cv32_random_debug_c::type_id::create("random_debug_vseqr");
+        debug_vseq.randomize();
+        debug_vseq.start(vsequencer);
+        break;
+    end     
+endtask : random_debug    
 `endif // __UVMT_CV32_FIRMWARE_TEST_SV__

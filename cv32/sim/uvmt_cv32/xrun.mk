@@ -134,7 +134,7 @@ XRUN_RUN_FLAGS        ?= -R -xmlibdirname ../xcelium.d
 XRUN_RUN_FLAGS        += $(XRUN_RUN_BASE_FLAGS)
 XRUN_RUN_FLAGS        += $(XRUN_RUN_WAVES_FLAGS)
 XRUN_RUN_FLAGS        += $(XRUN_RUN_COV_FLAGS)
-
+XRUN_RUN_FLAGS += +gen_random_debug
 no_rule:
 	@echo 'makefile: SIMULATOR is set to $(SIMULATOR), but no rule/target specified.'
 	@echo 'try "make SIMULATOR=xrun sanity" (or just "make sanity" if shell ENV variable SIMULATOR is already set).'
@@ -363,7 +363,7 @@ gen_corev_rand_debug_test:
 		+start_idx=0  \
 		+asm_file_name_opts=riscv_rand_debug_test  \
 		-l $(COREVDV_PKG)/out_$(DATE)/sim_riscv_rand_debug_test_0.log \
-		+instr_cnt=10000 \
+		+instr_cnt=50000 \
 		+num_of_sub_program=0 \
 		+directed_instr_0=riscv_int_numeric_corner_stream,4 \
 		+no_fence=1 \
@@ -371,6 +371,7 @@ gen_corev_rand_debug_test:
 		+no_branch_jump=1 \
 		+boot_mode=m \
 		+no_csr_instr=1 \
+		+no_wfi=0 \
 		+gen_debug_section=1
 	cp $(XRUN_RISCVDV_RESULTS)/corev_rand_debug_test/*.S $(CORE_TEST_DIR)/custom
 

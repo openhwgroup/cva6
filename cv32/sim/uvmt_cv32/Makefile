@@ -69,6 +69,7 @@ export DV_UVMT_CV32_PATH    = $(PROJ_ROOT_DIR)/$(COREV_PROJ)/tb/uvmt_cv32
 export DV_UVME_CV32_PATH    = $(PROJ_ROOT_DIR)/$(COREV_PROJ)/env/uvme_cv32
 export DV_UVML_HRTBT_PATH   = $(PROJ_ROOT_DIR)/lib/uvm_libs/uvml_hrtbt
 export DV_UVMA_CLKNRST_PATH = $(PROJ_ROOT_DIR)/lib/uvm_agents/uvma_clknrst
+export DV_UVMA_DEBUG_PATH   = $(PROJ_ROOT_DIR)/lib/uvm_agents/uvma_debug
 export DV_UVML_TRN_PATH     = $(PROJ_ROOT_DIR)/lib/uvm_libs/uvml_trn
 export DV_UVML_LOGS_PATH    = $(PROJ_ROOT_DIR)/lib/uvm_libs/uvml_logs
 export DV_UVML_SB_PATH      = $(PROJ_ROOT_DIR)/lib/uvm_libs/uvml_sb
