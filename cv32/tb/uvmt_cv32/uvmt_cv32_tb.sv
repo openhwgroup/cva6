@@ -113,36 +113,25 @@ module uvmt_cv32_tb;
       
       always @(posedge clknrst_if_iss.clk or negedge clknrst_if_iss.reset_n) begin
         if (!clknrst_if_iss.reset_n) begin
-          iss_wrap.b1.MSWInterrupt <= 1'b0;
-          iss_wrap.b1.MTimerInterrupt <= 1'b0;
-          iss_wrap.b1.MExternalInterrupt <= 1'b0;
+          for (int irq_idx=0; irq_idx<32; irq_idx++) begin
+            iss_wrap.b1.irq_i[irq_idx] <= 1'b0;
+          end
         end
         else begin
-          // MExternalInterrupt
-          if (dut_wrap.cv32e40p_wrapper_i.irq_i[11]) 
-            iss_wrap.b1.MExternalInterrupt <= 1'b1;
-          else if (iss_wrap.b1.deferint == 1)
-            iss_wrap.b1.MExternalInterrupt <= 1'b0;
-
-          // MSWInterrupt            
-          if (dut_wrap.cv32e40p_wrapper_i.irq_i[3]) 
-            iss_wrap.b1.MSWInterrupt <= 1'b1;
-          else if (iss_wrap.b1.deferint == 1)
-            iss_wrap.b1.MSWInterrupt <= 1'b0;
-
-          // MTimerInterrupt
-          if (dut_wrap.cv32e40p_wrapper_i.irq_i[7]) 
-            iss_wrap.b1.MTimerInterrupt <= 1'b1;
-          else if (iss_wrap.b1.deferint == 1)
-            iss_wrap.b1.MTimerInterrupt <= 1'b0;
+          for (int irq_idx=0; irq_idx<32; irq_idx++) begin
+            if (dut_wrap.cv32e40p_wrapper_i.irq_i[irq_idx]) 
+              iss_wrap.b1.irq_i[irq_idx] <= 1'b1;
+            else if (iss_wrap.b1.deferint == 1)
+              iss_wrap.b1.irq_i[irq_idx] <= 1'b0;
+            end
         end
       end
 
       always @(negedge step_compare_if.ovp_b1_Step) begin
-        if (iss_wrap.b1.deferint == 0) begin          
-          iss_wrap.b1.MExternalInterrupt <= 1'b0;
-          iss_wrap.b1.MSWInterrupt <= 1'b0;
-          iss_wrap.b1.MTimerInterrupt <= 1'b0;
+        if (iss_wrap.b1.deferint == 0) begin
+          for (int irq_idx=0; irq_idx<32; irq_idx++) begin
+            iss_wrap.b1.irq_i[irq_idx] <= 1'b0;
+          end
           iss_wrap.b1.deferint <= 1'b1;
         end
       end
