@@ -40,6 +40,13 @@ volatile int glb_expect_debug_entry     = 0;
 volatile int glb_expect_debug_exception = 0;
 volatile int glb_expect_irq_entry = 0; 
 volatile int glb_irq_timeout = 0;
+// Counter values
+// Checked at start and end of debug code
+// Only lower 32 bits checked, as simulation cannot overflow on 32 bits
+volatile int glb_mcycle_start = 0;
+volatile int glb_mcycle_end = 0;
+volatile int glb_minstret_start = 0;
+volatile int glb_minstret_end = 0;
 #define TEST_FAILED  *(volatile int *)0x20000000 = 1
 #define TEST_PASSED  *(volatile int *)0x20000000 = 123456789
 
@@ -174,14 +181,18 @@ void mm_ram_assert_irq(uint32_t mask, uint32_t cycle_delay) {
     *TIMER_VAL_ADDR = 1 + cycle_delay;
 }
 
+void counters_enable() {
+    // Enable counters mcycle (bit0) and minstret (bit2)
+    uint32_t mask = 1<<2 | 1<<0;
+    asm volatile("csrrc x0, 0x320, %0" : : "r" (mask));
+}
 #define MACHINE 3
 int main(int argc, char *argv[])
 {
-  unsigned int temp,temp1,temp2;
-
+    unsigned int temp,temp1,temp2;
     debug_req_control_t debug_req_control;
     mstatus_t mstatus, mstatus_cmp;
-
+    counters_enable();
     printf("\nBasic test checking debug functionality.\n");
 
     printf("------------------------\n");
@@ -504,6 +515,17 @@ int main(int argc, char *argv[])
     mm_ram_assert_irq(0,0);
     printf("Irq check done\n");
     
+    // Check that stoupcount bit (10) in dcsr has no affect
+    printf("-------------------------\n");
+    printf("Test 21: Setting stopcount bit=1\n");
+    glb_expect_debug_entry = 1;
+    glb_hart_status = 21;
+    
+    DEBUG_REQ_CONTROL_REG = debug_req_control.bits;
+     while(glb_debug_status != glb_hart_status){
+        printf("Wait for Debugger\n");
+    }
+    check_debug_status(121, glb_hart_status);
 
     printf("------------------------\n");
     printf("Test 18: Single stepping\n");
@@ -544,7 +566,7 @@ int main(int argc, char *argv[])
     printf("Test 20: Asserting debug_req and irq at the same cycle\n");
     glb_expect_debug_entry = 1;
     glb_expect_irq_entry = 1;
-
+    glb_hart_status = 20;
     DEBUG_REQ_CONTROL_REG = debug_req_control.bits;
     // 170 halts on first instuction in interrupt handler
     // 175 gives same timing for interrupt and debug_req_i
@@ -554,6 +576,10 @@ int main(int argc, char *argv[])
         printf("Wait for Debugger\n");
     }
     check_debug_status(120, glb_hart_status);
+
+
+        
+    
     //--------------------------------
     //return EXIT_FAILURE;
     printf("------------------------\n");
