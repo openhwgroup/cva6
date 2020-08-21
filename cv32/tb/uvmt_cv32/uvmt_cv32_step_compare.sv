@@ -134,53 +134,43 @@ module uvmt_cv32_step_compare
              "mcycleh"       : csr_val = `CV32E40P_CORE.cs_registers_i.mhpmcounter_q[`CV32E40P_CORE.cs_registers_i.csr_addr_i[4:0]][63:32];
              "mcountinhibit" : csr_val = `CV32E40P_CORE.cs_registers_i.mcountinhibit_q;
 
-             "mvendorid" : csr_val = {cv32e40p_pkg::MVENDORID_BANK, cv32e40p_pkg::MVENDORID_OFFSET};
-             "mstatus"   : csr_val = {`CV32E40P_CORE.cs_registers_i.mstatus_q.mprv, // Not documented in Rev 4.5 of user_manual.doc but is in the design
-                                      4'b0,
-                                      `CV32E40P_CORE.cs_registers_i.mstatus_q.mpp,
-                                      3'b0,
-                                      `CV32E40P_CORE.cs_registers_i.mstatus_q.mpie,
-                                      2'b0,
-                                      `CV32E40P_CORE.cs_registers_i.mstatus_q.upie,
-                                      `CV32E40P_CORE.cs_registers_i.mstatus_q.mie,
-                                      2'b0,
-                                      `CV32E40P_CORE.cs_registers_i.mstatus_q.uie};
-             "misa"       : csr_val = `CV32E40P_CORE.cs_registers_i.MISA_VALUE;
-             // MT: 2020-07-09
-             "mie"        : csr_val = `CV32E40P_CORE.cs_registers_i.mie_q;
-             //"mie"        : csr_val = {`CV32E40P_CORE.cs_registers_i.mie_q.irq_external,
-             //                          3'b0,
-             //                          `CV32E40P_CORE.cs_registers_i.mie_q.irq_timer,
-             //                          3'b0,
-             //                          `CV32E40P_CORE.cs_registers_i.mie_q.irq_software,
-             //                          3'b0};
-
-             // MT: 2020-06-11
-             //"miex"       : csr_val = `CV32E40P_CORE.cs_registers_i.miex_q;
-             "mtvec"      : csr_val = {`CV32E40P_CORE.cs_registers_i.mtvec_q, 6'h0, `CV32E40P_CORE.cs_registers_i.mtvec_mode_q}; 
-             "mtvecx"     : csr_val = {`CV32E40P_CORE.cs_registers_i.mtvec_q, 6'h0, 2'b01};
-             "mscratch"   : csr_val = `CV32E40P_CORE.cs_registers_i.mscratch_q;
-             "mepc"       : csr_val = `CV32E40P_CORE.cs_registers_i.mepc_q;
-             "mcause"     : csr_val = {`CV32E40P_CORE.cs_registers_i.mcause_q[5], 
-                                       26'b0, 
-                                       `CV32E40P_CORE.cs_registers_i.mcause_q[4:0]};
-             "mip"        : if (iss_wrap.b1.deferint == 0) ignore = 1;
-                            else csr_val = {`CV32E40P_CORE.cs_registers_i.mip};
-             //"mipx"       : csr_val = `CV32E40P_CORE.cs_registers_i.mipx;
-             "mhartid"    : csr_val = `CV32E40P_CORE.cs_registers_i.hart_id_i; 
-             //"mhartid"    : csr_val = {21'b0, 
-             //                          `CV32E40P_CORE.cs_registers_i.cluster_id_i[5:0], 
-             //                          1'b0, 
-             //                          `CV32E40P_CORE.cs_registers_i.core_id_i[3:0]};
-             "dcsr"         : csr_val = `CV32E40P_CORE.cs_registers_i.dcsr_q;     
-             "dpc"          : csr_val = `CV32E40P_CORE.cs_registers_i.depc_q;       
-             "dscratch0"    : csr_val = `CV32E40P_CORE.cs_registers_i.dscratch0_q;
-             "dscratch1"    : csr_val = `CV32E40P_CORE.cs_registers_i.dscratch1_q;
-             "pmpcfg0"      : csr_val = `CV32E40P_CORE.cs_registers_i.pmp_reg_q.pmpcfg_packed[0];
-             "pmpcfg1"      : csr_val = `CV32E40P_CORE.cs_registers_i.pmp_reg_q.pmpcfg_packed[1];
-             "pmpcfg2"      : csr_val = `CV32E40P_CORE.cs_registers_i.pmp_reg_q.pmpcfg_packed[2];
-             "pmpcfg3"      : csr_val = `CV32E40P_CORE.cs_registers_i.pmp_reg_q.pmpcfg_packed[3];
-             "time"         : ignore = 1;
+             "mvendorid"     : csr_val = {cv32e40p_pkg::MVENDORID_BANK, cv32e40p_pkg::MVENDORID_OFFSET};
+             "mstatus"       : csr_val = {`CV32E40P_CORE.cs_registers_i.mstatus_q.mprv, // Not documented in Rev 4.5 of user_manual.doc but is in the design
+                                          4'b0,
+                                          `CV32E40P_CORE.cs_registers_i.mstatus_q.mpp,
+                                          3'b0,
+                                          `CV32E40P_CORE.cs_registers_i.mstatus_q.mpie,
+                                          2'b0,
+                                          `CV32E40P_CORE.cs_registers_i.mstatus_q.upie,
+                                          `CV32E40P_CORE.cs_registers_i.mstatus_q.mie,
+                                          2'b0,
+                                          `CV32E40P_CORE.cs_registers_i.mstatus_q.uie};
+             "misa"          : csr_val = `CV32E40P_CORE.cs_registers_i.MISA_VALUE;
+             "mie"           : csr_val = `CV32E40P_CORE.cs_registers_i.mie_q;
+             "mtvec"         : csr_val = {`CV32E40P_CORE.cs_registers_i.mtvec_q, 6'h0, `CV32E40P_CORE.cs_registers_i.mtvec_mode_q};
+             "mscratch"      : csr_val = `CV32E40P_CORE.cs_registers_i.mscratch_q;
+             "mepc"          : csr_val = `CV32E40P_CORE.cs_registers_i.mepc_q;
+             "mcause"        : csr_val = {`CV32E40P_CORE.cs_registers_i.mcause_q[5], 
+                                          26'b0, 
+                                          `CV32E40P_CORE.cs_registers_i.mcause_q[4:0]};
+             //"mip"           : csr_val = `CV32E40P_CORE.cs_registers_i.mip;  
+             //FIXME:strichmo , Need to reconcile model when irq is deasserted in RTL vs. ISS
+             "mip"           : ignore = 1;
+             "mhartid"       : csr_val = `CV32E40P_CORE.cs_registers_i.hart_id_i; 
+             "dcsr"          : csr_val = `CV32E40P_CORE.cs_registers_i.dcsr_q;     
+             "dpc"           : csr_val = `CV32E40P_CORE.cs_registers_i.depc_q;       
+             "dscratch0"     : csr_val = `CV32E40P_CORE.cs_registers_i.dscratch0_q;
+             "dscratch1"     : csr_val = `CV32E40P_CORE.cs_registers_i.dscratch1_q;
+             "pmpcfg0"       : csr_val = `CV32E40P_CORE.cs_registers_i.pmp_reg_q.pmpcfg_packed[0];
+             "pmpcfg1"       : csr_val = `CV32E40P_CORE.cs_registers_i.pmp_reg_q.pmpcfg_packed[1];
+             "pmpcfg2"       : csr_val = `CV32E40P_CORE.cs_registers_i.pmp_reg_q.pmpcfg_packed[2];
+             "pmpcfg3"       : csr_val = `CV32E40P_CORE.cs_registers_i.pmp_reg_q.pmpcfg_packed[3];
+             "tselect"       : csr_val = 32'h0000_0000;
+             "tdata1"        : csr_val = `CV32E40P_CORE.cs_registers_i.tmatch_control_rdata;
+             "tdata2"        : csr_val = `CV32E40P_CORE.cs_registers_i.tmatch_value_rdata;
+             "tdata3"        : csr_val = 32'h0000_0000;
+             "tinfo"         : csr_val = `CV32E40P_CORE.cs_registers_i.tinfo_types;
+             "time"          : ignore  = 1;
              default: begin
                 `uvm_error("STEP_COMPARE", $sformatf("index=%s does not match a CSR name", index))
                 ignore = 1;
