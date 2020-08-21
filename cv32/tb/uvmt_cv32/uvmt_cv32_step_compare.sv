@@ -153,9 +153,7 @@ module uvmt_cv32_step_compare
              "mcause"        : csr_val = {`CV32E40P_CORE.cs_registers_i.mcause_q[5], 
                                           26'b0, 
                                           `CV32E40P_CORE.cs_registers_i.mcause_q[4:0]};
-             //"mip"           : csr_val = `CV32E40P_CORE.cs_registers_i.mip;  
-             //FIXME:strichmo , Need to reconcile model when irq is deasserted in RTL vs. ISS
-             "mip"           : ignore = 1;
+             "mip"           : csr_val = `CV32E40P_CORE.cs_registers_i.mip;  
              "mhartid"       : csr_val = `CV32E40P_CORE.cs_registers_i.hart_id_i; 
              "dcsr"          : csr_val = `CV32E40P_CORE.cs_registers_i.dcsr_q;     
              "dpc"           : csr_val = `CV32E40P_CORE.cs_registers_i.depc_q;       
