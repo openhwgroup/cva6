@@ -135,6 +135,16 @@
         "builds":    ["uvmt_cv32"],
         "list": [
           {
+            "name":        "pulp_vectorial_comparison_1",
+            "build":       "uvmt_cv32",
+            "cmd":         "cd cv32/sim/uvmt_cv32; make custom CUSTOM_PROG=pulp_vectorial_comparison_1 SIMULATOR=dsim USE_ISS=NO DSIM_WORK=/mux-flow/build/repo/dsim_work DSIM_RESULTS=/mux-flow/build/results",
+            "wavesCmd":    "cd cv32/sim/uvmt_cv32; make custom CUSTOM_PROG=pulp_vectorial_comparison_1 SIMULATOR=dsim USE_ISS=NO DSIM_WORK=/mux-flow/build/repo/dsim_work DSIM_RESULTS=/mux-flow/build/results WAVES=1 DSIM_DMP_FILE=pulp_vectorial_comparison_1.vcd",
+            "metricsFile": "pulp_vectorial_comparison_1/metrics.db",
+            "wavesFile" :  "pulp_vectorial_comparison_1/pulp_vectorial_comparison_1.vcd",
+            "isPass":      "SIMULATION PASSED",
+            "seed":        1
+          },
+          {
             "name":        "uvm_hello_world_test",
             "build":       "uvmt_cv32",
             "cmd":         "cd cv32/sim/uvmt_cv32; make hello-world SIMULATOR=dsim USE_ISS=YES DSIM_WORK=/mux-flow/build/repo/dsim_work DSIM_RESULTS=/mux-flow/build/results",
