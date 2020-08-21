@@ -23,6 +23,7 @@
 # Executables
 VCS              = $(CV_SIM_PREFIX)vcs
 SIMV             = $(CV_TOOL_PREFIX)simv
+DVE              = $(CV_TOOL_PREFIX)dve
 #VERDI            = $(CV_TOOL_PREFIX)verdi
 URG               = $(CV_SIM_PREFIX)urg
 
@@ -58,26 +59,25 @@ endif
 ################################################################################
 # GUI interactive simulation
 # GUI=YES enables interactive mode
-# ADV_DEBUG=YES will enable Indago, default is to use SimVision
+# ADV_DEBUG=YES currently not supported
 ifeq ($(call IS_YES,$(GUI)),YES)
 VCS_GUI += -gui
-VCS_USER_COMPILE_ARGS += -linedebug
+VCS_USER_COMPILE_ARGS += -debug_access+r
 ifeq ($(call IS_YES,$(ADV_DEBUG)),YES)
 $(error ADV_DEBUG not yet supported by VCS )
-#VCS_GUI += -indago
 endif
 endif
 
 ################################################################################
 # Waveform generation
 # WAVES=YES enables waveform generation for entire testbench
-# ADV_DEBUG=YES will enable Indago waves, default is to generate SimVision waves
+# ADV_DEBUG=YES currently not supported
 ifeq ($(call IS_YES,$(WAVES)),YES)
 ifeq ($(call IS_YES,$(ADV_DEBUG)),YES)
 $(error ADV_DEBUG not yet supported by VCS )
-#VCS_RUN_WAVES_FLAGS = -input ../../../tools/xrun/indago.tcl
+VCS_USER_COMPILE_ARGS = +vcs+vcdpluson
 else
-#VCS_RUN_WAVES_FLAGS = -input ../../../tools/xrun/probe.tcl
+VCS_USER_COMPILE_ARGS = +vcs+vcdpluson
 endif
 endif
 
@@ -85,16 +85,15 @@ endif
 # Waveform (post-process) command line
 ifeq ($(call IS_YES,$(ADV_DEBUG)),YES)
 $(error ADV_DEBUG not yet supported by VCS )
-#WAVES_CMD = cd $(VCS_RESULTS)/$(TEST) && $(INDAGO) -db ida.db
+WAVES_CMD = cd $(VCS_RESULTS)/$(TEST) && $(DVE) -vpd vcdplus.vpd 
 else
-#WAVES_CMD = cd $(VCS_RESULTS)/$(TEST) && $(SIMVISION) waves.shm
+WAVES_CMD = cd $(VCS_RESULTS)/$(TEST) && $(DVE) -vpd vcdplus.vpd 
 endif
 
 ################################################################################
 # Coverage options
 # COV=YES generates coverage database, must be specified for comp and run
 URG_MERGE_ARGS = -dbname merged.vdb -group lrm_bin_name -flex_merge union
-#URG_REPORT_ARGS = report_metrics -summary -overwrite -out cov_report
 MERGED_COV_DIR ?= merged_cov
 
 ifeq ($(call IS_YES,$(COV)),YES)
@@ -117,12 +116,6 @@ COV_ARGS = -dir cov_work/scope/merged
 else
 COV_ARGS = -dir $(TEST).vdb
 endif
-
-#ifeq ($(call IS_YES,$(GUI)),YES)
-#COV_ARGS += -gui
-#else
-#COV_ARGS += -execcmd "$(IMC_REPORT_ARGS)"
-#endif
 
 ################################################################################
 
