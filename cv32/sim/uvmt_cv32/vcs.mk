@@ -347,11 +347,16 @@ waves:
 cov_merge:
 	$(MKDIR_P) $(VCS_RESULTS)/$(MERGED_COV_DIR)
 	rm -rf $(VCS_RESULTS)/$(MERGED_COV_DIR)/*
-	cd $(VCS_RESULTS)/$(MERGED_COV_DIR) && \
-	$(URG) -dir $(COV_RESULTS_LIST) $(URG_MERGE_ARGS)
+	cd $(VCS_RESULTS)/$(MERGED_COV_DIR)
 
+# the report is in html format: use a browser to access it when GUI mode is selected
+ifeq ($(call IS_YES,$(GUI)),YES)
+cov: $(COV_MERGE)
+	cd $(VCS_RESULTS)/$(TEST) && browse urgReport/dashboard.html
+else
 cov: $(COV_MERGE)
 	cd $(VCS_RESULTS)/$(TEST) && $(URG) $(COV_ARGS)
+endif
 
 ###############################################################################
 # Clean up your mess!
