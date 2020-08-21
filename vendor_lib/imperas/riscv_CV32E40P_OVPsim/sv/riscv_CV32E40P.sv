@@ -47,6 +47,7 @@ module CPU
     export "DPI-C" function setCSR;
     export "DPI-C" function setDECODE;
     export "DPI-C" function getState;
+    export "DPI-C" function putState;
     export "DPI-C" task     setRETIRE;
     
     bit [31:0] PC, PCr;
@@ -107,58 +108,28 @@ module CPU
         PC = value;
     endfunction
     
+    function automatic void putState (
+            input int _irq_ack_o,
+            input int _irq_id_o,
+            input int _DM);
+        
+        SysBus.irq_ack_o    = _irq_ack_o;
+        SysBus.irq_id_o     = _irq_id_o;
+        SysBus.DM           = _DM;
+    endfunction
+        
     function automatic void getState (
             output int _terminate,
             output int _reset,
-            output int _nmi,
             output int _deferint,
-            output int _MSWInterrupt,
-            output int _MTimerInterrupt,
-            output int _MExternalInterrupt,
-            output int _LocalInterrupt0,
-            output int _LocalInterrupt1,
-            output int _LocalInterrupt2,
-            output int _LocalInterrupt3,
-            output int _LocalInterrupt4,
-            output int _LocalInterrupt5,
-            output int _LocalInterrupt6,
-            output int _LocalInterrupt7,
-            output int _LocalInterrupt8,
-            output int _LocalInterrupt9,
-            output int _LocalInterrupt10,
-            output int _LocalInterrupt11,
-            output int _LocalInterrupt12,
-            output int _LocalInterrupt13,
-            output int _LocalInterrupt14,
-            output int _LocalInterrupt15,
+            output int _irq_i,
             output int _haltreq,
             output int _resethaltreq);
-
-
+        
         _terminate          = SysBus.Shutdown;
         _reset              = SysBus.reset;
-        _nmi                = SysBus.nmi;
         _deferint           = SysBus.deferint;
-        _MSWInterrupt       = SysBus.MSWInterrupt;
-        _MTimerInterrupt    = SysBus.MTimerInterrupt;
-        _MExternalInterrupt = SysBus.MExternalInterrupt;
-        _LocalInterrupt0    = SysBus.LocalInterrupt[0];
-        _LocalInterrupt1    = SysBus.LocalInterrupt[1];
-        _LocalInterrupt2    = SysBus.LocalInterrupt[2];
-        _LocalInterrupt3    = SysBus.LocalInterrupt[3];
-        _LocalInterrupt4    = SysBus.LocalInterrupt[4];
-        _LocalInterrupt5    = SysBus.LocalInterrupt[5];
-        _LocalInterrupt6    = SysBus.LocalInterrupt[6];
-        _LocalInterrupt7    = SysBus.LocalInterrupt[7];
-        _LocalInterrupt8    = SysBus.LocalInterrupt[8];
-        _LocalInterrupt9    = SysBus.LocalInterrupt[9];
-        _LocalInterrupt10   = SysBus.LocalInterrupt[10];
-        _LocalInterrupt11   = SysBus.LocalInterrupt[11];
-        _LocalInterrupt12   = SysBus.LocalInterrupt[12];
-        _LocalInterrupt13   = SysBus.LocalInterrupt[13];
-        _LocalInterrupt14   = SysBus.LocalInterrupt[14];
-        _LocalInterrupt15   = SysBus.LocalInterrupt[15];
-
+        _irq_i              = SysBus.irq_i;
         _haltreq            = SysBus.haltreq ;
         _resethaltreq       = SysBus.resethaltreq ;
     endfunction

@@ -33,17 +33,15 @@ interface BUS;
     bit            Ird;     // Instruction Bus read
     
     bit            reset;
-    bit            nmigen;
     bit            deferint;
     
-    bit            nmi;
-    bit            MSWInterrupt;
-    bit            MTimerInterrupt;
-    bit            MExternalInterrupt;
-    bit     [15:0] LocalInterrupt;
+    bit     [31:0] irq_i;     // Active high level sensitive interrupt inputs
+    bit            irq_ack_o; // Interrupt acknowledge
+    bit     [4:0]  irq_id_o;  // Interrupt index for taken interrupt - only valid on irq_ack_o = 1
     
     bit            haltreq;
     bit            resethaltreq;
+    bit            DM;
     
     //
     // Bus helpers
