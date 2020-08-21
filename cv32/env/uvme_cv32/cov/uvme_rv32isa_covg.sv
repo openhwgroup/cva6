@@ -1207,7 +1207,6 @@ class uvme_rv32isa_covg extends uvm_component;
     endgroup
 
 // TODO : missing coverage of all combinations of source and destination operands.
-// FIXME: DONE
     covergroup c_srli_cg     with function sample(ins_t ins);
         option.per_instance = 1;
         cp_rd    : coverpoint get_gpr_name(ins.ops[0].val, ins.ops[0].key, "c.srli") {
@@ -1215,10 +1214,6 @@ class uvme_rv32isa_covg extends uvm_component;
         }
         cp_rs1   : coverpoint get_gpr_name(ins.ops[1].val, ins.ops[1].key, "c.srli") {
             bins gprval[] = {[s0:a5]};
-        }
-        cp_shamt5   : coverpoint get_gpr_name(ins.ops[2].val, ins.ops[2].key, "c.srli" ) {
-            bins zero = {0};
-            bins pos  = {[1:$]};
         }
     endgroup
 
