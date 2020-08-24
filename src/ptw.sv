@@ -17,8 +17,9 @@
 import ariane_pkg::*;
 
 module ptw #(
-        parameter int ASID_WIDTH = 1
-    )(
+        parameter int ASID_WIDTH = 1,
+        parameter ariane_pkg::ariane_cfg_t ArianeCfg = ariane_pkg::ArianeDefaultConfig
+) (
     input  logic                    clk_i,                  // Clock
     input  logic                    rst_ni,                 // Asynchronous reset active low
     input  logic                    flush_i,                // flush everything, we need to do this because
@@ -27,6 +28,7 @@ module ptw #(
     output logic                    ptw_active_o,
     output logic                    walking_instr_o,        // set when walking for TLB
     output logic                    ptw_error_o,            // set when an error occurred
+    output logic                    ptw_access_exception_o, // set when an PMP access exception occured
     input  logic                    enable_translation_i,   // CSRs indicate to enable SV39
     input  logic                    en_ld_st_translation_i, // enable virtual memory translation for load/stores
 
@@ -57,7 +59,12 @@ module ptw #(
     input  logic                    mxr_i,
     // Performance counters
     output logic                    itlb_miss_o,
-    output logic                    dtlb_miss_o
+    output logic                    dtlb_miss_o,
+    // PMP
+
+    input  riscv::pmpcfg_t [15:0]   pmpcfg_i,
+    input  logic [15:0][53:0]       pmpaddr_i,
+    output logic [riscv::PLEN-1:0]  bad_paddr_o
 
 );
 
@@ -73,7 +80,8 @@ module ptw #(
       WAIT_GRANT,
       PTE_LOOKUP,
       WAIT_RVALID,
-      PROPAGATE_ERROR
+      PROPAGATE_ERROR,
+      PROPAGATE_ACCESS_ERROR
     } state_q, state_d;
 
     // SV39 defines three levels of page tables
@@ -91,7 +99,7 @@ module ptw #(
     // register the VPN we need to walk, SV39 defines a 39 bit virtual address
     logic [riscv::VLEN-1:0] vaddr_q,   vaddr_n;
     // 4 byte aligned physical pointer
-    logic[55:0] ptw_pptr_q, ptw_pptr_n;
+    logic [riscv::PLEN-1:0] ptw_pptr_q, ptw_pptr_n;
 
     // Assignments
     assign update_vaddr_o  = vaddr_q;
@@ -124,6 +132,26 @@ module ptw #(
 
     assign req_port_o.tag_valid      = tag_valid_q;
 
+    logic allow_access;
+
+    assign bad_paddr_o = ptw_access_exception_o ? ptw_pptr_q : 'b0;
+
+    pmp #(
+        .PLEN       ( riscv::PLEN            ),
+        .PMP_LEN    ( riscv::PLEN - 2        ),
+        .NR_ENTRIES ( ArianeCfg.NrPMPEntries )
+    ) i_pmp_ptw (
+        .addr_i        ( ptw_pptr_q         ),
+        // PTW access are always checked as if in S-Mode...
+        .priv_lvl_i    ( riscv::PRIV_LVL_S  ),
+        // ...and they are always loads
+        .access_type_i ( riscv::ACCESS_READ ),
+        // Configuration
+        .conf_addr_i   ( pmpaddr_i          ),
+        .conf_i        ( pmpcfg_i           ),
+        .allow_o       ( allow_access       )
+    );
+
     //-------------------
     // Page table walker
     //-------------------
@@ -150,19 +178,20 @@ module ptw #(
     always_comb begin : ptw
         // default assignments
         // PTW memory interface
-        tag_valid_n           = 1'b0;
-        req_port_o.data_req   = 1'b0;
-        req_port_o.data_be    = 8'hFF;
-        req_port_o.data_size  = 2'b11;
-        req_port_o.data_we    = 1'b0;
-        ptw_error_o           = 1'b0;
-        itlb_update_o.valid   = 1'b0;
-        dtlb_update_o.valid   = 1'b0;
-        is_instr_ptw_n        = is_instr_ptw_q;
-        ptw_lvl_n             = ptw_lvl_q;
-        ptw_pptr_n            = ptw_pptr_q;
-        state_d               = state_q;
-        global_mapping_n      = global_mapping_q;
+        tag_valid_n            = 1'b0;
+        req_port_o.data_req    = 1'b0;
+        req_port_o.data_be     = 8'hFF;
+        req_port_o.data_size   = 2'b11;
+        req_port_o.data_we     = 1'b0;
+        ptw_error_o            = 1'b0;
+        ptw_access_exception_o = 1'b0;
+        itlb_update_o.valid    = 1'b0;
+        dtlb_update_o.valid    = 1'b0;
+        is_instr_ptw_n         = is_instr_ptw_q;
+        ptw_lvl_n              = ptw_lvl_q;
+        ptw_pptr_n             = ptw_pptr_q;
+        state_d                = state_q;
+        global_mapping_n       = global_mapping_q;
         // input registers
         tlb_update_asid_n     = tlb_update_asid_q;
         vaddr_n               = vaddr_q;
@@ -299,6 +328,15 @@ module ptw #(
                             end
                         end
                     end
+                    
+                    // Check if this access was actually allowed from a PMP perspective
+                    if (!allow_access) begin
+                        itlb_update_o.valid = 1'b0;
+                        dtlb_update_o.valid = 1'b0;
+                        // we have to return the failed address in bad_addr
+                        ptw_pptr_n = ptw_pptr_q; 
+                        state_d = PROPAGATE_ACCESS_ERROR;
+                    end
                 end
                 // we've got a data WAIT_GRANT so tell the cache that the tag is valid
             end
@@ -306,6 +344,10 @@ module ptw #(
             PROPAGATE_ERROR: begin
                 state_d     = IDLE;
                 ptw_error_o = 1'b1;
+            end
+            PROPAGATE_ACCESS_ERROR: begin
+                state_d     = IDLE;
+                ptw_access_exception_o = 1'b1;
             end
             // wait for the rvalid before going back to IDLE
             WAIT_RVALID: begin

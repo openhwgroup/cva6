@@ -60,7 +60,8 @@ module tb;
     Axi64BitCompliant:     1'b1,
     SwapEndianess:         1'b0,
     // debug
-    DmBaseAddress:         64'h0
+    DmBaseAddress:         64'h0,
+    NrPMPEntries:          0
   };
 
   // contention and invalidation rates (in %)
