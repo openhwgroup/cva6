@@ -60,8 +60,6 @@ before_install:
 
 stages:
   - sw_build
-  # - compile1
-  - compile2
   - test
 
 jobs:
@@ -73,7 +71,6 @@ jobs:
         - mkdir -p $RISCV
         - wget https://static.dev.sifive.com/dev-tools/riscv64-unknown-elf-gcc-8.3.0-2020.04.0-x86_64-linux-ubuntu14.tar.gz
         - tar -x -f riscv64-unknown-elf-gcc-8.3.0-2020.04.0-x86_64-linux-ubuntu14.tar.gz --strip-components=1 -C $RISCV
-        - ci/install-fesvr.sh
         - ci/install-spike.sh
 
     - stage: test
