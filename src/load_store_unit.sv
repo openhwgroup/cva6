@@ -68,7 +68,10 @@ module load_store_unit #(
     input  logic                     dcache_wbuffer_empty_i,
     // AMO interface
     output amo_req_t                 amo_req_o,
-    input  amo_resp_t                amo_resp_i
+    input  amo_resp_t                amo_resp_i,
+    // PMP
+    input  riscv::pmpcfg_t [15:0]    pmpcfg_i,
+    input  logic [15:0][53:0]        pmpaddr_i
 );
     // data is misaligned
     logic data_misaligned;
@@ -149,6 +152,8 @@ module load_store_unit #(
         .asid_to_be_flushed_i,
         .vaddr_to_be_flushed_i,
         .icache_areq_o          ( icache_areq_o          ),
+        .pmpcfg_i,
+        .pmpaddr_i,
         .*
     );
     logic store_buffer_empty;

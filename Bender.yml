@@ -30,7 +30,6 @@ sources:
     # Stand-alone source files
     - src/ariane.sv
     - src/serdiv.sv
-    - src/ariane_regfile_ff.sv
     - src/amo_buffer.sv
     - src/id_stage.sv
     - src/branch_unit.sv
@@ -60,6 +59,9 @@ sources:
     - src/mult.sv
     - src/load_unit.sv
     - src/issue_read_operands.sv
+    - src/pmp/src/pmp_entry.sv
+    - src/pmp/src/pmp.sv
+    - src/synopsys_sram.sv
     - src/fpu/src/fpnew_fma.sv
     - src/fpu/src/fpnew_opgroup_fmt_slice.sv
     - src/fpu/src/fpnew_divsqrt_multi.sv
@@ -161,8 +163,8 @@ sources:
     - src/common_cells/src/rstgen.sv
     - src/common_cells/src/stream_mux.sv
     - src/common_cells/src/stream_demux.sv
-    - src/common_cells/src/deprecated/stream_arbiter.sv
-    - src/common_cells/src/deprecated/stream_arbiter_flushable.sv
+    - src/common_cells/src/stream_arbiter.sv
+    - src/common_cells/src/stream_arbiter_flushable.sv
     - src/util/axi_master_connect.sv
     - src/util/axi_slave_connect.sv
     - src/util/axi_master_connect_rev.sv
@@ -208,6 +210,12 @@ sources:
         - src/util/instruction_tracer_defines.svh
         - src/util/instruction_trace_item.svh
         - src/util/exception_trace_item.svh
+    - target: fpga
+      files:
+      - fpga/src/ariane_regfile_fpga.sv
+    - target: not(fpga)
+      files:
+        - src/ariane_regfile_ff.sv
     - target: all(fpga, xilinx)
       files:
       - fpga/src/ariane_peripherals_xilinx.sv

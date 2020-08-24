@@ -52,6 +52,7 @@ package ariane_pkg;
       bit                               SwapEndianess;         // set to 1 to swap endianess inside L1.5 openpiton adapter
       //
       logic [63:0]                      DmBaseAddress;         // offset of the debug module
+      int unsigned                      NrPMPEntries;          // Number of PMP entries
     } ariane_cfg_t;
 
     localparam ariane_cfg_t ArianeDefaultConfig = '{
@@ -74,7 +75,8 @@ package ariane_pkg;
       Axi64BitCompliant:      1'b1,
       SwapEndianess:          1'b0,
       // debug
-      DmBaseAddress:          64'h0
+      DmBaseAddress:          64'h0,
+      NrPMPEntries:           8
     };
 
     // Function being called to check parameters
@@ -87,6 +89,7 @@ package ariane_pkg;
         assert(Cfg.NrNonIdempotentRules <= NrMaxRules);
         assert(Cfg.NrExecuteRegionRules <= NrMaxRules);
         assert(Cfg.NrCachedRegionRules  <= NrMaxRules);
+        assert(Cfg.NrPMPEntries <= 16);
       `endif
       // pragma translate_on
     endfunction
@@ -643,6 +646,12 @@ package ariane_pkg;
     // Bits required for representation of physical address space as 4K pages
     // (e.g. 27*4K == 39bit address space).
     localparam PPN4K_WIDTH = 38;
+
+    typedef enum logic [1:0] {
+      FE_NONE,
+      FE_INSTR_ACCESS_FAULT,
+      FE_INSTR_PAGE_FAULT
+    } frontend_exception_t;
 
     // ----------------------
     // cache request ports
