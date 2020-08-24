@@ -5,7 +5,6 @@ cache:
   apt: true
   directories:
     $RISCV
-    $VERILATOR_ROOT
   timeout: 1000
 
 # required packages to install
@@ -13,6 +12,8 @@ addons:
   apt:
     sources:
       - ubuntu-toolchain-r-test
+      - sourceline: 'deb http://download.opensuse.org/repositories/home:/phiwag:/edatools/xUbuntu_16.04 /'
+        key_url: 'https://download.opensuse.org/repositories/home:phiwag:edatools/xUbuntu_16.04/Release.key'
     packages:
       - gcc-7
       - g++-7
@@ -33,10 +34,11 @@ addons:
       - default-jdk
       - zlib1g-dev
       - valgrind
+      - verilator-4.040
+      - device-tree-compiler
 env:
   global:
     - RISCV="/home/travis/riscv_install"
-    - VERILATOR_ROOT="/home/travis/verilator-4.014/"
 
 branches:
   only:
@@ -46,39 +48,32 @@ branches:
 before_install:
   - export CXX=g++-7 CC=gcc-7
   # setup dependent paths
-  - export PATH=$RISCV/bin:$VERILATOR_ROOT/bin:$PATH
+  - export PATH=$RISCV/bin:/bin:$PATH
   - export LIBRARY_PATH=$RISCV/lib
   - export LD_LIBRARY_PATH=$RISCV/lib
-  - export C_INCLUDE_PATH=$RISCV/include:$VERILATOR_ROOT/include
-  - export CPLUS_INCLUDE_PATH=$RISCV/include:$VERILATOR_ROOT/include
+  - export C_INCLUDE_PATH=$RISCV/include
+  - export CPLUS_INCLUDE_PATH=$RISCV/include
   # number of parallel jobs to use for make commands and simulation
   - export NUM_JOBS=4
   - ci/make-tmp.sh
   - git submodule update --init --recursive
 
 stages:
-  - checkout
-  - compile1
+  - sw_build
+  # - compile1
   - compile2
   - test
 
 jobs:
   include:
-    - stage: checkout
-      name: checkout gcc
+    - stage: sw_build
+      name: build software
       script:
-        - ci/build-riscv-gcc.sh 0
-    - stage: compile1
-      name: build gcc
-      script:
-        - ci/build-riscv-gcc.sh 1
-        - rm -rf $RISCV/riscv-gnu-toolchain
-    - stage: compile2
-      name: build tools
-      script:
+        # Obtain pre-built toolchain.
+        - mkdir -p $RISCV
+        - wget https://static.dev.sifive.com/dev-tools/riscv64-unknown-elf-gcc-8.3.0-2020.04.0-x86_64-linux-ubuntu14.tar.gz
+        - tar -x -f riscv64-unknown-elf-gcc-8.3.0-2020.04.0-x86_64-linux-ubuntu14.tar.gz --strip-components=1 -C $RISCV
         - ci/install-fesvr.sh
-        - ci/install-verilator.sh
-        - ci/install-dtc.sh
         - ci/install-spike.sh
 
     - stage: test

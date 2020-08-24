@@ -1,7 +1,6 @@
 dhrystone.riscv
 median.riscv
 multiply.riscv
-pmp.riscv
 qsort.riscv
 rsort.riscv
 towers.riscv
