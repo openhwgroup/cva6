@@ -30,6 +30,8 @@ module tlb #(
     input  logic [ASID_WIDTH-1:0]   lu_asid_i,
     input  logic [riscv::VLEN-1:0]  lu_vaddr_i,
     output riscv::pte_t             lu_content_o,
+    input  logic [ASID_WIDTH-1:0]   asid_to_be_flushed_i,
+    input  logic [riscv::VLEN-1:0]  vaddr_to_be_flushed_i,
     output logic                    lu_is_2M_o,
     output logic                    lu_is_1G_o,
     output logic                    lu_hit_o
@@ -67,7 +69,8 @@ module tlb #(
 
         for (int unsigned i = 0; i < TLB_ENTRIES; i++) begin
             // first level match, this may be a giga page, check the ASID flags as well
-            if (tags_q[i].valid && lu_asid_i == tags_q[i].asid && vpn2 == tags_q[i].vpn2) begin
+            // if the entry is associated to a global address, don't match the ASID (ASID is don't care)
+            if (tags_q[i].valid && ((lu_asid_i == tags_q[i].asid) || content_q[i].g)  && vpn2 == tags_q[i].vpn2) begin
                 // second level
                 if (tags_q[i].is_1G) begin
                     lu_is_1G_o = 1'b1;
@@ -89,7 +92,18 @@ module tlb #(
         end
     end
 
-    // ------------------
+
+
+    logic asid_to_be_flushed_is0;  // indicates that the ASID provided by SFENCE.VMA (rs2)is 0, active high
+    logic vaddr_to_be_flushed_is0;  // indicates that the VADDR provided by SFENCE.VMA (rs1)is 0, active high
+    logic  [TLB_ENTRIES-1:0] vaddr_vpn0_match;
+    logic  [TLB_ENTRIES-1:0] vaddr_vpn1_match;
+    logic  [TLB_ENTRIES-1:0] vaddr_vpn2_match;
+
+    assign asid_to_be_flushed_is0 =  ~(|asid_to_be_flushed_i);
+    assign vaddr_to_be_flushed_is0 = ~(|vaddr_to_be_flushed_i);
+
+	  // ------------------
     // Update and Flush
     // ------------------
     always_comb begin : update_flush
@@ -97,13 +111,25 @@ module tlb #(
         content_n = content_q;
 
         for (int unsigned i = 0; i < TLB_ENTRIES; i++) begin
+
+            vaddr_vpn0_match[i] = (vaddr_to_be_flushed_i[20:12] == tags_q[i].vpn0);
+            vaddr_vpn1_match[i] = (vaddr_to_be_flushed_i[29:21] == tags_q[i].vpn1);
+            vaddr_vpn2_match[i] = (vaddr_to_be_flushed_i[38:30] == tags_q[i].vpn2);
+
             if (flush_i) begin
                 // invalidate logic
-                if (lu_asid_i == 1'b0) // flush everything if ASID is 0
+                // flush everything if ASID is 0 and vaddr is 0 ("SFENCE.VMA x0 x0" case)
+        				if (asid_to_be_flushed_is0 && vaddr_to_be_flushed_is0 )
                     tags_n[i].valid = 1'b0;
-                else if (lu_asid_i == tags_q[i].asid) // just flush entries from this ASID
+                // flush vaddr in all addressing space ("SFENCE.VMA vaddr x0" case), it should happen only for leaf pages
+                else if (asid_to_be_flushed_is0 && ((vaddr_vpn0_match[i] && vaddr_vpn1_match[i] && vaddr_vpn2_match[i]) || (vaddr_vpn2_match[i] && tags_q[i].is_1G) || (vaddr_vpn1_match[i] && vaddr_vpn2_match[i] && tags_q[i].is_2M) ) && (~vaddr_to_be_flushed_is0))
                     tags_n[i].valid = 1'b0;
-
+                // the entry is flushed if it's not global and asid and vaddr both matches with the entry to be flushed ("SFENCE.VMA vaddr asid" case)
+				        else if ((!content_q[i].g) && ((vaddr_vpn0_match[i] && vaddr_vpn1_match[i] && vaddr_vpn2_match[i]) || (vaddr_vpn2_match[i] && tags_q[i].is_1G) || (vaddr_vpn1_match[i] && vaddr_vpn2_match[i] && tags_q[i].is_2M)) && (asid_to_be_flushed_i == tags_q[i].asid) && (!vaddr_to_be_flushed_is0) && (!asid_to_be_flushed_is0))
+				          	tags_n[i].valid = 1'b0;
+                // the entry is flushed if it's not global, and the asid matches and vaddr is 0. ("SFENCE.VMA 0 asid" case)
+				        else if ((!content_q[i].g) && (vaddr_to_be_flushed_is0) && (asid_to_be_flushed_i == tags_q[i].asid) && (!asid_to_be_flushed_is0))
+				        	  tags_n[i].valid = 1'b0;
             // normal replacement
             end else if (update_i.valid & replace_en[i]) begin
                 // update tag array
