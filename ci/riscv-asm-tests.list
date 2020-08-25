@@ -71,7 +71,6 @@ rv64ui-v-bgeu
 rv64ui-v-blt
 rv64ui-v-bltu
 rv64ui-v-bne
-rv64ui-v-fence_i
 rv64ui-v-jal
 rv64ui-v-jalr
 rv64ui-v-lb
