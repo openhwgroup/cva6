@@ -12,9 +12,9 @@
 // Date: 05.05.2017
 // Description: CSR Register File as specified by RISC-V
 
-import ariane_pkg::*;
+// import ariane_pkg::*;
 
-module csr_regfile #(
+module csr_regfile import ariane_pkg::*; #(
     parameter logic [63:0] DmBaseAddress   = 64'h0, // debug module base address
     parameter int          AsidWidth       = 1,
     parameter int unsigned NrCommitPorts   = 2,
