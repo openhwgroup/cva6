@@ -101,6 +101,40 @@ module uvmt_cv32_tb;
       always @(dut_wrap.cv32e40p_wrapper_i.core_i.tracer_i.retire) -> step_compare_if.riscv_retire;
       assign step_compare_if.insn_pc   = dut_wrap.cv32e40p_wrapper_i.core_i.tracer_i.insn_pc;
       assign step_compare_if.riscy_GPR = dut_wrap.cv32e40p_wrapper_i.core_i.id_stage_i.registers_i.register_file_i.mem;
+      assign clknrst_if_iss.reset_n = clknrst_if.reset_n;
+
+      always @(posedge clknrst_if_iss.clk or negedge clknrst_if_iss.reset_n) begin
+        if (!clknrst_if_iss.reset_n)
+          iss_wrap.b1.deferint <= 1'b1;
+        else if (dut_wrap.cv32e40p_wrapper_i.core_i.id_stage_i.controller_i.ctrl_fsm_cs inside {cv32e40p_pkg::IRQ_TAKEN_ID,
+                                                                                                cv32e40p_pkg::IRQ_TAKEN_IF})
+          iss_wrap.b1.deferint <= 1'b0;
+      end
+      
+      always @(posedge clknrst_if_iss.clk or negedge clknrst_if_iss.reset_n) begin
+        if (!clknrst_if_iss.reset_n) begin
+          for (int irq_idx=0; irq_idx<32; irq_idx++) begin
+            iss_wrap.b1.irq_i[irq_idx] <= 1'b0;
+          end
+        end
+        else begin
+          for (int irq_idx=0; irq_idx<32; irq_idx++) begin
+            if (dut_wrap.cv32e40p_wrapper_i.irq_i[irq_idx]) 
+              iss_wrap.b1.irq_i[irq_idx] <= 1'b1;
+            else if (iss_wrap.b1.deferint == 1)
+              iss_wrap.b1.irq_i[irq_idx] <= 1'b0;
+            end
+        end
+      end
+
+      always @(negedge step_compare_if.ovp_b1_Step) begin
+        if (iss_wrap.b1.deferint == 0) begin
+          for (int irq_idx=0; irq_idx<32; irq_idx++) begin
+            iss_wrap.b1.irq_i[irq_idx] <= 1'b0;
+          end
+          iss_wrap.b1.deferint <= 1'b1;
+        end
+      end
     `endif
 
    /**

@@ -20,7 +20,7 @@ module mm_ram
      parameter RAM_ADDR_WIDTH    =  16,
                INSTR_RDATA_WIDTH = 128, // width of read_data on instruction bus
                DATA_RDATA_WIDTH  =  32, // width of read_data on data bus
-               DBG_ADDR_WIDTH    =  14, // POT ammount of emmory allocated for debugger
+               DBG_ADDR_WIDTH    =  14, // POT ammount of memory allocated for debugger
                                         // physically located at end of memory
                IRQ_WIDTH         =  32  // IRQ vector width
   )

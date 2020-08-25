@@ -36,12 +36,12 @@
 
 class uvme_rv32isa_covg extends uvm_component;
 
-    uvme_cv32_cntxt_c cntxt;
-
-// The following CSR ABI names are not currently included:
-// fp, pc
+    uvme_cv32_cntxt_c  cntxt;
+    
+    // The following CSR ABI names are not currently included:
+    // fp, pc
     function gpr_name_t get_gpr_name (string s, r, asm);
-        `uvm_info("RV32ISA Coverage", $sformatf("get_gpr_name(): GPR [%0s] used by ins %s being validated", s, asm), UVM_HIGH)
+        `uvm_info("RV32ISA Coverage", $sformatf("get_gpr_name(): GPR [%0s] used by ins %s being validated", s, asm), UVM_DEBUG)
         case (s)
             "zero" : return gpr_name_t'(zero);
             "ra"   : return gpr_name_t'(ra);
@@ -105,15 +105,19 @@ class uvme_rv32isa_covg extends uvm_component;
 // mhpmcounter3h, ..., mhpmcounter31h,
     function csr_name_t get_csr_name (string s, r, asm);
         case (s)
-            "marchid"      : return csr_name_t'(marchid);
             "mcause"       : return csr_name_t'(mcause);
             "mcounteren"   : return csr_name_t'(mcounteren);
             "mcountinhibit": return csr_name_t'(mcountinhibit);
             "mcycle"       : return csr_name_t'(mcycle);
             "mcycleh"      : return csr_name_t'(mcycleh);
-            "medeleg"      : return csr_name_t'(medeleg);
             "mepc"         : return csr_name_t'(mepc);
             "mhartid"      : return csr_name_t'(mhartid);
+            "mhpmevent4"   : return csr_name_t'(mhpmevent4);
+            "mhpmevent5"   : return csr_name_t'(mhpmevent5);
+            "mhpmevent6"   : return csr_name_t'(mhpmevent6);
+            "mhpmevent7"   : return csr_name_t'(mhpmevent7);
+            "mhpmevent8"   : return csr_name_t'(mhpmevent8);
+            "mhpmevent9"   : return csr_name_t'(mhpmevent9);
             "mhpmevent10"  : return csr_name_t'(mhpmevent10);
             "mhpmevent11"  : return csr_name_t'(mhpmevent11);
             "mhpmevent12"  : return csr_name_t'(mhpmevent12);
@@ -137,15 +141,7 @@ class uvme_rv32isa_covg extends uvm_component;
             "mhpmevent3"   : return csr_name_t'(mhpmevent3);
             "mhpmevent30"  : return csr_name_t'(mhpmevent30);
             "mhpmevent31"  : return csr_name_t'(mhpmevent31);
-            "mhpmevent4"   : return csr_name_t'(mhpmevent4);
-            "mhpmevent5"   : return csr_name_t'(mhpmevent5);
-            "mhpmevent6"   : return csr_name_t'(mhpmevent6);
-            "mhpmevent7"   : return csr_name_t'(mhpmevent7);
-            "mhpmevent8"   : return csr_name_t'(mhpmevent8);
-            "mhpmevent9"   : return csr_name_t'(mhpmevent9);
-            "mideleg"      : return csr_name_t'(mideleg);
             "mie"          : return csr_name_t'(mie);
-            "mimpid"       : return csr_name_t'(mimpid);
             "minstret"     : return csr_name_t'(minstret);
             "minstreth"    : return csr_name_t'(minstreth);
             "mip"          : return csr_name_t'(mip);
@@ -155,26 +151,31 @@ class uvme_rv32isa_covg extends uvm_component;
             "mtval"        : return csr_name_t'(mtval);
             "mtvec"        : return csr_name_t'(mtvec);
             "mvendorid"    : return csr_name_t'(mvendorid);
-            "pmpaddr0"     : return csr_name_t'(pmpaddr0);
-            "pmpaddr1"     : return csr_name_t'(pmpaddr1);
-            "pmpaddr10"    : return csr_name_t'(pmpaddr10);
-            "pmpaddr11"    : return csr_name_t'(pmpaddr11);
-            "pmpaddr12"    : return csr_name_t'(pmpaddr12);
-            "pmpaddr13"    : return csr_name_t'(pmpaddr13);
-            "pmpaddr14"    : return csr_name_t'(pmpaddr14);
-            "pmpaddr15"    : return csr_name_t'(pmpaddr15);
-            "pmpaddr2"     : return csr_name_t'(pmpaddr2);
-            "pmpaddr3"     : return csr_name_t'(pmpaddr3);
-            "pmpaddr4"     : return csr_name_t'(pmpaddr4);
-            "pmpaddr5"     : return csr_name_t'(pmpaddr5);
-            "pmpaddr6"     : return csr_name_t'(pmpaddr6);
-            "pmpaddr7"     : return csr_name_t'(pmpaddr7);
-            "pmpaddr8"     : return csr_name_t'(pmpaddr8);
-            "pmpaddr9"     : return csr_name_t'(pmpaddr9);
-            "pmpcfg0"      : return csr_name_t'(pmpcfg0);
-            "pmpcfg1"      : return csr_name_t'(pmpcfg1);
-            "pmpcfg2"      : return csr_name_t'(pmpcfg2);
-            "pmpcfg3"      : return csr_name_t'(pmpcfg3);
+            // These CSRs are not supported by CV32E40P
+            //"marchid"      : return csr_name_t'(marchid);
+            //"mimpid"       : return csr_name_t'(mimpid);
+            //"mideleg"      : return csr_name_t'(mideleg);
+            //"medeleg"      : return csr_name_t'(medeleg);
+            //"pmpaddr0"     : return csr_name_t'(pmpaddr0);
+            //"pmpaddr1"     : return csr_name_t'(pmpaddr1);
+            //"pmpaddr10"    : return csr_name_t'(pmpaddr10);
+            //"pmpaddr11"    : return csr_name_t'(pmpaddr11);
+            //"pmpaddr12"    : return csr_name_t'(pmpaddr12);
+            //"pmpaddr13"    : return csr_name_t'(pmpaddr13);
+            //"pmpaddr14"    : return csr_name_t'(pmpaddr14);
+            //"pmpaddr15"    : return csr_name_t'(pmpaddr15);
+            //"pmpaddr2"     : return csr_name_t'(pmpaddr2);
+            //"pmpaddr3"     : return csr_name_t'(pmpaddr3);
+            //"pmpaddr4"     : return csr_name_t'(pmpaddr4);
+            //"pmpaddr5"     : return csr_name_t'(pmpaddr5);
+            //"pmpaddr6"     : return csr_name_t'(pmpaddr6);
+            //"pmpaddr7"     : return csr_name_t'(pmpaddr7);
+            //"pmpaddr8"     : return csr_name_t'(pmpaddr8);
+            //"pmpaddr9"     : return csr_name_t'(pmpaddr9);
+            //"pmpcfg0"      : return csr_name_t'(pmpcfg0);
+            //"pmpcfg1"      : return csr_name_t'(pmpcfg1);
+            //"pmpcfg2"      : return csr_name_t'(pmpcfg2);
+            //"pmpcfg3"      : return csr_name_t'(pmpcfg3);
             default: begin
                 `uvm_error("RV32ISA Coverage", $sformatf("get_csr_name(): CSR [%0s] not recognized!", s))
             end
@@ -988,6 +989,111 @@ class uvme_rv32isa_covg extends uvm_component;
     endgroup
 
 ///////////////////////////////////////////////////////////////////////////////
+//Coverage of CSR access instructions
+///////////////////////////////////////////////////////////////////////////////
+    covergroup csrr_cg with function sample(ins_t ins);
+        option.per_instance = 1;
+        cp_rd    : coverpoint get_gpr_name(ins.ops[0].val, ins.ops[0].key, "csrr");
+        cp_csr   : coverpoint get_csr_name(ins.ops[1].val, ins.ops[1].key, "csrr");
+    endgroup
+
+    covergroup csrc_cg with function sample(ins_t ins);
+        option.per_instance = 1;
+        cp_csr   : coverpoint get_csr_name(ins.ops[0].val, ins.ops[0].key, "csrc");
+        cp_rs    : coverpoint get_gpr_name(ins.ops[1].val, ins.ops[1].key, "csrc");
+    endgroup
+
+    covergroup csrci_cg with function sample(ins_t ins);
+        option.per_instance = 1;
+        cp_csr   : coverpoint get_csr_name(ins.ops[0].val, ins.ops[0].key, "csrci");
+        cp_zimm  : coverpoint get_imm(ins.ops[1].val, "csrci") {
+          bins low  = {[5'b00000:5'b10000]};
+          bins high = {[5'b10001:5'b11111]};
+        }
+    endgroup
+
+    covergroup csrrc_cg with function sample(ins_t ins);
+        option.per_instance = 1;
+        cp_rd    : coverpoint get_gpr_name(ins.ops[0].val, ins.ops[0].key, "csrrc");
+        cp_csr   : coverpoint get_csr_name(ins.ops[1].val, ins.ops[1].key, "csrrc");
+        cp_rs1   : coverpoint get_gpr_name(ins.ops[2].val, ins.ops[2].key, "csrrc");
+    endgroup
+
+    covergroup csrrci_cg with function sample(ins_t ins);
+        option.per_instance = 1;
+        cp_rd    : coverpoint get_gpr_name(ins.ops[0].val, ins.ops[0].key, "csrrci");
+        cp_csr   : coverpoint get_csr_name(ins.ops[1].val, ins.ops[1].key, "csrrci");
+        cp_zimm  : coverpoint get_imm(ins.ops[2].val, "csrrci") {
+          bins low  = {[5'b00000:5'b10000]};
+          bins high = {[5'b10001:5'b11111]};
+        }
+    endgroup
+
+    covergroup csrrs_cg with function sample(ins_t ins);
+        option.per_instance = 1;
+        cp_rd    : coverpoint get_gpr_name(ins.ops[0].val, ins.ops[0].key, "csrrs");
+        cp_csr   : coverpoint get_csr_name(ins.ops[1].val, ins.ops[1].key, "csrrs");
+        cp_rs1   : coverpoint get_gpr_name(ins.ops[2].val, ins.ops[2].key, "csrrs");
+    endgroup
+
+    covergroup csrrsi_cg with function sample(ins_t ins);
+        option.per_instance = 1;
+        cp_rd    : coverpoint get_gpr_name(ins.ops[0].val, ins.ops[0].key, "csrrsi");
+        cp_csr   : coverpoint get_csr_name(ins.ops[1].val, ins.ops[1].key, "csrrsi");
+        cp_zimm  : coverpoint get_imm(ins.ops[2].val, "csrrsi") {
+          bins low  = {[5'b00000:5'b10000]};
+          bins high = {[5'b10001:5'b11111]};
+        }
+    endgroup
+
+    covergroup csrrw_cg with function sample(ins_t ins);
+        option.per_instance = 1;
+        cp_rd    : coverpoint get_gpr_name(ins.ops[0].val, ins.ops[0].key, "csrrw");
+        cp_csr   : coverpoint get_csr_name(ins.ops[1].val, ins.ops[1].key, "csrrw");
+        cp_rs1   : coverpoint get_gpr_name(ins.ops[2].val, ins.ops[2].key, "csrrw");
+    endgroup
+
+    covergroup csrrwi_cg with function sample(ins_t ins);
+        option.per_instance = 1;
+        cp_rd    : coverpoint get_gpr_name(ins.ops[0].val, ins.ops[0].key, "csrrwi");
+        cp_csr   : coverpoint get_csr_name(ins.ops[1].val, ins.ops[1].key, "csrrwi");
+        cp_zimm  : coverpoint get_imm(ins.ops[2].val, "csrrwi") {
+          bins low  = {[5'b00000:5'b10000]};
+          bins high = {[5'b10001:5'b11111]};
+        }
+    endgroup
+
+    covergroup csrs_cg with function sample(ins_t ins);
+        option.per_instance = 1;
+        cp_csr   : coverpoint get_csr_name(ins.ops[0].val, ins.ops[0].key, "csrs");
+        cp_rs1   : coverpoint get_gpr_name(ins.ops[1].val, ins.ops[1].key, "csrs");
+    endgroup
+
+    covergroup csrsi_cg with function sample(ins_t ins);
+        option.per_instance = 1;
+        cp_csr   : coverpoint get_csr_name(ins.ops[0].val, ins.ops[0].key, "csrsi");
+        cp_zimm  : coverpoint get_imm(ins.ops[1].val, "csrsi") {
+          bins low  = {[5'b00000:5'b10000]};
+          bins high = {[5'b10001:5'b11111]};
+        }
+    endgroup
+
+    covergroup csrw_cg with function sample(ins_t ins);
+        option.per_instance = 1;
+        cp_csr   : coverpoint get_csr_name(ins.ops[0].val, ins.ops[0].key, "csrw");
+        cp_rs1   : coverpoint get_gpr_name(ins.ops[1].val, ins.ops[1].key, "csrw");
+    endgroup
+
+    covergroup csrwi_cg with function sample(ins_t ins);
+        option.per_instance = 1;
+        cp_csr   : coverpoint get_csr_name(ins.ops[0].val, ins.ops[0].key, "csrwi");
+        cp_zimm  : coverpoint get_imm(ins.ops[1].val, "csrwi") {
+          bins low  = {[5'b00000:5'b10000]};
+          bins high = {[5'b10001:5'b11111]};
+        }
+    endgroup
+
+///////////////////////////////////////////////////////////////////////////////
 //Coverage of Std Extension for Compressed Instructions, Version 2.0
 ///////////////////////////////////////////////////////////////////////////////
 
@@ -1386,6 +1492,21 @@ class uvme_rv32isa_covg extends uvm_component;
         rem_cg        = new();
         divu_cg       = new();
         remu_cg       = new();
+
+        csrr_cg       = new();
+        csrc_cg       = new();
+        csrci_cg      = new();
+        csrrc_cg      = new();
+        csrrci_cg     = new();
+        csrrs_cg      = new();
+        csrrsi_cg     = new();
+        csrrw_cg      = new();
+        csrrwi_cg     = new();
+        csrs_cg       = new();
+        csrsi_cg      = new();
+        csrw_cg       = new();
+        csrwi_cg      = new();
+
         c_lwsp_cg     = new();
         c_swsp_cg     = new();
         c_lw_cg       = new();
@@ -1633,9 +1754,22 @@ class uvme_rv32isa_covg extends uvm_component;
             "rem"       : begin ins.asm=REM;    rem_cg.sample(ins);    end
             "divu"      : begin ins.asm=DIVU;   divu_cg.sample(ins);   end
             "remu"      : begin ins.asm=REMU;   remu_cg.sample(ins);   end
+            "csrr"      : begin ins.asm=CSRR;   csrr_cg.sample(ins);   `uvm_info("RV32ISA Coverage", $sformatf("Instruction: %0s %0s %0s %0s", ins.ins_str, ins.ops[0].val, ins.ops[1].val, ins.ops[2].val), UVM_HIGH) end
+            "csrc"      : begin ins.asm=CSRC;   csrc_cg.sample(ins);   `uvm_info("RV32ISA Coverage", $sformatf("Instruction: %0s %0s %0s %0s", ins.ins_str, ins.ops[0].val, ins.ops[1].val, ins.ops[2].val), UVM_HIGH) end
+            "csrci"     : begin ins.asm=CSRCI;  csrci_cg.sample(ins);  `uvm_info("RV32ISA Coverage", $sformatf("Instruction: %0s %0s %0s %0s", ins.ins_str, ins.ops[0].val, ins.ops[1].val, ins.ops[2].val), UVM_HIGH) end
+            "csrrc"     : begin ins.asm=CSRRC;  csrrc_cg.sample(ins);  `uvm_info("RV32ISA Coverage", $sformatf("Instruction: %0s %0s %0s %0s", ins.ins_str, ins.ops[0].val, ins.ops[1].val, ins.ops[2].val), UVM_HIGH) end
+            "csrrci"    : begin ins.asm=CSRRCI; csrrci_cg.sample(ins); `uvm_info("RV32ISA Coverage", $sformatf("Instruction: %0s %0s %0s %0s", ins.ins_str, ins.ops[0].val, ins.ops[1].val, ins.ops[2].val), UVM_HIGH) end
+            "csrrs"     : begin ins.asm=CSRRS;  csrrs_cg.sample(ins);  `uvm_info("RV32ISA Coverage", $sformatf("Instruction: %0s %0s %0s %0s", ins.ins_str, ins.ops[0].val, ins.ops[1].val, ins.ops[2].val), UVM_HIGH) end
+            "csrrsi"    : begin ins.asm=CSRRSI; csrrsi_cg.sample(ins); `uvm_info("RV32ISA Coverage", $sformatf("Instruction: %0s %0s %0s %0s", ins.ins_str, ins.ops[0].val, ins.ops[1].val, ins.ops[2].val), UVM_HIGH) end
+            "csrrw"     : begin ins.asm=CSRRW;  csrrw_cg.sample(ins);  `uvm_info("RV32ISA Coverage", $sformatf("Instruction: %0s %0s %0s %0s", ins.ins_str, ins.ops[0].val, ins.ops[1].val, ins.ops[2].val), UVM_HIGH) end
+            "csrrwi"    : begin ins.asm=CSRRWI; csrrwi_cg.sample(ins); `uvm_info("RV32ISA Coverage", $sformatf("Instruction: %0s %0s %0s %0s", ins.ins_str, ins.ops[0].val, ins.ops[1].val, ins.ops[2].val), UVM_HIGH) end
+            "csrs"      : begin ins.asm=CSRS;   csrs_cg.sample(ins);   `uvm_info("RV32ISA Coverage", $sformatf("Instruction: %0s %0s %0s %0s", ins.ins_str, ins.ops[0].val, ins.ops[1].val, ins.ops[2].val), UVM_HIGH) end
+            "csrsi"     : begin ins.asm=CSRRSI; csrsi_cg.sample(ins);  `uvm_info("RV32ISA Coverage", $sformatf("Instruction: %0s %0s %0s %0s", ins.ins_str, ins.ops[0].val, ins.ops[1].val, ins.ops[2].val), UVM_HIGH) end
+            "csrw"      : begin ins.asm=CSRRW;  csrw_cg.sample(ins);   `uvm_info("RV32ISA Coverage", $sformatf("Instruction: %0s %0s %0s %0s", ins.ins_str, ins.ops[0].val, ins.ops[1].val, ins.ops[2].val), UVM_HIGH) end
+            "csrwi"     : begin ins.asm=CSRWI;  csrwi_cg.sample(ins);  `uvm_info("RV32ISA Coverage", $sformatf("Instruction: %0s %0s %0s %0s", ins.ins_str, ins.ops[0].val, ins.ops[1].val, ins.ops[2].val), UVM_HIGH) end
             default: begin
               ins.asm = NOP;
-              `uvm_info("RV32ISA Coverage", $sformatf("Coverage warning: ins [%0s] not yet included in being covered", ins.ins_str), UVM_HIGH)
+              `uvm_info("RV32ISA Coverage", $sformatf("Coverage warning: ins [%0s] not yet included in being covered", ins.ins_str), UVM_DEBUG)
             end
         endcase
     endfunction: sample

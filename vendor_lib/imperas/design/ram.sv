@@ -69,6 +69,9 @@ module RAM
                 //$display("Load  %08x <= [%08X]", SysBus.DData, daddr4);
             end
         end
+        if (SysBus.Drd == 1 && SysBus.DAddr==32'h1500_1000) begin
+            SysBus.DData = dut_wrap.data_rdata;
+        end
 
         // WRITE
         if (isRAM) begin
