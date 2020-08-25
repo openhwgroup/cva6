@@ -38,13 +38,12 @@ check_log () {
     log=$1
     simulation_passed="$2"
     test_name=$3
-    run_index=$4
 
     if grep -q "${simulation_passed}" ${log}; then
-        echo "script: Test PASSED: ${test_name}_${run_index} Log: ${log}"
+        echo "script: Test PASSED: ${test_name} Log: ${log}"
         ((pass_count+=1))
     else
-        echo "script: Test FAILED: ${test_name}_${run_index} Log: ${log}"
+        echo "script: Test FAILED: ${test_name} Log: ${log}"
         ((fail_count+=1))
     fi
 }
@@ -55,9 +54,9 @@ check_log () {
 
 {% for b in unique_builds.values() %}
 # Build:{{b.name}} {{b.description}}
-echo "script: Running build: [cd {{b.dir}} && {{b.cmd}} SIMULATOR={{b.simulator}} USE_ISS={{b.iss}}]"
+echo "script: Running build: [cd {{b.dir}} && {{b.cmd}} SIMULATOR={{b.simulator}} USE_ISS={{regress_macros.yesorno(b.iss)}} COV={{regress_macros.yesorno(b.cov)}}]"
 pushd {{b.dir}} > /dev/null
-{{b.cmd}} SIMULATOR={{b.simulator}} USE_ISS={{b.iss}} >& /dev/null;
+{{b.cmd}} SIMULATOR={{b.simulator}} USE_ISS={{regress_macros.yesorno(b.iss)}} COV={{regress_macros.yesorno(b.cov)}} >& /dev/null;
 popd > /dev/null
 
 {% endfor -%}
@@ -68,7 +67,7 @@ popd > /dev/null
 
 {% for r in regressions %}
 {% for t in r.tests.values() %}
-#  Test: {{t.name}} {{t.description}}
+# --> Test: {{t.name}} : {{t.description}}
 {% if t.precmd %}
 #  Test (Precommand): {{t.name}} {{t.description}}
 echo "script: Running precmd: [cd {{t.dir}} && {{t.precmd}} SIMULATOR={{t.simulator}} SEED=random NUM_TESTS={{t.num}}]"
@@ -78,13 +77,15 @@ popd > /dev/null
 
 {% endif %}
 {% for run_index in range(t.num|int) %}
-#  Test (Index: {{run_index}}): {{t.name}} {{t.description}}
-echo "script: Running test [cd {{t.dir}} && {{t.cmd}} SIMULATOR={{t.simulator}} USE_ISS={{regress_macros.yesorno(t.iss)}} RUN_INDEX={{run_index}} SEED=random]"
+{% set test_cmd = t.cmd|replace('<RUN_INDEX>', run_index) %}
+{% set test_log = t.log|replace('<RUN_INDEX>', run_index) %}
+# --> Test (Index: {{run_index}}): {{t.cmd}} : {{t.description}}
+echo "script: Running test [cd {{t.dir}} && {{test_cmd}} SIMULATOR={{t.simulator}} COMP=0 USE_ISS={{regress_macros.yesorno(t.iss)}} COV={{regress_macros.yesorno(t.cov)}} SEED=random]"
 pushd {{t.dir}} > /dev/null
-{{t.cmd}} SIMULATOR={{t.simulator}} USE_ISS={{regress_macros.yesorno(t.iss)}} RUN_INDEX={{run_index}} SEED=random >& /dev/null;
+{{test_cmd}} SIMULATOR={{t.simulator}} COMP=0 USE_ISS={{regress_macros.yesorno(t.iss)}} COV={{regress_macros.yesorno(t.cov)}} SEED=random >& /dev/null;
 popd > /dev/null
-log={{t.dir}}/{{t.simulator}}_results/{{t.name}}/{{t.simulator}}-{{t.name}}.log
-check_log ${log} "{{t.simulation_passed}}" {{t.name}} {{t.run_index}}
+log={{t.dir}}/{{t.simulator}}_results/{{test_log}}/{{t.simulator}}-{{test_log}}.log
+check_log ${log} "{{t.simulation_passed}}" {{test_log}} 
 
 {% endfor %}
 

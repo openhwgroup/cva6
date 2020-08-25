@@ -45,6 +45,7 @@ module uvmt_cv32e40p_interrupt_assert
     input        id_stage_instr_valid_i, // instruction word is valid
     input [31:0] id_stage_instr_rdata_i, // Instruction word data
     input [4:0]  ctrl_fsm_cs,            // Controller FSM to get hint for interrupt taken
+    input [1:0]  exc_ctrl_cs,            // Controller FSM to get hint for interrupt pending (for arbitration)
 
     // WFI Interface
     input core_sleep_o
@@ -59,7 +60,7 @@ module uvmt_cv32e40p_interrupt_assert
   localparam WFI_INSTR_MASK = 32'hffffffff;
   localparam WFI_INSTR_DATA = 32'h10500073;
 
-  localparam WFI_WAKEUP_LATENCY = 20;
+  localparam WFI_WAKEUP_LATENCY = 40;
 
   // ---------------------------------------------------------------------------
   // Local variables
@@ -71,11 +72,16 @@ module uvmt_cv32e40p_interrupt_assert
   wire id_instr_is_wfi; // ID instruction is a WFI
   reg  in_wfi; // Local model of WFI state of core
 
+  reg[1:0]  exc_ctrl_cs_q;
+
   reg[31:0] next_irq;
   reg       next_irq_valid;
 
-  reg[31:0] next_irq_q;
+  reg[31:0] next_irq_q;    
   reg       next_irq_valid_q;
+
+  reg[31:0] expected_irq;
+  reg       expected_irq_ack;
 
   reg[31:0] last_instr_rdata;
 
@@ -163,6 +169,12 @@ module uvmt_cv32e40p_interrupt_assert
     irq_i[irq] ##0 mie_q[irq] ##0 !mstatus_mie ##1 irq_i[irq] ##0 mie_q[irq] ##0 mstatus_mie;
   endproperty : p_irq_masked_mstatus_then_enabled
 
+  // Interrupt request deasserted when enabled but not acked
+  property p_irq_deasserted_while_enabled_not_acked(irq);
+    irq_i[irq] ##0 mie_q[irq] ##0 mstatus_mie ##0 !irq_ack_o ##1 
+    !irq_i[irq] ##0 !irq_ack_o;
+  endproperty : p_irq_deasserted_while_enabled_not_acked  
+
   generate for(genvar gv_i = 0; gv_i < NUM_IRQ; gv_i++) begin : gen_irq_cov
     if (VALID_IRQ_MASK[gv_i]) begin : gen_valid
       c_irq_masked: cover property(p_irq_masked(gv_i));
@@ -170,6 +182,7 @@ module uvmt_cv32e40p_interrupt_assert
       c_irq_taken: cover property(p_irq_taken(gv_i));
       c_irq_masked_then_enabled: cover property(p_irq_masked_then_enabled(gv_i));
       c_irq_masked_mstatus_then_enabled: cover property(p_irq_masked_mstatus_then_enabled(gv_i));
+      c_irq_deasserted_while_enabled_not_acked: cover property(p_irq_deasserted_while_enabled_not_acked(gv_i));
     end
   end
   endgenerate
@@ -203,29 +216,45 @@ module uvmt_cv32e40p_interrupt_assert
 
   always @(posedge clk_i or negedge rst_ni) begin
     if (!rst_ni) begin
-      next_irq_q <= '0;
+      exc_ctrl_cs_q <= 0;
+      next_irq_q <= 0;
       next_irq_valid_q <= 0;
-    end  
-    else if (!next_irq_valid_q && mstatus_mie & next_irq_valid) begin
-      next_irq_q <= next_irq;
-      next_irq_valid_q <= 1'b1;
-    end
-    else if (irq_ack_o) begin
-      next_irq_valid_q <= 1'b0;
     end    
+    else begin
+      exc_ctrl_cs_q <= exc_ctrl_cs;
+      next_irq_q <= next_irq;
+      next_irq_valid_q <= next_irq_valid;
+    end
   end
+
+  always @(posedge clk_i or negedge rst_ni) begin
+    if (!rst_ni)
+      expected_irq <= 0;
+    else if (exc_ctrl_cs == 1 && exc_ctrl_cs_q == 0)
+      expected_irq <= next_irq_q;
+  end
+
+  always @(posedge clk_i or negedge rst_ni) begin
+    if (!rst_ni)
+      expected_irq_ack <= 0;
+    else if (irq_ack_o)
+      expected_irq_ack <= 0;
+    else if (exc_ctrl_cs == 1 && exc_ctrl_cs_q == 0 && next_irq_valid_q)
+      expected_irq_ack <= 1;
+  end
+
   // Check expected interrupt wins
   property p_irq_arb;
-    irq_ack_o |-> irq_id_o == next_irq_q;
+    irq_ack_o |-> irq_id_o == expected_irq;
   endproperty
   a_irq_arb: assert property(p_irq_arb)
     else
       `uvm_error(info_tag,
-                 $sformatf("Expected winning interrupt: %0d, actual interrupt: %0d", next_irq, irq_id_o))  
+                 $sformatf("Expected winning interrupt: %0d, actual interrupt: %0d", expected_irq, irq_id_o))  
 
   // Check that an interrupt is expected
   property p_irq_expected;
-    irq_ack_o |-> next_irq_valid_q;
+    irq_ack_o |-> expected_irq_ack;
   endproperty
   a_irq_expected: assert property(p_irq_expected)
     else
@@ -298,14 +327,14 @@ module uvmt_cv32e40p_interrupt_assert
     end
   end
 
-  // WFI assertion will assert core_sleep_o
+  // WFI assertion will assert core_sleep_o in 6 clocks
   property p_wfi_assert_core_sleep_o;
-    $rose(in_wfi) ##1 in_wfi[*3] ##0 !pending_enabled_irq |-> core_sleep_o;
+    $rose(in_wfi) ##1 in_wfi[*6] ##0 !pending_enabled_irq |-> core_sleep_o;
   endproperty
-  a_wfi_assert_core_sleep_o: assert property(p_wfi_assert_core_sleep_o)
-    else
-      `uvm_error(info_tag,
-                 "Assertion of wfi did not put core to sleep in 3 clocks");
+  // a_wfi_assert_core_sleep_o: assert property(p_wfi_assert_core_sleep_o)
+  //   else
+  //     `uvm_error(info_tag,
+  //                "Assertion of wfi did not put core to sleep in 4 clocks");
 
   // core_sleep_o deassertion in wfi should be followed by WFI deassertion
   property p_core_sleep_deassert;
@@ -346,6 +375,5 @@ module uvmt_cv32e40p_interrupt_assert
     end
   end
   endgenerate
-
 
 endmodule : uvmt_cv32e40p_interrupt_assert

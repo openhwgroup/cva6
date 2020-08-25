@@ -56,8 +56,7 @@ module uvmt_cv32_dut_wrap #(// DUT (riscv_core) parameters.
                             uvma_interrupt_if            interrupt_if,
                             uvmt_cv32_vp_status_if       vp_status_if,
                             uvmt_cv32_core_cntrl_if      core_cntrl_if,
-                            uvmt_cv32_core_status_if     core_status_if
-                            // FIXME:uvmt_cv32_core_interrupts_if core_interrupts_if
+                            uvmt_cv32_core_status_if     core_status_if                            
                            );
 
     import uvm_pkg::*; // needed for the UVM messaging service (`uvm_info(), etc.)
@@ -133,11 +132,11 @@ module uvmt_cv32_dut_wrap #(// DUT (riscv_core) parameters.
 
     // --------------------------------------------
     // Connect to uvma_interrupt_if
-    assign interrupt_if.clk     = clknrst_if.clk;
-    assign interrupt_if.reset_n = clknrst_if.reset_n;
-    assign irq_uvma             = interrupt_if.irq;
-    assign interrupt_if.irq_id  = irq_id;
-    assign interrupt_if.irq_ack = irq_ack;
+    assign interrupt_if.clk                     = clknrst_if.clk;
+    assign interrupt_if.reset_n                 = clknrst_if.reset_n;
+    assign irq_uvma                             = interrupt_if.irq;
+    assign interrupt_if.irq_id                  = irq_id;
+    assign interrupt_if.irq_ack                 = irq_ack;
 
     assign irq = irq_uvma | irq_vp;
 

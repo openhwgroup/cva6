@@ -53,7 +53,7 @@ logger = logging.getLogger(__name__)
 if (sys.version_info < (3,0,0)):
     print ('Requires python 3')
     exit(1)
-
+    
 def get_regress_path(project):
     '''Fetch regression path using project'''
     return os.path.abspath(os.path.join(os.path.dirname(__file__), '..', project, 'regress'))

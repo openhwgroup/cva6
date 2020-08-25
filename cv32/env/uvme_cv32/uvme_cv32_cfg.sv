@@ -68,11 +68,16 @@ class uvme_cv32_cfg_c extends uvm_object;
    constraint defaults_cons {
       soft enabled                == 0;
       soft is_active              == UVM_PASSIVE;
-      soft scoreboarding_enabled  == 1;
+      soft scoreboarding_enabled  == 1;      
       soft cov_model_enabled      == 1;
       soft trn_log_enabled        == 1;
       soft sys_clk_period       == uvme_cv32_sys_default_clk_period; // see uvme_cv32_constants.sv
       //soft debug_clk_period       == uvme_cv32_debug_default_clk_period;
+
+      // Currently the ISA functional model is directly tied to the ISS, so remove if no ISS
+      `ifndef ISS
+      cov_model_enabled == 0;
+      `endif
    }
    
    constraint agent_cfg_cons {
