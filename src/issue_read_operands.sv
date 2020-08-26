@@ -13,9 +13,8 @@
 // Description: Issues instruction from the scoreboard and fetches the operands
 //              This also includes all the forwarding logic
 
-import ariane_pkg::*;
 
-module issue_read_operands #(
+module issue_read_operands import ariane_pkg::*; #(
     parameter int unsigned NR_COMMIT_PORTS = 2
 )(
     input  logic                                   clk_i,    // Clock

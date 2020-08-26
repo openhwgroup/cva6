@@ -17,9 +17,8 @@
 // Date: 19.03.2017
 // Description: Ariane ALU based on RI5CY's ALU
 
-import ariane_pkg::*;
 
-module alu (
+module alu import ariane_pkg::*;(
     input  logic                     clk_i,          // Clock
     input  logic                     rst_ni,         // Asynchronous reset active low
     input  fu_data_t                 fu_data_i,

@@ -18,9 +18,8 @@
 // Description: Issues instruction from the scoreboard and fetches the operands
 //              This also includes all the forwarding logic
 //
-import ariane_pkg::*;
 
-module decoder (
+module decoder import ariane_pkg::*; (
     input  logic               debug_req_i,             // external debug request
     input  logic [riscv::VLEN-1:0] pc_i,                // PC from IF
     input  logic               is_compressed_i,         // is a compressed instruction

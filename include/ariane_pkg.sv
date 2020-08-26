@@ -481,7 +481,7 @@ package ariane_pkg;
         logic [TRANS_ID_BITS-1:0] trans_id;
     } fu_data_t;
 
-    function automatic logic is_branch (input fu_op op);
+    function automatic logic op_is_branch (input fu_op op);
         unique case (op) inside
             EQ, NE, LTS, GES, LTU, GEU: return 1'b1;
             default                   : return 1'b0; // all other ops

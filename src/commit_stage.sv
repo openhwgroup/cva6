@@ -12,9 +12,8 @@
 // Date: 15.04.2017
 // Description: Commits to the architectural state resulting from the scoreboard.
 
-import ariane_pkg::*;
 
-module commit_stage #(
+module commit_stage import ariane_pkg::*; #(
     parameter int unsigned NR_COMMIT_PORTS = 2
 )(
     input  logic                                    clk_i,

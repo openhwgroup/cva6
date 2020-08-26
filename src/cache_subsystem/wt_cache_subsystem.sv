@@ -18,10 +18,8 @@
 //              with a standard 64 bit AXI interface instead of the OpenPiton
 //              L1.5 interface.
 
-import ariane_pkg::*;
-import wt_cache_pkg::*;
 
-module wt_cache_subsystem #(
+module wt_cache_subsystem import ariane_pkg::*; import wt_cache_pkg::*; #(
   parameter ariane_pkg::ariane_cfg_t ArianeCfg       = ariane_pkg::ArianeDefaultConfig  // contains cacheable regions
 ) (
   input logic                            clk_i,

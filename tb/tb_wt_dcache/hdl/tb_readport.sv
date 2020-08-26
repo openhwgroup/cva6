@@ -17,11 +17,9 @@
 
 `include "tb.svh"
 
-import ariane_pkg::*;
-import wt_cache_pkg::*;
-import tb_pkg::*;
 
-program tb_readport  #(
+
+program tb_readport  import tb_pkg::*; import ariane_pkg::*; import wt_cache_pkg::*; #(
   parameter string       PortName      = "read port 0",
   parameter              FlushRate     = 1,
   parameter              KillRate      = 5,

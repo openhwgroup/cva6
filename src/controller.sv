@@ -12,9 +12,8 @@
 // Date: 08.05.2017
 // Description: Flush controller
 
-import ariane_pkg::*;
 
-module controller (
+module controller import ariane_pkg::*; (
     input  logic            clk_i,
     input  logic            rst_ni,
     output logic            set_pc_commit_o,        // Set PC om PC Gen

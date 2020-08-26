@@ -13,9 +13,8 @@
 // Description: Issue stage dispatches instructions to the FUs and keeps track of them
 //              in a scoreboard like data-structure.
 
-import ariane_pkg::*;
 
-module issue_stage #(
+module issue_stage import ariane_pkg::*; #(
     parameter int unsigned NR_ENTRIES = 8,
     parameter int unsigned NR_WB_PORTS = 4,
     parameter int unsigned NR_COMMIT_PORTS = 2

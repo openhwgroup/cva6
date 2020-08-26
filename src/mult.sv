@@ -1,7 +1,6 @@
 
-import ariane_pkg::*;
 
-module mult (
+module mult import ariane_pkg::*; (
     input  logic                     clk_i,
     input  logic                     rst_ni,
     input  logic                     flush_i,

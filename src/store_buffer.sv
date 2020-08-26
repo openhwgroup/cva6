@@ -13,9 +13,8 @@
 // Description: Store queue persists store requests and pushes them to memory
 //              if they are no longer speculative
 
-import ariane_pkg::*;
 
-module store_buffer (
+module store_buffer import ariane_pkg::*; (
     input logic          clk_i,           // Clock
     input logic          rst_ni,          // Asynchronous reset active low
     input logic          flush_i,         // if we flush we need to pause the transactions on the memory

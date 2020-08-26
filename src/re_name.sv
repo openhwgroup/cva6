@@ -18,9 +18,8 @@
 // University of Bologna.
 //
 
-import ariane_pkg::*;
 
-module re_name (
+module re_name import ariane_pkg::*; (
     input  logic                                   clk_i,    // Clock
     input  logic                                   rst_ni,   // Asynchronous reset active low
     input  logic                                   flush_i,  // Flush renaming state
