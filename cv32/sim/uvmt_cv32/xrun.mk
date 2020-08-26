@@ -136,6 +136,7 @@ XRUN_RUN_FLAGS        += $(XRUN_RUN_BASE_FLAGS)
 XRUN_RUN_FLAGS        += $(XRUN_RUN_WAVES_FLAGS)
 XRUN_RUN_FLAGS        += $(XRUN_RUN_COV_FLAGS)
 XRUN_RUN_FLAGS        += $(XRUN_USER_RUN_FLAGS)
+XRUN_RUN_FLAGS        += $(USER_RUN_FLAGS)
 
 no_rule:
 	@echo 'makefile: SIMULATOR is set to $(SIMULATOR), but no rule/target specified.'
