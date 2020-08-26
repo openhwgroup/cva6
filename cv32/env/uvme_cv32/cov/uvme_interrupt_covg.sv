@@ -99,7 +99,7 @@ task uvme_interrupt_covg::run_phase(uvm_phase phase);
 endtask : run_phase
 
 function void uvme_interrupt_covg::write_interrupt(uvma_interrupt_mon_trn_c trn);
-    if (trn.action == UVMA_INTERRUPT_MON_ACTION_IRQ) begin
+    if (trn.action == UVMA_INTERRUPT_MON_ACTION_IRQ && last_instr_trn != null) begin
         `uvm_info("INTERRUPTCOVG", $sformatf("IRQ entered from %s", last_instr_trn.ins.asm.name()), UVM_DEBUG)
         cg_irq_entry.sample(last_instr_trn.ins);
         irq_nested_count++;
