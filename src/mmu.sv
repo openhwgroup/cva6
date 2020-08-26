@@ -40,7 +40,7 @@ module mmu #(
     // if we need to walk the page table we can't grant in the same cycle
     // Cycle 0
     output logic                            lsu_dtlb_hit_o,   // sent in the same cycle as the request if translation hits in the DTLB
-    output logic [riscv::PLEN-13:0]         lsu_dtlb_ppn_o,        // ppn (send same cycle as hit)
+    output logic [riscv::PLEN-13:0]         lsu_dtlb_ppn_o,   // ppn (send same cycle as hit)
     // Cycle 1
     output logic                            lsu_valid_o,      // translation is valid
     output logic [riscv::PLEN-1:0]          lsu_paddr_o,      // translated address
