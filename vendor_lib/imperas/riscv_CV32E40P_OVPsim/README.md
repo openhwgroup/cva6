@@ -4,23 +4,42 @@ A Complete, Fully Functional, Configurable CV32E40P Simulation Model
 ===
 
 Author: Imperas Software, Ltd., using OVP Open Standard APIs  
-Date   : 20200521 
-Version: 20200521.0  
+Date   : 20200821 
+Version: 20200814.1  
 License: Simulation Model CV32E40P licensed under [Software License Agreement for Open Virtual Platforms Technology](OVP_IMPERAS_LICENSE.pdf)
 RISC-V Specifications currently supported:
-TBD
+- RISC-V Instruction Set Manual, Volume I: User-Level ISA (User Architecture Version 2.3)
+- RISC-V Instruction Set Manual, Volume II: Privileged Architecture (Privileged Architecture Version 1.11)
+
+
+
 
 ![OVP Image ](OVP_model_Encapsulation.jpg)  
 [OVP_MODIFIED_1.1_APACHE_OPEN_SOURCE_LICENSE_2.0.pdf](./doc/OVP_MODIFIED_1.1_APACHE_OPEN_SOURCE_LICENSE_2.0.pdf)
 
 
+
 About Imperas OVP OpenHW CV32E40P Model
 ---
-TBD
+The **riscv_CV32E40P_OVPsim** fixed model implements the functionality of the RISC-V Foundation's public User and Privilege specifications, configured for the OpenHW Group CV32E40P processor.
+
+The fixed model is provided as a shared object, riscv_CV32E40P.dpi.so, with a System Verilog DPI interface allowing it to be used in any compatible System Verilog simulator.
+
+The simulator is developed, licensed and maintained by [Imperas Software](http://www.imperas.com/riscv) and it is fully compliant to the OVP open standard APIs. 
+
+As a member of the RISC-V Foundation community of software and hardware innovators collaboratively driving RISC-V adoption, Imperas has developed the riscvOVPsim simulator to assist RISC-V adopters to become compliant to the RISC-V specifications.
+
 
 Debugging using GDB / Eclipse
 ---
-TBD
+The same fixed module can be used to debug the application using GDB and Eclipse. Additional Imperas products must be installed to enable these features.
+
+Command line parameters for the fixed model can be provided using an Imperas Control file. Specify a text file containing commands using IMPERAS_TOOLS in the environment.
+
+For GDB debug add the command line argument _-gdbconsole_, this will start the GDB debugger and connect to the virtual platform.
+
+For Eclipse debug add the command line argument _-gdbegui_, this will start the Eclipse eGui debugger and connect to the virtual platform.
+
 
 Using OpenHW CV32E40P Model
 ---

@@ -42,8 +42,8 @@ class uvmt_cv32_base_test_c extends uvm_test;
    uvme_cv32_vsqr_c  vsequencer;
    
    // Handles testbench interfaces
-   virtual uvmt_cv32_vp_status_if  vp_status_vif;  // virtual peripheral status
-   virtual uvmt_cv32_core_cntrl_if core_cntrl_vif; // control inputs to the core
+   virtual uvmt_cv32_vp_status_if    vp_status_vif;  // virtual peripheral status
+   virtual uvmt_cv32_core_cntrl_if   core_cntrl_vif; // control inputs to the core
    virtual uvmt_cv32_step_compare_if step_compare_vif;
    
    // Default sequences
@@ -195,7 +195,7 @@ function uvmt_cv32_base_test_c::new(string name="uvmt_cv32_base_test", uvm_compo
    rs = new("rs");
    
    // Terminate simulation after a "reasonable" number of errors
-   rs.set_max_quit_count(.count(5), .overridable(0));
+   rs.set_max_quit_count(.count(5), .overridable(1));
    uvm_report_server::set_server(rs);
    reset_vseq = uvme_cv32_reset_vseq_c::type_id::create("reset_vseq");
    

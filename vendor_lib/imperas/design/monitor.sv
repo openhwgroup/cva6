@@ -24,7 +24,6 @@ module MONITOR
     watchT end_signature;
     watchT _test_stdout;
     watchT _test_exit;
-    watchT _test_intc_nmi;
     watchT _test_intc_machine_external;
     watchT _test_intc_machine_software;  
     watchT _test_intc_machine_timer;  
@@ -136,7 +135,6 @@ module MONITOR
         nm_get("end_signature"  , end_signature);
         nm_get("_test_stdout"   , _test_stdout);
         
-        nm_get("_test_intc_nmi"               , _test_intc_nmi);
         nm_get("_test_intc_machine_external"  , _test_intc_machine_external);
         nm_get("_test_intc_machine_software"  , _test_intc_machine_software);
         nm_get("_test_intc_machine_timer"     , _test_intc_machine_timer);
@@ -155,8 +153,6 @@ module MONITOR
         if (_test_stdout.enable)
             $display("_test_stdout=%x", _test_stdout.addr);
             
-        if (_test_intc_nmi.enable)
-            $display("_test_intc_nmi=%x", _test_intc_nmi.addr);
         if (_test_intc_machine_external.enable)
             $display("_test_intc_machine_external=%x", _test_intc_machine_external.addr);
         if (_test_intc_machine_software.enable)
@@ -174,12 +170,11 @@ module MONITOR
     bit [3:0]  Dbe, Ibe;
     bit [2:0]  DSize, ISize;
     bit RD, WR, IF, LD, ST;
-    bit MSWInt, USWInt, SSWInt;
-    bit MTInt, UTInt, STInt;
-    bit MEInt, UEInt, SEInt;
-    bit reset, nmi, nmigen;
+    bit MSWInt;
+    bit MTInt;
+    bit MEInt;
+    bit reset;
     
-    int int_nmi_cnt;
     int int_machine_external_cnt;
     int int_machine_software_cnt;
     int int_machine_timer_cnt;
@@ -195,17 +190,9 @@ module MONITOR
         ISize  = SysBus.ISize;
         
         reset  = SysBus.reset;
-        nmi    = SysBus.nmi;
-        nmigen = SysBus.nmigen;
-        MSWInt = SysBus.MSWInterrupt;
-        USWInt = SysBus.USWInterrupt;
-        SSWInt = SysBus.SSWInterrupt;
-        MTInt  = SysBus.MTimerInterrupt;
-        UTInt  = SysBus.UTimerInterrupt;
-        STInt  = SysBus.STimerInterrupt;
-        MEInt  = SysBus.MExternalInterrupt;
-        UEInt  = SysBus.UExternalInterrupt;
-        SEInt  = SysBus.SExternalInterrupt;
+        MSWInt = SysBus.irq_i[3];
+        MTInt  = SysBus.irq_i[7];
+        MEInt  = SysBus.irq_i[11];
 
         IF     = (SysBus.Ird==1);
         LD     = (SysBus.Drd==1);
@@ -243,70 +230,54 @@ module MONITOR
             //
             // Interrupt Generation
             //
-            if (_test_intc_nmi.enable && SysBus.DAddr==_test_intc_nmi.addr) begin
-                int_nmi_cnt = SysBus.DData;
-                if (int_nmi_cnt == 0) begin
-                    // Interrupt Clear
-                    $display("SysBus.nmigen = 0");
-                    SysBus.nmigen = 0;
-                end
-            end 
             if (_test_intc_machine_external.enable && SysBus.DAddr==_test_intc_machine_external.addr) begin
                 int_machine_external_cnt = SysBus.DData;
                 if (int_machine_external_cnt == 0) begin
                     // Interrupt Clear
-                    $display("SysBus.MExternalInterrupt = 0");
-                    SysBus.MExternalInterrupt = 0;
+                    $display("SysBus.irq_i[11] = 0");
+                    SysBus.irq_i[11] = 0;
                 end
             end  
             if (_test_intc_machine_software.enable && SysBus.DAddr==_test_intc_machine_software.addr) begin
                 int_machine_software_cnt = SysBus.DData;
                 if (int_machine_software_cnt == 0) begin
                     // Interrupt Clear
-                    $display("SysBus.MSWInterrupt = 0");
-                    SysBus.MSWInterrupt = 0;
+                    $display("SysBus.irq_i[3] = 0");
+                    SysBus.irq_i[3] = 0;
                 end
             end
             if (_test_intc_machine_timer.enable && SysBus.DAddr==_test_intc_machine_timer.addr) begin
                 int_machine_timer_cnt = SysBus.DData;
                 if (int_machine_timer_cnt == 0) begin
                     // Interrupt Clear
-                    $display("SysBus.MTimerInterrupt = 0");
-                    SysBus.MTimerInterrupt = 0;
+                    $display("SysBus.irq_i[7] = 0");
+                    SysBus.irq_i[7] = 0;
                 end
             end
         end
-
-        // nmi Interrupt Generation
-        if (int_nmi_cnt > 1) begin
-            int_nmi_cnt = int_nmi_cnt - 1;
-        end else if ((int_nmi_cnt == 1) && (SysBus.nmigen == 0)) begin
-            $display("SysBus.nmigen = 1");
-            SysBus.nmigen = 1;
-        end 
         
         // Machine External Interrupt Generation
         if (int_machine_external_cnt > 1) begin
             int_machine_external_cnt = int_machine_external_cnt - 1;
-        end else if ((int_machine_external_cnt == 1) && (SysBus.MExternalInterrupt == 0)) begin
-            $display("SysBus.MExternalInterrupt = 1");
-            SysBus.MExternalInterrupt = 1;
+        end else if ((int_machine_external_cnt == 1) && (SysBus.irq_i[11] == 0)) begin
+            $display("SysBus.irq_i[11] = 1");
+            SysBus.irq_i[11] = 1;
         end 
    
         // Machine_timer Interrupt Generation
         if (int_machine_timer_cnt > 1) begin
             int_machine_timer_cnt = int_machine_timer_cnt - 1;
-        end else if ((int_machine_timer_cnt == 1) && (SysBus.MTimerInterrupt == 0)) begin
-            $display("SysBus.MTimerInterrupt = 1");
-            SysBus.MTimerInterrupt = 1;        
+        end else if ((int_machine_timer_cnt == 1) && (SysBus.irq_i[7] == 0)) begin
+            $display("SysBus.irq_i[7] = 1");
+            SysBus.irq_i[7] = 1;        
         end
 
         // Machine_software Interrupt Generation
         if (int_machine_software_cnt > 1) begin
             int_machine_software_cnt = int_machine_software_cnt - 1;
-        end else if ((int_machine_software_cnt == 1) && (SysBus.MSWInterrupt == 0)) begin
-            $display("SysBus.MSWInterrupt = 1");
-            SysBus.MSWInterrupt = 1;        
+        end else if ((int_machine_software_cnt == 1) && (SysBus.irq_i[3] == 0)) begin
+            $display("SysBus.irq_i[3] = 1");
+            SysBus.irq_i[3] = 1;        
         end
     end // always @ (posedge SysBus.Clk)
     

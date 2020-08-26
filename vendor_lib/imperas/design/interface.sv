@@ -32,20 +32,16 @@ interface BUS;
     bit     [2:0]  ISize;   // Instruction Bus Size of transfer 1-4 bytes
     bit            Ird;     // Instruction Bus read
     
-    bit     reset;
-    bit     nmigen;
-    bit     deferint;
+    bit            reset;
+    bit            deferint;
     
-    bit     nmi;
-    bit     MSWInterrupt;
-    bit     USWInterrupt;
-    bit     SSWInterrupt;
-    bit     MTimerInterrupt;
-    bit     UTimerInterrupt;
-    bit     STimerInterrupt;
-    bit     MExternalInterrupt;
-    bit     UExternalInterrupt;
-    bit     SExternalInterrupt;
+    bit     [31:0] irq_i;     // Active high level sensitive interrupt inputs
+    bit            irq_ack_o; // Interrupt acknowledge
+    bit     [4:0]  irq_id_o;  // Interrupt index for taken interrupt - only valid on irq_ack_o = 1
+    
+    bit            haltreq;
+    bit            resethaltreq;
+    bit            DM;
     
     //
     // Bus helpers

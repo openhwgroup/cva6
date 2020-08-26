@@ -29,6 +29,10 @@
 .global glb_previous_dpc
 .global glb_step_count
 .global glb_irq_timeout
+.global glb_mcycle_start
+.global glb_mcycle_end
+.global glb_minstret_start
+.global glb_minstret_end
 .global _step_trig_point
 .global _trigger_code
 .global _trigger_code_wfi
@@ -53,6 +57,15 @@ _debugger_start:
         lw t1, 0(a1)
         beq x0,t1,_debugger_fail
 
+    // Read lower 32 bits of mcycle and minstret
+    // and store in globals for check at exit
+    csrr t1, mcycle
+    csrr t2, minstret
+    la a1, glb_mcycle_start
+    sw t1, 0(a1)
+    la a1, glb_minstret_start
+    sw t2, 0(a1)
+ 
         // Determine Test to execute in debugger code based on glb_hart_status
         la a2, glb_hart_status
         lw t2, 0(a2)
@@ -114,6 +127,9 @@ _debugger_start:
     li t0, 20
     beq t2, t0, _debugger_req_and_irq
 
+    li t0, 21
+    beq t2, t0, _debugger_stopcount
+
 _debugger_req_and_irq:
     // Debug was requested at the same cycle as irq
     // Check dpc to see that pc is not at irq handler
@@ -123,7 +139,10 @@ _debugger_req_and_irq:
     beq t0, t1, _debugger_fail
     j _debugger_end
 
-
+_debugger_stopcount:
+    li t0, 1<<10
+    csrrs x0, dcsr, t0
+    j _debugger_end
 _debugger_irq:
     // Assert irq
     li a1, 0x15000000
@@ -503,16 +522,30 @@ _debugger_wfi_test:
     wfi
     j  _debugger_end
 
-_debugger_end:	
+_debugger_end:
+    // Check counter values. They should have increased while in debug
+    // regardless of stopcount bit in csr
+    csrr t1, mcycle
+    la a1, glb_mcycle_start
+    lw t2, 0(a1)
+    sub t1, t1, t2
+    beq t1, x0, _debugger_fail
+
+    csrr t1, minstret
+    la a1, glb_minstret_start
+    lw t2, 0(a1)
+    sub t1, t1, t2
+    beq t1, x0, _debugger_fail
+
     // If single stepping, do not clear
     la a1, glb_hart_status
     lw t0, 0(a1)
     li t1, 18
     beq t0, t1, _debugger_end_continue
 
-        // Clear debug entry expectation flag
-        la a1, glb_expect_debug_entry
-        sw x0, 0(a1)
+    // Clear debug entry expectation flag
+    la a1, glb_expect_debug_entry
+    sw x0, 0(a1)
 _debugger_end_continue:
         // Debugger Un-Stack
         //lw t0, 0(a0)
