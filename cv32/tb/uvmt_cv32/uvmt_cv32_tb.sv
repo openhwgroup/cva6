@@ -103,6 +103,10 @@ module uvmt_cv32_tb;
       assign step_compare_if.riscy_GPR = dut_wrap.cv32e40p_wrapper_i.core_i.id_stage_i.registers_i.register_file_i.mem;
       assign clknrst_if_iss.reset_n = clknrst_if.reset_n;
 
+      /**
+       * deferint assertion logic, assert when we enter IRQ_TAKEN_ID (irq taken during normal execution)
+         or IRQ_TAKEN_IF (irq taken after wake up from WFI)
+      */
       always @(posedge clknrst_if_iss.clk or negedge clknrst_if_iss.reset_n) begin
         if (!clknrst_if_iss.reset_n)
           iss_wrap.b1.deferint <= 1'b1;
@@ -110,7 +114,19 @@ module uvmt_cv32_tb;
                                                                                                 cv32e40p_pkg::IRQ_TAKEN_IF})
           iss_wrap.b1.deferint <= 1'b0;
       end
-      
+
+      /**
+       * deferint deassertion logic, on negedge of ovp_b1_Step from the ISS the deferint has been consumed 
+       */
+      always @(negedge step_compare_if.ovp_b1_Step) begin
+        if (iss_wrap.b1.deferint == 0) begin
+          iss_wrap.b1.deferint <= 1'b1;
+        end
+      end
+
+      /**
+       * Interrupt assertion to iss_wrap, note this runs on the ISS clock (skewed from core clock)
+       */
       always @(posedge clknrst_if_iss.clk or negedge clknrst_if_iss.reset_n) begin
         if (!clknrst_if_iss.reset_n) begin
           for (int irq_idx=0; irq_idx<32; irq_idx++) begin
@@ -119,22 +135,20 @@ module uvmt_cv32_tb;
         end
         else begin
           for (int irq_idx=0; irq_idx<32; irq_idx++) begin
+            // Leave ISS side asserted as long as RTL interrupt line is asserted
             if (dut_wrap.cv32e40p_wrapper_i.irq_i[irq_idx]) 
-              iss_wrap.b1.irq_i[irq_idx] <= 1'b1;
-            else if (iss_wrap.b1.deferint == 1)
+              iss_wrap.b1.irq_i[irq_idx] <= 1'b1;          
+            // If deferint is low and ovp_b1_Step is asserted, then interrupt was consumed by model
+            // Clear it now to avoid mip miscompare
+            else if (step_compare_if.ovp_b1_Step && iss_wrap.b1.deferint == 0)
               iss_wrap.b1.irq_i[irq_idx] <= 1'b0;
-            end
+            // If RTL interrupt deasserts, but the core has not taken the interrupt, then clear ISS irq
+            else if (iss_wrap.b1.deferint == 1)            
+              iss_wrap.b1.irq_i[irq_idx] <= 1'b0;
+          end
         end
       end
 
-      always @(negedge step_compare_if.ovp_b1_Step) begin
-        if (iss_wrap.b1.deferint == 0) begin
-          for (int irq_idx=0; irq_idx<32; irq_idx++) begin
-            iss_wrap.b1.irq_i[irq_idx] <= 1'b0;
-          end
-          iss_wrap.b1.deferint <= 1'b1;
-        end
-      end
     `endif
 
    /**
