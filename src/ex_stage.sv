@@ -15,6 +15,7 @@
 
 
 module ex_stage import ariane_pkg::*; #(
+    parameter int unsigned ASID_WIDTH = 1,
     parameter ariane_pkg::ariane_cfg_t ArianeCfg = ariane_pkg::ArianeDefaultConfig
 ) (
     input  logic                                   clk_i,    // Clock
