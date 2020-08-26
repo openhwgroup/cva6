@@ -12,7 +12,6 @@
 // Date: 19.04.2017
 // Description: Load Store Unit, handles address calculation and memory interface signals
 
-// import ariane_pkg::*;
 
 module load_store_unit import ariane_pkg::*; #(
     parameter int unsigned ASID_WIDTH = 1,

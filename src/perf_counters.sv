@@ -12,7 +12,6 @@
 // Date: 06.10.2017
 // Description: Performance counters
 
-// import ariane_pkg::*;
 
 module perf_counters import ariane_pkg::*; (
   input  logic                                    clk_i,

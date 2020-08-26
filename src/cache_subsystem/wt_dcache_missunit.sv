@@ -13,8 +13,6 @@
 // Description: miss controller for wb dcache. Note that the current assumption
 // is that the port with the highest index issues writes instead of reads.
 
-// import ariane_pkg::*;
-// import wt_cache_pkg::*;
 
 module wt_dcache_missunit import ariane_pkg::*; import wt_cache_pkg::*; #(
   parameter bit                         Axi64BitCompliant  = 1'b0, // set this to 1 when using in conjunction with 64bit AXI bus adapter

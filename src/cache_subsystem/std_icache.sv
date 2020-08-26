@@ -13,8 +13,6 @@
 // ------------------------------
 // Instruction Cache
 // ------------------------------
-// import ariane_pkg::*;
-// import std_cache_pkg::*;
 
 module std_icache import ariane_pkg::*; import std_cache_pkg::*; (
     input  logic                     clk_i,

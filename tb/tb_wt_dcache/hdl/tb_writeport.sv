@@ -16,8 +16,6 @@
 
 `include "tb.svh"
 
-// import ariane_pkg::*;
-// import wt_cache_pkg::*;
 
 
 program tb_writeport  import tb_pkg::*; import ariane_pkg::*; import wt_cache_pkg::*; #(

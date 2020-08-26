@@ -18,7 +18,6 @@
 // Description: Issues instruction from the scoreboard and fetches the operands
 //              This also includes all the forwarding logic
 //
-// import ariane_pkg::*;
 
 module decoder import ariane_pkg::*; (
     input  logic               debug_req_i,             // external debug request

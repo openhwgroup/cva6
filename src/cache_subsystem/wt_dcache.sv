@@ -12,8 +12,6 @@
 // Date: 13.09.2018
 // Description: Instruction cache that is compatible with openpiton.
 
-// import ariane_pkg::*;
-// import wt_cache_pkg::*;
 
 module wt_dcache import ariane_pkg::*; import wt_cache_pkg::*; #(
   // ID to be used for read and AMO transactions.

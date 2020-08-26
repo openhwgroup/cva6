@@ -13,7 +13,6 @@
 // Description: Store queue persists store requests and pushes them to memory
 //              if they are no longer speculative
 
-// import ariane_pkg::*;
 
 module store_buffer import ariane_pkg::*; (
     input logic          clk_i,           // Clock

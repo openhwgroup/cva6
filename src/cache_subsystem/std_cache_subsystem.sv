@@ -14,8 +14,6 @@
 // Description: Standard Ariane cache subsystem with instruction cache and
 //              write-back data cache.
 
-// import ariane_pkg::*;
-// import std_cache_pkg::*;
 
 module std_cache_subsystem import ariane_pkg::*; import std_cache_pkg::*; #(
   parameter logic [63:0] CACHE_START_ADDR = 64'h4000_0000

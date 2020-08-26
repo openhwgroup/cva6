@@ -48,8 +48,6 @@
 //           https://parallel.princeton.edu/openpiton/docs/micro_arch.pdf
 //
 
-// import ariane_pkg::*;
-// import wt_cache_pkg::*;
 
 module wt_l15_adapter import ariane_pkg::*; import wt_cache_pkg::*; #(
   parameter bit          SwapEndianess = 1

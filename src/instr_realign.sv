@@ -19,7 +19,6 @@
 // Furthermore we need to handle the case if we want to start fetching from an unaligned
 // instruction e.g. a branch.
 
-// import ariane_pkg::*;
 
 module instr_realign import ariane_pkg::*; (
     input  logic                              clk_i,

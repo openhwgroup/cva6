@@ -12,7 +12,6 @@
 // Date: 12.04.2018
 // Description: Wrapper for the floating-point unit
 
-// 
 
 module fpu_wrap import ariane_pkg::*; (
   input  logic                     clk_i,

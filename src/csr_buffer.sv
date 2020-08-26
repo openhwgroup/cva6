@@ -13,7 +13,6 @@
 // Description: Buffer to hold CSR address, this acts like a functional unit
 //              to the scoreboard.
 
-// import ariane_pkg::*;
 
 module csr_buffer import ariane_pkg::*; (
     input  logic                     clk_i,          // Clock

@@ -23,8 +23,6 @@
 
 `include "tb.svh"
 
-// import ariane_pkg::*;
-// import wt_cache_pkg::*;
 
 
 module tb; 

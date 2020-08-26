@@ -24,8 +24,6 @@
 // 3) NC accesses to I/O space are expected to return 32bit from memory.
 //
 
-// import ariane_pkg::*;
-// import wt_cache_pkg::*;
 
 module wt_icache import ariane_pkg::*; import wt_cache_pkg::*; #(
   parameter logic [CACHE_ID_WIDTH-1:0]  RdTxId             = 0,                                  // ID to be used for read transactions

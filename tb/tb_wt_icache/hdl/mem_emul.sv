@@ -13,8 +13,6 @@
 // Description: simple emulation layer for the memory subsystem.
 //
 
-// import ariane_pkg::*;
-// import wt_cache_pkg::*;
 
 module mem_emul import ariane_pkg::*; import wt_cache_pkg::*; #(
   parameter              MemRandHitRate = 10, //in percent

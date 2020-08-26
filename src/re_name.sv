@@ -18,7 +18,6 @@
 // University of Bologna.
 //
 
-// import ariane_pkg::*;
 
 module re_name import ariane_pkg::*; (
     input  logic                                   clk_i,    // Clock

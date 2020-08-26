@@ -13,7 +13,6 @@
 //
 // This file defines the interfaces we support.
 
-// import axi_pkg::*;
 
 
 /// An AXI4 interface.

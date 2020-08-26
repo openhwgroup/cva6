@@ -1,5 +1,4 @@
 
-// import ariane_pkg::*;
 
 module mult import ariane_pkg::*; (
     input  logic                     clk_i,

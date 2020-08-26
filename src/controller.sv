@@ -12,7 +12,6 @@
 // Date: 08.05.2017
 // Description: Flush controller
 
-// 
 
 module controller import ariane_pkg::*; (
     input  logic            clk_i,

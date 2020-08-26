@@ -13,7 +13,6 @@
 // Date: 19.04.2017
 // Description: Instantiation of all functional units residing in the execute stage
 
-// import ariane_pkg::*;
 
 module ex_stage import ariane_pkg::*; #(
     parameter ariane_pkg::ariane_cfg_t ArianeCfg = ariane_pkg::ArianeDefaultConfig
