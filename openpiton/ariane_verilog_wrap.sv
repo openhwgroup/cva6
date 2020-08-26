@@ -33,7 +33,9 @@ module ariane_verilog_wrap #(
   // cacheable regions
   parameter int unsigned               NrCachedRegionRules   =  0,
   parameter logic [NrMaxRules*64-1:0]  CachedRegionAddrBase  = '0,
-  parameter logic [NrMaxRules*64-1:0]  CachedRegionLength    = '0
+  parameter logic [NrMaxRules*64-1:0]  CachedRegionLength    = '0,
+  // PMP
+  parameter int unsigned               NrPMPEntries          =  8
 ) (
   input                       clk_i,
   input                       reset_l,      // this is an openpiton-specific name, do not change (hier. paths in TB use this)
@@ -185,7 +187,8 @@ module ariane_verilog_wrap #(
     Axi64BitCompliant:     1'b0,
     SwapEndianess:         SwapEndianess,
     // debug
-    DmBaseAddress:         DmBaseAddress
+    DmBaseAddress:         DmBaseAddress,
+    NrPMPEntries:          NrPMPEntries
   };
 
   ariane #(

@@ -286,13 +286,13 @@ package riscv;
     // Exception Cause Codes
     // ----------------------
     localparam logic [63:0] INSTR_ADDR_MISALIGNED = 0;
-    localparam logic [63:0] INSTR_ACCESS_FAULT    = 1;
+    localparam logic [63:0] INSTR_ACCESS_FAULT    = 1;  // Illegal access as governed by PMPs and PMAs
     localparam logic [63:0] ILLEGAL_INSTR         = 2;
     localparam logic [63:0] BREAKPOINT            = 3;
     localparam logic [63:0] LD_ADDR_MISALIGNED    = 4;
-    localparam logic [63:0] LD_ACCESS_FAULT       = 5;
+    localparam logic [63:0] LD_ACCESS_FAULT       = 5;  // Illegal access as governed by PMPs and PMAs
     localparam logic [63:0] ST_ADDR_MISALIGNED    = 6;
-    localparam logic [63:0] ST_ACCESS_FAULT       = 7;
+    localparam logic [63:0] ST_ACCESS_FAULT       = 7;  // Illegal access as governed by PMPs and PMAs
     localparam logic [63:0] ENV_CALL_UMODE        = 8;  // environment call from user mode
     localparam logic [63:0] ENV_CALL_SMODE        = 9;  // environment call from supervisor mode
     localparam logic [63:0] ENV_CALL_MMODE        = 11; // environment call from machine mode
@@ -356,7 +356,25 @@ package riscv;
         CSR_MTVAL          = 12'h343,
         CSR_MIP            = 12'h344,
         CSR_PMPCFG0        = 12'h3A0,
+        CSR_PMPCFG1        = 12'h3A1,
+        CSR_PMPCFG2        = 12'h3A2,
+        CSR_PMPCFG3        = 12'h3A3,
         CSR_PMPADDR0       = 12'h3B0,
+        CSR_PMPADDR1       = 12'h3B1,
+        CSR_PMPADDR2       = 12'h3B2,
+        CSR_PMPADDR3       = 12'h3B3,
+        CSR_PMPADDR4       = 12'h3B4,
+        CSR_PMPADDR5       = 12'h3B5,
+        CSR_PMPADDR6       = 12'h3B6,
+        CSR_PMPADDR7       = 12'h3B7,
+        CSR_PMPADDR8       = 12'h3B8,
+        CSR_PMPADDR9       = 12'h3B9,
+        CSR_PMPADDR10      = 12'h3BA,
+        CSR_PMPADDR11      = 12'h3BB,
+        CSR_PMPADDR12      = 12'h3BC,
+        CSR_PMPADDR13      = 12'h3BD,
+        CSR_PMPADDR14      = 12'h3BE,
+        CSR_PMPADDR15      = 12'h3BF,
         CSR_MVENDORID      = 12'hF11,
         CSR_MARCHID        = 12'hF12,
         CSR_MIMPID         = 12'hF13,
@@ -508,6 +526,36 @@ package riscv;
         logic [2:0]   frm;       // float rounding mode
         logic [4:0]   fflags;    // float exception flags
     } fcsr_t;
+
+    // PMP
+    typedef enum logic [1:0] {
+        OFF   = 2'b00,
+        TOR   = 2'b01,
+        NA4   = 2'b10,
+        NAPOT = 2'b11
+    } pmp_addr_mode_t;
+
+    // PMP Access Type
+    typedef enum logic [2:0] {
+        ACCESS_NONE  = 3'b000,
+        ACCESS_READ  = 3'b001,
+        ACCESS_WRITE = 3'b010,
+        ACCESS_EXEC  = 3'b100
+    } pmp_access_t;
+
+    typedef struct packed {
+        logic           x;
+        logic           w;
+        logic           r;
+    } pmpcfg_access_t;
+
+    // packed struct of a PMP configuration register (8bit)
+    typedef struct packed {
+        logic           locked;     // lock this configuration
+        logic [1:0]     reserved;
+        pmp_addr_mode_t addr_mode;  // Off, TOR, NA4, NAPOT
+        pmpcfg_access_t access_type;
+    } pmpcfg_t;
 
     // -----
     // Debug
