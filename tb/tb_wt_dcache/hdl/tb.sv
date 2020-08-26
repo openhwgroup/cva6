@@ -23,11 +23,12 @@
 
 `include "tb.svh"
 
-import ariane_pkg::*;
-import wt_cache_pkg::*;
-import tb_pkg::*;
 
-module tb;
+
+module tb; 
+  import tb_pkg::*; 
+  import ariane_pkg::*; 
+  import wt_cache_pkg::*;
 
   // leave this
   timeunit 1ps;

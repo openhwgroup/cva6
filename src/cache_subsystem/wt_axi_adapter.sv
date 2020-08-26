@@ -13,10 +13,8 @@
 // Description: adapter module to connect the L1D$ and L1I$ to a 64bit AXI bus.
 //
 
-import ariane_pkg::*;
-import wt_cache_pkg::*;
 
-module wt_axi_adapter #(
+module wt_axi_adapter import ariane_pkg::*; import wt_cache_pkg::*; #(
   parameter int unsigned ReqFifoDepth  = 2,
   parameter int unsigned MetaFifoDepth = wt_cache_pkg::DCACHE_MAX_TX
 ) (

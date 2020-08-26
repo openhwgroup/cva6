@@ -48,10 +48,8 @@
 //    then, only the NC word is written into the write buffer and no further write requests are acknowledged until that
 //    word has been evicted from the write buffer.
 
-import ariane_pkg::*;
-import wt_cache_pkg::*;
 
-module wt_dcache_wbuffer #(
+module wt_dcache_wbuffer import ariane_pkg::*; import wt_cache_pkg::*; #(
   parameter ariane_pkg::ariane_cfg_t    ArianeCfg          = ariane_pkg::ArianeDefaultConfig     // contains cacheable regions
 ) (
   input  logic                               clk_i,          // Clock

@@ -1,8 +1,8 @@
-[![Build Status](https://travis-ci.org/pulp-platform/ariane.svg?branch=master)](https://travis-ci.org/pulp-platform/ariane)
+[![Build Status](https://travis-ci.org/openhwgroup/cva6.svg?branch=master)](https://travis-ci.org/openhwgroup/cva6)
 
-# Ariane RISC-V CPU
+# CVA6 RISC-V CPU
 
-Ariane is a 6-stage, single issue, in-order CPU which implements the 64-bit RISC-V instruction set. It fully implements I, M, A and C extensions as specified in Volume I: User-Level ISA V 2.3 as well as the draft privilege extension 1.10. It implements three privilege levels M, S, U to fully support a Unix-like operating system. Furthermore it is compliant to the draft external debug spec 0.13.
+CVA6 is a 6-stage, single issue, in-order CPU which implements the 64-bit RISC-V instruction set. It fully implements I, M, A and C extensions as specified in Volume I: User-Level ISA V 2.3 as well as the draft privilege extension 1.10. It implements three privilege levels M, S, U to fully support a Unix-like operating system. Furthermore it is compliant to the draft external debug spec 0.13.
 
 It has configurable size, separate TLBs, a hardware PTW and branch-prediction (branch target buffer and branch history table). The primary design goal was on reducing critical path length.
 
@@ -10,7 +10,7 @@ It has configurable size, separate TLBs, a hardware PTW and branch-prediction (b
 
 ## Publication
 
-If you use Ariane in your academic work you can cite us:
+If you use CVA6 in your academic work you can cite us:
 
 ```
 @article{8777130,
@@ -30,7 +30,7 @@ If you use Ariane in your academic work you can cite us:
 Table of Contents
 =================
 
-   * [Ariane RISC-V CPU](#ariane-risc-v-cpu)
+   * [CVA6 RISC-V CPU](#cva6-risc-v-cpu)
    * [Table of Contents](#table-of-contents)
       * [Getting Started](#getting-started)
          * [Running User-Space Applications](#running-user-space-applications)
@@ -56,11 +56,11 @@ Go and get the [RISC-V tools](https://github.com/riscv/riscv-tools). Make sure t
 
 Checkout the repository and initialize all submodules
 ```
-$ git clone https://github.com/pulp-platform/ariane.git
+$ git clone https://github.com/openhwgroup/cva6.git
 $ git submodule update --init --recursive
 ```
 
-Build the Verilator model of Ariane by using the Makefile:
+Build the Verilator model of CVA6 by using the Makefile:
 ```
 $ make verilate
 ```
@@ -86,7 +86,7 @@ $ spike-dasm < trace_hart_00.dasm > logfile.txt
 
 ### Running User-Space Applications
 
-It is possible to run user-space binaries on Ariane with `riscv-pk` ([link](https://github.com/riscv/riscv-pk)).
+It is possible to run user-space binaries on CVA6 with `riscv-pk` ([link](https://github.com/riscv/riscv-pk)).
 
 ```
 $ mkdir build
@@ -103,7 +103,7 @@ $ echo '
 #include <stdio.h>
 
 int main(int argc, char const *argv[]) {
-    printf("Hello Ariane!\\n");
+    printf("Hello CVA6!\\n");
     return 0;
 }' > hello.c
 $ riscv64-unknown-elf-gcc hello.c -o hello.elf
@@ -123,7 +123,7 @@ $ make sim elf-bin=$RISCV/riscv64-unknown-elf/bin/pk target-options=hello.elf  b
 
 ## FPGA Emulation
 
-We currently only provide support for the [Genesys 2 board](https://reference.digilentinc.com/reference/programmable-logic/genesys-2/reference-manual). We provide pre-build bitstream and memory configuration files for the Genesys 2 [here](https://github.com/pulp-platform/ariane/releases).
+We currently only provide support for the [Genesys 2 board](https://reference.digilentinc.com/reference/programmable-logic/genesys-2/reference-manual). We provide pre-build bitstream and memory configuration files for the Genesys 2 [here](https://github.com/openhwgroup/cva6/releases).
 
 Tested on Vivado 2018.2. The FPGA SoC currently contains the following peripherals:
 
@@ -240,9 +240,9 @@ You can read or write device memory by using:
 
 ### Preliminary Support for OpenPiton Cache System
 
-Ariane has preliminary support for the OpenPiton distributed cache system from Princeton University. To this end, a different L1 cache subsystem (`src/cache_subsystem/wt_cache_subsystem.sv`) has been developed that follows a write-through protocol and that has support for cache invalidations and atomics.
+CVA6 has preliminary support for the OpenPiton distributed cache system from Princeton University. To this end, a different L1 cache subsystem (`src/cache_subsystem/wt_cache_subsystem.sv`) has been developed that follows a write-through protocol and that has support for cache invalidations and atomics.
 
-The corresponding integration patches will be released on [OpenPiton GitHub repository](https://github.com/PrincetonUniversity/openpiton). Check the `README` in that repository to see how to use Ariane in the OpenPiton setting.
+The corresponding integration patches will be released on [OpenPiton GitHub repository](https://github.com/PrincetonUniversity/openpiton). Check the `README` in that repository to see how to use CVA6 in the OpenPiton setting.
 
 To activate the different cache system, compile your code with the macro `WT_DCACHE` (set by default).
 
@@ -285,7 +285,7 @@ $ make torture-rtest-verilator
 ```
 This runs the randomized program on Spike and on the RTL target, and checks whether the two signatures match. The random instruction mix can be configured in the `./tmp/riscv-torture/config/default.config` file.
 
-Ariane can dump a trace-log in Questa which can be easily diffed against Spike with commit log enabled. In `include/ariane_pkg.sv` set:
+CVA6 can dump a trace-log in Questa which can be easily diffed against Spike with commit log enabled. In `include/ariane_pkg.sv` set:
 
 ```verilog
 localparam bit ENABLE_SPIKE_COMMIT_LOG = 1'b1;
@@ -339,7 +339,7 @@ The zero stage bootloader (ZSBL) for RTL simulation lives in `bootrom/` while th
 To re-generate the bootcode you can use the existing makefile within those directories. To generate the SystemVerilog files you will need the `bitstring` python package installed on your system.
 
 ### Co-simulation with Dromajo
-Ariane can be co-simulated with [Dromajo](https://github.com/chipsalliance/dromajo) (currently in the verilator model). 
+CVA6 can be co-simulated with [Dromajo](https://github.com/chipsalliance/dromajo) (currently in the verilator model).
 
 ```
 make verilate DROMAJO=1

@@ -488,40 +488,11 @@ $(addsuffix -verilator,$(riscv-fp-tests)): verilate
 $(addsuffix -verilator,$(riscv-benchmarks)): verilate
 	$(ver-library)/Variane_testharness $(riscv-benchmarks-dir)/$(subst -verilator,,$@)
 
-run-asm-tests-verilator: $(addsuffix -verilator, $(riscv-asm-tests)) $(addsuffix -verilator, $(riscv-amo-tests)) $(addsuffix -verilator, $(riscv-fp-tests)) $(addsuffix -verilator, $(riscv-fp-tests))
+run-all-tests-verilator: $(addsuffix -verilator, $(riscv-asm-tests)) $(addsuffix -verilator, $(riscv-amo-tests)) $(addsuffix -verilator, $(run-mul-verilator)) $(addsuffix -verilator, $(riscv-fp-tests))
 
-# split into smaller travis jobs (otherwise they will time out)
-riscv-asm-rv64ui-v := $(filter rv64ui-v-%, $(riscv-asm-tests))
-
-riscv-asm-rv64ui-p := $(filter rv64ui-p-%, $(riscv-asm-tests))
-
-riscv-asm-rv64mi-p := $(filter rv64mi-p-%, $(riscv-asm-tests))
-
-riscv-asm-rest := $(filter-out $(riscv-asm-rv64ui-v) $(riscv-asm-rv64ui-p) $(riscv-asm-rv64mi-p), $(riscv-asm-tests))
-
-run-asm-tests1-verilator: $(addsuffix -verilator, $(filter rv64ui-v-a% rv64ui-v-b%, $(riscv-asm-rv64ui-v)))
-
-run-asm-tests2-verilator: $(addsuffix -verilator, $(filter-out rv64ui-v-a% rv64ui-v-b%, $(riscv-asm-rv64ui-v)))
-
-run-asm-tests3-verilator: $(addsuffix -verilator, $(filter rv64ui-p-a% rv64ui-p-b%, $(riscv-asm-rv64ui-p)))
-
-run-asm-tests4-verilator: $(addsuffix -verilator, $(filter-out rv64ui-p-a% rv64ui-p-b%, $(riscv-asm-rv64ui-p)))
-
-run-asm-tests5-verilator: $(addsuffix -verilator, $(riscv-asm-rv64mi-p))
-
-run-asm-tests6-verilator: $(addsuffix -verilator, $(riscv-asm-rest))
+run-asm-tests-verilator: $(addsuffix -verilator, $(riscv-asm-tests))
 
 run-amo-verilator: $(addsuffix -verilator, $(riscv-amo-tests))
-
-riscv-amo-rv64ua-v := $(filter rv64ua-v-%, $(riscv-amo-tests))
-
-riscv-amo-rv64ua-p := $(filter rv64ua-p-%, $(riscv-amo-tests))
-
-run-amo-tests1-verilator: $(addsuffix -verilator, $(filter rv64ua-v-amom%, $(riscv-amo-rv64ua-v)))
-
-run-amo-tests2-verilator: $(addsuffix -verilator, $(filter-out rv64ua-v-amom%, $(riscv-amo-rv64ua-v)))
-
-run-amo-tests3-verilator: $(addsuffix -verilator, $(riscv-amo-rv64ua-p))
 
 run-mul-verilator: $(addsuffix -verilator, $(riscv-mul-tests))
 

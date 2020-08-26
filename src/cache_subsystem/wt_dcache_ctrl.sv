@@ -12,10 +12,8 @@
 // Date: 13.09.2018
 // Description: DCache controller for read port
 
-import ariane_pkg::*;
-import wt_cache_pkg::*;
 
-module wt_dcache_ctrl #(
+module wt_dcache_ctrl import ariane_pkg::*; import wt_cache_pkg::*; #(
   parameter logic [CACHE_ID_WIDTH-1:0]  RdTxId    = 1,                              // ID to use for read transactions
   parameter ariane_pkg::ariane_cfg_t    ArianeCfg = ariane_pkg::ArianeDefaultConfig // contains cacheable regions
 ) (

@@ -13,10 +13,8 @@
 // Description: miss controller for wb dcache. Note that the current assumption
 // is that the port with the highest index issues writes instead of reads.
 
-import ariane_pkg::*;
-import wt_cache_pkg::*;
 
-module wt_dcache_missunit #(
+module wt_dcache_missunit import ariane_pkg::*; import wt_cache_pkg::*; #(
   parameter bit                         Axi64BitCompliant  = 1'b0, // set this to 1 when using in conjunction with 64bit AXI bus adapter
   parameter logic [CACHE_ID_WIDTH-1:0]  AmoTxId            = 1,    // TX id to be used for AMOs
   parameter int unsigned                NumPorts           = 3     // number of miss ports

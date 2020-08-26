@@ -5,7 +5,6 @@ cache:
   apt: true
   directories:
     $RISCV
-    $VERILATOR_ROOT
   timeout: 1000
 
 # required packages to install
@@ -13,6 +12,8 @@ addons:
   apt:
     sources:
       - ubuntu-toolchain-r-test
+      - sourceline: 'deb http://download.opensuse.org/repositories/home:/phiwag:/edatools/xUbuntu_16.04 /'
+        key_url: 'https://download.opensuse.org/repositories/home:phiwag:edatools/xUbuntu_16.04/Release.key'
     packages:
       - gcc-7
       - g++-7
@@ -33,10 +34,11 @@ addons:
       - default-jdk
       - zlib1g-dev
       - valgrind
+      - verilator-4.040
+      - device-tree-compiler
 env:
   global:
     - RISCV="/home/travis/riscv_install"
-    - VERILATOR_ROOT="/home/travis/verilator-4.014/"
 
 branches:
   only:
@@ -46,39 +48,29 @@ branches:
 before_install:
   - export CXX=g++-7 CC=gcc-7
   # setup dependent paths
-  - export PATH=$RISCV/bin:$VERILATOR_ROOT/bin:$PATH
+  - export PATH=$RISCV/bin:/bin:$PATH
   - export LIBRARY_PATH=$RISCV/lib
   - export LD_LIBRARY_PATH=$RISCV/lib
-  - export C_INCLUDE_PATH=$RISCV/include:$VERILATOR_ROOT/include
-  - export CPLUS_INCLUDE_PATH=$RISCV/include:$VERILATOR_ROOT/include
+  - export C_INCLUDE_PATH=$RISCV/include
+  - export CPLUS_INCLUDE_PATH=$RISCV/include
   # number of parallel jobs to use for make commands and simulation
   - export NUM_JOBS=4
   - ci/make-tmp.sh
   - git submodule update --init --recursive
 
 stages:
-  - checkout
-  - compile1
-  - compile2
+  - sw_build
   - test
 
 jobs:
   include:
-    - stage: checkout
-      name: checkout gcc
+    - stage: sw_build
+      name: build software
       script:
-        - ci/build-riscv-gcc.sh 0
-    - stage: compile1
-      name: build gcc
-      script:
-        - ci/build-riscv-gcc.sh 1
-        - rm -rf $RISCV/riscv-gnu-toolchain
-    - stage: compile2
-      name: build tools
-      script:
-        - ci/install-fesvr.sh
-        - ci/install-verilator.sh
-        - ci/install-dtc.sh
+        # Obtain pre-built toolchain.
+        - mkdir -p $RISCV
+        - wget https://static.dev.sifive.com/dev-tools/riscv64-unknown-elf-gcc-8.3.0-2020.04.0-x86_64-linux-ubuntu14.tar.gz
+        - tar -x -f riscv64-unknown-elf-gcc-8.3.0-2020.04.0-x86_64-linux-ubuntu14.tar.gz --strip-components=1 -C $RISCV
         - ci/install-spike.sh
 
     - stage: test
@@ -88,41 +80,11 @@ jobs:
         - make -j${NUM_JOBS} run-benchmarks-verilator defines=WB_DCACHE
 
     # asm tests
-    # rv64ui-v-* tests
     - stage: test
-      name: run asm tests1 (Write-Back Cache)
+      name: run asm tests (Write-Back Cache)
       script:
         - ci/build-riscv-tests.sh
-        - make -j${NUM_JOBS} run-asm-tests1-verilator defines=WB_DCACHE
-
-    - stage: test
-      name: run asm tests2 (Write-Back Cache)
-      script:
-        - ci/build-riscv-tests.sh
-        - make -j${NUM_JOBS} run-asm-tests2-verilator defines=WB_DCACHE
-    # rv64ui-p-* tests
-    - stage: test
-      name: run asm tests3 (Write-Back Cache)
-      script:
-        - ci/build-riscv-tests.sh
-        - make -j${NUM_JOBS} run-asm-tests3-verilator defines=WB_DCACHE
-    - stage: test
-      name: run asm tests4 (Write-Back Cache)
-      script:
-        - ci/build-riscv-tests.sh
-        - make -j${NUM_JOBS} run-asm-tests4-verilator defines=WB_DCACHE
-    # rv64mi-p-* tests
-    - stage: test
-      name: run asm tests5 (Write-Back Cache)
-      script:
-        - ci/build-riscv-tests.sh
-        - make -j${NUM_JOBS} run-asm-tests5-verilator defines=WB_DCACHE
-    # rv64-* other tests
-    - stage: test
-      name: run asm tests6 (Write-Back Cache)
-      script:
-        - ci/build-riscv-tests.sh
-        - make -j${NUM_JOBS} run-asm-tests6-verilator defines=WB_DCACHE
+        - make -j${NUM_JOBS} run-asm-tests-verilator defines=WB_DCACHE
 
     # rv64um-*-* tests
     - stage: test
@@ -131,38 +93,19 @@ jobs:
         - ci/build-riscv-tests.sh
         - make -j${NUM_JOBS} run-mul-verilator defines=WB_DCACHE
 
-    # rv64ud-*-* tests
     - stage: test
-      name: run fp64 tests (Write-Back Cache)
+      name: run fp tests (Write-Back Cache)
       script:
         - ci/build-riscv-tests.sh
-        - make -j${NUM_JOBS} run-fp-d-verilator defines=WB_DCACHE
-
-    # rv64uf-*-* tests
-    - stage: test
-      name: run fp32 tests (Write-Back Cache)
-      script:
-        - ci/build-riscv-tests.sh
-        - make -j${NUM_JOBS} run-fp-f-verilator defines=WB_DCACHE
+        - make -j${NUM_JOBS} run-fp-verilator defines=WB_DCACHE
 
     # amo tests
     # rv64ua-v-* tests
     - stage: test
-      name: run amo tests1 (Write-Back Cache)
+      name: run amo tests (Write-Back Cache)
       script:
         - ci/build-riscv-tests.sh
-        - travis_wait 60 make -j${NUM_JOBS} run-amo-tests1-verilator defines=WB_DCACHE
-    - stage: test
-      name: run amo tests2 (Write-Back Cache)
-      script:
-        - ci/build-riscv-tests.sh
-        - travis_wait 60 make -j${NUM_JOBS} run-amo-tests2-verilator defines=WB_DCACHE
-     # rv64ua-p-* tests
-    - stage: test
-      name: run amo tests3 (Write-Back Cache)
-      script:
-        - ci/build-riscv-tests.sh
-        - make -j${NUM_JOBS} run-amo-tests3-verilator defines=WB_DCACHE
+        - travis_wait 60 make -j${NUM_JOBS} run-amo-verilator defines=WB_DCACHE
 
     - stage: test
       name: run riscv benchmarks (Write-through Cache)
@@ -173,39 +116,10 @@ jobs:
     # asm tests
     # rv64ui-v-* tests
     - stage: test
-      name: run asm tests1 (Write-through Cache)
+      name: run asm tests (Write-through Cache)
       script:
         - ci/build-riscv-tests.sh
-        - make -j${NUM_JOBS} run-asm-tests1-verilator defines=WT_DCACHE
-
-    - stage: test
-      name: run asm tests2 (Write-through Cache)
-      script:
-        - ci/build-riscv-tests.sh
-        - make -j${NUM_JOBS} run-asm-tests2-verilator defines=WT_DCACHE
-    # rv64ui-p-* tests
-    - stage: test
-      name: run asm tests3 (Write-through Cache)
-      script:
-        - ci/build-riscv-tests.sh
-        - make -j${NUM_JOBS} run-asm-tests3-verilator defines=WT_DCACHE
-    - stage: test
-      name: run asm tests4 (Write-through Cache)
-      script:
-        - ci/build-riscv-tests.sh
-        - make -j${NUM_JOBS} run-asm-tests4-verilator defines=WT_DCACHE
-    # rv64mi-p-* tests
-    - stage: test
-      name: run asm tests5 (Write-through Cache)
-      script:
-        - ci/build-riscv-tests.sh
-        - make -j${NUM_JOBS} run-asm-tests5-verilator defines=WT_DCACHE
-    # rv64-* other tests
-    - stage: test
-      name: run asm tests6 (Write-through Cache)
-      script:
-        - ci/build-riscv-tests.sh
-        - make -j${NUM_JOBS} run-asm-tests6-verilator defines=WT_DCACHE
+        - make -j${NUM_JOBS} run-asm-tests-verilator defines=WT_DCACHE
 
     # rv64um-*-* tests
     - stage: test
@@ -216,36 +130,18 @@ jobs:
 
     # rv64ud-*-* tests
     - stage: test
-      name: run fp64 tests (Write-through Cache)
+      name: run fp tests (Write-through Cache)
       script:
         - ci/build-riscv-tests.sh
-        - make -j${NUM_JOBS} run-fp-d-verilator defines=WT_DCACHE
-
-    # rv64uf-*-* tests
-    - stage: test
-      name: run fp32 tests (Write-through Cache)
-      script:
-        - ci/build-riscv-tests.sh
-        - make -j${NUM_JOBS} run-fp-f-verilator defines=WT_DCACHE
+        - make -j${NUM_JOBS} run-fp-verilator defines=WT_DCACHE
 
     # amo tests
     # rv64ua-v-* tests
     - stage: test
-      name: run amo tests1 (Write-through Cache)
+      name: run amo tests (Write-through Cache)
       script:
         - ci/build-riscv-tests.sh
-        - make -j${NUM_JOBS} run-amo-tests1-verilator defines=WT_DCACHE
-    - stage: test
-      name: run amo tests2 (Write-through Cache)
-      script:
-        - ci/build-riscv-tests.sh
-        - make -j${NUM_JOBS} run-amo-tests2-verilator defines=WT_DCACHE
-     # rv64ua-p-* tests
-    - stage: test
-      name: run amo tests3 (Write-through Cache)
-      script:
-        - ci/build-riscv-tests.sh
-        - make -j${NUM_JOBS} run-amo-tests3-verilator defines=WT_DCACHE
+        - make -j${NUM_JOBS} run-amo-verilator defines=WT_DCACHE
 
 # extra time during long builds
 install: travis_wait

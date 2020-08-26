@@ -16,11 +16,9 @@
 
 `include "tb.svh"
 
-import ariane_pkg::*;
-import wt_cache_pkg::*;
-import tb_pkg::*;
 
-program tb_writeport  #(
+
+program tb_writeport  import tb_pkg::*; import ariane_pkg::*; import wt_cache_pkg::*; #(
   parameter string       PortName      = "write port 0",
   parameter              MemWords      = 1024*1024,// in 64bit words
   parameter logic [63:0] CachedAddrBeg = 0,

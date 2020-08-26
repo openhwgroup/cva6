@@ -32,7 +32,10 @@
 #include <unistd.h>
 
 #include <fesvr/dtm.h>
+#include <fesvr/htif_hexwriter.h>
+#include <fesvr/elfloader.h>
 #include "remote_bitbang.h"
+
 // This software is heavily based on Rocket Chip
 // Checkout this awesome project:
 // https://github.com/freechipsproject/rocket-chip/
@@ -101,6 +104,19 @@ EMULATOR DEBUG OPTIONS (only supported in debug build -- try `make debug`)\n",
 #endif
          );
 }
+
+// In case we use the DTM we do not want to use the JTAG
+// to preload the data but only use the DTM to host fesvr functionality.
+class preload_aware_dtm_t : public dtm_t {
+  public:
+    preload_aware_dtm_t(int argc, char **argv) : dtm_t(argc, argv) {}
+    bool is_address_preloaded(addr_t taddr, size_t len) override { return true; }
+    // We do not want to reset the hart here as the reset function in `dtm_t` seems to disregard
+    // the privilege level and in general does not perform propper reset (despite the name).
+    // As all our binaries in preloading will always start at the base of DRAM this should not
+    // be such a big problem.
+    void reset() {}
+};
 
 int main(int argc, char **argv) {
   std::clock_t c_start = std::clock();
@@ -263,11 +279,17 @@ done_processing:
 
 #ifndef DROMAJO
   jtag = new remote_bitbang_t(rbb_port);
-  dtm = new dtm_t(htif_argc, htif_argv);
+  dtm = new preload_aware_dtm_t(htif_argc, htif_argv);
   signal(SIGTERM, handle_sigterm);
 #endif
 
   std::unique_ptr<Variane_testharness> top(new Variane_testharness);
+
+  // Use an hitf hexwriter to read the binary data.
+  htif_hexwriter_t htif(0x0, 1, -1);
+  memif_t memif(&htif);
+  reg_t entry;
+  load_elf(htif_argv[1], &memif, &entry);
 
 #if VM_TRACE
   Verilated::traceEverOn(true); // Verilator must compute traced signals
@@ -295,6 +317,10 @@ done_processing:
     main_time++;
   }
   top->rst_ni = 1;
+
+  // Preload memory.
+  size_t mem_size = 0x100000;
+  memif.read(0x80000000, mem_size, (void *) top->ariane_testharness__DOT__i_sram__DOT__genblk1__BRA__0__KET____DOT__genblk2__DOT__i_ram__DOT__Mem_DP);
 
 #ifndef DROMAJO
   while (!dtm->done() && !jtag->done()) {
