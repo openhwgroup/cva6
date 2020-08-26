@@ -418,6 +418,7 @@ module frontend import ariane_pkg::*; #(
       .instr_i             ( instr                ), // from re-aligner
       .addr_i              ( addr                 ), // from re-aligner
       .exception_i         ( icache_ex_valid_q    ), // from I$
+      .exception_addr_i    ( icache_vaddr_q       ),
       .predict_address_i   ( predict_address      ),
       .cf_type_i           ( cf_type              ),
       .valid_i             ( instruction_valid    ), // from re-aligner
