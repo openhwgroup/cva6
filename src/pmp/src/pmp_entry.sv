@@ -49,7 +49,7 @@ module pmp_entry #(
                 if (match_o == 0) begin
                     assert(addr_i >= (conf_addr_i << 2) || addr_i < (conf_addr_prev_i << 2));
                 end else begin
-                    assert(addr_i < (conf_addr_i << 2) || addr_i >= (conf_addr_prev_i << 2));
+                    assert(addr_i < (conf_addr_i << 2) && addr_i >= (conf_addr_prev_i << 2));
                 end
                 `endif
             end
