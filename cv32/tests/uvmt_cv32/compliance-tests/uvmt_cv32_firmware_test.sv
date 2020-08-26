@@ -152,7 +152,6 @@ task uvmt_cv32_firmware_test_c::irq_noise();
   while (1) begin
     uvme_cv32_interrupt_noise_c interrupt_noise_vseq;
 
-    repeat (100) @(env_cntxt.interrupt_cntxt.vif.mon_cb);
     interrupt_noise_vseq = uvme_cv32_interrupt_noise_c::type_id::create("interrupt_noise_vseqr");
     assert(interrupt_noise_vseq.randomize() with {
       reserved_irq_mask == 32'h0000_f777;

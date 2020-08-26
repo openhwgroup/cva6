@@ -28,41 +28,15 @@ class uvme_cv32_cov_model_c extends uvm_component;
    // Objects
    uvme_cv32_cfg_c    cfg;
    uvme_cv32_cntxt_c  cntxt;
-   // TODO Add covergoup sampling variable(s)
-   //      Ex: uvma_debug_mon_trn_c  debug_trn;
-   
-   // Input TLM
-   // TODO Add Input TLM to uvme_cv32_cov_model_c
-   //      Ex: uvm_analysis_port    #(uvma_debug_mon_trn_c)  debug_export;
-   //          uvm_tlm_analysis_fifo#(uvma_debug_mon_trn_c)  debug_fifo;
 
-   uvme_rv32isa_covg isa_covg;   
-   
+   uvme_rv32isa_covg   isa_covg;   
+   uvme_interrupt_covg interrupt_covg;
+
    `uvm_component_utils_begin(uvme_cv32_cov_model_c)
       `uvm_field_object(cfg  , UVM_DEFAULT)
       `uvm_field_object(cntxt, UVM_DEFAULT)
    `uvm_component_utils_end
-   
-   
-   // TODO Add covergroup(s) to uvme_cv32_cov_model_c
-   //      Ex: covergroup cv32_cfg_cg;
-   //             abc_cpt : coverpoint cfg.abc;
-   //             xyz_cpt : coverpoint cfg.xyz;
-   //          endgroup : cv32_cfg_cg
-   //          
-   //          covergroup cv32_cntxt_cg;
-   //             abc_cpt : coverpoint cntxt.abc;
-   //             xyz_cpt : coverpoint cntxt.xyz;
-   //          endgroup : cv32_cntxt_cg
-   //          
-   //          covergroup debug_trn_cg;
-   //             address : coverpoint debug_trn.address {
-   //                bins low   = {32'h0000_0000, 32'h4FFF_FFFF};
-   //                bins med   = {32'h5000_0000, 32'h9FFF_FFFF};
-   //                bins high  = {32'hA000_0000, 32'hFFFF_FFFF};
-   //             }
-   //          endgroup : debug_trn_cg
-   
+      
    
    /**
     * Default constructor.
@@ -73,7 +47,12 @@ class uvme_cv32_cov_model_c extends uvm_component;
     * Ensures cfg & cntxt handles are not null.
     */
    extern virtual function void build_phase(uvm_phase phase);
-   
+
+   /**
+    * Connects ISA coverage model to interrupt coverage model
+    */
+   extern virtual function void connect_phase(uvm_phase phase);
+
    /**
     * Describe uvme_cv32_cov_model_c::run_phase()
     */
@@ -107,7 +86,6 @@ function uvme_cv32_cov_model_c::new(string name="uvme_cv32_cov_model", uvm_compo
    
 endfunction : new
 
-
 function void uvme_cv32_cov_model_c::build_phase(uvm_phase phase);
    
    super.build_phase(phase);
@@ -125,12 +103,17 @@ function void uvme_cv32_cov_model_c::build_phase(uvm_phase phase);
    isa_covg = uvme_rv32isa_covg::type_id::create("isa_covg", this);
    uvm_config_db#(uvme_cv32_cntxt_c)::set(this, "isa_covg", "cntxt", cntxt);
    
-   // TODO Build Input TLM
-   //      Ex: debug_export = new("debug_export", this);
-   //          debug_fifo   = new("debug_fifo"  , this);
+   interrupt_covg = uvme_interrupt_covg::type_id::create("interrupt_covg", this);
+   uvm_config_db#(uvme_cv32_cntxt_c)::set(this, "interrupt_covg", "cntxt", cntxt);
    
 endfunction : build_phase
 
+function void uvme_cv32_cov_model_c::connect_phase(uvm_phase phase);
+   
+   super.connect_phase(phase);
+
+   isa_covg.ap.connect(interrupt_covg.rv32isa_export);
+endfunction : connect_phase
 
 task uvme_cv32_cov_model_c::run_phase(uvm_phase phase);
    
@@ -174,13 +157,6 @@ function void uvme_cv32_cov_model_c::sample_cntxt();
    
 endfunction : sample_cntxt
 
-
-// TODO Implement coverage function(s) to uvme_cv32_cov_model_c
-//      Ex: function void uvme_cv32_cov_model_c::sample_debug();
-//             
-//             debug_trn_cg.sample();
-//             
-//          endfunction : sample_debug
 
 
 `endif // __UVME_CV32_COV_MODEL_SV__

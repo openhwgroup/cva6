@@ -295,8 +295,7 @@ endfunction: connect_ral
 
 function void uvme_cv32_env_c::connect_coverage_model();
    
-   // TODO Implement uvme_cv32_env_c::connect_coverage_model()
-   //      Ex: debug_agent.mon_ap.connect(cov_model.debug_export);
+   interrupt_agent.monitor.ap.connect(cov_model.interrupt_covg.interrupt_mon_export);      
    
 endfunction: connect_coverage_model
 

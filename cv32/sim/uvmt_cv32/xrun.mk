@@ -43,7 +43,8 @@ XRUN_RUN_BASE_FLAGS   ?= -64bit $(XRUN_GUI) +UVM_VERBOSITY=$(XRUN_UVM_VERBOSITY)
 XRUN_GUI         ?=
 XRUN_SINGLE_STEP ?=
 XRUN_ELAB_COV     = -covdut uvmt_cv32_tb -coverage b:e:f:t:u
-XRUN_RUN_COV      = -covoverwrite -covscope uvmt_cv32_tb
+XRUN_RUN_COV      = -covscope uvmt_cv32_tb \
+					-nowarn CGDEFN
 NUM_TESTS        ?= 2
 XRUN_UVM_VERBOSITY ?= UVM_MEDIUM
 
@@ -132,6 +133,7 @@ endif
 
 # Simulate using latest elab
 XRUN_RUN_FLAGS        ?= -R -xmlibdirname ../xcelium.d 
+XRUN_RUN_FLAGS        += -covoverwrite
 XRUN_RUN_FLAGS        += $(XRUN_RUN_BASE_FLAGS)
 XRUN_RUN_FLAGS        += $(XRUN_RUN_WAVES_FLAGS)
 XRUN_RUN_FLAGS        += $(XRUN_RUN_COV_FLAGS)

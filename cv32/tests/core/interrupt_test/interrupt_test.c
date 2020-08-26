@@ -390,7 +390,7 @@ int test3() {
     mstatus_mie_enable();
 
     // Set 2 interrupts
-    for (uint32_t loop = 0; loop < 100; loop++) {
+    for (uint32_t loop = 0; loop < 50; loop++) {
         uint32_t irq[2];
 
         // Pick 2 random interrupts

@@ -27,18 +27,25 @@ interface uvma_interrupt_if
    (
    );
 
+    // ---------------------------------------------------------------------------
     // Interface wires
+    // ---------------------------------------------------------------------------
     wire        clk;
     wire        reset_n;
     wire [31:0] irq;
     wire        irq_ack;
     wire [4:0]  irq_id;
 
+    // -------------------------------------------------------------------
     // Testbench control
+    // ---------------------------------------------------------------------------
+    // -------------------------------------------------------------------
     bit         is_active;  // Set to active drive the interrupt lines
-
     bit [31:0]  irq_drv;       // TB interrupt driver
-    bit [31:0]  irq_deassert;
+
+    // -------------------------------------------------------------------
+    // Begin module code
+    // -------------------------------------------------------------------
 
     // Mux in driver to irq lines
     assign irq = is_active ? irq_drv : 1'b0;
@@ -46,7 +53,6 @@ interface uvma_interrupt_if
     initial begin
         is_active = 1'b0;
         irq_drv = '0;
-        irq_deassert ='0;   
     end
 
    
@@ -62,8 +68,7 @@ interface uvma_interrupt_if
     clocking drv_cb @(posedge clk or reset_n);
         input #1step irq_ack, 
                      irq_id;
-        output       irq_drv,
-                     irq_deassert;
+        output       irq_drv;
     endclocking : drv_cb
    
     /**
@@ -72,14 +77,13 @@ interface uvma_interrupt_if
     clocking mon_cb @(posedge clk or reset_n);
         input #1step irq_ack, 
                      irq_id,
-                     irq_drv,
-                     irq_deassert;
+                     irq_drv;
     endclocking : mon_cb
       
     modport dut_mp    (clocking dut_cb);
     modport active_mp (clocking drv_cb);
     modport passive_mp(clocking mon_cb);
-   
+
 endinterface : uvma_interrupt_if
 
 

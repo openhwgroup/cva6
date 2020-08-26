@@ -38,6 +38,8 @@ class uvme_rv32isa_covg extends uvm_component;
 
     uvme_cv32_cntxt_c  cntxt;
     
+    uvm_analysis_port#(uvme_rv32isa_covg_trn_c) ap;    
+
     // The following CSR ABI names are not currently included:
     // fp, pc
     function gpr_name_t get_gpr_name (string s, r, asm);
@@ -1527,8 +1529,10 @@ class uvme_rv32isa_covg extends uvm_component;
         c_or_cg       = new();
         c_xor_cg      = new();
         c_sub_cg      = new();
-        c_nop_cg      = new();
+        c_nop_cg      = new();        
         c_ebreak_cg   = new();
+
+        ap = new("ap", this);
     endfunction: new
 
     function void build_phase(uvm_phase phase);
@@ -1546,12 +1550,12 @@ class uvme_rv32isa_covg extends uvm_component;
         `uvm_info("rv32isa_covg", "The RV32ISA coverage model is running", UVM_LOW);
 
         while (1) begin
-           @(cntxt.isa_covg_vif.ins_valid);
-           sample(cntxt.isa_covg_vif.ins);
+            @(cntxt.isa_covg_vif.ins_valid);
+            sample(cntxt.isa_covg_vif.ins);
         end
     endtask
 
-    function void check_compressed(input ins_t ins);
+    function void check_compressed(inout ins_t ins);
         case (ins.ins_str)
             "lw"    : begin
                 `uvm_info("rv32isa_covg", $sformatf("EXPECTING LW: %0s ins.ops[0].val = %0s, ins.ops[1].val = %0s, ins.ops[2].val = %0s", ins.asm.name, ins.ops[0].val, ins.ops[1].val, ins.ops[2].val), UVM_HIGH)
@@ -1769,10 +1773,25 @@ class uvme_rv32isa_covg extends uvm_component;
             "csrwi"     : begin ins.asm=CSRWI;  csrwi_cg.sample(ins);  `uvm_info("RV32ISA Coverage", $sformatf("Instruction: %0s %0s %0s %0s", ins.ins_str, ins.ops[0].val, ins.ops[1].val, ins.ops[2].val), UVM_HIGH) end
             default: begin
               ins.asm = NOP;
-              `uvm_info("RV32ISA Coverage", $sformatf("Coverage warning: ins [%0s] not yet included in being covered", ins.ins_str), UVM_DEBUG)
+              `uvm_info("RV32ISA Coverage", $sformatf("Coverage warning: ins [%0s] not yet included in being covered", ins.ins_str), UVM_DEBUG)            
             end
         endcase
-    endfunction: sample
 
+        // Send instruction to analysis port
+        begin             
+            uvme_rv32isa_covg_trn_c isa_cov_trn;
+
+            // Hack in more instruction matches to enumerated types
+            case (ins.ins_str)
+                "wfi"       : begin ins.asm=WFI;    end
+                "mret"      : begin ins.asm=MRET;   end
+                "j"         : begin ins.asm=J;      end
+            endcase
+
+            isa_cov_trn = uvme_rv32isa_covg_trn_c::type_id::create("isa_cov_trn");
+            isa_cov_trn.ins = ins;
+            ap.write(isa_cov_trn);
+        end
+    endfunction: sample
 
 endclass : uvme_rv32isa_covg

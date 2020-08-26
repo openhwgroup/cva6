@@ -14,20 +14,23 @@ builds:
     # required: the make command to create the build
     cmd: make comp
     dir: cv32/sim/uvmt_cv32
+    cov: 1
+    iss: 0
 
 # List of tests
 tests:
-  interrupt:
+  interrupt_test:
     build: uvmt_cv32
     description: Interrupt directed test
     dir: cv32/sim/uvmt_cv32
-    cmd: make interrupt
+    cmd: make interrupt_test
     
-  corev_rand_instr_test_0:
+  corev_rand_interrupt_test:
     build: uvmt_cv32
-    description: Static riscv-dv ebreak test
+    description: Static riscv-dv interrupt test
     dir: cv32/sim/uvmt_cv32
-    precmd: make gen_corev_rand_instr_test
-    cmd: make custom CUSTOM_PROG=corev_rand_instr_test_0
-    num: 10
-
+    precmd: make gen_corev_rand_interrupt_test
+    cmd: make custom CUSTOM_PROG=corev_rand_interrupt_test_<RUN_INDEX> XRUN_USER_RUN_FLAGS=+gen_irq_noise
+    log: corev_rand_interrupt_test_<RUN_INDEX>
+    cov: 1
+    num: 5

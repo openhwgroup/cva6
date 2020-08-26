@@ -29,6 +29,10 @@ DEFAULT_ISS = 'YES'
 DEFAULT_SIMULATION_PASSED = 'SIMULATION PASSED'
 DEFAULT_SKIP_SIM = []
 
+def get_proj_root():
+    '''Fetch absolute path of core-v-verif directory'''
+    return os.path.abspath(os.path.join(os.path.dirname(__file__), "..", ".."))
+
 class Build:
     '''A regression build object'''
     def __init__(self, **kwargs):
@@ -38,6 +42,9 @@ class Build:
 
         for k, v in kwargs.items():            
             setattr(self, k, v)
+
+        # Absolutize a directory if exists
+        self.dir = os.path.abspath(os.path.join(get_proj_root(), self.dir))
 
     def __str__(self):
         return '{} {} {}'.format(self.name, self.cmd, self.dir)
@@ -56,6 +63,13 @@ class Test:
         for k, v in kwargs.items():
             setattr(self, k, v)
 
+        # Absolutize a directory if exists
+        self.dir = os.path.abspath(os.path.join(get_proj_root(), self.dir))
+
+        # Log equals the test name if does not exist
+        if not hasattr(self, 'log'):
+            self.log = self.name
+
 class Regression:
     '''A full regression object'''
     def __init__(self, **kwargs):
@@ -65,6 +79,7 @@ class Regression:
 
         for k, v in kwargs.items():
             setattr(self, k, v)
+
 
     def add_build(self, build):
         '''Add a new build object to this regression'''
