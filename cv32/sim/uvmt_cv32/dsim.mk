@@ -37,6 +37,7 @@ ifeq ($(USE_ISS),YES)
     DSIM_USER_COMPILE_ARGS += "+define+ISS+CV32E40P_TRACE_EXECUTION"
 #    DSIM_RUN_FLAGS         += +ovpcfg="--controlfile $(OVP_CTRL_FILE)"
 endif
+DSIM_RUN_FLAGS         += $(USER_RUN_FLAGS)
 
 
 # Variables to control wave dumping from command the line
