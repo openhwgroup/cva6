@@ -14,8 +14,6 @@
 //              the virtual interfaces and starts the test passed by +UVM_TEST+
 
 
-import ariane_pkg::*;
-import uvm_pkg::*;
 
 `include "uvm_macros.svh"
 
@@ -26,6 +24,8 @@ import "DPI-C" function byte get_section(output longint address, output longint 
 import "DPI-C" context function byte read_section(input longint address, inout byte buffer[]);
 
 module ariane_tb;
+    import ariane_pkg::*;
+    import uvm_pkg::*;
 
     static uvm_cmdline_processor uvcl = uvm_cmdline_processor::get_inst();
 
