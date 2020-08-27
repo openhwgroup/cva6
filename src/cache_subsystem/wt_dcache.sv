@@ -13,12 +13,12 @@
 // Description: Instruction cache that is compatible with openpiton.
 
 
-module wt_dcache import ariane_pkg::*; import wt_cache_pkg::*; #(
+module wt_dcache import riscv::*; import ariane_pkg::*; import wt_cache_pkg::*; #(
   // ID to be used for read and AMO transactions.
   // note that the write buffer uses all IDs up to DCACHE_MAX_TX-1 for write transactions
   parameter logic [CACHE_ID_WIDTH-1:0]   RdAmoTxId          = 1,
   // contains cacheable regions
-  parameter ariane_pkg::ariane_cfg_t     ArianeCfg          = ariane_pkg::ArianeDefaultConfig
+  parameter ariane_cfg_t     ArianeCfg          = ArianeDefaultConfig
 ) (
   input  logic                           clk_i,       // Clock
   input  logic                           rst_ni,      // Asynchronous reset active low
@@ -74,7 +74,7 @@ module wt_dcache import ariane_pkg::*; import wt_cache_pkg::*; #(
   logic [NumPorts-1:0]                          miss_nc;
   logic [NumPorts-1:0]                          miss_we;
   logic [NumPorts-1:0][63:0]                    miss_wdata;
-  logic [NumPorts-1:0][riscv::PLEN-1:0]         miss_paddr;
+  logic [NumPorts-1:0][PLEN-1:0]         miss_paddr;
   logic [NumPorts-1:0][DCACHE_SET_ASSOC-1:0]    miss_vld_bits;
   logic [NumPorts-1:0][2:0]                     miss_size;
   logic [NumPorts-1:0][CACHE_ID_WIDTH-1:0]      miss_id;
@@ -95,7 +95,7 @@ module wt_dcache import ariane_pkg::*; import wt_cache_pkg::*; #(
   logic [DCACHE_SET_ASSOC-1:0]                  rd_hit_oh;
 
   // miss unit <-> wbuffer
-  logic [DCACHE_MAX_TX-1:0][riscv::PLEN-1:0]    tx_paddr;
+  logic [DCACHE_MAX_TX-1:0][PLEN-1:0]    tx_paddr;
   logic [DCACHE_MAX_TX-1:0]                     tx_vld;
 
   // wbuffer <-> memory
