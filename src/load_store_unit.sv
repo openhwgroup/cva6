@@ -13,9 +13,9 @@
 // Description: Load Store Unit, handles address calculation and memory interface signals
 
 
-module load_store_unit import ariane_pkg::*; #(
+module load_store_unit import riscv::*; import ariane_pkg::*; #(
     parameter int unsigned ASID_WIDTH = 1,
-    parameter ariane_pkg::ariane_cfg_t ArianeCfg = ariane_pkg::ArianeDefaultConfig
+    parameter ariane_cfg_t ArianeCfg = ArianeDefaultConfig
 )(
     input  logic                     clk_i,
     input  logic                     rst_ni,
@@ -48,8 +48,8 @@ module load_store_unit import ariane_pkg::*; #(
     input  icache_areq_o_t           icache_areq_i,
     output icache_areq_i_t           icache_areq_o,
 
-    input  riscv::priv_lvl_t         priv_lvl_i,               // From CSR register file
-    input  riscv::priv_lvl_t         ld_st_priv_lvl_i,         // From CSR register file
+    input  priv_lvl_t         priv_lvl_i,               // From CSR register file
+    input  priv_lvl_t         ld_st_priv_lvl_i,         // From CSR register file
     input  logic                     sum_i,                    // From CSR register file
     input  logic                     mxr_i,                    // From CSR register file
     input  logic [43:0]              satp_ppn_i,               // From CSR register file
@@ -67,7 +67,7 @@ module load_store_unit import ariane_pkg::*; #(
     output amo_req_t                 amo_req_o,
     input  amo_resp_t                amo_resp_i,
     // PMP
-    input  riscv::pmpcfg_t [15:0]    pmpcfg_i,
+    input  pmpcfg_t [15:0]    pmpcfg_i,
     input  logic [15:0][53:0]        pmpaddr_i
 );
     // data is misaligned
@@ -86,26 +86,26 @@ module load_store_unit import ariane_pkg::*; #(
     // Address Generation Unit (AGU)
     // ------------------------------
     // virtual address as calculated by the AGU in the first cycle
-    logic [riscv::VLEN-1:0]   vaddr_i;
+    logic [VLEN-1:0]   vaddr_i;
     logic [63:0]              vaddr64;
     logic                     overflow;
     logic [7:0]               be_i;
 
     assign vaddr64 = $unsigned($signed(fu_data_i.imm) + $signed(fu_data_i.operand_a));
-    assign vaddr_i = vaddr64[riscv::VLEN-1:0];
-    // we work with SV39, so if VM is enabled, check that all bits [64:riscv::38] are equal
-    assign overflow = !((&vaddr64[63:riscv::VLEN-1]) == 1'b1 || (|vaddr64[63:riscv::VLEN-1]) == 1'b0);
+    assign vaddr_i = vaddr64[VLEN-1:0];
+    // we work with SV39, so if VM is enabled, check that all bits [64:38] are equal
+    assign overflow = !((&vaddr64[63:VLEN-1]) == 1'b1 || (|vaddr64[63:VLEN-1]) == 1'b0);
 
     logic                     st_valid_i;
     logic                     ld_valid_i;
     logic                     ld_translation_req;
     logic                     st_translation_req;
-    logic [riscv::VLEN-1:0]   ld_vaddr;
-    logic [riscv::VLEN-1:0]   st_vaddr;
+    logic [VLEN-1:0]   ld_vaddr;
+    logic [VLEN-1:0]   st_vaddr;
     logic                     translation_req;
     logic                     translation_valid;
-    logic [riscv::VLEN-1:0]   mmu_vaddr;
-    logic [riscv::PLEN-1:0]   mmu_paddr;
+    logic [VLEN-1:0]   mmu_vaddr;
+    logic [PLEN-1:0]   mmu_paddr;
     exception_t               mmu_exception;
     logic                     dtlb_hit;
 
@@ -252,7 +252,7 @@ module load_store_unit import ariane_pkg::*; #(
         st_valid_i = 1'b0;
 
         translation_req      = 1'b0;
-        mmu_vaddr            = {riscv::VLEN{1'b0}};
+        mmu_vaddr            = {VLEN{1'b0}};
 
         // check the operator to activate the right functional unit accordingly
         unique case (lsu_ctrl.fu)
@@ -335,15 +335,15 @@ module load_store_unit import ariane_pkg::*; #(
 
             if (lsu_ctrl.fu == LOAD) begin
                 misaligned_exception = {
-                    riscv::LD_ADDR_MISALIGNED,
-                    {{64-riscv::VLEN{1'b0}},lsu_ctrl.vaddr},
+                    LD_ADDR_MISALIGNED,
+                    {{64-VLEN{1'b0}},lsu_ctrl.vaddr},
                     1'b1
                 };
 
             end else if (lsu_ctrl.fu == STORE) begin
                 misaligned_exception = {
-                    riscv::ST_ADDR_MISALIGNED,
-                    {{64-riscv::VLEN{1'b0}},lsu_ctrl.vaddr},
+                    ST_ADDR_MISALIGNED,
+                    {{64-VLEN{1'b0}},lsu_ctrl.vaddr},
                     1'b1
                 };
             end
@@ -353,15 +353,15 @@ module load_store_unit import ariane_pkg::*; #(
 
             if (lsu_ctrl.fu == LOAD) begin
                 misaligned_exception = {
-                    riscv::LD_ACCESS_FAULT,
-                    {{64-riscv::VLEN{1'b0}},lsu_ctrl.vaddr},
+                    LD_ACCESS_FAULT,
+                    {{64-VLEN{1'b0}},lsu_ctrl.vaddr},
                     1'b1
                 };
 
             end else if (lsu_ctrl.fu == STORE) begin
                 misaligned_exception = {
-                    riscv::ST_ACCESS_FAULT,
-                    {{64-riscv::VLEN{1'b0}},lsu_ctrl.vaddr},
+                    ST_ACCESS_FAULT,
+                    {{64-VLEN{1'b0}},lsu_ctrl.vaddr},
                     1'b1
                 };
             end
@@ -399,7 +399,7 @@ endmodule
 // the LSU control should sample it and store it for later application to the units. It does so, by storing it in a
 // two element FIFO. This is necessary as we only know very late in the cycle whether the load/store will succeed (address check,
 // TLB hit mainly). So we better unconditionally allow another request to arrive and store this request in case we need to.
-module lsu_bypass import ariane_pkg::*; (
+module lsu_bypass import riscv::*; import ariane_pkg::*; (
     input  logic      clk_i,
     input  logic      rst_ni,
     input  logic      flush_i,
