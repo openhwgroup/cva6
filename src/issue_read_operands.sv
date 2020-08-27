@@ -13,8 +13,7 @@
 // Description: Issues instruction from the scoreboard and fetches the operands
 //              This also includes all the forwarding logic
 
-
-module issue_read_operands import ariane_pkg::*; #(
+module issue_read_operands import riscv::*; import ariane_pkg::*; #(
     parameter int unsigned NR_COMMIT_PORTS = 2
 )(
     input  logic                                   clk_i,    // Clock
@@ -40,7 +39,7 @@ module issue_read_operands import ariane_pkg::*; #(
     input  fu_t [2**REG_ADDR_SIZE-1:0]             rd_clobber_fpr_i,
     // To FU, just single issue for now
     output fu_data_t                               fu_data_o,
-    output logic [riscv::VLEN-1:0]                 pc_o,
+    output logic [VLEN-1:0]                 pc_o,
     output logic                                   is_compressed_instr_o,
     // ALU 1
     input  logic                                   flu_ready_i,      // Fixed latency unit ready to accept a new request
@@ -96,8 +95,8 @@ module issue_read_operands import ariane_pkg::*; #(
     logic forward_rs1, forward_rs2, forward_rs3;
 
     // original instruction stored in tval
-    riscv::instruction_t orig_instr;
-    assign orig_instr = riscv::instruction_t'(issue_instr_i.ex.tval[31:0]);
+    instruction_t orig_instr;
+    assign orig_instr = instruction_t'(issue_instr_i.ex.tval[31:0]);
 
     // ID <-> EX registers
     assign fu_data_o.operand_a = operand_a_q;
@@ -213,7 +212,7 @@ module issue_read_operands import ariane_pkg::*; #(
 
         // use the PC as operand a
         if (issue_instr_i.use_pc) begin
-            operand_a_n = {{64-riscv::VLEN{issue_instr_i.pc[riscv::VLEN-1]}}, issue_instr_i.pc};
+            operand_a_n = {{64-VLEN{issue_instr_i.pc[VLEN-1]}}, issue_instr_i.pc};
         end
 
         // use the zimm as operand a
