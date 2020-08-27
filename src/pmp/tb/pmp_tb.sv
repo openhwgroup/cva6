@@ -12,9 +12,9 @@
 // Date: 2.10.2019
 // Description: 
 
-import tb_pkg::*;
 
 module pmp_tb;
+    import tb_pkg::*;
     timeunit 1ns;
     timeprecision 1ps;
 
