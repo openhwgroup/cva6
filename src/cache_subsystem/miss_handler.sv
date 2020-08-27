@@ -16,7 +16,7 @@
 // MISS Handler
 // --------------
 
-module miss_handler import ariane_pkg::*; import std_cache_pkg::*; #(
+module miss_handler import ariane_pkg::*; import std_cache_pkg::*; import ariane_axi::*; #(
     parameter int unsigned NR_PORTS         = 3
 )(
     input  logic                                        clk_i,
@@ -33,8 +33,8 @@ module miss_handler import ariane_pkg::*; import std_cache_pkg::*; #(
     output logic [NR_PORTS-1:0][63:0]                   bypass_data_o,
 
     // AXI port
-    output ariane_axi::req_t                            axi_bypass_o,
-    input  ariane_axi::resp_t                           axi_bypass_i,
+    output req_t                            axi_bypass_o,
+    input  resp_t                           axi_bypass_i,
 
     // Miss handling (~> cacheline refill)
     output logic [NR_PORTS-1:0]                         miss_gnt_o,
@@ -42,8 +42,8 @@ module miss_handler import ariane_pkg::*; import std_cache_pkg::*; #(
 
     output logic [63:0]                                 critical_word_o,
     output logic                                        critical_word_valid_o,
-    output ariane_axi::req_t                            axi_data_o,
-    input  ariane_axi::resp_t                           axi_data_i,
+    output req_t                            axi_data_o,
+    input  resp_t                           axi_data_i,
 
     input  logic [NR_PORTS-1:0][55:0]                   mshr_addr_i,
     output logic [NR_PORTS-1:0]                         mshr_addr_matches_o,
@@ -102,7 +102,7 @@ module miss_handler import ariane_pkg::*; import std_cache_pkg::*; #(
     logic [DCACHE_LINE_WIDTH-1:0]            req_fsm_miss_wdata;
     logic                                    req_fsm_miss_we;
     logic [(DCACHE_LINE_WIDTH/8)-1:0]        req_fsm_miss_be;
-    ariane_axi::ad_req_t                     req_fsm_miss_req;
+    ad_req_t                     req_fsm_miss_req;
     logic [1:0]                              req_fsm_miss_size;
 
     logic                                    gnt_miss_fsm;
@@ -114,7 +114,7 @@ module miss_handler import ariane_pkg::*; import std_cache_pkg::*; #(
     logic [DCACHE_SET_ASSOC-1:0]           lfsr_oh;
     logic [$clog2(DCACHE_SET_ASSOC-1)-1:0] lfsr_bin;
     // AMOs
-    ariane_pkg::amo_t amo_op;
+    amo_t amo_op;
     logic [63:0] amo_operand_a, amo_operand_b, amo_result_o;
 
     struct packed {
@@ -152,7 +152,7 @@ module miss_handler import ariane_pkg::*; import std_cache_pkg::*; #(
         req_fsm_miss_wdata  = '0;
         req_fsm_miss_we     = 1'b0;
         req_fsm_miss_be     = '0;
-        req_fsm_miss_req    = ariane_axi::CACHE_LINE_REQ;
+        req_fsm_miss_req    = CACHE_LINE_REQ;
         req_fsm_miss_size   = 2'b11;
         // core
         flush_ack_o         = 1'b0;
@@ -384,7 +384,7 @@ module miss_handler import ariane_pkg::*; import std_cache_pkg::*; #(
                 req_fsm_miss_valid = 1'b1;
                 // address is in operand a
                 req_fsm_miss_addr = amo_req_i.operand_a;
-                req_fsm_miss_req = ariane_axi::SINGLE_REQ;
+                req_fsm_miss_req = SINGLE_REQ;
                 req_fsm_miss_size = amo_req_i.size;
                 // the request has been granted
                 if (gnt_miss_fsm) begin
@@ -434,7 +434,7 @@ module miss_handler import ariane_pkg::*; import std_cache_pkg::*; #(
                 end
 
                 req_fsm_miss_we   = 1'b1;
-                req_fsm_miss_req  = ariane_axi::SINGLE_REQ;
+                req_fsm_miss_req  = SINGLE_REQ;
                 req_fsm_miss_size = amo_req_i.size;
                 req_fsm_miss_addr = amo_req_i.operand_a;
 
@@ -569,7 +569,7 @@ module miss_handler import ariane_pkg::*; import std_cache_pkg::*; #(
         .clk_i,
         .rst_ni,
         .req_i                 ( req_fsm_bypass_valid   ),
-        .type_i                ( ariane_axi::SINGLE_REQ ),
+        .type_i                ( SINGLE_REQ ),
         .gnt_o                 ( gnt_bypass_fsm         ),
         .addr_i                ( req_fsm_bypass_addr    ),
         .we_i                  ( req_fsm_bypass_we      ),
