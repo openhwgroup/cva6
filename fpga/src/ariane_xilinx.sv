@@ -11,7 +11,7 @@
 // Description: Xilinx FPGA top-level
 // Author: Florian Zaruba <zarubaf@iis.ee.ethz.ch>
 
-module ariane_xilinx (
+module ariane_xilinx import ariane_pkg::*; import ariane_soc::*; import dm::*; import ariane_axi::*; (
 `ifdef GENESYSII
   input  logic         sys_clk_p   ,
   input  logic         sys_clk_n   ,
@@ -173,7 +173,7 @@ AXI_BUS #(
     .AXI_DATA_WIDTH ( AxiDataWidth     ),
     .AXI_ID_WIDTH   ( AxiIdWidthSlaves ),
     .AXI_USER_WIDTH ( AxiUserWidth     )
-) master[ariane_soc::NB_PERIPHERALS-1:0]();
+) master[NB_PERIPHERALS-1:0]();
 
 // disable test-enable
 logic test_en;
@@ -219,10 +219,10 @@ logic [AxiDataWidth-1:0] rom_rdata;
 // Debug
 logic          debug_req_valid;
 logic          debug_req_ready;
-dm::dmi_req_t  debug_req;
+dmi_req_t  debug_req;
 logic          debug_resp_valid;
 logic          debug_resp_ready;
-dm::dmi_resp_t debug_resp;
+dmi_resp_t debug_resp;
 
 logic dmactive;
 
@@ -249,8 +249,8 @@ assign rst = ddr_sync_reset;
 axi_node_wrap_with_slices #(
     // three ports from Ariane (instruction, data and bypass)
     .NB_SLAVE           ( NBSlave                    ),
-    .NB_MASTER          ( ariane_soc::NB_PERIPHERALS ),
-    .NB_REGION          ( ariane_soc::NrRegion       ),
+    .NB_MASTER          ( NB_PERIPHERALS ),
+    .NB_REGION          ( NrRegion       ),
     .AXI_ADDR_WIDTH     ( AxiAddrWidth               ),
     .AXI_DATA_WIDTH     ( AxiDataWidth               ),
     .AXI_USER_WIDTH     ( AxiUserWidth               ),
@@ -264,30 +264,30 @@ axi_node_wrap_with_slices #(
     .slave        ( slave      ),
     .master       ( master     ),
     .start_addr_i ({
-        ariane_soc::DebugBase,
-        ariane_soc::ROMBase,
-        ariane_soc::CLINTBase,
-        ariane_soc::PLICBase,
-        ariane_soc::UARTBase,
-        ariane_soc::TimerBase,
-        ariane_soc::SPIBase,
-        ariane_soc::EthernetBase,
-        ariane_soc::GPIOBase,
-        ariane_soc::DRAMBase
+        DebugBase,
+        ROMBase,
+        CLINTBase,
+        PLICBase,
+        UARTBase,
+        TimerBase,
+        SPIBase,
+        EthernetBase,
+        GPIOBase,
+        DRAMBase
     }),
     .end_addr_i   ({
-        ariane_soc::DebugBase    + ariane_soc::DebugLength - 1,
-        ariane_soc::ROMBase      + ariane_soc::ROMLength - 1,
-        ariane_soc::CLINTBase    + ariane_soc::CLINTLength - 1,
-        ariane_soc::PLICBase     + ariane_soc::PLICLength - 1,
-        ariane_soc::UARTBase     + ariane_soc::UARTLength - 1,
-        ariane_soc::TimerBase    + ariane_soc::TimerLength - 1,
-        ariane_soc::SPIBase      + ariane_soc::SPILength - 1,
-        ariane_soc::EthernetBase + ariane_soc::EthernetLength -1,
-        ariane_soc::GPIOBase     + ariane_soc::GPIOLength - 1,
-        ariane_soc::DRAMBase     + ariane_soc::DRAMLength - 1
+        DebugBase    + DebugLength - 1,
+        ROMBase      + ROMLength - 1,
+        CLINTBase    + CLINTLength - 1,
+        PLICBase     + PLICLength - 1,
+        UARTBase     + UARTLength - 1,
+        TimerBase    + TimerLength - 1,
+        SPIBase      + SPILength - 1,
+        EthernetBase + EthernetLength -1,
+        GPIOBase     + GPIOLength - 1,
+        DRAMBase     + DRAMLength - 1
     }),
-    .valid_rule_i (ariane_soc::ValidRule)
+    .valid_rule_i (ValidRule)
 );
 
 // ---------------
@@ -312,8 +312,8 @@ dmi_jtag i_dmi_jtag (
     .tdo_oe_o             (        )
 );
 
-ariane_axi::req_t    dm_axi_m_req;
-ariane_axi::resp_t   dm_axi_m_resp;
+req_t    dm_axi_m_req;
+resp_t   dm_axi_m_resp;
 
 logic                dm_slave_req;
 logic                dm_slave_we;
@@ -344,7 +344,7 @@ dm_top #(
     .dmactive_o       ( dmactive          ), // active debug session
     .debug_req_o      ( debug_req_irq     ),
     .unavailable_i    ( '0                ),
-    .hartinfo_i       ( {ariane_pkg::DebugHartInfo} ),
+    .hartinfo_i       ( {DebugHartInfo} ),
     .slave_req_i      ( dm_slave_req      ),
     .slave_we_i       ( dm_slave_we       ),
     .slave_addr_i     ( dm_slave_addr     ),
@@ -376,7 +376,7 @@ axi2mem #(
 ) i_dm_axi2mem (
     .clk_i      ( clk                       ),
     .rst_ni     ( rst_n                     ),
-    .slave      ( master[ariane_soc::Debug] ),
+    .slave      ( master[Debug] ),
     .req_o      ( dm_slave_req              ),
     .we_o       ( dm_slave_we               ),
     .addr_o     ( dm_slave_addr             ),
@@ -397,7 +397,7 @@ axi_adapter #(
     .clk_i                 ( clk                       ),
     .rst_ni                ( rst_n                     ),
     .req_i                 ( dm_master_req             ),
-    .type_i                ( ariane_axi::SINGLE_REQ    ),
+    .type_i                ( SINGLE_REQ    ),
     .gnt_o                 ( dm_master_gnt             ),
     .gnt_id_o              (                           ),
     .addr_i                ( dm_master_add             ),
@@ -418,15 +418,15 @@ axi_adapter #(
 // ---------------
 // Core
 // ---------------
-ariane_axi::req_t    axi_ariane_req;
-ariane_axi::resp_t   axi_ariane_resp;
+req_t    axi_ariane_req;
+resp_t   axi_ariane_resp;
 
 ariane #(
-    .ArianeCfg ( ariane_soc::ArianeSocCfg )
+    .ArianeCfg ( ArianeSocCfg )
 ) i_ariane (
     .clk_i        ( clk                 ),
     .rst_ni       ( ndmreset_n          ),
-    .boot_addr_i  ( ariane_soc::ROMBase ), // start fetching from ROM
+    .boot_addr_i  ( ROMBase ), // start fetching from ROM
     .hart_id_i    ( '0                  ),
     .irq_i        ( irq                 ),
     .ipi_i        ( ipi                 ),
@@ -450,8 +450,8 @@ always_ff @(posedge clk or negedge ndmreset_n) begin
   end
 end
 
-ariane_axi::req_t    axi_clint_req;
-ariane_axi::resp_t   axi_clint_resp;
+req_t    axi_clint_req;
+resp_t   axi_clint_resp;
 
 clint #(
     .AXI_ADDR_WIDTH ( AxiAddrWidth     ),
@@ -469,7 +469,7 @@ clint #(
     .ipi_o       ( ipi            )
 );
 
-axi_slave_connect i_axi_slave_connect_clint (.axi_req_o(axi_clint_req), .axi_resp_i(axi_clint_resp), .slave(master[ariane_soc::CLINT]));
+axi_slave_connect i_axi_slave_connect_clint (.axi_req_o(axi_clint_req), .axi_resp_i(axi_clint_resp), .slave(master[CLINT]));
 
 // ---------------
 // ROM
@@ -482,7 +482,7 @@ axi2mem #(
 ) i_axi2rom (
     .clk_i  ( clk                     ),
     .rst_ni ( ndmreset_n              ),
-    .slave  ( master[ariane_soc::ROM] ),
+    .slave  ( master[ROM] ),
     .req_o  ( rom_req                 ),
     .we_o   (                         ),
     .addr_o ( rom_addr                ),
@@ -530,13 +530,13 @@ ariane_peripherals #(
     .clk_i        ( clk                          ),
     .clk_200MHz_i ( ddr_clock_out                ),
     .rst_ni       ( ndmreset_n                   ),
-    .plic         ( master[ariane_soc::PLIC]     ),
-    .uart         ( master[ariane_soc::UART]     ),
-    .spi          ( master[ariane_soc::SPI]      ),
-    .gpio         ( master[ariane_soc::GPIO]     ),
+    .plic         ( master[PLIC]     ),
+    .uart         ( master[UART]     ),
+    .spi          ( master[SPI]      ),
+    .gpio         ( master[GPIO]     ),
     .eth_clk_i    ( eth_clk                      ),
-    .ethernet     ( master[ariane_soc::Ethernet] ),
-    .timer        ( master[ariane_soc::Timer]    ),
+    .ethernet     ( master[Ethernet] ),
+    .timer        ( master[Timer]    ),
     .irq_o        ( irq                          ),
     .rx_i         ( rx                           ),
     .tx_o         ( tx                           ),
@@ -628,7 +628,7 @@ axi_riscv_atomics_wrap #(
 ) i_axi_riscv_atomics (
     .clk_i  ( clk                      ),
     .rst_ni ( ndmreset_n               ),
-    .slv    ( master[ariane_soc::DRAM] ),
+    .slv    ( master[DRAM] ),
     .mst    ( dram                     )
 );
 
