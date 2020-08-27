@@ -14,12 +14,11 @@
 //              address translation unit. SV39 as defined in RISC-V
 //              privilege specification 1.11-WIP
 
-
-module mmu import ariane_pkg::*; #(
+module mmu import riscv::*; import ariane_pkg::*; #(
     parameter int unsigned INSTR_TLB_ENTRIES     = 4,
     parameter int unsigned DATA_TLB_ENTRIES      = 4,
     parameter int unsigned ASID_WIDTH            = 1,
-    parameter ariane_pkg::ariane_cfg_t ArianeCfg = ariane_pkg::ArianeDefaultConfig
+    parameter ariane_cfg_t ArianeCfg = ArianeDefaultConfig
 ) (
     input  logic                            clk_i,
     input  logic                            rst_ni,
@@ -34,18 +33,18 @@ module mmu import ariane_pkg::*; #(
     // in the LSU as we distinguish load and stores, what we do here is simple address translation
     input  exception_t                      misaligned_ex_i,
     input  logic                            lsu_req_i,        // request address translation
-    input  logic [riscv::VLEN-1:0]          lsu_vaddr_i,      // virtual address in
+    input  logic [VLEN-1:0]          lsu_vaddr_i,      // virtual address in
     input  logic                            lsu_is_store_i,   // the translation is requested by a store
     // if we need to walk the page table we can't grant in the same cycle
     // Cycle 0
     output logic                            lsu_dtlb_hit_o,   // sent in the same cycle as the request if translation hits in the DTLB
     // Cycle 1
     output logic                            lsu_valid_o,      // translation is valid
-    output logic [riscv::PLEN-1:0]          lsu_paddr_o,      // translated address
+    output logic [PLEN-1:0]          lsu_paddr_o,      // translated address
     output exception_t                      lsu_exception_o,  // address translation threw an exception
     // General control signals
-    input riscv::priv_lvl_t                 priv_lvl_i,
-    input riscv::priv_lvl_t                 ld_st_priv_lvl_i,
+    input priv_lvl_t                 priv_lvl_i,
+    input priv_lvl_t                 ld_st_priv_lvl_i,
     input logic                             sum_i,
     input logic                             mxr_i,
     // input logic flag_mprv_i,
@@ -59,7 +58,7 @@ module mmu import ariane_pkg::*; #(
     input  dcache_req_o_t                   req_port_i,
     output dcache_req_i_t                   req_port_o,
     // PMP
-    input  riscv::pmpcfg_t [15:0]           pmpcfg_i,
+    input  pmpcfg_t [15:0]           pmpcfg_i,
     input  logic [15:0][53:0]               pmpaddr_i
 );
 
@@ -69,19 +68,19 @@ module mmu import ariane_pkg::*; #(
     logic                   walking_instr; // PTW is walking because of an ITLB miss
     logic                   ptw_error;     // PTW threw an exception
     logic                   ptw_access_exception; // PTW threw an access exception (PMPs)
-    logic [riscv::PLEN-1:0] ptw_bad_paddr; // PTW PMP exception bad physical addr
+    logic [PLEN-1:0] ptw_bad_paddr; // PTW PMP exception bad physical addr
 
-    logic [riscv::VLEN-1:0] update_vaddr;
+    logic [VLEN-1:0] update_vaddr;
     tlb_update_t update_ptw_itlb, update_ptw_dtlb;
 
     logic        itlb_lu_access;
-    riscv::pte_t itlb_content;
+    pte_t itlb_content;
     logic        itlb_is_2M;
     logic        itlb_is_1G;
     logic        itlb_lu_hit;
 
     logic        dtlb_lu_access;
-    riscv::pte_t dtlb_content;
+    pte_t dtlb_content;
     logic        dtlb_is_2M;
     logic        dtlb_is_1G;
     logic        dtlb_lu_hit;
@@ -194,23 +193,23 @@ module mmu import ariane_pkg::*; #(
     always_comb begin : instr_interface
         // MMU disabled: just pass through
         icache_areq_o.fetch_valid  = icache_areq_i.fetch_req;
-        icache_areq_o.fetch_paddr  = icache_areq_i.fetch_vaddr[riscv::PLEN-1:0]; // play through in case we disabled address translation
+        icache_areq_o.fetch_paddr  = icache_areq_i.fetch_vaddr[PLEN-1:0]; // play through in case we disabled address translation
         // two potential exception sources:
         // 1. HPTW threw an exception -> signal with a page fault exception
         // 2. We got an access error because of insufficient permissions -> throw an access exception
         icache_areq_o.fetch_exception      = '0;
         // Check whether we are allowed to access this memory region from a fetch perspective
-        iaccess_err   = icache_areq_i.fetch_req && (((priv_lvl_i == riscv::PRIV_LVL_U) && ~itlb_content.u)
-                                                 || ((priv_lvl_i == riscv::PRIV_LVL_S) && itlb_content.u));
+        iaccess_err   = icache_areq_i.fetch_req && (((priv_lvl_i == PRIV_LVL_U) && ~itlb_content.u)
+                                                 || ((priv_lvl_i == PRIV_LVL_S) && itlb_content.u));
 
         // MMU enabled: address from TLB, request delayed until hit. Error when TLB
         // hit and no access right or TLB hit and translated address not valid (e.g.
         // AXI decode error), or when PTW performs walk due to ITLB miss and raises
         // an error.
         if (enable_translation_i) begin
-            // we work with SV39, so if VM is enabled, check that all bits [riscv::VLEN-1:38] are equal
-            if (icache_areq_i.fetch_req && !((&icache_areq_i.fetch_vaddr[riscv::VLEN-1:38]) == 1'b1 || (|icache_areq_i.fetch_vaddr[riscv::VLEN-1:38]) == 1'b0)) begin
-                icache_areq_o.fetch_exception = {riscv::INSTR_ACCESS_FAULT, {{64-riscv::VLEN{1'b0}}, icache_areq_i.fetch_vaddr}, 1'b1};
+            // we work with SV39, so if VM is enabled, check that all bits [VLEN-1:38] are equal
+            if (icache_areq_i.fetch_req && !((&icache_areq_i.fetch_vaddr[VLEN-1:38]) == 1'b1 || (|icache_areq_i.fetch_vaddr[VLEN-1:38]) == 1'b0)) begin
+                icache_areq_o.fetch_exception = {INSTR_ACCESS_FAULT, {{64-VLEN{1'b0}}, icache_areq_i.fetch_vaddr}, 1'b1};
             end
 
             icache_areq_o.fetch_valid = 1'b0;
@@ -235,9 +234,9 @@ module mmu import ariane_pkg::*; #(
                 // we got an access error
                 if (iaccess_err) begin
                     // throw a page fault
-                    icache_areq_o.fetch_exception = {riscv::INSTR_PAGE_FAULT, {{64-riscv::VLEN{1'b0}}, icache_areq_i.fetch_vaddr}, 1'b1};
+                    icache_areq_o.fetch_exception = {INSTR_PAGE_FAULT, {{64-VLEN{1'b0}}, icache_areq_i.fetch_vaddr}, 1'b1};
                 end else if (!pmp_instr_allow) begin
-                    icache_areq_o.fetch_exception = {riscv::INSTR_ACCESS_FAULT, {{64-riscv::PLEN{1'b0}}, icache_areq_i.fetch_vaddr}, 1'b1};
+                    icache_areq_o.fetch_exception = {INSTR_ACCESS_FAULT, {{64-PLEN{1'b0}}, icache_areq_i.fetch_vaddr}, 1'b1};
                 end
             end else
             // ---------
@@ -246,31 +245,31 @@ module mmu import ariane_pkg::*; #(
             // watch out for exceptions happening during walking the page table
             if (ptw_active && walking_instr) begin
                 icache_areq_o.fetch_valid = ptw_error | ptw_access_exception;
-                if (ptw_error) icache_areq_o.fetch_exception = {riscv::INSTR_PAGE_FAULT, {{64-riscv::VLEN{1'b0}}, update_vaddr}, 1'b1};
+                if (ptw_error) icache_areq_o.fetch_exception = {INSTR_PAGE_FAULT, {{64-VLEN{1'b0}}, update_vaddr}, 1'b1};
                 // TODO(moschn,zarubaf): What should the value of tval be in this case?
-                else icache_areq_o.fetch_exception = {riscv::INSTR_ACCESS_FAULT, {{64-riscv::VLEN{1'b0}}, ptw_bad_paddr}, 1'b1};
+                else icache_areq_o.fetch_exception = {INSTR_ACCESS_FAULT, {{64-VLEN{1'b0}}, ptw_bad_paddr}, 1'b1};
             end
         end
         // if it didn't match any execute region throw an `Instruction Access Fault`
         // or: if we are not translating, check PMPs immediately on the paddr
         if (!match_any_execute_region || (!enable_translation_i && !pmp_instr_allow)) begin
-          icache_areq_o.fetch_exception = {riscv::INSTR_ACCESS_FAULT, {{64-riscv::PLEN{1'b0}}, icache_areq_o.fetch_paddr}, 1'b1};
+          icache_areq_o.fetch_exception = {INSTR_ACCESS_FAULT, {{64-PLEN{1'b0}}, icache_areq_o.fetch_paddr}, 1'b1};
         end
     end
 
     // check for execute flag on memory
-    assign match_any_execute_region = ariane_pkg::is_inside_execute_regions(ArianeCfg, {{64-riscv::PLEN{1'b0}}, icache_areq_o.fetch_paddr});
+    assign match_any_execute_region = is_inside_execute_regions(ArianeCfg, {{64-PLEN{1'b0}}, icache_areq_o.fetch_paddr});
 
     // Instruction fetch
     pmp #(
-        .PLEN       ( riscv::PLEN            ),
-        .PMP_LEN    ( riscv::PLEN - 2        ),
+        .PLEN       ( PLEN            ),
+        .PMP_LEN    ( PLEN - 2        ),
         .NR_ENTRIES ( ArianeCfg.NrPMPEntries )
     ) i_pmp_if (
         .addr_i        ( icache_areq_o.fetch_paddr ),
         .priv_lvl_i,
         // we will always execute on the instruction fetch port
-        .access_type_i ( riscv::ACCESS_EXEC        ),
+        .access_type_i ( ACCESS_EXEC        ),
         // Configuration
         .conf_addr_i   ( pmpaddr_i                 ),
         .conf_i        ( pmpcfg_i                  ),
@@ -280,8 +279,8 @@ module mmu import ariane_pkg::*; #(
     //-----------------------
     // Data Interface
     //-----------------------
-    logic [riscv::VLEN-1:0] lsu_vaddr_n,     lsu_vaddr_q;
-    riscv::pte_t dtlb_pte_n,      dtlb_pte_q;
+    logic [VLEN-1:0] lsu_vaddr_n,     lsu_vaddr_q;
+    pte_t dtlb_pte_n,      dtlb_pte_q;
     exception_t  misaligned_ex_n, misaligned_ex_q;
     logic        lsu_req_n,       lsu_req_q;
     logic        lsu_is_store_n,  lsu_is_store_q;
@@ -293,7 +292,7 @@ module mmu import ariane_pkg::*; #(
     assign lsu_dtlb_hit_o = (en_ld_st_translation_i) ? dtlb_lu_hit :  1'b1;
 
     // Wires to PMP checks
-    riscv::pmp_access_t pmp_access_type;
+    pmp_access_t pmp_access_type;
     logic        pmp_data_allow;
     // The data interface is simpler and only consists of a request/response interface
     always_comb begin : data_interface
@@ -307,18 +306,18 @@ module mmu import ariane_pkg::*; #(
         dtlb_is_2M_n          = dtlb_is_2M;
         dtlb_is_1G_n          = dtlb_is_1G;
 
-        lsu_paddr_o           = lsu_vaddr_q[riscv::PLEN-1:0];
+        lsu_paddr_o           = lsu_vaddr_q[PLEN-1:0];
         lsu_valid_o           = lsu_req_q;
         lsu_exception_o       = misaligned_ex_q;
-        pmp_access_type       = lsu_is_store_q ? riscv::ACCESS_WRITE : riscv::ACCESS_READ;
+        pmp_access_type       = lsu_is_store_q ? ACCESS_WRITE : ACCESS_READ;
 
         // mute misaligned exceptions if there is no request otherwise they will throw accidental exceptions
         misaligned_ex_n.valid = misaligned_ex_i.valid & lsu_req_i;
 
         // Check if the User flag is set, then we may only access it in supervisor mode
         // if SUM is enabled
-        daccess_err = (ld_st_priv_lvl_i == riscv::PRIV_LVL_S && !sum_i && dtlb_pte_q.u) || // SUM is not set and we are trying to access a user page in supervisor mode
-                      (ld_st_priv_lvl_i == riscv::PRIV_LVL_U && !dtlb_pte_q.u);            // this is not a user page but we are in user mode and trying to access it
+        daccess_err = (ld_st_priv_lvl_i == PRIV_LVL_S && !sum_i && dtlb_pte_q.u) || // SUM is not set and we are trying to access a user page in supervisor mode
+                      (ld_st_priv_lvl_i == PRIV_LVL_U && !dtlb_pte_q.u);            // this is not a user page but we are in user mode and trying to access it
         // translation is enabled and no misaligned exception occurred
         if (en_ld_st_translation_i && !misaligned_ex_q.valid) begin
             lsu_valid_o = 1'b0;
@@ -347,20 +346,20 @@ module mmu import ariane_pkg::*; #(
                     // check if the page is write-able and we are not violating privileges
                     // also check if the dirty flag is set
                     if (!dtlb_pte_q.w || daccess_err || !dtlb_pte_q.d) begin
-                        lsu_exception_o = {riscv::STORE_PAGE_FAULT, {{64-riscv::VLEN{lsu_vaddr_q[riscv::VLEN-1]}},lsu_vaddr_q}, 1'b1};
+                        lsu_exception_o = {STORE_PAGE_FAULT, {{64-VLEN{lsu_vaddr_q[VLEN-1]}},lsu_vaddr_q}, 1'b1};
                     // Check if any PMPs are violated
                     end else if (!pmp_data_allow) begin
-                        lsu_exception_o = {riscv::ST_ACCESS_FAULT, {{64-riscv::PLEN{1'b0}}, lsu_paddr_o}, 1'b1};
+                        lsu_exception_o = {ST_ACCESS_FAULT, {{64-PLEN{1'b0}}, lsu_paddr_o}, 1'b1};
                     end
 
                 // this is a load
                 end else begin
                     // check for sufficient access privileges - throw a page fault if necessary
                     if (daccess_err) begin
-                        lsu_exception_o = {riscv::LOAD_PAGE_FAULT, {{64-riscv::VLEN{lsu_vaddr_q[riscv::VLEN-1]}},lsu_vaddr_q}, 1'b1};
+                        lsu_exception_o = {LOAD_PAGE_FAULT, {{64-VLEN{lsu_vaddr_q[VLEN-1]}},lsu_vaddr_q}, 1'b1};
                     // Check if any PMPs are violated
                     end else if (!pmp_data_allow) begin
-                        lsu_exception_o = {riscv::LD_ACCESS_FAULT, {{64-riscv::PLEN{1'b0}}, lsu_paddr_o}, 1'b1};
+                        lsu_exception_o = {LD_ACCESS_FAULT, {{64-PLEN{1'b0}}, lsu_paddr_o}, 1'b1};
                     end
                 end
             end else
@@ -376,9 +375,9 @@ module mmu import ariane_pkg::*; #(
                     lsu_valid_o = 1'b1;
                     // the page table walker can only throw page faults
                     if (lsu_is_store_q) begin
-                        lsu_exception_o = {riscv::STORE_PAGE_FAULT, {{64-riscv::VLEN{lsu_vaddr_q[riscv::VLEN-1]}},update_vaddr}, 1'b1};
+                        lsu_exception_o = {STORE_PAGE_FAULT, {{64-VLEN{lsu_vaddr_q[VLEN-1]}},update_vaddr}, 1'b1};
                     end else begin
-                        lsu_exception_o = {riscv::LOAD_PAGE_FAULT, {{64-riscv::VLEN{lsu_vaddr_q[riscv::VLEN-1]}},update_vaddr}, 1'b1};
+                        lsu_exception_o = {LOAD_PAGE_FAULT, {{64-VLEN{lsu_vaddr_q[VLEN-1]}},update_vaddr}, 1'b1};
                     end
                 end
 
@@ -386,24 +385,24 @@ module mmu import ariane_pkg::*; #(
                     // an error makes the translation valid
                     lsu_valid_o = 1'b1;
                     // the page table walker can only throw page faults
-                    lsu_exception_o = {riscv::LD_ACCESS_FAULT, ptw_bad_paddr, 1'b1};
+                    lsu_exception_o = {LD_ACCESS_FAULT, ptw_bad_paddr, 1'b1};
                 end
             end
         end
         // If translation is not enabled, check the paddr immediately against PMPs
         else if (lsu_req_q && !misaligned_ex_q.valid && !pmp_data_allow) begin
             if (lsu_is_store_q) begin
-                lsu_exception_o = {riscv::ST_ACCESS_FAULT, lsu_paddr_o, 1'b1};
+                lsu_exception_o = {ST_ACCESS_FAULT, lsu_paddr_o, 1'b1};
             end else begin
-                lsu_exception_o = {riscv::LD_ACCESS_FAULT, lsu_paddr_o, 1'b1};
+                lsu_exception_o = {LD_ACCESS_FAULT, lsu_paddr_o, 1'b1};
             end
         end
     end
 
     // Load/store PMP check
     pmp #(
-        .PLEN       ( riscv::PLEN            ),
-        .PMP_LEN    ( riscv::PLEN - 2        ),
+        .PLEN       ( PLEN            ),
+        .PMP_LEN    ( PLEN - 2        ),
         .NR_ENTRIES ( ArianeCfg.NrPMPEntries )
     ) i_pmp_data (
         .addr_i        ( lsu_paddr_o         ),
