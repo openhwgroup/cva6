@@ -12,18 +12,18 @@
 // Date: 2.10.2019
 // Description: purely combinatorial PMP unit (with extraction for more complex configs such as NAPOT)
 
-module pmp #(
+module pmp import riscv::*; #(
     parameter int unsigned PLEN = 34,       // rv64: 56
     parameter int unsigned PMP_LEN = 32,    // rv64: 54
     parameter int unsigned NR_ENTRIES = 4
 ) (
     // Input
     input logic [PLEN-1:0] addr_i,
-    input riscv::pmp_access_t access_type_i,
-    input riscv::priv_lvl_t priv_lvl_i,
+    input pmp_access_t access_type_i,
+    input priv_lvl_t priv_lvl_i,
     // Configuration
     input logic [15:0][PMP_LEN-1:0] conf_addr_i,
-    input riscv::pmpcfg_t [15:0] conf_i,
+    input pmpcfg_t [15:0] conf_i,
     // Output
     output logic allow_o
 );
@@ -51,7 +51,7 @@ module pmp #(
             for (i = 0; i < NR_ENTRIES; i++) begin
                 // either we are in S or U mode or the config is locked in which
                 // case it also applies in M mode
-                if (priv_lvl_i != riscv::PRIV_LVL_M || conf_i[i].locked) begin
+                if (priv_lvl_i != PRIV_LVL_M || conf_i[i].locked) begin
                     if (match[i]) begin
                         if ((access_type_i & conf_i[i].access_type) != access_type_i) allow_o = 1'b0;
                         else allow_o = 1'b1;
@@ -61,7 +61,7 @@ module pmp #(
             end
             if (i == NR_ENTRIES) begin // no PMP entry matched the address
                 // allow all accesses from M-mode for no pmp match
-                if (priv_lvl_i == riscv::PRIV_LVL_M) allow_o = 1'b1;
+                if (priv_lvl_i == PRIV_LVL_M) allow_o = 1'b1;
                 // disallow accesses for all other modes
                 else allow_o = 1'b0;
             end
@@ -70,10 +70,10 @@ module pmp #(
 
     `ifdef FORMAL
     always @(*) begin
-        if(priv_lvl_i == riscv::PRIV_LVL_M) begin
+        if(priv_lvl_i == PRIV_LVL_M) begin
             static logic no_locked = 1'b1;
             for (int i = 0; i < NR_ENTRIES; i++) begin
-                if (conf_i[i].locked && conf_i[i].addr_mode != riscv::OFF) begin
+                if (conf_i[i].locked && conf_i[i].addr_mode != OFF) begin
                     no_locked &= 1'b0;
                 end else no_locked &= 1'b1;
             end
