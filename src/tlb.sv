@@ -15,7 +15,7 @@
 //              fully set-associative
 
 
-module tlb import ariane_pkg::*; #(
+module tlb import riscv::*; import ariane_pkg::*; #(
       parameter int unsigned TLB_ENTRIES = 4,
       parameter int unsigned ASID_WIDTH  = 1
   )(
@@ -27,8 +27,8 @@ module tlb import ariane_pkg::*; #(
     // Lookup signals
     input  logic                    lu_access_i,
     input  logic [ASID_WIDTH-1:0]   lu_asid_i,
-    input  logic [riscv::VLEN-1:0]  lu_vaddr_i,
-    output riscv::pte_t             lu_content_o,
+    input  logic [VLEN-1:0]  lu_vaddr_i,
+    output pte_t             lu_content_o,
     output logic                    lu_is_2M_o,
     output logic                    lu_is_1G_o,
     output logic                    lu_hit_o
@@ -45,7 +45,7 @@ module tlb import ariane_pkg::*; #(
       logic                  valid;
     } [TLB_ENTRIES-1:0] tags_q, tags_n;
 
-    riscv::pte_t [TLB_ENTRIES-1:0] content_q, content_n;
+    pte_t [TLB_ENTRIES-1:0] content_q, content_n;
     logic [8:0] vpn0, vpn1, vpn2;
     logic [TLB_ENTRIES-1:0] lu_hit;     // to replacement logic
     logic [TLB_ENTRIES-1:0] replace_en; // replace the following entry, set by replacement strategy
