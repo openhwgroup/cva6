@@ -1001,7 +1001,7 @@ module csr_regfile #(
 `endif
             dcsr_q                 <= '0;
             dcsr_q.prv             <= riscv::PRIV_LVL_M;
-            dpc_q                  <= {riscv::XLEN{1'b0}};
+            dpc_q                  <= '0;
             dscratch0_q            <= {riscv::XLEN{1'b0}};
             dscratch1_q            <= {riscv::XLEN{1'b0}};
             // machine mode registers
