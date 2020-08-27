@@ -517,7 +517,7 @@ module decoder (
                     instruction_o.rs1[4:0] = instr.rtype.rs1;
                     instruction_o.rs2[4:0] = instr.rtype.rs2;
                     instruction_o.rd[4:0]  = instr.rtype.rd;
-                      if (IS_XLEN64) begin
+                      if (riscv::IS_XLEN64) begin
                         unique case ({instr.rtype.funct7, instr.rtype.funct3})
                             {7'b000_0000, 3'b000}: instruction_o.op = ariane_pkg::ADDW; // addw
                             {7'b010_0000, 3'b000}: instruction_o.op = ariane_pkg::SUBW; // subw
@@ -578,7 +578,7 @@ module decoder (
                     imm_select = IIMM;
                     instruction_o.rs1[4:0] = instr.itype.rs1;
                     instruction_o.rd[4:0]  = instr.itype.rd;
-                    if (riscv::XLEN==64)
+                    if (riscv::IS_XLEN64)
                     unique case (instr.itype.funct3)
                         3'b000: instruction_o.op = ariane_pkg::ADDW;  // Add Immediate
 
