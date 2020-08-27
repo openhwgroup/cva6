@@ -14,7 +14,7 @@
 // Date: 09.06.2018
 
 // return address stack
-module ras #(
+module ras import riscv::*; import ariane_pkg::*; #(
     parameter int unsigned DEPTH = 2
 )(
     input  logic             clk_i,
@@ -22,11 +22,11 @@ module ras #(
     input  logic             flush_i,
     input  logic             push_i,
     input  logic             pop_i,
-    input  logic [riscv::VLEN-1:0]      data_i,
-    output ariane_pkg::ras_t data_o
+    input  logic [VLEN-1:0]      data_i,
+    output ras_t data_o
 );
 
-    ariane_pkg::ras_t [DEPTH-1:0] stack_d, stack_q;
+    ras_t [DEPTH-1:0] stack_d, stack_q;
 
     assign data_o = stack_q[0];
 
