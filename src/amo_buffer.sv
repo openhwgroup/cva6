@@ -14,20 +14,20 @@
 // This unit buffers an atomic memory operations for the cache subsyste.
 // Furthermore it handles interfacing with the commit stage
 
-module amo_buffer (
+module amo_buffer import riscv::*; import ariane_pkg::*; (
     input  logic clk_i,              // Clock
     input  logic rst_ni,             // Asynchronous reset active low
     input  logic flush_i,            // pipeline flush
 
     input  logic             valid_i,            // AMO is valid
     output logic             ready_o,            // AMO unit is ready
-    input  ariane_pkg::amo_t amo_op_i,           // AMO Operation
-    input  logic [riscv::PLEN-1:0]      paddr_i,            // physical address of store which needs to be placed in the queue
+    input  amo_t amo_op_i,           // AMO Operation
+    input  logic [PLEN-1:0]      paddr_i,            // physical address of store which needs to be placed in the queue
     input  logic [63:0]      data_i,             // data which is placed in the queue
     input  logic [1:0]       data_size_i,        // type of request we are making (e.g.: bytes to write)
     // D$
-    output ariane_pkg::amo_req_t  amo_req_o,          // request to cache subsytem
-    input  ariane_pkg::amo_resp_t amo_resp_i,         // response from cache subsystem
+    output amo_req_t  amo_req_o,          // request to cache subsytem
+    input  amo_resp_t amo_resp_i,         // response from cache subsystem
     // Auxiliary signals
     input  logic amo_valid_commit_i, // We have a vaild AMO in the commit stage
     input  logic no_st_pending_i     // there is currently no store pending anymore
@@ -36,8 +36,8 @@ module amo_buffer (
     logic amo_valid;
 
     typedef struct packed {
-        ariane_pkg::amo_t        op;
-        logic [riscv::PLEN-1:0] paddr;
+        amo_t        op;
+        logic [PLEN-1:0] paddr;
         logic [63:0] data;
         logic [1:0]  size;
     } amo_op_t ;
@@ -48,7 +48,7 @@ module amo_buffer (
     assign amo_req_o.req = no_st_pending_i & amo_valid_commit_i & amo_valid;
     assign amo_req_o.amo_op = amo_data_out.op;
     assign amo_req_o.size = amo_data_out.size;
-    assign amo_req_o.operand_a = {{64-riscv::PLEN{1'b0}}, amo_data_out.paddr};
+    assign amo_req_o.operand_a = {{64-PLEN{1'b0}}, amo_data_out.paddr};
     assign amo_req_o.operand_b = amo_data_out.data;
 
     assign amo_data_in.op = amo_op_i;
