@@ -14,24 +14,24 @@
 // Date: 09.06.2018
 
 // branch history table - 2 bit saturation counter
-module bht #(
+module bht import riscv::*; import ariane_pkg::*; #(
     parameter int unsigned NR_ENTRIES = 1024
 )(
     input  logic                        clk_i,
     input  logic                        rst_ni,
     input  logic                        flush_i,
     input  logic                        debug_mode_i,
-    input  logic [riscv::VLEN-1:0]      vpc_i,
-    input  ariane_pkg::bht_update_t     bht_update_i,
+    input  logic [VLEN-1:0]      vpc_i,
+    input  bht_update_t     bht_update_i,
     // we potentially need INSTR_PER_FETCH predictions/cycle
-    output ariane_pkg::bht_prediction_t [ariane_pkg::INSTR_PER_FETCH-1:0] bht_prediction_o
+    output bht_prediction_t [INSTR_PER_FETCH-1:0] bht_prediction_o
 );
     // the last bit is always zero, we don't need it for indexing
     localparam OFFSET = 1;
     // re-shape the branch history table
-    localparam NR_ROWS = NR_ENTRIES / ariane_pkg::INSTR_PER_FETCH;
+    localparam NR_ROWS = NR_ENTRIES / INSTR_PER_FETCH;
     // number of bits needed to index the row
-    localparam ROW_ADDR_BITS = $clog2(ariane_pkg::INSTR_PER_FETCH);
+    localparam ROW_ADDR_BITS = $clog2(INSTR_PER_FETCH);
     // number of bits we should use for prediction
     localparam PREDICTION_BITS = $clog2(NR_ROWS) + OFFSET + ROW_ADDR_BITS;
     // we are not interested in all bits of the address
@@ -40,7 +40,7 @@ module bht #(
     struct packed {
         logic       valid;
         logic [1:0] saturation_counter;
-    } bht_d[NR_ROWS-1:0][ariane_pkg::INSTR_PER_FETCH-1:0], bht_q[NR_ROWS-1:0][ariane_pkg::INSTR_PER_FETCH-1:0];
+    } bht_d[NR_ROWS-1:0][INSTR_PER_FETCH-1:0], bht_q[NR_ROWS-1:0][INSTR_PER_FETCH-1:0];
 
     logic [$clog2(NR_ROWS)-1:0]  index, update_pc;
     logic [ROW_ADDR_BITS-1:0]    update_row_index;
@@ -51,7 +51,7 @@ module bht #(
     assign update_row_index = bht_update_i.pc[ROW_ADDR_BITS + OFFSET - 1:OFFSET];
 
     // prediction assignment
-    for (genvar i = 0; i < ariane_pkg::INSTR_PER_FETCH; i++) begin : gen_bht_output
+    for (genvar i = 0; i < INSTR_PER_FETCH; i++) begin : gen_bht_output
         assign bht_prediction_o[i].valid = bht_q[index][i].valid;
         assign bht_prediction_o[i].taken = bht_q[index][i].saturation_counter[1] == 1'b1;
     end
@@ -84,7 +84,7 @@ module bht #(
     always_ff @(posedge clk_i or negedge rst_ni) begin
         if (!rst_ni) begin
             for (int unsigned i = 0; i < NR_ROWS; i++) begin
-                for (int j = 0; j < ariane_pkg::INSTR_PER_FETCH; j++) begin
+                for (int j = 0; j < INSTR_PER_FETCH; j++) begin
                     bht_q[i][j] <= '0;
                 end
             end
@@ -92,7 +92,7 @@ module bht #(
             // evict all entries
             if (flush_i) begin
                 for (int i = 0; i < NR_ROWS; i++) begin
-                    for (int j = 0; j < ariane_pkg::INSTR_PER_FETCH; j++) begin
+                    for (int j = 0; j < INSTR_PER_FETCH; j++) begin
                         bht_q[i][j].valid <=  1'b0;
                         bht_q[i][j].saturation_counter <= 2'b10;
                     end
