@@ -12,7 +12,7 @@
 // Date: 08.04.2017
 // Description: Scoreboard - keeps track of all decoded, issued and committed instructions
 
-module scoreboard #(
+module scoreboard import ariane_pkg::*; #(
   parameter int unsigned NR_ENTRIES      = 8, // must be a power of 2
   parameter int unsigned NR_WB_PORTS     = 1,
   parameter int unsigned NR_COMMIT_PORTS = 2
@@ -24,42 +24,42 @@ module scoreboard #(
   input  logic                                                  flush_i,  // flush whole scoreboard
   input  logic                                                  unresolved_branch_i, // we have an unresolved branch
   // list of clobbered registers to issue stage
-  output ariane_pkg::fu_t [2**ariane_pkg::REG_ADDR_SIZE-1:0]    rd_clobber_gpr_o,
-  output ariane_pkg::fu_t [2**ariane_pkg::REG_ADDR_SIZE-1:0]    rd_clobber_fpr_o,
+  output fu_t [2**REG_ADDR_SIZE-1:0]    rd_clobber_gpr_o,
+  output fu_t [2**REG_ADDR_SIZE-1:0]    rd_clobber_fpr_o,
 
   // regfile like interface to operand read stage
-  input  logic [ariane_pkg::REG_ADDR_SIZE-1:0]                  rs1_i,
+  input  logic [REG_ADDR_SIZE-1:0]                  rs1_i,
   output logic [63:0]                                           rs1_o,
   output logic                                                  rs1_valid_o,
 
-  input  logic [ariane_pkg::REG_ADDR_SIZE-1:0]                  rs2_i,
+  input  logic [REG_ADDR_SIZE-1:0]                  rs2_i,
   output logic [63:0]                                           rs2_o,
   output logic                                                  rs2_valid_o,
 
-  input  logic [ariane_pkg::REG_ADDR_SIZE-1:0]                  rs3_i,
-  output logic [ariane_pkg::FLEN-1:0]                           rs3_o,
+  input  logic [REG_ADDR_SIZE-1:0]                  rs3_i,
+  output logic [FLEN-1:0]                           rs3_o,
   output logic                                                  rs3_valid_o,
 
   // advertise instruction to commit stage, if commit_ack_i is asserted advance the commit pointer
-  output ariane_pkg::scoreboard_entry_t [NR_COMMIT_PORTS-1:0]   commit_instr_o,
+  output scoreboard_entry_t [NR_COMMIT_PORTS-1:0]   commit_instr_o,
   input  logic              [NR_COMMIT_PORTS-1:0]               commit_ack_i,
 
   // instruction to put on top of scoreboard e.g.: top pointer
   // we can always put this instruction to the top unless we signal with asserted full_o
-  input  ariane_pkg::scoreboard_entry_t                         decoded_instr_i,
+  input  scoreboard_entry_t                         decoded_instr_i,
   input  logic                                                  decoded_instr_valid_i,
   output logic                                                  decoded_instr_ack_o,
 
   // instruction to issue logic, if issue_instr_valid and issue_ready is asserted, advance the issue pointer
-  output ariane_pkg::scoreboard_entry_t                         issue_instr_o,
+  output scoreboard_entry_t                         issue_instr_o,
   output logic                                                  issue_instr_valid_o,
   input  logic                                                  issue_ack_i,
 
   // write-back port
-  input ariane_pkg::bp_resolve_t                                resolved_branch_i,
-  input logic [NR_WB_PORTS-1:0][ariane_pkg::TRANS_ID_BITS-1:0]  trans_id_i,  // transaction ID at which to write the result back
+  input bp_resolve_t                                resolved_branch_i,
+  input logic [NR_WB_PORTS-1:0][TRANS_ID_BITS-1:0]  trans_id_i,  // transaction ID at which to write the result back
   input logic [NR_WB_PORTS-1:0][63:0]                           wbdata_i,    // write data in
-  input ariane_pkg::exception_t [NR_WB_PORTS-1:0]               ex_i,        // exception from a functional unit (e.g.: ld/st exception)
+  input exception_t [NR_WB_PORTS-1:0]               ex_i,        // exception from a functional unit (e.g.: ld/st exception)
   input logic [NR_WB_PORTS-1:0]                                 wt_valid_i   // data in is valid
 );
   localparam int unsigned BITS_ENTRIES = $clog2(NR_ENTRIES);
@@ -68,7 +68,7 @@ module scoreboard #(
   struct packed {
     logic                          issued;         // this bit indicates whether we issued this instruction e.g.: if it is valid
     logic                          is_rd_fpr_flag; // redundant meta info, added for speed
-    ariane_pkg::scoreboard_entry_t sbe;            // this is the score board entry we will send to ex
+    scoreboard_entry_t sbe;            // this is the score board entry we will send to ex
   } mem_q [NR_ENTRIES-1:0], mem_n [NR_ENTRIES-1:0];
 
   logic                    issue_full, issue_en;
@@ -115,7 +115,7 @@ module scoreboard #(
       // increase the issue counter and advance issue pointer
       issue_en = 1'b1;
       mem_n[issue_pointer_q] = {1'b1,                                      // valid bit
-                                ariane_pkg::is_rd_fpr(decoded_instr_i.op), // whether rd goes to the fpr
+                                is_rd_fpr(decoded_instr_i.op), // whether rd goes to the fpr
                                 decoded_instr_i                            // decoded instruction record
                                 };
     end
@@ -125,7 +125,7 @@ module scoreboard #(
     // ------------
     for (int unsigned i = 0; i < NR_ENTRIES; i++) begin
       // The FU is NONE -> this instruction is valid immediately
-      if (mem_q[i].sbe.fu == ariane_pkg::NONE && mem_q[i].issued)
+      if (mem_q[i].sbe.fu == NONE && mem_q[i].issued)
         mem_n[i].sbe.valid = 1'b1;
     end
 
@@ -144,7 +144,7 @@ module scoreboard #(
         if (ex_i[i].valid)
           mem_n[trans_id_i[i]].sbe.ex = ex_i[i];
         // write the fflags back from the FPU (exception valid is never set), leave tval intact
-        else if (mem_q[trans_id_i[i]].sbe.fu inside {ariane_pkg::FPU, ariane_pkg::FPU_VEC})
+        else if (mem_q[trans_id_i[i]].sbe.fu inside {FPU, FPU_VEC})
           mem_n[trans_id_i[i]].sbe.ex.cause = ex_i[i].cause;
       end
     end
@@ -195,17 +195,17 @@ module scoreboard #(
   // RD clobber process
   // -------------------
   // rd_clobber output: output currently clobbered destination registers
-  logic [2**ariane_pkg::REG_ADDR_SIZE-1:0][NR_ENTRIES:0]              gpr_clobber_vld;
-  logic [2**ariane_pkg::REG_ADDR_SIZE-1:0][NR_ENTRIES:0]              fpr_clobber_vld;
-  ariane_pkg::fu_t [NR_ENTRIES:0]                                     clobber_fu;
+  logic [2**REG_ADDR_SIZE-1:0][NR_ENTRIES:0]              gpr_clobber_vld;
+  logic [2**REG_ADDR_SIZE-1:0][NR_ENTRIES:0]              fpr_clobber_vld;
+  fu_t [NR_ENTRIES:0]                                     clobber_fu;
 
   always_comb begin : clobber_assign
     gpr_clobber_vld  = '0;
     fpr_clobber_vld  = '0;
 
     // default (highest entry hast lowest prio in arbiter tree below)
-    clobber_fu[NR_ENTRIES] = ariane_pkg::NONE;
-    for (int unsigned i = 0; i < 2**ariane_pkg::REG_ADDR_SIZE; i++) begin
+    clobber_fu[NR_ENTRIES] = NONE;
+    for (int unsigned i = 0; i < 2**REG_ADDR_SIZE; i++) begin
       gpr_clobber_vld[i][NR_ENTRIES] = 1'b1;
       fpr_clobber_vld[i][NR_ENTRIES] = 1'b1;
     end
@@ -221,11 +221,11 @@ module scoreboard #(
     gpr_clobber_vld[0] = '0;
   end
 
-  for (genvar k = 0; k < 2**ariane_pkg::REG_ADDR_SIZE; k++) begin : gen_sel_clobbers
+  for (genvar k = 0; k < 2**REG_ADDR_SIZE; k++) begin : gen_sel_clobbers
     // get fu that is going to clobber this register (there should be only one)
     rr_arb_tree #(
       .NumIn(NR_ENTRIES+1),
-      .DataType(ariane_pkg::fu_t),
+      .DataType(fu_t),
       .ExtPrio(1'b1),
       .AxiVldRdy(1'b1)
     ) i_sel_gpr_clobbers (
@@ -243,7 +243,7 @@ module scoreboard #(
     );
     rr_arb_tree #(
       .NumIn(NR_ENTRIES+1),
-      .DataType(ariane_pkg::fu_t),
+      .DataType(fu_t),
       .ExtPrio(1'b1),
       .AxiVldRdy(1'b1)
     ) i_sel_fpr_clobbers (
@@ -271,21 +271,21 @@ module scoreboard #(
 
   // WB ports have higher prio than entries
   for (genvar k = 0; unsigned'(k) < NR_WB_PORTS; k++) begin : gen_rs_wb
-    assign rs1_fwd_req[k] = (mem_q[trans_id_i[k]].sbe.rd == rs1_i) & wt_valid_i[k] & (~ex_i[k].valid) & (mem_q[trans_id_i[k]].is_rd_fpr_flag == ariane_pkg::is_rs1_fpr(issue_instr_o.op));
-    assign rs2_fwd_req[k] = (mem_q[trans_id_i[k]].sbe.rd == rs2_i) & wt_valid_i[k] & (~ex_i[k].valid) & (mem_q[trans_id_i[k]].is_rd_fpr_flag == ariane_pkg::is_rs2_fpr(issue_instr_o.op));
-    assign rs3_fwd_req[k] = (mem_q[trans_id_i[k]].sbe.rd == rs3_i) & wt_valid_i[k] & (~ex_i[k].valid) & (mem_q[trans_id_i[k]].is_rd_fpr_flag == ariane_pkg::is_imm_fpr(issue_instr_o.op));
+    assign rs1_fwd_req[k] = (mem_q[trans_id_i[k]].sbe.rd == rs1_i) & wt_valid_i[k] & (~ex_i[k].valid) & (mem_q[trans_id_i[k]].is_rd_fpr_flag == is_rs1_fpr(issue_instr_o.op));
+    assign rs2_fwd_req[k] = (mem_q[trans_id_i[k]].sbe.rd == rs2_i) & wt_valid_i[k] & (~ex_i[k].valid) & (mem_q[trans_id_i[k]].is_rd_fpr_flag == is_rs2_fpr(issue_instr_o.op));
+    assign rs3_fwd_req[k] = (mem_q[trans_id_i[k]].sbe.rd == rs3_i) & wt_valid_i[k] & (~ex_i[k].valid) & (mem_q[trans_id_i[k]].is_rd_fpr_flag == is_imm_fpr(issue_instr_o.op));
     assign rs_data[k]     = wbdata_i[k];
   end
   for (genvar k = 0; unsigned'(k) < NR_ENTRIES; k++) begin : gen_rs_entries
-    assign rs1_fwd_req[k+NR_WB_PORTS] = (mem_q[k].sbe.rd == rs1_i) & mem_q[k].issued & mem_q[k].sbe.valid & (mem_q[k].is_rd_fpr_flag == ariane_pkg::is_rs1_fpr(issue_instr_o.op));
-    assign rs2_fwd_req[k+NR_WB_PORTS] = (mem_q[k].sbe.rd == rs2_i) & mem_q[k].issued & mem_q[k].sbe.valid & (mem_q[k].is_rd_fpr_flag == ariane_pkg::is_rs2_fpr(issue_instr_o.op));
-    assign rs3_fwd_req[k+NR_WB_PORTS] = (mem_q[k].sbe.rd == rs3_i) & mem_q[k].issued & mem_q[k].sbe.valid & (mem_q[k].is_rd_fpr_flag == ariane_pkg::is_imm_fpr(issue_instr_o.op));
+    assign rs1_fwd_req[k+NR_WB_PORTS] = (mem_q[k].sbe.rd == rs1_i) & mem_q[k].issued & mem_q[k].sbe.valid & (mem_q[k].is_rd_fpr_flag == is_rs1_fpr(issue_instr_o.op));
+    assign rs2_fwd_req[k+NR_WB_PORTS] = (mem_q[k].sbe.rd == rs2_i) & mem_q[k].issued & mem_q[k].sbe.valid & (mem_q[k].is_rd_fpr_flag == is_rs2_fpr(issue_instr_o.op));
+    assign rs3_fwd_req[k+NR_WB_PORTS] = (mem_q[k].sbe.rd == rs3_i) & mem_q[k].issued & mem_q[k].sbe.valid & (mem_q[k].is_rd_fpr_flag == is_imm_fpr(issue_instr_o.op));
     assign rs_data[k+NR_WB_PORTS]     = mem_q[k].sbe.result;
   end
 
   // check whether we are accessing GPR[0], rs3 is only used with the FPR!
-  assign rs1_valid_o = rs1_valid & ((|rs1_i) | ariane_pkg::is_rs1_fpr(issue_instr_o.op));
-  assign rs2_valid_o = rs2_valid & ((|rs2_i) | ariane_pkg::is_rs2_fpr(issue_instr_o.op));
+  assign rs1_valid_o = rs1_valid & ((|rs1_i) | is_rs1_fpr(issue_instr_o.op));
+  assign rs2_valid_o = rs2_valid & ((|rs2_i) | is_rs2_fpr(issue_instr_o.op));
 
   // use fixed prio here
   // this implicitly gives higher prio to WB ports
@@ -348,7 +348,7 @@ module scoreboard #(
     .idx_o   (             )
   );
 
-  assign rs3_o = rs3[ariane_pkg::FLEN-1:0];
+  assign rs3_o = rs3[FLEN-1:0];
 
   // sequential process
   always_ff @(posedge clk_i or negedge rst_ni) begin : regs
@@ -373,7 +373,7 @@ module scoreboard #(
 
   // assert that zero is never set
   assert property (
-    @(posedge clk_i) disable iff (!rst_ni) (rd_clobber_gpr_o[0] == ariane_pkg::NONE))
+    @(posedge clk_i) disable iff (!rst_ni) (rd_clobber_gpr_o[0] == NONE))
     else $fatal (1,"RD 0 should not bet set");
   // assert that we never acknowledge a commit if the instruction is not valid
   assert property (
