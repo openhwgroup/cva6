@@ -19,6 +19,8 @@ interface instr_tracer_if (
         input clk
     );
 
+    import ariane_pkg::*;
+    
     logic             rstn;
     logic             flush_unissued;
     logic             flush;
@@ -28,14 +30,14 @@ interface instr_tracer_if (
     logic             fetch_ack;
     // Issue stage
     logic                           issue_ack; // issue acknowledged
-    ariane_pkg::scoreboard_entry_t  issue_sbe; // issue scoreboard entry
+    scoreboard_entry_t  issue_sbe; // issue scoreboard entry
     // WB stage
     logic [1:0][4:0]  waddr;
     logic [1:0][63:0] wdata;
     logic [1:0]       we_gpr;
     logic [1:0]       we_fpr;
     // commit stage
-    ariane_pkg::scoreboard_entry_t [1:0] commit_instr; // commit instruction
+    scoreboard_entry_t [1:0] commit_instr; // commit instruction
     logic                          [1:0] commit_ack;
     // address translation
     // stores
@@ -46,9 +48,9 @@ interface instr_tracer_if (
     logic                         ld_kill;
     logic [riscv::PLEN-1:0]       ld_paddr;
     // misprediction
-    ariane_pkg::bp_resolve_t resolve_branch;
+    bp_resolve_t resolve_branch;
     // exceptions
-    ariane_pkg::exception_t  exception;
+    exception_t  exception;
     // current privilege level
     riscv::priv_lvl_t  priv_lvl;
     logic              debug_mode;
