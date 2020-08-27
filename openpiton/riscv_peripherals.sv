@@ -25,7 +25,7 @@
 // PLIC     0xfff1100000 <length 0x4000000>
 //
 
-module riscv_peripherals #(
+module riscv_peripherals import dm::*; import ariane_axi::*; import ariane_pkg::*; import reg_intf::*; #(
     parameter int unsigned DataWidth       = 64,
     parameter int unsigned NumHarts        =  1,
     parameter int unsigned NumSources      =  1,
@@ -106,8 +106,8 @@ module riscv_peripherals #(
   logic          debug_resp_valid;
   logic          debug_resp_ready;
 
-  dm::dmi_req_t  debug_req;
-  dm::dmi_resp_t debug_resp;
+  dmi_req_t  debug_req;
+  dmi_resp_t debug_resp;
 
 `ifdef RISCV_FESVR_SIM
 
@@ -119,7 +119,7 @@ module riscv_peripherals #(
   // Converts to DPI calls
   logic [31:0] sim_exit; // TODO: wire this up in the testbench
   logic [1:0] debug_req_bits_op;
-  assign dmi_req.op = dm::dtm_op_t'(debug_req_bits_op);
+  assign dmi_req.op = dtm_op_t'(debug_req_bits_op);
 
   SimDTM i_SimDTM (
     .clk                  ( clk_i                ),
@@ -226,7 +226,7 @@ module riscv_peripherals #(
     .dmactive_o                                   , // active debug session
     .debug_req_o                                  ,
     .unavailable_i                                ,
-    .hartinfo_i           ( {NumHarts{ariane_pkg::DebugHartInfo}} ),
+    .hartinfo_i           ( {NumHarts{DebugHartInfo}} ),
     .slave_req_i          ( dm_slave_req         ),
     .slave_we_i           ( dm_slave_we          ),
     .slave_addr_i         ( dm_slave_addr        ),
@@ -459,8 +459,8 @@ module riscv_peripherals #(
   // CLINT
   /////////////////////////////
 
-  ariane_axi::req_t    clint_axi_req;
-  ariane_axi::resp_t   clint_axi_resp;
+  req_t    clint_axi_req;
+  resp_t   clint_axi_resp;
 
   clint #(
     .AXI_ADDR_WIDTH ( AxiAddrWidth ),
@@ -620,8 +620,8 @@ module riscv_peripherals #(
   assign plic_master.ar_region = '0;
 
 
-  reg_intf::reg_intf_resp_d32 plic_resp;
-  reg_intf::reg_intf_req_a32_d32 plic_req;
+  reg_intf_resp_d32 plic_resp;
+  reg_intf_req_a32_d32 plic_req;
 
   enum logic [2:0] {Idle, WriteSecond, ReadSecond, WriteResp, ReadResp} state_d, state_q;
   logic [31:0] rword_d, rword_q;
