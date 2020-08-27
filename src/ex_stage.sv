@@ -13,9 +13,8 @@
 // Date: 19.04.2017
 // Description: Instantiation of all functional units residing in the execute stage
 
-
-module ex_stage import ariane_pkg::*; #(
-    parameter ariane_pkg::ariane_cfg_t ArianeCfg = ariane_pkg::ArianeDefaultConfig
+module ex_stage import riscv::*; import ariane_pkg::*; #(
+    parameter ariane_cfg_t ArianeCfg = ArianeDefaultConfig
 ) (
     input  logic                                   clk_i,    // Clock
     input  logic                                   rst_ni,   // Asynchronous reset active low
@@ -23,7 +22,7 @@ module ex_stage import ariane_pkg::*; #(
     input  logic                                   debug_mode_i,
 
     input  fu_data_t                               fu_data_i,
-    input  logic [riscv::VLEN-1:0]                 pc_i,                  // PC of current instruction
+    input  logic [VLEN-1:0]                 pc_i,                  // PC of current instruction
     input  logic                                   is_compressed_instr_i, // we need to know if this was a compressed instruction
                                                                           // in order to calculate the next PC on a mis-predict
     // Fixed latency unit(s)
@@ -80,8 +79,8 @@ module ex_stage import ariane_pkg::*; #(
     input  logic                                   en_ld_st_translation_i,
     input  logic                                   flush_tlb_i,
 
-    input  riscv::priv_lvl_t                       priv_lvl_i,
-    input  riscv::priv_lvl_t                       ld_st_priv_lvl_i,
+    input  priv_lvl_t                       priv_lvl_i,
+    input  priv_lvl_t                       ld_st_priv_lvl_i,
     input  logic                                   sum_i,
     input  logic                                   mxr_i,
     input  logic [43:0]                            satp_ppn_i,
@@ -100,7 +99,7 @@ module ex_stage import ariane_pkg::*; #(
     output logic                                   itlb_miss_o,
     output logic                                   dtlb_miss_o,
     // PMPs
-    input  riscv::pmpcfg_t [15:0]                  pmpcfg_i,
+    input  pmpcfg_t [15:0]                  pmpcfg_i,
     input  logic[15:0][53:0]                       pmpaddr_i
 );
 
@@ -127,7 +126,7 @@ module ex_stage import ariane_pkg::*; #(
     // from ALU to branch unit
     logic alu_branch_res; // branch comparison result
     logic [63:0] alu_result, csr_result, mult_result;
-    logic [riscv::VLEN-1:0] branch_result;
+    logic [VLEN-1:0] branch_result;
     logic csr_ready, mult_ready;
     logic [TRANS_ID_BITS-1:0] mult_trans_id;
     logic mult_valid;
@@ -184,7 +183,7 @@ module ex_stage import ariane_pkg::*; #(
     // result MUX
     always_comb begin
         // Branch result as default case
-        flu_result_o = {{64-riscv::VLEN{1'b0}}, branch_result};
+        flu_result_o = {{64-VLEN{1'b0}}, branch_result};
         flu_trans_id_o = fu_data_i.trans_id;
         // ALU result
         if (alu_valid_i) begin
