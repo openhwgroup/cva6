@@ -137,6 +137,28 @@ module uvmt_cv32_tb;
           iss_wrap.b1.deferint <= 1'b1;
         end
       end
+
+      logic haltreq_next;
+      logic [3:0] haltreq_next2;
+      always @(posedge clknrst_if_iss.clk or negedge clknrst_if_iss.reset_n) begin
+        if (!clknrst_if_iss.reset_n) begin
+            iss_wrap.b1.haltreq <= 1'b0;
+            haltreq_next <= 1'b0;
+            haltreq_next2 <= 4'h0;
+        end else begin
+            haltreq_next <= dut_wrap.cv32e40p_wrapper_i.core_i.id_stage_i.controller_i.debug_req_pending;
+            if(haltreq_next == 1'b1) begin
+                haltreq_next2 <= haltreq_next2 + 1;
+            end else begin
+                haltreq_next2 <= 4'h0;
+            end
+
+            if(haltreq_next2 >= 4'h3) begin // 1,2,3: Enter dbg 1 cycle early(?) 4: ISS is late into debug
+                iss_wrap.b1.haltreq <= haltreq_next;
+            end
+        end
+      end
+
     `endif
 
    /**
