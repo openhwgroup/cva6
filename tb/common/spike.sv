@@ -18,24 +18,24 @@ import uvm_pkg::*;
 
 import "DPI-C" function int spike_create(string filename, longint unsigned dram_base, int unsigned size);
 
-typedef riscv::commit_log_t riscv_commit_log_t;
+typedef commit_log_t riscv_commit_log_t;
 import "DPI-C" function void spike_tick(output riscv_commit_log_t commit_log);
 
 import "DPI-C" function void clint_tick();
 
-module spike #(
+module spike import riscv::*; import ariane_pkg::*; #(
     parameter longint unsigned DramBase = 'h8000_0000,
     parameter int unsigned     Size     = 64 * 1024 * 1024 // 64 Mega Byte
 )(
     input logic       clk_i,
     input logic       rst_ni,
     input logic       clint_tick_i,
-    input ariane_pkg::scoreboard_entry_t [ariane_pkg::NR_COMMIT_PORTS-1:0] commit_instr_i,
-    input logic [ariane_pkg::NR_COMMIT_PORTS-1:0]                          commit_ack_i,
-    input ariane_pkg::exception_t                                          exception_i,
-    input logic [ariane_pkg::NR_COMMIT_PORTS-1:0][4:0]                     waddr_i,
-    input logic [ariane_pkg::NR_COMMIT_PORTS-1:0][63:0]                    wdata_i,
-    input riscv::priv_lvl_t                                                priv_lvl_i
+    input scoreboard_entry_t [NR_COMMIT_PORTS-1:0] commit_instr_i,
+    input logic [NR_COMMIT_PORTS-1:0]                          commit_ack_i,
+    input exception_t                                          exception_i,
+    input logic [NR_COMMIT_PORTS-1:0][4:0]                     waddr_i,
+    input logic [NR_COMMIT_PORTS-1:0][63:0]                    wdata_i,
+    input priv_lvl_t                                                priv_lvl_i
 );
     static uvm_cmdline_processor uvcl = uvm_cmdline_processor::get_inst();
 
@@ -57,7 +57,7 @@ module spike #(
     always_ff @(posedge clk_i) begin
         if (rst_ni) begin
 
-            for (int i = 0; i < ariane_pkg::NR_COMMIT_PORTS; i++) begin
+            for (int i = 0; i < NR_COMMIT_PORTS; i++) begin
                 if ((commit_instr_i[i].valid && commit_ack_i[i]) || (commit_instr_i[i].valid && exception_i.valid)) begin
                     spike_tick(commit_log);
                     instr = (commit_log.instr[1:0] != 2'b11) ? {16'b0, commit_log.instr[15:0]} : commit_log.instr;
