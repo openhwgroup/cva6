@@ -23,10 +23,11 @@ function string printPCexpr(input logic [63:0] imm);
 endfunction
 
 class instr_trace_item;
+    import ariane_pkg::;
     // keep a couple of general purpose information inside this instruction item
     time               simtime;
     longint unsigned   cycle;
-    ariane_pkg::scoreboard_entry_t sbe;
+    scoreboard_entry_t sbe;
     logic [31:0]       pc;
     logic [31:0]       instr;
     logic [63:0]       gp_reg_file [32];
@@ -39,13 +40,13 @@ class instr_trace_item;
     logic [63:0]       result;
     logic [riscv::PLEN-1:0]       paddr;
     string             priv_lvl;
-    ariane_pkg::bp_resolve_t       bp;
+    bp_resolve_t       bp;
 
     logic [4:0] rs1, rs2, rs3, rd;
 
     // constructor creating a new instruction trace item, e.g.: a single instruction with all relevant information
-    function new (time simtime, longint unsigned cycle, ariane_pkg::scoreboard_entry_t sbe, logic [31:0] instr, logic [63:0] gp_reg_file [32],
-                logic [63:0] fp_reg_file [32], logic [63:0] result, logic [riscv::PLEN-1:0] paddr, riscv::priv_lvl_t priv_lvl, logic debug_mode, ariane_pkg::bp_resolve_t bp);
+    function new (time simtime, longint unsigned cycle, scoreboard_entry_t sbe, logic [31:0] instr, logic [63:0] gp_reg_file [32],
+                logic [63:0] fp_reg_file [32], logic [63:0] result, logic [riscv::PLEN-1:0] paddr, riscv::priv_lvl_t priv_lvl, logic debug_mode, bp_resolve_t bp);
         this.simtime  = simtime;
         this.cycle    = cycle;
         this.pc       = sbe.pc;
@@ -466,44 +467,44 @@ class instr_trace_item;
     function string printRFBCInstr(input string mnemonic, input bit use_rnd);
 
         result_regs.push_back(rd);
-        result_fpr.push_back(ariane_pkg::is_rd_fpr(sbe.op));
+        result_fpr.push_back(is_rd_fpr(sbe.op));
         read_regs.push_back(rs2);
-        read_fpr.push_back(ariane_pkg::is_rs2_fpr(sbe.op));
+        read_fpr.push_back(is_rs2_fpr(sbe.op));
         read_regs.push_back(sbe.result[4:0]);
-        read_fpr.push_back(ariane_pkg::is_imm_fpr(sbe.op));
+        read_fpr.push_back(is_imm_fpr(sbe.op));
 
         if (use_rnd && instr[14:12]!=3'b111)
-            return $sformatf("%-12s %4s, %s, %s, %s", $sformatf("%s.%s",mnemonic, fpFmtToStr(instr[26:25])), ariane_pkg::is_rd_fpr(sbe.op)?fpRegAddrToStr(rd):regAddrToStr(rd), ariane_pkg::is_rs2_fpr(sbe.op)?fpRegAddrToStr(rs2):regAddrToStr(rs2), ariane_pkg::is_imm_fpr(sbe.op)?fpRegAddrToStr(sbe.result[4:0]):regAddrToStr(sbe.result[4:0]), fpRmToStr(instr[14:12]));
+            return $sformatf("%-12s %4s, %s, %s, %s", $sformatf("%s.%s",mnemonic, fpFmtToStr(instr[26:25])), is_rd_fpr(sbe.op)?fpRegAddrToStr(rd):regAddrToStr(rd), is_rs2_fpr(sbe.op)?fpRegAddrToStr(rs2):regAddrToStr(rs2), is_imm_fpr(sbe.op)?fpRegAddrToStr(sbe.result[4:0]):regAddrToStr(sbe.result[4:0]), fpRmToStr(instr[14:12]));
         else
-            return $sformatf("%-12s %4s, %s, %s", $sformatf("%s.%s",mnemonic, fpFmtToStr(instr[26:25])), ariane_pkg::is_rd_fpr(sbe.op)?fpRegAddrToStr(rd):regAddrToStr(rd), ariane_pkg::is_rs2_fpr(sbe.op)?fpRegAddrToStr(rs2):regAddrToStr(rs2), ariane_pkg::is_imm_fpr(sbe.op)?fpRegAddrToStr(sbe.result[4:0]):regAddrToStr(sbe.result[4:0]));
+            return $sformatf("%-12s %4s, %s, %s", $sformatf("%s.%s",mnemonic, fpFmtToStr(instr[26:25])), is_rd_fpr(sbe.op)?fpRegAddrToStr(rd):regAddrToStr(rd), is_rs2_fpr(sbe.op)?fpRegAddrToStr(rs2):regAddrToStr(rs2), is_imm_fpr(sbe.op)?fpRegAddrToStr(sbe.result[4:0]):regAddrToStr(sbe.result[4:0]));
     endfunction // printRFInstr
 
     function string printRFInstr(input string mnemonic, input bit use_rnd);
 
         result_regs.push_back(rd);
-        result_fpr.push_back(ariane_pkg::is_rd_fpr(sbe.op));
+        result_fpr.push_back(is_rd_fpr(sbe.op));
         read_regs.push_back(rs1);
-        read_fpr.push_back(ariane_pkg::is_rs1_fpr(sbe.op));
+        read_fpr.push_back(is_rs1_fpr(sbe.op));
         read_regs.push_back(rs2);
-        read_fpr.push_back(ariane_pkg::is_rs2_fpr(sbe.op));
+        read_fpr.push_back(is_rs2_fpr(sbe.op));
 
         if (use_rnd && instr[14:12]!=3'b111)
-            return $sformatf("%-12s %4s, %s, %s, %s", $sformatf("%s.%s",mnemonic, fpFmtToStr(instr[26:25])), ariane_pkg::is_rd_fpr(sbe.op)?fpRegAddrToStr(rd):regAddrToStr(rd), ariane_pkg::is_rs1_fpr(sbe.op)?fpRegAddrToStr(rs1):regAddrToStr(rs1), ariane_pkg::is_rs2_fpr(sbe.op)?fpRegAddrToStr(rs2):regAddrToStr(rs2), fpRmToStr(instr[14:12]));
+            return $sformatf("%-12s %4s, %s, %s, %s", $sformatf("%s.%s",mnemonic, fpFmtToStr(instr[26:25])), is_rd_fpr(sbe.op)?fpRegAddrToStr(rd):regAddrToStr(rd), is_rs1_fpr(sbe.op)?fpRegAddrToStr(rs1):regAddrToStr(rs1), is_rs2_fpr(sbe.op)?fpRegAddrToStr(rs2):regAddrToStr(rs2), fpRmToStr(instr[14:12]));
         else
-            return $sformatf("%-12s %4s, %s, %s", $sformatf("%s.%s",mnemonic, fpFmtToStr(instr[26:25])), ariane_pkg::is_rd_fpr(sbe.op)?fpRegAddrToStr(rd):regAddrToStr(rd), ariane_pkg::is_rs1_fpr(sbe.op)?fpRegAddrToStr(rs1):regAddrToStr(rs1), ariane_pkg::is_rs2_fpr(sbe.op)?fpRegAddrToStr(rs2):regAddrToStr(rs2));
+            return $sformatf("%-12s %4s, %s, %s", $sformatf("%s.%s",mnemonic, fpFmtToStr(instr[26:25])), is_rd_fpr(sbe.op)?fpRegAddrToStr(rd):regAddrToStr(rd), is_rs1_fpr(sbe.op)?fpRegAddrToStr(rs1):regAddrToStr(rs1), is_rs2_fpr(sbe.op)?fpRegAddrToStr(rs2):regAddrToStr(rs2));
     endfunction // printRFInstr
 
     function string printRFInstr1Op(input string mnemonic, input bit use_rnd);
 
         result_regs.push_back(rd);
-        result_fpr.push_back(ariane_pkg::is_rd_fpr(sbe.op));
+        result_fpr.push_back(is_rd_fpr(sbe.op));
         read_regs.push_back(rs1);
-        read_fpr.push_back(ariane_pkg::is_rs1_fpr(sbe.op));
+        read_fpr.push_back(is_rs1_fpr(sbe.op));
 
         if (use_rnd && instr[14:12]!=3'b111)
-            return $sformatf("%-12s %4s, %s, %s", $sformatf("%s.%s",mnemonic, fpFmtToStr(instr[26:25])), ariane_pkg::is_rd_fpr(sbe.op)?fpRegAddrToStr(rd):regAddrToStr(rd), ariane_pkg::is_rs1_fpr(sbe.op)?fpRegAddrToStr(rs1):regAddrToStr(rs1), fpRmToStr(instr[14:12]));
+            return $sformatf("%-12s %4s, %s, %s", $sformatf("%s.%s",mnemonic, fpFmtToStr(instr[26:25])), is_rd_fpr(sbe.op)?fpRegAddrToStr(rd):regAddrToStr(rd), is_rs1_fpr(sbe.op)?fpRegAddrToStr(rs1):regAddrToStr(rs1), fpRmToStr(instr[14:12]));
         else
-            return $sformatf("%-12s %4s, %s", $sformatf("%s.%s",mnemonic, fpFmtToStr(instr[26:25])), ariane_pkg::is_rd_fpr(sbe.op)?fpRegAddrToStr(rd):regAddrToStr(rd), ariane_pkg::is_rs1_fpr(sbe.op)?fpRegAddrToStr(rs1):regAddrToStr(rs1));
+            return $sformatf("%-12s %4s, %s", $sformatf("%s.%s",mnemonic, fpFmtToStr(instr[26:25])), is_rd_fpr(sbe.op)?fpRegAddrToStr(rd):regAddrToStr(rd), is_rs1_fpr(sbe.op)?fpRegAddrToStr(rs1):regAddrToStr(rs1));
     endfunction // printRFInstr1Op
 
     function string printR4Instr(input string mnemonic);
@@ -523,9 +524,9 @@ class instr_trace_item;
     function string printFpSpecialInstr();
 
         result_regs.push_back(rd);
-        result_fpr.push_back(ariane_pkg::is_rd_fpr(sbe.op));
+        result_fpr.push_back(is_rd_fpr(sbe.op));
         read_regs.push_back(rs1);
-        read_fpr.push_back(ariane_pkg::is_rs1_fpr(sbe.op));
+        read_fpr.push_back(is_rs1_fpr(sbe.op));
 
         case (sbe.op)
             instr_tracer_pkg::INSTR_FCVT_F2F : return $sformatf("%-12s %4s, %s, %s", $sformatf("fcvt.%s.%s", fpFmtToStr(instr[26:25]), fpFmtToStr(instr[21:20])), fpRegAddrToStr(rd), fpRegAddrToStr(rs1), fpRmToStr(instr[14:12]));
@@ -634,7 +635,7 @@ class instr_trace_item;
 
     function string printLoadInstr(input string mnemonic);
         result_regs.push_back(rd);
-        result_fpr.push_back(ariane_pkg::is_rd_fpr(sbe.op));
+        result_fpr.push_back(is_rd_fpr(sbe.op));
         read_regs.push_back(rs1);
         read_fpr.push_back(1'b0);
         // save the immediate for calculating the virtual address
@@ -648,7 +649,7 @@ class instr_trace_item;
 
     function string printStoreInstr(input string mnemonic);
         read_regs.push_back(rs2);
-        read_fpr.push_back(ariane_pkg::is_rs2_fpr(sbe.op));
+        read_fpr.push_back(is_rs2_fpr(sbe.op));
         read_regs.push_back(rs1);
         read_fpr.push_back(1'b0);
         // save the immediate for calculating the virtual address
