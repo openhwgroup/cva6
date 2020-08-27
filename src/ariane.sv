@@ -23,8 +23,8 @@ import "DPI-C" function void init_dromajo(string cfg_f_name);
 `endif
 
 
-module ariane import ariane_pkg::*; #(
-  parameter ariane_pkg::ariane_cfg_t ArianeCfg     = ariane_pkg::ArianeDefaultConfig
+module ariane import riscv::*; import ariane_pkg::*; import wt_cache_pkg::*; import ariane_axi::*; #(
+  parameter ariane_cfg_t ArianeCfg     = ArianeDefaultConfig
 ) (
   input  logic                         clk_i,
   input  logic                         rst_ni,
@@ -44,12 +44,12 @@ module ariane import ariane_pkg::*; #(
 `endif
 `ifdef PITON_ARIANE
   // L15 (memory side)
-  output wt_cache_pkg::l15_req_t       l15_req_o,
-  input  wt_cache_pkg::l15_rtrn_t      l15_rtrn_i
+  output l15_req_t       l15_req_o,
+  input  l15_rtrn_t      l15_rtrn_i
 `else
   // memory side, AXI Master
-  output ariane_axi::req_t             axi_req_o,
-  input  ariane_axi::resp_t            axi_resp_i
+  output req_t             axi_req_o,
+  input  resp_t            axi_resp_i
 `endif
 );
 
@@ -57,18 +57,18 @@ module ariane import ariane_pkg::*; #(
   // Global Signals
   // Signals connecting more than one module
   // ------------------------------------------
-  riscv::priv_lvl_t           priv_lvl;
+  priv_lvl_t           priv_lvl;
   exception_t                 ex_commit; // exception from commit stage
   bp_resolve_t                resolved_branch;
-  logic [riscv::VLEN-1:0]     pc_commit;
+  logic [VLEN-1:0]     pc_commit;
   logic                       eret;
   logic [NR_COMMIT_PORTS-1:0] commit_ack;
 
   // --------------
   // PCGEN <-> CSR
   // --------------
-  logic [riscv::VLEN-1:0]     trap_vector_base_commit_pcgen;
-  logic [riscv::VLEN-1:0]     epc_commit_pcgen;
+  logic [VLEN-1:0]     trap_vector_base_commit_pcgen;
+  logic [VLEN-1:0]     epc_commit_pcgen;
   // --------------
   // IF <-> ID
   // --------------
@@ -88,7 +88,7 @@ module ariane import ariane_pkg::*; #(
   // ISSUE <-> EX
   // --------------
   fu_data_t                 fu_data_id_ex;
-  logic [riscv::VLEN-1:0]   pc_id_ex;
+  logic [VLEN-1:0]   pc_id_ex;
   logic                     is_compressed_instr_id_ex;
   // fixed latency units
   logic                     flu_ready_ex_id;
@@ -157,12 +157,12 @@ module ariane import ariane_pkg::*; #(
   // CSR <-> *
   // --------------
   logic [4:0]               fflags_csr_commit;
-  riscv::xs_t               fs;
+  xs_t               fs;
   logic [2:0]               frm_csr_id_issue_ex;
   logic [6:0]               fprec_csr_ex;
   logic                     enable_translation_csr_ex;
   logic                     en_ld_st_translation_csr_ex;
-  riscv::priv_lvl_t         ld_st_priv_lvl_csr_ex;
+  priv_lvl_t         ld_st_priv_lvl_csr_ex;
   logic                     sum_csr_ex;
   logic                     mxr_csr_ex;
   logic [43:0]              satp_ppn_csr_ex;
@@ -181,7 +181,7 @@ module ariane import ariane_pkg::*; #(
   logic                     icache_en_csr;
   logic                     debug_mode;
   logic                     single_step_csr_commit;
-  riscv::pmpcfg_t [15:0]    pmpcfg;
+  pmpcfg_t [15:0]    pmpcfg;
   logic [15:0][53:0]        pmpaddr;
   // ----------------------------
   // Performance Counters <-> *
@@ -679,7 +679,7 @@ module ariane import ariane_pkg::*; #(
   // -------------------
   // pragma translate_off
   `ifndef VERILATOR
-  initial ariane_pkg::check_cfg(ArianeCfg);
+  initial check_cfg(ArianeCfg);
   `endif
   // pragma translate_on
 
@@ -708,8 +708,8 @@ module ariane import ariane_pkg::*; #(
   localparam PC_QUEUE_DEPTH = 16;
 
   logic        piton_pc_vld;
-  logic [riscv::VLEN-1:0] piton_pc;
-  logic [NR_COMMIT_PORTS-1:0][riscv::VLEN-1:0] pc_data;
+  logic [VLEN-1:0] piton_pc;
+  logic [NR_COMMIT_PORTS-1:0][VLEN-1:0] pc_data;
   logic [NR_COMMIT_PORTS-1:0] pc_pop, pc_empty;
 
   for (genvar i = 0; i < NR_COMMIT_PORTS; i++) begin : gen_pc_fifo
@@ -851,9 +851,9 @@ module ariane import ariane_pkg::*; #(
       if (debug_mode) mode = "D";
       else begin
         case (priv_lvl)
-        riscv::PRIV_LVL_M: mode = "M";
-        riscv::PRIV_LVL_S: mode = "S";
-        riscv::PRIV_LVL_U: mode = "U";
+        PRIV_LVL_M: mode = "M";
+        PRIV_LVL_S: mode = "S";
+        PRIV_LVL_U: mode = "U";
         endcase
       end
       for (int i = 0; i < NR_COMMIT_PORTS; i++) begin
