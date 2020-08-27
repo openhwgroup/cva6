@@ -145,13 +145,13 @@ module csr_regfile #(
     // ----------------
     // CSR Read logic
     // ----------------
-    assign mstatus_q_toberead = IS_XLEN64 ? mstatus_q[riscv::XLEN-1:0] :
+    assign mstatus_q_toberead = riscv::IS_XLEN64 ? mstatus_q[riscv::XLEN-1:0] :
                               {mstatus_q.sd, mstatus_q.wpri3[7:0], mstatus_q[22:0]};
 
     always_comb begin : csr_read_process
         // a read access exception can only occur if we attempt to read a CSR which does not exist
         read_access_exception = 1'b0;
-        csr_rdata = {riscv::XLEN{1'b0}};
+        csr_rdata = '0;
         perf_addr_o = csr_addr.address[4:0];
 
         if (csr_read) begin
