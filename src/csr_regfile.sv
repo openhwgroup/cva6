@@ -145,7 +145,7 @@ module csr_regfile #(
     // ----------------
     // CSR Read logic
     // ----------------
-    assign mstatus_q_toberead = (riscv::XLEN == 64) ? mstatus_q[riscv::XLEN-1:0] :
+    assign mstatus_q_toberead = IS_XLEN64 ? mstatus_q[riscv::XLEN-1:0] :
                               {mstatus_q.sd, mstatus_q.wpri3[7:0], mstatus_q[22:0]};
 
     always_comb begin : csr_read_process
