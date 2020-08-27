@@ -10,7 +10,7 @@
 
 // Xilinx Peripehrals
 
-module ariane_peripherals #(
+module ariane_peripherals import ariane_soc::*; import reg_intf::*; import axi_pkg::*; #(
     parameter int AxiAddrWidth = -1,
     parameter int AxiDataWidth = -1,
     parameter int AxiIdWidth   = -1,
@@ -61,7 +61,7 @@ module ariane_peripherals #(
     // ---------------
     // 1. PLIC
     // ---------------
-    logic [ariane_soc::NumSources-1:0] irq_sources;
+    logic [NumSources-1:0] irq_sources;
 
     REG_BUS #(
         .ADDR_WIDTH ( 32 ),
@@ -157,8 +157,8 @@ module ariane_peripherals #(
         .reg_o     ( reg_bus      )
     );
 
-    reg_intf::reg_intf_resp_d32 plic_resp;
-    reg_intf::reg_intf_req_a32_d32 plic_req;
+    reg_intf_resp_d32 plic_resp;
+    reg_intf_req_a32_d32 plic_req;
 
     assign plic_req.addr  = reg_bus.addr;
     assign plic_req.write = reg_bus.write;
@@ -171,9 +171,9 @@ module ariane_peripherals #(
     assign reg_bus.ready = plic_resp.ready;
 
     plic_top #(
-      .N_SOURCE    ( ariane_soc::NumSources  ),
-      .N_TARGET    ( ariane_soc::NumTargets  ),
-      .MAX_PRIO    ( ariane_soc::MaxPriority )
+      .N_SOURCE    ( NumSources  ),
+      .N_TARGET    ( NumTargets  ),
+      .MAX_PRIO    ( MaxPriority )
     ) i_plic (
       .clk_i,
       .rst_ni,
@@ -490,11 +490,11 @@ module ariane_peripherals #(
 
         assign spi.b_valid = spi.aw_valid;
         assign spi.b_id = spi.aw_id;
-        assign spi.b_resp = axi_pkg::RESP_SLVERR;
+        assign spi.b_resp = RESP_SLVERR;
         assign spi.b_user = '0;
 
         assign spi.r_valid = spi.ar_valid;
-        assign spi.r_resp = axi_pkg::RESP_SLVERR;
+        assign spi.r_resp = RESP_SLVERR;
         assign spi.r_data = 'hdeadbeef;
         assign spi.r_last = 1'b1;
     end
@@ -581,11 +581,11 @@ module ariane_peripherals #(
 
         assign ethernet.b_valid = ethernet.aw_valid;
         assign ethernet.b_id = ethernet.aw_id;
-        assign ethernet.b_resp = axi_pkg::RESP_SLVERR;
+        assign ethernet.b_resp = RESP_SLVERR;
         assign ethernet.b_user = '0;
 
         assign ethernet.r_valid = ethernet.ar_valid;
-        assign ethernet.r_resp = axi_pkg::RESP_SLVERR;
+        assign ethernet.r_resp = RESP_SLVERR;
         assign ethernet.r_data = 'hdeadbeef;
         assign ethernet.r_last = 1'b1;
     end
