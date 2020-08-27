@@ -85,14 +85,14 @@ module load_store_unit #(
     // ------------------------------
     // virtual address as calculated by the AGU in the first cycle
     logic [riscv::VLEN-1:0]   vaddr_i;
-    riscv::xlen_t             vaddrXlen;
+    riscv::xlen_t             vaddr_xlen;
     logic                     overflow;
     logic [7:0]               be_i;
 
-    assign vaddrXlen = $unsigned($signed(fu_data_i.imm) + $signed(fu_data_i.operand_a));
-    assign vaddr_i = vaddrXlen[riscv::VLEN-1:0];
+    assign vaddr_xlen = $unsigned($signed(fu_data_i.imm) + $signed(fu_data_i.operand_a));
+    assign vaddr_i = vaddr_xlen[riscv::VLEN-1:0];
     // we work with SV39 or SV32, so if VM is enabled, check that all bits [XLEN-1:38] or [XLEN-1:31] are equal
-    assign overflow = !((&vaddrXlen[riscv::XLEN-1:riscv::SV-1]) == 1'b1 || (|vaddrXlen[riscv::XLEN-1:riscv::SV-1]) == 1'b0);
+    assign overflow = !((&vaddr_xlen[riscv::XLEN-1:riscv::SV-1]) == 1'b1 || (|vaddr_xlen[riscv::XLEN-1:riscv::SV-1]) == 1'b0);
 
     logic                     st_valid_i;
     logic                     ld_valid_i;
