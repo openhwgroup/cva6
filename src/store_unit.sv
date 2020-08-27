@@ -13,7 +13,7 @@
 // Description: Store Unit, takes care of all store requests and atomic memory operations (AMOs)
 
 
-module store_unit import ariane_pkg::*; (
+module store_unit import riscv::*; import ariane_pkg::*; (
     input  logic                     clk_i,    // Clock
     input  logic                     rst_ni,  // Asynchronous reset active low
     input  logic                     flush_i,
@@ -33,8 +33,8 @@ module store_unit import ariane_pkg::*; (
     output exception_t               ex_o,
     // MMU -> Address Translation
     output logic                     translation_req_o, // request address translation
-    output logic [riscv::VLEN-1:0]   vaddr_o,           // virtual address out
-    input  logic [riscv::PLEN-1:0]   paddr_i,           // physical address in
+    output logic [VLEN-1:0]   vaddr_o,           // virtual address out
+    input  logic [PLEN-1:0]   paddr_i,           // physical address in
     input  exception_t               ex_i,
     input  logic                     dtlb_hit_i,       // will be one in the same cycle translation_req was asserted if it hits
     // address checker
