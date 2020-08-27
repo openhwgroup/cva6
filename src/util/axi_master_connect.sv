@@ -11,9 +11,9 @@
 // Description: Connects SV AXI interface to structs used by Ariane
 // Author: Florian Zaruba <zarubaf@iis.ee.ethz.ch>
 
-module axi_master_connect (
-    input  ariane_axi::req_t    axi_req_i,
-    output ariane_axi::resp_t   axi_resp_o,
+module axi_master_connect import ariane_axi::*; (
+    input  req_t    axi_req_i,
+    output resp_t   axi_resp_o,
     AXI_BUS.Master master
 );
 
