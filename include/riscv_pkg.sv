@@ -59,7 +59,7 @@ package riscv;
         XLEN_32  = 2'b01,
         XLEN_64  = 2'b10,
         XLEN_128 = 2'b11
-    } xlen_enum_t;
+    } xlen_e;
 
     typedef enum logic [1:0] {
         Off     = 2'b00,
@@ -71,8 +71,8 @@ package riscv;
     typedef struct packed {
         logic         sd;     // signal dirty state - read-only
         logic [62:36] wpri4;  // writes preserved reads ignored
-        xlen_enum_t   sxl;    // variable supervisor mode xlen - hardwired to zero
-        xlen_enum_t   uxl;    // variable user mode xlen - hardwired to zero
+        xlen_e        sxl;    // variable supervisor mode xlen - hardwired to zero
+        xlen_e        uxl;    // variable user mode xlen - hardwired to zero
         logic [8:0]   wpri3;  // writes preserved reads ignored
         logic         tsr;    // trap sret
         logic         tw;     // time wait
