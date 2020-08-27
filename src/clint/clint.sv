@@ -16,7 +16,7 @@
 // Platforms provide a real-time counter, exposed as a memory-mapped machine-mode register, mtime. mtime must run at
 // constant frequency, and the platform must provide a mechanism for determining the timebase of mtime (device tree).
 
-module clint #(
+module clint import ariane_axi::*; #(
     parameter int unsigned AXI_ADDR_WIDTH = 64,
     parameter int unsigned AXI_DATA_WIDTH = 64,
     parameter int unsigned AXI_ID_WIDTH   = 10,
@@ -25,8 +25,8 @@ module clint #(
     input  logic                clk_i,       // Clock
     input  logic                rst_ni,      // Asynchronous reset active low
     input  logic                testmode_i,
-    input  ariane_axi::req_t    axi_req_i,
-    output ariane_axi::resp_t   axi_resp_o,
+    input  req_t    axi_req_i,
+    output resp_t   axi_resp_o,
     input  logic                rtc_i,       // Real-time clock in (usually 32.768 kHz)
     output logic [NR_CORES-1:0] timer_irq_o, // Timer interrupts
     output logic [NR_CORES-1:0] ipi_o        // software interrupt (a.k.a inter-process-interrupt)
