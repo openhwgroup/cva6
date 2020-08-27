@@ -14,10 +14,10 @@
 // Instruction Cache
 // ------------------------------
 
-module std_icache import ariane_pkg::*; import std_cache_pkg::*; (
+module std_icache import riscv::*; import ariane_pkg::*; import std_cache_pkg::*; import ariane_axi::*; (
     input  logic                     clk_i,
     input  logic                     rst_ni,
-    input riscv::priv_lvl_t          priv_lvl_i,
+    input priv_lvl_t          priv_lvl_i,
 
     input  logic                     flush_i,          // flush the icache, flush and kill have to be asserted together
     input  logic                     en_i,             // enable icache
@@ -29,8 +29,8 @@ module std_icache import ariane_pkg::*; import std_cache_pkg::*; (
     input  icache_dreq_i_t           dreq_i,
     output icache_dreq_o_t           dreq_o,
     // AXI refill port
-    output ariane_axi::req_t         axi_req_o,
-    input  ariane_axi::resp_t        axi_resp_i
+    output req_t         axi_req_o,
+    input  resp_t        axi_resp_i
 );
 
     localparam int unsigned ICACHE_BYTE_OFFSET = $clog2(ICACHE_LINE_WIDTH/8); // 3
