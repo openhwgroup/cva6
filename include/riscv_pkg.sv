@@ -639,17 +639,8 @@ package riscv;
         return {csr, 5'h0, 3'h2, dest, 7'h73};
     endfunction
 
-    function automatic logic [31:0] ebreak ();
-        return 32'h00100073;
-    endfunction
 
-    function automatic logic [31:0] nop ();
-        return 32'h00000013;
-    endfunction
 
-    function automatic logic [31:0] illegal ();
-        return 32'h00000000;
-    endfunction
 
 
     // trace log compatible to spikes commit log feature
