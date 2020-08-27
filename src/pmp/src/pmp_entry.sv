@@ -12,7 +12,7 @@
 // Date: 2.10.2019
 // Description: single PMP entry
 
-module pmp_entry #(
+module pmp_entry import riscv::*; #(
     parameter int unsigned PLEN = 56,
     parameter int unsigned PMP_LEN = 54
 ) (
@@ -22,7 +22,7 @@ module pmp_entry #(
     // Configuration
     input logic [PMP_LEN-1:0] conf_addr_i,
     input logic [PMP_LEN-1:0] conf_addr_prev_i,
-    input riscv::pmp_addr_mode_t conf_addr_mode_i,
+    input pmp_addr_mode_t conf_addr_mode_i,
 
     // Output
     output logic match_o
@@ -38,7 +38,7 @@ module pmp_entry #(
 
     always_comb begin
         case (conf_addr_mode_i)
-            riscv::TOR:     begin
+            TOR:     begin
                 // check that the requested address is in between the two 
                 // configuration addresses
                 if (addr_i >= (conf_addr_prev_i << 2) && addr_i < (conf_addr_i << 2)) begin
@@ -53,12 +53,12 @@ module pmp_entry #(
                 end
                 `endif
             end
-            riscv::NA4, riscv::NAPOT:   begin
+            NA4, NAPOT:   begin
                 logic [PLEN-1:0] base;
                 logic [PLEN-1:0] mask;
                 int unsigned size;
 
-                if (conf_addr_mode_i == riscv::NA4) size = 2;
+                if (conf_addr_mode_i == NA4) size = 2;
                 else begin
                     // use the extracted trailing ones
                     size = trail_ones+3;
@@ -71,7 +71,7 @@ module pmp_entry #(
                 `ifdef FORMAL
                 // size extract checks
                 assert(size >= 2);
-                if (conf_addr_mode_i == riscv::NAPOT) begin
+                if (conf_addr_mode_i == NAPOT) begin
                     assert(size > 2);
                     if (size < PMP_LEN) assert(conf_addr_i[size - 3] == 0);
                     for (int i = 0; i < PMP_LEN; i++) begin
@@ -98,7 +98,7 @@ module pmp_entry #(
                 end
                 `endif
             end
-            riscv::OFF: match_o = 1'b0;
+            OFF: match_o = 1'b0;
             default:    match_o = 0;
         endcase
     end
