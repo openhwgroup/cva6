@@ -98,7 +98,7 @@ module csr_regfile #(
     // CSR write causes us to mark the FPU state as dirty
     logic  dirty_fp_state_csr;
     riscv::status_rv_t    mstatus_q,  mstatus_d;
-    riscv::xlen_t         mstatus_q_toberead;
+    riscv::xlen_t         mstatus_extended;
     riscv::satp_t         satp_q, satp_d;
     riscv::dcsr_t         dcsr_q,     dcsr_d;
     riscv::csr_t  csr_addr;
@@ -145,7 +145,7 @@ module csr_regfile #(
     // ----------------
     // CSR Read logic
     // ----------------
-    assign mstatus_q_toberead = riscv::IS_XLEN64 ? mstatus_q[riscv::XLEN-1:0] :
+    assign mstatus_extended = riscv::IS_XLEN64 ? mstatus_q[riscv::XLEN-1:0] :
                               {mstatus_q.sd, mstatus_q.wpri3[7:0], mstatus_q[22:0]};
 
     always_comb begin : csr_read_process
@@ -197,7 +197,7 @@ module csr_regfile #(
                 riscv::CSR_TDATA3:;  // not implemented
                 // supervisor registers
                 riscv::CSR_SSTATUS: begin
-                    csr_rdata = mstatus_q_toberead & ariane_pkg::SMODE_STATUS_READ_MASK[riscv::XLEN-1:0];
+                    csr_rdata = mstatus_extended & ariane_pkg::SMODE_STATUS_READ_MASK[riscv::XLEN-1:0];
                 end
                 riscv::CSR_SIE:                csr_rdata = mie_q & mideleg_q;
                 riscv::CSR_SIP:                csr_rdata = mip_q & mideleg_q;
@@ -216,7 +216,7 @@ module csr_regfile #(
                     end
                 end
                 // machine mode registers
-                riscv::CSR_MSTATUS:            csr_rdata = mstatus_q_toberead;
+                riscv::CSR_MSTATUS:            csr_rdata = mstatus_extended;
                 riscv::CSR_MISA:               csr_rdata = ISA_CODE;
                 riscv::CSR_MEDELEG:            csr_rdata = medeleg_q;
                 riscv::CSR_MIDELEG:            csr_rdata = mideleg_q;
