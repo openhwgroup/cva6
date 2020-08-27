@@ -13,8 +13,7 @@
 // Description: Issue stage dispatches instructions to the FUs and keeps track of them
 //              in a scoreboard like data-structure.
 
-
-module issue_stage import ariane_pkg::*; #(
+module issue_stage import riscv::*; import ariane_pkg::*; #(
     parameter int unsigned NR_ENTRIES = 8,
     parameter int unsigned NR_WB_PORTS = 4,
     parameter int unsigned NR_COMMIT_PORTS = 2
@@ -32,7 +31,7 @@ module issue_stage import ariane_pkg::*; #(
     output logic                                     decoded_instr_ack_o,
     // to EX
     output fu_data_t                                 fu_data_o,
-    output logic [riscv::VLEN-1:0]                   pc_o,
+    output logic [VLEN-1:0]                   pc_o,
     output logic                                     is_compressed_instr_o,
     input  logic                                     flu_ready_i,
     output logic                                     alu_valid_o,
