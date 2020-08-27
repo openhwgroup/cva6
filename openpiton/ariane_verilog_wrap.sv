@@ -13,7 +13,7 @@
 // Description: Ariane Top-level wrapper to break out SV structs to logic vectors.
 
 
-module ariane_verilog_wrap #(
+module ariane_verilog_wrap import wt_cache_pkg::*; import ariane_axi::*; import ariane_pkg::*; #(
   parameter int unsigned               RASDepth              = 2,
   parameter int unsigned               BTBEntries            = 32,
   parameter int unsigned               BHTEntries            = 128,
@@ -52,26 +52,26 @@ module ariane_verilog_wrap #(
 
 `ifdef PITON_ARIANE
   // L15 (memory side)
-  output [$size(wt_cache_pkg::l15_req_t)-1:0]  l15_req_o,
-  input  [$size(wt_cache_pkg::l15_rtrn_t)-1:0] l15_rtrn_i
+  output [$size(l15_req_t)-1:0]  l15_req_o,
+  input  [$size(l15_rtrn_t)-1:0] l15_rtrn_i
 `else
   // AXI (memory side)
-  output [$size(ariane_axi::req_t)-1:0]             axi_req_o,
-  input  [$size(ariane_axi::resp_t)-1:0]            axi_resp_i
+  output [$size(req_t)-1:0]             axi_req_o,
+  input  [$size(resp_t)-1:0]            axi_resp_i
 `endif
  );
 
 // assign bitvector to packed struct and vice versa
 `ifdef PITON_ARIANE
   // L15 (memory side)
-  wt_cache_pkg::l15_req_t  l15_req;
-  wt_cache_pkg::l15_rtrn_t l15_rtrn;
+  l15_req_t  l15_req;
+  l15_rtrn_t l15_rtrn;
 
   assign l15_req_o = l15_req;
   assign l15_rtrn  = l15_rtrn_i;
 `else
-  ariane_axi::req_t             axi_req;
-  ariane_axi::resp_t            axi_resp;
+  req_t             axi_req;
+  resp_t            axi_resp;
 
   assign axi_req_o = axi_req;
   assign axi_resp  = axi_resp_i;
@@ -87,7 +87,7 @@ module ariane_verilog_wrap #(
   // logic wake_up_d, wake_up_q;
   // logic rst_n;
 
-  // assign wake_up_d = wake_up_q || ((l15_rtrn.l15_returntype == wt_cache_pkg::L15_INT_RET) && l15_rtrn.l15_val);
+  // assign wake_up_d = wake_up_q || ((l15_rtrn.l15_returntype == L15_INT_RET) && l15_rtrn.l15_val);
 
   // always_ff @(posedge clk_i or negedge reset_l) begin : p_regs
   //   if(~reset_l) begin
@@ -168,7 +168,7 @@ module ariane_verilog_wrap #(
   // ariane instance
   /////////////////////////////
 
-  localparam ariane_pkg::ariane_cfg_t ArianeOpenPitonCfg = '{
+  localparam ariane_cfg_t ArianeOpenPitonCfg = '{
     RASDepth:              RASDepth,
     BTBEntries:            BTBEntries,
     BHTEntries:            BHTEntries,
