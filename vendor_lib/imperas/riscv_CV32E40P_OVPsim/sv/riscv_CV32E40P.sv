@@ -31,15 +31,16 @@ module CPU
     import uvm_pkg::*;
 `endif
 
-    import "DPI-C" context task ovpEntry(input int i, input string s1, input string s2);
+    import "DPI-C" context task ovpEntry(input string s1, input string s2);
     `ifndef UVM
-    import "DPI-C" context function void ovpExit(input int);
+    import "DPI-C" context function void ovpExit();
     `endif
 
     export "DPI-C" task     busLoad;
     export "DPI-C" task     busStore;
     export "DPI-C" task     busFetch;
     export "DPI-C" task     busWait;
+    export "DPI-C" task     atZero;
     
     export "DPI-C" function setPC;
     export "DPI-C" function setGPR;
@@ -76,6 +77,10 @@ module CPU
         busStep;
     endtask
     
+    task atZero;
+        #0;
+    endtask
+    
     // Called at end of instruction transaction
     task setRETIRE;
         input int retPC;
@@ -88,15 +93,15 @@ module CPU
             `endif
             if (Icount==0)
                 `ifdef UVM
-                `uvm_info("riscv_CV32E40P", $sformatf("[%0d] Initial State : %s", ID, Change), UVM_DEBUG)
+                `uvm_info("riscv_CV32E40P", $sformatf("Initial State : %s", Change), UVM_DEBUG)
                 `else
-                $display("[%0d] Initial State : %s", ID, Change);
+                $display("Initial State : %s", Change);
                 `endif
             else
                 `ifdef UVM
-                `uvm_info("riscv_CV32E40P", $sformatf("I [%0d] %0d PCr=0x%x %s : %s", ID, Icount, PCr, Decode, Change), UVM_DEBUG)
+                `uvm_info("riscv_CV32E40P", $sformatf("I %0d PCr=0x%x %s : %s", Icount, PCr, Decode, Change), UVM_DEBUG)
                 `else
-                $display("I [%0d] %0d PCr=0x%x %s : %s", ID, Icount, PCr, Decode, Change);
+                $display("I %0d PCr=0x%x %s : %s", Icount, PCr, Decode, Change);
                 `endif
         end
         Change = "";
@@ -531,7 +536,7 @@ module CPU
         ovpcfg_load();
         elf_load();
         cpu_cfg();
-        ovpEntry(ID, ovpcfg, elf_file);
+        ovpEntry(ovpcfg, elf_file);
         `ifndef UVM
         $finish;
         `endif
@@ -539,7 +544,7 @@ module CPU
     
     `ifndef UVM
     final begin
-        ovpExit(ID);
+        ovpExit();
     end
     `endif
  

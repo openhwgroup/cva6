@@ -153,7 +153,10 @@ module uvmt_cv32_tb;
                 haltreq_next2 <= 4'h0;
             end
 
-            if(haltreq_next2 >= 4'h3) begin // 1,2,3: Enter dbg 1 cycle early(?) 4: ISS is late into debug
+//            if(haltreq_next2 >= 4'h3) begin // 1,2,3: Enter dbg 1 cycle early(?) 4: ISS is late into debug
+//FIXME: IMPERAS
+// TODO IMPERAS determine correct syncronisation
+            if(haltreq_next2 >= 4'h6) begin // 1,2,3: Enter dbg 1 cycle early(?) 4: ISS is late into debug
                 iss_wrap.b1.haltreq <= haltreq_next;
             end
         end
