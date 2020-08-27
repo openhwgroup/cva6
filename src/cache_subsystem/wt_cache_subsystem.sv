@@ -19,8 +19,8 @@
 //              L1.5 interface.
 
 
-module wt_cache_subsystem import ariane_pkg::*; import wt_cache_pkg::*; #(
-  parameter ariane_pkg::ariane_cfg_t ArianeCfg       = ariane_pkg::ArianeDefaultConfig  // contains cacheable regions
+module wt_cache_subsystem import ariane_pkg::*; import wt_cache_pkg::*; import ariane_axi::*; #(
+  parameter ariane_cfg_t ArianeCfg       = ArianeDefaultConfig  // contains cacheable regions
 ) (
   input logic                            clk_i,
   input logic                            rst_ni,
@@ -54,20 +54,20 @@ module wt_cache_subsystem import ariane_pkg::*; import wt_cache_pkg::*; #(
   input  l15_rtrn_t                      l15_rtrn_i
 `else
   // memory side
-  output ariane_axi::req_t               axi_req_o,
-  input  ariane_axi::resp_t              axi_resp_i
+  output req_t               axi_req_o,
+  input  resp_t              axi_resp_i
 `endif
   // TODO: interrupt interface
 );
 
   logic icache_adapter_data_req, adapter_icache_data_ack, adapter_icache_rtrn_vld;
-  wt_cache_pkg::icache_req_t  icache_adapter;
-  wt_cache_pkg::icache_rtrn_t adapter_icache;
+  icache_req_t  icache_adapter;
+  icache_rtrn_t adapter_icache;
 
 
   logic dcache_adapter_data_req, adapter_dcache_data_ack, adapter_dcache_rtrn_vld;
-  wt_cache_pkg::dcache_req_t  dcache_adapter;
-  wt_cache_pkg::dcache_rtrn_t adapter_dcache;
+  dcache_req_t  dcache_adapter;
+  dcache_rtrn_t adapter_dcache;
 
   wt_icache #(
     // use ID 0 for icache reads
