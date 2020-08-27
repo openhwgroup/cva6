@@ -15,9 +15,9 @@
 
 /* verilator lint_off WIDTH */
 
-module ptw import ariane_pkg::*; #(
+module ptw import riscv::*; import ariane_pkg::*; #(
         parameter int ASID_WIDTH = 1,
-        parameter ariane_pkg::ariane_cfg_t ArianeCfg = ariane_pkg::ArianeDefaultConfig
+        parameter ariane_cfg_t ArianeCfg = ArianeDefaultConfig
 ) (
     input  logic                    clk_i,                  // Clock
     input  logic                    rst_ni,                 // Asynchronous reset active low
@@ -41,18 +41,18 @@ module ptw import ariane_pkg::*; #(
     output tlb_update_t             itlb_update_o,
     output tlb_update_t             dtlb_update_o,
 
-    output logic [riscv::VLEN-1:0]  update_vaddr_o,
+    output logic [VLEN-1:0]  update_vaddr_o,
 
     input  logic [ASID_WIDTH-1:0]   asid_i,
     // from TLBs
     // did we miss?
     input  logic                    itlb_access_i,
     input  logic                    itlb_hit_i,
-    input  logic [riscv::VLEN-1:0]  itlb_vaddr_i,
+    input  logic [VLEN-1:0]  itlb_vaddr_i,
 
     input  logic                    dtlb_access_i,
     input  logic                    dtlb_hit_i,
-    input  logic [riscv::VLEN-1:0]  dtlb_vaddr_i,
+    input  logic [VLEN-1:0]  dtlb_vaddr_i,
     // from CSR file
     input  logic [43:0]             satp_ppn_i, // ppn from satp
     input  logic                    mxr_i,
@@ -61,9 +61,9 @@ module ptw import ariane_pkg::*; #(
     output logic                    dtlb_miss_o,
     // PMP
 
-    input  riscv::pmpcfg_t [15:0]   pmpcfg_i,
+    input  pmpcfg_t [15:0]   pmpcfg_i,
     input  logic [15:0][53:0]       pmpaddr_i,
-    output logic [riscv::PLEN-1:0]  bad_paddr_o
+    output logic [PLEN-1:0]  bad_paddr_o
 
 );
 
@@ -71,8 +71,8 @@ module ptw import ariane_pkg::*; #(
     logic data_rvalid_q;
     logic [63:0] data_rdata_q;
 
-    riscv::pte_t pte;
-    assign pte = riscv::pte_t'(data_rdata_q);
+    pte_t pte;
+    assign pte = pte_t'(data_rdata_q);
 
     enum logic[2:0] {
       IDLE,
@@ -96,9 +96,9 @@ module ptw import ariane_pkg::*; #(
     // register the ASID
     logic [ASID_WIDTH-1:0]  tlb_update_asid_q, tlb_update_asid_n;
     // register the VPN we need to walk, SV39 defines a 39 bit virtual address
-    logic [riscv::VLEN-1:0] vaddr_q,   vaddr_n;
+    logic [VLEN-1:0] vaddr_q,   vaddr_n;
     // 4 byte aligned physical pointer
-    logic [riscv::PLEN-1:0] ptw_pptr_q, ptw_pptr_n;
+    logic [PLEN-1:0] ptw_pptr_q, ptw_pptr_n;
 
     // Assignments
     assign update_vaddr_o  = vaddr_q;
@@ -136,15 +136,15 @@ module ptw import ariane_pkg::*; #(
     assign bad_paddr_o = ptw_access_exception_o ? ptw_pptr_q : 'b0;
 
     pmp #(
-        .PLEN       ( riscv::PLEN            ),
-        .PMP_LEN    ( riscv::PLEN - 2        ),
+        .PLEN       ( PLEN            ),
+        .PMP_LEN    ( PLEN - 2        ),
         .NR_ENTRIES ( ArianeCfg.NrPMPEntries )
     ) i_pmp_ptw (
         .addr_i        ( ptw_pptr_q         ),
         // PTW access are always checked as if in S-Mode...
-        .priv_lvl_i    ( riscv::PRIV_LVL_S  ),
+        .priv_lvl_i    ( PRIV_LVL_S  ),
         // ...and they are always loads
-        .access_type_i ( riscv::ACCESS_READ ),
+        .access_type_i ( ACCESS_READ ),
         // Configuration
         .conf_addr_i   ( pmpaddr_i          ),
         .conf_i        ( pmpcfg_i           ),
