@@ -13,7 +13,7 @@
 // Description: Nonblocking private L1 dcache
 
 
-module std_nbdcache import std_cache_pkg::*; import ariane_pkg::*; #(
+module std_nbdcache import std_cache_pkg::*; import ariane_pkg::*; import ariane_axi::*; #(
     parameter logic [63:0] CACHE_START_ADDR = 64'h8000_0000
 )(
     input  logic                           clk_i,       // Clock
@@ -30,13 +30,12 @@ module std_nbdcache import std_cache_pkg::*; import ariane_pkg::*; #(
     input  dcache_req_i_t [2:0]            req_ports_i,  // request ports
     output dcache_req_o_t [2:0]            req_ports_o,  // request ports
     // Cache AXI refill port
-    output ariane_axi::req_t               axi_data_o,
-    input  ariane_axi::resp_t              axi_data_i,
-    output ariane_axi::req_t               axi_bypass_o,
-    input  ariane_axi::resp_t              axi_bypass_i
+    output req_t               axi_data_o,
+    input  resp_t              axi_data_i,
+    output req_t               axi_bypass_o,
+    input  resp_t              axi_bypass_i
 );
 
-import std_cache_pkg::*;
 
     // -------------------------------
     // Controller <-> Arbiter
