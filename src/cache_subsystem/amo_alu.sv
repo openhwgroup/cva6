@@ -11,9 +11,9 @@
 // Author: Florian Zaruba, ETH Zurich
 // Date: 15.09.2018
 // Description: Combinatorial AMO unit
-module amo_alu (
+module amo_alu import ariane_pkg::*; (
         // AMO interface
-        input  ariane_pkg::amo_t  amo_op_i,
+        input  amo_t  amo_op_i,
         input  logic [63:0]       amo_operand_a_i,
         input  logic [63:0]       amo_operand_b_i,
         output logic [63:0]       amo_result_o // result of atomic memory operation
@@ -33,26 +33,26 @@ module amo_alu (
 
         unique case (amo_op_i)
             // the default is to output operand_b
-            ariane_pkg::AMO_SC:;
-            ariane_pkg::AMO_SWAP:;
-            ariane_pkg::AMO_ADD: amo_result_o = adder_sum[63:0];
-            ariane_pkg::AMO_AND: amo_result_o = amo_operand_a_i & amo_operand_b_i;
-            ariane_pkg::AMO_OR:  amo_result_o = amo_operand_a_i | amo_operand_b_i;
-            ariane_pkg::AMO_XOR: amo_result_o = amo_operand_a_i ^ amo_operand_b_i;
-            ariane_pkg::AMO_MAX: begin
+            AMO_SC:;
+            AMO_SWAP:;
+            AMO_ADD: amo_result_o = adder_sum[63:0];
+            AMO_AND: amo_result_o = amo_operand_a_i & amo_operand_b_i;
+            AMO_OR:  amo_result_o = amo_operand_a_i | amo_operand_b_i;
+            AMO_XOR: amo_result_o = amo_operand_a_i ^ amo_operand_b_i;
+            AMO_MAX: begin
                 adder_operand_b = -$signed(amo_operand_b_i);
                 amo_result_o = adder_sum[64] ? amo_operand_b_i : amo_operand_a_i;
             end
-            ariane_pkg::AMO_MIN: begin
+            AMO_MIN: begin
                 adder_operand_b = -$signed(amo_operand_b_i);
                 amo_result_o = adder_sum[64] ? amo_operand_a_i : amo_operand_b_i;
             end
-            ariane_pkg::AMO_MAXU: begin
+            AMO_MAXU: begin
                 adder_operand_a = $unsigned(amo_operand_a_i);
                 adder_operand_b = -$unsigned(amo_operand_b_i);
                 amo_result_o = adder_sum[64] ? amo_operand_b_i : amo_operand_a_i;
             end
-            ariane_pkg::AMO_MINU: begin
+            AMO_MINU: begin
                 adder_operand_a = $unsigned(amo_operand_a_i);
                 adder_operand_b = -$unsigned(amo_operand_b_i);
                 amo_result_o = adder_sum[64] ? amo_operand_a_i : amo_operand_b_i;
