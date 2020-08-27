@@ -14,7 +14,7 @@
 // Date: 09.06.2018
 
 // branch target buffer
-module btb #(
+module btb import riscv::*; import ariane_pkg::*; #(
     parameter int NR_ENTRIES = 8
 )(
     input  logic                        clk_i,           // Clock
@@ -22,16 +22,16 @@ module btb #(
     input  logic                        flush_i,         // flush the btb
     input  logic                        debug_mode_i,
 
-    input  logic [riscv::VLEN-1:0]      vpc_i,           // virtual PC from IF stage
-    input  ariane_pkg::btb_update_t     btb_update_i,    // update btb with this information
-    output ariane_pkg::btb_prediction_t [ariane_pkg::INSTR_PER_FETCH-1:0] btb_prediction_o // prediction from btb
+    input  logic [VLEN-1:0]      vpc_i,           // virtual PC from IF stage
+    input  btb_update_t     btb_update_i,    // update btb with this information
+    output btb_prediction_t [INSTR_PER_FETCH-1:0] btb_prediction_o // prediction from btb
 );
     // the last bit is always zero, we don't need it for indexing
     localparam OFFSET = 1;
     // re-shape the branch history table
-    localparam NR_ROWS = NR_ENTRIES / ariane_pkg::INSTR_PER_FETCH;
+    localparam NR_ROWS = NR_ENTRIES / INSTR_PER_FETCH;
     // number of bits needed to index the row
-    localparam ROW_ADDR_BITS = $clog2(ariane_pkg::INSTR_PER_FETCH);
+    localparam ROW_ADDR_BITS = $clog2(INSTR_PER_FETCH);
     // number of bits we should use for prediction
     localparam PREDICTION_BITS = $clog2(NR_ROWS) + OFFSET + ROW_ADDR_BITS;
     // prevent aliasing to degrade performance
@@ -41,8 +41,8 @@ module btb #(
 
     // typedef for all branch target entries
     // we may want to try to put a tag field that fills the rest of the PC in-order to mitigate aliasing effects
-    ariane_pkg::btb_prediction_t btb_d [NR_ROWS-1:0][ariane_pkg::INSTR_PER_FETCH-1:0],
-                                 btb_q [NR_ROWS-1:0][ariane_pkg::INSTR_PER_FETCH-1:0];
+    btb_prediction_t btb_d [NR_ROWS-1:0][INSTR_PER_FETCH-1:0],
+                                 btb_q [NR_ROWS-1:0][INSTR_PER_FETCH-1:0];
     logic [$clog2(NR_ROWS)-1:0]  index, update_pc;
     logic [ROW_ADDR_BITS-1:0]    update_row_index;
 
@@ -51,7 +51,7 @@ module btb #(
     assign update_row_index = btb_update_i.pc[ROW_ADDR_BITS + OFFSET - 1:OFFSET];
 
     // output matching prediction
-    for (genvar i = 0; i < ariane_pkg::INSTR_PER_FETCH; i++) begin : gen_btb_output
+    for (genvar i = 0; i < INSTR_PER_FETCH; i++) begin : gen_btb_output
         assign btb_prediction_o[i] = btb_q[index][i]; // workaround
     end
 
@@ -79,7 +79,7 @@ module btb #(
             // evict all entries
             if (flush_i) begin
                 for (int i = 0; i < NR_ROWS; i++) begin
-                    for (int j = 0; j < ariane_pkg::INSTR_PER_FETCH; j++) begin
+                    for (int j = 0; j < INSTR_PER_FETCH; j++) begin
                         btb_q[i][j].valid <=  1'b0;
                     end
                 end
