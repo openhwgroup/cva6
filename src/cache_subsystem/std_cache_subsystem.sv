@@ -15,12 +15,12 @@
 //              write-back data cache.
 
 
-module std_cache_subsystem import ariane_pkg::*; import std_cache_pkg::*; #(
+module std_cache_subsystem import riscv::*; import ariane_pkg::*; import std_cache_pkg::*; import ariane_axi::*; #(
   parameter logic [63:0] CACHE_START_ADDR = 64'h4000_0000
 ) (
     input logic                            clk_i,
     input logic                            rst_ni,
-    input riscv::priv_lvl_t                priv_lvl_i,
+    input priv_lvl_t                priv_lvl_i,
     // I$
     input  logic                           icache_en_i,            // enable icache (or bypass e.g: in debug mode)
     input  logic                           icache_flush_i,         // flush the icache, flush and kill have to be asserted together
@@ -45,18 +45,18 @@ module std_cache_subsystem import ariane_pkg::*; import std_cache_pkg::*; #(
     input  dcache_req_i_t   [2:0]          dcache_req_ports_i,     // to/from LSU
     output dcache_req_o_t   [2:0]          dcache_req_ports_o,     // to/from LSU
     // memory side
-    output ariane_axi::req_t               axi_req_o,
-    input  ariane_axi::resp_t              axi_resp_i
+    output req_t               axi_req_o,
+    input  resp_t              axi_resp_i
 );
 
   assign wbuffer_empty_o = 1'b1;
 
-    ariane_axi::req_t  axi_req_icache;
-    ariane_axi::resp_t axi_resp_icache;
-    ariane_axi::req_t  axi_req_bypass;
-    ariane_axi::resp_t axi_resp_bypass;
-    ariane_axi::req_t  axi_req_data;
-    ariane_axi::resp_t axi_resp_data;
+    req_t  axi_req_icache;
+    resp_t axi_resp_icache;
+    req_t  axi_req_bypass;
+    resp_t axi_resp_bypass;
+    req_t  axi_req_data;
+    resp_t axi_resp_data;
 
     std_icache i_icache (
         .clk_i      ( clk_i                 ),
@@ -105,7 +105,7 @@ module std_cache_subsystem import ariane_pkg::*; import std_cache_pkg::*; #(
 
     // AR Channel
     stream_arbiter #(
-        .DATA_T ( ariane_axi::ar_chan_t ),
+        .DATA_T ( ar_chan_t ),
         .N_INP  ( 3                     )
     ) i_stream_arbiter_ar (
         .clk_i,
@@ -120,7 +120,7 @@ module std_cache_subsystem import ariane_pkg::*; import std_cache_pkg::*; #(
 
     // AW Channel
     stream_arbiter #(
-        .DATA_T ( ariane_axi::aw_chan_t ),
+        .DATA_T ( aw_chan_t ),
         .N_INP  ( 3                     )
     ) i_stream_arbiter_aw (
         .clk_i,
@@ -172,7 +172,7 @@ module std_cache_subsystem import ariane_pkg::*; import std_cache_pkg::*; #(
     assign w_select_arbiter = (w_fifo_empty) ? 0 : w_select_fifo;
 
     stream_mux #(
-        .DATA_T ( ariane_axi::w_chan_t ),
+        .DATA_T ( w_chan_t ),
         .N_INP  ( 3                    )
     ) i_stream_mux_w (
         .inp_data_i  ( {axi_req_data.w, axi_req_bypass.w, axi_req_icache.w} ),
