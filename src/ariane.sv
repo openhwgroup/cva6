@@ -231,6 +231,7 @@ module ariane import ariane_pkg::*; #(
   dcache_req_i_t [2:0]      dcache_req_ports_ex_cache;
   dcache_req_o_t [2:0]      dcache_req_ports_cache_ex;
   logic                     dcache_commit_wbuffer_empty;
+  logic                     dcache_commit_wbuffer_not_ni;
 
   // --------------
   // Frontend
@@ -428,6 +429,7 @@ module ariane import ariane_pkg::*; #(
     .dcache_req_ports_i     ( dcache_req_ports_cache_ex   ),
     .dcache_req_ports_o     ( dcache_req_ports_ex_cache   ),
     .dcache_wbuffer_empty_i ( dcache_commit_wbuffer_empty ),
+    .dcache_wbuffer_not_ni_i ( dcache_commit_wbuffer_not_ni ),
     // PMP
     .pmpcfg_i               ( pmpcfg                      ),
     .pmpaddr_i              ( pmpaddr                     )
@@ -626,6 +628,7 @@ module ariane import ariane_pkg::*; #(
     .dcache_req_ports_o    ( dcache_req_ports_cache_ex   ),
     // write buffer status
     .wbuffer_empty_o       ( dcache_commit_wbuffer_empty ),
+    .wbuffer_not_ni_o      ( dcache_commit_wbuffer_not_ni ),
 `ifdef PITON_ARIANE
     .l15_req_o             ( l15_req_o                   ),
     .l15_rtrn_i            ( l15_rtrn_i                  )
@@ -672,6 +675,7 @@ module ariane import ariane_pkg::*; #(
     .axi_req_o             ( axi_req_o                   ),
     .axi_resp_i            ( axi_resp_i                  )
   );
+  assign dcache_commit_wbuffer_not_ni = 1'b1;
 `endif
 
   // -------------------

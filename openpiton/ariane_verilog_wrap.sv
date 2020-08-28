@@ -23,9 +23,9 @@ module ariane_verilog_wrap #(
   parameter bit                        SwapEndianess         = 1,
   // PMA configuration
   // idempotent region
-  parameter int unsigned               NrNonIdempotentRules  =  0,
-  parameter logic [NrMaxRules*64-1:0]  NonIdempotentAddrBase = '0,
-  parameter logic [NrMaxRules*64-1:0]  NonIdempotentLength   = '0,
+  parameter int unsigned               NrNonIdempotentRules  =  1,
+  parameter logic [NrMaxRules*64-1:0]  NonIdempotentAddrBase = 64'h00C0000000,
+  parameter logic [NrMaxRules*64-1:0]  NonIdempotentLength   = 64'hFFFFFFFFFF,
   // executable regions
   parameter int unsigned               NrExecuteRegionRules  =  0,
   parameter logic [NrMaxRules*64-1:0]  ExecuteRegionAddrBase = '0,
