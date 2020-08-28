@@ -40,12 +40,14 @@
 #
 ###############################################################################
 
-MAKE          = make
-WAVES         = 0
-COREV_PROJ    = cv32
+# "Constants"
+MAKE           = make
 MAKE_DIR      = $(PWD)
-PROJ_ROOT_DIR = $(PWD)/../../..
-CUSTOM_PROG  ?= requested_csr_por
+MAKE_PATH     := $(shell dirname $(realpath $(firstword $(MAKEFILE_LIST))))
+COREV_PROJ     = cv32
+PROJ_ROOT_DIR  = $(abspath $(MAKE_PATH)/../../..)
+DATE           = $(shell date +%F)
+WAVES         = 0
 
 # Compile compile flags for all simulators
 SV_CMP_FLAGS = 
@@ -86,7 +88,7 @@ SIMV                    = ./simv
 # dsim is the Metrics Technologies SystemVerilog simulator  (https://metrics.ca/)
 DSIM                    = dsim
 DSIM_HOME               = /tools/Metrics/dsim
-DSIM_CMP_FLAGS          = -timescale 1ns/1ps $(SV_CMP_FLAGS)
+DSIM_CMP_FLAGS          = -timescale 1ns/1ps $(SV_CMP_FLAGS) +define+CV32E40P_APU_TRACE
 DSIM_RUN_FLAGS          = -write-sql
 DSIM_UVM_ARGS           = +incdir+$(UVM_HOME)/src $(UVM_HOME)/src/uvm_pkg.sv
 DSIM_RESULTS           ?= $(PWD)/results
@@ -101,7 +103,7 @@ endif
 
 # xrun is the Cadence xcelium SystemVerilog simulator (https://cadence.com/)
 XRUN              = xrun
-XRUN_FLAGS        = -clean -smartorder -sv -top worklib.tb_top -timescale 1ns/1ps
+XRUN_FLAGS        = -clean -smartorder -sv -top worklib.tb_top -timescale 1ns/1ps +define+CV32E40P_APU_TRACE
 XRUN_DIR          = xcelium.d
 
 # verilator configuration
@@ -148,9 +150,12 @@ FPNEW_PKG            := $(CV32E40P_PKG)/rtl/fpnew
 # FIXME: temporarily using a local manifest for the core.
 #        This is BAD PRACTICE and will be fixed with
 #        https://github.com/openhwgroup/cv32e40p/pull/421 is resolved.
-#CV32E40P_MANIFEST    := $(CV32E40P_PKG)/cv32e40p_manifest.flist
-CV32E40P_MANIFEST    := cv32e40p_temp_manifest.flist
+CV32E40P_MANIFEST    := $(CV32E40P_PKG)/cv32e40p_manifest.flist
+#CV32E40P_MANIFEST    := cv32e40p_temp_manifest.flist
 export DESIGN_RTL_DIR = $(CV32E40P_PKG)/rtl
+
+# Default "custom test-program"
+CUSTOM_PROG  ?= requested_csr_por
 
 # Shorthand rules for convience
 cv32e40p_pkg: $(CV32E40P_PKG)
@@ -218,7 +223,7 @@ dsim-comp: mk_results cv32e40p_pkg tbsrc_pkg tbsrc
 		$(DSIM) \
 		$(DSIM_CMP_FLAGS) \
 		$(DSIM_UVM_ARGS) \
-		-f $(MAKE_DIR)/$(CV32E40P_MANIFEST) \
+		-f $(CV32E40P_MANIFEST) \
 		$(TBSRC_PKG) \
 		$(TBSRC) \
 		-work $(DSIM_WORK) \
