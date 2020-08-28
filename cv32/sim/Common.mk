@@ -69,7 +69,8 @@ BANNER=*************************************************************************
 CV32E40P_REPO   ?= https://github.com/openhwgroup/cv32e40p
 CV32E40P_BRANCH ?= master
 #2020-08-28
-CV32E40P_HASH   ?= 7c65d1a6cbbcbc7eb20abfd1a83988c94e4fd175
+CV32E40P_HASH   ?= a5ec2db5cc3eabb6d0315658f11ae8e82bbf994d
+#CV32E40P_HASH   ?= 7c65d1a6cbbcbc7eb20abfd1a83988c94e4fd175
 #2020-08-18
 #CV32E40P_HASH   ?= 1607d8b675864db1aa013364fd4444a665331830
 #2020-07-16
