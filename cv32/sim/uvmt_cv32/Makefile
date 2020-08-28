@@ -90,6 +90,9 @@ COREVDV_PKG   := $(PROJ_ROOT_DIR)/vendor_lib/google/corev-dv
 export RISCV_DV_ROOT = $(RISCVDV_PKG)
 export COREV_DV_ROOT = $(COREVDV_PKG)
 
+# RISC-V Foundation's RISC-V Compliance Test-suite
+COMPLIANCE_PKG   := $(PROJ_ROOT_DIR)/vendor_lib/riscv/riscv-compliance
+
 # TB source files for the CV32E core
 TBSRC_TOP   := $(TBSRC_HOME)/uvmt_cv32/uvmt_cv32_tb.sv
 TBSRC_HOME  := $(PROJ_ROOT_DIR)/$(COREV_PROJ)/tb
@@ -143,6 +146,9 @@ clone_fpnew_rtl: clone_cv32e40p_rtl
 
 clone_riscv-dv:
 	$(CLONE_RISCVDV_CMD)
+
+clone_compliance:
+	$(CLONE_COMPLIANCE_CMD)
 
 $(CV32E40P_PKG):
 	$(CLONE_CV32E40P_CMD)
@@ -200,4 +206,7 @@ clean_riscv-dv:
 	rm -rf $(RISCVDV_PKG)
 	rm -rf $(COREVDV_PKG)/out_*
 	find ../../tests/core/google-riscv-dv -name "*.S" -exec rm {} \;
+
+clean_compliance:
+	rm -rf $(COMPLIANCE_PKG)
 
