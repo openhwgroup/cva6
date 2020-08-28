@@ -84,6 +84,7 @@ class corev_asm_program_gen extends riscv_asm_program_gen;
     instr_stream.push_back("                  lw a1, test_results /* report result */");
     instr_stream.push_back("                  sw a1,0(a0)");
     instr_stream.push_back("");
+    instr_stream.push_back("                  csrrwi x0,mie,0 /* clear mie so that final wfi never awakens */");
     instr_stream.push_back("                  wfi  /* we are done */");
     instr_stream.push_back("#End: Extracted from riscv_compliance_tests/riscv_test.h");
     instr_stream.push_back("");
