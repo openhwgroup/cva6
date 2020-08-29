@@ -19,11 +19,15 @@
 # 
 ################################################################################
 #
+# run_compliance: the main purpose of this script is to produce the .metrics.json
+#                 test-list for the RISC-V test-suite.  It will also (optionally)
+#                 run the tests. Used in conjunction with targets in the uvmt_cv32
+#                 Makefiles.
 #
 # Author: Mike Thompson
 #  email: mike@openhwgroup.org
 #
-# Written with Python 3.6.9 on Ubuntu 18.04.  Your python mileage may vary.
+# Written with Python 3.5.3 on Debian 9.  Your python mileage may vary.
 #
 # Restriction:
 #     - Needs to be launched from the ci directory.
@@ -97,7 +101,7 @@ for isafile in os.listdir(inputdir):
         if (args.json):
             print ('          {')
             print ('            "name":        "RISCV_COMPLIANCE_' + file_name + '",')
-            print ('            "build":       "uvmt_cv32_compliance",')
+            print ('            "build":       "uvmt_cv32_compliance_build",')
             print ('            "cmd":         "cd cv32/sim/uvmt_cv32; make compliance RISCV_ISA=' + riscv_isa + ' COMPLIANCE_PROG=' + file_name + ' SIMULATOR=dsim USE_ISS=YES DSIM_WORK=/mux-flow/build/repo/dsim_work DSIM_RESULTS=/mux-flow/build/results",')
             print ('            "wavesCmd":    "cd cv32/sim/uvmt_cv32; make compliance RISCV_ISA=' + riscv_isa + ' COMPLIANCE_PROG=' + file_name + ' SIMULATOR=dsim USE_ISS=YES DSIM_WORK=/mux-flow/build/repo/dsim_work DSIM_RESULTS=/mux-flow/build/results WAVES=1 DSIM_DMP_FILE=' + file_name + '.vcd",')
             print ('            "metricsFile": "' + file_name + '/metrics.db",')
