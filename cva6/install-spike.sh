@@ -29,11 +29,13 @@ fi
 
 if [ ! -f "$SPIKE_ROOT/bin/spike"  ]; then
     echo "Installing Spike"
+    PATCH_DIR=`pwd`/cva6
     mkdir -p $SPIKE_ROOT
     cd $SPIKE_ROOT
     git clone https://github.com/riscv/riscv-isa-sim.git 
     cd riscv-isa-sim
     git checkout $VERSION
+    git apply $PATCH_DIR/spike-shared-fesvr-lib.patch
     mkdir -p build
     cd build
     ../configure --enable-commitlog --prefix="$SPIKE_ROOT"
