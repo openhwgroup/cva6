@@ -209,7 +209,7 @@ module cache_ctrl import ariane_pkg::*; import std_cache_pkg::*; #(
 
                         // report data for a read
                         if (!mem_req_q.we) begin
-                            req_port_o.data_rvalid = 1'b1;
+                            req_port_o.data_rvalid = ~mem_req_q.killed;
                         // else this was a store so we need an extra step to handle it
                         end else begin
                             state_d = STORE_REQ;
