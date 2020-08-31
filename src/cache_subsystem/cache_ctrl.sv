@@ -167,7 +167,7 @@ module cache_ctrl import ariane_pkg::*; import std_cache_pkg::*; #(
             // cache enabled and waiting for tag
             WAIT_TAG, WAIT_TAG_SAVED: begin
                 // check that the client really wants to do the request and that we have a valid tag
-                if (!req_port_i.kill_req && (req_port_i.tag_valid || state_q == WAIT_TAG_SAVED)) begin
+                if (!req_port_i.kill_req && (req_port_i.tag_valid || state_q == WAIT_TAG_SAVED || mem_req_q.we)) begin
                     // save tag if we didn't already save it
                     if (state_q != WAIT_TAG_SAVED) begin
                         mem_req_d.tag = req_port_i.address_tag;
@@ -334,7 +334,7 @@ module cache_ctrl import ariane_pkg::*; import std_cache_pkg::*; #(
             // its for sure a miss
             WAIT_TAG_BYPASSED: begin
                 // check that the client really wants to do the request and that we have a valid tag
-                if (!req_port_i.kill_req & req_port_i.tag_valid) begin
+                if (!req_port_i.kill_req && (req_port_i.tag_valid || mem_req_q.we)) begin
                     // save tag
                     mem_req_d.tag = req_port_i.address_tag;
                     state_d = WAIT_REFILL_GNT;
