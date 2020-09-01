@@ -460,5 +460,5 @@ clean:
 	rm -rf $(VSIM_RESULTS)
 
 # All generated files plus the clone of the RTL
-clean_all: clean clean_core_tests
+clean_all: clean clean_core_tests clean-bsp
 	rm -rf $(CV32E40P_PKG)

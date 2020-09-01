@@ -363,5 +363,5 @@ clean:
 	rm -rf $(VCS_RESULTS)
 
 # All generated files plus the clone of the RTL
-clean_all: clean clean_core_tests clean_riscv-dv clean_test_programs
+clean_all: clean clean_core_tests clean_riscv-dv clean_test_programs clean-bsp
 	rm -rf $(CV32E40P_PKG)
