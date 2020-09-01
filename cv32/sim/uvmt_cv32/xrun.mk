@@ -411,9 +411,8 @@ gen_corev_rand_interrupt_test:
 	cp $(XRUN_RISCVDV_RESULTS)/corev_rand_interrupt_test/*.S $(CORE_TEST_DIR)/custom
 
 corev-dv: clean_riscv-dv clone_riscv-dv comp_riscv-dv
-	$(MAKE) gen_riscv-dv TEST=corev_arithmetic_base_test NUM_TESTS=2
-	$(MAKE) gen_riscv-dv TEST=corev_rand_instr_test NUM_TESTS=2
-	$(MAKE) gen_riscv-dv TEST=corev_jump_stress_test NUM_TESTS=2	
+	$(MAKE) gen_corev_arithmetic_base_test
+	$(MAKE) gen_corev_rand_instr_test 
 
 gen_riscv-dv: 
 	mkdir -p $(XRUN_RISCVDV_RESULTS)/$(TEST)

@@ -277,12 +277,19 @@ if (uvm):
                     if (run_cmd != ''):
                         run_cmd = run_cmd.replace('dsim', svtool)
                         # Only DSIM can run corev-dv (riscv-dv) at present
-
-                        if (prcmd or debug):
-                            print(run_cmd)
+                        if ( svtool == 'dsim' ):
+                            if (prcmd or debug):
+                                print(run_cmd)
+                            else:
+                                os.system(run_cmd)
+                                os.chdir(topdir)      # cmd in .metrics.json assumes all cmds start from here
                         else:
-                            os.system(run_cmd)
-                            os.chdir(topdir)      # cmd in .metrics.json assumes all cmds start from here
+                            if not ( re.search('corev_', run_cmd) ):
+                                if (prcmd or debug):
+                                    print(run_cmd)
+                                else:
+                                    os.system(run_cmd)
+                                    os.chdir(topdir)      # cmd in .metrics.json assumes all cmds start from here
                     else:
                         print ('ERROR: cannot find run command in .metrics.json')
                         exit(0)
