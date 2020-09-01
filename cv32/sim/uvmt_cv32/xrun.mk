@@ -141,7 +141,6 @@ endif
 XRUN_RUN_FLAGS        ?= -R -xmlibdirname ../xcelium.d 
 XRUN_RUN_FLAGS        += -covoverwrite
 XRUN_RUN_FLAGS        += $(XRUN_RUN_BASE_FLAGS)
-XRUN_RUN_FLAGS        += $(XRUN_RUN_WAVES_FLAGS)
 XRUN_RUN_FLAGS        += $(XRUN_RUN_COV_FLAGS)
 XRUN_RUN_FLAGS        += $(XRUN_USER_RUN_FLAGS)
 XRUN_RUN_FLAGS        += $(USER_RUN_FLAGS)
@@ -204,6 +203,7 @@ test: $(XRUN_SIM_PREREQ) $(TEST_TEST_DIR)/$(TEST_NAME).hex
 		$(XRUN) \
 			-l xrun-$(TEST_NAME).log \
 			$(XRUN_COMP_RUN) \
+			$(XRUN_RUN_WAVES_FLAGS) \
 			-covtest $(TEST_NAME) \
 			$(TEST_PLUSARGS) \
 			+UVM_TESTNAME=$(TEST_UVM_TEST) \
@@ -334,6 +334,7 @@ comp_corev-dv: $(RISCVDV_PKG)
 	mkdir -p $(XRUN_RISCVDV_RESULTS)
 	cd $(XRUN_RISCVDV_RESULTS) && \
 	$(XRUN) $(XRUN_COMP_FLAGS) \
+		$(QUIET) \
 		$(XRUN_USER_COMPILE_ARGS) \
 		-elaborate \
 		+incdir+$(COREVDV_PKG)/target/cv32e40p \
@@ -407,6 +408,7 @@ gen_corev-dv:
 		$(GEN_PLUSARGS)
 	# Copy out final assembler files to test directory
 	for (( idx=${GEN_START_INDEX}; idx < $$((${GEN_START_INDEX} + ${GEN_NUM_TESTS})); idx++ )); do \
+		ls -l ${XRUN_RISCVDV_RESULTS}/${TEST} > /dev/null; \
 		cp ${XRUN_RISCVDV_RESULTS}/${TEST}/${TEST}_$$idx.S ${GEN_TEST_DIR}; \
 	done
 
