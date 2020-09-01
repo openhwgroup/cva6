@@ -55,6 +55,7 @@ class corev_asm_program_gen extends riscv_asm_program_gen;
     instr_stream.push_back("");
     instr_stream.push_back("#Start: Extracted from riscv_compliance_tests/riscv_test.h");
     instr_stream.push_back("test_done:");
+    instr_stream.push_back("                  csrrci x0,mstatus,0x8 # Clear MSTATUS.MIE to avoid interrupts during test_done");
     instr_stream.push_back("                  lui a0,print_port>>12");
     instr_stream.push_back("                  addi a1,zero,'\\n'");
     instr_stream.push_back("                  sw a1,0(a0)");
