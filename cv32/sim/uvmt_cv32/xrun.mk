@@ -89,6 +89,8 @@ else
 WAVES_CMD = cd $(XRUN_RESULTS)/$(TEST_NAME) && $(SIMVISION) waves.shm
 endif
 
+XRUN_USER_COMPILE_ARGS += $(USER_COMPILE_FLAGS)
+
 ################################################################################
 # Coverage options
 # COV=YES generates coverage database, must be specified for comp and run
@@ -218,13 +220,13 @@ custom: $(XRUN_SIM_PREREQ) $(CUSTOM_DIR)/$(CUSTOM_PROG).hex
 
 ################################################################################
 # Explicit target tests
-hello-world:  $(XRUN_SIM_PREREQ) $(CUSTOM)/hello_world.hex
+hello-world:  $(XRUN_SIM_PREREQ) $(CUSTOM)/hello-world.hex
 	mkdir -p $(XRUN_RESULTS)/hello-world && cd $(XRUN_RESULTS)/hello-world && \
 	$(XRUN) -l xrun-hello-world.log -covtest hello-world $(XRUN_COMP_RUN) \
-		+elf_file=$(CUSTOM)/hello_world.elf \
-		+nm_file=$(CUSTOM)/hello_world.nm \
+		+elf_file=$(CUSTOM)/hello-world.elf \
+		+nm_file=$(CUSTOM)/hello-world.nm \
 		+UVM_TESTNAME=uvmt_cv32_firmware_test_c \
-		+firmware=$(CUSTOM)/hello_world.hex
+		+firmware=$(CUSTOM)/hello-world.hex
 
 interrupt_test:  $(XRUN_SIM_PREREQ) $(CORE_TEST_DIR)/interrupt_test/interrupt_test.hex
 	mkdir -p $(XRUN_RESULTS)/interrupt_test && cd $(XRUN_RESULTS)/interrupt_test && \

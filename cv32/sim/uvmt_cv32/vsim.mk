@@ -437,9 +437,9 @@ run: $(VSIM_RUN_PREREQ)
 .PHONY: hello-world
 
 hello-world: VSIM_TEST=hello-world
-hello-world: VSIM_FLAGS += +firmware=$(CUSTOM)/hello_world.hex +elf_file=$(CUSTOM)/hello_world.elf
+hello-world: VSIM_FLAGS += +firmware=$(CUSTOM)/hello-world.hex +elf_file=$(CUSTOM)/hello-world.elf
 hello-world: TEST_UVM_TEST=uvmt_cv32_firmware_test_c
-hello-world: $(CUSTOM)/hello_world.hex run
+hello-world: $(CUSTOM)/hello-world.hex run
 
 interrupt_test: VSIM_TEST=interrupt_test
 interrupt_test: VSIM_FLAGS += +firmware=$(CORE_TEST_DIR)/interrupt_test/interrupt_test.hex +elf_file=$(CORE_TEST_DIR)/interrupt_test/interrupt_test.elf
