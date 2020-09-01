@@ -136,7 +136,8 @@ module uvmt_cv32_step_compare
              "mcountinhibit" : csr_val = `CV32E40P_CORE.cs_registers_i.mcountinhibit_q;
 
              "mvendorid"     : csr_val = {cv32e40p_pkg::MVENDORID_BANK, cv32e40p_pkg::MVENDORID_OFFSET};
-             "mstatus"       : csr_val = {`CV32E40P_CORE.cs_registers_i.mstatus_q.mprv, // Not documented in Rev 4.5 of user_manual.doc but is in the design
+             "mstatus"       : if (step_compare_if.deferint_prime == 0) ignore = 1;
+                               else csr_val = {`CV32E40P_CORE.cs_registers_i.mstatus_q.mprv, // Not documented in Rev 4.5 of user_manual.doc but is in the design
                                           4'b0,
                                           `CV32E40P_CORE.cs_registers_i.mstatus_q.mpp,
                                           3'b0,
@@ -149,12 +150,16 @@ module uvmt_cv32_step_compare
              "misa"          : csr_val = `CV32E40P_CORE.cs_registers_i.MISA_VALUE;
              "mie"           : csr_val = `CV32E40P_CORE.cs_registers_i.mie_q;
              "mtvec"         : csr_val = {`CV32E40P_CORE.cs_registers_i.mtvec_q, 6'h0, `CV32E40P_CORE.cs_registers_i.mtvec_mode_q};
-             "mscratch"      : csr_val = `CV32E40P_CORE.cs_registers_i.mscratch_q;
-             "mepc"          : csr_val = `CV32E40P_CORE.cs_registers_i.mepc_q;
-             "mcause"        : csr_val = {`CV32E40P_CORE.cs_registers_i.mcause_q[5], 
-                                          26'b0, 
-                                          `CV32E40P_CORE.cs_registers_i.mcause_q[4:0]};
-             "mip"           : csr_val = `CV32E40P_CORE.cs_registers_i.mip;  
+             "mscratch"      : csr_val = `CV32E40P_CORE.cs_registers_i.mscratch_q;             
+             "mepc"          : if (step_compare_if.deferint_prime == 0) ignore = 1;
+                               else csr_val = `CV32E40P_CORE.cs_registers_i.mepc_q;             
+             "mcause"        : if (step_compare_if.deferint_prime == 0) ignore = 1;
+                               else csr_val = {`CV32E40P_CORE.cs_registers_i.mcause_q[5],
+                                               26'b0,
+                                               `CV32E40P_CORE.cs_registers_i.mcause_q[4:0]};
+            //  "mip"           : if (step_compare_if.deferint_prime == 0 || iss_wrap.b1.deferint == 0) ignore = 1;
+            //                    else csr_val = `CV32E40P_CORE.cs_registers_i.mip;
+             "mip"           : ignore = 1;      
              "mhartid"       : csr_val = `CV32E40P_CORE.cs_registers_i.hart_id_i; 
              "dcsr"          : csr_val = `CV32E40P_CORE.cs_registers_i.dcsr_q;     
              "dpc"           : csr_val = `CV32E40P_CORE.cs_registers_i.depc_q;       

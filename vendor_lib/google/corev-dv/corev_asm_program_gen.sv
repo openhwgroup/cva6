@@ -50,6 +50,62 @@ class corev_asm_program_gen extends riscv_asm_program_gen;
     instr_stream.push_back("_start_main:");
   endfunction
 
+  virtual function void gen_interrupt_vector_table(int              hart,
+                                                   string           mode,
+                                                   privileged_reg_t status,
+                                                   privileged_reg_t cause,
+                                                   privileged_reg_t ie,
+                                                   privileged_reg_t ip,
+                                                   privileged_reg_t scratch,
+                                                   ref string       instr[$]);
+    // In vector mode, the BASE address is shared between interrupt 0 and exception handling.
+    // When vectored interrupts are enabled, interrupt cause 0, which corresponds to user-mode
+    // software interrupts, are vectored to the same location as synchronous exceptions. This
+    // ambiguity does not arise in practice, since user-mode software interrupts are either
+    // disabled or delegated
+    corev_instr_gen_config corev_cfg;
+    `DV_CHECK_FATAL($cast(corev_cfg, cfg), "Could not cast cfg into corev_cfg")
+
+    instr = {instr, ".option norvc;",
+                    $sformatf("j %0s%0smode_exception_handler", hart_prefix(hart), mode)};
+    // Redirect the interrupt to the corresponding interrupt handler
+    for (int i = 1; i < max_interrupt_vector_num; i++) begin
+      instr.push_back($sformatf("j %0s%0smode_intr_vector_%0d", hart_prefix(hart), mode, i));      
+    end
+    if (!cfg.disable_compressed_instr) begin
+      instr = {instr, ".option rvc;"};
+    end
+    for (int i = 1; i < max_interrupt_vector_num; i++) begin      
+      string intr_handler[$];
+
+      if (corev_cfg.use_fast_intr_handler[i]) begin
+        // Emit fast interrupt handler that might read a couple of CSRs and finish
+        // Save 
+        intr_handler.push_back("mret");
+      end
+      else begin
+        // Standard full-stack-save interrupt handler
+        push_gpr_to_kernel_stack(status, scratch, cfg.mstatus_mprv, cfg.sp, cfg.tp, intr_handler);
+        gen_signature_handshake(.instr(intr_handler), .signature_type(CORE_STATUS),
+                                .core_status(HANDLING_IRQ));
+        intr_handler = {intr_handler,
+                        $sformatf("csrr x%0d, 0x%0x # %0s", cfg.gpr[0], cause, cause.name()),
+                        // Terminate the test if xCause[31] != 0 (indicating exception)
+                        $sformatf("srli x%0d, x%0d, 0x%0x", cfg.gpr[0], cfg.gpr[0], XLEN-1),
+                        $sformatf("beqz x%0d, 1f", cfg.gpr[0])};
+        gen_signature_handshake(.instr(intr_handler), .signature_type(WRITE_CSR), .csr(status));
+        gen_signature_handshake(.instr(intr_handler), .signature_type(WRITE_CSR), .csr(cause));
+        gen_signature_handshake(.instr(intr_handler), .signature_type(WRITE_CSR), .csr(ie));
+        gen_signature_handshake(.instr(intr_handler), .signature_type(WRITE_CSR), .csr(ip));
+        // Jump to commmon interrupt handling routine
+        intr_handler = {intr_handler,
+                        $sformatf("j %0s%0smode_intr_handler", hart_prefix(hart), mode),
+                        "1: j test_done"};
+      end
+
+      gen_section(get_label($sformatf("%0smode_intr_vector_%0d", mode, i), hart), intr_handler);
+    end
+  endfunction : gen_interrupt_vector_table
 
   virtual function void gen_test_done();
     instr_stream.push_back("");
