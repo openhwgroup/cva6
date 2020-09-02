@@ -90,6 +90,7 @@ module decoder import ariane_pkg::*; (
                 riscv::OpcodeSystem: begin
                     instruction_o.fu       = CSR;
                     instruction_o.rs1[4:0] = instr.itype.rs1;
+                    instruction_o.rs2[4:0] = instr.rtype.rs2;   //TODO: needs to be checked if better way is available
                     instruction_o.rd[4:0]  = instr.itype.rd;
 
                     unique case (instr.itype.funct3)

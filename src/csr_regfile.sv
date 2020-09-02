@@ -308,11 +308,11 @@ module csr_regfile import ariane_pkg::*; #(
     // ---------------------------
     logic [63:0] mask;
     always_comb begin : csr_update
-        automatic riscv::satp_t sapt;
+        automatic riscv::satp_t satp;
         automatic logic [63:0] instret;
 
 
-        sapt = satp_q;
+        satp = satp_q;
         instret = instret_q;
 
         // --------------------
@@ -486,11 +486,11 @@ module csr_regfile import ariane_pkg::*; #(
                     if (priv_lvl_o == riscv::PRIV_LVL_S && mstatus_q.tvm)
                         update_access_exception = 1'b1;
                     else begin
-                        sapt      = riscv::satp_t'(csr_wdata);
+                        satp      = riscv::satp_t'(csr_wdata);
                         // only make ASID_LEN - 1 bit stick, that way software can figure out how many ASID bits are supported
-                        sapt.asid = sapt.asid & {{(16-AsidWidth){1'b0}}, {AsidWidth{1'b1}}};
+                        satp.asid = satp.asid & {{(16-AsidWidth){1'b0}}, {AsidWidth{1'b1}}};
                         // only update if we actually support this mode
-                        if (sapt.mode == MODE_OFF || sapt.mode == MODE_SV39) satp_d = sapt;
+                        if (satp.mode == MODE_OFF || satp.mode == MODE_SV39) satp_d = satp;
                     end
                     // changing the mode can have side-effects on address translation (e.g.: other instructions), re-fetch
                     // the next instruction by executing a flush
