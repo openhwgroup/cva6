@@ -252,7 +252,7 @@ int main(int argc, char *argv[])
     // Writes are ignored
     temp = 0xFFFFFFFF;
     __asm__ volatile("csrw  0x7a0, %0"     : "=r"(temp)); // Trigger TSELECT
-//    __asm__ volatile("csrw  0x7a1, %0"     : "=r"(temp)); // Trigger TDATA1
+    __asm__ volatile("csrw  0x7a1, %0"     : "=r"(temp)); // Trigger TDATA1
     __asm__ volatile("csrw  0x7a2, %0"     : "=r"(temp)); // Trigger TDATA2
     __asm__ volatile("csrw  0x7a3, %0"     : "=r"(temp)); // Trigger TDATA3
     __asm__ volatile("csrw  0x7a8, %0"     : "=r"(temp)); // Trigger MCONTEXT
