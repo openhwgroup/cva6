@@ -138,30 +138,20 @@ module uvmt_cv32_tb;
         end
       end
 
-      logic haltreq_next;
-      logic [3:0] haltreq_next2;
       always @(posedge clknrst_if_iss.clk or negedge clknrst_if_iss.reset_n) begin
         if (!clknrst_if_iss.reset_n) begin
             iss_wrap.b1.haltreq <= 1'b0;
-            haltreq_next <= 1'b0;
-            haltreq_next2 <= 4'h0;
         end else begin
-            haltreq_next <= dut_wrap.cv32e40p_wrapper_i.core_i.id_stage_i.controller_i.debug_req_pending;
-            if(haltreq_next == 1'b1) begin
-                haltreq_next2 <= haltreq_next2 + 1;
+            if (dut_wrap.cv32e40p_wrapper_i.core_i.id_stage_i.controller_i.ctrl_fsm_cs inside {cv32e40p_pkg::DBG_TAKEN_ID, cv32e40p_pkg::DBG_TAKEN_IF}) begin
+                iss_wrap.b1.haltreq <= dut_wrap.cv32e40p_wrapper_i.core_i.id_stage_i.controller_i.debug_req_pending;
             end else begin
-                haltreq_next2 <= 4'h0;
+                if(iss_wrap.b1.DM == 1'b1) begin
+                   iss_wrap.b1.haltreq <= 1'b0;
+                end
             end
 
-//            if(haltreq_next2 >= 4'h3) begin // 1,2,3: Enter dbg 1 cycle early(?) 4: ISS is late into debug
-//FIXME: IMPERAS
-// TODO IMPERAS determine correct syncronisation
-            if(haltreq_next2 >= 4'h6) begin // 1,2,3: Enter dbg 1 cycle early(?) 4: ISS is late into debug
-                iss_wrap.b1.haltreq <= haltreq_next;
-            end
         end
       end
-
     `endif
 
    /**

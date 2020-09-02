@@ -29,7 +29,7 @@ module uvmt_cv32_iss_wrap
     //parameter int RAM_BYTE_SIZE  = 'h20000,
     parameter int ROM_START_ADDR = 'h00000000,
     parameter int ROM_BYTE_SIZE  = 'h0,
-    parameter int RAM_BYTE_SIZE  = 'h400000,
+    parameter int RAM_BYTE_SIZE  = 'h1B000000,
     parameter int ID = 0
    )
 
