@@ -59,12 +59,12 @@ _debugger_start:
 
     // Read lower 32 bits of mcycle and minstret
     // and store in globals for check at exit
-    csrr t1, mcycle
-    csrr t2, minstret
-    la a1, glb_mcycle_start
-    sw t1, 0(a1)
-    la a1, glb_minstret_start
-    sw t2, 0(a1)
+//    csrr t1, mcycle
+//    csrr t2, minstret
+//    la a1, glb_mcycle_start
+//    sw t1, 0(a1)
+//    la a1, glb_minstret_start
+//    sw t2, 0(a1)
  
         // Determine Test to execute in debugger code based on glb_hart_status
         la a2, glb_hart_status
@@ -525,17 +525,17 @@ _debugger_wfi_test:
 _debugger_end:
     // Check counter values. They should have increased while in debug
     // regardless of stopcount bit in csr
-    csrr t1, mcycle
-    la a1, glb_mcycle_start
-    lw t2, 0(a1)
-    sub t1, t1, t2
-    beq t1, x0, _debugger_fail
+//    csrr t1, mcycle
+//    la a1, glb_mcycle_start
+//    lw t2, 0(a1)
+//    sub t1, t1, t2
+//    beq t1, x0, _debugger_fail
 
-    csrr t1, minstret
-    la a1, glb_minstret_start
-    lw t2, 0(a1)
-    sub t1, t1, t2
-    beq t1, x0, _debugger_fail
+//    csrr t1, minstret
+//    la a1, glb_minstret_start
+//    lw t2, 0(a1)
+//    sub t1, t1, t2
+//    beq t1, x0, _debugger_fail
 
     // If single stepping, do not clear
     la a1, glb_hart_status
@@ -549,6 +549,7 @@ _debugger_end:
 _debugger_end_continue:
         // Debugger Un-Stack
         //lw t0, 0(a0)
+        la a0, __debugger_stack_start
         csrr t0, 0x7b3
         lw   t1, 4(a0)
         lw   t2, 8(a0)
