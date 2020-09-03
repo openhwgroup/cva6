@@ -31,6 +31,9 @@ module uvmt_cv32e40p_interrupt_assert
     input        irq_ack_o,
     input [4:0]  irq_id_o,
 
+    // External debug req (for WFI modeling)
+    input        debug_req_i,
+
     // CSR Interface
     input [5:0]  mcause_n, // mcause_n[5]: interrupt, mcause_n[4]: vector
     input [31:0] mip,     // machine interrupt pending
@@ -322,7 +325,7 @@ module uvmt_cv32e40p_interrupt_assert
     else begin
       if (is_wfi) 
         in_wfi <= 1'b1;
-      else if (|pending_enabled_irq)
+      else if (|pending_enabled_irq || debug_req_i)
         in_wfi <= 1'b0;
     end
   end
