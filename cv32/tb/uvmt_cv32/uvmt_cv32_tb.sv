@@ -76,6 +76,15 @@ module uvmt_cv32_tb;
                                                       .ctrl_fsm_cs(id_stage_i.controller_i.ctrl_fsm_cs),
                                                       .exc_ctrl_cs(id_stage_i.int_controller_i.exc_ctrl_cs),
                                                       .*);
+  bind cv32e40p_core 
+    uvmt_cv32e40p_debug_assert u_debug__assert(.if_stage_instr_rvalid_i(if_stage_i.instr_rvalid_i),
+                                               .if_stage_instr_rdata_i(if_stage_i.instr_rdata_i),
+                                               .id_stage_instr_valid_i(id_stage_i.instr_valid_i),
+                                               .id_stage_instr_rdata_i(id_stage_i.instr_rdata_i),
+                                               .ctrl_fsm_cs(id_stage_i.controller_i.ctrl_fsm_cs),
+                                               .debug_req_pending(id_stage_i.controller_i.debug_req_pending),
+                                               .debug_req_q(id_stage_i.controller_i.debug_req_q),
+                                               .*);
 
   /**
    * ISS WRAPPER instance:
