@@ -277,6 +277,9 @@ else
 	questa-cmd += +jtag_rbb_enable=0
 endif
 
+generate-trace:
+	cat trace_ip.dasm | sed 's/^.*core/core/'| $(SPIKE_ROOT)/bin/spike-dasm
+
 # Build the TB and module using QuestaSim
 build: $(library) $(library)/.build-srcs $(library)/.build-tb $(dpi-library)/ariane_dpi.so
 	# Optimize top level
@@ -478,6 +481,10 @@ verilate: $(if $(DROMAJO), dromajo,)
 	@echo "[Verilator] Building Model$(if $(PROFILE), for Profiling,)"
 	$(verilate_command)
 	cd $(ver-library) && $(MAKE) -j${NUM_JOBS} -f Variane_testharness.mk
+
+generate-trace-verilator:
+	make sim-verilator
+	make generate-trace
 
 sim-verilator: verilate
 	$(ver-library)/Variane_testharness $(elf-bin)
