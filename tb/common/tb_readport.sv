@@ -19,7 +19,7 @@
 
 
 
-program tb_readport  import tb_pkg::*; import ariane_pkg::*; import wt_cache_pkg::*; #(
+program tb_readport  import tb_pkg::*; import ariane_pkg::*; #(
   parameter string       PortName      = "read port 0",
   parameter              FlushRate     = 1,
   parameter              KillRate      = 5,
@@ -100,7 +100,7 @@ program tb_readport  import tb_pkg::*; import ariane_pkg::*; import wt_cache_pkg
         end
 
         `APPL_ACQ_WAIT;
-        if(dut_req_port_o.data_req) begin
+        if(dut_req_port_i.data_gnt) begin
           tmp_paddr = paddr;
           tmp_vld   = 1;
 
@@ -110,7 +110,7 @@ program tb_readport  import tb_pkg::*; import ariane_pkg::*; import wt_cache_pkg
               void'(randomize(cnt) with {cnt>0; cnt<=50;});
             end
           end
-         end
+        end
       end else begin
         tag_vld_q <= 1'b0;
         cnt -= 1;

@@ -18,7 +18,7 @@
 
 
 
-program tb_writeport  import tb_pkg::*; import ariane_pkg::*; import wt_cache_pkg::*; #(
+program tb_writeport  import tb_pkg::*; import ariane_pkg::*; #(
   parameter string       PortName      = "write port 0",
   parameter              MemWords      = 1024*1024,// in 64bit words
   parameter logic [63:0] CachedAddrBeg = 0,
@@ -202,7 +202,7 @@ program tb_writeport  import tb_pkg::*; import ariane_pkg::*; import wt_cache_pk
         void'(randomize(paddr) with {paddr >= 0; paddr < (MemWords<<3);});
 
         // do a random burst
-        void'(randomize(burst_len) with {burst_len >= 0; burst_len < 100;});
+        void'(randomize(burst_len) with {burst_len >= 1; burst_len < 100;});
         for(int k=0; k<burst_len && cnt < seq_num_vect_i && paddr < ((MemWords-1)<<3); k++) begin
           applyRandData();
           `APPL_WAIT_COMB_SIG(clk_i, dut_req_port_i.data_gnt)
@@ -212,7 +212,6 @@ program tb_writeport  import tb_pkg::*; import ariane_pkg::*; import wt_cache_pk
           cnt ++;
         end
       end
-      `APPL_WAIT_CYC(clk_i,1)
     end
 
     paddr                        = '0;
