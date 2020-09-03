@@ -13,8 +13,8 @@
 ../../src/common_cells/src/lzc.sv
 ../../src/common_cells/src/rr_arb_tree.sv
 ../../src/util/sram.sv
-hdl/tb_pkg.sv
+../common/tb_dcache_pkg.sv
 hdl/tb_mem.sv
-hdl/tb_readport.sv
-hdl/tb_writeport.sv
+../common/tb_readport.sv
+../common/tb_writeport.sv
 hdl/tb.sv
