@@ -76,6 +76,7 @@ module axi_adapter #(
         axi_req_o.aw.qos    = 4'b0;
         axi_req_o.aw.id     = id_i;
         axi_req_o.aw.atop   = '0; // currently not used
+        axi_req_o.aw.user   = '0;
 
         axi_req_o.ar_valid  = 1'b0;
         // in case of a single request or wrapping transfer we can simply begin at the address, if we want to request a cache-line
@@ -90,11 +91,13 @@ module axi_adapter #(
         axi_req_o.ar.cache  = 4'b0;
         axi_req_o.ar.qos    = 4'b0;
         axi_req_o.ar.id     = id_i;
+        axi_req_o.ar.user   = '0;
 
         axi_req_o.w_valid   = 1'b0;
         axi_req_o.w.data    = wdata_i[0];
         axi_req_o.w.strb    = be_i[0];
         axi_req_o.w.last    = 1'b0;
+        axi_req_o.w.user    = '0;
 
         axi_req_o.b_ready   = 1'b0;
         axi_req_o.r_ready   = 1'b0;

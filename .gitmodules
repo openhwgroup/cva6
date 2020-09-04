@@ -52,3 +52,6 @@
 [submodule "tb/dromajo"]
 	path = tb/dromajo
 	url = https://github.com/kabylkas/dromajo.git
+[submodule "tb/common_verification"]
+	path = tb/common_verification
+	url = git@github.com:pulp-platform/common_verification.git
