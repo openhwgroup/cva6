@@ -57,7 +57,8 @@ import uvm_pkg::*;      // needed for the UVM messaging service (`uvm_info(), et
 
 `include "uvm_macros.svh"
 `define CV32E40P_CORE   $root.uvmt_cv32_tb.dut_wrap.cv32e40p_wrapper_i.core_i
-`define CV32E40P_TRACER $root.uvmt_cv32_tb.dut_wrap.cv32e40p_wrapper_i.core_i.tracer_i
+//`define CV32E40P_TRACER $root.uvmt_cv32_tb.dut_wrap.cv32e40p_wrapper_i.core_i.tracer_i
+`define CV32E40P_TRACER $root.uvmt_cv32_tb.dut_wrap.cv32e40p_wrapper_i.tracer_i
 
 module uvmt_cv32_step_compare
 (

@@ -29,12 +29,14 @@ DSIM_RESULTS           ?= $(PWD)/dsim_results
 DSIM_WORK              ?= $(DSIM_RESULTS)/dsim_work
 DSIM_IMAGE             ?= dsim.out
 DSIM_RUN_FLAGS         ?=
+DSIM_CODE_COV_SCOPE    ?= $(PWD)/../tools/dsim/ccov_scopes.txt
 DSIM_USE_ISS           ?= YES
 
 DSIM_FILE_LIST ?= -f $(DV_UVMT_CV32_PATH)/uvmt_cv32.flist
 ifeq ($(USE_ISS),YES)
     DSIM_FILE_LIST         += -f $(DV_UVMT_CV32_PATH)/imperas_iss.flist
     DSIM_USER_COMPILE_ARGS += "+define+ISS+CV32E40P_TRACE_EXECUTION"
+#    DSIM_USER_COMPILE_ARGS += "+define+CV32E40P_ASSERT_ON+ISS+CV32E40P_TRACE_EXECUTION"
 #    DSIM_RUN_FLAGS         += +ovpcfg="--controlfile $(OVP_CTRL_FILE)"
 endif
 DSIM_RUN_FLAGS         += $(USER_RUN_FLAGS)
@@ -45,6 +47,8 @@ DSIM_RUN_FLAGS         += $(USER_RUN_FLAGS)
 WAVES                  ?= 0
 WAVE                   ?= 0
 DUMP_WAVES             := 0
+# Code Coverage collected by default
+CCOV                   ?= 1
 
 ifneq ($(WAVES), 0)
 DUMP_WAVES = 1
@@ -58,6 +62,11 @@ ifneq ($(DUMP_WAVES), 0)
 DSIM_ACC_FLAGS ?= +acc
 DSIM_DMP_FILE  ?= dsim.fst
 DSIM_DMP_FLAGS ?= -waves $(DSIM_DMP_FILE)
+endif
+
+ifneq ($(CCOV), 0)
+	DSIM_USER_COMPILE_ARGS += -code-cov block -code-cov-scope-specs $(DSIM_CODE_COV_SCOPE)
+	DSIM_RUN_FLAGS         += -code-cov block -code-cov-scope-specs $(DSIM_CODE_COV_SCOPE)
 endif
 
 .PHONY: sim
