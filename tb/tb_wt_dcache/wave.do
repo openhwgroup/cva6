@@ -48,11 +48,16 @@ add wave -noupdate -group {Readport 0} /tb/i_tb_readport0/seq_last_i
 add wave -noupdate -group {Readport 0} /tb/i_tb_readport0/seq_done_o
 add wave -noupdate -group {Readport 0} -expand /tb/i_tb_readport0/dut_req_port_o
 add wave -noupdate -group {Readport 0} -expand /tb/i_tb_readport0/dut_req_port_i
+add wave -noupdate -group {Readport 0} /tb/i_tb_readport0/exp_paddr_i
+add wave -noupdate -group {Readport 0} /tb/i_tb_readport0/exp_rdata_i
 add wave -noupdate -group {Readport 0} /tb/i_tb_readport0/paddr
 add wave -noupdate -group {Readport 0} /tb/i_tb_readport0/seq_end_req
 add wave -noupdate -group {Readport 0} /tb/i_tb_readport0/seq_end_ack
 add wave -noupdate -group {Readport 0} /tb/i_tb_readport0/tag_q
 add wave -noupdate -group {Readport 0} /tb/i_tb_readport0/tag_vld_q
+add wave -noupdate -group {Readport 0} /tb/i_tb_readport0/p_tag_delay/tmp_paddr
+add wave -noupdate -group {Readport 0} /tb/i_tb_readport0/p_tag_delay/cnt
+add wave -noupdate -group {Readport 0} /tb/i_tb_readport0/p_tag_delay/tmp_vld
 add wave -noupdate -group {Readport 1} /tb/i_tb_readport1/clk_i
 add wave -noupdate -group {Readport 1} /tb/i_tb_readport1/rst_ni
 add wave -noupdate -group {Readport 1} /tb/i_tb_readport1/seq_type_i
@@ -62,11 +67,14 @@ add wave -noupdate -group {Readport 1} /tb/i_tb_readport1/seq_last_i
 add wave -noupdate -group {Readport 1} /tb/i_tb_readport1/seq_done_o
 add wave -noupdate -group {Readport 1} -expand /tb/i_tb_readport1/dut_req_port_o
 add wave -noupdate -group {Readport 1} -expand /tb/i_tb_readport1/dut_req_port_i
+add wave -noupdate -group {Readport 1} /tb/i_tb_readport1/exp_paddr_i
+add wave -noupdate -group {Readport 1} /tb/i_tb_readport1/exp_rdata_i
 add wave -noupdate -group {Readport 1} /tb/i_tb_readport1/paddr
 add wave -noupdate -group {Readport 1} /tb/i_tb_readport1/seq_end_req
 add wave -noupdate -group {Readport 1} /tb/i_tb_readport1/seq_end_ack
 add wave -noupdate -group {Readport 1} /tb/i_tb_readport1/tag_q
 add wave -noupdate -group {Readport 1} /tb/i_tb_readport1/tag_vld_q
+add wave -noupdate -group {Readport 1} /tb/i_tb_readport1/p_tag_delay/tmp_paddr
 add wave -noupdate -group i_tb_mem /tb/i_tb_mem/clk_i
 add wave -noupdate -group i_tb_mem /tb/i_tb_mem/rst_ni
 add wave -noupdate -group i_tb_mem /tb/i_tb_mem/mem_rand_en_i
@@ -215,9 +223,10 @@ add wave -noupdate -group i_wbuffer /tb/i_dut/i_wt_dcache_wbuffer/dirty_rd_en
 add wave -noupdate -group i_wbuffer /tb/i_dut/i_wt_dcache_wbuffer/rdy
 add wave -noupdate -group i_wbuffer /tb/i_dut/i_wt_dcache_wbuffer/rtrn_empty
 add wave -noupdate -group i_wbuffer /tb/i_dut/i_wt_dcache_wbuffer/evict
-add wave -noupdate -group i_wbuffer /tb/i_dut/i_wt_dcache_wbuffer/nc_pending_d
-add wave -noupdate -group i_wbuffer /tb/i_dut/i_wt_dcache_wbuffer/nc_pending_q
-add wave -noupdate -group i_wbuffer /tb/i_dut/i_wt_dcache_wbuffer/addr_is_nc
+add wave -noupdate -group i_wbuffer /tb/i_dut/i_wt_dcache_wbuffer/ni_pending_d
+add wave -noupdate -group i_wbuffer /tb/i_dut/i_wt_dcache_wbuffer/ni_pending_q
+add wave -noupdate -group i_wbuffer /tb/i_dut/i_wt_dcache_wbuffer/is_ni
+add wave -noupdate -group i_wbuffer /tb/i_dut/i_wt_dcache_wbuffer/is_nc_miss
 add wave -noupdate -group i_missunit /tb/i_dut/i_wt_dcache_missunit/clk_i
 add wave -noupdate -group i_missunit /tb/i_dut/i_wt_dcache_missunit/rst_ni
 add wave -noupdate -group i_missunit /tb/i_dut/i_wt_dcache_missunit/enable_i
@@ -349,82 +358,82 @@ add wave -noupdate -group i_mem /tb/i_dut/i_wt_dcache_mem/wbuffer_rdata
 add wave -noupdate -group i_mem /tb/i_dut/i_wt_dcache_mem/rdata
 add wave -noupdate -group i_mem /tb/i_dut/i_wt_dcache_mem/wbuffer_cmp_addr
 add wave -noupdate -group i_mem /tb/i_dut/i_wt_dcache_mem/vld_tag_rdata
-add wave -noupdate -group i_ctrl0 {/tb/i_dut/genblk1[0]/i_wt_dcache_ctrl/clk_i}
-add wave -noupdate -group i_ctrl0 {/tb/i_dut/genblk1[0]/i_wt_dcache_ctrl/rst_ni}
-add wave -noupdate -group i_ctrl0 {/tb/i_dut/genblk1[0]/i_wt_dcache_ctrl/cache_en_i}
-add wave -noupdate -group i_ctrl0 -expand {/tb/i_dut/genblk1[0]/i_wt_dcache_ctrl/req_port_i}
-add wave -noupdate -group i_ctrl0 {/tb/i_dut/genblk1[0]/i_wt_dcache_ctrl/miss_ack_i}
-add wave -noupdate -group i_ctrl0 {/tb/i_dut/genblk1[0]/i_wt_dcache_ctrl/miss_replay_i}
-add wave -noupdate -group i_ctrl0 {/tb/i_dut/genblk1[0]/i_wt_dcache_ctrl/miss_rtrn_vld_i}
-add wave -noupdate -group i_ctrl0 {/tb/i_dut/genblk1[0]/i_wt_dcache_ctrl/rd_ack_i}
-add wave -noupdate -group i_ctrl0 {/tb/i_dut/genblk1[0]/i_wt_dcache_ctrl/rd_data_i}
-add wave -noupdate -group i_ctrl0 {/tb/i_dut/genblk1[0]/i_wt_dcache_ctrl/rd_vld_bits_i}
-add wave -noupdate -group i_ctrl0 {/tb/i_dut/genblk1[0]/i_wt_dcache_ctrl/rd_hit_oh_i}
-add wave -noupdate -group i_ctrl0 {/tb/i_dut/genblk1[0]/i_wt_dcache_ctrl/req_port_o}
-add wave -noupdate -group i_ctrl0 {/tb/i_dut/genblk1[0]/i_wt_dcache_ctrl/miss_req_o}
-add wave -noupdate -group i_ctrl0 {/tb/i_dut/genblk1[0]/i_wt_dcache_ctrl/miss_we_o}
-add wave -noupdate -group i_ctrl0 {/tb/i_dut/genblk1[0]/i_wt_dcache_ctrl/miss_wdata_o}
-add wave -noupdate -group i_ctrl0 {/tb/i_dut/genblk1[0]/i_wt_dcache_ctrl/miss_vld_bits_o}
-add wave -noupdate -group i_ctrl0 {/tb/i_dut/genblk1[0]/i_wt_dcache_ctrl/miss_paddr_o}
-add wave -noupdate -group i_ctrl0 {/tb/i_dut/genblk1[0]/i_wt_dcache_ctrl/miss_nc_o}
-add wave -noupdate -group i_ctrl0 {/tb/i_dut/genblk1[0]/i_wt_dcache_ctrl/miss_size_o}
-add wave -noupdate -group i_ctrl0 {/tb/i_dut/genblk1[0]/i_wt_dcache_ctrl/rd_tag_o}
-add wave -noupdate -group i_ctrl0 {/tb/i_dut/genblk1[0]/i_wt_dcache_ctrl/rd_idx_o}
-add wave -noupdate -group i_ctrl0 {/tb/i_dut/genblk1[0]/i_wt_dcache_ctrl/rd_off_o}
-add wave -noupdate -group i_ctrl0 {/tb/i_dut/genblk1[0]/i_wt_dcache_ctrl/rd_req_o}
-add wave -noupdate -group i_ctrl0 {/tb/i_dut/genblk1[0]/i_wt_dcache_ctrl/state_d}
-add wave -noupdate -group i_ctrl0 {/tb/i_dut/genblk1[0]/i_wt_dcache_ctrl/state_q}
-add wave -noupdate -group i_ctrl0 {/tb/i_dut/genblk1[0]/i_wt_dcache_ctrl/address_tag_d}
-add wave -noupdate -group i_ctrl0 {/tb/i_dut/genblk1[0]/i_wt_dcache_ctrl/address_tag_q}
-add wave -noupdate -group i_ctrl0 {/tb/i_dut/genblk1[0]/i_wt_dcache_ctrl/address_idx_d}
-add wave -noupdate -group i_ctrl0 {/tb/i_dut/genblk1[0]/i_wt_dcache_ctrl/address_idx_q}
-add wave -noupdate -group i_ctrl0 {/tb/i_dut/genblk1[0]/i_wt_dcache_ctrl/address_off_d}
-add wave -noupdate -group i_ctrl0 {/tb/i_dut/genblk1[0]/i_wt_dcache_ctrl/address_off_q}
-add wave -noupdate -group i_ctrl0 {/tb/i_dut/genblk1[0]/i_wt_dcache_ctrl/vld_data_d}
-add wave -noupdate -group i_ctrl0 {/tb/i_dut/genblk1[0]/i_wt_dcache_ctrl/vld_data_q}
-add wave -noupdate -group i_ctrl0 {/tb/i_dut/genblk1[0]/i_wt_dcache_ctrl/save_tag}
-add wave -noupdate -group i_ctrl0 {/tb/i_dut/genblk1[0]/i_wt_dcache_ctrl/rd_req_d}
-add wave -noupdate -group i_ctrl0 {/tb/i_dut/genblk1[0]/i_wt_dcache_ctrl/rd_req_q}
-add wave -noupdate -group i_ctrl0 {/tb/i_dut/genblk1[0]/i_wt_dcache_ctrl/data_size_d}
-add wave -noupdate -group i_ctrl0 {/tb/i_dut/genblk1[0]/i_wt_dcache_ctrl/data_size_q}
-add wave -noupdate -group i_ctrl1 {/tb/i_dut/genblk1[1]/i_wt_dcache_ctrl/clk_i}
-add wave -noupdate -group i_ctrl1 {/tb/i_dut/genblk1[1]/i_wt_dcache_ctrl/rst_ni}
-add wave -noupdate -group i_ctrl1 {/tb/i_dut/genblk1[1]/i_wt_dcache_ctrl/cache_en_i}
-add wave -noupdate -group i_ctrl1 -expand {/tb/i_dut/genblk1[1]/i_wt_dcache_ctrl/req_port_i}
-add wave -noupdate -group i_ctrl1 {/tb/i_dut/genblk1[1]/i_wt_dcache_ctrl/miss_ack_i}
-add wave -noupdate -group i_ctrl1 {/tb/i_dut/genblk1[1]/i_wt_dcache_ctrl/miss_replay_i}
-add wave -noupdate -group i_ctrl1 {/tb/i_dut/genblk1[1]/i_wt_dcache_ctrl/miss_rtrn_vld_i}
-add wave -noupdate -group i_ctrl1 {/tb/i_dut/genblk1[1]/i_wt_dcache_ctrl/rd_ack_i}
-add wave -noupdate -group i_ctrl1 {/tb/i_dut/genblk1[1]/i_wt_dcache_ctrl/rd_data_i}
-add wave -noupdate -group i_ctrl1 {/tb/i_dut/genblk1[1]/i_wt_dcache_ctrl/rd_vld_bits_i}
-add wave -noupdate -group i_ctrl1 {/tb/i_dut/genblk1[1]/i_wt_dcache_ctrl/rd_hit_oh_i}
-add wave -noupdate -group i_ctrl1 {/tb/i_dut/genblk1[1]/i_wt_dcache_ctrl/req_port_o}
-add wave -noupdate -group i_ctrl1 {/tb/i_dut/genblk1[1]/i_wt_dcache_ctrl/miss_req_o}
-add wave -noupdate -group i_ctrl1 {/tb/i_dut/genblk1[1]/i_wt_dcache_ctrl/miss_we_o}
-add wave -noupdate -group i_ctrl1 {/tb/i_dut/genblk1[1]/i_wt_dcache_ctrl/miss_wdata_o}
-add wave -noupdate -group i_ctrl1 {/tb/i_dut/genblk1[1]/i_wt_dcache_ctrl/miss_vld_bits_o}
-add wave -noupdate -group i_ctrl1 {/tb/i_dut/genblk1[1]/i_wt_dcache_ctrl/miss_paddr_o}
-add wave -noupdate -group i_ctrl1 {/tb/i_dut/genblk1[1]/i_wt_dcache_ctrl/miss_nc_o}
-add wave -noupdate -group i_ctrl1 {/tb/i_dut/genblk1[1]/i_wt_dcache_ctrl/miss_size_o}
-add wave -noupdate -group i_ctrl1 {/tb/i_dut/genblk1[1]/i_wt_dcache_ctrl/rd_tag_o}
-add wave -noupdate -group i_ctrl1 {/tb/i_dut/genblk1[1]/i_wt_dcache_ctrl/rd_idx_o}
-add wave -noupdate -group i_ctrl1 {/tb/i_dut/genblk1[1]/i_wt_dcache_ctrl/rd_off_o}
-add wave -noupdate -group i_ctrl1 {/tb/i_dut/genblk1[1]/i_wt_dcache_ctrl/rd_req_o}
-add wave -noupdate -group i_ctrl1 {/tb/i_dut/genblk1[1]/i_wt_dcache_ctrl/state_d}
-add wave -noupdate -group i_ctrl1 {/tb/i_dut/genblk1[1]/i_wt_dcache_ctrl/state_q}
-add wave -noupdate -group i_ctrl1 {/tb/i_dut/genblk1[1]/i_wt_dcache_ctrl/address_tag_d}
-add wave -noupdate -group i_ctrl1 {/tb/i_dut/genblk1[1]/i_wt_dcache_ctrl/address_tag_q}
-add wave -noupdate -group i_ctrl1 {/tb/i_dut/genblk1[1]/i_wt_dcache_ctrl/address_idx_d}
-add wave -noupdate -group i_ctrl1 {/tb/i_dut/genblk1[1]/i_wt_dcache_ctrl/address_idx_q}
-add wave -noupdate -group i_ctrl1 {/tb/i_dut/genblk1[1]/i_wt_dcache_ctrl/address_off_d}
-add wave -noupdate -group i_ctrl1 {/tb/i_dut/genblk1[1]/i_wt_dcache_ctrl/address_off_q}
-add wave -noupdate -group i_ctrl1 {/tb/i_dut/genblk1[1]/i_wt_dcache_ctrl/vld_data_d}
-add wave -noupdate -group i_ctrl1 {/tb/i_dut/genblk1[1]/i_wt_dcache_ctrl/vld_data_q}
-add wave -noupdate -group i_ctrl1 {/tb/i_dut/genblk1[1]/i_wt_dcache_ctrl/save_tag}
-add wave -noupdate -group i_ctrl1 {/tb/i_dut/genblk1[1]/i_wt_dcache_ctrl/rd_req_d}
-add wave -noupdate -group i_ctrl1 {/tb/i_dut/genblk1[1]/i_wt_dcache_ctrl/rd_req_q}
-add wave -noupdate -group i_ctrl1 {/tb/i_dut/genblk1[1]/i_wt_dcache_ctrl/data_size_d}
-add wave -noupdate -group i_ctrl1 {/tb/i_dut/genblk1[1]/i_wt_dcache_ctrl/data_size_q}
+add wave -noupdate -group i_ctrl0 {/tb/i_dut/gen_rd_ports[0]/i_wt_dcache_ctrl/clk_i}
+add wave -noupdate -group i_ctrl0 {/tb/i_dut/gen_rd_ports[0]/i_wt_dcache_ctrl/rst_ni}
+add wave -noupdate -group i_ctrl0 {/tb/i_dut/gen_rd_ports[0]/i_wt_dcache_ctrl/cache_en_i}
+add wave -noupdate -group i_ctrl0 -expand {/tb/i_dut/gen_rd_ports[0]/i_wt_dcache_ctrl/req_port_i}
+add wave -noupdate -group i_ctrl0 {/tb/i_dut/gen_rd_ports[0]/i_wt_dcache_ctrl/miss_ack_i}
+add wave -noupdate -group i_ctrl0 {/tb/i_dut/gen_rd_ports[0]/i_wt_dcache_ctrl/miss_replay_i}
+add wave -noupdate -group i_ctrl0 {/tb/i_dut/gen_rd_ports[0]/i_wt_dcache_ctrl/miss_rtrn_vld_i}
+add wave -noupdate -group i_ctrl0 {/tb/i_dut/gen_rd_ports[0]/i_wt_dcache_ctrl/rd_ack_i}
+add wave -noupdate -group i_ctrl0 {/tb/i_dut/gen_rd_ports[0]/i_wt_dcache_ctrl/rd_data_i}
+add wave -noupdate -group i_ctrl0 {/tb/i_dut/gen_rd_ports[0]/i_wt_dcache_ctrl/rd_vld_bits_i}
+add wave -noupdate -group i_ctrl0 {/tb/i_dut/gen_rd_ports[0]/i_wt_dcache_ctrl/rd_hit_oh_i}
+add wave -noupdate -group i_ctrl0 {/tb/i_dut/gen_rd_ports[0]/i_wt_dcache_ctrl/req_port_o}
+add wave -noupdate -group i_ctrl0 {/tb/i_dut/gen_rd_ports[0]/i_wt_dcache_ctrl/miss_req_o}
+add wave -noupdate -group i_ctrl0 {/tb/i_dut/gen_rd_ports[0]/i_wt_dcache_ctrl/miss_we_o}
+add wave -noupdate -group i_ctrl0 {/tb/i_dut/gen_rd_ports[0]/i_wt_dcache_ctrl/miss_wdata_o}
+add wave -noupdate -group i_ctrl0 {/tb/i_dut/gen_rd_ports[0]/i_wt_dcache_ctrl/miss_vld_bits_o}
+add wave -noupdate -group i_ctrl0 {/tb/i_dut/gen_rd_ports[0]/i_wt_dcache_ctrl/miss_paddr_o}
+add wave -noupdate -group i_ctrl0 {/tb/i_dut/gen_rd_ports[0]/i_wt_dcache_ctrl/miss_nc_o}
+add wave -noupdate -group i_ctrl0 {/tb/i_dut/gen_rd_ports[0]/i_wt_dcache_ctrl/miss_size_o}
+add wave -noupdate -group i_ctrl0 {/tb/i_dut/gen_rd_ports[0]/i_wt_dcache_ctrl/rd_tag_o}
+add wave -noupdate -group i_ctrl0 {/tb/i_dut/gen_rd_ports[0]/i_wt_dcache_ctrl/rd_idx_o}
+add wave -noupdate -group i_ctrl0 {/tb/i_dut/gen_rd_ports[0]/i_wt_dcache_ctrl/rd_off_o}
+add wave -noupdate -group i_ctrl0 {/tb/i_dut/gen_rd_ports[0]/i_wt_dcache_ctrl/rd_req_o}
+add wave -noupdate -group i_ctrl0 {/tb/i_dut/gen_rd_ports[0]/i_wt_dcache_ctrl/state_d}
+add wave -noupdate -group i_ctrl0 {/tb/i_dut/gen_rd_ports[0]/i_wt_dcache_ctrl/state_q}
+add wave -noupdate -group i_ctrl0 {/tb/i_dut/gen_rd_ports[0]/i_wt_dcache_ctrl/address_tag_d}
+add wave -noupdate -group i_ctrl0 {/tb/i_dut/gen_rd_ports[0]/i_wt_dcache_ctrl/address_tag_q}
+add wave -noupdate -group i_ctrl0 {/tb/i_dut/gen_rd_ports[0]/i_wt_dcache_ctrl/address_idx_d}
+add wave -noupdate -group i_ctrl0 {/tb/i_dut/gen_rd_ports[0]/i_wt_dcache_ctrl/address_idx_q}
+add wave -noupdate -group i_ctrl0 {/tb/i_dut/gen_rd_ports[0]/i_wt_dcache_ctrl/address_off_d}
+add wave -noupdate -group i_ctrl0 {/tb/i_dut/gen_rd_ports[0]/i_wt_dcache_ctrl/address_off_q}
+add wave -noupdate -group i_ctrl0 {/tb/i_dut/gen_rd_ports[0]/i_wt_dcache_ctrl/vld_data_d}
+add wave -noupdate -group i_ctrl0 {/tb/i_dut/gen_rd_ports[0]/i_wt_dcache_ctrl/vld_data_q}
+add wave -noupdate -group i_ctrl0 {/tb/i_dut/gen_rd_ports[0]/i_wt_dcache_ctrl/save_tag}
+add wave -noupdate -group i_ctrl0 {/tb/i_dut/gen_rd_ports[0]/i_wt_dcache_ctrl/rd_req_d}
+add wave -noupdate -group i_ctrl0 {/tb/i_dut/gen_rd_ports[0]/i_wt_dcache_ctrl/rd_req_q}
+add wave -noupdate -group i_ctrl0 {/tb/i_dut/gen_rd_ports[0]/i_wt_dcache_ctrl/data_size_d}
+add wave -noupdate -group i_ctrl0 {/tb/i_dut/gen_rd_ports[0]/i_wt_dcache_ctrl/data_size_q}
+add wave -noupdate -group i_ctrl1 {/tb/i_dut/gen_rd_ports[1]/i_wt_dcache_ctrl/clk_i}
+add wave -noupdate -group i_ctrl1 {/tb/i_dut/gen_rd_ports[1]/i_wt_dcache_ctrl/rst_ni}
+add wave -noupdate -group i_ctrl1 {/tb/i_dut/gen_rd_ports[1]/i_wt_dcache_ctrl/cache_en_i}
+add wave -noupdate -group i_ctrl1 -expand {/tb/i_dut/gen_rd_ports[1]/i_wt_dcache_ctrl/req_port_i}
+add wave -noupdate -group i_ctrl1 {/tb/i_dut/gen_rd_ports[1]/i_wt_dcache_ctrl/miss_ack_i}
+add wave -noupdate -group i_ctrl1 {/tb/i_dut/gen_rd_ports[1]/i_wt_dcache_ctrl/miss_replay_i}
+add wave -noupdate -group i_ctrl1 {/tb/i_dut/gen_rd_ports[1]/i_wt_dcache_ctrl/miss_rtrn_vld_i}
+add wave -noupdate -group i_ctrl1 {/tb/i_dut/gen_rd_ports[1]/i_wt_dcache_ctrl/rd_ack_i}
+add wave -noupdate -group i_ctrl1 {/tb/i_dut/gen_rd_ports[1]/i_wt_dcache_ctrl/rd_data_i}
+add wave -noupdate -group i_ctrl1 {/tb/i_dut/gen_rd_ports[1]/i_wt_dcache_ctrl/rd_vld_bits_i}
+add wave -noupdate -group i_ctrl1 {/tb/i_dut/gen_rd_ports[1]/i_wt_dcache_ctrl/rd_hit_oh_i}
+add wave -noupdate -group i_ctrl1 {/tb/i_dut/gen_rd_ports[1]/i_wt_dcache_ctrl/req_port_o}
+add wave -noupdate -group i_ctrl1 {/tb/i_dut/gen_rd_ports[1]/i_wt_dcache_ctrl/miss_req_o}
+add wave -noupdate -group i_ctrl1 {/tb/i_dut/gen_rd_ports[1]/i_wt_dcache_ctrl/miss_we_o}
+add wave -noupdate -group i_ctrl1 {/tb/i_dut/gen_rd_ports[1]/i_wt_dcache_ctrl/miss_wdata_o}
+add wave -noupdate -group i_ctrl1 {/tb/i_dut/gen_rd_ports[1]/i_wt_dcache_ctrl/miss_vld_bits_o}
+add wave -noupdate -group i_ctrl1 {/tb/i_dut/gen_rd_ports[1]/i_wt_dcache_ctrl/miss_paddr_o}
+add wave -noupdate -group i_ctrl1 {/tb/i_dut/gen_rd_ports[1]/i_wt_dcache_ctrl/miss_nc_o}
+add wave -noupdate -group i_ctrl1 {/tb/i_dut/gen_rd_ports[1]/i_wt_dcache_ctrl/miss_size_o}
+add wave -noupdate -group i_ctrl1 {/tb/i_dut/gen_rd_ports[1]/i_wt_dcache_ctrl/rd_tag_o}
+add wave -noupdate -group i_ctrl1 {/tb/i_dut/gen_rd_ports[1]/i_wt_dcache_ctrl/rd_idx_o}
+add wave -noupdate -group i_ctrl1 {/tb/i_dut/gen_rd_ports[1]/i_wt_dcache_ctrl/rd_off_o}
+add wave -noupdate -group i_ctrl1 {/tb/i_dut/gen_rd_ports[1]/i_wt_dcache_ctrl/rd_req_o}
+add wave -noupdate -group i_ctrl1 {/tb/i_dut/gen_rd_ports[1]/i_wt_dcache_ctrl/state_d}
+add wave -noupdate -group i_ctrl1 {/tb/i_dut/gen_rd_ports[1]/i_wt_dcache_ctrl/state_q}
+add wave -noupdate -group i_ctrl1 {/tb/i_dut/gen_rd_ports[1]/i_wt_dcache_ctrl/address_tag_d}
+add wave -noupdate -group i_ctrl1 {/tb/i_dut/gen_rd_ports[1]/i_wt_dcache_ctrl/address_tag_q}
+add wave -noupdate -group i_ctrl1 {/tb/i_dut/gen_rd_ports[1]/i_wt_dcache_ctrl/address_idx_d}
+add wave -noupdate -group i_ctrl1 {/tb/i_dut/gen_rd_ports[1]/i_wt_dcache_ctrl/address_idx_q}
+add wave -noupdate -group i_ctrl1 {/tb/i_dut/gen_rd_ports[1]/i_wt_dcache_ctrl/address_off_d}
+add wave -noupdate -group i_ctrl1 {/tb/i_dut/gen_rd_ports[1]/i_wt_dcache_ctrl/address_off_q}
+add wave -noupdate -group i_ctrl1 {/tb/i_dut/gen_rd_ports[1]/i_wt_dcache_ctrl/vld_data_d}
+add wave -noupdate -group i_ctrl1 {/tb/i_dut/gen_rd_ports[1]/i_wt_dcache_ctrl/vld_data_q}
+add wave -noupdate -group i_ctrl1 {/tb/i_dut/gen_rd_ports[1]/i_wt_dcache_ctrl/save_tag}
+add wave -noupdate -group i_ctrl1 {/tb/i_dut/gen_rd_ports[1]/i_wt_dcache_ctrl/rd_req_d}
+add wave -noupdate -group i_ctrl1 {/tb/i_dut/gen_rd_ports[1]/i_wt_dcache_ctrl/rd_req_q}
+add wave -noupdate -group i_ctrl1 {/tb/i_dut/gen_rd_ports[1]/i_wt_dcache_ctrl/data_size_d}
+add wave -noupdate -group i_ctrl1 {/tb/i_dut/gen_rd_ports[1]/i_wt_dcache_ctrl/data_size_q}
 TreeUpdate [SetDefaultTree]
 quietly WaveActivateNextPane
 add wave -noupdate {/tb/i_tb_mem/mem_array_q[6741]}

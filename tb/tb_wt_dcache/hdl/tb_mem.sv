@@ -150,7 +150,9 @@ module tb_mem import tb_pkg::*; import ariane_pkg::*; import wt_cache_pkg::*;#(
             // generate random invalidations
             if (inv_rand_en_i) begin
                 void'(randomize(rnd) with {rnd > 0; rnd <= 100;});
-                if(rnd < MemRandInvRate) begin
+                // only invalidate if there are no replies in flight to the cache. Otherwise, we
+                // might send data that has just been invalidated.
+                if(rnd < MemRandInvRate && ~infifo_empty) begin
                     mem_inv_q <= '1;
                     void'(randomize(lval) with {lval>=0; lval<(MemWords>>3);});
                     void'(randomize(val));
