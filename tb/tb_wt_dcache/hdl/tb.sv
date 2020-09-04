@@ -25,10 +25,7 @@
 
 
 
-module tb; 
-  import tb_pkg::*; 
-  import ariane_pkg::*; 
-  import wt_cache_pkg::*;
+module tb import tb_pkg::*; import ariane_pkg::*; import wt_cache_pkg::*; #()();
 
   // leave this
   timeunit 1ps;
@@ -575,7 +572,7 @@ module tb;
     req_rate     = '{default:100};
     runSeq((CachedAddrBeg>>3)+(2**(DCACHE_INDEX_WIDTH-3))*DCACHE_SET_ASSOC,0);
     seq_type     = '{LINEAR_SEQ, IDLE_SEQ, IDLE_SEQ};
-    runSeq(0,(CachedAddrBeg>>3)+(2**(DCACHE_INDEX_WIDTH-3))*DCACHE_SET_ASSOC,1);
+    runSeq(0,(CachedAddrBeg>>3)+(2**(DCACHE_INDEX_WIDTH-3))*DCACHE_SET_ASSOC);
     flushCache();
     memCheck();
     ///////////////////////////////////////////////
