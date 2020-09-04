@@ -118,13 +118,13 @@ comp: mk_results $(CV32E40P_PKG) $(OVP_MODEL_DPI)
 #   CUSTOM_DIR:   Absolute, not relative, path to the custom C program. Default
 #                 is `pwd`/../../tests/core/custom.
 #   CUSTOM_PROG:  C or assembler test-program that executes on the core. Default
-#                 is hello_world.c.
+#                 is hello-world.c.
 #   UVM_TESTNAME: Class identifer (not file path) of the UVM testcase run by
 #                 environment. Default is uvmt_cv32_firmware_test_c.
 #
 # Use cases:
 #   1: Full specification of the hello-world test:
-#      $ make custom SIMULATOR=dsim CUSTOM_DIR=`pwd`/../../tests/core/custom CUSTOM_PROG=hello_world UVM_TESTNAME=uvmt_cv32_firmware_test_c
+#      $ make custom SIMULATOR=dsim CUSTOM_DIR=`pwd`/../../tests/core/custom CUSTOM_PROG=hello-world UVM_TESTNAME=uvmt_cv32_firmware_test_c
 #
 #   2: Same thing, using the defaults in these Makefiles:
 #      $ make custom
@@ -161,16 +161,16 @@ asm: comp $(ASM_DIR)/$(ASM_PROG).hex $(ASM_DIR)/$(ASM_PROG).elf
 #      Here for historical reasons - mostly (completely?) superceeded by the
 #      custom target.
 #
-hello-world: comp $(CUSTOM)/hello_world.hex $(CUSTOM)/hello_world.elf
+hello-world: comp $(CUSTOM)/hello-world.hex $(CUSTOM)/hello-world.elf
 	mkdir -p $(DSIM_RESULTS)/hello-world && cd $(DSIM_RESULTS)/hello-world  && \
 	$(DSIM) -l dsim-hello-world.log -image $(DSIM_IMAGE) \
 		-work $(DSIM_WORK) $(DSIM_RUN_FLAGS) $(DSIM_DMP_FLAGS) \
 		-sv_lib $(UVM_HOME)/src/dpi/libuvm_dpi.so \
 		-sv_lib $(OVP_MODEL_DPI) \
 		+UVM_TESTNAME=uvmt_cv32_firmware_test_c \
-		+firmware=$(CUSTOM)/hello_world.hex \
-		+elf_file=$(CUSTOM)/hello_world.elf
-#		+nm_file=$(CUSTOM)/hello_world.nm
+		+firmware=$(CUSTOM)/hello-world.hex \
+		+elf_file=$(CUSTOM)/hello-world.elf
+#		+nm_file=$(CUSTOM)/hello-world.nm
 #		+verbose
 
 debug_test: comp $(CORE_TEST_DIR)/debug_test/debug_test.hex
@@ -218,7 +218,7 @@ cv32-firmware: comp $(FIRMWARE)/firmware.hex $(FIRMWARE)/firmware.elf
 
 # Mythical no-test-program testcase.  Might never be used.  Not known tow work
 no-test-program: comp
-	mkdir -p $(DSIM_RESULTS)/hello_world && cd $(DSIM_RESULTS)/hello_world  && \
+	mkdir -p $(DSIM_RESULTS)/hello-world && cd $(DSIM_RESULTS)/hello-world  && \
 	$(DSIM) -l dsim-$(UVM_TESTNAME).log -image $(DSIM_IMAGE) \
 		-work $(DSIM_WORK) $(DSIM_RUN_FLAGS) $(DSIM_DMP_FLAGS) \
 		-sv_lib $(UVM_HOME)/src/dpi/libuvm_dpi.so \

@@ -64,6 +64,13 @@ SIMULATOR    ?= $(CV_SIMULATOR)
 # Optionally exclude the OVPsim (not recommended)
 USE_ISS      ?= YES
 
+# Common Generation variables
+GEN_START_INDEX ?= 0
+GEN_NUM_TESTS   ?= 1
+
+# Commont test variables
+RUN_INDEX       ?= 0
+
 # UVM Environment
 export DV_UVMT_CV32_PATH      = $(PROJ_ROOT_DIR)/$(COREV_PROJ)/tb/uvmt_cv32
 export DV_UVME_CV32_PATH      = $(PROJ_ROOT_DIR)/$(COREV_PROJ)/env/uvme_cv32
@@ -148,6 +155,8 @@ $(CV32E40P_PKG):
 	$(CLONE_CV32E40P_CMD)
 	$(CLONE_FPNEW_CMD)
 
+$(RISCVDV_PKG):
+	$(CLONE_RISCVDV_CMD)	
 
 ###############################################################################
 # Include the targets/rules for the selected SystemVerilog simulator
