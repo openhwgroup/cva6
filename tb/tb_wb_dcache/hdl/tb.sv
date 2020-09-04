@@ -25,11 +25,7 @@
 `include "tb.svh"
 `include "assign.svh"
 
-import ariane_pkg::*;
-import std_cache_pkg::*;
-import tb_pkg::*;
-
-module tb;
+module tb import ariane_pkg::*; import std_cache_pkg::*; import tb_pkg::*; #()();
 
   // leave this
   timeunit 1ps;
