@@ -36,7 +36,7 @@ package tb_pkg;
   parameter ERROR_CNT_STOP_LEVEL = 1; // use 1 for debugging. 0 runs the complete simulation...
 
   // tb_readport sequences
-  typedef enum logic [2:0] { RANDOM_SEQ, LINEAR_SEQ, BURST_SEQ, IDLE_SEQ, WRAP_SEQ } seq_t;
+  typedef enum logic [2:0] { RANDOM_SEQ, LINEAR_SEQ, BURST_SEQ, IDLE_SEQ, WRAP_SEQ, SET_SEQ, CONST_SEQ } seq_t;
 
 ///////////////////////////////////////////////////////////////////////////////
 // progress
