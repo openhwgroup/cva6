@@ -293,7 +293,6 @@ TEST_FILES        = $(filter %.c %.S,$(wildcard $(dir $*)*))
 # This target selected if both %.c and %.S exist
 .PRECIOUS : %.elf
 %.elf: %.c
-	make clean-bsp
 	make bsp
 	$(RISCV_EXE_PREFIX)gcc $(CFLAGS) -o $@ \
 		-nostartfiles \
@@ -301,7 +300,6 @@ TEST_FILES        = $(filter %.c %.S,$(wildcard $(dir $*)*))
 
 # This target selected if only %.S exists
 %.elf: %.S
-	make clean-bsp
 	make bsp
 	$(RISCV_EXE_PREFIX)gcc $(CFLAGS) -o $@ \
 		-nostartfiles \
