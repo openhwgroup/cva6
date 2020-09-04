@@ -191,6 +191,8 @@ interface AXI_LITE #(
   parameter AXI_DATA_WIDTH = -1
 );
 
+  import axi_pkg::*;
+
   localparam AXI_STRB_WIDTH = AXI_DATA_WIDTH / 8;
 
   typedef logic [AXI_ADDR_WIDTH-1:0] addr_t;
