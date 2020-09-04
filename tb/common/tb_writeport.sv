@@ -149,6 +149,30 @@ program tb_writeport  import tb_pkg::*; import ariane_pkg::*; #(
     dut_req_port_o.data_wdata    = 'x;
   endtask : genSeqWrite
 
+  // Repeadedly write to the same address
+  task automatic genConstWrite();
+    automatic logic [63:0] val;
+    paddr                         = CachedAddrBeg;
+    dut_req_port_o.data_req       = '0;
+    dut_req_port_o.data_size      = '0;
+    dut_req_port_o.data_be        = '0;
+    dut_req_port_o.data_wdata     = 'x;
+    repeat(seq_num_vect_i) begin
+      void'(randomize(val));
+      dut_req_port_o.data_req   = 1'b1;
+      dut_req_port_o.data_size  = 2'b11;
+      dut_req_port_o.data_be    = '1;
+      dut_req_port_o.data_wdata = val;
+      `APPL_WAIT_COMB_SIG(clk_i, dut_req_port_i.data_gnt)
+      `APPL_WAIT_CYC(clk_i,1)
+    end
+    paddr                        = '0;
+    dut_req_port_o.data_req      = '0;
+    dut_req_port_o.data_size     = '0;
+    dut_req_port_o.data_be       = '0;
+    dut_req_port_o.data_wdata    = 'x;
+  endtask : genConstWrite
+
   task automatic genWrapSeq();
     automatic logic [63:0] val;
     void'($urandom(RndSeed));
@@ -258,6 +282,10 @@ program tb_writeport  import tb_pkg::*; import ariane_pkg::*; #(
           $display("%s> start linear sequence with %04d vectors and req_rate %03d", PortName, seq_num_vect_i, req_rate_i);
           genSeqWrite();
         end
+        CONST_SEQ: begin
+          $display("%s> start constant sequence with %04d vectors and req_rate %03d", PortName, seq_num_vect_i, req_rate_i);
+          genConstWrite();
+        end
         WRAP_SEQ: begin
           $display("%s> start wrapping sequence with %04d vectors and req_rate %03d", PortName, seq_num_vect_i, req_rate_i);
           genWrapSeq();
@@ -266,6 +294,9 @@ program tb_writeport  import tb_pkg::*; import ariane_pkg::*; #(
         BURST_SEQ: begin
           $display("%s> start burst sequence with %04d vectors and req_rate %03d", PortName, seq_num_vect_i, req_rate_i);
           genSeqBurst();
+        end
+        SET_SEQ: begin
+          $fatal(1, "Set sequence not implemented for write port agent.");
         end
       endcase // seq_type_i
       seq_done_o = 1'b1;
