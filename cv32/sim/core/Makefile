@@ -605,7 +605,7 @@ tc-clean:
 	find $(CORE_TEST_DIR) -name *.map     -exec rm {} \;
 
 .PHONY: clean clean_all distclean
-clean: questa-clean tc-clean verilate-clean vcs-clean firmware-clean custom-clean dsim-clean xrun-clean vcs-clean
+clean: questa-clean tc-clean verilate-clean vcs-clean firmware-clean custom-clean dsim-clean xrun-clean vcs-clean clean-bsp
 
 distclean: clean
 	rm -rf riscv-fesvr riscv-isa-sim $(CV32E40P_PKG) work

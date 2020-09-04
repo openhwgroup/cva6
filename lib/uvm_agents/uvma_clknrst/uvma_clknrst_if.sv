@@ -54,6 +54,10 @@ interface uvma_clknrst_if ();
       end
    end
    
+   always @* begin
+      if (clk_active && clk_period == 0.0) 
+         `uvm_fatal("CLKNRSTIF", $sformatf("%m: Clock is active with 0 period"))
+   end
    /**
     * Sets clk_period
     */

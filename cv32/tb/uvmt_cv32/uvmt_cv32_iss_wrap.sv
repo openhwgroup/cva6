@@ -131,7 +131,10 @@ module uvmt_cv32_iss_wrap
    end
 
    initial begin
+     clknrst_if.clk = 1'b0;
       #1;  // time for clknrst_if_dut to set the clk_period
+      wait (clk_period != 0.0);
+      `uvm_info("ISSWRAP", "Starting ISS clock", UVM_LOW)
       clknrst_if.set_period(clk_period);
       clknrst_if.start_clk();
    end
