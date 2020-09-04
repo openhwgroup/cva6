@@ -157,8 +157,8 @@ $(CV32E40P_PKG):
 # RISC-V Compliance Test-suite
 #     As much as possible, the test suite is used "out-of-the-box".  The
 #     "build_compliance" target below uses the Makefile supplied by the suite
-#     to compile the individual test-programs in the suite to generate the elf
-#     and hex files used in simulation.  Each <sim>.mk is assumed to have a
+#     to compile all the individual test-programs in the suite to generate the
+#     elf and hex files used in simulation.  Each <sim>.mk is assumed to have a
 #     target to run the compiled test-program.
 
 # RISCV_ISA='rv32i|rv32im|rv32imc|rv32Zicsr|rv32Zifencei'
@@ -170,7 +170,7 @@ clone_compliance:
 clr_compliance:
 	make clean -C $(PROJ_ROOT_DIR)/vendor_lib/riscv/riscv-compliance
 
-build_compliance:
+build_compliance: clone_compliance
 	make -i -C $(PROJ_ROOT_DIR)/vendor_lib/riscv/riscv-compliance \
 		RISCV_TARGET=OpenHW \
 		RISCV_DEVICE=cv32e40p \

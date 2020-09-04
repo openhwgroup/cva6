@@ -100,9 +100,10 @@ RISCVDV_BRANCH  ?= master
 #                  Generation of riscv_pmp_test fails (we do not care for CV32E40P).
 RISCVDV_HASH    ?= 10fd4fa8b7d0808732ecf656c213866cae37045a
 
-COMPLIANCE_REPO   ?= https://github.com/eroom1966/riscv-compliance
+COMPLIANCE_REPO   ?= https://github.com/riscv/riscv-compliance
 COMPLIANCE_BRANCH ?= master
-COMPLIANCE_HASH   ?= head
+# 2020-08-19
+COMPLIANCE_HASH   ?= c21a2e86afa3f7d4292a2dd26b759f3f29cde497
 
 # Generate command to clone the CV32E40P RTL
 ifeq ($(CV32E40P_BRANCH), master)
