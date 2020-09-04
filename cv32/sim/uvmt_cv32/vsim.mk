@@ -45,8 +45,6 @@ VSIM_COV 				?= -coverage
 VOPT_WAVES_ADV_DEBUG    ?= -designfile design.bin
 VSIM_WAVES_ADV_DEBUG    ?= -qwavedb=+signal+assertion+ignoretxntime+msgmode=both
 VSIM_WAVES_DO           ?= $(VSIM_SCRIPT_DIR)/waves.tcl
-NUM_TESTS               ?= 1
-START_INDEX             ?= 0
 
 # Common QUIET flag defaults to -quiet unless VERBOSE is set
 ifeq ($(call IS_YES,$(VERBOSE)),YES)
@@ -227,9 +225,9 @@ help:
 	vsim -help
 
 ################################################################################
-# riscv-dv generation targets
+# corev-dv generation targets
 
-vlog_riscv-dv:
+vlog_corev-dv:
 	$(MKDIR_P) $(VSIM_RISCVDV_RESULTS)
 	$(MKDIR_P) $(COREVDV_PKG)/out_$(DATE)/run
 	cd $(VSIM_RISCVDV_RESULTS) && \
@@ -246,7 +244,7 @@ vlog_riscv-dv:
 			-f $(COREVDV_PKG)/manifest.f \
 			-l $(COREVDV_PKG)/out_$(DATE)/run/vlog.log
 
-vopt-riscv-dv:
+vopt-corev-dv:
 	cd $(VSIM_RISCVDV_RESULTS) && \
 		$(VOPT) \
 			-work $(VWORK) \
@@ -302,39 +300,10 @@ gen_corev_rand_instr_test:
 			+no_csr_instr=1
 	cp $(VSIM_RISCVDV_RESULTS)/corev_rand_instr_test/*.S $(CORE_TEST_DIR)/custom
 
-gen_corev_rand_interrupt_test:
-	mkdir -p $(VSIM_RISCVDV_RESULTS)/corev_rand_interrupt_test	
-	cd $(VSIM_RISCVDV_RESULTS)/corev_rand_interrupt_test && \
-		$(VMAP) work ../work
-	cd $(VSIM_RISCVDV_RESULTS)/corev_rand_interrupt_test && \
-		$(VSIM) $(VSIM_FLAGS) \
-			corev_instr_gen_tb_top_vopt \
-			$(DPILIB_VSIM_OPT) \
-			+UVM_TESTNAME=corev_instr_base_test  \
-			+num_of_tests=$(NUM_TESTS)  \
-			+start_idx=0  \
-			+asm_file_name_opts=corev_rand_interrupt_test  \
-			-l $(COREVDV_PKG)/out_$(DATE)/sim_corev_rand_interrupt_test_0.log \
-			+instr_cnt=50000 \
-			+num_of_sub_program=5 \
-            +directed_instr_0=riscv_load_store_rand_instr_stream,4 \
-            +directed_instr_1=riscv_loop_instr,4 \
-            +directed_instr_2=riscv_hazard_instr_stream,4 \
-            +directed_instr_3=riscv_load_store_hazard_instr_stream,4 \
-            +directed_instr_4=riscv_multi_page_load_store_instr_stream,4 \
-            +directed_instr_5=riscv_mem_region_stress_test,4 \
-            +directed_instr_6=riscv_jal_instr,4 \
-			+no_fence=1 \
-            +enable_interrupt=1 \
-            +randomize_csr=1 \
-			+boot_mode=m \
-			+no_csr_instr=1
-	cp $(VSIM_RISCVDV_RESULTS)/corev_rand_interrupt_test/*.S $(CORE_TEST_DIR)/custom
-
-gen_riscv-dv: 
+gen_corev-dv: 
 	mkdir -p $(VSIM_RISCVDV_RESULTS)/$(TEST)
 	# Clean old assembler generated tests in results
-	for (( idx=${START_INDEX}; idx < $$((${START_INDEX} + ${NUM_TESTS})); idx++ )); do \
+	for (( idx=${START_INDEX}; idx < $$((${GEN_START_INDEX} + ${GEN_NUM_TESTS})); idx++ )); do \
 		rm -f ${VSIM_RISCVDV_RESULTS}/${TEST}/${TEST}_$$idx.S; \
 	done
 	cd $(VSIM_RISCVDV_RESULTS)/$(TEST) && \
@@ -345,27 +314,25 @@ gen_riscv-dv:
 			corev_instr_gen_tb_top_vopt \
 			$(DPILIB_VSIM_OPT) \
 			+UVM_TESTNAME=$(GEN_UVM_TEST) \
-			+num_of_tests=$(NUM_TESTS)  \
+			+num_of_tests=$(GEN_NUM_TESTS)  \
 			-l $(TEST)_$(START_INDEX)_$(NUM_TESTS).log \
 			+start_idx=$(START_INDEX) \
-			+num_of_tests=$(NUM_TESTS) \
+			+num_of_tests=$(GEN_NUM_TESTS) \
 			+UVM_TESTNAME=$(GEN_UVM_TEST) \
 			+asm_file_name_opts=$(TEST) \
 			$(GEN_PLUSARGS)
 	# Copy out final assembler files to test directory
-	for (( idx=${START_INDEX}; idx < $$((${START_INDEX} + ${NUM_TESTS})); idx++ )); do \
+	for (( idx=${GEN_START_INDEX}; idx < $$((${GEN_START_INDEX} + ${GEN_NUM_TESTS})); idx++ )); do \
 		cp ${VSIM_RISCVDV_RESULTS}/${TEST}/${TEST}_$$idx.S ${GEN_TEST_DIR}; \
 	done
 
-comp_riscv-dv: $(RISCVDV_PKG) vlog_riscv-dv vopt-riscv-dv
+comp_corev-dv: $(RISCVDV_PKG) vlog_corev-dv vopt_corev-dv
 
-comp_corev-dv: clean_riscv-dv \
-	clone_riscv-dv \
-	comp_riscv-dv 
-
-corev-dv: clone_riscv-dv comp_riscv-dv \
-	gen_corev_arithmetic_base_test \
-	gen_corev_rand_instr_test
+corev-dv: clean_riscv-dv \
+          clone_riscv-dv \
+          comp_corev-dv \
+          gen_corev_arithmetic_base_test \
+          gen_corev_rand_instr_test
 
 ################################################################################
 # Questa simulation targets
@@ -440,11 +407,6 @@ hello-world: VSIM_TEST=hello-world
 hello-world: VSIM_FLAGS += +firmware=$(CUSTOM)/hello-world.hex +elf_file=$(CUSTOM)/hello-world.elf
 hello-world: TEST_UVM_TEST=uvmt_cv32_firmware_test_c
 hello-world: $(CUSTOM)/hello-world.hex run
-
-interrupt_test: VSIM_TEST=interrupt_test
-interrupt_test: VSIM_FLAGS += +firmware=$(CORE_TEST_DIR)/interrupt_test/interrupt_test.hex +elf_file=$(CORE_TEST_DIR)/interrupt_test/interrupt_test.elf
-interrupt_test: TEST_UVM_TEST=uvmt_cv32_firmware_test_c
-interrupt_test: $(CORE_TEST_DIR)/interrupt_test/interrupt_test.hex run
 
 misalign: VSIM_TEST=misalign
 misalign: VSIM_FLAGS += +firmware=$(CUSTOM)/misalign.hex +elf_file=$(CUSTOM)/misalign.elf

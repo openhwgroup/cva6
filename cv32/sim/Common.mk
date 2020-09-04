@@ -54,7 +54,6 @@ IS_NO=$(if $(filter $(NO_VALS),$(1)),NO,YES)
 ###############################################################################
 # Common variables
 BANNER=*******************************************************************************************
-RUN_INDEX?=0
 
 ###############################################################################
 # Variables to determine the the command to clone external repositories.
@@ -245,9 +244,9 @@ sanity: hello-world
 
 # If the gen_corev-dv target is defined then read in a test specification file
 YAML2MAKE = $(PROJ_ROOT_DIR)/bin/yaml2make
-ifneq ($(filter gen_riscv-dv,$(MAKECMDGOALS)),)
+ifneq ($(filter gen_corev-dv,$(MAKECMDGOALS)),)
 ifeq ($(TEST),)
-$(error ERROR must specify a TEST variable with gen_riscv-dv target)
+$(error ERROR must specify a TEST variable with gen_corev-dv target)
 endif
 GEN_FLAGS_MAKE := $(shell $(YAML2MAKE) --test=$(TEST) --yaml=corev-dv.yaml --debug --prefix=GEN)
 ifeq ($(GEN_FLAGS_MAKE),)

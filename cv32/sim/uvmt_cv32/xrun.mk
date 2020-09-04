@@ -45,8 +45,6 @@ XRUN_SINGLE_STEP ?=
 XRUN_ELAB_COV     = -covdut uvmt_cv32_tb -coverage b:e:f:t:u
 XRUN_RUN_COV      = -covscope uvmt_cv32_tb \
 					-nowarn CGDEFN
-NUM_TESTS        ?= 1
-START_INDEX      ?= 0
 
 XRUN_UVM_VERBOSITY ?= UVM_MEDIUM
 
@@ -116,7 +114,7 @@ endif
 ifeq ($(call IS_YES,$(MERGE)),YES)
 COV_ARGS = -load cov_work/scope/merged
 else
-COV_ARGS = -load cov_work/uvmt_cv32_tb/$(TEST)
+COV_ARGS = -load cov_work/uvmt_cv32_tb/$(TEST_NAME)
 endif
 
 ifeq ($(call IS_YES,$(GUI)),YES)
@@ -228,14 +226,6 @@ hello-world:  $(XRUN_SIM_PREREQ) $(CUSTOM)/hello-world.hex
 		+UVM_TESTNAME=uvmt_cv32_firmware_test_c \
 		+firmware=$(CUSTOM)/hello-world.hex
 
-interrupt_test:  $(XRUN_SIM_PREREQ) $(CORE_TEST_DIR)/interrupt_test/interrupt_test.hex
-	mkdir -p $(XRUN_RESULTS)/interrupt_test && cd $(XRUN_RESULTS)/interrupt_test && \
-	$(XRUN) -l xrun-interrupt_test.log -covtest interrupt_test $(XRUN_COMP_RUN) \
-		+elf_file=$(CORE_TEST_DIR)/interrupt_test/interrupt_test.elf \
-		+nm_file=$(CORE_TEST_DIR)/interrupt_test/interrupt_test.nm \
-		+UVM_TESTNAME=uvmt_cv32_firmware_test_c \
-		+firmware=$(CORE_TEST_DIR)/interrupt_test/interrupt_test.hex
-
 misalign: $(XRUN_SIM_PREREQ) $(CUSTOM)/misalign.hex
 	mkdir -p $(XRUN_RESULTS)/misalign && cd $(XRUN_RESULTS)/misalign && \
 	$(XRUN) -l xrun-misalign.log -covtest misalign $(XRUN_COMP_RUN) \
@@ -335,7 +325,7 @@ riscv-compliance: $(XRUN_SIM_PREREQ) $(COMPLIANCE).elf
 
 ###############################################################################
 # Use Google instruction stream generator (RISCV-DV) to create new test-programs
-comp_riscv-dv: $(RISCVDV_PKG)
+comp_corev-dv: $(RISCVDV_PKG)
 	mkdir -p $(XRUN_RISCVDV_RESULTS)
 	cd $(XRUN_RISCVDV_RESULTS) && \
 	$(XRUN) $(XRUN_COMP_FLAGS) \
@@ -354,7 +344,7 @@ gen_corev_arithmetic_base_test:
 	$(XRUN) -R $(XRUN_RUN_FLAGS) \
 		-xceligen rand_struct \
 		+UVM_TESTNAME=corev_instr_base_test  \
-		+num_of_tests=$(NUM_TESTS)  \
+		+num_of_tests=2  \
 		+start_idx=0  \
 		+asm_file_name_opts=riscv_arithmetic_basic_test  \
 		-l $(COREVDV_PKG)/out_$(DATE)/sim_riscv_arithmetic_basic_test_0.log \
@@ -374,7 +364,7 @@ gen_corev_rand_instr_test:
 	$(XRUN) -R $(XRUN_RUN_FLAGS) \
 		-xceligen rand_struct \
 	 	+UVM_TESTNAME=corev_instr_base_test \
-		+num_of_tests=$(NUM_TESTS) \
+		+num_of_tests=2 \
 		+start_idx=0  \
 		+asm_file_name_opts=corev_rand_instr_test  \
 		-l $(COREVDV_PKG)/out_$(DATE)/sim_riscv_rand_instr_test_0.log \
@@ -389,50 +379,29 @@ gen_corev_rand_instr_test:
     +directed_instr_6=riscv_jal_instr,4
 	cp $(XRUN_RISCVDV_RESULTS)/corev_rand_instr_test/*.S $(CORE_TEST_DIR)/custom
 
-gen_corev_rand_interrupt_test:
-	mkdir -p $(XRUN_RISCVDV_RESULTS)/corev_rand_interrupt_test	
-	cd $(XRUN_RISCVDV_RESULTS)/corev_rand_interrupt_test && \
-	$(XRUN) -R $(XRUN_RUN_FLAGS) \
-		-xceligen rand_struct \
-		-l $(COREVDV_PKG)/out_$(DATE)/sim_riscv_rand_interrupt_test_0.log \
-		+UVM_TESTNAME=corev_instr_base_test  \
-		+num_of_tests=$(NUM_TESTS)  \
-		+start_idx=0  \
-		+asm_file_name_opts=corev_rand_interrupt_test  \
-		+instr_cnt=50000 \
-		+num_of_sub_program=5 \
-        +directed_instr_0=riscv_load_store_rand_instr_stream,4 \
-        +directed_instr_1=riscv_loop_instr,4 \
-        +directed_instr_2=riscv_hazard_instr_stream,4 \
-        +directed_instr_3=riscv_load_store_hazard_instr_stream,4 \
-		+no_fence=1 \
-        +enable_interrupt=1 \
-        +randomize_csr=1 \
-		+boot_mode=m \
-		+no_csr_instr=1
-	cp $(XRUN_RISCVDV_RESULTS)/corev_rand_interrupt_test/*.S $(CORE_TEST_DIR)/custom
-
-corev-dv: clean_riscv-dv clone_riscv-dv comp_riscv-dv
+corev-dv: clean_riscv-dv \
+          clone_riscv-dv \
+		  comp_corev-dv
 	$(MAKE) gen_corev_arithmetic_base_test
 	$(MAKE) gen_corev_rand_instr_test 
 
-gen_riscv-dv: 
+gen_corev-dv: 
 	mkdir -p $(XRUN_RISCVDV_RESULTS)/$(TEST)
 	# Clean old assembler generated tests in results
-	for (( idx=${START_INDEX}; idx < $$((${START_INDEX} + ${NUM_TESTS})); idx++ )); do \
+	for (( idx=${GEN_START_INDEX}; idx < $$((${GEN_START_INDEX} + ${GEN_NUM_TESTS})); idx++ )); do \
 		rm -f ${XRUN_RISCVDV_RESULTS}/${TEST}/${TEST}_$$idx.S; \
 	done
 	cd  $(XRUN_RISCVDV_RESULTS)/$(TEST) && \
 	$(XRUN) -R $(XRUN_RUN_FLAGS) \
 		-xceligen rand_struct \
-		-l $(TEST)_$(START_INDEX)_$(NUM_TESTS).log \
-		+start_idx=$(START_INDEX) \
-		+num_of_tests=$(NUM_TESTS) \
+		-l $(TEST)_$(GEN_START_INDEX)_$(GEN_NUM_TESTS).log \
+		+start_idx=$(GEN_START_INDEX) \
+		+num_of_tests=$(GEN_NUM_TESTS) \
 		+UVM_TESTNAME=$(GEN_UVM_TEST) \
 		+asm_file_name_opts=$(TEST) \
 		$(GEN_PLUSARGS)
 	# Copy out final assembler files to test directory
-	for (( idx=${START_INDEX}; idx < $$((${START_INDEX} + ${NUM_TESTS})); idx++ )); do \
+	for (( idx=${GEN_START_INDEX}; idx < $$((${GEN_START_INDEX} + ${GEN_NUM_TESTS})); idx++ )); do \
 		cp ${XRUN_RISCVDV_RESULTS}/${TEST}/${TEST}_$$idx.S ${GEN_TEST_DIR}; \
 	done
 
@@ -451,7 +420,7 @@ cov_merge:
 	$(IMC) -execcmd "$(IMC_MERGE_ARGS) -list ucd.list -out merged; exit"
 
 cov: $(COV_MERGE)
-	cd $(XRUN_RESULTS)/$(TEST) && $(IMC) $(COV_ARGS)
+	cd $(XRUN_RESULTS)/$(TEST_NAME) && $(IMC) $(COV_ARGS)
 
 ###############################################################################
 # Clean up your mess!

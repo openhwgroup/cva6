@@ -48,9 +48,9 @@ TOPDIR = os.path.abspath(os.path.join(os.path.dirname(os.path.realpath(__file__)
 VALID_YAMLS = ('corev-dv.yaml', 'test.yaml')
 REQUIRED_KEYS = ('name', 'uvm_test', 'description',)
 TEST_PATHS = (
-              'cv32/tests/core/corev-dv/',
-              'cv32/tests/core/custom',
-              'cv32/tests/core',
+              'cv32/tests/programs/corev-dv/',
+              'cv32/tests/programs/custom',
+              'cv32/tests/core/custom', # FIXME:strichmo:deprecate when tests moved out of core
               )
               
 if (sys.version_info < (3,0,0)):
