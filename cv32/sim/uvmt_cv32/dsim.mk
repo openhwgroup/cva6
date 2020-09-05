@@ -26,6 +26,7 @@ DSIM_HOME              ?= /tools/Metrics/dsim
 DSIM_CMP_FLAGS         ?= $(TIMESCALE) $(SV_CMP_FLAGS) -top uvmt_cv32_tb
 DSIM_UVM_ARGS          ?= +incdir+$(UVM_HOME)/src $(UVM_HOME)/src/uvm_pkg.sv
 DSIM_RESULTS           ?= $(PWD)/dsim_results
+DSIM_COREVDV_RESULTS   ?= $(PWD)/dsim_results/corev-dv
 DSIM_WORK              ?= $(DSIM_RESULTS)/dsim_work
 DSIM_IMAGE             ?= dsim.out
 DSIM_RUN_FLAGS         ?=
@@ -144,6 +145,30 @@ custom: comp $(CUSTOM_DIR)/$(CUSTOM_PROG).hex $(CUSTOM_DIR)/$(CUSTOM_PROG).elf
 		+UVM_TESTNAME=$(UVM_TESTNAME) \
 		+firmware=$(CUSTOM_DIR)/$(CUSTOM_PROG).hex \
 		+elf_file=$(CUSTOM_DIR)/$(CUSTOM_PROG).elf
+
+################################################################################
+# General test execution target "test"
+# 
+
+# Skip compile if COMP is specified and negative
+ifneq ($(call IS_NO,$(COMP)),NO)
+DSIM_SIM_PREREQ = comp
+endif
+
+test: $(DSIM_SIM_PREREQ) $(TEST_TEST_DIR)/$(TEST_NAME).hex
+	mkdir -p $(DSIM_RESULTS)/$(TEST_NAME) && \
+	cd $(DSIM_RESULTS)/$(TEST_NAME) && \
+		$(DSIM) \
+			-l dsim-$(TEST_NAME).log \
+			-image $(DSIM_IMAGE) \
+			-work $(DSIM_WORK) \
+			$(DSIM_RUN_FLAGS) \
+			$(DSIM_DMP_FLAGS) \
+			-sv_lib $(UVM_HOME)/src/dpi/libuvm_dpi.so \
+			-sv_lib $(OVP_MODEL_DPI) \
+			+UVM_TESTNAME=$(TEST_UVM_TEST) \
+			+firmware=$(TEST_TEST_DIR)/$(TEST_NAME).hex \
+			+elf_file=$(TEST_TEST_DIR)/$(TEST_NAME).elf
 
 # Similar to above, but for the ASM directory.
 asm: comp $(ASM_DIR)/$(ASM_PROG).hex $(ASM_DIR)/$(ASM_PROG).elf
@@ -272,14 +297,15 @@ dsim-firmware-unit-test: comp
 .PHONY: unit-test
 unit-test: dsim-unit-test
 
-
 ###############################################################################
 # Use Google instruction stream generator (RISCV-DV) to create new test-programs
 #riscv-dv: clone_riscv-dv
-comp_riscv-dv:
+comp_corev-dv:
+	# FIXME:strichmo:Please remove this!
 	mkdir -p $(COREVDV_PKG)/out_$(DATE)/dsim
+	mkdir -p $(DSIM_COREVDV_RESULTS)
 	dsim -sv \
-		-work $(COREVDV_PKG)/out_$(DATE)/dsim \
+		-work $(DSIM_COREVDV_RESULTS)/dsim \
 		-genimage image \
 		+incdir+$(UVM_HOME)/src \
 		$(UVM_HOME)/src/uvm_pkg.sv \
@@ -291,17 +317,19 @@ comp_riscv-dv:
 		+incdir+$(RISCVDV_PKG)/tests \
 		+incdir+$(COREVDV_PKG) \
 		-f $(COREVDV_PKG)/manifest.f \
-		-l $(COREVDV_PKG)/out_$(DATE)/dsim/compile.log 
+		-l $(DSIM_COREVDV_RESULTS)/compile.log
 
 #riscv-test: riscv-dv
 #		+asm_file_name=$(RISCVDV_PKG)/out_2020-06-24/asm_tests/riscv_arithmetic_basic_test  \
 
 gen_corev_arithmetic_base_test:
+	mkdir -p $(DSIM_COREVDV_RESULTS)/corev_arithmetic_base_test
+	cd $(DSIM_COREVDV_RESULTS)/corev_arithmetic_base_test && \
 	dsim -sv_seed $(RNDSEED) \
 		-sv_lib $(UVM_HOME)/src/dpi/libuvm_dpi.so \
 		+acc+rwb \
 		-image image \
-		-work $(COREVDV_PKG)/out_$(DATE)/dsim \
+		-work $(DSIM_COREVDV_RESULTS)/dsim \
 		+UVM_TESTNAME=corev_instr_base_test  \
 		+num_of_tests=2  \
 		+start_idx=0  \
@@ -315,14 +343,16 @@ gen_corev_arithmetic_base_test:
 		+no_branch_jump=1 \
 		+boot_mode=m \
 		+no_csr_instr=1
-	mv *.S $(CORE_TEST_DIR)/custom
+	mv $(DSIM_COREVDV_RESULTS)/corev_arithmetic_base_test/*.S $(CORE_TEST_DIR)/custom
 
 gen_corev_rand_instr_test:
+	mkdir -p $(DSIM_COREVDV_RESULTS)/corev_rand_instr_test
+	cd $(DSIM_COREVDV_RESULTS)/corev_rand_instr_test && \
 	dsim  -sv_seed $(RNDSEED) \
 		-sv_lib $(UVM_HOME)/src/dpi/libuvm_dpi.so \
 		+acc+rwb \
 		-image image \
-		-work $(COREVDV_PKG)/out_$(DATE)/dsim \
+		-work $(DSIM_COREVDV_RESULTS)/dsim \
 	 	+UVM_TESTNAME=corev_instr_base_test \
 		+num_of_tests=2  \
 		+start_idx=0  \
@@ -337,14 +367,16 @@ gen_corev_rand_instr_test:
     +directed_instr_4=riscv_multi_page_load_store_instr_stream,4 \
     +directed_instr_5=riscv_mem_region_stress_test,4 \
     +directed_instr_6=riscv_jal_instr,4
-	mv *.S $(CORE_TEST_DIR)/custom
+	mv $(DSIM_COREVDV_RESULTS)/corev_rand_instr_test/*.S $(CORE_TEST_DIR)/custom
 
 gen_corev_jump_stress_test:
+	mkdir -p $(DSIM_COREVDV_RESULTS)/corev_jump_stress_test
+	cd $(DSIM_COREVDV_RESULTS)/corev_jump_stress_test && \
 	dsim  -sv_seed $(RNDSEED) \
 		-sv_lib $(UVM_HOME)/src/dpi/libuvm_dpi.so \
 		+acc+rwb \
 		-image image \
-		-work $(COREVDV_PKG)/out_$(DATE)/dsim \
+		-work $(DSIM_COREVDV_RESULTS)/dsim \
 	 	+UVM_TESTNAME=corev_instr_base_test \
 		+num_of_tests=2  \
 		+start_idx=0  \
@@ -353,14 +385,37 @@ gen_corev_jump_stress_test:
 		+instr_cnt=5000 \
 		+num_of_sub_program=5 \
 		+directed_instr_1=riscv_jal_instr,20
-	mv *.S $(CORE_TEST_DIR)/custom
+	mv $(DSIM_COREVDV_RESULTS)/corev_jump_stress_test/*.S $(CORE_TEST_DIR)/custom
+
+gen_corev-dv: 
+	mkdir -p $(DSIM_RISCVDV_RESULTS)/$(TEST)
+	# Clean old assembler generated tests in results
+	for (( idx=${GEN_START_INDEX}; idx < $$((${GEN_START_INDEX} + ${GEN_NUM_TESTS})); idx++ )); do \
+		rm -f ${DSIM_RISCVDV_RESULTS}/${TEST}/${TEST}_$$idx.S; \
+	done
+	cd  $(DSIM_RISCVDV_RESULTS)/$(TEST) && \
+	dsim  -sv_seed $(RNDSEED) \
+		-sv_lib $(UVM_HOME)/src/dpi/libuvm_dpi.so \
+		+acc+rwb \
+		-image image \
+		-work $(DSIM_RISCVDV_RESULTS)/dsim \
+	 	+UVM_TESTNAME=$(GEN_UVM_TEST) \
+		+num_of_tests=$(GEN_NUM_TEST)  \
+		+start_idx=$(GEN_START_INDEX)  \
+		+asm_file_name_opts=$(TEST) \
+		-l $(TEST)_$(GEN_START_INDEX)_$(GEN_NUM_TESTS).log \
+		$(GEN_PLUSARGS)
+	# Copy out final assembler files to test directory
+	for (( idx=${GEN_START_INDEX}; idx < $$((${GEN_START_INDEX} + ${GEN_NUM_TESTS})); idx++ )); do \
+		cp ${DSIM_RISCVDV_RESULTS}/${TEST}/${TEST}_$$idx.S ${GEN_TEST_DIR}; \
+	done
 
 corev-dv: clean_riscv-dv \
 	  clone_riscv-dv \
-	  comp_riscv-dv \
+	  comp_corev-dv \
 	  gen_corev_arithmetic_base_test \
-	  gen_corev_rand_instr_test \
-	  gen_corev_jump_stress_test
+	  gen_corev_rand_instr_test 
+
 
 ###############################################################################
 # Clean up your mess!

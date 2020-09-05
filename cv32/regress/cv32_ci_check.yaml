@@ -35,6 +35,12 @@ tests:
     dir: cv32/sim/uvmt_cv32
     cmd: make custom CUSTOM_PROG=illegal
 
+  csr_instructions:
+    build: uvmt_cv32
+    description: Directed CSR test
+    dir: cv32/sim/uvmt_cv32
+    cmd: make custom CUSTOM_PROG=csr_instructions
+
   interrupt_test:
     build: uvmt_cv32
     description: Interrupt directed test
@@ -43,8 +49,9 @@ tests:
     cmd: make interrupt_test
     skip_sim: [xrun, vsim]
 
-  riscv_arithmetic_basic_test_0:
+  corev_arithmetic_base_test:
     build: uvmt_cv32
     description: riscv-dv basic math test
     dir: cv32/sim/uvmt_cv32
-    cmd: make custom CUSTOM_PROG=riscv_arithmetic_basic_test_0
+    cmd: make gen_corev-dv test TEST=corev_arithmetic_base_test
+    num: 2

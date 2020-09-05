@@ -28,10 +28,10 @@ INDAGO            = $(CV_TOOL_PREFIX) indago
 IMC               = $(CV_SIM_PREFIX) imc
 
 # Paths
-XRUN_RESULTS     ?= $(PWD)/xrun_results
-XRUN_RISCVDV_RESULTS ?= $(XRUN_RESULTS)/riscv-dv
-XRUN_DIR         ?= $(XRUN_RESULTS)/xcelium.d
-XRUN_UVMHOME_ARG ?= CDNS-1.2-ML
+XRUN_RESULTS         ?= $(PWD)/xrun_results
+XRUN_COREVDV_RESULTS ?= $(XRUN_RESULTS)/corev-dv
+XRUN_DIR             ?= $(XRUN_RESULTS)/xcelium.d
+XRUN_UVMHOME_ARG     ?= CDNS-1.2-ML
 
 # Flags
 XRUN_COMP_FLAGS  ?= -64bit -disable_sem2009 -access +rwc \
@@ -48,6 +48,7 @@ XRUN_RUN_COV      = -covscope uvmt_cv32_tb \
 
 XRUN_UVM_VERBOSITY ?= UVM_MEDIUM
 
+###############################################################################
 # Common QUIET flag defaults to -quiet unless VERBOSE is set
 ifeq ($(call IS_YES,$(VERBOSE)),YES)
 QUIET=
@@ -144,6 +145,18 @@ XRUN_RUN_FLAGS        += $(XRUN_RUN_BASE_FLAGS)
 XRUN_RUN_FLAGS        += $(XRUN_RUN_COV_FLAGS)
 XRUN_RUN_FLAGS        += $(XRUN_USER_RUN_FLAGS)
 XRUN_RUN_FLAGS        += $(USER_RUN_FLAGS)
+
+###############################################################################
+# Xcelium warning suppression
+
+# Allow extra semicolons
+XRUN_COMP_FLAGS += -nowarn UEXPSC
+
+# Un-named covergroup instances
+XRUN_RUN_COV    += -nowarn CGDEFN
+
+###############################################################################
+# Targets
 
 no_rule:
 	@echo 'makefile: SIMULATOR is set to $(SIMULATOR), but no rule/target specified.'
@@ -331,8 +344,8 @@ riscv-compliance: $(XRUN_SIM_PREREQ) $(COMPLIANCE).elf
 ###############################################################################
 # Use Google instruction stream generator (RISCV-DV) to create new test-programs
 comp_corev-dv: $(RISCVDV_PKG)
-	mkdir -p $(XRUN_RISCVDV_RESULTS)
-	cd $(XRUN_RISCVDV_RESULTS) && \
+	mkdir -p $(XRUN_COREVDV_RESULTS)
+	cd $(XRUN_COREVDV_RESULTS) && \
 	$(XRUN) $(XRUN_COMP_FLAGS) \
 		$(QUIET) \
 		$(XRUN_USER_COMPILE_ARGS) \
@@ -342,11 +355,11 @@ comp_corev-dv: $(RISCVDV_PKG)
 		+incdir+$(RISCVDV_PKG)/tests \
 		+incdir+$(COREVDV_PKG) \
 		-f $(COREVDV_PKG)/manifest.f \
-		-l $(COREVDV_PKG)/out_$(DATE)/run/compile.log 
+		-l xrun.log
 
 gen_corev_arithmetic_base_test:
-	mkdir -p $(XRUN_RISCVDV_RESULTS)/corev_arithmetic_base_test	
-	cd $(XRUN_RISCVDV_RESULTS)/corev_arithmetic_base_test && \
+	mkdir -p $(XRUN_COREVDV_RESULTS)/corev_arithmetic_base_test	
+	cd $(XRUN_COREVDV_RESULTS)/corev_arithmetic_base_test && \
 	$(XRUN) -R $(XRUN_RUN_FLAGS) \
 		-xceligen rand_struct \
 		+UVM_TESTNAME=corev_instr_base_test  \
@@ -362,11 +375,11 @@ gen_corev_arithmetic_base_test:
 		+no_branch_jump=1 \
 		+boot_mode=m \
 		+no_csr_instr=1
-	cp $(XRUN_RISCVDV_RESULTS)/corev_arithmetic_base_test/*.S $(CORE_TEST_DIR)/custom
+	cp $(XRUN_COREVDV_RESULTS)/corev_arithmetic_base_test/*.S $(CORE_TEST_DIR)/custom
 
 gen_corev_rand_instr_test:
-	mkdir -p $(XRUN_RISCVDV_RESULTS)/corev_rand_instr_test	
-	cd $(XRUN_RISCVDV_RESULTS)/corev_rand_instr_test && \
+	mkdir -p $(XRUN_COREVDV_RESULTS)/corev_rand_instr_test	
+	cd $(XRUN_COREVDV_RESULTS)/corev_rand_instr_test && \
 	$(XRUN) -R $(XRUN_RUN_FLAGS) \
 		-xceligen rand_struct \
 	 	+UVM_TESTNAME=corev_instr_base_test \
@@ -383,7 +396,7 @@ gen_corev_rand_instr_test:
     +directed_instr_4=riscv_multi_page_load_store_instr_stream,4 \
     +directed_instr_5=riscv_mem_region_stress_test,4 \
     +directed_instr_6=riscv_jal_instr,4
-	cp $(XRUN_RISCVDV_RESULTS)/corev_rand_instr_test/*.S $(CORE_TEST_DIR)/custom
+	cp $(XRUN_COREVDV_RESULTS)/corev_rand_instr_test/*.S $(CORE_TEST_DIR)/custom
 
 corev-dv: clean_riscv-dv \
           clone_riscv-dv \
@@ -392,12 +405,12 @@ corev-dv: clean_riscv-dv \
 	$(MAKE) gen_corev_rand_instr_test 
 
 gen_corev-dv: 
-	mkdir -p $(XRUN_RISCVDV_RESULTS)/$(TEST)
+	mkdir -p $(XRUN_COREVDV_RESULTS)/$(TEST)
 	# Clean old assembler generated tests in results
 	for (( idx=${GEN_START_INDEX}; idx < $$((${GEN_START_INDEX} + ${GEN_NUM_TESTS})); idx++ )); do \
-		rm -f ${XRUN_RISCVDV_RESULTS}/${TEST}/${TEST}_$$idx.S; \
+		rm -f ${XRUN_COREVDV_RESULTS}/${TEST}/${TEST}_$$idx.S; \
 	done
-	cd  $(XRUN_RISCVDV_RESULTS)/$(TEST) && \
+	cd  $(XRUN_COREVDV_RESULTS)/$(TEST) && \
 	$(XRUN) -R $(XRUN_RUN_FLAGS) \
 		-xceligen rand_struct \
 		-l $(TEST)_$(GEN_START_INDEX)_$(GEN_NUM_TESTS).log \
@@ -409,7 +422,7 @@ gen_corev-dv:
 	# Copy out final assembler files to test directory
 	for (( idx=${GEN_START_INDEX}; idx < $$((${GEN_START_INDEX} + ${GEN_NUM_TESTS})); idx++ )); do \
 		ls -l ${XRUN_RISCVDV_RESULTS}/${TEST} > /dev/null; \
-		cp ${XRUN_RISCVDV_RESULTS}/${TEST}/${TEST}_$$idx.S ${GEN_TEST_DIR}; \
+		cp ${XRUN_COREVDV_RESULTS}/${TEST}/${TEST}_$$idx.S ${GEN_TEST_DIR}; \
 	done
 
 ################################################################################

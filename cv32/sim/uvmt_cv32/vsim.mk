@@ -33,7 +33,7 @@ VCOVER                  = vcover
 # Paths
 VWORK     				= work
 VSIM_RESULTS           ?= $(MAKE_PATH)/vsim_results
-VSIM_RISCVDV_RESULTS   ?= $(VSIM_RESULTS)/riscv-dv
+VSIM_COREVDV_RESULTS   ?= $(VSIM_RESULTS)/corev-dv
 VSIM_COV_MERGE_DIR     ?= $(VSIM_RESULTS)/merged
 UVM_HOME               ?= $(abspath $(shell which $(VLIB))/../../verilog_src/uvm-1.2/src)
 USES_DPI = 1
@@ -228,11 +228,11 @@ help:
 # corev-dv generation targets
 
 vlog_corev-dv:
-	$(MKDIR_P) $(VSIM_RISCVDV_RESULTS)
+	$(MKDIR_P) $(VSIM_COREVDV_RESULTS)
 	$(MKDIR_P) $(COREVDV_PKG)/out_$(DATE)/run
-	cd $(VSIM_RISCVDV_RESULTS) && \
+	cd $(VSIM_COREVDV_RESULTS) && \
 		$(VLIB) $(VWORK)
-	cd $(VSIM_RISCVDV_RESULTS) && \
+	cd $(VSIM_COREVDV_RESULTS) && \
 		$(VLOG) \
 			$(VLOG_FLAGS) \
 			+incdir+$(UVM_HOME) \
@@ -242,23 +242,22 @@ vlog_corev-dv:
 			+incdir+$(RISCVDV_PKG)/tests \
 			+incdir+$(COREVDV_PKG) \
 			-f $(COREVDV_PKG)/manifest.f \
-			-l $(COREVDV_PKG)/out_$(DATE)/run/vlog.log
+			-l vlog.log
 
-vopt-corev-dv:
-	cd $(VSIM_RISCVDV_RESULTS) && \
+vopt_corev-dv:
+	cd $(VSIM_COREVDV_RESULTS) && \
 		$(VOPT) \
 			-work $(VWORK) \
 			$(VOPT_FLAGS) \
 			corev_instr_gen_tb_top \
 			-o corev_instr_gen_tb_top_vopt \
-			-l $(COREVDV_PKG)/out_$(DATE)/run/vopt.log
-
+			-l vopt.log
 
 gen_corev_arithmetic_base_test:
-	mkdir -p $(VSIM_RISCVDV_RESULTS)/corev_arithmetic_base_test	
-	cd $(VSIM_RISCVDV_RESULTS)/corev_arithmetic_base_test && \
+	mkdir -p $(VSIM_COREVDV_RESULTS)/corev_arithmetic_base_test	
+	cd $(VSIM_COREVDV_RESULTS)/corev_arithmetic_base_test && \
 		$(VMAP) work ../work
-	cd $(VSIM_RISCVDV_RESULTS)/corev_arithmetic_base_test && \
+	cd $(VSIM_COREVDV_RESULTS)/corev_arithmetic_base_test && \
 		$(VSIM) $(VSIM_FLAGS) \
 			corev_instr_gen_tb_top_vopt \
 			$(DPILIB_VSIM_OPT) \
@@ -275,13 +274,13 @@ gen_corev_arithmetic_base_test:
 			+no_branch_jump=1 \
 			+boot_mode=m \
 			+no_csr_instr=1
-	cp $(VSIM_RISCVDV_RESULTS)/corev_arithmetic_base_test/*.S $(CORE_TEST_DIR)/custom
+	cp $(VSIM_COREVDV_RESULTS)/corev_arithmetic_base_test/*.S $(CORE_TEST_DIR)/custom
 
 gen_corev_rand_instr_test:
-	mkdir -p $(VSIM_RISCVDV_RESULTS)/corev_rand_instr_test	
-	cd $(VSIM_RISCVDV_RESULTS)/corev_rand_instr_test && \
+	mkdir -p $(VSIM_COREVDV_RESULTS)/corev_rand_instr_test	
+	cd $(VSIM_COREVDV_RESULTS)/corev_rand_instr_test && \
 		$(VMAP) work ../work
-	cd $(VSIM_RISCVDV_RESULTS)/corev_rand_instr_test && \
+	cd $(VSIM_COREVDV_RESULTS)/corev_rand_instr_test && \
 		$(VSIM) $(VSIM_FLAGS) \
 			corev_instr_gen_tb_top_vopt \
 			$(DPILIB_VSIM_OPT) \
@@ -298,32 +297,32 @@ gen_corev_rand_instr_test:
 			+no_branch_jump=1 \
 			+boot_mode=m \
 			+no_csr_instr=1
-	cp $(VSIM_RISCVDV_RESULTS)/corev_rand_instr_test/*.S $(CORE_TEST_DIR)/custom
+	cp $(VSIM_COREVDV_RESULTS)/corev_rand_instr_test/*.S $(CORE_TEST_DIR)/custom
 
 gen_corev-dv: 
-	mkdir -p $(VSIM_RISCVDV_RESULTS)/$(TEST)
+	mkdir -p $(VSIM_COREVDV_RESULTS)/$(TEST)
 	# Clean old assembler generated tests in results
-	for (( idx=${START_INDEX}; idx < $$((${GEN_START_INDEX} + ${GEN_NUM_TESTS})); idx++ )); do \
-		rm -f ${VSIM_RISCVDV_RESULTS}/${TEST}/${TEST}_$$idx.S; \
+	for (( idx=${GEN_START_INDEX}; idx < $$((${GEN_START_INDEX} + ${GEN_NUM_TESTS})); idx++ )); do \
+		rm -f ${VSIM_COREVDV_RESULTS}/${TEST}/${TEST}_$$idx.S; \
 	done
-	cd $(VSIM_RISCVDV_RESULTS)/$(TEST) && \
+	cd $(VSIM_COREVDV_RESULTS)/$(TEST) && \
 		$(VMAP) work ../work
-	cd  $(VSIM_RISCVDV_RESULTS)/$(TEST) && \
+	cd  $(VSIM_COREVDV_RESULTS)/$(TEST) && \
 		$(VSIM) \
 			$(VSIM_FLAGS) \
 			corev_instr_gen_tb_top_vopt \
 			$(DPILIB_VSIM_OPT) \
 			+UVM_TESTNAME=$(GEN_UVM_TEST) \
 			+num_of_tests=$(GEN_NUM_TESTS)  \
-			-l $(TEST)_$(START_INDEX)_$(NUM_TESTS).log \
-			+start_idx=$(START_INDEX) \
+			-l $(TEST)_$(GEN_START_INDEX)_$(GEN_NUM_TESTS).log \
+			+start_idx=$(GEN_START_INDEX) \
 			+num_of_tests=$(GEN_NUM_TESTS) \
 			+UVM_TESTNAME=$(GEN_UVM_TEST) \
 			+asm_file_name_opts=$(TEST) \
 			$(GEN_PLUSARGS)
 	# Copy out final assembler files to test directory
 	for (( idx=${GEN_START_INDEX}; idx < $$((${GEN_START_INDEX} + ${GEN_NUM_TESTS})); idx++ )); do \
-		cp ${VSIM_RISCVDV_RESULTS}/${TEST}/${TEST}_$$idx.S ${GEN_TEST_DIR}; \
+		cp ${VSIM_COREVDV_RESULTS}/${TEST}/${TEST}_$$idx.S ${GEN_TEST_DIR}; \
 	done
 
 comp_corev-dv: $(RISCVDV_PKG) vlog_corev-dv vopt_corev-dv
@@ -347,7 +346,7 @@ lib: mk_vsim_dir $(CV32E40P_PKG) $(TBSRC_PKG) $(TBSRC)
 	fi
 
 # Target to run vlog over SystemVerilog source in $(VSIM_RESULTS)/
-comp: lib
+vlog: lib
 	@echo "$(BANNER)"
 	@echo "* Running vlog in $(VSIM_RESULTS)"
 	@echo "* Log: $(VSIM_RESULTS)/vlog.log"
@@ -366,7 +365,7 @@ comp: lib
 			$(TBSRC_PKG)
 
 # Target to run vopt over compiled code in $(VSIM_RESULTS)/
-opt: comp
+opt: vlog
 	@echo "$(BANNER)"
 	@echo "* Running vopt in $(VSIM_RESULTS)"
 	@echo "* Log: $(VSIM_RESULTS)/vopt.log"
@@ -378,6 +377,8 @@ opt: comp
 			$(VOPT_FLAGS) \
 			$(RTLSRC_VLOG_TB_TOP) \
 			-o $(RTLSRC_VOPT_TB_TOP)
+
+comp: opt
 
 # Target to run VSIM (i.e. run the simulation)
 run: $(VSIM_RUN_PREREQ)
