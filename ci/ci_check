@@ -171,7 +171,7 @@ if (not args.verilator and args.no_uvm):
 
 if (args.check_only):
     if (args.verilator):
-        check_core_results(len(core_tests))
+        check_core_results(len(core_tests)+1) # +1 because 'make' runs hello-world
     if not (args.no_uvm):
         check_uvm_results()
     exit(0)
@@ -323,7 +323,7 @@ os.chdir(topdir)      # cmd in .metrics.json assumes all cmds start from here
 os.chdir('ci')
 if not (prcmd):
     if (veril):
-        check_core_results(len(core_tests))
+        check_core_results(len(core_tests)+1) # +1 because 'make' runs hello-world
     if (uvm):
         check_uvm_results()
     else:
