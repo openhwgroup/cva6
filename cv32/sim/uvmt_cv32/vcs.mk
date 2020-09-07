@@ -189,12 +189,12 @@ custom: $(VCS_SIM_PREREQ) $(CUSTOM_DIR)/$(CUSTOM_PROG).hex
 
 ################################################################################
 # Explicit target tests
-hello-world:  $(VCS_SIM_PREREQ) $(CUSTOM)/hello_world.hex
+hello-world:  $(VCS_SIM_PREREQ) $(CUSTOM)/hello-world.hex
 	mkdir -p $(VCS_RESULTS)/hello-world && cd $(VCS_RESULTS)/hello-world && \
 	$(VCS_RESULTS)/$(SIMV) -l vcs-hello-world.log -cm_name hello-world $(VCS_RUN_FLAGS) \
 		+elf_file=$(CUSTOM)/hello_world.elf \
 		+UVM_TESTNAME=uvmt_cv32_firmware_test_c \
-		+firmware=$(CUSTOM)/hello_world.hex
+		+firmware=$(CUSTOM)/hello-world.hex
 
 interrupt_test:  $(VCS_SIM_PREREQ) $(CORE_TEST_DIR)/interrupt_test/interrupt_test.hex
 	mkdir -p $(VCS_RESULTS)/interrupt_test && cd $(VCS_RESULTS)/interrupt_test && \
@@ -406,5 +406,5 @@ clean:
 	rm -rf $(VCS_RESULTS)
 
 # All generated files plus the clone of the RTL
-clean_all: clean clean_core_tests clean_riscv-dv clean_test_programs
+clean_all: clean clean_core_tests clean_riscv-dv clean_test_programs clean-bsp
 	rm -rf $(CV32E40P_PKG)

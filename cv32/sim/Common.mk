@@ -68,8 +68,11 @@ BANNER=*************************************************************************
 
 CV32E40P_REPO   ?= https://github.com/openhwgroup/cv32e40p
 CV32E40P_BRANCH ?= master
+#2020-09-06
+CV32E40P_HASH   ?= 02bcd06728c76725d554bbc5079c2a89ff50055e
+#2020-09-04
+#CV32E40P_HASH   ?= 6fbd88c645d2b51c316af6eda79bab3e4c284093
 #2020-08-28
-CV32E40P_HASH   ?= a5ec2db5cc3eabb6d0315658f11ae8e82bbf994d
 #CV32E40P_HASH   ?= 7c65d1a6cbbcbc7eb20abfd1a83988c94e4fd175
 #2020-08-18
 #CV32E40P_HASH   ?= 1607d8b675864db1aa013364fd4444a665331830
@@ -215,7 +218,7 @@ COMPLIANCE_TEST_OBJS     = $(addsuffix .o, \
 # Thales verilator testbench compilation start
 
 SUPPORTED_COMMANDS := vsim-firmware-unit-test questa-unit-test questa-unit-test-gui dsim-unit-test vcs-unit-test
-SUPPORTS_MAKE_ARGS := $(findstring $(firstword $(MAKECMDGOALS)), $(SUPPORTED_COMMANDS))
+SUPPORTS_MAKE_ARGS := $(filter $(firstword $(MAKECMDGOALS)), $(SUPPORTED_COMMANDS))
 
 ifneq "$(SUPPORTS_MAKE_ARGS)" ""
   UNIT_TEST := $(wordlist 2,$(words $(MAKECMDGOALS)),$(MAKECMDGOALS))
@@ -237,6 +240,35 @@ FIRMWARE_UNIT_TEST_OBJS   =  	$(addsuffix .o, \
 # The sanity rule runs whatever is currently deemed to be the minimal test that
 # must be able to run (and pass!) prior to generating a pull-request.
 sanity: hello-world
+
+###############################################################################
+# Read YAML test specifications
+
+# If the gen_corev-dv target is defined then read in a test specification file
+YAML2MAKE = $(PROJ_ROOT_DIR)/bin/yaml2make
+ifneq ($(filter gen_corev-dv,$(MAKECMDGOALS)),)
+ifeq ($(TEST),)
+$(error ERROR must specify a TEST variable with gen_corev-dv target)
+endif
+GEN_FLAGS_MAKE := $(shell $(YAML2MAKE) --test=$(TEST) --yaml=corev-dv.yaml --debug --prefix=GEN)
+ifeq ($(GEN_FLAGS_MAKE),)
+$(error ERROR Could not find corev-dv.yaml for test: $(TEST))
+endif
+include $(GEN_FLAGS_MAKE)
+endif
+
+# If the test target is defined then read in a test specification file
+TEST_YAML_PARSE_TARGETS=test waves cov
+ifneq ($(filter $(TEST_YAML_PARSE_TARGETS),$(MAKECMDGOALS)),)
+ifeq ($(TEST),)
+$(error ERROR must specify a TEST variable)
+endif
+TEST_FLAGS_MAKE := $(shell $(YAML2MAKE) --test=$(TEST) --yaml=test.yaml --debug --run-index=$(RUN_INDEX) --prefix=TEST)
+ifeq ($(TEST_FLAGS_MAKE),)
+$(error ERROR Could not find test.yaml for test: $(TEST))
+endif
+include $(TEST_FLAGS_MAKE)
+endif
 
 ###############################################################################
 # Rule to generate hex (loadable by simulators) from elf
@@ -292,7 +324,6 @@ TEST_FILES        = $(filter %.c %.S,$(wildcard $(dir $*)*))
 # This target selected if both %.c and %.S exist
 .PRECIOUS : %.elf
 %.elf: %.c
-	make clean-bsp
 	make bsp
 	$(RISCV_EXE_PREFIX)gcc $(CFLAGS) -o $@ \
 		-nostartfiles \
@@ -300,7 +331,6 @@ TEST_FILES        = $(filter %.c %.S,$(wildcard $(dir $*)*))
 
 # This target selected if only %.S exists
 %.elf: %.S
-	make clean-bsp
 	make bsp
 	$(RISCV_EXE_PREFIX)gcc $(CFLAGS) -o $@ \
 		-nostartfiles \
