@@ -70,9 +70,9 @@ popd > /dev/null
 # --> Test: {{t.name}} : {{t.description}}
 {% if t.precmd %}
 #  Test (Precommand): {{t.name}} {{t.description}}
-echo "script: Running precmd: [cd {{t.dir}} && {{t.precmd}} SIMULATOR={{t.simulator}} SEED=random NUM_TESTS={{t.num}}]"
+echo "script: Running precmd: [cd {{t.dir}} && {{t.precmd}} SIMULATOR={{t.simulator}} SEED=random GEN_NUM_TESTS={{t.num}}]"
 pushd {{t.dir}} > /dev/null
-{{t.precmd}} SIMULATOR={{t.simulator}} SEED=random NUM_TESTS={{t.num}} >& /dev/null;
+{{t.precmd}} SIMULATOR={{t.simulator}} SEED=random GEN_NUM_TESTS={{t.num}} >& /dev/null;
 popd > /dev/null
 
 {% endif %}

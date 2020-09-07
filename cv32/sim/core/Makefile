@@ -168,8 +168,8 @@ tbsrc: $(TBSRC)
 
 SIMULATOR ?= vcs
 
-.PHONY: hello_world
-hello-world: $(SIMULATOR)-hello_world
+.PHONY: hello-world
+hello-world: $(SIMULATOR)-hello-world
 
 .PHONY: cv32_riscv_tests
 cv32_riscv_tests: $(SIMULATOR)-cv32_riscv_tests
@@ -238,19 +238,19 @@ dsim-comp-rtl-only: mk_results $(CV32E40P_PKG)
 
 
 # Metrics dsim simulations
-.PHONY: dsim-hello_world dsim-cv32_riscv_tests dsim-cv32_riscv_compliance_tests dsim-firmware
+.PHONY: dsim-hello-world dsim-cv32_riscv_tests dsim-cv32_riscv_compliance_tests dsim-firmware
 
-dsim-sanity: dsim-hello_world
+dsim-sanity: dsim-hello-world
 
 # Runs the hello world test
-dsim-hello_world: dsim-comp $(CUSTOM)/hello_world.hex
-	mkdir -p $(DSIM_RESULTS)/hello_world && cd $(DSIM_RESULTS)/hello_world  && \
-	$(DSIM) -l dsim-hello_world.log -image $(DSIM_IMAGE) \
+dsim-hello-world: dsim-comp $(CUSTOM)/hello-world.hex
+	mkdir -p $(DSIM_RESULTS)/hello-world && cd $(DSIM_RESULTS)/hello-world  && \
+	$(DSIM) -l dsim-hello-world.log -image $(DSIM_IMAGE) \
 		-work $(DSIM_WORK) $(DSIM_RUN_FLAGS) \
 		-sv_lib $(UVM_HOME)/src/dpi/libuvm_dpi.so \
 		-sv_lib $(OVP_MODEL_DPI)  \
-		+firmware=$(CUSTOM)/hello_world.hex \
-		+elf_file=$(CUSTOM)/hello_world.elf
+		+firmware=$(CUSTOM)/hello-world.hex \
+		+elf_file=$(CUSTOM)/hello-world.elf
 #		+verbose
 
 dsim-custom: dsim-comp $(CUSTOM)/$(CUSTOM_PROG).hex
@@ -364,10 +364,10 @@ vsim-run-gui: vsim-all
 	$(RTLSRC_VOPT_TB_TOP) -do $(VSIM_SCRIPT)
 
 
-.PHONY: questa-hello_world
-questa-hello_world: vsim-all $(CUSTOM)/hello_world.hex
-questa-hello_world: ALL_VSIM_FLAGS += +firmware=$(CUSTOM)/hello_world.hex
-questa-hello_world: vsim-run
+.PHONY: questa-hello-world
+questa-hello-world: vsim-all $(CUSTOM)/hello-world.hex
+questa-hello-world: ALL_VSIM_FLAGS += +firmware=$(CUSTOM)/hello-world.hex
+questa-hello-world: vsim-run
 
 .PHONY: questa-cv32_riscv_tests
 questa-cv32_riscv_tests: vsim-all $(CV32_RISCV_TESTS_FIRMWARE)/cv32_riscv_tests_firmware.hex
@@ -425,13 +425,13 @@ xrun-all: $(CV32E40P_PKG) $(FPNEW_PKG) $(RTLSRC_PKG) $(RTLSRC) $(TBSRC_PKG) $(TB
 		-f $(CV32E40P_MANIFEST) \
 		$(TBSRC_PKG) $(TBSRC)
 
-.PHONY: xrun-hello_world xrun-firmware
-xrun-hello_world: xrun-all $(CUSTOM)/hello_world.hex
+.PHONY: xrun-hello-world xrun-firmware
+xrun-hello-world: xrun-all $(CUSTOM)/hello-world.hex
 	$(XRUN) \
 		$(XRUN_FLAGS) \
 		-f $(CV32E40P_MANIFEST) \
 		$(TBSRC_PKG) $(TBSRC) \
-		+firmware=$(CUSTOM)/hello_world.hex
+		+firmware=$(CUSTOM)/hello-world.hex
 
 xrun-firmware: xrun-all $(FIRMWARE)/firmware.hex
 	$(XRUN) \
@@ -465,7 +465,7 @@ endif
 verilate: testbench_verilator
 
 sanity-veri-run:
-	make custom CUSTOM_PROG=hello_world
+	make custom CUSTOM_PROG=hello-world
 
 testbench_verilator: $(CV32E40P_PKG) $(TBSRC_VERI) $(TBSRC_PKG)
 	$(VERILATOR) --cc --sv --exe \
@@ -522,10 +522,10 @@ vcs-run: vcsify
 vcs-run-gui: vcsify
 	$(SIMV) $(ALL_VCS_FLAGS) -gui -do $(VCS_SCRIPT_GUI)
 
-.PHONY: vcs-hello_world
-vcs-hello_world: vcsify $(CUSTOM)/hello_world.hex
-vcs-hello_world: ALL_VCS_FLAGS += +firmware=$(CUSTOM)/hello_world.hex
-vcs-hello_world: vcs-run
+.PHONY: vcs-hello-world
+vcs-hello-world: vcsify $(CUSTOM)/hello-world.hex
+vcs-hello-world: ALL_VCS_FLAGS += +firmware=$(CUSTOM)/hello-world.hex
+vcs-hello-world: vcs-run
 
 .PHONY: vcs-custom
 vcs-custom: vcsify $(CUSTOM)/$(CUSTOM_PROG).hex
@@ -605,7 +605,7 @@ tc-clean:
 	find $(CORE_TEST_DIR) -name *.map     -exec rm {} \;
 
 .PHONY: clean clean_all distclean
-clean: questa-clean tc-clean verilate-clean vcs-clean firmware-clean custom-clean dsim-clean xrun-clean vcs-clean
+clean: questa-clean tc-clean verilate-clean vcs-clean firmware-clean custom-clean dsim-clean xrun-clean vcs-clean clean-bsp
 
 distclean: clean
 	rm -rf riscv-fesvr riscv-isa-sim $(CV32E40P_PKG) work

@@ -10,27 +10,32 @@ builds:
     # required: Make the corev-dv infrastructure    
     cmd: make corev-dv
     dir: cv32/sim/uvmt_cv32
+    cov: 0
   uvmt_cv32:
     # required: the make command to create the build
     cmd: make comp
-    dir: cv32/sim/uvmt_cv32
-    cov: 1
-    iss: 0
+    dir: cv32/sim/uvmt_cv32    
+    iss: 1
 
 # List of tests
 tests:
   interrupt_test:
     build: uvmt_cv32
-    description: Interrupt directed test
+    description: Interrupt directed test  
     dir: cv32/sim/uvmt_cv32
-    cmd: make interrupt_test
+    cmd: make test TEST=interrupt_test
     
-  corev_rand_interrupt_test:
+  corev_rand_interrupt:
     build: uvmt_cv32
-    description: Static riscv-dv interrupt test
+    description: Interrupt random test
     dir: cv32/sim/uvmt_cv32
-    precmd: make gen_corev_rand_interrupt_test
-    cmd: make custom CUSTOM_PROG=corev_rand_interrupt_test_<RUN_INDEX> XRUN_USER_RUN_FLAGS=+gen_irq_noise
-    log: corev_rand_interrupt_test_<RUN_INDEX>
-    cov: 1
-    num: 5
+    cmd: make gen_riscv-dv test TEST=corev_rand_interrupt
+    num: 100
+
+  corev_rand_interrupt_wfi:
+    build: uvmt_cv32
+    description: Interrupt random test with WFI
+    dir: cv32/sim/uvmt_cv32    
+    cmd: make gen_riscv-dv test TEST=corev_rand_interrupt_wfi
+    num: 100
+

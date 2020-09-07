@@ -57,7 +57,8 @@ import uvm_pkg::*;      // needed for the UVM messaging service (`uvm_info(), et
 
 `include "uvm_macros.svh"
 `define CV32E40P_CORE   $root.uvmt_cv32_tb.dut_wrap.cv32e40p_wrapper_i.core_i
-`define CV32E40P_TRACER $root.uvmt_cv32_tb.dut_wrap.cv32e40p_wrapper_i.core_i.tracer_i
+//`define CV32E40P_TRACER $root.uvmt_cv32_tb.dut_wrap.cv32e40p_wrapper_i.core_i.tracer_i
+`define CV32E40P_TRACER $root.uvmt_cv32_tb.dut_wrap.cv32e40p_wrapper_i.tracer_i
 
 module uvmt_cv32_step_compare
 (
@@ -241,8 +242,10 @@ module uvmt_cv32_step_compare
    // Then wait for the next compare event and start the clocks again
    initial begin
       static integer instruction_count = 0;
-      @(negedge clknrst_if.reset_n) ;// To allow uvmt_cv32_base_test_c::reset_phase to execute and set clk_period
-      clknrst_if.start_clk();
+      // Asynchronous reset design, allow the uvmt_cv32_base_test_c::reset_phase to execute a full reset cycle first
+      wait (clknrst_if.reset_n === 1'b0);
+      wait (clknrst_if.reset_n === 1'b1);
+      wait (clknrst_if.clk_active === 1'b1);
       forever begin
          @(step_compare_if.riscv_retire);
          clknrst_if.stop_clk();
