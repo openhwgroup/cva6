@@ -46,6 +46,7 @@ module CPU
     export "DPI-C" function setGPR;
     export "DPI-C" function setFPR;
     export "DPI-C" function setCSR;
+    export "DPI-C" function getCSR;
     export "DPI-C" function setDECODE;
     export "DPI-C" function getState;
     export "DPI-C" function putState;
@@ -201,6 +202,11 @@ module CPU
             $sformat(ch, "\n  R CSR[%s]=0x%X", index, value);
             Change = {Change, ch};
         end
+    endfunction
+    
+    function automatic void getCSR (input string index, output longint value);
+        $display("%m %s", index);
+        value = 'hdeadbeef;
     endfunction
     
     //
