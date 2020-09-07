@@ -28,7 +28,7 @@
 // FENCE
 typedef enum {
     ADD,ADDI,AND,ANDI,AUIPC,BEQ,BGE,BGEU
-    ,BLTU,BNE,BLT, FENCE, EBREAK,ECALL
+    ,BLTU,BNE,BLT, FENCE, FENCE_I,EBREAK,ECALL
     ,J,JAL,JALR,LB,LBU,LH,LHU
     ,LUI,LW,NOP,OR
     ,ORI, SB, SH,SLL,SLLI
@@ -40,7 +40,8 @@ typedef enum {
     ,CSRRCI,CSRRS, CSRRSI, CSRRW
     ,CSRRWI, CSRS, CSRSI, CSRW, CSRWI
     ,C_LWSP,C_SWSP,C_LW,C_SW
-    ,C_JAL,C_JALR,C_LI,C_LUI
+    ,C_BEQZ,C_BNEZ
+    ,C_J,C_JR,C_JAL,C_JALR,C_LI,C_LUI
     ,C_ADDI,C_ADDI16SP,C_ADDI4SPN
     ,C_SLLI,C_SRLI,C_SRAI,C_ANDI,C_ADD
     ,C_AND,C_OR,C_XOR,C_SUB,C_NOP,C_EBREAK
@@ -68,11 +69,23 @@ typedef enum {
     ,mhpmevent10,mhpmevent11,mhpmevent12,mhpmevent13,mhpmevent14,mhpmevent15,mhpmevent16,mhpmevent17
     ,mhpmevent18,mhpmevent19,mhpmevent20,mhpmevent21,mhpmevent22,mhpmevent23,mhpmevent24,mhpmevent25
     ,mhpmevent26,mhpmevent27,mhpmevent28,mhpmevent29,mhpmevent3,mhpmevent30,mhpmevent31,mhpmevent4
-    ,mhpmevent5,mhpmevent6,mhpmevent7,mhpmevent8,mhpmevent9,mideleg,mie,mimpid
-    ,minstret,minstreth,mip,misa,mscratch,mstatus,mtval,mtvec
+    ,mhpmcounter3,mhpmcounter4,mhpmcounter5,mhpmcounter6,mhpmcounter7,mhpmcounter8,mhpmcounter9
+    ,mhpmcounter10,mhpmcounter11,mhpmcounter12,mhpmcounter13,mhpmcounter14,mhpmcounter15,mhpmcounter16
+    ,mhpmcounter17,mhpmcounter18,mhpmcounter19,mhpmcounter20,mhpmcounter21,mhpmcounter22,mhpmcounter23
+    ,mhpmcounter24,mhpmcounter25,mhpmcounter26,mhpmcounter27,mhpmcounter28,mhpmcounter29,mhpmcounter30
+    ,mhpmcounter31
+    ,mhpmcounterh3,mhpmcounterh4,mhpmcounterh5,mhpmcounterh6,mhpmcounterh7,mhpmcounterh8,mhpmcounterh9
+    ,mhpmcounterh10,mhpmcounterh11,mhpmcounterh12,mhpmcounterh13,mhpmcounterh14,mhpmcounterh15,mhpmcounterh16
+    ,mhpmcounterh17,mhpmcounterh18,mhpmcounterh19,mhpmcounterh20,mhpmcounterh21,mhpmcounterh22,mhpmcounterh23
+    ,mhpmcounterh24,mhpmcounterh25,mhpmcounterh26,mhpmcounterh27,mhpmcounterh28,mhpmcounterh29,mhpmcounterh30
+    ,mhpmcounterh31
+    ,mhpmevent5,mhpmevent6,mhpmevent7,mhpmevent8,mhpmevent9,mideleg,mie,mcontext,scontext
+    ,minstret,minstreth,mip,misa,mscratch,mstatus,mtval,mtvec,march,mimpid
     ,mvendorid,pmpaddr0,pmpaddr1,pmpaddr10,pmpaddr11,pmpaddr12,pmpaddr13,pmpaddr14
     ,pmpaddr15,pmpaddr2,pmpaddr3,pmpaddr4,pmpaddr5,pmpaddr6,pmpaddr7,pmpaddr8
     ,pmpaddr9,pmpcfg0,pmpcfg1,pmpcfg2,pmpcfg3
+    ,tselect,tdata1,tdata2,tdata3,tinfo
+    ,dscratch0,dscratch1
 } csr_name_t;
 
 typedef struct {
@@ -81,9 +94,11 @@ typedef struct {
 } ops_t;
 
 typedef struct {
-    string ins_str;
+    string       ins_str;
     instr_name_t asm;
-    ops_t ops[4];
+    ops_t        ops[4];
+    bit          compressed;
+    bit[31:0]    pc;
 } ins_t;
 
 // TODO Add scoreboard specializations

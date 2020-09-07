@@ -53,7 +53,7 @@ MKDIR_P = mkdir -p
 
 # Compile compile flags for all simulators (careful!)
 WAVES        ?= 0
-SV_CMP_FLAGS ?= "+define+CV32E40P_ASSERT_ON"
+#SV_CMP_FLAGS ?= "+define+CV32E40P_ASSERT_ON"
 TIMESCALE    ?= -timescale 1ns/1ps
 UVM_PLUSARGS ?=
 
