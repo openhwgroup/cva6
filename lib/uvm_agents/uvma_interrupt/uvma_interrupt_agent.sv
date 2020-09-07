@@ -214,7 +214,7 @@ endfunction : connect_analysis_ports
 
 function void uvma_interrupt_agent_c::connect_cov_model();
    
-   mon_ap.connect(cov_model.mon_trn_fifo .analysis_export);
+   mon_ap.connect(cov_model.mon_trn_fifo.analysis_export);
    drv_ap.connect(cov_model.seq_item_fifo.analysis_export);
    
 endfunction : connect_cov_model

@@ -31,10 +31,15 @@ class corev_instr_base_test extends riscv_instr_base_test;
   string                  asm_file_name;
   corev_asm_program_gen   asm_gen;
 
+  corev_report_server     rs;
+
   `uvm_component_utils(corev_instr_base_test)
 
   function new(string name="", uvm_component parent=null);
     super.new(name, parent);
+
+    rs = new("rs");
+    uvm_report_server::set_server(rs);
   endfunction
 
   virtual function void build_phase(uvm_phase phase);

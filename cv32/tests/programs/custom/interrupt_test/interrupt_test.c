@@ -13,23 +13,23 @@ volatile uint32_t nested_irq              = 0;
 volatile uint32_t nested_irq_valid        = 0;
 volatile uint32_t in_direct_handler       = 0;
 
-uint32_t IRQ_ID_PRIORITY [3] = {
-    // FAST15_IRQ_ID   ,
-    // FAST14_IRQ_ID   ,
-    // FAST13_IRQ_ID   ,
-    // FAST12_IRQ_ID   ,
-    // FAST11_IRQ_ID   ,
-    // FAST10_IRQ_ID   ,
-    // FAST9_IRQ_ID    ,
-    // FAST8_IRQ_ID    ,
-    // FAST7_IRQ_ID    ,
-    // FAST6_IRQ_ID    ,
-    // FAST5_IRQ_ID    ,
-    // FAST4_IRQ_ID    ,
-    // FAST3_IRQ_ID    ,
-    // FAST2_IRQ_ID    ,
-    // FAST1_IRQ_ID    ,
-    // FAST0_IRQ_ID    ,
+uint32_t IRQ_ID_PRIORITY [IRQ_NUM] = {
+    FAST15_IRQ_ID   ,
+    FAST14_IRQ_ID   ,
+    FAST13_IRQ_ID   ,
+    FAST12_IRQ_ID   ,
+    FAST11_IRQ_ID   ,
+    FAST10_IRQ_ID   ,
+    FAST9_IRQ_ID    ,
+    FAST8_IRQ_ID    ,
+    FAST7_IRQ_ID    ,
+    FAST6_IRQ_ID    ,
+    FAST5_IRQ_ID    ,
+    FAST4_IRQ_ID    ,
+    FAST3_IRQ_ID    ,
+    FAST2_IRQ_ID    ,
+    FAST1_IRQ_ID    ,
+    FAST0_IRQ_ID    ,
     EXTERNAL_IRQ_ID ,
     SOFTWARE_IRQ_ID ,
     TIMER_IRQ_ID
@@ -52,12 +52,12 @@ void mstatus_mie_disable() {
 }
 
 void mie_enable_all() {
-    uint32_t mie_mask = (uint16_t) -1;
+    uint32_t mie_mask = (uint32_t) -1;
     asm volatile("csrrs x0, mie, %0" : : "r" (mie_mask));
 }
 
 void mie_disable_all() {
-    uint32_t mie_mask = (uint16_t) -1;
+    uint32_t mie_mask = (uint32_t) -1;
     asm volatile("csrrc x0, mie, %0" : : "r" (mie_mask));
 }
 
@@ -217,20 +217,20 @@ int main(int argc, char *argv[]) {
     if (retval != EXIT_SUCCESS)
         return retval;
 
-    // // Test 4
+    // Test 4
     retval = test4();
     if (retval != EXIT_SUCCESS)
         return retval;
 
-    // // Test 5
+    // Test 5
     retval = test5();
     if (retval != EXIT_SUCCESS)
         return retval;
 
-    // // Test 6
-    // retval = test6();
-    // if (retval != EXIT_SUCCESS)
-    //     return retval;
+    // Test 6
+    retval = test6();
+    if (retval != EXIT_SUCCESS)
+        return retval;
 
     // Repeat test1 (restore vector mode)
     retval = test7();
@@ -255,7 +255,7 @@ int test1() {
 // To share implementation of basic interrupt test with vector relocation tests,
 // break out the test 1 implementation here
 int test1_impl(int direct_mode) {
-    for (uint32_t i = 0; i <= 15; i++) {
+    for (uint32_t i = 0; i < 32; i++) {
 #ifdef DEBUG_MSG
         printf("Test1 -> Testing interrupt %lu\n", i);
 #endif
@@ -352,20 +352,20 @@ int test2() {
     mm_ram_assert_irq(0, 0); 
     
     // Enable all interrupts (MIE and MSTATUS.MIE)
-    uint32_t mie = (uint16_t) -1;
+    uint32_t mie = (uint32_t) -1;
     asm volatile("csrw mie, %0" : : "r" (mie));            
     mstatus_mie_enable();
     irq_id_q_ptr = 0;
 
     // Fire all IRQs and give time for them to be handled
-    mm_ram_assert_irq(0xffff, 0);
+    mm_ram_assert_irq((uint32_t) -1, 0);
 
     delay(100);
 
-    for (int i = 0; i < 3; i++) {
+    for (int i = 0; i < IRQ_NUM; i++) {
         // The irq_id_q should now contain interrupt IDs in the same order as IRQ_ID_PRIORITY
         if (IRQ_ID_PRIORITY[i] != irq_id_q[i]) {
-            printf("ERROR: priority mismatch, index %d, exp %lu, act %lu\n",
+            printf("priority mismatch, index %d, exp %lu, act %lu\n",
                     i, IRQ_ID_PRIORITY[i], irq_id_q[i]);
             return ERR_CODE_TEST_2;
         }
@@ -390,7 +390,7 @@ int test3() {
     mstatus_mie_enable();
 
     // Set 2 interrupts
-    for (uint32_t loop = 0; loop < 100; loop++) {
+    for (uint32_t loop = 0; loop < 50; loop++) {
         uint32_t irq[2];
 
         // Pick 2 random interrupts
@@ -436,7 +436,7 @@ int test4() {
     active_test = 4;
 
     // Iterate through multiple loops
-    for (int irq = 0; irq < 16; irq++) {
+    for (int irq = 0; irq < 32; irq++) {
         if (!(((0x1 << irq) & IRQ_MASK))) 
             continue;
 
@@ -462,7 +462,7 @@ int test4() {
                 mstatus_mie_disable();
 
             // Assert random batch of irqs (w/o selected irq)
-            rand_irq = (random_num32() & ~(0x1 << irq)) & 0xfff;
+            rand_irq = random_num32() & ~(0x1 << irq);
             mm_ram_assert_irq(rand_irq, 0);
 
             delay(2);
