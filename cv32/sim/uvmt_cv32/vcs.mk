@@ -44,7 +44,7 @@ VCS_UVM_VERBOSITY ?= UVM_MEDIUM
 VCS_UVMHOME_ARG ?= /opt/synopsys/vcs-mx/O-2018.09-SP1-1/etc/uvm
 VCS_UVM_ARGS          ?= +incdir+$(VCS_UVMHOME_ARG)/src $(VCS_UVMHOME_ARG)/src/uvm_pkg.sv +UVM_VERBOSITY=$(VCS_UVM_VERBOSITY) -ntb_opts uvm-1.2
 
-VCS_COMP_FLAGS  ?= -lca -sverilog -top uvmt_cv32_tb \
+VCS_COMP_FLAGS  ?= -lca -sverilog \
 										$(SV_CMP_FLAGS) $(VCS_UVM_ARGS) $(VCS_TIMESCALE) \
 										-assert svaext -race=all -ignore unique_checks -full64
 VCS_GUI         ?=
@@ -128,7 +128,7 @@ ifeq ($(call IS_YES,$(USE_ISS)),YES)
     VCS_PLUSARGS +="+USE_ISS"
 endif
 
-VCS_RUN_BASE_FLAGS   ?= $(VCS_GUI) +UVM_VERBOSITY=$(VCS_UVM_VERBOSITY) \
+VCS_RUN_BASE_FLAGS   ?= $(VCS_GUI) \
                          $(VCS_PLUSARGS) +ntb_random_seed=$(RNDSEED) -sv_lib $(VCS_OVP_MODEL_DPI)
 # Simulate using latest elab
 VCS_RUN_FLAGS        ?= 
@@ -163,7 +163,7 @@ VCS_COMP = $(VCS_COMP_FLAGS) \
 		$(UVM_PLUSARGS)
 
 comp: mk_vcs_dir $(CV32E40P_PKG) $(OVP_MODEL_DPI)
-	cd $(VCS_RESULTS) && $(VCS) $(VCS_COMP)
+	cd $(VCS_RESULTS) && $(VCS) $(VCS_COMP) -top uvmt_cv32_tb
 	@echo "$(BANNER)"
 	@echo "* $(,maSIMULATOR) compile complete"
 	@echo "* Log: $(VCS_RESULTS)/vcs.log"
@@ -294,12 +294,12 @@ riscv-compliance: $(VCS_SIM_PREREQ) $(COMPLIANCE).elf
 
 ###############################################################################
 # Use Google instruction stream generator (RISCV-DV) to create new test-programs
-comp_riscv-dv: comp
+comp_riscv-dv:
 #		+incdir+$(RISCVDV_PKG)/target/cv32e40p \
 	mkdir -p $(VCS_RISCVDV_RESULTS)
 	mkdir -p $(COREVDV_PKG)/out_$(DATE)/run
 	cd $(VCS_RISCVDV_RESULTS) && \
-	$(VCS_RESULTS)/$(SIMV) $(VCS_RUN_FLAGS) \
+	$(VCS) $(VCS_COMP_FLAGS) \
 		$(VCS_USER_COMPILE_ARGS) \
 		+incdir+$(RISCVDV_PKG)/target/rv32imc \
 		+incdir+$(RISCVDV_PKG)/user_extension \
@@ -308,10 +308,10 @@ comp_riscv-dv: comp
 		-f $(COREVDV_PKG)/manifest.f \
 		-l $(COREVDV_PKG)/out_$(DATE)/run/compile.log 
 
-gen_corev_arithmetic_base_test: comp
+gen_corev_arithmetic_base_test: comp_riscv-dv
 	mkdir -p $(VCS_RISCVDV_RESULTS)/corev_arithmetic_base_test	
 	cd $(VCS_RISCVDV_RESULTS)/corev_arithmetic_base_test && \
-	$(VCS_RESULTS)/$(SIMV) $(VCS_RUN_FLAGS) \
+	../$(SIMV) $(VCS_RUN_FLAG) \
 		+UVM_TESTNAME=corev_instr_base_test  \
 		+num_of_tests=2  \
 		+start_idx=0  \
@@ -327,10 +327,10 @@ gen_corev_arithmetic_base_test: comp
 		+no_csr_instr=1
 	cp $(VCS_RISCVDV_RESULTS)/corev_arithmetic_base_test/*.S $(CORE_TEST_DIR)/custom
 
-gen_corev_rand_instr_test: comp
+gen_corev_rand_instr_test: comp_riscv-dv
 	mkdir -p $(VCS_RISCVDV_RESULTS)/corev_rand_instr_test	
 	cd $(VCS_RISCVDV_RESULTS)/corev_rand_instr_test && \
-	$(VCS_RESULTS)/$(SIMV) $(VCS_RUN_FLAGS) \
+	../$(SIMV) $(VCS_RUN_FLAG) \
 	 	+UVM_TESTNAME=corev_instr_base_test \
 		+num_of_tests=$(NUM_TESTS) \
 		+start_idx=0  \
@@ -347,10 +347,10 @@ gen_corev_rand_instr_test: comp
     +directed_instr_6=riscv_jal_instr,4
 	cp $(VCS_RISCVDV_RESULTS)/corev_rand_instr_test/*.S $(CORE_TEST_DIR)/custom
 
-gen_corev_rand_interrupt_test: comp
+gen_corev_rand_interrupt_test: comp_riscv-dv
 	mkdir -p $(VCS_RISCVDV_RESULTS)/corev_rand_interrupt_test	
 	cd $(VCS_RISCVDV_RESULTS)/corev_rand_interrupt_test && \
-	$(VCS_RESULTS)/$(SIMV) -R $(VCS_RUN_FLAGS) \
+	../$(SIMV) $(VCS_RUN_FLAG) \
 		-l $(COREVDV_PKG)/out_$(DATE)/sim_riscv_rand_interrupt_test_0.log \
 		+UVM_TESTNAME=corev_instr_base_test  \
 		+num_of_tests=$(NUM_TESTS)  \
