@@ -77,13 +77,18 @@ module uvmt_cv32_tb;
                                                       .exc_ctrl_cs(id_stage_i.int_controller_i.exc_ctrl_cs),
                                                       .*);
   bind cv32e40p_core 
-    uvmt_cv32e40p_debug_assert u_debug__assert(.if_stage_instr_rvalid_i(if_stage_i.instr_rvalid_i),
+    uvmt_cv32e40p_debug_assert u_debug_assert(.if_stage_instr_rvalid_i(if_stage_i.instr_rvalid_i),
                                                .if_stage_instr_rdata_i(if_stage_i.instr_rdata_i),
                                                .id_stage_instr_valid_i(id_stage_i.instr_valid_i),
                                                .id_stage_instr_rdata_i(id_stage_i.instr_rdata_i),
+                                               .id_stage_is_compressed(id_stage_i.is_compressed_i),
+                                               .id_stage_pc(id_stage_i.pc_id_i),
+                                               .if_stage_pc(if_stage_i.pc_if_o),
                                                .ctrl_fsm_cs(id_stage_i.controller_i.ctrl_fsm_cs),
-                                               .debug_req_pending(id_stage_i.controller_i.debug_req_pending),
-                                               .debug_req_q(id_stage_i.controller_i.debug_req_q),
+                                               .debug_req_i(id_stage_i.controller_i.debug_req_i),
+                                               .debug_mode_q(id_stage_i.controller_i.debug_mode_q),
+                                               .dcsr_q(cs_registers_i.dcsr_q),
+                                               .depc_q(cs_registers_i.depc_q),
                                                .*);
 
   /**
