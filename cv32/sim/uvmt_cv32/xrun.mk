@@ -37,7 +37,7 @@ XRUN_UVMHOME_ARG ?= CDNS-1.2-ML
 XRUN_COMP_FLAGS  ?= -64bit -disable_sem2009 -access +rwc \
                     -nowarn UEXPSC \
                     -sv -uvm -uvmhome $(XRUN_UVMHOME_ARG) \
-                    $(TIMESCALE) $(SV_CMP_FLAGS)
+                    $(TIMESCALE)
 XRUN_RUN_BASE_FLAGS   ?= -64bit $(XRUN_GUI) +UVM_VERBOSITY=$(XRUN_UVM_VERBOSITY) \
                          $(XRUN_PLUSARGS) -svseed $(RNDSEED) -sv_lib $(OVP_MODEL_DPI)
 XRUN_GUI         ?=
