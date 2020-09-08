@@ -19,6 +19,7 @@
 ################################################################################
 
 import os
+import re
 import sys
 import logging
 from collections import OrderedDict
@@ -26,6 +27,7 @@ from collections import OrderedDict
 logger = logging.getLogger(__name__)
 
 DEFAULT_ISS = 'YES'
+DEFAULT_COV = 'NO'
 DEFAULT_SIMULATION_PASSED = 'SIMULATION PASSED'
 DEFAULT_SKIP_SIM = []
 
@@ -39,12 +41,24 @@ class Build:
 
         # Create defaults    
         self.iss = DEFAULT_ISS
-
+        
         for k, v in kwargs.items():            
             setattr(self, k, v)
 
         # Absolutize a directory if exists
         self.dir = os.path.abspath(os.path.join(get_proj_root(), self.dir))
+
+    def set_cov(self):
+        '''Set the coverage flag based on app setting.
+        If cov already defined (from testlist), then ignore'''
+        try:
+            getattr(self, 'cov')
+        except AttributeError:
+            self.cov = True
+            
+    def sub_make(self, make_sub):
+        '''In the command substitute the make with the supplied substitution'''
+        self.cmd = re.sub('make', make_sub, self.cmd)
 
     def __str__(self):
         return '{} {} {}'.format(self.name, self.cmd, self.dir)
@@ -69,6 +83,23 @@ class Test:
         # Log equals the test name if does not exist
         if not hasattr(self, 'log'):
             self.log = self.name
+
+    def set_cov(self):
+        '''Set the coverage flag based on app setting.
+        If cov already defined (from testlist), then ignore'''
+        try:
+            getattr(self, 'cov')
+        except AttributeError:
+            self.cov = True
+
+    def sub_make(self, make_sub):
+        '''In the command substitute the make with the supplied substitution'''
+        self.cmd = re.sub('make', make_sub, self.cmd)
+        try:
+            self.precmd = re.sub('make', make_sub, self.precmd)
+        except AttributeError:
+            # precmd is optional
+            pass
 
 class Regression:
     '''A full regression object'''

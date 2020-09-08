@@ -57,6 +57,8 @@ if (sys.version_info < (3,0,0)):
 ################################################################################
 # Gobals....
 name_of_ci_check_regression = 'cv32_ci_check_regression' # must match the name of one regression list in .metrics.json
+core_tests                  = ['misalign', 'illegal', 'dhrystone', 'fibonacci', 'riscv_ebreak_test_0']
+
 # This script is run from the "ci" directory, but the paths used by simulator
 # commands assume we are at the root of the repo.
 topdir = os.path.abspath(os.path.join(os.path.dirname(os.path.realpath(__file__)), '..'))
@@ -109,22 +111,21 @@ def check_uvm_results():
         print ('Please fix before issuing a pull-request.\n')
 
 
-def check_core_results():
-    core_runs_count = 0
+def check_core_results(run_count):
     core_runs = subprocess.Popen('grep "EXIT SUCCESS" -R -I ../cv32/sim/core/cobj_dir/logs',
                                  stdout=subprocess.PIPE,
                                  stderr=subprocess.STDOUT,
                                  shell="TRUE")
 
-    for line in core_runs.stdout.readlines():
-        #core_runs = line.decode('utf-8').rstrip()
-        print (line.decode('utf-8').rstrip())
-        core_runs_count += 1
-
-    if (core_runs_count == 0):
+    if (run_count == 0):
         print ('\nNo CORE logfiles found.\n')
     else:
-        if (core_runs_count == 6):
+        for line in core_runs.stdout.readlines():
+            #core_runs = line.decode('utf-8').rstrip()
+            print (line.decode('utf-8').rstrip())
+            run_count -= 1
+    
+        if (run_count == 0):
             print ('\nCI Check of CORE testbench PASSED.\nYou must also run the UVM CI regression before submitting a PR.')
         else:
             print ('\nCI Check of CORE testbench FAILED.')
@@ -170,7 +171,7 @@ if (not args.verilator and args.no_uvm):
 
 if (args.check_only):
     if (args.verilator):
-        check_core_results()
+        check_core_results(len(core_tests)+1) # +1 because 'make' runs hello-world
     if not (args.no_uvm):
         check_uvm_results()
     exit(0)
@@ -308,18 +309,12 @@ if  (veril):
 
     if (prcmd or debug):
         print('make')
-        print('make custom CUSTOM_PROG=misalign')
-        print('make custom CUSTOM_PROG=illegal')
-        print('make custom CUSTOM_PROG=dhrystone')
-        print('make custom CUSTOM_PROG=fibonacci')
-        print('make custom CUSTOM_PROG=riscv_ebreak_test_0')
+        for core_test in core_tests:
+            print('make custom CUSTOM_PROG=' + core_test)
     if not (prcmd):
         os.system('make')
-        os.system('make custom CUSTOM_PROG=misalign')
-        os.system('make custom CUSTOM_PROG=illegal')
-        os.system('make custom CUSTOM_PROG=dhrystone')
-        os.system('make custom CUSTOM_PROG=fibonacci')
-        os.system('make custom CUSTOM_PROG=riscv_ebreak_test_0')
+        for core_test in core_tests:
+            os.system('make custom CUSTOM_PROG=' + core_test)
     
 os.chdir(topdir)      # cmd in .metrics.json assumes all cmds start from here
 
@@ -328,7 +323,7 @@ os.chdir(topdir)      # cmd in .metrics.json assumes all cmds start from here
 os.chdir('ci')
 if not (prcmd):
     if (veril):
-        check_core_results()
+        check_core_results(len(core_tests)+1) # +1 because 'make' runs hello-world
     if (uvm):
         check_uvm_results()
     else:

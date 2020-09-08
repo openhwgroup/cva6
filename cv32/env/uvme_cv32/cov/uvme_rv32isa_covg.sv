@@ -150,9 +150,79 @@ class uvme_rv32isa_covg extends uvm_component;
             "misa"         : return csr_name_t'(misa);
             "mscratch"     : return csr_name_t'(mscratch);
             "mstatus"      : return csr_name_t'(mstatus);
+            "marchid"      : return csr_name_t'(marchid);
+            "mimpid"       : return csr_name_t'(mimpid);
             "mtval"        : return csr_name_t'(mtval);
             "mtvec"        : return csr_name_t'(mtvec);
             "mvendorid"    : return csr_name_t'(mvendorid);
+            "mcontext"     : return csr_name_t'(mcontext);
+            "scontext"     : return csr_name_t'(scontext);
+            "tselect"      : return csr_name_t'(tselect);
+            "tdata1"       : return csr_name_t'(tdata1);
+            "tdata2"       : return csr_name_t'(tdata2);
+            "tdata3"       : return csr_name_t'(tdata3);
+            "tinfo"        : return csr_name_t'(tinfo);
+            "dscratch0"    : return csr_name_t'(dscratch0);
+            "dscratch1"    : return csr_name_t'(dscratch1);
+            "mhpmcounter3" : return csr_name_t'(mhpmcounter3);
+            "mhpmcounter4" : return csr_name_t'(mhpmcounter4);
+            "mhpmcounter5" : return csr_name_t'(mhpmcounter5);
+            "mhpmcounter6" : return csr_name_t'(mhpmcounter6);
+            "mhpmcounter7" : return csr_name_t'(mhpmcounter7);
+            "mhpmcounter8" : return csr_name_t'(mhpmcounter8);
+            "mhpmcounter9" : return csr_name_t'(mhpmcounter9);
+            "mhpmcounter10": return csr_name_t'(mhpmcounter10);
+            "mhpmcounter11": return csr_name_t'(mhpmcounter11);
+            "mhpmcounter12": return csr_name_t'(mhpmcounter12);
+            "mhpmcounter13": return csr_name_t'(mhpmcounter13);
+            "mhpmcounter14": return csr_name_t'(mhpmcounter14);
+            "mhpmcounter15": return csr_name_t'(mhpmcounter15);
+            "mhpmcounter16": return csr_name_t'(mhpmcounter16);
+            "mhpmcounter17": return csr_name_t'(mhpmcounter17);
+            "mhpmcounter18": return csr_name_t'(mhpmcounter18);
+            "mhpmcounter19": return csr_name_t'(mhpmcounter19);
+            "mhpmcounter20": return csr_name_t'(mhpmcounter20);
+            "mhpmcounter21": return csr_name_t'(mhpmcounter21);
+            "mhpmcounter22": return csr_name_t'(mhpmcounter22);
+            "mhpmcounter23": return csr_name_t'(mhpmcounter23);
+            "mhpmcounter24": return csr_name_t'(mhpmcounter24);
+            "mhpmcounter25": return csr_name_t'(mhpmcounter25);
+            "mhpmcounter26": return csr_name_t'(mhpmcounter26);
+            "mhpmcounter27": return csr_name_t'(mhpmcounter27);
+            "mhpmcounter28": return csr_name_t'(mhpmcounter28);
+            "mhpmcounter29": return csr_name_t'(mhpmcounter29);
+            "mhpmcounter30": return csr_name_t'(mhpmcounter30);
+            "mhpmcounter31": return csr_name_t'(mhpmcounter31);
+            "mhpmcounterh3" : return csr_name_t'(mhpmcounterh3);
+            "mhpmcounterh4" : return csr_name_t'(mhpmcounterh4);
+            "mhpmcounterh5" : return csr_name_t'(mhpmcounterh5);
+            "mhpmcounterh6" : return csr_name_t'(mhpmcounterh6);
+            "mhpmcounterh7" : return csr_name_t'(mhpmcounterh7);
+            "mhpmcounterh8" : return csr_name_t'(mhpmcounterh8);
+            "mhpmcounterh9" : return csr_name_t'(mhpmcounterh9);
+            "mhpmcounterh10": return csr_name_t'(mhpmcounterh10);
+            "mhpmcounterh11": return csr_name_t'(mhpmcounterh11);
+            "mhpmcounterh12": return csr_name_t'(mhpmcounterh12);
+            "mhpmcounterh13": return csr_name_t'(mhpmcounterh13);
+            "mhpmcounterh14": return csr_name_t'(mhpmcounterh14);
+            "mhpmcounterh15": return csr_name_t'(mhpmcounterh15);
+            "mhpmcounterh16": return csr_name_t'(mhpmcounterh16);
+            "mhpmcounterh17": return csr_name_t'(mhpmcounterh17);
+            "mhpmcounterh18": return csr_name_t'(mhpmcounterh18);
+            "mhpmcounterh19": return csr_name_t'(mhpmcounterh19);
+            "mhpmcounterh20": return csr_name_t'(mhpmcounterh20);
+            "mhpmcounterh21": return csr_name_t'(mhpmcounterh21);
+            "mhpmcounterh22": return csr_name_t'(mhpmcounterh22);
+            "mhpmcounterh23": return csr_name_t'(mhpmcounterh23);
+            "mhpmcounterh24": return csr_name_t'(mhpmcounterh24);
+            "mhpmcounterh25": return csr_name_t'(mhpmcounterh25);
+            "mhpmcounterh26": return csr_name_t'(mhpmcounterh26);
+            "mhpmcounterh27": return csr_name_t'(mhpmcounterh27);
+            "mhpmcounterh28": return csr_name_t'(mhpmcounterh28);
+            "mhpmcounterh29": return csr_name_t'(mhpmcounterh29);
+            "mhpmcounterh30": return csr_name_t'(mhpmcounterh30);
+            "mhpmcounterh31": return csr_name_t'(mhpmcounterh31);
+        
             // These CSRs are not supported by CV32E40P
             //"marchid"      : return csr_name_t'(marchid);
             //"mimpid"       : return csr_name_t'(mimpid);
@@ -195,7 +265,14 @@ class uvme_rv32isa_covg extends uvm_component;
         end else begin
             val = s.atoi();
         end
+        `uvm_info("RV32ISA Coverage", $sformatf("get_imm: Convert %s (%s) to %0d", s, asm, val), UVM_DEBUG)
         return val;
+    endfunction
+
+    function int get_pc_imm(string s, bit[31:0] pc, string asm);
+        // From the Imperas ISS the string should be a 32-bit unsigend PC
+        get_pc_imm = s.atohex() - pc;        
+        `uvm_info("RV32ISA Coverage", $sformatf("get_pc_imm: Convert %s (%s) pc: 0x%08x to %0d", s, asm, pc, get_pc_imm), UVM_DEBUG)
     endfunction
 
 // TODO: add check for value is less than 16-bit
@@ -330,6 +407,36 @@ class uvme_rv32isa_covg extends uvm_component;
 // TODO : missing check of arbitrary positive and negative immediate values
 // TODO : missing check of maximum positive and negative immediate values
 // FIXME: DONE
+    covergroup c_beqz_cg with function sample(ins_t ins);
+        option.per_instance = 1;
+        cp_rs1    : coverpoint get_gpr_name(ins.ops[0].val, ins.ops[0].key, "c.beqz") {            
+            bins gprval[] = {[s0:a5]};
+        }
+        cp_bra12   : coverpoint get_imm(ins.ops[1].val,"c.beqz" ) {
+            bins neg  = {[$:-1]};
+            bins zero = {0};
+            bins pos  = {[1:$]};
+        }
+    endgroup
+
+// TODO : missing check of arbitrary positive and negative immediate values
+// TODO : missing check of maximum positive and negative immediate values
+// FIXME: DONE
+    covergroup c_bnez_cg with function sample(ins_t ins);
+        option.per_instance = 1;
+        cp_rs1    : coverpoint get_gpr_name(ins.ops[0].val, ins.ops[0].key, "c.bnez") {
+            bins gprval[] = {[s0:a5]};
+        }
+        cp_bra12   : coverpoint get_imm(ins.ops[1].val,"c.bnez" ) {
+            bins neg  = {[$:-1]};
+            bins zero = {0};
+            bins pos  = {[1:$]};
+        }
+    endgroup
+
+// TODO : missing check of arbitrary positive and negative immediate values
+// TODO : missing check of maximum positive and negative immediate values
+// FIXME: DONE
     covergroup bge_cg with function sample(ins_t ins);
         option.per_instance = 1;
         cp_rs1    : coverpoint get_gpr_name(ins.ops[0].val, ins.ops[0].key, "bge") {
@@ -445,6 +552,36 @@ class uvme_rv32isa_covg extends uvm_component;
         }
     endgroup
 
+// TODO : only counting occurence, ignoring when not called.
+// TODO : verification goal not specified in test plan
+// FIXME: DONE
+    covergroup fence_i_cg with function sample(ins_t ins);
+        option.per_instance = 1;
+        cp_asm   : coverpoint ins.asm == FENCE_I {
+            ignore_bins zero = {0};
+        }
+    endgroup
+
+// TODO : only counting occurrence, ignoring when not called.
+// TODO : verification goal not specified in test plan
+// FIXME: DONE
+    covergroup wfi_cg with function sample(ins_t ins);
+        option.per_instance = 1;
+        cp_asm   : coverpoint ins.asm == WFI {
+            ignore_bins zero = {0};
+        }
+    endgroup
+
+// TODO : only counting occurrence, ignoring when not called.
+// TODO : verification goal not specified in test plan
+// FIXME: DONE
+    covergroup mret_cg with function sample(ins_t ins);
+        option.per_instance = 1;
+        cp_asm   : coverpoint ins.asm == MRET {
+            ignore_bins zero = {0};
+        }
+    endgroup
+
 // TODO : case when rd = x0 counted but not singled out
 // FIXME: DONE
     covergroup jal_cg with function sample(ins_t ins);
@@ -452,28 +589,25 @@ class uvme_rv32isa_covg extends uvm_component;
         cp_rd    : coverpoint get_gpr_name(ins.ops[0].val, ins.ops[0].key, "jal") {
             bins gprval[] = {[zero:t6]};
         }
-        cp_jmp19   : coverpoint get_imm(ins.ops[1].val,"jal" ) {
+        cp_jmp19   : coverpoint get_pc_imm(ins.ops[1].val,ins.pc,"jal") {
             bins neg  = {[$:-1]};
             bins zero = {0};
             bins pos  = {[1:$]};
         }
     endgroup
 
-// TODO : unclear from the code why "key" values for cp_r0 and cp_r1 can be "R" or "C"
-// TODO : need to clarify if this is due to the diassembler and unrelated to RTL ISA
 // TODO : missing check of arbirary positive and negative immediate values
 // TODO : missing check of maximum positive and negative immediate values
 // FIXME: DONE
-    covergroup jalr_cg with function sample(ins_t ins, gpr_name_t r0, gpr_name_t r1);
+    covergroup jalr_cg with function sample(ins_t ins);
         option.per_instance = 1;
-        cp_r0    : coverpoint r0 iff (ins.ops[0].key[0] == "R");
-        cp_r1    : coverpoint r1 iff (ins.ops[1].key[0] == "R");
-        cp_imm0   : coverpoint get_imm(ins.ops[0].val,"jalr" ) iff (ins.ops[0].key[0] == "C") {
-            bins neg  = {[$:-1]};
-            bins zero = {0};
-            bins pos  = {[1:$]};
+        cp_rd    : coverpoint get_gpr_name(ins.ops[0].val, ins.ops[0].key, "jalr") {
+            bins gprval[] = {[zero:t6]};
         }
-        cp_imm1   : coverpoint get_imm(ins.ops[1].val,"jalr" ) iff (ins.ops[1].key[0] == "C") {
+        cp_rs1   : coverpoint get_gpr_name(ins.ops[1].val, ins.ops[1].key, "jalr") {
+            bins gprval[] = {[zero:t6]};
+        }        
+        cp_imm   : coverpoint get_imm(ins.ops[2].val, "jalr") {
             bins neg  = {[$:-1]};
             bins zero = {0};
             bins pos  = {[1:$]};
@@ -1174,38 +1308,42 @@ class uvme_rv32isa_covg extends uvm_component;
         }
     endgroup
 
-// TODO : case when rd = x0 counted but not singled out
 // FIXME: DONE
-    covergroup c_jal_cg      with function sample(ins_t ins);
+    covergroup c_j_cg      with function sample(ins_t ins);
         option.per_instance = 1;
-        cp_rd    : coverpoint get_gpr_name(ins.ops[0].val, ins.ops[0].key, "c,jal") {
-            bins gprval[] = {[s0:a5]};
-        }
-        cp_jmp11   : coverpoint get_imm(ins.ops[1].val,"c.jal" ) {
+        cp_jmp11   : coverpoint get_pc_imm(ins.ops[0].val, ins.pc, "c.j" ) {
             bins neg  = {[$:-1]};
             bins zero = {0};
             bins pos  = {[1:$]};
         }
     endgroup
 
-// TODO : unclear from the code why "key" values for cp_r0 and cp_r1 can be "R" or "C"
-// TODO : need to clarify if this is due to the diassembler and unrelated to RTL ISA
-// TODO : missing check of arbirary positive and negative immediate values
-// TODO : missing check of maximum positive and negative immediate values
 // FIXME: DONE
-    covergroup c_jalr_cg with function sample(ins_t ins, gpr_name_t r0, gpr_name_t r1);
+    covergroup c_jal_cg      with function sample(ins_t ins);
         option.per_instance = 1;
-        cp_r0    : coverpoint r0 iff (ins.ops[0].key[0] == "R");
-        cp_r1    : coverpoint r1 iff (ins.ops[1].key[0] == "R");
-        cp_imm0   : coverpoint get_imm(ins.ops[0].val,"c.jalr" ) iff (ins.ops[0].key[0] == "C") {
+        // Note even though by ISA the instruction is c.jal imm, the ISS places ra into operand0 
+        // in the decode, putting the offset into operand1q
+        cp_jmp11   : coverpoint get_pc_imm(ins.ops[1].val, ins.pc, "c.jal" ) {
             bins neg  = {[$:-1]};
             bins zero = {0};
             bins pos  = {[1:$]};
         }
-        cp_imm1   : coverpoint get_imm(ins.ops[1].val,"c.jalr" ) iff (ins.ops[1].key[0] == "C") {
-            bins neg  = {[$:-1]};
-            bins zero = {0};
-            bins pos  = {[1:$]};
+    endgroup
+
+// TODO : case when rd = x0 counted but not singled out
+// FIXME: DONE
+    covergroup c_jr_cg      with function sample(ins_t ins);
+        option.per_instance = 1;
+        cp_rs1    : coverpoint get_gpr_name(ins.ops[0].val, ins.ops[0].key, "c,jr") {
+            bins gprval[] = {[ra:t6]};
+        }
+    endgroup
+
+// FIXME: DONE
+    covergroup c_jalr_cg with function sample(ins_t ins);
+        option.per_instance = 1;
+        cp_rs1    : coverpoint get_gpr_name(ins.ops[0].val, ins.ops[0].key, "c,jalr") {
+            bins gprval[] = {[ra:t6]};
         }
     endgroup
 
@@ -1215,12 +1353,9 @@ class uvme_rv32isa_covg extends uvm_component;
     covergroup c_li_cg       with function sample(ins_t ins);
         option.per_instance = 1;
         cp_rd    : coverpoint get_gpr_name(ins.ops[0].val, ins.ops[0].key, "c.li") {
-            bins gprval[] = {[s0:a5]};
+            bins gprval[] = {[ra:t6]};
         }
-        cp_rs1    : coverpoint get_gpr_name(ins.ops[1].val, ins.ops[1].key, "c.li") {
-            bins gprval[] = {zero};
-        }
-        cp_imm6   : coverpoint get_imm(ins.ops[2].val,"c.li" ) {
+        cp_imm6   : coverpoint get_imm(ins.ops[1].val,"c.li" ) {
             bins neg  = {[$:-1]};
             bins zero = {0};
             bins pos  = {[1:$]};
@@ -1232,7 +1367,7 @@ class uvme_rv32isa_covg extends uvm_component;
     covergroup c_lui_cg      with function sample(ins_t ins);
         option.per_instance = 1;
         cp_rd    : coverpoint get_gpr_name(ins.ops[0].val, ins.ops[0].key, "c.lui") {
-            bins gprval[] = {[s0:a5]};
+            bins gprval[] = {ra,[gp:a5]};
         }
         cp_uimm6   : coverpoint get_imm(ins.ops[1].val,"c.lui" ) {
             bins neg  = {[$:-1]};
@@ -1248,10 +1383,6 @@ class uvme_rv32isa_covg extends uvm_component;
     covergroup c_addi_cg with function sample(ins_t ins);
         option.per_instance = 1;
         cp_rd    : coverpoint get_gpr_name(ins.ops[0].val, ins.ops[0].key, "c.addi") {
-            bins gprval[] = {[s0:a5]};
-//            bins unexpected[] = default;
-        }
-        cp_rs1    : coverpoint get_gpr_name(ins.ops[1].val, ins.ops[1].key, "c.addi") {
             bins gprval[] = {[s0:a5]};
 //            bins unexpected[] = default;
         }
@@ -1426,7 +1557,7 @@ class uvme_rv32isa_covg extends uvm_component;
 // FIXME: DONE
     covergroup c_nop_cg      with function sample(ins_t ins);
         option.per_instance = 1;
-        cp_asm   : coverpoint ins.asm == NOP {
+        cp_asm   : coverpoint ins.asm == C_NOP {
             ignore_bins zero = {0};
         }
     endgroup
@@ -1459,6 +1590,7 @@ class uvme_rv32isa_covg extends uvm_component;
         ebreak_cg     = new();
         ecall_cg      = new();
         fence_cg      = new();
+        fence_i_cg    = new();
         jal_cg        = new();
         jalr_cg       = new();
         lb_cg         = new();
@@ -1494,6 +1626,8 @@ class uvme_rv32isa_covg extends uvm_component;
         rem_cg        = new();
         divu_cg       = new();
         remu_cg       = new();
+        mret_cg       = new();
+        wfi_cg        = new();
 
         csrr_cg       = new();
         csrc_cg       = new();
@@ -1513,8 +1647,10 @@ class uvme_rv32isa_covg extends uvm_component;
         c_swsp_cg     = new();
         c_lw_cg       = new();
         c_sw_cg       = new();
+        c_j_cg        = new();
         c_jal_cg      = new();
-        c_jalr_cg     = new();
+        c_jr_cg       = new();
+        c_jalr_cg     = new();        
         c_li_cg       = new();
         c_lui_cg      = new();
         c_addi_cg     = new();
@@ -1531,6 +1667,8 @@ class uvme_rv32isa_covg extends uvm_component;
         c_sub_cg      = new();
         c_nop_cg      = new();        
         c_ebreak_cg   = new();
+        c_beqz_cg     = new();
+        c_bnez_cg     = new();
 
         ap = new("ap", this);
     endfunction: new
@@ -1580,41 +1718,14 @@ class uvme_rv32isa_covg extends uvm_component;
                     c_swsp_cg.sample(ins);
                 end
              end
-            "jal"   :  begin
-                `uvm_info("RV32ISA Coverage", $sformatf("check_compressed( %0s ): checking ins %0s %0s %0s(%0s)",
-                                                         ins.asm.name, ins.ins_str, ins.ops[0].val, ins.ops[2].val, ins.ops[1].val), UVM_HIGH)
-                if ((get_gpr_name(ins.ops[0].val, ins.ops[0].key, "c.jal") == gpr_name_t'(sp))
-                  && c_check_imm(ins.ops[1].val, "c.jal")) begin
-                    ins.asm=C_JAL;
-                    c_jal_cg.sample(ins);
-                end
-             end
-            "jalr"  :   begin
-                `uvm_info("RV32ISA Coverage", $sformatf("check_compressed( %0s ): checking ins %0s %0s %0s(%0s)",
-                                                         ins.asm.name, ins.ins_str, ins.ops[0].val, ins.ops[2].val, ins.ops[1].val), UVM_HIGH)
-                if (  ( get_gpr_name(ins.ops[0].val, ins.ops[0].key, "c.jalr") == gpr_name_t'(ra)) && c_check_gpr_name(ins.ops[1].val, ins.ops[1].key, "c.jalr") ) begin
-                    gpr_name_t r0, r1;
-                    ins.asm=JALR;
-                    if (ins.ops[0].key[0] == "R")
-                        r0 = get_gpr_name(ins.ops[0].val, ins.ops[0].key, "c.jalr");
-                    else
-                        r0 = gpr_none;
-                    if (ins.ops[1].key[1] == "R")
-                        r1 = get_gpr_name(ins.ops[1].val, ins.ops[1].key, "c.jalr");
-                    else
-                        r1 = gpr_none;
-                    if ((get_gpr_name(ins.ops[0].val, ins.ops[0].key, "c.jalr") == gpr_name_t'(ra))  && c_check_gpr_name(ins.ops[2].val, ins.ops[2].key, "c.jalr")
-                          && get_imm(ins.ops[1].val, "c.jalr") == 0 )
-                        c_jalr_cg.sample(ins, r0, r1);
-                end
-            end
-            "c.lui"   : begin ins.asm=C_LUI; c_lui_cg.sample(ins); end
+            "lui"     : begin ins.asm=C_LUI; c_lui_cg.sample(ins); end
             "addi"    : begin
                 `uvm_info("rv32isa_covg", $sformatf("EXPECTING ADDI: ins.ops[0].val = %0s, ins.ops[1].val = %0s", ins.ops[0].val, ins.ops[1].val), UVM_HIGH)
-                if (  c_check_gpr_name(ins.ops[0].val, ins.ops[0].key, "c.li") && ( get_gpr_name(ins.ops[1].val, ins.ops[1].key, "c.li") == gpr_name_t'(zero))) begin
-                    ins.asm=C_LI;
-                    c_li_cg.sample(ins);
-                     end
+                if (  get_gpr_name(ins.ops[0].val, ins.ops[0].key, "c.addi") == gpr_name_t'(zero) &&
+                      get_gpr_name(ins.ops[1].val, ins.ops[1].key, "c.addi") == gpr_name_t'(zero)) begin
+                    ins.asm=C_NOP;
+                    c_nop_cg.sample(ins);
+                end
                 else if ( (get_gpr_name(ins.ops[0].val, ins.ops[0].key, "c.addi16sp") == get_gpr_name(ins.ops[1].val, ins.ops[1].key, "c.addi16sp")) &&
                           (get_gpr_name(ins.ops[0].val, ins.ops[0].key, "c.addi16sp") == gpr_name_t'(sp))) begin
                     ins.asm=C_ADDI16SP;
@@ -1688,105 +1799,170 @@ class uvme_rv32isa_covg extends uvm_component;
                     c_sub_cg.sample(ins);
                 end
             end
-            "c.nop"       : begin ins.asm=C_NOP; c_nop_cg.sample(ins); end
-            "c.ebreak"    : begin ins.asm=C_EBREAK; c_ebreak_cg.sample(ins); end
-            default:        `uvm_info("RV32ISA Coverage", $sformatf("check_compressed(): ins [%0s] not yet checked", ins.ins_str), UVM_HIGH)
+            "ebreak"      : begin ins.asm=C_EBREAK; c_ebreak_cg.sample(ins); end
+            "j"           : begin ins.asm=C_J;      c_j_cg.sample(ins);      end
+            "jr"          : begin ins.asm=C_JR;     c_jr_cg.sample(ins);     end
+            "jal"         : begin ins.asm=C_JAL;    c_jal_cg.sample(ins);    end
+            "jalr"        : begin ins.asm=C_JALR;   c_jalr_cg.sample(ins);   end
+            "beqz"        : begin ins.asm=C_BEQZ;   c_beqz_cg.sample(ins);   end
+            "bnez"        : begin ins.asm=C_BNEZ;   c_bnez_cg.sample(ins);   end
+            "li"          : begin ins.asm=C_LI;     c_li_cg.sample(ins);     end
+
+            /*
+             * Compressed pseudo-op conversion
+             */        
+
+            // mv: convert to c.addi rd, rs
+            "mv"        : begin ins.asm=C_ADD; c_add_cg.sample(ins);   end
+
+            // UVM warning on a fall-through
+            default:    `uvm_warning("RV32ISA Coverage", 
+                                     $sformatf("check_compressed(): ins [%0s] not mapped to functional coverage", 
+                                               ins.ins_str))
         endcase
     endfunction: check_compressed
 
     function void sample(input ins_t ins);
-        check_compressed(ins);
-        case (ins.ins_str)
-            "add"       : begin ins.asm=ADD;    add_cg.sample(ins);    end
-            "addi"      : begin ins.asm=ADDI;   addi_cg.sample(ins);   end
-            "and"       : begin ins.asm=AND;    and_cg.sample(ins);    end
-            "andi"      : begin ins.asm=ANDI;   andi_cg.sample(ins);   end
-            "auipc"     : begin ins.asm=AUIPC;  auipc_cg.sample(ins);  end
-            "beq"       : begin ins.asm=BEQ;    beq_cg.sample(ins);    end
-            "bge"       : begin ins.asm=BGE;    bge_cg.sample(ins);    end
-            "bgeu"      : begin ins.asm=BGEU;   bgeu_cg.sample(ins);   end
-            "blt"       : begin ins.asm=BLT;    blt_cg.sample(ins);    end
-            "bltu"      : begin ins.asm=BLTU;   bltu_cg.sample(ins);   end
-            "bne"       : begin ins.asm=BNE;    bne_cg.sample(ins);    end
-            "ebreak"    : begin ins.asm=EBREAK; ebreak_cg.sample(ins); end
-            "ecall"     : begin ins.asm=ECALL;  ecall_cg.sample(ins);  end
-            "fence"     : begin ins.asm=FENCE;  fence_cg.sample(ins);  end
-            "jal"       : begin ins.asm=JAL;    jal_cg.sample(ins);    end
-            "jalr"      : begin
-                gpr_name_t r0, r1;
-                ins.asm=JALR;
-                if (ins.ops[0].key[0] == "R")
-                    r0 = get_gpr_name(ins.ops[0].val, ins.ops[0].key, "jalr");
-                else
-                    r0 = gpr_none;
-                if (ins.ops[1].key[1] == "R")
-                    r1 = get_gpr_name(ins.ops[1].val, ins.ops[1].key, "jalr");
-                else
-                    r1 = gpr_none;
-                jalr_cg.sample(ins, r0, r1);
-            end
-            "lb"        : begin ins.asm=LB;     lb_cg.sample(ins);     end
-            "lbu"       : begin ins.asm=LBU;    lbu_cg.sample(ins);    end
-            "lh"        : begin ins.asm=LH;     lh_cg.sample(ins);     end
-            "lhu"       : begin ins.asm=LHU;    lhu_cg.sample(ins);    end
-            "lui"       : begin ins.asm=LUI;    lui_cg.sample(ins);    end
-            "lw"        : begin ins.asm=LW;     lw_cg.sample(ins);     end
-            "nop"       : begin ins.asm=NOP;    nop_cg.sample(ins);    end
-            "or"        : begin ins.asm=OR;     or_cg.sample(ins);     end
-            "ori"       : begin ins.asm=ORI;    ori_cg.sample(ins);    end
-            "sb"        : begin ins.asm=SH;     sb_cg.sample(ins);     end
-            "sh"        : begin ins.asm=SH;     sh_cg.sample(ins);     end
-            "sll"       : begin ins.asm=SLL;    sll_cg.sample(ins);    end
-            "slli"      : begin ins.asm=SLLI;   slli_cg.sample(ins);   end
-            "slt"       : begin ins.asm=SLT;    slt_cg.sample(ins);    end
-            "slti"      : begin ins.asm=SLTI;   slti_cg.sample(ins);   end
-            "sltiu"     : begin ins.asm=SLTIU;  sltiu_cg.sample(ins);  end
-            "sltu"      : begin ins.asm=SLTU;   sltu_cg.sample(ins);   end
-            "sra"       : begin ins.asm=SRA;    sra_cg.sample(ins);    end
-            "srai"      : begin ins.asm=SRAI;   srai_cg.sample(ins);   end
-            "srl"       : begin ins.asm=SRL;    srl_cg.sample(ins);    end
-            "srli"      : begin ins.asm=SRLI;   srli_cg.sample(ins);   end
-            "sub"       : begin ins.asm=SUB;    sub_cg.sample(ins);    end
-            "sw"        : begin ins.asm=SW;     sw_cg.sample(ins);     end
-            "xor"       : begin ins.asm=XOR;    xor_cg.sample(ins);    end
-            "xori"      : begin ins.asm=XORI;   xori_cg.sample(ins);   end
-            "mul"       : begin ins.asm=MUL;    mul_cg.sample(ins);    end
-            "mulh"      : begin ins.asm=MULH;   mulh_cg.sample(ins);   end
-            "mulhu"     : begin ins.asm=MULHU;  mulhu_cg.sample(ins);  end
-            "mulhsu"    : begin ins.asm=MULHSU; mulhsu_cg.sample(ins); end
-            "div"       : begin ins.asm=DIV;    div_cg.sample(ins);    end
-            "rem"       : begin ins.asm=REM;    rem_cg.sample(ins);    end
-            "divu"      : begin ins.asm=DIVU;   divu_cg.sample(ins);   end
-            "remu"      : begin ins.asm=REMU;   remu_cg.sample(ins);   end
-            "csrr"      : begin ins.asm=CSRR;   csrr_cg.sample(ins);   `uvm_info("RV32ISA Coverage", $sformatf("Instruction: %0s %0s %0s %0s", ins.ins_str, ins.ops[0].val, ins.ops[1].val, ins.ops[2].val), UVM_HIGH) end
-            "csrc"      : begin ins.asm=CSRC;   csrc_cg.sample(ins);   `uvm_info("RV32ISA Coverage", $sformatf("Instruction: %0s %0s %0s %0s", ins.ins_str, ins.ops[0].val, ins.ops[1].val, ins.ops[2].val), UVM_HIGH) end
-            "csrci"     : begin ins.asm=CSRCI;  csrci_cg.sample(ins);  `uvm_info("RV32ISA Coverage", $sformatf("Instruction: %0s %0s %0s %0s", ins.ins_str, ins.ops[0].val, ins.ops[1].val, ins.ops[2].val), UVM_HIGH) end
-            "csrrc"     : begin ins.asm=CSRRC;  csrrc_cg.sample(ins);  `uvm_info("RV32ISA Coverage", $sformatf("Instruction: %0s %0s %0s %0s", ins.ins_str, ins.ops[0].val, ins.ops[1].val, ins.ops[2].val), UVM_HIGH) end
-            "csrrci"    : begin ins.asm=CSRRCI; csrrci_cg.sample(ins); `uvm_info("RV32ISA Coverage", $sformatf("Instruction: %0s %0s %0s %0s", ins.ins_str, ins.ops[0].val, ins.ops[1].val, ins.ops[2].val), UVM_HIGH) end
-            "csrrs"     : begin ins.asm=CSRRS;  csrrs_cg.sample(ins);  `uvm_info("RV32ISA Coverage", $sformatf("Instruction: %0s %0s %0s %0s", ins.ins_str, ins.ops[0].val, ins.ops[1].val, ins.ops[2].val), UVM_HIGH) end
-            "csrrsi"    : begin ins.asm=CSRRSI; csrrsi_cg.sample(ins); `uvm_info("RV32ISA Coverage", $sformatf("Instruction: %0s %0s %0s %0s", ins.ins_str, ins.ops[0].val, ins.ops[1].val, ins.ops[2].val), UVM_HIGH) end
-            "csrrw"     : begin ins.asm=CSRRW;  csrrw_cg.sample(ins);  `uvm_info("RV32ISA Coverage", $sformatf("Instruction: %0s %0s %0s %0s", ins.ins_str, ins.ops[0].val, ins.ops[1].val, ins.ops[2].val), UVM_HIGH) end
-            "csrrwi"    : begin ins.asm=CSRRWI; csrrwi_cg.sample(ins); `uvm_info("RV32ISA Coverage", $sformatf("Instruction: %0s %0s %0s %0s", ins.ins_str, ins.ops[0].val, ins.ops[1].val, ins.ops[2].val), UVM_HIGH) end
-            "csrs"      : begin ins.asm=CSRS;   csrs_cg.sample(ins);   `uvm_info("RV32ISA Coverage", $sformatf("Instruction: %0s %0s %0s %0s", ins.ins_str, ins.ops[0].val, ins.ops[1].val, ins.ops[2].val), UVM_HIGH) end
-            "csrsi"     : begin ins.asm=CSRRSI; csrsi_cg.sample(ins);  `uvm_info("RV32ISA Coverage", $sformatf("Instruction: %0s %0s %0s %0s", ins.ins_str, ins.ops[0].val, ins.ops[1].val, ins.ops[2].val), UVM_HIGH) end
-            "csrw"      : begin ins.asm=CSRRW;  csrw_cg.sample(ins);   `uvm_info("RV32ISA Coverage", $sformatf("Instruction: %0s %0s %0s %0s", ins.ins_str, ins.ops[0].val, ins.ops[1].val, ins.ops[2].val), UVM_HIGH) end
-            "csrwi"     : begin ins.asm=CSRWI;  csrwi_cg.sample(ins);  `uvm_info("RV32ISA Coverage", $sformatf("Instruction: %0s %0s %0s %0s", ins.ins_str, ins.ops[0].val, ins.ops[1].val, ins.ops[2].val), UVM_HIGH) end
-            default: begin
-              ins.asm = NOP;
-              `uvm_info("RV32ISA Coverage", $sformatf("Coverage warning: ins [%0s] not yet included in being covered", ins.ins_str), UVM_DEBUG)            
-            end
-        endcase
+        if (ins.compressed) begin
+            check_compressed(ins);        
+        end
+        else begin
+            case (ins.ins_str)
+                "add"       : begin ins.asm=ADD;    add_cg.sample(ins);    end
+                "addi"      : begin ins.asm=ADDI;   addi_cg.sample(ins);   end
+                "and"       : begin ins.asm=AND;    and_cg.sample(ins);    end
+                "andi"      : begin ins.asm=ANDI;   andi_cg.sample(ins);   end
+                "auipc"     : begin ins.asm=AUIPC;  auipc_cg.sample(ins);  end
+                "beq"       : begin ins.asm=BEQ;    beq_cg.sample(ins);    end
+                "bge"       : begin ins.asm=BGE;    bge_cg.sample(ins);    end
+                "bgeu"      : begin ins.asm=BGEU;   bgeu_cg.sample(ins);   end
+                "blt"       : begin ins.asm=BLT;    blt_cg.sample(ins);    end
+                "bltu"      : begin ins.asm=BLTU;   bltu_cg.sample(ins);   end
+                "bne"       : begin ins.asm=BNE;    bne_cg.sample(ins);    end
+                "ebreak"    : begin ins.asm=EBREAK; ebreak_cg.sample(ins); end
+                "ecall"     : begin ins.asm=ECALL;  ecall_cg.sample(ins);  end
+                "fence"     : begin ins.asm=FENCE;  fence_cg.sample(ins);  end
+                "fence.i"   : begin ins.asm=FENCE_I;fence_i_cg.sample(ins);  end
+                "jal"       : begin ins.asm=JAL;    jal_cg.sample(ins);    end
+                "jalr"      : begin
+                    // If operand1 is a consant (C) then assume operand1 is r0
+                    // and move the constant to operand2 to maintain consistent cg interface
+                    if (ins.ops[1].key[0]) begin
+                        ins.ops[2] = ins.ops[1];
+                        ins.ops[1].key = "R:"; ins.ops[0].val = "zero";
+                    end
+                    jalr_cg.sample(ins);
+                end
+                "lb"        : begin ins.asm=LB;     lb_cg.sample(ins);     end
+                "lbu"       : begin ins.asm=LBU;    lbu_cg.sample(ins);    end
+                "lh"        : begin ins.asm=LH;     lh_cg.sample(ins);     end
+                "lhu"       : begin ins.asm=LHU;    lhu_cg.sample(ins);    end
+                "lui"       : begin ins.asm=LUI;    lui_cg.sample(ins);    end
+                "lw"        : begin ins.asm=LW;     lw_cg.sample(ins);     end
+                "nop"       : begin ins.asm=NOP;    nop_cg.sample(ins);    end
+                "or"        : begin ins.asm=OR;     or_cg.sample(ins);     end
+                "ori"       : begin ins.asm=ORI;    ori_cg.sample(ins);    end
+                "sb"        : begin ins.asm=SH;     sb_cg.sample(ins);     end
+                "sh"        : begin ins.asm=SH;     sh_cg.sample(ins);     end
+                "sll"       : begin ins.asm=SLL;    sll_cg.sample(ins);    end
+                "slli"      : begin ins.asm=SLLI;   slli_cg.sample(ins);   end
+                "slt"       : begin ins.asm=SLT;    slt_cg.sample(ins);    end
+                "slti"      : begin ins.asm=SLTI;   slti_cg.sample(ins);   end
+                "sltiu"     : begin ins.asm=SLTIU;  sltiu_cg.sample(ins);  end
+                "sltu"      : begin ins.asm=SLTU;   sltu_cg.sample(ins);   end
+                "sra"       : begin ins.asm=SRA;    sra_cg.sample(ins);    end
+                "srai"      : begin ins.asm=SRAI;   srai_cg.sample(ins);   end
+                "srl"       : begin ins.asm=SRL;    srl_cg.sample(ins);    end
+                "srli"      : begin ins.asm=SRLI;   srli_cg.sample(ins);   end
+                "sub"       : begin ins.asm=SUB;    sub_cg.sample(ins);    end
+                "sw"        : begin ins.asm=SW;     sw_cg.sample(ins);     end
+                "xor"       : begin ins.asm=XOR;    xor_cg.sample(ins);    end
+                "xori"      : begin ins.asm=XORI;   xori_cg.sample(ins);   end
+                "mul"       : begin ins.asm=MUL;    mul_cg.sample(ins);    end
+                "mulh"      : begin ins.asm=MULH;   mulh_cg.sample(ins);   end
+                "mulhu"     : begin ins.asm=MULHU;  mulhu_cg.sample(ins);  end
+                "mulhsu"    : begin ins.asm=MULHSU; mulhsu_cg.sample(ins); end
+                "div"       : begin ins.asm=DIV;    div_cg.sample(ins);    end
+                "rem"       : begin ins.asm=REM;    rem_cg.sample(ins);    end
+                "divu"      : begin ins.asm=DIVU;   divu_cg.sample(ins);   end
+                "remu"      : begin ins.asm=REMU;   remu_cg.sample(ins);   end
+                "csrr"      : begin ins.asm=CSRR;   csrr_cg.sample(ins);   `uvm_info("RV32ISA Coverage", $sformatf("Instruction: %0s %0s %0s %0s", ins.ins_str, ins.ops[0].val, ins.ops[1].val, ins.ops[2].val), UVM_HIGH) end
+                "csrc"      : begin ins.asm=CSRC;   csrc_cg.sample(ins);   `uvm_info("RV32ISA Coverage", $sformatf("Instruction: %0s %0s %0s %0s", ins.ins_str, ins.ops[0].val, ins.ops[1].val, ins.ops[2].val), UVM_HIGH) end
+                "csrci"     : begin ins.asm=CSRCI;  csrci_cg.sample(ins);  `uvm_info("RV32ISA Coverage", $sformatf("Instruction: %0s %0s %0s %0s", ins.ins_str, ins.ops[0].val, ins.ops[1].val, ins.ops[2].val), UVM_HIGH) end
+                "csrrc"     : begin ins.asm=CSRRC;  csrrc_cg.sample(ins);  `uvm_info("RV32ISA Coverage", $sformatf("Instruction: %0s %0s %0s %0s", ins.ins_str, ins.ops[0].val, ins.ops[1].val, ins.ops[2].val), UVM_HIGH) end
+                "csrrci"    : begin ins.asm=CSRRCI; csrrci_cg.sample(ins); `uvm_info("RV32ISA Coverage", $sformatf("Instruction: %0s %0s %0s %0s", ins.ins_str, ins.ops[0].val, ins.ops[1].val, ins.ops[2].val), UVM_HIGH) end
+                "csrrs"     : begin ins.asm=CSRRS;  csrrs_cg.sample(ins);  `uvm_info("RV32ISA Coverage", $sformatf("Instruction: %0s %0s %0s %0s", ins.ins_str, ins.ops[0].val, ins.ops[1].val, ins.ops[2].val), UVM_HIGH) end
+                "csrrsi"    : begin ins.asm=CSRRSI; csrrsi_cg.sample(ins); `uvm_info("RV32ISA Coverage", $sformatf("Instruction: %0s %0s %0s %0s", ins.ins_str, ins.ops[0].val, ins.ops[1].val, ins.ops[2].val), UVM_HIGH) end
+                "csrrw"     : begin ins.asm=CSRRW;  csrrw_cg.sample(ins);  `uvm_info("RV32ISA Coverage", $sformatf("Instruction: %0s %0s %0s %0s", ins.ins_str, ins.ops[0].val, ins.ops[1].val, ins.ops[2].val), UVM_HIGH) end
+                "csrrwi"    : begin ins.asm=CSRRWI; csrrwi_cg.sample(ins); `uvm_info("RV32ISA Coverage", $sformatf("Instruction: %0s %0s %0s %0s", ins.ins_str, ins.ops[0].val, ins.ops[1].val, ins.ops[2].val), UVM_HIGH) end
+                "csrs"      : begin ins.asm=CSRS;   csrs_cg.sample(ins);   `uvm_info("RV32ISA Coverage", $sformatf("Instruction: %0s %0s %0s %0s", ins.ins_str, ins.ops[0].val, ins.ops[1].val, ins.ops[2].val), UVM_HIGH) end
+                "csrsi"     : begin ins.asm=CSRRSI; csrsi_cg.sample(ins);  `uvm_info("RV32ISA Coverage", $sformatf("Instruction: %0s %0s %0s %0s", ins.ins_str, ins.ops[0].val, ins.ops[1].val, ins.ops[2].val), UVM_HIGH) end
+                "csrw"      : begin ins.asm=CSRRW;  csrw_cg.sample(ins);   `uvm_info("RV32ISA Coverage", $sformatf("Instruction: %0s %0s %0s %0s", ins.ins_str, ins.ops[0].val, ins.ops[1].val, ins.ops[2].val), UVM_HIGH) end
+                "csrwi"     : begin ins.asm=CSRWI;  csrwi_cg.sample(ins);  `uvm_info("RV32ISA Coverage", $sformatf("Instruction: %0s %0s %0s %0s", ins.ins_str, ins.ops[0].val, ins.ops[1].val, ins.ops[2].val), UVM_HIGH) end
+                "mret"      : begin ins.asm=MRET;   mret_cg.sample(ins);   end
+                "wfi"       : begin ins.asm=WFI;    wfi_cg.sample(ins);    end
+
+                /*
+                * Convert pseduo-ops from ISS to ISA instructions for sampling
+                */
+
+                // j: convert to jal x0,offset
+                "j"         : begin ins.asm=JAL;    ins.ops[1] = ins.ops[0]; ins.ops[0].val = "zero"; jal_cg.sample(ins);    end
+                // jr: convert to jalr x0,offset(rs) (Technically jr has zero offset but ISS can map a non-zero offset in its decode
+                "jr"        : begin ins.asm=JALR;   
+                    if (ins.ops[0].key == "C") begin
+                        ins.ops[2] = ins.ops[0];
+                    end
+                    else begin
+                        ins.ops[2].key = "C"; ins.ops[2].val = "0";
+                    end
+                    jalr_cg.sample(ins);
+                end
+                // beqz: convert to beq rs, x0, offset
+                "beqz"      : begin ins.asm=BEQ;    ins.ops[2] = ins.ops[1]; ins.ops[1].val = "zero"; beq_cg.sample(ins);    end
+                // mv: convert to addi rs, rs, 0
+                "mv"        : begin ins.asm=ADDI;                                                     addi_cg.sample(ins);   end
+                // sltz: convert to slt rd, rs, 0
+                "sltz"      : begin ins.asm=SLT;    ins.ops[2].val = "zero";                          slt_cg.sample(ins);    end
+                // sgtz: convert to slt rd, rs, 0
+                "sgtz"      : begin ins.asm=SLT;    ins.ops[2] = ins.ops[1]; ins.ops[1].val = "zero"; slt_cg.sample(ins);    end
+                // bltz: convert to blt rs, x0, offset
+                "bltz"      : begin ins.asm=BLT;    ins.ops[2] = ins.ops[1]; ins.ops[1].val = "zero"; blt_cg.sample(ins);    end
+                // blez: convert to bge r0, rs, offset
+                "blez"      : begin ins.asm=BGE;    ins.ops[2] = ins.ops[1]; ins.ops[1] = ins.ops[0]; ins.ops[0].val = "zero"; bge_cg.sample(ins);   end
+                // bgez: convert to bge rs, r0, offset
+                "bgez"      : begin ins.asm=BGE;    ins.ops[2] = ins.ops[1]; ins.ops[1].val = "zero"; bge_cg.sample(ins);   end
+                // bnez: convert to bne rs, r0, offset
+                "bnez"      : begin ins.asm=BNE;    ins.ops[2] = ins.ops[1]; ins.ops[1].val = "zero"; bne_cg.sample(ins);   end
+                // bgtz: convert to blt x0, rs, offset
+                "bgtz"      : begin ins.asm=BLT;    ins.ops[2] = ins.ops[1]; ins.ops[1] = ins.ops[0]; ins.ops[0].val = "zero"; blt_cg.sample(ins);   end
+                // neg: convert to sub rd, x0, rs
+                "neg"       : begin ins.asm=SUB;    ins.ops[2] = ins.ops[1]; ins.ops[1].val = "zero"; sub_cg.sample(ins);    end
+                // snez: convert to sltu rd, x0, rs
+                "snez"      : begin ins.asm=SLTU;   ins.ops[2] = ins.ops[1]; ins.ops[1].val = "zero"; sltu_cg.sample(ins);   end
+                // seqz: convert to sltiu rd, rs, 1
+                "seqz"      : begin ins.asm=SLTIU;  ins.ops[2].val = "1";                             sltiu_cg.sample(ins);  end
+                // not:  convert to xor rd, rs, -1
+                "not"       : begin ins.asm=XOR;    ins.ops[2].val = "-1";                            xor_cg.sample(ins);  end
+                // ret: convert to jalr x0,x1(0)                
+                "ret"       : begin ins.asm=JALR;   ins.ops[0].key = "R"; ins.ops[0].val = "zero"; 
+                                                    ins.ops[1].key = "R"; ins.ops[1].val = "ra"; 
+                                                    ins.ops[2].val="0"; 
+                                                    jalr_cg.sample(ins);
+                end
+
+                default: begin
+                    ins.asm = NOP;
+                    `uvm_warning("RV32ISA Coverage", 
+                                 $sformatf("instruction [%0s] not mapped to functional coverage", 
+                                           ins.ins_str))                    
+                end
+            endcase
+        end
 
         // Send instruction to analysis port
         begin             
             uvme_rv32isa_covg_trn_c isa_cov_trn;
-
-            // Hack in more instruction matches to enumerated types
-            case (ins.ins_str)
-                "wfi"       : begin ins.asm=WFI;    end
-                "mret"      : begin ins.asm=MRET;   end
-                "j"         : begin ins.asm=J;      end
-            endcase
 
             isa_cov_trn = uvme_rv32isa_covg_trn_c::type_id::create("isa_cov_trn");
             isa_cov_trn.ins = ins;

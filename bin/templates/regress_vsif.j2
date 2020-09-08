@@ -1,0 +1,77 @@
+{#
+
+################################################################################
+#
+# Copyright 2020 OpenHW Group
+# 
+# Licensed under the Solderpad Hardware Licence, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+# 
+#     https://solderpad.org/licenses/
+# 
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#
+# SPDX-License-Identifier:Apache-2.0 WITH SHL-2.0
+# 
+################################################################################
+
+#}
+{% import 'regress_macros.j2' as regress_macros -%}
+
+session {{session}} {
+    top_dir: {{results_path}}/vmgr_sessions;
+{% if lsf %}
+    drm: lsf;
+    max_runs_in_parallel: 20;
+    queuing_policy: round_robin;
+    default_dispatch_parameters: <text>{{lsf}}</text>;
+{% endif %}
+}
+
+group cv32e40p {
+{% for b in unique_builds.values() %}
+    // Build:{{b.name}} {{b.description}}    
+    pre_group_script: "cd {{b.dir}} && {{b.cmd}} CV_SIM_PREFIX= SIMULATOR={{b.simulator}} USE_ISS={{b.iss}} COV={{regress_macros.yesorno(b.cov)}}";
+
+{% endfor %}
+{% for r in regressions %}
+{% for t in r.tests.values() %}
+{% if t.precmd %}
+{% set indent = '    '%}
+    group {{t.name}}_precmd {
+        // Test (Precommand): {{t.name}} {{t.description}}
+        test precmd {
+            sv_seed: gen_random;
+            count: 1;
+            run_script: "cd {{t.dir}} && {{t.precmd}} CV_SIM_PREFIX= SIMULATOR={{t.simulator}} RNDSEED=$RUN_ENV(BRUN_SV_SEED) NUM_TESTS={{t.num}}";
+        };
+{% else %}
+{% set indent = '' %}
+{% endif %}
+{{indent}}    //  Test: {{t.name}} {{t.description}}
+{{indent}}    group {{t.name}} {
+{% if t.precmd %}
+{{indent}}        depends_on: ../precmd;
+{% endif %}
+{{indent}}        test run {
+{{indent}}            sv_seed: gen_random;
+{{indent}}            seed: [0..{{t.num-1}}];
+{{indent}}            count: {{t.num}};
+{{indent}}            run_script: "cd {{t.dir}} && {{t.cmd}} COMP=0 CV_SIM_PREFIX= SIMULATOR={{t.simulator}} USE_ISS={{regress_macros.yesorno(t.iss)}} COV={{regress_macros.yesorno(t.cov)}} RUN_INDEX=$RUN_ENV(BRUN_SEED) START_INDEX=$RUN_ENV(BRUN_SEED) RNDSEED=$RUN_ENV(BRUN_SV_SEED)";
+{% if simulator == 'vsim' %}
+{{indent}}            scan_script: "vm_scan.pl uvm.flt {{filter_dir}}/vsim_run.flt";
+{% endif %}
+{{indent}}        };
+{{indent}}    };
+{% if t.precmd %}
+    };
+{% endif %}
+{% endfor %}    
+{% endfor %}
+};
+
