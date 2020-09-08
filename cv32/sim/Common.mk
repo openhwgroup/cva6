@@ -104,6 +104,11 @@ RISCVDV_BRANCH  ?= master
 #                  Generation of riscv_pmp_test fails (we do not care for CV32E40P).
 RISCVDV_HASH    ?= 10fd4fa8b7d0808732ecf656c213866cae37045a
 
+COMPLIANCE_REPO   ?= https://github.com/riscv/riscv-compliance
+COMPLIANCE_BRANCH ?= master
+# 2020-08-19
+COMPLIANCE_HASH   ?= c21a2e86afa3f7d4292a2dd26b759f3f29cde497
+
 # Generate command to clone the CV32E40P RTL
 ifeq ($(CV32E40P_BRANCH), master)
   TMP = git clone $(CV32E40P_REPO) --recurse $(CV32E40P_PKG)
@@ -144,6 +149,19 @@ else
   CLONE_RISCVDV_CMD = $(TMP3); cd $(RISCVDV_PKG); git checkout $(RISCVDV_HASH)
 endif
 # RISCV-DV repo var end
+
+# Generate command to clone the RISCV Compliance Test-suite
+ifeq ($(COMPLIANCE_BRANCH), master)
+  TMP4 = git clone $(COMPLIANCE_REPO) --recurse $(COMPLIANCE_PKG)
+else
+  TMP4 = git clone -b $(COMPLIANCE_BRANCH) --single-branch $(COMPLIANCE_REPO) --recurse $(COMPLIANCE_PKG)
+endif
+
+ifeq ($(COMPLIANCE_HASH), head)
+  CLONE_COMPLIANCE_CMD = $(TMP4)
+else
+  CLONE_COMPLIANCE_CMD = $(TMP4); cd $(COMPLIANCE_PKG); git checkout $(COMPLIANCE_HASH)
+endif
 
 ###############################################################################
 # Imperas Instruction Set Simulator

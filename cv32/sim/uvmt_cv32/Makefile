@@ -85,6 +85,8 @@ export DV_OVPM_HOME           = $(PROJ_ROOT_DIR)/vendor_lib/imperas
 export DV_OVPM_MODEL          = $(DV_OVPM_HOME)/riscv_CV32E40P_OVPsim
 export DV_OVPM_DESIGN         = $(DV_OVPM_HOME)/verilog/design
 
+export CORE_V_VERIF           = $(PROJ_ROOT_DIR)
+
 DV_UVMT_CV32_SRCS  = $(wildcard $(DV_UVMT_CV32_PATH)/*.sv))
 
 # Testcase name: must be the CLASS name of the testcase (not the filename).
@@ -96,6 +98,9 @@ RISCVDV_PKG   := $(PROJ_ROOT_DIR)/vendor_lib/google/riscv-dv
 COREVDV_PKG   := $(PROJ_ROOT_DIR)/vendor_lib/google/corev-dv
 export RISCV_DV_ROOT = $(RISCVDV_PKG)
 export COREV_DV_ROOT = $(COREVDV_PKG)
+
+# RISC-V Foundation's RISC-V Compliance Test-suite
+COMPLIANCE_PKG   := $(PROJ_ROOT_DIR)/vendor_lib/riscv/riscv-compliance
 
 # TB source files for the CV32E core
 TBSRC_TOP   := $(TBSRC_HOME)/uvmt_cv32/uvmt_cv32_tb.sv
@@ -155,8 +160,34 @@ $(CV32E40P_PKG):
 	$(CLONE_CV32E40P_CMD)
 	$(CLONE_FPNEW_CMD)
 
-$(RISCVDV_PKG):
-	$(CLONE_RISCVDV_CMD)	
+###############################################################################
+# RISC-V Compliance Test-suite
+#     As much as possible, the test suite is used "out-of-the-box".  The
+#     "build_compliance" target below uses the Makefile supplied by the suite
+#     to compile all the individual test-programs in the suite to generate the
+#     elf and hex files used in simulation.  Each <sim>.mk is assumed to have a
+#     target to run the compiled test-program.
+
+# RISCV_ISA='rv32i|rv32im|rv32imc|rv32Zicsr|rv32Zifencei'
+RISCV_ISA ?= rv32i
+
+clone_compliance:
+	$(CLONE_COMPLIANCE_CMD)
+
+clr_compliance:
+	make clean -C $(PROJ_ROOT_DIR)/vendor_lib/riscv/riscv-compliance
+
+build_compliance: clone_compliance
+	make -i -C $(PROJ_ROOT_DIR)/vendor_lib/riscv/riscv-compliance \
+		RISCV_TARGET=OpenHW \
+		RISCV_DEVICE=cv32e40p \
+		NOTRAPS=1 \
+		RISCV_ISA=$(RISCV_ISA)
+
+all_compliance: clone_compliance
+	make build_compliance RISCV_ISA=rv32i   && \
+	make build_compliance RISCV_ISA=rv32im  && \
+	make build_compliance RISCV_ISA=rv32imc
 
 ###############################################################################
 # Include the targets/rules for the selected SystemVerilog simulator
@@ -209,4 +240,7 @@ clean_riscv-dv:
 	rm -rf $(RISCVDV_PKG)
 	rm -rf $(COREVDV_PKG)/out_*
 	find ../../tests/core/google-riscv-dv -name "*.S" -exec rm {} \;
+
+clean_compliance:
+	rm -rf $(COMPLIANCE_PKG)
 
