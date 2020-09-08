@@ -125,6 +125,10 @@ endif
 
 ################################################################################
 
+# File to `include "uvm_macros.svh" since Xcelium automatic UVM compilation
+# does not source the macros file. 
+XRUN_UVM_MACROS_INC_FILE = $(DV_UVMT_CV32_PATH)/uvmt_cv32_uvm_macros_inc.sv
+
 XRUN_FILE_LIST ?= -f $(DV_UVMT_CV32_PATH)/uvmt_cv32.flist
 ifeq ($(call IS_YES,$(USE_ISS)),YES)
     XRUN_FILE_LIST += -f $(DV_UVMT_CV32_PATH)/imperas_iss.flist
@@ -165,6 +169,7 @@ XRUN_COMP = $(XRUN_COMP_FLAGS) \
 		$(XRUN_USER_COMPILE_ARGS) \
 		+incdir+$(DV_UVME_CV32_PATH) \
 		+incdir+$(DV_UVMT_CV32_PATH) \
+		$(XRUN_UVM_MACROS_INC_FILE) \
 		-f $(CV32E40P_MANIFEST) \
 		$(XRUN_FILE_LIST) \
 		$(UVM_PLUSARGS)
