@@ -14,9 +14,8 @@
 //
 // This module interfaces with the instruction cache, handles control
 // change request from the back-end and does branch prediction.
-import ariane_pkg::*;
 
-module frontend #(
+module frontend import ariane_pkg::*; #(
   parameter ariane_pkg::ariane_cfg_t ArianeCfg = ariane_pkg::ArianeDefaultConfig
 ) (
   input  logic               clk_i,              // Clock
@@ -49,8 +48,8 @@ module frontend #(
     // Instruction Cache Registers, from I$
     logic [FETCH_WIDTH-1:0] icache_data_q;
     logic                   icache_valid_q;
-    logic                   icache_ex_valid_q;
-    logic [riscv::VLEN-1:0] icache_vaddr_q;
+    ariane_pkg::frontend_exception_t icache_ex_valid_q;
+    logic [63:0]            icache_vaddr_q;
     logic                   instr_queue_ready;
     logic [ariane_pkg::INSTR_PER_FETCH-1:0] instr_queue_consumed;
     // upper-most branch-prediction from last cycle
@@ -230,7 +229,10 @@ module frontend #(
     // or reduce struct
     always_comb begin
       bp_valid = 1'b0;
-      for (int i = 0; i < INSTR_PER_FETCH; i++) bp_valid |= (cf_type[i] != NoCF);
+      // BP cannot be valid if we have a return instruction and the RAS is not giving a valid address
+      // Check that we encountered a control flow and that for a return the RAS 
+      // contains a valid prediction.
+      for (int i = 0; i < INSTR_PER_FETCH; i++) bp_valid |= ((cf_type[i] != NoCF & cf_type[i] != Return) | ((cf_type[i] == Return) & ras_predict.valid));
     end
     assign is_mispredict = resolved_branch_i.valid & resolved_branch_i.is_mispredict;
 
@@ -329,7 +331,7 @@ module frontend #(
         icache_data_q     <= '0;
         icache_valid_q    <= 1'b0;
         icache_vaddr_q    <= 'b0;
-        icache_ex_valid_q <= 1'b0;
+        icache_ex_valid_q <= ariane_pkg::FE_NONE;
         btb_q             <= '0;
         bht_q             <= '0;
       end else begin
@@ -339,7 +341,12 @@ module frontend #(
         if (icache_dreq_i.valid) begin
           icache_data_q        <= icache_data;
           icache_vaddr_q       <= icache_dreq_i.vaddr;
-          icache_ex_valid_q    <= icache_dreq_i.ex;
+          // Map the only three exceptions which can occur in the frontend to a two bit enum
+          if (icache_dreq_i.ex.cause == riscv::INSTR_PAGE_FAULT) begin
+            icache_ex_valid_q <= ariane_pkg::FE_INSTR_PAGE_FAULT;
+          end else if (icache_dreq_i.ex.cause == riscv::INSTR_ACCESS_FAULT) begin
+            icache_ex_valid_q <= ariane_pkg::FE_INSTR_ACCESS_FAULT;
+          end else icache_ex_valid_q <= ariane_pkg::FE_NONE;
           // save the uppermost prediction
           btb_q                <= btb_prediction[INSTR_PER_FETCH-1];
           bht_q                <= bht_prediction[INSTR_PER_FETCH-1];
@@ -411,6 +418,7 @@ module frontend #(
       .instr_i             ( instr                ), // from re-aligner
       .addr_i              ( addr                 ), // from re-aligner
       .exception_i         ( icache_ex_valid_q    ), // from I$
+      .exception_addr_i    ( icache_vaddr_q       ),
       .predict_address_i   ( predict_address      ),
       .cf_type_i           ( cf_type              ),
       .valid_i             ( instruction_valid    ), // from re-aligner

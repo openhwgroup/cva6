@@ -60,6 +60,9 @@ sources:
     - src/mult.sv
     - src/load_unit.sv
     - src/issue_read_operands.sv
+    - src/pmp/src/pmp_entry.sv
+    - src/pmp/src/pmp.sv
+    - src/synopsys_sram.sv
     - src/fpu/src/fpnew_fma.sv
     - src/fpu/src/fpnew_opgroup_fmt_slice.sv
     - src/fpu/src/fpnew_divsqrt_multi.sv
@@ -161,8 +164,8 @@ sources:
     - src/common_cells/src/rstgen.sv
     - src/common_cells/src/stream_mux.sv
     - src/common_cells/src/stream_demux.sv
-    - src/common_cells/src/deprecated/stream_arbiter.sv
-    - src/common_cells/src/deprecated/stream_arbiter_flushable.sv
+    - src/common_cells/src/stream_arbiter.sv
+    - src/common_cells/src/stream_arbiter_flushable.sv
     - src/util/axi_master_connect.sv
     - src/util/axi_slave_connect.sv
     - src/util/axi_master_connect_rev.sv

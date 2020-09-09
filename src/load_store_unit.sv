@@ -12,9 +12,8 @@
 // Date: 19.04.2017
 // Description: Load Store Unit, handles address calculation and memory interface signals
 
-import ariane_pkg::*;
 
-module load_store_unit #(
+module load_store_unit import ariane_pkg::*; #(
     parameter int unsigned ASID_WIDTH = 1,
     parameter ariane_pkg::ariane_cfg_t ArianeCfg = ariane_pkg::ArianeDefaultConfig
 )(
@@ -55,6 +54,8 @@ module load_store_unit #(
     input  logic                     mxr_i,                    // From CSR register file
     input  logic [riscv::PPNW-1:0]   satp_ppn_i,               // From CSR register file
     input  logic [ASID_WIDTH-1:0]    asid_i,                   // From CSR register file
+    input  logic [ASID_WIDTH-1:0]    asid_to_be_flushed_i,
+    input  logic [63:0]              vaddr_to_be_flushed_i,
     input  logic                     flush_tlb_i,
     // Performance counters
     output logic                     itlb_miss_o,
@@ -64,9 +65,13 @@ module load_store_unit #(
     input  dcache_req_o_t [2:0]      dcache_req_ports_i,
     output dcache_req_i_t [2:0]      dcache_req_ports_o,
     input  logic                     dcache_wbuffer_empty_i,
+    input  logic                     dcache_wbuffer_not_ni_i,
     // AMO interface
     output amo_req_t                 amo_req_o,
-    input  amo_resp_t                amo_resp_i
+    input  amo_resp_t                amo_resp_i,
+    // PMP
+    input  riscv::pmpcfg_t [15:0]    pmpcfg_i,
+    input  logic [15:0][53:0]        pmpaddr_i
 );
     // data is misaligned
     logic data_misaligned;
@@ -106,6 +111,7 @@ module load_store_unit #(
     logic [riscv::PLEN-1:0]   mmu_paddr;
     exception_t               mmu_exception;
     logic                     dtlb_hit;
+    logic [riscv::PLEN-13:0]  dtlb_ppn;
 
     logic                     ld_valid;
     logic [TRANS_ID_BITS-1:0] ld_trans_id;
@@ -139,12 +145,17 @@ module load_store_unit #(
         .lsu_paddr_o            ( mmu_paddr              ),
         .lsu_exception_o        ( mmu_exception          ),
         .lsu_dtlb_hit_o         ( dtlb_hit               ), // send in the same cycle as the request
+        .lsu_dtlb_ppn_o         ( dtlb_ppn               ), // send in the same cycle as the request
         // connecting PTW to D$ IF
         .req_port_i             ( dcache_req_ports_i [0] ),
         .req_port_o             ( dcache_req_ports_o [0] ),
         // icache address translation requests
         .icache_areq_i          ( icache_areq_i          ),
+        .asid_to_be_flushed_i,
+        .vaddr_to_be_flushed_i,
         .icache_areq_o          ( icache_areq_o          ),
+        .pmpcfg_i,
+        .pmpaddr_i,
         .*
     );
     logic store_buffer_empty;
@@ -206,6 +217,7 @@ module load_store_unit #(
         .paddr_i               ( mmu_paddr            ),
         .ex_i                  ( mmu_exception        ),
         .dtlb_hit_i            ( dtlb_hit             ),
+        .dtlb_ppn_i            ( dtlb_ppn             ),
         // to store unit
         .page_offset_o         ( page_offset          ),
         .page_offset_matches_i ( page_offset_matches  ),
@@ -213,7 +225,7 @@ module load_store_unit #(
         // to memory arbiter
         .req_port_i            ( dcache_req_ports_i [1] ),
         .req_port_o            ( dcache_req_ports_o [1] ),
-        .dcache_wbuffer_empty_i,
+        .dcache_wbuffer_not_ni_i,
         .commit_tran_id_i,
         .*
     );
@@ -395,7 +407,7 @@ endmodule
 // the LSU control should sample it and store it for later application to the units. It does so, by storing it in a
 // two element FIFO. This is necessary as we only know very late in the cycle whether the load/store will succeed (address check,
 // TLB hit mainly). So we better unconditionally allow another request to arrive and store this request in case we need to.
-module lsu_bypass (
+module lsu_bypass import ariane_pkg::*; (
     input  logic      clk_i,
     input  logic      rst_ni,
     input  logic      flush_i,

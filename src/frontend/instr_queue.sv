@@ -53,7 +53,8 @@ module instr_queue (
   output logic                                               ready_o,
   output logic [ariane_pkg::INSTR_PER_FETCH-1:0]             consumed_o,
   // we've encountered an exception, at this point the only possible exceptions are page-table faults
-  input  logic                                               exception_i,
+  input  ariane_pkg::frontend_exception_t                    exception_i,
+  input  logic [riscv::VLEN-1:0]                             exception_addr_i,
   // branch predict
   input  logic [riscv::VLEN-1:0]                             predict_address_i,
   input  ariane_pkg::cf_t  [ariane_pkg::INSTR_PER_FETCH-1:0] cf_type_i,
@@ -69,7 +70,8 @@ module instr_queue (
   typedef struct packed {
     logic [31:0]     instr; // instruction word
     ariane_pkg::cf_t cf;    // branch was taken
-    logic            ex;    // exception happened
+    ariane_pkg::frontend_exception_t ex;    // exception happened
+    logic [riscv::VLEN-1:0] ex_vaddr;       // lower VLEN bits of tval for exception
   } instr_data_t;
 
   logic [$clog2(ariane_pkg::INSTR_PER_FETCH)-1:0] branch_index;
@@ -180,6 +182,7 @@ module instr_queue (
     assign instr_data_in[i].instr = instr[i + idx_is_q];
     assign instr_data_in[i].cf = cf[i + idx_is_q];
     assign instr_data_in[i].ex = exception_i; // exceptions hold for the whole fetch packet
+    assign instr_data_in[i].ex_vaddr = exception_addr_i;
     /* verilator lint_on WIDTH */
   end
 
@@ -216,17 +219,21 @@ module instr_queue (
     fetch_entry_o.instruction = '0;
     fetch_entry_o.address = pc_q;
     fetch_entry_o.ex.valid = 1'b0;
-    // This is the only exception which can occur up to this point.
-    fetch_entry_o.ex.cause = riscv::INSTR_PAGE_FAULT;
+
     fetch_entry_o.ex.tval = '0;
     fetch_entry_o.branch_predict.predict_address = address_out;
     fetch_entry_o.branch_predict.cf = ariane_pkg::NoCF;
     // output mux select
     for (int unsigned i = 0; i < ariane_pkg::INSTR_PER_FETCH; i++) begin
       if (idx_ds_q[i]) begin
+        if (instr_data_out[i].ex == ariane_pkg::FE_INSTR_ACCESS_FAULT) begin
+            fetch_entry_o.ex.cause = riscv::INSTR_ACCESS_FAULT;
+        end else begin
+            fetch_entry_o.ex.cause = riscv::INSTR_PAGE_FAULT;
+        end
         fetch_entry_o.instruction = instr_data_out[i].instr;
-        fetch_entry_o.ex.valid = instr_data_out[i].ex;
-        fetch_entry_o.ex.tval  = {{64-riscv::VLEN{1'b0}}, pc_q};
+        fetch_entry_o.ex.valid = instr_data_out[i].ex != ariane_pkg::FE_NONE;
+        fetch_entry_o.ex.tval  = {{64-riscv::VLEN{1'b0}}, instr_data_out[i].ex_vaddr};
         fetch_entry_o.branch_predict.cf = instr_data_out[i].cf;
         pop_instr[i] = fetch_entry_valid_o & fetch_entry_ready_i;
       end

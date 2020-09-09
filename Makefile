@@ -101,13 +101,18 @@ util := $(addprefix $(root-dir), $(util))
 # Test packages
 test_pkg := $(wildcard tb/test/*/*sequence_pkg.sv*) \
 			$(wildcard tb/test/*/*_pkg.sv*)
+
 # DPI
-dpi_list := $(patsubst tb/dpi/%.cc, ${dpi-library}/%.o, $(wildcard tb/dpi/*.cc))
+dpi := $(patsubst tb/dpi/%.cc, ${dpi-library}/%.o, $(wildcard tb/dpi/*.cc))
+
 # filter spike stuff if tandem is not activated
 ifndef spike-tandem
-    dpi = $(filter-out ${dpi-library}/spike.o ${dpi-library}/sim_spike.o, $(dpi_list))
-else
-    dpi = $(dpi_list)
+    dpi := $(filter-out ${dpi-library}/spike.o ${dpi-library}/sim_spike.o, $(dpi))
+endif
+
+# filter dromajo stuff if dromajo is not activated
+ifndef DROMAJO
+    dpi := $(filter-out ${dpi-library}/dromajo_cosim_dpi.o, $(dpi))
 endif
 
 dpi_hdr := $(wildcard tb/dpi/*.h)
@@ -138,6 +143,7 @@ src :=  $(filter-out src/ariane_regfile.sv, $(wildcard src/*.sv))              \
         $(wildcard src/axi_node/src/*.sv)                                      \
         $(wildcard src/axi_riscv_atomics/src/*.sv)                             \
         $(wildcard src/axi_mem_if/src/*.sv)                                    \
+        $(wildcard src/pmp/src/*.sv)                                           \
         src/rv_plic/rtl/rv_plic_target.sv                                      \
         src/rv_plic/rtl/rv_plic_gateway.sv                                     \
         src/rv_plic/rtl/plic_regmap.sv                                         \
@@ -159,7 +165,7 @@ src :=  $(filter-out src/ariane_regfile.sv, $(wildcard src/*.sv))              \
         src/common_cells/src/rstgen.sv                                         \
         src/common_cells/src/stream_mux.sv                                     \
         src/common_cells/src/stream_demux.sv                                   \
-	src/common_cells/src/exp_backoff.sv                                    \
+        src/common_cells/src/exp_backoff.sv                                    \
         src/util/axi_master_connect.sv                                         \
         src/util/axi_slave_connect.sv                                          \
         src/util/axi_master_connect_rev.sv                                     \
@@ -187,6 +193,7 @@ src :=  $(filter-out src/ariane_regfile.sv, $(wildcard src/*.sv))              \
         src/common_cells/src/stream_delay.sv                                   \
         src/common_cells/src/lfsr_8bit.sv                                      \
         src/common_cells/src/lfsr_16bit.sv                                     \
+        src/common_cells/src/delta_counter.sv                                  \
         src/common_cells/src/counter.sv                                        \
         src/common_cells/src/shift_reg.sv                                      \
         src/tech_cells_generic/src/pulp_clock_gating.sv                        \
@@ -481,40 +488,11 @@ $(addsuffix -verilator,$(riscv-fp-tests)): verilate
 $(addsuffix -verilator,$(riscv-benchmarks)): verilate
 	$(ver-library)/Variane_testharness $(riscv-benchmarks-dir)/$(subst -verilator,,$@)
 
-run-asm-tests-verilator: $(addsuffix -verilator, $(riscv-asm-tests)) $(addsuffix -verilator, $(riscv-amo-tests)) $(addsuffix -verilator, $(riscv-fp-tests)) $(addsuffix -verilator, $(riscv-fp-tests))
+run-all-tests-verilator: $(addsuffix -verilator, $(riscv-asm-tests)) $(addsuffix -verilator, $(riscv-amo-tests)) $(addsuffix -verilator, $(run-mul-verilator)) $(addsuffix -verilator, $(riscv-fp-tests))
 
-# split into smaller travis jobs (otherwise they will time out)
-riscv-asm-rv64ui-v := $(filter rv64ui-v-%, $(riscv-asm-tests))
-
-riscv-asm-rv64ui-p := $(filter rv64ui-p-%, $(riscv-asm-tests))
-
-riscv-asm-rv64mi-p := $(filter rv64mi-p-%, $(riscv-asm-tests))
-
-riscv-asm-rest := $(filter-out $(riscv-asm-rv64ui-v) $(riscv-asm-rv64ui-p) $(riscv-asm-rv64mi-p), $(riscv-asm-tests))
-
-run-asm-tests1-verilator: $(addsuffix -verilator, $(filter rv64ui-v-a% rv64ui-v-b%, $(riscv-asm-rv64ui-v)))
-
-run-asm-tests2-verilator: $(addsuffix -verilator, $(filter-out rv64ui-v-a% rv64ui-v-b%, $(riscv-asm-rv64ui-v)))
-
-run-asm-tests3-verilator: $(addsuffix -verilator, $(filter rv64ui-p-a% rv64ui-p-b%, $(riscv-asm-rv64ui-p)))
-
-run-asm-tests4-verilator: $(addsuffix -verilator, $(filter-out rv64ui-p-a% rv64ui-p-b%, $(riscv-asm-rv64ui-p)))
-
-run-asm-tests5-verilator: $(addsuffix -verilator, $(riscv-asm-rv64mi-p))
-
-run-asm-tests6-verilator: $(addsuffix -verilator, $(riscv-asm-rest))
+run-asm-tests-verilator: $(addsuffix -verilator, $(riscv-asm-tests))
 
 run-amo-verilator: $(addsuffix -verilator, $(riscv-amo-tests))
-
-riscv-amo-rv64ua-v := $(filter rv64ua-v-%, $(riscv-amo-tests))
-
-riscv-amo-rv64ua-p := $(filter rv64ua-p-%, $(riscv-amo-tests))
-
-run-amo-tests1-verilator: $(addsuffix -verilator, $(filter rv64ua-v-amom%, $(riscv-amo-rv64ua-v)))
-
-run-amo-tests2-verilator: $(addsuffix -verilator, $(filter-out rv64ua-v-amom%, $(riscv-amo-rv64ua-v)))
-
-run-amo-tests3-verilator: $(addsuffix -verilator, $(riscv-amo-rv64ua-p))
 
 run-mul-verilator: $(addsuffix -verilator, $(riscv-mul-tests))
 

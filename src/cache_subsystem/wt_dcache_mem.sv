@@ -25,10 +25,8 @@
 //        4) Read ports with same priority are RR arbited. but high prio ports (rd_prio_i[port_nr] = '1b1) will stall
 //           low prio ports (rd_prio_i[port_nr] = '1b0)
 
-import ariane_pkg::*;
-import wt_cache_pkg::*;
 
-module wt_dcache_mem #(
+module wt_dcache_mem import ariane_pkg::*; import wt_cache_pkg::*; #(
   parameter bit          Axi64BitCompliant  = 1'b0, // set this to 1 when using in conjunction with 64bit AXI bus adapter
   parameter int unsigned NumPorts           = 3
 ) (

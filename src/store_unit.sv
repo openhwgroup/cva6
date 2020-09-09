@@ -12,9 +12,8 @@
 // Date: 22.05.2017
 // Description: Store Unit, takes care of all store requests and atomic memory operations (AMOs)
 
-import ariane_pkg::*;
 
-module store_unit (
+module store_unit import ariane_pkg::*; (
     input  logic                     clk_i,    // Clock
     input  logic                     rst_ni,  // Asynchronous reset active low
     input  logic                     flush_i,

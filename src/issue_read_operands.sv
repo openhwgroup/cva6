@@ -13,9 +13,8 @@
 // Description: Issues instruction from the scoreboard and fetches the operands
 //              This also includes all the forwarding logic
 
-import ariane_pkg::*;
 
-module issue_read_operands #(
+module issue_read_operands import ariane_pkg::*; #(
     parameter int unsigned NR_COMMIT_PORTS = 2
 )(
     input  logic                                   clk_i,    // Clock
@@ -41,6 +40,8 @@ module issue_read_operands #(
     input  fu_t [2**REG_ADDR_SIZE-1:0]             rd_clobber_fpr_i,
     // To FU, just single issue for now
     output fu_data_t                               fu_data_o,
+    output logic [riscv::VLEN-1:0]                 rs1_forwarding_o,  // unregistered version of fu_data_o.operanda
+    output logic [riscv::VLEN-1:0]                 rs2_forwarding_o,  // unregistered version of fu_data_o.operandb
     output logic [riscv::VLEN-1:0]                 pc_o,
     output logic                                   is_compressed_instr_o,
     // ALU 1
@@ -101,6 +102,10 @@ module issue_read_operands #(
     assign orig_instr = riscv::instruction_t'(issue_instr_i.ex.tval[31:0]);
 
     // ID <-> EX registers
+
+    assign rs1_forwarding_o = operand_a_n[riscv::VLEN-1:0];  //forwarding or unregistered rs1 value
+    assign rs2_forwarding_o = operand_b_n[riscv::VLEN-1:0];  //forwarding or unregistered rs2 value
+
     assign fu_data_o.operand_a = operand_a_q;
     assign fu_data_o.operand_b = operand_b_q;
     assign fu_data_o.fu        = fu_q;
@@ -161,7 +166,7 @@ module issue_read_operands #(
             // check if the clobbering instruction is not a CSR instruction, CSR instructions can only
             // be fetched through the register file since they can't be forwarded
             // if the operand is available, forward it. CSRs don't write to/from FPR
-            if (rs1_valid_i && (is_rs1_fpr(issue_instr_i.op) ? 1'b1 : rd_clobber_gpr_i[issue_instr_i.rs1] != CSR)) begin
+            if (rs1_valid_i && (is_rs1_fpr(issue_instr_i.op) ? 1'b1 : ((rd_clobber_gpr_i[issue_instr_i.rs1] != CSR) || (issue_instr_i.op == SFENCE_VMA)))) begin
                 forward_rs1 = 1'b1;
             end else begin // the operand is not available -> stall
                 stall = 1'b1;
@@ -171,7 +176,7 @@ module issue_read_operands #(
         if (is_rs2_fpr(issue_instr_i.op) ? rd_clobber_fpr_i[issue_instr_i.rs2] != NONE
                                          : rd_clobber_gpr_i[issue_instr_i.rs2] != NONE) begin
             // if the operand is available, forward it. CSRs don't write to/from FPR
-            if (rs2_valid_i && (is_rs2_fpr(issue_instr_i.op) ? 1'b1 : rd_clobber_gpr_i[issue_instr_i.rs2] != CSR)) begin
+            if (rs2_valid_i && (is_rs2_fpr(issue_instr_i.op) ? 1'b1 : ( (rd_clobber_gpr_i[issue_instr_i.rs2] != CSR) || (issue_instr_i.op == SFENCE_VMA))))  begin
                 forward_rs2 = 1'b1;
             end else begin // the operand is not available -> stall
                 stall = 1'b1;

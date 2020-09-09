@@ -13,9 +13,8 @@
 // Description: Issue stage dispatches instructions to the FUs and keeps track of them
 //              in a scoreboard like data-structure.
 
-import ariane_pkg::*;
 
-module issue_stage #(
+module issue_stage import ariane_pkg::*; #(
     parameter int unsigned NR_ENTRIES = 8,
     parameter int unsigned NR_WB_PORTS = 4,
     parameter int unsigned NR_COMMIT_PORTS = 2
@@ -32,6 +31,8 @@ module issue_stage #(
     input  logic                                     is_ctrl_flow_i,
     output logic                                     decoded_instr_ack_o,
     // to EX
+    output [63:0]                                    rs1_forwarding_o,  // unregistered version of fu_data_o.operanda
+    output [63:0]                                    rs2_forwarding_o, // unregistered version of fu_data_o.operandb
     output fu_data_t                                 fu_data_o,
     output logic [riscv::VLEN-1:0]                   pc_o,
     output logic                                     is_compressed_instr_o,

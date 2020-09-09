@@ -22,9 +22,8 @@ import "DPI-C" function void dromajo_step(int     hart_id,
 import "DPI-C" function void init_dromajo(string cfg_f_name);
 `endif
 
-import ariane_pkg::*;
 
-module ariane #(
+module ariane import ariane_pkg::*; #(
   parameter ariane_pkg::ariane_cfg_t ArianeCfg     = ariane_pkg::ArianeDefaultConfig
 ) (
   input  logic                         clk_i,
@@ -88,6 +87,9 @@ module ariane #(
   // --------------
   // ISSUE <-> EX
   // --------------
+   logic [63:0] rs1_forwarding_id_ex; // unregistered version of fu_data_o.operanda
+   logic [63:0] rs2_forwarding_id_ex; // unregistered version of fu_data_o.operandb
+
   fu_data_t                 fu_data_id_ex;
   logic [riscv::VLEN-1:0]   pc_id_ex;
   logic                     is_compressed_instr_id_ex;
@@ -167,7 +169,7 @@ module ariane #(
   logic                     sum_csr_ex;
   logic                     mxr_csr_ex;
   logic [riscv::PPNW-1:0]   satp_ppn_csr_ex;
-  logic [0:0]               asid_csr_ex;
+  logic [ASID_WIDTH-1:0]    asid_csr_ex;
   logic [11:0]              csr_addr_ex_csr;
   fu_op                     csr_op_commit_csr;
   riscv::xlen_t             csr_wdata_commit_csr;
@@ -182,6 +184,8 @@ module ariane #(
   logic                     icache_en_csr;
   logic                     debug_mode;
   logic                     single_step_csr_commit;
+  riscv::pmpcfg_t [15:0]    pmpcfg;
+  logic [15:0][53:0]        pmpaddr;
   // ----------------------------
   // Performance Counters <-> *
   // ----------------------------
@@ -230,6 +234,7 @@ module ariane #(
   dcache_req_i_t [2:0]      dcache_req_ports_ex_cache;
   dcache_req_o_t [2:0]      dcache_req_ports_cache_ex;
   logic                     dcache_commit_wbuffer_empty;
+  logic                     dcache_commit_wbuffer_not_ni;
 
   // --------------
   // Frontend
@@ -305,6 +310,8 @@ module ariane #(
     .is_ctrl_flow_i             ( is_ctrl_fow_id_issue         ),
     .decoded_instr_ack_o        ( issue_instr_issue_id         ),
     // Functional Units
+    .rs1_forwarding_o           ( rs1_forwarding_id_ex         ),
+    .rs2_forwarding_o           ( rs2_forwarding_id_ex         ),
     .fu_data_o                  ( fu_data_id_ex                ),
     .pc_o                       ( pc_id_ex                     ),
     .is_compressed_instr_o      ( is_compressed_instr_id_ex    ),
@@ -348,12 +355,15 @@ module ariane #(
   // EX
   // ---------
   ex_stage #(
-    .ArianeCfg ( ArianeCfg )
+    .ASID_WIDTH ( ASID_WIDTH ),
+    .ArianeCfg  ( ArianeCfg  )
   ) ex_stage_i (
     .clk_i                  ( clk_i                       ),
     .rst_ni                 ( rst_ni                      ),
     .debug_mode_i           ( debug_mode                  ),
     .flush_i                ( flush_ctrl_ex               ),
+    .rs1_forwarding_i       ( rs1_forwarding_id_ex        ),
+    .rs2_forwarding_i       ( rs2_forwarding_id_ex        ),
     .fu_data_i              ( fu_data_id_ex               ),
     .pc_i                   ( pc_id_ex                    ),
     .is_compressed_instr_i  ( is_compressed_instr_id_ex   ),
@@ -426,7 +436,11 @@ module ariane #(
     // DCACHE interfaces
     .dcache_req_ports_i     ( dcache_req_ports_cache_ex   ),
     .dcache_req_ports_o     ( dcache_req_ports_ex_cache   ),
-    .dcache_wbuffer_empty_i ( dcache_commit_wbuffer_empty )
+    .dcache_wbuffer_empty_i ( dcache_commit_wbuffer_empty ),
+    .dcache_wbuffer_not_ni_i ( dcache_commit_wbuffer_not_ni ),
+    // PMP
+    .pmpcfg_i               ( pmpcfg                      ),
+    .pmpaddr_i              ( pmpaddr                     )
   );
 
   // ---------
@@ -479,7 +493,8 @@ module ariane #(
   csr_regfile #(
     .AsidWidth              ( ASID_WIDTH                    ),
     .DmBaseAddress          ( ArianeCfg.DmBaseAddress       ),
-    .NrCommitPorts          ( NR_COMMIT_PORTS               )
+    .NrCommitPorts          ( NR_COMMIT_PORTS               ),
+    .NrPMPEntries           ( ArianeCfg.NrPMPEntries        )
   ) csr_regfile_i (
     .flush_o                ( flush_csr_ctrl                ),
     .halt_csr_o             ( halt_csr_ctrl                 ),
@@ -524,6 +539,8 @@ module ariane #(
     .perf_data_o            ( data_csr_perf                 ),
     .perf_data_i            ( data_perf_csr                 ),
     .perf_we_o              ( we_csr_perf                   ),
+    .pmpcfg_o               ( pmpcfg                        ),
+    .pmpaddr_o              ( pmpaddr                       ),
     .debug_req_i,
     .ipi_i,
     .irq_i,
@@ -620,6 +637,7 @@ module ariane #(
     .dcache_req_ports_o    ( dcache_req_ports_cache_ex   ),
     // write buffer status
     .wbuffer_empty_o       ( dcache_commit_wbuffer_empty ),
+    .wbuffer_not_ni_o      ( dcache_commit_wbuffer_not_ni ),
 `ifdef PITON_ARIANE
     .l15_req_o             ( l15_req_o                   ),
     .l15_rtrn_i            ( l15_rtrn_i                  )
@@ -666,6 +684,7 @@ module ariane #(
     .axi_req_o             ( axi_req_o                   ),
     .axi_resp_i            ( axi_resp_i                  )
   );
+  assign dcache_commit_wbuffer_not_ni = 1'b1;
 `endif
 
   // -------------------

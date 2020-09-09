@@ -13,10 +13,8 @@
 // Description: miss controller for wb dcache. Note that the current assumption
 // is that the port with the highest index issues writes instead of reads.
 
-import ariane_pkg::*;
-import wt_cache_pkg::*;
 
-module wt_dcache_missunit #(
+module wt_dcache_missunit import ariane_pkg::*; import wt_cache_pkg::*; #(
   parameter bit                         Axi64BitCompliant  = 1'b0, // set this to 1 when using in conjunction with 64bit AXI bus adapter
   parameter logic [CACHE_ID_WIDTH-1:0]  AmoTxId            = 1,    // TX id to be used for AMOs
   parameter int unsigned                NumPorts           = 3     // number of miss ports
@@ -186,7 +184,7 @@ module wt_dcache_missunit #(
   end
 
   // read/write collision, stalls the corresponding request
-  // write collides with MSHR
+  // write port[NumPorts-1] collides with MSHR_Q
   assign mshr_rdwr_collision = (mshr_q.paddr[riscv::PLEN-1:DCACHE_OFFSET_WIDTH] == miss_paddr_i[NumPorts-1][riscv::PLEN-1:DCACHE_OFFSET_WIDTH]) && mshr_vld_q;
 
   // read collides with inflight TX
@@ -343,7 +341,7 @@ module wt_dcache_missunit #(
   assign wr_cl_data_o    = mem_rtrn_i.data;
   assign wr_cl_data_be_o = (cl_write_en) ? '1 : '0;// we only write complete cachelines into the memory
 
-  // only NC responses write to the cache
+  // only non-NC responses write to the cache
   assign cl_write_en     = load_ack & ~mshr_q.nc;
 
 ///////////////////////////////////////////////////////

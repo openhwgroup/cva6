@@ -605,7 +605,6 @@ module ariane_peripherals #(
         logic        s_axi_gpio_awready;
         logic [31:0] s_axi_gpio_wdata;
         logic [3:0]  s_axi_gpio_wstrb;
-        logic        s_axi_gpio_wlast;
         logic        s_axi_gpio_wvalid;
         logic        s_axi_gpio_wready;
         logic [1:0]  s_axi_gpio_bresp;
@@ -681,7 +680,7 @@ module ariane_peripherals #(
             .m_axi_awready  ( s_axi_gpio_awready ),
             .m_axi_wdata    ( s_axi_gpio_wdata   ),
             .m_axi_wstrb    ( s_axi_gpio_wstrb   ),
-            .m_axi_wlast    ( s_axi_gpio_wlast   ),
+            .m_axi_wlast    (                    ),
             .m_axi_wvalid   ( s_axi_gpio_wvalid  ),
             .m_axi_wready   ( s_axi_gpio_wready  ),
             .m_axi_bresp    ( s_axi_gpio_bresp   ),
@@ -732,7 +731,7 @@ module ariane_peripherals #(
         );
 
         assign s_axi_gpio_rlast = 1'b1;
-        assign s_axi_gpio_wlast = 1'b1;
+
     end
 
     // 6. Timer

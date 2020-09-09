@@ -12,10 +12,8 @@
 // Date: 13.09.2018
 // Description: Instruction cache that is compatible with openpiton.
 
-import ariane_pkg::*;
-import wt_cache_pkg::*;
 
-module wt_dcache #(
+module wt_dcache import ariane_pkg::*; import wt_cache_pkg::*; #(
   // ID to be used for read and AMO transactions.
   // note that the write buffer uses all IDs up to DCACHE_MAX_TX-1 for write transactions
   parameter logic [CACHE_ID_WIDTH-1:0]   RdAmoTxId          = 1,
@@ -31,6 +29,7 @@ module wt_dcache #(
   output logic                           flush_ack_o, // send a single cycle acknowledge signal when the cache is flushed
   output logic                           miss_o,      // we missed on a ld/st
   output logic                           wbuffer_empty_o,
+  output logic                           wbuffer_not_ni_o,
 
   // AMO interface
   input  amo_req_t                       amo_req_i,
@@ -216,6 +215,7 @@ module wt_dcache #(
     .clk_i           ( clk_i               ),
     .rst_ni          ( rst_ni              ),
     .empty_o         ( wbuffer_empty_o     ),
+    .not_ni_o        ( wbuffer_not_ni_o    ),
     // TODO: fix this
     .cache_en_i      ( cache_en            ),
     // .cache_en_i      ( '0                  ),

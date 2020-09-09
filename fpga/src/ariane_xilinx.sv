@@ -180,7 +180,7 @@ logic test_en;
 logic ndmreset;
 logic ndmreset_n;
 logic debug_req_irq;
-logic time_irq;
+logic timer_irq;
 logic ipi;
 
 logic clk;

@@ -21,13 +21,14 @@
 // note that we use a simplified address translation scheme to emulate the TLB.
 // (random offsets).
 
-import ariane_pkg::*;
-import wt_cache_pkg::*;
-import tb_pkg::*;
+
 
 `include "tb.svh"
 
 module tb;
+  import tb_pkg::*;
+  import ariane_pkg::*;
+  import wt_cache_pkg::*;
 
   // leave this
   timeunit 1ps;
@@ -59,7 +60,8 @@ module tb;
     Axi64BitCompliant:     1'b0,
     SwapEndianess:         1'b0,
     // debug
-    DmBaseAddress:         64'h0
+    DmBaseAddress:         64'h0,
+    NrPMPEntries:          0
   };
 
   // rates are in percent

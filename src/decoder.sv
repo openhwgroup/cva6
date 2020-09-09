@@ -18,9 +18,8 @@
 // Description: Issues instruction from the scoreboard and fetches the operands
 //              This also includes all the forwarding logic
 //
-import ariane_pkg::*;
 
-module decoder (
+module decoder import ariane_pkg::*; (
     input  logic               debug_req_i,             // external debug request
     input  logic [riscv::VLEN-1:0] pc_i,                // PC from IF
     input  logic               is_compressed_i,         // is a compressed instruction
@@ -91,6 +90,7 @@ module decoder (
                 riscv::OpcodeSystem: begin
                     instruction_o.fu       = CSR;
                     instruction_o.rs1[4:0] = instr.itype.rs1;
+                    instruction_o.rs2[4:0] = instr.rtype.rs2;   //TODO: needs to be checked if better way is available
                     instruction_o.rd[4:0]  = instr.itype.rd;
 
                     unique case (instr.itype.funct3)
