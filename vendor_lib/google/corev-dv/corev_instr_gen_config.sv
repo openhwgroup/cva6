@@ -40,7 +40,9 @@ class corev_instr_gen_config extends riscv_instr_gen_config;
     }
         
     use_fast_intr_handler[0] == 0;    
-    mtvec_mode == VECTORED;
+    if (enable_fast_interrupt_handler) {
+      mtvec_mode == VECTORED;
+    }
   }
 
   `uvm_object_utils_begin(corev_instr_gen_config)
