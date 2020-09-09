@@ -34,6 +34,9 @@ session {{session}} {
 }
 
 group cv32e40p {
+{% if sve %}
+    sve_name: {{sve}};
+{% endif %}
 {% for b in unique_builds.values() %}
     // Build:{{b.name}} {{b.description}}    
     pre_group_script: "cd {{b.dir}} && {{b.cmd}} CV_SIM_PREFIX= SIMULATOR={{b.simulator}} USE_ISS={{b.iss}} COV={{regress_macros.yesorno(b.cov)}}";

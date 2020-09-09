@@ -4,7 +4,7 @@ name: corev_arithmetic_base_test
 uvm_test: corev_instr_base_test
 description: >
     RISCV-DV generated arithmetic test
-plusargs: >			
+plusargs: >
     +instr_cnt=10000
     +num_of_sub_program=0
     +directed_instr_0=riscv_int_numeric_corner_stream,4
@@ -13,4 +13,3 @@ plusargs: >
     +no_branch_jump=1
     +boot_mode=m
     +no_csr_instr=1
-

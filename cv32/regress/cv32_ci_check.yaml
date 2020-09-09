@@ -8,8 +8,9 @@ description: Commit sanity for the cv32
 builds:
   corev-dv:
     # required: Make the corev-dv infrastructure    
-    cmd: make corev-dv
+    cmd: make comp_corev-dv
     dir: cv32/sim/uvmt_cv32
+    cov: 0
   uvmt_cv32:
     # required: the make command to create the build
     cmd: make comp

@@ -8,7 +8,7 @@ description: Full regression (all tests) for CV32E40P with step-and-compare agai
 builds:
   corev-dv:
     # required: Make the corev-dv infrastructure    
-    cmd: make comp_riscv-dv
+    cmd: make comp_corev-dv
     dir: cv32/sim/uvmt_cv32
     cov: 0
   uvmt_cv32:
@@ -57,7 +57,7 @@ tests:
 
   riscv_ebreak_test:
     build: uvmt_cv32
-    description: Static riscv-dv ebreak
+    description: Static corev-dv ebreak
     dir: cv32/sim/uvmt_cv32
     cmd: make test TEST=riscv_ebreak_test
 
@@ -65,28 +65,28 @@ tests:
     build: uvmt_cv32
     description: Basic arithmetic test
     dir: cv32/sim/uvmt_cv32    
-    cmd: make gen_riscv-dv test TEST=corev_arithmetic_base_test
+    cmd: make gen_corev-dv test TEST=corev_arithmetic_base_test
     num: 100
 
   corev_random_instruction_test:
     build: uvmt_cv32
     description: Random instruciton test
     dir: cv32/sim/uvmt_cv32
-    cmd: make gen_riscv-dv test TEST=corev_rand_instr_test
+    cmd: make gen_corev-dv test TEST=corev_rand_instr_test
     num: 100
 
   corev_jump_stress_test:
     build: uvmt_cv32
     description: Jump stress test
     dir: cv32/sim/uvmt_cv32    
-    cmd: make gen_riscv-dv test TEST=corev_jump_stress_test
+    cmd: make gen_corev-dv test TEST=corev_jump_stress_test
     num: 100
 
   corev_rand_interrupt:
     build: uvmt_cv32
     description: Random interrupt test
     dir: cv32/sim/uvmt_cv32    
-    cmd: make gen_riscv-dv test TEST=corev_rand_interrupt
+    cmd: make gen_corev-dv test TEST=corev_rand_interrupt
     num: 100
 
   illegal:
