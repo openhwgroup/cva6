@@ -105,11 +105,22 @@ module uvmt_cv32_tb;
       assign step_compare_if.riscy_GPR = dut_wrap.cv32e40p_wrapper_i.core_i.id_stage_i.registers_i.register_file_i.mem;
       assign clknrst_if_iss.reset_n = clknrst_if.reset_n;
     
+      wire [31:0] irq_enabled;
       reg [31:0] irq_deferint;
       reg [31:0] irq_mip;
+      reg core_sleep_o_d;
+
+      always @(posedge clknrst_if.clk or negedge clknrst_if.reset_n) begin
+        if (!clknrst_if.reset_n)
+          core_sleep_o_d <= 1'b0;
+        else
+          core_sleep_o_d <= dut_wrap.cv32e40p_wrapper_i.core_sleep_o;
+      end
 
       wire id_start = dut_wrap.cv32e40p_wrapper_i.core_i.id_stage_i.id_valid_o &
                       dut_wrap.cv32e40p_wrapper_i.core_i.id_stage_i.is_decoding_o;
+
+      assign irq_enabled = dut_wrap.cv32e40p_wrapper_i.irq_i & dut_wrap.cv32e40p_wrapper_i.core_i.cs_registers_i.mie_n;
 
       /**
        * step_compare_if.deferint_prime is set to 0 (asserted) when the controller in ID commits to an interrupt
@@ -120,6 +131,8 @@ module uvmt_cv32_tb;
           step_compare_if.deferint_prime <= 1'b1;
         else if (dut_wrap.cv32e40p_wrapper_i.core_i.id_stage_i.controller_i.ctrl_fsm_cs inside {cv32e40p_pkg::IRQ_TAKEN_ID,
                                                                                                 cv32e40p_pkg::IRQ_TAKEN_IF})        
+          step_compare_if.deferint_prime <= 1'b0;
+        else if (core_sleep_o_d && irq_enabled) 
           step_compare_if.deferint_prime <= 1'b0;
         else if (id_start && !step_compare_if.deferint_prime) 
           step_compare_if.deferint_prime <= 1'b1;
@@ -133,7 +146,7 @@ module uvmt_cv32_tb;
           iss_wrap.b1.deferint <= 1'b1;
         else if (id_start && !step_compare_if.deferint_prime) 
           iss_wrap.b1.deferint <= 1'b0;
-      end 
+      end
 
       /**
        * deferint deassertion logic, on negedge of ovp_b1_Step from the ISS the deferint has been consumed 
@@ -155,6 +168,8 @@ module uvmt_cv32_tb;
         else if (dut_wrap.cv32e40p_wrapper_i.core_i.id_stage_i.controller_i.ctrl_fsm_cs inside {cv32e40p_pkg::IRQ_TAKEN_ID,
                                                                                                 cv32e40p_pkg::IRQ_TAKEN_IF})
           irq_deferint <= (1 << dut_wrap.irq_id);
+        else if (core_sleep_o_d && irq_enabled)
+          irq_deferint <= irq_enabled;
       end
       assign iss_wrap.b1.irq_i = !iss_wrap.b1.deferint ? irq_deferint : irq_mip;
 

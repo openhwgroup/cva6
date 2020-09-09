@@ -31,7 +31,7 @@ class uvme_cv32_interrupt_noise_c extends uvme_cv32_base_vseq_c;
    rand int unsigned initial_delay_deassert;
 
    rand bit [31:0]   reserved_irq_mask;
-
+  
    `uvm_object_utils_begin(uvme_cv32_interrupt_noise_c)
    `uvm_object_utils_end
    
@@ -44,7 +44,6 @@ class uvme_cv32_interrupt_noise_c extends uvme_cv32_base_vseq_c;
    constraint valid_delay_c {
      short_delay_wgt != 0 || med_delay_wgt != 0 || long_delay_wgt != 0;
    }
-
 
    constraint valid_initial_delay_assert_until_ack_c {
      initial_delay_assert_until_ack dist { 0 :/ 1,
@@ -83,17 +82,16 @@ function uvme_cv32_interrupt_noise_c::new(string name="uvme_cv32_interrupt_noise
 endfunction : new
 
 task uvme_cv32_interrupt_noise_c::rand_delay();
-  randcase    
+  randcase
     short_delay_wgt: repeat($urandom_range(100,1)) @(cntxt.interrupt_cntxt.vif.drv_cb);
     med_delay_wgt: repeat($urandom_range(500,100)) @(cntxt.interrupt_cntxt.vif.drv_cb);
-    long_delay_wgt: repeat($urandom_range(10000,5000)) @(cntxt.interrupt_cntxt.vif.drv_cb);
-  endcase 
+    long_delay_wgt: repeat($urandom_range(10_000,5_000)) @(cntxt.interrupt_cntxt.vif.drv_cb);
+  endcase
 endtask : rand_delay
 
 task uvme_cv32_interrupt_noise_c::body();
 
-
-  fork 
+  fork
     begin : gen_assert_until_ack
 
       repeat (initial_delay_assert_until_ack) @(cntxt.interrupt_cntxt.vif.drv_cb);
@@ -113,7 +111,8 @@ task uvme_cv32_interrupt_noise_c::body();
         finish_item(irq_req);
 
         rand_delay();
-      end  
+
+      end
     end
 
     begin : gen_assert
@@ -126,9 +125,10 @@ task uvme_cv32_interrupt_noise_c::body();
         `uvm_do_on_with(irq_req, p_sequencer.interrupt_sequencer, {        
           action        == UVMA_INTERRUPT_SEQ_ITEM_ACTION_DEASSERT;
           (irq_mask & local::reserved_irq_mask) == 0;
-        })   
+        })
 
         rand_delay();
+
       end  
     end
 
@@ -142,9 +142,10 @@ task uvme_cv32_interrupt_noise_c::body();
         `uvm_do_on_with(irq_req, p_sequencer.interrupt_sequencer, {        
           action        == UVMA_INTERRUPT_SEQ_ITEM_ACTION_ASSERT;
           (irq_mask & local::reserved_irq_mask) == 0;
-        })   
+        })
 
         rand_delay();
+
       end  
     end
   join
