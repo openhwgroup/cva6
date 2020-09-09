@@ -182,7 +182,8 @@ OVP_MODEL_DPI   = $(DV_OVPM_MODEL)/bin/Linux64/riscv_CV32E40P.dpi.so
 # riscv toolchain install path
 CV_SW_TOOLCHAIN  ?= /opt/riscv
 RISCV            ?= $(CV_SW_TOOLCHAIN)
-RISCV_EXE_PREFIX ?= $(RISCV)/bin/riscv32-unknown-elf-
+RISCV_PREFIX     ?= riscv32-unknown-elf-
+RISCV_EXE_PREFIX ?= $(RISCV)/bin/$(RISCV_PREFIX)
 
 CFLAGS ?= -Os -g -static -mabi=ilp32 -march=rv32imc -Wall -pedantic
 
