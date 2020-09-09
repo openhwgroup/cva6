@@ -47,8 +47,8 @@ class corev_interrupt_csr_instr_stream extends riscv_load_store_rand_instr_strea
   }
 
   constraint default_wgt_c {
-    soft wgt_random_mie == 0;
-    soft wgt_random_mstatus_mie == 2; 
+    soft wgt_random_mie == 1;
+    soft wgt_random_mstatus_mie == 3; 
   }
 
   `uvm_object_utils(corev_interrupt_csr_instr_stream)
