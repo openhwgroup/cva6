@@ -89,6 +89,12 @@ module uvmt_cv32_tb;
                                                .debug_mode_q(id_stage_i.controller_i.debug_mode_q),
                                                .dcsr_q(cs_registers_i.dcsr_q),
                                                .depc_q(cs_registers_i.depc_q),
+                                               .mcause_q(cs_registers_i.mcause_q),
+                                               .mtvec(cs_registers_i.mtvec_addr_i),
+                                               .mepc_q(cs_registers_i.mepc_q),
+                                               .tdata1(cs_registers_i.tmatch_control_rdata),
+                                               .tdata2(cs_registers_i.tmatch_value_rdata),
+                                               .trigger_match_i(id_stage_i.controller_i.trigger_match_i),
                                                .*);
 
   /**
