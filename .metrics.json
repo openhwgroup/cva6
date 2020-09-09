@@ -8,13 +8,13 @@
     "list": [
       {
         "name":     "uvmt_cv32",
-        "image":    "cv32-simulation-tools:20200720.2.0",
+        "image":    "cv32-simulation-tools:20200720.2.0-09092020",
         "cmd":      "cd cv32/sim/uvmt_cv32; make corev-dv SIMULATOR=dsim DSIM_WORK=/mux-flow/build/repo/dsim_work; make comp SIMULATOR=dsim USE_ISS=YES DSIM_WORK=/mux-flow/build/repo/dsim_work",
         "wavesCmd": "cd cv32/sim/uvmt_cv32; make corev-dv SIMULATOR=dsim DSIM_WORK=/mux-flow/build/repo/dsim_work; make comp SIMULATOR=dsim USE_ISS=YES DSIM_WORK=/mux-flow/build/repo/dsim_work WAVES=1"
       },
       {
         "name":     "uvmt_cv32_compliance_build",
-        "image":    "cv32-simulation-tools:20200720.2.0",
+        "image":    "cv32-simulation-tools:20200720.2.0-09092020",
         "cmd":      "cd cv32/sim/uvmt_cv32; make all_compliance; make comp SIMULATOR=dsim USE_ISS=YES DSIM_WORK=/mux-flow/build/repo/dsim_work",
         "wavesCmd": "cd cv32/sim/uvmt_cv32; make all_compliance; make comp SIMULATOR=dsim USE_ISS=YES DSIM_WORK=/mux-flow/build/repo/dsim_work WAVES=1"
       }
