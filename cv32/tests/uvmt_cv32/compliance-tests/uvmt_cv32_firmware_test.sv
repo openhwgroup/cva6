@@ -154,7 +154,7 @@ task uvmt_cv32_firmware_test_c::irq_noise();
 
     interrupt_noise_vseq = uvme_cv32_interrupt_noise_c::type_id::create("interrupt_noise_vseqr");
     assert(interrupt_noise_vseq.randomize() with {
-      reserved_irq_mask == 32'h0000_f777;
+      reserved_irq_mask == 32'h0;
     });
     interrupt_noise_vseq.start(vsequencer);
     break;
