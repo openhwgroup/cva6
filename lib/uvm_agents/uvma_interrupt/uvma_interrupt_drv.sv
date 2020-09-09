@@ -70,17 +70,17 @@ class uvma_interrupt_drv_c extends uvm_driver#(
    /**
     * Forked thread to handle interrupts
     */
-   extern task assert_irq_until_ack(int unsigned index, int unsigned repeat_count);
+   extern task assert_irq_until_ack(int unsigned index, int unsigned repeat_count, int unsigned skew);
 
    /**
     * Assert an interrupt signal
     */
-   extern task assert_irq(int unsigned index);
+   extern task assert_irq(int unsigned index, int unsigned skew);
 
    /**
     * Deassert an interrupt signal
     */
-   extern task deassert_irq(int unsigned index);
+   extern task deassert_irq(int unsigned index, int unsigned skew);
 
 endclass : uvma_interrupt_drv_c
 
@@ -145,7 +145,7 @@ task uvma_interrupt_drv_c::drv_req(uvma_interrupt_seq_item_c req);
             if (req.irq_mask[i]) begin
                automatic int ii = i;
                fork
-                  assert_irq_until_ack(ii, req.repeat_count);
+                  assert_irq_until_ack(ii, req.repeat_count, req.skew[ii]);
                join_none
             end
          end
@@ -153,14 +153,20 @@ task uvma_interrupt_drv_c::drv_req(uvma_interrupt_seq_item_c req);
       UVMA_INTERRUPT_SEQ_ITEM_ACTION_ASSERT: begin
          for (int i = 0; i < 32; i++) begin
             if (req.irq_mask[i]) begin
-               assert_irq(i);
+               automatic int ii = i;
+               fork
+                  assert_irq(ii, req.skew[ii]);
+               join_none
             end
          end
       end   
       UVMA_INTERRUPT_SEQ_ITEM_ACTION_DEASSERT: begin
          for (int i = 0; i < 32; i++) begin
             if (req.irq_mask[i]) begin
-               deassert_irq(i);
+               automatic int ii = i;
+               fork
+                  deassert_irq(ii, req.skew[ii]);
+               join_none
             end
          end
       end   
@@ -168,13 +174,15 @@ task uvma_interrupt_drv_c::drv_req(uvma_interrupt_seq_item_c req);
 
 endtask : drv_req
 
-task uvma_interrupt_drv_c::assert_irq_until_ack(int unsigned index, int unsigned repeat_count);
+task uvma_interrupt_drv_c::assert_irq_until_ack(int unsigned index, int unsigned repeat_count, int unsigned skew);
    // If a thread is already running on this irq, then exit
    if (!assert_until_ack_sem[index].try_get(1))
       return;      
 
+   repeat (skew) @(cntxt.vif.drv_cb);
+
    for (int loop = 0; loop < repeat_count; loop++) begin
-      cntxt.vif.drv_cb.irq_drv[index] <= 1'b1;
+      repeat (skew) @(cntxt.vif.drv_cb);cntxt.vif.drv_cb.irq_drv[index] <= 1'b1;
 
       while (1) begin
          @(cntxt.vif.mon_cb);
@@ -188,8 +196,9 @@ task uvma_interrupt_drv_c::assert_irq_until_ack(int unsigned index, int unsigned
    assert_until_ack_sem[index].put(1);
 endtask : assert_irq_until_ack
 
-task uvma_interrupt_drv_c::assert_irq(int unsigned index);
+task uvma_interrupt_drv_c::assert_irq(int unsigned index, int unsigned skew);
    if (assert_until_ack_sem[index].try_get(1)) begin
+      repeat (skew) @(cntxt.vif.drv_cb);
       cntxt.vif.drv_cb.irq_drv[index] <= 1'b1;
       assert_until_ack_sem[index].put(1);
       return;      
@@ -198,11 +207,12 @@ task uvma_interrupt_drv_c::assert_irq(int unsigned index);
    cntxt.vif.drv_cb.irq_drv[index] <= 1'b1;
 endtask : assert_irq
 
-task uvma_interrupt_drv_c::deassert_irq(int unsigned index);
+task uvma_interrupt_drv_c::deassert_irq(int unsigned index, int unsigned skew);
    if (assert_until_ack_sem[index].try_get(1)) begin
+      repeat (skew) @(cntxt.vif.drv_cb);
       cntxt.vif.drv_cb.irq_drv[index] <= 1'b0;
-      assert_until_ack_sem[index].put(1);      
-      return; 
+      assert_until_ack_sem[index].put(1);
+      return;
    end
 endtask : deassert_irq
 

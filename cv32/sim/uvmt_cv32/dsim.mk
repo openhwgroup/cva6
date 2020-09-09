@@ -286,7 +286,7 @@ comp_riscv-dv:
 		+define+DSIM \
 		-suppress EnumMustBePositive \
 		-suppress SliceOOB \
-		+incdir+$(RISCVDV_PKG)/target/rv32imc \
+		+incdir+$(COREVDV_PKG)/target/cv32e40p \
 		+incdir+$(RISCVDV_PKG)/user_extension \
 		+incdir+$(RISCVDV_PKG)/tests \
 		+incdir+$(COREVDV_PKG) \

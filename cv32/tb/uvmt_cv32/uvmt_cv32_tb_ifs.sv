@@ -249,6 +249,7 @@ interface uvmt_cv32_step_compare_if;
    event       ovp_cpu_busWait;  // Was call to ovp.cpu.busWait();
    logic   [31:0] ovp_cpu_GPR[32];
    logic [31:0][31:0] riscy_GPR; // packed dimensions, register index by data width
+   logic       deferint_prime; // Stages deferint for the ISS deferint signal
 
    int  num_pc_checks;
    int  num_gpr_checks;

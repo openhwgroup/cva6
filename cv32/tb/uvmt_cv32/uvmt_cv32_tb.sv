@@ -69,6 +69,7 @@ module uvmt_cv32_tb;
                                                       .mip(cs_registers_i.mip),
                                                       .mie_q(cs_registers_i.mie_q),
                                                       .mstatus_mie(cs_registers_i.mstatus_q.mie),
+                                                      .mtvec_mode_q(cs_registers_i.mtvec_mode_q),
                                                       .if_stage_instr_rvalid_i(if_stage_i.instr_rvalid_i),
                                                       .if_stage_instr_rdata_i(if_stage_i.instr_rdata_i),
                                                       .id_stage_instr_valid_i(id_stage_i.instr_valid_i),
@@ -103,16 +104,47 @@ module uvmt_cv32_tb;
       assign step_compare_if.insn_pc   = dut_wrap.cv32e40p_wrapper_i.tracer_i.insn_pc;
       assign step_compare_if.riscy_GPR = dut_wrap.cv32e40p_wrapper_i.core_i.id_stage_i.registers_i.register_file_i.mem;
       assign clknrst_if_iss.reset_n = clknrst_if.reset_n;
+    
+      wire [31:0] irq_enabled;
+      reg [31:0] irq_deferint;
+      reg [31:0] irq_mip;
+      reg core_sleep_o_d;
+
+      always @(posedge clknrst_if.clk or negedge clknrst_if.reset_n) begin
+        if (!clknrst_if.reset_n)
+          core_sleep_o_d <= 1'b0;
+        else
+          core_sleep_o_d <= dut_wrap.cv32e40p_wrapper_i.core_sleep_o;
+      end
+
+      wire id_start = dut_wrap.cv32e40p_wrapper_i.core_i.id_stage_i.id_valid_o &
+                      dut_wrap.cv32e40p_wrapper_i.core_i.id_stage_i.is_decoding_o;
+
+      assign irq_enabled = dut_wrap.cv32e40p_wrapper_i.irq_i & dut_wrap.cv32e40p_wrapper_i.core_i.cs_registers_i.mie_n;
 
       /**
-       * deferint assertion logic, assert when we enter IRQ_TAKEN_ID (irq taken during normal execution)
-         or IRQ_TAKEN_IF (irq taken after wake up from WFI)
+       * step_compare_if.deferint_prime is set to 0 (asserted) when the controller in ID commits to an interrupt
+         derefint_prime is then reset to 1 when the ID stage commits to the next instruction (which should be the MTVEC entry address)
       */
-      always @(posedge clknrst_if_iss.clk or negedge clknrst_if_iss.reset_n) begin
+      always @(posedge clknrst_if.clk or negedge clknrst_if.reset_n) begin
+        if (!clknrst_if_iss.reset_n)
+          step_compare_if.deferint_prime <= 1'b1;
+        else if (dut_wrap.cv32e40p_wrapper_i.core_i.id_stage_i.controller_i.ctrl_fsm_cs inside {cv32e40p_pkg::IRQ_TAKEN_ID,
+                                                                                                cv32e40p_pkg::IRQ_TAKEN_IF})        
+          step_compare_if.deferint_prime <= 1'b0;
+        else if (core_sleep_o_d && irq_enabled) 
+          step_compare_if.deferint_prime <= 1'b0;
+        else if (id_start && !step_compare_if.deferint_prime) 
+          step_compare_if.deferint_prime <= 1'b1;
+      end
+
+      /**
+       * When the ID stage commits, we set deferint to the ISS to signal to look at the interrrupts
+       */
+      always @(posedge clknrst_if.clk or negedge clknrst_if.reset_n) begin
         if (!clknrst_if_iss.reset_n)
           iss_wrap.b1.deferint <= 1'b1;
-        else if (dut_wrap.cv32e40p_wrapper_i.core_i.id_stage_i.controller_i.ctrl_fsm_cs inside {cv32e40p_pkg::IRQ_TAKEN_ID,
-                                                                                                cv32e40p_pkg::IRQ_TAKEN_IF})
+        else if (id_start && !step_compare_if.deferint_prime) 
           iss_wrap.b1.deferint <= 1'b0;
       end
 
@@ -122,30 +154,45 @@ module uvmt_cv32_tb;
       always @(negedge step_compare_if.ovp_b1_Step) begin
         if (iss_wrap.b1.deferint == 0) begin
           iss_wrap.b1.deferint <= 1'b1;
+          irq_deferint <= '0;
         end
       end
 
       /**
+        * irq_deferint will capture the asserted interrupt to present to the ISS later
+        * since the autoclear/ack interface can clear the IRQ long before the ISS sees it
+        */
+      always @(posedge clknrst_if.clk or negedge clknrst_if.reset_n) begin
+        if (!clknrst_if.reset_n)
+          irq_deferint <= '0;
+        else if (dut_wrap.cv32e40p_wrapper_i.core_i.id_stage_i.controller_i.ctrl_fsm_cs inside {cv32e40p_pkg::IRQ_TAKEN_ID,
+                                                                                                cv32e40p_pkg::IRQ_TAKEN_IF})
+          irq_deferint <= (1 << dut_wrap.irq_id);
+        else if (core_sleep_o_d && irq_enabled)
+          irq_deferint <= irq_enabled;
+      end
+      assign iss_wrap.b1.irq_i = !iss_wrap.b1.deferint ? irq_deferint : irq_mip;
+
+      /**
        * Interrupt assertion to iss_wrap, note this runs on the ISS clock (skewed from core clock)
        */
-      always @(posedge clknrst_if_iss.clk or negedge clknrst_if_iss.reset_n) begin
-        if (!clknrst_if_iss.reset_n) begin
-          for (int irq_idx=0; irq_idx<32; irq_idx++) begin
-            iss_wrap.b1.irq_i[irq_idx] <= 1'b0;
-          end
+      always @(posedge clknrst_if.clk or negedge clknrst_if.reset_n) begin
+        if (!clknrst_if.reset_n) begin
+          irq_mip <= '0;
         end
         else begin
           for (int irq_idx=0; irq_idx<32; irq_idx++) begin
+                        
             // Leave ISS side asserted as long as RTL interrupt line is asserted
             if (dut_wrap.cv32e40p_wrapper_i.irq_i[irq_idx]) 
-              iss_wrap.b1.irq_i[irq_idx] <= 1'b1;          
+              irq_mip[irq_idx] <= 1'b1;          
             // If deferint is low and ovp_b1_Step is asserted, then interrupt was consumed by model
             // Clear it now to avoid mip miscompare
             else if (step_compare_if.ovp_b1_Step && iss_wrap.b1.deferint == 0)
-              iss_wrap.b1.irq_i[irq_idx] <= 1'b0;
+              irq_mip[irq_idx] <= 1'b0;
             // If RTL interrupt deasserts, but the core has not taken the interrupt, then clear ISS irq
-            else if (iss_wrap.b1.deferint == 1)            
-              iss_wrap.b1.irq_i[irq_idx] <= 1'b0;
+            else if (iss_wrap.b1.deferint == 1)
+              irq_mip[irq_idx] <= 1'b0;            
           end
         end
       end

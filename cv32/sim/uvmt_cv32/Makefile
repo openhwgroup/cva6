@@ -160,6 +160,9 @@ $(CV32E40P_PKG):
 	$(CLONE_CV32E40P_CMD)
 	$(CLONE_FPNEW_CMD)
 
+$(RISCVDV_PKG):
+	$(CLONE_RISCVDV_CMD)	
+
 ###############################################################################
 # RISC-V Compliance Test-suite
 #     As much as possible, the test suite is used "out-of-the-box".  The
@@ -235,6 +238,12 @@ clean_test_programs:
 	find $(PROJ_ROOT_DIR)/cv32/tests/uvmt_cv32/test-programs -name *.map     -exec rm {} \;
 	find $(PROJ_ROOT_DIR)/cv32/tests/uvmt_cv32/test-programs -name *.readelf -exec rm {} \;
 	find $(PROJ_ROOT_DIR)/cv32/tests/uvmt_cv32/test-programs -name *.objdump -exec rm {} \;
+	find $(PROJ_ROOT_DIR)/cv32/tests/programs -name *.o       -exec rm {} \;
+	find $(PROJ_ROOT_DIR)/cv32/tests/programs -name *.hex     -exec rm {} \;
+	find $(PROJ_ROOT_DIR)/cv32/tests/programs -name *.elf     -exec rm {} \;
+	find $(PROJ_ROOT_DIR)/cv32/tests/programs -name *.map     -exec rm {} \;
+	find $(PROJ_ROOT_DIR)/cv32/tests/programs -name *.readelf -exec rm {} \;
+	find $(PROJ_ROOT_DIR)/cv32/tests/programs -name *.objdump -exec rm {} \;
 
 clean_riscv-dv:
 	rm -rf $(RISCVDV_PKG)

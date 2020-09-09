@@ -19,7 +19,8 @@ package corev_instr_test_pkg;
   import uvm_pkg::*;
   import riscv_instr_pkg::*;
   import riscv_instr_test_pkg::*;
-
+  import riscv_signature_pkg::*;
+  
   // Instruction streams
   `include "corev_interrupt_csr_instr_lib.sv"
 

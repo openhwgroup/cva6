@@ -1,49 +1,137 @@
-class corev_interrupt_csr_instr_stream extends riscv_rand_instr_stream;
+/*
+ * Copyright 2020 OpenHW Group
+ * Copyright 2020 Silicon Labs, Inc.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+/*
+ * corev_interrupt_csr_instr_stream
+ *
+ * Directed test stream to inject CLINT-interrupt related CSR writes
+ * Randomly selects one of the following via weights
+ * - Random write to MIE register
+ * - Random write to MSTATUS.MIE register
+ */
+
+class corev_interrupt_csr_instr_stream extends riscv_load_store_rand_instr_stream;
+
+  typedef enum { 
+    RANDOM_MIE,
+    RANDOM_MSTATUS_MIE
+  } interrupt_csr_action_enum;
+
+  rand interrupt_csr_action_enum action;
+  rand int unsigned wgt_random_mie;
+  rand int unsigned wgt_random_mstatus_mie;
+  rand reg[31:0] rand_mie_setting;
+
+  constraint ordering_wgt_c {
+    solve wgt_random_mie before action;
+    solve wgt_random_mstatus_mie before action;
+  }
+
+  constraint dist_action_c {
+    action dist  { RANDOM_MIE :/ wgt_random_mie,
+                   RANDOM_MSTATUS_MIE :/ wgt_random_mstatus_mie };
+  }
+
+  constraint default_wgt_c {
+    soft wgt_random_mie == 1;
+    soft wgt_random_mstatus_mie == 3; 
+  }
 
   `uvm_object_utils(corev_interrupt_csr_instr_stream)
   `uvm_object_new
 
   function void post_randomize();
-    `uvm_info("CVINTRRUPTCSRINSTR", "I am here", UVM_LOW)
-    initialize_instr_list(1);
-    allowed_instr = {CSRRW, CSRRS, CSRRC};
+    super.post_randomize();
+  endfunction : post_randomize
 
-    foreach (instr_list[i]) begin
-      randomize_instr(instr_list[i]);
-      randcase
-        1: generate_mie_write();
-        1: generate_mstatus_mie_write();
-      endcase
-    end
+  virtual function void add_mixed_instr(int instr_cnt);
+    super.add_mixed_instr(instr_cnt);
 
-  endfunction
+    case (action)
+      RANDOM_MIE: generate_mie_write();
+      RANDOM_MSTATUS_MIE: generate_mstatus_mie_write();
+    endcase
+  endfunction : add_mixed_instr
 
   function void generate_mie_write();
-    // Create a single MIE that can write, clear or set random bits unconstrained
-    `uvm_info("CVINTRCSRINSTR", "Generate MIE", UVM_LOW)
-    initialize_instr_list(.instr_cnt(1));
+    riscv_instr        inserted_instr_list[$];
 
-    instr_list[0] = riscv_instr::get_rand_instr(.include_instr({CSRRW, CSRRS, CSRRC}));
-    instr_list[0].csr_c.constraint_mode(0);
-    `DV_CHECK_RANDOMIZE_WITH_FATAL(instr_list[0],
-      csr == MIE;,
-      "Cannot randomize MIE CSR instruction"
-    )    
-  endfunction
+    riscv_pseudo_instr li_instr;
+    riscv_instr        csr_instr;
+
+    // Instruction 0: Generate a li with a randomized mask
+    li_instr = riscv_pseudo_instr::type_id::create("LI");  
+    `DV_CHECK_RANDOMIZE_WITH_FATAL(li_instr,
+      pseudo_instr_name == LI;
+      !(rd inside {reserved_rd, cfg.reserved_regs});
+      , "Failed randomizeing MIE LI instruction"
+    )
+    // riscv_instr constraints don't handle psuedo-op LI immediate correctly (gets truncated)
+    li_instr.imm = rand_mie_setting;
+    li_instr.comment = $sformatf("Set MIE to 0x%08x", rand_mie_setting);
+    li_instr.update_imm_str();
+    inserted_instr_list.push_back(li_instr);
+    
+    // Instruction 1: Generate a write, set or clear to MIE
+    csr_instr = riscv_instr::get_rand_instr(.include_instr({CSRRW, CSRRC, CSRRS}));
+    csr_instr.csr_c.constraint_mode(0);
+    `DV_CHECK_RANDOMIZE_WITH_FATAL(csr_instr,
+      csr == MIE;    
+      !(rd inside {reserved_rd, cfg.reserved_regs});
+      rs1 == li_instr.rd;
+      , "Cannot randomize MIE CSR instruction"
+    )
+    inserted_instr_list.push_back(csr_instr);
+
+    // Add to the random list of instructions
+    insert_instr_stream(inserted_instr_list);
+  endfunction : generate_mie_write
 
   function void generate_mstatus_mie_write();
-    // Randomly set or clear bit 3 (MIE) in MSTATUS    
-    `uvm_info("CVINTRCSRINSTR", "Generate MSTATUS_MIE", UVM_LOW)
-    
-    initialize_instr_list(.instr_cnt(1));
-    instr_list[0] = riscv_instr::get_rand_instr(.include_instr({CSRRWI, CSRRSI, CSRRCI}));
-    instr_list[0].csr_c.constraint_mode(0);
-    `DV_CHECK_RANDOMIZE_WITH_FATAL(instr_list[0],
-      rd == ZERO;
+    riscv_instr csr_instr;
+
+    // Randomly set or clear bit 3 (MIE) in MSTATUS        
+    csr_instr = riscv_instr::get_rand_instr(.include_instr({CSRRSI, CSRRCI}));
+    csr_instr.csr_c.constraint_mode(0);
+    `DV_CHECK_RANDOMIZE_WITH_FATAL(csr_instr,
       csr == MSTATUS;
-      imm inside {'h4, 'h0};,
-      "Cannot randomize MSTATUS_MIE CSR instruction"
+      !(rd inside {reserved_rd, cfg.reserved_regs});
+      imm inside {'h8, 'h0};
+      , "Cannot randomize MSTATUS_MIE CSR instruction"
     )
-  endfunction
+    insert_instr(csr_instr);
+  endfunction : generate_mstatus_mie_write
 
 endclass : corev_interrupt_csr_instr_stream
+
+ /*
+ * corev_interrupt_csr_wfi_instr_stream
+ *
+ * Directed instruction stream derived from corev_interrupt_csr_instr_stream
+ * but ensures that at least one valid CLINT interrupt is set to avoid starving WFI
+ */
+
+class corev_interrupt_csr_wfi_instr_stream extends corev_interrupt_csr_instr_stream;
+
+  constraint wfi_c {
+    action == RANDOM_MIE -> ((rand_mie_setting & valid_interrupt_mask) != 0);
+  }
+
+  `uvm_object_utils(corev_interrupt_csr_wfi_instr_stream)
+  `uvm_object_new
+
+endclass : corev_interrupt_csr_wfi_instr_stream

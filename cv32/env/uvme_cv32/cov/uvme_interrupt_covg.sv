@@ -121,7 +121,7 @@ function void uvme_interrupt_covg::write_rv32isa(uvme_rv32isa_covg_trn_c trn);
 
     // For each mret decrement the interrupt count
     if (last_instr_trn != null && last_instr_trn.ins.asm == MRET && irq_nested_count) begin    
-        cg_irq_exit.sample(last_instr_trn.ins);
+        cg_irq_exit.sample(trn.ins);
         irq_nested_count--;
     end
 
