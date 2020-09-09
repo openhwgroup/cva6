@@ -194,11 +194,10 @@ function uvmt_cv32_base_test_c::new(string name="uvmt_cv32_base_test", uvm_compo
    //        UVM_INFO @ 9.750 ns : uvmt_cv32_dut_wrap.sv(79) reporter [DUT_WRAP] load_instr_mem asserted!
    rs = new("rs");
    
-   // Terminate simulation after a "reasonable" number of errors
-   rs.set_max_quit_count(.count(5), .overridable(1));
+   
+   // Terminate simulation after a "reasonable" number of errors   
    uvm_report_server::set_server(rs);
    reset_vseq = uvme_cv32_reset_vseq_c::type_id::create("reset_vseq");
-   
 endfunction : new
 
 
@@ -206,6 +205,8 @@ function void uvmt_cv32_base_test_c::build_phase(uvm_phase phase);
    
    super.build_phase(phase);
    
+   rs.set_max_quit_count(.count(5), .overridable(1));
+
    retrieve_vifs    ();
    create_cfg       ();
    randomize_test   ();

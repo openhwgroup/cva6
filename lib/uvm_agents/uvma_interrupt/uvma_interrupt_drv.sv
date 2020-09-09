@@ -56,7 +56,12 @@ class uvma_interrupt_drv_c extends uvm_driver#(
     * Obtains the reqs from the sequence item port and calls drv_req()
     */
    extern virtual task run_phase(uvm_phase phase);
-   
+
+   /**
+    * Thread that clears acknowledged interrupts that were randomly asserted
+    */
+   extern task irq_ack_clear();   
+
    /**
     * Drives the virtual interface's (cntxt.vif) signals using req's contents.
     */
@@ -117,8 +122,11 @@ task uvma_interrupt_drv_c::run_phase(uvm_phase phase);
    // Enable the driver in the interface
    cntxt.vif.is_active = 1;
 
-   // Whether to drive interrupts from startup
-   
+   // Fork thread to deassert randomly asserted interrupts when acknowledged
+   fork
+      irq_ack_clear();
+   join_none
+
    forever begin
       seq_item_port.get_next_item(req);
       `uvml_hrtbt()
@@ -170,27 +178,53 @@ task uvma_interrupt_drv_c::assert_irq_until_ack(int unsigned index, int unsigned
 
       while (1) begin
          @(cntxt.vif.mon_cb);
-         if ((cntxt.vif.mon_cb.irq_ack && cntxt.vif.mon_cb.irq_id == index) ||
-            cntxt.vif.mon_cb.irq_deassert[index])
+         if ((cntxt.vif.mon_cb.irq_ack && cntxt.vif.mon_cb.irq_id == index))
             break;
       end
    end
 
+   `uvm_info("IRQDRV", $sformatf("assert_irq_until_ack: Deasserting irq: %0d", index), UVM_DEBUG);
    cntxt.vif.drv_cb.irq_drv[index] <= 1'b0;
    assert_until_ack_sem[index].put(1);
 endtask : assert_irq_until_ack
 
 task uvma_interrupt_drv_c::assert_irq(int unsigned index);
+   if (assert_until_ack_sem[index].try_get(1)) begin
+      cntxt.vif.drv_cb.irq_drv[index] <= 1'b1;
+      assert_until_ack_sem[index].put(1);
+      return;      
+   end   
+
    cntxt.vif.drv_cb.irq_drv[index] <= 1'b1;
 endtask : assert_irq
 
 task uvma_interrupt_drv_c::deassert_irq(int unsigned index);
    if (assert_until_ack_sem[index].try_get(1)) begin
+      cntxt.vif.drv_cb.irq_drv[index] <= 1'b0;
       assert_until_ack_sem[index].put(1);      
-      return;      
+      return; 
    end
-   
-   cntxt.vif.drv_cb.irq_deassert[index] <= 1'b0;
 endtask : deassert_irq
+
+task uvma_interrupt_drv_c::irq_ack_clear();
+   while(1) begin
+      @(cntxt.vif.mon_cb);
+      if (cntxt.vif.mon_cb.irq_ack) begin         
+         // Try to get the semaphore for the irq_id,
+         // If we can't get it, then this irq is managed by assert_irq_until_ack and we will ignore this ack
+         // Otherwise deassert the interrupt
+         int unsigned irq_id;
+         
+         irq_id  = cntxt.vif.mon_cb.irq_id;
+
+         `uvm_info("IRQDRV", $sformatf("irq_ack_clear: ack for IRQ: %0d", irq_id), UVM_DEBUG);
+         if (assert_until_ack_sem[irq_id].try_get(1)) begin
+            `uvm_info("IRQDRV", $sformatf("irq_ack_clear: Clearing IRQ: %0d", irq_id), UVM_DEBUG);
+            cntxt.vif.drv_cb.irq_drv[irq_id] <= 1'b0;
+            assert_until_ack_sem[irq_id].put(1);
+         end
+      end
+   end
+endtask
 
 `endif // __UVMA_INTERRUPT_DRV_SV__

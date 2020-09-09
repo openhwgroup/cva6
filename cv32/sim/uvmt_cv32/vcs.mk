@@ -133,6 +133,7 @@ VCS_RUN_FLAGS        ?=
 VCS_RUN_FLAGS        += $(VCS_RUN_BASE_FLAGS)
 VCS_RUN_FLAGS        += $(VCS_RUN_WAVES_FLAGS)
 VCS_RUN_FLAGS        += $(VCS_RUN_COV_FLAGS)
+VCS_RUN_FLAGS        += $(USER_RUN_FLAGS)
 
 no_rule:
 	@echo 'makefile: SIMULATOR is set to $(SIMULATOR), but no rule/target specified.'
@@ -186,12 +187,12 @@ custom: $(VCS_SIM_PREREQ) $(CUSTOM_DIR)/$(CUSTOM_PROG).hex
 
 ################################################################################
 # Explicit target tests
-hello-world:  $(VCS_SIM_PREREQ) $(CUSTOM)/hello_world.hex
+hello-world:  $(VCS_SIM_PREREQ) $(CUSTOM)/hello-world.hex
 	mkdir -p $(VCS_RESULTS)/hello-world && cd $(VCS_RESULTS)/hello-world && \
 	$(VCS_RESULTS)/$(SIMV) -l vcs-hello-world.log -cm_name hello-world $(VCS_COMP_RUN) \
-		+elf_file=$(CUSTOM)/hello_world.elf \
+		+elf_file=$(CUSTOM)/hello-world.elf \
 		+UVM_TESTNAME=uvmt_cv32_firmware_test_c \
-		+firmware=$(CUSTOM)/hello_world.hex
+		+firmware=$(CUSTOM)/hello-world.hex
 
 misalign: $(VCS_SIM_PREREQ) $(CUSTOM)/misalign.hex
 	mkdir -p $(VCS_RESULTS)/misalign && cd $(VCS_RESULTS)/misalign && \
@@ -362,5 +363,5 @@ clean:
 	rm -rf $(VCS_RESULTS)
 
 # All generated files plus the clone of the RTL
-clean_all: clean clean_core_tests clean_riscv-dv clean_test_programs
+clean_all: clean clean_core_tests clean_riscv-dv clean_test_programs clean-bsp
 	rm -rf $(CV32E40P_PKG)

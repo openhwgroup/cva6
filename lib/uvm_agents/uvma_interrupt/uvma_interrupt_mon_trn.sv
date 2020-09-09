@@ -24,19 +24,15 @@
  */
 class uvma_interrupt_mon_trn_c extends uvml_trn_mon_trn_c;
    
-   // Data
-   // TODO Add uvma_interrupt_mon_trn_c data fields
-   //      Ex: logic        abc;
-   //          logic [7:0]  xyz;
-   
-   
+   uvma_interrupt_mon_action_enum action;
+
+   int unsigned  id;
+
    `uvm_object_utils_begin(uvma_interrupt_mon_trn_c)
-      // TODO Add UVM field utils for data fields
-      //      Ex: `uvm_field_int(abc, UVM_DEFAULT)
-      //          `uvm_field_int(xyz, UVM_DEFAULT)
+      `uvm_field_enum(uvma_interrupt_mon_action_enum, action, UVM_DEFAULT)
+      `uvm_field_int(id, UVM_DEFAULT)
    `uvm_object_utils_end
-   
-   
+      
    /**
     * Default constructor.
     */
