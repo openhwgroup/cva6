@@ -236,54 +236,6 @@ custom: $(XRUN_SIM_PREREQ) $(CUSTOM_DIR)/$(CUSTOM_PROG).hex
 
 ################################################################################
 # Explicit target tests
-hello-world:  $(XRUN_SIM_PREREQ) $(CUSTOM)/hello-world.hex
-	mkdir -p $(XRUN_RESULTS)/hello-world && cd $(XRUN_RESULTS)/hello-world && \
-	$(XRUN) -l xrun-hello-world.log -covtest hello-world $(XRUN_COMP_RUN) \
-		+elf_file=$(CUSTOM)/hello-world.elf \
-		+nm_file=$(CUSTOM)/hello-world.nm \
-		+UVM_TESTNAME=uvmt_cv32_firmware_test_c \
-		+firmware=$(CUSTOM)/hello-world.hex
-
-misalign: $(XRUN_SIM_PREREQ) $(CUSTOM)/misalign.hex
-	mkdir -p $(XRUN_RESULTS)/misalign && cd $(XRUN_RESULTS)/misalign && \
-	$(XRUN) -l xrun-misalign.log -covtest misalign $(XRUN_COMP_RUN) \
-		+elf_file=$(CUSTOM)/misalign.elf \
-		+nm_file=$(CUSTOM)/misalign.nm \
-		+UVM_TESTNAME=uvmt_cv32_firmware_test_c \
-		+firmware=$(CUSTOM)/misalign.hex
-
-illegal: $(XRUN_SIM_PREREQ) $(CUSTOM)/illegal.hex
-	mkdir -p $(XRUN_RESULTS)/illegal && cd $(XRUN_RESULTS)/illegal && \
-	$(XRUN) -l xrun-illegal.log -covtest illegal $(XRUN_COMP_RUN) \
-		+elf_file=$(CUSTOM)/illegal.elf \
-		+nm_file=$(CUSTOM)/illegal.nm \
-		+UVM_TESTNAME=uvmt_cv32_firmware_test_c \
-		+firmware=$(CUSTOM)/illegal.hex
-
-fibonacci: $(XRUN_SIM_PREREQ) $(CUSTOM)/fibonacci.hex
-	mkdir -p $(XRUN_RESULTS)/fibonacci && cd $(XRUN_RESULTS)/fibonacci && \
-	$(XRUN) -l xrun-fibonacci.log -covtest fibonacci $(XRUN_COMP_RUN) \
-		+elf_file=$(CUSTOM)/fibonacci.elf \
-		+nm_file=$(CUSTOM)/fibonacci.nm \
-		+UVM_TESTNAME=uvmt_cv32_firmware_test_c \
-		+firmware=$(CUSTOM)/fibonacci.hex
-
-dhrystone: $(XRUN_SIM_PREREQ) $(CUSTOM)/dhrystone.hex
-	mkdir -p $(XRUN_RESULTS)/dhrystone && cd $(XRUN_RESULTS)/dhrystone && \
-	$(XRUN) -l xrun-dhrystonelog -covtest dhrystone $(XRUN_COMP_RUN) \
-		+elf_file=$(CUSTOM)/dhrystone.elf \
-		+nm_file=$(CUSTOM)/dhrystone.nm \
-		+UVM_TESTNAME=uvmt_cv32_firmware_test_c \
-		+firmware=$(CUSTOM)/dhrystone.hex
-
-riscv_ebreak_test_0: $(XRUN_SIM_PREREQ) $(CUSTOM)/riscv_ebreak_test_0.hex
-	mkdir -p $(XRUN_RESULTS)/riscv_ebreak_test_0 && cd $(XRUN_RESULTS)/riscv_ebreak_test_0 && \
-	$(XRUN) -l xrun-riscv_ebreak_test_0log -covtest riscv_ebreak_test_0 $(XRUN_COMP_RUN) \
-                +elf_file=$(CUSTOM)/riscv_ebreak_test_0.elf \
-                +nm_file=$(CUSTOM)/riscv_ebreak_test_0.nm \
-                +UVM_TESTNAME=uvmt_cv32_firmware_test_c \
-                +firmware=$(CUSTOM)/riscv_ebreak_test_0.hex
-
 debug_test: $(XRUN_SIM_PREREQ) $(CORE_TEST_DIR)/debug_test/debug_test.hex
 	mkdir -p $(XRUN_RESULTS)/debug_test && cd $(XRUN_RESULTS)/debug_test && \
 	$(XRUN) -l xrun-riscv_debug_test.log -covtest debug_test $(XRUN_COMP_RUN) \
