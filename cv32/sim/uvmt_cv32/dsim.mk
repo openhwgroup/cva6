@@ -403,7 +403,7 @@ gen_corev-dv:
 		-image image \
 		-work $(DSIM_COREVDV_RESULTS)/dsim \
 	 	+UVM_TESTNAME=$(GEN_UVM_TEST) \
-		+num_of_tests=$(GEN_NUM_TEST)  \
+		+num_of_tests=$(GEN_NUM_TESTS) \
 		+start_idx=$(GEN_START_INDEX)  \
 		+asm_file_name_opts=$(TEST) \
 		-l $(TEST)_$(GEN_START_INDEX)_$(GEN_NUM_TESTS).log \
