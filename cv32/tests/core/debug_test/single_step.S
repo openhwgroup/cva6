@@ -118,14 +118,6 @@ _irq_wait_loop:
 
     //-----------------
     // Stepping with interrupt, stepie=0
-    addi t0, t0,2 // debug code moves dpc to here
-    li t1, 2
-    // If trigger was correct, debug code skips
-    // loading of t0 to 1, and t0 should be of value 2
-    bne t0, t1, _single_step_fail
-
-
-    // Stepping with interrupt, stepie=1
     la a1, glb_step_info
     li t0, 6
     sw t0, 0(a1)
