@@ -388,17 +388,17 @@ gen_corev_jump_stress_test:
 	mv $(DSIM_COREVDV_RESULTS)/corev_jump_stress_test/*.S $(CORE_TEST_DIR)/custom
 
 gen_corev-dv: 
-	mkdir -p $(DSIM_RISCVDV_RESULTS)/$(TEST)
+	mkdir -p $(DSIM_COREVDV_RESULTS)/$(TEST)
 	# Clean old assembler generated tests in results
 	for (( idx=${GEN_START_INDEX}; idx < $$((${GEN_START_INDEX} + ${GEN_NUM_TESTS})); idx++ )); do \
-		rm -f ${DSIM_RISCVDV_RESULTS}/${TEST}/${TEST}_$$idx.S; \
+		rm -f ${DSIM_COREVDV_RESULTS}/${TEST}/${TEST}_$$idx.S; \
 	done
-	cd  $(DSIM_RISCVDV_RESULTS)/$(TEST) && \
+	cd  $(DSIM_COREVDV_RESULTS)/$(TEST) && \
 	dsim  -sv_seed $(RNDSEED) \
 		-sv_lib $(UVM_HOME)/src/dpi/libuvm_dpi.so \
 		+acc+rwb \
 		-image image \
-		-work $(DSIM_RISCVDV_RESULTS)/dsim \
+		-work $(DSIM_COREVDV_RESULTS)/dsim \
 	 	+UVM_TESTNAME=$(GEN_UVM_TEST) \
 		+num_of_tests=$(GEN_NUM_TEST)  \
 		+start_idx=$(GEN_START_INDEX)  \
@@ -407,7 +407,7 @@ gen_corev-dv:
 		$(GEN_PLUSARGS)
 	# Copy out final assembler files to test directory
 	for (( idx=${GEN_START_INDEX}; idx < $$((${GEN_START_INDEX} + ${GEN_NUM_TESTS})); idx++ )); do \
-		cp ${DSIM_RISCVDV_RESULTS}/${TEST}/${TEST}_$$idx.S ${GEN_TEST_DIR}; \
+		cp ${DSIM_COREVDV_RESULTS}/${TEST}/${TEST}_$$idx.S ${GEN_TEST_DIR}; \
 	done
 
 corev-dv: clean_riscv-dv \
