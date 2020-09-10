@@ -11,16 +11,7 @@
 // Author: Michael Schaffner <schaffner@iis.ee.ethz.ch>, ETH Zurich
 //         Nils Wistoff <nwistoff@iis.ee.ethz.ch>, ETH Zurich
 // Date: 04.09.2020
-// Description: testbench for piton_icache. includes the following tests:
-//
-// 0) random accesses with disabled cache
-// 1) random accesses with enabled cache to cacheable and noncacheable memory
-// 2) linear, wrapping sweep with enabled cache
-// 3) 1) with random stalls on the memory side and TLB side
-// 4) nr 3) with random invalidations
-//
-// note that we use a simplified address translation scheme to emulate the TLB.
-// (random offsets).
+// Description: testbench for nonblocking write-back L1 dcache.
 
 `include "tb.svh"
 `include "assign.svh"
@@ -55,14 +46,14 @@ module tb import ariane_pkg::*; import std_cache_pkg::*; import tb_pkg::*; #()()
   parameter nWriteVectors     = 20000;
   parameter nAMOs             = 20000;
 
-    /// ID width of the Full AXI slave port, master port has ID `AxiIdWidthFull + 32'd1`
+  /// ID width of the Full AXI slave port, master port has ID `AxiIdWidthFull + 32'd1`
   parameter int unsigned  TbAxiIdWidthFull   = 32'd6;
   /// Address width of the full AXI bus
   parameter int unsigned  TbAxiAddrWidthFull = 32'd64;
   /// Data width of the full AXI bus
   parameter int unsigned  TbAxiDataWidthFull = 32'd64;
   localparam int unsigned TbAxiUserWidthFull = 32'd1;
-    /// Application time to the DUT
+  /// Application time to the DUT
   parameter time          TbApplTime         = 2ns;
   /// Test time of the DUT
   parameter time          TbTestTime         = 8ns;
@@ -358,8 +349,8 @@ module tb import ariane_pkg::*; import std_cache_pkg::*; import tb_pkg::*; #()()
 
     // Start AXI port emulation
     fork
-    data_mem_port.run();
-    bypass_mem_port.run();
+      data_mem_port.run();
+      bypass_mem_port.run();
     join
   end
 
@@ -370,20 +361,20 @@ module tb import ariane_pkg::*; import std_cache_pkg::*; import tb_pkg::*; #()()
   std_nbdcache  #(
     .CACHE_START_ADDR ( CachedAddrBeg )
   ) i_dut (
-    .clk_i           ( clk_i           ), //
-    .rst_ni          ( rst_ni          ), //
-    .flush_i         ( flush_i         ), //
-    .flush_ack_o     ( flush_ack_o     ), //
-    .enable_i        ( enable_i        ), //
-    .miss_o          ( miss_o          ), //
-    .amo_req_i       ( amo_req_i       ), //
-    .amo_resp_o      ( amo_resp_o      ), //
-    .req_ports_i     ( req_ports_i     ), //
-    .req_ports_o     ( req_ports_o     ), //
-    .axi_data_o      ( axi_data_o      ), //
-    .axi_data_i      ( axi_data_i      ), //
-    .axi_bypass_o    ( axi_bypass_o    ), //
-    .axi_bypass_i    ( axi_bypass_i    )  //
+    .clk_i           ( clk_i           ),
+    .rst_ni          ( rst_ni          ),
+    .flush_i         ( flush_i         ),
+    .flush_ack_o     ( flush_ack_o     ),
+    .enable_i        ( enable_i        ),
+    .miss_o          ( miss_o          ),
+    .amo_req_i       ( amo_req_i       ),
+    .amo_resp_o      ( amo_resp_o      ),
+    .req_ports_i     ( req_ports_i     ),
+    .req_ports_o     ( req_ports_o     ),
+    .axi_data_o      ( axi_data_o      ),
+    .axi_data_i      ( axi_data_i      ),
+    .axi_bypass_o    ( axi_bypass_o    ),
+    .axi_bypass_i    ( axi_bypass_i    )
   );
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -923,15 +914,3 @@ module tb import ariane_pkg::*; import std_cache_pkg::*; import tb_pkg::*; #()()
   end
 
 endmodule
-
-
-
-
-
-
-
-
-
-
-
-
