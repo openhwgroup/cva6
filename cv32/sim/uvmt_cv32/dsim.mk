@@ -390,8 +390,11 @@ gen_corev_jump_stress_test:
 gen_corev-dv: 
 	mkdir -p $(DSIM_COREVDV_RESULTS)/$(TEST)
 	# Clean old assembler generated tests in results
-	for (( idx=${GEN_START_INDEX}; idx < $$((${GEN_START_INDEX} + ${GEN_NUM_TESTS})); idx++ )); do \
+	idx=$(GEN_START_INDEX); sum=$$(($(GEN_START_INDEX) + $(GEN_NUM_TESTS))); \
+	while [ $$idx -lt $${sum} ]; do \
 		rm -f ${DSIM_COREVDV_RESULTS}/${TEST}/${TEST}_$$idx.S; \
+		echo "idx = $$idx"; \
+		idx=$$((idx + 1)); \
 	done
 	cd  $(DSIM_COREVDV_RESULTS)/$(TEST) && \
 	dsim  -sv_seed $(RNDSEED) \
@@ -406,8 +409,10 @@ gen_corev-dv:
 		-l $(TEST)_$(GEN_START_INDEX)_$(GEN_NUM_TESTS).log \
 		$(GEN_PLUSARGS)
 	# Copy out final assembler files to test directory
-	for (( idx=${GEN_START_INDEX}; idx < $$((${GEN_START_INDEX} + ${GEN_NUM_TESTS})); idx++ )); do \
+	idx=$(GEN_START_INDEX); sum=$$(($(GEN_START_INDEX) + $(GEN_NUM_TESTS))); \
+	while [ $$idx -lt $${sum} ]; do \
 		cp ${DSIM_COREVDV_RESULTS}/${TEST}/${TEST}_$$idx.S ${GEN_TEST_DIR}; \
+		idx=$$((idx + 1)); \
 	done
 
 corev-dv: clean_riscv-dv \
