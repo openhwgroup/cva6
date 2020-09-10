@@ -357,52 +357,9 @@ comp_corev-dv: $(RISCVDV_PKG)
 		-f $(COREVDV_PKG)/manifest.f \
 		-l xrun.log
 
-gen_corev_arithmetic_base_test:
-	mkdir -p $(XRUN_COREVDV_RESULTS)/corev_arithmetic_base_test	
-	cd $(XRUN_COREVDV_RESULTS)/corev_arithmetic_base_test && \
-	$(XRUN) -R $(XRUN_RUN_FLAGS) \
-		-xceligen rand_struct \
-		+UVM_TESTNAME=corev_instr_base_test  \
-		+num_of_tests=2  \
-		+start_idx=0  \
-		+asm_file_name_opts=riscv_arithmetic_basic_test  \
-		-l $(COREVDV_PKG)/out_$(DATE)/sim_riscv_arithmetic_basic_test_0.log \
-		+instr_cnt=10000 \
-		+num_of_sub_program=0 \
-		+directed_instr_0=riscv_int_numeric_corner_stream,4 \
-		+no_fence=1 \
-		+no_data_page=1 \
-		+no_branch_jump=1 \
-		+boot_mode=m \
-		+no_csr_instr=1
-	cp $(XRUN_COREVDV_RESULTS)/corev_arithmetic_base_test/*.S $(CORE_TEST_DIR)/custom
-
-gen_corev_rand_instr_test:
-	mkdir -p $(XRUN_COREVDV_RESULTS)/corev_rand_instr_test	
-	cd $(XRUN_COREVDV_RESULTS)/corev_rand_instr_test && \
-	$(XRUN) -R $(XRUN_RUN_FLAGS) \
-		-xceligen rand_struct \
-	 	+UVM_TESTNAME=corev_instr_base_test \
-		+num_of_tests=2 \
-		+start_idx=0  \
-		+asm_file_name_opts=corev_rand_instr_test  \
-		-l $(COREVDV_PKG)/out_$(DATE)/sim_riscv_rand_instr_test_0.log \
-    +instr_cnt=10000 \
-    +num_of_sub_program=5 \
-    +directed_instr_0=riscv_load_store_rand_instr_stream,4 \
-    +directed_instr_1=riscv_loop_instr,4 \
-    +directed_instr_2=riscv_hazard_instr_stream,4 \
-    +directed_instr_3=riscv_load_store_hazard_instr_stream,4 \
-    +directed_instr_4=riscv_multi_page_load_store_instr_stream,4 \
-    +directed_instr_5=riscv_mem_region_stress_test,4 \
-    +directed_instr_6=riscv_jal_instr,4
-	cp $(XRUN_COREVDV_RESULTS)/corev_rand_instr_test/*.S $(CORE_TEST_DIR)/custom
-
 corev-dv: clean_riscv-dv \
           clone_riscv-dv \
 		  comp_corev-dv
-	$(MAKE) gen_corev_arithmetic_base_test
-	$(MAKE) gen_corev_rand_instr_test 
 
 gen_corev-dv: 
 	mkdir -p $(XRUN_COREVDV_RESULTS)/$(TEST)
