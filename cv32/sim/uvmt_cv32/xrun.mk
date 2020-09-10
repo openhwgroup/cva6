@@ -125,6 +125,10 @@ endif
 
 ################################################################################
 
+# File to `include "uvm_macros.svh" since Xcelium automatic UVM compilation
+# does not source the macros file. 
+XRUN_UVM_MACROS_INC_FILE = $(DV_UVMT_CV32_PATH)/uvmt_cv32_uvm_macros_inc.sv
+
 XRUN_FILE_LIST ?= -f $(DV_UVMT_CV32_PATH)/uvmt_cv32.flist
 ifeq ($(call IS_YES,$(USE_ISS)),YES)
     XRUN_FILE_LIST += -f $(DV_UVMT_CV32_PATH)/imperas_iss.flist
@@ -137,7 +141,6 @@ endif
 XRUN_RUN_FLAGS        ?= -R -xmlibdirname ../xcelium.d 
 XRUN_RUN_FLAGS        += -covoverwrite
 XRUN_RUN_FLAGS        += $(XRUN_RUN_BASE_FLAGS)
-XRUN_RUN_FLAGS        += $(XRUN_RUN_WAVES_FLAGS)
 XRUN_RUN_FLAGS        += $(XRUN_RUN_COV_FLAGS)
 XRUN_RUN_FLAGS        += $(XRUN_USER_RUN_FLAGS)
 XRUN_RUN_FLAGS        += $(USER_RUN_FLAGS)
@@ -165,6 +168,7 @@ XRUN_COMP = $(XRUN_COMP_FLAGS) \
 		$(XRUN_USER_COMPILE_ARGS) \
 		+incdir+$(DV_UVME_CV32_PATH) \
 		+incdir+$(DV_UVMT_CV32_PATH) \
+		$(XRUN_UVM_MACROS_INC_FILE) \
 		-f $(CV32E40P_MANIFEST) \
 		$(XRUN_FILE_LIST) \
 		$(UVM_PLUSARGS)
@@ -199,6 +203,7 @@ test: $(XRUN_SIM_PREREQ) $(TEST_TEST_DIR)/$(TEST_NAME).hex
 		$(XRUN) \
 			-l xrun-$(TEST_NAME).log \
 			$(XRUN_COMP_RUN) \
+			$(XRUN_RUN_WAVES_FLAGS) \
 			-covtest $(TEST_NAME) \
 			$(TEST_PLUSARGS) \
 			+UVM_TESTNAME=$(TEST_UVM_TEST) \
@@ -269,6 +274,7 @@ riscv_ebreak_test_0: $(XRUN_SIM_PREREQ) $(CUSTOM)/riscv_ebreak_test_0.hex
 debug_test: $(XRUN_SIM_PREREQ) $(CORE_TEST_DIR)/debug_test/debug_test.hex
 	mkdir -p $(XRUN_RESULTS)/debug_test && cd $(XRUN_RESULTS)/debug_test && \
 	$(XRUN) -l xrun-riscv_debug_test.log -covtest debug_test $(XRUN_COMP_RUN) \
+				$(XRUN_RUN_WAVES_FLAGS) \
                 +elf_file=$(CORE_TEST_DIR)/debug_test/debug_test.elf \
                 +nm_file=$(CORE_TEST_DIR)/debug_test/debug_test.nm \
                 +UVM_TESTNAME=uvmt_cv32_firmware_test_c \
@@ -329,6 +335,7 @@ comp_corev-dv: $(RISCVDV_PKG)
 	mkdir -p $(XRUN_RISCVDV_RESULTS)
 	cd $(XRUN_RISCVDV_RESULTS) && \
 	$(XRUN) $(XRUN_COMP_FLAGS) \
+		$(QUIET) \
 		$(XRUN_USER_COMPILE_ARGS) \
 		-elaborate \
 		+incdir+$(COREVDV_PKG)/target/cv32e40p \
@@ -424,6 +431,7 @@ gen_corev-dv:
 		$(GEN_PLUSARGS)
 	# Copy out final assembler files to test directory
 	for (( idx=${GEN_START_INDEX}; idx < $$((${GEN_START_INDEX} + ${GEN_NUM_TESTS})); idx++ )); do \
+		ls -l ${XRUN_RISCVDV_RESULTS}/${TEST} > /dev/null; \
 		cp ${XRUN_RISCVDV_RESULTS}/${TEST}/${TEST}_$$idx.S ${GEN_TEST_DIR}; \
 	done
 

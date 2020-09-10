@@ -68,8 +68,14 @@ BANNER=*************************************************************************
 
 CV32E40P_REPO   ?= https://github.com/openhwgroup/cv32e40p
 CV32E40P_BRANCH ?= master
+#2020-09-10
+CV32E40P_HASH    ?= e9bef11ff391a593dd32012bb5e6fe7795ac9d0e
+#2020-09-09
+#CV32E40P_HASH   ?= 7a0fe7afa3f520f4f67d07af3df47f91e6a04fe6
+#2020-09-08
+#CV32E40P_HASH   ?= cb07a7aa77465797fdaa5e783ce2e6bacb922bb3
 #2020-09-06
-CV32E40P_HASH   ?= 3335dbcfcbdbec1c1f97fe13835fe13a63a321e0
+#CV32E40P_HASH   ?= 3335dbcfcbdbec1c1f97fe13835fe13a63a321e0
 #2020-09-04
 #CV32E40P_HASH   ?= 6fbd88c645d2b51c316af6eda79bab3e4c284093
 #2020-08-28
@@ -101,6 +107,11 @@ RISCVDV_BRANCH  ?= master
 # July 8 version.  Randomization errors have significantly improved.
 #                  Generation of riscv_pmp_test fails (we do not care for CV32E40P).
 RISCVDV_HASH    ?= 10fd4fa8b7d0808732ecf656c213866cae37045a
+
+COMPLIANCE_REPO   ?= https://github.com/riscv/riscv-compliance
+COMPLIANCE_BRANCH ?= master
+# 2020-08-19
+COMPLIANCE_HASH   ?= c21a2e86afa3f7d4292a2dd26b759f3f29cde497
 
 # Generate command to clone the CV32E40P RTL
 ifeq ($(CV32E40P_BRANCH), master)
@@ -142,6 +153,19 @@ else
   CLONE_RISCVDV_CMD = $(TMP3); cd $(RISCVDV_PKG); git checkout $(RISCVDV_HASH)
 endif
 # RISCV-DV repo var end
+
+# Generate command to clone the RISCV Compliance Test-suite
+ifeq ($(COMPLIANCE_BRANCH), master)
+  TMP4 = git clone $(COMPLIANCE_REPO) --recurse $(COMPLIANCE_PKG)
+else
+  TMP4 = git clone -b $(COMPLIANCE_BRANCH) --single-branch $(COMPLIANCE_REPO) --recurse $(COMPLIANCE_PKG)
+endif
+
+ifeq ($(COMPLIANCE_HASH), head)
+  CLONE_COMPLIANCE_CMD = $(TMP4)
+else
+  CLONE_COMPLIANCE_CMD = $(TMP4); cd $(COMPLIANCE_PKG); git checkout $(COMPLIANCE_HASH)
+endif
 
 ###############################################################################
 # Imperas Instruction Set Simulator

@@ -156,6 +156,31 @@ asm: comp $(ASM_DIR)/$(ASM_PROG).hex $(ASM_DIR)/$(ASM_PROG).elf
 		+firmware=$(ASM_DIR)/$(ASM_PROG).hex \
 		+elf_file=$(ASM_DIR)/$(ASM_PROG).elf
 
+###############################################################################
+# Run a test-program from the RISC-V Compliance Test-suite. The parent Makefile
+# of this <sim>.mk implements "build_compliance", the target that compiles the
+# test-programs.
+#
+# There is a dependancy between RISCV_ISA and COMPLIANCE_PROG which *you* are
+# required to know.  For example, the I-ADD-01 test-program is part of the rv32i
+# testsuite.
+# So this works:
+#                make compliance RISCV_ISA=rv32i COMPLIANCE_PROG=I-ADD-01
+# But this does not:
+#                make compliance RISCV_ISA=rv32imc COMPLIANCE_PROG=I-ADD-01
+# 
+COMPLIANCE_PROG ?= I-ADD-01
+#compliance: comp
+compliance: comp build_compliance
+	mkdir -p $(DSIM_RESULTS)/$(COMPLIANCE_PROG) && cd $(DSIM_RESULTS)/$(COMPLIANCE_PROG)  && \
+	$(DSIM) -l dsim-$(COMPLIANCE_PROG).log -image $(DSIM_IMAGE) \
+		-work $(DSIM_WORK) $(DSIM_RUN_FLAGS) $(DSIM_DMP_FLAGS) \
+		-sv_lib $(UVM_HOME)/src/dpi/libuvm_dpi.so \
+		-sv_lib $(OVP_MODEL_DPI) \
+		+UVM_TESTNAME=$(UVM_TESTNAME) \
+		+firmware=$(COMPLIANCE_PKG)/work/$(RISCV_ISA)/$(COMPLIANCE_PROG).hex \
+		+elf_file=$(COMPLIANCE_PKG)/work/$(RISCV_ISA)/$(COMPLIANCE_PROG).elf
+
 ################################################################################
 # Commonly used targets:
 #      Here for historical reasons - mostly (completely?) superceeded by the
@@ -261,7 +286,7 @@ comp_riscv-dv:
 		+define+DSIM \
 		-suppress EnumMustBePositive \
 		-suppress SliceOOB \
-		+incdir+$(RISCVDV_PKG)/target/rv32imc \
+		+incdir+$(COREVDV_PKG)/target/cv32e40p \
 		+incdir+$(RISCVDV_PKG)/user_extension \
 		+incdir+$(RISCVDV_PKG)/tests \
 		+incdir+$(COREVDV_PKG) \
@@ -354,5 +379,6 @@ clean:
 	rm -rf $(DSIM_RESULTS)
 
 # All generated files plus the clone of the RTL
-clean_all: clean clean_core_tests clean_riscv-dv clean_test_programs clean-bsp
+clean_all: clean clean_core_tests clean_riscv-dv clean_test_programs clean-bsp clean_compliance
 	rm -rf $(CV32E40P_PKG)
+
