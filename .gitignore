@@ -8,6 +8,8 @@
 *.readelf
 *.gtkw
 *.vcd
+*.vsif
+*.sve
 dsim.env
 dsim.log
 dsim_results

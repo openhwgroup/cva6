@@ -1,0 +1,4 @@
+name: pulp_multiply_accumulate
+uvm_test: uvmt_cv32_firmware_test_c
+description: >
+    PULP MAC test
