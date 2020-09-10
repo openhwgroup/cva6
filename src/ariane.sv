@@ -97,7 +97,7 @@ module ariane import ariane_pkg::*; #(
   logic                     flu_ready_ex_id;
   logic [TRANS_ID_BITS-1:0] flu_trans_id_ex_id;
   logic                     flu_valid_ex_id;
-  logic [63:0]              flu_result_ex_id;
+  riscv::xlen_t             flu_result_ex_id;
   exception_t               flu_exception_ex_id;
   // ALU
   logic                     alu_valid_id_ex;
@@ -111,11 +111,11 @@ module ariane import ariane_pkg::*; #(
   logic                     lsu_ready_ex_id;
 
   logic [TRANS_ID_BITS-1:0] load_trans_id_ex_id;
-  logic [63:0]              load_result_ex_id;
+  riscv::xlen_t             load_result_ex_id;
   logic                     load_valid_ex_id;
   exception_t               load_exception_ex_id;
 
-  logic [63:0]              store_result_ex_id;
+  riscv::xlen_t             store_result_ex_id;
   logic [TRANS_ID_BITS-1:0] store_trans_id_ex_id;
   logic                     store_valid_ex_id;
   exception_t               store_exception_ex_id;
@@ -127,7 +127,7 @@ module ariane import ariane_pkg::*; #(
   logic [1:0]               fpu_fmt_id_ex;
   logic [2:0]               fpu_rm_id_ex;
   logic [TRANS_ID_BITS-1:0] fpu_trans_id_ex_id;
-  logic [63:0]              fpu_result_ex_id;
+  riscv::xlen_t             fpu_result_ex_id;
   logic                     fpu_valid_ex_id;
   exception_t               fpu_exception_ex_id;
   // CSR
@@ -153,7 +153,7 @@ module ariane import ariane_pkg::*; #(
   // COMMIT <-> ID
   // --------------
   logic [NR_COMMIT_PORTS-1:0][4:0]  waddr_commit_id;
-  logic [NR_COMMIT_PORTS-1:0][63:0] wdata_commit_id;
+  logic [NR_COMMIT_PORTS-1:0][riscv::XLEN-1:0] wdata_commit_id;
   logic [NR_COMMIT_PORTS-1:0]       we_gpr_commit_id;
   logic [NR_COMMIT_PORTS-1:0]       we_fpr_commit_id;
   // --------------
@@ -168,12 +168,12 @@ module ariane import ariane_pkg::*; #(
   riscv::priv_lvl_t         ld_st_priv_lvl_csr_ex;
   logic                     sum_csr_ex;
   logic                     mxr_csr_ex;
-  logic [43:0]              satp_ppn_csr_ex;
+  logic [riscv::PPNW-1:0]   satp_ppn_csr_ex;
   logic [ASID_WIDTH-1:0]    asid_csr_ex;
   logic [11:0]              csr_addr_ex_csr;
   fu_op                     csr_op_commit_csr;
-  logic [63:0]              csr_wdata_commit_csr;
-  logic [63:0]              csr_rdata_csr_commit;
+  riscv::xlen_t             csr_wdata_commit_csr;
+  riscv::xlen_t             csr_rdata_csr_commit;
   exception_t               csr_exception_csr_commit;
   logic                     tvm_csr_id;
   logic                     tw_csr_id;
@@ -190,7 +190,7 @@ module ariane import ariane_pkg::*; #(
   // Performance Counters <-> *
   // ----------------------------
   logic [4:0]               addr_csr_perf;
-  logic [63:0]              data_csr_perf, data_perf_csr;
+  riscv::xlen_t             data_csr_perf, data_perf_csr;
   logic                     we_csr_perf;
 
   logic                     icache_flush_ctrl_cache;
@@ -245,7 +245,7 @@ module ariane import ariane_pkg::*; #(
     .flush_i             ( flush_ctrl_if                 ), // not entirely correct
     .flush_bp_i          ( 1'b0                          ),
     .debug_mode_i        ( debug_mode                    ),
-    .boot_addr_i         ( boot_addr_i                   ),
+    .boot_addr_i         ( boot_addr_i[riscv::XLEN-1:0]  ),
     .icache_dreq_i       ( icache_dreq_cache_if          ),
     .icache_dreq_o       ( icache_dreq_if_cache          ),
     .resolved_branch_i   ( resolved_branch               ),
@@ -500,7 +500,8 @@ module ariane import ariane_pkg::*; #(
     .halt_csr_o             ( halt_csr_ctrl                 ),
     .commit_instr_i         ( commit_instr_id_commit        ),
     .commit_ack_i           ( commit_ack                    ),
-    .boot_addr_i            ( boot_addr_i                   ),
+    .boot_addr_i            ( boot_addr_i[riscv::XLEN-1:0]  ),
+    .hart_id_i              ( hart_id_i[riscv::XLEN-1:0]    ),
     .ex_i                   ( ex_commit                     ),
     .csr_op_i               ( csr_op_commit_csr             ),
     .csr_write_fflags_i     ( csr_write_fflags_commit_cs    ),

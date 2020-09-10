@@ -57,12 +57,12 @@ module decoder import ariane_pkg::*; (
         NOIMM, IIMM, SIMM, SBIMM, UIMM, JIMM, RS3
     } imm_select;
 
-    logic [63:0] imm_i_type;
-    logic [63:0] imm_s_type;
-    logic [63:0] imm_sb_type;
-    logic [63:0] imm_u_type;
-    logic [63:0] imm_uj_type;
-    logic [63:0] imm_bi_type;
+    riscv::xlen_t imm_i_type;
+    riscv::xlen_t imm_s_type;
+    riscv::xlen_t imm_sb_type;
+    riscv::xlen_t imm_u_type;
+    riscv::xlen_t imm_uj_type;
+    riscv::xlen_t imm_bi_type;
 
     always_comb begin : decoder
 
@@ -517,7 +517,7 @@ module decoder import ariane_pkg::*; (
                     instruction_o.rs1[4:0] = instr.rtype.rs1;
                     instruction_o.rs2[4:0] = instr.rtype.rs2;
                     instruction_o.rd[4:0]  = instr.rtype.rd;
-
+                      if (riscv::IS_XLEN64) begin
                         unique case ({instr.rtype.funct7, instr.rtype.funct3})
                             {7'b000_0000, 3'b000}: instruction_o.op = ariane_pkg::ADDW; // addw
                             {7'b010_0000, 3'b000}: instruction_o.op = ariane_pkg::SUBW; // subw
@@ -532,6 +532,7 @@ module decoder import ariane_pkg::*; (
                             {7'b000_0001, 3'b111}: instruction_o.op = ariane_pkg::REMUW;
                             default: illegal_instr = 1'b1;
                         endcase
+                      end else illegal_instr = 1'b1;
                 end
                 // --------------------------------
                 // Reg-Immediate Operations
@@ -554,6 +555,7 @@ module decoder import ariane_pkg::*; (
                           instruction_o.op = ariane_pkg::SLL;  // Shift Left Logical by Immediate
                           if (instr.instr[31:26] != 6'b0)
                             illegal_instr = 1'b1;
+                          if (instr.instr[25] != 1'b0 && riscv::XLEN==32) illegal_instr = 1'b1;
                         end
 
                         3'b101: begin
@@ -563,6 +565,7 @@ module decoder import ariane_pkg::*; (
                                 instruction_o.op = ariane_pkg::SRA;  // Shift Right Arithmetically by Immediate
                             else
                                 illegal_instr = 1'b1;
+                            if (instr.instr[25] != 1'b0 && riscv::XLEN==32) illegal_instr = 1'b1;
                         end
                     endcase
                 end
@@ -575,7 +578,7 @@ module decoder import ariane_pkg::*; (
                     imm_select = IIMM;
                     instruction_o.rs1[4:0] = instr.itype.rs1;
                     instruction_o.rd[4:0]  = instr.itype.rd;
-
+                    if (riscv::IS_XLEN64)
                     unique case (instr.itype.funct3)
                         3'b000: instruction_o.op = ariane_pkg::ADDW;  // Add Immediate
 
@@ -596,6 +599,7 @@ module decoder import ariane_pkg::*; (
 
                         default: illegal_instr = 1'b1;
                     endcase
+                    else illegal_instr = 1'b1;
                 end
                 // --------------------------------
                 // LSU
@@ -610,7 +614,8 @@ module decoder import ariane_pkg::*; (
                         3'b000: instruction_o.op  = ariane_pkg::SB;
                         3'b001: instruction_o.op  = ariane_pkg::SH;
                         3'b010: instruction_o.op  = ariane_pkg::SW;
-                        3'b011: instruction_o.op  = ariane_pkg::SD;
+                        3'b011: if (riscv::XLEN==64) instruction_o.op  = ariane_pkg::SD; 
+                                else illegal_instr = 1'b1;
                         default: illegal_instr = 1'b1;
                     endcase
                 end
@@ -628,7 +633,8 @@ module decoder import ariane_pkg::*; (
                         3'b100: instruction_o.op  = ariane_pkg::LBU;
                         3'b101: instruction_o.op  = ariane_pkg::LHU;
                         3'b110: instruction_o.op  = ariane_pkg::LWU;
-                        3'b011: instruction_o.op  = ariane_pkg::LD;
+                        3'b011: if (riscv::XLEN==64) instruction_o.op  = ariane_pkg::LD; 
+                                else illegal_instr = 1'b1;
                         default: illegal_instr = 1'b1;
                     endcase
                 end
@@ -1006,12 +1012,12 @@ module decoder import ariane_pkg::*; (
     // Sign extend immediate
     // --------------------------------
     always_comb begin : sign_extend
-        imm_i_type  = { {52 {instruction_i[31]}}, instruction_i[31:20] };
-        imm_s_type  = { {52 {instruction_i[31]}}, instruction_i[31:25], instruction_i[11:7] };
-        imm_sb_type = { {51 {instruction_i[31]}}, instruction_i[31], instruction_i[7], instruction_i[30:25], instruction_i[11:8], 1'b0 };
-        imm_u_type  = { {32 {instruction_i[31]}}, instruction_i[31:12], 12'b0 }; // JAL, AUIPC, sign extended to 64 bit
-        imm_uj_type = { {44 {instruction_i[31]}}, instruction_i[19:12], instruction_i[20], instruction_i[30:21], 1'b0 };
-        imm_bi_type = { {59{instruction_i[24]}}, instruction_i[24:20] };
+        imm_i_type  = { {riscv::XLEN-12{instruction_i[31]}}, instruction_i[31:20] };
+        imm_s_type  = { {riscv::XLEN-12{instruction_i[31]}}, instruction_i[31:25], instruction_i[11:7] };
+        imm_sb_type = { {riscv::XLEN-13{instruction_i[31]}}, instruction_i[31], instruction_i[7], instruction_i[30:25], instruction_i[11:8], 1'b0 };
+        imm_u_type  = { {riscv::XLEN-32{instruction_i[31]}}, instruction_i[31:12], 12'b0 }; // JAL, AUIPC, sign extended to 64 bit
+        imm_uj_type = { {riscv::XLEN-20{instruction_i[31]}}, instruction_i[19:12], instruction_i[20], instruction_i[30:21], 1'b0 };
+        imm_bi_type = { {riscv::XLEN-5{instruction_i[24]}}, instruction_i[24:20] };
 
         // NOIMM, IIMM, SIMM, BIMM, UIMM, JIMM, RS3
         // select immediate
@@ -1038,11 +1044,11 @@ module decoder import ariane_pkg::*; (
             end
             RS3: begin
                 // result holds address of fp operand rs3
-                instruction_o.result = {59'b0, instr.r4type.rs3};
+                instruction_o.result = {{riscv::XLEN-5{1'b0}}, instr.r4type.rs3};
                 instruction_o.use_imm = 1'b0;
             end
             default: begin
-                instruction_o.result = 64'b0;
+                instruction_o.result = {riscv::XLEN{1'b0}};
                 instruction_o.use_imm = 1'b0;
             end
         endcase
@@ -1051,7 +1057,7 @@ module decoder import ariane_pkg::*; (
     // ---------------------
     // Exception handling
     // ---------------------
-    logic [63:0] interrupt_cause;
+    riscv::xlen_t interrupt_cause;
 
     // this instruction has already executed if the exception is valid
     assign instruction_o.valid   = instruction_o.ex.valid;
@@ -1064,7 +1070,7 @@ module decoder import ariane_pkg::*; (
         if (~ex_i.valid) begin
             // if we didn't already get an exception save the instruction here as we may need it
             // in the commit stage if we got a access exception to one of the CSR registers
-            instruction_o.ex.tval  = (is_compressed_i) ? {48'b0, compressed_instr_i} : {32'b0, instruction_i};
+            instruction_o.ex.tval  = (is_compressed_i) ? {{riscv::XLEN-16{1'b0}}, compressed_instr_i} : {{riscv::XLEN-32{1'b0}}, instruction_i};
             // instructions which will throw an exception are marked as valid
             // e.g.: they can be committed anytime and do not need to wait for any functional unit
             // check here if we decoded an invalid instruction or if the compressed decoder already decoded
@@ -1098,37 +1104,37 @@ module decoder import ariane_pkg::*; (
             // we have three interrupt sources: external interrupts, software interrupts, timer interrupts (order of precedence)
             // for two privilege levels: Supervisor and Machine Mode
             // Supervisor Timer Interrupt
-            if (irq_ctrl_i.mie[riscv::S_TIMER_INTERRUPT[5:0]] && irq_ctrl_i.mip[riscv::S_TIMER_INTERRUPT[5:0]]) begin
+            if (irq_ctrl_i.mie[riscv::S_TIMER_INTERRUPT[$clog2(riscv::XLEN)-1:0]] && irq_ctrl_i.mip[riscv::S_TIMER_INTERRUPT[$clog2(riscv::XLEN)-1:0]]) begin
                 interrupt_cause = riscv::S_TIMER_INTERRUPT;
             end
             // Supervisor Software Interrupt
-            if (irq_ctrl_i.mie[riscv::S_SW_INTERRUPT[5:0]] && irq_ctrl_i.mip[riscv::S_SW_INTERRUPT[5:0]]) begin
+            if (irq_ctrl_i.mie[riscv::S_SW_INTERRUPT[$clog2(riscv::XLEN)-1:0]] && irq_ctrl_i.mip[riscv::S_SW_INTERRUPT[$clog2(riscv::XLEN)-1:0]]) begin
                 interrupt_cause = riscv::S_SW_INTERRUPT;
             end
             // Supervisor External Interrupt
             // The logical-OR of the software-writable bit and the signal from the external interrupt controller is
             // used to generate external interrupts to the supervisor
-            if (irq_ctrl_i.mie[riscv::S_EXT_INTERRUPT[5:0]] && (irq_ctrl_i.mip[riscv::S_EXT_INTERRUPT[5:0]] | irq_i[ariane_pkg::SupervisorIrq])) begin
+            if (irq_ctrl_i.mie[riscv::S_EXT_INTERRUPT[$clog2(riscv::XLEN)-1:0]] && (irq_ctrl_i.mip[riscv::S_EXT_INTERRUPT[$clog2(riscv::XLEN)-1:0]] | irq_i[ariane_pkg::SupervisorIrq])) begin
                 interrupt_cause = riscv::S_EXT_INTERRUPT;
             end
             // Machine Timer Interrupt
-            if (irq_ctrl_i.mip[riscv::M_TIMER_INTERRUPT[5:0]] && irq_ctrl_i.mie[riscv::M_TIMER_INTERRUPT[5:0]]) begin
+            if (irq_ctrl_i.mip[riscv::M_TIMER_INTERRUPT[$clog2(riscv::XLEN)-1:0]] && irq_ctrl_i.mie[riscv::M_TIMER_INTERRUPT[$clog2(riscv::XLEN)-1:0]]) begin
                 interrupt_cause = riscv::M_TIMER_INTERRUPT;
             end
             // Machine Mode Software Interrupt
-            if (irq_ctrl_i.mip[riscv::M_SW_INTERRUPT[5:0]] && irq_ctrl_i.mie[riscv::M_SW_INTERRUPT[5:0]]) begin
+            if (irq_ctrl_i.mip[riscv::M_SW_INTERRUPT[$clog2(riscv::XLEN)-1:0]] && irq_ctrl_i.mie[riscv::M_SW_INTERRUPT[$clog2(riscv::XLEN)-1:0]]) begin
                 interrupt_cause = riscv::M_SW_INTERRUPT;
             end
             // Machine Mode External Interrupt
-            if (irq_ctrl_i.mip[riscv::M_EXT_INTERRUPT[5:0]] && irq_ctrl_i.mie[riscv::M_EXT_INTERRUPT[5:0]]) begin
+            if (irq_ctrl_i.mip[riscv::M_EXT_INTERRUPT[$clog2(riscv::XLEN)-1:0]] && irq_ctrl_i.mie[riscv::M_EXT_INTERRUPT[$clog2(riscv::XLEN)-1:0]]) begin
                 interrupt_cause = riscv::M_EXT_INTERRUPT;
             end
 
-            if (interrupt_cause[63] && irq_ctrl_i.global_enable) begin
+            if (interrupt_cause[riscv::XLEN-1] && irq_ctrl_i.global_enable) begin
                 // However, if bit i in mideleg is set, interrupts are considered to be globally enabled if the hart’s current privilege
                 // mode equals the delegated privilege mode (S or U) and that mode’s interrupt enable bit
                 // (SIE or UIE in mstatus) is set, or if the current privilege mode is less than the delegated privilege mode.
-                if (irq_ctrl_i.mideleg[interrupt_cause[5:0]]) begin
+                if (irq_ctrl_i.mideleg[interrupt_cause[$clog2(riscv::XLEN)-1:0]]) begin
                     if ((irq_ctrl_i.sie && priv_lvl_i == riscv::PRIV_LVL_S) || priv_lvl_i == riscv::PRIV_LVL_U) begin
                         instruction_o.ex.valid = 1'b1;
                         instruction_o.ex.cause = interrupt_cause;

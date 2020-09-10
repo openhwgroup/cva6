@@ -29,15 +29,15 @@ module csr_regfile import ariane_pkg::*; #(
     input  scoreboard_entry_t [NrCommitPorts-1:0] commit_instr_i, // the instruction we want to commit
     input  logic [NrCommitPorts-1:0]              commit_ack_i,   // Commit acknowledged a instruction -> increase instret CSR
     // Core and Cluster ID
-    input  logic  [63:0]          boot_addr_i,                // Address from which to start booting, mtvec is set to the same address
-    input  logic  [63:0]          hart_id_i,                  // Hart id in a multicore environment (reflected in a CSR)
+    input  logic[riscv::XLEN-1:0] boot_addr_i,                // Address from which to start booting, mtvec is set to the same address
+    input  logic[riscv::XLEN-1:0] hart_id_i,                  // Hart id in a multicore environment (reflected in a CSR)
     // we are taking an exception
     input exception_t             ex_i,                       // We've got an exception from the commit stage, take it
 
     input  fu_op                  csr_op_i,                   // Operation to perform on the CSR file
     input  logic  [11:0]          csr_addr_i,                 // Address of the register to read/write
-    input  logic  [63:0]          csr_wdata_i,                // Write data in
-    output logic  [63:0]          csr_rdata_o,                // Read data out
+    input  logic[riscv::XLEN-1:0] csr_wdata_i,                // Write data in
+    output logic[riscv::XLEN-1:0] csr_rdata_o,                // Read data out
     input  logic                  dirty_fp_state_i,           // Mark the FP sate as dirty
     input  logic                  csr_write_fflags_i,         // Write fflags register e.g.: we are retiring a floating point instruction
     input  logic  [riscv::VLEN-1:0]  pc_i,                    // PC of instruction accessing the CSR
@@ -62,7 +62,7 @@ module csr_regfile import ariane_pkg::*; #(
     output riscv::priv_lvl_t      ld_st_priv_lvl_o,           // Privilege level at which load and stores should happen
     output logic                  sum_o,
     output logic                  mxr_o,
-    output logic [43:0]           satp_ppn_o,
+    output logic[riscv::PPNW-1:0] satp_ppn_o,
     output logic [AsidWidth-1:0] asid_o,
     // external interrupts
     input  logic [1:0]            irq_i,                      // external interrupt in
@@ -80,8 +80,8 @@ module csr_regfile import ariane_pkg::*; #(
     output logic                  dcache_en_o,                // L1 DCache Enable
     // Performance Counter
     output logic  [4:0]           perf_addr_o,                // read/write address to performance counter module (up to 29 aux counters possible in riscv encoding.h)
-    output logic  [63:0]          perf_data_o,                // write data to performance counter module
-    input  logic  [63:0]          perf_data_i,                // read data from performance counter module
+    output logic[riscv::XLEN-1:0] perf_data_o,                // write data to performance counter module
+    input  logic[riscv::XLEN-1:0] perf_data_i,                // read data from performance counter module
     output logic                  perf_we_o,
     // PMPs
     output riscv::pmpcfg_t [15:0] pmpcfg_o,   // PMP configuration containing pmpcfg for max 16 PMPs
@@ -90,7 +90,7 @@ module csr_regfile import ariane_pkg::*; #(
     // internal signal to keep track of access exceptions
     logic        read_access_exception, update_access_exception, privilege_violation;
     logic        csr_we, csr_read;
-    logic [63:0] csr_wdata, csr_rdata;
+    riscv::xlen_t csr_wdata, csr_rdata;
     riscv::priv_lvl_t   trap_to_priv_lvl;
     // register for enabling load store address translation, this is critical, hence the register
     logic        en_ld_st_translation_d, en_ld_st_translation_q;
@@ -100,7 +100,8 @@ module csr_regfile import ariane_pkg::*; #(
     logic  dret;  // return from debug mode
     // CSR write causes us to mark the FPU state as dirty
     logic  dirty_fp_state_csr;
-    riscv::status_rv64_t  mstatus_q,  mstatus_d;
+    riscv::status_rv_t    mstatus_q,  mstatus_d;
+    riscv::xlen_t         mstatus_extended;
     riscv::satp_t         satp_q, satp_d;
     riscv::dcsr_t         dcsr_q,     dcsr_d;
     riscv::csr_t  csr_addr;
@@ -110,36 +111,36 @@ module csr_regfile import ariane_pkg::*; #(
     logic        debug_mode_q, debug_mode_d;
     logic        mtvec_rst_load_q;// used to determine whether we came out of reset
 
-    logic [63:0] dpc_q,       dpc_d;
-    logic [63:0] dscratch0_q, dscratch0_d;
-    logic [63:0] dscratch1_q, dscratch1_d;
-    logic [63:0] mtvec_q,     mtvec_d;
-    logic [63:0] medeleg_q,   medeleg_d;
-    logic [63:0] mideleg_q,   mideleg_d;
-    logic [63:0] mip_q,       mip_d;
-    logic [63:0] mie_q,       mie_d;
-    logic [63:0] mcounteren_q,mcounteren_d;
-    logic [63:0] mscratch_q,  mscratch_d;
-    logic [63:0] mepc_q,      mepc_d;
-    logic [63:0] mcause_q,    mcause_d;
-    logic [63:0] mtval_q,     mtval_d;
+    riscv::xlen_t dpc_q,       dpc_d;
+    riscv::xlen_t dscratch0_q, dscratch0_d;
+    riscv::xlen_t dscratch1_q, dscratch1_d;
+    riscv::xlen_t mtvec_q,     mtvec_d;
+    riscv::xlen_t medeleg_q,   medeleg_d;
+    riscv::xlen_t mideleg_q,   mideleg_d;
+    riscv::xlen_t mip_q,       mip_d;
+    riscv::xlen_t mie_q,       mie_d;
+    riscv::xlen_t mcounteren_q,mcounteren_d;
+    riscv::xlen_t mscratch_q,  mscratch_d;
+    riscv::xlen_t mepc_q,      mepc_d;
+    riscv::xlen_t mcause_q,    mcause_d;
+    riscv::xlen_t mtval_q,     mtval_d;
 
-    logic [63:0] stvec_q,     stvec_d;
-    logic [63:0] scounteren_q,scounteren_d;
-    logic [63:0] sscratch_q,  sscratch_d;
-    logic [63:0] sepc_q,      sepc_d;
-    logic [63:0] scause_q,    scause_d;
-    logic [63:0] stval_q,     stval_d;
-    logic [63:0] dcache_q,    dcache_d;
-    logic [63:0] icache_q,    icache_d;
+    riscv::xlen_t stvec_q,     stvec_d;
+    riscv::xlen_t scounteren_q,scounteren_d;
+    riscv::xlen_t sscratch_q,  sscratch_d;
+    riscv::xlen_t sepc_q,      sepc_d;
+    riscv::xlen_t scause_q,    scause_d;
+    riscv::xlen_t stval_q,     stval_d;
+    riscv::xlen_t dcache_q,    dcache_d;
+    riscv::xlen_t icache_q,    icache_d;
 
     logic        wfi_d,       wfi_q;
 
-    logic [63:0] cycle_q,     cycle_d;
-    logic [63:0] instret_q,   instret_d;
+    riscv::xlen_t cycle_q,     cycle_d;
+    riscv::xlen_t instret_q,   instret_d;
 
     riscv::pmpcfg_t [15:0]    pmpcfg_q,  pmpcfg_d;
-    logic [15:0][53:0]        pmpaddr_q,  pmpaddr_d;
+    logic [15:0][riscv::VLEN-3:0]        pmpaddr_q,  pmpaddr_d;
 
 
     assign pmpcfg_o = pmpcfg_q[15:0];
@@ -154,10 +155,13 @@ module csr_regfile import ariane_pkg::*; #(
     // ----------------
     // CSR Read logic
     // ----------------
+    assign mstatus_extended = riscv::IS_XLEN64 ? mstatus_q[riscv::XLEN-1:0] :
+                              {mstatus_q.sd, mstatus_q.wpri3[7:0], mstatus_q[22:0]};
+
     always_comb begin : csr_read_process
         // a read access exception can only occur if we attempt to read a CSR which does not exist
         read_access_exception = 1'b0;
-        csr_rdata = 64'b0;
+        csr_rdata = '0;
         perf_addr_o = csr_addr.address[4:0];
 
         if (csr_read) begin
@@ -166,21 +170,21 @@ module csr_regfile import ariane_pkg::*; #(
                     if (mstatus_q.fs == riscv::Off) begin
                         read_access_exception = 1'b1;
                     end else begin
-                        csr_rdata = {59'b0, fcsr_q.fflags};
+                        csr_rdata = {{riscv::XLEN-5{1'b0}}, fcsr_q.fflags};
                     end
                 end
                 riscv::CSR_FRM: begin
                     if (mstatus_q.fs == riscv::Off) begin
                         read_access_exception = 1'b1;
                     end else begin
-                        csr_rdata = {61'b0, fcsr_q.frm};
+                        csr_rdata = {{riscv::XLEN-3{1'b0}}, fcsr_q.frm};
                     end
                 end
                 riscv::CSR_FCSR: begin
                     if (mstatus_q.fs == riscv::Off) begin
                         read_access_exception = 1'b1;
                     end else begin
-                        csr_rdata = {56'b0, fcsr_q.frm, fcsr_q.fflags};
+                        csr_rdata = {{riscv::XLEN-8{1'b0}}, fcsr_q.frm, fcsr_q.fflags};
                     end
                 end
                 // non-standard extension
@@ -188,11 +192,11 @@ module csr_regfile import ariane_pkg::*; #(
                     if (mstatus_q.fs == riscv::Off) begin
                         read_access_exception = 1'b1;
                     end else begin
-                        csr_rdata = {57'b0, fcsr_q.fprec};
+                        csr_rdata = {{riscv::XLEN-7{1'b0}}, fcsr_q.fprec};
                     end
                 end
                 // debug registers
-                riscv::CSR_DCSR:               csr_rdata = {32'b0, dcsr_q};
+                riscv::CSR_DCSR:               csr_rdata = {{riscv::XLEN-32{1'b0}}, dcsr_q};
                 riscv::CSR_DPC:                csr_rdata = dpc_q;
                 riscv::CSR_DSCRATCH0:          csr_rdata = dscratch0_q;
                 riscv::CSR_DSCRATCH1:          csr_rdata = dscratch1_q;
@@ -203,7 +207,7 @@ module csr_regfile import ariane_pkg::*; #(
                 riscv::CSR_TDATA3:;  // not implemented
                 // supervisor registers
                 riscv::CSR_SSTATUS: begin
-                    csr_rdata = mstatus_q & ariane_pkg::SMODE_STATUS_READ_MASK;
+                    csr_rdata = mstatus_extended & ariane_pkg::SMODE_STATUS_READ_MASK[riscv::XLEN-1:0];
                 end
                 riscv::CSR_SIE:                csr_rdata = mie_q & mideleg_q;
                 riscv::CSR_SIP:                csr_rdata = mip_q & mideleg_q;
@@ -222,7 +226,7 @@ module csr_regfile import ariane_pkg::*; #(
                     end
                 end
                 // machine mode registers
-                riscv::CSR_MSTATUS:            csr_rdata = mstatus_q;
+                riscv::CSR_MSTATUS:            csr_rdata = mstatus_extended;
                 riscv::CSR_MISA:               csr_rdata = ISA_CODE;
                 riscv::CSR_MEDELEG:            csr_rdata = medeleg_q;
                 riscv::CSR_MIDELEG:            csr_rdata = mideleg_q;
@@ -234,9 +238,9 @@ module csr_regfile import ariane_pkg::*; #(
                 riscv::CSR_MCAUSE:             csr_rdata = mcause_q;
                 riscv::CSR_MTVAL:              csr_rdata = mtval_q;
                 riscv::CSR_MIP:                csr_rdata = mip_q;
-                riscv::CSR_MVENDORID:          csr_rdata = 64'b0; // not implemented
+                riscv::CSR_MVENDORID:          csr_rdata = '0; // not implemented
                 riscv::CSR_MARCHID:            csr_rdata = ARIANE_MARCHID;
-                riscv::CSR_MIMPID:             csr_rdata = 64'b0; // not implemented
+                riscv::CSR_MIMPID:             csr_rdata = '0; // not implemented
                 riscv::CSR_MHARTID:            csr_rdata = hart_id_i;
                 riscv::CSR_MCYCLE:             csr_rdata = cycle_q;
                 riscv::CSR_MINSTRET:           csr_rdata = instret_q;
@@ -279,26 +283,26 @@ module csr_regfile import ariane_pkg::*; #(
                 riscv::CSR_PMPCFG0:          csr_rdata = pmpcfg_q[7:0];
                 riscv::CSR_PMPCFG2:          csr_rdata = pmpcfg_q[15:8];
                 // PMPADDR
-                // Important: we only support granularity 8 bytes (G=2) 
+                // Important: we only support granularity 8 bytes (G=2)
                 // -> last bit of pmpaddr must be set 0/1 based on the mode:
                 // NA4, NAPOT: 1
                 // TOR, OFF:   0
-                riscv::CSR_PMPADDR0:         csr_rdata = {10'b0, pmpaddr_q[0][53:1], (pmpcfg_q[0].addr_mode[1] == 1'b1 ? 1'b1 : 1'b0)};
-                riscv::CSR_PMPADDR1:         csr_rdata = {10'b0, pmpaddr_q[1][53:1], (pmpcfg_q[1].addr_mode[1] == 1'b1 ? 1'b1 : 1'b0)};
-                riscv::CSR_PMPADDR2:         csr_rdata = {10'b0, pmpaddr_q[2][53:1], (pmpcfg_q[2].addr_mode[1] == 1'b1 ? 1'b1 : 1'b0)};
-                riscv::CSR_PMPADDR3:         csr_rdata = {10'b0, pmpaddr_q[3][53:1], (pmpcfg_q[3].addr_mode[1] == 1'b1 ? 1'b1 : 1'b0)};
-                riscv::CSR_PMPADDR4:         csr_rdata = {10'b0, pmpaddr_q[4][53:1], (pmpcfg_q[4].addr_mode[1] == 1'b1 ? 1'b1 : 1'b0)};
-                riscv::CSR_PMPADDR5:         csr_rdata = {10'b0, pmpaddr_q[5][53:1], (pmpcfg_q[5].addr_mode[1] == 1'b1 ? 1'b1 : 1'b0)};
-                riscv::CSR_PMPADDR6:         csr_rdata = {10'b0, pmpaddr_q[6][53:1], (pmpcfg_q[6].addr_mode[1] == 1'b1 ? 1'b1 : 1'b0)};
-                riscv::CSR_PMPADDR7:         csr_rdata = {10'b0, pmpaddr_q[7][53:1], (pmpcfg_q[7].addr_mode[1] == 1'b1 ? 1'b1 : 1'b0)};
-                riscv::CSR_PMPADDR8:         csr_rdata = {10'b0, pmpaddr_q[8][53:1], (pmpcfg_q[8].addr_mode[1] == 1'b1 ? 1'b1 : 1'b0)};
-                riscv::CSR_PMPADDR9:         csr_rdata = {10'b0, pmpaddr_q[9][53:1], (pmpcfg_q[9].addr_mode[1] == 1'b1 ? 1'b1 : 1'b0)};
-                riscv::CSR_PMPADDR10:        csr_rdata = {10'b0, pmpaddr_q[10][53:1], (pmpcfg_q[10].addr_mode[1] == 1'b1 ? 1'b1 : 1'b0)};
-                riscv::CSR_PMPADDR11:        csr_rdata = {10'b0, pmpaddr_q[11][53:1], (pmpcfg_q[11].addr_mode[1] == 1'b1 ? 1'b1 : 1'b0)};
-                riscv::CSR_PMPADDR12:        csr_rdata = {10'b0, pmpaddr_q[12][53:1], (pmpcfg_q[12].addr_mode[1] == 1'b1 ? 1'b1 : 1'b0)};
-                riscv::CSR_PMPADDR13:        csr_rdata = {10'b0, pmpaddr_q[13][53:1], (pmpcfg_q[13].addr_mode[1] == 1'b1 ? 1'b1 : 1'b0)};
-                riscv::CSR_PMPADDR14:        csr_rdata = {10'b0, pmpaddr_q[14][53:1], (pmpcfg_q[14].addr_mode[1] == 1'b1 ? 1'b1 : 1'b0)};
-                riscv::CSR_PMPADDR15:        csr_rdata = {10'b0, pmpaddr_q[15][53:1], (pmpcfg_q[15].addr_mode[1] == 1'b1 ? 1'b1 : 1'b0)};
+                riscv::CSR_PMPADDR0:         csr_rdata = {10'b0, pmpaddr_q[0][riscv::VLEN-3:1], (pmpcfg_q[0].addr_mode[1] == 1'b1 ? 1'b1 : 1'b0)};
+                riscv::CSR_PMPADDR1:         csr_rdata = {10'b0, pmpaddr_q[1][riscv::VLEN-3:1], (pmpcfg_q[1].addr_mode[1] == 1'b1 ? 1'b1 : 1'b0)};
+                riscv::CSR_PMPADDR2:         csr_rdata = {10'b0, pmpaddr_q[2][riscv::VLEN-3:1], (pmpcfg_q[2].addr_mode[1] == 1'b1 ? 1'b1 : 1'b0)};
+                riscv::CSR_PMPADDR3:         csr_rdata = {10'b0, pmpaddr_q[3][riscv::VLEN-3:1], (pmpcfg_q[3].addr_mode[1] == 1'b1 ? 1'b1 : 1'b0)};
+                riscv::CSR_PMPADDR4:         csr_rdata = {10'b0, pmpaddr_q[4][riscv::VLEN-3:1], (pmpcfg_q[4].addr_mode[1] == 1'b1 ? 1'b1 : 1'b0)};
+                riscv::CSR_PMPADDR5:         csr_rdata = {10'b0, pmpaddr_q[5][riscv::VLEN-3:1], (pmpcfg_q[5].addr_mode[1] == 1'b1 ? 1'b1 : 1'b0)};
+                riscv::CSR_PMPADDR6:         csr_rdata = {10'b0, pmpaddr_q[6][riscv::VLEN-3:1], (pmpcfg_q[6].addr_mode[1] == 1'b1 ? 1'b1 : 1'b0)};
+                riscv::CSR_PMPADDR7:         csr_rdata = {10'b0, pmpaddr_q[7][riscv::VLEN-3:1], (pmpcfg_q[7].addr_mode[1] == 1'b1 ? 1'b1 : 1'b0)};
+                riscv::CSR_PMPADDR8:         csr_rdata = {10'b0, pmpaddr_q[8][riscv::VLEN-3:1], (pmpcfg_q[8].addr_mode[1] == 1'b1 ? 1'b1 : 1'b0)};
+                riscv::CSR_PMPADDR9:         csr_rdata = {10'b0, pmpaddr_q[9][riscv::VLEN-3:1], (pmpcfg_q[9].addr_mode[1] == 1'b1 ? 1'b1 : 1'b0)};
+                riscv::CSR_PMPADDR10:        csr_rdata = {10'b0, pmpaddr_q[10][riscv::VLEN-3:1], (pmpcfg_q[10].addr_mode[1] == 1'b1 ? 1'b1 : 1'b0)};
+                riscv::CSR_PMPADDR11:        csr_rdata = {10'b0, pmpaddr_q[11][riscv::VLEN-3:1], (pmpcfg_q[11].addr_mode[1] == 1'b1 ? 1'b1 : 1'b0)};
+                riscv::CSR_PMPADDR12:        csr_rdata = {10'b0, pmpaddr_q[12][riscv::VLEN-3:1], (pmpcfg_q[12].addr_mode[1] == 1'b1 ? 1'b1 : 1'b0)};
+                riscv::CSR_PMPADDR13:        csr_rdata = {10'b0, pmpaddr_q[13][riscv::VLEN-3:1], (pmpcfg_q[13].addr_mode[1] == 1'b1 ? 1'b1 : 1'b0)};
+                riscv::CSR_PMPADDR14:        csr_rdata = {10'b0, pmpaddr_q[14][riscv::VLEN-3:1], (pmpcfg_q[14].addr_mode[1] == 1'b1 ? 1'b1 : 1'b0)};
+                riscv::CSR_PMPADDR15:        csr_rdata = {10'b0, pmpaddr_q[15][riscv::VLEN-3:1], (pmpcfg_q[15].addr_mode[1] == 1'b1 ? 1'b1 : 1'b0)};
                 default: read_access_exception = 1'b1;
             endcase
         end
@@ -306,10 +310,10 @@ module csr_regfile import ariane_pkg::*; #(
     // ---------------------------
     // CSR Write and update logic
     // ---------------------------
-    logic [63:0] mask;
+    riscv::xlen_t mask;
     always_comb begin : csr_update
         automatic riscv::satp_t satp;
-        automatic logic [63:0] instret;
+        automatic riscv::xlen_t instret;
 
 
         satp = satp_q;
@@ -452,8 +456,8 @@ module csr_regfile import ariane_pkg::*; #(
                 riscv::CSR_TDATA3:;  // not implemented
                 // sstatus is a subset of mstatus - mask it accordingly
                 riscv::CSR_SSTATUS: begin
-                    mask = ariane_pkg::SMODE_STATUS_WRITE_MASK;
-                    mstatus_d = (mstatus_q & ~mask) | (csr_wdata & mask);
+                    mask = ariane_pkg::SMODE_STATUS_WRITE_MASK[riscv::XLEN-1:0];
+                    mstatus_d = (mstatus_q & ~{{64-riscv::XLEN{1'b0}}, mask}) | {{64-riscv::XLEN{1'b0}}, (csr_wdata & mask)};
                     // hardwire to zero if floating point extension is not present
                     if (!FP_PRESENT) begin
                         mstatus_d.fs = riscv::Off;
@@ -474,10 +478,10 @@ module csr_regfile import ariane_pkg::*; #(
                     mip_d = (mip_q & ~mask) | (csr_wdata & mask);
                 end
 
-                riscv::CSR_STVEC:              stvec_d     = {csr_wdata[63:2], 1'b0, csr_wdata[0]};
-                riscv::CSR_SCOUNTEREN:         scounteren_d = {{32'b0}, csr_wdata[31:0]};
+                riscv::CSR_STVEC:              stvec_d     = {csr_wdata[riscv::XLEN-1:2], 1'b0, csr_wdata[0]};
+                riscv::CSR_SCOUNTEREN:         scounteren_d = {{riscv::XLEN-32{1'b0}}, csr_wdata[31:0]};
                 riscv::CSR_SSCRATCH:           sscratch_d  = csr_wdata;
-                riscv::CSR_SEPC:               sepc_d      = {csr_wdata[63:1], 1'b0};
+                riscv::CSR_SEPC:               sepc_d      = {csr_wdata[riscv::XLEN-1:1], 1'b0};
                 riscv::CSR_SCAUSE:             scause_d    = csr_wdata;
                 riscv::CSR_STVAL:              stval_d     = csr_wdata;
                 // supervisor address translation and protection
@@ -488,9 +492,9 @@ module csr_regfile import ariane_pkg::*; #(
                     else begin
                         satp      = riscv::satp_t'(csr_wdata);
                         // only make ASID_LEN - 1 bit stick, that way software can figure out how many ASID bits are supported
-                        satp.asid = satp.asid & {{(16-AsidWidth){1'b0}}, {AsidWidth{1'b1}}};
+                        satp.asid = satp.asid & {{(riscv::ASIDW-AsidWidth){1'b0}}, {AsidWidth{1'b1}}};
                         // only update if we actually support this mode
-                        if (satp.mode == MODE_OFF || satp.mode == MODE_SV39) satp_d = satp;
+                        if (satp.mode == riscv::ModeOff[riscv::ModeW-1:0] || satp.mode == riscv::MODE_SV) satp_d = satp;
                     end
                     // changing the mode can have side-effects on address translation (e.g.: other instructions), re-fetch
                     // the next instruction by executing a flush
@@ -498,7 +502,7 @@ module csr_regfile import ariane_pkg::*; #(
                 end
 
                 riscv::CSR_MSTATUS: begin
-                    mstatus_d      = csr_wdata;
+                    mstatus_d      = {{64-riscv::XLEN{1'b0}}, csr_wdata};
                     mstatus_d.xs   = riscv::Off;
                     if (!FP_PRESENT) begin
                         mstatus_d.fs = riscv::Off;
@@ -534,15 +538,15 @@ module csr_regfile import ariane_pkg::*; #(
                 end
 
                 riscv::CSR_MTVEC: begin
-                    mtvec_d = {csr_wdata[63:2], 1'b0, csr_wdata[0]};
+                    mtvec_d = {csr_wdata[riscv::XLEN-1:2], 1'b0, csr_wdata[0]};
                     // we are in vector mode, this implementation requires the additional
                     // alignment constraint of 64 * 4 bytes
-                    if (csr_wdata[0]) mtvec_d = {csr_wdata[63:8], 7'b0, csr_wdata[0]};
+                    if (csr_wdata[0]) mtvec_d = {csr_wdata[riscv::XLEN-1:8], 7'b0, csr_wdata[0]};
                 end
-                riscv::CSR_MCOUNTEREN:         mcounteren_d = {{32'b0}, csr_wdata[31:0]};
+                riscv::CSR_MCOUNTEREN:         mcounteren_d = {{riscv::XLEN-32{1'b0}}, csr_wdata[31:0]};
 
                 riscv::CSR_MSCRATCH:           mscratch_d  = csr_wdata;
-                riscv::CSR_MEPC:               mepc_d      = {csr_wdata[63:1], 1'b0};
+                riscv::CSR_MEPC:               mepc_d      = {csr_wdata[riscv::XLEN-1:1], 1'b0};
                 riscv::CSR_MCAUSE:             mcause_d    = csr_wdata;
                 riscv::CSR_MTVAL:              mtval_d     = csr_wdata;
                 riscv::CSR_MIP: begin
@@ -585,30 +589,30 @@ module csr_regfile import ariane_pkg::*; #(
                                         perf_we_o   = 1'b1;
                 end
 
-                riscv::CSR_DCACHE:             dcache_d       = csr_wdata[0]; // enable bit
-                riscv::CSR_ICACHE:             icache_d       = csr_wdata[0]; // enable bit
+                riscv::CSR_DCACHE:             dcache_d    = {{riscv::XLEN-1{1'b0}}, csr_wdata[0]}; // enable bit
+                riscv::CSR_ICACHE:             icache_d    = {{riscv::XLEN-1{1'b0}}, csr_wdata[0]}; // enable bit
                 // PMP locked logic
                 // 1. refuse to update any locked entry
                 // 2. also refuse to update the entry below a locked TOR entry
                 // Note that writes to pmpcfg below a locked TOR entry are valid
                 riscv::CSR_PMPCFG0: for (int i = 0; i < 8; i++) if (!pmpcfg_q[i].locked) pmpcfg_d[i]  = csr_wdata[i*8+:8];
                 riscv::CSR_PMPCFG2: for (int i = 0; i < 8; i++) if (!pmpcfg_q[i+8].locked) pmpcfg_d[i+8]  = csr_wdata[i*8+:8];
-                riscv::CSR_PMPADDR0:   if (!pmpcfg_q[ 0].locked && !(pmpcfg_q[ 1].locked && pmpcfg_q[ 1].addr_mode == riscv::TOR))  pmpaddr_d[0]   = csr_wdata[53:0];
-                riscv::CSR_PMPADDR1:   if (!pmpcfg_q[ 1].locked && !(pmpcfg_q[ 2].locked && pmpcfg_q[ 2].addr_mode == riscv::TOR))  pmpaddr_d[1]   = csr_wdata[53:0];
-                riscv::CSR_PMPADDR2:   if (!pmpcfg_q[ 2].locked && !(pmpcfg_q[ 3].locked && pmpcfg_q[ 3].addr_mode == riscv::TOR))  pmpaddr_d[2]   = csr_wdata[53:0];
-                riscv::CSR_PMPADDR3:   if (!pmpcfg_q[ 3].locked && !(pmpcfg_q[ 4].locked && pmpcfg_q[ 4].addr_mode == riscv::TOR))  pmpaddr_d[3]   = csr_wdata[53:0];
-                riscv::CSR_PMPADDR4:   if (!pmpcfg_q[ 4].locked && !(pmpcfg_q[ 5].locked && pmpcfg_q[ 5].addr_mode == riscv::TOR))  pmpaddr_d[4]   = csr_wdata[53:0];
-                riscv::CSR_PMPADDR5:   if (!pmpcfg_q[ 5].locked && !(pmpcfg_q[ 6].locked && pmpcfg_q[ 6].addr_mode == riscv::TOR))  pmpaddr_d[5]   = csr_wdata[53:0];
-                riscv::CSR_PMPADDR6:   if (!pmpcfg_q[ 6].locked && !(pmpcfg_q[ 7].locked && pmpcfg_q[ 7].addr_mode == riscv::TOR))  pmpaddr_d[6]   = csr_wdata[53:0];
-                riscv::CSR_PMPADDR7:   if (!pmpcfg_q[ 7].locked && !(pmpcfg_q[ 8].locked && pmpcfg_q[ 8].addr_mode == riscv::TOR))  pmpaddr_d[7]   = csr_wdata[53:0];
-                riscv::CSR_PMPADDR8:   if (!pmpcfg_q[ 8].locked && !(pmpcfg_q[ 9].locked && pmpcfg_q[ 9].addr_mode == riscv::TOR))  pmpaddr_d[8]   = csr_wdata[53:0];
-                riscv::CSR_PMPADDR9:   if (!pmpcfg_q[ 9].locked && !(pmpcfg_q[10].locked && pmpcfg_q[10].addr_mode == riscv::TOR))  pmpaddr_d[9]   = csr_wdata[53:0];
-                riscv::CSR_PMPADDR10:  if (!pmpcfg_q[10].locked && !(pmpcfg_q[11].locked && pmpcfg_q[11].addr_mode == riscv::TOR))  pmpaddr_d[10]  = csr_wdata[53:0];
-                riscv::CSR_PMPADDR11:  if (!pmpcfg_q[11].locked && !(pmpcfg_q[12].locked && pmpcfg_q[12].addr_mode == riscv::TOR))  pmpaddr_d[11]  = csr_wdata[53:0];
-                riscv::CSR_PMPADDR12:  if (!pmpcfg_q[12].locked && !(pmpcfg_q[13].locked && pmpcfg_q[13].addr_mode == riscv::TOR))  pmpaddr_d[12]  = csr_wdata[53:0];
-                riscv::CSR_PMPADDR13:  if (!pmpcfg_q[13].locked && !(pmpcfg_q[14].locked && pmpcfg_q[14].addr_mode == riscv::TOR))  pmpaddr_d[13]  = csr_wdata[53:0];
-                riscv::CSR_PMPADDR14:  if (!pmpcfg_q[14].locked && !(pmpcfg_q[15].locked && pmpcfg_q[15].addr_mode == riscv::TOR))  pmpaddr_d[14]  = csr_wdata[53:0];
-                riscv::CSR_PMPADDR15:  if (!pmpcfg_q[15].locked)  pmpaddr_d[15]  = csr_wdata[53:0];
+                riscv::CSR_PMPADDR0:   if (!pmpcfg_q[ 0].locked && !(pmpcfg_q[ 1].locked && pmpcfg_q[ 1].addr_mode == riscv::TOR))  pmpaddr_d[0]   = csr_wdata[riscv::VLEN-3:0];
+                riscv::CSR_PMPADDR1:   if (!pmpcfg_q[ 1].locked && !(pmpcfg_q[ 2].locked && pmpcfg_q[ 2].addr_mode == riscv::TOR))  pmpaddr_d[1]   = csr_wdata[riscv::VLEN-3:0];
+                riscv::CSR_PMPADDR2:   if (!pmpcfg_q[ 2].locked && !(pmpcfg_q[ 3].locked && pmpcfg_q[ 3].addr_mode == riscv::TOR))  pmpaddr_d[2]   = csr_wdata[riscv::VLEN-3:0];
+                riscv::CSR_PMPADDR3:   if (!pmpcfg_q[ 3].locked && !(pmpcfg_q[ 4].locked && pmpcfg_q[ 4].addr_mode == riscv::TOR))  pmpaddr_d[3]   = csr_wdata[riscv::VLEN-3:0];
+                riscv::CSR_PMPADDR4:   if (!pmpcfg_q[ 4].locked && !(pmpcfg_q[ 5].locked && pmpcfg_q[ 5].addr_mode == riscv::TOR))  pmpaddr_d[4]   = csr_wdata[riscv::VLEN-3:0];
+                riscv::CSR_PMPADDR5:   if (!pmpcfg_q[ 5].locked && !(pmpcfg_q[ 6].locked && pmpcfg_q[ 6].addr_mode == riscv::TOR))  pmpaddr_d[5]   = csr_wdata[riscv::VLEN-3:0];
+                riscv::CSR_PMPADDR6:   if (!pmpcfg_q[ 6].locked && !(pmpcfg_q[ 7].locked && pmpcfg_q[ 7].addr_mode == riscv::TOR))  pmpaddr_d[6]   = csr_wdata[riscv::VLEN-3:0];
+                riscv::CSR_PMPADDR7:   if (!pmpcfg_q[ 7].locked && !(pmpcfg_q[ 8].locked && pmpcfg_q[ 8].addr_mode == riscv::TOR))  pmpaddr_d[7]   = csr_wdata[riscv::VLEN-3:0];
+                riscv::CSR_PMPADDR8:   if (!pmpcfg_q[ 8].locked && !(pmpcfg_q[ 9].locked && pmpcfg_q[ 9].addr_mode == riscv::TOR))  pmpaddr_d[8]   = csr_wdata[riscv::VLEN-3:0];
+                riscv::CSR_PMPADDR9:   if (!pmpcfg_q[ 9].locked && !(pmpcfg_q[10].locked && pmpcfg_q[10].addr_mode == riscv::TOR))  pmpaddr_d[9]   = csr_wdata[riscv::VLEN-3:0];
+                riscv::CSR_PMPADDR10:  if (!pmpcfg_q[10].locked && !(pmpcfg_q[11].locked && pmpcfg_q[11].addr_mode == riscv::TOR))  pmpaddr_d[10]  = csr_wdata[riscv::VLEN-3:0];
+                riscv::CSR_PMPADDR11:  if (!pmpcfg_q[11].locked && !(pmpcfg_q[12].locked && pmpcfg_q[12].addr_mode == riscv::TOR))  pmpaddr_d[11]  = csr_wdata[riscv::VLEN-3:0];
+                riscv::CSR_PMPADDR12:  if (!pmpcfg_q[12].locked && !(pmpcfg_q[13].locked && pmpcfg_q[13].addr_mode == riscv::TOR))  pmpaddr_d[12]  = csr_wdata[riscv::VLEN-3:0];
+                riscv::CSR_PMPADDR13:  if (!pmpcfg_q[13].locked && !(pmpcfg_q[14].locked && pmpcfg_q[14].addr_mode == riscv::TOR))  pmpaddr_d[13]  = csr_wdata[riscv::VLEN-3:0];
+                riscv::CSR_PMPADDR14:  if (!pmpcfg_q[14].locked && !(pmpcfg_q[15].locked && pmpcfg_q[15].addr_mode == riscv::TOR))  pmpaddr_d[14]  = csr_wdata[riscv::VLEN-3:0];
+                riscv::CSR_PMPADDR15:  if (!pmpcfg_q[15].locked)  pmpaddr_d[15]  = csr_wdata[riscv::VLEN-3:0];
                 default: update_access_exception = 1'b1;
             endcase
         end
@@ -650,10 +654,10 @@ module csr_regfile import ariane_pkg::*; #(
             flush_o   = 1'b0;
             // figure out where to trap to
             // a m-mode trap might be delegated if we are taking it in S mode
-            // first figure out if this was an exception or an interrupt e.g.: look at bit 63
-            // the cause register can only be 6 bits long (as we only support 64 exceptions)
-            if ((ex_i.cause[63] && mideleg_q[ex_i.cause[5:0]]) ||
-                (~ex_i.cause[63] && medeleg_q[ex_i.cause[5:0]])) begin
+            // first figure out if this was an exception or an interrupt e.g.: look at bit (XLEN-1)
+            // the cause register can only be $clog2(riscv::XLEN) bits long (as we only support XLEN exceptions)
+            if ((ex_i.cause[riscv::XLEN-1] && mideleg_q[ex_i.cause[$clog2(riscv::XLEN)-1:0]]) ||
+                (~ex_i.cause[riscv::XLEN-1] && medeleg_q[ex_i.cause[$clog2(riscv::XLEN)-1:0]])) begin
                 // traps never transition from a more-privileged mode to a less privileged mode
                 // so if we are already in M mode, stay there
                 trap_to_priv_lvl = (priv_lvl_o == riscv::PRIV_LVL_M) ? riscv::PRIV_LVL_M : riscv::PRIV_LVL_S;
@@ -669,7 +673,7 @@ module csr_regfile import ariane_pkg::*; #(
                 // set cause
                 scause_d       = ex_i.cause;
                 // set epc
-                sepc_d         = {{64-riscv::VLEN{pc_i[riscv::VLEN-1]}},pc_i};
+                sepc_d         = {{riscv::XLEN-riscv::VLEN{pc_i[riscv::VLEN-1]}},pc_i};
                 // set mtval or stval
                 stval_d        = (ariane_pkg::ZERO_TVAL
                                   && (ex_i.cause inside {
@@ -678,7 +682,7 @@ module csr_regfile import ariane_pkg::*; #(
                                     riscv::ENV_CALL_UMODE,
                                     riscv::ENV_CALL_SMODE,
                                     riscv::ENV_CALL_MMODE
-                                  } || ex_i.cause[63])) ? '0 : ex_i.tval;
+                                  } || ex_i.cause[riscv::XLEN-1])) ? '0 : ex_i.tval;
             // trap to machine mode
             end else begin
                 // update mstatus
@@ -688,7 +692,7 @@ module csr_regfile import ariane_pkg::*; #(
                 mstatus_d.mpp  = priv_lvl_q;
                 mcause_d       = ex_i.cause;
                 // set epc
-                mepc_d         = {{64-riscv::VLEN{pc_i[riscv::VLEN-1]}},pc_i};
+                mepc_d         = {{riscv::XLEN-riscv::VLEN{pc_i[riscv::VLEN-1]}},pc_i};
                 // set mtval or stval
                 mtval_d        = (ariane_pkg::ZERO_TVAL
                                   && (ex_i.cause inside {
@@ -697,7 +701,7 @@ module csr_regfile import ariane_pkg::*; #(
                                     riscv::ENV_CALL_UMODE,
                                     riscv::ENV_CALL_SMODE,
                                     riscv::ENV_CALL_MMODE
-                                  } || ex_i.cause[63])) ? '0 : ex_i.tval;
+                                  } || ex_i.cause[riscv::XLEN-1])) ? '0 : ex_i.tval;
             end
 
             priv_lvl_d = trap_to_priv_lvl;
@@ -737,7 +741,7 @@ module csr_regfile import ariane_pkg::*; #(
                     default:;
                 endcase
                 // save PC of next this instruction e.g.: the next one to be executed
-                dpc_d = {{64-riscv::VLEN{pc_i[riscv::VLEN-1]}},pc_i};
+                dpc_d = {{riscv::XLEN-riscv::VLEN{pc_i[riscv::VLEN-1]}},pc_i};
                 dcsr_d.cause = dm::CauseBreakpoint;
             end
 
@@ -745,7 +749,7 @@ module csr_regfile import ariane_pkg::*; #(
             if (ex_i.valid && ex_i.cause == riscv::DEBUG_REQUEST) begin
                 dcsr_d.prv = priv_lvl_o;
                 // save the PC
-                dpc_d = {{64-riscv::VLEN{pc_i[riscv::VLEN-1]}},pc_i};
+                dpc_d = {{riscv::XLEN-riscv::VLEN{pc_i[riscv::VLEN-1]}},pc_i};
                 // enter debug mode
                 debug_mode_d = 1'b1;
                 // jump to the base address
@@ -760,16 +764,16 @@ module csr_regfile import ariane_pkg::*; #(
                 // valid CTRL flow change
                 if (commit_instr_i[0].fu == CTRL_FLOW) begin
                     // we saved the correct target address during execute
-                    dpc_d = {{64-riscv::VLEN{commit_instr_i[0].bp.predict_address[riscv::VLEN-1]}}, commit_instr_i[0].bp.predict_address};
+                    dpc_d = {{riscv::XLEN-riscv::VLEN{commit_instr_i[0].bp.predict_address[riscv::VLEN-1]}}, commit_instr_i[0].bp.predict_address};
                 // exception valid
                 end else if (ex_i.valid) begin
-                    dpc_d = {{64-riscv::VLEN{1'b0}},trap_vector_base_o};
+                    dpc_d = {{riscv::XLEN-riscv::VLEN{1'b0}},trap_vector_base_o};
                 // return from environment
                 end else if (eret_o) begin
-                    dpc_d = {{64-riscv::VLEN{1'b0}},epc_o};
+                    dpc_d = {{riscv::XLEN-riscv::VLEN{1'b0}},epc_o};
                 // consecutive PC
                 end else begin
-                    dpc_d = {{64-riscv::VLEN{commit_instr_i[0].pc[riscv::VLEN-1]}}, commit_instr_i[0].pc + (commit_instr_i[0].is_compressed ? 'h2 : 'h4)};
+                    dpc_d = {{riscv::XLEN-riscv::VLEN{commit_instr_i[0].pc[riscv::VLEN-1]}}, commit_instr_i[0].pc + (commit_instr_i[0].is_compressed ? 'h2 : 'h4)};
                 end
                 debug_mode_d = 1'b1;
                 set_debug_pc_o = 1'b1;
@@ -786,7 +790,7 @@ module csr_regfile import ariane_pkg::*; #(
         // ------------------------------
         // Set the address translation at which the load and stores should occur
         // we can use the previous values since changing the address translation will always involve a pipeline flush
-        if (mprv && satp_q.mode == MODE_SV39 && (mstatus_q.mpp != riscv::PRIV_LVL_M))
+        if (mprv && satp_q.mode == riscv::MODE_SV && (mstatus_q.mpp != riscv::PRIV_LVL_M))
             en_ld_st_translation_d = 1'b1;
         else // otherwise we go with the regular settings
             en_ld_st_translation_d = en_translation_o;
@@ -923,7 +927,7 @@ module csr_regfile import ariane_pkg::*; #(
     // ----------------------
     always_comb begin : exception_ctrl
         csr_exception_o = {
-            64'b0, 64'b0, 1'b0
+            '0, '0, 1'b0
         };
         // ----------------------------------
         // Illegal Access (decode exception)
@@ -976,7 +980,7 @@ module csr_regfile import ariane_pkg::*; #(
         // check if we are in vectored mode, if yes then do BASE + 4 * cause
         // we are imposing an additional alignment-constraint of 64 * 4 bytes since
         // we want to spare the costly addition
-        if ((mtvec_q[0] || stvec_q[0]) && ex_i.cause[63]) begin
+        if ((mtvec_q[0] || stvec_q[0]) && ex_i.cause[riscv::XLEN-1]) begin
             trap_vector_base_o[7:2] = ex_i.cause[5:0];
         end
 
@@ -1022,7 +1026,7 @@ module csr_regfile import ariane_pkg::*; #(
     assign asid_o           = satp_q.asid[AsidWidth-1:0];
     assign sum_o            = mstatus_q.sum;
     // we support bare memory addressing and SV39
-    assign en_translation_o = (satp_q.mode == 4'h8 && priv_lvl_o != riscv::PRIV_LVL_M)
+    assign en_translation_o = (satp_q.mode == riscv::MODE_SV && priv_lvl_o != riscv::PRIV_LVL_M)
                               ? 1'b1
                               : 1'b0;
     assign mxr_o            = mstatus_q.mxr;
@@ -1047,7 +1051,7 @@ module csr_regfile import ariane_pkg::*; #(
         if (~rst_ni) begin
             priv_lvl_q             <= riscv::PRIV_LVL_M;
             // floating-point registers
-            fcsr_q                 <= 64'b0;
+            fcsr_q                 <= '0;
             // debug signals
 `ifdef DROMAJO
             debug_mode_q           <= 1'b1;
@@ -1056,36 +1060,36 @@ module csr_regfile import ariane_pkg::*; #(
 `endif
             dcsr_q                 <= '0;
             dcsr_q.prv             <= riscv::PRIV_LVL_M;
-            dpc_q                  <= 64'b0;
-            dscratch0_q            <= 64'b0;
-            dscratch1_q            <= 64'b0;
+            dpc_q                  <= '0;
+            dscratch0_q            <= {riscv::XLEN{1'b0}};
+            dscratch1_q            <= {riscv::XLEN{1'b0}};
             // machine mode registers
             mstatus_q              <= 64'b0;
             // set to boot address + direct mode + 4 byte offset which is the initial trap
             mtvec_rst_load_q       <= 1'b1;
             mtvec_q                <= '0;
-            medeleg_q              <= 64'b0;
-            mideleg_q              <= 64'b0;
-            mip_q                  <= 64'b0;
-            mie_q                  <= 64'b0;
-            mepc_q                 <= 64'b0;
-            mcause_q               <= 64'b0;
-            mcounteren_q           <= 64'b0;
-            mscratch_q             <= 64'b0;
-            mtval_q                <= 64'b0;
-            dcache_q               <= 64'b1;
-            icache_q               <= 64'b1;
+            medeleg_q              <= {riscv::XLEN{1'b0}};
+            mideleg_q              <= {riscv::XLEN{1'b0}};
+            mip_q                  <= {riscv::XLEN{1'b0}};
+            mie_q                  <= {riscv::XLEN{1'b0}};
+            mepc_q                 <= {riscv::XLEN{1'b0}};
+            mcause_q               <= {riscv::XLEN{1'b0}};
+            mcounteren_q           <= {riscv::XLEN{1'b0}};
+            mscratch_q             <= {riscv::XLEN{1'b0}};
+            mtval_q                <= {riscv::XLEN{1'b0}};
+            dcache_q               <= {{riscv::XLEN-1{1'b0}}, 1'b1};
+            icache_q               <= {{riscv::XLEN-1{1'b0}}, 1'b1};
             // supervisor mode registers
-            sepc_q                 <= 64'b0;
-            scause_q               <= 64'b0;
-            stvec_q                <= 64'b0;
-            scounteren_q           <= 64'b0;
-            sscratch_q             <= 64'b0;
-            stval_q                <= 64'b0;
-            satp_q                 <= 64'b0;
+            sepc_q                 <= {riscv::XLEN{1'b0}};
+            scause_q               <= {riscv::XLEN{1'b0}};
+            stvec_q                <= {riscv::XLEN{1'b0}};
+            scounteren_q           <= {riscv::XLEN{1'b0}};
+            sscratch_q             <= {riscv::XLEN{1'b0}};
+            stval_q                <= {riscv::XLEN{1'b0}};
+            satp_q                 <= {riscv::XLEN{1'b0}};
             // timer and counters
-            cycle_q                <= 64'b0;
-            instret_q              <= 64'b0;
+            cycle_q                <= {riscv::XLEN{1'b0}};
+            instret_q              <= {riscv::XLEN{1'b0}};
             // aux registers
             en_ld_st_translation_q <= 1'b0;
             // wait for interrupt

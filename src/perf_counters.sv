@@ -20,8 +20,8 @@ module perf_counters import ariane_pkg::*; (
   // SRAM like interface
   input  logic [4:0]                              addr_i,   // read/write address (up to 29 aux counters possible in riscv encoding.h)
   input  logic                                    we_i,     // write enable
-  input  logic [63:0]                             data_i,   // data to write
-  output logic [63:0]                             data_o,   // data to read
+  input  riscv::xlen_t                            data_i,   // data to write
+  output riscv::xlen_t                            data_o,   // data to read
   // from commit stage
   input  scoreboard_entry_t [NR_COMMIT_PORTS-1:0] commit_instr_i,     // the instruction we want to commit
   input  logic [NR_COMMIT_PORTS-1:0]              commit_ack_i,       // acknowledge that we are indeed committing
@@ -43,7 +43,7 @@ module perf_counters import ariane_pkg::*; (
 );
   localparam logic [6:0] RegOffset = riscv::CSR_ML1_ICACHE_MISS >> 5;
 
-  logic [riscv::CSR_MIF_EMPTY : riscv::CSR_ML1_ICACHE_MISS][63:0] perf_counter_d, perf_counter_q;
+  logic [riscv::CSR_MIF_EMPTY : riscv::CSR_ML1_ICACHE_MISS][riscv::XLEN-1:0] perf_counter_d, perf_counter_q;
 
   always_comb begin : perf_counters
     perf_counter_d = perf_counter_q;

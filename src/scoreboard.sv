@@ -29,11 +29,11 @@ module scoreboard #(
 
   // regfile like interface to operand read stage
   input  logic [ariane_pkg::REG_ADDR_SIZE-1:0]                  rs1_i,
-  output logic [63:0]                                           rs1_o,
+  output riscv::xlen_t                                          rs1_o,
   output logic                                                  rs1_valid_o,
 
   input  logic [ariane_pkg::REG_ADDR_SIZE-1:0]                  rs2_i,
-  output logic [63:0]                                           rs2_o,
+  output riscv::xlen_t                                          rs2_o,
   output logic                                                  rs2_valid_o,
 
   input  logic [ariane_pkg::REG_ADDR_SIZE-1:0]                  rs3_i,
@@ -58,7 +58,7 @@ module scoreboard #(
   // write-back port
   input ariane_pkg::bp_resolve_t                                resolved_branch_i,
   input logic [NR_WB_PORTS-1:0][ariane_pkg::TRANS_ID_BITS-1:0]  trans_id_i,  // transaction ID at which to write the result back
-  input logic [NR_WB_PORTS-1:0][63:0]                           wbdata_i,    // write data in
+  input logic [NR_WB_PORTS-1:0][riscv::XLEN-1:0]                wbdata_i,    // write data in
   input ariane_pkg::exception_t [NR_WB_PORTS-1:0]               ex_i,        // exception from a functional unit (e.g.: ld/st exception)
   input logic [NR_WB_PORTS-1:0]                                 wt_valid_i   // data in is valid
 );
@@ -266,7 +266,7 @@ module scoreboard #(
   // ----------------------------------
   // read operand interface: same logic as register file
   logic [NR_ENTRIES+NR_WB_PORTS-1:0] rs1_fwd_req, rs2_fwd_req, rs3_fwd_req;
-  logic [NR_ENTRIES+NR_WB_PORTS-1:0][63:0] rs_data;
+  logic [NR_ENTRIES+NR_WB_PORTS-1:0][riscv::XLEN-1:0] rs_data;
   logic rs1_valid, rs2_valid;
 
   // WB ports have higher prio than entries
@@ -291,7 +291,7 @@ module scoreboard #(
   // this implicitly gives higher prio to WB ports
   rr_arb_tree #(
     .NumIn(NR_ENTRIES+NR_WB_PORTS),
-    .DataWidth(64),
+    .DataWidth(riscv::XLEN),
     .ExtPrio(1'b1),
     .AxiVldRdy(1'b1)
   ) i_sel_rs1 (
@@ -310,7 +310,7 @@ module scoreboard #(
 
   rr_arb_tree #(
     .NumIn(NR_ENTRIES+NR_WB_PORTS),
-    .DataWidth(64),
+    .DataWidth(riscv::XLEN),
     .ExtPrio(1'b1),
     .AxiVldRdy(1'b1)
   ) i_sel_rs2 (
@@ -327,11 +327,11 @@ module scoreboard #(
     .idx_o   (             )
   );
 
-  logic [63:0] rs3;
+  riscv::xlen_t           rs3;
 
   rr_arb_tree #(
     .NumIn(NR_ENTRIES+NR_WB_PORTS),
-    .DataWidth(64),
+    .DataWidth(riscv::XLEN),
     .ExtPrio(1'b1),
     .AxiVldRdy(1'b1)
   ) i_sel_rs3 (

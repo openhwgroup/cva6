@@ -87,7 +87,7 @@ module branch_unit (
     always_comb begin : exception_handling
         branch_exception_o.cause = riscv::INSTR_ADDR_MISALIGNED;
         branch_exception_o.valid = 1'b0;
-        branch_exception_o.tval  = {{64-riscv::VLEN{pc_i[riscv::VLEN-1]}}, pc_i};
+        branch_exception_o.tval  = {{riscv::XLEN-riscv::VLEN{pc_i[riscv::VLEN-1]}}, pc_i};
         // only throw exception if this is indeed a branch
         if (branch_valid_i && target_address[0] != 1'b0) branch_exception_o.valid = 1'b1;
     end

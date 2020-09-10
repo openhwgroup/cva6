@@ -26,7 +26,7 @@ module load_unit import ariane_pkg::*; #(
     // load unit output port
     output logic                     valid_o,
     output logic [TRANS_ID_BITS-1:0] trans_id_o,
-    output logic [63:0]              result_o,
+    output riscv::xlen_t             result_o,
     output exception_t               ex_o,
     // MMU -> Address Translation
     output logic                     translation_req_o,   // request address translation
@@ -355,10 +355,10 @@ module load_unit import ariane_pkg::*; #(
     // result mux
     always_comb begin
         unique case (load_data_q.operator)
-            ariane_pkg::LW, ariane_pkg::LWU, ariane_pkg::FLW:    result_o = {{32{sign_bit}}, shifted_data[31:0]};
-            ariane_pkg::LH, ariane_pkg::LHU, ariane_pkg::FLH:    result_o = {{48{sign_bit}}, shifted_data[15:0]};
-            ariane_pkg::LB, ariane_pkg::LBU, ariane_pkg::FLB:    result_o = {{56{sign_bit}}, shifted_data[7:0]};
-            default:    result_o = shifted_data;
+            ariane_pkg::LW, ariane_pkg::LWU, ariane_pkg::FLW:    result_o = {{riscv::XLEN-32{sign_bit}}, shifted_data[31:0]};
+            ariane_pkg::LH, ariane_pkg::LHU, ariane_pkg::FLH:    result_o = {{riscv::XLEN-32+16{sign_bit}}, shifted_data[15:0]};
+            ariane_pkg::LB, ariane_pkg::LBU, ariane_pkg::FLB:    result_o = {{riscv::XLEN-32+24{sign_bit}}, shifted_data[7:0]};
+            default:    result_o = shifted_data[riscv::XLEN-1:0];
         endcase
     end
 
