@@ -39,6 +39,7 @@ module uvmt_cv32e40p_interrupt_assert
     input [31:0] mip,     // machine interrupt pending
     input [31:0] mie_q,   // machine interrupt enable
     input        mstatus_mie, // machine mode interrupt enable
+    input [1:0]  mtvec_mode_q, // machine mode interrupt vector mode
 
     // Instruction fetch stage
     input        if_stage_instr_rvalid_i, // Instruction word is valid
@@ -146,6 +147,9 @@ module uvmt_cv32e40p_interrupt_assert
   // ---------------------------------------------------------------------------
 
   // Coverage for individual interupt assertions
+  sequence s_irq_taken(irq);
+    irq_i[irq] ##0 mie_q[irq] ##0 mstatus_mie ##0 irq_ack_o ##0 irq_id_o == irq;
+  endsequence : s_irq_taken
 
   // Interrupt fired, global interrupts enabled, but not taken due to global MSTATUS.MIE setting
   property p_irq_masked(irq);
@@ -159,7 +163,7 @@ module uvmt_cv32e40p_interrupt_assert
 
   // Interrupt taken
   property p_irq_taken(irq);
-    irq_i[irq] ##0 mie_q[irq] ##0 mstatus_mie ##0 irq_ack_o ##0 irq_id_o == irq;
+    s_irq_taken(irq);
   endproperty : p_irq_taken
 
   // Interrupt enabled via MIE locally masked
@@ -178,6 +182,11 @@ module uvmt_cv32e40p_interrupt_assert
     !irq_i[irq] ##0 !irq_ack_o;
   endproperty : p_irq_deasserted_while_enabled_not_acked  
 
+  // Interrupt taken in each supported mtvec mode
+  property p_irq_in_mtvec(irq, mtvec);
+    s_irq_taken(irq) ##0 mtvec_mode_q == mtvec;
+  endproperty
+
   generate for(genvar gv_i = 0; gv_i < NUM_IRQ; gv_i++) begin : gen_irq_cov
     if (VALID_IRQ_MASK[gv_i]) begin : gen_valid
       c_irq_masked: cover property(p_irq_masked(gv_i));
@@ -186,6 +195,8 @@ module uvmt_cv32e40p_interrupt_assert
       c_irq_masked_then_enabled: cover property(p_irq_masked_then_enabled(gv_i));
       c_irq_masked_mstatus_then_enabled: cover property(p_irq_masked_mstatus_then_enabled(gv_i));
       c_irq_deasserted_while_enabled_not_acked: cover property(p_irq_deasserted_while_enabled_not_acked(gv_i));
+      c_irq_in_mtvec_fixed: cover property(p_irq_in_mtvec(gv_i, 0));
+      c_irq_in_mtvec_vector: cover property(p_irq_in_mtvec(gv_i, 1));
     end
   end
   endgenerate

@@ -134,38 +134,38 @@ module cv32e40p_tb_wrapper
         #(.RAM_ADDR_WIDTH (RAM_ADDR_WIDTH),
           .INSTR_RDATA_WIDTH (INSTR_RDATA_WIDTH))
     ram_i
-        (.clk_i          ( clk_i                          ),
-         .rst_ni         ( rst_ni                         ),
-         .dm_halt_addr_i ( DM_HALTADDRESS                 ),
+        (.clk_i          ( clk_i                                     ),
+         .rst_ni         ( rst_ni                                    ),
+         .dm_halt_addr_i ( DM_HALTADDRESS                            ),
 
-         .instr_req_i    ( instr_req                      ),
-         .instr_addr_i   ( instr_addr[RAM_ADDR_WIDTH-1:0] ),
-         .instr_rdata_o  ( instr_rdata                    ),
-         .instr_rvalid_o ( instr_rvalid                   ),
-         .instr_gnt_o    ( instr_gnt                      ),
+         .instr_req_i    ( instr_req                                 ),
+         .instr_addr_i   ( {12'h000, instr_addr[RAM_ADDR_WIDTH-1:0]} ),
+         .instr_rdata_o  ( instr_rdata                               ),
+         .instr_rvalid_o ( instr_rvalid                              ),
+         .instr_gnt_o    ( instr_gnt                                 ),
 
-         .data_req_i     ( data_req                       ),
-         .data_addr_i    ( data_addr                      ),
-         .data_we_i      ( data_we                        ),
-         .data_be_i      ( data_be                        ),
-         .data_wdata_i   ( data_wdata                     ),
-         .data_rdata_o   ( data_rdata                     ),
-         .data_rvalid_o  ( data_rvalid                    ),
-         .data_gnt_o     ( data_gnt                       ),
+         .data_req_i     ( data_req                                  ),
+         .data_addr_i    ( data_addr                                 ),
+         .data_we_i      ( data_we                                   ),
+         .data_be_i      ( data_be                                   ),
+         .data_wdata_i   ( data_wdata                                ),
+         .data_rdata_o   ( data_rdata                                ),
+         .data_rvalid_o  ( data_rvalid                               ),
+         .data_gnt_o     ( data_gnt                                  ),
 
          // TODO: Interrupts need to be re-done
-         .irq_id_i       ( irq_id_out[0:4]                ),
-         .irq_ack_i      ( irq_ack                        ),
-         //.irq_id_o       ( irq_id_in                      ),
-         .irq_o          ( irq                            ),
+         .irq_id_i       ( irq_id_out[0:4]                           ),
+         .irq_ack_i      ( irq_ack                                   ),
+         //.irq_id_o       ( irq_id_in                                ),
+         .irq_o          ( irq                                       ),
 
-         .debug_req_o    ( debug_req                      ),
+         .debug_req_o    ( debug_req                                 ),
 
-         .pc_core_id_i   ( cv32e40p_core_i.pc_id          ),
+         .pc_core_id_i   ( cv32e40p_core_i.pc_id                     ),
 
-         .tests_passed_o ( tests_passed_o                 ),
-         .tests_failed_o ( tests_failed_o                 ),
-         .exit_valid_o   ( exit_valid_o                   ),
-         .exit_value_o   ( exit_value_o                   ));
+         .tests_passed_o ( tests_passed_o                            ),
+         .tests_failed_o ( tests_failed_o                            ),
+         .exit_valid_o   ( exit_valid_o                              ),
+         .exit_value_o   ( exit_value_o                              ));
 
 endmodule // cv32e40p_tb_wrapper

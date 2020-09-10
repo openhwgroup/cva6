@@ -8,7 +8,7 @@ description: Directed and random interrupt tests for CV32E40P
 builds:
   corev-dv:
     # required: Make the corev-dv infrastructure    
-    cmd: make corev-dv
+    cmd: make comp_corev-dv
     dir: cv32/sim/uvmt_cv32
     cov: 0
   uvmt_cv32:
@@ -29,13 +29,13 @@ tests:
     build: uvmt_cv32
     description: Interrupt random test
     dir: cv32/sim/uvmt_cv32
-    cmd: make gen_riscv-dv test TEST=corev_rand_interrupt
-    num: 100
+    cmd: make gen_corev-dv test TEST=corev_rand_interrupt
+    num: 200
 
   corev_rand_interrupt_wfi:
     build: uvmt_cv32
     description: Interrupt random test with WFI
     dir: cv32/sim/uvmt_cv32    
-    cmd: make gen_riscv-dv test TEST=corev_rand_interrupt_wfi
-    num: 100
+    cmd: make gen_corev-dv test TEST=corev_rand_interrupt_wfi
+    num: 200
 

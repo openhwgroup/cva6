@@ -37,17 +37,19 @@ VCS_ELAB_COV     = -cm line+cond+tgl+fsm+branch+assert  -cm_dir $(MAKECMDGOALS)/
 VCS_OVP_MODEL_DPI = $(OVP_MODEL_DPI:.so=)                    # remove extension as VCS adds it
 VCS_TIMESCALE = $(shell echo "$(TIMESCALE)" | tr ' ' '=')    # -timescale=1ns/1ps
 
+VCS_UVM_VERBOSITY ?= UVM_MEDIUM
+
 # Flags
 #VCS_UVMHOME_ARG ?= /opt/uvm/1800.2-2017-0.9/
 VCS_UVMHOME_ARG ?= /opt/synopsys/vcs-mx/O-2018.09-SP1-1/etc/uvm
-VCS_UVM_ARGS          ?= +incdir+$(VCS_UVMHOME_ARG)/src $(VCS_UVMHOME_ARG)/src/uvm_pkg.sv -ntb_opts uvm-1.2
+VCS_UVM_ARGS          ?= +incdir+$(VCS_UVMHOME_ARG)/src $(VCS_UVMHOME_ARG)/src/uvm_pkg.sv +UVM_VERBOSITY=$(VCS_UVM_VERBOSITY) -ntb_opts uvm-1.2
 
-VCS_COMP_FLAGS  ?= -lca -sverilog -top uvmt_cv32_tb \
+VCS_COMP_FLAGS  ?= -lca -sverilog \
 										$(SV_CMP_FLAGS) $(VCS_UVM_ARGS) $(VCS_TIMESCALE) \
 										-assert svaext -race=all -ignore unique_checks -full64
 VCS_GUI         ?=
 VCS_RUN_COV      = -cm line+cond+tgl+fsm+branch+assert -cm_dir $(MAKECMDGOALS).vdb
-NUM_TEST         ?= 2
+NUM_TESTS         ?= 2
 
 # Common QUIET flag defaults to -quiet unless VERBOSE is set
 ifeq ($(call IS_YES,$(VERBOSE)),YES)
@@ -126,7 +128,7 @@ ifeq ($(call IS_YES,$(USE_ISS)),YES)
     VCS_PLUSARGS +="+USE_ISS"
 endif
 
-VCS_RUN_BASE_FLAGS   ?= $(VCS_GUI) +UVM_VERBOSITY=$(VCS_UVM_VERBOSITY) \
+VCS_RUN_BASE_FLAGS   ?= $(VCS_GUI) \
                          $(VCS_PLUSARGS) +ntb_random_seed=$(RNDSEED) -sv_lib $(VCS_OVP_MODEL_DPI)
 # Simulate using latest elab
 VCS_RUN_FLAGS        ?= 
@@ -151,6 +153,7 @@ cv32_riscv_tests: cv32-riscv-tests
 cv32_riscv_compliance_tests: cv32-riscv-compliance-tests
 
 VCS_COMP = $(VCS_COMP_FLAGS) \
+		$(QUIET) \
 		$(VCS_UVM_ARGS) \
 		$(VCS_USER_COMPILE_ARGS) \
 		+incdir+$(DV_UVME_CV32_PATH) \
@@ -160,7 +163,7 @@ VCS_COMP = $(VCS_COMP_FLAGS) \
 		$(UVM_PLUSARGS)
 
 comp: mk_vcs_dir $(CV32E40P_PKG) $(OVP_MODEL_DPI)
-	cd $(VCS_RESULTS) && $(VCS) $(VCS_COMP)
+	cd $(VCS_RESULTS) && $(VCS) $(VCS_COMP) -top uvmt_cv32_tb
 	@echo "$(BANNER)"
 	@echo "* $(,maSIMULATOR) compile complete"
 	@echo "* Log: $(VCS_RESULTS)/vcs.log"
@@ -169,18 +172,17 @@ comp: mk_vcs_dir $(CV32E40P_PKG) $(OVP_MODEL_DPI)
 ifneq ($(call IS_NO,$(COMP)),NO)
 VCS_SIM_PREREQ = comp
 endif
-VCS_COMP_RUN = $(VCS_RUN_FLAGS)
 
-ifeq ($(call IS_YES,$(XRUN_SINGLE_STEP)), YES)
-	XRUN_SIM_PREREQ = mk_xrun_dir $(CV32E40P_PKG) $(OVP_MODEL_DPI)
-	XRUN_COMP_RUN = $(XRUN_COMP) $(XRUN_RUN_BASE_FLAGS)
+ifeq ($(call IS_YES,$(VCS_SINGLE_STEP)), YES)
+	VCS_SIM_PREREQ = mk_vcs_dir $(CV32E40P_PKG) $(OVP_MODEL_DPI)
+	VCS_COMP_RUN = $(VCS_COMP) $(VCS_RUN_BASE_FLAGS)
 endif
 
 ################################################################################
 # Custom test-programs.  See comment in dsim.mk for more info
 custom: $(VCS_SIM_PREREQ) $(CUSTOM_DIR)/$(CUSTOM_PROG).hex
 	mkdir -p $(VCS_RESULTS)/$(CUSTOM_PROG) && cd $(VCS_RESULTS)/$(CUSTOM_PROG) && \
-	$(VCS_RESULTS)/$(SIMV) -l vcs-$(CUSTOM_PROG).log -cm_test $(CUSTOM_PROG) $(VCS_COMP_RUN) \
+	$(VCS_RESULTS)/$(SIMV) -l vcs-$(CUSTOM_PROG).log -cm_test $(CUSTOM_PROG) $(VCS_RUN_FLAGS) \
 		+UVM_TESTNAME=uvmt_cv32_firmware_test_c \
 		+elf_file=$(CUSTOM_DIR)/$(CUSTOM_PROG).elf \
 		+firmware=$(CUSTOM_DIR)/$(CUSTOM_PROG).hex
@@ -189,49 +191,56 @@ custom: $(VCS_SIM_PREREQ) $(CUSTOM_DIR)/$(CUSTOM_PROG).hex
 # Explicit target tests
 hello-world:  $(VCS_SIM_PREREQ) $(CUSTOM)/hello-world.hex
 	mkdir -p $(VCS_RESULTS)/hello-world && cd $(VCS_RESULTS)/hello-world && \
-	$(VCS_RESULTS)/$(SIMV) -l vcs-hello-world.log -cm_name hello-world $(VCS_COMP_RUN) \
-		+elf_file=$(CUSTOM)/hello-world.elf \
+	$(VCS_RESULTS)/$(SIMV) -l vcs-hello-world.log -cm_name hello-world $(VCS_RUN_FLAGS) \
+		+elf_file=$(CUSTOM)/hello_world.elf \
 		+UVM_TESTNAME=uvmt_cv32_firmware_test_c \
 		+firmware=$(CUSTOM)/hello-world.hex
 
+interrupt_test:  $(VCS_SIM_PREREQ) $(CORE_TEST_DIR)/interrupt_test/interrupt_test.hex
+	mkdir -p $(VCS_RESULTS)/interrupt_test && cd $(VCS_RESULTS)/interrupt_test && \
+	$(VCS_RESULTS)/$(SIMV) -l vcs-interrupt_test.log -cm_name interrupt_test $(VCS_RUN_FLAGS) \
+		+elf_file=$(CORE_TEST_DIR)/interrupt_test/interrupt_test.elf \
+		+UVM_TESTNAME=uvmt_cv32_firmware_test_c \
+		+firmware=$(CORE_TEST_DIR)/interrupt_test/interrupt_test.hex
+
 misalign: $(VCS_SIM_PREREQ) $(CUSTOM)/misalign.hex
 	mkdir -p $(VCS_RESULTS)/misalign && cd $(VCS_RESULTS)/misalign && \
-	$(VCS_RESULTS)/$(SIMV) -l vcs-misalign.log -cm_name misalign $(VCS_COMP_RUN) \
+	$(VCS_RESULTS)/$(SIMV) -l vcs-misalign.log -cm_name misalign $(VCS_RUN_FLAGS) \
 		+elf_file=$(CUSTOM)/misalign.elf \
 		+UVM_TESTNAME=uvmt_cv32_firmware_test_c \
 		+firmware=$(CUSTOM)/misalign.hex
 
 illegal: $(VCS_SIM_PREREQ) $(CUSTOM)/illegal.hex
 	mkdir -p $(VCS_RESULTS)/illegal && cd $(VCS_RESULTS)/illegal && \
-	$(VCS_RESULTS)/$(SIMV) -l vcs-illegal.log -cm_name illegal $(VCS_COMP_RUN) \
+	$(VCS_RESULTS)/$(SIMV) -l vcs-illegal.log -cm_name illegal $(VCS_RUN_FLAGS) \
 		+elf_file=$(CUSTOM)/illegal.elf \
 		+UVM_TESTNAME=uvmt_cv32_firmware_test_c \
 		+firmware=$(CUSTOM)/illegal.hex
 
 fibonacci: $(VCS_SIM_PREREQ) $(CUSTOM)/fibonacci.hex
 	mkdir -p $(VCS_RESULTS)/fibonacci && cd $(VCS_RESULTS)/fibonacci && \
-	$(VCS_RESULTS)/$(SIMV) -l vcs-fibonacci.log -cm_name fibonacci $(VCS_COMP_RUN) \
+	$(VCS_RESULTS)/$(SIMV) -l vcs-fibonacci.log -cm_name fibonacci $(VCS_RUN_FLAGS) \
 		+elf_file=$(CUSTOM)/fibonacci.elf \
 		+UVM_TESTNAME=uvmt_cv32_firmware_test_c \
 		+firmware=$(CUSTOM)/fibonacci.hex
 
 dhrystone: $(VCS_SIM_PREREQ) $(CUSTOM)/dhrystone.hex
 	mkdir -p $(VCS_RESULTS)/dhrystone && cd $(VCS_RESULTS)/dhrystone && \
-	$(VCS_RESULTS)/$(SIMV) -l vcs-dhrystonelog -cm_name dhrystone $(VCS_COMP_RUN) \
+	$(VCS_RESULTS)/$(SIMV) -l vcs-dhrystonelog -cm_name dhrystone $(VCS_RUN_FLAGS) \
 		+elf_file=$(CUSTOM)/dhrystone.elf \
 		+UVM_TESTNAME=uvmt_cv32_firmware_test_c \
 		+firmware=$(CUSTOM)/dhrystone.hex
 
 riscv_ebreak_test_0: $(VCS_SIM_PREREQ) $(CUSTOM)/riscv_ebreak_test_0.hex
 	mkdir -p $(VCS_RESULTS)/riscv_ebreak_test_0 && cd $(VCS_RESULTS)/riscv_ebreak_test_0 && \
-	$(VCS_RESULTS)/$(SIMV) -l vcs-riscv_ebreak_test_0log -cm_name riscv_ebreak_test_0 $(VCS_COMP_RUN) \
+	$(VCS_RESULTS)/$(SIMV) -l vcs-riscv_ebreak_test_0log -cm_name riscv_ebreak_test_0 $(VCS_RUN_FLAGS) \
                 +elf_file=$(CUSTOM)/riscv_ebreak_test_0.elf \
                 +UVM_TESTNAME=uvmt_cv32_firmware_test_c \
                 +firmware=$(CUSTOM)/riscv_ebreak_test_0.hex
 
 debug_test: $(VCS_SIM_PREREQ) $(CORE_TEST_DIR)/debug_test/debug_test.hex
 	mkdir -p $(VCS_RESULTS)/debug_test && cd $(VCS_RESULTS)/debug_test && \
-	$(VCS_RESULTS)/$(SIMV) -l vcs-riscv_debug_test.log -cm_name debug_test $(VCS_COMP_RUN) \
+	$(VCS_RESULTS)/$(SIMV) -l vcs-riscv_debug_test.log -cm_name debug_test $(VCS_RUN_FLAGS) \
                 +elf_file=$(CORE_TEST_DIR)/debug_test/debug_test.elf \
                 +UVM_TESTNAME=uvmt_cv32_firmware_test_c \
                 +firmware=$(CORE_TEST_DIR)/debug_test/debug_test.hex
@@ -239,7 +248,7 @@ debug_test: $(VCS_SIM_PREREQ) $(CORE_TEST_DIR)/debug_test/debug_test.hex
 # Runs tests in cv32_riscv_tests/ only
 cv32-riscv-tests: $(VCS_SIM_PREREQ) $(CV32_RISCV_TESTS_FIRMWARE)/cv32_riscv_tests_firmware.hex
 	mkdir -p $(VCS_RESULTS)/cv32-riscv-tests && cd $(VCS_RESULTS)/cv32-riscv-tests && \
-	$(VCS_RESULTS)/$(SIMV) -l vcs-cv32-riscv-tests.log $(VCS_COMP_RUN) \
+	$(VCS_RESULTS)/$(SIMV) -l vcs-cv32-riscv-tests.log $(VCS_RUN_FLAGS) \
 		+elf_file=$(CV32_RISCV_TESTS_FIRMWARE)/cv32_riscv_tests_firmware.elf \
 		+UVM_TESTNAME=uvmt_cv32_firmware_test_c \
 		+firmware=$(CV32_RISCV_TESTS_FIRMWARE)/cv32_riscv_tests_firmware.hex
@@ -247,7 +256,7 @@ cv32-riscv-tests: $(VCS_SIM_PREREQ) $(CV32_RISCV_TESTS_FIRMWARE)/cv32_riscv_test
 # Runs tests in cv32_riscv_compliance_tests/ only
 cv32-riscv-compliance-tests: $(VCS_SIM_PREREQ)  $(CV32_RISCV_COMPLIANCE_TESTS_FIRMWARE)/cv32_riscv_compliance_tests_firmware.hex
 	mkdir -p $(VCS_RESULTS)/cv32-riscv-compliance-tests && cd $(VCS_RESULTS)/cv32-riscv-compliance-tests && \
-	$(VCS) -l vcs-cv32-riscv_compliance_tests.log -cm_name cv32-riscv-compliance-tests $(VCS_RUN_FLAGS) \
+	$(VCS_RESULTS)/$(SIMV) -l vcs-cv32-riscv_compliance_tests.log -cm_name cv32-riscv-compliance-tests $(VCS_RUN_FLAGS) \
 		+elf_file=$(CV32_RISCV_COMPLIANCE_TESTS_FIRMWARE)/cv32_riscv_compliance_tests_firmware.elf \
 		+UVM_TESTNAME=uvmt_cv32_firmware_test_c \
 		+firmware=$(CV32_RISCV_COMPLIANCE_TESTS_FIRMWARE)/cv32_riscv_compliance_tests_firmware.hex
@@ -272,9 +281,21 @@ cv32-firmware: comp $(FIRMWARE)/firmware.hex
 #		+UVM_TESTNAME=uvmt_cv32_firmware_test_c \
 #		+firmware=$(FIRMWARE)/firmware_unit_test.hex
 
+################################################################################
+# Called from external compliance framework providing ELF, HEX, NM
+COMPLIANCE ?= missing
+riscv-compliance: $(VCS_SIM_PREREQ) $(COMPLIANCE).elf
+	mkdir -p $(VCS_RESULTS)/$(@) && cd $(VCS_RESULTS)/$(@) && \
+	$(VCS_RESULTS)/$(SIMV) -l vcs-$(@).log -cm_name riscv-compliance $(VCS_RUN_FLAGS) \
+		+UVM_TESTNAME=uvmt_cv32_firmware_test_c \
+		+elf_file=$(COMPLIANCE).elf \
+		+firmware=$(COMPLIANCE).hex \
+		+signature=$(COMPLIANCE).signature.output
+
 ###############################################################################
 # Use Google instruction stream generator (RISCV-DV) to create new test-programs
 comp_riscv-dv:
+#		+incdir+$(RISCVDV_PKG)/target/cv32e40p \
 	mkdir -p $(VCS_RISCVDV_RESULTS)
 	mkdir -p $(COREVDV_PKG)/out_$(DATE)/run
 	cd $(VCS_RISCVDV_RESULTS) && \
@@ -287,10 +308,10 @@ comp_riscv-dv:
 		-f $(COREVDV_PKG)/manifest.f \
 		-l $(COREVDV_PKG)/out_$(DATE)/run/compile.log 
 
-gen_corev_arithmetic_base_test:
+gen_corev_arithmetic_base_test: comp_riscv-dv
 	mkdir -p $(VCS_RISCVDV_RESULTS)/corev_arithmetic_base_test	
 	cd $(VCS_RISCVDV_RESULTS)/corev_arithmetic_base_test && \
-	$(VCS_RESULTS)/$(SIMV) $(VCS_RUN_FLAGS) \
+	../$(SIMV) $(VCS_RUN_FLAG) \
 		+UVM_TESTNAME=corev_instr_base_test  \
 		+num_of_tests=2  \
 		+start_idx=0  \
@@ -306,10 +327,10 @@ gen_corev_arithmetic_base_test:
 		+no_csr_instr=1
 	cp $(VCS_RISCVDV_RESULTS)/corev_arithmetic_base_test/*.S $(CORE_TEST_DIR)/custom
 
-gen_corev_rand_instr_test:
+gen_corev_rand_instr_test: comp_riscv-dv
 	mkdir -p $(VCS_RISCVDV_RESULTS)/corev_rand_instr_test	
 	cd $(VCS_RISCVDV_RESULTS)/corev_rand_instr_test && \
-	$(VCS_RESULTS)/$(SIMV) $(VCS_RUN_FLAGS) \
+	../$(SIMV) $(VCS_RUN_FLAG) \
 	 	+UVM_TESTNAME=corev_instr_base_test \
 		+num_of_tests=$(NUM_TESTS) \
 		+start_idx=0  \
@@ -325,6 +346,28 @@ gen_corev_rand_instr_test:
     +directed_instr_5=riscv_mem_region_stress_test,4 \
     +directed_instr_6=riscv_jal_instr,4
 	cp $(VCS_RISCVDV_RESULTS)/corev_rand_instr_test/*.S $(CORE_TEST_DIR)/custom
+
+gen_corev_rand_interrupt_test: comp_riscv-dv
+	mkdir -p $(VCS_RISCVDV_RESULTS)/corev_rand_interrupt_test	
+	cd $(VCS_RISCVDV_RESULTS)/corev_rand_interrupt_test && \
+	../$(SIMV) $(VCS_RUN_FLAG) \
+		-l $(COREVDV_PKG)/out_$(DATE)/sim_riscv_rand_interrupt_test_0.log \
+		+UVM_TESTNAME=corev_instr_base_test  \
+		+num_of_tests=$(NUM_TESTS)  \
+		+start_idx=0  \
+		+asm_file_name_opts=corev_rand_interrupt_test  \
+		+instr_cnt=50000 \
+		+num_of_sub_program=5 \
+        +directed_instr_0=riscv_load_store_rand_instr_stream,4 \
+        +directed_instr_1=riscv_loop_instr,4 \
+        +directed_instr_2=riscv_hazard_instr_stream,4 \
+        +directed_instr_3=riscv_load_store_hazard_instr_stream,4 \
+		+no_fence=1 \
+        +enable_interrupt=1 \
+        +randomize_csr=1 \
+		+boot_mode=m \
+		+no_csr_instr=1
+	cp $(VCS_RISCVDV_RESULTS)/corev_rand_interrupt_test/*.S $(CORE_TEST_DIR)/custom
 
 corev-dv: clean_riscv-dv \
 	clone_riscv-dv \

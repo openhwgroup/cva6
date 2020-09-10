@@ -25,29 +25,44 @@ class uvme_cv32_interrupt_noise_c extends uvme_cv32_base_vseq_c;
 
    rand int unsigned short_delay_wgt;
    rand int unsigned med_delay_wgt;
-   rand int unsigned long_delay_wgt;
-   rand int unsigned initial_delay;
+   rand int unsigned long_delay_wgt;   
+   rand int unsigned initial_delay_assert_until_ack;
+   rand int unsigned initial_delay_assert;
+   rand int unsigned initial_delay_deassert;
 
    rand bit [31:0]   reserved_irq_mask;
-
+  
    `uvm_object_utils_begin(uvme_cv32_interrupt_noise_c)
    `uvm_object_utils_end
    
-   constraint default_delay {
+   constraint default_delay_c {
      soft short_delay_wgt == 2;
      soft med_delay_wgt == 5;
      soft long_delay_wgt == 3;
    }
 
-   constraint valid_delay {
+   constraint valid_delay_c {
      short_delay_wgt != 0 || med_delay_wgt != 0 || long_delay_wgt != 0;
    }
 
-   constraint valid_initial_delay {
-     initial_delay dist { 0 :/ 1,
-                          [10:500] :/ 4,
-                          [500:1000] :/ 3};
+   constraint valid_initial_delay_assert_until_ack_c {
+     initial_delay_assert_until_ack dist { 0 :/ 1,
+                                           [10:500] :/ 4,
+                                           [500:1000] :/ 3};
    }
+
+   constraint valid_initial_delay_assert_c {
+     initial_delay_assert dist { 0 :/ 2,
+                                 [10:500] :/ 4,
+                                 [500:1000] :/ 3};
+   }
+
+   constraint valid_initial_delay_deassert_c {
+     initial_delay_deassert dist { 0 :/ 2,
+                                   [10:500] :/ 4,
+                                   [500:1000] :/ 3};
+   }
+   
    /**
     * Default constructor.
     */
@@ -67,56 +82,72 @@ function uvme_cv32_interrupt_noise_c::new(string name="uvme_cv32_interrupt_noise
 endfunction : new
 
 task uvme_cv32_interrupt_noise_c::rand_delay();
-  randcase    
+  randcase
     short_delay_wgt: repeat($urandom_range(100,1)) @(cntxt.interrupt_cntxt.vif.drv_cb);
     med_delay_wgt: repeat($urandom_range(500,100)) @(cntxt.interrupt_cntxt.vif.drv_cb);
-    long_delay_wgt: repeat($urandom_range(10000,5000)) @(cntxt.interrupt_cntxt.vif.drv_cb);
-  endcase 
+    long_delay_wgt: repeat($urandom_range(10_000,5_000)) @(cntxt.interrupt_cntxt.vif.drv_cb);
+  endcase
 endtask : rand_delay
 
 task uvme_cv32_interrupt_noise_c::body();
-  `uvm_info("IRQVSEQR", $sformatf("initial_delay = %0d", initial_delay), UVM_LOW);
-  repeat (initial_delay) @(cntxt.interrupt_cntxt.vif.drv_cb);
 
-  fork 
-    while(1) begin
-      uvma_interrupt_seq_item_c irq_req;
-      
-      `uvm_create_on(irq_req, p_sequencer.interrupt_sequencer);
-      start_item(irq_req);
-      irq_req.default_repeat_count.constraint_mode(0);
-      assert(irq_req.randomize() with {
-        action        == UVMA_INTERRUPT_SEQ_ITEM_ACTION_ASSERT_UNTIL_ACK;
-        repeat_count dist { 1 :/ 9, [2:3] :/ 1 };
+  fork
+    begin : gen_assert_until_ack
 
-        (irq_mask & local::reserved_irq_mask) == 0;
-      });
-      finish_item(irq_req);
+      repeat (initial_delay_assert_until_ack) @(cntxt.interrupt_cntxt.vif.drv_cb);
 
-      rand_delay();
-    end  
-  
-    while(1) begin
-      uvma_interrupt_seq_item_c irq_req;
-      
-      `uvm_do_on_with(irq_req, p_sequencer.interrupt_sequencer, {        
-        action        == UVMA_INTERRUPT_SEQ_ITEM_ACTION_DEASSERT;
-        (irq_mask & local::reserved_irq_mask) == 0;
-      })   
+      while(1) begin
+        uvma_interrupt_seq_item_c irq_req;
+        
+        `uvm_create_on(irq_req, p_sequencer.interrupt_sequencer);
+        start_item(irq_req);
+        irq_req.default_repeat_count_c.constraint_mode(0);
+        assert(irq_req.randomize() with {
+          action        == UVMA_INTERRUPT_SEQ_ITEM_ACTION_ASSERT_UNTIL_ACK;
+          repeat_count dist { 1 :/ 9, [2:3] :/ 1 };
 
-      rand_delay();
-    end  
+          (irq_mask & local::reserved_irq_mask) == 0;
+        });
+        finish_item(irq_req);
 
-    while(1) begin
-      uvma_interrupt_seq_item_c irq_req;
-      
-      `uvm_do_on_with(irq_req, p_sequencer.interrupt_sequencer, {        
-        action        == UVMA_INTERRUPT_SEQ_ITEM_ACTION_ASSERT;
-        (irq_mask & local::reserved_irq_mask) == 0;
-      })   
+        rand_delay();
 
-      rand_delay();
-    end  
+      end
+    end
+
+    begin : gen_assert
+
+      repeat (initial_delay_assert) @(cntxt.interrupt_cntxt.vif.drv_cb);
+
+      while(1) begin
+        uvma_interrupt_seq_item_c irq_req;
+        
+        `uvm_do_on_with(irq_req, p_sequencer.interrupt_sequencer, {        
+          action        == UVMA_INTERRUPT_SEQ_ITEM_ACTION_DEASSERT;
+          (irq_mask & local::reserved_irq_mask) == 0;
+        })
+
+        rand_delay();
+
+      end  
+    end
+
+    begin : gen_deassert
+
+      repeat (initial_delay_deassert) @(cntxt.interrupt_cntxt.vif.drv_cb);
+
+      while(1) begin
+        uvma_interrupt_seq_item_c irq_req;
+        
+        `uvm_do_on_with(irq_req, p_sequencer.interrupt_sequencer, {        
+          action        == UVMA_INTERRUPT_SEQ_ITEM_ACTION_ASSERT;
+          (irq_mask & local::reserved_irq_mask) == 0;
+        })
+
+        rand_delay();
+
+      end  
+    end
   join
 endtask : body
 
