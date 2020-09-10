@@ -529,6 +529,7 @@ int main(int argc, char *argv[])
     }
     check_debug_status(121, glb_hart_status);
 
+/*
     printf("------------------------\n");
     printf("Test 18: Single stepping\n");
     glb_hart_status = 18;
@@ -541,6 +542,7 @@ int main(int argc, char *argv[])
     check_debug_status(118, glb_hart_status);
 
     printf("Stepped %d times\n", glb_step_count);    
+*/
 
     printf("------------------------\n");
     printf("Test 19: irq in debug\n");
