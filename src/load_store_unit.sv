@@ -55,7 +55,7 @@ module load_store_unit import ariane_pkg::*; #(
     input  logic [riscv::PPNW-1:0]   satp_ppn_i,               // From CSR register file
     input  logic [ASID_WIDTH-1:0]    asid_i,                   // From CSR register file
     input  logic [ASID_WIDTH-1:0]    asid_to_be_flushed_i,
-    input  logic [63:0]              vaddr_to_be_flushed_i,
+    input  logic [riscv::VLEN-1:0]   vaddr_to_be_flushed_i,
     input  logic                     flush_tlb_i,
     // Performance counters
     output logic                     itlb_miss_o,
@@ -111,7 +111,7 @@ module load_store_unit import ariane_pkg::*; #(
     logic [riscv::PLEN-1:0]   mmu_paddr;
     exception_t               mmu_exception;
     logic                     dtlb_hit;
-    logic [riscv::PLEN-13:0]  dtlb_ppn;
+    logic [riscv::PPNW-1:0]   dtlb_ppn;
 
     logic                     ld_valid;
     logic [TRANS_ID_BITS-1:0] ld_trans_id;
