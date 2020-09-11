@@ -31,8 +31,8 @@ module issue_stage import ariane_pkg::*; #(
     input  logic                                     is_ctrl_flow_i,
     output logic                                     decoded_instr_ack_o,
     // to EX
-    output [63:0]                                    rs1_forwarding_o,  // unregistered version of fu_data_o.operanda
-    output [63:0]                                    rs2_forwarding_o, // unregistered version of fu_data_o.operandb
+    output [riscv::VLEN-1:0]                         rs1_forwarding_o,  // unregistered version of fu_data_o.operanda
+    output [riscv::VLEN-1:0]                         rs2_forwarding_o, // unregistered version of fu_data_o.operandb
     output fu_data_t                                 fu_data_o,
     output logic [riscv::VLEN-1:0]                   pc_o,
     output logic                                     is_compressed_instr_o,
