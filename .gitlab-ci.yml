@@ -232,7 +232,7 @@ s-bench-ver:
 s-icache-quest:
   stage: write-through
   script:
-    - cd tb/tb_wt_icache/
+    - cd tb/tb_icache/
     - make simc
     - "grep 'CI: PASSED' summary.rep"
 
