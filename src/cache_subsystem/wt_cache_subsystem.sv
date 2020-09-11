@@ -70,11 +70,11 @@ module wt_cache_subsystem import ariane_pkg::*; import wt_cache_pkg::*; #(
   wt_cache_pkg::dcache_req_t  dcache_adapter;
   wt_cache_pkg::dcache_rtrn_t adapter_dcache;
 
-  wt_icache #(
+  cva6_icache #(
     // use ID 0 for icache reads
     .RdTxId             ( 0             ),
     .ArianeCfg          ( ArianeCfg     )
-  ) i_wt_icache (
+  ) i_cva6_icache (
     .clk_i              ( clk_i                   ),
     .rst_ni             ( rst_ni                  ),
     .flush_i            ( icache_flush_i          ),

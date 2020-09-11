@@ -261,7 +261,7 @@ module tb import tb_pkg::*; import ariane_pkg::*; import wt_cache_pkg::*; #()();
 // MUT
 ///////////////////////////////////////////////////////////////////////////////
 
-  wt_icache  #(
+  cva6_icache  #(
     .ArianeCfg(Cfg)
     ) dut (
     .clk_i          ( clk_i          ),

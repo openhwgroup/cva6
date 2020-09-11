@@ -94,11 +94,11 @@ sources:
     - src/cache_subsystem/wt_dcache_ctrl.sv
     - src/cache_subsystem/wt_cache_subsystem.sv
     - src/cache_subsystem/wt_dcache_missunit.sv
-    - src/cache_subsystem/wt_icache.sv
-    - src/cache_subsystem/std_icache.sv
+    - src/cache_subsystem/cva6_icache.sv
     - src/cache_subsystem/wt_dcache_wbuffer.sv
     - src/cache_subsystem/wt_l15_adapter.sv
     - src/cache_subsystem/wt_dcache_mem.sv
+    - src/cache_subsystem/cva6_icache_axi_wrapper.sv
     - src/cache_subsystem/std_cache_subsystem.sv
     - src/cache_subsystem/wt_dcache.sv
     - src/clint/axi_lite_interface.sv

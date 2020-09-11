@@ -653,7 +653,7 @@ module ariane import ariane_pkg::*; #(
     // note: this only works with one cacheable region
     // not as important since this cache subsystem is about to be
     // deprecated
-    .CACHE_START_ADDR    ( ArianeCfg.CachedRegionAddrBase )
+    .ArianeCfg             ( ArianeCfg                   )
   ) i_cache_subsystem (
     // to D$
     .clk_i                 ( clk_i                       ),

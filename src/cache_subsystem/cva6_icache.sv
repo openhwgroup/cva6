@@ -25,7 +25,7 @@
 //
 
 
-module wt_icache import ariane_pkg::*; import wt_cache_pkg::*; #(
+module cva6_icache import ariane_pkg::*; import wt_cache_pkg::*; #(
   parameter logic [CACHE_ID_WIDTH-1:0]  RdTxId             = 0,                                  // ID to be used for read transactions
   parameter ariane_pkg::ariane_cfg_t    ArianeCfg          = ariane_pkg::ArianeDefaultConfig     // contains cacheable regions
 ) (
@@ -533,4 +533,4 @@ end else begin : gen_piton_offset
 `endif
 //pragma translate_on
 
-endmodule // wt_icache
+endmodule // cva6_icache
