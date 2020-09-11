@@ -63,7 +63,7 @@ module mmu import ariane_pkg::*; #(
     output dcache_req_i_t                   req_port_o,
     // PMP
     input  riscv::pmpcfg_t [15:0]           pmpcfg_i,
-    input  logic [15:0][riscv::PLEN-1:0]    pmpaddr_i
+    input  logic [15:0][riscv::PLEN-3:0]    pmpaddr_i
 );
 
     logic                   iaccess_err;   // insufficient privilege to access this instruction page
