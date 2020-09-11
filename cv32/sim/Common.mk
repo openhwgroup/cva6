@@ -68,8 +68,15 @@ BANNER=*************************************************************************
 
 CV32E40P_REPO   ?= https://github.com/openhwgroup/cv32e40p
 CV32E40P_BRANCH ?= master
+#2020-09-09
+CV32E40P_HASH   ?= 7a0fe7afa3f520f4f67d07af3df47f91e6a04fe6
+#2020-09-08
+#CV32E40P_HASH   ?= cb07a7aa77465797fdaa5e783ce2e6bacb922bb3
+#2020-09-06
+#CV32E40P_HASH   ?= 3335dbcfcbdbec1c1f97fe13835fe13a63a321e0
+#2020-09-04
+#CV32E40P_HASH   ?= 6fbd88c645d2b51c316af6eda79bab3e4c284093
 #2020-08-28
-CV32E40P_HASH   ?= a5ec2db5cc3eabb6d0315658f11ae8e82bbf994d
 #CV32E40P_HASH   ?= 7c65d1a6cbbcbc7eb20abfd1a83988c94e4fd175
 #2020-08-18
 #CV32E40P_HASH   ?= 1607d8b675864db1aa013364fd4444a665331830
@@ -98,6 +105,11 @@ RISCVDV_BRANCH  ?= master
 # July 8 version.  Randomization errors have significantly improved.
 #                  Generation of riscv_pmp_test fails (we do not care for CV32E40P).
 RISCVDV_HASH    ?= 10fd4fa8b7d0808732ecf656c213866cae37045a
+
+COMPLIANCE_REPO   ?= https://github.com/riscv/riscv-compliance
+COMPLIANCE_BRANCH ?= master
+# 2020-08-19
+COMPLIANCE_HASH   ?= c21a2e86afa3f7d4292a2dd26b759f3f29cde497
 
 # Generate command to clone the CV32E40P RTL
 ifeq ($(CV32E40P_BRANCH), master)
@@ -140,6 +152,19 @@ else
 endif
 # RISCV-DV repo var end
 
+# Generate command to clone the RISCV Compliance Test-suite
+ifeq ($(COMPLIANCE_BRANCH), master)
+  TMP4 = git clone $(COMPLIANCE_REPO) --recurse $(COMPLIANCE_PKG)
+else
+  TMP4 = git clone -b $(COMPLIANCE_BRANCH) --single-branch $(COMPLIANCE_REPO) --recurse $(COMPLIANCE_PKG)
+endif
+
+ifeq ($(COMPLIANCE_HASH), head)
+  CLONE_COMPLIANCE_CMD = $(TMP4)
+else
+  CLONE_COMPLIANCE_CMD = $(TMP4); cd $(COMPLIANCE_PKG); git checkout $(COMPLIANCE_HASH)
+endif
+
 ###############################################################################
 # Imperas Instruction Set Simulator
 
@@ -157,11 +182,17 @@ OVP_MODEL_DPI   = $(DV_OVPM_MODEL)/bin/Linux64/riscv_CV32E40P.dpi.so
 # riscv toolchain install path
 CV_SW_TOOLCHAIN  ?= /opt/riscv
 RISCV            ?= $(CV_SW_TOOLCHAIN)
-RISCV_EXE_PREFIX ?= $(RISCV)/bin/riscv32-unknown-elf-
+RISCV_PREFIX     ?= riscv32-unknown-elf-
+RISCV_EXE_PREFIX ?= $(RISCV)/bin/$(RISCV_PREFIX)
 
 CFLAGS ?= -Os -g -static -mabi=ilp32 -march=rv32imc -Wall -pedantic
 
+# FIXME:strichmo:Repeating this code until we fully deprecate CUSTOM_PROG, hopefully next PR
 ifeq ($(firstword $(subst _, ,$(CUSTOM_PROG))),pulp)
+  CFLAGS = -Os -g -D__riscv__=1 -D__LITTLE_ENDIAN__=1 -march=rv32imcxpulpv2 -Wa,-march=rv32imcxpulpv2 -fdata-sections -ffunction-sections -fdiagnostics-color=always
+endif
+
+ifeq ($(firstword $(subst _, ,$(TEST))),pulp)
   CFLAGS = -Os -g -D__riscv__=1 -D__LITTLE_ENDIAN__=1 -march=rv32imcxpulpv2 -Wa,-march=rv32imcxpulpv2 -fdata-sections -ffunction-sections -fdiagnostics-color=always
 endif
 
@@ -179,7 +210,7 @@ VERI_FIRMWARE                        = ../../tests/core/firmware
 CUSTOM                               = $(CORE_TEST_DIR)/custom
 CUSTOM_DIR                          ?= $(CUSTOM)
 CUSTOM_PROG                         ?= my_hello_world
-VERI_CUSTOM                          = ../../tests/core/custom
+VERI_CUSTOM                          = ../../tests/programs/custom
 ASM                                  = $(CORE_TEST_DIR)/asm
 ASM_DIR                             ?= $(ASM)
 ASM_PROG                            ?= my_hello_world
@@ -215,7 +246,7 @@ COMPLIANCE_TEST_OBJS     = $(addsuffix .o, \
 # Thales verilator testbench compilation start
 
 SUPPORTED_COMMANDS := vsim-firmware-unit-test questa-unit-test questa-unit-test-gui dsim-unit-test vcs-unit-test
-SUPPORTS_MAKE_ARGS := $(findstring $(firstword $(MAKECMDGOALS)), $(SUPPORTED_COMMANDS))
+SUPPORTS_MAKE_ARGS := $(filter $(firstword $(MAKECMDGOALS)), $(SUPPORTED_COMMANDS))
 
 ifneq "$(SUPPORTS_MAKE_ARGS)" ""
   UNIT_TEST := $(wordlist 2,$(words $(MAKECMDGOALS)),$(MAKECMDGOALS))
@@ -237,6 +268,35 @@ FIRMWARE_UNIT_TEST_OBJS   =  	$(addsuffix .o, \
 # The sanity rule runs whatever is currently deemed to be the minimal test that
 # must be able to run (and pass!) prior to generating a pull-request.
 sanity: hello-world
+
+###############################################################################
+# Read YAML test specifications
+
+# If the gen_corev-dv target is defined then read in a test specification file
+YAML2MAKE = $(PROJ_ROOT_DIR)/bin/yaml2make
+ifneq ($(filter gen_corev-dv,$(MAKECMDGOALS)),)
+ifeq ($(TEST),)
+$(error ERROR must specify a TEST variable with gen_corev-dv target)
+endif
+GEN_FLAGS_MAKE := $(shell $(YAML2MAKE) --test=$(TEST) --yaml=corev-dv.yaml --debug --prefix=GEN)
+ifeq ($(GEN_FLAGS_MAKE),)
+$(error ERROR Could not find corev-dv.yaml for test: $(TEST))
+endif
+include $(GEN_FLAGS_MAKE)
+endif
+
+# If the test target is defined then read in a test specification file
+TEST_YAML_PARSE_TARGETS=test waves cov
+ifneq ($(filter $(TEST_YAML_PARSE_TARGETS),$(MAKECMDGOALS)),)
+ifeq ($(TEST),)
+$(error ERROR must specify a TEST variable)
+endif
+TEST_FLAGS_MAKE := $(shell $(YAML2MAKE) --test=$(TEST) --yaml=test.yaml --debug --run-index=$(RUN_INDEX) --prefix=TEST)
+ifeq ($(TEST_FLAGS_MAKE),)
+$(error ERROR Could not find test.yaml for test: $(TEST))
+endif
+include $(TEST_FLAGS_MAKE)
+endif
 
 ###############################################################################
 # Rule to generate hex (loadable by simulators) from elf
@@ -292,7 +352,6 @@ TEST_FILES        = $(filter %.c %.S,$(wildcard $(dir $*)*))
 # This target selected if both %.c and %.S exist
 .PRECIOUS : %.elf
 %.elf: %.c
-	make clean-bsp
 	make bsp
 	$(RISCV_EXE_PREFIX)gcc $(CFLAGS) -o $@ \
 		-nostartfiles \
@@ -300,7 +359,6 @@ TEST_FILES        = $(filter %.c %.S,$(wildcard $(dir $*)*))
 
 # This target selected if only %.S exists
 %.elf: %.S
-	make clean-bsp
 	make bsp
 	$(RISCV_EXE_PREFIX)gcc $(CFLAGS) -o $@ \
 		-nostartfiles \
@@ -420,8 +478,6 @@ $(RISCV_COMPLIANCE_TESTS)/%.o: $(RISCV_COMPLIANCE_TESTS)/%.S $(RISCV_COMPLIANCE_
 		-DTEST_FUNC_NAME=$(notdir $(subst -,_,$(basename $<))) \
 		-DTEST_FUNC_TXT='"$(notdir $(subst -,_,$(basename $<)))"' \
 		-DTEST_FUNC_RET=$(notdir $(subst -,_,$(basename $<)))_ret $<
-
-
 
 # in dsim
 .PHONY: dsim-unit-test 

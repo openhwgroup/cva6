@@ -91,10 +91,8 @@ _step_trig_exit:
     bne t0, t1, _single_step_fail
 
 
+    //-----------------
     // Stepping with interrupt, stepie=1
-    // TODO: Stepie is currently not implemented
-    // Extend test to check both stepie=0
-    // and stepie=1 when rtl supports it.
     la a1, glb_step_info
     li t0, 5
     sw t0, 0(a1)
@@ -112,14 +110,43 @@ _step_trig_exit:
     li t0, 2
     sw t0, 0(a1)
 
-// Loop to wait for interrupt to be handled
-// TODO: If stepie=0, add timeout to below loop 
 _irq_wait_loop:
     la a1, glb_expect_irq_entry
     lw t0, 0(a1);
     bne t0, x0, _irq_wait_loop
-    
-    
+
+
+    //-----------------
+    // Stepping with interrupt, stepie=0
+    la a1, glb_step_info
+    li t0, 6
+    sw t0, 0(a1)
+
+    // Assert irq
+    li a1, 0x15000000
+    li t0, 0x40000000
+    sw t0, 0(a1)
+    li a1, 0x15000004
+    li t0, 2
+    sw t0, 0(a1)
+
+    // Wait out some instructions to give IRQ a chance
+    // Report an ERROR if IRQ taken as we did not set glb_expect_irq_entry flag
+    nop
+    nop
+    nop
+    nop
+
+    // De-Assert irq
+    li a1, 0x15000000
+    li t0, 0x00000000
+    sw t0, 0(a1)
+    li a1, 0x15000004
+    li t0, 1
+    sw t0, 0(a1)
+
+    nop
+    nop
 
     // Cause 2, disable single stepping
     la a1, glb_step_info

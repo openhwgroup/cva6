@@ -68,19 +68,10 @@ task uvme_cv32_reset_vseq_c::body();
    uvma_clknrst_seq_item_c  clk_start_req;
    uvma_clknrst_seq_item_c  reset_assrt_req;
 
-   `uvm_info("RST_VSEQ", $sformatf("Starting clock with period of %0t", (cfg.sys_clk_period * 1ps)), UVM_LOW)
-   `uvm_do_on_with(clk_start_req, p_sequencer.clknrst_sequencer, {
-      action        == UVMA_CLKNRST_SEQ_ITEM_ACTION_START_CLK;
-      initial_value == UVMA_CLKNRST_SEQ_ITEM_INITIAL_VALUE_0;
-      //clk_period    == local::cfg.sys_clk_period;
-      clk_period    == cfg.sys_clk_period;
-      //clk_period    == uvme_cv32_sys_default_clk_period;
-   })
-
-   `uvm_info("RST_VSEQ", $sformatf("waiting %0d clock cycles before issuing reset pulse", num_clk_before_reset), UVM_LOW)
-   repeat (num_clk_before_reset) begin
-      wait (cntxt.clknrst_cntxt.vif.clk === 1);
-   end
+   // Define the clock before applying reset
+   #1;
+   cntxt.clknrst_cntxt.vif.clk = 0;
+   #1;
 
    `uvm_info("RST_VSEQ", $sformatf("Asserting reset for %0t", (rst_deassert_period * 1ps)), UVM_LOW)
    `uvm_do_on_with(reset_assrt_req, p_sequencer.clknrst_sequencer, {
@@ -91,6 +82,15 @@ task uvme_cv32_reset_vseq_c::body();
 
    `uvm_info("RST_VSEQ", $sformatf("Done reset, waiting %0t for DUT to stabilize", (post_rst_wait * 1ps)), UVM_LOW)
    #(post_rst_wait * 1ps);
+
+   `uvm_info("RST_VSEQ", $sformatf("Starting clock with period of %0t", (cfg.sys_clk_period * 1ps)), UVM_LOW)
+   `uvm_do_on_with(clk_start_req, p_sequencer.clknrst_sequencer, {
+      action        == UVMA_CLKNRST_SEQ_ITEM_ACTION_START_CLK;
+      initial_value == UVMA_CLKNRST_SEQ_ITEM_INITIAL_VALUE_0;
+      //clk_period    == local::cfg.sys_clk_period;
+      clk_period    == cfg.sys_clk_period;
+      //clk_period    == uvme_cv32_sys_default_clk_period;
+   })
    
 endtask : body
 

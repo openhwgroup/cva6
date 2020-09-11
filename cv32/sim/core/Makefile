@@ -91,7 +91,7 @@ DSIM_HOME               = /tools/Metrics/dsim
 DSIM_CMP_FLAGS          = -timescale 1ns/1ps $(SV_CMP_FLAGS) +define+CV32E40P_APU_TRACE
 DSIM_RUN_FLAGS          = -write-sql
 DSIM_UVM_ARGS           = +incdir+$(UVM_HOME)/src $(UVM_HOME)/src/uvm_pkg.sv
-DSIM_RESULTS           ?= $(PWD)/results
+DSIM_RESULTS           ?= $(PWD)/dsim_results
 DSIM_WORK              ?= $(DSIM_RESULTS)/dsim_work
 DSIM_IMAGE              = dsim.out
 
@@ -168,8 +168,8 @@ tbsrc: $(TBSRC)
 
 SIMULATOR ?= vcs
 
-.PHONY: hello_world
-hello-world: $(SIMULATOR)-hello_world
+.PHONY: hello-world
+hello-world: $(SIMULATOR)-hello-world
 
 .PHONY: cv32_riscv_tests
 cv32_riscv_tests: $(SIMULATOR)-cv32_riscv_tests
@@ -238,69 +238,26 @@ dsim-comp-rtl-only: mk_results $(CV32E40P_PKG)
 
 
 # Metrics dsim simulations
-.PHONY: dsim-hello_world dsim-cv32_riscv_tests dsim-cv32_riscv_compliance_tests dsim-firmware
+.PHONY: dsim-hello-world dsim-firmware
 
-dsim-sanity: dsim-hello_world
+dsim-sanity: dsim-hello-world
 
 # Runs the hello world test
-dsim-hello_world: dsim-comp $(CUSTOM)/hello_world.hex
-	mkdir -p $(DSIM_RESULTS)/hello_world && cd $(DSIM_RESULTS)/hello_world  && \
-	$(DSIM) -l dsim-hello_world.log -image $(DSIM_IMAGE) \
+dsim-hello-world: dsim-comp $(VERI_CUSTOM)/hello-world/hello-world.hex
+	mkdir -p $(DSIM_RESULTS)/hello-world && cd $(DSIM_RESULTS)/hello-world  && \
+	$(DSIM) -l dsim-hello-world.log -image $(DSIM_IMAGE) \
 		-work $(DSIM_WORK) $(DSIM_RUN_FLAGS) \
 		-sv_lib $(UVM_HOME)/src/dpi/libuvm_dpi.so \
 		-sv_lib $(OVP_MODEL_DPI)  \
-		+firmware=$(CUSTOM)/hello_world.hex \
-		+elf_file=$(CUSTOM)/hello_world.elf
-#		+verbose
+		+firmware=../../$(VERI_CUSTOM)/hello-world/hello-world.hex
 
-dsim-custom: dsim-comp $(CUSTOM)/$(CUSTOM_PROG).hex
+dsim-custom: dsim-comp $(VERI_CUSTOM)/$(CUSTOM_PROG)/$(CUSTOM_PROG).hex
 	mkdir -p $(DSIM_RESULTS)/$(CUSTOM_PROG) && cd $(DSIM_RESULTS)/$(CUSTOM_PROG)  && \
 	$(DSIM) -l dsim-requested_csr_por.log -image $(DSIM_IMAGE) \
 		-work $(DSIM_WORK) $(DSIM_RUN_FLAGS) \
 		-sv_lib $(UVM_HOME)/src/dpi/libuvm_dpi.so \
 		-sv_lib $(OVP_MODEL_DPI)  \
-		+firmware=$(CUSTOM)/$(CUSTOM_PROG).hex \
-		+elf_file=$(CUSTOM)/$(CUSTOM_PROG).elf
-
-# Runs tests in riscv_tests/ only
-dsim-cv32_riscv_tests: dsim-comp $(CV32_RISCV_TESTS_FIRMWARE)/cv32_riscv_tests_firmware.hex
-	mkdir -p $(DSIM_RESULTS)/riscv-tests && cd $(DSIM_RESULTS)/riscv-tests && \
-	$(DSIM) -l dsim-riscv_tests.log -image $(DSIM_IMAGE) \
-		-work $(DSIM_WORK) $(DSIM_RUN_FLAGS) \
-		-sv_lib $(UVM_HOME)/src/dpi/libuvm_dpi.so \
-		-sv_lib $(OVP_MODEL_DPI)  \
-		+firmware=$(CV32_RISCV_TESTS_FIRMWARE)/cv32_riscv_tests_firmware.hex \
-		+elf_file=$(CV32_RISCV_TESTS_FIRMWARE)/cv32_riscv_tests_firmware.elf
-
-# Runs tests in riscv_compliance_tests/ only
-dsim-cv32_riscv_compliance_tests: dsim-comp $(CV32_RISCV_COMPLIANCE_TESTS_FIRMWARE)/cv32_riscv_compliance_tests_firmware.hex
-	mkdir -p $(DSIM_RESULTS)/riscv-compliance && cd $(DSIM_RESULTS)/riscv-compliance && \
-	$(DSIM) -l dsim-riscv_compliance_tests.log -image $(DSIM_IMAGE) \
-		-work $(DSIM_WORK) $(DSIM_RUN_FLAGS) \
-		-sv_lib $(UVM_HOME)/src/dpi/libuvm_dpi.so \
-		-sv_lib $(OVP_MODEL_DPI)  \
-		+firmware=$(CV32_RISCV_COMPLIANCE_TESTS_FIRMWARE)/cv32_riscv_compliance_tests_firmware.hex \
-		+elf_file=$(CV32_RISCV_COMPLIANCE_TESTS_FIRMWARE)/cv32_riscv_compliance_tests_firmware.elf
-
-# Runs all tests in riscv_tests/ and riscv_compliance_tests/
-dsim-firmware: dsim-comp $(FIRMWARE)/firmware.hex
-	mkdir -p $(DSIM_RESULTS)/firmware && cd $(DSIM_RESULTS)/firmware && \
-	$(DSIM) -l dsim-firmware.log -image $(DSIM_IMAGE) \
-		-work $(DSIM_WORK) \
-		-sv_lib $(UVM_HOME)/src/dpi/libuvm_dpi.so \
-		-sv_lib $(OVP_MODEL_DPI)  \
-		+firmware=$(FIRMWARE)/firmware.hex \
-		+elf_file=$(FIRMWARE)/firmware.elf
-
-# Runs a "unit-test" (see rule dsim-unit-test in ../Common.mk)
-dsim-firmware-unit-test: dsim-comp
-	mkdir -p $(DSIM_RESULTS)/firmware && cd $(DSIM_RESULTS)/firmware && \
-	$(DSIM) -l dsim-$(UNIT_TEST).log -image $(DSIM_IMAGE) \
-		-work $(DSIM_WORK) \
-		-sv_lib $(UVM_HOME)/src/dpi/libuvm_dpi.so \
-		-sv_lib $(OVP_MODEL_DPI)  \
-		+firmware=$(FIRMWARE)/firmware_unit_test.hex \
-		+elf_file=$(FIRMWARE)/firmware_unit_test.elf
+		+firmware=../../$(VERI_CUSTOM)/$(CUSTOM_PROG)/$(CUSTOM_PROG).hex
 
 # Metrics dsim cleanup
 .PHONY: dsim-clean
@@ -314,7 +271,7 @@ dsim-clean: tc-clean
 	rm -rf dsim_work
 	rm -f dsim.env
 	rm -f $(DSIM_IMAGE)
-	rm -rf $(DSIM_RESULTS)
+	rm -rf $(uIM_RESULTS)
 
 ###############################################################################
 # Mentor Questasim
@@ -364,10 +321,10 @@ vsim-run-gui: vsim-all
 	$(RTLSRC_VOPT_TB_TOP) -do $(VSIM_SCRIPT)
 
 
-.PHONY: questa-hello_world
-questa-hello_world: vsim-all $(CUSTOM)/hello_world.hex
-questa-hello_world: ALL_VSIM_FLAGS += +firmware=$(CUSTOM)/hello_world.hex
-questa-hello_world: vsim-run
+.PHONY: questa-hello-world
+questa-hello-world: vsim-all $(CUSTOM)/hello-world.hex
+questa-hello-world: ALL_VSIM_FLAGS += +firmware=$(CUSTOM)/hello-world.hex
+questa-hello-world: vsim-run
 
 .PHONY: questa-cv32_riscv_tests
 questa-cv32_riscv_tests: vsim-all $(CV32_RISCV_TESTS_FIRMWARE)/cv32_riscv_tests_firmware.hex
@@ -425,20 +382,21 @@ xrun-all: $(CV32E40P_PKG) $(FPNEW_PKG) $(RTLSRC_PKG) $(RTLSRC) $(TBSRC_PKG) $(TB
 		-f $(CV32E40P_MANIFEST) \
 		$(TBSRC_PKG) $(TBSRC)
 
-.PHONY: xrun-hello_world xrun-firmware
-xrun-hello_world: xrun-all $(CUSTOM)/hello_world.hex
+.PHONY: xrun-hello-world
+xrun-hello-world: xrun-all $(VERI_CUSTOM)/hello-world/hello-world.hex
 	$(XRUN) \
 		$(XRUN_FLAGS) \
 		-f $(CV32E40P_MANIFEST) \
 		$(TBSRC_PKG) $(TBSRC) \
-		+firmware=$(CUSTOM)/hello_world.hex
+		+firmware=$(VERI_CUSTOM)/hello-world/hello-world.hex
 
-xrun-firmware: xrun-all $(FIRMWARE)/firmware.hex
+.PHONY: xrun-custom
+xrun-custom: xrun-all $(VERI_CUSTOM)/$(CUSTOM_PROG)/$(CUSTOM_PROG).hex
 	$(XRUN) \
 		$(XRUN_FLAGS) \
 		-f $(CV32E40P_MANIFEST) \
 		$(TBSRC_PKG) $(TBSRC) \
-		+firmware=$(FIRMWARE)/firmware.hex
+		+firmware=$(VERI_CUSTOM)/$(CUSTOM_PROG)/$(CUSTOM_PROG).hex
 
 # Cadence Xcelium xrun cleanup
 .PHONY: xrun-clean xrun-clean-all
@@ -465,7 +423,7 @@ endif
 verilate: testbench_verilator
 
 sanity-veri-run:
-	make custom CUSTOM_PROG=hello_world
+	make custom CUSTOM_PROG=hello-world
 
 testbench_verilator: $(CV32E40P_PKG) $(TBSRC_VERI) $(TBSRC_PKG)
 	$(VERILATOR) --cc --sv --exe \
@@ -480,18 +438,11 @@ testbench_verilator: $(CV32E40P_PKG) $(TBSRC_VERI) $(TBSRC_PKG)
 	$(MAKE) -C $(VERI_OBJ_DIR) -f Vtb_top_verilator.mk
 	cp $(VERI_OBJ_DIR)/Vtb_top_verilator testbench_verilator
 
-custom: verilate $(VERI_CUSTOM)/$(CUSTOM_PROG).hex
+custom: verilate $(VERI_CUSTOM)/$(CUSTOM_PROG)/$(CUSTOM_PROG).hex
 	mkdir -p $(VERI_LOG_DIR)
 	./testbench_verilator $(VERI_FLAGS) \
-		"+firmware=$(VERI_CUSTOM)/$(CUSTOM_PROG).hex" \
+		"+firmware=$(VERI_CUSTOM)/$(CUSTOM_PROG)/$(CUSTOM_PROG).hex" \
 		| tee $(VERI_LOG_DIR)/$(CUSTOM_PROG).log
-
-cv32-riscv-tests: verilate ../../tests/core/cv32_riscv_tests_firmware/cv32_riscv_tests_firmware.hex
-	mkdir -p $(VERI_LOG_DIR)
-	./testbench_verilator $(VERI_FLAGS) \
-		"+firmware=../../tests/core/cv32_riscv_tests_firmware/cv32_riscv_tests_firmware.hex" \
-		| tee $(VERI_LOG_DIR)/$(cv32-riscv-tests).log
-
 
 # verilator specific cleanup
 veri-clean: verilate-clean
@@ -522,10 +473,10 @@ vcs-run: vcsify
 vcs-run-gui: vcsify
 	$(SIMV) $(ALL_VCS_FLAGS) -gui -do $(VCS_SCRIPT_GUI)
 
-.PHONY: vcs-hello_world
-vcs-hello_world: vcsify $(CUSTOM)/hello_world.hex
-vcs-hello_world: ALL_VCS_FLAGS += +firmware=$(CUSTOM)/hello_world.hex
-vcs-hello_world: vcs-run
+.PHONY: vcs-hello-world
+vcs-hello-world: vcsify $(CUSTOM)/hello-world.hex
+vcs-hello-world: ALL_VCS_FLAGS += +firmware=$(CUSTOM)/hello-world.hex
+vcs-hello-world: vcs-run
 
 .PHONY: vcs-custom
 vcs-custom: vcsify $(CUSTOM)/$(CUSTOM_PROG).hex
@@ -605,7 +556,7 @@ tc-clean:
 	find $(CORE_TEST_DIR) -name *.map     -exec rm {} \;
 
 .PHONY: clean clean_all distclean
-clean: questa-clean tc-clean verilate-clean vcs-clean firmware-clean custom-clean dsim-clean xrun-clean vcs-clean
+clean: questa-clean tc-clean verilate-clean vcs-clean firmware-clean custom-clean dsim-clean xrun-clean vcs-clean clean-bsp
 
 distclean: clean
 	rm -rf riscv-fesvr riscv-isa-sim $(CV32E40P_PKG) work

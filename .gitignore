@@ -8,6 +8,8 @@
 *.readelf
 *.gtkw
 *.vcd
+*.vsif
+*.sve
 dsim.env
 dsim.log
 dsim_results
@@ -15,6 +17,7 @@ metrics.db
 metrics_history.db
 xrun_results
 vsim_results
+vmgr_sessions
 __pycache__
 *.swp
 /.cproject
