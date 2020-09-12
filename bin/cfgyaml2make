@@ -97,7 +97,12 @@ def emit_make(cfg_spec, prefix):
     '''Emit a hash from the YAML test specification into a makefile that can be included'''
     fh = tempfile.NamedTemporaryFile(mode='w', delete=False)
     for k,v in sorted(cfg_spec.items()):
-        fh.write('{}{}={}\n'.format('' if not prefix else prefix.upper() + '_', k.upper(), v.rstrip()))
+        # Handle empty value (allowed)
+        try:
+            v_rstrip = v.rstrip()
+        except AttributeError:
+            v_rstrip = ''
+        fh.write('{}{}={}\n'.format('' if not prefix else prefix.upper() + '_', k.upper(), v_rstrip))
     fh.close()
 
     return fh.name

@@ -306,7 +306,7 @@ ifneq ($(filter $(CFG_YAML_PARSE_TARGETS),$(MAKECMDGOALS)),)
 ifneq ($(CFG),)
 CFG_FLAGS_MAKE := $(shell $(CFGYAML2MAKE) --yaml=$(CFG).yaml --debug --prefix=CFG)
 ifeq ($(CFG_FLAGS_MAKE),)
-$(error ERROR Could not find configuration: $(CFG).yaml)
+$(error ERROR Error finding or parsing configuration: $(CFG).yaml)
 endif
 include $(CFG_FLAGS_MAKE)
 endif
