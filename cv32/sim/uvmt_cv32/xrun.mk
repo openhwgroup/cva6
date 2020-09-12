@@ -42,8 +42,8 @@ XRUN_RUN_BASE_FLAGS   ?= -64bit $(XRUN_GUI) +UVM_VERBOSITY=$(XRUN_UVM_VERBOSITY)
                          $(XRUN_PLUSARGS) -svseed $(RNDSEED) -sv_lib $(OVP_MODEL_DPI)
 XRUN_GUI         ?=
 XRUN_SINGLE_STEP ?=
-XRUN_ELAB_COV     = -covdut uvmt_cv32_tb -coverage b:e:f:t:u
-XRUN_RUN_COV      = -covscope uvmt_cv32_tb \
+XRUN_ELAB_COV     = -covdut cv32e40p_core -coverage b:e:f:t:u
+XRUN_RUN_COV      = -covscope cv32e40p_core \
 					-nowarn CGDEFN
 
 XRUN_UVM_VERBOSITY ?= UVM_MEDIUM
@@ -165,12 +165,14 @@ no_rule:
 help:
 	xrun -help
 
-.PHONY: comp hello_world hello-world
+.PHONY: comp test waves cov
 
 mk_xrun_dir: 
 	$(MKDIR_P) $(XRUN_DIR)
 
-hello_world: hello-world
+# This special target is to support the special sanity target in the Common Makefile
+hello-world:
+	$(MAKE) test TEST=hello-world
 
 cv32_riscv_tests: cv32-riscv-tests 
 
@@ -178,6 +180,7 @@ cv32_riscv_compliance_tests: cv32-riscv-compliance-tests
 
 XRUN_COMP = $(XRUN_COMP_FLAGS) \
 		$(QUIET) \
+		$(CFG_COMPILE_FLAGS) \
 		$(XRUN_USER_COMPILE_ARGS) \
 		+incdir+$(DV_UVME_CV32_PATH) \
 		+incdir+$(DV_UVMT_CV32_PATH) \
@@ -209,8 +212,21 @@ ifeq ($(call IS_YES,$(XRUN_SINGLE_STEP)), YES)
 endif
 
 ################################################################################
+# If the configuration specified OVPSIM arguments, generate an ovpsim.ic file and
+# set IMPERAS_TOOLS to point to it
+gen_ovpsim_ic:
+	@if [ ! -z "$(CFG_OVPSIM)" ]; then \
+		mkdir -p $(XRUN_RESULTS)/$(TEST_NAME); \
+		echo "$(CFG_OVPSIM)" > $(XRUN_RESULTS)/$(TEST_NAME)/ovpsim.ic; \
+	fi
+ifneq ($(CFG_OVPSIM),)
+export IMPERAS_TOOLS=$(XRUN_RESULTS)/$(TEST_NAME)/ovpsim.ic
+endif
+
+################################################################################
 # The new general test target
-test: $(XRUN_SIM_PREREQ) $(TEST_TEST_DIR)/$(TEST_NAME).hex
+test: $(XRUN_SIM_PREREQ) $(TEST_TEST_DIR)/$(TEST_NAME).hex gen_ovpsim_ic
+	echo $(IMPERAS_TOOLS)
 	mkdir -p $(XRUN_RESULTS)/$(TEST_NAME) && \
 	cd $(XRUN_RESULTS)/$(TEST_NAME) && \
 		$(XRUN) \

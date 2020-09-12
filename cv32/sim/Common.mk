@@ -298,6 +298,20 @@ endif
 include $(TEST_FLAGS_MAKE)
 endif
 
+# If a test target is defined and a CFG is defined that read in build configuration file
+# CFG is optional
+CFGYAML2MAKE = $(PROJ_ROOT_DIR)/bin/cfgyaml2make
+CFG_YAML_PARSE_TARGETS=comp test
+ifneq ($(filter $(CFG_YAML_PARSE_TARGETS),$(MAKECMDGOALS)),)
+ifneq ($(CFG),)
+CFG_FLAGS_MAKE := $(shell $(CFGYAML2MAKE) --yaml=$(CFG).yaml --debug --prefix=CFG)
+ifeq ($(CFG_FLAGS_MAKE),)
+$(error ERROR Could not find configuration: $(CFG).yaml)
+endif
+include $(CFG_FLAGS_MAKE)
+endif
+endif
+
 ###############################################################################
 # Rule to generate hex (loadable by simulators) from elf
 # Relocate debugger to last 16KB of mm_ram

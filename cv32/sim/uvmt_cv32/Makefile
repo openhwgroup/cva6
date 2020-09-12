@@ -246,6 +246,7 @@ clean_test_programs:
 	find $(PROJ_ROOT_DIR)/cv32/tests/programs -name *.map     -exec rm {} \;
 	find $(PROJ_ROOT_DIR)/cv32/tests/programs -name *.readelf -exec rm {} \;
 	find $(PROJ_ROOT_DIR)/cv32/tests/programs -name *.objdump -exec rm {} \;
+	find $(PROJ_ROOT_DIR)/cv32/tests/programs -name corev_*.S -exec rm {} \;
 
 clean_riscv-dv:
 	rm -rf $(RISCVDV_PKG)
