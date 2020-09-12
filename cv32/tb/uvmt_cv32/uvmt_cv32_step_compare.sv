@@ -129,6 +129,7 @@ module uvmt_cv32_step_compare
            ignore = 0;
            csr_val = 0;
            case (index)
+             "marchid"       : csr_val = cv32e40p_pkg::MARCHID; // warning!  defined in cv32e40p_pkg
              "minstret"      : csr_val = `CV32E40P_CORE.cs_registers_i.mhpmcounter_q[`CV32E40P_CORE.cs_registers_i.csr_addr_i[4:0]][31:0];
              "minstreth"     : csr_val = `CV32E40P_CORE.cs_registers_i.mhpmcounter_q[`CV32E40P_CORE.cs_registers_i.csr_addr_i[4:0]][63:32];
              "mcycle"        : csr_val = `CV32E40P_CORE.cs_registers_i.mhpmcounter_q[`CV32E40P_CORE.cs_registers_i.csr_addr_i[4:0]][31:0];

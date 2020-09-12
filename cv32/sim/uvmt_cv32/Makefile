@@ -64,6 +64,9 @@ SIMULATOR    ?= $(CV_SIMULATOR)
 # Optionally exclude the OVPsim (not recommended)
 USE_ISS      ?= YES
 
+# Common configuration variables
+CFG             ?= default
+
 # Common Generation variables
 GEN_START_INDEX ?= 0
 GEN_NUM_TESTS   ?= 1
