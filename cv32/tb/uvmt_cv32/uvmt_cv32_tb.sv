@@ -31,6 +31,7 @@ module uvmt_cv32_tb;
    import uvmt_cv32_pkg::*;
    import uvme_cv32_pkg::*;
 
+
    // Capture regs for test status from Virtual Peripheral in dut_wrap.mem_i
    bit        tp;
    bit        tf;
@@ -57,6 +58,11 @@ module uvmt_cv32_tb;
    * a few mods to bring unused ports from the CORE to this level using SV interfaces.
    */
    uvmt_cv32_dut_wrap  #(
+`ifdef NO_PULP
+                         .PULP_XPULP        (0),
+                         .PULP_CLUSTER      (0),
+                         .PULP_ZFINX        (0),
+`endif
                          .INSTR_ADDR_WIDTH  (32),
                          .INSTR_RDATA_WIDTH (32),
                          .RAM_ADDR_WIDTH    (22)
@@ -171,7 +177,9 @@ module uvmt_cv32_tb;
         else if (core_sleep_o_d && irq_enabled)
           irq_deferint <= irq_enabled;
       end
-      assign iss_wrap.b1.irq_i = !iss_wrap.b1.deferint ? irq_deferint : irq_mip;
+      
+      always @*
+        iss_wrap.b1.irq_i = !iss_wrap.b1.deferint ? irq_deferint : irq_mip;
 
       /**
        * Interrupt assertion to iss_wrap, note this runs on the ISS clock (skewed from core clock)

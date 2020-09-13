@@ -28,19 +28,19 @@ tests:
     build: uvmt_cv32
     description: Static riscv-dv ebreak test
     dir: cv32/sim/uvmt_cv32
-    cmd: make custom CUSTOM_PROG=riscv_ebreak_test_0
+    cmd: make test TEST=riscv_ebreak_test_0
 
   illegal:
     build: uvmt_cv32
     description: Illegal instruction RISCV test
     dir: cv32/sim/uvmt_cv32
-    cmd: make custom CUSTOM_PROG=illegal
+    cmd: make test TEST=illegal
 
   csr_instructions:
     build: uvmt_cv32
     description: Directed CSR test
     dir: cv32/sim/uvmt_cv32
-    cmd: make custom CUSTOM_PROG=csr_instructions
+    cmd: make test TEST=csr_instructions
 
   interrupt_test:
     build: uvmt_cv32

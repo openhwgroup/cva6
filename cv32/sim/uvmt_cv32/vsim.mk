@@ -253,52 +253,6 @@ vopt_corev-dv:
 			-o corev_instr_gen_tb_top_vopt \
 			-l vopt.log
 
-gen_corev_arithmetic_base_test:
-	mkdir -p $(VSIM_COREVDV_RESULTS)/corev_arithmetic_base_test	
-	cd $(VSIM_COREVDV_RESULTS)/corev_arithmetic_base_test && \
-		$(VMAP) work ../work
-	cd $(VSIM_COREVDV_RESULTS)/corev_arithmetic_base_test && \
-		$(VSIM) $(VSIM_FLAGS) \
-			corev_instr_gen_tb_top_vopt \
-			$(DPILIB_VSIM_OPT) \
-			+UVM_TESTNAME=corev_instr_base_test  \
-			+num_of_tests=2  \
-			+start_idx=0  \
-			+asm_file_name_opts=riscv_arithmetic_basic_test  \
-			-l $(COREVDV_PKG)/out_$(DATE)/sim_riscv_arithmetic_basic_test_0.log \
-			+instr_cnt=10000 \
-			+num_of_sub_program=0 \
-			+directed_instr_0=riscv_int_numeric_corner_stream,4 \
-			+no_fence=1 \
-			+no_data_page=1 \
-			+no_branch_jump=1 \
-			+boot_mode=m \
-			+no_csr_instr=1
-	cp $(VSIM_COREVDV_RESULTS)/corev_arithmetic_base_test/*.S $(CORE_TEST_DIR)/custom
-
-gen_corev_rand_instr_test:
-	mkdir -p $(VSIM_COREVDV_RESULTS)/corev_rand_instr_test	
-	cd $(VSIM_COREVDV_RESULTS)/corev_rand_instr_test && \
-		$(VMAP) work ../work
-	cd $(VSIM_COREVDV_RESULTS)/corev_rand_instr_test && \
-		$(VSIM) $(VSIM_FLAGS) \
-			corev_instr_gen_tb_top_vopt \
-			$(DPILIB_VSIM_OPT) \
-			+UVM_TESTNAME=corev_instr_base_test  \
-			+num_of_tests=2  \
-			+start_idx=0  \
-			+asm_file_name_opts=corev_rand_instr_test  \
-			-l $(COREVDV_PKG)/out_$(DATE)/sim_corev_rand_instr_test_0.log \
-			+instr_cnt=10000 \
-			+num_of_sub_program=0 \
-			+directed_instr_0=riscv_int_numeric_corner_stream,4 \
-			+no_fence=1 \
-			+no_data_page=1 \
-			+no_branch_jump=1 \
-			+boot_mode=m \
-			+no_csr_instr=1
-	cp $(VSIM_COREVDV_RESULTS)/corev_rand_instr_test/*.S $(CORE_TEST_DIR)/custom
-
 gen_corev-dv: 
 	mkdir -p $(VSIM_COREVDV_RESULTS)/$(TEST)
 	# Clean old assembler generated tests in results
@@ -329,15 +283,25 @@ comp_corev-dv: $(RISCVDV_PKG) vlog_corev-dv vopt_corev-dv
 
 corev-dv: clean_riscv-dv \
           clone_riscv-dv \
-          comp_corev-dv \
-          gen_corev_arithmetic_base_test \
-          gen_corev_rand_instr_test
+          comp_corev-dv
 
 ################################################################################
 # Questa simulation targets
 
 mk_vsim_dir: 
 	$(MKDIR_P) $(VSIM_RESULTS)
+
+################################################################################
+# If the configuration specified OVPSIM arguments, generate an ovpsim.ic file and
+# set IMPERAS_TOOLS to point to it
+gen_ovpsim_ic:
+	@if [ ! -z "$(CFG_OVPSIM)" ]; then \
+		mkdir -p $(VSIM_RESULTS)/$(TEST_NAME); \
+		echo "$(CFG_OVPSIM)" > $(VSIM_RESULTS)/$(TEST_NAME)/ovpsim.ic; \
+	fi
+ifneq ($(CFG_OVPSIM),)
+export IMPERAS_TOOLS=$(VSIM_RESULTS)/$(TEST_NAME)/ovpsim.ic
+endif
 
 # Target to create work directory in $(VSIM_RESULTS)/
 lib: mk_vsim_dir $(CV32E40P_PKG) $(TBSRC_PKG) $(TBSRC)
@@ -356,6 +320,7 @@ vlog: lib
 			-work $(VWORK) \
 			-l vlog.log \
 			$(VLOG_FLAGS) \
+			$(CFG_COMPILE_FLAGS) \
 			+incdir+$(DV_UVME_CV32_PATH) \
 			+incdir+$(DV_UVMT_CV32_PATH) \
 			+incdir+$(UVM_HOME) \
@@ -381,7 +346,7 @@ opt: vlog
 comp: opt
 
 # Target to run VSIM (i.e. run the simulation)
-run: $(VSIM_RUN_PREREQ)
+run: $(VSIM_RUN_PREREQ) gen_ovpsim_ic
 	@echo "$(BANNER)"
 	@echo "* Running vsim in $(VSIM_RESULTS)/$(VSIM_TEST)"
 	@echo "* Log: $(VSIM_RESULTS)/$(VSIM_TEST)/vsim-$(VSIM_TEST).log"
@@ -404,25 +369,9 @@ run: $(VSIM_RUN_PREREQ)
 
 .PHONY: hello-world
 
-hello-world: VSIM_TEST=hello-world
-hello-world: VSIM_FLAGS += +firmware=$(CUSTOM)/hello-world.hex +elf_file=$(CUSTOM)/hello-world.elf
-hello-world: TEST_UVM_TEST=uvmt_cv32_firmware_test_c
-hello-world: $(CUSTOM)/hello-world.hex run
-
-misalign: VSIM_TEST=misalign
-misalign: VSIM_FLAGS += +firmware=$(CUSTOM)/misalign.hex +elf_file=$(CUSTOM)/misalign.elf
-misalign: TEST_UVM_TEST=uvmt_cv32_firmware_test_c
-misalign: $(CUSTOM)/misalign.hex run
-
-fibonacci: VSIM_TEST=fibonacci
-fibonacci: VSIM_FLAGS += +firmware=$(CUSTOM)/fibonacci.hex +elf_file=$(CUSTOM)/fibonacci.elf
-fibonacci: TEST_UVM_TEST=uvmt_cv32_firmware_test_c
-fibonacci: $(CUSTOM)/fibonacci.hex run
-
-dhrystone: VSIM_TEST=dhrystone
-dhrystone: VSIM_FLAGS += +firmware=$(CUSTOM)/dhrystone.hex +elf_file=$(CUSTOM)/dhrystone.elf
-dhrystone: TEST_UVM_TEST=uvmt_cv32_firmware_test_c
-dhrystone: $(CUSTOM)/dhrystone.hex run
+# This special target is to support the special sanity target in the Common Makefile
+hello-world:
+	$(MAKE) test TEST=hello-world
 
 custom: VSIM_TEST=$(CUSTOM_PROG)
 custom: VSIM_FLAGS += +firmware=$(CUSTOM_DIR)/$(CUSTOM_PROG).hex +elf_file=$(CUSTOM_DIR)/$(CUSTOM_PROG).elf

@@ -25,6 +25,18 @@ tests:
     dir: cv32/sim/uvmt_cv32
     cmd: make test TEST=hello-world
 
+  illegal:
+    build: uvmt_cv32
+    description: Illegal instruction test
+    dir: cv32/sim/uvmt_cv32
+    cmd: make test TEST=illegal
+
+  debug_test:
+    build: uvmt_cv32
+    description: Debug test
+    dir: cv32/sim/uvmt_cv32
+    cmd: make debug_test
+
   csr_instructions:
     build: uvmt_cv32
     description: CSR insturciton test
@@ -35,31 +47,25 @@ tests:
     build: uvmt_cv32
     description: CSR access test for CV32E40P
     dir: cv32/sim/uvmt_cv32
-    cmd: make custom CUSTOM_PROG=cv32e40p_csr_access_test
+    cmd: make test TEST=cv32e40p_csr_access_test
 
   requested_csr_por:
     build: uvmt_cv32
     description: CSR PoR test
     dir: cv32/sim/uvmt_cv32
-    cmd: make custom CUSTOM_PROG=requested_csr_por
+    cmd: make test TEST=requested_csr_por
 
   modeled_csr_por:
     build: uvmt_cv32
     description: Modeled CSR PoR test
     dir: cv32/sim/uvmt_cv32
-    cmd: make custom CUSTOM_PROG=modeled_csr_por
+    cmd: make test TEST=modeled_csr_por
 
-  csr_instructions:
-    build: uvmt_cv32
-    description: CSR Instruction Test
-    dir: cv32/sim/uvmt_cv32
-    cmd: make custom CUSTOM_PROG=csr_instructions
-
-  riscv_ebreak_test:
+  riscv_ebreak_test_0:
     build: uvmt_cv32
     description: Static corev-dv ebreak
     dir: cv32/sim/uvmt_cv32
-    cmd: make test TEST=riscv_ebreak_test
+    cmd: make test TEST=riscv_ebreak_test_0
 
   corev_arithmetic_base_test:
     build: uvmt_cv32
@@ -89,8 +95,11 @@ tests:
     cmd: make gen_corev-dv test TEST=corev_rand_interrupt
     num: 100
 
-  illegal:
+  corev_rand_interrupt_wfi:
     build: uvmt_cv32
-    description: Illegal instruction test
-    dir: cv32/sim/uvmt_cv32
-    cmd: make test TEST=illegal
+    description: Random interrupt test with DWFI
+    dir: cv32/sim/uvmt_cv32    
+    cmd: make gen_corev-dv test TEST=corev_rand_interrupt_wfi
+    num: 100
+
+    

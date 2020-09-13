@@ -78,10 +78,11 @@ no_rule:
 	@echo 'try "make SIMULATOR=dsim sanity" (or just "make sanity" if shell ENV variable SIMULATOR is already set).'
 #	@echo 'DUMP_WAVES=$(DUMP_WAVES)   DSIM_ACC_FLAGS=$(DSIM_ACC_FLAGS)   DSIM_DMP_FLAGS=$(DSIM_DMP_FLAGS)'
 
-# The sanity test is defined in ../Common.mk and will change over time
-#sanity: hello-world
+all: clean_all hello-world
 
-all: clean_all sanity
+# This special target is to support the special sanity target in the Common Makefile
+hello-world:
+	$(MAKE) test TEST=hello-world
 
 help:
 	dsim -help
@@ -98,6 +99,7 @@ comp: mk_results $(CV32E40P_PKG) $(OVP_MODEL_DPI)
 		$(DSIM_CMP_FLAGS) \
 		$(DSIM_UVM_ARGS) \
 		$(DSIM_ACC_FLAGS) \
+		$(CFG_COMPILE_FLAGS) \
 		$(DSIM_USER_COMPILE_ARGS) \
 		+incdir+$(DV_UVME_CV32_PATH) \
 		+incdir+$(DV_UVMT_CV32_PATH) \
@@ -150,12 +152,24 @@ custom: comp $(CUSTOM_DIR)/$(CUSTOM_PROG).hex $(CUSTOM_DIR)/$(CUSTOM_PROG).elf
 # General test execution target "test"
 # 
 
+################################################################################
+# If the configuration specified OVPSIM arguments, generate an ovpsim.ic file and
+# set IMPERAS_TOOLS to point to it
+gen_ovpsim_ic:
+	@if [ ! -z "$(CFG_OVPSIM)" ]; then \
+		mkdir -p $(DSIM_RESULTS)/$(TEST_NAME); \
+		echo "$(CFG_OVPSIM)" > $(DSIM_RESULTS)/$(TEST_NAME)/ovpsim.ic; \
+	fi
+ifneq ($(CFG_OVPSIM),)
+export IMPERAS_TOOLS=$(DSIM_RESULTS)/$(TEST_NAME)/ovpsim.ic
+endif
+
 # Skip compile if COMP is specified and negative
 ifneq ($(call IS_NO,$(COMP)),NO)
 DSIM_SIM_PREREQ = comp
 endif
 
-test: $(DSIM_SIM_PREREQ) $(TEST_TEST_DIR)/$(TEST_NAME).hex
+test: $(DSIM_SIM_PREREQ) $(TEST_TEST_DIR)/$(TEST_NAME).hex gen_ovpsim_ic
 	mkdir -p $(DSIM_RESULTS)/$(TEST_NAME) && \
 	cd $(DSIM_RESULTS)/$(TEST_NAME) && \
 		$(DSIM) \
@@ -164,6 +178,7 @@ test: $(DSIM_SIM_PREREQ) $(TEST_TEST_DIR)/$(TEST_NAME).hex
 			-work $(DSIM_WORK) \
 			$(DSIM_RUN_FLAGS) \
 			$(DSIM_DMP_FLAGS) \
+			$(TEST_PLUSARGS) \
 			-sv_lib $(UVM_HOME)/src/dpi/libuvm_dpi.so \
 			-sv_lib $(OVP_MODEL_DPI) \
 			+UVM_TESTNAME=$(TEST_UVM_TEST) \

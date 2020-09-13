@@ -1,0 +1,6 @@
+name: default
+description: Default configuration for CV32E40P simulations
+compile_flags: 
+ovpsim: >
+    --override root/cpu0/marchid=4
+    --showoverrides
