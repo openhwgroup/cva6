@@ -346,7 +346,7 @@ gen_corev-dv:
 		$(GEN_PLUSARGS)
 	# Copy out final assembler files to test directory
 	for (( idx=${GEN_START_INDEX}; idx < $$((${GEN_START_INDEX} + ${GEN_NUM_TESTS})); idx++ )); do \
-		ls -l ${XRUN_RISCVDV_RESULTS}/${TEST} > /dev/null; \
+		ls -l ${XRUN_COREVDV_RESULTS}/${TEST} > /dev/null; \
 		cp ${XRUN_COREVDV_RESULTS}/${TEST}/${TEST}_$$idx.S ${GEN_TEST_DIR}; \
 	done
 
