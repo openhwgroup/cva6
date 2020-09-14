@@ -57,6 +57,7 @@ module CPU
     bit [31:0] FPR[32];
     // ToDo Vector
     bit [31:0] CSR[string];
+    bit DM; 
     
     string Decode, Change;
     bit    [0:(64*8)-1] DecodeP;
@@ -122,6 +123,7 @@ module CPU
         SysBus.irq_ack_o    = _irq_ack_o;
         SysBus.irq_id_o     = _irq_id_o;
         SysBus.DM           = _DM;
+        DM                  = _DM;
     endfunction
         
     function automatic void getState (

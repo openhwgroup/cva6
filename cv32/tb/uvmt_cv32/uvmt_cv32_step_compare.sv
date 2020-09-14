@@ -161,8 +161,17 @@ module uvmt_cv32_step_compare
             //                    else csr_val = `CV32E40P_CORE.cs_registers_i.mip;
              "mip"           : ignore = 1;      
              "mhartid"       : csr_val = `CV32E40P_CORE.cs_registers_i.hart_id_i; 
-             "dcsr"          : csr_val = `CV32E40P_CORE.cs_registers_i.dcsr_q;     
-             "dpc"           : csr_val = `CV32E40P_CORE.cs_registers_i.depc_q;       
+
+             // only valid in DEBUG Mode
+             "dcsr"          : begin
+                               csr_val = `CV32E40P_CORE.cs_registers_i.dcsr_q;     
+                               if (iss_wrap.cpu.DM==0) ignore = 1;
+             end
+             "dpc"           : begin
+                               csr_val = `CV32E40P_CORE.cs_registers_i.depc_q;       
+                               if (iss_wrap.cpu.DM==0) ignore = 1;
+             end
+
              "dscratch0"     : csr_val = `CV32E40P_CORE.cs_registers_i.dscratch0_q;
              "dscratch1"     : csr_val = `CV32E40P_CORE.cs_registers_i.dscratch1_q;
              "pmpcfg0"       : csr_val = `CV32E40P_CORE.cs_registers_i.pmp_reg_q.pmpcfg_packed[0];

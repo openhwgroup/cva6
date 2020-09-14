@@ -582,6 +582,16 @@ class uvme_rv32isa_covg extends uvm_component;
         }
     endgroup
 
+// TODO : only counting occurrence, ignoring when not called.
+// TODO : verification goal not specified in test plan
+// FIXME: DONE
+    covergroup dret_cg with function sample(ins_t ins);
+        option.per_instance = 1;
+        cp_asm   : coverpoint ins.asm == DRET {
+            ignore_bins zero = {0};
+        }
+    endgroup
+
 // TODO : case when rd = x0 counted but not singled out
 // FIXME: DONE
     covergroup jal_cg with function sample(ins_t ins);
@@ -1627,6 +1637,7 @@ class uvme_rv32isa_covg extends uvm_component;
         divu_cg       = new();
         remu_cg       = new();
         mret_cg       = new();
+        dret_cg       = new();
         wfi_cg        = new();
 
         csrr_cg       = new();
@@ -1900,6 +1911,7 @@ class uvme_rv32isa_covg extends uvm_component;
                 "csrw"      : begin ins.asm=CSRRW;  csrw_cg.sample(ins);   `uvm_info("RV32ISA Coverage", $sformatf("Instruction: %0s %0s %0s %0s", ins.ins_str, ins.ops[0].val, ins.ops[1].val, ins.ops[2].val), UVM_HIGH) end
                 "csrwi"     : begin ins.asm=CSRWI;  csrwi_cg.sample(ins);  `uvm_info("RV32ISA Coverage", $sformatf("Instruction: %0s %0s %0s %0s", ins.ins_str, ins.ops[0].val, ins.ops[1].val, ins.ops[2].val), UVM_HIGH) end
                 "mret"      : begin ins.asm=MRET;   mret_cg.sample(ins);   end
+                "dret"      : begin ins.asm=DRET;   dret_cg.sample(ins);   end
                 "wfi"       : begin ins.asm=WFI;    wfi_cg.sample(ins);    end
 
                 /*
