@@ -186,11 +186,17 @@ OVP_MODEL_DPI   = $(DV_OVPM_MODEL)/bin/Linux64/riscv_CV32E40P.dpi.so
 # riscv toolchain install path
 CV_SW_TOOLCHAIN  ?= /opt/riscv
 RISCV            ?= $(CV_SW_TOOLCHAIN)
-RISCV_EXE_PREFIX ?= $(RISCV)/bin/riscv32-unknown-elf-
+RISCV_PREFIX     ?= riscv32-unknown-elf-
+RISCV_EXE_PREFIX ?= $(RISCV)/bin/$(RISCV_PREFIX)
 
 CFLAGS ?= -Os -g -static -mabi=ilp32 -march=rv32imc -Wall -pedantic
 
+# FIXME:strichmo:Repeating this code until we fully deprecate CUSTOM_PROG, hopefully next PR
 ifeq ($(firstword $(subst _, ,$(CUSTOM_PROG))),pulp)
+  CFLAGS = -Os -g -D__riscv__=1 -D__LITTLE_ENDIAN__=1 -march=rv32imcxpulpv2 -Wa,-march=rv32imcxpulpv2 -fdata-sections -ffunction-sections -fdiagnostics-color=always
+endif
+
+ifeq ($(firstword $(subst _, ,$(TEST))),pulp)
   CFLAGS = -Os -g -D__riscv__=1 -D__LITTLE_ENDIAN__=1 -march=rv32imcxpulpv2 -Wa,-march=rv32imcxpulpv2 -fdata-sections -ffunction-sections -fdiagnostics-color=always
 endif
 
@@ -208,7 +214,7 @@ VERI_FIRMWARE                        = ../../tests/core/firmware
 CUSTOM                               = $(CORE_TEST_DIR)/custom
 CUSTOM_DIR                          ?= $(CUSTOM)
 CUSTOM_PROG                         ?= my_hello_world
-VERI_CUSTOM                          = ../../tests/core/custom
+VERI_CUSTOM                          = ../../tests/programs/custom
 ASM                                  = $(CORE_TEST_DIR)/asm
 ASM_DIR                             ?= $(ASM)
 ASM_PROG                            ?= my_hello_world
@@ -294,6 +300,20 @@ ifeq ($(TEST_FLAGS_MAKE),)
 $(error ERROR Could not find test.yaml for test: $(TEST))
 endif
 include $(TEST_FLAGS_MAKE)
+endif
+
+# If a test target is defined and a CFG is defined that read in build configuration file
+# CFG is optional
+CFGYAML2MAKE = $(PROJ_ROOT_DIR)/bin/cfgyaml2make
+CFG_YAML_PARSE_TARGETS=comp test
+ifneq ($(filter $(CFG_YAML_PARSE_TARGETS),$(MAKECMDGOALS)),)
+ifneq ($(CFG),)
+CFG_FLAGS_MAKE := $(shell $(CFGYAML2MAKE) --yaml=$(CFG).yaml --debug --prefix=CFG)
+ifeq ($(CFG_FLAGS_MAKE),)
+$(error ERROR Error finding or parsing configuration: $(CFG).yaml)
+endif
+include $(CFG_FLAGS_MAKE)
+endif
 endif
 
 ###############################################################################
@@ -476,8 +496,6 @@ $(RISCV_COMPLIANCE_TESTS)/%.o: $(RISCV_COMPLIANCE_TESTS)/%.S $(RISCV_COMPLIANCE_
 		-DTEST_FUNC_NAME=$(notdir $(subst -,_,$(basename $<))) \
 		-DTEST_FUNC_TXT='"$(notdir $(subst -,_,$(basename $<)))"' \
 		-DTEST_FUNC_RET=$(notdir $(subst -,_,$(basename $<)))_ret $<
-
-
 
 # in dsim
 .PHONY: dsim-unit-test 

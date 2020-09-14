@@ -54,9 +54,9 @@ check_log () {
 
 {% for b in unique_builds.values() %}
 # Build:{{b.name}} {{b.description}}
-echo "script: Running build: [cd {{b.dir}} && {{b.cmd}} SIMULATOR={{b.simulator}} USE_ISS={{regress_macros.yesorno(b.iss)}} COV={{regress_macros.yesorno(b.cov)}}]"
+echo "script: Running build: [cd {{b.dir}} && {{b.cmd}} SIMULATOR={{b.simulator}} USE_ISS={{regress_macros.yesorno(b.iss)}} COV={{regress_macros.yesorno(b.cov)}}] {{makeargs}}"
 pushd {{b.dir}} > /dev/null
-{{b.cmd}} SIMULATOR={{b.simulator}} USE_ISS={{regress_macros.yesorno(b.iss)}} COV={{regress_macros.yesorno(b.cov)}} >& /dev/null;
+{{b.cmd}} SIMULATOR={{b.simulator}} USE_ISS={{regress_macros.yesorno(b.iss)}} COV={{regress_macros.yesorno(b.cov)}} {{makeargs}} >& /dev/null;
 popd > /dev/null
 
 {% endfor -%}
@@ -70,9 +70,9 @@ popd > /dev/null
 # --> Test: {{t.name}} : {{t.description}}
 {% if t.precmd %}
 #  Test (Precommand): {{t.name}} {{t.description}}
-echo "script: Running precmd: [cd {{t.dir}} && {{t.precmd}} SIMULATOR={{t.simulator}} SEED=random GEN_NUM_TESTS={{t.num}}]"
+echo "script: Running precmd: [cd {{t.dir}} && {{t.precmd}} SIMULATOR={{t.simulator}} SEED=random GEN_NUM_TESTS={{t.num}}] {{makeargs}}"
 pushd {{t.dir}} > /dev/null
-{{t.precmd}} SIMULATOR={{t.simulator}} SEED=random GEN_NUM_TESTS={{t.num}} >& /dev/null;
+{{t.precmd}} SIMULATOR={{t.simulator}} SEED=random GEN_NUM_TESTS={{t.num}} {{makeargs}} >& /dev/null;
 popd > /dev/null
 
 {% endif %}
@@ -80,9 +80,9 @@ popd > /dev/null
 {% set test_cmd = t.cmd|replace('<RUN_INDEX>', run_index) %}
 {% set test_log = t.log|replace('<RUN_INDEX>', run_index) %}
 # --> Test (Index: {{run_index}}): {{t.cmd}} : {{t.description}}
-echo "script: Running test [cd {{t.dir}} && {{test_cmd}} SIMULATOR={{t.simulator}} COMP=0 USE_ISS={{regress_macros.yesorno(t.iss)}} COV={{regress_macros.yesorno(t.cov)}} SEED=random]"
+echo "script: Running test [cd {{t.dir}} && {{test_cmd}} SIMULATOR={{t.simulator}} COMP=0 USE_ISS={{regress_macros.yesorno(t.iss)}} COV={{regress_macros.yesorno(t.cov)}} SEED=random {{makeargs}}]"
 pushd {{t.dir}} > /dev/null
-{{test_cmd}} SIMULATOR={{t.simulator}} COMP=0 USE_ISS={{regress_macros.yesorno(t.iss)}} COV={{regress_macros.yesorno(t.cov)}} SEED=random >& /dev/null;
+{{test_cmd}} SIMULATOR={{t.simulator}} COMP=0 USE_ISS={{regress_macros.yesorno(t.iss)}} COV={{regress_macros.yesorno(t.cov)}} SEED=random {{makeargs}} >& /dev/null;
 popd > /dev/null
 log={{t.dir}}/{{t.simulator}}_results/{{test_log}}/{{t.simulator}}-{{test_log}}.log
 check_log ${log} "{{t.simulation_passed}}" {{test_log}} 

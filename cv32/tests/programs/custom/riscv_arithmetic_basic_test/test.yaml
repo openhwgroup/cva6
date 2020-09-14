@@ -1,5 +1,3 @@
-# Test definition YAML for riscv_break_test
-
 name: riscv_arithmetic_basic_test_<RUN_INDEX>
 uvm_test: uvmt_cv32_firmware_test_c
 description: >

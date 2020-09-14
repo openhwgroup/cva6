@@ -2,7 +2,7 @@
 #include <stdlib.h>
 #include <strings.h>
 
-#include "startup/support.h"
+#include "../../../core/custom/startup/support.h"
 
 /*
  * Possible misaligned scenarios for 32 bit bus

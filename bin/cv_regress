@@ -129,13 +129,14 @@ logger = logging.getLogger(__name__)
 parser = argparse.ArgumentParser(formatter_class=argparse.ArgumentDefaultsHelpFormatter)
 parser.add_argument('-f', '--file', action='append', help='One or more input regression YAML lists to read')
 parser.add_argument('-p', '--project', default=DEFAULT_PROJECT, choices=VALID_PROJECTS, help='Select CV32 for regression')
-parser.add_argument('-o', '--outfile', default='regress.out', help='Output file')
+parser.add_argument('-o', '--outfile', help='Output file')
 parser.add_argument('-d', '--debug', help='Emit debug messages from logger', action='store_true')
 parser.add_argument('-s', '--simulator', help='Select simulator', choices=VALID_SIMULATORS, default=DEFAULT_SIMULATOR)
 parser.add_argument('-c', '--cov', help='Enable coverage', action='store_true')
 parser.add_argument('-m', '--metrics', help='Select Metrics waves output', action='store_true')
 parser.add_argument('--lsf', help='If applicable for output format, set LSF args to dispatch jobs')
 parser.add_argument('--make', help='Substitute for make command (to use short-cuts)')
+parser.add_argument('--makearg', action='append', help='Arguments to supply to each make command, can be specified multiple times')
 parser.add_argument('--sh', help='Select bash shell script output', action='store_true')
 parser.add_argument('--vsif', help='Select Vmanager VSIF output', action='store_true')
 
@@ -144,9 +145,20 @@ args = parser.parse_args()
 if args.debug:
     logger.setLevel(logging.DEBUG)
 
+# Validate arguments
 if not args.file:
     logger.fatal('Must specify a regression definition YAML file with -f or --f')
     os.sys.exit(2)
+
+# Supply defaults for outfile
+if not args.outfile:
+    args.outfile = os.path.splitext(args.file[0])[0]
+    if args.metrics:
+        args.outfile = args.outfile + '.json'
+    elif args.sh:
+        args.outfile = args.outfile + '.sh'
+    elif args.vsif:
+        args.outfile = args.outfile + '.vsif'
 
 regressions = []
 unique_builds = OrderedDict()
@@ -159,7 +171,7 @@ for f in args.file:
     for b in r.builds.values():
         if not b.name in unique_builds:
             unique_builds[b.name] = b
-    
+
 # Generate output product
 env = jinja2.Environment(loader=jinja2.FileSystemLoader(os.path.join(os.path.dirname(__file__),                                                         
                                                         'templates')), trim_blocks=True)
@@ -171,30 +183,43 @@ if args.sh:
     logger.info('Rendering template: regress_sh.j2 into: {}'.format(args.outfile))
     out_fh = open(args.outfile, 'w')
     out_fh.write(template.render(regressions=regressions,
+                                 makeargs=' '.join(args.makearg),
                                  unique_builds=unique_builds))
     out_fh.close()
     os.chmod(args.outfile, 0o775)
-elif args.metrics:
+
+if args.metrics:
     # Generate a metrics-compatible JSON file (--metrics)
     template = env.get_template('metrics.json.j2')
     logger.info('Rendering template: metrics.json.j2 into: {}'.format(args.outfile))
     out_fh = open(args.outfile, 'w')
     out_fh.write(template.render(regressions=regressions,
+                                 makeargs=' '.join(args.makearg),
                                  unique_builds=unique_builds))
     out_fh.close()
     os.chmod(args.outfile, 0o775)
-elif args.vsif:
+
+if args.vsif:
     # Generate a Vmanager-compatible VSIF file (--vsif)
+    sve = os.path.splitext(args.outfile)[0] + '.sve'
     template = env.get_template('regress_vsif.j2')
-    logger.info('Rendering template: regress_visf.j2 into: {}'.format(args.outfile))
+    logger.info('Rendering template: regress_vsif.j2 into: {}'.format(args.outfile))
     out_fh = open(args.outfile, 'w')
     out_fh.write(template.render(session=os.path.splitext(os.path.basename(args.outfile))[0],
                                  results_path=get_results_path(args.project),
                                  project=args.project,
                                  regressions=regressions,
+                                 makeargs=' '.join(args.makearg),
                                  lsf=args.lsf,
+                                 sve=os.path.abspath(sve),
                                  simulator=args.simulator,
                                  filter_dir=get_filter_dir(),
                                  unique_builds=unique_builds))
     out_fh.close()
     
+    # Generate a Vmanager-compatible SVE
+    template = env.get_template('regress_sve.j2')    
+    logger.info('Rendering template: regress_sve.j2 into: {}'.format(sve))
+    out_fh = open(sve, 'w')
+    out_fh.write(template.render(env=os.environ))
+    out_fh.close()

@@ -64,6 +64,9 @@ SIMULATOR    ?= $(CV_SIMULATOR)
 # Optionally exclude the OVPsim (not recommended)
 USE_ISS      ?= YES
 
+# Common configuration variables
+CFG             ?= default
+
 # Common Generation variables
 GEN_START_INDEX ?= 0
 GEN_NUM_TESTS   ?= 1
@@ -185,6 +188,8 @@ build_compliance: clone_compliance
 	make -i -C $(PROJ_ROOT_DIR)/vendor_lib/riscv/riscv-compliance \
 		RISCV_TARGET=OpenHW \
 		RISCV_DEVICE=cv32e40p \
+		PATH=$(RISCV)/bin:$(PATH) \
+		RISCV_PREFIX=$(RISCV_PREFIX) \
 		NOTRAPS=1 \
 		RISCV_ISA=$(RISCV_ISA)
 
@@ -245,6 +250,7 @@ clean_test_programs:
 	find $(PROJ_ROOT_DIR)/cv32/tests/programs -name *.map     -exec rm {} \;
 	find $(PROJ_ROOT_DIR)/cv32/tests/programs -name *.readelf -exec rm {} \;
 	find $(PROJ_ROOT_DIR)/cv32/tests/programs -name *.objdump -exec rm {} \;
+	find $(PROJ_ROOT_DIR)/cv32/tests/programs -name corev_*.S -exec rm {} \;
 
 clean_riscv-dv:
 	rm -rf $(RISCVDV_PKG)

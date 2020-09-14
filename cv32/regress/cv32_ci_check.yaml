@@ -8,8 +8,9 @@ description: Commit sanity for the cv32
 builds:
   corev-dv:
     # required: Make the corev-dv infrastructure    
-    cmd: make corev-dv
+    cmd: make comp_corev-dv
     dir: cv32/sim/uvmt_cv32
+    cov: 0
   uvmt_cv32:
     # required: the make command to create the build
     cmd: make comp
@@ -27,13 +28,19 @@ tests:
     build: uvmt_cv32
     description: Static riscv-dv ebreak test
     dir: cv32/sim/uvmt_cv32
-    cmd: make custom CUSTOM_PROG=riscv_ebreak_test_0
+    cmd: make test TEST=riscv_ebreak_test_0
 
   illegal:
     build: uvmt_cv32
     description: Illegal instruction RISCV test
     dir: cv32/sim/uvmt_cv32
-    cmd: make custom CUSTOM_PROG=illegal
+    cmd: make test TEST=illegal
+
+  csr_instructions:
+    build: uvmt_cv32
+    description: Directed CSR test
+    dir: cv32/sim/uvmt_cv32
+    cmd: make test TEST=csr_instructions
 
   interrupt_test:
     build: uvmt_cv32
@@ -43,8 +50,9 @@ tests:
     cmd: make interrupt_test
     skip_sim: [xrun, vsim]
 
-  riscv_arithmetic_basic_test_0:
+  corev_arithmetic_base_test:
     build: uvmt_cv32
     description: riscv-dv basic math test
     dir: cv32/sim/uvmt_cv32
-    cmd: make custom CUSTOM_PROG=riscv_arithmetic_basic_test_0
+    cmd: make gen_corev-dv test TEST=corev_arithmetic_base_test
+    num: 2
