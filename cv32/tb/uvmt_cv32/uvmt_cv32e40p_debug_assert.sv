@@ -30,7 +30,7 @@ module uvmt_cv32e40p_debug_assert
     input [31:0] irq_i,
     input        irq_ack_o,
     input [4:0]  irq_id_o,
-
+    input [31:0] mie_q,
 
     // Instruction fetch stage
     input        if_stage_instr_rvalid_i, // Instruction word is valid
@@ -43,6 +43,8 @@ module uvmt_cv32e40p_debug_assert
     input [31:0] id_stage_pc, // Program counter in decode
     input [31:0] if_stage_pc, // Program counter in fetch
     input ctrl_state_e  ctrl_fsm_cs,            // Controller FSM states with debug_req
+    input        illegal_insn_i,
+    input        ecall_insn_i,
 
     // Debug signals
     input              debug_req_i, // From controller
@@ -66,7 +68,8 @@ module uvmt_cv32e40p_debug_assert
   // ---------------------------------------------------------------------------
   // Local parameters
   // ---------------------------------------------------------------------------  
-
+    localparam WFI_INSTR_MASK = 32'hffffffff;
+    localparam WFI_INSTR_DATA = 32'h10500073;
   // ---------------------------------------------------------------------------
   // Local variables
   // ---------------------------------------------------------------------------
@@ -74,9 +77,16 @@ module uvmt_cv32e40p_debug_assert
  
   logic is_ebreak; // compiler cannot generate uncompressed ebreak yet(?)
   logic is_cebreak;
-
+  logic is_wfi;
+  logic in_wfi;
   logic [31:0] pc_at_dbg_req; // Capture PC when debug_req_i or ebreak is active
   logic [31:0] pc_at_ebreak; // Capture PC when ebreak
+
+  // check addr match locally for checking with matching disabled
+  logic addr_match;
+
+  // We need irq signals to properly track wfi/sleep
+  logic [31:0] pending_enabled_irq;
     
   // ---------------------------------------------------------------------------
   // Clocking blocks
@@ -107,7 +117,11 @@ module uvmt_cv32e40p_debug_assert
           ebreakm_set: coverpoint dcsr_q[15] {
                   bins active = {1};
           }
-          test: cross ex, ebreakm_set;  
+          dm : coverpoint debug_mode_q {
+                  bins active = {1};
+          }
+          ebreak_with_ebreakm: cross ex, ebreakm_set;  
+          ebreak_in_debug : cross ex, dm;
   endgroup
     
   // Cover that we execute c.ebreak with dcsr.ebreakm==1
@@ -119,7 +133,11 @@ module uvmt_cv32e40p_debug_assert
           ebreakm_set: coverpoint dcsr_q[15] {
                   bins active = {1};
           }
-          test: cross ex, ebreakm_set;  
+          dm : coverpoint debug_mode_q {
+                  bins active = {1};
+          }
+          cebreak_with_ebreakm: cross ex, ebreakm_set;  
+          cebreak_in_debug : cross ex, dm;
   endgroup
 
   // Cover that we execute ebreak with dcsr.ebreakm==0
@@ -162,14 +180,94 @@ module uvmt_cv32e40p_debug_assert
         ok_match: cross en, match;
     endgroup
 
-  // cg instances
+    // cover that we hit pc==tdata2 without having enabled trigger in m-mode
+    covergroup cg_trigger_match_disabled @(posedge clk_i);
+        option.per_instance = 1;
+        dis : coverpoint tdata1[2] {
+            bins hit = {0};
+        }
+        match: coverpoint addr_match {
+           bins hit = {1};
+        }
+        mmode : coverpoint debug_mode_q {
+           bins hit = {0};
+        }
+        match_without_en : cross dis, match, mmode;
+    endgroup
+
+
+    // Cover that we hit an exception during debug mode
+    covergroup cg_debug_mode_exception @(posedge clk_i);
+        option.per_instance = 1;
+        dm : coverpoint debug_mode_q {
+            bins hit  = {1};
+        }
+        ill : coverpoint illegal_insn_i {
+            bins hit = {1};
+        }
+        ex_in_debug : cross dm, ill;
+    endgroup
+
+    // Cover that we hit an ecall during debug mode
+    covergroup cg_debug_mode_ecall @(posedge clk_i);
+        option.per_instance = 1;
+        dm : coverpoint debug_mode_q {
+            bins hit  = {1};
+        }
+        ill : coverpoint ecall_insn_i {
+            bins hit = {1};
+        }
+        ex_in_debug : cross dm, ill;
+    endgroup
+
+    // Cover that we get interrupts while in debug mode
+    covergroup cg_irq_in_debug @(posedge clk_i);
+        option.per_instance = 1;
+        dm : coverpoint debug_mode_q {
+            bins hit  = {1};
+        }
+        irq : coverpoint |irq_i {
+            bins hit = {1};
+        }
+        ex_in_debug : cross dm, irq;
+    endgroup
+
+    // Cover that hit a WFI insn in debug mode
+    covergroup cg_wfi_in_debug @(posedge clk_i);
+        option.per_instance = 1;
+        iswfi : coverpoint is_wfi {
+                bins hit  = {1};
+        }
+        dm : coverpoint debug_mode_q {
+            bins hit = {1};
+        }
+        dm_wfi : cross iswfi, dm;
+    endgroup
+
+    // Cover that we get a debug_req while in wfi
+    covergroup cg_wfi_debug_req @(posedge clk_i);
+        option.per_instance = 1;
+        inwfi : coverpoint in_wfi {
+                bins hit  = {1};
+        }
+        dreq: coverpoint debug_req_i {
+            bins hit = {1};
+        }
+        dm_wfi : cross inwfi, dreq;
+    endgroup
+// cg instances
   cg_debug_mode_ext cg_debug_mode_i;
   cg_ebreak_execute_with_ebreakm cg_ebreak_execute_with_ebreakm_i;
   cg_cebreak_execute_with_ebreakm cg_cebreak_execute_with_ebreakm_i;
   cg_ebreak_execute_without_ebreakm cg_ebreak_execute_without_ebreakm_i;
   cg_cebreak_execute_without_ebreakm cg_cebreak_execute_without_ebreakm_i;
   cg_trigger_match cg_trigger_match_i;
-
+  cg_trigger_match_disabled cg_trigger_match_disabled_i;
+  cg_debug_mode_exception cg_debug_mode_exception_i;
+  cg_debug_mode_ecall cg_debug_mode_ecall_i;
+  cg_irq_in_debug cg_irq_in_debug_i;
+  cg_wfi_in_debug cg_wfi_in_debug_i;
+  cg_wfi_debug_req cg_wfi_debug_req_i;
   // create cg's at start of simulation
   initial begin
       cg_debug_mode_i = new();
@@ -178,6 +276,12 @@ module uvmt_cv32e40p_debug_assert
       cg_ebreak_execute_without_ebreakm_i = new();
       cg_cebreak_execute_without_ebreakm_i = new();
       cg_trigger_match_i = new();
+      cg_trigger_match_disabled_i = new();
+      cg_debug_mode_exception_i = new();
+      cg_debug_mode_ecall_i = new();
+      cg_irq_in_debug_i = new();
+      cg_wfi_in_debug_i = new();
+      cg_wfi_debug_req_i = new();
   end         
 
   assign is_ebreak = id_stage_instr_valid_i & 
@@ -234,10 +338,30 @@ module uvmt_cv32e40p_debug_assert
                                                                              (mepc_q == pc_at_ebreak) &&
                                                                              (id_stage_pc == mtvec);
     endproperty
-
+    
     a_cebreak_exception: assert property(p_cebreak_exception)
         else
             `uvm_error(info_tag,$sformatf("Exception not entered correctly after ebreak with dcsr.ebreak=0"));
+
+    // c.ebreak during debug mode results in relaunch of debug mode
+    property p_cebreak_during_debug_mode;
+        $rose(is_cebreak) && debug_mode_q  |-> ##[1:6] debug_mode_q  &&
+                                                       (id_stage_pc == dm_halt_addr_i); // TODO should check no change in dpc and dcsr
+    endproperty
+
+    a_cebreak_during_debug_mode: assert property(p_cebreak_during_debug_mode)
+        else
+            `uvm_error(info_tag,$sformatf("Debug mode not restarted after c.ebreak"));
+
+    // ebreak during debug mode results in relaunch
+    property p_ebreak_during_debug_mode;
+        $rose(is_ebreak) && debug_mode_q |-> ##[1:6] debug_mode_q && 
+                                                     (id_stage_pc == dm_halt_addr_i); // TODO should check no change in dpc and dcsr
+    endproperty
+
+    a_ebreak_during_debug_mode: assert property(p_ebreak_during_debug_mode)
+        else
+            `uvm_error(info_tag,$sformatf("Debug mode not restarted after ebreak"));
 
     // Trigger match results in debug mode
     property p_trigger_match;
@@ -250,7 +374,59 @@ module uvmt_cv32e40p_debug_assert
         else
             `uvm_error(info_tag, $sformatf("Debug mode not correctly entered after trigger match depc=%08x,  tdata2=%08x", depc_q, tdata2)); 
 
+    // Address match without trigger enabled should NOT result in debug mode
+    property p_trigger_match_disabled;
+        $rose(addr_match) && !debug_mode_q |-> ##[1:6] !debug_mode_q;
+    endproperty
 
+    a_trigger_match_disabled: assert property(p_trigger_match_disabled)
+        else
+            `uvm_error(info_tag, "Trigger match with tdata[2]==0 resulted in debug mode");
+
+    // Exception in debug mode results in pc->dm_exception_addr_i
+    property p_debug_mode_exception;
+        $rose(illegal_insn_i) && debug_mode_q |-> ##[1:6] debug_mode_q && (id_stage_pc == dm_exception_addr_i);
+    endproperty
+
+    a_debug_mode_exception : assert property(p_debug_mode_exception)
+        else
+            `uvm_error(info_tag, $sformatf("Exception in debug mode not handled incorrectly. dm=%d, pc=%08x", debug_mode_q, id_stage_pc));
+
+    // ECALL in debug mode results in pc->dm_exception_addr_i
+    property p_debug_mode_ecall;
+        $rose(ecall_insn_i) && debug_mode_q |-> ##[1:6] debug_mode_q && (id_stage_pc == dm_exception_addr_i);
+    endproperty
+
+    a_debug_mode_ecall : assert property(p_debug_mode_ecall)
+        else
+            `uvm_error(info_tag, $sformatf("ECALL in debug mode not handled incorrectly. dm=%d, pc=%08x", debug_mode_q, id_stage_pc));
+
+    // IRQ in debug mode are masked
+    property p_irq_in_debug;
+        debug_mode_q |-> !irq_ack_o;
+    endproperty
+
+    a_irq_in_debug : assert property(p_irq_in_debug)
+        else
+            `uvm_error(info_tag, $sformatf("IRQ not ignored while in debug mode"));
+
+    // WFI in debug mode does not sleep
+    property p_wfi_in_debug;
+        debug_mode_q && $rose(is_wfi) |-> ##6 !core_sleep_o;
+    endproperty
+
+    a_wfi_in_debug : assert property(p_wfi_in_debug)
+        else
+            `uvm_error(info_tag, $sformatf("WFI in debug mode cause core_sleep_o=1"));
+
+    // Debug request while sleeping makes core wake up and enter debug mode
+    property p_sleep_debug_req;
+        in_wfi && debug_req_i |=> !core_sleep_o ##5 debug_mode_q; 
+    endproperty
+
+    a_sleep_debug_req : assert property(p_sleep_debug_req)
+        else
+            `uvm_error(info_tag, $sformatf("Did not exit sleep after debug_req_i"));
   // -------------------------------------------
     // Capture internal states for use in checking
     // -------------------------------------------
@@ -271,6 +447,23 @@ module uvmt_cv32e40p_debug_assert
                 pc_at_ebreak <= id_stage_pc;
             end
        end
-
     end        
+
+    // Keep track of wfi state
+    always @(posedge clk_i or negedge rst_ni) begin
+    if (!rst_ni) begin
+      in_wfi <= 1'b0;
+    end
+    else begin
+      if (is_wfi) 
+        in_wfi <= 1'b1;
+      else if (|pending_enabled_irq || debug_req_i)
+        in_wfi <= 1'b0;
+    end
+  end
+
+    assign addr_match = (id_stage_pc == tdata2);
+    assign is_wfi = id_stage_instr_valid_i &
+                  ((id_stage_instr_rdata_i & WFI_INSTR_MASK) == WFI_INSTR_DATA);
+    assign pending_enabled_irq = irq_i & mie_q;
 endmodule : uvmt_cv32e40p_debug_assert
