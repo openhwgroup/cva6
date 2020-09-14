@@ -109,7 +109,7 @@ module uvmt_cv32e40p_interrupt_assert
   // irq_ack_o is always a pulse
   property p_irq_ack_o_pulse;
     irq_ack_o |=> !irq_ack_o;
-  endproperty;
+  endproperty
   a_irq_ack_o_pulse: assert property(p_irq_ack_o_pulse)
     else
       `uvm_error(info_tag,
