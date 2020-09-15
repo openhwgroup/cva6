@@ -140,6 +140,10 @@ class corev_interrupt_csr_wfi_instr_stream extends corev_interrupt_csr_instr_str
   function void post_randomize();
     allowed_mie_instr = {CSRRW};
 
+    // Do not allow zero as destination register for LI (might clear MIE inadvertently)
+    reserved_rd = new[reserved_rd.size() + 1](reserved_rd);
+    reserved_rd[reserved_rd.size()-1] = ZERO;
+    
     super.post_randomize();
   endfunction : post_randomize
 
