@@ -184,8 +184,16 @@ _debugger_single_step:
     beq t0, t1, _debugger_single_step_trig_setup
     li t1, 5
     beq t0, t1, _debugger_single_step_stepie_enable
+    li t1, 6
+    beq t0, t1, _debugger_single_step_stepie_disable
     j _debugger_fail
 
+_debugger_single_step_stepie_disable:
+    // enable stepi
+    li t0, 4<<28 | 1<<15 | 1<<2 | 0<<11
+    csrw dcsr, t0
+
+    j _debugger_single_step_end
 _debugger_single_step_stepie_enable:
     // enable stepi
     li t0, 4<<28 | 1<<15 | 1<<2 | 1<<11
@@ -252,6 +260,8 @@ _debugger_single_step_end:
     li t1, 3
     beq t0, t1, _debugger_end
     li t1, 5
+    beq t0, t1, _debugger_end
+    li t1, 6
     beq t0, t1, _debugger_end
     li t1, 0
     sw t1, 0(a1)

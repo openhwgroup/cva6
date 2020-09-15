@@ -93,10 +93,10 @@ Running the envrionment with Metrics [dsim](https://metrics.ca)
 ----------------------
 The command **make SIMULATOR=dsim sanity** will run the sanity testcase using _dsim_.
 <br><br>
-Setting a shell environment variable `SIMULATOR` to "dsim" will also define the
+Setting a shell environment variable `CV_SIMULATOR` to "dsim" will also define the
 Makefile variable SIMULATOR to `dsim` and you can save yourself a lot of typing. For
 example, in a bash shell:
-<br>**export SIMULATOR=dsim**
+<br>**export CV_SIMULATOR=dsim**
 <br>**make sanity**
 <br><br>
 The Makefile for dsim also supports variables to control wave dumping.  For example:
@@ -139,7 +139,7 @@ Current supported simulators: <i>Note that eventually all simulators will be sup
 
 | SIMULATOR | Supported |
 |-----------|-----------|
-|dsim       | No        |
+|dsim       | Yes       |
 |xrun       | Yes       |
 |questa     | Yes       |
 |vcs        | Yes       |
@@ -159,7 +159,7 @@ To run a simulation in interactive mode (to enable single-stepping, breakpoints,
 
 If applicable for a simulator, line debugging will be enabled in the compile to enable single-stepping.
 
-**make hello-world GUI=1**
+**make test TEST=hello-world GUI=1**
 
 ### Set the UVM quit count
 
@@ -168,7 +168,7 @@ to allow up to 5 errors to be signaled before aborting the test.  There is a run
 tests.  Use the USER_RUN_FLAGS make variable with the standard UVM_MAX_QUIT_COUNT plusarg as below.  Please note that the NO is required
 and signals that you want UVM to use your plusarg over any internally configured quit count values.
 
-**make hello-world USER_RUN_FLAGS=+UVM_MAX_QUIT_COUNT=10,NO**
+**make test TEST=hello-world USER_RUN_FLAGS=+UVM_MAX_QUIT_COUNT=10,NO**
 
 ### Post-process Waveform Debug
 
@@ -178,7 +178,7 @@ To create waves during simulation, set the **WAVES=YES** flag.<br>
 
 The waveform dump will include all signals in the <i>uvmt_tb32</i> testbench and recursively throughout the hierarchy.
 
-**make hello-world WAVES=1**
+**make test TEST=hello-world WAVES=1**
 
 If applicable for a simulator, dumping waves for an advanced debug tool is available.
 
@@ -202,7 +202,7 @@ By default coverage information is not generated during a simulation for <i>xrun
 
 To generate coverage database, set **COV=1**.
 
-**make hello-world COV=1**
+**make test TEST=hello-world COV=1**
 
 To view coverage results a new target **cov** was added to the makefiles.  By default the target will generate a coverage report in the same directory as the output log files and the coverage database.<br>
 
@@ -249,7 +249,7 @@ Available Test Programs
 -----------------------
 The `make` commands here assume you have set your shell SIMULATION
 There are three targets that can run a specific test-program by name:
-* **make hello-world**:<br>run the hello_world program found at `../../tests/core/custom`.
+* **make test TEST=hello-world**:<br>run the hello_world program found at `../../tests/core/custom`.
 * **make cv32-riscv-tests**:<br>run the CV32-specific RISC-V tests found at `../../tests/core/cv32_riscv_tests_firmware`
 * **make cv32-riscv-compilance-tests**:<br>run the CV32-specific RISC-V tests found at `../../tests/core/cv32_riscv_compliance_tests_firmware`
 Some targets are simulator specific:
@@ -279,4 +279,39 @@ You can now run any test program in that directory:<br>
 ```
 make custom CUSTOM_PROJ=hello_world
 make custom CUSTOM_PROJ=smoke
+```
+
+Build Configurations
+--------------------
+The `uvmt_cv32` environment supports adding compile flags to the testbench to support a specialized configuration of the core.  The testbench
+flow supports a single compilation object at any point in time so it is recommended that any testbench options be supported as run-time
+options (see the Test Specification documentation for setting run-time plusargs).  However if, for instance, parameters to the DUT need to be
+changed then this flow needs to be used.<br>
+
+All build configurations are in the files:<br>
+
+```
+cv32/tests/cfg/<cfg>.yaml
+```
+
+The contents of the YAML file support the following tags:
+| YAML Tag      | Required | Description |
+|---------------|----------|---------------------|
+| name          | Yes      | The name of the configuration                |
+| description   | Yes      | Brief description of the intent of the build configuration |
+| compile_flags | No       | Compile flags passed to the simulator compile-step    |
+| ovpsim        | No       | Flags for the IC file for the OVPSim ISS   |
+
+<br>
+The following is an example build configuration:<br>
+
+```
+name: no_pulp
+description: Sets all PULP-related flags to 0
+compile_flags: >
+    +define+NO_PULP
+    +define+HAHAHA
+ovpsim: >
+    --override root/cpu0/misa_Extensions=0x1104
+    --showoverrides
 ```

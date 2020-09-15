@@ -1,0 +1,4 @@
+name: misalign
+uvm_test: uvmt_cv32_firmware_test_c
+description: >
+    Misaligned instruction directed test

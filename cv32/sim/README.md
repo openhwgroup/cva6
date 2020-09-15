@@ -29,18 +29,5 @@ The Makefile will run the SystemVerilog/UVM verification environment found in
 Tool specific sub-dirs for some of the tools used in the CV32.  For example,
 Tcl control files for waveform viewing support.
 
-### Other directories
-There are also specific sub-dirs for some of the tools used in the CV32
-project.  These will be moved the the `tools` directory in a future update:
-
-#### xrun
-Cadence Xcelium Tcl scripts for GUI and waveform viewing support.
-
-#### questa
-Mentor Questa Tcl scripts for GUI and waveform viewing support.
-
-#### vcs
-Synopsys VCS Tcl scripts for GUI and waveform viewing support.
-
 #### mcy
 Setup and configuration for [Mutual Coverage with Yosys](https://github.com/YosysHQ/mcy) from [SymbioticEDA](https://www.symbioticeda.com/).

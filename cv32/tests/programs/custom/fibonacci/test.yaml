@@ -1,0 +1,4 @@
+name: fibonacci
+uvm_test: uvmt_cv32_firmware_test_c
+description: >
+    Fibonacci sequence directed test
