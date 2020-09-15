@@ -239,6 +239,7 @@ custom: $(XRUN_SIM_PREREQ) $(CUSTOM_DIR)/$(CUSTOM_PROG).hex
 debug_test: $(XRUN_SIM_PREREQ) $(CORE_TEST_DIR)/debug_test/debug_test.hex
 	mkdir -p $(XRUN_RESULTS)/debug_test && cd $(XRUN_RESULTS)/debug_test && \
 	$(XRUN) -l xrun-riscv_debug_test.log -covtest debug_test $(XRUN_COMP_RUN) \
+				$(XRUN_RUN_WAVES_FLAGS) \
                 +elf_file=$(CORE_TEST_DIR)/debug_test/debug_test.elf \
                 +nm_file=$(CORE_TEST_DIR)/debug_test/debug_test.nm \
                 +UVM_TESTNAME=uvmt_cv32_firmware_test_c \

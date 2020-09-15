@@ -79,6 +79,7 @@ module uvmt_cv32e40p_debug_assert
   logic is_cebreak;
   logic is_wfi;
   logic in_wfi;
+  logic is_dret;
   logic [31:0] pc_at_dbg_req; // Capture PC when debug_req_i or ebreak is active
   logic [31:0] pc_at_ebreak; // Capture PC when ebreak
 
@@ -255,6 +256,47 @@ module uvmt_cv32e40p_debug_assert
         }
         dm_wfi : cross inwfi, dreq;
     endgroup
+
+    // Cover that we perform single stepping
+    covergroup cg_single_step @(posedge clk_i);
+        option.per_instance = 1;
+        step : coverpoint dcsr_q[2] {
+                bins en  = {1};
+        }
+        mmode: coverpoint debug_mode_q {
+            bins hit = {0};
+        }
+        trigger : coverpoint trigger_match_i {
+            bins hit = {1};
+        }
+        wfi : coverpoint is_wfi {
+            bins hit = {1};
+        }
+        stepie : coverpoint dcsr_q[11];
+        mmode_step : cross step, mmode;
+        mmode_step_trigger_match : cross step, mmode, trigger;
+        mmode_step_wfi : cross step, mmode, wfi;
+        mmode_step_stepie : cross step, mmode, stepie;
+    endgroup
+
+    // Cover dret is executed in machine mode
+    covergroup cg_mmode_dret @(posedge clk_i);
+        option.per_instance = 1;
+        mmode : coverpoint debug_mode_q;
+        dret_ins : coverpoint is_dret {
+            bins hit = {1};
+        }
+        dret_ex : cross mmode, dret_ins;
+    endgroup
+
+    // Cover debug_req and irq asserted on same cycle
+    covergroup cg_irq_dreq @(posedge clk_i);
+        option.per_instance = 1;
+        dreq : coverpoint $rose(debug_req_i);
+        irq  : coverpoint $rose(|irq_i);
+        irq_and_dreq : cross dreq, irq;
+    endgroup
+
 // cg instances
   cg_debug_mode_ext cg_debug_mode_i;
   cg_ebreak_execute_with_ebreakm cg_ebreak_execute_with_ebreakm_i;
@@ -268,6 +310,9 @@ module uvmt_cv32e40p_debug_assert
   cg_irq_in_debug cg_irq_in_debug_i;
   cg_wfi_in_debug cg_wfi_in_debug_i;
   cg_wfi_debug_req cg_wfi_debug_req_i;
+  cg_single_step cg_single_step_i;
+  cg_mmode_dret cg_mmode_dret_i;
+  cg_irq_dreq  cg_irq_dreq_i;
   // create cg's at start of simulation
   initial begin
       cg_debug_mode_i = new();
@@ -282,6 +327,9 @@ module uvmt_cv32e40p_debug_assert
       cg_irq_in_debug_i = new();
       cg_wfi_in_debug_i = new();
       cg_wfi_debug_req_i = new();
+      cg_single_step_i = new();
+      cg_mmode_dret_i = new();
+      cg_irq_dreq_i = new();
   end         
 
   assign is_ebreak = id_stage_instr_valid_i & 
@@ -466,4 +514,5 @@ module uvmt_cv32e40p_debug_assert
     assign is_wfi = id_stage_instr_valid_i &
                   ((id_stage_instr_rdata_i & WFI_INSTR_MASK) == WFI_INSTR_DATA);
     assign pending_enabled_irq = irq_i & mie_q;
+    assign is_dret = id_stage_instr_valid_i & (id_stage_instr_rdata_i == 32'h7B200073);
 endmodule : uvmt_cv32e40p_debug_assert
