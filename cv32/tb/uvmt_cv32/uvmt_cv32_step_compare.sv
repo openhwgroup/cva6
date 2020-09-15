@@ -166,11 +166,11 @@ module uvmt_cv32_step_compare
              // only valid in DEBUG Mode
              "dcsr"          : begin
                                csr_val = `CV32E40P_CORE.cs_registers_i.dcsr_q;     
-                               if (iss_wrap.cpu.DM==0) ignore = 1;
+                               if (iss_wrap.b1.DM==0) ignore = 1;
              end
              "dpc"           : begin
                                csr_val = `CV32E40P_CORE.cs_registers_i.depc_q;       
-                               if (iss_wrap.cpu.DM==0) ignore = 1;
+                               if (iss_wrap.b1.DM==0) ignore = 1;
              end
 
              "dscratch0"     : csr_val = `CV32E40P_CORE.cs_registers_i.dscratch0_q;
