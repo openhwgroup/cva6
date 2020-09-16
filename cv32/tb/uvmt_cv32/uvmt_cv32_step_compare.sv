@@ -60,6 +60,9 @@ import uvm_pkg::*;      // needed for the UVM messaging service (`uvm_info(), et
 //`define CV32E40P_TRACER $root.uvmt_cv32_tb.dut_wrap.cv32e40p_wrapper_i.core_i.tracer_i
 `define CV32E40P_TRACER $root.uvmt_cv32_tb.dut_wrap.cv32e40p_wrapper_i.tracer_i
 
+`define CV32E40P_ISS $root.uvmt_cv32_tb.iss_wrap.cpu
+
+
 module uvmt_cv32_step_compare
 (
    uvma_clknrst_if            clknrst_if,
@@ -84,6 +87,7 @@ module uvmt_cv32_step_compare
    endfunction // check_32bit
    
    
+   bit [31:0] [63:0] mhpmcounter;
    function automatic void compare();
       int idx;
       logic [ 5:0] insn_regs_write_addr;
@@ -130,10 +134,14 @@ module uvmt_cv32_step_compare
            csr_val = 0;
            case (index)
              "marchid"       : csr_val = cv32e40p_pkg::MARCHID; // warning!  defined in cv32e40p_pkg
-             "minstret"      : csr_val = `CV32E40P_CORE.cs_registers_i.mhpmcounter_q[`CV32E40P_CORE.cs_registers_i.csr_addr_i[4:0]][31:0];
-             "minstreth"     : csr_val = `CV32E40P_CORE.cs_registers_i.mhpmcounter_q[`CV32E40P_CORE.cs_registers_i.csr_addr_i[4:0]][63:32];
-             "mcycle"        : csr_val = `CV32E40P_CORE.cs_registers_i.mhpmcounter_q[`CV32E40P_CORE.cs_registers_i.csr_addr_i[4:0]][31:0];
-             "mcycleh"       : csr_val = `CV32E40P_CORE.cs_registers_i.mhpmcounter_q[`CV32E40P_CORE.cs_registers_i.csr_addr_i[4:0]][63:32];
+
+             // local copy of HPM registers is used and updated on every cycle
+             // this seems strange.
+             "mcycle"        : csr_val = mhpmcounter[0][31:0];
+             "mcycleh"       : csr_val = mhpmcounter[0][63:32];
+             "minstret"      : csr_val = mhpmcounter[2][31:0];
+             "minstreth"     : csr_val = mhpmcounter[2][63:32];
+             
              "mcountinhibit" : csr_val = `CV32E40P_CORE.cs_registers_i.mcountinhibit_q;
 
              "mvendorid"     : csr_val = {cv32e40p_pkg::MVENDORID_BANK, cv32e40p_pkg::MVENDORID_OFFSET};
@@ -195,9 +203,20 @@ module uvmt_cv32_step_compare
              check_32bit(.compared(index), .expected(iss_wrap.cpu.CSR[index]), .actual(csr_val));
 
         end // foreach (ovp.cpu.CSR[index])
+        
+        // mhpmcounter lags the mhpmcounter_q by 1 cycle in order to match
+        mhpmcounter = `CV32E40P_CORE.cs_registers_i.mhpmcounter_q;
       `endif      
     endfunction // compare
-
+    
+    // RTL->RM CSR : mcycle, minstret, mcycleh, minstreth
+    function automatic void pushRTL2RM(string message);
+        `CV32E40P_ISS.CSR_rtl["mcycle"]    = mhpmcounter[0][31:0];
+        `CV32E40P_ISS.CSR_rtl["mcycleh"]   = mhpmcounter[0][63:32];
+        `CV32E40P_ISS.CSR_rtl["minstret"]  = mhpmcounter[2][31:0];
+        `CV32E40P_ISS.CSR_rtl["minstreth"] = mhpmcounter[2][63:32];
+    endfunction // pushRTL2RM
+    
     /*
         The schedule works like this
         1. Run the RTL for 1 instruction retirement
@@ -213,6 +232,7 @@ module uvmt_cv32_step_compare
     event ev_compare;
 
    initial begin
+      pushRTL2RM("Initial");
       step_compare_if.ovp_b1_Step = 0;
       step_compare_if.ovp_b1_Stepping = 1;
       step_ovp = 0;
@@ -228,6 +248,7 @@ module uvmt_cv32_step_compare
 
     // riscv_core
     always @(step_compare_if.riscv_retire) begin
+        pushRTL2RM("RTL Retire");
         step_rtl = 0;
         ret_rtl  = 1;
         #0 ->ev_rtl;
