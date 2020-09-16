@@ -57,6 +57,7 @@ module CPU
     bit [31:0] FPR[32];
     // ToDo Vector
     bit [31:0] CSR[string];
+    bit [31:0] CSR_rtl[string];
     
     string Decode, Change;
     bit    [0:(64*8)-1] DecodeP;
@@ -205,8 +206,12 @@ module CPU
     endfunction
     
     function automatic void getCSR (input string index, output longint value);
-        $display("%m %s", index);
-        value = 'hdeadbeef;
+        if (CSR_rtl.exists(index)) begin
+            value = CSR_rtl[index];
+        end else begin
+            $display("CSR_rtl.exists(%s) = False", index);
+            value = 'hdeadbeef;
+        end
     endfunction
     
     //
