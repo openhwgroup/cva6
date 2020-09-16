@@ -6,4 +6,3 @@ compile_flags: >
 ovpsim: >
     --override root/cpu/marchid=4
     --override root/cpu/misa_Extensions=0x1104
-    --showoverrides
