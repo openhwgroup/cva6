@@ -4,7 +4,7 @@
 name: corev_rand_interrupt
 uvm_test: corev_instr_base_test
 description: >
-    RISCV-DV generated random interrupt tests
+    RISCV-DV generated random debug tests
 plusargs: >
     +instr_cnt=50000
     +num_of_sub_program=0
