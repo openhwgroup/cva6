@@ -86,8 +86,17 @@ module uvmt_cv32_step_compare
       end
    endfunction // check_32bit
    
-   
    bit [31:0] [63:0] mhpmcounter;
+   always @(posedge `CV32E40P_CORE.ex_stage_i.clk) begin
+     if (`CV32E40P_CORE.ex_stage_i.csr_access_i) begin
+       //mhpmcounter[0] = `CV32E40P_CORE.cs_registers_i.mhpmcounter_q[0];
+       //mhpmcounter[2] = `CV32E40P_CORE.cs_registers_i.mhpmcounter_q[2];
+       //$display("@csr_access_i=1 mcycle=%08x", mhpmcounter[0]);
+       //$display("@csr_access_i=1 minstret=%08x", mhpmcounter[2]);
+       mhpmcounter = `CV32E40P_CORE.cs_registers_i.mhpmcounter_q;
+     end
+   end
+   
    function automatic void compare();
       int idx;
       logic [ 5:0] insn_regs_write_addr;
@@ -135,12 +144,11 @@ module uvmt_cv32_step_compare
            case (index)
              "marchid"       : csr_val = cv32e40p_pkg::MARCHID; // warning!  defined in cv32e40p_pkg
 
-             // local copy of HPM registers is used and updated on every cycle
-             // this seems strange.
-             "mcycle"        : csr_val = mhpmcounter[0][31:0];
-             "mcycleh"       : csr_val = mhpmcounter[0][63:32];
-             "minstret"      : csr_val = mhpmcounter[2][31:0];
-             "minstreth"     : csr_val = mhpmcounter[2][63:32];
+            
+             "mcycle"        : ignore = 1;
+             "mcycleh"       : ignore = 1;
+             "minstret"      : ignore = 1; 
+             "minstreth"     : ignore = 1; 
              
              "mcountinhibit" : csr_val = `CV32E40P_CORE.cs_registers_i.mcountinhibit_q;
 
@@ -204,8 +212,6 @@ module uvmt_cv32_step_compare
 
         end // foreach (ovp.cpu.CSR[index])
         
-        // mhpmcounter lags the mhpmcounter_q by 1 cycle in order to match
-        mhpmcounter = `CV32E40P_CORE.cs_registers_i.mhpmcounter_q;
       `endif      
     endfunction // compare
     
@@ -248,13 +254,13 @@ module uvmt_cv32_step_compare
 
     // riscv_core
     always @(step_compare_if.riscv_retire) begin
-        pushRTL2RM("RTL Retire");
         step_rtl = 0;
         ret_rtl  = 1;
         #0 ->ev_rtl;
     end
     
     always @(posedge ret_rtl) begin
+        pushRTL2RM("ret_rtl");
         ret_ovp  = 0;
         step_ovp = 1;
     end
