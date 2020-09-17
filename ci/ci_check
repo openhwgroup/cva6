@@ -278,7 +278,7 @@ if (uvm):
                     if (run_cmd != ''):
                         run_cmd = run_cmd.replace('dsim', svtool)
                         # Only DSIM can run corev-dv (riscv-dv) at present
-                        if ( svtool == 'dsim' ):
+                        if ( svtool == 'dsim' or svtool == 'xrun' or svtool == 'vsim'):
                             if (prcmd or debug):
                                 print(run_cmd)
                             else:

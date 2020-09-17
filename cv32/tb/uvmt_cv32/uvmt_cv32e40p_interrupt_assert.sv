@@ -83,6 +83,7 @@ module uvmt_cv32e40p_interrupt_assert
 
   reg[31:0] next_irq_q;    
   reg       next_irq_valid_q;
+  reg[31:0] saved_mie_q;
 
   reg[31:0] expected_irq;
   reg       expected_irq_ack;
@@ -109,7 +110,7 @@ module uvmt_cv32e40p_interrupt_assert
   // irq_ack_o is always a pulse
   property p_irq_ack_o_pulse;
     irq_ack_o |=> !irq_ack_o;
-  endproperty;
+  endproperty
   a_irq_ack_o_pulse: assert property(p_irq_ack_o_pulse)
     else
       `uvm_error(info_tag,
@@ -126,7 +127,7 @@ module uvmt_cv32e40p_interrupt_assert
 
   // irq_id_o is never a disabled irq
   property p_irq_id_o_mie_enabled;
-    irq_ack_o |-> mie_q[irq_id_o];
+    irq_ack_o |-> saved_mie_q[irq_id_o];
   endproperty    
   a_irq_id_o_mie_enabled: assert property(p_irq_id_o_mie_enabled)
     else
@@ -233,11 +234,16 @@ module uvmt_cv32e40p_interrupt_assert
       exc_ctrl_cs_q <= 0;
       next_irq_q <= 0;
       next_irq_valid_q <= 0;
+      saved_mie_q <= 0;
     end    
     else begin
       exc_ctrl_cs_q <= exc_ctrl_cs;
-      next_irq_q <= next_irq;
-      next_irq_valid_q <= next_irq_valid;
+      // Only latch new interrupt if interrupt controller state machine is idel
+      if (exc_ctrl_cs == 0) begin
+        next_irq_q <= next_irq;
+        next_irq_valid_q <= next_irq_valid;
+        saved_mie_q <= mie_q;
+      end
     end
   end
 

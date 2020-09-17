@@ -209,7 +209,7 @@ if args.vsif:
                                  results_path=get_results_path(args.project),
                                  project=args.project,
                                  regressions=regressions,
-                                 makeargs=' '.join(args.makearg),
+                                 makeargs=' '.join(args.makearg) if args.makearg else '',
                                  lsf=args.lsf,
                                  sve=os.path.abspath(sve),
                                  simulator=args.simulator,

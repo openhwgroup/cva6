@@ -252,14 +252,6 @@ custom: $(XRUN_SIM_PREREQ) $(CUSTOM_DIR)/$(CUSTOM_PROG).hex
 
 ################################################################################
 # Explicit target tests
-debug_test: $(XRUN_SIM_PREREQ) $(CORE_TEST_DIR)/debug_test/debug_test.hex
-	mkdir -p $(XRUN_RESULTS)/debug_test && cd $(XRUN_RESULTS)/debug_test && \
-	$(XRUN) -l xrun-riscv_debug_test.log -covtest debug_test $(XRUN_COMP_RUN) \
-				$(XRUN_RUN_WAVES_FLAGS) \
-                +elf_file=$(CORE_TEST_DIR)/debug_test/debug_test.elf \
-                +nm_file=$(CORE_TEST_DIR)/debug_test/debug_test.nm \
-                +UVM_TESTNAME=uvmt_cv32_firmware_test_c \
-                +firmware=$(CORE_TEST_DIR)/debug_test/debug_test.hex
 
 # Runs tests in cv32_riscv_tests/ only
 cv32-riscv-tests: $(XRUN_SIM_PREREQ) $(CV32_RISCV_TESTS_FIRMWARE)/cv32_riscv_tests_firmware.hex
@@ -326,27 +318,6 @@ comp_corev-dv: $(RISCVDV_PKG)
 		-f $(COREVDV_PKG)/manifest.f \
 		-l xrun.log
 
-gen_corev_rand_debug_test:
-	mkdir -p $(XRUN_RISCVDV_RESULTS)/corev_rand_debug_test
-	cd $(XRUN_RISCVDV_RESULTS)/corev_rand_debug_test && \
-	$(XRUN) -R $(XRUN_RUN_FLAGS) \
-		-xceligen rand_struct \
-		+UVM_TESTNAME=corev_instr_base_test  \
-		+num_of_tests=$(NUM_TESTS)  \
-		+start_idx=0  \
-		+asm_file_name_opts=riscv_rand_debug_test  \
-		-l $(COREVDV_PKG)/out_$(DATE)/sim_riscv_rand_debug_test_0.log \
-		+instr_cnt=50000 \
-		+num_of_sub_program=0 \
-		+directed_instr_0=riscv_int_numeric_corner_stream,4 \
-		+no_fence=1 \
-		+no_data_page=1 \
-		+no_branch_jump=1 \
-		+boot_mode=m \
-		+no_csr_instr=1 \
-		+no_wfi=0 \
-		+gen_debug_section=1
-	cp $(XRUN_RISCVDV_RESULTS)/corev_rand_debug_test/*.S $(CORE_TEST_DIR)/custom
 
 corev-dv: clean_riscv-dv \
           clone_riscv-dv \
@@ -369,7 +340,7 @@ gen_corev-dv:
 		$(GEN_PLUSARGS)
 	# Copy out final assembler files to test directory
 	for (( idx=${GEN_START_INDEX}; idx < $$((${GEN_START_INDEX} + ${GEN_NUM_TESTS})); idx++ )); do \
-		ls -l ${XRUN_RISCVDV_RESULTS}/${TEST} > /dev/null; \
+		ls -l ${XRUN_COREVDV_RESULTS}/${TEST} > /dev/null; \
 		cp ${XRUN_COREVDV_RESULTS}/${TEST}/${TEST}_$$idx.S ${GEN_TEST_DIR}; \
 	done
 

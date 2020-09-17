@@ -1142,16 +1142,6 @@
             "seed":        1
           },
           {
-            "name":        "cv32-riscv-compliance-tests",
-            "build":       "uvmt_cv32",
-            "cmd":         "cd cv32/sim/uvmt_cv32; make cv32-riscv-compliance-tests SIMULATOR=dsim USE_ISS=YES DSIM_WORK=/mux-flow/build/repo/dsim_work DSIM_RESULTS=/mux-flow/build/results",
-            "wavesCmd":    "cd cv32/sim/uvmt_cv32; make cv32-riscv-compliance-tests SIMULATOR=dsim USE_ISS=YES DSIM_WORK=/mux-flow/build/repo/dsim_work DSIM_RESULTS=/mux-flow/build/results WAVES=1 DSIM_DMP_FILE=cv32-riscv-compliance-tests.vcd",
-            "metricsFile": "cv32-riscv-compliance-tests/metrics.db",
-            "wavesFile" :  "cv32-riscv-compliance-tests/cv32-riscv-compliance-tests.vcd",
-            "isPass":      "SIMULATION PASSED",
-            "seed":        1
-          },
-          {
             "name":        "illegal-riscv-tests",
             "build":       "uvmt_cv32",
             "cmd":         "cd cv32/sim/uvmt_cv32; make test TEST=illegal SIMULATOR=dsim USE_ISS=YES DSIM_WORK=/mux-flow/build/repo/dsim_work DSIM_RESULTS=/mux-flow/build/results",
