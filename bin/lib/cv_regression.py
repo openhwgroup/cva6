@@ -45,8 +45,8 @@ class Build:
         for k, v in kwargs.items():            
             setattr(self, k, v)
 
-        # Absolutize a directory if exists
-        self.dir = os.path.abspath(os.path.join(get_proj_root(), self.dir))
+        # Absolutize a directory if dir tag exists
+        self.abs_dir = os.path.abspath(os.path.join(get_proj_root(), self.dir))
 
     def set_cov(self):
         '''Set the coverage flag based on app setting.
@@ -78,7 +78,7 @@ class Test:
             setattr(self, k, v)
 
         # Absolutize a directory if exists
-        self.dir = os.path.abspath(os.path.join(get_proj_root(), self.dir))
+        self.abs_dir = os.path.abspath(os.path.join(get_proj_root(), self.dir))
 
         # Log equals the test name if does not exist
         if not hasattr(self, 'log'):
