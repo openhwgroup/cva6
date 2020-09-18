@@ -1,6 +1,7 @@
 //
 // Copyright 2020 OpenHW Group
 // Copyright 2020 Datum Technologies
+// Copyright 2020 Silicon Labs, Inc.
 // 
 // Licensed under the Solderpad Hardware Licence, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -41,6 +42,7 @@ module uvmt_cv32_tb;
    // Agent interfaces
    uvma_clknrst_if              clknrst_if(); // clock and resets from the clknrst agent
    uvma_clknrst_if              clknrst_if_iss();
+   uvma_debug_if                debug_if();
    uvma_interrupt_if            interrupt_if(); // Interrupts
 
    // DUT Wrapper Interfaces
@@ -205,6 +207,20 @@ module uvmt_cv32_tb;
         end
       end
 
+      always @(posedge clknrst_if_iss.clk or negedge clknrst_if_iss.reset_n) begin
+        if (!clknrst_if_iss.reset_n) begin
+            iss_wrap.b1.haltreq <= 1'b0;
+        end else begin
+            if (dut_wrap.cv32e40p_wrapper_i.core_i.id_stage_i.controller_i.ctrl_fsm_cs inside {cv32e40p_pkg::DBG_TAKEN_ID, cv32e40p_pkg::DBG_TAKEN_IF}) begin
+                iss_wrap.b1.haltreq <= dut_wrap.cv32e40p_wrapper_i.core_i.id_stage_i.controller_i.debug_req_pending;
+            end else begin
+                if(iss_wrap.b1.DM == 1'b1) begin
+                   iss_wrap.b1.haltreq <= 1'b0;
+                end
+            end
+
+        end
+      end
     `endif
 
    /**
@@ -217,6 +233,7 @@ module uvmt_cv32_tb;
       
      // Add interfaces handles to uvm_config_db
      uvm_config_db#(virtual uvma_clknrst_if             )::set(.cntxt(null), .inst_name("*.env.clknrst_agent"), .field_name("vif"),         .value(clknrst_if));
+     uvm_config_db#(virtual uvma_debug_if               )::set(.cntxt(null), .inst_name("*.env.debug_agent"), .field_name("vif"), .value(debug_if));
      uvm_config_db#(virtual uvma_interrupt_if           )::set(.cntxt(null), .inst_name("*.env.interrupt_agent"), .field_name("vif"),         .value(interrupt_if));
      uvm_config_db#(virtual uvmt_cv32_vp_status_if      )::set(.cntxt(null), .inst_name("*"), .field_name("vp_status_vif"),       .value(vp_status_if)      );
      uvm_config_db#(virtual uvmt_cv32_core_cntrl_if     )::set(.cntxt(null), .inst_name("*"), .field_name("core_cntrl_vif"),      .value(core_cntrl_if)     );

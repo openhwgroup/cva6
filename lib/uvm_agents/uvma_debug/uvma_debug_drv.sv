@@ -1,5 +1,6 @@
 // Copyright 2020 OpenHW Group
 // Copyright 2020 Datum Technology Corporation
+// Copyright 2020 Silicon Labs, Inc.
 // 
 // Licensed under the Solderpad Hardware Licence, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -56,20 +57,6 @@ class uvma_debug_drv_c extends uvm_driver#(
     */
    extern virtual task run_phase(uvm_phase phase);
    
-   /**
-    * Called by run_phase() while agent is in pre-reset state.
-    */
-   extern virtual task drv_pre_reset(uvm_phase phase);
-   
-   /**
-    * Called by run_phase() while agent is in reset state.
-    */
-   extern virtual task drv_in_reset(uvm_phase phase);
-   
-   /**
-    * Called by run_phase() while agent is in post-reset state.
-    */
-   extern virtual task drv_post_reset(uvm_phase phase);
    
    /**
     * Drives the virtual interface's (cntxt.vif) signals using req's contents.
@@ -113,54 +100,28 @@ endfunction : build_phase
 task uvma_debug_drv_c::run_phase(uvm_phase phase);
    
    super.run_phase(phase);
+  
+   cntxt.vif.is_active =1;
    
-   if (cfg.enabled && cfg.is_active) begin
-      forever begin
-         case (cntxt.reset_state)
-            UVMA_RESET_STATE_PRE_RESET : drv_pre_reset (phase);
-            UVMA_RESET_STATE_IN_RESET  : drv_in_reset  (phase);
-            UVMA_RESET_STATE_POST_RESET: drv_post_reset(phase);
-         endcase
-      end
-   end
-   
+   forever begin
+       seq_item_port.get_next_item(req);
+       `uvml_hrtbt()
+       drv_req(req);
+       ap.write(req);
+       seq_item_port.item_done();
+   end 
 endtask : run_phase
 
 
-task uvma_debug_drv_c::drv_pre_reset(uvm_phase phase);
-   
-   // TODO Implement uvma_debug_drv_c::drv_pre_reset()
-   //      Ex: @(cntxt.vif.drv_cb);
-   
-   // WARNING If no time is consumed by this task, a zero-delay oscillation loop will occur and stall simulation
-   
-endtask : drv_pre_reset
-
-
-task uvma_debug_drv_c::drv_in_reset(uvm_phase phase);
-   
-   // TODO Implement uvma_debug_drv_c::drv_in_reset()
-   //      Ex: @(cntxt.vif.drv_cb);
-   
-   // WARNING If no time is consumed by this task, a zero-delay oscillation loop will occur and stall simulation
-   
-endtask : drv_in_reset
-
-
-task uvma_debug_drv_c::drv_post_reset(uvm_phase phase);
-   
-   seq_item_port.get_next_item(req);
-   `uvml_hrtbt()
-   
-   drv_req (req);
-   ap.write(req);
-   seq_item_port.item_done(/* TODO Remove this if request is not returned to sequencer/sequence: req*/);
-   
-endtask : drv_post_reset
-
 
 task uvma_debug_drv_c::drv_req(uvma_debug_seq_item_c req);
-   
+   `uvm_info("DEBUGDRV", $sformatf("Driving debug: %s",req.sprint()), UVM_HIGH); 
+   cntxt.vif.drv_cb.debug_drv <= 1'b1;
+ //  while(1) begin
+       repeat (req.active_cycles) @(cntxt.vif.mon_cb);
+       cntxt.vif.drv_cb.debug_drv <= 1'b0;           
+ //  end
+
    // TODO Implement uvma_debug_drv_c::drv_req()
    //      Ex: cntxt.vif.drv_cb.abc <= req.abc;
    //          cntxt.vif.drv_cb.xyz <= req.xyz;

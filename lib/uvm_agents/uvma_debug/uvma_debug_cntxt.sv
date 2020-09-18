@@ -1,5 +1,6 @@
 // Copyright 2020 OpenHW Group
 // Copyright 2020 Datum Technology Corporation
+// Copyright 2020 Silicon Labs, Inc.
 // 
 // Licensed under the Solderpad Hardware Licence, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -27,8 +28,6 @@ class uvma_debug_cntxt_c extends uvm_object;
    // Handle to agent interface
    virtual uvma_debug_if  vif;
    
-   // Integrals
-   uvma_reset_state_enum  reset_state = UVMA_RESET_STATE_PRE_RESET;
    
    // Events
    uvm_event  sample_cfg_e;
@@ -36,8 +35,6 @@ class uvma_debug_cntxt_c extends uvm_object;
    
    
    `uvm_object_utils_begin(uvma_debug_cntxt_c)
-      `uvm_field_enum(uvma_reset_state_enum, reset_state, UVM_DEFAULT)
-      
       `uvm_field_event(sample_cfg_e  , UVM_DEFAULT)
       `uvm_field_event(sample_cntxt_e, UVM_DEFAULT)
    `uvm_object_utils_end

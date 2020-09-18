@@ -1,5 +1,6 @@
 // Copyright 2020 OpenHW Group
 // Copyright 2020 Datum Technology Corporation
+// Copyright 2020 Silicon Labs, Inc.
 // 
 // Licensed under the Solderpad Hardware Licence, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -113,7 +114,7 @@ task uvma_debug_cov_model_c::run_phase(uvm_phase phase);
    
    super.run_phase(phase);
    
-   if (cfg.is_enabled && cfg.cov_model_enabled) begin
+   if (cfg.enabled && cfg.cov_model_enabled) begin
       fork
          // Configuration
          forever begin

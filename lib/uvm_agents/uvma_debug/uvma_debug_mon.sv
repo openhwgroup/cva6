@@ -1,5 +1,6 @@
 // Copyright 2020 OpenHW Group
 // Copyright 2020 Datum Technology Corporation
+// Copyright 2020 Silicon Labs, Inc.
 // 
 // Licensed under the Solderpad Hardware Licence, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -120,19 +121,19 @@ task uvma_debug_mon_c::run_phase(uvm_phase phase);
    
    super.run_phase(phase);
    
-   if (cfg.enabled) begin
-      fork
-         observe_reset();
-         
-         forever begin
-            case (cntxt.reset_state)
-               UVMA_RESET_STATE_PRE_RESET : mon_pre_reset (phase);
-               UVMA_RESET_STATE_IN_RESET  : mon_in_reset  (phase);
-               UVMA_RESET_STATE_POST_RESET: mon_post_reset(phase);
-            endcase
-         end
-      join_none
-   end
+//   if (cfg.enabled) begin
+//      fork
+//         observe_reset();
+//         
+//         forever begin
+//            case (cntxt.reset_state)
+//               UVMA_RESET_STATE_PRE_RESET : mon_pre_reset (phase);
+//               UVMA_RESET_STATE_IN_RESET  : mon_in_reset  (phase);
+//               UVMA_RESET_STATE_POST_RESET: mon_post_reset(phase);
+//            endcase
+//         end
+//      join_none
+//   end
    
 endtask : run_phase
 

@@ -1,5 +1,6 @@
 // Copyright 2020 OpenHW Group
 // Copyright 2020 Datum Technology Corporation
+// Copyright 2020 Silicon Labs, Inc.
 // 
 // Licensed under the Solderpad Hardware Licence, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -36,7 +37,7 @@ class uvme_cv32_cfg_c extends uvm_object;
    // Agent cfg handles
    rand uvma_clknrst_cfg_c    clknrst_cfg;
    rand uvma_interrupt_cfg_c  interrupt_cfg;
-   //rand uvma_debug_cfg_c    debug_cfg;
+   rand uvma_debug_cfg_c    debug_cfg;
    
    // Objects
    rand uvme_cv32_ral_c  ral;
@@ -56,7 +57,7 @@ class uvme_cv32_cfg_c extends uvm_object;
       
       `uvm_field_object(clknrst_cfg, UVM_DEFAULT)
       `uvm_field_object(interrupt_cfg, UVM_DEFAULT)
-      //`uvm_field_object(debug_cfg  , UVM_DEFAULT)
+      `uvm_field_object(debug_cfg  , UVM_DEFAULT)
       
       //`uvm_field_object(ral, UVM_DEFAULT)
       // TODO Add scoreboard cfg field macros
@@ -79,19 +80,19 @@ class uvme_cv32_cfg_c extends uvm_object;
       if (enabled) {
          clknrst_cfg.enabled == 1;
          interrupt_cfg.enabled == 1;
-         //debug_cfg.enabled == 1;
+         debug_cfg.enabled == 1;
       }
       
       if (is_active == UVM_ACTIVE) {
          clknrst_cfg.is_active == UVM_ACTIVE;
          interrupt_cfg.is_active == UVM_ACTIVE;
-         //debug_cfg.is_active == UVM_ACTIVE;
+         debug_cfg.is_active == UVM_ACTIVE;
       }
       
       if (trn_log_enabled) {
          clknrst_cfg.trn_log_enabled == 1;
          interrupt_cfg.trn_log_enabled == 1;
-         //debug_cfg.trn_log_enabled == 1;
+         debug_cfg.trn_log_enabled == 1;
       }
    }   
    
@@ -109,7 +110,7 @@ function uvme_cv32_cfg_c::new(string name="uvme_cv32_cfg");
    
    clknrst_cfg = uvma_clknrst_cfg_c::type_id::create("clknrst_cfg");
    interrupt_cfg = uvma_interrupt_cfg_c::type_id::create("interrupt_cfg");
-   //debug_cfg = uvma_debug_cfg_c    ::type_id::create("debug_cfg");
+   debug_cfg = uvma_debug_cfg_c    ::type_id::create("debug_cfg");
    
    ral = uvme_cv32_ral_c::type_id::create("ral");
    ral.build();

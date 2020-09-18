@@ -60,6 +60,9 @@ import uvm_pkg::*;      // needed for the UVM messaging service (`uvm_info(), et
 //`define CV32E40P_TRACER $root.uvmt_cv32_tb.dut_wrap.cv32e40p_wrapper_i.core_i.tracer_i
 `define CV32E40P_TRACER $root.uvmt_cv32_tb.dut_wrap.cv32e40p_wrapper_i.tracer_i
 
+`define CV32E40P_ISS $root.uvmt_cv32_tb.iss_wrap.cpu
+
+
 module uvmt_cv32_step_compare
 (
    uvma_clknrst_if            clknrst_if,
@@ -83,6 +86,16 @@ module uvmt_cv32_step_compare
       end
    endfunction // check_32bit
    
+   bit [31:0] [63:0] mhpmcounter;
+   always @(posedge `CV32E40P_CORE.ex_stage_i.clk) begin
+     if (`CV32E40P_CORE.ex_stage_i.csr_access_i) begin
+       //mhpmcounter[0] = `CV32E40P_CORE.cs_registers_i.mhpmcounter_q[0];
+       //mhpmcounter[2] = `CV32E40P_CORE.cs_registers_i.mhpmcounter_q[2];
+       //$display("@csr_access_i=1 mcycle=%08x", mhpmcounter[0]);
+       //$display("@csr_access_i=1 minstret=%08x", mhpmcounter[2]);
+       mhpmcounter = `CV32E40P_CORE.cs_registers_i.mhpmcounter_q;
+     end
+   end
    
    function automatic void compare();
       int idx;
@@ -130,10 +143,13 @@ module uvmt_cv32_step_compare
            csr_val = 0;
            case (index)
              "marchid"       : csr_val = cv32e40p_pkg::MARCHID; // warning!  defined in cv32e40p_pkg
-             "minstret"      : csr_val = `CV32E40P_CORE.cs_registers_i.mhpmcounter_q[`CV32E40P_CORE.cs_registers_i.csr_addr_i[4:0]][31:0];
-             "minstreth"     : csr_val = `CV32E40P_CORE.cs_registers_i.mhpmcounter_q[`CV32E40P_CORE.cs_registers_i.csr_addr_i[4:0]][63:32];
-             "mcycle"        : csr_val = `CV32E40P_CORE.cs_registers_i.mhpmcounter_q[`CV32E40P_CORE.cs_registers_i.csr_addr_i[4:0]][31:0];
-             "mcycleh"       : csr_val = `CV32E40P_CORE.cs_registers_i.mhpmcounter_q[`CV32E40P_CORE.cs_registers_i.csr_addr_i[4:0]][63:32];
+
+            
+             "mcycle"        : ignore = 1;
+             "mcycleh"       : ignore = 1;
+             "minstret"      : ignore = 1; 
+             "minstreth"     : ignore = 1; 
+             
              "mcountinhibit" : csr_val = `CV32E40P_CORE.cs_registers_i.mcountinhibit_q;
 
              "mvendorid"     : csr_val = {cv32e40p_pkg::MVENDORID_BANK, cv32e40p_pkg::MVENDORID_OFFSET};
@@ -162,8 +178,17 @@ module uvmt_cv32_step_compare
             //                    else csr_val = `CV32E40P_CORE.cs_registers_i.mip;
              "mip"           : ignore = 1;      
              "mhartid"       : csr_val = `CV32E40P_CORE.cs_registers_i.hart_id_i; 
-             "dcsr"          : csr_val = `CV32E40P_CORE.cs_registers_i.dcsr_q;     
-             "dpc"           : csr_val = `CV32E40P_CORE.cs_registers_i.depc_q;       
+
+             // only valid in DEBUG Mode
+             "dcsr"          : begin
+                               csr_val = `CV32E40P_CORE.cs_registers_i.dcsr_q;     
+                               if (iss_wrap.b1.DM==0) ignore = 1;
+             end
+             "dpc"           : begin
+                               csr_val = `CV32E40P_CORE.cs_registers_i.depc_q;       
+                               if (iss_wrap.b1.DM==0) ignore = 1;
+             end
+
              "dscratch0"     : csr_val = `CV32E40P_CORE.cs_registers_i.dscratch0_q;
              "dscratch1"     : csr_val = `CV32E40P_CORE.cs_registers_i.dscratch1_q;
              "pmpcfg0"       : csr_val = `CV32E40P_CORE.cs_registers_i.pmp_reg_q.pmpcfg_packed[0];
@@ -186,9 +211,18 @@ module uvmt_cv32_step_compare
              check_32bit(.compared(index), .expected(iss_wrap.cpu.CSR[index]), .actual(csr_val));
 
         end // foreach (ovp.cpu.CSR[index])
+        
       `endif      
     endfunction // compare
-
+    
+    // RTL->RM CSR : mcycle, minstret, mcycleh, minstreth
+    function automatic void pushRTL2RM(string message);
+        `CV32E40P_ISS.CSR_rtl["mcycle"]    = mhpmcounter[0][31:0];
+        `CV32E40P_ISS.CSR_rtl["mcycleh"]   = mhpmcounter[0][63:32];
+        `CV32E40P_ISS.CSR_rtl["minstret"]  = mhpmcounter[2][31:0];
+        `CV32E40P_ISS.CSR_rtl["minstreth"] = mhpmcounter[2][63:32];
+    endfunction // pushRTL2RM
+    
     /*
         The schedule works like this
         1. Run the RTL for 1 instruction retirement
@@ -204,6 +238,7 @@ module uvmt_cv32_step_compare
     event ev_compare;
 
    initial begin
+      pushRTL2RM("Initial");
       step_compare_if.ovp_b1_Step = 0;
       step_compare_if.ovp_b1_Stepping = 1;
       step_ovp = 0;
@@ -225,6 +260,7 @@ module uvmt_cv32_step_compare
     end
     
     always @(posedge ret_rtl) begin
+        pushRTL2RM("ret_rtl");
         ret_ovp  = 0;
         step_ovp = 1;
     end

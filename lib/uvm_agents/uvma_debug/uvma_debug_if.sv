@@ -1,5 +1,6 @@
 // Copyright 2020 OpenHW Group
 // Copyright 2020 Datum Technology Corporation
+// Copyright 2020 Silicon Labs, Inc.
 // 
 // Licensed under the Solderpad Hardware Licence, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -23,40 +24,42 @@
  * monitor and driver.
  */
 interface uvma_debug_if(
-   input  clk  ,
-   input  reset
 );
-   
-   // TODO Add uvma_debug_if signals
-   // Ex:  wire        enable;
-   //      wire [7:0]  data;
-   
-   
+    wire clk;
+    wire reset_n;
+    wire debug_req;
+  
+    bit is_active; 
+    bit debug_drv;
+
+    assign debug_req = is_active ? debug_drv : 1'b0;
+
+    initial begin
+        is_active = 1'b0;
+        debug_drv = 1'b0;
+    end
    /**
     * Used by target DUT.
     */
-   clocking dut_cb @(posedge clk or reset);
-      // TODO Implement uvma_debug_if::dut_cb()
-      //      Ex: input  enable,
-      //                 data  ;
+
+   clocking dut_cb @(posedge clk or reset_n);
    endclocking : dut_cb
    
    /**
     * Used by uvma_debug_drv_c.
     */
-   clocking drv_cb @(posedge clk or reset);
+   clocking drv_cb @(posedge clk or reset_n);
       // TODO Implement uvma_debug_if::drv_cb()
       //      Ex: output  enable,
       //                  data  ;
+       output debug_drv;
    endclocking : drv_cb
    
    /**
     * Used by uvma_debug_mon_c.
     */
-   clocking mon_cb @(posedge clk or reset);
-      // TODO Implement uvma_debug_if::mon_cb()
-      //      Ex: input  enable,
-      //                 data  ;
+   clocking mon_cb @(posedge clk or reset_n);
+       input #1step debug_drv;
    endclocking : mon_cb
    
    

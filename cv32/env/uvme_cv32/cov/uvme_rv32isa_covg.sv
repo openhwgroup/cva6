@@ -222,7 +222,9 @@ class uvme_rv32isa_covg extends uvm_component;
             "mhpmcounterh29": return csr_name_t'(mhpmcounterh29);
             "mhpmcounterh30": return csr_name_t'(mhpmcounterh30);
             "mhpmcounterh31": return csr_name_t'(mhpmcounterh31);
-        
+            "dcsr", "dpc"   : begin
+                `uvm_info("RV32ISA Coverage", $sformatf("get_csr_name(): CSR [%0s] not yet in functional coverage model.", s), UVM_DEBUG)
+            end 
             // These CSRs are not supported by CV32E40P
             //"marchid"      : return csr_name_t'(marchid);
             //"mimpid"       : return csr_name_t'(mimpid);
@@ -578,6 +580,16 @@ class uvme_rv32isa_covg extends uvm_component;
     covergroup mret_cg with function sample(ins_t ins);
         option.per_instance = 1;
         cp_asm   : coverpoint ins.asm == MRET {
+            ignore_bins zero = {0};
+        }
+    endgroup
+
+// TODO : only counting occurrence, ignoring when not called.
+// TODO : verification goal not specified in test plan
+// FIXME: DONE
+    covergroup dret_cg with function sample(ins_t ins);
+        option.per_instance = 1;
+        cp_asm   : coverpoint ins.asm == DRET {
             ignore_bins zero = {0};
         }
     endgroup
@@ -1577,6 +1589,7 @@ class uvme_rv32isa_covg extends uvm_component;
         divu_cg       = new();
         remu_cg       = new();
         mret_cg       = new();
+        dret_cg       = new();
         wfi_cg        = new();
 
         csrrc_cg      = new();
@@ -1847,6 +1860,7 @@ class uvme_rv32isa_covg extends uvm_component;
                 "csrci"     : begin ins.asm=CSRRCI; ins.ops[2] = ins.ops[1]; ins.ops[1] = ins.ops[0]; ins.ops[0].val = "zero"; csrrci_cg.sample(ins); end
 
                 "mret"      : begin ins.asm=MRET;   mret_cg.sample(ins);   end
+                "dret"      : begin ins.asm=DRET;   dret_cg.sample(ins);   end
                 "wfi"       : begin ins.asm=WFI;    wfi_cg.sample(ins);    end
 
                 /*
