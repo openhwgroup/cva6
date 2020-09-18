@@ -39,7 +39,7 @@
       "tests": {
         "resultsDir": "/mux-flow/build/results",
         "builds":    ["uvmt_cv32"],
-        "listCmd":   "/mux-flow/build/repo/bin/cv_regress --file=cv32_ci_check_metrics_test --metrics --outfile=/mux-flow/build/repo/cv32_ci_check.json",
+        "listCmd":   "/mux-flow/build/repo/bin/cv_regress --file=cv32_ci_check --metrics --outfile=/mux-flow/build/repo/cv32_ci_check.json",
         "listFile":  "/mux-flow/build/repo/cv32_ci_check.json"
       }
     },

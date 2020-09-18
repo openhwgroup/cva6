@@ -48,6 +48,8 @@ import sys
 import os
 import argparse
 import subprocess
+import pprint
+import yaml
 import re
 
 if (sys.version_info < (3,0,0)):
@@ -137,6 +139,16 @@ def ask_user():
     txt = input("Is this what you want [Y/N]? ")
     if not ((txt == 'Y') or (txt == 'y')):
         exit(1)
+
+# Load regression YAML
+def load_regress_yaml(regression):
+    '''Load the regression yaml and return the dictionary'''
+    full_regression = os.path.join(topdir, 'cv32/regress', regression + '.yaml')
+    fh = open(full_regression, 'r')
+    dict = yaml.load(fh)
+    fh.close()
+
+    return dict
 
 ################################################################################
 # Command-line arguments
@@ -262,38 +274,60 @@ if (uvm):
                 else:
                     if (debug):
                         print('Running', name_of_ci_check_regression)
+
+                # Load it in here!
+                m = re.search('\-\-file=(\w+)', item['tests']['listCmd'])
+                if not m:
+                    print('Cannot parse listCmd: {}'.format(item['tests']['listCmd']))
+                    exit(1)
+                lists_dict = load_regress_yaml(m.group(1))['tests']
+
                 if (debug):
-                    print(item['tests'])
-                tests_dict = item['tests']
-                if (debug):
-                   print (json.dumps(tests_dict, indent=2))
-                for key in tests_dict:
-                    if (key == 'list'):
-                       lists_dict = tests_dict['list']
-                       if (debug):
-                           print (json.dumps(lists_dict, indent=2))
-                for key in lists_dict:
-                    run_cmd_list = (key['cmd']).split()
-                    run_cmd = ' '.join(run_cmd_list[0:-2]) # See TODO #3
-                    if (run_cmd != ''):
-                        run_cmd = run_cmd.replace('dsim', svtool)
+                    pprint.pprint(lists_dict)
+                
+                for key in lists_dict.values():                
+                    run_cmd = key['cmd']
+                    
+                    if run_cmd == '':
+                        print ('ERROR: cannot find run command in .metrics.json')
+                        exit(1)
+
+                    try:
+                        if key['num'] > 1:
+                            num = key['num']
+                    except KeyError:
+                        num = 1
+
+                    try:                    
+                        iss = key['iss']
+                    except KeyError:
+                        iss = 1
+
+                    for n in range(num):                    
+                        # Add directory
+                        full_run_cmd = 'cd {}; {}'.format(key['dir'], run_cmd)
+                        # Add SIMULATOR
+                        full_run_cmd += ' SIMULATOR={}'.format(svtool)
+                        # Add indices
+                        full_run_cmd += ' GEN_START_INDEX={} RUN_INDEX={}'.format(n, n)
+                        # Add ISS
+                        full_run_cmd += ' USE_ISS={}'.format('YES' if iss else 'NO')
+
                         # Only DSIM can run corev-dv (riscv-dv) at present
                         if ( svtool == 'dsim' or svtool == 'xrun' or svtool == 'vsim'):
                             if (prcmd or debug):
-                                print(run_cmd)
+                                print(full_run_cmd)
                             else:
-                                os.system(run_cmd)
+                                os.system(full_run_cmd)
                                 os.chdir(topdir)      # cmd in .metrics.json assumes all cmds start from here
                         else:
-                            if not ( re.search('corev_', run_cmd) ):
+                            if not ( re.search('corev_', full_run_cmd) ):
                                 if (prcmd or debug):
-                                    print(run_cmd)
+                                    print(full_run_cmd)
                                 else:
-                                    os.system(run_cmd)
+                                    os.system(full_run_cmd)
                                     os.chdir(topdir)      # cmd in .metrics.json assumes all cmds start from here
-                    else:
-                        print ('ERROR: cannot find run command in .metrics.json')
-                        exit(0)
+
 else:  # if(uvm):
     print ('Not running UVM CI regression')
 
