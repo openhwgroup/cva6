@@ -1374,8 +1374,8 @@
           {
             "name":        "Debug Test 1",
             "build":       "uvmt_cv32",
-            "cmd":         "cd cv32/sim/uvmt_cv32; make debug_test SIMULATOR=dsim USE_ISS=NO DSIM_WORK=/mux-flow/build/repo/dsim_work DSIM_RESULTS=/mux-flow/build/results",
-            "wavesCmd":    "cd cv32/sim/uvmt_cv32; make debug_test SIMULATOR=dsim USE_ISS=NO DSIM_WORK=/mux-flow/build/repo/dsim_work DSIM_RESULTS=/mux-flow/build/results WAVES=1 DSIM_DMP_FILE=debug_test.vcd",
+            "cmd":         "cd cv32/sim/uvmt_cv32; make test TEST=debug_test SIMULATOR=dsim USE_ISS=YES DSIM_WORK=/mux-flow/build/repo/dsim_work DSIM_RESULTS=/mux-flow/build/results",
+            "wavesCmd":    "cd cv32/sim/uvmt_cv32; make test TEST=debug_test SIMULATOR=dsim USE_ISS=YES DSIM_WORK=/mux-flow/build/repo/dsim_work DSIM_RESULTS=/mux-flow/build/results WAVES=1 DSIM_DMP_FILE=debug_test.vcd",
             "metricsFile": "debug_test/metrics.db",
             "wavesFile" :  "debug_test/debug_test.vcd",
             "isPass":      "SIMULATION PASSED",
@@ -1579,16 +1579,6 @@
             "wavesCmd":    "cd cv32/sim/uvmt_cv32; make test TEST=pulp_vectorial_bitwise SIMULATOR=dsim USE_ISS=NO DSIM_WORK=/mux-flow/build/repo/dsim_work DSIM_RESULTS=/mux-flow/build/results WAVES=1 DSIM_DMP_FILE=pulp_vectorial_bitwise.vcd",
             "metricsFile": "pulp_vectorial_bitwise/metrics.db",
             "wavesFile" :  "pulp_vectorial_bitwise/pulp_vectorial_bitwise.vcd",
-            "isPass":      "SIMULATION PASSED",
-            "seed":        1
-          },
-          {
-            "name":        "Debug Test 1",
-            "build":       "uvmt_cv32",
-            "cmd":         "cd cv32/sim/uvmt_cv32; make debug_test SIMULATOR=dsim USE_ISS=NO DSIM_WORK=/mux-flow/build/repo/dsim_work DSIM_RESULTS=/mux-flow/build/results",
-            "wavesCmd":    "cd cv32/sim/uvmt_cv32; make debug_test SIMULATOR=dsim USE_ISS=NO DSIM_WORK=/mux-flow/build/repo/dsim_work DSIM_RESULTS=/mux-flow/build/results WAVES=1 DSIM_DMP_FILE=debug_test.vcd",
-            "metricsFile": "debug_test/metrics.db",
-            "wavesFile" :  "debug_test/debug_test.vcd",
             "isPass":      "SIMULATION PASSED",
             "seed":        1
           }
