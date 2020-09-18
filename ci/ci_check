@@ -154,7 +154,7 @@ def load_regress_yaml(regression):
 # Command-line arguments
 
 parser = argparse.ArgumentParser()
-parser.add_argument("-s", "--simulator",     help="SystemVerilog simulator",                          choices=['dsim', 'xrun', 'vsim', 'vcs'])
+parser.add_argument("-s", "--simulator",     help="SystemVerilog simulator",                          choices=['dsim', 'xrun', 'vsim', 'vcs', 'riviera'])
 parser.add_argument("-d", "--debug",         help="Display debug messages",                           action="store_true")
 parser.add_argument("-p", "--print_command", help="Print commands to stdout, do not run",             action="store_true")
 parser.add_argument("-c", "--check_only",    help="Check previosu results (do not run)",              action="store_true")

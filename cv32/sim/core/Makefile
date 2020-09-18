@@ -115,6 +115,22 @@ VERI_OBJ_DIR       ?= cobj_dir
 VERI_LOG_DIR       ?= cobj_dir/logs
 VERI_CFLAGS        += -O2
 
+#riviera configuration
+
+ALIB      = "vlib"
+AWORK     = work
+
+ALOG          = vlog
+ALOG_DEBUG    = -dbg
+ALOG_FLAGS    = 
+
+ASIM              = vsim
+ASIM_HOME         = $(ALDEC_PATH)
+ASIM_FLAGS       ?=  # user defined
+ALL_ASIM_FLAGS    = $(ASIM_FLAGS)
+ASIM_DEBUG_FLAGS  = -o2
+ASIM_GUI_FLAGS    = -gui
+
 # TB source files for the CV32E core
 TBSRC_HOME  := $(PROJ_ROOT_DIR)/$(COREV_PROJ)/tb
 TBSRC_TOP   := $(TBSRC_HOME)/core/tb_top.sv
@@ -529,6 +545,106 @@ vcs-clean:
 	rm -rf simv* *.daidir *.vpd *.db csrc ucli.key vc_hdrs.h
 
 ###############################################################################
+# Aldec Riviera-PRO
+
+
+.rvrlib-rtl:
+	$(ALIB) $(AWORK)
+	touch .rvrlib-rtl
+
+
+.rvr-build-rtl: .rvrlib-rtl $(CV32E40P_PKG) $(TBSRC_PKG) $(TBSRC) 
+	$(ALOG) \
+		-work $(AWORK) \
+		$(ALOG_FLAGS) \
+		-f $(CV32E40P_MANIFEST) \
+		$(TBSRC_PKG) $(TBSRC) 
+		
+
+asim-all:  .rvr-build-rtl
+	
+# run tb and exit
+.PHONY: asim-run
+asim-run: ALL_ASIM_FLAGS += -c  
+asim-run: asim-all
+	$(ASIM) -lib $(AWORK) $(ALL_ASIM_FLAGS)\
+	$(RTLSRC_VLOG_TB_TOP) -do "run -all; endsim; quit -force"
+
+
+
+# run tb and drop into interactive shell
+.PHONY: asim-run-sh
+asim-run-sh: ALL_ASIM_FLAGS += -c
+asim-run-sh: asim-all
+	$(ASIM) -lib $(AWORK) $(ALL_ASIM_FLAGS) \
+	$(RTLSRC_VLOG_TB_TOP) -do "run -all"
+
+# run tb with simulator gui
+.PHONY: asim-run-gui
+asim-run-gui: ALL_ASIM_FLAGS += $(ASIM_GUI_FLAGS) 
+asim-run-gui: asim-all
+	$(ASIM) -lib $(AWORK) $(ALL_ASIM_FLAGS) \
+	$(RTLSRC_VLOG_TB_TOP) -do "run -all"
+
+
+.PHONY: riviera-hello-world
+riviera-hello-world: asim-all $(CUSTOM)/hello-world.hex
+riviera-hello-world: ALL_ASIM_FLAGS += +firmware=$(CUSTOM)/hello-world.hex
+riviera-hello-world: asim-run
+
+.PHONY: riviera-hello-world-gui
+riviera-hello-world-gui: asim-all $(CUSTOM)/hello-world.hex
+riviera-hello-world-gui: ALL_ASIM_FLAGS += +firmware=$(CUSTOM)/hello-world.hex
+riviera-hello-world-gui: asim-run-gui
+
+.PHONY: riviera-cv32_riscv_tests
+riviera-cv32_riscv_tests: asim-all ../../tests/core/cv32_riscv_tests_firmware/cv32_riscv_tests_firmware.hex
+riviera-cv32_riscv_tests: ALL_ASIM_FLAGS += +firmware=$(CV32_RISCV_TESTS_FIRMWARE)/cv32_riscv_tests_firmware.hex
+riviera-cv32_riscv_tests: asim-run
+
+.PHONY: riviera-cv32_riscv_tests-gui
+riviera-cv32_riscv_tests-gui: asim-all $(CV32_RISCV_TESTS_FIRMWARE)/cv32_riscv_tests_firmware.hex
+riviera-cv32_riscv_tests-gui: ALL_ASIM_FLAGS += +firmware=$(CV32_RISCV_TESTS_FIRMWARE)/cv32_riscv_tests_firmware.hex
+riviera-cv32_riscv_tests-gui: asim-run-gui
+
+.PHONY: riviera-cv32_riscv_compliance_tests
+riviera-cv32_riscv_compliance_tests: asim-all $(CV32_RISCV_COMPLIANCE_TESTS_FIRMWARE)/cv32_riscv_compliance_tests_firmware.hex
+riviera-cv32_riscv_compliance_tests: ALL_ASIM_FLAGS += +firmware=$(CV32_RISCV_COMPLIANCE_TESTS_FIRMWARE)/cv32_riscv_compliance_tests_firmware.hex
+riviera-cv32_riscv_compliance_tests: asim-run
+
+.PHONY: riviera-cv32_riscv_compliance_tests-gui
+riviera-cv32_riscv_compliance_tests-gui: asim-all $(CV32_RISCV_COMPLIANCE_TESTS_FIRMWARE)/cv32_riscv_compliance_tests_firmware.hex
+riviera-cv32_riscv_compliance_tests-gui: ALL_ASIM_FLAGS += +firmware=$(CV32_RISCV_COMPLIANCE_TESTS_FIRMWARE)/cv32_riscv_compliance_tests_firmware.hex
+riviera-cv32_riscv_compliance_tests-gui: asim-run-gui
+
+.PHONY: riviera-firmware
+riviera-firmware: asim-all $(FIRMWARE)/firmware.hex
+riviera-firmware: ALL_ASIM_FLAGS += +firmware=$(FIRMWARE)/firmware.hex
+riviera-firmware: asim-run
+
+.PHONY: riviera-firmware-gui
+riviera-firmware-gui: asim-all $(FIRMWARE)/firmware.hex
+riviera-firmware-gui: ALL_ASIM_FLAGS += +firmware=$(FIRMWARE)/firmware.hex
+riviera-firmware-gui: asim-run-gui
+
+.PHONY: riviera-unit-test 
+riviera-unit-test:  firmware-unit-test-clean 
+riviera-unit-test:  $(FIRMWARE)/firmware_unit_test.hex 
+riviera-unit-test: ALL_ASIM_FLAGS += "+firmware=$(FIRMWARE)/firmware_unit_test.hex"
+riviera-unit-test: asim-run
+
+.PHONY: riviera-unit-test-gui 
+riviera-unit-test-gui:  firmware-unit-test-clean 
+riviera-unit-test-gui:  $(FIRMWARE)/firmware_unit_test.hex 
+riviera-unit-test-gui: ALL_ASIM_FLAGS += "+firmware=$(FIRMWARE)/firmware_unit_test.hex"
+riviera-unit-test-gui: asim-run-gui
+
+riviera-clean:
+	if [ -d $(AWORK) ]; then rm -r $(AWORK); fi
+	rm -f transcript trace_core*.log \
+	.build-rtl .rvrlib-rtl *.vcd objdump *.asdb *.cfg dpi_header.h
+
+###############################################################################
 # CV32E40P RTL dependencies
 
 clone_cv32e40p_rtl:
@@ -556,7 +672,7 @@ tc-clean:
 	find $(CORE_TEST_DIR) -name *.map     -exec rm {} \;
 
 .PHONY: clean clean_all distclean
-clean: questa-clean tc-clean verilate-clean vcs-clean firmware-clean custom-clean dsim-clean xrun-clean vcs-clean clean-bsp
+clean: questa-clean tc-clean verilate-clean vcs-clean firmware-clean custom-clean dsim-clean xrun-clean vcs-clean clean-bsp riviera-clean
 
 distclean: clean
 	rm -rf riscv-fesvr riscv-isa-sim $(CV32E40P_PKG) work
