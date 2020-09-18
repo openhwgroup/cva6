@@ -1,4 +1,4 @@
-//Copyright 202[x] Silicon Labs, Inc.
+//Copyright 2020 Silicon Labs, Inc.
   
 //This file, and derivatives thereof are licensed under the
 //Solderpad License, Version 2.0 (the "License");

@@ -222,7 +222,9 @@ class uvme_rv32isa_covg extends uvm_component;
             "mhpmcounterh29": return csr_name_t'(mhpmcounterh29);
             "mhpmcounterh30": return csr_name_t'(mhpmcounterh30);
             "mhpmcounterh31": return csr_name_t'(mhpmcounterh31);
-        
+            "dcsr", "dpc"   : begin
+                `uvm_info("RV32ISA Coverage", $sformatf("get_csr_name(): CSR [%0s] not yet in functional coverage model.", s), UVM_DEBUG)
+            end 
             // These CSRs are not supported by CV32E40P
             //"marchid"      : return csr_name_t'(marchid);
             //"mimpid"       : return csr_name_t'(mimpid);
