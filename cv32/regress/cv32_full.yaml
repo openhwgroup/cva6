@@ -107,8 +107,7 @@ tests:
     build: uvmt_cv32
     description: Debug Test 1
     dir: cv32/sim/uvmt_cv32
-    cmd: make debug_test
-    iss: 0
+    cmd: make test TEST=debug_test
 
   pulp_bit_manipulation:
     build: uvmt_cv32
