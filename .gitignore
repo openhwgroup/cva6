@@ -30,3 +30,4 @@ xcelium.d/
 waves.shm/
 *.log
 stdout.txt
+.vscode

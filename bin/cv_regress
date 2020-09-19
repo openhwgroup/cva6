@@ -84,7 +84,7 @@ def read_file(args, file):
         assert 'dir' in d, 'dir must be specified in test: ' + b        
     for t, d in testlist['tests'].items():
         assert 'build' in d, 'build must be specified in test: ' + t
-        assert 'description' in d, 'description must be specified in test: ' + t
+        #assert 'description' in d, 'description must be specified in test: ' + t
         assert 'cmd' in d, 'cmd must be specified in test: ' + t
         assert 'dir' in d, 'dir must be specified in test: ' + t
         
@@ -194,7 +194,7 @@ if args.metrics:
     logger.info('Rendering template: metrics.json.j2 into: {}'.format(args.outfile))
     out_fh = open(args.outfile, 'w')
     out_fh.write(template.render(regressions=regressions,
-                                 makeargs=' '.join(args.makearg),
+                                 makeargs=' '.join(args.makearg) if args.makearg else '',
                                  unique_builds=unique_builds))
     out_fh.close()
     os.chmod(args.outfile, 0o775)

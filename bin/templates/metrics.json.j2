@@ -24,49 +24,40 @@
 
 {% import 'regress_macros.j2' as regress_macros %}
 
-{
-    "variables": {
-        "RISCV": "/mux-flow/tools/riscv",
-        "LM_LICENSE_FILE": "2700@license-1",
-        "IMPERAS_QUEUE_LICENSE" : "1"
-    },
-    "builds": {
-        "list:" [
-{% for b in unique_builds.values() %}
-            {
-                "name":     "{{b.name}}",
-                "image":    "cv32-simulation-tools:20200316.10.0",
-                "cmd":      "cd {{b.dir}}; {{b.cmd}} SIMULATOR={{b.simulator}} DSIM_WORK=/mux-flow/build/repo/dsim_work",
-                "wavesCmd": "cd {{b.dir}}; {{b.cmd}} SIMULATOR={{b.simulator}} DSIM_WORK=/mux-flow/build/repo/dsim_work WAVES=1",
-            }
-{% endfor %}
-        ],
-    }
-    "regressions": [
+{% set common_dsim_make_vars = "DSIM_WORK=/mux-flow/build/repo/dsim_work DSIM_RESULTS=/mux-flow/build/results" %}
+{% set common_dsim_make_vars_waves = "DSIM_WORK=/mux-flow/build/repo/dsim_work DSIM_RESULTS=/mux-flow/build/results WAVES=1" %}
+[
 {% for r in regressions %}
-        {
-            "name": "{{r.name}}",
-            "description": "{{r.description}}",
-            "verbose" : "true",
-            "tests": {
-                "resultsDir": "/mux-flow/build/results",
-                "builds": "[ {% for b in r.builds.values() %}"{{b.name}}",{% endfor %} ]",
-                "list": [
-                    { 
-{% for t in r.tests.values() %}
-                        "name": "{{t.name}}" ,
-                        "build": "{{t.build}}",
-                        "cmd": "cd {{t.dir}}; {{t.cmd}} SIMULATOR={{t.simulator}} USE_ISS={{regress_macros.yesorno(t.ss)}}",
-                        "wavesCmd": "cd {{t.dir}}; {{t.cmd}} SIMULATOR={{t.simulator}} USE_ISS={{regress_macros.yesorno(t.ss)}} WAVES=1",
-                        "metricsFile": "{{t.name}}/metrics.db",
-                        "wavesFile": "{{t.name}}/{{t.name}}.vcd",
-                        "isPass": "{{t.simulation_passed}}",
-                    },                
+{% for t in r.tests.values()|sort(attribute='name') %}
+{% set is_last_test = loop.last %}
+{# For Metrics, the name is description if available, otherwise use name, with index #}
+{% if t.description %}{% set test_name = t.description %}{% else %}{% set test_name = t.name %}{% endif %}
+{% if t.num > 1 %}
+{% for index in range(t.num) %}
+    {
+        "name": "{{test_name}} {{index}}",
+        "build": "{{t.build}}",
+        "cmd": "cd {{t.dir}}; {{t.cmd}} SIMULATOR={{t.simulator}} USE_ISS={{regress_macros.yesorno(t.iss)}} RUN_INDEX={{index}} GEN_START_INDEX={{index}} {{common_dsim_make_vars}}",
+        "wavesCmd": "cd {{t.dir}}; {{t.cmd}} SIMULATOR={{t.simulator}} USE_ISS={{regress_macros.yesorno(t.iss)}} RUN_INDEX={{index}} GEN_START_INDEX={{index}} {{common_dsim_make_vars_waves}}",
+        "metricsFile": "{{t.name}}_{{index}}/metrics.db",
+        "wavesFile": "{{t.name}}_{{index}}/{{t.name}}.vcd",
+        "isPass": "{{t.simulation_passed}}"
+    }{% if not is_last_test or not loop.last %},{% endif %}
+
 {% endfor %}
-                ],
-            },
-        },
+{% else %}
+    {
+        "name": "{{test_name}}" ,
+        "build": "{{t.build}}",
+        "cmd": "cd {{t.dir}}; {{t.cmd}} SIMULATOR={{t.simulator}} USE_ISS={{regress_macros.yesorno(t.iss)}} {{common_dsim_make_vars}}",
+        "wavesCmd": "cd {{t.dir}}; {{t.cmd}} SIMULATOR={{t.simulator}} USE_ISS={{regress_macros.yesorno(t.iss)}} {{common_dsim_make_vars_waves}}",
+        "metricsFile": "{{t.name}}/metrics.db",
+        "wavesFile": "{{t.name}}/{{t.name}}.vcd",
+        "isPass": "{{t.simulation_passed}}"
+    }{% if not is_last_test %},{% endif %}
+    
+{% endif %}
 {% endfor %}
-    ]
-}
+{% endfor %}
+]
 
