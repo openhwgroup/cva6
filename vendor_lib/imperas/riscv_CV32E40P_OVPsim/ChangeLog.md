@@ -6,6 +6,9 @@ This CHANGELOG contains information for the Imperas OVP OpenHW CV32E40P fixed pl
 
 ---
 
+- Trigger Module Behaviour
+  - tdata1 access only permitted in debug mode, ignored in others
+
 Date 2020-August-06
 Version 20200805.1
 ===

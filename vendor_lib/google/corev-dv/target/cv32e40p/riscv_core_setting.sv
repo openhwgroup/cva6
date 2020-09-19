@@ -46,7 +46,7 @@ bit [31:0] valid_interrupt_mask = 32'hffff_0888;
 bit support_pmp = 0;
 
 // Debug mode support
-bit support_debug_mode = 0;
+bit support_debug_mode = 1;
 
 // Support delegate trap to user mode
 bit support_umode_trap = 0;

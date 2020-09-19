@@ -1,6 +1,7 @@
 //
 // Copyright 2020 OpenHW Group
 // Copyright 2020 Datum Technologies
+// Copyright 2020 Silicon Labs, Inc.
 // 
 // Licensed under the Solderpad Hardware Licence, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -83,7 +84,15 @@ module uvmt_cv32_dut_wrap #(// DUT (riscv_core) parameters.
     logic                         irq_ack;
     logic [ 4:0]                  irq_id;
 
+    logic                         debug_req_vp;
+    logic                         debug_req_uvma;
     logic                         debug_req;
+
+    assign debug_if.clk      = clknrst_if.clk;
+    assign debug_if.reset_n  = clknrst_if.reset_n;
+    assign debug_req_uvma    = debug_if.debug_req;
+
+    assign debug_req = debug_req_vp | debug_req_uvma;
    
 
     // Load the Instruction Memory 
@@ -230,7 +239,7 @@ module uvmt_cv32_dut_wrap #(// DUT (riscv_core) parameters.
          .irq_ack_i      ( irq_ack                         ),
          .irq_o          ( irq_vp                          ),
 
-         .debug_req_o    ( debug_req                       ),
+         .debug_req_o    ( debug_req_vp                       ),
 
          .pc_core_id_i   ( cv32e40p_wrapper_i.core_i.pc_id ),
 

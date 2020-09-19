@@ -31,20 +31,22 @@ module CPU
     import uvm_pkg::*;
 `endif
 
-    import "DPI-C" context task ovpEntry(input int i, input string s1, input string s2);
+    import "DPI-C" context task ovpEntry(input string s1, input string s2);
     `ifndef UVM
-    import "DPI-C" context function void ovpExit(input int i);
+    import "DPI-C" context function void ovpExit();
     `endif
 
     export "DPI-C" task     busLoad;
     export "DPI-C" task     busStore;
     export "DPI-C" task     busFetch;
     export "DPI-C" task     busWait;
+    export "DPI-C" task     atZero;
     
     export "DPI-C" function setPC;
     export "DPI-C" function setGPR;
     export "DPI-C" function setFPR;
     export "DPI-C" function setCSR;
+    export "DPI-C" function getCSR;
     export "DPI-C" function setDECODE;
     export "DPI-C" function getState;
     export "DPI-C" function putState;
@@ -55,6 +57,7 @@ module CPU
     bit [31:0] FPR[32];
     // ToDo Vector
     bit [31:0] CSR[string];
+    bit [31:0] CSR_rtl[string];
     
     string Decode, Change;
     bit    [0:(64*8)-1] DecodeP;
@@ -76,6 +79,10 @@ module CPU
         busStep;
     endtask
     
+    task atZero;
+        #0;
+    endtask
+    
     // Called at end of instruction transaction
     task setRETIRE;
         input int retPC;
@@ -88,15 +95,15 @@ module CPU
             `endif
             if (Icount==0)
                 `ifdef UVM
-                `uvm_info("riscv_CV32E40P", $sformatf("[%0d] Initial State : %s", ID, Change), UVM_DEBUG)
+                `uvm_info("riscv_CV32E40P", $sformatf("Initial State : %s", Change), UVM_DEBUG)
                 `else
-                $display("[%0d] Initial State : %s", ID, Change);
+                $display("Initial State : %s", Change);
                 `endif
             else
                 `ifdef UVM
-                `uvm_info("riscv_CV32E40P", $sformatf("I [%0d] %0d PCr=0x%x %s : %s", ID, Icount, PCr, Decode, Change), UVM_DEBUG)
+                `uvm_info("riscv_CV32E40P", $sformatf("I %0d PCr=0x%x %s : %s", Icount, PCr, Decode, Change), UVM_DEBUG)
                 `else
-                $display("I [%0d] %0d PCr=0x%x %s : %s", ID, Icount, PCr, Decode, Change);
+                $display("I %0d PCr=0x%x %s : %s", Icount, PCr, Decode, Change);
                 `endif
         end
         Change = "";
@@ -195,6 +202,15 @@ module CPU
             string ch;
             $sformat(ch, "\n  R CSR[%s]=0x%X", index, value);
             Change = {Change, ch};
+        end
+    endfunction
+    
+    function automatic void getCSR (input string index, output longint value);
+        if (CSR_rtl.exists(index)) begin
+            value = CSR_rtl[index];
+        end else begin
+            $display("CSR_rtl.exists(%s) = False", index);
+            value = 'hdeadbeef;
         end
     endfunction
     
@@ -531,7 +547,7 @@ module CPU
         ovpcfg_load();
         elf_load();
         cpu_cfg();
-        ovpEntry(ID, ovpcfg, elf_file);
+        ovpEntry(ovpcfg, elf_file);
         `ifndef UVM
         $finish;
         `endif
@@ -539,7 +555,7 @@ module CPU
     
     `ifndef UVM
     final begin
-        ovpExit(ID);
+        ovpExit();
     end
     `endif
  

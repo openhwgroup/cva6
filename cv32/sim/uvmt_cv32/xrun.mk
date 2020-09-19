@@ -252,13 +252,6 @@ custom: $(XRUN_SIM_PREREQ) $(CUSTOM_DIR)/$(CUSTOM_PROG).hex
 
 ################################################################################
 # Explicit target tests
-debug_test: $(XRUN_SIM_PREREQ) $(CORE_TEST_DIR)/debug_test/debug_test.hex
-	mkdir -p $(XRUN_RESULTS)/debug_test && cd $(XRUN_RESULTS)/debug_test && \
-	$(XRUN) -l xrun-riscv_debug_test.log -covtest debug_test $(XRUN_COMP_RUN) \
-                +elf_file=$(CORE_TEST_DIR)/debug_test/debug_test.elf \
-                +nm_file=$(CORE_TEST_DIR)/debug_test/debug_test.nm \
-                +UVM_TESTNAME=uvmt_cv32_firmware_test_c \
-                +firmware=$(CORE_TEST_DIR)/debug_test/debug_test.hex
 
 # Runs tests in cv32_riscv_tests/ only
 cv32-riscv-tests: $(XRUN_SIM_PREREQ) $(CV32_RISCV_TESTS_FIRMWARE)/cv32_riscv_tests_firmware.hex
@@ -324,6 +317,7 @@ comp_corev-dv: $(RISCVDV_PKG)
 		+incdir+$(COREVDV_PKG) \
 		-f $(COREVDV_PKG)/manifest.f \
 		-l xrun.log
+
 
 corev-dv: clean_riscv-dv \
           clone_riscv-dv \
