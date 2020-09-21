@@ -76,6 +76,7 @@ module uvmt_cv32_tb;
     uvmt_cv32e40p_interrupt_assert u_interrupt_assert(.mcause_n(cs_registers_i.mcause_n),
                                                       .mip(cs_registers_i.mip),
                                                       .mie_q(cs_registers_i.mie_q),
+                                                      .mie_n(cs_registers_i.mie_n),
                                                       .mstatus_mie(cs_registers_i.mstatus_q.mie),
                                                       .mtvec_mode_q(cs_registers_i.mtvec_mode_q),
                                                       .if_stage_instr_rvalid_i(if_stage_i.instr_rvalid_i),
@@ -83,7 +84,6 @@ module uvmt_cv32_tb;
                                                       .id_stage_instr_valid_i(id_stage_i.instr_valid_i),
                                                       .id_stage_instr_rdata_i(id_stage_i.instr_rdata_i),
                                                       .ctrl_fsm_cs(id_stage_i.controller_i.ctrl_fsm_cs),
-                                                      .exc_ctrl_cs(id_stage_i.int_controller_i.exc_ctrl_cs),
                                                       .*);
 
   /**
@@ -137,8 +137,7 @@ module uvmt_cv32_tb;
       always @(posedge clknrst_if.clk or negedge clknrst_if.reset_n) begin
         if (!clknrst_if_iss.reset_n)
           step_compare_if.deferint_prime <= 1'b1;
-        else if (dut_wrap.cv32e40p_wrapper_i.core_i.id_stage_i.controller_i.ctrl_fsm_cs inside {cv32e40p_pkg::IRQ_TAKEN_ID,
-                                                                                                cv32e40p_pkg::IRQ_TAKEN_IF})        
+        else if (dut_wrap.irq_ack)
           step_compare_if.deferint_prime <= 1'b0;
         else if (core_sleep_o_d && irq_enabled) 
           step_compare_if.deferint_prime <= 1'b0;
@@ -173,15 +172,15 @@ module uvmt_cv32_tb;
       always @(posedge clknrst_if.clk or negedge clknrst_if.reset_n) begin
         if (!clknrst_if.reset_n)
           irq_deferint <= '0;
-        else if (dut_wrap.cv32e40p_wrapper_i.core_i.id_stage_i.controller_i.ctrl_fsm_cs inside {cv32e40p_pkg::IRQ_TAKEN_ID,
-                                                                                                cv32e40p_pkg::IRQ_TAKEN_IF})
+        else if (dut_wrap.irq_ack)        
           irq_deferint <= (1 << dut_wrap.irq_id);
         else if (core_sleep_o_d && irq_enabled)
           irq_deferint <= irq_enabled;
       end
       
       always @*
-        iss_wrap.b1.irq_i = !iss_wrap.b1.deferint ? irq_deferint : irq_mip;
+        //iss_wrap.b1.irq_i = !iss_wrap.b1.deferint ? irq_deferint : irq_mip;
+        iss_wrap.b1.irq_i = !iss_wrap.b1.deferint ? irq_deferint : dut_wrap.irq;
 
       /**
        * Interrupt assertion to iss_wrap, note this runs on the ISS clock (skewed from core clock)
