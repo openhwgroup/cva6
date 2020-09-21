@@ -1,6 +1,5 @@
 // 
 // Copyright 2020 OpenHW Group
-// Copyright 2020 Datum Technology Corporation
 // Copyright 2020 Silicon Labs, Inc.
 //
 // Licensed under the Solderpad Hardware Licence, Version 2.0 (the "License");
@@ -46,6 +45,7 @@ module riscv_rvalid_stall(
     output logic        rvalid_o,
 
     // Stall knobs
+    input logic         en_stall_i,
     input logic [31:0]  stall_mode_i,
     input logic [31:0]  max_stall_i,
     input logic [31:0]  valid_stall_i
@@ -90,7 +90,9 @@ integer i;
 // -----------------------------------------------------------------------------------------------
 `ifndef VERILATOR
 function logic [FIFO_DELAY_WL-1:0] get_random_delay();
-    if (stall_mode_i == perturbation_defines::STANDARD)
+    if (!en_stall_i)
+        get_random_delay = 0;
+    else if (stall_mode_i == perturbation_defines::STANDARD)
         get_random_delay = valid_stall_i;
     else if (stall_mode_i == perturbation_defines::RANDOM)
         get_random_delay = $urandom_range(max_stall_i, 0);

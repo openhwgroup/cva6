@@ -39,7 +39,7 @@ group cv32e40p {
 {% endif %}
 {% for b in unique_builds.values() %}
     // Build:{{b.name}} {{b.description}}    
-    pre_group_script: "cd {{b.abs_dir}} && {{b.cmd}} CV_SIM_PREFIX= SIMULATOR={{b.simulator}} USE_ISS={{b.iss}} COV={{regress_macros.yesorno(b.cov)}} {{makeargs}}";
+    pre_group_script: 'cd {{b.abs_dir}} && {{b.cmd}} CV_SIM_PREFIX= SIMULATOR={{b.simulator}} USE_ISS={{b.iss}} COV={{regress_macros.yesorno(b.cov)}} {{makeargs}}';
 
 {% endfor %}
 {% for r in regressions %}
@@ -51,7 +51,7 @@ group cv32e40p {
         test precmd {
             sv_seed: gen_random;
             count: 1;
-            run_script: "cd {{t.abs_dir}} && {{t.precmd}} CV_SIM_PREFIX= SIMULATOR={{t.simulator}} RNDSEED=$RUN_ENV(BRUN_SV_SEED) NUM_TESTS={{t.num}} {{makeargs}}";
+            run_script: 'cd {{t.abs_dir}} && {{t.precmd}} CV_SIM_PREFIX= SIMULATOR={{t.simulator}} RNDSEED=$RUN_ENV(BRUN_SV_SEED) NUM_TESTS={{t.num}} {{makeargs}}';
         };
 {% else %}
 {% set indent = '' %}
@@ -65,9 +65,9 @@ group cv32e40p {
 {{indent}}            sv_seed: gen_random;
 {{indent}}            seed: [0..{{t.num-1}}];
 {{indent}}            count: {{t.num}};
-{{indent}}            run_script: "cd {{t.abs_dir}} && {{t.cmd}} COMP=0 CV_SIM_PREFIX= SIMULATOR={{t.simulator}} USE_ISS={{regress_macros.yesorno(t.iss)}} COV={{regress_macros.yesorno(t.cov)}} RUN_INDEX=$RUN_ENV(BRUN_SEED) GEN_START_INDEX=$RUN_ENV(BRUN_SEED) RNDSEED=$RUN_ENV(BRUN_SV_SEED) {{makeargs}}";
+{{indent}}            run_script: 'cd {{t.abs_dir}} && {{t.cmd}} COMP=0 CV_SIM_PREFIX= SIMULATOR={{t.simulator}} USE_ISS={{regress_macros.yesorno(t.iss)}} COV={{regress_macros.yesorno(t.cov)}} RUN_INDEX=$RUN_ENV(BRUN_SEED) GEN_START_INDEX=$RUN_ENV(BRUN_SEED) RNDSEED=$RUN_ENV(BRUN_SV_SEED) {{makeargs}}';
 {% if simulator == 'vsim' %}
-{{indent}}            scan_script: "vm_scan.pl uvm.flt {{filter_dir}}/vsim_run.flt";
+{{indent}}            scan_script: 'vm_scan.pl uvm.flt {{filter_dir}}/vsim_run.flt';
 {% endif %}
 {{indent}}        };
 {{indent}}    };

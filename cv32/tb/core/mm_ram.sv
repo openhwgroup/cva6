@@ -163,14 +163,19 @@ module mm_ram
         for (i = 0; i < RND_STALL_REGS; i=i+1) begin
             rnd_stall_regs[i] = 0;
         end
+        #1ns;
 `ifndef VERILATOR
-        if ($test$plusargs("rand_stall_obi")) begin
+        if ($test$plusargs("rand_stall_obi_instr") || 
+            $test$plusargs("rand_stall_obi_all")) begin
             rnd_stall_regs[RND_STALL_INSTR_EN]    = 1;
             rnd_stall_regs[RND_STALL_INSTR_MODE]  = $urandom_range(2,1);
-            rnd_stall_regs[RND_STALL_INSTR_GNT]   = $urandom_range(2,0);
-            rnd_stall_regs[RND_STALL_INSTR_VALID] = $urandom_range(2,0);
+            rnd_stall_regs[RND_STALL_INSTR_GNT]   = $urandom_range(3,0);
+            rnd_stall_regs[RND_STALL_INSTR_VALID] = $urandom_range(3,0);
             rnd_stall_regs[RND_STALL_INSTR_MAX]   = $urandom_range(3,0);
+        end
 
+        if ($test$plusargs("rand_stall_obi_data") ||
+            $test$plusargs("rand_stall_obi_all")) begin
             rnd_stall_regs[RND_STALL_DATA_EN]     = 1;
             rnd_stall_regs[RND_STALL_DATA_MODE]   = $urandom_range(2,1);
             rnd_stall_regs[RND_STALL_DATA_GNT]    = $urandom_range(2,0);
@@ -598,6 +603,7 @@ module mm_ram
         .rdata_i    ( ram_instr_rdata ),
         .rdata_o    ( instr_rdata_o   ),
         .rvalid_o   ( instr_rvalid_o  ),
+        .en_stall_i   ( rnd_stall_regs[RND_STALL_INSTR_EN][0]),
         .stall_mode_i ( rnd_stall_regs[RND_STALL_INSTR_MODE] ),
         .max_stall_i  ( rnd_stall_regs[RND_STALL_INSTR_MAX]  ),
         .valid_stall_i( rnd_stall_regs[RND_STALL_INSTR_VALID]));
@@ -611,6 +617,7 @@ module mm_ram
         .rdata_i    ( data_rdata_mux  ),
         .rdata_o    ( data_rdata_o    ),
         .rvalid_o   ( data_rvalid_o   ),
+        .en_stall_i   ( rnd_stall_regs[RND_STALL_DATA_EN][0]),
         .stall_mode_i ( rnd_stall_regs[RND_STALL_DATA_MODE] ),
         .max_stall_i  ( rnd_stall_regs[RND_STALL_DATA_MAX]  ),
         .valid_stall_i( rnd_stall_regs[RND_STALL_DATA_VALID]));
@@ -658,7 +665,6 @@ module mm_ram
     ram_data_we      = data_we_dec;
     ram_data_be      = data_be_dec;
 
-`ifndef VERILATOR
     if(rnd_stall_regs[RND_STALL_INSTR_EN]) begin
         ram_instr_req    = rnd_stall_instr_req;
         ram_instr_gnt    = rnd_stall_instr_gnt;
@@ -667,11 +673,9 @@ module mm_ram
         ram_data_req     = rnd_stall_data_req;
         ram_data_gnt     = rnd_stall_data_gnt;
     end
-`endif
   end
 
-`ifndef VERILATOR
-  riscv_random_stall
+  riscv_gnt_stall
   #(
     .DATA_WIDTH     (INSTR_RDATA_WIDTH),
     .RAM_ADDR_WIDTH (RAM_ADDR_WIDTH   )
@@ -687,12 +691,13 @@ module mm_ram
     .req_core_i         ( instr_req_i            ),
     .req_mem_o          ( rnd_stall_instr_req    ),
 
+    .en_stall_i         ( rnd_stall_regs[RND_STALL_INSTR_EN][0]),
     .stall_mode_i       ( rnd_stall_regs[RND_STALL_INSTR_MODE] ),
     .max_stall_i        ( rnd_stall_regs[RND_STALL_INSTR_MAX]  ),
     .gnt_stall_i        ( rnd_stall_regs[RND_STALL_INSTR_GNT]  )
     );
 
-  riscv_random_stall
+  riscv_gnt_stall
   #(
     .DATA_WIDTH     (DATA_RDATA_WIDTH),
     .RAM_ADDR_WIDTH (RAM_ADDR_WIDTH  )
@@ -708,11 +713,13 @@ module mm_ram
     .req_core_i         ( data_req_i             ),
     .req_mem_o          ( rnd_stall_data_req     ),
 
-    .stall_mode_i       ( rnd_stall_regs[RND_STALL_DATA_MODE]),
-    .max_stall_i        ( rnd_stall_regs[RND_STALL_DATA_MAX] ),
-    .gnt_stall_i        ( rnd_stall_regs[RND_STALL_DATA_GNT] )
+    .en_stall_i         ( rnd_stall_regs[RND_STALL_DATA_EN][0]),
+    .stall_mode_i       ( rnd_stall_regs[RND_STALL_DATA_MODE] ),
+    .max_stall_i        ( rnd_stall_regs[RND_STALL_DATA_MAX]  ),
+    .gnt_stall_i        ( rnd_stall_regs[RND_STALL_DATA_GNT]  )
     );
 
+`ifndef VERILATOR
     riscv_random_interrupt_generator
     random_interrupt_generator_i
     (
@@ -734,7 +741,6 @@ module mm_ram
       .irq_pc_id_i       ( pc_core_id_i                                 ),
       .irq_pc_trig_i     ( rnd_stall_regs[13]                           )
     );
-
 `endif
 
 endmodule // ram

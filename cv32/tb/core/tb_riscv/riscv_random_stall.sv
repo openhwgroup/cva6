@@ -22,9 +22,11 @@
 //                                                                                                              //
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
+//import riscv_defines::*;
+import perturbation_defines::*;
 
 module riscv_random_stall
- import perturbation_defines::*;
+
  #(
     parameter MAX_STALL_N    = 1,
               RAM_ADDR_WIDTH = 32,
@@ -34,97 +36,225 @@ module riscv_random_stall
 (
     input logic                             clk_i,
     input logic                             rst_ni,
+    //grant from memory
+    input logic                             grant_mem_i,
+    input logic                             rvalid_mem_i,
+    input logic [DATA_WIDTH-1:0]            rdata_mem_i,
+
+    output logic                            grant_core_o,
+    output logic                            rvalid_core_o,
+    output logic [DATA_WIDTH-1:0]           rdata_core_o,
 
     input logic                             req_core_i,
     output logic                            req_mem_o,
 
-    // grant to memory
-    output logic                            grant_core_o,
-    input logic                             grant_mem_i,
+    input logic  [RAM_ADDR_WIDTH-1:0]       addr_core_i,
+    output logic [RAM_ADDR_WIDTH-1:0]       addr_mem_o,
+
+    input logic [DATA_WIDTH-1:0]            wdata_core_i,
+    output logic [DATA_WIDTH-1:0]           wdata_mem_o,
+
+    input logic                             we_core_i,
+    output logic                            we_mem_o,
+
+    input logic [3:0]                       be_core_i,
+    output logic [3:0]                      be_mem_o,
 
     input logic [31:0]                      stall_mode_i,
     input logic [31:0]                      max_stall_i,
-    input logic [31:0]                      gnt_stall_i
+    input logic [31:0]                      gnt_stall_i,
+    input logic [31:0]                      valid_stall_i
 );
+`ifndef VERILATOR
+logic req_per_q, grant_per_q, rvalid_per_q;
 
-// -----------------------------------------------------------------------------------------------
-// Local variables
-// -----------------------------------------------------------------------------------------------
+typedef struct {
+     logic [31:0]                  addr;
+     logic                         we;
+     logic [ 3:0]                  be;
+     logic [DATA_WIDTH-1:0]        wdata;
+     logic [DATA_WIDTH-1:0]        rdata;
+   } stall_mem_t;
 
-logic req_core_i_q;
-logic grant_core_o_q;
+class rand_gnt_cycles;
+     rand int n;
+endclass : rand_gnt_cycles
 
-integer grant_delay_cnt;
+class rand_data_cycles;
+     rand int n;
+endclass : rand_data_cycles
 
-integer delay_value;
+mailbox #(stall_mem_t) core_reqs          = new (4);
+mailbox #(stall_mem_t) core_resps         = new (4);
+mailbox #(logic)       core_resps_granted = new (4);
+mailbox #(stall_mem_t) memory_transfers   = new (4);
 
-// -----------------------------------------------------------------------------------------------
-// Tasks and functions
-// -----------------------------------------------------------------------------------------------
-task set_delay_value();
-  if (stall_mode_i == perturbation_defines::STANDARD)
-    delay_value = gnt_stall_i;
-  else if (stall_mode_i == perturbation_defines::RANDOM)
-    delay_value = $urandom_range(max_stall_i, 0);
-  else
-    delay_value = 0;
-endtask : set_delay_value
+ always_comb begin
+   if (req_core_i) begin
+     req_per_q <= 1'b1;
+   end
+   else begin
+     req_per_q <= 1'b0;
+   end
+ end
 
-// -----------------------------------------------------------------------------------------------
-// Begin module code
-// -----------------------------------------------------------------------------------------------
+ always_comb begin
+   if (rvalid_mem_i) begin
+     rvalid_per_q <= 1'b1;
+   end
+   else begin
+     rvalid_per_q <= 1'b0;
+   end
+ end
 
-assign req_mem_o   = req_core_i;
 
-always @(posedge clk_i or negedge rst_ni) begin
-  if (!rst_ni) begin
-    req_core_i_q <= 1'b0;
-    grant_core_o_q <= 1'b0;
+ always_comb begin
+   if (grant_mem_i) begin
+     grant_per_q <= 1'b1;
+   end
+   else begin
+     grant_per_q <= 1'b0;
+   end
   end
-  else begin
-    req_core_i_q <= req_core_i;
-    grant_core_o_q <= grant_core_o;
-  end
-end
 
-always @(posedge clk_i or negedge rst_ni) begin
-  if (!rst_ni) begin
-    grant_core_o <= 1'b0;
-    grant_delay_cnt <= 0;
-  end 
-  else begin
-`ifdef VERILATOR
-    #1;
-`else
-    #(100ps);
-`endif
 
-    // When request is removed, remove grant
-    if (!req_core_i) begin
-      grant_core_o <= 1'b0;
-    end
 
-    // New request coming in
-    else if (grant_core_o_q || !req_core_i_q) begin
-      // Initialize stall here
-      set_delay_value();
-      if (delay_value == 0) begin
-        grant_delay_cnt <= 0;
-        grant_core_o <= 1'b1;
-      end
-      else begin
-        grant_delay_cnt <= delay_value;
-        grant_core_o <= 1'b0;        
-      end      
-    end
-    else if (grant_delay_cnt == 1) begin
-      grant_delay_cnt <= 0;
-      grant_core_o <= 1'b1;
-    end
-    else begin
-      grant_delay_cnt <= grant_delay_cnt - 1;    
-    end
-  end
-end
+ //Grant Process
+ initial
+ begin : grant_process
+     stall_mem_t mem_acc;
+     automatic rand_gnt_cycles wait_cycles = new ();
 
-endmodule : riscv_random_stall
+     int temp;
+
+     int stalls, max_val;
+     #10;//wait at the very beginning
+     while(1) begin
+         @(posedge clk_i);
+         #1;
+         grant_core_o = 1'b0;
+         if (!req_per_q) begin
+            wait(req_per_q == 1'b1);
+         end
+
+         if(stall_mode_i == STANDARD) begin  //FIXED NUMBER OF STALLS MODE
+             stalls = gnt_stall_i;
+         end else if(stall_mode_i == RANDOM) begin
+             max_val = max_stall_i;
+             temp = wait_cycles.randomize() with{
+                 n >= 0;
+                 n<= max_val;
+             };
+             stalls = wait_cycles.n;
+
+         end else begin
+             stalls = 0;
+         end
+
+
+         while(stalls != 0) begin
+            @(negedge clk_i);
+            stalls--;
+         end
+
+         @(negedge clk_i);
+         if(req_per_q == 1'b1) begin
+             grant_core_o   = 1'b1;
+             mem_acc.addr  = addr_core_i;
+             mem_acc.be    = be_core_i;
+             mem_acc.we    = we_core_i;
+             mem_acc.wdata = wdata_core_i;
+             core_reqs.put(mem_acc);
+             core_resps_granted.put(1'b1);
+         end
+
+     end
+ end
+
+ initial
+ begin : data_process
+     stall_mem_t mem_acc;
+     automatic rand_data_cycles wait_cycles = new ();
+     logic granted;
+     int temp, stalls, max_val;
+
+     while(1) begin
+         @(posedge clk_i);
+         #1;
+         rvalid_core_o = 1'b0;
+         rdata_core_o  = 'x;
+
+         core_resps_granted.get(granted);
+
+         core_resps.get(mem_acc);
+
+         if(stall_mode_i == STANDARD) begin  //FIXED NUMBER OF STALLS MODE
+             stalls = valid_stall_i;
+         end else if(stall_mode_i == RANDOM) begin
+             max_val = max_stall_i;
+             temp = wait_cycles.randomize() with {
+                 n>= 0;
+                 n<= max_val;
+             };
+             stalls = wait_cycles.n;
+
+         end else begin
+
+             stalls = 0;
+         end
+
+
+         while(stalls != 0) begin
+             @(negedge clk_i);
+             stalls--;
+         end
+
+         rdata_core_o  = mem_acc.rdata;
+         rvalid_core_o = 1'b1;
+     end
+ end
+
+ initial
+ begin : wait_for_grant
+     stall_mem_t mem_acc;
+     we_mem_o    = 1'b0;
+     req_mem_o   = 1'b0;
+     addr_mem_o  = '0;
+     be_mem_o    = 4'b0;
+     wdata_mem_o = 'x;
+
+     while(1) begin
+         @(posedge clk_i);
+         #1;
+         req_mem_o   = 1'b0;
+         addr_mem_o  = '0;
+         wdata_mem_o = 'x;
+         core_reqs.get(mem_acc);
+         req_mem_o   = 1'b1;
+         addr_mem_o  = mem_acc.addr;
+         we_mem_o    = mem_acc.we;
+         be_mem_o    = mem_acc.be;
+         wdata_mem_o = mem_acc.wdata;
+
+         wait(grant_per_q);
+         memory_transfers.put(mem_acc);
+
+     end
+ end
+
+ initial
+ begin : wait_for_valid
+     stall_mem_t mem_acc;
+     while(1) begin
+         memory_transfers.get(mem_acc);
+
+         wait(rvalid_per_q == 1'b1);
+         @(negedge clk_i);
+         mem_acc.rdata = rdata_mem_i;
+
+         core_resps.put(mem_acc);
+
+     end
+ end
+ `endif
+ endmodule

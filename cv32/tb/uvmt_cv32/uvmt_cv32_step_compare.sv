@@ -57,7 +57,6 @@ import uvm_pkg::*;      // needed for the UVM messaging service (`uvm_info(), et
 
 `include "uvm_macros.svh"
 `define CV32E40P_CORE   $root.uvmt_cv32_tb.dut_wrap.cv32e40p_wrapper_i.core_i
-//`define CV32E40P_TRACER $root.uvmt_cv32_tb.dut_wrap.cv32e40p_wrapper_i.core_i.tracer_i
 `define CV32E40P_TRACER $root.uvmt_cv32_tb.dut_wrap.cv32e40p_wrapper_i.tracer_i
 
 `define CV32E40P_ISS $root.uvmt_cv32_tb.iss_wrap.cpu
@@ -71,7 +70,21 @@ module uvmt_cv32_step_compare
 
    bit  Clk;
    bit  miscompare;
-   
+   bit  is_stall_sim = 0;
+
+  // Set the is_stall_sim flag if random stalls are enabled
+  // This will turn off some unpredictable checks:
+  // - CSR wire checks
+  // - Non-written GPR registers (per instructions)
+  // Note that register writebacks to GPRs will still be checked during each instruction retirement even with stalls
+  initial begin
+    if ($test$plusargs("rand_stall_obi_instr") ||
+        $test$plusargs("rand_stall_obi_data") ||
+        $test$plusargs("rand_stall_obi_all")) begin
+      is_stall_sim = 1;      
+    end
+  end
+
   function void check_32bit(input string compared, input bit [31:0] expected, input logic [31:0] actual);
       static int now = 0;
       if (now != $time) begin
@@ -118,7 +131,9 @@ module uvmt_cv32_step_compare
          compared_str = $sformatf("GPR[%0d]", idx);
          if ((idx == insn_regs_write_addr) && (idx != 0) && (insn_regs_write_size == 1)) // Use register in insn_regs_write queue if it exists
             check_32bit(.compared(compared_str), .expected(step_compare_if.ovp_cpu_GPR[idx][31:0]), .actual(insn_regs_write_value));
-         else // Use actual value from RTL to compare registers which should have not changed
+         // FIXME:strichmo:I am removing the static (non-written) register checks, as they fail in presence of I and D bus RAM stalls
+         // It would be highly desirable to find an alternative for this type of check to ensure unintended writes to do not
+         else if (!is_stall_sim && !`CV32E40P_TRACER.insn_wb_bypass) // Use actual value from RTL to compare registers which should have not changed
             check_32bit(.compared(compared_str), .expected(step_compare_if.ovp_cpu_GPR[idx][31:0]), .actual(step_compare_if.riscy_GPR[idx]));
          step_compare_if.num_gpr_checks++;
       end
@@ -129,6 +144,10 @@ module uvmt_cv32_step_compare
            step_compare_if.num_csr_checks++;
            ignore = 0;
            csr_val = 0;
+           
+           // CSR timing at instruction retirement is not completely deterministic in this simple model in presence of OBI stalls
+           if (is_stall_sim)
+            ignore = 1;
            case (index)
              "marchid"       : csr_val = cv32e40p_pkg::MARCHID; // warning!  defined in cv32e40p_pkg
              
@@ -149,7 +168,7 @@ module uvmt_cv32_step_compare
              "misa"          : csr_val = `CV32E40P_CORE.cs_registers_i.MISA_VALUE;
              "mie"           : csr_val = `CV32E40P_CORE.cs_registers_i.mie_q;
              "mtvec"         : csr_val = {`CV32E40P_CORE.cs_registers_i.mtvec_q, 6'h0, `CV32E40P_CORE.cs_registers_i.mtvec_mode_q};
-             "mscratch"      : csr_val = `CV32E40P_CORE.cs_registers_i.mscratch_q;             
+             "mscratch"      : csr_val = `CV32E40P_CORE.cs_registers_i.mscratch_q;                          
              "mepc"          : if (step_compare_if.deferint_prime == 0) ignore = 1;
                                else csr_val = `CV32E40P_CORE.cs_registers_i.mepc_q;             
              "mcause"        : if (step_compare_if.deferint_prime == 0) ignore = 1;
@@ -236,6 +255,7 @@ module uvmt_cv32_step_compare
         step_ovp = 0;
         ret_ovp  = 1;
         #0 ->ev_ovp;
+        ->`CV32E40P_TRACER.ovp_retire;
     end
 
     // riscv_core

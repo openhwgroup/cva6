@@ -54,7 +54,7 @@ ${TBSRC_HOME}/uvmt_cv32/uvmt_cv32_tb.sv
 ${TBSRC_HOME}/uvmt_cv32/uvmt_cv32_dut_wrap.sv
 ${TBSRC_HOME}/core/mm_ram.sv
 ${TBSRC_HOME}/core/dp_ram.sv
-${TBSRC_HOME}/core/tb_riscv/riscv_random_stall.sv
+${TBSRC_HOME}/core/tb_riscv/riscv_gnt_stall.sv
 ${TBSRC_HOME}/core/tb_riscv/riscv_rvalid_stall.sv
 ${TBSRC_HOME}/core/tb_riscv/riscv_random_interrupt_generator.sv
 
