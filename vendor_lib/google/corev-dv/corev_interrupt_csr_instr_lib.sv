@@ -51,6 +51,8 @@ class corev_interrupt_csr_instr_stream extends riscv_load_store_rand_instr_strea
     soft wgt_random_mstatus_mie == 3; 
   }
 
+  riscv_instr_name_t allowed_mie_instr[$] = {CSRRW, CSRRC, CSRRS};
+
   `uvm_object_utils(corev_interrupt_csr_instr_stream)
   `uvm_object_new
 
@@ -82,12 +84,12 @@ class corev_interrupt_csr_instr_stream extends riscv_load_store_rand_instr_strea
     )
     // riscv_instr constraints don't handle psuedo-op LI immediate correctly (gets truncated)
     li_instr.imm = rand_mie_setting;
-    li_instr.comment = $sformatf("Set MIE to 0x%08x", rand_mie_setting);
+    li_instr.comment = $sformatf("corev-dv: Set MIE to 0x%08x", rand_mie_setting);
     li_instr.update_imm_str();
     inserted_instr_list.push_back(li_instr);
     
     // Instruction 1: Generate a write, set or clear to MIE
-    csr_instr = riscv_instr::get_rand_instr(.include_instr({CSRRW, CSRRC, CSRRS}));
+    csr_instr = riscv_instr::get_rand_instr(.include_instr(allowed_mie_instr));
     csr_instr.csr_c.constraint_mode(0);
     `DV_CHECK_RANDOMIZE_WITH_FATAL(csr_instr,
       csr == MIE;    
@@ -113,6 +115,7 @@ class corev_interrupt_csr_instr_stream extends riscv_load_store_rand_instr_strea
       imm inside {'h8, 'h0};
       , "Cannot randomize MSTATUS_MIE CSR instruction"
     )
+    csr_instr.comment = "corev-dv: alter MSTATUS_MIE";
     insert_instr(csr_instr);
   endfunction : generate_mstatus_mie_write
 
@@ -133,5 +136,15 @@ class corev_interrupt_csr_wfi_instr_stream extends corev_interrupt_csr_instr_str
 
   `uvm_object_utils(corev_interrupt_csr_wfi_instr_stream)
   `uvm_object_new
+
+  function void post_randomize();
+    allowed_mie_instr = {CSRRW};
+
+    // Do not allow zero as destination register for LI (might clear MIE inadvertently)
+    reserved_rd = new[reserved_rd.size() + 1](reserved_rd);
+    reserved_rd[reserved_rd.size()-1] = ZERO;
+    
+    super.post_randomize();
+  endfunction : post_randomize
 
 endclass : corev_interrupt_csr_wfi_instr_stream

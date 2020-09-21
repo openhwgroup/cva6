@@ -64,6 +64,9 @@ SIMULATOR    ?= $(CV_SIMULATOR)
 # Optionally exclude the OVPsim (not recommended)
 USE_ISS      ?= YES
 
+# Common configuration variables
+CFG             ?= default
+
 # Common Generation variables
 GEN_START_INDEX ?= 0
 GEN_NUM_TESTS   ?= 1
@@ -77,6 +80,7 @@ export DV_UVME_CV32_PATH      = $(PROJ_ROOT_DIR)/$(COREV_PROJ)/env/uvme_cv32
 export DV_UVML_HRTBT_PATH     = $(PROJ_ROOT_DIR)/lib/uvm_libs/uvml_hrtbt
 export DV_UVMA_CLKNRST_PATH   = $(PROJ_ROOT_DIR)/lib/uvm_agents/uvma_clknrst
 export DV_UVMA_INTERRUPT_PATH = $(PROJ_ROOT_DIR)/lib/uvm_agents/uvma_interrupt
+export DV_UVMA_DEBUG_PATH     = $(PROJ_ROOT_DIR)/lib/uvm_agents/uvma_debug
 export DV_UVML_TRN_PATH       = $(PROJ_ROOT_DIR)/lib/uvm_libs/uvml_trn
 export DV_UVML_LOGS_PATH      = $(PROJ_ROOT_DIR)/lib/uvm_libs/uvml_logs
 export DV_UVML_SB_PATH        = $(PROJ_ROOT_DIR)/lib/uvm_libs/uvml_sb
@@ -246,6 +250,7 @@ clean_test_programs:
 	find $(PROJ_ROOT_DIR)/cv32/tests/programs -name *.map     -exec rm {} \;
 	find $(PROJ_ROOT_DIR)/cv32/tests/programs -name *.readelf -exec rm {} \;
 	find $(PROJ_ROOT_DIR)/cv32/tests/programs -name *.objdump -exec rm {} \;
+	find $(PROJ_ROOT_DIR)/cv32/tests/programs -name corev_*.S -exec rm {} \;
 
 clean_riscv-dv:
 	rm -rf $(RISCVDV_PKG)

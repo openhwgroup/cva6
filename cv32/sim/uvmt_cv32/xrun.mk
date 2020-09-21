@@ -165,12 +165,14 @@ no_rule:
 help:
 	xrun -help
 
-.PHONY: comp hello_world hello-world
+.PHONY: comp test waves cov
 
 mk_xrun_dir: 
 	$(MKDIR_P) $(XRUN_DIR)
 
-hello_world: hello-world
+# This special target is to support the special sanity target in the Common Makefile
+hello-world:
+	$(MAKE) test TEST=hello-world
 
 cv32_riscv_tests: cv32-riscv-tests 
 
@@ -178,6 +180,7 @@ cv32_riscv_compliance_tests: cv32-riscv-compliance-tests
 
 XRUN_COMP = $(XRUN_COMP_FLAGS) \
 		$(QUIET) \
+		$(CFG_COMPILE_FLAGS) \
 		$(XRUN_USER_COMPILE_ARGS) \
 		+incdir+$(DV_UVME_CV32_PATH) \
 		+incdir+$(DV_UVMT_CV32_PATH) \
@@ -209,8 +212,21 @@ ifeq ($(call IS_YES,$(XRUN_SINGLE_STEP)), YES)
 endif
 
 ################################################################################
+# If the configuration specified OVPSIM arguments, generate an ovpsim.ic file and
+# set IMPERAS_TOOLS to point to it
+gen_ovpsim_ic:
+	@if [ ! -z "$(CFG_OVPSIM)" ]; then \
+		mkdir -p $(XRUN_RESULTS)/$(TEST_NAME); \
+		echo "$(CFG_OVPSIM)" > $(XRUN_RESULTS)/$(TEST_NAME)/ovpsim.ic; \
+	fi
+ifneq ($(CFG_OVPSIM),)
+export IMPERAS_TOOLS=$(XRUN_RESULTS)/$(TEST_NAME)/ovpsim.ic
+endif
+
+################################################################################
 # The new general test target
-test: $(XRUN_SIM_PREREQ) $(TEST_TEST_DIR)/$(TEST_NAME).hex
+test: $(XRUN_SIM_PREREQ) $(TEST_TEST_DIR)/$(TEST_NAME).hex gen_ovpsim_ic
+	echo $(IMPERAS_TOOLS)
 	mkdir -p $(XRUN_RESULTS)/$(TEST_NAME) && \
 	cd $(XRUN_RESULTS)/$(TEST_NAME) && \
 		$(XRUN) \
@@ -236,14 +252,6 @@ custom: $(XRUN_SIM_PREREQ) $(CUSTOM_DIR)/$(CUSTOM_PROG).hex
 
 ################################################################################
 # Explicit target tests
-debug_test: $(XRUN_SIM_PREREQ) $(CORE_TEST_DIR)/debug_test/debug_test.hex
-	mkdir -p $(XRUN_RESULTS)/debug_test && cd $(XRUN_RESULTS)/debug_test && \
-	$(XRUN) -l xrun-riscv_debug_test.log -covtest debug_test $(XRUN_COMP_RUN) \
-				$(XRUN_RUN_WAVES_FLAGS) \
-                +elf_file=$(CORE_TEST_DIR)/debug_test/debug_test.elf \
-                +nm_file=$(CORE_TEST_DIR)/debug_test/debug_test.nm \
-                +UVM_TESTNAME=uvmt_cv32_firmware_test_c \
-                +firmware=$(CORE_TEST_DIR)/debug_test/debug_test.hex
 
 # Runs tests in cv32_riscv_tests/ only
 cv32-riscv-tests: $(XRUN_SIM_PREREQ) $(CV32_RISCV_TESTS_FIRMWARE)/cv32_riscv_tests_firmware.hex
@@ -310,6 +318,7 @@ comp_corev-dv: $(RISCVDV_PKG)
 		-f $(COREVDV_PKG)/manifest.f \
 		-l xrun.log
 
+
 corev-dv: clean_riscv-dv \
           clone_riscv-dv \
 		  comp_corev-dv
@@ -331,7 +340,7 @@ gen_corev-dv:
 		$(GEN_PLUSARGS)
 	# Copy out final assembler files to test directory
 	for (( idx=${GEN_START_INDEX}; idx < $$((${GEN_START_INDEX} + ${GEN_NUM_TESTS})); idx++ )); do \
-		ls -l ${XRUN_RISCVDV_RESULTS}/${TEST} > /dev/null; \
+		ls -l ${XRUN_COREVDV_RESULTS}/${TEST} > /dev/null; \
 		cp ${XRUN_COREVDV_RESULTS}/${TEST}/${TEST}_$$idx.S ${GEN_TEST_DIR}; \
 	done
 

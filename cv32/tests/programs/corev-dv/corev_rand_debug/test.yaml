@@ -1,0 +1,9 @@
+# Test definition YAML for random debug test
+
+# corev-dv generator test
+name: corev_rand_debug_<RUN_INDEX>
+uvm_test: uvmt_cv32_firmware_test_c
+description: >
+    Random debug generator test
+plusargs: >
+    +gen_random_debug

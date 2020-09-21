@@ -7,15 +7,11 @@ description: Full regression (all tests) for CV32E40P with step-and-compare agai
 # List of builds
 builds:
   corev-dv:
-    # required: Make the corev-dv infrastructure    
     cmd: make comp_corev-dv
     dir: cv32/sim/uvmt_cv32
-    cov: 0
   uvmt_cv32:
-    # required: the make command to create the build
     cmd: make comp
-    dir: cv32/sim/uvmt_cv32    
-    iss: 1
+    dir: cv32/sim/uvmt_cv32
 
 # List of tests
 tests:
@@ -27,70 +23,222 @@ tests:
 
   csr_instructions:
     build: uvmt_cv32
-    description: CSR insturciton test
+    description: CSR instruction test
     dir: cv32/sim/uvmt_cv32
     cmd: make test TEST=csr_instructions
 
   cv324e0p_csr_access_test:
     build: uvmt_cv32
-    description: CSR access test for CV32E40P
+    description: CSR Access Mode Test
     dir: cv32/sim/uvmt_cv32
-    cmd: make custom CUSTOM_PROG=cv32e40p_csr_access_test
+    cmd: make test TEST=cv32e40p_csr_access_test
 
   requested_csr_por:
     build: uvmt_cv32
     description: CSR PoR test
     dir: cv32/sim/uvmt_cv32
-    cmd: make custom CUSTOM_PROG=requested_csr_por
+    cmd: make test TEST=requested_csr_por
 
   modeled_csr_por:
     build: uvmt_cv32
     description: Modeled CSR PoR test
     dir: cv32/sim/uvmt_cv32
-    cmd: make custom CUSTOM_PROG=modeled_csr_por
+    cmd: make test TEST=modeled_csr_por
 
-  csr_instructions:
-    build: uvmt_cv32
-    description: CSR Instruction Test
-    dir: cv32/sim/uvmt_cv32
-    cmd: make custom CUSTOM_PROG=csr_instructions
-
-  riscv_ebreak_test:
+  riscv_ebreak_test_0:
     build: uvmt_cv32
     description: Static corev-dv ebreak
     dir: cv32/sim/uvmt_cv32
-    cmd: make test TEST=riscv_ebreak_test
+    cmd: make test TEST=riscv_ebreak_test_0
+
+  riscv_arithmetic_basic_test:
+    build: uvmt_cv32
+    description: Static riscv-dv arithmetic test
+    dir: cv32/sim/uvmt_cv32    
+    cmd: make test TEST=riscv_arithmetic_basic_test
+    num: 2
 
   corev_arithmetic_base_test:
     build: uvmt_cv32
-    description: Basic arithmetic test
+    description: Generated corev-dv arithmetic test
     dir: cv32/sim/uvmt_cv32    
     cmd: make gen_corev-dv test TEST=corev_arithmetic_base_test
-    num: 100
+    num: 2
 
-  corev_random_instruction_test:
+  corev_random_instr_test:
     build: uvmt_cv32
-    description: Random instruciton test
+    description: Generated corev-dv random instruction test
     dir: cv32/sim/uvmt_cv32
     cmd: make gen_corev-dv test TEST=corev_rand_instr_test
-    num: 100
+    num: 2
 
   corev_jump_stress_test:
     build: uvmt_cv32
-    description: Jump stress test
+    description: Generated corev-dv jump stress test
     dir: cv32/sim/uvmt_cv32    
     cmd: make gen_corev-dv test TEST=corev_jump_stress_test
-    num: 100
-
-  corev_rand_interrupt:
-    build: uvmt_cv32
-    description: Random interrupt test
-    dir: cv32/sim/uvmt_cv32    
-    cmd: make gen_corev-dv test TEST=corev_rand_interrupt
-    num: 100
+    num: 2
 
   illegal:
     build: uvmt_cv32
-    description: Illegal instruction test
+    description: Illegal-riscv-tests
     dir: cv32/sim/uvmt_cv32
     cmd: make test TEST=illegal
+
+  fibonacci:
+    build: uvmt_cv32
+    description: Fibonacci test
+    dir: cv32/sim/uvmt_cv32
+    cmd: make test TEST=fibonacci
+
+  misalign:
+    build: uvmt_cv32
+    description: Misalign test
+    dir: cv32/sim/uvmt_cv32
+    cmd: make test TEST=misalign
+
+  dhrystone:
+    build: uvmt_cv32
+    description: Dhrystone test
+    dir: cv32/sim/uvmt_cv32
+    cmd: make test TEST=dhrystone
+
+  debug_test:
+    build: uvmt_cv32
+    description: Debug Test 1
+    dir: cv32/sim/uvmt_cv32
+    cmd: make debug_test
+    iss: 0
+
+  pulp_bit_manipulation:
+    build: uvmt_cv32
+    description: pulp_bit_manipulation
+    dir: cv32/sim/uvmt_cv32
+    cmd: make test TEST=pulp_bit_manipulation
+    iss: 0
+
+  pulp_general_alu:
+    build: uvmt_cv32
+    description: pulp_general_alu
+    dir: cv32/sim/uvmt_cv32
+    cmd: make test TEST=pulp_general_alu
+    iss: 0
+
+  pulp_immediate_branching:
+    build: uvmt_cv32
+    description: pulp_immediate_branching
+    dir: cv32/sim/uvmt_cv32
+    cmd: make test TEST=pulp_immediate_branching
+    iss: 0
+    
+  pulp_multiply_accumulate:
+    build: uvmt_cv32
+    description: pulp_multiply_accumulate
+    dir: cv32/sim/uvmt_cv32
+    cmd: make test TEST=pulp_multiply_accumulate
+    iss: 0
+
+  pulp_post_increment_load_store:
+    build: uvmt_cv32
+    description: pulp_post_increment_load_store
+    dir: cv32/sim/uvmt_cv32
+    cmd: make test TEST=pulp_post_increment_load_store
+    iss: 0
+
+  pulp_vectorial_add_sub:
+    build: uvmt_cv32
+    description: pulp_vectorial_add_sub
+    dir: cv32/sim/uvmt_cv32
+    cmd: make test TEST=pulp_vectorial_add_sub
+    iss: 0
+
+  pulp_vectorial_avg:
+    build: uvmt_cv32
+    description: pulp_vectorial_avg
+    dir: cv32/sim/uvmt_cv32
+    cmd: make test TEST=pulp_vectorial_avg
+    iss: 0
+
+  pulp_vectorial_bit_manip:
+    build: uvmt_cv32
+    description: pulp_vectorial_bit_manip
+    dir: cv32/sim/uvmt_cv32
+    cmd: make test TEST=pulp_vectorial_bit_manip
+    iss: 0
+
+  pulp_vectorial_bitwise:
+    build: uvmt_cv32
+    description: pulp_vectorial_bitwise
+    dir: cv32/sim/uvmt_cv32
+    cmd: make test TEST=pulp_vectorial_bitwise
+    iss: 0
+
+  pulp_vectorial_comparison_1:
+    build: uvmt_cv32
+    description: pulp_vectorial_comparison_1
+    dir: cv32/sim/uvmt_cv32
+    cmd: make test TEST=pulp_vectorial_comparison_1
+    iss: 0
+
+  pulp_vectorial_comparison_2:
+    build: uvmt_cv32
+    description: pulp_vectorial_comparison_2
+    dir: cv32/sim/uvmt_cv32
+    cmd: make test TEST=pulp_vectorial_comparison_2
+    iss: 0
+
+  pulp_vectorial_comparison_3:
+    build: uvmt_cv32
+    description: pulp_vectorial_comparison_3
+    dir: cv32/sim/uvmt_cv32
+    cmd: make test TEST=pulp_vectorial_comparison_3
+    iss: 0
+
+  pulp_vectorial_complex:
+    build: uvmt_cv32
+    description: pulp_vectorial_complex
+    dir: cv32/sim/uvmt_cv32
+    cmd: make test TEST=pulp_vectorial_complex
+    iss: 0
+
+  pulp_vectorial_dot_product_1:
+    build: uvmt_cv32
+    description: pulp_vectorial_dot_product_1
+    dir: cv32/sim/uvmt_cv32
+    cmd: make test TEST=pulp_vectorial_dot_product_1
+    iss: 0
+
+  pulp_vectorial_dot_product_2:
+    build: uvmt_cv32
+    description: pulp_vectorial_dot_product_2
+    dir: cv32/sim/uvmt_cv32
+    cmd: make test TEST=pulp_vectorial_dot_product_2
+    iss: 0
+
+  pulp_vectorial_max:
+    build: uvmt_cv32
+    description: pulp_vectorial_max
+    dir: cv32/sim/uvmt_cv32
+    cmd: make test TEST=pulp_vectorial_max
+    iss: 0
+
+  pulp_vectorial_min:
+    build: uvmt_cv32
+    description: pulp_vectorial_min
+    dir: cv32/sim/uvmt_cv32
+    cmd: make test TEST=pulp_vectorial_min
+    iss: 0
+
+  pulp_vectorial_shift:
+    build: uvmt_cv32
+    description: pulp_vectorial_shift
+    dir: cv32/sim/uvmt_cv32
+    cmd: make test TEST=pulp_vectorial_shift
+    iss: 0
+
+  pulp_vectorial_shuffle_pack:
+    build: uvmt_cv32
+    description: pulp_vectorial_shuffle_pack
+    dir: cv32/sim/uvmt_cv32
+    cmd: make test TEST=pulp_vectorial_shuffle_pack
+    iss: 0

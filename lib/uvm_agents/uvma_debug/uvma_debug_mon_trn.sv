@@ -1,5 +1,6 @@
 // Copyright 2020 OpenHW Group
 // Copyright 2020 Datum Technology Corporation
+// Copyright 2020 Silicon Labs, Inc.
 // 
 // Licensed under the Solderpad Hardware Licence, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -21,7 +22,7 @@
 /**
  * Object rebuilt from the Debug monitor Analog of uvma_debug_seq_item_c.
  */
-class uvma_debug_mon_trn_c extends uvm_trn_mon_trn_c;
+class uvma_debug_mon_trn_c extends uvml_trn_mon_trn_c;
    
    // Data
    // TODO Add uvma_debug_mon_trn_c data fields

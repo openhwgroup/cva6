@@ -68,28 +68,12 @@ BANNER=*************************************************************************
 
 CV32E40P_REPO   ?= https://github.com/openhwgroup/cv32e40p
 CV32E40P_BRANCH ?= master
-#2020-09-14
-CV32E40P_HASH   ?= 41c5f9b2f2598b7aa066c3943e453e2e17792cd6
-#2020-09-11
-#CV32E40P_HASH    ?= cf064286636d6ff68660f666d1213bef5b7d2883
+#2020-09-17
+CV32E40P_HASH    ?= 9529b94dac8b90e23201c718e4e4bca8bd72204f
+#2020-09-13
+#CV32E40P_HASH   ?= 41c5f9b2f2598b7aa066c3943e453e2e17792cd6
 #2020-09-09
 #CV32E40P_HASH   ?= 7a0fe7afa3f520f4f67d07af3df47f91e6a04fe6
-#2020-09-08
-#CV32E40P_HASH   ?= cb07a7aa77465797fdaa5e783ce2e6bacb922bb3
-#2020-09-06
-#CV32E40P_HASH   ?= 3335dbcfcbdbec1c1f97fe13835fe13a63a321e0
-#2020-09-04
-#CV32E40P_HASH   ?= 6fbd88c645d2b51c316af6eda79bab3e4c284093
-#2020-08-28
-#CV32E40P_HASH   ?= 7c65d1a6cbbcbc7eb20abfd1a83988c94e4fd175
-#2020-08-18
-#CV32E40P_HASH   ?= 1607d8b675864db1aa013364fd4444a665331830
-#2020-07-16
-#CV32E40P_HASH   ?= 916d92afc6bbc27b7ab65c503043982e1b6e3ab0
-#2020-07-09
-#CV32E40P_HASH   ?= 3deb55860001f8ac39cefa80b90566170b12391f
-#2020-07-07
-#CV32E40P_HASH   ?= 8a3345cd80db4097cd007697233e54f020245bfb
 
 
 FPNEW_REPO      ?= https://github.com/pulp-platform/fpnew
@@ -300,6 +284,20 @@ ifeq ($(TEST_FLAGS_MAKE),)
 $(error ERROR Could not find test.yaml for test: $(TEST))
 endif
 include $(TEST_FLAGS_MAKE)
+endif
+
+# If a test target is defined and a CFG is defined that read in build configuration file
+# CFG is optional
+CFGYAML2MAKE = $(PROJ_ROOT_DIR)/bin/cfgyaml2make
+CFG_YAML_PARSE_TARGETS=comp test
+ifneq ($(filter $(CFG_YAML_PARSE_TARGETS),$(MAKECMDGOALS)),)
+ifneq ($(CFG),)
+CFG_FLAGS_MAKE := $(shell $(CFGYAML2MAKE) --yaml=$(CFG).yaml --debug --prefix=CFG)
+ifeq ($(CFG_FLAGS_MAKE),)
+$(error ERROR Error finding or parsing configuration: $(CFG).yaml)
+endif
+include $(CFG_FLAGS_MAKE)
+endif
 endif
 
 ###############################################################################
