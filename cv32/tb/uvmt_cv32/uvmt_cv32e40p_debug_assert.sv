@@ -62,7 +62,11 @@ module uvmt_cv32e40p_debug_assert
     input [31:0] tdata2,
     input trigger_match_i,
     // WFI Interface
-    input core_sleep_o
+    input core_sleep_o,
+
+    input logic csr_access,
+    input logic [1:0] csr_op,
+    input logic [11:0] csr_addr
   );
 
   // ---------------------------------------------------------------------------
@@ -297,6 +301,48 @@ module uvmt_cv32e40p_debug_assert
         irq_and_dreq : cross dreq, irq;
     endgroup
 
+    // Cover access to dcsr, dpc and dscratch0/1
+    // Do we need to cover all READ/WRITE/SET/CLEAR from m-mode?
+    covergroup cg_debug_regs @(posedge clk_i);
+        option.per_instance = 1;
+        mode : coverpoint debug_mode_q; // Only M and D supported
+        access : coverpoint csr_access {
+            bins hit = {1};
+        }
+        op : coverpoint csr_op {
+            bins read = {'h0};
+            bins write = {'h1};
+        }
+        addr  : coverpoint id_stage_instr_rdata_i[31:20]{ // csr addr not updated if illegal access
+            bins dcsr = {'h7B0};
+            bins dpc = {'h7B1};
+            bins dscratch0 = {'h7B2};
+            bins dscratch1 = {'h7B3};
+        }
+        dregs_access : cross mode, access, op,addr;
+    endgroup
+
+    // Cover access to trigger registers
+    // Do we need to cover all READ/WRITE/SET/CLEAR from m-mode?
+    covergroup cg_trigger_regs @(posedge clk_i);
+        option.per_instance = 1;
+        mode : coverpoint debug_mode_q; // Only M and D supported
+        access : coverpoint csr_access {
+            bins hit = {1};
+        }
+        op : coverpoint csr_op {
+            bins read = {'h0};
+            bins write = {'h1};
+        }
+        addr  : coverpoint id_stage_instr_rdata_i[31:20]{ // csr addr not updated if illegal access
+            bins tsel = {'h7A0};
+            bins tdata1 = {'h7A1};
+            bins tdata2 = {'h7A2};
+            bins tdata3 = {'h7A3};
+            bins tinfo = {'h7A4};
+        }
+        tregs_access : cross mode, access, op,addr;
+    endgroup
 // cg instances
   cg_debug_mode_ext cg_debug_mode_i;
   cg_ebreak_execute_with_ebreakm cg_ebreak_execute_with_ebreakm_i;
@@ -313,6 +359,8 @@ module uvmt_cv32e40p_debug_assert
   cg_single_step cg_single_step_i;
   cg_mmode_dret cg_mmode_dret_i;
   cg_irq_dreq  cg_irq_dreq_i;
+  cg_debug_regs cg_debug_regs_i;
+  cg_trigger_regs cg_trigger_regs_i;
   // create cg's at start of simulation
   initial begin
       cg_debug_mode_i = new();
@@ -330,6 +378,8 @@ module uvmt_cv32e40p_debug_assert
       cg_single_step_i = new();
       cg_mmode_dret_i = new();
       cg_irq_dreq_i = new();
+      cg_debug_regs_i = new();
+      cg_trigger_regs_i = new();
   end         
 
   assign is_ebreak = id_stage_instr_valid_i & 

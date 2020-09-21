@@ -99,6 +99,9 @@ module uvmt_cv32_tb;
                                                .tdata1(cs_registers_i.tmatch_control_rdata),
                                                .tdata2(cs_registers_i.tmatch_value_rdata),
                                                .trigger_match_i(id_stage_i.controller_i.trigger_match_i),
+                                               .csr_access(id_stage_i.csr_access),
+                                               .csr_op(cs_registers_i.csr_op_i),
+                                               .csr_addr(cs_registers_i.csr_addr_i),
                                                .*);
 
   /**
