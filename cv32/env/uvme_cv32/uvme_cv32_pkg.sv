@@ -41,6 +41,7 @@ package uvme_cv32_pkg;
    import uvma_clknrst_pkg::*;
    import uvma_interrupt_pkg::*;
    import uvma_debug_pkg::*;
+   import uvma_obi_pkg::*;
    
    // Constants / Structs / Enums
    `include "uvme_cv32_constants.sv"

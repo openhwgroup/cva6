@@ -37,7 +37,9 @@ class uvme_cv32_cfg_c extends uvm_object;
    // Agent cfg handles
    rand uvma_clknrst_cfg_c    clknrst_cfg;
    rand uvma_interrupt_cfg_c  interrupt_cfg;
-   rand uvma_debug_cfg_c    debug_cfg;
+   rand uvma_debug_cfg_c      debug_cfg;
+   rand uvma_obi_cfg_c        obi_instr_cfg;
+   rand uvma_obi_cfg_c        obi_data_cfg;
    
    // Objects
    rand uvme_cv32_ral_c  ral;
@@ -58,6 +60,8 @@ class uvme_cv32_cfg_c extends uvm_object;
       `uvm_field_object(clknrst_cfg, UVM_DEFAULT)
       `uvm_field_object(interrupt_cfg, UVM_DEFAULT)
       `uvm_field_object(debug_cfg  , UVM_DEFAULT)
+      `uvm_field_object(obi_instr_cfg, UVM_DEFAULT)
+      `uvm_field_object(obi_data_cfg, UVM_DEFAULT)
       
       //`uvm_field_object(ral, UVM_DEFAULT)
       // TODO Add scoreboard cfg field macros
@@ -72,27 +76,33 @@ class uvme_cv32_cfg_c extends uvm_object;
       soft scoreboarding_enabled  == 1;      
       soft cov_model_enabled      == 1;
       soft trn_log_enabled        == 1;
-      soft sys_clk_period       == uvme_cv32_sys_default_clk_period; // see uvme_cv32_constants.sv
+      soft sys_clk_period         == uvme_cv32_sys_default_clk_period; // see uvme_cv32_constants.sv
       //soft debug_clk_period       == uvme_cv32_debug_default_clk_period;
    }
    
    constraint agent_cfg_cons {
       if (enabled) {
-         clknrst_cfg.enabled == 1;
+         clknrst_cfg.enabled   == 1;
          interrupt_cfg.enabled == 1;
          debug_cfg.enabled == 1;
+         obi_instr_cfg.enabled == 1;
+         obi_data_cfg.enabled  == 1;
       }
       
       if (is_active == UVM_ACTIVE) {
-         clknrst_cfg.is_active == UVM_ACTIVE;
+         clknrst_cfg.is_active   == UVM_ACTIVE;
          interrupt_cfg.is_active == UVM_ACTIVE;
-         debug_cfg.is_active == UVM_ACTIVE;
+         debug_cfg.is_active     == UVM_ACTIVE;
+         obi_instr_cfg.is_active == UVM_PASSIVE;
+         obi_data_cfg.is_active  == UVM_PASSIVE;
       }
       
       if (trn_log_enabled) {
-         clknrst_cfg.trn_log_enabled == 1;
+         clknrst_cfg.trn_log_enabled   == 1;
          interrupt_cfg.trn_log_enabled == 1;
-         debug_cfg.trn_log_enabled == 1;
+         debug_cfg.trn_log_enabled     == 1;
+         obi_instr_cfg.trn_log_enabled == 1;
+         obi_data_cfg.trn_log_enabled  == 1;
       }
    }   
    
@@ -108,9 +118,11 @@ function uvme_cv32_cfg_c::new(string name="uvme_cv32_cfg");
    
    super.new(name);
    
-   clknrst_cfg = uvma_clknrst_cfg_c::type_id::create("clknrst_cfg");
+   clknrst_cfg  = uvma_clknrst_cfg_c::type_id::create("clknrst_cfg");
    interrupt_cfg = uvma_interrupt_cfg_c::type_id::create("interrupt_cfg");
    debug_cfg = uvma_debug_cfg_c    ::type_id::create("debug_cfg");
+   obi_instr_cfg = uvma_obi_cfg_c::type_id::create("obi_instr_cfg");
+   obi_data_cfg  = uvma_obi_cfg_c::type_id::create("obi_data_cfg");
    
    ral = uvme_cv32_ral_c::type_id::create("ral");
    ral.build();
