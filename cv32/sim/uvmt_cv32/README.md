@@ -80,14 +80,15 @@ The goal of this structure is to minimize the amount of redundant code in the
 Makefiles and ease the maintance of a given simulator's specific variables,
 rules and targets.
 <br><br>
-The basic usage is: `make SIMULATOR=<sim> <target>` where `sim` is vsim, dsim
-or xrun and `target` selects a specific testcase or other rule (e.g. "clean").
+The basic usage is: `make SIMULATOR=<sim> <target>` where `sim` is vsim, dsim,
+xrun or vcs and `target` selects a specific testcase or other rule (e.g. "clean").
 <br><br>
 **Hint**: define shell ENV variable "SIMULATOR" to match one of the supported
 simulator-specific Makefiles (e.g. vsim) to save yourself a lot of typing.
 <br><br>
-To run your own test-program use the `custom` target.  For example `make custom CUSTOM_PROG=illegal`
-will run illegal.c from the cv32/tests/core/custom directory.
+The basic format to run a test is `make test SIMULATOR=<sim> TEST=<test-program>` where `test-program`
+is the name of a [test-program](https://core-v-docs-verif-strat.readthedocs.io/en/latest/sim_tests.html#test-program)
+(either C or RISC-V assembler) located in cv32/tests/program/<testprogram>.
 
 Running the envrionment with Metrics [dsim](https://metrics.ca)
 ----------------------
@@ -116,6 +117,8 @@ using _xrun_.  Set the shell variable SIMULATOR to `xrun` to simply run **`make 
 **Note for Cadence users:** This testbench is known to require Xcelium 19.09 or
 later.  See [Issue 11](https://github.com/openhwgroup/core-v-verif/issues/11)
 for more info.
+<br>
+**2020-07-21**: there is also an issue with 20.06 which we are investigating.
 
 Running the environment with Mentor Graphics [Questa](https://www.mentor.com/products/fv/questa/) (vsim)
 ----------------------
