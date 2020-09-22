@@ -44,6 +44,7 @@ module uvmt_cv32e40p_debug_assert
     input [31:0] if_stage_pc, // Program counter in fetch
     input ctrl_state_e  ctrl_fsm_cs,            // Controller FSM states with debug_req
     input        illegal_insn_i,
+    input        illegal_insn_q, // output from controller
     input        ecall_insn_i,
 
     // Debug signals
@@ -51,6 +52,7 @@ module uvmt_cv32e40p_debug_assert
     input              debug_mode_q, // From controller
     input logic [31:0] dcsr_q, // From controller
     input logic [31:0] depc_q, // From cs regs
+    input logic [31:0] depc_n, // 
     input logic [31:0] dm_halt_addr_i,
     input logic [31:0] dm_exception_addr_i,
 
@@ -61,6 +63,12 @@ module uvmt_cv32e40p_debug_assert
     input [31:0] tdata1,
     input [31:0] tdata2,
     input trigger_match_i,
+
+    // Counter related input from cs_registers
+    input logic [31:0] mcountinhibit_q,
+    input logic [63:0] mcycle,
+    input logic [63:0] minstret,
+    input logic inst_ret,
     // WFI Interface
     input core_sleep_o,
 
@@ -90,6 +98,8 @@ module uvmt_cv32e40p_debug_assert
   // check addr match locally for checking with matching disabled
   logic addr_match;
 
+  // Check that value in dpc will match trigger address
+  logic dpc_will_hit;
   // We need irq signals to properly track wfi/sleep
   logic [31:0] pending_enabled_irq;
     
@@ -185,19 +195,28 @@ module uvmt_cv32e40p_debug_assert
         ok_match: cross en, match;
     endgroup
 
-    // cover that we hit pc==tdata2 without having enabled trigger in m-mode
+    // cover that we hit pc==tdata2  without having enabled trigger in m/d-mode
+    // cover hit in d-mode with trigger enabled (no action)
     covergroup cg_trigger_match_disabled @(posedge clk_i);
         option.per_instance = 1;
         dis : coverpoint tdata1[2] {
             bins hit = {0};
         }
+        en : coverpoint tdata1[2] {
+            bins hit = {1};
+        }
         match: coverpoint addr_match {
            bins hit = {1};
         }
         mmode : coverpoint debug_mode_q {
-           bins hit = {0};
+           bins m = {0};
         }
-        match_without_en : cross dis, match, mmode;
+        dmode : coverpoint debug_mode_q {
+           bins m = {1};
+        }
+        m_match_without_en : cross dis, match, mmode;
+        d_match_without_en : cross dis, match, dmode;
+        d_match_with_en    : cross en, match, dmode;
     endgroup
 
 
@@ -276,11 +295,19 @@ module uvmt_cv32e40p_debug_assert
         wfi : coverpoint is_wfi {
             bins hit = {1};
         }
+        ill : coverpoint illegal_insn_i {
+            bins hit = {1};
+        }
+        pc_will_trig : coverpoint dpc_will_hit {
+            bins hit = {1};
+        } 
         stepie : coverpoint dcsr_q[11];
         mmode_step : cross step, mmode;
         mmode_step_trigger_match : cross step, mmode, trigger;
         mmode_step_wfi : cross step, mmode, wfi;
         mmode_step_stepie : cross step, mmode, stepie;
+        mmode_step_illegal : cross step, mmode, ill;
+        mmode_step_next_pc_will_match : cross step, mmode, pc_will_trig;
     endgroup
 
     // Cover dret is executed in machine mode
@@ -313,7 +340,7 @@ module uvmt_cv32e40p_debug_assert
             bins read = {'h0};
             bins write = {'h1};
         }
-        addr  : coverpoint id_stage_instr_rdata_i[31:20]{ // csr addr not updated if illegal access
+        addr  : coverpoint id_stage_instr_rdata_i[31:20] { // csr addr not updated if illegal access
             bins dcsr = {'h7B0};
             bins dpc = {'h7B1};
             bins dscratch0 = {'h7B2};
@@ -343,6 +370,13 @@ module uvmt_cv32e40p_debug_assert
         }
         tregs_access : cross mode, access, op,addr;
     endgroup
+
+    // Cover that we run with counters mcycle and minstret enabled
+    covergroup cg_counters_enabled @(posedge clk_i);
+        option.per_instance = 1;
+        mcycle_en : coverpoint mcountinhibit_q[0];
+        minstret_en : coverpoint mcountinhibit_q[2];
+    endgroup
 // cg instances
   cg_debug_mode_ext cg_debug_mode_i;
   cg_ebreak_execute_with_ebreakm cg_ebreak_execute_with_ebreakm_i;
@@ -361,6 +395,7 @@ module uvmt_cv32e40p_debug_assert
   cg_irq_dreq  cg_irq_dreq_i;
   cg_debug_regs cg_debug_regs_i;
   cg_trigger_regs cg_trigger_regs_i;
+  cg_counters_enabled cg_counters_enabled_i;
   // create cg's at start of simulation
   initial begin
       cg_debug_mode_i = new();
@@ -380,6 +415,7 @@ module uvmt_cv32e40p_debug_assert
       cg_irq_dreq_i = new();
       cg_debug_regs_i = new();
       cg_trigger_regs_i = new();
+      cg_counters_enabled_i = new();
   end         
 
   assign is_ebreak = id_stage_instr_valid_i & 
@@ -397,7 +433,7 @@ module uvmt_cv32e40p_debug_assert
     // debug_req_i results in debug mode
     // TBD: Is there a fixed latency for this?
     property p_debug_mode_ext_req;
-        $rose(debug_req_i) |-> ##[1:6] (debug_mode_q && (dcsr_q[8:6]=== cv32e40p_pkg::DBG_CAUSE_HALTREQ) && 
+        $rose(debug_req_i) && !debug_mode_q |-> ##[1:40] (debug_mode_q && (dcsr_q[8:6]=== cv32e40p_pkg::DBG_CAUSE_HALTREQ) && 
                                                         (depc_q == pc_at_dbg_req)) &&
                                                         (id_stage_pc == dm_halt_addr_i);
     endproperty   
@@ -519,13 +555,108 @@ module uvmt_cv32e40p_debug_assert
 
     // Debug request while sleeping makes core wake up and enter debug mode
     property p_sleep_debug_req;
-        in_wfi && debug_req_i |=> !core_sleep_o ##5 debug_mode_q; 
+        in_wfi && debug_req_i |=> !core_sleep_o ##6 debug_mode_q; 
     endproperty
 
     a_sleep_debug_req : assert property(p_sleep_debug_req)
         else
-            `uvm_error(info_tag, $sformatf("Did not exit sleep after debug_req_i"));
-  // -------------------------------------------
+            `uvm_error(info_tag, $sformatf("Did not exit sleep(== %d) after debug_req_i. Debug_mode = %d", core_sleep_o, debug_mode_q));
+
+    // Accessing debug regs in m-mode is illegal
+    property p_debug_regs_mmode;
+        csr_access && !debug_mode_q && id_stage_instr_rdata_i[31:20] inside {'h7B0, 'h7B1, 'h7B2, 'h7B3} |->
+                 illegal_insn_i; 
+    endproperty
+
+    a_debug_regs_mmode : assert property(p_debug_regs_mmode)
+        else
+            `uvm_error(info_tag, "Accessing debug regs in M-mode did not result in illegal instruction");
+
+    // Exception while single step -> PC is set to exception handler before
+    // debug
+    property p_single_step_exception;
+        !debug_mode_q && dcsr_q[2] && illegal_insn_q |-> ##[1:20] debug_mode_q && (depc_q == mtvec);
+    endproperty
+
+    a_single_step_exception : assert property(p_single_step_exception)
+        else
+            `uvm_error(info_tag, "PC not set to exception handler after single step with exception");
+
+    // Trigger during single step 
+    property p_single_step_trigger;
+        !debug_mode_q && dcsr_q[2] && addr_match && tdata1[2] |->
+                ##[1:20] debug_mode_q && (dcsr_q[8:6] == cv32e40p_pkg::DBG_CAUSE_TRIGGER) && (depc_q == pc_at_dbg_req);
+    endproperty
+
+    a_single_step_trigger : assert property (p_single_step_trigger)
+        else
+            `uvm_error(info_tag, $sformatf("Single step and trigger error: depc = %08x, cause = %d",depc_q, dcsr_q[8:6]));
+
+    // Single step WFI must not result in sleeping
+    property p_single_step_wfi;
+        !debug_mode_q && dcsr_q[2] && is_wfi |->
+                ##[1:20] debug_mode_q && !core_sleep_o;
+    endproperty
+
+    a_single_step_wfi : assert property(p_single_step_wfi)
+        else
+            `uvm_error(info_tag, "Debug mode not entered after single step WFI or core went sleeping");
+
+    // dret in M-mode will cause illegal instruction
+    property p_mmode_dret;
+        !debug_mode_q && is_dret |-> ##1 illegal_insn_q;
+    endproperty
+
+    a_mmode_dret : assert property(p_mmode_dret)
+        else
+            `uvm_error(info_tag, "Executing dret in M-mode did not result in illegal instruction");
+
+    // dret in D-mode will restore pc and exit D-mode
+    property p_dmode_dret;
+        debug_mode_q && is_dret |-> ##[1:6] !debug_mode_q && (id_stage_pc == depc_q);
+    endproperty
+
+    a_dmode_dret : assert property(p_dmode_dret)
+        else
+            `uvm_error(info_tag, "Dret did not cause correct return from debug mode");
+
+    // Check that trigger regs cannot be written from M-mode
+    // TSEL, and TDATA3 are tied to zero, hence no register to check 
+    property p_mmode_tdata1_write;
+        !debug_mode_q && csr_access && csr_op == 'h1 && id_stage_instr_rdata_i[31:20] == 'h7A1 |-> ##2 $stable(tdata1);
+    endproperty
+
+    a_mmode_tdata1_write : assert property(p_mmode_tdata1_write)
+        else
+            `uvm_error(info_tag, "Writing tdata1 from M-mode not allowed to change register value!");
+
+  property p_mmode_tdata2_write;
+        !debug_mode_q && csr_access && csr_op == 'h1 && id_stage_instr_rdata_i[31:20] == 'h7A2 |-> ##2 $stable(tdata2);
+    endproperty
+
+    a_mmode_tdata2_write : assert property(p_mmode_tdata2_write)
+        else
+            `uvm_error(info_tag, "Writing tdata2 from M-mode not allowed to change register value!");
+
+    // Check that mcycle works as expected when not sleeping
+    property p_mcycle_count;
+        !mcountinhibit_q[0] && !core_sleep_o |=> (mcycle == ($past(mcycle)+1));
+    endproperty
+
+    a_mcycle_count : assert property(p_mcycle_count)
+        else
+            `uvm_error(info_tag, "Mcycle not counting when mcountinhibit[0] is cleared!");
+
+    // Check that minstret works as expected when not sleeping
+    property p_minstret_count;
+        !mcountinhibit_q[2] && inst_ret && !core_sleep_o |=> (minstret == ($past(minstret)+1));
+    endproperty
+
+    a_minstret_count : assert property(p_minstret_count)
+        else
+            `uvm_error(info_tag, "Minstret not counting when mcountinhibit[2] is cleared!");
+
+// -------------------------------------------
     // Capture internal states for use in checking
     // -------------------------------------------
     always @(posedge clk_i or negedge rst_ni) begin
@@ -561,6 +692,7 @@ module uvmt_cv32e40p_debug_assert
   end
 
     assign addr_match = (id_stage_pc == tdata2);
+    assign dpc_will_hit = (depc_n == tdata2);
     assign is_wfi = id_stage_instr_valid_i &
                   ((id_stage_instr_rdata_i & WFI_INSTR_MASK) == WFI_INSTR_DATA);
     assign pending_enabled_irq = irq_i & mie_q;
