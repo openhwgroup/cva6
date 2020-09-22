@@ -85,18 +85,7 @@ module uvmt_cv32_step_compare
         `uvm_info("Step-and-Compare", $sformatf("%s expected=0x%8h==actual", compared, actual), UVM_DEBUG)
       end
    endfunction // check_32bit
-   
-   bit [31:0] [63:0] mhpmcounter;
-   always @(posedge `CV32E40P_CORE.ex_stage_i.clk) begin
-     if (`CV32E40P_CORE.ex_stage_i.csr_access_i) begin
-       //mhpmcounter[0] = `CV32E40P_CORE.cs_registers_i.mhpmcounter_q[0];
-       //mhpmcounter[2] = `CV32E40P_CORE.cs_registers_i.mhpmcounter_q[2];
-       //$display("@csr_access_i=1 mcycle=%08x", mhpmcounter[0]);
-       //$display("@csr_access_i=1 minstret=%08x", mhpmcounter[2]);
-       mhpmcounter = `CV32E40P_CORE.cs_registers_i.mhpmcounter_q;
-     end
-   end
-   
+
    function automatic void compare();
       int idx;
       logic [ 5:0] insn_regs_write_addr;
@@ -114,7 +103,6 @@ module uvmt_cv32_step_compare
       // Compare GPR's
       // Assuming that `CV32E40P_TRACER.insn_regs_write size is never > 1.  Check this.
       // Note that dut_wrap is found 1 level up
-      //insn_regs_write_size = `CV32E40P_TRACER.insn_regs_write.size();
       insn_regs_write_size = `CV32E40P_TRACER.insn_regs_write.size();
       if (insn_regs_write_size > 1) begin
         `uvm_error("Step-and-Compare",  $sformatf("Assume insn_regs_write size is 0 or 1 but is %0d", insn_regs_write_size))
@@ -143,12 +131,6 @@ module uvmt_cv32_step_compare
            csr_val = 0;
            case (index)
              "marchid"       : csr_val = cv32e40p_pkg::MARCHID; // warning!  defined in cv32e40p_pkg
-
-            
-             "mcycle"        : ignore = 1;
-             "mcycleh"       : ignore = 1;
-             "minstret"      : ignore = 1; 
-             "minstreth"     : ignore = 1; 
              
              "mcountinhibit" : csr_val = `CV32E40P_CORE.cs_registers_i.mcountinhibit_q;
 
@@ -217,10 +199,12 @@ module uvmt_cv32_step_compare
     
     // RTL->RM CSR : mcycle, minstret, mcycleh, minstreth
     function automatic void pushRTL2RM(string message);
-        `CV32E40P_ISS.CSR_rtl["mcycle"]    = mhpmcounter[0][31:0];
-        `CV32E40P_ISS.CSR_rtl["mcycleh"]   = mhpmcounter[0][63:32];
-        `CV32E40P_ISS.CSR_rtl["minstret"]  = mhpmcounter[2][31:0];
-        `CV32E40P_ISS.CSR_rtl["minstreth"] = mhpmcounter[2][63:32];
+        logic [ 5:0] gpr_addr;
+        logic [31:0] gpr_value;
+      
+        gpr_addr  = `CV32E40P_TRACER.insn_regs_write[0].addr;
+        gpr_value = `CV32E40P_TRACER.insn_regs_write[0].value;
+        `CV32E40P_ISS.GPR_rtl[gpr_addr] = gpr_value;
     endfunction // pushRTL2RM
     
     /*
