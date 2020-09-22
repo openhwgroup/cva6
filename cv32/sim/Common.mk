@@ -21,7 +21,7 @@
 #
 ###############################################################################
 # 
-# Copyright 2019 Clifford Wolf
+# Copyright 2019 Claire Wolf
 # Copyright 2019 Robert Balas
 #
 # Permission to use, copy, modify, and/or distribute this software for any
