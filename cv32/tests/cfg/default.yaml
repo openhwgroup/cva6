@@ -3,4 +3,6 @@ description: Default configuration for CV32E40P simulations
 compile_flags: 
 ovpsim: >
     --override root/cpu/marchid=4
-#    --trace --tracechange --traceshowicount --monitornets --tracemode
+    --override root/cpu/noinhibit_mask=0xFFFFFFF0
+    #--trace --tracechange --traceshowicount --monitornets --tracemode
+    #--showoverrides
