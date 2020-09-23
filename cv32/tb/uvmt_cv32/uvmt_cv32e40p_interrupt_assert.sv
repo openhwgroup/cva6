@@ -77,7 +77,7 @@ module uvmt_cv32e40p_interrupt_assert
 
   wire id_instr_is_wfi; // ID instruction is a WFI
   reg  in_wfi; // Local model of WFI state of core
-  
+
   reg[31:0] irq_q;
 
   reg[31:0] next_irq;
@@ -283,11 +283,23 @@ module uvmt_cv32e40p_interrupt_assert
       `uvm_error(info_tag,
                  $sformatf("MCAUSE[4:0] is reserved value 0x%0x when reporting interrupt", mcause_n[4:0]));
 
+  // ---------------------------------------------------------------------------
+  // The infamous "first" flag (kludge for $past() handling of t=0 values)
+  // Would like to use a leading ##1 in the property instead but this currently
+  // does not work with dsim
+  // ---------------------------------------------------------------------------
+  reg first;
+  always @(negedge clk or negedge rst_ni)
+    if (!rst_ni)
+      first <= 1'b1;
+    else
+      first <= 1'b0;
+
   // mip reflects flopped interrupt inputs (irq_i) regardless of other configuration
   // Note that this runs on the gated clock
   property p_mip_irq_i;
     @(posedge clk)
-      ##1 mip == ($past(irq_i) & VALID_IRQ_MASK);
+      !first |-> mip == ($past(irq_i) & VALID_IRQ_MASK);
   endproperty
   a_mip_irq_i: assert property(p_mip_irq_i)
     else 
@@ -314,16 +326,6 @@ module uvmt_cv32e40p_interrupt_assert
       last_instr_rdata <= id_stage_instr_rdata_i;
     end
   end
-  reg take_cov;
-
-  always @(posedge clk_i or negedge rst_ni) begin
-    if (!rst_ni)
-      take_cov <= 1'b0;      
-    else if (irq_ack_o)
-      take_cov <= 1'b1;
-    else
-      take_cov <= 1'b0;
-  end
 
   // ---------------------------------------------------------------------------
   // WFI Checks
@@ -346,10 +348,6 @@ module uvmt_cv32e40p_interrupt_assert
   property p_wfi_assert_core_sleep_o;
     $rose(in_wfi) ##1 in_wfi[*6] ##0 !pending_enabled_irq |-> core_sleep_o;
   endproperty
-  // a_wfi_assert_core_sleep_o: assert property(p_wfi_assert_core_sleep_o)
-  //   else
-  //     `uvm_error(info_tag,
-  //                "Assertion of wfi did not put core to sleep in 4 clocks");
 
   // core_sleep_o deassertion in wfi should be followed by WFI deassertion
   property p_core_sleep_deassert;
