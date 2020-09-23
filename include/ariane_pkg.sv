@@ -669,6 +669,7 @@ package ariane_pkg;
         logic                     req;                    // we request a new word
         logic                     kill_s1;                // kill the current request
         logic                     kill_s2;                // kill the last request
+        logic                     spec;                   // request is speculative
         logic [riscv::VLEN-1:0]   vaddr;                  // 1st cycle: 12 bit index is taken for lookup
     } icache_dreq_i_t;
 
