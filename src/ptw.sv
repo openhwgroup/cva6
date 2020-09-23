@@ -33,11 +33,23 @@ module ptw import ariane_pkg::*; #(
 
     input  logic                    lsu_is_store_i,         // this translation was triggered by a store
     // PTW memory interface
+    
+    wire ptw_res_val,
     input  dcache_req_o_t           req_port_i,
+    /// ptw_req: ptw_req --OUT> ptw_res
+    wire ptw_req_val,
+    wire ptw_req_rdy,
     output dcache_req_i_t           req_port_o,
 
 
     // to TLBs, update logic
+    wire itlb_update_val,
+    /// SVA_trans_id 
+    wire itlb_update_vaddr,
+    wire dtlb_update_val,
+    /// SVA_trans_id 
+    wire dtlb_update_vaddr,
+
     output tlb_update_t             itlb_update_o,
     output tlb_update_t             dtlb_update_o,
 
@@ -45,13 +57,18 @@ module ptw import ariane_pkg::*; #(
 
     input  logic [ASID_WIDTH-1:0]   asid_i,
     // from TLBs
-    // did we miss?
+    /// itlb_update: itlb --IN> itlb_update
+    wire itlb_val,
     input  logic                    itlb_access_i,
     input  logic                    itlb_hit_i,
+    /// SVA_trans_id
     input  logic [riscv::VLEN-1:0]  itlb_vaddr_i,
 
+    /// dtlb_update: dtlb --IN> dtlb_update
+    wire dtlb_val,
     input  logic                    dtlb_access_i,
     input  logic                    dtlb_hit_i,
+    /// SVA_trans_id
     input  logic [riscv::VLEN-1:0]  dtlb_vaddr_i,
     // from CSR file
     input  logic [riscv::PPNW-1:0]  satp_ppn_i, // ppn from satp
@@ -400,6 +417,16 @@ module ptw import ariane_pkg::*; #(
             data_rvalid_q      <= req_port_i.data_rvalid;
         end
     end
+//
+assign itlb_val = enable_translation_i & itlb_access_i & ~itlb_hit_i & ~dtlb_access_i;
+assign dtlb_val = enable_translation_i & dtlb_access_i & ~dtlb_hit_i;
+assign itlb_update_val   = itlb_update_o.val;
+assign dtlb_update_val   = dtlb_update_o.val;
+assign itlb_update_vaddr = update_vaddr_o;
+assign dtlb_update_vaddr = update_vaddr_o;
 
+assign ptw_req_val = req_port_o.data_req;
+assign ptw_req_rdy = req_port_i.data_gnt;
+assign ptw_res_val = req_port_i.data_rvalid;
 endmodule
 /* verilator lint_on WIDTH */
