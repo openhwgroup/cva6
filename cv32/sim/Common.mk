@@ -178,9 +178,10 @@ COREV_MARCH         ?= corev
 PULP_SW_TOOLCHAIN   ?= /opt/pulp
 PULP_MARCH          ?= unknown
 
-RISCV            = /opt/riscv
-RISCV_PREFIX     = riscv32-unknown-elf-
-RISCV_EXE_PREFIX = $(RISCV)/bin/$(RISCV_PREFIX)
+CV_SW_TOOLCHAIN  ?= /opt/riscv
+RISCV            ?= $(CV_SW_TOOLCHAIN)
+RISCV_PREFIX     ?= riscv32-unknown-elf-
+RISCV_EXE_PREFIX ?= $(RISCV)/bin/$(RISCV_PREFIX)
 
 ifeq ($(call IS_YES,$(GNU)),YES)
 RISCV            = $(GNU_SW_TOOLCHAIN)
