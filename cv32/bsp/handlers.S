@@ -42,6 +42,7 @@
 .global m_fast14_irq_handler
 .global m_fast15_irq_handler
 
+.weak u_sw_irq_handler
 .weak m_software_irq_handler
 .weak m_timer_irq_handler
 .weak m_external_irq_handler
