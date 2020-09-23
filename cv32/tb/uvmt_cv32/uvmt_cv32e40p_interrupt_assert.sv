@@ -20,7 +20,8 @@ module uvmt_cv32e40p_interrupt_assert
   import cv32e40p_pkg::*;
   (
     
-    input clk_i,
+    input clk,   // Gated clock
+    input clk_i, // Free-running core clock
     input rst_ni,
 
     // Core inputs
@@ -38,6 +39,7 @@ module uvmt_cv32e40p_interrupt_assert
     input [5:0]  mcause_n, // mcause_n[5]: interrupt, mcause_n[4]: vector
     input [31:0] mip,     // machine interrupt pending
     input [31:0] mie_q,   // machine interrupt enable
+    input [31:0] mie_n,   // machine interrupt enable
     input        mstatus_mie, // machine mode interrupt enable
     input [1:0]  mtvec_mode_q, // machine mode interrupt vector mode
 
@@ -49,7 +51,6 @@ module uvmt_cv32e40p_interrupt_assert
     input        id_stage_instr_valid_i, // instruction word is valid
     input [31:0] id_stage_instr_rdata_i, // Instruction word data
     input [4:0]  ctrl_fsm_cs,            // Controller FSM to get hint for interrupt taken
-    input [1:0]  exc_ctrl_cs,            // Controller FSM to get hint for interrupt pending (for arbitration)
 
     // WFI Interface
     input core_sleep_o
@@ -72,11 +73,12 @@ module uvmt_cv32e40p_interrupt_assert
   string info_tag = "CV32E40P_IRQ_ASSERT";
 
   wire [31:0] pending_enabled_irq;
+  wire [31:0] pending_enabled_irq_q;
 
   wire id_instr_is_wfi; // ID instruction is a WFI
   reg  in_wfi; // Local model of WFI state of core
 
-  reg[1:0]  exc_ctrl_cs_q;
+  reg[31:0] irq_q;
 
   reg[31:0] next_irq;
   reg       next_irq_valid;
@@ -86,7 +88,7 @@ module uvmt_cv32e40p_interrupt_assert
   reg[31:0] saved_mie_q;
 
   reg[31:0] expected_irq;
-  reg       expected_irq_ack;
+  logic     expected_irq_ack;
 
   reg[31:0] last_instr_rdata;
 
@@ -101,7 +103,8 @@ module uvmt_cv32e40p_interrupt_assert
   // ---------------------------------------------------------------------------
   // Begin module code
   // ---------------------------------------------------------------------------
-  assign pending_enabled_irq = irq_i & mie_q;
+  assign pending_enabled_irq   = irq_i & mie_n;
+  assign pending_enabled_irq_q = irq_q & mie_n;
 
   // ---------------------------------------------------------------------------
   // Interrupt interface checks
@@ -127,12 +130,12 @@ module uvmt_cv32e40p_interrupt_assert
 
   // irq_id_o is never a disabled irq
   property p_irq_id_o_mie_enabled;
-    irq_ack_o |-> saved_mie_q[irq_id_o];
+    irq_ack_o |-> mie_n[irq_id_o];
   endproperty    
   a_irq_id_o_mie_enabled: assert property(p_irq_id_o_mie_enabled)
     else
       `uvm_error(info_tag,
-                 $sformatf("int_id_o output is 0x%0x which is disabled in MIE: 0x%08x", irq_id_o, mie_q));
+                 $sformatf("irq_id_o output is 0x%0x which is disabled in MIE: 0x%08x", irq_id_o, mie_n));
 
   // irq_ack_o cannot be asserted if mstatus_mie is deasserted
   property p_irq_id_o_mstatus_mie_enabled;
@@ -206,7 +209,7 @@ module uvmt_cv32e40p_interrupt_assert
   always @* begin
     next_irq_valid = 1'b0;
     next_irq = '0;
-    casex ({pending_enabled_irq[31:16], pending_enabled_irq[11], pending_enabled_irq[3], pending_enabled_irq[7]})
+    casex ({pending_enabled_irq_q[31:16], pending_enabled_irq_q[11], pending_enabled_irq_q[3], pending_enabled_irq_q[7]})
       19'b1???_????_????_????_???: begin next_irq = 'd31; next_irq_valid = '1; end
       19'b01??_????_????_????_???: begin next_irq = 'd30; next_irq_valid = '1; end
       19'b001?_????_????_????_???: begin next_irq = 'd29; next_irq_valid = '1; end
@@ -231,46 +234,36 @@ module uvmt_cv32e40p_interrupt_assert
 
   always @(posedge clk_i or negedge rst_ni) begin
     if (!rst_ni) begin
-      exc_ctrl_cs_q <= 0;
+      irq_q <= 0;
       next_irq_q <= 0;
       next_irq_valid_q <= 0;
       saved_mie_q <= 0;
     end    
     else begin
-      exc_ctrl_cs_q <= exc_ctrl_cs;
-      // Only latch new interrupt if interrupt controller state machine is idel
-      if (exc_ctrl_cs == 0) begin
-        next_irq_q <= next_irq;
-        next_irq_valid_q <= next_irq_valid;
-        saved_mie_q <= mie_q;
-      end
+      irq_q <= irq_i;
+      next_irq_q <= next_irq;
+      next_irq_valid_q <= next_irq_valid;
+      saved_mie_q <= mie_q;
     end
   end
 
   always @(posedge clk_i or negedge rst_ni) begin
     if (!rst_ni)
       expected_irq <= 0;
-    else if (exc_ctrl_cs == 1 && exc_ctrl_cs_q == 0)
+    else
       expected_irq <= next_irq_q;
   end
 
-  always @(posedge clk_i or negedge rst_ni) begin
-    if (!rst_ni)
-      expected_irq_ack <= 0;
-    else if (irq_ack_o)
-      expected_irq_ack <= 0;
-    else if (exc_ctrl_cs == 1 && exc_ctrl_cs_q == 0 && next_irq_valid_q)
-      expected_irq_ack <= 1;
-  end
+  assign expected_irq_ack = next_irq_valid & mstatus_mie;
 
   // Check expected interrupt wins
   property p_irq_arb;
-    irq_ack_o |-> irq_id_o == expected_irq;
+    irq_ack_o |-> irq_id_o == next_irq;
   endproperty
   a_irq_arb: assert property(p_irq_arb)
     else
       `uvm_error(info_tag,
-                 $sformatf("Expected winning interrupt: %0d, actual interrupt: %0d", expected_irq, irq_id_o))  
+                 $sformatf("Expected winning interrupt: %0d, actual interrupt: %0d", next_irq, irq_id_o))  
 
   // Check that an interrupt is expected
   property p_irq_expected;
@@ -290,14 +283,28 @@ module uvmt_cv32e40p_interrupt_assert
       `uvm_error(info_tag,
                  $sformatf("MCAUSE[4:0] is reserved value 0x%0x when reporting interrupt", mcause_n[4:0]));
 
-  // mip reflects input (irq_i) regardless of other configuration
+  // ---------------------------------------------------------------------------
+  // The infamous "first" flag (kludge for $past() handling of t=0 values)
+  // Would like to use a leading ##1 in the property instead but this currently
+  // does not work with dsim
+  // ---------------------------------------------------------------------------
+  reg first;
+  always @(negedge clk or negedge rst_ni)
+    if (!rst_ni)
+      first <= 1'b1;
+    else
+      first <= 1'b0;
+
+  // mip reflects flopped interrupt inputs (irq_i) regardless of other configuration
+  // Note that this runs on the gated clock
   property p_mip_irq_i;
-    mip == (irq_i & VALID_IRQ_MASK);
+    @(posedge clk)
+      !first |-> mip == ($past(irq_i) & VALID_IRQ_MASK);
   endproperty
   a_mip_irq_i: assert property(p_mip_irq_i)
     else 
       `uvm_error(info_tag,
-                 $sformatf("MIP of 0x%08x does not follow irq_i input: 0x%08x", mip, irq_i));
+                 $sformatf("MIP of 0x%08x does not follow flopped irq_i input: 0x%08x", mip, $past(irq_i)));
 
   // mip should not be reserved
   property p_mip_not_reserved;
@@ -318,16 +325,6 @@ module uvmt_cv32e40p_interrupt_assert
     else if (id_stage_instr_valid_i) begin
       last_instr_rdata <= id_stage_instr_rdata_i;
     end
-  end
-  reg take_cov;
-
-  always @(posedge clk_i or negedge rst_ni) begin
-    if (!rst_ni)
-      take_cov <= 1'b0;
-    else if (ctrl_fsm_cs == IRQ_TAKEN_ID)
-      take_cov <= 1'b1;
-    else
-      take_cov <= 1'b0;
   end
 
   // ---------------------------------------------------------------------------
@@ -351,10 +348,6 @@ module uvmt_cv32e40p_interrupt_assert
   property p_wfi_assert_core_sleep_o;
     $rose(in_wfi) ##1 in_wfi[*6] ##0 !pending_enabled_irq |-> core_sleep_o;
   endproperty
-  // a_wfi_assert_core_sleep_o: assert property(p_wfi_assert_core_sleep_o)
-  //   else
-  //     `uvm_error(info_tag,
-  //                "Assertion of wfi did not put core to sleep in 4 clocks");
 
   // core_sleep_o deassertion in wfi should be followed by WFI deassertion
   property p_core_sleep_deassert;

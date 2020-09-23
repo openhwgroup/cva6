@@ -107,6 +107,106 @@ class corev_asm_program_gen extends riscv_asm_program_gen;
     end
   endfunction : gen_interrupt_vector_table
 
+  // Setup EPC before entering target privileged mode
+  virtual function void setup_epc(int hart);
+    string instr[$];
+    string mode_name;
+    instr = {$sformatf("la x%0d, %0sinit", cfg.gpr[0], hart_prefix(hart))};
+    if(cfg.virtual_addr_translation_on) begin
+      // For supervisor and user mode, use virtual address instead of physical address.
+      // Virtual address starts from address 0x0, here only the lower 12 bits are kept
+      // as virtual address offset.
+      instr = {instr,
+               $sformatf("slli x%0d, x%0d, %0d", cfg.gpr[0], cfg.gpr[0], XLEN - 12),
+               $sformatf("srli x%0d, x%0d, %0d", cfg.gpr[0], cfg.gpr[0], XLEN - 12)};
+    end
+    mode_name = cfg.init_privileged_mode.name();
+    instr.push_back($sformatf("csrw mepc, x%0d", cfg.gpr[0]));
+    if (!riscv_instr_pkg::support_pmp) begin
+      instr.push_back($sformatf("jal ra, %0sinit_%0s", hart_prefix(hart), mode_name.tolower()));
+    end
+    gen_section(get_label("mepc_setup", hart), instr);
+  endfunction
+
+  // Interrupt handler routine
+  // Override from risc-dv since interrupts are auto-cleared, mip will not track through the ISS 
+  // to GPR properly with autoclear
+  virtual function void gen_interrupt_handler_section(privileged_mode_t mode, int hart);
+    string mode_prefix;
+    string ls_unit;
+    privileged_reg_t status, ip, ie, scratch;
+    string interrupt_handler_instr[$];
+    ls_unit = (XLEN == 32) ? "w" : "d";
+    if (mode < cfg.init_privileged_mode) return;
+    if (mode == USER_MODE && !riscv_instr_pkg::support_umode_trap) return;
+    case(mode)
+      MACHINE_MODE: begin
+        mode_prefix = "m";
+        status = MSTATUS;
+        ip = MIP;
+        ie = MIE;
+        scratch = MSCRATCH;
+      end
+      SUPERVISOR_MODE: begin
+        mode_prefix = "s";
+        status = SSTATUS;
+        ip = SIP;
+        ie = SIE;
+        scratch = SSCRATCH;
+      end
+      USER_MODE: begin
+        mode_prefix = "u";
+        status = USTATUS;
+        ip = UIP;
+        ie = UIE;
+        scratch = USCRATCH;
+      end
+      default: `uvm_fatal(get_full_name(), $sformatf("Unsupported mode: %0s", mode.name()))
+    endcase
+      // If nested interrupts are enabled, set xSTATUS.xIE in the interrupt handler
+      // to re-enable interrupt handling capabilities
+      if (cfg.enable_nested_interrupt) begin
+        interrupt_handler_instr.push_back($sformatf("csrr x%0d, 0x%0x", cfg.gpr[0], scratch));
+        interrupt_handler_instr.push_back($sformatf("bgtz x%0d, 1f", cfg.gpr[0]));
+        interrupt_handler_instr.push_back($sformatf("csrwi 0x%0x, 0x1", scratch));
+        case (status)
+          MSTATUS: begin
+            interrupt_handler_instr.push_back($sformatf("csrsi 0x%0x, 0x%0x", status, 8));
+          end
+          SSTATUS: begin
+            interrupt_handler_instr.push_back($sformatf("csrsi 0x%0x, 0x%0x", status, 2));
+          end
+          USTATUS: begin
+            interrupt_handler_instr.push_back($sformatf("csrsi 0x%0x, 0x%0x", status, 1));
+          end
+          default: `uvm_fatal(`gfn, $sformatf("Unsupported status %0s", status))
+        endcase
+        interrupt_handler_instr.push_back($sformatf("1: csrwi 0x%0x,0", scratch));
+      end
+    // Read back interrupt related privileged CSR
+    // The value of these CSR are checked by comparing with spike simulation result.
+    interrupt_handler_instr = {
+           interrupt_handler_instr,
+           $sformatf("csrr  x%0d, 0x%0x # %0s;", cfg.gpr[0], status, status.name()),
+           $sformatf("csrr  x%0d, 0x%0x # %0s;", cfg.gpr[0], ie, ie.name())
+    };
+    gen_plic_section(interrupt_handler_instr);
+    // Restore user mode GPR value from kernel stack before return
+    pop_gpr_from_kernel_stack(status, scratch, cfg.mstatus_mprv,
+                              cfg.sp, cfg.tp, interrupt_handler_instr);
+    interrupt_handler_instr = {interrupt_handler_instr,
+                               $sformatf("%0sret;", mode_prefix)
+    };
+    if (SATP_MODE != BARE) begin
+      // The interrupt handler will use one 4KB page
+      instr_stream.push_back(".align 12");
+    end else begin
+      instr_stream.push_back(".align 2");
+    end
+    gen_section(get_label($sformatf("%0smode_intr_handler", mode_prefix), hart),
+                interrupt_handler_instr);
+  endfunction : gen_interrupt_handler_section
+
   virtual function void gen_test_done();
     instr_stream.push_back("");
     instr_stream.push_back("#Start: Extracted from riscv_compliance_tests/riscv_test.h");
