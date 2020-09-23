@@ -107,6 +107,27 @@ class corev_asm_program_gen extends riscv_asm_program_gen;
     end
   endfunction : gen_interrupt_vector_table
 
+  // Setup EPC before entering target privileged mode
+  virtual function void setup_epc(int hart);
+    string instr[$];
+    string mode_name;
+    instr = {$sformatf("la x%0d, %0sinit", cfg.gpr[0], hart_prefix(hart))};
+    if(cfg.virtual_addr_translation_on) begin
+      // For supervisor and user mode, use virtual address instead of physical address.
+      // Virtual address starts from address 0x0, here only the lower 12 bits are kept
+      // as virtual address offset.
+      instr = {instr,
+               $sformatf("slli x%0d, x%0d, %0d", cfg.gpr[0], cfg.gpr[0], XLEN - 12),
+               $sformatf("srli x%0d, x%0d, %0d", cfg.gpr[0], cfg.gpr[0], XLEN - 12)};
+    end
+    mode_name = cfg.init_privileged_mode.name();
+    instr.push_back($sformatf("csrw mepc, x%0d", cfg.gpr[0]));
+    if (!riscv_instr_pkg::support_pmp) begin
+      instr.push_back($sformatf("jal ra, %0sinit_%0s", hart_prefix(hart), mode_name.tolower()));
+    end
+    gen_section(get_label("mepc_setup", hart), instr);
+  endfunction
+
   // Interrupt handler routine
   // Override from risc-dv since interrupts are auto-cleared, mip will not track through the ISS 
   // to GPR properly with autoclear
