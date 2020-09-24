@@ -1,4 +1,4 @@
-//
+
 // Copyright 2020 OpenHW Group
 // Copyright 2020 Datum Technologies
 // 
@@ -279,5 +279,72 @@ interface uvmt_cv32_step_compare_if;
    
 endinterface: uvmt_cv32_step_compare_if
 
+// Interface to debug assertions and covergroups
+interface uvmt_cv32_debug_cov_assert_if
+    import cv32e40p_pkg::*;
+    (
+    input logic clk_i,
+    input logic rst_ni,
 
+    // Core inputs
+    input logic        fetch_enable_i, // external core fetch enable
+
+    // External interrupt interface
+    input logic [31:0] irq_i,
+    input logic        irq_ack_o,
+    input logic [4:0]  irq_id_o,
+    input logic [31:0] mie_q,
+
+    // Instruction fetch stage
+    input logic        if_stage_instr_rvalid_i, // Instruction word is valid
+    input logic [31:0] if_stage_instr_rdata_i, // Instruction word data
+
+    // Instruction ID stage (determines executed instructions)  
+    input logic        id_stage_instr_valid_i, // instruction word is valid
+    input logic [31:0] id_stage_instr_rdata_i, // Instruction word data
+    input logic        id_stage_is_compressed,
+    input logic [31:0] id_stage_pc, // Program counter in decode
+    input logic [31:0] if_stage_pc, // Program counter in fetch
+    input ctrl_state_e  ctrl_fsm_cs,            // Controller FSM states with debug_req
+    input logic        illegal_insn_i,
+    input logic        illegal_insn_q, // output from controller
+    input logic        ecall_insn_i,
+
+    // Debug signals
+    input logic              debug_req_i, // From controller
+    input logic              debug_mode_q, // From controller
+    input logic [31:0] dcsr_q, // From controller
+    input logic [31:0] depc_q, // From cs regs
+    input logic [31:0] depc_n, // 
+    input logic [31:0] dm_halt_addr_i,
+    input logic [31:0] dm_exception_addr_i,
+
+    input logic [31:0] mcause_q,
+    input logic [31:0] mtvec,
+    input logic [31:0] mepc_q,
+    input logic [31:0] tdata1,
+    input logic [31:0] tdata2,
+    input logic trigger_match_i,
+
+    // Counter related input from cs_registers
+    input logic [31:0] mcountinhibit_q,
+    input logic [63:0] mcycle,
+    input logic [63:0] minstret,
+    input logic inst_ret,
+    // WFI Interface
+    input logic core_sleep_o,
+
+    input logic csr_access,
+    input logic [1:0] csr_op,
+    input logic [11:0] csr_addr
+    output logic is_wfi,
+    output logic in_wfi,
+    output logic dpc_will_hit,
+    output logic addr_match,
+    output logic is_ebreak,
+    output logic is_cebreak,
+    output logic is_dret,
+    output logic [31:0] pending_enabled_irq
+);
+endinterface
 `endif // __UVMT_CV32_TB_IFS_SV__

@@ -53,6 +53,9 @@ module uvmt_cv32_tb;
    // Step and compare interface
    uvmt_cv32_step_compare_if step_compare_if();
    uvmt_cv32_isa_covg_if     isa_covg_if();
+
+   // Debug assertion and coverage interface
+   uvmt_cv32_debug_cov_assert_if debug_cov_assert_if();
    
   /**
    * DUT WRAPPER instance:
@@ -85,38 +88,49 @@ module uvmt_cv32_tb;
                                                       .ctrl_fsm_cs(id_stage_i.controller_i.ctrl_fsm_cs),
                                                       .exc_ctrl_cs(id_stage_i.int_controller_i.exc_ctrl_cs),
                                                       .*);
-  bind cv32e40p_core 
-    uvmt_cv32e40p_debug_assert u_debug_assert(.if_stage_instr_rvalid_i(if_stage_i.instr_rvalid_i),
-                                               .if_stage_instr_rdata_i(if_stage_i.instr_rdata_i),
-                                               .id_stage_instr_valid_i(id_stage_i.instr_valid_i),
-                                               .id_stage_instr_rdata_i(id_stage_i.instr_rdata_i),
-                                               .id_stage_is_compressed(id_stage_i.is_compressed_i),
-                                               .id_stage_pc(id_stage_i.pc_id_i),
-                                               .if_stage_pc(if_stage_i.pc_if_o),
-                                               .mie_q(cs_registers_i.mstatus_q.mie),
-                                               .ctrl_fsm_cs(id_stage_i.controller_i.ctrl_fsm_cs),
-                                               .illegal_insn_i(id_stage_i.controller_i.illegal_insn_i),
-                                               .illegal_insn_q(id_stage_i.controller_i.illegal_insn_q),
-                                               .ecall_insn_i(id_stage_i.controller_i.ecall_insn_i),
-                                               .debug_req_i(id_stage_i.controller_i.debug_req_i),
-                                               .debug_mode_q(id_stage_i.controller_i.debug_mode_q),
-                                               .dcsr_q(cs_registers_i.dcsr_q),
-                                               .depc_q(cs_registers_i.depc_q),
-                                               .depc_n(cs_registers_i.depc_n),
-                                               .mcause_q(cs_registers_i.mcause_q),
-                                               .mtvec(cs_registers_i.mtvec_addr_i),
-                                               .mepc_q(cs_registers_i.mepc_q),
-                                               .tdata1(cs_registers_i.tmatch_control_rdata),
-                                               .tdata2(cs_registers_i.tmatch_value_rdata),
-                                               .trigger_match_i(id_stage_i.controller_i.trigger_match_i),
-                                               .mcountinhibit_q(cs_registers_i.mcountinhibit_q),
-                                               .mcycle(cs_registers_i.mhpmcounter_q[0]),
-                                               .minstret(cs_registers_i.mhpmcounter_q[2]),
-                                               .inst_ret(cs_registers_i.inst_ret),
-                                               .csr_access(id_stage_i.csr_access),
-                                               .csr_op(id_stage_i.csr_op),
-                                               .csr_addr(csr_addr),
-                                               .*);
+    
+    // Hook up interface to debug assertions and coverage                                          
+    assign debug_cov_assert_if.clk_i = clknrst_if.clk;
+    assign debug_cov_assert_if.rst_ni = clknrst_if.reset_n;
+    assign debug_cov_assert_if.fetch_enable_i = dut_wrap.cv32e40p_wrapper_i.core_i.fetch_enable_i;
+    assign debug_cov_assert_if.if_stage_instr_rvalid_i = dut_wrap.cv32e40p_wrapper_i.core_i.if_stage_i.instr_rvalid_i;
+    assign debug_cov_assert_if.if_stage_instr_rdata_i = dut_wrap.cv32e40p_wrapper_i.core_i.if_stage_i.instr_rdata_i;
+    assign debug_cov_assert_if.id_stage_instr_valid_i = dut_wrap.cv32e40p_wrapper_i.core_i.id_stage_i.instr_valid_i;
+    assign debug_cov_assert_if.id_stage_instr_rdata_i = dut_wrap.cv32e40p_wrapper_i.core_i.id_stage_i.instr_rdata_i;
+    assign debug_cov_assert_if.id_stage_is_compressed = dut_wrap.cv32e40p_wrapper_i.core_i.id_stage_i.is_compressed_i;
+    assign debug_cov_assert_if.id_stage_pc = dut_wrap.cv32e40p_wrapper_i.core_i.id_stage_i.pc_id_i;
+    assign debug_cov_assert_if.if_stage_pc = dut_wrap.cv32e40p_wrapper_i.core_i.if_stage_i.pc_if_o;
+    assign debug_cov_assert_if.mie_q = dut_wrap.cv32e40p_wrapper_i.core_i.cs_registers_i.mstatus_q.mie;
+    assign debug_cov_assert_if.ctrl_fsm_cs = dut_wrap.cv32e40p_wrapper_i.core_i.id_stage_i.controller_i.ctrl_fsm_cs;
+    assign debug_cov_assert_if.illegal_insn_i = dut_wrap.cv32e40p_wrapper_i.core_i.id_stage_i.controller_i.illegal_insn_i;
+    assign debug_cov_assert_if.illegal_insn_q = dut_wrap.cv32e40p_wrapper_i.core_i.id_stage_i.controller_i.illegal_insn_q;
+    assign debug_cov_assert_if.ecall_insn_i = dut_wrap.cv32e40p_wrapper_i.core_i.id_stage_i.controller_i.ecall_insn_i;
+    assign debug_cov_assert_if.debug_req_i = dut_wrap.cv32e40p_wrapper_i.core_i.id_stage_i.controller_i.debug_req_i;
+    assign debug_cov_assert_if.debug_mode_q = dut_wrap.cv32e40p_wrapper_i.core_i.id_stage_i.controller_i.debug_mode_q;
+    assign debug_cov_assert_if.dcsr_q = dut_wrap.cv32e40p_wrapper_i.core_i.cs_registers_i.dcsr_q;
+    assign debug_cov_assert_if.depc_q = dut_wrap.cv32e40p_wrapper_i.core_i.cs_registers_i.depc_q;
+    assign debug_cov_assert_if.depc_n = dut_wrap.cv32e40p_wrapper_i.core_i.cs_registers_i.depc_n;
+    assign debug_cov_assert_if.mcause_q = dut_wrap.cv32e40p_wrapper_i.core_i.cs_registers_i.mcause_q;
+    assign debug_cov_assert_if.mtvec = dut_wrap.cv32e40p_wrapper_i.core_i.cs_registers_i.mtvec_addr_i;
+    assign debug_cov_assert_if.mepc_q = dut_wrap.cv32e40p_wrapper_i.core_i.cs_registers_i.mepc_q;
+    assign debug_cov_assert_if.tdata1 = dut_wrap.cv32e40p_wrapper_i.core_i.cs_registers_i.tmatch_control_rdata;
+    assign debug_cov_assert_if.tdata2 = dut_wrap.cv32e40p_wrapper_i.core_i.cs_registers_i.tmatch_value_rdata;
+    assign debug_cov_assert_if.trigger_match_i = dut_wrap.cv32e40p_wrapper_i.core_i.id_stage_i.controller_i.trigger_match_i;
+    assign debug_cov_assert_if.mcountinhibit_q = dut_wrap.cv32e40p_wrapper_i.core_i.cs_registers_i.mcountinhibit_q;
+    assign debug_cov_assert_if.mcycle = dut_wrap.cv32e40p_wrapper_i.core_i.cs_registers_i.mhpmcounter_q[0];
+    assign debug_cov_assert_if.minstret = dut_wrap.cv32e40p_wrapper_i.core_i.cs_registers_i.mhpmcounter_q[2];
+    assign debug_cov_assert_if.inst_ret = dut_wrap.cv32e40p_wrapper_i.core_i.cs_registers_i.inst_ret;
+    assign debug_cov_assert_if.csr_access = dut_wrap.cv32e40p_wrapper_i.core_i.id_stage_i.csr_access;
+    assign debug_cov_assert_if.csr_op = dut_wrap.cv32e40p_wrapper_i.core_i.id_stage_i.csr_op;
+    assign debug_cov_assert_if.csr_addr = dut_wrap.cv32e40p_wrapper_i.core_i.csr_addr;
+    assign debug_cov_assert_if.irq_ack_o = dut_wrap.cv32e40p_wrapper_i.core_i.irq_ack_o;
+    assign debug_cov_assert_if.dm_halt_addr_i = dut_wrap.cv32e40p_wrapper_i.core_i.dm_halt_addr_i;
+    assign debug_cov_assert_if.dm_exception_addr_i = dut_wrap.cv32e40p_wrapper_i.core_i.dm_exception_addr_i;
+    assign debug_cov_assert_if.core_sleep_o = dut_wrap.cv32e40p_wrapper_i.core_i.core_sleep_o;
+    assign debug_cov_assert_if.irq_i = dut_wrap.cv32e40p_wrapper_i.core_i.irq_i;
+
+    // Instantiate debug assertions
+    uvmt_cv32e40p_debug_assert u_debug_assert(.cov_assert_if(debug_cov_assert_if));
 
   /**
    * ISS WRAPPER instance:
@@ -272,6 +286,7 @@ module uvmt_cv32_tb;
      uvm_config_db#(virtual uvmt_cv32_core_status_if    )::set(.cntxt(null), .inst_name("*"), .field_name("core_status_vif"),     .value(core_status_if)    );     
      uvm_config_db#(virtual uvmt_cv32_step_compare_if   )::set(.cntxt(null), .inst_name("*"), .field_name("step_compare_vif"),    .value(step_compare_if));
      uvm_config_db#(virtual uvmt_cv32_isa_covg_if       )::set(.cntxt(null), .inst_name("*"), .field_name("isa_covg_vif"),        .value(isa_covg_if));
+     uvm_config_db#(virtual uvmt_cv32_debug_cov_assert_if)::set(.cntxt(null), .inst_name("*.env.debug_agent"), .field_name("vif_cov"),.value(debug_cov_assert_if));
       
      // Make the DUT Wrapper Virtual Peripheral's status outputs available to the base_test
      uvm_config_db#(bit      )::set(.cntxt(null), .inst_name("*"), .field_name("tp"),     .value(1'b0)        );
