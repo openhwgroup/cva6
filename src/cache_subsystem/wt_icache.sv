@@ -69,6 +69,7 @@ module wt_icache import ariane_pkg::*; import wt_cache_pkg::*; #(
 
   // invalidations / flushing
   logic                                 inv_en;                       // incoming invalidations
+  logic                                 inv_d, inv_q;                 // invalidation in progress
   logic                                 flush_en, flush_done;         // used to flush cache entries
   logic [ICACHE_CL_IDX_WIDTH-1:0]       flush_cnt_d, flush_cnt_q;     // used to flush cache entries
 
@@ -88,7 +89,7 @@ module wt_icache import ariane_pkg::*; import wt_cache_pkg::*; #(
   logic [ICACHE_CL_IDX_WIDTH-1:0]       vld_addr;                     // valid bit
 
   // cpmtroller FSM
-  typedef enum logic[2:0] {FLUSH, IDLE, READ, MISS, TLB_MISS, KILL_ATRANS, KILL_MISS} state_e;
+  typedef enum logic[2:0] {FLUSH, IDLE, READ, MISS, KILL_ATRANS, KILL_MISS} state_e;
   state_e state_d, state_q;
 
 ///////////////////////////////////////////////////////
@@ -99,7 +100,7 @@ module wt_icache import ariane_pkg::*; import wt_cache_pkg::*; #(
   assign cl_tag_d  = (areq_i.fetch_valid) ? areq_i.fetch_paddr[ICACHE_TAG_WIDTH+ICACHE_INDEX_WIDTH-1:ICACHE_INDEX_WIDTH] : cl_tag_q;
 
   // noncacheable if request goes to I/O space, or if cache is disabled
-  assign paddr_is_nc = (~cache_en_q) | (~ariane_pkg::is_inside_cacheable_regions(ArianeCfg, {{64-ICACHE_TAG_WIDTH{1'b0}}, cl_tag_d, {ICACHE_INDEX_WIDTH{1'b0}}}));
+  assign paddr_is_nc = (~cache_en_q) | (~ariane_pkg::is_inside_cacheable_regions(ArianeCfg, {{{64-riscv::PLEN}{1'b0}}, cl_tag_d, {ICACHE_INDEX_WIDTH{1'b0}}}));
 
   // pass exception through
   assign dreq_o.ex = areq_i.fetch_exception;
@@ -139,6 +140,9 @@ end else begin : gen_piton_offset
   // way that is being replaced
   assign mem_data_o.way   = repl_way;
   assign dreq_o.vaddr     = vaddr_q;
+
+  // invalidations take two cycles
+  assign inv_d = inv_en;
 
 ///////////////////////////////////////////////////////
 // main control logic
@@ -217,7 +221,6 @@ end else begin : gen_piton_offset
       // reuse the miss mechanism to handle
       // the request
       READ: begin
-          state_d          = TLB_MISS;
           areq_o.fetch_req = '1;
           // only enable tag comparison if cache is enabled
           cmp_en_d    = cache_en_q;
@@ -229,7 +232,7 @@ end else begin : gen_piton_offset
             if (flush_d) begin
               state_d  = IDLE;
             // we have a hit or an exception output valid result
-            end else if ((|cl_hit && cache_en_q) || areq_i.fetch_exception.valid) begin
+            end else if (((|cl_hit && cache_en_q) || areq_i.fetch_exception.valid) && !inv_q) begin
               dreq_o.valid     = ~dreq_i.kill_s2;// just don't output in this case
               state_d          = IDLE;
 
@@ -250,7 +253,7 @@ end else begin : gen_piton_offset
             // we have a miss / NC transaction
             end else if (dreq_i.kill_s2) begin
               state_d = IDLE;
-            end else begin
+            end else if (!inv_q) begin
               cmp_en_d = 1'b0;
               // only count this as a miss if the cache is enabled, and
               // the address is cacheable
@@ -265,35 +268,6 @@ end else begin : gen_piton_offset
           end else if (dreq_i.kill_s2 || flush_d) begin
             state_d  = KILL_ATRANS;
           end
-      end
-      //////////////////////////////////
-      // wait until the memory transaction
-      // returns. do not write to memory
-      // if the nc bit is set.
-      TLB_MISS: begin
-        areq_o.fetch_req = '1;
-        // only enable tag comparison if cache is enabled
-        cmp_en_d = cache_en_q;
-        // readout speculatively
-        cache_rden = cache_en_q;
-
-        if (areq_i.fetch_valid && (!dreq_i.spec || !addr_ni)) begin
-          // check if we have to kill this request
-          if (dreq_i.kill_s2 | flush_d) begin
-            state_d  = IDLE;
-          // check whether we got an exception
-          end else if (areq_i.fetch_exception.valid) begin
-            dreq_o.valid = 1'b1;
-            state_d      = IDLE;
-          // re-trigger cache readout for tag comparison and cache line selection
-          // but if we got an invalidation, we have to wait another cycle
-          end else if (!mem_rtrn_vld_i) begin
-            state_d          = READ;
-          end
-        // bail out if this request is being killed
-        end else if (dreq_i.kill_s2 || flush_d) begin
-          state_d  = KILL_ATRANS;
-        end
       end
       //////////////////////////////////
       // wait until the memory transaction
@@ -486,6 +460,7 @@ end else begin : gen_piton_offset
       state_q       <= IDLE;
       cl_offset_q   <= '0;
       repl_way_oh_q <= '0;
+      inv_q         <= '0;
     end else begin
       cl_tag_q      <= cl_tag_d;
       flush_cnt_q   <= flush_cnt_d;
@@ -496,6 +471,7 @@ end else begin : gen_piton_offset
       state_q       <= state_d;
       cl_offset_q   <= cl_offset_d;
       repl_way_oh_q <= repl_way_oh_d;
+      inv_q         <= inv_d;
     end
   end
 
