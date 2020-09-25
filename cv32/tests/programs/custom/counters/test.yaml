@@ -1,0 +1,5 @@
+name: counters
+uvm_test: uvmt_cv32_firmware_test_c
+description: >
+    Simple counters sanity test
+

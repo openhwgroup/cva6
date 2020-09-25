@@ -107,8 +107,13 @@ tests:
     build: uvmt_cv32
     description: Debug Test 1
     dir: cv32/sim/uvmt_cv32
-    cmd: make debug_test
-    iss: 0
+    cmd: make test TEST=debug_test
+
+  counters:
+    build: uvmt_cv32
+    description: Directed test of Counters
+    dir: cv32/sim/uvmt_cv32
+    cmd: make test TEST=counters
 
   pulp_bit_manipulation:
     build: uvmt_cv32

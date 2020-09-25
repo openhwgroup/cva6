@@ -21,7 +21,7 @@
 #
 ###############################################################################
 # 
-# Copyright 2019 Clifford Wolf
+# Copyright 2019 Claire Wolf
 # Copyright 2019 Robert Balas
 #
 # Permission to use, copy, modify, and/or distribute this software for any
@@ -69,21 +69,12 @@ BANNER=*************************************************************************
 CV32E40P_REPO   ?= https://github.com/openhwgroup/cv32e40p
 CV32E40P_BRANCH ?= master
 #2020-09-17
-CV32E40P_HASH    ?= 9529b94dac8b90e23201c718e4e4bca8bd72204f
-#2020-09-13
-#CV32E40P_HASH   ?= 41c5f9b2f2598b7aa066c3943e453e2e17792cd6
-#2020-09-09
-#CV32E40P_HASH   ?= 7a0fe7afa3f520f4f67d07af3df47f91e6a04fe6
-
+CV32E40P_HASH    ?= 5c97310505eddbe36a429fd2fc9e0781ff89cd2f
 
 FPNEW_REPO      ?= https://github.com/pulp-platform/fpnew
 FPNEW_BRANCH    ?= master
-#2020-08-27
+#2020-09-23
 FPNEW_HASH      ?= a0c021c360abcc94e434d41974a52bdcbf14d156
-#Note: this is one merge behind the head (as of 2020-06-11)
-#FPNEW_HASH      ?= f108dfdd84f7c24dcdefb35790fafb3905bce552
-#Note: this is head (as of 2020-06-11).  Can't use it because of the worm
-#FPNEW_HASH      ?= babffe88fcf6d2931a7afa8d121b6a6ba4f532f7
 
 RISCVDV_REPO    ?= https://github.com/google/riscv-dv
 #RISCVDV_REPO    ?= https://github.com/MikeOpenHWGroup/riscv-dv
@@ -163,15 +154,51 @@ OVP_MODEL_DPI   = $(DV_OVPM_MODEL)/bin/Linux64/riscv_CV32E40P.dpi.so
 #OVP_CTRL_FILE   = $(DV_OVPM_DESIGN)/riscv_CV32E40P.ic
 
 ###############################################################################
-# Build "firmware" for the CV32E40P "core" testbench and "uvmt_cv32"
-# verification environment.  Substantially modified from the original from the
-# Makefile first developed for the PULP-Platform RI5CY testbench.
+# "Toolchain" to compile 'test-programs' (either C or RISC-V Assember) for the
+# CV32E40P.   This toolchain is used by both the core testbench and UVM
+# environment.  The assumption here is that you have installed at least one of
+# the following toolchains:
+#     1. GNU:   https://github.com/riscv/riscv-gnu-toolchain
+#               Assumed to be installed at /opt/gnu.
 #
-# riscv toolchain install path
+#     2. COREV: https://www.embecosm.com/resources/tool-chain-downloads/#corev 
+#               Assumed to be installed at /opt/corev.
+#
+#     3. PULP:  https://github.com/pulp-platform/pulp-riscv-gnu-toolchain 
+#               Assumed to be installed at /opt/pulp.
+#
+# If you do not select one of the above options, compilation will be attempted
+# using whatever is found at /opt/riscv using arch=unknown.
+#
+GNU_SW_TOOLCHAIN    ?= /opt/gnu
+GNU_MARCH           ?= unknown
+COREV_SW_TOOLCHAIN  ?= /opt/corev
+COREV_MARCH         ?= corev
+PULP_SW_TOOLCHAIN   ?= /opt/pulp
+PULP_MARCH          ?= unknown
+
 CV_SW_TOOLCHAIN  ?= /opt/riscv
 RISCV            ?= $(CV_SW_TOOLCHAIN)
 RISCV_PREFIX     ?= riscv32-unknown-elf-
 RISCV_EXE_PREFIX ?= $(RISCV)/bin/$(RISCV_PREFIX)
+
+ifeq ($(call IS_YES,$(GNU)),YES)
+RISCV            = $(GNU_SW_TOOLCHAIN)
+RISCV_PREFIX     = riscv32-$(GNU_MARCH)-elf-
+RISCV_EXE_PREFIX = $(RISCV)/bin/$(RISCV_PREFIX)
+endif
+
+ifeq ($(call IS_YES,$(COREV)),YES)
+RISCV            = $(COREV_SW_TOOLCHAIN)
+RISCV_PREFIX     = riscv32-$(COREV_MARCH)-elf-
+RISCV_EXE_PREFIX = $(RISCV)/bin/$(RISCV_PREFIX)
+endif
+
+ifeq ($(call IS_YES,$(PULP)),YES)
+RISCV            = $(PULP_SW_TOOLCHAIN)
+RISCV_PREFIX     = riscv32-$(PULP_MARCH)-elf-
+RISCV_EXE_PREFIX = $(RISCV)/bin/$(RISCV_PREFIX)
+endif
 
 CFLAGS ?= -Os -g -static -mabi=ilp32 -march=rv32imc -Wall -pedantic
 

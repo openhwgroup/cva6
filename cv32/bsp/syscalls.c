@@ -1,7 +1,7 @@
 /* An extremely minimalist syscalls.c for newlib
  * Based on riscv newlib libgloss/riscv/sys_*.c
  *
- * Copyright 2019 Clifford Wolf
+ * Copyright 2019 Claire Wolf
  * Copyright 2019 ETH Zürich and University of Bologna
  *
  * Permission to use, copy, modify, and/or distribute this software for any

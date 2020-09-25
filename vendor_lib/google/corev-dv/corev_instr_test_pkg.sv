@@ -25,6 +25,7 @@ package corev_instr_test_pkg;
   `include "corev_interrupt_csr_instr_lib.sv"
 
   `include "corev_privil_reg.sv"
+  `include "corev_privileged_common_seq.sv"
   `include "corev_instr_gen_config.sv"
   `include "corev_debug_rom_gen.sv"
   `include "corev_asm_program_gen.sv"

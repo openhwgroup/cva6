@@ -17,12 +17,6 @@ tests:
     cmd: make hello-world
     cmd: make test TEST=hello-world
     
-  riscv_ebreak_test_0:
-    build: uvmt_cv32
-    description: Static riscv-dv ebreak test
-    dir: cv32/sim/uvmt_cv32
-    cmd: make test TEST=riscv_ebreak_test_0
-
   illegal:
     build: uvmt_cv32
     dir: cv32/sim/uvmt_cv32
