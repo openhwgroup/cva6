@@ -141,7 +141,7 @@ group insert \
      simulator::uvmt_cv32_tb.dut_wrap.riscv_core_i.riscv_tracer_i.retire  \
      simulator::uvmt_cv32_tb.dut_wrap.riscv_core_i.riscv_tracer_i.insn_disas  \
      simulator::uvmt_cv32_tb.dut_wrap.riscv_core_i.riscv_tracer_i.insn_regs_write  \
-     simulator::uvmt_cv32_tb.dut_wrap.riscv_core_i.id_stage_i.registers_i.riscv_register_file_i.clk  \
+     simulator::uvmt_cv32_tb.dut_wrap.riscv_core_i.id_stage_i.register_file_i.clk  \
     registers \
      simulator::uvmt_cv32_tb.dut_wrap.riscv_core_i.id_stage_i.decoder_i.csr_illegal  \
      {simulator::uvmt_cv32_tb.dut_wrap.riscv_core_i.id_stage_i.decoder_i.instr_rdata_i[31:0]}  \
@@ -207,15 +207,15 @@ group set -comment {}
 group clear 0 end
 
 group insert \
-     {simulator::uvmt_cv32_tb.dut_wrap.riscv_core_i.id_stage_i.registers_i.riscv_register_file_i.mem[18]}  \
-     {simulator::uvmt_cv32_tb.dut_wrap.riscv_core_i.id_stage_i.registers_i.riscv_register_file_i.mem[17]}  \
-     {simulator::uvmt_cv32_tb.dut_wrap.riscv_core_i.id_stage_i.registers_i.riscv_register_file_i.mem[16]}  \
-     {simulator::uvmt_cv32_tb.dut_wrap.riscv_core_i.id_stage_i.registers_i.riscv_register_file_i.mem[15]}  \
-     {simulator::uvmt_cv32_tb.dut_wrap.riscv_core_i.id_stage_i.registers_i.riscv_register_file_i.mem[14]}  \
-     {simulator::uvmt_cv32_tb.dut_wrap.riscv_core_i.id_stage_i.registers_i.riscv_register_file_i.mem[13]}  \
-     {simulator::uvmt_cv32_tb.dut_wrap.riscv_core_i.id_stage_i.registers_i.riscv_register_file_i.mem[3]}  \
-     {simulator::uvmt_cv32_tb.dut_wrap.riscv_core_i.id_stage_i.registers_i.riscv_register_file_i.mem[2]}  \
-     {simulator::uvmt_cv32_tb.dut_wrap.riscv_core_i.id_stage_i.registers_i.riscv_register_file_i.mem[31:0]}  \
+     {simulator::uvmt_cv32_tb.dut_wrap.riscv_core_i.id_stage_i.register_file_i.mem[18]}  \
+     {simulator::uvmt_cv32_tb.dut_wrap.riscv_core_i.id_stage_i.register_file_i.mem[17]}  \
+     {simulator::uvmt_cv32_tb.dut_wrap.riscv_core_i.id_stage_i.register_file_i.mem[16]}  \
+     {simulator::uvmt_cv32_tb.dut_wrap.riscv_core_i.id_stage_i.register_file_i.mem[15]}  \
+     {simulator::uvmt_cv32_tb.dut_wrap.riscv_core_i.id_stage_i.register_file_i.mem[14]}  \
+     {simulator::uvmt_cv32_tb.dut_wrap.riscv_core_i.id_stage_i.register_file_i.mem[13]}  \
+     {simulator::uvmt_cv32_tb.dut_wrap.riscv_core_i.id_stage_i.register_file_i.mem[3]}  \
+     {simulator::uvmt_cv32_tb.dut_wrap.riscv_core_i.id_stage_i.register_file_i.mem[2]}  \
+     {simulator::uvmt_cv32_tb.dut_wrap.riscv_core_i.id_stage_i.register_file_i.mem[31:0]}  \
      {simulator::uvmt_cv32_tb.dut_wrap.riscv_core_i.cs_registers_i.mcause_q[6:0]}  \
      {simulator::uvmt_cv32_tb.dut_wrap.riscv_core_i.cs_registers_i.mepc_q[31:0]}  \
      {simulator::uvmt_cv32_tb.dut_wrap.riscv_core_i.cs_registers_i.MISA_VALUE[31:0]}  \
@@ -329,11 +329,11 @@ set id [waveform add -signals  {
 	} ]
 waveform format $id -radix %a
 set id [waveform add -signals  {
-	{simulator::uvmt_cv32_tb.dut_wrap.riscv_core_i.id_stage_i.registers_i.riscv_register_file_i.mem[10]}
+	{simulator::uvmt_cv32_tb.dut_wrap.riscv_core_i.id_stage_i.register_file_i.mem[10]}
 	} ]
 waveform format $id -radix %x
 set id [waveform add -signals  {
-	{simulator::uvmt_cv32_tb.dut_wrap.riscv_core_i.id_stage_i.registers_i.riscv_register_file_i.mem[3]}
+	{simulator::uvmt_cv32_tb.dut_wrap.riscv_core_i.id_stage_i.register_file_i.mem[3]}
 	} ]
 waveform format $id -radix %x
 
@@ -343,15 +343,15 @@ set groupId1 [waveform find -name registers]
 set gpGlist1 [waveform hierarchy contents $groupId1]
 set gpID1 [lindex $gpGlist1 0]
 foreach {name attrs}  {
-    {simulator::uvmt_cv32_tb.dut_wrap.riscv_core_i.id_stage_i.registers_i.riscv_register_file_i.mem[18]} {-radix %x}
-    {simulator::uvmt_cv32_tb.dut_wrap.riscv_core_i.id_stage_i.registers_i.riscv_register_file_i.mem[17]} {-radix %x}
-    {simulator::uvmt_cv32_tb.dut_wrap.riscv_core_i.id_stage_i.registers_i.riscv_register_file_i.mem[16]} {-radix %x}
-    {simulator::uvmt_cv32_tb.dut_wrap.riscv_core_i.id_stage_i.registers_i.riscv_register_file_i.mem[15]} {-radix %x}
-    {simulator::uvmt_cv32_tb.dut_wrap.riscv_core_i.id_stage_i.registers_i.riscv_register_file_i.mem[14]} {-radix %x}
-    {simulator::uvmt_cv32_tb.dut_wrap.riscv_core_i.id_stage_i.registers_i.riscv_register_file_i.mem[13]} {-radix %x}
-    {simulator::uvmt_cv32_tb.dut_wrap.riscv_core_i.id_stage_i.registers_i.riscv_register_file_i.mem[3]} {-radix %x}
-    {simulator::uvmt_cv32_tb.dut_wrap.riscv_core_i.id_stage_i.registers_i.riscv_register_file_i.mem[2]} {-radix %x}
-    {simulator::uvmt_cv32_tb.dut_wrap.riscv_core_i.id_stage_i.registers_i.riscv_register_file_i.mem[31:0]} {-radix %x}
+    {simulator::uvmt_cv32_tb.dut_wrap.riscv_core_i.id_stage_i.register_file_i.mem[18]} {-radix %x}
+    {simulator::uvmt_cv32_tb.dut_wrap.riscv_core_i.id_stage_i.register_file_i.mem[17]} {-radix %x}
+    {simulator::uvmt_cv32_tb.dut_wrap.riscv_core_i.id_stage_i.register_file_i.mem[16]} {-radix %x}
+    {simulator::uvmt_cv32_tb.dut_wrap.riscv_core_i.id_stage_i.register_file_i.mem[15]} {-radix %x}
+    {simulator::uvmt_cv32_tb.dut_wrap.riscv_core_i.id_stage_i.register_file_i.mem[14]} {-radix %x}
+    {simulator::uvmt_cv32_tb.dut_wrap.riscv_core_i.id_stage_i.register_file_i.mem[13]} {-radix %x}
+    {simulator::uvmt_cv32_tb.dut_wrap.riscv_core_i.id_stage_i.register_file_i.mem[3]} {-radix %x}
+    {simulator::uvmt_cv32_tb.dut_wrap.riscv_core_i.id_stage_i.register_file_i.mem[2]} {-radix %x}
+    {simulator::uvmt_cv32_tb.dut_wrap.riscv_core_i.id_stage_i.register_file_i.mem[31:0]} {-radix %x}
     {simulator::uvmt_cv32_tb.dut_wrap.riscv_core_i.cs_registers_i.mcause_q[6:0]} {-radix %x}
     {simulator::uvmt_cv32_tb.dut_wrap.riscv_core_i.cs_registers_i.mepc_q[31:0]} {-radix %x}
     {simulator::uvmt_cv32_tb.dut_wrap.riscv_core_i.cs_registers_i.MISA_VALUE[31:0]} {-radix %x}
@@ -463,7 +463,7 @@ foreach {name attrs}  {
     simulator::uvmt_cv32_tb.dut_wrap.riscv_core_i.riscv_tracer_i.retire {-radix %x}
     simulator::uvmt_cv32_tb.dut_wrap.riscv_core_i.riscv_tracer_i.insn_disas {-radix %a}
     simulator::uvmt_cv32_tb.dut_wrap.riscv_core_i.riscv_tracer_i.insn_regs_write {-trace analogSampleAndHold}
-    simulator::uvmt_cv32_tb.dut_wrap.riscv_core_i.id_stage_i.registers_i.riscv_register_file_i.clk {}
+    simulator::uvmt_cv32_tb.dut_wrap.riscv_core_i.id_stage_i.register_file_i.clk {}
     simulator::uvmt_cv32_tb.dut_wrap.riscv_core_i.id_stage_i.decoder_i.csr_illegal {}
     {simulator::uvmt_cv32_tb.dut_wrap.riscv_core_i.id_stage_i.decoder_i.instr_rdata_i[31:0]} {-radix %x}
     simulator::uvmt_cv32_tb.dut_wrap.riscv_core_i.id_stage_i.decoder_i.illegal_insn_o {}

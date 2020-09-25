@@ -358,10 +358,10 @@ logic [4:0]                    irq_core_resp_id_int;
             .apu_en_ex        ( RISCV_CORE.ex_stage_i.apu_en_i                  ),
 
             .ex_valid         ( RISCV_CORE.ex_valid                             ),
-            .ex_reg_addr      ( RISCV_CORE.id_stage_i.registers_i.waddr_b_i     ),
+            .ex_reg_addr      ( RISCV_CORE.id_stage_i.register_file_i.waddr_b_i ),
 
-            .ex_reg_we        ( RISCV_CORE.id_stage_i.registers_i.we_b_i        ),
-            .ex_reg_wdata     ( RISCV_CORE.id_stage_i.registers_i.wdata_b_i     ),
+            .ex_reg_we        ( RISCV_CORE.id_stage_i.register_file_i.we_b_i    ),
+            .ex_reg_wdata     ( RISCV_CORE.id_stage_i.register_file_i.wdata_b_i ),
 
             .ex_data_req      ( RISCV_CORE.data_req_o                           ),
             .ex_data_gnt      ( RISCV_CORE.data_gnt_i                           ),
@@ -373,9 +373,9 @@ logic [4:0]                    irq_core_resp_id_int;
             .wb_bypass        ( RISCV_CORE.ex_stage_i.branch_in_ex_i            ),
 
             .wb_valid         ( RISCV_CORE.wb_valid                             ),
-            .wb_reg_addr      ( RISCV_CORE.id_stage_i.registers_i.waddr_a_i     ),
-            .wb_reg_we        ( RISCV_CORE.id_stage_i.registers_i.we_a_i        ),
-            .wb_reg_wdata     ( RISCV_CORE.id_stage_i.registers_i.wdata_a_i     ),
+            .wb_reg_addr      ( RISCV_CORE.id_stage_i.register_file_i.waddr_a_i ),
+            .wb_reg_we        ( RISCV_CORE.id_stage_i.register_file_i.we_a_i    ),
+            .wb_reg_wdata     ( RISCV_CORE.id_stage_i.register_file_i.wdata_a_i ),
             .wb_data_rvalid   ( RISCV_CORE.data_rvalid_i                        ),
             .wb_data_rdata    ( RISCV_CORE.data_rdata_i                         )
           );

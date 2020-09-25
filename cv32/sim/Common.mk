@@ -69,12 +69,11 @@ BANNER=*************************************************************************
 CV32E40P_REPO   ?= https://github.com/openhwgroup/cv32e40p
 CV32E40P_BRANCH ?= master
 #2020-09-17
-CV32E40P_HASH    ?= 9529b94dac8b90e23201c718e4e4bca8bd72204f
-
+CV32E40P_HASH    ?= 5c97310505eddbe36a429fd2fc9e0781ff89cd2f
 
 FPNEW_REPO      ?= https://github.com/pulp-platform/fpnew
 FPNEW_BRANCH    ?= master
-#2020-08-27
+#2020-09-23
 FPNEW_HASH      ?= a0c021c360abcc94e434d41974a52bdcbf14d156
 
 RISCVDV_REPO    ?= https://github.com/google/riscv-dv
