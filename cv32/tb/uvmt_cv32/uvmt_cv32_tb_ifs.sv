@@ -336,7 +336,7 @@ interface uvmt_cv32_debug_cov_assert_if
 
     input logic csr_access,
     input logic [1:0] csr_op,
-    input logic [11:0] csr_addr
+    input logic [11:0] csr_addr,
     output logic is_wfi,
     output logic in_wfi,
     output logic dpc_will_hit,
