@@ -147,7 +147,8 @@ end else begin : gen_piton_offset
 ///////////////////////////////////////////////////////
 // main control logic
 ///////////////////////////////////////////////////////
-
+  logic addr_ni;
+  assign addr_ni = is_inside_nonidempotent_regions(ArianeCfg, areq_i.fetch_paddr);
   always_comb begin : p_fsm
     // default assignment
     state_d      = state_q;
@@ -226,7 +227,7 @@ end else begin : gen_piton_offset
           // readout speculatively
           cache_rden  = cache_en_q;
 
-          if (areq_i.fetch_valid) begin
+          if (areq_i.fetch_valid && (!dreq_i.spec || !addr_ni) ) begin
             // check if we have to flush
             if (flush_d) begin
               state_d  = IDLE;
