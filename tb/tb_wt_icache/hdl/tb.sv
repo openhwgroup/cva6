@@ -10,7 +10,7 @@
 //
 // Author: Michael Schaffner <schaffner@iis.ee.ethz.ch>, ETH Zurich
 // Date: 15.08.2018
-// Description: testbench for piton_icache. includes the following tests:
+// Description: testbench for icache. includes the following tests:
 //
 // 0) random accesses with disabled cache
 // 1) random accesses with enabled cache to cacheable and noncacheable memory
@@ -25,10 +25,7 @@
 
 `include "tb.svh"
 
-module tb;
-  import tb_pkg::*;
-  import ariane_pkg::*;
-  import wt_cache_pkg::*;
+module tb import tb_pkg::*; import ariane_pkg::*; import wt_cache_pkg::*; #()();
 
   // leave this
   timeunit 1ps;
@@ -38,7 +35,7 @@ module tb;
   parameter MemBytes                   = 2**ICACHE_INDEX_WIDTH * 4 * 32;
   parameter MemWords                   = MemBytes>>2;
   parameter logic [63:0] CachedAddrBeg = MemBytes/4;
-  parameter logic [63:0] CachedAddrEnd = 64'hFFFF_FFFF_FFFF_FFFF;
+  parameter logic [63:0] CachedAddrEnd = MemBytes;
 
   localparam ariane_cfg_t Cfg = '{
     RASDepth:              2,
@@ -343,19 +340,19 @@ module tb;
     // TEST 0
     en_i = 0;
     genRandReq();
-    `APPL_WAIT_CYC(clk_i,40);
+    `APPL_WAIT_CYC(clk_i,200);
     ///////////////////////////////////////////////
     // TEST 1
     test_name = "TEST1, enabled cache";
     en_i = 1;
     genRandReq();
-    `APPL_WAIT_CYC(clk_i,40);
+    `APPL_WAIT_CYC(clk_i,200);
     ///////////////////////////////////////////////
     // TEST 2
     test_name = "TEST2, enabled cache, sequential reads";
     en_i        = 1;
     genSeqRead();
-    `APPL_WAIT_CYC(clk_i,40);
+    `APPL_WAIT_CYC(clk_i,200);
     ///////////////////////////////////////////////
     // TEST 3
     test_name = "TEST3, enabled cache, random stalls in mem and TLB side";
@@ -363,7 +360,7 @@ module tb;
     mem_rand_en = 1;
     tlb_rand_en = 1;
     genRandReq();
-    `APPL_WAIT_CYC(clk_i,40);
+    `APPL_WAIT_CYC(clk_i,200);
     ///////////////////////////////////////////////
     // TEST 4
     test_name = "TEST4, +random invalidations";
@@ -372,7 +369,7 @@ module tb;
     tlb_rand_en = 1;
     inv_rand_en = 1;
     genRandReq();
-    `APPL_WAIT_CYC(clk_i,40);
+    `APPL_WAIT_CYC(clk_i,200);
     ///////////////////////////////////////////////
     end_of_sim = 1;
     $display("TB> stimuli application ended");
