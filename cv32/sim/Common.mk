@@ -378,10 +378,20 @@ TEST_FILES        = $(filter %.c %.S,$(wildcard $(dir $*)*))
 
 # Patterned targets to generate ELF.  Used only if explicit targets do not match.
 #
-# This target selected if both %.c and %.S exist
 .PRECIOUS : %.elf
+# This target selected if both %.c and %.S exist
+# Note that this target will pass both sources to gcc
+%.elf: %.c %.S
+	make bsp
+	test_asm_src=$(basename )
+	$(RISCV_EXE_PREFIX)gcc $(CFLAGS) -o $@ \
+		-nostartfiles \
+		$^ -T $(BSP)/link.ld -L $(BSP) -lcv-verif
+
+# This target selected if only %.c
 %.elf: %.c
 	make bsp
+	test_asm_src=$(basename )
 	$(RISCV_EXE_PREFIX)gcc $(CFLAGS) -o $@ \
 		-nostartfiles \
 		$^ -T $(BSP)/link.ld -L $(BSP) -lcv-verif
@@ -393,7 +403,6 @@ TEST_FILES        = $(filter %.c %.S,$(wildcard $(dir $*)*))
 		-nostartfiles \
 		-I $(ASM) \
 		$^ -T $(BSP)/link.ld -L $(BSP) -lcv-verif
-
 
 # compile and dump RISCV_TESTS only
 #$(CV32_RISCV_TESTS_FIRMWARE)/cv32_riscv_tests_firmware.elf: $(CV32_RISCV_TESTS_FIRMWARE_OBJS) $(RISCV_TESTS_OBJS) \

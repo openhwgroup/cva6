@@ -174,6 +174,20 @@ interface uvmt_cv32_core_cntrl_if (
     dm_exception_addr = 32'h1A11_1000;
     hart_id           = 32'h0000_0000;
 
+    // If a override is provided via plusarg then set bootstrap pins and adjust ISS model
+    if ($value$plusargs("mtvec_addr=0x%x", mtvec_addr));
+    begin
+      string override;
+      int fh;
+
+`ifdef ISS
+      override = $sformatf("--override root/cpu/mtvec=0x%08x", mtvec_addr);
+      fh = $fopen("ovpsim.ic", "a");
+      $fwrite(fh, "%s", override);
+      $fclose(fh);
+`endif
+    end
+
     qsc_stat_str =                $sformatf("\tclock_en          = %0d\n", clock_en);
     qsc_stat_str = {qsc_stat_str, $sformatf("\tscan_cg_en        = %0d\n", scan_cg_en)};
     qsc_stat_str = {qsc_stat_str, $sformatf("\tboot_addr         = %8h\n", boot_addr)};
