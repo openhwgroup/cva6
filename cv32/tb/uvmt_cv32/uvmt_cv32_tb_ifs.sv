@@ -319,6 +319,8 @@ interface uvmt_cv32_debug_cov_assert_if
     input logic        id_stage_is_compressed,
     input logic [31:0] id_stage_pc, // Program counter in decode
     input logic [31:0] if_stage_pc, // Program counter in fetch
+    input logic        is_decoding,
+    input logic        id_valid,
     input ctrl_state_e  ctrl_fsm_cs,            // Controller FSM states with debug_req
     input logic        illegal_insn_i,
     input logic        illegal_insn_q, // output from controller
