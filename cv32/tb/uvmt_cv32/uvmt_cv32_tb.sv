@@ -98,6 +98,8 @@ module uvmt_cv32_tb;
     assign debug_cov_assert_if.id_stage_instr_valid_i = dut_wrap.cv32e40p_wrapper_i.core_i.id_stage_i.instr_valid_i;
     assign debug_cov_assert_if.id_stage_instr_rdata_i = dut_wrap.cv32e40p_wrapper_i.core_i.id_stage_i.instr_rdata_i;
     assign debug_cov_assert_if.id_stage_is_compressed = dut_wrap.cv32e40p_wrapper_i.core_i.id_stage_i.is_compressed_i;
+    assign debug_cov_assert_if.id_valid = dut_wrap.cv32e40p_wrapper_i.core_i.id_stage_i.controller_i.id_valid_i;
+    assign debug_cov_assert_if.is_decoding = dut_wrap.cv32e40p_wrapper_i.core_i.id_stage_i.controller_i.is_decoding_o;
     assign debug_cov_assert_if.id_stage_pc = dut_wrap.cv32e40p_wrapper_i.core_i.id_stage_i.pc_id_i;
     assign debug_cov_assert_if.if_stage_pc = dut_wrap.cv32e40p_wrapper_i.core_i.if_stage_i.pc_if_o;
     assign debug_cov_assert_if.mie_q = dut_wrap.cv32e40p_wrapper_i.core_i.cs_registers_i.mstatus_q.mie;

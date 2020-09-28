@@ -42,11 +42,13 @@ module uvmt_cv32e40p_debug_assert
   default clocking @(posedge cov_assert_if.clk_i); endclocking
   default disable iff !(cov_assert_if.rst_ni);
   
-  assign cov_assert_if.is_ebreak = cov_assert_if.id_stage_instr_valid_i & 
+  assign cov_assert_if.is_ebreak = cov_assert_if.id_valid & 
+                                   cov_assert_if.is_decoding & 
                      (cov_assert_if.id_stage_instr_rdata_i == 32'h00100073) & 
                      cov_assert_if.id_stage_is_compressed == 1'b0;
 
-  assign cov_assert_if.is_cebreak = cov_assert_if.id_stage_instr_valid_i & 
+  assign cov_assert_if.is_cebreak = cov_assert_if.id_valid &
+                                    cov_assert_if.is_decoding &  
                      (cov_assert_if.id_stage_instr_rdata_i == 32'h00100073) & 
                      cov_assert_if.id_stage_is_compressed == 1'b1;
 
@@ -103,7 +105,7 @@ module uvmt_cv32e40p_debug_assert
 
     // c.ebreak during debug mode results in relaunch of debug mode
     property p_cebreak_during_debug_mode;
-        $rose(cov_assert_if.is_cebreak) && cov_assert_if.debug_mode_q  |-> ##[1:6] cov_assert_if.debug_mode_q  &&
+        $rose(cov_assert_if.is_cebreak) && cov_assert_if.debug_mode_q  |-> ##[1:40] cov_assert_if.debug_mode_q  &&
                                                        (cov_assert_if.id_stage_pc == cov_assert_if.dm_halt_addr_i); // TODO should check no change in dpc and dcsr
     endproperty
 
@@ -113,7 +115,7 @@ module uvmt_cv32e40p_debug_assert
 
     // ebreak during debug mode results in relaunch
     property p_ebreak_during_debug_mode;
-        $rose(cov_assert_if.is_ebreak) && cov_assert_if.debug_mode_q |-> ##[1:6] cov_assert_if.debug_mode_q && 
+        $rose(cov_assert_if.is_ebreak) && cov_assert_if.debug_mode_q |-> ##[1:40] cov_assert_if.debug_mode_q && 
                                                      (cov_assert_if.id_stage_pc == cov_assert_if.dm_halt_addr_i); // TODO should check no change in dpc and dcsr
     endproperty
 
@@ -296,7 +298,7 @@ module uvmt_cv32e40p_debug_assert
             end
 
             // Capture pc at ebreak
-            if(cov_assert_if.is_ebreak || cov_assert_if.is_cebreak) begin
+            if(cov_assert_if.is_ebreak || cov_assert_if.is_cebreak ) begin
                 pc_at_ebreak <= cov_assert_if.id_stage_pc;
             end
        end
