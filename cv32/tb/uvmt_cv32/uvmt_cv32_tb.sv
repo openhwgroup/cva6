@@ -111,7 +111,7 @@ module uvmt_cv32_tb;
     assign debug_cov_assert_if.depc_q = dut_wrap.cv32e40p_wrapper_i.core_i.cs_registers_i.depc_q;
     assign debug_cov_assert_if.depc_n = dut_wrap.cv32e40p_wrapper_i.core_i.cs_registers_i.depc_n;
     assign debug_cov_assert_if.mcause_q = dut_wrap.cv32e40p_wrapper_i.core_i.cs_registers_i.mcause_q;
-    assign debug_cov_assert_if.mtvec = dut_wrap.cv32e40p_wrapper_i.core_i.cs_registers_i.mtvec_addr_i;
+    assign debug_cov_assert_if.mtvec = {dut_wrap.cv32e40p_wrapper_i.core_i.cs_registers_i.mtvec_q, 8'h00};
     assign debug_cov_assert_if.mepc_q = dut_wrap.cv32e40p_wrapper_i.core_i.cs_registers_i.mepc_q;
     assign debug_cov_assert_if.tdata1 = dut_wrap.cv32e40p_wrapper_i.core_i.cs_registers_i.tmatch_control_rdata;
     assign debug_cov_assert_if.tdata2 = dut_wrap.cv32e40p_wrapper_i.core_i.cs_registers_i.tmatch_value_rdata;
