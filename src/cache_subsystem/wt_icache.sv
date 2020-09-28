@@ -489,7 +489,7 @@ end else begin : gen_piton_offset
       else $fatal(1,"[l1 icache] cannot replace cacheline and invalidate cacheline simultaneously");
 
   invalid_state: assert property (
-    @(posedge clk_i) disable iff (!rst_ni) (state_q inside {FLUSH, IDLE, READ, MISS, TLB_MISS, KILL_ATRANS, KILL_MISS}))
+    @(posedge clk_i) disable iff (!rst_ni) (state_q inside {FLUSH, IDLE, READ, MISS, KILL_ATRANS, KILL_MISS}))
       else $fatal(1,"[l1 icache] fsm reached an invalid state");
 
   hot1: assert property (
