@@ -39,7 +39,7 @@ The default values are:
 - `TESTS_HASH`: `f92842f91644092960ac7946a61ec2895e543cec`
 - `DV_REPO`: `https://github.com/ThalesGroup/riscv-dv.git`
 - `DV_BRANCH`: `oss`
-- `DV_HASH`: `7593c32194c349e5ba617da02abefbf9fcc3edb5`
+- `DV_HASH`: `8ff0a5ecb56269cfff94b59c9f7f4e267630ef20`
 - `DV_PATCH`: no default value
 
 - `DV_TARGET`: `rv64gc`
