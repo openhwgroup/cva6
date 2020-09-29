@@ -2,6 +2,10 @@ name: default
 description: Default configuration for CV32E40P simulations
 compile_flags: 
 ovpsim: >
+    # PULP_XPULP=1
+    #--override root/cpu/misa_Extensions=0x801104
+    # PULP_XPULP=0
+    --override root/cpu/misa_Extensions=0x001104
     --override root/cpu/marchid=4
     --override root/cpu/noinhibit_mask=0xFFFFFFF0
     #--trace --tracechange --traceshowicount --monitornets --tracemode
