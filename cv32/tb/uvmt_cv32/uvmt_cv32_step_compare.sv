@@ -202,9 +202,11 @@ module uvmt_cv32_step_compare
         logic [ 5:0] gpr_addr;
         logic [31:0] gpr_value;
       
-        gpr_addr  = `CV32E40P_TRACER.insn_regs_write[0].addr;
-        gpr_value = `CV32E40P_TRACER.insn_regs_write[0].value;
-        `CV32E40P_ISS.GPR_rtl[gpr_addr] = gpr_value;
+        if (`CV32E40P_TRACER.insn_regs_write.size()) begin
+          gpr_addr  = `CV32E40P_TRACER.insn_regs_write[0].addr;
+          gpr_value = `CV32E40P_TRACER.insn_regs_write[0].value;
+          `CV32E40P_ISS.GPR_rtl[gpr_addr] = gpr_value;
+        end
     endfunction // pushRTL2RM
     
     /*

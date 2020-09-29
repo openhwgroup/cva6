@@ -30,12 +30,19 @@ tests:
     description: Interrupt random test
     dir: cv32/sim/uvmt_cv32
     cmd: make gen_corev-dv test TEST=corev_rand_interrupt
-    num: 200
+    num: 100
+
+  corev_rand_interrupt_nested:
+    build: uvmt_cv32
+    description: Interrupt random test with nested interrupts and WFI
+    dir: cv32/sim/uvmt_cv32    
+    cmd: make gen_corev-dv test TEST=corev_rand_interrupt_nested
+    num: 100
 
   corev_rand_interrupt_wfi:
     build: uvmt_cv32
     description: Interrupt random test with WFI
     dir: cv32/sim/uvmt_cv32    
     cmd: make gen_corev-dv test TEST=corev_rand_interrupt_wfi
-    num: 200
+    num: 100
 

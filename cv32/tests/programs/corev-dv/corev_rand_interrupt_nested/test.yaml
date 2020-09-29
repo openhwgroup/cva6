@@ -1,0 +1,6 @@
+name: corev_rand_interrupt_nested_<RUN_INDEX>
+uvm_test: uvmt_cv32_firmware_test_c
+description: >
+    Random interrupt generator test with nested interrupts
+plusargs: >
+    +gen_irq_noise
