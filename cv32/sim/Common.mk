@@ -68,8 +68,10 @@ BANNER=*************************************************************************
 
 CV32E40P_REPO   ?= https://github.com/openhwgroup/cv32e40p
 CV32E40P_BRANCH ?= master
+#2020-09-24
+CV32E40P_HASH   ?= f04f1e8c0c2fde1dc353667612a48a6e95f7b366
 #2020-09-17
-CV32E40P_HASH    ?= 5c97310505eddbe36a429fd2fc9e0781ff89cd2f
+#CV32E40P_HASH   ?= 5c97310505eddbe36a429fd2fc9e0781ff89cd2f
 
 FPNEW_REPO      ?= https://github.com/pulp-platform/fpnew
 FPNEW_BRANCH    ?= master
@@ -378,10 +380,20 @@ TEST_FILES        = $(filter %.c %.S,$(wildcard $(dir $*)*))
 
 # Patterned targets to generate ELF.  Used only if explicit targets do not match.
 #
-# This target selected if both %.c and %.S exist
 .PRECIOUS : %.elf
+# This target selected if both %.c and %.S exist
+# Note that this target will pass both sources to gcc
+%.elf: %.c %.S
+	make bsp
+	test_asm_src=$(basename )
+	$(RISCV_EXE_PREFIX)gcc $(CFLAGS) -o $@ \
+		-nostartfiles \
+		$^ -T $(BSP)/link.ld -L $(BSP) -lcv-verif
+
+# This target selected if only %.c
 %.elf: %.c
 	make bsp
+	test_asm_src=$(basename )
 	$(RISCV_EXE_PREFIX)gcc $(CFLAGS) -o $@ \
 		-nostartfiles \
 		$^ -T $(BSP)/link.ld -L $(BSP) -lcv-verif
@@ -393,7 +405,6 @@ TEST_FILES        = $(filter %.c %.S,$(wildcard $(dir $*)*))
 		-nostartfiles \
 		-I $(ASM) \
 		$^ -T $(BSP)/link.ld -L $(BSP) -lcv-verif
-
 
 # compile and dump RISCV_TESTS only
 #$(CV32_RISCV_TESTS_FIRMWARE)/cv32_riscv_tests_firmware.elf: $(CV32_RISCV_TESTS_FIRMWARE_OBJS) $(RISCV_TESTS_OBJS) \
