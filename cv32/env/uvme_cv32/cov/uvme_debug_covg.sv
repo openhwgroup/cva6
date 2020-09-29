@@ -305,8 +305,6 @@ endclass : uvme_debug_covg
 function uvme_debug_covg::new(string name = "debug_covg", uvm_component parent = null);
     super.new(name, parent);
 
-    $display("Broke Questa");
-
     cg_debug_mode_ext = new();
     cg_ebreak_execute_with_ebreakm = new();
     cg_cebreak_execute_with_ebreakm = new();
