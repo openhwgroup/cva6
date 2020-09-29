@@ -8,5 +8,5 @@ ovpsim: >
     --override root/cpu/misa_Extensions=0x001104
     --override root/cpu/marchid=4
     --override root/cpu/noinhibit_mask=0xFFFFFFF0
-    --trace --tracechange --traceshowicount --monitornets --tracemode
+    #--trace --tracechange --traceshowicount --monitornets --tracemode
     #--showoverrides
