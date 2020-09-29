@@ -254,18 +254,70 @@ module uvmt_cv32_tb;
         end
       end
 
+      // Count number of issued and retired instructions
+      // This makes synchronizing haltreq to RM easier
+      logic [31:0] count_issue;
+      logic [31:0] count_retire;
+      always @(posedge clknrst_if.clk or negedge clknrst_if.reset_n) begin
+        if (!clknrst_if.reset_n) begin
+            count_issue <= 32'h0;
+        end else begin
+            if (dut_wrap.cv32e40p_wrapper_i.core_i.id_stage_i.id_valid_o & dut_wrap.cv32e40p_wrapper_i.core_i.id_stage_i.is_decoding_o &&
+               !dut_wrap.cv32e40p_wrapper_i.core_i.id_stage_i.controller_i.illegal_insn_i) begin
+                count_issue <= count_issue + 1;
+            end
+        end
+      end
+
+      always @(dut_wrap.cv32e40p_wrapper_i.tracer_i.retire or negedge clknrst_if.reset_n) begin
+          if (!clknrst_if.reset_n) begin
+              count_retire <= 32'h0;
+          end else begin
+              count_retire <= count_retire + 1;
+          end
+      end
+
+      // A simple FSM for controlling haltreq into RM
+      typedef enum logic [1:0] {INACTIVE, DBG_TAKEN, DRIVE_REQ} dbg_state_e;
+      dbg_state_e debug_req_state;
+
       always @(posedge clknrst_if_iss.clk or negedge clknrst_if_iss.reset_n) begin
         if (!clknrst_if_iss.reset_n) begin
             iss_wrap.b1.haltreq <= 1'b0;
+            debug_req_state <= INACTIVE;
         end else begin
-            if (dut_wrap.cv32e40p_wrapper_i.core_i.id_stage_i.controller_i.ctrl_fsm_cs inside {cv32e40p_pkg::DBG_TAKEN_ID, cv32e40p_pkg::DBG_TAKEN_IF}) begin
-                iss_wrap.b1.haltreq <= dut_wrap.cv32e40p_wrapper_i.core_i.id_stage_i.controller_i.debug_req_pending;
-            end else begin
-                if(iss_wrap.b1.DM == 1'b1) begin
-                   iss_wrap.b1.haltreq <= 1'b0;
-                end
-            end
+            unique case(debug_req_state)
+                INACTIVE: begin
+                    iss_wrap.b1.haltreq <= 1'b0;
 
+                    // Only drive haltreq if we have an external request
+                    if (dut_wrap.cv32e40p_wrapper_i.core_i.id_stage_i.controller_i.ctrl_fsm_cs inside {cv32e40p_pkg::DBG_TAKEN_ID, cv32e40p_pkg::DBG_TAKEN_IF} &&
+                        dut_wrap.cv32e40p_wrapper_i.core_i.id_stage_i.controller_i.debug_req_pending) begin
+
+                        debug_req_state <= DBG_TAKEN;
+                        // Already in sync, assert halreq right away
+                        if (count_retire == count_issue) begin
+                            iss_wrap.b1.haltreq <= 1'b1;
+                        end
+                    end
+                end
+                DBG_TAKEN: begin
+                    // Assert haltreq when we are in sync
+                    if (count_retire == count_issue) begin
+                        iss_wrap.b1.haltreq <= 1'b1;
+                        debug_req_state <= DRIVE_REQ;
+                    end
+                end
+                DRIVE_REQ: begin
+                    // Deassert haltreq when DM is observed
+                    if(iss_wrap.b1.DM == 1'b1) begin
+                        debug_req_state <= INACTIVE;
+                    end
+                end
+                default: begin
+                    debug_req_state <= INACTIVE;
+                end
+            endcase
         end
       end
     `endif
