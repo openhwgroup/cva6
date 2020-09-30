@@ -70,7 +70,7 @@ class uvmt_cv32_firmware_test_c extends uvmt_cv32_base_test_c;
    * Start random debug sequencer
    */
     extern virtual task random_debug();
-   
+
    /**
     *  Start the interrupt sequencer to apply random interrupts during test
     */
@@ -90,7 +90,7 @@ endfunction : new
 task uvmt_cv32_firmware_test_c::reset_phase(uvm_phase phase);
    
    super.reset_phase(phase);
-   
+  
 endtask : reset_phase
 
 
@@ -161,6 +161,16 @@ endtask : run_phase
 
 task uvmt_cv32_firmware_test_c::random_debug();
     `uvm_info("TEST", "Starting random debug in thread UVM test", UVM_NONE); 
+    if ($test$plusargs("reset_debug")) begin
+        uvme_cv32_random_debug_c reset_vseq;
+        @ (negedge env_cntxt.clknrst_cntxt.vif.reset_n);
+        
+        reset_vseq = uvme_cv32_random_debug_c::type_id::create("random_debug_vseqr");
+        reset_vseq.randomize();
+        reset_vseq.start(vsequencer);
+
+    end
+
     while (1) begin
         uvme_cv32_random_debug_c debug_vseq;
         repeat (100) @(env_cntxt.debug_cntxt.vif.mon_cb);
@@ -169,7 +179,7 @@ task uvmt_cv32_firmware_test_c::random_debug();
         debug_vseq.start(vsequencer);
         break;
     end     
-endtask : random_debug    
+endtask : random_debug   
 
 task uvmt_cv32_firmware_test_c::irq_noise();
   `uvm_info("TEST", "Starting IRQ Noise thread in UVM test", UVM_NONE);

@@ -71,7 +71,7 @@ module uvmt_cv32e40p_debug_assert
 
     // c.ebreak with dcsr.ebreakm results in debug mode
     property p_cebreak_debug_mode;
-        $rose(cov_assert_if.is_cebreak) && cov_assert_if.dcsr_q[15] == 1'b1 |-> ##[1:40] cov_assert_if.debug_mode_q && (cov_assert_if.dcsr_q[8:6] === cv32e40p_pkg::DBG_CAUSE_EBREAK) &&
+        $rose(cov_assert_if.is_cebreak) && cov_assert_if.dcsr_q[15] == 1'b1 && !cov_assert_if.debug_mode_q |-> ##[1:40] cov_assert_if.debug_mode_q && (cov_assert_if.dcsr_q[8:6] === cv32e40p_pkg::DBG_CAUSE_EBREAK) &&
                                                             (cov_assert_if.depc_q == pc_at_dbg_req) &&
                                                             (cov_assert_if.id_stage_pc == cov_assert_if.dm_halt_addr_i);
     endproperty
@@ -82,7 +82,7 @@ module uvmt_cv32e40p_debug_assert
 
     // ebreak with dcsr.ebreakm results in debug mode
     property p_ebreak_debug_mode;
-        $rose(cov_assert_if.is_ebreak) && cov_assert_if.dcsr_q[15] == 1'b1 |-> ##[1:40] cov_assert_if.debug_mode_q && (cov_assert_if.dcsr_q[8:6] === cv32e40p_pkg::DBG_CAUSE_EBREAK) &&
+        $rose(cov_assert_if.is_ebreak) && cov_assert_if.dcsr_q[15] == 1'b1 && !cov_assert_if.debug_mode_q|-> ##[1:40] cov_assert_if.debug_mode_q && (cov_assert_if.dcsr_q[8:6] === cv32e40p_pkg::DBG_CAUSE_EBREAK) &&
                                                             (cov_assert_if.depc_q == pc_at_dbg_req) &&
                                                             (cov_assert_if.id_stage_pc == cov_assert_if.dm_halt_addr_i);
     endproperty
@@ -322,5 +322,5 @@ module uvmt_cv32e40p_debug_assert
     assign cov_assert_if.is_wfi = cov_assert_if.id_stage_instr_valid_i &
                                   ((cov_assert_if.id_stage_instr_rdata_i & WFI_INSTR_MASK) == WFI_INSTR_DATA);
     assign cov_assert_if.pending_enabled_irq = cov_assert_if.irq_i & cov_assert_if.mie_q;
-    assign cov_assert_if.is_dret             = cov_assert_if.id_stage_instr_valid_i & (cov_assert_if.id_stage_instr_rdata_i == 32'h7B200073);
+    assign cov_assert_if.is_dret             = cov_assert_if.id_valid & cov_assert_if.is_decoding & (cov_assert_if.id_stage_instr_rdata_i == 32'h7B200073);
 endmodule : uvmt_cv32e40p_debug_assert
