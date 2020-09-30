@@ -32,31 +32,19 @@
 {% set is_last_test = loop.last %}
 {# For Metrics, the name is description if available, otherwise use name, with index #}
 {% if t.description %}{% set test_name = t.description %}{% else %}{% set test_name = t.name %}{% endif %}
-{% if t.num > 1 %}
-{% for index in range(t.num) %}
-    {
-        "name": "{{test_name}} {{index}}",
-        "build": "{{t.build}}",
-        "cmd": "cd {{t.dir}}; {{t.cmd}} SIMULATOR={{t.simulator}} USE_ISS={{regress_macros.yesorno(t.iss)}} RUN_INDEX={{index}} GEN_START_INDEX={{index}} {{common_dsim_make_vars}}",
-        "wavesCmd": "cd {{t.dir}}; {{t.cmd}} SIMULATOR={{t.simulator}} USE_ISS={{regress_macros.yesorno(t.iss)}} RUN_INDEX={{index}} GEN_START_INDEX={{index}} {{common_dsim_make_vars_waves}}",
-        "metricsFile": "{{t.name}}_{{index}}/metrics.db",
-        "wavesFile": "{{t.name}}_{{index}}/{{t.name}}.vcd",
-        "isPass": "{{t.simulation_passed}}"
-    }{% if not is_last_test or not loop.last %},{% endif %}
-
-{% endfor %}
-{% else %}
+{% if t.indexed %}{% set test_suffix = '_0' %}{% else %}{% set test_suffix = '' %}{% endif %}
     {
         "name": "{{test_name}}" ,
         "build": "{{t.build}}",
-        "cmd": "cd {{t.dir}}; {{t.cmd}} SIMULATOR={{t.simulator}} USE_ISS={{regress_macros.yesorno(t.iss)}} {{common_dsim_make_vars}}",
-        "wavesCmd": "cd {{t.dir}}; {{t.cmd}} SIMULATOR={{t.simulator}} USE_ISS={{regress_macros.yesorno(t.iss)}} {{common_dsim_make_vars_waves}}",
-        "metricsFile": "{{t.name}}/metrics.db",
-        "wavesFile": "{{t.name}}/{{t.name}}.vcd",
+        "cmd": "cd {{t.dir}}; {{t.cmd}} SIMULATOR={{t.simulator}} USE_ISS={{regress_macros.yesorno(t.iss)}} RNDSEED=<seed> {{common_dsim_make_vars}}",
+        "wavesCmd": "cd {{t.dir}}; {{t.cmd}} SIMULATOR={{t.simulator}} USE_ISS={{regress_macros.yesorno(t.iss)}} RNDSEED=<seed> {{common_dsim_make_vars_waves}}",
+        "metricsFile": "{{t.name}}{{test_suffix}}/metrics.db",
+        "wavesFile": "{{t.name}}{{test_suffix}}/{{t.name}}{{test_suffix}}.vcd",
+        "seed" : "random",
+        "iterations": {{t.num}},
         "isPass": "{{t.simulation_passed}}"
     }{% if not is_last_test %},{% endif %}
-    
-{% endif %}
+
 {% endfor %}
 {% endfor %}
 ]
