@@ -41,7 +41,7 @@ ifeq ($(USE_ISS),YES)
 #    DSIM_RUN_FLAGS         += +ovpcfg="--controlfile $(OVP_CTRL_FILE)"
 endif
 DSIM_RUN_FLAGS         += $(USER_RUN_FLAGS)
-
+DSIM_RUN_FLAGS         += -sv_seed $(RNDSEED)
 
 # Variables to control wave dumping from command the line
 # Humans _always_ forget the "S", so you can have it both ways...

@@ -27,7 +27,7 @@ tests:
     dir: cv32/sim/uvmt_cv32
     cmd: make test TEST=csr_instructions
 
-  cv324e0p_csr_access_test:
+  cv32e40p_csr_access_test:
     build: uvmt_cv32
     description: CSR Access Mode Test
     dir: cv32/sim/uvmt_cv32
@@ -65,7 +65,7 @@ tests:
     cmd: make gen_corev-dv test TEST=corev_arithmetic_base_test
     num: 2
 
-  corev_random_instr_test:
+  corev_rand_instr_test:
     build: uvmt_cv32
     description: Generated corev-dv random instruction test
     dir: cv32/sim/uvmt_cv32
