@@ -165,7 +165,7 @@ task uvmt_cv32_firmware_test_c::random_debug();
         uvme_cv32_random_debug_c debug_vseq;
         repeat (100) @(env_cntxt.debug_cntxt.vif.mon_cb);
         debug_vseq = uvme_cv32_random_debug_c::type_id::create("random_debug_vseqr");
-        debug_vseq.randomize();
+        void'(debug_vseq.randomize());
         debug_vseq.start(vsequencer);
         break;
     end     
