@@ -1,28 +1,40 @@
 # CVA6: Verification Environment for the CVA6 CORE-V processor core
 
-To execute tests on CVA6 core, run one of the shell scripts:
+- [Prerequisites](#prerequisites)
+- [Test execution](#test-execution)
+- [Environment variables](#environment-variables)
+- [32-bit configuration](#32-bit-configuration)
 
-- `source cva6/dv-riscv-compliance.sh`: [riscv-compliance](https://github.com/riscv/riscv-compliance) test suite,
-- `source cva6/dv-riscv-tests.sh`: [riscv-tests](https://github.com/riscv/riscv-tests) test suite,
+## Prerequisites
+To execute tests on CVA6 core, you need a RISC-V toolchain.
+
+For instance, you can use the gcc 10 toolchain.
+To build and install it, use scripts located at
+https://github.com/ThalesGroup/cva6-tools
+
+Once the toolchain is installed, set the `RISCV` environment variable
+to your toolchain installation path e.g. `RISCV = /path/to/gcc-10.2`
+to run the test scripts.
+
+## Test execution
+Run one of the shell scripts:
+
+- `source cva6/dv-riscv-compliance.sh`:
+[riscv-compliance](https://github.com/riscv/riscv-compliance) test suite,
+- `source cva6/dv-riscv-tests.sh`:
+[riscv-tests](https://github.com/riscv/riscv-tests) test suite.
 
 These tests are using [riscv-dv](https://github.com/ThalesGroup/riscv-dv)
 as environment (forked from https://github.com/google/riscv-dv).
 
-To run the scripts, the `RISCV` environment variable has to be set
-with your toolchain installation path.
-
-Tests are built with gcc 10 toolchain.
-To build and install it, use scripts located at
-https://github.com/ThalesGroup/cva6-tools
-
-As the built gcc toolchain is independent from XLEN values,
-the `RISCV_PREFIX` environment variable has to be set to `riscv-none-elf-`.
-
+## Environment variables
 Other environment variables can be set to overload default values
 provided in the different scripts.
 
 The default values are:
 
+- `RISCV_GCC`: `$RISCV/bin/riscv-none-elf-gcc`
+- `RISCV_OBJCOPY`: `$RISCV/bin/riscv-none-elf-objcopy`
 - `VERILATOR_ROOT`: `../tools/verilator-4.014` to install in core-v-verif/tools
 - `SPIKE_ROOT`: `../tools/spike` to install in core-v-verif/tools
 
@@ -41,16 +53,20 @@ The default values are:
 - `DV_BRANCH`: `oss`
 - `DV_HASH`: `8ff0a5ecb56269cfff94b59c9f7f4e267630ef20`
 - `DV_PATCH`: no default value
-
 - `DV_TARGET`: `rv64gc`
 - `DV_SIMULATORS`: `verilator,spike`
-- `DV_TESTLISTS`: `../../tests/testlist_riscv-tests-$DV_TARGET-p.yaml ../../tests/testlist_riscv-tests-$DV_TARGET-v.yaml`
+- `DV_TESTLISTS`: `../../tests/testlist_riscv-tests-$DV_TARGET-p.yaml
+../../tests/testlist_riscv-tests-$DV_TARGET-v.yaml`
 - `DV_OPTS`: no default value
-- `RISCV_GCC`: `$RISCV/bin/riscv-none-elf-gcc`
-- `RISCV_OBJCOPY`: `$RISCV/bin/riscv-none-elf-objcopy`
 
 ## 32-bit configuration
-The following environment variables have to be modified.
+To test the CVA6 in 32-bit configuration, `XLEN` has to be set to 32
+instead to 64. This can be done by patching the `riscv_pk.sv` file.
+Additionally, the architecture used for building the tests has to be
+modified.
+
+The following environment variables have to be modified before executing
+test script.
 
 - `CVA6_PATCH`: `../cva6/cva6-32bit.patch`
 - `DV_TARGET`: `rv32ima` as C, F, D extensions are not yet supported
