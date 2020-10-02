@@ -252,6 +252,11 @@ module frontend import ariane_pkg::*; #(
     bht_update_t bht_update;
     btb_update_t btb_update;
 
+    // assert on branch, deassert when resolved
+    logic speculative_q,speculative_d;
+    assign speculative_d = (speculative_q && !resolved_branch_i.valid || |is_branch || |is_return || |is_jalr) && !flush_i;
+    assign icache_dreq_o.spec = speculative_d;
+
     assign bht_update.valid = resolved_branch_i.valid
                                 & (resolved_branch_i.cf_type == ariane_pkg::Branch);
     assign bht_update.pc    = resolved_branch_i.pc;
@@ -328,6 +333,7 @@ module frontend import ariane_pkg::*; #(
       if (!rst_ni) begin
         npc_rst_load_q    <= 1'b1;
         npc_q             <= '0;
+        speculative_q     <= '0;
         icache_data_q     <= '0;
         icache_valid_q    <= 1'b0;
         icache_vaddr_q    <= 'b0;
@@ -337,6 +343,7 @@ module frontend import ariane_pkg::*; #(
       end else begin
         npc_rst_load_q    <= 1'b0;
         npc_q             <= npc_d;
+        speculative_q    <= speculative_d;
         icache_valid_q    <= icache_dreq_i.valid;
         if (icache_dreq_i.valid) begin
           icache_data_q        <= icache_data;
