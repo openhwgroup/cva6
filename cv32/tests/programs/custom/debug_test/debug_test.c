@@ -582,8 +582,19 @@ int main(int argc, char *argv[])
     check_debug_status(120, glb_hart_status);
 
 
-        
+    // Execute fence instruction in debug
+    printf("-----------------------------\n");
+    printf("Test 22: Execute fence in debug mode\n");
+    glb_expect_debug_entry = 1;
+    glb_hart_status = 22;
+    DEBUG_REQ_CONTROL_REG = debug_req_control.bits;
     
+    while(glb_debug_status != glb_hart_status) {
+        printf("Wait for debugger\n");
+    }    
+    
+    check_debug_status(121, glb_hart_status);
+
     //--------------------------------
     //return EXIT_FAILURE;
     printf("------------------------\n");

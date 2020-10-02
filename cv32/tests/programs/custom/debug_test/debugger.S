@@ -130,6 +130,18 @@ _debugger_start:
     li t0, 21
     beq t2, t0, _debugger_stopcount
 
+    li t0, 22
+    beq t2, t0, _debugger_fence
+
+_debugger_fence:
+    fence
+    nop 
+    nop
+    fence.i
+    nop
+    nop
+    j _debugger_end
+
 _debugger_req_and_irq:
     // Debug was requested at the same cycle as irq
     // Check dpc to see that pc is not at irq handler
