@@ -71,6 +71,8 @@ class uvmt_cv32_firmware_test_c extends uvmt_cv32_base_test_c;
    */
     extern virtual task random_debug();
 
+    extern virtual task reset_debug();
+
    /**
     *  Start the interrupt sequencer to apply random interrupts during test
     */
@@ -88,7 +90,12 @@ endfunction : new
 
 
 task uvmt_cv32_firmware_test_c::reset_phase(uvm_phase phase);
-   
+  if ($test$plusargs("reset_debug")) begin
+    fork
+      reset_debug();
+    join_none
+   end
+ 
    super.reset_phase(phase);
   
 endtask : reset_phase
@@ -159,17 +166,18 @@ task uvmt_cv32_firmware_test_c::run_phase(uvm_phase phase);
    
 endtask : run_phase
 
+task uvmt_cv32_firmware_test_c::reset_debug();
+    uvme_cv32_random_debug_c reset_vseq;
+    `uvm_info("TEST", "Applying debug_req_i at reset", UVM_NONE);
+    @(negedge env_cntxt.clknrst_cntxt.vif.reset_n);
+    reset_vseq = uvme_cv32_random_debug_c::type_id::create("random_reset_debug_vseqr");
+    reset_vseq.randomize();
+    reset_vseq.start(vsequencer);
+
+endtask
+
 task uvmt_cv32_firmware_test_c::random_debug();
     `uvm_info("TEST", "Starting random debug in thread UVM test", UVM_NONE); 
-    if ($test$plusargs("reset_debug")) begin
-        uvme_cv32_random_debug_c reset_vseq;
-        @ (negedge env_cntxt.clknrst_cntxt.vif.reset_n);
-        
-        reset_vseq = uvme_cv32_random_debug_c::type_id::create("random_debug_vseqr");
-        reset_vseq.randomize();
-        reset_vseq.start(vsequencer);
-
-    end
 
     while (1) begin
         uvme_cv32_random_debug_c debug_vseq;

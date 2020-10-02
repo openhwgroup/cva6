@@ -359,6 +359,7 @@ clean-bsp:
 # Special debug_test build
 # keep raw elf files to generate helpful debugging files such as dissambler
 .PRECIOUS : %debug_test.elf
+.PRECIOUS : %debug_test_reset.elf
 
 # Prepare file list for .elf
 # Get the source file names from the BSP directory
@@ -378,6 +379,12 @@ PREREQ_TEST_FILES = $(filter %.c %.S,$(wildcard $(dir %)*))
 TEST_FILES        = $(filter %.c %.S,$(wildcard $(dir $*)*))
 
 %debug_test.elf:
+	$(RISCV_EXE_PREFIX)gcc -mabi=ilp32 -march=rv32imc -o $@ \
+		-Wall -pedantic -Os -g -nostartfiles -static \
+		$(BSP_FILES) \
+		$(TEST_FILES) \
+		-T $(BSP)/link.ld
+%debug_test_reset.elf:
 	$(RISCV_EXE_PREFIX)gcc -mabi=ilp32 -march=rv32imc -o $@ \
 		-Wall -pedantic -Os -g -nostartfiles -static \
 		$(BSP_FILES) \

@@ -39,7 +39,6 @@ task uvme_cv32_random_debug_c::rand_delay();
 endtask : rand_delay      
 
 task uvme_cv32_random_debug_c::body();
-    #1us;
     fork
         while(1) begin
             uvma_debug_seq_item_c debug_req;
