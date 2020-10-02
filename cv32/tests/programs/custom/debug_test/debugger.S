@@ -306,7 +306,10 @@ _debugger_single_step_basic:
     li t1, 4<<28 | 0<<15 | 2<<6 | 1<<2 | 3<<0
     csrr t2, dcsr
     beq t1, t2, _debugger_step_trig_entry
-    
+
+    // Ensure tval (0x343) always == 0
+    csrr t1, 0x343
+    bne x0, t1, _debugger_fail
 //            ebreakm   step  stepen
     li t1, 4<<28 | 0<<15 | 4<<6 | 1<<2 | 3<<0
     bne t1, t2, _debugger_fail
