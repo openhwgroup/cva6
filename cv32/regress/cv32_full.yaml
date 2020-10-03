@@ -115,6 +115,12 @@ tests:
     dir: cv32/sim/uvmt_cv32
     cmd: make test TEST=counters
 
+  generic_exception_test:
+    build: uvmt_cv32
+    description: Generic Exception directed test
+    dir: cv32/sim/uvmt_cv32
+    cmd: make test TEST=generic_exception_test
+
   pulp_bit_manipulation:
     build: uvmt_cv32
     description: pulp_bit_manipulation
