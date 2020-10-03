@@ -76,7 +76,7 @@ module uvmt_cv32_tb;
 
   // Bind in verification modules to the design
   bind cv32e40p_core 
-    uvmt_cv32e40p_interrupt_assert u_interrupt_assert(.mcause_n(cs_registers_i.mcause_n),
+    uvmt_cv32e40p_interrupt_assert interrupt_assert_i(.mcause_n(cs_registers_i.mcause_n),
                                                       .mip(cs_registers_i.mip),
                                                       .mie_q(cs_registers_i.mie_q),
                                                       .mie_n(cs_registers_i.mie_n),
@@ -86,7 +86,9 @@ module uvmt_cv32_tb;
                                                       .if_stage_instr_rdata_i(if_stage_i.instr_rdata_i),
                                                       .id_stage_instr_valid_i(id_stage_i.instr_valid_i),
                                                       .id_stage_instr_rdata_i(id_stage_i.instr_rdata_i),
+                                                      .branch_taken_ex(id_stage_i.branch_taken_ex),
                                                       .ctrl_fsm_cs(id_stage_i.controller_i.ctrl_fsm_cs),
+                                                      .debug_mode_q(id_stage_i.controller_i.debug_mode_q),                                                      
                                                       .*);
     
     // Hook up interface to debug assertions and coverage                                          
