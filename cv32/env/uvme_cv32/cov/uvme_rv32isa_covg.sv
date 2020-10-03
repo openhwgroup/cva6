@@ -313,7 +313,6 @@ class uvme_rv32isa_covg extends uvm_component;
         option.per_instance = 1;
         cp_rd    : coverpoint get_gpr_name(ins.ops[0].val, ins.ops[0].key, "add") {
             bins gprval[] = {[zero:t6]};
-//            ignore_bins ignore_gprnone = {gpr_none};
         }
         cp_rs1    : coverpoint get_gpr_name(ins.ops[1].val, ins.ops[1].key, "add") {
             bins gprval[] = {[zero:t6]};
@@ -381,8 +380,7 @@ class uvme_rv32isa_covg extends uvm_component;
         cp_rd    : coverpoint get_gpr_name(ins.ops[0].val, ins.ops[0].key, "auipc") {
             bins gprval[] = {[zero:t6]};
         }
-        cp_uimm20   : coverpoint get_imm(ins.ops[1].val,"auipc" ) {
-            bins neg  = {[$:-1]};
+        cp_uimm20   : coverpoint get_imm(ins.ops[1].val,"auipc" ) {            
             bins zero = {0};
             bins pos  = {[1:$]};
         }
@@ -401,7 +399,6 @@ class uvme_rv32isa_covg extends uvm_component;
         }
         cp_bra12   : coverpoint get_imm(ins.ops[2].val,"beq" ) {
             bins neg  = {[$:-1]};
-            bins zero = {0};
             bins pos  = {[1:$]};
         }
     endgroup
@@ -416,7 +413,6 @@ class uvme_rv32isa_covg extends uvm_component;
         }
         cp_bra12   : coverpoint get_imm(ins.ops[1].val,"c.beqz" ) {
             bins neg  = {[$:-1]};
-            bins zero = {0};
             bins pos  = {[1:$]};
         }
     endgroup
@@ -430,8 +426,7 @@ class uvme_rv32isa_covg extends uvm_component;
             bins gprval[] = {[s0:a5]};
         }
         cp_bra12   : coverpoint get_imm(ins.ops[1].val,"c.bnez" ) {
-            bins neg  = {[$:-1]};
-            bins zero = {0};
+            bins neg  = {[$:-1]};      
             bins pos  = {[1:$]};
         }
     endgroup
@@ -448,8 +443,7 @@ class uvme_rv32isa_covg extends uvm_component;
             bins gprval[] = {[zero:t6]};
         }
         cp_bra12   : coverpoint get_imm(ins.ops[2].val,"bge" ) {
-            bins neg  = {[$:-1]};
-            bins zero = {0};
+            bins neg  = {[$:-1]};            
             bins pos  = {[1:$]};
         }
     endgroup
@@ -466,7 +460,6 @@ class uvme_rv32isa_covg extends uvm_component;
         }
         cp_bra12   : coverpoint get_imm(ins.ops[2].val,"bgeu" ) {
             bins neg  = {[$:-1]};
-            bins zero = {0};
             bins pos  = {[1:$]};
         }
     endgroup
@@ -484,7 +477,6 @@ class uvme_rv32isa_covg extends uvm_component;
         }
         cp_bra12   : coverpoint get_imm(ins.ops[2].val,"blt" ) {
             bins neg  = {[$:-1]};
-            bins zero = {0};
             bins pos  = {[1:$]};
         }
     endgroup
@@ -501,7 +493,6 @@ class uvme_rv32isa_covg extends uvm_component;
         }
         cp_bra12   : coverpoint get_imm(ins.ops[2].val,"bltu" ) {
             bins neg  = {[$:-1]};
-            bins zero = {0};
             bins pos  = {[1:$]};
         }
     endgroup
@@ -518,8 +509,7 @@ class uvme_rv32isa_covg extends uvm_component;
             bins gprval[] = {[zero:t6]};
         }
         cp_bra12   : coverpoint get_imm(ins.ops[2].val,"bne" ) {
-            bins neg  = {[$:-1]};
-            bins zero = {0};
+            bins neg  = {[$:-1]};            
             bins pos  = {[1:$]};
         }
     endgroup
@@ -603,7 +593,6 @@ class uvme_rv32isa_covg extends uvm_component;
         }
         cp_jmp19   : coverpoint get_pc_imm(ins.ops[1].val,ins.pc,"jal") {
             bins neg  = {[$:-1]};
-            bins zero = {0};
             bins pos  = {[1:$]};
         }
     endgroup
@@ -711,9 +700,12 @@ class uvme_rv32isa_covg extends uvm_component;
     covergroup lui_cg with function sample(ins_t ins);
         option.per_instance = 1;
         cp_rd    : coverpoint get_gpr_name(ins.ops[0].val, ins.ops[0].key, "lui") {
-            bins gprval[] = {[zero:t6]};
+          bins gprval[] = {[zero:t6]};
         }
-        cp_uimm20   : coverpoint get_imm(ins.ops[1].val,"lui" );
+        cp_uimm20   : coverpoint get_imm(ins.ops[1].val,"lui" ) {
+          bins zero = {0};
+          bins pos[16] = {[1:1048575]};
+        }
     endgroup
 
 // FIXME : cover point for rs1 should be on ins.ops[1], unless format imm8(rs1) decoded
@@ -1058,27 +1050,45 @@ class uvme_rv32isa_covg extends uvm_component;
 // FIXME: DONE
     covergroup mul_cg with function sample(ins_t ins);
         option.per_instance = 1;
-        cp_rd    : coverpoint get_gpr_name(ins.ops[0].val, ins.ops[0].key, "mul");
-        cp_rs1   : coverpoint get_gpr_name(ins.ops[1].val, ins.ops[1].key, "mul");
-        cp_rs2   : coverpoint get_gpr_name(ins.ops[2].val, ins.ops[2].key, "mul");
+        cp_rd    : coverpoint get_gpr_name(ins.ops[0].val, ins.ops[0].key, "mul") {
+          bins gprval[] = {[zero:t6]};
+        }
+        cp_rs1   : coverpoint get_gpr_name(ins.ops[1].val, ins.ops[1].key, "mul") {
+          bins gprval[] = {[zero:t6]};
+        }
+        cp_rs2   : coverpoint get_gpr_name(ins.ops[2].val, ins.ops[2].key, "mul") {
+          bins gprval[] = {[zero:t6]};
+        }
     endgroup
 
 // TODO : missing coverage of all combinations of source and destination operands.
 // FIXME: DONE
     covergroup mulh_cg with function sample(ins_t ins);
         option.per_instance = 1;
-        cp_rd    : coverpoint get_gpr_name(ins.ops[0].val, ins.ops[0].key, "mulh");
-        cp_rs1   : coverpoint get_gpr_name(ins.ops[1].val, ins.ops[1].key, "mulh");
-        cp_rs2   : coverpoint get_gpr_name(ins.ops[2].val, ins.ops[2].key, "mulh");
+        cp_rd    : coverpoint get_gpr_name(ins.ops[0].val, ins.ops[0].key, "mulh") {
+          bins gprval[] = {[zero:t6]};
+        }
+        cp_rs1   : coverpoint get_gpr_name(ins.ops[1].val, ins.ops[1].key, "mulh") {
+          bins gprval[] = {[zero:t6]};
+        }
+        cp_rs2   : coverpoint get_gpr_name(ins.ops[2].val, ins.ops[2].key, "mulh") {
+          bins gprval[] = {[zero:t6]};
+        }
     endgroup
 
 // TODO : missing coverage of all combinations of source and destination operands.
 // FIXME: DONE
     covergroup mulhu_cg with function sample(ins_t ins);
         option.per_instance = 1;
-        cp_rd    : coverpoint get_gpr_name(ins.ops[0].val, ins.ops[0].key, "mulhu");
-        cp_rs1   : coverpoint get_gpr_name(ins.ops[1].val, ins.ops[1].key, "mulhu");
-        cp_rs2   : coverpoint get_gpr_name(ins.ops[2].val, ins.ops[2].key, "mulhu");
+        cp_rd    : coverpoint get_gpr_name(ins.ops[0].val, ins.ops[0].key, "mulhu") {
+          bins gprval[] = {[zero:t6]};
+        }
+        cp_rs1   : coverpoint get_gpr_name(ins.ops[1].val, ins.ops[1].key, "mulhu") {
+          bins gprval[] = {[zero:t6]};
+        }
+        cp_rs2   : coverpoint get_gpr_name(ins.ops[2].val, ins.ops[2].key, "mulhu") {
+          bins gprval[] = {[zero:t6]};
+        }
     endgroup
 
 // TODO : missing coverage of all combinations of source and destination operands.
@@ -1086,9 +1096,15 @@ class uvme_rv32isa_covg extends uvm_component;
 // FIXME: DONE
     covergroup mulhsu_cg with function sample(ins_t ins);
         option.per_instance = 1;
-        cp_rd    : coverpoint get_gpr_name(ins.ops[0].val, ins.ops[0].key, "mulhsu");
-        cp_rs1   : coverpoint get_gpr_name(ins.ops[1].val, ins.ops[1].key, "mulhsu");
-        cp_rs2   : coverpoint get_gpr_name(ins.ops[2].val, ins.ops[2].key, "mulhsu" );
+        cp_rd    : coverpoint get_gpr_name(ins.ops[0].val, ins.ops[0].key, "mulhsu") {
+          bins gprval[] = {[zero:t6]};
+        }
+        cp_rs1   : coverpoint get_gpr_name(ins.ops[1].val, ins.ops[1].key, "mulhsu") {
+          bins gprval[] = {[zero:t6]};
+        }
+        cp_rs2   : coverpoint get_gpr_name(ins.ops[2].val, ins.ops[2].key, "mulhsu" ) {
+          bins gprval[] = {[zero:t6]};
+        }
     endgroup
 
 // TODO : missing coverage for sequence of MULH[[S]U] and MUL instructions
@@ -1100,9 +1116,15 @@ class uvme_rv32isa_covg extends uvm_component;
 // FIXME: DONE
     covergroup div_cg with function sample(ins_t ins);
         option.per_instance = 1;
-        cp_rd    : coverpoint get_gpr_name(ins.ops[0].val, ins.ops[0].key, "div");
-        cp_rs1   : coverpoint get_gpr_name(ins.ops[1].val, ins.ops[1].key, "div");
-        cp_rs2   : coverpoint get_gpr_name(ins.ops[2].val, ins.ops[2].key, "div");
+        cp_rd    : coverpoint get_gpr_name(ins.ops[0].val, ins.ops[0].key, "div") {
+          bins gprval[] = {[zero:t6]};
+        }
+        cp_rs1   : coverpoint get_gpr_name(ins.ops[1].val, ins.ops[1].key, "div") {
+          bins gprval[] = {[zero:t6]};
+        }
+        cp_rs2   : coverpoint get_gpr_name(ins.ops[2].val, ins.ops[2].key, "div") {
+          bins gprval[] = {[zero:t6]};
+        }
     endgroup
 
 // TODO : missing coverage of all combinations of source and destination operands.
@@ -1111,9 +1133,15 @@ class uvme_rv32isa_covg extends uvm_component;
 // FIXME: DONE
     covergroup rem_cg with function sample(ins_t ins);
         option.per_instance = 1;
-        cp_rd    : coverpoint get_gpr_name(ins.ops[0].val, ins.ops[0].key, "rem");
-        cp_rs1   : coverpoint get_gpr_name(ins.ops[1].val, ins.ops[1].key, "rem");
-        cp_rs2   : coverpoint get_gpr_name(ins.ops[2].val, ins.ops[2].key, "rem");
+        cp_rd    : coverpoint get_gpr_name(ins.ops[0].val, ins.ops[0].key, "rem") {
+          bins gprval[] = {[zero:t6]};
+        }
+        cp_rs1   : coverpoint get_gpr_name(ins.ops[1].val, ins.ops[1].key, "rem") {
+          bins gprval[] = {[zero:t6]};
+        }
+        cp_rs2   : coverpoint get_gpr_name(ins.ops[2].val, ins.ops[2].key, "rem") {
+          bins gprval[] = {[zero:t6]};
+        }
     endgroup
 
 // TODO : missing coverage of all combinations of source and destination operands.
@@ -1121,9 +1149,15 @@ class uvme_rv32isa_covg extends uvm_component;
 // FIXME: DONE
     covergroup divu_cg with function sample(ins_t ins);
         option.per_instance = 1;
-        cp_rd    : coverpoint get_gpr_name(ins.ops[0].val, ins.ops[0].key, "divu");
-        cp_rs1   : coverpoint get_gpr_name(ins.ops[1].val, ins.ops[1].key, "divu");
-        cp_rs2   : coverpoint get_gpr_name(ins.ops[2].val, ins.ops[2].key, "divu");
+        cp_rd    : coverpoint get_gpr_name(ins.ops[0].val, ins.ops[0].key, "divu") {
+          bins gprval[] = {[zero:t6]};
+        }
+        cp_rs1   : coverpoint get_gpr_name(ins.ops[1].val, ins.ops[1].key, "divu") {
+          bins gprval[] = {[zero:t6]};
+        }
+        cp_rs2   : coverpoint get_gpr_name(ins.ops[2].val, ins.ops[2].key, "divu") {
+          bins gprval[] = {[zero:t6]};
+        }
     endgroup
 
 // TODO : missing coverage of all combinations of source and destination operands.
@@ -1131,9 +1165,15 @@ class uvme_rv32isa_covg extends uvm_component;
 // FIXME: DONE
     covergroup remu_cg with function sample(ins_t ins);
         option.per_instance = 1;
-        cp_rd    : coverpoint get_gpr_name(ins.ops[0].val, ins.ops[0].key, "remu");
-        cp_rs1   : coverpoint get_gpr_name(ins.ops[1].val, ins.ops[1].key, "remu");
-        cp_rs2   : coverpoint get_gpr_name(ins.ops[2].val, ins.ops[2].key, "remu");
+        cp_rd    : coverpoint get_gpr_name(ins.ops[0].val, ins.ops[0].key, "remu") {
+          bins gprval[] = {[zero:t6]};
+        }
+        cp_rs1   : coverpoint get_gpr_name(ins.ops[1].val, ins.ops[1].key, "remu") {
+          bins gprval[] = {[zero:t6]};
+        }
+        cp_rs2   : coverpoint get_gpr_name(ins.ops[2].val, ins.ops[2].key, "remu") {
+          bins gprval[] = {[zero:t6]};
+        }
     endgroup
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -1142,7 +1182,9 @@ class uvme_rv32isa_covg extends uvm_component;
 
     covergroup csrrci_cg with function sample(ins_t ins);
         option.per_instance = 1;
-        cp_rd    : coverpoint get_gpr_name(ins.ops[0].val, ins.ops[0].key, "csrrci");
+        cp_rd    : coverpoint get_gpr_name(ins.ops[0].val, ins.ops[0].key, "csrrci") {
+          bins gprval[] = {[zero:t6]};
+        }
         cp_csr   : coverpoint get_csr_name(ins.ops[1].val, ins.ops[1].key, "csrrci");
         cp_zimm  : coverpoint get_imm(ins.ops[2].val, "csrrci") {
           bins low  = {[5'b00000:5'b10000]};
@@ -1152,21 +1194,31 @@ class uvme_rv32isa_covg extends uvm_component;
 
     covergroup csrrc_cg with function sample(ins_t ins);
         option.per_instance = 1;
-        cp_rd    : coverpoint get_gpr_name(ins.ops[0].val, ins.ops[0].key, "csrrc");
+        cp_rd    : coverpoint get_gpr_name(ins.ops[0].val, ins.ops[0].key, "csrrc") {
+          bins gprval[] = {[zero:t6]};
+        }
         cp_csr   : coverpoint get_csr_name(ins.ops[1].val, ins.ops[1].key, "csrrc");
-        cp_rs1   : coverpoint get_gpr_name(ins.ops[2].val, ins.ops[2].key, "csrrc");
+        cp_rs1   : coverpoint get_gpr_name(ins.ops[2].val, ins.ops[2].key, "csrrc") {
+          bins gprval[] = {[zero:t6]};
+        }
     endgroup
 
     covergroup csrrs_cg with function sample(ins_t ins);
         option.per_instance = 1;
-        cp_rd    : coverpoint get_gpr_name(ins.ops[0].val, ins.ops[0].key, "csrrs");
+        cp_rd    : coverpoint get_gpr_name(ins.ops[0].val, ins.ops[0].key, "csrrs") {
+          bins gprval[] = {[zero:t6]};
+        }
         cp_csr   : coverpoint get_csr_name(ins.ops[1].val, ins.ops[1].key, "csrrs");
-        cp_rs1   : coverpoint get_gpr_name(ins.ops[2].val, ins.ops[2].key, "csrrs");
+        cp_rs1   : coverpoint get_gpr_name(ins.ops[2].val, ins.ops[2].key, "csrrs") {
+          bins gprval[] = {[zero:t6]};
+        }
     endgroup
 
     covergroup csrrsi_cg with function sample(ins_t ins);
         option.per_instance = 1;
-        cp_rd    : coverpoint get_gpr_name(ins.ops[0].val, ins.ops[0].key, "csrrsi");
+        cp_rd    : coverpoint get_gpr_name(ins.ops[0].val, ins.ops[0].key, "csrrsi") {
+          bins gprval[] = {[zero:t6]};
+        }
         cp_csr   : coverpoint get_csr_name(ins.ops[1].val, ins.ops[1].key, "csrrsi");
         cp_zimm  : coverpoint get_imm(ins.ops[2].val, "csrrsi") {
           bins low  = {[5'b00000:5'b10000]};
@@ -1176,14 +1228,20 @@ class uvme_rv32isa_covg extends uvm_component;
 
     covergroup csrrw_cg with function sample(ins_t ins);
         option.per_instance = 1;
-        cp_rd    : coverpoint get_gpr_name(ins.ops[0].val, ins.ops[0].key, "csrrw");
+        cp_rd    : coverpoint get_gpr_name(ins.ops[0].val, ins.ops[0].key, "csrrw") {
+          bins gprval[] = {[zero:t6]};
+        }
         cp_csr   : coverpoint get_csr_name(ins.ops[1].val, ins.ops[1].key, "csrrw");
-        cp_rs1   : coverpoint get_gpr_name(ins.ops[2].val, ins.ops[2].key, "csrrw");
+        cp_rs1   : coverpoint get_gpr_name(ins.ops[2].val, ins.ops[2].key, "csrrw") {
+          bins gprval[] = {[zero:t6]};
+        }
     endgroup
 
     covergroup csrrwi_cg with function sample(ins_t ins);
         option.per_instance = 1;
-        cp_rd    : coverpoint get_gpr_name(ins.ops[0].val, ins.ops[0].key, "csrrwi");
+        cp_rd    : coverpoint get_gpr_name(ins.ops[0].val, ins.ops[0].key, "csrrwi") {
+          bins gprval[] = {[zero:t6]};
+        }
         cp_csr   : coverpoint get_csr_name(ins.ops[1].val, ins.ops[1].key, "csrrwi");
         cp_zimm  : coverpoint get_imm(ins.ops[2].val, "csrrwi") {
           bins low  = {[5'b00000:5'b10000]};
@@ -1274,8 +1332,7 @@ class uvme_rv32isa_covg extends uvm_component;
     covergroup c_j_cg      with function sample(ins_t ins);
         option.per_instance = 1;
         cp_jmp11   : coverpoint get_pc_imm(ins.ops[0].val, ins.pc, "c.j" ) {
-            bins neg  = {[$:-1]};
-            bins zero = {0};
+            bins neg  = {[$:-1]};            
             bins pos  = {[1:$]};
         }
     endgroup
@@ -1286,8 +1343,7 @@ class uvme_rv32isa_covg extends uvm_component;
         // Note even though by ISA the instruction is c.jal imm, the ISS places ra into operand0 
         // in the decode, putting the offset into operand1q
         cp_jmp11   : coverpoint get_pc_imm(ins.ops[1].val, ins.pc, "c.jal" ) {
-            bins neg  = {[$:-1]};
-            bins zero = {0};
+            bins neg  = {[$:-1]};        
             bins pos  = {[1:$]};
         }
     endgroup
@@ -1331,8 +1387,7 @@ class uvme_rv32isa_covg extends uvm_component;
         cp_rd    : coverpoint get_gpr_name(ins.ops[0].val, ins.ops[0].key, "c.lui") {
             bins gprval[] = {ra,[gp:a5]};
         }
-        cp_uimm6   : coverpoint get_imm(ins.ops[1].val,"c.lui" ) {
-            bins neg  = {[$:-1]};
+        cp_uimm6   : coverpoint get_imm(ins.ops[1].val,"c.lui" ) {    
             bins zero = {0};
             bins pos  = {[1:$]};
         }
@@ -1528,7 +1583,7 @@ class uvme_rv32isa_covg extends uvm_component;
 // FIXME: DONE
     covergroup c_ebreak_cg   with function sample(ins_t ins);
         option.per_instance = 1;
-        cp_asm   : coverpoint ins.asm == EBREAK {
+        cp_asm   : coverpoint ins.asm == C_EBREAK {
             ignore_bins zero = {0};
         }
     endgroup
@@ -1785,7 +1840,17 @@ class uvme_rv32isa_covg extends uvm_component;
         else begin
             case (ins.ins_str)
                 "add"       : begin ins.asm=ADD;    add_cg.sample(ins);    end
-                "addi"      : begin ins.asm=ADDI;   addi_cg.sample(ins);   end
+                "addi"      : begin 
+                  if (  get_gpr_name(ins.ops[0].val, ins.ops[0].key, "addi") == gpr_name_t'(zero) &&
+                        get_gpr_name(ins.ops[1].val, ins.ops[1].key, "addi") == gpr_name_t'(zero)) begin
+                    ins.asm=NOP;
+                    nop_cg.sample(ins);
+                  end
+                  else begin
+                    ins.asm=ADDI;   
+                    addi_cg.sample(ins);   
+                  end
+                end
                 "and"       : begin ins.asm=AND;    and_cg.sample(ins);    end
                 "andi"      : begin ins.asm=ANDI;   andi_cg.sample(ins);   end
                 "auipc"     : begin ins.asm=AUIPC;  auipc_cg.sample(ins);  end

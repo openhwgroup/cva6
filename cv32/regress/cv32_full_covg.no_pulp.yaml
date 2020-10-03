@@ -1,0 +1,152 @@
+# YAML file to specify a regression testlist
+---
+# Header
+name: cv32_full
+description: Full regression (all tests) for CV32E40P with step-and-compare against RM"
+
+# List of builds
+builds:
+  corev-dv:
+    cmd: make comp_corev-dv
+    dir: cv32/sim/uvmt_cv32
+    cov: 0
+  uvmt_cv32:
+    cmd: make comp
+    dir: cv32/sim/uvmt_cv32
+
+# List of tests
+tests:
+  hello-world:
+    build: uvmt_cv32
+    description: uvm_hello_world_test
+    dir: cv32/sim/uvmt_cv32
+    cmd: make test TEST=hello-world
+
+  csr_instructions:
+    build: uvmt_cv32
+    description: CSR instruction test
+    dir: cv32/sim/uvmt_cv32
+    cmd: make test TEST=csr_instructions
+
+  counters:
+    build: uvmt_cv32
+    description: General counters test
+    dir: cv32/sim/uvmt_cv32
+    cmd: make test TEST=counters
+
+  generic_exception_test:
+    build: uvmt_cv32
+    description: Generic exception test
+    dir: cv32/sim/uvmt_cv32
+    cmd: make test TEST=generic_exception_test
+
+  cv32e40p_csr_access_test:
+    build: uvmt_cv32
+    description: CSR Access Mode Test
+    dir: cv32/sim/uvmt_cv32
+    cmd: make test TEST=cv32e40p_csr_access_test
+
+  requested_csr_por:
+    build: uvmt_cv32
+    description: CSR PoR test
+    dir: cv32/sim/uvmt_cv32
+    cmd: make test TEST=requested_csr_por
+
+  modeled_csr_por:
+    build: uvmt_cv32
+    description: Modeled CSR PoR test
+    dir: cv32/sim/uvmt_cv32
+    cmd: make test TEST=modeled_csr_por
+
+  riscv_ebreak_test_0:
+    build: uvmt_cv32
+    description: Static corev-dv ebreak
+    dir: cv32/sim/uvmt_cv32
+    cmd: make test TEST=riscv_ebreak_test_0
+
+  riscv_arithmetic_basic_test:
+    build: uvmt_cv32
+    description: Static riscv-dv arithmetic test
+    dir: cv32/sim/uvmt_cv32    
+    cmd: make test TEST=riscv_arithmetic_basic_test
+    num: 2
+
+  corev_arithmetic_base_test:
+    build: uvmt_cv32
+    description: Generated corev-dv arithmetic test
+    dir: cv32/sim/uvmt_cv32    
+    cmd: make gen_corev-dv test TEST=corev_arithmetic_base_test
+    num: 200
+
+  corev_rand_instr_test:
+    build: uvmt_cv32
+    description: Generated corev-dv random instruction test
+    dir: cv32/sim/uvmt_cv32
+    cmd: make gen_corev-dv test TEST=corev_rand_instr_test
+    num: 200
+
+  corev_jump_stress_test:
+    build: uvmt_cv32
+    description: Generated corev-dv jump stress test
+    dir: cv32/sim/uvmt_cv32    
+    cmd: make gen_corev-dv test TEST=corev_jump_stress_test
+    num: 200
+
+  corev_rand_interrupt:
+    build: uvmt_cv32
+    description: Generated corev-dv random interrupt test
+    dir: cv32/sim/uvmt_cv32    
+    cmd: make gen_corev-dv test TEST=corev_rand_interrupt
+    num: 200
+
+  corev_rand_debug:
+    build: uvmt_cv32
+    description: Generated corev-dv random debug test
+    dir: cv32/sim/uvmt_cv32    
+    cmd: make gen_corev-dv test TEST=corev_rand_debug
+    num: 200
+
+  corev_rand_interrupt_wfi:
+    build: uvmt_cv32
+    description: Generated corev-dv random interrupt WFI test
+    dir: cv32/sim/uvmt_cv32    
+    cmd: make gen_corev-dv test TEST=corev_rand_interrupt_wfi
+    num: 200
+
+  corev_rand_interrupt_nested:
+    build: uvmt_cv32
+    description: Generated corev-dv random interrupt WFI test with random nested interrupts
+    dir: cv32/sim/uvmt_cv32    
+    cmd: make gen_corev-dv test TEST=corev_rand_interrupt_nested
+    num: 200
+
+  illegal:
+    build: uvmt_cv32
+    description: Illegal-riscv-tests
+    dir: cv32/sim/uvmt_cv32
+    cmd: make test TEST=illegal
+
+  fibonacci:
+    build: uvmt_cv32
+    description: Fibonacci test
+    dir: cv32/sim/uvmt_cv32
+    cmd: make test TEST=fibonacci
+
+  misalign:
+    build: uvmt_cv32
+    description: Misalign test
+    dir: cv32/sim/uvmt_cv32
+    cmd: make test TEST=misalign
+
+  dhrystone:
+    build: uvmt_cv32
+    description: Dhrystone test
+    dir: cv32/sim/uvmt_cv32
+    cmd: make test TEST=dhrystone
+
+  debug_test:
+    build: uvmt_cv32
+    description: Debug Test 1
+    dir: cv32/sim/uvmt_cv32
+    cmd: make test TEST=debug_test
+
