@@ -98,7 +98,7 @@ IMC_REPORT_ARGS = report_metrics -summary -overwrite -out cov_report
 MERGED_COV_DIR ?= merged_cov
 
 ifeq ($(call IS_YES,$(COV)),YES)
-XRUN_USER_COMPILE_ARGS += $(XRUN_ELAB_COV)
+XRUN_ELAB_COV_FLAGS += $(XRUN_ELAB_COV)
 XRUN_RUN_COV_FLAGS += $(XRUN_RUN_COV)
 endif
 
@@ -198,6 +198,7 @@ comp: mk_xrun_dir $(CV32E40P_PKG) $(OVP_MODEL_DPI)
 	@echo "$(BANNER)"
 	cd $(XRUN_RESULTS) && $(XRUN) \
 		$(XRUN_COMP) \
+		$(XRUN_ELAB_COV_FLAGS) \
 		-top $(RTLSRC_VLOG_TB_TOP) \
 		-l xrun.log \
 		-elaborate
