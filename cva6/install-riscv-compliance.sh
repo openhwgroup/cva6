@@ -24,7 +24,7 @@ if ! [ -n "$COMPLIANCE_REPO" ]; then
   COMPLIANCE_REPO="https://github.com/riscv/riscv-compliance.git"
   COMPLIANCE_BRANCH="master"
   COMPLIANCE_HASH="220e78542da4510e40eac31e31fdd4e77cdae437"
-  COMPLIANCE_PATCH="../../cva6/riscv-compliance.patch"
+  COMPLIANCE_PATCH="../../../cva6/riscv-compliance.patch"
 fi
 echo $COMPLIANCE_REPO
 echo $COMPLIANCE_BRANCH
