@@ -405,7 +405,7 @@ int main(int argc, char *argv[])
     ++err_cnt;
   }
  
-  __asm__ volatile("csrr %0, 0x306" : "=r"(mcounteren_rval));    // Not currently modeled
+  //__asm__ volatile("csrr %0, 0x306" : "=r"(mcounteren_rval));    // Not currently modeled
 
   //if (mcounteren_rval != 0x0) {
   //  printf("ERROR: CSR MCOUNTEREN not 0x0!\n\n");
