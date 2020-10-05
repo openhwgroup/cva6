@@ -55,8 +55,8 @@ The default values are:
 - `DV_PATCH`: no default value
 - `DV_TARGET`: `rv64gc`
 - `DV_SIMULATORS`: `verilator,spike`
-- `DV_TESTLISTS`: `../../tests/testlist_riscv-tests-$DV_TARGET-p.yaml
-../../tests/testlist_riscv-tests-$DV_TARGET-v.yaml`
+- `DV_TESTLISTS`: `../../cva6/tests/testlist_riscv-tests-$DV_TARGET-p.yaml
+../../cva6/tests/testlist_riscv-tests-$DV_TARGET-v.yaml`
 - `DV_OPTS`: no default value
 
 ## 32-bit configuration

@@ -29,10 +29,10 @@ echo $TESTS_REPO
 echo $TESTS_BRANCH
 echo $TESTS_HASH
 
-mkdir -p tests
-if ! [ -d tests/riscv-tests ]; then
-  git clone $TESTS_REPO -b $TESTS_BRANCH tests/riscv-tests
-  cd tests/riscv-tests; git checkout $TESTS_HASH; 
+mkdir -p cva6/tests
+if ! [ -d cva6/tests/riscv-tests ]; then
+  git clone $TESTS_REPO -b $TESTS_BRANCH cva6/tests/riscv-tests
+  cd cva6/tests/riscv-tests; git checkout $TESTS_HASH; 
   git submodule update --init --recursive
   git apply --directory=env ../../cva6/riscv-tests-env.patch
   cd -

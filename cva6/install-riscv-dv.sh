@@ -30,7 +30,7 @@ if ! [ -n "$RISCV_OBJCOPY" ]; then
 fi
 export SPIKE_PATH=$SPIKE_ROOT/bin
 export RTL_PATH=$ROOT_PROJECT/core-v-cores/cva6
-export TESTS_PATH=$ROOT_PROJECT/tests
+export TESTS_PATH=$ROOT_PROJECT/cva6/tests
 
 if ! [ -n "$DV_REPO" ]; then
   export DV_REPO="https://github.com/ThalesGroup/riscv-dv.git"

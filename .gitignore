@@ -31,7 +31,7 @@ waves.shm/
 *.log
 stdout.txt
 .vscode
-tests/riscv-compliance/
-tests/riscv-tests/
+cva6/tests/riscv-compliance/
+cva6/tests/riscv-tests/
 tools/
 uvm/riscv-dv/

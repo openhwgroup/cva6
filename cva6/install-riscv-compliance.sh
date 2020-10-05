@@ -31,10 +31,10 @@ echo $COMPLIANCE_BRANCH
 echo $COMPLIANCE_HASH
 echo $COMPLIANCE_PATCH
 
-mkdir -p tests
-if ! [ -d tests/riscv-compliance ]; then
-  git clone $COMPLIANCE_REPO -b $COMPLIANCE_BRANCH tests/riscv-compliance
-  cd tests/riscv-compliance; git checkout $COMPLIANCE_HASH;
+mkdir -p cva6/tests
+if ! [ -d cva6/tests/riscv-compliance ]; then
+  git clone $COMPLIANCE_REPO -b $COMPLIANCE_BRANCH cva6/tests/riscv-compliance
+  cd cva6/tests/riscv-compliance; git checkout $COMPLIANCE_HASH;
   if [ -f "$COMPLIANCE_PATCH" ]; then
     git apply $COMPLIANCE_PATCH
   fi

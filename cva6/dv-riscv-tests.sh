@@ -40,8 +40,8 @@ if ! [ -n "$DV_SIMULATORS" ]; then
 fi
 
 if ! [ -n "$DV_TESTLISTS" ]; then
-  DV_TESTLISTS="../../tests/testlist_riscv-tests-$DV_TARGET-p.yaml \
-                ../../tests/testlist_riscv-tests-$DV_TARGET-v.yaml"
+  DV_TESTLISTS="../../cva6/tests/testlist_riscv-tests-$DV_TARGET-p.yaml \
+                ../../cva6/tests/testlist_riscv-tests-$DV_TARGET-v.yaml"
 fi
 
 cd uvm/riscv-dv
