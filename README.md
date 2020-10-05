@@ -15,9 +15,13 @@ First, have a look at the [OpenHW Group's website](https://www.openhwgroup.org) 
 
 The design and verification documentation for the various CORE-V cores is located in the [OpenHW Group's CORE-V documentation repo](https://github.com/openhwgroup/core-v-docs).  Reading the [Verification Strategy](https://core-v-docs-verif-strat.readthedocs.io/en/latest/) is strongly recommended.
 
+### With CV32E40P
 If you want to run a simulation there are two options:
 1. To run the CORE testbench (based on the RI5CY testbench), go to `cv32/sim/core` and read the README.
 2. To run the CV32E40P UVM environment, go to `cv32/sim/uvmt_cv32` and read the README.
+
+## With CVA6
+To run CVA6 testbench, go to [cva6](cva6) directory and read the README.
 
 ## Directory Structure of this Repo
 ### bin
@@ -32,14 +36,14 @@ Empty sub-directory into which the RTL from one or more of the [CORE-V-CORES](ht
 ### cv32
 Verification Environments, testbenches, testcases and simulation Makefiles for the CV32E cores.
 
-### cv64
-Verification Environments, testbenches, testcases and simulation Makefiles for the CV64A cores.
+### cva6
+Verification Environments, testbenches, testcases and simulation Makefiles for the CVA6 cores.
 
 ### doc
 Contains a pointer to the [CORE-V-DOCS](https://github.com/openhwgroup/core-v-docs) repository.
 
 ### lib
-Common components for the CV32 and CV64 verification environments.
+Common components for the CV32 and CVA6 verification environments.
 
 ### vendor_lib
 Verification components supported by third-parties.

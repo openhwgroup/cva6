@@ -1,0 +1,13 @@
+diff --git a/include/riscv_pkg.sv b/include/riscv_pkg.sv
+index 58626cf..fc96515 100644
+--- a/include/riscv_pkg.sv
++++ b/include/riscv_pkg.sv
+@@ -28,7 +28,7 @@ package riscv;
+        ModeSv64 = 11
+     } vm_mode_t;
+ 
+-    localparam XLEN = 64;
++    localparam XLEN = 32;
+ 
+     // Warning: When using STD_CACHE, configuration must be PLEN=56 and VLEN=64
+     // Warning: VLEN must be superior or equal to PLEN
