@@ -55,6 +55,17 @@
       }
     },
     {
+      "name":        "cv32_interrupt_regression",
+      "description": "Directed and random interrupt tests for CV32E40P",
+      "verbose":     "true",
+      "tests": {
+        "resultsDir": "/mux-flow/build/results",
+        "builds":    ["uvmt_cv32"],
+        "listCmd":   "/mux-flow/build/repo/bin/cv_regress --file=cv32_interrupt --metrics --outfile=/mux-flow/build/repo/cv32_interrupt.json",
+        "listFile":  "/mux-flow/build/repo/cv32_interrupt.json"
+      }
+    },
+    {
       "name":        "cv32_xpulp_isa_regression",    
       "description": "XPULP ISA test-programs (and a few other tests that run with the RM disabled)",
       "verbose":     "true",
