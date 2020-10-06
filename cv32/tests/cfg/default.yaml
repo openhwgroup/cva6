@@ -1,12 +1,16 @@
 name: default
 description: Default configuration for CV32E40P simulations
 compile_flags: 
+    
+# Imperas ISS Options (in ovpsim section)
+# PULP_XPULP=1
+#--override root/cpu/misa_Extensions=0x801104
+# PULP_XPULP=0
+# Set as below
+# Debug options (add to ovpsim section as needed)
+#--trace --tracechange --traceshowicount --monitornets --tracemode
+#--showoverrides
 ovpsim: >
-    # PULP_XPULP=1
-    #--override root/cpu/misa_Extensions=0x801104
-    # PULP_XPULP=0
-    --override root/cpu/misa_Extensions=0x001104
+    --override root/cpu/misa_Extensions=0x801104
     --override root/cpu/marchid=4
     --override root/cpu/noinhibit_mask=0xFFFFFFF0
-    #--trace --tracechange --traceshowicount --monitornets --tracemode
-    #--showoverrides
