@@ -24,14 +24,23 @@
 .global _debugger_start
 .set test_ret_val, 0x20000000
 .set test_fail, 0x1
+.set test_debugger_entry, 0x1000
+.set test_debugger_ok, 0xa5
         
 _debugger_start:        
     // No code should have been run before this
     // check dpc == boot_addr == 0x80
     csrr t1, dpc
-    li t2, 0x84 # Boot addr 
+    li t2, 0x80 # Boot addr 
     bne t1, t2, _debugger_error
 
+    // Write known value to memory@0x1000
+    // We don't have any globals or pointers
+    // at this time, so we must rely on 
+    // memory (hopefully) not being used
+    li a0, test_debugger_entry
+    li t0, test_debugger_ok
+    sw t0, 0(a0)
     dret
 
 _debugger_error:

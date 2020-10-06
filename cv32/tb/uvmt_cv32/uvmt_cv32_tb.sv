@@ -138,7 +138,7 @@ module uvmt_cv32_tb;
     assign debug_cov_assert_if.illegal_insn_i = dut_wrap.cv32e40p_wrapper_i.core_i.id_stage_i.controller_i.illegal_insn_i;
     assign debug_cov_assert_if.illegal_insn_q = dut_wrap.cv32e40p_wrapper_i.core_i.id_stage_i.controller_i.illegal_insn_q;
     assign debug_cov_assert_if.ecall_insn_i = dut_wrap.cv32e40p_wrapper_i.core_i.id_stage_i.controller_i.ecall_insn_i;
-    assign debug_cov_assert_if.debug_req_i = dut_wrap.cv32e40p_wrapper_i.core_i.id_stage_i.controller_i.debug_req_i;
+    assign debug_cov_assert_if.debug_req_i = dut_wrap.cv32e40p_wrapper_i.core_i.id_stage_i.controller_i.debug_req_pending;
     assign debug_cov_assert_if.debug_mode_q = dut_wrap.cv32e40p_wrapper_i.core_i.id_stage_i.controller_i.debug_mode_q;
     assign debug_cov_assert_if.dcsr_q = dut_wrap.cv32e40p_wrapper_i.core_i.cs_registers_i.dcsr_q;
     assign debug_cov_assert_if.depc_q = dut_wrap.cv32e40p_wrapper_i.core_i.cs_registers_i.depc_q;
@@ -171,6 +171,7 @@ module uvmt_cv32_tb;
     assign debug_cov_assert_if.dm_exception_addr_i = dut_wrap.cv32e40p_wrapper_i.core_i.dm_exception_addr_i;
     assign debug_cov_assert_if.core_sleep_o = dut_wrap.cv32e40p_wrapper_i.core_i.core_sleep_o;
     assign debug_cov_assert_if.irq_i = dut_wrap.cv32e40p_wrapper_i.core_i.irq_i;
+    assign debug_cov_assert_if.pc_set = dut_wrap.cv32e40p_wrapper_i.core_i.id_stage_i.pc_set_o;
 
     // Instantiate debug assertions
     uvmt_cv32e40p_debug_assert u_debug_assert(.cov_assert_if(debug_cov_assert_if));

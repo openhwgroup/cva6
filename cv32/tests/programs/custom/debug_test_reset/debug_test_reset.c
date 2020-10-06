@@ -23,9 +23,21 @@
 #include <stdio.h>
 #include <stdlib.h>
 
+#define RND_STALL_REG *(volatile int *)0x1000
 
 #define MACHINE 3
 int main(int argc, char *argv[])
 {
-    return EXIT_SUCCESS;
+    unsigned int check_reg;
+    check_reg = RND_STALL_REG;
+
+    printf("Debug reg = %08x\n", check_reg);
+    // Debug code will write 0xff to this register
+    // If debug mode has not been entered, we will fail
+    if ((check_reg & 0xff) == 0xa5) {
+        return EXIT_SUCCESS;
+    }
+    else {
+        return EXIT_FAILURE;
+    }
 }

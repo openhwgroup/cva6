@@ -33,6 +33,8 @@ module uvmt_cv32e40p_debug_assert
   string info_tag = "CV32E40P_DEBUG_ASSERT";
   logic [31:0] pc_at_dbg_req; // Capture PC when debug_req_i or ebreak is active
   logic [31:0] pc_at_ebreak; // Capture PC when ebreak
+  logic [31:0] halt_addr_at_entry;
+  logic [31:0] exception_addr_at_entry;
   
   // ---------------------------------------------------------------------------
   // Clocking blocks
@@ -42,13 +44,13 @@ module uvmt_cv32e40p_debug_assert
   default clocking @(posedge cov_assert_if.clk_i); endclocking
   default disable iff !(cov_assert_if.rst_ni);
   
-  assign cov_assert_if.is_ebreak = cov_assert_if.id_valid & 
-                                   cov_assert_if.is_decoding & 
+  assign cov_assert_if.is_ebreak = cov_assert_if.is_decoding & 
+                                   cov_assert_if.id_stage_instr_valid_i &
                      (cov_assert_if.id_stage_instr_rdata_i == 32'h00100073) & 
                      cov_assert_if.id_stage_is_compressed == 1'b0;
 
-  assign cov_assert_if.is_cebreak = cov_assert_if.id_valid &
-                                    cov_assert_if.is_decoding &  
+  assign cov_assert_if.is_cebreak = cov_assert_if.is_decoding &
+                                    cov_assert_if.id_stage_instr_valid_i &
                      (cov_assert_if.id_stage_instr_rdata_i == 32'h00100073) & 
                      cov_assert_if.id_stage_is_compressed == 1'b1;
 
@@ -58,10 +60,15 @@ module uvmt_cv32e40p_debug_assert
 
     // debug_req_i results in debug mode
     // TBD: Is there a fixed latency for this?
+    // Only check when instr_valid_i is high, as debug_req is only evaluated
+    // in decode with a valid instruction
+    // Exclude ebreak and trigger as these have higher priority
     property p_debug_mode_ext_req;
-        $rose(cov_assert_if.debug_req_i) && !cov_assert_if.debug_mode_q |-> ##[1:40] (cov_assert_if.debug_mode_q && (cov_assert_if.dcsr_q[8:6]=== cv32e40p_pkg::DBG_CAUSE_HALTREQ) && 
+        cov_assert_if.debug_req_i && cov_assert_if.id_stage_instr_valid_i && cov_assert_if.is_decoding && !cov_assert_if.debug_mode_q &&
+        !cov_assert_if.trigger_match_i && !cov_assert_if.is_ebreak && !cov_assert_if.is_cebreak      
+        |-> ##[1:40] (cov_assert_if.debug_mode_q && (cov_assert_if.dcsr_q[8:6]=== cv32e40p_pkg::DBG_CAUSE_HALTREQ) && 
                                                         (cov_assert_if.depc_q == pc_at_dbg_req)) &&
-                                                        (cov_assert_if.id_stage_pc == cov_assert_if.dm_halt_addr_i);
+                                                        (cov_assert_if.id_stage_pc == halt_addr_at_entry);
     endproperty   
 
     a_debug_mode_ext_req: assert property(p_debug_mode_ext_req)
@@ -71,9 +78,9 @@ module uvmt_cv32e40p_debug_assert
 
     // c.ebreak with dcsr.ebreakm results in debug mode
     property p_cebreak_debug_mode;
-        $rose(cov_assert_if.is_cebreak) && cov_assert_if.dcsr_q[15] == 1'b1 && !cov_assert_if.debug_mode_q |-> ##[1:40] cov_assert_if.debug_mode_q && (cov_assert_if.dcsr_q[8:6] === cv32e40p_pkg::DBG_CAUSE_EBREAK) &&
+        $rose(cov_assert_if.is_cebreak) && cov_assert_if.dcsr_q[15] == 1'b1 && !cov_assert_if.debug_mode_q && cov_assert_if.id_valid|-> ##[1:40] cov_assert_if.debug_mode_q && (cov_assert_if.dcsr_q[8:6] === cv32e40p_pkg::DBG_CAUSE_EBREAK) &&
                                                             (cov_assert_if.depc_q == pc_at_dbg_req) &&
-                                                            (cov_assert_if.id_stage_pc == cov_assert_if.dm_halt_addr_i);
+                                                            (cov_assert_if.id_stage_pc == halt_addr_at_entry);
     endproperty
 
     a_cebreak_debug_mode: assert property(p_cebreak_debug_mode)
@@ -82,9 +89,9 @@ module uvmt_cv32e40p_debug_assert
 
     // ebreak with dcsr.ebreakm results in debug mode
     property p_ebreak_debug_mode;
-        $rose(cov_assert_if.is_ebreak) && cov_assert_if.dcsr_q[15] == 1'b1 && !cov_assert_if.debug_mode_q|-> ##[1:40] cov_assert_if.debug_mode_q && (cov_assert_if.dcsr_q[8:6] === cv32e40p_pkg::DBG_CAUSE_EBREAK) &&
+        $rose(cov_assert_if.is_ebreak) && cov_assert_if.dcsr_q[15] == 1'b1 && !cov_assert_if.debug_mode_q && cov_assert_if.id_valid|-> ##[1:40] cov_assert_if.debug_mode_q && (cov_assert_if.dcsr_q[8:6] === cv32e40p_pkg::DBG_CAUSE_EBREAK) &&
                                                             (cov_assert_if.depc_q == pc_at_dbg_req) &&
-                                                            (cov_assert_if.id_stage_pc == cov_assert_if.dm_halt_addr_i);
+                                                            (cov_assert_if.id_stage_pc == halt_addr_at_entry);
     endproperty
 
     a_ebreak_debug_mode: assert property(p_ebreak_debug_mode)
@@ -94,7 +101,7 @@ module uvmt_cv32e40p_debug_assert
 
     // c.ebreak without dcsr.ebreakm results in exception at mtvec
     property p_cebreak_exception;
-        $rose(cov_assert_if.is_cebreak) && cov_assert_if.dcsr_q[15] == 1'b0 && !cov_assert_if.debug_mode_q |-> ##[1:40] !cov_assert_if.debug_mode_q && (cov_assert_if.mcause_q[5:0] === cv32e40p_pkg::EXC_CAUSE_BREAKPOINT) &&
+        $rose(cov_assert_if.is_cebreak) && cov_assert_if.dcsr_q[15] == 1'b0 && !cov_assert_if.debug_mode_q  && cov_assert_if.is_decoding && cov_assert_if.id_valid|-> ##[1:40] !cov_assert_if.debug_mode_q && (cov_assert_if.mcause_q[5:0] === cv32e40p_pkg::EXC_CAUSE_BREAKPOINT) &&
                                                                              (cov_assert_if.mepc_q == pc_at_ebreak) &&
                                                                              (cov_assert_if.id_stage_pc == cov_assert_if.mtvec);
     endproperty
@@ -105,8 +112,8 @@ module uvmt_cv32e40p_debug_assert
 
     // c.ebreak during debug mode results in relaunch of debug mode
     property p_cebreak_during_debug_mode;
-        $rose(cov_assert_if.is_cebreak) && cov_assert_if.debug_mode_q  |-> ##[1:40] cov_assert_if.debug_mode_q  &&
-                                                       (cov_assert_if.id_stage_pc == cov_assert_if.dm_halt_addr_i); // TODO should check no change in dpc and dcsr
+        $rose(cov_assert_if.is_cebreak) ##0 cov_assert_if.debug_mode_q  && cov_assert_if.id_valid |-> ##[1:40] cov_assert_if.debug_mode_q  &&
+                                                       (cov_assert_if.id_stage_pc == halt_addr_at_entry); // TODO should check no change in dpc and dcsr
     endproperty
 
     a_cebreak_during_debug_mode: assert property(p_cebreak_during_debug_mode)
@@ -115,8 +122,8 @@ module uvmt_cv32e40p_debug_assert
 
     // ebreak during debug mode results in relaunch
     property p_ebreak_during_debug_mode;
-        $rose(cov_assert_if.is_ebreak) && cov_assert_if.debug_mode_q |-> ##[1:40] cov_assert_if.debug_mode_q && 
-                                                     (cov_assert_if.id_stage_pc == cov_assert_if.dm_halt_addr_i); // TODO should check no change in dpc and dcsr
+        $rose(cov_assert_if.is_ebreak) ##0 cov_assert_if.debug_mode_q && cov_assert_if.id_valid |-> ##[1:40] cov_assert_if.debug_mode_q && 
+                                                     (cov_assert_if.id_stage_pc == halt_addr_at_entry); // TODO should check no change in dpc and dcsr
     endproperty
 
     a_ebreak_during_debug_mode: assert property(p_ebreak_during_debug_mode)
@@ -125,9 +132,10 @@ module uvmt_cv32e40p_debug_assert
 
     // Trigger match results in debug mode
     property p_trigger_match;
-        $rose(cov_assert_if.trigger_match_i) && !cov_assert_if.debug_mode_q |-> ##[1:6] (cov_assert_if.debug_mode_q && (cov_assert_if.dcsr_q[8:6]=== cv32e40p_pkg::DBG_CAUSE_TRIGGER) && 
+        cov_assert_if.trigger_match_i ##0 cov_assert_if.tdata1[2] ##0 !cov_assert_if.debug_mode_q ##0 cov_assert_if.id_stage_instr_valid_i ##0 cov_assert_if.is_decoding
+        |-> ##[1:40] (cov_assert_if.debug_mode_q && (cov_assert_if.dcsr_q[8:6]=== cv32e40p_pkg::DBG_CAUSE_TRIGGER) && 
                                                             (cov_assert_if.depc_q == cov_assert_if.tdata2)) &&
-                                                            (cov_assert_if.id_stage_pc == cov_assert_if.dm_halt_addr_i);
+                                                            (cov_assert_if.id_stage_pc == halt_addr_at_entry);
     endproperty   
 
     a_trigger_match: assert property(p_trigger_match)
@@ -145,7 +153,7 @@ module uvmt_cv32e40p_debug_assert
 
     // Exception in debug mode results in pc->dm_exception_addr_i
     property p_debug_mode_exception;
-        $rose(cov_assert_if.illegal_insn_i) && cov_assert_if.debug_mode_q |-> ##[1:6] cov_assert_if.debug_mode_q && (cov_assert_if.id_stage_pc == cov_assert_if.dm_exception_addr_i);
+        $rose(cov_assert_if.illegal_insn_i) && cov_assert_if.debug_mode_q && cov_assert_if.is_decoding && cov_assert_if.id_valid |-> ##[1:40] cov_assert_if.debug_mode_q && (cov_assert_if.id_stage_pc == exception_addr_at_entry);
     endproperty
 
     a_debug_mode_exception : assert property(p_debug_mode_exception)
@@ -154,7 +162,8 @@ module uvmt_cv32e40p_debug_assert
 
     // ECALL in debug mode results in pc->dm_exception_addr_i
     property p_debug_mode_ecall;
-        $rose(cov_assert_if.ecall_insn_i) && cov_assert_if.debug_mode_q |-> ##[1:6] cov_assert_if.debug_mode_q && (cov_assert_if.id_stage_pc == cov_assert_if.dm_exception_addr_i);
+        $rose(cov_assert_if.ecall_insn_i) && cov_assert_if.debug_mode_q  && cov_assert_if.is_decoding && cov_assert_if.id_valid 
+        |-> ##[1:6] cov_assert_if.debug_mode_q && (cov_assert_if.id_stage_pc == exception_addr_at_entry);
     endproperty
 
     a_debug_mode_ecall : assert property(p_debug_mode_ecall)
@@ -181,7 +190,7 @@ module uvmt_cv32e40p_debug_assert
 
     // Debug request while sleeping makes core wake up and enter debug mode
     property p_sleep_debug_req;
-        cov_assert_if.in_wfi && cov_assert_if.debug_req_i |=> !cov_assert_if.core_sleep_o ##6 cov_assert_if.debug_mode_q; 
+        cov_assert_if.in_wfi && cov_assert_if.debug_req_i |=> !cov_assert_if.core_sleep_o ##[0:40] cov_assert_if.debug_mode_q; 
     endproperty
 
     a_sleep_debug_req : assert property(p_sleep_debug_req)
@@ -210,7 +219,7 @@ module uvmt_cv32e40p_debug_assert
 
     // Trigger during single step 
     property p_single_step_trigger;
-        !cov_assert_if.debug_mode_q && cov_assert_if.dcsr_q[2] && cov_assert_if.addr_match && cov_assert_if.tdata1[2] |->
+        !cov_assert_if.debug_mode_q && cov_assert_if.dcsr_q[2] && cov_assert_if.addr_match && cov_assert_if.tdata1[2] && cov_assert_if.id_stage_instr_valid_i|->
                 ##[1:20] cov_assert_if.debug_mode_q && (cov_assert_if.dcsr_q[8:6] == cv32e40p_pkg::DBG_CAUSE_TRIGGER) && (cov_assert_if.depc_q == pc_at_dbg_req);
     endproperty
 
@@ -266,7 +275,7 @@ module uvmt_cv32e40p_debug_assert
 
     // Check that mcycle works as expected when not sleeping
     property p_mcycle_count;
-        !cov_assert_if.mcountinhibit_q[0] && !cov_assert_if.core_sleep_o |=> (cov_assert_if.mcycle == ($past(cov_assert_if.mcycle)+1));
+        !cov_assert_if.mcountinhibit_q[0] && !cov_assert_if.core_sleep_o |=>  (cov_assert_if.mcycle == ($past(cov_assert_if.mcycle)+1));
     endproperty
 
     a_mcycle_count : assert property(p_mcycle_count)
@@ -310,11 +319,21 @@ module uvmt_cv32e40p_debug_assert
       cov_assert_if.in_wfi <= 1'b0;
     end
     else begin
-      if (cov_assert_if.is_wfi && !cov_assert_if.debug_mode_q) 
+      if (cov_assert_if.is_wfi && !cov_assert_if.debug_mode_q && cov_assert_if.id_valid && cov_assert_if.is_decoding)
         cov_assert_if.in_wfi <= 1'b1;
       else if (cov_assert_if.pending_enabled_irq || cov_assert_if.debug_req_i)
         cov_assert_if.in_wfi <= 1'b0;
     end
+  end
+
+  // Capture dm_halt_addr_i value
+  always@ (posedge cov_assert_if.clk_i) begin
+      if(cov_assert_if.ctrl_fsm_cs == cv32e40p_pkg::DBG_TAKEN_ID)
+          halt_addr_at_entry <= {cov_assert_if.dm_halt_addr_i[31:2], 2'b00};
+  end
+  always@ (posedge cov_assert_if.clk_i)  begin
+      if((cov_assert_if.illegal_insn_i | cov_assert_if.ecall_insn_i) & cov_assert_if.pc_set & cov_assert_if.debug_mode_q)
+          exception_addr_at_entry = {cov_assert_if.dm_exception_addr_i[31:2], 2'b00};
   end
 
     assign cov_assert_if.addr_match   = (cov_assert_if.id_stage_pc == cov_assert_if.tdata2);
