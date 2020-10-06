@@ -13,10 +13,28 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
+# SPDX-License-Identifier: Apache-2.0 WITH SHL-2.0
+#
 ################################################################################
 #
 # CSR definitions for the CV32E40P CORE-V proessor core (an RV32IMCZ machine).
 #
+# This file can be used as input to "gen_csr_test.py" delivered as part of
+# Google's riscv-dv project.  Assuming you are running this from
+# core-v-verif/vendor_lib/google/corev-dv and you've cloned riscv-dv, then the
+# following command-line should work for you:
+#
+#    python3 ../riscv-dv/scripts/gen_csr_test.py \
+#            --csr_file cv32e40p_csr_template.yaml \
+#            --xlen 32
+#
+# Source document is the CV32E40P user Manual:
+# https://core-v-docs-verif-strat.readthedocs.io/projects/cv32e40p_um/en/latest/index.html
+# Revision 62f0d86b
+#
+# Assumptions:
+#       1. Configuration core input mtvec_addr_i == 32'h0000_0000
+#       2. Core RTL parameters set as per User Manual defaults.
 ################################################################################
 #- csr: CSR_NAME
 #  description: >
@@ -51,6 +69,90 @@
 #      - description: ...
 #      - type: ...
 #      - ...
+
+# User CSRs
+- csr: cycle
+  description: >
+    (HPM) Cycle Counter
+  address: 0xC00
+  privilege_mode: M
+  rv32:
+    - field_name: cycle
+      description: >
+        Read-only unprivileged shadow of the lower 32 bits of the 64 bit machine mode cycle counter. 
+      type: R
+      reset_val: 0
+      msb: 31
+      lsb: 0
+- csr: instret
+  description: >
+    (HPM) Instruction-Retired Counter
+  address: 0xC02
+  privilege_mode: M
+  rv32:
+    - field_name: instret
+      description: >
+        Read-only unprivileged shadow of the lower 32 bits of the 64 bit machine mode instruction retired counter. 
+      type: R
+      reset_val: 0
+      msb: 31
+      lsb: 0
+- csr: hpmcounter3
+  description: >
+    (HPM) Performance-Monitoring Counter3
+  address: 0xC03
+  privilege_mode: M
+  rv32:
+    - field_name: counter3
+      description: >
+        Read-only unprivileged shadow of the lower 32 bits of the 64 bit machine performance counter. 
+      type: R
+      reset_val: 0
+      msb: 31
+      lsb: 0
+- csr: cycleh
+  description: >
+    (HPM) Upper 32 Cycle Counter
+  address: 0xC80
+  privilege_mode: M
+  rv32:
+    - field_name: cycleh
+      description: >
+        Read-only unprivileged shadow of the upper 32 bits of the 64 bit machine mode cycle counter. 
+      type: R
+      reset_val: 0
+      msb: 31
+      lsb: 0
+- csr: instreth
+  description: >
+    (HPM) Upper 32 Instruction-Retired Counter
+  address: 0xC82
+  privilege_mode: M
+  rv32:
+    - field_name: instreth
+      description: >
+        Read-only unprivileged shadow of the upper 32 bits of the 64 bit machine mode instruction retired counter. 
+      type: R
+      reset_val: 0
+      msb: 31
+      lsb: 0
+- csr: hpmcounter3h
+  description: >
+    (HPM) Upper 32 Performance-Monitoring Counter3
+  address: 0xC83
+  privilege_mode: M
+  rv32:
+    - field_name: counter3h
+      description: >
+        Read-only unprivileged shadow of the upper 32 bits of the 64 bit machine performance counter. 
+      type: R
+      reset_val: 0
+      msb: 31
+      lsb: 0
+
+# User Custom CSRs not verified for first release of CV32E40P
+
+# Machine CSRs
 - csr: mstatus
   description: >
     Machine ISA Register
@@ -146,6 +248,94 @@
       reset_val: 0
       msb: 3
       lsb: 3 
+- csr: mtvec
+  description: >
+    Machine Trap-Vector Base Address
+  address: 0x305
+  privilege_mode: M
+  rv32:
+    - field_name: BASE[31:8]
+      description: >
+        Trap-handler base address, always aligned to 256 bytes
+      type: WARL
+      reset_val: 0 # assumes mtvec_i == 0
+      msb: 31
+      lsb: 8
+    - field_name: BASE[7:2]
+      description: >
+        Trap-handler base address, always aligned to 256 bytes
+      type: R
+      reset_val: 0
+      msb: 7
+      lsb: 2
+    - field_name: MODE[1]
+      description: >
+        Always 0
+      type: R
+      reset_val: 0
+      msb: 1
+      lsb: 1
+    - field_name: MODE[0]
+      description: >
+        0 = Direct mode, 1 = vectored mode
+      type: WARL
+      reset_val: 0
+      msb: 1
+      lsb: 0
+- csr: mcountinhibit
+  description: >
+    Machine Counter-Inhibit
+  address: 0x320
+  privilege_mode: M
+  rv32:
+    - field_name: Selectors 31..4
+      description: >
+        Selectors for mhpmcounter31..4 inhibit (assuming NUM_MHPMCOUNTER set to 1)
+      type: R
+      reset_val: 0
+      msb: 31
+      lsb: 4
+    - field_name: Selectors 3
+      description: >
+        Selectors for mhpmcounter3 inhibit (assuming NUM_MHPMCOUNTER set to 1)
+      type: WARL
+      reset_val: 1
+      msb: 3
+      lsb: 3
+    - field_name: minstret inhibit
+      description: >
+        Inhibit minstret counting
+      type: WARL
+      reset_val: 1
+      msb: 2
+      lsb: 2
+    - field_name: zero
+      description: >
+        Zero
+      type: R
+      reset_val: 0
+      msb: 1
+      lsb: 1
+    - field_name: mcycle inhibit
+      description: >
+        Inhibit mcycle counting
+      type: WARL
+      reset_val: 1
+      msb: 0
+      lsb: 0
+- csr: mphmevent3
+  description: >
+    (HPM) Machine Performance-Monitoring Event Selector 3
+  address: 0x323
+  privilege_mode: M
+  rv32:
+    - field_name: Event
+      description: >
+        Event selector
+      type: WARL
+      reset_val: 0
+      msb: 31
+      lsb: 0
 - csr: mscratch
   description: >
     Machine Scratch-pad Register
@@ -159,3 +349,104 @@
       reset_val: 0
       msb: 31
       lsb: 0
+- csr: mepc
+  description: >
+    Machine Exception Program Counter
+  address: 0x341
+  privilege_mode: M
+  rv32:
+    - field_name: EPC
+      description: >
+          Exception PC[31:1]
+      type: WARL
+      reset_val: 0
+      msb: 31
+      lsb: 1
+    - field_name: EPC0
+      description: >
+          Exception PC[0]
+      type: WARL
+      reset_val: 0
+      msb: 0
+      lsb: 0
+- csr: mcause
+  description: >
+    Machine Exception Cause
+  address: 0x342
+  privilege_mode: M
+  rv32:
+    - field_name: Interrupt
+      description: >
+          Set when exception triggered by interrupt
+      type: R
+      reset_val: 0
+      msb: 31
+      lsb: 31
+    - field_name: zero
+      description: >
+          Always zero
+      type: R
+      reset_val: 0
+      msb: 30
+      lsb: 6
+    - field_name: ecode
+      description: >
+          Exception Code
+      type: R
+      reset_val: 0
+      msb: 5
+      lsb: 0
+- csr: mtval
+  description: >
+    Machine Trap Value
+  address: 0x343
+  privilege_mode: M
+  rv32:
+    - field_name: Trap value
+      description: >
+         Machine Trap Value
+      type: R
+      reset_val: 0
+      msb: 31
+      lsb: 0
+- csr: mip
+  description: >
+    Machine Interrupt Pending
+  address: 0x344
+  privilege_mode: M
+  rv32:
+    - field_name: Fast
+      description: >
+         Fast Interrupts Pending
+      type: R
+      reset_val: 0
+      msb: 31
+      lsb: 16
+    - field_name: zero
+      description: >
+          Always zero
+      type: R
+      reset_val: 0
+      msb: 15
+      lsb: 12
+    - field_name: External
+      description: >
+         Machine External Interrupt Pending
+      type: R
+      reset_val: 0
+      msb: 11
+      lsb: 11
+    - field_name: Timer
+      description: >
+         Machine Timer Interrupt Pending
+      type: R
+      reset_val: 0
+      msb: 7
+      lsb: 7
+    - field_name: Software
+      description: >
+         Machine Software Interrupt Pending
+      type: R
+      reset_val: 0
+      msb: 3
+      lsb: 3
