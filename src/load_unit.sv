@@ -57,6 +57,16 @@ module load_unit import ariane_pkg::*; #(
         fu_op                     operator;
     } load_data_d, load_data_q, in_data;
 
+    // there is a D$ request pending while we may accept further load requests
+    logic dreq_pending_d, dreq_pending_q;
+    // store valid_i for one cycle
+    logic valid_d, valid_q;
+    // store lsu_ctrl_i.trans_id for one cycle
+    logic [TRANS_ID_BITS-1:0] trans_id_d, trans_id_q;
+
+    // save valid bit
+    assign valid_d = valid_i;
+    assign trans_id_d = lsu_ctrl_i.trans_id;
     // page offset is defined as the lower 12 bits, feed through for address checker
     assign page_offset_o = lsu_ctrl_i.vaddr[11:0];
     // feed-through the virtual address for VA translation
@@ -73,8 +83,6 @@ module load_unit import ariane_pkg::*; #(
     assign req_port_o.address_tag   = paddr_i[ariane_pkg::DCACHE_TAG_WIDTH     +
                                               ariane_pkg::DCACHE_INDEX_WIDTH-1 :
                                               ariane_pkg::DCACHE_INDEX_WIDTH];
-    // directly output an exception
-    assign ex_o = ex_i;
 
     // Check that NI operations follow the necessary conditions
     logic paddr_ni;
@@ -95,6 +103,7 @@ module load_unit import ariane_pkg::*; #(
         load_data_d          = load_data_q;
         translation_req_o    = 1'b0;
         req_port_o.data_req  = 1'b0;
+        dreq_pending_d       = dreq_pending_q;
         // tag control
         req_port_o.kill_req  = 1'b0;
         req_port_o.tag_valid = 1'b0;
@@ -191,6 +200,7 @@ module load_unit import ariane_pkg::*; #(
             SEND_TAG: begin
                 req_port_o.tag_valid = 1'b1;
                 state_d = IDLE;
+                dreq_pending_d = 1'b1;
                 // we can make a new request here if we got one
                 if (valid_i) begin
                     // start the translation process even though we do not know if the addresses match
@@ -241,17 +251,22 @@ module load_unit import ariane_pkg::*; #(
         endcase
 
         // we got an exception
-        if (ex_i.valid && valid_i) begin
+        if (ex_i.valid && valid_q) begin
             // the next state will be the idle state
             state_d = IDLE;
-            // pop load - but only if we are not getting an rvalid in here - otherwise we will over-write an incoming transaction
-            if (!req_port_i.data_rvalid)
+            // pop load - but only if there is no pending D$ request - otherwise we will over-write an incoming transaction
+            if (!dreq_pending_q)
                 pop_ld_o = 1'b1;
         end
 
         // save the load data for later usage -> we should not clutter the load_data register
         if (pop_ld_o && !ex_i.valid) begin
             load_data_d = in_data;
+        end
+
+        // D$ request complete on rvalid or kill request
+        if (req_port_i.data_rvalid || req_port_o.kill_req) begin
+            dreq_pending_d = 1'b0;
         end
 
         // if we just flushed and the queue is not empty or we are getting an rvalid this cycle wait in a extra stage
@@ -265,7 +280,10 @@ module load_unit import ariane_pkg::*; #(
     // ---------------
     // decoupled rvalid process
     always_comb begin : rvalid_output
-        valid_o = 1'b0;
+        valid_o    = 1'b0;
+        ex_o.valid = 1'b0;
+        ex_o.cause = ex_i.cause;
+        ex_o.tval  = ex_i.tval;
         // output the queue data directly, the valid signal is set corresponding to the process above
         trans_id_o = load_data_q.trans_id;
         // we got an rvalid and are currently not flushing and not aborting the request
@@ -277,14 +295,15 @@ module load_unit import ariane_pkg::*; #(
             if (ex_i.valid)
                 valid_o = 1'b1;
         end
-        // an exception occurred during translation (we need to check for the valid flag because we could also get an
-        // exception from the store unit)
+        // an exception occurred during translation (we need to check for the valid flag from last cycle
+        // because we could also get an exception from the store unit)
         // exceptions can retire out-of-order -> but we need to give priority to non-excepting load and stores
-        // so we simply check if we got an rvalid if so we prioritize it by not retiring the exception - we simply go for another
-        // round in the load FSM
-        if (valid_i && ex_i.valid && !req_port_i.data_rvalid) begin
+        // so we simply check if we got a pending D$ request if so we prioritize it by not retiring
+        // the exception - we simply go for another round in the load FSM
+        if (valid_q && ex_i.valid && !dreq_pending_q) begin
             valid_o    = 1'b1;
-            trans_id_o = lsu_ctrl_i.trans_id;
+            ex_o.valid = 1'b1;
+            trans_id_o = trans_id_q;
         // if we are waiting for the translation to finish do not give a valid signal yet
         end else if (state_q == WAIT_TRANSLATION) begin
             valid_o = 1'b0;
@@ -295,11 +314,17 @@ module load_unit import ariane_pkg::*; #(
     // latch physical address for the tag cycle (one cycle after applying the index)
     always_ff @(posedge clk_i or negedge rst_ni) begin
         if (~rst_ni) begin
-            state_q     <= IDLE;
-            load_data_q <= '0;
+            state_q        <= IDLE;
+            load_data_q    <= '0;
+            dreq_pending_q <= '0;
+            valid_q        <= '0;
+            trans_id_q     <= '0;
         end else begin
-            state_q     <= state_d;
-            load_data_q <= load_data_d;
+            state_q        <= state_d;
+            load_data_q    <= load_data_d;
+            dreq_pending_q <= dreq_pending_d;
+            valid_q        <= valid_d;
+            trans_id_q     <= trans_id_d;
         end
     end
 
