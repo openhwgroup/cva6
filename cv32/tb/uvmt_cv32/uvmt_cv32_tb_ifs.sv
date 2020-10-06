@@ -182,8 +182,8 @@ interface uvmt_cv32_core_cntrl_if (
 
 `ifdef ISS
       override = $sformatf("--override root/cpu/mtvec=0x%08x", mtvec_addr);
-      fh = $fopen("ovpsim.ic", "a");
-      $fwrite(fh, "%s", override);
+      fh = $fopen("ovpsim.ic", "a");      
+      $fwrite(fh, " %s\n", override);
       $fclose(fh);
 `endif
     end
