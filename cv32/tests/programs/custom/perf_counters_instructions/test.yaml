@@ -1,0 +1,4 @@
+name: perf_counters_instructions
+uvm_test: uvmt_cv32_firmware_test_c
+description: >
+    Performance Counters Basic Test
