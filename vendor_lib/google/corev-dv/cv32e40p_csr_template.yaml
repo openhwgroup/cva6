@@ -70,85 +70,85 @@
 #      - type: ...
 #      - ...
 
-# User CSRs
-- csr: cycle
-  description: >
-    (HPM) Cycle Counter
-  address: 0xC00
-  privilege_mode: M
-  rv32:
-    - field_name: cycle
-      description: >
-        Read-only unprivileged shadow of the lower 32 bits of the 64 bit machine mode cycle counter. 
-      type: R
-      reset_val: 0
-      msb: 31
-      lsb: 0
-- csr: instret
-  description: >
-    (HPM) Instruction-Retired Counter
-  address: 0xC02
-  privilege_mode: M
-  rv32:
-    - field_name: instret
-      description: >
-        Read-only unprivileged shadow of the lower 32 bits of the 64 bit machine mode instruction retired counter. 
-      type: R
-      reset_val: 0
-      msb: 31
-      lsb: 0
-- csr: hpmcounter3
-  description: >
-    (HPM) Performance-Monitoring Counter3
-  address: 0xC03
-  privilege_mode: M
-  rv32:
-    - field_name: counter3
-      description: >
-        Read-only unprivileged shadow of the lower 32 bits of the 64 bit machine performance counter. 
-      type: R
-      reset_val: 0
-      msb: 31
-      lsb: 0
-- csr: cycleh
-  description: >
-    (HPM) Upper 32 Cycle Counter
-  address: 0xC80
-  privilege_mode: M
-  rv32:
-    - field_name: cycleh
-      description: >
-        Read-only unprivileged shadow of the upper 32 bits of the 64 bit machine mode cycle counter. 
-      type: R
-      reset_val: 0
-      msb: 31
-      lsb: 0
-- csr: instreth
-  description: >
-    (HPM) Upper 32 Instruction-Retired Counter
-  address: 0xC82
-  privilege_mode: M
-  rv32:
-    - field_name: instreth
-      description: >
-        Read-only unprivileged shadow of the upper 32 bits of the 64 bit machine mode instruction retired counter. 
-      type: R
-      reset_val: 0
-      msb: 31
-      lsb: 0
-- csr: hpmcounter3h
-  description: >
-    (HPM) Upper 32 Performance-Monitoring Counter3
-  address: 0xC83
-  privilege_mode: M
-  rv32:
-    - field_name: counter3h
-      description: >
-        Read-only unprivileged shadow of the upper 32 bits of the 64 bit machine performance counter. 
-      type: R
-      reset_val: 0
-      msb: 31
-      lsb: 0
+# User CSRs not implemented for first release of CV32E40P
+#- csr: cycle
+#  description: >
+#    (HPM) Cycle Counter
+#  address: 0xC00
+#  privilege_mode: M
+#  rv32:
+#    - field_name: cycle
+#      description: >
+#        Read-only unprivileged shadow of the lower 32 bits of the 64 bit machine mode cycle counter. 
+#      type: R
+#      reset_val: 0
+#      msb: 31
+#      lsb: 0
+#- csr: instret
+#  description: >
+#    (HPM) Instruction-Retired Counter
+#  address: 0xC02
+#  privilege_mode: M
+#  rv32:
+#    - field_name: instret
+#      description: >
+#        Read-only unprivileged shadow of the lower 32 bits of the 64 bit machine mode instruction retired counter. 
+#      type: R
+#      reset_val: 0
+#      msb: 31
+#      lsb: 0
+#- csr: hpmcounter3
+#  description: >
+#    (HPM) Performance-Monitoring Counter3
+#  address: 0xC03
+#  privilege_mode: M
+#  rv32:
+#    - field_name: counter3
+#      description: >
+#        Read-only unprivileged shadow of the lower 32 bits of the 64 bit machine performance counter. 
+#      type: R
+#      reset_val: 0
+#      msb: 31
+#      lsb: 0
+#- csr: cycleh
+#  description: >
+#    (HPM) Upper 32 Cycle Counter
+#  address: 0xC80
+#  privilege_mode: M
+#  rv32:
+#    - field_name: cycleh
+#      description: >
+#        Read-only unprivileged shadow of the upper 32 bits of the 64 bit machine mode cycle counter. 
+#      type: R
+#      reset_val: 0
+#      msb: 31
+#      lsb: 0
+#- csr: instreth
+#  description: >
+#    (HPM) Upper 32 Instruction-Retired Counter
+#  address: 0xC82
+#  privilege_mode: M
+#  rv32:
+#    - field_name: instreth
+#      description: >
+#        Read-only unprivileged shadow of the upper 32 bits of the 64 bit machine mode instruction retired counter. 
+#      type: R
+#      reset_val: 0
+#      msb: 31
+#      lsb: 0
+#- csr: hpmcounter3h
+#  description: >
+#    (HPM) Upper 32 Performance-Monitoring Counter3
+#  address: 0xC83
+#  privilege_mode: M
+#  rv32:
+#    - field_name: counter3h
+#      description: >
+#        Read-only unprivileged shadow of the upper 32 bits of the 64 bit machine performance counter. 
+#      type: R
+#      reset_val: 0
+#      msb: 31
+#      lsb: 0
 
 # User Custom CSRs not verified for first release of CV32E40P
 
@@ -279,8 +279,8 @@
       description: >
         0 = Direct mode, 1 = vectored mode
       type: WARL
-      reset_val: 0
-      msb: 1
+      reset_val: 1
+      msb: 0
       lsb: 0
 - csr: mcountinhibit
   description: >
@@ -323,18 +323,25 @@
       reset_val: 1
       msb: 0
       lsb: 0
-- csr: mphmevent3
+- csr: mhpmevent3
   description: >
     (HPM) Machine Performance-Monitoring Event Selector 3
   address: 0x323
   privilege_mode: M
   rv32:
-    - field_name: Event
+    - field_name: Zero
+      description: >
+        Always zero
+      type: R
+      reset_val: 0
+      msb: 31
+      lsb: 16
+    - field_name: Selectors
       description: >
         Event selector
       type: WARL
       reset_val: 0
-      msb: 31
+      msb: 15
       lsb: 0
 - csr: mscratch
   description: >
@@ -362,40 +369,43 @@
       reset_val: 0
       msb: 31
       lsb: 1
-    - field_name: EPC0
-      description: >
-          Exception PC[0]
-      type: WARL
-      reset_val: 0
-      msb: 0
-      lsb: 0
-- csr: mcause
-  description: >
-    Machine Exception Cause
-  address: 0x342
-  privilege_mode: M
-  rv32:
-    - field_name: Interrupt
-      description: >
-          Set when exception triggered by interrupt
-      type: R
-      reset_val: 0
-      msb: 31
-      lsb: 31
-    - field_name: zero
+    - field_name: Zero
       description: >
           Always zero
       type: R
       reset_val: 0
-      msb: 30
-      lsb: 6
-    - field_name: ecode
-      description: >
-          Exception Code
-      type: R
-      reset_val: 0
-      msb: 5
+      msb: 0
       lsb: 0
+# MCAUSE is commented out for now because the RM models the entire CSR
+# as WLRL (essentially RW).   This is not the case for the CV32E40P. The
+# specification below is correct and matches the RTL.
+#- csr: mcause
+#  description: >
+#    Machine Exception Cause
+#  address: 0x342
+#  privilege_mode: M
+#  rv32:
+#    - field_name: Interrupt
+#      description: >
+#          Set when exception triggered by interrupt
+#      type: WARL
+#      reset_val: 0
+#      msb: 31
+#      lsb: 31
+#    - field_name: zero
+#      description: >
+#          Always zero
+#      type: R
+#      reset_val: 0
+#      msb: 30
+#      lsb: 5
+#    - field_name: ecode
+#      description: >
+#          Exception Code
+#      type: WARL
+#      reset_val: 0
+#      msb: 4
+#      lsb: 0
 - csr: mtval
   description: >
     Machine Trap Value

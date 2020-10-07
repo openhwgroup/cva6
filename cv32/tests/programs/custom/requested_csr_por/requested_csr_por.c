@@ -398,7 +398,7 @@ int main(int argc, char *argv[])
     ++err_cnt;
   }
 
-  __asm__ volatile("csrr %0, 0x320" : "=r"(mcountinhibit_rval)); // Modeled, but cannot override PoR 
+  __asm__ volatile("csrr %0, 0x320" : "=r"(mcountinhibit_rval));
 
   if (mcountinhibit_rval != 0xD) {
     printf("ERROR: CSR MCOUNTINHIBIT not 0xD!\n\n");
@@ -466,7 +466,7 @@ int main(int argc, char *argv[])
   printf("\tmie           = 0x%0x\n", mie_rval);
   printf("\tmtvec         = 0x%0x\n", mtvec_rval);
   //printf("\tmcounteren    = 0x%0x\n", mcounteren_rval);
-  //printf("\tmcountinhibit = 0x%0x\n", mcountinhibit_rval);
+  printf("\tmcountinhibit = 0x%0x\n", mcountinhibit_rval);
   printf("\tmphmevent3    = 0x%0x\n", mphmevent_rval[3]);
   printf("\tmphmevent31   = 0x%0x\n", mphmevent_rval[31]);
   printf("\tmscratch      = 0x%0x\n", mscratch_rval);
