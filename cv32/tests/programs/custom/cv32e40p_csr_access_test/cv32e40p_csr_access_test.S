@@ -22,6 +22,12 @@ _start_main:
 #
 ############################################
 
+	#ifdef NO_PULP
+	#define EXP_MISA 0x40001104
+	#else
+	#define EXP_MISA 0x40801104
+	#endif
+
 	# mstatus
 	li x15, 0xa5a5a5a5
 	csrrw x2, 768, x15
@@ -89,66 +95,66 @@ _start_main:
 	# misa
 	li x15, 0xa5a5a5a5
 	csrrw x2, 769, x15
-	li x15, 0x40801104
+	li x15, EXP_MISA
 	bne x15, x2, csr_fail
 	li x15, 0x5a5a5a5a
 	csrrw x2, 769, x15
-	li x15, 0x40801104
+	li x15, EXP_MISA
 	bne x15, x2, csr_fail
 	li x15, 0xb6f9d554
 	csrrw x2, 769, x15
-	li x15, 0x40801104
+	li x15, EXP_MISA
 	bne x15, x2, csr_fail
 	li x15, 0xa5a5a5a5
 	csrrs x2, 769, x15
-	li x15, 0x40801104
+	li x15, EXP_MISA
 	bne x15, x2, csr_fail
 	li x15, 0x5a5a5a5a
 	csrrs x2, 769, x15
-	li x15, 0x40801104
+	li x15, EXP_MISA
 	bne x15, x2, csr_fail
 	li x15, 0x57f503b7
 	csrrs x2, 769, x15
-	li x15, 0x40801104
+	li x15, EXP_MISA
 	bne x15, x2, csr_fail
 	li x15, 0xa5a5a5a5
 	csrrc x2, 769, x15
-	li x15, 0x40801104
+	li x15, EXP_MISA
 	bne x15, x2, csr_fail
 	li x15, 0x5a5a5a5a
 	csrrc x2, 769, x15
-	li x15, 0x40801104
+	li x15, EXP_MISA
 	bne x15, x2, csr_fail
 	li x15, 0x46cb28cc
 	csrrc x2, 769, x15
-	li x15, 0x40801104
+	li x15, EXP_MISA
 	bne x15, x2, csr_fail
 	csrrwi x2, 769, 0b00101
-	li x15, 0x40801104
+	li x15, EXP_MISA
 	bne x15, x2, csr_fail
 	csrrwi x2, 769, 0b11010
-	li x15, 0x40801104
+	li x15, EXP_MISA
 	bne x15, x2, csr_fail
 	csrrwi x2, 769, 0b01110
-	li x15, 0x40801104
+	li x15, EXP_MISA
 	bne x15, x2, csr_fail
 	csrrsi x2, 769, 0b00101
-	li x15, 0x40801104
+	li x15, EXP_MISA
 	bne x15, x2, csr_fail
 	csrrsi x2, 769, 0b11010
-	li x15, 0x40801104
+	li x15, EXP_MISA
 	bne x15, x2, csr_fail
 	csrrsi x2, 769, 0b01000
-	li x15, 0x40801104
+	li x15, EXP_MISA
 	bne x15, x2, csr_fail
 	csrrci x2, 769, 0b00101
-	li x15, 0x40801104
+	li x15, EXP_MISA
 	bne x15, x2, csr_fail
 	csrrci x2, 769, 0b11010
-	li x15, 0x40801104
+	li x15, EXP_MISA
 	bne x15, x2, csr_fail
 	csrrci x2, 769, 0b11111
-	li x15, 0x40801104
+	li x15, EXP_MISA
 	bne x15, x2, csr_fail
 	# mie
 	li x15, 0xa5a5a5a5
