@@ -34,7 +34,8 @@
 #
 # Assumptions:
 #       1. Configuration core input mtvec_addr_i == 32'h0000_0000
-#       2. Core RTL parameters set as per User Manual defaults.
+#       2. Configuration core input hart_id_i == 32'h0000_0000
+#       3. Core RTL parameters set as per User Manual defaults.
 ################################################################################
 #- csr: CSR_NAME
 #  description: >
@@ -153,6 +154,62 @@
 # User Custom CSRs not verified for first release of CV32E40P
 
 # Machine CSRs
+
+# mcycle(h) and minstret(h) are done here because out of reset mcountinhibit
+# will disable cycle and instruction retirement counts.  These access tests
+# will not work if this counting is enabled.
+- csr: mcycle
+  description: >
+    Lower 32 Machine Cycle Counter
+  address: 0xB00
+  privilege_mode: M
+  rv32:
+    - field_name: Count
+      description: >
+        Lower 32-bits of 64-bit machine cycle counter
+      type: RW
+      reset_val: 0
+      msb: 31
+      lsb: 0
+- csr: mcycleh
+  description: >
+    Upper 32 Machine Cycle Counter
+  address: 0xB80
+  privilege_mode: M
+  rv32:
+    - field_name: Count
+      description: >
+        Upper 32-bits of 64-bit machine cycle counter
+      type: RW
+      reset_val: 0
+      msb: 31
+      lsb: 0
+- csr: minstret
+  description: >
+    Lower 32 Machine Instructions-Retired Counter
+  address: 0xB02
+  privilege_mode: M
+  rv32:
+    - field_name: Count
+      description: >
+        Lower 32-bits of 64-bit machine instructions retired counter
+      type: RW
+      reset_val: 0
+      msb: 31
+      lsb: 0
+- csr: minstreth
+  description: >
+    Upper 32 Machine Instructions-Retired Counter
+  address: 0xB82
+  privilege_mode: M
+  rv32:
+    - field_name: Count
+      description: >
+        Upper 32-bits of 64-bit machine instructions retired counter
+      type: RW
+      reset_val: 0
+      msb: 31
+      lsb: 0
 - csr: mstatus
   description: >
     Machine ISA Register
@@ -580,8 +637,8 @@
       lsb: 3
     - field_name: execute
       description: >
-         Enable matching on instruction address
-      type: WARL
+         Enable matching on instruction address.  Only writeable in Debug mode.
+      type: R
       reset_val: 0
       msb: 2
       lsb: 2
@@ -645,7 +702,7 @@
       reset_val: 4
       msb: 15
       lsb: 0
-- csr: mcontenxt
+- csr: mcontext
   description: >
     Machine Context Register
   address: 0x7A8
@@ -658,7 +715,7 @@
       reset_val: 0
       msb: 31
       lsb: 0
-- csr: scontenxt
+- csr: scontext
   description: >
     Supervisor Context Register
   address: 0x7AA
@@ -671,114 +728,66 @@
       reset_val: 0
       msb: 31
       lsb: 0
-- csr: mcycle
-  description: >
-    Lower 32 Machine Cycle Counter
-  address: 0xB00
-  privilege_mode: M
-  rv32:
-    - field_name: Count
-      description: >
-        Lower 32-bits of 64-bit machine cycle counter
-      type: RW
-      reset_val: 0
-      msb: 31
-      lsb: 0
-- csr: mcycleh
-  description: >
-    Upper 32 Machine Cycle Counter
-  address: 0xB80
-  privilege_mode: M
-  rv32:
-    - field_name: Count
-      description: >
-        Upper 32-bits of 64-bit machine cycle counter
-      type: RW
-      reset_val: 0
-      msb: 31
-      lsb: 0
-- csr: minstret
-  description: >
-    Lower 32 Machine Instructions-Retired Counter
-  address: 0xB02
-  privilege_mode: M
-  rv32:
-    - field_name: Count
-      description: >
-        Lower 32-bits of 64-bit machine instructions retired counter
-      type: RW
-      reset_val: 0
-      msb: 31
-      lsb: 0
-- csr: minstreth
-  description: >
-    Upper 32 Machine Instructions-Retired Counter
-  address: 0xB82
-  privilege_mode: M
-  rv32:
-    - field_name: Count
-      description: >
-        Upper 32-bits of 64-bit machine instructions retired counter
-      type: RW
-      reset_val: 0
-      msb: 31
-      lsb: 0
-- csr: mvendorid
-  description: >
-    Machine Vendor ID
-  address: 0xF11
-  privilege_mode: M
-  rv32:
-    - field_name: Bank
-      description: >
-       Number of continuation codes in JEDEC manufacturer ID 
-      type: R
-      reset_val: 13
-      msb: 31
-      lsb: 7
-    - field_name: ID
-      description: >
-       Final byte of JEDEC manufacturer ID, discarding the parity bit.
-      type: R
-      reset_val: 2
-      msb: 6
-      lsb: 0
-- csr: marchid
-  description: >
-    Machine Architecture ID
-  address: 0xF12
-  privilege_mode: M
-  rv32:
-    - field_name: ID
-      description: >
-        Machine Architecture ID of CV32E40P is 4
-      type: R
-      reset_val: 4
-      msb: 31
-      lsb: 0
-- csr: mimpid
-  description: >
-    Machine Implementation ID
-  address: 0xF13
-  privilege_mode: M
-  rv32:
-    - field_name: ID
-      description: >
-        Machine Implementation ID
-      type: R
-      reset_val: 0
-      msb: 31
-      lsb: 0
-- csr: mhartid
-  description: >
-    Machine Hart ID
-  address: 0xF14
-  privilege_mode: M
-  rv32:
-    - field_name: Hart
-      description: >
-        hart_id_i
-      type: R
-      reset_val: 0
-      msb: 31
-      lsb: 0
+###############################################################################
+# mvendorid, marchid, mimpid and mhartid are temporarily excluded from auto-
+# generation of access testing due to a known bugs in the RTL.
+#
+#- csr: mvendorid
+#  description: >
+#    Machine Vendor ID
+#  address: 0xF11
+#  privilege_mode: M
+#  rv32:
+#    - field_name: Bank
+#      description: >
+#       Number of continuation codes in JEDEC manufacturer ID 
+#      type: R
+#      reset_val: 12
+#      msb: 31
+#      lsb: 7
+#    - field_name: ID
+#      description: >
+#       Final byte of JEDEC manufacturer ID, discarding the parity bit.
+#      type: R
+#      reset_val: 2
+#      msb: 6
+#      lsb: 0
+#- csr: marchid
+#  description: >
+#    Machine Architecture ID
+#  address: 0xF12
+#  privilege_mode: M
+#  rv32:
+#    - field_name: ID
+#      description: >
+#        Machine Architecture ID of CV32E40P is 4
+#      type: R
+#      reset_val: 4
+#      msb: 31
+#      lsb: 0
+#- csr: mimpid
+#  description: >
+#    Machine Implementation ID
+#  address: 0xF13
+#  privilege_mode: M
+#  rv32:
+#    - field_name: ID
+#      description: >
+#        Machine Implementation ID
+#      type: R
+#      reset_val: 0
+#      msb: 31
+#      lsb: 0
+#- csr: mhartid
+#  description: >
+#    Machine Hart ID
+#  address: 0xF14
+#  privilege_mode: M
+#  rv32:
+#    - field_name: Hart
+#      description: >
+#        hart_id_i
+#      type: R
+#      reset_val: 0
+#      msb: 31
+#      lsb: 0
