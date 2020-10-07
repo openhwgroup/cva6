@@ -114,7 +114,7 @@ module tlb import ariane_pkg::*; #(
 
             vaddr_vpn0_match[i] = (vaddr_to_be_flushed_i[20:12] == tags_q[i].vpn0);
             vaddr_vpn1_match[i] = (vaddr_to_be_flushed_i[29:21] == tags_q[i].vpn1);
-            vaddr_vpn2_match[i] = (vaddr_to_be_flushed_i[38:30] == tags_q[i].vpn2);
+            vaddr_vpn2_match[i] = (vaddr_to_be_flushed_i[30+riscv::VPN2:30] == tags_q[i].vpn2);
 
             if (flush_i) begin
                 // invalidate logic

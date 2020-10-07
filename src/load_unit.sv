@@ -34,7 +34,7 @@ module load_unit import ariane_pkg::*; #(
     input  logic [riscv::PLEN-1:0]   paddr_i,             // physical address in
     input  exception_t               ex_i,                // exception which may has happened earlier. for example: mis-aligned exception
     input  logic                     dtlb_hit_i,          // hit on the dtlb, send in the same cycle as the request
-    input  logic [riscv::PLEN-13:0]  dtlb_ppn_i,          // ppn on the dtlb, send in the same cycle as the request
+    input  logic [riscv::PPNW-1:0]   dtlb_ppn_i,          // ppn on the dtlb, send in the same cycle as the request
     // address checker
     output logic [11:0]              page_offset_o,
     input  logic                     page_offset_matches_i,

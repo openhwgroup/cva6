@@ -49,7 +49,7 @@ module frontend import ariane_pkg::*; #(
     logic [FETCH_WIDTH-1:0] icache_data_q;
     logic                   icache_valid_q;
     ariane_pkg::frontend_exception_t icache_ex_valid_q;
-    logic [63:0]            icache_vaddr_q;
+    logic [riscv::VLEN-1:0] icache_vaddr_q;
     logic                   instr_queue_ready;
     logic [ariane_pkg::INSTR_PER_FETCH-1:0] instr_queue_consumed;
     // upper-most branch-prediction from last cycle
