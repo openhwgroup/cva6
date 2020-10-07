@@ -116,18 +116,23 @@ module uvmt_cv32_dut_wrap #(// DUT (riscv_core) parameters.
           // Now load it...
           `uvm_info("DUT_WRAP", $sformatf("loading firmware %0s", firmware), UVM_NONE)
           $readmemh(firmware, uvmt_cv32_tb.dut_wrap.ram_i.dp_ram_i.mem);
-          `ifdef ISS
-             // If using ISS for any location in RTL mem = X fill RTL and ISS memory with same random value
-             fill_cnt = 0;
-             for (int index=0; index < 2**RAM_ADDR_WIDTH; index++) begin
-                if (uvmt_cv32_tb.dut_wrap.ram_i.dp_ram_i.mem[index] === 8'hXX) begin
-                    fill_cnt++;
-                   rnd_byte = $random();
-                   uvmt_cv32_tb.dut_wrap.ram_i.dp_ram_i.mem[index]=rnd_byte;
-                   uvmt_cv32_tb.iss_wrap.ram.mem[index/4][((((index%4)+1)*8)-1)-:8]=rnd_byte; // convert byte to 32-bit addressing
-                end
+          // Initialize RTL and ISS memory with (the same) random value to
+          // prevent X propagation through the core RTL.
+          fill_cnt = 0;
+          for (int index=0; index < 2**RAM_ADDR_WIDTH; index++) begin
+             if (uvmt_cv32_tb.dut_wrap.ram_i.dp_ram_i.mem[index] === 8'hXX) begin
+                 fill_cnt++;
+                rnd_byte = $random();
+                uvmt_cv32_tb.dut_wrap.ram_i.dp_ram_i.mem[index]=rnd_byte;
+                `ifdef ISS
+                uvmt_cv32_tb.iss_wrap.ram.mem[index/4][((((index%4)+1)*8)-1)-:8]=rnd_byte; // convert byte to 32-bit addressing
+                `endif
              end
-             `uvm_info("DUT_WRAP", $sformatf("Filled 0d%0d RTL and ISS memory bytes with random values", fill_cnt), UVM_HIGH)
+          end
+          `ifdef ISS
+             `uvm_info("DUT_WRAP", $sformatf("Filled 0d%0d RTL and ISS memory bytes with random values", fill_cnt), UVM_LOW)
+          `else
+             `uvm_info("DUT_WRAP", $sformatf("Filled 0d%0d RTL memory bytes with random values", fill_cnt), UVM_LOW)
           `endif
         end
         else begin
