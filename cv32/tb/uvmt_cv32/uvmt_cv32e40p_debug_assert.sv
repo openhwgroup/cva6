@@ -70,6 +70,16 @@ module uvmt_cv32e40p_debug_assert
     // Assertions
     // ---------------------------------------
 
+    // check that we enter debug mode when expected. 
+    // CSR checks are done in other assertions
+    property p_enter_debug;
+        $changed(debug_cause_pri) && (debug_cause_pri != 3'b000) && !cov_assert_if.debug_mode_q
+        |-> decode_valid [->1:2] ##0 cov_assert_if.debug_mode_q;
+    endproperty
+    a_enter_debug: assert property(p_enter_debug)
+        else
+            `uvm_error(info_tag, $sformatf("Debug mode not entered after exepected cause %d", debug_cause_pri));
+
     // debug_req_i results in debug mode
     // TBD: Is there a fixed latency for this?
     // Only check when instr_valid_i is high, as debug_req is only evaluated
@@ -311,6 +321,19 @@ module uvmt_cv32e40p_debug_assert
     a_minstret_count : assert property(p_minstret_count)
         else
             `uvm_error(info_tag, "Minstret not counting when mcountinhibit[2] is cleared!");
+
+    // Check debug_req_i and irq on same cycle. 
+    // Should result in debug mode with regular pc in depc,
+    // not pc from interrupt handler
+    // PC is checked in another assertion
+    property p_debug_req_and_irq;
+        cov_assert_if.debug_req_i && cov_assert_if.pending_enabled_irq  && cov_assert_if.ctrl_fsm_cs == cv32e40p_pkg::DECODE
+        |-> (decode_valid & cov_assert_if.id_valid) [->1:2] ##0 cov_assert_if.debug_mode_q;
+    endproperty
+
+    a_debug_req_and_irq : assert property(p_debug_req_and_irq)
+        else
+            `uvm_error(info_tag, "Debug mode not entered after debug_req_i and irq on same cycle");
 
 // -------------------------------------------
     // Capture internal states for use in checking
