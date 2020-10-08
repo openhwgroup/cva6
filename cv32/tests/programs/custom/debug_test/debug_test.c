@@ -537,7 +537,8 @@ int main(int argc, char *argv[])
     // Run single step code (in single_step.S)
     _single_step(0); 
 
-    // Single step code should generate 1 illegal insn
+    // Single step code should generate 2 illegal insn
+    temp1++;
     check_illegal_insn_status(118, temp1++);
     check_debug_status(118, glb_hart_status);
 
