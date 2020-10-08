@@ -6,8 +6,11 @@ description: Full regression (all tests) for CV32E40P with step-and-compare agai
 
 # List of builds
 builds:
+  clean_fw:
+    cmd: make clean-bsp clean_test_programs
+    dir: cv32/sim/uvmt_cv32
   corev-dv:
-    cmd: make comp_corev-dv
+    cmd: make clean_riscv-dv comp_corev-dv
     dir: cv32/sim/uvmt_cv32
     cov: 0
   uvmt_cv32:
@@ -69,7 +72,7 @@ tests:
     description: Static riscv-dv arithmetic test
     dir: cv32/sim/uvmt_cv32    
     cmd: make test TEST=riscv_arithmetic_basic_test
-    num: 2
+    num: 1
 
   corev_arithmetic_base_test:
     build: uvmt_cv32

@@ -81,6 +81,7 @@ export DV_UVML_HRTBT_PATH     = $(PROJ_ROOT_DIR)/lib/uvm_libs/uvml_hrtbt
 export DV_UVMA_CLKNRST_PATH   = $(PROJ_ROOT_DIR)/lib/uvm_agents/uvma_clknrst
 export DV_UVMA_INTERRUPT_PATH = $(PROJ_ROOT_DIR)/lib/uvm_agents/uvma_interrupt
 export DV_UVMA_DEBUG_PATH     = $(PROJ_ROOT_DIR)/lib/uvm_agents/uvma_debug
+export DV_UVMA_OBI_PATH       = $(PROJ_ROOT_DIR)/lib/uvm_agents/uvma_obi
 export DV_UVML_TRN_PATH       = $(PROJ_ROOT_DIR)/lib/uvm_libs/uvml_trn
 export DV_UVML_LOGS_PATH      = $(PROJ_ROOT_DIR)/lib/uvm_libs/uvml_logs
 export DV_UVML_SB_PATH        = $(PROJ_ROOT_DIR)/lib/uvm_libs/uvml_sb

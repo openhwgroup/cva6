@@ -55,6 +55,17 @@
       }
     },
     {
+      "name":        "cv32_full_stall_regression",
+      "description": "Full regression for CV32 using dynamic test generation with random RAM stalls",
+      "verbose":     "true",
+      "tests": {
+        "resultsDir": "/mux-flow/build/results",
+        "builds":    ["uvmt_cv32"],
+        "listCmd":   "/mux-flow/build/repo/bin/cv_regress --file=cv32_full --metrics --makearg=USER_RUN_FLAGS=+rand_stall_obi_all --outfile=/mux-flow/build/repo/cv32_full.json",
+        "listFile":  "/mux-flow/build/repo/cv32_full.json"
+      }
+    },
+    {
       "name":        "cv32_interrupt_regression",
       "description": "Directed and random interrupt tests for CV32E40P",
       "verbose":     "true",

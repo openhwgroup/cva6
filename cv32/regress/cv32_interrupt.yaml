@@ -30,7 +30,7 @@ tests:
     description: Interrupt random test
     dir: cv32/sim/uvmt_cv32
     cmd: make gen_corev-dv test TEST=corev_rand_interrupt
-    num: 100
+    num: 50
 
   corev_rand_interrupt_nested:
     build: uvmt_cv32
@@ -38,11 +38,51 @@ tests:
     dir: cv32/sim/uvmt_cv32    
     cmd: make gen_corev-dv test TEST=corev_rand_interrupt_nested
     num: 100
+  corev_rand_interrupt_stall:
+    build: uvmt_cv32
+    description: Interrupt random test
+    dir: cv32/sim/uvmt_cv32
+    cmd: make gen_corev-dv test TEST=corev_rand_interrupt_stall
+    num: 50
 
   corev_rand_interrupt_wfi:
     build: uvmt_cv32
     description: Interrupt random test with WFI
     dir: cv32/sim/uvmt_cv32    
     cmd: make gen_corev-dv test TEST=corev_rand_interrupt_wfi
+    num: 50
+
+  corev_rand_interrupt_wfi_stall:
+    build: uvmt_cv32
+    description: Interrupt random test with WFI
+    dir: cv32/sim/uvmt_cv32    
+    cmd: make gen_corev-dv test TEST=corev_rand_interrupt_wfi_stall
+    num: 50
+
+  corev_rand_instr_test:
+    build: uvmt_cv32
+    description: Generated corev-dv random instruction test
+    dir: cv32/sim/uvmt_cv32
+    cmd: make gen_corev-dv test TEST=corev_rand_instr_test
     num: 100
 
+  corev_rand_instr_stall:
+    build: uvmt_cv32
+    description: Generated corev-dv random instruction test
+    dir: cv32/sim/uvmt_cv32
+    cmd: make gen_corev-dv test TEST=corev_rand_instr_stall
+    num: 50
+
+  corev_jump_stress_test:
+    build: uvmt_cv32
+    description: Generated corev-dv jump stress test
+    dir: cv32/sim/uvmt_cv32    
+    cmd: make gen_corev-dv test TEST=corev_jump_stress_test
+    num: 50
+
+  corev_jump_stress_stall:
+    build: uvmt_cv32
+    description: Generated corev-dv jump stress test
+    dir: cv32/sim/uvmt_cv32    
+    cmd: make gen_corev-dv test TEST=corev_jump_stress_stall
+    num: 50

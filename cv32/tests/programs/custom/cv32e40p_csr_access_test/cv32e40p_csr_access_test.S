@@ -15,6 +15,12 @@ _start:
 .section .text
 _start_main:
 
+	#ifdef NO_PULP
+	#define EXP_MISA 0x40001104
+	#else
+	#define EXP_MISA 0x40801104
+	#endif
+
 ###############################################################################
 #
 # Generated code starts...
@@ -344,66 +350,66 @@ _start0:
 	# misa
 	li x7, 0xa5a5a5a5
 	csrrw x12, 769, x7
-	li x7, 0x40801104
+	li x7, EXP_MISA
 	bne x7, x12, csr_fail
 	li x7, 0x5a5a5a5a
 	csrrw x12, 769, x7
-	li x7, 0x40801104
+	li x7, EXP_MISA
 	bne x7, x12, csr_fail
 	li x7, 0xb2883b3e
 	csrrw x12, 769, x7
-	li x7, 0x40801104
+	li x7, EXP_MISA
 	bne x7, x12, csr_fail
 	li x7, 0xa5a5a5a5
 	csrrs x12, 769, x7
-	li x7, 0x40801104
+	li x7, EXP_MISA
 	bne x7, x12, csr_fail
 	li x7, 0x5a5a5a5a
 	csrrs x12, 769, x7
-	li x7, 0x40801104
+	li x7, EXP_MISA
 	bne x7, x12, csr_fail
 	li x7, 0x9e6fcd65
 	csrrs x12, 769, x7
-	li x7, 0x40801104
+	li x7, EXP_MISA
 	bne x7, x12, csr_fail
 	li x7, 0xa5a5a5a5
 	csrrc x12, 769, x7
-	li x7, 0x40801104
+	li x7, EXP_MISA
 	bne x7, x12, csr_fail
 	li x7, 0x5a5a5a5a
 	csrrc x12, 769, x7
-	li x7, 0x40801104
+	li x7, EXP_MISA
 	bne x7, x12, csr_fail
 	li x7, 0xb741d0fc
 	csrrc x12, 769, x7
-	li x7, 0x40801104
+	li x7, EXP_MISA
 	bne x7, x12, csr_fail
 	csrrwi x12, 769, 0b00101
-	li x7, 0x40801104
+	li x7, EXP_MISA
 	bne x7, x12, csr_fail
 	csrrwi x12, 769, 0b11010
-	li x7, 0x40801104
+	li x7, EXP_MISA
 	bne x7, x12, csr_fail
 	csrrwi x12, 769, 0b01011
-	li x7, 0x40801104
+	li x7, EXP_MISA
 	bne x7, x12, csr_fail
 	csrrsi x12, 769, 0b00101
-	li x7, 0x40801104
+	li x7, EXP_MISA
 	bne x7, x12, csr_fail
 	csrrsi x12, 769, 0b11010
-	li x7, 0x40801104
+	li x7, EXP_MISA
 	bne x7, x12, csr_fail
 	csrrsi x12, 769, 0b00010
-	li x7, 0x40801104
+	li x7, EXP_MISA
 	bne x7, x12, csr_fail
 	csrrci x12, 769, 0b00101
-	li x7, 0x40801104
+	li x7, EXP_MISA
 	bne x7, x12, csr_fail
 	csrrci x12, 769, 0b11010
-	li x7, 0x40801104
+	li x7, EXP_MISA
 	bne x7, x12, csr_fail
 	csrrci x12, 769, 0b01100
-	li x7, 0x40801104
+	li x7, EXP_MISA
 	bne x7, x12, csr_fail
 	# mie
 	li x7, 0xa5a5a5a5
@@ -1639,69 +1645,69 @@ _start1:
 	li x14, 0x00001800
 	bne x14, x1, csr_fail
 	# misa
-	li x14, 0xa5a5a5a5
-	csrrw x1, 769, x14
-	li x14, 0x40801104
-	bne x14, x1, csr_fail
-	li x14, 0x5a5a5a5a
-	csrrw x1, 769, x14
-	li x14, 0x40801104
-	bne x14, x1, csr_fail
-	li x14, 0x41aa72be
-	csrrw x1, 769, x14
-	li x14, 0x40801104
-	bne x14, x1, csr_fail
-	li x14, 0xa5a5a5a5
-	csrrs x1, 769, x14
-	li x14, 0x40801104
-	bne x14, x1, csr_fail
-	li x14, 0x5a5a5a5a
-	csrrs x1, 769, x14
-	li x14, 0x40801104
-	bne x14, x1, csr_fail
-	li x14, 0xfb40315d
-	csrrs x1, 769, x14
-	li x14, 0x40801104
-	bne x14, x1, csr_fail
-	li x14, 0xa5a5a5a5
-	csrrc x1, 769, x14
-	li x14, 0x40801104
-	bne x14, x1, csr_fail
-	li x14, 0x5a5a5a5a
-	csrrc x1, 769, x14
-	li x14, 0x40801104
-	bne x14, x1, csr_fail
-	li x14, 0xa8e8d4aa
-	csrrc x1, 769, x14
-	li x14, 0x40801104
-	bne x14, x1, csr_fail
-	csrrwi x1, 769, 0b00101
-	li x14, 0x40801104
-	bne x14, x1, csr_fail
-	csrrwi x1, 769, 0b11010
-	li x14, 0x40801104
-	bne x14, x1, csr_fail
-	csrrwi x1, 769, 0b11100
-	li x14, 0x40801104
-	bne x14, x1, csr_fail
-	csrrsi x1, 769, 0b00101
-	li x14, 0x40801104
-	bne x14, x1, csr_fail
-	csrrsi x1, 769, 0b11010
-	li x14, 0x40801104
-	bne x14, x1, csr_fail
-	csrrsi x1, 769, 0b01000
-	li x14, 0x40801104
-	bne x14, x1, csr_fail
-	csrrci x1, 769, 0b00101
-	li x14, 0x40801104
-	bne x14, x1, csr_fail
-	csrrci x1, 769, 0b11010
-	li x14, 0x40801104
-	bne x14, x1, csr_fail
-	csrrci x1, 769, 0b00000
-	li x14, 0x40801104
-	bne x14, x1, csr_fail
+	li x15, 0xa5a5a5a5
+	csrrw x2, 769, x15
+	li x15, EXP_MISA
+	bne x15, x2, csr_fail
+	li x15, 0x5a5a5a5a
+	csrrw x2, 769, x15
+	li x15, EXP_MISA
+	bne x15, x2, csr_fail
+	li x15, 0xb6f9d554
+	csrrw x2, 769, x15
+	li x15, EXP_MISA
+	bne x15, x2, csr_fail
+	li x15, 0xa5a5a5a5
+	csrrs x2, 769, x15
+	li x15, EXP_MISA
+	bne x15, x2, csr_fail
+	li x15, 0x5a5a5a5a
+	csrrs x2, 769, x15
+	li x15, EXP_MISA
+	bne x15, x2, csr_fail
+	li x15, 0x57f503b7
+	csrrs x2, 769, x15
+	li x15, EXP_MISA
+	bne x15, x2, csr_fail
+	li x15, 0xa5a5a5a5
+	csrrc x2, 769, x15
+	li x15, EXP_MISA
+	bne x15, x2, csr_fail
+	li x15, 0x5a5a5a5a
+	csrrc x2, 769, x15
+	li x15, EXP_MISA
+	bne x15, x2, csr_fail
+	li x15, 0x46cb28cc
+	csrrc x2, 769, x15
+	li x15, EXP_MISA
+	bne x15, x2, csr_fail
+	csrrwi x2, 769, 0b00101
+	li x15, EXP_MISA
+	bne x15, x2, csr_fail
+	csrrwi x2, 769, 0b11010
+	li x15, EXP_MISA
+	bne x15, x2, csr_fail
+	csrrwi x2, 769, 0b01110
+	li x15, EXP_MISA
+	bne x15, x2, csr_fail
+	csrrsi x2, 769, 0b00101
+	li x15, EXP_MISA
+	bne x15, x2, csr_fail
+	csrrsi x2, 769, 0b11010
+	li x15, EXP_MISA
+	bne x15, x2, csr_fail
+	csrrsi x2, 769, 0b01000
+	li x15, EXP_MISA
+	bne x15, x2, csr_fail
+	csrrci x2, 769, 0b00101
+	li x15, EXP_MISA
+	bne x15, x2, csr_fail
+	csrrci x2, 769, 0b11010
+	li x15, EXP_MISA
+	bne x15, x2, csr_fail
+	csrrci x2, 769, 0b11111
+	li x15, EXP_MISA
+	bne x15, x2, csr_fail
 	# mie
 	li x14, 0xa5a5a5a5
 	csrrw x1, 772, x14
@@ -2938,66 +2944,66 @@ _start2:
 	# misa
 	li x8, 0xa5a5a5a5
 	csrrw x1, 769, x8
-	li x8, 0x40801104
+	li x8, EXP_MISA
 	bne x8, x1, csr_fail
 	li x8, 0x5a5a5a5a
 	csrrw x1, 769, x8
-	li x8, 0x40801104
+	li x8, EXP_MISA
 	bne x8, x1, csr_fail
 	li x8, 0xabafa291
 	csrrw x1, 769, x8
-	li x8, 0x40801104
+	li x8, EXP_MISA
 	bne x8, x1, csr_fail
 	li x8, 0xa5a5a5a5
 	csrrs x1, 769, x8
-	li x8, 0x40801104
+	li x8, EXP_MISA
 	bne x8, x1, csr_fail
 	li x8, 0x5a5a5a5a
 	csrrs x1, 769, x8
-	li x8, 0x40801104
+	li x8, EXP_MISA
 	bne x8, x1, csr_fail
 	li x8, 0xdd5beb59
 	csrrs x1, 769, x8
-	li x8, 0x40801104
+	li x8, EXP_MISA
 	bne x8, x1, csr_fail
 	li x8, 0xa5a5a5a5
 	csrrc x1, 769, x8
-	li x8, 0x40801104
+	li x8, EXP_MISA
 	bne x8, x1, csr_fail
 	li x8, 0x5a5a5a5a
 	csrrc x1, 769, x8
-	li x8, 0x40801104
+	li x8, EXP_MISA
 	bne x8, x1, csr_fail
 	li x8, 0x71755cfe
 	csrrc x1, 769, x8
-	li x8, 0x40801104
+	li x8, EXP_MISA
 	bne x8, x1, csr_fail
 	csrrwi x1, 769, 0b00101
-	li x8, 0x40801104
+	li x8, EXP_MISA
 	bne x8, x1, csr_fail
 	csrrwi x1, 769, 0b11010
-	li x8, 0x40801104
+	li x8, EXP_MISA
 	bne x8, x1, csr_fail
 	csrrwi x1, 769, 0b11010
-	li x8, 0x40801104
+	li x8, EXP_MISA
 	bne x8, x1, csr_fail
 	csrrsi x1, 769, 0b00101
-	li x8, 0x40801104
+	li x8, EXP_MISA
 	bne x8, x1, csr_fail
 	csrrsi x1, 769, 0b11010
-	li x8, 0x40801104
+	li x8, EXP_MISA
 	bne x8, x1, csr_fail
 	csrrsi x1, 769, 0b01101
-	li x8, 0x40801104
+	li x8, EXP_MISA
 	bne x8, x1, csr_fail
 	csrrci x1, 769, 0b00101
-	li x8, 0x40801104
+	li x8, EXP_MISA
 	bne x8, x1, csr_fail
 	csrrci x1, 769, 0b11010
-	li x8, 0x40801104
+	li x8, EXP_MISA
 	bne x8, x1, csr_fail
 	csrrci x1, 769, 0b01010
-	li x8, 0x40801104
+	li x8, EXP_MISA
 	bne x8, x1, csr_fail
 	# mie
 	li x8, 0xa5a5a5a5
@@ -4235,66 +4241,66 @@ _start3:
 	# misa
 	li x8, 0xa5a5a5a5
 	csrrw x12, 769, x8
-	li x8, 0x40801104
+	li x8, EXP_MISA
 	bne x8, x12, csr_fail
 	li x8, 0x5a5a5a5a
 	csrrw x12, 769, x8
-	li x8, 0x40801104
+	li x8, EXP_MISA
 	bne x8, x12, csr_fail
 	li x8, 0x5eef06d2
 	csrrw x12, 769, x8
-	li x8, 0x40801104
+	li x8, EXP_MISA
 	bne x8, x12, csr_fail
 	li x8, 0xa5a5a5a5
 	csrrs x12, 769, x8
-	li x8, 0x40801104
+	li x8, EXP_MISA
 	bne x8, x12, csr_fail
 	li x8, 0x5a5a5a5a
 	csrrs x12, 769, x8
-	li x8, 0x40801104
+	li x8, EXP_MISA
 	bne x8, x12, csr_fail
 	li x8, 0x9e48e762
 	csrrs x12, 769, x8
-	li x8, 0x40801104
+	li x8, EXP_MISA
 	bne x8, x12, csr_fail
 	li x8, 0xa5a5a5a5
 	csrrc x12, 769, x8
-	li x8, 0x40801104
+	li x8, EXP_MISA
 	bne x8, x12, csr_fail
 	li x8, 0x5a5a5a5a
 	csrrc x12, 769, x8
-	li x8, 0x40801104
+	li x8, EXP_MISA
 	bne x8, x12, csr_fail
 	li x8, 0x87adfdef
 	csrrc x12, 769, x8
-	li x8, 0x40801104
+	li x8, EXP_MISA
 	bne x8, x12, csr_fail
 	csrrwi x12, 769, 0b00101
-	li x8, 0x40801104
+	li x8, EXP_MISA
 	bne x8, x12, csr_fail
 	csrrwi x12, 769, 0b11010
-	li x8, 0x40801104
+	li x8, EXP_MISA
 	bne x8, x12, csr_fail
 	csrrwi x12, 769, 0b01010
-	li x8, 0x40801104
+	li x8, EXP_MISA
 	bne x8, x12, csr_fail
 	csrrsi x12, 769, 0b00101
-	li x8, 0x40801104
+	li x8, EXP_MISA
 	bne x8, x12, csr_fail
 	csrrsi x12, 769, 0b11010
-	li x8, 0x40801104
+	li x8, EXP_MISA
 	bne x8, x12, csr_fail
 	csrrsi x12, 769, 0b01010
-	li x8, 0x40801104
+	li x8, EXP_MISA
 	bne x8, x12, csr_fail
 	csrrci x12, 769, 0b00101
-	li x8, 0x40801104
+	li x8, EXP_MISA
 	bne x8, x12, csr_fail
 	csrrci x12, 769, 0b11010
-	li x8, 0x40801104
+	li x8, EXP_MISA
 	bne x8, x12, csr_fail
 	csrrci x12, 769, 0b01110
-	li x8, 0x40801104
+	li x8, EXP_MISA
 	bne x8, x12, csr_fail
 	# mie
 	li x8, 0xa5a5a5a5
@@ -5532,66 +5538,66 @@ _start4:
 	# misa
 	li x2, 0xa5a5a5a5
 	csrrw x4, 769, x2
-	li x2, 0x40801104
+	li x2, EXP_MISA
 	bne x2, x4, csr_fail
 	li x2, 0x5a5a5a5a
 	csrrw x4, 769, x2
-	li x2, 0x40801104
+	li x2, EXP_MISA
 	bne x2, x4, csr_fail
 	li x2, 0xf3b25313
 	csrrw x4, 769, x2
-	li x2, 0x40801104
+	li x2, EXP_MISA
 	bne x2, x4, csr_fail
 	li x2, 0xa5a5a5a5
 	csrrs x4, 769, x2
-	li x2, 0x40801104
+	li x2, EXP_MISA
 	bne x2, x4, csr_fail
 	li x2, 0x5a5a5a5a
 	csrrs x4, 769, x2
-	li x2, 0x40801104
+	li x2, EXP_MISA
 	bne x2, x4, csr_fail
 	li x2, 0x1b69b0fd
 	csrrs x4, 769, x2
-	li x2, 0x40801104
+	li x2, EXP_MISA
 	bne x2, x4, csr_fail
 	li x2, 0xa5a5a5a5
 	csrrc x4, 769, x2
-	li x2, 0x40801104
+	li x2, EXP_MISA
 	bne x2, x4, csr_fail
 	li x2, 0x5a5a5a5a
 	csrrc x4, 769, x2
-	li x2, 0x40801104
+	li x2, EXP_MISA
 	bne x2, x4, csr_fail
 	li x2, 0x7effc614
 	csrrc x4, 769, x2
-	li x2, 0x40801104
+	li x2, EXP_MISA
 	bne x2, x4, csr_fail
 	csrrwi x4, 769, 0b00101
-	li x2, 0x40801104
+	li x2, EXP_MISA
 	bne x2, x4, csr_fail
 	csrrwi x4, 769, 0b11010
-	li x2, 0x40801104
+	li x2, EXP_MISA
 	bne x2, x4, csr_fail
 	csrrwi x4, 769, 0b01100
-	li x2, 0x40801104
+	li x2, EXP_MISA
 	bne x2, x4, csr_fail
 	csrrsi x4, 769, 0b00101
-	li x2, 0x40801104
+	li x2, EXP_MISA
 	bne x2, x4, csr_fail
 	csrrsi x4, 769, 0b11010
-	li x2, 0x40801104
+	li x2, EXP_MISA
 	bne x2, x4, csr_fail
 	csrrsi x4, 769, 0b11001
-	li x2, 0x40801104
+	li x2, EXP_MISA
 	bne x2, x4, csr_fail
 	csrrci x4, 769, 0b00101
-	li x2, 0x40801104
+	li x2, EXP_MISA
 	bne x2, x4, csr_fail
 	csrrci x4, 769, 0b11010
-	li x2, 0x40801104
+	li x2, EXP_MISA
 	bne x2, x4, csr_fail
 	csrrci x4, 769, 0b00110
-	li x2, 0x40801104
+	li x2, EXP_MISA
 	bne x2, x4, csr_fail
 	# mie
 	li x2, 0xa5a5a5a5
@@ -6829,66 +6835,66 @@ _start5:
 	# misa
 	li x13, 0xa5a5a5a5
 	csrrw x6, 769, x13
-	li x13, 0x40801104
+	li x13, EXP_MISA
 	bne x13, x6, csr_fail
 	li x13, 0x5a5a5a5a
 	csrrw x6, 769, x13
-	li x13, 0x40801104
+	li x13, EXP_MISA
 	bne x13, x6, csr_fail
 	li x13, 0x338f1ae7
 	csrrw x6, 769, x13
-	li x13, 0x40801104
+	li x13, EXP_MISA
 	bne x13, x6, csr_fail
 	li x13, 0xa5a5a5a5
 	csrrs x6, 769, x13
-	li x13, 0x40801104
+	li x13, EXP_MISA
 	bne x13, x6, csr_fail
 	li x13, 0x5a5a5a5a
 	csrrs x6, 769, x13
-	li x13, 0x40801104
+	li x13, EXP_MISA
 	bne x13, x6, csr_fail
 	li x13, 0xe9ce5d97
 	csrrs x6, 769, x13
-	li x13, 0x40801104
+	li x13, EXP_MISA
 	bne x13, x6, csr_fail
 	li x13, 0xa5a5a5a5
 	csrrc x6, 769, x13
-	li x13, 0x40801104
+	li x13, EXP_MISA
 	bne x13, x6, csr_fail
 	li x13, 0x5a5a5a5a
 	csrrc x6, 769, x13
-	li x13, 0x40801104
+	li x13, EXP_MISA
 	bne x13, x6, csr_fail
 	li x13, 0xb41e7108
 	csrrc x6, 769, x13
-	li x13, 0x40801104
+	li x13, EXP_MISA
 	bne x13, x6, csr_fail
 	csrrwi x6, 769, 0b00101
-	li x13, 0x40801104
+	li x13, EXP_MISA
 	bne x13, x6, csr_fail
 	csrrwi x6, 769, 0b11010
-	li x13, 0x40801104
+	li x13, EXP_MISA
 	bne x13, x6, csr_fail
 	csrrwi x6, 769, 0b00110
-	li x13, 0x40801104
+	li x13, EXP_MISA
 	bne x13, x6, csr_fail
 	csrrsi x6, 769, 0b00101
-	li x13, 0x40801104
+	li x13, EXP_MISA
 	bne x13, x6, csr_fail
 	csrrsi x6, 769, 0b11010
-	li x13, 0x40801104
+	li x13, EXP_MISA
 	bne x13, x6, csr_fail
 	csrrsi x6, 769, 0b11011
-	li x13, 0x40801104
+	li x13, EXP_MISA
 	bne x13, x6, csr_fail
 	csrrci x6, 769, 0b00101
-	li x13, 0x40801104
+	li x13, EXP_MISA
 	bne x13, x6, csr_fail
 	csrrci x6, 769, 0b11010
-	li x13, 0x40801104
+	li x13, EXP_MISA
 	bne x13, x6, csr_fail
 	csrrci x6, 769, 0b10101
-	li x13, 0x40801104
+	li x13, EXP_MISA
 	bne x13, x6, csr_fail
 	# mie
 	li x13, 0xa5a5a5a5
@@ -8126,66 +8132,66 @@ _start6:
 	# misa
 	li x13, 0xa5a5a5a5
 	csrrw x1, 769, x13
-	li x13, 0x40801104
+	li x13, EXP_MISA
 	bne x13, x1, csr_fail
 	li x13, 0x5a5a5a5a
 	csrrw x1, 769, x13
-	li x13, 0x40801104
+	li x13, EXP_MISA
 	bne x13, x1, csr_fail
 	li x13, 0xefaf3e01
 	csrrw x1, 769, x13
-	li x13, 0x40801104
+	li x13, EXP_MISA
 	bne x13, x1, csr_fail
 	li x13, 0xa5a5a5a5
 	csrrs x1, 769, x13
-	li x13, 0x40801104
+	li x13, EXP_MISA
 	bne x13, x1, csr_fail
 	li x13, 0x5a5a5a5a
 	csrrs x1, 769, x13
-	li x13, 0x40801104
+	li x13, EXP_MISA
 	bne x13, x1, csr_fail
 	li x13, 0xea436c39
 	csrrs x1, 769, x13
-	li x13, 0x40801104
+	li x13, EXP_MISA
 	bne x13, x1, csr_fail
 	li x13, 0xa5a5a5a5
 	csrrc x1, 769, x13
-	li x13, 0x40801104
+	li x13, EXP_MISA
 	bne x13, x1, csr_fail
 	li x13, 0x5a5a5a5a
 	csrrc x1, 769, x13
-	li x13, 0x40801104
+	li x13, EXP_MISA
 	bne x13, x1, csr_fail
 	li x13, 0xab0cb7d6
 	csrrc x1, 769, x13
-	li x13, 0x40801104
+	li x13, EXP_MISA
 	bne x13, x1, csr_fail
 	csrrwi x1, 769, 0b00101
-	li x13, 0x40801104
+	li x13, EXP_MISA
 	bne x13, x1, csr_fail
 	csrrwi x1, 769, 0b11010
-	li x13, 0x40801104
+	li x13, EXP_MISA
 	bne x13, x1, csr_fail
 	csrrwi x1, 769, 0b01010
-	li x13, 0x40801104
+	li x13, EXP_MISA
 	bne x13, x1, csr_fail
 	csrrsi x1, 769, 0b00101
-	li x13, 0x40801104
+	li x13, EXP_MISA
 	bne x13, x1, csr_fail
 	csrrsi x1, 769, 0b11010
-	li x13, 0x40801104
+	li x13, EXP_MISA
 	bne x13, x1, csr_fail
 	csrrsi x1, 769, 0b11001
-	li x13, 0x40801104
+	li x13, EXP_MISA
 	bne x13, x1, csr_fail
 	csrrci x1, 769, 0b00101
-	li x13, 0x40801104
+	li x13, EXP_MISA
 	bne x13, x1, csr_fail
 	csrrci x1, 769, 0b11010
-	li x13, 0x40801104
+	li x13, EXP_MISA
 	bne x13, x1, csr_fail
 	csrrci x1, 769, 0b00111
-	li x13, 0x40801104
+	li x13, EXP_MISA
 	bne x13, x1, csr_fail
 	# mie
 	li x13, 0xa5a5a5a5
@@ -9423,66 +9429,66 @@ _start7:
 	# misa
 	li x15, 0xa5a5a5a5
 	csrrw x11, 769, x15
-	li x15, 0x40801104
+	li x15, EXP_MISA
 	bne x15, x11, csr_fail
 	li x15, 0x5a5a5a5a
 	csrrw x11, 769, x15
-	li x15, 0x40801104
+	li x15, EXP_MISA
 	bne x15, x11, csr_fail
 	li x15, 0x51563d97
 	csrrw x11, 769, x15
-	li x15, 0x40801104
+	li x15, EXP_MISA
 	bne x15, x11, csr_fail
 	li x15, 0xa5a5a5a5
 	csrrs x11, 769, x15
-	li x15, 0x40801104
+	li x15, EXP_MISA
 	bne x15, x11, csr_fail
 	li x15, 0x5a5a5a5a
 	csrrs x11, 769, x15
-	li x15, 0x40801104
+	li x15, EXP_MISA
 	bne x15, x11, csr_fail
 	li x15, 0xd903616d
 	csrrs x11, 769, x15
-	li x15, 0x40801104
+	li x15, EXP_MISA
 	bne x15, x11, csr_fail
 	li x15, 0xa5a5a5a5
 	csrrc x11, 769, x15
-	li x15, 0x40801104
+	li x15, EXP_MISA
 	bne x15, x11, csr_fail
 	li x15, 0x5a5a5a5a
 	csrrc x11, 769, x15
-	li x15, 0x40801104
+	li x15, EXP_MISA
 	bne x15, x11, csr_fail
 	li x15, 0x0b1bae48
 	csrrc x11, 769, x15
-	li x15, 0x40801104
+	li x15, EXP_MISA
 	bne x15, x11, csr_fail
 	csrrwi x11, 769, 0b00101
-	li x15, 0x40801104
+	li x15, EXP_MISA
 	bne x15, x11, csr_fail
 	csrrwi x11, 769, 0b11010
-	li x15, 0x40801104
+	li x15, EXP_MISA
 	bne x15, x11, csr_fail
 	csrrwi x11, 769, 0b01110
-	li x15, 0x40801104
+	li x15, EXP_MISA
 	bne x15, x11, csr_fail
 	csrrsi x11, 769, 0b00101
-	li x15, 0x40801104
+	li x15, EXP_MISA
 	bne x15, x11, csr_fail
 	csrrsi x11, 769, 0b11010
-	li x15, 0x40801104
+	li x15, EXP_MISA
 	bne x15, x11, csr_fail
 	csrrsi x11, 769, 0b11001
-	li x15, 0x40801104
+	li x15, EXP_MISA
 	bne x15, x11, csr_fail
 	csrrci x11, 769, 0b00101
-	li x15, 0x40801104
+	li x15, EXP_MISA
 	bne x15, x11, csr_fail
 	csrrci x11, 769, 0b11010
-	li x15, 0x40801104
+	li x15, EXP_MISA
 	bne x15, x11, csr_fail
 	csrrci x11, 769, 0b10011
-	li x15, 0x40801104
+	li x15, EXP_MISA
 	bne x15, x11, csr_fail
 	# mie
 	li x15, 0xa5a5a5a5
@@ -10720,66 +10726,66 @@ _start8:
 	# misa
 	li x3, 0xa5a5a5a5
 	csrrw x11, 769, x3
-	li x3, 0x40801104
+	li x3, EXP_MISA
 	bne x3, x11, csr_fail
 	li x3, 0x5a5a5a5a
 	csrrw x11, 769, x3
-	li x3, 0x40801104
+	li x3, EXP_MISA
 	bne x3, x11, csr_fail
 	li x3, 0x365440a5
 	csrrw x11, 769, x3
-	li x3, 0x40801104
+	li x3, EXP_MISA
 	bne x3, x11, csr_fail
 	li x3, 0xa5a5a5a5
 	csrrs x11, 769, x3
-	li x3, 0x40801104
+	li x3, EXP_MISA
 	bne x3, x11, csr_fail
 	li x3, 0x5a5a5a5a
 	csrrs x11, 769, x3
-	li x3, 0x40801104
+	li x3, EXP_MISA
 	bne x3, x11, csr_fail
 	li x3, 0xa46086ce
 	csrrs x11, 769, x3
-	li x3, 0x40801104
+	li x3, EXP_MISA
 	bne x3, x11, csr_fail
 	li x3, 0xa5a5a5a5
 	csrrc x11, 769, x3
-	li x3, 0x40801104
+	li x3, EXP_MISA
 	bne x3, x11, csr_fail
 	li x3, 0x5a5a5a5a
 	csrrc x11, 769, x3
-	li x3, 0x40801104
+	li x3, EXP_MISA
 	bne x3, x11, csr_fail
 	li x3, 0xf7b9c667
 	csrrc x11, 769, x3
-	li x3, 0x40801104
+	li x3, EXP_MISA
 	bne x3, x11, csr_fail
 	csrrwi x11, 769, 0b00101
-	li x3, 0x40801104
+	li x3, EXP_MISA
 	bne x3, x11, csr_fail
 	csrrwi x11, 769, 0b11010
-	li x3, 0x40801104
+	li x3, EXP_MISA
 	bne x3, x11, csr_fail
 	csrrwi x11, 769, 0b01111
-	li x3, 0x40801104
+	li x3, EXP_MISA
 	bne x3, x11, csr_fail
 	csrrsi x11, 769, 0b00101
-	li x3, 0x40801104
+	li x3, EXP_MISA
 	bne x3, x11, csr_fail
 	csrrsi x11, 769, 0b11010
-	li x3, 0x40801104
+	li x3, EXP_MISA
 	bne x3, x11, csr_fail
 	csrrsi x11, 769, 0b11000
-	li x3, 0x40801104
+	li x3, EXP_MISA
 	bne x3, x11, csr_fail
 	csrrci x11, 769, 0b00101
-	li x3, 0x40801104
+	li x3, EXP_MISA
 	bne x3, x11, csr_fail
 	csrrci x11, 769, 0b11010
-	li x3, 0x40801104
+	li x3, EXP_MISA
 	bne x3, x11, csr_fail
 	csrrci x11, 769, 0b11010
-	li x3, 0x40801104
+	li x3, EXP_MISA
 	bne x3, x11, csr_fail
 	# mie
 	li x3, 0xa5a5a5a5
@@ -12017,66 +12023,66 @@ _start9:
 	# misa
 	li x13, 0xa5a5a5a5
 	csrrw x10, 769, x13
-	li x13, 0x40801104
+	li x13, EXP_MISA
 	bne x13, x10, csr_fail
 	li x13, 0x5a5a5a5a
 	csrrw x10, 769, x13
-	li x13, 0x40801104
+	li x13, EXP_MISA
 	bne x13, x10, csr_fail
 	li x13, 0xbd668431
 	csrrw x10, 769, x13
-	li x13, 0x40801104
+	li x13, EXP_MISA
 	bne x13, x10, csr_fail
 	li x13, 0xa5a5a5a5
 	csrrs x10, 769, x13
-	li x13, 0x40801104
+	li x13, EXP_MISA
 	bne x13, x10, csr_fail
 	li x13, 0x5a5a5a5a
 	csrrs x10, 769, x13
-	li x13, 0x40801104
+	li x13, EXP_MISA
 	bne x13, x10, csr_fail
 	li x13, 0x282da37d
 	csrrs x10, 769, x13
-	li x13, 0x40801104
+	li x13, EXP_MISA
 	bne x13, x10, csr_fail
 	li x13, 0xa5a5a5a5
 	csrrc x10, 769, x13
-	li x13, 0x40801104
+	li x13, EXP_MISA
 	bne x13, x10, csr_fail
 	li x13, 0x5a5a5a5a
 	csrrc x10, 769, x13
-	li x13, 0x40801104
+	li x13, EXP_MISA
 	bne x13, x10, csr_fail
 	li x13, 0x7f9f2bc8
 	csrrc x10, 769, x13
-	li x13, 0x40801104
+	li x13, EXP_MISA
 	bne x13, x10, csr_fail
 	csrrwi x10, 769, 0b00101
-	li x13, 0x40801104
+	li x13, EXP_MISA
 	bne x13, x10, csr_fail
 	csrrwi x10, 769, 0b11010
-	li x13, 0x40801104
+	li x13, EXP_MISA
 	bne x13, x10, csr_fail
 	csrrwi x10, 769, 0b10000
-	li x13, 0x40801104
+	li x13, EXP_MISA
 	bne x13, x10, csr_fail
 	csrrsi x10, 769, 0b00101
-	li x13, 0x40801104
+	li x13, EXP_MISA
 	bne x13, x10, csr_fail
 	csrrsi x10, 769, 0b11010
-	li x13, 0x40801104
+	li x13, EXP_MISA
 	bne x13, x10, csr_fail
 	csrrsi x10, 769, 0b01100
-	li x13, 0x40801104
+	li x13, EXP_MISA
 	bne x13, x10, csr_fail
 	csrrci x10, 769, 0b00101
-	li x13, 0x40801104
+	li x13, EXP_MISA
 	bne x13, x10, csr_fail
 	csrrci x10, 769, 0b11010
-	li x13, 0x40801104
+	li x13, EXP_MISA
 	bne x13, x10, csr_fail
 	csrrci x10, 769, 0b10101
-	li x13, 0x40801104
+	li x13, EXP_MISA
 	bne x13, x10, csr_fail
 	# mie
 	li x13, 0xa5a5a5a5
@@ -13314,66 +13320,66 @@ _start10:
 	# misa
 	li x5, 0xa5a5a5a5
 	csrrw x6, 769, x5
-	li x5, 0x40801104
+	li x5, EXP_MISA
 	bne x5, x6, csr_fail
 	li x5, 0x5a5a5a5a
 	csrrw x6, 769, x5
-	li x5, 0x40801104
+	li x5, EXP_MISA
 	bne x5, x6, csr_fail
 	li x5, 0xb06df5b1
 	csrrw x6, 769, x5
-	li x5, 0x40801104
+	li x5, EXP_MISA
 	bne x5, x6, csr_fail
 	li x5, 0xa5a5a5a5
 	csrrs x6, 769, x5
-	li x5, 0x40801104
+	li x5, EXP_MISA
 	bne x5, x6, csr_fail
 	li x5, 0x5a5a5a5a
 	csrrs x6, 769, x5
-	li x5, 0x40801104
+	li x5, EXP_MISA
 	bne x5, x6, csr_fail
 	li x5, 0x651e9278
 	csrrs x6, 769, x5
-	li x5, 0x40801104
+	li x5, EXP_MISA
 	bne x5, x6, csr_fail
 	li x5, 0xa5a5a5a5
 	csrrc x6, 769, x5
-	li x5, 0x40801104
+	li x5, EXP_MISA
 	bne x5, x6, csr_fail
 	li x5, 0x5a5a5a5a
 	csrrc x6, 769, x5
-	li x5, 0x40801104
+	li x5, EXP_MISA
 	bne x5, x6, csr_fail
 	li x5, 0x6c6efcd0
 	csrrc x6, 769, x5
-	li x5, 0x40801104
+	li x5, EXP_MISA
 	bne x5, x6, csr_fail
 	csrrwi x6, 769, 0b00101
-	li x5, 0x40801104
+	li x5, EXP_MISA
 	bne x5, x6, csr_fail
 	csrrwi x6, 769, 0b11010
-	li x5, 0x40801104
+	li x5, EXP_MISA
 	bne x5, x6, csr_fail
 	csrrwi x6, 769, 0b10010
-	li x5, 0x40801104
+	li x5, EXP_MISA
 	bne x5, x6, csr_fail
 	csrrsi x6, 769, 0b00101
-	li x5, 0x40801104
+	li x5, EXP_MISA
 	bne x5, x6, csr_fail
 	csrrsi x6, 769, 0b11010
-	li x5, 0x40801104
+	li x5, EXP_MISA
 	bne x5, x6, csr_fail
 	csrrsi x6, 769, 0b01010
-	li x5, 0x40801104
+	li x5, EXP_MISA
 	bne x5, x6, csr_fail
 	csrrci x6, 769, 0b00101
-	li x5, 0x40801104
+	li x5, EXP_MISA
 	bne x5, x6, csr_fail
 	csrrci x6, 769, 0b11010
-	li x5, 0x40801104
+	li x5, EXP_MISA
 	bne x5, x6, csr_fail
 	csrrci x6, 769, 0b10011
-	li x5, 0x40801104
+	li x5, EXP_MISA
 	bne x5, x6, csr_fail
 	# mie
 	li x5, 0xa5a5a5a5
@@ -14611,66 +14617,66 @@ _start11:
 	# misa
 	li x11, 0xa5a5a5a5
 	csrrw x3, 769, x11
-	li x11, 0x40801104
+	li x11, EXP_MISA
 	bne x11, x3, csr_fail
 	li x11, 0x5a5a5a5a
 	csrrw x3, 769, x11
-	li x11, 0x40801104
+	li x11, EXP_MISA
 	bne x11, x3, csr_fail
 	li x11, 0xcb9fd9b8
 	csrrw x3, 769, x11
-	li x11, 0x40801104
+	li x11, EXP_MISA
 	bne x11, x3, csr_fail
 	li x11, 0xa5a5a5a5
 	csrrs x3, 769, x11
-	li x11, 0x40801104
+	li x11, EXP_MISA
 	bne x11, x3, csr_fail
 	li x11, 0x5a5a5a5a
 	csrrs x3, 769, x11
-	li x11, 0x40801104
+	li x11, EXP_MISA
 	bne x11, x3, csr_fail
 	li x11, 0xf5f874fb
 	csrrs x3, 769, x11
-	li x11, 0x40801104
+	li x11, EXP_MISA
 	bne x11, x3, csr_fail
 	li x11, 0xa5a5a5a5
 	csrrc x3, 769, x11
-	li x11, 0x40801104
+	li x11, EXP_MISA
 	bne x11, x3, csr_fail
 	li x11, 0x5a5a5a5a
 	csrrc x3, 769, x11
-	li x11, 0x40801104
+	li x11, EXP_MISA
 	bne x11, x3, csr_fail
 	li x11, 0x2e787069
 	csrrc x3, 769, x11
-	li x11, 0x40801104
+	li x11, EXP_MISA
 	bne x11, x3, csr_fail
 	csrrwi x3, 769, 0b00101
-	li x11, 0x40801104
+	li x11, EXP_MISA
 	bne x11, x3, csr_fail
 	csrrwi x3, 769, 0b11010
-	li x11, 0x40801104
+	li x11, EXP_MISA
 	bne x11, x3, csr_fail
 	csrrwi x3, 769, 0b01111
-	li x11, 0x40801104
+	li x11, EXP_MISA
 	bne x11, x3, csr_fail
 	csrrsi x3, 769, 0b00101
-	li x11, 0x40801104
+	li x11, EXP_MISA
 	bne x11, x3, csr_fail
 	csrrsi x3, 769, 0b11010
-	li x11, 0x40801104
+	li x11, EXP_MISA
 	bne x11, x3, csr_fail
 	csrrsi x3, 769, 0b00100
-	li x11, 0x40801104
+	li x11, EXP_MISA
 	bne x11, x3, csr_fail
 	csrrci x3, 769, 0b00101
-	li x11, 0x40801104
+	li x11, EXP_MISA
 	bne x11, x3, csr_fail
 	csrrci x3, 769, 0b11010
-	li x11, 0x40801104
+	li x11, EXP_MISA
 	bne x11, x3, csr_fail
 	csrrci x3, 769, 0b10111
-	li x11, 0x40801104
+	li x11, EXP_MISA
 	bne x11, x3, csr_fail
 	# mie
 	li x11, 0xa5a5a5a5
@@ -15908,66 +15914,66 @@ _start12:
 	# misa
 	li x15, 0xa5a5a5a5
 	csrrw x12, 769, x15
-	li x15, 0x40801104
+	li x15, EXP_MISA
 	bne x15, x12, csr_fail
 	li x15, 0x5a5a5a5a
 	csrrw x12, 769, x15
-	li x15, 0x40801104
+	li x15, EXP_MISA
 	bne x15, x12, csr_fail
 	li x15, 0x85d8ecd4
 	csrrw x12, 769, x15
-	li x15, 0x40801104
+	li x15, EXP_MISA
 	bne x15, x12, csr_fail
 	li x15, 0xa5a5a5a5
 	csrrs x12, 769, x15
-	li x15, 0x40801104
+	li x15, EXP_MISA
 	bne x15, x12, csr_fail
 	li x15, 0x5a5a5a5a
 	csrrs x12, 769, x15
-	li x15, 0x40801104
+	li x15, EXP_MISA
 	bne x15, x12, csr_fail
 	li x15, 0x0a69a79e
 	csrrs x12, 769, x15
-	li x15, 0x40801104
+	li x15, EXP_MISA
 	bne x15, x12, csr_fail
 	li x15, 0xa5a5a5a5
 	csrrc x12, 769, x15
-	li x15, 0x40801104
+	li x15, EXP_MISA
 	bne x15, x12, csr_fail
 	li x15, 0x5a5a5a5a
 	csrrc x12, 769, x15
-	li x15, 0x40801104
+	li x15, EXP_MISA
 	bne x15, x12, csr_fail
 	li x15, 0x76781d93
 	csrrc x12, 769, x15
-	li x15, 0x40801104
+	li x15, EXP_MISA
 	bne x15, x12, csr_fail
 	csrrwi x12, 769, 0b00101
-	li x15, 0x40801104
+	li x15, EXP_MISA
 	bne x15, x12, csr_fail
 	csrrwi x12, 769, 0b11010
-	li x15, 0x40801104
+	li x15, EXP_MISA
 	bne x15, x12, csr_fail
 	csrrwi x12, 769, 0b10010
-	li x15, 0x40801104
+	li x15, EXP_MISA
 	bne x15, x12, csr_fail
 	csrrsi x12, 769, 0b00101
-	li x15, 0x40801104
+	li x15, EXP_MISA
 	bne x15, x12, csr_fail
 	csrrsi x12, 769, 0b11010
-	li x15, 0x40801104
+	li x15, EXP_MISA
 	bne x15, x12, csr_fail
 	csrrsi x12, 769, 0b10001
-	li x15, 0x40801104
+	li x15, EXP_MISA
 	bne x15, x12, csr_fail
 	csrrci x12, 769, 0b00101
-	li x15, 0x40801104
+	li x15, EXP_MISA
 	bne x15, x12, csr_fail
 	csrrci x12, 769, 0b11010
-	li x15, 0x40801104
+	li x15, EXP_MISA
 	bne x15, x12, csr_fail
 	csrrci x12, 769, 0b11010
-	li x15, 0x40801104
+	li x15, EXP_MISA
 	bne x15, x12, csr_fail
 	# mie
 	li x15, 0xa5a5a5a5
@@ -17205,66 +17211,66 @@ _start13:
 	# misa
 	li x15, 0xa5a5a5a5
 	csrrw x9, 769, x15
-	li x15, 0x40801104
+	li x15, EXP_MISA
 	bne x15, x9, csr_fail
 	li x15, 0x5a5a5a5a
 	csrrw x9, 769, x15
-	li x15, 0x40801104
+	li x15, EXP_MISA
 	bne x15, x9, csr_fail
 	li x15, 0x633f7462
 	csrrw x9, 769, x15
-	li x15, 0x40801104
+	li x15, EXP_MISA
 	bne x15, x9, csr_fail
 	li x15, 0xa5a5a5a5
 	csrrs x9, 769, x15
-	li x15, 0x40801104
+	li x15, EXP_MISA
 	bne x15, x9, csr_fail
 	li x15, 0x5a5a5a5a
 	csrrs x9, 769, x15
-	li x15, 0x40801104
+	li x15, EXP_MISA
 	bne x15, x9, csr_fail
 	li x15, 0xbdd37b7e
 	csrrs x9, 769, x15
-	li x15, 0x40801104
+	li x15, EXP_MISA
 	bne x15, x9, csr_fail
 	li x15, 0xa5a5a5a5
 	csrrc x9, 769, x15
-	li x15, 0x40801104
+	li x15, EXP_MISA
 	bne x15, x9, csr_fail
 	li x15, 0x5a5a5a5a
 	csrrc x9, 769, x15
-	li x15, 0x40801104
+	li x15, EXP_MISA
 	bne x15, x9, csr_fail
 	li x15, 0x0a7b084a
 	csrrc x9, 769, x15
-	li x15, 0x40801104
+	li x15, EXP_MISA
 	bne x15, x9, csr_fail
 	csrrwi x9, 769, 0b00101
-	li x15, 0x40801104
+	li x15, EXP_MISA
 	bne x15, x9, csr_fail
 	csrrwi x9, 769, 0b11010
-	li x15, 0x40801104
+	li x15, EXP_MISA
 	bne x15, x9, csr_fail
 	csrrwi x9, 769, 0b10010
-	li x15, 0x40801104
+	li x15, EXP_MISA
 	bne x15, x9, csr_fail
 	csrrsi x9, 769, 0b00101
-	li x15, 0x40801104
+	li x15, EXP_MISA
 	bne x15, x9, csr_fail
 	csrrsi x9, 769, 0b11010
-	li x15, 0x40801104
+	li x15, EXP_MISA
 	bne x15, x9, csr_fail
 	csrrsi x9, 769, 0b00000
-	li x15, 0x40801104
+	li x15, EXP_MISA
 	bne x15, x9, csr_fail
 	csrrci x9, 769, 0b00101
-	li x15, 0x40801104
+	li x15, EXP_MISA
 	bne x15, x9, csr_fail
 	csrrci x9, 769, 0b11010
-	li x15, 0x40801104
+	li x15, EXP_MISA
 	bne x15, x9, csr_fail
 	csrrci x9, 769, 0b00001
-	li x15, 0x40801104
+	li x15, EXP_MISA
 	bne x15, x9, csr_fail
 	# mie
 	li x15, 0xa5a5a5a5
@@ -18502,66 +18508,66 @@ _start14:
 	# misa
 	li x10, 0xa5a5a5a5
 	csrrw x12, 769, x10
-	li x10, 0x40801104
+	li x10, EXP_MISA
 	bne x10, x12, csr_fail
 	li x10, 0x5a5a5a5a
 	csrrw x12, 769, x10
-	li x10, 0x40801104
+	li x10, EXP_MISA
 	bne x10, x12, csr_fail
 	li x10, 0x2b6072c4
 	csrrw x12, 769, x10
-	li x10, 0x40801104
+	li x10, EXP_MISA
 	bne x10, x12, csr_fail
 	li x10, 0xa5a5a5a5
 	csrrs x12, 769, x10
-	li x10, 0x40801104
+	li x10, EXP_MISA
 	bne x10, x12, csr_fail
 	li x10, 0x5a5a5a5a
 	csrrs x12, 769, x10
-	li x10, 0x40801104
+	li x10, EXP_MISA
 	bne x10, x12, csr_fail
 	li x10, 0x02d41fd3
 	csrrs x12, 769, x10
-	li x10, 0x40801104
+	li x10, EXP_MISA
 	bne x10, x12, csr_fail
 	li x10, 0xa5a5a5a5
 	csrrc x12, 769, x10
-	li x10, 0x40801104
+	li x10, EXP_MISA
 	bne x10, x12, csr_fail
 	li x10, 0x5a5a5a5a
 	csrrc x12, 769, x10
-	li x10, 0x40801104
+	li x10, EXP_MISA
 	bne x10, x12, csr_fail
 	li x10, 0x1c5f3c0e
 	csrrc x12, 769, x10
-	li x10, 0x40801104
+	li x10, EXP_MISA
 	bne x10, x12, csr_fail
 	csrrwi x12, 769, 0b00101
-	li x10, 0x40801104
+	li x10, EXP_MISA
 	bne x10, x12, csr_fail
 	csrrwi x12, 769, 0b11010
-	li x10, 0x40801104
+	li x10, EXP_MISA
 	bne x10, x12, csr_fail
 	csrrwi x12, 769, 0b10110
-	li x10, 0x40801104
+	li x10, EXP_MISA
 	bne x10, x12, csr_fail
 	csrrsi x12, 769, 0b00101
-	li x10, 0x40801104
+	li x10, EXP_MISA
 	bne x10, x12, csr_fail
 	csrrsi x12, 769, 0b11010
-	li x10, 0x40801104
+	li x10, EXP_MISA
 	bne x10, x12, csr_fail
 	csrrsi x12, 769, 0b01111
-	li x10, 0x40801104
+	li x10, EXP_MISA
 	bne x10, x12, csr_fail
 	csrrci x12, 769, 0b00101
-	li x10, 0x40801104
+	li x10, EXP_MISA
 	bne x10, x12, csr_fail
 	csrrci x12, 769, 0b11010
-	li x10, 0x40801104
+	li x10, EXP_MISA
 	bne x10, x12, csr_fail
 	csrrci x12, 769, 0b11100
-	li x10, 0x40801104
+	li x10, EXP_MISA
 	bne x10, x12, csr_fail
 	# mie
 	li x10, 0xa5a5a5a5
@@ -19799,66 +19805,66 @@ _start15:
 	# misa
 	li x12, 0xa5a5a5a5
 	csrrw x14, 769, x12
-	li x12, 0x40801104
+	li x12, EXP_MISA
 	bne x12, x14, csr_fail
 	li x12, 0x5a5a5a5a
 	csrrw x14, 769, x12
-	li x12, 0x40801104
+	li x12, EXP_MISA
 	bne x12, x14, csr_fail
 	li x12, 0xa8bd5551
 	csrrw x14, 769, x12
-	li x12, 0x40801104
+	li x12, EXP_MISA
 	bne x12, x14, csr_fail
 	li x12, 0xa5a5a5a5
 	csrrs x14, 769, x12
-	li x12, 0x40801104
+	li x12, EXP_MISA
 	bne x12, x14, csr_fail
 	li x12, 0x5a5a5a5a
 	csrrs x14, 769, x12
-	li x12, 0x40801104
+	li x12, EXP_MISA
 	bne x12, x14, csr_fail
 	li x12, 0xd3365821
 	csrrs x14, 769, x12
-	li x12, 0x40801104
+	li x12, EXP_MISA
 	bne x12, x14, csr_fail
 	li x12, 0xa5a5a5a5
 	csrrc x14, 769, x12
-	li x12, 0x40801104
+	li x12, EXP_MISA
 	bne x12, x14, csr_fail
 	li x12, 0x5a5a5a5a
 	csrrc x14, 769, x12
-	li x12, 0x40801104
+	li x12, EXP_MISA
 	bne x12, x14, csr_fail
 	li x12, 0xb5fac192
 	csrrc x14, 769, x12
-	li x12, 0x40801104
+	li x12, EXP_MISA
 	bne x12, x14, csr_fail
 	csrrwi x14, 769, 0b00101
-	li x12, 0x40801104
+	li x12, EXP_MISA
 	bne x12, x14, csr_fail
 	csrrwi x14, 769, 0b11010
-	li x12, 0x40801104
+	li x12, EXP_MISA
 	bne x12, x14, csr_fail
 	csrrwi x14, 769, 0b11001
-	li x12, 0x40801104
+	li x12, EXP_MISA
 	bne x12, x14, csr_fail
 	csrrsi x14, 769, 0b00101
-	li x12, 0x40801104
+	li x12, EXP_MISA
 	bne x12, x14, csr_fail
 	csrrsi x14, 769, 0b11010
-	li x12, 0x40801104
+	li x12, EXP_MISA
 	bne x12, x14, csr_fail
 	csrrsi x14, 769, 0b11100
-	li x12, 0x40801104
+	li x12, EXP_MISA
 	bne x12, x14, csr_fail
 	csrrci x14, 769, 0b00101
-	li x12, 0x40801104
+	li x12, EXP_MISA
 	bne x12, x14, csr_fail
 	csrrci x14, 769, 0b11010
-	li x12, 0x40801104
+	li x12, EXP_MISA
 	bne x12, x14, csr_fail
 	csrrci x14, 769, 0b01111
-	li x12, 0x40801104
+	li x12, EXP_MISA
 	bne x12, x14, csr_fail
 	# mie
 	li x12, 0xa5a5a5a5
@@ -21096,66 +21102,66 @@ _start16:
 	# misa
 	li x3, 0xa5a5a5a5
 	csrrw x14, 769, x3
-	li x3, 0x40801104
+	li x3, EXP_MISA
 	bne x3, x14, csr_fail
 	li x3, 0x5a5a5a5a
 	csrrw x14, 769, x3
-	li x3, 0x40801104
+	li x3, EXP_MISA
 	bne x3, x14, csr_fail
 	li x3, 0x6a8c9449
 	csrrw x14, 769, x3
-	li x3, 0x40801104
+	li x3, EXP_MISA
 	bne x3, x14, csr_fail
 	li x3, 0xa5a5a5a5
 	csrrs x14, 769, x3
-	li x3, 0x40801104
+	li x3, EXP_MISA
 	bne x3, x14, csr_fail
 	li x3, 0x5a5a5a5a
 	csrrs x14, 769, x3
-	li x3, 0x40801104
+	li x3, EXP_MISA
 	bne x3, x14, csr_fail
 	li x3, 0x89c3b1a6
 	csrrs x14, 769, x3
-	li x3, 0x40801104
+	li x3, EXP_MISA
 	bne x3, x14, csr_fail
 	li x3, 0xa5a5a5a5
 	csrrc x14, 769, x3
-	li x3, 0x40801104
+	li x3, EXP_MISA
 	bne x3, x14, csr_fail
 	li x3, 0x5a5a5a5a
 	csrrc x14, 769, x3
-	li x3, 0x40801104
+	li x3, EXP_MISA
 	bne x3, x14, csr_fail
 	li x3, 0x2c69b812
 	csrrc x14, 769, x3
-	li x3, 0x40801104
+	li x3, EXP_MISA
 	bne x3, x14, csr_fail
 	csrrwi x14, 769, 0b00101
-	li x3, 0x40801104
+	li x3, EXP_MISA
 	bne x3, x14, csr_fail
 	csrrwi x14, 769, 0b11010
-	li x3, 0x40801104
+	li x3, EXP_MISA
 	bne x3, x14, csr_fail
 	csrrwi x14, 769, 0b10110
-	li x3, 0x40801104
+	li x3, EXP_MISA
 	bne x3, x14, csr_fail
 	csrrsi x14, 769, 0b00101
-	li x3, 0x40801104
+	li x3, EXP_MISA
 	bne x3, x14, csr_fail
 	csrrsi x14, 769, 0b11010
-	li x3, 0x40801104
+	li x3, EXP_MISA
 	bne x3, x14, csr_fail
 	csrrsi x14, 769, 0b01001
-	li x3, 0x40801104
+	li x3, EXP_MISA
 	bne x3, x14, csr_fail
 	csrrci x14, 769, 0b00101
-	li x3, 0x40801104
+	li x3, EXP_MISA
 	bne x3, x14, csr_fail
 	csrrci x14, 769, 0b11010
-	li x3, 0x40801104
+	li x3, EXP_MISA
 	bne x3, x14, csr_fail
 	csrrci x14, 769, 0b01000
-	li x3, 0x40801104
+	li x3, EXP_MISA
 	bne x3, x14, csr_fail
 	# mie
 	li x3, 0xa5a5a5a5
@@ -22393,66 +22399,66 @@ _start17:
 	# misa
 	li x1, 0xa5a5a5a5
 	csrrw x15, 769, x1
-	li x1, 0x40801104
+	li x1, EXP_MISA
 	bne x1, x15, csr_fail
 	li x1, 0x5a5a5a5a
 	csrrw x15, 769, x1
-	li x1, 0x40801104
+	li x1, EXP_MISA
 	bne x1, x15, csr_fail
 	li x1, 0x6c49924e
 	csrrw x15, 769, x1
-	li x1, 0x40801104
+	li x1, EXP_MISA
 	bne x1, x15, csr_fail
 	li x1, 0xa5a5a5a5
 	csrrs x15, 769, x1
-	li x1, 0x40801104
+	li x1, EXP_MISA
 	bne x1, x15, csr_fail
 	li x1, 0x5a5a5a5a
 	csrrs x15, 769, x1
-	li x1, 0x40801104
+	li x1, EXP_MISA
 	bne x1, x15, csr_fail
 	li x1, 0xa8c05cc1
 	csrrs x15, 769, x1
-	li x1, 0x40801104
+	li x1, EXP_MISA
 	bne x1, x15, csr_fail
 	li x1, 0xa5a5a5a5
 	csrrc x15, 769, x1
-	li x1, 0x40801104
+	li x1, EXP_MISA
 	bne x1, x15, csr_fail
 	li x1, 0x5a5a5a5a
 	csrrc x15, 769, x1
-	li x1, 0x40801104
+	li x1, EXP_MISA
 	bne x1, x15, csr_fail
 	li x1, 0xb1546c64
 	csrrc x15, 769, x1
-	li x1, 0x40801104
+	li x1, EXP_MISA
 	bne x1, x15, csr_fail
 	csrrwi x15, 769, 0b00101
-	li x1, 0x40801104
+	li x1, EXP_MISA
 	bne x1, x15, csr_fail
 	csrrwi x15, 769, 0b11010
-	li x1, 0x40801104
+	li x1, EXP_MISA
 	bne x1, x15, csr_fail
 	csrrwi x15, 769, 0b00100
-	li x1, 0x40801104
+	li x1, EXP_MISA
 	bne x1, x15, csr_fail
 	csrrsi x15, 769, 0b00101
-	li x1, 0x40801104
+	li x1, EXP_MISA
 	bne x1, x15, csr_fail
 	csrrsi x15, 769, 0b11010
-	li x1, 0x40801104
+	li x1, EXP_MISA
 	bne x1, x15, csr_fail
 	csrrsi x15, 769, 0b10100
-	li x1, 0x40801104
+	li x1, EXP_MISA
 	bne x1, x15, csr_fail
 	csrrci x15, 769, 0b00101
-	li x1, 0x40801104
+	li x1, EXP_MISA
 	bne x1, x15, csr_fail
 	csrrci x15, 769, 0b11010
-	li x1, 0x40801104
+	li x1, EXP_MISA
 	bne x1, x15, csr_fail
 	csrrci x15, 769, 0b01001
-	li x1, 0x40801104
+	li x1, EXP_MISA
 	bne x1, x15, csr_fail
 	# mie
 	li x1, 0xa5a5a5a5
@@ -23690,66 +23696,66 @@ _start18:
 	# misa
 	li x15, 0xa5a5a5a5
 	csrrw x12, 769, x15
-	li x15, 0x40801104
+	li x15, EXP_MISA
 	bne x15, x12, csr_fail
 	li x15, 0x5a5a5a5a
 	csrrw x12, 769, x15
-	li x15, 0x40801104
+	li x15, EXP_MISA
 	bne x15, x12, csr_fail
 	li x15, 0x5925f427
 	csrrw x12, 769, x15
-	li x15, 0x40801104
+	li x15, EXP_MISA
 	bne x15, x12, csr_fail
 	li x15, 0xa5a5a5a5
 	csrrs x12, 769, x15
-	li x15, 0x40801104
+	li x15, EXP_MISA
 	bne x15, x12, csr_fail
 	li x15, 0x5a5a5a5a
 	csrrs x12, 769, x15
-	li x15, 0x40801104
+	li x15, EXP_MISA
 	bne x15, x12, csr_fail
 	li x15, 0xd672d6d6
 	csrrs x12, 769, x15
-	li x15, 0x40801104
+	li x15, EXP_MISA
 	bne x15, x12, csr_fail
 	li x15, 0xa5a5a5a5
 	csrrc x12, 769, x15
-	li x15, 0x40801104
+	li x15, EXP_MISA
 	bne x15, x12, csr_fail
 	li x15, 0x5a5a5a5a
 	csrrc x12, 769, x15
-	li x15, 0x40801104
+	li x15, EXP_MISA
 	bne x15, x12, csr_fail
 	li x15, 0x1c4a9673
 	csrrc x12, 769, x15
-	li x15, 0x40801104
+	li x15, EXP_MISA
 	bne x15, x12, csr_fail
 	csrrwi x12, 769, 0b00101
-	li x15, 0x40801104
+	li x15, EXP_MISA
 	bne x15, x12, csr_fail
 	csrrwi x12, 769, 0b11010
-	li x15, 0x40801104
+	li x15, EXP_MISA
 	bne x15, x12, csr_fail
 	csrrwi x12, 769, 0b00101
-	li x15, 0x40801104
+	li x15, EXP_MISA
 	bne x15, x12, csr_fail
 	csrrsi x12, 769, 0b00101
-	li x15, 0x40801104
+	li x15, EXP_MISA
 	bne x15, x12, csr_fail
 	csrrsi x12, 769, 0b11010
-	li x15, 0x40801104
+	li x15, EXP_MISA
 	bne x15, x12, csr_fail
 	csrrsi x12, 769, 0b00100
-	li x15, 0x40801104
+	li x15, EXP_MISA
 	bne x15, x12, csr_fail
 	csrrci x12, 769, 0b00101
-	li x15, 0x40801104
+	li x15, EXP_MISA
 	bne x15, x12, csr_fail
 	csrrci x12, 769, 0b11010
-	li x15, 0x40801104
+	li x15, EXP_MISA
 	bne x15, x12, csr_fail
 	csrrci x12, 769, 0b01110
-	li x15, 0x40801104
+	li x15, EXP_MISA
 	bne x15, x12, csr_fail
 	# mie
 	li x15, 0xa5a5a5a5
@@ -24987,66 +24993,66 @@ _start19:
 	# misa
 	li x2, 0xa5a5a5a5
 	csrrw x6, 769, x2
-	li x2, 0x40801104
+	li x2, EXP_MISA
 	bne x2, x6, csr_fail
 	li x2, 0x5a5a5a5a
 	csrrw x6, 769, x2
-	li x2, 0x40801104
+	li x2, EXP_MISA
 	bne x2, x6, csr_fail
 	li x2, 0x3f9e059e
 	csrrw x6, 769, x2
-	li x2, 0x40801104
+	li x2, EXP_MISA
 	bne x2, x6, csr_fail
 	li x2, 0xa5a5a5a5
 	csrrs x6, 769, x2
-	li x2, 0x40801104
+	li x2, EXP_MISA
 	bne x2, x6, csr_fail
 	li x2, 0x5a5a5a5a
 	csrrs x6, 769, x2
-	li x2, 0x40801104
+	li x2, EXP_MISA
 	bne x2, x6, csr_fail
 	li x2, 0x691d060c
 	csrrs x6, 769, x2
-	li x2, 0x40801104
+	li x2, EXP_MISA
 	bne x2, x6, csr_fail
 	li x2, 0xa5a5a5a5
 	csrrc x6, 769, x2
-	li x2, 0x40801104
+	li x2, EXP_MISA
 	bne x2, x6, csr_fail
 	li x2, 0x5a5a5a5a
 	csrrc x6, 769, x2
-	li x2, 0x40801104
+	li x2, EXP_MISA
 	bne x2, x6, csr_fail
 	li x2, 0xe458ff0a
 	csrrc x6, 769, x2
-	li x2, 0x40801104
+	li x2, EXP_MISA
 	bne x2, x6, csr_fail
 	csrrwi x6, 769, 0b00101
-	li x2, 0x40801104
+	li x2, EXP_MISA
 	bne x2, x6, csr_fail
 	csrrwi x6, 769, 0b11010
-	li x2, 0x40801104
+	li x2, EXP_MISA
 	bne x2, x6, csr_fail
 	csrrwi x6, 769, 0b10011
-	li x2, 0x40801104
+	li x2, EXP_MISA
 	bne x2, x6, csr_fail
 	csrrsi x6, 769, 0b00101
-	li x2, 0x40801104
+	li x2, EXP_MISA
 	bne x2, x6, csr_fail
 	csrrsi x6, 769, 0b11010
-	li x2, 0x40801104
+	li x2, EXP_MISA
 	bne x2, x6, csr_fail
 	csrrsi x6, 769, 0b11001
-	li x2, 0x40801104
+	li x2, EXP_MISA
 	bne x2, x6, csr_fail
 	csrrci x6, 769, 0b00101
-	li x2, 0x40801104
+	li x2, EXP_MISA
 	bne x2, x6, csr_fail
 	csrrci x6, 769, 0b11010
-	li x2, 0x40801104
+	li x2, EXP_MISA
 	bne x2, x6, csr_fail
 	csrrci x6, 769, 0b01111
-	li x2, 0x40801104
+	li x2, EXP_MISA
 	bne x2, x6, csr_fail
 	# mie
 	li x2, 0xa5a5a5a5
@@ -26284,66 +26290,66 @@ _start20:
 	# misa
 	li x10, 0xa5a5a5a5
 	csrrw x12, 769, x10
-	li x10, 0x40801104
+	li x10, EXP_MISA
 	bne x10, x12, csr_fail
 	li x10, 0x5a5a5a5a
 	csrrw x12, 769, x10
-	li x10, 0x40801104
+	li x10, EXP_MISA
 	bne x10, x12, csr_fail
 	li x10, 0xb24d9293
 	csrrw x12, 769, x10
-	li x10, 0x40801104
+	li x10, EXP_MISA
 	bne x10, x12, csr_fail
 	li x10, 0xa5a5a5a5
 	csrrs x12, 769, x10
-	li x10, 0x40801104
+	li x10, EXP_MISA
 	bne x10, x12, csr_fail
 	li x10, 0x5a5a5a5a
 	csrrs x12, 769, x10
-	li x10, 0x40801104
+	li x10, EXP_MISA
 	bne x10, x12, csr_fail
 	li x10, 0x51d96c5d
 	csrrs x12, 769, x10
-	li x10, 0x40801104
+	li x10, EXP_MISA
 	bne x10, x12, csr_fail
 	li x10, 0xa5a5a5a5
 	csrrc x12, 769, x10
-	li x10, 0x40801104
+	li x10, EXP_MISA
 	bne x10, x12, csr_fail
 	li x10, 0x5a5a5a5a
 	csrrc x12, 769, x10
-	li x10, 0x40801104
+	li x10, EXP_MISA
 	bne x10, x12, csr_fail
 	li x10, 0x59b564cf
 	csrrc x12, 769, x10
-	li x10, 0x40801104
+	li x10, EXP_MISA
 	bne x10, x12, csr_fail
 	csrrwi x12, 769, 0b00101
-	li x10, 0x40801104
+	li x10, EXP_MISA
 	bne x10, x12, csr_fail
 	csrrwi x12, 769, 0b11010
-	li x10, 0x40801104
+	li x10, EXP_MISA
 	bne x10, x12, csr_fail
 	csrrwi x12, 769, 0b01001
-	li x10, 0x40801104
+	li x10, EXP_MISA
 	bne x10, x12, csr_fail
 	csrrsi x12, 769, 0b00101
-	li x10, 0x40801104
+	li x10, EXP_MISA
 	bne x10, x12, csr_fail
 	csrrsi x12, 769, 0b11010
-	li x10, 0x40801104
+	li x10, EXP_MISA
 	bne x10, x12, csr_fail
 	csrrsi x12, 769, 0b11011
-	li x10, 0x40801104
+	li x10, EXP_MISA
 	bne x10, x12, csr_fail
 	csrrci x12, 769, 0b00101
-	li x10, 0x40801104
+	li x10, EXP_MISA
 	bne x10, x12, csr_fail
 	csrrci x12, 769, 0b11010
-	li x10, 0x40801104
+	li x10, EXP_MISA
 	bne x10, x12, csr_fail
 	csrrci x12, 769, 0b00111
-	li x10, 0x40801104
+	li x10, EXP_MISA
 	bne x10, x12, csr_fail
 	# mie
 	li x10, 0xa5a5a5a5
@@ -27581,66 +27587,66 @@ _start21:
 	# misa
 	li x2, 0xa5a5a5a5
 	csrrw x5, 769, x2
-	li x2, 0x40801104
+	li x2, EXP_MISA
 	bne x2, x5, csr_fail
 	li x2, 0x5a5a5a5a
 	csrrw x5, 769, x2
-	li x2, 0x40801104
+	li x2, EXP_MISA
 	bne x2, x5, csr_fail
 	li x2, 0x18154ec1
 	csrrw x5, 769, x2
-	li x2, 0x40801104
+	li x2, EXP_MISA
 	bne x2, x5, csr_fail
 	li x2, 0xa5a5a5a5
 	csrrs x5, 769, x2
-	li x2, 0x40801104
+	li x2, EXP_MISA
 	bne x2, x5, csr_fail
 	li x2, 0x5a5a5a5a
 	csrrs x5, 769, x2
-	li x2, 0x40801104
+	li x2, EXP_MISA
 	bne x2, x5, csr_fail
 	li x2, 0x1cc2958c
 	csrrs x5, 769, x2
-	li x2, 0x40801104
+	li x2, EXP_MISA
 	bne x2, x5, csr_fail
 	li x2, 0xa5a5a5a5
 	csrrc x5, 769, x2
-	li x2, 0x40801104
+	li x2, EXP_MISA
 	bne x2, x5, csr_fail
 	li x2, 0x5a5a5a5a
 	csrrc x5, 769, x2
-	li x2, 0x40801104
+	li x2, EXP_MISA
 	bne x2, x5, csr_fail
 	li x2, 0x880f0978
 	csrrc x5, 769, x2
-	li x2, 0x40801104
+	li x2, EXP_MISA
 	bne x2, x5, csr_fail
 	csrrwi x5, 769, 0b00101
-	li x2, 0x40801104
+	li x2, EXP_MISA
 	bne x2, x5, csr_fail
 	csrrwi x5, 769, 0b11010
-	li x2, 0x40801104
+	li x2, EXP_MISA
 	bne x2, x5, csr_fail
 	csrrwi x5, 769, 0b10100
-	li x2, 0x40801104
+	li x2, EXP_MISA
 	bne x2, x5, csr_fail
 	csrrsi x5, 769, 0b00101
-	li x2, 0x40801104
+	li x2, EXP_MISA
 	bne x2, x5, csr_fail
 	csrrsi x5, 769, 0b11010
-	li x2, 0x40801104
+	li x2, EXP_MISA
 	bne x2, x5, csr_fail
 	csrrsi x5, 769, 0b00100
-	li x2, 0x40801104
+	li x2, EXP_MISA
 	bne x2, x5, csr_fail
 	csrrci x5, 769, 0b00101
-	li x2, 0x40801104
+	li x2, EXP_MISA
 	bne x2, x5, csr_fail
 	csrrci x5, 769, 0b11010
-	li x2, 0x40801104
+	li x2, EXP_MISA
 	bne x2, x5, csr_fail
 	csrrci x5, 769, 0b00100
-	li x2, 0x40801104
+	li x2, EXP_MISA
 	bne x2, x5, csr_fail
 	# mie
 	li x2, 0xa5a5a5a5
@@ -28878,66 +28884,66 @@ _start22:
 	# misa
 	li x9, 0xa5a5a5a5
 	csrrw x3, 769, x9
-	li x9, 0x40801104
+	li x9, EXP_MISA
 	bne x9, x3, csr_fail
 	li x9, 0x5a5a5a5a
 	csrrw x3, 769, x9
-	li x9, 0x40801104
+	li x9, EXP_MISA
 	bne x9, x3, csr_fail
 	li x9, 0x6f3337dd
 	csrrw x3, 769, x9
-	li x9, 0x40801104
+	li x9, EXP_MISA
 	bne x9, x3, csr_fail
 	li x9, 0xa5a5a5a5
 	csrrs x3, 769, x9
-	li x9, 0x40801104
+	li x9, EXP_MISA
 	bne x9, x3, csr_fail
 	li x9, 0x5a5a5a5a
 	csrrs x3, 769, x9
-	li x9, 0x40801104
+	li x9, EXP_MISA
 	bne x9, x3, csr_fail
 	li x9, 0x6f402148
 	csrrs x3, 769, x9
-	li x9, 0x40801104
+	li x9, EXP_MISA
 	bne x9, x3, csr_fail
 	li x9, 0xa5a5a5a5
 	csrrc x3, 769, x9
-	li x9, 0x40801104
+	li x9, EXP_MISA
 	bne x9, x3, csr_fail
 	li x9, 0x5a5a5a5a
 	csrrc x3, 769, x9
-	li x9, 0x40801104
+	li x9, EXP_MISA
 	bne x9, x3, csr_fail
 	li x9, 0xe0f3dab6
 	csrrc x3, 769, x9
-	li x9, 0x40801104
+	li x9, EXP_MISA
 	bne x9, x3, csr_fail
 	csrrwi x3, 769, 0b00101
-	li x9, 0x40801104
+	li x9, EXP_MISA
 	bne x9, x3, csr_fail
 	csrrwi x3, 769, 0b11010
-	li x9, 0x40801104
+	li x9, EXP_MISA
 	bne x9, x3, csr_fail
 	csrrwi x3, 769, 0b11100
-	li x9, 0x40801104
+	li x9, EXP_MISA
 	bne x9, x3, csr_fail
 	csrrsi x3, 769, 0b00101
-	li x9, 0x40801104
+	li x9, EXP_MISA
 	bne x9, x3, csr_fail
 	csrrsi x3, 769, 0b11010
-	li x9, 0x40801104
+	li x9, EXP_MISA
 	bne x9, x3, csr_fail
 	csrrsi x3, 769, 0b11101
-	li x9, 0x40801104
+	li x9, EXP_MISA
 	bne x9, x3, csr_fail
 	csrrci x3, 769, 0b00101
-	li x9, 0x40801104
+	li x9, EXP_MISA
 	bne x9, x3, csr_fail
 	csrrci x3, 769, 0b11010
-	li x9, 0x40801104
+	li x9, EXP_MISA
 	bne x9, x3, csr_fail
 	csrrci x3, 769, 0b00111
-	li x9, 0x40801104
+	li x9, EXP_MISA
 	bne x9, x3, csr_fail
 	# mie
 	li x9, 0xa5a5a5a5
@@ -30175,66 +30181,66 @@ _start23:
 	# misa
 	li x5, 0xa5a5a5a5
 	csrrw x4, 769, x5
-	li x5, 0x40801104
+	li x5, EXP_MISA
 	bne x5, x4, csr_fail
 	li x5, 0x5a5a5a5a
 	csrrw x4, 769, x5
-	li x5, 0x40801104
+	li x5, EXP_MISA
 	bne x5, x4, csr_fail
 	li x5, 0x99c161c5
 	csrrw x4, 769, x5
-	li x5, 0x40801104
+	li x5, EXP_MISA
 	bne x5, x4, csr_fail
 	li x5, 0xa5a5a5a5
 	csrrs x4, 769, x5
-	li x5, 0x40801104
+	li x5, EXP_MISA
 	bne x5, x4, csr_fail
 	li x5, 0x5a5a5a5a
 	csrrs x4, 769, x5
-	li x5, 0x40801104
+	li x5, EXP_MISA
 	bne x5, x4, csr_fail
 	li x5, 0x29a6c102
 	csrrs x4, 769, x5
-	li x5, 0x40801104
+	li x5, EXP_MISA
 	bne x5, x4, csr_fail
 	li x5, 0xa5a5a5a5
 	csrrc x4, 769, x5
-	li x5, 0x40801104
+	li x5, EXP_MISA
 	bne x5, x4, csr_fail
 	li x5, 0x5a5a5a5a
 	csrrc x4, 769, x5
-	li x5, 0x40801104
+	li x5, EXP_MISA
 	bne x5, x4, csr_fail
 	li x5, 0x4aeeb678
 	csrrc x4, 769, x5
-	li x5, 0x40801104
+	li x5, EXP_MISA
 	bne x5, x4, csr_fail
 	csrrwi x4, 769, 0b00101
-	li x5, 0x40801104
+	li x5, EXP_MISA
 	bne x5, x4, csr_fail
 	csrrwi x4, 769, 0b11010
-	li x5, 0x40801104
+	li x5, EXP_MISA
 	bne x5, x4, csr_fail
 	csrrwi x4, 769, 0b10000
-	li x5, 0x40801104
+	li x5, EXP_MISA
 	bne x5, x4, csr_fail
 	csrrsi x4, 769, 0b00101
-	li x5, 0x40801104
+	li x5, EXP_MISA
 	bne x5, x4, csr_fail
 	csrrsi x4, 769, 0b11010
-	li x5, 0x40801104
+	li x5, EXP_MISA
 	bne x5, x4, csr_fail
 	csrrsi x4, 769, 0b01111
-	li x5, 0x40801104
+	li x5, EXP_MISA
 	bne x5, x4, csr_fail
 	csrrci x4, 769, 0b00101
-	li x5, 0x40801104
+	li x5, EXP_MISA
 	bne x5, x4, csr_fail
 	csrrci x4, 769, 0b11010
-	li x5, 0x40801104
+	li x5, EXP_MISA
 	bne x5, x4, csr_fail
 	csrrci x4, 769, 0b11110
-	li x5, 0x40801104
+	li x5, EXP_MISA
 	bne x5, x4, csr_fail
 	# mie
 	li x5, 0xa5a5a5a5
@@ -31472,66 +31478,66 @@ _start24:
 	# misa
 	li x7, 0xa5a5a5a5
 	csrrw x15, 769, x7
-	li x7, 0x40801104
+	li x7, EXP_MISA
 	bne x7, x15, csr_fail
 	li x7, 0x5a5a5a5a
 	csrrw x15, 769, x7
-	li x7, 0x40801104
+	li x7, EXP_MISA
 	bne x7, x15, csr_fail
 	li x7, 0xdefbba75
 	csrrw x15, 769, x7
-	li x7, 0x40801104
+	li x7, EXP_MISA
 	bne x7, x15, csr_fail
 	li x7, 0xa5a5a5a5
 	csrrs x15, 769, x7
-	li x7, 0x40801104
+	li x7, EXP_MISA
 	bne x7, x15, csr_fail
 	li x7, 0x5a5a5a5a
 	csrrs x15, 769, x7
-	li x7, 0x40801104
+	li x7, EXP_MISA
 	bne x7, x15, csr_fail
 	li x7, 0xec1ddb52
 	csrrs x15, 769, x7
-	li x7, 0x40801104
+	li x7, EXP_MISA
 	bne x7, x15, csr_fail
 	li x7, 0xa5a5a5a5
 	csrrc x15, 769, x7
-	li x7, 0x40801104
+	li x7, EXP_MISA
 	bne x7, x15, csr_fail
 	li x7, 0x5a5a5a5a
 	csrrc x15, 769, x7
-	li x7, 0x40801104
+	li x7, EXP_MISA
 	bne x7, x15, csr_fail
 	li x7, 0x3a42960d
 	csrrc x15, 769, x7
-	li x7, 0x40801104
+	li x7, EXP_MISA
 	bne x7, x15, csr_fail
 	csrrwi x15, 769, 0b00101
-	li x7, 0x40801104
+	li x7, EXP_MISA
 	bne x7, x15, csr_fail
 	csrrwi x15, 769, 0b11010
-	li x7, 0x40801104
+	li x7, EXP_MISA
 	bne x7, x15, csr_fail
 	csrrwi x15, 769, 0b10100
-	li x7, 0x40801104
+	li x7, EXP_MISA
 	bne x7, x15, csr_fail
 	csrrsi x15, 769, 0b00101
-	li x7, 0x40801104
+	li x7, EXP_MISA
 	bne x7, x15, csr_fail
 	csrrsi x15, 769, 0b11010
-	li x7, 0x40801104
+	li x7, EXP_MISA
 	bne x7, x15, csr_fail
 	csrrsi x15, 769, 0b11110
-	li x7, 0x40801104
+	li x7, EXP_MISA
 	bne x7, x15, csr_fail
 	csrrci x15, 769, 0b00101
-	li x7, 0x40801104
+	li x7, EXP_MISA
 	bne x7, x15, csr_fail
 	csrrci x15, 769, 0b11010
-	li x7, 0x40801104
+	li x7, EXP_MISA
 	bne x7, x15, csr_fail
 	csrrci x15, 769, 0b01010
-	li x7, 0x40801104
+	li x7, EXP_MISA
 	bne x7, x15, csr_fail
 	# mie
 	li x7, 0xa5a5a5a5
@@ -32769,66 +32775,66 @@ _start25:
 	# misa
 	li x7, 0xa5a5a5a5
 	csrrw x2, 769, x7
-	li x7, 0x40801104
+	li x7, EXP_MISA
 	bne x7, x2, csr_fail
 	li x7, 0x5a5a5a5a
 	csrrw x2, 769, x7
-	li x7, 0x40801104
+	li x7, EXP_MISA
 	bne x7, x2, csr_fail
 	li x7, 0x02cbc261
 	csrrw x2, 769, x7
-	li x7, 0x40801104
+	li x7, EXP_MISA
 	bne x7, x2, csr_fail
 	li x7, 0xa5a5a5a5
 	csrrs x2, 769, x7
-	li x7, 0x40801104
+	li x7, EXP_MISA
 	bne x7, x2, csr_fail
 	li x7, 0x5a5a5a5a
 	csrrs x2, 769, x7
-	li x7, 0x40801104
+	li x7, EXP_MISA
 	bne x7, x2, csr_fail
 	li x7, 0xca81cd94
 	csrrs x2, 769, x7
-	li x7, 0x40801104
+	li x7, EXP_MISA
 	bne x7, x2, csr_fail
 	li x7, 0xa5a5a5a5
 	csrrc x2, 769, x7
-	li x7, 0x40801104
+	li x7, EXP_MISA
 	bne x7, x2, csr_fail
 	li x7, 0x5a5a5a5a
 	csrrc x2, 769, x7
-	li x7, 0x40801104
+	li x7, EXP_MISA
 	bne x7, x2, csr_fail
 	li x7, 0xee8c1734
 	csrrc x2, 769, x7
-	li x7, 0x40801104
+	li x7, EXP_MISA
 	bne x7, x2, csr_fail
 	csrrwi x2, 769, 0b00101
-	li x7, 0x40801104
+	li x7, EXP_MISA
 	bne x7, x2, csr_fail
 	csrrwi x2, 769, 0b11010
-	li x7, 0x40801104
+	li x7, EXP_MISA
 	bne x7, x2, csr_fail
 	csrrwi x2, 769, 0b00111
-	li x7, 0x40801104
+	li x7, EXP_MISA
 	bne x7, x2, csr_fail
 	csrrsi x2, 769, 0b00101
-	li x7, 0x40801104
+	li x7, EXP_MISA
 	bne x7, x2, csr_fail
 	csrrsi x2, 769, 0b11010
-	li x7, 0x40801104
+	li x7, EXP_MISA
 	bne x7, x2, csr_fail
 	csrrsi x2, 769, 0b10100
-	li x7, 0x40801104
+	li x7, EXP_MISA
 	bne x7, x2, csr_fail
 	csrrci x2, 769, 0b00101
-	li x7, 0x40801104
+	li x7, EXP_MISA
 	bne x7, x2, csr_fail
 	csrrci x2, 769, 0b11010
-	li x7, 0x40801104
+	li x7, EXP_MISA
 	bne x7, x2, csr_fail
 	csrrci x2, 769, 0b01010
-	li x7, 0x40801104
+	li x7, EXP_MISA
 	bne x7, x2, csr_fail
 	# mie
 	li x7, 0xa5a5a5a5
@@ -34066,66 +34072,66 @@ _start26:
 	# misa
 	li x12, 0xa5a5a5a5
 	csrrw x15, 769, x12
-	li x12, 0x40801104
+	li x12, EXP_MISA
 	bne x12, x15, csr_fail
 	li x12, 0x5a5a5a5a
 	csrrw x15, 769, x12
-	li x12, 0x40801104
+	li x12, EXP_MISA
 	bne x12, x15, csr_fail
 	li x12, 0x67af56e5
 	csrrw x15, 769, x12
-	li x12, 0x40801104
+	li x12, EXP_MISA
 	bne x12, x15, csr_fail
 	li x12, 0xa5a5a5a5
 	csrrs x15, 769, x12
-	li x12, 0x40801104
+	li x12, EXP_MISA
 	bne x12, x15, csr_fail
 	li x12, 0x5a5a5a5a
 	csrrs x15, 769, x12
-	li x12, 0x40801104
+	li x12, EXP_MISA
 	bne x12, x15, csr_fail
 	li x12, 0xc659d97a
 	csrrs x15, 769, x12
-	li x12, 0x40801104
+	li x12, EXP_MISA
 	bne x12, x15, csr_fail
 	li x12, 0xa5a5a5a5
 	csrrc x15, 769, x12
-	li x12, 0x40801104
+	li x12, EXP_MISA
 	bne x12, x15, csr_fail
 	li x12, 0x5a5a5a5a
 	csrrc x15, 769, x12
-	li x12, 0x40801104
+	li x12, EXP_MISA
 	bne x12, x15, csr_fail
 	li x12, 0x29719705
 	csrrc x15, 769, x12
-	li x12, 0x40801104
+	li x12, EXP_MISA
 	bne x12, x15, csr_fail
 	csrrwi x15, 769, 0b00101
-	li x12, 0x40801104
+	li x12, EXP_MISA
 	bne x12, x15, csr_fail
 	csrrwi x15, 769, 0b11010
-	li x12, 0x40801104
+	li x12, EXP_MISA
 	bne x12, x15, csr_fail
 	csrrwi x15, 769, 0b00111
-	li x12, 0x40801104
+	li x12, EXP_MISA
 	bne x12, x15, csr_fail
 	csrrsi x15, 769, 0b00101
-	li x12, 0x40801104
+	li x12, EXP_MISA
 	bne x12, x15, csr_fail
 	csrrsi x15, 769, 0b11010
-	li x12, 0x40801104
+	li x12, EXP_MISA
 	bne x12, x15, csr_fail
 	csrrsi x15, 769, 0b00100
-	li x12, 0x40801104
+	li x12, EXP_MISA
 	bne x12, x15, csr_fail
 	csrrci x15, 769, 0b00101
-	li x12, 0x40801104
+	li x12, EXP_MISA
 	bne x12, x15, csr_fail
 	csrrci x15, 769, 0b11010
-	li x12, 0x40801104
+	li x12, EXP_MISA
 	bne x12, x15, csr_fail
 	csrrci x15, 769, 0b01001
-	li x12, 0x40801104
+	li x12, EXP_MISA
 	bne x12, x15, csr_fail
 	# mie
 	li x12, 0xa5a5a5a5
@@ -35363,66 +35369,66 @@ _start27:
 	# misa
 	li x4, 0xa5a5a5a5
 	csrrw x1, 769, x4
-	li x4, 0x40801104
+	li x4, EXP_MISA
 	bne x4, x1, csr_fail
 	li x4, 0x5a5a5a5a
 	csrrw x1, 769, x4
-	li x4, 0x40801104
+	li x4, EXP_MISA
 	bne x4, x1, csr_fail
 	li x4, 0xefae86ca
 	csrrw x1, 769, x4
-	li x4, 0x40801104
+	li x4, EXP_MISA
 	bne x4, x1, csr_fail
 	li x4, 0xa5a5a5a5
 	csrrs x1, 769, x4
-	li x4, 0x40801104
+	li x4, EXP_MISA
 	bne x4, x1, csr_fail
 	li x4, 0x5a5a5a5a
 	csrrs x1, 769, x4
-	li x4, 0x40801104
+	li x4, EXP_MISA
 	bne x4, x1, csr_fail
 	li x4, 0x7374a3e4
 	csrrs x1, 769, x4
-	li x4, 0x40801104
+	li x4, EXP_MISA
 	bne x4, x1, csr_fail
 	li x4, 0xa5a5a5a5
 	csrrc x1, 769, x4
-	li x4, 0x40801104
+	li x4, EXP_MISA
 	bne x4, x1, csr_fail
 	li x4, 0x5a5a5a5a
 	csrrc x1, 769, x4
-	li x4, 0x40801104
+	li x4, EXP_MISA
 	bne x4, x1, csr_fail
 	li x4, 0xb62b1e0b
 	csrrc x1, 769, x4
-	li x4, 0x40801104
+	li x4, EXP_MISA
 	bne x4, x1, csr_fail
 	csrrwi x1, 769, 0b00101
-	li x4, 0x40801104
+	li x4, EXP_MISA
 	bne x4, x1, csr_fail
 	csrrwi x1, 769, 0b11010
-	li x4, 0x40801104
+	li x4, EXP_MISA
 	bne x4, x1, csr_fail
 	csrrwi x1, 769, 0b11010
-	li x4, 0x40801104
+	li x4, EXP_MISA
 	bne x4, x1, csr_fail
 	csrrsi x1, 769, 0b00101
-	li x4, 0x40801104
+	li x4, EXP_MISA
 	bne x4, x1, csr_fail
 	csrrsi x1, 769, 0b11010
-	li x4, 0x40801104
+	li x4, EXP_MISA
 	bne x4, x1, csr_fail
 	csrrsi x1, 769, 0b00111
-	li x4, 0x40801104
+	li x4, EXP_MISA
 	bne x4, x1, csr_fail
 	csrrci x1, 769, 0b00101
-	li x4, 0x40801104
+	li x4, EXP_MISA
 	bne x4, x1, csr_fail
 	csrrci x1, 769, 0b11010
-	li x4, 0x40801104
+	li x4, EXP_MISA
 	bne x4, x1, csr_fail
 	csrrci x1, 769, 0b10110
-	li x4, 0x40801104
+	li x4, EXP_MISA
 	bne x4, x1, csr_fail
 	# mie
 	li x4, 0xa5a5a5a5
@@ -36660,66 +36666,66 @@ _start28:
 	# misa
 	li x8, 0xa5a5a5a5
 	csrrw x9, 769, x8
-	li x8, 0x40801104
+	li x8, EXP_MISA
 	bne x8, x9, csr_fail
 	li x8, 0x5a5a5a5a
 	csrrw x9, 769, x8
-	li x8, 0x40801104
+	li x8, EXP_MISA
 	bne x8, x9, csr_fail
 	li x8, 0x98fbc650
 	csrrw x9, 769, x8
-	li x8, 0x40801104
+	li x8, EXP_MISA
 	bne x8, x9, csr_fail
 	li x8, 0xa5a5a5a5
 	csrrs x9, 769, x8
-	li x8, 0x40801104
+	li x8, EXP_MISA
 	bne x8, x9, csr_fail
 	li x8, 0x5a5a5a5a
 	csrrs x9, 769, x8
-	li x8, 0x40801104
+	li x8, EXP_MISA
 	bne x8, x9, csr_fail
 	li x8, 0x242950e6
 	csrrs x9, 769, x8
-	li x8, 0x40801104
+	li x8, EXP_MISA
 	bne x8, x9, csr_fail
 	li x8, 0xa5a5a5a5
 	csrrc x9, 769, x8
-	li x8, 0x40801104
+	li x8, EXP_MISA
 	bne x8, x9, csr_fail
 	li x8, 0x5a5a5a5a
 	csrrc x9, 769, x8
-	li x8, 0x40801104
+	li x8, EXP_MISA
 	bne x8, x9, csr_fail
 	li x8, 0x5067f627
 	csrrc x9, 769, x8
-	li x8, 0x40801104
+	li x8, EXP_MISA
 	bne x8, x9, csr_fail
 	csrrwi x9, 769, 0b00101
-	li x8, 0x40801104
+	li x8, EXP_MISA
 	bne x8, x9, csr_fail
 	csrrwi x9, 769, 0b11010
-	li x8, 0x40801104
+	li x8, EXP_MISA
 	bne x8, x9, csr_fail
 	csrrwi x9, 769, 0b10111
-	li x8, 0x40801104
+	li x8, EXP_MISA
 	bne x8, x9, csr_fail
 	csrrsi x9, 769, 0b00101
-	li x8, 0x40801104
+	li x8, EXP_MISA
 	bne x8, x9, csr_fail
 	csrrsi x9, 769, 0b11010
-	li x8, 0x40801104
+	li x8, EXP_MISA
 	bne x8, x9, csr_fail
 	csrrsi x9, 769, 0b00011
-	li x8, 0x40801104
+	li x8, EXP_MISA
 	bne x8, x9, csr_fail
 	csrrci x9, 769, 0b00101
-	li x8, 0x40801104
+	li x8, EXP_MISA
 	bne x8, x9, csr_fail
 	csrrci x9, 769, 0b11010
-	li x8, 0x40801104
+	li x8, EXP_MISA
 	bne x8, x9, csr_fail
 	csrrci x9, 769, 0b00011
-	li x8, 0x40801104
+	li x8, EXP_MISA
 	bne x8, x9, csr_fail
 	# mie
 	li x8, 0xa5a5a5a5
@@ -37957,66 +37963,66 @@ _start29:
 	# misa
 	li x4, 0xa5a5a5a5
 	csrrw x6, 769, x4
-	li x4, 0x40801104
+	li x4, EXP_MISA
 	bne x4, x6, csr_fail
 	li x4, 0x5a5a5a5a
 	csrrw x6, 769, x4
-	li x4, 0x40801104
+	li x4, EXP_MISA
 	bne x4, x6, csr_fail
 	li x4, 0xbaa2c70b
 	csrrw x6, 769, x4
-	li x4, 0x40801104
+	li x4, EXP_MISA
 	bne x4, x6, csr_fail
 	li x4, 0xa5a5a5a5
 	csrrs x6, 769, x4
-	li x4, 0x40801104
+	li x4, EXP_MISA
 	bne x4, x6, csr_fail
 	li x4, 0x5a5a5a5a
 	csrrs x6, 769, x4
-	li x4, 0x40801104
+	li x4, EXP_MISA
 	bne x4, x6, csr_fail
 	li x4, 0xed26b809
 	csrrs x6, 769, x4
-	li x4, 0x40801104
+	li x4, EXP_MISA
 	bne x4, x6, csr_fail
 	li x4, 0xa5a5a5a5
 	csrrc x6, 769, x4
-	li x4, 0x40801104
+	li x4, EXP_MISA
 	bne x4, x6, csr_fail
 	li x4, 0x5a5a5a5a
 	csrrc x6, 769, x4
-	li x4, 0x40801104
+	li x4, EXP_MISA
 	bne x4, x6, csr_fail
 	li x4, 0x495e8fbc
 	csrrc x6, 769, x4
-	li x4, 0x40801104
+	li x4, EXP_MISA
 	bne x4, x6, csr_fail
 	csrrwi x6, 769, 0b00101
-	li x4, 0x40801104
+	li x4, EXP_MISA
 	bne x4, x6, csr_fail
 	csrrwi x6, 769, 0b11010
-	li x4, 0x40801104
+	li x4, EXP_MISA
 	bne x4, x6, csr_fail
 	csrrwi x6, 769, 0b10111
-	li x4, 0x40801104
+	li x4, EXP_MISA
 	bne x4, x6, csr_fail
 	csrrsi x6, 769, 0b00101
-	li x4, 0x40801104
+	li x4, EXP_MISA
 	bne x4, x6, csr_fail
 	csrrsi x6, 769, 0b11010
-	li x4, 0x40801104
+	li x4, EXP_MISA
 	bne x4, x6, csr_fail
 	csrrsi x6, 769, 0b01101
-	li x4, 0x40801104
+	li x4, EXP_MISA
 	bne x4, x6, csr_fail
 	csrrci x6, 769, 0b00101
-	li x4, 0x40801104
+	li x4, EXP_MISA
 	bne x4, x6, csr_fail
 	csrrci x6, 769, 0b11010
-	li x4, 0x40801104
+	li x4, EXP_MISA
 	bne x4, x6, csr_fail
 	csrrci x6, 769, 0b00100
-	li x4, 0x40801104
+	li x4, EXP_MISA
 	bne x4, x6, csr_fail
 	# mie
 	li x4, 0xa5a5a5a5
@@ -39254,66 +39260,66 @@ _start30:
 	# misa
 	li x4, 0xa5a5a5a5
 	csrrw x10, 769, x4
-	li x4, 0x40801104
+	li x4, EXP_MISA
 	bne x4, x10, csr_fail
 	li x4, 0x5a5a5a5a
 	csrrw x10, 769, x4
-	li x4, 0x40801104
+	li x4, EXP_MISA
 	bne x4, x10, csr_fail
 	li x4, 0xfc05e0ba
 	csrrw x10, 769, x4
-	li x4, 0x40801104
+	li x4, EXP_MISA
 	bne x4, x10, csr_fail
 	li x4, 0xa5a5a5a5
 	csrrs x10, 769, x4
-	li x4, 0x40801104
+	li x4, EXP_MISA
 	bne x4, x10, csr_fail
 	li x4, 0x5a5a5a5a
 	csrrs x10, 769, x4
-	li x4, 0x40801104
+	li x4, EXP_MISA
 	bne x4, x10, csr_fail
 	li x4, 0x22f978d8
 	csrrs x10, 769, x4
-	li x4, 0x40801104
+	li x4, EXP_MISA
 	bne x4, x10, csr_fail
 	li x4, 0xa5a5a5a5
 	csrrc x10, 769, x4
-	li x4, 0x40801104
+	li x4, EXP_MISA
 	bne x4, x10, csr_fail
 	li x4, 0x5a5a5a5a
 	csrrc x10, 769, x4
-	li x4, 0x40801104
+	li x4, EXP_MISA
 	bne x4, x10, csr_fail
 	li x4, 0x234602f7
 	csrrc x10, 769, x4
-	li x4, 0x40801104
+	li x4, EXP_MISA
 	bne x4, x10, csr_fail
 	csrrwi x10, 769, 0b00101
-	li x4, 0x40801104
+	li x4, EXP_MISA
 	bne x4, x10, csr_fail
 	csrrwi x10, 769, 0b11010
-	li x4, 0x40801104
+	li x4, EXP_MISA
 	bne x4, x10, csr_fail
 	csrrwi x10, 769, 0b11001
-	li x4, 0x40801104
+	li x4, EXP_MISA
 	bne x4, x10, csr_fail
 	csrrsi x10, 769, 0b00101
-	li x4, 0x40801104
+	li x4, EXP_MISA
 	bne x4, x10, csr_fail
 	csrrsi x10, 769, 0b11010
-	li x4, 0x40801104
+	li x4, EXP_MISA
 	bne x4, x10, csr_fail
 	csrrsi x10, 769, 0b10101
-	li x4, 0x40801104
+	li x4, EXP_MISA
 	bne x4, x10, csr_fail
 	csrrci x10, 769, 0b00101
-	li x4, 0x40801104
+	li x4, EXP_MISA
 	bne x4, x10, csr_fail
 	csrrci x10, 769, 0b11010
-	li x4, 0x40801104
+	li x4, EXP_MISA
 	bne x4, x10, csr_fail
 	csrrci x10, 769, 0b10110
-	li x4, 0x40801104
+	li x4, EXP_MISA
 	bne x4, x10, csr_fail
 	# mie
 	li x4, 0xa5a5a5a5
@@ -40551,66 +40557,66 @@ _start31:
 	# misa
 	li x8, 0xa5a5a5a5
 	csrrw x14, 769, x8
-	li x8, 0x40801104
+	li x8, EXP_MISA
 	bne x8, x14, csr_fail
 	li x8, 0x5a5a5a5a
 	csrrw x14, 769, x8
-	li x8, 0x40801104
+	li x8, EXP_MISA
 	bne x8, x14, csr_fail
 	li x8, 0x31f652b4
 	csrrw x14, 769, x8
-	li x8, 0x40801104
+	li x8, EXP_MISA
 	bne x8, x14, csr_fail
 	li x8, 0xa5a5a5a5
 	csrrs x14, 769, x8
-	li x8, 0x40801104
+	li x8, EXP_MISA
 	bne x8, x14, csr_fail
 	li x8, 0x5a5a5a5a
 	csrrs x14, 769, x8
-	li x8, 0x40801104
+	li x8, EXP_MISA
 	bne x8, x14, csr_fail
 	li x8, 0xc1f98bcd
 	csrrs x14, 769, x8
-	li x8, 0x40801104
+	li x8, EXP_MISA
 	bne x8, x14, csr_fail
 	li x8, 0xa5a5a5a5
 	csrrc x14, 769, x8
-	li x8, 0x40801104
+	li x8, EXP_MISA
 	bne x8, x14, csr_fail
 	li x8, 0x5a5a5a5a
 	csrrc x14, 769, x8
-	li x8, 0x40801104
+	li x8, EXP_MISA
 	bne x8, x14, csr_fail
 	li x8, 0x51e94d91
 	csrrc x14, 769, x8
-	li x8, 0x40801104
+	li x8, EXP_MISA
 	bne x8, x14, csr_fail
 	csrrwi x14, 769, 0b00101
-	li x8, 0x40801104
+	li x8, EXP_MISA
 	bne x8, x14, csr_fail
 	csrrwi x14, 769, 0b11010
-	li x8, 0x40801104
+	li x8, EXP_MISA
 	bne x8, x14, csr_fail
 	csrrwi x14, 769, 0b00001
-	li x8, 0x40801104
+	li x8, EXP_MISA
 	bne x8, x14, csr_fail
 	csrrsi x14, 769, 0b00101
-	li x8, 0x40801104
+	li x8, EXP_MISA
 	bne x8, x14, csr_fail
 	csrrsi x14, 769, 0b11010
-	li x8, 0x40801104
+	li x8, EXP_MISA
 	bne x8, x14, csr_fail
 	csrrsi x14, 769, 0b01110
-	li x8, 0x40801104
+	li x8, EXP_MISA
 	bne x8, x14, csr_fail
 	csrrci x14, 769, 0b00101
-	li x8, 0x40801104
+	li x8, EXP_MISA
 	bne x8, x14, csr_fail
 	csrrci x14, 769, 0b11010
-	li x8, 0x40801104
+	li x8, EXP_MISA
 	bne x8, x14, csr_fail
 	csrrci x14, 769, 0b10001
-	li x8, 0x40801104
+	li x8, EXP_MISA
 	bne x8, x14, csr_fail
 	# mie
 	li x8, 0xa5a5a5a5

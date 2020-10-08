@@ -55,9 +55,9 @@ int main(int argc, char *argv[])
 {
   int err_cnt = 0;
 
-  unsigned int event;
-  unsigned int count;
-  unsigned int minstret;
+  volatile unsigned int event;
+  volatile unsigned int count;
+  volatile unsigned int minstret;
 
 
   //////////////////////////////////////////////////////////////
@@ -91,9 +91,9 @@ int main(int argc, char *argv[])
   __asm__ volatile("csrwi 0xB02, 0x0");                         // minstret = 0
   __asm__ volatile("csrwi 0xB03, 0x0");                         // mhpmcounter3 = 0
   __asm__ volatile("csrwi 0x320, 0x0");                         // Enable counters
-  __asm__ volatile("auipc x4, 0x0\n\t\
-                    addi x4, x4, 12\n\t\
-                    jalr x0, x4, 0x0" \
+  __asm__ volatile("la x4, label2\n\t\
+                    jalr x0, x4, 0x0\n\t\
+                    label2: " \
                     : : : "x4");
   __asm__ volatile("csrwi 0x320, 0x1F");                        // Inhibit mcycle, minstret, mhpmcounter3-4
   __asm__ volatile("csrr %0, 0xB02" : "=r"(minstret));          // minstret

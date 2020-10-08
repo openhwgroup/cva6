@@ -36,8 +36,8 @@
     {
         "name": "{{test_name}}" ,
         "build": "{{t.build}}",
-        "cmd": "cd {{t.dir}}; {{t.cmd}} SIMULATOR={{t.simulator}} USE_ISS={{regress_macros.yesorno(t.iss)}} RNDSEED=<seed> {{common_dsim_make_vars}}",
-        "wavesCmd": "cd {{t.dir}}; {{t.cmd}} SIMULATOR={{t.simulator}} USE_ISS={{regress_macros.yesorno(t.iss)}} RNDSEED=<seed> {{common_dsim_make_vars_waves}}",
+        "cmd": "cd {{t.dir}}; {{t.cmd}} SIMULATOR={{t.simulator}} USE_ISS={{regress_macros.yesorno(t.iss)}} RNDSEED=<seed> {{common_dsim_make_vars}} {{makeargs}}",
+        "wavesCmd": "cd {{t.dir}}; {{t.cmd}} SIMULATOR={{t.simulator}} USE_ISS={{regress_macros.yesorno(t.iss)}} RNDSEED=<seed> {{common_dsim_make_vars_waves}} {{makeargs}}",
         "metricsFile": "{{t.name}}{{test_suffix}}/metrics.db",
         "wavesFile": "{{t.name}}{{test_suffix}}/{{t.name}}{{test_suffix}}.vcd",
         "seed" : "random",

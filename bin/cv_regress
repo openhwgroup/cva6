@@ -127,6 +127,8 @@ def read_file(args, file):
     # Construct a proper regression object
     regression = cv_regression.Regression(name=testlist['name'],
                                           description=testlist['description'])
+
+    # Create build objects
     for k in testlist['builds']:
         b = testlist['builds'][k]    
         build = cv_regression.Build(name=k, simulator=args.simulator, **b)
@@ -136,6 +138,7 @@ def read_file(args, file):
             build.sub_make(args.make)
         regression.add_build(build)
 
+    # Create test objects
     for k in testlist['tests']:
         t = testlist['tests'][k]
         
@@ -152,6 +155,8 @@ def read_file(args, file):
 
         check_valid_test(args.project, test.name)        
         test.indexed = is_test_indexed(args.project, test.name)
+        if test.indexed and test.num > 1 and args.num:
+            test.num = int(args.num)
 
         regression.add_test(test)
 
@@ -174,6 +179,7 @@ parser.add_argument('-d', '--debug', help='Emit debug messages from logger', act
 parser.add_argument('-s', '--simulator', help='Select simulator', choices=VALID_SIMULATORS, default=DEFAULT_SIMULATOR)
 parser.add_argument('-c', '--cov', help='Enable coverage', action='store_true')
 parser.add_argument('-m', '--metrics', help='Select Metrics waves output', action='store_true')
+parser.add_argument('-n', '--num', help='Force number of iterations for tests with multiple iteration')
 parser.add_argument('--lsf', help='If applicable for output format, set LSF args to dispatch jobs')
 parser.add_argument('--make', help='Substitute for make command (to use short-cuts)')
 parser.add_argument('--makearg', action='append', help='Arguments to supply to each make command, can be specified multiple times')
