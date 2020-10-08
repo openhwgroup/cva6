@@ -46,7 +46,7 @@ class uvml_logs_mon_trn_logger_c#(
    string        cli_args_result = "";
    string        fpath           = "";
    string        name            = "";
-   
+   string        agent_name      = "";
    
    `uvm_component_param_utils_begin(uvml_logs_mon_trn_logger_c#(T_TRN, T_CFG, T_CNTXT))
       `uvm_field_object(cfg  , UVM_DEFAULT)
@@ -139,16 +139,18 @@ function void uvml_logs_mon_trn_logger_c::end_of_elaboration_phase(uvm_phase pha
    
    // Assemble final path
    if (name == "") begin
-     fpath = {cli_args_result, "/", sub_dir, "/", parent.get_full_name(), ".trn.", fextension};
+     fpath = {parent.get_full_name(), ".trn.", fextension};
    end
    else begin
-     fpath = {cli_args_result, "/", sub_dir, "/", parent.get_full_name(), name, ".trn.", fextension};
+     fpath = {parent.get_full_name(), name, ".trn.", fextension};
    end
    
    // Opem file handle and check 
    fhandle       = $fopen(fpath, "w");
    fhandle_valid = (fhandle != 0);
    
+   agent_name = this.get_parent().get_name();
+
    print_header();
    
 endfunction : end_of_elaboration_phase

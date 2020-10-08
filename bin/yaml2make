@@ -95,6 +95,9 @@ def read_file(test, type, run_index):
             logger.fatal('-> : {}'.format(matches[0]))
             os.sys.exit(2)
 
+    if not 'program' in test_spec:
+        test_spec['program'] = test_spec['name']
+        
     # Debug the YAML parsing
     pp = pprint.PrettyPrinter()
     logger.debug('Read YAML:')

@@ -26,6 +26,7 @@
 // Agents
 -f ${DV_UVMA_CLKNRST_PATH}/uvma_clknrst_pkg.flist
 -f ${DV_UVMA_INTERRUPT_PATH}/uvma_interrupt_pkg.flist
+-f ${DV_UVMA_OBI_PATH}/uvma_obi_pkg.flist
 //-f ${DV_UVMA_RESET_PATH}/uvma_reset_pkg.flist
 -f ${DV_UVMA_DEBUG_PATH}/uvma_debug_pkg.flist
 
@@ -53,7 +54,8 @@ ${TBSRC_HOME}/uvmt_cv32/uvmt_cv32_tb.sv
 ${TBSRC_HOME}/uvmt_cv32/uvmt_cv32_dut_wrap.sv
 ${TBSRC_HOME}/core/mm_ram.sv
 ${TBSRC_HOME}/core/dp_ram.sv
-${TBSRC_HOME}/core/tb_riscv/riscv_random_stall.sv
+${TBSRC_HOME}/core/tb_riscv/riscv_gnt_stall.sv
+${TBSRC_HOME}/core/tb_riscv/riscv_rvalid_stall.sv
 ${TBSRC_HOME}/core/tb_riscv/riscv_random_interrupt_generator.sv
 
 // FIXME:STR:Find a better location
