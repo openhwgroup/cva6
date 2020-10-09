@@ -571,7 +571,7 @@ class uvme_rv32isa_covg extends uvm_component;
         cp_rd    : coverpoint get_gpr_name(ins.ops[0].val, ins.ops[0].key, "jal") {
             bins gprval[] = {[zero:t6]};
         }
-        cp_jmp19   : coverpoint get_pc_imm(ins.ops[1].val,ins.pc,"jal") {
+        cp_jmp19   : coverpoint get_pc_imm(ins.ops[1].val, ins.pc,"jal") {
             bins neg  = {[$:-1]};
             bins pos  = {[1:$]};
         }
@@ -585,10 +585,10 @@ class uvme_rv32isa_covg extends uvm_component;
         cp_rd    : coverpoint get_gpr_name(ins.ops[0].val, ins.ops[0].key, "jalr") {
             bins gprval[] = {[zero:t6]};
         }
-        cp_rs1   : coverpoint get_gpr_name(ins.ops[1].val, ins.ops[1].key, "jalr") {
+        cp_rs1   : coverpoint get_gpr_name(ins.ops[2].val, ins.ops[2].key, "jalr") {
             bins gprval[] = {[zero:t6]};
         }        
-        cp_imm   : coverpoint get_imm(ins.ops[2].val, "jalr") {
+        cp_offset: coverpoint get_pc_imm(ins.ops[1].val, ins.pc, "jalr") {
             bins neg  = {[$:-1]};
             bins zero = {0};
             bins pos  = {[1:$]};
@@ -1851,12 +1851,15 @@ class uvme_rv32isa_covg extends uvm_component;
                 "fence.i"   : begin ins.asm=FENCE_I;fence_i_cg.sample(ins);  end
                 "jal"       : begin ins.asm=JAL;    jal_cg.sample(ins);    end
                 "jalr"      : begin
+                    `uvm_info("RV32ISA Functional Coverage", $sformatf("jalr_cg: ins.ops[0].val = %0s, ins.ops[1].val = %0s, ins.ops[2].val = %0s",
+                                                                       ins.ops[0].val, ins.ops[1].val, ins.ops[2].val), UVM_DEBUG)
                     // If operand1 is a consant (C) then assume operand1 is r0
                     // and move the constant to operand2 to maintain consistent cg interface
-                    if (ins.ops[1].key[0]) begin
-                        ins.ops[2] = ins.ops[1];
-                        ins.ops[1].key = "R:"; ins.ops[0].val = "zero";
-                    end
+                    //if (ins.ops[1].key[0]) begin
+                    //    `uvm_info("RV32ISA Functional Coverage", $sformatf("jalr_cg: ins.ops[1].key[0] = %0s", ins.ops[1].key[0]), UVM_DEBUG)
+                    //    ins.ops[2] = ins.ops[1];
+                    //    ins.ops[1].key = "R:"; ins.ops[0].val = "zero";
+                    //end
                     jalr_cg.sample(ins);
                 end
                 "lb"        : begin ins.asm=LB;     lb_cg.sample(ins);     end
