@@ -68,6 +68,5 @@ modified.
 The following environment variables have to be modified before executing
 test script.
 
-- `CVA6_PATCH`: `../cva6/cva6-32bit.patch`
 - `DV_TARGET`: `rv32ima` as C, F, D extensions are not yet supported
 
