@@ -263,11 +263,11 @@ class uvme_rv32isa_covg extends uvm_component;
             val = s.atohex ();
         end else if (s[0] == "-") begin
             s = s.substr(1,s.len()-1);
-            val = 0 - s.atoi();
+            val = 0 - s.atohex();
         end else begin
-            val = s.atoi();
+            val = s.atohex();
         end
-        `uvm_info("RV32ISA Coverage", $sformatf("get_imm: Convert %s (%s) to %0d", s, asm, val), UVM_DEBUG)
+        `uvm_info("RV32ISA Coverage", $sformatf("get_imm: Convert %s (%s) to 0x%0x (%0d)", s, asm, val, val), UVM_DEBUG)
         return val;
     endfunction
 
@@ -386,9 +386,6 @@ class uvme_rv32isa_covg extends uvm_component;
         }
     endgroup
 
-// TODO : missing check of arbitrary positive and negative immediate values
-// TODO : missing check of maximum positive and negative immediate values
-// FIXME: DONE
     covergroup beq_cg with function sample(ins_t ins);
         option.per_instance = 1;
         cp_rs1    : coverpoint get_gpr_name(ins.ops[0].val, ins.ops[0].key, "beq") {
@@ -397,45 +394,36 @@ class uvme_rv32isa_covg extends uvm_component;
         cp_rs2    : coverpoint get_gpr_name(ins.ops[1].val, ins.ops[1].key, "beq") {
             bins gprval[] = {[zero:t6]};
         }
-        cp_offset : coverpoint get_imm(ins.ops[2].val,"beq" ) {
-            //bins neg  = {[$:-1]};
-            //bins pos  = {[1:$]};
-            bins neg  = {[12'h800:12'hFFF]};
-            bins pos  = {[12'h000:12'h7FF]};
+        cp_offset : coverpoint get_pc_imm(ins.ops[2].val, ins.pc, "beq" ) {
+            bins neg  = {[$:-1]};
+            bins pos  = {[1:$]};
+            //bins neg  = {[12'h800:12'hFFF]};
+            //bins pos  = {[12'h000:12'h7FF]};
         }
     endgroup
 
-// TODO : missing check of arbitrary positive and negative immediate values
-// TODO : missing check of maximum positive and negative immediate values
-// FIXME: DONE
     covergroup c_beqz_cg with function sample(ins_t ins);
         option.per_instance = 1;
         cp_rs1    : coverpoint get_gpr_name(ins.ops[0].val, ins.ops[0].key, "c.beqz") {            
             bins gprval[] = {[s0:a5]};
         }
-        cp_bra12   : coverpoint get_imm(ins.ops[1].val,"c.beqz" ) {
+        cp_offset : coverpoint get_pc_imm(ins.ops[1].val, ins.pc, "c.beqz" ) {
             bins neg  = {[$:-1]};
             bins pos  = {[1:$]};
         }
     endgroup
 
-// TODO : missing check of arbitrary positive and negative immediate values
-// TODO : missing check of maximum positive and negative immediate values
-// FIXME: DONE
     covergroup c_bnez_cg with function sample(ins_t ins);
         option.per_instance = 1;
         cp_rs1    : coverpoint get_gpr_name(ins.ops[0].val, ins.ops[0].key, "c.bnez") {
             bins gprval[] = {[s0:a5]};
         }
-        cp_bra12   : coverpoint get_imm(ins.ops[1].val,"c.bnez" ) {
+        cp_offset : coverpoint get_pc_imm(ins.ops[1].val, ins.pc, "c.bnez" ) {
             bins neg  = {[$:-1]};      
             bins pos  = {[1:$]};
         }
     endgroup
 
-// TODO : missing check of arbitrary positive and negative immediate values
-// TODO : missing check of maximum positive and negative immediate values
-// FIXME: DONE
     covergroup bge_cg with function sample(ins_t ins);
         option.per_instance = 1;
         cp_rs1    : coverpoint get_gpr_name(ins.ops[0].val, ins.ops[0].key, "bge") {
@@ -444,14 +432,12 @@ class uvme_rv32isa_covg extends uvm_component;
         cp_rs2    : coverpoint get_gpr_name(ins.ops[1].val, ins.ops[1].key, "bge") {
             bins gprval[] = {[zero:t6]};
         }
-        cp_bra12   : coverpoint get_imm(ins.ops[2].val,"bge" ) {
+        cp_offset : coverpoint get_pc_imm(ins.ops[2].val, ins.pc, "bge" ) {
             bins neg  = {[$:-1]};            
             bins pos  = {[1:$]};
         }
     endgroup
 
-// TODO : missing check of maximum immediate value
-// FIXME: DONE
     covergroup bgeu_cg with function sample(ins_t ins);
         option.per_instance = 1;
         cp_rs1    : coverpoint get_gpr_name(ins.ops[0].val, ins.ops[0].key, "bgeu") {
@@ -460,15 +446,12 @@ class uvme_rv32isa_covg extends uvm_component;
         cp_rs2    : coverpoint get_gpr_name(ins.ops[1].val, ins.ops[1].key, "bgeu") {
             bins gprval[] = {[zero:t6]};
         }
-        cp_bra12   : coverpoint get_imm(ins.ops[2].val,"bgeu" ) {
+        cp_offset : coverpoint get_pc_imm(ins.ops[2].val, ins.pc, "bgeu" ) {
             bins neg  = {[$:-1]};
             bins pos  = {[1:$]};
         }
     endgroup
 
-// TODO : missing check of arbirary positive and negative immediate values
-// TODO : missing check of maximum positive and negative immediate values
-// FIXME: DONE
     covergroup blt_cg with function sample(ins_t ins);
         option.per_instance = 1;
         cp_rs1    : coverpoint get_gpr_name(ins.ops[0].val, ins.ops[0].key, "blt") {
@@ -477,14 +460,12 @@ class uvme_rv32isa_covg extends uvm_component;
         cp_rs2    : coverpoint get_gpr_name(ins.ops[1].val, ins.ops[1].key, "blt") {
             bins gprval[] = {[zero:t6]};
         }
-        cp_bra12   : coverpoint get_imm(ins.ops[2].val,"blt" ) {
+        cp_offset : coverpoint get_pc_imm(ins.ops[2].val, ins.pc, "blt" ) {
             bins neg  = {[$:-1]};
             bins pos  = {[1:$]};
         }
     endgroup
 
-// TODO : missing check of maximum of immediate value
-// FIXME: DONE
     covergroup bltu_cg with function sample(ins_t ins);
         option.per_instance = 1;
         cp_rs1    : coverpoint get_gpr_name(ins.ops[0].val, ins.ops[0].key, "bltu") {
@@ -493,15 +474,12 @@ class uvme_rv32isa_covg extends uvm_component;
         cp_rs2    : coverpoint get_gpr_name(ins.ops[1].val, ins.ops[1].key, "bltu") {
             bins gprval[] = {[zero:t6]};
         }
-        cp_bra12   : coverpoint get_imm(ins.ops[2].val,"bltu" ) {
+        cp_offset : coverpoint get_pc_imm(ins.ops[2].val, ins.pc, "bltu" ) {
             bins neg  = {[$:-1]};
             bins pos  = {[1:$]};
         }
     endgroup
 
-// TODO : missing check of arbirary positive and negative immediate values
-// TODO : missing check of maximum positive and negative immediate values
-// FIXME: DONE
     covergroup bne_cg with function sample(ins_t ins);
         option.per_instance = 1;
         cp_rs1    : coverpoint get_gpr_name(ins.ops[0].val, ins.ops[0].key, "bne") {
@@ -510,7 +488,7 @@ class uvme_rv32isa_covg extends uvm_component;
         cp_rs2    : coverpoint get_gpr_name(ins.ops[1].val, ins.ops[1].key, "bne") {
             bins gprval[] = {[zero:t6]};
         }
-        cp_bra12   : coverpoint get_imm(ins.ops[2].val,"bne" ) {
+        cp_offset : coverpoint get_pc_imm(ins.ops[2].val, ins.pc, "bne" ) {
             bins neg  = {[$:-1]};            
             bins pos  = {[1:$]};
         }
@@ -1856,7 +1834,12 @@ class uvme_rv32isa_covg extends uvm_component;
                 "and"       : begin ins.asm=AND;    and_cg.sample(ins);    end
                 "andi"      : begin ins.asm=ANDI;   andi_cg.sample(ins);   end
                 "auipc"     : begin ins.asm=AUIPC;  auipc_cg.sample(ins);  end
-                "beq"       : begin ins.asm=BEQ;    beq_cg.sample(ins);    end
+                "beq"       : begin
+                  ins.asm=BEQ;
+                  beq_cg.sample(ins);
+                  `uvm_info("RV32ISA Functional Coverage", $sformatf("beq_cg: ins.ops[0].val = %0s, ins.ops[1].val = %0s, ins.ops[2].val = %0s, imm = %0h",
+                                                                     ins.ops[0].val, ins.ops[1].val, ins.ops[2].val, get_imm(ins.ops[2].val,"beq")), UVM_DEBUG)
+                end
                 "bge"       : begin ins.asm=BGE;    bge_cg.sample(ins);    end
                 "bgeu"      : begin ins.asm=BGEU;   bgeu_cg.sample(ins);   end
                 "blt"       : begin ins.asm=BLT;    blt_cg.sample(ins);    end
