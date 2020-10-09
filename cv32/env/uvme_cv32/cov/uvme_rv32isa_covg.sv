@@ -397,9 +397,11 @@ class uvme_rv32isa_covg extends uvm_component;
         cp_rs2    : coverpoint get_gpr_name(ins.ops[1].val, ins.ops[1].key, "beq") {
             bins gprval[] = {[zero:t6]};
         }
-        cp_bra12   : coverpoint get_imm(ins.ops[2].val,"beq" ) {
-            bins neg  = {[$:-1]};
-            bins pos  = {[1:$]};
+        cp_offset : coverpoint get_imm(ins.ops[2].val,"beq" ) {
+            //bins neg  = {[$:-1]};
+            //bins pos  = {[1:$]};
+            bins neg  = {[12'h800:12'hFFF]};
+            bins pos  = {[12'h000:12'h7FF]};
         }
     endgroup
 
