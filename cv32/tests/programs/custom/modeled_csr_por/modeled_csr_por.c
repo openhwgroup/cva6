@@ -181,40 +181,42 @@ int main(int argc, char *argv[])
   //  __asm__ volatile(string : "=r"(mphmevent_rval[i]));
   //}
   __asm__ volatile("csrr %0, 0x323" : "=r"(mphmevent_rval[3]));
-  __asm__ volatile("csrr %0, 0x324" : "=r"(mphmevent_rval[4]));
-  __asm__ volatile("csrr %0, 0x325" : "=r"(mphmevent_rval[5]));
-  __asm__ volatile("csrr %0, 0x326" : "=r"(mphmevent_rval[6]));
-  __asm__ volatile("csrr %0, 0x327" : "=r"(mphmevent_rval[7]));
-  __asm__ volatile("csrr %0, 0x328" : "=r"(mphmevent_rval[8]));
-  __asm__ volatile("csrr %0, 0x329" : "=r"(mphmevent_rval[9]));
-  __asm__ volatile("csrr %0, 0x32A" : "=r"(mphmevent_rval[10]));
-  __asm__ volatile("csrr %0, 0x32B" : "=r"(mphmevent_rval[11]));
-  __asm__ volatile("csrr %0, 0x32C" : "=r"(mphmevent_rval[12]));
-  __asm__ volatile("csrr %0, 0x32D" : "=r"(mphmevent_rval[13]));
-  __asm__ volatile("csrr %0, 0x32E" : "=r"(mphmevent_rval[14]));
-  __asm__ volatile("csrr %0, 0x32F" : "=r"(mphmevent_rval[15]));
-  __asm__ volatile("csrr %0, 0x330" : "=r"(mphmevent_rval[16]));
-  __asm__ volatile("csrr %0, 0x331" : "=r"(mphmevent_rval[17]));
-  __asm__ volatile("csrr %0, 0x332" : "=r"(mphmevent_rval[18]));
-  __asm__ volatile("csrr %0, 0x333" : "=r"(mphmevent_rval[19]));
-  __asm__ volatile("csrr %0, 0x334" : "=r"(mphmevent_rval[20]));
-  __asm__ volatile("csrr %0, 0x335" : "=r"(mphmevent_rval[21]));
-  __asm__ volatile("csrr %0, 0x336" : "=r"(mphmevent_rval[22]));
-  __asm__ volatile("csrr %0, 0x337" : "=r"(mphmevent_rval[23]));
-  __asm__ volatile("csrr %0, 0x338" : "=r"(mphmevent_rval[24]));
-  __asm__ volatile("csrr %0, 0x339" : "=r"(mphmevent_rval[25]));
-  __asm__ volatile("csrr %0, 0x33A" : "=r"(mphmevent_rval[26]));
-  __asm__ volatile("csrr %0, 0x33B" : "=r"(mphmevent_rval[27]));
-  __asm__ volatile("csrr %0, 0x33C" : "=r"(mphmevent_rval[28]));
-  __asm__ volatile("csrr %0, 0x33D" : "=r"(mphmevent_rval[29]));
-  __asm__ volatile("csrr %0, 0x33E" : "=r"(mphmevent_rval[30]));
-  __asm__ volatile("csrr %0, 0x33F" : "=r"(mphmevent_rval[31]));
+  //__asm__ volatile("csrr %0, 0x324" : "=r"(mphmevent_rval[4]));
+  //__asm__ volatile("csrr %0, 0x325" : "=r"(mphmevent_rval[5]));
+  //__asm__ volatile("csrr %0, 0x326" : "=r"(mphmevent_rval[6]));
+  //__asm__ volatile("csrr %0, 0x327" : "=r"(mphmevent_rval[7]));
+  //__asm__ volatile("csrr %0, 0x328" : "=r"(mphmevent_rval[8]));
+  //__asm__ volatile("csrr %0, 0x329" : "=r"(mphmevent_rval[9]));
+  //__asm__ volatile("csrr %0, 0x32A" : "=r"(mphmevent_rval[10]));
+  //__asm__ volatile("csrr %0, 0x32B" : "=r"(mphmevent_rval[11]));
+  //__asm__ volatile("csrr %0, 0x32C" : "=r"(mphmevent_rval[12]));
+  //__asm__ volatile("csrr %0, 0x32D" : "=r"(mphmevent_rval[13]));
+  //__asm__ volatile("csrr %0, 0x32E" : "=r"(mphmevent_rval[14]));
+  //__asm__ volatile("csrr %0, 0x32F" : "=r"(mphmevent_rval[15]));
+  //__asm__ volatile("csrr %0, 0x330" : "=r"(mphmevent_rval[16]));
+  //__asm__ volatile("csrr %0, 0x331" : "=r"(mphmevent_rval[17]));
+  //__asm__ volatile("csrr %0, 0x332" : "=r"(mphmevent_rval[18]));
+  //__asm__ volatile("csrr %0, 0x333" : "=r"(mphmevent_rval[19]));
+  //__asm__ volatile("csrr %0, 0x334" : "=r"(mphmevent_rval[20]));
+  //__asm__ volatile("csrr %0, 0x335" : "=r"(mphmevent_rval[21]));
+  //__asm__ volatile("csrr %0, 0x336" : "=r"(mphmevent_rval[22]));
+  //__asm__ volatile("csrr %0, 0x337" : "=r"(mphmevent_rval[23]));
+  //__asm__ volatile("csrr %0, 0x338" : "=r"(mphmevent_rval[24]));
+  //__asm__ volatile("csrr %0, 0x339" : "=r"(mphmevent_rval[25]));
+  //__asm__ volatile("csrr %0, 0x33A" : "=r"(mphmevent_rval[26]));
+  //__asm__ volatile("csrr %0, 0x33B" : "=r"(mphmevent_rval[27]));
+  //__asm__ volatile("csrr %0, 0x33C" : "=r"(mphmevent_rval[28]));
+  //__asm__ volatile("csrr %0, 0x33D" : "=r"(mphmevent_rval[29]));
+  //__asm__ volatile("csrr %0, 0x33E" : "=r"(mphmevent_rval[30]));
+  //__asm__ volatile("csrr %0, 0x33F" : "=r"(mphmevent_rval[31]));
 
-  for (int i=3; i<32; i++) {
+  //for (int i=3; i<32; i++) {
+  for (int i=3; i<4; i++) {
     sum += mphmevent_rval[i];
   }
   if (sum) {
-    printf("ERROR: CSR MPHMEVENT[3..31] not 0x0!\n\n");
+    //printf("ERROR: CSR MPHMEVENT[3..31] not 0x0!\n\n");
+    printf("ERROR: CSR MPHMEVENT[3] not 0x0!\n\n");
     ++err_cnt;
   }
 
@@ -336,41 +338,43 @@ int main(int argc, char *argv[])
   */
 
   __asm__ volatile("csrr %0, 0xB03" : "=r"(mhpmcounter_rval[3]));
-  __asm__ volatile("csrr %0, 0xB04" : "=r"(mhpmcounter_rval[4]));
-  __asm__ volatile("csrr %0, 0xB05" : "=r"(mhpmcounter_rval[5]));
-  __asm__ volatile("csrr %0, 0xB06" : "=r"(mhpmcounter_rval[6]));
-  __asm__ volatile("csrr %0, 0xB07" : "=r"(mhpmcounter_rval[7]));
-  __asm__ volatile("csrr %0, 0xB08" : "=r"(mhpmcounter_rval[8]));
-  __asm__ volatile("csrr %0, 0xB09" : "=r"(mhpmcounter_rval[9]));
-  __asm__ volatile("csrr %0, 0xB0A" : "=r"(mhpmcounter_rval[10]));
-  __asm__ volatile("csrr %0, 0xB0B" : "=r"(mhpmcounter_rval[11]));
-  __asm__ volatile("csrr %0, 0xB0C" : "=r"(mhpmcounter_rval[12]));
-  __asm__ volatile("csrr %0, 0xB0D" : "=r"(mhpmcounter_rval[13]));
-  __asm__ volatile("csrr %0, 0xB0E" : "=r"(mhpmcounter_rval[14]));
-  __asm__ volatile("csrr %0, 0xB0F" : "=r"(mhpmcounter_rval[15]));
-  __asm__ volatile("csrr %0, 0xB10" : "=r"(mhpmcounter_rval[16]));
-  __asm__ volatile("csrr %0, 0xB11" : "=r"(mhpmcounter_rval[17]));
-  __asm__ volatile("csrr %0, 0xB12" : "=r"(mhpmcounter_rval[18]));
-  __asm__ volatile("csrr %0, 0xB13" : "=r"(mhpmcounter_rval[19]));
-  __asm__ volatile("csrr %0, 0xB14" : "=r"(mhpmcounter_rval[20]));
-  __asm__ volatile("csrr %0, 0xB15" : "=r"(mhpmcounter_rval[21]));
-  __asm__ volatile("csrr %0, 0xB16" : "=r"(mhpmcounter_rval[22]));
-  __asm__ volatile("csrr %0, 0xB17" : "=r"(mhpmcounter_rval[23]));
-  __asm__ volatile("csrr %0, 0xB18" : "=r"(mhpmcounter_rval[24]));
-  __asm__ volatile("csrr %0, 0xB19" : "=r"(mhpmcounter_rval[25]));
-  __asm__ volatile("csrr %0, 0xB1A" : "=r"(mhpmcounter_rval[26]));
-  __asm__ volatile("csrr %0, 0xB1B" : "=r"(mhpmcounter_rval[27]));
-  __asm__ volatile("csrr %0, 0xB1C" : "=r"(mhpmcounter_rval[28]));
-  __asm__ volatile("csrr %0, 0xB1D" : "=r"(mhpmcounter_rval[29]));
-  __asm__ volatile("csrr %0, 0xB1E" : "=r"(mhpmcounter_rval[30]));
-  __asm__ volatile("csrr %0, 0xB1F" : "=r"(mhpmcounter_rval[31]));
+  //__asm__ volatile("csrr %0, 0xB04" : "=r"(mhpmcounter_rval[4]));
+  //__asm__ volatile("csrr %0, 0xB05" : "=r"(mhpmcounter_rval[5]));
+  //__asm__ volatile("csrr %0, 0xB06" : "=r"(mhpmcounter_rval[6]));
+  //__asm__ volatile("csrr %0, 0xB07" : "=r"(mhpmcounter_rval[7]));
+  //__asm__ volatile("csrr %0, 0xB08" : "=r"(mhpmcounter_rval[8]));
+  //__asm__ volatile("csrr %0, 0xB09" : "=r"(mhpmcounter_rval[9]));
+  //__asm__ volatile("csrr %0, 0xB0A" : "=r"(mhpmcounter_rval[10]));
+  //__asm__ volatile("csrr %0, 0xB0B" : "=r"(mhpmcounter_rval[11]));
+  //__asm__ volatile("csrr %0, 0xB0C" : "=r"(mhpmcounter_rval[12]));
+  //__asm__ volatile("csrr %0, 0xB0D" : "=r"(mhpmcounter_rval[13]));
+  //__asm__ volatile("csrr %0, 0xB0E" : "=r"(mhpmcounter_rval[14]));
+  //__asm__ volatile("csrr %0, 0xB0F" : "=r"(mhpmcounter_rval[15]));
+  //__asm__ volatile("csrr %0, 0xB10" : "=r"(mhpmcounter_rval[16]));
+  //__asm__ volatile("csrr %0, 0xB11" : "=r"(mhpmcounter_rval[17]));
+  //__asm__ volatile("csrr %0, 0xB12" : "=r"(mhpmcounter_rval[18]));
+  //__asm__ volatile("csrr %0, 0xB13" : "=r"(mhpmcounter_rval[19]));
+  //__asm__ volatile("csrr %0, 0xB14" : "=r"(mhpmcounter_rval[20]));
+  //__asm__ volatile("csrr %0, 0xB15" : "=r"(mhpmcounter_rval[21]));
+  //__asm__ volatile("csrr %0, 0xB16" : "=r"(mhpmcounter_rval[22]));
+  //__asm__ volatile("csrr %0, 0xB17" : "=r"(mhpmcounter_rval[23]));
+  //__asm__ volatile("csrr %0, 0xB18" : "=r"(mhpmcounter_rval[24]));
+  //__asm__ volatile("csrr %0, 0xB19" : "=r"(mhpmcounter_rval[25]));
+  //__asm__ volatile("csrr %0, 0xB1A" : "=r"(mhpmcounter_rval[26]));
+  //__asm__ volatile("csrr %0, 0xB1B" : "=r"(mhpmcounter_rval[27]));
+  //__asm__ volatile("csrr %0, 0xB1C" : "=r"(mhpmcounter_rval[28]));
+  //__asm__ volatile("csrr %0, 0xB1D" : "=r"(mhpmcounter_rval[29]));
+  //__asm__ volatile("csrr %0, 0xB1E" : "=r"(mhpmcounter_rval[30]));
+  //__asm__ volatile("csrr %0, 0xB1F" : "=r"(mhpmcounter_rval[31]));
 
   sum = 0;
-  for (int i=3; i<32; i++) {
+  //for (int i=3; i<32; i++) {
+  for (int i=3; i<4; i++) {
     sum += mhpmcounter_rval[i];
   }
   if (sum) {
-    printf("ERROR: CSR MHPMCOUNTER[3..31] not 0x0!\n\n");
+    //printf("ERROR: CSR MHPMCOUNTER[3..31] not 0x0!\n\n");
+    printf("ERROR: CSR MHPMCOUNTER[3] not 0x0!\n\n");
     ++err_cnt;
   }
 
@@ -391,41 +395,43 @@ int main(int argc, char *argv[])
   */
 
   __asm__ volatile("csrr %0, 0xB83" : "=r"(mhpmcounterh[3]));
-  __asm__ volatile("csrr %0, 0xB84" : "=r"(mhpmcounterh[4]));
-  __asm__ volatile("csrr %0, 0xB85" : "=r"(mhpmcounterh[5]));
-  __asm__ volatile("csrr %0, 0xB86" : "=r"(mhpmcounterh[6]));
-  __asm__ volatile("csrr %0, 0xB87" : "=r"(mhpmcounterh[7]));
-  __asm__ volatile("csrr %0, 0xB88" : "=r"(mhpmcounterh[8]));
-  __asm__ volatile("csrr %0, 0xB89" : "=r"(mhpmcounterh[9]));
-  __asm__ volatile("csrr %0, 0xB8A" : "=r"(mhpmcounterh[10]));
-  __asm__ volatile("csrr %0, 0xB8B" : "=r"(mhpmcounterh[11]));
-  __asm__ volatile("csrr %0, 0xB8C" : "=r"(mhpmcounterh[12]));
-  __asm__ volatile("csrr %0, 0xB8D" : "=r"(mhpmcounterh[13]));
-  __asm__ volatile("csrr %0, 0xB8E" : "=r"(mhpmcounterh[14]));
-  __asm__ volatile("csrr %0, 0xB8F" : "=r"(mhpmcounterh[15]));
-  __asm__ volatile("csrr %0, 0xB90" : "=r"(mhpmcounterh[16]));
-  __asm__ volatile("csrr %0, 0xB91" : "=r"(mhpmcounterh[17]));
-  __asm__ volatile("csrr %0, 0xB92" : "=r"(mhpmcounterh[18]));
-  __asm__ volatile("csrr %0, 0xB93" : "=r"(mhpmcounterh[19]));
-  __asm__ volatile("csrr %0, 0xB94" : "=r"(mhpmcounterh[20]));
-  __asm__ volatile("csrr %0, 0xB95" : "=r"(mhpmcounterh[21]));
-  __asm__ volatile("csrr %0, 0xB96" : "=r"(mhpmcounterh[22]));
-  __asm__ volatile("csrr %0, 0xB97" : "=r"(mhpmcounterh[23]));
-  __asm__ volatile("csrr %0, 0xB98" : "=r"(mhpmcounterh[24]));
-  __asm__ volatile("csrr %0, 0xB99" : "=r"(mhpmcounterh[25]));
-  __asm__ volatile("csrr %0, 0xB9A" : "=r"(mhpmcounterh[26]));
-  __asm__ volatile("csrr %0, 0xB9B" : "=r"(mhpmcounterh[27]));
-  __asm__ volatile("csrr %0, 0xB9C" : "=r"(mhpmcounterh[28]));
-  __asm__ volatile("csrr %0, 0xB9D" : "=r"(mhpmcounterh[29]));
-  __asm__ volatile("csrr %0, 0xB9E" : "=r"(mhpmcounterh[30]));
-  __asm__ volatile("csrr %0, 0xB9F" : "=r"(mhpmcounterh[31]));
+  //__asm__ volatile("csrr %0, 0xB84" : "=r"(mhpmcounterh[4]));
+  //__asm__ volatile("csrr %0, 0xB85" : "=r"(mhpmcounterh[5]));
+  //__asm__ volatile("csrr %0, 0xB86" : "=r"(mhpmcounterh[6]));
+  //__asm__ volatile("csrr %0, 0xB87" : "=r"(mhpmcounterh[7]));
+  //__asm__ volatile("csrr %0, 0xB88" : "=r"(mhpmcounterh[8]));
+  //__asm__ volatile("csrr %0, 0xB89" : "=r"(mhpmcounterh[9]));
+  //__asm__ volatile("csrr %0, 0xB8A" : "=r"(mhpmcounterh[10]));
+  //__asm__ volatile("csrr %0, 0xB8B" : "=r"(mhpmcounterh[11]));
+  //__asm__ volatile("csrr %0, 0xB8C" : "=r"(mhpmcounterh[12]));
+  //__asm__ volatile("csrr %0, 0xB8D" : "=r"(mhpmcounterh[13]));
+  //__asm__ volatile("csrr %0, 0xB8E" : "=r"(mhpmcounterh[14]));
+  //__asm__ volatile("csrr %0, 0xB8F" : "=r"(mhpmcounterh[15]));
+  //__asm__ volatile("csrr %0, 0xB90" : "=r"(mhpmcounterh[16]));
+  //__asm__ volatile("csrr %0, 0xB91" : "=r"(mhpmcounterh[17]));
+  //__asm__ volatile("csrr %0, 0xB92" : "=r"(mhpmcounterh[18]));
+  //__asm__ volatile("csrr %0, 0xB93" : "=r"(mhpmcounterh[19]));
+  //__asm__ volatile("csrr %0, 0xB94" : "=r"(mhpmcounterh[20]));
+  //__asm__ volatile("csrr %0, 0xB95" : "=r"(mhpmcounterh[21]));
+  //__asm__ volatile("csrr %0, 0xB96" : "=r"(mhpmcounterh[22]));
+  //__asm__ volatile("csrr %0, 0xB97" : "=r"(mhpmcounterh[23]));
+  //__asm__ volatile("csrr %0, 0xB98" : "=r"(mhpmcounterh[24]));
+  //__asm__ volatile("csrr %0, 0xB99" : "=r"(mhpmcounterh[25]));
+  //__asm__ volatile("csrr %0, 0xB9A" : "=r"(mhpmcounterh[26]));
+  //__asm__ volatile("csrr %0, 0xB9B" : "=r"(mhpmcounterh[27]));
+  //__asm__ volatile("csrr %0, 0xB9C" : "=r"(mhpmcounterh[28]));
+  //__asm__ volatile("csrr %0, 0xB9D" : "=r"(mhpmcounterh[29]));
+  //__asm__ volatile("csrr %0, 0xB9E" : "=r"(mhpmcounterh[30]));
+  //__asm__ volatile("csrr %0, 0xB9F" : "=r"(mhpmcounterh[31]));
 
   sum = 0;
-  for (int i=3; i<32; i++) {
+  //for (int i=3; i<32; i++) {
+  for (int i=3; i<4; i++) {
     sum += mhpmcounterh[i];
   }
   if (sum) {
-    printf("ERROR: CSR MHPMCOUNTERH[3..31] not 0x0!\n\n");
+    //printf("ERROR: CSR MHPMCOUNTERH[3..31] not 0x0!\n\n");
+    printf("ERROR: CSR MHPMCOUNTERH[3] not 0x0!\n\n");
     ++err_cnt;
   }
 
@@ -474,7 +480,7 @@ int main(int argc, char *argv[])
 	//printf("\tmcounteren    = 0x%0x\n", mcounteren_rval);
   //printf("\tmcountinhibit = 0x%0x\n", mcountinhibit_rval);
   printf("\tmphmevent3    = 0x%0x\n", mphmevent_rval[3]);
-  printf("\tmphmevent31   = 0x%0x\n", mphmevent_rval[31]);
+  //printf("\tmphmevent31   = 0x%0x\n", mphmevent_rval[31]);
   printf("\tmscratch      = 0x%0x\n", mscratch_rval);
   printf("\tmepc          = 0x%0x\n", mepc_rval);
   printf("\tmcause        = 0x%0x\n", mcause_rval);
@@ -494,11 +500,11 @@ int main(int argc, char *argv[])
   //printf("\tmcycle        = 0x%0x\n", mcycle_rval);
   //printf("\tminstret      = 0x%0x\n", minstret_rval);
   printf("\tmhpmcounter3  = 0x%0x\n", mhpmcounter_rval[3]);
-  printf("\tmhpmcounter31 = 0x%0x\n", mhpmcounter_rval[31]);
+  //printf("\tmhpmcounter31 = 0x%0x\n", mhpmcounter_rval[31]);
   //printf("\tmcycleh       = 0x%0x\n", mcycleh_rval);
   //printf("\tminstreth     = 0x%0x\n", minstreth_rval);
   printf("\tmhpmcounterh3 = 0x%0x\n", mhpmcounterh[3]);
-  printf("\tmhpmcounterh31= 0x%0x\n", mhpmcounterh[31]);
+  //printf("\tmhpmcounterh31= 0x%0x\n", mhpmcounterh[31]);
   printf("\tmvendorid     = 0x%0x\n", mvendorid_rval);
   printf("\tmmarchid      = 0x%0x\n", marchid_rval);
   printf("\tmimpid        = 0x%0x\n", mimpid_rval);

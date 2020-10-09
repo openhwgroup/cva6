@@ -114,7 +114,7 @@ class uvme_rv32isa_covg extends uvm_component;
             "mcycleh"      : return csr_name_t'(mcycleh);
             "mepc"         : return csr_name_t'(mepc);
             "mhartid"      : return csr_name_t'(mhartid);
-            //"mhpmevent3"   : return csr_name_t'(mhpmevent3);
+            "mhpmevent3"   : return csr_name_t'(mhpmevent3);
             //"mhpmevent4"   : return csr_name_t'(mhpmevent4);
             //"mhpmevent5"   : return csr_name_t'(mhpmevent5);
             //"mhpmevent6"   : return csr_name_t'(mhpmevent6);
@@ -251,7 +251,7 @@ class uvme_rv32isa_covg extends uvm_component;
             //"pmpcfg2"      : return csr_name_t'(pmpcfg2);
             //"pmpcfg3"      : return csr_name_t'(pmpcfg3);
             default: begin
-                `uvm_error("RV32ISA Coverage", $sformatf("get_csr_name(): CSR [%0s] not recognized!", s))
+                `uvm_warning("RV32ISA Coverage", $sformatf("get_csr_name(): CSR [%0s] not recognized!", s))
             end
         endcase
     endfunction

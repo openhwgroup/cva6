@@ -23,15 +23,27 @@ tests:
 
   perf_counters_instructions:
     build: uvmt_cv32
-    description: CSR instruction test
+    description: Performance Counters Instructions
     dir: cv32/sim/uvmt_cv32
     cmd: make test TEST=perf_counters_instructions
+
+  isa_fcov_holes:
+    build: uvmt_cv32
+    description: Hand-crafted testcase to fill ISA functional coverage holes 
+    dir: cv32/sim/uvmt_cv32
+    cmd: make test TEST=isa_fcov_holes
 
   csr_instructions:
     build: uvmt_cv32
     description: CSR instruction test
     dir: cv32/sim/uvmt_cv32
     cmd: make test TEST=csr_instructions
+
+  csr_instr_asm:
+    build: uvmt_cv32
+    description: CSR access instruction test
+    dir: cv32/sim/uvmt_cv32
+    cmd: make test TEST=csr_instr_asm
 
   cv32e40p_csr_access_test:
     build: uvmt_cv32
