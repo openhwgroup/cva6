@@ -712,7 +712,7 @@ class uvme_rv32isa_covg extends uvm_component;
 // FIXME: DONE
     covergroup nop_cg with function sample(ins_t ins);
         option.per_instance = 1;
-        cp_asm   : coverpoint (ins.asm == NOP); {
+        cp_asm   : coverpoint (ins.asm == NOP) {
             ignore_bins zero = {0};
             bins        one  = {1};
         }
