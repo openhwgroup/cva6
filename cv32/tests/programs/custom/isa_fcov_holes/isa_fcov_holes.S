@@ -96,12 +96,17 @@ _start0:
 # Hit those coverage holes with manually generated code...
 ################################################################################
 
-	li x1, 0xFFFFFFFF
+  li x1, 0xFFFFFFFF
 holes:
   beq x0, x1, test_done
-	li x1, 0x00000000
+  li x1, 0x00000000
   srli x2, x0, 0b000100  # hole: rd is never x2
   beq x0, x7, holes      # hole: negative branch
+  li x4, 0x00000002
+  jalr    x0, x4, 0      # jump to the second nop
+  nop
+  nop
+  nop
 
 test_done:
     lui a0,print_port>>12

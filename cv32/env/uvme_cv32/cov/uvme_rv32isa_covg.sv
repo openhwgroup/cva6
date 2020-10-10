@@ -712,9 +712,9 @@ class uvme_rv32isa_covg extends uvm_component;
 // FIXME: DONE
     covergroup nop_cg with function sample(ins_t ins);
         option.per_instance = 1;
-        cp_asm   : coverpoint ins.asm == NOP {
-            ignore_bins zero = {0};
-        }
+        cp_asm   : coverpoint ins.asm == NOP;// {
+        //    ignore_bins zero = {0};
+        //}
     endgroup
 
 // TODO : missing coverage of all combinations of source and destination operands.
@@ -1550,15 +1550,6 @@ class uvme_rv32isa_covg extends uvm_component;
         }
     endgroup
 
-// TODO : cover group for NOP (addi x0, x0, imm), may need to be merged into addi_cg
-// FIXME: DONE
-    covergroup c_nop_cg      with function sample(ins_t ins);
-        option.per_instance = 1;
-        cp_asm   : coverpoint ins.asm == C_NOP {
-            ignore_bins zero = {0};
-        }
-    endgroup
-
 // TODO : only counting occurrence, ignoring when not called.
 // FIXME: DONE
     covergroup c_ebreak_cg   with function sample(ins_t ins);
@@ -1656,7 +1647,6 @@ class uvme_rv32isa_covg extends uvm_component;
         c_or_cg       = new();
         c_xor_cg      = new();
         c_sub_cg      = new();
-        c_nop_cg      = new();        
         c_ebreak_cg   = new();
         c_beqz_cg     = new();
         c_bnez_cg     = new();
@@ -1712,16 +1702,11 @@ class uvme_rv32isa_covg extends uvm_component;
             "lui"     : begin ins.asm=C_LUI; c_lui_cg.sample(ins); end
             "addi"    : begin
                 `uvm_info("rv32isa_covg", $sformatf("EXPECTING ADDI: ins.ops[0].val = %0s, ins.ops[1].val = %0s", ins.ops[0].val, ins.ops[1].val), UVM_HIGH)
-                if (  get_gpr_name(ins.ops[0].val, ins.ops[0].key, "c.addi") == gpr_name_t'(zero) &&
-                      get_gpr_name(ins.ops[1].val, ins.ops[1].key, "c.addi") == gpr_name_t'(zero)) begin
-                    ins.asm=C_NOP;
-                    c_nop_cg.sample(ins);
-                end
-                else if ( (get_gpr_name(ins.ops[0].val, ins.ops[0].key, "c.addi16sp") == get_gpr_name(ins.ops[1].val, ins.ops[1].key, "c.addi16sp")) &&
+                if ( (get_gpr_name(ins.ops[0].val, ins.ops[0].key, "c.addi16sp") == get_gpr_name(ins.ops[1].val, ins.ops[1].key, "c.addi16sp")) &&
                           (get_gpr_name(ins.ops[0].val, ins.ops[0].key, "c.addi16sp") == gpr_name_t'(sp))) begin
                     ins.asm=C_ADDI16SP;
                     c_addi16sp_cg.sample(ins);
-                     end
+                end
                 else if ( (c_check_gpr_name(ins.ops[0].val, ins.ops[0].key, "c.addi4spn")) &&
                           (get_gpr_name(ins.ops[1].val, ins.ops[1].key, "c.addi4spn") == gpr_name_t'(sp)) ) begin
                     ins.asm=C_ADDI4SPN;
@@ -1765,7 +1750,7 @@ class uvme_rv32isa_covg extends uvm_component;
                     c_add_cg.sample(ins);
                 end
             end
-//    ,C_AND,C_OR,C_XOR,C_SUB,C_NOP,C_EBREAK
+//    ,C_AND,C_OR,C_XOR,C_SUB,C_EBREAK
             "and"         : begin
                 if ( get_gpr_name(ins.ops[0].val, ins.ops[0].key, "c.and")  == get_gpr_name(ins.ops[1].val, ins.ops[1].key, "c.and") ) begin
                     ins.asm=C_AND;

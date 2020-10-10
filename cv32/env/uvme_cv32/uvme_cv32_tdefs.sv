@@ -44,7 +44,7 @@ typedef enum {
     ,C_J,C_JR,C_JAL,C_JALR,C_LI,C_LUI
     ,C_ADDI,C_ADDI16SP,C_ADDI4SPN
     ,C_SLLI,C_SRLI,C_SRAI,C_ANDI,C_ADD
-    ,C_AND,C_OR,C_XOR,C_SUB,C_NOP,C_EBREAK
+    ,C_AND,C_OR,C_XOR,C_SUB,C_EBREAK
 } instr_name_t; // assembler
 
 
