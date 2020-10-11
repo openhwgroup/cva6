@@ -499,8 +499,8 @@ class uvme_rv32isa_covg extends uvm_component;
 // FIXME: DONE
     covergroup ebreak_cg with function sample(ins_t ins);
         option.per_instance = 1;
-        cp_asm   : coverpoint ins.asm == EBREAK {
-            ignore_bins zero = {0};
+        cp_asm   : coverpoint (ins.asm) {
+            bins ebreak_bin = {EBREAK};
         }
     endgroup
 
@@ -509,8 +509,8 @@ class uvme_rv32isa_covg extends uvm_component;
 // FIXME: DONE
     covergroup ecall_cg with function sample(ins_t ins);
         option.per_instance = 1;
-        cp_asm   : coverpoint ins.asm == ECALL {
-            ignore_bins zero = {0};
+        cp_asm   : coverpoint (ins.asm) {
+            bins ecall_bin = {ECALL};
         }
     endgroup
 
@@ -1554,8 +1554,8 @@ class uvme_rv32isa_covg extends uvm_component;
 // FIXME: DONE
     covergroup c_ebreak_cg   with function sample(ins_t ins);
         option.per_instance = 1;
-        cp_asm   : coverpoint ins.asm == C_EBREAK {
-            ignore_bins zero = {0};
+        cp_asm   : coverpoint (ins.asm) {
+            bins c_ebreak_bin = {C_EBREAK};
         }
     endgroup
 
