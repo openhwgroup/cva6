@@ -519,8 +519,8 @@ class uvme_rv32isa_covg extends uvm_component;
 // FIXME: DONE
     covergroup fence_cg with function sample(ins_t ins);
         option.per_instance = 1;
-        cp_asm   : coverpoint ins.asm == FENCE {
-            ignore_bins zero = {0};
+        cp_asm   : coverpoint (ins.asm) {
+            bins fence_bin = {FENCE};
         }
     endgroup
 
@@ -529,8 +529,8 @@ class uvme_rv32isa_covg extends uvm_component;
 // FIXME: DONE
     covergroup fence_i_cg with function sample(ins_t ins);
         option.per_instance = 1;
-        cp_asm   : coverpoint ins.asm == FENCE_I {
-            ignore_bins zero = {0};
+        cp_asm   : coverpoint (ins.asm) {
+            bins fence_bin = {FENCE_I};
         }
     endgroup
 
@@ -539,8 +539,8 @@ class uvme_rv32isa_covg extends uvm_component;
 // FIXME: DONE
     covergroup wfi_cg with function sample(ins_t ins);
         option.per_instance = 1;
-        cp_asm   : coverpoint ins.asm == WFI {
-            ignore_bins zero = {0};
+        cp_asm   : coverpoint (ins.asm) {
+            bins fence_bin = {WFI};
         }
     endgroup
 
@@ -549,8 +549,8 @@ class uvme_rv32isa_covg extends uvm_component;
 // FIXME: DONE
     covergroup mret_cg with function sample(ins_t ins);
         option.per_instance = 1;
-        cp_asm   : coverpoint ins.asm == MRET {
-            ignore_bins zero = {0};
+        cp_asm   : coverpoint (ins.asm) {
+            bins mret_bin = {MRET};
         }
     endgroup
 
@@ -559,8 +559,8 @@ class uvme_rv32isa_covg extends uvm_component;
 // FIXME: DONE
     covergroup dret_cg with function sample(ins_t ins);
         option.per_instance = 1;
-        cp_asm   : coverpoint ins.asm == DRET {
-            ignore_bins zero = {0};
+        cp_asm   : coverpoint (ins.asm) {
+            bins dret_bin = {DRET};
         }
     endgroup
 
@@ -712,9 +712,7 @@ class uvme_rv32isa_covg extends uvm_component;
 // FIXME: DONE
     covergroup nop_cg with function sample(ins_t ins);
         option.per_instance = 1;
-        //cp_nop   : coverpoint (ins.asm == NOP) {
         cp_nop   : coverpoint (ins.asm) {
-            //ignore_bins zero = {0};
             bins        nop_bin = {NOP};
         }
     endgroup
