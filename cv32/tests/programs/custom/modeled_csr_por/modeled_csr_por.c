@@ -33,6 +33,12 @@
 #include <stdio.h>
 #include <stdlib.h>
 
+#ifdef NO_PULP
+#define EXP_MISA 0x40001104
+#else 
+#define EXP_MISA 0x40801104
+#endif
+
 int main(int argc, char *argv[])
 {
 	// User CSRs
@@ -142,8 +148,8 @@ int main(int argc, char *argv[])
     printf("ERROR: CSR MSTATUS not 0x1800!\n\n");
     ++err_cnt;
   }
-  if (misa_rval != 0x40801104) {
-    printf("ERROR: CSR MISA not 0x0!\n\n");
+  if (misa_rval != EXP_MISA) {
+    printf("ERROR: CSR MISA not 0x%x!\n\n", EXP_MISA);
     ++err_cnt;
   }
   if (mie_rval != 0x0) {
@@ -433,8 +439,8 @@ int main(int argc, char *argv[])
     ++err_cnt;
   }
 
-  if (marchid_rval != 0x0) {
-    printf("ERROR: CSR MARCHID not zero!\n\n");
+  if (marchid_rval != 0x4) {
+    printf("ERROR: CSR MARCHID not 0x4!\n\n");
     ++err_cnt;
   }
 

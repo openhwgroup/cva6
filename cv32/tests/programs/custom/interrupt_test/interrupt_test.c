@@ -468,7 +468,7 @@ int test4() {
             delay(2);
 
             // Random assert "enabled" irq
-            mm_ram_assert_irq(rand_irq | (0x1 << irq), random_num32() & 0x3f);
+            mm_ram_assert_irq(rand_irq | (0x1 << irq), (random_num32() & 0x3f) + 32);
             asm volatile("wfi");
         
             if (gmie) {

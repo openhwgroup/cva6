@@ -16,6 +16,9 @@
 // processor core and some pseudo peripherals
 
 module mm_ram
+`ifndef VERILATOR
+  import uvm_pkg::*;
+`endif
  #(
      parameter RAM_ADDR_WIDTH    =  16,
                INSTR_RDATA_WIDTH = 128, // width of read_data on instruction bus
@@ -57,17 +60,27 @@ module mm_ram
      output logic                         exit_valid_o,
      output logic [31:0]                  exit_value_o);
 
-    localparam int                        RND_STALL_REGS = 16;
-    localparam int                        RND_IRQ_ID     = 31;
+    localparam int                        RND_STALL_REGS        = 16;
+    localparam int                        RND_STALL_INSTR_EN    = 0;
+    localparam int                        RND_STALL_INSTR_MODE  = 2;
+    localparam int                        RND_STALL_INSTR_MAX   = 4;
+    localparam int                        RND_STALL_INSTR_GNT   = 6;
+    localparam int                        RND_STALL_INSTR_VALID = 8;
+    localparam int                        RND_STALL_DATA_EN     = 1;
+    localparam int                        RND_STALL_DATA_MODE   = 3;
+    localparam int                        RND_STALL_DATA_MAX    = 5;
+    localparam int                        RND_STALL_DATA_GNT    = 7;
+    localparam int                        RND_STALL_DATA_VALID  = 9;
+
+    localparam int                        RND_IRQ_ID     = 31;    
 
     // mux for read and writes
     enum logic [2:0]{RAM, MM, RND_STALL, ERR, RND_NUM} select_rdata_d, select_rdata_q;
 
     enum logic {T_RAM, T_PER} transaction;
 
-    enum logic [1:0] {IDLE, PERIPHEARL_VALID, WAIT_RAM_GNT, WAIT_RAM_VALID} state_valid_n, state_valid_q;
 
-
+    integer                        i;
 
     logic [31:0]                   data_addr_aligned;
 
@@ -130,30 +143,58 @@ module mm_ram
     logic [31:0]                   rnd_stall_rdata;
 
     //signal delayed by random stall
-    logic                          rnd_stall_instr_req;
-    logic [RAM_ADDR_WIDTH-1:0]     rnd_stall_instr_addr;
+    logic                          rnd_stall_instr_req;    
     logic                          rnd_stall_instr_gnt;
-    logic                          rnd_stall_instr_valid;
-    logic [INSTR_RDATA_WIDTH-1:0]  rnd_stall_instr_rdata;
 
-    logic                          rnd_stall_data_req;
-    logic [RAM_ADDR_WIDTH-1:0]     rnd_stall_data_addr;
+    logic                          rnd_stall_data_req;    
     logic                          rnd_stall_data_gnt;
-    logic                          rnd_stall_data_valid;
-    logic [31:0]                   rnd_stall_data_rdata;
-    logic [31:0]                   rnd_stall_data_wdata;
-    logic                          rnd_stall_data_we;
-    logic [3:0]                    rnd_stall_data_be;
 
     // random number generation
     logic                          rnd_num_req;
     logic [31:0]                   rnd_num;
 
     //random or monitor interrupt request
-    logic rnd_irq;
+    logic                          rnd_irq;
    
    // uhh, align?
     always_comb data_addr_aligned = {data_addr_i[31:2], 2'b0};
+
+    initial begin
+        for (i = 0; i < RND_STALL_REGS; i=i+1) begin
+            rnd_stall_regs[i] = 0;
+        end
+        #1ns;
+`ifndef VERILATOR
+        if ($test$plusargs("rand_stall_obi_instr") || 
+            $test$plusargs("rand_stall_obi_all")) begin
+            rnd_stall_regs[RND_STALL_INSTR_EN]    = 1;
+            rnd_stall_regs[RND_STALL_INSTR_MODE]  = $urandom_range(2,1);
+            rnd_stall_regs[RND_STALL_INSTR_GNT]   = $urandom_range(3,0);
+            rnd_stall_regs[RND_STALL_INSTR_VALID] = $urandom_range(3,0);
+            rnd_stall_regs[RND_STALL_INSTR_MAX]   = $urandom_range(3,0);
+        end
+
+        if ($test$plusargs("rand_stall_obi_data") ||
+            $test$plusargs("rand_stall_obi_all")) begin
+            rnd_stall_regs[RND_STALL_DATA_EN]     = 1;
+            rnd_stall_regs[RND_STALL_DATA_MODE]   = $urandom_range(2,1);
+            rnd_stall_regs[RND_STALL_DATA_GNT]    = $urandom_range(2,0);
+            rnd_stall_regs[RND_STALL_DATA_VALID]  = $urandom_range(2,0);
+            rnd_stall_regs[RND_STALL_DATA_MAX]    = $urandom_range(3,0);
+        end
+
+        `uvm_info("RNDSTALL", $sformatf("INSTR stall enable: %0d", rnd_stall_regs[RND_STALL_INSTR_EN]), UVM_LOW)
+        `uvm_info("RNDSTALL", $sformatf("INSTR stall mode:   %0d", rnd_stall_regs[RND_STALL_INSTR_MODE]), UVM_LOW)
+        `uvm_info("RNDSTALL", $sformatf("INSTR stall gnt:    %0d", rnd_stall_regs[RND_STALL_INSTR_GNT]), UVM_LOW)
+        `uvm_info("RNDSTALL", $sformatf("INSTR stall valid:  %0d", rnd_stall_regs[RND_STALL_INSTR_VALID]), UVM_LOW)
+        `uvm_info("RNDSTALL", $sformatf("INSTR stall max:    %0d", rnd_stall_regs[RND_STALL_INSTR_MAX]), UVM_LOW)
+        `uvm_info("RNDSTALL", $sformatf("DATA stall enable:  %0d", rnd_stall_regs[RND_STALL_DATA_EN]), UVM_LOW)
+        `uvm_info("RNDSTALL", $sformatf("DATA stall mode:    %0d", rnd_stall_regs[RND_STALL_DATA_MODE]), UVM_LOW)
+        `uvm_info("RNDSTALL", $sformatf("DATA stall gnt:     %0d", rnd_stall_regs[RND_STALL_DATA_GNT]), UVM_LOW)
+        `uvm_info("RNDSTALL", $sformatf("DATA stall valid:   %0d", rnd_stall_regs[RND_STALL_DATA_VALID]), UVM_LOW)
+        `uvm_info("RNDSTALL", $sformatf("DATA stall max:     %0d", rnd_stall_regs[RND_STALL_DATA_MAX]), UVM_LOW)
+`endif
+    end
 
     // handle the mapping of read and writes to either memory or pseudo
     // peripherals (currently just a redirection of writes to stdout)
@@ -184,7 +225,7 @@ module mm_ram
         select_rdata_d      = RAM;
         transaction         = T_PER;
 
-        if (data_req_i) begin
+        if (data_req_i & data_gnt_o) begin
             if (data_we_i) begin // handle writes
                 if (data_addr_i < 2 ** RAM_ADDR_WIDTH ||
                     ( (data_addr_i >= dm_halt_addr_i) &&
@@ -349,22 +390,24 @@ module mm_ram
                     data_addr_i, data_wdata_i);
 `endif
 
+    logic[31:0] data_rdata_mux;
+
     // make sure we select the proper read data
     always_comb begin: read_mux
-        data_rdata_o = '0;
+        data_rdata_mux = '0;
 
         if(select_rdata_q == RAM) begin
-            data_rdata_o = core_data_rdata;
+            data_rdata_mux = core_data_rdata;
         end else if(select_rdata_q == RND_STALL) begin
 `ifndef VERILATOR
-            data_rdata_o = rnd_stall_rdata;
+            data_rdata_mux = rnd_stall_rdata;
 `else
             $display("out of bounds read from %08x\nRandom stall generator is not supported with Verilator", data_addr_i);
             $fatal(2);
 `endif
         
         end else if (select_rdata_q == RND_NUM) begin
-            data_rdata_o = rnd_num;    
+            data_rdata_mux = rnd_num;    
         end else if (select_rdata_q == ERR) begin
             $display("out of bounds read from %08x", data_addr_i);
             $fatal(2);
@@ -420,7 +463,7 @@ module mm_ram
 
 
     // Update random stall control
-    always_ff @(posedge clk_i, negedge rst_ni) begin: tb_stall
+    always @(posedge clk_i, negedge rst_ni) begin: tb_stall
         if(~rst_ni) begin
           rnd_stall_rdata  <= '0;
         end else begin
@@ -516,8 +559,7 @@ module mm_ram
                    // At count == 1, then de-assert debug_req
                    if(debug_req_duration_q == 1) 
                      debug_req_o <= !debug_req_value_q;
-                end
-               
+                end               
             end
         end
     end
@@ -552,9 +594,36 @@ module mm_ram
          .we_b_i    ( ram_data_we     ),
          .be_b_i    ( ram_data_be     ));
 
+    riscv_rvalid_stall instr_rvalid_stall_i (
+        .clk_i      ( clk_i           ),
+        .rst_ni     ( rst_ni          ),
+        .req_i      ( instr_req_i     ),
+        .gnt_i      ( instr_gnt_o     ),
+        .we_i       ( 1'b0            ),
+        .rdata_i    ( ram_instr_rdata ),
+        .rdata_o    ( instr_rdata_o   ),
+        .rvalid_o   ( instr_rvalid_o  ),
+        .en_stall_i   ( rnd_stall_regs[RND_STALL_INSTR_EN][0]),
+        .stall_mode_i ( rnd_stall_regs[RND_STALL_INSTR_MODE] ),
+        .max_stall_i  ( rnd_stall_regs[RND_STALL_INSTR_MAX]  ),
+        .valid_stall_i( rnd_stall_regs[RND_STALL_INSTR_VALID]));
+
+    riscv_rvalid_stall data_rvalid_stall_i (
+        .clk_i      ( clk_i           ),
+        .rst_ni     ( rst_ni          ),
+        .req_i      ( data_req_i      ),
+        .gnt_i      ( data_gnt_o      ),
+        .we_i       ( data_we_i       ),
+        .rdata_i    ( data_rdata_mux  ),
+        .rdata_o    ( data_rdata_o    ),
+        .rvalid_o   ( data_rvalid_o   ),
+        .en_stall_i   ( rnd_stall_regs[RND_STALL_DATA_EN][0]),
+        .stall_mode_i ( rnd_stall_regs[RND_STALL_DATA_MODE] ),
+        .max_stall_i  ( rnd_stall_regs[RND_STALL_DATA_MAX]  ),
+        .valid_stall_i( rnd_stall_regs[RND_STALL_DATA_VALID]));
 
     // signature range
-    always_ff @(posedge clk_i, negedge rst_ni) begin
+    always @(posedge clk_i, negedge rst_ni) begin
         if (~rst_ni) begin
             sig_end_q   <= '0;
             sig_begin_q <= '0;
@@ -562,113 +631,19 @@ module mm_ram
             sig_end_q   <= sig_end_d;
             sig_begin_q <= sig_begin_d;
         end
-
-
     end
 
     always_ff @(posedge clk_i, negedge rst_ni) begin
         if (~rst_ni) begin
             select_rdata_q <= RAM;
-            data_rvalid_q  <= '0;
-            instr_rvalid_q <= '0;
-            state_valid_q  <= IDLE;
-
         end else begin
             select_rdata_q <= select_rdata_d;
-            data_rvalid_q  <= ram_data_req;
-            instr_rvalid_q <= ram_instr_req;
-            state_valid_q  <= state_valid_n;
-
         end
     end
 
-    // do the handshacking stuff by assuming we always react in one cycle
-    always_comb
-    begin
-    data_gnt_o    = 1'b0;
-    data_rvalid_o = 1'b0;
-    state_valid_n = state_valid_q;
-
-        unique case(state_valid_q)
-
-            IDLE:
-            begin
-                if(data_req_i) begin
-                    if(transaction == T_RAM) begin
-                        data_gnt_o    = ram_data_gnt;
-                        if(ram_data_gnt) begin
-                            state_valid_n = WAIT_RAM_VALID;
-                        end else begin
-                            state_valid_n = WAIT_RAM_GNT;
-                        end
-                    end else begin
-                        state_valid_n = PERIPHEARL_VALID;
-                        data_gnt_o    = 1'b1;
-                    end
-                end
-            end
-
-            PERIPHEARL_VALID:
-            begin
-                data_rvalid_o  = 1'b1;
-                if(data_req_i) begin
-                    if(transaction == T_RAM) begin
-                        data_gnt_o    = ram_data_gnt;
-                        if(ram_data_gnt) begin
-                            state_valid_n = WAIT_RAM_VALID;
-                        end else begin
-                            state_valid_n = WAIT_RAM_GNT;
-                        end
-                    end else begin
-                        state_valid_n = PERIPHEARL_VALID;
-                        data_gnt_o    = 1'b1;
-                    end
-                end else state_valid_n = IDLE;
-            end
-
-            WAIT_RAM_GNT:
-            begin
-                data_rvalid_o  = 1'b0;
-                if(data_req_i) begin
-                    data_gnt_o = ram_data_gnt;
-                    if(ram_data_gnt) begin
-                        state_valid_n = WAIT_RAM_VALID;
-                    end else begin
-                        state_valid_n = WAIT_RAM_GNT;
-                    end
-                end else state_valid_n = IDLE;
-            end
-
-            WAIT_RAM_VALID:
-            begin
-                data_rvalid_o  = ram_data_valid;
-                if(ram_data_valid) begin
-                    if(data_req_i) begin
-                        if(transaction == RAM) begin
-                            data_gnt_o    = ram_data_gnt;
-                            if(ram_data_gnt) begin
-                                state_valid_n = WAIT_RAM_VALID;
-                            end else begin
-                                state_valid_n = WAIT_RAM_GNT;
-                            end
-                        end else begin
-                            state_valid_n = PERIPHEARL_VALID;
-                            data_gnt_o    = 1'b1;
-                        end
-                    end else state_valid_n = IDLE;
-                end
-            end
-
-            default: begin
-            end
-        endcase
-
-    end
-
     assign instr_gnt_o    = ram_instr_gnt;
-    assign instr_rvalid_o = ram_instr_valid;
-    assign instr_rdata_o  = core_instr_rdata;
-
+    assign data_gnt_o     = ram_data_gnt;
+    
     // remap debug code to end of memory
     assign instr_addr_remap =  ( (instr_addr_i >= dm_halt_addr_i) &&
                                (instr_addr_i < (dm_halt_addr_i + (2 ** DBG_ADDR_WIDTH)) ) ) ?
@@ -680,118 +655,71 @@ module mm_ram
     ram_instr_req    = instr_req_i;
     ram_instr_addr   = instr_addr_remap;
     ram_instr_gnt    = instr_req_i;
-    ram_instr_valid  = instr_rvalid_q;
     core_instr_rdata = ram_instr_rdata;
 
     ram_data_req     = data_req_dec;
     ram_data_addr    = data_addr_dec;
-    ram_data_gnt     = data_req_dec;
-    ram_data_valid   = data_rvalid_q;
+    ram_data_gnt     = data_req_i;
     core_data_rdata  = ram_data_rdata;
     ram_data_wdata   = data_wdata_dec;
     ram_data_we      = data_we_dec;
     ram_data_be      = data_be_dec;
 
-`ifndef VERILATOR
-    if(rnd_stall_regs[0]) begin
+    if(rnd_stall_regs[RND_STALL_INSTR_EN]) begin
         ram_instr_req    = rnd_stall_instr_req;
-        ram_instr_addr   = rnd_stall_instr_addr;
         ram_instr_gnt    = rnd_stall_instr_gnt;
-        ram_instr_valid  = rnd_stall_instr_valid;
-        core_instr_rdata = rnd_stall_instr_rdata;
     end
-    if(rnd_stall_regs[1]) begin
+    if(rnd_stall_regs[RND_STALL_DATA_EN]) begin
         ram_data_req     = rnd_stall_data_req;
-        ram_data_addr    = rnd_stall_data_addr;
         ram_data_gnt     = rnd_stall_data_gnt;
-        ram_data_valid   = rnd_stall_data_valid;
-        core_data_rdata  = rnd_stall_data_rdata;
-        ram_data_wdata   = rnd_stall_data_wdata;
-        ram_data_we      = rnd_stall_data_we;
-        ram_data_be      = rnd_stall_data_be;
     end
-`endif
   end
 
-`ifndef VERILATOR
-  riscv_random_stall
+  riscv_gnt_stall
   #(
     .DATA_WIDTH     (INSTR_RDATA_WIDTH),
     .RAM_ADDR_WIDTH (RAM_ADDR_WIDTH   )
    )
-  instr_random_stalls
+  instr_gnt_stall_i
   (
     .clk_i              ( clk_i                  ),
     .rst_ni             ( rst_ni                 ),
 
     .grant_mem_i        ( rnd_stall_instr_req    ),
-    .rvalid_mem_i       ( instr_rvalid_q         ),
-    .rdata_mem_i        ( ram_instr_rdata        ),
-
     .grant_core_o       ( rnd_stall_instr_gnt    ),
-    .rvalid_core_o      ( rnd_stall_instr_valid  ),
-    .rdata_core_o       ( rnd_stall_instr_rdata  ),
 
     .req_core_i         ( instr_req_i            ),
     .req_mem_o          ( rnd_stall_instr_req    ),
 
-    .addr_core_i        ( instr_addr_remap       ),
-    .addr_mem_o         ( rnd_stall_instr_addr   ),
-
-    .wdata_core_i       (                        ),
-    .wdata_mem_o        (                        ),
-
-    .we_core_i          (                        ),
-    .we_mem_o           (                        ),
-
-    .be_core_i          (                        ),
-    .be_mem_o           (                        ),
-
-    .stall_mode_i       ( rnd_stall_regs[2]      ),
-    .max_stall_i        ( rnd_stall_regs[4]      ),
-    .gnt_stall_i        ( rnd_stall_regs[6]      ),
-    .valid_stall_i      ( rnd_stall_regs[8]      )
+    .en_stall_i         ( rnd_stall_regs[RND_STALL_INSTR_EN][0]),
+    .stall_mode_i       ( rnd_stall_regs[RND_STALL_INSTR_MODE] ),
+    .max_stall_i        ( rnd_stall_regs[RND_STALL_INSTR_MAX]  ),
+    .gnt_stall_i        ( rnd_stall_regs[RND_STALL_INSTR_GNT]  )
     );
 
-  riscv_random_stall
+  riscv_gnt_stall
   #(
     .DATA_WIDTH     (DATA_RDATA_WIDTH),
     .RAM_ADDR_WIDTH (RAM_ADDR_WIDTH  )
    )
-  data_random_stalls
+  data_gnt_stall_i
   (
     .clk_i              ( clk_i                  ),
     .rst_ni             ( rst_ni                 ),
 
     .grant_mem_i        ( rnd_stall_data_req     ),
-    .rvalid_mem_i       ( data_rvalid_q          ),
-    .rdata_mem_i        ( ram_data_rdata         ),
-
     .grant_core_o       ( rnd_stall_data_gnt     ),
-    .rvalid_core_o      ( rnd_stall_data_valid   ),
-    .rdata_core_o       ( rnd_stall_data_rdata   ),
-
-    .req_core_i         ( data_req_dec           ),
+    
+    .req_core_i         ( data_req_i             ),
     .req_mem_o          ( rnd_stall_data_req     ),
 
-    .addr_core_i        ( data_addr_dec          ),
-    .addr_mem_o         ( rnd_stall_data_addr    ),
-
-    .wdata_core_i       ( data_wdata_dec         ),
-    .wdata_mem_o        ( rnd_stall_data_wdata   ),
-
-    .we_core_i          ( data_we_dec            ),
-    .we_mem_o           ( rnd_stall_data_we      ),
-
-    .be_core_i          ( data_be_dec            ),
-    .be_mem_o           ( rnd_stall_data_be      ),
-
-    .stall_mode_i       ( rnd_stall_regs[3]      ),
-    .max_stall_i        ( rnd_stall_regs[5]      ),
-    .gnt_stall_i        ( rnd_stall_regs[7]      ),
-    .valid_stall_i      ( rnd_stall_regs[9]      )
+    .en_stall_i         ( rnd_stall_regs[RND_STALL_DATA_EN][0]),
+    .stall_mode_i       ( rnd_stall_regs[RND_STALL_DATA_MODE] ),
+    .max_stall_i        ( rnd_stall_regs[RND_STALL_DATA_MAX]  ),
+    .gnt_stall_i        ( rnd_stall_regs[RND_STALL_DATA_GNT]  )
     );
 
+`ifndef VERILATOR
     riscv_random_interrupt_generator
     random_interrupt_generator_i
     (
@@ -813,7 +741,6 @@ module mm_ram
       .irq_pc_id_i       ( pc_core_id_i                                 ),
       .irq_pc_trig_i     ( rnd_stall_regs[13]                           )
     );
-
 `endif
 
 endmodule // ram

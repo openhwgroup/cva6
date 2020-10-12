@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="ISO-8859-1" standalone="no"?>
+<refinement-file-root>
+  <information comment-version="1" creation-time="Sat 12 Sep 2020 10:27:26 CDT" creator="strichmo" csCheck="false" save-ref-method="seq" tool-version="Cadence vManager20.07" rules-signature-c="f79f259b8257108c80d23c401eb3118">
+    <ucm-files>
+      <ucm-file domain="icc" modelCheckSum="1888276507" path="icc_708cd01b_4f9f729b.ucm(merged)"></ucm-file>
+    </ucm-files>
+    <ccf-files></ccf-files>
+  </information>
+  <rules>
+    <rule ccType="inst" comment="0" domain="icc" entityName="uvmt_cv32_tb/iss_wrap" entityType="inst" excTime="1599924424" name="exclude" recursiveMetrics="overall" reviewer="unknown" user="1" vscope="default"></rule>
+    <rule ccType="inst" comment="0" domain="icc" entityName="uvmt_cv32_tb" entityType="inst" excTime="1599924424" name="exclude" reviewer="unknown" user="1" vscope="default"></rule>
+    <rule ccType="inst" comment="0" domain="icc" entityName="uvmt_cv32_tb/dut_wrap/ram_i" entityType="inst" excTime="1599924424" name="exclude" recursiveMetrics="overall" reviewer="unknown" user="1" vscope="default"></rule>
+    <rule ccType="inst" comment="0" domain="icc" entityName="uvmt_cv32_tb/dut_wrap/cv32e40p_wrapper_i" entityType="inst" excTime="1599924424" name="exclude" reviewer="unknown" user="1" vscope="default"></rule>
+    <rule ccType="inst" comment="0" domain="icc" entityName="uvmt_cv32_tb/dut_wrap/cv32e40p_wrapper_i/core_log_i" entityType="inst" excTime="1599924424" name="exclude" recursiveMetrics="overall" reviewer="unknown" user="1" vscope="default"></rule>
+    <rule ccType="inst" comment="0" domain="icc" entityName="uvmt_cv32_tb/dut_wrap/cv32e40p_wrapper_i/tracer_i" entityType="inst" excTime="1599924424" name="exclude" recursiveMetrics="overall" reviewer="unknown" user="1" vscope="default"></rule>
+    <rule ccType="inst" comment="0" domain="icc" entityName="uvmt_cv32_tb/clknrst_if" entityType="inst" excTime="1599924424" name="exclude" recursiveMetrics="overall" reviewer="unknown" user="1" vscope="default"></rule>
+    <rule ccType="inst" comment="0" domain="icc" entityName="uvmt_cv32_tb/clknrst_if_iss" entityType="inst" excTime="1599924424" name="exclude" recursiveMetrics="overall" reviewer="unknown" user="1" vscope="default"></rule>
+    <rule ccType="inst" comment="0" domain="icc" entityName="uvmt_cv32_tb/interrupt_if" entityType="inst" excTime="1599924424" name="exclude" recursiveMetrics="overall" reviewer="unknown" user="1" vscope="default"></rule>
+    <rule ccType="inst" comment="0" domain="icc" entityName="uvmt_cv32_tb/vp_status_if" entityType="inst" excTime="1599924424" name="exclude" recursiveMetrics="overall" reviewer="unknown" user="1" vscope="default"></rule>
+    <rule ccType="inst" comment="0" domain="icc" entityName="uvmt_cv32_tb/core_cntrl_if" entityType="inst" excTime="1599924424" name="exclude" recursiveMetrics="overall" reviewer="unknown" user="1" vscope="default"></rule>
+    <rule ccType="inst" comment="0" domain="icc" entityName="uvmt_cv32_tb/core_status_if" entityType="inst" excTime="1599924424" name="exclude" recursiveMetrics="overall" reviewer="unknown" user="1" vscope="default"></rule>
+    <rule ccType="inst" comment="0" domain="icc" entityName="uvmt_cv32_tb/step_compare_if" entityType="inst" excTime="1599924424" name="exclude" recursiveMetrics="overall" reviewer="unknown" user="1" vscope="default"></rule>
+    <rule ccType="inst" comment="0" domain="icc" entityName="uvmt_cv32_tb/isa_covg_if" entityType="inst" excTime="1599924424" name="exclude" recursiveMetrics="overall" reviewer="unknown" user="1" vscope="default"></rule>
+    <rule ccType="inst" comment="0" domain="icc" entityName="uvmt_cv32_tb/step_compare" entityType="inst" excTime="1599924424" name="exclude" recursiveMetrics="overall" reviewer="unknown" user="1" vscope="default"></rule>
+    <rule ccType="inst" comment="0" domain="icc" entityName="uvmt_cv32_tb/dut_wrap" entityType="inst" excTime="1599924424" name="exclude" reviewer="unknown" user="1" vscope="default"></rule>
+  </rules>
+  <cache-map>
+    <cache-entry key="0" value="initial exclusions of non-DUT code from code coverage"></cache-entry>
+    <cache-entry key="1" value="strichmo"></cache-entry>
+  </cache-map>
+</refinement-file-root>

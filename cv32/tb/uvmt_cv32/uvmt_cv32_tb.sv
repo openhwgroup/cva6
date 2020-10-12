@@ -74,9 +74,38 @@ module uvmt_cv32_tb;
                         )
                         dut_wrap (.*);
 
+  // Bind in OBI interfaces (montioring only supported currently)
+  bind cv32e40p_wrapper
+    uvma_obi_if obi_instr_if_i(.clk(clk_i),
+                               .reset_n(rst_ni),
+                               .req(instr_req_o),
+                               .gnt(instr_gnt_i),
+                               .addr(instr_addr_o),
+                               .be('0),
+                               .we('0),
+                               .wdata('0),
+                               .rdata(instr_rdata_i),
+                               .rvalid(instr_rvalid_i),
+                               .rready(1'b1)
+                               );
+
+  bind cv32e40p_wrapper
+    uvma_obi_if obi_data_if_i(.clk(clk_i),
+                              .reset_n(rst_ni),
+                              .req(data_req_o),
+                              .gnt(data_gnt_i),
+                              .addr(data_addr_o),
+                              .be(data_be_o),
+                              .we(data_we_o),
+                              .wdata(data_wdata_o),
+                              .rdata(data_rdata_i),
+                              .rvalid(data_rvalid_i),
+                              .rready(1'b1)
+                              );
+
   // Bind in verification modules to the design
   bind cv32e40p_core 
-    uvmt_cv32e40p_interrupt_assert u_interrupt_assert(.mcause_n(cs_registers_i.mcause_n),
+    uvmt_cv32e40p_interrupt_assert interrupt_assert_i(.mcause_n(cs_registers_i.mcause_n),
                                                       .mip(cs_registers_i.mip),
                                                       .mie_q(cs_registers_i.mie_q),
                                                       .mie_n(cs_registers_i.mie_n),
@@ -86,7 +115,9 @@ module uvmt_cv32_tb;
                                                       .if_stage_instr_rdata_i(if_stage_i.instr_rdata_i),
                                                       .id_stage_instr_valid_i(id_stage_i.instr_valid_i),
                                                       .id_stage_instr_rdata_i(id_stage_i.instr_rdata_i),
+                                                      .branch_taken_ex(id_stage_i.branch_taken_ex),
                                                       .ctrl_fsm_cs(id_stage_i.controller_i.ctrl_fsm_cs),
+                                                      .debug_mode_q(id_stage_i.controller_i.debug_mode_q),                                                      
                                                       .*);
     
     // Hook up interface to debug assertions and coverage                                          
@@ -153,9 +184,6 @@ module uvmt_cv32_tb;
       uvmt_cv32_step_compare step_compare (.clknrst_if(clknrst_if),
                                            .step_compare_if(step_compare_if) );
 
-      //always @(dut_wrap.cv32e40p_wrapper_i.core_i.tracer_i.retire) -> step_compare_if.riscv_retire;
-      //assign step_compare_if.insn_pc   = dut_wrap.cv32e40p_wrapper_i.core_i.tracer_i.insn_pc;
-      //assign step_compare_if.riscy_GPR = dut_wrap.cv32e40p_wrapper_i.core_i.id_stage_i.register_file_i.mem;
       always @(dut_wrap.cv32e40p_wrapper_i.tracer_i.retire) -> step_compare_if.riscv_retire;
       assign step_compare_if.insn_pc   = dut_wrap.cv32e40p_wrapper_i.tracer_i.insn_pc;
       assign step_compare_if.riscy_GPR = dut_wrap.cv32e40p_wrapper_i.core_i.id_stage_i.register_file_i.mem;
@@ -254,18 +282,70 @@ module uvmt_cv32_tb;
         end
       end
 
+      // Count number of issued and retired instructions
+      // This makes synchronizing haltreq to RM easier
+      logic [31:0] count_issue;
+      logic [31:0] count_retire;
+      always @(posedge clknrst_if.clk or negedge clknrst_if.reset_n) begin
+        if (!clknrst_if.reset_n) begin
+            count_issue <= 32'h0;
+        end else begin
+            if (dut_wrap.cv32e40p_wrapper_i.core_i.id_stage_i.id_valid_o & dut_wrap.cv32e40p_wrapper_i.core_i.id_stage_i.is_decoding_o &&
+               !dut_wrap.cv32e40p_wrapper_i.core_i.id_stage_i.controller_i.illegal_insn_i) begin
+                count_issue <= count_issue + 1;
+            end
+        end
+      end
+
+      always @(dut_wrap.cv32e40p_wrapper_i.tracer_i.retire or negedge clknrst_if.reset_n) begin
+          if (!clknrst_if.reset_n) begin
+              count_retire <= 32'h0;
+          end else begin
+              count_retire <= count_retire + 1;
+          end
+      end
+
+      // A simple FSM for controlling haltreq into RM
+      typedef enum logic [1:0] {INACTIVE, DBG_TAKEN, DRIVE_REQ} dbg_state_e;
+      dbg_state_e debug_req_state;
+
       always @(posedge clknrst_if_iss.clk or negedge clknrst_if_iss.reset_n) begin
         if (!clknrst_if_iss.reset_n) begin
             iss_wrap.b1.haltreq <= 1'b0;
+            debug_req_state <= INACTIVE;
         end else begin
-            if (dut_wrap.cv32e40p_wrapper_i.core_i.id_stage_i.controller_i.ctrl_fsm_cs inside {cv32e40p_pkg::DBG_TAKEN_ID, cv32e40p_pkg::DBG_TAKEN_IF}) begin
-                iss_wrap.b1.haltreq <= dut_wrap.cv32e40p_wrapper_i.core_i.id_stage_i.controller_i.debug_req_pending;
-            end else begin
-                if(iss_wrap.b1.DM == 1'b1) begin
-                   iss_wrap.b1.haltreq <= 1'b0;
-                end
-            end
+            unique case(debug_req_state)
+                INACTIVE: begin
+                    iss_wrap.b1.haltreq <= 1'b0;
 
+                    // Only drive haltreq if we have an external request
+                    if (dut_wrap.cv32e40p_wrapper_i.core_i.id_stage_i.controller_i.ctrl_fsm_cs inside {cv32e40p_pkg::DBG_TAKEN_ID, cv32e40p_pkg::DBG_TAKEN_IF} &&
+                        dut_wrap.cv32e40p_wrapper_i.core_i.id_stage_i.controller_i.debug_req_pending) begin
+
+                        debug_req_state <= DBG_TAKEN;
+                        // Already in sync, assert halreq right away
+                        if (count_retire == count_issue) begin
+                            iss_wrap.b1.haltreq <= 1'b1;
+                        end
+                    end
+                end
+                DBG_TAKEN: begin
+                    // Assert haltreq when we are in sync
+                    if (count_retire == count_issue) begin
+                        iss_wrap.b1.haltreq <= 1'b1;
+                        debug_req_state <= DRIVE_REQ;
+                    end
+                end
+                DRIVE_REQ: begin
+                    // Deassert haltreq when DM is observed
+                    if(iss_wrap.b1.DM == 1'b1) begin
+                        debug_req_state <= INACTIVE;
+                    end
+                end
+                default: begin
+                    debug_req_state <= INACTIVE;
+                end
+            endcase
         end
       end
     `endif
@@ -279,9 +359,11 @@ module uvmt_cv32_tb;
      $timeformat(-9, 3, " ns", 8);
       
      // Add interfaces handles to uvm_config_db
-     uvm_config_db#(virtual uvma_clknrst_if             )::set(.cntxt(null), .inst_name("*.env.clknrst_agent"), .field_name("vif"),         .value(clknrst_if));
      uvm_config_db#(virtual uvma_debug_if               )::set(.cntxt(null), .inst_name("*.env.debug_agent"), .field_name("vif"), .value(debug_if));
-     uvm_config_db#(virtual uvma_interrupt_if           )::set(.cntxt(null), .inst_name("*.env.interrupt_agent"), .field_name("vif"),         .value(interrupt_if));
+     uvm_config_db#(virtual uvma_clknrst_if             )::set(.cntxt(null), .inst_name("*.env.clknrst_agent"), .field_name("vif"),        .value(clknrst_if));
+     uvm_config_db#(virtual uvma_interrupt_if           )::set(.cntxt(null), .inst_name("*.env.interrupt_agent"), .field_name("vif"),      .value(interrupt_if));
+     uvm_config_db#(virtual uvma_obi_if                 )::set(.cntxt(null), .inst_name("*.env.obi_instr_agent"), .field_name("vif"),      .value(dut_wrap.cv32e40p_wrapper_i.obi_instr_if_i));
+     uvm_config_db#(virtual uvma_obi_if                 )::set(.cntxt(null), .inst_name("*.env.obi_data_agent"),  .field_name("vif"),      .value(dut_wrap.cv32e40p_wrapper_i.obi_data_if_i));
      uvm_config_db#(virtual uvmt_cv32_vp_status_if      )::set(.cntxt(null), .inst_name("*"), .field_name("vp_status_vif"),       .value(vp_status_if)      );
      uvm_config_db#(virtual uvmt_cv32_core_cntrl_if     )::set(.cntxt(null), .inst_name("*"), .field_name("core_cntrl_vif"),      .value(core_cntrl_if)     );
      uvm_config_db#(virtual uvmt_cv32_core_status_if    )::set(.cntxt(null), .inst_name("*"), .field_name("core_status_vif"),     .value(core_status_if)    );     

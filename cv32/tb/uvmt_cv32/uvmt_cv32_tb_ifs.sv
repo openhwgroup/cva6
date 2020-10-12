@@ -175,15 +175,14 @@ interface uvmt_cv32_core_cntrl_if (
     hart_id           = 32'h0000_0000;
 
     // If a override is provided via plusarg then set bootstrap pins and adjust ISS model
-    if ($value$plusargs("mtvec_addr=0x%x", mtvec_addr));
-    begin
+    if ($value$plusargs("mtvec_addr=0x%x", mtvec_addr)) begin
       string override;
       int fh;
 
 `ifdef ISS
-      override = $sformatf("--override root/cpu/mtvec=0x%08x", mtvec_addr);
-      fh = $fopen("ovpsim.ic", "a");
-      $fwrite(fh, "%s", override);
+      override = $sformatf("--override root/cpu/mtvec=0x%08x", {mtvec_addr[31:8], 8'h01});
+      fh = $fopen("ovpsim.ic", "a");      
+      $fwrite(fh, " %s\n", override);
       $fclose(fh);
 `endif
     end
@@ -362,5 +361,62 @@ interface uvmt_cv32_debug_cov_assert_if
     output logic is_dret,
     output logic [31:0] pending_enabled_irq
 );
-endinterface
+
+  clocking mon_cb @(posedge clk_i);    
+    input #1step
+    fetch_enable_i,
+
+    irq_i,
+    irq_ack_o,
+    irq_id_o,
+    mie_q,
+
+    if_stage_instr_rvalid_i,
+    if_stage_instr_rdata_i,
+
+    id_stage_instr_valid_i,
+    id_stage_instr_rdata_i,
+    id_stage_is_compressed,
+    id_stage_pc,
+    if_stage_pc,
+    ctrl_fsm_cs,
+    illegal_insn_i,
+    illegal_insn_q,
+    ecall_insn_i,
+  
+    debug_req_i,
+    debug_mode_q,
+    dcsr_q,
+    depc_q,
+    depc_n,
+    dm_halt_addr_i,
+    dm_exception_addr_i,
+    mcause_q,
+    mtvec,
+    mepc_q,
+    tdata1,
+    tdata2,
+    trigger_match_i,
+
+    mcountinhibit_q,
+    mcycle,
+    minstret,
+    inst_ret,
+    
+    core_sleep_o,
+    csr_access,
+    csr_op,
+    csr_addr,
+    is_wfi,
+    in_wfi,
+    dpc_will_hit,
+    addr_match,
+    is_ebreak,
+    is_cebreak,
+    is_dret,
+    pending_enabled_irq;    
+  endclocking : mon_cb
+
+endinterface : uvmt_cv32_debug_cov_assert_if
+
 `endif // __UVMT_CV32_TB_IFS_SV__

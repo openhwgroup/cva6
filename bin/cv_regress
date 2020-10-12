@@ -52,17 +52,53 @@ logger = logging.getLogger(__name__)
 if (sys.version_info < (3,0,0)):
     print ('Requires python 3')
     exit(1)
+
+def get_project_path(project):
+    '''Fetch the project path based on path of this script'''
+    return os.path.abspath(os.path.join(os.path.dirname(__file__), '..', project))
+
+def check_valid_test(project, name):
+    '''Validation step to determine if a testname in a regression is valid.
+       Some regression tools will fail if test name does not match make TEST variable.'''    
+    test_dirs = (os.path.join(get_project_path(project), 'tests/programs/corev-dv'),
+                 os.path.join(get_project_path(project), 'tests/programs/custom'),
+    )
     
+    for t in test_dirs:
+        if os.path.isdir(os.path.join(t, name)):            
+            return True
+
+    logger.fatal('Test name: {} is not valid'.format(name))
+    os.sys.exit(2)
+
+def is_test_indexed(project, name):
+    '''Determine if a test requires an index or not.  Required for metrics test directory finding'''
+    test_dirs = (os.path.join(get_project_path(project), 'tests/programs/corev-dv'),
+                 os.path.join(get_project_path(project), 'tests/programs/custom'),
+    )
+
+    for t in test_dirs:
+        test_yaml = os.path.join(t, name, 'test.yaml')
+        if os.path.exists(test_yaml):
+            test_spec = yaml.load(open(test_yaml))            
+            if '<RUN_INDEX>' in test_spec['name']:
+                return True
+            else:
+                return False
+
+    logger.fatal('Fell through is_test_indexed for project: {}, name {}'.format(project, name))
+    os.sys.exit(2)
+
 def get_filter_dir():
-    '''Fetch regression path using project'''
+    '''Fetch Vmanager filter path using project'''
     return os.path.abspath(os.path.join(os.path.dirname(__file__), 'vmgr'))
 
 def get_regress_path(project):
     '''Fetch regression path using project'''
-    return os.path.abspath(os.path.join(os.path.dirname(__file__), '..', project, 'regress'))
+    return os.path.abspath(os.path.join(get_project_path(project), 'regress'))
 
 def get_results_path(project):
-    return os.path.abspath(os.path.join(os.path.dirname(__file__), '..', project, 'sim', 'uvmt_{}'.format(project)))
+    return os.path.abspath(os.path.join(get_project_path(project), 'sim', 'uvmt_{}'.format(project)))
 
 def read_file(args, file):
     '''Read a YAML definition filelist'''
@@ -91,6 +127,8 @@ def read_file(args, file):
     # Construct a proper regression object
     regression = cv_regression.Regression(name=testlist['name'],
                                           description=testlist['description'])
+
+    # Create build objects
     for k in testlist['builds']:
         b = testlist['builds'][k]    
         build = cv_regression.Build(name=k, simulator=args.simulator, **b)
@@ -100,6 +138,7 @@ def read_file(args, file):
             build.sub_make(args.make)
         regression.add_build(build)
 
+    # Create test objects
     for k in testlist['tests']:
         t = testlist['tests'][k]
         
@@ -113,6 +152,12 @@ def read_file(args, file):
             test.set_cov()
         if args.make:
             test.sub_make(args.make)
+
+        check_valid_test(args.project, test.name)        
+        test.indexed = is_test_indexed(args.project, test.name)
+        if test.indexed and test.num > 1 and args.num:
+            test.num = int(args.num)
+
         regression.add_test(test)
 
     return regression
@@ -134,6 +179,7 @@ parser.add_argument('-d', '--debug', help='Emit debug messages from logger', act
 parser.add_argument('-s', '--simulator', help='Select simulator', choices=VALID_SIMULATORS, default=DEFAULT_SIMULATOR)
 parser.add_argument('-c', '--cov', help='Enable coverage', action='store_true')
 parser.add_argument('-m', '--metrics', help='Select Metrics waves output', action='store_true')
+parser.add_argument('-n', '--num', help='Force number of iterations for tests with multiple iteration')
 parser.add_argument('--lsf', help='If applicable for output format, set LSF args to dispatch jobs')
 parser.add_argument('--make', help='Substitute for make command (to use short-cuts)')
 parser.add_argument('--makearg', action='append', help='Arguments to supply to each make command, can be specified multiple times')

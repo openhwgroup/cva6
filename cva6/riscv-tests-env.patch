@@ -1,0 +1,15 @@
+diff --git a/v/vm.c b/v/vm.c
+index 6bf05f7..71700f5 100644
+--- a/v/vm.c
++++ b/v/vm.c
+@@ -17,8 +17,8 @@
+ void trap_entry();
+ void pop_tf(trapframe_t*);
+ 
+-volatile uint64_t tohost;
+-volatile uint64_t fromhost;
++extern volatile uint64_t tohost;
++extern volatile uint64_t fromhost;
+ 
+ static void do_tohost(uint64_t tohost_value)
+ {

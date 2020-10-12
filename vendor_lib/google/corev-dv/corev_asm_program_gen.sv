@@ -129,13 +129,15 @@ class corev_asm_program_gen extends riscv_asm_program_gen;
   endfunction
 
   // Interrupt handler routine
-  // Override from risc-dv since interrupts are auto-cleared, mip will not track through the ISS 
-  // to GPR properly with autoclear
+  // Override from risc-dv:
+  // 1. Remove MIP read, since interrupts are auto-cleared, mip will not track through the ISS
+  //    to GPR properly with autoclear
   virtual function void gen_interrupt_handler_section(privileged_mode_t mode, int hart);
     string mode_prefix;
     string ls_unit;
     privileged_reg_t status, ip, ie, scratch;
     string interrupt_handler_instr[$];
+
     ls_unit = (XLEN == 32) ? "w" : "d";
     if (mode < cfg.init_privileged_mode) return;
     if (mode == USER_MODE && !riscv_instr_pkg::support_umode_trap) return;
@@ -163,26 +165,44 @@ class corev_asm_program_gen extends riscv_asm_program_gen;
       end
       default: `uvm_fatal(get_full_name(), $sformatf("Unsupported mode: %0s", mode.name()))
     endcase
-      // If nested interrupts are enabled, set xSTATUS.xIE in the interrupt handler
-      // to re-enable interrupt handling capabilities
-      if (cfg.enable_nested_interrupt) begin
-        interrupt_handler_instr.push_back($sformatf("csrr x%0d, 0x%0x", cfg.gpr[0], scratch));
-        interrupt_handler_instr.push_back($sformatf("bgtz x%0d, 1f", cfg.gpr[0]));
-        interrupt_handler_instr.push_back($sformatf("csrwi 0x%0x, 0x1", scratch));
-        case (status)
-          MSTATUS: begin
-            interrupt_handler_instr.push_back($sformatf("csrsi 0x%0x, 0x%0x", status, 8));
-          end
-          SSTATUS: begin
-            interrupt_handler_instr.push_back($sformatf("csrsi 0x%0x, 0x%0x", status, 2));
-          end
-          USTATUS: begin
-            interrupt_handler_instr.push_back($sformatf("csrsi 0x%0x, 0x%0x", status, 1));
-          end
-          default: `uvm_fatal(`gfn, $sformatf("Unsupported status %0s", status))
-        endcase
-        interrupt_handler_instr.push_back($sformatf("1: csrwi 0x%0x,0", scratch));
-      end
+
+    // If nested interrupts are enabled, set xSTATUS.xIE in the interrupt handler
+    // to re-enable interrupt handling capabilities
+    if (cfg.enable_nested_interrupt) begin
+      string store_instr = (XLEN == 32) ? "sw" : "sd";
+
+      // kernel stack point is already in sp, mscratch already has stored stack pointer
+      interrupt_handler_instr.push_back($sformatf("1: addi x%0d, x%0d, -%0d", cfg.sp, cfg.sp, 4 * (XLEN/8)));
+
+      // Push MIE, MEPC and MSTATUS to stack
+      interrupt_handler_instr.push_back($sformatf("csrr x%0d, mie", cfg.gpr[0]));
+      interrupt_handler_instr.push_back($sformatf("%0s  x%0d, %0d(x%0d)", store_instr, cfg.gpr[0], 1 * (XLEN/8), cfg.sp));
+      interrupt_handler_instr.push_back($sformatf("csrr x%0d, mepc", cfg.gpr[0]));
+      interrupt_handler_instr.push_back($sformatf("%0s  x%0d, %0d(x%0d)", store_instr, cfg.gpr[0], 2 * (XLEN/8), cfg.sp));
+      interrupt_handler_instr.push_back($sformatf("csrr x%0d, mstatus", cfg.gpr[0]));
+      interrupt_handler_instr.push_back($sformatf("%0s  x%0d, %0d(x%0d)", store_instr, cfg.gpr[0], 3 * (XLEN/8), cfg.sp));
+      interrupt_handler_instr.push_back($sformatf("csrr x%0d, mscratch", cfg.gpr[0]));
+      interrupt_handler_instr.push_back($sformatf("%0s  x%0d, %0d(x%0d)", store_instr, cfg.gpr[0], 4 * (XLEN/8), cfg.sp));
+
+      // Move SP to TP and restore TP
+      interrupt_handler_instr.push_back($sformatf("add x%0d, x%0d, zero", cfg.tp, cfg.sp));
+      interrupt_handler_instr.push_back($sformatf("csrrw x%0d, mscratch, x%0d", cfg.sp, cfg.sp));
+
+      // Re-enable interrupts        
+      case (status)
+        MSTATUS: begin
+          interrupt_handler_instr.push_back($sformatf("csrsi 0x%0x, 0x%0x", status, 8));
+        end
+        SSTATUS: begin
+          interrupt_handler_instr.push_back($sformatf("csrsi 0x%0x, 0x%0x", status, 2));
+        end
+        USTATUS: begin
+          interrupt_handler_instr.push_back($sformatf("csrsi 0x%0x, 0x%0x", status, 1));
+        end
+        default: `uvm_fatal(`gfn, $sformatf("Unsupported status %0s", status))
+      endcase
+    end
+
     // Read back interrupt related privileged CSR
     // The value of these CSR are checked by comparing with spike simulation result.
     interrupt_handler_instr = {
@@ -191,6 +211,42 @@ class corev_asm_program_gen extends riscv_asm_program_gen;
            $sformatf("csrr  x%0d, 0x%0x # %0s;", cfg.gpr[0], ie, ie.name())
     };
     gen_plic_section(interrupt_handler_instr);
+
+    if (cfg.enable_nested_interrupt) begin
+      string load_instr = (XLEN == 32) ? "lw" : "ld";
+
+      // If in nested interrupts, the restoration of all GPRs and interrupt registers from stack
+      // are considered a critical section
+      // Re-disable interrupts
+      case (status)
+        MSTATUS: begin
+          interrupt_handler_instr.push_back($sformatf("csrci 0x%0x, 0x%0x", status, 8));
+        end
+        SSTATUS: begin
+          interrupt_handler_instr.push_back($sformatf("csrci 0x%0x, 0x%0x", status, 2));
+        end
+        USTATUS: begin
+          interrupt_handler_instr.push_back($sformatf("csrci 0x%0x, 0x%0x", status, 1));
+        end
+        default: `uvm_fatal(`gfn, $sformatf("Unsupported status %0s", status))
+      endcase
+
+      // Save SP to scratch and move TP to SP
+      interrupt_handler_instr.push_back($sformatf("csrrw x%0d, mscratch, x%0d", cfg.sp, cfg.sp));
+      interrupt_handler_instr.push_back($sformatf("add x%0d, x%0d, zero", cfg.sp, cfg.tp));
+
+      interrupt_handler_instr.push_back($sformatf("%0s  x%0d, %0d(x%0d)", load_instr, cfg.gpr[0], 1 * (XLEN/8), cfg.sp));
+      interrupt_handler_instr.push_back($sformatf("csrw mie, x%0d", cfg.gpr[0]));
+      interrupt_handler_instr.push_back($sformatf("%0s  x%0d, %0d(x%0d)", load_instr, cfg.gpr[0], 2 * (XLEN/8), cfg.sp));
+      interrupt_handler_instr.push_back($sformatf("csrw mepc, x%0d", cfg.gpr[0]));
+      interrupt_handler_instr.push_back($sformatf("%0s  x%0d, %0d(x%0d)", load_instr, cfg.gpr[0], 3 * (XLEN/8), cfg.sp));
+      interrupt_handler_instr.push_back($sformatf("csrw mstatus, x%0d", cfg.gpr[0]));
+      interrupt_handler_instr.push_back($sformatf("%0s  x%0d, %0d(x%0d)", load_instr, cfg.gpr[0], 4 * (XLEN/8), cfg.sp));
+      interrupt_handler_instr.push_back($sformatf("csrw mscratch, x%0d", cfg.gpr[0]));
+
+      interrupt_handler_instr.push_back($sformatf("addi x%0d, x%0d, %0d", cfg.sp, cfg.sp, 4 * (XLEN/8)));
+    end
+
     // Restore user mode GPR value from kernel stack before return
     pop_gpr_from_kernel_stack(status, scratch, cfg.mstatus_mprv,
                               cfg.sp, cfg.tp, interrupt_handler_instr);

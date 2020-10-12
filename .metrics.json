@@ -55,6 +55,28 @@
       }
     },
     {
+      "name":        "cv32_full_stall_regression",
+      "description": "Full regression for CV32 using dynamic test generation with random RAM stalls",
+      "verbose":     "true",
+      "tests": {
+        "resultsDir": "/mux-flow/build/results",
+        "builds":    ["uvmt_cv32"],
+        "listCmd":   "/mux-flow/build/repo/bin/cv_regress --file=cv32_full --metrics --makearg=USER_RUN_FLAGS=+rand_stall_obi_all --outfile=/mux-flow/build/repo/cv32_full.json",
+        "listFile":  "/mux-flow/build/repo/cv32_full.json"
+      }
+    },
+    {
+      "name":        "cv32_interrupt_regression",
+      "description": "Directed and random interrupt tests for CV32E40P",
+      "verbose":     "true",
+      "tests": {
+        "resultsDir": "/mux-flow/build/results",
+        "builds":    ["uvmt_cv32"],
+        "listCmd":   "/mux-flow/build/repo/bin/cv_regress --file=cv32_interrupt --metrics --outfile=/mux-flow/build/repo/cv32_interrupt.json",
+        "listFile":  "/mux-flow/build/repo/cv32_interrupt.json"
+      }
+    },
+    {
       "name":        "cv32_xpulp_isa_regression",    
       "description": "XPULP ISA test-programs (and a few other tests that run with the RM disabled)",
       "verbose":     "true",
@@ -63,6 +85,857 @@
         "builds":    ["uvmt_cv32"],
         "listCmd":   "/mux-flow/build/repo/bin/cv_regress --file=cv32_xpulp_isa --metrics --outfile=/mux-flow/build/repo/cv32_xpulp_isa.json",
         "listFile":  "/mux-flow/build/repo/cv32_xpulp_isa.json"
+      }
+    },
+    {
+      "name":        "cv32_static_compliance_regression",
+      "description": "RISC-V Compliance Test-suite for CV32E40P",
+      "verbose":     "true",
+      "tests": {
+        "resultsDir": "/mux-flow/build/results",
+        "builds":    ["uvmt_cv32_compliance_build"],
+        "list": [
+          {
+            "name":        "RISCV_COMPLIANCE_I-FENCE.I-01",
+            "build":       "uvmt_cv32_compliance_build",
+            "cmd":         "cd cv32/sim/uvmt_cv32; make compliance RISCV_ISA=rv32Zifencei COMPLIANCE_PROG=I-FENCE.I-01 SIMULATOR=dsim USE_ISS=YES DSIM_WORK=/mux-flow/build/repo/dsim_work DSIM_RESULTS=/mux-flow/build/results",
+            "wavesCmd":    "cd cv32/sim/uvmt_cv32; make compliance RISCV_ISA=rv32Zifencei COMPLIANCE_PROG=I-FENCE.I-01 SIMULATOR=dsim USE_ISS=YES DSIM_WORK=/mux-flow/build/repo/dsim_work DSIM_RESULTS=/mux-flow/build/results WAVES=1 DSIM_DMP_FILE=I-FENCE.I-01.vcd",
+            "metricsFile": "I-FENCE.I-01/metrics.db",
+            "wavesFile" :  "I-FENCE.I-01/hello-world.vcd",
+            "isPass":      "SIMULATION PASSED",
+            "seed":        1
+          },
+          {
+            "name":        "RISCV_COMPLIANCE_I-CSRRCI-01",
+            "build":       "uvmt_cv32_compliance_build",
+            "cmd":         "cd cv32/sim/uvmt_cv32; make compliance RISCV_ISA=rv32Zicsr COMPLIANCE_PROG=I-CSRRCI-01 SIMULATOR=dsim USE_ISS=YES DSIM_WORK=/mux-flow/build/repo/dsim_work DSIM_RESULTS=/mux-flow/build/results",
+            "wavesCmd":    "cd cv32/sim/uvmt_cv32; make compliance RISCV_ISA=rv32Zicsr COMPLIANCE_PROG=I-CSRRCI-01 SIMULATOR=dsim USE_ISS=YES DSIM_WORK=/mux-flow/build/repo/dsim_work DSIM_RESULTS=/mux-flow/build/results WAVES=1 DSIM_DMP_FILE=I-CSRRCI-01.vcd",
+            "metricsFile": "I-CSRRCI-01/metrics.db",
+            "wavesFile" :  "I-CSRRCI-01/hello-world.vcd",
+            "isPass":      "SIMULATION PASSED",
+            "seed":        1
+          },
+          {
+            "name":        "RISCV_COMPLIANCE_I-CSRRS-01",
+            "build":       "uvmt_cv32_compliance_build",
+            "cmd":         "cd cv32/sim/uvmt_cv32; make compliance RISCV_ISA=rv32Zicsr COMPLIANCE_PROG=I-CSRRS-01 SIMULATOR=dsim USE_ISS=YES DSIM_WORK=/mux-flow/build/repo/dsim_work DSIM_RESULTS=/mux-flow/build/results",
+            "wavesCmd":    "cd cv32/sim/uvmt_cv32; make compliance RISCV_ISA=rv32Zicsr COMPLIANCE_PROG=I-CSRRS-01 SIMULATOR=dsim USE_ISS=YES DSIM_WORK=/mux-flow/build/repo/dsim_work DSIM_RESULTS=/mux-flow/build/results WAVES=1 DSIM_DMP_FILE=I-CSRRS-01.vcd",
+            "metricsFile": "I-CSRRS-01/metrics.db",
+            "wavesFile" :  "I-CSRRS-01/hello-world.vcd",
+            "isPass":      "SIMULATION PASSED",
+            "seed":        1
+          },
+          {
+            "name":        "RISCV_COMPLIANCE_I-CSRRSI-01",
+            "build":       "uvmt_cv32_compliance_build",
+            "cmd":         "cd cv32/sim/uvmt_cv32; make compliance RISCV_ISA=rv32Zicsr COMPLIANCE_PROG=I-CSRRSI-01 SIMULATOR=dsim USE_ISS=YES DSIM_WORK=/mux-flow/build/repo/dsim_work DSIM_RESULTS=/mux-flow/build/results",
+            "wavesCmd":    "cd cv32/sim/uvmt_cv32; make compliance RISCV_ISA=rv32Zicsr COMPLIANCE_PROG=I-CSRRSI-01 SIMULATOR=dsim USE_ISS=YES DSIM_WORK=/mux-flow/build/repo/dsim_work DSIM_RESULTS=/mux-flow/build/results WAVES=1 DSIM_DMP_FILE=I-CSRRSI-01.vcd",
+            "metricsFile": "I-CSRRSI-01/metrics.db",
+            "wavesFile" :  "I-CSRRSI-01/hello-world.vcd",
+            "isPass":      "SIMULATION PASSED",
+            "seed":        1
+          },
+          {
+            "name":        "RISCV_COMPLIANCE_I-CSRRW-01",
+            "build":       "uvmt_cv32_compliance_build",
+            "cmd":         "cd cv32/sim/uvmt_cv32; make compliance RISCV_ISA=rv32Zicsr COMPLIANCE_PROG=I-CSRRW-01 SIMULATOR=dsim USE_ISS=YES DSIM_WORK=/mux-flow/build/repo/dsim_work DSIM_RESULTS=/mux-flow/build/results",
+            "wavesCmd":    "cd cv32/sim/uvmt_cv32; make compliance RISCV_ISA=rv32Zicsr COMPLIANCE_PROG=I-CSRRW-01 SIMULATOR=dsim USE_ISS=YES DSIM_WORK=/mux-flow/build/repo/dsim_work DSIM_RESULTS=/mux-flow/build/results WAVES=1 DSIM_DMP_FILE=I-CSRRW-01.vcd",
+            "metricsFile": "I-CSRRW-01/metrics.db",
+            "wavesFile" :  "I-CSRRW-01/hello-world.vcd",
+            "isPass":      "SIMULATION PASSED",
+            "seed":        1
+          },
+          {
+            "name":        "RISCV_COMPLIANCE_I-CSRRC-01",
+            "build":       "uvmt_cv32_compliance_build",
+            "cmd":         "cd cv32/sim/uvmt_cv32; make compliance RISCV_ISA=rv32Zicsr COMPLIANCE_PROG=I-CSRRC-01 SIMULATOR=dsim USE_ISS=YES DSIM_WORK=/mux-flow/build/repo/dsim_work DSIM_RESULTS=/mux-flow/build/results",
+            "wavesCmd":    "cd cv32/sim/uvmt_cv32; make compliance RISCV_ISA=rv32Zicsr COMPLIANCE_PROG=I-CSRRC-01 SIMULATOR=dsim USE_ISS=YES DSIM_WORK=/mux-flow/build/repo/dsim_work DSIM_RESULTS=/mux-flow/build/results WAVES=1 DSIM_DMP_FILE=I-CSRRC-01.vcd",
+            "metricsFile": "I-CSRRC-01/metrics.db",
+            "wavesFile" :  "I-CSRRC-01/hello-world.vcd",
+            "isPass":      "SIMULATION PASSED",
+            "seed":        1
+          },
+          {
+            "name":        "RISCV_COMPLIANCE_I-CSRRWI-01",
+            "build":       "uvmt_cv32_compliance_build",
+            "cmd":         "cd cv32/sim/uvmt_cv32; make compliance RISCV_ISA=rv32Zicsr COMPLIANCE_PROG=I-CSRRWI-01 SIMULATOR=dsim USE_ISS=YES DSIM_WORK=/mux-flow/build/repo/dsim_work DSIM_RESULTS=/mux-flow/build/results",
+            "wavesCmd":    "cd cv32/sim/uvmt_cv32; make compliance RISCV_ISA=rv32Zicsr COMPLIANCE_PROG=I-CSRRWI-01 SIMULATOR=dsim USE_ISS=YES DSIM_WORK=/mux-flow/build/repo/dsim_work DSIM_RESULTS=/mux-flow/build/results WAVES=1 DSIM_DMP_FILE=I-CSRRWI-01.vcd",
+            "metricsFile": "I-CSRRWI-01/metrics.db",
+            "wavesFile" :  "I-CSRRWI-01/hello-world.vcd",
+            "isPass":      "SIMULATION PASSED",
+            "seed":        1
+          },
+          {
+            "name":        "RISCV_COMPLIANCE_C-LWSP",
+            "build":       "uvmt_cv32_compliance_build",
+            "cmd":         "cd cv32/sim/uvmt_cv32; make compliance RISCV_ISA=rv32imc COMPLIANCE_PROG=C-LWSP SIMULATOR=dsim USE_ISS=YES DSIM_WORK=/mux-flow/build/repo/dsim_work DSIM_RESULTS=/mux-flow/build/results",
+            "wavesCmd":    "cd cv32/sim/uvmt_cv32; make compliance RISCV_ISA=rv32imc COMPLIANCE_PROG=C-LWSP SIMULATOR=dsim USE_ISS=YES DSIM_WORK=/mux-flow/build/repo/dsim_work DSIM_RESULTS=/mux-flow/build/results WAVES=1 DSIM_DMP_FILE=C-LWSP.vcd",
+            "metricsFile": "C-LWSP/metrics.db",
+            "wavesFile" :  "C-LWSP/hello-world.vcd",
+            "isPass":      "SIMULATION PASSED",
+            "seed":        1
+          },
+          {
+            "name":        "RISCV_COMPLIANCE_C-J",
+            "build":       "uvmt_cv32_compliance_build",
+            "cmd":         "cd cv32/sim/uvmt_cv32; make compliance RISCV_ISA=rv32imc COMPLIANCE_PROG=C-J SIMULATOR=dsim USE_ISS=YES DSIM_WORK=/mux-flow/build/repo/dsim_work DSIM_RESULTS=/mux-flow/build/results",
+            "wavesCmd":    "cd cv32/sim/uvmt_cv32; make compliance RISCV_ISA=rv32imc COMPLIANCE_PROG=C-J SIMULATOR=dsim USE_ISS=YES DSIM_WORK=/mux-flow/build/repo/dsim_work DSIM_RESULTS=/mux-flow/build/results WAVES=1 DSIM_DMP_FILE=C-J.vcd",
+            "metricsFile": "C-J/metrics.db",
+            "wavesFile" :  "C-J/hello-world.vcd",
+            "isPass":      "SIMULATION PASSED",
+            "seed":        1
+          },
+          {
+            "name":        "RISCV_COMPLIANCE_C-ANDI",
+            "build":       "uvmt_cv32_compliance_build",
+            "cmd":         "cd cv32/sim/uvmt_cv32; make compliance RISCV_ISA=rv32imc COMPLIANCE_PROG=C-ANDI SIMULATOR=dsim USE_ISS=YES DSIM_WORK=/mux-flow/build/repo/dsim_work DSIM_RESULTS=/mux-flow/build/results",
+            "wavesCmd":    "cd cv32/sim/uvmt_cv32; make compliance RISCV_ISA=rv32imc COMPLIANCE_PROG=C-ANDI SIMULATOR=dsim USE_ISS=YES DSIM_WORK=/mux-flow/build/repo/dsim_work DSIM_RESULTS=/mux-flow/build/results WAVES=1 DSIM_DMP_FILE=C-ANDI.vcd",
+            "metricsFile": "C-ANDI/metrics.db",
+            "wavesFile" :  "C-ANDI/hello-world.vcd",
+            "isPass":      "SIMULATION PASSED",
+            "seed":        1
+          },
+          {
+            "name":        "RISCV_COMPLIANCE_C-BNEZ",
+            "build":       "uvmt_cv32_compliance_build",
+            "cmd":         "cd cv32/sim/uvmt_cv32; make compliance RISCV_ISA=rv32imc COMPLIANCE_PROG=C-BNEZ SIMULATOR=dsim USE_ISS=YES DSIM_WORK=/mux-flow/build/repo/dsim_work DSIM_RESULTS=/mux-flow/build/results",
+            "wavesCmd":    "cd cv32/sim/uvmt_cv32; make compliance RISCV_ISA=rv32imc COMPLIANCE_PROG=C-BNEZ SIMULATOR=dsim USE_ISS=YES DSIM_WORK=/mux-flow/build/repo/dsim_work DSIM_RESULTS=/mux-flow/build/results WAVES=1 DSIM_DMP_FILE=C-BNEZ.vcd",
+            "metricsFile": "C-BNEZ/metrics.db",
+            "wavesFile" :  "C-BNEZ/hello-world.vcd",
+            "isPass":      "SIMULATION PASSED",
+            "seed":        1
+          },
+          {
+            "name":        "RISCV_COMPLIANCE_C-ADD",
+            "build":       "uvmt_cv32_compliance_build",
+            "cmd":         "cd cv32/sim/uvmt_cv32; make compliance RISCV_ISA=rv32imc COMPLIANCE_PROG=C-ADD SIMULATOR=dsim USE_ISS=YES DSIM_WORK=/mux-flow/build/repo/dsim_work DSIM_RESULTS=/mux-flow/build/results",
+            "wavesCmd":    "cd cv32/sim/uvmt_cv32; make compliance RISCV_ISA=rv32imc COMPLIANCE_PROG=C-ADD SIMULATOR=dsim USE_ISS=YES DSIM_WORK=/mux-flow/build/repo/dsim_work DSIM_RESULTS=/mux-flow/build/results WAVES=1 DSIM_DMP_FILE=C-ADD.vcd",
+            "metricsFile": "C-ADD/metrics.db",
+            "wavesFile" :  "C-ADD/hello-world.vcd",
+            "isPass":      "SIMULATION PASSED",
+            "seed":        1
+          },
+          {
+            "name":        "RISCV_COMPLIANCE_C-ADDI",
+            "build":       "uvmt_cv32_compliance_build",
+            "cmd":         "cd cv32/sim/uvmt_cv32; make compliance RISCV_ISA=rv32imc COMPLIANCE_PROG=C-ADDI SIMULATOR=dsim USE_ISS=YES DSIM_WORK=/mux-flow/build/repo/dsim_work DSIM_RESULTS=/mux-flow/build/results",
+            "wavesCmd":    "cd cv32/sim/uvmt_cv32; make compliance RISCV_ISA=rv32imc COMPLIANCE_PROG=C-ADDI SIMULATOR=dsim USE_ISS=YES DSIM_WORK=/mux-flow/build/repo/dsim_work DSIM_RESULTS=/mux-flow/build/results WAVES=1 DSIM_DMP_FILE=C-ADDI.vcd",
+            "metricsFile": "C-ADDI/metrics.db",
+            "wavesFile" :  "C-ADDI/hello-world.vcd",
+            "isPass":      "SIMULATION PASSED",
+            "seed":        1
+          },
+          {
+            "name":        "RISCV_COMPLIANCE_C-OR",
+            "build":       "uvmt_cv32_compliance_build",
+            "cmd":         "cd cv32/sim/uvmt_cv32; make compliance RISCV_ISA=rv32imc COMPLIANCE_PROG=C-OR SIMULATOR=dsim USE_ISS=YES DSIM_WORK=/mux-flow/build/repo/dsim_work DSIM_RESULTS=/mux-flow/build/results",
+            "wavesCmd":    "cd cv32/sim/uvmt_cv32; make compliance RISCV_ISA=rv32imc COMPLIANCE_PROG=C-OR SIMULATOR=dsim USE_ISS=YES DSIM_WORK=/mux-flow/build/repo/dsim_work DSIM_RESULTS=/mux-flow/build/results WAVES=1 DSIM_DMP_FILE=C-OR.vcd",
+            "metricsFile": "C-OR/metrics.db",
+            "wavesFile" :  "C-OR/hello-world.vcd",
+            "isPass":      "SIMULATION PASSED",
+            "seed":        1
+          },
+          {
+            "name":        "RISCV_COMPLIANCE_C-JAL",
+            "build":       "uvmt_cv32_compliance_build",
+            "cmd":         "cd cv32/sim/uvmt_cv32; make compliance RISCV_ISA=rv32imc COMPLIANCE_PROG=C-JAL SIMULATOR=dsim USE_ISS=YES DSIM_WORK=/mux-flow/build/repo/dsim_work DSIM_RESULTS=/mux-flow/build/results",
+            "wavesCmd":    "cd cv32/sim/uvmt_cv32; make compliance RISCV_ISA=rv32imc COMPLIANCE_PROG=C-JAL SIMULATOR=dsim USE_ISS=YES DSIM_WORK=/mux-flow/build/repo/dsim_work DSIM_RESULTS=/mux-flow/build/results WAVES=1 DSIM_DMP_FILE=C-JAL.vcd",
+            "metricsFile": "C-JAL/metrics.db",
+            "wavesFile" :  "C-JAL/hello-world.vcd",
+            "isPass":      "SIMULATION PASSED",
+            "seed":        1
+          },
+          {
+            "name":        "RISCV_COMPLIANCE_C-LI",
+            "build":       "uvmt_cv32_compliance_build",
+            "cmd":         "cd cv32/sim/uvmt_cv32; make compliance RISCV_ISA=rv32imc COMPLIANCE_PROG=C-LI SIMULATOR=dsim USE_ISS=YES DSIM_WORK=/mux-flow/build/repo/dsim_work DSIM_RESULTS=/mux-flow/build/results",
+            "wavesCmd":    "cd cv32/sim/uvmt_cv32; make compliance RISCV_ISA=rv32imc COMPLIANCE_PROG=C-LI SIMULATOR=dsim USE_ISS=YES DSIM_WORK=/mux-flow/build/repo/dsim_work DSIM_RESULTS=/mux-flow/build/results WAVES=1 DSIM_DMP_FILE=C-LI.vcd",
+            "metricsFile": "C-LI/metrics.db",
+            "wavesFile" :  "C-LI/hello-world.vcd",
+            "isPass":      "SIMULATION PASSED",
+            "seed":        1
+          },
+          {
+            "name":        "RISCV_COMPLIANCE_C-SWSP",
+            "build":       "uvmt_cv32_compliance_build",
+            "cmd":         "cd cv32/sim/uvmt_cv32; make compliance RISCV_ISA=rv32imc COMPLIANCE_PROG=C-SWSP SIMULATOR=dsim USE_ISS=YES DSIM_WORK=/mux-flow/build/repo/dsim_work DSIM_RESULTS=/mux-flow/build/results",
+            "wavesCmd":    "cd cv32/sim/uvmt_cv32; make compliance RISCV_ISA=rv32imc COMPLIANCE_PROG=C-SWSP SIMULATOR=dsim USE_ISS=YES DSIM_WORK=/mux-flow/build/repo/dsim_work DSIM_RESULTS=/mux-flow/build/results WAVES=1 DSIM_DMP_FILE=C-SWSP.vcd",
+            "metricsFile": "C-SWSP/metrics.db",
+            "wavesFile" :  "C-SWSP/hello-world.vcd",
+            "isPass":      "SIMULATION PASSED",
+            "seed":        1
+          },
+          {
+            "name":        "RISCV_COMPLIANCE_C-LUI",
+            "build":       "uvmt_cv32_compliance_build",
+            "cmd":         "cd cv32/sim/uvmt_cv32; make compliance RISCV_ISA=rv32imc COMPLIANCE_PROG=C-LUI SIMULATOR=dsim USE_ISS=YES DSIM_WORK=/mux-flow/build/repo/dsim_work DSIM_RESULTS=/mux-flow/build/results",
+            "wavesCmd":    "cd cv32/sim/uvmt_cv32; make compliance RISCV_ISA=rv32imc COMPLIANCE_PROG=C-LUI SIMULATOR=dsim USE_ISS=YES DSIM_WORK=/mux-flow/build/repo/dsim_work DSIM_RESULTS=/mux-flow/build/results WAVES=1 DSIM_DMP_FILE=C-LUI.vcd",
+            "metricsFile": "C-LUI/metrics.db",
+            "wavesFile" :  "C-LUI/hello-world.vcd",
+            "isPass":      "SIMULATION PASSED",
+            "seed":        1
+          },
+          {
+            "name":        "RISCV_COMPLIANCE_C-LW",
+            "build":       "uvmt_cv32_compliance_build",
+            "cmd":         "cd cv32/sim/uvmt_cv32; make compliance RISCV_ISA=rv32imc COMPLIANCE_PROG=C-LW SIMULATOR=dsim USE_ISS=YES DSIM_WORK=/mux-flow/build/repo/dsim_work DSIM_RESULTS=/mux-flow/build/results",
+            "wavesCmd":    "cd cv32/sim/uvmt_cv32; make compliance RISCV_ISA=rv32imc COMPLIANCE_PROG=C-LW SIMULATOR=dsim USE_ISS=YES DSIM_WORK=/mux-flow/build/repo/dsim_work DSIM_RESULTS=/mux-flow/build/results WAVES=1 DSIM_DMP_FILE=C-LW.vcd",
+            "metricsFile": "C-LW/metrics.db",
+            "wavesFile" :  "C-LW/hello-world.vcd",
+            "isPass":      "SIMULATION PASSED",
+            "seed":        1
+          },
+          {
+            "name":        "RISCV_COMPLIANCE_C-XOR",
+            "build":       "uvmt_cv32_compliance_build",
+            "cmd":         "cd cv32/sim/uvmt_cv32; make compliance RISCV_ISA=rv32imc COMPLIANCE_PROG=C-XOR SIMULATOR=dsim USE_ISS=YES DSIM_WORK=/mux-flow/build/repo/dsim_work DSIM_RESULTS=/mux-flow/build/results",
+            "wavesCmd":    "cd cv32/sim/uvmt_cv32; make compliance RISCV_ISA=rv32imc COMPLIANCE_PROG=C-XOR SIMULATOR=dsim USE_ISS=YES DSIM_WORK=/mux-flow/build/repo/dsim_work DSIM_RESULTS=/mux-flow/build/results WAVES=1 DSIM_DMP_FILE=C-XOR.vcd",
+            "metricsFile": "C-XOR/metrics.db",
+            "wavesFile" :  "C-XOR/hello-world.vcd",
+            "isPass":      "SIMULATION PASSED",
+            "seed":        1
+          },
+          {
+            "name":        "RISCV_COMPLIANCE_C-SRAI",
+            "build":       "uvmt_cv32_compliance_build",
+            "cmd":         "cd cv32/sim/uvmt_cv32; make compliance RISCV_ISA=rv32imc COMPLIANCE_PROG=C-SRAI SIMULATOR=dsim USE_ISS=YES DSIM_WORK=/mux-flow/build/repo/dsim_work DSIM_RESULTS=/mux-flow/build/results",
+            "wavesCmd":    "cd cv32/sim/uvmt_cv32; make compliance RISCV_ISA=rv32imc COMPLIANCE_PROG=C-SRAI SIMULATOR=dsim USE_ISS=YES DSIM_WORK=/mux-flow/build/repo/dsim_work DSIM_RESULTS=/mux-flow/build/results WAVES=1 DSIM_DMP_FILE=C-SRAI.vcd",
+            "metricsFile": "C-SRAI/metrics.db",
+            "wavesFile" :  "C-SRAI/hello-world.vcd",
+            "isPass":      "SIMULATION PASSED",
+            "seed":        1
+          },
+          {
+            "name":        "RISCV_COMPLIANCE_C-AND",
+            "build":       "uvmt_cv32_compliance_build",
+            "cmd":         "cd cv32/sim/uvmt_cv32; make compliance RISCV_ISA=rv32imc COMPLIANCE_PROG=C-AND SIMULATOR=dsim USE_ISS=YES DSIM_WORK=/mux-flow/build/repo/dsim_work DSIM_RESULTS=/mux-flow/build/results",
+            "wavesCmd":    "cd cv32/sim/uvmt_cv32; make compliance RISCV_ISA=rv32imc COMPLIANCE_PROG=C-AND SIMULATOR=dsim USE_ISS=YES DSIM_WORK=/mux-flow/build/repo/dsim_work DSIM_RESULTS=/mux-flow/build/results WAVES=1 DSIM_DMP_FILE=C-AND.vcd",
+            "metricsFile": "C-AND/metrics.db",
+            "wavesFile" :  "C-AND/hello-world.vcd",
+            "isPass":      "SIMULATION PASSED",
+            "seed":        1
+          },
+          {
+            "name":        "RISCV_COMPLIANCE_C-BEQZ",
+            "build":       "uvmt_cv32_compliance_build",
+            "cmd":         "cd cv32/sim/uvmt_cv32; make compliance RISCV_ISA=rv32imc COMPLIANCE_PROG=C-BEQZ SIMULATOR=dsim USE_ISS=YES DSIM_WORK=/mux-flow/build/repo/dsim_work DSIM_RESULTS=/mux-flow/build/results",
+            "wavesCmd":    "cd cv32/sim/uvmt_cv32; make compliance RISCV_ISA=rv32imc COMPLIANCE_PROG=C-BEQZ SIMULATOR=dsim USE_ISS=YES DSIM_WORK=/mux-flow/build/repo/dsim_work DSIM_RESULTS=/mux-flow/build/results WAVES=1 DSIM_DMP_FILE=C-BEQZ.vcd",
+            "metricsFile": "C-BEQZ/metrics.db",
+            "wavesFile" :  "C-BEQZ/hello-world.vcd",
+            "isPass":      "SIMULATION PASSED",
+            "seed":        1
+          },
+          {
+            "name":        "RISCV_COMPLIANCE_C-SRLI",
+            "build":       "uvmt_cv32_compliance_build",
+            "cmd":         "cd cv32/sim/uvmt_cv32; make compliance RISCV_ISA=rv32imc COMPLIANCE_PROG=C-SRLI SIMULATOR=dsim USE_ISS=YES DSIM_WORK=/mux-flow/build/repo/dsim_work DSIM_RESULTS=/mux-flow/build/results",
+            "wavesCmd":    "cd cv32/sim/uvmt_cv32; make compliance RISCV_ISA=rv32imc COMPLIANCE_PROG=C-SRLI SIMULATOR=dsim USE_ISS=YES DSIM_WORK=/mux-flow/build/repo/dsim_work DSIM_RESULTS=/mux-flow/build/results WAVES=1 DSIM_DMP_FILE=C-SRLI.vcd",
+            "metricsFile": "C-SRLI/metrics.db",
+            "wavesFile" :  "C-SRLI/hello-world.vcd",
+            "isPass":      "SIMULATION PASSED",
+            "seed":        1
+          },
+          {
+            "name":        "RISCV_COMPLIANCE_C-MV",
+            "build":       "uvmt_cv32_compliance_build",
+            "cmd":         "cd cv32/sim/uvmt_cv32; make compliance RISCV_ISA=rv32imc COMPLIANCE_PROG=C-MV SIMULATOR=dsim USE_ISS=YES DSIM_WORK=/mux-flow/build/repo/dsim_work DSIM_RESULTS=/mux-flow/build/results",
+            "wavesCmd":    "cd cv32/sim/uvmt_cv32; make compliance RISCV_ISA=rv32imc COMPLIANCE_PROG=C-MV SIMULATOR=dsim USE_ISS=YES DSIM_WORK=/mux-flow/build/repo/dsim_work DSIM_RESULTS=/mux-flow/build/results WAVES=1 DSIM_DMP_FILE=C-MV.vcd",
+            "metricsFile": "C-MV/metrics.db",
+            "wavesFile" :  "C-MV/hello-world.vcd",
+            "isPass":      "SIMULATION PASSED",
+            "seed":        1
+          },
+          {
+            "name":        "RISCV_COMPLIANCE_C-SUB",
+            "build":       "uvmt_cv32_compliance_build",
+            "cmd":         "cd cv32/sim/uvmt_cv32; make compliance RISCV_ISA=rv32imc COMPLIANCE_PROG=C-SUB SIMULATOR=dsim USE_ISS=YES DSIM_WORK=/mux-flow/build/repo/dsim_work DSIM_RESULTS=/mux-flow/build/results",
+            "wavesCmd":    "cd cv32/sim/uvmt_cv32; make compliance RISCV_ISA=rv32imc COMPLIANCE_PROG=C-SUB SIMULATOR=dsim USE_ISS=YES DSIM_WORK=/mux-flow/build/repo/dsim_work DSIM_RESULTS=/mux-flow/build/results WAVES=1 DSIM_DMP_FILE=C-SUB.vcd",
+            "metricsFile": "C-SUB/metrics.db",
+            "wavesFile" :  "C-SUB/hello-world.vcd",
+            "isPass":      "SIMULATION PASSED",
+            "seed":        1
+          },
+          {
+            "name":        "RISCV_COMPLIANCE_C-JALR",
+            "build":       "uvmt_cv32_compliance_build",
+            "cmd":         "cd cv32/sim/uvmt_cv32; make compliance RISCV_ISA=rv32imc COMPLIANCE_PROG=C-JALR SIMULATOR=dsim USE_ISS=YES DSIM_WORK=/mux-flow/build/repo/dsim_work DSIM_RESULTS=/mux-flow/build/results",
+            "wavesCmd":    "cd cv32/sim/uvmt_cv32; make compliance RISCV_ISA=rv32imc COMPLIANCE_PROG=C-JALR SIMULATOR=dsim USE_ISS=YES DSIM_WORK=/mux-flow/build/repo/dsim_work DSIM_RESULTS=/mux-flow/build/results WAVES=1 DSIM_DMP_FILE=C-JALR.vcd",
+            "metricsFile": "C-JALR/metrics.db",
+            "wavesFile" :  "C-JALR/hello-world.vcd",
+            "isPass":      "SIMULATION PASSED",
+            "seed":        1
+          },
+          {
+            "name":        "RISCV_COMPLIANCE_C-SLLI",
+            "build":       "uvmt_cv32_compliance_build",
+            "cmd":         "cd cv32/sim/uvmt_cv32; make compliance RISCV_ISA=rv32imc COMPLIANCE_PROG=C-SLLI SIMULATOR=dsim USE_ISS=YES DSIM_WORK=/mux-flow/build/repo/dsim_work DSIM_RESULTS=/mux-flow/build/results",
+            "wavesCmd":    "cd cv32/sim/uvmt_cv32; make compliance RISCV_ISA=rv32imc COMPLIANCE_PROG=C-SLLI SIMULATOR=dsim USE_ISS=YES DSIM_WORK=/mux-flow/build/repo/dsim_work DSIM_RESULTS=/mux-flow/build/results WAVES=1 DSIM_DMP_FILE=C-SLLI.vcd",
+            "metricsFile": "C-SLLI/metrics.db",
+            "wavesFile" :  "C-SLLI/hello-world.vcd",
+            "isPass":      "SIMULATION PASSED",
+            "seed":        1
+          },
+          {
+            "name":        "RISCV_COMPLIANCE_C-ADDI16SP",
+            "build":       "uvmt_cv32_compliance_build",
+            "cmd":         "cd cv32/sim/uvmt_cv32; make compliance RISCV_ISA=rv32imc COMPLIANCE_PROG=C-ADDI16SP SIMULATOR=dsim USE_ISS=YES DSIM_WORK=/mux-flow/build/repo/dsim_work DSIM_RESULTS=/mux-flow/build/results",
+            "wavesCmd":    "cd cv32/sim/uvmt_cv32; make compliance RISCV_ISA=rv32imc COMPLIANCE_PROG=C-ADDI16SP SIMULATOR=dsim USE_ISS=YES DSIM_WORK=/mux-flow/build/repo/dsim_work DSIM_RESULTS=/mux-flow/build/results WAVES=1 DSIM_DMP_FILE=C-ADDI16SP.vcd",
+            "metricsFile": "C-ADDI16SP/metrics.db",
+            "wavesFile" :  "C-ADDI16SP/hello-world.vcd",
+            "isPass":      "SIMULATION PASSED",
+            "seed":        1
+          },
+          {
+            "name":        "RISCV_COMPLIANCE_C-SW",
+            "build":       "uvmt_cv32_compliance_build",
+            "cmd":         "cd cv32/sim/uvmt_cv32; make compliance RISCV_ISA=rv32imc COMPLIANCE_PROG=C-SW SIMULATOR=dsim USE_ISS=YES DSIM_WORK=/mux-flow/build/repo/dsim_work DSIM_RESULTS=/mux-flow/build/results",
+            "wavesCmd":    "cd cv32/sim/uvmt_cv32; make compliance RISCV_ISA=rv32imc COMPLIANCE_PROG=C-SW SIMULATOR=dsim USE_ISS=YES DSIM_WORK=/mux-flow/build/repo/dsim_work DSIM_RESULTS=/mux-flow/build/results WAVES=1 DSIM_DMP_FILE=C-SW.vcd",
+            "metricsFile": "C-SW/metrics.db",
+            "wavesFile" :  "C-SW/hello-world.vcd",
+            "isPass":      "SIMULATION PASSED",
+            "seed":        1
+          },
+          {
+            "name":        "RISCV_COMPLIANCE_C-JR",
+            "build":       "uvmt_cv32_compliance_build",
+            "cmd":         "cd cv32/sim/uvmt_cv32; make compliance RISCV_ISA=rv32imc COMPLIANCE_PROG=C-JR SIMULATOR=dsim USE_ISS=YES DSIM_WORK=/mux-flow/build/repo/dsim_work DSIM_RESULTS=/mux-flow/build/results",
+            "wavesCmd":    "cd cv32/sim/uvmt_cv32; make compliance RISCV_ISA=rv32imc COMPLIANCE_PROG=C-JR SIMULATOR=dsim USE_ISS=YES DSIM_WORK=/mux-flow/build/repo/dsim_work DSIM_RESULTS=/mux-flow/build/results WAVES=1 DSIM_DMP_FILE=C-JR.vcd",
+            "metricsFile": "C-JR/metrics.db",
+            "wavesFile" :  "C-JR/hello-world.vcd",
+            "isPass":      "SIMULATION PASSED",
+            "seed":        1
+          },
+          {
+            "name":        "RISCV_COMPLIANCE_C-ADDI4SPN",
+            "build":       "uvmt_cv32_compliance_build",
+            "cmd":         "cd cv32/sim/uvmt_cv32; make compliance RISCV_ISA=rv32imc COMPLIANCE_PROG=C-ADDI4SPN SIMULATOR=dsim USE_ISS=YES DSIM_WORK=/mux-flow/build/repo/dsim_work DSIM_RESULTS=/mux-flow/build/results",
+            "wavesCmd":    "cd cv32/sim/uvmt_cv32; make compliance RISCV_ISA=rv32imc COMPLIANCE_PROG=C-ADDI4SPN SIMULATOR=dsim USE_ISS=YES DSIM_WORK=/mux-flow/build/repo/dsim_work DSIM_RESULTS=/mux-flow/build/results WAVES=1 DSIM_DMP_FILE=C-ADDI4SPN.vcd",
+            "metricsFile": "C-ADDI4SPN/metrics.db",
+            "wavesFile" :  "C-ADDI4SPN/hello-world.vcd",
+            "isPass":      "SIMULATION PASSED",
+            "seed":        1
+          },
+          {
+            "name":        "RISCV_COMPLIANCE_REM",
+            "build":       "uvmt_cv32_compliance_build",
+            "cmd":         "cd cv32/sim/uvmt_cv32; make compliance RISCV_ISA=rv32im COMPLIANCE_PROG=REM SIMULATOR=dsim USE_ISS=YES DSIM_WORK=/mux-flow/build/repo/dsim_work DSIM_RESULTS=/mux-flow/build/results",
+            "wavesCmd":    "cd cv32/sim/uvmt_cv32; make compliance RISCV_ISA=rv32im COMPLIANCE_PROG=REM SIMULATOR=dsim USE_ISS=YES DSIM_WORK=/mux-flow/build/repo/dsim_work DSIM_RESULTS=/mux-flow/build/results WAVES=1 DSIM_DMP_FILE=REM.vcd",
+            "metricsFile": "REM/metrics.db",
+            "wavesFile" :  "REM/hello-world.vcd",
+            "isPass":      "SIMULATION PASSED",
+            "seed":        1
+          },
+          {
+            "name":        "RISCV_COMPLIANCE_REMU",
+            "build":       "uvmt_cv32_compliance_build",
+            "cmd":         "cd cv32/sim/uvmt_cv32; make compliance RISCV_ISA=rv32im COMPLIANCE_PROG=REMU SIMULATOR=dsim USE_ISS=YES DSIM_WORK=/mux-flow/build/repo/dsim_work DSIM_RESULTS=/mux-flow/build/results",
+            "wavesCmd":    "cd cv32/sim/uvmt_cv32; make compliance RISCV_ISA=rv32im COMPLIANCE_PROG=REMU SIMULATOR=dsim USE_ISS=YES DSIM_WORK=/mux-flow/build/repo/dsim_work DSIM_RESULTS=/mux-flow/build/results WAVES=1 DSIM_DMP_FILE=REMU.vcd",
+            "metricsFile": "REMU/metrics.db",
+            "wavesFile" :  "REMU/hello-world.vcd",
+            "isPass":      "SIMULATION PASSED",
+            "seed":        1
+          },
+          {
+            "name":        "RISCV_COMPLIANCE_DIV",
+            "build":       "uvmt_cv32_compliance_build",
+            "cmd":         "cd cv32/sim/uvmt_cv32; make compliance RISCV_ISA=rv32im COMPLIANCE_PROG=DIV SIMULATOR=dsim USE_ISS=YES DSIM_WORK=/mux-flow/build/repo/dsim_work DSIM_RESULTS=/mux-flow/build/results",
+            "wavesCmd":    "cd cv32/sim/uvmt_cv32; make compliance RISCV_ISA=rv32im COMPLIANCE_PROG=DIV SIMULATOR=dsim USE_ISS=YES DSIM_WORK=/mux-flow/build/repo/dsim_work DSIM_RESULTS=/mux-flow/build/results WAVES=1 DSIM_DMP_FILE=DIV.vcd",
+            "metricsFile": "DIV/metrics.db",
+            "wavesFile" :  "DIV/hello-world.vcd",
+            "isPass":      "SIMULATION PASSED",
+            "seed":        1
+          },
+          {
+            "name":        "RISCV_COMPLIANCE_DIVU",
+            "build":       "uvmt_cv32_compliance_build",
+            "cmd":         "cd cv32/sim/uvmt_cv32; make compliance RISCV_ISA=rv32im COMPLIANCE_PROG=DIVU SIMULATOR=dsim USE_ISS=YES DSIM_WORK=/mux-flow/build/repo/dsim_work DSIM_RESULTS=/mux-flow/build/results",
+            "wavesCmd":    "cd cv32/sim/uvmt_cv32; make compliance RISCV_ISA=rv32im COMPLIANCE_PROG=DIVU SIMULATOR=dsim USE_ISS=YES DSIM_WORK=/mux-flow/build/repo/dsim_work DSIM_RESULTS=/mux-flow/build/results WAVES=1 DSIM_DMP_FILE=DIVU.vcd",
+            "metricsFile": "DIVU/metrics.db",
+            "wavesFile" :  "DIVU/hello-world.vcd",
+            "isPass":      "SIMULATION PASSED",
+            "seed":        1
+          },
+          {
+            "name":        "RISCV_COMPLIANCE_MUL",
+            "build":       "uvmt_cv32_compliance_build",
+            "cmd":         "cd cv32/sim/uvmt_cv32; make compliance RISCV_ISA=rv32im COMPLIANCE_PROG=MUL SIMULATOR=dsim USE_ISS=YES DSIM_WORK=/mux-flow/build/repo/dsim_work DSIM_RESULTS=/mux-flow/build/results",
+            "wavesCmd":    "cd cv32/sim/uvmt_cv32; make compliance RISCV_ISA=rv32im COMPLIANCE_PROG=MUL SIMULATOR=dsim USE_ISS=YES DSIM_WORK=/mux-flow/build/repo/dsim_work DSIM_RESULTS=/mux-flow/build/results WAVES=1 DSIM_DMP_FILE=MUL.vcd",
+            "metricsFile": "MUL/metrics.db",
+            "wavesFile" :  "MUL/hello-world.vcd",
+            "isPass":      "SIMULATION PASSED",
+            "seed":        1
+          },
+          {
+            "name":        "RISCV_COMPLIANCE_MULHSU",
+            "build":       "uvmt_cv32_compliance_build",
+            "cmd":         "cd cv32/sim/uvmt_cv32; make compliance RISCV_ISA=rv32im COMPLIANCE_PROG=MULHSU SIMULATOR=dsim USE_ISS=YES DSIM_WORK=/mux-flow/build/repo/dsim_work DSIM_RESULTS=/mux-flow/build/results",
+            "wavesCmd":    "cd cv32/sim/uvmt_cv32; make compliance RISCV_ISA=rv32im COMPLIANCE_PROG=MULHSU SIMULATOR=dsim USE_ISS=YES DSIM_WORK=/mux-flow/build/repo/dsim_work DSIM_RESULTS=/mux-flow/build/results WAVES=1 DSIM_DMP_FILE=MULHSU.vcd",
+            "metricsFile": "MULHSU/metrics.db",
+            "wavesFile" :  "MULHSU/hello-world.vcd",
+            "isPass":      "SIMULATION PASSED",
+            "seed":        1
+          },
+          {
+            "name":        "RISCV_COMPLIANCE_MULH",
+            "build":       "uvmt_cv32_compliance_build",
+            "cmd":         "cd cv32/sim/uvmt_cv32; make compliance RISCV_ISA=rv32im COMPLIANCE_PROG=MULH SIMULATOR=dsim USE_ISS=YES DSIM_WORK=/mux-flow/build/repo/dsim_work DSIM_RESULTS=/mux-flow/build/results",
+            "wavesCmd":    "cd cv32/sim/uvmt_cv32; make compliance RISCV_ISA=rv32im COMPLIANCE_PROG=MULH SIMULATOR=dsim USE_ISS=YES DSIM_WORK=/mux-flow/build/repo/dsim_work DSIM_RESULTS=/mux-flow/build/results WAVES=1 DSIM_DMP_FILE=MULH.vcd",
+            "metricsFile": "MULH/metrics.db",
+            "wavesFile" :  "MULH/hello-world.vcd",
+            "isPass":      "SIMULATION PASSED",
+            "seed":        1
+          },
+          {
+            "name":        "RISCV_COMPLIANCE_MULHU",
+            "build":       "uvmt_cv32_compliance_build",
+            "cmd":         "cd cv32/sim/uvmt_cv32; make compliance RISCV_ISA=rv32im COMPLIANCE_PROG=MULHU SIMULATOR=dsim USE_ISS=YES DSIM_WORK=/mux-flow/build/repo/dsim_work DSIM_RESULTS=/mux-flow/build/results",
+            "wavesCmd":    "cd cv32/sim/uvmt_cv32; make compliance RISCV_ISA=rv32im COMPLIANCE_PROG=MULHU SIMULATOR=dsim USE_ISS=YES DSIM_WORK=/mux-flow/build/repo/dsim_work DSIM_RESULTS=/mux-flow/build/results WAVES=1 DSIM_DMP_FILE=MULHU.vcd",
+            "metricsFile": "MULHU/metrics.db",
+            "wavesFile" :  "MULHU/hello-world.vcd",
+            "isPass":      "SIMULATION PASSED",
+            "seed":        1
+          },
+          {
+            "name":        "RISCV_COMPLIANCE_I-RF_x0-01",
+            "build":       "uvmt_cv32_compliance_build",
+            "cmd":         "cd cv32/sim/uvmt_cv32; make compliance RISCV_ISA=rv32i COMPLIANCE_PROG=I-RF_x0-01 SIMULATOR=dsim USE_ISS=YES DSIM_WORK=/mux-flow/build/repo/dsim_work DSIM_RESULTS=/mux-flow/build/results",
+            "wavesCmd":    "cd cv32/sim/uvmt_cv32; make compliance RISCV_ISA=rv32i COMPLIANCE_PROG=I-RF_x0-01 SIMULATOR=dsim USE_ISS=YES DSIM_WORK=/mux-flow/build/repo/dsim_work DSIM_RESULTS=/mux-flow/build/results WAVES=1 DSIM_DMP_FILE=I-RF_x0-01.vcd",
+            "metricsFile": "I-RF_x0-01/metrics.db",
+            "wavesFile" :  "I-RF_x0-01/hello-world.vcd",
+            "isPass":      "SIMULATION PASSED",
+            "seed":        1
+          },
+          {
+            "name":        "RISCV_COMPLIANCE_I-AND-01",
+            "build":       "uvmt_cv32_compliance_build",
+            "cmd":         "cd cv32/sim/uvmt_cv32; make compliance RISCV_ISA=rv32i COMPLIANCE_PROG=I-AND-01 SIMULATOR=dsim USE_ISS=YES DSIM_WORK=/mux-flow/build/repo/dsim_work DSIM_RESULTS=/mux-flow/build/results",
+            "wavesCmd":    "cd cv32/sim/uvmt_cv32; make compliance RISCV_ISA=rv32i COMPLIANCE_PROG=I-AND-01 SIMULATOR=dsim USE_ISS=YES DSIM_WORK=/mux-flow/build/repo/dsim_work DSIM_RESULTS=/mux-flow/build/results WAVES=1 DSIM_DMP_FILE=I-AND-01.vcd",
+            "metricsFile": "I-AND-01/metrics.db",
+            "wavesFile" :  "I-AND-01/hello-world.vcd",
+            "isPass":      "SIMULATION PASSED",
+            "seed":        1
+          },
+          {
+            "name":        "RISCV_COMPLIANCE_I-XORI-01",
+            "build":       "uvmt_cv32_compliance_build",
+            "cmd":         "cd cv32/sim/uvmt_cv32; make compliance RISCV_ISA=rv32i COMPLIANCE_PROG=I-XORI-01 SIMULATOR=dsim USE_ISS=YES DSIM_WORK=/mux-flow/build/repo/dsim_work DSIM_RESULTS=/mux-flow/build/results",
+            "wavesCmd":    "cd cv32/sim/uvmt_cv32; make compliance RISCV_ISA=rv32i COMPLIANCE_PROG=I-XORI-01 SIMULATOR=dsim USE_ISS=YES DSIM_WORK=/mux-flow/build/repo/dsim_work DSIM_RESULTS=/mux-flow/build/results WAVES=1 DSIM_DMP_FILE=I-XORI-01.vcd",
+            "metricsFile": "I-XORI-01/metrics.db",
+            "wavesFile" :  "I-XORI-01/hello-world.vcd",
+            "isPass":      "SIMULATION PASSED",
+            "seed":        1
+          },
+          {
+            "name":        "RISCV_COMPLIANCE_I-LB-01",
+            "build":       "uvmt_cv32_compliance_build",
+            "cmd":         "cd cv32/sim/uvmt_cv32; make compliance RISCV_ISA=rv32i COMPLIANCE_PROG=I-LB-01 SIMULATOR=dsim USE_ISS=YES DSIM_WORK=/mux-flow/build/repo/dsim_work DSIM_RESULTS=/mux-flow/build/results",
+            "wavesCmd":    "cd cv32/sim/uvmt_cv32; make compliance RISCV_ISA=rv32i COMPLIANCE_PROG=I-LB-01 SIMULATOR=dsim USE_ISS=YES DSIM_WORK=/mux-flow/build/repo/dsim_work DSIM_RESULTS=/mux-flow/build/results WAVES=1 DSIM_DMP_FILE=I-LB-01.vcd",
+            "metricsFile": "I-LB-01/metrics.db",
+            "wavesFile" :  "I-LB-01/hello-world.vcd",
+            "isPass":      "SIMULATION PASSED",
+            "seed":        1
+          },
+          {
+            "name":        "RISCV_COMPLIANCE_I-RF_size-01",
+            "build":       "uvmt_cv32_compliance_build",
+            "cmd":         "cd cv32/sim/uvmt_cv32; make compliance RISCV_ISA=rv32i COMPLIANCE_PROG=I-RF_size-01 SIMULATOR=dsim USE_ISS=YES DSIM_WORK=/mux-flow/build/repo/dsim_work DSIM_RESULTS=/mux-flow/build/results",
+            "wavesCmd":    "cd cv32/sim/uvmt_cv32; make compliance RISCV_ISA=rv32i COMPLIANCE_PROG=I-RF_size-01 SIMULATOR=dsim USE_ISS=YES DSIM_WORK=/mux-flow/build/repo/dsim_work DSIM_RESULTS=/mux-flow/build/results WAVES=1 DSIM_DMP_FILE=I-RF_size-01.vcd",
+            "metricsFile": "I-RF_size-01/metrics.db",
+            "wavesFile" :  "I-RF_size-01/hello-world.vcd",
+            "isPass":      "SIMULATION PASSED",
+            "seed":        1
+          },
+          {
+            "name":        "RISCV_COMPLIANCE_I-JAL-01",
+            "build":       "uvmt_cv32_compliance_build",
+            "cmd":         "cd cv32/sim/uvmt_cv32; make compliance RISCV_ISA=rv32i COMPLIANCE_PROG=I-JAL-01 SIMULATOR=dsim USE_ISS=YES DSIM_WORK=/mux-flow/build/repo/dsim_work DSIM_RESULTS=/mux-flow/build/results",
+            "wavesCmd":    "cd cv32/sim/uvmt_cv32; make compliance RISCV_ISA=rv32i COMPLIANCE_PROG=I-JAL-01 SIMULATOR=dsim USE_ISS=YES DSIM_WORK=/mux-flow/build/repo/dsim_work DSIM_RESULTS=/mux-flow/build/results WAVES=1 DSIM_DMP_FILE=I-JAL-01.vcd",
+            "metricsFile": "I-JAL-01/metrics.db",
+            "wavesFile" :  "I-JAL-01/hello-world.vcd",
+            "isPass":      "SIMULATION PASSED",
+            "seed":        1
+          },
+          {
+            "name":        "RISCV_COMPLIANCE_I-BNE-01",
+            "build":       "uvmt_cv32_compliance_build",
+            "cmd":         "cd cv32/sim/uvmt_cv32; make compliance RISCV_ISA=rv32i COMPLIANCE_PROG=I-BNE-01 SIMULATOR=dsim USE_ISS=YES DSIM_WORK=/mux-flow/build/repo/dsim_work DSIM_RESULTS=/mux-flow/build/results",
+            "wavesCmd":    "cd cv32/sim/uvmt_cv32; make compliance RISCV_ISA=rv32i COMPLIANCE_PROG=I-BNE-01 SIMULATOR=dsim USE_ISS=YES DSIM_WORK=/mux-flow/build/repo/dsim_work DSIM_RESULTS=/mux-flow/build/results WAVES=1 DSIM_DMP_FILE=I-BNE-01.vcd",
+            "metricsFile": "I-BNE-01/metrics.db",
+            "wavesFile" :  "I-BNE-01/hello-world.vcd",
+            "isPass":      "SIMULATION PASSED",
+            "seed":        1
+          },
+          {
+            "name":        "RISCV_COMPLIANCE_I-LHU-01",
+            "build":       "uvmt_cv32_compliance_build",
+            "cmd":         "cd cv32/sim/uvmt_cv32; make compliance RISCV_ISA=rv32i COMPLIANCE_PROG=I-LHU-01 SIMULATOR=dsim USE_ISS=YES DSIM_WORK=/mux-flow/build/repo/dsim_work DSIM_RESULTS=/mux-flow/build/results",
+            "wavesCmd":    "cd cv32/sim/uvmt_cv32; make compliance RISCV_ISA=rv32i COMPLIANCE_PROG=I-LHU-01 SIMULATOR=dsim USE_ISS=YES DSIM_WORK=/mux-flow/build/repo/dsim_work DSIM_RESULTS=/mux-flow/build/results WAVES=1 DSIM_DMP_FILE=I-LHU-01.vcd",
+            "metricsFile": "I-LHU-01/metrics.db",
+            "wavesFile" :  "I-LHU-01/hello-world.vcd",
+            "isPass":      "SIMULATION PASSED",
+            "seed":        1
+          },
+          {
+            "name":        "RISCV_COMPLIANCE_I-SRL-01",
+            "build":       "uvmt_cv32_compliance_build",
+            "cmd":         "cd cv32/sim/uvmt_cv32; make compliance RISCV_ISA=rv32i COMPLIANCE_PROG=I-SRL-01 SIMULATOR=dsim USE_ISS=YES DSIM_WORK=/mux-flow/build/repo/dsim_work DSIM_RESULTS=/mux-flow/build/results",
+            "wavesCmd":    "cd cv32/sim/uvmt_cv32; make compliance RISCV_ISA=rv32i COMPLIANCE_PROG=I-SRL-01 SIMULATOR=dsim USE_ISS=YES DSIM_WORK=/mux-flow/build/repo/dsim_work DSIM_RESULTS=/mux-flow/build/results WAVES=1 DSIM_DMP_FILE=I-SRL-01.vcd",
+            "metricsFile": "I-SRL-01/metrics.db",
+            "wavesFile" :  "I-SRL-01/hello-world.vcd",
+            "isPass":      "SIMULATION PASSED",
+            "seed":        1
+          },
+          {
+            "name":        "RISCV_COMPLIANCE_I-BGEU-01",
+            "build":       "uvmt_cv32_compliance_build",
+            "cmd":         "cd cv32/sim/uvmt_cv32; make compliance RISCV_ISA=rv32i COMPLIANCE_PROG=I-BGEU-01 SIMULATOR=dsim USE_ISS=YES DSIM_WORK=/mux-flow/build/repo/dsim_work DSIM_RESULTS=/mux-flow/build/results",
+            "wavesCmd":    "cd cv32/sim/uvmt_cv32; make compliance RISCV_ISA=rv32i COMPLIANCE_PROG=I-BGEU-01 SIMULATOR=dsim USE_ISS=YES DSIM_WORK=/mux-flow/build/repo/dsim_work DSIM_RESULTS=/mux-flow/build/results WAVES=1 DSIM_DMP_FILE=I-BGEU-01.vcd",
+            "metricsFile": "I-BGEU-01/metrics.db",
+            "wavesFile" :  "I-BGEU-01/hello-world.vcd",
+            "isPass":      "SIMULATION PASSED",
+            "seed":        1
+          },
+          {
+            "name":        "RISCV_COMPLIANCE_I-SLL-01",
+            "build":       "uvmt_cv32_compliance_build",
+            "cmd":         "cd cv32/sim/uvmt_cv32; make compliance RISCV_ISA=rv32i COMPLIANCE_PROG=I-SLL-01 SIMULATOR=dsim USE_ISS=YES DSIM_WORK=/mux-flow/build/repo/dsim_work DSIM_RESULTS=/mux-flow/build/results",
+            "wavesCmd":    "cd cv32/sim/uvmt_cv32; make compliance RISCV_ISA=rv32i COMPLIANCE_PROG=I-SLL-01 SIMULATOR=dsim USE_ISS=YES DSIM_WORK=/mux-flow/build/repo/dsim_work DSIM_RESULTS=/mux-flow/build/results WAVES=1 DSIM_DMP_FILE=I-SLL-01.vcd",
+            "metricsFile": "I-SLL-01/metrics.db",
+            "wavesFile" :  "I-SLL-01/hello-world.vcd",
+            "isPass":      "SIMULATION PASSED",
+            "seed":        1
+          },
+          {
+            "name":        "RISCV_COMPLIANCE_I-LW-01",
+            "build":       "uvmt_cv32_compliance_build",
+            "cmd":         "cd cv32/sim/uvmt_cv32; make compliance RISCV_ISA=rv32i COMPLIANCE_PROG=I-LW-01 SIMULATOR=dsim USE_ISS=YES DSIM_WORK=/mux-flow/build/repo/dsim_work DSIM_RESULTS=/mux-flow/build/results",
+            "wavesCmd":    "cd cv32/sim/uvmt_cv32; make compliance RISCV_ISA=rv32i COMPLIANCE_PROG=I-LW-01 SIMULATOR=dsim USE_ISS=YES DSIM_WORK=/mux-flow/build/repo/dsim_work DSIM_RESULTS=/mux-flow/build/results WAVES=1 DSIM_DMP_FILE=I-LW-01.vcd",
+            "metricsFile": "I-LW-01/metrics.db",
+            "wavesFile" :  "I-LW-01/hello-world.vcd",
+            "isPass":      "SIMULATION PASSED",
+            "seed":        1
+          },
+          {
+            "name":        "RISCV_COMPLIANCE_I-SW-01",
+            "build":       "uvmt_cv32_compliance_build",
+            "cmd":         "cd cv32/sim/uvmt_cv32; make compliance RISCV_ISA=rv32i COMPLIANCE_PROG=I-SW-01 SIMULATOR=dsim USE_ISS=YES DSIM_WORK=/mux-flow/build/repo/dsim_work DSIM_RESULTS=/mux-flow/build/results",
+            "wavesCmd":    "cd cv32/sim/uvmt_cv32; make compliance RISCV_ISA=rv32i COMPLIANCE_PROG=I-SW-01 SIMULATOR=dsim USE_ISS=YES DSIM_WORK=/mux-flow/build/repo/dsim_work DSIM_RESULTS=/mux-flow/build/results WAVES=1 DSIM_DMP_FILE=I-SW-01.vcd",
+            "metricsFile": "I-SW-01/metrics.db",
+            "wavesFile" :  "I-SW-01/hello-world.vcd",
+            "isPass":      "SIMULATION PASSED",
+            "seed":        1
+          },
+          {
+            "name":        "RISCV_COMPLIANCE_I-DELAY_SLOTS-01",
+            "build":       "uvmt_cv32_compliance_build",
+            "cmd":         "cd cv32/sim/uvmt_cv32; make compliance RISCV_ISA=rv32i COMPLIANCE_PROG=I-DELAY_SLOTS-01 SIMULATOR=dsim USE_ISS=YES DSIM_WORK=/mux-flow/build/repo/dsim_work DSIM_RESULTS=/mux-flow/build/results",
+            "wavesCmd":    "cd cv32/sim/uvmt_cv32; make compliance RISCV_ISA=rv32i COMPLIANCE_PROG=I-DELAY_SLOTS-01 SIMULATOR=dsim USE_ISS=YES DSIM_WORK=/mux-flow/build/repo/dsim_work DSIM_RESULTS=/mux-flow/build/results WAVES=1 DSIM_DMP_FILE=I-DELAY_SLOTS-01.vcd",
+            "metricsFile": "I-DELAY_SLOTS-01/metrics.db",
+            "wavesFile" :  "I-DELAY_SLOTS-01/hello-world.vcd",
+            "isPass":      "SIMULATION PASSED",
+            "seed":        1
+          },
+          {
+            "name":        "RISCV_COMPLIANCE_I-BLT-01",
+            "build":       "uvmt_cv32_compliance_build",
+            "cmd":         "cd cv32/sim/uvmt_cv32; make compliance RISCV_ISA=rv32i COMPLIANCE_PROG=I-BLT-01 SIMULATOR=dsim USE_ISS=YES DSIM_WORK=/mux-flow/build/repo/dsim_work DSIM_RESULTS=/mux-flow/build/results",
+            "wavesCmd":    "cd cv32/sim/uvmt_cv32; make compliance RISCV_ISA=rv32i COMPLIANCE_PROG=I-BLT-01 SIMULATOR=dsim USE_ISS=YES DSIM_WORK=/mux-flow/build/repo/dsim_work DSIM_RESULTS=/mux-flow/build/results WAVES=1 DSIM_DMP_FILE=I-BLT-01.vcd",
+            "metricsFile": "I-BLT-01/metrics.db",
+            "wavesFile" :  "I-BLT-01/hello-world.vcd",
+            "isPass":      "SIMULATION PASSED",
+            "seed":        1
+          },
+          {
+            "name":        "RISCV_COMPLIANCE_I-ORI-01",
+            "build":       "uvmt_cv32_compliance_build",
+            "cmd":         "cd cv32/sim/uvmt_cv32; make compliance RISCV_ISA=rv32i COMPLIANCE_PROG=I-ORI-01 SIMULATOR=dsim USE_ISS=YES DSIM_WORK=/mux-flow/build/repo/dsim_work DSIM_RESULTS=/mux-flow/build/results",
+            "wavesCmd":    "cd cv32/sim/uvmt_cv32; make compliance RISCV_ISA=rv32i COMPLIANCE_PROG=I-ORI-01 SIMULATOR=dsim USE_ISS=YES DSIM_WORK=/mux-flow/build/repo/dsim_work DSIM_RESULTS=/mux-flow/build/results WAVES=1 DSIM_DMP_FILE=I-ORI-01.vcd",
+            "metricsFile": "I-ORI-01/metrics.db",
+            "wavesFile" :  "I-ORI-01/hello-world.vcd",
+            "isPass":      "SIMULATION PASSED",
+            "seed":        1
+          },
+          {
+            "name":        "RISCV_COMPLIANCE_I-LUI-01",
+            "build":       "uvmt_cv32_compliance_build",
+            "cmd":         "cd cv32/sim/uvmt_cv32; make compliance RISCV_ISA=rv32i COMPLIANCE_PROG=I-LUI-01 SIMULATOR=dsim USE_ISS=YES DSIM_WORK=/mux-flow/build/repo/dsim_work DSIM_RESULTS=/mux-flow/build/results",
+            "wavesCmd":    "cd cv32/sim/uvmt_cv32; make compliance RISCV_ISA=rv32i COMPLIANCE_PROG=I-LUI-01 SIMULATOR=dsim USE_ISS=YES DSIM_WORK=/mux-flow/build/repo/dsim_work DSIM_RESULTS=/mux-flow/build/results WAVES=1 DSIM_DMP_FILE=I-LUI-01.vcd",
+            "metricsFile": "I-LUI-01/metrics.db",
+            "wavesFile" :  "I-LUI-01/hello-world.vcd",
+            "isPass":      "SIMULATION PASSED",
+            "seed":        1
+          },
+          {
+            "name":        "RISCV_COMPLIANCE_I-RF_width-01",
+            "build":       "uvmt_cv32_compliance_build",
+            "cmd":         "cd cv32/sim/uvmt_cv32; make compliance RISCV_ISA=rv32i COMPLIANCE_PROG=I-RF_width-01 SIMULATOR=dsim USE_ISS=YES DSIM_WORK=/mux-flow/build/repo/dsim_work DSIM_RESULTS=/mux-flow/build/results",
+            "wavesCmd":    "cd cv32/sim/uvmt_cv32; make compliance RISCV_ISA=rv32i COMPLIANCE_PROG=I-RF_width-01 SIMULATOR=dsim USE_ISS=YES DSIM_WORK=/mux-flow/build/repo/dsim_work DSIM_RESULTS=/mux-flow/build/results WAVES=1 DSIM_DMP_FILE=I-RF_width-01.vcd",
+            "metricsFile": "I-RF_width-01/metrics.db",
+            "wavesFile" :  "I-RF_width-01/hello-world.vcd",
+            "isPass":      "SIMULATION PASSED",
+            "seed":        1
+          },
+          {
+            "name":        "RISCV_COMPLIANCE_I-SRAI-01",
+            "build":       "uvmt_cv32_compliance_build",
+            "cmd":         "cd cv32/sim/uvmt_cv32; make compliance RISCV_ISA=rv32i COMPLIANCE_PROG=I-SRAI-01 SIMULATOR=dsim USE_ISS=YES DSIM_WORK=/mux-flow/build/repo/dsim_work DSIM_RESULTS=/mux-flow/build/results",
+            "wavesCmd":    "cd cv32/sim/uvmt_cv32; make compliance RISCV_ISA=rv32i COMPLIANCE_PROG=I-SRAI-01 SIMULATOR=dsim USE_ISS=YES DSIM_WORK=/mux-flow/build/repo/dsim_work DSIM_RESULTS=/mux-flow/build/results WAVES=1 DSIM_DMP_FILE=I-SRAI-01.vcd",
+            "metricsFile": "I-SRAI-01/metrics.db",
+            "wavesFile" :  "I-SRAI-01/hello-world.vcd",
+            "isPass":      "SIMULATION PASSED",
+            "seed":        1
+          },
+          {
+            "name":        "RISCV_COMPLIANCE_I-OR-01",
+            "build":       "uvmt_cv32_compliance_build",
+            "cmd":         "cd cv32/sim/uvmt_cv32; make compliance RISCV_ISA=rv32i COMPLIANCE_PROG=I-OR-01 SIMULATOR=dsim USE_ISS=YES DSIM_WORK=/mux-flow/build/repo/dsim_work DSIM_RESULTS=/mux-flow/build/results",
+            "wavesCmd":    "cd cv32/sim/uvmt_cv32; make compliance RISCV_ISA=rv32i COMPLIANCE_PROG=I-OR-01 SIMULATOR=dsim USE_ISS=YES DSIM_WORK=/mux-flow/build/repo/dsim_work DSIM_RESULTS=/mux-flow/build/results WAVES=1 DSIM_DMP_FILE=I-OR-01.vcd",
+            "metricsFile": "I-OR-01/metrics.db",
+            "wavesFile" :  "I-OR-01/hello-world.vcd",
+            "isPass":      "SIMULATION PASSED",
+            "seed":        1
+          },
+          {
+            "name":        "RISCV_COMPLIANCE_I-ADDI-01",
+            "build":       "uvmt_cv32_compliance_build",
+            "cmd":         "cd cv32/sim/uvmt_cv32; make compliance RISCV_ISA=rv32i COMPLIANCE_PROG=I-ADDI-01 SIMULATOR=dsim USE_ISS=YES DSIM_WORK=/mux-flow/build/repo/dsim_work DSIM_RESULTS=/mux-flow/build/results",
+            "wavesCmd":    "cd cv32/sim/uvmt_cv32; make compliance RISCV_ISA=rv32i COMPLIANCE_PROG=I-ADDI-01 SIMULATOR=dsim USE_ISS=YES DSIM_WORK=/mux-flow/build/repo/dsim_work DSIM_RESULTS=/mux-flow/build/results WAVES=1 DSIM_DMP_FILE=I-ADDI-01.vcd",
+            "metricsFile": "I-ADDI-01/metrics.db",
+            "wavesFile" :  "I-ADDI-01/hello-world.vcd",
+            "isPass":      "SIMULATION PASSED",
+            "seed":        1
+          },
+          {
+            "name":        "RISCV_COMPLIANCE_I-NOP-01",
+            "build":       "uvmt_cv32_compliance_build",
+            "cmd":         "cd cv32/sim/uvmt_cv32; make compliance RISCV_ISA=rv32i COMPLIANCE_PROG=I-NOP-01 SIMULATOR=dsim USE_ISS=YES DSIM_WORK=/mux-flow/build/repo/dsim_work DSIM_RESULTS=/mux-flow/build/results",
+            "wavesCmd":    "cd cv32/sim/uvmt_cv32; make compliance RISCV_ISA=rv32i COMPLIANCE_PROG=I-NOP-01 SIMULATOR=dsim USE_ISS=YES DSIM_WORK=/mux-flow/build/repo/dsim_work DSIM_RESULTS=/mux-flow/build/results WAVES=1 DSIM_DMP_FILE=I-NOP-01.vcd",
+            "metricsFile": "I-NOP-01/metrics.db",
+            "wavesFile" :  "I-NOP-01/hello-world.vcd",
+            "isPass":      "SIMULATION PASSED",
+            "seed":        1
+          },
+          {
+            "name":        "RISCV_COMPLIANCE_I-SLTI-01",
+            "build":       "uvmt_cv32_compliance_build",
+            "cmd":         "cd cv32/sim/uvmt_cv32; make compliance RISCV_ISA=rv32i COMPLIANCE_PROG=I-SLTI-01 SIMULATOR=dsim USE_ISS=YES DSIM_WORK=/mux-flow/build/repo/dsim_work DSIM_RESULTS=/mux-flow/build/results",
+            "wavesCmd":    "cd cv32/sim/uvmt_cv32; make compliance RISCV_ISA=rv32i COMPLIANCE_PROG=I-SLTI-01 SIMULATOR=dsim USE_ISS=YES DSIM_WORK=/mux-flow/build/repo/dsim_work DSIM_RESULTS=/mux-flow/build/results WAVES=1 DSIM_DMP_FILE=I-SLTI-01.vcd",
+            "metricsFile": "I-SLTI-01/metrics.db",
+            "wavesFile" :  "I-SLTI-01/hello-world.vcd",
+            "isPass":      "SIMULATION PASSED",
+            "seed":        1
+          },
+          {
+            "name":        "RISCV_COMPLIANCE_I-SH-01",
+            "build":       "uvmt_cv32_compliance_build",
+            "cmd":         "cd cv32/sim/uvmt_cv32; make compliance RISCV_ISA=rv32i COMPLIANCE_PROG=I-SH-01 SIMULATOR=dsim USE_ISS=YES DSIM_WORK=/mux-flow/build/repo/dsim_work DSIM_RESULTS=/mux-flow/build/results",
+            "wavesCmd":    "cd cv32/sim/uvmt_cv32; make compliance RISCV_ISA=rv32i COMPLIANCE_PROG=I-SH-01 SIMULATOR=dsim USE_ISS=YES DSIM_WORK=/mux-flow/build/repo/dsim_work DSIM_RESULTS=/mux-flow/build/results WAVES=1 DSIM_DMP_FILE=I-SH-01.vcd",
+            "metricsFile": "I-SH-01/metrics.db",
+            "wavesFile" :  "I-SH-01/hello-world.vcd",
+            "isPass":      "SIMULATION PASSED",
+            "seed":        1
+          },
+          {
+            "name":        "RISCV_COMPLIANCE_I-BGE-01",
+            "build":       "uvmt_cv32_compliance_build",
+            "cmd":         "cd cv32/sim/uvmt_cv32; make compliance RISCV_ISA=rv32i COMPLIANCE_PROG=I-BGE-01 SIMULATOR=dsim USE_ISS=YES DSIM_WORK=/mux-flow/build/repo/dsim_work DSIM_RESULTS=/mux-flow/build/results",
+            "wavesCmd":    "cd cv32/sim/uvmt_cv32; make compliance RISCV_ISA=rv32i COMPLIANCE_PROG=I-BGE-01 SIMULATOR=dsim USE_ISS=YES DSIM_WORK=/mux-flow/build/repo/dsim_work DSIM_RESULTS=/mux-flow/build/results WAVES=1 DSIM_DMP_FILE=I-BGE-01.vcd",
+            "metricsFile": "I-BGE-01/metrics.db",
+            "wavesFile" :  "I-BGE-01/hello-world.vcd",
+            "isPass":      "SIMULATION PASSED",
+            "seed":        1
+          },
+          {
+            "name":        "RISCV_COMPLIANCE_I-BEQ-01",
+            "build":       "uvmt_cv32_compliance_build",
+            "cmd":         "cd cv32/sim/uvmt_cv32; make compliance RISCV_ISA=rv32i COMPLIANCE_PROG=I-BEQ-01 SIMULATOR=dsim USE_ISS=YES DSIM_WORK=/mux-flow/build/repo/dsim_work DSIM_RESULTS=/mux-flow/build/results",
+            "wavesCmd":    "cd cv32/sim/uvmt_cv32; make compliance RISCV_ISA=rv32i COMPLIANCE_PROG=I-BEQ-01 SIMULATOR=dsim USE_ISS=YES DSIM_WORK=/mux-flow/build/repo/dsim_work DSIM_RESULTS=/mux-flow/build/results WAVES=1 DSIM_DMP_FILE=I-BEQ-01.vcd",
+            "metricsFile": "I-BEQ-01/metrics.db",
+            "wavesFile" :  "I-BEQ-01/hello-world.vcd",
+            "isPass":      "SIMULATION PASSED",
+            "seed":        1
+          },
+          {
+            "name":        "RISCV_COMPLIANCE_I-AUIPC-01",
+            "build":       "uvmt_cv32_compliance_build",
+            "cmd":         "cd cv32/sim/uvmt_cv32; make compliance RISCV_ISA=rv32i COMPLIANCE_PROG=I-AUIPC-01 SIMULATOR=dsim USE_ISS=YES DSIM_WORK=/mux-flow/build/repo/dsim_work DSIM_RESULTS=/mux-flow/build/results",
+            "wavesCmd":    "cd cv32/sim/uvmt_cv32; make compliance RISCV_ISA=rv32i COMPLIANCE_PROG=I-AUIPC-01 SIMULATOR=dsim USE_ISS=YES DSIM_WORK=/mux-flow/build/repo/dsim_work DSIM_RESULTS=/mux-flow/build/results WAVES=1 DSIM_DMP_FILE=I-AUIPC-01.vcd",
+            "metricsFile": "I-AUIPC-01/metrics.db",
+            "wavesFile" :  "I-AUIPC-01/hello-world.vcd",
+            "isPass":      "SIMULATION PASSED",
+            "seed":        1
+          },
+          {
+            "name":        "RISCV_COMPLIANCE_I-JALR-01",
+            "build":       "uvmt_cv32_compliance_build",
+            "cmd":         "cd cv32/sim/uvmt_cv32; make compliance RISCV_ISA=rv32i COMPLIANCE_PROG=I-JALR-01 SIMULATOR=dsim USE_ISS=YES DSIM_WORK=/mux-flow/build/repo/dsim_work DSIM_RESULTS=/mux-flow/build/results",
+            "wavesCmd":    "cd cv32/sim/uvmt_cv32; make compliance RISCV_ISA=rv32i COMPLIANCE_PROG=I-JALR-01 SIMULATOR=dsim USE_ISS=YES DSIM_WORK=/mux-flow/build/repo/dsim_work DSIM_RESULTS=/mux-flow/build/results WAVES=1 DSIM_DMP_FILE=I-JALR-01.vcd",
+            "metricsFile": "I-JALR-01/metrics.db",
+            "wavesFile" :  "I-JALR-01/hello-world.vcd",
+            "isPass":      "SIMULATION PASSED",
+            "seed":        1
+          },
+          {
+            "name":        "RISCV_COMPLIANCE_I-LBU-01",
+            "build":       "uvmt_cv32_compliance_build",
+            "cmd":         "cd cv32/sim/uvmt_cv32; make compliance RISCV_ISA=rv32i COMPLIANCE_PROG=I-LBU-01 SIMULATOR=dsim USE_ISS=YES DSIM_WORK=/mux-flow/build/repo/dsim_work DSIM_RESULTS=/mux-flow/build/results",
+            "wavesCmd":    "cd cv32/sim/uvmt_cv32; make compliance RISCV_ISA=rv32i COMPLIANCE_PROG=I-LBU-01 SIMULATOR=dsim USE_ISS=YES DSIM_WORK=/mux-flow/build/repo/dsim_work DSIM_RESULTS=/mux-flow/build/results WAVES=1 DSIM_DMP_FILE=I-LBU-01.vcd",
+            "metricsFile": "I-LBU-01/metrics.db",
+            "wavesFile" :  "I-LBU-01/hello-world.vcd",
+            "isPass":      "SIMULATION PASSED",
+            "seed":        1
+          },
+          {
+            "name":        "RISCV_COMPLIANCE_I-ANDI-01",
+            "build":       "uvmt_cv32_compliance_build",
+            "cmd":         "cd cv32/sim/uvmt_cv32; make compliance RISCV_ISA=rv32i COMPLIANCE_PROG=I-ANDI-01 SIMULATOR=dsim USE_ISS=YES DSIM_WORK=/mux-flow/build/repo/dsim_work DSIM_RESULTS=/mux-flow/build/results",
+            "wavesCmd":    "cd cv32/sim/uvmt_cv32; make compliance RISCV_ISA=rv32i COMPLIANCE_PROG=I-ANDI-01 SIMULATOR=dsim USE_ISS=YES DSIM_WORK=/mux-flow/build/repo/dsim_work DSIM_RESULTS=/mux-flow/build/results WAVES=1 DSIM_DMP_FILE=I-ANDI-01.vcd",
+            "metricsFile": "I-ANDI-01/metrics.db",
+            "wavesFile" :  "I-ANDI-01/hello-world.vcd",
+            "isPass":      "SIMULATION PASSED",
+            "seed":        1
+          },
+          {
+            "name":        "RISCV_COMPLIANCE_I-SLTIU-01",
+            "build":       "uvmt_cv32_compliance_build",
+            "cmd":         "cd cv32/sim/uvmt_cv32; make compliance RISCV_ISA=rv32i COMPLIANCE_PROG=I-SLTIU-01 SIMULATOR=dsim USE_ISS=YES DSIM_WORK=/mux-flow/build/repo/dsim_work DSIM_RESULTS=/mux-flow/build/results",
+            "wavesCmd":    "cd cv32/sim/uvmt_cv32; make compliance RISCV_ISA=rv32i COMPLIANCE_PROG=I-SLTIU-01 SIMULATOR=dsim USE_ISS=YES DSIM_WORK=/mux-flow/build/repo/dsim_work DSIM_RESULTS=/mux-flow/build/results WAVES=1 DSIM_DMP_FILE=I-SLTIU-01.vcd",
+            "metricsFile": "I-SLTIU-01/metrics.db",
+            "wavesFile" :  "I-SLTIU-01/hello-world.vcd",
+            "isPass":      "SIMULATION PASSED",
+            "seed":        1
+          },
+          {
+            "name":        "RISCV_COMPLIANCE_I-SRA-01",
+            "build":       "uvmt_cv32_compliance_build",
+            "cmd":         "cd cv32/sim/uvmt_cv32; make compliance RISCV_ISA=rv32i COMPLIANCE_PROG=I-SRA-01 SIMULATOR=dsim USE_ISS=YES DSIM_WORK=/mux-flow/build/repo/dsim_work DSIM_RESULTS=/mux-flow/build/results",
+            "wavesCmd":    "cd cv32/sim/uvmt_cv32; make compliance RISCV_ISA=rv32i COMPLIANCE_PROG=I-SRA-01 SIMULATOR=dsim USE_ISS=YES DSIM_WORK=/mux-flow/build/repo/dsim_work DSIM_RESULTS=/mux-flow/build/results WAVES=1 DSIM_DMP_FILE=I-SRA-01.vcd",
+            "metricsFile": "I-SRA-01/metrics.db",
+            "wavesFile" :  "I-SRA-01/hello-world.vcd",
+            "isPass":      "SIMULATION PASSED",
+            "seed":        1
+          },
+          {
+            "name":        "RISCV_COMPLIANCE_I-IO-01",
+            "build":       "uvmt_cv32_compliance_build",
+            "cmd":         "cd cv32/sim/uvmt_cv32; make compliance RISCV_ISA=rv32i COMPLIANCE_PROG=I-IO-01 SIMULATOR=dsim USE_ISS=YES DSIM_WORK=/mux-flow/build/repo/dsim_work DSIM_RESULTS=/mux-flow/build/results",
+            "wavesCmd":    "cd cv32/sim/uvmt_cv32; make compliance RISCV_ISA=rv32i COMPLIANCE_PROG=I-IO-01 SIMULATOR=dsim USE_ISS=YES DSIM_WORK=/mux-flow/build/repo/dsim_work DSIM_RESULTS=/mux-flow/build/results WAVES=1 DSIM_DMP_FILE=I-IO-01.vcd",
+            "metricsFile": "I-IO-01/metrics.db",
+            "wavesFile" :  "I-IO-01/hello-world.vcd",
+            "isPass":      "SIMULATION PASSED",
+            "seed":        1
+          },
+          {
+            "name":        "RISCV_COMPLIANCE_I-XOR-01",
+            "build":       "uvmt_cv32_compliance_build",
+            "cmd":         "cd cv32/sim/uvmt_cv32; make compliance RISCV_ISA=rv32i COMPLIANCE_PROG=I-XOR-01 SIMULATOR=dsim USE_ISS=YES DSIM_WORK=/mux-flow/build/repo/dsim_work DSIM_RESULTS=/mux-flow/build/results",
+            "wavesCmd":    "cd cv32/sim/uvmt_cv32; make compliance RISCV_ISA=rv32i COMPLIANCE_PROG=I-XOR-01 SIMULATOR=dsim USE_ISS=YES DSIM_WORK=/mux-flow/build/repo/dsim_work DSIM_RESULTS=/mux-flow/build/results WAVES=1 DSIM_DMP_FILE=I-XOR-01.vcd",
+            "metricsFile": "I-XOR-01/metrics.db",
+            "wavesFile" :  "I-XOR-01/hello-world.vcd",
+            "isPass":      "SIMULATION PASSED",
+            "seed":        1
+          },
+          {
+            "name":        "RISCV_COMPLIANCE_I-ENDIANESS-01",
+            "build":       "uvmt_cv32_compliance_build",
+            "cmd":         "cd cv32/sim/uvmt_cv32; make compliance RISCV_ISA=rv32i COMPLIANCE_PROG=I-ENDIANESS-01 SIMULATOR=dsim USE_ISS=YES DSIM_WORK=/mux-flow/build/repo/dsim_work DSIM_RESULTS=/mux-flow/build/results",
+            "wavesCmd":    "cd cv32/sim/uvmt_cv32; make compliance RISCV_ISA=rv32i COMPLIANCE_PROG=I-ENDIANESS-01 SIMULATOR=dsim USE_ISS=YES DSIM_WORK=/mux-flow/build/repo/dsim_work DSIM_RESULTS=/mux-flow/build/results WAVES=1 DSIM_DMP_FILE=I-ENDIANESS-01.vcd",
+            "metricsFile": "I-ENDIANESS-01/metrics.db",
+            "wavesFile" :  "I-ENDIANESS-01/hello-world.vcd",
+            "isPass":      "SIMULATION PASSED",
+            "seed":        1
+          },
+          {
+            "name":        "RISCV_COMPLIANCE_I-LH-01",
+            "build":       "uvmt_cv32_compliance_build",
+            "cmd":         "cd cv32/sim/uvmt_cv32; make compliance RISCV_ISA=rv32i COMPLIANCE_PROG=I-LH-01 SIMULATOR=dsim USE_ISS=YES DSIM_WORK=/mux-flow/build/repo/dsim_work DSIM_RESULTS=/mux-flow/build/results",
+            "wavesCmd":    "cd cv32/sim/uvmt_cv32; make compliance RISCV_ISA=rv32i COMPLIANCE_PROG=I-LH-01 SIMULATOR=dsim USE_ISS=YES DSIM_WORK=/mux-flow/build/repo/dsim_work DSIM_RESULTS=/mux-flow/build/results WAVES=1 DSIM_DMP_FILE=I-LH-01.vcd",
+            "metricsFile": "I-LH-01/metrics.db",
+            "wavesFile" :  "I-LH-01/hello-world.vcd",
+            "isPass":      "SIMULATION PASSED",
+            "seed":        1
+          },
+          {
+            "name":        "RISCV_COMPLIANCE_I-ADD-01",
+            "build":       "uvmt_cv32_compliance_build",
+            "cmd":         "cd cv32/sim/uvmt_cv32; make compliance RISCV_ISA=rv32i COMPLIANCE_PROG=I-ADD-01 SIMULATOR=dsim USE_ISS=YES DSIM_WORK=/mux-flow/build/repo/dsim_work DSIM_RESULTS=/mux-flow/build/results",
+            "wavesCmd":    "cd cv32/sim/uvmt_cv32; make compliance RISCV_ISA=rv32i COMPLIANCE_PROG=I-ADD-01 SIMULATOR=dsim USE_ISS=YES DSIM_WORK=/mux-flow/build/repo/dsim_work DSIM_RESULTS=/mux-flow/build/results WAVES=1 DSIM_DMP_FILE=I-ADD-01.vcd",
+            "metricsFile": "I-ADD-01/metrics.db",
+            "wavesFile" :  "I-ADD-01/hello-world.vcd",
+            "isPass":      "SIMULATION PASSED",
+            "seed":        1
+          },
+          {
+            "name":        "RISCV_COMPLIANCE_I-SB-01",
+            "build":       "uvmt_cv32_compliance_build",
+            "cmd":         "cd cv32/sim/uvmt_cv32; make compliance RISCV_ISA=rv32i COMPLIANCE_PROG=I-SB-01 SIMULATOR=dsim USE_ISS=YES DSIM_WORK=/mux-flow/build/repo/dsim_work DSIM_RESULTS=/mux-flow/build/results",
+            "wavesCmd":    "cd cv32/sim/uvmt_cv32; make compliance RISCV_ISA=rv32i COMPLIANCE_PROG=I-SB-01 SIMULATOR=dsim USE_ISS=YES DSIM_WORK=/mux-flow/build/repo/dsim_work DSIM_RESULTS=/mux-flow/build/results WAVES=1 DSIM_DMP_FILE=I-SB-01.vcd",
+            "metricsFile": "I-SB-01/metrics.db",
+            "wavesFile" :  "I-SB-01/hello-world.vcd",
+            "isPass":      "SIMULATION PASSED",
+            "seed":        1
+          },
+          {
+            "name":        "RISCV_COMPLIANCE_I-SLTU-01",
+            "build":       "uvmt_cv32_compliance_build",
+            "cmd":         "cd cv32/sim/uvmt_cv32; make compliance RISCV_ISA=rv32i COMPLIANCE_PROG=I-SLTU-01 SIMULATOR=dsim USE_ISS=YES DSIM_WORK=/mux-flow/build/repo/dsim_work DSIM_RESULTS=/mux-flow/build/results",
+            "wavesCmd":    "cd cv32/sim/uvmt_cv32; make compliance RISCV_ISA=rv32i COMPLIANCE_PROG=I-SLTU-01 SIMULATOR=dsim USE_ISS=YES DSIM_WORK=/mux-flow/build/repo/dsim_work DSIM_RESULTS=/mux-flow/build/results WAVES=1 DSIM_DMP_FILE=I-SLTU-01.vcd",
+            "metricsFile": "I-SLTU-01/metrics.db",
+            "wavesFile" :  "I-SLTU-01/hello-world.vcd",
+            "isPass":      "SIMULATION PASSED",
+            "seed":        1
+          },
+          {
+            "name":        "RISCV_COMPLIANCE_I-SRLI-01",
+            "build":       "uvmt_cv32_compliance_build",
+            "cmd":         "cd cv32/sim/uvmt_cv32; make compliance RISCV_ISA=rv32i COMPLIANCE_PROG=I-SRLI-01 SIMULATOR=dsim USE_ISS=YES DSIM_WORK=/mux-flow/build/repo/dsim_work DSIM_RESULTS=/mux-flow/build/results",
+            "wavesCmd":    "cd cv32/sim/uvmt_cv32; make compliance RISCV_ISA=rv32i COMPLIANCE_PROG=I-SRLI-01 SIMULATOR=dsim USE_ISS=YES DSIM_WORK=/mux-flow/build/repo/dsim_work DSIM_RESULTS=/mux-flow/build/results WAVES=1 DSIM_DMP_FILE=I-SRLI-01.vcd",
+            "metricsFile": "I-SRLI-01/metrics.db",
+            "wavesFile" :  "I-SRLI-01/hello-world.vcd",
+            "isPass":      "SIMULATION PASSED",
+            "seed":        1
+          },
+          {
+            "name":        "RISCV_COMPLIANCE_I-SLT-01",
+            "build":       "uvmt_cv32_compliance_build",
+            "cmd":         "cd cv32/sim/uvmt_cv32; make compliance RISCV_ISA=rv32i COMPLIANCE_PROG=I-SLT-01 SIMULATOR=dsim USE_ISS=YES DSIM_WORK=/mux-flow/build/repo/dsim_work DSIM_RESULTS=/mux-flow/build/results",
+            "wavesCmd":    "cd cv32/sim/uvmt_cv32; make compliance RISCV_ISA=rv32i COMPLIANCE_PROG=I-SLT-01 SIMULATOR=dsim USE_ISS=YES DSIM_WORK=/mux-flow/build/repo/dsim_work DSIM_RESULTS=/mux-flow/build/results WAVES=1 DSIM_DMP_FILE=I-SLT-01.vcd",
+            "metricsFile": "I-SLT-01/metrics.db",
+            "wavesFile" :  "I-SLT-01/hello-world.vcd",
+            "isPass":      "SIMULATION PASSED",
+            "seed":        1
+          },
+          {
+            "name":        "RISCV_COMPLIANCE_I-SLLI-01",
+            "build":       "uvmt_cv32_compliance_build",
+            "cmd":         "cd cv32/sim/uvmt_cv32; make compliance RISCV_ISA=rv32i COMPLIANCE_PROG=I-SLLI-01 SIMULATOR=dsim USE_ISS=YES DSIM_WORK=/mux-flow/build/repo/dsim_work DSIM_RESULTS=/mux-flow/build/results",
+            "wavesCmd":    "cd cv32/sim/uvmt_cv32; make compliance RISCV_ISA=rv32i COMPLIANCE_PROG=I-SLLI-01 SIMULATOR=dsim USE_ISS=YES DSIM_WORK=/mux-flow/build/repo/dsim_work DSIM_RESULTS=/mux-flow/build/results WAVES=1 DSIM_DMP_FILE=I-SLLI-01.vcd",
+            "metricsFile": "I-SLLI-01/metrics.db",
+            "wavesFile" :  "I-SLLI-01/hello-world.vcd",
+            "isPass":      "SIMULATION PASSED",
+            "seed":        1
+          },
+          {
+            "name":        "RISCV_COMPLIANCE_I-BLTU-01",
+            "build":       "uvmt_cv32_compliance_build",
+            "cmd":         "cd cv32/sim/uvmt_cv32; make compliance RISCV_ISA=rv32i COMPLIANCE_PROG=I-BLTU-01 SIMULATOR=dsim USE_ISS=YES DSIM_WORK=/mux-flow/build/repo/dsim_work DSIM_RESULTS=/mux-flow/build/results",
+            "wavesCmd":    "cd cv32/sim/uvmt_cv32; make compliance RISCV_ISA=rv32i COMPLIANCE_PROG=I-BLTU-01 SIMULATOR=dsim USE_ISS=YES DSIM_WORK=/mux-flow/build/repo/dsim_work DSIM_RESULTS=/mux-flow/build/results WAVES=1 DSIM_DMP_FILE=I-BLTU-01.vcd",
+            "metricsFile": "I-BLTU-01/metrics.db",
+            "wavesFile" :  "I-BLTU-01/hello-world.vcd",
+            "isPass":      "SIMULATION PASSED",
+            "seed":        1
+          },
+          {
+            "name":        "RISCV_COMPLIANCE_I-SUB-01",
+            "build":       "uvmt_cv32_compliance_build",
+            "cmd":         "cd cv32/sim/uvmt_cv32; make compliance RISCV_ISA=rv32i COMPLIANCE_PROG=I-SUB-01 SIMULATOR=dsim USE_ISS=YES DSIM_WORK=/mux-flow/build/repo/dsim_work DSIM_RESULTS=/mux-flow/build/results",
+            "wavesCmd":    "cd cv32/sim/uvmt_cv32; make compliance RISCV_ISA=rv32i COMPLIANCE_PROG=I-SUB-01 SIMULATOR=dsim USE_ISS=YES DSIM_WORK=/mux-flow/build/repo/dsim_work DSIM_RESULTS=/mux-flow/build/results WAVES=1 DSIM_DMP_FILE=I-SUB-01.vcd",
+            "metricsFile": "I-SUB-01/metrics.db",
+            "wavesFile" :  "I-SUB-01/hello-world.vcd",
+            "isPass":      "SIMULATION PASSED",
+            "seed":        1
+          }
+        ]
       }
     }
   ]

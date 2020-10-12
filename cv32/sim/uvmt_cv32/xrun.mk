@@ -98,7 +98,7 @@ IMC_REPORT_ARGS = report_metrics -summary -overwrite -out cov_report
 MERGED_COV_DIR ?= merged_cov
 
 ifeq ($(call IS_YES,$(COV)),YES)
-XRUN_USER_COMPILE_ARGS += $(XRUN_ELAB_COV)
+XRUN_ELAB_COV_FLAGS += $(XRUN_ELAB_COV)
 XRUN_RUN_COV_FLAGS += $(XRUN_RUN_COV)
 endif
 
@@ -198,6 +198,7 @@ comp: mk_xrun_dir $(CV32E40P_PKG) $(OVP_MODEL_DPI)
 	@echo "$(BANNER)"
 	cd $(XRUN_RESULTS) && $(XRUN) \
 		$(XRUN_COMP) \
+		$(XRUN_ELAB_COV_FLAGS) \
 		-top $(RTLSRC_VLOG_TB_TOP) \
 		-l xrun.log \
 		-elaborate
@@ -227,7 +228,7 @@ endif
 
 ################################################################################
 # The new general test target
-test: $(XRUN_SIM_PREREQ) $(TEST_TEST_DIR)/$(TEST_NAME).hex gen_ovpsim_ic
+test: $(XRUN_SIM_PREREQ) $(TEST_TEST_DIR)/$(TEST_PROGRAM).hex gen_ovpsim_ic
 	echo $(IMPERAS_TOOLS)
 	mkdir -p $(XRUN_RESULTS)/$(TEST_NAME) && \
 	cd $(XRUN_RESULTS)/$(TEST_NAME) && \
@@ -238,9 +239,9 @@ test: $(XRUN_SIM_PREREQ) $(TEST_TEST_DIR)/$(TEST_NAME).hex gen_ovpsim_ic
 			-covtest $(TEST_NAME) \
 			$(TEST_PLUSARGS) \
 			+UVM_TESTNAME=$(TEST_UVM_TEST) \
-			+elf_file=$(TEST_TEST_DIR)/$(TEST_NAME).elf \
-			+nm_file=$(TEST_TEST_DIR)/$(TEST_NAME).nm \
-			+firmware=$(TEST_TEST_DIR)/$(TEST_NAME).hex
+			+elf_file=$(TEST_TEST_DIR)/$(TEST_PROGRAM).elf \
+			+nm_file=$(TEST_TEST_DIR)/$(TEST_PROGRAM).nm \
+			+firmware=$(TEST_TEST_DIR)/$(TEST_PROGRAM).hex
 
 ################################################################################
 # Custom test-programs.  See comment in dsim.mk for more info

@@ -34,6 +34,7 @@ module uvmt_cv32e40p_interrupt_assert
 
     // External debug req (for WFI modeling)
     input        debug_req_i,
+    input        debug_mode_q,
 
     // CSR Interface
     input [5:0]  mcause_n, // mcause_n[5]: interrupt, mcause_n[4]: vector
@@ -51,6 +52,9 @@ module uvmt_cv32e40p_interrupt_assert
     input        id_stage_instr_valid_i, // instruction word is valid
     input [31:0] id_stage_instr_rdata_i, // Instruction word data
     input [4:0]  ctrl_fsm_cs,            // Controller FSM to get hint for interrupt taken
+
+    // Determine whether to cancel instruction if branch taken
+    input branch_taken_ex,
 
     // WFI Interface
     input core_sleep_o
@@ -274,22 +278,13 @@ module uvmt_cv32e40p_interrupt_assert
       `uvm_error(info_tag,
                  $sformatf("Did not expect interrupt ack: %0d", irq_id_o))
 
-  // mcause is never a reserved interrupt
-  property p_mcause_irq_not_reserved;
-    mcause_n[5] |-> VALID_IRQ_MASK[mcause_n[4:0]];
-  endproperty
-  a_mcause_irq_not_reserved: assert property(p_mcause_irq_not_reserved)
-    else
-      `uvm_error(info_tag,
-                 $sformatf("MCAUSE[4:0] is reserved value 0x%0x when reporting interrupt", mcause_n[4:0]));
-
   // ---------------------------------------------------------------------------
   // The infamous "first" flag (kludge for $past() handling of t=0 values)
   // Would like to use a leading ##1 in the property instead but this currently
   // does not work with dsim
   // ---------------------------------------------------------------------------
   reg first;
-  always @(negedge clk or negedge rst_ni)
+  always @(posedge clk or negedge rst_ni)
     if (!rst_ni)
       first <= 1'b1;
     else
@@ -330,8 +325,9 @@ module uvmt_cv32e40p_interrupt_assert
   // ---------------------------------------------------------------------------
   // WFI Checks
   // ---------------------------------------------------------------------------
-  assign is_wfi = id_stage_instr_valid_i & 
-                  ((id_stage_instr_rdata_i & WFI_INSTR_MASK) == WFI_INSTR_DATA);
+  assign is_wfi = id_stage_instr_valid_i && 
+                  ((id_stage_instr_rdata_i & WFI_INSTR_MASK) == WFI_INSTR_DATA) &&
+                  !branch_taken_ex;
   always @(posedge clk_i or negedge rst_ni) begin
     if (!rst_ni) begin
       in_wfi <= 1'b0;
@@ -346,8 +342,14 @@ module uvmt_cv32e40p_interrupt_assert
 
   // WFI assertion will assert core_sleep_o in 6 clocks
   property p_wfi_assert_core_sleep_o;
-    $rose(in_wfi) ##1 in_wfi[*6] ##0 !pending_enabled_irq |-> core_sleep_o;
+    !pending_enabled_irq_q ##0 !in_wfi ##1 !pending_enabled_irq_q ##0
+      ((!pending_enabled_irq && !debug_mode_q && !debug_req_i) throughout in_wfi[*38]) 
+             |-> core_sleep_o;
   endproperty
+  a_wfi_assert_core_sleep_o: assert property(p_wfi_assert_core_sleep_o)
+    else
+      `uvm_error(info_tag,
+                 "Aassertion of core_sleep_o did not occur within 6 clocks")
 
   // core_sleep_o deassertion in wfi should be followed by WFI deassertion
   property p_core_sleep_deassert;
@@ -360,7 +362,7 @@ module uvmt_cv32e40p_interrupt_assert
   
   // When WFI deasserts the core should be awake
   property p_wfi_deassert_core_sleep_o;
-    $fell(in_wfi) |-> !core_sleep_o;
+    core_sleep_o ##1 pending_enabled_irq |-> !core_sleep_o;
   endproperty
   a_wfi_deassert_core_sleep_o: assert property(p_wfi_deassert_core_sleep_o) 
     else
@@ -368,9 +370,9 @@ module uvmt_cv32e40p_interrupt_assert
                  "Deassertion of WFI occurred and core is still asleep");
 
   // WFI wakeup to next instruction fetch
-  property p_wfi_wake_to_instr_fetch; 
-    disable iff (!rst_ni || !fetch_enable_i)
-      $fell(in_wfi) |-> ##[1:WFI_WAKEUP_LATENCY] if_stage_instr_rvalid_i;
+  property p_wfi_wake_to_instr_fetch;
+    disable iff (!rst_ni || !fetch_enable_i || debug_mode_q)
+      core_sleep_o ##0 in_wfi ##1 !in_wfi[->1] |-> ##[1:WFI_WAKEUP_LATENCY] if_stage_instr_rvalid_i;
   endproperty
   a_wfi_wake_to_instr_fetch: assert property(p_wfi_wake_to_instr_fetch)
     else

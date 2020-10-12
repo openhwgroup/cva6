@@ -31,6 +31,12 @@
 #include <stdio.h>
 #include <stdlib.h>
 
+#ifdef NO_PULP
+#define EXP_MISA 0x40001104
+#else 
+#define EXP_MISA 0x40801104
+#endif
+
 int main(int argc, char *argv[])
 {
   // User CSRs
@@ -141,8 +147,8 @@ int main(int argc, char *argv[])
     printf("ERROR: CSR MSTATUS not 0x1800!\n\n");
     ++err_cnt;
   }
-  if (misa_rval != 0x40801104) {
-    printf("ERROR: CSR MISA not 0x0!\n\n");
+  if (misa_rval != EXP_MISA) {
+    printf("ERROR: CSR MISA not 0x%x!\n\n", EXP_MISA);
     ++err_cnt;
   }
   if (mie_rval != 0x0) {
@@ -398,14 +404,14 @@ int main(int argc, char *argv[])
     ++err_cnt;
   }
 
-  __asm__ volatile("csrr %0, 0x320" : "=r"(mcountinhibit_rval)); // Modeled, but cannot override PoR 
+  __asm__ volatile("csrr %0, 0x320" : "=r"(mcountinhibit_rval));
 
   if (mcountinhibit_rval != 0xD) {
     printf("ERROR: CSR MCOUNTINHIBIT not 0xD!\n\n");
     ++err_cnt;
   }
  
-  __asm__ volatile("csrr %0, 0x306" : "=r"(mcounteren_rval));    // Not currently modeled
+  //__asm__ volatile("csrr %0, 0x306" : "=r"(mcounteren_rval));    // Not currently modeled
 
   //if (mcounteren_rval != 0x0) {
   //  printf("ERROR: CSR MCOUNTEREN not 0x0!\n\n");
@@ -466,7 +472,7 @@ int main(int argc, char *argv[])
   printf("\tmie           = 0x%0x\n", mie_rval);
   printf("\tmtvec         = 0x%0x\n", mtvec_rval);
   //printf("\tmcounteren    = 0x%0x\n", mcounteren_rval);
-  //printf("\tmcountinhibit = 0x%0x\n", mcountinhibit_rval);
+  printf("\tmcountinhibit = 0x%0x\n", mcountinhibit_rval);
   printf("\tmphmevent3    = 0x%0x\n", mphmevent_rval[3]);
   printf("\tmphmevent31   = 0x%0x\n", mphmevent_rval[31]);
   printf("\tmscratch      = 0x%0x\n", mscratch_rval);
