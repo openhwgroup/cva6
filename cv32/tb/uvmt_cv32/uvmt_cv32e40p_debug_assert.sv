@@ -45,7 +45,7 @@ module uvmt_cv32e40p_debug_assert
   logic [31:0] prev_id_pc;
   logic first_debug_ins_flag;
   logic first_debug_ins;
-
+  logic first_after_wfi;
   logic decode_valid;
   // ---------------------------------------------------------------------------
   // Clocking blocks
@@ -216,13 +216,15 @@ module uvmt_cv32e40p_debug_assert
             `uvm_error(info_tag, $sformatf("WFI in debug mode cause core_sleep_o=1"));
 
     // Debug request while sleeping makes core wake up and enter debug mode
+    // wit cause=haltreq
     property p_sleep_debug_req;
-        cov_assert_if.in_wfi && cov_assert_if.debug_req_i |=> !cov_assert_if.core_sleep_o |-> decode_valid [->1:2] ##0 cov_assert_if.debug_mode_q; 
+        cov_assert_if.in_wfi && cov_assert_if.debug_req_i |=> !cov_assert_if.core_sleep_o |-> decode_valid [->1:2] ##0 cov_assert_if.debug_mode_q &&
+        cov_assert_if.dcsr_q[8:6] == cv32e40p_pkg::DBG_CAUSE_HALTREQ;
     endproperty
 
     a_sleep_debug_req : assert property(p_sleep_debug_req)
         else
-            `uvm_error(info_tag, $sformatf("Did not exit sleep(== %d) after debug_req_i. Debug_mode = %d", cov_assert_if.core_sleep_o, cov_assert_if.debug_mode_q));
+            `uvm_error(info_tag, $sformatf("Did not exit sleep(== %d) after debug_req_i. Debug_mode = %d cause = %d", cov_assert_if.core_sleep_o, cov_assert_if.debug_mode_q, cov_assert_if.dcsr_q[8:6]));
 
     // Accessing debug regs in m-mode is illegal
     property p_debug_regs_mmode;
@@ -361,14 +363,21 @@ module uvmt_cv32e40p_debug_assert
     always @(posedge cov_assert_if.clk_i or negedge cov_assert_if.rst_ni) begin
     if (!cov_assert_if.rst_ni) begin
       cov_assert_if.in_wfi <= 1'b0;
+      first_after_wfi <= 1'b0;
     end
     else begin
       // Enter wfi if we have a valid instruction, not in debug mode and not
       // single stepping
-      if (cov_assert_if.is_wfi && !cov_assert_if.debug_mode_q && cov_assert_if.is_decoding && cov_assert_if.id_stage_instr_valid_i & !cov_assert_if.dcsr_q[2])
+      if (cov_assert_if.is_wfi && !cov_assert_if.debug_mode_q && cov_assert_if.is_decoding && cov_assert_if.id_stage_instr_valid_i & !cov_assert_if.dcsr_q[2]) begin
         cov_assert_if.in_wfi <= 1'b1;
-      else if (cov_assert_if.pending_enabled_irq || cov_assert_if.debug_req_i)
+        first_after_wfi <= 1'b1;
+
+      end else if (cov_assert_if.pending_enabled_irq || cov_assert_if.debug_req_i)
         cov_assert_if.in_wfi <= 1'b0;
+
+      if(cov_assert_if.ctrl_fsm_cs == cv32e40p_pkg::DECODE && cov_assert_if.is_decoding && cov_assert_if.id_stage_instr_valid_i & first_after_wfi)
+          first_after_wfi <= 1'b0;
+        
     end
   end
 
@@ -408,11 +417,11 @@ module uvmt_cv32e40p_debug_assert
             debug_cause_pri <= 3'b000;
         end else begin
             // Debug evaluated in decode state with valid instructions only
-            if(cov_assert_if.ctrl_fsm_cs == cv32e40p_pkg::DECODE) begin
+            if(cov_assert_if.ctrl_fsm_cs == cv32e40p_pkg::DECODE & !cov_assert_if.debug_mode_q) begin
                 if(cov_assert_if.is_decoding & cov_assert_if.id_stage_instr_valid_i) begin
-                    if(cov_assert_if.trigger_match_i)
+                    if(cov_assert_if.trigger_match_i & !first_after_wfi)
                         debug_cause_pri <= 3'b010;
-                    else if((cov_assert_if.dcsr_q[15]) & (cov_assert_if.is_ebreak | cov_assert_if.is_cebreak))
+                    else if((cov_assert_if.dcsr_q[15]) & (cov_assert_if.is_ebreak | cov_assert_if.is_cebreak) & !first_after_wfi)
                         debug_cause_pri <= 3'b001;
                     else if(cov_assert_if.debug_req_i) 
                         debug_cause_pri <= 3'b011;
@@ -420,8 +429,15 @@ module uvmt_cv32e40p_debug_assert
                         debug_cause_pri <= 3'b100;
                     else
                         debug_cause_pri <= 3'b000;
+
                 end
 
+            end else if(cov_assert_if.ctrl_fsm_cs == cv32e40p_pkg::DBG_TAKEN_IF) begin
+                if(cov_assert_if.debug_req_i) begin
+                    debug_cause_pri <= 3'b011;
+                end else if(cov_assert_if.dcsr_q[2]) begin
+                    debug_cause_pri <= 3'b100;
+                end
             end
         end
     end
