@@ -178,8 +178,9 @@ PULP_SW_TOOLCHAIN   ?= /opt/pulp
 PULP_MARCH          ?= unknown
 
 CV_SW_TOOLCHAIN  ?= /opt/riscv
+CV_SW_MARCH      ?= unknown
 RISCV            ?= $(CV_SW_TOOLCHAIN)
-RISCV_PREFIX     ?= riscv32-unknown-elf-
+RISCV_PREFIX     ?= riscv32-$(CV_SW_MARCH)-elf-
 RISCV_EXE_PREFIX ?= $(RISCV)/bin/$(RISCV_PREFIX)
 
 ifeq ($(call IS_YES,$(GNU)),YES)
@@ -342,7 +343,10 @@ endif
 	$(RISCV_EXE_PREFIX)objdump -D -S $*.elf > $*.objdump
 
 bsp:
-	make -C $(BSP)
+	make -C $(BSP) RISCV=$(RISCV) RISCV_PREFIX=$(RISCV_PREFIX) RISCV_EXE_PREFIX=$(RISCV_EXE_PREFIX)
+
+vars-bsp:
+	make vars -C $(BSP) RISCV=$(RISCV) RISCV_PREFIX=$(RISCV_PREFIX) RISCV_EXE_PREFIX=$(RISCV_EXE_PREFIX)
 
 clean-bsp:
 	make clean -C $(BSP)
