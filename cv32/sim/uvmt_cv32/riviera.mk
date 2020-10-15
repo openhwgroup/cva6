@@ -13,6 +13,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+# SPDX-License-Identifier: Apache-2.0 WITH SHL-2.0
 # 
 ###############################################################################
 #
@@ -26,9 +27,9 @@ VLIB   					= vlib
 VMAP 					= vmap
 VLOG 					= $(CV_SIM_PREFIX) vlog
 VSIM 					= $(CV_SIM_PREFIX) vsim
+VWORK     				= work
 
 # Paths
-VWORK     				= work
 VSIM_RESULTS           ?= $(MAKE_PATH)/riviera_results
 VSIM_COREVDV_RESULTS   ?= $(VSIM_RESULTS)/corev-dv
 VSIM_COV_MERGE_DIR     ?= $(VSIM_RESULTS)/merged
@@ -64,7 +65,6 @@ LIBNAME = uvm_dpi
 # VLOG (Compilation)
 VLOG_FLAGS    ?= \
 				-timescale "1ns/1ps" \
-				-sv \
 				-err VCP2694 W1 #for riscv dv
 
 VLOG_FILE_LIST = -f $(DV_UVMT_CV32_PATH)/uvmt_cv32.flist
@@ -95,7 +95,7 @@ endif
 
 # Skip compile if requested (COMP=NO)
 ifneq ($(call IS_NO,$(COMP)),NO)
-VSIM_SIM_PREREQ = 
+VSIM_SIM_PREREQ = comp
 endif
 
 ################################################################################
