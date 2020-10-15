@@ -74,6 +74,7 @@ cv32/sim/
               +--- vsim.mk                  # Mentor Questa
               +--- dsim.mk                  # Metrics dsim
               +--- xrun.mk                  # Cadance Xcelium
+              +--- riviera.mk               # Aldec Riviera-PRO
               +--- <other_simulators>.mk
 ```
 The goal of this structure is to minimize the amount of redundant code in the
@@ -81,7 +82,7 @@ Makefiles and ease the maintance of a given simulator's specific variables,
 rules and targets.
 <br><br>
 The basic usage is: `make SIMULATOR=<sim> <target>` where `sim` is vsim, dsim,
-xrun or vcs and `target` selects a specific testcase or other rule (e.g. "clean").
+ xrun, vcs or riviera and `target` selects a specific testcase or other rule (e.g. "clean").
 <br><br>
 **Hint**: define shell ENV variable "SIMULATOR" to match one of the supported
 simulator-specific Makefiles (e.g. vsim) to save yourself a lot of typing.
@@ -134,27 +135,34 @@ Set the shell variable SIMULATOR to `vcs` to simply run **`make <target>`**.
 with _vcs_ in several weeks.  If you need to update the Makefiles, please do
 so and issue a Pull Request.
 
+Running the environment with Aldec [Riviera-PRO](https://www.aldec.com/en/products/functional_verification/riviera-pro) (riviera)
+----------------------
+The command **make SIMULATOR=riviera sanity** will run the sanity testcase using _riviera_.
+Set the shell variable SIMULATOR to `riviera` to simply run **`make <target>`**.
+
 Common Makefile Flags
 ---------------
 For all tests in the <i>uvmt_cv32</i> directory the following flags and targets are supported for common operations with the simulators.  For all flags and targets described in this section it is assumed that the user will supply a SIMULATOR setting on the make command line or populate the CV_SIMULATOR environment variable.
 
 Current supported simulators: <i>Note that eventually all simulators will be supported</i>
 
-| SIMULATOR | Supported |
-|-----------|-----------|
-|dsim       | Yes       |
-|xrun       | Yes       |
-|questa     | Yes       |
-|vcs        | Yes       |
+| SIMULATOR  | Supported |
+|------------|-----------|
+|dsim        | Yes       |
+|xrun        | Yes       |
+|questa      | Yes       |
+|vcs         | Yes       |
+|Riviera-PRO | Yes       |
 
 For certain simulators multiple debug tools are available that enable advanced debug capabilities but generally require respective licenses from the vendor.  By default all debug-related commands in this section will support a standard debug tool with the simulator.   However support is provided for advanced debug tools when avaiable.  The advanced debug tool is selected with each make command by setting the **ADV_DEBUG=YES** flag.
 
-| SIMULATOR | Standard Debug Tool | Advanced Debug Tool |
-|-----------|---------------------|---------------------|
-| dsim      | N/A                 | N/A                 |
-| xrun      | SimVision           | Indago              |
-| questa    | Questa Tk GUI       | Visualizer          |
-| vcs       | DVE                 | Verdi               |
+| SIMULATOR   | Standard Debug Tool | Advanced Debug Tool |
+|-------------|---------------------|---------------------|
+| dsim        | N/A                 | N/A                 |
+| xrun        | SimVision           | Indago              |
+| questa      | Questa Tk GUI       | Visualizer          |
+| vcs         | DVE                 | Verdi               |
+| Riviera-PRO | Riviera-PRO         | Riviera-PRO         |
 
 ### Interactive Simulation
 

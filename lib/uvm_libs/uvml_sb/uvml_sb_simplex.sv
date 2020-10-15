@@ -206,11 +206,20 @@ endtask: run_phase
 
 function void uvml_sb_simplex_c::check_phase(uvm_phase phase);
 
+`ifdef _VCP
+   uvml_trn_mon_trn_c vcp_temp;
+`endif // end VCP
    if (cfg.enabled) begin
       if (cntxt.exp_q.size() != 0) begin
          `uvm_error("SB", $sformatf("Expected queue is not empty! exp_q.size() = %0d", cntxt.exp_q.size()))
          foreach(cntxt.exp_q[ii]) begin
+`ifdef _VCP
+            vcp_temp = cntxt.exp_q[ii];
+            `uvm_info("SB", $sformatf("exp_q[%0d]: \n%s", ii, temp.sprint()), UVM_MEDIUM)
+`else
             `uvm_info("SB", $sformatf("exp_q[%0d]: \n%s", ii, cntxt.exp_q[ii].sprint()), UVM_MEDIUM)
+`endif//end _VCP
+
          end
       end
       
@@ -259,6 +268,9 @@ task uvml_sb_simplex_c::mode_out_of_order();
    T_TRN         act_trn, exp_trn;
    bit           found_match = 0;
    int unsigned  match_idx   = 0;
+`ifdef _VCP
+   uvml_trn_mon_trn_c vcp_temp;
+`endif //end _VCP
    
    get_act       (act_trn);
    calc_act_stats(exp_trn);
@@ -269,7 +281,12 @@ task uvml_sb_simplex_c::mode_out_of_order();
    end
    else begin
       foreach (cntxt.exp_q[ii]) begin
-         if (cntxt.exp_q[ii].compare(act_trn)) begin
+`ifdef _VCP
+        vcp_temp=exp_q[ii];
+        if (vcp_temp.compare(act_trn)) begin
+`else
+        if (cntxt.exp_q[ii].compare(act_trn)) begin
+`endif //end VCP
             match_idx = ii;
             found_match = 1;
             cntxt.match_count++;

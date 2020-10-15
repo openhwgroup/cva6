@@ -216,7 +216,11 @@ else
 ifeq ($(SIMULATOR), vcs)
 include $(MAKE_PATH)/vcs.mk
 else
+ifeq ($(SIMULATOR), riviera)
+include $(MAKE_PATH)/riviera.mk
+else
 include $(MAKE_PATH)/unsim.mk
+endif
 endif
 endif
 endif
@@ -260,4 +264,3 @@ clean_riscv-dv:
 
 clean_compliance:
 	rm -rf $(COMPLIANCE_PKG)
-

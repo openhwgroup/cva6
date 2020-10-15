@@ -320,7 +320,7 @@ interface uvmt_cv32_debug_cov_assert_if
     input logic [31:0] if_stage_pc, // Program counter in fetch
     input logic        is_decoding,
     input logic        id_valid,
-    input ctrl_state_e  ctrl_fsm_cs,            // Controller FSM states with debug_req
+    input wire ctrl_state_e  ctrl_fsm_cs,            // Controller FSM states with debug_req
     input logic        illegal_insn_i,
     input logic        illegal_insn_q, // output from controller
     input logic        ecall_insn_i,
