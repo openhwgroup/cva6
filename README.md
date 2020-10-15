@@ -2,6 +2,8 @@
 Functional verification project for the CORE-V family of RISC-V cores. This project is under active development.
 
 ## NEWS UPDATES:
+**2020-10-15**: Aldec's Riviera-PRO SystemVerilog simulator is now supported by core-v-verif.  Check out the README in [cv32/sim/uvmt_cv32](https://github.com/openhwgroup/core-v-verif/tree/master/cv32/sim/uvmt_cv32#running-the-environment-with-aldec-riviera-pro-riviera) for more information.
+<br>
 **2020-09-04**: a new (and _much_ better) method of specifying and organizating test-programs and simulations is now merged in.  See slide "_Test Specification Updates_" in the [2020-08-31 CV32E40P project update](https://github.com/openhwgroup/core-v-docs/blob/master/verif/MeetingPresentations/20200831-CV32E40P-ProjectScheduleUpdate.pptx).
 <br>
 **2020-06-12**: a new "Board Support Package" for CV32E40P simulations is installed at `cv32/bsp`.  This BSP should be used to compile/assemble your [test-programs](https://core-v-docs-verif-strat.readthedocs.io/en/latest/test_program_environment.html).  The Makefiles for both the CORE testbench and UVM verification environment have been updated to use this BSP.
