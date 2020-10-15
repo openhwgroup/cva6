@@ -912,8 +912,7 @@ class uvme_rv32isa_covg extends uvm_component;
         cp_rs1    : coverpoint get_gpr_name(ins.ops[1].val, ins.ops[1].key, "srai") {
             bins gprval[] = {[zero:t6]};
         }
-        cp_shamt5   : coverpoint get_imm(ins.ops[2].val,"srai" ){
-            bins neg  = {[$:-1]};
+        cp_shamt5   : coverpoint get_imm(ins.ops[2].val,"srai" ){            
             bins zero = {0};
             bins pos  = {[1:$]};
         }
@@ -1243,17 +1242,11 @@ class uvme_rv32isa_covg extends uvm_component;
     covergroup c_lwsp_cg     with function sample(ins_t ins);
         option.per_instance = 1;
         cp_rd    : coverpoint get_gpr_name(ins.ops[0].val, ins.ops[0].key, "c.lwsp") {
-            bins gprval[] = {[s0:a5]};
-//            bins unexpected[] = default;
+            bins gprval[] = {[ra:t6]};
         }
-        cp_imm6   : coverpoint get_imm(ins.ops[1].val, "c.lwsp") {
-            bins neg  = {[$:-1]};
+        cp_imm6   : coverpoint get_imm(ins.ops[1].val, "c.lwsp") {            
             bins zero = {0};
             bins pos  = {[1:$]};
-        }
-        cp_rs1     : coverpoint get_gpr_name(ins.ops[2].val, ins.ops[2].key, "c.lwsp") {
-            bins gprval[] = {[s0:a5]};
-//            bins unexpected[] = default;
         }
     endgroup
 
@@ -1262,15 +1255,11 @@ class uvme_rv32isa_covg extends uvm_component;
     covergroup c_swsp_cg    with function sample(ins_t ins);
         option.per_instance = 1;
         cp_rs2   : coverpoint get_gpr_name(ins.ops[0].val, ins.ops[0].key, "c.swsp") {
-            bins gprval[] = {[s0:a5]};
+            bins gprval[] = {[ra:t6]};
         }
-        cp_imm6  : coverpoint get_imm(ins.ops[1].val, "c.swsp") {
-            bins neg  = {[$:-1]};
+        cp_imm6  : coverpoint get_imm(ins.ops[1].val, "c.swsp") {            
             bins zero = {0};
             bins pos  = {[1:$]};
-        }
-        cp_rs1     : coverpoint get_gpr_name(ins.ops[2].val, ins.ops[2].key, "c.swsp") {
-            bins gprval[] = {[s0:a5]};
         }
     endgroup
 
@@ -1281,8 +1270,7 @@ class uvme_rv32isa_covg extends uvm_component;
         cp_rd    : coverpoint get_gpr_name(ins.ops[0].val, ins.ops[0].key, "c.lw") {
             bins gprval[] = {[s0:a5]};
         }
-        cp_imm5   : coverpoint get_imm(ins.ops[1].val, "c.lw") {
-            bins neg  = {[$:-1]};
+        cp_imm5   : coverpoint get_imm(ins.ops[1].val, "c.lw") {            
             bins zero = {0};
             bins pos  = {[1:$]};
         }
@@ -1298,8 +1286,7 @@ class uvme_rv32isa_covg extends uvm_component;
         cp_rs1     : coverpoint get_gpr_name(ins.ops[0].val, ins.ops[0].key, "c.sw") {
             bins gprval[] = {[s0:a5]};
         }
-        cp_imm5   : coverpoint get_imm(ins.ops[1].val, "c.sw") {
-            bins neg  = {[$:-1]};
+        cp_imm5   : coverpoint get_imm(ins.ops[1].val, "c.sw") {            
             bins zero = {0};
             bins pos  = {[1:$]};
         }
@@ -1367,7 +1354,8 @@ class uvme_rv32isa_covg extends uvm_component;
         cp_rd    : coverpoint get_gpr_name(ins.ops[0].val, ins.ops[0].key, "c.lui") {
             bins gprval[] = {ra,[gp:a5]};
         }
-        cp_uimm6   : coverpoint get_imm(ins.ops[1].val,"c.lui" ) {    
+        cp_imm6   : coverpoint get_imm(ins.ops[1].val,"c.lui" ) {    
+            bins neg  = {[$:-1]};
             bins zero = {0};
             bins pos  = {[1:$]};
         }
@@ -1497,8 +1485,12 @@ class uvme_rv32isa_covg extends uvm_component;
 // FIXME: DONE
     covergroup c_add_cg with function sample(ins_t ins);
         option.per_instance = 1;
-        cp_rd     : coverpoint get_gpr_name(ins.ops[0].val, ins.ops[0].key, "c.add");
-        cp_rs2    : coverpoint get_gpr_name(ins.ops[2].val, ins.ops[2].key, "c.add");
+        cp_rd     : coverpoint get_gpr_name(ins.ops[0].val, ins.ops[0].key, "c.add") {
+          bins gprval[] = {[ra:t6]};
+        }
+        cp_rs1    : coverpoint get_gpr_name(ins.ops[2].val, ins.ops[2].key, "c.add") {
+          bins gprval[] = {[ra:t6]};
+        }
     endgroup
 
 // TODO : missing coverage of all combinations of source and destination operands.
