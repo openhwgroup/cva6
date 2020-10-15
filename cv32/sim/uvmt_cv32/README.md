@@ -25,10 +25,9 @@ go to the [Imperas website](http://www.imperas.com/) for installation instructio
 SystemVerilog Simulators
 ----------------------------------
 Any SystemVerilog simulator that implements complete support for [IEEE-1800-2017](https://ieeexplore.ieee.org/document/8299595)
-will be able to compile and run this verification environment. At the time of this writting
-(2020-02-08) the Metrics **_dsim_**, Cadence **_Xcelium_**, Mentor's **_Questa_**  and Synopsys **_VCS_** simulators are supported by the Makefiles. 
-If you have access to other SystemVerilog simulators such as Aldec **_RivieraPRO_** or some other simulator
-not listed here and would like to add support to the Makefile, your pull-request will be graciously accepted!
+will be able to compile and run this verification environment. Metrics **_dsim_**, Cadence **_Xcelium_**, Mentor's **_Questa_**,
+Aldec's **_Riviera-PRO_**  and Synopsys **_VCS_** simulators are supported by the Makefiles. If you have access to a SystemVerilog
+simulator not listed here and would like to add support to the Makefiles, your pull-request will be graciously accepted!
 
 UVM-1.2 Libraries
 -------------
