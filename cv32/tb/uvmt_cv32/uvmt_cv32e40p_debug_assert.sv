@@ -45,7 +45,6 @@ module uvmt_cv32e40p_debug_assert
   logic [31:0] prev_id_pc;
   logic first_debug_ins_flag;
   logic first_debug_ins;
-  logic first_after_wfi;
   logic decode_valid;
   // ---------------------------------------------------------------------------
   // Clocking blocks
@@ -363,21 +362,16 @@ module uvmt_cv32e40p_debug_assert
     always @(posedge cov_assert_if.clk_i or negedge cov_assert_if.rst_ni) begin
     if (!cov_assert_if.rst_ni) begin
       cov_assert_if.in_wfi <= 1'b0;
-      first_after_wfi <= 1'b0;
     end
     else begin
       // Enter wfi if we have a valid instruction, not in debug mode and not
       // single stepping
       if (cov_assert_if.is_wfi && !cov_assert_if.debug_mode_q && cov_assert_if.is_decoding && cov_assert_if.id_stage_instr_valid_i & !cov_assert_if.dcsr_q[2]) begin
         cov_assert_if.in_wfi <= 1'b1;
-        first_after_wfi <= 1'b1;
 
       end else if (cov_assert_if.pending_enabled_irq || cov_assert_if.debug_req_i)
         cov_assert_if.in_wfi <= 1'b0;
-
-      if(cov_assert_if.ctrl_fsm_cs == cv32e40p_pkg::DECODE && cov_assert_if.is_decoding && cov_assert_if.id_stage_instr_valid_i & first_after_wfi)
-          first_after_wfi <= 1'b0;
-        
+       
     end
   end
 
@@ -419,9 +413,9 @@ module uvmt_cv32e40p_debug_assert
             // Debug evaluated in decode state with valid instructions only
             if(cov_assert_if.ctrl_fsm_cs == cv32e40p_pkg::DECODE & !cov_assert_if.debug_mode_q) begin
                 if(cov_assert_if.is_decoding & cov_assert_if.id_stage_instr_valid_i) begin
-                    if(cov_assert_if.trigger_match_i & !first_after_wfi)
+                    if(cov_assert_if.trigger_match_i)
                         debug_cause_pri <= 3'b010;
-                    else if((cov_assert_if.dcsr_q[15]) & (cov_assert_if.is_ebreak | cov_assert_if.is_cebreak) & !first_after_wfi)
+                    else if((cov_assert_if.dcsr_q[15]) & (cov_assert_if.is_ebreak | cov_assert_if.is_cebreak))
                         debug_cause_pri <= 3'b001;
                     else if(cov_assert_if.debug_req_i) 
                         debug_cause_pri <= 3'b011;
