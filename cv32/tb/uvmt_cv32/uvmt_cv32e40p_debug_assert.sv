@@ -79,11 +79,7 @@ module uvmt_cv32e40p_debug_assert
         else
             `uvm_error(info_tag, $sformatf("Debug mode not entered after exepected cause %d", debug_cause_pri));
 
-    // debug_req_i results in debug mode
-    // TBD: Is there a fixed latency for this?
-    // Only check when instr_valid_i is high, as debug_req is only evaluated
-    // in decode with a valid instruction
-    // Exclude ebreak and trigger as these have higher priority
+    // Checck that depc gets the correct value when debug mode is entered.
     property p_debug_mode_pc;
         $rose(first_debug_ins) |-> cov_assert_if.debug_mode_q && (prev_id_pc == halt_addr_at_entry) && (cov_assert_if.depc_q == pc_at_dbg_req);
     endproperty   
@@ -92,6 +88,7 @@ module uvmt_cv32e40p_debug_assert
         else
             `uvm_error(info_tag, $sformatf("Debug mode entered with wrong pc. pc==%08x",prev_id_pc));
 
+    // Check that debug with cause haltreq is correct
     property p_debug_mode_ext_req;
         $rose(cov_assert_if.debug_mode_q) && (cov_assert_if.dcsr_q[8:6] == cv32e40p_pkg::DBG_CAUSE_HALTREQ) 
         |-> debug_cause_pri == cv32e40p_pkg::DBG_CAUSE_HALTREQ;
@@ -101,7 +98,7 @@ module uvmt_cv32e40p_debug_assert
         else
             `uvm_error(info_tag, $sformatf("Debug cause not correct for haltreq, cause = %d",cov_assert_if.dcsr_q[8:6]));
 
-    // c.ebreak with dcsr.ebreakm results in debug mode
+    // Check that debug with cause ebreak is correct
     property p_cebreak_debug_mode;
         $rose(cov_assert_if.debug_mode_q) && (cov_assert_if.dcsr_q[8:6] == cv32e40p_pkg::DBG_CAUSE_EBREAK)
         |-> debug_cause_pri == cv32e40p_pkg::DBG_CAUSE_EBREAK;
@@ -110,20 +107,10 @@ module uvmt_cv32e40p_debug_assert
     a_cebreak_debug_mode: assert property(p_cebreak_debug_mode)
         else
             `uvm_error(info_tag,$sformatf("Debug mode with wrong cause after ebreak, case = %d",cov_assert_if.dcsr_q[8:6]));
-/*
-    // ebreak with dcsr.ebreakm results in debug mode
-    property p_ebreak_debug_mode;
-        $rose(cov_assert_if.is_ebreak) && cov_assert_if.dcsr_q[15] == 1'b1 && !cov_assert_if.debug_mode_q && cov_assert_if.id_valid|-> ##[1:40] cov_assert_if.debug_mode_q && (cov_assert_if.dcsr_q[8:6] === cv32e40p_pkg::DBG_CAUSE_EBREAK) &&
-                                                            (cov_assert_if.depc_q == pc_at_dbg_req) &&
-                                                            (cov_assert_if.id_stage_pc == halt_addr_at_entry);
-    endproperty
-
-    a_ebreak_debug_mode: assert property(p_ebreak_debug_mode)
-        else
-            `uvm_error(info_tag,$sformatf("Debug mode not entered following ebreak with dcsr.ebreakm or wrong cause. Cause=%d",cov_assert_if.dcsr_q[8:6]));
-*/
 
     // c.ebreak without dcsr.ebreakm results in exception at mtvec
+    // TODO: This is expected to fail formal as the sequence gets long and
+    // complicated.
     property p_cebreak_exception;
         $rose(cov_assert_if.is_cebreak) && cov_assert_if.dcsr_q[15] == 1'b0 && !cov_assert_if.debug_mode_q  && cov_assert_if.is_decoding && cov_assert_if.id_valid &&
         !cov_assert_if.debug_req_i 
@@ -134,9 +121,23 @@ module uvmt_cv32e40p_debug_assert
     
     a_cebreak_exception: assert property(p_cebreak_exception)
         else
-            `uvm_error(info_tag,$sformatf("Exception not entered correctly after ebreak with dcsr.ebreak=0"));
+            `uvm_error(info_tag,$sformatf("Exception not entered correctly after c.ebreak with dcsr.ebreak=0"));
 
+    // ebreak without dcsr.ebreakm results in exception at mtvec
+    property p_ebreak_exception;
+        $rose(cov_assert_if.is_ebreak) && cov_assert_if.dcsr_q[15] == 1'b0 && !cov_assert_if.debug_mode_q  && cov_assert_if.is_decoding && cov_assert_if.id_valid &&
+        !cov_assert_if.debug_req_i 
+        |-> (decode_valid & cov_assert_if.id_valid) [->2] ##0  !cov_assert_if.debug_mode_q && (cov_assert_if.mcause_q[5:0] === cv32e40p_pkg::EXC_CAUSE_BREAKPOINT) 
+                                                                && (cov_assert_if.mepc_q == pc_at_ebreak) &&
+                                                                   (cov_assert_if.id_stage_pc == cov_assert_if.mtvec);
+    endproperty
+    
+    // TODO: Fails formal as above
+    a_ebreak_exception: assert property(p_ebreak_exception)
+        else
+            `uvm_error(info_tag,$sformatf("Exception not entered correctly after ebreak with dcsr.ebreak=0"));
     // c.ebreak during debug mode results in relaunch of debug mode
+
     property p_cebreak_during_debug_mode;
         $rose(cov_assert_if.is_cebreak) ##0 cov_assert_if.debug_mode_q  |-> decode_valid [->2] ##0 cov_assert_if.debug_mode_q  &&
                                                        (cov_assert_if.id_stage_pc == halt_addr_at_entry); // TODO should check no change in dpc and dcsr
@@ -265,6 +266,15 @@ module uvmt_cv32e40p_debug_assert
         else
             `uvm_error(info_tag, "Debug mode not entered after single step WFI or core went sleeping");
 
+    // Executing with single step with no irq results in debug mode
+    property p_single_step;
+        !cov_assert_if.debug_mode_q && cov_assert_if.dcsr_q[2] && !cov_assert_if.dcsr_q[11] && decode_valid |=>  decode_valid [->1] ##0 cov_assert_if.debug_mode_q;
+    endproperty
+
+    a_single_step: assert property(p_single_step)
+        else
+            `uvm_error(info_tag, "Debug mode not entered for single step");
+
     // dret in M-mode will cause illegal instruction
     // If pending debug req, illegal insn will not assert
     // until resume
@@ -335,6 +345,8 @@ module uvmt_cv32e40p_debug_assert
     a_debug_req_and_irq : assert property(p_debug_req_and_irq)
         else
             `uvm_error(info_tag, "Debug mode not entered after debug_req_i and irq on same cycle");
+
+    
 
 // -------------------------------------------
     // Capture internal states for use in checking
