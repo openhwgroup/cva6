@@ -2,7 +2,7 @@
 ---
 # Header
 name: cv32_full
-description: Full regression (all tests) for CV32E40P with step-and-compare against RM"
+description: Full regression (all tests) for CV32E40P with step-and-compare against RM
 
 # List of builds
 builds:
@@ -35,7 +35,7 @@ tests:
 
   hpmcounter_basic_test:
     build: uvmt_cv32
-    description: hpmcounter_basic_test: Hand-crafted testcase to demo hpmcounters
+    description: hpmcounter_basic_test - Hand-crafted testcase to demo hpmcounters
     dir: cv32/sim/uvmt_cv32
     cmd: make test TEST=hpmcounter_basic_test
 
