@@ -11,7 +11,7 @@ Supported SystemVerilog Simulators
 At the time of this writting (2020-02-14) **_Verilator_**, the Metrics
 **_dsim_**, Mentor's **_Questa_**, Cadence **_Xcelium_**, Synopsys **_vcs_** and Aldec **_Riviera-PRO_**
 simulators are supported. Note that **_Icarus_** verilog cannot compile the RTL and there are no plans
-to support Icarus in the future.  On-going support for Verilator is not guaranteed.
+to support Icarus in the future.
 
 RISC-V GCC Compilers
 --------------------
