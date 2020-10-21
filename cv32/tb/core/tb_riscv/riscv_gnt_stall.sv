@@ -28,7 +28,9 @@
 
 
 module riscv_gnt_stall
+`ifndef VERILATOR
  import perturbation_defines::*;
+`endif
  #(
     parameter MAX_STALL_N    = 1,
               RAM_ADDR_WIDTH = 32,
@@ -67,6 +69,7 @@ integer delay_value;
 // Tasks and functions
 // -----------------------------------------------------------------------------------------------
 task set_delay_value();
+`ifndef VERILATOR
   if (!en_stall_i)
     delay_value = 0;
   else if (stall_mode_i == perturbation_defines::STANDARD)
@@ -75,6 +78,9 @@ task set_delay_value();
     delay_value = $urandom_range(max_stall_i, 0);
   else
     delay_value = 0;
+`else
+    delay_value = 0;
+`endif
 endtask : set_delay_value
 
 // -----------------------------------------------------------------------------------------------
@@ -101,7 +107,7 @@ always @(posedge clk_i or negedge rst_ni) begin
   end 
   else begin
 `ifdef VERILATOR
-    #1;
+    //#1;
 `else
     #(100ps);
 `endif
