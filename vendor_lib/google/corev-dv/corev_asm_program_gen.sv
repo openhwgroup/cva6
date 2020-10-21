@@ -48,6 +48,11 @@ class corev_asm_program_gen extends riscv_asm_program_gen;
     instr_stream.push_back(".globl _start_main");
     instr_stream.push_back(".section .text");
     instr_stream.push_back("_start_main:");
+    if (cfg.gen_debug_section) begin
+      corev_instr_gen_config cfg_corev;
+      `DV_CHECK($cast(cfg_corev, cfg))
+      instr_stream.push_back($sformatf("la x%0d, debugger_stack_end", cfg_corev.dp));
+    end
   endfunction
 
   virtual function void gen_interrupt_vector_table(int              hart,
@@ -303,4 +308,48 @@ class corev_asm_program_gen extends riscv_asm_program_gen;
     instr_stream.push_back("");
   endfunction
 
-endclass
+  // Override gen_stack_section to add debugger stack generation section  
+  // Implmeneted as a post-step to super.gen_stack_section()
+  virtual function void gen_stack_section(int hart);  
+    super.gen_stack_section(hart);
+
+    if (SATP_MODE != BARE) begin
+      instr_stream.push_back(".align 12");
+    end else begin
+      instr_stream.push_back(".align 2");
+    end
+    instr_stream.push_back(get_label("debugger_stack_start:", hart));
+    instr_stream.push_back($sformatf(".rept %0d", cfg.stack_len - 1));
+    instr_stream.push_back($sformatf(".%0dbyte 0x0", XLEN/8));
+    instr_stream.push_back(".endr");
+    instr_stream.push_back(get_label("debugger_stack_end:", hart));
+    instr_stream.push_back($sformatf(".%0dbyte 0x0", XLEN/8));
+
+  endfunction : gen_stack_section
+
+  // Override of init_gpr to remove cfg.dp from initiailization if a debug section is generated
+  virtual function void init_gpr();
+    string str;
+    bit [DATA_WIDTH-1:0] reg_val;
+    corev_instr_gen_config cfg_corev;
+
+    `DV_CHECK($cast(cfg_corev, cfg))    
+    // Init general purpose registers with random values
+    for(int i = 0; i < NUM_GPR; i++) begin
+      if (i inside {cfg.sp, cfg.tp}) continue;
+      if (cfg.gen_debug_section && (i inside {cfg_corev.dp})) continue;
+      
+      `DV_CHECK_STD_RANDOMIZE_WITH_FATAL(reg_val,
+        reg_val dist {
+          'h0                         :/ 1,
+          'h8000_0000                 :/ 1,
+          ['h1         : 'hF]         :/ 1,
+          ['h10        : 'hEFFF_FFFF] :/ 1,
+          ['hF000_0000 : 'hFFFF_FFFF] :/ 1
+        };)
+      str = $sformatf("%0sli x%0d, 0x%0x", indent, i, reg_val);
+      instr_stream.push_back(str);
+    end
+  endfunction
+
+endclass : corev_asm_program_gen
