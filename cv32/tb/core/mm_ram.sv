@@ -18,6 +18,7 @@
 module mm_ram
 `ifndef VERILATOR
   import uvm_pkg::*;
+  `include "uvm_macros.svh"
 `endif
  #(
      parameter RAM_ADDR_WIDTH    =  16,
