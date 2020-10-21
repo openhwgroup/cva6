@@ -113,4 +113,4 @@ class corev_instr_gen_config extends riscv_instr_gen_config;
     end    
   endfunction : post_randomize
 
-endclass
+endclass : corev_instr_gen_config

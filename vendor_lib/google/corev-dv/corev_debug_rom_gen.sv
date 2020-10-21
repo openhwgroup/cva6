@@ -95,17 +95,6 @@ class corev_debug_rom_gen extends riscv_debug_rom_gen;
             insert_sub_program(sub_program[hart], debug_main);
             debug_main = {debug_main, main_program[hart].instr_string_list};
             
-            foreach (debug_main[i]) begin
-                for (int l = 0; l < debug_main[i].len() - 4; l++) begin
-                    if (debug_main[i].substr(l, l+3) == "dret") begin
-                        debug_main[i] = {debug_main[i].substr(0,l-1), "j debug_end"};
-                        `uvm_info("CVDEBUGROM", $sformatf("DRET found at %0d", i), UVM_LOW);
-                        break;
-                    end
-                end
-                `uvm_info("CVDEBUGROM", $sformatf("debug_main[%0d]: %s]", i, debug_main[i]), UVM_LOW)
-            end
-
 
             // Create the ebreak end
             if (cfg.enable_ebreak_in_debug_rom) begin
@@ -123,8 +112,7 @@ class corev_debug_rom_gen extends riscv_debug_rom_gen;
             //format_section(debug_end);
             gen_section($sformatf("%0sdebug_rom", hart_prefix(hart)), debug_main);
             debug_end = {debug_end, dret};            
-            gen_section($sformatf("%0sdebug_end", hart_prefix(hart)), debug_end);
-            //gen_section($sformatf("%0sdebug_dret", hart_prefix(hart)), debug_dret);
+            gen_section($sformatf("%0sdebug_end", hart_prefix(hart)), debug_end);            
         end
         gen_debug_exception_handler();
     endfunction : gen_program
