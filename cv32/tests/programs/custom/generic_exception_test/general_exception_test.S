@@ -10,7 +10,7 @@ test_results:
 # main test
 main:
     li x15, 0x00001800
-    csrrw x0, mstatus, x15
+    csrrw x0, mstatus, x15  # redundant in cv32e40p: hardwired PoR value
     li x0, 0xf21ee7dc
     li x1, 0x80000000
     li x3, 0xccda4374
@@ -42,8 +42,10 @@ main:
     li x30, 0x0
     li x31, 0x5912efde
     li x4, 0x40001104
-    csrrc x30, mtvec, 0x0
-    .word(0x00000000)	#Exception Code: 2
+    csrrc x30, mtvec, x0
+#    csrrc x30, mtvec, 0x0
+#2220.000 ns: Illegal instruction (core 0) at PC 0x0000017c:
+    .word(0x00000000)	#Exception Code: 2 (illegal instruction)
     nop
     nop
     csrrc x14, mstatus, x0
@@ -51,7 +53,7 @@ main:
     csrrc x14, mstatus, x0
     nop
     nop
-    c.ebreak	#Exception Code: 3
+    c.ebreak	#Exception Code: 3 (breakpoint)
     nop
     nop
     csrrc x14, mstatus, x0
@@ -59,7 +61,7 @@ main:
     csrrc x14, mstatus, x0
     nop
     nop
-    ebreak		#Exception Code: 3
+    ebreak		#Exception Code: 3 (breakpoint)
     nop
     nop
     csrrc x14, mstatus, x0
@@ -67,7 +69,7 @@ main:
     csrrc x14, mstatus, x0
     nop
     nop
-    ecall		#Exception Code: 11
+    ecall		#Exception Code: 11 (env call from M-mode)
     nop
     nop
     csrrc x14, mstatus, x0
@@ -81,6 +83,7 @@ main:
     csrs mstatus, x15
     lw t0, 4(sp)
     c.addi sp, 8
+#6645.000 ns: Illegal instruction (core 0) at PC 0x000001ec:
     .word(0x00000000)	#Exception Code: 2
     nop
     nop
@@ -121,6 +124,7 @@ main:
     csrrc x14, mstatus, x0
     nop
     nop
+#11118.000 ns: Illegal instruction (core 0) at PC 0x00000260:
     .word(0x0057179B)   #Exception Code: 2 #SLLIW
     nop
     nop
@@ -129,6 +133,7 @@ main:
     csrrc x14, mstatus, x0
     nop
     nop
+#12186.000 ns: Illegal instruction (core 0) at PC 0x00000278:
     .word(0x0057579B)   #Exception Code: 2 #SRLIW
     nop
     nop
@@ -137,6 +142,7 @@ main:
     csrrc x14, mstatus, x0
     nop
     nop
+#13254.000 ns: Illegal instruction (core 0) at PC 0x00000290:
     .word(0x4057579B)   #Exception Code: 2 #SRAIW
     nop
     nop
@@ -145,22 +151,46 @@ main:
     csrrc x14, mstatus, x0
     nop
     nop
+#14322.000 ns: Illegal instruction (core 0) at PC 0x000002a8:
     csrrc x17, 0x7B0, x0 #Exception Code: 2 #Cannot access DCSR in M mode
     li x18, 0x00008000
     or x17, x17, x18
+#15306.000 ns: Illegal instruction (core 0) at PC 0x000002b2:
     csrrw x0, 0x7B0, x17 #Exception Code: 2 #Cannot access DCSR in M mode
+#16290.000 ns: Illegal instruction (core 0) at PC 0x000002b6:
     csrrc x17, 0x7B0, x0 #Exception Code: 2 #Cannot access DCSR in M mode
     add x17, x1, x0
     c.addi x17, 12
+#17265.000 ns: Illegal instruction (core 0) at PC 0x000002c0:
     csrrw x0, 0x7B1, x17 #Exception Code: 2 #Cannot access DPC in M mode
+#18246.000 ns: Illegal instruction (core 0) at PC 0x000002c4:
     csrrc x17, 0x7B1, x0 #Exception Code: 2 #Cannot access DPC in M mode
     ebreak
     nop
+    nop
+    csrrc x14, mstatus, x0
+    csrrw x0, mstatus, x15
+    csrrc x14, mstatus, x0
+    nop
+    nop
+added_by_mike:
+    .word(0x3bc6f92f)
+    .word(0x5dd26da7)
+    .word(0xe5607a57)
+    .word(0x958e4a67)
+    .word(0x6159607b)
+    .word(0x6c6b7433)
+    .word(0x1a6a2b33)
+    .word(0xd9067c3b)
+    .word(0xfa133223)
+#    .word(0x4b724b57)
+    .word(0x6fcbc273)
+    .word(0x395dd7e7)
 exit:
     lw x18, test_results /* report passed result */
-    li x16, 0x25a
-    beq x26, x16, test_end
-    li x18, 1
+#    li x16, 0x25a
+#    beq x26, x16, test_end
+#    li x18, 1
 test_end:
     li x17, 0x20000000
     sw x18,0(x17)
