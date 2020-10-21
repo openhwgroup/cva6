@@ -61,6 +61,24 @@ tests:
     dir: cv32/sim/uvmt_cv32
     cmd: make test TEST=modeled_csr_por
 
+  csr_instr_asm:
+    build: uvmt_cv32
+    description: CSR instruction assembly test
+    dir: cv32/sim/uvmt_cv32
+    cmd: make test TEST=csr_instr_asm
+
+  perf_counters_instructions:
+    build: uvmt_cv32
+    description: Performance counter test
+    dir: cv32/sim/uvmt_cv32
+    cmd: make test TEST=perf_counters_instructions
+
+  hpmcounter_basic_test:
+    build: uvmt_cv32
+    description: Hardware performance counter basic test
+    dir: cv32/sim/uvmt_cv32
+    cmd: make test TEST=hpmcounter_basic_test
+
   riscv_ebreak_test_0:
     build: uvmt_cv32
     description: Static corev-dv ebreak
@@ -160,3 +178,20 @@ tests:
     dir: cv32/sim/uvmt_cv32
     cmd: make test TEST=debug_test
 
+  interrupt_bootstrap:
+    build: uvmt_cv32
+    description: Interrupt bootstrap test
+    dir: cv32/sim/uvmt_cv32
+    cmd: make test TEST=interrupt_bootstrap
+
+  interrupt_test:
+    build: uvmt_cv32
+    description: Interrupt test
+    dir: cv32/sim/uvmt_cv32
+    cmd: make test TEST=interrupt_test
+
+  isa_fcov_holes:
+    build: uvmt_cv32
+    description: ISA function coverage test
+    dir: cv32/sim/uvmt_cv32
+    cmd: make test TEST=isa_fcov_holes
