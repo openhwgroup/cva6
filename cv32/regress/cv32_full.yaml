@@ -2,7 +2,7 @@
 ---
 # Header
 name: cv32_full
-description: Full regression (all tests) for CV32E40P with step-and-compare against RM"
+description: Full regression (all tests) for CV32E40P with step-and-compare against RM
 
 # List of builds
 builds:
@@ -32,6 +32,12 @@ tests:
     description: Hand-crafted testcase to fill ISA functional coverage holes 
     dir: cv32/sim/uvmt_cv32
     cmd: make test TEST=isa_fcov_holes
+
+  hpmcounter_basic_test:
+    build: uvmt_cv32
+    description: hpmcounter_basic_test - Hand-crafted testcase to demo hpmcounters
+    dir: cv32/sim/uvmt_cv32
+    cmd: make test TEST=hpmcounter_basic_test
 
   csr_instructions:
     build: uvmt_cv32

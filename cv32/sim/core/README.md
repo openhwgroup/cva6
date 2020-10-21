@@ -1,17 +1,17 @@
 Simulation Directory for CV32E Core Testbench
 ==================================
 This is the directory in which you should run all tests of the Core Testbench.
-The testbench itself is located at `../../tb/core` and the testcases are at
-`../../tests/core`.  See the README in those directories for more information.
+The testbench itself is located at `../../tb/core` and the test-programs are at
+`../../tests`.  See the README in those directories for more information.
 
-To run the testcases you will need a SystemVerilog simulator and RISC-V GCC compiler.
+To run the core testbench you will need a SystemVerilog simulator and RISC-V GCC compiler.
 
 Supported SystemVerilog Simulators
 ----------------------------------
-At the time of this writting (2020-02-14) **_Verilator_**, the Metrics
+The core testbench and associated test-programs can be run using **_Verilator_**, the Metrics
 **_dsim_**, Mentor's **_Questa_**, Cadence **_Xcelium_**, Synopsys **_vcs_** and Aldec **_Riviera-PRO_**
-simulators are supported. Note that **_Icarus_** verilog cannot compile the RTL and there are no plans
-to support Icarus in the future.  On-going support for Verilator is not guaranteed.
+simulators. Note that **_Icarus_** verilog cannot compile the RTL and there are no plans
+to support Icarus in the future.
 
 RISC-V GCC Compilers
 --------------------

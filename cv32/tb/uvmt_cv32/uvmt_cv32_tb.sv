@@ -152,7 +152,17 @@ module uvmt_cv32_tb;
     assign debug_cov_assert_if.mcountinhibit_q = dut_wrap.cv32e40p_wrapper_i.core_i.cs_registers_i.mcountinhibit_q;
     assign debug_cov_assert_if.mcycle = dut_wrap.cv32e40p_wrapper_i.core_i.cs_registers_i.mhpmcounter_q[0];
     assign debug_cov_assert_if.minstret = dut_wrap.cv32e40p_wrapper_i.core_i.cs_registers_i.mhpmcounter_q[2];
-    assign debug_cov_assert_if.inst_ret = dut_wrap.cv32e40p_wrapper_i.core_i.cs_registers_i.inst_ret;
+
+    // TODO: review this change from CV32E40P_HASH f6196bf to a26b194. It should be logically equivalent.
+    //assign debug_cov_assert_if.inst_ret = dut_wrap.cv32e40p_wrapper_i.core_i.cs_registers_i.inst_ret;
+    // First attempt: this causes unexpected failures of a_minstret_count
+    //assign debug_cov_assert_if.inst_ret = (dut_wrap.cv32e40p_wrapper_i.core_i.id_valid &
+    //                                       dut_wrap.cv32e40p_wrapper_i.core_i.is_decoding);
+    // Second attempt: (based on OK input).  This passes, but maybe only because p_minstret_count
+    //                                       is the only property sensitive to inst_ret. Will
+    //                                       this work in the general case?
+    assign debug_cov_assert_if.inst_ret = dut_wrap.cv32e40p_wrapper_i.core_i.cs_registers_i.mhpmevent_minstret_i;
+
     assign debug_cov_assert_if.csr_access = dut_wrap.cv32e40p_wrapper_i.core_i.id_stage_i.csr_access;
     assign debug_cov_assert_if.csr_op = dut_wrap.cv32e40p_wrapper_i.core_i.id_stage_i.csr_op;
     assign debug_cov_assert_if.csr_addr = dut_wrap.cv32e40p_wrapper_i.core_i.csr_addr;

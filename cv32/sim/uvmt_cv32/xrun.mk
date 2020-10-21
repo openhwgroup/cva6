@@ -38,7 +38,7 @@ XRUN_COMP_FLAGS  ?= -64bit -disable_sem2009 -access +rwc \
                     -nowarn UEXPSC \
                     -sv -uvm -uvmhome $(XRUN_UVMHOME_ARG) \
                     $(TIMESCALE) $(SV_CMP_FLAGS)
-XRUN_RUN_BASE_FLAGS   ?= -64bit $(XRUN_GUI) +UVM_VERBOSITY=$(XRUN_UVM_VERBOSITY) \
+XRUN_RUN_BASE_FLAGS   ?= -64bit $(XRUN_GUI) -licqueue +UVM_VERBOSITY=$(XRUN_UVM_VERBOSITY) \
                          $(XRUN_PLUSARGS) -svseed $(RNDSEED) -sv_lib $(OVP_MODEL_DPI)
 XRUN_GUI         ?=
 XRUN_SINGLE_STEP ?=

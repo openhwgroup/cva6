@@ -18,6 +18,7 @@
 module mm_ram
 `ifndef VERILATOR
   import uvm_pkg::*;
+  `include "uvm_macros.svh"
 `endif
  #(
      parameter RAM_ADDR_WIDTH    =  16,
@@ -163,8 +164,8 @@ module mm_ram
         for (i = 0; i < RND_STALL_REGS; i=i+1) begin
             rnd_stall_regs[i] = 0;
         end
-        #1ns;
 `ifndef VERILATOR
+        #1ns;
         if ($test$plusargs("rand_stall_obi_instr") || 
             $test$plusargs("rand_stall_obi_all")) begin
             rnd_stall_regs[RND_STALL_INSTR_EN]    = 1;

@@ -123,6 +123,7 @@ AWORK     = work
 ALOG          = vlog
 ALOG_DEBUG    = -dbg
 ALOG_FLAGS    = 
+ALOG_UVM      = -uvmver 1.2
 
 ASIM              = vsim
 ASIM_HOME         = $(ALDEC_PATH)
@@ -141,13 +142,19 @@ TBSRC       := $(TBSRC_CORE)/tb_top.sv \
                $(TBSRC_CORE)/mm_ram.sv \
                $(TBSRC_CORE)/dp_ram.sv \
                $(TBSRC_CORE)/tb_riscv/riscv_random_stall.sv \
-               $(TBSRC_CORE)/tb_riscv/riscv_random_interrupt_generator.sv
+               $(TBSRC_CORE)/tb_riscv/riscv_random_interrupt_generator.sv \
+               $(TBSRC_CORE)/tb_riscv/riscv_rvalid_stall.sv \
+               $(TBSRC_CORE)/tb_riscv/riscv_gnt_stall.sv 
+
+#/tb_riscv/riscv_rvalid_stall.sv
 
 RTLSRC_VLOG_TB_TOP	:= $(basename $(notdir $(TBSRC_TOP)))
 RTLSRC_VOPT_TB_TOP	:= $(addsuffix _vopt, $(RTLSRC_VLOG_TB_TOP))
 
 TBSRC_VERI  := $(TBSRC_CORE)/tb_top_verilator.sv \
                $(TBSRC_CORE)/cv32e40p_tb_wrapper.sv \
+               $(TBSRC_CORE)/tb_riscv/riscv_rvalid_stall.sv \
+               $(TBSRC_CORE)/tb_riscv/riscv_gnt_stall.sv \
                $(TBSRC_CORE)/mm_ram.sv \
                $(TBSRC_CORE)/dp_ram.sv
 SIM_LIBS    := $(PROJ_ROOT_DIR)/lib/sim_libs
@@ -557,6 +564,7 @@ vcs-clean:
 	$(ALOG) \
 		-work $(AWORK) \
 		$(ALOG_FLAGS) \
+		$(ALOG_UVM) \
 		-f $(CV32E40P_MANIFEST) \
 		$(TBSRC_PKG) $(TBSRC) 
 		
