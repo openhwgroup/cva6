@@ -34,6 +34,21 @@ class corev_instr_gen_config extends riscv_instr_gen_config;
   // Mask for using a fast interrupt handler (mret only), relying on h/W interrupt ack mechanism
   rand bit [31:0] use_fast_intr_handler;
 
+  // Random register for debug stack pointer
+  rand riscv_reg_t     dp;
+
+  constraint dp_c {
+    // Debug pointer may not be the return address, stack pointer, nor thread pointer
+    if (!gen_debug_section) {
+      dp == ZERO;
+    } else {      
+      !(dp inside {sp, tp, ra, scratch_reg, GP, RA, ZERO});
+      foreach (gpr[i]) {
+        !(gpr[i] inside {dp});
+      }
+    }
+  }
+
   // CV32E40P requires the MTVEC table to be aligned to 256KB boundaries
   constraint mtvec_c {
     tvec_alignment == 8;
@@ -67,14 +82,35 @@ class corev_instr_gen_config extends riscv_instr_gen_config;
   `uvm_object_utils_begin(corev_instr_gen_config)
     `uvm_field_enum(mtvec_mode_t, mtvec_mode, UVM_DEFAULT)
     `uvm_field_int(knob_zero_fast_intr_handlers, UVM_DEFAULT)
+    `uvm_field_enum(riscv_reg_t, dp, UVM_DEFAULT)
+    `uvm_field_enum(riscv_reg_t, scratch_reg, UVM_DEFAULT)
     `uvm_field_int(enable_fast_interrupt_handler, UVM_DEFAULT)
-    `uvm_field_int(use_fast_intr_handler, UVM_DEFAULT)
+    `uvm_field_int(use_fast_intr_handler, UVM_DEFAULT)    
   `uvm_object_utils_end
 
   function new(string name="");
     super.new(name);
 
     get_bool_arg_value("+enable_fast_interrupt_handler=", enable_fast_interrupt_handler);
-  endfunction
+  endfunction : new
 
-endclass
+  function void post_randomize();
+    super.post_randomize();
+
+    // Add in the debug pointer to reserved registers if we are using it
+    if (gen_debug_section) begin
+      reserved_regs = {tp, sp, scratch_reg, dp};
+    end
+
+    // In the debug ROM some combinations are not valid because they use the same register (dscratch0)
+    if (gen_debug_section) begin
+      if ((enable_ebreak_in_debug_rom || set_dcsr_ebreak) && 
+           enable_debug_single_step) begin
+        `uvm_fatal("CVINSTGENCFG", 
+                   $sformatf("Illegal combination of debug plusargs: enable_ebreak_in_debug_rom = %0d, set_dcsr_ebreakl = %0d, enable_debug_single_step = %0d",
+                             enable_ebreak_in_debug_rom, set_dcsr_ebreak, enable_debug_single_step))
+      end
+    end    
+  endfunction : post_randomize
+
+endclass : corev_instr_gen_config
