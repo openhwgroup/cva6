@@ -21,7 +21,7 @@
 #
 ###############################################################################
 # 
-# Copyright 2019 Clifford Wolf
+# Copyright 2019 Claire Wolf
 # Copyright 2019 Robert Balas
 #
 # Permission to use, copy, modify, and/or distribute this software for any
@@ -91,7 +91,7 @@ DSIM_HOME               = /tools/Metrics/dsim
 DSIM_CMP_FLAGS          = -timescale 1ns/1ps $(SV_CMP_FLAGS) +define+CV32E40P_APU_TRACE
 DSIM_RUN_FLAGS          = -write-sql
 DSIM_UVM_ARGS           = +incdir+$(UVM_HOME)/src $(UVM_HOME)/src/uvm_pkg.sv
-DSIM_RESULTS           ?= $(PWD)/results
+DSIM_RESULTS           ?= $(PWD)/dsim_results
 DSIM_WORK              ?= $(DSIM_RESULTS)/dsim_work
 DSIM_IMAGE              = dsim.out
 
@@ -115,6 +115,23 @@ VERI_OBJ_DIR       ?= cobj_dir
 VERI_LOG_DIR       ?= cobj_dir/logs
 VERI_CFLAGS        += -O2
 
+#riviera configuration
+
+ALIB      = "vlib"
+AWORK     = work
+
+ALOG          = vlog
+ALOG_DEBUG    = -dbg
+ALOG_FLAGS    = 
+ALOG_UVM      = -uvmver 1.2
+
+ASIM              = vsim
+ASIM_HOME         = $(ALDEC_PATH)
+ASIM_FLAGS       ?=  # user defined
+ALL_ASIM_FLAGS    = $(ASIM_FLAGS)
+ASIM_DEBUG_FLAGS  = -o2
+ASIM_GUI_FLAGS    = -gui
+
 # TB source files for the CV32E core
 TBSRC_HOME  := $(PROJ_ROOT_DIR)/$(COREV_PROJ)/tb
 TBSRC_TOP   := $(TBSRC_HOME)/core/tb_top.sv
@@ -125,13 +142,19 @@ TBSRC       := $(TBSRC_CORE)/tb_top.sv \
                $(TBSRC_CORE)/mm_ram.sv \
                $(TBSRC_CORE)/dp_ram.sv \
                $(TBSRC_CORE)/tb_riscv/riscv_random_stall.sv \
-               $(TBSRC_CORE)/tb_riscv/riscv_random_interrupt_generator.sv
+               $(TBSRC_CORE)/tb_riscv/riscv_random_interrupt_generator.sv \
+               $(TBSRC_CORE)/tb_riscv/riscv_rvalid_stall.sv \
+               $(TBSRC_CORE)/tb_riscv/riscv_gnt_stall.sv 
+
+#/tb_riscv/riscv_rvalid_stall.sv
 
 RTLSRC_VLOG_TB_TOP	:= $(basename $(notdir $(TBSRC_TOP)))
 RTLSRC_VOPT_TB_TOP	:= $(addsuffix _vopt, $(RTLSRC_VLOG_TB_TOP))
 
 TBSRC_VERI  := $(TBSRC_CORE)/tb_top_verilator.sv \
                $(TBSRC_CORE)/cv32e40p_tb_wrapper.sv \
+               $(TBSRC_CORE)/tb_riscv/riscv_rvalid_stall.sv \
+               $(TBSRC_CORE)/tb_riscv/riscv_gnt_stall.sv \
                $(TBSRC_CORE)/mm_ram.sv \
                $(TBSRC_CORE)/dp_ram.sv
 SIM_LIBS    := $(PROJ_ROOT_DIR)/lib/sim_libs
@@ -238,69 +261,26 @@ dsim-comp-rtl-only: mk_results $(CV32E40P_PKG)
 
 
 # Metrics dsim simulations
-.PHONY: dsim-hello-world dsim-cv32_riscv_tests dsim-cv32_riscv_compliance_tests dsim-firmware
+.PHONY: dsim-hello-world dsim-firmware
 
 dsim-sanity: dsim-hello-world
 
 # Runs the hello world test
-dsim-hello-world: dsim-comp $(CUSTOM)/hello-world.hex
+dsim-hello-world: dsim-comp $(VERI_CUSTOM)/hello-world/hello-world.hex
 	mkdir -p $(DSIM_RESULTS)/hello-world && cd $(DSIM_RESULTS)/hello-world  && \
 	$(DSIM) -l dsim-hello-world.log -image $(DSIM_IMAGE) \
 		-work $(DSIM_WORK) $(DSIM_RUN_FLAGS) \
 		-sv_lib $(UVM_HOME)/src/dpi/libuvm_dpi.so \
 		-sv_lib $(OVP_MODEL_DPI)  \
-		+firmware=$(CUSTOM)/hello-world.hex \
-		+elf_file=$(CUSTOM)/hello-world.elf
-#		+verbose
+		+firmware=../../$(VERI_CUSTOM)/hello-world/hello-world.hex
 
-dsim-custom: dsim-comp $(CUSTOM)/$(CUSTOM_PROG).hex
+dsim-custom: dsim-comp $(VERI_CUSTOM)/$(CUSTOM_PROG)/$(CUSTOM_PROG).hex
 	mkdir -p $(DSIM_RESULTS)/$(CUSTOM_PROG) && cd $(DSIM_RESULTS)/$(CUSTOM_PROG)  && \
 	$(DSIM) -l dsim-requested_csr_por.log -image $(DSIM_IMAGE) \
 		-work $(DSIM_WORK) $(DSIM_RUN_FLAGS) \
 		-sv_lib $(UVM_HOME)/src/dpi/libuvm_dpi.so \
 		-sv_lib $(OVP_MODEL_DPI)  \
-		+firmware=$(CUSTOM)/$(CUSTOM_PROG).hex \
-		+elf_file=$(CUSTOM)/$(CUSTOM_PROG).elf
-
-# Runs tests in riscv_tests/ only
-dsim-cv32_riscv_tests: dsim-comp $(CV32_RISCV_TESTS_FIRMWARE)/cv32_riscv_tests_firmware.hex
-	mkdir -p $(DSIM_RESULTS)/riscv-tests && cd $(DSIM_RESULTS)/riscv-tests && \
-	$(DSIM) -l dsim-riscv_tests.log -image $(DSIM_IMAGE) \
-		-work $(DSIM_WORK) $(DSIM_RUN_FLAGS) \
-		-sv_lib $(UVM_HOME)/src/dpi/libuvm_dpi.so \
-		-sv_lib $(OVP_MODEL_DPI)  \
-		+firmware=$(CV32_RISCV_TESTS_FIRMWARE)/cv32_riscv_tests_firmware.hex \
-		+elf_file=$(CV32_RISCV_TESTS_FIRMWARE)/cv32_riscv_tests_firmware.elf
-
-# Runs tests in riscv_compliance_tests/ only
-dsim-cv32_riscv_compliance_tests: dsim-comp $(CV32_RISCV_COMPLIANCE_TESTS_FIRMWARE)/cv32_riscv_compliance_tests_firmware.hex
-	mkdir -p $(DSIM_RESULTS)/riscv-compliance && cd $(DSIM_RESULTS)/riscv-compliance && \
-	$(DSIM) -l dsim-riscv_compliance_tests.log -image $(DSIM_IMAGE) \
-		-work $(DSIM_WORK) $(DSIM_RUN_FLAGS) \
-		-sv_lib $(UVM_HOME)/src/dpi/libuvm_dpi.so \
-		-sv_lib $(OVP_MODEL_DPI)  \
-		+firmware=$(CV32_RISCV_COMPLIANCE_TESTS_FIRMWARE)/cv32_riscv_compliance_tests_firmware.hex \
-		+elf_file=$(CV32_RISCV_COMPLIANCE_TESTS_FIRMWARE)/cv32_riscv_compliance_tests_firmware.elf
-
-# Runs all tests in riscv_tests/ and riscv_compliance_tests/
-dsim-firmware: dsim-comp $(FIRMWARE)/firmware.hex
-	mkdir -p $(DSIM_RESULTS)/firmware && cd $(DSIM_RESULTS)/firmware && \
-	$(DSIM) -l dsim-firmware.log -image $(DSIM_IMAGE) \
-		-work $(DSIM_WORK) \
-		-sv_lib $(UVM_HOME)/src/dpi/libuvm_dpi.so \
-		-sv_lib $(OVP_MODEL_DPI)  \
-		+firmware=$(FIRMWARE)/firmware.hex \
-		+elf_file=$(FIRMWARE)/firmware.elf
-
-# Runs a "unit-test" (see rule dsim-unit-test in ../Common.mk)
-dsim-firmware-unit-test: dsim-comp
-	mkdir -p $(DSIM_RESULTS)/firmware && cd $(DSIM_RESULTS)/firmware && \
-	$(DSIM) -l dsim-$(UNIT_TEST).log -image $(DSIM_IMAGE) \
-		-work $(DSIM_WORK) \
-		-sv_lib $(UVM_HOME)/src/dpi/libuvm_dpi.so \
-		-sv_lib $(OVP_MODEL_DPI)  \
-		+firmware=$(FIRMWARE)/firmware_unit_test.hex \
-		+elf_file=$(FIRMWARE)/firmware_unit_test.elf
+		+firmware=../../$(VERI_CUSTOM)/$(CUSTOM_PROG)/$(CUSTOM_PROG).hex
 
 # Metrics dsim cleanup
 .PHONY: dsim-clean
@@ -314,7 +294,7 @@ dsim-clean: tc-clean
 	rm -rf dsim_work
 	rm -f dsim.env
 	rm -f $(DSIM_IMAGE)
-	rm -rf $(DSIM_RESULTS)
+	rm -rf $(uIM_RESULTS)
 
 ###############################################################################
 # Mentor Questasim
@@ -425,20 +405,21 @@ xrun-all: $(CV32E40P_PKG) $(FPNEW_PKG) $(RTLSRC_PKG) $(RTLSRC) $(TBSRC_PKG) $(TB
 		-f $(CV32E40P_MANIFEST) \
 		$(TBSRC_PKG) $(TBSRC)
 
-.PHONY: xrun-hello-world xrun-firmware
-xrun-hello-world: xrun-all $(CUSTOM)/hello-world.hex
+.PHONY: xrun-hello-world
+xrun-hello-world: xrun-all $(VERI_CUSTOM)/hello-world/hello-world.hex
 	$(XRUN) \
 		$(XRUN_FLAGS) \
 		-f $(CV32E40P_MANIFEST) \
 		$(TBSRC_PKG) $(TBSRC) \
-		+firmware=$(CUSTOM)/hello-world.hex
+		+firmware=$(VERI_CUSTOM)/hello-world/hello-world.hex
 
-xrun-firmware: xrun-all $(FIRMWARE)/firmware.hex
+.PHONY: xrun-custom
+xrun-custom: xrun-all $(VERI_CUSTOM)/$(CUSTOM_PROG)/$(CUSTOM_PROG).hex
 	$(XRUN) \
 		$(XRUN_FLAGS) \
 		-f $(CV32E40P_MANIFEST) \
 		$(TBSRC_PKG) $(TBSRC) \
-		+firmware=$(FIRMWARE)/firmware.hex
+		+firmware=$(VERI_CUSTOM)/$(CUSTOM_PROG)/$(CUSTOM_PROG).hex
 
 # Cadence Xcelium xrun cleanup
 .PHONY: xrun-clean xrun-clean-all
@@ -480,18 +461,11 @@ testbench_verilator: $(CV32E40P_PKG) $(TBSRC_VERI) $(TBSRC_PKG)
 	$(MAKE) -C $(VERI_OBJ_DIR) -f Vtb_top_verilator.mk
 	cp $(VERI_OBJ_DIR)/Vtb_top_verilator testbench_verilator
 
-custom: verilate $(VERI_CUSTOM)/$(CUSTOM_PROG).hex
+custom: verilate $(VERI_CUSTOM)/$(CUSTOM_PROG)/$(CUSTOM_PROG).hex
 	mkdir -p $(VERI_LOG_DIR)
 	./testbench_verilator $(VERI_FLAGS) \
-		"+firmware=$(VERI_CUSTOM)/$(CUSTOM_PROG).hex" \
+		"+firmware=$(VERI_CUSTOM)/$(CUSTOM_PROG)/$(CUSTOM_PROG).hex" \
 		| tee $(VERI_LOG_DIR)/$(CUSTOM_PROG).log
-
-cv32-riscv-tests: verilate ../../tests/core/cv32_riscv_tests_firmware/cv32_riscv_tests_firmware.hex
-	mkdir -p $(VERI_LOG_DIR)
-	./testbench_verilator $(VERI_FLAGS) \
-		"+firmware=../../tests/core/cv32_riscv_tests_firmware/cv32_riscv_tests_firmware.hex" \
-		| tee $(VERI_LOG_DIR)/$(cv32-riscv-tests).log
-
 
 # verilator specific cleanup
 veri-clean: verilate-clean
@@ -578,6 +552,107 @@ vcs-clean:
 	rm -rf simv* *.daidir *.vpd *.db csrc ucli.key vc_hdrs.h
 
 ###############################################################################
+# Aldec Riviera-PRO
+
+
+.rvrlib-rtl:
+	$(ALIB) $(AWORK)
+	touch .rvrlib-rtl
+
+
+.rvr-build-rtl: .rvrlib-rtl $(CV32E40P_PKG) $(TBSRC_PKG) $(TBSRC) 
+	$(ALOG) \
+		-work $(AWORK) \
+		$(ALOG_FLAGS) \
+		$(ALOG_UVM) \
+		-f $(CV32E40P_MANIFEST) \
+		$(TBSRC_PKG) $(TBSRC) 
+		
+
+asim-all:  .rvr-build-rtl
+	
+# run tb and exit
+.PHONY: asim-run
+asim-run: ALL_ASIM_FLAGS += -c  
+asim-run: asim-all
+	$(ASIM) -lib $(AWORK) $(ALL_ASIM_FLAGS)\
+	$(RTLSRC_VLOG_TB_TOP) -do "run -all; endsim; quit -force"
+
+
+
+# run tb and drop into interactive shell
+.PHONY: asim-run-sh
+asim-run-sh: ALL_ASIM_FLAGS += -c
+asim-run-sh: asim-all
+	$(ASIM) -lib $(AWORK) $(ALL_ASIM_FLAGS) \
+	$(RTLSRC_VLOG_TB_TOP) -do "run -all"
+
+# run tb with simulator gui
+.PHONY: asim-run-gui
+asim-run-gui: ALL_ASIM_FLAGS += $(ASIM_GUI_FLAGS) 
+asim-run-gui: asim-all
+	$(ASIM) -lib $(AWORK) $(ALL_ASIM_FLAGS) \
+	$(RTLSRC_VLOG_TB_TOP) -do "run -all"
+
+
+.PHONY: riviera-hello-world
+riviera-hello-world: asim-all $(CUSTOM)/hello-world.hex
+riviera-hello-world: ALL_ASIM_FLAGS += +firmware=$(CUSTOM)/hello-world.hex
+riviera-hello-world: asim-run
+
+.PHONY: riviera-hello-world-gui
+riviera-hello-world-gui: asim-all $(CUSTOM)/hello-world.hex
+riviera-hello-world-gui: ALL_ASIM_FLAGS += +firmware=$(CUSTOM)/hello-world.hex
+riviera-hello-world-gui: asim-run-gui
+
+.PHONY: riviera-cv32_riscv_tests
+riviera-cv32_riscv_tests: asim-all ../../tests/core/cv32_riscv_tests_firmware/cv32_riscv_tests_firmware.hex
+riviera-cv32_riscv_tests: ALL_ASIM_FLAGS += +firmware=$(CV32_RISCV_TESTS_FIRMWARE)/cv32_riscv_tests_firmware.hex
+riviera-cv32_riscv_tests: asim-run
+
+.PHONY: riviera-cv32_riscv_tests-gui
+riviera-cv32_riscv_tests-gui: asim-all $(CV32_RISCV_TESTS_FIRMWARE)/cv32_riscv_tests_firmware.hex
+riviera-cv32_riscv_tests-gui: ALL_ASIM_FLAGS += +firmware=$(CV32_RISCV_TESTS_FIRMWARE)/cv32_riscv_tests_firmware.hex
+riviera-cv32_riscv_tests-gui: asim-run-gui
+
+.PHONY: riviera-cv32_riscv_compliance_tests
+riviera-cv32_riscv_compliance_tests: asim-all $(CV32_RISCV_COMPLIANCE_TESTS_FIRMWARE)/cv32_riscv_compliance_tests_firmware.hex
+riviera-cv32_riscv_compliance_tests: ALL_ASIM_FLAGS += +firmware=$(CV32_RISCV_COMPLIANCE_TESTS_FIRMWARE)/cv32_riscv_compliance_tests_firmware.hex
+riviera-cv32_riscv_compliance_tests: asim-run
+
+.PHONY: riviera-cv32_riscv_compliance_tests-gui
+riviera-cv32_riscv_compliance_tests-gui: asim-all $(CV32_RISCV_COMPLIANCE_TESTS_FIRMWARE)/cv32_riscv_compliance_tests_firmware.hex
+riviera-cv32_riscv_compliance_tests-gui: ALL_ASIM_FLAGS += +firmware=$(CV32_RISCV_COMPLIANCE_TESTS_FIRMWARE)/cv32_riscv_compliance_tests_firmware.hex
+riviera-cv32_riscv_compliance_tests-gui: asim-run-gui
+
+.PHONY: riviera-firmware
+riviera-firmware: asim-all $(FIRMWARE)/firmware.hex
+riviera-firmware: ALL_ASIM_FLAGS += +firmware=$(FIRMWARE)/firmware.hex
+riviera-firmware: asim-run
+
+.PHONY: riviera-firmware-gui
+riviera-firmware-gui: asim-all $(FIRMWARE)/firmware.hex
+riviera-firmware-gui: ALL_ASIM_FLAGS += +firmware=$(FIRMWARE)/firmware.hex
+riviera-firmware-gui: asim-run-gui
+
+.PHONY: riviera-unit-test 
+riviera-unit-test:  firmware-unit-test-clean 
+riviera-unit-test:  $(FIRMWARE)/firmware_unit_test.hex 
+riviera-unit-test: ALL_ASIM_FLAGS += "+firmware=$(FIRMWARE)/firmware_unit_test.hex"
+riviera-unit-test: asim-run
+
+.PHONY: riviera-unit-test-gui 
+riviera-unit-test-gui:  firmware-unit-test-clean 
+riviera-unit-test-gui:  $(FIRMWARE)/firmware_unit_test.hex 
+riviera-unit-test-gui: ALL_ASIM_FLAGS += "+firmware=$(FIRMWARE)/firmware_unit_test.hex"
+riviera-unit-test-gui: asim-run-gui
+
+riviera-clean:
+	if [ -d $(AWORK) ]; then rm -r $(AWORK); fi
+	rm -f transcript trace_core*.log \
+	.build-rtl .rvrlib-rtl *.vcd objdump *.asdb *.cfg dpi_header.h
+
+###############################################################################
 # CV32E40P RTL dependencies
 
 clone_cv32e40p_rtl:
@@ -605,7 +680,7 @@ tc-clean:
 	find $(CORE_TEST_DIR) -name *.map     -exec rm {} \;
 
 .PHONY: clean clean_all distclean
-clean: questa-clean tc-clean verilate-clean vcs-clean firmware-clean custom-clean dsim-clean xrun-clean vcs-clean clean-bsp
+clean: questa-clean tc-clean verilate-clean vcs-clean firmware-clean custom-clean dsim-clean xrun-clean vcs-clean clean-bsp riviera-clean
 
 distclean: clean
 	rm -rf riscv-fesvr riscv-isa-sim $(CV32E40P_PKG) work

@@ -21,7 +21,7 @@
 #
 ###############################################################################
 # 
-# Copyright 2019 Clifford Wolf
+# Copyright 2019 Claire Wolf
 # Copyright 2019 Robert Balas
 #
 # Permission to use, copy, modify, and/or distribute this software for any
@@ -68,30 +68,17 @@ BANNER=*************************************************************************
 
 CV32E40P_REPO   ?= https://github.com/openhwgroup/cv32e40p
 CV32E40P_BRANCH ?= master
-#2020-09-06
-CV32E40P_HASH   ?= 02bcd06728c76725d554bbc5079c2a89ff50055e
-#2020-09-04
-#CV32E40P_HASH   ?= 6fbd88c645d2b51c316af6eda79bab3e4c284093
-#2020-08-28
-#CV32E40P_HASH   ?= 7c65d1a6cbbcbc7eb20abfd1a83988c94e4fd175
-#2020-08-18
-#CV32E40P_HASH   ?= 1607d8b675864db1aa013364fd4444a665331830
-#2020-07-16
-#CV32E40P_HASH   ?= 916d92afc6bbc27b7ab65c503043982e1b6e3ab0
-#2020-07-09
-#CV32E40P_HASH   ?= 3deb55860001f8ac39cefa80b90566170b12391f
-#2020-07-07
-#CV32E40P_HASH   ?= 8a3345cd80db4097cd007697233e54f020245bfb
-
+#2020-10-14
+CV32E40P_HASH   ?= a26b194
+#2020-10-08
+#CV32E40P_HASH   ?= f6196bf
 
 FPNEW_REPO      ?= https://github.com/pulp-platform/fpnew
 FPNEW_BRANCH    ?= master
-#2020-08-27
-FPNEW_HASH      ?= a0c021c360abcc94e434d41974a52bdcbf14d156
-#Note: this is one merge behind the head (as of 2020-06-11)
-#FPNEW_HASH      ?= f108dfdd84f7c24dcdefb35790fafb3905bce552
-#Note: this is head (as of 2020-06-11).  Can't use it because of the worm
-#FPNEW_HASH      ?= babffe88fcf6d2931a7afa8d121b6a6ba4f532f7
+#2020-10-05
+FPNEW_HASH      ?= 5b2a9d4
+#2020-09-23
+#FPNEW_HASH      ?= a0c021c360abcc94e434d41974a52bdcbf14d156
 
 RISCVDV_REPO    ?= https://github.com/google/riscv-dv
 #RISCVDV_REPO    ?= https://github.com/MikeOpenHWGroup/riscv-dv
@@ -101,6 +88,11 @@ RISCVDV_BRANCH  ?= master
 # July 8 version.  Randomization errors have significantly improved.
 #                  Generation of riscv_pmp_test fails (we do not care for CV32E40P).
 RISCVDV_HASH    ?= 10fd4fa8b7d0808732ecf656c213866cae37045a
+
+COMPLIANCE_REPO   ?= https://github.com/riscv/riscv-compliance
+COMPLIANCE_BRANCH ?= master
+# 2020-08-19
+COMPLIANCE_HASH   ?= c21a2e86afa3f7d4292a2dd26b759f3f29cde497
 
 # Generate command to clone the CV32E40P RTL
 ifeq ($(CV32E40P_BRANCH), master)
@@ -143,6 +135,19 @@ else
 endif
 # RISCV-DV repo var end
 
+# Generate command to clone the RISCV Compliance Test-suite
+ifeq ($(COMPLIANCE_BRANCH), master)
+  TMP4 = git clone $(COMPLIANCE_REPO) --recurse $(COMPLIANCE_PKG)
+else
+  TMP4 = git clone -b $(COMPLIANCE_BRANCH) --single-branch $(COMPLIANCE_REPO) --recurse $(COMPLIANCE_PKG)
+endif
+
+ifeq ($(COMPLIANCE_HASH), head)
+  CLONE_COMPLIANCE_CMD = $(TMP4)
+else
+  CLONE_COMPLIANCE_CMD = $(TMP4); cd $(COMPLIANCE_PKG); git checkout $(COMPLIANCE_HASH)
+endif
+
 ###############################################################################
 # Imperas Instruction Set Simulator
 
@@ -153,18 +158,61 @@ OVP_MODEL_DPI   = $(DV_OVPM_MODEL)/bin/Linux64/riscv_CV32E40P.dpi.so
 #OVP_CTRL_FILE   = $(DV_OVPM_DESIGN)/riscv_CV32E40P.ic
 
 ###############################################################################
-# Build "firmware" for the CV32E40P "core" testbench and "uvmt_cv32"
-# verification environment.  Substantially modified from the original from the
-# Makefile first developed for the PULP-Platform RI5CY testbench.
+# "Toolchain" to compile 'test-programs' (either C or RISC-V Assember) for the
+# CV32E40P.   This toolchain is used by both the core testbench and UVM
+# environment.  The assumption here is that you have installed at least one of
+# the following toolchains:
+#     1. GNU:   https://github.com/riscv/riscv-gnu-toolchain
+#               Assumed to be installed at /opt/gnu.
 #
-# riscv toolchain install path
+#     2. COREV: https://www.embecosm.com/resources/tool-chain-downloads/#corev 
+#               Assumed to be installed at /opt/corev.
+#
+#     3. PULP:  https://github.com/pulp-platform/pulp-riscv-gnu-toolchain 
+#               Assumed to be installed at /opt/pulp.
+#
+# If you do not select one of the above options, compilation will be attempted
+# using whatever is found at /opt/riscv using arch=unknown.
+#
+GNU_SW_TOOLCHAIN    ?= /opt/gnu
+GNU_MARCH           ?= unknown
+COREV_SW_TOOLCHAIN  ?= /opt/corev
+COREV_MARCH         ?= corev
+PULP_SW_TOOLCHAIN   ?= /opt/pulp
+PULP_MARCH          ?= unknown
+
 CV_SW_TOOLCHAIN  ?= /opt/riscv
+CV_SW_MARCH      ?= unknown
 RISCV            ?= $(CV_SW_TOOLCHAIN)
-RISCV_EXE_PREFIX ?= $(RISCV)/bin/riscv32-unknown-elf-
+RISCV_PREFIX     ?= riscv32-$(CV_SW_MARCH)-elf-
+RISCV_EXE_PREFIX ?= $(RISCV)/bin/$(RISCV_PREFIX)
+
+ifeq ($(call IS_YES,$(GNU)),YES)
+RISCV            = $(GNU_SW_TOOLCHAIN)
+RISCV_PREFIX     = riscv32-$(GNU_MARCH)-elf-
+RISCV_EXE_PREFIX = $(RISCV)/bin/$(RISCV_PREFIX)
+endif
+
+ifeq ($(call IS_YES,$(COREV)),YES)
+RISCV            = $(COREV_SW_TOOLCHAIN)
+RISCV_PREFIX     = riscv32-$(COREV_MARCH)-elf-
+RISCV_EXE_PREFIX = $(RISCV)/bin/$(RISCV_PREFIX)
+endif
+
+ifeq ($(call IS_YES,$(PULP)),YES)
+RISCV            = $(PULP_SW_TOOLCHAIN)
+RISCV_PREFIX     = riscv32-$(PULP_MARCH)-elf-
+RISCV_EXE_PREFIX = $(RISCV)/bin/$(RISCV_PREFIX)
+endif
 
 CFLAGS ?= -Os -g -static -mabi=ilp32 -march=rv32imc -Wall -pedantic
 
+# FIXME:strichmo:Repeating this code until we fully deprecate CUSTOM_PROG, hopefully next PR
 ifeq ($(firstword $(subst _, ,$(CUSTOM_PROG))),pulp)
+  CFLAGS = -Os -g -D__riscv__=1 -D__LITTLE_ENDIAN__=1 -march=rv32imcxpulpv2 -Wa,-march=rv32imcxpulpv2 -fdata-sections -ffunction-sections -fdiagnostics-color=always
+endif
+
+ifeq ($(firstword $(subst _, ,$(TEST))),pulp)
   CFLAGS = -Os -g -D__riscv__=1 -D__LITTLE_ENDIAN__=1 -march=rv32imcxpulpv2 -Wa,-march=rv32imcxpulpv2 -fdata-sections -ffunction-sections -fdiagnostics-color=always
 endif
 
@@ -182,7 +230,7 @@ VERI_FIRMWARE                        = ../../tests/core/firmware
 CUSTOM                               = $(CORE_TEST_DIR)/custom
 CUSTOM_DIR                          ?= $(CUSTOM)
 CUSTOM_PROG                         ?= my_hello_world
-VERI_CUSTOM                          = ../../tests/core/custom
+VERI_CUSTOM                          = ../../tests/programs/custom
 ASM                                  = $(CORE_TEST_DIR)/asm
 ASM_DIR                             ?= $(ASM)
 ASM_PROG                            ?= my_hello_world
@@ -270,6 +318,20 @@ endif
 include $(TEST_FLAGS_MAKE)
 endif
 
+# If a test target is defined and a CFG is defined that read in build configuration file
+# CFG is optional
+CFGYAML2MAKE = $(PROJ_ROOT_DIR)/bin/cfgyaml2make
+CFG_YAML_PARSE_TARGETS=comp test
+ifneq ($(filter $(CFG_YAML_PARSE_TARGETS),$(MAKECMDGOALS)),)
+ifneq ($(CFG),)
+CFG_FLAGS_MAKE := $(shell $(CFGYAML2MAKE) --yaml=$(CFG).yaml --debug --prefix=CFG)
+ifeq ($(CFG_FLAGS_MAKE),)
+$(error ERROR Error finding or parsing configuration: $(CFG).yaml)
+endif
+include $(CFG_FLAGS_MAKE)
+endif
+endif
+
 ###############################################################################
 # Rule to generate hex (loadable by simulators) from elf
 # Relocate debugger to last 16KB of mm_ram
@@ -285,7 +347,10 @@ endif
 	$(RISCV_EXE_PREFIX)objdump -D -S $*.elf > $*.objdump
 
 bsp:
-	make -C $(BSP)
+	make -C $(BSP) RISCV=$(RISCV) RISCV_PREFIX=$(RISCV_PREFIX) RISCV_EXE_PREFIX=$(RISCV_EXE_PREFIX)
+
+vars-bsp:
+	make vars -C $(BSP) RISCV=$(RISCV) RISCV_PREFIX=$(RISCV_PREFIX) RISCV_EXE_PREFIX=$(RISCV_EXE_PREFIX)
 
 clean-bsp:
 	make clean -C $(BSP)
@@ -321,22 +386,31 @@ TEST_FILES        = $(filter %.c %.S,$(wildcard $(dir $*)*))
 
 # Patterned targets to generate ELF.  Used only if explicit targets do not match.
 #
-# This target selected if both %.c and %.S exist
 .PRECIOUS : %.elf
+# This target selected if both %.c and %.S exist
+# Note that this target will pass both sources to gcc
+%.elf: %.c %.S
+	make bsp
+	test_asm_src=$(basename )
+	$(RISCV_EXE_PREFIX)gcc $(CFG_CFLAGS) $(CFLAGS) -o $@ \
+		-nostartfiles \
+		$^ -T $(BSP)/link.ld -L $(BSP) -lcv-verif
+
+# This target selected if only %.c
 %.elf: %.c
 	make bsp
-	$(RISCV_EXE_PREFIX)gcc $(CFLAGS) -o $@ \
+	test_asm_src=$(basename )
+	$(RISCV_EXE_PREFIX)gcc $(CFG_CFLAGS) $(CFLAGS) -o $@ \
 		-nostartfiles \
 		$^ -T $(BSP)/link.ld -L $(BSP) -lcv-verif
 
 # This target selected if only %.S exists
 %.elf: %.S
 	make bsp
-	$(RISCV_EXE_PREFIX)gcc $(CFLAGS) -o $@ \
+	$(RISCV_EXE_PREFIX)gcc $(CFG_CFLAGS) $(CFLAGS) -v -o $@ \
 		-nostartfiles \
 		-I $(ASM) \
 		$^ -T $(BSP)/link.ld -L $(BSP) -lcv-verif
-
 
 # compile and dump RISCV_TESTS only
 #$(CV32_RISCV_TESTS_FIRMWARE)/cv32_riscv_tests_firmware.elf: $(CV32_RISCV_TESTS_FIRMWARE_OBJS) $(RISCV_TESTS_OBJS) \
@@ -450,8 +524,6 @@ $(RISCV_COMPLIANCE_TESTS)/%.o: $(RISCV_COMPLIANCE_TESTS)/%.S $(RISCV_COMPLIANCE_
 		-DTEST_FUNC_NAME=$(notdir $(subst -,_,$(basename $<))) \
 		-DTEST_FUNC_TXT='"$(notdir $(subst -,_,$(basename $<)))"' \
 		-DTEST_FUNC_RET=$(notdir $(subst -,_,$(basename $<)))_ret $<
-
-
 
 # in dsim
 .PHONY: dsim-unit-test 

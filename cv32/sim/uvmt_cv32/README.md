@@ -25,10 +25,9 @@ go to the [Imperas website](http://www.imperas.com/) for installation instructio
 SystemVerilog Simulators
 ----------------------------------
 Any SystemVerilog simulator that implements complete support for [IEEE-1800-2017](https://ieeexplore.ieee.org/document/8299595)
-will be able to compile and run this verification environment. At the time of this writting
-(2020-02-08) the Metrics **_dsim_**, Cadence **_Xcelium_**, Mentor's **_Questa_**  and Synopsys **_VCS_** simulators are supported by the Makefiles. 
-If you have access to other SystemVerilog simulators such as Aldec **_RivieraPRO_** or some other simulator
-not listed here and would like to add support to the Makefile, your pull-request will be graciously accepted!
+will be able to compile and run this verification environment. Metrics **_dsim_**, Cadence **_Xcelium_**, Mentor's **_Questa_**,
+Aldec's **_Riviera-PRO_**  and Synopsys **_VCS_** simulators are supported by the Makefiles. If you have access to a SystemVerilog
+simulator not listed here and would like to add support to the Makefiles, your pull-request will be graciously accepted!
 
 UVM-1.2 Libraries
 -------------
@@ -74,29 +73,31 @@ cv32/sim/
               +--- vsim.mk                  # Mentor Questa
               +--- dsim.mk                  # Metrics dsim
               +--- xrun.mk                  # Cadance Xcelium
+              +--- riviera.mk               # Aldec Riviera-PRO
               +--- <other_simulators>.mk
 ```
 The goal of this structure is to minimize the amount of redundant code in the
 Makefiles and ease the maintance of a given simulator's specific variables,
 rules and targets.
 <br><br>
-The basic usage is: `make SIMULATOR=<sim> <target>` where `sim` is vsim, dsim
-or xrun and `target` selects a specific testcase or other rule (e.g. "clean").
+The basic usage is: `make SIMULATOR=<sim> <target>` where `sim` is vsim, dsim,
+ xrun, vcs or riviera and `target` selects a specific testcase or other rule (e.g. "clean").
 <br><br>
 **Hint**: define shell ENV variable "SIMULATOR" to match one of the supported
 simulator-specific Makefiles (e.g. vsim) to save yourself a lot of typing.
 <br><br>
-To run your own test-program use the `custom` target.  For example `make custom CUSTOM_PROG=illegal`
-will run illegal.c from the cv32/tests/core/custom directory.
+The basic format to run a test is `make test SIMULATOR=<sim> TEST=<test-program>` where `test-program`
+is the name of a [test-program](https://core-v-docs-verif-strat.readthedocs.io/en/latest/sim_tests.html#test-program)
+(either C or RISC-V assembler) located in cv32/tests/program/<testprogram>.
 
 Running the envrionment with Metrics [dsim](https://metrics.ca)
 ----------------------
 The command **make SIMULATOR=dsim sanity** will run the sanity testcase using _dsim_.
 <br><br>
-Setting a shell environment variable `SIMULATOR` to "dsim" will also define the
+Setting a shell environment variable `CV_SIMULATOR` to "dsim" will also define the
 Makefile variable SIMULATOR to `dsim` and you can save yourself a lot of typing. For
 example, in a bash shell:
-<br>**export SIMULATOR=dsim**
+<br>**export CV_SIMULATOR=dsim**
 <br>**make sanity**
 <br><br>
 The Makefile for dsim also supports variables to control wave dumping.  For example:
@@ -116,6 +117,8 @@ using _xrun_.  Set the shell variable SIMULATOR to `xrun` to simply run **`make 
 **Note for Cadence users:** This testbench is known to require Xcelium 19.09 or
 later.  See [Issue 11](https://github.com/openhwgroup/core-v-verif/issues/11)
 for more info.
+<br>
+**2020-07-21**: there is also an issue with 20.06 which we are investigating.
 
 Running the environment with Mentor Graphics [Questa](https://www.mentor.com/products/fv/questa/) (vsim)
 ----------------------
@@ -131,27 +134,34 @@ Set the shell variable SIMULATOR to `vcs` to simply run **`make <target>`**.
 with _vcs_ in several weeks.  If you need to update the Makefiles, please do
 so and issue a Pull Request.
 
+Running the environment with Aldec [Riviera-PRO](https://www.aldec.com/en/products/functional_verification/riviera-pro) (riviera)
+----------------------
+The command **make SIMULATOR=riviera sanity** will run the sanity testcase using _riviera_.
+Set the shell variable SIMULATOR to `riviera` to simply run **`make <target>`**.
+
 Common Makefile Flags
 ---------------
 For all tests in the <i>uvmt_cv32</i> directory the following flags and targets are supported for common operations with the simulators.  For all flags and targets described in this section it is assumed that the user will supply a SIMULATOR setting on the make command line or populate the CV_SIMULATOR environment variable.
 
 Current supported simulators: <i>Note that eventually all simulators will be supported</i>
 
-| SIMULATOR | Supported |
-|-----------|-----------|
-|dsim       | No        |
-|xrun       | Yes       |
-|questa     | Yes       |
-|vcs        | Yes       |
+| SIMULATOR  | Supported |
+|------------|-----------|
+|dsim        | Yes       |
+|xrun        | Yes       |
+|questa      | Yes       |
+|vcs         | Yes       |
+|Riviera-PRO | Yes       |
 
 For certain simulators multiple debug tools are available that enable advanced debug capabilities but generally require respective licenses from the vendor.  By default all debug-related commands in this section will support a standard debug tool with the simulator.   However support is provided for advanced debug tools when avaiable.  The advanced debug tool is selected with each make command by setting the **ADV_DEBUG=YES** flag.
 
-| SIMULATOR | Standard Debug Tool | Advanced Debug Tool |
-|-----------|---------------------|---------------------|
-| dsim      | N/A                 | N/A                 |
-| xrun      | SimVision           | Indago              |
-| questa    | Questa Tk GUI       | Visualizer          |
-| vcs       | DVE                 | Verdi               |
+| SIMULATOR   | Standard Debug Tool | Advanced Debug Tool |
+|-------------|---------------------|---------------------|
+| dsim        | N/A                 | N/A                 |
+| xrun        | SimVision           | Indago              |
+| questa      | Questa Tk GUI       | Visualizer          |
+| vcs         | DVE                 | Verdi               |
+| Riviera-PRO | Riviera-PRO         | Riviera-PRO         |
 
 ### Interactive Simulation
 
@@ -159,7 +169,7 @@ To run a simulation in interactive mode (to enable single-stepping, breakpoints,
 
 If applicable for a simulator, line debugging will be enabled in the compile to enable single-stepping.
 
-**make hello-world GUI=1**
+**make test TEST=hello-world GUI=1**
 
 ### Set the UVM quit count
 
@@ -168,7 +178,7 @@ to allow up to 5 errors to be signaled before aborting the test.  There is a run
 tests.  Use the USER_RUN_FLAGS make variable with the standard UVM_MAX_QUIT_COUNT plusarg as below.  Please note that the NO is required
 and signals that you want UVM to use your plusarg over any internally configured quit count values.
 
-**make hello-world USER_RUN_FLAGS=+UVM_MAX_QUIT_COUNT=10,NO**
+**make test TEST=hello-world USER_RUN_FLAGS=+UVM_MAX_QUIT_COUNT=10,NO**
 
 ### Post-process Waveform Debug
 
@@ -178,7 +188,7 @@ To create waves during simulation, set the **WAVES=YES** flag.<br>
 
 The waveform dump will include all signals in the <i>uvmt_tb32</i> testbench and recursively throughout the hierarchy.
 
-**make hello-world WAVES=1**
+**make test TEST=hello-world WAVES=1**
 
 If applicable for a simulator, dumping waves for an advanced debug tool is available.
 
@@ -202,7 +212,7 @@ By default coverage information is not generated during a simulation for <i>xrun
 
 To generate coverage database, set **COV=1**.
 
-**make hello-world COV=1**
+**make test TEST=hello-world COV=1**
 
 To view coverage results a new target **cov** was added to the makefiles.  By default the target will generate a coverage report in the same directory as the output log files and the coverage database.<br>
 
@@ -249,7 +259,7 @@ Available Test Programs
 -----------------------
 The `make` commands here assume you have set your shell SIMULATION
 There are three targets that can run a specific test-program by name:
-* **make hello-world**:<br>run the hello_world program found at `../../tests/core/custom`.
+* **make test TEST=hello-world**:<br>run the hello_world program found at `../../tests/core/custom`.
 * **make cv32-riscv-tests**:<br>run the CV32-specific RISC-V tests found at `../../tests/core/cv32_riscv_tests_firmware`
 * **make cv32-riscv-compilance-tests**:<br>run the CV32-specific RISC-V tests found at `../../tests/core/cv32_riscv_compliance_tests_firmware`
 Some targets are simulator specific:
@@ -279,4 +289,39 @@ You can now run any test program in that directory:<br>
 ```
 make custom CUSTOM_PROJ=hello_world
 make custom CUSTOM_PROJ=smoke
+```
+
+Build Configurations
+--------------------
+The `uvmt_cv32` environment supports adding compile flags to the testbench to support a specialized configuration of the core.  The testbench
+flow supports a single compilation object at any point in time so it is recommended that any testbench options be supported as run-time
+options (see the Test Specification documentation for setting run-time plusargs).  However if, for instance, parameters to the DUT need to be
+changed then this flow needs to be used.<br>
+
+All build configurations are in the files:<br>
+
+```
+cv32/tests/cfg/<cfg>.yaml
+```
+
+The contents of the YAML file support the following tags:
+| YAML Tag      | Required | Description |
+|---------------|----------|---------------------|
+| name          | Yes      | The name of the configuration                |
+| description   | Yes      | Brief description of the intent of the build configuration |
+| compile_flags | No       | Compile flags passed to the simulator compile-step    |
+| ovpsim        | No       | Flags for the IC file for the OVPSim ISS   |
+
+<br>
+The following is an example build configuration:<br>
+
+```
+name: no_pulp
+description: Sets all PULP-related flags to 0
+compile_flags: >
+    +define+NO_PULP
+    +define+HAHAHA
+ovpsim: >
+    --override root/cpu0/misa_Extensions=0x1104
+    --showoverrides
 ```

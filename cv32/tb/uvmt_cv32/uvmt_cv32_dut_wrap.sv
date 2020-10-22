@@ -1,6 +1,7 @@
 //
 // Copyright 2020 OpenHW Group
 // Copyright 2020 Datum Technologies
+// Copyright 2020 Silicon Labs, Inc.
 // 
 // Licensed under the Solderpad Hardware Licence, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -83,7 +84,15 @@ module uvmt_cv32_dut_wrap #(// DUT (riscv_core) parameters.
     logic                         irq_ack;
     logic [ 4:0]                  irq_id;
 
+    logic                         debug_req_vp;
+    logic                         debug_req_uvma;
     logic                         debug_req;
+
+    assign debug_if.clk      = clknrst_if.clk;
+    assign debug_if.reset_n  = clknrst_if.reset_n;
+    assign debug_req_uvma    = debug_if.debug_req;
+
+    assign debug_req = debug_req_vp | debug_req_uvma;
    
 
     // Load the Instruction Memory 
@@ -107,18 +116,23 @@ module uvmt_cv32_dut_wrap #(// DUT (riscv_core) parameters.
           // Now load it...
           `uvm_info("DUT_WRAP", $sformatf("loading firmware %0s", firmware), UVM_NONE)
           $readmemh(firmware, uvmt_cv32_tb.dut_wrap.ram_i.dp_ram_i.mem);
-          `ifdef ISS
-             // If using ISS for any location in RTL mem = X fill RTL and ISS memory with same random value
-             fill_cnt = 0;
-             for (int index=0; index < 2**RAM_ADDR_WIDTH; index++) begin
-                if (uvmt_cv32_tb.dut_wrap.ram_i.dp_ram_i.mem[index] === 8'hXX) begin
-                    fill_cnt++;
-                   rnd_byte = $random();
-                   uvmt_cv32_tb.dut_wrap.ram_i.dp_ram_i.mem[index]=rnd_byte;
-                   uvmt_cv32_tb.iss_wrap.ram.mem[index/4][((((index%4)+1)*8)-1)-:8]=rnd_byte; // convert byte to 32-bit addressing
-                end
+          // Initialize RTL and ISS memory with (the same) random value to
+          // prevent X propagation through the core RTL.
+          fill_cnt = 0;
+          for (int index=0; index < 2**RAM_ADDR_WIDTH; index++) begin
+             if (uvmt_cv32_tb.dut_wrap.ram_i.dp_ram_i.mem[index] === 8'hXX) begin
+                 fill_cnt++;
+                rnd_byte = $random();
+                uvmt_cv32_tb.dut_wrap.ram_i.dp_ram_i.mem[index]=rnd_byte;
+                `ifdef ISS
+                uvmt_cv32_tb.iss_wrap.ram.mem[index/4][((((index%4)+1)*8)-1)-:8]=rnd_byte; // convert byte to 32-bit addressing
+                `endif
              end
-             `uvm_info("DUT_WRAP", $sformatf("Filled 0d%0d RTL and ISS memory bytes with random values", fill_cnt), UVM_HIGH)
+          end
+          `ifdef ISS
+             `uvm_info("DUT_WRAP", $sformatf("Filled 0d%0d RTL and ISS memory bytes with random values", fill_cnt), UVM_LOW)
+          `else
+             `uvm_info("DUT_WRAP", $sformatf("Filled 0d%0d RTL memory bytes with random values", fill_cnt), UVM_LOW)
           `endif
         end
         else begin
@@ -230,7 +244,7 @@ module uvmt_cv32_dut_wrap #(// DUT (riscv_core) parameters.
          .irq_ack_i      ( irq_ack                         ),
          .irq_o          ( irq_vp                          ),
 
-         .debug_req_o    ( debug_req                       ),
+         .debug_req_o    ( debug_req_vp                       ),
 
          .pc_core_id_i   ( cv32e40p_wrapper_i.core_i.pc_id ),
 

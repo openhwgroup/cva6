@@ -1,5 +1,6 @@
 // Copyright 2020 OpenHW Group
 // Copyright 2020 Datum Technology Corporation
+// Copyright 2020 Silicon Labs, Inc.
 // 
 // Licensed under the Solderpad Hardware Licence, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -21,7 +22,7 @@
 /**
  * Component writing Debug monitor transactions debug data to disk as plain text.
  */
-class uvma_debug_mon_trn_logger_c extends uvm_logs_mon_trn_logger_c#(
+class uvma_debug_mon_trn_logger_c extends uvml_logs_mon_trn_logger_c#(
    .T_TRN  (uvma_debug_mon_trn_c),
    .T_CFG  (uvma_debug_cfg_c    ),
    .T_CNTXT(uvma_debug_cntxt_c  )

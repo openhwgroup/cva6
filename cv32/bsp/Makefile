@@ -21,3 +21,12 @@ $(LIBCV-VERIF): $(OBJ)
 
 clean:
 	rm -f $(OBJ) $(LIBCV-VERIF)
+
+
+vars:
+	@echo "make bsp variables:"
+	@echo "   CV_SW_TOOLCHAIN  = $(CV_SW_TOOLCHAIN)"
+	@echo "   RISCV            = $(RISCV)"
+	@echo "   RISCV_EXE_PREFIX = $(RISCV_EXE_PREFIX)"
+	@echo "   RISCV_GCC        = $(RISCV_GCC)"
+

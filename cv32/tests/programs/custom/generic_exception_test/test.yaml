@@ -1,0 +1,7 @@
+# Test definition YAML for test
+
+# Interrupt directed test
+name: general_exception_test
+uvm_test: uvmt_cv32_firmware_test_c
+description: >
+    Generic directed exception test

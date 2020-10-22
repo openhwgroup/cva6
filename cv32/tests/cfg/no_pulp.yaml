@@ -1,0 +1,10 @@
+name: no_pulp
+description: Sets all PULP-related parameters to 0
+compile_flags: >
+    +define+NO_PULP
+ovpsim: >
+    --override root/cpu/marchid=4
+    --override root/cpu/misa_Extensions=0x1104
+    --override root/cpu/noinhibit_mask=0xFFFFFFF0
+cflags: >
+    -DNO_PULP

@@ -45,7 +45,8 @@ class corev_instr_base_test extends riscv_instr_base_test;
   virtual function void build_phase(uvm_phase phase);
     override_gen_config();
     override_privil_reg();
-
+    override_privil_seq();
+    override_debug_rom_gen();
     super.build_phase(phase);
   endfunction
 
@@ -57,6 +58,16 @@ class corev_instr_base_test extends riscv_instr_base_test;
   virtual function void override_privil_reg();    
     uvm_factory::get().set_type_override_by_type(riscv_privil_reg::get_type(),
                                                  corev_privil_reg::get_type());
+  endfunction
+
+  virtual function void override_privil_seq();
+    uvm_factory::get().set_type_override_by_type(riscv_privileged_common_seq::get_type(),
+                                                 corev_privileged_common_seq::get_type());
+  endfunction
+
+  virtual function void override_debug_rom_gen();
+    uvm_factory::get().set_type_override_by_type(riscv_debug_rom_gen::get_type(),
+                                                 corev_debug_rom_gen::get_type());
   endfunction
 
   virtual function void apply_directed_instr();

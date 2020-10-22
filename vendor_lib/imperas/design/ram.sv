@@ -27,7 +27,7 @@ module RAM
 );
 
     // Sparse memory supported by all RTL simulators
-    reg /* sparse */ [31:0] mem [bit[29:0]]; /* sparse */
+    reg [31:0] mem [bit[29:0]];
 
     Uns32 daddr4, iaddr4;
     Uns32 value;

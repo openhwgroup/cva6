@@ -54,6 +54,9 @@ $ git push --set-upstream origin ohw_mike_20191122<br>
 $ cd $HOME/GitHubRepos/openhwgroup/cv32e40p<br>
 $ git clone --recursive -b ohw_mike_20191122 https://github.com/openhwgroup/cv32e40p ohw_mike_20191122<br>
 
+## Get the short version of the hash of your clone
+$ git log --pretty=format:'%h' -n 1
+
 ## Sync a branch to the master (same repo)
 $ cd $HOME/GitHubRepos/<GitHub_Account>/<Repository/><Branch><br>
 $ git checkout master<br>

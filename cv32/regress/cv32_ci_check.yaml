@@ -1,50 +1,57 @@
-# YAML file to specify a regression testlist
----
-# Header
 name: cv32_ci_check
 description: Commit sanity for the cv32
 
-# List of builds
 builds:
   corev-dv:
-    # required: Make the corev-dv infrastructure    
-    cmd: make corev-dv
+    cmd: make comp_corev-dv
     dir: cv32/sim/uvmt_cv32
   uvmt_cv32:
-    # required: the make command to create the build
     cmd: make comp
     dir: cv32/sim/uvmt_cv32
 
-# List of tests
 tests:
   hello-world:
     build: uvmt_cv32
     description: UVM Hello World Test
     dir: cv32/sim/uvmt_cv32
     cmd: make hello-world
+    cmd: make test TEST=hello-world
     
-  riscv_ebreak_test_0:
-    build: uvmt_cv32
-    description: Static riscv-dv ebreak test
-    dir: cv32/sim/uvmt_cv32
-    cmd: make custom CUSTOM_PROG=riscv_ebreak_test_0
-
   illegal:
     build: uvmt_cv32
-    description: Illegal instruction RISCV test
     dir: cv32/sim/uvmt_cv32
-    cmd: make custom CUSTOM_PROG=illegal
+    cmd: make test TEST=illegal
 
-  interrupt_test:
+  csr_instructions:
     build: uvmt_cv32
-    description: Interrupt directed test
+    description: CSR Instruction Test
     dir: cv32/sim/uvmt_cv32
-    iss: no
-    cmd: make interrupt_test
-    skip_sim: [xrun, vsim]
+    cmd: make test TEST=csr_instructions
 
-  riscv_arithmetic_basic_test_0:
+  riscv_arithmetic_basic_test:
     build: uvmt_cv32
-    description: riscv-dv basic math test
+    description: Static riscv-dv arithmetic test 0
     dir: cv32/sim/uvmt_cv32
-    cmd: make custom CUSTOM_PROG=riscv_arithmetic_basic_test_0
+    cmd: make test TEST=riscv_arithmetic_basic_test
+
+  corev_arithmetic_base_test:
+    build: uvmt_cv32
+    description: Generated corev-dv random arithmetic test
+    dir: cv32/sim/uvmt_cv32
+    cmd: make gen_corev-dv test TEST=corev_arithmetic_base_test
+    num: 2
+
+  corev_rand_instr_test:
+    build: uvmt_cv32  
+    description: Generated corev-dv random instruction test
+    dir: cv32/sim/uvmt_cv32
+    cmd: make gen_corev-dv test TEST=corev_rand_instr_test
+    num: 2
+
+  corev_jump_stress_test:
+    build: uvmt_cv32  
+    description: Generated corev-dv jump stress test
+    dir: cv32/sim/uvmt_cv32
+    cmd: make gen_corev-dv test TEST=corev_jump_stress_test
+    num: 2
+

@@ -1,5 +1,6 @@
 // Copyright 2020 OpenHW Group
 // Copyright 2020 Datum Technology Corporation
+// Copyright 2020 Silicon Labs, Inc.
 // 
 // Licensed under the Solderpad Hardware Licence, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -21,15 +22,14 @@
 /**
  * Object created by Debug agent sequences extending uvma_debug_seq_base_c.
  */
-class uvma_debug_seq_item_c extends uvm_trn_seq_item_c;
+class uvma_debug_seq_item_c extends uvml_trn_seq_item_c;
    
-   // TODO Add uvma_debug_seq_item_c fields
-   //      Ex: rand bit [7:0]  abc;
-   
+  bit debug_req; 
+  rand int unsigned active_cycles;
    
    `uvm_object_utils_begin(uvma_debug_seq_item_c)
-      // TODO Add uvma_debug_seq_item_c UVM field utils
-      //      Ex: `uvm_field_int(abc, UVM_DEFAULT)
+    `uvm_field_int(debug_req, UVM_DEFAULT)
+    `uvm_field_int(active_cycles, UVM_DEFAULT)
    `uvm_object_utils_end
    
    
@@ -37,7 +37,9 @@ class uvma_debug_seq_item_c extends uvm_trn_seq_item_c;
    //      Ex: constraint default_cons {
    //             abc inside {0,2,4,8,16,32};
    //          }
-   
+   constraint active_cons {
+       active_cycles > 0 && active_cycles < 100;
+   }
    
    /**
     * Default constructor.

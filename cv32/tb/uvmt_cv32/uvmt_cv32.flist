@@ -1,7 +1,8 @@
 //
 // Copyright 2020 OpenHW Group
 // Copyright 2020 Datum Technologies
-// 
+// Copyright 2020 Silicon Labs, Inc.
+//
 // Licensed under the Solderpad Hardware Licence, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
@@ -25,8 +26,9 @@
 // Agents
 -f ${DV_UVMA_CLKNRST_PATH}/uvma_clknrst_pkg.flist
 -f ${DV_UVMA_INTERRUPT_PATH}/uvma_interrupt_pkg.flist
+-f ${DV_UVMA_OBI_PATH}/uvma_obi_pkg.flist
 //-f ${DV_UVMA_RESET_PATH}/uvma_reset_pkg.flist
-//-f ${DV_UVMA_DEBUG_PATH}/uvma_debug_pkg.flist
+-f ${DV_UVMA_DEBUG_PATH}/uvma_debug_pkg.flist
 
 // Environments
 -f ${DV_UVME_CV32_PATH}/uvme_cv32_pkg.flist
@@ -52,8 +54,10 @@ ${TBSRC_HOME}/uvmt_cv32/uvmt_cv32_tb.sv
 ${TBSRC_HOME}/uvmt_cv32/uvmt_cv32_dut_wrap.sv
 ${TBSRC_HOME}/core/mm_ram.sv
 ${TBSRC_HOME}/core/dp_ram.sv
-${TBSRC_HOME}/core/tb_riscv/riscv_random_stall.sv
+${TBSRC_HOME}/core/tb_riscv/riscv_gnt_stall.sv
+${TBSRC_HOME}/core/tb_riscv/riscv_rvalid_stall.sv
 ${TBSRC_HOME}/core/tb_riscv/riscv_random_interrupt_generator.sv
 
 // FIXME:STR:Find a better location
 ${DV_UVMT_CV32_PATH}/uvmt_cv32e40p_interrupt_assert.sv
+${DV_UVMT_CV32_PATH}/uvmt_cv32e40p_debug_assert.sv

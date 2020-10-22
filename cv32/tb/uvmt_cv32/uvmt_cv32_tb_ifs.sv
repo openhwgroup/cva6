@@ -1,4 +1,4 @@
-//
+
 // Copyright 2020 OpenHW Group
 // Copyright 2020 Datum Technologies
 // 
@@ -174,6 +174,19 @@ interface uvmt_cv32_core_cntrl_if (
     dm_exception_addr = 32'h1A11_1000;
     hart_id           = 32'h0000_0000;
 
+    // If a override is provided via plusarg then set bootstrap pins and adjust ISS model
+    if ($value$plusargs("mtvec_addr=0x%x", mtvec_addr)) begin
+      string override;
+      int fh;
+
+`ifdef ISS
+      override = $sformatf("--override root/cpu/mtvec=0x%08x", {mtvec_addr[31:8], 8'h01});
+      fh = $fopen("ovpsim.ic", "a");      
+      $fwrite(fh, " %s\n", override);
+      $fclose(fh);
+`endif
+    end
+
     qsc_stat_str =                $sformatf("\tclock_en          = %0d\n", clock_en);
     qsc_stat_str = {qsc_stat_str, $sformatf("\tscan_cg_en        = %0d\n", scan_cg_en)};
     qsc_stat_str = {qsc_stat_str, $sformatf("\tboot_addr         = %8h\n", boot_addr)};
@@ -249,6 +262,7 @@ interface uvmt_cv32_step_compare_if;
    event       ovp_cpu_busWait;  // Was call to ovp.cpu.busWait();
    logic   [31:0] ovp_cpu_GPR[32];
    logic [31:0][31:0] riscy_GPR; // packed dimensions, register index by data width
+   logic       deferint_prime; // Stages deferint for the ISS deferint signal
 
    int  num_pc_checks;
    int  num_gpr_checks;
@@ -278,5 +292,131 @@ interface uvmt_cv32_step_compare_if;
    
 endinterface: uvmt_cv32_step_compare_if
 
+// Interface to debug assertions and covergroups
+interface uvmt_cv32_debug_cov_assert_if
+    import cv32e40p_pkg::*;
+    (
+    input logic clk_i,
+    input logic rst_ni,
+
+    // Core inputs
+    input logic        fetch_enable_i, // external core fetch enable
+
+    // External interrupt interface
+    input logic [31:0] irq_i,
+    input logic        irq_ack_o,
+    input logic [4:0]  irq_id_o,
+    input logic [31:0] mie_q,
+
+    // Instruction fetch stage
+    input logic        if_stage_instr_rvalid_i, // Instruction word is valid
+    input logic [31:0] if_stage_instr_rdata_i, // Instruction word data
+
+    // Instruction ID stage (determines executed instructions)  
+    input logic        id_stage_instr_valid_i, // instruction word is valid
+    input logic [31:0] id_stage_instr_rdata_i, // Instruction word data
+    input logic        id_stage_is_compressed,
+    input logic [31:0] id_stage_pc, // Program counter in decode
+    input logic [31:0] if_stage_pc, // Program counter in fetch
+    input logic        is_decoding,
+    input logic        id_valid,
+    input wire ctrl_state_e  ctrl_fsm_cs,            // Controller FSM states with debug_req
+    input logic        illegal_insn_i,
+    input logic        illegal_insn_q, // output from controller
+    input logic        ecall_insn_i,
+
+    // Debug signals
+    input logic              debug_req_i, // From controller
+    input logic              debug_mode_q, // From controller
+    input logic [31:0] dcsr_q, // From controller
+    input logic [31:0] depc_q, // From cs regs
+    input logic [31:0] depc_n, // 
+    input logic [31:0] dm_halt_addr_i,
+    input logic [31:0] dm_exception_addr_i,
+
+    input logic [31:0] mcause_q,
+    input logic [31:0] mtvec,
+    input logic [31:0] mepc_q,
+    input logic [31:0] tdata1,
+    input logic [31:0] tdata2,
+    input logic trigger_match_i,
+
+    // Counter related input from cs_registers
+    input logic [31:0] mcountinhibit_q,
+    input logic [63:0] mcycle,
+    input logic [63:0] minstret,
+    input logic inst_ret,
+    // WFI Interface
+    input logic core_sleep_o,
+
+    input logic csr_access,
+    input logic [1:0] csr_op,
+    input logic [11:0] csr_addr,
+    output logic is_wfi,
+    output logic in_wfi,
+    output logic dpc_will_hit,
+    output logic addr_match,
+    output logic is_ebreak,
+    output logic is_cebreak,
+    output logic is_dret,
+    output logic [31:0] pending_enabled_irq
+);
+
+  clocking mon_cb @(posedge clk_i);    
+    input #1step
+    fetch_enable_i,
+
+    irq_i,
+    irq_ack_o,
+    irq_id_o,
+    mie_q,
+
+    if_stage_instr_rvalid_i,
+    if_stage_instr_rdata_i,
+
+    id_stage_instr_valid_i,
+    id_stage_instr_rdata_i,
+    id_stage_is_compressed,
+    id_stage_pc,
+    if_stage_pc,
+    ctrl_fsm_cs,
+    illegal_insn_i,
+    illegal_insn_q,
+    ecall_insn_i,
+  
+    debug_req_i,
+    debug_mode_q,
+    dcsr_q,
+    depc_q,
+    depc_n,
+    dm_halt_addr_i,
+    dm_exception_addr_i,
+    mcause_q,
+    mtvec,
+    mepc_q,
+    tdata1,
+    tdata2,
+    trigger_match_i,
+
+    mcountinhibit_q,
+    mcycle,
+    minstret,
+    inst_ret,
+    
+    core_sleep_o,
+    csr_access,
+    csr_op,
+    csr_addr,
+    is_wfi,
+    in_wfi,
+    dpc_will_hit,
+    addr_match,
+    is_ebreak,
+    is_cebreak,
+    is_dret,
+    pending_enabled_irq;    
+  endclocking : mon_cb
+
+endinterface : uvmt_cv32_debug_cov_assert_if
 
 `endif // __UVMT_CV32_TB_IFS_SV__

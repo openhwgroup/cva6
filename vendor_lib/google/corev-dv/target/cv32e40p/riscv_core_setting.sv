@@ -39,11 +39,14 @@ mtvec_mode_t supported_interrupt_mode[$] = {DIRECT, VECTORED};
 // supported
 int max_interrupt_vector_num = 32;
 
+// Valid CLINT interrupts
+bit [31:0] valid_interrupt_mask = 32'hffff_0888;
+
 // Physical memory protection support
 bit support_pmp = 0;
 
 // Debug mode support
-bit support_debug_mode = 0;
+bit support_debug_mode = 1;
 
 // Support delegate trap to user mode
 bit support_umode_trap = 0;

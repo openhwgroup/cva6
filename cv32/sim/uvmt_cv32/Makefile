@@ -21,7 +21,7 @@
 #
 ###############################################################################
 # 
-# Copyright 2019 Clifford Wolf
+# Copyright 2019 Claire Wolf
 # Copyright 2019 Robert Balas
 #
 # Permission to use, copy, modify, and/or distribute this software for any
@@ -64,6 +64,9 @@ SIMULATOR    ?= $(CV_SIMULATOR)
 # Optionally exclude the OVPsim (not recommended)
 USE_ISS      ?= YES
 
+# Common configuration variables
+CFG             ?= default
+
 # Common Generation variables
 GEN_START_INDEX ?= 0
 GEN_NUM_TESTS   ?= 1
@@ -77,6 +80,8 @@ export DV_UVME_CV32_PATH      = $(PROJ_ROOT_DIR)/$(COREV_PROJ)/env/uvme_cv32
 export DV_UVML_HRTBT_PATH     = $(PROJ_ROOT_DIR)/lib/uvm_libs/uvml_hrtbt
 export DV_UVMA_CLKNRST_PATH   = $(PROJ_ROOT_DIR)/lib/uvm_agents/uvma_clknrst
 export DV_UVMA_INTERRUPT_PATH = $(PROJ_ROOT_DIR)/lib/uvm_agents/uvma_interrupt
+export DV_UVMA_DEBUG_PATH     = $(PROJ_ROOT_DIR)/lib/uvm_agents/uvma_debug
+export DV_UVMA_OBI_PATH       = $(PROJ_ROOT_DIR)/lib/uvm_agents/uvma_obi
 export DV_UVML_TRN_PATH       = $(PROJ_ROOT_DIR)/lib/uvm_libs/uvml_trn
 export DV_UVML_LOGS_PATH      = $(PROJ_ROOT_DIR)/lib/uvm_libs/uvml_logs
 export DV_UVML_SB_PATH        = $(PROJ_ROOT_DIR)/lib/uvm_libs/uvml_sb
@@ -84,6 +89,8 @@ export DV_UVML_SB_PATH        = $(PROJ_ROOT_DIR)/lib/uvm_libs/uvml_sb
 export DV_OVPM_HOME           = $(PROJ_ROOT_DIR)/vendor_lib/imperas
 export DV_OVPM_MODEL          = $(DV_OVPM_HOME)/riscv_CV32E40P_OVPsim
 export DV_OVPM_DESIGN         = $(DV_OVPM_HOME)/verilog/design
+
+export CORE_V_VERIF           = $(PROJ_ROOT_DIR)
 
 DV_UVMT_CV32_SRCS  = $(wildcard $(DV_UVMT_CV32_PATH)/*.sv))
 
@@ -96,6 +103,9 @@ RISCVDV_PKG   := $(PROJ_ROOT_DIR)/vendor_lib/google/riscv-dv
 COREVDV_PKG   := $(PROJ_ROOT_DIR)/vendor_lib/google/corev-dv
 export RISCV_DV_ROOT = $(RISCVDV_PKG)
 export COREV_DV_ROOT = $(COREVDV_PKG)
+
+# RISC-V Foundation's RISC-V Compliance Test-suite
+COMPLIANCE_PKG   := $(PROJ_ROOT_DIR)/vendor_lib/riscv/riscv-compliance
 
 # TB source files for the CV32E core
 TBSRC_TOP   := $(TBSRC_HOME)/uvmt_cv32/uvmt_cv32_tb.sv
@@ -159,6 +169,37 @@ $(RISCVDV_PKG):
 	$(CLONE_RISCVDV_CMD)	
 
 ###############################################################################
+# RISC-V Compliance Test-suite
+#     As much as possible, the test suite is used "out-of-the-box".  The
+#     "build_compliance" target below uses the Makefile supplied by the suite
+#     to compile all the individual test-programs in the suite to generate the
+#     elf and hex files used in simulation.  Each <sim>.mk is assumed to have a
+#     target to run the compiled test-program.
+
+# RISCV_ISA='rv32i|rv32im|rv32imc|rv32Zicsr|rv32Zifencei'
+RISCV_ISA ?= rv32i
+
+clone_compliance:
+	$(CLONE_COMPLIANCE_CMD)
+
+clr_compliance:
+	make clean -C $(PROJ_ROOT_DIR)/vendor_lib/riscv/riscv-compliance
+
+build_compliance: clone_compliance
+	make -i -C $(PROJ_ROOT_DIR)/vendor_lib/riscv/riscv-compliance \
+		RISCV_TARGET=OpenHW \
+		RISCV_DEVICE=cv32e40p \
+		PATH=$(RISCV)/bin:$(PATH) \
+		RISCV_PREFIX=$(RISCV_PREFIX) \
+		NOTRAPS=1 \
+		RISCV_ISA=$(RISCV_ISA)
+
+all_compliance: clone_compliance
+	make build_compliance RISCV_ISA=rv32i   && \
+	make build_compliance RISCV_ISA=rv32im  && \
+	make build_compliance RISCV_ISA=rv32imc
+
+###############################################################################
 # Include the targets/rules for the selected SystemVerilog simulator
 #ifeq ($(SIMULATOR), unsim)
 #include unsim.mk
@@ -175,7 +216,11 @@ else
 ifeq ($(SIMULATOR), vcs)
 include $(MAKE_PATH)/vcs.mk
 else
+ifeq ($(SIMULATOR), riviera)
+include $(MAKE_PATH)/riviera.mk
+else
 include $(MAKE_PATH)/unsim.mk
+endif
 endif
 endif
 endif
@@ -204,9 +249,18 @@ clean_test_programs:
 	find $(PROJ_ROOT_DIR)/cv32/tests/uvmt_cv32/test-programs -name *.map     -exec rm {} \;
 	find $(PROJ_ROOT_DIR)/cv32/tests/uvmt_cv32/test-programs -name *.readelf -exec rm {} \;
 	find $(PROJ_ROOT_DIR)/cv32/tests/uvmt_cv32/test-programs -name *.objdump -exec rm {} \;
+	find $(PROJ_ROOT_DIR)/cv32/tests/programs -name *.o       -exec rm {} \;
+	find $(PROJ_ROOT_DIR)/cv32/tests/programs -name *.hex     -exec rm {} \;
+	find $(PROJ_ROOT_DIR)/cv32/tests/programs -name *.elf     -exec rm {} \;
+	find $(PROJ_ROOT_DIR)/cv32/tests/programs -name *.map     -exec rm {} \;
+	find $(PROJ_ROOT_DIR)/cv32/tests/programs -name *.readelf -exec rm {} \;
+	find $(PROJ_ROOT_DIR)/cv32/tests/programs -name *.objdump -exec rm {} \;
+	find $(PROJ_ROOT_DIR)/cv32/tests/programs -name corev_*.S -exec rm {} \;
 
 clean_riscv-dv:
 	rm -rf $(RISCVDV_PKG)
 	rm -rf $(COREVDV_PKG)/out_*
 	find ../../tests/core/google-riscv-dv -name "*.S" -exec rm {} \;
 
+clean_compliance:
+	rm -rf $(COMPLIANCE_PKG)

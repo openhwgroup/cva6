@@ -181,6 +181,13 @@ function void uvma_debug_agent_c::retrieve_vif();
    else begin
       `uvm_info("VIF", $sformatf("Found vif handle of type %s in uvm_config_db", $typename(cntxt.vif)), UVM_DEBUG)
    end
+
+   if (!uvm_config_db#(virtual uvmt_cv32_debug_cov_assert_if)::get(this, "", "vif_cov", cntxt.vif_cov)) begin
+      `uvm_fatal("VIF", $sformatf("Could not find vif handle of type %s in uvm_config_db", $typename(cntxt.vif_cov)))
+   end
+   else begin
+      `uvm_info("VIF", $sformatf("Found vif handle of type %s in uvm_config_db", $typename(cntxt.vif_cov)), UVM_DEBUG)
+   end
    
 endfunction : retrieve_vif
 

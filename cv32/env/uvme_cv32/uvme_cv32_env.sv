@@ -1,6 +1,7 @@
 // Copyright 2020 OpenHW Group
 // Copyright 2020 Datum Technology Corporation
-// 
+// Copyright 2020 Silicon Labs, Inc.
+//
 // Licensed under the Solderpad Hardware Licence, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
@@ -41,8 +42,10 @@ class uvme_cv32_env_c extends uvm_env;
    // Agents
    uvma_clknrst_agent_c   clknrst_agent;
    uvma_interrupt_agent_c interrupt_agent;
-   //uvma_debug_agent_c  debug_agen
-   
+   uvma_debug_agent_c     debug_agent;
+   uvma_obi_agent_c       obi_instr_agent;
+   uvma_obi_agent_c       obi_data_agent;
+
    
 
    `uvm_component_utils_begin(uvme_cv32_env_c)
@@ -71,7 +74,12 @@ class uvme_cv32_env_c extends uvm_env;
     * 5. Connects agents to coverage model via connect_coverage_model()
     */
    extern virtual function void connect_phase(uvm_phase phase);
-   
+
+   /**
+    * Print out final elaboration
+    */
+   extern virtual function void end_of_elaboration_phase(uvm_phase phase);   
+
    /**
     * Assigns configuration handles to components using UVM Configuration Database.
     */
@@ -202,12 +210,21 @@ function void uvme_cv32_env_c::connect_phase(uvm_phase phase);
 endfunction: connect_phase
 
 
+function void uvme_cv32_env_c::end_of_elaboration_phase(uvm_phase phase);
+   super.end_of_elaboration_phase(phase);
+
+   `uvm_info("UVMECV32ENV", $sformatf("Configuration:\n%s", cfg.sprint()), UVM_LOW)
+
+endfunction : end_of_elaboration_phase
+
 function void uvme_cv32_env_c::assign_cfg();
    
    uvm_config_db#(uvme_cv32_cfg_c)::set(this, "*", "cfg", cfg);
    uvm_config_db#(uvma_clknrst_cfg_c)::set(this, "*clknrst_agent", "cfg", cfg.clknrst_cfg);
    uvm_config_db#(uvma_interrupt_cfg_c)::set(this, "*interrupt_agent", "cfg", cfg.interrupt_cfg);
-   //uvm_config_db#(uvma_debug_cfg_c)::set(this, "debug_agent", "cfg", cfg.debug_cfg);
+   uvm_config_db#(uvma_debug_cfg_c)::set(this, "debug_agent", "cfg", cfg.debug_cfg);
+   uvm_config_db#(uvma_obi_cfg_c)::set(this, "obi_instr_agent", "cfg", cfg.obi_instr_cfg);
+   uvm_config_db#(uvma_obi_cfg_c)::set(this, "obi_data_agent", "cfg", cfg.obi_data_cfg);
    
 endfunction: assign_cfg
 
@@ -217,7 +234,9 @@ function void uvme_cv32_env_c::assign_cntxt();
    uvm_config_db#(uvme_cv32_cntxt_c)::set(this, "*", "cntxt", cntxt);
    uvm_config_db#(uvma_clknrst_cntxt_c)::set(this, "clknrst_agent", "cntxt", cntxt.clknrst_cntxt);
    uvm_config_db#(uvma_interrupt_cntxt_c)::set(this, "interrupt_agent", "cntxt", cntxt.interrupt_cntxt);
-   //uvm_config_db#(uvma_debug_cntxt_c)::set(this, "debug_agent", "cntxt", cntxt.debug_cntxt);
+   uvm_config_db#(uvma_debug_cntxt_c)::set(this, "debug_agent", "cntxt", cntxt.debug_cntxt);
+   uvm_config_db#(uvma_obi_cntxt_c)::set(this, "obi_instr_agent", "cntxt", cntxt.obi_instr_cntxt);
+   uvm_config_db#(uvma_obi_cntxt_c)::set(this, "obi_data_agent", "cntxt", cntxt.obi_data_cntxt);
    
 endfunction: assign_cntxt
 
@@ -226,7 +245,9 @@ function void uvme_cv32_env_c::create_agents();
    
    clknrst_agent = uvma_clknrst_agent_c::type_id::create("clknrst_agent", this);
    interrupt_agent = uvma_interrupt_agent_c::type_id::create("interrupt_agent", this);
-   //debug_agent = uvma_debug_agent_c::type_id::create("debug_agent", this);
+   debug_agent = uvma_debug_agent_c::type_id::create("debug_agent", this);
+   obi_instr_agent = uvma_obi_agent_c::type_id::create("obi_instr_agent", this);
+   obi_data_agent  = uvma_obi_agent_c::type_id::create("obi_data_agent", this);
    
 endfunction: create_agents
 
@@ -304,7 +325,7 @@ function void uvme_cv32_env_c::assemble_vsequencer();
    
    vsequencer.clknrst_sequencer = clknrst_agent.sequencer;
    vsequencer.interrupt_sequencer = interrupt_agent.sequencer;
-   //vsequencer.debug_sequencer   = debug_agent.sequencer;
+   vsequencer.debug_sequencer   = debug_agent.sequencer;
    
 endfunction: assemble_vsequencer
 

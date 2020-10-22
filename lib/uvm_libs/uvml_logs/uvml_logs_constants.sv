@@ -20,10 +20,15 @@
 `define __UVML_LOGS_CONSTANTS_SV__
 
 
+`ifdef _VCP
+parameter uvml_logs_default_sim_dir_cli_arg  = "SIM_DIR_RESULTS";
+parameter uvml_logs_default_trn_log_dir_name =         "trn_log";
+parameter uvml_logs_default_trn_fextension   =             "log";
+`else
 const string  uvml_logs_default_sim_dir_cli_arg  = "SIM_DIR_RESULTS";
 const string  uvml_logs_default_trn_log_dir_name =         "trn_log";
 const string  uvml_logs_default_trn_fextension   =             "log";
-
+`endif //end VCP
 
 
 `endif // __UVML_LOGS_CONSTANTS_SV__
