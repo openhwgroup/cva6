@@ -43,6 +43,7 @@ XRUN_RUN_BASE_FLAGS   ?= -64bit $(XRUN_GUI) -licqueue +UVM_VERBOSITY=$(XRUN_UVM_
 XRUN_GUI         ?=
 XRUN_SINGLE_STEP ?=
 XRUN_ELAB_COV     = -covdut uvmt_cv32_tb -coverage b:e:f:t:u
+XRUN_ELAB_COVFILE = -covfile ../../tools/xrun/covfile.tcl
 XRUN_RUN_COV      = -covscope uvmt_cv32_tb \
 					-nowarn CGDEFN
 
@@ -99,6 +100,7 @@ MERGED_COV_DIR ?= merged_cov
 
 ifeq ($(call IS_YES,$(COV)),YES)
 XRUN_ELAB_COV_FLAGS += $(XRUN_ELAB_COV)
+XRUN_ELAB_COV_FLAGS += $(XRUN_ELAB_COVFILE)
 XRUN_RUN_COV_FLAGS += $(XRUN_RUN_COV)
 endif
 
