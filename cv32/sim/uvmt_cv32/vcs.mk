@@ -124,7 +124,7 @@ endif
 VCS_FILE_LIST ?= -f $(DV_UVMT_CV32_PATH)/uvmt_cv32.flist
 ifeq ($(call IS_YES,$(USE_ISS)),YES)
     VCS_FILE_LIST += -f $(DV_UVMT_CV32_PATH)/imperas_iss.flist
-    VCS_USER_COMPILE_ARGS += "+define+ISS+CV32E40P_TRACE_EXECUTION"
+    VCS_USER_COMPILE_ARGS += "+define+ISS +define+CV32E40P_TRACE_EXECUTION"
     VCS_PLUSARGS +="+USE_ISS"
 endif
 
