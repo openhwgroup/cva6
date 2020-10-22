@@ -174,7 +174,6 @@ FPNEW_PKG            := $(CV32E40P_PKG)/rtl/fpnew
 #        This is BAD PRACTICE and will be fixed with
 #        https://github.com/openhwgroup/cv32e40p/pull/421 is resolved.
 CV32E40P_MANIFEST    := $(CV32E40P_PKG)/cv32e40p_manifest.flist
-#CV32E40P_MANIFEST    := cv32e40p_temp_manifest.flist
 export DESIGN_RTL_DIR = $(CV32E40P_PKG)/rtl
 
 # Default "custom test-program"
@@ -455,6 +454,7 @@ testbench_verilator: $(CV32E40P_PKG) $(TBSRC_VERI) $(TBSRC_PKG)
 		--Wno-MODDUP --top-module \
 		tb_top_verilator $(TBSRC_VERI) \
 		-f $(CV32E40P_MANIFEST) \
+		$(CV32E40P_PKG)/bhv/cv32e40p_core_log.sv \
 		$(TBSRC_CORE)/tb_top_verilator.cpp --Mdir $(VERI_OBJ_DIR) \
 		-CFLAGS "-std=gnu++11 $(VERI_CFLAGS)" \
 		$(VERI_COMPILE_FLAGS)
