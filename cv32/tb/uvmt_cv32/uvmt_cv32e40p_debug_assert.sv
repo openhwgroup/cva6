@@ -315,7 +315,7 @@ module uvmt_cv32e40p_debug_assert
 
     // Check that mcycle works as expected when not sleeping
     // Counter can be written an arbitrary value, check that
-    // it changed only
+    // it changed only when not being written to
     property p_mcycle_count;
         !cov_assert_if.mcountinhibit_q[0] && !cov_assert_if.core_sleep_o  && !(cov_assert_if.csr_we_int && (cov_assert_if.csr_addr ==12'hB00 || cov_assert_if.csr_addr == 12'hB80)) |=>  $changed(cov_assert_if.mcycle);
     endproperty
@@ -325,8 +325,11 @@ module uvmt_cv32e40p_debug_assert
             `uvm_error(info_tag, "Mcycle not counting when mcountinhibit[0] is cleared!");
 
     // Check that minstret works as expected when not sleeping
+    // Check only when not written to
     property p_minstret_count;
-        !cov_assert_if.mcountinhibit_q[2] && cov_assert_if.inst_ret && !cov_assert_if.core_sleep_o |=> (cov_assert_if.minstret == ($past(cov_assert_if.minstret)+1));
+        !cov_assert_if.mcountinhibit_q[2] && cov_assert_if.inst_ret && !cov_assert_if.core_sleep_o
+        && !(cov_assert_if.csr_we_int && (cov_assert_if.csr_addr == 12'hB02 || cov_assert_if.csr_addr == 12'hB82))
+        |=> (cov_assert_if.minstret == ($past(cov_assert_if.minstret)+1));
     endproperty
 
     a_minstret_count : assert property(p_minstret_count)
