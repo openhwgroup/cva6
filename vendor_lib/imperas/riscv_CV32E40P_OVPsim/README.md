@@ -30,6 +30,16 @@ The simulator is developed, licensed and maintained by [Imperas Software](http:/
 As a member of the RISC-V Foundation community of software and hardware innovators collaboratively driving RISC-V adoption, Imperas has developed the riscvOVPsim simulator to assist RISC-V adopters to become compliant to the RISC-V specifications.
 
 
+Obtaining a license to use OpenHW CV32E40P Model
+---
+The **riscv_CV32E40P_OVPsim** fixed model requires a license to allow its execution. The license can be obtained by OpenHW collaborators or by contacting Imperas.
+
+If you want to be a collaborator - please contact OpenHW directly: info@openhwgroup.org
+
+If you do not want to be a collaborator and want a license key to use the OpenHW Imperas reference model, then please contact support@ovpworld.org for a key.
+
+
+
 Debugging using GDB / Eclipse
 ---
 The same fixed module can be used to debug the application using GDB and Eclipse. Additional Imperas products must be installed to enable these features.

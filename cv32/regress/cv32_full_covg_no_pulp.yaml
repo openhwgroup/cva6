@@ -132,7 +132,21 @@ tests:
     description: Generated corev-dv random debug test
     dir: cv32/sim/uvmt_cv32    
     cmd: make gen_corev-dv test TEST=corev_rand_debug
-    num: 200
+    num: 50
+
+  corev_rand_debug_single_step:
+    build: uvmt_cv32
+    description: debug random test with single-stepping
+    dir: cv32/sim/uvmt_cv32
+    cmd: make gen_corev-dv test TEST=corev_rand_debug_single_step
+    num: 50
+
+  corev_rand_debug_ebreak:
+    build: uvmt_cv32
+    description: debug random test with ebreaks from ROM
+    dir: cv32/sim/uvmt_cv32
+    cmd: make gen_corev-dv test TEST=corev_rand_debug_ebreak
+    num: 50
 
   corev_rand_interrupt_wfi:
     build: uvmt_cv32

@@ -27,7 +27,7 @@ session {{session}} {
     top_dir: {{results_path}}/vmgr_sessions;
 {% if lsf %}
     drm: lsf;
-    max_runs_in_parallel: 20;
+    max_runs_in_parallel: 30;
     queuing_policy: round_robin;
     default_dispatch_parameters: <text>{{lsf}}</text>;
 {% endif %}
@@ -67,8 +67,11 @@ group cv32e40p {
 {{indent}}            count: {{t.num}};
 {{indent}}            run_script: 'cd {{t.abs_dir}} && {{t.cmd}} COMP=0 CV_SIM_PREFIX= SIMULATOR={{t.simulator}} USE_ISS={{regress_macros.yesorno(t.iss)}} COV={{regress_macros.yesorno(t.cov)}} RUN_INDEX=$RUN_ENV(BRUN_SEED) GEN_START_INDEX=$RUN_ENV(BRUN_SEED) RNDSEED=$RUN_ENV(BRUN_SV_SEED) {{makeargs}}';
 {% if simulator == 'vsim' %}
-{{indent}}            scan_script: 'vm_scan.pl uvm.flt {{filter_dir}}/vsim_run.flt';
+{{indent}}            scan_script: 'vm_scan.pl {{filter_dir}}/corev_uvm.flt {{filter_dir}}/vsim_run.flt';
 {% endif %}
+{% if simulator == 'xrun' %}
+{{indent}}            scan_script: 'vm_scan.pl cdns_sim.flt {{filter_dir}}/corev_uvm.flt vm.flt shell.flt';
+{% endif  %}
 {{indent}}        };
 {{indent}}    };
 {% if t.precmd %}
