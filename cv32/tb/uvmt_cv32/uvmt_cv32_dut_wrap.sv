@@ -41,7 +41,7 @@
  */
 module uvmt_cv32_dut_wrap #(// DUT (riscv_core) parameters.
                             // https://github.com/openhwgroup/core-v-docs/blob/master/cores/cv32e40p/CV32E40P_and%20CV32E40_Features_Parameters.pdf
-                            parameter PULP_XPULP          =  1,
+                            parameter PULP_XPULP          =  0,
                                       PULP_CLUSTER        =  0,
                                       FPU                 =  0,
                                       PULP_ZFINX          =  0,
