@@ -12,6 +12,8 @@
 // Contributor: Robert Balas <balasr@student.ethz.ch>
 // Module renamed from riscv_wrapper to cv32e40p_tb_wrapper because (1) the
 // name of the core changed, and (2) the design has a cv32e40p_wrapper module.
+//
+// SPDX-License-Identifier: Apache-2.0 WITH SHL-0.51
 
 module cv32e40p_tb_wrapper
     #(parameter // Parameters used by TB
@@ -21,7 +23,7 @@ module cv32e40p_tb_wrapper
                 DM_HALTADDRESS    = 32'h1A11_0800,
                 HART_ID           = 32'h0000_0000,
                 // Parameters used by DUT
-                PULP_XPULP        = 1,
+                PULP_XPULP        = 0,
                 PULP_CLUSTER      = 0,
                 FPU               = 0,
                 PULP_ZFINX        = 0,
@@ -128,16 +130,10 @@ module cv32e40p_tb_wrapper
          .apu_master_result_i    (                       ),
          .apu_master_flags_i     (                       ),
 
-         // TODO: Interrupts need to be re-done
+         // Interrupts verified in UVM environment
          .irq_i                  ( {64{1'b0}}            ),
          .irq_ack_o              ( irq_ack               ),
          .irq_id_o               ( irq_id_out            ),
-         //.irq_software_i         (1'b0                   ),
-         //.irq_timer_i            (1'b0                   ),
-         //.irq_external_i         (1'b0                   ),
-         //.irq_fast_i             ({15{1'b0}}             ),
-         //.irq_nmi_i              (1'b0                   ),
-         //.irq_fastx_i            ({32{1'b0}}             ),
 
          .debug_req_i            ( debug_req             ),
 
