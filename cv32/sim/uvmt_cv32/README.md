@@ -157,7 +157,7 @@ For certain simulators multiple debug tools are available that enable advanced d
 
 | SIMULATOR   | Standard Debug Tool | Advanced Debug Tool |
 |-------------|---------------------|---------------------|
-| dsim        | N/A                 | N/A                 |
+| dsim        | gtkwave             | N/A                 |
 | xrun        | SimVision           | Indago              |
 | questa      | Questa Tk GUI       | Visualizer          |
 | vcs         | DVE                 | Verdi               |
@@ -236,7 +236,7 @@ Invoke GUI coverage browser for all executed tests with coverage databases.
 
 **make cov MERGE=1 GUI=1**
 
-Available Tests
+Sanity Tests
 ---------------
 The `make` commands here assume you have set your shell SIMULATION
 environment variable to your specific simulator (see above).
@@ -253,43 +253,59 @@ stress the RTL improves.  Running sanity is trivial:
 Before issuing a pull-request for either the RTL or verification code, please
 re-run the sanity test.   Your pull-request will be rejected if sanity does not
 compile and run successfully.   For extra points, go to the `ci` directory at the
-top of this repository and run `ci_check`.
+top of this repository and run `ci_check`.  For more info:
+<br><br>
+**./ci__check -h**
+<br><br>
 
 Available Test Programs
 -----------------------
 The `make` commands here assume you have set your shell SIMULATION
-There are three targets that can run a specific test-program by name:
-* **make test TEST=hello-world**:<br>run the hello_world program found at `../../tests/core/custom`.
-* **make cv32-riscv-tests**:<br>run the CV32-specific RISC-V tests found at `../../tests/core/cv32_riscv_tests_firmware`
-* **make cv32-riscv-compilance-tests**:<br>run the CV32-specific RISC-V tests found at `../../tests/core/cv32_riscv_compliance_tests_firmware`
-Some targets are simulator specific:
-* **make make dsim-unit-test <prog>**:<br>run one <prog> from the firmware suite
-of tests.  For example: `make SIMULATOR=dsim dsim-unit-test addi`.
-<br><br>
-There are also a few targets that do something other than run a test:
+environment variable to your specific simulator (see above).
+<br>
+The general form to run a test is `make test TEST=<test-program>`, where _test-program_ is the filename
+of a test-program (without the file extension) of a test program located at ../../tests/programs/custom.
+Each test-program (either C or assembler) has its own directory, which contains the program itself (either
+C or assembler) plus `test.yaml`, the test-program configuration file (see Build Configurations, below).
+<br>
+Here are a few examples
+* **make test TEST=hello-world**:<br>run the hello_world program found at `../../tests/programs/custom`.
+* **make test TEST=dhrystone**:<br>run the dhrystone program found at `../../tests/programs/custom`.
+* **make test TEST=riscv_arithmetic_basic_test**:<br>run the riscv_arithmetic_basic_test program found at `../../tests/programs/custom`.
+<br>
+There are also a few targets that do something other than run a test.  The most popular is:
 * **make clean\_all**:<br>deletes all SIMULATOR generated intermediates, waves and logs **plus** the cloned RTL code.
 
-Custom Test Programs
---------------------
-The `uvmt_cv32` environment supports the ability to run any arbitrary test program that can run on the cv32e40p core, as long as it has
-been pre-compiled into a hex-file.  These are called `Type 1` tests in the
-[Verification Strategy](https://core-v-docs-verif-strat.readthedocs.io/en/latest/sim_tests.html#test-program).
-<br><br>
-The Makefile implements a rule called `custom` that will compile a test-program and pass it to the SystemVerilog simulation.  The user
-must specify `CUSTOM_DIR`, the _absolute_ path to the compiled program, and `CUSTOM_PROG`, the filename of the test program (no extension).
-For example:<br>
-```
-make custom CUSTOM_DIR=/your-abs-path-to-core-v-verif/cv32/tests/uvmt_cv32/test-programs CUSTOM_PROJ=hello_world
-```
-This could be a lot of typing, so its useful to pre-define the path as a shell environment variable:
+
+Generated Tests
+---------------
+The CV32 UVM environment uses the [Google riscv-dv](https://github.com/google/riscv-dv)
+generator to automate the generation of test-programs.  The generator
+is cloned by the Makefiles to ../../../vendor_lib/google/riscv-dv as needed.  Specific
+classes ar extended to create a `corev-dv` genrator that is specific to this environment.
+Note that riscv-dv is not modified, merely extended.  This allows core-v-verif to stay
+up-to-date with the latest release of riscv-dv.
 <br>
-`export CUSTOM_DIR=/your-abs-path-to-core-v-verif/cv32/tests/uvmt_cv32/test-programs`
+A complete list of generated test corev-dv programs is found at ../../tests/programs/corev-dv.
+Running these is a two-step process.  The first step is to clone riscv-dv and compile corev-dv:
 <br>
-You can now run any test program in that directory:<br>
-```
-make custom CUSTOM_PROJ=hello_world
-make custom CUSTOM_PROJ=smoke
-```
+**make corev-dv**
+<br>
+Note that the `corev-dv` target need only be run once.  The next step is to generate, compile
+and run a test.  For example:
+<br>
+**make gen_corev-dv test TEST=corev_rand_jump_stress_test**
+<br>
+
+RISC-V Compliance Test-suite
+---------------
+The CV32 UVM environment is able to run the [riscv-compliance](https://github.com/riscv/riscv-compliance)
+test-suite.  As with riscv-dv, the compliance test-suite
+is cloned by the Makefiles to ../../../vendor_lib/riscv-compliance as needed.
+<br>
+TODO: instructions to run compliance
+
+
 
 Build Configurations
 --------------------

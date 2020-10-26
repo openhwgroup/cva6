@@ -303,7 +303,7 @@ module uvmt_cv32_step_compare
          if (!(instruction_count % 10000)) begin
             `uvm_info("Step-and-Compare", $sformatf("Compared %0d instructions", instruction_count), UVM_NONE)
          end
-         if (instruction_count >= 1_000_000) begin
+         if (instruction_count >= 10_000_000) begin
             `uvm_fatal("Step-and-Compare", $sformatf("Compared %0d instructions - that's too long!", instruction_count))
          end
       end

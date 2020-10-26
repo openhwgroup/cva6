@@ -227,39 +227,6 @@ compliance: comp build_compliance
 #      custom target.
 #
 
-# Runs tests in riscv_tests/ only
-cv32-riscv-tests: comp $(CV32_RISCV_TESTS_FIRMWARE)/cv32_riscv_tests_firmware.hex $(CV32_RISCV_TESTS_FIRMWARE)/cv32_riscv_tests_firmware.elf
-	mkdir -p $(DSIM_RESULTS)/cv32-riscv-tests && cd $(DSIM_RESULTS)/cv32-riscv-tests && \
-	$(DSIM) -l dsim-riscv_tests.log -image $(DSIM_IMAGE) \
-		-work $(DSIM_WORK) $(DSIM_RUN_FLAGS) $(DSIM_DMP_FLAGS) \
-		-sv_lib $(UVM_HOME)/src/dpi/libuvm_dpi.so \
-		-sv_lib $(OVP_MODEL_DPI) \
-		+UVM_TESTNAME=uvmt_cv32_firmware_test_c \
-		+firmware=$(CV32_RISCV_TESTS_FIRMWARE)/cv32_riscv_tests_firmware.hex \
-		+elf_file=$(CV32_RISCV_TESTS_FIRMWARE)/cv32_riscv_tests_firmware.elf
-
-# Runs tests in riscv_compliance_tests/ only
-cv32-riscv-compliance-tests: comp $(CV32_RISCV_COMPLIANCE_TESTS_FIRMWARE)/cv32_riscv_compliance_tests_firmware.hex $(CV32_RISCV_COMPLIANCE_TESTS_FIRMWARE)/cv32_riscv_compliance_tests_firmware.elf
-	mkdir -p $(DSIM_RESULTS)/cv32-riscv-compliance-tests && cd $(DSIM_RESULTS)/cv32-riscv-compliance-tests && \
-	$(DSIM) -l dsim-riscv_compliance_tests.log -image $(DSIM_IMAGE) \
-		-work $(DSIM_WORK) $(DSIM_RUN_FLAGS) $(DSIM_DMP_FLAGS) \
-		-sv_lib $(UVM_HOME)/src/dpi/libuvm_dpi.so \
-		-sv_lib $(OVP_MODEL_DPI) \
-		+UVM_TESTNAME=uvmt_cv32_firmware_test_c \
-		+firmware=$(CV32_RISCV_COMPLIANCE_TESTS_FIRMWARE)/cv32_riscv_compliance_tests_firmware.hex \
-		+elf_file=$(CV32_RISCV_COMPLIANCE_TESTS_FIRMWARE)/cv32_riscv_compliance_tests_firmware.elf
-
-# Runs all tests in riscv_tests/ and riscv_compliance_tests/
-cv32-firmware: comp $(FIRMWARE)/firmware.hex $(FIRMWARE)/firmware.elf
-	mkdir -p $(DSIM_RESULTS)/firmware && cd $(DSIM_RESULTS)/firmware && \
-	$(DSIM) -l dsim-firmware.log -image $(DSIM_IMAGE) \
-		-work $(DSIM_WORK) $(DSIM_RUN_FLAGS) $(DSIM_DMP_FLAGS) \
-		-sv_lib $(UVM_HOME)/src/dpi/libuvm_dpi.so \
-		-sv_lib $(OVP_MODEL_DPI) \
-		+UVM_TESTNAME=uvmt_cv32_firmware_test_c \
-		+firmware=$(FIRMWARE)/firmware.hex \
-		+elf_file=$(FIRMWARE)/firmware.elf
-
 # Mythical no-test-program testcase.  Might never be used.  Not known tow work
 no-test-program: comp
 	mkdir -p $(DSIM_RESULTS)/hello-world && cd $(DSIM_RESULTS)/hello-world  && \
@@ -365,6 +332,6 @@ clean:
 	rm -rf $(DSIM_RESULTS)
 
 # All generated files plus the clone of the RTL
-clean_all: clean clean_core_tests clean_riscv-dv clean_test_programs clean-bsp clean_compliance
+clean_all: clean clean_riscv-dv clean_test_programs clean-bsp clean_compliance
 	rm -rf $(CV32E40P_PKG)
 

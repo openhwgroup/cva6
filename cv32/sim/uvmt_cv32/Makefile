@@ -230,18 +230,8 @@ endif
 
 ###############################################################################
 # Clean up your mess!
-#   1. Clean all generated files of the C and assembler tests in tests/core
-#      Note: CORE_TEST_DIR is defined in ../Common.mk
+#   1. Clean all generated files of the C and assembler tests
 #   2. Simulator-specific clean targets are in ./<simulator>.mk
-clean_core_tests:
-	find $(CORE_TEST_DIR) -name *.o       -exec rm {} \;
-	find $(CORE_TEST_DIR) -name *.hex     -exec rm {} \;
-	find $(CORE_TEST_DIR) -name *.elf     -exec rm {} \;
-	find $(CORE_TEST_DIR) -name *.map     -exec rm {} \;
-	find $(CORE_TEST_DIR) -name *.readelf -exec rm {} \;
-	find $(CORE_TEST_DIR) -name *.objdump -exec rm {} \;
-	find $(CORE_TEST_DIR) -name corev_*.S -exec rm {} \;
-
 clean_test_programs:
 	find $(PROJ_ROOT_DIR)/cv32/tests/uvmt_cv32/test-programs -name *.o       -exec rm {} \;
 	find $(PROJ_ROOT_DIR)/cv32/tests/uvmt_cv32/test-programs -name *.hex     -exec rm {} \;
@@ -260,7 +250,6 @@ clean_test_programs:
 clean_riscv-dv:
 	rm -rf $(RISCVDV_PKG)
 	rm -rf $(COREVDV_PKG)/out_*
-	find ../../tests/core/google-riscv-dv -name "*.S" -exec rm {} \;
 
 clean_compliance:
 	rm -rf $(COMPLIANCE_PKG)
