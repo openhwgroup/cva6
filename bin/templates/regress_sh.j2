@@ -97,8 +97,8 @@ check_log ${log} "{{t.simulation_passed}}" {{test_log}}
 {% endfor %}
 {% endfor %}
 
-echo "{{project}}: Passing tests: ${pass_count}"
-echo "{{project}}: Failing tests: ${fail_count}"
+echo "{{session}}: Passing tests: ${pass_count}"
+echo "{{session}}: Failing tests: ${fail_count}"
 
 if [ ${fail_count} -ne 0 ]; then
     exit 1
