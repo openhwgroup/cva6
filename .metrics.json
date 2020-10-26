@@ -65,13 +65,25 @@
       }
     },
     {
+      "name":        "cv32_full_coverage_no_pulp_regression",
+      "description": "Directed and random interrupt tests for CV32E40P",
+      "verbose":     "true",
+      "tests": {
+        "resultsDir": "/mux-flow/build/results",
+        "builds":    ["uvmt_cv32"],
+        "timeout":   "8h",
+        "listCmd":   "/mux-flow/build/repo/bin/cv_regress --file=cv32_full_covg_no_pulp --metrics --outfile=/mux-flow/build/repo/cv32_full_covg_no_pulp.json",
+        "listFile":  "/mux-flow/build/repo/cv32_full_covg_no_pulp.json"
+      }
+    },
+    {
       "name":        "cv32_interrupt_regression",
       "description": "Directed and random interrupt tests for CV32E40P",
       "verbose":     "true",
       "tests": {
         "resultsDir": "/mux-flow/build/results",
         "builds":    ["uvmt_cv32"],
-	"timeout":   "6h",
+        "timeout":   "6h",
         "listCmd":   "/mux-flow/build/repo/bin/cv_regress --file=cv32_interrupt --metrics --outfile=/mux-flow/build/repo/cv32_interrupt.json",
         "listFile":  "/mux-flow/build/repo/cv32_interrupt.json"
       }
