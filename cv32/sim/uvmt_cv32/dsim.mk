@@ -14,6 +14,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # 
+# SPDX-License-Identifier: Apache-2.0 WITH SHL-2.0
+#
 ###############################################################################
 #
 # DSIM-specific Makefile for the CV32E40P "uvmt_cv32" testbench.

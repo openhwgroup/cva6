@@ -14,6 +14,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # 
+# SPDX-License-Identifier: Apache-2.0 WITH SHL-2.0
+#
 ###############################################################################
 #
 # XRUN-specific Makefile for the CV32E40P "uvmt_cv32" testbench.
@@ -256,38 +258,6 @@ custom: $(XRUN_SIM_PREREQ) $(CUSTOM_DIR)/$(CUSTOM_PROG).hex
 		+firmware=$(CUSTOM_DIR)/$(CUSTOM_PROG).hex
 
 ################################################################################
-# Explicit target tests
-
-# Runs tests in cv32_riscv_tests/ only
-cv32-riscv-tests: $(XRUN_SIM_PREREQ) $(CV32_RISCV_TESTS_FIRMWARE)/cv32_riscv_tests_firmware.hex
-	mkdir -p $(XRUN_RESULTS)/cv32-riscv-tests && cd $(XRUN_RESULTS)/cv32-riscv-tests && \
-	$(XRUN) -l xrun-cv32-riscv-tests.log $(XRUN_COMP_RUN) \
-		+elf_file=$(CV32_RISCV_TESTS_FIRMWARE)/cv32_riscv_tests_firmware.elf \
-		+nm_file=$(CV32_RISCV_TESTS_FIRMWARE)/cv32_riscv_tests_firmware.nm \
-		+UVM_TESTNAME=uvmt_cv32_firmware_test_c \
-		+firmware=$(CV32_RISCV_TESTS_FIRMWARE)/cv32_riscv_tests_firmware.hex
-
-# Runs tests in cv32_riscv_compliance_tests/ only
-cv32-riscv-compliance-tests: $(XRUN_SIM_PREREQ)  $(CV32_RISCV_COMPLIANCE_TESTS_FIRMWARE)/cv32_riscv_compliance_tests_firmware.hex
-	mkdir -p $(XRUN_RESULTS)/cv32-riscv-compliance-tests && cd $(XRUN_RESULTS)/cv32-riscv-compliance-tests && \
-	$(XRUN) -l xrun-cv32-riscv_compliance_tests.log -covtest cv32-riscv-compliance-tests $(XRUN_RUN_FLAGS) \
-		+elf_file=$(CV32_RISCV_COMPLIANCE_TESTS_FIRMWARE)/cv32_riscv_compliance_tests_firmware.elf \
-		+nm_file=$(CV32_RISCV_COMPLIANCE_TESTS_FIRMWARE)/cv32_riscv_compliance_tests_firmware.nm \
-		+UVM_TESTNAME=uvmt_cv32_firmware_test_c \
-		+firmware=$(CV32_RISCV_COMPLIANCE_TESTS_FIRMWARE)/cv32_riscv_compliance_tests_firmware.hex
-
-unit-test:  firmware-unit-test-clean
-unit-test:  $(FIRMWARE)/firmware_unit_test.hex
-unit-test: ALL_VSIM_FLAGS += "+firmware=$(FIRMWARE)/firmware_unit_test.hex"
-unit-test: dsim-firmware-unit-test
-
-# Runs all tests in riscv_tests/ and riscv_compliance_tests/
-cv32-firmware: comp $(FIRMWARE)/firmware.hex
-	$(XRUN) -R -l xrun-firmware.log \
-		+UVM_TESTNAME=uvmt_cv32_firmware_test_c \
-		+firmware=$(FIRMWARE)/firmware.hex
-
-################################################################################
 # Called from external compliance framework providing ELF, HEX, NM
 COMPLIANCE ?= missing
 riscv-compliance: $(XRUN_SIM_PREREQ) $(COMPLIANCE).elf
@@ -298,14 +268,6 @@ riscv-compliance: $(XRUN_SIM_PREREQ) $(COMPLIANCE).elf
 		+nm_file=$(COMPLIANCE).nm \
 		+firmware=$(COMPLIANCE).hex \
 		+signature=$(COMPLIANCE).signature.output
-
-# XRUN UNIT TESTS: run each test individually. See comment header for dsim-unit-test for more info.
-# TODO: update ../Common.mk to create "xrun-firmware-unit-test" target.
-# Example: to run the ADDI test `make xrun-unit-test addi`
-#xrun-unit-test: comp
-#	$(XRUN) -R -l xrun-$(UNIT_TEST).log \
-#		+UVM_TESTNAME=uvmt_cv32_firmware_test_c \
-#		+firmware=$(FIRMWARE)/firmware_unit_test.hex
 
 ###############################################################################
 # Use Google instruction stream generator (RISCV-DV) to create new test-programs

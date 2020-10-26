@@ -242,6 +242,8 @@ if (uvm):
                    if (debug):
                        print (json.dumps(list_dict, indent=2, sort_keys=True))
             for key in list_dict:
+                if (key['name'] != 'uvmt_cv32'):
+                    continue
                 build_cmd_list = (key['cmd']).split()
                 build_cmd = ' '.join(build_cmd_list[0:-1]) # See TODO #3
                 build_cmd = build_cmd.replace(' DSIM_WORK=/mux-flow/build/repo/dsim_work', '')

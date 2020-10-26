@@ -152,14 +152,22 @@ will change over time as the ability of the verification environment to
 stress the RTL improves.  Running sanity is trivial:
 <br><br>
 **make sanity**
+
+CI Mini-regression
+------------------
+OpenHW uses the [Metrics CI platform]() for regressions.  The control script for this is `.metrics.json`
+located at the top-level of this repository.  A pythin script `ci/ci_check` can be used to run the
+"cv32 CI check regression" specified in the control script.  Before issuing a pull-request for either
+the RTL or verification code, please run `ci_check`.  Your pull-request will be rejected if `ci_check`
+does not compile and run successfully. Usage is simple:
+<br>
+**./ci__check -s xrun**
+<br>
+will run the CI sanity regression using Xcelium.
 <br><br>
-Before issuing a pull-request for either the RTL or verification code, please
-re-run the sanity test.   Your pull-request will be rejected if sanity does not
-compile and run successfully.   For extra points, go to the `ci` directory at the
-top of this repository and run `ci_check`.  For more info:
-<br><br>
+Complete user information is obtained in the usual way:
+<br>
 **./ci__check -h**
-<br><br>
 
 Available Test Programs
 -----------------------
@@ -178,18 +186,17 @@ Here are a few examples
 <br>
 There are also a few targets that do something other than run a test.  The most popular is:
 <br>
-**make clean\_all**
+**make clean_all**
 <br>
-deletes all SIMULATOR generated intermediates, waves and logs **plus** the cloned RTL code.
-
+which deletes all SIMULATOR generated intermediates, waves and logs **plus** the cloned RTL code.
 
 Generated Tests
 ---------------
 The CV32 UVM environment uses the [Google riscv-dv](https://github.com/google/riscv-dv)
 generator to automate the generation of test-programs.  The generator
-is cloned by the Makefiles to ../../../vendor_lib/google/riscv-dv as needed.  Specific
+is cloned by the Makefiles to `vendor_lib/google` as needed.  Specific
 classes ar extended to create a `corev-dv` genrator that is specific to this environment.
-Note that riscv-dv is not modified, merely extended.  This allows core-v-verif to stay
+Note that riscv-dv is not modified, merely extended, allowing core-v-verif to stay
 up-to-date with the latest release of riscv-dv.
 <br>
 A complete list of generated test corev-dv programs is found at ../../tests/programs/corev-dv.
@@ -206,10 +213,18 @@ and run a test.  For example:
 RISC-V Compliance Test-suite
 ---------------
 The CV32 UVM environment is able to run the [riscv-compliance](https://github.com/riscv/riscv-compliance)
-test-suite.  As with riscv-dv, the compliance test-suite
-is cloned by the Makefiles to ../../../vendor_lib/riscv-compliance as needed.
+test-suite.  As with riscv-dv, the compliance test-suite is cloned by the Makefiles to `vendor_lib/riscv`
+as needed.  Running the test-suite is a two step process:
 <br>
-TODO: instructions to run compliance
+**make all_compliance**
+<br>
+will clone riscv-compliance and compile the test-programs.  Below is an example of running a specific
+test-program from the suite:
+<br>
+**make compliance RISCV_ISA=rv32Zifencei COMPLIANCE_PROG=I-FENCE.I-01**
+<br>
+TODO: create a sript to run all compliance tests (this is not currently in place because we do it on the
+MetricsCI platform using the .metrics.json regression control script.
 
 Build Configurations
 --------------------
