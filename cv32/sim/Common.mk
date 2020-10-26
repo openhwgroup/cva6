@@ -216,6 +216,9 @@ ifeq ($(firstword $(subst _, ,$(TEST))),pulp)
   CFLAGS = -Os -g -D__riscv__=1 -D__LITTLE_ENDIAN__=1 -march=rv32imcxpulpv2 -Wa,-march=rv32imcxpulpv2 -fdata-sections -ffunction-sections -fdiagnostics-color=always
 endif
 
+ASM       ?= ../../tests/asm
+ASM_DIR   ?= $(ASM)
+
 # CORE FIRMWARE vars. All of the C and assembler programs under CORE_TEST_DIR
 # are collectively known as "Core Firmware".  Yes, this is confusing because
 # one of sub-directories of CORE_TEST_DIR is called "firmware".
@@ -231,8 +234,6 @@ CUSTOM                               = $(CORE_TEST_DIR)/custom
 CUSTOM_DIR                          ?= $(CUSTOM)
 CUSTOM_PROG                         ?= my_hello_world
 VERI_CUSTOM                          = ../../tests/programs/custom
-ASM                                  = $(CORE_TEST_DIR)/asm
-ASM_DIR                             ?= $(ASM)
 ASM_PROG                            ?= my_hello_world
 CV32_RISCV_TESTS_FIRMWARE            = $(CORE_TEST_DIR)/cv32_riscv_tests_firmware
 CV32_RISCV_COMPLIANCE_TESTS_FIRMWARE = $(CORE_TEST_DIR)/cv32_riscv_compliance_tests_firmware
