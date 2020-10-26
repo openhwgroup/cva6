@@ -68,6 +68,11 @@ module uvmt_cv32_tb;
                          .PULP_CLUSTER      (0),
                          .PULP_ZFINX        (0),
 `endif
+`ifdef PULP
+                         .PULP_XPULP        (1),
+                         .PULP_CLUSTER      (0),
+                         .PULP_ZFINX        (0),
+`endif
                          .INSTR_ADDR_WIDTH  (32),
                          .INSTR_RDATA_WIDTH (32),
                          .RAM_ADDR_WIDTH    (22)
