@@ -58,6 +58,7 @@ import uvm_pkg::*;      // needed for the UVM messaging service (`uvm_info(), et
 `include "uvm_macros.svh"
 `define CV32E40P_CORE   $root.uvmt_cv32_tb.dut_wrap.cv32e40p_wrapper_i.core_i
 `define CV32E40P_TRACER $root.uvmt_cv32_tb.dut_wrap.cv32e40p_wrapper_i.tracer_i
+`define CV32E40P_MMRAM  $root.uvmt_cv32_tb.dut_wrap.ram_i
 
 `define CV32E40P_ISS $root.uvmt_cv32_tb.iss_wrap.cpu
 
@@ -77,11 +78,10 @@ module uvmt_cv32_step_compare
   // - CSR wire checks
   // - Non-written GPR registers (per instructions)
   // Note that register writebacks to GPRs will still be checked during each instruction retirement even with stalls
-  initial begin
-    if ($test$plusargs("rand_stall_obi_instr") ||
-        $test$plusargs("rand_stall_obi_data") ||
-        $test$plusargs("rand_stall_obi_all")) begin
-      is_stall_sim = 1;      
+  always @(posedge clknrst_if.reset_n) begin
+    is_stall_sim = `CV32E40P_MMRAM.is_stall_sim();
+    if (is_stall_sim) begin
+      `uvm_info("Step-andCompare", $sformatf("is_stall_sim set to 1, disabling CSR wire checks and stable GPR register checks"), UVM_NONE)
     end
   end
 
