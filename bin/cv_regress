@@ -229,7 +229,8 @@ if args.sh:
     logger.info('Rendering template: regress_sh.j2 into: {}'.format(args.outfile))
     out_fh = open(args.outfile, 'w')
     out_fh.write(template.render(regressions=regressions,
-                                 makeargs=' '.join(args.makearg),
+                                 makeargs=' '.join(args.makearg) if args.makearg else '',
+                                 session=os.path.splitext(os.path.basename(args.outfile))[0],
                                  unique_builds=unique_builds))
     out_fh.close()
     os.chmod(args.outfile, 0o775)

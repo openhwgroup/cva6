@@ -537,7 +537,8 @@ int main(int argc, char *argv[])
     // Run single step code (in single_step.S)
     _single_step(0); 
 
-    // Single step code should generate 1 illegal insn
+    // Single step code should generate 2 illegal insn
+    temp1++;
     check_illegal_insn_status(118, temp1++);
     check_debug_status(118, glb_hart_status);
 
@@ -582,8 +583,19 @@ int main(int argc, char *argv[])
     check_debug_status(120, glb_hart_status);
 
 
-        
+    // Execute fence instruction in debug
+    printf("-----------------------------\n");
+    printf("Test 22: Execute fence in debug mode\n");
+    glb_expect_debug_entry = 1;
+    glb_hart_status = 22;
+    DEBUG_REQ_CONTROL_REG = debug_req_control.bits;
     
+    while(glb_debug_status != glb_hart_status) {
+        printf("Wait for debugger\n");
+    }    
+    
+    check_debug_status(121, glb_hart_status);
+
     //--------------------------------
     //return EXIT_FAILURE;
     printf("------------------------\n");

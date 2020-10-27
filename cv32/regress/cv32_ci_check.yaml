@@ -22,6 +22,11 @@ tests:
     dir: cv32/sim/uvmt_cv32
     cmd: make test TEST=illegal
 
+  debug_test:
+    build: uvmt_cv32
+    dir: cv32/sim/uvmt_cv32
+    cmd: make test TEST=debug_test
+
   csr_instructions:
     build: uvmt_cv32
     description: CSR Instruction Test

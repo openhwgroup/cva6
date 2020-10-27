@@ -138,12 +138,12 @@ module uvmt_cv32_tb;
     assign debug_cov_assert_if.is_decoding = dut_wrap.cv32e40p_wrapper_i.core_i.id_stage_i.controller_i.is_decoding_o;
     assign debug_cov_assert_if.id_stage_pc = dut_wrap.cv32e40p_wrapper_i.core_i.id_stage_i.pc_id_i;
     assign debug_cov_assert_if.if_stage_pc = dut_wrap.cv32e40p_wrapper_i.core_i.if_stage_i.pc_if_o;
-    assign debug_cov_assert_if.mie_q = dut_wrap.cv32e40p_wrapper_i.core_i.cs_registers_i.mstatus_q.mie;
+    assign debug_cov_assert_if.mie_q = dut_wrap.cv32e40p_wrapper_i.core_i.cs_registers_i.mie_q;
     assign debug_cov_assert_if.ctrl_fsm_cs = dut_wrap.cv32e40p_wrapper_i.core_i.id_stage_i.controller_i.ctrl_fsm_cs;
     assign debug_cov_assert_if.illegal_insn_i = dut_wrap.cv32e40p_wrapper_i.core_i.id_stage_i.controller_i.illegal_insn_i;
     assign debug_cov_assert_if.illegal_insn_q = dut_wrap.cv32e40p_wrapper_i.core_i.id_stage_i.controller_i.illegal_insn_q;
     assign debug_cov_assert_if.ecall_insn_i = dut_wrap.cv32e40p_wrapper_i.core_i.id_stage_i.controller_i.ecall_insn_i;
-    assign debug_cov_assert_if.debug_req_i = dut_wrap.cv32e40p_wrapper_i.core_i.id_stage_i.controller_i.debug_req_i;
+    assign debug_cov_assert_if.debug_req_i = dut_wrap.cv32e40p_wrapper_i.core_i.id_stage_i.controller_i.debug_req_pending;
     assign debug_cov_assert_if.debug_mode_q = dut_wrap.cv32e40p_wrapper_i.core_i.id_stage_i.controller_i.debug_mode_q;
     assign debug_cov_assert_if.dcsr_q = dut_wrap.cv32e40p_wrapper_i.core_i.cs_registers_i.dcsr_q;
     assign debug_cov_assert_if.depc_q = dut_wrap.cv32e40p_wrapper_i.core_i.cs_registers_i.depc_q;
@@ -171,11 +171,13 @@ module uvmt_cv32_tb;
     assign debug_cov_assert_if.csr_access = dut_wrap.cv32e40p_wrapper_i.core_i.id_stage_i.csr_access;
     assign debug_cov_assert_if.csr_op = dut_wrap.cv32e40p_wrapper_i.core_i.id_stage_i.csr_op;
     assign debug_cov_assert_if.csr_addr = dut_wrap.cv32e40p_wrapper_i.core_i.csr_addr;
+    assign debug_cov_assert_if.csr_we_int = dut_wrap.cv32e40p_wrapper_i.core_i.cs_registers_i.csr_we_int;
     assign debug_cov_assert_if.irq_ack_o = dut_wrap.cv32e40p_wrapper_i.core_i.irq_ack_o;
     assign debug_cov_assert_if.dm_halt_addr_i = dut_wrap.cv32e40p_wrapper_i.core_i.dm_halt_addr_i;
     assign debug_cov_assert_if.dm_exception_addr_i = dut_wrap.cv32e40p_wrapper_i.core_i.dm_exception_addr_i;
     assign debug_cov_assert_if.core_sleep_o = dut_wrap.cv32e40p_wrapper_i.core_i.core_sleep_o;
     assign debug_cov_assert_if.irq_i = dut_wrap.cv32e40p_wrapper_i.core_i.irq_i;
+    assign debug_cov_assert_if.pc_set = dut_wrap.cv32e40p_wrapper_i.core_i.id_stage_i.pc_set_o;
 
     // Instantiate debug assertions
     uvmt_cv32e40p_debug_assert u_debug_assert(.cov_assert_if(debug_cov_assert_if));
@@ -301,12 +303,15 @@ module uvmt_cv32_tb;
       // This makes synchronizing haltreq to RM easier
       logic [31:0] count_issue;
       logic [31:0] count_retire;
+
       always @(posedge clknrst_if.clk or negedge clknrst_if.reset_n) begin
         if (!clknrst_if.reset_n) begin
             count_issue <= 32'h0;
         end else begin
-            if (dut_wrap.cv32e40p_wrapper_i.core_i.id_stage_i.id_valid_o & dut_wrap.cv32e40p_wrapper_i.core_i.id_stage_i.is_decoding_o &&
-               !dut_wrap.cv32e40p_wrapper_i.core_i.id_stage_i.controller_i.illegal_insn_i) begin
+            if ((dut_wrap.cv32e40p_wrapper_i.core_i.id_stage_i.id_valid_o && dut_wrap.cv32e40p_wrapper_i.core_i.id_stage_i.is_decoding_o &&
+               !dut_wrap.cv32e40p_wrapper_i.core_i.id_stage_i.controller_i.illegal_insn_i) ||
+                (dut_wrap.cv32e40p_wrapper_i.core_i.id_stage_i.controller_i.is_decoding_o && dut_wrap.cv32e40p_wrapper_i.core_i.id_stage_i.controller_i.ebrk_insn_i &&
+                (dut_wrap.cv32e40p_wrapper_i.core_i.id_stage_i.controller_i.ebrk_force_debug_mode || dut_wrap.cv32e40p_wrapper_i.core_i.id_stage_i.controller_i.debug_mode_q))) begin
                 count_issue <= count_issue + 1;
             end
         end
@@ -336,7 +341,7 @@ module uvmt_cv32_tb;
                     // Only drive haltreq if we have an external request
                     if (dut_wrap.cv32e40p_wrapper_i.core_i.id_stage_i.controller_i.ctrl_fsm_cs inside {cv32e40p_pkg::DBG_TAKEN_ID, cv32e40p_pkg::DBG_TAKEN_IF} &&
                         dut_wrap.cv32e40p_wrapper_i.core_i.id_stage_i.controller_i.debug_req_pending) begin
-
+                            
                         debug_req_state <= DBG_TAKEN;
                         // Already in sync, assert halreq right away
                         if (count_retire == count_issue) begin

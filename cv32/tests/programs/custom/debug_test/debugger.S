@@ -130,6 +130,18 @@ _debugger_start:
     li t0, 21
     beq t2, t0, _debugger_stopcount
 
+    li t0, 22
+    beq t2, t0, _debugger_fence
+
+_debugger_fence:
+    fence
+    nop 
+    nop
+    fence.i
+    nop
+    nop
+    j _debugger_end
+
 _debugger_req_and_irq:
     // Debug was requested at the same cycle as irq
     // Check dpc to see that pc is not at irq handler
@@ -294,7 +306,10 @@ _debugger_single_step_basic:
     li t1, 4<<28 | 0<<15 | 2<<6 | 1<<2 | 3<<0
     csrr t2, dcsr
     beq t1, t2, _debugger_step_trig_entry
-    
+
+    // Ensure tval (0x343) always == 0
+    csrr t1, 0x343
+    bne x0, t1, _debugger_fail
 //            ebreakm   step  stepen
     li t1, 4<<28 | 0<<15 | 4<<6 | 1<<2 | 3<<0
     bne t1, t2, _debugger_fail
