@@ -42,8 +42,25 @@ ifeq ($(USE_ISS),YES)
 #    DSIM_USER_COMPILE_ARGS += "+define+CV32E40P_ASSERT_ON+ISS+CV32E40P_TRACE_EXECUTION"
 #    DSIM_RUN_FLAGS         += +ovpcfg="--controlfile $(OVP_CTRL_FILE)"
 endif
+
+# Seed management for constrained-random sims. This is an intentional repeat
+# of the root Makefile: dsim regressions use random seeds by default.
+DSIM_SEED    ?= random
+DSIM_RNDSEED ?= 
+
+ifeq ($(DSIM_SEED),random)
+DSIM_RNDSEED = $(shell date +%N)
+else
+ifeq ($(DSIM_SEED),)
+# Empty DSIM_SEED variable selects a random value
+DSIM_RNDSEED = 1
+else
+DSIM_RNDSEED = $(DSIM_SEED)
+endif
+endif
+
 DSIM_RUN_FLAGS         += $(USER_RUN_FLAGS)
-DSIM_RUN_FLAGS         += -sv_seed $(RNDSEED)
+DSIM_RUN_FLAGS         += -sv_seed $(DSIM_RNDSEED)
 
 # Variables to control wave dumping from command the line
 # Humans _always_ forget the "S", so you can have it both ways...
@@ -295,7 +312,7 @@ gen_corev-dv:
 		idx=$$((idx + 1)); \
 	done
 	cd  $(DSIM_COREVDV_RESULTS)/$(TEST) && \
-	dsim  -sv_seed $(RNDSEED) \
+	dsim  -sv_seed $(DSIM_RNDSEED) \
 		-sv_lib $(UVM_HOME)/src/dpi/libuvm_dpi.so \
 		+acc+rwb \
 		-image image \
