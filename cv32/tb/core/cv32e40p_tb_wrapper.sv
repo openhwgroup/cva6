@@ -119,16 +119,14 @@ module cv32e40p_tb_wrapper
          .data_wdata_o           ( data_wdata            ),
          .data_rdata_i           ( data_rdata            ),
 
-         .apu_master_req_o       (                       ),
-         .apu_master_ready_o     (                       ),
-         .apu_master_gnt_i       (                       ),
-         .apu_master_operands_o  (                       ),
-         .apu_master_op_o        (                       ),
-         .apu_master_type_o      (                       ),
-         .apu_master_flags_o     (                       ),
-         .apu_master_valid_i     (                       ),
-         .apu_master_result_i    (                       ),
-         .apu_master_flags_i     (                       ),
+         .apu_req_o              (                       ),
+         .apu_gnt_i              ( 1'b0                  ),
+         .apu_operands_o         (                       ),
+         .apu_op_o               (                       ),
+         .apu_flags_o            (                       ),
+         .apu_rvalid_i           ( 1'b0                  ),
+         .apu_result_i           ( {32{1'b0}}            ),
+         .apu_flags_i            ( {5{1'b0}}             ), // APU_NUSFLAGS_CPU
 
          // Interrupts verified in UVM environment
          .irq_i                  ( {64{1'b0}}            ),

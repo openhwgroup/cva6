@@ -192,20 +192,16 @@ module uvmt_cv32_dut_wrap #(// DUT (riscv_core) parameters.
          .data_wdata_o           ( data_wdata                     ),
          .data_rdata_i           ( data_rdata                     ),
 
-         .apu_master_req_o       (                                ),
-         .apu_master_ready_o     (                                ),
-         .apu_master_gnt_i       (                                ),
-         .apu_master_operands_o  (                                ),
-         .apu_master_op_o        (                                ),
-         .apu_master_type_o      (                                ),
-         .apu_master_flags_o     (                                ),
-         .apu_master_valid_i     (                                ),
-         .apu_master_result_i    (                                ),
-         .apu_master_flags_i     (                                ),
+		 // APU not verified in cv32e40p (future work)
+         .apu_req_o              (                                ),
+         .apu_gnt_i              ( 1'b0                           ),
+         .apu_operands_o         (                                ),
+         .apu_op_o               (                                ),
+         .apu_flags_o            (                                ),
+         .apu_rvalid_i           ( 1'b0                           ),
+         .apu_result_i           ( {32{1'b0}}                     ),
+         .apu_flags_i            ( {5{1'b0}}                      ), // APU_NUSFLAGS_CPU
 
-         // TODO: interrupts significantly updated for CV32E40P
-         //       Connect all interrupt signals to an SV interface
-         //       and pass to ENV for an INTERRUPT AGENT to drive/monitor.
          .irq_i                  ( irq                            ),
          .irq_ack_o              ( irq_ack                        ),
          .irq_id_o               ( irq_id                         ),
