@@ -192,7 +192,7 @@ module uvmt_cv32_dut_wrap #(// DUT (riscv_core) parameters.
          .data_wdata_o           ( data_wdata                     ),
          .data_rdata_i           ( data_rdata                     ),
 
-		 // APU not verified in cv32e40p (future work)
+    		 // APU not verified in cv32e40p (future work)
          .apu_req_o              (                                ),
          .apu_gnt_i              ( 1'b0                           ),
          .apu_operands_o         (                                ),
