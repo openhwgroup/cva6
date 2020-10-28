@@ -88,7 +88,11 @@ class uvme_cv32_cfg_c extends uvm_object;
          obi_instr_cfg.enabled == 1;
          obi_data_cfg.enabled  == 1;
       }
-      
+      obi_instr_cfg.write_enabled == 0;
+      obi_instr_cfg.read_enabled  == 1;
+      obi_data_cfg.write_enabled  == 1;
+      obi_data_cfg.read_enabled   == 1;
+
       if (is_active == UVM_ACTIVE) {
          clknrst_cfg.is_active   == UVM_ACTIVE;
          interrupt_cfg.is_active == UVM_ACTIVE;
@@ -103,6 +107,11 @@ class uvme_cv32_cfg_c extends uvm_object;
          debug_cfg.trn_log_enabled     == 1;
          obi_instr_cfg.trn_log_enabled == 1;
          obi_data_cfg.trn_log_enabled  == 1;
+      }
+
+      if (cov_model_enabled) {
+         obi_instr_cfg.cov_model_enabled == 1;
+         obi_data_cfg.cov_model_enabled  == 1;
       }
    }   
    

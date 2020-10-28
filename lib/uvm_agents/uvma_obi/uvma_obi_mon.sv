@@ -124,24 +124,27 @@ endtask : run_phase
 task uvma_obi_mon_c::monitor_req();
    while(1) begin
       @(cntxt.vif.mon_cb);
-
-      if (cntxt.vif.mon_cb.req && cntxt.vif.mon_cb.gnt) begin
+      
+      if (cntxt.vif.mon_cb.req) begin
          uvma_obi_mon_trn_c mon_trn = uvma_obi_mon_trn_c::type_id::create("obi_mon_trn");
-         mon_trn.addr  = cntxt.vif.mon_cb.addr;
-         mon_trn.be    = cntxt.vif.mon_cb.be;
-         mon_trn.we    = cntxt.vif.mon_cb.we;
-         if (mon_trn.we)
-            mon_trn.data = cntxt.vif.mon_cb.wdata;
+         while (1) begin
+            if (cntxt.vif.mon_cb.gnt) begin
+               mon_trn.addr  = cntxt.vif.mon_cb.addr;
+               mon_trn.be    = cntxt.vif.mon_cb.be;
+               mon_trn.we    = cntxt.vif.mon_cb.we;
+               if (mon_trn.we)
+                  mon_trn.data = cntxt.vif.mon_cb.wdata;
 
-         mon_trn_addr_q.push_back(mon_trn);
-      end
-
-      // if (cntxt.vif.mon_cb.irq_ack) begin
-      //    uvma_obi_mon_trn_c mon_trn = uvma_obi_mon_trn_c::type_id::create("mon_irq_trn");
-      //    mon_trn.action = UVMA_OBI_MON_ACTION_IRQ;
-      //    mon_trn.id = cntxt.vif.mon_cb.irq_id;
-      //    ap.write(mon_trn);
-      // end
+               mon_trn_addr_q.push_back(mon_trn);               
+               mon_trn = null;
+               break;
+            end
+            else begin
+               mon_trn.req_to_gnt_delay_cycles++;
+               @(cntxt.vif.mon_cb);
+            end
+         end
+      end      
    end
 endtask : monitor_req
 
@@ -149,19 +152,25 @@ task uvma_obi_mon_c::monitor_resp();
    while(1) begin
       @(cntxt.vif.mon_cb);
 
-      if (cntxt.vif.mon_cb.rvalid && cntxt.vif.mon_cb.rready) begin
-         uvma_obi_mon_trn_c mon_trn;
-
-         if (mon_trn_addr_q.size() == 0) begin
-            `uvm_fatal("OBIMON", $sformatf("%s Received response without address", this.get_full_name()))
+      if (cntxt.vif.mon_cb.rready && mon_trn_addr_q.size()) begin
+         if (cntxt.vif.mon_cb.rvalid) begin
+            uvma_obi_mon_trn_c mon_trn;
+            
+            mon_trn = mon_trn_addr_q.pop_front();
+            
+            if (!mon_trn.we)
+               mon_trn.data = cntxt.vif.mon_cb.rdata;            
+         
+            ap.write(mon_trn);
          end
+         else begin
+            uvma_obi_mon_trn_c mon_trn;
 
-         mon_trn = mon_trn_addr_q.pop_front();
-         
-         if (!mon_trn.we)
-            mon_trn.data = cntxt.vif.mon_cb.rdata;
-         
-         ap.write(mon_trn);
+            if (mon_trn_addr_q.size() != 0) begin
+               mon_trn = mon_trn_addr_q[0];
+               mon_trn.rready_to_rvalid_delay_cycles++;
+            end
+         end
       end
    end
 endtask : monitor_resp

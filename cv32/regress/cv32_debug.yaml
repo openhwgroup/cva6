@@ -24,7 +24,14 @@ tests:
     description: Debug directed test  
     dir: cv32/sim/uvmt_cv32
     cmd: make test TEST=debug_test
-    
+    num: 20
+
+  debug_test_reset:
+    build: uvmt_cv32
+    description: Debug reset test  
+    dir: cv32/sim/uvmt_cv32
+    cmd: make test TEST=debug_test_reset
+
   corev_rand_debug:
     build: uvmt_cv32
     description: debug random test

@@ -171,7 +171,7 @@ ifneq ($(call IS_NO,$(COMP)),NO)
 DSIM_SIM_PREREQ = comp
 endif
 
-test: $(DSIM_SIM_PREREQ) $(TEST_TEST_DIR)/$(TEST_NAME).hex gen_ovpsim_ic
+test: $(DSIM_SIM_PREREQ) $(TEST_TEST_DIR)/$(TEST_PROGRAM).hex gen_ovpsim_ic
 	mkdir -p $(DSIM_RESULTS)/$(TEST_NAME) && \
 	cd $(DSIM_RESULTS)/$(TEST_NAME) && \
 		$(DSIM) \
@@ -184,8 +184,8 @@ test: $(DSIM_SIM_PREREQ) $(TEST_TEST_DIR)/$(TEST_NAME).hex gen_ovpsim_ic
 			-sv_lib $(UVM_HOME)/src/dpi/libuvm_dpi.so \
 			-sv_lib $(OVP_MODEL_DPI) \
 			+UVM_TESTNAME=$(TEST_UVM_TEST) \
-			+firmware=$(TEST_TEST_DIR)/$(TEST_NAME).hex \
-			+elf_file=$(TEST_TEST_DIR)/$(TEST_NAME).elf
+			+firmware=$(TEST_TEST_DIR)/$(TEST_PROGRAM).hex \
+			+elf_file=$(TEST_TEST_DIR)/$(TEST_PROGRAM).elf
 
 # Similar to above, but for the ASM directory.
 asm: comp $(ASM_DIR)/$(ASM_PROG).hex $(ASM_DIR)/$(ASM_PROG).elf
