@@ -58,10 +58,10 @@ module cv32e40p_tb_wrapper
     logic                         debug_req;
 
     // irq signals (not used)
-    logic                         irq;
+    logic [0:31]                  irq;
     logic [0:4]                   irq_id_in;
     logic                         irq_ack;
-    logic [0:5]                   irq_id_out;
+    logic [0:4]                   irq_id_out;
     logic                         irq_sec;
 
 
@@ -119,19 +119,17 @@ module cv32e40p_tb_wrapper
          .data_wdata_o           ( data_wdata            ),
          .data_rdata_i           ( data_rdata            ),
 
-         .apu_master_req_o       (                       ),
-         .apu_master_ready_o     (                       ),
-         .apu_master_gnt_i       (                       ),
-         .apu_master_operands_o  (                       ),
-         .apu_master_op_o        (                       ),
-         .apu_master_type_o      (                       ),
-         .apu_master_flags_o     (                       ),
-         .apu_master_valid_i     (                       ),
-         .apu_master_result_i    (                       ),
-         .apu_master_flags_i     (                       ),
+         .apu_req_o              (                       ),
+         .apu_gnt_i              ( 1'b0                  ),
+         .apu_operands_o         (                       ),
+         .apu_op_o               (                       ),
+         .apu_flags_o            (                       ),
+         .apu_rvalid_i           ( 1'b0                  ),
+         .apu_result_i           ( {32{1'b0}}            ),
+         .apu_flags_i            ( {5{1'b0}}             ), // APU_NUSFLAGS_CPU
 
          // Interrupts verified in UVM environment
-         .irq_i                  ( {64{1'b0}}            ),
+         .irq_i                  ( {32{1'b0}}            ),
          .irq_ack_o              ( irq_ack               ),
          .irq_id_o               ( irq_id_out            ),
 
@@ -151,7 +149,9 @@ module cv32e40p_tb_wrapper
          .dm_halt_addr_i ( DM_HALTADDRESS                            ),
 
          .instr_req_i    ( instr_req                                 ),
-         .instr_addr_i   ( {12'h000, instr_addr[RAM_ADDR_WIDTH-1:0]} ),
+         .instr_addr_i   ( { {10{1'b0}},
+                             instr_addr[RAM_ADDR_WIDTH-1:0]
+                           }                                         ),
          .instr_rdata_o  ( instr_rdata                               ),
          .instr_rvalid_o ( instr_rvalid                              ),
          .instr_gnt_o    ( instr_gnt                                 ),
@@ -166,9 +166,8 @@ module cv32e40p_tb_wrapper
          .data_gnt_o     ( data_gnt                                  ),
 
          // TODO: Interrupts need to be re-done
-         .irq_id_i       ( irq_id_out[0:4]                           ),
+         .irq_id_i       ( irq_id_out                                ),
          .irq_ack_i      ( irq_ack                                   ),
-         //.irq_id_o       ( irq_id_in                                ),
          .irq_o          ( irq                                       ),
 
          .debug_req_o    ( debug_req                                 ),

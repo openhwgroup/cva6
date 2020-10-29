@@ -171,7 +171,7 @@ task uvmt_cv32_firmware_test_c::reset_debug();
     `uvm_info("TEST", "Applying debug_req_i at reset", UVM_NONE);
     @(negedge env_cntxt.clknrst_cntxt.vif.reset_n);
     reset_vseq = uvme_cv32_random_debug_c::type_id::create("random_reset_debug_vseqr");
-    reset_vseq.randomize();
+    void'(reset_vseq.randomize());
     reset_vseq.start(vsequencer);
 
 endtask
