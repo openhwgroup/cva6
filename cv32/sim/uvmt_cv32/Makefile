@@ -155,15 +155,11 @@ include $(MAKE_PATH)/../Common.mk
 clone_cv32e40p_rtl:
 	$(CLONE_CV32E40P_CMD)
 
-clone_fpnew_rtl: clone_cv32e40p_rtl
-	$(CLONE_FPNEW_CMD)
-
 clone_riscv-dv:
 	$(CLONE_RISCVDV_CMD)
 
 $(CV32E40P_PKG):
 	$(CLONE_CV32E40P_CMD)
-	$(CLONE_FPNEW_CMD)
 
 $(RISCVDV_PKG):
 	$(CLONE_RISCVDV_CMD)	

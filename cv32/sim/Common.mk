@@ -68,22 +68,10 @@ BANNER=*************************************************************************
 
 CV32E40P_REPO   ?= https://github.com/openhwgroup/cv32e40p
 CV32E40P_BRANCH ?= master
-CV32E40P_HASH   ?= 68bb847
-
-FPNEW_REPO      ?= https://github.com/pulp-platform/fpnew
-FPNEW_BRANCH    ?= master
-#2020-10-05
-FPNEW_HASH      ?= 5b2a9d4
-#2020-09-23
-#FPNEW_HASH      ?= a0c021c360abcc94e434d41974a52bdcbf14d156
+CV32E40P_HASH   ?= 8dfe6f0
 
 RISCVDV_REPO    ?= https://github.com/google/riscv-dv
-#RISCVDV_REPO    ?= https://github.com/MikeOpenHWGroup/riscv-dv
 RISCVDV_BRANCH  ?= master
-# May 2 version of riscv-dv.  Later versions have had known randomization errors
-#RISCVDV_HASH    ?= c37c5f3f57ac61991aa5abd614badb367c5d025d
-# July 8 version.  Randomization errors have significantly improved.
-#                  Generation of riscv_pmp_test fails (we do not care for CV32E40P).
 RISCVDV_HASH    ?= 10fd4fa8b7d0808732ecf656c213866cae37045a
 
 COMPLIANCE_REPO   ?= https://github.com/riscv/riscv-compliance
@@ -102,19 +90,6 @@ ifeq ($(CV32E40P_HASH), head)
   CLONE_CV32E40P_CMD = $(TMP)
 else
   CLONE_CV32E40P_CMD = $(TMP); cd $(CV32E40P_PKG); git checkout $(CV32E40P_HASH)
-endif
-
-# Generate command to clone the FPNEW RTL
-ifeq ($(FPNEW_BRANCH), master)
-  TMP2 = git clone $(FPNEW_REPO) --recurse $(FPNEW_PKG)
-else
-  TMP2 = git clone -b $(FPNEW_BRANCH) --single-branch $(FPNEW_REPO) --recurse $(FPNEW_PKG)
-endif
-
-ifeq ($(FPNEW_HASH), head)
-  CLONE_FPNEW_CMD = $(TMP2)
-else
-  CLONE_FPNEW_CMD = $(TMP2); cd $(FPNEW_PKG); git checkout $(FPNEW_HASH)
 endif
 # RTL repo vars end
 
@@ -144,6 +119,7 @@ ifeq ($(COMPLIANCE_HASH), head)
 else
   CLONE_COMPLIANCE_CMD = $(TMP4); cd $(COMPLIANCE_PKG); git checkout $(COMPLIANCE_HASH)
 endif
+# RISCV Compliance repo var end
 
 ###############################################################################
 # Imperas Instruction Set Simulator
