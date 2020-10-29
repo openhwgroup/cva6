@@ -167,35 +167,45 @@ module mm_ram
 `ifndef VERILATOR
         #1ns;
         if (!$test$plusargs("rand_stall_obi_disable")) begin
-            randcase
-                2: begin
-                    // No delays
-                end
-                1: begin
-                    // Create RAM stall delays
-                    rnd_stall_regs[RND_STALL_INSTR_EN]    = 1;
-                    rnd_stall_regs[RND_STALL_INSTR_MODE]  = $urandom_range(2,1);
-                    rnd_stall_regs[RND_STALL_INSTR_GNT]   = $urandom_range(3,0);
-                    rnd_stall_regs[RND_STALL_INSTR_VALID] = $urandom_range(3,0);
-                    rnd_stall_regs[RND_STALL_INSTR_MAX]   = $urandom_range(3,0);
-                end
-            endcase
-        end
+            if ($test$plusargs("max_data_zero_instr_stall")) begin
+                `uvm_info("RNDSTALL", "Max data stall, zero instruction stall configuration", UVM_LOW)
+                // This "knob" creates maximum stalls on data loads/stores, and
+                // no stalls on instruction fetches.  Used for fence.i testing. 
+                rnd_stall_regs[RND_STALL_DATA_EN]     = 1;
+                rnd_stall_regs[RND_STALL_DATA_MODE]   = 2;
+                rnd_stall_regs[RND_STALL_DATA_GNT]    = 2;
+                rnd_stall_regs[RND_STALL_DATA_VALID]  = 2;
+                rnd_stall_regs[RND_STALL_DATA_MAX]    = 3;
+            end
+            else begin
+                randcase
+                    2: begin
+                        // No delays
+                    end
+                    1: begin
+                        // Create RAM stall delays
+                        rnd_stall_regs[RND_STALL_INSTR_EN]    = 1;
+                        rnd_stall_regs[RND_STALL_INSTR_MODE]  = $urandom_range(2,1);
+                        rnd_stall_regs[RND_STALL_INSTR_GNT]   = $urandom_range(3,0);
+                        rnd_stall_regs[RND_STALL_INSTR_VALID] = $urandom_range(3,0);
+                        rnd_stall_regs[RND_STALL_INSTR_MAX]   = $urandom_range(3,0);
+                    end
+                endcase
 
-        if (!$test$plusargs("rand_stall_obi_disable")) begin
-            randcase
-                2: begin
-                    // No delays
-                end
-                1: begin
-                    // Create RAM stall delays
-                    rnd_stall_regs[RND_STALL_DATA_EN]     = 1;
-                    rnd_stall_regs[RND_STALL_DATA_MODE]   = $urandom_range(2,1);
-                    rnd_stall_regs[RND_STALL_DATA_GNT]    = $urandom_range(2,0);
-                    rnd_stall_regs[RND_STALL_DATA_VALID]  = $urandom_range(2,0);
-                    rnd_stall_regs[RND_STALL_DATA_MAX]    = $urandom_range(3,0);
-                end
-            endcase
+                randcase
+                    2: begin
+                        // No delays
+                    end
+                    1: begin
+                        // Create RAM stall delays
+                        rnd_stall_regs[RND_STALL_DATA_EN]     = 1;
+                        rnd_stall_regs[RND_STALL_DATA_MODE]   = $urandom_range(2,1);
+                        rnd_stall_regs[RND_STALL_DATA_GNT]    = $urandom_range(2,0);
+                        rnd_stall_regs[RND_STALL_DATA_VALID]  = $urandom_range(2,0);
+                        rnd_stall_regs[RND_STALL_DATA_MAX]    = $urandom_range(3,0);
+                    end
+                endcase
+            end
         end
 
         `uvm_info("RNDSTALL", $sformatf("INSTR OBI stall enable: %0d", rnd_stall_regs[RND_STALL_INSTR_EN]), UVM_LOW)
