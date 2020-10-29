@@ -100,7 +100,7 @@ endtask : run_phase
 
 function void uvme_interrupt_covg::write_interrupt(uvma_interrupt_mon_trn_c trn);
     if (trn.action == UVMA_INTERRUPT_MON_ACTION_IRQ && last_instr_trn != null) begin
-        `uvm_info("INTERRUPTCOVG", $sformatf("IRQ entered from %s", last_instr_trn.ins.asm.name()), UVM_LOW)
+        `uvm_info("INTERRUPTCOVG", $sformatf("IRQ entered from %s", last_instr_trn.ins.asm.name()), UVM_DEBUG)
         cg_irq_entry.sample(last_instr_trn.ins);
         irq_nested_count++;
     end
@@ -121,7 +121,7 @@ function void uvme_interrupt_covg::write_rv32isa(uvme_rv32isa_covg_trn_c trn);
 
     // For each mret decrement the interrupt count
     if (last_instr_trn != null && last_instr_trn.ins.asm == MRET && irq_nested_count) begin    
-        `uvm_info("INTERRUPTCOVG", $sformatf("IRQ exited to %s", trn.ins.asm.name()), UVM_LOW)
+        `uvm_info("INTERRUPTCOVG", $sformatf("IRQ exited to %s", trn.ins.asm.name()), UVM_DEBUG)
         cg_irq_exit.sample(trn.ins);
         irq_nested_count--;
     end
