@@ -22,6 +22,8 @@ If you want to run a simulation there are two options:
 1. To run the CORE testbench (based on the RI5CY testbench), go to `cv32/sim/core` and read the README.
 2. To run the CV32E40P UVM environment, go to `cv32/sim/uvmt_cv32` and read the README.
 
+The most recently published coverage report can be found [here](https://mikeopenhwgroup.github.io/core-v-docs/).
+
 ## With CVA6
 To run CVA6 testbench, go to [cva6](cva6) directory and read the README.
 
