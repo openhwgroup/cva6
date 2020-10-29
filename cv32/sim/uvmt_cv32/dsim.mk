@@ -200,7 +200,7 @@ asm: comp $(ASM_DIR)/$(ASM_PROG).hex $(ASM_DIR)/$(ASM_PROG).elf
 
 ###############################################################################
 # Run a test-program from the RISC-V Compliance Test-suite. The parent Makefile
-# of this <sim>.mk implements "build_compliance", the target that compiles the
+# of this <sim>.mk implements "all_compliance", the target that compiles the
 # test-programs.
 #
 # There is a dependancy between RISCV_ISA and COMPLIANCE_PROG which *you* are
@@ -212,9 +212,10 @@ asm: comp $(ASM_DIR)/$(ASM_PROG).hex $(ASM_DIR)/$(ASM_PROG).elf
 #                make compliance RISCV_ISA=rv32imc COMPLIANCE_PROG=I-ADD-01
 # 
 COMPLIANCE_PROG ?= I-ADD-01
-#compliance: comp
+
 compliance: comp build_compliance
 	mkdir -p $(DSIM_RESULTS)/$(COMPLIANCE_PROG) && cd $(DSIM_RESULTS)/$(COMPLIANCE_PROG)  && \
+	export IMPERAS_TOOLS=$(PROJ_ROOT_DIR)/cv32/tests/cfg/ovpsim_no_pulp.ic && \
 	$(DSIM) -l dsim-$(COMPLIANCE_PROG).log -image $(DSIM_IMAGE) \
 		-work $(DSIM_WORK) $(DSIM_RUN_FLAGS) $(DSIM_DMP_FLAGS) \
 		-sv_lib $(UVM_HOME)/src/dpi/libuvm_dpi.so \
