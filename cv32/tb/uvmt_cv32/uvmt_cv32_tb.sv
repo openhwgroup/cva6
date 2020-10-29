@@ -195,6 +195,7 @@ module uvmt_cv32_tb;
                                       .step_compare_if(step_compare_if),
                                       .isa_covg_if(isa_covg_if)
                              );
+                          
      /**
       * Step-and-Compare logic 
       */
@@ -205,7 +206,12 @@ module uvmt_cv32_tb;
       assign step_compare_if.insn_pc   = dut_wrap.cv32e40p_wrapper_i.tracer_i.insn_pc;
       assign step_compare_if.riscy_GPR = dut_wrap.cv32e40p_wrapper_i.core_i.id_stage_i.register_file_i.mem;
       assign clknrst_if_iss.reset_n = clknrst_if.reset_n;
-    
+
+      // Connect step-and-compare signals to interrupt_if for functional coverage of instructions and interrupts
+      assign interrupt_if.deferint = iss_wrap.b1.deferint;
+      assign interrupt_if.ovp_b1_Step = step_compare_if.ovp_b1_Step;
+      
+      // Interrupt modeling logic - used to time interrupt entry from RTL to the ISS    
       wire [31:0] irq_enabled;
       reg [31:0] irq_deferint;
       reg [31:0] irq_mip;
