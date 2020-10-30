@@ -32,7 +32,11 @@ class uvma_interrupt_mon_c extends uvm_monitor;
    uvma_interrupt_cntxt_c  cntxt;
    
    // TLM
+   // This analysis port will fire when the irq_ack_o is seen (core acknowledges the interrupt)
    uvm_analysis_port#(uvma_interrupt_mon_trn_c)  ap;   
+      
+   // This analysis port will fire when the first instruction in the ISR is retired (i.e. the MTVEC location)
+   uvm_analysis_port#(uvma_interrupt_mon_trn_c)  ap_iss;
    
    `uvm_component_utils_begin(uvma_interrupt_mon_c)
       `uvm_field_object(cfg  , UVM_DEFAULT)
@@ -61,6 +65,11 @@ class uvma_interrupt_mon_c extends uvm_monitor;
     */
    extern virtual task monitor_irq();
 
+   /**
+    * Publish a monitor transaction when interrupt is taken (delayed until the first instruction of the ISR is retired)
+    */
+   extern virtual task monitor_irq_iss();
+
 endclass : uvma_interrupt_mon_c
 
 function uvma_interrupt_mon_c::new(string name="uvma_interrupt_mon", uvm_component parent=null);
@@ -84,7 +93,8 @@ function void uvma_interrupt_mon_c::build_phase(uvm_phase phase);
       `uvm_fatal("CNTXT", "Context handle is null")
    end
    
-   ap = new("ap", this);
+   ap     = new("ap", this);
+   ap_iss = new("ap_iss", this);
   
 endfunction : build_phase
 
@@ -98,8 +108,10 @@ task uvma_interrupt_mon_c::run_phase(uvm_phase phase);
          wait (cntxt.vif.reset_n === 1'b1);
          
          fork begin
+            // To maintain random thread stability launch iss thread always, but it will exit immediately if no iss configured
             fork
                monitor_irq();
+               monitor_irq_iss();
             join_none
 
             wait (cntxt.vif.reset_n === 1'b0);
@@ -123,6 +135,26 @@ task uvma_interrupt_mon_c::monitor_irq();
       end
    end
 endtask : monitor_irq
+
+task uvma_interrupt_mon_c::monitor_irq_iss();
+`ifdef ISS
+   while(1) begin
+      @(cntxt.vif.mon_cb);
+
+      if (cntxt.vif.mon_cb.irq_ack) begin         
+         uvma_interrupt_mon_trn_c mon_trn = uvma_interrupt_mon_trn_c::type_id::create("mon_irq_trn");
+         mon_trn.action = UVMA_INTERRUPT_MON_ACTION_IRQ;
+         mon_trn.id = cntxt.vif.mon_cb.irq_id;
+
+         // Wait for the ISS to enter
+         wait (cntxt.vif.deferint == 1'b0);
+         wait (cntxt.vif.ovp_b1_Step == 1'b1);
+
+         ap_iss.write(mon_trn);
+      end
+   end
+`endif
+endtask : monitor_irq_iss
 
 
 `endif // __UVMA_INTERRUPT_MON_SV__
