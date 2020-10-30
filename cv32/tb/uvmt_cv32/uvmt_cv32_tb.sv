@@ -170,6 +170,7 @@ module uvmt_cv32_tb;
 
     assign debug_cov_assert_if.csr_access = dut_wrap.cv32e40p_wrapper_i.core_i.id_stage_i.csr_access;
     assign debug_cov_assert_if.csr_op = dut_wrap.cv32e40p_wrapper_i.core_i.id_stage_i.csr_op;
+    assign debug_cov_assert_if.csr_op_dec = dut_wrap.cv32e40p_wrapper_i.core_i.id_stage_i.decoder_i.csr_op;
     assign debug_cov_assert_if.csr_addr = dut_wrap.cv32e40p_wrapper_i.core_i.csr_addr;
     assign debug_cov_assert_if.csr_we_int = dut_wrap.cv32e40p_wrapper_i.core_i.cs_registers_i.csr_we_int;
     assign debug_cov_assert_if.irq_ack_o = dut_wrap.cv32e40p_wrapper_i.core_i.irq_ack_o;

@@ -351,6 +351,7 @@ interface uvmt_cv32_debug_cov_assert_if
 
     input logic csr_access,
     input logic [1:0] csr_op,
+    input logic [1:0] csr_op_dec,
     input logic [11:0] csr_addr,
     input logic csr_we_int,
     output logic is_wfi,
@@ -408,6 +409,7 @@ interface uvmt_cv32_debug_cov_assert_if
     core_sleep_o,
     csr_access,
     csr_op,
+    csr_op_dec,
     csr_addr,
     is_wfi,
     in_wfi,
