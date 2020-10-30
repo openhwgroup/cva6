@@ -197,10 +197,11 @@ build_compliance: clone_compliance
 		RISCV_ISA=$(RISCV_ISA)
 
 all_compliance: clone_compliance
-	make build_compliance RISCV_ISA=rv32i   && \
-	make build_compliance RISCV_ISA=rv32im  && \
-	make build_compliance RISCV_ISA=rv32imc && \
-	make build_compliance RISCV_ISA=rv32ifencei
+	make build_compliance RISCV_ISA=rv32i        && \
+	make build_compliance RISCV_ISA=rv32im       && \
+	make build_compliance RISCV_ISA=rv32imc      && \
+	make build_compliance RISCV_ISA=rv32Zicsr    && \
+	make build_compliance RISCV_ISA=rv32Zifencei
 
 ###############################################################################
 # Include the targets/rules for the selected SystemVerilog simulator
