@@ -1963,7 +1963,11 @@ class uvme_rv32isa_covg extends uvm_component;
                 end
             endcase
         end
-        instr_cg.sample(ins);
+       
+        // Do not call sample until ins_prev is assigned otherwise
+        // get a hit on bin [ADD][1st instruction]
+        if (ins_prev.ins_str != "") 
+          instr_cg.sample(ins);
         ins_prev = ins; // Save instruction as previous
 
         // Send instruction to analysis port
