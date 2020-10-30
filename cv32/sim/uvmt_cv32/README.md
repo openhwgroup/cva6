@@ -213,8 +213,8 @@ and run a test.  For example:
 RISC-V Compliance Test-suite
 ---------------
 The CV32 UVM environment is able to run the [riscv-compliance](https://github.com/riscv/riscv-compliance)
-test-suite.  As with riscv-dv, the compliance test-suite is cloned by the Makefiles to `vendor_lib/riscv`
-as needed.  Running the test-suite is a two step process:
+test-suite in step-and-compare mode with the ISS Reference Model.  As with riscv-dv, the compliance test-suite
+is cloned by the Makefiles to `vendor_lib/riscv` as needed.  Running the test-suite is a two step process:
 <br>
 **make all_compliance**
 <br>
@@ -223,7 +223,16 @@ test-program from the suite:
 <br>
 **make compliance RISCV_ISA=rv32Zifencei COMPLIANCE_PROG=I-FENCE.I-01**
 <br>
-TODO: create a sript to run all compliance tests (this is not currently in place because we do it on the
+**Note:** There is a dependancy between RISCV_ISA and COMPLIANCE_PROG.  For example, because the I-ADD-01 test-program is part of the rv32i testsuite this works:
+```
+make compliance RISCV_ISA=rv32i COMPLIANCE_PROG=I-ADD-01
+```
+But this does not:
+```
+make compliance RISCV_ISA=rv32imc COMPLIANCE_PROG=I-ADD-01
+```
+
+**TODO:** create a sript to run all compliance tests (this is not currently in place because we do it on the
 MetricsCI platform using the .metrics.json regression control script.
 
 Build Configurations
