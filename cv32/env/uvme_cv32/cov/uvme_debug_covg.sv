@@ -143,7 +143,7 @@ class uvme_debug_covg extends uvm_component;
         dm : coverpoint cntxt.debug_cntxt.vif_cov.mon_cb.debug_mode_q {
             bins hit  = {1};
         }
-        ill : coverpoint cntxt.debug_cntxt.vif_cov.mon_cb.illegal_insn_i {
+        ill : coverpoint cntxt.debug_cntxt.vif_cov.mon_cb.illegal_insn_q {
             bins hit = {1};
         }
         ex_in_debug : cross dm, ill;
@@ -311,7 +311,7 @@ class uvme_debug_covg extends uvm_component;
             bins tdata1 = {'h7A1};
             bins tdata2 = {'h7A2};
             bins tdata3 = {'h7A3};
-            bins tinfo = {'h7A4};
+            bins tinfo  = {'h7A4};
         }
         tregs_access : cross mode, access, op,addr;
     endgroup
@@ -321,6 +321,18 @@ class uvme_debug_covg extends uvm_component;
         option.per_instance = 1;
         mcycle_en : coverpoint cntxt.debug_cntxt.vif_cov.mon_cb.mcountinhibit_q[0];
         minstret_en : coverpoint cntxt.debug_cntxt.vif_cov.mon_cb.mcountinhibit_q[2];
+    endgroup
+
+    // Cover that we get a debug_req_i while in RESET state
+    covergroup cg_debug_at_reset;
+        option.per_instance = 1;
+        state : coverpoint cntxt.debug_cntxt.vif_cov.mon_cb.ctrl_fsm_cs { 
+            bins reset= {cv32e40p_pkg::RESET};
+        }
+         dbg : coverpoint cntxt.debug_cntxt.vif_cov.mon_cb.debug_req_i { 
+            bins active= {1'b1};
+        }
+        dbg_at_reset : cross state, dbg;
     endgroup
 
 
@@ -348,6 +360,7 @@ function uvme_debug_covg::new(string name = "debug_covg", uvm_component parent =
     cg_debug_regs_m_mode = new();
     cg_trigger_regs = new();
     cg_counters_enabled = new();
+    cg_debug_at_reset = new();
 
 endfunction : new
 
@@ -401,5 +414,6 @@ task uvme_debug_covg::sample_clk_i();
     cg_debug_regs_m_mode.sample();
     cg_trigger_regs.sample();
     cg_counters_enabled.sample();
+    cg_debug_at_reset.sample();
   end
 endtask  : sample_clk_i
