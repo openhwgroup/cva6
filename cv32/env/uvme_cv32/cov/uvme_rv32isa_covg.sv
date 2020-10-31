@@ -1558,7 +1558,7 @@ class uvme_rv32isa_covg extends uvm_component;
       cp_ins_prev : coverpoint (ins_prev.asm) {
          option.weight = 0;
       }
-      cr_ins_prev_x_ins: cross (cp_ins_prev, cp_ins ) {
+      cr_ins_prev_x_ins: cross cp_ins_prev, cp_ins {
          option.weight = 1;
          option.comment = "Cross previous with current instruction";
       }
