@@ -1541,8 +1541,6 @@ class uvme_rv32isa_covg extends uvm_component;
         }
     endgroup
 
-// TODO : only counting occurrence, ignoring when not called.
-// FIXME: DONE
     covergroup c_ebreak_cg   with function sample(ins_t ins);
         option.per_instance = 1;
         cp_asm   : coverpoint (ins.asm) {
@@ -1553,13 +1551,17 @@ class uvme_rv32isa_covg extends uvm_component;
    // Every instruction has been followed by every
    // other instruction
    covergroup instr_cg with function sample(ins_t ins);
-      option.per_instance = 1;
-      cp_ins : coverpoint ins.asm{
-      option.weight = 0;}
-      cp_ins_prev : coverpoint ins_prev.asm{
-      option.weight = 0;}
-      cr_ins_prev_x_ins: cross cp_ins_prev, cp_ins{
-      option.comment = "Cross previous with current instruction";}
+      //option.per_instance = 1;
+      cp_ins : coverpoint (ins.asm) {
+         option.weight = 0;
+      }
+      cp_ins_prev : coverpoint (ins_prev.asm) {
+         option.weight = 0;
+      }
+      cr_ins_prev_x_ins: cross (cp_ins_prev, cp_ins ) {
+         option.weight = 1;
+         option.comment = "Cross previous with current instruction";
+      }
    endgroup // instr_cg
 
     `uvm_component_utils(uvme_rv32isa_covg)
@@ -1962,12 +1964,13 @@ class uvme_rv32isa_covg extends uvm_component;
                                            ins.ins_str))                    
                 end
             endcase
-        end
+        end // else branch of if (ins.compressed)
        
         // Do not call sample until ins_prev is assigned otherwise
         // get a hit on bin [ADD][1st instruction]
         if (ins_prev.ins_str != "") 
           instr_cg.sample(ins);
+
         ins_prev = ins; // Save instruction as previous
 
         // Send instruction to analysis port
