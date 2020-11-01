@@ -180,10 +180,6 @@ mk_xrun_dir:
 hello-world:
 	$(MAKE) test TEST=hello-world
 
-cv32_riscv_tests: cv32-riscv-tests 
-
-cv32_riscv_compliance_tests: cv32-riscv-compliance-tests 
-
 XRUN_COMP = $(XRUN_COMP_FLAGS) \
 		$(QUIET) \
 		$(CFG_COMPILE_FLAGS) \
@@ -257,17 +253,17 @@ custom: $(XRUN_SIM_PREREQ) $(CUSTOM_DIR)/$(CUSTOM_PROG).hex
 		+UVM_TESTNAME=uvmt_cv32_firmware_test_c \
 		+firmware=$(CUSTOM_DIR)/$(CUSTOM_PROG).hex
 
-################################################################################
-# Called from external compliance framework providing ELF, HEX, NM
-COMPLIANCE ?= missing
-riscv-compliance: $(XRUN_SIM_PREREQ) $(COMPLIANCE).elf
-	mkdir -p $(XRUN_RESULTS)/$(@) && cd $(XRUN_RESULTS)/$(@) && \
+###############################################################################
+# Run a test-program from the RISC-V Compliance Test-suite. The parent Makefile
+COMPLIANCE_PROG ?= I-ADD-01
+
+compliance: comp build_compliance
+	mkdir -p $(XRUN_RESULTS)/$(COMPLIANCE_PROG) && cd $(XRUN_RESULTS)/$(COMPLIANCE_PROG)  && \
+	export IMPERAS_TOOLS=$(PROJ_ROOT_DIR)/cv32/tests/cfg/ovpsim_no_pulp.ic && \
 	$(XRUN) -l xrun-$(@).log -covtest riscv-compliance $(XRUN_COMP_RUN) \
 		+UVM_TESTNAME=uvmt_cv32_firmware_test_c \
-		+elf_file=$(COMPLIANCE).elf \
-		+nm_file=$(COMPLIANCE).nm \
-		+firmware=$(COMPLIANCE).hex \
-		+signature=$(COMPLIANCE).signature.output
+		+firmware=$(COMPLIANCE_PKG)/work/$(RISCV_ISA)/$(COMPLIANCE_PROG).hex \
+		+elf_file=$(COMPLIANCE_PKG)/work/$(RISCV_ISA)/$(COMPLIANCE_PROG).elf
 
 ###############################################################################
 # Use Google instruction stream generator (RISCV-DV) to create new test-programs

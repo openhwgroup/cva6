@@ -14,6 +14,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # 
+# SPDX-License-Identifier: Apache-2.0 WITH SHL-2.0
+#
 ###############################################################################
 #
 # Makefile for the CV32E40P "uvmt_cv32" testbench.  Substantially modified
@@ -191,9 +193,11 @@ build_compliance: clone_compliance
 		RISCV_ISA=$(RISCV_ISA)
 
 all_compliance: clone_compliance
-	make build_compliance RISCV_ISA=rv32i   && \
-	make build_compliance RISCV_ISA=rv32im  && \
-	make build_compliance RISCV_ISA=rv32imc
+	make build_compliance RISCV_ISA=rv32i        && \
+	make build_compliance RISCV_ISA=rv32im       && \
+	make build_compliance RISCV_ISA=rv32imc      && \
+	make build_compliance RISCV_ISA=rv32Zicsr    && \
+	make build_compliance RISCV_ISA=rv32Zifencei
 
 ###############################################################################
 # Include the targets/rules for the selected SystemVerilog simulator
