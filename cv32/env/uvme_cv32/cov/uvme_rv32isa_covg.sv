@@ -1349,16 +1349,14 @@ class uvme_rv32isa_covg extends uvm_component;
         }
     endgroup
 
-// TODO : missing coverage of all immediate values and destination registers.
-// FIXME: DONE
     covergroup c_lui_cg      with function sample(ins_t ins);
         option.per_instance = 1;
         cp_rd    : coverpoint get_gpr_name(ins.ops[0].val, ins.ops[0].key, "c.lui") {
-            bins gprval[] = {ra,[gp:a5]};
+            bins gprval[] = {ra,[gp:t6]}; // invalid when rd = x2 (sp)
         }
         cp_imm6   : coverpoint get_imm(ins.ops[1].val,"c.lui" ) {    
             bins neg  = {[$:-1]};
-            bins zero = {0};
+            // invalid when imm = 0
             bins pos  = {[1:$]};
         }
     endgroup
@@ -1551,7 +1549,9 @@ class uvme_rv32isa_covg extends uvm_component;
    // Every instruction has been followed by every
    // other instruction
    covergroup instr_cg with function sample(ins_t ins);
-      //option.per_instance = 1;
+    `ifndef DSIM
+      option.per_instance = 1;
+    `endif
       cp_ins : coverpoint (ins.asm) {
          option.weight = 0;
       }
@@ -1566,7 +1566,7 @@ class uvme_rv32isa_covg extends uvm_component;
 
     `uvm_component_utils(uvme_rv32isa_covg)
 
-// TODO : review by 20-July-2020
+// TODO : need review
     function new(string name="rv32isa_covg", uvm_component parent=null);
         super.new(name, parent);
         add_cg        = new();
