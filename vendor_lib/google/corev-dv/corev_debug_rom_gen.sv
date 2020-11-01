@@ -47,6 +47,12 @@ class corev_debug_rom_gen extends riscv_debug_rom_gen;
             debug_main = {dret};
             gen_section($sformatf("%0sdebug_rom", hart_prefix(hart)), debug_main);
         end else begin
+            // Check the debugger stack pointer to check for a null pointer in cfg.dp
+            // and initialize
+            debug_main.push_back($sformatf("bne x%0d, zero, dp_init_done", cfg_corev.dp));
+            debug_main.push_back($sformatf("la  x%0d, debugger_stack_end", cfg_corev.dp));
+            debug_main.push_back($sformatf("dp_init_done:"));
+
             if (cfg.enable_ebreak_in_debug_rom) begin
                 gen_ebreak_header();
             end
