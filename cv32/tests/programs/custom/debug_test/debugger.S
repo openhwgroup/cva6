@@ -133,6 +133,34 @@ _debugger_start:
     li t0, 22
     beq t2, t0, _debugger_fence
 
+    li t0, 23
+    beq t2, t0, _debugger_trigger_disabled_in_debug
+
+    li t0, 24
+    beq t2, t0, _debugger_trigger_regs_access
+
+_debugger_trigger_regs_access:
+    # R/W trigger regs otherwise not accessed
+    # to close coverage holes
+    li t0, 0xff
+    csrw 0x7a4, t0 # tinfo
+    csrr t0, 0x7a4
+    li t1, 4
+    bne t0, t1, _debugger_fail
+
+    li t0, 0xff
+    csrw 0x7a3, t0 # tdata3
+    csrr t0, 0x7a3
+    bne t0, x0, _debugger_fail
+
+    li t0, 0xff
+    csrw 0x7a0, t0 # tsel
+    csrr t0, 0x7a0
+    bne t0, x0, _debugger_fail
+    
+    j _debugger_end
+
+ 
 _debugger_fence:
     fence
     nop 
@@ -345,7 +373,7 @@ _debugger_ebreak_entry:
 	csrr t2,dcsr
 	bne  t1,t2,_debugger_fail
         csrr a1,dpc
-        addi a1,a1,2
+        addi a1,a1,4 # uncompressed ebreak used to enter debug here
         csrw dpc,a1
         //sw t1, 0(a1)
         j  _debugger_end
@@ -502,14 +530,26 @@ _debugger_ebreak:
 	// Repeat executing debug code until debug status = hart_status + 3
 	addi t0, t2, 3
 	beq  t1, t0, _debugger_end
+    // Execute non-compressed ebreak for iteration 2
+    addi t0, t2, 2
+    beq t1, t0, _uncompressed_ebreak
 	// Debugger Un-Stack and call debugger code from start using ebreak
-        csrr t0, 0x7b3
+    csrr t0, 0x7b3
 	lw   t1, 4(a0)
         lw   t2, 8(a0)
         lw   a1, 12(a0)
         lw   a2, 16(a0)
         csrr a0, dscratch
         ebreak
+_uncompressed_ebreak:
+	// Debugger Un-Stack and call debugger code from start using ebreak
+    csrr t0, 0x7b3
+	lw   t1, 4(a0)
+        lw   t2, 8(a0)
+        lw   a1, 12(a0)
+        lw   a2, 16(a0)
+        csrr a0, dscratch
+        .4byte 0x00100073 # ebreak
 
 _debugger_trigger_in_debug:
     // setup address to trigger on
@@ -535,6 +575,30 @@ _debugger_trig_point:
     csrw tdata1, t1
     j _debugger_end    
 
+_debugger_trigger_disabled_in_debug:
+    // setup address to trigger on
+	la   a1, _debugger_trig_point_dis
+    // Set trig enable to 0
+	csrw tdata2,a1
+	li   t1, 0<<2
+	csrw tdata1,t1
+	li   t1, 2<<28 | 1<<27 | 1<<12 | 1<<6 | 0 <<2
+	csrr t2,tdata1
+	bne  t1,t2,_debugger_fail
+    
+    // Clear glb_expect_debug_entry
+    // If we trig, we'll reenter debug and
+    // test will fail due to 0 flag
+    la a1, glb_expect_debug_entry
+    li t1, 0
+    sw t1, 0(a1)
+_debugger_trig_point_dis:     
+    // Should _not_trig here
+    nop
+    // Clear trigger
+    li t1, 0<<2
+    csrw tdata1, t1
+    j _debugger_end    
 _debugger_wfi_test:
     la a1, glb_debug_status
     csrr t2,dcsr

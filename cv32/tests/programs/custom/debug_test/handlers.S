@@ -274,7 +274,7 @@ cont_illegal_insn:
         // Clear ebreak flag
         sw x0, 0(a0) 
         // Execute ebreak
-        ebreak    
+        .4byte 0x00100073    
         // Exit handler
     	j end_handler_incr_mepc
 

@@ -325,6 +325,8 @@ interface uvmt_cv32_debug_cov_assert_if
     input logic        illegal_insn_q, // output from controller
     input logic        ecall_insn_i,
 
+    input logic [31:0] boot_addr_i,
+
     // Debug signals
     input logic              debug_req_i, // From controller
     input logic              debug_mode_q, // From controller
@@ -351,6 +353,7 @@ interface uvmt_cv32_debug_cov_assert_if
 
     input logic csr_access,
     input logic [1:0] csr_op,
+    input logic [1:0] csr_op_dec,
     input logic [11:0] csr_addr,
     input logic csr_we_int,
     output logic is_wfi,
@@ -385,7 +388,7 @@ interface uvmt_cv32_debug_cov_assert_if
     illegal_insn_i,
     illegal_insn_q,
     ecall_insn_i,
-  
+    boot_addr_i, 
     debug_req_i,
     debug_mode_q,
     dcsr_q,
@@ -408,6 +411,7 @@ interface uvmt_cv32_debug_cov_assert_if
     core_sleep_o,
     csr_access,
     csr_op,
+    csr_op_dec,
     csr_addr,
     is_wfi,
     in_wfi,
