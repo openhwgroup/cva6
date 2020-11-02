@@ -210,13 +210,13 @@ tests:
     build: uvmt_cv32
     description: Interrupt bootstrap test
     dir: cv32/sim/uvmt_cv32
-    cmd: make test TEST=interrupt_bootstrap
+    cmd: make test COREV=YES TEST=interrupt_bootstrap
 
   interrupt_test:
     build: uvmt_cv32
     description: Interrupt test
     dir: cv32/sim/uvmt_cv32
-    cmd: make test TEST=interrupt_test
+    cmd: make test COREV=YES TEST=interrupt_test
 
   isa_fcov_holes:
     build: uvmt_cv32
