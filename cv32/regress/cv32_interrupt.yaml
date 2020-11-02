@@ -39,6 +39,13 @@ tests:
     cmd: make gen_corev-dv test COREV=YES TEST=corev_rand_interrupt_debug
     num: 50
 
+  corev_rand_interrupt_exception:
+    build: uvmt_cv32
+    description: Interrupt random test with exceptions
+    dir: cv32/sim/uvmt_cv32
+    cmd: make gen_corev-dv test COREV=YES TEST=corev_rand_interrupt_exception
+    num: 50
+
   corev_rand_interrupt_nested:
     build: uvmt_cv32
     description: Interrupt random test with nested interrupts and WFI
@@ -52,5 +59,3 @@ tests:
     dir: cv32/sim/uvmt_cv32    
     cmd: make gen_corev-dv test COREV=YES TEST=corev_rand_interrupt_wfi
     num: 50
-
-
