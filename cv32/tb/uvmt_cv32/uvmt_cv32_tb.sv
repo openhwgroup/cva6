@@ -108,6 +108,39 @@ module uvmt_cv32_tb;
                               .rready(1'b1)
                               );
 
+  bind cv32e40p_wrapper
+    uvma_obi_assert#(
+                     .ADDR_WIDTH(32),
+                     .DATA_WIDTH(32)
+                    ) obi_instr_assert_i(.clk(clk_i),
+                                         .reset_n(rst_ni),
+                                         .req(instr_req_o),
+                                         .gnt(instr_gnt_i),
+                                         .addr(instr_addr_o),
+                                         .be('0),
+                                         .we('0),
+                                         .wdata('0),
+                                         .rdata(instr_rdata_i),
+                                         .rvalid(instr_rvalid_i),
+                                         .rready(1'b1)
+                                        );
+bind cv32e40p_wrapper
+    uvma_obi_assert#(
+                     .ADDR_WIDTH(32),
+                     .DATA_WIDTH(32)
+                    ) obi_data_assert_i(.clk(clk_i),
+                                        .reset_n(rst_ni),
+                                        .req(data_req_o),
+                                        .gnt(data_gnt_i),
+                                        .addr(data_addr_o),
+                                        .be(data_be_o),
+                                        .we(data_we_o),
+                                        .wdata(data_wdata_o),
+                                        .rdata(data_rdata_i),
+                                        .rvalid(data_rvalid_i),
+                                        .rready(1'b1)
+                                       );
+
   // Bind in verification modules to the design
   bind cv32e40p_core 
     uvmt_cv32e40p_interrupt_assert interrupt_assert_i(.mcause_n(cs_registers_i.mcause_n),
