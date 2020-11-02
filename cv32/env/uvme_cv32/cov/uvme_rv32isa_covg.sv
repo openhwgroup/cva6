@@ -1546,12 +1546,24 @@ class uvme_rv32isa_covg extends uvm_component;
         }
     endgroup
 
-   // Every instruction has been followed by every
-   // other instruction
+   // Every instruction has been followed by every other instruction
+`ifdef DSIM
+   // dsim handling of per_instance coverage
    covergroup instr_cg with function sample(ins_t ins);
-    `ifndef DSIM
+      cp_ins : coverpoint (ins.asm) {
+         type_option.weight = 0;
+      }
+      cp_ins_prev : coverpoint (ins_prev.asm) {
+         type_option.weight = 0;
+      }
+      cr_ins_prev_x_ins: cross cp_ins_prev, cp_ins {
+         type_option.weight = 1;
+         type_option.comment = "Cross previous with current instruction";
+      }
+   endgroup // instr_cg
+`else
+   covergroup instr_cg with function sample(ins_t ins);
       option.per_instance = 1;
-    `endif
       cp_ins : coverpoint (ins.asm) {
          option.weight = 0;
       }
@@ -1563,6 +1575,7 @@ class uvme_rv32isa_covg extends uvm_component;
          option.comment = "Cross previous with current instruction";
       }
    endgroup // instr_cg
+`endif // DSIM
 
     `uvm_component_utils(uvme_rv32isa_covg)
 
