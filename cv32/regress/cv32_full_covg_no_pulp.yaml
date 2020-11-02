@@ -155,6 +155,13 @@ tests:
     cmd: make gen_corev-dv test TEST=corev_rand_interrupt_wfi
     num: 200
 
+  corev_rand_interrupt_debug:
+    build: uvmt_cv32
+    description: Generated corev-dv random interrupt WFI test with debug
+    dir: cv32/sim/uvmt_cv32    
+    cmd: make gen_corev-dv test TEST=corev_rand_interrupt_debug
+    num: 200
+
   corev_rand_interrupt_nested:
     build: uvmt_cv32
     description: Generated corev-dv random interrupt WFI test with random nested interrupts

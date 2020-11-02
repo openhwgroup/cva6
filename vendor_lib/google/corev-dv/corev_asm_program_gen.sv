@@ -48,11 +48,6 @@ class corev_asm_program_gen extends riscv_asm_program_gen;
     instr_stream.push_back(".globl _start_main");
     instr_stream.push_back(".section .text");
     instr_stream.push_back("_start_main:");
-    if (cfg.gen_debug_section) begin
-      corev_instr_gen_config cfg_corev;
-      `DV_CHECK($cast(cfg_corev, cfg))
-      instr_stream.push_back($sformatf("la x%0d, debugger_stack_end", cfg_corev.dp));
-    end
   endfunction
 
   virtual function void gen_interrupt_vector_table(int              hart,
@@ -366,5 +361,20 @@ class corev_asm_program_gen extends riscv_asm_program_gen;
       instr_stream.push_back(str);
     end
   endfunction
+
+  // ECALL trap handler - corev-dv does not use the ecall to signal test_done as standard riscv-dv does.
+  // Therefore to enable random ecalls in test, simply handle ecall as an exception with no special
+  // processing other than to increment the PC from MEPC
+  virtual function void gen_ecall_handler(int hart);
+    string instr[$];
+    instr = {instr,
+            $sformatf("csrr  x%0d, mepc", cfg.gpr[0]),
+            $sformatf("addi  x%0d, x%0d, 4", cfg.gpr[0], cfg.gpr[0]),
+            $sformatf("csrw  mepc, x%0d", cfg.gpr[0])
+    };
+    pop_gpr_from_kernel_stack(MSTATUS, MSCRATCH, cfg.mstatus_mprv, cfg.sp, cfg.tp, instr);
+    instr.push_back("mret");
+    gen_section(get_label("ecall_handler", hart), instr);
+  endfunction : gen_ecall_handler
 
 endclass : corev_asm_program_gen
