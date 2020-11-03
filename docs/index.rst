@@ -19,6 +19,7 @@ Editor: **Florian Zaruba**
    issue_stage
    ex_stage
    commit_stage
+   cva6_soc
 
 Indices and tables
 ==================
