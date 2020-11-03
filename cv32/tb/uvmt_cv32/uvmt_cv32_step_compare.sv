@@ -239,7 +239,8 @@ module uvmt_cv32_step_compare
     bit step_ovp = 0;
     event ev_ovp, ev_rtl;
     event ev_compare;
-
+    static integer instruction_count = 0;
+   
     typedef enum {RESET,  // Needed to get an event on state so always block is initially entered
                   STEP_RTL,
                   STEP_OVP,
@@ -259,23 +260,26 @@ module uvmt_cv32_step_compare
       case (state)
         STEP_RTL: begin
            wait (step_compare_if.riscv_retire.triggered)
-             step_rtl <= 0;
-             step_ovp <= 1;
-             pushRTL2RM("ret_rtl");
-             state <= STEP_OVP;
+           clknrst_if.stop_clk();
+           step_rtl <= 0;
+           step_ovp <= 1;
+           pushRTL2RM("ret_rtl");
+           state <= STEP_OVP;
         end
         STEP_OVP: begin
            wait (step_compare_if.ovp_cpu_retire.triggered)
-              step_ovp <= 0;
-              ->ev_ovp; // not used
-              ->`CV32E40P_TRACER.ovp_retire;
-              state <= COMPARE;
+           step_ovp <= 0;
+           ->ev_ovp; // not used
+           ->`CV32E40P_TRACER.ovp_retire;
+           state <= COMPARE;
         end
         COMPARE: begin 
-            ->step_compare_if.ovp_cpu_busWait;
-            compare();
-            step_rtl <= 1;
-            ->ev_compare;
+           ->step_compare_if.ovp_cpu_busWait;
+           compare();
+           step_rtl <= 1;
+           ->ev_compare;
+           clknrst_if.start_clk();
+           instruction_count += 1;           
            state <= STEP_RTL;
         end
       endcase // case (state)      
@@ -285,29 +289,15 @@ module uvmt_cv32_step_compare
         step_compare_if.ovp_b1_Step = step_ovp;
     end
 
-   // After reset start the clock to the riscv
-   // Any time the RTL flags retire, stop the clock
-   // Then wait for the next compare event and start the clocks again
-   initial begin
-      static integer instruction_count = 0;
-      // Asynchronous reset design, allow the uvmt_cv32_base_test_c::reset_phase to execute a full reset cycle first
-      wait (clknrst_if.reset_n === 1'b0);
-      wait (clknrst_if.reset_n === 1'b1);
-      wait (clknrst_if.clk_active === 1'b1);
-      forever begin
-         @(step_compare_if.riscv_retire);
-         clknrst_if.stop_clk();
-         @(ev_compare);
-         clknrst_if.start_clk();
-         instruction_count += 1;
-         if (!(instruction_count % 10000)) begin
-            `uvm_info("Step-and-Compare", $sformatf("Compared %0d instructions", instruction_count), UVM_NONE)
-         end
-         if (instruction_count >= 10_000_000) begin
-            `uvm_fatal("Step-and-Compare", $sformatf("Compared %0d instructions - that's too long!", instruction_count))
-         end
+   always @(instruction_count) begin
+      if (!(instruction_count % 10000)) begin
+         `uvm_info("Step-and-Compare", $sformatf("Compared %0d instructions", instruction_count), UVM_NONE)
+      end
+      if (instruction_count >= 10_000_000) begin
+         `uvm_fatal("Step-and-Compare", $sformatf("Compared %0d instructions - that's too long!", instruction_count))
       end
    end
+   
 
 `ifdef COVERAGE
    coverage cov1;
