@@ -29,12 +29,16 @@
 #include <stdio.h>
 #include <stdlib.h>
 
+#ifndef NUM_MPHMCOUNTERS
+#define NUM_MHPMCOUNTERS 1
+#endif
+
 static int chck(unsigned int is, unsigned int should)
 {
   int err;
   err = is == should ? 0 : 1;
   if (err)
-    printf("fail\n");
+    printf("fail %d %d\n", is, should);
   else
     printf("pass\n");
   return err;
@@ -48,7 +52,7 @@ int main(int argc, char *argv[])
   volatile unsigned int minstret_rval;
   volatile unsigned int mcountinhibit_rval;
   volatile unsigned int mhpmcounter_rval[32];
-  volatile unsigned int mphmevent_rval[32];
+  volatile unsigned int mhpmevent_rval[32];
   volatile unsigned int mhartid_rval;
   volatile unsigned int sum;
   volatile unsigned int count;
@@ -104,44 +108,44 @@ int main(int argc, char *argv[])
   __asm__ volatile("csrr %0, 0xB1F" : "=r"(mhpmcounter_rval[31]));
 
 
-  __asm__ volatile("csrr %0, 0x323" : "=r"(mphmevent_rval[3]));
-  __asm__ volatile("csrr %0, 0x324" : "=r"(mphmevent_rval[4]));
-  __asm__ volatile("csrr %0, 0x325" : "=r"(mphmevent_rval[5]));
-  __asm__ volatile("csrr %0, 0x326" : "=r"(mphmevent_rval[6]));
-  __asm__ volatile("csrr %0, 0x327" : "=r"(mphmevent_rval[7]));
-  __asm__ volatile("csrr %0, 0x328" : "=r"(mphmevent_rval[8]));
-  __asm__ volatile("csrr %0, 0x329" : "=r"(mphmevent_rval[9]));
-  __asm__ volatile("csrr %0, 0x32A" : "=r"(mphmevent_rval[10]));
-  __asm__ volatile("csrr %0, 0x32B" : "=r"(mphmevent_rval[11]));
-  __asm__ volatile("csrr %0, 0x32C" : "=r"(mphmevent_rval[12]));
-  __asm__ volatile("csrr %0, 0x32D" : "=r"(mphmevent_rval[13]));
-  __asm__ volatile("csrr %0, 0x32E" : "=r"(mphmevent_rval[14]));
-  __asm__ volatile("csrr %0, 0x32F" : "=r"(mphmevent_rval[15]));
-  __asm__ volatile("csrr %0, 0x330" : "=r"(mphmevent_rval[16]));
-  __asm__ volatile("csrr %0, 0x331" : "=r"(mphmevent_rval[17]));
-  __asm__ volatile("csrr %0, 0x332" : "=r"(mphmevent_rval[18]));
-  __asm__ volatile("csrr %0, 0x333" : "=r"(mphmevent_rval[19]));
-  __asm__ volatile("csrr %0, 0x334" : "=r"(mphmevent_rval[20]));
-  __asm__ volatile("csrr %0, 0x335" : "=r"(mphmevent_rval[21]));
-  __asm__ volatile("csrr %0, 0x336" : "=r"(mphmevent_rval[22]));
-  __asm__ volatile("csrr %0, 0x337" : "=r"(mphmevent_rval[23]));
-  __asm__ volatile("csrr %0, 0x338" : "=r"(mphmevent_rval[24]));
-  __asm__ volatile("csrr %0, 0x339" : "=r"(mphmevent_rval[25]));
-  __asm__ volatile("csrr %0, 0x33A" : "=r"(mphmevent_rval[26]));
-  __asm__ volatile("csrr %0, 0x33B" : "=r"(mphmevent_rval[27]));
-  __asm__ volatile("csrr %0, 0x33C" : "=r"(mphmevent_rval[28]));
-  __asm__ volatile("csrr %0, 0x33D" : "=r"(mphmevent_rval[29]));
-  __asm__ volatile("csrr %0, 0x33E" : "=r"(mphmevent_rval[30]));
-  __asm__ volatile("csrr %0, 0x33F" : "=r"(mphmevent_rval[31]));
+  __asm__ volatile("csrr %0, 0x323" : "=r"(mhpmevent_rval[3]));
+  __asm__ volatile("csrr %0, 0x324" : "=r"(mhpmevent_rval[4]));
+  __asm__ volatile("csrr %0, 0x325" : "=r"(mhpmevent_rval[5]));
+  __asm__ volatile("csrr %0, 0x326" : "=r"(mhpmevent_rval[6]));
+  __asm__ volatile("csrr %0, 0x327" : "=r"(mhpmevent_rval[7]));
+  __asm__ volatile("csrr %0, 0x328" : "=r"(mhpmevent_rval[8]));
+  __asm__ volatile("csrr %0, 0x329" : "=r"(mhpmevent_rval[9]));
+  __asm__ volatile("csrr %0, 0x32A" : "=r"(mhpmevent_rval[10]));
+  __asm__ volatile("csrr %0, 0x32B" : "=r"(mhpmevent_rval[11]));
+  __asm__ volatile("csrr %0, 0x32C" : "=r"(mhpmevent_rval[12]));
+  __asm__ volatile("csrr %0, 0x32D" : "=r"(mhpmevent_rval[13]));
+  __asm__ volatile("csrr %0, 0x32E" : "=r"(mhpmevent_rval[14]));
+  __asm__ volatile("csrr %0, 0x32F" : "=r"(mhpmevent_rval[15]));
+  __asm__ volatile("csrr %0, 0x330" : "=r"(mhpmevent_rval[16]));
+  __asm__ volatile("csrr %0, 0x331" : "=r"(mhpmevent_rval[17]));
+  __asm__ volatile("csrr %0, 0x332" : "=r"(mhpmevent_rval[18]));
+  __asm__ volatile("csrr %0, 0x333" : "=r"(mhpmevent_rval[19]));
+  __asm__ volatile("csrr %0, 0x334" : "=r"(mhpmevent_rval[20]));
+  __asm__ volatile("csrr %0, 0x335" : "=r"(mhpmevent_rval[21]));
+  __asm__ volatile("csrr %0, 0x336" : "=r"(mhpmevent_rval[22]));
+  __asm__ volatile("csrr %0, 0x337" : "=r"(mhpmevent_rval[23]));
+  __asm__ volatile("csrr %0, 0x338" : "=r"(mhpmevent_rval[24]));
+  __asm__ volatile("csrr %0, 0x339" : "=r"(mhpmevent_rval[25]));
+  __asm__ volatile("csrr %0, 0x33A" : "=r"(mhpmevent_rval[26]));
+  __asm__ volatile("csrr %0, 0x33B" : "=r"(mhpmevent_rval[27]));
+  __asm__ volatile("csrr %0, 0x33C" : "=r"(mhpmevent_rval[28]));
+  __asm__ volatile("csrr %0, 0x33D" : "=r"(mhpmevent_rval[29]));
+  __asm__ volatile("csrr %0, 0x33E" : "=r"(mhpmevent_rval[30]));
+  __asm__ volatile("csrr %0, 0x33F" : "=r"(mhpmevent_rval[31]));
 
   for (int i=3; i<32; i++) {
-    sum += mphmevent_rval[i];
+    sum += mhpmevent_rval[i];
   }
   if (sum) {
     printf("ERROR: CSR MHPMEVENT[3..31] not 0x0!\n\n");
     ++err_cnt;
   }
-
+  
 
   sum = 0;
   for (int i=3; i<32; i++) {
@@ -174,11 +178,136 @@ int main(int argc, char *argv[])
   printf("MCOUNTINHIBIT Initial  Value is %0x\n", mcountinhibit_rval);
 
 //////////////////////////////////////////////////////////////
+  // To complete code coverage try to write all unimplemented HPMEVENT<n> registers
+  for (int i = 3; i <= 31; i++) {      
+    volatile unsigned int revent;
+    volatile unsigned int wevent = (unsigned int) -1;
+    
+    
+    if (i >= NUM_MHPMCOUNTERS+3) {
+      switch (i) {
+        case 3:
+          __asm__ volatile("csrw mhpmevent3, %0" : : "r"(wevent)); 
+          __asm__ volatile("csrr %0, mhpmevent3" : "=r"(revent)); 
+          break;
+        case 4:
+          __asm__ volatile("csrw mhpmevent4, %0" : : "r"(wevent)); 
+          __asm__ volatile("csrr %0, mhpmevent4" : "=r"(revent)); 
+          break;
+        case 5:
+          __asm__ volatile("csrw mhpmevent5, %0" : : "r"(wevent)); 
+          __asm__ volatile("csrr %0, mhpmevent5" : "=r"(revent)); 
+          break;
+        case 6:
+          __asm__ volatile("csrw mhpmevent6, %0" : : "r"(wevent)); 
+          __asm__ volatile("csrr %0, mhpmevent6" : "=r"(revent)); 
+        case 7:
+          __asm__ volatile("csrw mhpmevent7, %0" : : "r"(wevent)); 
+          __asm__ volatile("csrr %0, mhpmevent7" : "=r"(revent)); 
+        case 8:
+          __asm__ volatile("csrw mhpmevent8, %0" : : "r"(wevent)); 
+          __asm__ volatile("csrr %0, mhpmevent8" : "=r"(revent)); 
+        case 9:
+          __asm__ volatile("csrw mhpmevent9, %0" : : "r"(wevent)); 
+          __asm__ volatile("csrr %0, mhpmevent9" : "=r"(revent)); 
+          break;
+        case 10:
+          __asm__ volatile("csrw mhpmevent10, %0" : : "r"(wevent)); 
+          __asm__ volatile("csrr %0, mhpmevent10" : "=r"(revent)); 
+          break;
+        case 11:
+          __asm__ volatile("csrw mhpmevent11, %0" : : "r"(wevent)); 
+          __asm__ volatile("csrr %0, mhpmevent11" : "=r"(revent)); 
+          break;
+        case 12:
+          __asm__ volatile("csrw mhpmevent12, %0" : : "r"(wevent)); 
+          __asm__ volatile("csrr %0, mhpmevent12" : "=r"(revent)); 
+          break;
+        case 13:
+          __asm__ volatile("csrw mhpmevent13, %0" : : "r"(wevent)); 
+          __asm__ volatile("csrr %0, mhpmevent13" : "=r"(revent)); 
+          break;
+        case 14:
+          __asm__ volatile("csrw mhpmevent14, %0" : : "r"(wevent)); 
+          __asm__ volatile("csrr %0, mhpmevent14" : "=r"(revent)); 
+          break;
+        case 15:
+          __asm__ volatile("csrw mhpmevent15, %0" : : "r"(wevent)); 
+          __asm__ volatile("csrr %0, mhpmevent15" : "=r"(revent)); 
+          break;
+        case 16:
+          __asm__ volatile("csrw mhpmevent16, %0" : : "r"(wevent)); 
+          __asm__ volatile("csrr %0, mhpmevent16" : "=r"(revent)); 
+        case 17:
+          __asm__ volatile("csrw mhpmevent17, %0" : : "r"(wevent)); 
+          __asm__ volatile("csrr %0, mhpmevent17" : "=r"(revent)); 
+        case 18:
+          __asm__ volatile("csrw mhpmevent18, %0" : : "r"(wevent)); 
+          __asm__ volatile("csrr %0, mhpmevent18" : "=r"(revent)); 
+        case 19:
+          __asm__ volatile("csrw mhpmevent19, %0" : : "r"(wevent)); 
+          __asm__ volatile("csrr %0, mhpmevent19" : "=r"(revent)); 
+          break;
+        case 20:
+          __asm__ volatile("csrw mhpmevent20, %0" : : "r"(wevent)); 
+          __asm__ volatile("csrr %0, mhpmevent20" : "=r"(revent)); 
+          break;
+        case 21:
+          __asm__ volatile("csrw mhpmevent21, %0" : : "r"(wevent)); 
+          __asm__ volatile("csrr %0, mhpmevent21" : "=r"(revent)); 
+          break;
+        case 22:
+          __asm__ volatile("csrw mhpmevent22, %0" : : "r"(wevent)); 
+          __asm__ volatile("csrr %0, mhpmevent22" : "=r"(revent)); 
+          break;
+        case 23:
+          __asm__ volatile("csrw mhpmevent23, %0" : : "r"(wevent)); 
+          __asm__ volatile("csrr %0, mhpmevent23" : "=r"(revent)); 
+          break;
+        case 24:
+          __asm__ volatile("csrw mhpmevent24, %0" : : "r"(wevent)); 
+          __asm__ volatile("csrr %0, mhpmevent24" : "=r"(revent)); 
+          break;
+        case 25:
+          __asm__ volatile("csrw mhpmevent25, %0" : : "r"(wevent)); 
+          __asm__ volatile("csrr %0, mhpmevent25" : "=r"(revent)); 
+          break;
+        case 26:
+          __asm__ volatile("csrw mhpmevent26, %0" : : "r"(wevent)); 
+          __asm__ volatile("csrr %0, mhpmevent26" : "=r"(revent)); 
+        case 27:
+          __asm__ volatile("csrw mhpmevent27, %0" : : "r"(wevent)); 
+          __asm__ volatile("csrr %0, mhpmevent27" : "=r"(revent)); 
+        case 28:
+          __asm__ volatile("csrw mhpmevent28, %0" : : "r"(wevent)); 
+          __asm__ volatile("csrr %0, mhpmevent28" : "=r"(revent)); 
+        case 29:
+          __asm__ volatile("csrw mhpmevent29, %0" : : "r"(wevent)); 
+          __asm__ volatile("csrr %0, mhpmevent29" : "=r"(revent)); 
+          break;
+        case 30:
+          __asm__ volatile("csrw mhpmevent30, %0" : : "r"(wevent)); 
+          __asm__ volatile("csrr %0, mhpmevent30" : "=r"(revent)); 
+          break;
+        case 31:
+          __asm__ volatile("csrw mhpmevent31, %0" : : "r"(wevent)); 
+          __asm__ volatile("csrr %0, mhpmevent31" : "=r"(revent)); 
+          break;
+      }
+
+      if (revent != 0) {
+        printf("ERROR: MHPMEVENT%d does not read back zero 0x%0x\n", i, revent);
+        ++err_cnt;
+      }
+    }
+  }
+
+//////////////////////////////////////////////////////////////
   // Count load use hazards
   printf("\nCount load use hazards");
 
   event = 0x4;                                                  // Trigger on load use hazards
-  __asm__ volatile("csrw 0x323, %0 " : "=r"(event));            // Set mphmevent3
+  __asm__ volatile("csrw 0x323, %0 " : : "r"(event));           // Set mhpmevent3
   __asm__ volatile("csrwi 0xB02, 0x0");                         // minstret = 0
   __asm__ volatile("csrwi 0xB03, 0x0");                         // mhpmcounter3 = 0
   __asm__ volatile("csrwi 0x320, 0x0");                         // Enable counters
@@ -215,7 +344,7 @@ int main(int argc, char *argv[])
   printf("\nCount Jump register hazards");
 
   event = 0x8;                                                  // Trigger on jump register hazards
-  __asm__ volatile("csrw 0x323, %0 " : "=r"(event));            // Set mphmevent3
+  __asm__ volatile("csrw 0x323, %0 " : : "r"(event));           // Set mhpmevent3
   __asm__ volatile("csrwi 0xB02, 0x0");                         // minstret = 0
   __asm__ volatile("csrwi 0xB03, 0x0");                         // mhpmcounter3 = 0
   __asm__ volatile("csrwi 0x320, 0x0");                         // Enable counters
@@ -252,13 +381,13 @@ int main(int argc, char *argv[])
   printf("\nCount memory read transactions");
 
   event = 0x20;                                                 // Trigger on loads
-  __asm__ volatile("csrw 0x323, %0 " : "=r"(event));            // Set mphmevent3
+  __asm__ volatile("csrw 0x323, %0 " : : "r"(event));             // Set mhpmevent3
   __asm__ volatile("csrwi 0xB02, 0x0");                         // minstret = 0
   __asm__ volatile("csrwi 0xB03, 0x0");                         // mhpmcounter3 = 0
   __asm__ volatile("csrwi 0x320, 0x0");                         // Enable counters
   __asm__ volatile("lw x4, 0(sp)");                             // count++
   __asm__ volatile("mulh x0, x0, x0");
-  __asm__ volatile("j jump_target_memread");                    // do not count jump in mphmevent3
+  __asm__ volatile("j jump_target_memread");                    // do not count jump in mhpmevent3
   __asm__ volatile("nop");                                      // do not count nop in instret
   __asm__ volatile("jump_target_memread:");
   __asm__ volatile("lw x4, 0(sp)");                             // count++
@@ -278,7 +407,7 @@ int main(int argc, char *argv[])
   printf("\nCount memory write transactions");
 
   event = 0x40;                                                 // Trigger on stores
-  __asm__ volatile("csrw 0x323, %0 " : "=r"(event));            // Set mphmevent3
+  __asm__ volatile("csrw 0x323, %0 " : : "r"(event));           // Set mhpmevent3
   __asm__ volatile("csrwi 0xB02, 0x0");                         // minstret = 0
   __asm__ volatile("csrwi 0xB03, 0x0");                         // mhpmcounter3 = 0
   __asm__ volatile("csrwi 0x320, 0x0");                         // Enable counters
@@ -300,7 +429,7 @@ int main(int argc, char *argv[])
   printf("\nCount jumps");
 
   event = 0x80;                                                 // Trigger on jumps
-  __asm__ volatile("csrw 0x323, %0 " : "=r"(event));            // Set mphmevent3
+  __asm__ volatile("csrw 0x323, %0 " : : "r"(event));           // Set mhpmevent3
   __asm__ volatile("csrwi 0xB02, 0x0");                         // minstret = 0
   __asm__ volatile("csrwi 0xB03, 0x0");                         // mhpmcounter3 = 0
   __asm__ volatile("csrwi 0x320, 0x0");                         // Enable counters
@@ -323,7 +452,7 @@ int main(int argc, char *argv[])
   printf("\nCount Icache Misses");
 
   event = 0x10;                                                 // Trigger on jumps
-  __asm__ volatile("csrw 0x323, %0 " : "=r"(event));            // Set mphmevent3
+  __asm__ volatile("csrw 0x323, %0 " : : "r"(event));             // Set mhpmevent3
   __asm__ volatile("csrwi 0xB02, 0x0");                         // minstret = 0
   __asm__ volatile("csrwi 0xB03, 0x0");                         // mhpmcounter3 = 0
   __asm__ volatile("csrwi 0x320, 0x0");                         // Enable counters
@@ -473,7 +602,7 @@ int main(int argc, char *argv[])
   printf("\nCount branches (conditional)");
 
   event = 0x100;                                                // Trigger on on taken branches
-  __asm__ volatile("csrw 0x323, %0 " : "=r"(event));            // Set mphmevent3
+  __asm__ volatile("csrw 0x323, %0 " : : "r"(event));           // Set mhpmevent3
   __asm__ volatile("csrwi 0xB02, 0x0");                         // minstret = 0
   __asm__ volatile("csrwi 0xB03, 0x0");                         // mhpmcounter3 = 0
   __asm__ volatile("csrwi 0x320, 0x0");                         // Enable counters
@@ -498,7 +627,7 @@ int main(int argc, char *argv[])
   printf("\nCount branches taken (conditional)");
 
   event = 0x200;                                                // Trigger on on taken branches
-  __asm__ volatile("csrw 0x323, %0 " : "=r"(event));            // Set mphmevent3
+  __asm__ volatile("csrw 0x323, %0 " : : "r"(event));           // Set mhpmevent3
   __asm__ volatile("csrwi 0xB02, 0x0");                         // minstret = 0
   __asm__ volatile("csrwi 0xB03, 0x0");                         // mhpmcounter3 = 0
   __asm__ volatile("csrwi 0x320, 0x0");                         // Enable counters
@@ -523,7 +652,7 @@ int main(int argc, char *argv[])
   printf("\nCompressed instructions");
 
   event = 0x400;                                                // Trigger on compressed instructions
-  __asm__ volatile("csrw 0x323, %0 " : "=r"(event));            // Set mphmevent3
+  __asm__ volatile("csrw 0x323, %0 " : : "r"(event));           // Set mhpmevent3
   __asm__ volatile("csrwi 0xB02, 0x0");                         // minstret = 0
   __asm__ volatile("csrwi 0xB03, 0x0");                         // mhpmcounter3 = 0
   __asm__ volatile("csrwi 0x320, 0x0");                         // Enable counters
@@ -547,7 +676,7 @@ int main(int argc, char *argv[])
 
   event = 0x2;                                                  // Trigger on retired instructions
   __asm__ volatile(".option rvc");
-  __asm__ volatile("csrw 0x323, %0 " : "=r"(event));            // Set mphmevent3
+  __asm__ volatile("csrw 0x323, %0 " : : "r"(event));           // Set mhpmevent3
   __asm__ volatile("csrwi 0xB02, 0x0");                         // minstret = 0
   __asm__ volatile("csrwi 0xB03, 0x0");                         // mhpmcounter3 = 0
   __asm__ volatile("csrwi 0x320, 0x0");                         // Enable counters

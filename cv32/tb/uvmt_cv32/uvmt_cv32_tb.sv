@@ -447,7 +447,8 @@ bind cv32e40p_wrapper
      uvm_top.run_test();
    end : test_bench_entry_point
 
-   
+   assign core_cntrl_if.clk = clknrst_if.clk;
+
    // Capture the test status and exit pulse flags
    // TODO: put this logic in the vp_status_if (makes it easier to pass to ENV)
    always @(posedge clknrst_if.clk) begin
