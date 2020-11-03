@@ -15,6 +15,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 // 
+// SPDX-License-Identifier: Apache-2.0 WITH SHL-2.0
+//
 
 
 `ifndef __UVMT_CV32_TB_SV__
