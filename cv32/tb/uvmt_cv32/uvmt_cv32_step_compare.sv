@@ -237,8 +237,6 @@ module uvmt_cv32_step_compare
     */
     bit step_rtl = 0;
     bit step_ovp = 0;
-    bit ret_ovp = 0;
-    bit ret_rtl = 0;
     event ev_ovp, ev_rtl;
     event ev_compare;
 
@@ -253,9 +251,7 @@ module uvmt_cv32_step_compare
       step_compare_if.ovp_b1_Step <= 0;
       step_compare_if.ovp_b1_Stepping <= 1;
       step_ovp <= 0;
-      ret_ovp <= 0;// not used
       step_rtl <= 1;
-      ret_rtl <= 0; // not used
       state <= STEP_RTL;
    end
    
@@ -264,7 +260,6 @@ module uvmt_cv32_step_compare
         STEP_RTL: begin
            wait (step_compare_if.riscv_retire.triggered)
              step_rtl <= 0;
-             ret_rtl  <= 1; // Not used
              step_ovp <= 1;
              pushRTL2RM("ret_rtl");
              state <= STEP_OVP;
@@ -272,7 +267,6 @@ module uvmt_cv32_step_compare
         STEP_OVP: begin
            wait (step_compare_if.ovp_cpu_retire.triggered)
               step_ovp <= 0;
-              ret_ovp  <= 1;// not used
               ->ev_ovp; // not used
               ->`CV32E40P_TRACER.ovp_retire;
               state <= COMPARE;
@@ -280,8 +274,6 @@ module uvmt_cv32_step_compare
         COMPARE: begin 
             ->step_compare_if.ovp_cpu_busWait;
             compare();
-            ret_rtl  <= 0; //not used
-            ret_ovp  <= 0; // not used
             step_rtl <= 1;
             ->ev_compare;
            state <= STEP_RTL;
@@ -289,52 +281,6 @@ module uvmt_cv32_step_compare
       endcase // case (state)      
    end
    
-   /*
-   initial begin
-      pushRTL2RM("Initial");
-      step_compare_if.ovp_b1_Step = 0;
-      step_compare_if.ovp_b1_Stepping = 1;
-      step_ovp = 0;
-      ret_ovp = 0;
-      step_rtl = 1;
-      ret_rtl = 0;
-   end
-    
-    // ovp_core
-    always @(step_compare_if.ovp_cpu_retire) begin
-        step_ovp = 0;
-        ret_ovp  = 1;
-        #0 ->ev_ovp;
-        ->`CV32E40P_TRACER.ovp_retire;
-    end
-
-    // riscv_core
-    always @(step_compare_if.riscv_retire) begin
-        step_rtl = 0;
-        ret_rtl  = 1;
-        // #0 ->ev_rtl; does nothing since ignored due to ret_ovp=0
-    end
-    
-    always @(posedge ret_rtl) begin
-        pushRTL2RM("ret_rtl");
-        // ret_ovp  = 0; moved to always @(ev_ovp or ev_rtl) after compare.
-        step_ovp = 1;
-    end
-
-//    always @(ev_ovp or ev_rtl) begin
-//        if (ret_ovp && ret_rtl) begin
-      always @(ev_ovp) begin
-            ->step_compare_if.ovp_cpu_busWait;
-            compare();
-            ret_rtl  = 0;
-            ret_ovp  = 0;
-            step_rtl = 1;
-            #0 ->ev_compare;
-     //   end
-    end
-*/
-
- 
     always @(step_ovp) begin
         step_compare_if.ovp_b1_Step = step_ovp;
     end
