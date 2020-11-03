@@ -22,15 +22,22 @@
 .global _trigger_exit
 .global _trigger_test
 .global _trigger_code
-.global _trigger_test_wfi
-.global _trigger_code_wfi
+.global _trigger_test_ebreak
+.global _trigger_code_ebreak
+.global _trigger_code_cebreak
 .type _trigger_code, @function
-.type _trigger_code_wfi, @function
-_trigger_code_wfi:
-    wfi
+.type _trigger_code_ebreak, @function
+.type _trigger_code_cebreak, @function
+
+_trigger_code_ebreak:
+    .4byte 0x00100073
     ret
 
-_trigger_test_wfi:
+_trigger_code_cebreak:
+    c.ebreak
+    ret
+
+_trigger_test_ebreak:
     addi sp,sp,-30
     sw t0, 0(sp)
     sw t1, 4(sp)
@@ -39,7 +46,24 @@ _trigger_test_wfi:
     sw a2, 16(sp)
     sw ra, 20(sp)
 
-    jal ra, _trigger_code_wfi
+    # a0 holds argument
+    # 0 - ebreak
+    # 1 - c.c.ebreak
+
+    mv t1, a0
+    li t0, 0
+    beq t0, t1, jmp_ebreak
+    
+    li t0, 1
+    beq t0, t1, jmp_cebreak
+
+jmp_ebreak:
+    jal ra, _trigger_code_ebreak
+    j __trigger_done
+jmp_cebreak:
+    jal ra, _trigger_code_cebreak
+    j __trigger_done
+
     j __trigger_done
      // We will trigger on the _trigger_code addess
 	// We should not expect the first instruction to execute

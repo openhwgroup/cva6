@@ -351,6 +351,8 @@ interface uvmt_cv32_debug_cov_assert_if
     // WFI Interface
     input logic core_sleep_o,
 
+    input logic fence_i,
+
     input logic csr_access,
     input logic [1:0] csr_op,
     input logic [1:0] csr_op_dec,
@@ -402,7 +404,7 @@ interface uvmt_cv32_debug_cov_assert_if
     tdata1,
     tdata2,
     trigger_match_i,
-
+    fence_i,
     mcountinhibit_q,
     mcycle,
     minstret,

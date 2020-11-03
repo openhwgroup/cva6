@@ -190,6 +190,7 @@ bind cv32e40p_wrapper
     assign debug_cov_assert_if.mcountinhibit_q = dut_wrap.cv32e40p_wrapper_i.core_i.cs_registers_i.mcountinhibit_q;
     assign debug_cov_assert_if.mcycle = dut_wrap.cv32e40p_wrapper_i.core_i.cs_registers_i.mhpmcounter_q[0];
     assign debug_cov_assert_if.minstret = dut_wrap.cv32e40p_wrapper_i.core_i.cs_registers_i.mhpmcounter_q[2];
+    assign debug_cov_assert_if.fence_i = dut_wrap.cv32e40p_wrapper_i.core_i.id_stage_i.decoder_i.fencei_insn_o;
 
     // TODO: review this change from CV32E40P_HASH f6196bf to a26b194. It should be logically equivalent.
     //assign debug_cov_assert_if.inst_ret = dut_wrap.cv32e40p_wrapper_i.core_i.cs_registers_i.inst_ret;
@@ -352,6 +353,7 @@ bind cv32e40p_wrapper
             if ((dut_wrap.cv32e40p_wrapper_i.core_i.id_stage_i.id_valid_o && dut_wrap.cv32e40p_wrapper_i.core_i.id_stage_i.is_decoding_o &&
                !dut_wrap.cv32e40p_wrapper_i.core_i.id_stage_i.controller_i.illegal_insn_i) ||
                 (dut_wrap.cv32e40p_wrapper_i.core_i.id_stage_i.controller_i.is_decoding_o && dut_wrap.cv32e40p_wrapper_i.core_i.id_stage_i.controller_i.ebrk_insn_i &&
+                 !dut_wrap.cv32e40p_wrapper_i.core_i.id_stage_i.trigger_match_i &&
                 (dut_wrap.cv32e40p_wrapper_i.core_i.id_stage_i.controller_i.ebrk_force_debug_mode || dut_wrap.cv32e40p_wrapper_i.core_i.id_stage_i.controller_i.debug_mode_q))) begin
                 count_issue <= count_issue + 1;
             end

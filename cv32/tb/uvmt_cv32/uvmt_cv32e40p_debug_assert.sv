@@ -113,6 +113,7 @@ module uvmt_cv32e40p_debug_assert
     // TODO: This is expected to fail formal as the sequence gets long and
     // complicated.
     property p_cebreak_exception;
+        disable iff(cov_assert_if.debug_req_i | cov_assert_if.rst_ni)
         $rose(cov_assert_if.is_cebreak) && cov_assert_if.dcsr_q[15] == 1'b0 && !cov_assert_if.debug_mode_q  && cov_assert_if.is_decoding && cov_assert_if.id_valid &&
         !cov_assert_if.debug_req_i 
         |-> (decode_valid & cov_assert_if.id_valid) [->2] ##0  !cov_assert_if.debug_mode_q && (cov_assert_if.mcause_q[5:0] === cv32e40p_pkg::EXC_CAUSE_BREAKPOINT) 

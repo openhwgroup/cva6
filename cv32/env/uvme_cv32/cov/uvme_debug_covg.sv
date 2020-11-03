@@ -335,6 +335,46 @@ class uvme_debug_covg extends uvm_component;
         dbg_at_reset : cross state, dbg;
     endgroup
 
+    // Cover that we execute fence and fence.i in debug mode
+    covergroup cg_fence_in_debug;
+        option.per_instance = 1;
+        mode : coverpoint cntxt.debug_cntxt.vif_cov.mon_cb.debug_mode_q { 
+            bins debug= {1'b1};
+        }
+        fence : coverpoint cntxt.debug_cntxt.vif_cov.mon_cb.fence_i { 
+            bins active= {1'b1};
+        }
+        fence_in_debug : cross mode, fence;
+    endgroup
+
+    // Cover that we get all combinations of debug causes
+    covergroup cg_debug_causes;
+        option.per_instance = 1;
+        tmatch : coverpoint cntxt.debug_cntxt.vif_cov.mon_cb.trigger_match_i { 
+            bins match= {1'b1};
+        }
+         ebreak : coverpoint cntxt.debug_cntxt.vif_cov.mon_cb.is_ebreak { 
+            bins active= {1'b1};
+        }
+         cebreak : coverpoint cntxt.debug_cntxt.vif_cov.mon_cb.is_cebreak { 
+            bins active= {1'b1};
+        }
+         dbg_req : coverpoint cntxt.debug_cntxt.vif_cov.mon_cb.debug_req_i { 
+            bins active= {1'b1};
+        }
+         step : coverpoint cntxt.debug_cntxt.vif_cov.mon_cb.dcsr_q[2] & !cntxt.debug_cntxt.vif_cov.mon_cb.debug_mode_q { 
+            bins active= {1'b1};
+        }
+        trig_vs_ebreak : cross tmatch, ebreak;
+        trig_vs_cebreak : cross tmatch, cebreak;
+        trig_vs_dbg_req : cross tmatch, dbg_req;
+        trig_vs_step : cross tmatch, step;
+        ebreak_vs_req : cross ebreak, dbg_req;
+        cebreak_vs_req : cross cebreak, dbg_req;
+        ebreak_vs_step : cross ebreak, step;
+        cebreak_cs_step : cross cebreak, step;
+        dbg_req_vs_step : cross dbg_req, step;
+    endgroup
 
 endclass : uvme_debug_covg
 
@@ -361,7 +401,8 @@ function uvme_debug_covg::new(string name = "debug_covg", uvm_component parent =
     cg_trigger_regs = new();
     cg_counters_enabled = new();
     cg_debug_at_reset = new();
-
+    cg_fence_in_debug = new();
+    cg_debug_causes = new();
 endfunction : new
 
 function void uvme_debug_covg::build_phase(uvm_phase phase);
@@ -415,5 +456,7 @@ task uvme_debug_covg::sample_clk_i();
     cg_trigger_regs.sample();
     cg_counters_enabled.sample();
     cg_debug_at_reset.sample();
+    cg_fence_in_debug.sample();
+    cg_debug_causes.sample();
   end
 endtask  : sample_clk_i

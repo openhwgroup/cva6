@@ -35,7 +35,8 @@
 .global glb_minstret_end
 .global _step_trig_point
 .global _trigger_code
-.global _trigger_code_wfi
+.global _trigger_code_ebreak
+.global _trigger_code_cebreak
 .global __debugger_stack_start
 .global _debugger_fail
 .global _debugger_end
@@ -93,7 +94,11 @@ _debugger_start:
 	beq t2,t0,_debugger_trigger_match    // Test 8
 
     li t0, 81
-    beq t2,t0, _debugger_trigger_match_wfi 
+    beq t2,t0, _debugger_trigger_match_ebreak
+
+    li t0, 82
+    beq t2, t0, _debugger_trigger_match_cebreak
+
 	li t0,9
 	beq t2,t0,_debugger_trigger_disable    // Test 9
 
@@ -226,6 +231,10 @@ _debugger_single_step:
     beq t0, t1, _debugger_single_step_stepie_enable
     li t1, 6
     beq t0, t1, _debugger_single_step_stepie_disable
+    li t1, 7
+    beq t0, t1, _debugger_single_step_cebreak
+    li t1, 8
+    beq t0, t1, _debugger_single_step_ebreak
     j _debugger_fail
 
 _debugger_single_step_stepie_disable:
@@ -246,8 +255,8 @@ _debugger_single_step_enable:
     li t1, 4<<28 | 1<<15 | 1<<6 | 3<<0
     bne t0, t1, _debugger_fail
 
-    // Enable step bit in dcsr and disable ebreakm
-    li t0, 4<<28 | 0<<15 | 1<<2 
+    // Enable step bit in dcsr
+    li t0, 4<<28 | 1<<15 | 1<<2 
     csrw dcsr, t0
 
     // ebreak used to enter single step test, incr dpc
@@ -291,7 +300,7 @@ _debugger_single_step_end:
     sw t0, 0(a1)
     
     // Clear step info if not 3 (exception) or 5 (irq while stepping)
-    // 
+    // 6, 7 or 8
     // In exception test we expect jumps
     // to mtvec and other places, so keep
     // step info to waive dpc checks
@@ -303,6 +312,10 @@ _debugger_single_step_end:
     beq t0, t1, _debugger_end
     li t1, 6
     beq t0, t1, _debugger_end
+    li t1, 7
+    beq t0, t1, _debugger_end
+    li t1, 8
+    beq t0, t1, _debugger_end
     li t1, 0
     sw t1, 0(a1)
 
@@ -312,7 +325,7 @@ _debugger_single_step_end:
 _debugger_single_step_illegal_insn:
     // Check dcsr
     //            ebreakm   step  stepen
-    li t1, 4<<28 | 0<<15 | 4<<6 | 1<<2 | 3<<0
+    li t1, 4<<28 | 1<<15 | 4<<6 | 1<<2 | 3<<0
     csrr t2, dcsr
     bne t1, t2, _debugger_fail
     // read dpc and mtvec
@@ -329,17 +342,44 @@ _debugger_step_trig_entry:
     csrw dpc, a1
     j _debugger_single_step_end 
 
+_debugger_single_step_cebreak:
+    # If cause == 1, we need to advance dpc by 2
+    li t1, 4<<28 | 1<<15 | 1<<6 | 1<<2 | 3<<0
+    csrr t2, dcsr
+    beq t1, t2, _inc_dpc_cebreak
+    
+    j _debugger_single_step_end
+_inc_dpc_cebreak:
+    csrr t1, dpc
+    addi t1, t1, 2
+    csrw dpc, t1
+    j _debugger_single_step_end
+
+_debugger_single_step_ebreak:
+    # If cause == 1, we need to advance dpc by 2
+    li t1, 4<<28 | 1<<15 | 1<<6 | 1<<2 | 3<<0
+    csrr t2, dcsr
+    beq t1, t2, _inc_dpc_ebreak
+    
+    j _debugger_single_step_end
+_inc_dpc_ebreak:
+    csrr t1, dpc
+    addi t1, t1, 4
+    csrw dpc, t1
+    j _debugger_single_step_end
+
 _debugger_single_step_basic:
     // Check dcsr, jump to match-in-step if flagged in dcsr
-    li t1, 4<<28 | 0<<15 | 2<<6 | 1<<2 | 3<<0
+    li t1, 4<<28 | 1<<15 | 2<<6 | 1<<2 | 3<<0
     csrr t2, dcsr
     beq t1, t2, _debugger_step_trig_entry
+
 
     // Ensure tval (0x343) always == 0
     csrr t1, 0x343
     bne x0, t1, _debugger_fail
 //            ebreakm   step  stepen
-    li t1, 4<<28 | 0<<15 | 4<<6 | 1<<2 | 3<<0
+    li t1, 4<<28 | 1<<15 | 4<<6 | 1<<2 | 3<<0
     bne t1, t2, _debugger_fail
     // Check that dpc increased by 2 or 4
     csrr t0, dpc
@@ -481,11 +521,11 @@ _debugger_trigger_match:
 	la   a1,_trigger_exit
 	csrw dpc,a1
     
-    // Setup match addr for next match: wfi
-    la a1, _trigger_code_wfi
+    // Setup match addr for next match: ebreak
+    la a1, _trigger_code_ebreak
     csrw tdata2, a1
 	j   _debugger_end
-_debugger_trigger_match_wfi:
+_debugger_trigger_match_ebreak:
 	// Expect DCSR
 	//   31:28 XDEBUGER Version = 4
 	//    8:6   Cause           = 2 Trigger
@@ -495,9 +535,36 @@ _debugger_trigger_match_wfi:
 	csrr t2,dcsr
 	bne  t1,t2,_debugger_fail
 
-	la   a1,_trigger_code_wfi
+	la   a1,_trigger_code_ebreak
 	csrr a2,dpc
 	bne  a1,a2,_debugger_fail
+
+    # Advance pc past ebreak insn
+    addi a2, a2, 4
+    csrw dpc, a2
+
+    # Setup match addr for next match: c.ebreak
+    la a1, _trigger_code_cebreak
+    csrw tdata2, a1
+
+	j   _debugger_end
+_debugger_trigger_match_cebreak:
+	// Expect DCSR
+	//   31:28 XDEBUGER Version = 4
+	//    8:6   Cause           = 2 Trigger
+	//    1:0   Privelege       = 3 Machine
+	// TBD FIXME BUG documentation update needed
+	li   t1, 4<<28 | 2<<6 | 3<<0 | 1<<15
+	csrr t2,dcsr
+	bne  t1,t2,_debugger_fail
+
+	la   a1,_trigger_code_cebreak
+	csrr a2,dpc
+	bne  a1,a2,_debugger_fail
+
+    # Advance pc past c.ebreak insn
+    addi a2, a2, 2
+    csrw dpc, a2
 
     // Disable trigger
     csrw tdata1, x0
