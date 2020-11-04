@@ -37,6 +37,9 @@
 .global _trigger_code
 .global _trigger_code_ebreak
 .global _trigger_code_cebreak
+.global _trigger_code_illegal_insn
+.global _trigger_code_branch_insn
+.global _trigger_code_multicycle_insn
 .global __debugger_stack_start
 .global _debugger_fail
 .global _debugger_end
@@ -98,6 +101,15 @@ _debugger_start:
 
     li t0, 82
     beq t2, t0, _debugger_trigger_match_cebreak
+
+    li t0, 83
+    beq t2, t0, _debugger_trigger_match_illegal_insn
+
+    li t0, 84
+    beq t2, t0, _debugger_trigger_match_branch_insn
+
+    li t0, 85
+    beq t2, t0, _debugger_trigger_match_multicycle_insn
 
 	li t0,9
 	beq t2,t0,_debugger_trigger_disable    // Test 9
@@ -566,9 +578,70 @@ _debugger_trigger_match_cebreak:
     addi a2, a2, 2
     csrw dpc, a2
 
+    # Setup match addr for next match: illegal_insn
+    la a1, _trigger_code_illegal_insn
+    csrw tdata2, a1
+
     // Disable trigger
-    csrw tdata1, x0
+    //csrw tdata1, x0
 	j   _debugger_end
+
+_debugger_trigger_match_illegal_insn:
+   	li   t1, 4<<28 | 2<<6 | 3<<0 | 1<<15
+	csrr t2,dcsr
+	bne  t1,t2,_debugger_fail
+
+	la   a1,_trigger_code_illegal_insn
+	csrr a2,dpc
+	bne  a1,a2,_debugger_fail
+
+    # Advance pc past illegal insn (dret, 4 bytes)
+    addi a2, a2, 4
+    csrw dpc, a2
+
+    # Setup match addr for next match: branch_insn
+    la a1, _trigger_code_branch_insn
+    csrw tdata2, a1
+
+    j _debugger_end
+    
+_debugger_trigger_match_branch_insn:
+   	li   t1, 4<<28 | 2<<6 | 3<<0 | 1<<15
+	csrr t2,dcsr
+	bne  t1,t2,_debugger_fail
+
+	la   a1,_trigger_code_branch_insn
+	csrr a2,dpc
+	bne  a1,a2,_debugger_fail
+
+    # Advance pc past illegal branch (beq, 4 bytes)
+    addi a2, a2, 4
+    csrw dpc, a2
+
+    # Setup match addr for next match: multicycle_insn
+    la a1, _trigger_code_multicycle_insn
+    csrw tdata2, a1
+
+    j _debugger_end
+
+_debugger_trigger_match_multicycle_insn:
+   	li   t1, 4<<28 | 2<<6 | 3<<0 | 1<<15
+	csrr t2,dcsr
+	bne  t1,t2,_debugger_fail
+
+	la   a1,_trigger_code_multicycle_insn
+	csrr a2,dpc
+	bne  a1,a2,_debugger_fail
+
+    # Advance pc past multicycle insn (mulhsu, 4 bytes)
+    addi a2, a2, 4
+    csrw dpc, a2
+
+    # disable trigger
+    csrw tdata1, x0
+
+    j _debugger_end
+
 _debugger_trigger_disable:
 	// Expect DCSR
 	//   31:28 XDEBUGER Version = 4
