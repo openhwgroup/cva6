@@ -3,7 +3,7 @@
 # This means you need to have a toolchain at COREV_SW_TOOLCHAIN (see Common.mk)
 ---
 # Header
-name: cv32_full
+name: cv32_full_covg_no_pulp
 description: Full regression (all tests) for CV32E40P with step-and-compare against RM"
 
 # List of builds
@@ -168,7 +168,7 @@ tests:
     build: uvmt_cv32
     description: Generated corev-dv random interrupt WFI test with exceptions
     dir: cv32/sim/uvmt_cv32    
-    cmd: make gen_corev-dv test COREV=YES TEST=corev_rand_interrupt_debug
+    cmd: make gen_corev-dv test COREV=YES TEST=corev_rand_interrupt_exception
     num: 100
 
   corev_rand_interrupt_nested:
