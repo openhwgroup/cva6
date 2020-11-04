@@ -937,9 +937,6 @@ class uvme_rv32isa_covg extends uvm_component;
 //Coverage of Std Extension for Integer Multiplication & Division, Version 2.0
 ///////////////////////////////////////////////////////////////////////////////
 
-// TODO : missing coverage of all combinations of source and destination operands.
-// TODO : missing check of overflow/underflow
-// FIXME: DONE
     covergroup mul_cg with function sample(ins_t ins);
         option.per_instance = 1;
         cp_rd    : coverpoint get_gpr_name(ins.ops[0].val, ins.ops[0].key, "mul") {
@@ -953,8 +950,6 @@ class uvme_rv32isa_covg extends uvm_component;
         }
     endgroup
 
-// TODO : missing coverage of all combinations of source and destination operands.
-// FIXME: DONE
     covergroup mulh_cg with function sample(ins_t ins);
         option.per_instance = 1;
         cp_rd    : coverpoint get_gpr_name(ins.ops[0].val, ins.ops[0].key, "mulh") {
@@ -968,8 +963,6 @@ class uvme_rv32isa_covg extends uvm_component;
         }
     endgroup
 
-// TODO : missing coverage of all combinations of source and destination operands.
-// FIXME: DONE
     covergroup mulhu_cg with function sample(ins_t ins);
         option.per_instance = 1;
         cp_rd    : coverpoint get_gpr_name(ins.ops[0].val, ins.ops[0].key, "mulhu") {
@@ -983,9 +976,6 @@ class uvme_rv32isa_covg extends uvm_component;
         }
     endgroup
 
-// TODO : missing coverage of all combinations of source and destination operands.
-// TODO : missing check that rs1 is signed and rs2 is unsigned.
-// FIXME: DONE
     covergroup mulhsu_cg with function sample(ins_t ins);
         option.per_instance = 1;
         cp_rd    : coverpoint get_gpr_name(ins.ops[0].val, ins.ops[0].key, "mulhsu") {
@@ -999,13 +989,10 @@ class uvme_rv32isa_covg extends uvm_component;
         }
     endgroup
 
-// TODO : missing coverage for sequence of MULH[[S]U] and MUL instructions
-//        where micro-architecture fuses/merges them into one isntruction.
+    // TODO : do we need coverage for sequence of MULH[[S]U] and MUL instructions?
 
-// TODO : missing coverage of all combinations of source and destination operands.
-// TODO : missing check of overflow/underflow
-// TODO : missing check of divide-by-zero
-// FIXME: DONE
+    // WAIVED : missing check of overflow/underflow
+    // WAIVED : missing check of divide-by-zero
     covergroup div_cg with function sample(ins_t ins);
         option.per_instance = 1;
         cp_rd    : coverpoint get_gpr_name(ins.ops[0].val, ins.ops[0].key, "div") {
@@ -1019,10 +1006,8 @@ class uvme_rv32isa_covg extends uvm_component;
         }
     endgroup
 
-// TODO : missing coverage of all combinations of source and destination operands.
-// TODO : missing check of overflow/underflow
-// TODO : missing check of divide-by-zero
-// FIXME: DONE
+    // WAIVED : missing check of overflow/underflow
+    // WAIVED : missing check of divide-by-zero
     covergroup rem_cg with function sample(ins_t ins);
         option.per_instance = 1;
         cp_rd    : coverpoint get_gpr_name(ins.ops[0].val, ins.ops[0].key, "rem") {
@@ -1036,9 +1021,8 @@ class uvme_rv32isa_covg extends uvm_component;
         }
     endgroup
 
-// TODO : missing coverage of all combinations of source and destination operands.
-// TODO : missing check of divide-by-zero
-// FIXME: DONE
+    // WAIVED : missing check of overflow/underflow
+    // WAIVED : missing check of divide-by-zero
     covergroup divu_cg with function sample(ins_t ins);
         option.per_instance = 1;
         cp_rd    : coverpoint get_gpr_name(ins.ops[0].val, ins.ops[0].key, "divu") {
@@ -1052,9 +1036,8 @@ class uvme_rv32isa_covg extends uvm_component;
         }
     endgroup
 
-// TODO : missing coverage of all combinations of source and destination operands.
-// TODO : missing check of divide-by-zero
-// FIXME: DONE
+    // WAIVED : missing check of overflow/underflow
+    // WAIVED : missing check of divide-by-zero
     covergroup remu_cg with function sample(ins_t ins);
         option.per_instance = 1;
         cp_rd    : coverpoint get_gpr_name(ins.ops[0].val, ins.ops[0].key, "remu") {
