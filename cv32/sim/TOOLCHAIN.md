@@ -1,4 +1,20 @@
 ## Toolchain Installation Instructions
+
+### CORE-V Toolchain
+The recommended toolchain for all CORE-V cores is available [here](https://www.embecosm.com/resources/tool-chain-downloads/#corev).
+It is recommended that you install this at /opt/corev.
+
+### PULP Toolchain
+If you are using the PULP instruction extensions, you will need access to the PULP toolchain.  **Note** that this toolchain is
+out-of-date and cannot compile all test-programs for the CV32E40P, so it is recommended to use the COREV toolchain by
+default and the PULP toolchain as needed.  The see the comment header in `Common.mk` (in this directory) to
+see how to set this up.
+
+#### Pre-built PULP Toolchain
+The recommended PULP toolchain for all CV32E40P is available [here](https://www.embecosm.com/resources/tool-chain-downloads/#pulp).
+It is recommended that you install this at /opt/riscv.
+
+#### Building the PULP Toolchain from source
 What follows is a set of commands that can be used to install the RISCV GNU Toolchain from the PULP-Platform team.
 If you use these commands verbatim you should not encounter any issues.  If you do, please open an issue and assign it to @MikeOpenHWGroup.
 <br><br>
