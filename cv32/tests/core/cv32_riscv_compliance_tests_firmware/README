@@ -1,6 +1,0 @@
-A simple test firmware. This code is in the public domain. Simply copy whatever
-you can use.
-
-Someday, this will contain only what is needed to supported the
-riscv_compliance_tests for CV32.   At this point it contains a bunch of other
-stuff as well.

@@ -72,6 +72,11 @@ _single_step:
     sw t0, 0(a1)
     csrr t0, dcsr // illegal
 
+    la a1, glb_expect_illegal_insn
+    li t0, 1
+    sw t0, 0(a1)
+    dret // illegal
+
     // Trigger match setup
     la a1, glb_step_info
     li t0, 4

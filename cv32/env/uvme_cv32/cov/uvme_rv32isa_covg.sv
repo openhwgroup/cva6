@@ -38,7 +38,9 @@ class uvme_rv32isa_covg extends uvm_component;
 
     uvme_cv32_cntxt_c  cntxt;
     
-    uvm_analysis_port#(uvme_rv32isa_covg_trn_c) ap;    
+    uvm_analysis_port#(uvme_rv32isa_covg_trn_c) ap;  
+
+    ins_t ins_prev; // Previous instruction  
 
     // The following CSR ABI names are not currently included:
     // fp, pc
@@ -1347,16 +1349,14 @@ class uvme_rv32isa_covg extends uvm_component;
         }
     endgroup
 
-// TODO : missing coverage of all immediate values and destination registers.
-// FIXME: DONE
     covergroup c_lui_cg      with function sample(ins_t ins);
         option.per_instance = 1;
         cp_rd    : coverpoint get_gpr_name(ins.ops[0].val, ins.ops[0].key, "c.lui") {
-            bins gprval[] = {ra,[gp:a5]};
+            bins gprval[] = {ra,[gp:t6]}; // invalid when rd = x2 (sp)
         }
         cp_imm6   : coverpoint get_imm(ins.ops[1].val,"c.lui" ) {    
             bins neg  = {[$:-1]};
-            bins zero = {0};
+            // invalid when imm = 0
             bins pos  = {[1:$]};
         }
     endgroup
@@ -1539,8 +1539,6 @@ class uvme_rv32isa_covg extends uvm_component;
         }
     endgroup
 
-// TODO : only counting occurrence, ignoring when not called.
-// FIXME: DONE
     covergroup c_ebreak_cg   with function sample(ins_t ins);
         option.per_instance = 1;
         cp_asm   : coverpoint (ins.asm) {
@@ -1548,9 +1546,40 @@ class uvme_rv32isa_covg extends uvm_component;
         }
     endgroup
 
+   // Every instruction has been followed by every other instruction
+`ifdef DSIM
+   // dsim handling of per_instance coverage
+   covergroup instr_cg with function sample(ins_t ins);
+      cp_ins : coverpoint (ins.asm) {
+         type_option.weight = 0;
+      }
+      cp_ins_prev : coverpoint (ins_prev.asm) {
+         type_option.weight = 0;
+      }
+      cr_ins_prev_x_ins: cross cp_ins_prev, cp_ins {
+         type_option.weight = 1;
+         type_option.comment = "Cross previous with current instruction";
+      }
+   endgroup // instr_cg
+`else
+   covergroup instr_cg with function sample(ins_t ins);
+      option.per_instance = 1;
+      cp_ins : coverpoint (ins.asm) {
+         option.weight = 0;
+      }
+      cp_ins_prev : coverpoint (ins_prev.asm) {
+         option.weight = 0;
+      }
+      cr_ins_prev_x_ins: cross cp_ins_prev, cp_ins {
+         option.weight = 1;
+         option.comment = "Cross previous with current instruction";
+      }
+   endgroup // instr_cg
+`endif // DSIM
+
     `uvm_component_utils(uvme_rv32isa_covg)
 
-// TODO : review by 20-July-2020
+// TODO : need review
     function new(string name="rv32isa_covg", uvm_component parent=null);
         super.new(name, parent);
         add_cg        = new();
@@ -1639,6 +1668,8 @@ class uvme_rv32isa_covg extends uvm_component;
         c_ebreak_cg   = new();
         c_beqz_cg     = new();
         c_bnez_cg     = new();
+
+        instr_cg      = new();
 
         ap = new("ap", this);
     endfunction: new
@@ -1946,7 +1977,14 @@ class uvme_rv32isa_covg extends uvm_component;
                                            ins.ins_str))                    
                 end
             endcase
-        end
+        end // else branch of if (ins.compressed)
+       
+        // Do not call sample until ins_prev is assigned otherwise
+        // get a hit on bin [ADD][1st instruction]
+        if (ins_prev.ins_str != "") 
+          instr_cg.sample(ins);
+
+        ins_prev = ins; // Save instruction as previous
 
         // Send instruction to analysis port
         begin             

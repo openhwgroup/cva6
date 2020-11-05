@@ -36,6 +36,10 @@ interface uvma_interrupt_if
     wire        irq_ack;
     wire [4:0]  irq_id;
 
+    // Used to time true interrupt entry with tracer instruction retirement
+    wire        deferint;
+    wire        ovp_b1_Step;
+
     // -------------------------------------------------------------------
     // Testbench control
     // ---------------------------------------------------------------------------

@@ -14,6 +14,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # 
+# SPDX-License-Identifier: Apache-2.0 WITH SHL-2.0
+#
 ###############################################################################
 #
 # DSIM-specific Makefile for the CV32E40P "uvmt_cv32" testbench.
@@ -40,8 +42,25 @@ ifeq ($(USE_ISS),YES)
 #    DSIM_USER_COMPILE_ARGS += "+define+CV32E40P_ASSERT_ON+ISS+CV32E40P_TRACE_EXECUTION"
 #    DSIM_RUN_FLAGS         += +ovpcfg="--controlfile $(OVP_CTRL_FILE)"
 endif
+
+# Seed management for constrained-random sims. This is an intentional repeat
+# of the root Makefile: dsim regressions use random seeds by default.
+DSIM_SEED    ?= random
+DSIM_RNDSEED ?= 
+
+ifeq ($(DSIM_SEED),random)
+DSIM_RNDSEED = $(shell date +%N)
+else
+ifeq ($(DSIM_SEED),)
+# Empty DSIM_SEED variable selects a random value
+DSIM_RNDSEED = 1
+else
+DSIM_RNDSEED = $(DSIM_SEED)
+endif
+endif
+
 DSIM_RUN_FLAGS         += $(USER_RUN_FLAGS)
-DSIM_RUN_FLAGS         += -sv_seed $(RNDSEED)
+DSIM_RUN_FLAGS         += -sv_seed $(DSIM_RNDSEED)
 
 # Variables to control wave dumping from command the line
 # Humans _always_ forget the "S", so you can have it both ways...
@@ -93,7 +112,6 @@ mk_results:
 
 ################################################################################
 # DSIM compile target
-#      - TODO: cd $(DSIM_RESULTS) - incompatible with pkg file
 comp: mk_results $(CV32E40P_PKG) $(OVP_MODEL_DPI)
 	$(DSIM) \
 		$(DSIM_CMP_FLAGS) \
@@ -169,7 +187,7 @@ ifneq ($(call IS_NO,$(COMP)),NO)
 DSIM_SIM_PREREQ = comp
 endif
 
-test: $(DSIM_SIM_PREREQ) $(TEST_TEST_DIR)/$(TEST_NAME).hex gen_ovpsim_ic
+test: $(DSIM_SIM_PREREQ) $(TEST_TEST_DIR)/$(TEST_PROGRAM).hex gen_ovpsim_ic
 	mkdir -p $(DSIM_RESULTS)/$(TEST_NAME) && \
 	cd $(DSIM_RESULTS)/$(TEST_NAME) && \
 		$(DSIM) \
@@ -182,8 +200,8 @@ test: $(DSIM_SIM_PREREQ) $(TEST_TEST_DIR)/$(TEST_NAME).hex gen_ovpsim_ic
 			-sv_lib $(UVM_HOME)/src/dpi/libuvm_dpi.so \
 			-sv_lib $(OVP_MODEL_DPI) \
 			+UVM_TESTNAME=$(TEST_UVM_TEST) \
-			+firmware=$(TEST_TEST_DIR)/$(TEST_NAME).hex \
-			+elf_file=$(TEST_TEST_DIR)/$(TEST_NAME).elf
+			+firmware=$(TEST_TEST_DIR)/$(TEST_PROGRAM).hex \
+			+elf_file=$(TEST_TEST_DIR)/$(TEST_PROGRAM).elf
 
 # Similar to above, but for the ASM directory.
 asm: comp $(ASM_DIR)/$(ASM_PROG).hex $(ASM_DIR)/$(ASM_PROG).elf
@@ -198,7 +216,7 @@ asm: comp $(ASM_DIR)/$(ASM_PROG).hex $(ASM_DIR)/$(ASM_PROG).elf
 
 ###############################################################################
 # Run a test-program from the RISC-V Compliance Test-suite. The parent Makefile
-# of this <sim>.mk implements "build_compliance", the target that compiles the
+# of this <sim>.mk implements "all_compliance", the target that compiles the
 # test-programs.
 #
 # There is a dependancy between RISCV_ISA and COMPLIANCE_PROG which *you* are
@@ -210,9 +228,10 @@ asm: comp $(ASM_DIR)/$(ASM_PROG).hex $(ASM_DIR)/$(ASM_PROG).elf
 #                make compliance RISCV_ISA=rv32imc COMPLIANCE_PROG=I-ADD-01
 # 
 COMPLIANCE_PROG ?= I-ADD-01
-#compliance: comp
+
 compliance: comp build_compliance
 	mkdir -p $(DSIM_RESULTS)/$(COMPLIANCE_PROG) && cd $(DSIM_RESULTS)/$(COMPLIANCE_PROG)  && \
+	export IMPERAS_TOOLS=$(PROJ_ROOT_DIR)/cv32/tests/cfg/ovpsim_no_pulp.ic && \
 	$(DSIM) -l dsim-$(COMPLIANCE_PROG).log -image $(DSIM_IMAGE) \
 		-work $(DSIM_WORK) $(DSIM_RUN_FLAGS) $(DSIM_DMP_FLAGS) \
 		-sv_lib $(UVM_HOME)/src/dpi/libuvm_dpi.so \
@@ -226,39 +245,6 @@ compliance: comp build_compliance
 #      Here for historical reasons - mostly (completely?) superceeded by the
 #      custom target.
 #
-
-# Runs tests in riscv_tests/ only
-cv32-riscv-tests: comp $(CV32_RISCV_TESTS_FIRMWARE)/cv32_riscv_tests_firmware.hex $(CV32_RISCV_TESTS_FIRMWARE)/cv32_riscv_tests_firmware.elf
-	mkdir -p $(DSIM_RESULTS)/cv32-riscv-tests && cd $(DSIM_RESULTS)/cv32-riscv-tests && \
-	$(DSIM) -l dsim-riscv_tests.log -image $(DSIM_IMAGE) \
-		-work $(DSIM_WORK) $(DSIM_RUN_FLAGS) $(DSIM_DMP_FLAGS) \
-		-sv_lib $(UVM_HOME)/src/dpi/libuvm_dpi.so \
-		-sv_lib $(OVP_MODEL_DPI) \
-		+UVM_TESTNAME=uvmt_cv32_firmware_test_c \
-		+firmware=$(CV32_RISCV_TESTS_FIRMWARE)/cv32_riscv_tests_firmware.hex \
-		+elf_file=$(CV32_RISCV_TESTS_FIRMWARE)/cv32_riscv_tests_firmware.elf
-
-# Runs tests in riscv_compliance_tests/ only
-cv32-riscv-compliance-tests: comp $(CV32_RISCV_COMPLIANCE_TESTS_FIRMWARE)/cv32_riscv_compliance_tests_firmware.hex $(CV32_RISCV_COMPLIANCE_TESTS_FIRMWARE)/cv32_riscv_compliance_tests_firmware.elf
-	mkdir -p $(DSIM_RESULTS)/cv32-riscv-compliance-tests && cd $(DSIM_RESULTS)/cv32-riscv-compliance-tests && \
-	$(DSIM) -l dsim-riscv_compliance_tests.log -image $(DSIM_IMAGE) \
-		-work $(DSIM_WORK) $(DSIM_RUN_FLAGS) $(DSIM_DMP_FLAGS) \
-		-sv_lib $(UVM_HOME)/src/dpi/libuvm_dpi.so \
-		-sv_lib $(OVP_MODEL_DPI) \
-		+UVM_TESTNAME=uvmt_cv32_firmware_test_c \
-		+firmware=$(CV32_RISCV_COMPLIANCE_TESTS_FIRMWARE)/cv32_riscv_compliance_tests_firmware.hex \
-		+elf_file=$(CV32_RISCV_COMPLIANCE_TESTS_FIRMWARE)/cv32_riscv_compliance_tests_firmware.elf
-
-# Runs all tests in riscv_tests/ and riscv_compliance_tests/
-cv32-firmware: comp $(FIRMWARE)/firmware.hex $(FIRMWARE)/firmware.elf
-	mkdir -p $(DSIM_RESULTS)/firmware && cd $(DSIM_RESULTS)/firmware && \
-	$(DSIM) -l dsim-firmware.log -image $(DSIM_IMAGE) \
-		-work $(DSIM_WORK) $(DSIM_RUN_FLAGS) $(DSIM_DMP_FLAGS) \
-		-sv_lib $(UVM_HOME)/src/dpi/libuvm_dpi.so \
-		-sv_lib $(OVP_MODEL_DPI) \
-		+UVM_TESTNAME=uvmt_cv32_firmware_test_c \
-		+firmware=$(FIRMWARE)/firmware.hex \
-		+elf_file=$(FIRMWARE)/firmware.elf
 
 # Mythical no-test-program testcase.  Might never be used.  Not known tow work
 no-test-program: comp
@@ -326,7 +312,7 @@ gen_corev-dv:
 		idx=$$((idx + 1)); \
 	done
 	cd  $(DSIM_COREVDV_RESULTS)/$(TEST) && \
-	dsim  -sv_seed $(RNDSEED) \
+	dsim  -sv_seed $(DSIM_RNDSEED) \
 		-sv_lib $(UVM_HOME)/src/dpi/libuvm_dpi.so \
 		+acc+rwb \
 		-image image \
@@ -365,6 +351,6 @@ clean:
 	rm -rf $(DSIM_RESULTS)
 
 # All generated files plus the clone of the RTL
-clean_all: clean clean_core_tests clean_riscv-dv clean_test_programs clean-bsp clean_compliance
+clean_all: clean clean_riscv-dv clean_test_programs clean-bsp clean_compliance
 	rm -rf $(CV32E40P_PKG)
 

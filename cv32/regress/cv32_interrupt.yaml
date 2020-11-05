@@ -32,12 +32,26 @@ tests:
     cmd: make gen_corev-dv test COREV=YES TEST=corev_rand_interrupt
     num: 50
 
+  corev_rand_interrupt_debug:
+    build: uvmt_cv32
+    description: Interrupt random test with debug
+    dir: cv32/sim/uvmt_cv32
+    cmd: make gen_corev-dv test COREV=YES TEST=corev_rand_interrupt_debug
+    num: 50
+
+  corev_rand_interrupt_exception:
+    build: uvmt_cv32
+    description: Interrupt random test with exceptions
+    dir: cv32/sim/uvmt_cv32
+    cmd: make gen_corev-dv test COREV=YES TEST=corev_rand_interrupt_exception
+    num: 50
+
   corev_rand_interrupt_nested:
     build: uvmt_cv32
     description: Interrupt random test with nested interrupts and WFI
     dir: cv32/sim/uvmt_cv32    
     cmd: make gen_corev-dv test COREV=YES TEST=corev_rand_interrupt_nested
-    num: 100
+    num: 50
 
   corev_rand_interrupt_wfi:
     build: uvmt_cv32
@@ -45,18 +59,3 @@ tests:
     dir: cv32/sim/uvmt_cv32    
     cmd: make gen_corev-dv test COREV=YES TEST=corev_rand_interrupt_wfi
     num: 50
-
-  corev_rand_instr_test:
-    build: uvmt_cv32
-    description: Generated corev-dv random instruction test
-    dir: cv32/sim/uvmt_cv32
-    cmd: make gen_corev-dv test COREV=YES TEST=corev_rand_instr_test
-    num: 100
-
-  corev_jump_stress_test:
-    build: uvmt_cv32
-    description: Generated corev-dv jump stress test
-    dir: cv32/sim/uvmt_cv32    
-    cmd: make gen_corev-dv test COREV=YES TEST=corev_jump_stress_test
-    num: 50
-

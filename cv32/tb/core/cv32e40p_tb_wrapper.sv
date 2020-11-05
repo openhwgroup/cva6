@@ -12,6 +12,8 @@
 // Contributor: Robert Balas <balasr@student.ethz.ch>
 // Module renamed from riscv_wrapper to cv32e40p_tb_wrapper because (1) the
 // name of the core changed, and (2) the design has a cv32e40p_wrapper module.
+//
+// SPDX-License-Identifier: Apache-2.0 WITH SHL-0.51
 
 module cv32e40p_tb_wrapper
     #(parameter // Parameters used by TB
@@ -21,7 +23,7 @@ module cv32e40p_tb_wrapper
                 DM_HALTADDRESS    = 32'h1A11_0800,
                 HART_ID           = 32'h0000_0000,
                 // Parameters used by DUT
-                PULP_XPULP        = 1,
+                PULP_XPULP        = 0,
                 PULP_CLUSTER      = 0,
                 FPU               = 0,
                 PULP_ZFINX        = 0,
@@ -56,15 +58,31 @@ module cv32e40p_tb_wrapper
     logic                         debug_req;
 
     // irq signals (not used)
-    logic                         irq;
+    logic [0:31]                  irq;
     logic [0:4]                   irq_id_in;
     logic                         irq_ack;
-    logic [0:5]                   irq_id_out;
+    logic [0:4]                   irq_id_out;
     logic                         irq_sec;
 
 
     // interrupts (only timer for now)
     assign irq_sec     = '0;
+
+	// core log reports parameter usage and illegal instructions to the logfile
+    cv32e40p_core_log
+     #(
+          .PULP_XPULP            ( PULP_XPULP            ),
+          .PULP_CLUSTER          ( PULP_CLUSTER          ),
+          .FPU                   ( FPU                   ),
+          .PULP_ZFINX            ( PULP_ZFINX            ),
+          .NUM_MHPMCOUNTERS      ( NUM_MHPMCOUNTERS      ))
+    core_log_i(
+          .clk_i              ( cv32e40p_core_i.id_stage_i.clk              ),
+          .is_decoding_i      ( cv32e40p_core_i.id_stage_i.is_decoding_o    ),
+          .illegal_insn_dec_i ( cv32e40p_core_i.id_stage_i.illegal_insn_dec ),
+          .hart_id_i          ( cv32e40p_core_i.hart_id_i                   ),
+          .pc_id_i            ( cv32e40p_core_i.pc_id                       )
+      );
 
     // instantiate the core
     cv32e40p_core #(
@@ -101,27 +119,19 @@ module cv32e40p_tb_wrapper
          .data_wdata_o           ( data_wdata            ),
          .data_rdata_i           ( data_rdata            ),
 
-         .apu_master_req_o       (                       ),
-         .apu_master_ready_o     (                       ),
-         .apu_master_gnt_i       (                       ),
-         .apu_master_operands_o  (                       ),
-         .apu_master_op_o        (                       ),
-         .apu_master_type_o      (                       ),
-         .apu_master_flags_o     (                       ),
-         .apu_master_valid_i     (                       ),
-         .apu_master_result_i    (                       ),
-         .apu_master_flags_i     (                       ),
+         .apu_req_o              (                       ),
+         .apu_gnt_i              ( 1'b0                  ),
+         .apu_operands_o         (                       ),
+         .apu_op_o               (                       ),
+         .apu_flags_o            (                       ),
+         .apu_rvalid_i           ( 1'b0                  ),
+         .apu_result_i           ( {32{1'b0}}            ),
+         .apu_flags_i            ( {5{1'b0}}             ), // APU_NUSFLAGS_CPU
 
-         // TODO: Interrupts need to be re-done
-         .irq_i                  ( {64{1'b0}}            ),
+         // Interrupts verified in UVM environment
+         .irq_i                  ( {32{1'b0}}            ),
          .irq_ack_o              ( irq_ack               ),
          .irq_id_o               ( irq_id_out            ),
-         //.irq_software_i         (1'b0                   ),
-         //.irq_timer_i            (1'b0                   ),
-         //.irq_external_i         (1'b0                   ),
-         //.irq_fast_i             ({15{1'b0}}             ),
-         //.irq_nmi_i              (1'b0                   ),
-         //.irq_fastx_i            ({32{1'b0}}             ),
 
          .debug_req_i            ( debug_req             ),
 
@@ -139,7 +149,9 @@ module cv32e40p_tb_wrapper
          .dm_halt_addr_i ( DM_HALTADDRESS                            ),
 
          .instr_req_i    ( instr_req                                 ),
-         .instr_addr_i   ( {12'h000, instr_addr[RAM_ADDR_WIDTH-1:0]} ),
+         .instr_addr_i   ( { {10{1'b0}},
+                             instr_addr[RAM_ADDR_WIDTH-1:0]
+                           }                                         ),
          .instr_rdata_o  ( instr_rdata                               ),
          .instr_rvalid_o ( instr_rvalid                              ),
          .instr_gnt_o    ( instr_gnt                                 ),
@@ -154,9 +166,8 @@ module cv32e40p_tb_wrapper
          .data_gnt_o     ( data_gnt                                  ),
 
          // TODO: Interrupts need to be re-done
-         .irq_id_i       ( irq_id_out[0:4]                           ),
+         .irq_id_i       ( irq_id_out                                ),
          .irq_ack_i      ( irq_ack                                   ),
-         //.irq_id_o       ( irq_id_in                                ),
          .irq_o          ( irq                                       ),
 
          .debug_req_o    ( debug_req                                 ),

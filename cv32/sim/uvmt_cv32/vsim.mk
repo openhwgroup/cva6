@@ -380,9 +380,9 @@ custom: $(CUSTOM_DIR)/$(CUSTOM_PROG).hex run
 
 ################################################################################
 # The new general test target
-test: VSIM_TEST=$(TEST_NAME)
-test: VSIM_FLAGS += +firmware=$(TEST_TEST_DIR)/$(TEST_NAME).hex +elf_file=$(TEST_TEST_DIR)/$(TEST_NAME).elf
-test: $(TEST_TEST_DIR)/$(TEST_NAME).hex run
+test: VSIM_TEST=$(TEST_PROGRAM)
+test: VSIM_FLAGS += +firmware=$(TEST_TEST_DIR)/$(TEST_PROGRAM).hex +elf_file=$(TEST_TEST_DIR)/$(TEST_PROGRAM).elf
+test: $(TEST_TEST_DIR)/$(TEST_PROGRAM).hex run
 
 ################################################################################
 # Invoke post-process waveform viewer
@@ -414,5 +414,5 @@ clean:
 	rm -rf $(VSIM_RESULTS)
 
 # All generated files plus the clone of the RTL
-clean_all: clean clean_core_tests clean-bsp
+clean_all: clean clean_riscv-dv clean_test_programs clean-bsp clean_compliance
 	rm -rf $(CV32E40P_PKG)

@@ -68,6 +68,11 @@ module uvmt_cv32_tb;
                          .PULP_CLUSTER      (0),
                          .PULP_ZFINX        (0),
 `endif
+`ifdef PULP
+                         .PULP_XPULP        (1),
+                         .PULP_CLUSTER      (0),
+                         .PULP_ZFINX        (0),
+`endif
                          .INSTR_ADDR_WIDTH  (32),
                          .INSTR_RDATA_WIDTH (32),
                          .RAM_ADDR_WIDTH    (22)
@@ -103,6 +108,39 @@ module uvmt_cv32_tb;
                               .rready(1'b1)
                               );
 
+  bind cv32e40p_wrapper
+    uvma_obi_assert#(
+                     .ADDR_WIDTH(32),
+                     .DATA_WIDTH(32)
+                    ) obi_instr_assert_i(.clk(clk_i),
+                                         .reset_n(rst_ni),
+                                         .req(instr_req_o),
+                                         .gnt(instr_gnt_i),
+                                         .addr(instr_addr_o),
+                                         .be('0),
+                                         .we('0),
+                                         .wdata('0),
+                                         .rdata(instr_rdata_i),
+                                         .rvalid(instr_rvalid_i),
+                                         .rready(1'b1)
+                                        );
+bind cv32e40p_wrapper
+    uvma_obi_assert#(
+                     .ADDR_WIDTH(32),
+                     .DATA_WIDTH(32)
+                    ) obi_data_assert_i(.clk(clk_i),
+                                        .reset_n(rst_ni),
+                                        .req(data_req_o),
+                                        .gnt(data_gnt_i),
+                                        .addr(data_addr_o),
+                                        .be(data_be_o),
+                                        .we(data_we_o),
+                                        .wdata(data_wdata_o),
+                                        .rdata(data_rdata_i),
+                                        .rvalid(data_rvalid_i),
+                                        .rready(1'b1)
+                                       );
+
   // Bind in verification modules to the design
   bind cv32e40p_core 
     uvmt_cv32e40p_interrupt_assert interrupt_assert_i(.mcause_n(cs_registers_i.mcause_n),
@@ -133,12 +171,12 @@ module uvmt_cv32_tb;
     assign debug_cov_assert_if.is_decoding = dut_wrap.cv32e40p_wrapper_i.core_i.id_stage_i.controller_i.is_decoding_o;
     assign debug_cov_assert_if.id_stage_pc = dut_wrap.cv32e40p_wrapper_i.core_i.id_stage_i.pc_id_i;
     assign debug_cov_assert_if.if_stage_pc = dut_wrap.cv32e40p_wrapper_i.core_i.if_stage_i.pc_if_o;
-    assign debug_cov_assert_if.mie_q = dut_wrap.cv32e40p_wrapper_i.core_i.cs_registers_i.mstatus_q.mie;
+    assign debug_cov_assert_if.mie_q = dut_wrap.cv32e40p_wrapper_i.core_i.cs_registers_i.mie_q;
     assign debug_cov_assert_if.ctrl_fsm_cs = dut_wrap.cv32e40p_wrapper_i.core_i.id_stage_i.controller_i.ctrl_fsm_cs;
     assign debug_cov_assert_if.illegal_insn_i = dut_wrap.cv32e40p_wrapper_i.core_i.id_stage_i.controller_i.illegal_insn_i;
     assign debug_cov_assert_if.illegal_insn_q = dut_wrap.cv32e40p_wrapper_i.core_i.id_stage_i.controller_i.illegal_insn_q;
     assign debug_cov_assert_if.ecall_insn_i = dut_wrap.cv32e40p_wrapper_i.core_i.id_stage_i.controller_i.ecall_insn_i;
-    assign debug_cov_assert_if.debug_req_i = dut_wrap.cv32e40p_wrapper_i.core_i.id_stage_i.controller_i.debug_req_i;
+    assign debug_cov_assert_if.debug_req_i = dut_wrap.cv32e40p_wrapper_i.core_i.id_stage_i.controller_i.debug_req_pending;
     assign debug_cov_assert_if.debug_mode_q = dut_wrap.cv32e40p_wrapper_i.core_i.id_stage_i.controller_i.debug_mode_q;
     assign debug_cov_assert_if.dcsr_q = dut_wrap.cv32e40p_wrapper_i.core_i.cs_registers_i.dcsr_q;
     assign debug_cov_assert_if.depc_q = dut_wrap.cv32e40p_wrapper_i.core_i.cs_registers_i.depc_q;
@@ -165,12 +203,16 @@ module uvmt_cv32_tb;
 
     assign debug_cov_assert_if.csr_access = dut_wrap.cv32e40p_wrapper_i.core_i.id_stage_i.csr_access;
     assign debug_cov_assert_if.csr_op = dut_wrap.cv32e40p_wrapper_i.core_i.id_stage_i.csr_op;
+    assign debug_cov_assert_if.csr_op_dec = dut_wrap.cv32e40p_wrapper_i.core_i.id_stage_i.decoder_i.csr_op;
     assign debug_cov_assert_if.csr_addr = dut_wrap.cv32e40p_wrapper_i.core_i.csr_addr;
+    assign debug_cov_assert_if.csr_we_int = dut_wrap.cv32e40p_wrapper_i.core_i.cs_registers_i.csr_we_int;
     assign debug_cov_assert_if.irq_ack_o = dut_wrap.cv32e40p_wrapper_i.core_i.irq_ack_o;
     assign debug_cov_assert_if.dm_halt_addr_i = dut_wrap.cv32e40p_wrapper_i.core_i.dm_halt_addr_i;
     assign debug_cov_assert_if.dm_exception_addr_i = dut_wrap.cv32e40p_wrapper_i.core_i.dm_exception_addr_i;
     assign debug_cov_assert_if.core_sleep_o = dut_wrap.cv32e40p_wrapper_i.core_i.core_sleep_o;
     assign debug_cov_assert_if.irq_i = dut_wrap.cv32e40p_wrapper_i.core_i.irq_i;
+    assign debug_cov_assert_if.pc_set = dut_wrap.cv32e40p_wrapper_i.core_i.id_stage_i.pc_set_o;
+    assign debug_cov_assert_if.boot_addr_i = dut_wrap.cv32e40p_wrapper_i.core_i.boot_addr_i;
 
     // Instantiate debug assertions
     uvmt_cv32e40p_debug_assert u_debug_assert(.cov_assert_if(debug_cov_assert_if));
@@ -188,6 +230,7 @@ module uvmt_cv32_tb;
                                       .step_compare_if(step_compare_if),
                                       .isa_covg_if(isa_covg_if)
                              );
+                          
      /**
       * Step-and-Compare logic 
       */
@@ -198,7 +241,12 @@ module uvmt_cv32_tb;
       assign step_compare_if.insn_pc   = dut_wrap.cv32e40p_wrapper_i.tracer_i.insn_pc;
       assign step_compare_if.riscy_GPR = dut_wrap.cv32e40p_wrapper_i.core_i.id_stage_i.register_file_i.mem;
       assign clknrst_if_iss.reset_n = clknrst_if.reset_n;
-    
+
+      // Connect step-and-compare signals to interrupt_if for functional coverage of instructions and interrupts
+      assign interrupt_if.deferint = iss_wrap.b1.deferint;
+      assign interrupt_if.ovp_b1_Step = step_compare_if.ovp_b1_Step;
+      
+      // Interrupt modeling logic - used to time interrupt entry from RTL to the ISS    
       wire [31:0] irq_enabled;
       reg [31:0] irq_deferint;
       reg [31:0] irq_mip;
@@ -211,8 +259,11 @@ module uvmt_cv32_tb;
           core_sleep_o_d <= dut_wrap.cv32e40p_wrapper_i.core_sleep_o;
       end
 
+      // Advance acknowledged interrupt to ISS when next valid instruction decode executes
+      // Ignoring any instructon decodes in debug mode
       wire id_start = dut_wrap.cv32e40p_wrapper_i.core_i.id_stage_i.id_valid_o &
-                      dut_wrap.cv32e40p_wrapper_i.core_i.id_stage_i.is_decoding_o;
+                      dut_wrap.cv32e40p_wrapper_i.core_i.id_stage_i.is_decoding_o &
+                      ~dut_wrap.cv32e40p_wrapper_i.core_i.debug_mode;
 
       assign irq_enabled = dut_wrap.cv32e40p_wrapper_i.irq_i & dut_wrap.cv32e40p_wrapper_i.core_i.cs_registers_i.mie_n;
 
@@ -296,12 +347,15 @@ module uvmt_cv32_tb;
       // This makes synchronizing haltreq to RM easier
       logic [31:0] count_issue;
       logic [31:0] count_retire;
+
       always @(posedge clknrst_if.clk or negedge clknrst_if.reset_n) begin
         if (!clknrst_if.reset_n) begin
             count_issue <= 32'h0;
         end else begin
-            if (dut_wrap.cv32e40p_wrapper_i.core_i.id_stage_i.id_valid_o & dut_wrap.cv32e40p_wrapper_i.core_i.id_stage_i.is_decoding_o &&
-               !dut_wrap.cv32e40p_wrapper_i.core_i.id_stage_i.controller_i.illegal_insn_i) begin
+            if ((dut_wrap.cv32e40p_wrapper_i.core_i.id_stage_i.id_valid_o && dut_wrap.cv32e40p_wrapper_i.core_i.id_stage_i.is_decoding_o &&
+               !dut_wrap.cv32e40p_wrapper_i.core_i.id_stage_i.controller_i.illegal_insn_i) ||
+                (dut_wrap.cv32e40p_wrapper_i.core_i.id_stage_i.controller_i.is_decoding_o && dut_wrap.cv32e40p_wrapper_i.core_i.id_stage_i.controller_i.ebrk_insn_i &&
+                (dut_wrap.cv32e40p_wrapper_i.core_i.id_stage_i.controller_i.ebrk_force_debug_mode || dut_wrap.cv32e40p_wrapper_i.core_i.id_stage_i.controller_i.debug_mode_q))) begin
                 count_issue <= count_issue + 1;
             end
         end
@@ -331,7 +385,7 @@ module uvmt_cv32_tb;
                     // Only drive haltreq if we have an external request
                     if (dut_wrap.cv32e40p_wrapper_i.core_i.id_stage_i.controller_i.ctrl_fsm_cs inside {cv32e40p_pkg::DBG_TAKEN_ID, cv32e40p_pkg::DBG_TAKEN_IF} &&
                         dut_wrap.cv32e40p_wrapper_i.core_i.id_stage_i.controller_i.debug_req_pending) begin
-
+                            
                         debug_req_state <= DBG_TAKEN;
                         // Already in sync, assert halreq right away
                         if (count_retire == count_issue) begin
@@ -393,7 +447,8 @@ module uvmt_cv32_tb;
      uvm_top.run_test();
    end : test_bench_entry_point
 
-   
+   assign core_cntrl_if.clk = clknrst_if.clk;
+
    // Capture the test status and exit pulse flags
    // TODO: put this logic in the vp_status_if (makes it easier to pass to ENV)
    always @(posedge clknrst_if.clk) begin

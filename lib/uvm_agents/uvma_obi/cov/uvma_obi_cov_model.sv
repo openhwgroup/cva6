@@ -17,18 +17,40 @@
 `ifndef __UVMA_OBI_COV_MODEL_SV__
 `define __UVMA_OBI_COV_MODEL_SV__
 
+   /*
+   * Covergroups
+   * Decalred at package-level to enable mutliple instances per monitor class (e.g. read/write)
+   */
+covergroup cg_delay(string name) with function sample(uvma_obi_mon_trn_c trn);
+   option.per_instance = 1;
+   option.name         = name;
+
+   req_to_gnt: coverpoint (trn.req_to_gnt_delay_cycles) {
+      bins dly[] = { [0:3] };
+   }
+   rready_to_rvalid: coverpoint (trn.rready_to_rvalid_delay_cycles) {
+      bins dly[] = { [0:3] };
+   }   
+
+   dly_cross: cross req_to_gnt, rready_to_rvalid;
+endgroup : cg_delay
 
 /**
  * Component encapsulating Obi functional coverage model.
  */
 class uvma_obi_cov_model_c extends uvm_component;
    
+
    // Objects
    uvma_obi_cfg_c       cfg;
    uvma_obi_cntxt_c     cntxt;
    uvma_obi_mon_trn_c   mon_trn;
    uvma_obi_seq_item_c  seq_item;
    
+   // Covergroups 
+   cg_delay             wr_dly_cg;
+   cg_delay             rd_dly_cg;
+
    // TLM
    uvm_tlm_analysis_fifo#(uvma_obi_mon_trn_c )  mon_trn_fifo;
    uvm_tlm_analysis_fifo#(uvma_obi_seq_item_c)  seq_item_fifo;
@@ -106,8 +128,15 @@ function void uvma_obi_cov_model_c::build_phase(uvm_phase phase);
    mon_trn_fifo  = new("mon_trn_fifo" , this);
    seq_item_fifo = new("seq_item_fifo", this);
    
-endfunction : build_phase
+   if (cfg.enabled && cfg.cov_model_enabled) begin
+      if (cfg.read_enabled)
+         rd_dly_cg = new("rd_dly_cg");
 
+      if (cfg.write_enabled)
+         wr_dly_cg = new("wr_dly_cg");
+   end
+
+endfunction : build_phase
 
 task uvma_obi_cov_model_c::run_phase(uvm_phase phase);
    
@@ -128,6 +157,7 @@ task uvma_obi_cov_model_c::run_phase(uvm_phase phase);
          end
          
          // Monitor transactions
+         
          forever begin
             mon_trn_fifo.get(mon_trn);
             sample_mon_trn();
@@ -160,7 +190,10 @@ endfunction : sample_cntxt
 
 function void uvma_obi_cov_model_c::sample_mon_trn();
    
-   // TODO Implement uvma_obi_cov_model_c::sample_mon_trn();
+   if (mon_trn.we)
+      wr_dly_cg.sample(mon_trn);
+   else
+      rd_dly_cg.sample(mon_trn);
    
 endfunction : sample_mon_trn
 

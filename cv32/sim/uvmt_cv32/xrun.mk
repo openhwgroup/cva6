@@ -14,6 +14,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # 
+# SPDX-License-Identifier: Apache-2.0 WITH SHL-2.0
+#
 ###############################################################################
 #
 # XRUN-specific Makefile for the CV32E40P "uvmt_cv32" testbench.
@@ -178,10 +180,6 @@ mk_xrun_dir:
 hello-world:
 	$(MAKE) test TEST=hello-world
 
-cv32_riscv_tests: cv32-riscv-tests 
-
-cv32_riscv_compliance_tests: cv32-riscv-compliance-tests 
-
 XRUN_COMP = $(XRUN_COMP_FLAGS) \
 		$(QUIET) \
 		$(CFG_COMPILE_FLAGS) \
@@ -255,57 +253,17 @@ custom: $(XRUN_SIM_PREREQ) $(CUSTOM_DIR)/$(CUSTOM_PROG).hex
 		+UVM_TESTNAME=uvmt_cv32_firmware_test_c \
 		+firmware=$(CUSTOM_DIR)/$(CUSTOM_PROG).hex
 
-################################################################################
-# Explicit target tests
+###############################################################################
+# Run a test-program from the RISC-V Compliance Test-suite. The parent Makefile
+COMPLIANCE_PROG ?= I-ADD-01
 
-# Runs tests in cv32_riscv_tests/ only
-cv32-riscv-tests: $(XRUN_SIM_PREREQ) $(CV32_RISCV_TESTS_FIRMWARE)/cv32_riscv_tests_firmware.hex
-	mkdir -p $(XRUN_RESULTS)/cv32-riscv-tests && cd $(XRUN_RESULTS)/cv32-riscv-tests && \
-	$(XRUN) -l xrun-cv32-riscv-tests.log $(XRUN_COMP_RUN) \
-		+elf_file=$(CV32_RISCV_TESTS_FIRMWARE)/cv32_riscv_tests_firmware.elf \
-		+nm_file=$(CV32_RISCV_TESTS_FIRMWARE)/cv32_riscv_tests_firmware.nm \
-		+UVM_TESTNAME=uvmt_cv32_firmware_test_c \
-		+firmware=$(CV32_RISCV_TESTS_FIRMWARE)/cv32_riscv_tests_firmware.hex
-
-# Runs tests in cv32_riscv_compliance_tests/ only
-cv32-riscv-compliance-tests: $(XRUN_SIM_PREREQ)  $(CV32_RISCV_COMPLIANCE_TESTS_FIRMWARE)/cv32_riscv_compliance_tests_firmware.hex
-	mkdir -p $(XRUN_RESULTS)/cv32-riscv-compliance-tests && cd $(XRUN_RESULTS)/cv32-riscv-compliance-tests && \
-	$(XRUN) -l xrun-cv32-riscv_compliance_tests.log -covtest cv32-riscv-compliance-tests $(XRUN_RUN_FLAGS) \
-		+elf_file=$(CV32_RISCV_COMPLIANCE_TESTS_FIRMWARE)/cv32_riscv_compliance_tests_firmware.elf \
-		+nm_file=$(CV32_RISCV_COMPLIANCE_TESTS_FIRMWARE)/cv32_riscv_compliance_tests_firmware.nm \
-		+UVM_TESTNAME=uvmt_cv32_firmware_test_c \
-		+firmware=$(CV32_RISCV_COMPLIANCE_TESTS_FIRMWARE)/cv32_riscv_compliance_tests_firmware.hex
-
-unit-test:  firmware-unit-test-clean
-unit-test:  $(FIRMWARE)/firmware_unit_test.hex
-unit-test: ALL_VSIM_FLAGS += "+firmware=$(FIRMWARE)/firmware_unit_test.hex"
-unit-test: dsim-firmware-unit-test
-
-# Runs all tests in riscv_tests/ and riscv_compliance_tests/
-cv32-firmware: comp $(FIRMWARE)/firmware.hex
-	$(XRUN) -R -l xrun-firmware.log \
-		+UVM_TESTNAME=uvmt_cv32_firmware_test_c \
-		+firmware=$(FIRMWARE)/firmware.hex
-
-################################################################################
-# Called from external compliance framework providing ELF, HEX, NM
-COMPLIANCE ?= missing
-riscv-compliance: $(XRUN_SIM_PREREQ) $(COMPLIANCE).elf
-	mkdir -p $(XRUN_RESULTS)/$(@) && cd $(XRUN_RESULTS)/$(@) && \
+compliance: comp build_compliance
+	mkdir -p $(XRUN_RESULTS)/$(COMPLIANCE_PROG) && cd $(XRUN_RESULTS)/$(COMPLIANCE_PROG)  && \
+	export IMPERAS_TOOLS=$(PROJ_ROOT_DIR)/cv32/tests/cfg/ovpsim_no_pulp.ic && \
 	$(XRUN) -l xrun-$(@).log -covtest riscv-compliance $(XRUN_COMP_RUN) \
 		+UVM_TESTNAME=uvmt_cv32_firmware_test_c \
-		+elf_file=$(COMPLIANCE).elf \
-		+nm_file=$(COMPLIANCE).nm \
-		+firmware=$(COMPLIANCE).hex \
-		+signature=$(COMPLIANCE).signature.output
-
-# XRUN UNIT TESTS: run each test individually. See comment header for dsim-unit-test for more info.
-# TODO: update ../Common.mk to create "xrun-firmware-unit-test" target.
-# Example: to run the ADDI test `make xrun-unit-test addi`
-#xrun-unit-test: comp
-#	$(XRUN) -R -l xrun-$(UNIT_TEST).log \
-#		+UVM_TESTNAME=uvmt_cv32_firmware_test_c \
-#		+firmware=$(FIRMWARE)/firmware_unit_test.hex
+		+firmware=$(COMPLIANCE_PKG)/work/$(RISCV_ISA)/$(COMPLIANCE_PROG).hex \
+		+elf_file=$(COMPLIANCE_PKG)/work/$(RISCV_ISA)/$(COMPLIANCE_PROG).elf
 
 ###############################################################################
 # Use Google instruction stream generator (RISCV-DV) to create new test-programs
@@ -380,5 +338,5 @@ clean_eclipse:
 	rm  -rf workspace
 
 # All generated files plus the clone of the RTL
-clean_all: clean clean_eclipse clean_core_tests clean_riscv-dv clean_test_programs clean-bsp
+clean_all: clean clean_eclipse clean_riscv-dv clean_test_programs clean-bsp clean_compliance
 	rm -rf $(CV32E40P_PKG)

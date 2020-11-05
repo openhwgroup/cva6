@@ -14,6 +14,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # 
+# SPDX-License-Identifier: Apache-2.0 WITH SHL-2.0
+#
 ###############################################################################
 #
 # Common code for simulation Makefiles.  Intended to be included by the
@@ -68,25 +70,10 @@ BANNER=*************************************************************************
 
 CV32E40P_REPO   ?= https://github.com/openhwgroup/cv32e40p
 CV32E40P_BRANCH ?= master
-#2020-10-14
-CV32E40P_HASH   ?= a26b194
-#2020-10-08
-#CV32E40P_HASH   ?= f6196bf
-
-FPNEW_REPO      ?= https://github.com/pulp-platform/fpnew
-FPNEW_BRANCH    ?= master
-#2020-10-05
-FPNEW_HASH      ?= 5b2a9d4
-#2020-09-23
-#FPNEW_HASH      ?= a0c021c360abcc94e434d41974a52bdcbf14d156
+CV32E40P_HASH   ?= 769e00c
 
 RISCVDV_REPO    ?= https://github.com/google/riscv-dv
-#RISCVDV_REPO    ?= https://github.com/MikeOpenHWGroup/riscv-dv
 RISCVDV_BRANCH  ?= master
-# May 2 version of riscv-dv.  Later versions have had known randomization errors
-#RISCVDV_HASH    ?= c37c5f3f57ac61991aa5abd614badb367c5d025d
-# July 8 version.  Randomization errors have significantly improved.
-#                  Generation of riscv_pmp_test fails (we do not care for CV32E40P).
 RISCVDV_HASH    ?= 10fd4fa8b7d0808732ecf656c213866cae37045a
 
 COMPLIANCE_REPO   ?= https://github.com/riscv/riscv-compliance
@@ -105,19 +92,6 @@ ifeq ($(CV32E40P_HASH), head)
   CLONE_CV32E40P_CMD = $(TMP)
 else
   CLONE_CV32E40P_CMD = $(TMP); cd $(CV32E40P_PKG); git checkout $(CV32E40P_HASH)
-endif
-
-# Generate command to clone the FPNEW RTL
-ifeq ($(FPNEW_BRANCH), master)
-  TMP2 = git clone $(FPNEW_REPO) --recurse $(FPNEW_PKG)
-else
-  TMP2 = git clone -b $(FPNEW_BRANCH) --single-branch $(FPNEW_REPO) --recurse $(FPNEW_PKG)
-endif
-
-ifeq ($(FPNEW_HASH), head)
-  CLONE_FPNEW_CMD = $(TMP2)
-else
-  CLONE_FPNEW_CMD = $(TMP2); cd $(FPNEW_PKG); git checkout $(FPNEW_HASH)
 endif
 # RTL repo vars end
 
@@ -147,6 +121,7 @@ ifeq ($(COMPLIANCE_HASH), head)
 else
   CLONE_COMPLIANCE_CMD = $(TMP4); cd $(COMPLIANCE_PKG); git checkout $(COMPLIANCE_HASH)
 endif
+# RISCV Compliance repo var end
 
 ###############################################################################
 # Imperas Instruction Set Simulator
@@ -216,6 +191,9 @@ ifeq ($(firstword $(subst _, ,$(TEST))),pulp)
   CFLAGS = -Os -g -D__riscv__=1 -D__LITTLE_ENDIAN__=1 -march=rv32imcxpulpv2 -Wa,-march=rv32imcxpulpv2 -fdata-sections -ffunction-sections -fdiagnostics-color=always
 endif
 
+ASM       ?= ../../tests/asm
+ASM_DIR   ?= $(ASM)
+
 # CORE FIRMWARE vars. All of the C and assembler programs under CORE_TEST_DIR
 # are collectively known as "Core Firmware".  Yes, this is confusing because
 # one of sub-directories of CORE_TEST_DIR is called "firmware".
@@ -231,8 +209,6 @@ CUSTOM                               = $(CORE_TEST_DIR)/custom
 CUSTOM_DIR                          ?= $(CUSTOM)
 CUSTOM_PROG                         ?= my_hello_world
 VERI_CUSTOM                          = ../../tests/programs/custom
-ASM                                  = $(CORE_TEST_DIR)/asm
-ASM_DIR                             ?= $(ASM)
 ASM_PROG                            ?= my_hello_world
 CV32_RISCV_TESTS_FIRMWARE            = $(CORE_TEST_DIR)/cv32_riscv_tests_firmware
 CV32_RISCV_COMPLIANCE_TESTS_FIRMWARE = $(CORE_TEST_DIR)/cv32_riscv_compliance_tests_firmware
@@ -359,6 +335,7 @@ clean-bsp:
 # Special debug_test build
 # keep raw elf files to generate helpful debugging files such as dissambler
 .PRECIOUS : %debug_test.elf
+.PRECIOUS : %debug_test_reset.elf
 
 # Prepare file list for .elf
 # Get the source file names from the BSP directory
@@ -378,6 +355,12 @@ PREREQ_TEST_FILES = $(filter %.c %.S,$(wildcard $(dir %)*))
 TEST_FILES        = $(filter %.c %.S,$(wildcard $(dir $*)*))
 
 %debug_test.elf:
+	$(RISCV_EXE_PREFIX)gcc -mabi=ilp32 -march=rv32imc -o $@ \
+		-Wall -pedantic -Os -g -nostartfiles -static \
+		$(BSP_FILES) \
+		$(TEST_FILES) \
+		-T $(BSP)/link.ld
+%debug_test_reset.elf:
 	$(RISCV_EXE_PREFIX)gcc -mabi=ilp32 -march=rv32imc -o $@ \
 		-Wall -pedantic -Os -g -nostartfiles -static \
 		$(BSP_FILES) \

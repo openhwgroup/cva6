@@ -98,6 +98,7 @@ endinterface : uvmt_cv32_vp_status_if
  * Quasi-static core control signals.
  */
 interface uvmt_cv32_core_cntrl_if (
+                                    input  logic        clk,
                                     output logic        fetch_en,
                                     output logic        ext_perf_counters,
                                     // quasi static values
@@ -203,13 +204,22 @@ interface uvmt_cv32_core_cntrl_if (
     debug_req  = 1'b0;
   end
 
+  clocking drv_cb @(posedge clk);
+    output fetch_en;
+  endclocking : drv_cb
+
   /** Sets fetch_en to the core. */
   function void go_fetch();
-    fetch_en = 1'b1;
+    drv_cb.fetch_en <= 1'b1;
     `uvm_info("CORE_CNTRL_IF", "uvmt_cv32_core_cntrl_if.go_fetch() called", UVM_DEBUG)
     core_cntrl_cg_inst = new();
     core_cntrl_cg_inst.sample();
   endfunction : go_fetch
+
+  function void stop_fetch();
+    drv_cb.fetch_en <= 1'b0;
+    `uvm_info("CORE_CNTRL_IF", "uvmt_cv32_core_cntrl_if.stop_fetch() called", UVM_DEBUG)
+  endfunction : stop_fetch
 
 endinterface : uvmt_cv32_core_cntrl_if
 
@@ -325,6 +335,8 @@ interface uvmt_cv32_debug_cov_assert_if
     input logic        illegal_insn_q, // output from controller
     input logic        ecall_insn_i,
 
+    input logic [31:0] boot_addr_i,
+
     // Debug signals
     input logic              debug_req_i, // From controller
     input logic              debug_mode_q, // From controller
@@ -351,7 +363,9 @@ interface uvmt_cv32_debug_cov_assert_if
 
     input logic csr_access,
     input logic [1:0] csr_op,
+    input logic [1:0] csr_op_dec,
     input logic [11:0] csr_addr,
+    input logic csr_we_int,
     output logic is_wfi,
     output logic in_wfi,
     output logic dpc_will_hit,
@@ -359,7 +373,8 @@ interface uvmt_cv32_debug_cov_assert_if
     output logic is_ebreak,
     output logic is_cebreak,
     output logic is_dret,
-    output logic [31:0] pending_enabled_irq
+    output logic [31:0] pending_enabled_irq,
+    input logic pc_set
 );
 
   clocking mon_cb @(posedge clk_i);    
@@ -383,7 +398,7 @@ interface uvmt_cv32_debug_cov_assert_if
     illegal_insn_i,
     illegal_insn_q,
     ecall_insn_i,
-  
+    boot_addr_i, 
     debug_req_i,
     debug_mode_q,
     dcsr_q,
@@ -406,6 +421,7 @@ interface uvmt_cv32_debug_cov_assert_if
     core_sleep_o,
     csr_access,
     csr_op,
+    csr_op_dec,
     csr_addr,
     is_wfi,
     in_wfi,
@@ -414,7 +430,8 @@ interface uvmt_cv32_debug_cov_assert_if
     is_ebreak,
     is_cebreak,
     is_dret,
-    pending_enabled_irq;    
+    pending_enabled_irq,
+    pc_set;
   endclocking : mon_cb
 
 endinterface : uvmt_cv32_debug_cov_assert_if

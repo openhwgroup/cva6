@@ -174,7 +174,6 @@ FPNEW_PKG            := $(CV32E40P_PKG)/rtl/fpnew
 #        This is BAD PRACTICE and will be fixed with
 #        https://github.com/openhwgroup/cv32e40p/pull/421 is resolved.
 CV32E40P_MANIFEST    := $(CV32E40P_PKG)/cv32e40p_manifest.flist
-#CV32E40P_MANIFEST    := cv32e40p_temp_manifest.flist
 export DESIGN_RTL_DIR = $(CV32E40P_PKG)/rtl
 
 # Default "custom test-program"
@@ -455,6 +454,7 @@ testbench_verilator: $(CV32E40P_PKG) $(TBSRC_VERI) $(TBSRC_PKG)
 		--Wno-MODDUP --top-module \
 		tb_top_verilator $(TBSRC_VERI) \
 		-f $(CV32E40P_MANIFEST) \
+		$(CV32E40P_PKG)/bhv/cv32e40p_core_log.sv \
 		$(TBSRC_CORE)/tb_top_verilator.cpp --Mdir $(VERI_OBJ_DIR) \
 		-CFLAGS "-std=gnu++11 $(VERI_CFLAGS)" \
 		$(VERI_COMPILE_FLAGS)
@@ -670,17 +670,18 @@ $(CV32E40P_PKG):
 # general targets
 .PHONY: tc-clean
 	
-# clean up toolchain generated files (CORE_TEST_DIR defined in ../Common.mk)
-tc-clean:
-	find $(CORE_TEST_DIR) -name *.o       -exec rm {} \;
-	find $(CORE_TEST_DIR) -name *.hex     -exec rm {} \;
-	find $(CORE_TEST_DIR) -name *.elf     -exec rm {} \;
-	find $(CORE_TEST_DIR) -name *.readelf -exec rm {} \;
-	find $(CORE_TEST_DIR) -name *.objdump -exec rm {} \;
-	find $(CORE_TEST_DIR) -name *.map     -exec rm {} \;
+# clean up toolchain generated files
+clean_test_programs:
+	find $(PROJ_ROOT_DIR)/cv32/tests/programs -name *.o       -exec rm {} \;
+	find $(PROJ_ROOT_DIR)/cv32/tests/programs -name *.hex     -exec rm {} \;
+	find $(PROJ_ROOT_DIR)/cv32/tests/programs -name *.elf     -exec rm {} \;
+	find $(PROJ_ROOT_DIR)/cv32/tests/programs -name *.map     -exec rm {} \;
+	find $(PROJ_ROOT_DIR)/cv32/tests/programs -name *.readelf -exec rm {} \;
+	find $(PROJ_ROOT_DIR)/cv32/tests/programs -name *.objdump -exec rm {} \;
+	find $(PROJ_ROOT_DIR)/cv32/tests/programs -name corev_*.S -exec rm {} \;
 
 .PHONY: clean clean_all distclean
-clean: questa-clean tc-clean verilate-clean vcs-clean firmware-clean custom-clean dsim-clean xrun-clean vcs-clean clean-bsp riviera-clean
+clean: clean_test_programs questa-clean verilate-clean vcs-clean firmware-clean custom-clean dsim-clean xrun-clean vcs-clean clean-bsp riviera-clean
 
 distclean: clean
 	rm -rf riscv-fesvr riscv-isa-sim $(CV32E40P_PKG) work

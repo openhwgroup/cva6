@@ -23,9 +23,13 @@
  * Object rebuilt from the Obi monitor Analog of uvma_obi_seq_item_c.
  */
 class uvma_obi_mon_trn_c extends uvma_obi_seq_item_c;
-   
+
+   int unsigned req_to_gnt_delay_cycles;
+   int unsigned rready_to_rvalid_delay_cycles;
 
    `uvm_object_utils_begin(uvma_obi_mon_trn_c)
+      `uvm_field_int(req_to_gnt_delay_cycles, UVM_DEFAULT)
+      `uvm_field_int(rready_to_rvalid_delay_cycles, UVM_DEFAULT)
    `uvm_object_utils_end
       
    /**

@@ -70,11 +70,18 @@ class uvmt_cv32_firmware_test_c extends uvmt_cv32_base_test_c;
    * Start random debug sequencer
    */
     extern virtual task random_debug();
-   
+
+    extern virtual task reset_debug();
+
    /**
     *  Start the interrupt sequencer to apply random interrupts during test
     */
    extern virtual task irq_noise();
+
+   /**
+    *  Randomly assert/deassert fetch_enable_i
+    */
+   extern virtual task random_fetch_toggle();
 
 endclass : uvmt_cv32_firmware_test_c
 
@@ -88,9 +95,14 @@ endfunction : new
 
 
 task uvmt_cv32_firmware_test_c::reset_phase(uvm_phase phase);
-   
+  if ($test$plusargs("reset_debug")) begin
+    fork
+      reset_debug();
+    join_none
+   end
+ 
    super.reset_phase(phase);
-   
+  
 endtask : reset_phase
 
 
@@ -141,6 +153,12 @@ task uvmt_cv32_firmware_test_c::run_phase(uvm_phase phase);
     join_none
    end
 
+   if ($test$plusargs("random_fetch_toggle")) begin
+     fork
+       random_fetch_toggle();
+     join_none
+   end
+
    phase.raise_objection(this);
    @(posedge env_cntxt.clknrst_cntxt.vif.reset_n);
    repeat (33) @(posedge env_cntxt.clknrst_cntxt.vif.clk);
@@ -159,8 +177,19 @@ task uvmt_cv32_firmware_test_c::run_phase(uvm_phase phase);
    
 endtask : run_phase
 
+task uvmt_cv32_firmware_test_c::reset_debug();
+    uvme_cv32_random_debug_c reset_vseq;
+    `uvm_info("TEST", "Applying debug_req_i at reset", UVM_NONE);
+    @(negedge env_cntxt.clknrst_cntxt.vif.reset_n);
+    reset_vseq = uvme_cv32_random_debug_c::type_id::create("random_reset_debug_vseqr");
+    void'(reset_vseq.randomize());
+    reset_vseq.start(vsequencer);
+
+endtask
+
 task uvmt_cv32_firmware_test_c::random_debug();
     `uvm_info("TEST", "Starting random debug in thread UVM test", UVM_NONE); 
+
     while (1) begin
         uvme_cv32_random_debug_c debug_vseq;
         repeat (100) @(env_cntxt.debug_cntxt.vif.mon_cb);
@@ -169,7 +198,7 @@ task uvmt_cv32_firmware_test_c::random_debug();
         debug_vseq.start(vsequencer);
         break;
     end     
-endtask : random_debug    
+endtask : random_debug   
 
 task uvmt_cv32_firmware_test_c::irq_noise();
   `uvm_info("TEST", "Starting IRQ Noise thread in UVM test", UVM_NONE);
@@ -185,5 +214,30 @@ task uvmt_cv32_firmware_test_c::irq_noise();
   end
 endtask : irq_noise
 
+task uvmt_cv32_firmware_test_c::random_fetch_toggle();
+  `uvm_info("TEST", "Starting random_fetch_toggle thread in UVM test", UVM_NONE);
+  while (1) begin
+    int unsigned fetch_assert_cycles;
+    int unsigned fetch_deassert_cycles;
+
+    // Randomly assert for a random number of cycles
+    randcase
+      9: fetch_assert_cycles = $urandom_range(100_000, 100);
+      1: fetch_assert_cycles = $urandom_range(100, 1);
+      1: fetch_assert_cycles = $urandom_range(3, 1);
+    endcase
+    repeat (fetch_assert_cycles) @(core_cntrl_vif.drv_cb);
+    core_cntrl_vif.stop_fetch();
+
+    // Randomly dessert for a random number of cycles
+    randcase    
+      3: fetch_deassert_cycles = $urandom_range(100, 1);
+      1: fetch_deassert_cycles = $urandom_range(3, 1);
+    endcase
+    repeat (fetch_deassert_cycles) @(core_cntrl_vif.drv_cb);
+    core_cntrl_vif.go_fetch();
+  end
+  
+endtask : random_fetch_toggle
 
 `endif // __UVMT_CV32_FIRMWARE_TEST_SV__

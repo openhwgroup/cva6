@@ -23,6 +23,7 @@ package corev_instr_test_pkg;
   
   // Instruction streams
   `include "corev_interrupt_csr_instr_lib.sv"
+  `include "corev_misc_instr_lib.sv"  
 
   `include "corev_privil_reg.sv"
   `include "corev_privileged_common_seq.sv"
@@ -32,4 +33,34 @@ package corev_instr_test_pkg;
   `include "corev_report_server.sv"
   `include "corev_instr_base_test.sv"
 
-endpackage
+  // Push general purpose register to the debugger stack
+  function automatic void push_gpr_to_debugger_stack(corev_instr_gen_config cfg_corev,                                                     
+                                                     ref string instr[$]);
+    string store_instr = (XLEN == 32) ? "sw" : "sd";
+    // Reserve space from kernel stack to save all 32 GPR except for x0
+    instr.push_back($sformatf("1: addi x%0d, x%0d, -%0d", cfg_corev.dp, cfg_corev.dp, 31 * (XLEN/8)));
+    // Push all GPRs to kernel stack
+    for(int i = 1; i < 32; i++) begin
+      if (i == cfg_corev.dp) continue;
+      if (i == cfg_corev.sp) continue;
+      if (i == cfg_corev.tp) continue;
+      instr.push_back($sformatf("%0s  x%0d, %0d(x%0d)", store_instr, i, i * (XLEN/8), cfg_corev.dp));
+    end
+  endfunction : push_gpr_to_debugger_stack
+
+    // Pop general purpose register from debugger stack
+  function automatic void pop_gpr_from_debugger_stack(corev_instr_gen_config cfg_corev,                                                      
+                                                      ref string instr[$]);
+    string load_instr = (XLEN == 32) ? "lw" : "ld";
+    // Pop user mode GPRs from kernel stack
+    for(int i = 1; i < 32; i++) begin
+      if (i == cfg_corev.dp) continue;
+      if (i == cfg_corev.sp) continue;
+      if (i == cfg_corev.tp) continue;
+      instr.push_back($sformatf("%0s  x%0d, %0d(x%0d)", load_instr, i, i * (XLEN/8), cfg_corev.dp));
+    end
+    // Restore debugger stack pointer
+    instr.push_back($sformatf("addi x%0d, x%0d, %0d", cfg_corev.dp, cfg_corev.dp, 31 * (XLEN/8)));
+  endfunction : pop_gpr_from_debugger_stack
+
+endpackage : corev_instr_test_pkg;

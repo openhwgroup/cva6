@@ -14,6 +14,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # 
+# SPDX-License-Identifier: Apache-2.0 WITH SHL-2.0
+#
 ###############################################################################
 #
 # Makefile for the CV32E40P "uvmt_cv32" testbench.  Substantially modified
@@ -155,15 +157,11 @@ include $(MAKE_PATH)/../Common.mk
 clone_cv32e40p_rtl:
 	$(CLONE_CV32E40P_CMD)
 
-clone_fpnew_rtl: clone_cv32e40p_rtl
-	$(CLONE_FPNEW_CMD)
-
 clone_riscv-dv:
 	$(CLONE_RISCVDV_CMD)
 
 $(CV32E40P_PKG):
 	$(CLONE_CV32E40P_CMD)
-	$(CLONE_FPNEW_CMD)
 
 $(RISCVDV_PKG):
 	$(CLONE_RISCVDV_CMD)	
@@ -195,9 +193,11 @@ build_compliance: clone_compliance
 		RISCV_ISA=$(RISCV_ISA)
 
 all_compliance: clone_compliance
-	make build_compliance RISCV_ISA=rv32i   && \
-	make build_compliance RISCV_ISA=rv32im  && \
-	make build_compliance RISCV_ISA=rv32imc
+	make build_compliance RISCV_ISA=rv32i        && \
+	make build_compliance RISCV_ISA=rv32im       && \
+	make build_compliance RISCV_ISA=rv32imc      && \
+	make build_compliance RISCV_ISA=rv32Zicsr    && \
+	make build_compliance RISCV_ISA=rv32Zifencei
 
 ###############################################################################
 # Include the targets/rules for the selected SystemVerilog simulator
@@ -230,19 +230,10 @@ endif
 
 ###############################################################################
 # Clean up your mess!
-#   1. Clean all generated files of the C and assembler tests in tests/core
-#      Note: CORE_TEST_DIR is defined in ../Common.mk
+#   1. Clean all generated files of the C and assembler tests
 #   2. Simulator-specific clean targets are in ./<simulator>.mk
-clean_core_tests:
-	find $(CORE_TEST_DIR) -name *.o       -exec rm {} \;
-	find $(CORE_TEST_DIR) -name *.hex     -exec rm {} \;
-	find $(CORE_TEST_DIR) -name *.elf     -exec rm {} \;
-	find $(CORE_TEST_DIR) -name *.map     -exec rm {} \;
-	find $(CORE_TEST_DIR) -name *.readelf -exec rm {} \;
-	find $(CORE_TEST_DIR) -name *.objdump -exec rm {} \;
-	find $(CORE_TEST_DIR) -name corev_*.S -exec rm {} \;
-
-clean_test_programs:
+#   3. clean-bsp target is specified in ../Common.mk
+clean_test_programs: clean-bsp
 	find $(PROJ_ROOT_DIR)/cv32/tests/uvmt_cv32/test-programs -name *.o       -exec rm {} \;
 	find $(PROJ_ROOT_DIR)/cv32/tests/uvmt_cv32/test-programs -name *.hex     -exec rm {} \;
 	find $(PROJ_ROOT_DIR)/cv32/tests/uvmt_cv32/test-programs -name *.elf     -exec rm {} \;
@@ -260,7 +251,6 @@ clean_test_programs:
 clean_riscv-dv:
 	rm -rf $(RISCVDV_PKG)
 	rm -rf $(COREVDV_PKG)/out_*
-	find ../../tests/core/google-riscv-dv -name "*.S" -exec rm {} \;
 
 clean_compliance:
 	rm -rf $(COMPLIANCE_PKG)

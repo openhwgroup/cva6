@@ -166,36 +166,66 @@ module mm_ram
         end
 `ifndef VERILATOR
         #1ns;
-        if ($test$plusargs("rand_stall_obi_instr") || 
-            $test$plusargs("rand_stall_obi_all")) begin
-            rnd_stall_regs[RND_STALL_INSTR_EN]    = 1;
-            rnd_stall_regs[RND_STALL_INSTR_MODE]  = $urandom_range(2,1);
-            rnd_stall_regs[RND_STALL_INSTR_GNT]   = $urandom_range(3,0);
-            rnd_stall_regs[RND_STALL_INSTR_VALID] = $urandom_range(3,0);
-            rnd_stall_regs[RND_STALL_INSTR_MAX]   = $urandom_range(3,0);
+        if (!$test$plusargs("rand_stall_obi_disable")) begin
+            if ($test$plusargs("max_data_zero_instr_stall")) begin
+                `uvm_info("RNDSTALL", "Max data stall, zero instruction stall configuration", UVM_LOW)
+                // This "knob" creates maximum stalls on data loads/stores, and
+                // no stalls on instruction fetches.  Used for fence.i testing. 
+                rnd_stall_regs[RND_STALL_DATA_EN]     = 1;
+                rnd_stall_regs[RND_STALL_DATA_MODE]   = 2;
+                rnd_stall_regs[RND_STALL_DATA_GNT]    = 2;
+                rnd_stall_regs[RND_STALL_DATA_VALID]  = 2;
+                rnd_stall_regs[RND_STALL_DATA_MAX]    = 3;
+            end
+            else begin
+                randcase
+                    2: begin
+                        // No delays
+                    end
+                    1: begin
+                        // Create RAM stall delays
+                        rnd_stall_regs[RND_STALL_INSTR_EN]    = 1;
+                        rnd_stall_regs[RND_STALL_INSTR_MODE]  = $urandom_range(2,1);
+                        rnd_stall_regs[RND_STALL_INSTR_GNT]   = $urandom_range(3,0);
+                        rnd_stall_regs[RND_STALL_INSTR_VALID] = $urandom_range(3,0);
+                        rnd_stall_regs[RND_STALL_INSTR_MAX]   = $urandom_range(3,0);
+                    end
+                endcase
+
+                randcase
+                    2: begin
+                        // No delays
+                    end
+                    1: begin
+                        // Create RAM stall delays
+                        rnd_stall_regs[RND_STALL_DATA_EN]     = 1;
+                        rnd_stall_regs[RND_STALL_DATA_MODE]   = $urandom_range(2,1);
+                        rnd_stall_regs[RND_STALL_DATA_GNT]    = $urandom_range(2,0);
+                        rnd_stall_regs[RND_STALL_DATA_VALID]  = $urandom_range(2,0);
+                        rnd_stall_regs[RND_STALL_DATA_MAX]    = $urandom_range(3,0);
+                    end
+                endcase
+            end
         end
 
-        if ($test$plusargs("rand_stall_obi_data") ||
-            $test$plusargs("rand_stall_obi_all")) begin
-            rnd_stall_regs[RND_STALL_DATA_EN]     = 1;
-            rnd_stall_regs[RND_STALL_DATA_MODE]   = $urandom_range(2,1);
-            rnd_stall_regs[RND_STALL_DATA_GNT]    = $urandom_range(2,0);
-            rnd_stall_regs[RND_STALL_DATA_VALID]  = $urandom_range(2,0);
-            rnd_stall_regs[RND_STALL_DATA_MAX]    = $urandom_range(3,0);
-        end
-
-        `uvm_info("RNDSTALL", $sformatf("INSTR stall enable: %0d", rnd_stall_regs[RND_STALL_INSTR_EN]), UVM_LOW)
-        `uvm_info("RNDSTALL", $sformatf("INSTR stall mode:   %0d", rnd_stall_regs[RND_STALL_INSTR_MODE]), UVM_LOW)
-        `uvm_info("RNDSTALL", $sformatf("INSTR stall gnt:    %0d", rnd_stall_regs[RND_STALL_INSTR_GNT]), UVM_LOW)
-        `uvm_info("RNDSTALL", $sformatf("INSTR stall valid:  %0d", rnd_stall_regs[RND_STALL_INSTR_VALID]), UVM_LOW)
-        `uvm_info("RNDSTALL", $sformatf("INSTR stall max:    %0d", rnd_stall_regs[RND_STALL_INSTR_MAX]), UVM_LOW)
-        `uvm_info("RNDSTALL", $sformatf("DATA stall enable:  %0d", rnd_stall_regs[RND_STALL_DATA_EN]), UVM_LOW)
-        `uvm_info("RNDSTALL", $sformatf("DATA stall mode:    %0d", rnd_stall_regs[RND_STALL_DATA_MODE]), UVM_LOW)
-        `uvm_info("RNDSTALL", $sformatf("DATA stall gnt:     %0d", rnd_stall_regs[RND_STALL_DATA_GNT]), UVM_LOW)
-        `uvm_info("RNDSTALL", $sformatf("DATA stall valid:   %0d", rnd_stall_regs[RND_STALL_DATA_VALID]), UVM_LOW)
-        `uvm_info("RNDSTALL", $sformatf("DATA stall max:     %0d", rnd_stall_regs[RND_STALL_DATA_MAX]), UVM_LOW)
+        `uvm_info("RNDSTALL", $sformatf("INSTR OBI stall enable: %0d", rnd_stall_regs[RND_STALL_INSTR_EN]), UVM_LOW)
+        `uvm_info("RNDSTALL", $sformatf("INSTR OBI stall mode:   %0d", rnd_stall_regs[RND_STALL_INSTR_MODE]), UVM_LOW)
+        `uvm_info("RNDSTALL", $sformatf("INSTR OBI stall gnt:    %0d", rnd_stall_regs[RND_STALL_INSTR_GNT]), UVM_LOW)
+        `uvm_info("RNDSTALL", $sformatf("INSTR OBI stall valid:  %0d", rnd_stall_regs[RND_STALL_INSTR_VALID]), UVM_LOW)
+        `uvm_info("RNDSTALL", $sformatf("INSTR OBI stall max:    %0d", rnd_stall_regs[RND_STALL_INSTR_MAX]), UVM_LOW)
+        `uvm_info("RNDSTALL", $sformatf("DATA  OBI stall enable: %0d", rnd_stall_regs[RND_STALL_DATA_EN]), UVM_LOW)
+        `uvm_info("RNDSTALL", $sformatf("DATA  OBI stall mode:   %0d", rnd_stall_regs[RND_STALL_DATA_MODE]), UVM_LOW)
+        `uvm_info("RNDSTALL", $sformatf("DATA  OBI stall gnt:    %0d", rnd_stall_regs[RND_STALL_DATA_GNT]), UVM_LOW)
+        `uvm_info("RNDSTALL", $sformatf("DATA  OBI stall valid:  %0d", rnd_stall_regs[RND_STALL_DATA_VALID]), UVM_LOW)
+        `uvm_info("RNDSTALL", $sformatf("DATA  OBI stall max:    %0d", rnd_stall_regs[RND_STALL_DATA_MAX]), UVM_LOW)
 `endif
     end
+
+`ifndef VERILATOR
+    function bit is_stall_sim();
+        return rnd_stall_regs[RND_STALL_DATA_EN] || rnd_stall_regs[RND_STALL_INSTR_EN];
+    endfunction : is_stall_sim
+`endif
 
     // handle the mapping of read and writes to either memory or pseudo
     // peripherals (currently just a redirection of writes to stdout)

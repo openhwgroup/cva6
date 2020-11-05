@@ -237,6 +237,11 @@ int main(int argc, char *argv[]) {
     if (retval != EXIT_SUCCESS)
         return retval;
 
+    // Try to write mcause (for coverage)
+    retval = test8();
+    if (retval != EXIT_SUCCESS)
+        return retval;
+
     return EXIT_SUCCESS;
 }
 
@@ -541,6 +546,40 @@ int test7() {
 
     if (test1_impl(0) != EXIT_SUCCESS)
         return ERR_CODE_TEST_7;
+
+    return EXIT_SUCCESS;
+}
+
+int test8() {
+    volatile uint32_t mcausew;
+    volatile uint32_t mcauser;
+
+    // MCAUSE is writable, this simple check tests this and also fufills code coverage
+    printf("TEST 8 - READ/WRITE TO MCAUSE");
+
+    mcausew = 0x0;
+    __asm__ volatile("csrw mcause, %0" : : "r"(mcausew));
+    __asm__ volatile("csrr %0, mcause" : "=r"(mcauser));
+    if (mcauser != 0) {
+        printf("MCAUSE write-read error, exp: 0x0, act: 0x%lx\n", mcauser);
+        return EXIT_FAILURE;
+    }
+
+    mcausew = 0x1f;
+    __asm__ volatile("csrw mcause, %0" : : "r"(mcausew));
+    __asm__ volatile("csrr %0, mcause" : "=r"(mcauser));
+    if (mcauser != mcausew) {
+        printf("MCAUSE write-read error, exp: 0x1f, act: 0x%lx\n", mcauser);
+        return EXIT_FAILURE;
+    }
+
+    mcausew = 0x0;
+    __asm__ volatile("csrw mcause, %0" : : "r"(mcausew));
+    __asm__ volatile("csrr %0, mcause" : "=r"(mcauser));
+    if (mcauser != 0) {
+        printf("MCAUSE write-read error, exp: 0x0, act: 0x%lx\n", mcauser);
+        return EXIT_FAILURE;
+    }
 
     return EXIT_SUCCESS;
 }

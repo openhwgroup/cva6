@@ -100,6 +100,7 @@ int test4();
 int test5();
 int test6();
 int test7();
+int test8();
 
 // Test1 (all irqs in sequence) used in multiple tests so break out implementation
 int test1_impl(int direct_mode);

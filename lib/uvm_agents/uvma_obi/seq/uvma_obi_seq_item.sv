@@ -25,7 +25,7 @@ class uvma_obi_seq_item_c extends uvml_trn_seq_item_c;
 
    rand bit [31:0]     addr;
    rand bit [31:0]     data;
-   rand bit [3:0]      we;
+   rand bit            we;
    rand bit [3:0]      be;   
 
    static protected string _log_format_string = "0x%08x %s 0x%01x 0x%08x";

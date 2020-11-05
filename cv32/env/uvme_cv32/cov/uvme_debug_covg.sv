@@ -143,7 +143,7 @@ class uvme_debug_covg extends uvm_component;
         dm : coverpoint cntxt.debug_cntxt.vif_cov.mon_cb.debug_mode_q {
             bins hit  = {1};
         }
-        ill : coverpoint cntxt.debug_cntxt.vif_cov.mon_cb.illegal_insn_i {
+        ill : coverpoint cntxt.debug_cntxt.vif_cov.mon_cb.illegal_insn_q {
             bins hit = {1};
         }
         ex_in_debug : cross dm, ill;
@@ -249,11 +249,13 @@ class uvme_debug_covg extends uvm_component;
         irq_and_dreq : cross dreq, irq;
     endgroup
 
-    // Cover access to dcsr, dpc and dscratch0/1
-    // Do we need to cover all READ/WRITE/SET/CLEAR from m-mode?
-    covergroup cg_debug_regs;
+    // Cover access to dcsr, dpc and dscratch0/1 in D-mode
+    covergroup cg_debug_regs_d_mode;
         option.per_instance = 1;
-        mode : coverpoint cntxt.debug_cntxt.vif_cov.mon_cb.debug_mode_q; // Only M and D supported
+        mode : coverpoint cntxt.debug_cntxt.vif_cov.mon_cb.debug_mode_q {
+            bins M = {1} ;
+        }
+
         access : coverpoint cntxt.debug_cntxt.vif_cov.mon_cb.csr_access {
             bins hit = {1};
         }
@@ -270,6 +272,28 @@ class uvme_debug_covg extends uvm_component;
         dregs_access : cross mode, access, op,addr;
     endgroup
 
+    // Cover access to dcsr, dpc and dscratch0/1 in M-mode
+    covergroup cg_debug_regs_m_mode;
+        option.per_instance = 1;
+        mode : coverpoint cntxt.debug_cntxt.vif_cov.mon_cb.debug_mode_q {
+            bins M = {0} ;
+        }
+
+        access : coverpoint cntxt.debug_cntxt.vif_cov.mon_cb.csr_access {
+            bins hit = {1};
+        }
+        op : coverpoint cntxt.debug_cntxt.vif_cov.mon_cb.csr_op_dec {
+            bins read = {'h0};
+            bins write = {2'h01};
+        }
+        addr  : coverpoint cntxt.debug_cntxt.vif_cov.mon_cb.id_stage_instr_rdata_i[31:20] { // csr addr not updated if illegal access
+            bins dcsr = {'h7B0};
+            bins dpc = {'h7B1};
+            bins dscratch0 = {'h7B2};
+            bins dscratch1 = {'h7B3};
+        }
+        dregs_access : cross mode, access, op,addr;
+    endgroup
     // Cover access to trigger registers
     // Do we need to cover all READ/WRITE/SET/CLEAR from m-mode?
     covergroup cg_trigger_regs;
@@ -287,7 +311,7 @@ class uvme_debug_covg extends uvm_component;
             bins tdata1 = {'h7A1};
             bins tdata2 = {'h7A2};
             bins tdata3 = {'h7A3};
-            bins tinfo = {'h7A4};
+            bins tinfo  = {'h7A4};
         }
         tregs_access : cross mode, access, op,addr;
     endgroup
@@ -297,6 +321,18 @@ class uvme_debug_covg extends uvm_component;
         option.per_instance = 1;
         mcycle_en : coverpoint cntxt.debug_cntxt.vif_cov.mon_cb.mcountinhibit_q[0];
         minstret_en : coverpoint cntxt.debug_cntxt.vif_cov.mon_cb.mcountinhibit_q[2];
+    endgroup
+
+    // Cover that we get a debug_req_i while in RESET state
+    covergroup cg_debug_at_reset;
+        option.per_instance = 1;
+        state : coverpoint cntxt.debug_cntxt.vif_cov.mon_cb.ctrl_fsm_cs { 
+            bins reset= {cv32e40p_pkg::RESET};
+        }
+         dbg : coverpoint cntxt.debug_cntxt.vif_cov.mon_cb.debug_req_i { 
+            bins active= {1'b1};
+        }
+        dbg_at_reset : cross state, dbg;
     endgroup
 
 
@@ -320,9 +356,11 @@ function uvme_debug_covg::new(string name = "debug_covg", uvm_component parent =
     cg_single_step = new();
     cg_mmode_dret = new();
     cg_irq_dreq = new();
-    cg_debug_regs = new();
+    cg_debug_regs_d_mode = new();
+    cg_debug_regs_m_mode = new();
     cg_trigger_regs = new();
     cg_counters_enabled = new();
+    cg_debug_at_reset = new();
 
 endfunction : new
 
@@ -372,8 +410,10 @@ task uvme_debug_covg::sample_clk_i();
     cg_single_step.sample();
     cg_mmode_dret.sample();
     cg_irq_dreq.sample();
-    cg_debug_regs.sample();
+    cg_debug_regs_d_mode.sample();
+    cg_debug_regs_m_mode.sample();
     cg_trigger_regs.sample();
     cg_counters_enabled.sample();
+    cg_debug_at_reset.sample();
   end
 endtask  : sample_clk_i
