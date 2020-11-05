@@ -365,8 +365,10 @@ interface uvmt_cv32_debug_cov_assert_if
     output logic is_ebreak,
     output logic is_cebreak,
     output logic is_dret,
+    output logic is_mulhsu,
     output logic [31:0] pending_enabled_irq,
-    input logic pc_set
+    input logic pc_set,
+    input logic branch_in_decode
 );
 
   clocking mon_cb @(posedge clk_i);    
@@ -422,8 +424,10 @@ interface uvmt_cv32_debug_cov_assert_if
     is_ebreak,
     is_cebreak,
     is_dret,
+    is_mulhsu,
     pending_enabled_irq,
-    pc_set;
+    pc_set,
+    branch_in_decode
   endclocking : mon_cb
 
 endinterface : uvmt_cv32_debug_cov_assert_if

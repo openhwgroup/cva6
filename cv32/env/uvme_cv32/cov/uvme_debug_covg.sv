@@ -246,7 +246,31 @@ class uvme_debug_covg extends uvm_component;
         irq  : coverpoint |cntxt.debug_cntxt.vif_cov.mon_cb.irq_i {
                 bins trans_active = (1'b0 => 1'b1);
         }
+        trigger : coverpoint cntxt.debug_cntxt.vif_cov.mon_cb.trigger_match_i {
+            bins hit = {1};
+        }
+        ill : coverpoint cntxt.debug_cntxt.vif_cov.mon_cb.illegal_insn_i {
+            bins hit = {1};
+        }
+         ebreak : coverpoint cntxt.debug_cntxt.vif_cov.mon_cb.is_ebreak { 
+            bins active= {1'b1};
+        }
+         cebreak : coverpoint cntxt.debug_cntxt.vif_cov.mon_cb.is_cebreak { 
+            bins active= {1'b1};
+        }
+         branch : coverpoint cntxt.debug_cntxt.vif_cov.mon_cb.branch_in_decode { 
+            bins active= {1'b1};
+        }
+         mulhsu : coverpoint cntxt.debug_cntxt.vif_cov.mon_cb.is_mulhsu { 
+            bins active= {1'b1};
+        }
+        dreq_and_ill : cross dreq, ill;
         irq_and_dreq : cross dreq, irq;
+        irq_dreq_trig_ill : cross dreq, irq, trigger, ill;
+        irq_dreq_trig_cebreak : cross dreq, irq, trigger, cebreak;
+        irq_dreq_trig_ebreak : cross dreq, irq, trigger, ebreak;
+        irq_dreq_trig_branch : cross dreq, irq, trigger, branch;
+        irq_dreq_trig_multicycle : cross dreq, irq, trigger, mulhsu;
     endgroup
 
     // Cover access to dcsr, dpc and dscratch0/1 in D-mode
@@ -353,6 +377,9 @@ class uvme_debug_covg extends uvm_component;
         tmatch : coverpoint cntxt.debug_cntxt.vif_cov.mon_cb.trigger_match_i { 
             bins match= {1'b1};
         }
+        tnomatch : coverpoint cntxt.debug_cntxt.vif_cov.mon_cb.trigger_match_i { 
+            bins nomatch= {1'b0};
+        }
          ebreak : coverpoint cntxt.debug_cntxt.vif_cov.mon_cb.is_ebreak { 
             bins active= {1'b1};
         }
@@ -369,8 +396,9 @@ class uvme_debug_covg extends uvm_component;
         trig_vs_cebreak : cross tmatch, cebreak;
         trig_vs_dbg_req : cross tmatch, dbg_req;
         trig_vs_step : cross tmatch, step;
-        ebreak_vs_req : cross ebreak, dbg_req;
-        cebreak_vs_req : cross cebreak, dbg_req;
+        // Excluding trigger match to check 'lower' priority causes
+        ebreak_vs_req : cross ebreak, dbg_req, tnomatch;
+        cebreak_vs_req : cross cebreak, dbg_req, tnomatch;
         ebreak_vs_step : cross ebreak, step;
         cebreak_cs_step : cross cebreak, step;
         dbg_req_vs_step : cross dbg_req, step;

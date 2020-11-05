@@ -214,7 +214,7 @@ bind cv32e40p_wrapper
     assign debug_cov_assert_if.irq_i = dut_wrap.cv32e40p_wrapper_i.core_i.irq_i;
     assign debug_cov_assert_if.pc_set = dut_wrap.cv32e40p_wrapper_i.core_i.id_stage_i.pc_set_o;
     assign debug_cov_assert_if.boot_addr_i = dut_wrap.cv32e40p_wrapper_i.core_i.boot_addr_i;
-
+    assign debug_cov_assert_if.branch_in_decode = dut_wrap.cv32e40p_wrapper_i.core_i.id_stage_i.controller_i.branch_in_id;
     // Instantiate debug assertions
     uvmt_cv32e40p_debug_assert u_debug_assert(.cov_assert_if(debug_cov_assert_if));
 
