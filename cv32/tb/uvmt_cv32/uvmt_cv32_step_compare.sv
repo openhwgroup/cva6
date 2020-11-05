@@ -72,6 +72,21 @@ module uvmt_cv32_step_compare
    bit  Clk;
    bit  miscompare;
    bit  is_stall_sim = 0;
+   bit  ignore_dpc_check = 0;
+
+  // FIXME:strichmo:when running random interrupts and random debug requests it is possible to enter debug mode 
+  // (while also acking an interrupt) when the debug program counter may or may not yet be pointing to the interrupt
+  // vector (mtvec) upon debug entry.  However the PC stream should verify proper operation (the PC will mismatch when 
+  // the debug ROM eventually executes a dret).  For now we will skip this comparison if the test requests it
+  initial begin
+    if ($test$plusargs("ignore_dpc_check")) begin
+      ignore_dpc_check = 1;
+      `uvm_info("Step-and-Compare", $sformatf("Requesting +ignore_dpc_check"), UVM_NONE)
+    end
+    else begin
+      ignore_dpc_check = 0;
+    end
+  end
 
   // Set the is_stall_sim flag if random stalls are enabled
   // This will turn off some unpredictable checks:
@@ -106,6 +121,7 @@ module uvmt_cv32_step_compare
       int          insn_regs_write_size;
       string       compared_str;
       bit ignore;
+      
       logic [31:0] csr_val;
 
       // Compare PC
@@ -188,6 +204,7 @@ module uvmt_cv32_step_compare
              "dpc"           : begin
                                csr_val = `CV32E40P_CORE.cs_registers_i.depc_q;       
                                if (iss_wrap.b1.DM==0) ignore = 1;
+                               if (ignore_dpc_check) ignore = 1;                               
              end
 
              "dscratch0"     : csr_val = `CV32E40P_CORE.cs_registers_i.dscratch0_q;

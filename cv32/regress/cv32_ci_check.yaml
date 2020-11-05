@@ -1,3 +1,4 @@
+# YAML file to specify the ci_check regression testlist.
 name: cv32_ci_check
 description: Commit sanity for the cv32
 

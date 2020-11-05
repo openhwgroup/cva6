@@ -260,8 +260,11 @@ bind cv32e40p_wrapper
           core_sleep_o_d <= dut_wrap.cv32e40p_wrapper_i.core_sleep_o;
       end
 
+      // Advance acknowledged interrupt to ISS when next valid instruction decode executes
+      // Ignoring any instructon decodes in debug mode
       wire id_start = dut_wrap.cv32e40p_wrapper_i.core_i.id_stage_i.id_valid_o &
-                      dut_wrap.cv32e40p_wrapper_i.core_i.id_stage_i.is_decoding_o;
+                      dut_wrap.cv32e40p_wrapper_i.core_i.id_stage_i.is_decoding_o &
+                      ~dut_wrap.cv32e40p_wrapper_i.core_i.debug_mode;
 
       assign irq_enabled = dut_wrap.cv32e40p_wrapper_i.irq_i & dut_wrap.cv32e40p_wrapper_i.core_i.cs_registers_i.mie_n;
 
@@ -446,7 +449,8 @@ bind cv32e40p_wrapper
      uvm_top.run_test();
    end : test_bench_entry_point
 
-   
+   assign core_cntrl_if.clk = clknrst_if.clk;
+
    // Capture the test status and exit pulse flags
    // TODO: put this logic in the vp_status_if (makes it easier to pass to ENV)
    always @(posedge clknrst_if.clk) begin

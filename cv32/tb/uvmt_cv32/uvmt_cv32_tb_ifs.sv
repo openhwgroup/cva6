@@ -98,6 +98,7 @@ endinterface : uvmt_cv32_vp_status_if
  * Quasi-static core control signals.
  */
 interface uvmt_cv32_core_cntrl_if (
+                                    input  logic        clk,
                                     output logic        fetch_en,
                                     output logic        ext_perf_counters,
                                     // quasi static values
@@ -203,13 +204,22 @@ interface uvmt_cv32_core_cntrl_if (
     debug_req  = 1'b0;
   end
 
+  clocking drv_cb @(posedge clk);
+    output fetch_en;
+  endclocking : drv_cb
+
   /** Sets fetch_en to the core. */
   function void go_fetch();
-    fetch_en = 1'b1;
+    drv_cb.fetch_en <= 1'b1;
     `uvm_info("CORE_CNTRL_IF", "uvmt_cv32_core_cntrl_if.go_fetch() called", UVM_DEBUG)
     core_cntrl_cg_inst = new();
     core_cntrl_cg_inst.sample();
   endfunction : go_fetch
+
+  function void stop_fetch();
+    drv_cb.fetch_en <= 1'b0;
+    `uvm_info("CORE_CNTRL_IF", "uvmt_cv32_core_cntrl_if.stop_fetch() called", UVM_DEBUG)
+  endfunction : stop_fetch
 
 endinterface : uvmt_cv32_core_cntrl_if
 

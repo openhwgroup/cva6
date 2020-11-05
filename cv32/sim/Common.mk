@@ -68,9 +68,9 @@ BANNER=*************************************************************************
 #      *_TAG:    Not yet supported (TODO).
 #                
 
-CV32E40P_REPO   ?= https://github.com/silabs-oysteink/cv32e40p
-CV32E40P_BRANCH ?= silabs-oysteink_tracer-trigger-ebreak
-CV32E40P_HASH   ?= head
+CV32E40P_REPO   ?= https://github.com/openhwgroup/cv32e40p
+CV32E40P_BRANCH ?= master
+CV32E40P_HASH   ?= 769e00c
 
 RISCVDV_REPO    ?= https://github.com/google/riscv-dv
 RISCVDV_BRANCH  ?= master

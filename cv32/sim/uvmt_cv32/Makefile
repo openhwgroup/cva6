@@ -232,7 +232,8 @@ endif
 # Clean up your mess!
 #   1. Clean all generated files of the C and assembler tests
 #   2. Simulator-specific clean targets are in ./<simulator>.mk
-clean_test_programs:
+#   3. clean-bsp target is specified in ../Common.mk
+clean_test_programs: clean-bsp
 	find $(PROJ_ROOT_DIR)/cv32/tests/uvmt_cv32/test-programs -name *.o       -exec rm {} \;
 	find $(PROJ_ROOT_DIR)/cv32/tests/uvmt_cv32/test-programs -name *.hex     -exec rm {} \;
 	find $(PROJ_ROOT_DIR)/cv32/tests/uvmt_cv32/test-programs -name *.elf     -exec rm {} \;
