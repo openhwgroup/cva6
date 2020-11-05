@@ -34,12 +34,6 @@
 .global glb_minstret_start
 .global glb_minstret_end
 .global _step_trig_point
-.global _trigger_code
-.global _trigger_code_ebreak
-.global _trigger_code_cebreak
-.global _trigger_code_illegal_insn
-.global _trigger_code_branch_insn
-.global _trigger_code_multicycle_insn
 .global __debugger_stack_start
 .global _debugger_fail
 .global _debugger_end
@@ -89,32 +83,8 @@ _debugger_start:
 
 	li t0,6
 	beq t2,t0,_debugger_csr    // Test 6
-
-	li t0,7
-	beq t2,t0,_debugger_trigger_setup    // Test 7
-
-	li t0,8
-	beq t2,t0,_debugger_trigger_match    // Test 8
-
-    li t0, 81
-    beq t2,t0, _debugger_trigger_match_ebreak
-
-    li t0, 82
-    beq t2, t0, _debugger_trigger_match_cebreak
-
-    li t0, 83
-    beq t2, t0, _debugger_trigger_match_illegal_insn
-
-    li t0, 84
-    beq t2, t0, _debugger_trigger_match_branch_insn
-
-    li t0, 85
-    beq t2, t0, _debugger_trigger_match_multicycle_insn
-
-	li t0,9
-	beq t2,t0,_debugger_trigger_disable    // Test 9
-
-	li t0,10
+	
+    li t0,10
 	beq t2,t0,_debugger_ebreak_entry    // Test 10
 
 	li t0,11
@@ -129,8 +99,6 @@ _debugger_start:
     li t0,14
     beq t2,t0, _debugger_ebreak_entry // Test 14
 
-    li t0,15
-    beq t2,t0, _debugger_trigger_in_debug // Test 15
     
     li t0,17
     beq t2,t0, _debugger_wfi_test // Test 17
@@ -507,156 +475,6 @@ _debugger_csr:
 	bne  x0,t2,_debugger_fail
 
 	j _debugger_end
-_debugger_trigger_setup:
-	// setup address to trigger on
-	la   a1,_trigger_code
-	csrw tdata2,a1
-	li   t1, 1<<2
-	csrw tdata1,t1
-	li   t1, 2<<28 | 1<<27 | 1<<12 | 1<<6 | 1 <<2
-	csrr t2,tdata1
-	bne  t1,t2,_debugger_fail
-	j    _debugger_end
-_debugger_trigger_match:
-	// Expect DCSR
-	//   31:28 XDEBUGER Version = 4
-	//    8:6   Cause           = 2 Trigger
-	//    1:0   Privelege       = 3 Machine
-	// TBD FIXME BUG documentation update needed
-	li   t1, 4<<28 | 2<<6 | 3<<0 | 1<<15
-	csrr t2,dcsr
-	bne  t1,t2,_debugger_fail
-
-	la   a1,_trigger_code
-	csrr a2,dpc
-	bne  a1,a2,_debugger_fail
-	la   a1,_trigger_exit
-	csrw dpc,a1
-    
-    // Setup match addr for next match: ebreak
-    la a1, _trigger_code_ebreak
-    csrw tdata2, a1
-	j   _debugger_end
-_debugger_trigger_match_ebreak:
-	// Expect DCSR
-	//   31:28 XDEBUGER Version = 4
-	//    8:6   Cause           = 2 Trigger
-	//    1:0   Privelege       = 3 Machine
-	// TBD FIXME BUG documentation update needed
-	li   t1, 4<<28 | 2<<6 | 3<<0 | 1<<15
-	csrr t2,dcsr
-	bne  t1,t2,_debugger_fail
-
-	la   a1,_trigger_code_ebreak
-	csrr a2,dpc
-	bne  a1,a2,_debugger_fail
-
-    # Advance pc past ebreak insn
-    addi a2, a2, 4
-    csrw dpc, a2
-
-    # Setup match addr for next match: c.ebreak
-    la a1, _trigger_code_cebreak
-    csrw tdata2, a1
-
-	j   _debugger_end
-_debugger_trigger_match_cebreak:
-	// Expect DCSR
-	//   31:28 XDEBUGER Version = 4
-	//    8:6   Cause           = 2 Trigger
-	//    1:0   Privelege       = 3 Machine
-	// TBD FIXME BUG documentation update needed
-	li   t1, 4<<28 | 2<<6 | 3<<0 | 1<<15
-	csrr t2,dcsr
-	bne  t1,t2,_debugger_fail
-
-	la   a1,_trigger_code_cebreak
-	csrr a2,dpc
-	bne  a1,a2,_debugger_fail
-
-    # Advance pc past c.ebreak insn
-    addi a2, a2, 2
-    csrw dpc, a2
-
-    # Setup match addr for next match: illegal_insn
-    la a1, _trigger_code_illegal_insn
-    csrw tdata2, a1
-
-    // Disable trigger
-    //csrw tdata1, x0
-	j   _debugger_end
-
-_debugger_trigger_match_illegal_insn:
-   	li   t1, 4<<28 | 2<<6 | 3<<0 | 1<<15
-	csrr t2,dcsr
-	bne  t1,t2,_debugger_fail
-
-	la   a1,_trigger_code_illegal_insn
-	csrr a2,dpc
-	bne  a1,a2,_debugger_fail
-
-    # Advance pc past illegal insn (dret, 4 bytes)
-    addi a2, a2, 4
-    csrw dpc, a2
-
-    # Setup match addr for next match: branch_insn
-    la a1, _trigger_code_branch_insn
-    csrw tdata2, a1
-
-    j _debugger_end
-    
-_debugger_trigger_match_branch_insn:
-   	li   t1, 4<<28 | 2<<6 | 3<<0 | 1<<15
-	csrr t2,dcsr
-	bne  t1,t2,_debugger_fail
-
-	la   a1,_trigger_code_branch_insn
-	csrr a2,dpc
-	bne  a1,a2,_debugger_fail
-
-    # Advance pc past illegal branch (beq, 4 bytes)
-    addi a2, a2, 4
-    csrw dpc, a2
-
-    # Setup match addr for next match: multicycle_insn
-    la a1, _trigger_code_multicycle_insn
-    csrw tdata2, a1
-
-    j _debugger_end
-
-_debugger_trigger_match_multicycle_insn:
-   	li   t1, 4<<28 | 2<<6 | 3<<0 | 1<<15
-	csrr t2,dcsr
-	bne  t1,t2,_debugger_fail
-
-	la   a1,_trigger_code_multicycle_insn
-	csrr a2,dpc
-	bne  a1,a2,_debugger_fail
-
-    # Advance pc past multicycle insn (mulhsu, 4 bytes)
-    addi a2, a2, 4
-    csrw dpc, a2
-
-    # disable trigger
-    csrw tdata1, x0
-
-    j _debugger_end
-
-_debugger_trigger_disable:
-	// Expect DCSR
-	//   31:28 XDEBUGER Version = 4
-	//    8:6   Cause           = 3 debugger
-	//    1:0   Privelege       = 3 Machine
-	// TBD FIXME BUG documentation update needed
-	li   t1, 4<<28 | 3<<6 | 3<<0 | 1<<15
-	csrr t2,dcsr
-	bne  t1,t2,_debugger_fail
-
-	csrw tdata1,x0
-	li   t1, 2<<28 | 1<<27 | 1<<12 | 1<<6
-	csrr t2,tdata1
-	bne  t1,t2,_debugger_fail
-	j    _debugger_end
 
 _debugger_ebreak:
     li t0, 4<<28 | 3<<6 | 3<<0

@@ -51,12 +51,6 @@ volatile int glb_minstret_end = 0;
 #define TEST_PASSED  *(volatile int *)0x20000000 = 123456789
 
 extern int __stack_start; 
-extern int _trigger_code;
-extern int _trigger_code_ebreak;
-extern int _trigger_code_cebreak;
-extern int _trigger_code_illegal_insn;
-extern int _trigger_code_branch_insn;
-extern int _trigger_code_multicycle_insn;
 typedef union {
   struct {
     unsigned int start_delay      : 15; // 14: 0
@@ -100,8 +94,6 @@ typedef union {
   unsigned int bits;
 }  mstatus_t;
 
-extern void _trigger_test(int d);
-extern void _trigger_test_ebreak(int d);
 extern void _single_step(int d);
 // Tag is simply to help debug and determine where the failure came from
 void check_debug_status(int tag, int value)
@@ -352,208 +344,6 @@ int main(int argc, char *argv[])
     check_debug_status(61,glb_hart_status);
 
 
-
-    printf("------------------------\n");
-    printf(" Test7: Test Trigger\n");
-
-    printf("  test7.1: Don't expect trigger\n");
-    _trigger_test(0); // 0 = don't expect trigger match
-
-    printf("  test7.2: setup trigger in debugger\n");
-    // Setup trigger for _trigger_code function address
-    glb_hart_status = 7;
-    glb_expect_debug_entry = 1;
-    DEBUG_REQ_CONTROL_REG = debug_req_control.bits;
-    while(glb_debug_status != glb_hart_status){
-      printf("Wait for Debugger\n");
-    }
-    check_debug_status(72,glb_hart_status);
-    __asm__ volatile("csrr %0, 0x7a1"   : "=r"(temp)); // Trigger TDATA1
-    //   31:28 type      = 2
-    //      27 dmode     = 1
-    //   15:12 action    = 1
-    //      6  m(achine) = 1
-    if(temp !=  (2<<28 | 1<<27 | 1<<12 | 1<<6| 1 <<2)){printf("ERROR: TDATA1 Read 2\n");TEST_FAILED;}
-    __asm__ volatile("csrr %0, 0x7a2"   : "=r"(temp)); // Trigger TDATA2
-    if(temp != (int) (&_trigger_code) ){printf("ERROR: TDATA2 Read 2 %x %x \n", (int) (&_trigger_code),temp);TEST_FAILED;}
-
-    printf("  test7.3: Expect Trigger\n");
-    glb_hart_status = 8;
-    glb_expect_debug_entry = 1;
-    _trigger_test(1); //  trigger match enabled
-    // We should have also incremented debug status
-    check_debug_status(73,glb_hart_status);
-
-    printf("  test7.2: rerun setup trigger in debugger\n");
-    // Setup trigger for _trigger_code function address
-    glb_hart_status = 7;
-    glb_expect_debug_entry = 1;
-    DEBUG_REQ_CONTROL_REG = debug_req_control.bits;
-    while(glb_debug_status != glb_hart_status){
-      printf("Wait for Debugger\n");
-    }
-    check_debug_status(72,glb_hart_status);
-    __asm__ volatile("csrr %0, 0x7a1"   : "=r"(temp)); // Trigger TDATA1
-    //   31:28 type      = 2
-    //      27 dmode     = 1
-    //   15:12 action    = 1
-    //      6  m(achine) = 1
-    if(temp !=  (2<<28 | 1<<27 | 1<<12 | 1<<6| 1 <<2)){printf("ERROR: TDATA1 Read 2\n");TEST_FAILED;}
-    __asm__ volatile("csrr %0, 0x7a2"   : "=r"(temp)); // Trigger TDATA2
-    if(temp != (int) (&_trigger_code) ){printf("ERROR: TDATA2 Read 2 %x %x \n", (int) (&_trigger_code),temp);TEST_FAILED;}
-
-    // Set up debug_req to be active when we hit the trigger point
-    debug_req_control = (debug_req_control_t) {
-      .fields.value            = 1,
-      .fields.pulse_mode       = 1, //PULSE Mode
-      .fields.rand_pulse_width = 0,
-      .fields.pulse_width      = 5,// FIXME: BUG: one clock pulse cause core to lock up
-      .fields.rand_start_delay = 0,
-      .fields.start_delay      = 1087
-    };
-    
-    DEBUG_REQ_CONTROL_REG = debug_req_control.bits;
-
-    printf("  test7.3: Expect Trigger and debug_req_i\n");
-    glb_hart_status = 8;
-    glb_expect_debug_entry = 1;
-    _trigger_test(1); //  trigger match enabled
-    // We should have also incremented debug status
-    check_debug_status(73,glb_hart_status);
-
-    // Set debug_req timing to match trigger
-    debug_req_control = (debug_req_control_t) {
-      .fields.value            = 1,
-      .fields.pulse_mode       = 1, //PULSE Mode
-      .fields.rand_pulse_width = 0,
-      .fields.pulse_width      = 5,// FIXME: BUG: one clock pulse cause core to lock up
-      .fields.rand_start_delay = 0,
-      .fields.start_delay      = 1249
-    };
-    // Enable irq
-    mstatus_mie_enable();
-    mie_enable(30);
-  
-    DEBUG_REQ_CONTROL_REG = debug_req_control.bits;
-    mm_ram_assert_irq(0x40000000, 1244); // match timing of debug_req_i and trigger
-    printf("  test7.5: Trigger on ebreak with irq and debug_req_i\n");
-    glb_hart_status=81;
-    glb_expect_debug_entry = 1;
-    glb_expect_irq_entry = 1;
-
-    _trigger_test_ebreak(0);
-    check_debug_status(76, glb_hart_status);
-
-    // Set debug_req timing to match trigger
-    debug_req_control = (debug_req_control_t) {
-      .fields.value            = 1,
-      .fields.pulse_mode       = 1, //PULSE Mode
-      .fields.rand_pulse_width = 0,
-      .fields.pulse_width      = 5,// FIXME: BUG: one clock pulse cause core to lock up
-      .fields.rand_start_delay = 0,
-      .fields.start_delay      = 957
-    };
-    // Enable irq
-    mstatus_mie_enable();
-    mie_enable(30);
-  
-    DEBUG_REQ_CONTROL_REG = debug_req_control.bits;
-    mm_ram_assert_irq(0x40000000, 952); // match timing of debug_req_i and trigger
-    printf("  test7.6: Trigger on c.ebreak\n");
-    glb_hart_status=82;
-    glb_expect_debug_entry = 1;
-    glb_expect_irq_entry = 1;
-    _trigger_test_ebreak(1);
-    check_debug_status(76, glb_hart_status);
-
-    // Set debug_req timing to match trigger
-    debug_req_control = (debug_req_control_t) {
-      .fields.value            = 1,
-      .fields.pulse_mode       = 1, //PULSE Mode
-      .fields.rand_pulse_width = 0,
-      .fields.pulse_width      = 5,// FIXME: BUG: one clock pulse cause core to lock up
-      .fields.rand_start_delay = 0,
-      .fields.start_delay      = 982
-    };
-    // Enable irq
-    mstatus_mie_enable();
-    mie_enable(30);
-    DEBUG_REQ_CONTROL_REG = debug_req_control.bits;
-    mm_ram_assert_irq(0x40000000, 977); // match timing of debug_req_i and trigger
-   printf("  test7.6: Trigger on illegal  \n");
-    glb_hart_status=83;
-    glb_expect_debug_entry = 1;
-    glb_expect_irq_entry = 1;
-    _trigger_test_ebreak(2);
-    check_debug_status(76, glb_hart_status);
-    check_illegal_insn_status(76, temp1-1); // Expect no increase as we step over 
-
-    // Set debug_req timing to match trigger
-    debug_req_control = (debug_req_control_t) {
-      .fields.value            = 1,
-      .fields.pulse_mode       = 1, //PULSE Mode
-      .fields.rand_pulse_width = 0,
-      .fields.pulse_width      = 5,// FIXME: BUG: one clock pulse cause core to lock up
-      .fields.rand_start_delay = 0,
-      .fields.start_delay      = 960
-    };
-    // Enable irq
-    mstatus_mie_enable();
-    mie_enable(30);
-    DEBUG_REQ_CONTROL_REG = debug_req_control.bits;
-    mm_ram_assert_irq(0x40000000, 955); // match timing of debug_req_i and trigger
-    printf("  test7.6: Trigger on branch  \n");
-    glb_hart_status=84;
-    glb_expect_debug_entry = 1;
-    glb_expect_irq_entry = 1;
-    _trigger_test_ebreak(3);
-    check_debug_status(76, glb_hart_status);
-
-    // Set debug_req timing to match trigger
-    debug_req_control = (debug_req_control_t) {
-      .fields.value            = 1,
-      .fields.pulse_mode       = 1, //PULSE Mode
-      .fields.rand_pulse_width = 0,
-      .fields.pulse_width      = 5,// FIXME: BUG: one clock pulse cause core to lock up
-      .fields.rand_start_delay = 0,
-      .fields.start_delay      = 1041
-    };
-    // Enable irq
-    mstatus_mie_enable();
-    mie_enable(30);
-    DEBUG_REQ_CONTROL_REG = debug_req_control.bits;
-    mm_ram_assert_irq(0x40000000, 1036); // match timing of debug_req_i and trigger
-    printf("  test7.6: Trigger on multicycle insn\n");
-    glb_hart_status=85;
-    glb_expect_debug_entry = 1;
-    glb_expect_irq_entry = 1;
-    _trigger_test_ebreak(4);
-    check_debug_status(76, glb_hart_status);
-
-    // set debug_req_control back to previous value 
-   debug_req_control = (debug_req_control_t) {
-      .fields.value            = 1,
-      .fields.pulse_mode       = 1, //PULSE Mode
-      .fields.rand_pulse_width = 0,
-      .fields.pulse_width      = 5,// FIXME: BUG: one clock pulse cause core to lock up
-      .fields.rand_start_delay = 0,
-      .fields.start_delay      = 200
-    }; 
-
-    printf("  test7.4: Disable Trigger\n");
-    glb_hart_status = 9;
-    glb_expect_debug_entry = 1;
-    DEBUG_REQ_CONTROL_REG = debug_req_control.bits;
-    while(glb_debug_status != glb_hart_status){
-      printf("Wait for Debugger\n");
-    }
-    check_debug_status(74,glb_hart_status);
-    _trigger_test(0); //  trigger disabled
-
-    // Don't expect to enter debug (debug status stays the same value)
-    check_debug_status(75,glb_hart_status);
-
-    
     printf("------------------------\n");
     printf(" Test10: check hart ebreak executes debugger code\n");
     glb_hart_status = 10;
@@ -619,21 +409,6 @@ int main(int argc, char *argv[])
    
     check_illegal_insn_status(114,temp1++);
     check_debug_status(114, glb_hart_status);
-
-    printf("------------------------\n");
-    printf("Test 15: trigger match in debug mode\n");
-    glb_hart_status = 15;
-    glb_expect_debug_entry = 1;
-
-    // Request debug
-    DEBUG_REQ_CONTROL_REG = debug_req_control.bits;
-    
-    while(glb_debug_status != glb_hart_status){
-        printf("Wait for Debugger\n");
-    } 
-
-    check_debug_status(115, glb_hart_status);
-
     printf("----------------------\n");
     printf("Test 16: dret in m-mode causes exception\n");
     
