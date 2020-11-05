@@ -53,6 +53,17 @@ static int chck(unsigned int is, unsigned int should)
   return err;
 }
 
+static int chck_le(unsigned int is, unsigned int should)
+{
+  int err;
+  err = is <= should ? 0 : 1;
+  if (err)
+    printf("fail\n");
+  else
+    printf("pass\n");
+  return err;
+}
+
 int main(int argc, char *argv[])
 {
   int err_cnt = 0;
@@ -170,7 +181,7 @@ int main(int argc, char *argv[])
   err_cnt += chck(minstret, 5);
 
   printf("Load use hazards count = %d\n", count);
-  err_cnt += chck(count, 1);
+  err_cnt += chck_le(count, 1);                                 // Hazard count is 0 or 1 (0 if due to instruction interface stalls 'use' did not closely follow the load)
 
   //////////////////////////////////////////////////////////////
   // Count jump register hazards
@@ -193,7 +204,7 @@ int main(int argc, char *argv[])
   err_cnt += chck(minstret, 4);
 
   printf("Jump register hazards count = %d\n", count);
-  err_cnt += chck(count, 1);
+  err_cnt += chck_le(count, 1);                                 // Hazard count is 0 or 1 (0 if due to instruction interface stalls jalr did not closely follow the addi before it)
 
   //////////////////////////////////////////////////////////////
   // Count memory read transactions - Read while enabled
