@@ -44,7 +44,7 @@ XRUN_RUN_BASE_FLAGS   ?= -64bit $(XRUN_GUI) -licqueue +UVM_VERBOSITY=$(XRUN_UVM_
                          $(XRUN_PLUSARGS) -svseed $(RNDSEED) -sv_lib $(OVP_MODEL_DPI)
 XRUN_GUI         ?=
 XRUN_SINGLE_STEP ?=
-XRUN_ELAB_COV     = -covdut uvmt_cv32_tb -coverage b:e:f:t:u
+XRUN_ELAB_COV     = -covdut uvmt_cv32_tb -coverage b:e:f:u
 XRUN_ELAB_COVFILE = -covfile ../../tools/xrun/covfile.tcl
 XRUN_RUN_COV      = -covscope uvmt_cv32_tb \
 					-nowarn CGDEFN
@@ -155,8 +155,49 @@ XRUN_RUN_FLAGS        += $(USER_RUN_FLAGS)
 ###############################################################################
 # Xcelium warning suppression
 
+# Xcelium constraint solver
+XRUN_RUN_FLAGS  += -nowarn XCLGNOPTM
+XRUN_RUN_FLAGS  += -nowarn RNDNOXCEL
+
+# Probes
+XRUN_RUN_FLAGS  += -nowarn PRLDYN
+
 # Allow extra semicolons
 XRUN_COMP_FLAGS += -nowarn UEXPSC
+
+# SOP expression evaluates to a constant - remove from coverage calculation
+XRUN_COMP_FLAGS += -nowarn COVSEC
+
+# Warning that no timescale defined for package, this is by design as no
+# core-v-verif code should contain its own timescale
+XRUN_COMP_FLAGS += -nowarn TSNSPK
+
+# Warning on expression coverage speedup (only counts always blocks in expression if output changes)
+XRUN_COMP_FLAGS += -nowarn COVVPO
+XRUN_RUN_COV    += -nowarn COVVPO
+
+# Warning about new style struct expression scoring
+XRUN_COMP_FLAGS += -nowarn COVEOS
+
+# +incdir in -f file not used
+XRUN_COMP_FLAGS += -nowarn SPDUSD
+
+# scoring events not included in expression coverage
+XRUN_COMP_FLAGS += -nowarn COVNSO
+
+# instance reporting warings for covergroups
+XRUN_COMP_FLAGS += -nowarn COVCGN
+XRUN_COMP_FLAGS += -nowarn CGPIZE
+
+# per_instance option is 0
+XRUN_COMP_FLAGS += -nowarn CGPIDF
+
+# deselect_coverage -all warnings
+XRUN_COMP_FLAGS += -nowarn CGNSWA
+
+# instance reporting warings for covergroups
+XRUN_RUN_COV    += -nowarn COVCGN
+XRUN_RUN_COV    += -nowarn CGPIZE
 
 # Un-named covergroup instances
 XRUN_RUN_COV    += -nowarn CGDEFN

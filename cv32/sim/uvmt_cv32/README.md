@@ -42,17 +42,14 @@ from the [IEEE Standards Association](https://standards.ieee.org/).
 
 RISC-V GCC Compilers
 --------------------
-Compiling the riscv-tests and riscv-compliance-tests requires a cross-compiler,
-often refered to as the "toolchain".  It is recommended that you use the
-[PULP RISCV GNU Toolchain](https://github.com/pulp-platform/pulp-riscv-gnu-toolchain)
-from the Pulp Platform team.  See [TOOLCHAIN](https://github.com/openhwgroup/core-v-verif/blob/master/cv32/sim/TOOLCHAIN.md)
+Compiling the test-programs requires a RISC-V cross-compiler,
+often refered to as the "toolchain".
+See [TOOLCHAIN](https://github.com/openhwgroup/core-v-verif/blob/master/cv32/sim/TOOLCHAIN.md)
 for detailed installation instructions.
 <br><br>
-Some teams use the [riscv-gcc](https://github.com/riscv/riscv-gcc) toolchain, but this
-does not support the custom PULP instructions.
-<br><br>
-**IMPORTANT:** Once the toolchain is set up, define a shell environment
-variable `RISCV` to the path of your RISC-V toolchain (e.g. `export RISCV=/opt/riscv`).
+**IMPORTANT:** The shell environment variable `RISCV` must point to the path of your
+toolchain (e.g. `export RISCV=/opt/riscv`). By default the Makefiles will attempt to compile
+your test-program using whatever is found at /opt/riscv using march=unknown.
 
 Makefiles
 -----------
@@ -60,8 +57,7 @@ Makefiles
 The cwd of this README is `cv32/sim/uvmt_cv32` and the **Makefile** at this location is the
 'root' Makefile.  `../Common.mk` supports all common variables, rules
 and targets, including specific targets to clone the RTL from
-[cv32e40p](https://github.com/openhwgroup/cv32e40p) and
-[fpnew](https://github.com/pulp-platform/fpnew) as appropriate. Simulator-specific
+[cv32e40p](https://github.com/openhwgroup/cv32e40p). Simulator-specific
 Makefiles are used to build the command-line to run a specific test with a specific
 simulator.  These files are organized as shown below:
 ```
