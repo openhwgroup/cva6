@@ -98,7 +98,7 @@ endinterface : uvmt_cv32_vp_status_if
  * Quasi-static core control signals.
  */
 interface uvmt_cv32_core_cntrl_if (
-                                    input  /*logic*/        clk,
+                                    input          clk,
                                     output logic        fetch_en,
                                     output logic        ext_perf_counters,
                                     // quasi static values
@@ -306,66 +306,66 @@ endinterface: uvmt_cv32_step_compare_if
 interface uvmt_cv32_debug_cov_assert_if
     import cv32e40p_pkg::*;
     (
-    input /*logic*/ clk_i,
-    input /*logic*/ rst_ni,
+    input  clk_i,
+    input  rst_ni,
 
     // Core inputs
-    input /*logic*/        fetch_enable_i, // external core fetch enable
+    input         fetch_enable_i, // external core fetch enable
 
     // External interrupt interface
-    input /*logic*/ [31:0] irq_i,
-    input /*logic*/        irq_ack_o,
-    input /*logic*/ [4:0]  irq_id_o,
-    input /*logic*/ [31:0] mie_q,
+    input  [31:0] irq_i,
+    input         irq_ack_o,
+    input  [4:0]  irq_id_o,
+    input  [31:0] mie_q,
 
     // Instruction fetch stage
-    input /*logic*/        if_stage_instr_rvalid_i, // Instruction word is valid
-    input /*logic*/ [31:0] if_stage_instr_rdata_i, // Instruction word data
+    input         if_stage_instr_rvalid_i, // Instruction word is valid
+    input  [31:0] if_stage_instr_rdata_i, // Instruction word data
 
     // Instruction ID stage (determines executed instructions)  
-    input /*logic*/        id_stage_instr_valid_i, // instruction word is valid
-    input /*logic*/ [31:0] id_stage_instr_rdata_i, // Instruction word data
-    input /*logic*/        id_stage_is_compressed,
-    input /*logic*/ [31:0] id_stage_pc, // Program counter in decode
-    input /*logic*/ [31:0] if_stage_pc, // Program counter in fetch
-    input /*logic*/        is_decoding,
-    input /*logic*/        id_valid,
+    input         id_stage_instr_valid_i, // instruction word is valid
+    input  [31:0] id_stage_instr_rdata_i, // Instruction word data
+    input         id_stage_is_compressed,
+    input  [31:0] id_stage_pc, // Program counter in decode
+    input  [31:0] if_stage_pc, // Program counter in fetch
+    input         is_decoding,
+    input         id_valid,
     input wire ctrl_state_e  ctrl_fsm_cs,            // Controller FSM states with debug_req
-    input /*logic*/        illegal_insn_i,
-    input /*logic*/        illegal_insn_q, // output from controller
-    input /*logic*/        ecall_insn_i,
+    input         illegal_insn_i,
+    input         illegal_insn_q, // output from controller
+    input         ecall_insn_i,
 
-    input /*logic*/ [31:0] boot_addr_i,
+    input  [31:0] boot_addr_i,
 
     // Debug signals
-    input /*logic*/              debug_req_i, // From controller
-    input /*logic*/              debug_mode_q, // From controller
-    input /*logic*/ [31:0] dcsr_q, // From controller
-    input /*logic*/ [31:0] depc_q, // From cs regs
-    input /*logic*/ [31:0] depc_n, // 
-    input /*logic*/ [31:0] dm_halt_addr_i,
-    input /*logic*/ [31:0] dm_exception_addr_i,
+    input               debug_req_i, // From controller
+    input               debug_mode_q, // From controller
+    input  [31:0] dcsr_q, // From controller
+    input  [31:0] depc_q, // From cs regs
+    input  [31:0] depc_n, // 
+    input  [31:0] dm_halt_addr_i,
+    input  [31:0] dm_exception_addr_i,
 
-    input /*logic*/ [31:0] mcause_q,
-    input /*logic*/ [31:0] mtvec,
-    input /*logic*/ [31:0] mepc_q,
-    input /*logic*/ [31:0] tdata1,
-    input /*logic*/ [31:0] tdata2,
-    input /*logic*/ trigger_match_i,
+    input  [31:0] mcause_q,
+    input  [31:0] mtvec,
+    input  [31:0] mepc_q,
+    input  [31:0] tdata1,
+    input  [31:0] tdata2,
+    input  trigger_match_i,
 
     // Counter related input from cs_registers
-    input /*logic*/ [31:0] mcountinhibit_q,
-    input /*logic*/ [63:0] mcycle,
-    input /*logic*/ [63:0] minstret,
-    input /*logic*/ inst_ret,
+    input  [31:0] mcountinhibit_q,
+    input  [63:0] mcycle,
+    input  [63:0] minstret,
+    input  inst_ret,
     // WFI Interface
-    input /*logic*/ core_sleep_o,
+    input  core_sleep_o,
 
-    input /*logic*/ csr_access,
-    input /*logic*/ [1:0] csr_op,
-    input /*logic*/ [1:0] csr_op_dec,
-    input /*logic*/ [11:0] csr_addr,
-    input /*logic*/ csr_we_int,
+    input  csr_access,
+    input  [1:0] csr_op,
+    input  [1:0] csr_op_dec,
+    input  [11:0] csr_addr,
+    input  csr_we_int,
     output logic is_wfi,
     output logic in_wfi,
     output logic dpc_will_hit,
@@ -374,7 +374,7 @@ interface uvmt_cv32_debug_cov_assert_if
     output logic is_cebreak,
     output logic is_dret,
     output logic [31:0] pending_enabled_irq,
-    input /*logic*/ pc_set
+    input  pc_set
 );
 
   clocking mon_cb @(posedge clk_i);    
