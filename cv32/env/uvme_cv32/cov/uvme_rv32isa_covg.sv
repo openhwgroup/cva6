@@ -936,6 +936,8 @@ class uvme_rv32isa_covg extends uvm_component;
 ///////////////////////////////////////////////////////////////////////////////
 //Coverage of Std Extension for Integer Multiplication & Division, Version 2.0
 ///////////////////////////////////////////////////////////////////////////////
+// Note : there is no coverage for sequence of MULH[[S]U] and MUL instructions
+//        because the CV32E40P does not implement fused instructions.
 
     covergroup mul_cg with function sample(ins_t ins);
         option.per_instance = 1;
@@ -989,7 +991,6 @@ class uvme_rv32isa_covg extends uvm_component;
         }
     endgroup
 
-    // TODO : do we need coverage for sequence of MULH[[S]U] and MUL instructions?
 
     // WAIVED : missing check of overflow/underflow
     // WAIVED : missing check of divide-by-zero
