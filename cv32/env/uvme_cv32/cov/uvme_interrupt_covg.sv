@@ -28,7 +28,9 @@ class uvme_interrupt_covg extends uvm_component;
     */
     covergroup cg_irq_entry with function sample(ins_t ins);
         option.per_instance = 1;
-        cp_irq : coverpoint ins.asm;
+        cp_irq : coverpoint ins.asm {
+            ignore_bins excp = { EBREAK, C_EBREAK, ECALL };
+        }
     endgroup : cg_irq_entry
 
     covergroup cg_wfi_entry with function sample(ins_t ins);

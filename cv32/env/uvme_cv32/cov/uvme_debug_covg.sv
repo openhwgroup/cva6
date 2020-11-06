@@ -283,8 +283,8 @@ class uvme_debug_covg extends uvm_component;
             bins hit = {1};
         }
         op : coverpoint cntxt.debug_cntxt.vif_cov.mon_cb.csr_op_dec {
-            bins read = {'h0};
-            bins write = {2'h01};
+            bins read = {1'h0};
+            bins write = {1'h1};
         }
         addr  : coverpoint cntxt.debug_cntxt.vif_cov.mon_cb.id_stage_instr_rdata_i[31:20] { // csr addr not updated if illegal access
             bins dcsr = {'h7B0};
