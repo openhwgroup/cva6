@@ -361,11 +361,14 @@ interface uvmt_cv32_debug_cov_assert_if
     // WFI Interface
     input  core_sleep_o,
 
+    input  fence_i,
+      
     input  csr_access,
     input  [1:0] csr_op,
     input  [1:0] csr_op_dec,
     input  [11:0] csr_addr,
     input  csr_we_int,
+
     output logic is_wfi,
     output logic in_wfi,
     output logic dpc_will_hit,
@@ -373,8 +376,10 @@ interface uvmt_cv32_debug_cov_assert_if
     output logic is_ebreak,
     output logic is_cebreak,
     output logic is_dret,
+    output logic is_mulhsu,
     output logic [31:0] pending_enabled_irq,
-    input  pc_set
+    input  pc_set,
+    input  branch_in_decode
 );
 
   clocking mon_cb @(posedge clk_i);    
@@ -412,7 +417,7 @@ interface uvmt_cv32_debug_cov_assert_if
     tdata1,
     tdata2,
     trigger_match_i,
-
+    fence_i,
     mcountinhibit_q,
     mcycle,
     minstret,
@@ -430,8 +435,10 @@ interface uvmt_cv32_debug_cov_assert_if
     is_ebreak,
     is_cebreak,
     is_dret,
+    is_mulhsu,
     pending_enabled_irq,
-    pc_set;
+    pc_set,
+    branch_in_decode
   endclocking : mon_cb
 
 endinterface : uvmt_cv32_debug_cov_assert_if
