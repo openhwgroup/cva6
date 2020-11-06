@@ -33,12 +33,6 @@ tests:
     dir: cv32/sim/uvmt_cv32
     cmd: make test COREV=YES TEST=csr_instructions
 
-  counters:
-    build: uvmt_cv32
-    description: General counters test
-    dir: cv32/sim/uvmt_cv32
-    cmd: make test COREV=YES TEST=counters
-
   generic_exception_test:
     build: uvmt_cv32
     description: Generic exception test
@@ -80,6 +74,12 @@ tests:
     description: Hardware performance counter basic test
     dir: cv32/sim/uvmt_cv32
     cmd: make test COREV=YES TEST=hpmcounter_basic_test
+
+  hpmcounter_hazard_test:
+    build: uvmt_cv32
+    description: Hardware performance counter hazard test
+    dir: cv32/sim/uvmt_cv32
+    cmd: make test COREV=YES TEST=hpmcounter_hazard_test
 
   riscv_ebreak_test_0:
     build: uvmt_cv32
