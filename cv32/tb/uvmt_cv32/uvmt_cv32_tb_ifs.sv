@@ -438,7 +438,7 @@ interface uvmt_cv32_debug_cov_assert_if
     is_mulhsu,
     pending_enabled_irq,
     pc_set,
-    branch_in_decode
+    branch_in_decode;
   endclocking : mon_cb
 
 endinterface : uvmt_cv32_debug_cov_assert_if
