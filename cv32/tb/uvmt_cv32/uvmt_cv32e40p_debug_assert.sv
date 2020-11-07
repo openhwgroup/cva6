@@ -68,7 +68,7 @@ module uvmt_cv32e40p_debug_assert
   assign cov_assert_if.is_mulhsu = cov_assert_if.is_decoding &
                                    cov_assert_if.id_stage_instr_valid_i & 
                                    cov_assert_if.id_stage_instr_rdata_i[31:25] == 7'h1 &
-                                   cov_assert_if.id_stage_instr_rdata_i[14:12] == 2'b010 &
+                                   cov_assert_if.id_stage_instr_rdata_i[14:12] == 3'b010 &
                                    cov_assert_if.id_stage_instr_rdata_i[6:0]   == 7'h33;
 
 
