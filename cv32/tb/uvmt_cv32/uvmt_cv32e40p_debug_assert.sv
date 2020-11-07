@@ -65,6 +65,13 @@ module uvmt_cv32e40p_debug_assert
                      (cov_assert_if.id_stage_instr_rdata_i == 32'h00100073) & 
                      cov_assert_if.id_stage_is_compressed == 1'b1;
 
+  assign cov_assert_if.is_mulhsu = cov_assert_if.is_decoding &
+                                   cov_assert_if.id_stage_instr_valid_i & 
+                                   cov_assert_if.id_stage_instr_rdata_i[31:25] == 7'h1 &
+                                   cov_assert_if.id_stage_instr_rdata_i[14:12] == 2'b010 &
+                                   cov_assert_if.id_stage_instr_rdata_i[6:0]   == 7'h33;
+
+
   assign decode_valid =  cov_assert_if.id_stage_instr_valid_i & cov_assert_if.ctrl_fsm_cs == cv32e40p_pkg::DECODE;
     // ---------------------------------------
     // Assertions
@@ -113,6 +120,7 @@ module uvmt_cv32e40p_debug_assert
     // TODO: This is expected to fail formal as the sequence gets long and
     // complicated.
     property p_cebreak_exception;
+        disable iff(cov_assert_if.debug_req_i | cov_assert_if.rst_ni)
         $rose(cov_assert_if.is_cebreak) && cov_assert_if.dcsr_q[15] == 1'b0 && !cov_assert_if.debug_mode_q  && cov_assert_if.is_decoding && cov_assert_if.id_valid &&
         !cov_assert_if.debug_req_i 
         |-> (decode_valid & cov_assert_if.id_valid) [->2] ##0  !cov_assert_if.debug_mode_q && (cov_assert_if.mcause_q[5:0] === cv32e40p_pkg::EXC_CAUSE_BREAKPOINT) 

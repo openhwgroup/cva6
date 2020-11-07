@@ -69,6 +69,12 @@ tests:
     dir: cv32/sim/uvmt_cv32
     cmd: make test COREV=YES TEST=hpmcounter_basic_test
 
+  hpmcounter_hazard_test:
+    build: uvmt_cv32
+    description: Hardware performance counter hazard test
+    dir: cv32/sim/uvmt_cv32
+    cmd: make test COREV=YES TEST=hpmcounter_hazard_test
+
   riscv_ebreak_test_0:
     build: uvmt_cv32
     description: Static corev-dv ebreak
