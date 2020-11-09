@@ -29,23 +29,36 @@ class uvme_interrupt_covg extends uvm_component;
     covergroup cg_irq_entry with function sample(ins_t ins);
         option.per_instance = 1;
         cp_irq : coverpoint ins.asm {
-            ignore_bins excp = { EBREAK, C_EBREAK, ECALL };
+            // These instructions will enter the exception handler which will gate off any interrupts
+            // by disabling MSIE immediately upon execution
+            ignore_bins ebreak_excp   = { EBREAK };
+            ignore_bins c_ebreak_excp = { C_EBREAK };
+            ignore_bins ecal_excp     = { ECALL };
         }
     endgroup : cg_irq_entry
 
     covergroup cg_wfi_entry with function sample(ins_t ins);
         option.per_instance = 1;
-        cp_wfi : coverpoint ins.asm;
+        cp_wfi : coverpoint ins.asm {
+        }
     endgroup : cg_wfi_entry
 
     covergroup cg_irq_exit with function sample(ins_t ins);
         option.per_instance = 1;
-        cp_irq : coverpoint ins.asm;
+        cp_irq : coverpoint ins.asm {
+            // Should not exit an IRQ into an MRET (usually interrupts are disabled at end of ISR)
+            ignore_bins mret_excp = { MRET };
+            // Should not exit an IRQ into a DRET
+            ignore_bins dret_excp = { DRET };
+            // May remove NOP from all coverage
+            ignore_bins nop = { NOP };
+        }
     endgroup : cg_irq_exit
 
     covergroup cg_wfi_exit with function sample(ins_t ins);
         option.per_instance = 1;
-        cp_wfi : coverpoint ins.asm;
+        cp_wfi : coverpoint ins.asm {
+        }
     endgroup : cg_wfi_exit
 
     /*
@@ -111,7 +124,7 @@ endfunction : write_interrupt
 function void uvme_interrupt_covg::write_rv32isa(uvme_rv32isa_covg_trn_c trn);
 
     // If this is a WFI, then sample the last instruction
-    if (trn.ins.asm == WFI) begin
+    if (trn.ins.asm == WFI && last_instr_trn != null) begin
         cg_wfi_entry.sample(last_instr_trn.ins);
     end
 
