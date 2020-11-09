@@ -1820,7 +1820,7 @@ class uvme_rv32isa_covg extends uvm_component;
 
     function void sample(input ins_t ins);
         if (ins.compressed) begin
-            check_compressed(ins);        
+            check_compressed(ins);
         end
         else begin
             case (ins.ins_str)
@@ -1865,6 +1865,7 @@ class uvme_rv32isa_covg extends uvm_component;
                     //    ins.ops[2] = ins.ops[1];
                     //    ins.ops[1].key = "R:"; ins.ops[0].val = "zero";
                     //end
+                    ins.asm = JALR;
                     jalr_cg.sample(ins);
                 end
                 "lb"        : begin ins.asm=LB;     lb_cg.sample(ins);     end
@@ -1876,7 +1877,7 @@ class uvme_rv32isa_covg extends uvm_component;
                 "nop"       : begin ins.asm=NOP;    nop_cg.sample(ins);    end
                 "or"        : begin ins.asm=OR;     or_cg.sample(ins);     end
                 "ori"       : begin ins.asm=ORI;    ori_cg.sample(ins);    end
-                "sb"        : begin ins.asm=SH;     sb_cg.sample(ins);     end
+                "sb"        : begin ins.asm=SB;     sb_cg.sample(ins);     end
                 "sh"        : begin ins.asm=SH;     sh_cg.sample(ins);     end
                 "sll"       : begin ins.asm=SLL;    sll_cg.sample(ins);    end
                 "slli"      : begin ins.asm=SLLI;   slli_cg.sample(ins);   end
@@ -1992,6 +1993,7 @@ class uvme_rv32isa_covg extends uvm_component;
 
             isa_cov_trn = uvme_rv32isa_covg_trn_c::type_id::create("isa_cov_trn");
             isa_cov_trn.ins = ins;
+            `uvm_info("RV32ISA Coverage", $sformatf("Passing ISA coverage transaction:\n%s", isa_cov_trn.sprint()), UVM_DEBUG)
             ap.write(isa_cov_trn);
         end
     endfunction: sample
