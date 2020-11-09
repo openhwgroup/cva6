@@ -41,7 +41,7 @@
  */
 module uvmt_cv32_dut_wrap #(// DUT (riscv_core) parameters.
                             // https://github.com/openhwgroup/core-v-docs/blob/master/cores/cv32e40p/CV32E40P_and%20CV32E40_Features_Parameters.pdf
-                            parameter PULP_XPULP          =  1,
+                            parameter PULP_XPULP          =  0,
                                       PULP_CLUSTER        =  0,
                                       FPU                 =  0,
                                       PULP_ZFINX          =  0,
@@ -87,6 +87,9 @@ module uvmt_cv32_dut_wrap #(// DUT (riscv_core) parameters.
     logic                         debug_req_vp;
     logic                         debug_req_uvma;
     logic                         debug_req;
+    logic                         debug_havereset;
+    logic                         debug_running;
+    logic                         debug_halted;
 
     assign debug_if.clk      = clknrst_if.clk;
     assign debug_if.reset_n  = clknrst_if.reset_n;
@@ -192,25 +195,24 @@ module uvmt_cv32_dut_wrap #(// DUT (riscv_core) parameters.
          .data_wdata_o           ( data_wdata                     ),
          .data_rdata_i           ( data_rdata                     ),
 
-         .apu_master_req_o       (                                ),
-         .apu_master_ready_o     (                                ),
-         .apu_master_gnt_i       (                                ),
-         .apu_master_operands_o  (                                ),
-         .apu_master_op_o        (                                ),
-         .apu_master_type_o      (                                ),
-         .apu_master_flags_o     (                                ),
-         .apu_master_valid_i     (                                ),
-         .apu_master_result_i    (                                ),
-         .apu_master_flags_i     (                                ),
+    		 // APU not verified in cv32e40p (future work)
+         .apu_req_o              (                                ),
+         .apu_gnt_i              ( 1'b0                           ),
+         .apu_operands_o         (                                ),
+         .apu_op_o               (                                ),
+         .apu_flags_o            (                                ),
+         .apu_rvalid_i           ( 1'b0                           ),
+         .apu_result_i           ( {32{1'b0}}                     ),
+         .apu_flags_i            ( {5{1'b0}}                      ), // APU_NUSFLAGS_CPU
 
-         // TODO: interrupts significantly updated for CV32E40P
-         //       Connect all interrupt signals to an SV interface
-         //       and pass to ENV for an INTERRUPT AGENT to drive/monitor.
          .irq_i                  ( irq                            ),
          .irq_ack_o              ( irq_ack                        ),
          .irq_id_o               ( irq_id                         ),
 
          .debug_req_i            ( debug_req                      ),
+         .debug_havereset_o      ( debug_havereset                ),
+         .debug_running_o        ( debug_running                  ),
+         .debug_halted_o         ( debug_halted                   ),
 
          .fetch_enable_i         ( core_cntrl_if.fetch_en         ),
          .core_sleep_o           ( core_status_if.core_busy       )

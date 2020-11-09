@@ -31,6 +31,9 @@ class uvma_interrupt_seq_item_c extends uvml_trn_seq_item_c;
    rand int unsigned                          no_skew_wgt;
    rand int unsigned                          skew_wgt;
 
+   rand int unsigned                          small_mask_wgt;
+   rand int unsigned                          large_mask_wgt;
+
    `uvm_object_utils_begin(uvma_interrupt_seq_item_c)
       `uvm_field_enum(uvma_interrupt_seq_item_action_enum, action, UVM_DEFAULT)
       `uvm_field_int(irq_mask, UVM_DEFAULT)
@@ -38,8 +41,29 @@ class uvma_interrupt_seq_item_c extends uvml_trn_seq_item_c;
       `uvm_field_int(no_skew_wgt, UVM_DEFAULT)
       `uvm_field_int(skew_wgt, UVM_DEFAULT)
       `uvm_field_int(repeat_count, UVM_DEFAULT)
+      `uvm_field_int(small_mask_wgt, UVM_DEFAULT)
+      `uvm_field_int(large_mask_wgt, UVM_DEFAULT)
    `uvm_object_utils_end
    
+   constraint small_mask_wgt_c {
+      small_mask_wgt inside {[3:7]};
+   }
+
+   constraint large_mask_wgt_c {
+      large_mask_wgt inside {[0:3]};      
+   }
+
+   constraint irq_mask_order_c {
+      solve small_mask_wgt before irq_mask;
+      solve large_mask_wgt before irq_mask;
+   }
+
+   constraint irq_mask_c {      
+      $countones(irq_mask) dist { [1:4]  :/ small_mask_wgt,
+                                  [1:31] :/ large_mask_wgt
+                                };
+   }
+
    constraint valid_repeat_count_c {
       repeat_count != 0;   
    }

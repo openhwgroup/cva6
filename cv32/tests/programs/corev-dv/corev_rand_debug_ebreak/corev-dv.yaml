@@ -12,7 +12,7 @@ plusargs: >
     +boot_mode=m
     +no_csr_instr=1
     +no_wfi=0
-    +no_ebreak=1
+    +no_ebreak=0
     +no_dret=1
     +enable_misaligned_instr=1
     +enable_ebreak_in_debug_rom=1

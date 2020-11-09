@@ -33,9 +33,14 @@ class uvma_obi_cfg_c extends uvm_object;
    
    rand bit                      cov_model_enabled;
    rand bit                      trn_log_enabled;
-      
+
+   rand bit                      read_enabled;
+   rand bit                      write_enabled;
+
    `uvm_object_utils_begin(uvma_obi_cfg_c)
       `uvm_field_int (                         enabled           , UVM_DEFAULT)
+      `uvm_field_int (                         read_enabled      , UVM_DEFAULT)
+      `uvm_field_int (                         write_enabled     , UVM_DEFAULT)
       `uvm_field_enum(uvm_active_passive_enum, is_active         , UVM_DEFAULT)   
       `uvm_field_int (                         cov_model_enabled , UVM_DEFAULT)
       `uvm_field_int (                         trn_log_enabled   , UVM_DEFAULT)
@@ -45,7 +50,9 @@ class uvma_obi_cfg_c extends uvm_object;
       soft enabled           == 1;
       soft is_active         == UVM_PASSIVE;
       soft cov_model_enabled == 0;
-      soft trn_log_enabled   == 1;   
+      soft trn_log_enabled   == 1;
+      soft read_enabled      == 1;
+      soft write_enabled     == 1;
    }
       
    /**

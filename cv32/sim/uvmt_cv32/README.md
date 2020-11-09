@@ -42,17 +42,14 @@ from the [IEEE Standards Association](https://standards.ieee.org/).
 
 RISC-V GCC Compilers
 --------------------
-Compiling the riscv-tests and riscv-compliance-tests requires a cross-compiler,
-often refered to as the "toolchain".  It is recommended that you use the
-[PULP RISCV GNU Toolchain](https://github.com/pulp-platform/pulp-riscv-gnu-toolchain)
-from the Pulp Platform team.  See [TOOLCHAIN](https://github.com/openhwgroup/core-v-verif/blob/master/cv32/sim/TOOLCHAIN.md)
+Compiling the test-programs requires a RISC-V cross-compiler,
+often refered to as the "toolchain".
+See [TOOLCHAIN](https://github.com/openhwgroup/core-v-verif/blob/master/cv32/sim/TOOLCHAIN.md)
 for detailed installation instructions.
 <br><br>
-Some teams use the [riscv-gcc](https://github.com/riscv/riscv-gcc) toolchain, but this
-does not support the custom PULP instructions.
-<br><br>
-**IMPORTANT:** Once the toolchain is set up, define a shell environment
-variable `RISCV` to the path of your RISC-V toolchain (e.g. `export RISCV=/opt/riscv`).
+**IMPORTANT:** The shell environment variable `RISCV` must point to the path of your
+toolchain (e.g. `export RISCV=/opt/riscv`). By default the Makefiles will attempt to compile
+your test-program using whatever is found at /opt/riscv using march=unknown.
 
 Makefiles
 -----------
@@ -60,8 +57,7 @@ Makefiles
 The cwd of this README is `cv32/sim/uvmt_cv32` and the **Makefile** at this location is the
 'root' Makefile.  `../Common.mk` supports all common variables, rules
 and targets, including specific targets to clone the RTL from
-[cv32e40p](https://github.com/openhwgroup/cv32e40p) and
-[fpnew](https://github.com/pulp-platform/fpnew) as appropriate. Simulator-specific
+[cv32e40p](https://github.com/openhwgroup/cv32e40p). Simulator-specific
 Makefiles are used to build the command-line to run a specific test with a specific
 simulator.  These files are organized as shown below:
 ```
@@ -139,11 +135,140 @@ Running the environment with Aldec [Riviera-PRO](https://www.aldec.com/en/produc
 The command **make SIMULATOR=riviera sanity** will run the sanity testcase using _riviera_.
 Set the shell variable SIMULATOR to `riviera` to simply run **`make <target>`**.
 
+Sanity Tests
+---------------
+The `make` commands here assume you have set your shell SIMULATION
+environment variable to your specific simulator (see above).
+<br><br>
+Before making changes to the code in your local branch, it is a good idea to run the sanity
+test to ensure you are starting from a stable code-base.  The code (both RTL
+and verification) should _always_ pass sanity, so if it does not, please
+raise an issue and assign it to @mikeopenhwgroup.  The definition of "sanity"
+will change over time as the ability of the verification environment to
+stress the RTL improves.  Running sanity is trivial:
+<br><br>
+**make sanity**
+
+CI Mini-regression
+------------------
+OpenHW uses the [Metrics CI platform]() for regressions.  The control script for this is `.metrics.json`
+located at the top-level of this repository.  A pythin script `ci/ci_check` can be used to run the
+"cv32 CI check regression" specified in the control script.  Before issuing a pull-request for either
+the RTL or verification code, please run `ci_check`.  Your pull-request will be rejected if `ci_check`
+does not compile and run successfully. Usage is simple:
+<br>
+**./ci__check -s xrun**
+<br>
+will run the CI sanity regression using Xcelium.
+<br><br>
+Complete user information is obtained in the usual way:
+<br>
+**./ci__check -h**
+
+Available Test Programs
+-----------------------
+The `make` commands here assume you have set your shell SIMULATION
+environment variable to your specific simulator (see above).
+<br>
+The general form to run a test is `make test TEST=<test-program>`, where _test-program_ is the filename
+of a test-program (without the file extension) of a test program located at ../../tests/programs/custom.
+Each test-program (either C or assembler) has its own directory, which contains the program itself (either
+C or assembler) plus `test.yaml`, the test-program configuration file (see Build Configurations, below).
+<br>
+Here are a few examples
+* **make test TEST=hello-world**:<br>run the hello_world program found at `../../tests/programs/custom`.
+* **make test TEST=dhrystone**:<br>run the dhrystone program found at `../../tests/programs/custom`.
+* **make test TEST=riscv_arithmetic_basic_test**:<br>run the riscv_arithmetic_basic_test program found at `../../tests/programs/custom`.
+<br>
+There are also a few targets that do something other than run a test.  The most popular is:
+<br>
+**make clean_all**
+<br>
+which deletes all SIMULATOR generated intermediates, waves and logs **plus** the cloned RTL code.
+
+Generated Tests
+---------------
+The CV32 UVM environment uses the [Google riscv-dv](https://github.com/google/riscv-dv)
+generator to automate the generation of test-programs.  The generator
+is cloned by the Makefiles to `vendor_lib/google` as needed.  Specific
+classes ar extended to create a `corev-dv` genrator that is specific to this environment.
+Note that riscv-dv is not modified, merely extended, allowing core-v-verif to stay
+up-to-date with the latest release of riscv-dv.
+<br>
+A complete list of generated test corev-dv programs is found at ../../tests/programs/corev-dv.
+Running these is a two-step process.  The first step is to clone riscv-dv and compile corev-dv:
+<br>
+**make corev-dv**
+<br>
+Note that the `corev-dv` target need only be run once.  The next step is to generate, compile
+and run a test.  For example:
+<br>
+**make gen_corev-dv test TEST=corev_rand_jump_stress_test**
+<br>
+
+RISC-V Compliance Test-suite
+---------------
+The CV32 UVM environment is able to run the [riscv-compliance](https://github.com/riscv/riscv-compliance)
+test-suite in step-and-compare mode with the ISS Reference Model.  As with riscv-dv, the compliance test-suite
+is cloned by the Makefiles to `vendor_lib/riscv` as needed.  Running the test-suite is a two step process:
+<br>
+**make all_compliance**
+<br>
+will clone riscv-compliance and compile the test-programs.  Below is an example of running a specific
+test-program from the suite:
+<br>
+**make compliance RISCV_ISA=rv32Zifencei COMPLIANCE_PROG=I-FENCE.I-01**
+<br>
+**Note:** There is a dependancy between RISCV_ISA and COMPLIANCE_PROG.  For example, because the I-ADD-01 test-program is part of the rv32i testsuite this works:
+```
+make compliance RISCV_ISA=rv32i COMPLIANCE_PROG=I-ADD-01
+```
+But this does not:
+```
+make compliance RISCV_ISA=rv32imc COMPLIANCE_PROG=I-ADD-01
+```
+
+**TODO:** create a sript to run all compliance tests (this is not currently in place because we do it on the
+MetricsCI platform using the .metrics.json regression control script.
+
+Build Configurations
+--------------------
+The `uvmt_cv32` environment supports adding compile flags to the testbench to support a specialized configuration of the core.  The testbench
+flow supports a single compilation object at any point in time so it is recommended that any testbench options be supported as run-time
+options (see the Test Specification documentation for setting run-time plusargs).  However if, for instance, parameters to the DUT need to be
+changed then this flow needs to be used.<br>
+
+All build configurations are in the files:<br>
+
+```
+cv32/tests/cfg/<cfg>.yaml
+```
+
+The contents of the YAML file support the following tags:
+| YAML Tag      | Required | Description |
+|---------------|----------|---------------------|
+| name          | Yes      | The name of the configuration                |
+| description   | Yes      | Brief description of the intent of the build configuration |
+| compile_flags | No       | Compile flags passed to the simulator compile-step    |
+| ovpsim        | No       | Flags for the IC file for the OVPSim ISS   |
+
+<br>
+The following is an example build configuration:<br>
+
+```
+name: no_pulp
+description: Sets all PULP-related flags to 0
+compile_flags: >
+    +define+NO_PULP
+    +define+HAHAHA
+ovpsim: >
+    --override root/cpu0/misa_Extensions=0x1104
+    --showoverrides
+```
+
 Common Makefile Flags
 ---------------
 For all tests in the <i>uvmt_cv32</i> directory the following flags and targets are supported for common operations with the simulators.  For all flags and targets described in this section it is assumed that the user will supply a SIMULATOR setting on the make command line or populate the CV_SIMULATOR environment variable.
-
-Current supported simulators: <i>Note that eventually all simulators will be supported</i>
 
 | SIMULATOR  | Supported |
 |------------|-----------|
@@ -157,7 +282,7 @@ For certain simulators multiple debug tools are available that enable advanced d
 
 | SIMULATOR   | Standard Debug Tool | Advanced Debug Tool |
 |-------------|---------------------|---------------------|
-| dsim        | N/A                 | N/A                 |
+| dsim        | gtkwave             | N/A                 |
 | xrun        | SimVision           | Indago              |
 | questa      | Questa Tk GUI       | Visualizer          |
 | vcs         | DVE                 | Verdi               |
@@ -236,92 +361,3 @@ Invoke GUI coverage browser for all executed tests with coverage databases.
 
 **make cov MERGE=1 GUI=1**
 
-Available Tests
----------------
-The `make` commands here assume you have set your shell SIMULATION
-environment variable to your specific simulator (see above).
-<br><br>
-Before making changes to the code in your local branch, it is a good idea to run the sanity
-test to ensure you are starting from a stable code-base.  The code (both RTL
-and verification) should _always_ pass sanity, so if it does not, please
-raise an issue and assign it to @mikeopenhwgroup.  The definition of "sanity"
-will change over time as the ability of the verification environment to
-stress the RTL improves.  Running sanity is trivial:
-<br><br>
-**make sanity**
-<br><br>
-Before issuing a pull-request for either the RTL or verification code, please
-re-run the sanity test.   Your pull-request will be rejected if sanity does not
-compile and run successfully.   For extra points, go to the `ci` directory at the
-top of this repository and run `ci_check`.
-
-Available Test Programs
------------------------
-The `make` commands here assume you have set your shell SIMULATION
-There are three targets that can run a specific test-program by name:
-* **make test TEST=hello-world**:<br>run the hello_world program found at `../../tests/core/custom`.
-* **make cv32-riscv-tests**:<br>run the CV32-specific RISC-V tests found at `../../tests/core/cv32_riscv_tests_firmware`
-* **make cv32-riscv-compilance-tests**:<br>run the CV32-specific RISC-V tests found at `../../tests/core/cv32_riscv_compliance_tests_firmware`
-Some targets are simulator specific:
-* **make make dsim-unit-test <prog>**:<br>run one <prog> from the firmware suite
-of tests.  For example: `make SIMULATOR=dsim dsim-unit-test addi`.
-<br><br>
-There are also a few targets that do something other than run a test:
-* **make clean\_all**:<br>deletes all SIMULATOR generated intermediates, waves and logs **plus** the cloned RTL code.
-
-Custom Test Programs
---------------------
-The `uvmt_cv32` environment supports the ability to run any arbitrary test program that can run on the cv32e40p core, as long as it has
-been pre-compiled into a hex-file.  These are called `Type 1` tests in the
-[Verification Strategy](https://core-v-docs-verif-strat.readthedocs.io/en/latest/sim_tests.html#test-program).
-<br><br>
-The Makefile implements a rule called `custom` that will compile a test-program and pass it to the SystemVerilog simulation.  The user
-must specify `CUSTOM_DIR`, the _absolute_ path to the compiled program, and `CUSTOM_PROG`, the filename of the test program (no extension).
-For example:<br>
-```
-make custom CUSTOM_DIR=/your-abs-path-to-core-v-verif/cv32/tests/uvmt_cv32/test-programs CUSTOM_PROJ=hello_world
-```
-This could be a lot of typing, so its useful to pre-define the path as a shell environment variable:
-<br>
-`export CUSTOM_DIR=/your-abs-path-to-core-v-verif/cv32/tests/uvmt_cv32/test-programs`
-<br>
-You can now run any test program in that directory:<br>
-```
-make custom CUSTOM_PROJ=hello_world
-make custom CUSTOM_PROJ=smoke
-```
-
-Build Configurations
---------------------
-The `uvmt_cv32` environment supports adding compile flags to the testbench to support a specialized configuration of the core.  The testbench
-flow supports a single compilation object at any point in time so it is recommended that any testbench options be supported as run-time
-options (see the Test Specification documentation for setting run-time plusargs).  However if, for instance, parameters to the DUT need to be
-changed then this flow needs to be used.<br>
-
-All build configurations are in the files:<br>
-
-```
-cv32/tests/cfg/<cfg>.yaml
-```
-
-The contents of the YAML file support the following tags:
-| YAML Tag      | Required | Description |
-|---------------|----------|---------------------|
-| name          | Yes      | The name of the configuration                |
-| description   | Yes      | Brief description of the intent of the build configuration |
-| compile_flags | No       | Compile flags passed to the simulator compile-step    |
-| ovpsim        | No       | Flags for the IC file for the OVPSim ISS   |
-
-<br>
-The following is an example build configuration:<br>
-
-```
-name: no_pulp
-description: Sets all PULP-related flags to 0
-compile_flags: >
-    +define+NO_PULP
-    +define+HAHAHA
-ovpsim: >
-    --override root/cpu0/misa_Extensions=0x1104
-    --showoverrides
-```

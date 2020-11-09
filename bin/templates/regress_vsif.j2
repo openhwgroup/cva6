@@ -61,6 +61,7 @@ group cv32e40p {
 {% if t.precmd %}
 {{indent}}        depends_on: ../precmd;
 {% endif %}
+{{indent}}        timeout: 3600;
 {{indent}}        test run {
 {{indent}}            sv_seed: gen_random;
 {{indent}}            seed: [0..{{t.num-1}}];

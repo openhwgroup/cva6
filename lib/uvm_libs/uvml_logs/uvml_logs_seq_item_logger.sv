@@ -139,10 +139,10 @@ function void uvml_logs_seq_item_logger_c::end_of_elaboration_phase(uvm_phase ph
    
    // Assemble final path
    if (name == "") begin
-      fpath = {cli_args_result, "/", sub_dir, "/", parent.get_full_name(), ".seq_item.", fextension};
+      fpath = {parent.get_full_name(), ".seq_item.", fextension};
    end
    else begin
-      fpath = {cli_args_result, "/", sub_dir, "/", parent.get_full_name(), name, ".seq_item.", fextension};
+      fpath = {parent.get_full_name(), name, ".seq_item.", fextension};
    end
    
    // Opem file handle and check 

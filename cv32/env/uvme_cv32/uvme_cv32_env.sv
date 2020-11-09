@@ -316,16 +316,16 @@ endfunction: connect_ral
 
 function void uvme_cv32_env_c::connect_coverage_model();
    
-   interrupt_agent.monitor.ap.connect(cov_model.interrupt_covg.interrupt_mon_export);      
+   interrupt_agent.monitor.ap_iss.connect(cov_model.interrupt_covg.interrupt_mon_export);      
    
 endfunction: connect_coverage_model
 
 
 function void uvme_cv32_env_c::assemble_vsequencer();
    
-   vsequencer.clknrst_sequencer = clknrst_agent.sequencer;
+   vsequencer.clknrst_sequencer   = clknrst_agent.sequencer;
    vsequencer.interrupt_sequencer = interrupt_agent.sequencer;
-   vsequencer.debug_sequencer   = debug_agent.sequencer;
+   vsequencer.debug_sequencer     = debug_agent.sequencer;
    
 endfunction: assemble_vsequencer
 

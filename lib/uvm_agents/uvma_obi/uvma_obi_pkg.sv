@@ -28,6 +28,7 @@
 
 // Interface(s) / Module(s) / Checker(s)
 `include "uvma_obi_if.sv"
+`include "uvma_obi_assert.sv"
 
 /**
  * Encapsulates all the types needed for an UVM agent capable of driving and/or

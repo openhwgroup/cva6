@@ -72,6 +72,11 @@ _single_step:
     sw t0, 0(a1)
     csrr t0, dcsr // illegal
 
+    la a1, glb_expect_illegal_insn
+    li t0, 1
+    sw t0, 0(a1)
+    dret // illegal
+
     // Trigger match setup
     la a1, glb_step_info
     li t0, 4
@@ -148,6 +153,28 @@ _irq_wait_loop:
     nop
     nop
 
+    # set step reason to 7 (step with c.ebreak)
+    la a1, glb_step_info
+    li t0, 7
+    sw t0, 0(a1)
+
+    # Ebreak to cover ebreak vs step cause priority
+    c.ebreak
+
+    # set step reason to 8 (step with ebreak)
+    la a1, glb_step_info
+    li t0, 8
+    sw t0, 0(a1)
+
+    # Ebreak to cover ebreak vs step cause priority
+    .4byte 0x00100073
+
+    # set step reason to 0, normal step
+    la a1, glb_step_info
+    li t0, 0
+    sw t0, 0(a1)
+
+    ecall
     // Cause 2, disable single stepping
     la a1, glb_step_info
     li t0, 2

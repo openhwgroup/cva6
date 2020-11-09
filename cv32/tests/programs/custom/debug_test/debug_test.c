@@ -51,8 +51,6 @@ volatile int glb_minstret_end = 0;
 #define TEST_PASSED  *(volatile int *)0x20000000 = 123456789
 
 extern int __stack_start; 
-extern int _trigger_code;
-extern int _trigger_code_wfi;
 typedef union {
   struct {
     unsigned int start_delay      : 15; // 14: 0
@@ -96,8 +94,6 @@ typedef union {
   unsigned int bits;
 }  mstatus_t;
 
-extern void _trigger_test(int d);
-extern void _trigger_test_wfi(int d);
 extern void _single_step(int d);
 // Tag is simply to help debug and determine where the failure came from
 void check_debug_status(int tag, int value)
@@ -255,6 +251,7 @@ int main(int argc, char *argv[])
     __asm__ volatile("csrw  0x7a1, %0"     : "=r"(temp)); // Trigger TDATA1
     __asm__ volatile("csrw  0x7a2, %0"     : "=r"(temp)); // Trigger TDATA2
     __asm__ volatile("csrw  0x7a3, %0"     : "=r"(temp)); // Trigger TDATA3
+    __asm__ volatile("csrw  0x7a4, %0"     : "=r"(temp)); // Trigger TINFO
     __asm__ volatile("csrw  0x7a8, %0"     : "=r"(temp)); // Trigger MCONTEXT
     __asm__ volatile("csrw  0x7aa, %0"     : "=r"(temp)); // Trigger SCONTEXT
 
@@ -275,7 +272,7 @@ int main(int argc, char *argv[])
     __asm__ volatile("csrr %0, 0x7a3"   : "=r"(temp)); // Trigger TDATA3
     if(temp != 0x0){printf("ERROR: TDATA3 Read\n");TEST_FAILED;}
 
-    __asm__ volatile("csrr %0, 0x7a4"   : "=r"(temp)); // Trigger TDATA3
+    __asm__ volatile("csrr %0, 0x7a4"   : "=r"(temp)); // Trigger TINFO
     // tmatch = 1<<2
     if(temp != 1<<2){printf("ERROR: TINFO Read %d \n",temp);TEST_FAILED;}
 
@@ -347,68 +344,11 @@ int main(int argc, char *argv[])
     check_debug_status(61,glb_hart_status);
 
 
-
-    printf("------------------------\n");
-    printf(" Test7: Test Trigger\n");
-
-    printf("  test7.1: Don't expect trigger\n");
-    _trigger_test(0); // 0 = don't expect trigger match
-
-    printf("  test7.2: setup trigger in debugger\n");
-    // Setup trigger for _trigger_code function address
-    glb_hart_status = 7;
-    glb_expect_debug_entry = 1;
-    DEBUG_REQ_CONTROL_REG = debug_req_control.bits;
-    while(glb_debug_status != glb_hart_status){
-      printf("Wait for Debugger\n");
-    }
-    check_debug_status(72,glb_hart_status);
-    __asm__ volatile("csrr %0, 0x7a1"   : "=r"(temp)); // Trigger TDATA1
-    //   31:28 type      = 2
-    //      27 dmode     = 1
-    //   15:12 action    = 1
-    //      6  m(achine) = 1
-    if(temp !=  (2<<28 | 1<<27 | 1<<12 | 1<<6| 1 <<2)){printf("ERROR: TDATA1 Read 2\n");TEST_FAILED;}
-    __asm__ volatile("csrr %0, 0x7a2"   : "=r"(temp)); // Trigger TDATA2
-    if(temp != (int) (&_trigger_code) ){printf("ERROR: TDATA2 Read 2 %x %x \n", (int) (&_trigger_code),temp);TEST_FAILED;}
-
-    printf("  test7.3: Expect Trigger\n");
-    glb_hart_status = 8;
-    glb_expect_debug_entry = 1;
-    _trigger_test(1); //  trigger match enabled
-    // We should have also incremented debug status
-    check_debug_status(73,glb_hart_status);
-
-    
-    // Following test commented out. 
-    // // With timing = 0, the WFI will not execute
-    // before entring debug, and hang on resume
-    
-    //printf("  test7.5: Trigger on WFI\n");
-    //glb_hart_status=81;
-    //glb_expect_debug_entry = 1;
-    //_trigger_test_wfi(1);
-    //check_debug_status(76, glb_hart_status);
-
-    printf("  test7.4: Disable Trigger\n");
-    glb_hart_status = 9;
-    glb_expect_debug_entry = 1;
-    DEBUG_REQ_CONTROL_REG = debug_req_control.bits;
-    while(glb_debug_status != glb_hart_status){
-      printf("Wait for Debugger\n");
-    }
-    check_debug_status(74,glb_hart_status);
-    _trigger_test(0); //  trigger disabled
-
-    // Don't expect to enter debug (debug status stays the same value)
-    check_debug_status(75,glb_hart_status);
-
-    
     printf("------------------------\n");
     printf(" Test10: check hart ebreak executes debugger code\n");
     glb_hart_status = 10;
     glb_expect_debug_entry = 1;
-    asm volatile("c.ebreak");
+    asm volatile(".4byte 0x00100073");
     check_debug_status(33,glb_hart_status);
 
     printf("------------------------\n");
@@ -469,21 +409,6 @@ int main(int argc, char *argv[])
    
     check_illegal_insn_status(114,temp1++);
     check_debug_status(114, glb_hart_status);
-
-    printf("------------------------\n");
-    printf("Test 15: trigger match in debug mode\n");
-    glb_hart_status = 15;
-    glb_expect_debug_entry = 1;
-
-    // Request debug
-    DEBUG_REQ_CONTROL_REG = debug_req_control.bits;
-    
-    while(glb_debug_status != glb_hart_status){
-        printf("Wait for Debugger\n");
-    } 
-
-    check_debug_status(115, glb_hart_status);
-
     printf("----------------------\n");
     printf("Test 16: dret in m-mode causes exception\n");
     
@@ -537,7 +462,8 @@ int main(int argc, char *argv[])
     // Run single step code (in single_step.S)
     _single_step(0); 
 
-    // Single step code should generate 1 illegal insn
+    // Single step code should generate 2 illegal insn
+    temp1++;
     check_illegal_insn_status(118, temp1++);
     check_debug_status(118, glb_hart_status);
 
@@ -582,8 +508,46 @@ int main(int argc, char *argv[])
     check_debug_status(120, glb_hart_status);
 
 
-        
+    // Execute fence instruction in debug
+    printf("-----------------------------\n");
+    printf("Test 22: Execute fence in debug mode\n");
+    glb_expect_debug_entry = 1;
+    glb_hart_status = 22;
+    DEBUG_REQ_CONTROL_REG = debug_req_control.bits;
     
+    while(glb_debug_status != glb_hart_status) {
+        printf("Wait for debugger\n");
+    }    
+    
+    check_debug_status(121, glb_hart_status);
+
+    printf("------------------------\n");
+    printf("Test 23: trigger match in debug mode with match disabled\n");
+    glb_hart_status = 23;
+    glb_expect_debug_entry = 1;
+
+    // Request debug
+    DEBUG_REQ_CONTROL_REG = debug_req_control.bits;
+    
+    while(glb_debug_status != glb_hart_status){
+        printf("Wait for Debugger\n");
+    } 
+    
+    check_debug_status(123, glb_hart_status);
+    printf("------------------------\n");
+    printf("Test 24: trigger register access in D-mode\n");
+    glb_hart_status = 24;
+    glb_expect_debug_entry = 1;
+
+    // Request debug
+    DEBUG_REQ_CONTROL_REG = debug_req_control.bits;
+    
+    while(glb_debug_status != glb_hart_status){
+        printf("Wait for Debugger\n");
+    } 
+
+    check_debug_status(124, glb_hart_status);
+
     //--------------------------------
     //return EXIT_FAILURE;
     printf("------------------------\n");

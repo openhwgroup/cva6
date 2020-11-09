@@ -28,7 +28,9 @@ class uvme_interrupt_covg extends uvm_component;
     */
     covergroup cg_irq_entry with function sample(ins_t ins);
         option.per_instance = 1;
-        cp_irq : coverpoint ins.asm;
+        cp_irq : coverpoint ins.asm {
+            ignore_bins excp = { EBREAK, C_EBREAK, ECALL };
+        }
     endgroup : cg_irq_entry
 
     covergroup cg_wfi_entry with function sample(ins_t ins);
@@ -121,6 +123,7 @@ function void uvme_interrupt_covg::write_rv32isa(uvme_rv32isa_covg_trn_c trn);
 
     // For each mret decrement the interrupt count
     if (last_instr_trn != null && last_instr_trn.ins.asm == MRET && irq_nested_count) begin    
+        `uvm_info("INTERRUPTCOVG", $sformatf("IRQ exited to %s", trn.ins.asm.name()), UVM_DEBUG)
         cg_irq_exit.sample(trn.ins);
         irq_nested_count--;
     end

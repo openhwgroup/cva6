@@ -1,7 +1,7 @@
-name: corev_rand_interrupt_stall
+name: corev_rand_interrupt
 uvm_test: corev_instr_base_test
 description: >
-    RISCV-DV generated random interrupt tests with random stalls
+    RISCV-DV generated random interrupt test
 plusargs: >
     +instr_cnt=50000
     +num_of_sub_program=5

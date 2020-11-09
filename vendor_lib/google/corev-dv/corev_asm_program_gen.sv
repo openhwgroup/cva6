@@ -48,11 +48,6 @@ class corev_asm_program_gen extends riscv_asm_program_gen;
     instr_stream.push_back(".globl _start_main");
     instr_stream.push_back(".section .text");
     instr_stream.push_back("_start_main:");
-    if (cfg.gen_debug_section) begin
-      corev_instr_gen_config cfg_corev;
-      `DV_CHECK($cast(cfg_corev, cfg))
-      instr_stream.push_back($sformatf("la x%0d, debugger_stack_end", cfg_corev.dp));
-    end
   endfunction
 
   virtual function void gen_interrupt_vector_table(int              hart,
@@ -269,44 +264,59 @@ class corev_asm_program_gen extends riscv_asm_program_gen;
   endfunction : gen_interrupt_handler_section
 
   virtual function void gen_test_done();
-    instr_stream.push_back("");
-    instr_stream.push_back("#Start: Extracted from riscv_compliance_tests/riscv_test.h");
-    instr_stream.push_back("test_done:");
-    instr_stream.push_back("                  csrrci x0,mstatus,0x8 # Clear MSTATUS.MIE to avoid interrupts during test_done");
-    instr_stream.push_back("                  lui a0,print_port>>12");
-    instr_stream.push_back("                  addi a1,zero,'\\n'");
-    instr_stream.push_back("                  sw a1,0(a0)");
-    instr_stream.push_back("                  addi a1,zero,'C'");
-    instr_stream.push_back("                  sw a1,0(a0)");
-    instr_stream.push_back("                  addi a1,zero,'V'");
-    instr_stream.push_back("                  sw a1,0(a0)");
-    instr_stream.push_back("                  addi a1,zero,'3'");
-    instr_stream.push_back("                  sw a1,0(a0)");
-    instr_stream.push_back("                  addi a1,zero,'2'");
-    instr_stream.push_back("                  sw a1,0(a0)");
-    instr_stream.push_back("                  addi a1,zero,' '");
-    instr_stream.push_back("                  sw a1,0(a0)");
-    instr_stream.push_back("                  addi a1,zero,'D'");
-    instr_stream.push_back("                  sw a1,0(a0)");
-    instr_stream.push_back("                  addi a1,zero,'O'");
-    instr_stream.push_back("                  sw a1,0(a0)");
-    instr_stream.push_back("                  addi a1,zero,'N'");
-    instr_stream.push_back("                  sw a1,0(a0)");
-    instr_stream.push_back("                  addi a1,zero,'E'");
-    instr_stream.push_back("                  sw a1,0(a0)");
-    instr_stream.push_back("                  addi a1,zero,'\\n'");
-    instr_stream.push_back("                  sw a1,0(a0)");
-    instr_stream.push_back("                  sw a1,0(a0)");
-    instr_stream.push_back("");
-    instr_stream.push_back("                  li a0, test_ret_val");
-    instr_stream.push_back("                  lw a1, test_results /* report result */");
-    instr_stream.push_back("                  sw a1,0(a0)");
-    instr_stream.push_back("");
-    instr_stream.push_back("                  csrrwi x0,mie,0 /* clear mie so that final wfi never awakens */");
-    instr_stream.push_back("                  wfi  /* we are done */");
-    instr_stream.push_back("#End: Extracted from riscv_compliance_tests/riscv_test.h");
-    instr_stream.push_back("");
-  endfunction
+    // Select two registers to serve as reg0,reg1 in fixed test_done
+    // Avoid using the reserved registers
+
+    riscv_reg_t td_reg[2];
+
+    `DV_CHECK_STD_RANDOMIZE_WITH_FATAL(td_reg,
+      td_reg[0] != td_reg[1];
+      foreach (td_reg[i]) {
+        td_reg[i] != ZERO;      
+        foreach (cfg.reserved_regs[j]) {
+          td_reg[i] != cfg.reserved_regs[j];
+        }
+      }
+    )
+
+    instr_stream.push_back($sformatf(""));
+    instr_stream.push_back($sformatf("#Start: Extracted from riscv_compliance_tests/riscv_test.h"));
+    instr_stream.push_back($sformatf("test_done:"));
+    instr_stream.push_back($sformatf("                  csrrci x0,mstatus,0x8 # Clear MSTATUS.MIE to avoid interrupts during test_done"));
+    instr_stream.push_back($sformatf("                  lui %s,print_port>>12", td_reg[0].name().tolower()));
+    instr_stream.push_back($sformatf("                  addi %s,zero,'\\n'", td_reg[1].name().tolower()));
+    instr_stream.push_back($sformatf("                  sw %s,0(%s)", td_reg[1].name().tolower(), td_reg[0].name().tolower()));
+    instr_stream.push_back($sformatf("                  addi %s,zero,'C'", td_reg[1].name().tolower()));
+    instr_stream.push_back($sformatf("                  sw %s,0(%s)", td_reg[1].name().tolower(), td_reg[0].name().tolower()));
+    instr_stream.push_back($sformatf("                  addi %s,zero,'V'", td_reg[1].name().tolower()));
+    instr_stream.push_back($sformatf("                  sw %s,0(%s)", td_reg[1].name().tolower(), td_reg[0].name().tolower()));
+    instr_stream.push_back($sformatf("                  addi %s,zero,'3'", td_reg[1].name().tolower()));
+    instr_stream.push_back($sformatf("                  sw %s,0(%s)", td_reg[1].name().tolower(), td_reg[0].name().tolower()));
+    instr_stream.push_back($sformatf("                  addi %s,zero,'2'", td_reg[1].name().tolower()));
+    instr_stream.push_back($sformatf("                  sw %s,0(%s)", td_reg[1].name().tolower(), td_reg[0].name().tolower()));
+    instr_stream.push_back($sformatf("                  addi %s,zero,' '", td_reg[1].name().tolower()));
+    instr_stream.push_back($sformatf("                  sw %s,0(%s)", td_reg[1].name().tolower(), td_reg[0].name().tolower()));
+    instr_stream.push_back($sformatf("                  addi %s,zero,'D'", td_reg[1].name().tolower()));
+    instr_stream.push_back($sformatf("                  sw %s,0(%s)", td_reg[1].name().tolower(), td_reg[0].name().tolower()));
+    instr_stream.push_back($sformatf("                  addi %s,zero,'O'", td_reg[1].name().tolower()));
+    instr_stream.push_back($sformatf("                  sw %s,0(%s)", td_reg[1].name().tolower(), td_reg[0].name().tolower()));
+    instr_stream.push_back($sformatf("                  addi %s,zero,'N'", td_reg[1].name().tolower()));
+    instr_stream.push_back($sformatf("                  sw %s,0(%s)", td_reg[1].name().tolower(), td_reg[0].name().tolower()));
+    instr_stream.push_back($sformatf("                  addi %s,zero,'E'", td_reg[1].name().tolower()));
+    instr_stream.push_back($sformatf("                  sw %s,0(%s)", td_reg[1].name().tolower(), td_reg[0].name().tolower()));
+    instr_stream.push_back($sformatf("                  addi %s,zero,'\\n'", td_reg[1].name().tolower()));
+    instr_stream.push_back($sformatf("                  sw %s,0(%s)", td_reg[1].name().tolower(), td_reg[0].name().tolower()));
+    instr_stream.push_back($sformatf("                  sw %s,0(%s)", td_reg[1].name().tolower(), td_reg[0].name().tolower()));
+    instr_stream.push_back($sformatf(""));
+    instr_stream.push_back($sformatf("                  li %s, test_ret_val", td_reg[0].name().tolower()));
+    instr_stream.push_back($sformatf("                  lw %s, test_results /* report result */", td_reg[1].name().tolower()));
+    instr_stream.push_back($sformatf("                  sw %s,0(%s)", td_reg[1].name().tolower(), td_reg[0].name().tolower()));
+    instr_stream.push_back($sformatf(""));
+    instr_stream.push_back($sformatf("                  csrrwi x0,mie,0 /* clear mie so that final wfi never awakens */"));
+    instr_stream.push_back($sformatf("                  wfi  /* we are done */"));
+    instr_stream.push_back($sformatf("#End: Extracted from riscv_compliance_tests/riscv_test.h"));
+    instr_stream.push_back($sformatf(""));
+  endfunction : gen_test_done
 
   // Override gen_stack_section to add debugger stack generation section  
   // Implmeneted as a post-step to super.gen_stack_section()
@@ -351,5 +361,20 @@ class corev_asm_program_gen extends riscv_asm_program_gen;
       instr_stream.push_back(str);
     end
   endfunction
+
+  // ECALL trap handler - corev-dv does not use the ecall to signal test_done as standard riscv-dv does.
+  // Therefore to enable random ecalls in test, simply handle ecall as an exception with no special
+  // processing other than to increment the PC from MEPC
+  virtual function void gen_ecall_handler(int hart);
+    string instr[$];
+    instr = {instr,
+            $sformatf("csrr  x%0d, mepc", cfg.gpr[0]),
+            $sformatf("addi  x%0d, x%0d, 4", cfg.gpr[0], cfg.gpr[0]),
+            $sformatf("csrw  mepc, x%0d", cfg.gpr[0])
+    };
+    pop_gpr_from_kernel_stack(MSTATUS, MSCRATCH, cfg.mstatus_mprv, cfg.sp, cfg.tp, instr);
+    instr.push_back("mret");
+    gen_section(get_label("ecall_handler", hart), instr);
+  endfunction : gen_ecall_handler
 
 endclass : corev_asm_program_gen

@@ -58,6 +58,7 @@ import uvm_pkg::*;      // needed for the UVM messaging service (`uvm_info(), et
 `include "uvm_macros.svh"
 `define CV32E40P_CORE   $root.uvmt_cv32_tb.dut_wrap.cv32e40p_wrapper_i.core_i
 `define CV32E40P_TRACER $root.uvmt_cv32_tb.dut_wrap.cv32e40p_wrapper_i.tracer_i
+`define CV32E40P_MMRAM  $root.uvmt_cv32_tb.dut_wrap.ram_i
 
 `define CV32E40P_ISS $root.uvmt_cv32_tb.iss_wrap.cpu
 
@@ -71,17 +72,31 @@ module uvmt_cv32_step_compare
    bit  Clk;
    bit  miscompare;
    bit  is_stall_sim = 0;
+   bit  ignore_dpc_check = 0;
+
+  // FIXME:strichmo:when running random interrupts and random debug requests it is possible to enter debug mode 
+  // (while also acking an interrupt) when the debug program counter may or may not yet be pointing to the interrupt
+  // vector (mtvec) upon debug entry.  However the PC stream should verify proper operation (the PC will mismatch when 
+  // the debug ROM eventually executes a dret).  For now we will skip this comparison if the test requests it
+  initial begin
+    if ($test$plusargs("ignore_dpc_check")) begin
+      ignore_dpc_check = 1;
+      `uvm_info("Step-and-Compare", $sformatf("Requesting +ignore_dpc_check"), UVM_NONE)
+    end
+    else begin
+      ignore_dpc_check = 0;
+    end
+  end
 
   // Set the is_stall_sim flag if random stalls are enabled
   // This will turn off some unpredictable checks:
   // - CSR wire checks
   // - Non-written GPR registers (per instructions)
   // Note that register writebacks to GPRs will still be checked during each instruction retirement even with stalls
-  initial begin
-    if ($test$plusargs("rand_stall_obi_instr") ||
-        $test$plusargs("rand_stall_obi_data") ||
-        $test$plusargs("rand_stall_obi_all")) begin
-      is_stall_sim = 1;      
+  always @(posedge clknrst_if.reset_n) begin
+    is_stall_sim = `CV32E40P_MMRAM.is_stall_sim();
+    if (is_stall_sim) begin
+      `uvm_info("Step-andCompare", $sformatf("is_stall_sim set to 1, disabling CSR wire checks and stable GPR register checks"), UVM_NONE)
     end
   end
 
@@ -106,6 +121,7 @@ module uvmt_cv32_step_compare
       int          insn_regs_write_size;
       string       compared_str;
       bit ignore;
+      
       logic [31:0] csr_val;
 
       // Compare PC
@@ -188,6 +204,7 @@ module uvmt_cv32_step_compare
              "dpc"           : begin
                                csr_val = `CV32E40P_CORE.cs_registers_i.depc_q;       
                                if (iss_wrap.b1.DM==0) ignore = 1;
+                               if (ignore_dpc_check) ignore = 1;                               
              end
 
              "dscratch0"     : csr_val = `CV32E40P_CORE.cs_registers_i.dscratch0_q;
@@ -303,7 +320,7 @@ module uvmt_cv32_step_compare
          if (!(instruction_count % 10000)) begin
             `uvm_info("Step-and-Compare", $sformatf("Compared %0d instructions", instruction_count), UVM_NONE)
          end
-         if (instruction_count >= 1_000_000) begin
+         if (instruction_count >= 10_000_000) begin
             `uvm_fatal("Step-and-Compare", $sformatf("Compared %0d instructions - that's too long!", instruction_count))
          end
       end
