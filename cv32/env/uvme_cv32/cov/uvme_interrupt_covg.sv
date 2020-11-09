@@ -50,8 +50,6 @@ class uvme_interrupt_covg extends uvm_component;
             ignore_bins mret_excp = { MRET };
             // Should not exit an IRQ into a DRET
             ignore_bins dret_excp = { DRET };
-            // May remove NOP from all coverage
-            ignore_bins nop = { NOP };
         }
     endgroup : cg_irq_exit
 

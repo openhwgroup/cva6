@@ -326,7 +326,6 @@ class uvme_rv32isa_covg extends uvm_component;
 
 // TODO : missing coverage of all combinations of source and destination operands.
 // TODO : missing check of overflow/underflow
-// TODO : NOP covered by nop_cg cover group
 // FIXME: DONE
     covergroup addi_cg with function sample(ins_t ins);
         option.per_instance = 1;
@@ -707,15 +706,6 @@ class uvme_rv32isa_covg extends uvm_component;
         }
         cp_rs1     : coverpoint get_gpr_name(ins.ops[2].val, ins.ops[2].key, "lw") {
             bins gprval[] = {[zero:t6]};
-        }
-    endgroup
-
-// TODO : cover group for NOP (addi x0, x0, imm), may need to be merged into addi_cg
-// FIXME: DONE
-    covergroup nop_cg with function sample(ins_t ins);
-        option.per_instance = 1;
-        cp_nop   : coverpoint (ins.asm) {
-            bins        nop_bin = {NOP};
         }
     endgroup
 
@@ -1363,7 +1353,6 @@ class uvme_rv32isa_covg extends uvm_component;
 
 // TODO : missing coverage of all combinations of source and destination operands.
 // TODO : missing check of overflow/underflow
-// TODO : NOP covered by nop_cg cover group
 // FIXME: DONE
     covergroup c_addi_cg with function sample(ins_t ins);
         option.per_instance = 1;
@@ -1604,8 +1593,7 @@ class uvme_rv32isa_covg extends uvm_component;
         lh_cg         = new();
         lhu_cg        = new();
         lui_cg        = new();
-        lw_cg         = new();
-        nop_cg        = new();
+        lw_cg         = new();        
         or_cg         = new();
         ori_cg        = new();
         sb_cg         = new();
@@ -1826,15 +1814,8 @@ class uvme_rv32isa_covg extends uvm_component;
             case (ins.ins_str)
                 "add"       : begin ins.asm=ADD;    add_cg.sample(ins);    end
                 "addi"      : begin 
-                  if (  get_gpr_name(ins.ops[0].val, ins.ops[0].key, "addi") == gpr_name_t'(zero) &&
-                        get_gpr_name(ins.ops[1].val, ins.ops[1].key, "addi") == gpr_name_t'(zero)) begin
-                    ins.asm=NOP;
-                    nop_cg.sample(ins);
-                  end
-                  else begin
                     ins.asm=ADDI;   
-                    addi_cg.sample(ins);   
-                  end
+                    addi_cg.sample(ins);                     
                 end
                 "and"       : begin ins.asm=AND;    and_cg.sample(ins);    end
                 "andi"      : begin ins.asm=ANDI;   andi_cg.sample(ins);   end
@@ -1873,8 +1854,7 @@ class uvme_rv32isa_covg extends uvm_component;
                 "lh"        : begin ins.asm=LH;     lh_cg.sample(ins);     end
                 "lhu"       : begin ins.asm=LHU;    lhu_cg.sample(ins);    end
                 "lui"       : begin ins.asm=LUI;    lui_cg.sample(ins);    end
-                "lw"        : begin ins.asm=LW;     lw_cg.sample(ins);     end
-                "nop"       : begin ins.asm=NOP;    nop_cg.sample(ins);    end
+                "lw"        : begin ins.asm=LW;     lw_cg.sample(ins);     end                
                 "or"        : begin ins.asm=OR;     or_cg.sample(ins);     end
                 "ori"       : begin ins.asm=ORI;    ori_cg.sample(ins);    end
                 "sb"        : begin ins.asm=SB;     sb_cg.sample(ins);     end
@@ -1971,8 +1951,7 @@ class uvme_rv32isa_covg extends uvm_component;
                                                     jalr_cg.sample(ins);
                 end
 
-                default: begin
-                    ins.asm = NOP;
+                default: begin                    
                     `uvm_warning("RV32ISA Coverage", 
                                  $sformatf("instruction [%0s] not mapped to functional coverage", 
                                            ins.ins_str))                    
