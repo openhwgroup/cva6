@@ -40,7 +40,6 @@
 #         "cmd" key.
 #      3. Handle Verilator a little more elegantly.
 #      4. Terminate if compile fails.
-#      5. Check that all specified tests ran.
 ################################################################################
 
 import json
@@ -51,6 +50,7 @@ import subprocess
 import pprint
 import yaml
 import re
+import distutils.spawn
 
 if (sys.version_info < (3,0,0)):
     print ('Requires python 3')
@@ -198,6 +198,9 @@ if (args.no_uvm):
 
 if (args.simulator == None):
     print ('Must specify a simulator.  Type `ci_check -h` to see how')
+    exit(0)
+elif (not(distutils.spawn.find_executable(args.simulator))):
+    print ('ERROR: simulator='+args.simulator+' but executable not found')
     exit(0)
 else:
     svtool = args.simulator
