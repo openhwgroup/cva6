@@ -52,8 +52,9 @@ module CPU
     export "DPI-C" function getState;
     export "DPI-C" function putState;
     export "DPI-C" task     setRETIRE;
+    export "DPI-C" task     setDISCARD;
     
-    bit [31:0] PC, PCr;
+    bit [31:0] PC, PCr, PCe;
     bit [31:0] GPR[32];
     bit [31:0] FPR[32];
     // ToDo Vector
@@ -66,6 +67,7 @@ module CPU
     bit    [0:(64*8)-1] DecodeP;
     int    Icount = 0;
     event  Retire;
+    event  Discard;
     
     bit mode_disass = 0;
     
@@ -122,7 +124,14 @@ module CPU
         SysBus.Step = 0;
         ->Retire;
     endtask
-    
+
+    task setDISCARD;
+        input int excPC;
+        
+        PCe = excPC;
+        ->Discard;
+    endtask
+        
     function automatic void setPC (input longint value);
         PC = value;
     endfunction
