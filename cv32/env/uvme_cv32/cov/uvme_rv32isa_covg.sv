@@ -1357,7 +1357,7 @@ class uvme_rv32isa_covg extends uvm_component;
     covergroup c_addi_cg with function sample(ins_t ins);
         option.per_instance = 1;
         cp_rd    : coverpoint get_gpr_name(ins.ops[0].val, ins.ops[0].key, "c.addi") {
-            bins gprval[] = {[s0:a5]};
+            bins gprval[] = {zero,[s0:a5]}; // Add zero here to map c.nop
 //            bins unexpected[] = default;
         }
         cp_imm6   : coverpoint get_imm(ins.ops[2].val,"c.addi" ) {
@@ -1725,6 +1725,13 @@ class uvme_rv32isa_covg extends uvm_component;
                     c_addi_cg.sample(ins);
                 end
             end
+            "nop"     : begin
+                // Map to C_ADDI x0,0
+                ins.asm=C_ADDI;
+                ins.ops[0].val = "zero";
+                ins.ops[2].val = "0";
+                c_addi_cg.sample(ins);
+            end
             "slli"    : begin
                 if ( get_gpr_name(ins.ops[0].val, ins.ops[0].key, "c.slli") == get_gpr_name(ins.ops[1].val, ins.ops[1].key, "c.slli")) begin
                     ins.asm=C_SLLI;
@@ -1905,6 +1912,14 @@ class uvme_rv32isa_covg extends uvm_component;
                 /*
                 * Convert pseduo-ops from ISS to ISA instructions for sampling
                 */
+                "nop"     : begin
+                    // Map to ADDI x0,x0,0
+                    ins.asm=C_ADDI;
+                    ins.ops[0].val = "zero";
+                    ins.ops[1].val = "zero";
+                    ins.ops[2].val = "0";
+                    addi_cg.sample(ins);
+                end
 
                 // j: convert to jal x0,offset
                 "j"         : begin ins.asm=JAL;    ins.ops[1] = ins.ops[0]; ins.ops[0].val = "zero"; jal_cg.sample(ins);    end
