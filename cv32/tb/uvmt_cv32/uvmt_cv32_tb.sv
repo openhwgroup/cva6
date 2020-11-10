@@ -303,8 +303,6 @@ bind cv32e40p_wrapper
           step_compare_if.deferint_prime <= 1'b1;
         else if (dut_wrap.irq_ack)
           step_compare_if.deferint_prime <= 1'b0;
-        else if (core_sleep_o_d && irq_enabled) 
-          step_compare_if.deferint_prime <= 1'b0;
         else if (id_start && !step_compare_if.deferint_prime) 
           step_compare_if.deferint_prime <= 1'b1;
       end
