@@ -68,6 +68,8 @@ BANNER=*************************************************************************
 #      *_TAG:    Not yet supported (TODO).
 #                
 
+export SHELL = /bin/bash
+
 CV32E40P_REPO   ?= https://github.com/openhwgroup/cv32e40p
 CV32E40P_BRANCH ?= master
 CV32E40P_HASH   ?= 6c858bc
