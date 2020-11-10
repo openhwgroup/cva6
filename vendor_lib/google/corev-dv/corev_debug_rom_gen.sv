@@ -127,7 +127,6 @@ class corev_debug_rom_gen extends riscv_debug_rom_gen;
 
             //format_section(debug_end);
             gen_section($sformatf("%0sdebug_rom", hart_prefix(hart)), debug_main);
-            debug_end = {debug_end, dret};            
 
             // Randomly add a WFI at end of debug rom
             // This will be treaed as a NOP always, but added here to close instructon
@@ -138,6 +137,8 @@ class corev_debug_rom_gen extends riscv_debug_rom_gen;
                     4: begin /* insert nothing */ end
                 endcase
             end
+
+            debug_end = {debug_end, dret};            
 
             gen_section($sformatf("%0sdebug_end", hart_prefix(hart)), debug_end);            
         end
