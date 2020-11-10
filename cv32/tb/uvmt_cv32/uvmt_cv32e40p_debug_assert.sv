@@ -369,6 +369,18 @@ module uvmt_cv32e40p_debug_assert
     a_debug_at_reset : assert property(p_debug_at_reset)
         else
             `uvm_error(info_tag, "Debug mode not entered correctly at reset!");
+
+    // Check that we cover the case where a debug_req_i
+    // comes in the middle of an illegal insn, causing
+    // dpc to be set to the exception handler entry addr
+    property p_illegal_insn_debug_req;
+        cov_assert_if.illegal_insn_q & cov_assert_if.debug_req_i |-> decode_valid [->1:2] ##0 cov_assert_if.debug_mode_q &&
+                                                                     cov_assert_if.depc_q == cov_assert_if.mtvec;
+    endproperty
+    
+    a_illegal_insn_debug_req : assert property(p_illegal_insn_debug_req)
+        else
+            `uvm_error(info_tag, "Debug mode not entered correctly while handling illegal instruction!");
 // -------------------------------------------
     // Capture internal states for use in checking
     // -------------------------------------------
