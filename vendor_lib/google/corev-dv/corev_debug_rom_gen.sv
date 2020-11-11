@@ -38,6 +38,16 @@ class corev_debug_rom_gen extends riscv_debug_rom_gen;
         // Cast CORE-V derived handle to enable fetching core-v config fields
         `DV_CHECK($cast(cfg_corev, cfg))
 
+        // Randomly add a WFI at start of ddebug rom
+        // This will be treaed as a NOP always, but added here to close instructon
+        // combination coverage (i.e. ebreak->wfi)
+        if (!cfg.no_wfi) begin
+            randcase
+                1:  debug_main.push_back("wfi");
+                4: begin /* insert nothing */ end
+            endcase
+        end
+
         // The following is directly copied from riscv_debug_rom_gen.sv
         // Changes: 
         // - Altering the stack push/pop to use custom debugger stack            
@@ -47,6 +57,12 @@ class corev_debug_rom_gen extends riscv_debug_rom_gen;
             debug_main = {dret};
             gen_section($sformatf("%0sdebug_rom", hart_prefix(hart)), debug_main);
         end else begin
+            // Check the debugger stack pointer to check for a null pointer in cfg.dp
+            // and initialize
+            debug_main.push_back($sformatf("bne x%0d, zero, dp_init_done", cfg_corev.dp));
+            debug_main.push_back($sformatf("la  x%0d, debugger_stack_end", cfg_corev.dp));
+            debug_main.push_back($sformatf("dp_init_done:"));
+
             if (cfg.enable_ebreak_in_debug_rom) begin
                 gen_ebreak_header();
             end
@@ -111,7 +127,19 @@ class corev_debug_rom_gen extends riscv_debug_rom_gen;
 
             //format_section(debug_end);
             gen_section($sformatf("%0sdebug_rom", hart_prefix(hart)), debug_main);
+
+            // Randomly add a WFI at end of debug rom
+            // This will be treaed as a NOP always, but added here to close instructon
+            // combination coverage (i.e. ebreak->wfi)
+            if (!cfg.no_wfi) begin
+                randcase
+                    1:  debug_end.push_back("wfi");
+                    4: begin /* insert nothing */ end
+                endcase
+            end
+
             debug_end = {debug_end, dret};            
+
             gen_section($sformatf("%0sdebug_end", hart_prefix(hart)), debug_end);            
         end
         gen_debug_exception_handler();

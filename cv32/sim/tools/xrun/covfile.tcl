@@ -21,11 +21,19 @@ set_optimize -vlog_prune_on
 set_glitch_strobe 1ps
 
 # ----------------------------------------------------------------------------------
+# FSM coverage configruation
+# ----------------------------------------------------------------------------------
+
+# Enable scoring state hold arcs in FSM
+set_fsm_scoring -hold_transition
+
+# ----------------------------------------------------------------------------------
 # Expression coverage configuration
 # ----------------------------------------------------------------------------------
 
 # Setting expression scoring for all operators (not only boolean (|| &&) and VHDL (AND OR NOR NAND)
-set_expr_scoring -all
+set_expr_coverable_operators -all
+set_expr_coverable_statements -all
 
 # ----------------------------------------------------------------------------------
 # Toggle coverage configuration
@@ -33,3 +41,10 @@ set_expr_scoring -all
 
 # Toggle coverage smart refinement (refinement for toggle with traverse hierarchy)
 set_toggle_smart_refinement
+
+# ----------------------------------------------------------------------------------
+# Instances/modules to remove from coverage
+# For performance and to avoid spurious warnings, remove these modules from code coverage collection
+# ----------------------------------------------------------------------------------
+deselect_coverage -all -module riscv_random_interrupt_generator
+deselect_coverage -all -module cv32e40p_tracer

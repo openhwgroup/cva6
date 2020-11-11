@@ -14,6 +14,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # 
+# SPDX-License-Identifier: Apache-2.0 WITH SHL-2.0
+#
 ###############################################################################
 #
 # Common code for simulation Makefiles.  Intended to be included by the
@@ -66,9 +68,11 @@ BANNER=*************************************************************************
 #      *_TAG:    Not yet supported (TODO).
 #                
 
+export SHELL = /bin/bash
+
 CV32E40P_REPO   ?= https://github.com/openhwgroup/cv32e40p
 CV32E40P_BRANCH ?= master
-CV32E40P_HASH   ?= 8dfe6f0
+CV32E40P_HASH   ?= edfe222
 
 RISCVDV_REPO    ?= https://github.com/google/riscv-dv
 RISCVDV_BRANCH  ?= master
@@ -334,7 +338,7 @@ clean-bsp:
 # keep raw elf files to generate helpful debugging files such as dissambler
 .PRECIOUS : %debug_test.elf
 .PRECIOUS : %debug_test_reset.elf
-
+.PRECIOUS : %debug_test_trigger.elf
 # Prepare file list for .elf
 # Get the source file names from the BSP directory
 PREREQ_BSP_FILES  = $(filter %.c %.S %.ld,$(wildcard $(BSP)/*))
@@ -359,6 +363,12 @@ TEST_FILES        = $(filter %.c %.S,$(wildcard $(dir $*)*))
 		$(TEST_FILES) \
 		-T $(BSP)/link.ld
 %debug_test_reset.elf:
+	$(RISCV_EXE_PREFIX)gcc -mabi=ilp32 -march=rv32imc -o $@ \
+		-Wall -pedantic -Os -g -nostartfiles -static \
+		$(BSP_FILES) \
+		$(TEST_FILES) \
+		-T $(BSP)/link.ld
+%debug_test_trigger.elf:
 	$(RISCV_EXE_PREFIX)gcc -mabi=ilp32 -march=rv32imc -o $@ \
 		-Wall -pedantic -Os -g -nostartfiles -static \
 		$(BSP_FILES) \

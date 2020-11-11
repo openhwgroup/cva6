@@ -40,6 +40,7 @@ module uvmt_cv32e40p_debug_assert
   logic [31:0] tdata2_at_entry;
   // Locally track which debug cause should be used
   logic [2:0] debug_cause_pri;
+  logic [31:0] boot_addr_at_entry;
 
   // Locally track pc in ID stage to detect first instruction of debug code
   logic [31:0] prev_id_pc;
@@ -63,6 +64,13 @@ module uvmt_cv32e40p_debug_assert
                                     cov_assert_if.id_stage_instr_valid_i &
                      (cov_assert_if.id_stage_instr_rdata_i == 32'h00100073) & 
                      cov_assert_if.id_stage_is_compressed == 1'b1;
+
+  assign cov_assert_if.is_mulhsu = cov_assert_if.is_decoding &
+                                   cov_assert_if.id_stage_instr_valid_i & 
+                                   cov_assert_if.id_stage_instr_rdata_i[31:25] == 7'h1 &
+                                   cov_assert_if.id_stage_instr_rdata_i[14:12] == 3'b010 &
+                                   cov_assert_if.id_stage_instr_rdata_i[6:0]   == 7'h33;
+
 
   assign decode_valid =  cov_assert_if.id_stage_instr_valid_i & cov_assert_if.ctrl_fsm_cs == cv32e40p_pkg::DECODE;
     // ---------------------------------------
@@ -112,6 +120,7 @@ module uvmt_cv32e40p_debug_assert
     // TODO: This is expected to fail formal as the sequence gets long and
     // complicated.
     property p_cebreak_exception;
+        disable iff(cov_assert_if.debug_req_i | cov_assert_if.rst_ni)
         $rose(cov_assert_if.is_cebreak) && cov_assert_if.dcsr_q[15] == 1'b0 && !cov_assert_if.debug_mode_q  && cov_assert_if.is_decoding && cov_assert_if.id_valid &&
         !cov_assert_if.debug_req_i 
         |-> (decode_valid & cov_assert_if.id_valid) [->2] ##0  !cov_assert_if.debug_mode_q && (cov_assert_if.mcause_q[5:0] === cv32e40p_pkg::EXC_CAUSE_BREAKPOINT) 
@@ -349,8 +358,17 @@ module uvmt_cv32e40p_debug_assert
         else
             `uvm_error(info_tag, "Debug mode not entered after debug_req_i and irq on same cycle");
 
-    
+    // debug_req at reset should result in debug mode and no instructions
+    // executed
+    property p_debug_at_reset;
+        cov_assert_if.ctrl_fsm_cs == cv32e40p_pkg::RESET && cov_assert_if.debug_req_i |->
+        decode_valid [->1:2] ##0 cov_assert_if.debug_mode_q && (cov_assert_if.depc_q == boot_addr_at_entry);
+ 
+    endproperty    
 
+    a_debug_at_reset : assert property(p_debug_at_reset)
+        else
+            `uvm_error(info_tag, "Debug mode not entered correctly at reset!");
 // -------------------------------------------
     // Capture internal states for use in checking
     // -------------------------------------------
@@ -406,6 +424,10 @@ module uvmt_cv32e40p_debug_assert
           // Clear flag while not in dmode or we see ebreak in debug
           if((!cov_assert_if.debug_mode_q & halt_addr_at_entry_flag) | (cov_assert_if.debug_mode_q & (cov_assert_if.is_ebreak | cov_assert_if.is_cebreak)))
               halt_addr_at_entry_flag <= 1'b0;
+
+          // Capture boot addr
+          if(cov_assert_if.ctrl_fsm_cs == cv32e40p_pkg::RESET)
+              boot_addr_at_entry <= cov_assert_if.boot_addr_i;
       end
   end
   always@ (posedge cov_assert_if.clk_i)  begin

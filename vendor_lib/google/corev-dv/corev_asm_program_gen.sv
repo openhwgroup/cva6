@@ -79,8 +79,14 @@ class corev_asm_program_gen extends riscv_asm_program_gen;
       string intr_handler[$];
 
       if (corev_cfg.use_fast_intr_handler[i]) begin
-        // Emit fast interrupt handler that might read a couple of CSRs and finish
-        // Save 
+        // Emit fast interrupt handler since cv32e40p has hardware interrupt ack
+        // If WFIs allow, randomly insert wfi as well
+        if (!cfg.no_wfi) begin         
+            randcase
+                2:  intr_handler.push_back("wfi");
+                4: begin /* insert nothing */ end
+            endcase          
+        end
         intr_handler.push_back("mret");
       end
       else begin
@@ -250,6 +256,8 @@ class corev_asm_program_gen extends riscv_asm_program_gen;
     // Restore user mode GPR value from kernel stack before return
     pop_gpr_from_kernel_stack(status, scratch, cfg.mstatus_mprv,
                               cfg.sp, cfg.tp, interrupt_handler_instr);
+                                      // Emit fast interrupt handler since cv32e40p has hardware interrupt ack
+
     interrupt_handler_instr = {interrupt_handler_instr,
                                $sformatf("%0sret;", mode_prefix)
     };
