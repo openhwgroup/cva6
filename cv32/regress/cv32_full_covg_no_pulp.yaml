@@ -220,7 +220,13 @@ tests:
     dir: cv32/sim/uvmt_cv32
     cmd: make test COREV=YES TEST=debug_test_trigger
 
-  interrupt_bootstrap:
+  debug_test_known_miscompares:
+    build: uvmt_cv32
+    description: Debug test which contains known miscompares
+    dir: cv32/sim/uvmt_cv32
+    cmd: make test COREV=YES TEST=debug_test_known_miscompares USE_ISS=NO
+
+interrupt_bootstrap:
     build: uvmt_cv32
     description: Interrupt bootstrap test
     dir: cv32/sim/uvmt_cv32

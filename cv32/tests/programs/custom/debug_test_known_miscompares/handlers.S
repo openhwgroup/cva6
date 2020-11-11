@@ -65,6 +65,9 @@
 .global glb_illegal_insn_status
 .global glb_ebreak_status
 .global glb_expect_illegal_insn
+.global glb_expect_ebreak_handler
+.global glb_exception_ebreak_status
+.global glb_expect_irq_entry
 .set test_ret_val, 0x20000000
 .set test_fail, 0x1
 
@@ -91,6 +94,15 @@ __no_irq_handler:
 	la a0, no_exception_handler_msg
 	jal ra, puts
     
+    // Check if we expected to enter irq
+    la a1, glb_expect_irq_entry
+    lw t0, 0(a1)
+    beq t0, x0, _irq_fail
+
+    // Clear entry flag
+    li t0, 0
+    sw t0, 0(a1)
+	//j __no_irq_handler
     
     // Return
     lw ra, 0(sp)
@@ -214,6 +226,22 @@ handle_ebreak:
 	/* TODO support debug handling requirements.  */
 	la a0, ebreak_msg
 	jal ra, puts
+        // Check if expecting ebreak handler
+        la a0, glb_expect_ebreak_handler 
+        lw t0, 0(a0)
+        bne t0, x0, cont_handle_ebreak
+        // Not expecting ebreak, assert test failed
+        li a0, test_ret_val
+        li t0, 1
+        sw t0, 0(a0)
+	j end_handler_incr_mepc
+cont_handle_ebreak:
+        //increment hart status     
+        sw x0, 0(a0)
+        la a0, glb_ebreak_status  
+        lw t0, 0(a0)
+        addi t0,t0,1
+        sw t0, 0(a0)
 	j end_handler_incr_mepc
 
 
@@ -237,6 +265,18 @@ cont_illegal_insn:
         addi t0,t0,1
         sw t0, 0(a0)
 
+        // Check if we are expected to execute ebreak
+        la a0, glb_exception_ebreak_status
+        lw t0, 0(a0)
+        //  End handler if no ebreak is to be executed
+        beq t0, x0, end_handler_incr_mepc
+       
+        // Clear ebreak flag
+        sw x0, 0(a0) 
+        // Execute ebreak
+        .4byte 0x00100073    
+        // Exit handler
+    	j end_handler_incr_mepc
 
 	j end_handler_incr_mepc
 

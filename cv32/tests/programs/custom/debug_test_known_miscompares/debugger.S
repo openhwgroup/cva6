@@ -59,8 +59,28 @@ _debugger_start:
     
     li t0, 1
     beq t2, t0, _debugger_illegal_and_req
+    li t0, 2
+    beq t2, t0, _debugger_single_step_enable
+    li t0, 3
+    beq t2, t0, _debugger_single_step_ebreak
+    li t0, 4
+    beq t2, t0, _debugger_single_step_disable
 
     j _debugger_fail
+
+_debugger_single_step_ebreak:
+    j _debugger_end
+
+_debugger_single_step_enable:
+    // Enable step bit in dcsr
+    li t0, 4<<28 | 0<<15 | 1<<2 
+    csrw dcsr, t0
+    j _debugger_end
+
+_debugger_single_step_disable:
+    li t0, 4<<28 | 0<<15 | 0<<2 
+    csrw dcsr, t0
+    j _debugger_end
 
 _debugger_illegal_and_req:
     # Test expects entry of exception handler
@@ -72,11 +92,7 @@ _debugger_illegal_and_req:
 
 
 _debugger_end:
-
-    // Clear debug entry expectation flag
-    la a1, glb_expect_debug_entry
-    sw x0, 0(a1)
-_debugger_end_continue:
+    
         // Debugger Un-Stack
         //lw t0, 0(a0)
         la a0, __debugger_stack_start
@@ -87,6 +103,7 @@ _debugger_end_continue:
         lw   a2, 16(a0)
         csrr a0, dscratch
         dret
+
 _debugger_fail: //Test Failed
         li a0, test_ret_val
         li t0, test_fail
