@@ -49,7 +49,6 @@ VCS_COMP_FLAGS  ?= -lca -sverilog \
 										-assert svaext -race=all -ignore unique_checks -full64
 VCS_GUI         ?=
 VCS_RUN_COV      = -cm line+cond+tgl+fsm+branch+assert -cm_dir $(MAKECMDGOALS).vdb
-NUM_TESTS         ?= 2
 
 ###############################################################################
 # Common QUIET flag defaults to -quiet unless VERBOSE is set
@@ -273,7 +272,7 @@ comp_corev-dv: $(RISCVDV_PKG)
 	cd $(VCS_COREVDV_RESULTS) && \
 	$(VCS) $(VCS_COMP_FLAGS) \
 		$(QUIET) $(VCS_USER_COMPILE_ARGS) \
-		+incdir+$(RISCVDV_PKG)/target/rv32imc \
+		+incdir+$(COREVDV_PKG)/target/cv32e40p \
 		+incdir+$(RISCVDV_PKG)/user_extension \
 		+incdir+$(RISCVDV_PKG)/tests \
 		+incdir+$(COREVDV_PKG) \
