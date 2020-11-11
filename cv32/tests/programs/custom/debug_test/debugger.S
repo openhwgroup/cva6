@@ -215,6 +215,10 @@ _debugger_single_step:
     beq t0, t1, _debugger_single_step_cebreak
     li t1, 8
     beq t0, t1, _debugger_single_step_ebreak
+    li t1, 9
+    beq t0, t1, _debugger_single_step_ebreak_exception
+    li t1, 10
+    beq t0, t1, _debugger_single_step_cebreak_exception
     j _debugger_fail
 
 _debugger_single_step_stepie_disable:
@@ -280,7 +284,7 @@ _debugger_single_step_end:
     sw t0, 0(a1)
     
     // Clear step info if not 3 (exception) or 5 (irq while stepping)
-    // 6, 7 or 8
+    // 6, 7 or 8, 9, 10
     // In exception test we expect jumps
     // to mtvec and other places, so keep
     // step info to waive dpc checks
@@ -295,6 +299,10 @@ _debugger_single_step_end:
     li t1, 7
     beq t0, t1, _debugger_end
     li t1, 8
+    beq t0, t1, _debugger_end
+    li t1, 9
+    beq t0, t1, _debugger_end
+    li t1, 10
     beq t0, t1, _debugger_end
     li t1, 0
     sw t1, 0(a1)
@@ -336,7 +344,7 @@ _inc_dpc_cebreak:
     j _debugger_single_step_end
 
 _debugger_single_step_ebreak:
-    # If cause == 1, we need to advance dpc by 2
+    # If cause == 1, we need to advance dpc by 4
     li t1, 4<<28 | 1<<15 | 1<<6 | 1<<2 | 3<<0
     csrr t2, dcsr
     beq t1, t2, _inc_dpc_ebreak
@@ -346,6 +354,38 @@ _inc_dpc_ebreak:
     csrr t1, dpc
     addi t1, t1, 4
     csrw dpc, t1
+
+    # Turn off dcsr.ebreakm for next two tests
+    # NB! Set to 1 until miscompares are fixed
+    # and steps 9 and 10 are back in
+    li t1, 4<<28 | 1<<15 | 1<<6 | 1<<2 | 3<<0
+    csrw dcsr, t1
+    j _debugger_single_step_end
+
+_debugger_single_step_ebreak_exception:
+    # If cause == 1, we need to advance dpc by 2
+    #li t1, 4<<28 | 0<<15 | 1<<6 | 1<<2 | 3<<0
+    #csrr t2, dcsr
+    #beq t1, t2, _inc_dpc_ebreak
+    
+#    j _debugger_single_step_end
+#_inc_dpc_ebreak_2:
+#    csrr t1, dpc
+#    addi t1, t1, 4
+#    csrw dpc, t1
+
+    j _debugger_single_step_end
+_debugger_single_step_cebreak_exception:
+    #  depc != 0 => we have passed the first
+    # instruction of the handler, and we can
+    # set dcsr.ebreakm again
+    csrr t0, dpc
+    bne t0, x0, _end
+    
+    li t1, 4<<28 | 1<<15 | 1<<6 | 1<<2 | 3<<0
+    csrw dcsr, t1
+
+_end:
     j _debugger_single_step_end
 
 _debugger_single_step_basic:

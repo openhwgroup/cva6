@@ -339,6 +339,8 @@ clean-bsp:
 .PRECIOUS : %debug_test.elf
 .PRECIOUS : %debug_test_reset.elf
 .PRECIOUS : %debug_test_trigger.elf
+.PRECIOUS : %debug_test_known_miscompares.elf
+	
 # Prepare file list for .elf
 # Get the source file names from the BSP directory
 PREREQ_BSP_FILES  = $(filter %.c %.S %.ld,$(wildcard $(BSP)/*))
@@ -369,6 +371,12 @@ TEST_FILES        = $(filter %.c %.S,$(wildcard $(dir $*)*))
 		$(TEST_FILES) \
 		-T $(BSP)/link.ld
 %debug_test_trigger.elf:
+	$(RISCV_EXE_PREFIX)gcc -mabi=ilp32 -march=rv32imc -o $@ \
+		-Wall -pedantic -Os -g -nostartfiles -static \
+		$(BSP_FILES) \
+		$(TEST_FILES) \
+		-T $(BSP)/link.ld
+%debug_test_known_miscompares.elf:
 	$(RISCV_EXE_PREFIX)gcc -mabi=ilp32 -march=rv32imc -o $@ \
 		-Wall -pedantic -Os -g -nostartfiles -static \
 		$(BSP_FILES) \
