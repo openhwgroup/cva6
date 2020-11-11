@@ -317,7 +317,7 @@ function void uvmt_cv32_base_test_c::phase_ended(uvm_phase phase);
      if(!(uvm_config_db#(bit[31:0])::get(null, "*", "evalue", evalue))) `uvm_error("END_OF_TEST", "Cannot get evalue from config_db.")
 
      // Use the DUT Wrapper Virtual Peripheral's status outputs to update report server status.   
-     if (tf)  `uvm_warning  ("END_OF_TEST", "DUT WRAPPER virtual peripheral flagged test failure.")
+     if (tf)  `uvm_error  ("END_OF_TEST", "DUT WRAPPER virtual peripheral flagged test failure.")
      
      // Check exit code if a valid exit code was written to Virtual Peripheral
      if (evalid) begin
