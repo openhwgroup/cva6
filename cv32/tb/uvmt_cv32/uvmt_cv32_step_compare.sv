@@ -235,9 +235,8 @@ module uvmt_cv32_step_compare
            then run OVP for 1 instruction retirement
         3. Compare RTL <-> OVP
     */
-    bit step_rtl = 0;
-    bit step_ovp = 0;
-    event ev_ovp, ev_rtl;
+    bit step_rtl;
+    bit step_ovp;
     event ev_compare;
     static integer instruction_count = 0;
    
@@ -269,7 +268,6 @@ module uvmt_cv32_step_compare
         STEP_OVP: begin
            wait (step_compare_if.ovp_cpu_retire.triggered)
            step_ovp <= 0;
-           ->ev_ovp; // not used
            ->`CV32E40P_TRACER.ovp_retire;
            state <= COMPARE;
         end
