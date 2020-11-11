@@ -106,11 +106,6 @@ _debugger_start:
     li t0,15
     beq t2,t0, _debugger_trigger_in_debug // Test 15
     
-    li t0, 25
-    beq t2, t0, _debugger_illegal_and_req
-
-_debugger_illegal_and_req:
-    j _debugger_end
 
 _debugger_mret_call:
 	mret // will invoke debugger exception routine
