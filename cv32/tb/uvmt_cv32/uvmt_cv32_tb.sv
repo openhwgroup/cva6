@@ -275,7 +275,9 @@ bind cv32e40p_wrapper
       
       // Interrupt modeling logic - used to time interrupt entry from RTL to the ISS    
       wire [31:0] irq_enabled;
-      reg [31:0] irq_deferint;
+      reg [31:0] irq_deferint_ack;
+      reg [31:0] irq_deferint_sleep;
+      reg        deferint_ack;      
       reg [31:0] irq_mip;
       reg core_sleep_o_d;
 
@@ -299,24 +301,35 @@ bind cv32e40p_wrapper
          derefint_prime is then reset to 1 when the ID stage commits to the next instruction (which should be the MTVEC entry address)
       */
       always @(posedge clknrst_if.clk or negedge clknrst_if.reset_n) begin
-        if (!clknrst_if_iss.reset_n)
-          step_compare_if.deferint_prime <= 1'b1;
-        else if (dut_wrap.irq_ack)
+        if (!clknrst_if_iss.reset_n) begin
+          step_compare_if.deferint_prime     <= 1'b1;
+          step_compare_if.deferint_prime_ack <= 1'b1;
+        end
+        else if (dut_wrap.irq_ack) begin
+          step_compare_if.deferint_prime     <= 1'b0;
+          step_compare_if.deferint_prime_ack <= 1'b0;
+        end
+        else if (core_sleep_o_d && irq_enabled) begin
           step_compare_if.deferint_prime <= 1'b0;
-        else if (core_sleep_o_d && irq_enabled) 
-          step_compare_if.deferint_prime <= 1'b0;
-        else if (id_start && !step_compare_if.deferint_prime) 
-          step_compare_if.deferint_prime <= 1'b1;
+        end
+        else if (id_start && !step_compare_if.deferint_prime) begin
+          step_compare_if.deferint_prime     <= 1'b1;
+          step_compare_if.deferint_prime_ack <= 1'b1;
+        end
       end
 
       /**
        * When the ID stage commits, we set deferint to the ISS to signal to look at the interrrupts
        */
       always @(posedge clknrst_if.clk or negedge clknrst_if.reset_n) begin
-        if (!clknrst_if_iss.reset_n)
+        if (!clknrst_if_iss.reset_n) begin
           iss_wrap.b1.deferint <= 1'b1;
-        else if (id_start && !step_compare_if.deferint_prime) 
+          deferint_ack <= 1'b1;
+        end
+        else if (id_start && !step_compare_if.deferint_prime) begin
           iss_wrap.b1.deferint <= 1'b0;
+          deferint_ack <= step_compare_if.deferint_prime_ack;
+        end
       end
 
       /**
@@ -324,27 +337,35 @@ bind cv32e40p_wrapper
        */
       always @(negedge step_compare_if.ovp_b1_Step) begin
         if (iss_wrap.b1.deferint == 0) begin
-          iss_wrap.b1.deferint <= 1'b1;
-          irq_deferint <= '0;
+          iss_wrap.b1.deferint <= 1'b1;          
+          deferint_ack <= 1'b1;
+          irq_deferint_ack <= '0;          
         end
+        irq_deferint_sleep <= '0;
       end
 
       /**
-        * irq_deferint will capture the asserted interrupt to present to the ISS later
+        * irq_deferint_ack will capture the asserted interrupt to present to the ISS later
         * since the autoclear/ack interface can clear the IRQ long before the ISS sees it
         */
       always @(posedge clknrst_if.clk or negedge clknrst_if.reset_n) begin
         if (!clknrst_if.reset_n)
-          irq_deferint <= '0;
-        else if (dut_wrap.irq_ack)        
-          irq_deferint <= (1 << dut_wrap.irq_id);
-        else if (core_sleep_o_d && irq_enabled)
-          irq_deferint <= irq_enabled;
+          irq_deferint_ack <= '0;
+        else if (dut_wrap.irq_ack)
+          irq_deferint_ack <= (1 << dut_wrap.irq_id);
       end
       
-      always @*
-        //iss_wrap.b1.irq_i = !iss_wrap.b1.deferint ? irq_deferint : irq_mip;
-        iss_wrap.b1.irq_i = !iss_wrap.b1.deferint ? irq_deferint : dut_wrap.irq;
+      always @(posedge clknrst_if.clk or negedge clknrst_if.reset_n) begin
+        if (!clknrst_if.reset_n)
+          irq_deferint_sleep <= '0;
+        else if (core_sleep_o_d)
+          irq_deferint_sleep <= irq_enabled;
+      end
+
+      always @*        
+        iss_wrap.b1.irq_i = iss_wrap.b1.deferint ? dut_wrap.irq :
+                            !deferint_ack ? irq_deferint_ack :
+                            irq_deferint_sleep;
 
       /**
        * Interrupt assertion to iss_wrap, note this runs on the ISS clock (skewed from core clock)

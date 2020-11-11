@@ -24,7 +24,13 @@ tests:
     description: Interrupt directed test  
     dir: cv32/sim/uvmt_cv32
     cmd: make test COREV=YES TEST=interrupt_test
-    
+
+  interrupt_bootstrap:
+    build: uvmt_cv32
+    description: Interrupt directed bootstrap
+    dir: cv32/sim/uvmt_cv32
+    cmd: make test COREV=YES TEST=interrupt_bootstrap
+
   corev_rand_interrupt:
     build: uvmt_cv32
     description: Interrupt random test
