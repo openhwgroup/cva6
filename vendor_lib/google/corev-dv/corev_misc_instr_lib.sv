@@ -54,9 +54,10 @@
 /*
  * corev_jal_wfi_instr
  *
- * corev_hal_wfi_instr: Directed test stream that uses the riscv_jal_instr directed instruction stream and injects random
+ * corev_jal_wfi_instr: Directed test stream that uses the riscv_jal_instr directed instruction stream and injects random
  * WFI instructions in the stream.  This helps to close coverage on WFI combination instructions with C_J and JAL instructions
  */
+
 class corev_jal_wfi_instr extends riscv_jal_instr;
 
   rand int unsigned num_wfi;
@@ -111,6 +112,12 @@ class corev_jal_wfi_instr extends riscv_jal_instr;
 
 endclass : corev_jal_wfi_instr
 
+/*
+ * corev_nop_instr
+ *
+ * Generates a compressed or non-compressed NOP (pseduo-op)
+ */
+ 
 class corev_nop_instr extends riscv_directed_instr_stream;
 
   `uvm_object_utils(corev_nop_instr)
@@ -134,3 +141,164 @@ class corev_nop_instr extends riscv_directed_instr_stream;
   endfunction : post_randomize
 
 endclass : corev_nop_instr
+
+/*
+ * corev_jalr_wfi_instr
+ *
+ * Create a very directed test stream to close coverage on wfi followed by a jump
+ * The directed stream will run a fixed sequence like so: (Note that flavors of jumps are randomized when allowable by the ISA)
+ *    la         s0, 1f #start corev_jalr_wfi_instr
+ *    la         s1, 2f
+ *    wfi
+ *    jalr       zero, s0, 0
+ * 2: c.jal      3f
+ * 1: jalr       zero, s1, 0
+ * 3: nop
+ */
+class corev_jalr_wfi_instr extends riscv_directed_instr_stream;
+
+  rand bit         use_jalr;
+  rand bit         use_compressed;
+  rand riscv_reg_t fwd_addr_reg;
+  rand riscv_reg_t bwd_addr_reg;
+
+  constraint use_jalr_c {
+    // Compressed versions of jalr can only use ra, so we can only use ra if not reserved
+    (RA inside {cfg.reserved_regs}) -> !use_jalr;
+  }
+
+  constraint use_compressed_c {
+    cfg.disable_compressed_instr -> !use_compressed;
+    use_compressed == 1;
+  }
+
+  constraint valid_reg_c {
+    fwd_addr_reg != bwd_addr_reg;
+    !(fwd_addr_reg inside {cfg.reserved_regs});
+    !(bwd_addr_reg inside {cfg.reserved_regs});
+    // Always use compressed instruction targetable register
+    use_compressed -> (fwd_addr_reg inside {[S0:A5]});
+    use_compressed -> (bwd_addr_reg inside {[S0:A5]});
+  }
+
+  `uvm_object_utils(corev_jalr_wfi_instr);
+
+  function new(string name = "");
+    super.new(name);
+  endfunction : new
+  
+  function void post_randomize();
+    riscv_pseudo_instr la_instr;
+    riscv_instr        instr;
+    riscv_instr_name_t allowed_instr[];
+
+    // ---------------------------------------
+    // First instruction: load the address of fwd label (1)    
+    // ---------------------------------------
+    la_instr = riscv_pseudo_instr::type_id::create("LA");
+    `DV_CHECK_RANDOMIZE_WITH_FATAL(la_instr,
+      pseudo_instr_name == LA;
+      rd == fwd_addr_reg;
+      , "Failed randomizing LA"
+    )
+    la_instr.imm_str = "1f";
+    la_instr.comment = "start corev_jalr_wfi_instr";    
+    insert_instr(la_instr, 0);
+
+    // ---------------------------------------
+    // Second instruction: load the address of bwd label (2)
+    // ---------------------------------------
+    la_instr = riscv_pseudo_instr::type_id::create("LA");
+    `DV_CHECK_RANDOMIZE_WITH_FATAL(la_instr,
+      pseudo_instr_name == LA;
+      rd == bwd_addr_reg;
+      , "Failed randomizing LA"
+    )
+    la_instr.imm_str = "2f";
+    insert_instr(la_instr, 1);
+
+    // ---------------------------------------
+    // WFI
+    // ---------------------------------------
+    instr = riscv_instr::get_instr(WFI);
+    instr.m_cfg = cfg;
+    insert_instr(instr, 2);
+
+    // ---------------------------------------
+    // Jump to routine
+    // ---------------------------------------
+    allowed_instr = {JALR};
+    if (use_compressed) begin
+      allowed_instr = {allowed_instr, C_JR};
+      if (use_jalr) begin
+        allowed_instr = {allowed_instr, C_JALR};
+      end
+    end
+    foreach (allowed_instr[i]) begin
+      $display("allowed_instr[%0d] = %s", i, allowed_instr[i].name());
+    end    
+    instr = riscv_instr::get_rand_instr(.include_instr(allowed_instr));
+    $display("instr = %s", instr.instr_name.name());
+    `DV_CHECK_RANDOMIZE_WITH_FATAL(instr,    
+      instr_name == JALR -> rd == ZERO;
+      rs1 == fwd_addr_reg;
+      , "Could not randomize JR"
+    )
+    instr.imm_str = "0";
+    insert_instr(instr, 3);
+
+    // ---------------------------------------
+    // Jump to end (label 3)
+    // ---------------------------------------
+    allowed_instr = {JAL};
+    if (use_compressed) begin
+      allowed_instr = {allowed_instr, C_J, C_JAL};
+    end
+    //instr = riscv_instr::type_id::create("LI");
+    instr = riscv_instr::get_rand_instr(.include_instr(allowed_instr));
+    $display("instr = %s", instr.instr_name.name());
+    `DV_CHECK_RANDOMIZE_WITH_FATAL(instr,      
+      (instr_name inside {JALR, JAL}) -> rd == ZERO;      
+      , "Could not randomize jump"
+    )
+    instr.imm_str = "3f";
+    instr.label   = "2";       
+    insert_instr(instr, 4);
+
+    // ---------------------------------------
+    // Jump back (label 1)
+    // ---------------------------------------
+    allowed_instr = {JALR};
+    if (use_compressed) begin
+      allowed_instr = {allowed_instr, C_JR};
+      if (use_jalr) begin
+        allowed_instr = {allowed_instr, C_JALR};
+      end
+    end
+    instr = riscv_instr::get_rand_instr(.include_instr(allowed_instr));
+    $display("instr = %s", instr.instr_name.name());
+    `DV_CHECK_RANDOMIZE_WITH_FATAL(instr,      
+      instr_name == JALR -> rd == ZERO;
+      rs1 == bwd_addr_reg;
+      , "Could not randomize jump back"
+    )
+    instr.imm_str = "0";
+    instr.label   = "1";
+    insert_instr(instr, 5);
+
+    // ---------------------------------------
+    // Final instruction (NOP)
+    // ---------------------------------------
+    instr = riscv_instr::get_instr(NOP);
+    instr.label  = "3";    
+    insert_instr(instr, 6);
+
+    foreach(instr_list[i]) begin
+      instr_list[i].atomic = 1;
+      if(instr_list[i].label == "")
+        instr_list[i].has_label = 0;
+    end
+
+  endfunction : post_randomize
+
+endclass : corev_jalr_wfi_instr
