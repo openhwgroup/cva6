@@ -83,7 +83,7 @@ class corev_asm_program_gen extends riscv_asm_program_gen;
         // If WFIs allow, randomly insert wfi as well
         if (!cfg.no_wfi) begin         
             randcase
-                1:  intr_handler.push_back("wfi");
+                2:  intr_handler.push_back("wfi");
                 4: begin /* insert nothing */ end
             endcase          
         end
@@ -257,13 +257,6 @@ class corev_asm_program_gen extends riscv_asm_program_gen;
     pop_gpr_from_kernel_stack(status, scratch, cfg.mstatus_mprv,
                               cfg.sp, cfg.tp, interrupt_handler_instr);
                                       // Emit fast interrupt handler since cv32e40p has hardware interrupt ack
-    // If WFIs allow, randomly insert wfi as well
-    if (!cfg.no_wfi) begin         
-        randcase
-            1:  interrupt_handler_instr.push_back("wfi");
-            5: begin /* insert nothing */ end
-        endcase          
-    end    
 
     interrupt_handler_instr = {interrupt_handler_instr,
                                $sformatf("%0sret;", mode_prefix)
