@@ -47635,6 +47635,21 @@ main:
 .word(0x0000500f)
 .word(0x0000600f)
 .word(0x0000700f)
+# manually added ill-formed branch instructions
+.word(0x00002063)
+.word(0x00003063)
+.word(0x000020e3)
+.word(0x000030e3)
+# manually added PULP instructions that are interrupts as illegal when PULP_XPULP=0
+.word(0x42000033)
+.word(0x42001033)
+.word(0x04002033)
+.word(0x04003033)
+.word(0x04004033)
+.word(0x04005033)
+.word(0x04006033)
+.word(0x04007033)
+.word(0x08005033)
     lw      x5,80(sp)
     bne     x5, x6, fail
     lw      x5,76(sp)
@@ -47677,8 +47692,7 @@ main:
     bne     x5, x25, fail
     addi    sp,sp,84
     li x18, 123456789
-#    li x16, 47553
-    li x16, 47559
+    li x16, 47572
     beq x31, x16, test_end
 fail:
     li x18, 1
