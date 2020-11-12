@@ -33,6 +33,12 @@ tests:
     dir: cv32/sim/uvmt_cv32
     cmd: make test COREV=YES TEST=generic_exception_test
 
+  illegal_instr_test:
+    build: uvmt_cv32
+    description: Illegal instruction test
+    dir: cv32/sim/uvmt_cv32
+    cmd: make test COREV=YES TEST=illegal_instr_test
+
   cv32e40p_csr_access_test:
     build: uvmt_cv32
     description: CSR Access Mode Test
