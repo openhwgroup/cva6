@@ -86,7 +86,15 @@ class uvme_debug_covg extends uvm_component;
           ebreakm_clear: coverpoint cntxt.debug_cntxt.vif_cov.mon_cb.dcsr_q[15] {
                   bins active = {0};
           }
-          test: cross ex, ebreakm_clear;  
+          step: coverpoint cntxt.debug_cntxt.vif_cov.mon_cb.dcsr_q[2] {
+                  bins active = {1};
+          }
+          nostep: coverpoint cntxt.debug_cntxt.vif_cov.mon_cb.dcsr_q[2] {
+                  bins active = {0};
+          }
+          ebreak_regular_nodebug: cross ex, ebreakm_clear, nostep;
+          ebreak_step_nodebug : cross ex, ebreakm_clear, step;
+
   endgroup
     
   // Cover that we execute c.ebreak with dcsr.ebreakm==0
@@ -98,7 +106,14 @@ class uvme_debug_covg extends uvm_component;
           ebreakm_clear: coverpoint cntxt.debug_cntxt.vif_cov.mon_cb.dcsr_q[15] {
                   bins active = {0};
           }
-          test: cross ex, ebreakm_clear;  
+          step: coverpoint cntxt.debug_cntxt.vif_cov.mon_cb.dcsr_q[2] {
+                  bins active = {1};
+          }
+          nostep: coverpoint cntxt.debug_cntxt.vif_cov.mon_cb.dcsr_q[2] {
+                  bins active = {0};
+          }
+          cebreak_regular_nodebug: cross ex, ebreakm_clear, nostep;
+          cebreak_step_nodebug : cross ex, ebreakm_clear, step;
   endgroup
 
     // Cover that we hit a trigger match
