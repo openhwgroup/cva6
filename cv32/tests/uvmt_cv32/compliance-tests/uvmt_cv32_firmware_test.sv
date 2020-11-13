@@ -95,12 +95,6 @@ endfunction : new
 
 
 task uvmt_cv32_firmware_test_c::reset_phase(uvm_phase phase);
-  if ($test$plusargs("reset_debug")) begin
-    fork
-      reset_debug();
-    join_none
-   end
- 
    super.reset_phase(phase);
   
 endtask : reset_phase
@@ -159,6 +153,12 @@ task uvmt_cv32_firmware_test_c::run_phase(uvm_phase phase);
      join_none
    end
 
+   if ($test$plusargs("reset_debug")) begin
+    fork
+      reset_debug();
+    join_none
+   end
+
    phase.raise_objection(this);
    @(posedge env_cntxt.clknrst_cntxt.vif.reset_n);
    repeat (33) @(posedge env_cntxt.clknrst_cntxt.vif.clk);
@@ -178,12 +178,18 @@ task uvmt_cv32_firmware_test_c::run_phase(uvm_phase phase);
 endtask : run_phase
 
 task uvmt_cv32_firmware_test_c::reset_debug();
-    uvme_cv32_random_debug_c reset_vseq;
+    uvme_cv32_random_debug_reset_c debug_vseq;
     `uvm_info("TEST", "Applying debug_req_i at reset", UVM_NONE);
     @(negedge env_cntxt.clknrst_cntxt.vif.reset_n);
-    reset_vseq = uvme_cv32_random_debug_c::type_id::create("random_reset_debug_vseqr");
-    void'(reset_vseq.randomize());
-    reset_vseq.start(vsequencer);
+
+    // Delay debug_req by 35 cycles to hit BOOT_SET
+    if ($test$plusargs("debug_boot_set")) begin
+        repeat(35) @(posedge env_cntxt.clknrst_cntxt.vif.clk);
+    end
+  
+    debug_vseq = uvme_cv32_random_debug_reset_c::type_id::create("random_debug_reset_vseqr");
+    void'(debug_vseq.randomize());
+    debug_vseq.start(vsequencer);
 
 endtask
 
