@@ -42,7 +42,9 @@ class uvme_debug_covg extends uvm_component;
    
   covergroup cg_debug_mode_ext ;
           option.per_instance = 1;
-          state: coverpoint cntxt.debug_cntxt.vif_cov.mon_cb.ctrl_fsm_cs;
+          state: coverpoint cntxt.debug_cntxt.vif_cov.mon_cb.ctrl_fsm_cs{
+              ignore_bins ignore_pulp_states = {cv32e40p_pkg::ELW_EXE, cv32e40p_pkg::IRQ_FLUSH_ELW, cv32e40p_pkg::DECODE_HWLOOP};
+          }
   endgroup : cg_debug_mode_ext
 
   // Cover that we execute ebreak with dcsr.ebreakm==1
