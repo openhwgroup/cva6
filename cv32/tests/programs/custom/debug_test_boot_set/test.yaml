@@ -1,12 +1,11 @@
 # Test definition YAML for test
 
 # Debug directed test for debug request at reset
-name: debug_test_boot_set
+name: debug_test_boot_set_<RUN_INDEX>
 uvm_test: uvmt_cv32_firmware_test_c
 program: debug_test_reset
 description: >
     Debug directed test, debug at reset
 plusargs: >
-        +reset_debug
         +debug_boot_set
 

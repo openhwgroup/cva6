@@ -77,6 +77,9 @@ package uvme_cv32_pkg;
    `include "uvme_cv32_vseq_lib.sv"
    `include "uvme_cv32_random_debug_vseq.sv" 
    `include "uvme_cv32_random_debug_reset_vseq.sv" 
+   `include "uvme_cv32_random_debug_bootset_vseq.sv" 
+
+
 
 endpackage : uvme_cv32_pkg
 

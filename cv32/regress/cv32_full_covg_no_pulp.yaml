@@ -237,6 +237,7 @@ tests:
     description: Debug test target debug_req at BOOT_SET
     dir: cv32/sim/uvmt_cv32
     cmd: make test COREV=YES TEST=debug_test_boot_set
+    num: 50
 
   interrupt_bootstrap:
     build: uvmt_cv32
