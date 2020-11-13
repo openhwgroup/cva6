@@ -37,7 +37,7 @@ module pmp_tb;
     int unsigned size;
 
     pmp #(
-        .XLEN(WIDTH),
+        .PLEN(WIDTH),
         .PMP_LEN(PMP_LEN),
         .NR_ENTRIES(NR_ENTRIES)
     ) i_pmp(
