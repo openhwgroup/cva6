@@ -7,5 +7,4 @@ program: debug_test_reset
 description: >
     Debug directed test, debug at reset
 plusargs: >
-        +debug_boot_set
-
+    +debug_boot_set
