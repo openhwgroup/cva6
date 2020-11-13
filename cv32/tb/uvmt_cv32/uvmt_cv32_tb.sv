@@ -130,7 +130,7 @@ module uvmt_cv32_tb;
                                          .req(instr_req_o),
                                          .gnt(instr_gnt_i),
                                          .addr(instr_addr_o),
-                                         .be('0),
+                                         .be('1), // Assume full word reads from instruction OBI
                                          .we('0),
                                          .wdata('0),
                                          .rdata(instr_rdata_i),

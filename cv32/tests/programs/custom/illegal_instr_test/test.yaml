@@ -3,4 +3,4 @@
 name: illegal_instr_test
 uvm_test: uvmt_cv32_firmware_test_c
 description: >
-    Script-generated test contributed by em-micro to exercise all (?) illegal instructions
+    Script-generated test contributed by em-micro to exercise all (?) illegal instruction types
