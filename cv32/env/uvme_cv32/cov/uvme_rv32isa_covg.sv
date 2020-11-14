@@ -672,13 +672,6 @@ class uvme_rv32isa_covg extends uvm_component;
         }
     endgroup
 
-    covergroup nop_cg with function sample(ins_t ins);
-        option.per_instance = 1;
-        cp_nop   : coverpoint (ins.asm) {
-            bins        nop_bin = {NOP};
-        }
-    endgroup
-
     covergroup or_cg with function sample(ins_t ins);
         option.per_instance = 1;
         cp_rd    : coverpoint get_gpr_name(ins.ops[0].val, ins.ops[0].key, "or") {
