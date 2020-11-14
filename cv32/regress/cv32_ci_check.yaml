@@ -16,48 +16,61 @@ tests:
     description: UVM Hello World Test
     dir: cv32/sim/uvmt_cv32
     cmd: make hello-world
-    cmd: make test TEST=hello-world
+    cmd: make test COREV=YES TEST=hello-world
     
+  interrupt_test:
+    build: uvmt_cv32
+    description: Interrupt directed test  
+    dir: cv32/sim/uvmt_cv32
+    cmd: make test COREV=YES TEST=interrupt_test
+    
+  corev_rand_interrupt:
+    build: uvmt_cv32
+    description: Interrupt random test
+    dir: cv32/sim/uvmt_cv32
+    cmd: make gen_corev-dv test COREV=YES TEST=corev_rand_interrupt
+    num: 2
+
   illegal:
     build: uvmt_cv32
     dir: cv32/sim/uvmt_cv32
-    cmd: make test TEST=illegal
+    cmd: make test COREV=YES TEST=illegal
 
   debug_test:
     build: uvmt_cv32
     dir: cv32/sim/uvmt_cv32
-    cmd: make test TEST=debug_test
+    cmd: make test COREV=YES TEST=debug_test
 
   csr_instructions:
     build: uvmt_cv32
     description: CSR Instruction Test
     dir: cv32/sim/uvmt_cv32
-    cmd: make test TEST=csr_instructions
+    cmd: make test COREV=YES TEST=csr_instructions
 
   riscv_arithmetic_basic_test:
     build: uvmt_cv32
     description: Static riscv-dv arithmetic test 0
     dir: cv32/sim/uvmt_cv32
-    cmd: make test TEST=riscv_arithmetic_basic_test
+    cmd: make test COREV=YES TEST=riscv_arithmetic_basic_test
 
   corev_arithmetic_base_test:
     build: uvmt_cv32
     description: Generated corev-dv random arithmetic test
     dir: cv32/sim/uvmt_cv32
-    cmd: make gen_corev-dv test TEST=corev_arithmetic_base_test
+    cmd: make gen_corev-dv test COREV=YES TEST=corev_arithmetic_base_test
     num: 2
 
   corev_rand_instr_test:
     build: uvmt_cv32  
     description: Generated corev-dv random instruction test
     dir: cv32/sim/uvmt_cv32
-    cmd: make gen_corev-dv test TEST=corev_rand_instr_test
+    cmd: make gen_corev-dv test COREV=YES TEST=corev_rand_instr_test
     num: 2
 
   corev_jump_stress_test:
     build: uvmt_cv32  
     description: Generated corev-dv jump stress test
     dir: cv32/sim/uvmt_cv32
-    cmd: make gen_corev-dv test TEST=corev_jump_stress_test
+    cmd: make gen_corev-dv test COREV=YES TEST=corev_jump_stress_test
     num: 2
 

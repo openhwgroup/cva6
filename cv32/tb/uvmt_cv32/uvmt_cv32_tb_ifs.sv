@@ -273,6 +273,7 @@ interface uvmt_cv32_step_compare_if;
    logic   [31:0] ovp_cpu_GPR[32];
    logic [31:0][31:0] riscy_GPR; // packed dimensions, register index by data width
    logic       deferint_prime; // Stages deferint for the ISS deferint signal
+   logic       deferint_prime_ack; // Set low if deferint_prime was set due to interrupt ack (as opposed to wakeup)
 
    int  num_pc_checks;
    int  num_gpr_checks;
@@ -346,7 +347,7 @@ interface uvmt_cv32_debug_cov_assert_if
     input  [31:0] dm_halt_addr_i,
     input  [31:0] dm_exception_addr_i,
 
-    input  [31:0] mcause_q,
+    input  [5:0]  mcause_q,
     input  [31:0] mtvec,
     input  [31:0] mepc_q,
     input  [31:0] tdata1,

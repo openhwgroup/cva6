@@ -40,7 +40,6 @@
 #         "cmd" key.
 #      3. Handle Verilator a little more elegantly.
 #      4. Terminate if compile fails.
-#      5. Check that all specified tests ran.
 ################################################################################
 
 import json
@@ -51,6 +50,7 @@ import subprocess
 import pprint
 import yaml
 import re
+import distutils.spawn
 
 if (sys.version_info < (3,0,0)):
     print ('Requires python 3')
@@ -71,7 +71,7 @@ print('ci_check: topdir  : {}'.format(topdir))
 
 # Check results and print something useful
 # TODO: fix this! (its so ugly I'm embarassed to check it in)
-def check_uvm_results():
+def check_uvm_results(check_only=0):
     fail_count = 0
     expct_fail = 0
     pass_count = 0
@@ -102,6 +102,8 @@ def check_uvm_results():
 
     if (pass_count == 0):
         print ('\nNo UVM logfiles found.\n')
+    elif ((not check_only) and ((pass_count+fail_count) != num_tests)):
+        print ('CI Check FAILED: Expected '+str(num_tests)+' tests to run but found only '+str(fail_count+pass_count)+' PASSED or FAILED messages');
     elif ((fail_count == 0) and (pass_count >=3)):
         print ('\nCI Check PASSED with no failures.')
         print ('OK to issue a pull-request.\n')
@@ -185,7 +187,7 @@ if (args.check_only):
     if (args.verilator):
         check_core_results(len(core_tests)+1) # +1 because 'make' runs hello-world
     if not (args.no_uvm):
-        check_uvm_results()
+        check_uvm_results(args.check_only)
     exit(0)
 
 if (args.verilator):
@@ -196,6 +198,9 @@ if (args.no_uvm):
 
 if (args.simulator == None):
     print ('Must specify a simulator.  Type `ci_check -h` to see how')
+    exit(0)
+elif (not(distutils.spawn.find_executable(args.simulator))):
+    print ('ERROR: simulator='+args.simulator+' but executable not found')
     exit(0)
 else:
     svtool = args.simulator
@@ -287,6 +292,7 @@ if (uvm):
                 if (debug):
                     pprint.pprint(lists_dict)
                 
+                num_tests = 0
                 for key in lists_dict.values():                
                     run_cmd = key['cmd']
                     
@@ -316,13 +322,15 @@ if (uvm):
                         full_run_cmd += ' USE_ISS={}'.format('YES' if iss else 'NO')
 
                         # Only DSIM can run corev-dv (riscv-dv) at present
-                        if ( svtool == 'dsim' or svtool == 'xrun' or svtool == 'vsim' or svtool == 'riviera'):
+                        if ( svtool == 'dsim' or svtool == 'xrun' or svtool == 'vsim' or svtool == 'riviera' or svtool == 'vcs'):
+                            num_tests+=1
                             if (prcmd or debug):
                                 print(full_run_cmd)
                             else:
                                 os.system(full_run_cmd)
                                 os.chdir(topdir)      # cmd in .metrics.json assumes all cmds start from here
                         else:
+                            num_tests+=1
                             if not ( re.search('corev_', full_run_cmd) ):
                                 if (prcmd or debug):
                                     print(full_run_cmd)

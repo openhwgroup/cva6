@@ -71,8 +71,6 @@ module uvmt_cv32_tb;
    uvmt_cv32_step_compare_if step_compare_if();
    uvmt_cv32_isa_covg_if     isa_covg_if();
 
-   // Debug assertion and coverage interface
-   uvmt_cv32_debug_cov_assert_if debug_cov_assert_if();
    
   /**
    * DUT WRAPPER instance:
@@ -134,7 +132,7 @@ module uvmt_cv32_tb;
                                          .req(instr_req_o),
                                          .gnt(instr_gnt_i),
                                          .addr(instr_addr_o),
-                                         .be('0),
+                                         .be('1), // Assume full word reads from instruction OBI
                                          .we('0),
                                          .wdata('0),
                                          .rdata(instr_rdata_i),
@@ -175,39 +173,40 @@ bind cv32e40p_wrapper
                                                       .debug_mode_q(id_stage_i.controller_i.debug_mode_q),                                                      
                                                       .*);
     
-    // Hook up interface to debug assertions and coverage                                          
-    assign debug_cov_assert_if.clk_i = clknrst_if.clk;
-    assign debug_cov_assert_if.rst_ni = clknrst_if.reset_n;
-    assign debug_cov_assert_if.fetch_enable_i = dut_wrap.cv32e40p_wrapper_i.core_i.fetch_enable_i;
-    assign debug_cov_assert_if.if_stage_instr_rvalid_i = dut_wrap.cv32e40p_wrapper_i.core_i.if_stage_i.instr_rvalid_i;
-    assign debug_cov_assert_if.if_stage_instr_rdata_i = dut_wrap.cv32e40p_wrapper_i.core_i.if_stage_i.instr_rdata_i;
-    assign debug_cov_assert_if.id_stage_instr_valid_i = dut_wrap.cv32e40p_wrapper_i.core_i.id_stage_i.instr_valid_i;
-    assign debug_cov_assert_if.id_stage_instr_rdata_i = dut_wrap.cv32e40p_wrapper_i.core_i.id_stage_i.instr_rdata_i;
-    assign debug_cov_assert_if.id_stage_is_compressed = dut_wrap.cv32e40p_wrapper_i.core_i.id_stage_i.is_compressed_i;
-    assign debug_cov_assert_if.id_valid = dut_wrap.cv32e40p_wrapper_i.core_i.id_stage_i.controller_i.id_valid_i;
-    assign debug_cov_assert_if.is_decoding = dut_wrap.cv32e40p_wrapper_i.core_i.id_stage_i.controller_i.is_decoding_o;
-    assign debug_cov_assert_if.id_stage_pc = dut_wrap.cv32e40p_wrapper_i.core_i.id_stage_i.pc_id_i;
-    assign debug_cov_assert_if.if_stage_pc = dut_wrap.cv32e40p_wrapper_i.core_i.if_stage_i.pc_if_o;
-    assign debug_cov_assert_if.mie_q = dut_wrap.cv32e40p_wrapper_i.core_i.cs_registers_i.mie_q;
-    assign debug_cov_assert_if.ctrl_fsm_cs = dut_wrap.cv32e40p_wrapper_i.core_i.id_stage_i.controller_i.ctrl_fsm_cs;
-    assign debug_cov_assert_if.illegal_insn_i = dut_wrap.cv32e40p_wrapper_i.core_i.id_stage_i.controller_i.illegal_insn_i;
-    assign debug_cov_assert_if.illegal_insn_q = dut_wrap.cv32e40p_wrapper_i.core_i.id_stage_i.controller_i.illegal_insn_q;
-    assign debug_cov_assert_if.ecall_insn_i = dut_wrap.cv32e40p_wrapper_i.core_i.id_stage_i.controller_i.ecall_insn_i;
-    assign debug_cov_assert_if.debug_req_i = dut_wrap.cv32e40p_wrapper_i.core_i.id_stage_i.controller_i.debug_req_pending;
-    assign debug_cov_assert_if.debug_mode_q = dut_wrap.cv32e40p_wrapper_i.core_i.id_stage_i.controller_i.debug_mode_q;
-    assign debug_cov_assert_if.dcsr_q = dut_wrap.cv32e40p_wrapper_i.core_i.cs_registers_i.dcsr_q;
-    assign debug_cov_assert_if.depc_q = dut_wrap.cv32e40p_wrapper_i.core_i.cs_registers_i.depc_q;
-    assign debug_cov_assert_if.depc_n = dut_wrap.cv32e40p_wrapper_i.core_i.cs_registers_i.depc_n;
-    assign debug_cov_assert_if.mcause_q = dut_wrap.cv32e40p_wrapper_i.core_i.cs_registers_i.mcause_q;
-    assign debug_cov_assert_if.mtvec = {dut_wrap.cv32e40p_wrapper_i.core_i.cs_registers_i.mtvec_q, 8'h00};
-    assign debug_cov_assert_if.mepc_q = dut_wrap.cv32e40p_wrapper_i.core_i.cs_registers_i.mepc_q;
-    assign debug_cov_assert_if.tdata1 = dut_wrap.cv32e40p_wrapper_i.core_i.cs_registers_i.tmatch_control_rdata;
-    assign debug_cov_assert_if.tdata2 = dut_wrap.cv32e40p_wrapper_i.core_i.cs_registers_i.tmatch_value_rdata;
-    assign debug_cov_assert_if.trigger_match_i = dut_wrap.cv32e40p_wrapper_i.core_i.id_stage_i.controller_i.trigger_match_i;
-    assign debug_cov_assert_if.mcountinhibit_q = dut_wrap.cv32e40p_wrapper_i.core_i.cs_registers_i.mcountinhibit_q;
-    assign debug_cov_assert_if.mcycle = dut_wrap.cv32e40p_wrapper_i.core_i.cs_registers_i.mhpmcounter_q[0];
-    assign debug_cov_assert_if.minstret = dut_wrap.cv32e40p_wrapper_i.core_i.cs_registers_i.mhpmcounter_q[2];
-    assign debug_cov_assert_if.fence_i = dut_wrap.cv32e40p_wrapper_i.core_i.id_stage_i.decoder_i.fencei_insn_o;
+   // Debug assertion and coverage interface
+   uvmt_cv32_debug_cov_assert_if debug_cov_assert_if(    
+    .clk_i(clknrst_if.clk),
+    .rst_ni(clknrst_if.reset_n),
+    .fetch_enable_i(dut_wrap.cv32e40p_wrapper_i.core_i.fetch_enable_i),
+    .if_stage_instr_rvalid_i(dut_wrap.cv32e40p_wrapper_i.core_i.if_stage_i.instr_rvalid_i),
+    .if_stage_instr_rdata_i(dut_wrap.cv32e40p_wrapper_i.core_i.if_stage_i.instr_rdata_i),
+    .id_stage_instr_valid_i(dut_wrap.cv32e40p_wrapper_i.core_i.id_stage_i.instr_valid_i),
+    .id_stage_instr_rdata_i(dut_wrap.cv32e40p_wrapper_i.core_i.id_stage_i.instr_rdata_i),
+    .id_stage_is_compressed(dut_wrap.cv32e40p_wrapper_i.core_i.id_stage_i.is_compressed_i),
+    .id_valid(dut_wrap.cv32e40p_wrapper_i.core_i.id_stage_i.controller_i.id_valid_i),
+    .is_decoding(dut_wrap.cv32e40p_wrapper_i.core_i.id_stage_i.controller_i.is_decoding_o),
+    .id_stage_pc(dut_wrap.cv32e40p_wrapper_i.core_i.id_stage_i.pc_id_i),
+    .if_stage_pc(dut_wrap.cv32e40p_wrapper_i.core_i.if_stage_i.pc_if_o),
+    .mie_q(dut_wrap.cv32e40p_wrapper_i.core_i.cs_registers_i.mie_q),
+    .ctrl_fsm_cs(dut_wrap.cv32e40p_wrapper_i.core_i.id_stage_i.controller_i.ctrl_fsm_cs),
+    .illegal_insn_i(dut_wrap.cv32e40p_wrapper_i.core_i.id_stage_i.controller_i.illegal_insn_i),
+    .illegal_insn_q(dut_wrap.cv32e40p_wrapper_i.core_i.id_stage_i.controller_i.illegal_insn_q),
+    .ecall_insn_i(dut_wrap.cv32e40p_wrapper_i.core_i.id_stage_i.controller_i.ecall_insn_i),
+    .debug_req_i(dut_wrap.cv32e40p_wrapper_i.core_i.id_stage_i.controller_i.debug_req_pending),
+    .debug_mode_q(dut_wrap.cv32e40p_wrapper_i.core_i.id_stage_i.controller_i.debug_mode_q),
+    .dcsr_q(dut_wrap.cv32e40p_wrapper_i.core_i.cs_registers_i.dcsr_q),
+    .depc_q(dut_wrap.cv32e40p_wrapper_i.core_i.cs_registers_i.depc_q),
+    .depc_n(dut_wrap.cv32e40p_wrapper_i.core_i.cs_registers_i.depc_n),
+    .mcause_q(dut_wrap.cv32e40p_wrapper_i.core_i.cs_registers_i.mcause_q),
+    .mtvec({dut_wrap.cv32e40p_wrapper_i.core_i.cs_registers_i.mtvec_q, 8'h00}),
+    .mepc_q(dut_wrap.cv32e40p_wrapper_i.core_i.cs_registers_i.mepc_q),
+    .tdata1(dut_wrap.cv32e40p_wrapper_i.core_i.cs_registers_i.tmatch_control_rdata),
+    .tdata2(dut_wrap.cv32e40p_wrapper_i.core_i.cs_registers_i.tmatch_value_rdata),
+    .trigger_match_i(dut_wrap.cv32e40p_wrapper_i.core_i.id_stage_i.controller_i.trigger_match_i),
+    .mcountinhibit_q(dut_wrap.cv32e40p_wrapper_i.core_i.cs_registers_i.mcountinhibit_q),
+    .mcycle(dut_wrap.cv32e40p_wrapper_i.core_i.cs_registers_i.mhpmcounter_q[0]),
+    .minstret(dut_wrap.cv32e40p_wrapper_i.core_i.cs_registers_i.mhpmcounter_q[2]),
+    .fence_i(dut_wrap.cv32e40p_wrapper_i.core_i.id_stage_i.decoder_i.fencei_insn_o),
 
     // TODO: review this change from CV32E40P_HASH f6196bf to a26b194. It should be logically equivalent.
     //assign debug_cov_assert_if.inst_ret = dut_wrap.cv32e40p_wrapper_i.core_i.cs_registers_i.inst_ret;
@@ -217,21 +216,33 @@ bind cv32e40p_wrapper
     // Second attempt: (based on OK input).  This passes, but maybe only because p_minstret_count
     //                                       is the only property sensitive to inst_ret. Will
     //                                       this work in the general case?
-    assign debug_cov_assert_if.inst_ret = dut_wrap.cv32e40p_wrapper_i.core_i.cs_registers_i.mhpmevent_minstret_i;
+    .inst_ret(dut_wrap.cv32e40p_wrapper_i.core_i.cs_registers_i.mhpmevent_minstret_i),
+    .csr_access(dut_wrap.cv32e40p_wrapper_i.core_i.id_stage_i.csr_access),
+    .csr_op(dut_wrap.cv32e40p_wrapper_i.core_i.id_stage_i.csr_op),
+    .csr_op_dec(dut_wrap.cv32e40p_wrapper_i.core_i.id_stage_i.decoder_i.csr_op),
+    .csr_addr(dut_wrap.cv32e40p_wrapper_i.core_i.csr_addr),
+    .csr_we_int(dut_wrap.cv32e40p_wrapper_i.core_i.cs_registers_i.csr_we_int),
+    .irq_ack_o(dut_wrap.cv32e40p_wrapper_i.core_i.irq_ack_o),
+    .irq_id_o(dut_wrap.cv32e40p_wrapper_i.core_i.irq_id_o),
+    .dm_halt_addr_i(dut_wrap.cv32e40p_wrapper_i.core_i.dm_halt_addr_i),
+    .dm_exception_addr_i(dut_wrap.cv32e40p_wrapper_i.core_i.dm_exception_addr_i),
+    .core_sleep_o(dut_wrap.cv32e40p_wrapper_i.core_i.core_sleep_o),
+    .irq_i(dut_wrap.cv32e40p_wrapper_i.core_i.irq_i),
+    .pc_set(dut_wrap.cv32e40p_wrapper_i.core_i.id_stage_i.pc_set_o),
+    .boot_addr_i(dut_wrap.cv32e40p_wrapper_i.core_i.boot_addr_i),
+    .branch_in_decode(dut_wrap.cv32e40p_wrapper_i.core_i.id_stage_i.controller_i.branch_in_id),
 
-    assign debug_cov_assert_if.csr_access = dut_wrap.cv32e40p_wrapper_i.core_i.id_stage_i.csr_access;
-    assign debug_cov_assert_if.csr_op = dut_wrap.cv32e40p_wrapper_i.core_i.id_stage_i.csr_op;
-    assign debug_cov_assert_if.csr_op_dec = dut_wrap.cv32e40p_wrapper_i.core_i.id_stage_i.decoder_i.csr_op;
-    assign debug_cov_assert_if.csr_addr = dut_wrap.cv32e40p_wrapper_i.core_i.csr_addr;
-    assign debug_cov_assert_if.csr_we_int = dut_wrap.cv32e40p_wrapper_i.core_i.cs_registers_i.csr_we_int;
-    assign debug_cov_assert_if.irq_ack_o = dut_wrap.cv32e40p_wrapper_i.core_i.irq_ack_o;
-    assign debug_cov_assert_if.dm_halt_addr_i = dut_wrap.cv32e40p_wrapper_i.core_i.dm_halt_addr_i;
-    assign debug_cov_assert_if.dm_exception_addr_i = dut_wrap.cv32e40p_wrapper_i.core_i.dm_exception_addr_i;
-    assign debug_cov_assert_if.core_sleep_o = dut_wrap.cv32e40p_wrapper_i.core_i.core_sleep_o;
-    assign debug_cov_assert_if.irq_i = dut_wrap.cv32e40p_wrapper_i.core_i.irq_i;
-    assign debug_cov_assert_if.pc_set = dut_wrap.cv32e40p_wrapper_i.core_i.id_stage_i.pc_set_o;
-    assign debug_cov_assert_if.boot_addr_i = dut_wrap.cv32e40p_wrapper_i.core_i.boot_addr_i;
-    assign debug_cov_assert_if.branch_in_decode = dut_wrap.cv32e40p_wrapper_i.core_i.id_stage_i.controller_i.branch_in_id;
+    .is_wfi(),
+    .in_wfi(),
+    .dpc_will_hit(),
+    .addr_match(),
+    .is_ebreak(),
+    .is_cebreak(),
+    .is_dret(),
+    .is_mulhsu(),
+    .pending_enabled_irq()
+  );
+
     // Instantiate debug assertions
     uvmt_cv32e40p_debug_assert u_debug_assert(.cov_assert_if(debug_cov_assert_if));
 
@@ -266,7 +277,9 @@ bind cv32e40p_wrapper
       
       // Interrupt modeling logic - used to time interrupt entry from RTL to the ISS    
       wire [31:0] irq_enabled;
-      reg [31:0] irq_deferint;
+      reg [31:0] irq_deferint_ack;
+      reg [31:0] irq_deferint_sleep;
+      reg        deferint_ack;      
       reg [31:0] irq_mip;
       reg core_sleep_o_d;
 
@@ -290,24 +303,35 @@ bind cv32e40p_wrapper
          derefint_prime is then reset to 1 when the ID stage commits to the next instruction (which should be the MTVEC entry address)
       */
       always @(posedge clknrst_if.clk or negedge clknrst_if.reset_n) begin
-        if (!clknrst_if_iss.reset_n)
-          step_compare_if.deferint_prime <= 1'b1;
-        else if (dut_wrap.irq_ack)
+        if (!clknrst_if_iss.reset_n) begin
+          step_compare_if.deferint_prime     <= 1'b1;
+          step_compare_if.deferint_prime_ack <= 1'b1;
+        end
+        else if (dut_wrap.irq_ack) begin
+          step_compare_if.deferint_prime     <= 1'b0;
+          step_compare_if.deferint_prime_ack <= 1'b0;
+        end
+        else if (core_sleep_o_d && irq_enabled) begin
           step_compare_if.deferint_prime <= 1'b0;
-        else if (core_sleep_o_d && irq_enabled) 
-          step_compare_if.deferint_prime <= 1'b0;
-        else if (id_start && !step_compare_if.deferint_prime) 
-          step_compare_if.deferint_prime <= 1'b1;
+        end
+        else if (id_start && !step_compare_if.deferint_prime) begin
+          step_compare_if.deferint_prime     <= 1'b1;
+          step_compare_if.deferint_prime_ack <= 1'b1;
+        end
       end
 
       /**
        * When the ID stage commits, we set deferint to the ISS to signal to look at the interrrupts
        */
       always @(posedge clknrst_if.clk or negedge clknrst_if.reset_n) begin
-        if (!clknrst_if_iss.reset_n)
+        if (!clknrst_if_iss.reset_n) begin
           iss_wrap.b1.deferint <= 1'b1;
-        else if (id_start && !step_compare_if.deferint_prime) 
+          deferint_ack <= 1'b1;
+        end
+        else if (id_start && !step_compare_if.deferint_prime) begin
           iss_wrap.b1.deferint <= 1'b0;
+          deferint_ack <= step_compare_if.deferint_prime_ack;
+        end
       end
 
       /**
@@ -315,27 +339,35 @@ bind cv32e40p_wrapper
        */
       always @(negedge step_compare_if.ovp_b1_Step) begin
         if (iss_wrap.b1.deferint == 0) begin
-          iss_wrap.b1.deferint <= 1'b1;
-          irq_deferint <= '0;
+          iss_wrap.b1.deferint <= 1'b1;          
+          deferint_ack <= 1'b1;
+          irq_deferint_ack <= '0;          
         end
+        irq_deferint_sleep <= '0;
       end
 
       /**
-        * irq_deferint will capture the asserted interrupt to present to the ISS later
+        * irq_deferint_ack will capture the asserted interrupt to present to the ISS later
         * since the autoclear/ack interface can clear the IRQ long before the ISS sees it
         */
       always @(posedge clknrst_if.clk or negedge clknrst_if.reset_n) begin
         if (!clknrst_if.reset_n)
-          irq_deferint <= '0;
-        else if (dut_wrap.irq_ack)        
-          irq_deferint <= (1 << dut_wrap.irq_id);
-        else if (core_sleep_o_d && irq_enabled)
-          irq_deferint <= irq_enabled;
+          irq_deferint_ack <= '0;
+        else if (dut_wrap.irq_ack)
+          irq_deferint_ack <= (1 << dut_wrap.irq_id);
       end
       
-      always @*
-        //iss_wrap.b1.irq_i = !iss_wrap.b1.deferint ? irq_deferint : irq_mip;
-        iss_wrap.b1.irq_i = !iss_wrap.b1.deferint ? irq_deferint : dut_wrap.irq;
+      always @(posedge clknrst_if.clk or negedge clknrst_if.reset_n) begin
+        if (!clknrst_if.reset_n)
+          irq_deferint_sleep <= '0;
+        else if (core_sleep_o_d)
+          irq_deferint_sleep <= irq_enabled;
+      end
+
+      always @*        
+        iss_wrap.b1.irq_i = iss_wrap.b1.deferint ? dut_wrap.irq :
+                            !deferint_ack ? irq_deferint_ack :
+                            irq_deferint_sleep;
 
       /**
        * Interrupt assertion to iss_wrap, note this runs on the ISS clock (skewed from core clock)

@@ -404,7 +404,6 @@ int main(int argc, char *argv[])
     check_debug_status(75,glb_hart_status);
 
     
-// IMPERAS _ TODO undefined behavior of <mus>ret
     printf("------------------------\n");
     printf(" Test13: check mret during debug launches debugger exception and no csr modified\n");
     glb_hart_status = 13;
@@ -432,6 +431,7 @@ int main(int argc, char *argv[])
     } 
 
     check_debug_status(115, glb_hart_status);
+
 
     printf("------------------------\n");
     printf("Finished \n");

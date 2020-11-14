@@ -14,7 +14,7 @@ plusargs: >
     +enable_interrupt=1
     +enable_nested_interrupt=1
     +enable_fast_interrupt_handler=1
-    +no_wfi=0
+    +no_wfi=1
     +randomize_csr=1
     +boot_mode=m
     +no_csr_instr=0

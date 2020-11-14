@@ -39,6 +39,12 @@ tests:
     dir: cv32/sim/uvmt_cv32
     cmd: make test COREV=YES TEST=generic_exception_test
 
+  illegal_instr_test:
+    build: uvmt_cv32
+    description: Illegal instruction test
+    dir: cv32/sim/uvmt_cv32
+    cmd: make test COREV=YES TEST=illegal_instr_test
+
   cv32e40p_csr_access_test:
     build: uvmt_cv32
     description: CSR Access Mode Test
@@ -207,6 +213,32 @@ tests:
     description: Debug Test 1
     dir: cv32/sim/uvmt_cv32
     cmd: make test COREV=YES TEST=debug_test
+
+  debug_test_reset:
+    build: uvmt_cv32
+    description: Debug reset test
+    dir: cv32/sim/uvmt_cv32
+    cmd: make test COREV=YES TEST=debug_test_reset
+
+  debug_test_trigger:
+    build: uvmt_cv32
+    description: Debug trigger test
+    dir: cv32/sim/uvmt_cv32
+    cmd: make test COREV=YES TEST=debug_test_trigger
+
+  debug_test_known_miscompares:
+    build: uvmt_cv32
+    description: Debug test which contains known miscompares
+    dir: cv32/sim/uvmt_cv32
+    cmd: make test COREV=YES TEST=debug_test_known_miscompares
+    iss: 0
+
+  debug_test_boot_set:
+    build: uvmt_cv32
+    description: Debug test target debug_req at BOOT_SET
+    dir: cv32/sim/uvmt_cv32
+    cmd: make test COREV=YES TEST=debug_test_boot_set
+    num: 50
 
   interrupt_bootstrap:
     build: uvmt_cv32

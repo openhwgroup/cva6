@@ -4,8 +4,8 @@ A Complete, Fully Functional, Configurable CV32E40P Simulation Model
 ===
 
 Author: Imperas Software, Ltd., using OVP Open Standard APIs  
-Date   : 20201012 
-Version: 20200821.7  
+Date   : 20201110 
+Version: 20200821.9  
 License: Simulation Model CV32E40P licensed under [Software License Agreement for Open Virtual Platforms Technology](OVP_IMPERAS_LICENSE.pdf)
 RISC-V Specifications currently supported:
 - RISC-V Instruction Set Manual, Volume I: User-Level ISA (User Architecture Version 2.3)
@@ -28,16 +28,6 @@ The fixed model is provided as a shared object, riscv_CV32E40P.dpi.so, with a Sy
 The simulator is developed, licensed and maintained by [Imperas Software](http://www.imperas.com/riscv) and it is fully compliant to the OVP open standard APIs. 
 
 As a member of the RISC-V Foundation community of software and hardware innovators collaboratively driving RISC-V adoption, Imperas has developed the riscvOVPsim simulator to assist RISC-V adopters to become compliant to the RISC-V specifications.
-
-
-Obtaining a license to use OpenHW CV32E40P Model
----
-The **riscv_CV32E40P_OVPsim** fixed model requires a license to allow its execution. The license can be obtained by OpenHW collaborators or by contacting Imperas.
-
-If you want to be a collaborator - please contact OpenHW directly: info@openhwgroup.org
-
-If you do not want to be a collaborator and want a license key to use the OpenHW Imperas reference model, then please contact support@ovpworld.org for a key.
-
 
 
 Debugging using GDB / Eclipse
