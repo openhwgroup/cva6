@@ -230,7 +230,8 @@ tests:
     build: uvmt_cv32
     description: Debug test which contains known miscompares
     dir: cv32/sim/uvmt_cv32
-    cmd: make test COREV=YES TEST=debug_test_known_miscompares USE_ISS=NO
+    cmd: make test COREV=YES TEST=debug_test_known_miscompares
+    iss: 0
 
   debug_test_boot_set:
     build: uvmt_cv32
