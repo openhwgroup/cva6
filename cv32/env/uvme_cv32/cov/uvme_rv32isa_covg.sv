@@ -124,7 +124,7 @@ class uvme_rv32isa_covg extends uvm_component;
     function csr_name_t get_csr_name (string s, r, asm);
         case (s)
             "mcause"       : return csr_name_t'(mcause);
-            "mcounteren"   : return csr_name_t'(mcounteren);
+            //"mcounteren"   : return csr_name_t'(mcounteren);
             "mcountinhibit": return csr_name_t'(mcountinhibit);
             "mcycle"       : return csr_name_t'(mcycle);
             "mcycleh"      : return csr_name_t'(mcycleh);
@@ -241,9 +241,9 @@ class uvme_rv32isa_covg extends uvm_component;
             "dcsr", "dpc"   : begin
                 `uvm_info("RV32ISA Coverage", $sformatf("get_csr_name(): CSR [%0s] not yet in functional coverage model.", s), UVM_DEBUG)
             end 
+            "marchid"      : return csr_name_t'(marchid);
+            "mimpid"       : return csr_name_t'(mimpid);
             // These CSRs are not supported by CV32E40P
-            //"marchid"      : return csr_name_t'(marchid);
-            //"mimpid"       : return csr_name_t'(mimpid);
             //"mideleg"      : return csr_name_t'(mideleg);
             //"medeleg"      : return csr_name_t'(medeleg);
             //"pmpaddr0"     : return csr_name_t'(pmpaddr0);

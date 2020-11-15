@@ -64,12 +64,13 @@ typedef enum {
 // The following CSRs are not currently included:
 // mstatush, mtinst, mtval2, mhpmcounter3, ..., mhpmcounter31,
 // mhpmcounter3h, ..., mhpmcounter31h,
+// medeleg, mcounteren
 //The following CSRs have been removed:
 // satp (supervisor-mode address translation and protection)
 typedef enum {
-    marchid,mcause,mcounteren,mcountinhibit,mcycle,mcycleh,medeleg,mepc,mhartid
+    marchid,mcause,mcountinhibit,mcycle,mcycleh,mepc,mhartid
     ,mie,mcontext,scontext
-    ,minstret,minstreth,mip,misa,mscratch,mstatus,mtval,mtvec,march,mimpid
+    ,minstret,minstreth,mip,misa,mscratch,mstatus,mtval,mtvec,mimpid
     ,mvendorid
     ,mhpmevent3
     ,mhpmcounter3
