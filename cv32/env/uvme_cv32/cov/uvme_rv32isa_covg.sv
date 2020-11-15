@@ -1330,8 +1330,8 @@ class uvme_rv32isa_covg extends uvm_component;
     covergroup c_li_cg       with function sample(ins_t ins);
         option.per_instance = 1;
         cp_rd    : coverpoint get_gpr_name(ins.ops[0].val, ins.ops[0].key, "c.li") {
-            bins gprval[] = {[ra:t6]};
-        }
+            bins gprval[] = {zero, [ra:t6]};            
+        }        
         cp_imm6   : coverpoint get_imm(ins.ops[1].val,"c.li" ) {
             bins neg  = {[$:-1]};
             bins zero = {0};
@@ -1342,7 +1342,7 @@ class uvme_rv32isa_covg extends uvm_component;
     covergroup c_lui_cg      with function sample(ins_t ins);
         option.per_instance = 1;
         cp_rd    : coverpoint get_gpr_name(ins.ops[0].val, ins.ops[0].key, "c.lui") {
-            bins gprval[] = {ra,[gp:t6]}; // invalid when rd = x2 (sp)
+            bins gprval[] = {zero,ra,[gp:t6]}; // invalid when rd = x2 (sp)            
         }
         cp_imm6   : coverpoint get_imm(ins.ops[1].val,"c.lui" ) {    
             bins neg  = {[$:-1]};
@@ -1358,7 +1358,6 @@ class uvme_rv32isa_covg extends uvm_component;
         option.per_instance = 1;
         cp_rd    : coverpoint get_gpr_name(ins.ops[0].val, ins.ops[0].key, "c.addi") {
             bins gprval[] = {zero,[s0:a5]}; // Add zero here to map c.nop
-//            bins unexpected[] = default;
         }
         cp_imm6   : coverpoint get_imm(ins.ops[2].val,"c.addi" ) {
             bins neg  = {[$:-1]};
@@ -1406,7 +1405,7 @@ class uvme_rv32isa_covg extends uvm_component;
     covergroup c_slli_cg     with function sample(ins_t ins);
         option.per_instance = 1;
         cp_rd    : coverpoint get_gpr_name(ins.ops[0].val, ins.ops[0].key, "c.slli") {
-            bins gprval[] = {[s0:a5]};
+            bins gprval[] = {zero, [s0:a5]};
         }
         cp_rs1   : coverpoint get_gpr_name(ins.ops[1].val, ins.ops[1].key, "c.slli") {
             bins gprval[] = {[s0:a5]};
@@ -1472,9 +1471,21 @@ class uvme_rv32isa_covg extends uvm_component;
     covergroup c_add_cg with function sample(ins_t ins);
         option.per_instance = 1;
         cp_rd     : coverpoint get_gpr_name(ins.ops[0].val, ins.ops[0].key, "c.add") {
-          bins gprval[] = {[ra:t6]};
+          bins gprval[] = {zero, [ra:t6]};
         }
         cp_rs1    : coverpoint get_gpr_name(ins.ops[2].val, ins.ops[2].key, "c.add") {
+          bins gprval[] = {[ra:t6]};
+        }
+    endgroup
+
+// TODO : missing coverage of all combinations of source and destination operands.
+// FIXME: DONE
+    covergroup c_mv_cg with function sample(ins_t ins);
+        option.per_instance = 1;
+        cp_rd     : coverpoint get_gpr_name(ins.ops[0].val, ins.ops[0].key, "c.mv") {
+          bins gprval[] = {zero, [ra:t6]};
+        }
+        cp_rs1    : coverpoint get_gpr_name(ins.ops[1].val, ins.ops[1].key, "c.mv") {
           bins gprval[] = {[ra:t6]};
         }
     endgroup
@@ -1649,6 +1660,7 @@ class uvme_rv32isa_covg extends uvm_component;
         c_srai_cg     = new();
         c_andi_cg     = new();
         c_add_cg      = new();
+        c_mv_cg       = new();
         c_and_cg      = new();
         c_or_cg       = new();
         c_xor_cg      = new();
@@ -1797,13 +1809,7 @@ class uvme_rv32isa_covg extends uvm_component;
             "beqz"        : begin ins.asm=C_BEQZ;   c_beqz_cg.sample(ins);   end
             "bnez"        : begin ins.asm=C_BNEZ;   c_bnez_cg.sample(ins);   end
             "li"          : begin ins.asm=C_LI;     c_li_cg.sample(ins);     end
-
-            /*
-             * Compressed pseudo-op conversion
-             */        
-
-            // mv: convert to c.addi rd, rs
-            "mv"        : begin ins.asm=C_ADD; c_add_cg.sample(ins);   end
+            "mv"          : begin ins.asm=C_MV;     c_mv_cg.sample(ins);     end
 
             // UVM warning on a fall-through
             default:    `uvm_warning("RV32ISA Coverage", 
@@ -1849,11 +1855,6 @@ class uvme_rv32isa_covg extends uvm_component;
                         ins.ops[2] = ins.ops[1];
                         ins.ops[1].key = "C"; ins.ops[1].val = "0";
                     end
-                    `uvm_info("RV32ISA Functional Coverage", $sformatf("jalr_cg: %s:%s %s:%s %s:%s", 
-                        ins.ops[0].key, ins.ops[0].val,
-                        ins.ops[1].key, ins.ops[1].val,
-                        ins.ops[2].key, ins.ops[2].val),
-                        UVM_LOW)
                     ins.asm = JALR;
                     jalr_cg.sample(ins);
                 end
