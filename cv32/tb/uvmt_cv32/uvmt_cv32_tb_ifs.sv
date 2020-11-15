@@ -155,7 +155,7 @@ interface uvmt_cv32_core_cntrl_if (
     }
   endgroup: core_cntrl_cg
 
-  core_cntrl_cg core_cntrl_cg_inst;
+  core_cntrl_cg core_cntrl_cg_inst = new();
 
   initial begin: static_controls
     fetch_en          = 1'b0; // Enabled by go_fetch(), below
@@ -212,7 +212,6 @@ interface uvmt_cv32_core_cntrl_if (
   function void go_fetch();
     drv_cb.fetch_en <= 1'b1;
     `uvm_info("CORE_CNTRL_IF", "uvmt_cv32_core_cntrl_if.go_fetch() called", UVM_DEBUG)
-    core_cntrl_cg_inst = new();
     core_cntrl_cg_inst.sample();
   endfunction : go_fetch
 
