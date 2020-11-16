@@ -210,6 +210,32 @@
       reset_val: 0
       msb: 31
       lsb: 0
+- csr: mhpmcounter3
+  description: >
+    Lower 32-bit Machine Performance Monitoring Counter
+  address: 0xB03
+  privilege_mode: M
+  rv32:
+    - field_name: Count
+      description: >
+        Lower 32-bits of 64-bit machine performance-monitoring counter
+      type: RW
+      reset_val: 0
+      msb: 31
+      lsb: 0
+- csr: mhpmcounter3h
+  description: >
+    Upper 32-bit Machine Performance Monitoring Counter
+  address: 0xB83
+  privilege_mode: M
+  rv32:
+    - field_name: Count
+      description: >
+        Upper 32-bits of 64-bit machine performance-monitoring counter
+      type: RW
+      reset_val: 0
+      msb: 31
+      lsb: 0
 - csr: mstatus
   description: >
     Machine ISA Register
