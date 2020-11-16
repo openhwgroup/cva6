@@ -1054,7 +1054,11 @@ class uvme_rv32isa_covg extends uvm_component;
         cp_rd    : coverpoint get_gpr_name(ins.ops[0].val, ins.ops[0].key, "csrrci") {
           bins gprval[] = {[zero:t6]};
         }
-        cp_csr   : coverpoint get_csr_name(ins.ops[1].val, ins.ops[1].key, "csrrci");
+        cp_csr   : coverpoint get_csr_name(ins.ops[1].val, ins.ops[1].key, "csrrci") {
+          // RM does not emit coverage transactions for illegal instructions and
+		  // CV32E40P treats csrrci rd, ro_csrs, zimm as an illegal instruction
+          ignore_bins ro_csrs = {"mhartid", "mimpid", "mvendorid"};
+		}
         cp_zimm  : coverpoint get_imm(ins.ops[2].val, "csrrci") {
           bins low  = {[5'b00000:5'b10000]};
           bins high = {[5'b10001:5'b11111]};
@@ -1088,7 +1092,11 @@ class uvme_rv32isa_covg extends uvm_component;
         cp_rd    : coverpoint get_gpr_name(ins.ops[0].val, ins.ops[0].key, "csrrsi") {
           bins gprval[] = {[zero:t6]};
         }
-        cp_csr   : coverpoint get_csr_name(ins.ops[1].val, ins.ops[1].key, "csrrsi");
+        cp_csr   : coverpoint get_csr_name(ins.ops[1].val, ins.ops[1].key, "csrrsi") {
+          // RM does not emit coverage transactions for illegal instructions and
+		  // CV32E40P treats csrrsi rd, ro_csrs, zimm as an illegal instruction
+          ignore_bins ro_csrs = {"mhartid", "mimpid", "mvendorid"};
+		}
         cp_zimm  : coverpoint get_imm(ins.ops[2].val, "csrrsi") {
           bins low  = {[5'b00000:5'b10000]};
           bins high = {[5'b10001:5'b11111]};
@@ -1100,7 +1108,11 @@ class uvme_rv32isa_covg extends uvm_component;
         cp_rd    : coverpoint get_gpr_name(ins.ops[0].val, ins.ops[0].key, "csrrw") {
           bins gprval[] = {[zero:t6]};
         }
-        cp_csr   : coverpoint get_csr_name(ins.ops[1].val, ins.ops[1].key, "csrrw");
+        cp_csr   : coverpoint get_csr_name(ins.ops[1].val, ins.ops[1].key, "csrrw") {
+          // RM does not emit coverage transactions for illegal instructions and
+		  // CV32E40P treats csrrw rd, ro_csrs, zimm as an illegal instruction
+          ignore_bins ro_csrs = {"mhartid", "mimpid", "mvendorid"};
+		}
         cp_rs1   : coverpoint get_gpr_name(ins.ops[2].val, ins.ops[2].key, "csrrw") {
           bins gprval[] = {[zero:t6]};
         }
@@ -1111,7 +1123,11 @@ class uvme_rv32isa_covg extends uvm_component;
         cp_rd    : coverpoint get_gpr_name(ins.ops[0].val, ins.ops[0].key, "csrrwi") {
           bins gprval[] = {[zero:t6]};
         }
-        cp_csr   : coverpoint get_csr_name(ins.ops[1].val, ins.ops[1].key, "csrrwi");
+        cp_csr   : coverpoint get_csr_name(ins.ops[1].val, ins.ops[1].key, "csrrwi") {
+          // RM does not emit coverage transactions for illegal instructions and
+		  // CV32E40P treats csrrwi rd, ro_csrs, zimm as an illegal instruction
+          ignore_bins ro_csrs = {"mhartid", "mimpid", "mvendorid"};
+		}
         cp_zimm  : coverpoint get_imm(ins.ops[2].val, "csrrwi") {
           bins low  = {[5'b00000:5'b10000]};
           bins high = {[5'b10001:5'b11111]};
