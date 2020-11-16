@@ -1309,7 +1309,7 @@ class uvme_rv32isa_covg extends uvm_component;
             bins gprval[] = {[s0:a5]};
         }
         cp_shamt5   : coverpoint get_imm(ins.ops[2].val, "c.slli" ) {
-            // Note that zero is reserved (used for HINTs)
+            bins zero = {0};
             bins pos  = {[1:$]};
         }
     endgroup
@@ -1323,8 +1323,8 @@ class uvme_rv32isa_covg extends uvm_component;
         cp_rs1   : coverpoint get_gpr_name(ins.ops[1].val, ins.ops[1].key, "c.srli") {
             bins gprval[] = {[s0:a5]};
         }
-        cp_shamt5   : coverpoint get_imm(ins.ops[2].val, "c.srli" ) {
-            // Note that zero is reserved (used for HINTs)
+        cp_shamt5   : coverpoint get_imm(ins.ops[2].val, "c.srli" ) {            
+            bins zero = {0};
             bins pos  = {[1:$]};
         }
     endgroup
@@ -1340,8 +1340,8 @@ class uvme_rv32isa_covg extends uvm_component;
         cp_rs1   : coverpoint get_gpr_name(ins.ops[1].val, ins.ops[1].key, "c.srai") {
             bins gprval[] = {[s0:a5]};
         }
-        cp_shamt5   : coverpoint get_imm(ins.ops[2].val, "c.srai" ) {
-            // Note that zero is reserved (used for HINTs)
+        cp_shamt5   : coverpoint get_imm(ins.ops[2].val, "c.srai" ) {            
+            bins zero = {0};
             bins pos  = {[1:$]};
         }
     endgroup
