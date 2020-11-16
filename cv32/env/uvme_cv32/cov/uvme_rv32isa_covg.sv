@@ -1842,7 +1842,7 @@ class uvme_rv32isa_covg extends uvm_component;
                         ins.ops[0].key, ins.ops[0].val,
                         ins.ops[1].key, ins.ops[1].val,
                         ins.ops[2].key, ins.ops[2].val),
-                        UVM_LOW)
+                        UVM_DEBUG)
 
                     jalr_cg.sample(ins);
                 end
