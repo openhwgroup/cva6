@@ -85,10 +85,22 @@ main:
     sw      x25,4(sp)
 ###############################################################################
 
+	csrrci x5,  0x340, 0x0a   # not illegal instruction: attempt to write RW CSR
+
+	# mhpmevent3
+	csrrci x5,  0x323, 0x0a   # not illegal instruction: attempt to write RW CSR
+	csrrc  x5,  0x323, x0     # not illegal instruction: no attempt to write RO CSR
+	csrrc  x0,  0x323, x5     # not illegal instruction: attempt to write RW CSR
+	csrrci x5,  0x323, 0x0a   # not illegal instruction: attempt to write RW CSR
+	csrrs  x0,  0x323, x5     # not illegal instruction: attempt to write RW CSR
+ 	csrrsi x0,  0x323, 0x0a   # not illegal instruction: attempt to write RW CSR
+ 	csrrw  x0,  0x323, x0     # not illegal instruction: attempt to write RW CSR
+	csrrwi x0,  0x323, 0x0a   # not illegal instruction: attempt to write RW CSR
+
 	# mvendorid
 	csrrc  x5,  3857, x0     # not illegal instruction: no attempt to write RO CSR
 	csrrc  x0,  3857, x5     # illegal instruction: attempt to write RO CSR
-	csrrci x0,  3857, 0x0a   # illegal instruction: attempt to write RO CSR
+	csrrci x5,  3857, 0x0a   # illegal instruction: attempt to write RO CSR
 	csrrs  x0,  3857, x5     # illegal instruction: attempt to write RO CSR
  	csrrsi x0,  3857, 0x0a   # illegal instruction: attempt to write RO CSR
  	csrrw  x0,  3857, x0     # illegal instruction: attempt to write RO CSR

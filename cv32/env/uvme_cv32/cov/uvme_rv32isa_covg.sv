@@ -1796,7 +1796,12 @@ class uvme_rv32isa_covg extends uvm_component;
                 "csrrs"     : begin ins.asm=CSRRS;  csrrs_cg.sample(ins);  end
                 "csrrc"     : begin ins.asm=CSRRC;  csrrc_cg.sample(ins);  end
                 "csrrwi"    : begin ins.asm=CSRRWI; csrrwi_cg.sample(ins); end
-                "csrrci"    : begin ins.asm=CSRRCI; csrrci_cg.sample(ins); end
+                "csrrci"    : begin
+                  ins.asm=CSRRCI;
+                  csrrci_cg.sample(ins);
+                  `uvm_info("RV32ISA Functional Coverage", $sformatf("csrrci_cg: ins.ops[0].val = %0s, ins.ops[1].val = %0s, ins.ops[2].val = %0s, imm = %0h",
+                                                                     ins.ops[0].val, ins.ops[1].val, ins.ops[2].val, get_imm(ins.ops[2].val,"beq")), UVM_DEBUG)
+			    end
                 "csrrsi"    : begin ins.asm=CSRRSI; csrrsi_cg.sample(ins); end                
 
                 "csrw"      : begin ins.asm=CSRRW;  ins.ops[2] = ins.ops[1]; ins.ops[1] = ins.ops[0]; ins.ops[0].val = "zero"; csrrw_cg.sample(ins); end

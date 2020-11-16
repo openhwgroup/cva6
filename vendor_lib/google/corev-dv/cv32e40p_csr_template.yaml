@@ -406,27 +406,27 @@
       reset_val: 1
       msb: 0
       lsb: 0
-# MHPMEVENT3..31 not full modeled by RM
-#- csr: mhpmevent3
-#  description: >
-#    (HPM) Machine Performance-Monitoring Event Selector 3
-#  address: 0x323
-#  privilege_mode: M
-#  rv32:
-#    - field_name: Zero
-#      description: >
-#        Always zero
-#      type: R
-#      reset_val: 0
-#      msb: 31
-#      lsb: 16
-#    - field_name: Selectors
-#      description: >
-#        Event selector
-#      type: WARL
-#      reset_val: 0
-#      msb: 15
-#      lsb: 0
+# MHPMEVENT4..31 not full modeled by RM
+- csr: mhpmevent3
+  description: >
+    (HPM) Machine Performance-Monitoring Event Selector 3
+  address: 0x323
+  privilege_mode: M
+  rv32:
+    - field_name: Zero
+      description: >
+        Always zero
+      type: R
+      reset_val: 0
+      msb: 31
+      lsb: 16
+    - field_name: Selectors
+      description: >
+        Event selector
+      type: WARL
+      reset_val: 0
+      msb: 15
+      lsb: 0
 - csr: mscratch
   description: >
     Machine Scratch-pad Register
