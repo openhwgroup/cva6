@@ -25,6 +25,7 @@ package corev_instr_test_pkg;
   `include "corev_interrupt_csr_instr_lib.sv"
   `include "corev_misc_instr_lib.sv"  
 
+  `include "corev_compressed_instr.sv"
   `include "corev_privil_reg.sv"
   `include "corev_privileged_common_seq.sv"
   `include "corev_instr_gen_config.sv"
