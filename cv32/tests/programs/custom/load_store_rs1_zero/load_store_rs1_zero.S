@@ -45,33 +45,33 @@ _start_main:
     li a1, 0x12345678
     sw a1, 2044(zero)
     lw a2, 2044(zero)
-    bne a2, a1, csr_fail
+    bne a2, a1, test_fail
 
     # write/read mem[2047]=0x9A with sb and lb (lb does sign extend)
     li a3, 0x9A
     sb a3, 2047(zero)
     li a3, 0xFFFFFF9A # Sign extended expected value
     lb a4, 2047(zero)
-    bne a4, a3, csr_fail
+    bne a4, a3, test_fail
         
     # write/read mem[2047]=0xBC with sb and lbu (lbu does not sign extend)
     li a5, 0xBC
     sb a5, 2047(zero)
     lbu a6, 2047(zero)
-    bne a5, a6, csr_fail
+    bne a5, a6, test_fail
 
     # write/read mem[2047]=0xDE & mem[2046]=0xF0 with sh and lh (lh does sign extend)
     li a7, 0xDEF0
     sh a7, 2046(zero)
     li a7, 0xFFFFDEF0 # Sign extended expected value
     lh a0, 2046(zero)
-    bne a7, a0, csr_fail
+    bne a7, a0, test_fail
         
     # write/read mem[2047]=0x81 & mem[2046]=0x23 with sh and lhu (lhu does not sign extend)
     li a1, 0x8123
     sh a1, 2046(zero)
     lhu a2, 2046(zero)
-    bne a1, a2, csr_fail
+    bne a1, a2, test_fail
         
 test_done:
     lui a0,print_port>>12
@@ -99,13 +99,13 @@ test_done:
     sw a1,0(a0)
     sw a1,0(a0)
 
-csr_pass:
+test_pass:
     li x18, 123456789
     li x17, 0x20000000
     sw x18,0(x17)
     wfi
 
-csr_fail:
+test_fail:
     lui a0,print_port>>12
     addi a1,zero,'\n'
     sw a1,0(a0)
