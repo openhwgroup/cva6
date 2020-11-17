@@ -65,3 +65,10 @@ tests:
     dir: cv32/sim/uvmt_cv32    
     cmd: make gen_corev-dv test COREV=YES TEST=corev_rand_interrupt_wfi
     num: 50
+
+  corev_rand_interrupt_wfi_mem_stress:
+    build: uvmt_cv32
+    description: Interrupt random test with WFI
+    dir: cv32/sim/uvmt_cv32    
+    cmd: make gen_corev-dv test COREV=YES TEST=corev_rand_interrupt_wfi_mem_stress
+    num: 50
