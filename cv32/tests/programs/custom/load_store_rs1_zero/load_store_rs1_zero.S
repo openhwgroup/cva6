@@ -41,24 +41,37 @@ _start:
 _start_main:
 
 # Verify uncompressed load and store
-    # Write/read mem[2044]=12, mem[2045]=34, mem[2046]=56, mem[2047]=78
+    # Write/read mem[2047]=12, mem[2046]=34, mem[2045]=56, mem[2044]=78
     li a1, 0x12345678
     sw a1, 2044(zero)
     lw a2, 2044(zero)
     bne a2, a1, csr_fail
 
-    # write/read mem[2047]=9A with sb and lb (lbu does sign extend)
+    # write/read mem[2047]=0x9A with sb and lb (lb does sign extend)
     li a3, 0x9A
     sb a3, 2047(zero)
-    li a3, 0xFFFFFF9A # Expected value
+    li a3, 0xFFFFFF9A # Sign extended expected value
     lb a4, 2047(zero)
     bne a4, a3, csr_fail
         
-    # write/read mem[2047]=BC with sb and lbu (lbu does not sign extend)
+    # write/read mem[2047]=0xBC with sb and lbu (lbu does not sign extend)
     li a5, 0xBC
     sb a5, 2047(zero)
     lbu a6, 2047(zero)
     bne a5, a6, csr_fail
+
+    # write/read mem[2047]=0xDE & mem[2046]=0xF0 with sh and lh (lh does sign extend)
+    li a7, 0xDEF0
+    sh a7, 2046(zero)
+    li a7, 0xFFFFDEF0 # Sign extended expected value
+    lh a0, 2046(zero)
+    bne a7, a0, csr_fail
+        
+    # write/read mem[2047]=0x81 & mem[2046]=0x23 with sh and lhu (lhu does not sign extend)
+    li a1, 0x8123
+    sh a1, 2046(zero)
+    lhu a2, 2046(zero)
+    bne a1, a2, csr_fail
         
 test_done:
     lui a0,print_port>>12
