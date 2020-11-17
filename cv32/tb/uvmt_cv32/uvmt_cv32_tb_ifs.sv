@@ -155,7 +155,7 @@ interface uvmt_cv32_core_cntrl_if (
     }
   endgroup: core_cntrl_cg
 
-  core_cntrl_cg core_cntrl_cg_inst;
+  core_cntrl_cg core_cntrl_cg_inst = new();
 
   initial begin: static_controls
     fetch_en          = 1'b0; // Enabled by go_fetch(), below
@@ -212,7 +212,6 @@ interface uvmt_cv32_core_cntrl_if (
   function void go_fetch();
     drv_cb.fetch_en <= 1'b1;
     `uvm_info("CORE_CNTRL_IF", "uvmt_cv32_core_cntrl_if.go_fetch() called", UVM_DEBUG)
-    core_cntrl_cg_inst = new();
     core_cntrl_cg_inst.sample();
   endfunction : go_fetch
 
@@ -273,6 +272,7 @@ interface uvmt_cv32_step_compare_if;
    logic   [31:0] ovp_cpu_GPR[32];
    logic [31:0][31:0] riscy_GPR; // packed dimensions, register index by data width
    logic       deferint_prime; // Stages deferint for the ISS deferint signal
+   logic       deferint_prime_ack; // Set low if deferint_prime was set due to interrupt ack (as opposed to wakeup)
 
    int  num_pc_checks;
    int  num_gpr_checks;

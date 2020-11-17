@@ -32,6 +32,13 @@ tests:
     dir: cv32/sim/uvmt_cv32
     cmd: make test TEST=debug_test_reset
 
+  debug_test_boot_set:
+    build: uvmt_cv32
+    description: Debug reset test with random boot set
+    dir: cv32/sim/uvmt_cv32
+    cmd: make test TEST=debug_test_boot_set
+    num: 50
+
   corev_rand_debug:
     build: uvmt_cv32
     description: debug random test

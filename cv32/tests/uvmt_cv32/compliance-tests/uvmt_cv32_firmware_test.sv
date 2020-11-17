@@ -73,6 +73,7 @@ class uvmt_cv32_firmware_test_c extends uvmt_cv32_base_test_c;
 
     extern virtual task reset_debug();
 
+    extern virtual task bootset_debug();
    /**
     *  Start the interrupt sequencer to apply random interrupts during test
     */
@@ -95,12 +96,6 @@ endfunction : new
 
 
 task uvmt_cv32_firmware_test_c::reset_phase(uvm_phase phase);
-  if ($test$plusargs("reset_debug")) begin
-    fork
-      reset_debug();
-    join_none
-   end
- 
    super.reset_phase(phase);
   
 endtask : reset_phase
@@ -159,6 +154,17 @@ task uvmt_cv32_firmware_test_c::run_phase(uvm_phase phase);
      join_none
    end
 
+   if ($test$plusargs("reset_debug")) begin
+    fork
+      reset_debug();
+    join_none
+   end
+   if ($test$plusargs("debug_boot_set")) begin
+    fork
+      bootset_debug();
+    join_none
+   end
+
    phase.raise_objection(this);
    @(posedge env_cntxt.clknrst_cntxt.vif.reset_n);
    repeat (33) @(posedge env_cntxt.clknrst_cntxt.vif.clk);
@@ -178,12 +184,27 @@ task uvmt_cv32_firmware_test_c::run_phase(uvm_phase phase);
 endtask : run_phase
 
 task uvmt_cv32_firmware_test_c::reset_debug();
-    uvme_cv32_random_debug_c reset_vseq;
+    uvme_cv32_random_debug_reset_c debug_vseq;
+    debug_vseq = uvme_cv32_random_debug_reset_c::type_id::create("random_debug_reset_vseqr");
     `uvm_info("TEST", "Applying debug_req_i at reset", UVM_NONE);
     @(negedge env_cntxt.clknrst_cntxt.vif.reset_n);
-    reset_vseq = uvme_cv32_random_debug_c::type_id::create("random_reset_debug_vseqr");
-    void'(reset_vseq.randomize());
-    reset_vseq.start(vsequencer);
+
+    void'(debug_vseq.randomize());
+    debug_vseq.start(vsequencer);
+
+endtask
+
+task uvmt_cv32_firmware_test_c::bootset_debug();
+    uvme_cv32_random_debug_bootset_c debug_vseq;
+    debug_vseq = uvme_cv32_random_debug_bootset_c::type_id::create("random_debug_bootset_vseqr");
+    `uvm_info("TEST", "Applying single cycle debug_req after reset", UVM_NONE);
+    @(negedge env_cntxt.clknrst_cntxt.vif.reset_n);
+
+    // Delay debug_req_i by up to 35 cycles.Should hit BOOT_SET
+    repeat($urandom_range(35,1)) @(posedge env_cntxt.clknrst_cntxt.vif.clk);
+  
+    void'(debug_vseq.randomize());
+    debug_vseq.start(vsequencer);
 
 endtask
 

@@ -83,7 +83,7 @@ class corev_asm_program_gen extends riscv_asm_program_gen;
         // If WFIs allow, randomly insert wfi as well
         if (!cfg.no_wfi) begin         
             randcase
-                1:  intr_handler.push_back("wfi");
+                2:  intr_handler.push_back("wfi");
                 4: begin /* insert nothing */ end
             endcase          
         end
@@ -257,13 +257,6 @@ class corev_asm_program_gen extends riscv_asm_program_gen;
     pop_gpr_from_kernel_stack(status, scratch, cfg.mstatus_mprv,
                               cfg.sp, cfg.tp, interrupt_handler_instr);
                                       // Emit fast interrupt handler since cv32e40p has hardware interrupt ack
-    // If WFIs allow, randomly insert wfi as well
-    if (!cfg.no_wfi) begin         
-        randcase
-            1:  interrupt_handler_instr.push_back("wfi");
-            5: begin /* insert nothing */ end
-        endcase          
-    end    
 
     interrupt_handler_instr = {interrupt_handler_instr,
                                $sformatf("%0sret;", mode_prefix)
@@ -283,7 +276,7 @@ class corev_asm_program_gen extends riscv_asm_program_gen;
     // Avoid using the reserved registers
 
     riscv_reg_t td_reg[2];
-    string      td_reg_name[2];
+    string      td_nam[2];
 
     `DV_CHECK_STD_RANDOMIZE_WITH_FATAL(td_reg,
       td_reg[0] != td_reg[1];
@@ -295,41 +288,41 @@ class corev_asm_program_gen extends riscv_asm_program_gen;
       }
     )
 
-    td_reg_name[0] = td_reg[0].name;
-    td_reg_name[1] = td_reg[1].name;
+    td_nam[0] = td_reg[0].name();
+    td_nam[1] = td_reg[1].name();
 
     instr_stream.push_back($sformatf(""));
     instr_stream.push_back($sformatf("#Start: Extracted from riscv_compliance_tests/riscv_test.h"));
     instr_stream.push_back($sformatf("test_done:"));
     instr_stream.push_back($sformatf("                  csrrci x0,mstatus,0x8 # Clear MSTATUS.MIE to avoid interrupts during test_done"));
-    instr_stream.push_back($sformatf("                  lui %s,print_port>>12", td_reg_name[0].tolower()));
-    instr_stream.push_back($sformatf("                  addi %s,zero,'\\n'", td_reg_name[1].tolower()));
-    instr_stream.push_back($sformatf("                  sw %s,0(%s)", td_reg_name[1].tolower(), td_reg_name[0].tolower()));
-    instr_stream.push_back($sformatf("                  addi %s,zero,'C'", td_reg_name[1].tolower()));
-    instr_stream.push_back($sformatf("                  sw %s,0(%s)", td_reg_name[1].tolower(), td_reg_name[0].tolower()));
-    instr_stream.push_back($sformatf("                  addi %s,zero,'V'", td_reg_name[1].tolower()));
-    instr_stream.push_back($sformatf("                  sw %s,0(%s)", td_reg_name[1].tolower(), td_reg_name[0].tolower()));
-    instr_stream.push_back($sformatf("                  addi %s,zero,'3'", td_reg_name[1].tolower()));
-    instr_stream.push_back($sformatf("                  sw %s,0(%s)", td_reg_name[1].tolower(), td_reg_name[0].tolower()));
-    instr_stream.push_back($sformatf("                  addi %s,zero,'2'", td_reg_name[1].tolower()));
-    instr_stream.push_back($sformatf("                  sw %s,0(%s)", td_reg_name[1].tolower(), td_reg_name[0].tolower()));
-    instr_stream.push_back($sformatf("                  addi %s,zero,' '", td_reg_name[1].tolower()));
-    instr_stream.push_back($sformatf("                  sw %s,0(%s)", td_reg_name[1].tolower(), td_reg_name[0].tolower()));
-    instr_stream.push_back($sformatf("                  addi %s,zero,'D'", td_reg_name[1].tolower()));
-    instr_stream.push_back($sformatf("                  sw %s,0(%s)", td_reg_name[1].tolower(), td_reg_name[0].tolower()));
-    instr_stream.push_back($sformatf("                  addi %s,zero,'O'", td_reg_name[1].tolower()));
-    instr_stream.push_back($sformatf("                  sw %s,0(%s)", td_reg_name[1].tolower(), td_reg_name[0].tolower()));
-    instr_stream.push_back($sformatf("                  addi %s,zero,'N'", td_reg_name[1].tolower()));
-    instr_stream.push_back($sformatf("                  sw %s,0(%s)", td_reg_name[1].tolower(), td_reg_name[0].tolower()));
-    instr_stream.push_back($sformatf("                  addi %s,zero,'E'", td_reg_name[1].tolower()));
-    instr_stream.push_back($sformatf("                  sw %s,0(%s)", td_reg_name[1].tolower(), td_reg_name[0].tolower()));
-    instr_stream.push_back($sformatf("                  addi %s,zero,'\\n'", td_reg_name[1].tolower()));
-    instr_stream.push_back($sformatf("                  sw %s,0(%s)", td_reg_name[1].tolower(), td_reg_name[0].tolower()));
-    instr_stream.push_back($sformatf("                  sw %s,0(%s)", td_reg_name[1].tolower(), td_reg_name[0].tolower()));
+    instr_stream.push_back($sformatf("                  lui %s,print_port>>12", td_nam[0].tolower()));
+    instr_stream.push_back($sformatf("                  addi %s,zero,'\\n'", td_nam[1].tolower()));
+    instr_stream.push_back($sformatf("                  sw %s,0(%s)", td_nam[1].tolower(), td_nam[0].tolower()));
+    instr_stream.push_back($sformatf("                  addi %s,zero,'C'", td_nam[1].tolower()));
+    instr_stream.push_back($sformatf("                  sw %s,0(%s)", td_nam[1].tolower(), td_nam[0].tolower()));
+    instr_stream.push_back($sformatf("                  addi %s,zero,'V'", td_nam[1].tolower()));
+    instr_stream.push_back($sformatf("                  sw %s,0(%s)", td_nam[1].tolower(), td_nam[0].tolower()));
+    instr_stream.push_back($sformatf("                  addi %s,zero,'3'", td_nam[1].tolower()));
+    instr_stream.push_back($sformatf("                  sw %s,0(%s)", td_nam[1].tolower(), td_nam[0].tolower()));
+    instr_stream.push_back($sformatf("                  addi %s,zero,'2'", td_nam[1].tolower()));
+    instr_stream.push_back($sformatf("                  sw %s,0(%s)", td_nam[1].tolower(), td_nam[0].tolower()));
+    instr_stream.push_back($sformatf("                  addi %s,zero,' '", td_nam[1].tolower()));
+    instr_stream.push_back($sformatf("                  sw %s,0(%s)", td_nam[1].tolower(), td_nam[0].tolower()));
+    instr_stream.push_back($sformatf("                  addi %s,zero,'D'", td_nam[1].tolower()));
+    instr_stream.push_back($sformatf("                  sw %s,0(%s)", td_nam[1].tolower(), td_nam[0].tolower()));
+    instr_stream.push_back($sformatf("                  addi %s,zero,'O'", td_nam[1].tolower()));
+    instr_stream.push_back($sformatf("                  sw %s,0(%s)", td_nam[1].tolower(), td_nam[0].tolower()));
+    instr_stream.push_back($sformatf("                  addi %s,zero,'N'", td_nam[1].tolower()));
+    instr_stream.push_back($sformatf("                  sw %s,0(%s)", td_nam[1].tolower(), td_nam[0].tolower()));
+    instr_stream.push_back($sformatf("                  addi %s,zero,'E'", td_nam[1].tolower()));
+    instr_stream.push_back($sformatf("                  sw %s,0(%s)", td_nam[1].tolower(), td_nam[0].tolower()));
+    instr_stream.push_back($sformatf("                  addi %s,zero,'\\n'", td_nam[1].tolower()));
+    instr_stream.push_back($sformatf("                  sw %s,0(%s)", td_nam[1].tolower(), td_nam[0].tolower()));
+    instr_stream.push_back($sformatf("                  sw %s,0(%s)", td_nam[1].tolower(), td_nam[0].tolower()));
     instr_stream.push_back($sformatf(""));
-    instr_stream.push_back($sformatf("                  li %s, test_ret_val", td_reg_name[0].tolower()));
-    instr_stream.push_back($sformatf("                  lw %s, test_results /* report result */", td_reg_name[1].tolower()));
-    instr_stream.push_back($sformatf("                  sw %s,0(%s)", td_reg_name[1].tolower(), td_reg_name[0].tolower()));
+    instr_stream.push_back($sformatf("                  li %s, test_ret_val", td_nam[0].tolower()));
+    instr_stream.push_back($sformatf("                  lw %s, test_results /* report result */", td_nam[1].tolower()));
+    instr_stream.push_back($sformatf("                  sw %s,0(%s)", td_nam[1].tolower(), td_nam[0].tolower()));
     instr_stream.push_back($sformatf(""));
     instr_stream.push_back($sformatf("                  csrrwi x0,mie,0 /* clear mie so that final wfi never awakens */"));
     instr_stream.push_back($sformatf("                  wfi  /* we are done */"));

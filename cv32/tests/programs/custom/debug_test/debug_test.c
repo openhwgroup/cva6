@@ -294,13 +294,16 @@ int main(int argc, char *argv[])
                                            mstatus_cmp.bits, mstatus.bits); TEST_FAILED;}
 
     printf("------------------------\n");
-    printf(" Test3: check hart ebreak executes ebreak handler but does not execute debugger code\n");
+    printf(" Test3.1: check hart ebreak executes ebreak handler but does not execute debugger code\n");
     glb_expect_ebreak_handler = 1;
     asm volatile("c.ebreak");
     check_ebreak_status(32,1);
 
-    //FIXME: complier cannot generate 32 ebreak instruction
-    //  Need to test both 16bit and 32bit ebreak instruction
+    printf("------------------------\n");
+    printf(" Test3.2: check hart c.ebreak executes ebreak handler but does not execute debugger code\n");
+    glb_expect_ebreak_handler = 1;
+    asm volatile(".4byte 0x00100073");
+    check_ebreak_status(32,2);
 
     printf("------------------------\n");
     printf(" Test4: request hardware debugger\n");

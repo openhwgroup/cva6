@@ -322,7 +322,7 @@ if (uvm):
                         full_run_cmd += ' USE_ISS={}'.format('YES' if iss else 'NO')
 
                         # Only DSIM can run corev-dv (riscv-dv) at present
-                        if ( svtool == 'dsim' or svtool == 'xrun' or svtool == 'vsim' or svtool == 'riviera'):
+                        if ( svtool == 'dsim' or svtool == 'xrun' or svtool == 'vsim' or svtool == 'riviera' or svtool == 'vcs'):
                             num_tests+=1
                             if (prcmd or debug):
                                 print(full_run_cmd)

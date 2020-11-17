@@ -12,6 +12,9 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
+//
+// SPDX-License-Identifier: Apache-2.0 WITH SHL-2.0
+//
 
 
 `ifndef __UVME_CV32_TDEFS_SV__
@@ -41,7 +44,7 @@ typedef enum {
     ,C_LWSP,C_SWSP,C_LW,C_SW
     ,C_BEQZ,C_BNEZ
     ,C_J,C_JR,C_JAL,C_JALR,C_LI,C_LUI
-    ,C_ADDI,C_ADDI16SP,C_ADDI4SPN
+    ,C_ADDI,C_ADDI16SP,C_ADDI4SPN,C_MV
     ,C_SLLI,C_SRLI,C_SRAI,C_ANDI,C_ADD
     ,C_AND,C_OR,C_XOR,C_SUB,C_EBREAK
 } instr_name_t; // assembler
@@ -61,12 +64,13 @@ typedef enum {
 // The following CSRs are not currently included:
 // mstatush, mtinst, mtval2, mhpmcounter3, ..., mhpmcounter31,
 // mhpmcounter3h, ..., mhpmcounter31h,
+// medeleg, mcounteren
 //The following CSRs have been removed:
 // satp (supervisor-mode address translation and protection)
 typedef enum {
-    marchid,mcause,mcounteren,mcountinhibit,mcycle,mcycleh,medeleg,mepc,mhartid
+    marchid,mcause,mcountinhibit,mcycle,mcycleh,mepc,mhartid
     ,mie,mcontext,scontext
-    ,minstret,minstreth,mip,misa,mscratch,mstatus,mtval,mtvec,march,mimpid
+    ,minstret,minstreth,mip,misa,mscratch,mstatus,mtval,mtvec,mimpid
     ,mvendorid
     ,mhpmevent3
     ,mhpmcounter3
