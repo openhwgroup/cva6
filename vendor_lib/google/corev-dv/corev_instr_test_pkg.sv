@@ -23,6 +23,7 @@ package corev_instr_test_pkg;
   
   // Instruction streams
   `include "corev_interrupt_csr_instr_lib.sv"
+  `include "corev_load_store_instr_lib.sv"  
   `include "corev_misc_instr_lib.sv"  
 
   `include "corev_compressed_instr.sv"
