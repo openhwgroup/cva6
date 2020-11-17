@@ -175,7 +175,7 @@ module mm_ram
                 rnd_stall_regs[RND_STALL_DATA_MODE]   = 2;
                 rnd_stall_regs[RND_STALL_DATA_GNT]    = 2;
                 rnd_stall_regs[RND_STALL_DATA_VALID]  = 2;
-                rnd_stall_regs[RND_STALL_DATA_MAX]    = 3;
+                rnd_stall_regs[RND_STALL_DATA_MAX]    = 8;
             end
             else begin
                 randcase
