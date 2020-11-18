@@ -23,6 +23,14 @@
 #
 ###############################################################################
 
+#
+# Cadence do not (officially) support Ubuntu, so suppress the nonzero return code from XRUN
+#
+OS_IS_UBUNTU = $(findstring Ubuntu,$(shell lsb_release -d))
+ifeq ($(OS_IS_UBUNTU),Ubuntu)
+    .IGNORE: hello-world comp test custom compliance comp_corev-dv corev-dv gen_corev-dv
+endif
+
 # Executables
 XRUN              = $(CV_SIM_PREFIX) xrun
 SIMVISION         = $(CV_TOOL_PREFIX) simvision
@@ -325,7 +333,7 @@ comp_corev-dv: $(RISCVDV_PKG)
 
 corev-dv: clean_riscv-dv \
           clone_riscv-dv \
-		  comp_corev-dv
+	  comp_corev-dv
 
 gen_corev-dv: 
 	mkdir -p $(XRUN_COREVDV_RESULTS)/$(TEST)

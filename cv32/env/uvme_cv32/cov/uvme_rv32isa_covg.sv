@@ -273,7 +273,8 @@ class uvme_rv32isa_covg extends uvm_component;
     endfunction
 
     function int get_imm(string s, asm);
-      int val;
+        int val;
+
         if (s[1] == "x") begin
             s = s.substr(2,s.len()-1);
             val = s.atohex ();
@@ -284,6 +285,7 @@ class uvme_rv32isa_covg extends uvm_component;
             val = s.atohex();
         end
         `uvm_info("RV32ISA Coverage", $sformatf("get_imm: Convert %s (%s) to 0x%0x (%0d)", s, asm, val, val), UVM_DEBUG)
+
         return val;
     endfunction
 
@@ -1259,7 +1261,8 @@ class uvme_rv32isa_covg extends uvm_component;
             bins gprval[] = {zero,ra,[gp:t6]}; // invalid when rd = x2 (sp)            
         }
         cp_imm6   : coverpoint get_imm(ins.ops[1].val,"c.lui" ) {    
-            bins neg  = {[$:-1]};
+            // Represents sign-extended negative numbers for nzimm6
+            bins neg  = {['hfffe0:'hfffff]};
             // invalid when imm = 0
             bins pos  = {[1:$]};
         }

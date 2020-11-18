@@ -44,6 +44,7 @@ class corev_instr_base_test extends riscv_instr_base_test;
 
   virtual function void build_phase(uvm_phase phase);
     override_gen_config();
+    override_compressed_instr();
     override_privil_reg();
     override_privil_seq();
     override_debug_rom_gen();
@@ -53,6 +54,11 @@ class corev_instr_base_test extends riscv_instr_base_test;
   virtual function void override_gen_config();    
     uvm_factory::get().set_type_override_by_type(riscv_instr_gen_config::get_type(),
                                                  corev_instr_gen_config::get_type());
+  endfunction
+
+  virtual function void override_compressed_instr();
+    uvm_factory::get().set_type_override_by_type(riscv_C_LUI_instr::get_type(),
+                                                 corev_C_LUI_instr::get_type());
   endfunction
 
   virtual function void override_privil_reg();    
