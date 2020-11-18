@@ -31,7 +31,8 @@ tests:
     build: uvmt_cv32
     description: mhpmcounter29_csr_access_test_2
     dir: cv32/sim/uvmt_cv32
-    cmd: make test TEST=mhpmcounter29_csr_access_test_2 COREV=YES CFG=num_mhpmcounter_29 USE_ISS=NO
+    cmd: make test TEST=mhpmcounter29_csr_access_test_2 COREV=YES CFG=num_mhpmcounter_29
+    iss: 0
 
   csr_instructions:
     build: uvmt_cv32
