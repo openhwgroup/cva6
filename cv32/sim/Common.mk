@@ -391,7 +391,7 @@ TEST_FILES        = $(filter %.c %.S,$(wildcard $(dir $*)*))
 %.elf: %.c %.S
 	make bsp
 	test_asm_src=$(basename )
-	$(RISCV_EXE_PREFIX)gcc $(CFG_CFLAGS) $(CFLAGS) -o $@ \
+	$(RISCV_EXE_PREFIX)gcc $(CFG_CFLAGS) $(TEST_CFLAGS) $(CFLAGS) -o $@ \
 		-nostartfiles \
 		$^ -T $(BSP)/link.ld -L $(BSP) -lcv-verif
 
@@ -399,14 +399,14 @@ TEST_FILES        = $(filter %.c %.S,$(wildcard $(dir $*)*))
 %.elf: %.c
 	make bsp
 	test_asm_src=$(basename )
-	$(RISCV_EXE_PREFIX)gcc $(CFG_CFLAGS) $(CFLAGS) -o $@ \
+	$(RISCV_EXE_PREFIX)gcc $(CFG_CFLAGS) $(TEST_CFLAGS) $(CFLAGS) -o $@ \
 		-nostartfiles \
 		$^ -T $(BSP)/link.ld -L $(BSP) -lcv-verif
 
 # This target selected if only %.S exists
 %.elf: %.S
 	make bsp
-	$(RISCV_EXE_PREFIX)gcc $(CFG_CFLAGS) $(CFLAGS) -v -o $@ \
+	$(RISCV_EXE_PREFIX)gcc $(CFG_CFLAGS) $(TEST_CFLAGS) $(CFLAGS) -v -o $@ \
 		-nostartfiles \
 		-I $(ASM) \
 		$^ -T $(BSP)/link.ld -L $(BSP) -lcv-verif
