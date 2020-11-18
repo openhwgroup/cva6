@@ -356,25 +356,13 @@ _inc_dpc_ebreak:
     csrw dpc, t1
 
     # Turn off dcsr.ebreakm for next two tests
-    # NB! Set to 1 until miscompares are fixed
-    # and steps 9 and 10 are back in
-    li t1, 4<<28 | 1<<15 | 1<<6 | 1<<2 | 3<<0
+    li t1, 4<<28 | 0<<15 | 1<<6 | 1<<2 | 3<<0
     csrw dcsr, t1
     j _debugger_single_step_end
 
 _debugger_single_step_ebreak_exception:
-    # If cause == 1, we need to advance dpc by 2
-    #li t1, 4<<28 | 0<<15 | 1<<6 | 1<<2 | 3<<0
-    #csrr t2, dcsr
-    #beq t1, t2, _inc_dpc_ebreak
-    
-#    j _debugger_single_step_end
-#_inc_dpc_ebreak_2:
-#    csrr t1, dpc
-#    addi t1, t1, 4
-#    csrw dpc, t1
-
     j _debugger_single_step_end
+
 _debugger_single_step_cebreak_exception:
     #  depc != 0 => we have passed the first
     # instruction of the handler, and we can
