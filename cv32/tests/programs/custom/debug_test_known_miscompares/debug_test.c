@@ -102,56 +102,6 @@ int main(int argc, char *argv[])
     check_debug_status(11, glb_hart_status);
     check_illegal_insn_status(1,1);
 
-    printf("------------------------\n");
-    printf("Test 2.1: Enable single step\n");
-    glb_hart_status = 2;
-    glb_expect_debug_entry = 1;
-    // Set delay so we get the request
-    debug_req_control = (debug_req_control_t) {
-      .fields.value            = 1,
-      .fields.pulse_mode       = 1, //PULSE Mode
-      .fields.rand_pulse_width = 0,
-      .fields.pulse_width      = 5,// FIXME: BUG: one clock pulse cause core to lock up
-      .fields.rand_start_delay = 0,
-      .fields.start_delay      = 200
-    };
-
-    DEBUG_REQ_CONTROL_REG = debug_req_control.bits;
-    while(glb_debug_status != glb_hart_status){
-        printf("Wait for Debugger\n");
-    } 
-
-    printf("------------------------\n");
-    printf("Test 2.2: Step ebreak with dcsr.ebreakm==0\n");
-    glb_hart_status = 3;
-    
-    glb_expect_ebreak_handler = 1;
-    // Run single step code (in single_step.S)
-    asm volatile("c.ebreak");
-    asm volatile("nop");
-    asm volatile("nop");
-    glb_expect_ebreak_handler = 1;
-    asm volatile(".4byte 0x00100073");
-    
-     printf("------------------------\n");
-    printf("Test 2.3: Disable single step\n");
-    glb_hart_status = 4;
-    glb_expect_debug_entry = 1;
-
-    // Set delay so we get the request
-    debug_req_control = (debug_req_control_t) {
-      .fields.value            = 1,
-      .fields.pulse_mode       = 1, //PULSE Mode
-      .fields.rand_pulse_width = 0,
-      .fields.pulse_width      = 5,// FIXME: BUG: one clock pulse cause core to lock up
-      .fields.rand_start_delay = 0,
-      .fields.start_delay      = 200
-    };
-
-    DEBUG_REQ_CONTROL_REG = debug_req_control.bits;
-    while(glb_debug_status != glb_hart_status){
-        printf("Wait for Debugger\n");
-    }
 
 
     printf("------------------------\n");
