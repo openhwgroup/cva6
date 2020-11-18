@@ -102,8 +102,12 @@ module uvma_obi_assert
     4'b1100,
     4'b1000
   };
+  bit be_inside_contiguous_be;
+  always_comb begin
+    be_inside_contiguous_be = be inside {contiguous_be};
+  end
   property p_be_contiguous;
-    req |-> be inside {contiguous_be};
+    req |-> be_inside_contiguous_be;
   endproperty : p_be_contiguous
   a_be_contiguous : assert property(p_be_contiguous)
   else
