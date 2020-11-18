@@ -1,0 +1,734 @@
+# Copyright 2020 OpenHW Group
+# Copyright 2019 Google LLC
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#      http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#
+# SPDX-License-Identifier: Apache-2.0 WITH SHL-2.0
+#
+################################################################################
+#
+# CSR definitions for the CV32E40P CORE-V proessor core (an RV32IMCZ machine).
+#
+# This file can be used as input to "gen_csr_test.py" delivered as part of
+# Google's riscv-dv project.  Assuming you are running this from
+# core-v-verif/vendor_lib/google/corev-dv and you've cloned riscv-dv, then the
+# following command-line should work for you:
+#
+#    python3 ../riscv-dv/scripts/gen_csr_test.py \
+#            --csr_file <csr_template.yaml> \
+#            --xlen 32
+#
+# Source document is the CV32E40P user Manual:
+# https://core-v-docs-verif-strat.readthedocs.io/projects/cv32e40p_um/en/latest/index.html
+# Revision 62f0d86b
+#
+# Assumptions:
+#       1. Configuration core input mtvec_addr_i == 32'h0000_0000
+#       2. Configuration core input hart_id_i == 32'h0000_0000
+#       3. Core RTL parameters set as per User Manual defaults.
+################################################################################
+#- csr: CSR_NAME
+#  description: >
+#    BRIEF_DESCRIPTION
+#  address: 0x###
+#  privilege_mode: MODE (D/M/S/H/U)
+#  rv32:
+#    - MSB_FIELD_NAME:
+#      - description: >
+#          BRIEF_DESCRIPTION
+#      - type: TYPE (WPRI/WLRL/WARL/R)
+#      - reset_val: RESET_VAL
+#      - msb: MSB_POS
+#      - lsb: LSB_POS
+#    - ...
+#    - ...
+#    - LSB_FIELD_NAME:
+#      - description: ...
+#      - type: ...
+#      - ...
+#  rv64:
+#    - MSB_FIELD_NAME:
+#      - description: >
+#          BRIEF_DESCRIPTION
+#      - type: TYPE (WPRI/WLRL/WARL/R)
+#      - reset_val: RESET_VAL
+#      - msb: MSB_POS
+#      - lsb: LSB_POS
+#    - ...
+#    - ...
+#    - LSB_FIELD_NAME:
+#      - description: ...
+#      - type: ...
+#      - ...
+
+# User CSRs not implemented for first release of CV32E40P
+#- csr: cycle
+#  description: >
+#    (HPM) Cycle Counter
+#  address: 0xC00
+#  privilege_mode: M
+#  rv32:
+#    - field_name: cycle
+#      description: >
+#        Read-only unprivileged shadow of the lower 32 bits of the 64 bit machine mode cycle counter. 
+#      type: R
+#      reset_val: 0
+#      msb: 31
+#      lsb: 0
+#- csr: instret
+#  description: >
+#    (HPM) Instruction-Retired Counter
+#  address: 0xC02
+#  privilege_mode: M
+#  rv32:
+#    - field_name: instret
+#      description: >
+#        Read-only unprivileged shadow of the lower 32 bits of the 64 bit machine mode instruction retired counter. 
+#      type: R
+#      reset_val: 0
+#      msb: 31
+#      lsb: 0
+#- csr: hpmcounter3
+#  description: >
+#    (HPM) Performance-Monitoring Counter3
+#  address: 0xC03
+#  privilege_mode: M
+#  rv32:
+#    - field_name: counter3
+#      description: >
+#        Read-only unprivileged shadow of the lower 32 bits of the 64 bit machine performance counter. 
+#      type: R
+#      reset_val: 0
+#      msb: 31
+#      lsb: 0
+#- csr: cycleh
+#  description: >
+#    (HPM) Upper 32 Cycle Counter
+#  address: 0xC80
+#  privilege_mode: M
+#  rv32:
+#    - field_name: cycleh
+#      description: >
+#        Read-only unprivileged shadow of the upper 32 bits of the 64 bit machine mode cycle counter. 
+#      type: R
+#      reset_val: 0
+#      msb: 31
+#      lsb: 0
+#- csr: instreth
+#  description: >
+#    (HPM) Upper 32 Instruction-Retired Counter
+#  address: 0xC82
+#  privilege_mode: M
+#  rv32:
+#    - field_name: instreth
+#      description: >
+#        Read-only unprivileged shadow of the upper 32 bits of the 64 bit machine mode instruction retired counter. 
+#      type: R
+#      reset_val: 0
+#      msb: 31
+#      lsb: 0
+#- csr: hpmcounter3h
+#  description: >
+#    (HPM) Upper 32 Performance-Monitoring Counter3
+#  address: 0xC83
+#  privilege_mode: M
+#  rv32:
+#    - field_name: counter3h
+#      description: >
+#        Read-only unprivileged shadow of the upper 32 bits of the 64 bit machine performance counter. 
+#      type: R
+#      reset_val: 0
+#      msb: 31
+#      lsb: 0
+
+# MHPMEVENT4..31 not full modeled by RM
+- csr: mhpmevent3
+  description: >
+    (HPM) Machine Performance-Monitoring Event Selector 3
+  address: 0x323
+  privilege_mode: M
+  rv32:
+    - field_name: Zero
+      description: >
+        Always zero
+      type: R
+      reset_val: 0
+      msb: 31
+      lsb: 16
+    - field_name: Selectors
+      description: >
+        Event selector
+      type: WARL
+      reset_val: 0
+      msb: 15
+      lsb: 0
+- csr: mhpmevent4
+  description: >
+    (HPM) Machine Performance-Monitoring Event Selector 4
+  address: 0x324
+  privilege_mode: M
+  rv32:
+    - field_name: Zero
+      description: >
+        Always zero
+      type: R
+      reset_val: 0
+      msb: 31
+      lsb: 16
+    - field_name: Selectors
+      description: >
+        Event selector
+      type: WARL
+      reset_val: 0
+      msb: 15
+      lsb: 0
+- csr: mhpmevent5
+  description: >
+    (HPM) Machine Performance-Monitoring Event Selector 5
+  address: 0x325
+  privilege_mode: M
+  rv32:
+    - field_name: Zero
+      description: >
+        Always zero
+      type: R
+      reset_val: 0
+      msb: 31
+      lsb: 16
+    - field_name: Selectors
+      description: >
+        Event selector
+      type: WARL
+      reset_val: 0
+      msb: 15
+      lsb: 0
+- csr: mhpmevent6
+  description: >
+    (HPM) Machine Performance-Monitoring Event Selector 6
+  address: 0x326
+  privilege_mode: M
+  rv32:
+    - field_name: Zero
+      description: >
+        Always zero
+      type: R
+      reset_val: 0
+      msb: 31
+      lsb: 16
+    - field_name: Selectors
+      description: >
+        Event selector
+      type: WARL
+      reset_val: 0
+      msb: 15
+      lsb: 0
+- csr: mhpmevent7
+  description: >
+    (HPM) Machine Performance-Monitoring Event Selector 7
+  address: 0x327
+  privilege_mode: M
+  rv32:
+    - field_name: Zero
+      description: >
+        Always zero
+      type: R
+      reset_val: 0
+      msb: 31
+      lsb: 16
+    - field_name: Selectors
+      description: >
+        Event selector
+      type: WARL
+      reset_val: 0
+      msb: 15
+      lsb: 0
+- csr: mhpmevent8
+  description: >
+    (HPM) Machine Performance-Monitoring Event Selector 8
+  address: 0x328
+  privilege_mode: M
+  rv32:
+    - field_name: Zero
+      description: >
+        Always zero
+      type: R
+      reset_val: 0
+      msb: 31
+      lsb: 16
+    - field_name: Selectors
+      description: >
+        Event selector
+      type: WARL
+      reset_val: 0
+      msb: 15
+      lsb: 0
+- csr: mhpmevent9
+  description: >
+    (HPM) Machine Performance-Monitoring Event Selector 9
+  address: 0x329
+  privilege_mode: M
+  rv32:
+    - field_name: Zero
+      description: >
+        Always zero
+      type: R
+      reset_val: 0
+      msb: 31
+      lsb: 16
+    - field_name: Selectors
+      description: >
+        Event selector
+      type: WARL
+      reset_val: 0
+      msb: 15
+      lsb: 0
+- csr: mhpmevent10
+  description: >
+    (HPM) Machine Performance-Monitoring Event Selector 10
+  address: 0x32a
+  privilege_mode: M
+  rv32:
+    - field_name: Zero
+      description: >
+        Always zero
+      type: R
+      reset_val: 0
+      msb: 31
+      lsb: 16
+    - field_name: Selectors
+      description: >
+        Event selector
+      type: WARL
+      reset_val: 0
+      msb: 15
+      lsb: 0
+- csr: mhpmevent11
+  description: >
+    (HPM) Machine Performance-Monitoring Event Selector 11
+  address: 0x32b
+  privilege_mode: M
+  rv32:
+    - field_name: Zero
+      description: >
+        Always zero
+      type: R
+      reset_val: 0
+      msb: 31
+      lsb: 16
+    - field_name: Selectors
+      description: >
+        Event selector
+      type: WARL
+      reset_val: 0
+      msb: 15
+      lsb: 0
+- csr: mhpmevent12
+  description: >
+    (HPM) Machine Performance-Monitoring Event Selector 12
+  address: 0x32c
+  privilege_mode: M
+  rv32:
+    - field_name: Zero
+      description: >
+        Always zero
+      type: R
+      reset_val: 0
+      msb: 31
+      lsb: 16
+    - field_name: Selectors
+      description: >
+        Event selector
+      type: WARL
+      reset_val: 0
+      msb: 15
+      lsb: 0
+- csr: mhpmevent13
+  description: >
+    (HPM) Machine Performance-Monitoring Event Selector 13
+  address: 0x32d
+  privilege_mode: M
+  rv32:
+    - field_name: Zero
+      description: >
+        Always zero
+      type: R
+      reset_val: 0
+      msb: 31
+      lsb: 16
+    - field_name: Selectors
+      description: >
+        Event selector
+      type: WARL
+      reset_val: 0
+      msb: 15
+      lsb: 0
+- csr: mhpmevent14
+  description: >
+    (HPM) Machine Performance-Monitoring Event Selector 14
+  address: 0x32e
+  privilege_mode: M
+  rv32:
+    - field_name: Zero
+      description: >
+        Always zero
+      type: R
+      reset_val: 0
+      msb: 31
+      lsb: 16
+    - field_name: Selectors
+      description: >
+        Event selector
+      type: WARL
+      reset_val: 0
+      msb: 15
+      lsb: 0
+- csr: mhpmevent15
+  description: >
+    (HPM) Machine Performance-Monitoring Event Selector 15
+  address: 0x32f
+  privilege_mode: M
+  rv32:
+    - field_name: Zero
+      description: >
+        Always zero
+      type: R
+      reset_val: 0
+      msb: 31
+      lsb: 16
+    - field_name: Selectors
+      description: >
+        Event selector
+      type: WARL
+      reset_val: 0
+      msb: 15
+      lsb: 0
+- csr: mhpmevent16
+  description: >
+    (HPM) Machine Performance-Monitoring Event Selector 16
+  address: 0x330
+  privilege_mode: M
+  rv32:
+    - field_name: Zero
+      description: >
+        Always zero
+      type: R
+      reset_val: 0
+      msb: 31
+      lsb: 16
+    - field_name: Selectors
+      description: >
+        Event selector
+      type: WARL
+      reset_val: 0
+      msb: 15
+      lsb: 0
+- csr: mhpmevent17
+  description: >
+    (HPM) Machine Performance-Monitoring Event Selector 17
+  address: 0x331
+  privilege_mode: M
+  rv32:
+    - field_name: Zero
+      description: >
+        Always zero
+      type: R
+      reset_val: 0
+      msb: 31
+      lsb: 16
+    - field_name: Selectors
+      description: >
+        Event selector
+      type: WARL
+      reset_val: 0
+      msb: 15
+      lsb: 0
+- csr: mhpmevent18
+  description: >
+    (HPM) Machine Performance-Monitoring Event Selector 18
+  address: 0x332
+  privilege_mode: M
+  rv32:
+    - field_name: Zero
+      description: >
+        Always zero
+      type: R
+      reset_val: 0
+      msb: 31
+      lsb: 16
+    - field_name: Selectors
+      description: >
+        Event selector
+      type: WARL
+      reset_val: 0
+      msb: 15
+      lsb: 0
+- csr: mhpmevent19
+  description: >
+    (HPM) Machine Performance-Monitoring Event Selector 19
+  address: 0x333
+  privilege_mode: M
+  rv32:
+    - field_name: Zero
+      description: >
+        Always zero
+      type: R
+      reset_val: 0
+      msb: 31
+      lsb: 16
+    - field_name: Selectors
+      description: >
+        Event selector
+      type: WARL
+      reset_val: 0
+      msb: 15
+      lsb: 0
+- csr: mhpmevent20
+  description: >
+    (HPM) Machine Performance-Monitoring Event Selector 20
+  address: 0x334
+  privilege_mode: M
+  rv32:
+    - field_name: Zero
+      description: >
+        Always zero
+      type: R
+      reset_val: 0
+      msb: 31
+      lsb: 16
+    - field_name: Selectors
+      description: >
+        Event selector
+      type: WARL
+      reset_val: 0
+      msb: 15
+      lsb: 0
+- csr: mhpmevent21
+  description: >
+    (HPM) Machine Performance-Monitoring Event Selector 21
+  address: 0x335
+  privilege_mode: M
+  rv32:
+    - field_name: Zero
+      description: >
+        Always zero
+      type: R
+      reset_val: 0
+      msb: 31
+      lsb: 16
+    - field_name: Selectors
+      description: >
+        Event selector
+      type: WARL
+      reset_val: 0
+      msb: 15
+      lsb: 0
+- csr: mhpmevent22
+  description: >
+    (HPM) Machine Performance-Monitoring Event Selector 22
+  address: 0x336
+  privilege_mode: M
+  rv32:
+    - field_name: Zero
+      description: >
+        Always zero
+      type: R
+      reset_val: 0
+      msb: 31
+      lsb: 16
+    - field_name: Selectors
+      description: >
+        Event selector
+      type: WARL
+      reset_val: 0
+      msb: 15
+      lsb: 0
+- csr: mhpmevent23
+  description: >
+    (HPM) Machine Performance-Monitoring Event Selector 23
+  address: 0x337
+  privilege_mode: M
+  rv32:
+    - field_name: Zero
+      description: >
+        Always zero
+      type: R
+      reset_val: 0
+      msb: 31
+      lsb: 16
+    - field_name: Selectors
+      description: >
+        Event selector
+      type: WARL
+      reset_val: 0
+      msb: 15
+      lsb: 0
+- csr: mhpmevent24
+  description: >
+    (HPM) Machine Performance-Monitoring Event Selector 24
+  address: 0x338
+  privilege_mode: M
+  rv32:
+    - field_name: Zero
+      description: >
+        Always zero
+      type: R
+      reset_val: 0
+      msb: 31
+      lsb: 16
+    - field_name: Selectors
+      description: >
+        Event selector
+      type: WARL
+      reset_val: 0
+      msb: 15
+      lsb: 0
+- csr: mhpmevent25
+  description: >
+    (HPM) Machine Performance-Monitoring Event Selector 25
+  address: 0x339
+  privilege_mode: M
+  rv32:
+    - field_name: Zero
+      description: >
+        Always zero
+      type: R
+      reset_val: 0
+      msb: 31
+      lsb: 16
+    - field_name: Selectors
+      description: >
+        Event selector
+      type: WARL
+      reset_val: 0
+      msb: 15
+      lsb: 0
+- csr: mhpmevent26
+  description: >
+    (HPM) Machine Performance-Monitoring Event Selector 26
+  address: 0x33a
+  privilege_mode: M
+  rv32:
+    - field_name: Zero
+      description: >
+        Always zero
+      type: R
+      reset_val: 0
+      msb: 31
+      lsb: 16
+    - field_name: Selectors
+      description: >
+        Event selector
+      type: WARL
+      reset_val: 0
+      msb: 15
+      lsb: 0
+- csr: mhpmevent27
+  description: >
+    (HPM) Machine Performance-Monitoring Event Selector 27
+  address: 0x33b
+  privilege_mode: M
+  rv32:
+    - field_name: Zero
+      description: >
+        Always zero
+      type: R
+      reset_val: 0
+      msb: 31
+      lsb: 16
+    - field_name: Selectors
+      description: >
+        Event selector
+      type: WARL
+      reset_val: 0
+      msb: 15
+      lsb: 0
+- csr: mhpmevent28
+  description: >
+    (HPM) Machine Performance-Monitoring Event Selector 28
+  address: 0x33c
+  privilege_mode: M
+  rv32:
+    - field_name: Zero
+      description: >
+        Always zero
+      type: R
+      reset_val: 0
+      msb: 31
+      lsb: 16
+    - field_name: Selectors
+      description: >
+        Event selector
+      type: WARL
+      reset_val: 0
+      msb: 15
+      lsb: 0
+- csr: mhpmevent29
+  description: >
+    (HPM) Machine Performance-Monitoring Event Selector 29
+  address: 0x33d
+  privilege_mode: M
+  rv32:
+    - field_name: Zero
+      description: >
+        Always zero
+      type: R
+      reset_val: 0
+      msb: 31
+      lsb: 16
+    - field_name: Selectors
+      description: >
+        Event selector
+      type: WARL
+      reset_val: 0
+      msb: 15
+      lsb: 0
+- csr: mhpmevent30
+  description: >
+    (HPM) Machine Performance-Monitoring Event Selector 30
+  address: 0x33e
+  privilege_mode: M
+  rv32:
+    - field_name: Zero
+      description: >
+        Always zero
+      type: R
+      reset_val: 0
+      msb: 31
+      lsb: 16
+    - field_name: Selectors
+      description: >
+        Event selector
+      type: WARL
+      reset_val: 0
+      msb: 15
+      lsb: 0
+- csr: mhpmevent31
+  description: >
+    (HPM) Machine Performance-Monitoring Event Selector 31
+  address: 0x33f
+  privilege_mode: M
+  rv32:
+    - field_name: Zero
+      description: >
+        Always zero
+      type: R
+      reset_val: 0
+      msb: 31
+      lsb: 16
+    - field_name: Selectors
+      description: >
+        Event selector
+      type: WARL
+      reset_val: 0
+      msb: 15
+      lsb: 0

@@ -49,7 +49,11 @@ class uvme_debug_covg extends uvm_component;
 
   // Cover that we execute ebreak with dcsr.ebreakm==1
   covergroup cg_ebreak_execute_with_ebreakm;
-          option.per_instance = 1;
+`ifdef DSIM
+        option.cross_num_print_missing = 1;
+`else
+        option.per_instance = 1;
+`endif
           ex: coverpoint cntxt.debug_cntxt.vif_cov.mon_cb.is_ebreak {
                   bins active = {1};
           }
@@ -65,7 +69,11 @@ class uvme_debug_covg extends uvm_component;
     
   // Cover that we execute c.ebreak with dcsr.ebreakm==1
   covergroup cg_cebreak_execute_with_ebreakm;
-          option.per_instance = 1;
+`ifdef DSIM
+        option.cross_num_print_missing = 1;
+`else
+        option.per_instance = 1;
+`endif
           ex: coverpoint cntxt.debug_cntxt.vif_cov.mon_cb.is_cebreak {
                   bins active = {1};
           }
@@ -81,7 +89,11 @@ class uvme_debug_covg extends uvm_component;
 
   // Cover that we execute ebreak with dcsr.ebreakm==0
   covergroup cg_ebreak_execute_without_ebreakm;
-          option.per_instance = 1;
+`ifdef DSIM
+        option.cross_num_print_missing = 1;
+`else
+        option.per_instance = 1;
+`endif
           ex: coverpoint cntxt.debug_cntxt.vif_cov.mon_cb.is_ebreak {
                   bins active = {1};
           }
@@ -96,12 +108,15 @@ class uvme_debug_covg extends uvm_component;
           }
           ebreak_regular_nodebug: cross ex, ebreakm_clear, nostep;
           ebreak_step_nodebug : cross ex, ebreakm_clear, step;
-
   endgroup
     
   // Cover that we execute c.ebreak with dcsr.ebreakm==0
   covergroup cg_cebreak_execute_without_ebreakm;
-          option.per_instance = 1;
+`ifdef DSIM
+        option.cross_num_print_missing = 1;
+`else
+        option.per_instance = 1;
+`endif
           ex: coverpoint cntxt.debug_cntxt.vif_cov.mon_cb.is_cebreak {
                   bins active = {1};
           }
@@ -120,7 +135,11 @@ class uvme_debug_covg extends uvm_component;
 
     // Cover that we hit a trigger match
     covergroup cg_trigger_match;
+`ifdef DSIM
+        option.cross_num_print_missing = 1;
+`else
         option.per_instance = 1;
+`endif
         en : coverpoint cntxt.debug_cntxt.vif_cov.mon_cb.tdata1[2] {
             bins active = {1};
         }
@@ -133,7 +152,11 @@ class uvme_debug_covg extends uvm_component;
     // cover that we hit pc==tdata2  without having enabled trigger in m/d-mode
     // cover hit in d-mode with trigger enabled (no action)
     covergroup cg_trigger_match_disabled;
+`ifdef DSIM
+        option.cross_num_print_missing = 1;
+`else
         option.per_instance = 1;
+`endif
         dis : coverpoint cntxt.debug_cntxt.vif_cov.mon_cb.tdata1[2] {
             bins hit = {0};
         }
@@ -156,7 +179,11 @@ class uvme_debug_covg extends uvm_component;
 
     // Cover that we hit an exception during debug mode
     covergroup cg_debug_mode_exception;
+`ifdef DSIM
+        option.cross_num_print_missing = 1;
+`else
         option.per_instance = 1;
+`endif
         dm : coverpoint cntxt.debug_cntxt.vif_cov.mon_cb.debug_mode_q {
             bins hit  = {1};
         }
@@ -168,7 +195,11 @@ class uvme_debug_covg extends uvm_component;
 
     // Cover that we hit an ecall during debug mode
     covergroup cg_debug_mode_ecall;
+`ifdef DSIM
+        option.cross_num_print_missing = 1;
+`else
         option.per_instance = 1;
+`endif
         dm : coverpoint cntxt.debug_cntxt.vif_cov.mon_cb.debug_mode_q {
             bins hit  = {1};
         }
@@ -180,7 +211,11 @@ class uvme_debug_covg extends uvm_component;
 
     // Cover that we get interrupts while in debug mode
     covergroup cg_irq_in_debug;
+`ifdef DSIM
+        option.cross_num_print_missing = 1;
+`else
         option.per_instance = 1;
+`endif
         dm : coverpoint cntxt.debug_cntxt.vif_cov.mon_cb.debug_mode_q {
             bins hit  = {1};
         }
@@ -204,7 +239,11 @@ class uvme_debug_covg extends uvm_component;
 
     // Cover that we get a debug_req while in wfi
     covergroup cg_wfi_debug_req;
+`ifdef DSIM
+        option.cross_num_print_missing = 1;
+`else
         option.per_instance = 1;
+`endif
         inwfi : coverpoint cntxt.debug_cntxt.vif_cov.mon_cb.in_wfi {
                 bins hit  = {1};
         }
@@ -216,7 +255,11 @@ class uvme_debug_covg extends uvm_component;
 
     // Cover that we perform single stepping
     covergroup cg_single_step;
+`ifdef DSIM
+        option.cross_num_print_missing = 1;
+`else
         option.per_instance = 1;
+`endif
         step : coverpoint cntxt.debug_cntxt.vif_cov.mon_cb.dcsr_q[2] {
                 bins en  = {1};
         }
@@ -246,7 +289,11 @@ class uvme_debug_covg extends uvm_component;
 
     // Cover dret is executed in machine mode
     covergroup cg_mmode_dret;
+`ifdef DSIM
+        option.cross_num_print_missing = 1;
+`else
         option.per_instance = 1;
+`endif
         mmode : coverpoint cntxt.debug_cntxt.vif_cov.mon_cb.debug_mode_q;
         dret_ins : coverpoint cntxt.debug_cntxt.vif_cov.mon_cb.is_dret {
             bins hit = {1};
@@ -256,7 +303,11 @@ class uvme_debug_covg extends uvm_component;
 
     // Cover debug_req and irq asserted on same cycle
     covergroup cg_irq_dreq;
+`ifdef DSIM
+        option.cross_num_print_missing = 1;
+`else
         option.per_instance = 1;
+`endif
         dreq : coverpoint cntxt.debug_cntxt.vif_cov.mon_cb.debug_req_i {
                 bins trans_active  = (1'b0 => 1'b1);
         }
@@ -292,7 +343,11 @@ class uvme_debug_covg extends uvm_component;
 
     // Cover access to dcsr, dpc and dscratch0/1 in D-mode
     covergroup cg_debug_regs_d_mode;
+`ifdef DSIM
+        option.cross_num_print_missing = 1;
+`else
         option.per_instance = 1;
+`endif
         mode : coverpoint cntxt.debug_cntxt.vif_cov.mon_cb.debug_mode_q {
             bins M = {1} ;
         }
@@ -315,7 +370,11 @@ class uvme_debug_covg extends uvm_component;
 
     // Cover access to dcsr, dpc and dscratch0/1 in M-mode
     covergroup cg_debug_regs_m_mode;
+`ifdef DSIM
+        option.cross_num_print_missing = 1;
+`else
         option.per_instance = 1;
+`endif
         mode : coverpoint cntxt.debug_cntxt.vif_cov.mon_cb.debug_mode_q {
             bins M = {0} ;
         }
@@ -338,7 +397,11 @@ class uvme_debug_covg extends uvm_component;
     // Cover access to trigger registers
     // Do we need to cover all READ/WRITE/SET/CLEAR from m-mode?
     covergroup cg_trigger_regs;
+`ifdef DSIM
+        option.cross_num_print_missing = 1;
+`else
         option.per_instance = 1;
+`endif
         mode : coverpoint cntxt.debug_cntxt.vif_cov.mon_cb.debug_mode_q; // Only M and D supported
         access : coverpoint cntxt.debug_cntxt.vif_cov.mon_cb.csr_access {
             bins hit = {1};
@@ -359,6 +422,12 @@ class uvme_debug_covg extends uvm_component;
 
     // Cover that we run with counters mcycle and minstret enabled
     covergroup cg_counters_enabled;
+`ifdef DSIM
+	    // N/A if no cross coverage
+        // option.cross_num_print_missing = 1;
+`else
+        option.per_instance = 1;
+`endif
         option.per_instance = 1;
         mcycle_en : coverpoint cntxt.debug_cntxt.vif_cov.mon_cb.mcountinhibit_q[0];
         minstret_en : coverpoint cntxt.debug_cntxt.vif_cov.mon_cb.mcountinhibit_q[2];
@@ -366,7 +435,11 @@ class uvme_debug_covg extends uvm_component;
 
     // Cover that we get a debug_req_i while in RESET state
     covergroup cg_debug_at_reset;
+`ifdef DSIM
+        option.cross_num_print_missing = 1;
+`else
         option.per_instance = 1;
+`endif
         state : coverpoint cntxt.debug_cntxt.vif_cov.mon_cb.ctrl_fsm_cs { 
             bins reset= {cv32e40p_pkg::RESET};
         }
@@ -378,7 +451,11 @@ class uvme_debug_covg extends uvm_component;
 
     // Cover that we execute fence and fence.i in debug mode
     covergroup cg_fence_in_debug;
+`ifdef DSIM
+        option.cross_num_print_missing = 1;
+`else
         option.per_instance = 1;
+`endif
         mode : coverpoint cntxt.debug_cntxt.vif_cov.mon_cb.debug_mode_q { 
             bins debug= {1'b1};
         }
@@ -390,7 +467,11 @@ class uvme_debug_covg extends uvm_component;
 
     // Cover that we get all combinations of debug causes
     covergroup cg_debug_causes;
+`ifdef DSIM
+        option.cross_num_print_missing = 1;
+`else
         option.per_instance = 1;
+`endif
         tmatch : coverpoint cntxt.debug_cntxt.vif_cov.mon_cb.trigger_match_i { 
             bins match= {1'b1};
         }
