@@ -45,6 +45,12 @@ tests:
     dir: cv32/sim/uvmt_cv32
     cmd: make test COREV=YES TEST=illegal_instr_test
 
+  branch_zero:
+    build: uvmt_cv32
+    description: Branch test with zero offsets
+    dir: cv32/sim/uvmt_cv32
+    cmd: make test COREV=YES TEST=branch_zero
+
   cv32e40p_csr_access_test:
     build: uvmt_cv32
     description: CSR Access Mode Test
