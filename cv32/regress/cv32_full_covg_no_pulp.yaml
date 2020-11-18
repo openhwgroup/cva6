@@ -124,7 +124,7 @@ tests:
     build: uvmt_cv32
     description: Generated corev-dv random instruction test with long stalls
     dir: cv32/sim/uvmt_cv32
-    cmd: make gen_corev-dv test COREV=YES TEST=corev_rand_instr_test_long_stall
+    cmd: make gen_corev-dv test COREV=YES TEST=corev_rand_instr_long_stall
     num: 30
 
   corev_rand_illegal_instr_test:
