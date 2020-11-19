@@ -27,7 +27,7 @@ class uvme_interrupt_covg extends uvm_component;
     * Covergroups
     */
     covergroup cg_irq_entry with function sample(ins_t ins);
-        option.per_instance = 1;
+        `per_instance_fcov
         cp_irq : coverpoint ins.asm {
             // These instructions will enter the exception handler which will gate off any interrupts
             // by disabling MSIE immediately upon execution
@@ -38,13 +38,13 @@ class uvme_interrupt_covg extends uvm_component;
     endgroup : cg_irq_entry
 
     covergroup cg_wfi_entry with function sample(ins_t ins);
-        option.per_instance = 1;
+        `per_instance_fcov
         cp_wfi : coverpoint ins.asm {
         }
     endgroup : cg_wfi_entry
 
     covergroup cg_irq_exit with function sample(ins_t ins);
-        option.per_instance = 1;
+        `per_instance_fcov
         cp_irq : coverpoint ins.asm {
             // Should not exit an IRQ into an MRET (usually interrupts are disabled at end of ISR)
             ignore_bins mret_excp = { MRET };
@@ -54,7 +54,7 @@ class uvme_interrupt_covg extends uvm_component;
     endgroup : cg_irq_exit
 
     covergroup cg_wfi_exit with function sample(ins_t ins);
-        option.per_instance = 1;
+        `per_instance_fcov
         cp_wfi : coverpoint ins.asm {
         }
     endgroup : cg_wfi_exit

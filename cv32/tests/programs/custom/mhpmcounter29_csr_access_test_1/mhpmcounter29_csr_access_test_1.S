@@ -804,7 +804,7 @@ main:
  	csrrw  x0,  0xB8F, x0  
 	csrrwi x0,  0xB8F, 0x0a
 
-	# mhpmcounter16
+	# mhpmcounterh16
 	csrrci x5,  0xB90, 0x0a
 	csrrc  x5,  0xB90, x0  
 	csrrc  x0,  0xB90, x5  
@@ -814,7 +814,7 @@ main:
  	csrrw  x0,  0xB90, x0  
 	csrrwi x0,  0xB90, 0x0a
 
-	# mhpmcounter17
+	# mhpmcounterh17
 	csrrci x5,  0xB91, 0x0a
 	csrrc  x5,  0xB91, x0  
 	csrrc  x0,  0xB91, x5  
@@ -824,7 +824,7 @@ main:
  	csrrw  x0,  0xB91, x0  
 	csrrwi x0,  0xB91, 0x0a
 
-	# mhpmcounter18
+	# mhpmcounterh18
 	csrrci x5,  0xB92, 0x0a
 	csrrc  x5,  0xB92, x0  
 	csrrc  x0,  0xB92, x5  
@@ -834,7 +834,7 @@ main:
  	csrrw  x0,  0xB92, x0  
 	csrrwi x0,  0xB92, 0x0a
 
-	# mhpmcounter19
+	# mhpmcounterh19
 	csrrci x5,  0xB93, 0x0a
 	csrrc  x5,  0xB93, x0  
 	csrrc  x0,  0xB93, x5  
@@ -844,7 +844,7 @@ main:
  	csrrw  x0,  0xB93, x0  
 	csrrwi x0,  0xB93, 0x0a
 
-	# mhpmcounter20
+	# mhpmcounterh20
 	csrrci x5,  0xB94, 0x0a
 	csrrc  x5,  0xB94, x0  
 	csrrc  x0,  0xB94, x5  
@@ -854,7 +854,7 @@ main:
  	csrrw  x0,  0xB94, x0  
 	csrrwi x0,  0xB94, 0x0a
 
-	# mhpmcounter21
+	# mhpmcounterh21
 	csrrci x5,  0xB95, 0x0a
 	csrrc  x5,  0xB95, x0  
 	csrrc  x0,  0xB95, x5  
@@ -864,7 +864,7 @@ main:
  	csrrw  x0,  0xB95, x0  
 	csrrwi x0,  0xB95, 0x0a
 
-	# mhpmcounter22
+	# mhpmcounterh22
 	csrrci x5,  0xB96, 0x0a
 	csrrc  x5,  0xB96, x0  
 	csrrc  x0,  0xB96, x5  
@@ -874,7 +874,7 @@ main:
  	csrrw  x0,  0xB96, x0  
 	csrrwi x0,  0xB96, 0x0a
 
-	# mhpmcounter23
+	# mhpmcounterh23
 	csrrci x5,  0xB97, 0x0a
 	csrrc  x5,  0xB97, x0  
 	csrrc  x0,  0xB97, x5  
@@ -884,7 +884,7 @@ main:
  	csrrw  x0,  0xB97, x0  
 	csrrwi x0,  0xB97, 0x0a
 
-	# mhpmcounter24
+	# mhpmcounterh24
 	csrrci x5,  0xB98, 0x0a
 	csrrc  x5,  0xB98, x0  
 	csrrc  x0,  0xB98, x5  
@@ -894,7 +894,7 @@ main:
  	csrrw  x0,  0xB98, x0  
 	csrrwi x0,  0xB98, 0x0a
 
-	# mhpmcounter25
+	# mhpmcounterh25
 	csrrci x5,  0xB99, 0x0a
 	csrrc  x5,  0xB99, x0  
 	csrrc  x0,  0xB99, x5  
@@ -904,7 +904,7 @@ main:
  	csrrw  x0,  0xB99, x0  
 	csrrwi x0,  0xB99, 0x0a
 
-	# mhpmcounter26
+	# mhpmcounterh26
 	csrrci x5,  0xB9A, 0x0a
 	csrrc  x5,  0xB9A, x0  
 	csrrc  x0,  0xB9A, x5  
@@ -914,7 +914,7 @@ main:
  	csrrw  x0,  0xB9A, x0  
 	csrrwi x0,  0xB9A, 0x0a
 
-	# mhpmcounter27
+	# mhpmcounterh27
 	csrrci x5,  0xB9B, 0x0a
 	csrrc  x5,  0xB9B, x0  
 	csrrc  x0,  0xB9B, x5  
@@ -924,7 +924,7 @@ main:
  	csrrw  x0,  0xB9B, x0  
 	csrrwi x0,  0xB9B, 0x0a
 
-	# mhpmcounter28
+	# mhpmcounterh28
 	csrrci x5,  0xB9C, 0x0a
 	csrrc  x5,  0xB9C, x0  
 	csrrc  x0,  0xB9C, x5  
@@ -934,7 +934,7 @@ main:
  	csrrw  x0,  0xB9C, x0  
 	csrrwi x0,  0xB9C, 0x0a
 
-	# mhpmcounter29
+	# mhpmcounterh29
 	csrrci x5,  0xB9D, 0x0a
 	csrrc  x5,  0xB9D, x0  
 	csrrc  x0,  0xB9D, x5  
@@ -944,7 +944,7 @@ main:
  	csrrw  x0,  0xB9D, x0  
 	csrrwi x0,  0xB9D, 0x0a
 
-	# mhpmcounter30
+	# mhpmcounterh30
 	csrrci x5,  0xB9E, 0x0a
 	csrrc  x5,  0xB9E, x0  
 	csrrc  x0,  0xB9E, x5  
@@ -954,7 +954,7 @@ main:
  	csrrw  x0,  0xB9E, x0  
 	csrrwi x0,  0xB9E, 0x0a
 
-	# mhpmcounter31
+	# mhpmcounterh31
 	csrrci x5,  0xB9F, 0x0a
 	csrrc  x5,  0xB9F, x0  
 	csrrc  x0,  0xB9F, x5  
