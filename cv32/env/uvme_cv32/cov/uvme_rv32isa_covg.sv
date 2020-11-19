@@ -1895,7 +1895,7 @@ class uvme_rv32isa_covg extends uvm_component;
                 // seqz: convert to sltiu rd, rs, 1
                 "seqz"      : begin ins.asm=SLTIU;  ins.ops[2].val = "1";                             sltiu_cg.sample(ins);  end
                 // not:  convert to xor rd, rs, -1
-                "not"       : begin ins.asm=XOR;    ins.ops[2].val = "-1";                            xor_cg.sample(ins);  end
+                "not"       : begin ins.asm=XOR;    ins.ops[2].val = "-1";                            xori_cg.sample(ins);  end
                 // ret: convert to jalr x0,x1(0)                
                 "ret"       : begin ins.asm=JALR;   ins.ops[0].key = "R"; ins.ops[0].val = "zero"; 
                                                     ins.ops[1].key = "R"; ins.ops[1].val = "ra"; 
