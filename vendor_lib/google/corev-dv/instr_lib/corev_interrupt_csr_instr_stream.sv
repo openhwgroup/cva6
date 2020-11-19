@@ -32,24 +32,30 @@ class corev_interrupt_csr_instr_stream extends riscv_load_store_rand_instr_strea
   } interrupt_csr_action_enum;
 
   rand interrupt_csr_action_enum action;
+`ifdef _VCP
+  int unsigned wgt_random_mie = 1;
+  int unsigned wgt_random_mstatus_mie = 3;
+`else
   rand int unsigned wgt_random_mie;
   rand int unsigned wgt_random_mstatus_mie;
+`endif
   rand reg[31:0] rand_mie_setting;
-
+`ifndef _VCP
   constraint ordering_wgt_c {
     solve wgt_random_mie before action;
     solve wgt_random_mstatus_mie before action;
   }
-
+`endif
   constraint dist_action_c {
     action dist  { RANDOM_MIE :/ wgt_random_mie,
                    RANDOM_MSTATUS_MIE :/ wgt_random_mstatus_mie };
   }
-
+`ifndef _VCP
   constraint default_wgt_c {
     soft wgt_random_mie == 1;
     soft wgt_random_mstatus_mie == 3; 
   }
+`endif
 
   riscv_instr_name_t allowed_mie_instr[$] = {CSRRW, CSRRC, CSRRS};
 
