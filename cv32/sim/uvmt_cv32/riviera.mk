@@ -156,8 +156,7 @@ comp_core-dv:
 	cd $(VSIM_COREVDV_RESULTS) && \
 		$(VLOG) \
 			$(VLOG_FLAGS) \
-			+incdir+$(UVM_HOME) \
-			$(UVM_HOME)/uvm_pkg.sv \
+			-uvmver 1.2 \
 			+incdir+$(COREVDV_PKG)/target/cv32e40p \
 			+incdir+$(RISCVDV_PKG)/user_extension \
 			+incdir+$(RISCVDV_PKG)/tests \
@@ -173,13 +172,12 @@ gen_corev-dv:
 		echo "idx = $$idx"; \
 		idx=$$((idx + 1)); \
 	done
-	cd $(VSIM_COREVDV_RESULTS)/$(TEST) && \
-		$(VMAP) work ../work
 	cd  $(VSIM_COREVDV_RESULTS)/$(TEST) && \
 		$(VSIM) \
 			$(VSIM_FLAGS) \
 			corev_instr_gen_tb_top \
 			$(DPILIB_VSIM_OPT) \
+			-lib $(VSIM_COREVDV_RESULTS)/work \
 			+UVM_TESTNAME=$(GEN_UVM_TEST) \
 			+num_of_tests=$(GEN_NUM_TESTS)  \
 			-l $(TEST)_$(GEN_START_INDEX)_$(GEN_NUM_TESTS).log \
@@ -248,11 +246,11 @@ run: $(VSIM_SIM_PREREQ) gen_ovpsim_ic
 	@echo "$(BANNER)"
 	mkdir -p $(VSIM_RESULTS)/$(VSIM_TEST) && \
 	cd $(VSIM_RESULTS)/$(VSIM_TEST) && \
-	$(VMAP) work ../work && \
 		$(VSIM) \
 			$(VSIM_FLAGS) \
 			${DPILIB_VSIM_OPT} \
 			-l vsim-$(VSIM_TEST).log \
+			-lib $(VSIM_RESULTS)/work \
 			+UVM_TESTNAME=$(TEST_UVM_TEST)\
 			$(RTLSRC_VLOG_TB_TOP) \
 			$(TEST_PLUSARGS) \
