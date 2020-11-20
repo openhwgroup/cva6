@@ -22,7 +22,7 @@
  * biased to generate many C_LW and C_SW streams
  */
 
- class corev_compressed_load_store_stress_instr_stream extends riscv_load_store_stress_instr_stream;
+class corev_compressed_load_store_stress_instr_stream extends riscv_load_store_stress_instr_stream;
   
   constraint sp_c {
     use_sp_as_rs1 dist {1 := 1, 0 := 5};
@@ -59,36 +59,4 @@
   endfunction : post_randomize
 
 endclass : corev_compressed_load_store_stress_instr_stream
-
-class corev_compressed_load_store_wfi_stress_instr_stream extends corev_compressed_load_store_stress_instr_stream;
-  
-  rand bit first_instr_wfi;
-  rand bit last_instr_wfi;  
-
-  `uvm_object_utils(corev_compressed_load_store_wfi_stress_instr_stream)
-  `uvm_object_new
-  
-  function void post_randomize();
-    super.post_randomize();
-
-    if (first_instr_wfi) begin
-      riscv_instr        wfi;
-
-      wfi = riscv_instr::get_rand_instr(.include_instr({WFI}));
-      `DV_CHECK_RANDOMIZE_FATAL(wfi);
-      insert_instr(wfi, 0);
-    end 
-
-    if (last_instr_wfi) begin
-      riscv_instr        wfi;
-
-      wfi = riscv_instr::get_rand_instr(.include_instr({WFI}));
-      `DV_CHECK_RANDOMIZE_FATAL(wfi);
-      insert_instr(wfi, instr_list.size());
-    end 
-
-    instr_list[0].comment = "corev_compressed_load_store_wfi_stream";
-  endfunction : post_randomize
-
-endclass : corev_compressed_load_store_wfi_stress_instr_stream
 

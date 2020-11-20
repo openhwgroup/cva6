@@ -18,47 +18,10 @@
 /*
  * corev_load_store instruction sequences
  *
- * corev_compressed_load_store_stress_instr_stream: Extension of riscv_load_store_rand_instr_stream with offsets
- * biased to generate many C_LW and C_SW streams
+ * corev_compressed_load_store_wfi_stress_instr_stream: Extension of riscv_load_store_rand_instr_stream with offsets
+ * biased to generate many C_LW and C_SW streams and injected WFI
  */
 
- class corev_compressed_load_store_stress_instr_stream extends riscv_load_store_stress_instr_stream;
-  
-  constraint sp_c {
-    use_sp_as_rs1 dist {1 := 1, 0 := 5};
-    if (use_sp_as_rs1) {
-      rs1_reg == SP;
-    }
-  }
-
-  `uvm_object_utils(corev_compressed_load_store_stress_instr_stream)
-  `uvm_object_new
-  
-  virtual function void randomize_offset();
-    int offset_, addr_;
-    offset = new[num_load_store];
-    addr = new[num_load_store];
-    for (int i=0; i<num_load_store; i++) begin
-      if (!std::randomize(offset_, addr_) with {
-        offset_ inside {[0:127]};     
-        offset_[1:0] == 0;
-        addr_ == base + offset_;
-        addr_ inside {[0 : max_load_store_offset - 1]};
-      }) begin
-        `uvm_fatal(`gfn, "Cannot randomize load/store offset")
-      end
-      offset[i] = offset_;
-      addr[i] = addr_;
-    end
-  endfunction : randomize_offset
-
-  function void post_randomize();
-    super.post_randomize();
-
-    instr_list[0].comment = "corev_compressed_load_store_stress";
-  endfunction : post_randomize
-
-endclass : corev_compressed_load_store_stress_instr_stream
 
 class corev_compressed_load_store_wfi_stress_instr_stream extends corev_compressed_load_store_stress_instr_stream;
   
