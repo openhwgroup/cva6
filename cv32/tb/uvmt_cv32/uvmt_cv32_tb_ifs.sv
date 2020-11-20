@@ -98,9 +98,8 @@ endinterface : uvmt_cv32_vp_status_if
  * Quasi-static core control signals.
  */
 interface uvmt_cv32_core_cntrl_if (
-                                    input          clk,
+                                    input               clk,
                                     output logic        fetch_en,
-                                    output logic        ext_perf_counters,
                                     // quasi static values
                                     output logic        clock_en,
                                     output logic        scan_cg_en,
@@ -157,16 +156,12 @@ interface uvmt_cv32_core_cntrl_if (
 
   core_cntrl_cg core_cntrl_cg_inst = new();
 
-  initial begin: static_controls
-    fetch_en          = 1'b0; // Enabled by go_fetch(), below
-    ext_perf_counters = 1'b0; // TODO: set proper width (currently 0 in the RTL)
-  end
-
   // TODO: randomize hart_id (should have no affect?).
   //       randomize boot_addr and mtvec addr (need to sync with the start address of the test program.
-  //       figure out what to do with test_en.
   initial begin: quasi_static_controls
 
+    fetch_en          = 1'b0; // Enabled by go_fetch(), below
+    debug_req         = 1'b0;
     clock_en          = 1'b1;
     scan_cg_en        = 1'b0;
     boot_addr         = 32'h0000_0080;
@@ -199,11 +194,6 @@ interface uvmt_cv32_core_cntrl_if (
     `uvm_info("CORE_CNTRL_IF", $sformatf("Quasi-static CORE control inputs:\n%s", qsc_stat_str), UVM_NONE)
   end
 
-  // TODO: waiting for the User Manual to provide some guidance here...
-  initial begin: debug_control
-    debug_req  = 1'b0;
-  end
-
   clocking drv_cb @(posedge clk);
     output fetch_en;
   endclocking : drv_cb
@@ -213,12 +203,29 @@ interface uvmt_cv32_core_cntrl_if (
     drv_cb.fetch_en <= 1'b1;
     `uvm_info("CORE_CNTRL_IF", "uvmt_cv32_core_cntrl_if.go_fetch() called", UVM_DEBUG)
     core_cntrl_cg_inst.sample();
+	repeat(10) @(posedge clk);
+	lfsr_reset <= 1'b0;
   endfunction : go_fetch
 
   function void stop_fetch();
     drv_cb.fetch_en <= 1'b0;
+	lfsr_reset      <= 1'b1;
     `uvm_info("CORE_CNTRL_IF", "uvmt_cv32_core_cntrl_if.stop_fetch() called", UVM_DEBUG)
   endfunction : stop_fetch
+
+  wire         linear_feedback;
+  reg    [7:0] lfsr;
+  assign linear_feedback = !(out[7] ^ out[3]);
+
+  always_ff @(posedge clk) begin
+    if (lfsr_reset) begin // active high reset
+      lfsr <= 8'h00;
+    end
+	else begin
+      lfsr <= {lfsr[6:0], linear_feedback};
+	  drv_cb.fetch_en <= lfsr[7];
+    end 
+  end 
 
 endinterface : uvmt_cv32_core_cntrl_if
 
@@ -262,17 +269,17 @@ interface uvmt_cv32_step_compare_if;
      logic [31:0] value;
    } reg_t;
 
-   event        ovp_cpu_retire; // Was ovp.cpu.Retire
-   event        riscv_retire;   // Was riscv_core.riscv_tracer_i.retire
-   bit   [31:0] ovp_cpu_PCr;    // Was iss_wrap.cpu.PCr
+   event        ovp_cpu_retire;     // Was ovp.cpu.Retire
+   event        riscv_retire;       // Was riscv_core.riscv_tracer_i.retire
+   bit   [31:0] ovp_cpu_PCr;        // Was iss_wrap.cpu.PCr
    logic [31:0] insn_pc;
-   bit         ovp_b1_Step;    // Was ovp.b1.Step = 0;
-   bit         ovp_b1_Stepping; // Was ovp.b1.Stepping = 1;
-   event       ovp_cpu_busWait;  // Was call to ovp.cpu.busWait();
-   logic   [31:0] ovp_cpu_GPR[32];
-   logic [31:0][31:0] riscy_GPR; // packed dimensions, register index by data width
-   logic       deferint_prime; // Stages deferint for the ISS deferint signal
-   logic       deferint_prime_ack; // Set low if deferint_prime was set due to interrupt ack (as opposed to wakeup)
+   bit          ovp_b1_Step;        // Was ovp.b1.Step = 0;
+   bit          ovp_b1_Stepping;    // Was ovp.b1.Stepping = 1;
+   event        ovp_cpu_busWait;    // Was call to ovp.cpu.busWait();
+   logic [31:0] ovp_cpu_GPR[32];
+   logic [31:0][31:0] riscy_GPR;    // packed dimensions, register index by data width
+   logic        deferint_prime;     // Stages deferint for the ISS deferint signal
+   logic        deferint_prime_ack; // Set low if deferint_prime was set due to interrupt ack (as opposed to wakeup)
 
    int  num_pc_checks;
    int  num_gpr_checks;
@@ -338,8 +345,8 @@ interface uvmt_cv32_debug_cov_assert_if
     input  [31:0] boot_addr_i,
 
     // Debug signals
-    input               debug_req_i, // From controller
-    input               debug_mode_q, // From controller
+    input         debug_req_i, // From controller
+    input         debug_mode_q, // From controller
     input  [31:0] dcsr_q, // From controller
     input  [31:0] depc_q, // From cs regs
     input  [31:0] depc_n, // 
