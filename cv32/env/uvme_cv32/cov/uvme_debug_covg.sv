@@ -15,6 +15,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 //
+// SPDX-License-Identifier: Apache-2.0 WITH SHL-2.0
 //
 ///////////////////////////////////////////////////////////////////////////////
 
@@ -41,7 +42,7 @@ class uvme_debug_covg extends uvm_component;
     */
    
   covergroup cg_debug_mode_ext ;
-          option.per_instance = 1;
+          `per_instance_fcov
           state: coverpoint cntxt.debug_cntxt.vif_cov.mon_cb.ctrl_fsm_cs{
               ignore_bins ignore_pulp_states = {cv32e40p_pkg::ELW_EXE, cv32e40p_pkg::IRQ_FLUSH_ELW, cv32e40p_pkg::DECODE_HWLOOP};
           }
@@ -49,7 +50,7 @@ class uvme_debug_covg extends uvm_component;
 
   // Cover that we execute ebreak with dcsr.ebreakm==1
   covergroup cg_ebreak_execute_with_ebreakm;
-          option.per_instance = 1;
+          `per_instance_fcov
           ex: coverpoint cntxt.debug_cntxt.vif_cov.mon_cb.is_ebreak {
                   bins active = {1};
           }
@@ -65,7 +66,7 @@ class uvme_debug_covg extends uvm_component;
     
   // Cover that we execute c.ebreak with dcsr.ebreakm==1
   covergroup cg_cebreak_execute_with_ebreakm;
-          option.per_instance = 1;
+          `per_instance_fcov
           ex: coverpoint cntxt.debug_cntxt.vif_cov.mon_cb.is_cebreak {
                   bins active = {1};
           }
@@ -81,7 +82,7 @@ class uvme_debug_covg extends uvm_component;
 
   // Cover that we execute ebreak with dcsr.ebreakm==0
   covergroup cg_ebreak_execute_without_ebreakm;
-          option.per_instance = 1;
+          `per_instance_fcov
           ex: coverpoint cntxt.debug_cntxt.vif_cov.mon_cb.is_ebreak {
                   bins active = {1};
           }
@@ -96,12 +97,11 @@ class uvme_debug_covg extends uvm_component;
           }
           ebreak_regular_nodebug: cross ex, ebreakm_clear, nostep;
           ebreak_step_nodebug : cross ex, ebreakm_clear, step;
-
   endgroup
     
   // Cover that we execute c.ebreak with dcsr.ebreakm==0
   covergroup cg_cebreak_execute_without_ebreakm;
-          option.per_instance = 1;
+          `per_instance_fcov
           ex: coverpoint cntxt.debug_cntxt.vif_cov.mon_cb.is_cebreak {
                   bins active = {1};
           }
@@ -120,7 +120,7 @@ class uvme_debug_covg extends uvm_component;
 
     // Cover that we hit a trigger match
     covergroup cg_trigger_match;
-        option.per_instance = 1;
+        `per_instance_fcov
         en : coverpoint cntxt.debug_cntxt.vif_cov.mon_cb.tdata1[2] {
             bins active = {1};
         }
@@ -133,7 +133,7 @@ class uvme_debug_covg extends uvm_component;
     // cover that we hit pc==tdata2  without having enabled trigger in m/d-mode
     // cover hit in d-mode with trigger enabled (no action)
     covergroup cg_trigger_match_disabled;
-        option.per_instance = 1;
+        `per_instance_fcov
         dis : coverpoint cntxt.debug_cntxt.vif_cov.mon_cb.tdata1[2] {
             bins hit = {0};
         }
@@ -156,7 +156,7 @@ class uvme_debug_covg extends uvm_component;
 
     // Cover that we hit an exception during debug mode
     covergroup cg_debug_mode_exception;
-        option.per_instance = 1;
+        `per_instance_fcov
         dm : coverpoint cntxt.debug_cntxt.vif_cov.mon_cb.debug_mode_q {
             bins hit  = {1};
         }
@@ -168,7 +168,7 @@ class uvme_debug_covg extends uvm_component;
 
     // Cover that we hit an ecall during debug mode
     covergroup cg_debug_mode_ecall;
-        option.per_instance = 1;
+        `per_instance_fcov
         dm : coverpoint cntxt.debug_cntxt.vif_cov.mon_cb.debug_mode_q {
             bins hit  = {1};
         }
@@ -180,7 +180,7 @@ class uvme_debug_covg extends uvm_component;
 
     // Cover that we get interrupts while in debug mode
     covergroup cg_irq_in_debug;
-        option.per_instance = 1;
+        `per_instance_fcov
         dm : coverpoint cntxt.debug_cntxt.vif_cov.mon_cb.debug_mode_q {
             bins hit  = {1};
         }
@@ -192,7 +192,7 @@ class uvme_debug_covg extends uvm_component;
     
     // Cover that hit a WFI insn in debug mode
     covergroup cg_wfi_in_debug;
-        option.per_instance = 1;
+        `per_instance_fcov
         iswfi : coverpoint cntxt.debug_cntxt.vif_cov.mon_cb.is_wfi {
                 bins hit  = {1};
         }
@@ -204,7 +204,7 @@ class uvme_debug_covg extends uvm_component;
 
     // Cover that we get a debug_req while in wfi
     covergroup cg_wfi_debug_req;
-        option.per_instance = 1;
+        `per_instance_fcov
         inwfi : coverpoint cntxt.debug_cntxt.vif_cov.mon_cb.in_wfi {
                 bins hit  = {1};
         }
@@ -216,7 +216,7 @@ class uvme_debug_covg extends uvm_component;
 
     // Cover that we perform single stepping
     covergroup cg_single_step;
-        option.per_instance = 1;
+        `per_instance_fcov
         step : coverpoint cntxt.debug_cntxt.vif_cov.mon_cb.dcsr_q[2] {
                 bins en  = {1};
         }
@@ -246,7 +246,7 @@ class uvme_debug_covg extends uvm_component;
 
     // Cover dret is executed in machine mode
     covergroup cg_mmode_dret;
-        option.per_instance = 1;
+        `per_instance_fcov
         mmode : coverpoint cntxt.debug_cntxt.vif_cov.mon_cb.debug_mode_q;
         dret_ins : coverpoint cntxt.debug_cntxt.vif_cov.mon_cb.is_dret {
             bins hit = {1};
@@ -256,7 +256,7 @@ class uvme_debug_covg extends uvm_component;
 
     // Cover debug_req and irq asserted on same cycle
     covergroup cg_irq_dreq;
-        option.per_instance = 1;
+        `per_instance_fcov
         dreq : coverpoint cntxt.debug_cntxt.vif_cov.mon_cb.debug_req_i {
                 bins trans_active  = (1'b0 => 1'b1);
         }
@@ -292,7 +292,7 @@ class uvme_debug_covg extends uvm_component;
 
     // Cover access to dcsr, dpc and dscratch0/1 in D-mode
     covergroup cg_debug_regs_d_mode;
-        option.per_instance = 1;
+        `per_instance_fcov
         mode : coverpoint cntxt.debug_cntxt.vif_cov.mon_cb.debug_mode_q {
             bins M = {1} ;
         }
@@ -315,7 +315,7 @@ class uvme_debug_covg extends uvm_component;
 
     // Cover access to dcsr, dpc and dscratch0/1 in M-mode
     covergroup cg_debug_regs_m_mode;
-        option.per_instance = 1;
+        `per_instance_fcov
         mode : coverpoint cntxt.debug_cntxt.vif_cov.mon_cb.debug_mode_q {
             bins M = {0} ;
         }
@@ -338,7 +338,7 @@ class uvme_debug_covg extends uvm_component;
     // Cover access to trigger registers
     // Do we need to cover all READ/WRITE/SET/CLEAR from m-mode?
     covergroup cg_trigger_regs;
-        option.per_instance = 1;
+        `per_instance_fcov
         mode : coverpoint cntxt.debug_cntxt.vif_cov.mon_cb.debug_mode_q; // Only M and D supported
         access : coverpoint cntxt.debug_cntxt.vif_cov.mon_cb.csr_access {
             bins hit = {1};
@@ -359,14 +359,14 @@ class uvme_debug_covg extends uvm_component;
 
     // Cover that we run with counters mcycle and minstret enabled
     covergroup cg_counters_enabled;
-        option.per_instance = 1;
+        `per_instance_fcov
         mcycle_en : coverpoint cntxt.debug_cntxt.vif_cov.mon_cb.mcountinhibit_q[0];
         minstret_en : coverpoint cntxt.debug_cntxt.vif_cov.mon_cb.mcountinhibit_q[2];
     endgroup
 
     // Cover that we get a debug_req_i while in RESET state
     covergroup cg_debug_at_reset;
-        option.per_instance = 1;
+        `per_instance_fcov
         state : coverpoint cntxt.debug_cntxt.vif_cov.mon_cb.ctrl_fsm_cs { 
             bins reset= {cv32e40p_pkg::RESET};
         }
@@ -378,7 +378,7 @@ class uvme_debug_covg extends uvm_component;
 
     // Cover that we execute fence and fence.i in debug mode
     covergroup cg_fence_in_debug;
-        option.per_instance = 1;
+        `per_instance_fcov
         mode : coverpoint cntxt.debug_cntxt.vif_cov.mon_cb.debug_mode_q { 
             bins debug= {1'b1};
         }
@@ -390,7 +390,7 @@ class uvme_debug_covg extends uvm_component;
 
     // Cover that we get all combinations of debug causes
     covergroup cg_debug_causes;
-        option.per_instance = 1;
+        `per_instance_fcov
         tmatch : coverpoint cntxt.debug_cntxt.vif_cov.mon_cb.trigger_match_i { 
             bins match= {1'b1};
         }

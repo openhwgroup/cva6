@@ -1,0 +1,10 @@
+name: num_mhpmcounters_29
+description: Configuration for CV32E40P simulations with NUM_MHPMCOUNTER set to 29
+compile_flags: 
+    +define+NO_PULP+SET_NUM_MHPMCOUNTERS=29
+ovpsim: >
+    --override root/cpu/misa_Extensions=0x001104
+    --override root/cpu/marchid=4
+    --override root/cpu/noinhibit_mask=0000000000
+cflags: >
+    -DNO_PULP
