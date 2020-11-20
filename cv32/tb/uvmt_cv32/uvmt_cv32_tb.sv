@@ -36,27 +36,27 @@ module uvmt_cv32_tb;
 
    // DUT (core) parameters: refer to the CV2E40P User Manual.
 `ifdef NO_PULP
-   parameter int core_param_pulp_xpulp       = 0;
-   parameter int core_param_pulp_cluster     = 0;
-   parameter int core_param_pulp_zfinx       = 0;
+   parameter int CORE_PARAM_PULP_XPULP       = 0;
+   parameter int CORE_PARAM_PULP_CLUSTER     = 0;
+   parameter int CORE_PARAM_PULP_ZFINX       = 0;
 `endif
 
 `ifdef PULP
-   parameter int core_param_pulp_xpulp       = 1;
-   parameter int core_param_pulp_cluster     = 0;
-   parameter int core_param_pulp_zfinx       = 0;
+   parameter int CORE_PARAM_PULP_XPULP       = 1;
+   parameter int CORE_PARAM_PULP_CLUSTER     = 0;
+   parameter int CORE_PARAM_PULP_ZFINX       = 0;
 `endif
 
 `ifdef SET_NUM_MHPMCOUNTERS
-   parameter int core_param_num_mhpmcounters = `SET_NUM_MHPMCOUNTERS;
+   parameter int CORE_PARAM_NUM_MHPMCOUNTERS = `SET_NUM_MHPMCOUNTERS;
 `else
-   parameter int core_param_num_mhpmcounters = 1;
+   parameter int CORE_PARAM_NUM_MHPMCOUNTERS = 1;
 `endif
 
    // ENV (testbench) parameters
-   parameter int env_param_instr_addr_width  = 32;
-   parameter int env_param_instr_data_width  = 32;
-   parameter int env_param_ram_addr_width    = 22;
+   parameter int ENV_PARAM_INSTR_ADDR_WIDTH  = 32;
+   parameter int ENV_PARAM_INSTR_DATA_WIDTH  = 32;
+   parameter int ENV_PARAM_RAM_ADDR_WIDTH    = 22;
 
    // Capture regs for test status from Virtual Peripheral in dut_wrap.mem_i
    bit        tp;
@@ -101,13 +101,13 @@ module uvmt_cv32_tb;
    * a few mods to bring unused ports from the CORE to this level using SV interfaces.
    */
    uvmt_cv32_dut_wrap  #(
-                         .PULP_XPULP        (core_param_pulp_xpulp),
-                         .PULP_CLUSTER      (core_param_pulp_cluster),
-                         .PULP_ZFINX        (core_param_pulp_zfinx),
-                         .NUM_MHPMCOUNTERS  (core_param_num_mhpmcounters),
-                         .INSTR_ADDR_WIDTH  (env_param_instr_addr_width),
-                         .INSTR_RDATA_WIDTH (env_param_instr_data_width),
-                         .RAM_ADDR_WIDTH    (env_param_ram_addr_width)
+                         .PULP_XPULP        (CORE_PARAM_PULP_XPULP),
+                         .PULP_CLUSTER      (CORE_PARAM_PULP_CLUSTER),
+                         .PULP_ZFINX        (CORE_PARAM_PULP_ZFINX),
+                         .NUM_MHPMCOUNTERS  (CORE_PARAM_NUM_MHPMCOUNTERS),
+                         .INSTR_ADDR_WIDTH  (ENV_PARAM_INSTR_ADDR_WIDTH),
+                         .INSTR_RDATA_WIDTH (ENV_PARAM_INSTR_DATA_WIDTH),
+                         .RAM_ADDR_WIDTH    (ENV_PARAM_RAM_ADDR_WIDTH)
                         )
                         dut_wrap (.*);
 
@@ -515,13 +515,13 @@ bind cv32e40p_wrapper
      uvm_config_db#(bit[31:0])::set(.cntxt(null), .inst_name("*"), .field_name("evalue"), .value(32'h00000000));
 
 	 // DUT and ENV parameters
-     uvm_config_db#(int)::set(.cntxt(null), .inst_name("*"), .field_name("core_param_pulp_xpulp"),       .value(core_param_pulp_xpulp)      );
-     uvm_config_db#(int)::set(.cntxt(null), .inst_name("*"), .field_name("core_param_pulp_cluster"),     .value(core_param_pulp_cluster)    );
-     uvm_config_db#(int)::set(.cntxt(null), .inst_name("*"), .field_name("core_param_pulp_zfinx"),       .value(core_param_pulp_zfinx)      );
-     uvm_config_db#(int)::set(.cntxt(null), .inst_name("*"), .field_name("core_param_num_mhpmcounters"), .value(core_param_num_mhpmcounters));
-     uvm_config_db#(int)::set(.cntxt(null), .inst_name("*"), .field_name("env_param_instr_addr_width"),  .value(env_param_instr_addr_width) );
-     uvm_config_db#(int)::set(.cntxt(null), .inst_name("*"), .field_name("env_param_instr_data_width"),  .value(env_param_instr_data_width) );
-     uvm_config_db#(int)::set(.cntxt(null), .inst_name("*"), .field_name("env_param_ram_addr_width"),    .value(env_param_ram_addr_width)   );
+     uvm_config_db#(int)::set(.cntxt(null), .inst_name("*"), .field_name("CORE_PARAM_PULP_XPULP"),       .value(CORE_PARAM_PULP_XPULP)      );
+     uvm_config_db#(int)::set(.cntxt(null), .inst_name("*"), .field_name("CORE_PARAM_PULP_CLUSTER"),     .value(CORE_PARAM_PULP_CLUSTER)    );
+     uvm_config_db#(int)::set(.cntxt(null), .inst_name("*"), .field_name("CORE_PARAM_PULP_ZFINX"),       .value(CORE_PARAM_PULP_ZFINX)      );
+     uvm_config_db#(int)::set(.cntxt(null), .inst_name("*"), .field_name("CORE_PARAM_NUM_MHPMCOUNTERS"), .value(CORE_PARAM_NUM_MHPMCOUNTERS));
+     uvm_config_db#(int)::set(.cntxt(null), .inst_name("*"), .field_name("ENV_PARAM_INSTR_ADDR_WIDTH"),  .value(ENV_PARAM_INSTR_ADDR_WIDTH) );
+     uvm_config_db#(int)::set(.cntxt(null), .inst_name("*"), .field_name("ENV_PARAM_INSTR_DATA_WIDTH"),  .value(ENV_PARAM_INSTR_DATA_WIDTH) );
+     uvm_config_db#(int)::set(.cntxt(null), .inst_name("*"), .field_name("ENV_PARAM_RAM_ADDR_WIDTH"),    .value(ENV_PARAM_RAM_ADDR_WIDTH)   );
       
      // Run test
      uvm_top.enable_print_topology = 0; // ENV coders enable this as a debug aid
