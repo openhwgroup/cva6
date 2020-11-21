@@ -5,7 +5,7 @@ The UVM testcases are at `../../tests/uvmt_cv32`, and the test-programs can be
 found in `cv32/tests/program`.  See the README in those directories for more information.
 <br><br>
 Please refer to the [Verification Strategy](https://core-v-docs-verif-strat.readthedocs.io/en/latest/sim_tests.html#simulation-tests-in-the-uvm-environments)
-for a discussion on the distinction between a _testcase_ (a UVM class extended from _uvm\_test_ that instantiates and controls the UVM environment) and a _test-program_ (a C or assembler program that runs on the core RTL model) in this environment.
+for a discussion on the distinction between a _testcase_ (a SystemVerilog class extended from _uvm\_test_ that instantiates and controls the UVM environment) and a _test-program_ (a C or assembler program that runs on the core RTL model) in this environment.
 <br><br>
 To run the UVM environment you will need:
 - a run-time license for the Imperas OVPsim Instruction Set Simulator
