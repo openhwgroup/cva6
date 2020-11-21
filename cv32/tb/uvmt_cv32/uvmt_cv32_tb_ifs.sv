@@ -116,7 +116,10 @@ interface uvmt_cv32_core_cntrl_if (
 
   import uvm_pkg::*;
 
-  string qsc_stat_str; //Quasi Static Control Status
+  string       qsc_stat_str; //Quasi Static Control Status
+  wire         fb;
+  reg          lfsr_reset;
+  reg   [15:0] lfsr;
 
   covergroup core_cntrl_cg;
     clock_enable: coverpoint clock_en {
@@ -160,6 +163,8 @@ interface uvmt_cv32_core_cntrl_if (
   //       randomize boot_addr and mtvec addr (need to sync with the start address of the test program.
   initial begin: quasi_static_controls
 
+
+    lfsr_reset        = 1'b1;
     fetch_en          = 1'b0; // Enabled by go_fetch(), below
     debug_req         = 1'b0;
     clock_en          = 1'b1;
@@ -199,13 +204,14 @@ interface uvmt_cv32_core_cntrl_if (
   endclocking : drv_cb
 
   /** Sets fetch_en to the core. */
-  function void go_fetch();
+  //function void go_fetch();
+  task go_fetch();
     drv_cb.fetch_en <= 1'b1;
     `uvm_info("CORE_CNTRL_IF", "uvmt_cv32_core_cntrl_if.go_fetch() called", UVM_DEBUG)
     core_cntrl_cg_inst.sample();
-	repeat(10) @(posedge clk);
-	lfsr_reset <= 1'b0;
-  endfunction : go_fetch
+    repeat(10) @(posedge clk);
+    lfsr_reset <= 1'b0;
+  endtask : go_fetch
 
   function void stop_fetch();
     drv_cb.fetch_en <= 1'b0;
@@ -213,17 +219,17 @@ interface uvmt_cv32_core_cntrl_if (
     `uvm_info("CORE_CNTRL_IF", "uvmt_cv32_core_cntrl_if.stop_fetch() called", UVM_DEBUG)
   endfunction : stop_fetch
 
-  wire         linear_feedback;
-  reg    [7:0] lfsr;
-  assign linear_feedback = !(out[7] ^ out[3]);
+  // LFSR used to "randomly" toggle fetch_en to show that
+  // the core ignores fetch_en after its initial assertion.
+  assign fb = !(lfsr[15] ^ lfsr[13] ^ lfsr[12] ^ lfsr[10]);
 
   always_ff @(posedge clk) begin
     if (lfsr_reset) begin // active high reset
-      lfsr <= 8'h00;
+      lfsr <= $urandom();
     end
-	else begin
-      lfsr <= {lfsr[6:0], linear_feedback};
-	  drv_cb.fetch_en <= lfsr[7];
+    else begin
+      lfsr <= {lfsr[14:0], fb};
+      drv_cb.fetch_en <= lfsr[15];
     end 
   end 
 
