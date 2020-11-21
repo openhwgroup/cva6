@@ -101,7 +101,7 @@ interface uvmt_cv32_core_cntrl_if (
                                     input               clk,
                                     output logic        fetch_en,
                                     // quasi static values
-                                    output logic        clock_en,
+                                    output logic        pulp_clock_en,
                                     output logic        scan_cg_en,
                                     output logic [31:0] boot_addr,
                                     output logic [31:0] mtvec_addr,
@@ -122,14 +122,15 @@ interface uvmt_cv32_core_cntrl_if (
   reg   [15:0] lfsr;
 
   covergroup core_cntrl_cg;
-    clock_enable: coverpoint clock_en {
-      bins enabled  = {1'b1};
-      bins disabled = {1'b0};
-    }
-    scan_enable: coverpoint scan_cg_en {
-      bins enabled  = {1'b1};
-      bins disabled = {1'b0};
-    }
+    // For CV32E40P, this s.b. tied to 0
+    //pulp_clock_enable: coverpoint pulp_clock_en {
+    //  bins enabled  = {1'b1};
+    //  bins disabled = {1'b0};
+    //}
+    //scan_enable: coverpoint scan_cg_en {
+    //  bins enabled  = {1'b1};
+    //  bins disabled = {1'b0};
+    //}
     boot_address: coverpoint boot_addr {
       bins low  = {[32'h0000_0000 : 32'h0000_FFFF]};
       bins med  = {[32'h0001_0000 : 32'hEFFF_FFFF]};
@@ -167,7 +168,7 @@ interface uvmt_cv32_core_cntrl_if (
     lfsr_reset        = 1'b1;
     fetch_en          = 1'b0; // Enabled by go_fetch(), below
     debug_req         = 1'b0;
-    clock_en          = 1'b1;
+    pulp_clock_en     = 1'b0;
     scan_cg_en        = 1'b0;
     boot_addr         = 32'h0000_0080;
     mtvec_addr        = 32'h0000_0000;
@@ -188,7 +189,7 @@ interface uvmt_cv32_core_cntrl_if (
 `endif
     end
 
-    qsc_stat_str =                $sformatf("\tclock_en          = %0d\n", clock_en);
+    qsc_stat_str =                $sformatf("\tpulp_clock_en     = %0d\n", pulp_clock_en);
     qsc_stat_str = {qsc_stat_str, $sformatf("\tscan_cg_en        = %0d\n", scan_cg_en)};
     qsc_stat_str = {qsc_stat_str, $sformatf("\tboot_addr         = %8h\n", boot_addr)};
     qsc_stat_str = {qsc_stat_str, $sformatf("\tmtvec_addr        = %8h\n", mtvec_addr)};
@@ -223,7 +224,7 @@ interface uvmt_cv32_core_cntrl_if (
   // the core ignores fetch_en after its initial assertion.
   assign fb = !(lfsr[15] ^ lfsr[13] ^ lfsr[12] ^ lfsr[10]);
 
-  always_ff @(posedge clk) begin
+  always @(posedge clk) begin
     if (lfsr_reset) begin // active high reset
       lfsr <= $urandom();
     end
