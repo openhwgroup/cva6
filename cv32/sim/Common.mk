@@ -72,7 +72,7 @@ export SHELL = /bin/bash
 
 CV32E40P_REPO   ?= https://github.com/openhwgroup/cv32e40p
 CV32E40P_BRANCH ?= master
-CV32E40P_HASH   ?= d922d0f
+CV32E40P_HASH   ?= 2b7cd10
 
 RISCVDV_REPO    ?= https://github.com/google/riscv-dv
 RISCVDV_BRANCH  ?= master
