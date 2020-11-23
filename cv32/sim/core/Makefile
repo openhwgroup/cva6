@@ -605,55 +605,15 @@ riviera-hello-world-gui: asim-all $(CUSTOM)/hello-world/hello-world.hex
 riviera-hello-world-gui: ALL_ASIM_FLAGS += +firmware=$(CUSTOM)/hello-world/hello-world.hex
 riviera-hello-world-gui: asim-run-gui
 
-.PHONY: riviera-fibonacci
-riviera-fibonacci: asim-all $(CUSTOM)/fibonacci/fibonacci.hex
-riviera-fibonacci: ALL_ASIM_FLAGS += +firmware=$(CUSTOM)/fibonacci/fibonacci.hex
-riviera-fibonacci: asim-run
+.PHONY: riviera-custom
+riviera-custom: asim-all $(CUSTOM)/$(CUSTOM_PROG)/$(CUSTOM_PROG).hex
+riviera-custom: ALL_ASIM_FLAGS += +firmware=$(CUSTOM)/$(CUSTOM_PROG)/$(CUSTOM_PROG).hex
+riviera-custom: asim-run
 
-.PHONY: riviera-fibonacci-gui
-riviera-fibonacci-gui: asim-all $(CUSTOM)/fibonacci/fibonacci.hex
-riviera-fibonacci-gui: ALL_ASIM_FLAGS += +firmware=$(CUSTOM)/fibonacci/fibonacci.hex
-riviera-fibonacci-gui: asim-run-gui
-
-.PHONY: riviera-dhrystone
-riviera-dhrystone: asim-all $(CUSTOM)/dhrystone/dhrystone.hex
-riviera-dhrystone: ALL_ASIM_FLAGS += +firmware=$(CUSTOM)/dhrystone/dhrystone.hex
-riviera-dhrystone: asim-run
-
-.PHONY: riviera-dhrystone-gui
-riviera-dhrystone-gui: asim-all $(CUSTOM)/dhrystone/dhrystone.hex
-riviera-dhrystone-gui: ALL_ASIM_FLAGS += +firmware=$(CUSTOM)/dhrystone/dhrystone.hex
-riviera-dhrystone-gui: asim-run-gui
-
-.PHONY: riviera-misalign
-riviera-misalign: asim-all $(CUSTOM)/misalign/misalign.hex
-riviera-misalign: ALL_ASIM_FLAGS += +firmware=$(CUSTOM)/misalign/misalign.hex
-riviera-misalign: asim-run
-
-.PHONY: riviera-misalign-gui
-riviera-misalign-gui: asim-all $(CUSTOM)/misalign/misalign.hex
-riviera-misalign-gui: ALL_ASIM_FLAGS += +firmware=$(CUSTOM)/misalign/misalign.hex
-riviera-misalign-gui: asim-run-gui
-
-.PHONY: riviera-illegal
-riviera-illegal: asim-all $(CUSTOM)/illegal/illegal.hex
-riviera-illegal: ALL_ASIM_FLAGS += +firmware=$(CUSTOM)/illegal/illegal.hex
-riviera-illegal: asim-run
-
-.PHONY: riviera-illegal-gui
-riviera-illegal-gui: asim-all $(CUSTOM)/illegal/illegal.hex
-riviera-illegal-gui: ALL_ASIM_FLAGS += +firmware=$(CUSTOM)/illegal/illegal.hex
-riviera-illegal-gui: asim-run-gui
-
-.PHONY: riviera-riscv_ebreak_test_0
-riviera-riscv_ebreak_test_0: asim-all $(CUSTOM)/riscv_ebreak_test_0/riscv_ebreak_test_0.hex
-riviera-riscv_ebreak_test_0: ALL_ASIM_FLAGS += +firmware=$(CUSTOM)/riscv_ebreak_test_0/riscv_ebreak_test_0.hex
-riviera-riscv_ebreak_test_0: asim-run
-
-.PHONY: riviera-riscv_ebreak_test_0-gui
-riviera-riscv_ebreak_test_0-gui: asim-all $(CUSTOM)/riscv_ebreak_test_0/riscv_ebreak_test_0.hex
-riviera-riscv_ebreak_test_0-gui: ALL_ASIM_FLAGS += +firmware=$(CUSTOM)/riscv_ebreak_test_0/riscv_ebreak_test_0.hex
-riviera-riscv_ebreak_test_0-gui: asim-run-gui
+.PHONY: riviera-custom-gui
+riviera-custom-gui: asim-all $(CUSTOM)/$(CUSTOM_PROG)/$(CUSTOM_PROG).hex
+riviera-custom-gui: ALL_ASIM_FLAGS += +firmware=$(CUSTOM)/$(CUSTOM_PROG)/$(CUSTOM_PROG).hex
+riviera-custom-gui: asim-run-gui
 
 riviera-clean:
 	if [ -d $(AWORK) ]; then rm -r $(AWORK); fi
