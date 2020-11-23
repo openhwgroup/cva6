@@ -96,6 +96,65 @@ _start0:
 # Hit those coverage holes with manually generated code...
 ################################################################################
 
+  # Various rd/rs holes, especially rs1==x0
+  li  x1, 0xFFFFFFFF
+  add x2, x0, x4         # hole: rs1==x0
+  add x2, x0, x1
+  and x2, x25, x26       # hole: rs1==x25
+
+  lw  x2, 0(x0)          # hole: load/store with rs1==x0
+  lw  x3, 4(x0)
+  add x2, x0, x3
+  sw  x2, 0(x0)
+  lw  x1, 0(x0)          # hole: load/store with rs1==x0
+  bne x2, x1, csr_fail
+
+  li  x1, 0xFFFFFFFF
+  li  x2, 0xFFFFFFFF
+  li  x3, 0xFFFFFFFF
+  lb  x2, 0(x0)          # hole: load/store with rs1==x0
+  lb  x3, 4(x0)
+  add x2, x0, x3
+  sb  x2, 0(x0)
+  lb  x1, 0(x0)          # hole: load/store with rs1==x0
+  bne x2, x1, csr_fail
+
+  li  x1, 0xFFFFFFFF
+  li  x2, 0xFFFFFFFF
+  li  x3, 0xFFFFFFFF
+  lbu x2, 0(x0)          # hole: load/store with rs1==x0
+  lbu x3, 4(x0)
+  add x2, x0, x3
+  sb  x2, 0(x0)
+  lbu x1, 0(x0)          # hole: load/store with rs1==x0
+  bne x2, x1, csr_fail
+
+  li  x1, 0xFFFFFFFF
+  li  x2, 0xFFFFFFFF
+  li  x3, 0xFFFFFFFF
+  lh  x2, 0(x0)          # hole: load/store with rs1==x0
+  lh  x3, 4(x0)
+  add x2, x0, x3
+  sh  x2, 0(x0)
+  lh  x1, 0(x0)          # hole: load/store with rs1==x0
+  bne x2, x1, csr_fail
+
+  li  x1, 0xFFFFFFFF
+  li  x2, 0xFFFFFFFF
+  li  x3, 0xFFFFFFFF
+  lhu x2, 0(x0)          # hole: load/store with rs1==x0
+  lhu x3, 4(x0)
+  add x2, x0, x3
+  sh  x2, 0(x0)
+  lhu x1, 0(x0)          # hole: load/store with rs1==x0
+  bne x2, x1, csr_fail
+
+  lw  x3, 4(x0)
+  add x3, x0, x4         # hole: rs1==x0
+  sw  x2, 0(x0)
+  sw  x2, 4(x0)
+
+  # negative branch
   li x1, 0xFFFFFFFF
 holes:
   beq x0, x1, test_done
@@ -107,15 +166,6 @@ holes:
   nop
   nop
   nop
-
-  add x2, x0, x4         # hole: rs1==x0
-  add x2, x0, x1
-  and x2, x25, x26       # hole: rs1==x25
-
-  lw x2, 0(x0)           # hole: load/stire with rs1==x0
-  lw x3, 4(x0)
-  sw x2, 0(x0)
-  sw x2, 4(x0)
 
 test_done:
     lui a0,print_port>>12
