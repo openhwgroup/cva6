@@ -184,13 +184,14 @@ clr_compliance:
 	make clean -C $(PROJ_ROOT_DIR)/vendor_lib/riscv/riscv-compliance
 
 build_compliance: clone_compliance
-	make -i -C $(PROJ_ROOT_DIR)/vendor_lib/riscv/riscv-compliance \
+	make simulate -i -C $(PROJ_ROOT_DIR)/vendor_lib/riscv/riscv-compliance \
 		RISCV_TARGET=OpenHW \
 		RISCV_DEVICE=cv32e40p \
 		PATH=$(RISCV)/bin:$(PATH) \
 		RISCV_PREFIX=$(RISCV_PREFIX) \
 		NOTRAPS=1 \
 		RISCV_ISA=$(RISCV_ISA)
+#		VERBOSE=1
 
 all_compliance: clone_compliance
 	make build_compliance RISCV_ISA=rv32i        && \
