@@ -230,6 +230,7 @@ comp: lib
 	cd $(VSIM_RESULTS) && \
 		$(VLOG) \
 			$(VLOG_FLAGS) \
+			$(CFG_COMPILE_FLAGS) \
 			+incdir+$(DV_UVME_CV32_PATH) \
 			+incdir+$(DV_UVMT_CV32_PATH) \
 			+incdir+$(UVM_HOME) \
