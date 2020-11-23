@@ -108,6 +108,15 @@ holes:
   nop
   nop
 
+  add x2, x0, x4         # hole: rs1==x0
+  add x2, x0, x1
+  and x2, x25, x26       # hole: rs1==x25
+
+  lw x2, 0(x0)           # hole: load/stire with rs1==x0
+  lw x3, 4(x0)
+  sw x2, 0(x0)
+  sw x2, 4(x0)
+
 test_done:
     lui a0,print_port>>12
     addi a1,zero,'\n'
