@@ -32,7 +32,7 @@
 #define TEST_PASS                      123456789
 #define TEST_FAIL                              1
 #define VIRT_PERIPH_STATUS_FLAG_ADDR  0x20000000 
-#define EXPECTED_ILLEGAL_INSTRUCTIONS         24
+#define EXPECTED_ILLEGAL_INSTRUCTIONS         80
 
 main:
     li        t0, (0x1 << 3)
@@ -136,18 +136,95 @@ main:
 	li     x30, 0x00000000
 	bne    x5,  x30, fail
 
-	# mhartid
-	csrrc  x5,  3860, x0     # not illegal instruction: no attempt to write RO CSR
-	csrrc  x0,  3860, x5     # illegal instruction: attempt to write RO CSR
-	csrrci x0,  3860, 0x0a   # illegal instruction: attempt to write RO CSR
-	csrrs  x0,  3860, x5     # illegal instruction: attempt to write RO CSR
+    # mhartid
+    csrrc  x5,  3860, x0     # not illegal instruction: no attempt to write RO CSR
+    csrrc  x0,  3860, x5     # illegal instruction: attempt to write RO CSR
+    csrrci x0,  3860, 0x0a   # illegal instruction: attempt to write RO CSR
+    csrrs  x0,  3860, x5     # illegal instruction: attempt to write RO CSR
  	csrrsi x0,  3860, 0x0a   # illegal instruction: attempt to write RO CSR
  	csrrw  x0,  3860, x0     # illegal instruction: attempt to write RO CSR
-	csrrwi x0,  3860, 0x0a   # illegal instruction: attempt to write RO CSR
+    csrrwi x0,  3860, 0x0a   # illegal instruction: attempt to write RO CSR
 
 	csrrc  x5,  3860, x0     # not illegal
 	li     x30, 0x00000000
 	bne    x5,  x30, fail
+
+    ##
+    ## Access the User Custom CSRs.   These are all illegal instructions when
+    ## PULP_XPULP = 0 (which is the default for CV32E40P).
+    ##
+
+    # lpstart0
+    csrrc  x5,  0x800, x0     # illegal instructions: attempt access "non-existant" CSR
+    csrrc  x0,  0x800, x5
+    csrrci x0,  0x800, 0x0a
+    csrrs  x0,  0x800, x5
+ 	csrrsi x0,  0x800, 0x0a
+ 	csrrw  x0,  0x800, x0
+    csrrwi x0,  0x800, 0x0a
+
+    # lpend0
+    csrrc  x5,  0x801, x0     # illegal instructions: attempt access "non-existant" CSR
+    csrrc  x0,  0x801, x5
+    csrrci x0,  0x801, 0x0a
+    csrrs  x0,  0x801, x5
+ 	csrrsi x0,  0x801, 0x0a
+ 	csrrw  x0,  0x801, x0
+    csrrwi x0,  0x801, 0x0a
+
+    # lpcount0
+    csrrc  x5,  0x802, x0     # illegal instructions: attempt access "non-existant" CSR
+    csrrc  x0,  0x802, x5
+    csrrci x0,  0x802, 0x0a
+    csrrs  x0,  0x802, x5
+ 	csrrsi x0,  0x802, 0x0a
+ 	csrrw  x0,  0x802, x0
+    csrrwi x0,  0x802, 0x0a
+
+    # lpstart1
+    csrrc  x5,  0x804, x0     # illegal instructions: attempt access "non-existant" CSR
+    csrrc  x0,  0x804, x5
+    csrrci x0,  0x804, 0x0a
+    csrrs  x0,  0x804, x5
+ 	csrrsi x0,  0x804, 0x0a
+ 	csrrw  x0,  0x804, x0
+    csrrwi x0,  0x804, 0x0a
+
+    # lpend1
+    csrrc  x5,  0x805, x0     # illegal instructions: attempt access "non-existant" CSR
+    csrrc  x0,  0x805, x5
+    csrrci x0,  0x805, 0x0a
+    csrrs  x0,  0x805, x5
+ 	csrrsi x0,  0x805, 0x0a
+ 	csrrw  x0,  0x805, x0
+    csrrwi x0,  0x805, 0x0a
+
+    # lpcount1
+    csrrc  x5,  0x806, x0     # illegal instructions: attempt access "non-existant" CSR
+    csrrc  x0,  0x806, x5
+    csrrci x0,  0x806, 0x0a
+    csrrs  x0,  0x806, x5
+ 	csrrsi x0,  0x806, 0x0a
+ 	csrrw  x0,  0x806, x0
+    csrrwi x0,  0x806, 0x0a
+
+    # uhartid
+    csrrc  x5,  0xCC0, x0     # illegal instructions: attempt access "non-existant" CSR
+    csrrc  x0,  0xCC0, x5
+    csrrci x0,  0xCC0, 0x0a
+    csrrs  x0,  0xCC0, x5
+ 	csrrsi x0,  0xCC0, 0x0a
+ 	csrrw  x0,  0xCC0, x0
+    csrrwi x0,  0xCC0, 0x0a
+
+    # privlv
+    csrrc  x5,  0xCC1, x0     # illegal instructions: attempt access "non-existant" CSR
+    csrrc  x0,  0xCC1, x5
+    csrrci x0,  0xCC1, 0x0a
+    csrrs  x0,  0xCC1, x5
+ 	csrrsi x0,  0xCC1, 0x0a
+ 	csrrw  x0,  0xCC1, x0
+    csrrwi x0,  0xCC1, 0x0a
 
 ###############################################################################
     lw      x5,80(sp)
