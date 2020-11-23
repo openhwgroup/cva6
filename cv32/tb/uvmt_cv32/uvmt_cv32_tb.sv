@@ -39,12 +39,17 @@ module uvmt_cv32_tb;
    parameter int CORE_PARAM_PULP_XPULP       = 0;
    parameter int CORE_PARAM_PULP_CLUSTER     = 0;
    parameter int CORE_PARAM_PULP_ZFINX       = 0;
-`endif
-
-`ifdef PULP
-   parameter int CORE_PARAM_PULP_XPULP       = 1;
-   parameter int CORE_PARAM_PULP_CLUSTER     = 0;
-   parameter int CORE_PARAM_PULP_ZFINX       = 0;
+`else
+   `ifdef PULP
+      parameter int CORE_PARAM_PULP_XPULP       = 1;
+      parameter int CORE_PARAM_PULP_CLUSTER     = 0;
+      parameter int CORE_PARAM_PULP_ZFINX       = 0;
+   `else
+      // If you don't explicitly specify either NO_PULP or PULP, you get NO_PULP
+      parameter int CORE_PARAM_PULP_XPULP       = 0;
+      parameter int CORE_PARAM_PULP_CLUSTER     = 0;
+      parameter int CORE_PARAM_PULP_ZFINX       = 0;
+   `endif
 `endif
 
 `ifdef SET_NUM_MHPMCOUNTERS
