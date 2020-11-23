@@ -117,13 +117,12 @@ module uvmt_cv32e40p_debug_assert
             `uvm_error(info_tag,$sformatf("Debug mode with wrong cause after ebreak, case = %d",cov_assert_if.dcsr_q[8:6]));
 
     // c.ebreak without dcsr.ebreakm results in exception at mtvec
-    // TODO: This is expected to fail formal as the sequence gets long and
-    // complicated.
+    // Exclude single stepping as the sequence gets very complicated
     property p_cebreak_exception;
         disable iff(cov_assert_if.debug_req_i | !cov_assert_if.rst_ni)
         $rose(cov_assert_if.is_cebreak) && cov_assert_if.dcsr_q[15] == 1'b0 && !cov_assert_if.debug_mode_q  && cov_assert_if.is_decoding && cov_assert_if.id_valid &&
         !cov_assert_if.debug_req_i && !cov_assert_if.dcsr_q[2]
-        |-> (decode_valid & cov_assert_if.id_valid) [->2] ##0  !cov_assert_if.debug_mode_q && (cov_assert_if.mcause_q[5:0] === cv32e40p_pkg::EXC_CAUSE_BREAKPOINT) 
+        |-> (decode_valid) [->1:2] ##0  !cov_assert_if.debug_mode_q && (cov_assert_if.mcause_q[5:0] === cv32e40p_pkg::EXC_CAUSE_BREAKPOINT) 
                                                                 && (cov_assert_if.mepc_q == pc_at_ebreak) &&
                                                                    (cov_assert_if.id_stage_pc == cov_assert_if.mtvec);
     endproperty
@@ -138,7 +137,7 @@ module uvmt_cv32e40p_debug_assert
         disable iff(cov_assert_if.debug_req_i | !cov_assert_if.rst_ni)
         $rose(cov_assert_if.is_ebreak) && cov_assert_if.dcsr_q[15] == 1'b0 && !cov_assert_if.debug_mode_q  && cov_assert_if.is_decoding && cov_assert_if.id_valid &&
         !cov_assert_if.debug_req_i && !cov_assert_if.dcsr_q[2] 
-        |-> (decode_valid & cov_assert_if.id_valid) [->2] ##0  !cov_assert_if.debug_mode_q && (cov_assert_if.mcause_q[5:0] === cv32e40p_pkg::EXC_CAUSE_BREAKPOINT) 
+        |-> (decode_valid) [->1:2] ##0  !cov_assert_if.debug_mode_q && (cov_assert_if.mcause_q[5:0] === cv32e40p_pkg::EXC_CAUSE_BREAKPOINT) 
                                                                 && (cov_assert_if.mepc_q == pc_at_ebreak) &&
                                                                    (cov_assert_if.id_stage_pc == cov_assert_if.mtvec);
     endproperty
@@ -373,11 +372,10 @@ module uvmt_cv32e40p_debug_assert
             `uvm_error(info_tag, "Debug mode not entered correctly at reset!");
 
     // Check that we cover the case where a debug_req_i
-    // comes in the middle of an illegal insn, causing
+    // comes while flushing due to an illegal insn, causing
     // dpc to be set to the exception handler entry addr
     property p_illegal_insn_debug_req;
-        cov_assert_if.illegal_insn_q & cov_assert_if.debug_req_i |-> decode_valid [->1:2] ##0 cov_assert_if.debug_mode_q &&
-                                                                     cov_assert_if.depc_q == cov_assert_if.mtvec;
+        (cov_assert_if.ctrl_fsm_cs == cv32e40p_pkg::FLUSH_EX | cov_assert_if.ctrl_fsm_cs == cv32e40p_pkg::FLUSH_WB) && cov_assert_if.illegal_insn_q & cov_assert_if.debug_req_i & !cov_assert_if.debug_mode_q|-> decode_valid [->1:2] ##0 cov_assert_if.debug_mode_q &&  cov_assert_if.depc_q == cov_assert_if.mtvec;
     endproperty
     
     a_illegal_insn_debug_req : assert property(p_illegal_insn_debug_req)
@@ -440,8 +438,8 @@ module uvmt_cv32e40p_debug_assert
               halt_addr_at_entry_flag <= 1'b0;
 
           // Capture boot addr
-          if(cov_assert_if.ctrl_fsm_cs == cv32e40p_pkg::RESET)
-              boot_addr_at_entry <= cov_assert_if.boot_addr_i;
+          if(cov_assert_if.ctrl_fsm_cs == cv32e40p_pkg::BOOT_SET)
+              boot_addr_at_entry <= {cov_assert_if.boot_addr_i[31:2], 2'b00};
       end
   end
   always@ (posedge cov_assert_if.clk_i)  begin
