@@ -596,56 +596,24 @@ asim-run-gui: asim-all
 
 
 .PHONY: riviera-hello-world
-riviera-hello-world: asim-all $(CUSTOM)/hello-world.hex
-riviera-hello-world: ALL_ASIM_FLAGS += +firmware=$(CUSTOM)/hello-world.hex
+riviera-hello-world: asim-all $(CUSTOM)/hello-world/hello-world.hex
+riviera-hello-world: ALL_ASIM_FLAGS += +firmware=$(CUSTOM)/hello-world/hello-world.hex
 riviera-hello-world: asim-run
 
 .PHONY: riviera-hello-world-gui
-riviera-hello-world-gui: asim-all $(CUSTOM)/hello-world.hex
-riviera-hello-world-gui: ALL_ASIM_FLAGS += +firmware=$(CUSTOM)/hello-world.hex
+riviera-hello-world-gui: asim-all $(CUSTOM)/hello-world/hello-world.hex
+riviera-hello-world-gui: ALL_ASIM_FLAGS += +firmware=$(CUSTOM)/hello-world/hello-world.hex
 riviera-hello-world-gui: asim-run-gui
 
-.PHONY: riviera-cv32_riscv_tests
-riviera-cv32_riscv_tests: asim-all ../../tests/core/cv32_riscv_tests_firmware/cv32_riscv_tests_firmware.hex
-riviera-cv32_riscv_tests: ALL_ASIM_FLAGS += +firmware=$(CV32_RISCV_TESTS_FIRMWARE)/cv32_riscv_tests_firmware.hex
-riviera-cv32_riscv_tests: asim-run
+.PHONY: riviera-custom
+riviera-custom: asim-all $(CUSTOM)/$(CUSTOM_PROG)/$(CUSTOM_PROG).hex
+riviera-custom: ALL_ASIM_FLAGS += +firmware=$(CUSTOM)/$(CUSTOM_PROG)/$(CUSTOM_PROG).hex
+riviera-custom: asim-run
 
-.PHONY: riviera-cv32_riscv_tests-gui
-riviera-cv32_riscv_tests-gui: asim-all $(CV32_RISCV_TESTS_FIRMWARE)/cv32_riscv_tests_firmware.hex
-riviera-cv32_riscv_tests-gui: ALL_ASIM_FLAGS += +firmware=$(CV32_RISCV_TESTS_FIRMWARE)/cv32_riscv_tests_firmware.hex
-riviera-cv32_riscv_tests-gui: asim-run-gui
-
-.PHONY: riviera-cv32_riscv_compliance_tests
-riviera-cv32_riscv_compliance_tests: asim-all $(CV32_RISCV_COMPLIANCE_TESTS_FIRMWARE)/cv32_riscv_compliance_tests_firmware.hex
-riviera-cv32_riscv_compliance_tests: ALL_ASIM_FLAGS += +firmware=$(CV32_RISCV_COMPLIANCE_TESTS_FIRMWARE)/cv32_riscv_compliance_tests_firmware.hex
-riviera-cv32_riscv_compliance_tests: asim-run
-
-.PHONY: riviera-cv32_riscv_compliance_tests-gui
-riviera-cv32_riscv_compliance_tests-gui: asim-all $(CV32_RISCV_COMPLIANCE_TESTS_FIRMWARE)/cv32_riscv_compliance_tests_firmware.hex
-riviera-cv32_riscv_compliance_tests-gui: ALL_ASIM_FLAGS += +firmware=$(CV32_RISCV_COMPLIANCE_TESTS_FIRMWARE)/cv32_riscv_compliance_tests_firmware.hex
-riviera-cv32_riscv_compliance_tests-gui: asim-run-gui
-
-.PHONY: riviera-firmware
-riviera-firmware: asim-all $(FIRMWARE)/firmware.hex
-riviera-firmware: ALL_ASIM_FLAGS += +firmware=$(FIRMWARE)/firmware.hex
-riviera-firmware: asim-run
-
-.PHONY: riviera-firmware-gui
-riviera-firmware-gui: asim-all $(FIRMWARE)/firmware.hex
-riviera-firmware-gui: ALL_ASIM_FLAGS += +firmware=$(FIRMWARE)/firmware.hex
-riviera-firmware-gui: asim-run-gui
-
-.PHONY: riviera-unit-test 
-riviera-unit-test:  firmware-unit-test-clean 
-riviera-unit-test:  $(FIRMWARE)/firmware_unit_test.hex 
-riviera-unit-test: ALL_ASIM_FLAGS += "+firmware=$(FIRMWARE)/firmware_unit_test.hex"
-riviera-unit-test: asim-run
-
-.PHONY: riviera-unit-test-gui 
-riviera-unit-test-gui:  firmware-unit-test-clean 
-riviera-unit-test-gui:  $(FIRMWARE)/firmware_unit_test.hex 
-riviera-unit-test-gui: ALL_ASIM_FLAGS += "+firmware=$(FIRMWARE)/firmware_unit_test.hex"
-riviera-unit-test-gui: asim-run-gui
+.PHONY: riviera-custom-gui
+riviera-custom-gui: asim-all $(CUSTOM)/$(CUSTOM_PROG)/$(CUSTOM_PROG).hex
+riviera-custom-gui: ALL_ASIM_FLAGS += +firmware=$(CUSTOM)/$(CUSTOM_PROG)/$(CUSTOM_PROG).hex
+riviera-custom-gui: asim-run-gui
 
 riviera-clean:
 	if [ -d $(AWORK) ]; then rm -r $(AWORK); fi
