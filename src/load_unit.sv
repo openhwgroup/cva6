@@ -73,8 +73,9 @@ module load_unit import ariane_pkg::*; #(
     assign req_port_o.address_tag   = paddr_i[ariane_pkg::DCACHE_TAG_WIDTH     +
                                               ariane_pkg::DCACHE_INDEX_WIDTH-1 :
                                               ariane_pkg::DCACHE_INDEX_WIDTH];
-    // directly output an exception
-    assign ex_o = ex_i;
+    // directly forward exception fields (valid bit is set below)
+    assign ex_o.cause = ex_i.cause;
+    assign ex_o.tval  = ex_i.tval;
 
     // Check that NI operations follow the necessary conditions
     logic paddr_ni;
@@ -265,7 +266,8 @@ module load_unit import ariane_pkg::*; #(
     // ---------------
     // decoupled rvalid process
     always_comb begin : rvalid_output
-        valid_o = 1'b0;
+        valid_o    = 1'b0;
+        ex_o.valid = 1'b0;
         // output the queue data directly, the valid signal is set corresponding to the process above
         trans_id_o = load_data_q.trans_id;
         // we got an rvalid and are currently not flushing and not aborting the request
@@ -273,9 +275,13 @@ module load_unit import ariane_pkg::*; #(
             // we killed the request
             if(!req_port_o.kill_req)
                 valid_o = 1'b1;
-            // the output is also valid if we got an exception
-            if (ex_i.valid)
-                valid_o = 1'b1;
+            // the output is also valid if we got an exception. An exception arrives one cycle after
+            // dtlb_hit_i is asserted, i.e. when we are in SEND_TAG. Otherwise, the exception
+            // corresponds to the next request that is already being translated (see below).
+            if (ex_i.valid && (state_q == SEND_TAG)) begin
+                valid_o    = 1'b1;
+                ex_o.valid = 1'b1;
+            end
         end
         // an exception occurred during translation (we need to check for the valid flag because we could also get an
         // exception from the store unit)
@@ -284,6 +290,7 @@ module load_unit import ariane_pkg::*; #(
         // round in the load FSM
         if (valid_i && ex_i.valid && !req_port_i.data_rvalid) begin
             valid_o    = 1'b1;
+            ex_o.valid = 1'b1;
             trans_id_o = lsu_ctrl_i.trans_id;
         // if we are waiting for the translation to finish do not give a valid signal yet
         end else if (state_q == WAIT_TRANSLATION) begin
