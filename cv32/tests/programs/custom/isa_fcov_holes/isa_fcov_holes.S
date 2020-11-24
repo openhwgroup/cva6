@@ -155,15 +155,8 @@ _start0:
   sw  x2, 4(x0)
 
   # cross coverage with c.jal
-  # TODO: how to handle EBREAK, ECALL, WFI, MRET, DRET
-#$$    ,C_LWSP,C_SWSP,C_LW,C_SW
-#    ,C_BEQZ,C_BNEZ
-#    ,C_J,C_JR,C_JAL,C_JALR,C_LI,C_LUI
-#    ,C_ADDI,C_ADDI16SP,C_ADDI4SPN,C_MV
-#    ,C_SLLI,C_SRLI,C_SRAI,C_ANDI,C_ADD
-#    ,C_AND,C_OR,C_XOR,C_SUB,C_EBREAK
+  # TODO: how to handle EBREAK, ECALL, WFI, MRET, DRET, C_EBREAK
 crosses:
-  # ADD,ADDI,AND,ANDI,AUIPC,BEQ,BGE,BGEU
   add x3, x2, x1
   c.jal next1
 next1:
@@ -190,7 +183,6 @@ next7:
   bgeu x2, x1, crosses
   c.jal next8
 next8:
-#    ,BLTU,BNE,BLT, FENCE, FENCE_I,EBREAK,ECALL
   blt x1, x2, crosses
   c.jal next9
 next9:
@@ -207,12 +199,13 @@ next11:
 next12:
   fence.i
   c.jal next13
-#    ,JAL,JALR,LB,LBU,LH,LHU
 next13:
-  c.jal next14
+  jal next14
 next14:
+  c.jal next14.1 # whoops!
+next14.1:
   lla x2, next15
-  c.jalr x2
+  jalr x2
 next15:
   c.jal next16
 next16:
@@ -227,7 +220,6 @@ next18:
 next19:
   lh x2, 2(x0)
   c.jal next20
-#    ,LUI,LW,OR
 next20:
   lui x2, 5
   c.jal next21
@@ -238,7 +230,6 @@ next22:
   or  x2, x3, x4
   c.jal next23
 next23:
-#    ,ORI, SB, SH,SLL,SLLI
   ori  x2, x3, 5
   c.jal next24
 next24:
@@ -254,7 +245,6 @@ next27:
   slli x2, x3, 5
   c.jal next28
 next28:
-#    ,SLT,SLTI,SLTIU,SLTU,SRA,SRAI
   slt   x2, x3, x4
   c.jal next29
 next29:
@@ -273,7 +263,6 @@ next33:
   srai  x2, x3, 4
   c.jal next34
 next34:
-#    ,SRL,SRLI,SUB,SW,XOR,XORI
   srl  x2, x3, x4
   c.jal next35
 next35:
@@ -292,7 +281,6 @@ next39:
   xori x2, x3, 4
   c.jal next40
 next40:
-#    ,MUL,MULH,MULHU,MULHSU
   mul    x2, x3, x4
   c.jal next41
 next41:
@@ -305,7 +293,6 @@ next43:
   mulhsu x2, x3, x4
   c.jal next44
 next44:
-#    ,DIV,REM,DIVU,REMU
   div   x2, x3, x4
   c.jal next45
 next45:
@@ -318,7 +305,6 @@ next47:
   remu  x2, x3, x4
   c.jal next48
 next48:
-#    ,CSRRW, CSRRC, CSRRS
   csrrw x7, 0x340, x12 #mscratch
   c.jal next49
 next49:
@@ -328,7 +314,6 @@ next50:
   csrrs x7, 0x340, x12
   c.jal next51
 next51:
-#    ,CSRRCI, CSRRSI, CSRRWI
   csrrwi x7, 0x340, 12 #mscratch
   c.jal next52
 next52:
@@ -338,7 +323,6 @@ next53:
   csrrsi x7, 0x340, 12
   c.jal next54
 next54:
-#    ,C_LWSP,C_SWSP,C_LW,C_SW
   c.lwsp x4, 0(x2)
   c.jal next55
 next55:
@@ -351,7 +335,6 @@ next57:
   c.sw   a2, 8(a0)
   c.jal next58
 next58:
-#    ,C_BEQZ,C_BNEZ
   li  a2, 1
   li  a4, 0
   c.beqz a2, crosses
@@ -360,6 +343,68 @@ next59:
   c.bnez a4, crosses
   c.jal next60
 next60:
+  c.j next61
+next61:
+  c.jal next62
+next62:
+  lla x2, next63
+  c.jr x2
+next63:
+  c.jal next64
+next64:
+  c.jal next65
+next65:
+  lla x2, next66
+  c.jalr x2
+next66:
+  c.jal next67
+next67:
+  c.li x2, 0
+  c.jal next68
+next68:
+  c.lui x4, 2
+  c.jal next69
+next69:
+  c.addi      x2, 0
+  c.jal next70
+next70:
+  c.addi16sp  sp, -16 
+  c.jal next71
+next71:
+  c.addi4spn  a2, sp,  4
+  c.jal next72
+next72:
+  c.mv        x4, x3
+  c.jal next73
+next73:
+  c.slli  x2, 2
+  c.jal next74
+next74:
+  c.srli  a2, 2
+  c.jal next75
+next75:
+  c.srai  a2, 2
+  c.jal next76
+next76:
+  c.andi  a2, 4
+  c.jal next77
+next77:
+  c.add   x2, x4
+  c.jal next78
+next78:
+  c.and a2, a4
+  c.jal next79
+next79:
+  c.or  a2, a4
+  c.jal next80
+next80:
+  c.xor a2, a4
+  c.jal next81
+next81:
+  c.sub a2, a4
+  c.jal next82
+next82:
+
 
   # negative branch
   li x1, 0xFFFFFFFF
