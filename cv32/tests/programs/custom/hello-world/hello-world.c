@@ -16,9 +16,10 @@
 ** 
 *******************************************************************************
 **
-** Sanity test for the CV32E40P core.  Reads the MISA and MVENDORID CSRs and
-**                                     prints some useful (?) messages to
-**                                     stdout.  Will fail if MISA is not sane.
+** Sanity test for the CV32E40P core.  Reads the MVENDORID, MISA, MARCHID and
+**                                     MIMPID CSRs and prints some useful (?)
+**                                     messages to stdout.  Will fail if these
+**                                     CSRs do not match expected values.
 **
 *******************************************************************************
 */
@@ -28,19 +29,38 @@
 
 int main(int argc, char *argv[])
 {
-    unsigned int misa_rval, mxl;
+    unsigned int misa_rval, mvendorid_rval, marchid_rval, mimpid_rval, mxl;
              int reserved, tentative, nonstd, user, super;
 
     mxl = 0; reserved = 0; tentative = 0; nonstd = 0; user = 0; super = 0;
 
     /* inline assembly: read mvendorid and misa */
-    asm volatile("ecall");
-    // __asm__ volatile("csrr %0, 0xF11" : "=r"(mvendorid_rval));
+    __asm__ volatile("csrr %0, 0xF11" : "=r"(mvendorid_rval));
     __asm__ volatile("csrr %0, 0x301" : "=r"(misa_rval));
+    __asm__ volatile("csrr %0, 0xF12" : "=r"(marchid_rval));
+    __asm__ volatile("csrr %0, 0xF13" : "=r"(mimpid_rval));
+
+    /* Check MVENDORID CSR: 0x602 is the value assigned by JEDEC to the OpenHW Group */
+    if (mvendorid_rval != 0x00000602) {
+      printf("\tERROR: CSR MVENDORID reads as 0x%x - should be 0x00000602 for the OpenHW Group.\n\n", mvendorid_rval);
+      return EXIT_FAILURE;
+    }
 
     /* Check MISA CSR: if its zero, it might not be implemented at all */
-    if (misa_rval == 0x0) {
-      printf("\tERROR: CSR MISA returned zero!\n\n");
+    if (misa_rval != 0x40001104) {
+      printf("\tERROR: CSR MISA reads as 0x%x - should be 0x40001104 for this release of CV32E40P!\n\n");
+      return EXIT_FAILURE;
+    }
+
+    /* Check MARCHID CSR: 0x4 is the value assigned by the RISC-V Foundation to CV32E40P */
+    if (marchid_rval != 0x00000004) {
+      printf("\tERROR: CSR MARCHID reads as 0x%x - should be 0x00000004 for CV32E40P.\n\n", marchid_rval);
+      return EXIT_FAILURE;
+    }
+
+    /* Check MIMPID CSR: 0x0 is the value assigned by the OpenHW Group to the first release of CV32E40P */
+    if (mimpid_rval != 0x00000000) {
+      printf("\tERROR: CSR MARCHID reads as 0x%x - should be 0x00000000 for this release of CV32E40P.\n\n", mimpid_rval);
       return EXIT_FAILURE;
     }
 
@@ -48,8 +68,10 @@ int main(int argc, char *argv[])
     printf("\nHELLO WORLD!!!\n");
     printf("This is the OpenHW Group CV32E40P CORE-V processor core.\n");
     printf("CV32E40P is a RISC-V ISA compliant core with the following attributes:\n");
-    // printf("\tmvendorid = 0x%0x\n", mvendorid_rval);
-    printf("\tmisa      = 0x%0x\n", misa_rval);
+    printf("\tmvendorid = 0x%x\n", mvendorid_rval);
+    printf("\tmarchid   = 0x%x\n", marchid_rval);
+    printf("\tmimpid    = 0x%x\n", mimpid_rval);
+    printf("\tmisa      = 0x%x\n", misa_rval);
     mxl = ((misa_rval & 0xC0000000) >> 30); // MXL == MISA[31:30]
     switch (mxl) {
       case 0:  printf("\tERROR: MXL cannot be zero!\n");
@@ -65,7 +87,7 @@ int main(int argc, char *argv[])
                return EXIT_FAILURE;
     }
 
-    printf("\tSupported Instructions: ");
+    printf("\tSupported Instructions Extensions: ");
     if ((misa_rval >> 25) & 0x00000001) ++reserved;
     if ((misa_rval >> 24) & 0x00000001) ++reserved;
     if ((misa_rval >> 23) & 0x00000001) {

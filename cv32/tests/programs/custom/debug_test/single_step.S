@@ -70,6 +70,7 @@ _single_step:
     la a1, glb_step_info
     li t0, 3
     sw t0, 0(a1)
+
     csrr t0, dcsr // illegal
 
     la a1, glb_expect_illegal_insn
@@ -168,31 +169,30 @@ _irq_wait_loop:
 
     # Ebreak to cover ebreak vs step cause priority
     .4byte 0x00100073
-#---------------------------
-# Code to be enabled when step-and-compare is passing
+    
     # Set step reason to 9, ebreak without dcsr.ebreakm
-    #la a1, glb_step_info
-    #li t0, 9
-    #sw t0, 0(a1)
+    la a1, glb_step_info
+    li t0, 9
+    sw t0, 0(a1)
     
     # Expect to enter ebreak handler
-    #la a0, glb_expect_ebreak_handler 
-    #li t0, 1
-    #sw t0, 0(a0)
+    la a0, glb_expect_ebreak_handler 
+    li t0, 1
+    sw t0, 0(a0)
 
-    #.4byte 0x00100073
- 
+    .4byte 0x00100073
+
      # Expect to enter ebreak handler
-    #la a0, glb_expect_ebreak_handler 
-    #li t0, 1
-    #sw t0, 0(a0)
-     # Set step reason to 10, cebreak without dcsr.ebreakm
-    #la a1, glb_step_info
-    #li t0, 10
-    #sw t0, 0(a1)
+    la a0, glb_expect_ebreak_handler 
+    li t0, 1
+    sw t0, 0(a0)
+    # Set step reason to 10, cebreak without dcsr.ebreakm
+    la a1, glb_step_info
+    li t0, 10
+    sw t0, 0(a1)
     
-    #c.ebreak
-#---------------------------------------------
+    c.ebreak
+    
     # set step reason to 0, normal step
     la a1, glb_step_info
     li t0, 0

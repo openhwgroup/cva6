@@ -98,11 +98,10 @@ endinterface : uvmt_cv32_vp_status_if
  * Quasi-static core control signals.
  */
 interface uvmt_cv32_core_cntrl_if (
-                                    input          clk,
+                                    input               clk,
                                     output logic        fetch_en,
-                                    output logic        ext_perf_counters,
                                     // quasi static values
-                                    output logic        clock_en,
+                                    output logic        pulp_clock_en,
                                     output logic        scan_cg_en,
                                     output logic [31:0] boot_addr,
                                     output logic [31:0] mtvec_addr,
@@ -117,17 +116,21 @@ interface uvmt_cv32_core_cntrl_if (
 
   import uvm_pkg::*;
 
-  string qsc_stat_str; //Quasi Static Control Status
+  string       qsc_stat_str; //Quasi Static Control Status
+  wire         fb;
+  reg          lfsr_reset;
+  reg   [15:0] lfsr;
 
   covergroup core_cntrl_cg;
-    clock_enable: coverpoint clock_en {
-      bins enabled  = {1'b1};
-      bins disabled = {1'b0};
-    }
-    scan_enable: coverpoint scan_cg_en {
-      bins enabled  = {1'b1};
-      bins disabled = {1'b0};
-    }
+    // For CV32E40P, this s.b. tied to 0
+    //pulp_clock_enable: coverpoint pulp_clock_en {
+    //  bins enabled  = {1'b1};
+    //  bins disabled = {1'b0};
+    //}
+    //scan_enable: coverpoint scan_cg_en {
+    //  bins enabled  = {1'b1};
+    //  bins disabled = {1'b0};
+    //}
     boot_address: coverpoint boot_addr {
       bins low  = {[32'h0000_0000 : 32'h0000_FFFF]};
       bins med  = {[32'h0001_0000 : 32'hEFFF_FFFF]};
@@ -157,17 +160,15 @@ interface uvmt_cv32_core_cntrl_if (
 
   core_cntrl_cg core_cntrl_cg_inst = new();
 
-  initial begin: static_controls
-    fetch_en          = 1'b0; // Enabled by go_fetch(), below
-    ext_perf_counters = 1'b0; // TODO: set proper width (currently 0 in the RTL)
-  end
-
   // TODO: randomize hart_id (should have no affect?).
   //       randomize boot_addr and mtvec addr (need to sync with the start address of the test program.
-  //       figure out what to do with test_en.
   initial begin: quasi_static_controls
 
-    clock_en          = 1'b1;
+
+    lfsr_reset        = 1'b1;
+    fetch_en          = 1'b0; // Enabled by go_fetch(), below
+    debug_req         = 1'b0;
+    pulp_clock_en     = 1'b0;
     scan_cg_en        = 1'b0;
     boot_addr         = 32'h0000_0080;
     mtvec_addr        = 32'h0000_0000;
@@ -188,7 +189,7 @@ interface uvmt_cv32_core_cntrl_if (
 `endif
     end
 
-    qsc_stat_str =                $sformatf("\tclock_en          = %0d\n", clock_en);
+    qsc_stat_str =                $sformatf("\tpulp_clock_en     = %0d\n", pulp_clock_en);
     qsc_stat_str = {qsc_stat_str, $sformatf("\tscan_cg_en        = %0d\n", scan_cg_en)};
     qsc_stat_str = {qsc_stat_str, $sformatf("\tboot_addr         = %8h\n", boot_addr)};
     qsc_stat_str = {qsc_stat_str, $sformatf("\tmtvec_addr        = %8h\n", mtvec_addr)};
@@ -199,26 +200,39 @@ interface uvmt_cv32_core_cntrl_if (
     `uvm_info("CORE_CNTRL_IF", $sformatf("Quasi-static CORE control inputs:\n%s", qsc_stat_str), UVM_NONE)
   end
 
-  // TODO: waiting for the User Manual to provide some guidance here...
-  initial begin: debug_control
-    debug_req  = 1'b0;
-  end
-
   clocking drv_cb @(posedge clk);
     output fetch_en;
   endclocking : drv_cb
 
   /** Sets fetch_en to the core. */
-  function void go_fetch();
+  //function void go_fetch();
+  task go_fetch();
     drv_cb.fetch_en <= 1'b1;
     `uvm_info("CORE_CNTRL_IF", "uvmt_cv32_core_cntrl_if.go_fetch() called", UVM_DEBUG)
     core_cntrl_cg_inst.sample();
-  endfunction : go_fetch
+    repeat(10) @(posedge clk);
+    lfsr_reset <= 1'b0;
+  endtask : go_fetch
 
   function void stop_fetch();
     drv_cb.fetch_en <= 1'b0;
+	lfsr_reset      <= 1'b1;
     `uvm_info("CORE_CNTRL_IF", "uvmt_cv32_core_cntrl_if.stop_fetch() called", UVM_DEBUG)
   endfunction : stop_fetch
+
+  // LFSR used to "randomly" toggle fetch_en to show that
+  // the core ignores fetch_en after its initial assertion.
+  assign fb = !(lfsr[15] ^ lfsr[13] ^ lfsr[12] ^ lfsr[10]);
+
+  always @(posedge clk) begin
+    if (lfsr_reset) begin // active high reset
+      lfsr <= $urandom();
+    end
+    else begin
+      lfsr <= {lfsr[14:0], fb};
+      drv_cb.fetch_en <= lfsr[15];
+    end 
+  end 
 
 endinterface : uvmt_cv32_core_cntrl_if
 
@@ -262,17 +276,17 @@ interface uvmt_cv32_step_compare_if;
      logic [31:0] value;
    } reg_t;
 
-   event        ovp_cpu_retire; // Was ovp.cpu.Retire
-   event        riscv_retire;   // Was riscv_core.riscv_tracer_i.retire
-   bit   [31:0] ovp_cpu_PCr;    // Was iss_wrap.cpu.PCr
+   event        ovp_cpu_retire;     // Was ovp.cpu.Retire
+   event        riscv_retire;       // Was riscv_core.riscv_tracer_i.retire
+   bit   [31:0] ovp_cpu_PCr;        // Was iss_wrap.cpu.PCr
    logic [31:0] insn_pc;
-   bit         ovp_b1_Step;    // Was ovp.b1.Step = 0;
-   bit         ovp_b1_Stepping; // Was ovp.b1.Stepping = 1;
-   event       ovp_cpu_busWait;  // Was call to ovp.cpu.busWait();
-   logic   [31:0] ovp_cpu_GPR[32];
-   logic [31:0][31:0] riscy_GPR; // packed dimensions, register index by data width
-   logic       deferint_prime; // Stages deferint for the ISS deferint signal
-   logic       deferint_prime_ack; // Set low if deferint_prime was set due to interrupt ack (as opposed to wakeup)
+   bit          ovp_b1_Step;        // Was ovp.b1.Step = 0;
+   bit          ovp_b1_Stepping;    // Was ovp.b1.Stepping = 1;
+   event        ovp_cpu_busWait;    // Was call to ovp.cpu.busWait();
+   logic [31:0] ovp_cpu_GPR[32];
+   logic [31:0][31:0] riscy_GPR;    // packed dimensions, register index by data width
+   logic        deferint_prime;     // Stages deferint for the ISS deferint signal
+   logic        deferint_prime_ack; // Set low if deferint_prime was set due to interrupt ack (as opposed to wakeup)
 
    int  num_pc_checks;
    int  num_gpr_checks;
@@ -338,8 +352,8 @@ interface uvmt_cv32_debug_cov_assert_if
     input  [31:0] boot_addr_i,
 
     // Debug signals
-    input               debug_req_i, // From controller
-    input               debug_mode_q, // From controller
+    input         debug_req_i, // From controller
+    input         debug_mode_q, // From controller
     input  [31:0] dcsr_q, // From controller
     input  [31:0] depc_q, // From cs regs
     input  [31:0] depc_n, // 

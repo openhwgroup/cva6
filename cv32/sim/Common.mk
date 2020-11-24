@@ -72,7 +72,7 @@ export SHELL = /bin/bash
 
 CV32E40P_REPO   ?= https://github.com/openhwgroup/cv32e40p
 CV32E40P_BRANCH ?= master
-CV32E40P_HASH   ?= d922d0f
+CV32E40P_HASH   ?= 2b7cd10
 
 RISCVDV_REPO    ?= https://github.com/google/riscv-dv
 RISCVDV_BRANCH  ?= master
@@ -203,7 +203,7 @@ ASM_DIR   ?= $(ASM)
 # Note that the DSIM targets allow for writing the log-files to arbitrary
 # locations, so all of these paths are absolute, except those used by Verilator.
 # TODO: clean this mess up!
-CORE_TEST_DIR                        = $(PROJ_ROOT_DIR)/cv32/tests/core
+CORE_TEST_DIR                        = $(PROJ_ROOT_DIR)/cv32/tests/programs
 BSP                                  = $(PROJ_ROOT_DIR)/cv32/bsp
 FIRMWARE                             = $(CORE_TEST_DIR)/firmware
 VERI_FIRMWARE                        = ../../tests/core/firmware
@@ -391,7 +391,7 @@ TEST_FILES        = $(filter %.c %.S,$(wildcard $(dir $*)*))
 %.elf: %.c %.S
 	make bsp
 	test_asm_src=$(basename )
-	$(RISCV_EXE_PREFIX)gcc $(CFG_CFLAGS) $(CFLAGS) -o $@ \
+	$(RISCV_EXE_PREFIX)gcc $(CFG_CFLAGS) $(TEST_CFLAGS) $(CFLAGS) -o $@ \
 		-nostartfiles \
 		$^ -T $(BSP)/link.ld -L $(BSP) -lcv-verif
 
@@ -399,14 +399,14 @@ TEST_FILES        = $(filter %.c %.S,$(wildcard $(dir $*)*))
 %.elf: %.c
 	make bsp
 	test_asm_src=$(basename )
-	$(RISCV_EXE_PREFIX)gcc $(CFG_CFLAGS) $(CFLAGS) -o $@ \
+	$(RISCV_EXE_PREFIX)gcc $(CFG_CFLAGS) $(TEST_CFLAGS) $(CFLAGS) -o $@ \
 		-nostartfiles \
 		$^ -T $(BSP)/link.ld -L $(BSP) -lcv-verif
 
 # This target selected if only %.S exists
 %.elf: %.S
 	make bsp
-	$(RISCV_EXE_PREFIX)gcc $(CFG_CFLAGS) $(CFLAGS) -v -o $@ \
+	$(RISCV_EXE_PREFIX)gcc $(CFG_CFLAGS) $(TEST_CFLAGS) $(CFLAGS) -v -o $@ \
 		-nostartfiles \
 		-I $(ASM) \
 		$^ -T $(BSP)/link.ld -L $(BSP) -lcv-verif

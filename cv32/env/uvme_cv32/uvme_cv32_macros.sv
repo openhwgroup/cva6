@@ -18,6 +18,7 @@
 `define __UVME_CV32_MACROS_SV__
 
 
+`define per_instance_fcov `ifndef DSIM option.per_instance = 1; `endif
 
 
 

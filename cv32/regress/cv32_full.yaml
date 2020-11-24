@@ -21,6 +21,19 @@ tests:
     dir: cv32/sim/uvmt_cv32
     cmd: make test COREV=YES TEST=hello-world
 
+#  mhpmcounter29_csr_access_test_1:
+#    build: uvmt_cv32
+#    description: mhpmcounter29_csr_access_test_1
+#    dir: cv32/sim/uvmt_cv32
+#    cmd: make test TEST=mhpmcounter29_csr_access_test_1 COREV=YES CFG=num_mhpmcounter_29
+
+  mhpmcounter29_csr_access_test_2:
+    build: uvmt_cv32
+    description: mhpmcounter29_csr_access_test_2
+    dir: cv32/sim/uvmt_cv32
+    cmd: make test TEST=mhpmcounter29_csr_access_test_2 COREV=YES CFG=num_mhpmcounter_29
+    iss: 0
+
   csr_instructions:
     build: uvmt_cv32
     description: CSR instruction test
@@ -208,6 +221,12 @@ tests:
     dir: cv32/sim/uvmt_cv32
     cmd: make test COREV=YES TEST=debug_test
 
+  debug_test_reset:
+    build: uvmt_cv32
+    description: Debug reset test
+    dir: cv32/sim/uvmt_cv32
+    cmd: make test COREV=YES TEST=debug_test_reset
+
   interrupt_bootstrap:
     build: uvmt_cv32
     description: Interrupt bootstrap test
@@ -225,3 +244,17 @@ tests:
     description: ISA function coverage test
     dir: cv32/sim/uvmt_cv32
     cmd: make test TEST=isa_fcov_holes
+
+  cv32e40p_csr_access_test:
+    build: uvmt_cv32
+    description: Randomly generated CSR access test
+    dir: cv32/sim/uvmt_cv32
+    cmd: make test COREV=YES TEST=cv32e40p_csr_access_test
+
+  cv32e40p_readonly_csr_access_test:
+    build: uvmt_cv32
+    description: Manually generated CSR access test of RO CSRs
+    dir: cv32/sim/uvmt_cv32
+    cmd: make test COREV=YES TEST=cv32e40p_readonly_csr_access_test
+
+

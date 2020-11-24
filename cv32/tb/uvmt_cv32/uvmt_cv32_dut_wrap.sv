@@ -171,7 +171,7 @@ module uvmt_cv32_dut_wrap #(// DUT (riscv_core) parameters.
          .clk_i                  ( clknrst_if.clk                 ),
          .rst_ni                 ( clknrst_if.reset_n             ),
 
-         .pulp_clock_en_i        ( core_cntrl_if.clock_en         ),
+         .pulp_clock_en_i        ( core_cntrl_if.pulp_clock_en    ),
          .scan_cg_en_i           ( core_cntrl_if.scan_cg_en       ),
 
          .boot_addr_i            ( core_cntrl_if.boot_addr        ),

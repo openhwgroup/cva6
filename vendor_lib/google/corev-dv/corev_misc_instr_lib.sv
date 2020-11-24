@@ -143,6 +143,38 @@ class corev_nop_instr extends riscv_directed_instr_stream;
 endclass : corev_nop_instr
 
 /*
+ * corev_xori_not_instr
+ *
+ * Generates a XORI with a -1 immediate value to tesdt logical not pseudo-op
+ */
+ 
+class corev_xori_not_instr extends riscv_directed_instr_stream;
+
+  `uvm_object_utils(corev_xori_not_instr)
+
+  function new(string name = "");
+    super.new(name);
+  endfunction : new
+
+  function void post_randomize();
+    riscv_instr_name_t allowed_xori[$];
+    riscv_instr        xori;
+
+    allowed_xori.push_back(XORI);
+
+    xori = riscv_instr::get_rand_instr(.include_instr(allowed_xori));
+    xori.m_cfg = cfg;
+    randomize_gpr(xori);
+    xori.imm = -1;
+    xori.extend_imm();
+    xori.update_imm_str();
+    xori.comment = "corev_xori_not_instr";
+    insert_instr(xori, 0);
+  endfunction : post_randomize
+
+endclass : corev_xori_not_instr
+
+/*
  * corev_jalr_wfi_instr
  *
  * Create a very directed test stream to close coverage on wfi followed by a jump
@@ -234,11 +266,7 @@ class corev_jalr_wfi_instr extends riscv_directed_instr_stream;
         allowed_instr = {allowed_instr, C_JALR};
       end
     end
-    foreach (allowed_instr[i]) begin
-      $display("allowed_instr[%0d] = %s", i, allowed_instr[i].name());
-    end    
-    instr = riscv_instr::get_rand_instr(.include_instr(allowed_instr));
-    $display("instr = %s", instr.instr_name.name());
+    instr = riscv_instr::get_rand_instr(.include_instr(allowed_instr));    
     `DV_CHECK_RANDOMIZE_WITH_FATAL(instr,    
       instr_name == JALR -> rd == ZERO;
       rs1 == fwd_addr_reg;
@@ -255,8 +283,7 @@ class corev_jalr_wfi_instr extends riscv_directed_instr_stream;
       allowed_instr = {allowed_instr, C_J, C_JAL};
     end
     //instr = riscv_instr::type_id::create("LI");
-    instr = riscv_instr::get_rand_instr(.include_instr(allowed_instr));
-    $display("instr = %s", instr.instr_name.name());
+    instr = riscv_instr::get_rand_instr(.include_instr(allowed_instr));    
     `DV_CHECK_RANDOMIZE_WITH_FATAL(instr,      
       (instr_name inside {JALR, JAL}) -> rd == ZERO;      
       , "Could not randomize jump"
@@ -275,8 +302,7 @@ class corev_jalr_wfi_instr extends riscv_directed_instr_stream;
         allowed_instr = {allowed_instr, C_JALR};
       end
     end
-    instr = riscv_instr::get_rand_instr(.include_instr(allowed_instr));
-    $display("instr = %s", instr.instr_name.name());
+    instr = riscv_instr::get_rand_instr(.include_instr(allowed_instr));    
     `DV_CHECK_RANDOMIZE_WITH_FATAL(instr,      
       instr_name == JALR -> rd == ZERO;
       rs1 == bwd_addr_reg;

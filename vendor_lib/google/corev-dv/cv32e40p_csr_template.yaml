@@ -406,27 +406,27 @@
       reset_val: 1
       msb: 0
       lsb: 0
-# MHPMEVENT3..31 not full modeled by RM
-#- csr: mhpmevent3
-#  description: >
-#    (HPM) Machine Performance-Monitoring Event Selector 3
-#  address: 0x323
-#  privilege_mode: M
-#  rv32:
-#    - field_name: Zero
-#      description: >
-#        Always zero
-#      type: R
-#      reset_val: 0
-#      msb: 31
-#      lsb: 16
-#    - field_name: Selectors
-#      description: >
-#        Event selector
-#      type: WARL
-#      reset_val: 0
-#      msb: 15
-#      lsb: 0
+# MHPMEVENT4..31 not full modeled by RM
+- csr: mhpmevent3
+  description: >
+    (HPM) Machine Performance-Monitoring Event Selector 3
+  address: 0x323
+  privilege_mode: M
+  rv32:
+    - field_name: Zero
+      description: >
+        Always zero
+      type: R
+      reset_val: 0
+      msb: 31
+      lsb: 16
+    - field_name: Selectors
+      description: >
+        Event selector
+      type: WARL
+      reset_val: 0
+      msb: 15
+      lsb: 0
 - csr: mscratch
   description: >
     Machine Scratch-pad Register
@@ -460,36 +460,33 @@
       reset_val: 0
       msb: 0
       lsb: 0
-# MCAUSE is commented out for now because the RM models the entire CSR
-# as WLRL (essentially RW).   This is not the case for the CV32E40P. The
-# specification below is correct and matches the RTL.
-#- csr: mcause
-#  description: >
-#    Machine Exception Cause
-#  address: 0x342
-#  privilege_mode: M
-#  rv32:
-#    - field_name: Interrupt
-#      description: >
-#          Set when exception triggered by interrupt
-#      type: WARL
-#      reset_val: 0
-#      msb: 31
-#      lsb: 31
-#    - field_name: zero
-#      description: >
-#          Always zero
-#      type: R
-#      reset_val: 0
-#      msb: 30
-#      lsb: 5
-#    - field_name: ecode
-#      description: >
-#          Exception Code
-#      type: WARL
-#      reset_val: 0
-#      msb: 4
-#      lsb: 0
+- csr: mcause
+  description: >
+    Machine Exception Cause
+  address: 0x342
+  privilege_mode: M
+  rv32:
+    - field_name: Interrupt
+      description: >
+          Set when exception triggered by interrupt
+      type: WARL
+      reset_val: 0
+      msb: 31
+      lsb: 31
+    - field_name: zero
+      description: >
+          Always zero
+      type: R
+      reset_val: 0
+      msb: 30
+      lsb: 5
+    - field_name: ecode
+      description: >
+          Exception Code
+      type: WARL
+      reset_val: 0
+      msb: 4
+      lsb: 0
 - csr: mtval
   description: >
     Machine Trap Value
@@ -754,9 +751,12 @@
       reset_val: 0
       msb: 31
       lsb: 0
+
 ###############################################################################
 # mvendorid, marchid, mimpid and mhartid are temporarily excluded from auto-
-# generation of access testing due to a known bugs in the RTL.
+# generation of access testing as all bits in these CSRs are RO, so any attempt
+# to write them causes an illegal instruction exception.  Access modes to these
+# CSRs is tested in a separate, manually written test-program.
 #
 #- csr: mvendorid
 #  description: >

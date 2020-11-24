@@ -12,6 +12,9 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
+//
+// SPDX-License-Identifier: Apache-2.0 WITH SHL-2.0
+//
 
 
 `ifndef __UVME_CV32_TDEFS_SV__
@@ -61,32 +64,38 @@ typedef enum {
 // The following CSRs are not currently included:
 // mstatush, mtinst, mtval2, mhpmcounter3, ..., mhpmcounter31,
 // mhpmcounter3h, ..., mhpmcounter31h,
+// medeleg, mcounteren
 //The following CSRs have been removed:
 // satp (supervisor-mode address translation and protection)
 typedef enum {
-    marchid,mcause,mcounteren,mcountinhibit,mcycle,mcycleh,medeleg,mepc,mhartid
+    marchid,mcause,mcountinhibit,mcycle,mcycleh,mepc,mhartid
     ,mie,mcontext,scontext
-    ,minstret,minstreth,mip,misa,mscratch,mstatus,mtval,mtvec,march,mimpid
+    ,minstret,minstreth,mip,misa,mscratch,mstatus,mtval,mtvec,mimpid
     ,mvendorid
-    ,mhpmevent3
-    ,mhpmcounter3
-    ,mhpmcounterh3
     ,tselect,tdata1,tdata2,tdata3,tinfo
     ,dscratch0,dscratch1
-//    ,mhpmevent10,mhpmevent11,mhpmevent12,mhpmevent13,mhpmevent14,mhpmevent15,mhpmevent16,mhpmevent17
-//    ,mhpmevent18,mhpmevent19,mhpmevent20,mhpmevent21,mhpmevent22,mhpmevent23,mhpmevent24,mhpmevent25
-//    ,mhpmevent26,mhpmevent27,mhpmevent28,mhpmevent29,mhpmevent3,mhpmevent30,mhpmevent31,mhpmevent4
-//    ,mhpmcounter3,mhpmcounter4,mhpmcounter5,mhpmcounter6,mhpmcounter7,mhpmcounter8,mhpmcounter9
-//    ,mhpmcounter10,mhpmcounter11,mhpmcounter12,mhpmcounter13,mhpmcounter14,mhpmcounter15,mhpmcounter16
-//    ,mhpmcounter17,mhpmcounter18,mhpmcounter19,mhpmcounter20,mhpmcounter21,mhpmcounter22,mhpmcounter23
-//    ,mhpmcounter24,mhpmcounter25,mhpmcounter26,mhpmcounter27,mhpmcounter28,mhpmcounter29,mhpmcounter30
-//    ,mhpmcounter31
-//    ,mhpmcounterh3,mhpmcounterh4,mhpmcounterh5,mhpmcounterh6,mhpmcounterh7,mhpmcounterh8,mhpmcounterh9
-//    ,mhpmcounterh10,mhpmcounterh11,mhpmcounterh12,mhpmcounterh13,mhpmcounterh14,mhpmcounterh15,mhpmcounterh16
-//    ,mhpmcounterh17,mhpmcounterh18,mhpmcounterh19,mhpmcounterh20,mhpmcounterh21,mhpmcounterh22,mhpmcounterh23
-//    ,mhpmcounterh24,mhpmcounterh25,mhpmcounterh26,mhpmcounterh27,mhpmcounterh28,mhpmcounterh29,mhpmcounterh30
-//    ,mhpmcounterh31
-//    ,mhpmevent5,mhpmevent6,mhpmevent7,mhpmevent8,mhpmevent9,mideleg
+
+    ,mhpmevent3
+    ,mhpmevent4,mhpmevent5,mhpmevent6,mhpmevent7,mhpmevent8,mhpmevent9
+    ,mhpmevent10,mhpmevent11,mhpmevent12,mhpmevent13,mhpmevent14,mhpmevent15,mhpmevent16,mhpmevent17
+    ,mhpmevent18,mhpmevent19,mhpmevent20,mhpmevent21,mhpmevent22,mhpmevent23,mhpmevent24,mhpmevent25
+    ,mhpmevent26,mhpmevent27,mhpmevent28,mhpmevent29,mhpmevent30,mhpmevent31
+
+    ,mhpmcounter3
+    ,mhpmcounter4,mhpmcounter5,mhpmcounter6,mhpmcounter7,mhpmcounter8,mhpmcounter9
+    ,mhpmcounter10,mhpmcounter11,mhpmcounter12,mhpmcounter13,mhpmcounter14,mhpmcounter15,mhpmcounter16
+    ,mhpmcounter17,mhpmcounter18,mhpmcounter19,mhpmcounter20,mhpmcounter21,mhpmcounter22,mhpmcounter23
+    ,mhpmcounter24,mhpmcounter25,mhpmcounter26,mhpmcounter27,mhpmcounter28,mhpmcounter29,mhpmcounter30
+    ,mhpmcounter31
+
+    ,mhpmcounterh3
+    ,mhpmcounterh4,mhpmcounterh5,mhpmcounterh6,mhpmcounterh7,mhpmcounterh8,mhpmcounterh9
+    ,mhpmcounterh10,mhpmcounterh11,mhpmcounterh12,mhpmcounterh13,mhpmcounterh14,mhpmcounterh15,mhpmcounterh16
+    ,mhpmcounterh17,mhpmcounterh18,mhpmcounterh19,mhpmcounterh20,mhpmcounterh21,mhpmcounterh22,mhpmcounterh23
+    ,mhpmcounterh24,mhpmcounterh25,mhpmcounterh26,mhpmcounterh27,mhpmcounterh28,mhpmcounterh29,mhpmcounterh30
+    ,mhpmcounterh31
+//
+//    ,mideleg
 //    ,pmpaddr0,pmpaddr1,pmpaddr10,pmpaddr11,pmpaddr12,pmpaddr13,pmpaddr14
 //    ,pmpaddr15,pmpaddr2,pmpaddr3,pmpaddr4,pmpaddr5,pmpaddr6,pmpaddr7,pmpaddr8
 //    ,pmpaddr9,pmpcfg0,pmpcfg1,pmpcfg2,pmpcfg3
@@ -104,16 +113,5 @@ typedef struct {
     bit          compressed;
     bit[31:0]    pc;
 } ins_t;
-
-// TODO Add scoreboard specializations
-//      Ex: typedef uvml_sb_cntxt_c#(
-//             .T_TRN(uvma_cv32_mon_trn_c)
-//          ) uvme_cv32_sb_cntxt_c;
-//          
-//          typedef uvml_sb_simplex_c#(
-//             .T_CNTXT(uvme_cv32_sb_cntxt_c),
-//             .T_TRN  (uvma_cv32_mon_trn_c )
-//          ) uvme_cv32_sb_simplex_c;
-
 
 `endif // __UVME_CV32_TDEFS_SV__

@@ -22,9 +22,18 @@ package corev_instr_test_pkg;
   import riscv_signature_pkg::*;
   
   // Instruction streams
-  `include "corev_interrupt_csr_instr_lib.sv"
-  `include "corev_misc_instr_lib.sv"  
+  `include "instr_lib/corev_interrupt_csr_instr_stream.sv"
+  `include "instr_lib/corev_interrupt_csr_wfi_instr_stream.sv"
+  `include "instr_lib/corev_compressed_load_store_stress_instr_stream.sv"
+  `include "instr_lib/corev_compressed_load_store_wfi_stress_instr_stream.sv"
+  `include "instr_lib/corev_ecall_instr_stream.sv"
+  `include "instr_lib/corev_nop_instr.sv"
+  `include "instr_lib/corev_xori_not_instr.sv"
+  `include "instr_lib/corev_jal_wfi_instr.sv"
+  `include "instr_lib/corev_jalr_wfi_instr.sv"
+  
 
+  `include "corev_compressed_instr.sv"
   `include "corev_privil_reg.sv"
   `include "corev_privileged_common_seq.sv"
   `include "corev_instr_gen_config.sv"
