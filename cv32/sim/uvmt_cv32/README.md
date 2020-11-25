@@ -114,12 +114,14 @@ using _xrun_.  Set the shell variable SIMULATOR to `xrun` to simply run **`make 
 later.  See [Issue 11](https://github.com/openhwgroup/core-v-verif/issues/11)
 for more info.
 <br>
-**2020-07-21**: there is also an issue with 20.06 which we are investigating.
 
 Running the environment with Mentor Graphics [Questa](https://www.mentor.com/products/fv/questa/) (vsim)
 ----------------------
 The command **make SIMULATOR=vsim sanity** will run the sanity testcase using _vsim_.
 Set the shell variable SIMULATOR to `vsim` to simply run **`make <target>`**.
+<br> <br>
+**Note for Mentor users:** This testbench is known to require Questa 2019.2 or later.
+<br>
 
 Running the environment with Synopsys VCS [VCS](https://www.synopsys.com/verification/simulation/vcs.html) (vcs)
 ----------------------
