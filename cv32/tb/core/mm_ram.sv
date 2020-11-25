@@ -158,12 +158,12 @@ module mm_ram
     logic                          rnd_irq;
    
     // used by dump_signature methods
-    automatic string               sig_file;
-    automatic string               sig_string;
-    automatic bit                  use_sig_file;
-    automatic integer              sig_fd;
-    automatic integer              errno;
-    automatic string               error_str;
+    string               sig_file;
+    string               sig_string;
+    bit                  use_sig_file;
+    integer              sig_fd;
+    integer              errno;
+    string               error_str;
 
    // uhh, align?
     always_comb data_addr_aligned = {data_addr_i[31:2], 2'b0};
@@ -363,7 +363,6 @@ module mm_ram
 `endif
                     exit_valid_o = '1; // signal halt to testbench
                     exit_value_o = '0;
-                    while (1) @(posedge clk_i);
 
                 end else if (data_addr_i == 32'h1500_0000) begin
                     timer_wdata = data_wdata_i;
