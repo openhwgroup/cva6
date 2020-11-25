@@ -157,10 +157,18 @@ module mm_ram
     //random or monitor interrupt request
     logic                          rnd_irq;
    
+    // used by dump_signature methods
+    automatic string               sig_file;
+    automatic string               sig_string;
+    automatic bit                  use_sig_file;
+    automatic integer              sig_fd;
+    automatic integer              errno;
+    automatic string               error_str;
+
    // uhh, align?
     always_comb data_addr_aligned = {data_addr_i[31:2], 2'b0};
 
-    initial begin
+    initial begin : configure_stalls
         for (i = 0; i < RND_STALL_REGS; i=i+1) begin
             rnd_stall_regs[i] = 0;
         end
@@ -219,13 +227,61 @@ module mm_ram
         `uvm_info("RNDSTALL", $sformatf("DATA  OBI stall valid:  %0d", rnd_stall_regs[RND_STALL_DATA_VALID]), UVM_LOW)
         `uvm_info("RNDSTALL", $sformatf("DATA  OBI stall max:    %0d", rnd_stall_regs[RND_STALL_DATA_MAX]), UVM_LOW)
 `endif
-    end
+    end : configure_stalls
 
 `ifndef VERILATOR
     function bit is_stall_sim();
         return rnd_stall_regs[RND_STALL_DATA_EN] || rnd_stall_regs[RND_STALL_INSTR_EN];
     endfunction : is_stall_sim
 `endif
+
+`ifndef VERILATOR
+    function void uvm_dump_signature();
+        if ($value$plusargs("signature=%s", sig_file)) begin
+            sig_fd = $fopen(sig_file, "w");
+            if (sig_fd == 0) begin
+                errno = $ferror(sig_fd, error_str);
+                `uvm_error("MM_RAM", $sformatf("Cannot open signature file %s for writing (error_str: %s).", sig_file, error_str))
+                use_sig_file = 1'b0;
+            end else begin
+                use_sig_file = 1'b1;
+            end
+        end
+
+        sig_string = "";
+        for (logic [31:0] addr = sig_begin_q; addr < sig_end_q; addr +=4) begin
+            sig_string = {sig_string, $sformatf("%x%x%x%x\n", dp_ram_i.mem[addr+3], dp_ram_i.mem[addr+2],
+                                                              dp_ram_i.mem[addr+1], dp_ram_i.mem[addr+0])};
+            if (use_sig_file) begin
+                $fdisplay(sig_fd, "%x%x%x%x", dp_ram_i.mem[addr+3], dp_ram_i.mem[addr+2],
+                                              dp_ram_i.mem[addr+1], dp_ram_i.mem[addr+0]);
+            end
+        end
+        `uvm_info("MM_RAM", $sformatf("Dumping signature:\n%s", sig_string), UVM_LOW)
+    endfunction : uvm_dump_signature
+`else // VERILATOR
+    function void veri_dump_signature();
+        if ($value$plusargs("signature=%s", sig_file)) begin
+            sig_fd = $fopen(sig_file, "w");
+            if (sig_fd == 0) begin
+                $error("can't open file");
+                use_sig_file = 1'b0;
+            end else begin
+                use_sig_file = 1'b1;
+            end
+        end
+
+        $display("%m @ %0t: Dumping signature", $time);
+        for (logic [31:0] addr = sig_begin_q; addr < sig_end_q; addr +=4) begin
+            $display("%x%x%x%x", dp_ram_i.mem[addr+3], dp_ram_i.mem[addr+2],
+                                 dp_ram_i.mem[addr+1], dp_ram_i.mem[addr+0]);
+            if (use_sig_file) begin
+                $fdisplay(sig_fd, "%x%x%x%x", dp_ram_i.mem[addr+3], dp_ram_i.mem[addr+2],
+                                              dp_ram_i.mem[addr+1], dp_ram_i.mem[addr+0]);
+            end
+        end
+    endfunction : veri_dump_signature
+`endif // VERILATOR
 
     // handle the mapping of read and writes to either memory or pseudo
     // peripherals (currently just a redirection of writes to stdout)
@@ -299,46 +355,15 @@ module mm_ram
                     sig_end_d = data_wdata_i;
 
                 end else if (data_addr_i == 32'h2000_0010) begin
-                    // halt and dump signature
-                    automatic string sig_file;
-                    automatic bit use_sig_file;
-                    automatic integer sig_fd;
-                    automatic integer errno;
-                    automatic string error_str;
-
-                    if ($value$plusargs("signature=%s", sig_file)) begin
-                        sig_fd = $fopen(sig_file, "w");
-                        if (sig_fd == 0) begin
+                    // dump signature and halt
 `ifndef VERILATOR
-                            errno = $ferror(sig_fd, error_str);
-                            $error(error_str);
+                    uvm_dump_signature();
 `else
-                            $error("can't open file");
+                    veri_dump_signature();
 `endif
-                            use_sig_file = 1'b0;
-                        end else begin
-                            use_sig_file = 1'b1;
-                        end
-                    end
-
-                    $display("Dumping signature");
-                    for (logic [31:0] addr = sig_begin_q; addr < sig_end_q; addr +=4) begin
-                        $display("%x%x%x%x",
-                            dp_ram_i.mem[addr+3],
-                            dp_ram_i.mem[addr+2],
-                            dp_ram_i.mem[addr+1],
-                            dp_ram_i.mem[addr+0]);
-                        if (use_sig_file) begin
-                            $fdisplay(sig_fd, "%x%x%x%x",
-                                dp_ram_i.mem[addr+3],
-                                dp_ram_i.mem[addr+2],
-                                dp_ram_i.mem[addr+1],
-                                dp_ram_i.mem[addr+0]);
-                        end
-                    end
-                    // end simulation
-                    exit_valid_o = '1;
+                    exit_valid_o = '1; // signal halt to testbench
                     exit_value_o = '0;
+                    while (1) @(posedge clk_i);
 
                 end else if (data_addr_i == 32'h1500_0000) begin
                     timer_wdata = data_wdata_i;
