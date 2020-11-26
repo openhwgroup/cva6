@@ -158,22 +158,21 @@ module mm_ram
     logic                          rnd_irq;
    
     // used by dump_signature methods
-    string               sig_file;
-    string               sig_string;
-    bit                  use_sig_file;
-    integer              sig_fd;
-    integer              errno;
-    string               error_str;
+    string                         sig_file;
+    string                         sig_string;
+    bit                            use_sig_file;
+    integer                        sig_fd;
+    integer                        errno;
+    string                         error_str;
 
-   // uhh, align?
+    // uhh, align?
     always_comb data_addr_aligned = {data_addr_i[31:2], 2'b0};
 
-    initial begin : configure_stalls
+    always @(negedge rst_ni) begin : configure_stalls
         for (i = 0; i < RND_STALL_REGS; i=i+1) begin
             rnd_stall_regs[i] = 0;
         end
 `ifndef VERILATOR
-        #1ns;
         if (!$test$plusargs("rand_stall_obi_disable")) begin
             if ($test$plusargs("max_data_zero_instr_stall")) begin
                 `uvm_info("RNDSTALL", "Max data stall, zero instruction stall configuration", UVM_LOW)

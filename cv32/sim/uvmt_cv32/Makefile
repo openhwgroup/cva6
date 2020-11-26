@@ -183,6 +183,8 @@ clone_compliance:
 clr_compliance:
 	make clean -C $(PROJ_ROOT_DIR)/vendor_lib/riscv/riscv-compliance
 
+#	make simulate -i -C $(PROJ_ROOT_DIR)/vendor_lib/riscv/riscv-compliance \
+
 build_compliance: clone_compliance
 	make simulate -i -C $(PROJ_ROOT_DIR)/vendor_lib/riscv/riscv-compliance \
 		RISCV_TARGET=OpenHW \

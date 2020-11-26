@@ -227,18 +227,52 @@ asm: comp $(ASM_DIR)/$(ASM_PROG).hex $(ASM_DIR)/$(ASM_PROG).elf
 # But this does not:
 #                make compliance RISCV_ISA=rv32imc COMPLIANCE_PROG=I-ADD-01
 # 
+RISCV_ISA       ?= rv32i
 COMPLIANCE_PROG ?= I-ADD-01
+
+REF ?= $(COMPLIANCE_PKG)/riscv-test-suite/$(RISCV_ISA)/references/$(COMPLIANCE_PROG).reference_output
+SIG ?= $(DSIM_RESULTS)/$(COMPLIANCE_PROG)/$(COMPLIANCE_PROG).signature_output
+TEST_PLUSARGS ?= +signature=$(COMPLIANCE_PROG).signature_output
 
 compliance: comp build_compliance
 	mkdir -p $(DSIM_RESULTS)/$(COMPLIANCE_PROG) && cd $(DSIM_RESULTS)/$(COMPLIANCE_PROG)  && \
 	export IMPERAS_TOOLS=$(PROJ_ROOT_DIR)/cv32/tests/cfg/ovpsim_no_pulp.ic && \
 	$(DSIM) -l dsim-$(COMPLIANCE_PROG).log -image $(DSIM_IMAGE) \
-		-work $(DSIM_WORK) $(DSIM_RUN_FLAGS) $(DSIM_DMP_FLAGS) \
+		-work $(DSIM_WORK) $(DSIM_RUN_FLAGS) $(DSIM_DMP_FLAGS) $(TEST_PLUSARGS) \
 		-sv_lib $(UVM_HOME)/src/dpi/libuvm_dpi.so \
 		-sv_lib $(OVP_MODEL_DPI) \
 		+UVM_TESTNAME=$(UVM_TESTNAME) \
 		+firmware=$(COMPLIANCE_PKG)/work/$(RISCV_ISA)/$(COMPLIANCE_PROG).hex \
 		+elf_file=$(COMPLIANCE_PKG)/work/$(RISCV_ISA)/$(COMPLIANCE_PROG).elf
+
+#check_compliance_signature: compliance
+
+DIFFS := $(shell diff --ignore-case --strip-trailing-cr $(REF) $(SIG))
+
+check_compliance_signature:
+	@echo ""
+	@echo ""
+	@echo "Checking Compliance Signature for $(RISCV_ISA)/$(COMPLIANCE_PROG)"
+	@echo "Reference: $(REF)"
+	@echo "Signature: $(SIG)"
+	@echo -n "diff:"
+	@if [ $(DIFFS) == "" ]; then\
+		echo " ... OK"\
+	else\
+		echo " ... FAIL"\
+	fi
+
+
+
+#	if [ $(shell diff --ignore-case --strip-trailing-cr $(REF) $(SIG)) ]; then\
+#		echo " ... OK"\
+#	else\
+#		echo " ... FAIL"\
+#	fi
+
+
+#	@diff --ignore-case --strip-trailing-cr $(REF) $(SIG)
+#	@echo ""
 
 ################################################################################
 # Commonly used targets:
