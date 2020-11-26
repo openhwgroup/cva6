@@ -19,10 +19,16 @@
 # SPDX-License-Identifier: Apache-2.0 WITH SHL-2.0
 #
 ###############################################################################
+# diff_signatures: script adopted from the riscv-compliance testsuite to
+#                  compare (diff) signature dumps.  Will either compare the
+#                  reference and signatures from a single test-program, or all
+#                  refs and sigs found in a regression.
+###############################################################################
 
-#printf "\n\nCompare to reference files ... \n\n";
 FAIL=0
 RUN=0
+
+# TODO: iterate across all files, not just the ones provided.
 
 #for ref in ${SUITEDIR}/references/*.reference_output;
 #do 
