@@ -245,35 +245,6 @@ compliance: comp build_compliance
 		+firmware=$(COMPLIANCE_PKG)/work/$(RISCV_ISA)/$(COMPLIANCE_PROG).hex \
 		+elf_file=$(COMPLIANCE_PKG)/work/$(RISCV_ISA)/$(COMPLIANCE_PROG).elf
 
-#check_compliance_signature: compliance
-
-DIFFS := $(shell diff --ignore-case --strip-trailing-cr $(REF) $(SIG))
-
-check_compliance_signature:
-	@echo ""
-	@echo ""
-	@echo "Checking Compliance Signature for $(RISCV_ISA)/$(COMPLIANCE_PROG)"
-	@echo "Reference: $(REF)"
-	@echo "Signature: $(SIG)"
-	@echo -n "diff:"
-	@if [ $(DIFFS) == "" ]; then\
-		echo " ... OK"\
-	else\
-		echo " ... FAIL"\
-	fi
-
-
-
-#	if [ $(shell diff --ignore-case --strip-trailing-cr $(REF) $(SIG)) ]; then\
-#		echo " ... OK"\
-#	else\
-#		echo " ... FAIL"\
-#	fi
-
-
-#	@diff --ignore-case --strip-trailing-cr $(REF) $(SIG)
-#	@echo ""
-
 ################################################################################
 # Commonly used targets:
 #      Here for historical reasons - mostly (completely?) superceeded by the

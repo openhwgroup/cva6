@@ -175,7 +175,9 @@ $(RISCVDV_PKG):
 #     target to run the compiled test-program.
 
 # RISCV_ISA='rv32i|rv32im|rv32imc|rv32Zicsr|rv32Zifencei'
-RISCV_ISA ?= rv32i
+RISCV_ISA    ?= rv32i
+RISCV_TARGET ?= OpenHW
+RISCV_DEVICE ?= cv32e40p
 
 clone_compliance:
 	$(CLONE_COMPLIANCE_CMD)
@@ -187,8 +189,8 @@ clr_compliance:
 
 build_compliance: clone_compliance
 	make simulate -i -C $(PROJ_ROOT_DIR)/vendor_lib/riscv/riscv-compliance \
-		RISCV_TARGET=OpenHW \
-		RISCV_DEVICE=cv32e40p \
+		RISCV_TARGET=${RISCV_TARGET} \
+		RISCV_DEVICE=${RISCV_DEVICE} \
 		PATH=$(RISCV)/bin:$(PATH) \
 		RISCV_PREFIX=$(RISCV_PREFIX) \
 		NOTRAPS=1 \
@@ -201,6 +203,15 @@ all_compliance: clone_compliance
 	make build_compliance RISCV_ISA=rv32imc      && \
 	make build_compliance RISCV_ISA=rv32Zicsr    && \
 	make build_compliance RISCV_ISA=rv32Zifencei
+
+check_compliance_signature: compliance
+	@echo "Checking Compliance Signature for $(RISCV_ISA)/$(COMPLIANCE_PROG)"
+	@echo "Reference: $(REF)"
+	@echo "Signature: $(SIG)"
+	@export REF=$(REF) && export SIG=$(SIG) && export COMPL_PROG=$(COMPLIANCE_PROG) && \
+    export RISCV_TARGET=${RISCV_TARGET} && export RISCV_DEVICE=${RISCV_DEVICE} && \
+	export RISCV_ISA=${RISCV_ISA} && \
+	$(PROJ_ROOT_DIR)/bin/diff_signatures.sh
 
 ###############################################################################
 # Include the targets/rules for the selected SystemVerilog simulator
