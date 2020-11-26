@@ -303,13 +303,29 @@ custom: $(XRUN_SIM_PREREQ) $(CUSTOM_DIR)/$(CUSTOM_PROG).hex
 		+firmware=$(CUSTOM_DIR)/$(CUSTOM_PROG).hex
 
 ###############################################################################
-# Run a test-program from the RISC-V Compliance Test-suite. The parent Makefile
+# Run a single test-program from the RISC-V Compliance Test-suite. The parent
+# Makefile of this <sim>.mk implements "all_compliance", the target that
+# compiles the test-programs.
+#
+# There is a dependancy between RISCV_ISA and COMPLIANCE_PROG which *you* are
+# required to know.  For example, the I-ADD-01 test-program is part of the rv32i
+# testsuite.
+# So this works:
+#                make compliance RISCV_ISA=rv32i COMPLIANCE_PROG=I-ADD-01
+# But this does not:
+#                make compliance RISCV_ISA=rv32imc COMPLIANCE_PROG=I-ADD-01
+# 
+RISCV_ISA       ?= rv32i
 COMPLIANCE_PROG ?= I-ADD-01
+
+REF ?= $(COMPLIANCE_PKG)/riscv-test-suite/$(RISCV_ISA)/references/$(COMPLIANCE_PROG).reference_output
+SIG ?= $(XRUN_RESULTS)/$(COMPLIANCE_PROG)/$(COMPLIANCE_PROG).signature_output
+TEST_PLUSARGS ?= +signature=$(COMPLIANCE_PROG).signature_output
 
 compliance: comp build_compliance
 	mkdir -p $(XRUN_RESULTS)/$(COMPLIANCE_PROG) && cd $(XRUN_RESULTS)/$(COMPLIANCE_PROG)  && \
 	export IMPERAS_TOOLS=$(PROJ_ROOT_DIR)/cv32/tests/cfg/ovpsim_no_pulp.ic && \
-	$(XRUN) -l xrun-$(@).log -covtest riscv-compliance $(XRUN_COMP_RUN) \
+	$(XRUN) -l xrun-$(@).log -covtest riscv-compliance $(XRUN_COMP_RUN) $(TEST_PLUSARGS) \
 		+UVM_TESTNAME=uvmt_cv32_firmware_test_c \
 		+firmware=$(COMPLIANCE_PKG)/work/$(RISCV_ISA)/$(COMPLIANCE_PROG).hex \
 		+elf_file=$(COMPLIANCE_PKG)/work/$(RISCV_ISA)/$(COMPLIANCE_PROG).elf

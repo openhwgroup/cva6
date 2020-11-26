@@ -215,9 +215,9 @@ asm: comp $(ASM_DIR)/$(ASM_PROG).hex $(ASM_DIR)/$(ASM_PROG).elf
 		+elf_file=$(ASM_DIR)/$(ASM_PROG).elf
 
 ###############################################################################
-# Run a test-program from the RISC-V Compliance Test-suite. The parent Makefile
-# of this <sim>.mk implements "all_compliance", the target that compiles the
-# test-programs.
+# Run a single test-program from the RISC-V Compliance Test-suite. The parent
+# Makefile of this <sim>.mk implements "all_compliance", the target that
+# compiles the test-programs.
 #
 # There is a dependancy between RISCV_ISA and COMPLIANCE_PROG which *you* are
 # required to know.  For example, the I-ADD-01 test-program is part of the rv32i

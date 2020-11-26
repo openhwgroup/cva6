@@ -185,7 +185,7 @@ clone_compliance:
 clr_compliance:
 	make clean -C $(PROJ_ROOT_DIR)/vendor_lib/riscv/riscv-compliance
 
-#	make simulate -i -C $(PROJ_ROOT_DIR)/vendor_lib/riscv/riscv-compliance \
+#	make -i -C $(PROJ_ROOT_DIR)/vendor_lib/riscv/riscv-compliance \
 
 build_compliance: clone_compliance
 	make simulate -i -C $(PROJ_ROOT_DIR)/vendor_lib/riscv/riscv-compliance \
@@ -204,12 +204,13 @@ all_compliance: clone_compliance
 	make build_compliance RISCV_ISA=rv32Zicsr    && \
 	make build_compliance RISCV_ISA=rv32Zifencei
 
-check_compliance_signature: compliance
+# "compliance" is a simulator-specific target defined in <sim>.mk
+compliance_check_sig: compliance
 	@echo "Checking Compliance Signature for $(RISCV_ISA)/$(COMPLIANCE_PROG)"
 	@echo "Reference: $(REF)"
 	@echo "Signature: $(SIG)"
 	@export REF=$(REF) && export SIG=$(SIG) && export COMPL_PROG=$(COMPLIANCE_PROG) && \
-    export RISCV_TARGET=${RISCV_TARGET} && export RISCV_DEVICE=${RISCV_DEVICE} && \
+	export RISCV_TARGET=${RISCV_TARGET} && export RISCV_DEVICE=${RISCV_DEVICE} && \
 	export RISCV_ISA=${RISCV_ISA} && \
 	$(PROJ_ROOT_DIR)/bin/diff_signatures.sh
 
