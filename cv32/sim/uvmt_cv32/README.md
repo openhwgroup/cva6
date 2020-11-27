@@ -208,7 +208,7 @@ and run a test.  For example:
 **make gen_corev-dv test TEST=corev_rand_jump_stress_test**
 <br>
 
-RISC-V Compliance Test-suite
+RISC-V Compliance Test-suite and Regressions
 ---------------
 The CV32 UVM environment is able to run the [RISC-V compliance](https://github.com/riscv/riscv-compliance)
 test-suite in step-and-compare mode with the ISS Reference Model, and can optionally dump and check a signature
@@ -235,9 +235,15 @@ But this does not:
 ```
 make compliance RISCV_ISA=rv32imc COMPLIANCE_PROG=I-ADD-01
 ```
-
-**TODO:** create a sript to run all compliance tests (this is not currently in place because we do it on the
-MetricsCI platform using the .metrics.json regression control script).
+The `compliance_check_sig` target can be used in the same way as above to run the simulation plus perform a post-simulation
+check of the signature file and the reference signature provided as part of the compliance test-suite.
+<br><br>
+DSIM and XRUN users can run per-extension compliance regressions using the `compliance_regression` target.   For example:
+```
+make compliance_regression RISCV_ISA=rv32imc
+``` will run all compressed instruction tests in the compliance test-suite, diff the signature files and produce a summary report.
+<br><br>
+**TODO**: add the `compliance_regression` target to the VCS, VSIM and RIVIERA makefile extensions. 
 
 Build Configurations
 --------------------
