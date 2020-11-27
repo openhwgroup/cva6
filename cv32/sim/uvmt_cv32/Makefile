@@ -205,9 +205,8 @@ all_compliance: clone_compliance
 	make build_compliance RISCV_ISA=rv32Zifencei
 
 # "compliance" is a simulator-specific target defined in <sim>.mk
-#compliance_check_sig: compliance
 
-compliance_check_sig:
+compliance_check_sig: compliance
 	@echo "Checking Compliance Signature for $(RISCV_ISA)/$(COMPLIANCE_PROG)"
 	@echo "Reference: $(REF)"
 	@echo "Signature: $(SIG)"
