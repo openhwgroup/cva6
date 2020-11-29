@@ -215,9 +215,9 @@ asm: comp $(ASM_DIR)/$(ASM_PROG).hex $(ASM_DIR)/$(ASM_PROG).elf
 		+elf_file=$(ASM_DIR)/$(ASM_PROG).elf
 
 ###############################################################################
-# Run a test-program from the RISC-V Compliance Test-suite. The parent Makefile
-# of this <sim>.mk implements "all_compliance", the target that compiles the
-# test-programs.
+# Run a single test-program from the RISC-V Compliance Test-suite. The parent
+# Makefile of this <sim>.mk implements "all_compliance", the target that
+# compiles the test-programs.
 #
 # There is a dependancy between RISCV_ISA and COMPLIANCE_PROG which *you* are
 # required to know.  For example, the I-ADD-01 test-program is part of the rv32i
@@ -227,13 +227,19 @@ asm: comp $(ASM_DIR)/$(ASM_PROG).hex $(ASM_DIR)/$(ASM_PROG).elf
 # But this does not:
 #                make compliance RISCV_ISA=rv32imc COMPLIANCE_PROG=I-ADD-01
 # 
+RISCV_ISA       ?= rv32i
 COMPLIANCE_PROG ?= I-ADD-01
+
+SIG_ROOT      ?= $(DSIM_RESULTS)
+SIG           ?= $(DSIM_RESULTS)/$(COMPLIANCE_PROG)/$(COMPLIANCE_PROG).signature_output
+REF           ?= $(COMPLIANCE_PKG)/riscv-test-suite/$(RISCV_ISA)/references/$(COMPLIANCE_PROG).reference_output
+TEST_PLUSARGS ?= +signature=$(COMPLIANCE_PROG).signature_output
 
 compliance: comp build_compliance
 	mkdir -p $(DSIM_RESULTS)/$(COMPLIANCE_PROG) && cd $(DSIM_RESULTS)/$(COMPLIANCE_PROG)  && \
 	export IMPERAS_TOOLS=$(PROJ_ROOT_DIR)/cv32/tests/cfg/ovpsim_no_pulp.ic && \
 	$(DSIM) -l dsim-$(COMPLIANCE_PROG).log -image $(DSIM_IMAGE) \
-		-work $(DSIM_WORK) $(DSIM_RUN_FLAGS) $(DSIM_DMP_FLAGS) \
+		-work $(DSIM_WORK) $(DSIM_RUN_FLAGS) $(DSIM_DMP_FLAGS) $(TEST_PLUSARGS) \
 		-sv_lib $(UVM_HOME)/src/dpi/libuvm_dpi.so \
 		-sv_lib $(OVP_MODEL_DPI) \
 		+UVM_TESTNAME=$(UVM_TESTNAME) \
