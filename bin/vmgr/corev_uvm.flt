@@ -45,6 +45,13 @@ add_filter ("SV-Seed", 2,
            );
 
 
+## Detect signature miscompare
+add_filter ("compliance signature miscompare", 4,
+	    '^\s*\.\.\. MISCOMPARE!',
+	    failure (1,'compliance','signature miscompare','error', 'RISCV Compliance signature miscompare')
+	   );
+
+
 ## OVM and UVM Message filtering
 
 add_filter ("uvm_svcb_dut_critical", 4,

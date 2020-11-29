@@ -285,6 +285,38 @@ corev-dv: clean_riscv-dv \
           clone_riscv-dv \
           comp_corev-dv
 
+###############################################################################
+# Run a single test-program from the RISC-V Compliance Test-suite. The parent
+# Makefile of this <sim>.mk implements "all_compliance", the target that
+# compiles the test-programs.
+#
+# There is a dependancy between RISCV_ISA and COMPLIANCE_PROG which *you* are
+# required to know.  For example, the I-ADD-01 test-program is part of the rv32i
+# testsuite.
+# So this works:
+#                make compliance RISCV_ISA=rv32i COMPLIANCE_PROG=I-ADD-01
+# But this does not:
+#                make compliance RISCV_ISA=rv32imc COMPLIANCE_PROG=I-ADD-01
+# 
+RISCV_ISA       ?= rv32i
+COMPLIANCE_PROG ?= I-ADD-01
+
+SIG_ROOT      ?= $(VSIM_RESULTS)
+SIG           ?= $(VSIM_RESULTS)/$(COMPLIANCE_PROG)/$(COMPLIANCE_PROG).signature_output
+REF           ?= $(COMPLIANCE_PKG)/riscv-test-suite/$(RISCV_ISA)/references/$(COMPLIANCE_PROG).reference_output
+TEST_PLUSARGS ?= +signature=$(COMPLIANCE_PROG).signature_output
+
+ifneq ($(call IS_NO,$(COMP)),NO)
+VSIM_COMPLIANCE_PREREQ = build_compliance
+endif
+
+compliance: VSIM_TEST=$(COMPLIANCE_PROG)
+compliance: VSIM_FLAGS+=+firmware=$(COMPLIANCE_PKG)/work/$(RISCV_ISA)/$(COMPLIANCE_PROG).hex
+compliance: VSIM_FLAGS+=+elf_file=$(COMPLIANCE_PKG)/work/$(RISCV_ISA)/$(COMPLIANCE_PROG).elf
+compliance: TEST_UVM_TEST=uvmt_cv32_firmware_test_c
+compliance: $(VSIM_COMPLIANCE_PREREQ) run
+compliance: export IMPERAS_TOOLS=$(PROJ_ROOT_DIR)/cv32/tests/cfg/ovpsim_no_pulp.ic
+
 ################################################################################
 # Questa simulation targets
 

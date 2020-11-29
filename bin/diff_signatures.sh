@@ -104,6 +104,8 @@ print_summary() {
 # Script starts here
 if [[ $1 = "" ]]; then
     diff_files ${REF} ${SIG}
+
+    print_summary
 else
     for ref in ${SUITEDIR}/references/*.reference_output;
     do 
@@ -118,4 +120,7 @@ else
     print_summary
 fi
 
+if [[ $status == "0" ]]; then
+    echo "All signatures passed"
+fi
 exit ${status}

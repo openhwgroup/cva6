@@ -30,6 +30,7 @@
 # --------------------------------------------------------------------------------------
 pass_count=0
 fail_count=0
+failed=0
 
 # --------------------------------------------------------------------------------------
 # Functions
@@ -41,9 +42,16 @@ check_log () {
 
     if grep -q "${simulation_passed}" ${log}; then
         echo "{{session}}: Test PASSED: ${test_name} Log: ${log}"
-        ((pass_count+=1))
     else
         echo "{{session}}: Test FAILED: ${test_name} Log: ${log}"
+        failed=1
+    fi
+}
+
+incr_test_counts () {
+    if [[ ${failed} == "0" ]]; then
+        ((pass_count+=1))
+    else
         ((fail_count+=1))
     fi
 }
@@ -89,9 +97,16 @@ log={{t.abs_dir}}/{{t.simulator}}_results/{{test_log}}_{{run_index}}/{{t.simulat
 {% else %}
 log={{t.abs_dir}}/{{t.simulator}}_results/{{test_log}}/{{t.simulator}}-{{test_log}}.log
 {% endif %}
+{% if 'compliance' in t.cmd %}
+compliance_diff_log={{t.abs_dir}}/{{t.simulator}}_results/{{test_log}}/diff_signatures.log
+{% endif %}
 
+failed=0
 check_log ${log} "{{t.simulation_passed}}" {{test_log}} 
-
+{% if 'compliance' in t.cmd %}
+check_log ${compliance_diff_log} "All signatures passed" {{test_log}}
+{% endif %}
+incr_test_counts
 {% endfor %}
 
 {% endfor %}
