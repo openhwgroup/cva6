@@ -166,6 +166,9 @@ $(CV32E40P_PKG):
 $(RISCVDV_PKG):
 	$(CLONE_RISCVDV_CMD)	
 
+$(COMPLIANCE_PKG):
+	$(CLONE_COMPLIANCE_CMD)
+
 ###############################################################################
 # RISC-V Compliance Test-suite
 #     As much as possible, the test suite is used "out-of-the-box".  The
@@ -187,7 +190,7 @@ clr_compliance:
 
 #	make -i -C $(PROJ_ROOT_DIR)/vendor_lib/riscv/riscv-compliance \
 
-build_compliance: clone_compliance
+build_compliance: $(COMPLIANCE_PKG)
 	make simulate -i -C $(PROJ_ROOT_DIR)/vendor_lib/riscv/riscv-compliance \
 		RISCV_TARGET=${RISCV_TARGET} \
 		RISCV_DEVICE=${RISCV_DEVICE} \
@@ -197,7 +200,7 @@ build_compliance: clone_compliance
 		RISCV_ISA=$(RISCV_ISA)
 #		VERBOSE=1
 
-all_compliance: clone_compliance
+all_compliance: $(COMPLIANCE_PKG)
 	make build_compliance RISCV_ISA=rv32i        && \
 	make build_compliance RISCV_ISA=rv32im       && \
 	make build_compliance RISCV_ISA=rv32imc      && \
