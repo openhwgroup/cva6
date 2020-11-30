@@ -24,7 +24,7 @@ module frontend import ariane_pkg::*; #(
   input  logic               flush_bp_i,         // flush branch prediction
   input  logic               debug_mode_i,
   // global input
-  input  logic [63:0]        boot_addr_i,
+  input  logic [riscv::VLEN-1:0]        boot_addr_i,
   // Set a new PC
   // mispredict
   input  bp_resolve_t        resolved_branch_i,  // from controller signaling a branch_predict -> update BTB
@@ -289,8 +289,8 @@ module frontend import ariane_pkg::*; #(
       // boot_addr_i will be assigned a constant
       // on the top-level.
       if (npc_rst_load_q) begin
-        npc_d         = boot_addr_i[riscv::VLEN-1:0];
-        fetch_address = boot_addr_i[riscv::VLEN-1:0];
+        npc_d         = boot_addr_i;
+        fetch_address = boot_addr_i;
       end else begin
         fetch_address    = npc_q;
         // keep stable by default

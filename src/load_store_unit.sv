@@ -71,7 +71,7 @@ module load_store_unit import ariane_pkg::*; #(
     input  amo_resp_t                amo_resp_i,
     // PMP
     input  riscv::pmpcfg_t [15:0]    pmpcfg_i,
-    input  logic [15:0][53:0]        pmpaddr_i
+    input  logic [15:0][riscv::PLEN-3:0] pmpaddr_i
 );
     // data is misaligned
     logic data_misaligned;
