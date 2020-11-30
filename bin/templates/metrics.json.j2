@@ -42,7 +42,8 @@
         "wavesFile": "{{t.name}}{{test_suffix}}/{{t.name}}{{test_suffix}}.vcd",
         "seed" : "random",
         "iterations": {{t.num}},
-        "isPass": "{{t.simulation_passed}}"
+        "isPass": "{{t.simulation_passed}}",
+        "isFail": "... MISCOMPARE!"
     }{% if not is_last_test %},{% endif %}
 
 {% endfor %}

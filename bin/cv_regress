@@ -153,10 +153,15 @@ def read_file(args, file):
         if args.make:
             test.sub_make(args.make)
 
-        check_valid_test(args.project, test.name)        
-        test.indexed = is_test_indexed(args.project, test.name)
-        if test.indexed and test.num > 1 and args.num:
-            test.num = int(args.num)
+        # Determine if a test is valid, skip for compliance tests
+        # Since it is not possible to determine apriori if a compliance test is valid
+        if not 'compliance' in test.cmd:
+            check_valid_test(args.project, test.name)
+
+            # Determine if a test is indexed for setting test iterations
+            test.indexed = is_test_indexed(args.project, test.name)
+            if test.indexed and test.num > 1 and args.num:
+                test.num = int(args.num)
 
         regression.add_test(test)
 

@@ -214,14 +214,15 @@ compliance_check_sig: compliance
 	export REF=$(REF) && export SIG=$(SIG) && export COMPL_PROG=$(COMPLIANCE_PROG) && \
 	export RISCV_TARGET=${RISCV_TARGET} && export RISCV_DEVICE=${RISCV_DEVICE} && \
 	export RISCV_ISA=${RISCV_ISA} export SIG_ROOT=${SIG_ROOT} && \
-	$(PROJ_ROOT_DIR)/bin/diff_signatures.sh
+	$(PROJ_ROOT_DIR)/bin/diff_signatures.sh | tee $(SIMULATOR)_results/$(COMPLIANCE_PROG)/diff_signatures.log
 
 compliance_check_all_sigs:
+	@$(MKDIR_P) $(SIMULATOR)_results/$(RISCV_ISA)
 	@echo "Checking Compliance Signature for all tests in $(RISCV_ISA)"
 	@export SUITEDIR=$(PROJ_ROOT_DIR)/vendor_lib/riscv/riscv-compliance/riscv-test-suite/$(RISCV_ISA) && \
 	export RISCV_TARGET=${RISCV_TARGET} && export RISCV_DEVICE=${RISCV_DEVICE} && \
 	export RISCV_ISA=${RISCV_ISA} export SIG_ROOT=${SIG_ROOT} && \
-	$(PROJ_ROOT_DIR)/bin/diff_signatures.sh $(RISCV_ISA)
+	$(PROJ_ROOT_DIR)/bin/diff_signatures.sh $(RISCV_ISA) | tee $(SIMULATOR)_results/$(RISCV_ISA)/diff_signatures.log
 
 #	export REF=$(REF) && export SIG=$(SIG) && export COMPL_PROG=$(COMPLIANCE_PROG) && \
 

@@ -323,10 +323,14 @@ SIG           ?= $(XRUN_RESULTS)/$(COMPLIANCE_PROG)/$(COMPLIANCE_PROG).signature
 REF           ?= $(COMPLIANCE_PKG)/riscv-test-suite/$(RISCV_ISA)/references/$(COMPLIANCE_PROG).reference_output
 TEST_PLUSARGS ?= +signature=$(COMPLIANCE_PROG).signature_output
 
-compliance: comp build_compliance
+ifneq ($(call IS_NO,$(COMP)),NO)
+XRUN_COMPLIANCE_PREREQ = comp build_compliance
+endif
+
+compliance: $(XRUN_COMPLIANCE_PREREQ)
 	mkdir -p $(XRUN_RESULTS)/$(COMPLIANCE_PROG) && cd $(XRUN_RESULTS)/$(COMPLIANCE_PROG)  && \
 	export IMPERAS_TOOLS=$(PROJ_ROOT_DIR)/cv32/tests/cfg/ovpsim_no_pulp.ic && \
-	$(XRUN) -l xrun-$(@).log -covtest riscv-compliance $(XRUN_COMP_RUN) $(TEST_PLUSARGS) \
+	$(XRUN) -l xrun-$(COMPLIANCE_PROG).log -covtest riscv-compliance $(XRUN_COMP_RUN) $(TEST_PLUSARGS) \
 		+UVM_TESTNAME=uvmt_cv32_firmware_test_c \
 		+firmware=$(COMPLIANCE_PKG)/work/$(RISCV_ISA)/$(COMPLIANCE_PROG).hex \
 		+elf_file=$(COMPLIANCE_PKG)/work/$(RISCV_ISA)/$(COMPLIANCE_PROG).elf
