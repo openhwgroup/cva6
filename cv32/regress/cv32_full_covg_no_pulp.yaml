@@ -57,6 +57,12 @@ tests:
     dir: cv32/sim/uvmt_cv32
     cmd: make test COREV=YES TEST=cv32e40p_csr_access_test
 
+  cv32e40p_readonly_csr_access_test:
+    build: uvmt_cv32
+    description: CSR Read-only Access Mode Test
+    dir: cv32/sim/uvmt_cv32
+    cmd: make test COREV=YES TEST=cv32e40p_readonly_csr_access_test
+
   requested_csr_por:
     build: uvmt_cv32
     description: CSR PoR test
