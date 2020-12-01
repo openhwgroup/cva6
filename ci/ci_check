@@ -190,13 +190,12 @@ if (args.check_only):
         check_uvm_results(args.check_only)
     exit(0)
 
-if (args.verilator):
-    veril = 1
-
 if (args.no_uvm):
     uvm = 0
 
-if (args.simulator == None):
+if (args.verilator):
+    veril = 1
+elif (args.simulator == None):
     print ('Must specify a simulator.  Type `ci_check -h` to see how')
     exit(0)
 elif (not(distutils.spawn.find_executable(args.simulator))):
