@@ -34,11 +34,16 @@ class corev_compressed_load_store_wfi_stress_instr_stream extends corev_compress
   function void post_randomize();
     super.post_randomize();
 
+    instr_list[0].comment = "corev_compressed_load_store_wfi_stream";
+
     if (first_instr_wfi) begin
       riscv_instr        wfi;
 
       wfi = riscv_instr::get_rand_instr(.include_instr({WFI}));
-      `DV_CHECK_RANDOMIZE_FATAL(wfi);
+      `DV_CHECK_RANDOMIZE_FATAL(wfi);      
+      wfi.comment = "Insert first WFI";
+      wfi.atomic = 1;
+      wfi.label = "0";
       insert_instr(wfi, 0);
     end 
 
@@ -46,12 +51,13 @@ class corev_compressed_load_store_wfi_stress_instr_stream extends corev_compress
       riscv_instr        wfi;
 
       wfi = riscv_instr::get_rand_instr(.include_instr({WFI}));
-      `DV_CHECK_RANDOMIZE_FATAL(wfi);
+      `DV_CHECK_RANDOMIZE_FATAL(wfi);      
+      wfi.comment = "Insert last WFI";
+      wfi.atomic = 1;
+      wfi.label = "0";
       insert_instr(wfi, instr_list.size());
     end 
-
-    instr_list[0].comment = "corev_compressed_load_store_wfi_stream";
+    
   endfunction : post_randomize
 
 endclass : corev_compressed_load_store_wfi_stress_instr_stream
-
