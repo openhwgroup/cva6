@@ -20,6 +20,14 @@
 #
 ###############################################################################
 
+#
+# Synopsys do not (officially) support Ubuntu, so suppress the nonzero return code from VCS
+#
+OS_IS_UBUNTU = $(findstring Ubuntu,$(shell lsb_release -d))
+ifeq ($(OS_IS_UBUNTU),Ubuntu)
+    .IGNORE: hello-world comp test custom compliance comp_corev-dv corev-dv gen_corev-dv
+endif
+
 # Executables
 VCS              = $(CV_SIM_PREFIX)vcs
 SIMV             = $(CV_TOOL_PREFIX)simv
@@ -150,10 +158,6 @@ mk_vcs_dir:
 hello-world:
 	$(MAKE) test TEST=hello-world
 
-cv32_riscv_tests: cv32-riscv-tests
-
-cv32_riscv_compliance_tests: cv32-riscv-compliance-tests
-
 VCS_COMP = $(VCS_COMP_FLAGS) \
 		$(QUIET) \
 		$(VCS_UVM_ARGS) \
@@ -215,55 +219,38 @@ custom: $(VCS_SIM_PREREQ) $(CUSTOM_DIR)/$(CUSTOM_PROG).hex
 		+elf_file=$(CUSTOM_DIR)/$(CUSTOM_PROG).elf \
 		+firmware=$(CUSTOM_DIR)/$(CUSTOM_PROG).hex
 
-################################################################################
-# Explicit target tests
+###############################################################################
+# Run a single test-program from the RISC-V Compliance Test-suite. The parent
+# Makefile of this <sim>.mk implements "all_compliance", the target that
+# compiles the test-programs.
+#
+# There is a dependancy between RISCV_ISA and COMPLIANCE_PROG which *you* are
+# required to know.  For example, the I-ADD-01 test-program is part of the rv32i
+# testsuite.
+# So this works:
+#                make compliance RISCV_ISA=rv32i COMPLIANCE_PROG=I-ADD-01
+# But this does not:
+#                make compliance RISCV_ISA=rv32imc COMPLIANCE_PROG=I-ADD-01
+# 
+RISCV_ISA       ?= rv32i
+COMPLIANCE_PROG ?= I-ADD-01
 
-# Runs tests in cv32_riscv_tests/ only
-cv32-riscv-tests: $(VCS_SIM_PREREQ) $(CV32_RISCV_TESTS_FIRMWARE)/cv32_riscv_tests_firmware.hex
-	mkdir -p $(VCS_RESULTS)/cv32-riscv-tests && cd $(VCS_RESULTS)/cv32-riscv-tests && \
-	$(VCS_RESULTS)/$(SIMV) -l vcs-cv32-riscv-tests.log $(VCS_RUN_FLAGS) \
-		+elf_file=$(CV32_RISCV_TESTS_FIRMWARE)/cv32_riscv_tests_firmware.elf \
+SIG_ROOT      ?= $(VCS_RESULTS)
+SIG           ?= $(VCS_RESULTS)/$(COMPLIANCE_PROG)/$(COMPLIANCE_PROG).signature_output
+REF           ?= $(COMPLIANCE_PKG)/riscv-test-suite/$(RISCV_ISA)/references/$(COMPLIANCE_PROG).reference_output
+TEST_PLUSARGS ?= +signature=$(COMPLIANCE_PROG).signature_output
+
+ifneq ($(call IS_NO,$(COMP)),NO)
+VCS_COMPLIANCE_PREREQ = comp build_compliance
+endif
+
+compliance: $(VCS_COMPLIANCE_PREREQ)
+	mkdir -p $(VCS_RESULTS)/$(COMPLIANCE_PROG) && cd $(VCS_RESULTS)/$(COMPLIANCE_PROG)  && \
+	export IMPERAS_TOOLS=$(PROJ_ROOT_DIR)/cv32/tests/cfg/ovpsim_no_pulp.ic && \
+	$(VCS_RESULTS)/$(SIMV) -l vcs-$(COMPLIANCE_PROG).log -cm_test riscv-compliance $(VCS_COMP_RUN) $(TEST_PLUSARGS) \
 		+UVM_TESTNAME=uvmt_cv32_firmware_test_c \
-		+firmware=$(CV32_RISCV_TESTS_FIRMWARE)/cv32_riscv_tests_firmware.hex
-
-# Runs tests in cv32_riscv_compliance_tests/ only
-cv32-riscv-compliance-tests: $(VCS_SIM_PREREQ)  $(CV32_RISCV_COMPLIANCE_TESTS_FIRMWARE)/cv32_riscv_compliance_tests_firmware.hex
-	mkdir -p $(VCS_RESULTS)/cv32-riscv-compliance-tests && cd $(VCS_RESULTS)/cv32-riscv-compliance-tests && \
-	$(VCS_RESULTS)/$(SIMV) -l vcs-cv32-riscv_compliance_tests.log -cm_name cv32-riscv-compliance-tests $(VCS_RUN_FLAGS) \
-		+elf_file=$(CV32_RISCV_COMPLIANCE_TESTS_FIRMWARE)/cv32_riscv_compliance_tests_firmware.elf \
-		+UVM_TESTNAME=uvmt_cv32_firmware_test_c \
-		+firmware=$(CV32_RISCV_COMPLIANCE_TESTS_FIRMWARE)/cv32_riscv_compliance_tests_firmware.hex
-
-unit-test:  firmware-unit-test-clean
-unit-test:  $(FIRMWARE)/firmware_unit_test.hex
-unit-test: ALL_VSIM_FLAGS += "+firmware=$(FIRMWARE)/firmware_unit_test.hex"
-unit-test: vcs-firmware-unit-test
-
-
-# Runs all tests in riscv_tests/ and riscv_compliance_tests/
-cv32-firmware: comp $(FIRMWARE)/firmware.hex
-	$(VCS_RESULTS)/$(SIMV) -l vcs-firmware.log \
-		+UVM_TESTNAME=uvmt_cv32_firmware_test_c \
-		+firmware=$(FIRMWARE)/firmware.hex
-
-################################################################################
-# Called from external compliance framework providing ELF, HEX, NM
-COMPLIANCE ?= missing
-riscv-compliance: $(VCS_SIM_PREREQ) $(COMPLIANCE).elf
-	mkdir -p $(VCS_RESULTS)/$(@) && cd $(VCS_RESULTS)/$(@) && \
-	$(VCS_RESULTS)/$(SIMV) -l vcs-$(@).log -cm_name riscv-compliance $(VCS_RUN_FLAGS) \
-		+UVM_TESTNAME=uvmt_cv32_firmware_test_c \
-		+elf_file=$(COMPLIANCE).elf \
-		+firmware=$(COMPLIANCE).hex \
-		+signature=$(COMPLIANCE).signature.output
-
-# VCS UNIT TESTS: run each test individually. See comment header for dsim-unit-test for more info.
-# TODO: update ../Common.mk to create "vcs-firmware-unit-test" target.
-# Example: to run the ADDI test `make vcs-unit-test addi`
-#vcs-unit-test: comp
-#	$(VCS) -R -l vcs-$(UNIT_TEST).log \
-#		+UVM_TESTNAME=uvmt_cv32_firmware_test_c \
-#		+firmware=$(FIRMWARE)/firmware_unit_test.hex
+		+firmware=$(COMPLIANCE_PKG)/work/$(RISCV_ISA)/$(COMPLIANCE_PROG).hex \
+		+elf_file=$(COMPLIANCE_PKG)/work/$(RISCV_ISA)/$(COMPLIANCE_PROG).elf
 
 ###############################################################################
 # Use Google instruction stream generator (RISCV-DV) to create new test-programs
