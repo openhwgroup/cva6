@@ -65,14 +65,17 @@ BANNER=*************************************************************************
 #                Set to 'master' to pull the master branch.
 #      *_HASH:   Value of the specific hash you wish to clone;
 #                Set to 'head' to pull the head of the branch you want.
-#      *_TAG:    Not yet supported (TODO).
+# THe CV32E40P repo also has a variable to clone a specific tag:
+#      *_TAG:    Value of the specific tag you wish to clone;
+#                Will override the HASH unless set to "none".
 #                
 
 export SHELL = /bin/bash
 
 CV32E40P_REPO   ?= https://github.com/openhwgroup/cv32e40p
 CV32E40P_BRANCH ?= master
-CV32E40P_HASH   ?= 2b7cd10
+CV32E40P_HASH   ?= 295b5fb
+CV32E40P_TAG    ?= cv32e40p_v1.0.0
 
 RISCVDV_REPO    ?= https://github.com/google/riscv-dv
 RISCVDV_BRANCH  ?= master
@@ -83,11 +86,13 @@ COMPLIANCE_BRANCH ?= master
 # 2020-08-19
 COMPLIANCE_HASH   ?= c21a2e86afa3f7d4292a2dd26b759f3f29cde497
 
-# Generate command to clone the CV32E40P RTL
+# Generate command to clone the CV32E40P RTL.
+# If a TAG is specified, get the master branch from that tag
+
 ifeq ($(CV32E40P_BRANCH), master)
-  TMP = git clone $(CV32E40P_REPO) --recurse $(CV32E40P_PKG)
+  TMP = git clone $(CV32E40P_REPO) $(CV32E40P_PKG)
 else
-  TMP = git clone -b $(CV32E40P_BRANCH) --single-branch $(CV32E40P_REPO) --recurse $(CV32E40P_PKG)
+  TMP = git clone -b $(CV32E40P_BRANCH) --single-branch $(CV32E40P_REPO) $(CV32E40P_PKG)
 endif
 
 ifeq ($(CV32E40P_HASH), head)
@@ -95,6 +100,13 @@ ifeq ($(CV32E40P_HASH), head)
 else
   CLONE_CV32E40P_CMD = $(TMP); cd $(CV32E40P_PKG); git checkout $(CV32E40P_HASH)
 endif
+
+ifeq ($(CV32E40P_TAG), none)
+  CLONE_CV32E40P_CMD = $(CLONE_CV32E40P_CMD)
+else
+  CLONE_CV32E40P_CMD = $(TMP); cd $(CV32E40P_PKG); git checkout tags/$(CV32E40P_TAG)
+endif
+
 # RTL repo vars end
 
 # Generate command to clone RISCV-DV (Google's random instruction generator)
