@@ -302,7 +302,7 @@ module mmu import ariane_pkg::*; #(
     // Wires to PMP checks
     riscv::pmp_access_t pmp_access_type;
     logic        pmp_data_allow;
-    localparam   PPNW_min = (riscv::PPNW-1 > 29) ? 29 : riscv::PPNW-1;
+    localparam   PPNWMin = (riscv::PPNW-1 > 29) ? 29 : riscv::PPNW-1;
     // The data interface is simpler and only consists of a request/response interface
     always_comb begin : data_interface
         // save request and DTLB response
@@ -341,8 +341,8 @@ module mmu import ariane_pkg::*; #(
             end
             // Giga page
             if (dtlb_is_1G_q) begin
-                lsu_paddr_o[PPNW_min:12] = lsu_vaddr_q[PPNW_min:12];
-                lsu_dtlb_ppn_o[PPNW_min:12] = lsu_vaddr_n[PPNW_min:12];
+                lsu_paddr_o[PPNWMin:12] = lsu_vaddr_q[PPNWMin:12];
+                lsu_dtlb_ppn_o[PPNWMin:12] = lsu_vaddr_n[PPNWMin:12];
             end
             // ---------
             // DTLB Hit
