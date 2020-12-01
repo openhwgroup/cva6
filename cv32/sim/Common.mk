@@ -87,7 +87,6 @@ COMPLIANCE_BRANCH ?= master
 COMPLIANCE_HASH   ?= c21a2e86afa3f7d4292a2dd26b759f3f29cde497
 
 # Generate command to clone the CV32E40P RTL.
-# If a TAG is specified, get the master branch from that tag
 
 ifeq ($(CV32E40P_BRANCH), master)
   TMP = git clone $(CV32E40P_REPO) $(CV32E40P_PKG)
@@ -95,14 +94,13 @@ else
   TMP = git clone -b $(CV32E40P_BRANCH) --single-branch $(CV32E40P_REPO) $(CV32E40P_PKG)
 endif
 
-ifeq ($(CV32E40P_HASH), head)
-  CLONE_CV32E40P_CMD = $(TMP)
-else
-  CLONE_CV32E40P_CMD = $(TMP); cd $(CV32E40P_PKG); git checkout $(CV32E40P_HASH)
-endif
-
+# If a TAG is specified, the HASH is not considered
 ifeq ($(CV32E40P_TAG), none)
-  CLONE_CV32E40P_CMD = $(CLONE_CV32E40P_CMD)
+  ifeq ($(CV32E40P_HASH), head)
+    CLONE_CV32E40P_CMD = $(TMP)
+  else
+    CLONE_CV32E40P_CMD = $(TMP); cd $(CV32E40P_PKG); git checkout $(CV32E40P_HASH)
+  endif
 else
   CLONE_CV32E40P_CMD = $(TMP); cd $(CV32E40P_PKG); git checkout tags/$(CV32E40P_TAG)
 endif
