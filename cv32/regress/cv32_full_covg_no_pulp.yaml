@@ -294,4 +294,4 @@ tests:
     build: uvmt_cv32
     description: ISA function coverage test
     dir: cv32/sim/uvmt_cv32
-    cmd: make test TEST=isa_fcov_holes
+    cmd: make test COREV=YES TEST=isa_fcov_holes
