@@ -98,6 +98,7 @@ tests:
     description: Hardware performance counter full access coverage test 2
     dir: cv32/sim/uvmt_cv32
     cmd: make test COREV=YES TEST=mhpmcounter29_csr_access_test_2
+    iss: 0
 
   hpmcounter_basic_test:
     build: uvmt_cv32
