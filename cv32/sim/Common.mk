@@ -75,7 +75,8 @@ export SHELL = /bin/bash
 CV32E40P_REPO   ?= https://github.com/openhwgroup/cv32e40p
 CV32E40P_BRANCH ?= master
 CV32E40P_HASH   ?= 295b5fb
-CV32E40P_TAG    ?= cv32e40p_v1.0.0
+#CV32E40P_TAG    ?= cv32e40p_v1.0.0
+CV32E40P_TAG    ?= none
 
 RISCVDV_REPO    ?= https://github.com/google/riscv-dv
 RISCVDV_BRANCH  ?= master
