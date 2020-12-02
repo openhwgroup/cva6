@@ -88,13 +88,13 @@ tests:
     cmd: make test COREV=YES TEST=perf_counters_instructions
 
   mhpmcounter29_csr_access_test_1:
-    build: umvt_cv32
+    build: uvmt_cv32
     description: Hardware performance counter full access coverage test 1
     dir: cv32/sim/uvmt_cv32
     cmd: make test COREV=YES TEST=mhpmcounter29_csr_access_test_1
 
   mhpmcounter29_csr_access_test_2:
-    build: umvt_cv32
+    build: uvmt_cv32
     description: Hardware performance counter full access coverage test 2
     dir: cv32/sim/uvmt_cv32
     cmd: make test COREV=YES TEST=mhpmcounter29_csr_access_test_2
