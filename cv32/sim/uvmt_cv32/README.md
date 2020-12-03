@@ -238,11 +238,12 @@ make compliance RISCV_ISA=rv32imc COMPLIANCE_PROG=I-ADD-01
 The `compliance_check_sig` target can be used in the same way as above to run the simulation plus perform a post-simulation
 check of the signature file and the reference signature provided as part of the compliance test-suite.
 <br><br>
-DSIM, VSIM and XRUN users can run per-extension compliance regressions using the `compliance_regression` target.   For example:
+Per-extension compliance regressions can be run using the `compliance_regression` target.   For example:
 ```
 make compliance_regression RISCV_ISA=rv32imc
 ```
-will run all compressed instruction tests in the compliance test-suite, diff the signature files and produce a summary report.
+will run all compressed instruction tests in the compliance test-suite, diff the signature files and produce a summary report. Note that four of the test-programs
+in the rv32i compliance suite are deliberately ignored.  See [issue #412](https://github.com/openhwgroup/core-v-verif/issues/412).
 <br><br>
 The _cv_regress_ utility can also be used to run the compliance regression tests found in the [cv32_compliance](https://github.com/openhwgroup/core-v-verif/blob/master/cv32/regress/cv32_compliance.yaml) YAML regression
 specification.  This is supported for Metrics JSON (--metrics), shell script (--sh), and Cadence Vmanager VSIF (--vsif) output formats.  Use the following example:
@@ -251,7 +252,6 @@ specification.  This is supported for Metrics JSON (--metrics), shell script (--
 % cv_regress --file=cv32_compliance --sim=xrun --sh
 % ./cv32_compliance.sh
 ```
-**TODO**: add the `compliance_regression` target to the VCS and RIVIERA makefile extensions. 
 
 Build Configurations
 --------------------
