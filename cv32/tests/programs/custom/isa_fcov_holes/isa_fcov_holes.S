@@ -405,11 +405,10 @@ next81:
   c.jal next82
 next82:
 
-
   # negative branch
   li x1, 0xFFFFFFFF
 holes:
-  beq x0, x1, test_done
+  beq x0, x1, test_lui0
   li x1, 0x00000000
   srli x2, x0, 0b000100  # hole: rd is never x2
   beq x0, x7, holes      # hole: negative branch
@@ -418,6 +417,110 @@ holes:
   nop
   nop
   nop
+
+test_lui0:
+  #first, load gprs with non-zero values
+  lui x0,  0x0FFFF
+  lui x1,  0xF0FFF
+  lui x2,  0xFF0FF
+  lui x3,  0xFFF0F
+  lui x4,  0xFFFF0
+  lui x5,  0xFFF0F
+  lui x6,  0xFF0FF
+  lui x7,  0xF0FFF
+  lui x8,  0x0FFFF
+  lui x9,  0xF0FFF
+  lui x10, 0xFF0FF
+  lui x11, 0xFFF0F
+  lui x12, 0xFFFF0
+  lui x13, 0xFFF0F
+  lui x14, 0xFF0FF
+  lui x15, 0xF0FFF
+  lui x16, 0x0FFFF
+  lui x17, 0xF0FFF
+  lui x18, 0xFF0FF
+  lui x19, 0xFFFFF
+  lui x20, 0xFFF0F
+  lui x21, 0xFFFF0
+  lui x22, 0xFFF0F
+  lui x23, 0xFF0FF
+  lui x24, 0xF0FFF
+  lui x25, 0x0FFFF
+  lui x26, 0xF0FFF
+  lui x27, 0xFF0FF
+  lui x28, 0xFFF0F
+  lui x29, 0xFFFF0
+  lui x30, 0xFFF0F
+  lui x31, 0xFF0FF
+
+  # The infamous load-unsigned-immediate with imm==0
+  lui x0,  0
+  addi x0, x0, 0
+  bne x0, x0, test_fail
+  lui x1,  0
+  bne x1, x0, test_fail
+  lui x2,  0
+  bne x2, x0, test_fail
+  lui x3,  0
+  bne x3, x0, test_fail
+  lui x4,  0
+  bne x4, x0, test_fail
+  lui x5,  0
+  bne x5, x0, test_fail
+  lui x6,  0
+  bne x6, x0, test_fail
+  lui x7,  0
+  bne x7, x0, test_fail
+  lui x8,  0
+  bne x8, x0, test_fail
+  lui x9,  0
+  bne x9, x0, test_fail
+  lui x10, 0
+  bne x10, x0, test_fail
+  lui x11, 0
+  bne x0, x11, test_fail
+  lui x12, 0
+  bne x0, x12, test_fail
+  lui x13, 0
+  bne x0, x13, test_fail
+  lui x14, 0
+  bne x0, x14, test_fail
+  lui x15, 0
+  bne x0, x15, test_fail
+  lui x16, 0
+  bne x0, x16, test_fail
+  lui x17, 0
+  bne x0, x17, test_fail
+  lui x18, 0
+  bne x0, x18, test_fail
+  lui x19, 0
+  bne x0, x19, test_fail
+  lui x20, 0
+  bne x0, x20, test_fail
+  lui x21, 0
+  bne x21, x0, test_fail
+  lui x22, 0
+  bne x0, x22, test_fail
+  lui x23, 0
+  bne x23, x0, test_fail
+  lui x24, 0
+  bne x0, x24, test_fail
+  lui x25, 0
+  bne x25, x0, test_fail
+  lui x26, 0
+  bne x0, x26, test_fail
+  lui x27, 0
+  bne x27, x0, test_fail
+  lui x28, 6
+  beq x0, x28, test_fail # just to see if you're paying attention
+  lui x29, 0
+  bne x29, x0, test_fail
+  lui x30, 0
+  bne x0, x30, test_fail
+  lui x31, 0
+  bne x31, x0, test_fail
+  lui x28, 0
+  bne x0, x28, test_fail # we skipped lui x28, 0
 
 test_done:
     lui a0,print_port>>12
@@ -452,6 +555,7 @@ csr_pass:
     wfi
 
 csr_fail:
+test_fail:
     lui a0,print_port>>12
     addi a1,zero,'\n'
     sw a1,0(a0)
