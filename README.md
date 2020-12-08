@@ -23,7 +23,7 @@ If you want to run a simulation there are two options:
 2. To run the CV32E40P UVM environment, go to `cv32/sim/uvmt_cv32` and read the README.
 
 #### CV32E40P coverage data
-The most recently published coverage report for the CV32E40P can be found [here](https://mikeopenhwgroup.github.io/core-v-docs/).
+The most recently published coverage report for the CV32E40P can be found [here](https://openhwgroup.github.io/core-v-verif/).
 
 ### With CVA6
 To run CVA6 testbench, go to [cva6](cva6) directory and read the README.
@@ -44,8 +44,8 @@ Verification Environments, testbenches, testcases and simulation Makefiles for t
 ### cva6
 Verification Environments, testbenches, testcases and simulation Makefiles for the CVA6 cores.
 
-### doc
-Contains a pointer to the [CORE-V-DOCS](https://github.com/openhwgroup/core-v-docs) repository.
+### docs
+Source for GitHub Pages.  Contains a pointers to the [Verification Strategy document](https://core-v-docs-verif-strat.readthedocs.io/en/latest/), the [CORE-V-DOCS](https://github.com/openhwgroup/core-v-docs) repository, and available coverage reports.
 
 ### lib
 Common components for the CV32 and CVA6 verification environments.
