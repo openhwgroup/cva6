@@ -386,6 +386,9 @@ added_by_mike:
     .word(0x20006003)   # add 0x1 to MAGIC_NUMBER
     .word(0x40006003)   # add 0x1 to MAGIC_NUMBER
     .word(0x80006003)   # add 0x1 to MAGIC_NUMBER
+# unused fields in fence (these should _not_ add to MAGIC_NUMBER
+    .word(0x00000F8F)   # rd/imm5  =0b11111
+    .word(0x000F800F)   # rs1 =0b11111
 exit:
     lw x18, test_results /* report passed result */
     li x16, MAGIC_NUMBER
