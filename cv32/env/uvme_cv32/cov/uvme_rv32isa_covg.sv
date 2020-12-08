@@ -284,7 +284,7 @@ class uvme_rv32isa_covg extends uvm_component;
         end else begin
             val = s.atoi();
         end
-        `uvm_info("RV32ISA Coverage", $sformatf("get_imm: Convert %s (%s) to 0x%0x (%0d)", s, asm, val, val), UVM_LOW)
+        `uvm_info("RV32ISA Coverage", $sformatf("get_imm: Convert %s (%s) to 0x%0x (%0d)", s, asm, val, val), UVM_DEBUG)
 
         return val;
     endfunction
