@@ -1,0 +1,590 @@
+/*
+ * Contains css settings used by the browser to display html reports.
+ * Can be modified to customize the setings for fonts, text and colors.
+*/
+
+/* Overall setting for HTML page
+ * font-size can addded to change the size of fonts for the complete page.
+*/
+body {
+    font-family: sans-serif;
+    color: black;
+    text-indent: 0;
+    background-color: white;
+}
+
+p.fs {
+    font-size: 0.8em;
+    font-family: sans-serif;
+}
+
+table.print-friendly tr td, table.print-friendly tr th {
+    page-break-inside: avoid;
+}
+
+table.summary_table {
+    font-size: 0.8em;
+    font-family: sans-serif;
+    border-spacing: 0px;
+    border-width: 1px;
+    border-style: none;
+    border-color: black;
+}
+
+table.info_header, table.info_header_aligned {
+    font-size: 0.8em;
+    font-family: sans-serif;
+    border-spacing: 0px;
+    border-width: 1px;
+    border-style: none;
+    border-color: black;
+}
+
+table.info_header_aligned {
+    width: 80%;
+}
+
+table.detail_header {
+    font-size: 0.8em;
+    font-family: sans-serif;
+    border-spacing: 0px;
+    border-width: 1;
+    border-style: solid;
+    border-color: black;
+}
+
+td.summary {
+    padding: 0px 4px 1px 4px;
+    border-style: solid;
+    border-color: black;
+    border-width: 1px;
+    text-align: left;
+}
+
+th.summary {
+    padding: 0px 4px 1px 4px;
+    border-style: solid;
+    border-color: black;
+    border-width: 1px;
+    text-align: left;
+}
+
+tr.summary {
+    text-align: left;
+}
+
+tr.detail {
+    text-align: left;
+}
+
+A:link {
+    color: blue;
+}
+
+A:active {
+    color: blue;
+    outline: none;
+}
+
+A:visited {
+    color: darkred;
+}
+
+A:hover {
+    color: red;
+}
+
+A:focus {
+    -moz-outline-style: none;
+}
+
+p.title {
+    font-size: large;
+    font-weight: BOLD;
+    color: BLACK;
+    font-family: sans-serif;
+}
+
+p.summary_title {
+    background-color: ff6666;
+    font-size: medium;
+    font-weight: BOLD;
+    color: BLACK;
+    font-family: sans-serif;
+}
+
+p.detail_title {
+    background-color: ff6666;
+    font-size: medium;
+    font-weight: BOLD;
+    color: BLACK;
+    font-family: sans-serif;
+}
+
+p.subtitle {
+    font-size: small;
+    font-weight: BOLD;
+    color: BLACK;
+    font-family: sans-serif;
+}
+
+p.section {
+    font-size: medium;
+    text-decoration: underline;
+    font-weight: BOLD;
+    color: BLACK;
+    font-family: sans-serif;
+}
+
+/* Name field of summary tables */
+.namecell, .BOOLEAN_cell, .ENUM_cell, .STRING_cell, .DATE_cell, .UNSIGNED_INT_cell, .UNSIGNED_LONG_cell, .DOUBLE_cell, .namecellHeaderLine {
+    background-color: white;
+    padding: 0px 4px 1px 4px;
+    border-style: solid;
+    border-color: black;
+    border-width: 1px;
+    text-align: left;
+    min-width: 100px;
+}
+
+.FILE_cell {
+
+    background-color: white;
+    padding: 0px 4px 1px 4px;
+    border-style: solid;
+    border-color: black;
+    border-width: 1px;
+    text-align: left;
+    max-width: 300px;
+    min-width: 200px;
+    word-wrap: break-word;
+     word-break: break-all;
+    /*white-space: normal*/
+}
+
+.namecellHeaderLine {
+    width: 8%;
+}
+
+/* data cell field of summary tables depending on the value of data cell */
+.rangenone {
+    background-color: cccccc;
+    padding: 0px 4px 1px 4px;
+    border-style: solid;
+    border-color: black;
+    border-width: 1px;
+    text-align: left;
+}
+
+.range0 {
+    background-color: ff6666;
+    padding: 0px 4px 1px 4px;
+    border-style: solid;
+    border-color: black;
+    border-width: 1px;
+    text-align: left;
+}
+
+.range01to04 {
+    background-color: ff9999;
+    padding: 0px 4px 1px 4px;
+    border-style: solid;
+    border-color: black;
+    border-width: 1px;
+    text-align: left;
+}
+
+.range05to09 {
+    background-color: ff9999;
+    padding: 0px 4px 1px 4px;
+    border-style: solid;
+    border-color: black;
+    border-width: 1px;
+    text-align: left;
+}
+
+.range10to14 {
+    background-color: ff9999;
+    padding: 0px 4px 1px 4px;
+    border-style: solid;
+    border-color: black;
+    border-width: 1px;
+    text-align: left;
+}
+
+.range15to19 {
+    background-color: ff9999;
+    padding: 0px 4px 1px 4px;
+    border-style: solid;
+    border-color: black;
+    border-width: 1px;
+    text-align: left;
+}
+
+.range20to24 {
+    background-color: ff9999;
+    padding: 0px 4px 1px 4px;
+    border-style: solid;
+    border-color: black;
+    border-width: 1px;
+    text-align: left;
+}
+
+.range25to29 {
+    background-color: ffcc99;
+    padding: 0px 4px 1px 4px;
+    border-style: solid;
+    border-color: black;
+    border-width: 1px;
+    text-align: left;
+}
+
+.range30to34 {
+    background-color: ffcc99;
+    padding: 0px 4px 1px 4px;
+    border-style: solid;
+    border-color: black;
+    border-width: 1px;
+    text-align: left;
+}
+
+.range35to39 {
+    background-color: ffcc99;
+    padding: 0px 4px 1px 4px;
+    border-style: solid;
+    border-color: black;
+    border-width: 1px;
+    text-align: left;
+}
+
+.range40to44 {
+    background-color: ffcc99;
+    padding: 0px 4px 1px 4px;
+    border-style: solid;
+    border-color: black;
+    border-width: 1px;
+    text-align: left;
+}
+
+.range45to49 {
+    background-color: ffcc99;
+    padding: 0px 4px 1px 4px;
+    border-style: solid;
+    border-color: black;
+    border-width: 1px;
+    text-align: left;
+}
+
+.range50to54 {
+    background-color: ffff66;
+    padding: 0px 4px 1px 4px;
+    border-style: solid;
+    border-color: black;
+    border-width: 1px;
+    text-align: left;
+}
+
+.range55to59 {
+    background-color: ffff66;
+    padding: 0px 4px 1px 4px;
+    border-style: solid;
+    border-color: black;
+    border-width: 1px;
+    text-align: left;
+}
+
+.range60to64 {
+    background-color: ffff66;
+    padding: 0px 4px 1px 4px;
+    border-style: solid;
+    border-color: black;
+    border-width: 1px;
+    text-align: left;
+}
+
+.range65to69 {
+    background-color: ffff66;
+    padding: 0px 4px 1px 4px;
+    border-style: solid;
+    border-color: black;
+    border-width: 1px;
+    text-align: left;
+}
+
+.range70to74 {
+    background-color: ffff66;
+    padding: 0px 4px 1px 4px;
+    border-style: solid;
+    border-color: black;
+    border-width: 1px;
+    text-align: left;
+}
+
+.range75to79 {
+    background-color: #99ff66;
+    padding: 0px 4px 1px 4px;
+    border-style: solid;
+    border-color: black;
+    border-width: 1px;
+    text-align: left;
+}
+
+.range80to84 {
+    background-color: #99ff66;
+    padding: 0px 4px 1px 4px;
+    border-style: solid;
+    border-color: black;
+    border-width: 1px;
+    text-align: left;
+}
+
+.range85to89 {
+    background-color: #99ff66;
+    padding: 0px 4px 1px 4px;
+    border-style: solid;
+    border-color: black;
+    border-width: 1px;
+    text-align: left;
+}
+
+.range90to94 {
+    background-color: #99ff66;
+    padding: 0px 4px 1px 4px;
+    border-style: solid;
+    border-color: black;
+    border-width: 1px;
+    text-align: left;
+}
+
+.range95to99 {
+    background-color: #99ff66;
+    padding: 0px 4px 1px 4px;
+    border-style: solid;
+    border-color: black;
+    border-width: 1px;
+    text-align: left;
+}
+
+.range100 {
+    background-color: #33cc00;
+    padding: 0px 4px 1px 4px;
+    border-style: solid;
+    border-color: black;
+    border-width: 1px;
+    text-align: left;
+}
+
+a.sht:link {
+    text-decoration: none;
+    color: blue;
+}
+
+a.sht:active {
+    text-decoration: none;
+    color: blue;
+    outline: none;
+}
+
+a.sht:visited {
+    text-decoration: none;
+    color: blue;
+}
+
+a.sht:hover {
+    text-decoration: none;
+    color: red;
+}
+
+a.sht:focus {
+    -moz-outline-style: none;
+}
+
+a.namet:link {
+    text-decoration: none;
+    color: blue;
+}
+
+a.namet:active {
+    text-decoration: none;
+    color: blue;
+    outline: none;
+}
+
+a.namet:visited {
+    text-decoration: none;
+    color: blue;
+}
+
+a.namet:hover {
+    text-decoration: none;
+    color: blue;
+}
+
+a.namet:focus {
+    -moz-outline-style: none;
+}
+
+.wht {
+    background-color: #609acc;
+    color: #ffffff;
+    padding: 0px 4px 1px 4px;
+    border-style: solid;
+    border-color: black;
+    border-width: 1px;
+    width: 6em;
+    text-align: left;
+}
+
+.wht_wide {
+    background-color: #609acc;
+    padding: 0px 4px 1px 4px;
+    color: #ffffff;
+    border-style: solid;
+    border-color: black;
+    border-width: 1px;
+    width: 24em;
+    text-align: left;
+}
+
+.wht_wider {
+    background-color: #609acc;
+    color: #ffffff;
+    padding: 0px 4px 1px 4px;
+    border-style: solid;
+    border-color: black;
+    border-width: 1px;
+    text-align: left;
+}
+
+/* Font used to generate detail report text */
+pre.detail_report_text {
+    font-family: Courier;
+    font-size: 0.8em;
+}
+
+.tooltip {
+    color: #000000;
+    outline: none;
+    cursor: help;
+    text-decoration: none;
+    position: relative;
+    color: #FFFFFF;
+}
+
+.tooltip span {
+    margin-left: -999em;
+    position: absolute;
+    display: none;
+}
+
+.tooltip:hover span {
+    border-radius: 5px 5px;
+    -moz-border-radius: 5px;
+    -webkit-border-radius: 5px;
+    box-shadow: 5px 5px 5px rgba(0, 0, 0, 0.1);
+    -webkit-box-shadow: 5px 5px rgba(0, 0, 0, 0.1);
+    -moz-box-shadow: 5px 5px rgba(0, 0, 0, 0.1);
+    font-family: Calibri, Tahoma, Geneva, sans-serif;
+    color: #000000;
+    position: absolute;
+    left: 1em;
+    top: 2em;
+    z-index: 99;
+    margin-left: 0;
+    width: relative;
+    display: block;
+}
+
+.tooltip:hover em {
+    font-family: Candara, Tahoma, Geneva, sans-serif;
+    font-size: 1.2em;
+    font-weight: bold;
+    display: block;
+    padding: 0.2em 0 0.6em 0;
+}
+
+.classic {
+    padding: 0.8em 1em;
+}
+
+* html a:hover {
+    background: transparent;
+}
+
+.classic {
+    background: #9FDAEE;
+    border: 1px solid #2BB0D7;
+}
+
+.pane4-open {
+    position: absolute;
+    right: 5px;
+    width: auto;
+    height: auto;
+    padding: 5px 10px;
+    text-align: center;
+    border: 1px solid #999;
+    z-index: 20000;
+    background: #609acc;
+    margin-top: 3px;
+}
+
+.report-header {
+    background-color: #f8f8f8;
+    border-color: #b2b2b2;
+    background-image: linear-gradient(0deg, #b2b2b2, #b2b2b2 50%, transparent 50%);
+    color: #444444;
+    top: 0;
+    border-top-width: 0;
+    border-bottom-width: 1px;
+    display: -webkit-box;
+    display: -webkit-flex;
+    display: -moz-box;
+    display: -moz-flex;
+    display: -ms-flexbox;
+    display: flex;
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+    position: absolute;
+    right: 0;
+    left: 0;
+    z-index: 10;
+    box-sizing: border-box;
+    /*padding: 5px;*/
+    width: 100%;
+    height: 44px;
+    border-width: 0;
+    border-style: solid;
+    border-top: 1px solid transparent;
+    border-bottom: 1px solid #dddddd;
+    background-size: 0;
+}
+
+.header-text {
+    padding-top: 11px;
+    padding-bottom: 12px;
+    /* color: #444444; */
+    line-height: 20px;
+    /* position: fixed; */
+    /* display: block; */
+    padding: 10px;
+    width: 100%;
+    text-align: center;
+}
+
+.info_icon {
+    cursor: pointer;
+    align: right;
+    vertical-align: middle;
+    padding: 2px;
+    border: 0;
+
+}
+
+.groupTop {
+    border-top: 2px solid #000 !important;
+    font-weight: bold !important;
+    font-style: italic !important;
+}
