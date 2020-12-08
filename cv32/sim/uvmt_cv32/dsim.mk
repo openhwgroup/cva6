@@ -80,7 +80,7 @@ endif
 
 ifneq ($(DUMP_WAVES), 0)
 DSIM_ACC_FLAGS ?= +acc
-DSIM_DMP_FILE  ?= dsim.fst
+DSIM_DMP_FILE  ?= dsim.vcd
 DSIM_DMP_FLAGS ?= -waves $(DSIM_DMP_FILE)
 endif
 

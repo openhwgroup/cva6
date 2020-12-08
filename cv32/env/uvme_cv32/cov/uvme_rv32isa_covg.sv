@@ -118,9 +118,11 @@ class uvme_rv32isa_covg extends uvm_component;
         endcase
     endfunction
 
-// The following CSRs are not currently included:
-// mstatush, mtinst, mtval2, mhpmcounter3, ..., mhpmcounter31,
-// mhpmcounter3h, ..., mhpmcounter31h,
+// The following CSRs are not included as they do not exist in CV32E40P
+// because NUM_HPMCOUNTERS is set to 1:
+//    mhpmevent4,    ..., mhpmevent4,
+//    mhpmcounter4,  ..., mhpmcounter31,
+//    mhpmcounterh4, ..., mhpmcounterh31
     function csr_name_t get_csr_name (string s, r, asm);
         case (s)
             "mcause"       : return csr_name_t'(mcause);
@@ -130,34 +132,34 @@ class uvme_rv32isa_covg extends uvm_component;
             "mepc"         : return csr_name_t'(mepc);
             "mhartid"      : return csr_name_t'(mhartid);
             "mhpmevent3"   : return csr_name_t'(mhpmevent3);
-            "mhpmevent4"   : return csr_name_t'(mhpmevent4);
-            "mhpmevent5"   : return csr_name_t'(mhpmevent5);
-            "mhpmevent6"   : return csr_name_t'(mhpmevent6);
-            "mhpmevent7"   : return csr_name_t'(mhpmevent7);
-            "mhpmevent8"   : return csr_name_t'(mhpmevent8);
-            "mhpmevent9"   : return csr_name_t'(mhpmevent9);
-            "mhpmevent10"  : return csr_name_t'(mhpmevent10);
-            "mhpmevent11"  : return csr_name_t'(mhpmevent11);
-            "mhpmevent12"  : return csr_name_t'(mhpmevent12);
-            "mhpmevent13"  : return csr_name_t'(mhpmevent13);
-            "mhpmevent14"  : return csr_name_t'(mhpmevent14);
-            "mhpmevent15"  : return csr_name_t'(mhpmevent15);
-            "mhpmevent16"  : return csr_name_t'(mhpmevent16);
-            "mhpmevent17"  : return csr_name_t'(mhpmevent17);
-            "mhpmevent18"  : return csr_name_t'(mhpmevent18);
-            "mhpmevent19"  : return csr_name_t'(mhpmevent19);
-            "mhpmevent20"  : return csr_name_t'(mhpmevent20);
-            "mhpmevent21"  : return csr_name_t'(mhpmevent21);
-            "mhpmevent22"  : return csr_name_t'(mhpmevent22);
-            "mhpmevent23"  : return csr_name_t'(mhpmevent23);
-            "mhpmevent24"  : return csr_name_t'(mhpmevent24);
-            "mhpmevent25"  : return csr_name_t'(mhpmevent25);
-            "mhpmevent26"  : return csr_name_t'(mhpmevent26);
-            "mhpmevent27"  : return csr_name_t'(mhpmevent27);
-            "mhpmevent28"  : return csr_name_t'(mhpmevent28);
-            "mhpmevent29"  : return csr_name_t'(mhpmevent29);
-            "mhpmevent30"  : return csr_name_t'(mhpmevent30);
-            "mhpmevent31"  : return csr_name_t'(mhpmevent31);
+            //"mhpmevent4"   : return csr_name_t'(mhpmevent4);
+            //"mhpmevent5"   : return csr_name_t'(mhpmevent5);
+            //"mhpmevent6"   : return csr_name_t'(mhpmevent6);
+            //"mhpmevent7"   : return csr_name_t'(mhpmevent7);
+            //"mhpmevent8"   : return csr_name_t'(mhpmevent8);
+            //"mhpmevent9"   : return csr_name_t'(mhpmevent9);
+            //"mhpmevent10"  : return csr_name_t'(mhpmevent10);
+            //"mhpmevent11"  : return csr_name_t'(mhpmevent11);
+            //"mhpmevent12"  : return csr_name_t'(mhpmevent12);
+            //"mhpmevent13"  : return csr_name_t'(mhpmevent13);
+            //"mhpmevent14"  : return csr_name_t'(mhpmevent14);
+            //"mhpmevent15"  : return csr_name_t'(mhpmevent15);
+            //"mhpmevent16"  : return csr_name_t'(mhpmevent16);
+            //"mhpmevent17"  : return csr_name_t'(mhpmevent17);
+            //"mhpmevent18"  : return csr_name_t'(mhpmevent18);
+            //"mhpmevent19"  : return csr_name_t'(mhpmevent19);
+            //"mhpmevent20"  : return csr_name_t'(mhpmevent20);
+            //"mhpmevent21"  : return csr_name_t'(mhpmevent21);
+            //"mhpmevent22"  : return csr_name_t'(mhpmevent22);
+            //"mhpmevent23"  : return csr_name_t'(mhpmevent23);
+            //"mhpmevent24"  : return csr_name_t'(mhpmevent24);
+            //"mhpmevent25"  : return csr_name_t'(mhpmevent25);
+            //"mhpmevent26"  : return csr_name_t'(mhpmevent26);
+            //"mhpmevent27"  : return csr_name_t'(mhpmevent27);
+            //"mhpmevent28"  : return csr_name_t'(mhpmevent28);
+            //"mhpmevent29"  : return csr_name_t'(mhpmevent29);
+            //"mhpmevent30"  : return csr_name_t'(mhpmevent30);
+            //"mhpmevent31"  : return csr_name_t'(mhpmevent31);
             "mie"          : return csr_name_t'(mie);
             "minstret"     : return csr_name_t'(minstret);
             "minstreth"    : return csr_name_t'(minstreth);
@@ -180,63 +182,63 @@ class uvme_rv32isa_covg extends uvm_component;
             "dscratch0"    : return csr_name_t'(dscratch0);
             "dscratch1"    : return csr_name_t'(dscratch1);
             "mhpmcounter3" : return csr_name_t'(mhpmcounter3);
-            "mhpmcounter4" : return csr_name_t'(mhpmcounter4);
-            "mhpmcounter5" : return csr_name_t'(mhpmcounter5);
-            "mhpmcounter6" : return csr_name_t'(mhpmcounter6);
-            "mhpmcounter7" : return csr_name_t'(mhpmcounter7);
-            "mhpmcounter8" : return csr_name_t'(mhpmcounter8);
-            "mhpmcounter9" : return csr_name_t'(mhpmcounter9);
-            "mhpmcounter10": return csr_name_t'(mhpmcounter10);
-            "mhpmcounter11": return csr_name_t'(mhpmcounter11);
-            "mhpmcounter12": return csr_name_t'(mhpmcounter12);
-            "mhpmcounter13": return csr_name_t'(mhpmcounter13);
-            "mhpmcounter14": return csr_name_t'(mhpmcounter14);
-            "mhpmcounter15": return csr_name_t'(mhpmcounter15);
-            "mhpmcounter16": return csr_name_t'(mhpmcounter16);
-            "mhpmcounter17": return csr_name_t'(mhpmcounter17);
-            "mhpmcounter18": return csr_name_t'(mhpmcounter18);
-            "mhpmcounter19": return csr_name_t'(mhpmcounter19);
-            "mhpmcounter20": return csr_name_t'(mhpmcounter20);
-            "mhpmcounter21": return csr_name_t'(mhpmcounter21);
-            "mhpmcounter22": return csr_name_t'(mhpmcounter22);
-            "mhpmcounter23": return csr_name_t'(mhpmcounter23);
-            "mhpmcounter24": return csr_name_t'(mhpmcounter24);
-            "mhpmcounter25": return csr_name_t'(mhpmcounter25);
-            "mhpmcounter26": return csr_name_t'(mhpmcounter26);
-            "mhpmcounter27": return csr_name_t'(mhpmcounter27);
-            "mhpmcounter28": return csr_name_t'(mhpmcounter28);
-            "mhpmcounter29": return csr_name_t'(mhpmcounter29);
-            "mhpmcounter30": return csr_name_t'(mhpmcounter30);
-            "mhpmcounter31": return csr_name_t'(mhpmcounter31);
+            //"mhpmcounter4" : return csr_name_t'(mhpmcounter4);
+            //"mhpmcounter5" : return csr_name_t'(mhpmcounter5);
+            //"mhpmcounter6" : return csr_name_t'(mhpmcounter6);
+            //"mhpmcounter7" : return csr_name_t'(mhpmcounter7);
+            //"mhpmcounter8" : return csr_name_t'(mhpmcounter8);
+            //"mhpmcounter9" : return csr_name_t'(mhpmcounter9);
+            //"mhpmcounter10": return csr_name_t'(mhpmcounter10);
+            //"mhpmcounter11": return csr_name_t'(mhpmcounter11);
+            //"mhpmcounter12": return csr_name_t'(mhpmcounter12);
+            //"mhpmcounter13": return csr_name_t'(mhpmcounter13);
+            //"mhpmcounter14": return csr_name_t'(mhpmcounter14);
+            //"mhpmcounter15": return csr_name_t'(mhpmcounter15);
+            //"mhpmcounter16": return csr_name_t'(mhpmcounter16);
+            //"mhpmcounter17": return csr_name_t'(mhpmcounter17);
+            //"mhpmcounter18": return csr_name_t'(mhpmcounter18);
+            //"mhpmcounter19": return csr_name_t'(mhpmcounter19);
+            //"mhpmcounter20": return csr_name_t'(mhpmcounter20);
+            //"mhpmcounter21": return csr_name_t'(mhpmcounter21);
+            //"mhpmcounter22": return csr_name_t'(mhpmcounter22);
+            //"mhpmcounter23": return csr_name_t'(mhpmcounter23);
+            //"mhpmcounter24": return csr_name_t'(mhpmcounter24);
+            //"mhpmcounter25": return csr_name_t'(mhpmcounter25);
+            //"mhpmcounter26": return csr_name_t'(mhpmcounter26);
+            //"mhpmcounter27": return csr_name_t'(mhpmcounter27);
+            //"mhpmcounter28": return csr_name_t'(mhpmcounter28);
+            //"mhpmcounter29": return csr_name_t'(mhpmcounter29);
+            //"mhpmcounter30": return csr_name_t'(mhpmcounter30);
+            //"mhpmcounter31": return csr_name_t'(mhpmcounter31);
             "mhpmcounterh3" : return csr_name_t'(mhpmcounterh3);
-            "mhpmcounterh4" : return csr_name_t'(mhpmcounterh4);
-            "mhpmcounterh5" : return csr_name_t'(mhpmcounterh5);
-            "mhpmcounterh6" : return csr_name_t'(mhpmcounterh6);
-            "mhpmcounterh7" : return csr_name_t'(mhpmcounterh7);
-            "mhpmcounterh8" : return csr_name_t'(mhpmcounterh8);
-            "mhpmcounterh9" : return csr_name_t'(mhpmcounterh9);
-            "mhpmcounterh10": return csr_name_t'(mhpmcounterh10);
-            "mhpmcounterh11": return csr_name_t'(mhpmcounterh11);
-            "mhpmcounterh12": return csr_name_t'(mhpmcounterh12);
-            "mhpmcounterh13": return csr_name_t'(mhpmcounterh13);
-            "mhpmcounterh14": return csr_name_t'(mhpmcounterh14);
-            "mhpmcounterh15": return csr_name_t'(mhpmcounterh15);
-            "mhpmcounterh16": return csr_name_t'(mhpmcounterh16);
-            "mhpmcounterh17": return csr_name_t'(mhpmcounterh17);
-            "mhpmcounterh18": return csr_name_t'(mhpmcounterh18);
-            "mhpmcounterh19": return csr_name_t'(mhpmcounterh19);
-            "mhpmcounterh20": return csr_name_t'(mhpmcounterh20);
-            "mhpmcounterh21": return csr_name_t'(mhpmcounterh21);
-            "mhpmcounterh22": return csr_name_t'(mhpmcounterh22);
-            "mhpmcounterh23": return csr_name_t'(mhpmcounterh23);
-            "mhpmcounterh24": return csr_name_t'(mhpmcounterh24);
-            "mhpmcounterh25": return csr_name_t'(mhpmcounterh25);
-            "mhpmcounterh26": return csr_name_t'(mhpmcounterh26);
-            "mhpmcounterh27": return csr_name_t'(mhpmcounterh27);
-            "mhpmcounterh28": return csr_name_t'(mhpmcounterh28);
-            "mhpmcounterh29": return csr_name_t'(mhpmcounterh29);
-            "mhpmcounterh30": return csr_name_t'(mhpmcounterh30);
-            "mhpmcounterh31": return csr_name_t'(mhpmcounterh31);
+            //"mhpmcounterh4" : return csr_name_t'(mhpmcounterh4);
+            //"mhpmcounterh5" : return csr_name_t'(mhpmcounterh5);
+            //"mhpmcounterh6" : return csr_name_t'(mhpmcounterh6);
+            //"mhpmcounterh7" : return csr_name_t'(mhpmcounterh7);
+            //"mhpmcounterh8" : return csr_name_t'(mhpmcounterh8);
+            //"mhpmcounterh9" : return csr_name_t'(mhpmcounterh9);
+            //"mhpmcounterh10": return csr_name_t'(mhpmcounterh10);
+            //"mhpmcounterh11": return csr_name_t'(mhpmcounterh11);
+            //"mhpmcounterh12": return csr_name_t'(mhpmcounterh12);
+            //"mhpmcounterh13": return csr_name_t'(mhpmcounterh13);
+            //"mhpmcounterh14": return csr_name_t'(mhpmcounterh14);
+            //"mhpmcounterh15": return csr_name_t'(mhpmcounterh15);
+            //"mhpmcounterh16": return csr_name_t'(mhpmcounterh16);
+            //"mhpmcounterh17": return csr_name_t'(mhpmcounterh17);
+            //"mhpmcounterh18": return csr_name_t'(mhpmcounterh18);
+            //"mhpmcounterh19": return csr_name_t'(mhpmcounterh19);
+            //"mhpmcounterh20": return csr_name_t'(mhpmcounterh20);
+            //"mhpmcounterh21": return csr_name_t'(mhpmcounterh21);
+            //"mhpmcounterh22": return csr_name_t'(mhpmcounterh22);
+            //"mhpmcounterh23": return csr_name_t'(mhpmcounterh23);
+            //"mhpmcounterh24": return csr_name_t'(mhpmcounterh24);
+            //"mhpmcounterh25": return csr_name_t'(mhpmcounterh25);
+            //"mhpmcounterh26": return csr_name_t'(mhpmcounterh26);
+            //"mhpmcounterh27": return csr_name_t'(mhpmcounterh27);
+            //"mhpmcounterh28": return csr_name_t'(mhpmcounterh28);
+            //"mhpmcounterh29": return csr_name_t'(mhpmcounterh29);
+            //"mhpmcounterh30": return csr_name_t'(mhpmcounterh30);
+            //"mhpmcounterh31": return csr_name_t'(mhpmcounterh31);
             "dcsr", "dpc"   : begin
                 `uvm_info("RV32ISA Coverage", $sformatf("get_csr_name(): CSR [%0s] not yet in functional coverage model.", s), UVM_DEBUG)
             end 
@@ -295,9 +297,6 @@ class uvme_rv32isa_covg extends uvm_component;
         `uvm_info("RV32ISA Coverage", $sformatf("get_pc_imm: Convert %s (%s) pc: 0x%08x to %0d", s, asm, pc, get_pc_imm), UVM_DEBUG)
     endfunction
 
-// TODO: add check for value is less than 16-bit
-// FIXME : c_addi16spn_cg immediate is 6-bits wide
-// FIXME : c_addi4spn_cg immediate is 8-bits wide
     function logic c_check_imm(string s, asm);
       int val;
         if (s[1] == "x") begin
@@ -399,30 +398,6 @@ class uvme_rv32isa_covg extends uvm_component;
         }
         cp_offset : coverpoint get_pc_imm(ins.ops[2].val, ins.pc, "beq" ) {
             bins neg  = {[$:-1]};
-            bins zero = {0};
-            bins pos  = {[1:$]};
-        }
-    endgroup
-
-    covergroup c_beqz_cg with function sample(ins_t ins);
-        `per_instance_fcov
-        cp_rs1    : coverpoint get_gpr_name(ins.ops[0].val, ins.ops[0].key, "c.beqz") {            
-            bins gprval[] = {[s0:a5]};
-        }
-        cp_offset : coverpoint get_pc_imm(ins.ops[1].val, ins.pc, "c.beqz" ) {
-            bins neg  = {[$:-1]};
-            bins zero = {0};
-            bins pos  = {[1:$]};
-        }
-    endgroup
-
-    covergroup c_bnez_cg with function sample(ins_t ins);
-        `per_instance_fcov
-        cp_rs1    : coverpoint get_gpr_name(ins.ops[0].val, ins.ops[0].key, "c.bnez") {
-            bins gprval[] = {[s0:a5]};
-        }
-        cp_offset : coverpoint get_pc_imm(ins.ops[1].val, ins.pc, "c.bnez" ) {
-            bins neg  = {[$:-1]};      
             bins zero = {0};
             bins pos  = {[1:$]};
         }
@@ -531,9 +506,6 @@ class uvme_rv32isa_covg extends uvm_component;
         }
     endgroup
 
-// TODO : only counting occurrence, ignoring when not called.
-// TODO : verification goal not specified in test plan
-// FIXME: DONE
     covergroup wfi_cg with function sample(ins_t ins);
         `per_instance_fcov
         cp_asm   : coverpoint (ins.asm) {
@@ -541,9 +513,6 @@ class uvme_rv32isa_covg extends uvm_component;
         }
     endgroup
 
-// TODO : only counting occurrence, ignoring when not called.
-// TODO : verification goal not specified in test plan
-// FIXME: DONE
     covergroup mret_cg with function sample(ins_t ins);
         `per_instance_fcov
         cp_asm   : coverpoint (ins.asm) {
@@ -551,9 +520,6 @@ class uvme_rv32isa_covg extends uvm_component;
         }
     endgroup
 
-// TODO : only counting occurrence, ignoring when not called.
-// TODO : verification goal not specified in test plan
-// FIXME: DONE
     covergroup dret_cg with function sample(ins_t ins);
         `per_instance_fcov
         cp_asm   : coverpoint (ins.asm) {
@@ -1140,13 +1106,9 @@ class uvme_rv32isa_covg extends uvm_component;
 //Coverage of Std Extension for Compressed Instructions, Version 2.0
 ///////////////////////////////////////////////////////////////////////////////
 
-// TODO : missing check that 32I & 32C instuctions aligned on 16/32-bit boundaries.
-// FIXME: the following instruction included in the verification plan are not
-//        supported and thus are not included in coverage code: C.FLWSP, C.FLDSP,
-//
+// WAIVED : missing check that 32I & 32C instuctions aligned on 16/32-bit boundaries.
+// WAIVED : missing coverage of all combinations of source and destination operands.
 
-// TODO : missing coverage of all combinations of source and destination operands.
-// TODO : DONE
     covergroup c_lwsp_cg     with function sample(ins_t ins);
         `per_instance_fcov
         cp_rd    : coverpoint get_gpr_name(ins.ops[0].val, ins.ops[0].key, "c.lwsp") {
@@ -1158,8 +1120,6 @@ class uvme_rv32isa_covg extends uvm_component;
         }
     endgroup
 
-// TODO : missing coverage of all combinations of source and destination operands.
-// TODO : DONE
     covergroup c_swsp_cg    with function sample(ins_t ins);
         `per_instance_fcov
         cp_rs2   : coverpoint get_gpr_name(ins.ops[0].val, ins.ops[0].key, "c.swsp") {
@@ -1171,8 +1131,6 @@ class uvme_rv32isa_covg extends uvm_component;
         }
     endgroup
 
-// TODO : missing coverage of all combinations of source and destination operands.
-// TODO : DONE
     covergroup c_lw_cg       with function sample(ins_t ins);
         `per_instance_fcov
         cp_rd    : coverpoint get_gpr_name(ins.ops[0].val, ins.ops[0].key, "c.lw") {
@@ -1187,8 +1145,6 @@ class uvme_rv32isa_covg extends uvm_component;
         }
     endgroup
 
-// TODO : missing coverage of all combinations of source and destination operands.
-// TODO : DONE
     covergroup c_sw_cg       with function sample(ins_t ins);
         `per_instance_fcov
         cp_rs1     : coverpoint get_gpr_name(ins.ops[0].val, ins.ops[0].key, "c.sw") {
@@ -1203,7 +1159,6 @@ class uvme_rv32isa_covg extends uvm_component;
         }
     endgroup
 
-// FIXME: DONE
     covergroup c_j_cg      with function sample(ins_t ins);
         `per_instance_fcov
         cp_jmp11   : coverpoint get_pc_imm(ins.ops[0].val, ins.pc, "c.j" ) {
@@ -1212,7 +1167,6 @@ class uvme_rv32isa_covg extends uvm_component;
         }
     endgroup
 
-// FIXME: DONE
     covergroup c_jal_cg      with function sample(ins_t ins);
         `per_instance_fcov
         // Note even though by ISA the instruction is c.jal imm, the ISS places ra into operand0 
@@ -1223,8 +1177,6 @@ class uvme_rv32isa_covg extends uvm_component;
         }
     endgroup
 
-// TODO : case when rd = x0 counted but not singled out
-// FIXME: DONE
     covergroup c_jr_cg      with function sample(ins_t ins);
         `per_instance_fcov
         cp_rs1    : coverpoint get_gpr_name(ins.ops[0].val, ins.ops[0].key, "c,jr") {
@@ -1232,7 +1184,6 @@ class uvme_rv32isa_covg extends uvm_component;
         }
     endgroup
 
-// FIXME: DONE
     covergroup c_jalr_cg with function sample(ins_t ins);
         `per_instance_fcov
         cp_rs1    : coverpoint get_gpr_name(ins.ops[0].val, ins.ops[0].key, "c,jalr") {
@@ -1240,9 +1191,30 @@ class uvme_rv32isa_covg extends uvm_component;
         }
     endgroup
 
-// TODO : missing coverage of all combinations of source and destination operands.
-// TODO : missing check of overflow/underflow
-// FIXME: DONE
+    covergroup c_beqz_cg with function sample(ins_t ins);
+        `per_instance_fcov
+        cp_rs1    : coverpoint get_gpr_name(ins.ops[0].val, ins.ops[0].key, "c.beqz") {            
+            bins gprval[] = {[s0:a5]};
+        }
+        cp_offset : coverpoint get_pc_imm(ins.ops[1].val, ins.pc, "c.beqz" ) {
+            bins neg  = {[$:-1]};
+            bins zero = {0};
+            bins pos  = {[1:$]};
+        }
+    endgroup
+
+    covergroup c_bnez_cg with function sample(ins_t ins);
+        `per_instance_fcov
+        cp_rs1    : coverpoint get_gpr_name(ins.ops[0].val, ins.ops[0].key, "c.bnez") {
+            bins gprval[] = {[s0:a5]};
+        }
+        cp_offset : coverpoint get_pc_imm(ins.ops[1].val, ins.pc, "c.bnez" ) {
+            bins neg  = {[$:-1]};      
+            bins zero = {0};
+            bins pos  = {[1:$]};
+        }
+    endgroup
+
     covergroup c_li_cg       with function sample(ins_t ins);
         `per_instance_fcov
         cp_rd    : coverpoint get_gpr_name(ins.ops[0].val, ins.ops[0].key, "c.li") {
@@ -1268,9 +1240,6 @@ class uvme_rv32isa_covg extends uvm_component;
         }
     endgroup
 
-// TODO : missing coverage of all combinations of source and destination operands.
-// TODO : missing check of overflow/underflow
-// FIXME: DONE
     covergroup c_addi_cg with function sample(ins_t ins);
         `per_instance_fcov
         cp_rd    : coverpoint get_gpr_name(ins.ops[0].val, ins.ops[0].key, "c.addi") {
@@ -1283,9 +1252,6 @@ class uvme_rv32isa_covg extends uvm_component;
         }
     endgroup
 
-// TODO : missing coverage of all combinations of source and destination operands.
-// TODO : missing check of overflow/underflow
-// FIXME: DONE
     covergroup c_addi16sp_cg with function sample(ins_t ins);
         `per_instance_fcov
         cp_rd    : coverpoint get_gpr_name(ins.ops[0].val, ins.ops[0].key, "c.addi16sp") {
@@ -1301,9 +1267,6 @@ class uvme_rv32isa_covg extends uvm_component;
         }
     endgroup
 
-// TODO : missing coverage of all combinations of source and destination operands.
-// TODO : missing check of overflow/underflow
-// FIXME: DONE
     covergroup c_addi4spn_cg  with function sample(ins_t ins);
         `per_instance_fcov
         cp_rd    : coverpoint get_gpr_name(ins.ops[0].val, ins.ops[0].key, "c.addi4spn") {
@@ -1317,8 +1280,6 @@ class uvme_rv32isa_covg extends uvm_component;
         }
     endgroup
 
-// TODO : missing coverage of all combinations of source and destination operands.
-// FIXME: DONE
     covergroup c_slli_cg     with function sample(ins_t ins);
         `per_instance_fcov
         cp_rd    : coverpoint get_gpr_name(ins.ops[0].val, ins.ops[0].key, "c.slli") {
@@ -1333,7 +1294,6 @@ class uvme_rv32isa_covg extends uvm_component;
         }
     endgroup
 
-// TODO : missing coverage of all combinations of source and destination operands.
     covergroup c_srli_cg     with function sample(ins_t ins);
         `per_instance_fcov
         cp_rd    : coverpoint get_gpr_name(ins.ops[0].val, ins.ops[0].key, "c.srli") {
@@ -1348,9 +1308,6 @@ class uvme_rv32isa_covg extends uvm_component;
         }
     endgroup
 
-// TODO : missing coverage of all combinations of source and destination operands.
-// TODO : missing check of arbirary positive and negative immediate values (MIKE: immediate is unsigned)
-// FIXME: DONE
     covergroup c_srai_cg     with function sample(ins_t ins);
         `per_instance_fcov
         cp_rd    : coverpoint get_gpr_name(ins.ops[0].val, ins.ops[0].key, "c.srai") {
@@ -1365,8 +1322,6 @@ class uvme_rv32isa_covg extends uvm_component;
         }
     endgroup
 
-// TODO : missing coverage of all combinations of source and destination operands.
-// FIXME: DONE
     covergroup c_andi_cg     with function sample(ins_t ins);
         `per_instance_fcov
         cp_rd    : coverpoint get_gpr_name(ins.ops[0].val, ins.ops[0].key, "c.andi") {
@@ -1382,9 +1337,6 @@ class uvme_rv32isa_covg extends uvm_component;
         }
     endgroup
 
-// TODO : missing coverage of all combinations of source and destination operands.
-// TODO : missing check of overflow/underflow
-// FIXME: DONE
     covergroup c_add_cg with function sample(ins_t ins);
         `per_instance_fcov
         cp_rd     : coverpoint get_gpr_name(ins.ops[0].val, ins.ops[0].key, "c.add") {
@@ -1395,8 +1347,6 @@ class uvme_rv32isa_covg extends uvm_component;
         }
     endgroup
 
-// TODO : missing coverage of all combinations of source and destination operands.
-// FIXME: DONE
     covergroup c_mv_cg with function sample(ins_t ins);
         `per_instance_fcov
         cp_rd     : coverpoint get_gpr_name(ins.ops[0].val, ins.ops[0].key, "c.mv") {
@@ -1407,8 +1357,6 @@ class uvme_rv32isa_covg extends uvm_component;
         }
     endgroup
 
-// TODO : missing coverage of all combinations of source and destination operands.
-// FIXME: DONE
     covergroup c_and_cg      with function sample(ins_t ins);
         `per_instance_fcov
         cp_rd    : coverpoint get_gpr_name(ins.ops[0].val, ins.ops[0].key, "c.and") {
@@ -1419,8 +1367,6 @@ class uvme_rv32isa_covg extends uvm_component;
         }
     endgroup
 
-// TODO : missing coverage of all combinations of source and destination operands.
-// FIXME: DONE
     covergroup c_or_cg       with function sample(ins_t ins);
         `per_instance_fcov
         cp_rd    : coverpoint get_gpr_name(ins.ops[0].val, ins.ops[0].key, "c.or") {
@@ -1431,8 +1377,6 @@ class uvme_rv32isa_covg extends uvm_component;
         }
     endgroup
 
-// TODO : missing coverage of all combinations of source and destination operands.
-// FIXME: DONE
     covergroup c_xor_cg      with function sample(ins_t ins);
         `per_instance_fcov
         cp_rd    : coverpoint get_gpr_name(ins.ops[0].val, ins.ops[0].key, "c.xor") {
@@ -1443,9 +1387,6 @@ class uvme_rv32isa_covg extends uvm_component;
         }
     endgroup
 
-// TODO : missing coverage of all combinations of source and destination operands.
-// TODO : missing check of overflow/underflow
-// FIXME: DONE
     covergroup c_sub_cg      with function sample(ins_t ins);
         `per_instance_fcov
         cp_rd    : coverpoint get_gpr_name(ins.ops[0].val, ins.ops[0].key, "c.sub") {
@@ -1463,7 +1404,10 @@ class uvme_rv32isa_covg extends uvm_component;
         }
     endgroup
 
-   // Every instruction has been followed by every other instruction
+///////////////////////////////////////////////////////////////////////////////
+// Coverage for every instruction has been followed by every other instruction
+///////////////////////////////////////////////////////////////////////////////
+
 `ifdef DSIM
    // dsim handling of per_instance coverage
    covergroup instr_cg with function sample(ins_t ins);
@@ -1496,7 +1440,6 @@ class uvme_rv32isa_covg extends uvm_component;
 
     `uvm_component_utils(uvme_rv32isa_covg)
 
-// TODO : need review
     function new(string name="rv32isa_covg", uvm_component parent=null);
         super.new(name, parent);
         add_cg        = new();
