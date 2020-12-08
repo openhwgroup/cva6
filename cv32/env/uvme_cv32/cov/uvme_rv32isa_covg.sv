@@ -1679,12 +1679,12 @@ class uvme_rv32isa_covg extends uvm_component;
     endfunction: check_compressed
 
     function void sample(input ins_t ins);
-        `uvm_info("RV32ISA", $sformatf("ins: %s %s:%s %s:%s %s:%s %s:%s", 
+        `uvm_info("RV32ISA", $sformatf("instruction from ISS: %s %s:%s %s:%s %s:%s %s:%s", 
                                         ins.ins_str,
                                         ins.ops[0].key, ins.ops[0].val,
                                         ins.ops[1].key, ins.ops[1].val,
                                         ins.ops[2].key, ins.ops[2].val,
-                                        ins.ops[3].key, ins.ops[3].val), UVM_LOW);
+                                        ins.ops[3].key, ins.ops[3].val), UVM_DEBUG);
         if (ins.compressed) begin
             check_compressed(ins);
         end
