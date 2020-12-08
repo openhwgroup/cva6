@@ -280,9 +280,9 @@ class uvme_rv32isa_covg extends uvm_component;
             val = s.atohex ();
         end else if (s[0] == "-") begin
             s = s.substr(1,s.len()-1);
-            val = 0 - s.atohex();
+            val = 0 - s.atoi();
         end else begin
-            val = s.atohex();
+            val = s.atoi();
         end
         `uvm_info("RV32ISA Coverage", $sformatf("get_imm: Convert %s (%s) to 0x%0x (%0d)", s, asm, val, val), UVM_DEBUG)
 
@@ -1736,6 +1736,12 @@ class uvme_rv32isa_covg extends uvm_component;
     endfunction: check_compressed
 
     function void sample(input ins_t ins);
+        `uvm_info("RV32ISA", $sformatf("ins: %s %s:%s %s:%s %s:%s %s:%s", 
+                                        ins.ins_str,
+                                        ins.ops[0].key, ins.ops[0].val,
+                                        ins.ops[1].key, ins.ops[1].val,
+                                        ins.ops[2].key, ins.ops[2].val,
+                                        ins.ops[3].key, ins.ops[3].val), UVM_LOW);
         if (ins.compressed) begin
             check_compressed(ins);
         end
