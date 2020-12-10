@@ -42,6 +42,9 @@ module ariane import ariane_pkg::*; #(
   // firesim trace port
   output traced_instr_pkg::trace_port_t trace_o,
 `endif
+  // RISC-V formal interface port (`rvfi`):
+  // Can be left open when formal tracing is not needed.
+  output ariane_rvfi_pkg::rvfi_port_t  rvfi_o,
 `ifdef PITON_ARIANE
   // L15 (memory side)
   output wt_cache_pkg::l15_req_t       l15_req_o,
@@ -893,5 +896,37 @@ module ariane import ariane_pkg::*; #(
   end
 `endif // VERILATOR
 //pragma translate_on
+
+  always_comb
+    for (int i = 0; i < NR_COMMIT_PORTS; i++) begin
+      logic exception, mem_exception;
+      exception = commit_instr_id_commit[i].valid && commit_instr_id_commit[i].ex.valid && ex_commit.valid;
+      mem_exception = exception &&
+        (commit_instr_id_commit[i].ex.cause == riscv::INSTR_ADDR_MISALIGNED ||
+         commit_instr_id_commit[i].ex.cause == riscv::INSTR_ACCESS_FAULT ||
+         commit_instr_id_commit[i].ex.cause == riscv::ILLEGAL_INSTR ||
+         commit_instr_id_commit[i].ex.cause == riscv::LD_ADDR_MISALIGNED ||
+         commit_instr_id_commit[i].ex.cause == riscv::LD_ACCESS_FAULT ||
+         commit_instr_id_commit[i].ex.cause == riscv::ST_ADDR_MISALIGNED ||
+         commit_instr_id_commit[i].ex.cause == riscv::ST_ACCESS_FAULT ||
+         commit_instr_id_commit[i].ex.cause == riscv::INSTR_PAGE_FAULT ||
+         commit_instr_id_commit[i].ex.cause == riscv::LOAD_PAGE_FAULT ||
+         commit_instr_id_commit[i].ex.cause == riscv::STORE_PAGE_FAULT);
+      // when rvfi_valid, the instruction is executed
+      rvfi_o[i].valid    = (commit_ack[i] && !commit_instr_id_commit[i].ex.valid) ||
+        (exception && (commit_instr_id_commit[i].ex.cause == riscv::ENV_CALL_MMODE ||
+                  commit_instr_id_commit[i].ex.cause == riscv::ENV_CALL_SMODE ||
+                  commit_instr_id_commit[i].ex.cause == riscv::ENV_CALL_UMODE));
+      rvfi_o[i].insn     = commit_instr_id_commit[i].ex.tval[31:0];
+      // when trap, the instruction is not executed
+      rvfi_o[i].trap     = mem_exception;
+      rvfi_o[i].mode     = debug_mode ? 2'b10 : priv_lvl;
+      rvfi_o[i].ixl      = riscv::XLEN == 64 ? 2 : 1;
+      rvfi_o[i].rs1_addr = commit_instr_id_commit[i].rs1;
+      rvfi_o[i].rs2_addr = commit_instr_id_commit[i].rs2;
+      rvfi_o[i].rd_addr  = commit_instr_id_commit[i].rd;
+      rvfi_o[i].rd_wdata = ariane_pkg::is_rd_fpr(commit_instr_id_commit[i].op) == 0 ? wdata_commit_id[i] : commit_instr_id_commit[i].result;
+      rvfi_o[i].pc_rdata = commit_instr_id_commit[i].pc;
+    end
 
 endmodule // ariane

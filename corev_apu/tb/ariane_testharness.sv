@@ -32,6 +32,8 @@ module ariane_testharness #(
   output logic [31:0]                    exit_o
 );
 
+  localparam [7:0] hart_id = '0;
+
   // disable test-enable
   logic        test_en;
   logic        ndmreset;
@@ -678,6 +680,7 @@ module ariane_testharness #(
   // ---------------
   ariane_axi_soc::req_t    axi_ariane_req;
   ariane_axi_soc::resp_t   axi_ariane_resp;
+  rvfi_pkg::rvfi_port_t rvfi;
 
   ariane #(
     .ArianeCfg  ( ariane_soc::ArianeSocCfg )
@@ -685,10 +688,11 @@ module ariane_testharness #(
     .clk_i                ( clk_i               ),
     .rst_ni               ( ndmreset_n          ),
     .boot_addr_i          ( ariane_soc::ROMBase ), // start fetching from ROM
-    .hart_id_i            ( '0                  ),
+    .hart_id_i            ( {56'h0, hart_id}    ),
     .irq_i                ( irqs                ),
     .ipi_i                ( ipi                 ),
     .time_irq_i           ( timer_irq           ),
+    .rvfi_o               ( rvfi                ),
 // Disable Debug when simulating with Spike
 `ifdef SPIKE_TANDEM
     .debug_req_i          ( 1'b0                ),
@@ -721,6 +725,17 @@ module ariane_testharness #(
       $warning("B Response Errored");
     end
   end
+
+  rvfi_tracer  #(
+    .SIM_FINISH(2000000),
+    .HART_ID(hart_id),
+    .DEBUG_START(0),
+    .DEBUG_STOP(0)
+  ) rvfi_tracer_i (
+    .clk_i(clk_i),
+    .rst_ni(rst_ni),
+    .rvfi_i(rvfi)
+  );
 
 `ifdef AXI_SVA
   // AXI 4 Assertion IP integration - You will need to get your own copy of this IP if you want
