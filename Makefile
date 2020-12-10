@@ -82,6 +82,7 @@ ariane_pkg := include/riscv_pkg.sv                          \
               src/register_interface/src/reg_intf.sv        \
               src/register_interface/src/reg_intf_pkg.sv    \
               include/axi_intf.sv                           \
+              include/rvfi_tracer_pkg.sv                    \
               tb/ariane_soc_pkg.sv                          \
               include/ariane_axi_pkg.sv                     \
               src/fpu/src/fpnew_pkg.sv                      \
@@ -205,6 +206,7 @@ src :=  $(filter-out src/ariane_regfile.sv, $(wildcard src/*.sv))              \
         src/tech_cells_generic/src/pulp_clock_mux2.sv                          \
         tb/ariane_testharness.sv                                               \
         tb/ariane_peripherals.sv                                               \
+        tb/rvfi_tracer.sv                                                      \
         tb/common/uart.sv                                                      \
         tb/common/SimDTM.sv                                                    \
         tb/common/SimJTAG.sv

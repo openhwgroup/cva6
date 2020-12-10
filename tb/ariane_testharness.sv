@@ -678,6 +678,7 @@ module ariane_testharness #(
   // ---------------
   ariane_axi::req_t    axi_ariane_req;
   ariane_axi::resp_t   axi_ariane_resp;
+  rvfi_tracer_pkg::rvfi_port_t rvfi;
 
   ariane #(
     .ArianeCfg  ( ariane_soc::ArianeSocCfg )
@@ -689,6 +690,9 @@ module ariane_testharness #(
     .irq_i                ( irqs                ),
     .ipi_i                ( ipi                 ),
     .time_irq_i           ( timer_irq           ),
+`ifdef RVFI_TRACE
+    .rvfi_o               ( rvfi                ),
+`endif
 // Disable Debug when simulating with Spike
 `ifdef SPIKE_TANDEM
     .debug_req_i          ( 1'b0                ),
@@ -721,6 +725,24 @@ module ariane_testharness #(
       $warning("B Response Errored");
     end
   end
+
+  logic [31:0] cycles;
+  always_ff @(posedge clk_i or negedge ndmreset_n) begin
+    if (~ndmreset_n) begin
+      cycles <= 0;
+    end else begin
+      cycles <= cycles+1;
+    end
+  end
+
+  rvfi_tracer  #(
+    .SIM_FINISH(2000000),
+    .DEBUG_START(0),
+    .DEBUG_STOP(0)
+  ) rvfi_tracer_i (
+    .cycles(cycles),
+    .rvfi_i(rvfi)
+  ) ;
 
 `ifdef AXI_SVA
   // AXI 4 Assertion IP integration - You will need to get your own copy of this IP if you want
