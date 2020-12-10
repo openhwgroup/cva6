@@ -28,7 +28,11 @@ package riscv;
        ModeSv64 = 11
     } vm_mode_t;
 
+`ifdef CV32A6
+    localparam XLEN = 32;
+`else
     localparam XLEN = 64;
+`endif
 
     // Warning: When using STD_CACHE, configuration must be PLEN=56 and VLEN=64
     // Warning: VLEN must be superior or equal to PLEN
