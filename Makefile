@@ -143,6 +143,12 @@ ifdef spike-tandem
     CFLAGS += -Itb/riscv-isa-sim/install/include/spike
 endif
 
+ifeq ($(findstring 32, $(variant)),32)
+    CVA6_VARIANT = CV32A6
+else
+    CVA6_VARIANT = CV64A6
+endif
+
 # this list contains the standalone components
 src :=  $(filter-out core/ariane_regfile.sv, $(wildcard core/*.sv))                  \
         $(filter-out core/fpu/src/fpnew_pkg.sv, $(wildcard core/fpu/src/*.sv))       \
@@ -557,6 +563,8 @@ verilate_command := $(verilator)                                                
                     -Wno-UNOPTFLAT                                                                               \
                     -Wno-BLKANDNBLK                                                                              \
                     -Wno-style                                                                                   \
+                    $(if ($(PRELOAD)!=""), -DPRELOAD=1,)                                                         \
+                    -D$(CVA6_VARIANT)                                                                                      \
                     $(if $(DROMAJO), -DDROMAJO=1,)                                                               \
                     $(if $(PROFILE),--stats --stats-vars --profile-cfuncs,)                                      \
                     $(if $(DEBUG),--trace --trace-structs,)                                                      \
