@@ -253,11 +253,11 @@ tests:
     dir: cv32/sim/uvmt_cv32
     cmd: make test COREV=YES TEST=debug_test
 
-#  debug_test_reset:
-#    build: uvmt_cv32
-#    description: Debug reset test
-#    dir: cv32/sim/uvmt_cv32
-#    cmd: make test COREV=YES TEST=debug_test_reset
+  debug_test_reset:
+    build: uvmt_cv32
+    description: Debug reset test
+    dir: cv32/sim/uvmt_cv32
+    cmd: make test COREV=YES TEST=debug_test_reset
 
   debug_test_trigger:
     build: uvmt_cv32
@@ -265,12 +265,12 @@ tests:
     dir: cv32/sim/uvmt_cv32
     cmd: make test COREV=YES TEST=debug_test_trigger
 
-#  debug_test_known_miscompares:
-#    build: uvmt_cv32
-#    description: Debug test which contains known miscompares
-#    dir: cv32/sim/uvmt_cv32
-#    cmd: make test COREV=YES TEST=debug_test_known_miscompares
-#    iss: 0
+  debug_test_known_miscompares:
+    build: uvmt_cv32
+    description: Debug test which contains known miscompares
+    dir: cv32/sim/uvmt_cv32
+    cmd: make test COREV=YES TEST=debug_test_known_miscompares
+    iss: 0
 
   debug_test_boot_set:
     build: uvmt_cv32
