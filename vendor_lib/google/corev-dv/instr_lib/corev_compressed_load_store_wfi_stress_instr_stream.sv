@@ -28,12 +28,23 @@ class corev_compressed_load_store_wfi_stress_instr_stream extends corev_compress
   rand bit first_instr_wfi;
   rand bit last_instr_wfi;  
 
+  constraint wfi_dist_c {
+    first_instr_wfi dist { 0 :/ 1, 1 :/ 9};
+    last_instr_wfi dist { 0 :/ 1, 1 :/ 9};
+  }
+
   `uvm_object_utils(corev_compressed_load_store_wfi_stress_instr_stream)
-  `uvm_object_new
+  
+  function new(string name = "corev_compressed_load_store_wfi_stress_instr_stream");
+    super.new(name);
+
+    min_instr_cnt = 1;
+    max_instr_cnt = 3;
+  endfunction : new
   
   function void post_randomize();
     super.post_randomize();
-
+    
     instr_list[0].comment = "corev_compressed_load_store_wfi_stream";
 
     if (first_instr_wfi) begin
@@ -44,7 +55,7 @@ class corev_compressed_load_store_wfi_stress_instr_stream extends corev_compress
       wfi.comment = "Insert first WFI";
       wfi.atomic = 1;
       wfi.label = "0";
-      insert_instr(wfi, 0);
+      insert_instr(wfi, 1);
     end 
 
     if (last_instr_wfi) begin
