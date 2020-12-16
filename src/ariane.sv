@@ -899,11 +899,11 @@ module ariane import ariane_pkg::*; #(
 //pragma translate_on
 
 `ifdef RVFI_TRACE
-  logic trap, exception;
-  always @(commit_ack, commit_instr_id_commit, debug_mode, wdata_commit_id, priv_lvl, ex_commit)
+  always_comb
     for (int i = 0; i < NR_COMMIT_PORTS; i++) begin
-      trap = commit_instr_id_commit[i].valid && commit_instr_id_commit[i].ex.valid && ex_commit.valid;
-      exception = trap &&
+      logic exception, mem_exception;
+      exception = commit_instr_id_commit[i].valid && commit_instr_id_commit[i].ex.valid && ex_commit.valid;
+      mem_exception = exception &&
         (commit_instr_id_commit[i].ex.cause == riscv::INSTR_ADDR_MISALIGNED ||
          commit_instr_id_commit[i].ex.cause == riscv::INSTR_ACCESS_FAULT ||
          commit_instr_id_commit[i].ex.cause == riscv::ILLEGAL_INSTR ||
@@ -914,13 +914,14 @@ module ariane import ariane_pkg::*; #(
          commit_instr_id_commit[i].ex.cause == riscv::INSTR_PAGE_FAULT ||
          commit_instr_id_commit[i].ex.cause == riscv::LOAD_PAGE_FAULT ||
          commit_instr_id_commit[i].ex.cause == riscv::STORE_PAGE_FAULT);
-
+      // when rvfi_valid, the instruction is executed
       rvfi_o[i].rvfi_valid    = (commit_ack[i] && !commit_instr_id_commit[i].ex.valid) ||
-        (trap && (commit_instr_id_commit[i].ex.cause == riscv::ENV_CALL_MMODE ||
+        (exception && (commit_instr_id_commit[i].ex.cause == riscv::ENV_CALL_MMODE ||
                   commit_instr_id_commit[i].ex.cause == riscv::ENV_CALL_SMODE ||
                   commit_instr_id_commit[i].ex.cause == riscv::ENV_CALL_UMODE));
       rvfi_o[i].rvfi_insn     = commit_instr_id_commit[i].ex.tval[31:0];
-      rvfi_o[i].rvfi_trap     = exception;
+      // when rvfi_trap, the instruction is not executed
+      rvfi_o[i].rvfi_trap     = mem_exception;
       rvfi_o[i].rvfi_mode     = debug_mode ? 2'b10 : priv_lvl;
       rvfi_o[i].rvfi_ixl      = riscv::XLEN == 64 ? 2 : 1;
       rvfi_o[i].rvfi_rs1_addr = commit_instr_id_commit[i].rs1;
