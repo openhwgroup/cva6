@@ -1,7 +1,7 @@
 Simulation Directory for CV32E UVM Verification Environment
 ==================================
 This is the directory in which you should run all tests of the UVM environment.
-The UVM testcases are at `../../tests/uvmt_cv32`, and the test-programs can be
+The UVM testcases are at `cv32/tests/uvmt_cv32`, and the test-programs can be
 found in `cv32/tests/program`.  See the README in those directories for more information.
 <br><br>
 Please refer to the [Verification Strategy](https://core-v-docs-verif-strat.readthedocs.io/en/latest/sim_tests.html#simulation-tests-in-the-uvm-environments)
@@ -54,8 +54,8 @@ your test-program using whatever is found at /opt/riscv using march=unknown.
 Makefiles
 -----------
 `Make` is used to generate the command-lines that compile and run simulations.
-The cwd of this README is `cv32/sim/uvmt_cv32` and the **Makefile** at this location is the
-'root' Makefile.  `../Common.mk` supports all common variables, rules
+`cv32/sim/uvmt_cv32/Makefile` is the
+'root' Makefile.  `cv32/sim/Common.mk` supports all common variables, rules
 and targets, including specific targets to clone the RTL from
 [cv32e40p](https://github.com/openhwgroup/cv32e40p). Simulator-specific
 Makefiles are used to build the command-line to run a specific test with a specific
@@ -173,14 +173,14 @@ The `make` commands here assume you have set your shell SIMULATION
 environment variable to your specific simulator (see above).
 <br>
 The general form to run a test is `make test TEST=<test-program>`, where _test-program_ is the filename
-of a test-program (without the file extension) of a test program located at ../../tests/programs/custom.
+of a test-program (without the file extension) of a test program located at cv32/tests/programs/custom.
 Each test-program (either C or assembler) has its own directory, which contains the program itself (either
 C or assembler) plus `test.yaml`, the test-program configuration file (see Build Configurations, below).
 <br>
 Here are a few examples
-* **make test TEST=hello-world**:<br>run the hello_world program found at `../../tests/programs/custom`.
-* **make test TEST=dhrystone**:<br>run the dhrystone program found at `../../tests/programs/custom`.
-* **make test TEST=riscv_arithmetic_basic_test**:<br>run the riscv_arithmetic_basic_test program found at `../../tests/programs/custom`.
+* **make test TEST=hello-world**:<br>run the hello_world program found at `cv32/tests/programs/custom`.
+* **make test TEST=dhrystone**:<br>run the dhrystone program found at `cv32/tests/programs/custom`.
+* **make test TEST=riscv_arithmetic_basic_test**:<br>run the riscv_arithmetic_basic_test program found at `cv32/tests/programs/custom`.
 <br>
 There are also a few targets that do something other than run a test.  The most popular is:
 <br>
@@ -188,23 +188,24 @@ There are also a few targets that do something other than run a test.  The most 
 <br>
 which deletes all SIMULATOR generated intermediates, waves and logs **plus** the cloned RTL code.
 
-Generated Tests
+COREV-DV Generated Tests
 ---------------
 The CV32 UVM environment uses the [Google riscv-dv](https://github.com/google/riscv-dv)
 generator to automate the generation of test-programs.  The generator
 is cloned by the Makefiles to `vendor_lib/google` as needed.  Specific
-classes ar extended to create a `corev-dv` genrator that is specific to this environment.
+classes ar extended to create a `corev-dv` generator that is specific to this environment.
 Note that riscv-dv is not modified, merely extended, allowing core-v-verif to stay
 up-to-date with the latest release of riscv-dv.
-<br>
-A complete list of generated test corev-dv programs is found at ../../tests/programs/corev-dv.
+<br><br>
+Riscv-dv uses test templates such as "riscv_arithmetic_basic_test" and "riscv_rand_jump_test".
+Corev-dv has a set of templates for corev-dv generated test-programs at `cv32/tests/programs/corev-dv`.
 Running these is a two-step process.  The first step is to clone riscv-dv and compile corev-dv:
-<br>
+<br><br>
 **make corev-dv**
-<br>
+<br><br>
 Note that the `corev-dv` target need only be run once.  The next step is to generate, compile
 and run a test.  For example:
-<br>
+<br><br>
 **make gen_corev-dv test TEST=corev_rand_jump_stress_test**
 <br>
 
@@ -318,7 +319,11 @@ If applicable for a simulator, line debugging will be enabled in the compile to 
 
 **make test TEST=hello-world GUI=1**
 
-### Set the UVM quit count
+### Passing run-time arguments to the simulator
+
+The Makefiles support a user controllable variable **USER_RUN_FLAGS** which can be used to pass run-time arguments.  Two typical use-cases for this are provided below:
+
+#### Set the UVM quit count
 
 All error signaling and handling is routed through the standard UVM report server for all OpenHW testbenches.  By default the UVM is configured 
 to allow up to 5 errors to be signaled before aborting the test.  There is a run-time plusarg to configure this that should work for all
@@ -326,6 +331,12 @@ tests.  Use the USER_RUN_FLAGS make variable with the standard UVM_MAX_QUIT_COUN
 and signals that you want UVM to use your plusarg over any internally configured quit count values.
 
 **make test TEST=hello-world USER_RUN_FLAGS=+UVM_MAX_QUIT_COUNT=10,NO**
+
+#### UVM verbosity control
+
+The following will increase the verbosity level to DEBUG.
+
+**make test TEST=hello-world USER_RUN_FLAGS=+UVM_VERBOSITY=UVM_DEBUG**
 
 ### Post-process Waveform Debug
 
