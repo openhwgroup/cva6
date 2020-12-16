@@ -2243,7 +2243,7 @@
 ,{"title":"1;0;-;-;-","expanded":false,"Exclusion Rule Type":"None","UNR":"none","Score":"1","Out":"0"}
 ],"cov_table_title":"Coverage Table with Output","header":"LoadEn_S ? OpBShift_DI : ((~ CntZero_S) ? (Cnt_DP - 1) : Cnt_DP)","columns":"LoadEn_S;OpBShift_DI;CntZero_S;(Cnt_DP - 1);Cnt_DP"}
 ]}
-,{"expanded":false,"expanded":false,"Exclusion Rule Type":"None","UNR":"none","Index":"1","All Average Grd":"100%","All Cov":"2 / 2 (100%)","Src Start Line":"100","Is Coverage Excluded":"1","Enclosing Entity":"uvmt_cv32_tb.dut_wrap.cv32e40p_wrapper_i.core_i.ex_stage_i.mult_i","Source":"  assign short_round = (operator_i == MUL_IR) ? {1'b0, short_round_tmp[31:1]} : '0;"
+,{"expanded":false,"expanded":false,"Exclusion Rule Type":"None","UNR":"none","Index":"1","All Average Grd":"100%","All Cov":"2 / 2 (100%)","Src Start Line":"98","Is Coverage Excluded":"1","Enclosing Entity":"uvmt_cv32_tb.dut_wrap.cv32e40p_wrapper_i.core_i.ex_stage_i.mult_i","Source":"  assign short_round = (operator_i == MUL_IR) ? {1'b0, short_round_tmp[31:1]} : '0;"
 ,"subitems":[{"expanded":false,"expanded":false,"Exclusion Rule Type":"None","UNR":"none","Index":"1","All Average Grd":"100%","All Cov":"1 / 1 (100%)","Is Coverage Excluded":"1","Source":"  assign short_round = (operator_i == MUL_IR) ? {1'b0, short_round_tmp[31:1]} : '0;","table_type":"cov"
 ,"subitems":[{"title":"1;1","expanded":false,"Exclusion Rule Type":"Analysis Time","UNR":"none","Score":"0","Out":"1","excluded":"1"}
 ,{"title":"-;0","expanded":false,"Exclusion Rule Type":"Analysis Time","UNR":"none","Score":"0","Out":"0","excluded":"1"}
@@ -2254,7 +2254,7 @@
 ,{"title":"lhs != rhs","expanded":false,"Exclusion Rule Type":"None","UNR":"none","Score":"1","Out":"n/a"}
 ],"cov_table_title":"Coverage Equality Table","header":"(operator_i == MUL_IR)","columns":"operator_i;MUL_IR"}
 ]}
-,{"expanded":false,"expanded":false,"Exclusion Rule Type":"None","UNR":"none","Index":"7","All Average Grd":"100%","All Cov":"3 / 3 (100%)","Src Start Line":"118","Is Coverage Excluded":"1","Enclosing Entity":"uvmt_cv32_tb.dut_wrap.cv32e40p_wrapper_i.core_i.ex_stage_i.mult_i","Source":"  assign short_imm         = mulh_active ? mulh_imm         : imm_i;"
+,{"expanded":false,"expanded":false,"Exclusion Rule Type":"None","UNR":"none","Index":"7","All Average Grd":"100%","All Cov":"3 / 3 (100%)","Src Start Line":"116","Is Coverage Excluded":"1","Enclosing Entity":"uvmt_cv32_tb.dut_wrap.cv32e40p_wrapper_i.core_i.ex_stage_i.mult_i","Source":"  assign short_imm         = mulh_active ? mulh_imm         : imm_i;"
 ,"subitems":[{"expanded":false,"expanded":false,"Exclusion Rule Type":"None","UNR":"none","Index":"1","All Average Grd":"100%","All Cov":"3 / 3 (100%)","Is Coverage Excluded":"1","Source":"  assign short_imm         = mulh_active ? mulh_imm         : imm_i;","table_type":"cov"
 ,"subitems":[{"title":"0;-;1","expanded":false,"Exclusion Rule Type":"Analysis Time","UNR":"none","Score":"0","Out":"1","excluded":"1"}
 ,{"title":"1;1;-","expanded":false,"Exclusion Rule Type":"None","UNR":"none","Score":"1","Out":"1"}
@@ -2262,7 +2262,7 @@
 ,{"title":"1;0;-","expanded":false,"Exclusion Rule Type":"None","UNR":"none","Score":"1","Out":"0"}
 ],"cov_table_title":"Coverage Table with Output","header":"mulh_active ? mulh_imm : imm_i","columns":"mulh_active;mulh_imm;imm_i"}
 ]}
-,{"expanded":false,"expanded":false,"Exclusion Rule Type":"None","UNR":"none","Index":"8","All Average Grd":"100%","All Cov":"3 / 3 (100%)","Src Start Line":"119","Is Coverage Excluded":"1","Enclosing Entity":"uvmt_cv32_tb.dut_wrap.cv32e40p_wrapper_i.core_i.ex_stage_i.mult_i","Source":"  assign short_subword     = mulh_active ? mulh_subword     : {2{short_subword_i}};"
+,{"expanded":false,"expanded":false,"Exclusion Rule Type":"None","UNR":"none","Index":"8","All Average Grd":"100%","All Cov":"3 / 3 (100%)","Src Start Line":"117","Is Coverage Excluded":"1","Enclosing Entity":"uvmt_cv32_tb.dut_wrap.cv32e40p_wrapper_i.core_i.ex_stage_i.mult_i","Source":"  assign short_subword     = mulh_active ? mulh_subword     : {2{short_subword_i}};"
 ,"subitems":[{"expanded":false,"expanded":false,"Exclusion Rule Type":"None","UNR":"none","Index":"1","All Average Grd":"100%","All Cov":"3 / 3 (100%)","Is Coverage Excluded":"1","Source":"  assign short_subword     = mulh_active ? mulh_subword     : {2{short_subword_i}};","table_type":"cov"
 ,"subitems":[{"title":"0;-;1","expanded":false,"Exclusion Rule Type":"Analysis Time","UNR":"none","Score":"0","Out":"1","excluded":"1"}
 ,{"title":"1;1;-","expanded":false,"Exclusion Rule Type":"None","UNR":"none","Score":"1","Out":"1"}
@@ -2270,13 +2270,13 @@
 ,{"title":"1;0;-","expanded":false,"Exclusion Rule Type":"None","UNR":"none","Score":"1","Out":"0"}
 ],"cov_table_title":"Coverage Table with Output","header":"mulh_active ? mulh_subword : {2{short_subword_i}}","columns":"mulh_active;mulh_subword;{2{short_subword_i}}"}
 ]}
-,{"expanded":false,"expanded":false,"Exclusion Rule Type":"None","UNR":"none","Index":"16","All Average Grd":"100%","All Cov":"1 / 1 (100%)","Src Start Line":"223","Is Coverage Excluded":"1","Enclosing Entity":"uvmt_cv32_tb.dut_wrap.cv32e40p_wrapper_i.core_i.ex_stage_i.mult_i","Source":"  assign int_is_msu = (operator_i == MUL_MSU32);"
+,{"expanded":false,"expanded":false,"Exclusion Rule Type":"None","UNR":"none","Index":"16","All Average Grd":"100%","All Cov":"1 / 1 (100%)","Src Start Line":"221","Is Coverage Excluded":"1","Enclosing Entity":"uvmt_cv32_tb.dut_wrap.cv32e40p_wrapper_i.core_i.ex_stage_i.mult_i","Source":"  assign int_is_msu = (operator_i == MUL_MSU32);"
 ,"subitems":[{"expanded":false,"expanded":false,"Exclusion Rule Type":"None","UNR":"none","Index":"1","All Average Grd":"100%","All Cov":"1 / 1 (100%)","Is Coverage Excluded":"1","Source":"  assign int_is_msu = (operator_i == MUL_MSU32);","table_type":"cov"
 ,"subitems":[{"title":"lhs == rhs","expanded":false,"Exclusion Rule Type":"Analysis Time","UNR":"none","Score":"0","Out":"n/a","excluded":"1"}
 ,{"title":"lhs != rhs","expanded":false,"Exclusion Rule Type":"None","UNR":"none","Score":"1","Out":"n/a"}
 ],"cov_table_title":"Coverage Equality Table","header":"operator_i == MUL_MSU32","columns":"operator_i;MUL_MSU32"}
 ]}
-,{"expanded":false,"expanded":false,"Exclusion Rule Type":"None","UNR":"none","Index":"17","All Average Grd":"100%","All Cov":"2 / 2 (100%)","Src Start Line":"225","Is Coverage Excluded":"1","Enclosing Entity":"uvmt_cv32_tb.dut_wrap.cv32e40p_wrapper_i.core_i.ex_stage_i.mult_i","Source":"  assign int_op_a_msu = op_a_i ^ {32{int_is_msu}};"
+,{"expanded":false,"expanded":false,"Exclusion Rule Type":"None","UNR":"none","Index":"17","All Average Grd":"100%","All Cov":"2 / 2 (100%)","Src Start Line":"223","Is Coverage Excluded":"1","Enclosing Entity":"uvmt_cv32_tb.dut_wrap.cv32e40p_wrapper_i.core_i.ex_stage_i.mult_i","Source":"  assign int_op_a_msu = op_a_i ^ {32{int_is_msu}};"
 ,"subitems":[{"expanded":false,"expanded":false,"Exclusion Rule Type":"None","UNR":"none","Index":"1","All Average Grd":"100%","All Cov":"2 / 2 (100%)","Is Coverage Excluded":"1","Source":"  assign int_op_a_msu = op_a_i ^ {32{int_is_msu}};","table_type":"cov"
 ,"subitems":[{"title":"0;0","expanded":false,"Exclusion Rule Type":"None","UNR":"none","Score":"1","Out":"n/a"}
 ,{"title":"0;1","expanded":false,"Exclusion Rule Type":"Analysis Time","UNR":"none","Score":"0","Out":"n/a","excluded":"1"}
@@ -2284,84 +2284,84 @@
 ,{"title":"1;1","expanded":false,"Exclusion Rule Type":"Analysis Time","UNR":"none","Score":"0","Out":"n/a","excluded":"1"}
 ],"cov_table_title":"Coverage Table","header":"op_a_i ^ {32{int_is_msu}}","columns":"op_a_i;{32{int_is_msu}}"}
 ]}
-,{"expanded":false,"expanded":false,"Exclusion Rule Type":"None","UNR":"none","Index":"18","All Average Grd":"100%","All Cov":"2 / 2 (100%)","Src Start Line":"226","Is Coverage Excluded":"1","Enclosing Entity":"uvmt_cv32_tb.dut_wrap.cv32e40p_wrapper_i.core_i.ex_stage_i.mult_i","Source":"  assign int_op_b_msu = op_b_i & {32{int_is_msu}};"
+,{"expanded":false,"expanded":false,"Exclusion Rule Type":"None","UNR":"none","Index":"18","All Average Grd":"100%","All Cov":"2 / 2 (100%)","Src Start Line":"224","Is Coverage Excluded":"1","Enclosing Entity":"uvmt_cv32_tb.dut_wrap.cv32e40p_wrapper_i.core_i.ex_stage_i.mult_i","Source":"  assign int_op_b_msu = op_b_i & {32{int_is_msu}};"
 ,"subitems":[{"expanded":false,"expanded":false,"Exclusion Rule Type":"None","UNR":"none","Index":"1","All Average Grd":"100%","All Cov":"2 / 2 (100%)","Is Coverage Excluded":"1","Source":"  assign int_op_b_msu = op_b_i & {32{int_is_msu}};","table_type":"cov"
 ,"subitems":[{"title":"0;-","expanded":false,"Exclusion Rule Type":"None","UNR":"none","Score":"1","Out":"n/a"}
 ,{"title":"-;0","expanded":false,"Exclusion Rule Type":"None","UNR":"none","Score":"1","Out":"n/a"}
 ,{"title":"1;1","expanded":false,"Exclusion Rule Type":"Analysis Time","UNR":"none","Score":"0","Out":"n/a","excluded":"1"}
 ],"cov_table_title":"Coverage Table","header":"op_b_i & {32{int_is_msu}}","columns":"op_b_i;{32{int_is_msu}}"}
 ]}
-,{"expanded":false,"expanded":false,"Exclusion Rule Type":"None","UNR":"none","Index":"19","All Average Grd":"100%","All Cov":"2 / 2 (100%)","Src Start Line":"252","Is Coverage Excluded":"1","Enclosing Entity":"uvmt_cv32_tb.dut_wrap.cv32e40p_wrapper_i.core_i.ex_stage_i.mult_i","Source":"  assign dot_char_op_a[0] = {dot_signed_i[1] & dot_op_a_i[ 7], dot_op_a_i[ 7: 0]};"
+,{"expanded":false,"expanded":false,"Exclusion Rule Type":"None","UNR":"none","Index":"19","All Average Grd":"100%","All Cov":"2 / 2 (100%)","Src Start Line":"250","Is Coverage Excluded":"1","Enclosing Entity":"uvmt_cv32_tb.dut_wrap.cv32e40p_wrapper_i.core_i.ex_stage_i.mult_i","Source":"  assign dot_char_op_a[0] = {dot_signed_i[1] & dot_op_a_i[ 7], dot_op_a_i[ 7: 0]};"
 ,"subitems":[{"expanded":false,"expanded":false,"Exclusion Rule Type":"None","UNR":"none","Index":"1","All Average Grd":"100%","All Cov":"2 / 2 (100%)","Is Coverage Excluded":"1","Source":"  assign dot_char_op_a[0] = {dot_signed_i[1] & dot_op_a_i[ 7], dot_op_a_i[ 7: 0]};","table_type":"cov"
 ,"subitems":[{"title":"0;-","expanded":false,"Exclusion Rule Type":"None","UNR":"none","Score":"1","Out":"n/a"}
 ,{"title":"-;0","expanded":false,"Exclusion Rule Type":"None","UNR":"none","Score":"1","Out":"n/a"}
 ,{"title":"1;1","expanded":false,"Exclusion Rule Type":"Analysis Time","UNR":"none","Score":"0","Out":"n/a","excluded":"1"}
 ],"cov_table_title":"Coverage Table","header":"(dot_signed_i[1] & dot_op_a_i[7])","columns":"dot_signed_i[1];dot_op_a_i[7]"}
 ]}
-,{"expanded":false,"expanded":false,"Exclusion Rule Type":"None","UNR":"none","Index":"20","All Average Grd":"100%","All Cov":"2 / 2 (100%)","Src Start Line":"253","Is Coverage Excluded":"1","Enclosing Entity":"uvmt_cv32_tb.dut_wrap.cv32e40p_wrapper_i.core_i.ex_stage_i.mult_i","Source":"  assign dot_char_op_a[1] = {dot_signed_i[1] & dot_op_a_i[15], dot_op_a_i[15: 8]};"
+,{"expanded":false,"expanded":false,"Exclusion Rule Type":"None","UNR":"none","Index":"20","All Average Grd":"100%","All Cov":"2 / 2 (100%)","Src Start Line":"251","Is Coverage Excluded":"1","Enclosing Entity":"uvmt_cv32_tb.dut_wrap.cv32e40p_wrapper_i.core_i.ex_stage_i.mult_i","Source":"  assign dot_char_op_a[1] = {dot_signed_i[1] & dot_op_a_i[15], dot_op_a_i[15: 8]};"
 ,"subitems":[{"expanded":false,"expanded":false,"Exclusion Rule Type":"None","UNR":"none","Index":"1","All Average Grd":"100%","All Cov":"2 / 2 (100%)","Is Coverage Excluded":"1","Source":"  assign dot_char_op_a[1] = {dot_signed_i[1] & dot_op_a_i[15], dot_op_a_i[15: 8]};","table_type":"cov"
 ,"subitems":[{"title":"0;-","expanded":false,"Exclusion Rule Type":"None","UNR":"none","Score":"1","Out":"n/a"}
 ,{"title":"-;0","expanded":false,"Exclusion Rule Type":"None","UNR":"none","Score":"1","Out":"n/a"}
 ,{"title":"1;1","expanded":false,"Exclusion Rule Type":"Analysis Time","UNR":"none","Score":"0","Out":"n/a","excluded":"1"}
 ],"cov_table_title":"Coverage Table","header":"(dot_signed_i[1] & dot_op_a_i[15])","columns":"dot_signed_i[1];dot_op_a_i[15]"}
 ]}
-,{"expanded":false,"expanded":false,"Exclusion Rule Type":"None","UNR":"none","Index":"21","All Average Grd":"100%","All Cov":"2 / 2 (100%)","Src Start Line":"254","Is Coverage Excluded":"1","Enclosing Entity":"uvmt_cv32_tb.dut_wrap.cv32e40p_wrapper_i.core_i.ex_stage_i.mult_i","Source":"  assign dot_char_op_a[2] = {dot_signed_i[1] & dot_op_a_i[23], dot_op_a_i[23:16]};"
+,{"expanded":false,"expanded":false,"Exclusion Rule Type":"None","UNR":"none","Index":"21","All Average Grd":"100%","All Cov":"2 / 2 (100%)","Src Start Line":"252","Is Coverage Excluded":"1","Enclosing Entity":"uvmt_cv32_tb.dut_wrap.cv32e40p_wrapper_i.core_i.ex_stage_i.mult_i","Source":"  assign dot_char_op_a[2] = {dot_signed_i[1] & dot_op_a_i[23], dot_op_a_i[23:16]};"
 ,"subitems":[{"expanded":false,"expanded":false,"Exclusion Rule Type":"None","UNR":"none","Index":"1","All Average Grd":"100%","All Cov":"2 / 2 (100%)","Is Coverage Excluded":"1","Source":"  assign dot_char_op_a[2] = {dot_signed_i[1] & dot_op_a_i[23], dot_op_a_i[23:16]};","table_type":"cov"
 ,"subitems":[{"title":"0;-","expanded":false,"Exclusion Rule Type":"None","UNR":"none","Score":"1","Out":"n/a"}
 ,{"title":"-;0","expanded":false,"Exclusion Rule Type":"None","UNR":"none","Score":"1","Out":"n/a"}
 ,{"title":"1;1","expanded":false,"Exclusion Rule Type":"Analysis Time","UNR":"none","Score":"0","Out":"n/a","excluded":"1"}
 ],"cov_table_title":"Coverage Table","header":"(dot_signed_i[1] & dot_op_a_i[23])","columns":"dot_signed_i[1];dot_op_a_i[23]"}
 ]}
-,{"expanded":false,"expanded":false,"Exclusion Rule Type":"None","UNR":"none","Index":"22","All Average Grd":"100%","All Cov":"2 / 2 (100%)","Src Start Line":"255","Is Coverage Excluded":"1","Enclosing Entity":"uvmt_cv32_tb.dut_wrap.cv32e40p_wrapper_i.core_i.ex_stage_i.mult_i","Source":"  assign dot_char_op_a[3] = {dot_signed_i[1] & dot_op_a_i[31], dot_op_a_i[31:24]};"
+,{"expanded":false,"expanded":false,"Exclusion Rule Type":"None","UNR":"none","Index":"22","All Average Grd":"100%","All Cov":"2 / 2 (100%)","Src Start Line":"253","Is Coverage Excluded":"1","Enclosing Entity":"uvmt_cv32_tb.dut_wrap.cv32e40p_wrapper_i.core_i.ex_stage_i.mult_i","Source":"  assign dot_char_op_a[3] = {dot_signed_i[1] & dot_op_a_i[31], dot_op_a_i[31:24]};"
 ,"subitems":[{"expanded":false,"expanded":false,"Exclusion Rule Type":"None","UNR":"none","Index":"1","All Average Grd":"100%","All Cov":"2 / 2 (100%)","Is Coverage Excluded":"1","Source":"  assign dot_char_op_a[3] = {dot_signed_i[1] & dot_op_a_i[31], dot_op_a_i[31:24]};","table_type":"cov"
 ,"subitems":[{"title":"0;-","expanded":false,"Exclusion Rule Type":"None","UNR":"none","Score":"1","Out":"n/a"}
 ,{"title":"-;0","expanded":false,"Exclusion Rule Type":"None","UNR":"none","Score":"1","Out":"n/a"}
 ,{"title":"1;1","expanded":false,"Exclusion Rule Type":"Analysis Time","UNR":"none","Score":"0","Out":"n/a","excluded":"1"}
 ],"cov_table_title":"Coverage Table","header":"(dot_signed_i[1] & dot_op_a_i[31])","columns":"dot_signed_i[1];dot_op_a_i[31]"}
 ]}
-,{"expanded":false,"expanded":false,"Exclusion Rule Type":"None","UNR":"none","Index":"23","All Average Grd":"100%","All Cov":"2 / 2 (100%)","Src Start Line":"257","Is Coverage Excluded":"1","Enclosing Entity":"uvmt_cv32_tb.dut_wrap.cv32e40p_wrapper_i.core_i.ex_stage_i.mult_i","Source":"  assign dot_char_op_b[0] = {dot_signed_i[0] & dot_op_b_i[ 7], dot_op_b_i[ 7: 0]};"
+,{"expanded":false,"expanded":false,"Exclusion Rule Type":"None","UNR":"none","Index":"23","All Average Grd":"100%","All Cov":"2 / 2 (100%)","Src Start Line":"255","Is Coverage Excluded":"1","Enclosing Entity":"uvmt_cv32_tb.dut_wrap.cv32e40p_wrapper_i.core_i.ex_stage_i.mult_i","Source":"  assign dot_char_op_b[0] = {dot_signed_i[0] & dot_op_b_i[ 7], dot_op_b_i[ 7: 0]};"
 ,"subitems":[{"expanded":false,"expanded":false,"Exclusion Rule Type":"None","UNR":"none","Index":"1","All Average Grd":"100%","All Cov":"2 / 2 (100%)","Is Coverage Excluded":"1","Source":"  assign dot_char_op_b[0] = {dot_signed_i[0] & dot_op_b_i[ 7], dot_op_b_i[ 7: 0]};","table_type":"cov"
 ,"subitems":[{"title":"0;-","expanded":false,"Exclusion Rule Type":"None","UNR":"none","Score":"1","Out":"n/a"}
 ,{"title":"-;0","expanded":false,"Exclusion Rule Type":"None","UNR":"none","Score":"1","Out":"n/a"}
 ,{"title":"1;1","expanded":false,"Exclusion Rule Type":"Analysis Time","UNR":"none","Score":"0","Out":"n/a","excluded":"1"}
 ],"cov_table_title":"Coverage Table","header":"(dot_signed_i[0] & dot_op_b_i[7])","columns":"dot_signed_i[0];dot_op_b_i[7]"}
 ]}
-,{"expanded":false,"expanded":false,"Exclusion Rule Type":"None","UNR":"none","Index":"24","All Average Grd":"100%","All Cov":"2 / 2 (100%)","Src Start Line":"258","Is Coverage Excluded":"1","Enclosing Entity":"uvmt_cv32_tb.dut_wrap.cv32e40p_wrapper_i.core_i.ex_stage_i.mult_i","Source":"  assign dot_char_op_b[1] = {dot_signed_i[0] & dot_op_b_i[15], dot_op_b_i[15: 8]};"
+,{"expanded":false,"expanded":false,"Exclusion Rule Type":"None","UNR":"none","Index":"24","All Average Grd":"100%","All Cov":"2 / 2 (100%)","Src Start Line":"256","Is Coverage Excluded":"1","Enclosing Entity":"uvmt_cv32_tb.dut_wrap.cv32e40p_wrapper_i.core_i.ex_stage_i.mult_i","Source":"  assign dot_char_op_b[1] = {dot_signed_i[0] & dot_op_b_i[15], dot_op_b_i[15: 8]};"
 ,"subitems":[{"expanded":false,"expanded":false,"Exclusion Rule Type":"None","UNR":"none","Index":"1","All Average Grd":"100%","All Cov":"2 / 2 (100%)","Is Coverage Excluded":"1","Source":"  assign dot_char_op_b[1] = {dot_signed_i[0] & dot_op_b_i[15], dot_op_b_i[15: 8]};","table_type":"cov"
 ,"subitems":[{"title":"0;-","expanded":false,"Exclusion Rule Type":"None","UNR":"none","Score":"1","Out":"n/a"}
 ,{"title":"-;0","expanded":false,"Exclusion Rule Type":"None","UNR":"none","Score":"1","Out":"n/a"}
 ,{"title":"1;1","expanded":false,"Exclusion Rule Type":"Analysis Time","UNR":"none","Score":"0","Out":"n/a","excluded":"1"}
 ],"cov_table_title":"Coverage Table","header":"(dot_signed_i[0] & dot_op_b_i[15])","columns":"dot_signed_i[0];dot_op_b_i[15]"}
 ]}
-,{"expanded":false,"expanded":false,"Exclusion Rule Type":"None","UNR":"none","Index":"25","All Average Grd":"100%","All Cov":"2 / 2 (100%)","Src Start Line":"259","Is Coverage Excluded":"1","Enclosing Entity":"uvmt_cv32_tb.dut_wrap.cv32e40p_wrapper_i.core_i.ex_stage_i.mult_i","Source":"  assign dot_char_op_b[2] = {dot_signed_i[0] & dot_op_b_i[23], dot_op_b_i[23:16]};"
+,{"expanded":false,"expanded":false,"Exclusion Rule Type":"None","UNR":"none","Index":"25","All Average Grd":"100%","All Cov":"2 / 2 (100%)","Src Start Line":"257","Is Coverage Excluded":"1","Enclosing Entity":"uvmt_cv32_tb.dut_wrap.cv32e40p_wrapper_i.core_i.ex_stage_i.mult_i","Source":"  assign dot_char_op_b[2] = {dot_signed_i[0] & dot_op_b_i[23], dot_op_b_i[23:16]};"
 ,"subitems":[{"expanded":false,"expanded":false,"Exclusion Rule Type":"None","UNR":"none","Index":"1","All Average Grd":"100%","All Cov":"2 / 2 (100%)","Is Coverage Excluded":"1","Source":"  assign dot_char_op_b[2] = {dot_signed_i[0] & dot_op_b_i[23], dot_op_b_i[23:16]};","table_type":"cov"
 ,"subitems":[{"title":"0;-","expanded":false,"Exclusion Rule Type":"None","UNR":"none","Score":"1","Out":"n/a"}
 ,{"title":"-;0","expanded":false,"Exclusion Rule Type":"None","UNR":"none","Score":"1","Out":"n/a"}
 ,{"title":"1;1","expanded":false,"Exclusion Rule Type":"Analysis Time","UNR":"none","Score":"0","Out":"n/a","excluded":"1"}
 ],"cov_table_title":"Coverage Table","header":"(dot_signed_i[0] & dot_op_b_i[23])","columns":"dot_signed_i[0];dot_op_b_i[23]"}
 ]}
-,{"expanded":false,"expanded":false,"Exclusion Rule Type":"None","UNR":"none","Index":"26","All Average Grd":"100%","All Cov":"2 / 2 (100%)","Src Start Line":"260","Is Coverage Excluded":"1","Enclosing Entity":"uvmt_cv32_tb.dut_wrap.cv32e40p_wrapper_i.core_i.ex_stage_i.mult_i","Source":"  assign dot_char_op_b[3] = {dot_signed_i[0] & dot_op_b_i[31], dot_op_b_i[31:24]};"
+,{"expanded":false,"expanded":false,"Exclusion Rule Type":"None","UNR":"none","Index":"26","All Average Grd":"100%","All Cov":"2 / 2 (100%)","Src Start Line":"258","Is Coverage Excluded":"1","Enclosing Entity":"uvmt_cv32_tb.dut_wrap.cv32e40p_wrapper_i.core_i.ex_stage_i.mult_i","Source":"  assign dot_char_op_b[3] = {dot_signed_i[0] & dot_op_b_i[31], dot_op_b_i[31:24]};"
 ,"subitems":[{"expanded":false,"expanded":false,"Exclusion Rule Type":"None","UNR":"none","Index":"1","All Average Grd":"100%","All Cov":"2 / 2 (100%)","Is Coverage Excluded":"1","Source":"  assign dot_char_op_b[3] = {dot_signed_i[0] & dot_op_b_i[31], dot_op_b_i[31:24]};","table_type":"cov"
 ,"subitems":[{"title":"0;-","expanded":false,"Exclusion Rule Type":"None","UNR":"none","Score":"1","Out":"n/a"}
 ,{"title":"-;0","expanded":false,"Exclusion Rule Type":"None","UNR":"none","Score":"1","Out":"n/a"}
 ,{"title":"1;1","expanded":false,"Exclusion Rule Type":"Analysis Time","UNR":"none","Score":"0","Out":"n/a","excluded":"1"}
 ],"cov_table_title":"Coverage Table","header":"(dot_signed_i[0] & dot_op_b_i[31])","columns":"dot_signed_i[0];dot_op_b_i[31]"}
 ]}
-,{"expanded":false,"expanded":false,"Exclusion Rule Type":"None","UNR":"none","Index":"27","All Average Grd":"100%","All Cov":"2 / 2 (100%)","Src Start Line":"272","Is Coverage Excluded":"1","Enclosing Entity":"uvmt_cv32_tb.dut_wrap.cv32e40p_wrapper_i.core_i.ex_stage_i.mult_i","Source":"  assign dot_short_op_a[0]    = {dot_signed_i[1] & dot_op_a_i[15], dot_op_a_i[15: 0]};"
+,{"expanded":false,"expanded":false,"Exclusion Rule Type":"None","UNR":"none","Index":"27","All Average Grd":"100%","All Cov":"2 / 2 (100%)","Src Start Line":"270","Is Coverage Excluded":"1","Enclosing Entity":"uvmt_cv32_tb.dut_wrap.cv32e40p_wrapper_i.core_i.ex_stage_i.mult_i","Source":"  assign dot_short_op_a[0]    = {dot_signed_i[1] & dot_op_a_i[15], dot_op_a_i[15: 0]};"
 ,"subitems":[{"expanded":false,"expanded":false,"Exclusion Rule Type":"None","UNR":"none","Index":"1","All Average Grd":"100%","All Cov":"2 / 2 (100%)","Is Coverage Excluded":"1","Source":"  assign dot_short_op_a[0]    = {dot_signed_i[1] & dot_op_a_i[15], dot_op_a_i[15: 0]};","table_type":"cov"
 ,"subitems":[{"title":"0;-","expanded":false,"Exclusion Rule Type":"None","UNR":"none","Score":"1","Out":"n/a"}
 ,{"title":"-;0","expanded":false,"Exclusion Rule Type":"None","UNR":"none","Score":"1","Out":"n/a"}
 ,{"title":"1;1","expanded":false,"Exclusion Rule Type":"Analysis Time","UNR":"none","Score":"0","Out":"n/a","excluded":"1"}
 ],"cov_table_title":"Coverage Table","header":"(dot_signed_i[1] & dot_op_a_i[15])","columns":"dot_signed_i[1];dot_op_a_i[15]"}
 ]}
-,{"expanded":false,"expanded":false,"Exclusion Rule Type":"None","UNR":"none","Index":"28","All Average Grd":"100%","All Cov":"2 / 2 (100%)","Src Start Line":"273","Is Coverage Excluded":"1","Enclosing Entity":"uvmt_cv32_tb.dut_wrap.cv32e40p_wrapper_i.core_i.ex_stage_i.mult_i","Source":"  assign dot_short_op_a[1]    = {dot_signed_i[1] & dot_op_a_i[31], dot_op_a_i[31:16]};"
+,{"expanded":false,"expanded":false,"Exclusion Rule Type":"None","UNR":"none","Index":"28","All Average Grd":"100%","All Cov":"2 / 2 (100%)","Src Start Line":"271","Is Coverage Excluded":"1","Enclosing Entity":"uvmt_cv32_tb.dut_wrap.cv32e40p_wrapper_i.core_i.ex_stage_i.mult_i","Source":"  assign dot_short_op_a[1]    = {dot_signed_i[1] & dot_op_a_i[31], dot_op_a_i[31:16]};"
 ,"subitems":[{"expanded":false,"expanded":false,"Exclusion Rule Type":"None","UNR":"none","Index":"1","All Average Grd":"100%","All Cov":"2 / 2 (100%)","Is Coverage Excluded":"1","Source":"  assign dot_short_op_a[1]    = {dot_signed_i[1] & dot_op_a_i[31], dot_op_a_i[31:16]};","table_type":"cov"
 ,"subitems":[{"title":"0;-","expanded":false,"Exclusion Rule Type":"None","UNR":"none","Score":"1","Out":"n/a"}
 ,{"title":"-;0","expanded":false,"Exclusion Rule Type":"None","UNR":"none","Score":"1","Out":"n/a"}
 ,{"title":"1;1","expanded":false,"Exclusion Rule Type":"Analysis Time","UNR":"none","Score":"0","Out":"n/a","excluded":"1"}
 ],"cov_table_title":"Coverage Table","header":"(dot_signed_i[1] & dot_op_a_i[31])","columns":"dot_signed_i[1];dot_op_a_i[31]"}
 ]}
-,{"expanded":false,"expanded":false,"Exclusion Rule Type":"None","UNR":"none","Index":"29","All Average Grd":"100%","All Cov":"2 / 2 (100%)","Src Start Line":"274","Is Coverage Excluded":"1","Enclosing Entity":"uvmt_cv32_tb.dut_wrap.cv32e40p_wrapper_i.core_i.ex_stage_i.mult_i","Source":"  assign dot_short_op_a_1_neg = dot_short_op_a[1] ^ {17{(is_clpx_i & ~clpx_img_i)}}; //negates whether clpx_img_i is 0 or 1, only REAL PART needs to be negated"
+,{"expanded":false,"expanded":false,"Exclusion Rule Type":"None","UNR":"none","Index":"29","All Average Grd":"100%","All Cov":"2 / 2 (100%)","Src Start Line":"272","Is Coverage Excluded":"1","Enclosing Entity":"uvmt_cv32_tb.dut_wrap.cv32e40p_wrapper_i.core_i.ex_stage_i.mult_i","Source":"  assign dot_short_op_a_1_neg = dot_short_op_a[1] ^ {17{(is_clpx_i & ~clpx_img_i)}}; //negates whether clpx_img_i is 0 or 1, only REAL PART needs to be negated"
 ,"subitems":[{"expanded":false,"expanded":false,"Exclusion Rule Type":"None","UNR":"none","Index":"1","All Average Grd":"100%","All Cov":"1 / 1 (100%)","Is Coverage Excluded":"1","Source":"  assign dot_short_op_a_1_neg = dot_short_op_a[1] ^ {17{(is_clpx_i & ~clpx_img_i)}}; //negates whether clpx_img_i is 0 or 1, only REAL PART needs to be negated","table_type":"cov"
 ,"subitems":[{"title":"0;0","expanded":false,"Exclusion Rule Type":"None","UNR":"none","Score":"1","Out":"n/a"}
 ,{"title":"0;1","expanded":false,"Exclusion Rule Type":"Analysis Time","UNR":"none","Score":"0","Out":"n/a","excluded":"1"}
@@ -2374,7 +2374,7 @@
 ,{"title":"0;-","expanded":false,"Exclusion Rule Type":"None","UNR":"none","Score":"1","Out":"0"}
 ],"cov_table_title":"Coverage Table with Output","header":"(is_clpx_i & (~ clpx_img_i))","columns":"is_clpx_i;clpx_img_i"}
 ]}
-,{"expanded":false,"expanded":false,"Exclusion Rule Type":"None","UNR":"none","Index":"30","All Average Grd":"100%","All Cov":"4 / 4 (100%)","Src Start Line":"276","Is Coverage Excluded":"1","Enclosing Entity":"uvmt_cv32_tb.dut_wrap.cv32e40p_wrapper_i.core_i.ex_stage_i.mult_i","Source":"  assign dot_short_op_b[0] = (is_clpx_i & clpx_img_i) ? {dot_signed_i[0] & dot_op_b_i[31], dot_op_b_i[31:16]} : {dot_signed_i[0] & dot_op_b_i[15], dot_op_b_i[15: 0]};"
+,{"expanded":false,"expanded":false,"Exclusion Rule Type":"None","UNR":"none","Index":"30","All Average Grd":"100%","All Cov":"4 / 4 (100%)","Src Start Line":"274","Is Coverage Excluded":"1","Enclosing Entity":"uvmt_cv32_tb.dut_wrap.cv32e40p_wrapper_i.core_i.ex_stage_i.mult_i","Source":"  assign dot_short_op_b[0] = (is_clpx_i & clpx_img_i) ? {dot_signed_i[0] & dot_op_b_i[31], dot_op_b_i[31:16]} : {dot_signed_i[0] & dot_op_b_i[15], dot_op_b_i[15: 0]};"
 ,"subitems":[{"expanded":false,"expanded":false,"Exclusion Rule Type":"None","UNR":"none","Index":"1","All Average Grd":"100%","All Cov":"2 / 2 (100%)","Is Coverage Excluded":"1","Source":"  assign dot_short_op_b[0] = (is_clpx_i & clpx_img_i) ? {dot_signed_i[0] & dot_op_b_i[31], dot_op_b_i[31:16]} : {dot_signed_i[0] & dot_op_b_i[15], dot_op_b_i[15: 0]};","table_type":"cov"
 ,"subitems":[{"title":"1;1;1;-","expanded":false,"Exclusion Rule Type":"Analysis Time","UNR":"none","Score":"0","Out":"1","excluded":"1"}
 ,{"title":"-;0;-;1","expanded":false,"Exclusion Rule Type":"Analysis Time","UNR":"none","Score":"0","Out":"1","excluded":"1"}
@@ -2394,7 +2394,7 @@
 ,{"title":"1;1","expanded":false,"Exclusion Rule Type":"Analysis Time","UNR":"none","Score":"0","Out":"n/a","excluded":"1"}
 ],"cov_table_title":"Coverage Table","header":"(dot_signed_i[0] & dot_op_b_i[15])","columns":"dot_signed_i[0];dot_op_b_i[15]"}
 ]}
-,{"expanded":false,"expanded":false,"Exclusion Rule Type":"None","UNR":"none","Index":"31","All Average Grd":"100%","All Cov":"4 / 4 (100%)","Src Start Line":"277","Is Coverage Excluded":"1","Enclosing Entity":"uvmt_cv32_tb.dut_wrap.cv32e40p_wrapper_i.core_i.ex_stage_i.mult_i","Source":"  assign dot_short_op_b[1] = (is_clpx_i & clpx_img_i) ? {dot_signed_i[0] & dot_op_b_i[15], dot_op_b_i[15: 0]} : {dot_signed_i[0] & dot_op_b_i[31], dot_op_b_i[31:16]};"
+,{"expanded":false,"expanded":false,"Exclusion Rule Type":"None","UNR":"none","Index":"31","All Average Grd":"100%","All Cov":"4 / 4 (100%)","Src Start Line":"275","Is Coverage Excluded":"1","Enclosing Entity":"uvmt_cv32_tb.dut_wrap.cv32e40p_wrapper_i.core_i.ex_stage_i.mult_i","Source":"  assign dot_short_op_b[1] = (is_clpx_i & clpx_img_i) ? {dot_signed_i[0] & dot_op_b_i[15], dot_op_b_i[15: 0]} : {dot_signed_i[0] & dot_op_b_i[31], dot_op_b_i[31:16]};"
 ,"subitems":[{"expanded":false,"expanded":false,"Exclusion Rule Type":"None","UNR":"none","Index":"1","All Average Grd":"100%","All Cov":"2 / 2 (100%)","Is Coverage Excluded":"1","Source":"  assign dot_short_op_b[1] = (is_clpx_i & clpx_img_i) ? {dot_signed_i[0] & dot_op_b_i[15], dot_op_b_i[15: 0]} : {dot_signed_i[0] & dot_op_b_i[31], dot_op_b_i[31:16]};","table_type":"cov"
 ,"subitems":[{"title":"1;1;1;-","expanded":false,"Exclusion Rule Type":"Analysis Time","UNR":"none","Score":"0","Out":"1","excluded":"1"}
 ,{"title":"-;0;-;1","expanded":false,"Exclusion Rule Type":"Analysis Time","UNR":"none","Score":"0","Out":"1","excluded":"1"}
@@ -2414,7 +2414,7 @@
 ,{"title":"1;1","expanded":false,"Exclusion Rule Type":"Analysis Time","UNR":"none","Score":"0","Out":"n/a","excluded":"1"}
 ],"cov_table_title":"Coverage Table","header":"(dot_signed_i[0] & dot_op_b_i[31])","columns":"dot_signed_i[0];dot_op_b_i[31]"}
 ]}
-,{"expanded":false,"expanded":false,"Exclusion Rule Type":"None","UNR":"none","Index":"32","All Average Grd":"100%","All Cov":"1 / 1 (100%)","Src Start Line":"283","Is Coverage Excluded":"1","Enclosing Entity":"uvmt_cv32_tb.dut_wrap.cv32e40p_wrapper_i.core_i.ex_stage_i.mult_i","Source":"  assign accumulator        = is_clpx_i ? dot_short_op_b_ext & {32{~clpx_img_i}} : $signed(dot_op_c_i);"
+,{"expanded":false,"expanded":false,"Exclusion Rule Type":"None","UNR":"none","Index":"32","All Average Grd":"100%","All Cov":"1 / 1 (100%)","Src Start Line":"281","Is Coverage Excluded":"1","Enclosing Entity":"uvmt_cv32_tb.dut_wrap.cv32e40p_wrapper_i.core_i.ex_stage_i.mult_i","Source":"  assign accumulator        = is_clpx_i ? dot_short_op_b_ext & {32{~clpx_img_i}} : $signed(dot_op_c_i);"
 ,"subitems":[{"expanded":false,"expanded":false,"Exclusion Rule Type":"None","UNR":"none","Index":"1","All Average Grd":"100%","All Cov":"1 / 1 (100%)","Is Coverage Excluded":"1","Source":"  assign accumulator        = is_clpx_i ? dot_short_op_b_ext & {32{~clpx_img_i}} : $signed(dot_op_c_i);","table_type":"cov"
 ,"subitems":[{"title":"1;1;1;-","expanded":false,"Exclusion Rule Type":"Analysis Time","UNR":"none","Score":"0","Out":"1","excluded":"1"}
 ,{"title":"0;-;-;1","expanded":false,"Exclusion Rule Type":"Analysis Time","UNR":"none","Score":"0","Out":"1","excluded":"1"}
@@ -2549,12 +2549,16 @@
 ,{"title":"0;0","expanded":false,"Exclusion Rule Type":"Analysis Time","UNR":"none","Score":"0","Out":"n/a","excluded":"1"}
 ],"cov_table_title":"Coverage Table","header":"fflags_i | fflags_q","columns":"fflags_i;fflags_q"}
 ]}
-,{"expanded":false,"expanded":false,"Exclusion Rule Type":"None","UNR":"none","Index":"1","All Average Grd":"100%","All Cov":"4 / 4 (100%)","Src Start Line":"1454","Is Coverage Excluded":"1","Enclosing Entity":"uvmt_cv32_tb.dut_wrap.cv32e40p_wrapper_i.core_i.cs_registers_i.gen_mhpmcounter_write[1]","Source":"      assign mhpmcounter_write_lower[wcnt_gidx] = csr_we_int && (csr_addr_i == (CSR_MCYCLE + wcnt_gidx));"
+,{"expanded":false,"expanded":false,"Exclusion Rule Type":"None","UNR":"none","Index":"1","All Average Grd":"100%","All Cov":"3 / 3 (100%)","Src Start Line":"1454","Is Coverage Excluded":"1","Enclosing Entity":"uvmt_cv32_tb.dut_wrap.cv32e40p_wrapper_i.core_i.cs_registers_i.gen_mhpmcounter_write[1]","Source":"      assign mhpmcounter_write_lower[wcnt_gidx] = csr_we_int && (csr_addr_i == (CSR_MCYCLE + wcnt_gidx));"
 ,"subitems":[{"expanded":false,"expanded":false,"Exclusion Rule Type":"None","UNR":"none","Index":"1","All Average Grd":"100%","All Cov":"2 / 2 (100%)","Is Coverage Excluded":"1","Source":"      assign mhpmcounter_write_lower[wcnt_gidx] = csr_we_int && (csr_addr_i == (CSR_MCYCLE + wcnt_gidx));","table_type":"cov"
 ,"subitems":[{"title":"0;-","expanded":false,"Exclusion Rule Type":"None","UNR":"none","Score":"1","Out":"n/a"}
 ,{"title":"-;0","expanded":false,"Exclusion Rule Type":"None","UNR":"none","Score":"1","Out":"n/a"}
 ,{"title":"1;1","expanded":false,"Exclusion Rule Type":"Analysis Time","UNR":"none","Score":"0","Out":"n/a","excluded":"1"}
 ],"cov_table_title":"Coverage Table","header":"csr_we_int && (csr_addr_i == (CSR_MCYCLE + wcnt_gidx))","columns":"csr_we_int;(csr_addr_i == (CSR_MCYCLE + wcnt_gidx))"}
+,{"expanded":false,"expanded":false,"Exclusion Rule Type":"None","UNR":"none","Index":"2","All Average Grd":"100%","All Cov":"1 / 1 (100%)","Is Coverage Excluded":"1","Source":"      assign mhpmcounter_write_lower[wcnt_gidx] = csr_we_int && (csr_addr_i == (CSR_MCYCLE + wcnt_gidx));","table_type":"cov"
+,"subitems":[{"title":"lhs == rhs","expanded":false,"Exclusion Rule Type":"Analysis Time","UNR":"none","Score":"1","Out":"n/a","excluded":"1"}
+,{"title":"lhs != rhs","expanded":false,"Exclusion Rule Type":"None","UNR":"none","Score":"1","Out":"n/a"}
+],"cov_table_title":"Coverage Equality Table","header":"(csr_addr_i == (CSR_MCYCLE + wcnt_gidx))","columns":"csr_addr_i;(CSR_MCYCLE + wcnt_gidx)"}
 ]}
 ,{"expanded":false,"expanded":false,"Exclusion Rule Type":"None","UNR":"none","Index":"2","All Average Grd":"100%","All Cov":"3 / 3 (100%)","Src Start Line":"1458","Is Coverage Excluded":"1","Enclosing Entity":"uvmt_cv32_tb.dut_wrap.cv32e40p_wrapper_i.core_i.cs_registers_i.gen_mhpmcounter_write[1]","Source":"                                                  csr_we_int && (csr_addr_i == (CSR_MCYCLEH + wcnt_gidx)) && (MHPMCOUNTER_WIDTH == 64);"
 ,"subitems":[{"expanded":false,"expanded":false,"Exclusion Rule Type":"None","UNR":"none","Index":"1","All Average Grd":"100%","All Cov":"2 / 2 (100%)","Is Coverage Excluded":"1","Source":"                                                  csr_we_int && (csr_addr_i == (CSR_MCYCLEH + wcnt_gidx)) && (MHPMCOUNTER_WIDTH == 64);","table_type":"cov"
