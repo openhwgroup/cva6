@@ -27,20 +27,20 @@ module rvfi_tracer #(
   initial f = $fopen("trace_ip.dasm", "w");
   final $fclose(f);
 
-  //Generate the trace based on RVFI
+  // Generate the trace based on RVFI
   logic [63:0] pc64;
   always_ff @(posedge i_ariane.clk_i) begin
     for (int i = 0; i < NR_COMMIT_PORTS; i++) begin
       pc64 = {{riscv::XLEN-riscv::VLEN{rvfi_i[i].rvfi_pc_rdata[riscv::VLEN-1]}}, rvfi_i[i].rvfi_pc_rdata};
-      //print instruction information if is valid or is trapped
+      // print the instruction information if the instruction is valid or a trap is taken
       if (rvfi_i[i].rvfi_valid) begin
-        //Instruction information
+        // Instruction information
         $fwrite(f, "core   0: 0x%h (0x%h) DASM(%h)\n",
           pc64, rvfi_i[i].rvfi_insn, rvfi_i[i].rvfi_insn);
-        //Destination register information
+        // Destination register information
         $fwrite(f, "%h 0x%h (0x%h)",
           rvfi_i[i].rvfi_mode, pc64, rvfi_i[i].rvfi_insn);
-        //Decode instruction to know if destination register is FP register
+        // Decode instruction to know if destination register is FP register
         if ( rvfi_i[i].rvfi_insn[6:0] == 7'b1001111 ||
              rvfi_i[i].rvfi_insn[6:0] == 7'b1001011 ||
              rvfi_i[i].rvfi_insn[6:0] == 7'b1000111 ||
@@ -62,16 +62,14 @@ module rvfi_tracer #(
     if (cycles > SIM_FINISH) $finish(1);
   end
 
-  //Trace custom signals
-  //Define signals to be traced by adding them into debug and name arrays
+  // Trace any custom signals
+  // Define signals to be traced by adding them into debug and name arrays
   string name[0:10];
   logic[63:0] debug[0:10], debug_previous[0:10];
-  //assign debug[0] = i_ariane.csr_regfile_i.dscratch1_q;
-  //assign  name[0] = "i_ariane.csr_regfile_i.dscratch1_q";
 
   always_ff @(posedge i_ariane.clk_i) begin
     if (cycles > DEBUG_START && cycles < DEBUG_STOP)
-      for (int index=0; index<100; index=index+1)
+      for (int index = 0; index < 100; index++)
         if (debug_previous[index] != debug[index])
           $fwrite(f, "%d %s %x\n", cycles, name[index], debug[index]);
     debug_previous <= debug;
