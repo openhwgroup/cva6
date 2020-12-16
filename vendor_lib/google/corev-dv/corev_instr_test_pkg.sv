@@ -32,8 +32,8 @@ package corev_instr_test_pkg;
   `include "instr_lib/corev_jal_wfi_instr.sv"
   `include "instr_lib/corev_jalr_wfi_instr.sv"
   
-
   `include "corev_compressed_instr.sv"
+  `include "corev_illegal_instr.sv"
   `include "corev_privil_reg.sv"
   `include "corev_privileged_common_seq.sv"
   `include "corev_instr_gen_config.sv"
