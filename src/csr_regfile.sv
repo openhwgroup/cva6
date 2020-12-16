@@ -29,7 +29,7 @@ module csr_regfile import ariane_pkg::*; #(
     input  scoreboard_entry_t [NrCommitPorts-1:0] commit_instr_i, // the instruction we want to commit
     input  logic [NrCommitPorts-1:0]              commit_ack_i,   // Commit acknowledged a instruction -> increase instret CSR
     // Core and Cluster ID
-    input  logic[riscv::XLEN-1:0] boot_addr_i,                // Address from which to start booting, mtvec is set to the same address
+    input  logic[riscv::VLEN-1:0] boot_addr_i,                // Address from which to start booting, mtvec is set to the same address
     input  logic[riscv::XLEN-1:0] hart_id_i,                  // Hart id in a multicore environment (reflected in a CSR)
     // we are taking an exception
     input exception_t             ex_i,                       // We've got an exception from the commit stage, take it
@@ -85,7 +85,7 @@ module csr_regfile import ariane_pkg::*; #(
     output logic                  perf_we_o,
     // PMPs
     output riscv::pmpcfg_t [15:0] pmpcfg_o,   // PMP configuration containing pmpcfg for max 16 PMPs
-    output logic [15:0][53:0]     pmpaddr_o   // PMP addresses
+    output logic [15:0][riscv::PLEN-3:0] pmpaddr_o            // PMP addresses
 );
     // internal signal to keep track of access exceptions
     logic        read_access_exception, update_access_exception, privilege_violation;
@@ -361,7 +361,7 @@ module csr_regfile import ariane_pkg::*; #(
         // boot_addr_i will be assigned a constant
         // on the top-level.
         if (mtvec_rst_load_q) begin
-            mtvec_d             = boot_addr_i + 'h40;
+            mtvec_d             = {{riscv::XLEN-riscv::VLEN{1'b0}}, boot_addr_i} + 'h40;
         end else begin
             mtvec_d             = mtvec_q;
         end

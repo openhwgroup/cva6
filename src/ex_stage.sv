@@ -105,7 +105,7 @@ module ex_stage import ariane_pkg::*; #(
     output logic                                   dtlb_miss_o,
     // PMPs
     input  riscv::pmpcfg_t [15:0]                  pmpcfg_i,
-    input  logic[15:0][53:0]                       pmpaddr_i
+    input  logic[15:0][riscv::PLEN-3:0]            pmpaddr_i
 );
 
     // -------------------------

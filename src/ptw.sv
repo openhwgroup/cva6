@@ -62,7 +62,7 @@ module ptw import ariane_pkg::*; #(
     // PMP
 
     input  riscv::pmpcfg_t [15:0]   pmpcfg_i,
-    input  logic [15:0][53:0]       pmpaddr_i,
+    input  logic [15:0][riscv::PLEN-3:0] pmpaddr_i,
     output logic [riscv::PLEN-1:0]  bad_paddr_o
 
 );
