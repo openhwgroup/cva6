@@ -21,10 +21,27 @@
 
  class corev_ecall_instr_stream extends riscv_load_store_rand_instr_stream;
   
+  // Number of ecall instructions to generate (note: will be back-to-back)
   rand int unsigned ecall_cnt;
 
+  // Set to include a WFI before the ECALL instruction stream
+  // If the configuration excludes WFI, this will be constrained to 0
+  rand bit wfi;
+
   constraint ecall_c {
-    ecall_cnt inside {[1:5]};    
+    ecall_cnt dist {1     :/ 10,
+                    [2:3] :/ 5,
+                    [4:6] :/ 3};
+  }
+  
+  constraint wfi_dist_c {
+    wfi dist { 0 :/ 1,
+               1 :/ 1 };
+  }
+
+  // Check config for WFI
+  constraint wfi_cfg_c {
+    cfg.no_wfi -> wfi == 0;
   }
 
   `uvm_object_utils(corev_ecall_instr_stream)
@@ -33,8 +50,20 @@
   virtual function void add_mixed_instr(int instr_cnt);
     super.add_mixed_instr(instr_cnt);
 
+    if (wfi) 
+      add_wfi();
+
     add_ecall(ecall_cnt);
   endfunction : add_mixed_instr
+
+  virtual function void add_wfi();
+    riscv_instr wfi_instr;
+
+    wfi_instr = riscv_instr::get_rand_instr(.include_instr({WFI}));
+    `DV_CHECK_RANDOMIZE_FATAL(wfi_instr)
+    wfi_instr.comment = "corev-dv: corev_ecall_instr_stream";
+    insert_instr(wfi_instr);    
+  endfunction : add_wfi
 
   virtual function void add_ecall(int unsigned cnt);
     riscv_instr ecall_instr;
