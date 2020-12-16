@@ -31,6 +31,10 @@ class corev_compressed_load_store_stress_instr_stream extends riscv_load_store_s
     }
   }
 
+  constraint compressed_reg_c {
+    rs1_reg inside {[S0:A5], SP};
+  }
+
   `uvm_object_utils(corev_compressed_load_store_stress_instr_stream)
   `uvm_object_new
   
