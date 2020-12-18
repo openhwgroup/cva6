@@ -8,7 +8,8 @@
 // Original Author: Jean-Roch COULON (jean-roch.coulon@invia.fr)
 
 module rvfi_tracer import ariane_pkg::*; #(
-  parameter int unsigned SIM_FINISH = 1000000,
+  parameter int unsigned SIM_FINISH  = 1000000,
+  parameter logic [7:0] HART_ID      = '0,
   parameter int unsigned DEBUG_START = 0,
   parameter int unsigned DEBUG_STOP  = 0
 )(
@@ -17,7 +18,7 @@ module rvfi_tracer import ariane_pkg::*; #(
 );
 
   int f;
-  initial f = $fopen("trace_ip.dasm", "w");
+  initial f = $fopen($sformatf("trace_rvfi_hart_%h.dasm", HART_ID), "w");
   final $fclose(f);
 
   // Generate the trace based on RVFI

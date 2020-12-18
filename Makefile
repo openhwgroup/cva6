@@ -286,7 +286,7 @@ else
 endif
 
 generate-trace:
-	cat trace_ip.dasm | sed 's/^.*core/core/'| $(SPIKE_ROOT)/bin/spike-dasm
+	cat trace_rvfi_hart_00.dasm | sed 's/^.*core/core/'| $(SPIKE_ROOT)/bin/spike-dasm
 
 # Build the TB and module using QuestaSim
 build: $(library) $(library)/.build-srcs $(library)/.build-tb $(dpi-library)/ariane_dpi.so
