@@ -235,9 +235,6 @@ package ariane_pkg;
     // enables a commit log which matches spikes commit log format for easier trace comparison
     localparam bit ENABLE_SPIKE_COMMIT_LOG = 1'b1;
 
-    //enable RFVI to generate RVFI trace
-    `define RVFI_TRACE
-
 
     // ------------- Dangerouse -------------
     // if set to zero a flush will not invalidate the cache-lines, in a single core environment
