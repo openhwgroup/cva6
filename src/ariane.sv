@@ -42,7 +42,9 @@ module ariane import ariane_pkg::*; #(
   // firesim trace port
   output traced_instr_pkg::trace_port_t trace_o,
 `endif
-  // Risc-V Format Interface port
+  // RISC-V formal interface port (`rvfi`):
+  // Can be left open when formal tracing is not needed.
+  // The `rvfi_tracer` module can be connected to dump the trace content into a file.
   output rvfi_tracer_pkg::rvfi_port_t  rvfi_o,
 `ifdef PITON_ARIANE
   // L15 (memory side)
