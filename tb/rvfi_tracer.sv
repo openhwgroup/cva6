@@ -24,32 +24,31 @@ module rvfi_tracer import ariane_pkg::*; #(
   logic [63:0] pc64;
   always_ff @(posedge i_ariane.clk_i) begin
     for (int i = 0; i < NR_COMMIT_PORTS; i++) begin
-      pc64 = {{riscv::XLEN-riscv::VLEN{rvfi_i[i].rvfi_pc_rdata[riscv::VLEN-1]}}, rvfi_i[i].rvfi_pc_rdata};
+      pc64 = {{riscv::XLEN-riscv::VLEN{rvfi_i[i].pc_rdata[riscv::VLEN-1]}}, rvfi_i[i].pc_rdata};
       // print the instruction information if the instruction is valid or a trap is taken
-      if (rvfi_i[i].rvfi_valid) begin
+      if (rvfi_i[i].valid) begin
         // Instruction information
         $fwrite(f, "core   0: 0x%h (0x%h) DASM(%h)\n",
-          pc64, rvfi_i[i].rvfi_insn, rvfi_i[i].rvfi_insn);
+          pc64, rvfi_i[i].insn, rvfi_i[i].insn);
         // Destination register information
         $fwrite(f, "%h 0x%h (0x%h)",
-          rvfi_i[i].rvfi_mode, pc64, rvfi_i[i].rvfi_insn);
+          rvfi_i[i].mode, pc64, rvfi_i[i].insn);
         // Decode instruction to know if destination register is FP register
-        if ( rvfi_i[i].rvfi_insn[6:0] == 7'b1001111 ||
-             rvfi_i[i].rvfi_insn[6:0] == 7'b1001011 ||
-             rvfi_i[i].rvfi_insn[6:0] == 7'b1000111 ||
-             rvfi_i[i].rvfi_insn[6:0] == 7'b1000011 ||
-             rvfi_i[i].rvfi_insn[6:0] == 7'b0000111 ||
-            (rvfi_i[i].rvfi_insn[6:0] == 7'b1010011
-                        && rvfi_i[i].rvfi_insn[31:26] != 6'b111000
-                        && rvfi_i[i].rvfi_insn[31:26] != 6'b101000
-                        && rvfi_i[i].rvfi_insn[31:26] != 6'b110000) )
+        if ( rvfi_i[i].insn[6:0] == 7'b1001111 ||
+             rvfi_i[i].insn[6:0] == 7'b1001011 ||
+             rvfi_i[i].insn[6:0] == 7'b1000111 ||
+             rvfi_i[i].insn[6:0] == 7'b1000011 ||
+             rvfi_i[i].insn[6:0] == 7'b0000111 ||
+            (rvfi_i[i].insn[6:0] == 7'b1010011 && rvfi_i[i].insn[31:26] != 6'b111000
+                                               && rvfi_i[i].insn[31:26] != 6'b101000
+                                               && rvfi_i[i].insn[31:26] != 6'b110000) )
           $fwrite(f, " f%d 0x%h\n",
-            rvfi_i[i].rvfi_rd_addr, rvfi_i[i].rvfi_rd_wdata);
-        else if (rvfi_i[i].rvfi_rd_addr != 0)
+            rvfi_i[i].rd_addr, rvfi_i[i].rd_wdata);
+        else if (rvfi_i[i].rd_addr != 0)
           $fwrite(f, " x%d 0x%h\n",
-            rvfi_i[i].rvfi_rd_addr, rvfi_i[i].rvfi_rd_wdata);
+            rvfi_i[i].rd_addr, rvfi_i[i].rd_wdata);
         else $fwrite(f, "\n");
-      end else if (rvfi_i[i].rvfi_trap)
+      end else if (rvfi_i[i].trap)
         $fwrite(f, "exception : 0x%h\n", pc64);
     end
     if (cycles > SIM_FINISH) $finish(1);
