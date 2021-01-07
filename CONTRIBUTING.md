@@ -1,9 +1,10 @@
 # Contributing
-New Contributors are always welecome.  Contributors are encouraged, but not required, to be a [member](https://www.openhwgroup.org/membership/) of the OpenHW Group. Have a look at [README](https://github.com/openhwgroup/core-v-verif/blob/master/README.md), especially the [getting started](https://github.com/openhwgroup/core-v-verif#getting-started) section.
+New Contributors are always welcome. Start by having a look at the **README**, especially the [getting started](https://github.com/openhwgroup/core-v-verif#getting-started) section.
 
 ## Contributor Agreement
+Contributors are encouraged, but not required, to be a [member](https://www.openhwgroup.org/membership/) of the OpenHW Group.
 Contributors must be covered by the terms of the [Eclipse Contributor Agreement](https://www.eclipse.org/legal/ECA.php) (for individuals) or the [Eclipse Member Committer and Contributor Agreement](https://www.eclipse.org/legal/committer_process/EclipseMemberCommitterAgreement.pdf) (for employees of Member companies). The ECA/MCCA is an agreement covering a Contributor's role in making technical contributions to the OpenHW Group, and it provides the legal framework for granting copyright on code and/or documents merged into OpenHW Group repositories.
-<br>
+<br><br>
 All pull-requests to OpenHW Group git repositories must be signed-off using the `--signoff` (or `-s`) option to the git commit command (see below).
 
 ## The Mechanics
