@@ -32,10 +32,14 @@ source ./cva6/install-riscv-dv.sh
 source ./cva6/install-riscv-compliance.sh
 source ./cva6/install-riscv-tests.sh
 
+if ! [ -n "$DV_SIMULATORS" ]; then
+  DV_SIMULATORS=verilator,spike
+fi
+
 cd uvm/riscv-dv
-python3 run.py --testlist=../../cva6/tests/testlist_riscv-tests-rv64gc-v.yaml --test rv64ui-v-add --target rv64gc --iss=verilator,spike $DV_OPTS
-python3 run.py --testlist=../../cva6/tests/testlist_riscv-tests-rv64gc-p.yaml --test rv64ui-p-add --target rv64gc --iss=verilator,spike $DV_OPTS
-python3 run.py --testlist=../../cva6/tests/testlist_riscv-compliance-rv64gc.yaml --test rv32i-I-ADD-01 --target rv64gc --iss=verilator,spike $DV_OPTS
-python3 run.py --testlist=../../cva6/tests/testlist_riscv-compliance-rv32ima.yaml --test rv32i-I-ADD-01 --target rv32imac --iss=verilator,spike $DV_OPTS
-python3 run.py --testlist=../../cva6/tests/testlist_riscv-tests-rv32ima-p.yaml --test rv32ui-p-add --target rv32imac --iss=verilator,spike $DV_OPTS
+python3 run.py --testlist=../../cva6/tests/testlist_riscv-tests-rv64gc-v.yaml --test rv64ui-v-add --target rv64gc --iss=$DV_SIMULATORS $DV_OPTS
+python3 run.py --testlist=../../cva6/tests/testlist_riscv-tests-rv64gc-p.yaml --test rv64ui-p-add --target rv64gc --iss=$DV_SIMULATORS $DV_OPTS
+python3 run.py --testlist=../../cva6/tests/testlist_riscv-compliance-rv64gc.yaml --test rv32i-I-ADD-01 --target rv64gc --iss=$DV_SIMULATORS $DV_OPTS
+python3 run.py --testlist=../../cva6/tests/testlist_riscv-compliance-rv32ima.yaml --test rv32i-I-ADD-01 --target rv32imac --iss=$DV_SIMULATORS $DV_OPTS
+python3 run.py --testlist=../../cva6/tests/testlist_riscv-tests-rv32ima-p.yaml --test rv32ui-p-add --target rv32imac --iss=$DV_SIMULATORS $DV_OPTS
 cd ../..
