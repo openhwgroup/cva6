@@ -13,7 +13,7 @@ It has configurable size, separate TLBs, a hardware PTW and branch-prediction (b
 If you use CVA6 in your academic work you can cite us:
 
 ```
-@article{8777130,
+@article{zaruba2019cost,
    author={F. {Zaruba} and L. {Benini}},
    journal={IEEE Transactions on Very Large Scale Integration (VLSI) Systems},
    title={The Cost of Application-Class Processing: Energy and Performance Analysis of a Linux-Ready 1.7-GHz 64-Bit RISC-V Core in 22-nm FDSOI Technology},
@@ -49,6 +49,13 @@ Table of Contents
    * [Acknowledgements](#acknowledgements)
 
 Created by [gh-md-toc](https://github.com/ekalinin/github-markdown-toc)
+
+## Tool Requirements
+
+* `verilator >= 4.002`
+
+> There is currently a known issue with version 4.106 and 4.108. 4.106 does not
+> compile and 4.108 hangs after a couple of cycles simulation time.
 
 ## Getting Started
 
