@@ -165,7 +165,6 @@ module cv32e40p_tb_wrapper
          .data_rvalid_o  ( data_rvalid                               ),
          .data_gnt_o     ( data_gnt                                  ),
 
-         // TODO: Interrupts need to be re-done
          .irq_id_i       ( irq_id_out                                ),
          .irq_ack_i      ( irq_ack                                   ),
          .irq_o          ( irq                                       ),

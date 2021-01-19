@@ -48,7 +48,7 @@ int main(int argc, char *argv[])
 
     /* Check MISA CSR: if its zero, it might not be implemented at all */
     if (misa_rval != 0x40001104) {
-      printf("\tERROR: CSR MISA reads as 0x%x - should be 0x40001104 for this release of CV32E40P!\n\n");
+      printf("\tERROR: CSR MISA reads as 0x%x - should be 0x40001104 for this release of CV32E40P!\n\n", misa_rval);
       return EXIT_FAILURE;
     }
 

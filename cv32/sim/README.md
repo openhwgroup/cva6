@@ -28,6 +28,3 @@ The Makefile will run the SystemVerilog/UVM verification environment found in
 #### tools
 Tool specific sub-dirs for some of the tools used in the CV32.  For example,
 Tcl control files for waveform viewing support.
-
-#### mcy
-Setup and configuration for [Mutual Coverage with Yosys](https://github.com/YosysHQ/mcy) from [SymbioticEDA](https://www.symbioticeda.com/).

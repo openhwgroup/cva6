@@ -60,7 +60,7 @@ __syscall_error(long a0)
 
 void unimplemented_syscall()
 {
-  const char *p = "Unimplemented system call called!\n";
+  const char *p = "BSP: Unimplemented system call called!\n";
   while (*p)
     *(volatile int *)STDOUT_REG = *(p++);
 }
