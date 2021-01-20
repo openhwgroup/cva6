@@ -88,3 +88,7 @@ $ git merge upstream/master<br>
 $ git push --set-upstream origin master<br>
 
 
+## Using ssh (need to set-up ssh keys first)
+\# git remote set-url origin git@github.com:username/your-repository.git<br>
+$ git clone git@github.com:openhwgroup/core-v-verif.git master<br>
+
