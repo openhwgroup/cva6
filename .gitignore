@@ -32,3 +32,6 @@ work-dpi/
 tb/riscv-isa-sim/
 work-*/*
 install/
+*.swp
+dsim.*
+dsim_*

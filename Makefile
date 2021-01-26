@@ -479,6 +479,10 @@ verilate: $(if $(DROMAJO), dromajo,)
 	$(verilate_command)
 	cd $(ver-library) && $(MAKE) -j${NUM_JOBS} -f Variane_testharness.mk
 
+comp-verilate: $(if $(DROMAJO), dromajo,)
+	@echo "[Verilator] Building Model$(if $(PROFILE), for Profiling,)"
+	$(verilate_command)
+
 sim-verilator: verilate
 	$(ver-library)/Variane_testharness $(elf-bin)
 
