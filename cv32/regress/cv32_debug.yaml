@@ -1,8 +1,8 @@
 # YAML file to specify a regression testlist
 ---
 # Header
-name: cv32_interrupt
-description: Directed and random interrupt tests for CV32E40P
+name: cv32_debug_regression
+description: Directed and random debug tests for CV32E40P
 
 # List of builds
 builds:
