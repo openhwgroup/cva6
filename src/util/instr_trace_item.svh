@@ -12,17 +12,18 @@
 // Date: 30.05.2017
 // Description: Instruction tracer single instruction item
 
+`ifndef __INSTR_TRACE_ITEM_INC__
+`define __INSTR_TRACE_ITEM_INC__
 `ifndef VERILATOR
-function string printPCexpr(input logic [63:0] imm);
-  // check if the sign bit is set
-  if ($signed(imm) > 0) begin
-      //return $sformatf("pc + %0d", $signed(imm));
-      printPCexpr = $sformatf("pc + %0d", $signed(imm));
-  end else begin
-      //return $sformatf("pc - %0d", $signed(-imm));
-      printPCexpr =  $sformatf("pc - %0d", $signed(-imm));
-  end
-endfunction
+
+//function string printPCexpr(input logic [63:0] imm);
+//  // check if the sign bit is set
+//  if ($signed(imm) > 0) begin
+//      return ($sformatf("pc + %0d", $signed(imm)));
+//  end else begin
+//      return ($sformatf("pc - %0d", $signed(-imm)));
+//  end
+//endfunction
 
 class instr_trace_item;
     // keep a couple of general purpose information inside this instruction item
@@ -68,6 +69,15 @@ class instr_trace_item;
         end else begin
             this.instr    = instr;
         end
+    endfunction
+
+    function string printPCexpr(input logic [63:0] imm);
+      // check if the sign bit is set
+      if ($signed(imm) > 0) begin
+          return ($sformatf("pc + %0d", $signed(imm)));
+      end else begin
+          return ($sformatf("pc - %0d", $signed(-imm)));
+      end
     endfunction
 
     // convert gp register address to ABI compatible form
@@ -796,4 +806,6 @@ class instr_trace_item;
         return (this.printRInstr(s));
     endfunction
   endclass
-`endif
+
+`endif //VERILATOR
+`endif //__INSTR_TRACE_ITEM_INC__

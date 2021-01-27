@@ -12,7 +12,10 @@
 // Date: 17.06.2017
 // Description: Instruction tracer single exception item
 
+`ifndef __EX_TRACE_ITEM_INC__
+`define __EX_TRACE_ITEM_INC__
 `ifndef VERILATOR
+
 class ex_trace_item;
     // contains a human readable form of the cause value
     string                  cause_s;
@@ -76,5 +79,6 @@ class ex_trace_item;
     endfunction : printException
 
 endclass
-`endif
 
+`endif // __EX_TRACE_ITEM_INC__
+`endif // VERILATOR

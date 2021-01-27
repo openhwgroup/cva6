@@ -131,13 +131,6 @@ dsim \
     src/axi_node/src/axi_node.sv \
     src/axi_node/src/axi_node_wrap_with_slices.sv \
     src/axi_node/src/axi_multiplexer.sv \
-    src/axi_riscv_atomics/src/axi_riscv_amos.sv \
-    src/axi_riscv_atomics/src/axi_riscv_atomics.sv \
-    src/axi_riscv_atomics/src/axi_res_tbl.sv \
-    src/axi_riscv_atomics/src/axi_riscv_lrsc_wrap.sv \
-    src/axi_riscv_atomics/src/axi_riscv_amos_alu.sv \
-    src/axi_riscv_atomics/src/axi_riscv_lrsc.sv \
-    src/axi_riscv_atomics/src/axi_riscv_atomics_wrap.sv \
     src/axi_mem_if/src/axi2mem.sv \
     src/pmp/src/pmp_entry.sv \
     src/pmp/src/pmp.sv \
@@ -197,9 +190,19 @@ dsim \
     src/common_cells/src/counter.sv \
     src/common_cells/src/shift_reg.sv \
     src/tech_cells_generic/src/pulp_clock_gating.sv \
+    src/tech_cells_generic/src/cluster_clock_gating.sv \
     src/tech_cells_generic/src/cluster_clock_inverter.sv \
     src/tech_cells_generic/src/pulp_clock_mux2.sv \
     core_tb/cva6_core_tb.sv \
     src/util/sram.sv \
+    -sv \
     -work dsim_work \
     -genimage dsim.out
+
+#    src/axi_riscv_atomics/src/axi_riscv_amos.sv \
+#    src/axi_riscv_atomics/src/axi_riscv_atomics.sv \
+#    src/axi_riscv_atomics/src/axi_res_tbl.sv \
+#    src/axi_riscv_atomics/src/axi_riscv_lrsc_wrap.sv \
+#    src/axi_riscv_atomics/src/axi_riscv_amos_alu.sv \
+#    src/axi_riscv_atomics/src/axi_riscv_lrsc.sv \
+#    src/axi_riscv_atomics/src/axi_riscv_atomics_wrap.sv \

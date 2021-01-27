@@ -17,7 +17,6 @@
 import uvm_pkg::*;
 `include "uvm_macros.svh"
 `include "ex_trace_item.svh"
-
 `include "instr_trace_item.svh"
 //pragma translate_on
 

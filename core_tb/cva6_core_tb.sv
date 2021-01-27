@@ -13,7 +13,9 @@
 // Description: Test-harness for Ariane
 //              Instantiates an AXI-Bus and memories
 
-`ifndef VERILATOR
+`ifdef VERILATOR
+  // VERILATOR uses tb/cva6_core_tb.cpp to drive the harness.
+`else
 
 `timescale 1ns/1ns
 module cva6_core_tb #(
@@ -27,7 +29,7 @@ module cva6_core_tb #(
   logic reset_n;
 
   initial begin
-    //$timeformat(-9, 2, "ns");
+    $timeformat(-9, 2, "ns");
     clk = 1'b0;
     reset_n = 1'b0;
     fork
@@ -45,11 +47,16 @@ module cva6_core_tb #(
       end
     join
   end
+
+  cva6_testharness cva6_th_inst (
+                                 .clk_i  (clk),
+                                 .rst_ni (reset_n)
+                                );
 endmodule
 
 `endif //VERILATOR
 
-module ariane_testharness #(
+module cva6_testharness #(
   parameter int unsigned AXI_USER_WIDTH    = 1,
   parameter int unsigned AXI_ADDRESS_WIDTH = 64,
   parameter int unsigned AXI_DATA_WIDTH    = 64,

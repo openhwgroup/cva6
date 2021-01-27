@@ -1,6 +1,10 @@
 #!/bin/sh
+rm -rf work-ver
 echo "[Verilator] Building Model"
 verilator \
+    +define+WT_DCACHE \
+    +incdir+src/axi_node \
+    +incdir+src/common_cells/include/ \
     include/riscv_pkg.sv \
     src/riscv-dbg/src/dm_pkg.sv \
     include/ariane_pkg.sv \
@@ -188,9 +192,7 @@ verilator \
     src/tech_cells_generic/src/cluster_clock_inverter.sv \
     src/tech_cells_generic/src/pulp_clock_mux2.sv \
     core_tb/cva6_core_tb.sv \
-    +define+WT_DCACHE \
     src/util/sram.sv \
-    +incdir+src/axi_node \
     --unroll-count 256 \
     -Werror-PINMISSING \
     -Werror-IMPLICIT \
@@ -208,10 +210,9 @@ verilator \
     -Wall \
     --cc \
     --vpi \
-    +incdir+src/common_cells/include/ \
-    --top-module ariane_testharness \
+    --top-module cva6_testharness \
     --Mdir work-ver -O3 \
-    --exe tb/ariane_tb.cpp
+    --exe core_tb/cva6_core_tb.cpp
 
 #    --top-module cva6_core_tb \
 #    --exe tb/ariane_tb.cpp tb/dpi/SimDTM.cc tb/dpi/SimJTAG.cc tb/dpi/remote_bitbang.cc tb/dpi/msim_helper.cc
