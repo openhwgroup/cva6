@@ -24,6 +24,8 @@
 //      return ($sformatf("pc - %0d", $signed(-imm)));
 //  end
 //endfunction
+//
+import instr_tracer_pkg::*;
 
 class instr_trace_item;
     // keep a couple of general purpose information inside this instruction item
@@ -373,9 +375,10 @@ class instr_trace_item;
             instr_tracer_pkg::SH:             s = this.printStoreInstr("sh");
             instr_tracer_pkg::SW:             s = this.printStoreInstr("sw");
             instr_tracer_pkg::SD:             s = this.printStoreInstr("sd");
-            instr_tracer_pkg::FSW:            s = this.printStoreInstr("fsw");
-            instr_tracer_pkg::FSD:            s = this.printStoreInstr("fsd");
-            instr_tracer_pkg::FSQ:            s = this.printStoreInstr("fsq");
+            // These appear more than once in the case statement
+            //instr_tracer_pkg::FSW:            s = this.printStoreInstr("fsw");
+            //instr_tracer_pkg::FSD:            s = this.printStoreInstr("fsd");
+            //instr_tracer_pkg::FSQ:            s = this.printStoreInstr("fsq");
             instr_tracer_pkg::INSTR_AMO:      s = this.printAMOInstr();
             // Compressed Instructions
             instr_tracer_pkg::C_FLD:          s = this.printLoadInstr("c.fld");

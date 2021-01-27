@@ -29,7 +29,7 @@ module cva6_core_tb #(
   logic reset_n;
 
   initial begin
-    $timeformat(-9, 2, "ns");
+    $timeformat(-9, 2, "ns", 10);
     clk = 1'b0;
     reset_n = 1'b0;
     fork

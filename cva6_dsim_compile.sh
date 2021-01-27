@@ -1,14 +1,16 @@
 #!/bin/sh
 #export UVM_HOME=/opt/Metrics/dsim/20201123.4.0/uvm-1.2
+#    +incdir+/opt/Metrics/dsim/20201123.4.0/uvm-1.2/src \
+#    /opt/Metrics/dsim/20201123.4.0/uvm-1.2/src/uvm_pkg.sv \
 rm -rf dsim.env dsim.log dsim_work
 echo "[DSIM] Building Model"
 dsim \
     +define+WT_DCACHE \
-    +incdir+/opt/Metrics/dsim/20201123.4.0/uvm-1.2/src \
+    +incdir+${UVM_HOME}/src \
     +incdir+src/axi_node \
     +incdir+src/common_cells/include/ \
     +incdir+src/util/ \
-    /opt/Metrics/dsim/20201123.4.0/uvm-1.2/src/uvm_pkg.sv \
+    ${UVM_HOME}/src/uvm_pkg.sv \
     include/riscv_pkg.sv \
     src/riscv-dbg/src/dm_pkg.sv \
     include/ariane_pkg.sv \
@@ -20,6 +22,7 @@ dsim \
     include/axi_intf.sv \
     tb/ariane_soc_pkg.sv \
     include/ariane_axi_pkg.sv \
+    include/instr_tracer_pkg.sv \
     src/fpu/src/fpnew_pkg.sv \
     src/fpu/src/fpu_div_sqrt_mvp/hdl/defs_div_sqrt_mvp.sv \
     src/ariane.sv \
@@ -72,7 +75,6 @@ dsim \
     src/fpu/src/fpu_div_sqrt_mvp/hdl/preprocess_mvp.sv \
     src/fpu/src/fpu_div_sqrt_mvp/hdl/control_mvp.sv \
     src/fpu/src/fpu_div_sqrt_mvp/hdl/norm_div_sqrt_mvp.sv \
-    src/fpu/src/fpu_div_sqrt_mvp/hdl/div_sqrt_mvp_wrapper.sv \
     src/frontend/frontend.sv \
     src/frontend/instr_scan.sv \
     src/frontend/instr_queue.sv \
@@ -91,53 +93,10 @@ dsim \
     src/cache_subsystem/wt_dcache_missunit.sv \
     src/cache_subsystem/cva6_icache.sv \
     src/cache_subsystem/wt_dcache_wbuffer.sv \
-    src/cache_subsystem/wt_l15_adapter.sv \
     src/cache_subsystem/wt_dcache_mem.sv \
-    src/cache_subsystem/std_cache_subsystem.sv \
     src/cache_subsystem/cva6_icache_axi_wrapper.sv \
-    bootrom/bootrom.sv \
-    bootrom/dromajo_bootrom.sv \
-    src/clint/axi_lite_interface.sv \
-    src/clint/clint.sv \
-    fpga/src/axi2apb/src/axi2apb_wrap.sv \
-    fpga/src/axi2apb/src/axi2apb.sv \
-    fpga/src/axi2apb/src/axi2apb_64_32.sv \
-    fpga/src/apb_timer/apb_timer.sv \
-    fpga/src/apb_timer/timer.sv \
-    fpga/src/axi_slice/src/axi_w_buffer.sv \
-    fpga/src/axi_slice/src/axi_r_buffer.sv \
-    fpga/src/axi_slice/src/axi_slice_wrap.sv \
-    fpga/src/axi_slice/src/axi_slice.sv \
-    fpga/src/axi_slice/src/axi_single_slice.sv \
-    fpga/src/axi_slice/src/axi_ar_buffer.sv \
-    fpga/src/axi_slice/src/axi_b_buffer.sv \
-    fpga/src/axi_slice/src/axi_aw_buffer.sv \
-    src/axi_node/src/axi_regs_top.sv \
-    src/axi_node/src/axi_BR_allocator.sv \
-    src/axi_node/src/axi_BW_allocator.sv \
-    src/axi_node/src/axi_address_decoder_BR.sv \
-    src/axi_node/src/axi_DW_allocator.sv \
-    src/axi_node/src/axi_address_decoder_BW.sv \
-    src/axi_node/src/axi_address_decoder_DW.sv \
-    src/axi_node/src/axi_node_arbiter.sv \
-    src/axi_node/src/axi_response_block.sv \
-    src/axi_node/src/axi_request_block.sv \
-    src/axi_node/src/axi_AR_allocator.sv \
-    src/axi_node/src/axi_AW_allocator.sv \
-    src/axi_node/src/axi_address_decoder_AR.sv \
-    src/axi_node/src/axi_address_decoder_AW.sv \
-    src/axi_node/src/apb_regs_top.sv \
-    src/axi_node/src/axi_node_intf_wrap.sv \
-    src/axi_node/src/axi_node.sv \
-    src/axi_node/src/axi_node_wrap_with_slices.sv \
-    src/axi_node/src/axi_multiplexer.sv \
-    src/axi_mem_if/src/axi2mem.sv \
     src/pmp/src/pmp_entry.sv \
     src/pmp/src/pmp.sv \
-    src/rv_plic/rtl/rv_plic_target.sv \
-    src/rv_plic/rtl/rv_plic_gateway.sv \
-    src/rv_plic/rtl/plic_regmap.sv \
-    src/rv_plic/rtl/plic_top.sv \
     src/riscv-dbg/src/dmi_cdc.sv \
     src/riscv-dbg/src/dmi_jtag.sv \
     src/riscv-dbg/src/dmi_jtag_tap.sv \
@@ -146,27 +105,14 @@ dsim \
     src/riscv-dbg/src/dm_sba.sv \
     src/riscv-dbg/src/dm_top.sv \
     src/riscv-dbg/debug_rom/debug_rom.sv \
-    src/register_interface/src/apb_to_reg.sv \
-    src/axi/src/axi_multicut.sv \
-    src/common_cells/src/deprecated/generic_fifo.sv \
-    src/common_cells/src/deprecated/pulp_sync.sv \
-    src/common_cells/src/deprecated/find_first_one.sv \
     src/common_cells/src/rstgen_bypass.sv \
     src/common_cells/src/stream_mux.sv \
     src/common_cells/src/stream_demux.sv \
     src/common_cells/src/exp_backoff.sv \
-    src/util/axi_master_connect.sv \
-    src/util/axi_slave_connect.sv \
-    src/util/axi_master_connect_rev.sv \
-    src/util/axi_slave_connect_rev.sv \
     src/util/ex_trace_item.svh \
     src/util/instr_trace_item.svh \
     src/util/instr_tracer.sv \
     src/util/instr_tracer_if.sv \
-    src/axi/src/axi_cut.sv \
-    src/axi/src/axi_join.sv \
-    src/axi/src/axi_delayer.sv \
-    src/axi/src/axi_to_axi_lite.sv \
     src/fpga-support/rtl/SyncSpRamBeNx64.sv \
     src/common_cells/src/unread.sv \
     src/common_cells/src/sync.sv \
@@ -199,6 +145,65 @@ dsim \
     -work dsim_work \
     -genimage dsim.out
 
+#    src/cache_subsystem/std_cache_subsystem.sv \
+#    src/fpu/src/fpu_div_sqrt_mvp/hdl/div_sqrt_mvp_wrapper.sv \
+#    src/cache_subsystem/wt_l15_adapter.sv \
+
+#    src/rv_plic/rtl/rv_plic_target.sv \
+#    src/rv_plic/rtl/rv_plic_gateway.sv \
+#    src/rv_plic/rtl/plic_regmap.sv \
+#    src/rv_plic/rtl/plic_top.sv \
+
+#    src/util/axi_master_connect.sv \
+#    src/util/axi_slave_connect.sv \
+#    src/util/axi_master_connect_rev.sv \
+#    src/util/axi_slave_connect_rev.sv \
+#    src/axi/src/axi_cut.sv \
+#    src/axi/src/axi_join.sv \
+#    src/axi/src/axi_delayer.sv \
+#    src/axi/src/axi_to_axi_lite.sv \
+
+#    src/register_interface/src/apb_to_reg.sv \
+#    src/axi/src/axi_multicut.sv \
+#    bootrom/bootrom.sv \
+#    bootrom/dromajo_bootrom.sv \
+#    src/clint/axi_lite_interface.sv \
+#    src/clint/clint.sv \
+#    src/axi_node/src/axi_regs_top.sv \
+#    src/axi_node/src/axi_BR_allocator.sv \
+#    src/axi_node/src/axi_BW_allocator.sv \
+#    src/axi_node/src/axi_address_decoder_BR.sv \
+#    src/axi_node/src/axi_DW_allocator.sv \
+#    src/axi_node/src/axi_address_decoder_BW.sv \
+#    src/axi_node/src/axi_address_decoder_DW.sv \
+#    src/axi_node/src/axi_node_arbiter.sv \
+#    src/axi_node/src/axi_response_block.sv \
+#    src/axi_node/src/axi_request_block.sv \
+#    src/axi_node/src/axi_AR_allocator.sv \
+#    src/axi_node/src/axi_AW_allocator.sv \
+#    src/axi_node/src/axi_address_decoder_AR.sv \
+#    src/axi_node/src/axi_address_decoder_AW.sv \
+#    src/axi_node/src/apb_regs_top.sv \
+#    src/axi_node/src/axi_node_intf_wrap.sv \
+#    src/axi_node/src/axi_node.sv \
+#    src/axi_node/src/axi_node_wrap_with_slices.sv \
+#    src/axi_node/src/axi_multiplexer.sv \
+#    src/axi_mem_if/src/axi2mem.sv \
+
+#    fpga/src/axi2apb/src/axi2apb_wrap.sv \
+#    fpga/src/axi2apb/src/axi2apb.sv \
+#    fpga/src/axi2apb/src/axi2apb_64_32.sv \
+#    fpga/src/apb_timer/apb_timer.sv \
+#    fpga/src/apb_timer/timer.sv \
+#    fpga/src/axi_slice/src/axi_w_buffer.sv \
+#    fpga/src/axi_slice/src/axi_r_buffer.sv \
+#    fpga/src/axi_slice/src/axi_slice_wrap.sv \
+#    fpga/src/axi_slice/src/axi_slice.sv \
+#    fpga/src/axi_slice/src/axi_single_slice.sv \
+#    fpga/src/axi_slice/src/axi_ar_buffer.sv \
+#    fpga/src/axi_slice/src/axi_b_buffer.sv \
+#    fpga/src/axi_slice/src/axi_aw_buffer.sv \
+
 #    src/axi_riscv_atomics/src/axi_riscv_amos.sv \
 #    src/axi_riscv_atomics/src/axi_riscv_atomics.sv \
 #    src/axi_riscv_atomics/src/axi_res_tbl.sv \
@@ -206,3 +211,7 @@ dsim \
 #    src/axi_riscv_atomics/src/axi_riscv_amos_alu.sv \
 #    src/axi_riscv_atomics/src/axi_riscv_lrsc.sv \
 #    src/axi_riscv_atomics/src/axi_riscv_atomics_wrap.sv \
+
+#    src/common_cells/src/deprecated/generic_fifo.sv \
+#    src/common_cells/src/deprecated/pulp_sync.sv \
+#    src/common_cells/src/deprecated/find_first_one.sv \
