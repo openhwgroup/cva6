@@ -78,7 +78,7 @@ module axi_shim #(
     assign wr_single_req       = (wr_blen_i == 0);
 
     // address
-    assign axi_req_o.aw.burst  = (wr_single_req) ? 2'b00 : 2'b01;  // fixed size for single request and incremental transfer for everything else
+    assign axi_req_o.aw.burst  = axi_pkg::BURST_INCR; // Use BURST_INCR for AXI regular transaction
     assign axi_req_o.aw.addr   = wr_addr_i;
     assign axi_req_o.aw.size   = wr_size_i;
     assign axi_req_o.aw.len    = wr_blen_i;
@@ -232,10 +232,9 @@ module axi_shim #(
 ///////////////////////////////////////////////////////
 
     // address
-    // in case of a single request or wrapping transfer we can simply begin at the address, if we want to request a cache-line
+    // in case of a wrapping transfer we can simply begin at the address, if we want to request a cache-line
     // with an incremental transfer we need to output the corresponding base address of the cache line
-    assign axi_req_o.ar.burst  = (rd_blen_i == 0)      ? 2'b00 :
-                                                         2'b01;  
+    assign axi_req_o.ar.burst  = axi_pkg::BURST_INCR; // Use BURST_INCR for AXI regular transaction
     assign axi_req_o.ar.addr   = rd_addr_i;
     assign axi_req_o.ar.size   = rd_size_i;
     assign axi_req_o.ar.len    = rd_blen_i;

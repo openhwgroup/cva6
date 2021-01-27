@@ -70,7 +70,7 @@ module axi_adapter #(
         axi_req_o.aw.region = 4'b0;
         axi_req_o.aw.len    = 8'b0;
         axi_req_o.aw.size   = {1'b0, size_i};
-        axi_req_o.aw.burst  = (type_i == ariane_axi::SINGLE_REQ) ? 2'b00 :  2'b01;  // fixed size for single request and incremental transfer for everything else
+        axi_req_o.aw.burst  = axi_pkg::BURST_INCR; // Use BURST_INCR for AXI regular transaction
         axi_req_o.aw.lock   = 1'b0;
         axi_req_o.aw.cache  = 4'b0;
         axi_req_o.aw.qos    = 4'b0;
@@ -86,7 +86,7 @@ module axi_adapter #(
         axi_req_o.ar.region = 4'b0;
         axi_req_o.ar.len    = 8'b0;
         axi_req_o.ar.size   = {1'b0, size_i}; // 8 bytes
-        axi_req_o.ar.burst  = (type_i == ariane_axi::SINGLE_REQ) ? 2'b00 : (CRITICAL_WORD_FIRST ? 2'b10 : 2'b01);  // wrapping transfer in case of a critical word first strategy
+        axi_req_o.ar.burst  = (CRITICAL_WORD_FIRST ? axi_pkg::BURST_WRAP : axi_pkg::BURST_INCR); // wrapping transfer in case of a critical word first strategy
         axi_req_o.ar.lock   = 1'b0;
         axi_req_o.ar.cache  = 4'b0;
         axi_req_o.ar.qos    = 4'b0;
