@@ -60,7 +60,7 @@ int main(int argc, char **argv, char **env)
     svLogicVecVal idx = {0};
     idx.aval = mutidx;
     set_mutidx(&idx);
-    std::cout << "mutsel = " << idx.aval << "\n";
+    std::cout << "[tb_top_verilator] mutsel = " << idx.aval << "\n";
 #endif
 
     while (!Verilated::gotFinish()) {
@@ -103,9 +103,9 @@ void dump_memory()
         }
         mem_file.close();
 
-        std::cout << "finished dumping memory" << std::endl;
+        std::cout << "[tb_top_verilator] finished dumping memory" << std::endl;
 
     } catch (std::ofstream::failure e) {
-        std::cerr << "exception opening/reading/closing file memory_dump.bin\n";
+        std::cerr << "[tb_top_verilator] exception opening/reading/closing file memory_dump.bin\n";
     }
 }
