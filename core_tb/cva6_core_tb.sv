@@ -17,7 +17,6 @@
   // VERILATOR uses tb/cva6_core_tb.cpp to drive the harness.
 `else
 
-`timescale 1ns/1ns
 module cva6_core_tb #(
   parameter int CLK_PERIOD   = 10,
                 RESET_CYCLES =  5,

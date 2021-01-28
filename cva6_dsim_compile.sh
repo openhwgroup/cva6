@@ -1,30 +1,28 @@
 #!/bin/sh
-#export UVM_HOME=/opt/Metrics/dsim/20201123.4.0/uvm-1.2
-#    +incdir+/opt/Metrics/dsim/20201123.4.0/uvm-1.2/src \
-#    /opt/Metrics/dsim/20201123.4.0/uvm-1.2/src/uvm_pkg.sv \
-rm -rf dsim.env dsim.log dsim_work
+rm -rf dsim.env dsim.log dsim_work metrics.db
 echo "[DSIM] Building Model"
 dsim \
-    +define+WT_DCACHE \
     +incdir+${UVM_HOME}/src \
+    ${UVM_HOME}/src/uvm_pkg.sv \
+    \
+    +define+WT_DCACHE \
     +incdir+src/axi_node \
     +incdir+src/common_cells/include/ \
     +incdir+src/util/ \
-    ${UVM_HOME}/src/uvm_pkg.sv \
+    \
     include/riscv_pkg.sv \
     src/riscv-dbg/src/dm_pkg.sv \
     include/ariane_pkg.sv \
-    include/std_cache_pkg.sv \
-    include/wt_cache_pkg.sv \
     src/axi/src/axi_pkg.sv \
-    src/register_interface/src/reg_intf.sv \
-    src/register_interface/src/reg_intf_pkg.sv \
     include/axi_intf.sv \
     tb/ariane_soc_pkg.sv \
     include/ariane_axi_pkg.sv \
     include/instr_tracer_pkg.sv \
     src/fpu/src/fpnew_pkg.sv \
-    src/fpu/src/fpu_div_sqrt_mvp/hdl/defs_div_sqrt_mvp.sv \
+    include/wt_cache_pkg.sv \
+    src/register_interface/src/reg_intf_pkg.sv \
+    src/register_interface/src/reg_intf.sv \
+    \
     src/ariane.sv \
     src/serdiv.sv \
     src/ariane_regfile_ff.sv \
@@ -42,7 +40,6 @@ dsim \
     src/scoreboard.sv \
     src/mmu.sv \
     src/store_unit.sv \
-    src/axi_adapter.sv \
     src/fpu_wrap.sv \
     src/csr_regfile.sv \
     src/load_store_unit.sv \
@@ -50,14 +47,16 @@ dsim \
     src/multiplier.sv \
     src/store_buffer.sv \
     src/compressed_decoder.sv \
-    src/axi_shim.sv \
     src/alu.sv \
     src/instr_realign.sv \
     src/perf_counters.sv \
     src/ptw.sv \
     src/mult.sv \
     src/load_unit.sv \
+    src/axi_shim.sv \
     src/issue_read_operands.sv \
+    \
+    src/fpu/src/fpu_div_sqrt_mvp/hdl/defs_div_sqrt_mvp.sv \
     src/fpu/src/fpnew_fma.sv \
     src/fpu/src/fpnew_opgroup_fmt_slice.sv \
     src/fpu/src/fpnew_divsqrt_multi.sv \
@@ -75,76 +74,49 @@ dsim \
     src/fpu/src/fpu_div_sqrt_mvp/hdl/preprocess_mvp.sv \
     src/fpu/src/fpu_div_sqrt_mvp/hdl/control_mvp.sv \
     src/fpu/src/fpu_div_sqrt_mvp/hdl/norm_div_sqrt_mvp.sv \
+    \
     src/frontend/frontend.sv \
     src/frontend/instr_scan.sv \
     src/frontend/instr_queue.sv \
     src/frontend/bht.sv \
     src/frontend/btb.sv \
     src/frontend/ras.sv \
-    src/cache_subsystem/wt_dcache.sv \
-    src/cache_subsystem/tag_cmp.sv \
-    src/cache_subsystem/cache_ctrl.sv \
-    src/cache_subsystem/amo_alu.sv \
-    src/cache_subsystem/wt_axi_adapter.sv \
-    src/cache_subsystem/std_nbdcache.sv \
-    src/cache_subsystem/wt_dcache_ctrl.sv \
-    src/cache_subsystem/miss_handler.sv \
-    src/cache_subsystem/wt_cache_subsystem.sv \
-    src/cache_subsystem/wt_dcache_missunit.sv \
-    src/cache_subsystem/cva6_icache.sv \
-    src/cache_subsystem/wt_dcache_wbuffer.sv \
-    src/cache_subsystem/wt_dcache_mem.sv \
-    src/cache_subsystem/cva6_icache_axi_wrapper.sv \
+    \
     src/pmp/src/pmp_entry.sv \
     src/pmp/src/pmp.sv \
-    src/riscv-dbg/src/dmi_cdc.sv \
-    src/riscv-dbg/src/dmi_jtag.sv \
-    src/riscv-dbg/src/dmi_jtag_tap.sv \
-    src/riscv-dbg/src/dm_csrs.sv \
-    src/riscv-dbg/src/dm_mem.sv \
-    src/riscv-dbg/src/dm_sba.sv \
-    src/riscv-dbg/src/dm_top.sv \
-    src/riscv-dbg/debug_rom/debug_rom.sv \
-    src/common_cells/src/rstgen_bypass.sv \
-    src/common_cells/src/stream_mux.sv \
-    src/common_cells/src/stream_demux.sv \
-    src/common_cells/src/exp_backoff.sv \
+    \
     src/util/ex_trace_item.svh \
     src/util/instr_trace_item.svh \
     src/util/instr_tracer.sv \
     src/util/instr_tracer_if.sv \
+    src/util/sram.sv \
+    \
     src/fpga-support/rtl/SyncSpRamBeNx64.sv \
+    \
+    src/common_cells/src/exp_backoff.sv \
     src/common_cells/src/unread.sv \
-    src/common_cells/src/sync.sv \
-    src/common_cells/src/cdc_2phase.sv \
-    src/common_cells/src/spill_register.sv \
-    src/common_cells/src/sync_wedge.sv \
-    src/common_cells/src/edge_detect.sv \
-    src/common_cells/src/stream_arbiter.sv \
-    src/common_cells/src/stream_arbiter_flushable.sv \
-    src/common_cells/src/deprecated/fifo_v1.sv \
-    src/common_cells/src/deprecated/fifo_v2.sv \
     src/common_cells/src/fifo_v3.sv \
     src/common_cells/src/lzc.sv \
     src/common_cells/src/popcount.sv \
     src/common_cells/src/rr_arb_tree.sv \
-    src/common_cells/src/deprecated/rrarbiter.sv \
-    src/common_cells/src/stream_delay.sv \
     src/common_cells/src/lfsr_8bit.sv \
-    src/common_cells/src/lfsr_16bit.sv \
-    src/common_cells/src/delta_counter.sv \
-    src/common_cells/src/counter.sv \
     src/common_cells/src/shift_reg.sv \
-    src/tech_cells_generic/src/pulp_clock_gating.sv \
-    src/tech_cells_generic/src/cluster_clock_gating.sv \
-    src/tech_cells_generic/src/cluster_clock_inverter.sv \
-    src/tech_cells_generic/src/pulp_clock_mux2.sv \
+    \
+    src/cache_subsystem/wt_cache_subsystem.sv \
+    src/cache_subsystem/wt_axi_adapter.sv \
+    src/cache_subsystem/cva6_icache.sv \
+    src/cache_subsystem/wt_dcache.sv \
+    src/cache_subsystem/wt_dcache_missunit.sv \
+    src/cache_subsystem/wt_dcache_wbuffer.sv \
+    src/cache_subsystem/wt_dcache_mem.sv \
+    src/cache_subsystem/wt_dcache_ctrl.sv \
+    \
     core_tb/cva6_core_tb.sv \
-    src/util/sram.sv \
     -sv \
     -work dsim_work \
     -genimage dsim.out
 
+#    include/std_cache_pkg.sv \
 #    src/cache_subsystem/std_cache_subsystem.sv \
 #    src/fpu/src/fpu_div_sqrt_mvp/hdl/div_sqrt_mvp_wrapper.sv \
 #    src/cache_subsystem/wt_l15_adapter.sv \
@@ -162,6 +134,9 @@ dsim \
 #    src/axi/src/axi_join.sv \
 #    src/axi/src/axi_delayer.sv \
 #    src/axi/src/axi_to_axi_lite.sv \
+
+#    src/axi_adapter.sv \
+#    src/axi_shim.sv \
 
 #    src/register_interface/src/apb_to_reg.sv \
 #    src/axi/src/axi_multicut.sv \
@@ -215,3 +190,59 @@ dsim \
 #    src/common_cells/src/deprecated/generic_fifo.sv \
 #    src/common_cells/src/deprecated/pulp_sync.sv \
 #    src/common_cells/src/deprecated/find_first_one.sv \
+#    src/common_cells/src/deprecated/fifo_v1.sv \
+#    src/common_cells/src/deprecated/fifo_v2.sv \
+#    src/common_cells/src/deprecated/rrarbiter.sv \
+#    src/common_cells/src/sync_wedge.sv \
+#    src/common_cells/src/sync.sv \
+
+#    src/tech_cells_generic/src/cluster_clock_gating.sv \
+#    src/tech_cells_generic/src/cluster_clock_inverter.sv \
+#    src/tech_cells_generic/src/pulp_clock_mux2.sv \
+#    src/tech_cells_generic/src/pulp_clock_gating.sv \
+
+#    src/riscv-dbg/src/dmi_cdc.sv \
+#    src/riscv-dbg/src/dmi_jtag.sv \
+#    src/riscv-dbg/src/dmi_jtag_tap.sv \
+#    src/riscv-dbg/src/dm_csrs.sv \
+#    src/riscv-dbg/src/dm_mem.sv \
+#    src/riscv-dbg/src/dm_sba.sv \
+#    src/riscv-dbg/src/dm_top.sv \
+#    src/riscv-dbg/debug_rom/debug_rom.sv \
+
+#    src/common_cells/src/cdc_2phase.sv \
+#    src/common_cells/src/spill_register.sv \
+#    src/common_cells/src/edge_detect.sv \
+#    src/common_cells/src/rstgen_bypass.sv \
+#    src/common_cells/src/stream_mux.sv \
+#    src/common_cells/src/stream_demux.sv \
+#    src/common_cells/src/stream_delay.sv \
+#    src/common_cells/src/lfsr_16bit.sv \
+#    src/common_cells/src/counter.sv \
+#    src/common_cells/src/stream_arbiter_flushable.sv \
+#    src/common_cells/src/delta_counter.sv \
+
+#    src/cache_subsystem/wt_dcache.sv \
+#    src/cache_subsystem/tag_cmp.sv \
+#    src/cache_subsystem/cache_ctrl.sv \
+#    src/cache_subsystem/amo_alu.sv \
+#    src/cache_subsystem/wt_axi_adapter.sv \
+#    src/cache_subsystem/std_nbdcache.sv \
+#    src/cache_subsystem/wt_dcache_ctrl.sv \
+#    src/cache_subsystem/miss_handler.sv \
+#    src/cache_subsystem/wt_cache_subsystem.sv \
+#    src/cache_subsystem/wt_dcache_missunit.sv \
+#    src/cache_subsystem/cva6_icache.sv \
+#    src/cache_subsystem/wt_dcache_wbuffer.sv \
+#    src/cache_subsystem/wt_dcache_mem.sv \
+#    src/cache_subsystem/cva6_icache_axi_wrapper.sv \
+
+#    src/common_cells/src/stream_arbiter.sv \
+#    src/common_cells/src/stream_arbiter_flushable.sv \
+
+# compile the scoreboard only:
+# dsim src/riscv-dbg/src/dm_pkg.sv include/riscv_pkg.sv include/ariane_pkg.sv src/scoreboard.sv src/fpu/src/common_cells/src/rr_arb_tree.sv  src/common_cells/src/popcount.sv -sv -work dsim_work -genimage dsim.out -warn AssignPatMissingKey
+
+# compile the wt cache subsystem only:
+#dsim include/riscv_pkg.sv src/riscv-dbg/src/dm_pkg.sv include/ariane_pkg.sv src/axi/src/axi_pkg.sv include/axi_intf.sv tb/ariane_soc_pkg.sv include/ariane_axi_pkg.sv include/instr_tracer_pkg.sv include/wt_cache_pkg.sv \
+#    src/cache_subsystem/wt_cache_subsystem.sv     src/cache_subsystem/cva6_icache.sv     src/cache_subsystem/wt_dcache.sv     src/cache_subsystem/wt_axi_adapter.sv     src/cache_subsystem/wt_dcache_missunit.sv     src/cache_subsystem/wt_dcache_wbuffer.sv     src/cache_subsystem/wt_dcache_mem.sv     src/cache_subsystem/wt_dcache_ctrl.sv src/common_cells/src/lzc.sv src/common_cells/src/lfsr_8bit.sv src/common_cells/src/exp_backoff.sv src/common_cells/src/fifo_v3.sv src/axi_shim.sv  src/common_cells/src/rr_arb_tree.sv src/util/sram.sv src/fpga-support/rtl/SyncSpRamBeNx64.sv

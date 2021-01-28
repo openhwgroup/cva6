@@ -36,3 +36,4 @@ install/
 dsim.*
 dsim_*
 xrun.*
+metrics_history.db
