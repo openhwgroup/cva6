@@ -27,6 +27,13 @@
 #include <stdio.h>
 #include <stdlib.h>
 
+#ifdef NO_PULP
+#define EXP_MISA 0x40001104
+#else 
+#define EXP_MISA 0x40801104
+#endif
+
+
 int main(int argc, char *argv[])
 {
     unsigned int misa_rval, mvendorid_rval, marchid_rval, mimpid_rval, mxl;
@@ -47,8 +54,8 @@ int main(int argc, char *argv[])
     }
 
     /* Check MISA CSR: if its zero, it might not be implemented at all */
-    if (misa_rval != 0x40001104) {
-      printf("\tERROR: CSR MISA reads as 0x%x - should be 0x40001104 for this release of CV32E40P!\n\n");
+    if (misa_rval != EXP_MISA) {
+      printf("\tERROR: CSR MISA reads as 0x%x - should be 0x%x for this release of CV32E40P!\n\n", misa_rval, EXP_MISA);
       return EXIT_FAILURE;
     }
 
