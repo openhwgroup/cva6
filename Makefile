@@ -83,6 +83,7 @@ ariane_pkg := include/riscv_pkg.sv                          \
               src/register_interface/src/reg_intf_pkg.sv    \
               include/axi_intf.sv                           \
               tb/ariane_soc_pkg.sv                          \
+              tb/ariane_axi_soc_pkg.sv                      \
               include/ariane_axi_pkg.sv                     \
               src/fpu/src/fpnew_pkg.sv                      \
               src/fpu/src/fpu_div_sqrt_mvp/hdl/defs_div_sqrt_mvp.sv
