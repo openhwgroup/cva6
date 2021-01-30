@@ -1,0 +1,35 @@
+[*]
+[*] GTKWave Analyzer v3.3.107 (w)1999-2020 BSI
+[*] Sat Jan 30 19:46:39 2021
+[*]
+[dumpfile] "/home/mike/GitHubRepos/MikeOpenHWGroup/cva6/experimental/sim/core/Vcva6_core_tb.vcd"
+[dumpfile_mtime] "Sat Jan 30 19:42:49 2021"
+[dumpfile_size] 1359010
+[savefile] "/home/mike/GitHubRepos/MikeOpenHWGroup/cva6/experimental/sim/tools/cva6_core_tb_verilator.gtkw"
+[timestart] 0
+[size] 1000 600
+[pos] 2361 126
+*-6.573730 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1
+[treeopen] TOP.
+[treeopen] TOP.cva6_testharness.
+[sst_width] 233
+[signals_width] 166
+[sst_expanded] 1
+[sst_vpaned_height] 144
+@28
+TOP.clk_i
+TOP.rst_ni
+@22
+TOP.cva6_testharness.cv64a6_inst.boot_addr_i[63:0]
+TOP.cva6_testharness.cv64a6_inst.hart_id_i[63:0]
+@28
+TOP.cva6_testharness.cv64a6_inst.irq_i[1:0]
+TOP.cva6_testharness.cv64a6_inst.ipi_i
+TOP.cva6_testharness.cv64a6_inst.time_irq_i
+TOP.cva6_testharness.cv64a6_inst.debug_req_i
+@22
+TOP.cva6_testharness.cv64a6_inst.axi_req_o[280:0]
+@23
+TOP.cva6_testharness.cv64a6_inst.axi_resp_i[83:0]
+[pattern_trace] 1
+[pattern_trace] 0
