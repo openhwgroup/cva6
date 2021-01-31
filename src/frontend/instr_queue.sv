@@ -219,6 +219,7 @@ module instr_queue (
     fetch_entry_o.instruction = '0;
     fetch_entry_o.address = pc_q;
     fetch_entry_o.ex.valid = 1'b0;
+    fetch_entry_o.ex.cause = '0;
 
     fetch_entry_o.ex.tval = '0;
     fetch_entry_o.branch_predict.predict_address = address_out;
