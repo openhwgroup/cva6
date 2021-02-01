@@ -19,7 +19,7 @@
 #include "verilator.h"
 #include "verilated.h"
 #include "verilated_vcd_c.h"
-//#include "Variane_testharness__Dpi.h"
+#include "Variane_testharness__Dpi.h"
 
 #include <stdio.h>
 #include <iostream>
@@ -31,7 +31,7 @@
 #include <signal.h>
 #include <unistd.h>
 
-//#include <fesvr/dtm.h>
+#include <fesvr/dtm.h>
 #include <fesvr/htif_hexwriter.h>
 #include <fesvr/elfloader.h>
 #include "remote_bitbang.h"
