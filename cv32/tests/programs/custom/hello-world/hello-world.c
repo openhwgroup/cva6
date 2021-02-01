@@ -27,9 +27,16 @@
 #include <stdio.h>
 #include <stdlib.h>
 
+//FIXME: the core tb does not have the ability to select PULP/NO_PULP at
+//       compile-time, so we set a default MISA to NO_PULP value.  This
+//       needs to be fixed, but for now does not affect UVM env.
+#define EXP_MISA 0x40001104
+
 #ifdef NO_PULP
 #define EXP_MISA 0x40001104
-#else 
+#endif
+
+#ifdef PULP
 #define EXP_MISA 0x40801104
 #endif
 
