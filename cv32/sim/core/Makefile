@@ -16,7 +16,7 @@
 # 
 ###############################################################################
 #
-# Makefile for the CV32E40P "core" testbench.  Substantially modified from the
+# Makefile for the CV_CORE "core" testbench.  Substantially modified from the
 # Makefile original for the RI5CY testbench.
 #
 ###############################################################################
@@ -42,12 +42,16 @@
 
 # "Constants"
 MAKE           = make
-MAKE_DIR      = $(PWD)
+MAKE_DIR       = $(PWD)
 MAKE_PATH     := $(shell dirname $(realpath $(firstword $(MAKEFILE_LIST))))
 COREV_PROJ     = cv32
-PROJ_ROOT_DIR  = $(abspath $(MAKE_PATH)/../../..)
+CORE_V_VERIF   = $(abspath $(MAKE_PATH)/../../..)
 DATE           = $(shell date +%F)
-WAVES         = 0
+WAVES          = 0
+
+CV_CORE       ?= CV32E40P
+CV_CORE_LC     = $(shell echo $(CV_CORE) | tr A-Z a-z)
+CV_CORE_UC     = $(shell echo $(CV_CORE) | tr a-z A-Z)
 
 # Compile compile flags for all simulators
 SV_CMP_FLAGS = 
@@ -103,7 +107,7 @@ endif
 
 # xrun is the Cadence xcelium SystemVerilog simulator (https://cadence.com/)
 XRUN              = xrun
-XRUN_FLAGS        = -clean -smartorder -sv -top worklib.tb_top -timescale 1ns/1ps +define+CV32E40P_APU_TRACE
+XRUN_FLAGS        = -clean -smartorder -sv -top worklib.tb_top -timescale 1ns/1ps +define+CV32E40P_APU_TRACE -uvmhome CDNS-1.2-ML
 XRUN_DIR          = xcelium.d
 
 # verilator configuration
@@ -133,7 +137,7 @@ ASIM_DEBUG_FLAGS  = -o2
 ASIM_GUI_FLAGS    = -gui
 
 # TB source files for the CV32E core
-TBSRC_HOME  := $(PROJ_ROOT_DIR)/$(COREV_PROJ)/tb
+TBSRC_HOME  := $(CORE_V_VERIF)/$(CV_CORE_LC)/tb
 TBSRC_TOP   := $(TBSRC_HOME)/core/tb_top.sv
 TBSRC_CORE  := $(TBSRC_HOME)/core
 TBSRC_PKG   := $(TBSRC_CORE)/tb_riscv/include/perturbation_defines.sv
@@ -157,30 +161,29 @@ TBSRC_VERI  := $(TBSRC_CORE)/tb_top_verilator.sv \
                $(TBSRC_CORE)/tb_riscv/riscv_gnt_stall.sv \
                $(TBSRC_CORE)/mm_ram.sv \
                $(TBSRC_CORE)/dp_ram.sv
-SIM_LIBS    := $(PROJ_ROOT_DIR)/lib/sim_libs
+SIM_LIBS    := $(CORE_V_VERIF)/lib/sim_libs
 
 # RTL source files for the CV32E core
-# DESIGN_RTL_DIR is used by CV32E40P_MANIFEST file
-CV32E40P_PKG         := $(PROJ_ROOT_DIR)/core-v-cores/cv32e40p
-CV32E40P_RTLSRC_INCDIR  := $(CV32E40P_PKG)/rtl/include
-CV32E40P_RTLSRC_PKG  := $(CV32E40P_PKG)/rtl/fpnew/src/fpnew_pkg.sv \
-				$(addprefix $(CV32E40P_RTLSRC_INCDIR)/,\
-				cv32e40p_apu_core_package.sv cv32e40p_defines.sv \
-				cv32e40p_tracer_defines.sv)
-CV32E40P_RTLSRC  := $(filter-out $(CV32E40P_PKG)/rtl/cv32e40p_register_file_latch.sv, \
-                $(wildcard $(CV32E40P_PKG)/rtl/*.sv))
-FPNEW_PKG            := $(CV32E40P_PKG)/rtl/fpnew
+# DESIGN_RTL_DIR is used by CV_CORE_MANIFEST file
+CV_CORE_PKG           := $(CORE_V_VERIF)/core-v-cores/$(CV_CORE_LC)
+CV_CORE_RTLSRC_INCDIR := $(CV_CORE_PKG)/rtl/include
+CV_CORE_RTLSRC_PKG    := $(CV_CORE_PKG)/rtl/fpnew/src/fpnew_pkg.sv \
+				$(addprefix $(CV_CORE_RTLSRC_INCDIR)/,\
+				CV_CORE_apu_core_package.sv CV_CORE_defines.sv \
+				CV_CORE_tracer_defines.sv)
+CV_CORE_RTLSRC  := $(filter-out $(CV_CORE_PKG)/rtl/CV_CORE_register_file_latch.sv, \
+                $(wildcard $(CV_CORE_PKG)/rtl/*.sv))
 # FIXME: temporarily using a local manifest for the core.
 #        This is BAD PRACTICE and will be fixed with
-#        https://github.com/openhwgroup/cv32e40p/pull/421 is resolved.
-CV32E40P_MANIFEST    := $(CV32E40P_PKG)/cv32e40p_manifest.flist
-export DESIGN_RTL_DIR = $(CV32E40P_PKG)/rtl
+#        https://github.com/openhwgroup/CV_CORE/pull/421 is resolved.
+CV_CORE_MANIFEST    := $(CV_CORE_PKG)/cv32e40p_manifest.flist
+export DESIGN_RTL_DIR = $(CV_CORE_PKG)/rtl
 
 # Default "custom test-program"
 CUSTOM_PROG  ?= requested_csr_por
 
 # Shorthand rules for convience
-cv32e40p_pkg: $(CV32E40P_PKG)
+CV_CORE_pkg: $(CV_CORE_PKG)
 
 tbsrc_pkg: $(TBSRC_PKG)
 
@@ -221,8 +224,8 @@ unit-test-gui: $(SIMULATOR)-unit-test-gui
 # Common Makefile:
 #    - Core Firmware and the RISCV GCC Toolchain (SDK)
 #    - Variables for RTL dependencies
-include $(PROJ_ROOT_DIR)/cv32/sim/Common.mk
-
+include ../Common.mk
+include $(CORE_V_VERIF)/sim/Common.mk
 
 # assume verilator if no target chosen
 .DEFAULT_GOAL := sanity-veri-run
@@ -240,21 +243,21 @@ mk_results:
 	$(MKDIR_P) $(DSIM_WORK)
 
 # Metrics dsim compile targets
-dsim-comp: mk_results cv32e40p_pkg tbsrc_pkg tbsrc
+dsim-comp: mk_results CV_CORE_pkg tbsrc_pkg tbsrc
 		cd $(DSIM_RESULTS) && \
 		$(DSIM) \
 		$(DSIM_CMP_FLAGS) \
 		$(DSIM_UVM_ARGS) \
-		-f $(CV32E40P_MANIFEST) \
+		-f $(CV_CORE_MANIFEST) \
 		$(TBSRC_PKG) \
 		$(TBSRC) \
 		-work $(DSIM_WORK) \
 		-genimage $(DSIM_IMAGE)
 
-dsim-comp-rtl-only: mk_results $(CV32E40P_PKG)
+dsim-comp-rtl-only: mk_results $(CV_CORE_PKG)
 	$(DSIM) \
 		$(DSIM_CMP_FLAGS) \
-		-f $(CV32E40P_MANIFEST) \
+		-f $(CV_CORE_MANIFEST) \
 		-work $(DSIM_WORK) \
 		-genimage $(DSIM_IMAGE)
 
@@ -304,11 +307,11 @@ dsim-clean: tc-clean
 	touch .lib-rtl
 
 
-.build-rtl: .lib-rtl $(CV32E40P_PKG) $(TBSRC_PKG) $(TBSRC)
+.build-rtl: .lib-rtl $(CV_CORE_PKG) $(TBSRC_PKG) $(TBSRC)
 	$(VLOG) \
 		-work $(VWORK) \
 		$(VLOG_FLAGS) \
-		-f $(CV32E40P_MANIFEST) \
+		-f $(CV_CORE_MANIFEST) \
 		$(TBSRC_PKG) $(TBSRC) 
 		
 
@@ -398,17 +401,17 @@ questa-clean:
 ###############################################################################
 # Cadence Xcelium xrun testbench compilation
 .PHONY: xrun-all
-xrun-all: $(CV32E40P_PKG) $(FPNEW_PKG) $(RTLSRC_PKG) $(RTLSRC) $(TBSRC_PKG) $(TBSRC)
+xrun-all: $(CV_CORE_PKG) $(RTLSRC_PKG) $(RTLSRC) $(TBSRC_PKG) $(TBSRC)
 	$(XRUN) \
 		$(XRUN_FLAGS) \
-		-f $(CV32E40P_MANIFEST) \
+		-f $(CV_CORE_MANIFEST) \
 		$(TBSRC_PKG) $(TBSRC)
 
 .PHONY: xrun-hello-world
 xrun-hello-world: xrun-all $(VERI_CUSTOM)/hello-world/hello-world.hex
 	$(XRUN) \
 		$(XRUN_FLAGS) \
-		-f $(CV32E40P_MANIFEST) \
+		-f $(CV_CORE_MANIFEST) \
 		$(TBSRC_PKG) $(TBSRC) \
 		+firmware=$(VERI_CUSTOM)/hello-world/hello-world.hex
 
@@ -416,7 +419,7 @@ xrun-hello-world: xrun-all $(VERI_CUSTOM)/hello-world/hello-world.hex
 xrun-custom: xrun-all $(VERI_CUSTOM)/$(CUSTOM_PROG)/$(CUSTOM_PROG).hex
 	$(XRUN) \
 		$(XRUN_FLAGS) \
-		-f $(CV32E40P_MANIFEST) \
+		-f $(CV_CORE_MANIFEST) \
 		$(TBSRC_PKG) $(TBSRC) \
 		+firmware=$(VERI_CUSTOM)/$(CUSTOM_PROG)/$(CUSTOM_PROG).hex
 
@@ -447,14 +450,14 @@ verilate: testbench_verilator
 sanity-veri-run:
 	make custom CUSTOM_PROG=hello-world
 
-testbench_verilator: $(CV32E40P_PKG) $(TBSRC_VERI) $(TBSRC_PKG)
+testbench_verilator: $(CV_CORE_PKG) $(TBSRC_VERI) $(TBSRC_PKG)
 	$(VERILATOR) --cc --sv --exe \
 		$(VERI_TRACE) \
 		--Wno-lint --Wno-UNOPTFLAT \
 		--Wno-MODDUP --top-module \
 		tb_top_verilator $(TBSRC_VERI) \
-		-f $(CV32E40P_MANIFEST) \
-		$(CV32E40P_PKG)/bhv/cv32e40p_core_log.sv \
+		-f $(CV_CORE_MANIFEST) \
+		$(CV_CORE_PKG)/bhv/CV_CORE_core_log.sv \
 		$(TBSRC_CORE)/tb_top_verilator.cpp --Mdir $(VERI_OBJ_DIR) \
 		-CFLAGS "-std=gnu++11 $(VERI_CFLAGS)" \
 		$(VERI_COMPILE_FLAGS)
@@ -480,12 +483,12 @@ verilate-clean: tc-clean
 ###############################################################################
 # Synopsys VCS
 
-vcsify: cv32e40p_pkg tbsrc_pkg tbsrc
+vcsify: CV_CORE_pkg tbsrc_pkg tbsrc
 	$(VCS) +vc -sverilog -race=all -ignore unique_checks -full64 \
 		-timescale=1ns/1ps \
 		-assert svaext \
 		-CC "-I$(VCS_HOME)/include -O3 -march=native" $(VCS_FLAGS) \
-		-f $(MAKE_DIR)/$(CV32E40P_MANIFEST) \
+		-f $(MAKE_DIR)/$(CV_CORE_MANIFEST) \
 		$(TBSRC_PKG) $(TBSRC)
 
 RTLSRC_TB_TOP	:= $(basename $(notdir $(TBSRC_TOP)))
@@ -560,12 +563,12 @@ vcs-clean:
 	touch .rvrlib-rtl
 
 
-.rvr-build-rtl: .rvrlib-rtl $(CV32E40P_PKG) $(TBSRC_PKG) $(TBSRC) 
+.rvr-build-rtl: .rvrlib-rtl $(CV_CORE_PKG) $(TBSRC_PKG) $(TBSRC) 
 	$(ALOG) \
 		-work $(AWORK) \
 		$(ALOG_FLAGS) \
 		$(ALOG_UVM) \
-		-f $(CV32E40P_MANIFEST) \
+		-f $(CV_CORE_MANIFEST) \
 		$(TBSRC_PKG) $(TBSRC) 
 		
 
@@ -621,18 +624,14 @@ riviera-clean:
 	.build-rtl .rvrlib-rtl *.vcd objdump *.asdb *.cfg dpi_header.h
 
 ###############################################################################
-# CV32E40P RTL dependencies
+# CV_CORE RTL dependencies
 
-clone_cv32e40p_rtl:
-	$(CLONE_CV32E40P_CMD)
+clone_$(CV_CORE_LC)_rtl:
+	$(CLONE_CV_CORE_CMD)
 
-clone_fpnew_rtl: clone_cv32e40p_rtl
-	$(CLONE_FPNEW_CMD)
-
-$(CV32E40P_PKG):
-	$(CLONE_CV32E40P_CMD)
-	$(CLONE_FPNEW_CMD)
-
+$(CV_CORE_PKG):
+	@echo "Need to clone"
+	$(CLONE_CV_CORE_CMD)
 
 ###############################################################################
 # general targets
@@ -640,19 +639,19 @@ $(CV32E40P_PKG):
 	
 # clean up toolchain generated files
 clean_test_programs:
-	find $(PROJ_ROOT_DIR)/cv32/tests/programs -name *.o       -exec rm {} \;
-	find $(PROJ_ROOT_DIR)/cv32/tests/programs -name *.hex     -exec rm {} \;
-	find $(PROJ_ROOT_DIR)/cv32/tests/programs -name *.elf     -exec rm {} \;
-	find $(PROJ_ROOT_DIR)/cv32/tests/programs -name *.map     -exec rm {} \;
-	find $(PROJ_ROOT_DIR)/cv32/tests/programs -name *.readelf -exec rm {} \;
-	find $(PROJ_ROOT_DIR)/cv32/tests/programs -name *.objdump -exec rm {} \;
-	find $(PROJ_ROOT_DIR)/cv32/tests/programs -name corev_*.S -exec rm {} \;
+	find $(CORE_V_VERIF)/cv32/tests/programs -name *.o       -exec rm {} \;
+	find $(CORE_V_VERIF)/cv32/tests/programs -name *.hex     -exec rm {} \;
+	find $(CORE_V_VERIF)/cv32/tests/programs -name *.elf     -exec rm {} \;
+	find $(CORE_V_VERIF)/cv32/tests/programs -name *.map     -exec rm {} \;
+	find $(CORE_V_VERIF)/cv32/tests/programs -name *.readelf -exec rm {} \;
+	find $(CORE_V_VERIF)/cv32/tests/programs -name *.objdump -exec rm {} \;
+	find $(CORE_V_VERIF)/cv32/tests/programs -name corev_*.S -exec rm {} \;
 
 .PHONY: clean clean_all distclean
 clean: clean_test_programs questa-clean verilate-clean vcs-clean firmware-clean custom-clean dsim-clean xrun-clean vcs-clean clean-bsp riviera-clean
 
 distclean: clean
-	rm -rf riscv-fesvr riscv-isa-sim $(CV32E40P_PKG) work
+	rm -rf riscv-fesvr riscv-isa-sim $(CV_CORE_PKG) work
 
 clean_all: distclean
 #endend

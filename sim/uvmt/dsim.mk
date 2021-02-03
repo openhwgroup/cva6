@@ -38,7 +38,7 @@ DSIM_USE_ISS           ?= YES
 DSIM_FILE_LIST ?= -f $(DV_UVMT_CV32_PATH)/uvmt_cv32.flist
 ifeq ($(USE_ISS),YES)
     DSIM_FILE_LIST         += -f $(DV_UVMT_CV32_PATH)/imperas_iss.flist
-    DSIM_USER_COMPILE_ARGS += "+define+ISS+CV32E40P_TRACE_EXECUTION"
+    DSIM_USER_COMPILE_ARGS += "+define+ISS+$(CV_CORE_UC)_TRACE_EXECUTION"
 #    DSIM_USER_COMPILE_ARGS += "+define+CV32E40P_ASSERT_ON+ISS+CV32E40P_TRACE_EXECUTION"
 #    DSIM_RUN_FLAGS         += +ovpcfg="--controlfile $(OVP_CTRL_FILE)"
 endif
@@ -112,7 +112,7 @@ mk_results:
 
 ################################################################################
 # DSIM compile target
-comp: mk_results $(CV32E40P_PKG) $(OVP_MODEL_DPI)
+comp: mk_results $(CV_CORE_PKG) $(OVP_MODEL_DPI)
 	$(DSIM) \
 		$(DSIM_CMP_FLAGS) \
 		$(DSIM_UVM_ARGS) \
@@ -121,7 +121,7 @@ comp: mk_results $(CV32E40P_PKG) $(OVP_MODEL_DPI)
 		$(DSIM_USER_COMPILE_ARGS) \
 		+incdir+$(DV_UVME_CV32_PATH) \
 		+incdir+$(DV_UVMT_CV32_PATH) \
-		-f $(CV32E40P_MANIFEST) \
+		-f $(CV_CORE_MANIFEST) \
 		$(DSIM_FILE_LIST) \
 		-work $(DSIM_WORK) \
 		+$(UVM_PLUSARGS) \
@@ -237,7 +237,7 @@ TEST_PLUSARGS ?= +signature=$(COMPLIANCE_PROG).signature_output
 
 compliance: comp build_compliance
 	mkdir -p $(DSIM_RESULTS)/$(COMPLIANCE_PROG) && cd $(DSIM_RESULTS)/$(COMPLIANCE_PROG)  && \
-	export IMPERAS_TOOLS=$(PROJ_ROOT_DIR)/cv32/tests/cfg/ovpsim_no_pulp.ic && \
+	export IMPERAS_TOOLS=$(CORE_V_VERIF)/cv32/tests/cfg/ovpsim_no_pulp.ic && \
 	$(DSIM) -l dsim-$(COMPLIANCE_PROG).log -image $(DSIM_IMAGE) \
 		-work $(DSIM_WORK) $(DSIM_RUN_FLAGS) $(DSIM_DMP_FLAGS) $(TEST_PLUSARGS) \
 		-sv_lib $(UVM_HOME)/src/dpi/libuvm_dpi.so \
@@ -298,7 +298,7 @@ comp_corev-dv:
 		+define+DSIM \
 		-suppress EnumMustBePositive \
 		-suppress SliceOOB \
-		+incdir+$(COREVDV_PKG)/target/cv32e40p \
+		+incdir+$(COREVDV_PKG)/target/$(CV_CORE_LC) \
 		+incdir+$(RISCVDV_PKG)/user_extension \
 		+incdir+$(RISCVDV_PKG)/tests \
 		+incdir+$(COREVDV_PKG) \
@@ -358,5 +358,5 @@ clean:
 
 # All generated files plus the clone of the RTL
 clean_all: clean clean_riscv-dv clean_test_programs clean-bsp clean_compliance
-	rm -rf $(CV32E40P_PKG)
+	rm -rf $(CV_CORE_PKG)
 

@@ -18,7 +18,7 @@
 #
 ###############################################################################
 #
-# XRUN-specific Makefile for the CV32E40P "uvmt_cv32" testbench.
+# XRUN-specific Makefile for any uvmt testbench.
 # XRUN is the Cadence Xcelium SystemVerilog simulator (https://cadence.com/)
 #
 ###############################################################################
@@ -145,11 +145,11 @@ XRUN_UVM_MACROS_INC_FILE = $(DV_UVMT_CV32_PATH)/uvmt_cv32_uvm_macros_inc.sv
 XRUN_FILE_LIST ?= -f $(DV_UVMT_CV32_PATH)/uvmt_cv32.flist
 ifeq ($(call IS_YES,$(USE_ISS)),YES)
     XRUN_FILE_LIST += -f $(DV_UVMT_CV32_PATH)/imperas_iss.flist
-    XRUN_USER_COMPILE_ARGS += +define+ISS+CV32E40P_TRACE_EXECUTION
+    XRUN_USER_COMPILE_ARGS += +define+ISS+$(CV_CORE_UC)_TRACE_EXECUTION
     XRUN_PLUSARGS +="+USE_ISS"
 #     XRUN_PLUSARGS += +USE_ISS +ovpcfg="--controlfile $(OVP_CTRL_FILE)"
 else
-	XRUN_USER_COMPILE_ARGS += +define+CV32E40P_TRACE_EXECUTION
+	XRUN_USER_COMPILE_ARGS += +define+$(CV_CORE_UC)_TRACE_EXECUTION
 endif
 
 # Simulate using latest elab
@@ -236,11 +236,11 @@ XRUN_COMP = $(XRUN_COMP_FLAGS) \
 		+incdir+$(DV_UVME_CV32_PATH) \
 		+incdir+$(DV_UVMT_CV32_PATH) \
 		$(XRUN_UVM_MACROS_INC_FILE) \
-		-f $(CV32E40P_MANIFEST) \
+		-f $(CV_CORE_MANIFEST) \
 		$(XRUN_FILE_LIST) \
 		$(UVM_PLUSARGS)
 
-comp: mk_xrun_dir $(CV32E40P_PKG) $(OVP_MODEL_DPI)
+comp: mk_xrun_dir $(CV_CORE_PKG) $(OVP_MODEL_DPI)
 	@echo "$(BANNER)"
 	@echo "* Compiling xrun in $(XRUN_RESULTS)"
 	@echo "* Log: $(XRUN_RESULTS)/xrun.log"
@@ -259,7 +259,7 @@ endif
 XRUN_COMP_RUN = $(XRUN_RUN_FLAGS)
 
 ifeq ($(call IS_YES,$(XRUN_SINGLE_STEP)), YES)
-	XRUN_SIM_PREREQ = mk_xrun_dir $(CV32E40P_PKG) $(OVP_MODEL_DPI)
+	XRUN_SIM_PREREQ = mk_xrun_dir $(CV_CORE_PKG) $(OVP_MODEL_DPI)
 	XRUN_COMP_RUN = $(XRUN_COMP) $(XRUN_RUN_BASE_FLAGS)
 endif
 
@@ -329,7 +329,7 @@ endif
 
 compliance: $(XRUN_COMPLIANCE_PREREQ)
 	mkdir -p $(XRUN_RESULTS)/$(COMPLIANCE_PROG) && cd $(XRUN_RESULTS)/$(COMPLIANCE_PROG)  && \
-	export IMPERAS_TOOLS=$(PROJ_ROOT_DIR)/cv32/tests/cfg/ovpsim_no_pulp.ic && \
+	export IMPERAS_TOOLS=$(CORE_V_VERIF)/cv32/tests/cfg/ovpsim_no_pulp.ic && \
 	$(XRUN) -l xrun-$(COMPLIANCE_PROG).log -covtest riscv-compliance $(XRUN_COMP_RUN) $(TEST_PLUSARGS) \
 		+UVM_TESTNAME=uvmt_cv32_firmware_test_c \
 		+firmware=$(COMPLIANCE_PKG)/work/$(RISCV_ISA)/$(COMPLIANCE_PROG).hex \
@@ -344,7 +344,7 @@ comp_corev-dv: $(RISCVDV_PKG)
 		$(QUIET) \
 		$(XRUN_USER_COMPILE_ARGS) \
 		-elaborate \
-		+incdir+$(COREVDV_PKG)/target/cv32e40p \
+		+incdir+$(COREVDV_PKG)/target/$(CV_CORE_LC) \
 		+incdir+$(RISCVDV_PKG)/user_extension \
 		+incdir+$(RISCVDV_PKG)/tests \
 		+incdir+$(COREVDV_PKG) \
@@ -409,4 +409,4 @@ clean_eclipse:
 
 # All generated files plus the clone of the RTL
 clean_all: clean clean_eclipse clean_riscv-dv clean_test_programs clean-bsp clean_compliance
-	rm -rf $(CV32E40P_PKG)
+	rm -rf $(CV_CORE_PKG)

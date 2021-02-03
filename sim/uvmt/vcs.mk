@@ -246,7 +246,7 @@ endif
 
 compliance: $(VCS_COMPLIANCE_PREREQ)
 	mkdir -p $(VCS_RESULTS)/$(COMPLIANCE_PROG) && cd $(VCS_RESULTS)/$(COMPLIANCE_PROG)  && \
-	export IMPERAS_TOOLS=$(PROJ_ROOT_DIR)/cv32/tests/cfg/ovpsim_no_pulp.ic && \
+	export IMPERAS_TOOLS=$(CORE_V_VERIF)/cv32/tests/cfg/ovpsim_no_pulp.ic && \
 	$(VCS_RESULTS)/$(SIMV) -l vcs-$(COMPLIANCE_PROG).log -cm_test riscv-compliance $(VCS_COMP_RUN) $(TEST_PLUSARGS) \
 		+UVM_TESTNAME=uvmt_cv32_firmware_test_c \
 		+firmware=$(COMPLIANCE_PKG)/work/$(RISCV_ISA)/$(COMPLIANCE_PROG).hex \

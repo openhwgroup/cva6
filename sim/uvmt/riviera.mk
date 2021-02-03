@@ -233,7 +233,7 @@ compliance: VSIM_FLAGS+=+firmware=$(COMPLIANCE_PKG)/work/$(RISCV_ISA)/$(COMPLIAN
 compliance: VSIM_FLAGS+=+elf_file=$(COMPLIANCE_PKG)/work/$(RISCV_ISA)/$(COMPLIANCE_PROG).elf
 compliance: TEST_UVM_TEST=uvmt_cv32_firmware_test_c
 compliance: $(VSIM_COMPLIANCE_PREREQ) run
-compliance: export IMPERAS_TOOLS=$(PROJ_ROOT_DIR)/cv32/tests/cfg/ovpsim_no_pulp.ic
+compliance: export IMPERAS_TOOLS=$(CORE_V_VERIF)/cv32/tests/cfg/ovpsim_no_pulp.ic
 
 ################################################################################
 # If the configuration specified OVPSIM arguments, generate an ovpsim.ic file and
