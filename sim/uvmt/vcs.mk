@@ -36,7 +36,7 @@ DVE              = $(CV_TOOL_PREFIX)dve
 URG               = $(CV_SIM_PREFIX)urg
 
 # Paths
-VCS_RESULTS     ?= $(PWD)/vcs_results
+VCS_RESULTS     ?= $(MAKE_PATH)/vcs_results
 VCS_COREVDV_RESULTS ?= $(VCS_RESULTS)/corev-dv
 VCS_DIR         ?= $(VCS_RESULTS)/vcs.d
 VCS_ELAB_COV     = -cm line+cond+tgl+fsm+branch+assert  -cm_dir $(MAKECMDGOALS)/$(MAKECMDGOALS).vdb

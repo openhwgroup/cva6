@@ -44,13 +44,16 @@ logging.basicConfig()
 logger = logging.getLogger(os.path.basename(__file__))
 logger.setLevel(logging.INFO)
 
-TOPDIR = os.path.abspath(os.path.join(os.path.dirname(os.path.realpath(__file__)), '..'))
-
-REQUIRED_KEYS = ('name', 'description',)
-CFG_PATHS = (
-            'cv32/tests/cfg',
-             )
-              
+try:
+    TOPDIR = os.path.abspath(os.path.join(os.path.dirname(os.path.realpath(__file__)), '..'))
+    REQUIRED_KEYS = ('name', 'description',)
+    CFG_PATHS = (
+                '{}/tests/cfg'.format(os.environ['CV_CORE'].lower()),
+                )
+except KeyError:
+    logger.fatal('Must defined CV_CORE environment variable before running')
+    os.sys.exit(2)
+    
 if (sys.version_info < (3,0,0)):
     print ('Requires python 3')
     exit(1)

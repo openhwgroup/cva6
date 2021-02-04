@@ -18,7 +18,7 @@
 #
 ###############################################################################
 #
-# Makefile for the CV32E40P "uvmt_cv32" testbench.  Substantially modified
+# Makefile for the UVMT testbench for multiple OpenHW-verified cores.  Substantially modified
 # from the original Makefile for the RI5CY testbench.
 #
 ###############################################################################
@@ -51,6 +51,8 @@ endif
 DATE           = $(shell date +%F)
 CV_CORE_LC     = $(shell echo $(CV_CORE) | tr A-Z a-z)
 CV_CORE_UC     = $(shell echo $(CV_CORE) | tr a-z A-Z)
+export CV_CORE_LC
+export CV_CORE_UC
 .DEFAULT_GOAL := no_rule 
 
 # Useful commands
@@ -80,8 +82,8 @@ GEN_NUM_TESTS   ?= 1
 RUN_INDEX       ?= 0
 
 # UVM Environment
-export DV_UVMT_CV32_PATH      = $(CORE_V_VERIF)/$(CV_CORE_LC)/tb/uvmt_cv32
-export DV_UVME_CV32_PATH      = $(CORE_V_VERIF)/$(CV_CORE_LC)/env/uvme_cv32
+export DV_UVMT_PATH           = $(CORE_V_VERIF)/$(CV_CORE_LC)/tb/uvmt
+export DV_UVME_PATH           = $(CORE_V_VERIF)/$(CV_CORE_LC)/env/uvme
 export DV_UVML_HRTBT_PATH     = $(CORE_V_VERIF)/lib/uvm_libs/uvml_hrtbt
 export DV_UVMA_CLKNRST_PATH   = $(CORE_V_VERIF)/lib/uvm_agents/uvma_clknrst
 export DV_UVMA_INTERRUPT_PATH = $(CORE_V_VERIF)/lib/uvm_agents/uvma_interrupt
@@ -90,30 +92,32 @@ export DV_UVMA_OBI_PATH       = $(CORE_V_VERIF)/lib/uvm_agents/uvma_obi
 export DV_UVML_TRN_PATH       = $(CORE_V_VERIF)/lib/uvm_libs/uvml_trn
 export DV_UVML_LOGS_PATH      = $(CORE_V_VERIF)/lib/uvm_libs/uvml_logs
 export DV_UVML_SB_PATH        = $(CORE_V_VERIF)/lib/uvm_libs/uvml_sb
-  
+
 export DV_OVPM_HOME           = $(CORE_V_VERIF)/vendor_lib/imperas
 export DV_OVPM_MODEL          = $(DV_OVPM_HOME)/riscv_$(CV_CORE_UC)sim
 export DV_OVPM_DESIGN         = $(DV_OVPM_HOME)/verilog/design
 
-DV_UVMT_CV32_SRCS  = $(wildcard $(DV_UVMT_CV32_PATH)/*.sv))
+DV_UVMT_SRCS                  = $(wildcard $(DV_UVMT_PATH)/*.sv))
 
 # Testcase name: must be the CLASS name of the testcase (not the filename).
-# Look in ../../tests/uvmt_cv32.
-UVM_TESTNAME ?= uvmt_cv32_firmware_test_c
+# Look in ../../tests/uvmt
+UVM_TESTNAME ?= uvmt_$(CV_CORE_LC)_firmware_test_c
 
 # Google's random instruction generator
-RISCVDV_PKG   := $(CORE_V_VERIF)/vendor_lib/google/riscv-dv
-COREVDV_PKG   := $(CORE_V_VERIF)/vendor_lib/google/corev-dv
-export RISCV_DV_ROOT = $(RISCVDV_PKG)
-export COREV_DV_ROOT = $(COREVDV_PKG)
+RISCVDV_PKG         := $(CORE_V_VERIF)/vendor_lib/google/riscv-dv
+COREVDV_PKG         := $(CORE_V_VERIF)/vendor_lib/google/corev-dv
+CV_CORE_COREVDV_PKG := $(CORE_V_VERIF)/$(CV_CORE_LC)/env/uvme/corev-dv
+export RISCV_DV_ROOT         = $(RISCVDV_PKG)
+export COREV_DV_ROOT         = $(COREVDV_PKG)
+export CV_CORE_COREV_DV_ROOT = $(CV_CORE_COREVDV_PKG)
 
 # RISC-V Foundation's RISC-V Compliance Test-suite
 COMPLIANCE_PKG   := $(CORE_V_VERIF)/vendor_lib/riscv/riscv-compliance
 
 # TB source files for the CV32E core
-TBSRC_TOP   := $(TBSRC_HOME)/uvmt_cv32/uvmt_cv32_tb.sv
+TBSRC_TOP   := $(TBSRC_HOME)/uvmt/uvmt_$(CV_CORE_LC)_tb.sv
 TBSRC_HOME  := $(CORE_V_VERIF)/$(CV_CORE_LC)/tb
-export TBSRC_HOME  = $(CORE_V_VERIF)/$(CV_CORE_LC)/tb
+export TBSRC_HOME = $(CORE_V_VERIF)/$(CV_CORE_LC)/tb
 
 SIM_LIBS    := $(CORE_V_VERIF)/lib/sim_libs
 
@@ -229,12 +233,12 @@ compliance_check_all_sigs:
 
 compliance_regression:
 	make build_compliance RISCV_ISA=$(RISCV_ISA)
-	@export SIM_DIR=$(CORE_V_VERIF)/cv32/sim/uvmt_cv32 && \
+	@export SIM_DIR=$(CORE_V_VERIF)/$(CV_CORE_LC)/sim/uvmt && \
 	$(CORE_V_VERIF)/bin/run_compliance.sh $(RISCV_ISA)
 	make compliance_check_all_sigs RISCV_ISA=$(RISCV_ISA)
 
 dah:
-	@export SIM_DIR=$(CORE_V_VERIF)/cv32/sim/uvmt_cv32 && \
+	@export SIM_DIR=$(CORE_V_VERIF)/cv32/sim/uvmt && \
 	$(CORE_V_VERIF)/bin/run_compliance.sh $(RISCV_ISA)
 
 ###############################################################################

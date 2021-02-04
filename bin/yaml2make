@@ -43,18 +43,22 @@ logging.basicConfig()
 logger = logging.getLogger(os.path.basename(__file__))
 logger.setLevel(logging.INFO)
 
-TOPDIR = os.path.abspath(os.path.join(os.path.dirname(os.path.realpath(__file__)), '..'))
+# Constants
+try:
+    TOPDIR = os.path.abspath(os.path.join(os.path.dirname(os.path.realpath(__file__)), '..'))
+    VALID_YAMLS = ('corev-dv.yaml', 'test.yaml')
+    REQUIRED_KEYS = ('name', 'uvm_test', 'description',)
+    CFG_PATH = (
+                '{}/tests/cfg'.format(os.environ['CV_CORE'].lower()),
+                )
+    TEST_PATHS = (
+                '{}/tests/programs/corev-dv/'.format(os.environ['CV_CORE'].lower()),
+                '{}/tests/programs/custom'.format(os.environ['CV_CORE'].lower()),
+                )
+except KeyError:
+    logger.fatal('Must defined CV_CORE environment variable before running')
+    os.sys.exit(2)
 
-VALID_YAMLS = ('corev-dv.yaml', 'test.yaml')
-REQUIRED_KEYS = ('name', 'uvm_test', 'description',)
-CFG_PATH = (
-            'cv32/tests/cfg',
-            )
-TEST_PATHS = (
-              'cv32/tests/programs/corev-dv/',
-              'cv32/tests/programs/custom',
-              )
-              
 if (sys.version_info < (3,0,0)):
     print ('Requires python 3')
     exit(1)
@@ -67,7 +71,7 @@ def read_file(test, type, run_index):
 
     # It is a fatal error to find less than 1 or more than 1 match
     if len(matches) == 0:
-        logger.fatal('Could not find {} in any directories:')
+        logger.fatal('Could not find [{}] in any directories:'.format(type))
         for p in TEST_PATHS:
             logger.fatal(os.path.join(TOPDIR, p, test, type)) 
         os.sys.exit(2)

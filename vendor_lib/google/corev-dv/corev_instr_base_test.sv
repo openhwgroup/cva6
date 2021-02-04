@@ -43,47 +43,8 @@ class corev_instr_base_test extends riscv_instr_base_test;
   endfunction
 
   virtual function void build_phase(uvm_phase phase);
-    override_gen_config();
-    override_compressed_instr();
-    override_illegal_instr();
-    override_privil_reg();
-    override_privil_seq();
-    override_debug_rom_gen();
     super.build_phase(phase);
-  endfunction
-
-  virtual function void override_gen_config();
-    uvm_factory::get().set_type_override_by_type(riscv_instr_gen_config::get_type(),
-                                                 corev_instr_gen_config::get_type());
-  endfunction
-
-  virtual function void override_compressed_instr();
-    uvm_factory::get().set_type_override_by_type(riscv_C_LUI_instr::get_type(),
-                                                 corev_C_LUI_instr::get_type());
-  endfunction
-
-  virtual function void override_privil_reg();
-    uvm_factory::get().set_type_override_by_type(riscv_privil_reg::get_type(),
-                                                 corev_privil_reg::get_type());
-  endfunction
-
-  virtual function void override_illegal_instr();
-    uvm_factory::get().set_type_override_by_type(riscv_illegal_instr::get_type(),
-                                                 corev_illegal_instr::get_type());
-  endfunction
-
-  virtual function void override_privil_seq();
-    uvm_factory::get().set_type_override_by_type(riscv_privileged_common_seq::get_type(),
-                                                 corev_privileged_common_seq::get_type());
-  endfunction
-
-  virtual function void override_debug_rom_gen();
-    uvm_factory::get().set_type_override_by_type(riscv_debug_rom_gen::get_type(),
-                                                 corev_debug_rom_gen::get_type());
-  endfunction
-
-  virtual function void apply_directed_instr();
-  endfunction
+  endfunction  
 
   task run_phase(uvm_phase phase);
     int fd;
@@ -108,4 +69,5 @@ class corev_instr_base_test extends riscv_instr_base_test;
     end
   endtask
 
-endclass
+endclass : corev_instr_base_test
+

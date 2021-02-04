@@ -38,7 +38,7 @@ INDAGO            = $(CV_TOOL_PREFIX) indago
 IMC               = $(CV_SIM_PREFIX) imc
 
 # Paths
-XRUN_RESULTS         ?= $(PWD)/xrun_results
+XRUN_RESULTS         ?= $(MAKE_PATH)/xrun_results
 XRUN_COREVDV_RESULTS ?= $(XRUN_RESULTS)/corev-dv
 XRUN_DIR             ?= $(XRUN_RESULTS)/xcelium.d
 XRUN_UVMHOME_ARG     ?= CDNS-1.2-ML
@@ -52,9 +52,9 @@ XRUN_RUN_BASE_FLAGS   ?= -64bit $(XRUN_GUI) -licqueue +UVM_VERBOSITY=$(XRUN_UVM_
                          $(XRUN_PLUSARGS) -svseed $(RNDSEED) -sv_lib $(OVP_MODEL_DPI)
 XRUN_GUI         ?=
 XRUN_SINGLE_STEP ?=
-XRUN_ELAB_COV     = -covdut uvmt_cv32_tb -coverage b:e:f:u
+XRUN_ELAB_COV     = -covdut uvmt_$(CV_CORE_LC)_tb -coverage b:e:f:u
 XRUN_ELAB_COVFILE = -covfile ../../tools/xrun/covfile.tcl
-XRUN_RUN_COV      = -covscope uvmt_cv32_tb \
+XRUN_RUN_COV      = -covscope uvmt_$(CV_CORE_LC)_tb \
 					-nowarn CGDEFN
 
 XRUN_UVM_VERBOSITY ?= UVM_MEDIUM
@@ -127,7 +127,7 @@ endif
 ifeq ($(call IS_YES,$(MERGE)),YES)
 COV_ARGS = -load cov_work/scope/merged
 else
-COV_ARGS = -load cov_work/uvmt_cv32_tb/$(TEST_NAME)
+COV_ARGS = -load cov_work/uvmt_$(CV_CORE_LC)_tb/$(TEST_NAME)
 endif
 
 ifeq ($(call IS_YES,$(GUI)),YES)
@@ -140,11 +140,11 @@ endif
 
 # File to `include "uvm_macros.svh" since Xcelium automatic UVM compilation
 # does not source the macros file. 
-XRUN_UVM_MACROS_INC_FILE = $(DV_UVMT_CV32_PATH)/uvmt_cv32_uvm_macros_inc.sv
+XRUN_UVM_MACROS_INC_FILE = $(DV_UVMT_PATH)/uvmt_$(CV_CORE_LC)_uvm_macros_inc.sv
 
-XRUN_FILE_LIST ?= -f $(DV_UVMT_CV32_PATH)/uvmt_cv32.flist
+XRUN_FILE_LIST ?= -f $(DV_UVMT_PATH)/uvmt_$(CV_CORE_LC).flist
 ifeq ($(call IS_YES,$(USE_ISS)),YES)
-    XRUN_FILE_LIST += -f $(DV_UVMT_CV32_PATH)/imperas_iss.flist
+    XRUN_FILE_LIST += -f $(DV_UVMT_PATH)/imperas_iss.flist
     XRUN_USER_COMPILE_ARGS += +define+ISS+$(CV_CORE_UC)_TRACE_EXECUTION
     XRUN_PLUSARGS +="+USE_ISS"
 #     XRUN_PLUSARGS += +USE_ISS +ovpcfg="--controlfile $(OVP_CTRL_FILE)"
@@ -233,8 +233,8 @@ XRUN_COMP = $(XRUN_COMP_FLAGS) \
 		$(QUIET) \
 		$(CFG_COMPILE_FLAGS) \
 		$(XRUN_USER_COMPILE_ARGS) \
-		+incdir+$(DV_UVME_CV32_PATH) \
-		+incdir+$(DV_UVMT_CV32_PATH) \
+		+incdir+$(DV_UVME_PATH) \
+		+incdir+$(DV_UVMT_PATH) \
 		$(XRUN_UVM_MACROS_INC_FILE) \
 		-f $(CV_CORE_MANIFEST) \
 		$(XRUN_FILE_LIST) \
@@ -299,7 +299,7 @@ custom: $(XRUN_SIM_PREREQ) $(CUSTOM_DIR)/$(CUSTOM_PROG).hex
 	$(XRUN) -l xrun-$(CUSTOM_PROG).log -covtest $(CUSTOM_PROG) $(XRUN_COMP_RUN) \
 		+elf_file=$(CUSTOM_DIR)/$(CUSTOM_PROG).elf \
 		+nm_file=$(CUSTOM_DIR)/$(CUSTOM_PROG).nm \
-		+UVM_TESTNAME=uvmt_cv32_firmware_test_c \
+		+UVM_TESTNAME=uvmt_$(CV_CORE_LC)_firmware_test_c \
 		+firmware=$(CUSTOM_DIR)/$(CUSTOM_PROG).hex
 
 ###############################################################################
@@ -329,9 +329,9 @@ endif
 
 compliance: $(XRUN_COMPLIANCE_PREREQ)
 	mkdir -p $(XRUN_RESULTS)/$(COMPLIANCE_PROG) && cd $(XRUN_RESULTS)/$(COMPLIANCE_PROG)  && \
-	export IMPERAS_TOOLS=$(CORE_V_VERIF)/cv32/tests/cfg/ovpsim_no_pulp.ic && \
+	export IMPERAS_TOOLS=$(CORE_V_VERIF)/$(CV_CORE_LC)/tests/cfg/ovpsim_no_pulp.ic && \
 	$(XRUN) -l xrun-$(COMPLIANCE_PROG).log -covtest riscv-compliance $(XRUN_COMP_RUN) $(TEST_PLUSARGS) \
-		+UVM_TESTNAME=uvmt_cv32_firmware_test_c \
+		+UVM_TESTNAME=uvmt_$(CV_CORE_LC)_firmware_test_c \
 		+firmware=$(COMPLIANCE_PKG)/work/$(RISCV_ISA)/$(COMPLIANCE_PROG).hex \
 		+elf_file=$(COMPLIANCE_PKG)/work/$(RISCV_ISA)/$(COMPLIANCE_PROG).elf
 
@@ -344,10 +344,11 @@ comp_corev-dv: $(RISCVDV_PKG)
 		$(QUIET) \
 		$(XRUN_USER_COMPILE_ARGS) \
 		-elaborate \
-		+incdir+$(COREVDV_PKG)/target/$(CV_CORE_LC) \
+		+incdir+$(CV_CORE_COREVDV_PKG)/target/$(CV_CORE_LC) \
 		+incdir+$(RISCVDV_PKG)/user_extension \
 		+incdir+$(RISCVDV_PKG)/tests \
 		+incdir+$(COREVDV_PKG) \
+		+incdir+$(CV_CORE_COREVDV_PKG) \
 		-f $(COREVDV_PKG)/manifest.f \
 		-l xrun.log
 
@@ -398,6 +399,7 @@ cov: $(COV_MERGE)
 # Clean up your mess!
 
 clean:	
+	@echo "$(MAKEFILE_LIST)"
 	rm -rf $(XRUN_RESULTS)	
 
 # Files created by Eclipse when using the Imperas ISS + debugger

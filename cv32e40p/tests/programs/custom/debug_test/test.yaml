@@ -1,0 +1,9 @@
+# Test definition YAML for test
+
+# Debug directed test
+name: debug_test
+uvm_test: uvmt_$(CV_CORE_LC)_firmware_test_c
+program: debug_test
+description: >
+    Debug directed test
+

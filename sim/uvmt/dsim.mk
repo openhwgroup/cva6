@@ -27,12 +27,12 @@ DSIM                    = dsim
 DSIM_HOME              ?= /tools/Metrics/dsim
 DSIM_CMP_FLAGS         ?= $(TIMESCALE) $(SV_CMP_FLAGS) -top uvmt_cv32_tb
 DSIM_UVM_ARGS          ?= +incdir+$(UVM_HOME)/src $(UVM_HOME)/src/uvm_pkg.sv
-DSIM_RESULTS           ?= $(PWD)/dsim_results
-DSIM_COREVDV_RESULTS   ?= $(PWD)/dsim_results/corev-dv
+DSIM_RESULTS           ?= $(MAKE_PATH)/dsim_results
+DSIM_COREVDV_RESULTS   ?= $(MAKE_PATH)/dsim_results/corev-dv
 DSIM_WORK              ?= $(DSIM_RESULTS)/dsim_work
 DSIM_IMAGE             ?= dsim.out
 DSIM_RUN_FLAGS         ?=
-DSIM_CODE_COV_SCOPE    ?= $(PWD)/../tools/dsim/ccov_scopes.txt
+DSIM_CODE_COV_SCOPE    ?= $(MAKE_PATH)/../tools/dsim/ccov_scopes.txt
 DSIM_USE_ISS           ?= YES
 
 DSIM_FILE_LIST ?= -f $(DV_UVMT_CV32_PATH)/uvmt_cv32.flist

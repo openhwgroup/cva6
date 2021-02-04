@@ -1,0 +1,4 @@
+name: pulp_post_increment_load_store
+uvm_test: uvmt_$(CV_CORE_LC)_firmware_test_c
+description: >
+    PULP test

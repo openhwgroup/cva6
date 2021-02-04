@@ -116,7 +116,7 @@ endif
 ifeq ($(COMPLIANCE_HASH), head)
   CLONE_COMPLIANCE_CMD = $(TMP4)
 else
-  CLONE_COMPLIANCE_CMD = $(TMP4); cd $(COMPLIANCE_PKG); git checkout $(COMPLIANCE_HASH)
+  CLONE_COMPLIANCE_CMD = $(TMP4); cd $(COMPLIANCE_PKG); sleep 2; git checkout $(COMPLIANCE_HASH)
 endif
 # RISCV Compliance repo var end
 
