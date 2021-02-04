@@ -88,7 +88,7 @@ SIMV                    = ./simv
 # dsim is the Metrics Technologies SystemVerilog simulator  (https://metrics.ca/)
 DSIM                    = dsim
 DSIM_HOME               = /tools/Metrics/dsim
-DSIM_CMP_FLAGS          = -timescale 1ns/1ps $(SV_CMP_FLAGS) +define+CV32E40P_APU_TRACE
+DSIM_CMP_FLAGS          = -timescale 1ns/1ps $(SV_CMP_FLAGS) -suppress MultiBlockWrite +define+CV32E40P_APU_TRACE
 DSIM_RUN_FLAGS          = -write-sql
 DSIM_UVM_ARGS           = +incdir+$(UVM_HOME)/src $(UVM_HOME)/src/uvm_pkg.sv
 DSIM_RESULTS           ?= $(PWD)/dsim_results
@@ -110,7 +110,7 @@ XRUN_DIR          = xcelium.d
 VERILATOR           = verilator
 VERI_FLAGS         +=
 VERI_COMPILE_FLAGS += -Wno-BLKANDNBLK $(SV_CMP_FLAGS) # hope this doesn't hurt us in the long run
-VERI_TRACE          =
+VERI_TRACE         ?=
 VERI_OBJ_DIR       ?= cobj_dir
 VERI_LOG_DIR       ?= cobj_dir/logs
 VERI_CFLAGS        += -O2
@@ -170,9 +170,6 @@ CV32E40P_RTLSRC_PKG  := $(CV32E40P_PKG)/rtl/fpnew/src/fpnew_pkg.sv \
 CV32E40P_RTLSRC  := $(filter-out $(CV32E40P_PKG)/rtl/cv32e40p_register_file_latch.sv, \
                 $(wildcard $(CV32E40P_PKG)/rtl/*.sv))
 FPNEW_PKG            := $(CV32E40P_PKG)/rtl/fpnew
-# FIXME: temporarily using a local manifest for the core.
-#        This is BAD PRACTICE and will be fixed with
-#        https://github.com/openhwgroup/cv32e40p/pull/421 is resolved.
 CV32E40P_MANIFEST    := $(CV32E40P_PKG)/cv32e40p_manifest.flist
 export DESIGN_RTL_DIR = $(CV32E40P_PKG)/rtl
 
@@ -241,15 +238,18 @@ mk_results:
 
 # Metrics dsim compile targets
 dsim-comp: mk_results cv32e40p_pkg tbsrc_pkg tbsrc
-		cd $(DSIM_RESULTS) && \
-		$(DSIM) \
-		$(DSIM_CMP_FLAGS) \
-		$(DSIM_UVM_ARGS) \
-		-f $(CV32E40P_MANIFEST) \
-		$(TBSRC_PKG) \
-		$(TBSRC) \
-		-work $(DSIM_WORK) \
-		-genimage $(DSIM_IMAGE)
+	@echo "$(BANNER)"
+	@echo "* Compiling CORE TB and CV32E40P with Metrics DSIM"
+	@echo "$(BANNER)"
+	cd $(DSIM_RESULTS) && \
+	$(DSIM) \
+	$(DSIM_CMP_FLAGS) \
+	$(DSIM_UVM_ARGS) \
+	-f $(CV32E40P_MANIFEST) \
+	$(TBSRC_PKG) \
+	$(TBSRC) \
+	-work $(DSIM_WORK) \
+	-genimage $(DSIM_IMAGE)
 
 dsim-comp-rtl-only: mk_results $(CV32E40P_PKG)
 	$(DSIM) \
@@ -266,17 +266,27 @@ dsim-sanity: dsim-hello-world
 
 # Runs the hello world test
 dsim-hello-world: dsim-comp $(VERI_CUSTOM)/hello-world/hello-world.hex
+	@echo "$(BANNER)"
+	@echo "* Running with Metrics DSIM"
+	@echo "$(BANNER)"
 	mkdir -p $(DSIM_RESULTS)/hello-world && cd $(DSIM_RESULTS)/hello-world  && \
-	$(DSIM) -l dsim-hello-world.log -image $(DSIM_IMAGE) \
-		-work $(DSIM_WORK) $(DSIM_RUN_FLAGS) \
+	$(DSIM) -l dsim-hello-world.log \
+		-image $(DSIM_IMAGE) \
+		-work $(DSIM_WORK) \
+		$(DSIM_RUN_FLAGS) \
 		-sv_lib $(UVM_HOME)/src/dpi/libuvm_dpi.so \
 		-sv_lib $(OVP_MODEL_DPI)  \
 		+firmware=../../$(VERI_CUSTOM)/hello-world/hello-world.hex
 
 dsim-custom: dsim-comp $(VERI_CUSTOM)/$(CUSTOM_PROG)/$(CUSTOM_PROG).hex
+	@echo "$(BANNER)"
+	@echo "* Running with Metrics DSIM"
+	@echo "$(BANNER)"
 	mkdir -p $(DSIM_RESULTS)/$(CUSTOM_PROG) && cd $(DSIM_RESULTS)/$(CUSTOM_PROG)  && \
-	$(DSIM) -l dsim-requested_csr_por.log -image $(DSIM_IMAGE) \
-		-work $(DSIM_WORK) $(DSIM_RUN_FLAGS) \
+	$(DSIM) -l dsim-$(CUSTOM_PROG).log \
+		-image $(DSIM_IMAGE) \
+		-work $(DSIM_WORK) \
+		$(DSIM_RUN_FLAGS) \
 		-sv_lib $(UVM_HOME)/src/dpi/libuvm_dpi.so \
 		-sv_lib $(OVP_MODEL_DPI)  \
 		+firmware=../../$(VERI_CUSTOM)/$(CUSTOM_PROG)/$(CUSTOM_PROG).hex
@@ -437,7 +447,9 @@ xrun-clean-all: xrun-clean
 # We first test if the user wants to to vcd dumping. This hacky part is required
 # because we need to conditionally compile the testbench (-DVCD_TRACE) and pass
 # the --trace flags to the verilator call
-ifeq ($(findstring +vcd,$(VERI_FLAGS)),+vcd)
+#ifeq ($(findstring +vcd,$(VERI_FLAGS)),+vcd)
+
+ifneq (${WAVES}, 0)
 VERI_TRACE="--trace"
 VERI_CFLAGS+="-DVCD_TRACE"
 endif
@@ -448,6 +460,9 @@ sanity-veri-run:
 	make custom CUSTOM_PROG=hello-world
 
 testbench_verilator: $(CV32E40P_PKG) $(TBSRC_VERI) $(TBSRC_PKG)
+	@echo "$(BANNER)"
+	@echo "* Compiling CORE TB and CV32E40P with Verilator"
+	@echo "$(BANNER)"
 	$(VERILATOR) --cc --sv --exe \
 		$(VERI_TRACE) \
 		--Wno-lint --Wno-UNOPTFLAT \
@@ -462,6 +477,9 @@ testbench_verilator: $(CV32E40P_PKG) $(TBSRC_VERI) $(TBSRC_PKG)
 	cp $(VERI_OBJ_DIR)/Vtb_top_verilator testbench_verilator
 
 custom: verilate $(VERI_CUSTOM)/$(CUSTOM_PROG)/$(CUSTOM_PROG).hex
+	@echo "$(BANNER)"
+	@echo "* Running with Verilator: logfile in $(VERI_LOG_DIR)/$(CUSTOM_PROG).log"
+	@echo "$(BANNER)"
 	mkdir -p $(VERI_LOG_DIR)
 	./testbench_verilator $(VERI_FLAGS) \
 		"+firmware=$(VERI_CUSTOM)/$(CUSTOM_PROG)/$(CUSTOM_PROG).hex" \
@@ -624,14 +642,20 @@ riviera-clean:
 # CV32E40P RTL dependencies
 
 clone_cv32e40p_rtl:
+	@echo "$(BANNER)"
+	@echo "* Cloning CV32E40P RTL model"
+	@echo "$(BANNER)"
 	$(CLONE_CV32E40P_CMD)
 
-clone_fpnew_rtl: clone_cv32e40p_rtl
-	$(CLONE_FPNEW_CMD)
+#clone_fpnew_rtl: clone_cv32e40p_rtl
+#	$(CLONE_FPNEW_CMD)
 
 $(CV32E40P_PKG):
+	@echo "$(BANNER)"
+	@echo "* Cloning CV32E40P RTL model"
+	@echo "$(BANNER)"
 	$(CLONE_CV32E40P_CMD)
-	$(CLONE_FPNEW_CMD)
+#	$(CLONE_FPNEW_CMD)
 
 
 ###############################################################################

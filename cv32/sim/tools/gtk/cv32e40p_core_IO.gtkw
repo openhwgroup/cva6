@@ -1,19 +1,19 @@
 [*]
 [*] GTKWave Analyzer v3.3.107 (w)1999-2020 BSI
-[*] Mon Nov 23 19:03:40 2020
+[*] Sun Jan 17 22:43:12 2021
 [*]
-[dumpfile] "/data/mike/GitHubRepos/MikeOpenHWGroup/core-v-verif/pipeline_hazards/cv32/sim/uvmt_cv32/dsim_results/hello-world/dsim.fst"
-[dumpfile_mtime] "Mon Nov 23 18:49:40 2020"
-[dumpfile_size] 4020478
-[savefile] "/data/mike/GitHubRepos/MikeOpenHWGroup/core-v-verif/pipeline_hazards/cv32/sim/tools/gtk/cv32e40p_core_IO.gtkw"
+[dumpfile] "/home/mike/GitHubRepos/MikeOpenHWGroup/core-v-verif/zero2printf/cv32/sim/core/verilator_tb.vcd"
+[dumpfile_mtime] "Sun Jan 17 22:24:26 2021"
+[dumpfile_size] 160537015
+[savefile] "/home/mike/GitHubRepos/MikeOpenHWGroup/core-v-verif/zero2printf/cv32/sim/tools/gtk/cv32e40p_core_IO.gtkw"
 [timestart] 58070
-[size] 1920 936
-[pos] -915 -334
+[size] 1920 948
+[pos] -1 -1
 *-13.000000 2040 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1
-[treeopen] $root.
-[treeopen] $root.uvmt_cv32_tb.
-[treeopen] $root.uvmt_cv32_tb.dut_wrap.
-[treeopen] $root.uvmt_cv32_tb.dut_wrap.cv32e40p_wrapper_i.
+[treeopen] TOP.
+[treeopen] TOP.tb_top_verilator.
+[treeopen] TOP.tb_top_verilator.cv32e40p_tb_wrapper_i.
+[treeopen] TOP.tb_top_verilator.cv32e40p_tb_wrapper_i.cv32e40p_core_i.
 [sst_width] 434
 [signals_width] 346
 [sst_expanded] 1
@@ -21,81 +21,75 @@
 @200
 -Clock and Reset
 @28
-$root.uvmt_cv32_tb.dut_wrap.cv32e40p_wrapper_i.core_i.clk_i
-$root.uvmt_cv32_tb.dut_wrap.cv32e40p_wrapper_i.core_i.rst_ni
-$root.uvmt_cv32_tb.dut_wrap.cv32e40p_wrapper_i.core_i.scan_cg_en_i
+TOP.tb_top_verilator.cv32e40p_tb_wrapper_i.cv32e40p_core_i.clk_i
+TOP.tb_top_verilator.cv32e40p_tb_wrapper_i.cv32e40p_core_i.rst_ni
+TOP.tb_top_verilator.cv32e40p_tb_wrapper_i.cv32e40p_core_i.scan_cg_en_i
 @200
 -Configuration Inputs
 @22
-$root.uvmt_cv32_tb.dut_wrap.cv32e40p_wrapper_i.core_i.boot_addr_i[31:0]
-$root.uvmt_cv32_tb.dut_wrap.cv32e40p_wrapper_i.core_i.mtvec_addr_i[31:0]
-$root.uvmt_cv32_tb.dut_wrap.cv32e40p_wrapper_i.core_i.dm_exception_addr_i[31:0]
-$root.uvmt_cv32_tb.dut_wrap.cv32e40p_wrapper_i.core_i.dm_halt_addr_i[31:0]
-$root.uvmt_cv32_tb.dut_wrap.cv32e40p_wrapper_i.core_i.hart_id_i[31:0]
+TOP.tb_top_verilator.cv32e40p_tb_wrapper_i.cv32e40p_core_i.boot_addr_i[31:0]
+TOP.tb_top_verilator.cv32e40p_tb_wrapper_i.cv32e40p_core_i.mtvec_addr_i[31:0]
+TOP.tb_top_verilator.cv32e40p_tb_wrapper_i.cv32e40p_core_i.dm_halt_addr_i[31:0]
+TOP.tb_top_verilator.cv32e40p_tb_wrapper_i.cv32e40p_core_i.dm_exception_addr_i[31:0]
+TOP.tb_top_verilator.cv32e40p_tb_wrapper_i.cv32e40p_core_i.hart_id_i[31:0]
 @200
 -Aux Processor Unit I/O
-@23
-$root.uvmt_cv32_tb.dut_wrap.cv32e40p_wrapper_i.core_i.apu_flags_i[4:0]
-@22
-$root.uvmt_cv32_tb.dut_wrap.cv32e40p_wrapper_i.core_i.apu_flags_o[14:0]
 @28
-$root.uvmt_cv32_tb.dut_wrap.cv32e40p_wrapper_i.core_i.apu_gnt_i
+TOP.tb_top_verilator.cv32e40p_tb_wrapper_i.cv32e40p_core_i.apu_req_o
+TOP.tb_top_verilator.cv32e40p_tb_wrapper_i.cv32e40p_core_i.apu_gnt_i
 @22
-$root.uvmt_cv32_tb.dut_wrap.cv32e40p_wrapper_i.core_i.apu_op_o[5:0]
-$root.uvmt_cv32_tb.dut_wrap.cv32e40p_wrapper_i.core_i.apu_operands_o[95:0]
+TOP.tb_top_verilator.cv32e40p_tb_wrapper_i.cv32e40p_core_i.apu_operands_o[95:0]
+TOP.tb_top_verilator.cv32e40p_tb_wrapper_i.cv32e40p_core_i.apu_op_o[5:0]
+TOP.tb_top_verilator.cv32e40p_tb_wrapper_i.cv32e40p_core_i.apu_flags_o[14:0]
 @28
-$root.uvmt_cv32_tb.dut_wrap.cv32e40p_wrapper_i.core_i.apu_req_o
+TOP.tb_top_verilator.cv32e40p_tb_wrapper_i.cv32e40p_core_i.apu_rvalid_i
 @22
-$root.uvmt_cv32_tb.dut_wrap.cv32e40p_wrapper_i.core_i.apu_result_i[31:0]
-@28
-$root.uvmt_cv32_tb.dut_wrap.cv32e40p_wrapper_i.core_i.apu_rvalid_i
+TOP.tb_top_verilator.cv32e40p_tb_wrapper_i.cv32e40p_core_i.apu_result_i[31:0]
+TOP.tb_top_verilator.cv32e40p_tb_wrapper_i.cv32e40p_core_i.apu_flags_i[4:0]
 @200
 -Special Control Signals
 @28
-$root.uvmt_cv32_tb.dut_wrap.cv32e40p_wrapper_i.core_i.core_sleep_o
-$root.uvmt_cv32_tb.dut_wrap.cv32e40p_wrapper_i.core_i.pulp_clock_en_i
-$root.uvmt_cv32_tb.dut_wrap.cv32e40p_wrapper_i.core_i.fetch_enable_i
+TOP.tb_top_verilator.cv32e40p_tb_wrapper_i.cv32e40p_core_i.fetch_enable_i
+TOP.tb_top_verilator.cv32e40p_tb_wrapper_i.cv32e40p_core_i.core_sleep_o
+TOP.tb_top_verilator.cv32e40p_tb_wrapper_i.cv32e40p_core_i.pulp_clock_en_i
 @200
 -Data Memory Interface
-@22
-$root.uvmt_cv32_tb.dut_wrap.cv32e40p_wrapper_i.core_i.data_addr_o[31:0]
-$root.uvmt_cv32_tb.dut_wrap.cv32e40p_wrapper_i.core_i.data_be_o[3:0]
 @28
-$root.uvmt_cv32_tb.dut_wrap.cv32e40p_wrapper_i.core_i.data_gnt_i
+TOP.tb_top_verilator.cv32e40p_tb_wrapper_i.cv32e40p_core_i.data_req_o
+TOP.tb_top_verilator.cv32e40p_tb_wrapper_i.cv32e40p_core_i.data_gnt_i
+TOP.tb_top_verilator.cv32e40p_tb_wrapper_i.cv32e40p_core_i.data_rvalid_i
 @22
-$root.uvmt_cv32_tb.dut_wrap.cv32e40p_wrapper_i.core_i.data_rdata_i[31:0]
+TOP.tb_top_verilator.cv32e40p_tb_wrapper_i.cv32e40p_core_i.data_addr_o[31:0]
+TOP.tb_top_verilator.cv32e40p_tb_wrapper_i.cv32e40p_core_i.data_be_o[3:0]
+TOP.tb_top_verilator.cv32e40p_tb_wrapper_i.cv32e40p_core_i.data_wdata_o[31:0]
 @28
-$root.uvmt_cv32_tb.dut_wrap.cv32e40p_wrapper_i.core_i.data_req_o
-$root.uvmt_cv32_tb.dut_wrap.cv32e40p_wrapper_i.core_i.data_rvalid_i
+TOP.tb_top_verilator.cv32e40p_tb_wrapper_i.cv32e40p_core_i.data_we_o
 @22
-$root.uvmt_cv32_tb.dut_wrap.cv32e40p_wrapper_i.core_i.data_wdata_o[31:0]
-@28
-$root.uvmt_cv32_tb.dut_wrap.cv32e40p_wrapper_i.core_i.data_we_o
-$root.uvmt_cv32_tb.dut_wrap.cv32e40p_wrapper_i.core_i.debug_halted_o
+TOP.tb_top_verilator.cv32e40p_tb_wrapper_i.cv32e40p_core_i.data_rdata_i[31:0]
 @200
 -Debug Module Interface
 @28
-$root.uvmt_cv32_tb.dut_wrap.cv32e40p_wrapper_i.core_i.debug_havereset_o
-$root.uvmt_cv32_tb.dut_wrap.cv32e40p_wrapper_i.core_i.debug_req_i
-$root.uvmt_cv32_tb.dut_wrap.cv32e40p_wrapper_i.core_i.debug_running_o
+TOP.tb_top_verilator.cv32e40p_tb_wrapper_i.cv32e40p_core_i.debug_req_i
+TOP.tb_top_verilator.cv32e40p_tb_wrapper_i.cv32e40p_core_i.debug_havereset_o
+TOP.tb_top_verilator.cv32e40p_tb_wrapper_i.cv32e40p_core_i.debug_running_o
+TOP.tb_top_verilator.cv32e40p_tb_wrapper_i.cv32e40p_core_i.debug_halted_o
 @200
 -Instruction Memory Interface
-@22
-$root.uvmt_cv32_tb.dut_wrap.cv32e40p_wrapper_i.core_i.instr_addr_o[31:0]
+@29
+TOP.tb_top_verilator.cv32e40p_tb_wrapper_i.cv32e40p_core_i.instr_req_o
 @28
-$root.uvmt_cv32_tb.dut_wrap.cv32e40p_wrapper_i.core_i.instr_gnt_i
+TOP.tb_top_verilator.cv32e40p_tb_wrapper_i.cv32e40p_core_i.instr_gnt_i
+TOP.tb_top_verilator.cv32e40p_tb_wrapper_i.cv32e40p_core_i.instr_rvalid_i
 @22
-$root.uvmt_cv32_tb.dut_wrap.cv32e40p_wrapper_i.core_i.instr_rdata_i[31:0]
-@28
-$root.uvmt_cv32_tb.dut_wrap.cv32e40p_wrapper_i.core_i.instr_req_o
-$root.uvmt_cv32_tb.dut_wrap.cv32e40p_wrapper_i.core_i.instr_rvalid_i
+TOP.tb_top_verilator.cv32e40p_tb_wrapper_i.cv32e40p_core_i.instr_addr_o[31:0]
+TOP.tb_top_verilator.cv32e40p_tb_wrapper_i.cv32e40p_core_i.instr_rdata_i[31:0]
 @200
 -Interrupts
 @22
-$root.uvmt_cv32_tb.dut_wrap.cv32e40p_wrapper_i.core_i.irq_i[31:0]
+TOP.tb_top_verilator.cv32e40p_tb_wrapper_i.cv32e40p_core_i.irq_i[31:0]
 @28
-$root.uvmt_cv32_tb.dut_wrap.cv32e40p_wrapper_i.core_i.irq_ack_o
+TOP.tb_top_verilator.cv32e40p_tb_wrapper_i.cv32e40p_core_i.irq_ack_o
 @22
-$root.uvmt_cv32_tb.dut_wrap.cv32e40p_wrapper_i.core_i.irq_id_o[4:0]
+TOP.tb_top_verilator.cv32e40p_tb_wrapper_i.cv32e40p_core_i.irq_id_o[4:0]
 [pattern_trace] 1
 [pattern_trace] 0

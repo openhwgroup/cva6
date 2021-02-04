@@ -329,13 +329,23 @@ endif
 #    $^ is all prerequistes.
 #    $* is file_name (w/o extension) of target
 %.hex: %.elf
-	$(RISCV_EXE_PREFIX)objcopy -O verilog $< $@ \
+	@echo "$(BANNER)"
+	@echo "* Generating hexfile, readelf and objdump files"
+	@echo "$(BANNER)"
+	$(RISCV_EXE_PREFIX)objcopy -O verilog \
+		$< \
+		$@ \
 		--change-section-address  .debugger=0x3FC000 \
 		--change-section-address  .debugger_exception=0x3FC800
+	@echo ""
 	$(RISCV_EXE_PREFIX)readelf -a $< > $*.readelf
+	@echo ""
 	$(RISCV_EXE_PREFIX)objdump -D -S $*.elf > $*.objdump
 
 bsp:
+	@echo "$(BANNER)"
+	@echo "* Compiling BSP"
+	@echo "$(BANNER)"
 	make -C $(BSP) RISCV=$(RISCV) RISCV_PREFIX=$(RISCV_PREFIX) RISCV_EXE_PREFIX=$(RISCV_EXE_PREFIX)
 
 vars-bsp:
@@ -401,18 +411,34 @@ TEST_FILES        = $(filter %.c %.S,$(wildcard $(dir $*)*))
 # Note that this target will pass both sources to gcc
 %.elf: %.c %.S
 	make bsp
-	test_asm_src=$(basename )
-	$(RISCV_EXE_PREFIX)gcc $(CFG_CFLAGS) $(TEST_CFLAGS) $(CFLAGS) -o $@ \
+	@echo "$(BANNER)"
+	@echo "* Compiling test-program $^"
+	@echo "$(BANNER)"
+	$(RISCV_EXE_PREFIX)gcc $(CFG_CFLAGS) \
+		$(TEST_CFLAGS) \
+		$(CFLAGS) \
+		-o $@ \
 		-nostartfiles \
-		$^ -T $(BSP)/link.ld -L $(BSP) -lcv-verif
+		$^ \
+		-T $(BSP)/link.ld \
+		-L $(BSP) \
+		-lcv-verif
 
 # This target selected if only %.c
 %.elf: %.c
 	make bsp
-	test_asm_src=$(basename )
-	$(RISCV_EXE_PREFIX)gcc $(CFG_CFLAGS) $(TEST_CFLAGS) $(CFLAGS) -o $@ \
+	@echo "$(BANNER)"
+	@echo "* Compiling test-program $^"
+	@echo "$(BANNER)"
+	$(RISCV_EXE_PREFIX)gcc $(CFG_CFLAGS) \
+		$(TEST_CFLAGS) \
+		$(CFLAGS) \
+		-o $@ \
 		-nostartfiles \
-		$^ -T $(BSP)/link.ld -L $(BSP) -lcv-verif
+		$^ \
+		-T $(BSP)/link.ld \
+		-L $(BSP) \
+		-lcv-verif
 
 # This target selected if only %.S exists
 %.elf: %.S

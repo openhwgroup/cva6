@@ -137,9 +137,9 @@ module tb_top
         end
         if (exit_valid) begin
             if (exit_value == 0)
-                $display("EXIT SUCCESS");
+                $display("%m @ %0t: EXIT SUCCESS", $time);
             else
-                $display("EXIT FAILURE: %d", exit_value);
+                $display("%m @ %0t: EXIT FAILURE: %d", exit_value, $time);
             $finish;
         end
     end

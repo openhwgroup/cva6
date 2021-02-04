@@ -32,9 +32,6 @@ To run CVA6 testbench, go to [cva6](cva6) directory and read the README.
 ### bin
 Various utilities for running tests and performing various verification-related activities in the core-v-verif repository.
 
-### ci
-Scriptware for user regression tests and an explainer for the Metrics continuous integration flow used by CORE-V-VERIF.
-
 ### core-v-cores
 Empty sub-directory into which the RTL from one or more of the [CORE-V-CORES](https://github.com/openhwgroup/core-v-cores) repositories is cloned.
 

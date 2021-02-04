@@ -1,19 +1,19 @@
 ###############################################################################
 #
 # Copyright 2020 OpenHW Group
-# 
+#
 # Licensed under the Solderpad Hardware Licence, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
-# 
+#
 #     https://solderpad.org/licenses/
-# 
+#
 # Unless required by applicable law or agreed to in writing, software
 # distributed under the License is distributed on an "AS IS" BASIS,
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-# 
+#
 # SPDX-License-Identifier: Apache-2.0 WITH SHL-2.0
 #
 ###############################################################################
@@ -25,7 +25,7 @@
 
 DSIM                    = dsim
 DSIM_HOME              ?= /tools/Metrics/dsim
-DSIM_CMP_FLAGS         ?= $(TIMESCALE) $(SV_CMP_FLAGS) -top uvmt_cv32_tb
+DSIM_CMP_FLAGS         ?= $(TIMESCALE) $(SV_CMP_FLAGS) -top uvmt_cv32_tb -suppress MultiBlockWrite
 DSIM_UVM_ARGS          ?= +incdir+$(UVM_HOME)/src $(UVM_HOME)/src/uvm_pkg.sv
 DSIM_RESULTS           ?= $(PWD)/dsim_results
 DSIM_COREVDV_RESULTS   ?= $(PWD)/dsim_results/corev-dv
