@@ -1,19 +1,19 @@
 /*
 **
 ** Copyright 2020 OpenHW Group
-** 
+**
 ** Licensed under the Solderpad Hardware Licence, Version 2.0 (the "License");
 ** you may not use this file except in compliance with the License.
 ** You may obtain a copy of the License at
-** 
+**
 **     https://solderpad.org/licenses/
-** 
+**
 ** Unless required by applicable law or agreed to in writing, software
 ** distributed under the License is distributed on an "AS IS" BASIS,
 ** WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 ** See the License for the specific language governing permissions and
 ** limitations under the License.
-** 
+**
 *******************************************************************************
 **
 ** Sanity test for the CV32E40P core.  Reads the MVENDORID, MISA, MARCHID and
@@ -26,6 +26,20 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+
+//FIXME: the core tb does not have the ability to select PULP/NO_PULP at
+//       compile-time, so we set a default MISA to NO_PULP value.  This
+//       needs to be fixed, but for now does not affect UVM env.
+#define EXP_MISA 0x40001104
+
+#ifdef NO_PULP
+#define EXP_MISA 0x40001104
+#endif
+
+#ifdef PULP
+#define EXP_MISA 0x40801104
+#endif
+
 
 int main(int argc, char *argv[])
 {
@@ -47,8 +61,8 @@ int main(int argc, char *argv[])
     }
 
     /* Check MISA CSR: if its zero, it might not be implemented at all */
-    if (misa_rval != 0x40001104) {
-      printf("\tERROR: CSR MISA reads as 0x%x - should be 0x40001104 for this release of CV32E40P!\n\n", misa_rval);
+    if (misa_rval != EXP_MISA) {
+      printf("\tERROR: CSR MISA reads as 0x%x - should be 0x%x for this release of CV32E40P!\n\n", misa_rval, EXP_MISA);
       return EXIT_FAILURE;
     }
 
