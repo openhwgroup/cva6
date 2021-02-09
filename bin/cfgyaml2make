@@ -45,12 +45,15 @@ logger = logging.getLogger(os.path.basename(__file__))
 logger.setLevel(logging.INFO)
 
 TOPDIR = os.path.abspath(os.path.join(os.path.dirname(os.path.realpath(__file__)), '..'))
-
 REQUIRED_KEYS = ('name', 'description',)
 CFG_PATHS = (
-            'cv32/tests/cfg',
-             )
-              
+             '<CV_CORE>/tests/cfg',
+            )
+try:
+    DEFAULT_CORE=os.environ['CV_CORE']
+except KeyError:
+    DEFAULT_CORE=None
+
 if (sys.version_info < (3,0,0)):
     print ('Requires python 3')
     exit(1)
@@ -113,6 +116,7 @@ def emit_make(cfg_spec, prefix):
 parser = argparse.ArgumentParser()
 parser.add_argument('-d', '--debug', action='store_true', help='Display debug messages')
 parser.add_argument('--yaml', help='Name of YAML build specification to find')
+parser.add_argument('--core', default=DEFAULT_CORE, help='Default core to test')
 parser.add_argument('--prefix', help='Prefix to add to make variables generated')
 args = parser.parse_args()
 
@@ -120,9 +124,15 @@ if args.debug:
     logger.setLevel(level=logging.DEBUG)
 
 # Validate 
+if not args.core:
+    logger.fatal('Must specify core with CV_CORE envrionment variable or --core')
+    os.sys.exit(2)
+
 if not args.yaml:
     logger.fatal('Must specify the YAML build specification with --yaml')
     os.sys.exit(2)
+
+CFG_PATHS = [p.replace('<CV_CORE>', args.core.lower()) for p in CFG_PATHS]
 
 cfg_spec = read_file(file=args.yaml)
 temp_file = emit_make(cfg_spec=cfg_spec, prefix=args.prefix)

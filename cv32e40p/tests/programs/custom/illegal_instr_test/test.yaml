@@ -1,0 +1,6 @@
+# Test definition YAML for test
+
+name: illegal_instr_test
+uvm_test: uvmt_$(CV_CORE_LC)_firmware_test_c
+description: >
+    Script-generated test contributed by em-micro to exercise all (?) illegal instruction types
