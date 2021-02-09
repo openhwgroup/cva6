@@ -11,7 +11,7 @@ builds:
     cmd: make comp_corev-dv
     dir: cv32e40p/sim/uvmt
     cov: 0
-  cv32e40p:
+  uvmt_cv32e40p:
     # required: the make command to create the build
     cmd: make comp
     dir: cv32e40p/sim/uvmt    
@@ -20,41 +20,41 @@ builds:
 # List of tests
 tests:
   debug_test:
-    build: cv32e40p
+    build: uvmt_cv32e40p
     description: Debug directed test  
     dir: cv32e40p/sim/uvmt
     cmd: make test TEST=debug_test
     num: 20
 
   debug_test_reset:
-    build: cv32e40p
+    build: uvmt_cv32e40p
     description: Debug reset test  
     dir: cv32e40p/sim/uvmt
     cmd: make test TEST=debug_test_reset
 
   debug_test_boot_set:
-    build: cv32e40p
+    build: uvmt_cv32e40p
     description: Debug reset test with random boot set
     dir: cv32e40p/sim/uvmt
     cmd: make test TEST=debug_test_boot_set
     num: 50
 
   corev_rand_debug:
-    build: cv32e40p
+    build: uvmt_cv32e40p
     description: debug random test
     dir: cv32e40p/sim/uvmt
     cmd: make gen_corev-dv test TEST=corev_rand_debug
     num: 50
 
   corev_rand_debug_single_step:
-    build: cv32e40p
+    build: uvmt_cv32e40p
     description: debug random test
     dir: cv32e40p/sim/uvmt
     cmd: make gen_corev-dv test TEST=corev_rand_debug_single_step
     num: 50
 
   corev_rand_debug_ebreak:
-    build: cv32e40p
+    build: uvmt_cv32e40p
     description: debug random test
     dir: cv32e40p/sim/uvmt
     cmd: make gen_corev-dv test TEST=corev_rand_debug_ebreak

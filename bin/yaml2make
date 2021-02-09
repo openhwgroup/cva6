@@ -44,20 +44,20 @@ logger = logging.getLogger(os.path.basename(__file__))
 logger.setLevel(logging.INFO)
 
 # Constants
+TOPDIR = os.path.abspath(os.path.join(os.path.dirname(os.path.realpath(__file__)), '..'))
+VALID_YAMLS = ('corev-dv.yaml', 'test.yaml')
+REQUIRED_KEYS = ('name', 'uvm_test', 'description',)
+CFG_PATH = (
+            '<CV_CORE>/tests/cfg',
+            )
+TEST_PATHS = (
+            '<CV_CORE>/tests/programs/corev-dv/',
+            '<CV_CORE>/tests/programs/custom',
+            )
 try:
-    TOPDIR = os.path.abspath(os.path.join(os.path.dirname(os.path.realpath(__file__)), '..'))
-    VALID_YAMLS = ('corev-dv.yaml', 'test.yaml')
-    REQUIRED_KEYS = ('name', 'uvm_test', 'description',)
-    CFG_PATH = (
-                '{}/tests/cfg'.format(os.environ['CV_CORE'].lower()),
-                )
-    TEST_PATHS = (
-                '{}/tests/programs/corev-dv/'.format(os.environ['CV_CORE'].lower()),
-                '{}/tests/programs/custom'.format(os.environ['CV_CORE'].lower()),
-                )
+    DEFAULT_CORE=os.environ['CV_CORE']
 except KeyError:
-    logger.fatal('Must defined CV_CORE environment variable before running')
-    os.sys.exit(2)
+    DEFAULT_CORE=None
 
 if (sys.version_info < (3,0,0)):
     print ('Requires python 3')
@@ -126,11 +126,16 @@ parser.add_argument('-t', '--test', help='Test to look for')
 parser.add_argument('-d', '--debug', action='store_true', help='Display debug messages')
 parser.add_argument('--yaml', choices=VALID_YAMLS, help='Name of YAML test specification to find')
 parser.add_argument('--prefix', help='Prefix to add to make variables generated')
+parser.add_argument('--core', default=DEFAULT_CORE, help='Default core to test')
 parser.add_argument('--run-index', default='0', help='Add a run index to append to test specifications')
 args = parser.parse_args()
 
 if args.debug:
     logger.setLevel(level=logging.DEBUG)
+
+if not args.core:
+    logger.fatal('Must specify core with CV_CORE envrionment variable or --core')
+    os.sys.exit(2)
 
 # Validate 
 if not args.yaml:
@@ -141,6 +146,9 @@ if not args.yaml:
 if not args.test:
     logger.fatal('Must specify a test with -t or --test')
     os.sys.exit(2)
+
+CFG_PATH = [p.replace('<CV_CORE>', args.core.lower()) for p in CFG_PATH]
+TEST_PATHS = [p.replace('<CV_CORE>', args.core.lower()) for p in TEST_PATHS]
 
 test_spec = read_file(test=args.test, type=args.yaml, run_index=args.run_index)
 temp_file = emit_make(test_spec=test_spec, prefix=args.prefix)

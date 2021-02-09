@@ -16,7 +16,7 @@
 # 
 ###############################################################################
 #
-# VSIM-specific Makefile for the CV32E40P "uvmt_cv32" testbench.
+# VSIM-specific Makefile for the Core-V-Verif "uvmt" testbench.
 # VSIM is the Mentor Graphics Questa SystemVerilog simulator.
 #
 ###############################################################################
@@ -80,15 +80,15 @@ VLOG_FLAGS    ?= \
         		-mfcu \
         		+acc=rb \
 				$(QUIET) \
-        		-writetoplevels  uvmt_cv32_tb
-VLOG_FILE_LIST = -f $(DV_UVMT_CV32_PATH)/uvmt_cv32.flist
+        		-writetoplevels  uvmt_$(CV_CORE_LC)_tb
+VLOG_FILE_LIST = -f $(DV_UVMT_PATH)/uvmt_$(CV_CORE_LC).flist
 
 VLOG_FLAGS += $(DPILIB_VLOG_OPT)
 
 # Add the ISS to compilation
 ifeq ($(call IS_YES,$(USE_ISS)),YES)
-VLOG_FILE_LIST += -f $(DV_UVMT_CV32_PATH)/imperas_iss.flist
-VLOG_FLAGS += "+define+ISS+CV32E40P_TRACE_EXECUTION"
+VLOG_FILE_LIST += -f $(DV_UVMT_PATH)/imperas_iss.flist
+VLOG_FLAGS += "+define+ISS+$(CV_CORE_UC)_TRACE_EXECUTION"
 endif
 
 ###############################################################################
@@ -113,7 +113,7 @@ VSIM_UVM_ARGS      = +incdir+$(UVM_HOME)/src $(UVM_HOME)/src/uvm_pkg.sv
 
 ifeq ($(call IS_YES,$(USE_ISS)),YES)
 VSIM_FLAGS += +USE_ISS
-VSIM_FLAGS += -sv_lib $(DV_OVPM_MODEL)/bin/Linux64/riscv_CV32E40P.dpi
+VSIM_FLAGS += -sv_lib $(basename $(OVP_MODEL_DPI))
 endif
 
 # Skip compile if requested (COMP=NO)
@@ -237,10 +237,11 @@ vlog_corev-dv:
 			$(VLOG_FLAGS) \
 			+incdir+$(UVM_HOME) \
 			$(UVM_HOME)/uvm_pkg.sv \
-			+incdir+$(COREVDV_PKG)/target/cv32e40p \
+			+incdir+$(CV_CORE_COREVDV_PKG)/target/$(CV_CORE_LC) \
 			+incdir+$(RISCVDV_PKG)/user_extension \
 			+incdir+$(RISCVDV_PKG)/tests \
 			+incdir+$(COREVDV_PKG) \
+			+incdir+$(CV_CORE_COREVDV_PKG) \
 			-f $(COREVDV_PKG)/manifest.f \
 			-l vlog.log
 
@@ -249,8 +250,8 @@ vopt_corev-dv:
 		$(VOPT) \
 			-work $(VWORK) \
 			$(VOPT_FLAGS) \
-			corev_instr_gen_tb_top \
-			-o corev_instr_gen_tb_top_vopt \
+			$(CV_CORE_LC)_instr_gen_tb_top \
+			-o $(CV_CORE_LC)_instr_gen_tb_top_vopt \
 			-l vopt.log
 
 gen_corev-dv: 
@@ -264,7 +265,7 @@ gen_corev-dv:
 	cd  $(VSIM_COREVDV_RESULTS)/$(TEST) && \
 		$(VSIM) \
 			$(VSIM_FLAGS) \
-			corev_instr_gen_tb_top_vopt \
+			$(CV_CORE_LC)_instr_gen_tb_top_vopt \
 			$(DPILIB_VSIM_OPT) \
 			+UVM_TESTNAME=$(GEN_UVM_TEST) \
 			+num_of_tests=$(GEN_NUM_TESTS)  \
@@ -313,9 +314,9 @@ endif
 compliance: VSIM_TEST=$(COMPLIANCE_PROG)
 compliance: VSIM_FLAGS+=+firmware=$(COMPLIANCE_PKG)/work/$(RISCV_ISA)/$(COMPLIANCE_PROG).hex
 compliance: VSIM_FLAGS+=+elf_file=$(COMPLIANCE_PKG)/work/$(RISCV_ISA)/$(COMPLIANCE_PROG).elf
-compliance: TEST_UVM_TEST=uvmt_cv32_firmware_test_c
+compliance: TEST_UVM_TEST=uvmt_$(CV_CORE_LC)_firmware_test_c
 compliance: $(VSIM_COMPLIANCE_PREREQ) run
-compliance: export IMPERAS_TOOLS=$(CORE_V_VERIF)/cv32/tests/cfg/ovpsim_no_pulp.ic
+compliance: export IMPERAS_TOOLS=$(CORE_V_VERIF)/$(CV_CORE_LC)/tests/cfg/ovpsim_no_pulp.ic
 
 ################################################################################
 # Questa simulation targets
@@ -336,7 +337,7 @@ export IMPERAS_TOOLS=$(VSIM_RESULTS)/$(TEST_NAME)/ovpsim.ic
 endif
 
 # Target to create work directory in $(VSIM_RESULTS)/
-lib: mk_vsim_dir $(CV32E40P_PKG) $(TBSRC_PKG) $(TBSRC)
+lib: mk_vsim_dir $(CV_CORE_PKG) $(TBSRC_PKG) $(TBSRC)
 	if [ ! -d "$(VSIM_RESULTS)/$(VWORK)" ]; then \
 		$(VLIB) $(VSIM_RESULTS)/$(VWORK); \
 	fi
@@ -353,11 +354,11 @@ vlog: lib
 			-l vlog.log \
 			$(VLOG_FLAGS) \
 			$(CFG_COMPILE_FLAGS) \
-			+incdir+$(DV_UVME_CV32_PATH) \
-			+incdir+$(DV_UVMT_CV32_PATH) \
+			+incdir+$(DV_UVME_PATH) \
+			+incdir+$(DV_UVMT_PATH) \
 			+incdir+$(UVM_HOME) \
 			$(UVM_HOME)/uvm_pkg.sv \
-			-f $(CV32E40P_MANIFEST) \
+			-f $(CV_CORE_MANIFEST) \
 			$(VLOG_FILE_LIST) \
 			$(TBSRC_PKG)
 
@@ -407,7 +408,7 @@ hello-world:
 
 custom: VSIM_TEST=$(CUSTOM_PROG)
 custom: VSIM_FLAGS += +firmware=$(CUSTOM_DIR)/$(CUSTOM_PROG).hex +elf_file=$(CUSTOM_DIR)/$(CUSTOM_PROG).elf
-custom: TEST_UVM_TEST=uvmt_cv32_firmware_test_c
+custom: TEST_UVM_TEST=uvmt_$(CV_CORE_LC)_firmware_test_c
 custom: $(CUSTOM_DIR)/$(CUSTOM_PROG).hex run
 
 ################################################################################
@@ -447,4 +448,4 @@ clean:
 
 # All generated files plus the clone of the RTL
 clean_all: clean clean_riscv-dv clean_test_programs clean-bsp clean_compliance
-	rm -rf $(CV32E40P_PKG)
+	rm -rf $(CV_CORE_PKG)

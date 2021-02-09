@@ -16,7 +16,7 @@
 # 
 ###############################################################################
 #
-# VCS-specific Makefile for the CV32E40P "uvmt_cv32" testbench.
+# VCS-specific Makefile for the Core-V-Verif "uvmt" testbench.
 #
 ###############################################################################
 
@@ -129,10 +129,10 @@ endif
 
 ################################################################################
 
-VCS_FILE_LIST ?= -f $(DV_UVMT_CV32_PATH)/uvmt_cv32.flist
+VCS_FILE_LIST ?= -f $(DV_UVMT_PATH)/uvmt_$(CV_CORE_LC).flist
 ifeq ($(call IS_YES,$(USE_ISS)),YES)
-    VCS_FILE_LIST += -f $(DV_UVMT_CV32_PATH)/imperas_iss.flist
-    VCS_USER_COMPILE_ARGS += "+define+ISS +define+CV32E40P_TRACE_EXECUTION"
+    VCS_FILE_LIST += -f $(DV_UVMT_PATH)/imperas_iss.flist
+    VCS_USER_COMPILE_ARGS += "+define+ISS +define+$(CV_CORE_UC)_TRACE_EXECUTION"
     VCS_PLUSARGS +="+USE_ISS"
 endif
 
@@ -162,16 +162,16 @@ VCS_COMP = $(VCS_COMP_FLAGS) \
 		$(QUIET) \
 		$(VCS_UVM_ARGS) \
 		$(VCS_USER_COMPILE_ARGS) \
-		+incdir+$(DV_UVME_CV32_PATH) \
-		+incdir+$(DV_UVMT_CV32_PATH) \
-		-f $(CV32E40P_MANIFEST) \
+		+incdir+$(DV_UVME_PATH) \
+		+incdir+$(DV_UVMT_PATH) \
+		-f $(CV_CORE_MANIFEST) \
 		$(VCS_FILE_LIST) \
 		$(UVM_PLUSARGS)
 
-comp: mk_vcs_dir $(CV32E40P_PKG) $(OVP_MODEL_DPI)
-	cd $(VCS_RESULTS) && $(VCS) $(VCS_COMP) -top uvmt_cv32_tb
+comp: mk_vcs_dir $(CV_CORE_PKG) $(OVP_MODEL_DPI)
+	cd $(VCS_RESULTS) && $(VCS) $(VCS_COMP) -top uvmt_$(CV_CORE_LC)_tb
 	@echo "$(BANNER)"
-	@echo "* $(,maSIMULATOR) compile complete"
+	@echo "* $(SIMULATOR) compile complete"
 	@echo "* Log: $(VCS_RESULTS)/vcs.log"
 	@echo "$(BANNER)"
 
@@ -180,7 +180,7 @@ VCS_SIM_PREREQ = comp
 endif
 
 ifeq ($(call IS_YES,$(VCS_SINGLE_STEP)), YES)
-	VCS_SIM_PREREQ = mk_vcs_dir $(CV32E40P_PKG) $(OVP_MODEL_DPI)
+	VCS_SIM_PREREQ = mk_vcs_dir $(CV_CORE_PKG) $(OVP_MODEL_DPI)
 	VCS_COMP_RUN = $(VCS_COMP) $(VCS_RUN_BASE_FLAGS)
 endif
 
@@ -215,7 +215,7 @@ test: $(VCS_SIM_PREREQ) $(TEST_TEST_DIR)/$(TEST_PROGRAM).hex gen_ovpsim_ic
 custom: $(VCS_SIM_PREREQ) $(CUSTOM_DIR)/$(CUSTOM_PROG).hex
 	mkdir -p $(VCS_RESULTS)/$(CUSTOM_PROG) && cd $(VCS_RESULTS)/$(CUSTOM_PROG) && \
 	$(VCS_RESULTS)/$(SIMV) -l vcs-$(CUSTOM_PROG).log -cm_test $(CUSTOM_PROG) $(VCS_RUN_FLAGS) \
-		+UVM_TESTNAME=uvmt_cv32_firmware_test_c \
+		+UVM_TESTNAME=uvmt_$(CV_CORE_LC)_firmware_test_c \
 		+elf_file=$(CUSTOM_DIR)/$(CUSTOM_PROG).elf \
 		+firmware=$(CUSTOM_DIR)/$(CUSTOM_PROG).hex
 
@@ -246,9 +246,9 @@ endif
 
 compliance: $(VCS_COMPLIANCE_PREREQ)
 	mkdir -p $(VCS_RESULTS)/$(COMPLIANCE_PROG) && cd $(VCS_RESULTS)/$(COMPLIANCE_PROG)  && \
-	export IMPERAS_TOOLS=$(CORE_V_VERIF)/cv32/tests/cfg/ovpsim_no_pulp.ic && \
+	export IMPERAS_TOOLS=$(CORE_V_VERIF)/$(CV_CORE_LC)/tests/cfg/ovpsim_no_pulp.ic && \
 	$(VCS_RESULTS)/$(SIMV) -l vcs-$(COMPLIANCE_PROG).log -cm_test riscv-compliance $(VCS_COMP_RUN) $(TEST_PLUSARGS) \
-		+UVM_TESTNAME=uvmt_cv32_firmware_test_c \
+		+UVM_TESTNAME=uvmt_$(CV_CORE_LC)_firmware_test_c \
 		+firmware=$(COMPLIANCE_PKG)/work/$(RISCV_ISA)/$(COMPLIANCE_PROG).hex \
 		+elf_file=$(COMPLIANCE_PKG)/work/$(RISCV_ISA)/$(COMPLIANCE_PROG).elf
 
@@ -259,12 +259,12 @@ comp_corev-dv: $(RISCVDV_PKG)
 	cd $(VCS_COREVDV_RESULTS) && \
 	$(VCS) $(VCS_COMP_FLAGS) \
 		$(QUIET) $(VCS_USER_COMPILE_ARGS) \
-		+incdir+$(COREVDV_PKG)/target/cv32e40p \
+		+incdir+$(CV_CORE_COREVDV_PKG)/target/$(CV_CORE_LC) \
 		+incdir+$(RISCVDV_PKG)/user_extension \
 		+incdir+$(RISCVDV_PKG)/tests \
-		+incdir+$(COREVDV_PKG) \
+		+incdir+$(CV_CORE_COREVDV_PKG) \
 		-f $(COREVDV_PKG)/manifest.f \
-		-l vcs.log 
+		-l vcs.log
 
 corev-dv: clean_riscv-dv \
           clone_riscv-dv \
@@ -323,4 +323,4 @@ clean:
 
 # All generated files plus the clone of the RTL
 clean_all: clean clean_core_tests clean_riscv-dv clean_test_programs clean-bsp
-	rm -rf $(CV32E40P_PKG)
+	rm -rf $(CV_CORE_PKG)
