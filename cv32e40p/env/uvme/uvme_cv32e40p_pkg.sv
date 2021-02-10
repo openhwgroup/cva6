@@ -46,10 +46,7 @@ package uvme_cv32e40p_pkg;
    // Constants / Structs / Enums
    `include "uvme_cv32e40p_constants.sv"
    `include "uvme_cv32e40p_tdefs.sv"
-   
-   // Register Abstraction Layer
-   `include "uvme_cv32e40p_ral.sv"
-   
+      
    // Objects
    `include "uvme_cv32e40p_cfg.sv"
    `include "uvme_cv32e40p_cntxt.sv"
