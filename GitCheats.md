@@ -93,12 +93,12 @@ $ git clone git@github.com:openhwgroup/core-v-verif.git master<br>
 
 ### Metrics CI Cheat Sheet
 
-#### Add the Metrics remote
+#### Add GitLab Metrics remote
 $ git remote add metrics git@gitlab.openhwgroup.metrics.ca:cv32e40p_verif/cv32e40p_verif.git
 
 #### Check to see if you have the Metrics remote added
-$ git remote -v
-> metrics	git@gitlab.openhwgroup.metrics.ca:cv32e40p_verif/cv32e40p_verif.git (fetch)
-> metrics	git@gitlab.openhwgroup.metrics.ca:cv32e40p_verif/cv32e40p_verif.git (push)
-> origin	https://github.com/openhwgroup/core-v-verif (fetch)
-> origin	https://github.com/openhwgroup/core-v-verif (push)
+$ git remote -v<br>
+  \> metrics	git@gitlab.openhwgroup.metrics.ca:cv32e40p_verif/cv32e40p_verif.git (fetch)<br>
+  \> metrics	git@gitlab.openhwgroup.metrics.ca:cv32e40p_verif/cv32e40p_verif.git (push)<br>
+  \> origin	https://github.com/openhwgroup/core-v-verif (fetch)<br>
+  \> origin	https://github.com/openhwgroup/core-v-verif (push)<br>
