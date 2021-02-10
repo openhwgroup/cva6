@@ -94,8 +94,8 @@ export DV_UVML_LOGS_PATH      = $(CORE_V_VERIF)/lib/uvm_libs/uvml_logs
 export DV_UVML_SB_PATH        = $(CORE_V_VERIF)/lib/uvm_libs/uvml_sb
 
 export DV_OVPM_HOME           = $(CORE_V_VERIF)/vendor_lib/imperas
-export DV_OVPM_MODEL          = $(DV_OVPM_HOME)/riscv_$(CV_CORE_UC)sim
-export DV_OVPM_DESIGN         = $(DV_OVPM_HOME)/verilog/design
+export DV_OVPM_MODEL          = $(DV_OVPM_HOME)/riscv_$(CV_CORE_UC)_OVPsim
+export DV_OVPM_DESIGN         = $(DV_OVPM_HOME)/design
 
 DV_UVMT_SRCS                  = $(wildcard $(DV_UVMT_PATH)/*.sv))
 
@@ -105,7 +105,7 @@ UVM_TESTNAME ?= uvmt_$(CV_CORE_LC)_firmware_test_c
 
 # Google's random instruction generator
 RISCVDV_PKG         := $(CORE_V_VERIF)/vendor_lib/google/riscv-dv
-COREVDV_PKG         := $(CORE_V_VERIF)/vendor_lib/google/corev-dv
+COREVDV_PKG         := $(CORE_V_VERIF)/lib/corev-dv
 CV_CORE_COREVDV_PKG := $(CORE_V_VERIF)/$(CV_CORE_LC)/env/uvme/corev-dv
 export RISCV_DV_ROOT         = $(RISCVDV_PKG)
 export COREV_DV_ROOT         = $(COREVDV_PKG)
@@ -154,7 +154,6 @@ endif
 #    - Core Firmware and the RISCV GCC Toolchain (SDK)
 #    - Variables for RTL dependencies
 include $(CORE_V_VERIF)/sim/Common.mk
-
 ###############################################################################
 # Clone core RTL and DV dependencies
 clone_cv_core_rtl:

@@ -19,17 +19,23 @@ on the command line for describing options and arguments available.
 
 ==================================
 
-## makecv32
-This is a simple wrapper around the main simulation Makefile located in:<br>
+## makeuvmt
+This is a simple wrapper to redirect a make call to any core's UVMT Makefile.  This redirection script
+simply requires that you either:
+- specify CV_CORE in your environment -or-
+- specify CV_CORE on the maekeuvmt command line as an override
 
-cv32/sim/uvmt_cv32
+The script will then invoke make in the following directory:<br>
+> \<core-v-verif>/$(CV_CORE)/sim/uvmt
 
 This should enable simulations to be executed regardess of current shell directory.  All common make flags
 and conventions should be passed to the underlying Makefile directory.
 
 *Examples:*
-> % makecv32 sanity WAVES=1 SIMUALTOR=vsim<br>
-% makecv32 corev-dv corev_rand_instr_test_0`
+> \# makeuvmt can be invoked from any directory<br>
+> % makeuvmt test TEST=hello-world WAVES=1 SIMUALTOR=vsim<br>
+> \# Override the core to cv32e40x (regardless of CV_CORE environment setting)<br>
+> % makeuvmt test TEST=hello-world WAVES=1 CV_CORE=cv32e40x<br>
 
 ## ci_check
 
@@ -51,11 +57,12 @@ YAML format into an output format suitable for the specified regression platform
 output platforms are:<br>
 - Metrics JSON (--metrics)
 - Shell Script (--sh)
+- Vmanager VSIF (--vsif)
 
 The format of the YAML testlist file is given below.  All YAML regression testslists should go in the following directory:
 > core-v-verif/\<project>/regress<br>
 
-where *\<project>* is either cv32 (default) or cv64.
+where *\<project>* is a core (cv32e40p or cva6)
 
 Note that the utility has the ability to combine multiple testlists to build larger regressions.  Therefore the --file 
 option may be specified multiple times.
@@ -63,8 +70,8 @@ option may be specified multiple times.
 Please refer to the help utility of *cv_regress* for more details on the utility.
 
 *Examples:*
-> \# Read in *cv32_ci_check* testlist with Questa and emit an executable shell script<br>
-% cv_regress --file=cv32_ci_check.yaml --simulator=vsim --outfile=vsim_ci_check.sh
+> \# Read in *cv32e40p_ci_check* testlist with Questa and emit an executable shell script<br>
+% cv_regress --file=cv32e40p_ci_check.yaml --simulator=vsim --outfile=vsim_ci_check.sh
 
 ### Regression YAML Format
 

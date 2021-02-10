@@ -3,8 +3,6 @@ Verification components from Google and CORE-V specific extensions and updates t
 
 **riscv-dv**: location where the Google RISC-V Instruction Stream Generator is cloned to.
 
-**corev-dv**: CORE-V extensions to riscv-dv.
-
 In order to use riscv-dv the following shell ENV variables must be set (values are examples only):
 ```
 export DSIM="/tools/Metrics/dsim/20190802.10.1/bin/dsim"

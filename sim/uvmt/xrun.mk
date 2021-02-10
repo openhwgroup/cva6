@@ -240,7 +240,7 @@ XRUN_COMP = $(XRUN_COMP_FLAGS) \
 		$(XRUN_FILE_LIST) \
 		$(UVM_PLUSARGS)
 
-comp: mk_xrun_dir $(CV_CORE_PKG) $(OVP_MODEL_DPI)
+comp: mk_xrun_dir $(CV_CORE_PKG)
 	@echo "$(BANNER)"
 	@echo "* Compiling xrun in $(XRUN_RESULTS)"
 	@echo "* Log: $(XRUN_RESULTS)/xrun.log"
@@ -259,7 +259,7 @@ endif
 XRUN_COMP_RUN = $(XRUN_RUN_FLAGS)
 
 ifeq ($(call IS_YES,$(XRUN_SINGLE_STEP)), YES)
-	XRUN_SIM_PREREQ = mk_xrun_dir $(CV_CORE_PKG) $(OVP_MODEL_DPI)
+	XRUN_SIM_PREREQ = mk_xrun_dir $(CV_CORE_PKG)
 	XRUN_COMP_RUN = $(XRUN_COMP) $(XRUN_RUN_BASE_FLAGS)
 endif
 

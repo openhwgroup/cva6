@@ -1,4 +1,4 @@
-## CV32/TB: testbenches for the CV32E40\* CORE-V family of RISC-V cores.
+## CV32/TB: testbenches for the CV32E40P CORE-V family of RISC-V cores.
 Derived from the
 [tb](https://github.com/pulp-platform/riscv/tree/master/tb)
 directory of the PULP-Platform RI5CY project.  There are two distinct
@@ -9,12 +9,11 @@ Modified to remove a few RTL files (placed these in the rtl directory). This
 testbench supports Verilator and we will do what we can to maintain Verilator
 support here.  Note that `tb_riscv` is now a sub-directory of `core`.
 
-### uvmt_cv32
-The testbench and testharness for the CV32E40\* UVM verification
+### uvmt
+The testbench and testharness for the CV32E40P UVM verification
 environments.  This tb/th maintains support for all features of the `core`
-testbench.  Future releases of `uvmt_cv32` will support features such as
-an Instruction Set Simulator reference model of the cv32, an instruction
-generator, and functional coverage. Cannot be run with Verilator.
+testbench.  This testbench must be run with a SystemVerilog 1800-compliant simulator, 
+i.e. it cannot be run with Verilator.
 
 ## Retired Testbenches
 A set of directories inherited from the RI5CY project have fallen into disuse
