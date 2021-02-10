@@ -3,9 +3,6 @@
 Verification Components for the CORE-V verification environments.  Examples
 include UVM Agents for various physical interfaces, memory models, virtual peripherals, etc.
 
-There is a great debate between mike@openhwgroup.org and aimeepsutton@metrics.ca about where the
-riscv-gnu-toolchain should go here.  If you have an opinion, send a comment/question to both of us.
-
 ## uvm_agents
 Home of UVM Agents
 
@@ -14,3 +11,8 @@ All other UVM verification components
 
 ## sim_libs
 Non-UVM verification components
+
+## corev-dv
+corev-dv is the general name for the customization layer of SystemVerilog developed by OpenHW contributors to
+customize and enhance the Google RISCV-DV generator https://github.com/google/riscv-dv<br>
+This directory contains general corev-dv code shared by all OpenHW core.  Each core includes its own corev-dv directory in its env/ directory containing core-specific customziations.
