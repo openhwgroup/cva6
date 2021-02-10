@@ -203,6 +203,9 @@ XRUN_COMP_FLAGS += -nowarn CGPIDF
 # deselect_coverage -all warnings
 XRUN_COMP_FLAGS += -nowarn CGNSWA
 
+# deselect_coverage -all warnings
+XRUN_COMP_COREV_DV_FLAGS += -nowarn BNDWRN
+
 # instance reporting warings for covergroups
 XRUN_RUN_COV    += -nowarn COVCGN
 XRUN_RUN_COV    += -nowarn CGPIZE
@@ -343,15 +346,14 @@ comp_corev-dv: $(RISCVDV_PKG)
 	$(XRUN) $(XRUN_COMP_FLAGS) \
 		$(QUIET) \
 		$(XRUN_USER_COMPILE_ARGS) \
+		$(XRUN_COMP_COREV_DV_FLAGS) \
 		-elaborate \
 		+incdir+$(CV_CORE_COREVDV_PKG)/target/$(CV_CORE_LC) \
 		+incdir+$(RISCVDV_PKG)/user_extension \
-		+incdir+$(RISCVDV_PKG)/tests \
 		+incdir+$(COREVDV_PKG) \
 		+incdir+$(CV_CORE_COREVDV_PKG) \
 		-f $(COREVDV_PKG)/manifest.f \
 		-l xrun.log
-
 
 corev-dv: clean_riscv-dv \
           clone_riscv-dv \

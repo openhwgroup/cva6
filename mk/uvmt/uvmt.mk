@@ -93,7 +93,7 @@ export DV_UVML_TRN_PATH       = $(CORE_V_VERIF)/lib/uvm_libs/uvml_trn
 export DV_UVML_LOGS_PATH      = $(CORE_V_VERIF)/lib/uvm_libs/uvml_logs
 export DV_UVML_SB_PATH        = $(CORE_V_VERIF)/lib/uvm_libs/uvml_sb
 
-export DV_OVPM_HOME           = $(CORE_V_VERIF)/vendor_lib/imperas
+export DV_OVPM_HOME           = $(CORE_V_VERIF)/$(CV_CORE_LC)/vendor_lib/imperas
 export DV_OVPM_MODEL          = $(DV_OVPM_HOME)/riscv_$(CV_CORE_UC)_OVPsim
 export DV_OVPM_DESIGN         = $(DV_OVPM_HOME)/design
 
@@ -104,15 +104,15 @@ DV_UVMT_SRCS                  = $(wildcard $(DV_UVMT_PATH)/*.sv))
 UVM_TESTNAME ?= uvmt_$(CV_CORE_LC)_firmware_test_c
 
 # Google's random instruction generator
-RISCVDV_PKG         := $(CORE_V_VERIF)/vendor_lib/google/riscv-dv
+RISCVDV_PKG         := $(CORE_V_VERIF)/$(CV_CORE_LC)/vendor_lib/google/riscv-dv
 COREVDV_PKG         := $(CORE_V_VERIF)/lib/corev-dv
-CV_CORE_COREVDV_PKG := $(CORE_V_VERIF)/$(CV_CORE_LC)/env/uvme/corev-dv
+CV_CORE_COREVDV_PKG := $(CORE_V_VERIF)/$(CV_CORE_LC)/env/corev-dv
 export RISCV_DV_ROOT         = $(RISCVDV_PKG)
 export COREV_DV_ROOT         = $(COREVDV_PKG)
 export CV_CORE_COREV_DV_ROOT = $(CV_CORE_COREVDV_PKG)
 
 # RISC-V Foundation's RISC-V Compliance Test-suite
-COMPLIANCE_PKG   := $(CORE_V_VERIF)/vendor_lib/riscv/riscv-compliance
+COMPLIANCE_PKG   := $(CORE_V_VERIF)/$(CV_CORE_LC)/vendor_lib/riscv/riscv-compliance
 
 # TB source files for the CV32E core
 TBSRC_TOP   := $(TBSRC_HOME)/uvmt/uvmt_$(CV_CORE_LC)_tb.sv
@@ -153,7 +153,7 @@ endif
 # Common Makefile:
 #    - Core Firmware and the RISCV GCC Toolchain (SDK)
 #    - Variables for RTL dependencies
-include $(CORE_V_VERIF)/sim/Common.mk
+include $(CORE_V_VERIF)/mk/Common.mk
 ###############################################################################
 # Clone core RTL and DV dependencies
 clone_cv_core_rtl:
@@ -189,10 +189,10 @@ clone_compliance:
 	$(CLONE_COMPLIANCE_CMD)
 
 clr_compliance:
-	make clean -C $(CORE_V_VERIF)/vendor_lib/riscv/riscv-compliance
+	make clean -C $(CORE_V_VERIF)/$(CV_CORE_LC)/vendor_lib/riscv/riscv-compliance
 
 build_compliance: $(COMPLIANCE_PKG)
-	make simulate -i -C $(CORE_V_VERIF)/vendor_lib/riscv/riscv-compliance \
+	make simulate -i -C $(CORE_V_VERIF)/$(CV_CORE_LC)/vendor_lib/riscv/riscv-compliance \
 		RISCV_TARGET=${RISCV_TARGET} \
 		RISCV_DEVICE=${RISCV_DEVICE} \
 		PATH=$(RISCV)/bin:$(PATH) \
@@ -214,7 +214,7 @@ compliance_check_sig: compliance
 	@echo "Checking Compliance Signature for $(RISCV_ISA)/$(COMPLIANCE_PROG)"
 	@echo "Reference: $(REF)"
 	@echo "Signature: $(SIG)"
-	@export SUITEDIR=$(CORE_V_VERIF)/vendor_lib/riscv/riscv-compliance/riscv-test-suite/$(RISCV_ISA) && \
+	@export SUITEDIR=$(CORE_V_VERIF)/$(CV_CORE_LC)/vendor_lib/riscv/riscv-compliance/riscv-test-suite/$(RISCV_ISA) && \
 	export REF=$(REF) && export SIG=$(SIG) && export COMPL_PROG=$(COMPLIANCE_PROG) && \
 	export RISCV_TARGET=${RISCV_TARGET} && export RISCV_DEVICE=${RISCV_DEVICE} && \
 	export RISCV_ISA=${RISCV_ISA} export SIG_ROOT=${SIG_ROOT} && \
@@ -223,7 +223,7 @@ compliance_check_sig: compliance
 compliance_check_all_sigs:
 	@$(MKDIR_P) $(SIMULATOR)_results/$(RISCV_ISA)
 	@echo "Checking Compliance Signature for all tests in $(RISCV_ISA)"
-	@export SUITEDIR=$(CORE_V_VERIF)/vendor_lib/riscv/riscv-compliance/riscv-test-suite/$(RISCV_ISA) && \
+	@export SUITEDIR=$(CORE_V_VERIF)/$(CV_CORE_LC)/vendor_lib/riscv/riscv-compliance/riscv-test-suite/$(RISCV_ISA) && \
 	export RISCV_TARGET=${RISCV_TARGET} && export RISCV_DEVICE=${RISCV_DEVICE} && \
 	export RISCV_ISA=${RISCV_ISA} export SIG_ROOT=${SIG_ROOT} && \
 	$(CORE_V_VERIF)/bin/diff_signatures.sh $(RISCV_ISA) | tee $(SIMULATOR)_results/$(RISCV_ISA)/diff_signatures.log
@@ -246,21 +246,21 @@ dah:
 #include unsim.mk
 #else
 ifeq ($(SIMULATOR), dsim)
-include $(CORE_V_VERIF)/sim/uvmt/dsim.mk
+include $(CORE_V_VERIF)/mk/uvmt/dsim.mk
 else
 ifeq ($(SIMULATOR), xrun)
-include $(CORE_V_VERIF)/sim/uvmt/xrun.mk
+include $(CORE_V_VERIF)/mk/uvmt/xrun.mk
 else
 ifeq ($(SIMULATOR), vsim)
-include $(CORE_V_VERIF)/sim/uvmt/vsim.mk
+include $(CORE_V_VERIF)/mk/uvmt/vsim.mk
 else
 ifeq ($(SIMULATOR), vcs)
-include $(CORE_V_VERIF)/sim/uvmt/vcs.mk
+include $(CORE_V_VERIF)/mk/uvmt/vcs.mk
 else
 ifeq ($(SIMULATOR), riviera)
-include $(CORE_V_VERIF)/sim/uvmt/riviera.mk
+include $(CORE_V_VERIF)/mk/uvmt/riviera.mk
 else
-include $(CORE_V_VERIF)/sim/uvmt/unsim.mk
+include $(CORE_V_VERIF)/mk/uvmt/unsim.mk
 endif
 endif
 endif

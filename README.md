@@ -2,7 +2,7 @@
 Functional verification project for the CORE-V family of RISC-V cores. This project is under active development.
 
 ## NEWS UPDATES:
-**2020-10-15**: Aldec's Riviera-PRO SystemVerilog simulator is now supported by core-v-verif.  Check out the README in [cv32/sim/uvmt_cv32](https://github.com/openhwgroup/core-v-verif/tree/master/cv32/sim/uvmt_cv32#running-the-environment-with-aldec-riviera-pro-riviera) for more information.
+**2020-10-15**: Aldec's Riviera-PRO SystemVerilog simulator is now supported by core-v-verif.  Check out the README in [mk/uvmt](https://github.com/openhwgroup/core-v-verif/tree/master/mk/uvmt#running-the-environment-with-aldec-riviera-pro-riviera) for more information.
 <br>
 **2020-09-04**: a new (and _much_ better) method of specifying and organizating test-programs and simulations is now merged in.  See slide "_Test Specification Updates_" in the [2020-08-31 CV32E40P project update](https://github.com/openhwgroup/core-v-docs/blob/master/verif/MeetingPresentations/20200831-CV32E40P-ProjectScheduleUpdate.pptx).
 <br>
@@ -22,7 +22,7 @@ The design and verification documentation for the various CORE-V cores is locate
 ### With CV32E40P
 If you want to run a simulation there are two options:
 1. To run the CORE testbench, go to `cv32e40p/sim/core` and read the README.
-2. To run the CV32E40P UVM environment, go to `cv32e40p/sim/uvmt_cv32` and read the README.
+2. To run the CV32E40P UVM environment, go to `cv32e40p/sim/uvmt` and read the README.
 
 #### CV32E40P coverage data
 The most recently published coverage report for the CV32E40P can be found [here](https://openhwgroup.github.io/core-v-verif/).
@@ -47,7 +47,7 @@ Verification Environments, testbenches, testcases and simulation Makefiles for t
 Source for GitHub Pages.  Contains a pointers to the [Verification Strategy document](https://core-v-docs-verif-strat.readthedocs.io/en/latest/), the [CORE-V-DOCS](https://github.com/openhwgroup/core-v-docs) repository, and available coverage reports.
 
 ### mk
-Common simulation Makefiles that support testsbenches for all CORE-V cores.
+Common simulation Makefiles that support testbenches for all CORE-V cores.
 
 ### lib
 Common components for the all CORE-V verification environments.

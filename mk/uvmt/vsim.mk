@@ -239,7 +239,6 @@ vlog_corev-dv:
 			$(UVM_HOME)/uvm_pkg.sv \
 			+incdir+$(CV_CORE_COREVDV_PKG)/target/$(CV_CORE_LC) \
 			+incdir+$(RISCVDV_PKG)/user_extension \
-			+incdir+$(RISCVDV_PKG)/tests \
 			+incdir+$(COREVDV_PKG) \
 			+incdir+$(CV_CORE_COREVDV_PKG) \
 			-f $(COREVDV_PKG)/manifest.f \
