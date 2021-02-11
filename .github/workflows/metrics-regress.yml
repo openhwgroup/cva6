@@ -18,7 +18,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
-      - run: ./bin/metrics-regress.py $METRICS_REGRESSION_NAME $METRICS_PROJECT_ID
+      - run: ./bin/metrics-regress $METRICS_REGRESSION_NAME $METRICS_PROJECT_ID
         env:
           METRICS_CI_TOKEN: ${{ secrets.METRICS_CI_TOKEN }}
           METRICS_REGRESSION_NAME: cv32_ci_check_regression

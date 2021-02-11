@@ -42,7 +42,7 @@ reqParams['regressionName'] = args.regressionName
 
 # Determine the git reference to pass to Metrics. For PRs, the reference
 # is of the format /refs/pull/<PR-number>/merge
-if str(os.environ['GITHUB_EVENT_NAME']) is 'pull_request_target':
+if str(os.environ['GITHUB_EVENT_NAME']) == 'pull_request_target':
     reqParams['branch'] = '/refs/pull/' + str(os.environ['PR_NUMBER']) + '/merge'
 else:
     reqParams['branch'] = str(os.environ['GITHUB_REF'])
