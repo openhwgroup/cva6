@@ -28,11 +28,7 @@ class uvme_cv32e40p_env_c extends uvm_env;
    // Objects
    uvme_cv32e40p_cfg_c    cfg;
    uvme_cv32e40p_cntxt_c  cntxt;
-   
-   // Register Abstraction Layer (RAL)
-   uvme_cv32e40p_ral_c           ral;
-   //uvma_debug_reg_adapter_c  reg_adapter;
-   
+      
    // Components
    uvme_cv32e40p_cov_model_c  cov_model;
    uvme_cv32e40p_prd_c        predictor;
@@ -67,8 +63,7 @@ class uvme_cv32e40p_env_c extends uvm_env;
    extern virtual function void build_phase(uvm_phase phase);
    
    /**
-    * 1. Connects agents to predictor via connect_predictor()
-    * 2. Connects ral to predictor & provisioning agent via connect_ral()
+    * 1. Connects agents to predictor via connect_predictor()    
     * 3. Connects predictor & agents to scoreboard via connect_scoreboard()
     * 4. Assembles virtual sequencer handles via assemble_vsequencer()
     * 5. Connects agents to coverage model via connect_coverage_model()
@@ -96,11 +91,6 @@ class uvme_cv32e40p_env_c extends uvm_env;
    extern virtual function void create_agents();
    
    /**
-    * Creates ral_adapter which translates to/from ral to debug_agent.
-    */
-   extern virtual function void create_ral_adapter();
-   
-   /**
     * Creates additional (non-agent) environment components (and objects).
     */
    extern virtual function void create_env_components();
@@ -124,12 +114,7 @@ class uvme_cv32e40p_env_c extends uvm_env;
     * Connects scoreboards components to agents/predictor.
     */
    extern virtual function void connect_scoreboard();
-   
-   /**
-    * Connects RAL to provisioning agent (debug_agent).
-    */
-   extern virtual function void connect_ral();
-   
+      
    /**
     * Connects environment coverage model to agents/scoreboards/predictor.
     */
@@ -171,8 +156,7 @@ function void uvme_cv32e40p_env_c::build_phase(uvm_phase phase);
       
       assign_cfg           ();
       assign_cntxt         ();
-      create_agents        ();
-      create_ral_adapter   ();
+      create_agents        ();      
       create_env_components();
       
       if (cfg.is_active) begin
@@ -197,8 +181,7 @@ function void uvme_cv32e40p_env_c::connect_phase(uvm_phase phase);
          connect_scoreboard();
       end
       
-      if (cfg.is_active) begin
-         connect_ral();
+      if (cfg.is_active) begin         
          assemble_vsequencer();
       end
       
@@ -262,14 +245,6 @@ function void uvme_cv32e40p_env_c::create_env_components();
 endfunction: create_env_components
 
 
-function void uvme_cv32e40p_env_c::create_ral_adapter();
-   
-   //reg_adapter = uvma_debug_reg_adapter_c::type_id::create("reg_adapter");
-   ral = cfg.ral;
-   
-endfunction: create_ral_adapter
-
-
 function void uvme_cv32e40p_env_c::create_vsequencer();
    
    vsequencer = uvme_cv32e40p_vsqr_c::type_id::create("vsequencer", this);
@@ -304,14 +279,6 @@ function void uvme_cv32e40p_env_c::connect_scoreboard();
    //      Ex: predictor.debug_ap.connect(sb.debug_sb.exp_export);
    
 endfunction: connect_scoreboard
-
-
-function void uvme_cv32e40p_env_c::connect_ral();
-   
-   //ral.default_map.set_sequencer(debug_agent.sequencer, reg_adapter);
-   //ral.default_map.set_auto_predict(1);
-   
-endfunction: connect_ral
 
 
 function void uvme_cv32e40p_env_c::connect_coverage_model();

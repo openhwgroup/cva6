@@ -41,8 +41,7 @@ class uvme_cv32e40p_cfg_c extends uvm_object;
    rand uvma_obi_cfg_c        obi_instr_cfg;
    rand uvma_obi_cfg_c        obi_data_cfg;
    
-   // Objects
-   rand uvme_cv32e40p_ral_c  ral;
+   // Objects   
    // TODO Add scoreboard configuration handles
    //      Ex: rand uvml_sb_cfg_c  sb_egress_cfg;
    //          rand uvml_sb_cfg_c  sb_ingress_cfg;
@@ -62,8 +61,7 @@ class uvme_cv32e40p_cfg_c extends uvm_object;
       `uvm_field_object(debug_cfg  , UVM_DEFAULT)
       `uvm_field_object(obi_instr_cfg, UVM_DEFAULT)
       `uvm_field_object(obi_data_cfg, UVM_DEFAULT)
-      
-      //`uvm_field_object(ral, UVM_DEFAULT)
+            
       // TODO Add scoreboard cfg field macros
       //      Ex: `uvm_field_object(sb_egress_cfg , UVM_DEFAULT)
       //          `uvm_field_object(sb_ingress_cfg, UVM_DEFAULT)
@@ -132,11 +130,7 @@ function uvme_cv32e40p_cfg_c::new(string name="uvme_cv32e40p_cfg");
    debug_cfg = uvma_debug_cfg_c    ::type_id::create("debug_cfg");
    obi_instr_cfg = uvma_obi_cfg_c::type_id::create("obi_instr_cfg");
    obi_data_cfg  = uvma_obi_cfg_c::type_id::create("obi_data_cfg");
-   
-   ral = uvme_cv32e40p_ral_c::type_id::create("ral");
-   ral.build();
-   ral.lock_model();
-   
+      
    // TODO Create scoreboard cfg objects
    //      Ex: sb_egress_cfg  = uvml_sb_cfg_c::type_id::create("sb_egress_cfg" );
    //          sb_ingress_cfg = uvml_sb_cfg_c::type_id::create("sb_ingress_cfg");

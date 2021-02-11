@@ -225,7 +225,7 @@ unit-test-gui: $(SIMULATOR)-unit-test-gui
 #    - Core Firmware and the RISCV GCC Toolchain (SDK)
 #    - Variables for RTL dependencies
 include ../Common.mk
-include $(CORE_V_VERIF)/sim/Common.mk
+include $(CORE_V_VERIF)/mk/Common.mk
 
 # assume verilator if no target chosen
 .DEFAULT_GOAL := sanity-veri-run

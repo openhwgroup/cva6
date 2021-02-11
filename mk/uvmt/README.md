@@ -1,7 +1,7 @@
 Common Makefiles for Core-V UVM Verification Environment
 ==================================
 This directory contains the Makefiles to run all tests of the UVM environment.
-The UVM testcases are at `CV_CORE/tests/uvmt_cv32`, and the test-programs can be
+The UVM testcases are at `CV_CORE/tests/uvmt`, and the test-programs can be
 found in `CV_CORE/tests/program`.  See the README in those directories for more information.
 <br><br>
 Please refer to the [Verification Strategy](https://core-v-docs-verif-strat.readthedocs.io/en/latest/sim_tests.html#simulation-tests-in-the-uvm-environments)
@@ -25,6 +25,9 @@ The following environment variables can be set for any make invocation to run te
 | CV_TOOL_PREFIX       | Prepended to all standalone tool (i.e. non-interacitive) simulation tool invocations such as coverage tools and waveform viewers.  Can be used to invoke job-scheduling tool (e.g. LSF). |
 | CV_SIMULATOR         | The default simulator to use for all tools (dsim, vcs, xrun, vsim, riviera).  Can be overridden on any make invocation. |
 | CV_CORE              | The core to simulate by default.  Can be overridden on any make command line.  Typically specified in the same case as the directory in which the testbench resides (e.g. cv32e40p, cva6).  However makefiles have access to internally defined CV_CORE_LC and CV_CORE_UC variables to get expected cases of the CV_CORE name (e.g. for macros, etc that might typically be capitalized). |
+| CV_SW_TOOLCHAIN      | Points to SW toolchain installation for compiling, assembling, and/or linking test programs.  **A toolchain is required for running any tests in the _uvmt_ environment** |
+| CV_SW_MARCH          | Architecture of tool chain to invoke.  Defaults to _unknown_ |
+<br>
 
 Imperas OVPsim Instruction Set Simulator
 ----------------------------------------
@@ -55,27 +58,30 @@ RISC-V GCC Compilers
 --------------------
 Compiling the test-programs requires a RISC-V cross-compiler,
 often refered to as the "toolchain".
-See [TOOLCHAIN](https://github.com/openhwgroup/core-v-verif/blob/master/cv32/sim/TOOLCHAIN.md)
+See [TOOLCHAIN](https://github.com/openhwgroup/core-v-verif/blob/master/cv32e40p/sim/TOOLCHAIN.md)
 for detailed installation instructions.
 <br><br>
-**IMPORTANT:** The shell environment variable `RISCV` must point to the path of your
-toolchain (e.g. `export RISCV=/opt/riscv`). By default the Makefiles will attempt to compile
+**IMPORTANT:** The shell environment variable `CV_SW_TOOLCHAIN` must point to the path of your
+toolchain (e.g. `export CV_SW_TOOLCHAIN=/opt/riscv`). By default the Makefiles will attempt to compile
 your test-program using whatever is found at /opt/riscv using march=unknown.
 
 Makefiles
 -----------
-`Make` is used to generate the command-lines that compile and run simulations.
-`CV_CORE/sim/uvmt/Makefile` is the
-'root' Makefile.  `cv32/sim/Common.mk` supports all common variables, rules
+`Make` is used to generate the command-lines that compile and run simulations.<br>
+- `CV_CORE/sim/uvmt/Makefile` is the
+'root' Makefile from which users can invoke simulations.  This makefile includes the common uvmt simulation makefile at `mk/uvmt/uvmt.mk`
+which implements simulation execution targets (described below.)
+- `CV_CORE/sim/Common.mk` should be used to define variables to point to third-party libraries.  This include the RTL repo to simulate, Google riscv-dv, RISCV compliance suite and other external repositories.
+- The common makefile in `mk/Common.mk` supports all common variables, rules
 and targets, including specific targets to clone the RTL from
-[cv32e40p](https://github.com/openhwgroup/cv32e40p). Simulator-specific
-Makefiles are used to build the command-line to run a specific test with a specific
+[cv32e40p](https://github.com/openhwgroup/cv32e40p). 
+- Simulator-specific Makefiles are used to build the command-line to run a specific test with a specific
 simulator.  These files are organized as shown below:
 ```
-cv32/sim/
+mk/
       +--- Common.mk                        # Common variables and targets
       +--- uvmt/
-              +--- Makefile                 # 'Root' Makefile
+              +--- uvmt.mk                  # Simulation makefile
               +--- vcs.mk                   # Synopsys VCS
               +--- vsim.mk                  # Mentor Questa
               +--- dsim.mk                  # Metrics dsim
@@ -84,18 +90,18 @@ cv32/sim/
               +--- <other_simulators>.mk
 ```
 The goal of this structure is to minimize the amount of redundant code in the
-Makefiles and ease the maintance of a given simulator's specific variables,
+Makefiles, maintain common look-and-feel across all cores and ease the maintance of a given simulator's specific variables,
 rules and targets.
 <br><br>
 The basic usage is: `make SIMULATOR=<sim> <target>` where `sim` is vsim, dsim,
- xrun, vcs or riviera and `target` selects a specific testcase or other rule (e.g. "clean").
+ xrun, vcs or riviera and `target` selects one or more activities (e.g. 'clean', 'test', 'gen_corev-dv')
 <br><br>
 **Hint**: define shell ENV variable "SIMULATOR" to match one of the supported
 simulator-specific Makefiles (e.g. vsim) to save yourself a lot of typing.
 <br><br>
 The basic format to run a test is `make test SIMULATOR=<sim> TEST=<test-program>` where `test-program`
 is the name of a [test-program](https://core-v-docs-verif-strat.readthedocs.io/en/latest/sim_tests.html#test-program)
-(either C or RISC-V assembler) located in cv32/tests/program/<testprogram>.
+(either C or RISC-V assembler) located in <CV_CORE>/tests/programs/custom/<testprogram>.
 
 Running the envrionment with Metrics [dsim](https://metrics.ca)
 ----------------------
@@ -184,14 +190,14 @@ The `make` commands here assume you have set your shell SIMULATION
 environment variable to your specific simulator (see above).
 <br>
 The general form to run a test is `make test TEST=<test-program>`, where _test-program_ is the filename
-of a test-program (without the file extension) of a test program located at cv32/tests/programs/custom.
+of a test-program (without the file extension) of a test program located at <CV_CORE>/tests/programs/custom.
 Each test-program (either C or assembler) has its own directory, which contains the program itself (either
 C or assembler) plus `test.yaml`, the test-program configuration file (see Build Configurations, below).
 <br>
 Here are a few examples
-* **make test TEST=hello-world**:<br>run the hello_world program found at `cv32/tests/programs/custom`.
-* **make test TEST=dhrystone**:<br>run the dhrystone program found at `cv32/tests/programs/custom`.
-* **make test TEST=riscv_arithmetic_basic_test**:<br>run the riscv_arithmetic_basic_test program found at `cv32/tests/programs/custom`.
+* **make test TEST=hello-world**:<br>run the hello_world program found at `<CV_CORE>/tests/programs/custom`.
+* **make test TEST=dhrystone**:<br>run the dhrystone program found at `<CV_CORE>/tests/programs/custom`.
+* **make test TEST=riscv_arithmetic_basic_test**:<br>run the riscv_arithmetic_basic_test program found at `<CV_CORE>/tests/programs/custom`.
 <br>
 There are also a few targets that do something other than run a test.  The most popular is:
 <br>
@@ -203,13 +209,13 @@ COREV-DV Generated Tests
 ---------------
 The CV32 UVM environment uses the [Google riscv-dv](https://github.com/google/riscv-dv)
 generator to automate the generation of test-programs.  The generator
-is cloned by the Makefiles to `vendor_lib/google` as needed.  Specific
+is cloned by the Makefiles to `$(CV_CORE)/vendor_lib/google` as needed.  Specific
 classes ar extended to create a `corev-dv` generator that is specific to this environment.
 Note that riscv-dv is not modified, merely extended, allowing core-v-verif to stay
 up-to-date with the latest release of riscv-dv.
 <br><br>
 Riscv-dv uses test templates such as "riscv_arithmetic_basic_test" and "riscv_rand_jump_test".
-Corev-dv has a set of templates for corev-dv generated test-programs at `cv32/tests/programs/corev-dv`.
+Corev-dv has a set of templates for corev-dv generated test-programs at `<CV_CORE>/tests/programs/corev-dv`.
 Running these is a two-step process.  The first step is to clone riscv-dv and compile corev-dv:
 <br><br>
 **make corev-dv**
@@ -225,7 +231,7 @@ RISC-V Compliance Test-suite and Regressions
 The CV32 UVM environment is able to run the [RISC-V compliance](https://github.com/riscv/riscv-compliance)
 test-suite in step-and-compare mode with the ISS Reference Model, and can optionally dump and check a signature
 file against a reference signature.  As with riscv-dv, the compliance test-suite
-is cloned by the Makefiles to `vendor_lib/riscv` as needed.  The form of the target to run a single test-program
+is cloned by the Makefiles to `$(CV_CORE)/vendor_lib/riscv` as needed.  The form of the target to run a single test-program
 from the compliance test suite is as follows:
 ```
 make compliance RISCV_ISA=<ISA> COMPLIANCE_PROG=<test-program>
@@ -257,17 +263,17 @@ make compliance_regression RISCV_ISA=rv32imc
 will run all compressed instruction tests in the compliance test-suite, diff the signature files and produce a summary report. Note that four of the test-programs
 in the rv32i compliance suite are deliberately ignored.  See [issue #412](https://github.com/openhwgroup/core-v-verif/issues/412).
 <br><br>
-The _cv_regress_ utility can also be used to run the compliance regression tests found in the [cv32_compliance](https://github.com/openhwgroup/core-v-verif/blob/master/cv32/regress/cv32_compliance.yaml) YAML regression
+The _cv_regress_ utility can also be used to run the compliance regression tests found in the [cv32_compliance](https://github.com/openhwgroup/core-v-verif/blob/master/cv32e40p/regress/cv32_compliance.yaml) YAML regression
 specification.  This is supported for Metrics JSON (--metrics), shell script (--sh), and Cadence Vmanager VSIF (--vsif) output formats.  Use the following example:
 ```
 # Shell script output
-% cv_regress --file=cv32_compliance --sim=xrun --sh
-% ./cv32_compliance.sh
+% cv_regress --file=cv32e40p_compliance --sim=xrun --sh
+% ./cv32e40p_compliance.sh
 ```
 
 Build Configurations
 --------------------
-The `uvmt_cv32` environment supports adding compile flags to the testbench to support a specialized configuration of the core.  The testbench
+The `uvmt` environment supports adding compile flags to the testbench to support a specialized configuration of the core.  The testbench
 flow supports a single compilation object at any point in time so it is recommended that any testbench options be supported as run-time
 options (see the Test Specification documentation for setting run-time plusargs).  However if, for instance, parameters to the DUT need to be
 changed then this flow needs to be used.<br>
@@ -275,7 +281,7 @@ changed then this flow needs to be used.<br>
 All build configurations are in the files:<br>
 
 ```
-cv32/tests/cfg/<cfg>.yaml
+<CV_CORE>/tests/cfg/<cfg>.yaml
 ```
 
 The contents of the YAML file support the following tags:
@@ -302,7 +308,7 @@ ovpsim: >
 
 Common Makefile Flags
 ---------------
-For all tests in the <i>uvmt_cv32</i> directory the following flags and targets are supported for common operations with the simulators.  For all flags and targets described in this section it is assumed that the user will supply a SIMULATOR setting on the make command line or populate the CV_SIMULATOR environment variable.
+For all tests in the <i>uvmt</i> directory the following flags and targets are supported for common operations with the simulators.  For all flags and targets described in this section it is assumed that the user will supply a SIMULATOR setting on the make command line or populate the CV_SIMULATOR environment variable.
 
 | SIMULATOR    | Supported |
 |--------------|-----------|

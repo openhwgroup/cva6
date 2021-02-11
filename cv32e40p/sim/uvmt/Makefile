@@ -43,10 +43,10 @@
 ###############################################################################
 
 # "Constants"
-MAKE           = make
-MAKE_PATH     := $(shell dirname $(realpath $(lastword $(MAKEFILE_LIST))))
+MAKE                  = make
+MAKE_PATH            := $(shell dirname $(realpath $(lastword $(MAKEFILE_LIST))))
 export CORE_V_VERIF   = $(abspath $(MAKE_PATH)/../../..)
 export CV_CORE       ?= cv32e40p
 
 include ../Common.mk
-include $(CORE_V_VERIF)/sim/uvmt/uvmt.mk
+include $(CORE_V_VERIF)/mk/uvmt/uvmt.mk

@@ -261,7 +261,6 @@ comp_corev-dv: $(RISCVDV_PKG)
 		$(QUIET) $(VCS_USER_COMPILE_ARGS) \
 		+incdir+$(CV_CORE_COREVDV_PKG)/target/$(CV_CORE_LC) \
 		+incdir+$(RISCVDV_PKG)/user_extension \
-		+incdir+$(RISCVDV_PKG)/tests \
 		+incdir+$(CV_CORE_COREVDV_PKG) \
 		-f $(COREVDV_PKG)/manifest.f \
 		-l vcs.log

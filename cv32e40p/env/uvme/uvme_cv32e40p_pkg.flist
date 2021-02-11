@@ -17,7 +17,6 @@
 // Directories
 +incdir+${DV_UVME_PATH}
 +incdir+${DV_UVME_PATH}/cov
-+incdir+${DV_UVME_PATH}/ral
 +incdir+${DV_UVME_PATH}/vseq
 
 // Files
