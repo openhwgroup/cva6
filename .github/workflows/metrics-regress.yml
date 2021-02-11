@@ -8,8 +8,8 @@ name: metrics-regress
 on:
   push:
     branches: [ master ]
-  pull_request_target:
-    branches: [ master ]
+#  pull_request_target:
+#    branches: [ master ]
 
 # If you fork this repository, you must create a new Metrics project for your fork
 # and set the environment variable $METRICS_PROJECT_ID accordingly
