@@ -1,0 +1,28 @@
+# This workflow initiates a regression on the Metrics platform and waits
+# for the result of the regression. If all tests pass, the action succeeds.
+
+name: metrics-regress
+
+# Controls when the action will run. Triggers the workflow on push or pull request
+# events but only for the master branch
+on:
+  push:
+    branches: [ master ]
+#  pull_request_target:
+#    branches: [ master ]
+
+# If you fork this repository, you must create a new Metrics project for your fork
+# and set the environment variable $METRICS_PROJECT_ID accordingly
+jobs:
+  metrics-regression:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - run: ./bin/metrics-regress $METRICS_REGRESSION_NAME $METRICS_PROJECT_ID
+        env:
+          METRICS_CI_TOKEN: ${{ secrets.METRICS_CI_TOKEN }}
+          METRICS_REGRESSION_NAME: cv32_ci_check_regression
+          METRICS_PROJECT_ID: ${{ secrets.METRICS_PROJECT_ID }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+        shell: bash
+
