@@ -130,7 +130,7 @@ CFLAGS := -I$(QUESTASIM_HOME)/include         \
           -I$(RISCV)/include                  \
           -I$(SPIKE_ROOT)/include             \
           $(if $(DROMAJO), -I../tb/dromajo/src,) \
-          -std=c++11 -I../tb/dpi
+          -std=c++11 -I../tb/dpi -O3
 
 
 ifdef spike-tandem
@@ -413,7 +413,7 @@ verilate_command := $(verilator)                                                
                     $(if $(PROFILE),--stats --stats-vars --profile-cfuncs,)                                      \
                     $(if $(DEBUG),--trace --trace-structs,)                                                      \
                     -LDFLAGS "-L$(RISCV)/lib -L$(SPIKE_ROOT)/lib -Wl,-rpath,$(RISCV)/lib -Wl,-rpath,$(SPIKE_ROOT)/lib -lfesvr$(if $(PROFILE), -g -pg,) $(if $(DROMAJO), -L../tb/dromajo/src -ldromajo_cosim,) -lpthread" \
-                    -CFLAGS "$(CFLAGS)$(if $(PROFILE), -g -pg,) $(if $(DROMAJO), -DDROMAJO=1,) -O3 -DVL_DEBUG"   \
+                    -CFLAGS "$(CFLAGS)$(if $(PROFILE), -g -pg,) $(if $(DROMAJO), -DDROMAJO=1,) -DVL_DEBUG"       \
                     -Wall --cc  --vpi                                                                            \
                     $(list_incdir) --top-module ariane_testharness                                               \
                     --Mdir $(ver-library) -O3                                                                    \
