@@ -17,7 +17,7 @@
 # 
 ###############################################################################
 #
-# Riviera-PRO-specific Makefile for the CV32E40P "uvmt_cv32" testbench.
+# Riviera-PRO-specific Makefile for the Core-V-Verif "uvmt" testbench.
 # Riviera-PRO is the Aldec SystemVerilog simulator.
 #
 ###############################################################################
@@ -52,10 +52,12 @@ endif
 
 ifeq ($(USES_DPI),1)
   DPILIB_VLOG_OPT = 
-  DPILIB_VSIM_OPT = -sv_lib "$(ALDEC_PATH)/bin/uvm_1_2_dpi.so"
+  DPILIB_VSIM_OPT = -sv_lib "$(ALDEC_PATH)/bin/uvm_1_2_dpi"
+  DPILIB_TARGET = dpi_lib$(BITS)
 else
   DPILIB_VLOG_OPT = +define+UVM_NO_DPI 
   DPILIB_VSIM_OPT = 
+  DPILIB_TARGET =
 endif
 
 LIBDIR  = $(UVM_HOME)/lib
@@ -67,15 +69,15 @@ VLOG_FLAGS    ?= \
 				-timescale "1ns/1ps" \
 				-err VCP2694 W1 #for riscv dv
 
-VLOG_FILE_LIST = -f $(DV_UVMT_CV32_PATH)/uvmt_cv32.flist
+VLOG_FILE_LIST = -f $(DV_UVMT_PATH)/uvmt_$(CV_CORE_LC).flist
 
 VLOG_DEBUG_FLAGS ?= -dbg
 VLOG_FLAGS += $(DPILIB_VLOG_OPT)
 
 # Add the ISS to compilation
 ifeq ($(call IS_YES,$(USE_ISS)),YES)
-VLOG_FILE_LIST += -f $(DV_UVMT_CV32_PATH)/imperas_iss.flist
-VLOG_FLAGS += "+define+ISS+CV32E40P_TRACE_EXECUTION"
+VLOG_FILE_LIST += -f $(DV_UVMT_PATH)/imperas_iss.flist
+VLOG_FLAGS += "+define+ISS+$(CV_CORE_UC)_TRACE_EXECUTION"
 VLOG_FLAGS += -dpilib
 endif
 
@@ -90,12 +92,12 @@ VSIM_UVM_ARGS      =
 
 ifeq ($(call IS_YES,$(USE_ISS)),YES)
 VSIM_FLAGS += +USE_ISS
-VSIM_FLAGS += -sv_lib $(DV_OVPM_MODEL)/bin/Linux64/riscv_CV32E40P.dpi
+VSIM_FLAGS += -sv_lib $(basename $(OVP_MODEL_DPI))
 endif
 
 # Skip compile if requested (COMP=NO)
 ifneq ($(call IS_NO,$(COMP)),NO)
-VSIM_SIM_PREREQ = comp
+VSIM_RUN_PREREQ = comp
 endif
 
 ################################################################################
@@ -146,9 +148,9 @@ help:
 	vsim -help
 
 ################################################################################
-# core-dv generation targets
+# corev-dv generation targets
 
-comp_core-dv:
+vlog_corev-dv:
 	$(MKDIR_P) $(VSIM_COREVDV_RESULTS)
 	$(MKDIR_P) $(COREVDV_PKG)/out_$(DATE)/run
 	cd $(VSIM_COREVDV_RESULTS) && \
@@ -157,25 +159,22 @@ comp_core-dv:
 		$(VLOG) \
 			$(VLOG_FLAGS) \
 			-uvmver 1.2 \
-			+incdir+$(COREVDV_PKG)/target/cv32e40p \
+			+incdir+$(CV_CORE_COREVDV_PKG)/target/$(CV_CORE_LC) \
 			+incdir+$(RISCVDV_PKG)/user_extension \
-			+incdir+$(RISCVDV_PKG)/tests \
 			+incdir+$(COREVDV_PKG) \
-			-f $(COREVDV_PKG)/manifest.f \
+			+incdir+$(CV_CORE_COREVDV_PKG) \
+			-f $(COREVDV_PKG)/manifest.f 
 
 gen_corev-dv: 
 	mkdir -p $(VSIM_COREVDV_RESULTS)/$(TEST)
 	# Clean old assembler generated tests in results
-	idx=$(GEN_START_INDEX); sum=$$(($(GEN_START_INDEX) + $(GEN_NUM_TESTS))); \
-	while [ $$idx -lt $${sum} ]; do \
+	for (( idx=${GEN_START_INDEX}; idx < $$((${GEN_START_INDEX} + ${GEN_NUM_TESTS})); idx++ )); do \
 		rm -f ${VSIM_COREVDV_RESULTS}/${TEST}/${TEST}_$$idx.S; \
-		echo "idx = $$idx"; \
-		idx=$$((idx + 1)); \
 	done
 	cd  $(VSIM_COREVDV_RESULTS)/$(TEST) && \
 		$(VSIM) \
 			$(VSIM_FLAGS) \
-			corev_instr_gen_tb_top \
+			$(CV_CORE_LC)_instr_gen_tb_top \
 			$(DPILIB_VSIM_OPT) \
 			-lib $(VSIM_COREVDV_RESULTS)/work \
 			+UVM_TESTNAME=$(GEN_UVM_TEST) \
@@ -187,15 +186,15 @@ gen_corev-dv:
 			$(GEN_PLUSARGS) \
 			-do '$(VRUN_FLAGS)'
 	# Copy out final assembler files to test directory
-	idx=$(GEN_START_INDEX); sum=$$(($(GEN_START_INDEX) + $(GEN_NUM_TESTS))); \
-	while [ $$idx -lt $${sum} ]; do \
+	for (( idx=${GEN_START_INDEX}; idx < $$((${GEN_START_INDEX} + ${GEN_NUM_TESTS})); idx++ )); do \
 		cp ${VSIM_COREVDV_RESULTS}/${TEST}/${TEST}_$$idx.S ${GEN_TEST_DIR}; \
-		idx=$$((idx + 1)); \
 	done
+
+comp_corev-dv: $(RISCVDV_PKG) vlog_corev-dv
 
 corev-dv: clean_riscv-dv \
 	clone_riscv-dv \
-	comp_core-dv \
+	comp_corev-dv
 
 ################################################################################
 # Riviera-PRO simulation targets
@@ -231,9 +230,9 @@ endif
 compliance: VSIM_TEST=$(COMPLIANCE_PROG)
 compliance: VSIM_FLAGS+=+firmware=$(COMPLIANCE_PKG)/work/$(RISCV_ISA)/$(COMPLIANCE_PROG).hex
 compliance: VSIM_FLAGS+=+elf_file=$(COMPLIANCE_PKG)/work/$(RISCV_ISA)/$(COMPLIANCE_PROG).elf
-compliance: TEST_UVM_TEST=uvmt_cv32_firmware_test_c
+compliance: TEST_UVM_TEST=uvmt_$(CV_CORE_LC)_firmware_test_c
 compliance: $(VSIM_COMPLIANCE_PREREQ) run
-compliance: export IMPERAS_TOOLS=$(CORE_V_VERIF)/cv32/tests/cfg/ovpsim_no_pulp.ic
+compliance: export IMPERAS_TOOLS=$(CORE_V_VERIF)/$(CV_CORE_LC)/tests/cfg/ovpsim_no_pulp.ic
 
 ################################################################################
 # If the configuration specified OVPSIM arguments, generate an ovpsim.ic file and
@@ -248,7 +247,7 @@ export IMPERAS_TOOLS=$(VSIM_RESULTS)/$(TEST_NAME)/ovpsim.ic
 endif
 
 # Target to create work directory in $(VSIM_RESULTS)/
-lib: mk_vsim_dir $(CV32E40P_PKG) $(TBSRC_PKG) $(TBSRC)
+lib: mk_vsim_dir $(CV_CORE_PKG) $(TBSRC_PKG) $(TBSRC)
 	if [ ! -d "$(VSIM_RESULTS)/$(VWORK)" ]; then \
 		$(VLIB) "$(VSIM_RESULTS)/$(VWORK)"; \
 	fi
@@ -263,15 +262,15 @@ comp: lib
 		$(VLOG) \
 			$(VLOG_FLAGS) \
 			$(CFG_COMPILE_FLAGS) \
-			+incdir+$(DV_UVME_CV32_PATH) \
-			+incdir+$(DV_UVMT_CV32_PATH) \
+			+incdir+$(DV_UVME_PATH) \
+			+incdir+$(DV_UVMT_PATH) \
 			-uvmver 1.2 \
-			-f $(CV32E40P_MANIFEST) \
+			-f $(CV_CORE_MANIFEST) \
 			$(VLOG_FILE_LIST) \
 			$(TBSRC_PKG)
 
 # Target to run VSIM (i.e. run the simulation)
-run: $(VSIM_SIM_PREREQ) gen_ovpsim_ic
+run: $(VSIM_RUN_PREREQ) gen_ovpsim_ic
 	@echo "$(BANNER)"
 	@echo "* Running vsim in $(VSIM_RESULTS)/$(VSIM_TEST)"
 	@echo "* Log: $(VSIM_RESULTS)/$(VSIM_TEST)/vsim-$(VSIM_TEST).log"
@@ -299,14 +298,14 @@ hello-world:
 
 custom: VSIM_TEST=$(CUSTOM_PROG)
 custom: VSIM_FLAGS += +firmware=$(CUSTOM_DIR)/$(CUSTOM_PROG).hex +elf_file=$(CUSTOM_DIR)/$(CUSTOM_PROG).elf
-custom: TEST_UVM_TEST=uvmt_cv32_firmware_test_c
+custom: TEST_UVM_TEST=uvmt_$(CV_CORE_LC)_firmware_test_c
 custom: $(CUSTOM_DIR)/$(CUSTOM_PROG).hex run
 
 ################################################################################
 # The new general test target
-test: VSIM_TEST=$(TEST_NAME)
-test: VSIM_FLAGS += +firmware=$(TEST_TEST_DIR)/$(TEST_NAME).hex +elf_file=$(TEST_TEST_DIR)/$(TEST_NAME).elf
-test: $(TEST_TEST_DIR)/$(TEST_NAME).hex run
+test: VSIM_TEST=$(TEST_PROGRAM)
+test: VSIM_FLAGS += +firmware=$(TEST_TEST_DIR)/$(TEST_PROGRAM).hex +elf_file=$(TEST_TEST_DIR)/$(TEST_PROGRAM).elf
+test: $(TEST_TEST_DIR)/$(TEST_PROGRAM).hex run
 
 ################################################################################
 # Invoke post-process waveform viewer
@@ -323,5 +322,5 @@ clean:
 	rm -rf $(VSIM_RESULTS) library.cfg $(VWORK)
 
 # All generated files plus the clone of the RTL
-clean_all: clean clean_core_tests
-	rm -rf $(CV32E40P_PKG)
+clean_all: clean clean_riscv-dv clean_test_programs clean-bsp clean_compliance
+	rm -rf $(CV_CORE_PKG)
