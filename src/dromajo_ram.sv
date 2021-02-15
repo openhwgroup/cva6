@@ -71,7 +71,7 @@ module dromajo_ram
     end
   end
 
-  always_ff @(posedge Clk_CI) begin
+  always @(posedge Clk_CI) begin
     if(CSel_SI) begin
       if(WrEn_SI) begin
         if(BEn_SI[0]) Mem_DP[Addr_DI][7:0]   <= WrData_DI[7:0];

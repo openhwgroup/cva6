@@ -57,22 +57,16 @@ before_install:
   - export NUM_JOBS=4
   - ci/make-tmp.sh
   - git submodule update --init --recursive
+  - mkdir -p $RISCV
+  - wget https://static.dev.sifive.com/dev-tools/riscv64-unknown-elf-gcc-8.3.0-2020.04.0-x86_64-linux-ubuntu14.tar.gz
+  - tar -x -f riscv64-unknown-elf-gcc-8.3.0-2020.04.0-x86_64-linux-ubuntu14.tar.gz --strip-components=1 -C $RISCV
+  - ci/install-fesvr.sh
 
 stages:
-  - sw_build
   - test
 
 jobs:
   include:
-    - stage: sw_build
-      name: build software
-      script:
-        # Obtain pre-built toolchain.
-        - mkdir -p $RISCV
-        - wget https://static.dev.sifive.com/dev-tools/riscv64-unknown-elf-gcc-8.3.0-2020.04.0-x86_64-linux-ubuntu14.tar.gz
-        - tar -x -f riscv64-unknown-elf-gcc-8.3.0-2020.04.0-x86_64-linux-ubuntu14.tar.gz --strip-components=1 -C $RISCV
-        - ci/install-spike.sh
-
     - stage: test
       name: run riscv benchmarks (Write-Back Cache)
       script:

@@ -83,10 +83,10 @@ module cache_ctrl import ariane_pkg::*; import std_cache_pkg::*; #(
 
     logic [DCACHE_SET_ASSOC-1:0] hit_way_d, hit_way_q;
 
+    mem_req_t mem_req_d, mem_req_q;
+
     assign busy_o = (state_q != IDLE);
     assign tag_o  = mem_req_d.tag;
-
-    mem_req_t mem_req_d, mem_req_q;
 
     logic [DCACHE_LINE_WIDTH-1:0] cl_i;
 

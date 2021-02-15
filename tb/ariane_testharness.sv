@@ -563,7 +563,7 @@ module ariane_testharness #(
     .test_en_i    ( test_en    ),
     .slave        ( slave      ),
     .master       ( master     ),
-    .start_addr_i (addr_map_t'({
+    .start_addr_i ({
       ariane_soc::DebugBase,
       ariane_soc::ROMBase,
       ariane_soc::CLINTBase,
@@ -574,8 +574,8 @@ module ariane_testharness #(
       ariane_soc::EthernetBase,
       ariane_soc::GPIOBase,
       ariane_soc::DRAMBase
-    })),
-    .end_addr_i   (addr_map_t'({
+    }),
+    .end_addr_i   ({
       ariane_soc::DebugBase    + ariane_soc::DebugLength - 1,
       ariane_soc::ROMBase      + ariane_soc::ROMLength - 1,
       ariane_soc::CLINTBase    + ariane_soc::CLINTLength - 1,
@@ -586,7 +586,7 @@ module ariane_testharness #(
       ariane_soc::EthernetBase + ariane_soc::EthernetLength -1,
       ariane_soc::GPIOBase     + ariane_soc::GPIOLength - 1,
       ariane_soc::DRAMBase     + ariane_soc::DRAMLength - 1
-    })),
+    }),
     .valid_rule_i (ariane_soc::ValidRule)
   );
 
