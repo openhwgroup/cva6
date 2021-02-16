@@ -1,0 +1,145 @@
+name: cv32_xpulp_isa
+description: XPULP ISA test-programs (and a few other tests that run with the RM disabled)
+
+builds:
+  corev-dv:
+    cmd: make comp_corev-dv
+    dir: cv32e40p/sim/uvmt
+  uvmt_cv32e40p:    
+    cmd: make comp
+    dir: cv32e40p/sim/uvmt
+
+tests:
+  pulp_bit_manipulation:
+    build: uvmt_cv32e40p
+    description: pulp_bit_manipulation
+    dir: cv32e40p/sim/uvmt
+    cmd: make test TEST=pulp_bit_manipulation CFG=pulp
+    iss: 0
+
+  pulp_general_alu:
+    build: uvmt_cv32e40p
+    description: pulp_general_alu
+    dir: cv32e40p/sim/uvmt
+    cmd: make test TEST=pulp_general_alu CFG=pulp
+    iss: 0
+
+  pulp_immediate_branching:
+    build: uvmt_cv32e40p
+    description: pulp_immediate_branching
+    dir: cv32e40p/sim/uvmt
+    cmd: make test TEST=pulp_immediate_branching CFG=pulp
+    iss: 0
+
+  pulp_multiply_accumulate:
+    build: uvmt_cv32e40p
+    description: pulp_multiply_accumulate
+    dir: cv32e40p/sim/uvmt
+    cmd: make test TEST=pulp_multiply_accumulate CFG=pulp
+    iss: 0
+
+  pulp_post_increment_load_store:
+    build: uvmt_cv32e40p
+    description: pulp_post_increment_load_store
+    dir: cv32e40p/sim/uvmt
+    cmd: make test TEST=pulp_post_increment_load_store CFG=pulp
+    iss: 0
+
+  pulp_vectorial_add_sub:
+    build: uvmt_cv32e40p
+    description: pulp_vectorial_add_sub
+    dir: cv32e40p/sim/uvmt
+    cmd: make test TEST=pulp_vectorial_add_sub CFG=pulp
+    iss: 0
+
+  pulp_vectorial_avg:
+    build: uvmt_cv32e40p
+    description: pulp_vectorial_avg
+    dir: cv32e40p/sim/uvmt
+    cmd: make test TEST=pulp_vectorial_avg CFG=pulp
+    iss: 0
+
+  pulp_vectorial_bit_manip:
+    build: uvmt_cv32e40p
+    description: pulp_vectorial_bit_manip
+    dir: cv32e40p/sim/uvmt
+    cmd: make test TEST=pulp_vectorial_bit_manip CFG=pulp
+    iss: 0
+
+  pulp_vectorial_bitwise:
+    build: uvmt_cv32e40p
+    description: pulp_vectorial_bitwise
+    dir: cv32e40p/sim/uvmt
+    cmd: make test TEST=pulp_vectorial_bitwise CFG=pulp
+    iss: 0
+    
+  pulp_vectorial_comparison_1:
+    build: uvmt_cv32e40p
+    description: pulp_vectorial_comparison_1
+    dir: cv32e40p/sim/uvmt
+    cmd: make test TEST=pulp_vectorial_comparison_1 CFG=pulp
+    iss: 0
+
+  pulp_vectorial_comparison_2:
+    build: uvmt_cv32e40p
+    description: pulp_vectorial_comparison_2
+    dir: cv32e40p/sim/uvmt    
+    cmd: make test TEST=pulp_vectorial_comparison_2 CFG=pulp
+    iss: 0
+
+  pulp_vectorial_comparison_3:
+    build: uvmt_cv32e40p
+    description: pulp_vectorial_comparison_3
+    dir: cv32e40p/sim/uvmt
+    cmd: make test TEST=pulp_vectorial_comparison_3 CFG=pulp
+    iss: 0
+
+  pulp_vectorial_complex:
+    build: uvmt_cv32e40p
+    description: pulp_vectorial_complex
+    dir: cv32e40p/sim/uvmt
+    cmd: make test TEST=pulp_vectorial_complex CFG=pulp
+    iss: 0
+
+  pulp_vectorial_dot_product_1:
+    build: uvmt_cv32e40p
+    description: pulp_vectorial_dot_product_1
+    dir: cv32e40p/sim/uvmt
+    cmd: make test TEST=pulp_vectorial_dot_product_1 CFG=pulp
+    iss: 0
+
+  pulp_vectorial_dot_product_2:
+    build: uvmt_cv32e40p
+    description: pulp_vectorial_dot_product_2
+    dir: cv32e40p/sim/uvmt
+    cmd: make test TEST=pulp_vectorial_dot_product_2 CFG=pulp
+    iss: 0
+
+  pulp_vectorial_max:
+    build: uvmt_cv32e40p
+    description: pulp_vectorial_max
+    dir: cv32e40p/sim/uvmt
+    cmd: make test TEST=pulp_vectorial_max CFG=pulp
+    iss: 0
+
+  pulp_vectorial_min:
+    build: uvmt_cv32e40p
+    description: pulp_vectorial_min
+    dir: cv32e40p/sim/uvmt
+    cmd: make test TEST=pulp_vectorial_min CFG=pulp
+    iss: 0
+
+  pulp_vectorial_shift:
+    build: uvmt_cv32e40p
+    description: pulp_vectorial_shift
+    dir: cv32e40p/sim/uvmt
+    cmd: make test TEST=pulp_vectorial_shift CFG=pulp
+    iss: 0
+
+  pulp_vectorial_shuffle_pack:
+    build: uvmt_cv32e40p
+    description: pulp_vectorial_shuffle_pack
+    dir: cv32e40p/sim/uvmt
+    cmd: make test TEST=pulp_vectorial_shuffle_pack CFG=pulp
+    iss: 0
+

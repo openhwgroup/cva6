@@ -1,0 +1,9 @@
+name: mhpmcounter29_csr_access_test_2
+uvm_test: uvmt_$(CV_CORE_LC)_firmware_test_c
+description: >
+    CSR access test with NUM_MHPMCOUNTER = 29 (CANNOT run with ISS)
+ovpsim: >
+    --override root/cpu/misa_Extensions=0x001104
+    --override root/cpu/marchid=4
+    --override root/cpu/noinhibit_mask=0000000000
+
