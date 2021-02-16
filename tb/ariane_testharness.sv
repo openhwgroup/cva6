@@ -195,8 +195,8 @@ module ariane_testharness #(
     end
   end
 
-  ariane_axi::req_t    dm_axi_m_req;
-  ariane_axi::resp_t   dm_axi_m_resp;
+  ariane_axi_soc::req_t    dm_axi_m_req;
+  ariane_axi_soc::resp_t   dm_axi_m_resp;
 
   logic                dm_slave_req;
   logic                dm_slave_we;
@@ -281,7 +281,7 @@ module ariane_testharness #(
     .clk_i                 ( clk_i                     ),
     .rst_ni                ( rst_ni                    ),
     .req_i                 ( dm_master_req             ),
-    .type_i                ( ariane_axi::SINGLE_REQ    ),
+    .type_i                ( ariane_axi_soc::SINGLE_REQ    ),
     .gnt_o                 ( dm_master_gnt             ),
     .gnt_id_o              (                           ),
     .addr_i                ( dm_master_add             ),
@@ -377,23 +377,23 @@ module ariane_testharness #(
     .AXI_USER_WIDTH ( AXI_USER_WIDTH           )
   ) dram_delayed();
 
-  ariane_axi::aw_chan_slv_t aw_chan_i;
-  ariane_axi::w_chan_t      w_chan_i;
-  ariane_axi::b_chan_slv_t  b_chan_o;
-  ariane_axi::ar_chan_slv_t ar_chan_i;
-  ariane_axi::r_chan_slv_t  r_chan_o;
-  ariane_axi::aw_chan_slv_t aw_chan_o;
-  ariane_axi::w_chan_t      w_chan_o;
-  ariane_axi::b_chan_slv_t  b_chan_i;
-  ariane_axi::ar_chan_slv_t ar_chan_o;
-  ariane_axi::r_chan_slv_t  r_chan_i;
+  ariane_axi_soc::aw_chan_slv_t aw_chan_i;
+  ariane_axi_soc::w_chan_t      w_chan_i;
+  ariane_axi_soc::b_chan_slv_t  b_chan_o;
+  ariane_axi_soc::ar_chan_slv_t ar_chan_i;
+  ariane_axi_soc::r_chan_slv_t  r_chan_o;
+  ariane_axi_soc::aw_chan_slv_t aw_chan_o;
+  ariane_axi_soc::w_chan_t      w_chan_o;
+  ariane_axi_soc::b_chan_slv_t  b_chan_i;
+  ariane_axi_soc::ar_chan_slv_t ar_chan_o;
+  ariane_axi_soc::r_chan_slv_t  r_chan_i;
 
   axi_delayer #(
-    .aw_t              ( ariane_axi::aw_chan_slv_t ),
-    .w_t               ( ariane_axi::w_chan_t      ),
-    .b_t               ( ariane_axi::b_chan_slv_t  ),
-    .ar_t              ( ariane_axi::ar_chan_slv_t ),
-    .r_t               ( ariane_axi::r_chan_slv_t  ),
+    .aw_t              ( ariane_axi_soc::aw_chan_slv_t ),
+    .w_t               ( ariane_axi_soc::w_chan_t      ),
+    .b_t               ( ariane_axi_soc::b_chan_slv_t  ),
+    .ar_t              ( ariane_axi_soc::ar_chan_slv_t ),
+    .r_t               ( ariane_axi_soc::r_chan_slv_t  ),
     .StallRandomOutput ( StallRandomOutput         ),
     .StallRandomInput  ( StallRandomInput          ),
     .FixedDelayInput   ( 0                         ),
@@ -596,8 +596,8 @@ module ariane_testharness #(
   logic ipi;
   logic timer_irq;
 
-  ariane_axi::req_t    axi_clint_req;
-  ariane_axi::resp_t   axi_clint_resp;
+  ariane_axi_soc::req_t    axi_clint_req;
+  ariane_axi_soc::resp_t   axi_clint_resp;
 
   clint #(
     .AXI_ADDR_WIDTH ( AXI_ADDRESS_WIDTH        ),
@@ -676,8 +676,8 @@ module ariane_testharness #(
   // ---------------
   // Core
   // ---------------
-  ariane_axi::req_t    axi_ariane_req;
-  ariane_axi::resp_t   axi_ariane_resp;
+  ariane_axi_soc::req_t    axi_ariane_req;
+  ariane_axi_soc::resp_t   axi_ariane_resp;
 
   ariane #(
     .ArianeCfg  ( ariane_soc::ArianeSocCfg )
@@ -726,15 +726,15 @@ module ariane_testharness #(
   // AXI 4 Assertion IP integration - You will need to get your own copy of this IP if you want
   // to use it
   Axi4PC #(
-    .DATA_WIDTH(ariane_axi::DataWidth),
+    .DATA_WIDTH(ariane_axi_soc::DataWidth),
     .WID_WIDTH(ariane_soc::IdWidthSlave),
     .RID_WIDTH(ariane_soc::IdWidthSlave),
-    .AWUSER_WIDTH(ariane_axi::UserWidth),
-    .WUSER_WIDTH(ariane_axi::UserWidth),
-    .BUSER_WIDTH(ariane_axi::UserWidth),
-    .ARUSER_WIDTH(ariane_axi::UserWidth),
-    .RUSER_WIDTH(ariane_axi::UserWidth),
-    .ADDR_WIDTH(ariane_axi::AddrWidth)
+    .AWUSER_WIDTH(ariane_axi_soc::UserWidth),
+    .WUSER_WIDTH(ariane_axi_soc::UserWidth),
+    .BUSER_WIDTH(ariane_axi_soc::UserWidth),
+    .ARUSER_WIDTH(ariane_axi_soc::UserWidth),
+    .RUSER_WIDTH(ariane_axi_soc::UserWidth),
+    .ADDR_WIDTH(ariane_axi_soc::AddrWidth)
   ) i_Axi4PC (
     .ACLK(clk_i),
     .ARESETn(ndmreset_n),

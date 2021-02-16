@@ -23,7 +23,6 @@ sources:
     - src/register_interface/src/reg_intf.sv
     - src/register_interface/src/reg_intf_pkg.sv
     - include/axi_intf.sv
-    - tb/ariane_soc_pkg.sv
     - include/ariane_axi_pkg.sv
     - src/fpu/src/fpnew_pkg.sv
     - src/fpu/src/fpu_div_sqrt_mvp/hdl/defs_div_sqrt_mvp.sv
@@ -196,6 +195,8 @@ sources:
     - src/tech_cells_generic/src/pulp_clock_mux2.sv
     - target: test
       files:
+      - tb/ariane_soc_pkg.sv
+      - tb/ariane_axi_soc_pkg.sv
       - tb/ariane_testharness.sv
       - tb/ariane_peripherals.sv
       - tb/common/uart.sv
