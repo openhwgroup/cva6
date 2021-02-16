@@ -26,6 +26,5 @@ ${RISCV_DV_ROOT}/test/riscv_instr_test_pkg.sv
 ${COREV_DV_ROOT}/corev_instr_test_pkg.sv
 
 // Core-specific CORE-V-VERIF
-${CV_CORE_COREV_DV_ROOT}/"${CV_CORE_LC}"_instr_test_pkg.sv
-${CV_CORE_COREV_DV_ROOT}/"${CV_CORE_LC}"_instr_gen_tb_top.sv
-
+${CV_CORE_COREV_DV_ROOT}/${CV_CORE_LC}_instr_test_pkg.sv
+${CV_CORE_COREV_DV_ROOT}/${CV_CORE_LC}_instr_gen_tb_top.sv
