@@ -368,7 +368,7 @@ module scoreboard #(
   //pragma translate_off
   `ifndef VERILATOR
   initial begin
-    assert (NR_ENTRIES == 2**BITS_ENTRIES) else $fatal("Scoreboard size needs to be a power of two.");
+    assert (NR_ENTRIES == 2**BITS_ENTRIES) else $fatal(1, "Scoreboard size needs to be a power of two.");
   end
 
   // assert that zero is never set
