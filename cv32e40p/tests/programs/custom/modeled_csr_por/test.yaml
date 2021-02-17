@@ -1,0 +1,4 @@
+name: modeled_csr_por
+uvm_test: uvmt_$(CV_CORE_LC)_firmware_test_c
+description: >
+    CSR Power on reset test

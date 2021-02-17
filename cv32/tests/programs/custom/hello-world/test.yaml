@@ -1,4 +1,0 @@
-name: hello-world
-uvm_test: uvmt_cv32_firmware_test_c
-description: >
-    Simple hello-world sanity test

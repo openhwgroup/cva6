@@ -2,13 +2,13 @@
 ################################################################################
 #
 # Copyright 2020 OpenHW Group
-#
+# 
 # Licensed under the Solderpad Hardware Licence, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
-#
+# 
 #     https://solderpad.org/licenses/
-#
+# 
 # Unless required by applicable law or agreed to in writing, software
 # distributed under the License is distributed on an "AS IS" BASIS,
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -16,7 +16,7 @@
 # limitations under the License.
 #
 # SPDX-License-Identifier:Apache-2.0 WITH SHL-2.0
-#
+# 
 ################################################################################
 #
 # ci_check: python script to run a sanity regression.  Intended to be used
@@ -31,7 +31,6 @@
 # Written with Python 3.6.9 on Ubuntu 18.04.  Your python mileage may vary.
 #
 # Restriction:
-#     - Needs to be launched from the bin directory.
 #     - Blindly uses .metrics.json wih no ability for user over-ride.
 #
 # TODO:
@@ -58,8 +57,12 @@ if (sys.version_info < (3,0,0)):
 
 ################################################################################
 # Gobals....
-name_of_ci_check_regression = 'cv32_ci_check_regression' # must match the name of one regression list in .metrics.json
+name_of_ci_check_regression = '<core>_ci_check_regression' # must match the name of one regression list in .metrics.json
 core_tests                  = ['misalign', 'illegal', 'dhrystone', 'fibonacci', 'riscv_ebreak_test_0']
+try:
+    default_core            = os.environ['CV_CORE']
+except KeyError:
+    default_core            = 'None'
 
 # This script is run from the "bin" directory, but the paths used by simulator
 # commands assume we are at the root of the repo.
@@ -76,11 +79,11 @@ def check_uvm_results(check_only=0):
     expct_fail = 0
     pass_count = 0
 
-    fails = subprocess.Popen('grep "SIMULATION FAILED" `find ../cv32/sim/uvmt_cv32/{}_results -name "*.log" -print`'.format(args.simulator),
+    fails = subprocess.Popen('grep "SIMULATION FAILED" `find ../{}/sim/uvmt/{}_results -name "*.log" -print`'.format(args.core.lower(), args.simulator),
                               stdout=subprocess.PIPE,
                               stderr=subprocess.STDOUT,
                               shell="TRUE")
-    passes = subprocess.Popen('grep "SIMULATION PASSED" `find ../cv32/sim/uvmt_cv32/{}_results -name "*.log" -print`'.format(args.simulator),
+    passes = subprocess.Popen('grep "SIMULATION PASSED" `find ../{}/sim/uvmt/{}_results -name "*.log" -print`'.format(args.core.lower(), args.simulator),
                               stdout=subprocess.PIPE,
                               stderr=subprocess.STDOUT,
                               shell="TRUE")
@@ -116,7 +119,7 @@ def check_uvm_results(check_only=0):
 
 
 def check_core_results(run_count):
-    core_runs = subprocess.Popen('grep "EXIT SUCCESS" -R -I ../cv32/sim/core/cobj_dir/logs',
+    core_runs = subprocess.Popen('grep "EXIT SUCCESS" -R -I ../{}/sim/core/cobj_dir/logs'.format(args.core.lower()),
                                  stdout=subprocess.PIPE,
                                  stderr=subprocess.STDOUT,
                                  shell="TRUE")
@@ -145,7 +148,7 @@ def ask_user():
 # Load regression YAML
 def load_regress_yaml(regression):
     '''Load the regression yaml and return the dictionary'''
-    full_regression = os.path.join(topdir, 'cv32/regress', regression + '.yaml')
+    full_regression = os.path.join(topdir, '{}/regress'.format(args.core.lower()), regression + '.yaml')
     fh = open(full_regression, 'r')
     dict = yaml.load(fh)
     fh.close()
@@ -157,6 +160,7 @@ def load_regress_yaml(regression):
 
 parser = argparse.ArgumentParser()
 parser.add_argument("-s", "--simulator",     help="SystemVerilog simulator",                          choices=['dsim', 'xrun', 'vsim', 'vcs', 'riviera'])
+parser.add_argument("--core",                help="Set the core to test (default: {})".format(default_core), default=default_core)
 parser.add_argument("-d", "--debug",         help="Display debug messages",                           action="store_true")
 parser.add_argument("-p", "--print_command", help="Print commands to stdout, do not run",             action="store_true")
 parser.add_argument("-c", "--check_only",    help="Check previosu results (do not run)",              action="store_true")
@@ -178,6 +182,14 @@ if (args.debug):
 
 if (args.print_command):
     prcmd = 1
+
+if (args.core == 'None'):
+    print('No default core specified in CV_CORE and no --core defined')
+    exit(1)
+
+if (not os.path.exists(os.path.join(topdir, args.core.lower(), 'sim/uvmt/Makefile'))):
+    print('Core directory for {} not found'.format(args.core))
+    exit(1)
 
 if (not args.verilator and args.no_uvm):
     print ('Specifying --no_uvm without --verilator means I do nothing...  Type `ci_check -h` for usage.')
@@ -204,6 +216,11 @@ elif (not(distutils.spawn.find_executable(args.simulator))):
 else:
     svtool = args.simulator
 
+name_of_ci_check_regression = name_of_ci_check_regression.replace('<core>', args.core.lower())
+print('ci_check: core : {}'.format(args.core))
+print('ci_check: name_of_ci_check_regression : {}'.format(name_of_ci_check_regression))
+os.environ['CV_CORE'] = args.core.upper()
+
 # --print_command is set: do not actually _do_ anything
 if not (prcmd):
     if (args.keep):
@@ -212,15 +229,18 @@ if not (prcmd):
     else:
         print ('This will delete your previously cloned RTL repo plus all previously generated files')
         ask_user()
-        os.chdir(os.path.join(topdir, 'cv32/sim/uvmt_cv32'))
+        os.chdir(os.path.join(topdir, '{}/sim/uvmt'.format(args.core.lower())))
         os.system('make clean_all')
-        os.chdir(os.path.join(topdir, 'cv32/sim/core'))
+        os.chdir(os.path.join(topdir, '{}/sim/core'.format(args.core.lower())))
         os.system('make clean_all')
         os.chdir(os.path.join(topdir, 'bin'))
 
 
 ################################################################################
 # script starts here
+
+
+
 
 # This script is run from the "ci" directory, but the paths used by simulator
 # commands assume we are at the root of the repo.
@@ -246,7 +266,7 @@ if (uvm):
                    if (debug):
                        print (json.dumps(list_dict, indent=2, sort_keys=True))
             for key in list_dict:
-                if (key['name'] != 'uvmt_cv32'):
+                if (key['name'] != 'uvmt_{}'.format(args.core.lower())):
                     continue
                 build_cmd_list = (key['cmd']).split()
                 build_cmd = ' '.join(build_cmd_list[0:-1]) # See TODO #3
@@ -254,11 +274,11 @@ if (uvm):
                 if (build_cmd != ''):
                     build_cmd = build_cmd.replace('dsim', svtool)
                     if (args.repo):
-                        build_cmd = build_cmd + ' CV32E40P_REPO=' + args.repo
+                        build_cmd = build_cmd + ' {}_REPO='.format(args.core.upper()) + args.repo
                     if (args.branch):
-                        build_cmd = build_cmd + ' CV32E40P_BRANCH=' + args.branch
+                        build_cmd = build_cmd + ' {}_BRANCH='.format(args.core.upper()) + args.branch
                     if (args.hash):
-                        build_cmd = build_cmd + ' CV32E40P_HASH=' + args.hash
+                        build_cmd = build_cmd + ' {}_HASH='.format(args.core.upper()) + args.hash
                     if (prcmd or debug):
                         print(build_cmd)
                     else:
@@ -347,8 +367,8 @@ else:  # if(uvm):
 if  (veril):
     print ('Running Verilator tests on CORE testbench...')
     if (debug):
-        print('cv32/sim/core')
-    os.chdir(os.path.join(topdir,'cv32/sim/core'))
+        print('{}/sim/core'.format(args.core.lower()))
+    os.chdir(os.path.join(topdir,'{}/sim/core'.format(args.core.lower())))
 
     if (prcmd or debug):
         print('make')

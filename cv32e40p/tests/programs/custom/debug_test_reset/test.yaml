@@ -1,0 +1,10 @@
+# Test definition YAML for test
+
+# Debug directed test for debug request at reset
+name: debug_test_reset
+uvm_test: uvmt_$(CV_CORE_LC)_firmware_test_c
+description: >
+    Debug directed test, debug at reset
+plusargs: >
+        +reset_debug
+

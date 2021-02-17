@@ -1,0 +1,325 @@
+###############################################################################
+#
+# Copyright 2020 OpenHW Group
+# 
+# Licensed under the Solderpad Hardware Licence, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+# 
+#     https://solderpad.org/licenses/
+# 
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+# 
+###############################################################################
+#
+# VCS-specific Makefile for the Core-V-Verif "uvmt" testbench.
+#
+###############################################################################
+
+#
+# Synopsys do not (officially) support Ubuntu, so suppress the nonzero return code from VCS
+#
+OS_IS_UBUNTU = $(findstring Ubuntu,$(shell lsb_release -d))
+ifeq ($(OS_IS_UBUNTU),Ubuntu)
+    .IGNORE: hello-world comp test custom compliance comp_corev-dv corev-dv gen_corev-dv
+endif
+
+# Executables
+VCS              = $(CV_SIM_PREFIX)vcs
+SIMV             = $(CV_TOOL_PREFIX)simv
+DVE              = $(CV_TOOL_PREFIX)dve
+#VERDI            = $(CV_TOOL_PREFIX)verdi
+URG               = $(CV_SIM_PREFIX)urg
+
+# Paths
+VCS_RESULTS     ?= $(MAKE_PATH)/vcs_results
+VCS_COREVDV_RESULTS ?= $(VCS_RESULTS)/corev-dv
+VCS_DIR         ?= $(VCS_RESULTS)/vcs.d
+VCS_ELAB_COV     = -cm line+cond+tgl+fsm+branch+assert  -cm_dir $(MAKECMDGOALS)/$(MAKECMDGOALS).vdb
+
+# modifications to already defined variables to take into account VCS
+VCS_OVP_MODEL_DPI = $(OVP_MODEL_DPI:.so=)                    # remove extension as VCS adds it
+VCS_TIMESCALE = $(shell echo "$(TIMESCALE)" | tr ' ' '=')    # -timescale=1ns/1ps
+
+VCS_UVM_VERBOSITY ?= UVM_MEDIUM
+
+# Flags
+#VCS_UVMHOME_ARG ?= /opt/uvm/1800.2-2017-0.9/
+VCS_UVMHOME_ARG ?= /opt/synopsys/vcs-mx/O-2018.09-SP1-1/etc/uvm
+VCS_UVM_ARGS          ?= +incdir+$(VCS_UVMHOME_ARG)/src $(VCS_UVMHOME_ARG)/src/uvm_pkg.sv +UVM_VERBOSITY=$(VCS_UVM_VERBOSITY) -ntb_opts uvm-1.2
+
+VCS_COMP_FLAGS  ?= -lca -sverilog \
+										$(SV_CMP_FLAGS) $(VCS_UVM_ARGS) $(VCS_TIMESCALE) \
+										-assert svaext -race=all -ignore unique_checks -full64
+VCS_GUI         ?=
+VCS_RUN_COV      = -cm line+cond+tgl+fsm+branch+assert -cm_dir $(MAKECMDGOALS).vdb
+
+###############################################################################
+# Common QUIET flag defaults to -quiet unless VERBOSE is set
+ifeq ($(call IS_YES,$(VERBOSE)),YES)
+QUIET=
+else
+QUIET=-q
+endif
+
+################################################################################
+# GUI interactive simulation
+# GUI=YES enables interactive mode
+# ADV_DEBUG=YES currently not supported
+ifeq ($(call IS_YES,$(GUI)),YES)
+VCS_GUI += -gui
+VCS_USER_COMPILE_ARGS += -debug_access+r
+ifeq ($(call IS_YES,$(ADV_DEBUG)),YES)
+$(error ADV_DEBUG not yet supported by VCS )
+endif
+endif
+
+################################################################################
+# Waveform generation
+# WAVES=YES enables waveform generation for entire testbench
+# ADV_DEBUG=YES currently not supported
+ifeq ($(call IS_YES,$(WAVES)),YES)
+ifeq ($(call IS_YES,$(ADV_DEBUG)),YES)
+$(error ADV_DEBUG not yet supported by VCS )
+VCS_USER_COMPILE_ARGS = +vcs+vcdpluson
+else
+VCS_USER_COMPILE_ARGS = +vcs+vcdpluson
+endif
+endif
+
+################################################################################
+# Waveform (post-process) command line
+ifeq ($(call IS_YES,$(ADV_DEBUG)),YES)
+$(error ADV_DEBUG not yet supported by VCS )
+WAVES_CMD = cd $(VCS_RESULTS)/$(TEST_NAME) && $(DVE) -vpd vcdplus.vpd 
+else
+WAVES_CMD = cd $(VCS_RESULTS)/$(TEST_NAME) && $(DVE) -vpd vcdplus.vpd 
+endif
+
+################################################################################
+# Coverage options
+# COV=YES generates coverage database, must be specified for comp and run
+URG_MERGE_ARGS = -dbname merged.vdb -group lrm_bin_name -flex_merge union
+MERGED_COV_DIR ?= merged_cov
+
+ifeq ($(call IS_YES,$(COV)),YES)
+VCS_USER_COMPILE_ARGS += $(VCS_ELAB_COV)
+VCS_RUN_COV_FLAGS += $(VCS_RUN_COV)
+endif
+
+# list all vbd files
+COV_RESULTS_LIST = $(wildcard $(VCS_RESULTS)/*/*.vdb)
+
+ifeq ($(call IS_YES,$(MERGE)),YES)
+COV_MERGE = cov_merge
+TEST = $(MERGED_COV_DIR)
+else
+COV_MERGE =
+endif
+
+ifeq ($(call IS_YES,$(MERGE)),YES)
+COV_ARGS = -dir cov_work/scope/merged
+else
+COV_ARGS = -dir $(TEST_NAME).vdb
+endif
+
+################################################################################
+
+VCS_FILE_LIST ?= -f $(DV_UVMT_PATH)/uvmt_$(CV_CORE_LC).flist
+ifeq ($(call IS_YES,$(USE_ISS)),YES)
+    VCS_FILE_LIST += -f $(DV_UVMT_PATH)/imperas_iss.flist
+    VCS_USER_COMPILE_ARGS += "+define+ISS +define+$(CV_CORE_UC)_TRACE_EXECUTION"
+    VCS_PLUSARGS +="+USE_ISS"
+endif
+
+VCS_RUN_BASE_FLAGS   ?= $(VCS_GUI) \
+                         $(VCS_PLUSARGS) +ntb_random_seed=$(RNDSEED) -sv_lib $(VCS_OVP_MODEL_DPI)
+# Simulate using latest elab
+VCS_RUN_FLAGS        ?= 
+VCS_RUN_FLAGS        += $(VCS_RUN_BASE_FLAGS)
+VCS_RUN_FLAGS        += $(VCS_RUN_WAVES_FLAGS)
+VCS_RUN_FLAGS        += $(VCS_RUN_COV_FLAGS)
+VCS_RUN_FLAGS        += $(USER_RUN_FLAGS)
+
+no_rule:
+	@echo 'makefile: SIMULATOR is set to $(SIMULATOR), but no rule/target specified.'
+	@echo 'try "make SIMULATOR=vcs sanity" (or just "make sanity" if shell ENV variable SIMULATOR is already set).'
+
+.PHONY: comp test waves cov
+
+mk_vcs_dir:
+	$(MKDIR_P) $(VCS_DIR)
+
+# This special target is to support the special sanity target in the Common Makefile
+hello-world:
+	$(MAKE) test TEST=hello-world
+
+VCS_COMP = $(VCS_COMP_FLAGS) \
+		$(QUIET) \
+		$(VCS_UVM_ARGS) \
+		$(VCS_USER_COMPILE_ARGS) \
+		+incdir+$(DV_UVME_PATH) \
+		+incdir+$(DV_UVMT_PATH) \
+		-f $(CV_CORE_MANIFEST) \
+		$(VCS_FILE_LIST) \
+		$(UVM_PLUSARGS)
+
+comp: mk_vcs_dir $(CV_CORE_PKG) $(OVP_MODEL_DPI)
+	cd $(VCS_RESULTS) && $(VCS) $(VCS_COMP) -top uvmt_$(CV_CORE_LC)_tb
+	@echo "$(BANNER)"
+	@echo "* $(SIMULATOR) compile complete"
+	@echo "* Log: $(VCS_RESULTS)/vcs.log"
+	@echo "$(BANNER)"
+
+ifneq ($(call IS_NO,$(COMP)),NO)
+VCS_SIM_PREREQ = comp
+endif
+
+ifeq ($(call IS_YES,$(VCS_SINGLE_STEP)), YES)
+	VCS_SIM_PREREQ = mk_vcs_dir $(CV_CORE_PKG) $(OVP_MODEL_DPI)
+	VCS_COMP_RUN = $(VCS_COMP) $(VCS_RUN_BASE_FLAGS)
+endif
+
+################################################################################
+# If the configuration specified OVPSIM arguments, generate an ovpsim.ic file and
+# set IMPERAS_TOOLS to point to it
+gen_ovpsim_ic:
+	@if [ ! -z "$(CFG_OVPSIM)" ]; then \
+		mkdir -p $(VCS_RESULTS)/$(TEST_NAME); \
+		echo "$(CFG_OVPSIM)" > $(VCS_RESULTS)/$(TEST_NAME)/ovpsim.ic; \
+	fi
+ifneq ($(CFG_OVPSIM),)
+export IMPERAS_TOOLS=$(VCS_RESULTS)/$(TEST_NAME)/ovpsim.ic
+endif
+
+################################################################################
+# The new general test target
+test: $(VCS_SIM_PREREQ) $(TEST_TEST_DIR)/$(TEST_PROGRAM).hex gen_ovpsim_ic
+	echo $(IMPERAS_TOOLS)
+	mkdir -p $(VCS_RESULTS)/$(TEST_NAME) && \
+	cd $(VCS_RESULTS)/$(TEST_NAME) && \
+		$(VCS_RESULTS)/$(SIMV) \
+			-l vcs-$(TEST_NAME).log \
+			-cm_name $(TEST_NAME) $(VCS_RUN_FLAGS) \
+			$(TEST_PLUSARGS) \
+			+UVM_TESTNAME=$(TEST_UVM_TEST) \
+			+elf_file=$(TEST_TEST_DIR)/$(TEST_PROGRAM).elf \
+			+firmware=$(TEST_TEST_DIR)/$(TEST_PROGRAM).hex
+
+################################################################################
+# Custom test-programs.  See comment in dsim.mk for more info
+custom: $(VCS_SIM_PREREQ) $(CUSTOM_DIR)/$(CUSTOM_PROG).hex
+	mkdir -p $(VCS_RESULTS)/$(CUSTOM_PROG) && cd $(VCS_RESULTS)/$(CUSTOM_PROG) && \
+	$(VCS_RESULTS)/$(SIMV) -l vcs-$(CUSTOM_PROG).log -cm_test $(CUSTOM_PROG) $(VCS_RUN_FLAGS) \
+		+UVM_TESTNAME=uvmt_$(CV_CORE_LC)_firmware_test_c \
+		+elf_file=$(CUSTOM_DIR)/$(CUSTOM_PROG).elf \
+		+firmware=$(CUSTOM_DIR)/$(CUSTOM_PROG).hex
+
+###############################################################################
+# Run a single test-program from the RISC-V Compliance Test-suite. The parent
+# Makefile of this <sim>.mk implements "all_compliance", the target that
+# compiles the test-programs.
+#
+# There is a dependancy between RISCV_ISA and COMPLIANCE_PROG which *you* are
+# required to know.  For example, the I-ADD-01 test-program is part of the rv32i
+# testsuite.
+# So this works:
+#                make compliance RISCV_ISA=rv32i COMPLIANCE_PROG=I-ADD-01
+# But this does not:
+#                make compliance RISCV_ISA=rv32imc COMPLIANCE_PROG=I-ADD-01
+# 
+RISCV_ISA       ?= rv32i
+COMPLIANCE_PROG ?= I-ADD-01
+
+SIG_ROOT      ?= $(VCS_RESULTS)
+SIG           ?= $(VCS_RESULTS)/$(COMPLIANCE_PROG)/$(COMPLIANCE_PROG).signature_output
+REF           ?= $(COMPLIANCE_PKG)/riscv-test-suite/$(RISCV_ISA)/references/$(COMPLIANCE_PROG).reference_output
+TEST_PLUSARGS ?= +signature=$(COMPLIANCE_PROG).signature_output
+
+ifneq ($(call IS_NO,$(COMP)),NO)
+VCS_COMPLIANCE_PREREQ = comp build_compliance
+endif
+
+compliance: $(VCS_COMPLIANCE_PREREQ)
+	mkdir -p $(VCS_RESULTS)/$(COMPLIANCE_PROG) && cd $(VCS_RESULTS)/$(COMPLIANCE_PROG)  && \
+	export IMPERAS_TOOLS=$(CORE_V_VERIF)/$(CV_CORE_LC)/tests/cfg/ovpsim_no_pulp.ic && \
+	$(VCS_RESULTS)/$(SIMV) -l vcs-$(COMPLIANCE_PROG).log -cm_test riscv-compliance $(VCS_COMP_RUN) $(TEST_PLUSARGS) \
+		+UVM_TESTNAME=uvmt_$(CV_CORE_LC)_firmware_test_c \
+		+firmware=$(COMPLIANCE_PKG)/work/$(RISCV_ISA)/$(COMPLIANCE_PROG).hex \
+		+elf_file=$(COMPLIANCE_PKG)/work/$(RISCV_ISA)/$(COMPLIANCE_PROG).elf
+
+###############################################################################
+# Use Google instruction stream generator (RISCV-DV) to create new test-programs
+comp_corev-dv: $(RISCVDV_PKG)
+	mkdir -p $(COREVDV_PKG)/out_$(DATE)/run
+	cd $(VCS_COREVDV_RESULTS) && \
+	$(VCS) $(VCS_COMP_FLAGS) \
+		$(QUIET) $(VCS_USER_COMPILE_ARGS) \
+		+incdir+$(CV_CORE_COREVDV_PKG)/target/$(CV_CORE_LC) \
+		+incdir+$(RISCVDV_PKG)/user_extension \
+		+incdir+$(CV_CORE_COREVDV_PKG) \
+		-f $(COREVDV_PKG)/manifest.f \
+		-l vcs.log
+
+corev-dv: clean_riscv-dv \
+          clone_riscv-dv \
+		  comp_corev-dv
+
+gen_corev-dv: 
+	mkdir -p $(VCS_COREVDV_RESULTS)/$(TEST)
+	# Clean old assembler generated tests in results
+	for (( idx=${GEN_START_INDEX}; idx < $$((${GEN_START_INDEX} + ${GEN_NUM_TESTS})); idx++ )); do \
+		rm -f ${VCS_COREVDV_RESULTS}/${TEST}/${TEST}_$$idx.S; \
+	done
+	cd  $(VCS_COREVDV_RESULTS)/$(TEST) && \
+	../$(SIMV) -R $(VCS_RUN_FLAGS) \
+		-l $(TEST)_$(GEN_START_INDEX)_$(GEN_NUM_TESTS).log \
+		+start_idx=$(GEN_START_INDEX) \
+		+num_of_tests=$(GEN_NUM_TESTS) \
+		+UVM_TESTNAME=$(GEN_UVM_TEST) \
+		+asm_file_name_opts=$(TEST) \
+		$(GEN_PLUSARGS)
+	# Copy out final assembler files to test directory
+	for (( idx=${GEN_START_INDEX}; idx < $$((${GEN_START_INDEX} + ${GEN_NUM_TESTS})); idx++ )); do \
+		ls -l ${VCS_COREVDV_RESULTS}/${TEST} > /dev/null; \
+		cp ${VCS_COREVDV_RESULTS}/${TEST}/${TEST}_$$idx.S ${GEN_TEST_DIR}; \
+	done
+
+################################################################################
+# Invoke post-process waveform viewer
+waves:
+	$(WAVES_CMD)
+
+################################################################################
+# Invoke post-process coverage viewer
+cov_merge:
+	$(MKDIR_P) $(VCS_RESULTS)/$(MERGED_COV_DIR)
+	rm -rf $(VCS_RESULTS)/$(MERGED_COV_DIR)/*
+	cd $(VCS_RESULTS)/$(MERGED_COV_DIR)
+
+# the report is in html format: use a browser to access it when GUI mode is selected
+ifeq ($(call IS_YES,$(GUI)),YES)
+cov: $(COV_MERGE)
+	cd $(VCS_RESULTS)/$(TEST_NAME) && browse urgReport/dashboard.html
+else
+cov: $(COV_MERGE)
+	cd $(VCS_RESULTS)/$(TEST_NAME) && $(URG) $(COV_ARGS)
+endif
+
+###############################################################################
+# Clean up your mess!
+
+clean:
+	rm -f simv
+	rm -rf simv.*
+	rm -rf csrc
+	rm -f vc_hdrs.h
+	rm -rf $(VCS_RESULTS)
+
+# All generated files plus the clone of the RTL
+clean_all: clean clean_core_tests clean_riscv-dv clean_test_programs clean-bsp
+	rm -rf $(CV_CORE_PKG)
