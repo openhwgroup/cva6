@@ -230,7 +230,7 @@ module frontend import ariane_pkg::*; #(
     always_comb begin
       bp_valid = 1'b0;
       // BP cannot be valid if we have a return instruction and the RAS is not giving a valid address
-      // Check that we encountered a control flow and that for a return the RAS 
+      // Check that we encountered a control flow and that for a return the RAS
       // contains a valid prediction.
       for (int i = 0; i < INSTR_PER_FETCH; i++) bp_valid |= ((cf_type[i] != NoCF & cf_type[i] != Return) | ((cf_type[i] == Return) & ras_predict.valid));
     end
@@ -441,7 +441,7 @@ module frontend import ariane_pkg::*; #(
     // pragma translate_off
     `ifndef VERILATOR
       initial begin
-        assert (FETCH_WIDTH == 32 || FETCH_WIDTH == 64) else $fatal("[frontend] fetch width != not supported");
+        assert (FETCH_WIDTH == 32 || FETCH_WIDTH == 64) else $fatal(1, "[frontend] fetch width != not supported");
       end
     `endif
     // pragma translate_on
