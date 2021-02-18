@@ -32,13 +32,18 @@ module pmp #(
         logic [NR_ENTRIES-1:0] match;
 
         for (genvar i = 0; i < NR_ENTRIES; i++) begin
+
+            logic [PMP_LEN-1:0] conf_addr_prev;
+	
+            assign conf_addr_prev = (i == 0) ? '0 : conf_addr_i[i-1];
+
             pmp_entry #(
                 .PLEN    ( PLEN    ),
                 .PMP_LEN ( PMP_LEN )
             ) i_pmp_entry(
                 .addr_i           ( addr_i                         ),
                 .conf_addr_i      ( conf_addr_i[i]                 ),
-                .conf_addr_prev_i ( i == 0 ? '0 : conf_addr_i[i-1] ),
+                .conf_addr_prev_i ( conf_addr_prev                 ),
                 .conf_addr_mode_i ( conf_i[i].addr_mode            ),
                 .match_o          ( match[i]                       )
             );

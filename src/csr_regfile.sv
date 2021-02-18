@@ -494,7 +494,7 @@ module csr_regfile import ariane_pkg::*; #(
                         // only make ASID_LEN - 1 bit stick, that way software can figure out how many ASID bits are supported
                         satp.asid = satp.asid & {{(riscv::ASIDW-AsidWidth){1'b0}}, {AsidWidth{1'b1}}};
                         // only update if we actually support this mode
-                        if (satp.mode == riscv::ModeOff[riscv::ModeW-1:0] || satp.mode == riscv::MODE_SV) satp_d = satp;
+                        if (satp.mode == riscv::ModeOff || satp.mode == riscv::MODE_SV) satp_d = satp;
                     end
                     // changing the mode can have side-effects on address translation (e.g.: other instructions), re-fetch
                     // the next instruction by executing a flush
