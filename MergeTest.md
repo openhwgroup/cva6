@@ -1,5 +1,5 @@
 # Merge Test
-Use this file to exercise the GitHub portions of the OpenHW Group workflow
+Use this file to exercise the GitHub portions of the OpenHW Group workflow.
 
 Parts of the [OpenHW Group workflow](https://github.com/openhwgroup/core-v-docs/blob/master/verif/Common/OpenHWGroup_WorkFlow.pdf)
 are modeled after Vincent Driessen's [git branching model](https://nvie.com/posts/a-successful-git-branching-model/).  When

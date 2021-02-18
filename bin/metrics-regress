@@ -18,11 +18,16 @@
 # SPDX-License-Identifier: Apache-2.0 WITH SHL-2.0
 #
 ###############################################################################
-# Regression invoked by workflow.
-#
-# TODO: this script is not functional in this repo.  Don't use it (yet).
-#
-# Stolen, without the slightest hint of shame, from Aimee Sutton.
+# MetricsCI script launched by GitHub Actions.
+# See ../.github/workflows/metrics-regress.yml.
+# Not intended to be launched manually, but if you _have_ to here's an example:
+# ENV vars needed by metrics-regress:
+#     $ export GITHUB_EVENT_NAME=push
+#     $ export GITHUB_REF=master
+# You need to have saved METRICS_CI_TOKEN in a safe place.
+#     $ export METRICS_CI_TOKEN=6Pcc5hQoIKEn8Pjz+lvjqG+C1SY=
+#     $ ./metrics-regress cv32e40p_ci_check_regression main-core-v-verif-openhwgroup
+
 
 import json
 import http.client
@@ -53,12 +58,8 @@ parser.add_argument('regressionName', help='The name of the regression to run')
 parser.add_argument('projectId',      help='The ID of the Metrics project')
 args = parser.parse_args()
 
-## FIXME: do nothing and exit clean
-print('No tests executed. Exit with code 0.')
-exit(0)
-
 ## Server
-server =  'nightly.metrics.ca:443'
+server =  'openhwgroup.metrics.ca:443'
 
 ## API Endpoints
 postRegression = '/api/v1/projects/'+args.projectId+'/regressionRuns'
@@ -70,7 +71,7 @@ reqParams['regressionName'] = args.regressionName
 
 # Determine the git reference to pass to Metrics. For PRs, the reference
 # is of the format /refs/pull/<PR-number>/merge
-if str(os.environ['GITHUB_EVENT_NAME']) is 'pull_request_target':
+if str(os.environ['GITHUB_EVENT_NAME']) == 'pull_request_target':
     reqParams['branch'] = '/refs/pull/' + str(os.environ['PR_NUMBER']) + '/merge'
 else:
     reqParams['branch'] = str(os.environ['GITHUB_REF'])
@@ -99,7 +100,7 @@ while True:
             break
         if 'buildFailed' in regressionData['status']:
             print('A build has failed. No tests will be run')
-            print('Debug at: https://chipsalliance.metrics.ca/' + args.projectId + \
+            print('Debug at: https://openhwgroup.metrics.ca/' + args.projectId + \
                   '/results/regressionRuns/' + regressionRunId)
             exit(1)
 
@@ -114,24 +115,24 @@ print('Incomplete tests: ' + str(regressionData['testRuns']['incomplete']))
 print('\n')
 
 ## Poll for coverage data
-#while True:
-#    time.sleep(10)
-#    response, regressionData = make_http_request('GET', getRegressionRunInfo+regressionRunId)
-#    if response.status is 200:
-#        if regressionData['functionalCoverage'] is not None :
-#            break
+while True:
+    time.sleep(10)
+    response, regressionData = make_http_request('GET', getRegressionRunInfo+regressionRunId)
+    if response.status is 200:
+        if regressionData['functionalCoverage'] is not None :
+            break
 
 ## Print functional coverage
-#print('Coverage results')
-#print('================')
-#print('Functional: ' + str(math.trunc(regressionData['functionalCoverage']*100)/100))
-#if regressionData['assertionCoverage'] is not None:
-#    print('Assertion: ' + str(math.trunc(regressionData['assertionCoverage']*100) /100))
-#if regressionData['lineCoverage'] is not None:
-#    print('Code (block): ' + str(math.trunc(regressionData['lineCoverage']*100) /100))
-#print('\n')
+print('Coverage results')
+print('================')
+print('Functional: ' + str(math.trunc(regressionData['functionalCoverage']*100)/100))
+if regressionData['assertionCoverage'] is not None:
+    print('Assertion: ' + str(math.trunc(regressionData['assertionCoverage']*100) /100))
+if regressionData['lineCoverage'] is not None:
+    print('Code (block): ' + str(math.trunc(regressionData['lineCoverage']*100) /100))
+print('\n')
 
-print('Full results at: https://nightly.metrics.ca/' + args.projectId + \
+print('Full results at: https://openhwgroup.metrics.ca/' + args.projectId + \
       '/results/regressionRuns/' + regressionRunId)
 
 ## Set the exit code to be used by github action

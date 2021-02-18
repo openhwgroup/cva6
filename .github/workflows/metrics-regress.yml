@@ -18,6 +18,8 @@
 #
 ###############################################################################
 # This is a basic workflow to get core-v-verif started with GitHub Actions.
+# It initiates a regression on the Metrics platform and waits for the result
+# of the regression. If all tests pass, the action succeeds.
 # In the near future this will be expanded to support multiple development
 # branches, each with its own pull and/or pull-request regression.
 #
@@ -30,8 +32,8 @@ name: metrics-regress
 on:
   push:
     branches: [ master ]
-  pull_request_target:
-    branches: [ master ]
+#  pull_request_target:
+#    branches: [ master ]
 
 # If you fork this repository, you must create a new Metrics project for your fork
 # and set the environment variable $METRICS_PROJECT_ID accordingly
@@ -43,7 +45,7 @@ jobs:
       - run: ./bin/metrics-regress $METRICS_REGRESSION_NAME $METRICS_PROJECT_ID
         env:
           METRICS_CI_TOKEN: ${{ secrets.METRICS_CI_TOKEN }}
-          METRICS_REGRESSION_NAME: riscv-dv_regression
+          METRICS_REGRESSION_NAME: cv32e40p_ci_check_regression
           METRICS_PROJECT_ID: ${{ secrets.METRICS_PROJECT_ID }}
           PR_NUMBER: ${{ github.event.pull_request.number }}
         shell: bash
