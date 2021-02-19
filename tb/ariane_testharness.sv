@@ -281,7 +281,7 @@ module ariane_testharness #(
     .clk_i                 ( clk_i                     ),
     .rst_ni                ( rst_ni                    ),
     .req_i                 ( dm_master_req             ),
-    .type_i                ( ariane_axi_soc::SINGLE_REQ    ),
+    .type_i                ( ariane_axi::SINGLE_REQ    ),
     .gnt_o                 ( dm_master_gnt             ),
     .gnt_id_o              (                           ),
     .addr_i                ( dm_master_add             ),
