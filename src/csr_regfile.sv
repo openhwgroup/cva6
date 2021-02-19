@@ -494,7 +494,8 @@ module csr_regfile import ariane_pkg::*; #(
                         // only make ASID_LEN - 1 bit stick, that way software can figure out how many ASID bits are supported
                         satp.asid = satp.asid & {{(riscv::ASIDW-AsidWidth){1'b0}}, {AsidWidth{1'b1}}};
                         // only update if we actually support this mode
-                        if (satp.mode == riscv::ModeOff || satp.mode == riscv::MODE_SV) satp_d = satp;
+                        if (riscv::vm_mode_t'(satp.mode) == riscv::ModeOff ||
+                            riscv::vm_mode_t'(satp.mode) == riscv::MODE_SV) satp_d = satp;
                     end
                     // changing the mode can have side-effects on address translation (e.g.: other instructions), re-fetch
                     // the next instruction by executing a flush
@@ -800,7 +801,7 @@ module csr_regfile import ariane_pkg::*; #(
         // ------------------------------
         // Set the address translation at which the load and stores should occur
         // we can use the previous values since changing the address translation will always involve a pipeline flush
-        if (mprv && satp_q.mode == riscv::MODE_SV && (mstatus_q.mpp != riscv::PRIV_LVL_M))
+        if (mprv && riscv::vm_mode_t'(satp_q.mode) == riscv::MODE_SV && (mstatus_q.mpp != riscv::PRIV_LVL_M))
             en_ld_st_translation_d = 1'b1;
         else // otherwise we go with the regular settings
             en_ld_st_translation_d = en_translation_o;
@@ -1036,7 +1037,8 @@ module csr_regfile import ariane_pkg::*; #(
     assign asid_o           = satp_q.asid[AsidWidth-1:0];
     assign sum_o            = mstatus_q.sum;
     // we support bare memory addressing and SV39
-    assign en_translation_o = (satp_q.mode == riscv::MODE_SV && priv_lvl_o != riscv::PRIV_LVL_M)
+    assign en_translation_o = (riscv::vm_mode_t'(satp_q.mode) == riscv::MODE_SV &&
+                               priv_lvl_o != riscv::PRIV_LVL_M)
                               ? 1'b1
                               : 1'b0;
     assign mxr_o            = mstatus_q.mxr;
