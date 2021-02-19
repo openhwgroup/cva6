@@ -71,7 +71,7 @@ interface uvma_clknrst_if ();
     */
    function void start_clk();
       `uvm_info("CLKNRST", "Starting clock generation", UVM_HIGH)
-      clk_active = 1;
+      if (clk_period) clk_active = 1;
    endfunction : start_clk
    
    /**

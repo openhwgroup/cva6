@@ -276,14 +276,21 @@ interface uvmt_cv32e40p_step_compare_if;
      logic [31:0] value;
    } reg_t;
 
-   event        ovp_cpu_retire;     // Was ovp.cpu.Retire
-   event        riscv_retire;       // Was riscv_core.riscv_tracer_i.retire
+   event        ovp_cpu_valid;      // Indicate instruction successfully retired
+   event        ovp_cpu_trap;       // Indicate exception occured 
+   event        ovp_cpu_halt;       // Indicate exception occured 
    bit   [31:0] ovp_cpu_PCr;        // Was iss_wrap.cpu.PCr
-   logic [31:0] insn_pc;
-   bit          ovp_b1_Step;        // Was ovp.b1.Step = 0;
-   bit          ovp_b1_Stepping;    // Was ovp.b1.Stepping = 1;
-   event        ovp_cpu_busWait;    // Was call to ovp.cpu.busWait();
    logic [31:0] ovp_cpu_GPR[32];
+   bit          ovp_cpu_state_idle;
+   bit          ovp_cpu_state_stepi;
+   bit          ovp_cpu_state_stop;
+   bit          ovp_cpu_state_cont;
+
+   event        riscv_retire;       // Was riscv_core.riscv_tracer_i.retire
+   event        riscv_trap;         // new event to indicate RTL took a trap
+   event        riscv_halt;         // new event to indicate RTL took a halt
+   
+   logic [31:0] insn_pc;
    logic [31:0][31:0] riscy_GPR;    // packed dimensions, register index by data width
    logic        deferint_prime;     // Stages deferint for the ISS deferint signal
    logic        deferint_prime_ack; // Set low if deferint_prime was set due to interrupt ack (as opposed to wakeup)
