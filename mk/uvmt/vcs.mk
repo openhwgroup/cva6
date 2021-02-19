@@ -30,7 +30,7 @@ endif
 
 # Executables
 VCS              = $(CV_SIM_PREFIX)vcs
-SIMV             = $(CV_TOOL_PREFIX)simv
+SIMV             = $(CV_TOOL_PREFIX)simv -licwait 20
 DVE              = $(CV_TOOL_PREFIX)dve
 #VERDI            = $(CV_TOOL_PREFIX)verdi
 URG               = $(CV_SIM_PREFIX)urg
@@ -145,9 +145,15 @@ VCS_RUN_FLAGS        += $(VCS_RUN_WAVES_FLAGS)
 VCS_RUN_FLAGS        += $(VCS_RUN_COV_FLAGS)
 VCS_RUN_FLAGS        += $(USER_RUN_FLAGS)
 
+###############################################################################
+# Targets
+
 no_rule:
 	@echo 'makefile: SIMULATOR is set to $(SIMULATOR), but no rule/target specified.'
 	@echo 'try "make SIMULATOR=vcs sanity" (or just "make sanity" if shell ENV variable SIMULATOR is already set).'
+
+help:
+	vcs -help
 
 .PHONY: comp test waves cov
 
@@ -255,12 +261,13 @@ compliance: $(VCS_COMPLIANCE_PREREQ)
 ###############################################################################
 # Use Google instruction stream generator (RISCV-DV) to create new test-programs
 comp_corev-dv: $(RISCVDV_PKG)
-	mkdir -p $(COREVDV_PKG)/out_$(DATE)/run
+	mkdir -p $(VCS_COREVDV_RESULTS)
 	cd $(VCS_COREVDV_RESULTS) && \
 	$(VCS) $(VCS_COMP_FLAGS) \
 		$(QUIET) $(VCS_USER_COMPILE_ARGS) \
 		+incdir+$(CV_CORE_COREVDV_PKG)/target/$(CV_CORE_LC) \
 		+incdir+$(RISCVDV_PKG)/user_extension \
+		+incdir+$(COREVDV_PKG) \
 		+incdir+$(CV_CORE_COREVDV_PKG) \
 		-f $(COREVDV_PKG)/manifest.f \
 		-l vcs.log
@@ -313,13 +320,17 @@ endif
 ###############################################################################
 # Clean up your mess!
 
-clean:
-	rm -f simv
-	rm -rf simv.*
-	rm -rf csrc
-	rm -f vc_hdrs.h
-	rm -rf $(VCS_RESULTS)
+clean:	
+	@echo "$(MAKEFILE_LIST)"
+	rm -rf $(VCS_RESULTS)	
+
+# Files created by Eclipse when using the Imperas ISS + debugger
+clean_eclipse:
+	rm  -f eguieclipse.log
+	rm  -f idebug.log
+	rm  -f stdout.txt
+	rm  -rf workspace
 
 # All generated files plus the clone of the RTL
-clean_all: clean clean_core_tests clean_riscv-dv clean_test_programs clean-bsp
+clean_all: clean clean_eclipse clean_riscv-dv clean_test_programs clean-bsp clean_compliance
 	rm -rf $(CV_CORE_PKG)
