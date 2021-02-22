@@ -68,21 +68,22 @@ module cv32e40p_tb_wrapper
     // interrupts (only timer for now)
     assign irq_sec     = '0;
 
-	// core log reports parameter usage and illegal instructions to the logfile
-    cv32e40p_core_log
-     #(
-          .PULP_XPULP            ( PULP_XPULP            ),
-          .PULP_CLUSTER          ( PULP_CLUSTER          ),
-          .FPU                   ( FPU                   ),
-          .PULP_ZFINX            ( PULP_ZFINX            ),
-          .NUM_MHPMCOUNTERS      ( NUM_MHPMCOUNTERS      ))
-    core_log_i(
-          .clk_i              ( cv32e40p_core_i.id_stage_i.clk              ),
-          .is_decoding_i      ( cv32e40p_core_i.id_stage_i.is_decoding_o    ),
-          .illegal_insn_dec_i ( cv32e40p_core_i.id_stage_i.illegal_insn_dec ),
-          .hart_id_i          ( cv32e40p_core_i.hart_id_i                   ),
-          .pc_id_i            ( cv32e40p_core_i.pc_id                       )
-      );
+//    // core log reports parameter usage and illegal instructions to the logfile
+//    // MIKET: commenting out as the cv32e40p RTL wrapper does this as well.
+//    cv32e40p_core_log
+//     #(
+//          .PULP_XPULP            ( PULP_XPULP            ),
+//          .PULP_CLUSTER          ( PULP_CLUSTER          ),
+//          .FPU                   ( FPU                   ),
+//          .PULP_ZFINX            ( PULP_ZFINX            ),
+//          .NUM_MHPMCOUNTERS      ( NUM_MHPMCOUNTERS      ))
+//    core_log_i(
+//          .clk_i              ( cv32e40p_core_i.id_stage_i.clk              ),
+//          .is_decoding_i      ( cv32e40p_core_i.id_stage_i.is_decoding_o    ),
+//          .illegal_insn_dec_i ( cv32e40p_core_i.id_stage_i.illegal_insn_dec ),
+//          .hart_id_i          ( cv32e40p_core_i.hart_id_i                   ),
+//          .pc_id_i            ( cv32e40p_core_i.pc_id                       )
+//      );
 
     // instantiate the core
     cv32e40p_core #(
