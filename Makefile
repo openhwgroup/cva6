@@ -133,6 +133,11 @@ CFLAGS := -I$(QUESTASIM_HOME)/include         \
           $(if $(DROMAJO), -I../tb/dromajo/src,) \
           -std=c++11 -I../tb/dpi -O3
 
+ifdef XCELIUM_HOME
+CFLAGS += -I$(XCELIUM_HOME)/tools/include
+else
+$(warning XCELIUM_HOME not set which is necessary for compiling DPIs when using XCELIUM)
+endif
 
 ifdef spike-tandem
     CFLAGS += -Itb/riscv-isa-sim/install/include/spike
@@ -322,7 +327,8 @@ $(dpi-library)/ariane_dpi.so: $(dpi)
 # single test runs on Questa can be started by calling make <testname>, e.g. make towers.riscv
 # the test names are defined in ci/riscv-asm-tests.list, and in ci/riscv-benchmarks.list
 # if you want to run in batch mode, use make <testname> batch-mode=1
-# alternatively you can call make sim elf-bin=<path/to/elf-bin> in order to load an arbitrary binary
+# alternatively you can call make sim elf-bin=<path/to/elf-bin> in order to load an arbitrary binary		
+ 
 generate-trace-vsim:
 	make sim preload=$(preload) elf-bin= batch-mode=1
 	make generate-trace
@@ -389,6 +395,147 @@ run-benchmarks: $(riscv-benchmarks)
 
 check-benchmarks:
 	ci/check-tests.sh tmp/riscv-benchmarks- $(shell wc -l $(riscv-benchmarks-list) | awk -F " " '{ print $1 }')
+#####################################
+# xrun-specific commands, variables
+#####################################
+XRUN               ?= xrun
+XRUN_WORK_DIR      ?= xrun_work
+XRUN_RESULTS_DIR   ?= xrun_results
+XRUN_UVMHOME_ARG   ?= CDNS-1.2-ML
+XRUN_COMPL_LOG     ?= xrun_compl.log
+XRUN_RUN_LOG       ?= xrun_run.log
+CVA6_HOME	   ?= $(realpath -s $(root-dir))
+
+XRUN_INCDIR :=+incdir+$(CVA6_HOME)/src/axi_node 	\
+	+incdir+$(CVA6_HOME)/src/common_cells/include 	\
+	+incdir+$(CVA6_HOME)/src/util
+XRUN_TB := $(addprefix $(CVA6_HOME)/, tb/ariane_tb.sv)
+
+XRUN_COMP_FLAGS  ?= -64bit -disable_sem2009 -access +rwc 			\
+		    -sv -v93 -uvm -uvmhome $(XRUN_UVMHOME_ARG) 			\
+		    -sv_lib $(CVA6_HOME)/$(dpi-library)/ariane_dpi.so		\
+		    -smartorder -sv -top worklib.$(top_level)			\
+		    -xceligen on=1903 +define+$(defines) -timescale 1ns/1ps	\
+
+XRUN_RUN_FLAGS := -R -64bit -disable_sem2009 -access +rwc -timescale 1ns/1ps		\
+		-sv_lib	$(CVA6_HOME)/$(dpi-library)/ariane_dpi.so -xceligen on=1903	\
+
+XRUN_DISABLED_WARNINGS := BIGWIX 	\
+			ZROMCW 		\
+			STRINT 		\
+			ENUMERR 	\
+			SPDUSD		\
+			RNDXCELON
+
+XRUN_DISABLED_WARNINGS 	:= $(patsubst %, -nowarn %, $(XRUN_DISABLED_WARNINGS))
+
+XRUN_COMP = $(XRUN_COMP_FLAGS)		\
+	$(XRUN_DISABLED_WARNINGS) 	\
+	$(XRUN_INCDIR)		      	\
+	$(filter %.sv, $(ariane_pkg)) 	\
+	$(filter %.sv, $(util))		\
+	$(filter %.vhd, $(uart_src))  	\
+	$(filter %.sv, $(src))	      	\
+	$(filter %.sv, $(XRUN_TB))	\
+
+XRUN_RUN = $(XRUN_RUN_FLAGS) 		\
+	$(XRUN_DISABLED_WARNINGS)	\
+
+xrun_clean:
+	@echo "[XRUN] clean up"
+	rm -rf $(XRUN_RESULTS_DIR)
+	rm -rf $(dpi-library)
+
+xrun_comp: $(dpi-library)/ariane_dpi.so
+	@echo "[XRUN] Building Model"
+	mkdir -p $(XRUN_RESULTS_DIR)
+	cd $(XRUN_RESULTS_DIR) && $(XRUN)   \
+		+permissive		    \
+		$(XRUN_COMP)                \
+		-l $(XRUN_COMPL_LOG)        \
+		+permissive-off		    \
+		-elaborate
+
+xrun_sim: xrun_comp
+	@echo "[XRUN] Simulating selected binary"
+	cd $(XRUN_RESULTS_DIR) && $(XRUN)	\
+		+permissive			\
+		$(XRUN_RUN)			\
+		+MAX_CYCLES=$(max_cycles)	\
+		+UVM_TESTNAME=$(test_case)	\
+		-l $(XRUN_RUN_LOG)		\
+		+permissive-off			\
+		++$(elf-bin)
+
+#-e "set_severity_pack_assert_off {warning}; set_pack_assert_off {numeric_std}" TODO: This will remove assertion warning at the beginning of the simulation.
+	 
+xrun_all: xrun_clean xrun_comp xrun_sim
+
+$(addprefix xrun_, $(riscv-asm-tests)): xrun_comp
+	cd $(XRUN_RESULTS_DIR); 								\
+	mkdir -p isa/asm/;									\
+	$(XRUN)	+permissive $(XRUN_RUN) +MAX_CYCLES=$(max_cycles) +UVM_TESTNAME=$(test_case) 	\
+	-l isa/asm/$(notdir $@).log +permissive-off ++$(CVA6_HOME)/$(riscv-test-dir)/$(patsubst xrun_%,%,$@)
+
+$(addprefix xrun_, $(riscv-amo-tests)): xrun_comp
+	cd $(XRUN_RESULTS_DIR); 								\
+	mkdir -p isa/amo/;									\
+	$(XRUN)	+permissive $(XRUN_RUN) +MAX_CYCLES=$(max_cycles) +UVM_TESTNAME=$(test_case) 	\
+	-l isa/amo/$(notdir $@).log +permissive-off ++$(CVA6_HOME)/$(riscv-test-dir)/$(patsubst xrun_%,%,$@)
+
+$(addprefix xrun_, $(riscv-mul-tests)): xrun_comp
+	cd $(XRUN_RESULTS_DIR); 								\
+	mkdir -p isa/mul/;									\
+	$(XRUN)	+permissive $(XRUN_RUN) +MAX_CYCLES=$(max_cycles) +UVM_TESTNAME=$(test_case) 	\
+	-l isa/mul/$(notdir $@).log +permissive-off ++$(CVA6_HOME)/$(riscv-test-dir)/$(patsubst xrun_%,%,$@)
+
+$(addprefix xrun_, $(riscv-fp-tests)): xrun_comp
+	cd $(XRUN_RESULTS_DIR); 								\
+	mkdir -p isa/fp/;									\
+	$(XRUN)	+permissive $(XRUN_RUN) +MAX_CYCLES=$(max_cycles) +UVM_TESTNAME=$(test_case) 	\
+	-l isa/fp/$(notdir $@).log +permissive-off ++$(CVA6_HOME)/$(riscv-test-dir)/$(patsubst xrun_%,%,$@)
+
+$(addprefix xrun_, $(riscv-benchmarks)): xrun_comp
+	cd $(XRUN_RESULTS_DIR);									\
+	mkdir -p benchmarks/;									\
+	$(XRUN)	+permissive $(XRUN_RUN) +MAX_CYCLES=$(max_cycles) +UVM_TESTNAME=$(test_case) 	\
+	-l benchmarks/$(notdir $@).log +permissive-off ++$(CVA6_HOME)/$(riscv-benchmarks-dir)/$(patsubst xrun_%,%,$@)
+
+# can use -jX to run ci tests in parallel using X processes
+xrun-asm-tests: $(addprefix xrun_, $(riscv-asm-tests))
+	$(MAKE) xrun-check-asm-tests
+
+xrun-amo-tests: $(addprefix xrun_, $(riscv-amo-tests))
+	$(MAKE) xrun-check-amo-tests
+
+xrun-mul-tests: $(addprefix xrun_, $(riscv-mul-tests))
+	$(MAKE) xrun-check-mul-tests
+
+xrun-fp-tests: $(addprefix xrun_, $(riscv-fp-tests))
+	$(MAKE) xrun-check-fp-tests
+
+xrun-check-asm-tests:
+	ci/check-tests.sh $(XRUN_RESULTS_DIR)/isa/asm/ $(shell wc -l $(riscv-asm-tests-list) | awk -F " " '{ print $1 }') 
+
+xrun-check-amo-tests:
+	ci/check-tests.sh $(XRUN_RESULTS_DIR)/isa/amo/ $(shell wc -l $(riscv-amo-tests-list) | awk -F " " '{ print $1 }')
+
+xrun-check-mul-tests:
+	ci/check-tests.sh $(XRUN_RESULTS_DIR)/isa/mul/ $(shell wc -l $(riscv-mul-tests-list) | awk -F " " '{ print $1 }')
+
+xrun-check-fp-tests:
+	ci/check-tests.sh $(XRUN_RESULTS_DIR)/isa/fp/ $(shell wc -l $(riscv-fp-tests-list) | awk -F " " '{ print $1 }')
+
+
+# can use -jX to run ci tests in parallel using X processes
+xrun-benchmarks: $(addprefix xrun_, $(riscv-benchmarks))
+	$(MAKE) check-benchmarks
+
+
+xrun-check-benchmarks:
+	ci/check-tests.sh $(XRUN_RESULTS_DIR)/benchmarks/ $(shell wc -l $(riscv-benchmarks-list) | awk -F " " '{ print $1 }')
+
+xrun-ci: xrun-asm-tests xrun-amo-tests xrun-mul-tests xrun-fp-tests xrun-benchmarks
 
 # verilator-specific
 verilate_command := $(verilator)                                                                                 \
