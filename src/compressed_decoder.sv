@@ -99,7 +99,7 @@ module compressed_decoder
                     riscv::OpcodeC1Addiw: begin // or riscv::OpcodeC1Jal for RV32IC
 			if (riscv::XLEN == 64) begin
                             // c.addiw -> addiw rd, rd, nzimm for RV64IC
-                            if (instr_i[11:7] != 5'h0) begin// only valid if the destination is not r0
+                            if (instr_i[11:7] != 5'h0) begin // only valid if the destination is not r0
                                 instr_o = {{6 {instr_i[12]}}, instr_i[12], instr_i[6:2], instr_i[11:7], 3'b0, instr_i[11:7], riscv::OpcodeOpImm32};
                             end else begin
                                 illegal_instr_o = 1'b1;
