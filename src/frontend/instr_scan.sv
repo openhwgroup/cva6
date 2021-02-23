@@ -33,6 +33,11 @@ module instr_scan (
 );
     logic is_rvc;
     assign is_rvc     = (instr_i[1:0] != 2'b11);
+
+    logic rv32_rvc_jal;
+    assign rv32_rvc_jal = (riscv::XLEN == 32) & ((instr_i[15:13] == riscv::OpcodeC1Jal) & is_rvc & (instr_i[1:0] == riscv::OpcodeC1));
+
+
     // check that rs1 is either x1 or x5 and that rd is not rs1
     assign rvi_return_o = rvi_jalr_o & ((instr_i[19:15] == 5'd1) | instr_i[19:15] == 5'd5)
                                      & (instr_i[19:15] != instr_i[11:7]);
