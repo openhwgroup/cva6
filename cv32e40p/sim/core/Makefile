@@ -1,26 +1,26 @@
 ###############################################################################
 #
 # Copyright 2020 OpenHW Group
-# 
+#
 # Licensed under the Solderpad Hardware Licence, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
-# 
+#
 #     https://solderpad.org/licenses/
-# 
+#
 # Unless required by applicable law or agreed to in writing, software
 # distributed under the License is distributed on an "AS IS" BASIS,
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-# 
+#
 ###############################################################################
 #
 # Makefile for the CV_CORE "core" testbench.  Substantially modified from the
 # Makefile original for the RI5CY testbench.
 #
 ###############################################################################
-# 
+#
 # Copyright 2019 Claire Wolf
 # Copyright 2019 Robert Balas
 #
@@ -54,7 +54,14 @@ CV_CORE_LC     = $(shell echo $(CV_CORE) | tr A-Z a-z)
 CV_CORE_UC     = $(shell echo $(CV_CORE) | tr a-z A-Z)
 
 # Compile compile flags for all simulators
-SV_CMP_FLAGS = 
+SV_CMP_FLAGS =
+
+###############################################################################
+# Common Makefiles:
+#  -Variables for RTL and other dependencies (e.g. RISCV-DV)
+include ../Common.mk
+#  -Core Firmware and the RISCV GCC Toolchain (SDK)
+include $(CORE_V_VERIF)/mk/Common.mk
 
 # vsim configuration
 VVERSION  = "10.7b"
@@ -183,7 +190,7 @@ export DESIGN_RTL_DIR = $(CV_CORE_PKG)/rtl
 CUSTOM_PROG  ?= requested_csr_por
 
 # Shorthand rules for convience
-CV_CORE_pkg: $(CV_CORE_PKG)
+CV_CORE_pkg: clone_$(CV_CORE_LC)_rtl
 
 tbsrc_pkg: $(TBSRC_PKG)
 
@@ -219,13 +226,6 @@ unit-test: $(SIMULATOR)-unit-test
 
 .PHONY: unit-test-gui
 unit-test-gui: $(SIMULATOR)-unit-test-gui
-
-###############################################################################
-# Common Makefile:
-#    - Core Firmware and the RISCV GCC Toolchain (SDK)
-#    - Variables for RTL dependencies
-include ../Common.mk
-include $(CORE_V_VERIF)/mk/Common.mk
 
 # assume verilator if no target chosen
 .DEFAULT_GOAL := sanity-veri-run
@@ -462,7 +462,7 @@ verilate: testbench_verilator
 sanity-veri-run:
 	make custom CUSTOM_PROG=hello-world
 
-testbench_verilator: $(CV_CORE_PKG) $(TBSRC_VERI) $(TBSRC_PKG)
+testbench_verilator: CV_CORE_pkg $(TBSRC_VERI) $(TBSRC_PKG)
 	@echo "$(BANNER)"
 	@echo "* Compiling CORE TB and CV32E40P with Verilator"
 	@echo "$(BANNER)"
@@ -472,7 +472,7 @@ testbench_verilator: $(CV_CORE_PKG) $(TBSRC_VERI) $(TBSRC_PKG)
 		--Wno-MODDUP --top-module \
 		tb_top_verilator $(TBSRC_VERI) \
 		-f $(CV_CORE_MANIFEST) \
-		$(CV_CORE_PKG)/bhv/CV_CORE_core_log.sv \
+		$(CV_CORE_PKG)/bhv/$(CV_CORE_LC)_core_log.sv \
 		$(TBSRC_CORE)/tb_top_verilator.cpp --Mdir $(VERI_OBJ_DIR) \
 		-CFLAGS "-std=gnu++11 $(VERI_CFLAGS)" \
 		$(VERI_COMPILE_FLAGS)
