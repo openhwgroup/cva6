@@ -293,7 +293,7 @@ bind cv32e40p_wrapper
 
       // Connect step-and-compare signals to interrupt_if for functional coverage of instructions and interrupts
       assign interrupt_if.deferint = iss_wrap.b1.deferint;
-      assign interrupt_if.ovp_b1_Step = step_compare_if.ovp_b1_Step;
+      assign interrupt_if.ovp_cpu_state_stepi = step_compare_if.ovp_cpu_state_stepi;
       
       // Interrupt modeling logic - used to time interrupt entry from RTL to the ISS    
       wire [31:0] irq_enabled;
@@ -355,9 +355,9 @@ bind cv32e40p_wrapper
       end
 
       /**
-       * deferint deassertion logic, on negedge of ovp_b1_Step from the ISS the deferint has been consumed 
-       */
-      always @(negedge step_compare_if.ovp_b1_Step) begin
+        * deferint deassertion logic, on negedge of ovp_cpu_state_stepi from the ISS the deferint has been consumed 
+        */
+      always @(negedge step_compare_if.ovp_cpu_state_stepi) begin
         if (iss_wrap.b1.deferint == 0) begin
           iss_wrap.b1.deferint <= 1'b1;          
           deferint_ack <= 1'b1;
@@ -402,9 +402,9 @@ bind cv32e40p_wrapper
             // Leave ISS side asserted as long as RTL interrupt line is asserted
             if (dut_wrap.cv32e40p_wrapper_i.irq_i[irq_idx]) 
               irq_mip[irq_idx] <= 1'b1;          
-            // If deferint is low and ovp_b1_Step is asserted, then interrupt was consumed by model
+            // If deferint is low and ovp_cpu_state_stepi is asserted, then interrupt was consumed by model
             // Clear it now to avoid mip miscompare
-            else if (step_compare_if.ovp_b1_Step && iss_wrap.b1.deferint == 0)
+            else if (step_compare_if.ovp_cpu_state_stepi && iss_wrap.b1.deferint == 0)
               irq_mip[irq_idx] <= 1'b0;
             // If RTL interrupt deasserts, but the core has not taken the interrupt, then clear ISS irq
             else if (iss_wrap.b1.deferint == 1)

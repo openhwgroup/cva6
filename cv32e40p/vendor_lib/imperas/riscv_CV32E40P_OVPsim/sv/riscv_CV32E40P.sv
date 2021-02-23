@@ -1,6 +1,6 @@
 /*
  *
- * Copyright (c) 2005-2020 Imperas Software Ltd., www.imperas.com
+ * Copyright (c) 2005-2021 Imperas Software Ltd., www.imperas.com
  *
  * The contents of this file are provided under the Software License
  * Agreement that you accepted before downloading this file.
@@ -20,6 +20,77 @@
 //`define DEBUG
 //`define UVM
 
+interface RVVI_state #(
+    parameter int ILEN = 32,
+    parameter int XLEN = 32
+);
+
+    event            notify;
+    
+    bit              valid; // Retired instruction
+    bit              trap;  // Trapped instruction
+    bit              halt;  // Halted  instruction
+    
+    bit              intr;  // Flag first instruction of trap handler
+    bit [(XLEN-1):0] order;
+    bit [(ILEN-1):0] insn;
+    bit [2:0]        isize;
+    bit [1:0]        mode;
+    bit [1:0]        ixl;
+    
+    string           decode;
+
+    bit [(XLEN-1):0] pc;
+    bit [(XLEN-1):0] pcnext;
+
+    // Registers
+    bit [(XLEN-1):0] x[32];
+    bit [(XLEN-1):0] f[32];
+    bit [(XLEN-1):0] csr[string];
+    
+endinterface
+
+typedef enum { IDLE, STEPI, STOP, CONT } rvvi_c_e;
+interface RVVI_control;
+
+    event     notify;
+    
+    rvvi_c_e  cmd;
+    bit       ssmode;
+    
+    bit       state_idle;
+    bit       state_stepi;
+    bit       state_stop;
+    bit       state_cont;
+    
+    initial ssmode = 1;
+    
+    assign state_idle  = (cmd == IDLE);
+    assign state_stepi = (cmd == STEPI);
+    assign state_stop  = (cmd == STOP);
+    assign state_cont  = (cmd == CONT);
+    
+    function automatic void idle();
+        cmd = IDLE;
+        ->notify;
+    endfunction 
+    function automatic void stepi();
+        cmd = STEPI;
+        ->notify;
+    endfunction    
+    function automatic void stop();
+        ssmode = 1;
+        cmd = STOP;
+        ->notify;
+    endfunction    
+    function automatic void cont();
+        ssmode = 0;
+        cmd = CONT;
+        ->notify;
+    endfunction
+    
+endinterface
+
 module CPU 
 #(
     parameter int ID = 0
@@ -37,40 +108,51 @@ module CPU
     import "DPI-C" context function void ovpExit();
     `endif
 
+    export "DPI-C" task     busFetch;
     export "DPI-C" task     busLoad;
     export "DPI-C" task     busStore;
-    export "DPI-C" task     busFetch;
     export "DPI-C" task     busWait;
-    export "DPI-C" task     atZero;
     
-    export "DPI-C" function setPC;
     export "DPI-C" function setGPR;
     export "DPI-C" function getGPR;
     export "DPI-C" function setFPR;
     export "DPI-C" function setCSR;
-    export "DPI-C" function setDECODE;
     export "DPI-C" function getState;
     export "DPI-C" function putState;
-    export "DPI-C" task     setRETIRE;
-    export "DPI-C" task     setDISCARD;
     
-    bit [31:0] PC, PCr, PCe;
-    bit [31:0] GPR[32];
-    bit [31:0] FPR[32];
-    // ToDo Vector
-    bit [31:0] CSR[string];
+    export "DPI-C" task     setRETIRE;
+    export "DPI-C" task     setTRAP;
+    export "DPI-C" function setDECODE;
+    
+    RVVI_state   state();
+    RVVI_control control();
     
     // From RTL
     bit [31:0] GPR_rtl[32];
+/*
+    always @state.notify begin
+        if (state.valid) begin
+            $display("<R> %s", state.decode);
+        end else if (state.trap) begin
+            $display("<E> %s", state.decode);
+        end else begin
+            $display("ERROR: %s", state.decode);
+        end
+    end
     
-    string Decode, Change;
-    bit    [0:(64*8)-1] DecodeP;
-    int    Icount = 0;
-    event  Retire;
-    event  Discard;
-    
-    bit mode_disass = 0;
-    
+    always @control.notify begin
+        if (control.cmd == IDLE) begin
+            $display("<C> idle");
+        end else if (control.cmd == STEPI) begin
+            $display("<C> stepi");
+        end else if (control.cmd == STOP) begin
+            $display("<C> stop");
+        end else if (control.cmd == CONT) begin
+            $display("<C> continue");
+        end
+    end
+*/
+
     //
     // Format message for UVM/SV environment
     //
@@ -92,8 +174,8 @@ module CPU
     endfunction
     
     task busStep;
-        if (SysBus.Stepping) begin
-            while (SysBus.Step == 0) begin
+        if (control.ssmode) begin
+            while (control.cmd != STEPI) begin
                 @(posedge SysBus.Clk);
             end
         end
@@ -104,38 +186,41 @@ module CPU
         busStep;
     endtask
     
-    task atZero;
-        #0;
-    endtask
-    
     // Called at end of instruction transaction
     task setRETIRE;
+        input int hart;
         input int retPC;
+        input int nextPC;
+        input longint count;
     
-        PCr = retPC;
-        Icount++;
-        if (mode_disass == 1) begin
-            if (Icount==0)
-                msginfo($sformatf("Initial State : %s", Change));
-            else
-                msginfo($sformatf("I %0d PCr=0x%x %s : %s", Icount, PCr, Decode, Change));
-        end
-        Change = "";
-        SysBus.Step = 0;
-        ->Retire;
+        control.idle();
+        
+        // RVVI_S
+        state.trap   = 0; 
+        state.valid  = 1;
+        state.pc     = retPC;
+        state.pcnext = nextPC;
+        state.order  = count;
+        ->state.notify;
     endtask
 
-    task setDISCARD;
+    task setTRAP;
+        input int hart;
         input int excPC;
+        input int nextPC;
+        input longint count;
         
-        PCe = excPC;
-        ->Discard;
+        control.idle();
+        
+        // RVVI_S
+        state.trap   = 1; 
+        state.valid  = 0;
+        state.pc     = excPC;
+        state.pcnext = nextPC;
+        state.order  = count;
+        ->state.notify;
     endtask
         
-    function automatic void setPC (input longint value);
-        PC = value;
-    endfunction
-    
     function automatic void putState (
             input int _irq_ack_o,
             input int _irq_id_o,
@@ -162,43 +247,14 @@ module CPU
         _resethaltreq       = SysBus.resethaltreq ;
     endfunction
         
-    function automatic void setDECODE (input string value);
-        Decode = value;
-    endfunction
-    
-    function automatic void setFetchDECODE ();
-        if (mode_disass == 1) begin
-            DecodeP[0:7]     = Decode.getc(0);
-            DecodeP[8:15]    = Decode.getc(1);
-            DecodeP[16:23]   = Decode.getc(2);
-            DecodeP[24:31]   = Decode.getc(3);
-            DecodeP[32:39]   = Decode.getc(4);
-            DecodeP[40:47]   = Decode.getc(5);
-            DecodeP[48:55]   = Decode.getc(6);
-            DecodeP[56:63]   = Decode.getc(7);
-            DecodeP[64:71]   = Decode.getc(8);
-            DecodeP[72:79]   = Decode.getc(9);
-            DecodeP[80:87]   = Decode.getc(10);
-            DecodeP[88:95]   = Decode.getc(11);
-            DecodeP[96:103]  = Decode.getc(12);
-            DecodeP[104:111] = Decode.getc(13);
-            DecodeP[112:119] = Decode.getc(14);
-            DecodeP[120:127] = Decode.getc(15);
-            DecodeP[128:135] = Decode.getc(16);
-            DecodeP[136:143] = Decode.getc(17);
-            DecodeP[144:151] = Decode.getc(18);
-            DecodeP[152:159] = Decode.getc(19);
-            DecodeP[160:163] = Decode.getc(20);
-        end
+    function automatic void setDECODE (input string value, input int insn, input int isize);
+        state.decode = value;
+        state.insn   = insn;
+        state.isize  = isize;
     endfunction
     
     function automatic void setGPR (input int index, input longint value);
-        GPR[index] = value;
-        if (mode_disass == 1) begin
-            string ch;
-            $sformat(ch, "\n  R GPR[%0d]=0x%X", index, value);
-            Change = {Change, ch};
-        end
+        state.x[index] = value;
     endfunction
     
     function automatic void getGPR (input int index, output longint value);
@@ -206,24 +262,11 @@ module CPU
     endfunction
     
     function automatic void setFPR (input int index, input longint value);
-        FPR[index] = value;
-        if (mode_disass == 1) begin
-            string ch;
-            $sformat(ch, "\n  R FPR[%0d]=0x%X", index, value);
-            Change = {Change, ch};
-        end
+        state.f[index] = value;
     endfunction
     
     function automatic void setCSR (input string index, input longint value);
-        `ifdef DEBUG
-        msginfo($sformatf("setCSR %16s %x %0t", index, value, $time));
-        `endif
-        CSR[index] = value;
-        if (mode_disass == 1) begin
-            string ch;
-            $sformat(ch, "\n  R CSR[%s]=0x%X", index, value);
-            Change = {Change, ch};
-        end
+        state.csr[index] = value;
     endfunction
 
     //
@@ -337,10 +380,11 @@ module CPU
     endtask
      
     task busStore;
-        input int address;
-        input int size;
-        input int data;
-        input int artifact;
+        input  int address;
+        input  int size;
+        input  int data;
+        input  int artifact;
+        output int fault; 
         
         //
         // Are we over an address boundary ?
@@ -371,7 +415,9 @@ module CPU
             busStore32(address_lo, size_lo, lo, artifact);
             busStore32(address_hi, size_hi, hi, artifact);
         end
-
+        
+        // Determine fault logic
+        fault = 0;
     endtask
 
     function automatic void dmiRead(input int address, input int size, output int data);
@@ -402,7 +448,7 @@ module CPU
             SysBus.Dbe   <= ble;
             SysBus.Drd   <= 1;
             
-            // Wait for the transfer to complete & stepping
+            // Wait for the transfer to complete & ssmode
             busWait;
             data = setData(address, SysBus.DData);
             SysBus.Drd   <= 0;
@@ -418,6 +464,7 @@ module CPU
         input  int size;
         output int data; 
         input  int artifact; 
+        output int fault; 
 
         //
         // Are we over an address boundary ?
@@ -442,6 +489,9 @@ module CPU
         
             data = {hi, lo} >> ((address & 'h3) * 8);
         end
+
+        // Determine fault logic
+        fault = 0;
     endtask
 
     task busFetch32;
@@ -462,9 +512,7 @@ module CPU
             SysBus.Ibe   <= ble;
             SysBus.Ird   <= 1;
             
-            setFetchDECODE;
-            
-            // Wait for the transfer to complete & stepping
+            // Wait for the transfer to complete & ssmode
             busWait;
             data = setData(address, SysBus.IData);
             SysBus.Ird   <= 0;
@@ -480,7 +528,7 @@ module CPU
         input  int size;
         output int data; 
         input  int artifact; 
-
+        
         //
         // Are we over an address boundary ?
         // firstly consider 32 bit
@@ -490,7 +538,7 @@ module CPU
         
         // Aligned access
         if (overflow < 4) begin
-        busFetch32(address, size, data, artifact);
+            busFetch32(address, size, data, artifact);
         
         // Misaligned access
         end else begin
@@ -505,11 +553,6 @@ module CPU
             data = {hi, lo} >> ((address & 'h3) * 8);
         end
     endtask
-
-    function automatic void cpu_cfg();
-        if ($test$plusargs("disass"))
-            mode_disass = 1;
-    endfunction
 
     string elf_file;
     function automatic void elf_load();
@@ -528,7 +571,6 @@ module CPU
     initial begin
         ovpcfg_load();
         elf_load();
-        cpu_cfg();
         ovpEntry(ovpcfg, elf_file);
         `ifndef UVM
         $finish;

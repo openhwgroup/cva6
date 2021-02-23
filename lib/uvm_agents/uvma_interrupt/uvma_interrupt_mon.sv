@@ -148,7 +148,7 @@ task uvma_interrupt_mon_c::monitor_irq_iss();
 
          // Wait for the ISS to enter
          wait (cntxt.vif.deferint == 1'b0);
-         wait (cntxt.vif.ovp_b1_Step == 1'b1);
+         wait (cntxt.vif.ovp_cpu_state_stepi == 1'b1);
 
          ap_iss.write(mon_trn);
       end

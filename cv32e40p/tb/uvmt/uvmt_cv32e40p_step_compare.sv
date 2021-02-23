@@ -44,7 +44,7 @@
  */
 
 //
-// Execute step and compare of dut ISS instance vs riscv RTL instance
+// Execute step and compare of dut OVP instance vs riscv RTL instance
 //
 `ifndef T0_TYPE
   `define T0_TYPE "RV32IMC"
@@ -57,7 +57,10 @@ import uvm_pkg::*;      // needed for the UVM messaging service (`uvm_info(), et
 `define CV32E40P_TRACER $root.uvmt_cv32e40p_tb.dut_wrap.cv32e40p_wrapper_i.tracer_i
 `define CV32E40P_MMRAM  $root.uvmt_cv32e40p_tb.dut_wrap.ram_i
 
-`define CV32E40P_ISS $root.uvmt_cv32e40p_tb.iss_wrap.cpu
+// TODO change names
+`define CV32E40P_RM              $root.uvmt_cv32e40p_tb.iss_wrap.cpu
+`define CV32E40P_RM_RVVI_STATE   $root.uvmt_cv32e40p_tb.iss_wrap.cpu.state
+`define CV32E40P_RM_RVVI_CONTROL $root.uvmt_cv32e40p_tb.iss_wrap.cpu.control
 
 
 module uvmt_cv32e40p_step_compare
@@ -122,8 +125,8 @@ module uvmt_cv32e40p_step_compare
       logic [31:0] csr_val;
 
       // Compare PC
-      check_32bit(.compared("PC"), .expected(step_compare_if.ovp_cpu_PCr), 
-                                   .actual(step_compare_if.insn_pc));
+      //check_32bit(.compared("PC"), .expected(step_compare_if.ovp_cpu_PCr), .actual(step_compare_if.insn_pc));
+      check_32bit(.compared("PC"), .expected(`CV32E40P_RM_RVVI_STATE.pc), .actual(step_compare_if.insn_pc));
       step_compare_if.num_pc_checks++;
 
       // Compare GPR's
@@ -153,7 +156,7 @@ module uvmt_cv32e40p_step_compare
 
       // Compare CSR's
       `ifdef ISS
-        foreach(iss_wrap.cpu.CSR[index]) begin
+        foreach(`CV32E40P_RM_RVVI_STATE.csr[index]) begin
            step_compare_if.num_csr_checks++;
            ignore = 0;
            csr_val = 0;
@@ -223,9 +226,9 @@ module uvmt_cv32e40p_step_compare
            endcase // case (index)
 
            if (!ignore)
-             check_32bit(.compared(index), .expected(iss_wrap.cpu.CSR[index]), .actual(csr_val));
+             check_32bit(.compared(index), .expected(`CV32E40P_RM_RVVI_STATE.csr[index]), .actual(csr_val));
 
-        end // foreach (ovp.cpu.CSR[index])
+        end // foreach (ovp.cpu.csr[index])
         
       `endif      
     endfunction // compare
@@ -238,7 +241,7 @@ module uvmt_cv32e40p_step_compare
         if (`CV32E40P_TRACER.insn_regs_write.size()) begin
           gpr_addr  = `CV32E40P_TRACER.insn_regs_write[0].addr;
           gpr_value = `CV32E40P_TRACER.insn_regs_write[0].value;
-          `CV32E40P_ISS.GPR_rtl[gpr_addr] = gpr_value;
+          `CV32E40P_RM.GPR_rtl[gpr_addr] = gpr_value;
         end
     endfunction // pushRTL2RM
     
@@ -249,57 +252,111 @@ module uvmt_cv32e40p_step_compare
            then run OVP for 1 instruction retirement
         3. Compare RTL <-> OVP
     */
-    bit step_rtl;
-    bit step_ovp;
     event ev_compare;
     static integer instruction_count = 0;
    
-    typedef enum {RESET,  // Needed to get an event on state so always block is initially entered
-                  STEP_RTL,
-                  STEP_OVP,
-                  COMPARE} state_e; 
+    typedef enum {
+        INIT,
+        IDLE,  // Needed to get an event on state so always block is initially entered
+        
+        RTL_STEP,
+        RTL_VALID,
+        RTL_TRAP,
+        RTL_HALT,
+        
+        RM_STEP,
+        RM_VALID,
+        RM_TRAP,
+        RM_HALT,
+        
+        CMP
+    } state_e; 
 
-   state_e state;
-   initial begin
-      pushRTL2RM("Initial");
-      step_compare_if.ovp_b1_Step <= 0;
-      step_compare_if.ovp_b1_Stepping <= 1;
-      step_ovp <= 0;
-      step_rtl <= 1;
-      state <= STEP_RTL;
-   end
+   state_e state = INIT;
+   initial state <= IDLE; // cause an event for always @*
    
    always @(*) begin
       case (state)
-        STEP_RTL: begin
-           wait (step_compare_if.riscv_retire.triggered)
-           clknrst_if.stop_clk();
-           step_rtl <= 0;
-           step_ovp <= 1;
-           pushRTL2RM("ret_rtl");
-           state <= STEP_OVP;
+        IDLE: begin
+            state <= RTL_STEP;
         end
-        STEP_OVP: begin
-           wait (step_compare_if.ovp_cpu_retire.triggered)
-           step_ovp <= 0;
-           ->`CV32E40P_TRACER.ovp_retire;
-           state <= COMPARE;
+        
+        RTL_STEP: begin
+            clknrst_if.start_clk();
+            fork
+                begin
+                    @step_compare_if.riscv_retire;
+                    clknrst_if.stop_clk();
+                    state <= RTL_VALID;
+                end
+                begin
+                    @step_compare_if.riscv_trap;
+                    state <= RTL_TRAP;
+                end
+                begin
+                    @step_compare_if.riscv_halt;
+                    state <= RTL_HALT;
+                end
+            join_any
+            disable fork;
         end
-        COMPARE: begin 
-           ->step_compare_if.ovp_cpu_busWait;
-           compare();
-           step_rtl <= 1;
-           ->ev_compare;
-           clknrst_if.start_clk();
-           instruction_count += 1;           
-           state <= STEP_RTL;
+
+        RTL_VALID: begin
+            state <= RM_STEP;
         end
-      endcase // case (state)      
+        
+        RTL_TRAP: begin
+            //state <= RM_STEP; // TODO: RTL/RVVI needs additional work
+            state <= RTL_STEP;
+        end
+        
+        RTL_HALT: begin
+            state <= RTL_STEP;
+        end
+
+        RM_STEP: begin
+            pushRTL2RM("ret_rtl");
+            `CV32E40P_RM_RVVI_CONTROL.stepi();
+            fork
+                begin
+                    @step_compare_if.ovp_cpu_valid;
+                    ->`CV32E40P_TRACER.ovp_retire;
+                    state <= RM_VALID;
+                end
+                begin
+                    @step_compare_if.ovp_cpu_trap;
+                    state <= RM_TRAP;
+                end
+                begin
+                    @step_compare_if.ovp_cpu_halt;
+                    state <= RM_HALT;
+                end
+            join_any
+            disable fork;
+        end
+
+        RM_VALID: begin
+            state <= CMP;
+        end
+        
+        RM_TRAP: begin
+            //state <= CMP; // TODO: needs enabling after RTL/RVVI fix
+            state <= RM_STEP;
+        end
+        
+        RM_HALT: begin
+            state <= RM_STEP;
+        end
+
+        CMP: begin 
+             compare();
+             ->ev_compare;
+             instruction_count += 1;           
+             //state <= RTL_STEP;
+             state <= IDLE;
+        end
+      endcase // case (state)
    end
-   
-    always @(step_ovp) begin
-        step_compare_if.ovp_b1_Step = step_ovp;
-    end
 
    always @(instruction_count) begin
       if (!(instruction_count % 10000)) begin
@@ -332,7 +389,7 @@ module uvmt_cv32e40p_step_compare
 
 
     function automatic void sample();
-        string decode = iss_wrap.cpu.Decode;
+        string decode = `CV32E40P_RM.Decode;
         string ins_str, op[4], key, val;
         int i;
         ins_t ins;
