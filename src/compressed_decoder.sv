@@ -95,12 +95,21 @@ module compressed_decoder
                         instr_o = {{6 {instr_i[12]}}, instr_i[12], instr_i[6:2], instr_i[11:7], 3'b0, instr_i[11:7], riscv::OpcodeOpImm};
                     end
 
-                    // c.addiw -> addiw rd, rd, nzimm for RV64
-                    riscv::OpcodeC1Addiw: begin
-                        if (instr_i[11:7] != 5'h0) // only valid if the destination is not r0
-                            instr_o = {{6 {instr_i[12]}}, instr_i[12], instr_i[6:2], instr_i[11:7], 3'b0, instr_i[11:7], riscv::OpcodeOpImm32};
-                        else
-                            illegal_instr_o = 1'b1;
+                    
+                    riscv::OpcodeC1Addiw: begin // or riscv::OpcodeC1Jal for RV32IC
+			if (riscv::XLEN==64) begin
+                            // c.addiw -> addiw rd, rd, nzimm for RV64IC
+                            if (instr_i[11:7] != 5'h0) // only valid if the destination is not r0
+                                instr_o = {{6 {instr_i[12]}}, instr_i[12], instr_i[6:2], instr_i[11:7], 3'b0, instr_i[11:7], riscv::OpcodeOpImm32};
+                            else
+                                illegal_instr_o = 1'b1;
+                        end else begin
+                            // c.jal -> jal x1, imm for RV32IC only
+                            instr_o = {instr_i[12], instr_i[8], instr_i[10:9], instr_i[6], instr_i[7], instr_i[2], instr_i[11], instr_i[5:3], {9 {instr_i[12]}}, 5'b1, riscv::OpcodeJal};
+
+
+             
+                        end
                     end
 
                     riscv::OpcodeC1Li: begin
