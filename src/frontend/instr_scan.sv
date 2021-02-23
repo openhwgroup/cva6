@@ -45,10 +45,7 @@ module instr_scan (
     assign rvi_jump_o   = (instr_i[6:0] == riscv::OpcodeJal);
 
     // opcode JAL
-    assign rvc_jump_o   = (riscv::XLEN == 64) ? 
-                         ((instr_i[15:13] == riscv::OpcodeC1J) & is_rvc & (instr_i[1:0] == riscv::OpcodeC1)) :
-                         ((instr_i[15:13] == riscv::OpcodeC1J) & is_rvc & (instr_i[1:0] == riscv::OpcodeC1)) 
-                         | ((instr_i[15:13] == riscv::OpcodeC1Jal) & is_rvc & (instr_i[1:0] == riscv::OpcodeC1)) ;
+    assign rvc_jump_o   = ((instr_i[15:13] == riscv::OpcodeC1J) & is_rvc & (instr_i[1:0] == riscv::OpcodeC1)) | rv32_rvc_jal;
 
     // always links to register 0
     logic is_jal_r;
