@@ -56,7 +56,7 @@ module instr_scan (
     assign rvc_jr_o     = is_jal_r & ~instr_i[12];
     // always links to register 1 e.g.: it is a jump
     assign rvc_jalr_o   = is_jal_r & instr_i[12];
-    assign rvc_call_o   = (riscv::XLEN == 64) ? rvc_jalr_o : rvc_jalr_o | ((instr_i[15:13] == riscv::OpcodeC1Jal) & is_rvc & (instr_i[1:0] == riscv::OpcodeC1));
+    assign rvc_call_o   = rvc_jalr_o | rv32_rvc_jal;
 
     assign rvc_branch_o = ((instr_i[15:13] == riscv::OpcodeC1Beqz) | (instr_i[15:13] == riscv::OpcodeC1Bnez))
                         & (instr_i[1:0] == riscv::OpcodeC1)
