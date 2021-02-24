@@ -140,7 +140,7 @@ ASIM              = vsim
 ASIM_HOME         = $(ALDEC_PATH)
 ASIM_FLAGS       ?=  # user defined
 ALL_ASIM_FLAGS    = $(ASIM_FLAGS)
-ASIM_DEBUG_FLAGS  = -o2
+ASIM_DEBUG_FLAGS  = -dbg
 ASIM_GUI_FLAGS    = -gui
 
 # TB source files for the CV32E core
@@ -575,13 +575,11 @@ vcs-clean:
 ###############################################################################
 # Aldec Riviera-PRO
 
-
 .rvrlib-rtl:
 	$(ALIB) $(AWORK)
 	touch .rvrlib-rtl
 
-
-.rvr-build-rtl: .rvrlib-rtl $(CV_CORE_PKG) $(TBSRC_PKG) $(TBSRC) 
+rvr-build-rtl: .rvrlib-rtl CV_CORE_pkg tbsrc_pkg tbsrc
 	$(ALOG) \
 		-work $(AWORK) \
 		$(ALOG_FLAGS) \
@@ -589,50 +587,46 @@ vcs-clean:
 		-f $(CV_CORE_MANIFEST) \
 		$(TBSRC_PKG) $(TBSRC) 
 		
-
 asim-all:  .rvr-build-rtl
 	
 # run tb and exit
 .PHONY: asim-run
 asim-run: ALL_ASIM_FLAGS += -c  
-asim-run: asim-all
+asim-run: rvr-build-rtl
 	$(ASIM) -lib $(AWORK) $(ALL_ASIM_FLAGS)\
 	$(RTLSRC_VLOG_TB_TOP) -do "run -all; endsim; quit -force"
-
-
 
 # run tb and drop into interactive shell
 .PHONY: asim-run-sh
 asim-run-sh: ALL_ASIM_FLAGS += -c
-asim-run-sh: asim-all
+asim-run-sh: rvr-build-rtl
 	$(ASIM) -lib $(AWORK) $(ALL_ASIM_FLAGS) \
 	$(RTLSRC_VLOG_TB_TOP) -do "run -all"
 
 # run tb with simulator gui
 .PHONY: asim-run-gui
 asim-run-gui: ALL_ASIM_FLAGS += $(ASIM_GUI_FLAGS) 
-asim-run-gui: asim-all
+asim-run-gui: rvr-build-rtl
 	$(ASIM) -lib $(AWORK) $(ALL_ASIM_FLAGS) \
 	$(RTLSRC_VLOG_TB_TOP) -do "run -all"
 
-
 .PHONY: riviera-hello-world
-riviera-hello-world: asim-all $(CUSTOM)/hello-world/hello-world.hex
+riviera-hello-world: rvr-build-rtl $(CUSTOM)/hello-world/hello-world.hex
 riviera-hello-world: ALL_ASIM_FLAGS += +firmware=$(CUSTOM)/hello-world/hello-world.hex
 riviera-hello-world: asim-run
 
 .PHONY: riviera-hello-world-gui
-riviera-hello-world-gui: asim-all $(CUSTOM)/hello-world/hello-world.hex
+riviera-hello-world-gui: rvr-build-rtl $(CUSTOM)/hello-world/hello-world.hex
 riviera-hello-world-gui: ALL_ASIM_FLAGS += +firmware=$(CUSTOM)/hello-world/hello-world.hex
 riviera-hello-world-gui: asim-run-gui
 
 .PHONY: riviera-custom
-riviera-custom: asim-all $(CUSTOM)/$(CUSTOM_PROG)/$(CUSTOM_PROG).hex
+riviera-custom: rvr-build-rtl $(CUSTOM)/$(CUSTOM_PROG)/$(CUSTOM_PROG).hex
 riviera-custom: ALL_ASIM_FLAGS += +firmware=$(CUSTOM)/$(CUSTOM_PROG)/$(CUSTOM_PROG).hex
 riviera-custom: asim-run
 
 .PHONY: riviera-custom-gui
-riviera-custom-gui: asim-all $(CUSTOM)/$(CUSTOM_PROG)/$(CUSTOM_PROG).hex
+riviera-custom-gui: rvr-build-rtl $(CUSTOM)/$(CUSTOM_PROG)/$(CUSTOM_PROG).hex
 riviera-custom-gui: ALL_ASIM_FLAGS += +firmware=$(CUSTOM)/$(CUSTOM_PROG)/$(CUSTOM_PROG).hex
 riviera-custom-gui: asim-run-gui
 
