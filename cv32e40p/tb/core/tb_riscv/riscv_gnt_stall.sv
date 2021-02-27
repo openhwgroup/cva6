@@ -112,9 +112,9 @@ always @(posedge clk_i or negedge rst_ni) begin
     #(100ps);
 `endif
 
-    // When request is removed, remove grant
+    // When request is removed, randomize gnt
     if (!req_core_i) begin
-      grant_core_o <= 1'b0;
+      grant_core_o <= $urandom;
     end
 
     // New request coming in
