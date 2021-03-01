@@ -130,4 +130,10 @@ module uvma_obi_assert
   else
     `uvm_error(info_tag, $sformatf("be of 0x%01x not consistent with addr 0x%08x", $sampled(be), $sampled(addr)));
 
+  // Cover that grant is asserted when unrequested
+  property p_unrequested_gnt;
+    !req ##0 gnt;
+  endproperty : p_unrequested_gnt
+  c_unrequested_gnt: cover property(p_unrequested_gnt);
+
 endmodule : uvma_obi_assert

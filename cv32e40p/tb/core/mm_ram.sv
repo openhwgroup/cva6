@@ -696,13 +696,13 @@ module mm_ram
   always_comb
   begin
     ram_instr_req    = instr_req_i;
-    ram_instr_addr   = instr_addr_remap;
-    ram_instr_gnt    = instr_req_i;
+    ram_instr_addr   = instr_addr_remap;    
+    ram_instr_gnt    = instr_req_i ? 1'b1 : $urandom;
     core_instr_rdata = ram_instr_rdata;
 
     ram_data_req     = data_req_dec;
     ram_data_addr    = data_addr_dec;
-    ram_data_gnt     = data_req_i;
+    ram_data_gnt     = data_req_i ? 1'b1 : $urandom;
     core_data_rdata  = ram_data_rdata;
     ram_data_wdata   = data_wdata_dec;
     ram_data_we      = data_we_dec;
