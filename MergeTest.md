@@ -24,6 +24,9 @@ And Take 4 !
 
 ### Madcat
 ```
+            /^v^\
+  /^v^\                  /^v^\
+         /^v^\
      ____          ____
     |oooo|        |oooo|
     |oooo| .----. |oooo|
