@@ -38,7 +38,7 @@ INDAGO            = $(CV_TOOL_PREFIX) indago
 IMC               = $(CV_SIM_PREFIX) imc
 
 # Paths
-XRUN_RESULTS         ?= $(MAKE_PATH)/xrun_results
+XRUN_RESULTS         ?= $(if $(CV_RESULTS),$(CV_RESULTS)/xrun_results,$(MAKE_PATH)/xrun_results)
 XRUN_COREVDV_RESULTS ?= $(XRUN_RESULTS)/corev-dv
 XRUN_DIR             ?= $(XRUN_RESULTS)/xcelium.d
 XRUN_UVMHOME_ARG     ?= CDNS-1.2-ML
@@ -53,7 +53,7 @@ XRUN_RUN_BASE_FLAGS   ?= -64bit $(XRUN_GUI) -licqueue +UVM_VERBOSITY=$(XRUN_UVM_
 XRUN_GUI         ?=
 XRUN_SINGLE_STEP ?=
 XRUN_ELAB_COV     = -covdut uvmt_$(CV_CORE_LC)_tb -coverage b:e:f:u
-XRUN_ELAB_COVFILE = -covfile ../../tools/xrun/covfile.tcl
+XRUN_ELAB_COVFILE = -covfile $(abspath $(MAKE_PATH)/../tools/xrun/covfile.tcl)
 XRUN_RUN_COV      = -covscope uvmt_$(CV_CORE_LC)_tb \
 					-nowarn CGDEFN
 
@@ -85,9 +85,9 @@ endif
 # ADV_DEBUG=YES will enable Indago waves, default is to generate SimVision waves
 ifeq ($(call IS_YES,$(WAVES)),YES)
 ifeq ($(call IS_YES,$(ADV_DEBUG)),YES)
-XRUN_RUN_WAVES_FLAGS = -input ../../../tools/xrun/indago.tcl
+XRUN_RUN_WAVES_FLAGS = -input $(abspath $(MAKE_PATH)/../tools/xrun/indago.tcl)
 else
-XRUN_RUN_WAVES_FLAGS = -input ../../../tools/xrun/probe.tcl
+XRUN_RUN_WAVES_FLAGS = -input $(abspath $(MAKE_PATH)/../tools/xrun/probe.tcl)
 endif
 endif
 
@@ -115,7 +115,7 @@ XRUN_RUN_COV_FLAGS += $(XRUN_RUN_COV)
 endif
 
 # Find command to gather ucd files 
-COV_MERGE_FIND = find "$$(pwd -P)" -type f -name "*.ucd" | grep -v `d_cov | xargs dirname > $(XRUN_RESULTS)/merged_cov/ucd.list
+COV_MERGE_FIND = find "$(XRUN_RESULTS)" -type f -name "*.ucd" | grep -v d_cov | xargs dirname 
 
 ifeq ($(call IS_YES,$(MERGE)),YES)
 COV_MERGE = cov_merge
@@ -125,7 +125,7 @@ COV_MERGE =
 endif
 
 ifeq ($(call IS_YES,$(MERGE)),YES)
-COV_ARGS = -load cov_work/scope/merged
+COV_ARGS = -load $(XRUN_RESULTS)/$(MERGED_COV_DIR)/cov_work/scope/merged
 else
 COV_ARGS = -load cov_work/uvmt_$(CV_CORE_LC)_tb/$(TEST_NAME)
 endif
@@ -392,7 +392,7 @@ cov_merge:
 	rm -rf $(XRUN_RESULTS)/$(MERGED_COV_DIR)/*
 	$(COV_MERGE_FIND) > $(XRUN_RESULTS)/$(MERGED_COV_DIR)/ucd.list
 	cd $(XRUN_RESULTS)/$(MERGED_COV_DIR) && \
-	$(IMC) -execcmd "$(IMC_MERGE_ARGS) -list ucd.list -out merged; exit"
+	$(IMC) -execcmd "$(IMC_MERGE_ARGS) -runfile ucd.list -out merged; exit"
 
 cov: $(COV_MERGE)
 	cd $(XRUN_RESULTS)/$(TEST_NAME) && $(IMC) $(COV_ARGS)
