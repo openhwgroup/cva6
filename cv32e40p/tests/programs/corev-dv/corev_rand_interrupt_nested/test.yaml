@@ -1,4 +1,4 @@
-name: corev_rand_interrupt_nested_<RUN_INDEX>
+name: corev_rand_interrupt_nested
 uvm_test: uvmt_$(CV_CORE_LC)_firmware_test_c
 description: >
     Random interrupt generator test with nested interrupts

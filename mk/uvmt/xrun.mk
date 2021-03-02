@@ -53,7 +53,7 @@ XRUN_RUN_BASE_FLAGS   ?= -64bit $(XRUN_GUI) -licqueue +UVM_VERBOSITY=$(XRUN_UVM_
 XRUN_GUI         ?=
 XRUN_SINGLE_STEP ?=
 XRUN_ELAB_COV     = -covdut uvmt_$(CV_CORE_LC)_tb -coverage b:e:f:u
-XRUN_ELAB_COVFILE = -covfile ../../tools/xrun/covfile.tcl
+XRUN_ELAB_COVFILE = -covfile $(abspath $(MAKE_PATH)/../tools/xrun/covfile.tcl)
 XRUN_RUN_COV      = -covscope uvmt_$(CV_CORE_LC)_tb \
 					-nowarn CGDEFN
 
@@ -85,18 +85,18 @@ endif
 # ADV_DEBUG=YES will enable Indago waves, default is to generate SimVision waves
 ifeq ($(call IS_YES,$(WAVES)),YES)
 ifeq ($(call IS_YES,$(ADV_DEBUG)),YES)
-XRUN_RUN_WAVES_FLAGS = -input ../../../tools/xrun/indago.tcl
+XRUN_RUN_WAVES_FLAGS = -input $(abspath $(MAKE_PATH)/../tools/xrun/indago.tcl)
 else
-XRUN_RUN_WAVES_FLAGS = -input ../../../tools/xrun/probe.tcl
+XRUN_RUN_WAVES_FLAGS = -input $(abspath $(MAKE_PATH)/../tools/xrun/probe.tcl)
 endif
 endif
 
 ################################################################################
 # Waveform (post-process) command line
 ifeq ($(call IS_YES,$(ADV_DEBUG)),YES)
-WAVES_CMD = cd $(XRUN_RESULTS)/$(TEST_NAME) && $(INDAGO) -db ida.db
+WAVES_CMD = cd $(XRUN_RESULTS)/$(TEST_NAME)_$(RUN_INDEX) && $(INDAGO) -db ida.db
 else
-WAVES_CMD = cd $(XRUN_RESULTS)/$(TEST_NAME) && $(SIMVISION) waves.shm
+WAVES_CMD = cd $(XRUN_RESULTS)/$(TEST_NAME)_$(RUN_INDEX) && $(SIMVISION) waves.shm
 endif
 
 XRUN_USER_COMPILE_ARGS += $(USER_COMPILE_FLAGS)
@@ -115,7 +115,7 @@ XRUN_RUN_COV_FLAGS += $(XRUN_RUN_COV)
 endif
 
 # Find command to gather ucd files 
-COV_MERGE_FIND = find "$$(pwd -P)" -type f -name "*.ucd" | grep -v `d_cov | xargs dirname > $(XRUN_RESULTS)/merged_cov/ucd.list
+COV_MERGE_FIND = find "$(XRUN_RESULTS)" -type f -name "*.ucd" | grep -v d_cov | xargs dirname
 
 ifeq ($(call IS_YES,$(MERGE)),YES)
 COV_MERGE = cov_merge
@@ -271,19 +271,25 @@ endif
 # set IMPERAS_TOOLS to point to it
 gen_ovpsim_ic:
 	@if [ ! -z "$(CFG_OVPSIM)" ]; then \
-		mkdir -p $(XRUN_RESULTS)/$(TEST_NAME); \
-		echo "$(CFG_OVPSIM)" > $(XRUN_RESULTS)/$(TEST_NAME)/ovpsim.ic; \
+		mkdir -p $(XRUN_RESULTS)/$(TEST_NAME)_$(RUN_INDEX); \
+		echo "$(CFG_OVPSIM)" > $(XRUN_RESULTS)/$(TEST_NAME)_$(RUN_INDEX)/ovpsim.ic; \
 	fi
 ifneq ($(CFG_OVPSIM),)
-export IMPERAS_TOOLS=$(XRUN_RESULTS)/$(TEST_NAME)/ovpsim.ic
+export IMPERAS_TOOLS=$(XRUN_RESULTS)/$(TEST_NAME)_$(RUN_INDEX)/ovpsim.ic
 endif
 
 ################################################################################
 # The new general test target
-test: $(XRUN_SIM_PREREQ) $(TEST_TEST_DIR)/$(TEST_PROGRAM).hex gen_ovpsim_ic
+
+# corev-dv tests needs an added run_index_suffix, blank for other tests
+ifeq ($(shell echo $(TEST) | head -c 6),corev_)
+	OPT_RUN_INDEX_SUFFIX=_$(RUN_INDEX)
+endif
+
+test: $(XRUN_SIM_PREREQ) $(TEST_TEST_DIR)/$(TEST_PROGRAM)$(OPT_RUN_INDEX_SUFFIX).hex gen_ovpsim_ic
 	echo $(IMPERAS_TOOLS)
-	mkdir -p $(XRUN_RESULTS)/$(TEST_NAME) && \
-	cd $(XRUN_RESULTS)/$(TEST_NAME) && \
+	mkdir -p $(XRUN_RESULTS)/$(TEST_NAME)_$(RUN_INDEX) && \
+	cd $(XRUN_RESULTS)/$(TEST_NAME)_$(RUN_INDEX) && \
 		$(XRUN) \
 			-l xrun-$(TEST_NAME).log \
 			$(XRUN_COMP_RUN) \
@@ -291,14 +297,15 @@ test: $(XRUN_SIM_PREREQ) $(TEST_TEST_DIR)/$(TEST_PROGRAM).hex gen_ovpsim_ic
 			-covtest $(TEST_NAME) \
 			$(TEST_PLUSARGS) \
 			+UVM_TESTNAME=$(TEST_UVM_TEST) \
-			+elf_file=$(TEST_TEST_DIR)/$(TEST_PROGRAM).elf \
-			+nm_file=$(TEST_TEST_DIR)/$(TEST_PROGRAM).nm \
-			+firmware=$(TEST_TEST_DIR)/$(TEST_PROGRAM).hex
+			+elf_file=$(TEST_TEST_DIR)/$(TEST_PROGRAM)$(OPT_RUN_INDEX_SUFFIX).elf \
+			+nm_file=$(TEST_TEST_DIR)/$(TEST_PROGRAM)$(OPT_RUN_INDEX_SUFFIX).nm \
+			+firmware=$(TEST_TEST_DIR)/$(TEST_PROGRAM)$(OPT_RUN_INDEX_SUFFIX).hex
 
 ################################################################################
 # Custom test-programs.  See comment in dsim.mk for more info
 custom: $(XRUN_SIM_PREREQ) $(CUSTOM_DIR)/$(CUSTOM_PROG).hex
-	mkdir -p $(XRUN_RESULTS)/$(CUSTOM_PROG) && cd $(XRUN_RESULTS)/$(CUSTOM_PROG) && \
+	mkdir -p $(XRUN_RESULTS)/$(CUSTOM_PROG)_$(RUN_INDEX) && \
+		cd $(XRUN_RESULTS)/$(CUSTOM_PROG)_$(RUN_INDEX) && \
 	$(XRUN) -l xrun-$(CUSTOM_PROG).log -covtest $(CUSTOM_PROG) $(XRUN_COMP_RUN) \
 		+elf_file=$(CUSTOM_DIR)/$(CUSTOM_PROG).elf \
 		+nm_file=$(CUSTOM_DIR)/$(CUSTOM_PROG).nm \
@@ -322,7 +329,7 @@ RISCV_ISA       ?= rv32i
 COMPLIANCE_PROG ?= I-ADD-01
 
 SIG_ROOT      ?= $(XRUN_RESULTS)
-SIG           ?= $(XRUN_RESULTS)/$(COMPLIANCE_PROG)/$(COMPLIANCE_PROG).signature_output
+SIG           ?= $(XRUN_RESULTS)/$(COMPLIANCE_PROG)_$(RUN_INDEX)/$(COMPLIANCE_PROG).signature_output
 REF           ?= $(COMPLIANCE_PKG)/riscv-test-suite/$(RISCV_ISA)/references/$(COMPLIANCE_PROG).reference_output
 TEST_PLUSARGS ?= +signature=$(COMPLIANCE_PROG).signature_output
 
@@ -331,7 +338,8 @@ XRUN_COMPLIANCE_PREREQ = comp build_compliance
 endif
 
 compliance: $(XRUN_COMPLIANCE_PREREQ)
-	mkdir -p $(XRUN_RESULTS)/$(COMPLIANCE_PROG) && cd $(XRUN_RESULTS)/$(COMPLIANCE_PROG)  && \
+	mkdir -p $(XRUN_RESULTS)/$(COMPLIANCE_PROG)_$(RUN_INDEX) && \
+		cd $(XRUN_RESULTS)/$(COMPLIANCE_PROG)_$(RUN_INDEX) && \
 	export IMPERAS_TOOLS=$(CORE_V_VERIF)/$(CV_CORE_LC)/tests/cfg/ovpsim_no_pulp.ic && \
 	$(XRUN) -l xrun-$(COMPLIANCE_PROG).log -covtest riscv-compliance $(XRUN_COMP_RUN) $(TEST_PLUSARGS) \
 		+UVM_TESTNAME=uvmt_$(CV_CORE_LC)_firmware_test_c \
@@ -392,10 +400,16 @@ cov_merge:
 	rm -rf $(XRUN_RESULTS)/$(MERGED_COV_DIR)/*
 	$(COV_MERGE_FIND) > $(XRUN_RESULTS)/$(MERGED_COV_DIR)/ucd.list
 	cd $(XRUN_RESULTS)/$(MERGED_COV_DIR) && \
-	$(IMC) -execcmd "$(IMC_MERGE_ARGS) -list ucd.list -out merged; exit"
+	$(IMC) -execcmd "$(IMC_MERGE_ARGS) -runfile ucd.list -out merged; exit"
+
+ifeq ($(call IS_YES,$(MERGE)),YES)
+  COVERAGE_TARGET_DIR=$(XRUN_RESULTS)/$(MERGED_COV_DIR)
+else
+  COVERAGE_TARGET_DIR=$(XRUN_RESULTS)/$(TEST_NAME)_$(RUN_INDEX)
+endif
 
 cov: $(COV_MERGE)
-	cd $(XRUN_RESULTS)/$(TEST_NAME) && $(IMC) $(COV_ARGS)
+	cd $(COVERAGE_TARGET_DIR) && $(IMC) $(COV_ARGS)
 
 ###############################################################################
 # Clean up your mess!

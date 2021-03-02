@@ -95,9 +95,9 @@ endif
 # Waveform (post-process) command line
 ifeq ($(call IS_YES,$(ADV_DEBUG)),YES)
 $(error ADV_DEBUG not yet supported by VCS )
-WAVES_CMD = cd $(VCS_RESULTS)/$(TEST_NAME) && $(DVE) -vpd vcdplus.vpd 
+WAVES_CMD = cd $(VCS_RESULTS)/$(TEST_NAME)_$(RUN_INDEX) && $(DVE) -vpd vcdplus.vpd 
 else
-WAVES_CMD = cd $(VCS_RESULTS)/$(TEST_NAME) && $(DVE) -vpd vcdplus.vpd 
+WAVES_CMD = cd $(VCS_RESULTS)/$(TEST_NAME)_$(RUN_INDEX) && $(DVE) -vpd vcdplus.vpd 
 endif
 
 ################################################################################
@@ -195,31 +195,37 @@ endif
 # set IMPERAS_TOOLS to point to it
 gen_ovpsim_ic:
 	@if [ ! -z "$(CFG_OVPSIM)" ]; then \
-		mkdir -p $(VCS_RESULTS)/$(TEST_NAME); \
-		echo "$(CFG_OVPSIM)" > $(VCS_RESULTS)/$(TEST_NAME)/ovpsim.ic; \
+		mkdir -p $(VCS_RESULTS)/$(TEST_NAME)_$(RUN_INDEX); \
+		echo "$(CFG_OVPSIM)" > $(VCS_RESULTS)/$(TEST_NAME)_$(RUN_INDEX)/ovpsim.ic; \
 	fi
 ifneq ($(CFG_OVPSIM),)
-export IMPERAS_TOOLS=$(VCS_RESULTS)/$(TEST_NAME)/ovpsim.ic
+export IMPERAS_TOOLS=$(VCS_RESULTS)/$(TEST_NAME)_$(RUN_INDEX)/ovpsim.ic
 endif
 
 ################################################################################
 # The new general test target
-test: $(VCS_SIM_PREREQ) $(TEST_TEST_DIR)/$(TEST_PROGRAM).hex gen_ovpsim_ic
+
+# corev-dv tests needs an added run_index suffix
+ifeq ($(shell echo $(TEST) | head -c 6),corev_)
+  OPT_RUN_INDEX_SUFFIX=_$(RUN_INDEX)
+endif
+
+test: $(VCS_SIM_PREREQ) $(TEST_TEST_DIR)/$(TEST_PROGRAM)$(OPT_RUN_INDEX_SUFFIX).hex gen_ovpsim_ic
 	echo $(IMPERAS_TOOLS)
-	mkdir -p $(VCS_RESULTS)/$(TEST_NAME) && \
-	cd $(VCS_RESULTS)/$(TEST_NAME) && \
+	mkdir -p $(VCS_RESULTS)/$(TEST_NAME)_$(RUN_INDEX) && \
+	cd $(VCS_RESULTS)/$(TEST_NAME)_$(RUN_INDEX) && \
 		$(VCS_RESULTS)/$(SIMV) \
 			-l vcs-$(TEST_NAME).log \
 			-cm_name $(TEST_NAME) $(VCS_RUN_FLAGS) \
 			$(TEST_PLUSARGS) \
 			+UVM_TESTNAME=$(TEST_UVM_TEST) \
-			+elf_file=$(TEST_TEST_DIR)/$(TEST_PROGRAM).elf \
-			+firmware=$(TEST_TEST_DIR)/$(TEST_PROGRAM).hex
+			+elf_file=$(TEST_TEST_DIR)/$(TEST_PROGRAM)$(OPT_RUN_INDEX_SUFFIX).elf \
+			+firmware=$(TEST_TEST_DIR)/$(TEST_PROGRAM)$(OPT_RUN_INDEX_SUFFIX).hex
 
 ################################################################################
 # Custom test-programs.  See comment in dsim.mk for more info
 custom: $(VCS_SIM_PREREQ) $(CUSTOM_DIR)/$(CUSTOM_PROG).hex
-	mkdir -p $(VCS_RESULTS)/$(CUSTOM_PROG) && cd $(VCS_RESULTS)/$(CUSTOM_PROG) && \
+	mkdir -p $(VCS_RESULTS)/$(CUSTOM_PROG)_$(RUN_INDEX) && cd $(VCS_RESULTS)/$(CUSTOM_PROG)_$(RUN_INDEX) && \
 	$(VCS_RESULTS)/$(SIMV) -l vcs-$(CUSTOM_PROG).log -cm_test $(CUSTOM_PROG) $(VCS_RUN_FLAGS) \
 		+UVM_TESTNAME=uvmt_$(CV_CORE_LC)_firmware_test_c \
 		+elf_file=$(CUSTOM_DIR)/$(CUSTOM_PROG).elf \
@@ -242,7 +248,7 @@ RISCV_ISA       ?= rv32i
 COMPLIANCE_PROG ?= I-ADD-01
 
 SIG_ROOT      ?= $(VCS_RESULTS)
-SIG           ?= $(VCS_RESULTS)/$(COMPLIANCE_PROG)/$(COMPLIANCE_PROG).signature_output
+SIG           ?= $(VCS_RESULTS)/$(COMPLIANCE_PROG)_$(RUN_INDEX)/$(COMPLIANCE_PROG).signature_output
 REF           ?= $(COMPLIANCE_PKG)/riscv-test-suite/$(RISCV_ISA)/references/$(COMPLIANCE_PROG).reference_output
 TEST_PLUSARGS ?= +signature=$(COMPLIANCE_PROG).signature_output
 
@@ -251,7 +257,7 @@ VCS_COMPLIANCE_PREREQ = comp build_compliance
 endif
 
 compliance: $(VCS_COMPLIANCE_PREREQ)
-	mkdir -p $(VCS_RESULTS)/$(COMPLIANCE_PROG) && cd $(VCS_RESULTS)/$(COMPLIANCE_PROG)  && \
+	mkdir -p $(VCS_RESULTS)/$(COMPLIANCE_PROG)_$(RUN_INDEX) && cd $(VCS_RESULTS)/$(COMPLIANCE_PROG)_$(RUN_INDEX)  && \
 	export IMPERAS_TOOLS=$(CORE_V_VERIF)/$(CV_CORE_LC)/tests/cfg/ovpsim_no_pulp.ic && \
 	$(VCS_RESULTS)/$(SIMV) -l vcs-$(COMPLIANCE_PROG).log -cm_test riscv-compliance $(VCS_COMP_RUN) $(TEST_PLUSARGS) \
 		+UVM_TESTNAME=uvmt_$(CV_CORE_LC)_firmware_test_c \
@@ -308,13 +314,19 @@ cov_merge:
 	rm -rf $(VCS_RESULTS)/$(MERGED_COV_DIR)/*
 	cd $(VCS_RESULTS)/$(MERGED_COV_DIR)
 
+ifeq ($(call IS_YES,$(MERGE)),YES)
+  COVERAGE_TARGET_DIR=$(VCS_RESULTS)/$(MERGED_COV_DIR)
+else
+  COVERAGE_TARGET_DIR=$(VCS_RESULTS)/$(TEST_NAME)_$(RUN_INDEX)
+endif
+
 # the report is in html format: use a browser to access it when GUI mode is selected
 ifeq ($(call IS_YES,$(GUI)),YES)
 cov: $(COV_MERGE)
-	cd $(VCS_RESULTS)/$(TEST_NAME) && browse urgReport/dashboard.html
+	cd $(COVERAGE_TARGET_DIR) && browse urgReport/dashboard.html
 else
 cov: $(COV_MERGE)
-	cd $(VCS_RESULTS)/$(TEST_NAME) && $(URG) $(COV_ARGS)
+	cd $(COVERAGE_TARGET_DIR) && $(URG) $(COV_ARGS)
 endif
 
 ###############################################################################

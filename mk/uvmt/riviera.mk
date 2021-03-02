@@ -219,7 +219,7 @@ RISCV_ISA       ?= rv32i
 COMPLIANCE_PROG ?= I-ADD-01
 
 SIG_ROOT      ?= $(VSIM_RESULTS)
-SIG           ?= $(VSIM_RESULTS)/$(COMPLIANCE_PROG)/$(COMPLIANCE_PROG).signature_output
+SIG           ?= $(VSIM_RESULTS)/$(COMPLIANCE_PROG)_$(RUN_INDEX)/$(COMPLIANCE_PROG).signature_output
 REF           ?= $(COMPLIANCE_PKG)/riscv-test-suite/$(RISCV_ISA)/references/$(COMPLIANCE_PROG).reference_output
 TEST_PLUSARGS ?= +signature=$(COMPLIANCE_PROG).signature_output
 
@@ -239,11 +239,11 @@ compliance: export IMPERAS_TOOLS=$(CORE_V_VERIF)/$(CV_CORE_LC)/tests/cfg/ovpsim_
 # set IMPERAS_TOOLS to point to it
 gen_ovpsim_ic:
 	@if [ ! -z "$(CFG_OVPSIM)" ]; then \
-		mkdir -p $(VSIM_RESULTS)/$(TEST_NAME); \
-		echo "$(CFG_OVPSIM)" > $(VSIM_RESULTS)/$(TEST_NAME)/ovpsim.ic; \
+		mkdir -p $(VSIM_RESULTS)/$(TEST_NAME)_$(RUN_INDEX); \
+		echo "$(CFG_OVPSIM)" > $(VSIM_RESULTS)/$(TEST_NAME)_$(RUN_INDEX)/ovpsim.ic; \
 	fi
 ifneq ($(CFG_OVPSIM),)
-export IMPERAS_TOOLS=$(VSIM_RESULTS)/$(TEST_NAME)/ovpsim.ic
+export IMPERAS_TOOLS=$(VSIM_RESULTS)/$(TEST_NAME)_$(RUN_INDEX)/ovpsim.ic
 endif
 
 # Target to create work directory in $(VSIM_RESULTS)/
@@ -272,11 +272,11 @@ comp: lib
 # Target to run VSIM (i.e. run the simulation)
 run: $(VSIM_RUN_PREREQ) gen_ovpsim_ic
 	@echo "$(BANNER)"
-	@echo "* Running vsim in $(VSIM_RESULTS)/$(VSIM_TEST)"
-	@echo "* Log: $(VSIM_RESULTS)/$(VSIM_TEST)/vsim-$(VSIM_TEST).log"
+	@echo "* Running vsim in $(VSIM_RESULTS)/$(VSIM_TEST)_$(RUN_INDEX)"
+	@echo "* Log: $(VSIM_RESULTS)/$(VSIM_TEST)_$(RUN_INDEX)/vsim-$(VSIM_TEST).log"
 	@echo "$(BANNER)"
-	mkdir -p $(VSIM_RESULTS)/$(VSIM_TEST) && \
-	cd $(VSIM_RESULTS)/$(VSIM_TEST) && \
+	mkdir -p $(VSIM_RESULTS)/$(VSIM_TEST)_$(RUN_INDEX) && \
+	cd $(VSIM_RESULTS)/$(VSIM_TEST)_$(RUN_INDEX) && \
 		$(VSIM) \
 			$(VSIM_FLAGS) \
 			${DPILIB_VSIM_OPT} \
@@ -303,9 +303,15 @@ custom: $(CUSTOM_DIR)/$(CUSTOM_PROG).hex run
 
 ################################################################################
 # The new general test target
+
+# corev-dv tests needs an added run_index suffix
+ifeq ($(shell echo $(TEST) | head -c 6),corev_)
+  OPT_RUN_INDEX_SUFFIX=_$(RUN_INDEX)
+endif
+
 test: VSIM_TEST=$(TEST_PROGRAM)
-test: VSIM_FLAGS += +firmware=$(TEST_TEST_DIR)/$(TEST_PROGRAM).hex +elf_file=$(TEST_TEST_DIR)/$(TEST_PROGRAM).elf
-test: $(TEST_TEST_DIR)/$(TEST_PROGRAM).hex run
+test: VSIM_FLAGS += +firmware=$(TEST_TEST_DIR)/$(TEST_PROGRAM)$(OPT_RUN_INDEX_SUFFIX).hex +elf_file=$(TEST_TEST_DIR)/$(TEST_PROGRAM)$(OPT_RUN_INDEX_SUFFIX).elf
+test: $(TEST_TEST_DIR)/$(TEST_PROGRAM)$(OPT_RUN_INDEX_SUFFIX).hex run
 
 ################################################################################
 # Invoke post-process waveform viewer

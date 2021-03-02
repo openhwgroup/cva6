@@ -112,7 +112,7 @@ else
         #echo "ref = ${ref}"
         base=$(basename ${ref})
         stub=${base//".reference_output"/}
-        sig=${SIG_ROOT}/${stub}/${stub}.signature_output
+        sig=${SIG_ROOT}/${stub}_${RUN_INDEX}/${stub}.signature_output
     
         diff_files ${ref} ${sig}
     done
