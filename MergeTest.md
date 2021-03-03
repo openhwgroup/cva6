@@ -24,6 +24,9 @@ And Take 4 !
 
 ### Madcat
 ```
+            /^v^\
+  /^v^\                  /^v^\
+         /^v^\
      ____          ____
     |oooo|        |oooo|
     |oooo| .----. |oooo|
@@ -79,4 +82,11 @@ And Take 4 !
                   **///////////,     *((((((((((//////                          
                      ****//////////((((((((////////                             
                           /*******************                               
+
+```
+{signal: [
+  {name: 'clk',           wave: 'p.....'},
+  {name: 'mergetest_req', wave: '01....'},
+  {name: 'mergetest_ack', wave: '0.X...'},
+]}
 ```
