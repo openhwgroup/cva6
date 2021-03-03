@@ -23,6 +23,7 @@ And Take 3 !
 And Take 4 !
 And Take 5 !
 And Take 6 !
+And Take 7 !
 
 We have cookies!
 
