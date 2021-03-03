@@ -34,7 +34,7 @@ VCOVER                  = vcover
 VWORK     				= work
 VSIM_RESULTS           ?= $(MAKE_PATH)/vsim_results
 VSIM_COREVDV_RESULTS   ?= $(VSIM_RESULTS)/corev-dv
-VSIM_COV_MERGE_DIR     ?= $(VSIM_RESULTS)/merged
+VSIM_COV_MERGE_DIR     ?= $(VSIM_RESULTS)/$(CFG)/merged
 UVM_HOME               ?= $(abspath $(shell which $(VLIB))/../../verilog_src/uvm-1.2/src)
 USES_DPI = 1
 
@@ -65,6 +65,8 @@ endif
 
 LIBDIR  = $(UVM_HOME)/lib
 LIBNAME = uvm_dpi
+
+OPT_RV_ISA_DIR = $(if $(RISCV_ISA),/$(RISCV_ISA),)
 
 ###############################################################################
 # VLOG (Compilation)
@@ -162,23 +164,23 @@ endif
 COV_FLAGS = 
 COV_REPORT = cov_report
 COV_MERGE_TARGET =
-COV_MERGE_FIND = find $(VSIM_RESULTS) -type f -name "*.ucdb" | grep -v merged.ucdb > $(VSIM_COV_MERGE_DIR)/ucdb.list
+COV_MERGE_FIND = find $(VSIM_RESULTS)/$(CFG) -type f -name "*.ucdb" | grep -v merged.ucdb
 COV_MERGE_FLAGS=merge -64 -out merged.ucdb -inputs ucdb.list
 
 ifeq ($(call IS_YES,$(MERGE)),YES)
-COV_DIR=$(VSIM_RESULTS)/$(COV_MERGE_DIR)
+COV_DIR=$(VSIM_RESULTS)/$(CFG)/$(COV_MERGE_DIR)
 COV_MERGE_TARGET=cov_merge
 else
-COV_DIR=$(VSIM_RESULTS)/$(TEST)
+COV_DIR=$(VSIM_RESULTS)/$(CFG)/$(TEST)
 endif
 
 ifeq ($(call IS_YES,$(MERGE)),YES)
 ifeq ($(call IS_YES,$(GUI)),YES)
 # Merged coverage GUI
-COV_FLAGS=-viewcov merged.ucdb
+COV_FLAGS=-viewcov $(VSIM_COV_MERGE_DIR)/merged.ucdb
 else
 # Merged coverage report
-COV_FLAGS=-c -viewcov merged.ucdb -do "file delete -force $(COV_REPORT); coverage report -html -details -precision 2 -annotate -output $(COV_REPORT); exit -f"
+COV_FLAGS=-c -viewcov $(VSIM_COV_MERGE_DIR)/merged.ucdb -do "file delete -force $(COV_REPORT); coverage report -html -details -precision 2 -annotate -output $(COV_REPORT); exit -f"
 endif
 else
 ifeq ($(call IS_YES,$(GUI)),YES)
@@ -194,13 +196,13 @@ endif
 # Waveform (post-process) command line
 ifeq ($(call IS_YES,$(ADV_DEBUG)),YES)
 WAVES_CMD = \
-	cd $(VSIM_RESULTS)/$(TEST) && \
+	cd $(VSIM_RESULTS)/$(CFG)/$(TEST) && \
 		$(VISUALIZER) \
 			-designfile ../design.bin \
 			-wavefile qwave.db
 else
 WAVES_CMD = \
-	cd $(VSIM_RESULTS)/$(TEST) && \
+	cd $(VSIM_RESULTS)/$(CFG)/$(TEST) && \
 		$(VSIM) \
 			-gui \
 			-view vsim.wlf
@@ -301,8 +303,8 @@ corev-dv: clean_riscv-dv \
 RISCV_ISA       ?= rv32i
 COMPLIANCE_PROG ?= I-ADD-01
 
-SIG_ROOT      ?= $(VSIM_RESULTS)
-SIG           ?= $(VSIM_RESULTS)/$(COMPLIANCE_PROG)/$(COMPLIANCE_PROG).signature_output
+SIG_ROOT      ?= $(VSIM_RESULTS)/$(CFG)/$(RISCV_ISA)
+SIG           ?= $(VSIM_RESULTS)/$(CFG)/$(RISCV_ISA)/$(COMPLIANCE_PROG)/$(COMPLIANCE_PROG).signature_output
 REF           ?= $(COMPLIANCE_PKG)/riscv-test-suite/$(RISCV_ISA)/references/$(COMPLIANCE_PROG).reference_output
 TEST_PLUSARGS ?= +signature=$(COMPLIANCE_PROG).signature_output
 
@@ -311,6 +313,7 @@ VSIM_COMPLIANCE_PREREQ = build_compliance
 endif
 
 compliance: VSIM_TEST=$(COMPLIANCE_PROG)
+compliance: OPT_SUBDIR=$(RISCV_ISA)
 compliance: VSIM_FLAGS+=+firmware=$(COMPLIANCE_PKG)/work/$(RISCV_ISA)/$(COMPLIANCE_PROG).hex
 compliance: VSIM_FLAGS+=+elf_file=$(COMPLIANCE_PKG)/work/$(RISCV_ISA)/$(COMPLIANCE_PROG).elf
 compliance: TEST_UVM_TEST=uvmt_$(CV_CORE_LC)_firmware_test_c
@@ -321,33 +324,33 @@ compliance: export IMPERAS_TOOLS=$(CORE_V_VERIF)/$(CV_CORE_LC)/tests/cfg/ovpsim_
 # Questa simulation targets
 
 mk_vsim_dir: 
-	$(MKDIR_P) $(VSIM_RESULTS)
+	$(MKDIR_P) $(VSIM_RESULTS)/$(CFG)
 
 ################################################################################
 # If the configuration specified OVPSIM arguments, generate an ovpsim.ic file and
 # set IMPERAS_TOOLS to point to it
 gen_ovpsim_ic:
 	@if [ ! -z "$(CFG_OVPSIM)" ]; then \
-		mkdir -p $(VSIM_RESULTS)/$(TEST_NAME); \
-		echo "$(CFG_OVPSIM)" > $(VSIM_RESULTS)/$(TEST_NAME)/ovpsim.ic; \
+		mkdir -p $(VSIM_RESULTS)/$(CFG)/$(TEST_NAME); \
+		echo "$(CFG_OVPSIM)" > $(VSIM_RESULTS)/$(CFG)/$(TEST_NAME)/ovpsim.ic; \
 	fi
 ifneq ($(CFG_OVPSIM),)
-export IMPERAS_TOOLS=$(VSIM_RESULTS)/$(TEST_NAME)/ovpsim.ic
+export IMPERAS_TOOLS=$(VSIM_RESULTS)/$(CFG)/$(TEST_NAME)/ovpsim.ic
 endif
 
 # Target to create work directory in $(VSIM_RESULTS)/
 lib: mk_vsim_dir $(CV_CORE_PKG) $(TBSRC_PKG) $(TBSRC)
-	if [ ! -d "$(VSIM_RESULTS)/$(VWORK)" ]; then \
-		$(VLIB) $(VSIM_RESULTS)/$(VWORK); \
+	if [ ! -d "$(VSIM_RESULTS)/$(CFG)/$(VWORK)" ]; then \
+		$(VLIB) $(VSIM_RESULTS)/$(CFG)/$(VWORK); \
 	fi
 
 # Target to run vlog over SystemVerilog source in $(VSIM_RESULTS)/
 vlog: lib
 	@echo "$(BANNER)"
-	@echo "* Running vlog in $(VSIM_RESULTS)"
-	@echo "* Log: $(VSIM_RESULTS)/vlog.log"
+	@echo "* Running vlog in $(VSIM_RESULTS)/$(CFG)"
+	@echo "* Log: $(VSIM_RESULTS)/$(CFG)/vlog.log"
 	@echo "$(BANNER)"
-	cd $(VSIM_RESULTS) && \
+	cd $(VSIM_RESULTS)/$(CFG) && \
 		$(VLOG) \
 			-work $(VWORK) \
 			-l vlog.log \
@@ -364,10 +367,10 @@ vlog: lib
 # Target to run vopt over compiled code in $(VSIM_RESULTS)/
 opt: vlog
 	@echo "$(BANNER)"
-	@echo "* Running vopt in $(VSIM_RESULTS)"
-	@echo "* Log: $(VSIM_RESULTS)/vopt.log"
+	@echo "* Running vopt in $(VSIM_RESULTS)/$(CFG)"
+	@echo "* Log: $(VSIM_RESULTS)/$(CFG)/vopt.log"
 	@echo "$(BANNER)"
-	cd $(VSIM_RESULTS) && \
+	cd $(VSIM_RESULTS)/$(CFG) && \
 		$(VOPT) \
 			-work $(VWORK) \
 			-l vopt.log \
@@ -377,16 +380,18 @@ opt: vlog
 
 comp: opt
 
+RUN_DIR = $(abspath $(VSIM_RESULTS)/$(CFG)/$(OPT_SUBDIR)/$(VSIM_TEST))
+
 # Target to run VSIM (i.e. run the simulation)
 run: $(VSIM_RUN_PREREQ) gen_ovpsim_ic
 	@echo "$(BANNER)"
-	@echo "* Running vsim in $(VSIM_RESULTS)/$(VSIM_TEST)"
-	@echo "* Log: $(VSIM_RESULTS)/$(VSIM_TEST)/vsim-$(VSIM_TEST).log"
+	@echo "* Running vsim in $(RUN_DIR)"
+	@echo "* Log: $(RUN_DIR)/vsim-$(VSIM_TEST).log"
 	@echo "$(BANNER)"
-	mkdir -p $(VSIM_RESULTS)/$(VSIM_TEST) && \
-	cd $(VSIM_RESULTS)/$(VSIM_TEST) && \
-		$(VMAP) work ../work
-	cd $(VSIM_RESULTS)/$(VSIM_TEST) && \
+	mkdir -p $(RUN_DIR) && \
+	cd $(RUN_DIR) && \
+		$(VMAP) work $(VSIM_RESULTS)/$(CFG)/work
+	cd $(RUN_DIR) && \
 		$(VSIM) \
 			-work $(VWORK) \
 			$(VSIM_FLAGS) \
@@ -428,10 +433,10 @@ waves:
 ################################################################################
 # Invoke coverage
 cov_merge:
-	$(MKDIR_P) $(VSIM_RESULTS)/$(COV_MERGE_DIR)
-	cd $(COV_DIR) && \
-		$(COV_MERGE_FIND)
-	cd $(VSIM_RESULTS)/$(COV_MERGE_DIR) && \
+	$(MKDIR_P) $(VSIM_COV_MERGE_DIR)
+	cd $(VSIM_COV_MERGE_DIR) && \
+		$(COV_MERGE_FIND) > $(VSIM_COV_MERGE_DIR)/ucdb.list
+	cd $(VSIM_COV_MERGE_DIR) && \
 		$(VCOVER) \
 			$(COV_MERGE_FLAGS)
 cov: $(COV_MERGE_TARGET)
