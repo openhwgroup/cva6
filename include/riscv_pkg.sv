@@ -671,7 +671,6 @@ package riscv;
             return $sformatf("%d 0x%h %s\n", priv_lvl, pc, instr_word);
         end
     endfunction
-    // pragma translate_on
 
     typedef struct {
         byte priv;
@@ -682,5 +681,6 @@ package riscv;
         int unsigned instr;
         byte was_exception;
     } commit_log_t;
+    // pragma translate_on
 
 endpackage

@@ -32,9 +32,8 @@ module pmp #(
         logic [NR_ENTRIES-1:0] match;
 
         for (genvar i = 0; i < NR_ENTRIES; i++) begin
-
             logic [PMP_LEN-1:0] conf_addr_prev;
-	
+
             assign conf_addr_prev = (i == 0) ? '0 : conf_addr_i[i-1];
 
             pmp_entry #(
@@ -51,7 +50,7 @@ module pmp #(
 
         always_comb begin
             int i;
-            
+
             allow_o = 1'b0;
             for (i = 0; i < NR_ENTRIES; i++) begin
                 // either we are in S or U mode or the config is locked in which
@@ -82,7 +81,7 @@ module pmp #(
                     no_locked &= 1'b0;
                 end else no_locked &= 1'b1;
             end
-            
+
             if (no_locked == 1'b1) assert(allow_o == 1'b1);
         end
     end
