@@ -22,6 +22,8 @@ Git merge, Take 2 !
 And Take 3 !
 And Take 4 !
 
+We have cookies!
+
 ### Madcat
 ```
      ____          ____
