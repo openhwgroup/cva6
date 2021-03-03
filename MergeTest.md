@@ -53,3 +53,11 @@ And Take 4 !
    __|\_/|__    __|\_/|__     -- David Poulin
   /___n_n___\  /___n_n___\
   ```
+
+```
+{signal: [
+  {name: 'clk',           wave: 'p.....'},
+  {name: 'mergetest_req', wave: '01....'},
+  {name: 'mergetest_ack', wave: '0.X...'},
+]}
+```
