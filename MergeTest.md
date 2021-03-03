@@ -22,6 +22,7 @@ Git merge, Take 2 !
 And Take 3 !
 And Take 4 !
 And Take 5 !
+And Take 6 !
 
 We have cookies!
 
