@@ -18,14 +18,6 @@ If you are new to git, or unfamiliar with using branches and pull-requests, have
 ## Make your changes below this line.
 Extra marks for creativity and wit.
 
-Git merge, Take 2 !
-And Take 3 !
-And Take 4 !
-And Take 5 !
-And Take 6 !
-And Take 7 !
-
-We have cookies!
 
 ### Madcat
 ```
