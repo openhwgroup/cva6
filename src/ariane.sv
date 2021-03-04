@@ -184,7 +184,7 @@ module ariane import ariane_pkg::*; #(
   logic                     icache_en_csr;
   logic                     dcache_flush_csr;
   logic                     dcache_flush_csr_active;
-  logic			    		dcache_flush_temp = 1'b0;
+  logic                     dcache_flush_temp = 1'b0;
   logic                     icache_flush_csr;
   logic                     debug_mode;
   logic                     single_step_csr_commit;
