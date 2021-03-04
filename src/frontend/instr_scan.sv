@@ -33,6 +33,10 @@ module instr_scan (
 );
     logic is_rvc;
     assign is_rvc     = (instr_i[1:0] != 2'b11);
+
+    logic rv32_rvc_jal;
+    assign rv32_rvc_jal = (riscv::XLEN == 32) & ((instr_i[15:13] == riscv::OpcodeC1Jal) & is_rvc & (instr_i[1:0] == riscv::OpcodeC1));
+
     // check that rs1 is either x1 or x5 and that rd is not rs1
     assign rvi_return_o = rvi_jalr_o & ((instr_i[19:15] == 5'd1) | instr_i[19:15] == 5'd5)
                                      & (instr_i[19:15] != instr_i[11:7]);
@@ -45,7 +49,8 @@ module instr_scan (
     assign rvi_jump_o   = (instr_i[6:0] == riscv::OpcodeJal);
 
     // opcode JAL
-    assign rvc_jump_o   = (instr_i[15:13] == riscv::OpcodeC1J) & is_rvc & (instr_i[1:0] == riscv::OpcodeC1);
+    assign rvc_jump_o   = ((instr_i[15:13] == riscv::OpcodeC1J) & is_rvc & (instr_i[1:0] == riscv::OpcodeC1)) | rv32_rvc_jal;
+
     // always links to register 0
     logic is_jal_r;
     assign is_jal_r     = (instr_i[15:13] == riscv::OpcodeC2JalrMvAdd)
@@ -55,7 +60,7 @@ module instr_scan (
     assign rvc_jr_o     = is_jal_r & ~instr_i[12];
     // always links to register 1 e.g.: it is a jump
     assign rvc_jalr_o   = is_jal_r & instr_i[12];
-    assign rvc_call_o   = rvc_jalr_o;
+    assign rvc_call_o   = rvc_jalr_o | rv32_rvc_jal;
 
     assign rvc_branch_o = ((instr_i[15:13] == riscv::OpcodeC1Beqz) | (instr_i[15:13] == riscv::OpcodeC1Bnez))
                         & (instr_i[1:0] == riscv::OpcodeC1)
