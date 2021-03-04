@@ -36,6 +36,7 @@ class uvme_cv32e40p_env_c extends uvm_env;
    uvme_cv32e40p_vsqr_c       vsequencer;
    
    // Agents
+   uvma_isa_agent_c       isa_agent;
    uvma_clknrst_agent_c   clknrst_agent;
    uvma_interrupt_agent_c interrupt_agent;
    uvma_debug_agent_c     debug_agent;
@@ -201,7 +202,8 @@ function void uvme_cv32e40p_env_c::end_of_elaboration_phase(uvm_phase phase);
 endfunction : end_of_elaboration_phase
 
 function void uvme_cv32e40p_env_c::assign_cfg();
-   
+
+   // TODO uvma_isa_agent
    uvm_config_db#(uvme_cv32e40p_cfg_c)::set(this, "*", "cfg", cfg);
    uvm_config_db#(uvma_clknrst_cfg_c)::set(this, "*clknrst_agent", "cfg", cfg.clknrst_cfg);
    uvm_config_db#(uvma_interrupt_cfg_c)::set(this, "*interrupt_agent", "cfg", cfg.interrupt_cfg);
@@ -213,7 +215,8 @@ endfunction: assign_cfg
 
 
 function void uvme_cv32e40p_env_c::assign_cntxt();
-   
+
+   // TODO uvma_isa_agent
    uvm_config_db#(uvme_cv32e40p_cntxt_c)::set(this, "*", "cntxt", cntxt);
    uvm_config_db#(uvma_clknrst_cntxt_c)::set(this, "clknrst_agent", "cntxt", cntxt.clknrst_cntxt);
    uvm_config_db#(uvma_interrupt_cntxt_c)::set(this, "interrupt_agent", "cntxt", cntxt.interrupt_cntxt);
@@ -225,7 +228,8 @@ endfunction: assign_cntxt
 
 
 function void uvme_cv32e40p_env_c::create_agents();
-   
+
+   // TODO uvma_isa_agent
    clknrst_agent = uvma_clknrst_agent_c::type_id::create("clknrst_agent", this);
    interrupt_agent = uvma_interrupt_agent_c::type_id::create("interrupt_agent", this);
    debug_agent = uvma_debug_agent_c::type_id::create("debug_agent", this);
