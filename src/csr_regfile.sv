@@ -1092,7 +1092,7 @@ module csr_regfile import ariane_pkg::*; #(
             mcounteren_q           <= {riscv::XLEN{1'b0}};
             mscratch_q             <= {riscv::XLEN{1'b0}};
             mtval_q                <= {riscv::XLEN{1'b0}};
-	    dcache_q               <= {{riscv::XLEN-2{1'b0}}, 1'b0, 1'b1}; // dcache flush disable by default and dcache enable by default
+			dcache_q               <= {{riscv::XLEN-2{1'b0}}, 1'b0, 1'b1}; // dcache flush disable by default and dcache enable by default
             icache_q               <= {{riscv::XLEN-2{1'b0}}, 1'b0, 1'b1}; // icache flush disable by default and icache enable by default
             // supervisor mode registers
             sepc_q                 <= {riscv::XLEN{1'b0}};
