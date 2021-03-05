@@ -18,7 +18,11 @@ class uvma_isa_mon_c extends uvm_monitor;
 
   `uvm_component_utils(uvma_isa_mon_c);
 
+  uvma_isa_cntxt_c cntxt;
+
   extern function new(string name, uvm_component parent);
+  extern virtual function void build_phase(uvm_phase phase);
+  extern virtual task run_phase(uvm_phase phase);
 
 endclass : uvma_isa_mon_c
 
@@ -28,3 +32,24 @@ function uvma_isa_mon_c::new(string name = "uvma_isa_mon", uvm_component parent 
   super.new(name, parent);
 
 endfunction : new
+
+
+function void uvma_isa_mon_c::build_phase(uvm_phase phase);
+
+  super.build_phase(phase);
+
+  void'(uvm_config_db#(uvma_isa_cntxt_c)::get(this, "", "cntxt", cntxt));
+  if (!cntxt) begin
+    `uvm_fatal("CNTXT", "Context handle is null")
+  end
+
+endfunction : build_phase
+
+
+task uvma_isa_mon_c::run_phase(uvm_phase phase);
+
+  super.run_phase(phase);
+
+  // TODO if cfg.enabled, while 1, wait cntxt.vif.reset, ...
+
+endtask : run_phase

@@ -14,12 +14,17 @@
 // limitations under the License.
 
 
-package uvma_isa_pkg;
+class uvma_isa_cntxt_c extends uvm_object;
 
-  import uvm_pkg::*;
+  `uvm_object_utils(uvma_isa_cntxt_c)
 
-  `include "uvma_isa_cntxt.sv"
-  `include "uvma_isa_mon.sv"
-  `include "uvma_isa_agent.sv"
+  extern function new(string name = "uvma_isa_cntxt");
 
-endpackage : uvma_isa_pkg
+endclass : uvma_isa_cntxt_c
+
+
+function uvma_isa_cntxt_c::new(string name = "uvma_isa_cntxt");
+
+  super.new(name);
+
+endfunction : new

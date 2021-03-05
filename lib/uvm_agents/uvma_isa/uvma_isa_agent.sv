@@ -18,10 +18,12 @@ class uvma_isa_agent_c extends uvm_agent;
 
   `uvm_component_utils(uvma_isa_agent_c);
 
-  uvma_isa_mon_c monitor;
+  uvma_isa_cntxt_c cntxt;
+  uvma_isa_mon_c   monitor;
 
   extern function new(string name, uvm_component parent);
   extern virtual function void build_phase(uvm_phase phase);
+  extern function void get_and_set_cntxt();
   extern function void create_components();
 
 endclass : uvma_isa_agent_c
@@ -37,9 +39,22 @@ endfunction : new
 function void uvma_isa_agent_c::build_phase(uvm_phase phase);
 
   super.build_phase(phase);
+  get_and_set_cntxt();
   create_components();
 
 endfunction : build_phase
+
+
+function void uvma_isa_agent_c::get_and_set_cntxt();
+
+  void'(uvm_config_db#(uvma_isa_cntxt_c)::get(this, "", "cntxt", cntxt));
+  if (!cntxt) begin
+    `uvm_info("CNTXT", "Context handle is null; creating.", UVM_DEBUG)
+    cntxt = uvma_isa_cntxt_c::type_id::create("cntxt");
+  end
+  uvm_config_db#(uvma_isa_cntxt_c)::set(this, "*", "cntxt", cntxt);
+
+endfunction : get_and_set_cntxt
 
 
 function void uvma_isa_agent_c::create_components();
