@@ -22,8 +22,9 @@ package uvma_isa_pkg;
   import uvm_pkg::*;
   import uvml_trn_pkg::*;
 
-  `include "uvma_isa_mon_trn.sv"
   `include "uvma_isa_cntxt.sv"
+  `include "uvma_isa_mon_trn.sv"
+  `include "uvma_isa_cov_model.sv"
   `include "uvma_isa_mon.sv"
   `include "uvma_isa_agent.sv"
 

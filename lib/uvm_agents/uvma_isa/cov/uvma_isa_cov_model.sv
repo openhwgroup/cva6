@@ -14,7 +14,27 @@
 // limitations under the License.
 
 
-+incdir+${DV_UVMA_ISA_PATH}
-+incdir+${DV_UVMA_ISA_PATH}/cov
+class uvma_isa_cov_model_c extends uvm_component;
 
-${DV_UVMA_ISA_PATH}/uvma_isa_pkg.sv
+  `uvm_component_utils(uvma_isa_cov_model_c)
+
+  uvm_tlm_analysis_fifo #(uvma_isa_mon_trn_c) mon_trn_fifo;
+
+  extern function new(string name = "uvma_isa_cov_model", uvm_component parent = null);
+  extern virtual function void build_phase(uvm_phase phase);
+
+endclass : uvma_isa_cov_model_c
+
+
+function uvma_isa_cov_model_c::new(string name = "uvma_isa_cov_model", uvm_component parent = null);
+
+  super.new(name, parent);
+
+endfunction : new
+
+
+function void uvma_isa_cov_model_c::build_phase(uvm_phase phase);
+
+  mon_trn_fifo = new("mon_trn_fifo", this);
+
+endfunction : build_phase

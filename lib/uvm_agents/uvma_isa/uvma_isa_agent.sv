@@ -18,10 +18,17 @@ class uvma_isa_agent_c extends uvm_agent;
 
   `uvm_component_utils(uvma_isa_agent_c);
 
+  // Objecs
   uvma_isa_cntxt_c                        cntxt;
+
+  // Components
   uvma_isa_mon_c                          monitor;
+  uvma_isa_cov_model_c                    cov_model;
+
+  // TLM
   uvm_analysis_port #(uvma_isa_mon_trn_c) mon_ap;
 
+  // Methods
   extern function new(string name, uvm_component parent);
   extern virtual function void build_phase(uvm_phase phase);
   extern virtual function void connect_phase(uvm_phase phase);
@@ -55,8 +62,8 @@ function void uvma_isa_agent_c::connect_phase(uvm_phase phase);
   super.connect_phase(phase);
 
   mon_ap = monitor.ap;
-  //TODO mon_ap.connect(cov_model.mon_trn_fifo.analysis_export); //TODO if cfg...enabled
-
+  mon_ap.connect(cov_model.mon_trn_fifo.analysis_export);  //TODO if cfg...enabled
+  //TODO connect logger
 
 endfunction : connect_phase
 
@@ -88,6 +95,7 @@ endfunction : retrieve_vif
 
 function void uvma_isa_agent_c::create_components();
 
-  monitor = uvma_isa_mon_c::type_id::create("monitor", this);
+  monitor   = uvma_isa_mon_c::type_id::create("monitor", this);
+  cov_model = uvma_isa_cov_model_c::type_id::create("cov_model", this);
 
 endfunction
