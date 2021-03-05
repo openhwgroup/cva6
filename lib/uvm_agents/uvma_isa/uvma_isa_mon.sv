@@ -51,5 +51,13 @@ task uvma_isa_mon_c::run_phase(uvm_phase phase);
   super.run_phase(phase);
 
   // TODO if cfg.enabled, while 1, wait cntxt.vif.reset, ...
+  fork
+    begin
+      //TODO while (1) begin
+      wait(cntxt.vif.retire.triggered);
+      $display("TODO monitor got a retirement event: insn = ", cntxt.vif.insn);
+      //end
+    end
+  join_none
 
 endtask : run_phase

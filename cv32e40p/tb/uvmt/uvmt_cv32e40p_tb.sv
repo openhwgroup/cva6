@@ -537,6 +537,9 @@ bind cv32e40p_wrapper
 
    assign core_cntrl_if.clk = clknrst_if.clk;
 
+   always @(dut_wrap.cv32e40p_wrapper_i.tracer_i.retire) -> isa_if.retire;
+   assign isa_if.insn = dut_wrap.cv32e40p_wrapper_i.tracer_i.insn_val;
+
    // Capture the test status and exit pulse flags
    // TODO: put this logic in the vp_status_if (makes it easier to pass to ENV)
    always @(posedge clknrst_if.clk) begin
