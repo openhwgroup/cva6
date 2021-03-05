@@ -14,8 +14,6 @@
 
 `ifndef VERILATOR
 //pragma translate_off
-import uvm_pkg::*;
-`include "uvm_macros.svh"
 `include "ex_trace_item.svh"
 `include "instr_trace_item.svh"
 //pragma translate_on
@@ -197,14 +195,12 @@ module instr_tracer (
     if (ariane_pkg::ENABLE_SPIKE_COMMIT_LOG && !debug_mode) begin
       $fwrite(commit_log, riscv::spikeCommitLog(sbe.pc, priv_lvl, instr, sbe.rd, result, ariane_pkg::is_rd_fpr(sbe.op)));
     end
-    uvm_report_info( "Tracer",  print_instr, UVM_HIGH);
     $fwrite(f, {print_instr, "\n"});
   endfunction
 
   function void printException(logic [riscv::VLEN-1:0] pc, logic [63:0] cause, logic [63:0] tval);
     automatic ex_trace_item eti = new (pc, cause, tval);
     automatic string print_ex = eti.printException();
-    uvm_report_info( "Tracer",  print_ex, UVM_HIGH);
     $fwrite(f, {print_ex, "\n"});
   endfunction
 

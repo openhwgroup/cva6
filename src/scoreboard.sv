@@ -65,11 +65,12 @@ module scoreboard #(
   localparam int unsigned BITS_ENTRIES = $clog2(NR_ENTRIES);
 
   // this is the FIFO struct of the issue queue
-  struct packed {
+  typedef struct packed {
     logic                          issued;         // this bit indicates whether we issued this instruction e.g.: if it is valid
     logic                          is_rd_fpr_flag; // redundant meta info, added for speed
     ariane_pkg::scoreboard_entry_t sbe;            // this is the score board entry we will send to ex
-  } mem_q [NR_ENTRIES-1:0], mem_n [NR_ENTRIES-1:0];
+  } sb_mem_t;
+  sb_mem_t [NR_ENTRIES-1:0] mem_q, mem_n;
 
   logic                    issue_full, issue_en;
   logic [BITS_ENTRIES-1:0] issue_cnt_n,      issue_cnt_q;
@@ -353,7 +354,7 @@ module scoreboard #(
   // sequential process
   always_ff @(posedge clk_i or negedge rst_ni) begin : regs
     if(!rst_ni) begin
-      mem_q                 <= '{default: 0};
+      mem_q                 <= '{default: sb_mem_t'(0)};
       issue_cnt_q           <= '0;
       commit_pointer_q      <= '0;
       issue_pointer_q       <= '0;
