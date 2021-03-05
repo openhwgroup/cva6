@@ -38,7 +38,7 @@ INDAGO            = $(CV_TOOL_PREFIX) indago
 IMC               = $(CV_SIM_PREFIX) imc
 
 # Paths
-XRUN_RESULTS         ?= $(MAKE_PATH)/xrun_results
+XRUN_RESULTS         ?= $(if $(CV_RESULTS),$(CV_RESULTS)/xrun_results,$(MAKE_PATH)/xrun_results)
 XRUN_COREVDV_RESULTS ?= $(XRUN_RESULTS)/corev-dv
 XRUN_DIR             ?= $(XRUN_RESULTS)/xcelium.d
 XRUN_UVMHOME_ARG     ?= CDNS-1.2-ML
@@ -116,6 +116,7 @@ endif
 
 # Find command to gather ucd files 
 COV_MERGE_FIND = find "$(XRUN_RESULTS)" -type f -name "*.ucd" | grep -v d_cov | xargs dirname
+COV_MERGE_FIND = find "$(XRUN_RESULTS)" -type f -name "*.ucd" | grep -v d_cov | xargs dirname 
 
 ifeq ($(call IS_YES,$(MERGE)),YES)
 COV_MERGE = cov_merge
@@ -125,7 +126,7 @@ COV_MERGE =
 endif
 
 ifeq ($(call IS_YES,$(MERGE)),YES)
-COV_ARGS = -load cov_work/scope/merged
+COV_ARGS = -load $(XRUN_RESULTS)/$(MERGED_COV_DIR)/cov_work/scope/merged
 else
 COV_ARGS = -load cov_work/uvmt_$(CV_CORE_LC)_tb/$(TEST_NAME)
 endif

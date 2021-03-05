@@ -56,7 +56,7 @@ if (sys.version_info < (3,0,0)):
     exit(1)
 
 ################################################################################
-# Gobals....
+# Globals....
 name_of_ci_check_regression = '<core>_ci_check_regression' # must match the name of one regression list in .metrics.json
 core_tests                  = ['misalign', 'illegal', 'dhrystone', 'fibonacci', 'riscv_ebreak_test_0']
 try:
@@ -70,6 +70,37 @@ topdir = os.path.abspath(os.path.join(os.path.dirname(os.path.realpath(__file__)
 print('ci_check: topdir  : {}'.format(topdir))
 
 ################################################################################
+# Command-line arguments
+
+parser = argparse.ArgumentParser()
+parser.add_argument("-s", "--simulator",     help="SystemVerilog simulator",                          choices=['dsim', 'xrun', 'vsim', 'vcs', 'riviera'])
+parser.add_argument("--core",                help="Set the core to test (default: {})".format(default_core), default=default_core)
+parser.add_argument("-d", "--debug",         help="Display debug messages",                           action="store_true")
+parser.add_argument("-p", "--print_command", help="Print commands to stdout, do not run",             action="store_true")
+parser.add_argument("-c", "--check_only",    help="Check previosu results (do not run)",              action="store_true")
+parser.add_argument("-k", "--keep",          help="Keep previous cloned or generated files",          action="store_true")
+parser.add_argument("-v", "--verilator",     help="Run Verilator on the CORE testbench",              action="store_true")
+parser.add_argument("-u", "--no_uvm",        help="DO NOT run CI regression on the UVM testbench",    action="store_true")
+parser.add_argument("--repo",                help="Use this repo for the RTL, not one in Makefile",   type=str)
+parser.add_argument("--branch",              help="Use this branch for the RTL, not one in Makefile", type=str)
+parser.add_argument("--hash",                help="Use this hash for the RTL, not one in Makefile",   type=str)
+
+args   = parser.parse_args()
+debug  = 0       # warning, too much info!
+prcmd  = 0       # prints cmds to stdout
+veril  = 0       # run Verilator on CORE when set
+uvm    = 1       # Run UVM CI regression by default
+################################################################################
+
+# Set correct simulator output path
+if 'CV_RESULTS' in os.environ:
+    uvm_results_dir = os.path.abspath(os.getenv('CV_RESULTS'))
+else:
+    uvm_results_dir = os.path.abspath(os.path.join(topdir, args.core.lower(), 'sim/uvmt'))
+
+sim_results_dir = os.path.abspath(os.path.join(uvm_results_dir, '{}_results'.format(args.simulator)))
+
+################################################################################
 # Methods....
 
 # Check results and print something useful
@@ -79,42 +110,46 @@ def check_uvm_results(check_only=0):
     expct_fail = 0
     pass_count = 0
 
-    fails = subprocess.Popen('grep "SIMULATION FAILED" `find ../{}/sim/uvmt/{}_results -name "*.log" -print`'.format(args.core.lower(), args.simulator),
-                              stdout=subprocess.PIPE,
-                              stderr=subprocess.STDOUT,
-                              shell="TRUE")
-    passes = subprocess.Popen('grep "SIMULATION PASSED" `find ../{}/sim/uvmt/{}_results -name "*.log" -print`'.format(args.core.lower(), args.simulator),
-                              stdout=subprocess.PIPE,
-                              stderr=subprocess.STDOUT,
-                              shell="TRUE")
+    if os.path.exists(sim_results_dir):
+        fails = subprocess.Popen('grep "SIMULATION FAILED" `find {} -name "*.log" -print`'.format(sim_results_dir),
+                                  stdout=subprocess.PIPE,
+                                  stderr=subprocess.STDOUT,
+                                  shell="TRUE")
+        passes = subprocess.Popen('grep "SIMULATION PASSED" `find {} -name "*.log" -print`'.format(sim_results_dir),
+                                  stdout=subprocess.PIPE,
+                                  stderr=subprocess.STDOUT,
+                                  shell="TRUE")
 
-    for line in fails.stdout.readlines():
-        failed = line.decode('utf-8').rstrip()
-        print (failed)
-        fail_count += 1
-        # TODO: make this a list of known failures (hopefully there won't be that many...)
-        if (
-            (re.search('riscv_compliance', failed))
-            # or (re.search('riscv_ebreak', failed))
-           ):
-            expct_fail += 1
+        for line in fails.stdout.readlines():
+            failed = line.decode('utf-8').rstrip()
+            print (failed)
+            fail_count += 1
+            # TODO: make this a list of known failures (hopefully there won't be that many...)
+            if (
+                (re.search('riscv_compliance', failed))
+                # or (re.search('riscv_ebreak', failed))
+               ):
+                expct_fail += 1
 
-    for line in passes.stdout.readlines():
-        print (line.decode('utf-8').rstrip())
-        pass_count += 1
+        for line in passes.stdout.readlines():
+            print (line.decode('utf-8').rstrip())
+            pass_count += 1
 
-    if (pass_count == 0):
-        print ('\nNo UVM logfiles found.\n')
-    elif ((not check_only) and ((pass_count+fail_count) != num_tests)):
-        print ('CI Check FAILED: Expected '+str(num_tests)+' tests to run but found only '+str(fail_count+pass_count)+' PASSED or FAILED messages');
-    elif ((fail_count == 0) and (pass_count >=3)):
-        print ('\nCI Check PASSED with no failures.')
-        print ('OK to issue a pull-request.\n')
-    elif (fail_count == expct_fail):
-        print ('\nCI Check PASSED with known failure(s).')
-        print ('OK to issue a pull-request.\n')
+        if (pass_count == 0):
+            print ('\nNo UVM logfiles found.\n')
+        elif ((not check_only) and ((pass_count+fail_count) != num_tests)):
+            print ('CI Check FAILED: Expected '+str(num_tests)+' tests to run but found only '+str(fail_count+pass_count)+' PASSED or FAILED messages');
+        elif ((fail_count == 0) and (pass_count >=3)):
+            print ('\nCI Check PASSED with no failures.')
+            print ('OK to issue a pull-request.\n')
+        elif (fail_count == expct_fail):
+            print ('\nCI Check PASSED with known failure(s).')
+            print ('OK to issue a pull-request.\n')
+        else:
+            print ('\nCI Check FAILED with unknown failures.')
+            print ('Please fix before issuing a pull-request.\n')
     else:
-        print ('\nCI Check FAILED with unknown failures.')
+        print ('\nCI Check FAILED with non-existent sim directory: {}'.format(sim_results_dir))
         print ('Please fix before issuing a pull-request.\n')
 
 
@@ -156,26 +191,7 @@ def load_regress_yaml(regression):
     return dict
 
 ################################################################################
-# Command-line arguments
-
-parser = argparse.ArgumentParser()
-parser.add_argument("-s", "--simulator",     help="SystemVerilog simulator",                          choices=['dsim', 'xrun', 'vsim', 'vcs', 'riviera'])
-parser.add_argument("--core",                help="Set the core to test (default: {})".format(default_core), default=default_core)
-parser.add_argument("-d", "--debug",         help="Display debug messages",                           action="store_true")
-parser.add_argument("-p", "--print_command", help="Print commands to stdout, do not run",             action="store_true")
-parser.add_argument("-c", "--check_only",    help="Check previosu results (do not run)",              action="store_true")
-parser.add_argument("-k", "--keep",          help="Keep previous cloned or generated files",          action="store_true")
-parser.add_argument("-v", "--verilator",     help="Run Verilator on the CORE testbench",              action="store_true")
-parser.add_argument("-u", "--no_uvm",        help="DO NOT run CI regression on the UVM testbench",    action="store_true")
-parser.add_argument("--repo",                help="Use this repo for the RTL, not one in Makefile",   type=str)
-parser.add_argument("--branch",              help="Use this branch for the RTL, not one in Makefile", type=str)
-parser.add_argument("--hash",                help="Use this hash for the RTL, not one in Makefile",   type=str)
-
-args   = parser.parse_args()
-debug  = 0       # warning, too much info!
-prcmd  = 0       # prints cmds to stdout
-veril  = 0       # run Verilator on CORE when set
-uvm    = 1       # Run UVM CI regression by default
+# Handle Command-line arguments
 
 if (args.debug):
     debug = 1
@@ -229,12 +245,11 @@ if not (prcmd):
     else:
         print ('This will delete your previously cloned RTL repo plus all previously generated files')
         ask_user()
-        os.chdir(os.path.join(topdir, '{}/sim/uvmt'.format(args.core.lower())))
+        os.chdir(os.path.abspath(os.path.join(topdir, args.core.lower(), 'sim/uvmt')))
         os.system('make clean_all')
         os.chdir(os.path.join(topdir, '{}/sim/core'.format(args.core.lower())))
         os.system('make clean_all')
         os.chdir(os.path.join(topdir, 'bin'))
-
 
 ################################################################################
 # script starts here

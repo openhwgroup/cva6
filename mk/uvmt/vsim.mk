@@ -32,7 +32,7 @@ VCOVER                  = vcover
 
 # Paths
 VWORK     				= work
-VSIM_RESULTS           ?= $(MAKE_PATH)/vsim_results
+VSIM_RESULTS           ?= $(if $(CV_RESULTS),$(CV_RESULTS)/vsim_results,$(MAKE_PATH)/vsim_results)
 VSIM_COREVDV_RESULTS   ?= $(VSIM_RESULTS)/corev-dv
 VSIM_COV_MERGE_DIR     ?= $(VSIM_RESULTS)/merged
 UVM_HOME               ?= $(abspath $(shell which $(VLIB))/../../verilog_src/uvm-1.2/src)
@@ -175,10 +175,10 @@ endif
 ifeq ($(call IS_YES,$(MERGE)),YES)
 ifeq ($(call IS_YES,$(GUI)),YES)
 # Merged coverage GUI
-COV_FLAGS=-viewcov merged.ucdb
+COV_FLAGS=-viewcov $(VSIM_COV_MERGE_DIR)/merged.ucdb
 else
 # Merged coverage report
-COV_FLAGS=-c -viewcov merged.ucdb -do "file delete -force $(COV_REPORT); coverage report -html -details -precision 2 -annotate -output $(COV_REPORT); exit -f"
+COV_FLAGS=-c -viewcov $(VSIM_COV_MERGE_DIR)/merged.ucdb -do "file delete -force $(COV_REPORT); coverage report -html -details -precision 2 -annotate -output $(COV_REPORT); exit -f"
 endif
 else
 ifeq ($(call IS_YES,$(GUI)),YES)
@@ -434,9 +434,9 @@ waves:
 ################################################################################
 # Invoke coverage
 cov_merge:
-	$(MKDIR_P) $(VSIM_COV_MERGE_DIR)/$(COV_MERGE_DIR)
+	$(MKDIR_P) $(VSIM_COV_MERGE_DIR)
 	cd $(COV_DIR) && \
-		$(COV_MERGE_FIND) > $(VSIM_COV_MERGE_DIR)/ucdb.list
+		$(COV_MERGE_FIND)
 	cd $(VSIM_COV_MERGE_DIR) && \
 		$(VCOVER) \
 			$(COV_MERGE_FLAGS)
