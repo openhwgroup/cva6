@@ -29,7 +29,7 @@ DSIM_CMP_FLAGS         ?= $(TIMESCALE) $(SV_CMP_FLAGS) -top uvmt_$(CV_CORE_LC)_t
 DSIM_UVM_ARGS          ?= +incdir+$(UVM_HOME)/src $(UVM_HOME)/src/uvm_pkg.sv
 DSIM_RESULTS           ?= $(if $(CV_RESULTS),$(CV_RESULTS)/dsim_results,$(MAKE_PATH)/dsim_results)
 DSIM_COREVDV_RESULTS   ?= $(DSIM_RESULTS)/corev-dv
-DSIM_WORK              ?= $(DSIM_RESULTS)/dsim_work
+DSIM_WORK              ?= $(DSIM_RESULTS)/$(CFG)/dsim_work
 DSIM_IMAGE             ?= dsim.out
 DSIM_RUN_FLAGS         ?=
 DSIM_CODE_COV_SCOPE    ?= $(MAKE_PATH)/../tools/dsim/ccov_scopes.txt
@@ -157,7 +157,7 @@ comp: mk_results $(CV_CORE_PKG) $(OVP_MODEL_DPI)
 #      $ make custom CUSTOM_PROG=<my_custom_test_program>
 #
 custom: comp $(CUSTOM_DIR)/$(CUSTOM_PROG).hex $(CUSTOM_DIR)/$(CUSTOM_PROG).elf 
-	mkdir -p $(DSIM_RESULTS)/$(CUSTOM_PROG)_$(RUN_INDEX) && cd $(DSIM_RESULTS)/$(CUSTOM_PROG)_$(RUN_INDEX) && \
+	mkdir -p $(DSIM_RESULTS)/$(CFG)/$(CUSTOM_PROG)_$(RUN_INDEX) && cd $(DSIM_RESULTS)/$(CFG)/$(CUSTOM_PROG)_$(RUN_INDEX)  && \
 	$(DSIM) -l dsim-$(CUSTOM_PROG).log -image $(DSIM_IMAGE) \
 		-work $(DSIM_WORK) $(DSIM_RUN_FLAGS) $(DSIM_DMP_FLAGS) \
 		-sv_lib $(UVM_HOME)/src/dpi/libuvm_dpi.so \
@@ -175,11 +175,11 @@ custom: comp $(CUSTOM_DIR)/$(CUSTOM_PROG).hex $(CUSTOM_DIR)/$(CUSTOM_PROG).elf
 # set IMPERAS_TOOLS to point to it
 gen_ovpsim_ic:
 	@if [ ! -z "$(CFG_OVPSIM)" ]; then \
-		mkdir -p $(DSIM_RESULTS)/$(TEST_NAME)_$(RUN_INDEX); \
-		echo "$(CFG_OVPSIM)" > $(DSIM_RESULTS)/$(TEST_NAME)_$(RUN_INDEX)/ovpsim.ic; \
+		mkdir -p $(DSIM_RESULTS)/$(CFG)/$(TEST_NAME)_$(RUN_INDEX); \
+		echo "$(CFG_OVPSIM)" > $(DSIM_RESULTS)/$(CFG)/$(TEST_NAME)_$(RUN_INDEX)/ovpsim.ic; \
 	fi
 ifneq ($(CFG_OVPSIM),)
-export IMPERAS_TOOLS=$(DSIM_RESULTS)/$(TEST_NAME)_$(RUN_INDEX)/ovpsim.ic
+export IMPERAS_TOOLS=$(DSIM_RESULTS)/$(CFG)/$(TEST_NAME)_$(RUN_INDEX)/ovpsim.ic
 endif
 
 # Skip compile if COMP is specified and negative
@@ -193,8 +193,8 @@ ifeq ($(shell echo $(TEST) | head -c 6),corev_)
 endif
 
 test: $(DSIM_SIM_PREREQ) $(TEST_TEST_DIR)/$(TEST_PROGRAM)$(OPT_RUN_INDEX_SUFFIX).hex gen_ovpsim_ic
-	mkdir -p $(DSIM_RESULTS)/$(TEST_NAME)_$(RUN_INDEX) && \
-	cd $(DSIM_RESULTS)/$(TEST_NAME)_$(RUN_INDEX) && \
+	mkdir -p $(DSIM_RESULTS)/$(CFG)/$(TEST_NAME)_$(RUN_INDEX) && \
+	cd $(DSIM_RESULTS)/$(CFG)/$(TEST_NAME)_$(RUN_INDEX) && \
 		$(DSIM) \
 			-l dsim-$(TEST_NAME).log \
 			-image $(DSIM_IMAGE) \
@@ -210,7 +210,7 @@ test: $(DSIM_SIM_PREREQ) $(TEST_TEST_DIR)/$(TEST_PROGRAM)$(OPT_RUN_INDEX_SUFFIX)
 
 # Similar to above, but for the ASM directory.
 asm: comp $(ASM_DIR)/$(ASM_PROG).hex $(ASM_DIR)/$(ASM_PROG).elf
-	mkdir -p $(DSIM_RESULTS)/$(ASM_PROG)_$(RUN_INDEX) && cd $(DSIM_RESULTS)/$(ASM_PROG)_$(RUN_INDEX) && \
+	mkdir -p $(DSIM_RESULTS)/$(CFG)/$(ASM_PROG)_$(RUN_INDEX) && cd $(DSIM_RESULTS)/$(CFG)/$(ASM_PROG)_$(RUN_INDEX)  && \
 	$(DSIM) -l dsim-$(ASM_PROG).log -image $(DSIM_IMAGE) \
 		-work $(DSIM_WORK) $(DSIM_RUN_FLAGS) $(DSIM_DMP_FLAGS) \
 		-sv_lib $(UVM_HOME)/src/dpi/libuvm_dpi.so \
@@ -235,13 +235,13 @@ asm: comp $(ASM_DIR)/$(ASM_PROG).hex $(ASM_DIR)/$(ASM_PROG).elf
 RISCV_ISA       ?= rv32i
 COMPLIANCE_PROG ?= I-ADD-01
 
-SIG_ROOT      ?= $(DSIM_RESULTS)
-SIG           ?= $(DSIM_RESULTS)/$(COMPLIANCE_PROG)_$(RUN_INDEX)/$(COMPLIANCE_PROG).signature_output
+SIG_ROOT      ?= $(DSIM_RESULTS)/$(CFG)/$(RISCV_ISA)
+SIG           ?= $(DSIM_RESULTS)/$(CFG)/$(RISCV_ISA)/$(COMPLIANCE_PROG)_$(RUN_INDEX)/$(COMPLIANCE_PROG).signature_output
 REF           ?= $(COMPLIANCE_PKG)/riscv-test-suite/$(RISCV_ISA)/references/$(COMPLIANCE_PROG).reference_output
 TEST_PLUSARGS ?= +signature=$(COMPLIANCE_PROG).signature_output
 
 compliance: comp build_compliance
-	mkdir -p $(DSIM_RESULTS)/$(COMPLIANCE_PROG)_$(RUN_INDEX) && cd $(DSIM_RESULTS)/$(COMPLIANCE_PROG)_$(RUN_INDEX) && \
+	mkdir -p $(DSIM_RESULTS)/$(CFG)/$(RISCV_ISA)/$(COMPLIANCE_PROG)_$(RUN_INDEX) && cd $(DSIM_RESULTS)/$(CFG)/$(RISCV_ISA)/$(COMPLIANCE_PROG)_$(RUN_INDEX)  && \
 	export IMPERAS_TOOLS=$(CORE_V_VERIF)/$(CV_CORE_LC)/tests/cfg/ovpsim_no_pulp.ic && \
 	$(DSIM) -l dsim-$(COMPLIANCE_PROG).log -image $(DSIM_IMAGE) \
 		-work $(DSIM_WORK) $(DSIM_RUN_FLAGS) $(DSIM_DMP_FLAGS) $(TEST_PLUSARGS) \
@@ -259,7 +259,7 @@ compliance: comp build_compliance
 
 # Mythical no-test-program testcase.  Might never be used.  Not known tow work
 no-test-program: comp
-	mkdir -p $(DSIM_RESULTS)/hello-world_$(RUN_INDEX) && cd $(DSIM_RESULTS)/hello-world_$(RUN_INDEX)  && \
+	mkdir -p $(DSIM_RESULTS)/$(CFG)/hello-world_$(RUN_INDEX) && cd $(DSIM_RESULTS)/$(CFG)/hello-world_$(RUN_INDEX)  && \
 	$(DSIM) -l dsim-$(UVM_TESTNAME).log -image $(DSIM_IMAGE) \
 		-work $(DSIM_WORK) $(DSIM_RUN_FLAGS) $(DSIM_DMP_FLAGS) \
 		-sv_lib $(UVM_HOME)/src/dpi/libuvm_dpi.so \

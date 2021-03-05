@@ -38,7 +38,7 @@ URG               = $(CV_SIM_PREFIX)urg
 # Paths
 VCS_RESULTS     ?= $(if $(CV_RESULTS),$(CV_RESULTS)/vcs_results,$(MAKE_PATH)/vcs_results)
 VCS_COREVDV_RESULTS ?= $(VCS_RESULTS)/corev-dv
-VCS_DIR         ?= $(VCS_RESULTS)/vcs.d
+VCS_DIR         ?= $(VCS_RESULTS)/$(CFG)/vcs.d
 VCS_ELAB_COV     = -cm line+cond+tgl+fsm+branch+assert  -cm_dir $(MAKECMDGOALS)/$(MAKECMDGOALS).vdb
 
 # modifications to already defined variables to take into account VCS
@@ -95,9 +95,9 @@ endif
 # Waveform (post-process) command line
 ifeq ($(call IS_YES,$(ADV_DEBUG)),YES)
 $(error ADV_DEBUG not yet supported by VCS )
-WAVES_CMD = cd $(VCS_RESULTS)/$(TEST_NAME)_$(RUN_INDEX) && $(DVE) -vpd vcdplus.vpd 
+WAVES_CMD = cd $(VCS_RESULTS)/$(CFG)/$(TEST_NAME)_$(RUN_INDEX) && $(DVE) -vpd vcdplus.vpd 
 else
-WAVES_CMD = cd $(VCS_RESULTS)/$(TEST_NAME)_$(RUN_INDEX) && $(DVE) -vpd vcdplus.vpd 
+WAVES_CMD = cd $(VCS_RESULTS)/$(CFG)/$(TEST_NAME)_$(RUN_INDEX) && $(DVE) -vpd vcdplus.vpd 
 endif
 
 ################################################################################
@@ -175,10 +175,10 @@ VCS_COMP = $(VCS_COMP_FLAGS) \
 		$(UVM_PLUSARGS)
 
 comp: mk_vcs_dir $(CV_CORE_PKG) $(OVP_MODEL_DPI)
-	cd $(VCS_RESULTS) && $(VCS) $(VCS_COMP) -top uvmt_$(CV_CORE_LC)_tb
+	cd $(VCS_RESULTS)/$(CFG) && $(VCS) $(VCS_COMP) -top uvmt_$(CV_CORE_LC)_tb
 	@echo "$(BANNER)"
 	@echo "* $(SIMULATOR) compile complete"
-	@echo "* Log: $(VCS_RESULTS)/vcs.log"
+	@echo "* Log: $(VCS_RESULTS)/$(CFG)/vcs.log"
 	@echo "$(BANNER)"
 
 ifneq ($(call IS_NO,$(COMP)),NO)
@@ -195,11 +195,11 @@ endif
 # set IMPERAS_TOOLS to point to it
 gen_ovpsim_ic:
 	@if [ ! -z "$(CFG_OVPSIM)" ]; then \
-		mkdir -p $(VCS_RESULTS)/$(TEST_NAME)_$(RUN_INDEX); \
-		echo "$(CFG_OVPSIM)" > $(VCS_RESULTS)/$(TEST_NAME)_$(RUN_INDEX)/ovpsim.ic; \
+		mkdir -p $(VCS_RESULTS)/$(CFG)/$(TEST_NAME)_$(RUN_INDEX); \
+		echo "$(CFG_OVPSIM)" > $(VCS_RESULTS)/$(CFG)/$(TEST_NAME)_$(RUN_INDEX)/ovpsim.ic; \
 	fi
 ifneq ($(CFG_OVPSIM),)
-export IMPERAS_TOOLS=$(VCS_RESULTS)/$(TEST_NAME)_$(RUN_INDEX)/ovpsim.ic
+export IMPERAS_TOOLS=$(VCS_RESULTS)/$(CFG)/$(TEST_NAME)_$(RUN_INDEX)/ovpsim.ic
 endif
 
 ################################################################################
@@ -212,9 +212,9 @@ endif
 
 test: $(VCS_SIM_PREREQ) $(TEST_TEST_DIR)/$(TEST_PROGRAM)$(OPT_RUN_INDEX_SUFFIX).hex gen_ovpsim_ic
 	echo $(IMPERAS_TOOLS)
-	mkdir -p $(VCS_RESULTS)/$(TEST_NAME)_$(RUN_INDEX) && \
-	cd $(VCS_RESULTS)/$(TEST_NAME)_$(RUN_INDEX) && \
-		$(VCS_RESULTS)/$(SIMV) \
+	mkdir -p $(VCS_RESULTS)/$(CFG)/$(TEST_NAME)_$(RUN_INDEX) && \
+	cd $(VCS_RESULTS)/$(CFG)/$(TEST_NAME)_$(RUN_INDEX) && \
+		$(VCS_RESULTS)/$(CFG)/$(SIMV) \
 			-l vcs-$(TEST_NAME).log \
 			-cm_name $(TEST_NAME) $(VCS_RUN_FLAGS) \
 			$(TEST_PLUSARGS) \
@@ -225,8 +225,8 @@ test: $(VCS_SIM_PREREQ) $(TEST_TEST_DIR)/$(TEST_PROGRAM)$(OPT_RUN_INDEX_SUFFIX).
 ################################################################################
 # Custom test-programs.  See comment in dsim.mk for more info
 custom: $(VCS_SIM_PREREQ) $(CUSTOM_DIR)/$(CUSTOM_PROG).hex
-	mkdir -p $(VCS_RESULTS)/$(CUSTOM_PROG)_$(RUN_INDEX) && cd $(VCS_RESULTS)/$(CUSTOM_PROG)_$(RUN_INDEX) && \
-	$(VCS_RESULTS)/$(SIMV) -l vcs-$(CUSTOM_PROG).log -cm_test $(CUSTOM_PROG) $(VCS_RUN_FLAGS) \
+	mkdir -p $(VCS_RESULTS)/$(CFG)/$(CUSTOM_PROG)_$(RUN_INDEX) && cd $(VCS_RESULTS)/$(CFG)/$(CUSTOM_PROG)_$(RUN_INDEX) && \
+	$(VCS_RESULTS)/$(CFG)/$(SIMV) -l vcs-$(CUSTOM_PROG).log -cm_test $(CUSTOM_PROG) $(VCS_RUN_FLAGS) \
 		+UVM_TESTNAME=uvmt_$(CV_CORE_LC)_firmware_test_c \
 		+elf_file=$(CUSTOM_DIR)/$(CUSTOM_PROG).elf \
 		+firmware=$(CUSTOM_DIR)/$(CUSTOM_PROG).hex
@@ -247,8 +247,8 @@ custom: $(VCS_SIM_PREREQ) $(CUSTOM_DIR)/$(CUSTOM_PROG).hex
 RISCV_ISA       ?= rv32i
 COMPLIANCE_PROG ?= I-ADD-01
 
-SIG_ROOT      ?= $(VCS_RESULTS)
-SIG           ?= $(VCS_RESULTS)/$(COMPLIANCE_PROG)_$(RUN_INDEX)/$(COMPLIANCE_PROG).signature_output
+SIG_ROOT      ?= $(VCS_RESULTS)/$(CFG)/$(RISCV_ISA)
+SIG           ?= $(VCS_RESULTS)/$(CFG)/$(RISCV_ISA)/$(COMPLIANCE_PROG)_$(RUN_INDEX)/$(COMPLIANCE_PROG).signature_output
 REF           ?= $(COMPLIANCE_PKG)/riscv-test-suite/$(RISCV_ISA)/references/$(COMPLIANCE_PROG).reference_output
 TEST_PLUSARGS ?= +signature=$(COMPLIANCE_PROG).signature_output
 
@@ -310,9 +310,15 @@ waves:
 ################################################################################
 # Invoke post-process coverage viewer
 cov_merge:
-	$(MKDIR_P) $(VCS_RESULTS)/$(MERGED_COV_DIR)
-	rm -rf $(VCS_RESULTS)/$(MERGED_COV_DIR)/*
-	cd $(VCS_RESULTS)/$(MERGED_COV_DIR)
+	$(MKDIR_P) $(VCS_RESULTS)/$(CFG)/$(MERGED_COV_DIR)
+	rm -rf $(VCS_RESULTS)/$(CFG)/$(MERGED_COV_DIR)/*
+	cd $(VCS_RESULTS)/$(CFG)/$(MERGED_COV_DIR)
+
+ifeq ($(call IS_YES,$(MERGE)),YES)
+  COVERAGE_TARGET_DIR=$(VCS_RESULTS)/$(CFG)/$(MERGED_COV_DIR)
+else
+  COVERAGE_TARGET_DIR=$(VCS_RESULTS)/$(CFG)/$(TEST_NAME)
+endif
 
 ifeq ($(call IS_YES,$(MERGE)),YES)
   COVERAGE_TARGET_DIR=$(VCS_RESULTS)/$(MERGED_COV_DIR)
