@@ -22,6 +22,7 @@ class uvma_isa_cov_model_c extends uvm_component;
 
   extern function new(string name = "uvma_isa_cov_model", uvm_component parent = null);
   extern virtual function void build_phase(uvm_phase phase);
+  extern virtual task run_phase(uvm_phase phase);
 
 endclass : uvma_isa_cov_model_c
 
@@ -38,3 +39,18 @@ function void uvma_isa_cov_model_c::build_phase(uvm_phase phase);
   mon_trn_fifo = new("mon_trn_fifo", this);
 
 endfunction : build_phase
+
+
+task uvma_isa_cov_model_c::run_phase(uvm_phase phase);
+
+  super.run_phase(phase);
+
+  fork  //TODO if cfg.enabled etc...
+    forever begin
+      uvma_isa_mon_trn_c mon_trn;
+      mon_trn_fifo.get(mon_trn);
+      $display("TODO cov_model got a mon_trn");
+    end
+  join_none
+
+endtask : run_phase

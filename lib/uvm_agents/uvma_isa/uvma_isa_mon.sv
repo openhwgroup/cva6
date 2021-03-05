@@ -57,8 +57,11 @@ task uvma_isa_mon_c::run_phase(uvm_phase phase);
   fork
     begin
       repeat (3) begin  //TODO while (1) begin
+        uvma_isa_mon_trn_c mon_trn;
+
         @(cntxt.vif.retire);
         $display("TODO mon got retire: insn=0x%0h @%0t", cntxt.vif.insn, $time);
+        ap.write(mon_trn);
       end
     end
   join_none
