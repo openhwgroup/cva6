@@ -14,19 +14,5 @@
 // limitations under the License.
 
 
-class uvma_isa_cntxt_c extends uvm_object;
-
-  `uvm_object_utils(uvma_isa_cntxt_c)
-
-  virtual uvma_isa_if vif;
-
-  extern function new(string name = "uvma_isa_cntxt");
-
-endclass : uvma_isa_cntxt_c
-
-
-function uvma_isa_cntxt_c::new(string name = "uvma_isa_cntxt");
-
-  super.new(name);
-
-endfunction : new
+interface uvma_isa_if;
+endinterface

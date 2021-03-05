@@ -14,6 +14,9 @@
 // limitations under the License.
 
 
+`include "uvma_isa_if.sv"
+
+
 package uvma_isa_pkg;
 
   import uvm_pkg::*;

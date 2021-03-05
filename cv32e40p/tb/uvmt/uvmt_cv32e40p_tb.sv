@@ -70,6 +70,7 @@ module uvmt_cv32e40p_tb;
    bit [31:0] evalue;
 
    // Agent interfaces
+   uvma_isa_if                  isa_if();
    uvma_clknrst_if              clknrst_if(); // clock and resets from the clknrst agent
    uvma_clknrst_if              clknrst_if_iss();
    uvma_debug_if                debug_if();
@@ -500,7 +501,7 @@ bind cv32e40p_wrapper
      $timeformat(-9, 3, " ns", 8);
       
      // Add interfaces handles to uvm_config_db
-     //TODO uvma_isa_agent
+     uvm_config_db#(virtual uvma_isa_if                 )::set(.cntxt(null), .inst_name("*.env.isa_agent"),   .field_name("vif"), .value(isa_if));
      uvm_config_db#(virtual uvma_debug_if               )::set(.cntxt(null), .inst_name("*.env.debug_agent"), .field_name("vif"), .value(debug_if));
      uvm_config_db#(virtual uvma_clknrst_if             )::set(.cntxt(null), .inst_name("*.env.clknrst_agent"), .field_name("vif"),        .value(clknrst_if));
      uvm_config_db#(virtual uvma_interrupt_if           )::set(.cntxt(null), .inst_name("*.env.interrupt_agent"), .field_name("vif"),      .value(interrupt_if));
