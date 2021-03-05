@@ -632,7 +632,7 @@ module ariane import ariane_pkg::*; #(
     .icache_dreq_o         ( icache_dreq_cache_if        ),
     // D$
     .dcache_en_i           ( dcache_en_csr               ),
-    .dcache_flush_i        ( dcache_flush_ctrl_cache | dcache_flush_csr_active	),
+    .dcache_flush_i        ( dcache_flush_ctrl_cache | dcache_flush_csr_active   ),
     .dcache_flush_ack_o    ( dcache_flush_ack_cache_ctrl ),
     // to commit stage
     .dcache_amo_req_i      ( amo_req                     ),
@@ -675,7 +675,7 @@ module ariane import ariane_pkg::*; #(
     .icache_dreq_o         ( icache_dreq_cache_if        ),
     // D$
     .dcache_en_i           ( dcache_en_csr               ),
-    .dcache_flush_i        ( dcache_flush_ctrl_cache | dcache_flush_csr_active	),
+    .dcache_flush_i        ( dcache_flush_ctrl_cache | dcache_flush_csr_active   ),
     .dcache_flush_ack_o    ( dcache_flush_ack_cache_ctrl ),
     // to commit stage
     .amo_req_i             ( amo_req                     ),

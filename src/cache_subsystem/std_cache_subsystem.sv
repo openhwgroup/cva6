@@ -36,7 +36,7 @@ module std_cache_subsystem import ariane_pkg::*; import std_cache_pkg::*; #(
     output amo_resp_t                      amo_resp_o,
     // D$
     // Cache management
-    input  logic                           dcache_en_i,        	   // from CSR
+    input  logic                           dcache_en_i,            // from CSR
     input  logic                           dcache_flush_i,         // high until acknowledged
     output logic                           dcache_flush_ack_o,     // send a single cycle acknowledge signal when the cache is flushed
     output logic                           dcache_miss_o,          // we missed on a ld/st
@@ -84,7 +84,7 @@ module std_cache_subsystem import ariane_pkg::*; import std_cache_pkg::*; #(
    ) i_nbdcache (
       .clk_i,
       .rst_ni,
-		.enable_i     ( dcache_en_i         	),
+		  .enable_i     ( dcache_en_i         	),
       .flush_i      ( dcache_flush_i         ),
       .flush_ack_o  ( dcache_flush_ack_o     ),
       .miss_o       ( dcache_miss_o          ),

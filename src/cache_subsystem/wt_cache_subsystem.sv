@@ -36,7 +36,7 @@ module wt_cache_subsystem import ariane_pkg::*; import wt_cache_pkg::*; #(
   output icache_dreq_o_t                 icache_dreq_o,
   // D$
   // Cache management
-  input  logic                           dcache_en_i,        	 // from CSR
+  input  logic                           dcache_en_i,        	   // from CSR
   input  logic                           dcache_flush_i,         // high until acknowledged
   output logic                           dcache_flush_ack_o,     // send a single cycle acknowledge signal when the cache is flushed
   output logic                           dcache_miss_o,          // we missed on a ld/st
