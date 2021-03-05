@@ -18,7 +18,8 @@ class uvma_isa_mon_c extends uvm_monitor;
 
   `uvm_component_utils(uvma_isa_mon_c);
 
-  uvma_isa_cntxt_c cntxt;
+  uvma_isa_cntxt_c                        cntxt;
+  uvm_analysis_port #(uvma_isa_mon_trn_c) ap;
 
   extern function new(string name, uvm_component parent);
   extern virtual function void build_phase(uvm_phase phase);
@@ -43,6 +44,8 @@ function void uvma_isa_mon_c::build_phase(uvm_phase phase);
     `uvm_fatal("CNTXT", "Context handle is null")
   end
 
+  ap = new("ap", this);
+
 endfunction : build_phase
 
 
@@ -53,10 +56,10 @@ task uvma_isa_mon_c::run_phase(uvm_phase phase);
   // TODO if cfg.enabled, while 1, wait cntxt.vif.reset, ...
   fork
     begin
-      //TODO while (1) begin
-      wait(cntxt.vif.retire.triggered);
-      $display("TODO monitor got a retirement event: insn = ", cntxt.vif.insn);
-      //end
+      repeat (3) begin  //TODO while (1) begin
+        @(cntxt.vif.retire);
+        $display("TODO mon got retire: insn=0x%0h @%0t", cntxt.vif.insn, $time);
+      end
     end
   join_none
 

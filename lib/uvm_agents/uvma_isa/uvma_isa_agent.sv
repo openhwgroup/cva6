@@ -18,11 +18,13 @@ class uvma_isa_agent_c extends uvm_agent;
 
   `uvm_component_utils(uvma_isa_agent_c);
 
-  uvma_isa_cntxt_c cntxt;
-  uvma_isa_mon_c   monitor;
+  uvma_isa_cntxt_c                        cntxt;
+  uvma_isa_mon_c                          monitor;
+  uvm_analysis_port #(uvma_isa_mon_trn_c) mon_ap;
 
   extern function new(string name, uvm_component parent);
   extern virtual function void build_phase(uvm_phase phase);
+  extern virtual function void connect_phase(uvm_phase phase);
   extern function void get_and_set_cntxt();
   extern function void retrieve_vif();
   extern function void create_components();
@@ -40,11 +42,23 @@ endfunction : new
 function void uvma_isa_agent_c::build_phase(uvm_phase phase);
 
   super.build_phase(phase);
+
   get_and_set_cntxt();
   retrieve_vif();
   create_components();
 
 endfunction : build_phase
+
+
+function void uvma_isa_agent_c::connect_phase(uvm_phase phase);
+
+  super.connect_phase(phase);
+
+  mon_ap = monitor.ap;
+  //TODO mon_ap.connect(cov_model.mon_trn_fifo.analysis_export); //TODO if cfg...enabled
+
+
+endfunction : connect_phase
 
 
 function void uvma_isa_agent_c::get_and_set_cntxt();

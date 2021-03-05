@@ -14,17 +14,17 @@
 // limitations under the License.
 
 
-`include "uvma_isa_if.sv"
+class uvma_isa_mon_trn_c extends uvml_trn_mon_trn_c;
+
+  `uvm_object_utils(uvma_isa_mon_trn_c)
+
+  extern function new(string name = "uvma_isa_mon_trn");
+
+endclass : uvma_isa_mon_trn_c
 
 
-package uvma_isa_pkg;
+function uvma_isa_mon_trn_c::new(string name = "uvma_isa_mon_trn");
 
-  import uvm_pkg::*;
-  import uvml_trn_pkg::*;
+  super.new(name);
 
-  `include "uvma_isa_mon_trn.sv"
-  `include "uvma_isa_cntxt.sv"
-  `include "uvma_isa_mon.sv"
-  `include "uvma_isa_agent.sv"
-
-endpackage : uvma_isa_pkg
+endfunction : new
