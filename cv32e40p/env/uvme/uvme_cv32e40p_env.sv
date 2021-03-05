@@ -229,13 +229,13 @@ endfunction: assign_cntxt
 
 function void uvme_cv32e40p_env_c::create_agents();
 
-   // TODO uvma_isa_agent
+   isa_agent = uvma_isa_agent_c::type_id::create("isa_agent", this);
    clknrst_agent = uvma_clknrst_agent_c::type_id::create("clknrst_agent", this);
    interrupt_agent = uvma_interrupt_agent_c::type_id::create("interrupt_agent", this);
    debug_agent = uvma_debug_agent_c::type_id::create("debug_agent", this);
    obi_instr_agent = uvma_obi_agent_c::type_id::create("obi_instr_agent", this);
    obi_data_agent  = uvma_obi_agent_c::type_id::create("obi_data_agent", this);
-   
+
 endfunction: create_agents
 
 

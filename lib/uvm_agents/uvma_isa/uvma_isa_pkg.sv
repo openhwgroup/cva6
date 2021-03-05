@@ -18,6 +18,7 @@ package uvma_isa_pkg;
 
   import uvm_pkg::*;
 
+  `include "uvma_isa_mon.sv"
   `include "uvma_isa_agent.sv"
 
 endpackage : uvma_isa_pkg

@@ -14,36 +14,17 @@
 // limitations under the License.
 
 
-class uvma_isa_agent_c extends uvm_agent;
+class uvma_isa_mon_c extends uvm_monitor;
 
-  `uvm_component_utils(uvma_isa_agent_c);
-
-  uvma_isa_mon_c monitor;
+  `uvm_component_utils(uvma_isa_mon_c);
 
   extern function new(string name, uvm_component parent);
-  extern virtual function void build_phase(uvm_phase phase);
-  extern function void create_components();
 
-endclass : uvma_isa_agent_c
+endclass : uvma_isa_mon_c
 
 
-function uvma_isa_agent_c::new(string name = "uvma_isa_agent", uvm_component parent = null);
+function uvma_isa_mon_c::new(string name = "uvma_isa_mon", uvm_component parent = null);
 
   super.new(name, parent);
 
 endfunction : new
-
-
-function void uvma_isa_agent_c::build_phase(uvm_phase phase);
-
-  super.build_phase(phase);
-  create_components();
-
-endfunction : build_phase
-
-
-function void uvma_isa_agent_c::create_components();
-
-  monitor = uvma_isa_mon_c::type_id::create("monitor", this);
-
-endfunction
