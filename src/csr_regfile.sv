@@ -78,6 +78,8 @@ module csr_regfile import ariane_pkg::*; #(
     // Caches
     output logic                  icache_en_o,                // L1 ICache Enable
     output logic                  dcache_en_o,                // L1 DCache Enable
+    output logic                  icache_flush_o,             // L1 ICache Flush
+    output logic                  dcache_flush_o,             // L1 DCache Flush
     // Performance Counter
     output logic  [4:0]           perf_addr_o,                // read/write address to performance counter module (up to 29 aux counters possible in riscv encoding.h)
     output logic[riscv::XLEN-1:0] perf_data_o,                // write data to performance counter module
@@ -590,8 +592,8 @@ module csr_regfile import ariane_pkg::*; #(
                                         perf_we_o   = 1'b1;
                 end
 
-                riscv::CSR_DCACHE:             dcache_d    = {{riscv::XLEN-1{1'b0}}, csr_wdata[0]}; // enable bit
-                riscv::CSR_ICACHE:             icache_d    = {{riscv::XLEN-1{1'b0}}, csr_wdata[0]}; // enable bit
+                riscv::CSR_DCACHE:             dcache_d    = {{riscv::XLEN-2{1'b0}}, csr_wdata[1], csr_wdata[0]}; // csr_wdata[1] = flush bit, csr_wdata[0] = enable bit
+                riscv::CSR_ICACHE:             icache_d    = {{riscv::XLEN-2{1'b0}}, csr_wdata[1], csr_wdata[0]}; // csr_wdata[1] = flush bit, csr_wdata[0] = enable bit
                 // PMP locked logic
                 // 1. refuse to update any locked entry
                 // 2. also refuse to update the entry below a locked TOR entry
@@ -1052,7 +1054,8 @@ module csr_regfile import ariane_pkg::*; #(
     assign icache_en_o      = icache_q[0] & (~debug_mode_q);
 `endif
     assign dcache_en_o      = dcache_q[0];
-
+    assign dcache_flush_o   = dcache_q[1];
+    assign icache_flush_o   = icache_q[1];
     // determine if mprv needs to be considered if in debug mode
     assign mprv             = (debug_mode_q && !dcsr_q.mprven) ? 1'b0 : mstatus_q.mprv;
     assign debug_mode_o     = debug_mode_q;
@@ -1089,8 +1092,8 @@ module csr_regfile import ariane_pkg::*; #(
             mcounteren_q           <= {riscv::XLEN{1'b0}};
             mscratch_q             <= {riscv::XLEN{1'b0}};
             mtval_q                <= {riscv::XLEN{1'b0}};
-            dcache_q               <= {{riscv::XLEN-1{1'b0}}, 1'b1};
-            icache_q               <= {{riscv::XLEN-1{1'b0}}, 1'b1};
+	    dcache_q               <= {{riscv::XLEN-2{1'b0}}, 1'b0, 1'b1}; // dcache flush disable by default and dcache enable by default
+            icache_q               <= {{riscv::XLEN-2{1'b0}}, 1'b0, 1'b1}; // icache flush disable by default and icache enable by default
             // supervisor mode registers
             sepc_q                 <= {riscv::XLEN{1'b0}};
             scause_q               <= {riscv::XLEN{1'b0}};
