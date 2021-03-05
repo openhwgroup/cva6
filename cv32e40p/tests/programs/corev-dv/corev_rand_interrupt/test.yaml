@@ -1,7 +1,7 @@
 # Test definition YAML for random interrupt test
 
 # corev-dv generator test
-name: corev_rand_interrupt_<RUN_INDEX>
+name: corev_rand_interrupt
 uvm_test: uvmt_$(CV_CORE_LC)_firmware_test_c
 description: >
     Random interrupt generator test

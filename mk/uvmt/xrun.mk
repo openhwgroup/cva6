@@ -38,7 +38,7 @@ INDAGO            = $(CV_TOOL_PREFIX) indago
 IMC               = $(CV_SIM_PREFIX) imc
 
 # Paths
-XRUN_RESULTS         ?= $(MAKE_PATH)/xrun_results
+XRUN_RESULTS         ?= $(if $(CV_RESULTS),$(CV_RESULTS)/xrun_results,$(MAKE_PATH)/xrun_results)
 XRUN_COREVDV_RESULTS ?= $(XRUN_RESULTS)/corev-dv
 XRUN_DIR             ?= $(XRUN_RESULTS)/$(CFG)/xcelium.d
 XRUN_UVMHOME_ARG     ?= CDNS-1.2-ML
@@ -94,9 +94,11 @@ endif
 ################################################################################
 # Waveform (post-process) command line
 ifeq ($(call IS_YES,$(ADV_DEBUG)),YES)
-WAVES_CMD = cd $(XRUN_RESULTS)/$(CFG)/$(TEST_NAME) && $(INDAGO) -db ida.db
+
+WAVES_CMD = cd $(XRUN_RESULTS)/$(CFG)/$(TEST_NAME)_$(RUN_INDEX) && $(INDAGO) -db ida.db
 else
-WAVES_CMD = cd $(XRUN_RESULTS)/$(CFG)/$(TEST_NAME) && $(SIMVISION) waves.shm
+WAVES_CMD = cd $(XRUN_RESULTS)/$(CFG)/$(TEST_NAME)_$(RUN_INDEX) && $(SIMVISION) waves.shm
+
 endif
 
 XRUN_USER_COMPILE_ARGS += $(USER_COMPILE_FLAGS)
@@ -271,19 +273,25 @@ endif
 # set IMPERAS_TOOLS to point to it
 gen_ovpsim_ic:
 	@if [ ! -z "$(CFG_OVPSIM)" ]; then \
-		mkdir -p $(XRUN_RESULTS)/$(CFG)/$(TEST_NAME); \
-		echo "$(CFG_OVPSIM)" > $(XRUN_RESULTS)/$(CFG)/$(TEST_NAME)/ovpsim.ic; \
+		mkdir -p $(XRUN_RESULTS)/$(CFG)/$(TEST_NAME)_$(RUN_INDEX); \
+		echo "$(CFG_OVPSIM)" > $(XRUN_RESULTS)/$(CFG)/$(TEST_NAME)_$(RUN_INDEX)/ovpsim.ic; \
 	fi
 ifneq ($(CFG_OVPSIM),)
-export IMPERAS_TOOLS=$(XRUN_RESULTS)/$(CFG)/$(TEST_NAME)/ovpsim.ic
+export IMPERAS_TOOLS=$(XRUN_RESULTS)/$(CFG)/$(TEST_NAME)_$(RUN_INDEX)/ovpsim.ic
 endif
 
 ################################################################################
 # The new general test target
-test: $(XRUN_SIM_PREREQ) $(TEST_TEST_DIR)/$(TEST_PROGRAM).hex gen_ovpsim_ic
+
+# corev-dv tests needs an added run_index_suffix, blank for other tests
+ifeq ($(shell echo $(TEST) | head -c 6),corev_)
+	OPT_RUN_INDEX_SUFFIX=_$(RUN_INDEX)
+endif
+
+test: $(XRUN_SIM_PREREQ) $(TEST_TEST_DIR)/$(TEST_PROGRAM)$(OPT_RUN_INDEX_SUFFIX).hex gen_ovpsim_ic
 	echo $(IMPERAS_TOOLS)
-	mkdir -p $(XRUN_RESULTS)/$(CFG)/$(TEST_NAME) && \
-	cd $(XRUN_RESULTS)/$(CFG)/$(TEST_NAME) && \
+	mkdir -p $(XRUN_RESULTS)/$(CFG)/$(TEST_NAME)_$(RUN_INDEX) && \
+	cd $(XRUN_RESULTS)/$(CFG)/$(TEST_NAME)_$(RUN_INDEX) && \
 		$(XRUN) \
 			-R -xmlibdirname ../xcelium.d \
 			-l xrun-$(TEST_NAME).log \
@@ -292,14 +300,14 @@ test: $(XRUN_SIM_PREREQ) $(TEST_TEST_DIR)/$(TEST_PROGRAM).hex gen_ovpsim_ic
 			-covtest $(TEST_NAME) \
 			$(TEST_PLUSARGS) \
 			+UVM_TESTNAME=$(TEST_UVM_TEST) \
-			+elf_file=$(TEST_TEST_DIR)/$(TEST_PROGRAM).elf \
-			+nm_file=$(TEST_TEST_DIR)/$(TEST_PROGRAM).nm \
-			+firmware=$(TEST_TEST_DIR)/$(TEST_PROGRAM).hex
+			+elf_file=$(TEST_TEST_DIR)/$(TEST_PROGRAM)$(OPT_RUN_INDEX_SUFFIX).elf \
+			+nm_file=$(TEST_TEST_DIR)/$(TEST_PROGRAM)$(OPT_RUN_INDEX_SUFFIX).nm \
+			+firmware=$(TEST_TEST_DIR)/$(TEST_PROGRAM)$(OPT_RUN_INDEX_SUFFIX).hex
 
 ################################################################################
 # Custom test-programs.  See comment in dsim.mk for more info
 custom: $(XRUN_SIM_PREREQ) $(CUSTOM_DIR)/$(CUSTOM_PROG).hex
-	mkdir -p $(XRUN_RESULTS)/$(CFG)/$(CUSTOM_PROG) && cd $(XRUN_RESULTS)/$(CFG)/$(CUSTOM_PROG) && \
+	mkdir -p $(XRUN_RESULTS)/$(CFG)/$(CUSTOM_PROG)_$(RUN_INDEX) && cd $(XRUN_RESULTS)/$(CFG)/$(CUSTOM_PROG)_$(RUN_INDEX) && \
 	$(XRUN) -R ../xcelium.d -l xrun-$(CUSTOM_PROG).log -covtest $(CUSTOM_PROG) $(XRUN_COMP_RUN) \
 		+elf_file=$(CUSTOM_DIR)/$(CUSTOM_PROG).elf \
 		+nm_file=$(CUSTOM_DIR)/$(CUSTOM_PROG).nm \
@@ -323,7 +331,7 @@ RISCV_ISA       ?= rv32i
 COMPLIANCE_PROG ?= I-ADD-01
 
 SIG_ROOT      ?= $(XRUN_RESULTS)/$(CFG)/$(RISCV_ISA)
-SIG           ?= $(XRUN_RESULTS)/$(CFG)/$(RISCV_ISA)/$(COMPLIANCE_PROG)/$(COMPLIANCE_PROG).signature_output
+SIG           ?= $(XRUN_RESULTS)/$(CFG)/$(RISCV_ISA)/$(COMPLIANCE_PROG)_$(RUN_INDEX)/$(COMPLIANCE_PROG).signature_output
 REF           ?= $(COMPLIANCE_PKG)/riscv-test-suite/$(RISCV_ISA)/references/$(COMPLIANCE_PROG).reference_output
 TEST_PLUSARGS ?= +signature=$(COMPLIANCE_PROG).signature_output
 
@@ -332,7 +340,8 @@ XRUN_COMPLIANCE_PREREQ = comp build_compliance
 endif
 
 compliance: $(XRUN_COMPLIANCE_PREREQ)
-	mkdir -p $(XRUN_RESULTS)/$(CFG)/$(RISCV_ISA)/$(COMPLIANCE_PROG) && cd $(XRUN_RESULTS)/$(CFG)/$(RISCV_ISA)/$(COMPLIANCE_PROG)  && \
+	mkdir -p $(XRUN_RESULTS)/$(CFG)/$(RISCV_ISA)/$(COMPLIANCE_PROG)_$(RUN_INDEX) && \
+    cd $(XRUN_RESULTS)/$(CFG)/$(RISCV_ISA)/$(COMPLIANCE_PROG)_$(RUN_INDEX)  && \
 	export IMPERAS_TOOLS=$(CORE_V_VERIF)/$(CV_CORE_LC)/tests/cfg/ovpsim_no_pulp.ic && \
 	$(XRUN) -R -xmlibdirname ../../xcelium.d -l xrun-$(COMPLIANCE_PROG).log -covtest riscv-compliance $(XRUN_COMP_RUN) $(TEST_PLUSARGS) \
 		+UVM_TESTNAME=uvmt_$(CV_CORE_LC)_firmware_test_c \
@@ -400,7 +409,7 @@ cov_merge:
 ifeq ($(call IS_YES,$(MERGE)),YES)
   COVERAGE_TARGET_DIR=$(XRUN_RESULTS)/$(CFG)/$(MERGED_COV_DIR)
 else
-  COVERAGE_TARGET_DIR=$(XRUN_RESULTS)/$(CFG)/$(TEST_NAME)
+  COVERAGE_TARGET_DIR=$(XRUN_RESULTS)/$(CFG)/$(TEST_NAME)_$(RUN_INDEX)
 endif
 
 cov: $(COV_MERGE)

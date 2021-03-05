@@ -79,7 +79,7 @@ GEN_START_INDEX ?= 0
 GEN_NUM_TESTS   ?= 1
 
 # Commont test variables
-RUN_INDEX       ?= 0
+export RUN_INDEX       ?= 0
 
 # UVM Environment
 export DV_UVMT_PATH           = $(CORE_V_VERIF)/$(CV_CORE_LC)/tb/uvmt

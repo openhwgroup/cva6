@@ -118,11 +118,18 @@ tests:
     dir: cv32e40p/sim/uvmt
     cmd: make test COREV=YES TEST=riscv_ebreak_test_0
 
-  riscv_arithmetic_basic_test:
+  riscv_arithmetic_basic_test_0:
     build: uvmt_cv32e40p
-    description: Static riscv-dv arithmetic test
+    description: Static riscv-dv arithmetic test 0
     dir: cv32e40p/sim/uvmt    
-    cmd: make test COREV=YES TEST=riscv_arithmetic_basic_test
+    cmd: make test COREV=YES TEST=riscv_arithmetic_basic_test_0
+    num: 1
+
+  riscv_arithmetic_basic_test_1:
+    build: uvmt_cv32e40p
+    description: Static riscv-dv arithmetic test 1
+    dir: cv32e40p/sim/uvmt    
+    cmd: make test COREV=YES TEST=riscv_arithmetic_basic_test_1
     num: 1
 
   corev_arithmetic_base_test:

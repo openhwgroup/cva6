@@ -32,7 +32,7 @@ VCOVER                  = vcover
 
 # Paths
 VWORK     				= work
-VSIM_RESULTS           ?= $(MAKE_PATH)/vsim_results
+VSIM_RESULTS           ?= $(if $(CV_RESULTS),$(CV_RESULTS)/vsim_results,$(MAKE_PATH)/vsim_results)
 VSIM_COREVDV_RESULTS   ?= $(VSIM_RESULTS)/corev-dv
 VSIM_COV_MERGE_DIR     ?= $(VSIM_RESULTS)/$(CFG)/merged
 UVM_HOME               ?= $(abspath $(shell which $(VLIB))/../../verilog_src/uvm-1.2/src)
@@ -168,11 +168,10 @@ COV_MERGE_FIND = find $(VSIM_RESULTS)/$(CFG) -type f -name "*.ucdb" | grep -v me
 COV_MERGE_FLAGS=merge -64 -out merged.ucdb -inputs ucdb.list
 
 ifeq ($(call IS_YES,$(MERGE)),YES)
-COV_DIR=$(VSIM_RESULTS)/$(CFG)/$(COV_MERGE_DIR)
+COV_DIR=$(VSIM_COV_MERGE_DIR)
 COV_MERGE_TARGET=cov_merge
 else
-COV_DIR=$(VSIM_RESULTS)/$(CFG)/$(TEST)
-endif
+COV_DIR=$(VSIM_RESULTS)/$(CFG)/$(TEST)_$(RUN_INDEX)
 
 ifeq ($(call IS_YES,$(MERGE)),YES)
 ifeq ($(call IS_YES,$(GUI)),YES)
@@ -196,13 +195,13 @@ endif
 # Waveform (post-process) command line
 ifeq ($(call IS_YES,$(ADV_DEBUG)),YES)
 WAVES_CMD = \
-	cd $(VSIM_RESULTS)/$(CFG)/$(TEST) && \
+	cd $(VSIM_RESULTS)/$(CFG)/$(TEST)_$(RUN_INDEX) && \
 		$(VISUALIZER) \
 			-designfile ../design.bin \
 			-wavefile qwave.db
 else
 WAVES_CMD = \
-	cd $(VSIM_RESULTS)/$(CFG)/$(TEST) && \
+	cd $(VSIM_RESULTS)/$(CFG)/$(TEST)_$(RUN_INDEX) && \
 		$(VSIM) \
 			-gui \
 			-view vsim.wlf
@@ -304,7 +303,8 @@ RISCV_ISA       ?= rv32i
 COMPLIANCE_PROG ?= I-ADD-01
 
 SIG_ROOT      ?= $(VSIM_RESULTS)/$(CFG)/$(RISCV_ISA)
-SIG           ?= $(VSIM_RESULTS)/$(CFG)/$(RISCV_ISA)/$(COMPLIANCE_PROG)/$(COMPLIANCE_PROG).signature_output
+SIG           ?= $(VSIM_RESULTS)/$(CFG)/$(RISCV_ISA)/$(COMPLIANCE_PROG)_$(RUN_INDEX)/$(COMPLIANCE_PROG).signature_output
+
 REF           ?= $(COMPLIANCE_PKG)/riscv-test-suite/$(RISCV_ISA)/references/$(COMPLIANCE_PROG).reference_output
 TEST_PLUSARGS ?= +signature=$(COMPLIANCE_PROG).signature_output
 
@@ -331,11 +331,11 @@ mk_vsim_dir:
 # set IMPERAS_TOOLS to point to it
 gen_ovpsim_ic:
 	@if [ ! -z "$(CFG_OVPSIM)" ]; then \
-		mkdir -p $(VSIM_RESULTS)/$(CFG)/$(TEST_NAME); \
-		echo "$(CFG_OVPSIM)" > $(VSIM_RESULTS)/$(CFG)/$(TEST_NAME)/ovpsim.ic; \
+		mkdir -p $(VSIM_RESULTS)/$(CFG)/$(TEST_NAME)_$(RUN_INDEX); \
+		echo "$(CFG_OVPSIM)" > $(VSIM_RESULTS)/$(CFG)/$(TEST_NAME)_$(RUN_INDEX)/ovpsim.ic; \
 	fi
 ifneq ($(CFG_OVPSIM),)
-export IMPERAS_TOOLS=$(VSIM_RESULTS)/$(CFG)/$(TEST_NAME)/ovpsim.ic
+export IMPERAS_TOOLS=$(VSIM_RESULTS)/$(CFG)/$(TEST_NAME)_$(RUN_INDEX)/ovpsim.ic
 endif
 
 # Target to create work directory in $(VSIM_RESULTS)/
@@ -380,7 +380,7 @@ opt: vlog
 
 comp: opt
 
-RUN_DIR = $(abspath $(VSIM_RESULTS)/$(CFG)/$(OPT_SUBDIR)/$(VSIM_TEST))
+RUN_DIR = $(abspath $(VSIM_RESULTS)/$(CFG)/$(OPT_SUBDIR)/$(VSIM_TEST)_$(RUN_INDEX))
 
 # Target to run VSIM (i.e. run the simulation)
 run: $(VSIM_RUN_PREREQ) gen_ovpsim_ic
@@ -417,9 +417,15 @@ custom: $(CUSTOM_DIR)/$(CUSTOM_PROG).hex run
 
 ################################################################################
 # The new general test target
+
+# corev-dv tests needs an added run_index suffix
+ifeq ($(shell echo $(TEST) | head -c 6),corev_)
+  OPT_RUN_INDEX_SUFFIX=_$(RUN_INDEX)
+endif
+
 test: VSIM_TEST=$(TEST_PROGRAM)
-test: VSIM_FLAGS += +firmware=$(TEST_TEST_DIR)/$(TEST_PROGRAM).hex +elf_file=$(TEST_TEST_DIR)/$(TEST_PROGRAM).elf
-test: $(TEST_TEST_DIR)/$(TEST_PROGRAM).hex run
+test: VSIM_FLAGS += +firmware=$(TEST_TEST_DIR)/$(TEST_PROGRAM)$(OPT_RUN_INDEX_SUFFIX).hex +elf_file=$(TEST_TEST_DIR)/$(TEST_PROGRAM)$(OPT_RUN_INDEX_SUFFIX).elf
+test: $(TEST_TEST_DIR)/$(TEST_PROGRAM)$(OPT_RUN_INDEX_SUFFIX).hex run
 
 ################################################################################
 # Invoke post-process waveform viewer
