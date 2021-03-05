@@ -84,7 +84,7 @@ module std_cache_subsystem import ariane_pkg::*; import std_cache_pkg::*; #(
    ) i_nbdcache (
       .clk_i,
       .rst_ni,
-      .enable_i     ( dcache_en_i        	 ),
+		.enable_i     ( dcache_en_i         	),
       .flush_i      ( dcache_flush_i         ),
       .flush_ack_o  ( dcache_flush_ack_o     ),
       .miss_o       ( dcache_miss_o          ),
