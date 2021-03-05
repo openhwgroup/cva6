@@ -184,7 +184,7 @@ module ariane import ariane_pkg::*; #(
   logic                     icache_en_csr;
   logic                     dcache_flush_csr;
   logic                     dcache_flush_csr_active;
-  logic			    dcache_flush_temp = 1'b0;
+  logic			    		dcache_flush_temp = 1'b0;
   logic                     icache_flush_csr;
   logic                     debug_mode;
   logic                     single_step_csr_commit;
@@ -537,7 +537,7 @@ module ariane import ariane_pkg::*; #(
     .tsr_o                  ( tsr_csr_id                    ),
     .debug_mode_o           ( debug_mode                    ),
     .single_step_o          ( single_step_csr_commit        ),
-    .dcache_en_o            ( dcache_en_csr        	    ),
+    .dcache_en_o            ( dcache_en_csr        	    	),
     .icache_en_o            ( icache_en_csr                 ),
     .dcache_flush_o         ( dcache_flush_csr              ),
     .icache_flush_o         ( icache_flush_csr              ),
@@ -631,7 +631,7 @@ module ariane import ariane_pkg::*; #(
     .icache_dreq_i         ( icache_dreq_if_cache        ),
     .icache_dreq_o         ( icache_dreq_cache_if        ),
     // D$
-    .dcache_enable_i       ( dcache_en_csr	         ),
+    .dcache_en_i           ( dcache_en_csr               ),
     .dcache_flush_i        ( dcache_flush_ctrl_cache | dcache_flush_csr_active	),
     .dcache_flush_ack_o    ( dcache_flush_ack_cache_ctrl ),
     // to commit stage
@@ -674,7 +674,7 @@ module ariane import ariane_pkg::*; #(
     .icache_dreq_i         ( icache_dreq_if_cache        ),
     .icache_dreq_o         ( icache_dreq_cache_if        ),
     // D$
-    .dcache_enable_i       ( dcache_en_csr               ),
+    .dcache_en_i           ( dcache_en_csr               ),
     .dcache_flush_i        ( dcache_flush_ctrl_cache | dcache_flush_csr_active	),
     .dcache_flush_ack_o    ( dcache_flush_ack_cache_ctrl ),
     // to commit stage
