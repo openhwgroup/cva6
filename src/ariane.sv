@@ -692,13 +692,13 @@ module ariane import ariane_pkg::*; #(
   );
   assign dcache_commit_wbuffer_not_ni = 1'b1;
 `endif
-always @(posedge dcache_flush_csr) begin
-	assign dcache_flush_temp = 1'b1;
-end
-assign dcache_flush_csr_active = dcache_flush_temp ? 1'b1 : 1'b0;
-always @(posedge dcache_flush_ack_cache_ctrl) begin
-	assign dcache_flush_temp = 1'b0;
-end
+	always @(posedge dcache_flush_csr) begin
+		assign dcache_flush_temp = 1'b1;
+	end
+	assign dcache_flush_csr_active = dcache_flush_temp ? 1'b1 : 1'b0;
+	always @(posedge dcache_flush_ack_cache_ctrl) begin
+		assign dcache_flush_temp = 1'b0;
+	end
   // -------------------
   // Parameter Check
   // -------------------
