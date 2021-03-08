@@ -86,7 +86,8 @@ class cv32e40p_asm_program_gen extends corev_asm_program_gen;
         // Jump to commmon interrupt handling routine
         intr_handler = {intr_handler,
                         $sformatf("j %0s%0smode_intr_handler", hart_prefix(hart), mode),
-                        "1: j test_done"};
+                        $sformatf("1: la x%0d, test_done", cfg.scratch_reg),
+                        $sformatf("jalr x%0d, 0", cfg.scratch_reg)};
       end
 
       gen_section(get_label($sformatf("%0smode_intr_vector_%0d", mode, i), hart), intr_handler);
@@ -108,9 +109,6 @@ class cv32e40p_asm_program_gen extends corev_asm_program_gen;
     end
     mode_name = cfg.init_privileged_mode.name();
     instr.push_back($sformatf("csrw mepc, x%0d", cfg.gpr[0]));
-    if (!riscv_instr_pkg::support_pmp) begin
-      instr.push_back($sformatf("jal ra, %0sinit_%0s", hart_prefix(hart), mode_name.tolower()));
-    end
     gen_section(get_label("mepc_setup", hart), instr);
   endfunction
 
