@@ -21,7 +21,7 @@ CV_CORE_TAG    ?= cv32e40p_v1.0.0
 
 RISCVDV_REPO    ?= https://github.com/google/riscv-dv
 RISCVDV_BRANCH  ?= master
-RISCVDV_HASH    ?= 10fd4fa8b7d0808732ecf656c213866cae37045a
+RISCVDV_HASH		?= 0b625258549e733082c12e5dc749f05aefb07d5a
 
 COMPLIANCE_REPO   ?= https://github.com/riscv/riscv-compliance
 COMPLIANCE_BRANCH ?= master
