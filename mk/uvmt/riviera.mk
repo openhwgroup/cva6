@@ -284,7 +284,7 @@ run: $(VSIM_RUN_PREREQ) gen_ovpsim_ic
 			$(VSIM_FLAGS) \
 			${DPILIB_VSIM_OPT} \
 			-l vsim-$(VSIM_TEST).log \
-			-lib $(VSIM_RESULTS)/work \
+			-lib $(VSIM_RESULTS)/$(CFG)/work \
 			+UVM_TESTNAME=$(TEST_UVM_TEST)\
 			$(RTLSRC_VLOG_TB_TOP) \
 			$(TEST_PLUSARGS) \
