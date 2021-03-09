@@ -470,22 +470,21 @@ module mm_ram
         if(select_rdata_q == RAM) begin
             data_rdata_mux = core_data_rdata;
         end else if(select_rdata_q == RND_STALL) begin
-`ifndef VERILATOR
             data_rdata_mux = rnd_stall_rdata;
-`else
+`ifndef VERILATOR
             `uvm_fatal(MM_RAM_TAG, $sformatf("out of bounds read from %08x\nRandom stall generator is not supported with Verilator", data_addr_i));
 `endif
-        
         end else if (select_rdata_q == RND_NUM) begin
-            data_rdata_mux = rnd_num;    
+            data_rdata_mux = rnd_num;
         end else if (select_rdata_q == TICKS) begin
             data_rdata_mux = cycle_count_q;
-
+`ifndef VERILATOR
             if (cycle_count_overflow_q) begin
                 `uvm_fatal(MM_RAM_TAG, "cycle counter read after overflow");
             end
         end else if (select_rdata_q == ERR) begin
             `uvm_fatal(MM_RAM_TAG, $sformatf("out of bounds read from %08x", data_addr_i));
+`endif
         end
     end
 
