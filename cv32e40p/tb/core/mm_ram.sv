@@ -88,6 +88,10 @@ module mm_ram
     localparam int                        MMADDR_RNDNUM     = 32'h1500_1000;
     localparam int                        MMADDR_TICKS      = 32'h1500_1004;
 
+    // UVM info tags
+    localparam string                     MM_RAM_TAG = "MM_RAM";
+    localparam string                     RNDSTALL_TAG = "RNDSTALL";
+
     // mux for read and writes
     enum logic [2:0]{RAM, MM, RND_STALL, ERR, RND_NUM, TICKS} select_rdata_d, select_rdata_q;
 
@@ -193,7 +197,7 @@ module mm_ram
 `ifndef VERILATOR
         if (!$test$plusargs("rand_stall_obi_disable")) begin
             if ($test$plusargs("max_data_zero_instr_stall")) begin
-                `uvm_info("RNDSTALL", "Max data stall, zero instruction stall configuration", UVM_LOW)
+                `uvm_info(RNDSTALL_TAG, "Max data stall, zero instruction stall configuration", UVM_LOW)
                 // This "knob" creates maximum stalls on data loads/stores, and
                 // no stalls on instruction fetches.  Used for fence.i testing. 
                 rnd_stall_regs[RND_STALL_DATA_EN]     = 1;
@@ -233,16 +237,16 @@ module mm_ram
             end
         end
 
-        `uvm_info("RNDSTALL", $sformatf("INSTR OBI stall enable: %0d", rnd_stall_regs[RND_STALL_INSTR_EN]), UVM_LOW)
-        `uvm_info("RNDSTALL", $sformatf("INSTR OBI stall mode:   %0d", rnd_stall_regs[RND_STALL_INSTR_MODE]), UVM_LOW)
-        `uvm_info("RNDSTALL", $sformatf("INSTR OBI stall gnt:    %0d", rnd_stall_regs[RND_STALL_INSTR_GNT]), UVM_LOW)
-        `uvm_info("RNDSTALL", $sformatf("INSTR OBI stall valid:  %0d", rnd_stall_regs[RND_STALL_INSTR_VALID]), UVM_LOW)
-        `uvm_info("RNDSTALL", $sformatf("INSTR OBI stall max:    %0d", rnd_stall_regs[RND_STALL_INSTR_MAX]), UVM_LOW)
-        `uvm_info("RNDSTALL", $sformatf("DATA  OBI stall enable: %0d", rnd_stall_regs[RND_STALL_DATA_EN]), UVM_LOW)
-        `uvm_info("RNDSTALL", $sformatf("DATA  OBI stall mode:   %0d", rnd_stall_regs[RND_STALL_DATA_MODE]), UVM_LOW)
-        `uvm_info("RNDSTALL", $sformatf("DATA  OBI stall gnt:    %0d", rnd_stall_regs[RND_STALL_DATA_GNT]), UVM_LOW)
-        `uvm_info("RNDSTALL", $sformatf("DATA  OBI stall valid:  %0d", rnd_stall_regs[RND_STALL_DATA_VALID]), UVM_LOW)
-        `uvm_info("RNDSTALL", $sformatf("DATA  OBI stall max:    %0d", rnd_stall_regs[RND_STALL_DATA_MAX]), UVM_LOW)
+        `uvm_info(RNDSTALL_TAG, $sformatf("INSTR OBI stall enable: %0d", rnd_stall_regs[RND_STALL_INSTR_EN]), UVM_LOW)
+        `uvm_info(RNDSTALL_TAG, $sformatf("INSTR OBI stall mode:   %0d", rnd_stall_regs[RND_STALL_INSTR_MODE]), UVM_LOW)
+        `uvm_info(RNDSTALL_TAG, $sformatf("INSTR OBI stall gnt:    %0d", rnd_stall_regs[RND_STALL_INSTR_GNT]), UVM_LOW)
+        `uvm_info(RNDSTALL_TAG, $sformatf("INSTR OBI stall valid:  %0d", rnd_stall_regs[RND_STALL_INSTR_VALID]), UVM_LOW)
+        `uvm_info(RNDSTALL_TAG, $sformatf("INSTR OBI stall max:    %0d", rnd_stall_regs[RND_STALL_INSTR_MAX]), UVM_LOW)
+        `uvm_info(RNDSTALL_TAG, $sformatf("DATA  OBI stall enable: %0d", rnd_stall_regs[RND_STALL_DATA_EN]), UVM_LOW)
+        `uvm_info(RNDSTALL_TAG, $sformatf("DATA  OBI stall mode:   %0d", rnd_stall_regs[RND_STALL_DATA_MODE]), UVM_LOW)
+        `uvm_info(RNDSTALL_TAG, $sformatf("DATA  OBI stall gnt:    %0d", rnd_stall_regs[RND_STALL_DATA_GNT]), UVM_LOW)
+        `uvm_info(RNDSTALL_TAG, $sformatf("DATA  OBI stall valid:  %0d", rnd_stall_regs[RND_STALL_DATA_VALID]), UVM_LOW)
+        `uvm_info(RNDSTALL_TAG, $sformatf("DATA  OBI stall max:    %0d", rnd_stall_regs[RND_STALL_DATA_MAX]), UVM_LOW)
 `endif
     end : configure_stalls
 
@@ -331,7 +335,7 @@ module mm_ram
                         sig_fd = $fopen(sig_file, "w");
                         if (sig_fd == 0) begin
                             errno = $ferror(sig_fd, error_str);
-                            `uvm_error("MM_RAM", $sformatf("Cannot open signature file %s for writing (error_str: %s).", sig_file, error_str))
+                            `uvm_error(MM_RAM_TAG, $sformatf("Cannot open signature file %s for writing (error_str: %s).", sig_file, error_str))
                             use_sig_file = 1'b0;
                         end else begin
                             use_sig_file = 1'b1;
@@ -347,7 +351,7 @@ module mm_ram
                                                           dp_ram_i.mem[addr+1], dp_ram_i.mem[addr+0]);
                         end
                     end
-                    `uvm_info("MM_RAM", $sformatf("Dumping signature:\n%s", sig_string), UVM_LOW)
+                    `uvm_info(MM_RAM_TAG, $sformatf("Dumping signature:\n%s", sig_string), UVM_LOW)
 `else
                     if ($value$plusargs("signature=%s", sig_file)) begin
                         sig_fd = $fopen(sig_file, "w");
@@ -454,7 +458,7 @@ module mm_ram
          || data_addr_i == MMADDR_SIGDUMP
          || data_addr_i == MMADDR_TICKS
          || data_addr_i[31:16] == MMADDR_RNDSTALL))
-           else `uvm_fatal("MM_RAM", $sformatf("out of bounds write to %08x with %08x", data_addr_i, data_wdata_i))
+           else `uvm_fatal(MM_RAM_TAG, $sformatf("out of bounds write to %08x with %08x", data_addr_i, data_wdata_i))
 `endif
 
     logic[31:0] data_rdata_mux;
@@ -469,8 +473,7 @@ module mm_ram
 `ifndef VERILATOR
             data_rdata_mux = rnd_stall_rdata;
 `else
-            $display("out of bounds read from %08x\nRandom stall generator is not supported with Verilator", data_addr_i);
-            $fatal(2);
+            `uvm_fatal(MM_RAM_TAG, $sformatf("out of bounds read from %08x\nRandom stall generator is not supported with Verilator", data_addr_i));
 `endif
         
         end else if (select_rdata_q == RND_NUM) begin
@@ -479,11 +482,10 @@ module mm_ram
             data_rdata_mux = cycle_count_q;
 
             if (cycle_count_overflow_q) begin
-                $fatal(1, "cycle counter read after overflow");
+                `uvm_fatal(MM_RAM_TAG, "cycle counter read after overflow");
             end
         end else if (select_rdata_q == ERR) begin
-            $display("out of bounds read from %08x", data_addr_i);
-            $fatal(2);
+            `uvm_fatal(MM_RAM_TAG, $sformatf("out of bounds read from %08x", data_addr_i));
         end
     end
 
