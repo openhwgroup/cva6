@@ -2,10 +2,10 @@
 [*] GTKWave Analyzer v3.3.108 (w)1999-2020 BSI
 [*] Mon Feb 22 21:01:23 2021
 [*]
-[dumpfile] "/home/mike/GitHubRepos/MikeOpenHWGroup/core-v-verif/master/cv32e40p/sim/uvmt/dsim_results/interrupt_test/dsim.fst"
+[dumpfile] "./dsim_results/interrupt_test/dsim.fst"
 [dumpfile_mtime] "Mon Feb 22 20:48:54 2021"
 [dumpfile_size] 72678013
-[savefile] "/home/mike/GitHubRepos/MikeOpenHWGroup/core-v-verif/master/cv32e40p/sim/tools/gtk/cv32e40p_core_IO.fst.gtkw"
+[savefile] "../tools/gtk/cv32e40p_core_IO.fst.gtkw"
 [timestart] 35610
 [size] 1920 948
 [pos] -47 -47
