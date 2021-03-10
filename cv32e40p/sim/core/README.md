@@ -13,19 +13,9 @@ The core testbench and associated test-programs can be run using **_Verilator_**
 simulators. Note that **_Icarus_** verilog cannot compile the RTL and there are no plans
 to support Icarus in the future.
 
-RISC-V GCC Compilers
---------------------
-Compiling the riscv-tests and riscv-compliance-tests requires a cross-compiler,
-often refered to as the "toolchain".  It is recommended that you use the
-[PULP RISCV GNU Toolchain](https://github.com/pulp-platform/pulp-riscv-gnu-toolchain)
-from the Pulp Platform team.  See [TOOLCHAIN](https://github.com/openhwgroup/core-v-verif/blob/master/cv32/sim/TOOLCHAIN.md)
-for detailed installation instructions.
-<br><br>
-Some teams use the [riscv-gcc](https://github.com/riscv/riscv-gcc) toolchain, but this
-does not support the custom PULP instructions.
-<br><br>
-**IMPORTANT:** Once the toolchain is set up, define a shell environment
-variable `RISCV` to the path of your RISC-V toolchain (e.g. `export RISCV=/opt/riscv`).
+RISC-V GCC Compiler "Toolchain"
+-------------------------------
+Pointers to the recommended toolchain for CV32E40P are in `../TOOLCHAIN`.
 
 Running your own C programs
 ---------------------
