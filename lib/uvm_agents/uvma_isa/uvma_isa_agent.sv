@@ -30,7 +30,7 @@ class uvma_isa_agent_c extends uvm_agent;
   uvm_analysis_port #(uvma_isa_mon_trn_c) mon_ap;
 
   // Methods
-  extern function new(string name, uvm_component parent);
+  extern function new(string name = "uvma_isa_agent", uvm_component parent = null);
   extern virtual function void build_phase(uvm_phase phase);
   extern virtual function void connect_phase(uvm_phase phase);
   extern function void get_and_set_cfg();

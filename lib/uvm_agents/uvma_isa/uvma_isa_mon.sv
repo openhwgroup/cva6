@@ -21,7 +21,7 @@ class uvma_isa_mon_c extends uvm_monitor;
   uvma_isa_cntxt_c                        cntxt;
   uvm_analysis_port #(uvma_isa_mon_trn_c) ap;
 
-  extern function new(string name, uvm_component parent);
+  extern function new(string name = "uvma_isa_mon", uvm_component parent = null);
   extern virtual function void build_phase(uvm_phase phase);
   extern virtual task run_phase(uvm_phase phase);
 
