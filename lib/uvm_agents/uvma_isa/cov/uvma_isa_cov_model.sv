@@ -18,6 +18,10 @@ class uvma_isa_cov_model_c extends uvm_component;
 
   `uvm_component_utils(uvma_isa_cov_model_c)
 
+  // Objects
+  uvma_isa_cfg_c cfg;
+
+  // TLM
   uvm_tlm_analysis_fifo #(uvma_isa_mon_trn_c) mon_trn_fifo;
 
   extern function new(string name = "uvma_isa_cov_model", uvm_component parent = null);
@@ -36,6 +40,17 @@ endfunction : new
 
 function void uvma_isa_cov_model_c::build_phase(uvm_phase phase);
 
+  super.build_phase(phase);
+
+  void'(uvm_config_db#(uvma_isa_cfg_c)::get(this, "", "cfg", cfg));
+  if (!cfg) begin
+    `uvm_fatal("CFG", "Configuration handle is null")
+  end
+
+  if (cfg.enabled && cfg.cov_model_enabled) begin
+    //TODO instr_cg = new();
+  end
+
   mon_trn_fifo = new("mon_trn_fifo", this);
 
 endfunction : build_phase
@@ -45,12 +60,14 @@ task uvma_isa_cov_model_c::run_phase(uvm_phase phase);
 
   super.run_phase(phase);
 
-  fork  //TODO if cfg.enabled etc...
-    forever begin
-      uvma_isa_mon_trn_c mon_trn;
-      mon_trn_fifo.get(mon_trn);
-      $display("TODO cov_model got a mon_trn");
-    end
-  join_none
+  if (cfg.enabled && cfg.cov_model_enabled) begin
+    fork
+      forever begin
+        uvma_isa_mon_trn_c mon_trn;
+        mon_trn_fifo.get(mon_trn);
+        $display("TODO sample_mon_trn()");
+      end
+    join_none
+  end
 
 endtask : run_phase
