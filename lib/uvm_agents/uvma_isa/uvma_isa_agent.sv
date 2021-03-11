@@ -19,6 +19,7 @@ class uvma_isa_agent_c extends uvm_agent;
   `uvm_component_utils(uvma_isa_agent_c);
 
   // Objecs
+  uvma_isa_cfg_c                          cfg;
   uvma_isa_cntxt_c                        cntxt;
 
   // Components
@@ -32,6 +33,7 @@ class uvma_isa_agent_c extends uvm_agent;
   extern function new(string name, uvm_component parent);
   extern virtual function void build_phase(uvm_phase phase);
   extern virtual function void connect_phase(uvm_phase phase);
+  extern function void get_and_set_cfg();
   extern function void get_and_set_cntxt();
   extern function void retrieve_vif();
   extern function void create_components();
@@ -50,6 +52,7 @@ function void uvma_isa_agent_c::build_phase(uvm_phase phase);
 
   super.build_phase(phase);
 
+  get_and_set_cfg();
   get_and_set_cntxt();
   retrieve_vif();
   create_components();
@@ -61,11 +64,24 @@ function void uvma_isa_agent_c::connect_phase(uvm_phase phase);
 
   super.connect_phase(phase);
 
+  // TODO if cov_model_enabled and if trn_log_enabled
   mon_ap = monitor.ap;
   mon_ap.connect(cov_model.mon_trn_fifo.analysis_export);  //TODO if cfg...enabled
-  //TODO connect logger
 
 endfunction : connect_phase
+
+
+function void uvma_isa_agent_c::get_and_set_cfg();
+
+  void'(uvm_config_db#(uvma_isa_cfg_c)::get(this, "", "cfg", cfg));
+  if (!cfg) begin
+    `uvm_fatal("CFG", "Configuration handle is null")
+  end else begin
+    `uvm_info("CFG", $sformatf("Found configuration handle:\n%s", cfg.sprint()), UVM_DEBUG)
+    uvm_config_db#(uvma_isa_cfg_c)::set(this, "*", "cfg", cfg);
+  end
+
+endfunction : get_and_set_cfg
 
 
 function void uvma_isa_agent_c::get_and_set_cntxt();

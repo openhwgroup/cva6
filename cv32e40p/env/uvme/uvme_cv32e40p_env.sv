@@ -203,8 +203,9 @@ endfunction : end_of_elaboration_phase
 
 function void uvme_cv32e40p_env_c::assign_cfg();
 
-   // TODO uvma_isa_agent
    uvm_config_db#(uvme_cv32e40p_cfg_c)::set(this, "*", "cfg", cfg);
+
+   uvm_config_db#(uvma_isa_cfg_c)::set(this, "*isa_agent", "cfg", cfg.isa_cfg);
    uvm_config_db#(uvma_clknrst_cfg_c)::set(this, "*clknrst_agent", "cfg", cfg.clknrst_cfg);
    uvm_config_db#(uvma_interrupt_cfg_c)::set(this, "*interrupt_agent", "cfg", cfg.interrupt_cfg);
    uvm_config_db#(uvma_debug_cfg_c)::set(this, "debug_agent", "cfg", cfg.debug_cfg);

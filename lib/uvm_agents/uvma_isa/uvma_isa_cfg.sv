@@ -14,19 +14,22 @@
 // limitations under the License.
 
 
-`include "uvma_isa_if.sv"
+class uvma_isa_cfg_c extends uvm_object;
+
+  `uvm_object_utils(uvma_isa_cfg_c);
+
+  rand bit                     enabled;
+  rand uvm_active_passive_enum is_active;
+  rand bit                     cov_model_enabled;
+  rand bit                     trn_log_enabled;
+
+  extern function new(string name = "uvma_isa_cfg");
+
+endclass : uvma_isa_cfg_c
 
 
-package uvma_isa_pkg;
+function uvma_isa_cfg_c::new(string name = "uvma_isa_cfg");
 
-  import uvm_pkg::*;
-  import uvml_trn_pkg::*;
+  super.new(name);
 
-  `include "uvma_isa_cfg.sv"
-  `include "uvma_isa_cntxt.sv"
-  `include "uvma_isa_mon_trn.sv"
-  `include "uvma_isa_cov_model.sv"
-  `include "uvma_isa_mon.sv"
-  `include "uvma_isa_agent.sv"
-
-endpackage : uvma_isa_pkg
+endfunction : new
