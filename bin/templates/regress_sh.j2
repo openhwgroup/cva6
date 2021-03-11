@@ -87,18 +87,29 @@ popd > /dev/null
 
 {% endif %}
 {% for run_index in range(t.num|int) %}
-{% set test_cmd = t.cmd|replace('<RUN_INDEX>', run_index) %}
-{% set test_log = t.log|replace('<RUN_INDEX>', run_index) %}
+{% set test_cmd = t.cmd %}
+{% set test_log = t.log %}
 # --> Test (Index: {{run_index}}): {{t.cmd}} : {{t.description}}
 {% set cmd = test_cmd + ' CV_CORE=' + project + ' CFG=' + cfg + ' SIMULATOR=' + t.simulator + ' COMP=0 USE_ISS=' + regress_macros.yesorno(t.iss) + ' COV=' + regress_macros.yesorno(t.cov) + ' SEED=random GEN_START_INDEX=' + run_index|string + ' RUN_INDEX=' + run_index|string + makeargs %}
 echo "{{session}}: Running test [cd {{t.abs_dir}} && {{cmd}}]"
 pushd {{t.abs_dir}} > /dev/null
 {{cmd}} >& /dev/null;
 popd > /dev/null
+
 {# Determine log location #}
+{% if t.results %}
+log={{t.abs_dir}}/{{t.simulator}}_results/{{cfg}}/{{t.results}}_{{run_index}}/{{t.simulator}}-{{test_log}}.log
+{% else %}
 log={{t.abs_dir}}/{{t.simulator}}_results/{{cfg}}/{{test_log}}_{{run_index}}/{{t.simulator}}-{{test_log}}.log
+{% endif %}
+
+{# Compliance signature check #}
 {% if 'compliance' in t.cmd %}
-compliance_diff_log={{t.abs_dir}}/{{t.simulator}}_results/{{cfg}}/{{test_log}}/diff_signatures.log
+{% if t.results %}
+compliance_diff_log={{t.abs_dir}}/{{t.simulator}}_results/{{cfg}}/{{t.results}}_{{run_index}}/diff_signatures.log
+{% else %}
+compliance_diff_log={{t.abs_dir}}/{{t.simulator}}_results/{{cfg}}/{{test_log}}_{{run_index}}/diff_signatures.log
+{% endif %}
 {% endif %}
 
 failed=0
