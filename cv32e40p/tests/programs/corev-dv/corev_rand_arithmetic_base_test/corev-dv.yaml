@@ -1,6 +1,6 @@
 # Test definition YAML for corev-dv test generator
 
-name: corev_arithmetic_base_test
+name: corev_rand_arithmetic_base_test
 uvm_test: $(CV_CORE_LC)_instr_base_test
 description: >
     RISCV-DV generated arithmetic test
