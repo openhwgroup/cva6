@@ -178,13 +178,13 @@ located at the top-level of this repository.  A pythin script `ci/ci_check` can 
 the RTL or verification code, please run `ci_check`.  Your pull-request will be rejected if `ci_check`
 does not compile and run successfully. Usage is simple:
 ```
-./ci__check --core cv32e40p -s xrun**
+./ci_check --core cv32e40p -s xrun
 ```
 will run the CI sanity regression on the cv32e40p using Xcelium.
 <br><br>
 Complete user information is obtained in the usual way:
 ```
-./ci__check -h
+./ci_check -h
 ```
 
 Available Test Programs
