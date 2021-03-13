@@ -5,7 +5,7 @@ The UVM testcases are at `CV_CORE/tests/uvmt`, and the test-programs can be
 found in `CV_CORE/tests/program`.  See the README in those directories for more information.
 <br><br>
 Please refer to the [Verification Strategy](https://core-v-docs-verif-strat.readthedocs.io/en/latest/sim_tests.html#simulation-tests-in-the-uvm-environments)
-for a discussion on the distinction between a _testcase_ (a SystemVerilog class extended from _uvm\_test_ that instantiates and controls the UVM environment) and a _test-program_ (a C or assembler program that runs on the core RTL model) in this environment.
+for a discussion on the distinction between a _testcase_ (a SystemVerilog class extended from uvm_test that instantiates and controls the UVM environment) and a _test-program_ (a C or assembler program that runs on the core RTL model) in this environment.
 <br><br>
 To run the UVM environment you will need:
 - a run-time license for the Imperas OVPsim Instruction Set Simulator
@@ -164,10 +164,11 @@ Before making changes to the code in your local branch, it is a good idea to run
 test to ensure you are starting from a stable code-base.  The code (both RTL
 and verification) should _always_ pass sanity, so if it does not, please
 raise an issue and assign it to @mikeopenhwgroup.  The definition of "sanity"
-will change over time as the ability of the verification environment to
+may change over time as the ability of the verification environment to
 stress the RTL improves.  Running sanity is trivial:
-<br><br>
-**make sanity**
+```
+make sanity
+```
 
 CI Mini-regression
 ------------------
@@ -176,14 +177,15 @@ located at the top-level of this repository.  A pythin script `ci/ci_check` can 
 "cv32 CI check regression" specified in the control script.  Before issuing a pull-request for either
 the RTL or verification code, please run `ci_check`.  Your pull-request will be rejected if `ci_check`
 does not compile and run successfully. Usage is simple:
-<br>
-**./ci__check -s xrun**
-<br>
-will run the CI sanity regression using Xcelium.
+```
+./ci_check --core cv32e40p -s xrun
+```
+will run the CI sanity regression on the cv32e40p using Xcelium.
 <br><br>
 Complete user information is obtained in the usual way:
-<br>
-**./ci__check -h**
+```
+./ci_check -h
+```
 
 Available Test Programs
 -----------------------
@@ -201,9 +203,9 @@ Here are a few examples
 * **make test TEST=riscv_arithmetic_basic_test**:<br>run the riscv_arithmetic_basic_test program found at `<CV_CORE>/tests/programs/custom`.
 <br>
 There are also a few targets that do something other than run a test.  The most popular is:
-<br>
+```
 **make clean_all**
-<br>
+```
 which deletes all SIMULATOR generated intermediates, waves and logs **plus** the cloned RTL code.
 
 COREV-DV Generated Tests
@@ -218,14 +220,14 @@ up-to-date with the latest release of riscv-dv.
 Riscv-dv uses test templates such as "riscv_arithmetic_basic_test" and "riscv_rand_jump_test".
 Corev-dv has a set of templates for corev-dv generated test-programs at `<CV_CORE>/tests/programs/corev-dv`.
 Running these is a two-step process.  The first step is to clone riscv-dv and compile corev-dv:
-<br><br>
-**make corev-dv**
-<br><br>
+```
+make corev-dv
+```
 Note that the `corev-dv` target need only be run once.  The next step is to generate, compile
 and run a test.  For example:
-<br><br>
-**make gen_corev-dv test TEST=corev_rand_jump_stress_test**
-<br>
+```
+make gen_corev-dv test TEST=corev_rand_jump_stress_test
+```
 
 RISC-V Compliance Test-suite and Regressions
 ---------------
