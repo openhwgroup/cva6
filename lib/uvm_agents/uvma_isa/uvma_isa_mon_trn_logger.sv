@@ -38,13 +38,13 @@ endfunction : new
 
 function void uvma_isa_mon_trn_logger_c::print_header();
 
-  $display("TODO print header");
+  fwrite("time, instr");
 
 endfunction : print_header
 
 
 function void uvma_isa_mon_trn_logger_c::write(uvma_isa_mon_trn_c t);
 
-  $display("TODO write");
+  fwrite($sformatf("%t, %s", $time, "TODO instr"));
 
 endfunction : write
