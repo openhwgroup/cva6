@@ -25,28 +25,43 @@
 #
 # Stolen, without the slightest hint of shame, from Aimee Sutton.
 
-name: metrics-regress
+name: cv32e40p-dev-scheduled-metrics-regress
 
 # Controls when the action will run. Triggers the workflow on push or pull request
 # events but only for the master branch
-on:
-  push:
-    branches: [ master ]
-#  pull_request_target:
-#    branches: [ master ]
 
-# If you fork this repository, you must create a new Metrics project for your fork
-# and set the environment variable $METRICS_PROJECT_ID accordingly
+on:
+  schedule:
+    # This will run nightly (in the Western Hemisphere) at 0500 UTC
+    - cron: '0 5 * * *'
+
 jobs:
-  metrics-regression:
+  metrics-cv32e40p_full_covg_no_pulp_dev:
+    name: metrics-cv32e40p_full_covg_no_pulp_dev
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
+        with:
+          ref: cv32e40p/dev
       - run: ./bin/metrics-regress $METRICS_REGRESSION_NAME $METRICS_PROJECT_ID
         env:
           METRICS_CI_TOKEN: ${{ secrets.METRICS_CI_TOKEN }}
-          METRICS_REGRESSION_NAME: cv32e40p_ci_check_regression
+          METRICS_REGRESSION_NAME: cv32e40p_full_covg_no_pulp_dev
           METRICS_PROJECT_ID: ${{ secrets.METRICS_PROJECT_ID }}
           PR_NUMBER: ${{ github.event.pull_request.number }}
         shell: bash
 
+  metrics-cv32e40p_compliance_dev:
+    name: metrics-cv32e40p_compliance_dev
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+        with:
+          ref: cv32e40p/dev
+      - run: ./bin/metrics-regress $METRICS_REGRESSION_NAME $METRICS_PROJECT_ID
+        env:
+          METRICS_CI_TOKEN: ${{ secrets.METRICS_CI_TOKEN }}
+          METRICS_REGRESSION_NAME: cv32e40p_compliance_dev
+          METRICS_PROJECT_ID: ${{ secrets.METRICS_PROJECT_ID }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+        shell: bash
