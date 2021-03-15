@@ -1,8 +1,8 @@
 # YAML file to specify a regression testlist
 ---
 # Header
-name: cv32_full
-description: Full regression (all tests) for CV32E40P with step-and-compare against RM
+name: cv32e40p_full
+description: Release regression for CV32E40P
 
 # List of builds
 builds:
@@ -20,19 +20,6 @@ tests:
     description: uvm_hello_world_test
     dir: cv32e40p/sim/uvmt
     cmd: make test COREV=YES TEST=hello-world
-
-#  mhpmcounter29_csr_access_test_1:
-#    build: uvmt_cv32e40p
-#    description: mhpmcounter29_csr_access_test_1
-#    dir: cv32e40p/sim/uvmt
-#    cmd: make test TEST=mhpmcounter29_csr_access_test_1 COREV=YES CFG=num_mhpmcounter_29
-
-  mhpmcounter29_csr_access_test_2:
-    build: uvmt_cv32e40p
-    description: mhpmcounter29_csr_access_test_2
-    dir: cv32e40p/sim/uvmt
-    cmd: make test TEST=mhpmcounter29_csr_access_test_2 COREV=YES CFG=num_mhpmcounter_29
-    iss: 0
 
   csr_instructions:
     build: uvmt_cv32e40p
