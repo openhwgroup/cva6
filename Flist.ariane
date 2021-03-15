@@ -101,13 +101,13 @@ src/issue_stage.sv
 src/load_unit.sv
 src/load_store_unit.sv
 src/mmu_sv39/mmu.sv
-src/mmu_sv32/mmu_sv32.sv
+src/cva6_mmu_sv32/cva6_mmu_sv32.sv
 src/mult.sv
 src/multiplier.sv
 src/serdiv.sv
 src/perf_counters.sv
 src/mmu_sv39/ptw.sv
-src/mmu_sv32/ptw_sv32.sv
+src/cva6_mmu_sv32/cva6_ptw_sv32.sv
 src/ariane_regfile_ff.sv
 src/re_name.sv
 src/scoreboard.sv
@@ -115,7 +115,7 @@ src/store_buffer.sv
 src/amo_buffer.sv
 src/store_unit.sv
 src/mmu_sv39/tlb.sv
-src/mmu_sv32/tlb_sv32.sv
+src/cva6_mmu_sv32/cva6_tlb_sv32.sv
 src/commit_stage.sv
 src/cache_subsystem/wt_dcache_ctrl.sv
 src/cache_subsystem/wt_dcache_mem.sv
