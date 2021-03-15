@@ -18,13 +18,14 @@ class uvma_isa_agent_c extends uvm_agent;
 
   `uvm_component_utils(uvma_isa_agent_c);
 
-  // Objecs
+  // Objects
   uvma_isa_cfg_c                          cfg;
   uvma_isa_cntxt_c                        cntxt;
 
   // Components
   uvma_isa_mon_c                          monitor;
   uvma_isa_cov_model_c                    cov_model;
+  uvma_isa_mon_trn_logger_c               mon_trn_logger;
 
   // TLM
   uvm_analysis_port #(uvma_isa_mon_trn_c) mon_ap;
@@ -67,6 +68,7 @@ function void uvma_isa_agent_c::connect_phase(uvm_phase phase);
   // TODO if cov_model_enabled and if trn_log_enabled
   mon_ap = monitor.ap;
   mon_ap.connect(cov_model.mon_trn_fifo.analysis_export);  //TODO if cfg...enabled
+  mon_ap.connect(mon_trn_logger.analysis_export);  // TODO if cfg...enabled
 
 endfunction : connect_phase
 
@@ -111,7 +113,8 @@ endfunction : retrieve_vif
 
 function void uvma_isa_agent_c::create_components();
 
-  monitor   = uvma_isa_mon_c::type_id::create("monitor", this);
+  monitor = uvma_isa_mon_c::type_id::create("monitor", this);
   cov_model = uvma_isa_cov_model_c::type_id::create("cov_model", this);
+  mon_trn_logger = uvma_isa_mon_trn_logger_c::type_id::create("mon_trn_logger", this);
 
-endfunction
+endfunction : create_components

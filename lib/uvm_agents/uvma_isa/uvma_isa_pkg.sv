@@ -21,10 +21,17 @@ package uvma_isa_pkg;
 
   import uvm_pkg::*;
   import uvml_trn_pkg::*;
+  import uvml_logs_pkg::*;
 
+  // Objects
   `include "uvma_isa_cfg.sv"
   `include "uvma_isa_cntxt.sv"
+
+  // Transactions
   `include "uvma_isa_mon_trn.sv"
+  `include "uvma_isa_mon_trn_logger.sv"
+
+  // Components
   `include "uvma_isa_cov_model.sv"
   `include "uvma_isa_mon.sv"
   `include "uvma_isa_agent.sv"
