@@ -334,8 +334,7 @@ generate-trace-vsim:
 	make generate-trace
 
 sim: build
-	vsim${questa_version} +permissive $(questa-flags) -lib $(library) +MAX_CYCLES=$(max_cycles) +UVM_TESTNAME=$(test_case) \
-	-do "coverage save -onexit $(preload).ucdb; run -a; quit -code [coverage attribute -name TESTSTATUS -concise -value $(preload)]" $(questa-cmd) \
+    vsim${questa_version} +permissive $(questa-flags) $(questa-cmd) -lib $(library) +MAX_CYCLES=$(max_cycles) +UVM_TESTNAME=$(test_case) \
 	+BASEDIR=$(riscv-test-dir) $(uvm-flags) $(QUESTASIM_FLAGS) -gblso $(SPIKE_ROOT)/lib/libfesvr.so -sv_lib $(dpi-library)/ariane_dpi  \
 	${top_level}_optimized +permissive-off ++$(elf-bin) ++$(target-options) | tee sim.log
 
