@@ -208,6 +208,17 @@ There are also a few targets that do something other than run a test.  The most 
 ```
 which deletes all SIMULATOR generated intermediates, waves and logs **plus** the cloned RTL code.
 
+### CoreMark
+
+There is a port of the [CoreMark](https://www.eembc.org/coremark/)
+benchmark runnable with the following make command.
+
+* **make test TEST=coremark USE_ISS=NO**
+
+This will run the benchmark and print out the results.
+The numbers "Total ticks" and "Iterations" can be used to compute the CoreMak/MHz score with
+the following equation `CoreMark/MHz = iterations / (totalticks / 1e6)`.
+
 COREV-DV Generated Tests
 ---------------
 The CV32 UVM environment uses the [Google riscv-dv](https://github.com/google/riscv-dv)
