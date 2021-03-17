@@ -60,10 +60,22 @@ task uvma_isa_mon_c::run_phase(uvm_phase phase);
         uvma_isa_mon_trn_c mon_trn;
 
         @(cntxt.vif.retire);
-        $display("TODO mon got retire: insn=0x%0h @%0t", cntxt.vif.insn, $time);
+
         mon_trn = new();
         mon_trn.instr = new();
+        mon_trn.instr.name =
+          (cntxt.vif.insn[6:0] == 7'b00_100_11) ?
+            (cntxt.vif.insn[14:12] == 3'b000) ?
+              ADDI :
+            (cntxt.vif.insn[14:12] == 3'b110) ?
+              ORI :
+            UNKNOWN :
+          UNKNOWN;  // TODO use disassembler
         mon_trn.instr.rs1 = cntxt.vif.insn[19:15];  // TODO use disassembler
+        mon_trn.instr.rs2 = cntxt.vif.insn[24:20];  // TODO use disassembler
+        mon_trn.instr.rd = cntxt.vif.insn[11:7];  // TODO use disassembler
+        mon_trn.instr.immi = cntxt.vif.insn[31:25];  // TODO use disassembler
+
         ap.write(mon_trn);
       end
     end

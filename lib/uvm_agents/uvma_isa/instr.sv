@@ -14,11 +14,19 @@
 // limitations under the License.
 
 
+typedef enum {
+  UNKNOWN,
+  ADDI,
+  ORI
+} instr_name_t;
+
+
 class instr_c extends uvm_object;
 
-  int name;  // TODO proper definition
-  bit [4:0] rs1;  // TODO proper definition
-  bit [4:0] rs2;  // TODO proper definition
-  bit [4:0] rd;  // TODO proper definition
+  instr_name_t name;
+  bit [4:0] rs1;
+  bit [4:0] rs2;
+  bit [4:0] rd;
+  bit [11:0] immi;
 
 endclass : instr_c

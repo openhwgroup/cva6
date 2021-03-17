@@ -15,9 +15,9 @@
 
 
 class uvma_isa_mon_trn_logger_c extends uvml_logs_mon_trn_logger_c#(
-  .T_TRN(uvma_isa_mon_trn_c),
-  .T_CFG(uvma_isa_cfg_c),
-  .T_CNTXT(uvma_isa_cntxt_c)
+    .T_TRN  (uvma_isa_mon_trn_c),
+    .T_CFG  (uvma_isa_cfg_c),
+    .T_CNTXT(uvma_isa_cntxt_c)
 );
 
   `uvm_component_utils(uvma_isa_mon_trn_logger_c)
@@ -29,7 +29,8 @@ class uvma_isa_mon_trn_logger_c extends uvml_logs_mon_trn_logger_c#(
 endclass : uvma_isa_mon_trn_logger_c
 
 
-function uvma_isa_mon_trn_logger_c::new(string name = "uvma_isa_mon_trn_logger", uvm_component parent = null);
+function uvma_isa_mon_trn_logger_c::new(string name = "uvma_isa_mon_trn_logger",
+                                        uvm_component parent = null);
 
   super.new(name, parent);
 

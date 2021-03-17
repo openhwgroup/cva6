@@ -14,16 +14,14 @@
 // limitations under the License.
 
 
-covergroup cg_instr(string name) with function sample (instr_c instr);
-  // TODO specific name, like "cg_opimm"
+covergroup cg_itype(string name) with function sample (instr_c instr);
   option.per_instance = 1;
   option.name = name;
 
-  cp_rs1 : coverpoint instr.rs1;
-  cp_rs2 : coverpoint instr.rs2;
-  cp_rd : coverpoint instr.rd;
-
-endgroup : cg_instr
+  cp_rs1: coverpoint instr.rs1;
+  cp_rd: coverpoint instr.rd;
+  cp_immi: coverpoint instr.immi;
+endgroup : cg_itype
 
 
 class uvma_isa_cov_model_c extends uvm_component;
@@ -34,7 +32,8 @@ class uvma_isa_cov_model_c extends uvm_component;
   uvma_isa_cfg_c cfg;
 
   // Covergroups
-  cg_instr instr_cg;  // TODO specific name, like "addi_cg"
+  cg_itype addi_cg;  // TODO only if feature flag?
+  cg_itype ori_cg;  // TODO only if feature flag?
 
   // TLM
   uvm_tlm_analysis_fifo #(uvma_isa_mon_trn_c) mon_trn_fifo;
@@ -42,6 +41,7 @@ class uvma_isa_cov_model_c extends uvm_component;
   extern function new(string name = "uvma_isa_cov_model", uvm_component parent = null);
   extern virtual function void build_phase(uvm_phase phase);
   extern virtual task run_phase(uvm_phase phase);
+  extern function void sample (instr_c instr);
 
 endclass : uvma_isa_cov_model_c
 
@@ -63,7 +63,8 @@ function void uvma_isa_cov_model_c::build_phase(uvm_phase phase);
   end
 
   if (cfg.enabled && cfg.cov_model_enabled) begin
-    instr_cg = new("instr_cg");
+    addi_cg = new("addi_cg");
+    ori_cg  = new("ori_cg");
   end
 
   mon_trn_fifo = new("mon_trn_fifo", this);
@@ -82,10 +83,20 @@ task uvma_isa_cov_model_c::run_phase(uvm_phase phase);
 
         mon_trn_fifo.get(mon_trn);
         $display("TODO sample_mon_trn()");
-        $display("TODO rs1 = %0d", mon_trn.instr.rs1);
-        instr_cg.sample(mon_trn.instr);
+        sample (mon_trn.instr);
       end
     join_none
   end
 
 endtask : run_phase
+
+
+function void uvma_isa_cov_model_c::sample (instr_c instr);
+
+  case (instr.name)
+    ADDI: addi_cg.sample(instr);
+    ORI:  ori_cg.sample(instr);
+    // TODO default
+  endcase
+
+endfunction
