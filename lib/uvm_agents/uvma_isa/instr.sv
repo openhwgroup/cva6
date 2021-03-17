@@ -14,19 +14,11 @@
 // limitations under the License.
 
 
-class uvma_isa_mon_trn_c extends uvml_trn_mon_trn_c;
+class instr_c extends uvm_object;
 
-  `uvm_object_utils(uvma_isa_mon_trn_c)
+  int name;  // TODO proper definition
+  int rs1;  // TODO proper definition
+  int rs2;  // TODO proper definition
+  int rd;  // TODO proper definition
 
-  instr_c instr;
-
-  extern function new(string name = "uvma_isa_mon_trn");
-
-endclass : uvma_isa_mon_trn_c
-
-
-function uvma_isa_mon_trn_c::new(string name = "uvma_isa_mon_trn");
-
-  super.new(name);
-
-endfunction : new
+endclass : instr_c

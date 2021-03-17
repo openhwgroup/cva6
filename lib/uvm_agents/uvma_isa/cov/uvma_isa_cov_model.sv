@@ -64,8 +64,10 @@ task uvma_isa_cov_model_c::run_phase(uvm_phase phase);
     fork
       forever begin
         uvma_isa_mon_trn_c mon_trn;
+
         mon_trn_fifo.get(mon_trn);
         $display("TODO sample_mon_trn()");
+        $display("TODO rs1 = %0d", mon_trn.instr.rs1);
       end
     join_none
   end

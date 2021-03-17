@@ -61,6 +61,9 @@ task uvma_isa_mon_c::run_phase(uvm_phase phase);
 
         @(cntxt.vif.retire);
         $display("TODO mon got retire: insn=0x%0h @%0t", cntxt.vif.insn, $time);
+        mon_trn = new();
+        mon_trn.instr = new();
+        mon_trn.instr.rs1 = cntxt.vif.insn[19:15];  // TODO use disassembler
         ap.write(mon_trn);
       end
     end
