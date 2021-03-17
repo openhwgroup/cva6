@@ -17,8 +17,8 @@
 class instr_c extends uvm_object;
 
   int name;  // TODO proper definition
-  int rs1;  // TODO proper definition
-  int rs2;  // TODO proper definition
-  int rd;  // TODO proper definition
+  bit [4:0] rs1;  // TODO proper definition
+  bit [4:0] rs2;  // TODO proper definition
+  bit [4:0] rd;  // TODO proper definition
 
 endclass : instr_c

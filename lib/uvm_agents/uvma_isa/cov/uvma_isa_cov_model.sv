@@ -14,12 +14,27 @@
 // limitations under the License.
 
 
+covergroup cg_instr(string name) with function sample (instr_c instr);
+  // TODO specific name, like "cg_opimm"
+  option.per_instance = 1;
+  option.name = name;
+
+  cp_rs1 : coverpoint instr.rs1;
+  cp_rs2 : coverpoint instr.rs2;
+  cp_rd : coverpoint instr.rd;
+
+endgroup : cg_instr
+
+
 class uvma_isa_cov_model_c extends uvm_component;
 
   `uvm_component_utils(uvma_isa_cov_model_c)
 
   // Objects
   uvma_isa_cfg_c cfg;
+
+  // Covergroups
+  cg_instr instr_cg;  // TODO specific name, like "addi_cg"
 
   // TLM
   uvm_tlm_analysis_fifo #(uvma_isa_mon_trn_c) mon_trn_fifo;
@@ -48,7 +63,7 @@ function void uvma_isa_cov_model_c::build_phase(uvm_phase phase);
   end
 
   if (cfg.enabled && cfg.cov_model_enabled) begin
-    //TODO instr_cg = new();
+    instr_cg = new("instr_cg");
   end
 
   mon_trn_fifo = new("mon_trn_fifo", this);
@@ -68,6 +83,7 @@ task uvma_isa_cov_model_c::run_phase(uvm_phase phase);
         mon_trn_fifo.get(mon_trn);
         $display("TODO sample_mon_trn()");
         $display("TODO rs1 = %0d", mon_trn.instr.rs1);
+        instr_cg.sample(mon_trn.instr);
       end
     join_none
   end

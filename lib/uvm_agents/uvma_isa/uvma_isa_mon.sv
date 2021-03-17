@@ -56,7 +56,7 @@ task uvma_isa_mon_c::run_phase(uvm_phase phase);
   // TODO if cfg.enabled, while 1, wait cntxt.vif.reset, ...
   fork
     begin
-      repeat (3) begin  //TODO while (1) begin
+      repeat (10) begin  //TODO forever begin
         uvma_isa_mon_trn_c mon_trn;
 
         @(cntxt.vif.retire);
