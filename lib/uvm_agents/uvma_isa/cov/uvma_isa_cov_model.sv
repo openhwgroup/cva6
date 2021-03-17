@@ -24,6 +24,15 @@ covergroup cg_itype(string name) with function sample (instr_c instr);
 endgroup : cg_itype
 
 
+covergroup cg_utype(string name) with function sample (instr_c instr);
+  option.per_instance = 1;
+  option.name = name;
+
+  cp_rd: coverpoint instr.rd;
+  cp_immu: coverpoint instr.immu;
+endgroup : cg_utype
+
+
 class uvma_isa_cov_model_c extends uvm_component;
 
   `uvm_component_utils(uvma_isa_cov_model_c)
@@ -33,7 +42,8 @@ class uvma_isa_cov_model_c extends uvm_component;
 
   // Covergroups
   cg_itype addi_cg;  // TODO only if feature flag?
-  cg_itype ori_cg;  // TODO only if feature flag?
+  cg_itype ori_cg;
+  cg_utype auipc_cg;
 
   // TLM
   uvm_tlm_analysis_fifo #(uvma_isa_mon_trn_c) mon_trn_fifo;
@@ -65,6 +75,7 @@ function void uvma_isa_cov_model_c::build_phase(uvm_phase phase);
   if (cfg.enabled && cfg.cov_model_enabled) begin
     addi_cg = new("addi_cg");
     ori_cg  = new("ori_cg");
+    auipc_cg = new("auipc_cg");
   end
 
   mon_trn_fifo = new("mon_trn_fifo", this);
@@ -82,7 +93,6 @@ task uvma_isa_cov_model_c::run_phase(uvm_phase phase);
         uvma_isa_mon_trn_c mon_trn;
 
         mon_trn_fifo.get(mon_trn);
-        $display("TODO sample_mon_trn()");
         sample (mon_trn.instr);
       end
     join_none
@@ -96,6 +106,7 @@ function void uvma_isa_cov_model_c::sample (instr_c instr);
   case (instr.name)
     ADDI: addi_cg.sample(instr);
     ORI:  ori_cg.sample(instr);
+    AUIPC: auipc_cg.sample(instr);
     // TODO default
   endcase
 

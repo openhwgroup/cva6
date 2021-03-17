@@ -56,7 +56,7 @@ task uvma_isa_mon_c::run_phase(uvm_phase phase);
   // TODO if cfg.enabled, while 1, wait cntxt.vif.reset, ...
   fork
     begin
-      repeat (10) begin  //TODO forever begin
+      forever begin
         uvma_isa_mon_trn_c mon_trn;
 
         @(cntxt.vif.retire);
@@ -70,11 +70,14 @@ task uvma_isa_mon_c::run_phase(uvm_phase phase);
             (cntxt.vif.insn[14:12] == 3'b110) ?
               ORI :
             UNKNOWN :
+          (cntxt.vif.insn[6:0] == 7'b00_101_11) ?
+            AUIPC :
           UNKNOWN;  // TODO use disassembler
         mon_trn.instr.rs1 = cntxt.vif.insn[19:15];  // TODO use disassembler
         mon_trn.instr.rs2 = cntxt.vif.insn[24:20];  // TODO use disassembler
         mon_trn.instr.rd = cntxt.vif.insn[11:7];  // TODO use disassembler
         mon_trn.instr.immi = cntxt.vif.insn[31:25];  // TODO use disassembler
+        mon_trn.instr.immu = cntxt.vif.insn[31:12];  // TODO use disassembler
 
         ap.write(mon_trn);
       end
