@@ -157,6 +157,8 @@ src :=  $(filter-out src/ariane_regfile.sv, $(wildcard src/*.sv))              \
         $(wildcard src/axi_riscv_atomics/src/*.sv)                             \
         $(wildcard src/axi_mem_if/src/*.sv)                                    \
         $(wildcard src/pmp/src/*.sv)                                           \
+        $(wildcard src/mmu_sv39/*.sv)                                          \
+        $(wildcard src/mmu_sv32/*.sv)                                          \
         src/rv_plic/rtl/rv_plic_target.sv                                      \
         src/rv_plic/rtl/rv_plic_gateway.sv                                     \
         src/rv_plic/rtl/plic_regmap.sv                                         \
@@ -218,11 +220,6 @@ src :=  $(filter-out src/ariane_regfile.sv, $(wildcard src/*.sv))              \
         tb/common/SimDTM.sv                                                    \
         tb/common/SimJTAG.sv
 
-ifeq ($(XLEN), 64)
-src := $(src) $(wildcard src/mmu_sv39/*.sv)
-else
-src := $(src),$(wildcard src/mmu_sv32/*.sv)
-endif
 
 src := $(addprefix $(root-dir), $(src))
 
