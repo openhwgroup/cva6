@@ -2,6 +2,8 @@
 # Date: 03/19/2017
 # Description: Makefile for linting and testing Ariane.
 
+XLEN ?= 64
+
 # questa library
 library        ?= work
 # verilator lib
@@ -215,6 +217,12 @@ src :=  $(filter-out src/ariane_regfile.sv, $(wildcard src/*.sv))              \
         tb/common/uart.sv                                                      \
         tb/common/SimDTM.sv                                                    \
         tb/common/SimJTAG.sv
+
+ifeq ($(XLEN), 64)
+src := $(src) $(wildcard src/mmu_sv39/*.sv)
+else
+src := $(src),$(wildcard src/mmu_sv32/*.sv)
+endif
 
 src := $(addprefix $(root-dir), $(src))
 

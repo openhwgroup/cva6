@@ -33,7 +33,7 @@ package riscv;
     // Warning: When using STD_CACHE, configuration must be PLEN=56 and VLEN=64
     // Warning: VLEN must be superior or equal to PLEN
     localparam VLEN       = (XLEN == 32) ? 32 : 64;    // virtual address length
-    localparam PLEN       = (XLEN == 32) ? 32 : 56;    // physical address length
+    localparam PLEN       = (XLEN == 32) ? 34 : 56;    // physical address length
 
     localparam IS_XLEN64  = (XLEN == 32) ? 1'b0 : 1'b1;
     localparam ModeW      = (XLEN == 32) ? 1 : 4;
@@ -263,10 +263,10 @@ package riscv;
     // ----------------------
     // Virtual Memory
     // ----------------------
-    // memory management, pte
+    // memory management, pte for sv39
     typedef struct packed {
         logic [9:0]  reserved;
-        logic [PLEN-12-1:0] ppn;
+        logic [44-1:0] ppn; // PPN length for 
         logic [1:0]  rsw;
         logic d;
         logic a;
@@ -277,6 +277,20 @@ package riscv;
         logic r;
         logic v;
     } pte_t;
+
+    // memory management, pte for sv32
+    typedef struct packed {
+        logic [22-1:0] ppn; // PPN length for 
+        logic [1:0]  rsw;
+        logic d;
+        logic a;
+        logic g;
+        logic u;
+        logic x;
+        logic w;
+        logic r;
+        logic v;
+    } pte_sv32_t;
 
     // ----------------------
     // Exception Cause Codes
