@@ -18,7 +18,9 @@ typedef enum {
   UNKNOWN,
   ADDI,
   ORI,
-  AUIPC
+  AUIPC,
+  SW,
+  XOR
 } instr_name_t;
 
 
@@ -30,5 +32,6 @@ class instr_c extends uvm_object;
   bit [4:0] rd;
   bit [11:0] immi;
   bit [19:0] immu;
+  bit [11:0] imms;
 
 endclass : instr_c

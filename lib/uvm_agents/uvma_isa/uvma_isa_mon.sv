@@ -64,14 +64,24 @@ task uvma_isa_mon_c::run_phase(uvm_phase phase);
         mon_trn = new();
         mon_trn.instr = new();
         mon_trn.instr.name =
-          (cntxt.vif.insn[6:0] == 7'b00_100_11) ?
+          (cntxt.vif.insn[6:0] == 7'b00_100_11) ? // OP-IMM
             (cntxt.vif.insn[14:12] == 3'b000) ?
               ADDI :
             (cntxt.vif.insn[14:12] == 3'b110) ?
               ORI :
             UNKNOWN :
-          (cntxt.vif.insn[6:0] == 7'b00_101_11) ?
+          (cntxt.vif.insn[6:0] == 7'b00_101_11) ? // AUIPC
             AUIPC :
+          (cntxt.vif.insn[6:0] == 7'b01_000_11) ? // STORE
+            (cntxt.vif.insn[14:12] == 3'b010) ?
+              SW :
+            UNKNOWN :
+          (cntxt.vif.insn[6:0] == 7'b01_100_11) ? // OP
+            (cntxt.vif.insn[14:12] == 3'b100) ?
+              (cntxt.vif.insn[31:25] == 7'b0) ?
+                XOR :
+              UNKNOWN :
+            UNKNOWN :
           UNKNOWN;  // TODO use disassembler
         mon_trn.instr.rs1 = cntxt.vif.insn[19:15];  // TODO use disassembler
         mon_trn.instr.rs2 = cntxt.vif.insn[24:20];  // TODO use disassembler

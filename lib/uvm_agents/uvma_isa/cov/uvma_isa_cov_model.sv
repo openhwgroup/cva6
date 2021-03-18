@@ -14,6 +14,16 @@
 // limitations under the License.
 
 
+covergroup cg_rtype(string name) with function sample (instr_c instr);
+  option.per_instance = 1;
+  option.name = name;
+
+  cp_rs1: coverpoint instr.rs1;
+  cp_rs2: coverpoint instr.rs2;
+  cp_rd: coverpoint instr.rd;
+endgroup : cg_rtype
+
+
 covergroup cg_itype(string name) with function sample (instr_c instr);
   option.per_instance = 1;
   option.name = name;
@@ -22,6 +32,16 @@ covergroup cg_itype(string name) with function sample (instr_c instr);
   cp_rd: coverpoint instr.rd;
   cp_immi: coverpoint instr.immi;
 endgroup : cg_itype
+
+
+covergroup cg_stype(string name) with function sample (instr_c instr);
+  option.per_instance = 1;
+  option.name = name;
+
+  cp_rs1: coverpoint instr.rs1;
+  cp_rs2: coverpoint instr.rs2;
+  cp_imms: coverpoint instr.imms;
+endgroup : cg_stype
 
 
 covergroup cg_utype(string name) with function sample (instr_c instr);
@@ -44,6 +64,8 @@ class uvma_isa_cov_model_c extends uvm_component;
   cg_itype addi_cg;  // TODO only if feature flag?
   cg_itype ori_cg;
   cg_utype auipc_cg;
+  cg_stype sw_cg;
+  cg_rtype xor_cg;
 
   // TLM
   uvm_tlm_analysis_fifo #(uvma_isa_mon_trn_c) mon_trn_fifo;
@@ -76,6 +98,8 @@ function void uvma_isa_cov_model_c::build_phase(uvm_phase phase);
     addi_cg = new("addi_cg");
     ori_cg  = new("ori_cg");
     auipc_cg = new("auipc_cg");
+    sw_cg = new("sw_cg");
+    xor_cg = new("xor_cg");
   end
 
   mon_trn_fifo = new("mon_trn_fifo", this);
@@ -107,6 +131,8 @@ function void uvma_isa_cov_model_c::sample (instr_c instr);
     ADDI: addi_cg.sample(instr);
     ORI:  ori_cg.sample(instr);
     AUIPC: auipc_cg.sample(instr);
+    SW: sw_cg.sample(instr);
+    XOR: xor_cg.sample(instr);
     // TODO default
   endcase
 
