@@ -221,7 +221,7 @@ src :=  $(filter-out src/ariane_regfile.sv, $(wildcard src/*.sv))              \
 ifeq ($(XLEN), 64)
 src := $(src) $(wildcard src/mmu_sv39/*.sv)
 else
-src := $(src),$(wildcard src/cva6_mmu_sv32/*.sv)
+src := $(src),$(wildcard src/mmu_sv32/*.sv)
 endif
 
 src := $(addprefix $(root-dir), $(src))
