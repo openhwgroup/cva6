@@ -159,7 +159,7 @@ module load_store_unit import ariane_pkg::*; #(
             .pmpaddr_i,
             .*
         );
-    end else if (MMU_PRESENT && (riscv::XLEN==32) ) begin : gen_mmu_sv32
+    end else if (MMU_PRESENT && (riscv::XLEN == 32)) begin : gen_mmu_sv32
         cva6_mmu_sv32 #(
             .INSTR_TLB_ENTRIES      ( 16                     ),
             .DATA_TLB_ENTRIES       ( 16                     ),
