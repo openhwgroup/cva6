@@ -24,7 +24,7 @@
 // 2020-02-17  0.1      S.Jacq       TLB Sv32 for CV32A6
 // =========================================================================== //
 
-module tlb_sv32 import ariane_pkg::*; #(
+module cva6_tlb_sv32 import ariane_pkg::*; #(
       parameter int unsigned TLB_ENTRIES = 4,
       parameter int unsigned ASID_WIDTH  = 1
   )(
