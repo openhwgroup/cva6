@@ -27,7 +27,7 @@
 // =========================================================================== //
 
 
-module mmu_sv32 import ariane_pkg::*; #(
+module cva6_mmu_sv32 import ariane_pkg::*; #(
     parameter int unsigned INSTR_TLB_ENTRIES     = 4,
     parameter int unsigned DATA_TLB_ENTRIES      = 4,
     parameter int unsigned ASID_WIDTH            = 1,
@@ -105,7 +105,7 @@ module mmu_sv32 import ariane_pkg::*; #(
     assign dtlb_lu_access = lsu_req_i;
 
 
-    tlb_sv32 #(
+    cva6_tlb_sv32 #(
         .TLB_ENTRIES      ( INSTR_TLB_ENTRIES          ),
         .ASID_WIDTH       ( ASID_WIDTH                 )
     ) i_itlb (
@@ -126,7 +126,7 @@ module mmu_sv32 import ariane_pkg::*; #(
         .lu_hit_o         ( itlb_lu_hit                )
     );
 
-    tlb_sv32 #(
+    cva6_tlb_sv32 #(
         .TLB_ENTRIES     ( DATA_TLB_ENTRIES             ),
         .ASID_WIDTH      ( ASID_WIDTH                   )
     ) i_dtlb (
@@ -138,8 +138,8 @@ module mmu_sv32 import ariane_pkg::*; #(
 
         .lu_access_i      ( dtlb_lu_access              ),
         .lu_asid_i        ( asid_i                      ),
-	.asid_to_be_flushed_i  ( asid_to_be_flushed_i   ),
-	.vaddr_to_be_flushed_i ( vaddr_to_be_flushed_i  ),
+        .asid_to_be_flushed_i  ( asid_to_be_flushed_i   ),
+        .vaddr_to_be_flushed_i ( vaddr_to_be_flushed_i  ),
         .lu_vaddr_i       ( lsu_vaddr_i                 ),
         .lu_content_o     ( dtlb_content                ),
 
@@ -148,7 +148,7 @@ module mmu_sv32 import ariane_pkg::*; #(
     );
 
 
-    ptw_sv32  #(
+    cva6_ptw_sv32  #(
         .ASID_WIDTH             ( ASID_WIDTH            ),
         .ArianeCfg              ( ArianeCfg             )
     ) i_ptw (
