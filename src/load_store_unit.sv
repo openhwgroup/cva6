@@ -130,7 +130,7 @@ module load_store_unit import ariane_pkg::*; #(
     // -------------------
     // MMU e.g.: TLBs/PTW
     // -------------------
-    if (MMU_PRESENT && (riscv::XLEN==64) ) begin : gen_mmu_sv39
+    if (MMU_PRESENT && (riscv::XLEN == 64)) begin : gen_mmu_sv39
         mmu #(
             .INSTR_TLB_ENTRIES      ( 16                     ),
             .DATA_TLB_ENTRIES       ( 16                     ),
@@ -564,4 +564,3 @@ module lsu_bypass import ariane_pkg::*; (
         end
     end
 endmodule
-
