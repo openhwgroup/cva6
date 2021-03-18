@@ -31,20 +31,21 @@ name: cv32e40p-dev-metrics-regress
 # events but only for the master branch
 on:
   push:
-    branches: [ cv32e40p/dev ]
+    branches:
+      - cv32e40p/dev
 #  pull_request_target:
 #    branches: [ master ]
 
 # If you fork this repository, you must create a new Metrics project for your fork
 # and set the environment variable $METRICS_PROJECT_ID accordingly
 jobs:
-  metrics-cv32e40p_ci_check_dev:
-    name: metrics-cv32e40p_ci_check_dev
+  cv32e40p_ci_check_dev-metrics:
+    name: cv32e40p_ci_check_dev-metrics
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
         with:
-        ref: cv32e40p/dev
+          ref: cv32e40p/dev
       - run: ./bin/metrics-regress $METRICS_REGRESSION_NAME $METRICS_PROJECT_ID
         env:
           METRICS_CI_TOKEN: ${{ secrets.METRICS_CI_TOKEN }}
@@ -52,4 +53,3 @@ jobs:
           METRICS_PROJECT_ID: ${{ secrets.METRICS_PROJECT_ID }}
           PR_NUMBER: ${{ github.event.pull_request.number }}
         shell: bash
-

@@ -36,8 +36,8 @@ on:
     - cron: '0 5 * * *'
 
 jobs:
-  metrics-cv32e40p_full_covg_no_pulp_dev:
-    name: metrics-cv32e40p_full_covg_no_pulp_dev
+  cv32e40p_full_covg_no_pulp_dev-metrics:
+    name: cv32e40p_full_covg_no_pulp_dev-metrics
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
@@ -51,8 +51,8 @@ jobs:
           PR_NUMBER: ${{ github.event.pull_request.number }}
         shell: bash
 
-  metrics-cv32e40p_compliance_dev:
-    name: metrics-cv32e40p_compliance_dev
+  cv32e40p_compliance_dev-metrics:
+    name: cv32e40p_compliance_dev-metrics
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2

@@ -31,15 +31,16 @@ name: master-metrics-regress
 # events but only for the master branch
 on:
   push:
-    branches: [ master ]
+    branches:
+      - master
 #  pull_request_target:
 #    branches: [ master ]
 
 # If you fork this repository, you must create a new Metrics project for your fork
 # and set the environment variable $METRICS_PROJECT_ID accordingly
 jobs:
-  metrics-cv32e40p_rel_check_master:
-    name: metrics-cv32e40p_rel_check_master
+  cv32e40p_rel_check_master-metrics:
+    name: cv32e40p_rel_check_master-metrcs
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2

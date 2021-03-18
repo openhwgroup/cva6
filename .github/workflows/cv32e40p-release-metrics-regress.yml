@@ -31,15 +31,16 @@ name: cv32e40p-release-metrics-regress
 # events but only for the master branch
 on:
   push:
-    branches: [ cv32e40p/release ]
+    branches:
+      - cv32e40p/release      
 #  pull_request_target:
 #    branches: [ master ]
 
 # If you fork this repository, you must create a new Metrics project for your fork
 # and set the environment variable $METRICS_PROJECT_ID accordingly
 jobs:
-  metrics-cv32e40p_rel_check_release:
-    name: metrics-cv32e40p_rel_check_release
+  cv32e40p_rel_check_release-metrics:
+    name: cv32e40p_rel_check_release-metrics
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
