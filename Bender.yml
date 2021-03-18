@@ -57,9 +57,15 @@ sources:
     - src/mmu_sv39/mmu.sv
     - src/mmu_sv39/ptw.sv
     - src/mmu_sv39/mult.sv
+<<<<<<< HEAD
     - src/mmu_sv32/mmu_sv32.sv
     - src/mmu_sv32/ptw_sv32.sv
     - src/mmu_sv32/mult_sv32.sv
+=======
+    - src/mmu_sv32/cva6_mmu_sv32.sv
+    - src/mmu_sv32/cva6_ptw_sv32.sv
+    - src/mmu_sv32/cva6_mult_sv32.sv
+>>>>>>> 702eef2050c5c425f71e7929088fed981c50338e
     - src/load_unit.sv
     - src/issue_read_operands.sv
     - src/pmp/src/pmp_entry.sv

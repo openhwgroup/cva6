@@ -639,7 +639,11 @@ package ariane_pkg;
         logic                  valid;      // valid flag
         logic                  is_2M;      //
         logic                  is_1G;      //
+<<<<<<< HEAD
         logic [27-1:0]         vpn;        //VPN (39bits) = 27bits + 12bits offset
+=======
+        logic [27-1:0]         vpn;        // VPN (39bits) = 27bits + 12bits offset
+>>>>>>> 702eef2050c5c425f71e7929088fed981c50338e
         logic [ASID_WIDTH-1:0] asid;
         riscv::pte_t           content;
     } tlb_update_t;
