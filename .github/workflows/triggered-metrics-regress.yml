@@ -25,35 +25,41 @@
 #
 # Stolen, without the slightest hint of shame, from Aimee Sutton.
 
-name: cv32e40p-dev-scheduled-metrics-regress
+name: triggered-metrics-regress
 
 # Controls when the action will run. Triggers the workflow on push or pull request
 # events but only for the master branch
-
 on:
-  schedule:
-    # This will run nightly (in the Western Hemisphere) at 0500 UTC
-    - cron: '0 5 * * *'
+  push:
+    branches:
+      - master
+      - cv32e40p/dev
+      - cv32e40p/release
 
+#  pull_request_target:
+#    branches: [ master ]
+
+# If you fork this repository, you must create a new Metrics project for your fork
+# and set the environment variable $METRICS_PROJECT_ID accordingly
 jobs:
-  cv32e40p_full_covg_no_pulp_dev-metrics:
-    name: cv32e40p_full_covg_no_pulp_dev-metrics
+  cv32e40p_rel_check_master-metrics:
+    name: cv32e40p_rel_check_master-metrics
     runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/master'
     steps:
       - uses: actions/checkout@v2
-        with:
-          ref: cv32e40p/dev
       - run: ./bin/metrics-regress $METRICS_REGRESSION_NAME $METRICS_PROJECT_ID
         env:
           METRICS_CI_TOKEN: ${{ secrets.METRICS_CI_TOKEN }}
-          METRICS_REGRESSION_NAME: cv32e40p_full_covg_no_pulp_dev
+          METRICS_REGRESSION_NAME: cv32e40p_rel_check_master
           METRICS_PROJECT_ID: ${{ secrets.METRICS_PROJECT_ID }}
           PR_NUMBER: ${{ github.event.pull_request.number }}
         shell: bash
 
-  cv32e40p_compliance_dev-metrics:
-    name: cv32e40p_compliance_dev-metrics
+  cv32e40p_ci_check_dev-metrics:
+    name: cv32e40p_ci_check_dev-metrics
     runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/cv32e40p/dev'
     steps:
       - uses: actions/checkout@v2
         with:
@@ -61,7 +67,23 @@ jobs:
       - run: ./bin/metrics-regress $METRICS_REGRESSION_NAME $METRICS_PROJECT_ID
         env:
           METRICS_CI_TOKEN: ${{ secrets.METRICS_CI_TOKEN }}
-          METRICS_REGRESSION_NAME: cv32e40p_compliance_dev
+          METRICS_REGRESSION_NAME: cv32e40p_ci_check_dev
+          METRICS_PROJECT_ID: ${{ secrets.METRICS_PROJECT_ID }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+        shell: bash
+
+  cv32e40p_rel_check_release-metrics:
+    name: cv32e40p_rel_check_dev-metrics
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/cv32e40p/dev'
+    steps:
+      - uses: actions/checkout@v2
+        with:
+          ref: cv32e40p/release
+      - run: ./bin/metrics-regress $METRICS_REGRESSION_NAME $METRICS_PROJECT_ID
+        env:
+          METRICS_CI_TOKEN: ${{ secrets.METRICS_CI_TOKEN }}
+          METRICS_REGRESSION_NAME: cv32e40p_rel_check_release
           METRICS_PROJECT_ID: ${{ secrets.METRICS_PROJECT_ID }}
           PR_NUMBER: ${{ github.event.pull_request.number }}
         shell: bash
