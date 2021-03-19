@@ -42,8 +42,7 @@ on:
 # If you fork this repository, you must create a new Metrics project for your fork
 # and set the environment variable $METRICS_PROJECT_ID accordingly
 jobs:
-  cv32e40p_rel_check_master-metrics:
-    name: cv32e40p_rel_check_master-metrics
+  cv32e40p_rel_check_master-metrics:    
     runs-on: ubuntu-latest
     if: github.ref == 'refs/heads/master'
     steps:
@@ -56,8 +55,7 @@ jobs:
           PR_NUMBER: ${{ github.event.pull_request.number }}
         shell: bash
 
-  cv32e40p_ci_check_dev-metrics:
-    name: cv32e40p_ci_check_dev-metrics
+  cv32e40p_ci_check_dev-metrics:    
     runs-on: ubuntu-latest
     if: github.ref == 'refs/heads/cv32e40p/dev'
     steps:
@@ -73,9 +71,8 @@ jobs:
         shell: bash
 
   cv32e40p_rel_check_release-metrics:
-    name: cv32e40p_rel_check_dev-metrics
     runs-on: ubuntu-latest
-    if: github.ref == 'refs/heads/cv32e40p/dev'
+    if: github.ref == 'refs/heads/cv32e40p/release'
     steps:
       - uses: actions/checkout@v2
         with:
