@@ -22,6 +22,10 @@ class uvma_isa_cfg_c extends uvm_object;
   rand uvm_active_passive_enum is_active;
   rand bit                     cov_model_enabled;
   rand bit                     trn_log_enabled;
+  rand bit                     ext_i_enabled;
+  rand bit                     ext_m_enabled;
+  rand bit                     ext_c_enabled;
+  rand bit                     ext_zifencei_enabled;
 
   extern function new(string name = "uvma_isa_cfg");
 

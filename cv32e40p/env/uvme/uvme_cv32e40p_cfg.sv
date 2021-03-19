@@ -93,6 +93,10 @@ class uvme_cv32e40p_cfg_c extends uvm_object;
       obi_instr_cfg.read_enabled  == 1;
       obi_data_cfg.write_enabled  == 1;
       obi_data_cfg.read_enabled   == 1;
+      isa_cfg.ext_i_enabled        == 1;
+      isa_cfg.ext_m_enabled        == 1;
+      isa_cfg.ext_c_enabled        == 1;
+      isa_cfg.ext_zifencei_enabled == 1;
 
       if (is_active == UVM_ACTIVE) {
          isa_cfg.is_active       == UVM_PASSIVE;

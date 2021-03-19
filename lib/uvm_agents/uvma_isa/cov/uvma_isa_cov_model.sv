@@ -97,13 +97,17 @@ function void uvma_isa_cov_model_c::build_phase(uvm_phase phase);
   end
 
   if (cfg.enabled && cfg.cov_model_enabled) begin
-    addi_cg = new("addi_cg");
-    ori_cg  = new("ori_cg");
-    auipc_cg = new("auipc_cg");
-    sw_cg = new("sw_cg");
-    xor_cg = new("xor_cg");
-    mulh_cg = new("mulh_cg");
-    divu_cg = new("divu_cg");
+    if (cfg.ext_i_enabled) begin
+      addi_cg = new("addi_cg");
+      ori_cg  = new("ori_cg");
+      auipc_cg = new("auipc_cg");
+      sw_cg = new("sw_cg");
+      xor_cg = new("xor_cg");
+    end
+    if (cfg.ext_m_enabled) begin
+      mulh_cg = new("mulh_cg");
+      divu_cg = new("divu_cg");
+    end
   end
 
   mon_trn_fifo = new("mon_trn_fifo", this);
@@ -131,15 +135,31 @@ endtask : run_phase
 
 function void uvma_isa_cov_model_c::sample (instr_c instr);
 
-  case (instr.name)
-    ADDI: addi_cg.sample(instr);
-    ORI:  ori_cg.sample(instr);
-    AUIPC: auipc_cg.sample(instr);
-    SW: sw_cg.sample(instr);
-    XOR: xor_cg.sample(instr);
-    MULH: mulh_cg.sample(instr);
-    DIVU: divu_cg.sample(instr);
-    // TODO default
-  endcase
+  logic have_sampled = 0;
+
+  if (!have_sampled && cfg.ext_i_enabled) begin
+    have_sampled = 1;
+    case (instr.name)
+      ADDI: addi_cg.sample(instr);
+      ORI:  ori_cg.sample(instr);
+      AUIPC: auipc_cg.sample(instr);
+      SW: sw_cg.sample(instr);
+      XOR: xor_cg.sample(instr);
+      default: have_sampled = 0;
+    endcase
+  end
+
+  if (!have_sampled && cfg.ext_m_enabled) begin
+    have_sampled = 1;
+    case (instr.name)
+      MULH: mulh_cg.sample(instr);
+      DIVU: divu_cg.sample(instr);
+      default: have_sampled = 0;
+    endcase
+  end
+
+  if (!have_sampled) begin
+    $display("TODO error if no match found");
+  end
 
 endfunction
