@@ -20,7 +20,9 @@ typedef enum {
   ORI,
   AUIPC,
   SW,
-  XOR
+  XOR,
+  MULH,
+  DIVU
 } instr_name_t;
 
 

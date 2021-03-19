@@ -77,10 +77,12 @@ task uvma_isa_mon_c::run_phase(uvm_phase phase);
               SW :
             UNKNOWN :
           (cntxt.vif.insn[6:0] == 7'b01_100_11) ? // OP
-            (cntxt.vif.insn[14:12] == 3'b100) ?
-              (cntxt.vif.insn[31:25] == 7'b0) ?
-                XOR :
-              UNKNOWN :
+            ((cntxt.vif.insn[14:12] == 3'b100) && (cntxt.vif.insn[31:25] == 7'b0)) ?
+              XOR :
+            ((cntxt.vif.insn[14:12] == 3'b001) && (cntxt.vif.insn[31:25] == 7'b0000001)) ?
+              MULH :
+            ((cntxt.vif.insn[14:12] == 3'b101) && (cntxt.vif.insn[31:25] == 7'b0000001)) ?
+              DIVU :
             UNKNOWN :
           UNKNOWN;  // TODO use disassembler
         mon_trn.instr.rs1 = cntxt.vif.insn[19:15];  // TODO use disassembler

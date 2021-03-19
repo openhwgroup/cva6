@@ -66,6 +66,8 @@ class uvma_isa_cov_model_c extends uvm_component;
   cg_utype auipc_cg;
   cg_stype sw_cg;
   cg_rtype xor_cg;
+  cg_rtype mulh_cg;
+  cg_rtype divu_cg;
 
   // TLM
   uvm_tlm_analysis_fifo #(uvma_isa_mon_trn_c) mon_trn_fifo;
@@ -100,6 +102,8 @@ function void uvma_isa_cov_model_c::build_phase(uvm_phase phase);
     auipc_cg = new("auipc_cg");
     sw_cg = new("sw_cg");
     xor_cg = new("xor_cg");
+    mulh_cg = new("mulh_cg");
+    divu_cg = new("divu_cg");
   end
 
   mon_trn_fifo = new("mon_trn_fifo", this);
@@ -133,6 +137,8 @@ function void uvma_isa_cov_model_c::sample (instr_c instr);
     AUIPC: auipc_cg.sample(instr);
     SW: sw_cg.sample(instr);
     XOR: xor_cg.sample(instr);
+    MULH: mulh_cg.sample(instr);
+    DIVU: divu_cg.sample(instr);
     // TODO default
   endcase
 
