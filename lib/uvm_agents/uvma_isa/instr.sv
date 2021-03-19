@@ -16,13 +16,17 @@
 
 typedef enum {
   UNKNOWN,
-  ADDI,
-  ORI,
-  AUIPC,
-  SW,
-  XOR,
-  MULH,
-  DIVU
+
+  // 32I
+  LUI, AUIPC, JAL, JALR,
+  BEQ, BNE, BLT, BGE, BLTU, BGEU,
+  LB, LH, LW, LBU, LHU, SB, SH, SW,
+  ADDI, SLTI, SLTIU, XORI, ORI, ANDI, SLLI, SRLI, SRAI,
+  ADD, SUB, SLL, SLT, SLTU, XOR, SRL, SRA, OR, AND,
+  FENCE, ECALL, EBREAK,
+
+  // 32M
+  MULH, DIVU
 } instr_name_t;
 
 
@@ -33,7 +37,9 @@ class instr_c extends uvm_object;
   bit [4:0] rs2;
   bit [4:0] rd;
   bit [11:0] immi;
-  bit [19:0] immu;
   bit [11:0] imms;
+  bit [12:1] immb;
+  bit [19:0] immu;
+  bit [20:1] immj;
 
 endclass : instr_c
