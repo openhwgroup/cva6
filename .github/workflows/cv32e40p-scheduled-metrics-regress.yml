@@ -39,7 +39,7 @@ jobs:
   cv32e40p_full_covg_no_pulp_dev-metrics:
     name: cv32e40p_full_covg_no_pulp_dev-metrics
     runs-on: ubuntu-latest
-    if: github.repository == 'strichmo/core-v-verif'
+    if: github.repository == 'openhwgroup/core-v-verif'
     steps:
       - uses: actions/checkout@v2
         with:
@@ -55,7 +55,7 @@ jobs:
   cv32e40p_compliance_dev-metrics:
     name: cv32e40p_compliance_dev-metrics
     runs-on: ubuntu-latest
-    if: github.repository == 'strichmo/core-v-verif'
+    if: github.repository == 'openhwgroup/core-v-verif'
     steps:
       - uses: actions/checkout@v2
         with:
