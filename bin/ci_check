@@ -55,7 +55,7 @@ if (sys.version_info < (3,0,0)):
 
 ################################################################################
 # Globals....
-name_of_ci_check_regression = '<core>_ci_check_regression' # must match the name of one regression list in .metrics.json
+name_of_ci_check_regression = '<core>_ci_check_dev' # must match the name of one regression list in .metrics.json
 core_tests                  = ['misalign', 'illegal', 'dhrystone', 'fibonacci', 'riscv_ebreak_test_0']
 try:
     default_core            = os.environ['CV_CORE']
