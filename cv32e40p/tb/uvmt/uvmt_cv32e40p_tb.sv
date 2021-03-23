@@ -539,6 +539,7 @@ bind cv32e40p_wrapper
 
    always @(dut_wrap.cv32e40p_wrapper_i.tracer_i.retire) -> isa_if.retire;
    assign isa_if.insn = dut_wrap.cv32e40p_wrapper_i.tracer_i.insn_val;
+   assign isa_if.is_compressed = dut_wrap.cv32e40p_wrapper_i.tracer_i.insn_compressed;
 
    // Capture the test status and exit pulse flags
    // TODO: put this logic in the vp_status_if (makes it easier to pass to ENV)

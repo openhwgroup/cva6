@@ -72,6 +72,14 @@ covergroup cg_jtype(string name) with function sample (instr_c instr);
 endgroup : cg_jtype
 
 
+covergroup cg_cj(string name) with function sample (instr_c instr);
+  option.per_instance = 1;
+  option.name = name;
+
+  cp_c_immj: coverpoint instr.c_immj;
+endgroup : cg_cj
+
+
 class uvma_isa_cov_model_c extends uvm_component;
 
   `uvm_component_utils(uvma_isa_cov_model_c)
@@ -124,6 +132,10 @@ class uvma_isa_cov_model_c extends uvm_component;
   //32M:
   cg_rtype divu_cg;
   cg_rtype mulh_cg;
+  /*TODO rest of M*/
+  //32C:
+  cg_cj c_j_cg;
+  cg_cj c_jal_cg;
 
   // TLM
   uvm_tlm_analysis_fifo #(uvma_isa_mon_trn_c) mon_trn_fifo;
@@ -203,6 +215,10 @@ function void uvma_isa_cov_model_c::build_phase(uvm_phase phase);
     if (cfg.ext_m_enabled) begin
       mulh_cg = new("mulh_cg");
       divu_cg = new("divu_cg");
+    end
+    if (cfg.ext_c_enabled) begin
+      c_j_cg = new("c_j_cg");
+      c_jal_cg = new("c_jal_cg");
     end
   end
 
@@ -291,6 +307,17 @@ function void uvma_isa_cov_model_c::sample (instr_c instr);
     case (instr.name)
       MULH: mulh_cg.sample(instr);
       DIVU: divu_cg.sample(instr);
+      // TODO rest of M
+      default: have_sampled = 0;
+    endcase
+  end
+
+  if (!have_sampled && cfg.ext_c_enabled) begin
+    have_sampled = 1;
+    case (instr.name)
+      C_J: c_j_cg.sample(instr);
+      C_JAL: c_jal_cg.sample(instr);
+      // TODO rest of C
       default: have_sampled = 0;
     endcase
   end

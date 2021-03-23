@@ -26,13 +26,18 @@ typedef enum {
   FENCE, ECALL, EBREAK,
 
   // 32M
-  MULH, DIVU
+  MULH, DIVU,
+
+  // 32C
+  C_J, C_JAL,
+  C_BEQZ, C_BNEZ
 } instr_name_t;
 
 
 class instr_c extends uvm_object;
 
   instr_name_t name;
+
   bit [4:0] rs1;
   bit [4:0] rs2;
   bit [4:0] rd;
@@ -41,5 +46,7 @@ class instr_c extends uvm_object;
   bit [12:1] immb;
   bit [19:0] immu;
   bit [20:1] immj;
+
+  bit [11:1] c_immj;
 
 endclass : instr_c

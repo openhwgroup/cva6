@@ -18,5 +18,6 @@ interface uvma_isa_if;
 
   event        retire;
   logic [31:0] insn;
+  logic        is_compressed;
 
 endinterface
