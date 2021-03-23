@@ -26,6 +26,7 @@ class uvma_isa_cfg_c extends uvm_object;
   rand bit                     ext_m_enabled;
   rand bit                     ext_c_enabled;
   rand bit                     ext_zifencei_enabled;
+  rand bit                     ext_zicsr_enabled;
 
   extern function new(string name = "uvma_isa_cfg");
 

@@ -132,10 +132,11 @@ class uvma_isa_cov_model_c extends uvm_component;
   //32M:
   cg_rtype divu_cg;
   cg_rtype mulh_cg;
-  /*TODO rest of M*/
   //32C:
   cg_cj c_j_cg;
   cg_cj c_jal_cg;
+  //Zicsr:
+  cg_itype csrrw_cg;  // TODO define csr "imm" type
 
   // TLM
   uvm_tlm_analysis_fifo #(uvma_isa_mon_trn_c) mon_trn_fifo;
@@ -219,6 +220,9 @@ function void uvma_isa_cov_model_c::build_phase(uvm_phase phase);
     if (cfg.ext_c_enabled) begin
       c_j_cg = new("c_j_cg");
       c_jal_cg = new("c_jal_cg");
+    end
+    if (cfg.ext_zicsr_enabled) begin
+      csrrw_cg = new("csrrw_cg");
     end
   end
 
@@ -318,6 +322,15 @@ function void uvma_isa_cov_model_c::sample (instr_c instr);
       C_J: c_j_cg.sample(instr);
       C_JAL: c_jal_cg.sample(instr);
       // TODO rest of C
+      default: have_sampled = 0;
+    endcase
+  end
+
+  if (!have_sampled && cfg.ext_zicsr_enabled) begin
+    have_sampled = 1;
+    case (instr.name)
+      CSRRW: csrrw_cg.sample(instr);
+      // TODO rest of Zicsr
       default: have_sampled = 0;
     endcase
   end

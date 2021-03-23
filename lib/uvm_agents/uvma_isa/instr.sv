@@ -30,7 +30,11 @@ typedef enum {
 
   // 32C
   C_J, C_JAL,
-  C_BEQZ, C_BNEZ
+  C_BEQZ, C_BNEZ,
+
+  // Zicsr
+  CSRRW, CSRRS, CSRRC,
+  CSRRWI, CSRRSI, CSRRCI
 } instr_name_t;
 
 

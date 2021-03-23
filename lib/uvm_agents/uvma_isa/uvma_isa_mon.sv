@@ -86,6 +86,10 @@ task uvma_isa_mon_c::run_phase(uvm_phase phase);
             ((cntxt.vif.insn[14:12] == 3'b101) && (cntxt.vif.insn[31:25] == 7'b0000001)) ?
               DIVU :
             UNKNOWN :
+          (cntxt.vif.insn[6:0] == 7'b11_100_11) ? // SYSTEM
+            (cntxt.vif.insn[14:12] == 3'b001) ?
+              CSRRW :
+            UNKNOWN :
           UNKNOWN;  // TODO use disassembler
         mon_trn.instr.name =
           cntxt.vif.is_compressed ?
@@ -94,8 +98,8 @@ task uvma_isa_mon_c::run_phase(uvm_phase phase);
                 C_J :
               (cntxt.vif.insn[11:7] == 5'b00001) ?
                 C_JAL :
-              mon_trn.instr.name :
-            mon_trn.instr.name :
+              UNKNOWN :
+            UNKNOWN :
           mon_trn.instr.name;  // TODO get proper binary input
 if (mon_trn.instr.name == C_JAL) $display("TODO got C_JAL");
         mon_trn.instr.rs1 = cntxt.vif.insn[19:15];  // TODO use disassembler

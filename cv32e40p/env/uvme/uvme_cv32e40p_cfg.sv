@@ -97,6 +97,7 @@ class uvme_cv32e40p_cfg_c extends uvm_object;
       isa_cfg.ext_m_enabled        == 1;
       isa_cfg.ext_c_enabled        == 1;
       isa_cfg.ext_zifencei_enabled == 1;
+      isa_cfg.ext_zicsr_enabled    == 1;
 
       if (is_active == UVM_ACTIVE) {
          isa_cfg.is_active       == UVM_PASSIVE;
