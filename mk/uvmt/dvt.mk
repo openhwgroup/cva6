@@ -61,6 +61,8 @@ else
 	$(DVT_COMMAND)            \
 	+dvt_init+dvt             \
 	-uvm                      \
+	+define+CV32E40P_ASSERT_ON \
+	+define+ISS+CV32E40P_TRACE_EXECUTION \
 	+incdir+$(DV_UVME_PATH)   \
 	+incdir+$(DV_UVMT_PATH)   \
 	-f $(CV_CORE_MANIFEST)    \

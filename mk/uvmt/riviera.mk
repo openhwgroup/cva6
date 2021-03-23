@@ -324,12 +324,6 @@ test: $(TEST_TEST_DIR)/$(TEST_PROGRAM)$(OPT_RUN_INDEX_SUFFIX).hex run
 # Invoke coverage
 #TODO
 
-################################################################################
-# Open a DVT Eclipse IDE instance with the project imported automatically
-ifeq ($(MAKECMDGOALS), open_in_dvt_ide)
-include $(CORE_V_VERIF)/mk/uvmt/dvt.mk
-endif	
-
 ###############################################################################
 # Clean up your mess!
 

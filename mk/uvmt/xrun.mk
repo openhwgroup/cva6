@@ -415,12 +415,6 @@ endif
 cov: $(COV_MERGE)
 	cd $(COVERAGE_TARGET_DIR) && $(IMC) $(COV_ARGS)
 
-################################################################################
-# Open a DVT Eclipse IDE instance with the project imported automatically
-ifeq ($(MAKECMDGOALS), open_in_dvt_ide)
-include $(CORE_V_VERIF)/mk/uvmt/dvt.mk
-endif	
-
 ###############################################################################
 # Clean up your mess!
 
