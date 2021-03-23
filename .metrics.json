@@ -61,7 +61,7 @@
       "tests": {
         "resultsDir": "/mux-flow/build/results",
         "builds":    ["uvmt_cv32e40p"],
-        "listCmd":   "/mux-flow/build/repo/bin/cv_regress --file=cv32e40p_rel_check --metrics --outfile=/mux-flow/build/repo/cv32e40p_rel_check.json",
+        "listCmd":   "/mux-flow/build/repo/bin/cv_regress --core=cv32e40p --file=cv32e40p_rel_check --metrics --outfile=/mux-flow/build/repo/cv32e40p_rel_check.json",
         "listFile":  "/mux-flow/build/repo/cv32e40p_rel_check.json"
       }
     },
@@ -72,7 +72,7 @@
       "tests": {
         "resultsDir": "/mux-flow/build/results",
         "builds":    ["uvmt_cv32e40p"],
-        "listCmd":   "/mux-flow/build/repo/bin/cv_regress --file=cv32e40p_rel_check --metrics --outfile=/mux-flow/build/repo/cv32e40p_rel_check.json",
+        "listCmd":   "/mux-flow/build/repo/bin/cv_regress --core=cv32e40p --file=cv32e40p_rel_check --metrics --outfile=/mux-flow/build/repo/cv32e40p_rel_check.json",
         "listFile":  "/mux-flow/build/repo/cv32e40p_rel_check.json"
       }
     },
@@ -83,7 +83,7 @@
       "tests": {
         "resultsDir": "/mux-flow/build/results",
         "builds":    ["uvmt_cv32e40p"],
-        "listCmd":   "/mux-flow/build/repo/bin/cv_regress --file=cv32e40p_full --metrics --makearg=USER_RUN_FLAGS=+rand_stall_obi_all --outfile=/mux-flow/build/repo/cv32e40p_full.json",
+        "listCmd":   "/mux-flow/build/repo/bin/cv_regress --core=cv32e40p --file=cv32e40p_full --metrics --makearg=USER_RUN_FLAGS=+rand_stall_obi_all --outfile=/mux-flow/build/repo/cv32e40p_full.json",
         "listFile":  "/mux-flow/build/repo/cv32e40p_full.json"
       }
     },
@@ -95,7 +95,7 @@
         "resultsDir": "/mux-flow/build/results",
         "builds":    ["uvmt_cv32e40p"],
         "timeout":   "8h",
-        "listCmd":   "/mux-flow/build/repo/bin/cv_regress --file=cv32e40p_full_covg_no_pulp --metrics --outfile=/mux-flow/build/repo/cv32e40p_full_covg_no_pulp.json",
+        "listCmd":   "/mux-flow/build/repo/bin/cv_regress --core=cv32e40p --file=cv32e40p_full_covg_no_pulp --metrics --outfile=/mux-flow/build/repo/cv32e40p_full_covg_no_pulp.json",
         "listFile":  "/mux-flow/build/repo/cv32e40p_full_covg_no_pulp.json"
       }
     },
@@ -107,7 +107,7 @@
         "resultsDir": "/mux-flow/build/results",
         "builds":    ["uvmt_cv32e40p"],
         "timeout":   "6h",
-        "listCmd":   "/mux-flow/build/repo/bin/cv_regress --file=cv32e40p_interrupt --metrics --outfile=/mux-flow/build/repo/cv32e40p_interrupt.json",
+        "listCmd":   "/mux-flow/build/repo/bin/cv_regress --core=cv32e40p --file=cv32e40p_interrupt --metrics --outfile=/mux-flow/build/repo/cv32e40p_interrupt.json",
         "listFile":  "/mux-flow/build/repo/cv32e40p_interrupt.json"
       }
     },
@@ -118,7 +118,7 @@
       "tests": {
         "resultsDir": "/mux-flow/build/results",
         "builds":    ["uvmt_cv32e40p"],
-        "listCmd":   "/mux-flow/build/repo/bin/cv_regress --file=cv32e40p_xpulp_isa --metrics --outfile=/mux-flow/build/repo/cv32e40p_xpulp_isa.json",
+        "listCmd":   "/mux-flow/build/repo/bin/cv_regress --core=cv32e40p --file=cv32e40p_xpulp_isa --metrics --outfile=/mux-flow/build/repo/cv32e40p_xpulp_isa.json",
         "listFile":  "/mux-flow/build/repo/cv32e40p_xpulp_isa.json"
       }
     },
@@ -151,7 +151,7 @@
       "tests": {
         "resultsDir": "/mux-flow/build/results",
         "builds":    ["uvmt_cv32e40x"],
-        "listCmd":   "/mux-flow/build/repo/bin/cv_regress --file=cv32e40x_rel_check --metrics --outfile=/mux-flow/build/repo/cv32e40x_rel_check.json",
+        "listCmd":   "/mux-flow/build/repo/bin/cv_regress --core=cv32e40x --file=cv32e40x_rel_check --metrics --outfile=/mux-flow/build/repo/cv32e40x_rel_check.json",
         "listFile":  "/mux-flow/build/repo/cv32e40x_rel_check.json"
       }
     },
@@ -162,7 +162,7 @@
       "tests": {
         "resultsDir": "/mux-flow/build/results",
         "builds":    ["uvmt_cv32e40x"],
-        "listCmd":   "/mux-flow/build/repo/bin/cv_regress --file=cv32e40x_rel_check --metrics --outfile=/mux-flow/build/repo/cv32e40x_rel_check.json",
+        "listCmd":   "/mux-flow/build/repo/bin/cv_regress --core=cv32e40x --file=cv32e40x_rel_check --metrics --outfile=/mux-flow/build/repo/cv32e40x_rel_check.json",
         "listFile":  "/mux-flow/build/repo/cv32e40x_rel_check.json"
       }
     },
@@ -173,7 +173,7 @@
       "tests": {
         "resultsDir": "/mux-flow/build/results",
         "builds":    ["uvmt_cv32e40x"],
-        "listCmd":   "/mux-flow/build/repo/bin/cv_regress --file=cv32e40x_full --metrics --makearg=USER_RUN_FLAGS=+rand_stall_obi_all --outfile=/mux-flow/build/repo/cv32e40x_full.json",
+        "listCmd":   "/mux-flow/build/repo/bin/cv_regress --core=cv32e40x --file=cv32e40x_full --metrics --makearg=USER_RUN_FLAGS=+rand_stall_obi_all --outfile=/mux-flow/build/repo/cv32e40x_full.json",
         "listFile":  "/mux-flow/build/repo/cv32e40x_full.json"
       }
     },
@@ -185,7 +185,7 @@
         "resultsDir": "/mux-flow/build/results",
         "builds":    ["uvmt_cv32e40x"],
         "timeout":   "8h",
-        "listCmd":   "/mux-flow/build/repo/bin/cv_regress --file=cv32e40X_fulL --metrics --outfile=/mux-flow/build/repo/cv32e40x_full_covg_no_pulp.json",
+        "listCmd":   "/mux-flow/build/repo/bin/cv_regress --core=cv32e40x --file=cv32e40X_fulL --metrics --outfile=/mux-flow/build/repo/cv32e40x_full_covg_no_pulp.json",
         "listFile":  "/mux-flow/build/repo/cv32e40x_full.json"
       }
     },
@@ -197,7 +197,7 @@
         "resultsDir": "/mux-flow/build/results",
         "builds":    ["uvmt_cv32e40x"],
         "timeout":   "6h",
-        "listCmd":   "/mux-flow/build/repo/bin/cv_regress --file=cv32e40x_interrupt --metrics --outfile=/mux-flow/build/repo/cv32e40x_interrupt.json",
+        "listCmd":   "/mux-flow/build/repo/bin/cv_regress --core=cv32e40x --file=cv32e40x_interrupt --metrics --outfile=/mux-flow/build/repo/cv32e40x_interrupt.json",
         "listFile":  "/mux-flow/build/repo/cv32e40x_interrupt.json"
       }
     }

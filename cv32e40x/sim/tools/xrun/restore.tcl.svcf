@@ -1,0 +1,851 @@
+# SimVision Command Script (Fri May 15 14:26:58 MDT 2020)
+#
+# Version 19.09.s007
+#
+# You can restore this configuration with:
+#
+#      xrun -l xrun-hello-world.log -64bit -R -input ../xrun/restore.tcl +UVM_VERBOSITY=UVM_LOW +=+USE_ISS -sv_lib /wrk/gtumbush/mcu/OpenHW/iss_integration_fork/cv32/sim/uvmt_cv32/../../../vendor_lib/imperas/riscv_CV32E40X_OVPsim/bin/Linux64/riscv_CV32E40X.dpi.so +elf_file=/wrk/gtumbush/mcu/OpenHW/iss_integration_fork/cv32/sim/uvmt_cv32/../../../cv32/tests/core/custom/illegal.elf +nm_file=/wrk/gtumbush/mcu/OpenHW/iss_integration_fork/cv32/sim/uvmt_cv32/../../../cv32/tests/core/custom/illegal.nm +UVM_TESTNAME=uvmt_cv32_firmware_test_c +firmware=/wrk/gtumbush/mcu/OpenHW/iss_integration_fork/cv32/sim/uvmt_cv32/../../../cv32/tests/core/custom/illegal.hex -input /wrk/gtumbush/mcu/OpenHW/iss_integration_fork/cv32/sim/xrun/restore.tcl
+#
+
+
+#
+# Preferences
+#
+preferences set waveform-dont-show-assert-debug-info 1
+preferences set toolbar-Standard-WatchWindow {
+  usual
+  shown 0
+}
+preferences set waveform-print-variables selected
+preferences set script-input-warning 0
+preferences set txe-locate-add-fibers 1
+preferences set signal-type-colors {assertion #FF0000 output #FFA500 group #0099FF inout #00FFFF input #FFFF00 fiber #00EEEE errorsignal #FF0000 unknown #FFFFFF overlay #0099FF internal #00FF00 reference #FFFFFF}
+preferences set seq-time-width 20
+preferences set txe-view-hold 0
+preferences set txe-navigate-search-locate 0
+preferences set plugin-enable-svdatabrowser-new 1
+preferences set cursorctl-dont-show-sync-warning 1
+preferences set toolbar-Windows-WatchWindow {
+  usual
+  shown 0
+}
+preferences set verilog-colors {Su #ff0099 0 {} 1 {} HiZ #ff9900 We #00ffff Pu #9900ff Sm #00ff99 X #ff0000 StrX #ff0000 other #ffff00 Z #ff9900 Me #0000ff La #ff00ff St {}}
+preferences set waveform-signal-add-radix hex
+preferences set toolbar-sendToIndago-WaveWindow {
+  usual
+  position -pos 1
+}
+preferences set txe-navigate-waveform-locate 1
+preferences set txe-view-hidden 0
+preferences set waveform-height 16
+preferences set toolbar-Standard-Console {
+  usual
+  position -pos 1
+}
+preferences set txe-search-show-linenumbers 1
+preferences set toolbar-Search-Console {
+  usual
+  position -pos 2
+}
+preferences set toolbar-txe_waveform_toggle-WaveWindow {
+  usual
+  position -pos 3
+}
+preferences set memviewer-addressradix hex
+preferences set plugin-enable-groupscope 0
+preferences set standard-methodology-filtering 1
+preferences set key-bindings {PageUp PageUp Edit>Undo Ctrl+z View>Zoom>Next {Alt+Right arrow} View>Zoom>In Alt+i PageDown PageDown ScrollDown {Down arrow} Edit>Copy Ctrl+c View>Zoom>FullY_widget y Edit>Create>Group Ctrl+g Simulation>NextInScope F7 Edit>Select>All Ctrl+a Format>Radix>Decimal Ctrl+Shift+D Edit>Ungroup Ctrl+Shift+G TopOfPage Home Edit>Create>Condition Ctrl+e {command -console SimVision {%w sidebar access designbrowser selectall}} Alt+a View>Zoom>FullX_widget = ScrollLeft {Left arrow} Edit>SelectAllText Alt+a Edit>TextSearchConsole Alt+s Windows>SendTo>Waveform Ctrl+w Simulation>Return Shift+F5 View>CallstackDown {Ctrl+Down arrow} Select>All Ctrl+a Edit>Delete Del Format>Radix>Octal Ctrl+Shift+O Edit>Cut Ctrl+x Simulation>Run F2 Edit>Create>Marker Ctrl+m View>Center Alt+c View>CallstackInWindow Ctrl+k Edit>SelectAll Ctrl+a File>OpenDatabase Ctrl+o Edit>Redo Ctrl+y Format>Radix>Binary Ctrl+Shift+B View>ExpandSequenceTime>AtCursor Alt+x ScrollUp {Up arrow} File>CloseWindow Ctrl+Shift+w ScrollRight {Right arrow} View>Zoom>FullX Alt+= Edit>Create>Bus Ctrl+b Explore>NextEdge Ctrl+\] View>Zoom>Cursor-Baseline Alt+z View>Zoom>OutX Alt+o Edit>GoToLine Ctrl+g View>Zoom>Fit Alt+= View>Zoom>OutX_widget o View>CallstackUp {Ctrl+Up arrow} View>Bookmarks>Add Ctrl+b Format>Radix>Hexadecimal Ctrl+Shift+H Edit>Search Ctrl+f Simulation>Next F6 View>ShowValues Ctrl+s View>Zoom>InX Alt+i Edit>Create>MarkerAtCursor Ctrl+Shift+M View>Zoom>Out Alt+o Edit>TextSearch Ctrl+f Format>Signed Ctrl+Shift+S Edit>Paste Ctrl+v View>Zoom>Previous {Alt+Left arrow} View>CollapseSequenceTime>AtCursor Alt+s Format>Radix>ASCII Ctrl+Shift+A View>Zoom>InX_widget i Explore>PreviousEdge {Ctrl+[} Simulation>Step F5 BottomOfPage End}
+preferences set sb-display-values 1
+preferences set plugin-enable-interleaveandcompare 0
+preferences set plugin-enable-waveformfrequencyplot 0
+preferences set toolbar-SimControl-WatchWindow {
+  usual
+  shown 0
+}
+preferences set toolbar-Windows-WaveWindow {
+  usual
+  position -pos 4
+}
+preferences set txe-navigate-waveform-next-child 1
+preferences set memviewer-radix hex
+preferences set print-designer {make GUI='-gui -input restore.tcl' TARGET=INCISIVE APP=hello}
+preferences set vhdl-colors {X #ff0000 0 {} L #00ffff H #00ffff U #9900ff 1 {} - {} Z #ff9900 W #ff0000}
+preferences set txe-locate-scroll-x 1
+preferences set txe-locate-scroll-y 1
+preferences set waveform-assertion-debug 1
+preferences set txe-locate-pop-waveform 1
+preferences set whats-new-dont-show-at-startup 1
+preferences set toolbar-TimeSearch-WatchWindow {
+  usual
+  shown 0
+}
+preferences set prompt-exit 0
+preferences set key-bindings {Edit>Undo Ctrl+z PageUp PageUp View>Zoom>In Alt+i View>Zoom>Next {Alt+Right arrow} PageDown PageDown Edit>Copy Ctrl+c ScrollDown {Down arrow} Edit>Select>All Ctrl+a Simulation>NextInScope F7 Edit>Create>Group Ctrl+g View>Zoom>FullY_widget y Format>Radix>Decimal Ctrl+Shift+D Edit>Ungroup Ctrl+Shift+G TopOfPage Home Edit>Create>Condition Ctrl+e {command -console SimVision {%w sidebar access designbrowser selectall}} Alt+a View>Zoom>FullX_widget = ScrollLeft {Left arrow} Edit>SelectAllText Alt+a Edit>TextSearchConsole Alt+s Windows>SendTo>Waveform Ctrl+w Simulation>Return Shift+F5 View>CallstackDown {Ctrl+Down arrow} Select>All Ctrl+a Edit>Delete Del Format>Radix>Octal Ctrl+Shift+O Edit>Cut Ctrl+x Simulation>Run F2 Edit>Create>Marker Ctrl+m View>Center Alt+c View>CallstackInWindow Ctrl+k Edit>SelectAll Ctrl+a File>OpenDatabase Ctrl+o Edit>Redo Ctrl+y Format>Radix>Binary Ctrl+Shift+B View>ExpandSequenceTime>AtCursor Alt+x ScrollUp {Up arrow} File>CloseWindow Ctrl+Shift+w ScrollRight {Right arrow} View>Zoom>FullX Alt+= Edit>Create>Bus Ctrl+b Explore>NextEdge Ctrl+\] View>Zoom>Cursor-Baseline Alt+z View>Zoom>OutX Alt+o Edit>GoToLine Ctrl+g View>Zoom>Fit Alt+= View>Zoom>OutX_widget o View>CallstackUp {Ctrl+Up arrow} View>Bookmarks>Add Ctrl+b View>ShowValues Ctrl+s Simulation>Next F6 Edit>Search Ctrl+f Format>Radix>Hexadecimal Ctrl+Shift+H Edit>Create>MarkerAtCursor Ctrl+Shift+M View>Zoom>InX Alt+i View>Zoom>Out Alt+o Edit>TextSearch Ctrl+f View>Zoom>Previous {Alt+Left arrow} Edit>Paste Ctrl+v Format>Signed Ctrl+Shift+S View>CollapseSequenceTime>AtCursor Alt+s View>Zoom>InX_widget i Format>Radix>ASCII Ctrl+Shift+A BottomOfPage End Simulation>Step F5 Explore>PreviousEdge {Ctrl+[}}
+preferences set toolbar-sendToIndago-WaveWindow {
+  usual
+  position -pos 4
+}
+
+#
+# Simulator
+#
+database require simulator -hints {
+	simulator "xrun -l xrun-hello-world.log -64bit -R -gui -input ../xrun/restore.tcl +UVM_VERBOSITY=UVM_LOW +=+USE_ISS -sv_lib /wrk/gtumbush/mcu/OpenHW/iss_integration_fork/cv32/sim/uvmt_cv32/../../../vendor_lib/imperas/riscv_CV32E40X_OVPsim/bin/Linux64/riscv_CV32E40X.dpi.so +elf_file=/wrk/gtumbush/mcu/OpenHW/iss_integration_fork/cv32/sim/uvmt_cv32/../../../cv32/tests/core/custom/illegal.elf +nm_file=/wrk/gtumbush/mcu/OpenHW/iss_integration_fork/cv32/sim/uvmt_cv32/../../../cv32/tests/core/custom/illegal.nm +UVM_TESTNAME=uvmt_cv32_firmware_test_c +firmware=/wrk/gtumbush/mcu/OpenHW/iss_integration_fork/cv32/sim/uvmt_cv32/../../../cv32/tests/core/custom/illegal.hex -input restore.tcl"
+}
+
+#
+# Conditions
+#
+set expression simulator::uvmt_cv32_tb.dut_wrap.riscv_core_i.riscv_tracer_i.clk
+if {[catch {condition new -name  tracer_clk -expr $expression}] != ""} {
+    condition set -using tracer_clk -expr $expression
+}
+#
+# Groups
+#
+catch {group new -name ISS -overlay 0}
+catch {group new -name RTL -overlay 0}
+catch {group new -name step_compare_if -overlay 0}
+catch {group new -name clknrst_if -overlay 0}
+catch {group new -name {RISCV RAM} -overlay 0}
+catch {group new -name instr_bus -overlay 0}
+catch {group new -name registers -overlay 0}
+catch {group new -name {ISS RAM} -overlay 0}
+catch {group new -name {data bus} -overlay 0}
+catch {group new -name {inst _bus} -overlay 0}
+group using ISS
+group set -overlay 0
+group set -comment {}
+group clear 0 end
+
+group insert \
+     simulator::uvmt_cv32_tb.iss_wrap.cpu.Retire  \
+     simulator::uvmt_cv32_tb.iss_wrap.b1.Clk  \
+     simulator::uvmt_cv32_tb.iss_wrap.b1.Step  \
+     simulator::uvmt_cv32_tb.iss_wrap.b1.Stepping  \
+     simulator::uvmt_cv32_tb.iss_wrap.cpu.PCr  \
+     {simulator::uvmt_cv32_tb.iss_wrap.cpu.GPR[0:31]}  \
+     {simulator::uvmt_cv32_tb.iss_wrap.cpu.CSR["mcause"]}  \
+     {simulator::uvmt_cv32_tb.iss_wrap.cpu.CSR["mepc"]}  \
+     {simulator::uvmt_cv32_tb.iss_wrap.cpu.CSR["misa"]}  \
+     {simulator::uvmt_cv32_tb.iss_wrap.cpu.CSR["mstatus"]}  \
+     {simulator::uvmt_cv32_tb.iss_wrap.cpu.CSR["mtvec"]} 
+group using RTL
+group set -overlay 0
+group set -comment {}
+group clear 0 end
+
+group insert \
+     tracer_clk  \
+     {simulator::uvmt_cv32_tb.dut_wrap.riscv_core_i.riscv_tracer_i.insn_pc[31:0]}  \
+     simulator::uvmt_cv32_tb.dut_wrap.riscv_core_i.riscv_tracer_i.retire  \
+     simulator::uvmt_cv32_tb.dut_wrap.riscv_core_i.riscv_tracer_i.insn_disas  \
+     simulator::uvmt_cv32_tb.dut_wrap.riscv_core_i.riscv_tracer_i.insn_regs_write  \
+     simulator::uvmt_cv32_tb.dut_wrap.riscv_core_i.id_stage_i.register_file_i.clk  \
+    registers \
+     simulator::uvmt_cv32_tb.dut_wrap.riscv_core_i.id_stage_i.decoder_i.csr_illegal  \
+     {simulator::uvmt_cv32_tb.dut_wrap.riscv_core_i.id_stage_i.decoder_i.instr_rdata_i[31:0]}  \
+     simulator::uvmt_cv32_tb.dut_wrap.riscv_core_i.id_stage_i.decoder_i.illegal_insn_o  \
+     simulator::uvmt_cv32_tb.dut_wrap.riscv_core_i.id_stage_i.decoder_i.illegal_c_insn_i 
+group using step_compare_if
+group set -overlay 0
+group set -comment {}
+group clear 0 end
+
+group insert \
+     {simulator::uvmt_cv32_tb.step_compare_if.insn_pc[31:0]}  \
+     simulator::uvmt_cv32_tb.step_compare_if.ovp_b1_Step  \
+     simulator::uvmt_cv32_tb.step_compare_if.ovp_b1_Stepping  \
+     {simulator::uvmt_cv32_tb.step_compare_if.ovp_cpu_GPR[0:31]}  \
+     simulator::uvmt_cv32_tb.step_compare_if.ovp_cpu_PCr  \
+     simulator::uvmt_cv32_tb.step_compare_if.ovp_cpu_busWait  \
+     simulator::uvmt_cv32_tb.step_compare_if.ovp_cpu_retire  \
+     simulator::uvmt_cv32_tb.step_compare_if.reg_t  \
+     simulator::uvmt_cv32_tb.step_compare_if.riscv_retire  \
+     {simulator::uvmt_cv32_tb.step_compare_if.riscy_GPR[31:0]} 
+group using clknrst_if
+group set -overlay 0
+group set -comment {}
+group clear 0 end
+
+group insert \
+     simulator::uvmt_cv32_tb.clknrst_if.clk  \
+     simulator::uvmt_cv32_tb.clknrst_if.clk_active  \
+     simulator::uvmt_cv32_tb.clknrst_if.reset_n  \
+     simulator::uvmt_cv32_tb.clknrst_if.clk_period 
+group using {RISCV RAM}
+group set -overlay 0
+group set -comment {}
+group clear 0 end
+
+group insert \
+     simulator::uvmt_cv32_tb.dut_wrap.ram_i.clk_i  \
+    instr_bus \
+     simulator::uvmt_cv32_tb.dut_wrap.ram_i.exit_valid_o  \
+     {simulator::uvmt_cv32_tb.dut_wrap.ram_i.exit_value_o[31:0]}  \
+     simulator::uvmt_cv32_tb.dut_wrap.ram_i.irq_ack_i  \
+     {simulator::uvmt_cv32_tb.dut_wrap.ram_i.irq_id_i[4:0]}  \
+     {simulator::uvmt_cv32_tb.dut_wrap.ram_i.irq_id_o[4:0]}  \
+     simulator::uvmt_cv32_tb.dut_wrap.ram_i.irq_o  \
+     {simulator::uvmt_cv32_tb.dut_wrap.ram_i.pc_core_id_i[31:0]}  \
+     simulator::uvmt_cv32_tb.dut_wrap.ram_i.rst_ni  \
+     simulator::uvmt_cv32_tb.dut_wrap.ram_i.tests_failed_o  \
+     simulator::uvmt_cv32_tb.dut_wrap.ram_i.tests_passed_o 
+group using instr_bus
+group set -overlay 0
+group set -comment {}
+group clear 0 end
+
+group insert \
+     {simulator::uvmt_cv32_tb.dut_wrap.ram_i.instr_addr_i[19:0]}  \
+     simulator::uvmt_cv32_tb.dut_wrap.ram_i.instr_req_i  \
+     simulator::uvmt_cv32_tb.dut_wrap.ram_i.instr_gnt_o  \
+     simulator::uvmt_cv32_tb.dut_wrap.ram_i.instr_rvalid_o 
+group using registers
+group set -overlay 0
+group set -comment {}
+group clear 0 end
+
+group insert \
+     {simulator::uvmt_cv32_tb.dut_wrap.riscv_core_i.id_stage_i.register_file_i.mem[18]}  \
+     {simulator::uvmt_cv32_tb.dut_wrap.riscv_core_i.id_stage_i.register_file_i.mem[17]}  \
+     {simulator::uvmt_cv32_tb.dut_wrap.riscv_core_i.id_stage_i.register_file_i.mem[16]}  \
+     {simulator::uvmt_cv32_tb.dut_wrap.riscv_core_i.id_stage_i.register_file_i.mem[15]}  \
+     {simulator::uvmt_cv32_tb.dut_wrap.riscv_core_i.id_stage_i.register_file_i.mem[14]}  \
+     {simulator::uvmt_cv32_tb.dut_wrap.riscv_core_i.id_stage_i.register_file_i.mem[13]}  \
+     {simulator::uvmt_cv32_tb.dut_wrap.riscv_core_i.id_stage_i.register_file_i.mem[3]}  \
+     {simulator::uvmt_cv32_tb.dut_wrap.riscv_core_i.id_stage_i.register_file_i.mem[2]}  \
+     {simulator::uvmt_cv32_tb.dut_wrap.riscv_core_i.id_stage_i.register_file_i.mem[31:0]}  \
+     {simulator::uvmt_cv32_tb.dut_wrap.riscv_core_i.cs_registers_i.mcause_q[6:0]}  \
+     {simulator::uvmt_cv32_tb.dut_wrap.riscv_core_i.cs_registers_i.mepc_q[31:0]}  \
+     {simulator::uvmt_cv32_tb.dut_wrap.riscv_core_i.cs_registers_i.MISA_VALUE[31:0]}  \
+     simulator::uvmt_cv32_tb.dut_wrap.riscv_core_i.cs_registers_i.mstatus_q  \
+     {simulator::uvmt_cv32_tb.dut_wrap.riscv_core_i.cs_registers_i.mtvec_q[23:0]} 
+group using {ISS RAM}
+group set -overlay 0
+group set -comment {}
+group clear 0 end
+
+group insert \
+    {data bus} \
+    {inst _bus}
+group using {data bus}
+group set -overlay 0
+group set -comment {}
+group clear 0 end
+
+group insert \
+     simulator::uvmt_cv32_tb.iss_wrap.b1.DAddr  \
+     simulator::uvmt_cv32_tb.iss_wrap.b1.DSize  \
+     simulator::uvmt_cv32_tb.iss_wrap.b1.Dbe  \
+     simulator::uvmt_cv32_tb.iss_wrap.b1.Drd  \
+     simulator::uvmt_cv32_tb.iss_wrap.b1.Dwr  \
+     simulator::uvmt_cv32_tb.iss_wrap.b1.DData 
+group using {inst _bus}
+group set -overlay 0
+group set -comment {}
+group clear 0 end
+
+group insert \
+     simulator::uvmt_cv32_tb.iss_wrap.b1.IAddr  \
+     simulator::uvmt_cv32_tb.iss_wrap.b1.IData  \
+     simulator::uvmt_cv32_tb.iss_wrap.b1.ISize  \
+     simulator::uvmt_cv32_tb.iss_wrap.b1.Ibe  \
+     simulator::uvmt_cv32_tb.iss_wrap.b1.Ird 
+
+#
+# Mnemonic Maps
+#
+mmap new  -reuse -name {Boolean as Logic} -radix %b -contents {{%c=FALSE -edgepriority 1 -shape low}
+{%c=TRUE -edgepriority 1 -shape high}}
+mmap new  -reuse -name {Example Map} -radix %x -contents {{%b=11???? -bgcolor orange -label REG:%x -linecolor yellow -shape bus}
+{%x=1F -bgcolor red -label ERROR -linecolor white -shape EVENT}
+{%x=2C -bgcolor red -label ERROR -linecolor white -shape EVENT}
+{%x=* -label %x -linecolor gray -shape bus}}
+
+#
+# Time Ranges
+#
+timerange new -name startup -start 0 -end 277722.442ps
+timerange new -name {GPR miscompare} -start 111779.448ps -end 152715.121ps
+timerange new -name {illegal instr} -start 24337.912632ns -end 24474.11169ns
+
+#
+# Design Browser windows
+#
+if {[catch {window new WatchList -name "Design Browser 1" -geometry 856x639+893+216}] != ""} {
+    window geometry "Design Browser 1" 856x639+893+216
+}
+window target "Design Browser 1" on
+browser using {Design Browser 1}
+browser set -scope  simulator::uvmt_cv32_tb.iss_wrap.ram 
+browser set \
+    -signalsort name
+browser yview see  simulator::uvmt_cv32_tb.iss_wrap.ram 
+browser timecontrol set -lock 0
+
+#
+# Waveform windows
+#
+if {[catch {window new WaveWindow -name "Waveform 1" -geometry 1181x782+116+21}] != ""} {
+    window geometry "Waveform 1" 1181x782+116+21
+}
+window target "Waveform 1" on
+waveform using {Waveform 1}
+waveform sidebar visibility partial
+waveform set \
+    -primarycursor TimeA \
+    -signalnames name \
+    -signalwidth 258 \
+    -units ns \
+    -valuewidth 1
+waveform baseline set -time 2,884,000,000fs
+
+set id [waveform add -signals  {
+	simulator::uvmt_cv32_tb.step_compare.ev_compare
+	} ]
+waveform format $id -radix %x
+set id [waveform add -signals  {
+	simulator::uvmt_cv32_tb.step_compare.ev_ovp
+	} ]
+waveform format $id -radix %x
+set id [waveform add -signals  {
+	simulator::uvmt_cv32_tb.step_compare.ev_rtl
+	} ]
+waveform format $id -radix %x
+set id [waveform add -signals  {
+	simulator::uvmt_cv32_tb.step_compare.miscompare
+	} ]
+set id [waveform add -signals  {
+	simulator::uvmt_cv32_tb.iss_wrap.cpu.PCr
+	} ]
+waveform format $id -radix %x
+set id [waveform add -signals  {
+	{simulator::uvmt_cv32_tb.dut_wrap.riscv_core_i.riscv_tracer_i.insn_pc[31:0]}
+	} ]
+waveform format $id -radix %x
+set id [waveform add -signals  {
+	simulator::uvmt_cv32_tb.dut_wrap.riscv_core_i.riscv_tracer_i.insn_disas
+	} ]
+waveform format $id -radix %a
+set id [waveform add -signals  {
+	{simulator::uvmt_cv32_tb.dut_wrap.riscv_core_i.id_stage_i.register_file_i.mem[10]}
+	} ]
+waveform format $id -radix %x
+set id [waveform add -signals  {
+	{simulator::uvmt_cv32_tb.dut_wrap.riscv_core_i.id_stage_i.register_file_i.mem[3]}
+	} ]
+waveform format $id -radix %x
+
+set groupId0 [waveform add -groups RTL]
+
+set groupId1 [waveform find -name registers]
+set gpGlist1 [waveform hierarchy contents $groupId1]
+set gpID1 [lindex $gpGlist1 0]
+foreach {name attrs}  {
+    {simulator::uvmt_cv32_tb.dut_wrap.riscv_core_i.id_stage_i.register_file_i.mem[18]} {-radix %x}
+    {simulator::uvmt_cv32_tb.dut_wrap.riscv_core_i.id_stage_i.register_file_i.mem[17]} {-radix %x}
+    {simulator::uvmt_cv32_tb.dut_wrap.riscv_core_i.id_stage_i.register_file_i.mem[16]} {-radix %x}
+    {simulator::uvmt_cv32_tb.dut_wrap.riscv_core_i.id_stage_i.register_file_i.mem[15]} {-radix %x}
+    {simulator::uvmt_cv32_tb.dut_wrap.riscv_core_i.id_stage_i.register_file_i.mem[14]} {-radix %x}
+    {simulator::uvmt_cv32_tb.dut_wrap.riscv_core_i.id_stage_i.register_file_i.mem[13]} {-radix %x}
+    {simulator::uvmt_cv32_tb.dut_wrap.riscv_core_i.id_stage_i.register_file_i.mem[3]} {-radix %x}
+    {simulator::uvmt_cv32_tb.dut_wrap.riscv_core_i.id_stage_i.register_file_i.mem[2]} {-radix %x}
+    {simulator::uvmt_cv32_tb.dut_wrap.riscv_core_i.id_stage_i.register_file_i.mem[31:0]} {-radix %x}
+    {simulator::uvmt_cv32_tb.dut_wrap.riscv_core_i.cs_registers_i.mcause_q[6:0]} {-radix %x}
+    {simulator::uvmt_cv32_tb.dut_wrap.riscv_core_i.cs_registers_i.mepc_q[31:0]} {-radix %x}
+    {simulator::uvmt_cv32_tb.dut_wrap.riscv_core_i.cs_registers_i.MISA_VALUE[31:0]} {-radix %x}
+    simulator::uvmt_cv32_tb.dut_wrap.riscv_core_i.cs_registers_i.mstatus_q {-radix %x}
+    {simulator::uvmt_cv32_tb.dut_wrap.riscv_core_i.cs_registers_i.mtvec_q[23:0]} {-radix %x}
+} childcmds {
+    {}
+    {}
+    {}
+    {}
+    {}
+    {}
+    {}
+    {}
+    {
+        set id $gpID1
+        waveform hierarchy expand $id
+        set id2 [lindex [waveform hierarchy content $id] 0]
+        waveform format $id2 -radix %x
+        set id2 [lindex [waveform hierarchy content $id] 1]
+        waveform format $id2 -radix %x
+        set id2 [lindex [waveform hierarchy content $id] 2]
+        waveform format $id2 -radix %x
+        set id2 [lindex [waveform hierarchy content $id] 3]
+        waveform format $id2 -radix %x
+        set id2 [lindex [waveform hierarchy content $id] 4]
+        waveform format $id2 -radix %x
+        set id2 [lindex [waveform hierarchy content $id] 5]
+        waveform format $id2 -radix %x
+        set id2 [lindex [waveform hierarchy content $id] 6]
+        waveform format $id2 -radix %x
+        set id2 [lindex [waveform hierarchy content $id] 7]
+        waveform format $id2 -radix %x
+        set id2 [lindex [waveform hierarchy content $id] 8]
+        waveform format $id2 -radix %x
+        set id2 [lindex [waveform hierarchy content $id] 9]
+        waveform format $id2 -radix %x
+        set id2 [lindex [waveform hierarchy content $id] 10]
+        waveform format $id2 -radix %x
+        set id2 [lindex [waveform hierarchy content $id] 11]
+        waveform format $id2 -radix %x
+        set id2 [lindex [waveform hierarchy content $id] 12]
+        waveform format $id2 -radix %x
+        set id2 [lindex [waveform hierarchy content $id] 13]
+        waveform format $id2 -radix %x
+        set id2 [lindex [waveform hierarchy content $id] 14]
+        waveform format $id2 -radix %x
+        set id2 [lindex [waveform hierarchy content $id] 15]
+        waveform format $id2 -radix %x
+        set id2 [lindex [waveform hierarchy content $id] 16]
+        waveform format $id2 -radix %x
+        set id2 [lindex [waveform hierarchy content $id] 17]
+        waveform format $id2 -radix %x
+        set id2 [lindex [waveform hierarchy content $id] 18]
+        waveform format $id2 -radix %x
+        set id2 [lindex [waveform hierarchy content $id] 19]
+        waveform format $id2 -radix %x
+        set id2 [lindex [waveform hierarchy content $id] 20]
+        waveform format $id2 -radix %x
+        set id2 [lindex [waveform hierarchy content $id] 21]
+        waveform format $id2 -radix %x
+        set id2 [lindex [waveform hierarchy content $id] 22]
+        waveform format $id2 -radix %x
+        set id2 [lindex [waveform hierarchy content $id] 23]
+        waveform format $id2 -radix %x
+        set id2 [lindex [waveform hierarchy content $id] 24]
+        waveform format $id2 -radix %x
+        set id2 [lindex [waveform hierarchy content $id] 25]
+        waveform format $id2 -radix %x
+        set id2 [lindex [waveform hierarchy content $id] 26]
+        waveform format $id2 -radix %x
+        set id2 [lindex [waveform hierarchy content $id] 27]
+        waveform format $id2 -radix %x
+        set id2 [lindex [waveform hierarchy content $id] 28]
+        waveform format $id2 -radix %x
+        set id2 [lindex [waveform hierarchy content $id] 29]
+        waveform format $id2 -radix %x
+        set id2 [lindex [waveform hierarchy content $id] 30]
+        waveform format $id2 -radix %x
+        set id2 [lindex [waveform hierarchy content $id] 31]
+        waveform format $id2 -radix %x
+        waveform hierarchy collapse $id
+    }
+    {}
+    {}
+    {}
+    {}
+    {}
+} {
+    set expected [ join [waveform signals -format fullpath $gpID1] ]
+    if {[string equal $name $expected] || $name == "cdivider"} {
+        if {$attrs != ""} {
+            eval waveform format $gpID1 $attrs
+        }
+        if { $childcmds != ""} {
+            eval $childcmds
+        }
+    }
+    set gpGlist1 [lrange $gpGlist1 1 end]
+    set gpID1 [lindex $gpGlist1 0]
+}
+waveform hierarchy collapse $groupId1
+
+set gpGlist0 [waveform hierarchy contents $groupId0]
+set gpID0 [lindex $gpGlist0 0]
+foreach {name attrs}  {
+    tracer_clk {}
+    {simulator::uvmt_cv32_tb.dut_wrap.riscv_core_i.riscv_tracer_i.insn_pc[31:0]} {-radix %x}
+    simulator::uvmt_cv32_tb.dut_wrap.riscv_core_i.riscv_tracer_i.retire {-radix %x}
+    simulator::uvmt_cv32_tb.dut_wrap.riscv_core_i.riscv_tracer_i.insn_disas {-radix %a}
+    simulator::uvmt_cv32_tb.dut_wrap.riscv_core_i.riscv_tracer_i.insn_regs_write {-trace analogSampleAndHold}
+    simulator::uvmt_cv32_tb.dut_wrap.riscv_core_i.id_stage_i.register_file_i.clk {}
+    simulator::uvmt_cv32_tb.dut_wrap.riscv_core_i.id_stage_i.decoder_i.csr_illegal {}
+    {simulator::uvmt_cv32_tb.dut_wrap.riscv_core_i.id_stage_i.decoder_i.instr_rdata_i[31:0]} {-radix %x}
+    simulator::uvmt_cv32_tb.dut_wrap.riscv_core_i.id_stage_i.decoder_i.illegal_insn_o {}
+    simulator::uvmt_cv32_tb.dut_wrap.riscv_core_i.id_stage_i.decoder_i.illegal_c_insn_i {}
+} childcmds {
+    {}
+    {}
+    {}
+    {}
+    {
+        set id $gpID0
+        waveform hierarchy expand $id
+        set id2 [lindex [waveform hierarchy content $id] 0]
+        waveform format $id2 -radix %x
+        waveform hierarchy collapse $id
+    }
+    {}
+    {}
+    {}
+    {}
+    {}
+} {
+    set expected [ join [waveform signals -format fullpath $gpID0] ]
+    if {[string equal $name $expected] || $name == "cdivider"} {
+        if {$attrs != ""} {
+            eval waveform format $gpID0 $attrs
+        }
+        if { $childcmds != ""} {
+            eval $childcmds
+        }
+    }
+    set gpGlist0 [lrange $gpGlist0 1 end]
+    set gpID0 [lindex $gpGlist0 0]
+}
+waveform hierarchy collapse $groupId0
+
+
+set groupId0 [waveform add -groups ISS]
+set gpGlist0 [waveform hierarchy contents $groupId0]
+set gpID0 [lindex $gpGlist0 0]
+foreach {name attrs}  {
+    simulator::uvmt_cv32_tb.iss_wrap.cpu.Retire {-radix %x}
+    simulator::uvmt_cv32_tb.iss_wrap.b1.Clk {}
+    simulator::uvmt_cv32_tb.iss_wrap.b1.Step {}
+    simulator::uvmt_cv32_tb.iss_wrap.b1.Stepping {}
+    simulator::uvmt_cv32_tb.iss_wrap.cpu.PCr {-radix %x}
+    {simulator::uvmt_cv32_tb.iss_wrap.cpu.GPR[0:31]} {-radix %x}
+    {simulator::uvmt_cv32_tb.iss_wrap.cpu.CSR["mcause"]} {-radix %x}
+    {simulator::uvmt_cv32_tb.iss_wrap.cpu.CSR["mepc"]} {-radix %x}
+    {simulator::uvmt_cv32_tb.iss_wrap.cpu.CSR["misa"]} {-radix %x}
+    {simulator::uvmt_cv32_tb.iss_wrap.cpu.CSR["mstatus"]} {-radix %x}
+    {simulator::uvmt_cv32_tb.iss_wrap.cpu.CSR["mtvec"]} {-radix %x}
+} childcmds {
+    {}
+    {}
+    {}
+    {}
+    {}
+    {}
+    {}
+    {}
+    {}
+    {}
+    {}
+} {
+    set expected [ join [waveform signals -format fullpath $gpID0] ]
+    if {[string equal $name $expected] || $name == "cdivider"} {
+        if {$attrs != ""} {
+            eval waveform format $gpID0 $attrs
+        }
+        if { $childcmds != ""} {
+            eval $childcmds
+        }
+    }
+    set gpGlist0 [lrange $gpGlist0 1 end]
+    set gpID0 [lindex $gpGlist0 0]
+}
+waveform hierarchy collapse $groupId0
+
+
+set groupId0 [waveform add -groups {{ISS RAM}}]
+
+set groupId1 [waveform find -name {data bus}]
+set gpGlist1 [waveform hierarchy contents $groupId1]
+set gpID1 [lindex $gpGlist1 0]
+foreach {name attrs}  {
+    simulator::uvmt_cv32_tb.iss_wrap.b1.DAddr {-radix %x}
+    simulator::uvmt_cv32_tb.iss_wrap.b1.DSize {-radix %x}
+    simulator::uvmt_cv32_tb.iss_wrap.b1.Dbe {-radix %x}
+    simulator::uvmt_cv32_tb.iss_wrap.b1.Drd {}
+    simulator::uvmt_cv32_tb.iss_wrap.b1.Dwr {}
+    simulator::uvmt_cv32_tb.iss_wrap.b1.DData {-radix %x}
+} childcmds {
+    {}
+    {}
+    {}
+    {}
+    {}
+    {}
+} {
+    set expected [ join [waveform signals -format fullpath $gpID1] ]
+    if {[string equal $name $expected] || $name == "cdivider"} {
+        if {$attrs != ""} {
+            eval waveform format $gpID1 $attrs
+        }
+        if { $childcmds != ""} {
+            eval $childcmds
+        }
+    }
+    set gpGlist1 [lrange $gpGlist1 1 end]
+    set gpID1 [lindex $gpGlist1 0]
+}
+waveform hierarchy collapse $groupId1
+
+
+set groupId1 [waveform find -name {inst _bus}]
+set gpGlist1 [waveform hierarchy contents $groupId1]
+set gpID1 [lindex $gpGlist1 0]
+foreach {name attrs}  {
+    simulator::uvmt_cv32_tb.iss_wrap.b1.IAddr {-radix %x}
+    simulator::uvmt_cv32_tb.iss_wrap.b1.IData {-radix %x}
+    simulator::uvmt_cv32_tb.iss_wrap.b1.ISize {-radix %x}
+    simulator::uvmt_cv32_tb.iss_wrap.b1.Ibe {-radix %x}
+    simulator::uvmt_cv32_tb.iss_wrap.b1.Ird {}
+} childcmds {
+    {}
+    {}
+    {}
+    {}
+    {}
+} {
+    set expected [ join [waveform signals -format fullpath $gpID1] ]
+    if {[string equal $name $expected] || $name == "cdivider"} {
+        if {$attrs != ""} {
+            eval waveform format $gpID1 $attrs
+        }
+        if { $childcmds != ""} {
+            eval $childcmds
+        }
+    }
+    set gpGlist1 [lrange $gpGlist1 1 end]
+    set gpID1 [lindex $gpGlist1 0]
+}
+waveform hierarchy collapse $groupId1
+
+waveform hierarchy collapse $groupId0
+
+
+set groupId0 [waveform add -groups {{RISCV RAM}}]
+
+set groupId1 [waveform find -name instr_bus]
+set gpGlist1 [waveform hierarchy contents $groupId1]
+set gpID1 [lindex $gpGlist1 0]
+foreach {name attrs}  {
+    {simulator::uvmt_cv32_tb.dut_wrap.ram_i.instr_addr_i[19:0]} {-radix %x}
+    simulator::uvmt_cv32_tb.dut_wrap.ram_i.instr_req_i {}
+    simulator::uvmt_cv32_tb.dut_wrap.ram_i.instr_gnt_o {}
+    simulator::uvmt_cv32_tb.dut_wrap.ram_i.instr_rvalid_o {}
+} childcmds {
+    {}
+    {}
+    {}
+    {}
+} {
+    set expected [ join [waveform signals -format fullpath $gpID1] ]
+    if {[string equal $name $expected] || $name == "cdivider"} {
+        if {$attrs != ""} {
+            eval waveform format $gpID1 $attrs
+        }
+        if { $childcmds != ""} {
+            eval $childcmds
+        }
+    }
+    set gpGlist1 [lrange $gpGlist1 1 end]
+    set gpID1 [lindex $gpGlist1 0]
+}
+waveform hierarchy collapse $groupId1
+
+set gpGlist0 [waveform hierarchy contents $groupId0]
+set gpID0 [lindex $gpGlist0 0]
+foreach {name attrs}  {
+    simulator::uvmt_cv32_tb.dut_wrap.ram_i.clk_i {}
+    simulator::uvmt_cv32_tb.dut_wrap.ram_i.exit_valid_o {}
+    {simulator::uvmt_cv32_tb.dut_wrap.ram_i.exit_value_o[31:0]} {-radix %x}
+    simulator::uvmt_cv32_tb.dut_wrap.ram_i.irq_ack_i {}
+    {simulator::uvmt_cv32_tb.dut_wrap.ram_i.irq_id_i[4:0]} {-radix %x}
+    {simulator::uvmt_cv32_tb.dut_wrap.ram_i.irq_id_o[4:0]} {-radix %x}
+    simulator::uvmt_cv32_tb.dut_wrap.ram_i.irq_o {}
+    {simulator::uvmt_cv32_tb.dut_wrap.ram_i.pc_core_id_i[31:0]} {-radix %x}
+    simulator::uvmt_cv32_tb.dut_wrap.ram_i.rst_ni {}
+    simulator::uvmt_cv32_tb.dut_wrap.ram_i.tests_failed_o {}
+    simulator::uvmt_cv32_tb.dut_wrap.ram_i.tests_passed_o {}
+} childcmds {
+    {}
+    {}
+    {}
+    {}
+    {}
+    {}
+    {}
+    {}
+    {}
+    {}
+    {}
+} {
+    set expected [ join [waveform signals -format fullpath $gpID0] ]
+    if {[string equal $name $expected] || $name == "cdivider"} {
+        if {$attrs != ""} {
+            eval waveform format $gpID0 $attrs
+        }
+        if { $childcmds != ""} {
+            eval $childcmds
+        }
+    }
+    set gpGlist0 [lrange $gpGlist0 1 end]
+    set gpID0 [lindex $gpGlist0 0]
+}
+waveform hierarchy collapse $groupId0
+
+
+set groupId0 [waveform add -groups clknrst_if]
+set gpGlist0 [waveform hierarchy contents $groupId0]
+set gpID0 [lindex $gpGlist0 0]
+foreach {name attrs}  {
+    simulator::uvmt_cv32_tb.clknrst_if.clk {}
+    simulator::uvmt_cv32_tb.clknrst_if.clk_active {}
+    simulator::uvmt_cv32_tb.clknrst_if.reset_n {}
+    simulator::uvmt_cv32_tb.clknrst_if.clk_period {-trace analogSampleAndHold}
+} childcmds {
+    {}
+    {}
+    {}
+    {}
+} {
+    set expected [ join [waveform signals -format fullpath $gpID0] ]
+    if {[string equal $name $expected] || $name == "cdivider"} {
+        if {$attrs != ""} {
+            eval waveform format $gpID0 $attrs
+        }
+        if { $childcmds != ""} {
+            eval $childcmds
+        }
+    }
+    set gpGlist0 [lrange $gpGlist0 1 end]
+    set gpID0 [lindex $gpGlist0 0]
+}
+waveform hierarchy collapse $groupId0
+
+set id [waveform add -signals  {
+	simulator::uvmt_cv32_tb.dut_wrap.riscv_core_i.riscv_tracer_i.cycles
+	} ]
+waveform format $id -radix %x
+set id [waveform add -signals  {
+	simulator::uvmt_cv32_tb.step_compare.ret_ovp
+	} ]
+set id [waveform add -signals  {
+	simulator::uvmt_cv32_tb.step_compare.ret_rtl
+	} ]
+set id [waveform add -signals  {
+	simulator::uvmt_cv32_tb.step_compare.step_ovp
+	} ]
+set id [waveform add -signals  {
+	simulator::uvmt_cv32_tb.step_compare.step_rtl
+	} ]
+set id [waveform add -signals  {
+	simulator::uvmt_cv32_tb.step_compare.Clk
+	} ]
+set id [waveform add -signals  {
+	{simulator::uvmt_cv32_tb.step_compare_if.insn_pc[31:0]}
+	} ]
+waveform format $id -radix %x
+set id [waveform add -signals  {
+	simulator::uvmt_cv32_tb.step_compare_if.ovp_b1_Step
+	} ]
+set id [waveform add -signals  {
+	simulator::uvmt_cv32_tb.step_compare_if.ovp_b1_Stepping
+	} ]
+set id [waveform add -signals  {
+	simulator::uvmt_cv32_tb.step_compare_if.ovp_cpu_PCr
+	} ]
+waveform format $id -radix %x
+set id [waveform add -signals  {
+	simulator::uvmt_cv32_tb.step_compare_if.ovp_cpu_busWait
+	} ]
+waveform format $id -radix %x
+set id [waveform add -signals  {
+	simulator::uvmt_cv32_tb.step_compare_if.ovp_cpu_retire
+	} ]
+waveform format $id -radix %x
+set id [waveform add -signals  {
+	simulator::uvmt_cv32_tb.step_compare_if.riscv_retire
+	} ]
+waveform format $id -radix %x
+
+set groupId0 [waveform add -groups clknrst_if]
+set gpGlist0 [waveform hierarchy contents $groupId0]
+set gpID0 [lindex $gpGlist0 0]
+foreach {name attrs}  {
+    simulator::uvmt_cv32_tb.clknrst_if.clk {}
+    simulator::uvmt_cv32_tb.clknrst_if.clk_active {}
+    simulator::uvmt_cv32_tb.clknrst_if.reset_n {}
+    simulator::uvmt_cv32_tb.clknrst_if.clk_period {-trace analogSampleAndHold}
+} childcmds {
+    {}
+    {}
+    {}
+    {}
+} {
+    set expected [ join [waveform signals -format fullpath $gpID0] ]
+    if {[string equal $name $expected] || $name == "cdivider"} {
+        if {$attrs != ""} {
+            eval waveform format $gpID0 $attrs
+        }
+        if { $childcmds != ""} {
+            eval $childcmds
+        }
+    }
+    set gpGlist0 [lrange $gpGlist0 1 end]
+    set gpID0 [lindex $gpGlist0 0]
+}
+waveform hierarchy collapse $groupId0
+
+
+set groupId0 [waveform add -groups step_compare_if]
+set gpGlist0 [waveform hierarchy contents $groupId0]
+set gpID0 [lindex $gpGlist0 0]
+foreach {name attrs}  {
+    {simulator::uvmt_cv32_tb.step_compare_if.insn_pc[31:0]} {-radix %x}
+    simulator::uvmt_cv32_tb.step_compare_if.ovp_b1_Step {}
+    simulator::uvmt_cv32_tb.step_compare_if.ovp_b1_Stepping {}
+    {simulator::uvmt_cv32_tb.step_compare_if.ovp_cpu_GPR[0:31]} {-radix %x}
+    simulator::uvmt_cv32_tb.step_compare_if.ovp_cpu_PCr {-radix %x}
+    simulator::uvmt_cv32_tb.step_compare_if.ovp_cpu_busWait {-radix %x}
+    simulator::uvmt_cv32_tb.step_compare_if.ovp_cpu_retire {-radix %x}
+    simulator::uvmt_cv32_tb.step_compare_if.reg_t {-radix %x}
+    simulator::uvmt_cv32_tb.step_compare_if.riscv_retire {-radix %x}
+    {simulator::uvmt_cv32_tb.step_compare_if.riscy_GPR[31:0]} {-radix %x}
+} childcmds {
+    {}
+    {}
+    {}
+    {}
+    {}
+    {}
+    {}
+    {}
+    {}
+    {}
+} {
+    set expected [ join [waveform signals -format fullpath $gpID0] ]
+    if {[string equal $name $expected] || $name == "cdivider"} {
+        if {$attrs != ""} {
+            eval waveform format $gpID0 $attrs
+        }
+        if { $childcmds != ""} {
+            eval $childcmds
+        }
+    }
+    set gpGlist0 [lrange $gpGlist0 1 end]
+    set gpID0 [lindex $gpGlist0 0]
+}
+waveform hierarchy collapse $groupId0
+
+set id [waveform add -signals  {
+	simulator::uvmt_cv32_tb.dut_wrap.riscv_core_i.clk_i
+	} ]
+set id [waveform add -signals  {
+	simulator::uvmt_cv32_tb.dut_wrap.riscv_core_i.clk
+	} ]
+
+waveform xview limits 1308.568422ns 1367.430905ns
+
+#
+# Waveform Window Links
+#
+
+#
+# Console windows
+#
+console set -windowname Console
+window geometry Console 1059x365+-5+678
+
+#
+# Layout selection
+#

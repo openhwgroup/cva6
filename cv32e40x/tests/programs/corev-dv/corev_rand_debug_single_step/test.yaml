@@ -1,0 +1,6 @@
+name: corev_rand_debug_single_step
+uvm_test: uvmt_$(CV_CORE_LC)_firmware_test_c
+description: >
+    Random debug generator test with single-stepping supported in the debug ROM
+plusargs: >
+    +gen_random_debug

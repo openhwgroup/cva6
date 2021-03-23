@@ -1,0 +1,13 @@
+# Test definition YAML for random interrupt test
+
+# corev-dv generator test
+name: corev_rand_interrupt_debug
+uvm_test: uvmt_$(CV_CORE_LC)_firmware_test_c
+description: >
+    Random interrupt generator test with debug ebreaks
+plusargs: >
+    +gen_irq_noise
+    +reset_debug
+    +gen_random_debug    
+    +ignore_dpc_check
+    
