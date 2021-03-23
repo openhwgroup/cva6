@@ -170,7 +170,7 @@ def read_file(args, file):
 # Start of script
 VALID_SIMULATORS = ('dsim', 'vsim', 'vcs', 'xrun')
 DEFAULT_SIMULATOR = 'dsim'
-VALID_PROJECTS = ('cv32e40p', 'cv64')
+VALID_PROJECTS = ('cv32e40p', 'cv32e40x', 'cv64')
 DEFAULT_PROJECT = 'cv32e40p'
 DEFAULT_CFG = 'default'
 
