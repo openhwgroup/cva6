@@ -137,6 +137,8 @@ class uvma_isa_cov_model_c extends uvm_component;
   cg_cj c_jal_cg;
   //Zicsr:
   cg_itype csrrw_cg;  // TODO define csr "imm" type
+  //Zifence_i:
+  cg_itype fence_i_cg;  // TODO own cg? (not itype)
 
   // TLM
   uvm_tlm_analysis_fifo #(uvma_isa_mon_trn_c) mon_trn_fifo;
@@ -223,6 +225,9 @@ function void uvma_isa_cov_model_c::build_phase(uvm_phase phase);
     end
     if (cfg.ext_zicsr_enabled) begin
       csrrw_cg = new("csrrw_cg");
+    end
+    if (cfg.ext_zifencei_enabled) begin
+      fence_i_cg = new("fence_i_cg");
     end
   end
 
@@ -331,6 +336,14 @@ function void uvma_isa_cov_model_c::sample (instr_c instr);
     case (instr.name)
       CSRRW: csrrw_cg.sample(instr);
       // TODO rest of Zicsr
+      default: have_sampled = 0;
+    endcase
+  end
+
+  if (!have_sampled && cfg.ext_zifencei_enabled) begin
+    have_sampled = 1;
+    case (instr.name)
+      FENCE_I: fence_i_cg.sample(instr);
       default: have_sampled = 0;
     endcase
   end

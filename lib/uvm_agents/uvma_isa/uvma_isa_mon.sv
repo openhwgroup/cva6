@@ -90,6 +90,10 @@ task uvma_isa_mon_c::run_phase(uvm_phase phase);
             (cntxt.vif.insn[14:12] == 3'b001) ?
               CSRRW :
             UNKNOWN :
+          (cntxt.vif.insn[6:0] == 7'b00_011_11) ? // MISC-MEM
+            (cntxt.vif.insn[14:12] == 3'b001) ?
+              FENCE_I :
+            UNKNOWN :
           UNKNOWN;  // TODO use disassembler
         mon_trn.instr.name =
           cntxt.vif.is_compressed ?
@@ -101,7 +105,6 @@ task uvma_isa_mon_c::run_phase(uvm_phase phase);
               UNKNOWN :
             UNKNOWN :
           mon_trn.instr.name;  // TODO get proper binary input
-if (mon_trn.instr.name == C_JAL) $display("TODO got C_JAL");
         mon_trn.instr.rs1 = cntxt.vif.insn[19:15];  // TODO use disassembler
         mon_trn.instr.rs2 = cntxt.vif.insn[24:20];  // TODO use disassembler
         mon_trn.instr.rd = cntxt.vif.insn[11:7];  // TODO use disassembler

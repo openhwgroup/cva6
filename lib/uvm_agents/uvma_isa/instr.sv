@@ -34,7 +34,10 @@ typedef enum {
 
   // Zicsr
   CSRRW, CSRRS, CSRRC,
-  CSRRWI, CSRRSI, CSRRCI
+  CSRRWI, CSRRSI, CSRRCI,
+
+  // Zifencei
+  FENCE_I
 } instr_name_t;
 
 
