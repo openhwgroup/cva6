@@ -1,0 +1,6 @@
+name: hpmcounter_hazard_test
+uvm_test: uvmt_$(CV_CORE_LC)_firmware_test_c
+description: >
+    HPM Counter Hazard Test (donated by Arjan Bink)
+plusargs: >
+    +max_data_zero_instr_stall

@@ -1,0 +1,19 @@
+name: pulp
+description: Sets all PULP-related parameters to 1
+compile_flags: 
+    +define+PULP
+    
+# Imperas ISS Options (in ovpsim section)
+# PULP_XPULP=1
+#--override root/cpu/misa_Extensions=0x801104
+# PULP_XPULP=0
+# Set as below
+# Debug options (add to ovpsim section as needed)
+#--trace --tracechange --traceshowicount --monitornets --tracemode
+#--showoverrides
+ovpsim: >
+    --override root/cpu/misa_Extensions=0x801104
+    --override root/cpu/marchid=4
+    --override root/cpu/noinhibit_mask=0xFFFFFFF0
+cflags: >
+    -DPULP
