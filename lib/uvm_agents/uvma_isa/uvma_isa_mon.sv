@@ -94,6 +94,10 @@ task uvma_isa_mon_c::run_phase(uvm_phase phase);
             (cntxt.vif.insn[14:12] == 3'b001) ?
               FENCE_I :
             UNKNOWN :
+          (cntxt.vif.insn[6:0] == 7'b00_000_11) ? // LOAD
+            (cntxt.vif.insn[14:12] == 3'b010) ?
+              LW :
+            UNKNOWN :
           UNKNOWN;  // TODO use disassembler
         mon_trn.instr.name =
           cntxt.vif.is_compressed ?
@@ -103,6 +107,8 @@ task uvma_isa_mon_c::run_phase(uvm_phase phase);
               (cntxt.vif.insn[11:7] == 5'b00001) ?
                 C_JAL :
               UNKNOWN :
+            (mon_trn.instr.name == LW) ?
+              C_LW :
             UNKNOWN :
           mon_trn.instr.name;  // TODO get proper binary input
         mon_trn.instr.rs1 = cntxt.vif.insn[19:15];  // TODO use disassembler
@@ -111,6 +117,8 @@ task uvma_isa_mon_c::run_phase(uvm_phase phase);
         mon_trn.instr.immi = cntxt.vif.insn[31:25];  // TODO use disassembler
         mon_trn.instr.immu = cntxt.vif.insn[31:12];  // TODO use disassembler
         mon_trn.instr.c_immj = cntxt.vif.insn[12:2];  // TODO use disassembler
+        mon_trn.instr.c_rs1p = cntxt.vif.insn[9:7];  // TODO use disassembler
+        mon_trn.instr.c_rdp = cntxt.vif.insn[4:2];  // TODO use disassembler
 
         ap.write(mon_trn);
       end

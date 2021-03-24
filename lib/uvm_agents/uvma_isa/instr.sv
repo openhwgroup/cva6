@@ -30,6 +30,7 @@ typedef enum {
   DIV, DIVU, REM, REMU,
 
   // 32C
+  C_ADDI4SPN, C_LW, C_SW,
   C_J, C_JAL,
   C_BEQZ, C_BNEZ,
 
@@ -55,6 +56,12 @@ class instr_c extends uvm_object;
   bit [19:0] immu;
   bit [20:1] immj;
 
+  bit [2:0] c_rs1p;
+  bit [2:0] c_rs2p;
+  bit [2:0] c_rdp;
+  bit [7:0] c_immiw;
+  bit [5:0] c_imml;
+  bit [5:0] c_imms;
   bit [11:1] c_immj;
 
 endclass : instr_c

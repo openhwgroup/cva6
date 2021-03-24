@@ -72,6 +72,35 @@ covergroup cg_jtype(string name) with function sample (instr_c instr);
 endgroup : cg_jtype
 
 
+covergroup cg_ciw(string name) with function sample (instr_c instr);
+  option.per_instance = 1;
+  option.name = name;
+
+  cp_c_immiw: coverpoint instr.c_immiw;
+  cp_c_rdp: coverpoint instr.c_rdp;
+endgroup : cg_ciw
+
+
+covergroup cg_cl(string name) with function sample (instr_c instr);
+  option.per_instance = 1;
+  option.name = name;
+
+  cp_c_imml: coverpoint instr.c_imml;
+  cp_c_rs1p: coverpoint instr.c_rs1p;
+  cp_c_rdp: coverpoint instr.c_rdp;
+endgroup : cg_cl
+
+
+covergroup cg_cs(string name) with function sample (instr_c instr);
+  option.per_instance = 1;
+  option.name = name;
+
+  cp_c_imms: coverpoint instr.c_imms;
+  cp_c_rs1p: coverpoint instr.c_rs1p;
+  cp_c_rs2p: coverpoint instr.c_rs2p;
+endgroup : cg_cs
+
+
 covergroup cg_cj(string name) with function sample (instr_c instr);
   option.per_instance = 1;
   option.name = name;
@@ -139,6 +168,9 @@ class uvma_isa_cov_model_c extends uvm_component;
   cg_rtype rem_cg;
   cg_rtype remu_cg;
   //32C:
+  cg_ciw c_addi4spn_cg;
+  cg_cl c_lw_cg;
+  cg_cs c_sw_cg;
   cg_cj c_j_cg;
   cg_cj c_jal_cg;
   //Zicsr:
@@ -237,13 +269,17 @@ function void uvma_isa_cov_model_c::build_phase(uvm_phase phase);
       remu_cg = new("remu_cg");
     end
     if (cfg.ext_c_enabled) begin
-      c_j_cg   = new("c_j_cg");
+      c_addi4spn_cg = new("c_addi4spn_cg");
+      c_lw_cg = new("c_lw_cg");
+      c_sw_cg = new("c_sw_cg");
+
+      c_j_cg = new("c_j_cg");
       c_jal_cg = new("c_jal_cg");
     end
     if (cfg.ext_zicsr_enabled) begin
-      csrrw_cg = new("csrrw_cg");
-      csrrs_cg = new("csrrs_cg");
-      csrrc_cg = new("csrrc_cg");
+      csrrw_cg  = new("csrrw_cg");
+      csrrs_cg  = new("csrrs_cg");
+      csrrc_cg  = new("csrrc_cg");
       csrrwi_cg = new("csrrwi_cg");
       csrrsi_cg = new("csrrsi_cg");
       csrrci_cg = new("csrrci_cg");
@@ -351,9 +387,14 @@ function void uvma_isa_cov_model_c::sample (instr_c instr);
   if (!have_sampled && cfg.ext_c_enabled) begin
     have_sampled = 1;
     case (instr.name)
-      C_J: c_j_cg.sample(instr);
+      C_ADDI4SPN: c_addi4spn_cg.sample(instr);
+      C_LW: c_lw_cg.sample(instr);
+      C_SW: c_sw_cg.sample(instr);
+
+      C_J:   c_j_cg.sample(instr);
       C_JAL: c_jal_cg.sample(instr);
       // TODO rest of C
+
       default: have_sampled = 0;
     endcase
   end
