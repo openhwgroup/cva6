@@ -130,8 +130,14 @@ class uvma_isa_cov_model_c extends uvm_component;
   cg_utype auipc_cg;
   cg_jtype jal_cg;
   //32M:
-  cg_rtype divu_cg;
+  cg_rtype mul_cg;
   cg_rtype mulh_cg;
+  cg_rtype mulhsu_cg;
+  cg_rtype mulhu_cg;
+  cg_rtype div_cg;
+  cg_rtype divu_cg;
+  cg_rtype rem_cg;
+  cg_rtype remu_cg;
   //32C:
   cg_cj c_j_cg;
   cg_cj c_jal_cg;
@@ -216,11 +222,17 @@ function void uvma_isa_cov_model_c::build_phase(uvm_phase phase);
       ebreak_cg = new("ebreak_cg");
     end
     if (cfg.ext_m_enabled) begin
+      mul_cg = new("mul_cg");
       mulh_cg = new("mulh_cg");
+      mulhsu_cg = new("mulhsu_cg");
+      mulhu_cg = new("mulhu_cg");
+      div_cg = new("div_cg");
       divu_cg = new("divu_cg");
+      rem_cg = new("rem_cg");
+      remu_cg = new("remu_cg");
     end
     if (cfg.ext_c_enabled) begin
-      c_j_cg = new("c_j_cg");
+      c_j_cg   = new("c_j_cg");
       c_jal_cg = new("c_jal_cg");
     end
     if (cfg.ext_zicsr_enabled) begin
@@ -314,9 +326,14 @@ function void uvma_isa_cov_model_c::sample (instr_c instr);
   if (!have_sampled && cfg.ext_m_enabled) begin
     have_sampled = 1;
     case (instr.name)
+      MUL: mul_cg.sample(instr);
       MULH: mulh_cg.sample(instr);
+      MULHSU: mulhsu_cg.sample(instr);
+      MULHU: mulhu_cg.sample(instr);
+      DIV: div_cg.sample(instr);
       DIVU: divu_cg.sample(instr);
-      // TODO rest of M
+      REM: rem_cg.sample(instr);
+      REMU: remu_cg.sample(instr);
       default: have_sampled = 0;
     endcase
   end
@@ -334,7 +351,7 @@ function void uvma_isa_cov_model_c::sample (instr_c instr);
   if (!have_sampled && cfg.ext_zicsr_enabled) begin
     have_sampled = 1;
     case (instr.name)
-      CSRRW: csrrw_cg.sample(instr);
+      CSRRW:   csrrw_cg.sample(instr);
       // TODO rest of Zicsr
       default: have_sampled = 0;
     endcase

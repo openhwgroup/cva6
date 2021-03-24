@@ -26,7 +26,8 @@ typedef enum {
   FENCE, ECALL, EBREAK,
 
   // 32M
-  MULH, DIVU,
+  MUL, MULH, MULHSU, MULHU,
+  DIV, DIVU, REM, REMU,
 
   // 32C
   C_J, C_JAL,
