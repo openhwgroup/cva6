@@ -52,6 +52,7 @@ CFG_PATH = (
             )
 TEST_PATHS = (
             '<CV_CORE>/tests/programs/corev-dv/',
+            '<CV_CORE>/tests/programs/embench/',
             '<CV_CORE>/tests/programs/custom',
             )
 try:
