@@ -72,6 +72,15 @@ covergroup cg_jtype(string name) with function sample (instr_c instr);
 endgroup : cg_jtype
 
 
+covergroup cg_cr(string name) with function sample (instr_c instr);
+  option.per_instance = 1;
+  option.name = name;
+
+  cp_c_rdrs1: coverpoint instr.c_rdrs1;
+  cp_c_rs2: coverpoint instr.c_rs2;
+endgroup : cg_cr
+
+
 covergroup cg_ci(string name) with function sample (instr_c instr);
   option.per_instance = 1;
   option.name = name;
@@ -79,6 +88,15 @@ covergroup cg_ci(string name) with function sample (instr_c instr);
   cp_c_immi: coverpoint instr.c_immi;
   cp_c_rdrs1: coverpoint instr.c_rdrs1;
 endgroup : cg_ci
+
+
+covergroup cg_css(string name) with function sample (instr_c instr);
+  option.per_instance = 1;
+  option.name = name;
+
+  cp_c_immss: coverpoint instr.c_immss;
+  cp_c_rs2: coverpoint instr.c_rs2;
+endgroup : cg_css
 
 
 covergroup cg_ciw(string name) with function sample (instr_c instr);
@@ -213,6 +231,14 @@ class uvma_isa_cov_model_c extends uvm_component;
   cg_cj c_j_cg;
   cg_cb c_beqz_cg;
   cg_cb c_bnez_cg;
+  cg_ci c_slli_cg;
+  cg_ci c_lwsp_cg;
+  cg_cr c_jr_cg;
+  cg_cr c_mv_cg;
+  cg_cr c_ebreak_cg;  // TODO should have own cg?
+  cg_cr c_jalr_cg;
+  cg_cr c_add_cg;
+  cg_css c_swsp_cg;
   //Zicsr:
   cg_itype csrrw_cg;  // TODO define type for named "csr" imm
   cg_itype csrrs_cg;
@@ -328,6 +354,15 @@ function void uvma_isa_cov_model_c::build_phase(uvm_phase phase);
       c_j_cg    = new("c_j_cg");
       c_beqz_cg = new("c_beqz_cg");
       c_bnez_cg = new("c_bnez_cg");
+
+      c_slli_cg    = new("c_slli_cg");
+      c_lwsp_cg    = new("c_lwsp_cg");
+      c_jr_cg    = new("c_jr_cg");
+      c_mv_cg    = new("c_mv_cg");
+      c_ebreak_cg    = new("c_ebreak_cg");
+      c_jalr_cg    = new("c_jalr_cg");
+      c_add_cg    = new("c_add_cg");
+      c_swsp_cg    = new("c_swsp_cg");
     end
     if (cfg.ext_zicsr_enabled) begin
       csrrw_cg  = new("csrrw_cg");
@@ -460,7 +495,14 @@ function void uvma_isa_cov_model_c::sample (instr_c instr);
       C_BEQZ: c_beqz_cg.sample(instr);
       C_BNEZ: c_bnez_cg.sample(instr);
 
-      // TODO rest of C
+      C_SLLI: c_slli_cg.sample(instr);
+      C_LWSP: c_lwsp_cg.sample(instr);
+      C_JR: c_jr_cg.sample(instr);
+      C_MV: c_mv_cg.sample(instr);
+      C_EBREAK: c_ebreak_cg.sample(instr);
+      C_JALR: c_jalr_cg.sample(instr);
+      C_ADD: c_add_cg.sample(instr);
+      C_SWSP: c_swsp_cg.sample(instr);
 
       default: have_sampled = 0;
     endcase
