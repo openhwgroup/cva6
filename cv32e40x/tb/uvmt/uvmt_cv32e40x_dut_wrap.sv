@@ -176,6 +176,7 @@ module uvmt_cv32e40x_dut_wrap #(// DUT (riscv_core) parameters.
          .instr_rvalid_i         ( instr_rvalid                   ),
          .instr_addr_o           ( instr_addr                     ),
          .instr_rdata_i          ( instr_rdata                    ),
+         .instr_err_i            ( '0                             ), //TODO: Temp tie off to get "debug_test" to pass
 
          .data_req_o             ( data_req                       ),
          .data_gnt_i             ( data_gnt                       ),
