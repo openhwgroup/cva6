@@ -72,6 +72,15 @@ covergroup cg_jtype(string name) with function sample (instr_c instr);
 endgroup : cg_jtype
 
 
+covergroup cg_ci(string name) with function sample (instr_c instr);
+  option.per_instance = 1;
+  option.name = name;
+
+  cp_c_immi: coverpoint instr.c_immi;
+  cp_c_rdrs1: coverpoint instr.c_rdrs1;
+endgroup : cg_ci
+
+
 covergroup cg_ciw(string name) with function sample (instr_c instr);
   option.per_instance = 1;
   option.name = name;
@@ -99,6 +108,24 @@ covergroup cg_cs(string name) with function sample (instr_c instr);
   cp_c_rs1p: coverpoint instr.c_rs1p;
   cp_c_rs2p: coverpoint instr.c_rs2p;
 endgroup : cg_cs
+
+
+covergroup cg_ca(string name) with function sample (instr_c instr);
+  option.per_instance = 1;
+  option.name = name;
+
+  cp_c_rdprs1p: coverpoint instr.c_rdprs1p;
+  cp_c_rs2p: coverpoint instr.c_rs2p;
+endgroup : cg_ca
+
+
+covergroup cg_cb(string name) with function sample (instr_c instr);
+  option.per_instance = 1;
+  option.name = name;
+
+  cp_c_immb: coverpoint instr.c_immb;
+  cp_c_rs1p: coverpoint instr.c_rs1p;
+endgroup : cg_cb
 
 
 covergroup cg_cj(string name) with function sample (instr_c instr);
@@ -171,8 +198,21 @@ class uvma_isa_cov_model_c extends uvm_component;
   cg_ciw c_addi4spn_cg;
   cg_cl c_lw_cg;
   cg_cs c_sw_cg;
-  cg_cj c_j_cg;
+  cg_ci c_addi_cg;
   cg_cj c_jal_cg;
+  cg_ci c_li_cg;
+  cg_ci c_addi16sp_cg;
+  cg_ci c_lui_cg;  // TODO need "cg_ci_lui" specialization?
+  cg_cb c_srli_cg;
+  cg_cb c_srai_cg;
+  cg_cb c_andi_cg;
+  cg_ca c_sub_cg;
+  cg_ca c_xor_cg;
+  cg_ca c_or_cg;
+  cg_ca c_and_cg;
+  cg_cj c_j_cg;
+  cg_cb c_beqz_cg;
+  cg_cb c_bnez_cg;
   //Zicsr:
   cg_itype csrrw_cg;  // TODO define type for named "csr" imm
   cg_itype csrrs_cg;
@@ -259,8 +299,8 @@ function void uvma_isa_cov_model_c::build_phase(uvm_phase phase);
       ebreak_cg = new("ebreak_cg");
     end
     if (cfg.ext_m_enabled) begin
-      mul_cg = new("mul_cg");
-      mulh_cg = new("mulh_cg");
+      mul_cg    = new("mul_cg");
+      mulh_cg   = new("mulh_cg");
       mulhsu_cg = new("mulhsu_cg");
       mulhu_cg = new("mulhu_cg");
       div_cg = new("div_cg");
@@ -273,8 +313,21 @@ function void uvma_isa_cov_model_c::build_phase(uvm_phase phase);
       c_lw_cg = new("c_lw_cg");
       c_sw_cg = new("c_sw_cg");
 
-      c_j_cg = new("c_j_cg");
-      c_jal_cg = new("c_jal_cg");
+      c_addi_cg = new("c_addi_cg");
+      c_jal_cg  = new("c_jal_cg");
+      c_li_cg   = new("c_li_cg");
+      c_addi16sp_cg = new("c_addi16sp_cg");
+      c_lui_cg  = new("c_lui_cg");
+      c_srli_cg = new("c_srli_cg");
+      c_srai_cg = new("c_srai_cg");
+      c_andi_cg = new("c_andi_cg");
+      c_sub_cg = new("c_sub_cg");
+      c_xor_cg = new("c_xor_cg");
+      c_or_cg = new("c_or_cg");
+      c_and_cg = new("c_and_cg");
+      c_j_cg    = new("c_j_cg");
+      c_beqz_cg = new("c_beqz_cg");
+      c_bnez_cg = new("c_bnez_cg");
     end
     if (cfg.ext_zicsr_enabled) begin
       csrrw_cg  = new("csrrw_cg");
@@ -372,8 +425,8 @@ function void uvma_isa_cov_model_c::sample (instr_c instr);
   if (!have_sampled && cfg.ext_m_enabled) begin
     have_sampled = 1;
     case (instr.name)
-      MUL: mul_cg.sample(instr);
-      MULH: mulh_cg.sample(instr);
+      MUL:    mul_cg.sample(instr);
+      MULH:   mulh_cg.sample(instr);
       MULHSU: mulhsu_cg.sample(instr);
       MULHU: mulhu_cg.sample(instr);
       DIV: div_cg.sample(instr);
@@ -388,11 +441,25 @@ function void uvma_isa_cov_model_c::sample (instr_c instr);
     have_sampled = 1;
     case (instr.name)
       C_ADDI4SPN: c_addi4spn_cg.sample(instr);
-      C_LW: c_lw_cg.sample(instr);
-      C_SW: c_sw_cg.sample(instr);
+      C_LW:       c_lw_cg.sample(instr);
+      C_SW:       c_sw_cg.sample(instr);
 
-      C_J:   c_j_cg.sample(instr);
+      C_ADDI: c_addi_cg.sample(instr);
       C_JAL: c_jal_cg.sample(instr);
+      C_LI: c_li_cg.sample(instr);
+      C_ADDI16SP: c_addi16sp_cg.sample(instr);
+      C_LUI: c_lui_cg.sample(instr);
+      C_SRLI: c_srli_cg.sample(instr);
+      C_SRAI: c_srai_cg.sample(instr);
+      C_ANDI: c_andi_cg.sample(instr);
+      C_SUB: c_sub_cg.sample(instr);
+      C_XOR: c_xor_cg.sample(instr);
+      C_OR: c_or_cg.sample(instr);
+      C_AND: c_and_cg.sample(instr);
+      C_J: c_j_cg.sample(instr);
+      C_BEQZ: c_beqz_cg.sample(instr);
+      C_BNEZ: c_bnez_cg.sample(instr);
+
       // TODO rest of C
 
       default: have_sampled = 0;

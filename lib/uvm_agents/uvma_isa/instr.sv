@@ -31,8 +31,8 @@ typedef enum {
 
   // 32C
   C_ADDI4SPN, C_LW, C_SW,
-  C_J, C_JAL,
-  C_BEQZ, C_BNEZ,
+  C_ADDI, C_JAL, C_LI, C_ADDI16SP, C_LUI, C_SRLI, C_SRAI,
+  C_ANDI, C_SUB, C_XOR, C_OR, C_AND, C_J, C_BEQZ, C_BNEZ,
 
   // Zicsr
   CSRRW, CSRRS, CSRRC,
@@ -59,9 +59,13 @@ class instr_c extends uvm_object;
   bit [2:0] c_rs1p;
   bit [2:0] c_rs2p;
   bit [2:0] c_rdp;
+  bit [4:0] c_rdrs1;  // rd/rs1
+  bit [2:0] c_rdprs1p;  // rd'/rs1'
   bit [7:0] c_immiw;
   bit [5:0] c_imml;
   bit [5:0] c_imms;
   bit [11:1] c_immj;
+  bit [5:0] c_immi;
+  bit [7:0] c_immb;
 
 endclass : instr_c
