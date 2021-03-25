@@ -278,91 +278,91 @@ function void uvma_isa_cov_model_c::build_phase(uvm_phase phase);
 
   if (cfg.enabled && cfg.cov_model_enabled) begin
     if (cfg.ext_i_enabled) begin
-      lui_cg = new("lui_cg");
-      auipc_cg = new("auipc_cg");
-      jal_cg = new("jal_cg");
-      jalr_cg = new("jalr_cg");
+      lui_cg    = new("lui_cg");
+      auipc_cg  = new("auipc_cg");
+      jal_cg    = new("jal_cg");
+      jalr_cg   = new("jalr_cg");
 
-      beq_cg = new("beq_cg");
-      bne_cg = new("bne_cg");
-      blt_cg = new("blt_cg");
-      bge_cg = new("bge_cg");
-      bltu_cg = new("bltu_cg");
-      bgeu_cg = new("bgeu_cg");
+      beq_cg    = new("beq_cg");
+      bne_cg    = new("bne_cg");
+      blt_cg    = new("blt_cg");
+      bge_cg    = new("bge_cg");
+      bltu_cg   = new("bltu_cg");
+      bgeu_cg   = new("bgeu_cg");
 
-      lb_cg = new("lb_cg");
-      lh_cg = new("lh_cg");
-      lw_cg = new("lw_cg");
-      lbu_cg = new("lbu_cg");
-      lhu_cg = new("lhu_cg");
-      sb_cg = new("sb_cg");
-      sh_cg = new("sh_cg");
-      sw_cg = new("sw_cg");
+      lb_cg     = new("lb_cg");
+      lh_cg     = new("lh_cg");
+      lw_cg     = new("lw_cg");
+      lbu_cg    = new("lbu_cg");
+      lhu_cg    = new("lhu_cg");
+      sb_cg     = new("sb_cg");
+      sh_cg     = new("sh_cg");
+      sw_cg     = new("sw_cg");
 
-      addi_cg = new("addi_cg");
-      slti_cg = new("slti_cg");
-      sltiu_cg = new("sltiu_cg");
-      xori_cg = new("xori_cg");
-      ori_cg = new("ori_cg");
-      andi_cg = new("andi_cg");
-      slli_cg = new("slli_cg");
-      srli_cg = new("srli_cg");
-      srai_cg = new("srai_cg");
+      addi_cg   = new("addi_cg");
+      slti_cg   = new("slti_cg");
+      sltiu_cg  = new("sltiu_cg");
+      xori_cg   = new("xori_cg");
+      ori_cg    = new("ori_cg");
+      andi_cg   = new("andi_cg");
+      slli_cg   = new("slli_cg");
+      srli_cg   = new("srli_cg");
+      srai_cg   = new("srai_cg");
 
-      add_cg = new("add_cg");
-      sub_cg = new("sub_cg");
-      sll_cg = new("sll_cg");
-      slt_cg = new("slt_cg");
-      sltu_cg = new("sltu_cg");
-      xor_cg = new("xor_cg");
-      srl_cg = new("srl_cg");
-      sra_cg = new("sra_cg");
-      or_cg = new("or_cg");
-      and_cg = new("and_cg");
+      add_cg    = new("add_cg");
+      sub_cg    = new("sub_cg");
+      sll_cg    = new("sll_cg");
+      slt_cg    = new("slt_cg");
+      sltu_cg   = new("sltu_cg");
+      xor_cg    = new("xor_cg");
+      srl_cg    = new("srl_cg");
+      sra_cg    = new("sra_cg");
+      or_cg     = new("or_cg");
+      and_cg    = new("and_cg");
 
-      fence_cg = new("fence_cg");
-      ecall_cg = new("ecall_cg");
+      fence_cg  = new("fence_cg");
+      ecall_cg  = new("ecall_cg");
       ebreak_cg = new("ebreak_cg");
     end
     if (cfg.ext_m_enabled) begin
       mul_cg    = new("mul_cg");
       mulh_cg   = new("mulh_cg");
       mulhsu_cg = new("mulhsu_cg");
-      mulhu_cg = new("mulhu_cg");
-      div_cg = new("div_cg");
-      divu_cg = new("divu_cg");
-      rem_cg = new("rem_cg");
-      remu_cg = new("remu_cg");
+      mulhu_cg  = new("mulhu_cg");
+      div_cg    = new("div_cg");
+      divu_cg   = new("divu_cg");
+      rem_cg    = new("rem_cg");
+      remu_cg   = new("remu_cg");
     end
     if (cfg.ext_c_enabled) begin
       c_addi4spn_cg = new("c_addi4spn_cg");
-      c_lw_cg = new("c_lw_cg");
-      c_sw_cg = new("c_sw_cg");
+      c_lw_cg       = new("c_lw_cg");
+      c_sw_cg       = new("c_sw_cg");
 
-      c_addi_cg = new("c_addi_cg");
-      c_jal_cg  = new("c_jal_cg");
-      c_li_cg   = new("c_li_cg");
+      c_addi_cg     = new("c_addi_cg");
+      c_jal_cg      = new("c_jal_cg");
+      c_li_cg       = new("c_li_cg");
       c_addi16sp_cg = new("c_addi16sp_cg");
-      c_lui_cg  = new("c_lui_cg");
-      c_srli_cg = new("c_srli_cg");
-      c_srai_cg = new("c_srai_cg");
-      c_andi_cg = new("c_andi_cg");
-      c_sub_cg = new("c_sub_cg");
-      c_xor_cg = new("c_xor_cg");
-      c_or_cg = new("c_or_cg");
-      c_and_cg = new("c_and_cg");
-      c_j_cg    = new("c_j_cg");
-      c_beqz_cg = new("c_beqz_cg");
-      c_bnez_cg = new("c_bnez_cg");
+      c_lui_cg      = new("c_lui_cg");
+      c_srli_cg     = new("c_srli_cg");
+      c_srai_cg     = new("c_srai_cg");
+      c_andi_cg     = new("c_andi_cg");
+      c_sub_cg      = new("c_sub_cg");
+      c_xor_cg      = new("c_xor_cg");
+      c_or_cg       = new("c_or_cg");
+      c_and_cg      = new("c_and_cg");
+      c_j_cg        = new("c_j_cg");
+      c_beqz_cg     = new("c_beqz_cg");
+      c_bnez_cg     = new("c_bnez_cg");
 
-      c_slli_cg    = new("c_slli_cg");
-      c_lwsp_cg    = new("c_lwsp_cg");
-      c_jr_cg    = new("c_jr_cg");
-      c_mv_cg    = new("c_mv_cg");
-      c_ebreak_cg    = new("c_ebreak_cg");
-      c_jalr_cg    = new("c_jalr_cg");
-      c_add_cg    = new("c_add_cg");
-      c_swsp_cg    = new("c_swsp_cg");
+      c_slli_cg     = new("c_slli_cg");
+      c_lwsp_cg     = new("c_lwsp_cg");
+      c_jr_cg       = new("c_jr_cg");
+      c_mv_cg       = new("c_mv_cg");
+      c_ebreak_cg   = new("c_ebreak_cg");
+      c_jalr_cg     = new("c_jalr_cg");
+      c_add_cg      = new("c_add_cg");
+      c_swsp_cg     = new("c_swsp_cg");
     end
     if (cfg.ext_zicsr_enabled) begin
       csrrw_cg  = new("csrrw_cg");
@@ -460,14 +460,14 @@ function void uvma_isa_cov_model_c::sample (instr_c instr);
   if (!have_sampled && cfg.ext_m_enabled) begin
     have_sampled = 1;
     case (instr.name)
-      MUL:    mul_cg.sample(instr);
-      MULH:   mulh_cg.sample(instr);
-      MULHSU: mulhsu_cg.sample(instr);
-      MULHU: mulhu_cg.sample(instr);
-      DIV: div_cg.sample(instr);
-      DIVU: divu_cg.sample(instr);
-      REM: rem_cg.sample(instr);
-      REMU: remu_cg.sample(instr);
+      MUL:     mul_cg.sample(instr);
+      MULH:    mulh_cg.sample(instr);
+      MULHSU:  mulhsu_cg.sample(instr);
+      MULHU:   mulhu_cg.sample(instr);
+      DIV:     div_cg.sample(instr);
+      DIVU:    divu_cg.sample(instr);
+      REM:     rem_cg.sample(instr);
+      REMU:    remu_cg.sample(instr);
       default: have_sampled = 0;
     endcase
   end
@@ -479,30 +479,30 @@ function void uvma_isa_cov_model_c::sample (instr_c instr);
       C_LW:       c_lw_cg.sample(instr);
       C_SW:       c_sw_cg.sample(instr);
 
-      C_ADDI: c_addi_cg.sample(instr);
-      C_JAL: c_jal_cg.sample(instr);
-      C_LI: c_li_cg.sample(instr);
+      C_ADDI:     c_addi_cg.sample(instr);
+      C_JAL:      c_jal_cg.sample(instr);
+      C_LI:       c_li_cg.sample(instr);
       C_ADDI16SP: c_addi16sp_cg.sample(instr);
-      C_LUI: c_lui_cg.sample(instr);
-      C_SRLI: c_srli_cg.sample(instr);
-      C_SRAI: c_srai_cg.sample(instr);
-      C_ANDI: c_andi_cg.sample(instr);
-      C_SUB: c_sub_cg.sample(instr);
-      C_XOR: c_xor_cg.sample(instr);
-      C_OR: c_or_cg.sample(instr);
-      C_AND: c_and_cg.sample(instr);
-      C_J: c_j_cg.sample(instr);
-      C_BEQZ: c_beqz_cg.sample(instr);
-      C_BNEZ: c_bnez_cg.sample(instr);
+      C_LUI:      c_lui_cg.sample(instr);
+      C_SRLI:     c_srli_cg.sample(instr);
+      C_SRAI:     c_srai_cg.sample(instr);
+      C_ANDI:     c_andi_cg.sample(instr);
+      C_SUB:      c_sub_cg.sample(instr);
+      C_XOR:      c_xor_cg.sample(instr);
+      C_OR:       c_or_cg.sample(instr);
+      C_AND:      c_and_cg.sample(instr);
+      C_J:        c_j_cg.sample(instr);
+      C_BEQZ:     c_beqz_cg.sample(instr);
+      C_BNEZ:     c_bnez_cg.sample(instr);
 
-      C_SLLI: c_slli_cg.sample(instr);
-      C_LWSP: c_lwsp_cg.sample(instr);
-      C_JR: c_jr_cg.sample(instr);
-      C_MV: c_mv_cg.sample(instr);
+      C_SLLI:   c_slli_cg.sample(instr);
+      C_LWSP:   c_lwsp_cg.sample(instr);
+      C_JR:     c_jr_cg.sample(instr);
+      C_MV:     c_mv_cg.sample(instr);
       C_EBREAK: c_ebreak_cg.sample(instr);
-      C_JALR: c_jalr_cg.sample(instr);
-      C_ADD: c_add_cg.sample(instr);
-      C_SWSP: c_swsp_cg.sample(instr);
+      C_JALR:   c_jalr_cg.sample(instr);
+      C_ADD:    c_add_cg.sample(instr);
+      C_SWSP:   c_swsp_cg.sample(instr);
 
       default: have_sampled = 0;
     endcase

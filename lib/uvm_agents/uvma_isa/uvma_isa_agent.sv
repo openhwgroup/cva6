@@ -113,8 +113,8 @@ endfunction : retrieve_vif
 
 function void uvma_isa_agent_c::create_components();
 
-  monitor = uvma_isa_mon_c::type_id::create("monitor", this);
-  cov_model = uvma_isa_cov_model_c::type_id::create("cov_model", this);
+  monitor        = uvma_isa_mon_c::type_id::create("monitor", this);
+  cov_model      = uvma_isa_cov_model_c::type_id::create("cov_model", this);
   mon_trn_logger = uvma_isa_mon_trn_logger_c::type_id::create("mon_trn_logger", this);
 
 endfunction : create_components
