@@ -331,5 +331,5 @@ clean:
 	rm -rf $(VSIM_RESULTS) library.cfg $(VWORK)
 
 # All generated files plus the clone of the RTL
-clean_all: clean clean_riscv-dv clean_test_programs clean-bsp clean_compliance
+clean_all: clean clean_riscv-dv clean_test_programs clean-bsp clean_compliance clean_embench
 	rm -rf $(CV_CORE_PKG)

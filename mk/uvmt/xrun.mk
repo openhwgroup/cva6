@@ -348,6 +348,8 @@ compliance: $(XRUN_COMPLIANCE_PREREQ)
 		+firmware=$(COMPLIANCE_PKG)/work/$(RISCV_ISA)/$(COMPLIANCE_PROG).hex \
 		+elf_file=$(COMPLIANCE_PKG)/work/$(RISCV_ISA)/$(COMPLIANCE_PROG).elf
 
+
+
 ###############################################################################
 # Use Google instruction stream generator (RISCV-DV) to create new test-programs
 comp_corev-dv: $(RISCVDV_PKG)
@@ -430,5 +432,5 @@ clean_eclipse:
 	rm  -rf workspace
 
 # All generated files plus the clone of the RTL
-clean_all: clean clean_eclipse clean_riscv-dv clean_test_programs clean-bsp clean_compliance
+clean_all: clean clean_eclipse clean_riscv-dv clean_test_programs clean-bsp clean_compliance clean_embench
 	rm -rf $(CV_CORE_PKG)
