@@ -2,10 +2,10 @@
 [*] GTKWave Analyzer v3.3.107 (w)1999-2020 BSI
 [*] Sun Jan 17 22:43:12 2021
 [*]
-[dumpfile] "/home/mike/GitHubRepos/MikeOpenHWGroup/core-v-verif/zero2printf/cv32/sim/core/verilator_tb.vcd"
+[dumpfile] "./verilator_tb.vcd"
 [dumpfile_mtime] "Sun Jan 17 22:24:26 2021"
 [dumpfile_size] 160537015
-[savefile] "/home/mike/GitHubRepos/MikeOpenHWGroup/core-v-verif/zero2printf/cv32/sim/tools/gtk/cv32e40p_core_IO.gtkw"
+[savefile] "../tools/gtk/cv32e40p_core_IO.gtkw"
 [timestart] 58070
 [size] 1920 948
 [pos] -1 -1

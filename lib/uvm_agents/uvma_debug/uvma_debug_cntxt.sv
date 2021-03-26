@@ -27,10 +27,6 @@ class uvma_debug_cntxt_c extends uvm_object;
    
    // Handle to agent interface
    virtual uvma_debug_if  vif;
-
-   // Handle to coverage interface
-   // NOTE: Trying this to a core-interface needs to be editted to make this more generic
-   virtual uvmt_cv32e40p_debug_cov_assert_if vif_cov;
    
    // Events
    uvm_event  sample_cfg_e;

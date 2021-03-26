@@ -5,7 +5,7 @@ The UVM testcases are at `CV_CORE/tests/uvmt`, and the test-programs can be
 found in `CV_CORE/tests/program`.  See the README in those directories for more information.
 <br><br>
 Please refer to the [Verification Strategy](https://core-v-docs-verif-strat.readthedocs.io/en/latest/sim_tests.html#simulation-tests-in-the-uvm-environments)
-for a discussion on the distinction between a _testcase_ (a SystemVerilog class extended from _uvm\_test_ that instantiates and controls the UVM environment) and a _test-program_ (a C or assembler program that runs on the core RTL model) in this environment.
+for a discussion on the distinction between a _testcase_ (a SystemVerilog class extended from uvm_test that instantiates and controls the UVM environment) and a _test-program_ (a C or assembler program that runs on the core RTL model) in this environment.
 <br><br>
 To run the UVM environment you will need:
 - a run-time license for the Imperas OVPsim Instruction Set Simulator
@@ -27,6 +27,7 @@ The following environment variables can be set for any make invocation to run te
 | CV_CORE              | The core to simulate by default.  Can be overridden on any make command line.  Typically specified in the same case as the directory in which the testbench resides (e.g. cv32e40p, cva6).  However makefiles have access to internally defined CV_CORE_LC and CV_CORE_UC variables to get expected cases of the CV_CORE name (e.g. for macros, etc that might typically be capitalized). |
 | CV_SW_TOOLCHAIN      | Points to SW toolchain installation for compiling, assembling, and/or linking test programs.  **A toolchain is required for running any tests in the _uvmt_ environment** |
 | CV_SW_MARCH          | Architecture of tool chain to invoke.  Defaults to _unknown_ |
+| CV_RESULTS           | Optional simulator output redirection path. Defaults to blank, i.e. simulation outputs will be located in <i>&lt;core></i>/mk/uvmt/<i>&lt;simulator></i>_results. |
 <br>
 
 Imperas OVPsim Instruction Set Simulator
@@ -163,10 +164,11 @@ Before making changes to the code in your local branch, it is a good idea to run
 test to ensure you are starting from a stable code-base.  The code (both RTL
 and verification) should _always_ pass sanity, so if it does not, please
 raise an issue and assign it to @mikeopenhwgroup.  The definition of "sanity"
-will change over time as the ability of the verification environment to
+may change over time as the ability of the verification environment to
 stress the RTL improves.  Running sanity is trivial:
-<br><br>
-**make sanity**
+```
+make sanity
+```
 
 CI Mini-regression
 ------------------
@@ -175,14 +177,15 @@ located at the top-level of this repository.  A pythin script `ci/ci_check` can 
 "cv32 CI check regression" specified in the control script.  Before issuing a pull-request for either
 the RTL or verification code, please run `ci_check`.  Your pull-request will be rejected if `ci_check`
 does not compile and run successfully. Usage is simple:
-<br>
-**./ci__check -s xrun**
-<br>
-will run the CI sanity regression using Xcelium.
+```
+./ci_check --core cv32e40p -s xrun
+```
+will run the CI sanity regression on the cv32e40p using Xcelium.
 <br><br>
 Complete user information is obtained in the usual way:
-<br>
-**./ci__check -h**
+```
+./ci_check -h
+```
 
 Available Test Programs
 -----------------------
@@ -200,10 +203,21 @@ Here are a few examples
 * **make test TEST=riscv_arithmetic_basic_test**:<br>run the riscv_arithmetic_basic_test program found at `<CV_CORE>/tests/programs/custom`.
 <br>
 There are also a few targets that do something other than run a test.  The most popular is:
-<br>
+```
 **make clean_all**
-<br>
+```
 which deletes all SIMULATOR generated intermediates, waves and logs **plus** the cloned RTL code.
+
+### CoreMark
+
+There is a port of the [CoreMark](https://www.eembc.org/coremark/)
+benchmark runnable with the following make command.
+
+* **make test TEST=coremark USE_ISS=NO**
+
+This will run the benchmark and print out the results.
+The numbers "Total ticks" and "Iterations" can be used to compute the CoreMak/MHz score with
+the following equation `CoreMark/MHz = iterations / (totalticks / 1e6)`.
 
 COREV-DV Generated Tests
 ---------------
@@ -217,14 +231,14 @@ up-to-date with the latest release of riscv-dv.
 Riscv-dv uses test templates such as "riscv_arithmetic_basic_test" and "riscv_rand_jump_test".
 Corev-dv has a set of templates for corev-dv generated test-programs at `<CV_CORE>/tests/programs/corev-dv`.
 Running these is a two-step process.  The first step is to clone riscv-dv and compile corev-dv:
-<br><br>
-**make corev-dv**
-<br><br>
+```
+make corev-dv
+```
 Note that the `corev-dv` target need only be run once.  The next step is to generate, compile
 and run a test.  For example:
-<br><br>
-**make gen_corev-dv test TEST=corev_rand_jump_stress_test**
-<br>
+```
+make gen_corev-dv test TEST=corev_rand_jump_stress_test
+```
 
 RISC-V Compliance Test-suite and Regressions
 ---------------
@@ -305,6 +319,7 @@ ovpsim: >
     --override root/cpu0/misa_Extensions=0x1104
     --showoverrides
 ```
+To facilitate multiple simultaneous runs with different configurations, simulation databases and output files are located in the <i>&lt;simulator</i>_results/<i>&lt;CFG></i>-subdirectories, where CFG is the name of the current yaml configuration. If not overriden, the default configuration is chosen and the subdirectory named accordingly.
 
 Common Makefile Flags
 ---------------
@@ -401,7 +416,7 @@ Invoke GUI coverage browser for the hello-world test:
 
 **make cov TEST=hello-world GUI=1**
 
-An additional option to the **make cov** target exists to <i>merge</i> coverage.  To merge coverage the makefiles will look in **all** existing test results directories <i>for the selected simulator</i> and generate a merged coverage report in <i>&lt;simulator>_results/merged_cov</i>.  The respective coverage report of GUI invocation will use that directory as the coverage database.  Coverage merging is selected by setting the <i>MERGE=1</i> flag.
+An additional option to the **make cov** target exists to <i>merge</i> coverage.  To merge coverage the makefiles will look in **all** existing test results directories <i>for the selected simulator</i> and configuration, and generate a merged coverage report in <i>&lt;simulator>_results/&lt;cfg>/merged_cov</i>.  The respective coverage report of GUI invocation will use that directory as the coverage database.  Coverage merging is selected by setting the <i>MERGE=1</i> flag.
 
 Generate coverage report for all executed tests with coverage databases.
 

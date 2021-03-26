@@ -387,6 +387,17 @@ TEST_FILES        = $(filter %.c %.S,$(wildcard $(dir $*)*))
 		$(BSP_FILES) \
 		$(TEST_FILES) \
 		-T $(BSP)/link.ld
+COREMARK_CFLAGS = \
+	-mabi=ilp32 -march=rv32im -O3 -g -falign-functions=16 \
+	-funroll-all-loops -falign-jumps=4 -finline-functions \
+	-Wall -pedantic -nostartfiles -static
+%coremark.elf:
+	$(RISCV_EXE_PREFIX)gcc $(COREMARK_CFLAGS) -o $@ \
+		-DFLAGS_STR=\""$(COREMARK_CFLAGS)"\" \
+		-DPERFORMANCE_RUN=1 -DITERATIONS=10 \
+		$(BSP_FILES) \
+		$(TEST_FILES) \
+		-T $(BSP)/link.ld
 
 # Patterned targets to generate ELF.  Used only if explicit targets do not match.
 #

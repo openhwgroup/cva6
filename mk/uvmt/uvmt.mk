@@ -51,6 +51,7 @@ endif
 DATE           = $(shell date +%F)
 CV_CORE_LC     = $(shell echo $(CV_CORE) | tr A-Z a-z)
 CV_CORE_UC     = $(shell echo $(CV_CORE) | tr a-z A-Z)
+SIMULATOR_UC   = $(shell echo $(SIMULATOR) | tr a-z A-Z)
 export CV_CORE_LC
 export CV_CORE_UC
 .DEFAULT_GOAL := no_rule 
@@ -79,7 +80,7 @@ GEN_START_INDEX ?= 0
 GEN_NUM_TESTS   ?= 1
 
 # Commont test variables
-RUN_INDEX       ?= 0
+export RUN_INDEX       ?= 0
 
 # UVM Environment
 export DV_UVMT_PATH           = $(CORE_V_VERIF)/$(CV_CORE_LC)/tb/uvmt
@@ -210,6 +211,7 @@ all_compliance: $(COMPLIANCE_PKG)
 	make build_compliance RISCV_ISA=rv32Zifencei
 
 # "compliance" is a simulator-specific target defined in <sim>.mk
+COMPLIANCE_RESULTS = $($(SIMULATOR_UC)_RESULTS)
 
 compliance_check_sig: compliance
 	@echo "Checking Compliance Signature for $(RISCV_ISA)/$(COMPLIANCE_PROG)"
@@ -219,15 +221,15 @@ compliance_check_sig: compliance
 	export REF=$(REF) && export SIG=$(SIG) && export COMPL_PROG=$(COMPLIANCE_PROG) && \
 	export RISCV_TARGET=${RISCV_TARGET} && export RISCV_DEVICE=${RISCV_DEVICE} && \
 	export RISCV_ISA=${RISCV_ISA} export SIG_ROOT=${SIG_ROOT} && \
-	$(CORE_V_VERIF)/bin/diff_signatures.sh | tee $(SIMULATOR)_results/$(COMPLIANCE_PROG)/diff_signatures.log
+	$(CORE_V_VERIF)/bin/diff_signatures.sh | tee $(COMPLIANCE_RESULTS)/$(CFG)/$(RISCV_ISA)/$(COMPLIANCE_PROG)_$(RUN_INDEX)/diff_signatures.log
 
 compliance_check_all_sigs:
-	@$(MKDIR_P) $(SIMULATOR)_results/$(RISCV_ISA)
-	@echo "Checking Compliance Signature for all tests in $(RISCV_ISA)"
+	@$(MKDIR_P) $(COMPLIANCE_RESULTS)/$(CFG)/$(RISCV_ISA)
+	@echo "Checking Compliance Signature for all tests in $(CFG)/$(RISCV_ISA)"
 	@export SUITEDIR=$(CORE_V_VERIF)/$(CV_CORE_LC)/vendor_lib/riscv/riscv-compliance/riscv-test-suite/$(RISCV_ISA) && \
 	export RISCV_TARGET=${RISCV_TARGET} && export RISCV_DEVICE=${RISCV_DEVICE} && \
 	export RISCV_ISA=${RISCV_ISA} export SIG_ROOT=${SIG_ROOT} && \
-	$(CORE_V_VERIF)/bin/diff_signatures.sh $(RISCV_ISA) | tee $(SIMULATOR)_results/$(RISCV_ISA)/diff_signatures.log
+	$(CORE_V_VERIF)/bin/diff_signatures.sh $(RISCV_ISA) | tee $(COMPLIANCE_RESULTS)/$(CFG)/$(RISCV_ISA)/diff_signatures.log
 
 #	export REF=$(REF) && export SIG=$(SIG) && export COMPL_PROG=$(COMPLIANCE_PROG) && \
 

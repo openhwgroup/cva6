@@ -33,6 +33,5 @@ stdout.txt
 .vscode
 cva6/tests/riscv-compliance/
 cva6/tests/riscv-tests/
-tools/
 uvm/riscv-dv/
 riviera_results/

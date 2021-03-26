@@ -9,7 +9,7 @@ create a shell variable COREV to YES:
 $ PATH="/opt/corev/bin:$PATH"
 $ export COREV="YES"
 ```
-Search for "Toolchain" in `Common.mk` for guidance on how to get a custom
+Search for "Toolchain" in `../../mk/Common.mk` for guidance on how to get a custom
 installation to work with the Makefiles.
 
 ### PULP Toolchain

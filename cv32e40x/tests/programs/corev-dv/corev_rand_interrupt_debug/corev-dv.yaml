@@ -1,0 +1,23 @@
+name: corev_rand_interrupt_debug
+uvm_test: $(CV_CORE_LC)_instr_base_test
+description: >
+    RISCV-DV generated random interrupt tests with exceptions
+plusargs: >
+    +instr_cnt=4000
+    +num_of_sub_program=15
+    +directed_instr_0=riscv_load_store_rand_instr_stream,4
+    +directed_instr_1=riscv_loop_instr,4
+    +directed_instr_2=riscv_hazard_instr_stream,4 
+    +directed_instr_3=riscv_load_store_hazard_instr_stream,4
+    +directed_instr_4=corev_interrupt_csr_wfi_instr_stream,5    
+    +no_fence=0
+    +enable_interrupt=1
+    +enable_fast_interrupt_handler=1
+    +randomize_csr=1
+    +boot_mode=m
+    +no_csr_instr=1
+    +no_ebreak=0
+    +gen_debug_section=1
+    +set_dcsr_ebreak=1
+    +illegal_instr_ratio=0
+    +no_wfi=0

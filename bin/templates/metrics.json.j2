@@ -32,14 +32,19 @@
 {% set is_last_test = loop.last %}
 {# For Metrics, the name is description if available, otherwise use name, with index #}
 {% if t.description %}{% set test_name = t.description %}{% else %}{% set test_name = t.name %}{% endif %}
-{% if t.indexed %}{% set test_suffix = '_0' %}{% else %}{% set test_suffix = '' %}{% endif %}
+{% set test_suffix = '_0' %}
     {
         "name": "{{test_name}}" ,
         "build": "{{t.build}}",
-        "cmd": "cd {{t.dir}}; {{t.cmd}} SIMULATOR={{t.simulator}} USE_ISS={{regress_macros.yesorno(t.iss)}} RNDSEED=<seed> {{common_dsim_make_vars}} {{makeargs}}",
-        "wavesCmd": "cd {{t.dir}}; {{t.cmd}} SIMULATOR={{t.simulator}} USE_ISS={{regress_macros.yesorno(t.iss)}} RNDSEED=<seed> {{common_dsim_make_vars_waves}} {{makeargs}}",
-        "metricsFile": "{{t.name}}{{test_suffix}}/metrics.db",
-        "wavesFile": "{{t.name}}{{test_suffix}}/{{t.name}}{{test_suffix}}.vcd",
+        "cmd": "cd {{t.dir}}; {{t.cmd}} CV_CORE={{project}} CFG={{cfg}} SIMULATOR={{t.simulator}} USE_ISS={{regress_macros.yesorno(t.iss)}} RNDSEED=<seed> {{common_dsim_make_vars}} {{makeargs}}",
+        "wavesCmd": "cd {{t.dir}}; {{t.cmd}} CV_CORE={{project}} CFG={{cfg}} SIMULATOR={{t.simulator}} USE_ISS={{regress_macros.yesorno(t.iss)}} RNDSEED=<seed> {{common_dsim_make_vars_waves}} {{makeargs}}",
+{% if t.results %}
+        "metricsFile": "{{cfg}}/{{t.results}}{{test_suffix}}/metrics.db",
+        "wavesFile": "{{cfg}}/{{t.results}}{{test_suffix}}/{{t.name}}{{test_suffix}}.vcd",
+{% else %}
+        "metricsFile": "{{cfg}}/{{t.name}}{{test_suffix}}/metrics.db",
+        "wavesFile": "{{cfg}}/{{t.name}}{{test_suffix}}/{{t.name}}{{test_suffix}}.vcd",
+{% endif %}
         "seed" : "random",
         "iterations": {{t.num}},
         "isPass": "{{t.simulation_passed}}",

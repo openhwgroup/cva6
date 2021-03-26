@@ -1,0 +1,15 @@
+#
+# Code Coverage Scope Specification file for DSIM
+#
+# Example from DSIM User Manual: path top.testbench.dut +
+#
+# We want to instrument and collect code coverage for the CORE and all levels
+# of hierarchy below the top of the core. Also, in the DSIM compile-time args,
+# top is defined as uvmt_cv32_tb, so compile-time command looks something like:
+# 
+#  dsim -top uvmt_cv32_tb \
+#       -code-cov block \
+#       -code-cov-scope-specs ccov_scopes.txt \
+#       -f $(MANIFEST)
+#
+path uvmt_cv32e40x_tb.dut_wrap.cv32e40x_wrapper_i.core_i +

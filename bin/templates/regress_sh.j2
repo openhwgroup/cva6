@@ -62,9 +62,10 @@ incr_test_counts () {
 
 {% for b in unique_builds.values() %}
 # Build:{{b.name}} {{b.description}}
-echo "{{session}}: Running build: [cd {{b.abs_dir}} && {{b.cmd}} CV_CORE={{project}} SIMULATOR={{b.simulator}} USE_ISS={{regress_macros.yesorno(b.iss)}} COV={{regress_macros.yesorno(b.cov)}}] {{makeargs}}"
+{% set cmd = b.cmd + ' CV_CORE=' + project + ' CFG=' + cfg + ' SIMULATOR=' + b.simulator + ' USE_ISS=' + regress_macros.yesorno(b.iss) + ' COV=' + regress_macros.yesorno(b.cov) + makeargs %}
+echo "{{session}}: Running build: [cd {{b.abs_dir}} && {{cmd}}]"
 pushd {{b.abs_dir}} > /dev/null
-{{b.cmd}} CV_CORE={{project}} SIMULATOR={{b.simulator}} USE_ISS={{regress_macros.yesorno(b.iss)}} COV={{regress_macros.yesorno(b.cov)}} {{makeargs}} >& /dev/null;
+{{cmd}}
 popd > /dev/null
 
 {% endfor -%}
@@ -78,27 +79,37 @@ popd > /dev/null
 # --> Test: {{t.name}} : {{t.description}}
 {% if t.precmd %}
 #  Test (Precommand): {{t.name}} {{t.description}}
-echo "{{session}}: Running precmd: [cd {{t.abs_dir}} && {{t.precmd}} CV_CORE={{project}} SIMULATOR={{t.simulator}} SEED=random GEN_NUM_TESTS={{t.num}}] {{makeargs}}"
+{% set cmd = t.precmd + ' CV_CORE=' + project + 'CFG=' + cfg + ' SIMULATOR=' + t.simulator + ' SEED=random GEN_NUM_TESTS=' + t.num + makeargs %}
+echo "{{session}}: Running precmd: [cd {{t.abs_dir}} && {{cmd}}]
 pushd {{t.abs_dir}} > /dev/null
-{{t.precmd}} CV_CORE={{project}} SIMULATOR={{t.simulator}} SEED=random GEN_NUM_TESTS={{t.num}} {{makeargs}} >& /dev/null;
+{{cmd}} >& /dev/null;
 popd > /dev/null
 
 {% endif %}
 {% for run_index in range(t.num|int) %}
-{% set test_cmd = t.cmd|replace('<RUN_INDEX>', run_index) %}
-{% set test_log = t.log|replace('<RUN_INDEX>', run_index) %}
+{% set test_cmd = t.cmd %}
+{% set test_log = t.log %}
 # --> Test (Index: {{run_index}}): {{t.cmd}} : {{t.description}}
-echo "{{session}}: Running test [cd {{t.abs_dir}} && {{test_cmd}} CV_CORE={{project}} SIMULATOR={{t.simulator}} COMP=0 USE_ISS={{regress_macros.yesorno(t.iss)}} COV={{regress_macros.yesorno(t.cov)}} SEED=random GEN_START_INDEX={{run_index}} RUN_INDEX={{run_index}} {{makeargs}}]"
+{% set cmd = test_cmd + ' CV_CORE=' + project + ' CFG=' + cfg + ' SIMULATOR=' + t.simulator + ' COMP=0 USE_ISS=' + regress_macros.yesorno(t.iss) + ' COV=' + regress_macros.yesorno(t.cov) + ' SEED=random GEN_START_INDEX=' + run_index|string + ' RUN_INDEX=' + run_index|string + makeargs %}
+echo "{{session}}: Running test [cd {{t.abs_dir}} && {{cmd}}]"
 pushd {{t.abs_dir}} > /dev/null
-{{test_cmd}} CV_CORE={{project}} SIMULATOR={{t.simulator}} COMP=0 USE_ISS={{regress_macros.yesorno(t.iss)}} COV={{regress_macros.yesorno(t.cov)}} SEED=random GEN_START_INDEX={{run_index}} RUN_INDEX={{run_index}} {{makeargs}} >& /dev/null;
+{{cmd}} >& /dev/null;
 popd > /dev/null
-{% if t.indexed %}
-log={{t.abs_dir}}/{{t.simulator}}_results/{{test_log}}_{{run_index}}/{{t.simulator}}-{{test_log}}_{{run_index}}.log
+
+{# Determine log location #}
+{% if t.results %}
+log={{t.abs_dir}}/{{t.simulator}}_results/{{cfg}}/{{t.results}}_{{run_index}}/{{t.simulator}}-{{test_log}}.log
 {% else %}
-log={{t.abs_dir}}/{{t.simulator}}_results/{{test_log}}/{{t.simulator}}-{{test_log}}.log
+log={{t.abs_dir}}/{{t.simulator}}_results/{{cfg}}/{{test_log}}_{{run_index}}/{{t.simulator}}-{{test_log}}.log
 {% endif %}
+
+{# Compliance signature check #}
 {% if 'compliance' in t.cmd %}
-compliance_diff_log={{t.abs_dir}}/{{t.simulator}}_results/{{test_log}}/diff_signatures.log
+{% if t.results %}
+compliance_diff_log={{t.abs_dir}}/{{t.simulator}}_results/{{cfg}}/{{t.results}}_{{run_index}}/diff_signatures.log
+{% else %}
+compliance_diff_log={{t.abs_dir}}/{{t.simulator}}_results/{{cfg}}/{{test_log}}_{{run_index}}/diff_signatures.log
+{% endif %}
 {% endif %}
 
 failed=0

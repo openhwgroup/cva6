@@ -1,0 +1,4 @@
+name: isa_fcov_holes
+uvm_test: uvmt_$(CV_CORE_LC)_firmware_test_c
+description: >
+    Hand-crafted testcase to fill ISA functional coverage holes

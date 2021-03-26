@@ -512,7 +512,7 @@ bind cv32e40p_wrapper
      uvm_config_db#(virtual uvmt_cv32e40p_core_status_if    )::set(.cntxt(null), .inst_name("*"), .field_name("core_status_vif"),     .value(core_status_if)    );     
      uvm_config_db#(virtual uvmt_cv32e40p_step_compare_if   )::set(.cntxt(null), .inst_name("*"), .field_name("step_compare_vif"),    .value(step_compare_if));
      uvm_config_db#(virtual uvmt_cv32e40p_isa_covg_if       )::set(.cntxt(null), .inst_name("*"), .field_name("isa_covg_vif"),        .value(isa_covg_if));
-     uvm_config_db#(virtual uvmt_cv32e40p_debug_cov_assert_if)::set(.cntxt(null), .inst_name("*.env.debug_agent"), .field_name("vif_cov"),.value(debug_cov_assert_if));
+     uvm_config_db#(virtual uvmt_cv32e40p_debug_cov_assert_if)::set(.cntxt(null), .inst_name("*.env"), .field_name("debug_cov_vif"),.value(debug_cov_assert_if));
       
      // Make the DUT Wrapper Virtual Peripheral's status outputs available to the base_test
      uvm_config_db#(bit      )::set(.cntxt(null), .inst_name("*"), .field_name("tp"),     .value(1'b0)        );

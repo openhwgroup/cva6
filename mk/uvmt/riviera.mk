@@ -30,7 +30,7 @@ VSIM 					= $(CV_SIM_PREFIX) vsim
 VWORK     				= work
 
 # Paths
-VSIM_RESULTS           ?= $(MAKE_PATH)/riviera_results
+VSIM_RESULTS           ?= $(if $(CV_RESULTS),$(CV_RESULTS)/riviera_results,$(MAKE_PATH)/riviera_results)
 VSIM_COREVDV_RESULTS   ?= $(VSIM_RESULTS)/corev-dv
 VSIM_COV_MERGE_DIR     ?= $(VSIM_RESULTS)/merged
 UVM_HOME               ?= ${ALDEC_PATH}/vlib/uvm-1.2/src/
@@ -218,8 +218,8 @@ mk_vsim_dir:
 RISCV_ISA       ?= rv32i
 COMPLIANCE_PROG ?= I-ADD-01
 
-SIG_ROOT      ?= $(VSIM_RESULTS)
-SIG           ?= $(VSIM_RESULTS)/$(COMPLIANCE_PROG)/$(COMPLIANCE_PROG).signature_output
+SIG_ROOT      ?= $(VSIM_RESULTS)/$(CFG)/$(RISCV_ISA)
+SIG           ?= $(VSIM_RESULTS)/$(CFG)/$(RISCV_ISA)/$(COMPLIANCE_PROG)_$(RUN_INDEX)/$(COMPLIANCE_PROG).signature_output
 REF           ?= $(COMPLIANCE_PKG)/riscv-test-suite/$(RISCV_ISA)/references/$(COMPLIANCE_PROG).reference_output
 TEST_PLUSARGS ?= +signature=$(COMPLIANCE_PROG).signature_output
 
@@ -228,6 +228,7 @@ VSIM_COMPLIANCE_PREREQ = build_compliance
 endif
 
 compliance: VSIM_TEST=$(COMPLIANCE_PROG)
+compliance: OPT_SUBDIR=$(RISCV_ISA)
 compliance: VSIM_FLAGS+=+firmware=$(COMPLIANCE_PKG)/work/$(RISCV_ISA)/$(COMPLIANCE_PROG).hex
 compliance: VSIM_FLAGS+=+elf_file=$(COMPLIANCE_PKG)/work/$(RISCV_ISA)/$(COMPLIANCE_PROG).elf
 compliance: TEST_UVM_TEST=uvmt_$(CV_CORE_LC)_firmware_test_c
@@ -239,26 +240,26 @@ compliance: export IMPERAS_TOOLS=$(CORE_V_VERIF)/$(CV_CORE_LC)/tests/cfg/ovpsim_
 # set IMPERAS_TOOLS to point to it
 gen_ovpsim_ic:
 	@if [ ! -z "$(CFG_OVPSIM)" ]; then \
-		mkdir -p $(VSIM_RESULTS)/$(TEST_NAME); \
-		echo "$(CFG_OVPSIM)" > $(VSIM_RESULTS)/$(TEST_NAME)/ovpsim.ic; \
+		mkdir -p $(VSIM_RESULTS)/$(CFG)/$(TEST_NAME)_$(RUN_INDEX); \
+		echo "$(CFG_OVPSIM)" > $(VSIM_RESULTS)/$(CFG)/$(TEST_NAME)_$(RUN_INDEX)/ovpsim.ic; \
 	fi
 ifneq ($(CFG_OVPSIM),)
-export IMPERAS_TOOLS=$(VSIM_RESULTS)/$(TEST_NAME)/ovpsim.ic
+export IMPERAS_TOOLS=$(VSIM_RESULTS)/$(CFG)/$(TEST_NAME)_$(RUN_INDEX)/ovpsim.ic
 endif
 
 # Target to create work directory in $(VSIM_RESULTS)/
 lib: mk_vsim_dir $(CV_CORE_PKG) $(TBSRC_PKG) $(TBSRC)
-	if [ ! -d "$(VSIM_RESULTS)/$(VWORK)" ]; then \
-		$(VLIB) "$(VSIM_RESULTS)/$(VWORK)"; \
+	if [ ! -d "$(VSIM_RESULTS)/$(CFG)/$(VWORK)" ]; then \
+		$(VLIB) "$(VSIM_RESULTS)/$(CFG)/$(VWORK)"; \
 	fi
 
 # Target to run vlog over SystemVerilog source in $(VSIM_RESULTS)/
 comp: lib
 	@echo "$(BANNER)"
-	@echo "* Running vlog in $(VSIM_RESULTS)"
-	@echo "* Log: $(VSIM_RESULTS)/vlog.log"
+	@echo "* Running vlog in $(VSIM_RESULTS)/$(CFG)"
+	@echo "* Log: $(VSIM_RESULTS)/$(CFG)/vlog.log"
 	@echo "$(BANNER)"
-	cd $(VSIM_RESULTS) && \
+	cd $(VSIM_RESULTS)/$(CFG) && \
 		$(VLOG) \
 			$(VLOG_FLAGS) \
 			$(CFG_COMPILE_FLAGS) \
@@ -269,19 +270,21 @@ comp: lib
 			$(VLOG_FILE_LIST) \
 			$(TBSRC_PKG)
 
+RUN_DIR = $(abspath $(VSIM_RESULTS)/$(CFG)/$(OPT_SUBDIR)/$(VSIM_TEST)_$(RUN_INDEX))
+
 # Target to run VSIM (i.e. run the simulation)
 run: $(VSIM_RUN_PREREQ) gen_ovpsim_ic
 	@echo "$(BANNER)"
-	@echo "* Running vsim in $(VSIM_RESULTS)/$(VSIM_TEST)"
-	@echo "* Log: $(VSIM_RESULTS)/$(VSIM_TEST)/vsim-$(VSIM_TEST).log"
+	@echo "* Running vsim in $(RUN_DIR)"
+	@echo "* Log: $(RUN_DIR)/vsim-$(VSIM_TEST).log"
 	@echo "$(BANNER)"
-	mkdir -p $(VSIM_RESULTS)/$(VSIM_TEST) && \
-	cd $(VSIM_RESULTS)/$(VSIM_TEST) && \
+	mkdir -p $(RUN_DIR) && \
+	cd $(RUN_DIR) && \
 		$(VSIM) \
 			$(VSIM_FLAGS) \
 			${DPILIB_VSIM_OPT} \
 			-l vsim-$(VSIM_TEST).log \
-			-lib $(VSIM_RESULTS)/work \
+			-lib $(VSIM_RESULTS)/$(CFG)/work \
 			+UVM_TESTNAME=$(TEST_UVM_TEST)\
 			$(RTLSRC_VLOG_TB_TOP) \
 			$(TEST_PLUSARGS) \
@@ -303,9 +306,15 @@ custom: $(CUSTOM_DIR)/$(CUSTOM_PROG).hex run
 
 ################################################################################
 # The new general test target
+
+# corev-dv tests needs an added run_index suffix
+ifeq ($(shell echo $(TEST) | head -c 6),corev_)
+  OPT_RUN_INDEX_SUFFIX=_$(RUN_INDEX)
+endif
+
 test: VSIM_TEST=$(TEST_PROGRAM)
-test: VSIM_FLAGS += +firmware=$(TEST_TEST_DIR)/$(TEST_PROGRAM).hex +elf_file=$(TEST_TEST_DIR)/$(TEST_PROGRAM).elf
-test: $(TEST_TEST_DIR)/$(TEST_PROGRAM).hex run
+test: VSIM_FLAGS += +firmware=$(TEST_TEST_DIR)/$(TEST_PROGRAM)$(OPT_RUN_INDEX_SUFFIX).hex +elf_file=$(TEST_TEST_DIR)/$(TEST_PROGRAM)$(OPT_RUN_INDEX_SUFFIX).elf
+test: $(TEST_TEST_DIR)/$(TEST_PROGRAM)$(OPT_RUN_INDEX_SUFFIX).hex run
 
 ################################################################################
 # Invoke post-process waveform viewer

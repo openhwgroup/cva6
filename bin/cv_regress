@@ -170,8 +170,9 @@ def read_file(args, file):
 # Start of script
 VALID_SIMULATORS = ('dsim', 'vsim', 'vcs', 'xrun')
 DEFAULT_SIMULATOR = 'dsim'
-VALID_PROJECTS = ('cv32e40p', 'cv64')
+VALID_PROJECTS = ('cv32e40p', 'cv32e40x', 'cv64')
 DEFAULT_PROJECT = 'cv32e40p'
+DEFAULT_CFG = 'default'
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -183,6 +184,7 @@ parser.add_argument('-o', '--outfile', help='Output file')
 parser.add_argument('-d', '--debug', help='Emit debug messages from logger', action='store_true')
 parser.add_argument('-s', '--simulator', help='Select simulator', choices=VALID_SIMULATORS, default=DEFAULT_SIMULATOR)
 parser.add_argument('-c', '--cov', help='Enable coverage', action='store_true')
+parser.add_argument('--cfg', default=DEFAULT_CFG, help='Test configuration to test')
 parser.add_argument('-m', '--metrics', help='Select Metrics waves output', action='store_true')
 parser.add_argument('-n', '--num', help='Force number of iterations for tests with multiple iteration')
 parser.add_argument('--lsf', help='If applicable for output format, set LSF args to dispatch jobs')
@@ -235,6 +237,7 @@ if args.sh:
     out_fh = open(args.outfile, 'w')
     out_fh.write(template.render(regressions=regressions,
                                  project=args.project,
+                                 cfg=args.cfg,
                                  makeargs=' '.join(args.makearg) if args.makearg else '',
                                  session=os.path.splitext(os.path.basename(args.outfile))[0],
                                  unique_builds=unique_builds))
@@ -248,6 +251,7 @@ if args.metrics:
     out_fh = open(args.outfile, 'w')
     out_fh.write(template.render(regressions=regressions,
                                  project=args.project,
+                                 cfg=args.cfg,
                                  makeargs=' '.join(args.makearg) if args.makearg else '',
                                  unique_builds=unique_builds))
     out_fh.close()
@@ -262,6 +266,7 @@ if args.vsif:
     out_fh.write(template.render(session=os.path.splitext(os.path.basename(args.outfile))[0],
                                  results_path=get_results_path(args.project),
                                  project=args.project,
+                                 cfg=args.cfg,
                                  regressions=regressions,
                                  makeargs=' '.join(args.makearg) if args.makearg else '',
                                  lsf=args.lsf,
