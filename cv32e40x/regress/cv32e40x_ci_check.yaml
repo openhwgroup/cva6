@@ -37,11 +37,10 @@ tests:
     dir: cv32e40x/sim/uvmt
     cmd: make test COREV=YES TEST=illegal
 
-  # FIXME:strichmo:Should file an issue to fix this ASAP
-  # debug_test:
-  #   build: uvmt_cv32e40x
-  #   dir: cv32e40x/sim/uvmt
-  #   cmd: make test COREV=YES TEST=debug_test
+  debug_test:
+    build: uvmt_cv32e40x
+    dir: cv32e40x/sim/uvmt
+    cmd: make test COREV=YES TEST=debug_test
 
   csr_instructions:
     build: uvmt_cv32e40x
