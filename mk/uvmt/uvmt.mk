@@ -79,6 +79,12 @@ CFG             ?= default
 GEN_START_INDEX ?= 0
 GEN_NUM_TESTS   ?= 1
 
+# EMBench options
+EMB_TYPE           ?= speed
+EMB_TARGET         ?= 0
+EMB_CPU_MHZ        ?= 1
+EMB_BUILD_ONLY_ARG  = $(if $(filter $(YES_VALS),$(EMB_BUILD_ONLY)),YES,NO)
+EMB_DEBUG_ARG       = $(if $(filter $(YES_VALS),$(EMB_DEBUG)),YES,NO)
 # Commont test variables
 export RUN_INDEX       ?= 0
 
@@ -114,6 +120,10 @@ export CV_CORE_COREV_DV_ROOT = $(CV_CORE_COREVDV_PKG)
 
 # RISC-V Foundation's RISC-V Compliance Test-suite
 COMPLIANCE_PKG   := $(CORE_V_VERIF)/$(CV_CORE_LC)/vendor_lib/riscv/riscv-compliance
+
+# EMBench benchmarking suite
+EMBENCH_PKG	:= $(CORE_V_VERIF)/$(CV_CORE_LC)/vendor_lib/embench
+EMBENCH_TESTS	:= $(CORE_V_VERIF)/$(CV_CORE_LC)/tests/programs/embench
 
 # TB source files for the CV32E core
 TBSRC_TOP   := $(TBSRC_HOME)/uvmt/uvmt_$(CV_CORE_LC)_tb.sv
@@ -163,6 +173,9 @@ clone_cv_core_rtl:
 clone_riscv-dv:
 	$(CLONE_RISCVDV_CMD)
 
+clone_embench:
+	$(CLONE_EMBENCH_CMD)
+
 $(CV_CORE_PKG):
 	echo "Cloning"
 	$(CLONE_CV_CORE_CMD)
@@ -172,6 +185,9 @@ $(RISCVDV_PKG):
 
 $(COMPLIANCE_PKG):
 	$(CLONE_COMPLIANCE_CMD)
+
+$(EMBENCH_PKG):
+	$(CLONE_EMBENCH_CMD)
 
 ###############################################################################
 # RISC-V Compliance Test-suite
@@ -243,6 +259,22 @@ dah:
 	$(CORE_V_VERIF)/bin/run_compliance.sh $(RISCV_ISA)
 
 ###############################################################################
+# EMBench benchmark
+# 	target to check out and run the EMBench suite for code size and speed
+#		
+
+embench: $(EMBENCH_PKG)
+	$(CORE_V_VERIF)/bin/run_embench.py \
+	-c $(CV_CORE) \
+	-cc $(RISCV_EXE_PREFIX)gcc \
+	-sim $(SIMULATOR) \
+	-t $(EMB_TYPE) \
+	-b $(EMB_BUILD_ONLY_ARG) \
+	-tgt $(EMB_TARGET) \
+	-f $(EMB_CPU_MHZ) \
+	-d $(EMB_DEBUG_ARG) \
+
+###############################################################################
 # Include the targets/rules for the selected SystemVerilog simulator
 #ifeq ($(SIMULATOR), unsim)
 #include unsim.mk
@@ -297,3 +329,8 @@ clean_riscv-dv:
 
 clean_compliance:
 	rm -rf $(COMPLIANCE_PKG)
+
+clean_embench:
+	rm -rf $(EMBENCH_PKG)
+	cd $(EMBENCH_TESTS) && \
+	find . ! -path . ! -path ./README.md -delete
