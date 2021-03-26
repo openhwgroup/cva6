@@ -67,6 +67,10 @@ ifndef RISCVDV_REPO
 $(error Must define a RISCVDV_REPO to use the common makefile)
 endif
 
+ifndef EMBENCH_REPO
+$(warning Must define a EMBENCH_REPO to use the common makefile)
+endif
+
 ifndef COMPLIANCE_REPO
 $(error Must define a COMPLIANCE_REPO to use the common makefile)
 endif
@@ -120,6 +124,20 @@ else
 endif
 # RISCV Compliance repo var end
 
+###############################################################################
+# Generate command to clone EMBench (Embedded Benchmarking suite)
+ifeq ($(EMBENCH_BRANCH), master)
+  TMP5 = git clone $(EMBENCH_REPO) --recurse $(EMBENCH_PKG)
+else
+  TMP5 = git clone -b $(EMBENCH_BRANCH) --single-branch $(EMBENCH_REPO) --recurse $(EMBENCH_PKG)
+endif
+
+ifeq ($(EMBENCH_HASH), head)
+  CLONE_EMBENCH_CMD = $(TMP5)
+else
+  CLONE_EMBENCH_CMD = $(TMP5); cd $(EMBENCH_PKG); git checkout $(EMBENCH_HASH)
+endif
+# RISCV-DV repo var end
 ###############################################################################
 # Imperas Instruction Set Simulator
 
