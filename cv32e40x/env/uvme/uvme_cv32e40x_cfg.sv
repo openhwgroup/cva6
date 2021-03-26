@@ -82,7 +82,7 @@ class uvme_cv32e40x_cfg_c extends uvm_object;
    
    constraint agent_cfg_cons {
       if (enabled) {
-         isa_cfg.enabled       == 1;
+         isa_cfg.enabled       == 0;
          clknrst_cfg.enabled   == 1;
          interrupt_cfg.enabled == 1;
          debug_cfg.enabled == 1;
