@@ -92,7 +92,7 @@ class uvme_cv32e40x_cfg_c extends uvm_object;
       obi_instr_cfg.read_enabled  == 1;
       obi_data_cfg.write_enabled  == 1;
       obi_data_cfg.read_enabled   == 1;
-      isacov_cfg.enabled              == 0;
+      isacov_cfg.enabled              == 0;  // TODO don't need "== 0" after uvma_isacov has matured enough
       isacov_cfg.ext_i_enabled        == 1;
       isacov_cfg.ext_m_enabled        == 1;
       isacov_cfg.ext_c_enabled        == 1;

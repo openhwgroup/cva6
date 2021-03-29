@@ -18,6 +18,10 @@
 
 interface uvma_isacov_if;
 
+  // This interface must be instantiated and driven in the tb.
+  // TODO ...although, in the future this should be changed to:
+  //   1) use RVFI, and/or 2) use a TLM port instead.
+
   event        retire;
   logic [31:0] insn;
   logic        is_compressed;
