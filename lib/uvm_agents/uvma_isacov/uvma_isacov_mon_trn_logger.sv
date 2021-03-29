@@ -16,22 +16,22 @@
 // SPDX-License-Identifier: Apache-2.0 WITH SHL-2.0
 
 
-class uvma_isa_mon_trn_logger_c extends uvml_logs_mon_trn_logger_c#(
-    .T_TRN  (uvma_isa_mon_trn_c),
-    .T_CFG  (uvma_isa_cfg_c),
-    .T_CNTXT(uvma_isa_cntxt_c)
+class uvma_isacov_mon_trn_logger_c extends uvml_logs_mon_trn_logger_c#(
+    .T_TRN  (uvma_isacov_mon_trn_c),
+    .T_CFG  (uvma_isacov_cfg_c),
+    .T_CNTXT(uvma_isacov_cntxt_c)
 );
 
-  `uvm_component_utils(uvma_isa_mon_trn_logger_c)
+  `uvm_component_utils(uvma_isacov_mon_trn_logger_c)
 
-  extern function new(string name = "uvma_isa_mon_trn_logger", uvm_component parent = null);
+  extern function new(string name = "uvma_isacov_mon_trn_logger", uvm_component parent = null);
   extern virtual function void print_header();
-  extern virtual function void write(uvma_isa_mon_trn_c t);
+  extern virtual function void write(uvma_isacov_mon_trn_c t);
 
-endclass : uvma_isa_mon_trn_logger_c
+endclass : uvma_isacov_mon_trn_logger_c
 
 
-function uvma_isa_mon_trn_logger_c::new(string name = "uvma_isa_mon_trn_logger",
+function uvma_isacov_mon_trn_logger_c::new(string name = "uvma_isacov_mon_trn_logger",
                                         uvm_component parent = null);
 
   super.new(name, parent);
@@ -39,14 +39,14 @@ function uvma_isa_mon_trn_logger_c::new(string name = "uvma_isa_mon_trn_logger",
 endfunction : new
 
 
-function void uvma_isa_mon_trn_logger_c::print_header();
+function void uvma_isacov_mon_trn_logger_c::print_header();
 
   fwrite("time, instr");
 
 endfunction : print_header
 
 
-function void uvma_isa_mon_trn_logger_c::write(uvma_isa_mon_trn_c t);
+function void uvma_isacov_mon_trn_logger_c::write(uvma_isacov_mon_trn_c t);
 
   fwrite($sformatf("%t, %s", $time, "TODO instr"));
 

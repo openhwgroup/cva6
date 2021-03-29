@@ -16,18 +16,26 @@
 // SPDX-License-Identifier: Apache-2.0 WITH SHL-2.0
 
 
-class uvma_isa_cntxt_c extends uvm_object;
+class uvma_isacov_cfg_c extends uvm_object;
 
-  `uvm_object_utils(uvma_isa_cntxt_c)
+  `uvm_object_utils(uvma_isacov_cfg_c);
 
-  virtual uvma_isa_if vif;
+  rand bit                     enabled;
+  rand uvm_active_passive_enum is_active;
+  rand bit                     cov_model_enabled;
+  rand bit                     trn_log_enabled;
+  rand bit                     ext_i_enabled;
+  rand bit                     ext_m_enabled;
+  rand bit                     ext_c_enabled;
+  rand bit                     ext_zifencei_enabled;
+  rand bit                     ext_zicsr_enabled;
 
-  extern function new(string name = "uvma_isa_cntxt");
+  extern function new(string name = "uvma_isacov_cfg");
 
-endclass : uvma_isa_cntxt_c
+endclass : uvma_isacov_cfg_c
 
 
-function uvma_isa_cntxt_c::new(string name = "uvma_isa_cntxt");
+function uvma_isacov_cfg_c::new(string name = "uvma_isacov_cfg");
 
   super.new(name);
 

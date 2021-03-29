@@ -16,27 +16,27 @@
 // SPDX-License-Identifier: Apache-2.0 WITH SHL-2.0
 
 
-class uvma_isa_cfg_c extends uvm_object;
-
-  `uvm_object_utils(uvma_isa_cfg_c);
-
-  rand bit                     enabled;
-  rand uvm_active_passive_enum is_active;
-  rand bit                     cov_model_enabled;
-  rand bit                     trn_log_enabled;
-  rand bit                     ext_i_enabled;
-  rand bit                     ext_m_enabled;
-  rand bit                     ext_c_enabled;
-  rand bit                     ext_zifencei_enabled;
-  rand bit                     ext_zicsr_enabled;
-
-  extern function new(string name = "uvma_isa_cfg");
-
-endclass : uvma_isa_cfg_c
+`include "uvma_isacov_if.sv"
 
 
-function uvma_isa_cfg_c::new(string name = "uvma_isa_cfg");
+package uvma_isacov_pkg;
 
-  super.new(name);
+  import uvm_pkg::*;
+  import uvml_trn_pkg::*;
+  import uvml_logs_pkg::*;
 
-endfunction : new
+  // Objects
+  `include "uvma_isacov_cfg.sv"
+  `include "uvma_isacov_cntxt.sv"
+  `include "uvma_isacov_instr.sv"
+
+  // Transactions
+  `include "uvma_isacov_mon_trn.sv"
+  `include "uvma_isacov_mon_trn_logger.sv"
+
+  // Components
+  `include "uvma_isacov_cov_model.sv"
+  `include "uvma_isacov_mon.sv"
+  `include "uvma_isacov_agent.sv"
+
+endpackage : uvma_isacov_pkg

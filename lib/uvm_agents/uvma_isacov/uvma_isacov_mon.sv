@@ -16,32 +16,32 @@
 // SPDX-License-Identifier: Apache-2.0 WITH SHL-2.0
 
 
-class uvma_isa_mon_c extends uvm_monitor;
+class uvma_isacov_mon_c extends uvm_monitor;
 
-  `uvm_component_utils(uvma_isa_mon_c);
+  `uvm_component_utils(uvma_isacov_mon_c);
 
-  uvma_isa_cntxt_c                        cntxt;
-  uvm_analysis_port #(uvma_isa_mon_trn_c) ap;
+  uvma_isacov_cntxt_c                        cntxt;
+  uvm_analysis_port #(uvma_isacov_mon_trn_c) ap;
 
-  extern function new(string name = "uvma_isa_mon", uvm_component parent = null);
+  extern function new(string name = "uvma_isacov_mon", uvm_component parent = null);
   extern virtual function void build_phase(uvm_phase phase);
   extern virtual task run_phase(uvm_phase phase);
 
-endclass : uvma_isa_mon_c
+endclass : uvma_isacov_mon_c
 
 
-function uvma_isa_mon_c::new(string name = "uvma_isa_mon", uvm_component parent = null);
+function uvma_isacov_mon_c::new(string name = "uvma_isacov_mon", uvm_component parent = null);
 
   super.new(name, parent);
 
 endfunction : new
 
 
-function void uvma_isa_mon_c::build_phase(uvm_phase phase);
+function void uvma_isacov_mon_c::build_phase(uvm_phase phase);
 
   super.build_phase(phase);
 
-  void'(uvm_config_db#(uvma_isa_cntxt_c)::get(this, "", "cntxt", cntxt));
+  void'(uvm_config_db#(uvma_isacov_cntxt_c)::get(this, "", "cntxt", cntxt));
   if (!cntxt) begin
     `uvm_fatal("CNTXT", "Context handle is null")
   end
@@ -51,7 +51,7 @@ function void uvma_isa_mon_c::build_phase(uvm_phase phase);
 endfunction : build_phase
 
 
-task uvma_isa_mon_c::run_phase(uvm_phase phase);
+task uvma_isacov_mon_c::run_phase(uvm_phase phase);
 
   super.run_phase(phase);
 
@@ -59,7 +59,7 @@ task uvma_isa_mon_c::run_phase(uvm_phase phase);
   fork
     begin
       forever begin
-        uvma_isa_mon_trn_c mon_trn;
+        uvma_isacov_mon_trn_c mon_trn;
 
         @(cntxt.vif.retire);
 

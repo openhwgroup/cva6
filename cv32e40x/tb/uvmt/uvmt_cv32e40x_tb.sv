@@ -52,7 +52,7 @@ module uvmt_cv32e40x_tb;
    bit [31:0] evalue;
 
    // Agent interfaces
-   uvma_isa_if                  isa_if();
+   uvma_isacov_if               isacov_if();
    uvma_clknrst_if              clknrst_if(); // clock and resets from the clknrst agent
    uvma_clknrst_if              clknrst_if_iss();
    uvma_debug_if                debug_if();
@@ -490,7 +490,7 @@ bind cv32e40x_wrapper
      $timeformat(-9, 3, " ns", 8);
       
      // Add interfaces handles to uvm_config_db
-     uvm_config_db#(virtual uvma_isa_if                 )::set(.cntxt(null), .inst_name("*.env.isa_agent"),   .field_name("vif"), .value(isa_if));
+     uvm_config_db#(virtual uvma_isacov_if              )::set(.cntxt(null), .inst_name("*.env.isacov_agent"), .field_name("vif"), .value(isacov_if));
      uvm_config_db#(virtual uvma_debug_if               )::set(.cntxt(null), .inst_name("*.env.debug_agent"), .field_name("vif"), .value(debug_if));
      uvm_config_db#(virtual uvma_clknrst_if             )::set(.cntxt(null), .inst_name("*.env.clknrst_agent"), .field_name("vif"),        .value(clknrst_if));
      uvm_config_db#(virtual uvma_interrupt_if           )::set(.cntxt(null), .inst_name("*.env.interrupt_agent"), .field_name("vif"),      .value(interrupt_if));
@@ -523,9 +523,9 @@ bind cv32e40x_wrapper
 
    assign core_cntrl_if.clk = clknrst_if.clk;
 
-   always @(dut_wrap.cv32e40x_wrapper_i.tracer_i.retire) -> isa_if.retire;
-   assign isa_if.insn = dut_wrap.cv32e40x_wrapper_i.tracer_i.insn_val;
-   assign isa_if.is_compressed = dut_wrap.cv32e40x_wrapper_i.tracer_i.insn_compressed;
+   always @(dut_wrap.cv32e40x_wrapper_i.tracer_i.retire) -> isacov_if.retire;
+   assign isacov_if.insn = dut_wrap.cv32e40x_wrapper_i.tracer_i.insn_val;
+   assign isacov_if.is_compressed = dut_wrap.cv32e40x_wrapper_i.tracer_i.insn_compressed;
 
    // Capture the test status and exit pulse flags
    // TODO: put this logic in the vp_status_if (makes it easier to pass to ENV)

@@ -16,18 +16,18 @@
 // SPDX-License-Identifier: Apache-2.0 WITH SHL-2.0
 
 
-class uvma_isa_mon_trn_c extends uvml_trn_mon_trn_c;
+class uvma_isacov_cntxt_c extends uvm_object;
 
-  `uvm_object_utils(uvma_isa_mon_trn_c)
+  `uvm_object_utils(uvma_isacov_cntxt_c)
 
-  uvma_isa_instr_c instr;
+  virtual uvma_isacov_if vif;
 
-  extern function new(string name = "uvma_isa_mon_trn");
+  extern function new(string name = "uvma_isacov_cntxt");
 
-endclass : uvma_isa_mon_trn_c
+endclass : uvma_isacov_cntxt_c
 
 
-function uvma_isa_mon_trn_c::new(string name = "uvma_isa_mon_trn");
+function uvma_isacov_cntxt_c::new(string name = "uvma_isacov_cntxt");
 
   super.new(name);
 

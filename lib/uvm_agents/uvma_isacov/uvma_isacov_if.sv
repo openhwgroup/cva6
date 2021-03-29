@@ -16,7 +16,10 @@
 // SPDX-License-Identifier: Apache-2.0 WITH SHL-2.0
 
 
-+incdir+${DV_UVMA_ISA_PATH}
-+incdir+${DV_UVMA_ISA_PATH}/cov
+interface uvma_isacov_if;
 
-${DV_UVMA_ISA_PATH}/uvma_isa_pkg.sv
+  event        retire;
+  logic [31:0] insn;
+  logic        is_compressed;
+
+endinterface

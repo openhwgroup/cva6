@@ -16,27 +16,7 @@
 // SPDX-License-Identifier: Apache-2.0 WITH SHL-2.0
 
 
-`include "uvma_isa_if.sv"
++incdir+${DV_UVMA_ISACOV_PATH}
++incdir+${DV_UVMA_ISACOV_PATH}/cov
 
-
-package uvma_isa_pkg;
-
-  import uvm_pkg::*;
-  import uvml_trn_pkg::*;
-  import uvml_logs_pkg::*;
-
-  // Objects
-  `include "uvma_isa_cfg.sv"
-  `include "uvma_isa_cntxt.sv"
-  `include "uvma_isa_instr.sv"
-
-  // Transactions
-  `include "uvma_isa_mon_trn.sv"
-  `include "uvma_isa_mon_trn_logger.sv"
-
-  // Components
-  `include "uvma_isa_cov_model.sv"
-  `include "uvma_isa_mon.sv"
-  `include "uvma_isa_agent.sv"
-
-endpackage : uvma_isa_pkg
+${DV_UVMA_ISACOV_PATH}/uvma_isacov_pkg.sv
