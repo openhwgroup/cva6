@@ -28,7 +28,7 @@ package uvma_isa_pkg;
   // Objects
   `include "uvma_isa_cfg.sv"
   `include "uvma_isa_cntxt.sv"
-  `include "instr.sv"
+  `include "uvma_isa_instr.sv"
 
   // Transactions
   `include "uvma_isa_mon_trn.sv"

@@ -16,7 +16,7 @@
 // SPDX-License-Identifier: Apache-2.0 WITH SHL-2.0
 
 
-covergroup cg_rtype(string name) with function sample (instr_c instr);
+covergroup cg_rtype(string name) with function sample (uvma_isa_instr_c instr);
   option.per_instance = 1;
   option.name = name;
 
@@ -26,7 +26,7 @@ covergroup cg_rtype(string name) with function sample (instr_c instr);
 endgroup : cg_rtype
 
 
-covergroup cg_itype(string name) with function sample (instr_c instr);
+covergroup cg_itype(string name) with function sample (uvma_isa_instr_c instr);
   option.per_instance = 1;
   option.name = name;
 
@@ -36,7 +36,7 @@ covergroup cg_itype(string name) with function sample (instr_c instr);
 endgroup : cg_itype
 
 
-covergroup cg_stype(string name) with function sample (instr_c instr);
+covergroup cg_stype(string name) with function sample (uvma_isa_instr_c instr);
   option.per_instance = 1;
   option.name = name;
 
@@ -46,7 +46,7 @@ covergroup cg_stype(string name) with function sample (instr_c instr);
 endgroup : cg_stype
 
 
-covergroup cg_btype(string name) with function sample (instr_c instr);
+covergroup cg_btype(string name) with function sample (uvma_isa_instr_c instr);
   option.per_instance = 1;
   option.name = name;
 
@@ -56,7 +56,7 @@ covergroup cg_btype(string name) with function sample (instr_c instr);
 endgroup : cg_btype
 
 
-covergroup cg_utype(string name) with function sample (instr_c instr);
+covergroup cg_utype(string name) with function sample (uvma_isa_instr_c instr);
   option.per_instance = 1;
   option.name = name;
 
@@ -65,7 +65,7 @@ covergroup cg_utype(string name) with function sample (instr_c instr);
 endgroup : cg_utype
 
 
-covergroup cg_jtype(string name) with function sample (instr_c instr);
+covergroup cg_jtype(string name) with function sample (uvma_isa_instr_c instr);
   option.per_instance = 1;
   option.name = name;
 
@@ -74,7 +74,7 @@ covergroup cg_jtype(string name) with function sample (instr_c instr);
 endgroup : cg_jtype
 
 
-covergroup cg_cr(string name) with function sample (instr_c instr);
+covergroup cg_cr(string name) with function sample (uvma_isa_instr_c instr);
   option.per_instance = 1;
   option.name = name;
 
@@ -83,7 +83,7 @@ covergroup cg_cr(string name) with function sample (instr_c instr);
 endgroup : cg_cr
 
 
-covergroup cg_ci(string name) with function sample (instr_c instr);
+covergroup cg_ci(string name) with function sample (uvma_isa_instr_c instr);
   option.per_instance = 1;
   option.name = name;
 
@@ -92,7 +92,7 @@ covergroup cg_ci(string name) with function sample (instr_c instr);
 endgroup : cg_ci
 
 
-covergroup cg_css(string name) with function sample (instr_c instr);
+covergroup cg_css(string name) with function sample (uvma_isa_instr_c instr);
   option.per_instance = 1;
   option.name = name;
 
@@ -101,7 +101,7 @@ covergroup cg_css(string name) with function sample (instr_c instr);
 endgroup : cg_css
 
 
-covergroup cg_ciw(string name) with function sample (instr_c instr);
+covergroup cg_ciw(string name) with function sample (uvma_isa_instr_c instr);
   option.per_instance = 1;
   option.name = name;
 
@@ -110,7 +110,7 @@ covergroup cg_ciw(string name) with function sample (instr_c instr);
 endgroup : cg_ciw
 
 
-covergroup cg_cl(string name) with function sample (instr_c instr);
+covergroup cg_cl(string name) with function sample (uvma_isa_instr_c instr);
   option.per_instance = 1;
   option.name = name;
 
@@ -120,7 +120,7 @@ covergroup cg_cl(string name) with function sample (instr_c instr);
 endgroup : cg_cl
 
 
-covergroup cg_cs(string name) with function sample (instr_c instr);
+covergroup cg_cs(string name) with function sample (uvma_isa_instr_c instr);
   option.per_instance = 1;
   option.name = name;
 
@@ -130,7 +130,7 @@ covergroup cg_cs(string name) with function sample (instr_c instr);
 endgroup : cg_cs
 
 
-covergroup cg_ca(string name) with function sample (instr_c instr);
+covergroup cg_ca(string name) with function sample (uvma_isa_instr_c instr);
   option.per_instance = 1;
   option.name = name;
 
@@ -139,7 +139,7 @@ covergroup cg_ca(string name) with function sample (instr_c instr);
 endgroup : cg_ca
 
 
-covergroup cg_cb(string name) with function sample (instr_c instr);
+covergroup cg_cb(string name) with function sample (uvma_isa_instr_c instr);
   option.per_instance = 1;
   option.name = name;
 
@@ -148,7 +148,7 @@ covergroup cg_cb(string name) with function sample (instr_c instr);
 endgroup : cg_cb
 
 
-covergroup cg_cj(string name) with function sample (instr_c instr);
+covergroup cg_cj(string name) with function sample (uvma_isa_instr_c instr);
   option.per_instance = 1;
   option.name = name;
 
@@ -257,7 +257,7 @@ class uvma_isa_cov_model_c extends uvm_component;
   extern function new(string name = "uvma_isa_cov_model", uvm_component parent = null);
   extern virtual function void build_phase(uvm_phase phase);
   extern virtual task run_phase(uvm_phase phase);
-  extern function void sample (instr_c instr);
+  extern function void sample (uvma_isa_instr_c instr);
 
 endclass : uvma_isa_cov_model_c
 
@@ -402,7 +402,7 @@ task uvma_isa_cov_model_c::run_phase(uvm_phase phase);
 endtask : run_phase
 
 
-function void uvma_isa_cov_model_c::sample (instr_c instr);
+function void uvma_isa_cov_model_c::sample (uvma_isa_instr_c instr);
 
   logic have_sampled = 0;
 

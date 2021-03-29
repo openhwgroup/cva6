@@ -46,7 +46,7 @@ typedef enum {
 } instr_name_t;
 
 
-class instr_c extends uvm_object;
+class uvma_isa_instr_c extends uvm_object;
 
   instr_name_t name;
 
@@ -73,4 +73,4 @@ class instr_c extends uvm_object;
   bit [7:0] c_immb;
   bit [5:0] c_immss;
 
-endclass : instr_c
+endclass : uvma_isa_instr_c

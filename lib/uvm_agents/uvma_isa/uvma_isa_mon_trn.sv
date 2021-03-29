@@ -20,7 +20,7 @@ class uvma_isa_mon_trn_c extends uvml_trn_mon_trn_c;
 
   `uvm_object_utils(uvma_isa_mon_trn_c)
 
-  instr_c instr;
+  uvma_isa_instr_c instr;
 
   extern function new(string name = "uvma_isa_mon_trn");
 
