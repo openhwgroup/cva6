@@ -417,17 +417,18 @@ package ariane_pkg;
     localparam int unsigned DCACHE_INDEX_WIDTH = $clog2(`CONFIG_L1D_SIZE / DCACHE_SET_ASSOC);
     localparam int unsigned DCACHE_TAG_WIDTH   = riscv::PLEN - DCACHE_INDEX_WIDTH;
 `else
-    // align to openpiton for the time being (this should be more configurable in the future)
-     // I$
-    localparam int unsigned ICACHE_INDEX_WIDTH = 12;  // in bit
+    // I$
+		localparam int unsigned CONFIG_L1I_SIZE    = 16*1024;
+    localparam int unsigned ICACHE_SET_ASSOC   = 4;
+    localparam int unsigned ICACHE_INDEX_WIDTH = $clog2(CONFIG_L1I_SIZE / ICACHE_SET_ASSOC);  // in bit, contains also offset width
     localparam int unsigned ICACHE_TAG_WIDTH   = riscv::PLEN-ICACHE_INDEX_WIDTH;  // in bit
     localparam int unsigned ICACHE_LINE_WIDTH  = 128; // in bit
-    localparam int unsigned ICACHE_SET_ASSOC   = 4;
     // D$
-    localparam int unsigned DCACHE_INDEX_WIDTH = 12;  // in bit
+		localparam int unsigned CONFIG_L1D_SIZE    = 32*1024;
+	  localparam int unsigned DCACHE_SET_ASSOC   = 8;
+    localparam int unsigned DCACHE_INDEX_WIDTH = $clog2(CONFIG_L1D_SIZE / DCACHE_SET_ASSOC);  // in bit, contains also offset width
     localparam int unsigned DCACHE_TAG_WIDTH   = riscv::PLEN-DCACHE_INDEX_WIDTH;  // in bit
     localparam int unsigned DCACHE_LINE_WIDTH  = 128; // in bit
-    localparam int unsigned DCACHE_SET_ASSOC   = 8;
 `endif
 
     // ---------------
