@@ -580,6 +580,17 @@ vcs-unit-test:  vcsify $(FIRMWARE)/firmware_unit_test.hex
 vcs-unit-test:  vcs-run
 
 ###############################################################################
+# Build disassembler
+
+DPI_DASM_PKG = $(CORE_V_VERIF)/lib/dpi_dasm
+DPI_DASM_SRC = $(DPI_DASM_PKG)/dpi_dasm.cxx
+DPI_DASM_OUT = $(DPI_DASM_PKG)/libdpi_dasm.so
+DPI_DASM_CFLAGS = -shared -fPIC -std=c++11
+
+dpi_disasm:
+	c++ $(DPI_DASM_CFLAGS) $(DPI_DASM_INC) $(DPI_DASM_SRC) -o $(DPI_DASM_OUT)
+
+###############################################################################
 # house-cleaning for unit-testing
 custom-clean:
 	rm -rf $(CUSTOM)/hello_world.elf $(CUSTOM)/hello_world.hex
