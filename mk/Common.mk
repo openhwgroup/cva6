@@ -582,7 +582,7 @@ vcs-unit-test:  vcs-run
 ###############################################################################
 # Build disassembler
 
-DPI_DASM_SRC = $(DPI_DASM_PKG)/dpi_dasm.cxx
+DPI_DASM_SRC = $(DPI_DASM_PKG)/dpi_dasm.cxx $(SPIKE_PKG)/disasm/disasm.cc $(SPIKE_PKG)/disasm/regnames.cc
 DPI_DASM_OUT = $(DPI_DASM_PKG)/libdpi_dasm.so
 DPI_DASM_CFLAGS = -shared -fPIC -std=c++11
 DPI_DASM_SVDPI_PATH ?= . -please_set_DPI_DASM_SVDPI_PATH_to_where_svdpi.h_is

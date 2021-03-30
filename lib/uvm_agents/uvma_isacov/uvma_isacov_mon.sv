@@ -59,6 +59,7 @@ task uvma_isacov_mon_c::run_phase(uvm_phase phase);
 
   super.run_phase(phase);
 
+`ifdef COV
   // TODO if cfg.enabled, while 1, wait cntxt.vif.reset, ...
   fork
     begin
@@ -69,6 +70,7 @@ task uvma_isacov_mon_c::run_phase(uvm_phase phase);
 
         mon_trn = new();
         mon_trn.instr = new();
+$display("TODO got instr: ", dasm_name(cntxt.vif.insn), " at ", $time);
         mon_trn.instr.name =
           (cntxt.vif.insn[6:0] == 7'b00_100_11) ? // OP-IMM
             (cntxt.vif.insn[14:12] == 3'b000) ?
@@ -117,12 +119,12 @@ task uvma_isacov_mon_c::run_phase(uvm_phase phase);
               C_LW :
             UNKNOWN :
           mon_trn.instr.name;  // TODO get proper binary input
-        mon_trn.instr.rs1 = cntxt.vif.insn[19:15];  // TODO use disassembler
-        mon_trn.instr.rs2 = cntxt.vif.insn[24:20];  // TODO use disassembler
-        mon_trn.instr.rd = cntxt.vif.insn[11:7];  // TODO use disassembler
-        mon_trn.instr.immi = cntxt.vif.insn[31:25];  // TODO use disassembler
-        mon_trn.instr.immu = cntxt.vif.insn[31:12];  // TODO use disassembler
-        mon_trn.instr.c_immj = cntxt.vif.insn[12:2];  // TODO use disassembler
+        mon_trn.instr.rs1 = dasm_rs1(cntxt.vif.insn);
+        mon_trn.instr.rs2 = dasm_rs2(cntxt.vif.insn);
+        mon_trn.instr.rd = dasm_rd(cntxt.vif.insn);
+        mon_trn.instr.immi = dasm_i_imm(cntxt.vif.insn);
+        mon_trn.instr.immu = dasm_u_imm(cntxt.vif.insn);
+        mon_trn.instr.c_immj = dasm_rvc_j_imm(cntxt.vif.insn);
         mon_trn.instr.c_rs1p = cntxt.vif.insn[9:7];  // TODO use disassembler
         mon_trn.instr.c_rdp = cntxt.vif.insn[4:2];  // TODO use disassembler
 
@@ -130,5 +132,7 @@ task uvma_isacov_mon_c::run_phase(uvm_phase phase);
       end
     end
   join_none
+`endif
+// TODO refactor out the big lifting to separate task/function
 
 endtask : run_phase
