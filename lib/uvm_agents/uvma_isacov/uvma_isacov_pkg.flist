@@ -18,5 +18,6 @@
 
 +incdir+${DV_UVMA_ISACOV_PATH}
 +incdir+${DV_UVMA_ISACOV_PATH}/cov
++incdir+${DPI_DASM_ROOT}
 
 ${DV_UVMA_ISACOV_PATH}/uvma_isacov_pkg.sv

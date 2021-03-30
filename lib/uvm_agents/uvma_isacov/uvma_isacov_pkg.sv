@@ -17,6 +17,7 @@
 
 
 `include "uvma_isacov_if.sv"
+`include "dpi_dasm_imports.svh"
 
 
 package uvma_isacov_pkg;
