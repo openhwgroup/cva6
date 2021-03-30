@@ -17,7 +17,6 @@
 
 
 `include "uvma_isacov_if.sv"
-`include "dpi_dasm_imports.svh"
 
 
 package uvma_isacov_pkg;
@@ -25,6 +24,9 @@ package uvma_isacov_pkg;
   import uvm_pkg::*;
   import uvml_trn_pkg::*;
   import uvml_logs_pkg::*;
+
+  // DPI imports
+  `include "dpi_dasm_imports.svh"
 
   // Objects
   `include "uvma_isacov_cfg.sv"

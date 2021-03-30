@@ -48,6 +48,10 @@ function void uvma_isacov_mon_c::build_phase(uvm_phase phase);
 
   ap = new("ap", this);
 
+  `ifdef COV
+    dasm_set_config(32, "rv32imc", 0);
+  `endif
+
 endfunction : build_phase
 
 
