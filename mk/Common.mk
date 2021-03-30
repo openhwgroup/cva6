@@ -582,13 +582,21 @@ vcs-unit-test:  vcs-run
 ###############################################################################
 # Build disassembler
 
+SPIKE_PKG = $(CORE_V_VERIF)/$(CV_CORE_LC)/vendor_lib/spike
+
 DPI_DASM_PKG = $(CORE_V_VERIF)/lib/dpi_dasm
 DPI_DASM_SRC = $(DPI_DASM_PKG)/dpi_dasm.cxx
 DPI_DASM_OUT = $(DPI_DASM_PKG)/libdpi_dasm.so
 DPI_DASM_CFLAGS = -shared -fPIC -std=c++11
+DPI_DASM_SVDPI_PATH ?= . -please_set_DPI_DASM_SVDPI_PATH_to_where_svdpi.h_is
+DPI_DASM_INC = -I $(DPI_DASM_PKG) -I $(DPI_DASM_SVDPI_PATH) -I $(SPIKE_PKG)/riscv -I $(SPIKE_PKG)/softfloat
 
-dpi_disasm:
+dpi_disasm: $(SPIKE_PKG)
 	c++ $(DPI_DASM_CFLAGS) $(DPI_DASM_INC) $(DPI_DASM_SRC) -o $(DPI_DASM_OUT)
+
+$(SPIKE_PKG):
+	git clone --depth=1 https://github.com/riscv/riscv-isa-sim.git $(SPIKE_PKG)
+	@echo TODO use url from env variable and specific hash
 
 ###############################################################################
 # house-cleaning for unit-testing
