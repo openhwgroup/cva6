@@ -84,8 +84,15 @@ extern "C" const char* disassemble_insn_str(uint64_t insn) {
 //--------------------------------------------------------------------------------
 
 extern "C" const char* get_insn_name(uint64_t insn) {
-  string insn_str = disassemble_insn_str(insn);
-  return (insn_str.substr(0, insn_str.find(" "))).data(); 
+  const disasm_insn_t *dinsn;
+
+  insn = endian_swap(insn, gv_is_big_endian);
+  if (!gp_disassembler) {
+    initialize_disassembler();
+  }
+
+  dinsn = gp_disassembler->lookup(insn & 0xFFFFFFFF);
+  return dinsn->get_name();
 }
 
 //--------------------------------------------------------------------------------

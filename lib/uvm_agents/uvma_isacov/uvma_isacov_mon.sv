@@ -22,6 +22,7 @@ class uvma_isacov_mon_c extends uvm_monitor;
 
   uvma_isacov_cntxt_c                        cntxt;
   uvm_analysis_port #(uvma_isacov_mon_trn_c) ap;
+  instr_name_t                               instr_name_lookup[string];
 
   extern function new(string name = "uvma_isacov_mon", uvm_component parent = null);
   extern virtual function void build_phase(uvm_phase phase);
@@ -39,6 +40,8 @@ endfunction : new
 
 function void uvma_isacov_mon_c::build_phase(uvm_phase phase);
 
+  instr_name_t in;
+
   super.build_phase(phase);
 
   void'(uvm_config_db#(uvma_isacov_cntxt_c)::get(this, "", "cntxt", cntxt));
@@ -50,12 +53,20 @@ function void uvma_isacov_mon_c::build_phase(uvm_phase phase);
 
   `ifdef COV
     dasm_set_config(32, "rv32imc", 0);
+
+    in = in.first;
+    repeat(in.num) begin
+      instr_name_lookup[in.name().tolower()] = in;
+      in = in.next;
+    end
   `endif
 
 endfunction : build_phase
 
 
 task uvma_isacov_mon_c::run_phase(uvm_phase phase);
+
+  string instr_name;
 
   super.run_phase(phase);
 
@@ -70,43 +81,14 @@ task uvma_isacov_mon_c::run_phase(uvm_phase phase);
 
         mon_trn = new();
         mon_trn.instr = new();
-$display("TODO got instr: ", dasm_name(cntxt.vif.insn), " at ", $time);
-        mon_trn.instr.name =
-          (cntxt.vif.insn[6:0] == 7'b00_100_11) ? // OP-IMM
-            (cntxt.vif.insn[14:12] == 3'b000) ?
-              ADDI :
-            (cntxt.vif.insn[14:12] == 3'b110) ?
-              ORI :
-            UNKNOWN :
-          (cntxt.vif.insn[6:0] == 7'b00_101_11) ? // AUIPC
-            AUIPC :
-          (cntxt.vif.insn[6:0] == 7'b11_011_11) ? // JAL
-            JAL :
-          (cntxt.vif.insn[6:0] == 7'b01_000_11) ? // STORE
-            (cntxt.vif.insn[14:12] == 3'b010) ?
-              SW :
-            UNKNOWN :
-          (cntxt.vif.insn[6:0] == 7'b01_100_11) ? // OP
-            ((cntxt.vif.insn[14:12] == 3'b100) && (cntxt.vif.insn[31:25] == 7'b0)) ?
-              XOR :
-            ((cntxt.vif.insn[14:12] == 3'b001) && (cntxt.vif.insn[31:25] == 7'b0000001)) ?
-              MULH :
-            ((cntxt.vif.insn[14:12] == 3'b101) && (cntxt.vif.insn[31:25] == 7'b0000001)) ?
-              DIVU :
-            UNKNOWN :
-          (cntxt.vif.insn[6:0] == 7'b11_100_11) ? // SYSTEM
-            (cntxt.vif.insn[14:12] == 3'b001) ?
-              CSRRW :
-            UNKNOWN :
-          (cntxt.vif.insn[6:0] == 7'b00_011_11) ? // MISC-MEM
-            (cntxt.vif.insn[14:12] == 3'b001) ?
-              FENCE_I :
-            UNKNOWN :
-          (cntxt.vif.insn[6:0] == 7'b00_000_11) ? // LOAD
-            (cntxt.vif.insn[14:12] == 3'b010) ?
-              LW :
-            UNKNOWN :
-          UNKNOWN;  // TODO use disassembler
+
+        instr_name = dasm_name(cntxt.vif.insn);
+        if (instr_name_lookup.exists(instr_name)) begin
+          mon_trn.instr.name = instr_name_lookup[instr_name];
+        end else begin
+          mon_trn.instr.name = UNKNOWN;
+          $display("TODO error couldn't look up '%s'", instr_name);
+        end
         mon_trn.instr.name =
           cntxt.vif.is_compressed ?
             (mon_trn.instr.name == JAL) ?
@@ -119,6 +101,7 @@ $display("TODO got instr: ", dasm_name(cntxt.vif.insn), " at ", $time);
               C_LW :
             UNKNOWN :
           mon_trn.instr.name;  // TODO get proper binary input
+
         mon_trn.instr.rs1 = dasm_rs1(cntxt.vif.insn);
         mon_trn.instr.rs2 = dasm_rs2(cntxt.vif.insn);
         mon_trn.instr.rd = dasm_rd(cntxt.vif.insn);
@@ -133,6 +116,6 @@ $display("TODO got instr: ", dasm_name(cntxt.vif.insn), " at ", $time);
     end
   join_none
 `endif
-// TODO refactor out the big lifting to separate task/function
+// TODO refactor the bulk to separate task/function
 
 endtask : run_phase
