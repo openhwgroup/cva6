@@ -186,6 +186,9 @@ module uvmt_cv32e40x_dut_wrap #(// DUT (riscv_core) parameters.
          .data_addr_o            ( data_addr                      ),
          .data_wdata_o           ( data_wdata                     ),
          .data_rdata_i           ( data_rdata                     ),
+         .data_atop_o            (                                ), //TODO: Temp ignore
+         .data_err_i             ( '0                             ), //TODO: Temp tie off
+         .data_exokay_i          ( '0                             ), //TODO: Temp tie off
 
          .irq_i                  ( irq                            ),
          .irq_ack_o              ( irq_ack                        ),
