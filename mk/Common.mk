@@ -77,7 +77,7 @@ endif
 
 ###############################################################################
 # Generate command to clone or symlink the core RTL
-ifeq ($(CV_CORE_PATH), "")
+ifeq ($(CV_CORE_PATH),)
   ifeq ($(CV_CORE_BRANCH), master)
     TMP = git clone $(CV_CORE_REPO) $(CV_CORE_PKG)
   else
