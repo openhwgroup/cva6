@@ -13,9 +13,11 @@
 
 export SHELL = /bin/bash
 
-CV_CORE_REPO   ?= https://github.com/openhwgroup/cv32e40x
+#CV_CORE_REPO   ?= https://github.com/openhwgroup/cv32e40x
+CV_CORE_REPO   ?= https://github.com/strichmo/cv32e40x.git
 CV_CORE_BRANCH ?= master
-CV_CORE_HASH   ?= 79aa234b4ee7a67d07c8ee0cd27d81a7db89bb2f
+#CV_CORE_HASH   ?= 79aa234b4ee7a67d07c8ee0cd27d81a7db89bb2f
+CV_CORE_HASH   ?= 9a53e533c3e1bf38c470f5784facc1e1abd179c7
 CV_CORE_TAG    ?= none
 
 RISCVDV_REPO    ?= https://github.com/google/riscv-dv
@@ -26,3 +28,4 @@ COMPLIANCE_REPO   ?= https://github.com/strichmo/riscv-arch-test.git
 COMPLIANCE_BRANCH ?= strichmo/pr/cv32e40x_initial_old_compliance
 # 2020-08-19
 COMPLIANCE_HASH   ?= cf29051b177ba61b8c39de91c33d20d202697423
+
