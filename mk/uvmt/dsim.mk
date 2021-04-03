@@ -36,12 +36,10 @@ DSIM_CODE_COV_SCOPE    ?= $(MAKE_PATH)/../tools/dsim/ccov_scopes.txt
 DSIM_USE_ISS           ?= YES
 
 DSIM_FILE_LIST ?= -f $(DV_UVMT_PATH)/uvmt_$(CV_CORE_LC).flist
+DSIM_FILE_LIST         += -f $(DV_UVMT_PATH)/imperas_iss.flist
+DSIM_USER_COMPILE_ARGS += "+define+$(CV_CORE_UC)_TRACE_EXECUTION"
 ifeq ($(USE_ISS),YES)
-    DSIM_FILE_LIST         += -f $(DV_UVMT_PATH)/imperas_iss.flist
-    DSIM_USER_COMPILE_ARGS += "+define+ISS+$(CV_CORE_UC)_TRACE_EXECUTION"
-	DSIM_RUN_FLAGS         += +USE_ISS
-#    DSIM_USER_COMPILE_ARGS += "+define+CV32E40P_ASSERT_ON+ISS+CV32E40P_TRACE_EXECUTION"
-#    DSIM_RUN_FLAGS         += +ovpcfg="--controlfile $(OVP_CTRL_FILE)"
+	DSIM_RUN_FLAGS     += +USE_ISS
 endif
 
 # Seed management for constrained-random sims. This is an intentional repeat

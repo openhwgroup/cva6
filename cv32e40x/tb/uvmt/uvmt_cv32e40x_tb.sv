@@ -252,10 +252,9 @@ bind cv32e40x_wrapper
 
     uvmt_cv32e40x_debug_assert u_debug_assert(.cov_assert_if(debug_cov_assert_if));
 
-  /**
-   * ISS WRAPPER instance:
-   */
-   `ifdef ISS
+    /**
+    * ISS WRAPPER instance:
+    */   
       uvmt_cv32e40x_iss_wrap  #(
                                 .ID (0)
                                )
@@ -473,7 +472,6 @@ bind cv32e40x_wrapper
             endcase
         end
       end
-    `endif // ISS
 
    /**
     * Test bench entry point.

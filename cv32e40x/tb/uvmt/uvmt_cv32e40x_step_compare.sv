@@ -161,7 +161,7 @@ module uvmt_cv32e40x_step_compare
       end
 
       // Compare CSR's
-      `ifdef ISS
+      if (use_iss) begin
         foreach(`CV32E40X_RM_RVVI_STATE.csr[index]) begin
            step_compare_if.num_csr_checks++;
            ignore = 0;
@@ -228,9 +228,8 @@ module uvmt_cv32e40x_step_compare
            if (!ignore)
              check_32bit(.compared(index), .expected(`CV32E40X_RM_RVVI_STATE.csr[index]), .actual(csr_val));
 
-        end // foreach (ovp.cpu.csr[index])
-        
-      `endif      
+        end // foreach (ovp.cpu.csr[index])        
+      end // if (use_iss)
     endfunction // compare
     
     // RTL->RM CSR : mcycle, minstret, mcycleh, minstreth
