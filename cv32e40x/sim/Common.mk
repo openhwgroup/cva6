@@ -17,7 +17,7 @@ export SHELL = /bin/bash
 CV_CORE_REPO   ?= https://github.com/strichmo/cv32e40x.git
 CV_CORE_BRANCH ?= master
 #CV_CORE_HASH   ?= 79aa234b4ee7a67d07c8ee0cd27d81a7db89bb2f
-CV_CORE_HASH   ?= 9a53e533c3e1bf38c470f5784facc1e1abd179c7
+CV_CORE_HASH   ?= 9b0d8ce382fa072c423b3caa6d348c0bd537ea33
 CV_CORE_TAG    ?= none
 
 RISCVDV_REPO    ?= https://github.com/google/riscv-dv
