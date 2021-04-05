@@ -80,6 +80,9 @@ def is_test_indexed(project, name):
     for t in test_dirs:
         test_yaml = os.path.join(t, name, 'test.yaml')
         if os.path.exists(test_yaml):
+            # Newer PyYAMLs must specify explicit loader (policy) or will issue warnings
+            # Older PyYAMLs will not support the Loader argument
+            # So try the new way first, then catch to the old way
             try:
                 test_spec = yaml.load(open(test_yaml), Loader=yaml.FullLoader)
             except AttributeError:
@@ -109,6 +112,9 @@ def read_file(args, file):
     full_regress_file = os.path.join(get_regress_path(args.project), file)
     stream = open(full_regress_file, 'r')
     logger.info('Reading regression: {}'.format(full_regress_file))    
+    # Newer PyYAMLs must specify explicit loader (policy) or will issue warnings
+    # Older PyYAMLs will not support the Loader argument
+    # So try the new way first, then catch to the old way
     try:
         testlist = yaml.load(stream, Loader=yaml.FullLoader)
     except AttributeError:
