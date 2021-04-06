@@ -88,10 +88,8 @@ VLOG_FILE_LIST = -f $(DV_UVMT_PATH)/uvmt_$(CV_CORE_LC).flist
 VLOG_FLAGS += $(DPILIB_VLOG_OPT)
 
 # Add the ISS to compilation
-ifeq ($(call IS_YES,$(USE_ISS)),YES)
 VLOG_FILE_LIST += -f $(DV_UVMT_PATH)/imperas_iss.flist
-VLOG_FLAGS += "+define+ISS+$(CV_CORE_UC)_TRACE_EXECUTION"
-endif
+VLOG_FLAGS += "+define+$(CV_CORE_UC)_TRACE_EXECUTION"
 
 ###############################################################################
 # VOPT (Optimization)

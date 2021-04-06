@@ -85,7 +85,13 @@ def read_file(test, type, run_index):
 
     stream = open(matches[0], 'r')
     logger.debug('Reading test specification: {}'.format(matches[0]))
-    test_spec = yaml.load(stream)
+    # Newer PyYAMLs must specify explicit loader (policy) or will issue warnings
+    # Older PyYAMLs will not support the Loader argument
+    # So try the new way first, then catch to the old way
+    try:
+        test_spec = yaml.load(stream, Loader=yaml.FullLoader)
+    except AttributeError:
+        test_spec = yaml.load(stream)
     stream.close()
     test_spec['test_dir'] = os.path.dirname(matches[0])
 
@@ -123,12 +129,12 @@ def emit_make(test_spec, prefix):
 # Command-line arguments
 
 parser = argparse.ArgumentParser()
-parser.add_argument('-t', '--test', help='Test to look for')
-parser.add_argument('-d', '--debug', action='store_true', help='Display debug messages')
-parser.add_argument('--yaml', choices=VALID_YAMLS, help='Name of YAML test specification to find')
-parser.add_argument('--prefix', help='Prefix to add to make variables generated')
+parser.add_argument('-t', '--test', help='Required: Test to look for')
+parser.add_argument('--yaml', choices=VALID_YAMLS, help='Required: Name of YAML test specification to find')
 parser.add_argument('--core', default=DEFAULT_CORE, help='Default core to test')
+parser.add_argument('--prefix', help='Prefix to add to make variables generated')
 parser.add_argument('--run-index', default='0', help='Add a run index to append to test specifications')
+parser.add_argument('-d', '--debug', action='store_true', help='Display debug messages')
 args = parser.parse_args()
 
 if args.debug:

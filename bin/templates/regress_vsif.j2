@@ -39,7 +39,7 @@ group cv32e40p {
 {% endif %}
 {% for b in unique_builds.values() %}
     // Build:{{b.name}} {{b.description}}    
-    pre_group_script: 'cd {{b.abs_dir}} && {{b.cmd}} CV_CORE={{project}} CFG={{cfg}} CV_SIM_PREFIX= SIMULATOR={{b.simulator}} USE_ISS={{b.iss}} COV={{regress_macros.yesorno(b.cov)}} {{makeargs}}';
+    pre_group_script: 'cd {{b.abs_dir}} && {{b.cmd}} CV_CORE={{project}} CFG={{cfg}} CV_SIM_PREFIX= SIMULATOR={{b.simulator}} COV={{regress_macros.yesorno(b.cov)}} {{makeargs}}';
 
 {% endfor %}
 {% for r in regressions %}
