@@ -30,10 +30,12 @@ name: cv32e40p-scheduled-metrics-regress
 # Controls when the action will run. Triggers the workflow on push or pull request
 # events but only for the master branch
 
-on:
-  schedule:
-    # This will run nightly (in the Western Hemisphere) at 0500 UTC
-    - cron: '0 5 * * *'
+on: workflow_dispatch
+  # To alleviate licenses usage on the Metrics cloud, turning off schedule 
+  # and using workflow_dispatch (i.e. manual start only)
+  # schedule:
+  #   # This will run nightly (in the Western Hemisphere) at 0500 UTC
+  #   - cron: '0 5 * * *'
 
 jobs:
   cv32e40p_full_covg_no_pulp_dev-metrics:
