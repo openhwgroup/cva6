@@ -52,7 +52,7 @@ function void uvma_isacov_mon_c::build_phase(uvm_phase phase);
 
   ap = new("ap", this);
 
-  `ifdef COV
+  `ifdef DPI_DASM
     dasm_set_config(32, "rv32imc", 0);
 
     in = in.first;
@@ -69,7 +69,7 @@ task uvma_isacov_mon_c::run_phase(uvm_phase phase);
 
   super.run_phase(phase);
 
-  `ifdef COV
+  `ifdef DPI_DASM
     //TODO if (cfg.enabled) begin
       forever sample_instr();
     //end

@@ -52,10 +52,10 @@ XRUN_RUN_BASE_FLAGS   ?= -64bit $(XRUN_GUI) -licqueue +UVM_VERBOSITY=$(XRUN_UVM_
                          $(XRUN_PLUSARGS) -svseed $(RNDSEED) -sv_lib $(OVP_MODEL_DPI)
 XRUN_GUI         ?=
 XRUN_SINGLE_STEP ?=
-XRUN_ELAB_COV     = -covdut uvmt_$(CV_CORE_LC)_tb -coverage b:e:f:u +define+COV
+XRUN_ELAB_COV     = -covdut uvmt_$(CV_CORE_LC)_tb -coverage b:e:f:u
 XRUN_ELAB_COVFILE = -covfile $(abspath $(MAKE_PATH)/../tools/xrun/covfile.tcl)
 XRUN_RUN_COV      = -covscope uvmt_$(CV_CORE_LC)_tb \
-					-nowarn CGDEFN -sv_lib $(DPI_DASM_PKG)/libdpi_dasm.so
+					-nowarn CGDEFN
 
 XRUN_UVM_VERBOSITY ?= UVM_MEDIUM
 
