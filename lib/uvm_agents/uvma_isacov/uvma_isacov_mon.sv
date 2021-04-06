@@ -27,6 +27,7 @@ class uvma_isacov_mon_c extends uvm_monitor;
   extern function new(string name = "uvma_isacov_mon", uvm_component parent = null);
   extern virtual function void build_phase(uvm_phase phase);
   extern virtual task run_phase(uvm_phase phase);
+  extern task sample_instr();
 
 endclass : uvma_isacov_mon_c
 
@@ -66,56 +67,56 @@ endfunction : build_phase
 
 task uvma_isacov_mon_c::run_phase(uvm_phase phase);
 
-  string instr_name;
-
   super.run_phase(phase);
 
-`ifdef COV
-  // TODO if cfg.enabled, while 1, wait cntxt.vif.reset, ...
-  fork
-    begin
-      forever begin
-        uvma_isacov_mon_trn_c mon_trn;
-
-        @(cntxt.vif.retire);
-
-        mon_trn = new();
-        mon_trn.instr = new();
-
-        instr_name = dasm_name(cntxt.vif.insn);
-        if (instr_name_lookup.exists(instr_name)) begin
-          mon_trn.instr.name = instr_name_lookup[instr_name];
-        end else begin
-          mon_trn.instr.name = UNKNOWN;
-          $display("TODO error couldn't look up '%s'", instr_name);
-        end
-        mon_trn.instr.name =
-          cntxt.vif.is_compressed ?
-            (mon_trn.instr.name == JAL) ?
-              (cntxt.vif.insn[11:7] == 5'b00000) ?
-                C_J :
-              (cntxt.vif.insn[11:7] == 5'b00001) ?
-                C_JAL :
-              UNKNOWN :
-            (mon_trn.instr.name == LW) ?
-              C_LW :
-            UNKNOWN :
-          mon_trn.instr.name;  // TODO get proper binary input
-
-        mon_trn.instr.rs1 = dasm_rs1(cntxt.vif.insn);
-        mon_trn.instr.rs2 = dasm_rs2(cntxt.vif.insn);
-        mon_trn.instr.rd = dasm_rd(cntxt.vif.insn);
-        mon_trn.instr.immi = dasm_i_imm(cntxt.vif.insn);
-        mon_trn.instr.immu = dasm_u_imm(cntxt.vif.insn);
-        mon_trn.instr.c_immj = dasm_rvc_j_imm(cntxt.vif.insn);
-        mon_trn.instr.c_rs1p = cntxt.vif.insn[9:7];  // TODO use disassembler
-        mon_trn.instr.c_rdp = cntxt.vif.insn[4:2];  // TODO use disassembler
-
-        ap.write(mon_trn);
-      end
-    end
-  join_none
-`endif
-// TODO refactor the bulk to separate task/function
+  `ifdef COV
+    //TODO if (cfg.enabled) begin
+      forever sample_instr();
+    //end
+  `endif
 
 endtask : run_phase
+
+
+task uvma_isacov_mon_c::sample_instr();
+
+  uvma_isacov_mon_trn_c mon_trn;
+  string                instr_name;
+
+  @(cntxt.vif.retire);
+
+  mon_trn = new();
+  mon_trn.instr = new();
+
+  instr_name = dasm_name(cntxt.vif.insn);
+  if (instr_name_lookup.exists(instr_name)) begin
+    mon_trn.instr.name = instr_name_lookup[instr_name];
+  end else begin
+    mon_trn.instr.name = UNKNOWN;
+    $display("TODO error couldn't look up '%s'", instr_name);
+  end
+  mon_trn.instr.name =
+    cntxt.vif.is_compressed ?
+      (mon_trn.instr.name == JAL) ?
+        (cntxt.vif.insn[11:7] == 5'b00000) ?
+          C_J :
+        (cntxt.vif.insn[11:7] == 5'b00001) ?
+          C_JAL :
+        UNKNOWN :
+      (mon_trn.instr.name == LW) ?
+        C_LW :
+      UNKNOWN :
+    mon_trn.instr.name;  // TODO get non de-compressed binary input instead of this
+
+  mon_trn.instr.rs1 = dasm_rs1(cntxt.vif.insn);
+  mon_trn.instr.rs2 = dasm_rs2(cntxt.vif.insn);
+  mon_trn.instr.rd = dasm_rd(cntxt.vif.insn);
+  mon_trn.instr.immi = dasm_i_imm(cntxt.vif.insn);
+  mon_trn.instr.immu = dasm_u_imm(cntxt.vif.insn);
+  mon_trn.instr.c_immj = dasm_rvc_j_imm(cntxt.vif.insn);
+  mon_trn.instr.c_rs1p = cntxt.vif.insn[9:7];  // TODO use disassembler
+  mon_trn.instr.c_rdp = cntxt.vif.insn[4:2];  // TODO use disassembler
+
+  ap.write(mon_trn);
+
+endtask : sample_instr
