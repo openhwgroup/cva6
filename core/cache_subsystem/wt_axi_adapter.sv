@@ -16,7 +16,13 @@
 
 module wt_axi_adapter import ariane_pkg::*; import wt_cache_pkg::*; #(
   parameter int unsigned ReqFifoDepth  = 2,
-  parameter int unsigned MetaFifoDepth = wt_cache_pkg::DCACHE_MAX_TX
+  parameter int unsigned MetaFifoDepth = wt_cache_pkg::DCACHE_MAX_TX,
+  parameter int unsigned AxiAddrWidth = 0,
+  parameter int unsigned AxiDataWidth = 0,
+  parameter int unsigned AxiIdWidth   = 0,
+  parameter int unsigned AxiUserWidth = 0,
+  parameter type axi_req_t = ariane_axi::req_t,
+  parameter type axi_rsp_t = ariane_axi::resp_t
 ) (
   input logic                  clk_i,
   input logic                  rst_ni,
@@ -38,8 +44,8 @@ module wt_axi_adapter import ariane_pkg::*; import wt_cache_pkg::*; #(
   output dcache_rtrn_t         dcache_rtrn_o,
 
   // AXI port
-  output ariane_axi::req_t    axi_req_o,
-  input  ariane_axi::resp_t   axi_resp_i
+  output axi_req_t             axi_req_o,
+  input  axi_rsp_t             axi_resp_i
 );
 
   // support up to 512bit cache lines
@@ -66,7 +72,7 @@ module wt_axi_adapter import ariane_pkg::*; import wt_cache_pkg::*; #(
   logic [63:0]                    axi_rd_addr, axi_wr_addr;
   logic [$clog2(AxiNumWords)-1:0] axi_rd_blen, axi_wr_blen;
   logic [1:0] axi_rd_size, axi_wr_size;
-  logic [$size(axi_resp_i.r.id)-1:0] axi_rd_id_in, axi_wr_id_in, axi_rd_id_out, axi_wr_id_out, wr_id_out;
+  logic [AxiIdWidth-1:0] axi_rd_id_in, axi_wr_id_in, axi_rd_id_out, axi_wr_id_out, wr_id_out;
   logic [AxiNumWords-1:0][63:0] axi_wr_data;
   logic [AxiNumWords-1:0][AXI_USER_WIDTH-1:0] axi_wr_user;
   logic [63:0] axi_rd_data;
@@ -351,7 +357,7 @@ module wt_axi_adapter import ariane_pkg::*; import wt_cache_pkg::*; #(
   assign b_push              = axi_wr_valid & axi_wr_rdy;
 
   fifo_v3 #(
-    .DATA_WIDTH   ( $size(axi_resp_i.r.id) + 1 ),
+    .DATA_WIDTH   ( AxiIdWidth + 1 ),
     .DEPTH        ( MetaFifoDepth              ),
     .FALL_THROUGH ( 1'b1                       )
   ) i_b_fifo (
@@ -571,9 +577,13 @@ module wt_axi_adapter import ariane_pkg::*; import wt_cache_pkg::*; #(
 ///////////////////////////////////////////////////////
 
   axi_shim #(
-    .AxiUserWidth    ( AXI_USER_WIDTH         ),
-    .AxiNumWords     ( AxiNumWords            ),
-    .AxiIdWidth      ( $size(axi_resp_i.r.id) )
+    .AxiNumWords     ( AxiNumWords  ),
+    .AxiAddrWidth    ( AxiAddrWidth ),
+    .AxiDataWidth    ( AxiDataWidth ),
+    .AxiIdWidth      ( AxiIdWidth   ),
+    .AxiUserWidth    ( AxiUserWidth ),
+    .axi_req_t       ( axi_req_t    ),
+    .axi_rsp_t       ( axi_rsp_t    )
   ) i_axi_shim (
     .clk_i           ( clk_i             ),
     .rst_ni          ( rst_ni            ),

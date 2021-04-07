@@ -24,7 +24,13 @@ import "DPI-C" function void init_dromajo(string cfg_f_name);
 
 
 module cva6 import ariane_pkg::*; #(
-  parameter ariane_pkg::ariane_cfg_t ArianeCfg     = ariane_pkg::ArianeDefaultConfig
+  parameter ariane_pkg::ariane_cfg_t ArianeCfg     = ariane_pkg::ArianeDefaultConfig,
+  parameter int unsigned AxiAddrWidth = ariane_axi::AddrWidth,
+  parameter int unsigned AxiDataWidth = ariane_axi::DataWidth,
+  parameter int unsigned AxiIdWidth   = ariane_axi::IdWidth,
+  parameter int unsigned AxiUserWidth = ariane_axi::UserWidth,
+  parameter type axi_req_t = ariane_axi::req_t,
+  parameter type axi_rsp_t = ariane_axi::resp_t
 ) (
   input  logic                         clk_i,
   input  logic                         rst_ni,
@@ -55,8 +61,8 @@ module cva6 import ariane_pkg::*; #(
   input  wt_cache_pkg::l15_rtrn_t      l15_rtrn_i
 `else
   // memory side, AXI Master
-  output ariane_axi::req_t             axi_req_o,
-  input  ariane_axi::resp_t            axi_resp_i
+  output axi_req_t                     axi_req_o,
+  input  axi_rsp_t                     axi_resp_i
 `endif
 );
 
@@ -674,7 +680,13 @@ module cva6 import ariane_pkg::*; #(
 `ifdef WT_DCACHE
   // this is a cache subsystem that is compatible with OpenPiton
   wt_cache_subsystem #(
-    .ArianeCfg            ( ArianeCfg     )
+    .ArianeCfg            ( ArianeCfg ),
+    .AxiAddrWidth         ( AxiAddrWidth ),
+    .AxiDataWidth         ( AxiDataWidth ),
+    .AxiIdWidth           ( AxiIdWidth ),
+    .AxiUserWidth         ( AxiUserWidth ),
+    .axi_req_t            ( axi_req_t ),
+    .axi_rsp_t            ( axi_rsp_t )
   ) i_cache_subsystem (
     // to D$
     .clk_i                 ( clk_i                       ),

@@ -20,7 +20,13 @@
 
 
 module wt_cache_subsystem import ariane_pkg::*; import wt_cache_pkg::*; #(
-  parameter ariane_pkg::ariane_cfg_t ArianeCfg       = ariane_pkg::ArianeDefaultConfig  // contains cacheable regions
+  parameter ariane_pkg::ariane_cfg_t ArianeCfg       = ariane_pkg::ArianeDefaultConfig,  // contains cacheable regions
+  parameter int unsigned AxiAddrWidth = 0,
+  parameter int unsigned AxiDataWidth = 0,
+  parameter int unsigned AxiIdWidth   = 0,
+  parameter int unsigned AxiUserWidth = 0,
+  parameter type axi_req_t = ariane_axi::req_t,
+  parameter type axi_rsp_t = ariane_axi::resp_t
 ) (
   input logic                            clk_i,
   input logic                            rst_ni,
@@ -55,8 +61,8 @@ module wt_cache_subsystem import ariane_pkg::*; import wt_cache_pkg::*; #(
   input  l15_rtrn_t                      l15_rtrn_i
 `else
   // memory side
-  output ariane_axi::req_t               axi_req_o,
-  input  ariane_axi::resp_t              axi_resp_i
+  output axi_req_t                       axi_req_o,
+  input  axi_rsp_t                       axi_resp_i
 `endif
   // TODO: interrupt interface
 );
@@ -147,7 +153,14 @@ module wt_cache_subsystem import ariane_pkg::*; import wt_cache_pkg::*; #(
     .l15_rtrn_i         ( l15_rtrn_i              )
   );
 `else
-  wt_axi_adapter i_adapter (
+  wt_axi_adapter #(
+    .AxiAddrWidth       ( AxiAddrWidth ),
+    .AxiDataWidth       ( AxiDataWidth ),
+    .AxiIdWidth         ( AxiIdWidth ),
+    .AxiUserWidth       ( AxiUserWidth ),
+    .axi_req_t          ( axi_req_t ),
+    .axi_rsp_t          ( axi_rsp_t )
+  ) i_adapter (
     .clk_i              ( clk_i                   ),
     .rst_ni             ( rst_ni                  ),
     .icache_data_req_i  ( icache_adapter_data_req ),

@@ -1201,7 +1201,7 @@ module csr_regfile import ariane_pkg::*; #(
     `ifndef VERILATOR
         // check that eret and ex are never valid together
         assert property (
-          @(posedge clk_i) !(eret_o && ex_i.valid))
+          @(posedge clk_i) disable iff (!rst_ni !== '0) !(eret_o && ex_i.valid))
         else begin $error("eret and exception should never be valid at the same time"); $stop(); end
     `endif
     //pragma translate_on

@@ -22,7 +22,12 @@
 module axi_shim #(
   parameter int unsigned AxiUserWidth = 64, // data width in dwords, this is also the maximum burst length, must be >=2
   parameter int unsigned AxiNumWords = 4, // data width in dwords, this is also the maximum burst length, must be >=2
-  parameter int unsigned AxiIdWidth  = 4  // stick to the spec
+  parameter int unsigned AxiAddrWidth = 0,
+  parameter int unsigned AxiDataWidth = 0,
+  parameter int unsigned AxiIdWidth   = 0,
+  parameter int unsigned AxiUserWidth = 0,
+  parameter type axi_req_t = ariane_axi::req_t,
+  parameter type axi_rsp_t = ariane_axi::resp_t
 ) (
   input  logic                            clk_i,  // Clock
   input  logic                            rst_ni, // Asynchronous reset active low
@@ -61,8 +66,8 @@ module axi_shim #(
   output logic [AxiIdWidth-1:0]           wr_id_o,
   output logic                            wr_exokay_o, // indicates whether exclusive tx succeeded
   // AXI port
-  output ariane_axi::req_t                axi_req_o,
-  input  ariane_axi::resp_t               axi_resp_i
+  output axi_req_t                        axi_req_o,
+  input  axi_rsp_t                        axi_resp_i
 );
   localparam AddrIndex = ($clog2(AxiNumWords) > 0) ? $clog2(AxiNumWords) : 1;
 
@@ -82,7 +87,7 @@ module axi_shim #(
 
   // address
   assign axi_req_o.aw.burst  = axi_pkg::BURST_INCR; // Use BURST_INCR for AXI regular transaction
-  assign axi_req_o.aw.addr   = wr_addr_i;
+  assign axi_req_o.aw.addr   = wr_addr_i[AxiAddrWidth-1:0];
   assign axi_req_o.aw.size   = wr_size_i;
   assign axi_req_o.aw.len    = wr_blen_i;
   assign axi_req_o.aw.id     = wr_id_i;
@@ -92,11 +97,14 @@ module axi_shim #(
   assign axi_req_o.aw.cache  = 4'b0;
   assign axi_req_o.aw.qos    = 4'b0;
   assign axi_req_o.aw.atop   = wr_atop_i;
+  assign axi_req_o.aw.user   = '0;
+
   // data
   assign axi_req_o.w.data    = wr_data_i[wr_cnt_q];
   assign axi_req_o.w.user    = wr_user_i[wr_cnt_q];
   assign axi_req_o.w.strb    = wr_be_i[wr_cnt_q];
   assign axi_req_o.w.last    = wr_cnt_done;
+  assign axi_req_o.w.user   = '0;
 
   // write response
   assign wr_exokay_o         = (axi_resp_i.b.resp == axi_pkg::RESP_EXOKAY);
@@ -239,7 +247,7 @@ module axi_shim #(
   // in case of a wrapping transfer we can simply begin at the address, if we want to request a cache-line
   // with an incremental transfer we need to output the corresponding base address of the cache line
   assign axi_req_o.ar.burst  = axi_pkg::BURST_INCR; // Use BURST_INCR for AXI regular transaction
-  assign axi_req_o.ar.addr   = rd_addr_i;
+  assign axi_req_o.ar.addr   = rd_addr_i[AxiAddrWidth-1:0];
   assign axi_req_o.ar.size   = rd_size_i;
   assign axi_req_o.ar.len    = rd_blen_i;
   assign axi_req_o.ar.id     = rd_id_i;
@@ -248,6 +256,7 @@ module axi_shim #(
   assign axi_req_o.ar.lock   = rd_lock_i;
   assign axi_req_o.ar.cache  = 4'b0;
   assign axi_req_o.ar.qos    = 4'b0;
+  assign axi_req_o.ar.user   = '0;
 
   // make the read request
   assign axi_req_o.ar_valid  = rd_req_i;
@@ -285,7 +294,11 @@ module axi_shim #(
 `ifndef VERILATOR
    initial begin
     assert (AxiNumWords >= 1) else
-     $fatal(1,"[axi adapter] AxiNumWords must be >= 1");
+     $fatal(1, "[axi adapter] AxiNumWords must be >= 1");
+    assert (AxiDataWidth == 64) else
+     $fatal(1, "[axi adapter] AXI data width must be 64");
+    assert (AxiIdWidth >= 2) else
+     $fatal(1, "[axi adapter] AXI id width must be at least 2 bit wide");
    end
 `endif
 //pragma translate_on
