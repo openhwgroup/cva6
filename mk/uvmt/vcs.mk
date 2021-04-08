@@ -130,9 +130,9 @@ endif
 ################################################################################
 
 VCS_FILE_LIST ?= -f $(DV_UVMT_PATH)/uvmt_$(CV_CORE_LC).flist
+VCS_FILE_LIST += -f $(DV_UVMT_PATH)/imperas_iss.flist
+VCS_USER_COMPILE_ARGS += +define+$(CV_CORE_UC)_TRACE_EXECUTION
 ifeq ($(call IS_YES,$(USE_ISS)),YES)
-    VCS_FILE_LIST += -f $(DV_UVMT_PATH)/imperas_iss.flist
-    VCS_USER_COMPILE_ARGS += "+define+ISS +define+$(CV_CORE_UC)_TRACE_EXECUTION"
     VCS_PLUSARGS +="+USE_ISS"
 endif
 
@@ -350,5 +350,5 @@ clean_eclipse:
 	rm  -rf workspace
 
 # All generated files plus the clone of the RTL
-clean_all: clean clean_eclipse clean_riscv-dv clean_test_programs clean-bsp clean_compliance
+clean_all: clean clean_eclipse clean_riscv-dv clean_test_programs clean-bsp clean_compliance clean_embench
 	rm -rf $(CV_CORE_PKG)

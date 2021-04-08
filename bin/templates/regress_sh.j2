@@ -62,7 +62,7 @@ incr_test_counts () {
 
 {% for b in unique_builds.values() %}
 # Build:{{b.name}} {{b.description}}
-{% set cmd = b.cmd + ' CV_CORE=' + project + ' CFG=' + cfg + ' SIMULATOR=' + b.simulator + ' USE_ISS=' + regress_macros.yesorno(b.iss) + ' COV=' + regress_macros.yesorno(b.cov) + makeargs %}
+{% set cmd = b.cmd + ' CV_CORE=' + project + ' CFG=' + cfg + ' SIMULATOR=' + b.simulator + ' COV=' + regress_macros.yesorno(b.cov) + makeargs %}
 echo "{{session}}: Running build: [cd {{b.abs_dir}} && {{cmd}}]"
 pushd {{b.abs_dir}} > /dev/null
 {{cmd}}

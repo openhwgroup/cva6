@@ -145,13 +145,10 @@ endif
 XRUN_UVM_MACROS_INC_FILE = $(DV_UVMT_PATH)/uvmt_$(CV_CORE_LC)_uvm_macros_inc.sv
 
 XRUN_FILE_LIST ?= -f $(DV_UVMT_PATH)/uvmt_$(CV_CORE_LC).flist
+XRUN_FILE_LIST += -f $(DV_UVMT_PATH)/imperas_iss.flist
+XRUN_USER_COMPILE_ARGS += +define+$(CV_CORE_UC)_TRACE_EXECUTION
 ifeq ($(call IS_YES,$(USE_ISS)),YES)
-    XRUN_FILE_LIST += -f $(DV_UVMT_PATH)/imperas_iss.flist
-    XRUN_USER_COMPILE_ARGS += +define+ISS+$(CV_CORE_UC)_TRACE_EXECUTION
     XRUN_PLUSARGS +="+USE_ISS"
-#     XRUN_PLUSARGS += +USE_ISS +ovpcfg="--controlfile $(OVP_CTRL_FILE)"
-else
-	XRUN_USER_COMPILE_ARGS += +define+$(CV_CORE_UC)_TRACE_EXECUTION
 endif
 
 # Simulate using latest elab
@@ -348,6 +345,8 @@ compliance: $(XRUN_COMPLIANCE_PREREQ)
 		+firmware=$(COMPLIANCE_PKG)/work/$(RISCV_ISA)/$(COMPLIANCE_PROG).hex \
 		+elf_file=$(COMPLIANCE_PKG)/work/$(RISCV_ISA)/$(COMPLIANCE_PROG).elf
 
+
+
 ###############################################################################
 # Use Google instruction stream generator (RISCV-DV) to create new test-programs
 comp_corev-dv: $(RISCVDV_PKG)
@@ -430,5 +429,5 @@ clean_eclipse:
 	rm  -rf workspace
 
 # All generated files plus the clone of the RTL
-clean_all: clean clean_eclipse clean_riscv-dv clean_test_programs clean-bsp clean_compliance
+clean_all: clean clean_eclipse clean_riscv-dv clean_test_programs clean-bsp clean_compliance clean_embench
 	rm -rf $(CV_CORE_PKG)

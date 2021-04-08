@@ -3,7 +3,10 @@ The directories from which you should launch your interactive simulations and
 regressions are the `core` and `uvmt_cv32` directories located here.
 
 ### Cloning the RTL
-The Makefiles will automatically clone the required RTL to `../../core-v-cores/cv32e40x`.
+The Makefiles will automatically clone the required RTL to `../../core-v-cores/cv32e40x`,
+unless the CV_CORE_PATH parameter is set.
+If the CV_CORE_PATH is set, a symlink to this path will be created in `../../core-v-cores/` instead of cloning the repo.
+This allows for working on the RTL in a separate environment.
 <br><br>
 There are user variables
 in `./Common.mk` that control the URL, branch and hash of the cloned code - see
