@@ -80,7 +80,7 @@ module axi_adapter #(
     axi_req_o.aw.size   = {1'b0, size_i}; // 1, 2, 4 or 8 bytes
     axi_req_o.aw.burst  = axi_pkg::BURST_INCR; // Use BURST_INCR for AXI regular transaction
     axi_req_o.aw.lock   = 1'b0;
-    axi_req_o.aw.cache  = 4'b0;
+    axi_req_o.aw.cache  = axi_pkg::CACHE_MODIFIABLE;
     axi_req_o.aw.qos    = 4'b0;
     axi_req_o.aw.id     = id_i;
     axi_req_o.aw.atop   = atop_from_amo(amo_i);
@@ -100,7 +100,7 @@ module axi_adapter #(
     axi_req_o.ar.size   = {1'b0, size_i}; // 1, 2, 4 or 8 bytes
     axi_req_o.ar.burst  = (CRITICAL_WORD_FIRST ? axi_pkg::BURST_WRAP : axi_pkg::BURST_INCR); // wrapping transfer in case of a critical word first strategy
     axi_req_o.ar.lock   = 1'b0;
-    axi_req_o.ar.cache  = 4'b0;
+    axi_req_o.ar.cache  = axi_pkg::CACHE_MODIFIABLE;
     axi_req_o.ar.qos    = 4'b0;
     axi_req_o.ar.id     = id_i;
     axi_req_o.ar.user   = '0;
