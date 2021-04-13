@@ -387,16 +387,14 @@ endfunction : build_phase
 task uvma_isacov_cov_model_c::run_phase(uvm_phase phase);
 
   super.run_phase(phase);
+  
+  forever begin
+    uvma_isacov_mon_trn_c mon_trn;
 
-  if (cfg.enabled && cfg.cov_model_enabled) begin
-    fork
-      forever begin
-        uvma_isacov_mon_trn_c mon_trn;
-
-        mon_trn_fifo.get(mon_trn);
-        sample (mon_trn.instr);
-      end
-    join_none
+    mon_trn_fifo.get(mon_trn);
+    if (cfg.enabled && cfg.cov_model_enabled) begin
+      sample (mon_trn.instr);
+    end
   end
 
 endtask : run_phase
