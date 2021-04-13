@@ -41,9 +41,9 @@ package riscv;
     localparam PPNW       = (XLEN == 32) ? 22 : 44;
     localparam vm_mode_t MODE_SV = (XLEN == 32) ? ModeSv32 : ModeSv39;
     localparam SV         = (MODE_SV == ModeSv32) ? 32 : 39;
-    localparam VPN2       = (riscv::VLEN-31 < 8) ? riscv::VLEN-31 : 8;
+    localparam VPN2       = (VLEN-31 < 8) ? VLEN-31 : 8;
 
-    typedef logic [riscv::XLEN-1:0] xlen_t;
+    typedef logic [XLEN-1:0] xlen_t;
 
     // --------------------
     // Privilege Spec
