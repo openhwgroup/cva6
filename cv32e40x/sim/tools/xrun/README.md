@@ -19,6 +19,6 @@ These XML files should be created using coverage tools such as IMC or Vmanager. 
 
 | File | Maintenance | Description |
 |------|-------------|-------------|
-| cv32e40x_no_pulp.hierarchy.vRefine | Manual | Removes hierarchies from coverage database that are not to be considered for coverage (e.g. testbench |
-| cv32e40x_no_pulp.auto.vRefine | Automatic | Auto-generated refinements based on parameter usage for the CV32E40X without PULP extensions.  *Do not manually edit* |
-| cv32e40x_no_pulp.manual.vRefine | Manual | Manually added coverage exception based on deesign verification reviews. |
+| cv32e40x.hierarchy.vRefine | Manual | Removes hierarchies from coverage database that are not to be considered for coverage (e.g. testbench |
+| cv32e40x.auto.vRefine | Automatic | Auto-generated refinements based on parameter usage for the CV32E40X without PULP extensions.  *Do not manually edit* |
+| cv32e40x.manual.vRefine | Manual | Manually added coverage exception based on deesign verification reviews. |
