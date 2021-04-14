@@ -860,7 +860,7 @@ module ariane import ariane_pkg::*; #(
     if (~rst_ni) begin
       cycles <= 0;
     end else begin
-      string mode = "";
+      byte mode = "";
       if (debug_mode) mode = "D";
       else begin
         case (priv_lvl)
