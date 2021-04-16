@@ -82,13 +82,22 @@ endif
 ################################################################################
 # Waveform generation
 # WAVES=YES enables waveform generation for entire testbench
+# WAVES_MEM=YES enables tracing memories and large vectors
 # ADV_DEBUG=YES will enable Indago waves, default is to generate SimVision waves
-ifeq ($(call IS_YES,$(WAVES)),YES)
-ifeq ($(call IS_YES,$(ADV_DEBUG)),YES)
-XRUN_RUN_WAVES_FLAGS = -input $(abspath $(MAKE_PATH)/../tools/xrun/indago.tcl)
+ifeq ($(call IS_YES,$(WAVES_MEM)),YES)
+  ifeq ($(call IS_YES,$(ADV_DEBUG)),YES)
+    XRUN_RUN_WAVES_FLAGS = -input $(abspath $(MAKE_PATH)/../tools/xrun/indago_mem.tcl)
+  else
+    XRUN_RUN_WAVES_FLAGS = -input $(abspath $(MAKE_PATH)/../tools/xrun/probe_mem.tcl)
+  endif
 else
-XRUN_RUN_WAVES_FLAGS = -input $(abspath $(MAKE_PATH)/../tools/xrun/probe.tcl)
-endif
+  ifeq ($(call IS_YES,$(WAVES)),YES)
+    ifeq ($(call IS_YES,$(ADV_DEBUG)),YES)
+      XRUN_RUN_WAVES_FLAGS = -input $(abspath $(MAKE_PATH)/../tools/xrun/indago.tcl)
+    else
+      XRUN_RUN_WAVES_FLAGS = -input $(abspath $(MAKE_PATH)/../tools/xrun/probe.tcl)
+    endif
+  endif
 endif
 
 ################################################################################
