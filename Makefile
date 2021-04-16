@@ -115,7 +115,7 @@ test_pkg := $(wildcard tb/test/*/*sequence_pkg.sv*) \
 			$(wildcard tb/test/*/*_pkg.sv*)
 
 # DPI
-dpi := $(patsubst tb/dpi/%.cc, ${dpi-library}/%.o, $(wildcard tb/dpi/*.cc))
+dpi := $(patsubst corev_apu/tb/dpi/%.cc, ${dpi-library}/%.o, $(wildcard corev_apu/tb/dpi/*.cc))
 
 # filter spike stuff if tandem is not activated
 ifndef spike-tandem
@@ -127,9 +127,10 @@ ifndef DROMAJO
     dpi := $(filter-out ${dpi-library}/dromajo_cosim_dpi.o, $(dpi))
 endif
 
-dpi_hdr := $(wildcard tb/dpi/*.h)
+dpi_hdr := $(wildcard corev_apu/tb/dpi/*.h)
 dpi_hdr := $(addprefix $(root-dir), $(dpi_hdr))
 CFLAGS := -I$(QUESTASIM_HOME)/include         \
+          -I$(VCS_HOME)/include \
           -I$(RISCV)/include                  \
           -I$(SPIKE_ROOT)/include             \
           $(if $(DROMAJO), -I../corev_apu/tb/dromajo/src,) \
@@ -232,14 +233,14 @@ src :=  $(filter-out core/ariane_regfile.sv, $(wildcard core/*.sv))             
 
 src := $(addprefix $(root-dir), $(src))
 
-uart_src := $(wildcard fpga/src/apb_uart/src/*.vhd)
+uart_src := $(wildcard corev_apu/fpga/src/apb_uart/src/*.vhd)
 uart_src := $(addprefix $(root-dir), $(uart_src))
 
 fpga_src :=  $(wildcard fpga/src/*.sv) $(wildcard fpga/src/bootrom/*.sv) $(wildcard fpga/src/ariane-ethernet/*.sv)
 fpga_src := $(addprefix $(root-dir), $(fpga_src))
 
 # look for testbenches
-tbs := tb/ariane_tb.sv tb/ariane_testharness.sv
+tbs := corev_apu/tb/ariane_tb.sv corev_apu/tb/ariane_testharness.sv
 # RISCV asm tests and benchmark setup (used for CI)
 # there is a definesd test-list with selected CI tests
 riscv-test-dir            := tmp/riscv-tests/build/isa/
@@ -299,6 +300,18 @@ else
 	questa-cmd += +jtag_rbb_enable=0
 endif
 
+vcs_build: $(dpi-library)/ariane_dpi.so
+	vlogan -full64 -nc -sverilog -ntb_opts uvm-1.2
+	vlogan -full64 -nc -sverilog -ntb_opts uvm-1.2 +define+$(CVA6_VARIANT) +define+WT_CACHE $(filter %.sv,$(ariane_pkg)) +incdir+core/include/+$(VCS_HOME)/etc/uvm-1.2/dpi
+	vlogan -full64 -nc -sverilog -ntb_opts uvm-1.2 +define+$(CVA6_VARIANT) +define+WT_CACHE $(filter %.sv,$(util)) +incdir+common/local/util+core/include/+src/util/+$(VCS_HOME)/etc/uvm-1.2/dpi
+	vhdlan -full64 $(filter %.vhd,$(uart_src))
+	vlogan -full64 -nc -sverilog -ntb_opts uvm-1.2 -assert svaext +define+$(CVA6_VARIANT) +define+WT_CACHE $(filter %.sv,$(src)) +incdir+core/include/+common/submodules/common_cells/include/+common/local/util/+$(VCS_HOME)/etc/uvm-1.2/dpi
+	vlogan -full64 -nc -sverilog -ntb_opts uvm-1.2 $(tbs)
+	vcs -full64 -timescale=1ns/1ns -ntb_opts uvm-1.2 work.ariane_tb
+
+vcs: vcs_build
+	./simv +permissive -sv_lib work-dpi/ariane_dpi +permissive-off ++$(elf-bin) | tee vcs.log
+
 # Build the TB and module using QuestaSim
 build: $(library) $(library)/.build-srcs $(library)/.build-tb $(dpi-library)/ariane_dpi.so
 	# Optimize top level
@@ -325,7 +338,7 @@ $(library):
 	vlib${questa_version} $(library)
 
 # compile DPIs
-$(dpi-library)/%.o: tb/dpi/%.cc $(dpi_hdr)
+$(dpi-library)/%.o: corev_apu/tb/dpi/%.cc $(dpi_hdr)
 	mkdir -p $(dpi-library)
 	$(CXX) -shared -fPIC -std=c++0x -Bsymbolic $(CFLAGS) -c $< -o $@
 
@@ -413,7 +426,7 @@ CVA6_HOME	   ?= $(realpath -s $(root-dir))
 XRUN_INCDIR :=+incdir+$(CVA6_HOME)/src/axi_node 	\
 	+incdir+$(CVA6_HOME)/src/common_cells/include 	\
 	+incdir+$(CVA6_HOME)/src/util
-XRUN_TB := $(addprefix $(CVA6_HOME)/, tb/ariane_tb.sv)
+XRUN_TB := $(addprefix $(CVA6_HOME)/, corev_apu/tb/ariane_tb.sv)
 
 XRUN_COMP_FLAGS  ?= -64bit -disable_sem2009 -access +rwc 			\
 		    -sv -v93 -uvm -uvmhome $(XRUN_UVMHOME_ARG) 			\
@@ -721,7 +734,7 @@ check-torture:
 	diff -s $(riscv-torture-dir)/$(test-location).spike.sig $(riscv-torture-dir)/$(test-location).rtlsim.sig
 
 fpga_filter := $(addprefix $(root-dir), bootrom/bootrom.sv)
-fpga_filter += $(addprefix $(root-dir), include/instr_tracer_pkg.sv)
+fpga_filter += $(addprefix $(root-dir), core/include/instr_tracer_pkg.sv)
 fpga_filter += $(addprefix $(root-dir), src/util/ex_trace_item.sv)
 fpga_filter += $(addprefix $(root-dir), src/util/instr_trace_item.sv)
 fpga_filter += $(addprefix $(root-dir), src/util/instr_tracer_if.sv)
