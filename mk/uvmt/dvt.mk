@@ -31,7 +31,7 @@ DVT_COMMAND = $(DVT_HOME)/bin/dvt_cli.sh createProject $(CORE_V_VERIF) \
 
 .PHONY: open_in_dvt_ide check_dvt_home
 
-open_in_dvt_ide: check_dvt_home
+open_in_dvt_ide: check_dvt_home $(CV_CORE_PKG)
 ifeq ($(SIMULATOR), xrun)
 	$(DVT_COMMAND)            \
 	+dvt_init+xcelium.xrun    \
