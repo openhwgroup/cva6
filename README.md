@@ -1,4 +1,9 @@
+<!---
 [![Build Status](https://travis-ci.org/openhwgroup/cva6.svg?branch=master)](https://travis-ci.org/openhwgroup/cva6)
+-->
+
+# Update in Progress
+This branch is experimental and exists to prototype proposed changes to the structure of this repository.  Use at your own risk!
 
 # CVA6 RISC-V CPU
 
