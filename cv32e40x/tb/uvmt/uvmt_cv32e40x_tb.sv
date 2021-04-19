@@ -170,9 +170,9 @@ bind cv32e40x_wrapper
                                                       .if_stage_instr_rdata_i(if_stage_i.m_c_obi_instr_if.resp_payload.rdata),
                                                       .id_stage_instr_valid_i(id_stage_i.if_id_pipe_i.instr_valid),
                                                       .id_stage_instr_rdata_i(id_stage_i.if_id_pipe_i.instr.bus_resp.rdata),
-                                                      .branch_taken_ex(id_stage_i.branch_taken_ex),
-                                                      .ctrl_fsm_cs(id_stage_i.controller_i.ctrl_fsm_cs),
-                                                      .debug_mode_q(id_stage_i.controller_i.debug_mode_q),                                                      
+                                                      .branch_taken_ex(id_stage_i.branch_taken_ex_o),
+                                                      .ctrl_fsm_cs(controller_i.controller_fsm_i.ctrl_fsm_cs),
+                                                      .debug_mode_q(controller_i.controller_fsm_i.debug_mode_q),
                                                       .*);
    
     // Debug assertion and coverage interface
@@ -188,17 +188,17 @@ bind cv32e40x_wrapper
       .id_stage_instr_valid_i(dut_wrap.cv32e40x_wrapper_i.core_i.id_stage_i.if_id_pipe_i.instr_valid),
       .id_stage_instr_rdata_i(dut_wrap.cv32e40x_wrapper_i.core_i.id_stage_i.if_id_pipe_i.instr.bus_resp.rdata),
       .id_stage_is_compressed(dut_wrap.cv32e40x_wrapper_i.core_i.id_stage_i.if_id_pipe_i.is_compressed),
-      .id_valid(dut_wrap.cv32e40x_wrapper_i.core_i.id_stage_i.controller_i.id_valid_i),
-      .is_decoding(dut_wrap.cv32e40x_wrapper_i.core_i.id_stage_i.controller_i.is_decoding_o),
+      .id_valid(dut_wrap.cv32e40x_wrapper_i.core_i.id_valid),
+      .is_decoding(dut_wrap.cv32e40x_wrapper_i.core_i.is_decoding),
       .id_stage_pc(dut_wrap.cv32e40x_wrapper_i.core_i.id_stage_i.if_id_pipe_i.pc),
       .if_stage_pc(dut_wrap.cv32e40x_wrapper_i.core_i.if_stage_i.pc_if_o),
       .mie_q(dut_wrap.cv32e40x_wrapper_i.core_i.cs_registers_i.mie_q),
-      .ctrl_fsm_cs(dut_wrap.cv32e40x_wrapper_i.core_i.id_stage_i.controller_i.ctrl_fsm_cs),
-      .illegal_insn_i(dut_wrap.cv32e40x_wrapper_i.core_i.id_stage_i.controller_i.illegal_insn_i),
-      .illegal_insn_q(dut_wrap.cv32e40x_wrapper_i.core_i.id_stage_i.controller_i.illegal_insn_q),
-      .ecall_insn_i(dut_wrap.cv32e40x_wrapper_i.core_i.id_stage_i.controller_i.ecall_insn_i),
-      .debug_req_i(dut_wrap.cv32e40x_wrapper_i.core_i.id_stage_i.controller_i.debug_req_pending),
-      .debug_mode_q(dut_wrap.cv32e40x_wrapper_i.core_i.id_stage_i.controller_i.debug_mode_q),
+      .ctrl_fsm_cs(dut_wrap.cv32e40x_wrapper_i.core_i.controller_i.controller_fsm_i.ctrl_fsm_cs),
+      .illegal_insn_i(dut_wrap.cv32e40x_wrapper_i.core_i.controller_i.controller_fsm_i.illegal_insn_i),
+      .illegal_insn_q(dut_wrap.cv32e40x_wrapper_i.core_i.controller_i.controller_fsm_i.illegal_insn_q),
+      .ecall_insn_i(dut_wrap.cv32e40x_wrapper_i.core_i.controller_i.controller_fsm_i.ecall_insn_i),
+      .debug_req_i(dut_wrap.cv32e40x_wrapper_i.core_i.controller_i.controller_fsm_i.debug_req_pending),
+      .debug_mode_q(dut_wrap.cv32e40x_wrapper_i.core_i.controller_i.controller_fsm_i.debug_mode_q),
       .dcsr_q(dut_wrap.cv32e40x_wrapper_i.core_i.cs_registers_i.dcsr_q),
       .depc_q(dut_wrap.cv32e40x_wrapper_i.core_i.cs_registers_i.dpc_q),
       .depc_n(dut_wrap.cv32e40x_wrapper_i.core_i.cs_registers_i.dpc_n),
@@ -209,7 +209,7 @@ bind cv32e40x_wrapper
       .mepc_q(dut_wrap.cv32e40x_wrapper_i.core_i.cs_registers_i.mepc_q),
       .tdata1(dut_wrap.cv32e40x_wrapper_i.core_i.cs_registers_i.tmatch_control_rdata),
       .tdata2(dut_wrap.cv32e40x_wrapper_i.core_i.cs_registers_i.tmatch_value_rdata),
-      .trigger_match_i(dut_wrap.cv32e40x_wrapper_i.core_i.id_stage_i.controller_i.trigger_match_i),
+      .trigger_match_i(dut_wrap.cv32e40x_wrapper_i.core_i.controller_i.controller_fsm_i.debug_trigger_match_i),
       .mcountinhibit_q(dut_wrap.cv32e40x_wrapper_i.core_i.cs_registers_i.mcountinhibit_q),
       .mcycle(dut_wrap.cv32e40x_wrapper_i.core_i.cs_registers_i.mhpmcounter_q[0]),
       .minstret(dut_wrap.cv32e40x_wrapper_i.core_i.cs_registers_i.mhpmcounter_q[2]),
@@ -235,9 +235,9 @@ bind cv32e40x_wrapper
       .dm_exception_addr_i(dut_wrap.cv32e40x_wrapper_i.core_i.dm_exception_addr_i),
       .core_sleep_o(dut_wrap.cv32e40x_wrapper_i.core_i.core_sleep_o),
       .irq_i(dut_wrap.cv32e40x_wrapper_i.core_i.irq_i),
-      .pc_set(dut_wrap.cv32e40x_wrapper_i.core_i.id_stage_i.pc_set_o),
+      .pc_set(dut_wrap.cv32e40x_wrapper_i.core_i.pc_set),
       .boot_addr_i(dut_wrap.cv32e40x_wrapper_i.core_i.boot_addr_i),
-      .branch_in_decode(dut_wrap.cv32e40x_wrapper_i.core_i.id_stage_i.controller_i.branch_in_id),
+      .branch_in_decode(dut_wrap.cv32e40x_wrapper_i.core_i.controller_i.controller_fsm_i.branch_in_id),
 
       .is_wfi(),
       .in_wfi(),
@@ -302,7 +302,7 @@ bind cv32e40x_wrapper
       // Advance acknowledged interrupt to ISS when next valid instruction decode executes
       // Ignoring any instructon decodes in debug mode
       wire id_start = dut_wrap.cv32e40x_wrapper_i.core_i.id_stage_i.id_valid_o &
-                      dut_wrap.cv32e40x_wrapper_i.core_i.id_stage_i.is_decoding_o &
+                      dut_wrap.cv32e40x_wrapper_i.core_i.is_decoding  &
                       ~dut_wrap.cv32e40x_wrapper_i.core_i.debug_mode;
 
       assign irq_enabled = dut_wrap.cv32e40x_wrapper_i.irq_i & dut_wrap.cv32e40x_wrapper_i.core_i.cs_registers_i.mie_n;
@@ -411,11 +411,11 @@ bind cv32e40x_wrapper
         if (!clknrst_if.reset_n) begin
             count_issue <= 32'h0;
         end else begin
-            if ((dut_wrap.cv32e40x_wrapper_i.core_i.id_stage_i.id_valid_o && dut_wrap.cv32e40x_wrapper_i.core_i.id_stage_i.is_decoding_o &&
-               !dut_wrap.cv32e40x_wrapper_i.core_i.id_stage_i.controller_i.illegal_insn_i) ||
-                (dut_wrap.cv32e40x_wrapper_i.core_i.id_stage_i.controller_i.is_decoding_o && dut_wrap.cv32e40x_wrapper_i.core_i.id_stage_i.controller_i.ebrk_insn_i &&
-                 !dut_wrap.cv32e40x_wrapper_i.core_i.id_stage_i.trigger_match_i &&
-                (dut_wrap.cv32e40x_wrapper_i.core_i.id_stage_i.controller_i.ebrk_force_debug_mode || dut_wrap.cv32e40x_wrapper_i.core_i.id_stage_i.controller_i.debug_mode_q))) begin
+            if ((dut_wrap.cv32e40x_wrapper_i.core_i.id_stage_i.id_valid_o && dut_wrap.cv32e40x_wrapper_i.core_i.is_decoding &&
+               !dut_wrap.cv32e40x_wrapper_i.core_i.controller_i.controller_fsm_i.illegal_insn_i) ||
+                (dut_wrap.cv32e40x_wrapper_i.core_i.is_decoding && dut_wrap.cv32e40x_wrapper_i.core_i.controller_i.controller_fsm_i.ebrk_insn_i &&
+                 !dut_wrap.cv32e40x_wrapper_i.core_i.controller_i.debug_trigger_match_i &&
+                (dut_wrap.cv32e40x_wrapper_i.core_i.controller_i.controller_fsm_i.ebrk_force_debug_mode || dut_wrap.cv32e40x_wrapper_i.core_i.controller_i.controller_fsm_i.debug_mode_q))) begin
                 count_issue <= count_issue + 1;
             end
         end
@@ -443,8 +443,8 @@ bind cv32e40x_wrapper
                     iss_wrap.b1.haltreq <= 1'b0;
 
                     // Only drive haltreq if we have an external request
-                    if (dut_wrap.cv32e40x_wrapper_i.core_i.id_stage_i.controller_i.ctrl_fsm_cs inside {cv32e40x_pkg::DBG_TAKEN_ID, cv32e40x_pkg::DBG_TAKEN_IF} &&
-                        dut_wrap.cv32e40x_wrapper_i.core_i.id_stage_i.controller_i.debug_req_pending) begin
+                    if (dut_wrap.cv32e40x_wrapper_i.core_i.controller_i.controller_fsm_i.ctrl_fsm_cs inside {cv32e40x_pkg::DBG_TAKEN_ID, cv32e40x_pkg::DBG_TAKEN_IF} &&
+                        dut_wrap.cv32e40x_wrapper_i.core_i.controller_i.controller_fsm_i.debug_req_pending) begin
                             
                         debug_req_state <= DBG_TAKEN;
                         // Already in sync, assert halreq right away
