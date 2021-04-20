@@ -17,7 +17,7 @@
 
 
 typedef enum {
-  UNKNOWN,
+  UNKNOWN,  // TODO this should not be needed?
 
   // 32I
   LUI, AUIPC, JAL, JALR,

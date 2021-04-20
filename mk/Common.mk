@@ -608,6 +608,23 @@ vcs-unit-test:  vcsify $(FIRMWARE)/firmware_unit_test.hex
 vcs-unit-test:  vcs-run
 
 ###############################################################################
+# Build disassembler
+
+DPI_DASM_SRC = $(DPI_DASM_PKG)/dpi_dasm.cxx $(DPI_DASM_PKG)/spike/disasm.cc $(SPIKE_PKG)/disasm/regnames.cc
+DPI_DASM_OUT = $(DPI_DASM_PKG)/libdpi_dasm.so
+DPI_DASM_CFLAGS = -shared -fPIC -std=c++11
+DPI_DASM_SVDPI_PATH ?= . -please_set_DPI_DASM_SVDPI_PATH_to_where_svdpi.h_is
+DPI_DASM_INC = -I $(DPI_DASM_PKG) -I $(DPI_DASM_SVDPI_PATH) -I $(SPIKE_PKG)/riscv -I $(SPIKE_PKG)/softfloat
+
+dpi_dasm: $(SPIKE_PKG)
+	c++ $(DPI_DASM_CFLAGS) $(DPI_DASM_INC) $(DPI_DASM_SRC) -o $(DPI_DASM_OUT)
+
+$(SPIKE_PKG):
+	git clone https://github.com/riscv/riscv-isa-sim.git $(SPIKE_PKG)
+	cd $(SPIKE_PKG) && git checkout 8faa928819fb551325e76b463fc0c978e22f5be3
+	@echo TODO use url and hash from env variables
+
+###############################################################################
 # house-cleaning for unit-testing
 custom-clean:
 	rm -rf $(CUSTOM)/hello_world.elf $(CUSTOM)/hello_world.hex

@@ -25,6 +25,9 @@ package uvma_isacov_pkg;
   import uvml_trn_pkg::*;
   import uvml_logs_pkg::*;
 
+  // DPI imports
+  `include "dpi_dasm_imports.svh"
+
   // Objects
   `include "uvma_isacov_cfg.sv"
   `include "uvma_isacov_cntxt.sv"
