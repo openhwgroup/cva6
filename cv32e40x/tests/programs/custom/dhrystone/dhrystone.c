@@ -365,6 +365,8 @@
 
 /* Compiler and system dependent definitions: */
 
+// mm_ram cycle counter address 
+#define TICKS_ADDR (*((volatile uint32_t*)0x15001004))
 
 #define Mic_secs_Per_Second     1000000.0
                 /* Berkeley UNIX C returns process times in seconds/HZ */
@@ -596,7 +598,8 @@ int main (int argc, char *argv[])
 
   printf ("Execution starts, %d runs through Dhrystone\n", Number_Of_Runs);
 
-
+  // reset cycle counter
+  TICKS_ADDR = 0;
 
   for (Run_Index = 1; Run_Index <= Number_Of_Runs; ++Run_Index)
   {
@@ -693,6 +696,8 @@ int main (int argc, char *argv[])
 
   } /* loop "for Run_Index" */
 
+  //record cycle counter
+  uint32_t cycle_cnt = TICKS_ADDR;
 
   printf ("Execution ends%c", '\n');
   printf (" %c", '\n');
@@ -745,6 +750,8 @@ int main (int argc, char *argv[])
   printf ("        should be:   DHRYSTONE PROGRAM, 1'ST STRING%c", '\n');
   printf ("Str_2_Loc:           %s\n", Str_2_Loc);
   printf ("        should be:   DHRYSTONE PROGRAM, 2'ND STRING%c", '\n');
+
+  printf ("Cycle count is %d \n", cycle_cnt);
 
 
 
