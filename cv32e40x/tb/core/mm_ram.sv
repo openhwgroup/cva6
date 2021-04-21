@@ -400,7 +400,6 @@ module mm_ram
                     cycle_count_clear = 1;
                 end else if (data_addr_i == MMADDR_TICKS_PRINT) begin
                     cycle_count_print = 1;
-                    //`uvm_info(MM_RAM_TAG, $sformatf("Cycle count is %0d", cycle_count_q), UVM_LOW);
                 end else begin
                     // out of bounds write
                 end
