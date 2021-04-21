@@ -27,7 +27,9 @@ class uvma_isacov_mon_c extends uvm_monitor;
   extern function new(string name = "uvma_isacov_mon", uvm_component parent = null);
   extern virtual function void build_phase(uvm_phase phase);
   extern virtual task run_phase(uvm_phase phase);
+  `ifdef DPI_DASM
   extern task sample_instr();
+  `endif
 
 endclass : uvma_isacov_mon_c
 
@@ -78,6 +80,7 @@ task uvma_isacov_mon_c::run_phase(uvm_phase phase);
 endtask : run_phase
 
 
+`ifdef DPI_DASM
 task uvma_isacov_mon_c::sample_instr();
 
   uvma_isacov_mon_trn_c mon_trn;
@@ -124,3 +127,4 @@ task uvma_isacov_mon_c::sample_instr();
   ap.write(mon_trn);
 
 endtask : sample_instr
+`endif
