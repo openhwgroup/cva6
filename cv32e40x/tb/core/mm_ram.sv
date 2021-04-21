@@ -206,6 +206,21 @@ module mm_ram
                 rnd_stall_regs[RND_STALL_DATA_VALID]  = 2;
                 rnd_stall_regs[RND_STALL_DATA_MAX]    = 8;
             end
+            else if ($test$plusargs("rvalid_singles_stall")) begin
+                `uvm_info(RNDSTALL_TAG, "Single-cycle data and instr stall configuration", UVM_LOW)
+                // This "knob" creates single-cycle stalls on data and instr loads/stores.
+                // Used for testing performance impact of instruction fetch policies.
+                rnd_stall_regs[RND_STALL_DATA_EN]     = 1;
+                rnd_stall_regs[RND_STALL_DATA_MODE]   = 1;
+                rnd_stall_regs[RND_STALL_DATA_GNT]    = 0;
+                rnd_stall_regs[RND_STALL_DATA_VALID]  = 1;
+                rnd_stall_regs[RND_STALL_DATA_MAX]    = 1;
+                rnd_stall_regs[RND_STALL_INSTR_EN]     = 1;
+                rnd_stall_regs[RND_STALL_INSTR_MODE]   = 1;
+                rnd_stall_regs[RND_STALL_INSTR_GNT]    = 0;
+                rnd_stall_regs[RND_STALL_INSTR_VALID]  = 1;
+                rnd_stall_regs[RND_STALL_INSTR_MAX]    = 1;
+            end
             else begin
                 randcase
                     2: begin
