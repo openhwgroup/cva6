@@ -25,7 +25,7 @@ typedef enum {
   LB, LH, LW, LBU, LHU, SB, SH, SW,
   ADDI, SLTI, SLTIU, XORI, ORI, ANDI, SLLI, SRLI, SRAI,
   ADD, SUB, SLL, SLT, SLTU, XOR, SRL, SRA, OR, AND,
-  FENCE, ECALL, EBREAK,
+  FENCE, ECALL, EBREAK, DRET, MRET, WFI,
 
   // 32M
   MUL, MULH, MULHSU, MULHU,
@@ -47,7 +47,7 @@ typedef enum {
 
 
 class uvma_isacov_instr_c extends uvm_object;
-
+  
   instr_name_t name;
 
   bit [4:0] rs1;
@@ -73,4 +73,19 @@ class uvma_isacov_instr_c extends uvm_object;
   bit [7:0] c_immb;
   bit [5:0] c_immss;
 
+  `uvm_object_utils_begin(uvma_isacov_instr_c);
+    `uvm_field_enum(instr_name_t, name, UVM_ALL_ON);
+  `uvm_object_utils_end;
+
+  extern function new(string name = "isacov_instr");
+
+  extern function string convert2string();
 endclass : uvma_isacov_instr_c
+
+function uvma_isacov_instr_c::new(string name = "isacov_instr");
+  super.new(name);
+endfunction : new
+
+function string uvma_isacov_instr_c::convert2string();
+  return name.name();
+endfunction : convert2string

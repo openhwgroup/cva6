@@ -24,6 +24,7 @@ class uvma_isacov_mon_trn_c extends uvml_trn_mon_trn_c;
 
   extern function new(string name = "uvma_isacov_mon_trn");
 
+  extern function string convert2string();
 endclass : uvma_isacov_mon_trn_c
 
 
@@ -32,3 +33,7 @@ function uvma_isacov_mon_trn_c::new(string name = "uvma_isacov_mon_trn");
   super.new(name);
 
 endfunction : new
+
+function string uvma_isacov_mon_trn_c::convert2string();
+  return instr.convert2string();
+endfunction : convert2string
