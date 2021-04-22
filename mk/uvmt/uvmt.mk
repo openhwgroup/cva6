@@ -341,3 +341,7 @@ clean_embench:
 	rm -rf $(EMBENCH_PKG)
 	cd $(EMBENCH_TESTS) && \
 	find . ! -path . ! -path ./README.md -delete
+
+clean_spike:
+	rm -rf $(SPIKE_PKG)
+

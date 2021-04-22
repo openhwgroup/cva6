@@ -36,6 +36,7 @@ VSIM_RESULTS           ?= $(if $(CV_RESULTS),$(CV_RESULTS)/vsim_results,$(MAKE_P
 VSIM_COREVDV_RESULTS   ?= $(VSIM_RESULTS)/corev-dv
 VSIM_COV_MERGE_DIR     ?= $(VSIM_RESULTS)/$(CFG)/merged
 UVM_HOME               ?= $(abspath $(shell which $(VLIB))/../../verilog_src/uvm-1.2/src)
+DPI_INCLUDE            ?= $(abspath $(shell which $(VLIB))/../../include)
 USES_DPI = 1
 
 # Default flags
@@ -111,10 +112,12 @@ VSIM_SCRIPT_DIR	   = $(abspath $(MAKE_PATH)/../tools/vsim)
 
 VSIM_UVM_ARGS      = +incdir+$(UVM_HOME)/src $(UVM_HOME)/src/uvm_pkg.sv
 
+VSIM_FLAGS += -sv_lib $(basename $(OVP_MODEL_DPI))
 ifeq ($(call IS_YES,$(USE_ISS)),YES)
 VSIM_FLAGS += +USE_ISS
-VSIM_FLAGS += -sv_lib $(basename $(OVP_MODEL_DPI))
 endif
+
+VSIM_FLAGS += -sv_lib $(basename $(DPI_DASM_LIB))
 
 # Skip compile if requested (COMP=NO)
 ifneq ($(call IS_NO,$(COMP)),NO)
@@ -186,6 +189,7 @@ COV_FLAGS=-viewcov $(TEST).ucdb
 else
 # Test coverage report
 COV_FLAGS=-c -viewcov $(TEST).ucdb -do "file delete -force $(COV_REPORT); coverage report -html -details -precision 2 -annotate -output $(COV_REPORT); exit -f"
+endif
 endif
 endif
 
@@ -455,5 +459,5 @@ clean:
 	rm -rf $(VSIM_RESULTS)
 
 # All generated files plus the clone of the RTL
-clean_all: clean clean_riscv-dv clean_test_programs clean-bsp clean_compliance clean_embench
+clean_all: clean clean_riscv-dv clean_test_programs clean-bsp clean_compliance clean_embench clean_spike
 	rm -rf $(CV_CORE_PKG)
