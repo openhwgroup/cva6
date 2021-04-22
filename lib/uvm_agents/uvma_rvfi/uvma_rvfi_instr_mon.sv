@@ -161,6 +161,21 @@ task uvma_rvfi_instr_mon_c::monitor_rvfi_instr();
          mon_trn.csr_mip    = cntxt.instr_vif[nret_id].mon_cb.csr_mip;
          mon_trn.csr_mcause = cntxt.instr_vif[nret_id].mon_cb.csr_mcause;
 
+         // Determine if interrupt is debug_halt, nmi or interrupt
+         mon_trn.insn_debug_halt = 0;
+         mon_trn.insn_nmi        = 0;
+         mon_trn.insn_interrupt  = 0;
+         if (mon_trn.intr) begin
+            if (cfg.debug_halt_handler_enabled && mon_trn.pc_rdata == cfg.debug_halt_handler_addr) 
+               mon_trn.insn_debug_halt = 1;
+            else if (cfg.nmi_handler_enabled && mon_trn.pc_rdata == cfg.nmi_handler_addr)
+               mon_trn.insn_nmi = 1;
+            else if (mon_trn.csr_mcause[31]) begin
+               mon_trn.insn_interrupt    = 1;
+               mon_trn.insn_interrupt_id = {1'b0, mon_trn.csr_mcause[30:0]};
+            end
+         end
+
          `uvm_info(log_tag, $sformatf("%s", mon_trn.convert2string()), UVM_HIGH);
 
          ap.write(mon_trn);

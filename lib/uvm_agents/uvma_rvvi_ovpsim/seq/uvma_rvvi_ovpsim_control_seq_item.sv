@@ -31,11 +31,14 @@ class uvma_rvvi_ovpsim_control_seq_item_c#(int ILEN=uvma_rvvi_pkg::DEFAULT_ILEN,
    // Set to signal entry into debugger handler
    rand bit halt;
 
+   // Set to signal entry into NMI handler
+   rand bit nmi;
+
    // For accuracy of mip model the irq_i inputs for each instrucion
    rand bit[ILEN-1:0] mip;
 
    // Hint to which instruction "won" the interrupt
-   rand bit[ILEN-1:0] mcause;
+   rand int unsigned intr_id;
 
    // Backdoor hint of register write for testing volatile CSR registers and ensuring RM tracks register value
    rand bit [GPR_ADDR_WL-1:0]    rd1_addr;
@@ -46,8 +49,9 @@ class uvma_rvvi_ovpsim_control_seq_item_c#(int ILEN=uvma_rvvi_pkg::DEFAULT_ILEN,
    `uvm_object_param_utils_begin(uvma_rvvi_ovpsim_control_seq_item_c#(ILEN,XLEN))      
       `uvm_field_int(intr, UVM_DEFAULT)
       `uvm_field_int(halt, UVM_DEFAULT)
+      `uvm_field_int(nmi, UVM_DEFAULT)
       `uvm_field_int(mip, UVM_DEFAULT)
-      `uvm_field_int(mcause, UVM_DEFAULT)
+      `uvm_field_int(intr_id, UVM_DEFAULT)
       `uvm_field_int(rd1_addr, UVM_DEFAULT)
       `uvm_field_int(rd1_wdata, UVM_DEFAULT)
    `uvm_object_utils_end

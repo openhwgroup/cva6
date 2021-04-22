@@ -106,6 +106,7 @@ interface uvmt_cv32e40x_core_cntrl_if (
                                     output logic [31:0] mtvec_addr,
                                     output logic [31:0] dm_halt_addr,
                                     output logic [31:0] dm_exception_addr,
+                                    output logic [31:0] nmi_addr,
                                     output logic [31:0] hart_id,
                                     // To be driven by future debug module (DM)
                                     output logic        debug_req,
@@ -173,6 +174,7 @@ interface uvmt_cv32e40x_core_cntrl_if (
     mtvec_addr        = 32'h0000_0000;
     dm_halt_addr      = 32'h1A11_0800;
     dm_exception_addr = 32'h1A11_1000;
+    nmi_addr          = 32'h2000_0000;
     hart_id           = 32'h0000_0000;
 
     // If a override is provided via plusarg then set bootstrap pins and adjust ISS model

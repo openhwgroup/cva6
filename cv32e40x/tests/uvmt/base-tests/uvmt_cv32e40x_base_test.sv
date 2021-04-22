@@ -60,12 +60,14 @@ class uvmt_cv32e40x_base_test_c extends uvm_test;
       env_cfg.enabled         == 1;
       env_cfg.is_active       == UVM_ACTIVE;
       env_cfg.trn_log_enabled == 1;
+
+      env_cfg.rvfi_cfg.nmi_handler_addr        == core_cntrl_vif.nmi_addr;
+      env_cfg.rvfi_cfg.debug_halt_handler_addr == core_cntrl_vif.dm_halt_addr;
    }
    
    constraint test_type_default_cons {
      soft test_cfg.tpt == NO_TEST_PROGRAM;
    }
-   
    
    // Additional, temporary constraints to get around known design bugs/constraints
    `include "uvmt_cv32e40x_base_test_workarounds.sv"

@@ -125,18 +125,16 @@ task uvma_rvvi_ovpsim_drv_c::stepi(REQ req);
    // Stop the clock
    stop_clknrst();
 
-   // Signal an interrupt to the ISS if mcause and rvfi_intr signals external interrupt   
-   // FIXME:strichmo:This should be using control rvvi interface signals
-   if (rvvi_ovpsim_seq_item.intr && rvvi_ovpsim_seq_item.mcause[31]) begin   
+   // Signal an interrupt to the ISS if mcause and rvfi_intr signals external interrupt  
+   if (rvvi_ovpsim_seq_item.intr) begin
       rvvi_ovpsim_cntxt.ovpsim_bus_vif.deferint = 1'b0;
-      rvvi_ovpsim_cntxt.ovpsim_bus_vif.irq_i    = 1 << (rvvi_ovpsim_seq_item.mcause[4:0]);
+      rvvi_ovpsim_cntxt.ovpsim_bus_vif.irq_i    = 1 << (rvvi_ovpsim_seq_item.intr_id);
       rvvi_ovpsim_cntxt.control_vif.stepi();
       @(rvvi_ovpsim_cntxt.state_vif.notify);
       rvvi_ovpsim_cntxt.ovpsim_bus_vif.deferint = 1'b1;
       @(posedge rvvi_ovpsim_cntxt.ovpsim_bus_vif.Clk);
    end
-
-   // FIXME:HACK:strichmo:emulate rvfi_halt via PC (0x1)
+   
    if (rvvi_ovpsim_seq_item.halt) begin
       rvvi_ovpsim_cntxt.ovpsim_bus_vif.haltreq  = 1'b1;      
       rvvi_ovpsim_cntxt.control_vif.stepi();

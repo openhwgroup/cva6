@@ -71,6 +71,7 @@ module uvmt_cv32e40x_tb;
                                                   .mtvec_addr(),
                                                   .dm_halt_addr(),
                                                   .dm_exception_addr(),
+                                                  .nmi_addr(),
                                                   .hart_id(),
                                                   .debug_req(),
                                                   .load_instr_mem()); // Static and quasi-static core control inputs.
@@ -127,7 +128,7 @@ module uvmt_cv32e40x_tb;
                                                                    .rvfi_mem_wdata(rvfi_i.rvfi_mem_wdata[uvme_cv32e40x_pkg::XLEN*0+:uvme_cv32e40x_pkg::XLEN]),
                                                                    .rvfi_mem_wmask(rvfi_i.rvfi_mem_wmask[uvme_cv32e40x_pkg::XLEN/8*0+:uvme_cv32e40x_pkg::XLEN/8]),
                                                                    .csr_mcause(core_i.cs_registers_i.mcause_q),
-                                                                   .csr_mip(core_i.cs_registers_i.mip)
+                                                                   .csr_mip(core_i.cs_registers_i.mip)                                                                   
                                                                    );
 
   // Bind in OBI interfaces (montioring only supported currently)
@@ -672,3 +673,4 @@ endmodule : uvmt_cv32e40x_tb
 `default_nettype wire
 
 `endif // __UVMT_CV32E40X_TB_SV__
+
