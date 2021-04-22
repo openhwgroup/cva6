@@ -45,6 +45,17 @@ typedef enum {
   FENCE_I
 } instr_name_t;
 
+typedef enum {
+  // RV32 types
+  R_TYPE,
+  I_TYPE,
+  S_TYPE,
+  B_TYPE,
+  U_TYPE,
+  J_TYPE,
+
+  UNKNOWN_TYPE // Delete when all are implemented
+} instr_type_t;
 
 class uvma_isacov_instr_c extends uvm_object;
   
@@ -74,18 +85,57 @@ class uvma_isacov_instr_c extends uvm_object;
   bit [5:0] c_immss;
 
   `uvm_object_utils_begin(uvma_isacov_instr_c);
-    `uvm_field_enum(instr_name_t, name, UVM_ALL_ON);
+    `uvm_field_enum(instr_name_t, name, UVM_ALL_ON | UVM_NOPRINT);
+    `uvm_field_int(rs1, UVM_ALL_ON | UVM_NOPRINT);
+    `uvm_field_int(rs2, UVM_ALL_ON | UVM_NOPRINT);
+    `uvm_field_int(rd, UVM_ALL_ON | UVM_NOPRINT);
+
+    `uvm_field_int(immi, UVM_ALL_ON | UVM_NOPRINT);
+    `uvm_field_int(imms, UVM_ALL_ON | UVM_NOPRINT);
+    `uvm_field_int(immb, UVM_ALL_ON | UVM_NOPRINT);
+    `uvm_field_int(immu, UVM_ALL_ON | UVM_NOPRINT);
+    `uvm_field_int(immj, UVM_ALL_ON | UVM_NOPRINT);
+
+    `uvm_field_int(c_rs1p,    UVM_ALL_ON | UVM_NOPRINT);
+    `uvm_field_int(c_rs2p,    UVM_ALL_ON | UVM_NOPRINT);
+    `uvm_field_int(c_rdp,     UVM_ALL_ON | UVM_NOPRINT);
+    `uvm_field_int(c_rdrs1,   UVM_ALL_ON | UVM_NOPRINT);
+    `uvm_field_int(c_rs2,     UVM_ALL_ON | UVM_NOPRINT);
+    `uvm_field_int(c_rdprs1p, UVM_ALL_ON | UVM_NOPRINT);
+    `uvm_field_int(c_immiw,   UVM_ALL_ON | UVM_NOPRINT);
+    `uvm_field_int(c_imml,    UVM_ALL_ON | UVM_NOPRINT);
+    `uvm_field_int(c_imms,    UVM_ALL_ON | UVM_NOPRINT);
+    `uvm_field_int(c_immj,    UVM_ALL_ON | UVM_NOPRINT);
+    `uvm_field_int(c_immj,    UVM_ALL_ON | UVM_NOPRINT);
+    `uvm_field_int(c_immi,    UVM_ALL_ON | UVM_NOPRINT);
+    `uvm_field_int(c_immb,    UVM_ALL_ON | UVM_NOPRINT);
+    `uvm_field_int(c_immss,   UVM_ALL_ON | UVM_NOPRINT);    
   `uvm_object_utils_end;
 
   extern function new(string name = "isacov_instr");
 
   extern function string convert2string();
+
+  extern function instr_type_t get_instr_type();
 endclass : uvma_isacov_instr_c
 
 function uvma_isacov_instr_c::new(string name = "isacov_instr");
   super.new(name);
 endfunction : new
 
+function instr_type_t uvma_isacov_instr_c::get_instr_type();
+  if (name inside {ADD,SUB,SLL,SLT,SLTU,XOR,SRL,SRA,OR,AND}) 
+    return R_TYPE;
+
+  return UNKNOWN_TYPE;
+endfunction : get_instr_type
+
 function string uvma_isacov_instr_c::convert2string();
+  instr_type_t instr_type = this.get_instr_type();
+
+  if (instr_type == R_TYPE) begin
+    return $sformatf("%s x%0d, x%0d, x%0d", name.name(), rd, rs1, rs2);
+  end
+
   return name.name();
 endfunction : convert2string

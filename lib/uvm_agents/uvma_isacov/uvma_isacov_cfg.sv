@@ -18,8 +18,6 @@
 
 class uvma_isacov_cfg_c extends uvm_object;
 
-  `uvm_object_utils(uvma_isacov_cfg_c);
-
   rand bit                     enabled;
   rand uvm_active_passive_enum is_active;
   rand bit                     cov_model_enabled;
@@ -29,6 +27,18 @@ class uvma_isacov_cfg_c extends uvm_object;
   rand bit                     ext_c_enabled;
   rand bit                     ext_zifencei_enabled;
   rand bit                     ext_zicsr_enabled;
+
+  `uvm_object_utils_begin(uvma_isacov_cfg_c);
+    `uvm_field_int(enabled, UVM_DEFAULT);
+    `uvm_field_enum(uvm_active_passive_enum, is_active, UVM_DEFAULT);
+    `uvm_field_int(cov_model_enabled, UVM_DEFAULT);
+    `uvm_field_int(trn_log_enabled, UVM_DEFAULT);
+    `uvm_field_int(ext_i_enabled, UVM_DEFAULT);
+    `uvm_field_int(ext_m_enabled, UVM_DEFAULT);
+    `uvm_field_int(ext_c_enabled, UVM_DEFAULT);
+    `uvm_field_int(ext_zifencei_enabled, UVM_DEFAULT);
+    `uvm_field_int(ext_zicsr_enabled, UVM_DEFAULT);
+  `uvm_object_utils_end;
 
   extern function new(string name = "uvma_isacov_cfg");
 
