@@ -88,10 +88,13 @@ VSIM_SCRIPT_DIR	   = $(abspath $(MAKE_PATH)/../tools/riviera)
 
 VSIM_UVM_ARGS      =
 
+VSIM_FLAGS += -sv_lib $(basename $(OVP_MODEL_DPI))
+
 ifeq ($(call IS_YES,$(USE_ISS)),YES)
 VSIM_FLAGS += +USE_ISS
-VSIM_FLAGS += -sv_lib $(basename $(OVP_MODEL_DPI))
 endif
+
+VSIM_FLAGS += -sv_lib $(basename $(DPI_DASM_LIB))
 
 # Skip compile if requested (COMP=NO)
 ifneq ($(call IS_NO,$(COMP)),NO)
@@ -329,5 +332,5 @@ clean:
 	rm -rf $(VSIM_RESULTS) library.cfg $(VWORK)
 
 # All generated files plus the clone of the RTL
-clean_all: clean clean_riscv-dv clean_test_programs clean-bsp clean_compliance clean_embench
+clean_all: clean clean_riscv-dv clean_test_programs clean-bsp clean_compliance clean_embench clean_dpi_dasm_spike
 	rm -rf $(CV_CORE_PKG)

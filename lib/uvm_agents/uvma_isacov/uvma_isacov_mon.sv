@@ -26,10 +26,9 @@ class uvma_isacov_mon_c extends uvm_monitor;
 
   extern function new(string name = "uvma_isacov_mon", uvm_component parent = null);
   extern virtual function void build_phase(uvm_phase phase);
-  extern virtual task run_phase(uvm_phase phase);
-  `ifdef DPI_DASM
+  extern virtual task run_phase(uvm_phase phase);  
+
   extern task sample_instr();
-  `endif
 
 endclass : uvma_isacov_mon_c
 
@@ -53,34 +52,24 @@ function void uvma_isacov_mon_c::build_phase(uvm_phase phase);
   end
 
   ap = new("ap", this);
+  
+  dasm_set_config(32, "rv32imc", 0);
 
-  `ifdef DPI_DASM
-    dasm_set_config(32, "rv32imc", 0);
-
-    in = in.first;
-    repeat(in.num) begin
-      instr_name_lookup[in.name().tolower()] = in;
-      in = in.next;
-    end
-  `endif
+  in = in.first;
+  repeat(in.num) begin
+    instr_name_lookup[in.name().tolower()] = in;
+    in = in.next;
+  end  
 
 endfunction : build_phase
 
 
 task uvma_isacov_mon_c::run_phase(uvm_phase phase);
 
-  super.run_phase(phase);
-
-  `ifdef DPI_DASM
-    //TODO if (cfg.enabled) begin
-      forever sample_instr();
-    //end
-  `endif
+  forever sample_instr();
 
 endtask : run_phase
 
-
-`ifdef DPI_DASM
 task uvma_isacov_mon_c::sample_instr();
 
   uvma_isacov_mon_trn_c mon_trn;
@@ -88,7 +77,7 @@ task uvma_isacov_mon_c::sample_instr();
 
   @(cntxt.vif.retire);
 
-  mon_trn = new();
+  mon_trn = uvma_isacov_mon_trn_c::type_id::create("mon_trn");
   mon_trn.instr = new();
 
   instr_name = dasm_name(cntxt.vif.insn);
@@ -96,7 +85,7 @@ task uvma_isacov_mon_c::sample_instr();
     mon_trn.instr.name = instr_name_lookup[instr_name];
   end else begin
     mon_trn.instr.name = UNKNOWN;
-    $display("TODO error couldn't look up '%s'", instr_name);
+    `uvm_warning("ISACOVMON", $sformatf("TODO: error couldn't look up '%s'", instr_name));
   end
   mon_trn.instr.name =
     cntxt.vif.is_compressed ?
@@ -127,4 +116,3 @@ task uvma_isacov_mon_c::sample_instr();
   ap.write(mon_trn);
 
 endtask : sample_instr
-`endif
