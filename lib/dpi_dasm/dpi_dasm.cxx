@@ -26,7 +26,7 @@ using namespace std;
 function <extension_t*()> gcp_extension;
 
 // Global strings
-string          gs_ext_str; 
+string          gs_ext_str;
 string          gs_ret_str;
 
 // Global pointers
@@ -97,10 +97,10 @@ extern "C" const char* disassemble_insn_str(uint64_t insn) {
     initialize_disassembler();
   }
 
-  insn            = endian_swap(insn, gv_is_big_endian);
-  string insn_str = gp_disassembler->disassemble(insn & 0xFFFFFFFF);
+  insn        = endian_swap(insn, gv_is_big_endian);
+  gs_ret_str  = gp_disassembler->disassemble(insn & 0xFFFFFFFF);
 
-  return insn_str.data();
+  return gs_ret_str.data();
 }
 
 //--------------------------------------------------------------------------------
