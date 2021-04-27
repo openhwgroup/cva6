@@ -4,7 +4,45 @@
 
 # EXPERIMENTAL EXPERIMENTAL EXPERIMENTAL
 
-This is an experimental fork/branch of the CVA6 repo used to prototype a new directory/file structure.  Use at your own risk.
+This is an experimental fork/branch of the CVA6 repo used to prototype a new directory/file structurei for this repository.
+Use at your own risk.
+
+### New Directory Structure:
+#### ci
+Scriptware for CI.
+Unchanged.
+
+#### common
+Source code used by both the CVA6 Core and the COREV APU.
+
+#### core
+Source code for the CVA6 Core only.
+There should be no sources in this directory used to build anything other than the CVA6 core.
+
+#### corev_apu
+Source code for the CVA6 APU, exclusive of the CVA6 core.
+An illustration of the COREV APU is below (see FPGA Emulation, below).
+There should be no sources in this directory used to build the CVA6 core.
+
+#### docs
+Documentation.
+Unchanged.
+
+#### scripts
+General scriptware.
+Unchanged.
+
+### To try the new structure
+Checkout the repository and initialize all submodules:
+```
+$ git clone -b reorg3_proto https://github.com/MikeOpenHWGroup/cva6.git reorg3_proto
+$ cd reorg3_proto
+$ git submodule update --init --recursive
+$ cd core/example_tb
+$ make
+```
+To run the example_tb you will need Verilator (known to work with V4.108).
+
 
 # CVA6 RISC-V CPU
 
