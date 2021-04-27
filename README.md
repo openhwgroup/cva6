@@ -1,4 +1,10 @@
+<!---
 [![Build Status](https://travis-ci.org/openhwgroup/cva6.svg?branch=master)](https://travis-ci.org/openhwgroup/cva6)
+-->
+
+# EXPERIMENTAL EXPERIMENTAL EXPERIMENTAL
+
+This is an experimental fork/branch of the CVA6 repo used to prototype a new directory/file structure.  Use at your own risk.
 
 # CVA6 RISC-V CPU
 
