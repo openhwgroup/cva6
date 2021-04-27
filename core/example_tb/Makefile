@@ -34,6 +34,43 @@ endif
 .DEFAULT_GOAL := help
 
 ###############################################################################
+# Cadence Xcelium specific commands, variables
+###############################################################################
+XRUN                   ?= xrun
+XRUN_COMP_FLAGS        ?= -sv -64bit -disable_sem2009 -access +rwc -timescale 1ns/1ps
+XRUN_ACC_FLAGS         ?= 
+XRUN_DISABLED_WARNINGS ?= -nowarn UEXPSC
+XRUN_UVMHOME_ARG       ?= -uvm -uvmhome CDNS-1.2-ML
+XRUN_COMPL_LOG         ?= xrun_compl.log
+XRUN_RUN_LOG           ?= xrun_run.log
+XRUN_RESULTS_DIR       ?= xrun_results
+
+XRUN_COMP = $(XRUN_COMP_FLAGS) \
+            $(XRUN_ACC_FLAGS) \
+            $(XRUN_DISABLED_WARNINGS) \
+            $(XRUN_UVMHOME_ARG) \
+            -l $(XRUN_COMPL_LOG) \
+            -f $(CVA6_TB_DIR)/Flist.cva6 \
+            -f $(CVA6_TB_DIR)/Flist.cva6_tb \
+            -top cva6_core_only_tb \
+            -elaborate
+
+xrun_comp:
+	@echo "[XRUN] Building Model"
+	mkdir -p $(XRUN_RESULTS_DIR)
+	cd $(XRUN_RESULTS_DIR) && \
+	$(XRUN) $(XRUN_COMP)
+
+xrun_run: xrun_comp
+	@echo "[XRUN] Running Model"
+	cd $(XRUN_RESULTS_DIR) && \
+	$(XRUN) -R -xmlibdirname ./xcelium.d -l $(XRUN_RUN_LOG)
+
+xrun_clean_all:
+	@echo "[XRUN] Cleanup (entire xrun_results dir)"
+	rm -rf $(XRUN_RESULTS_DIR)
+
+###############################################################################
 # dsim-specific commands, variables
 ###############################################################################
 DSIM               ?= dsim
@@ -142,7 +179,7 @@ veri_clean_all:
 # Common targets and rules
 ###############################################################################
 
-clean_all: dsim_clean_all veri_clean_all
+clean_all: xrun_clean_all dsim_clean_all veri_clean_all
 
 
 help:
@@ -156,6 +193,9 @@ help:
 	@echo "DSIM targets:"
 	@echo "   make dsim_comp : Compiles with DSIM"
 	@echo "   make dsim_run  : Compiles and runs with DSIM"
+	@echo "XRUN targets:"
+	@echo "   make xrun_comp : Compiles with XRUN"
+	@echo "   make xrun_run  : Compiles and runs with XRUN"
 	@echo "Clean-up targets:"
 	@echo "   make clean_all : Deletes ALL generated files"
 	@echo "Support for other simulators on the ToDo list..."
