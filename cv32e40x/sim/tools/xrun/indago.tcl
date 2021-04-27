@@ -13,5 +13,9 @@ if { [find -scope uvmt_cv32e40x_tb -instance iss_wrap] != ""} {
     ida_probe -wave -wave_probe_args="uvmt_cv32e40x_tb.iss_wrap.cpu.state.decode -depth 1"    
 }
 
-run
-exit
+# Do not automatically start the simulation if the GUI mode is enabled
+# (to allow user to setup breakpoints, etc.)
+if { ${simvision_attached} == 0} {
+    run
+    exit
+}

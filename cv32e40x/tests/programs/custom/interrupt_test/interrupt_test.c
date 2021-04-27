@@ -256,6 +256,9 @@ int main(int argc, char *argv[]) {
     if (retval != EXIT_SUCCESS)
         return retval;
 
+    // Clear MIE for final WFI
+    mie_disable_all();
+    
     return EXIT_SUCCESS;
 }
 

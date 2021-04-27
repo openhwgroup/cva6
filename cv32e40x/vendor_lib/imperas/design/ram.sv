@@ -77,7 +77,7 @@ module RAM
             end
         end
         if (SysBus.Drd == 1 && SysBus.DAddr==32'h1500_1000) begin
-            SysBus.DData = dut_wrap.data_rdata;
+            SysBus.DData = dut_wrap.ram_i.rnd_num;
         end
 
         // WRITE

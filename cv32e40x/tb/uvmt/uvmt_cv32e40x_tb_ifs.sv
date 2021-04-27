@@ -36,8 +36,7 @@ interface uvmt_cv32e40x_clk_gen_if (output logic core_clock, output logic core_r
    realtime  core_clock_period       = 1500ps; // uvme_cv32e40x_clk_period * 1ps;
    realtime  reset_deassert_duration = 7400ps; // uvme_cv32e40x_reset_deassert_duarion * 1ps;
    realtime  reset_assert_duration   = 7400ps; // uvme_cv32e40x_reset_assert_duarion * 1ps;
-   
-   
+      
    /**
     * Generates clock and reset signals.
     * If reset_n comes up de-asserted (1'b1), wait a bit, then assert, then de-assert

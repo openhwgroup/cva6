@@ -74,6 +74,7 @@ module uvmt_cv32e40x_step_compare
    bit  is_stall_sim = 0;
    bit  ignore_dpc_check = 0;
    bit  use_iss = 0;
+   bit  use_rvvi = 0;
 
   // FIXME:strichmo:when running random interrupts and random debug requests it is possible to enter debug mode 
   // (while also acking an interrupt) when the debug program counter may or may not yet be pointing to the interrupt
@@ -92,6 +93,8 @@ module uvmt_cv32e40x_step_compare
   initial begin
     if ($test$plusargs("USE_ISS"))
       use_iss = 1;
+    if ($test$plusargs("USE_RVVI"))
+      use_rvvi = 1;
   end
   
   // Set the is_stall_sim flag if random stalls are enabled
@@ -161,7 +164,7 @@ module uvmt_cv32e40x_step_compare
       end
 
       // Compare CSR's
-      if (use_iss) begin
+      if (use_iss && !use_rvvi) begin
         foreach(`CV32E40X_RM_RVVI_STATE.csr[index]) begin
            step_compare_if.num_csr_checks++;
            ignore = 0;
@@ -275,7 +278,7 @@ module uvmt_cv32e40x_step_compare
    initial state <= IDLE; // cause an event for always @*
    
    always @(*) begin
-      if (use_iss) begin
+      if (use_iss && !use_rvvi) begin
         case (state)
           IDLE: begin
               state <= RTL_STEP;
@@ -368,43 +371,6 @@ module uvmt_cv32e40x_step_compare
       end
    end
    
-
-`ifdef COVERAGE
-   coverage cov1;
-   initial begin
-       cov1 = new();
-   end
-
-    function void split(input string in_s, output string s1, s2);
-        automatic int i;
-        for (i=0; i<in_s.len(); i++) begin
-            if (in_s.getc(i) == ":")
-                break;
-         end
-         if (i==0 ) begin
-            `uvm_fatal("STEP COMPARE", $sformatf(": not found in split '%0s'", in_s))
-         end
-         s1 = in_s.substr(0,i-1);
-         s2 = in_s.substr(i+1,in_s.len()-1);
-    endfunction
-
-
-    function automatic void sample();
-        string decode = `CV32E40X_RM.Decode;
-        string ins_str, op[4], key, val;
-        int i;
-        ins_t ins;
-        int num = $sscanf (decode, "%s %s %s %s %s", ins_str, op[0], op[1], op[2], op[3]);
-        ins.ins_str = ins_str;
-        for (i=0; i<num-1; i++) begin
-            split(op[i], key, val);
-            ins.ops[i].key=key;
-            ins.ops[i].val=val;
-        end
-        cov1.sample (ins);
-    endfunction
-`endif
-
 endmodule: uvmt_cv32e40x_step_compare
 
 `endif //__UVMT_CV32E40X_STEP_COMPARE_SV__

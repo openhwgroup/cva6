@@ -37,18 +37,28 @@ module uvmt_cv32e40x_iss_wrap
     uvmt_cv32e40x_isa_covg_if     isa_covg_if
    );
 
-    BUS         b1();
+   bit  use_iss = 0;
+   bit  use_rvvi = 0;
 
-    MONITOR     mon(b1);
-    RAM         #(
+   BUS         b1();
+
+   MONITOR     mon(b1);
+   RAM         #(
                 .ROM_START_ADDR(ROM_START_ADDR),
                 .ROM_BYTE_SIZE(ROM_BYTE_SIZE),
                 .RAM_BYTE_SIZE(RAM_BYTE_SIZE)) ram(b1);
 
-    CPU #(.ID(ID)) cpu(b1);
+   CPU #(.ID(ID)) cpu(b1);
 
    assign b1.Clk = clknrst_if.clk;
-   
+
+  initial begin
+    if ($test$plusargs("USE_ISS"))
+      use_iss = 1;
+    if ($test$plusargs("USE_RVVI"))
+      use_rvvi = 1;
+  end
+
    // monitor rvvi updates
    always @(cpu.state.notify) begin
        int i;
@@ -112,7 +122,9 @@ module uvmt_cv32e40x_iss_wrap
     endfunction
 
    always @(step_compare_if.ovp_cpu_valid) begin
-       sample();
+      if (use_iss && !use_rvvi) begin
+         sample();
+      end
    end
 
    initial begin
