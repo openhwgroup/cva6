@@ -82,37 +82,37 @@ ${CVA6_REPO_DIR}/core/fpu/src/fpu_div_sqrt_mvp/hdl/nrbd_nrsc_mvp.sv
 ${CVA6_REPO_DIR}/core/fpu/src/fpu_div_sqrt_mvp/hdl/preprocess_mvp.sv
 
 // Top-level source files (not necessarily instantiated at the top of the cva6).
-${CVA6_REPO_DIR}/core/src/ariane.sv
-${CVA6_REPO_DIR}/core/src/alu.sv
-${CVA6_REPO_DIR}/core/src/fpu_wrap.sv  // Note: depends on fpnew_pkg, above
-${CVA6_REPO_DIR}/core/src/branch_unit.sv
-${CVA6_REPO_DIR}/core/src/compressed_decoder.sv
-${CVA6_REPO_DIR}/core/src/controller.sv
-${CVA6_REPO_DIR}/core/src/csr_buffer.sv
-${CVA6_REPO_DIR}/core/src/csr_regfile.sv
-${CVA6_REPO_DIR}/core/src/decoder.sv
-${CVA6_REPO_DIR}/core/src/ex_stage.sv
-${CVA6_REPO_DIR}/core/src/instr_realign.sv
-${CVA6_REPO_DIR}/core/src/id_stage.sv
-${CVA6_REPO_DIR}/core/src/issue_read_operands.sv
-${CVA6_REPO_DIR}/core/src/issue_stage.sv
-${CVA6_REPO_DIR}/core/src/load_unit.sv
-${CVA6_REPO_DIR}/core/src/load_store_unit.sv
-${CVA6_REPO_DIR}/core/src/mmu.sv
-${CVA6_REPO_DIR}/core/src/mult.sv
-${CVA6_REPO_DIR}/core/src/multiplier.sv
-${CVA6_REPO_DIR}/core/src/serdiv.sv
-${CVA6_REPO_DIR}/core/src/perf_counters.sv
-${CVA6_REPO_DIR}/core/src/ptw.sv
-${CVA6_REPO_DIR}/core/src/ariane_regfile_ff.sv
-${CVA6_REPO_DIR}/core/src/re_name.sv
-${CVA6_REPO_DIR}/core/src/scoreboard.sv // NOTE: scoreboard.sv modified for DSIM (unchanged for other simulators)
-${CVA6_REPO_DIR}/core/src/store_buffer.sv
-${CVA6_REPO_DIR}/core/src/amo_buffer.sv
-${CVA6_REPO_DIR}/core/src/store_unit.sv
-${CVA6_REPO_DIR}/core/src/tlb.sv
-${CVA6_REPO_DIR}/core/src/commit_stage.sv
-${CVA6_REPO_DIR}/core/src/axi_shim.sv
+${CVA6_REPO_DIR}/core/ariane.sv
+${CVA6_REPO_DIR}/core/alu.sv
+${CVA6_REPO_DIR}/core/fpu_wrap.sv  // Note: depends on fpnew_pkg, above
+${CVA6_REPO_DIR}/core/branch_unit.sv
+${CVA6_REPO_DIR}/core/compressed_decoder.sv
+${CVA6_REPO_DIR}/core/controller.sv
+${CVA6_REPO_DIR}/core/csr_buffer.sv
+${CVA6_REPO_DIR}/core/csr_regfile.sv
+${CVA6_REPO_DIR}/core/decoder.sv
+${CVA6_REPO_DIR}/core/ex_stage.sv
+${CVA6_REPO_DIR}/core/instr_realign.sv
+${CVA6_REPO_DIR}/core/id_stage.sv
+${CVA6_REPO_DIR}/core/issue_read_operands.sv
+${CVA6_REPO_DIR}/core/issue_stage.sv
+${CVA6_REPO_DIR}/core/load_unit.sv
+${CVA6_REPO_DIR}/core/load_store_unit.sv
+${CVA6_REPO_DIR}/core/mmu.sv
+${CVA6_REPO_DIR}/core/mult.sv
+${CVA6_REPO_DIR}/core/multiplier.sv
+${CVA6_REPO_DIR}/core/serdiv.sv
+${CVA6_REPO_DIR}/core/perf_counters.sv
+${CVA6_REPO_DIR}/core/ptw.sv
+${CVA6_REPO_DIR}/core/ariane_regfile_ff.sv
+${CVA6_REPO_DIR}/core/re_name.sv
+${CVA6_REPO_DIR}/core/scoreboard.sv // NOTE: scoreboard.sv modified for DSIM (unchanged for other simulators)
+${CVA6_REPO_DIR}/core/store_buffer.sv
+${CVA6_REPO_DIR}/core/amo_buffer.sv
+${CVA6_REPO_DIR}/core/store_unit.sv
+${CVA6_REPO_DIR}/core/tlb.sv
+${CVA6_REPO_DIR}/core/commit_stage.sv
+${CVA6_REPO_DIR}/core/axi_shim.sv
 
 // What is "frontend"?
 ${CVA6_REPO_DIR}/core/frontend/btb.sv
