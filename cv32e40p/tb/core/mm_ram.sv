@@ -471,13 +471,17 @@ module mm_ram
             data_rdata_mux = core_data_rdata;
         end else if(select_rdata_q == RND_STALL) begin
             data_rdata_mux = rnd_stall_rdata;
+            uvmt_cv32e40p_tb.iss_wrap.ram.RND_STALL = data_rdata_mux;
 `ifndef VERILATOR
             `uvm_fatal(MM_RAM_TAG, $sformatf("out of bounds read from %08x\nRandom stall generator is not supported with Verilator", data_addr_i));
 `endif
         end else if (select_rdata_q == RND_NUM) begin
             data_rdata_mux = rnd_num;
+            uvmt_cv32e40p_tb.iss_wrap.ram.RND_NUM = data_rdata_mux;
+
         end else if (select_rdata_q == TICKS) begin
             data_rdata_mux = cycle_count_q;
+            uvmt_cv32e40p_tb.iss_wrap.ram.TICKS = data_rdata_mux;
 `ifndef VERILATOR
             if (cycle_count_overflow_q) begin
                 `uvm_fatal(MM_RAM_TAG, "cycle counter read after overflow");
