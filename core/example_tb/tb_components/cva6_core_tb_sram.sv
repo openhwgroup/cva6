@@ -79,7 +79,7 @@ end
       sync_sram_nx64 #(
         .ADDR_WIDTH($clog2(NUM_WORDS)),
         .DATA_DEPTH(NUM_WORDS),
-        .SIM_INIT (2) // 0: no init, 1: zero init, 2: random init, 3: deadbeef init
+        .SIM_INIT (4) // 0: no init, 1: zero init, 2: random init, 3: deadbeef init, 4: init from file
       ) i_ram (
           .Clk_CI    ( clk_i                     ),
           .Rst_RBI   ( rstn_i                    ),
@@ -102,7 +102,7 @@ module sync_sram_nx64
   parameter ADDR_WIDTH = 10,
   parameter DATA_DEPTH = 1024, // usually 2**ADDR_WIDTH, but can be lower
   parameter SIM_INIT   = 0     // for simulation only, will not be synthesized
-                               // 0: no init, 1: zero init, 2: random init, 3: deadbeef init
+                               // 0: no init, 1: zero init, 2: random init, 3: deadbeef init, 4: init from file
                                // note: on verilator, 2 is not supported. define the VERILATOR macro to work around.
 )(
   input  logic                  Clk_CI,
@@ -125,6 +125,11 @@ module sync_sram_nx64
   logic [DATA_BYTES*8-1:0] RdData_DP;
 
   logic [DATA_BYTES*8-1:0] Mem_DP[DATA_DEPTH-1:0];
+  logic [7:0] Mem_init[0:'hFFFFFF];
+
+  initial begin
+    $readmemh("../Mem_init.txt", Mem_init);
+  end
 
   assign RdData_DO = RdData_DP;
   assign RdData_DP = RdData_DN;
@@ -133,12 +138,16 @@ module sync_sram_nx64
     automatic logic [63:0] val;
     if(Rst_RBI == 1'b0 && SIM_INIT>0) begin
       for(int k=0; k<DATA_DEPTH;k++) begin
-        // 0: no init, 1: zero init, 2: random init, 3: deadbeef init
+        // 0: no init, 1: zero init, 2: random init, 3: deadbeef init, 4: init from file
         if(SIM_INIT==1) val = '0;
     `ifndef VERILATOR
         else if(SIM_INIT==2) void'(randomize(val));
     `endif
-        else val = 64'hdeadbeefdeadbeef;
+        else if(SIM_INIT==3) val = 64'hdeadbeefdeadbeef;
+        else val = {Mem_init[8*k+7], Mem_init[8*k+6],
+                    Mem_init[8*k+5], Mem_init[8*k+4],
+                    Mem_init[8*k+3], Mem_init[8*k+2],
+                    Mem_init[8*k+1], Mem_init[8*k+0]};
         Mem_DP[k] = val;
         //$write("%m @ %0t: Mem_DP[%0d] = %h\n", $time, k, val);
       end
