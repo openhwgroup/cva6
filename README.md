@@ -42,6 +42,7 @@ $ cd core/example_tb
 $ make
 ```
 To run the example_tb you will need Verilator (known to work with V4.108).
+Support for Cadence Xcelium (xrun) and Metrics DSIM is there also.
 
 
 # CVA6 RISC-V CPU
