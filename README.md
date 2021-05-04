@@ -2,6 +2,7 @@
 Functional verification project for the CORE-V family of RISC-V cores.
 
 ## NEWS UPDATES:
+**2021-03-23**: The verificaton environment for the [cv32e40x](https://github.com/openhwgroup/cv32e40x) is up and running.
 **2020-12-16**: The [cv32e40p_v1.0.0](https://github.com/openhwgroup/core-v-verif/releases/tag/22dc5fc) of core-v-verif is released.
 This tag clones the v1.0.0 release of the CV32E40P CORE-V core and will allow you to reproduce the verification environment as it existed at `RTL Freeze`.
 <br>
