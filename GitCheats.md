@@ -103,7 +103,7 @@ $ git remote -v<br>
   \> origin	https://github.com/openhwgroup/core-v-verif (fetch)<br>
   \> origin	https://github.com/openhwgroup/core-v-verif (push)<br>
 
-#### Rebasing a previous commit
+### Rebasing a previous commit
 \# https://stackoverflow.com/questions/3042437/how-to-change-the-commit-author-for-one-specific-commit<br>
 \# https://docs.github.com/en/github/getting-started-with-github/about-git-rebase#an-example-of-using-git-rebase<br>
 $ cd \<working_dir\><br>
