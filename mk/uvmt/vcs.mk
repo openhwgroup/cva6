@@ -130,14 +130,17 @@ endif
 ################################################################################
 
 VCS_FILE_LIST ?= -f $(DV_UVMT_PATH)/uvmt_$(CV_CORE_LC).flist
+VCS_FILE_LIST += -f $(DV_UVMT_PATH)/imperas_iss.flist
+VCS_USER_COMPILE_ARGS += +define+$(CV_CORE_UC)_TRACE_EXECUTION
 ifeq ($(call IS_YES,$(USE_ISS)),YES)
-    VCS_FILE_LIST += -f $(DV_UVMT_PATH)/imperas_iss.flist
-    VCS_USER_COMPILE_ARGS += "+define+ISS +define+$(CV_CORE_UC)_TRACE_EXECUTION"
     VCS_PLUSARGS +="+USE_ISS"
 endif
 
 VCS_RUN_BASE_FLAGS   ?= $(VCS_GUI) \
-                         $(VCS_PLUSARGS) +ntb_random_seed=$(RNDSEED) -sv_lib $(VCS_OVP_MODEL_DPI)
+                        $(VCS_PLUSARGS) +ntb_random_seed=$(RNDSEED) \
+						-sv_lib $(VCS_OVP_MODEL_DPI) \
+						-sv_lib $(DPI_DASM_LIB)
+
 # Simulate using latest elab
 VCS_RUN_FLAGS        ?= 
 VCS_RUN_FLAGS        += $(VCS_RUN_BASE_FLAGS)
@@ -350,5 +353,5 @@ clean_eclipse:
 	rm  -rf workspace
 
 # All generated files plus the clone of the RTL
-clean_all: clean clean_eclipse clean_riscv-dv clean_test_programs clean-bsp clean_compliance clean_embench
+clean_all: clean clean_eclipse clean_riscv-dv clean_test_programs clean-bsp clean_compliance clean_embench clean_dpi_dasm_spike
 	rm -rf $(CV_CORE_PKG)

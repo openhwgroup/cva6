@@ -1,3 +1,3 @@
 {%- macro yesorno(val) -%}
-{%- if val -%}YES{%- else -%}NO{%- endif -%}
+{%- if val == '0' -%}NO{%- elif val == '1' -%}YES{%- elif val == True-%}YES{%- else -%}{{val}}{%- endif -%}
 {%- endmacro -%}

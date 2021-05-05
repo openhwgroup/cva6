@@ -122,16 +122,17 @@ module uvmt_cv32e40x_dut_wrap #(// DUT (riscv_core) parameters.
                  fill_cnt++;
                 rnd_byte = $random();
                 uvmt_cv32e40x_tb.dut_wrap.ram_i.dp_ram_i.mem[index]=rnd_byte;
-                `ifdef ISS
-                uvmt_cv32e40x_tb.iss_wrap.ram.mem[index/4][((((index%4)+1)*8)-1)-:8]=rnd_byte; // convert byte to 32-bit addressing
-                `endif
+                if ($test$plusargs("USE_ISS")) begin
+                  uvmt_cv32e40x_tb.iss_wrap.ram.mem[index/4][((((index%4)+1)*8)-1)-:8]=rnd_byte; // convert byte to 32-bit addressing
+                end                
              end
           end
-          `ifdef ISS
+          if ($test$plusargs("USE_ISS")) begin
              `uvm_info("DUT_WRAP", $sformatf("Filled 0d%0d RTL and ISS memory bytes with random values", fill_cnt), UVM_LOW)
-          `else
+          end
+          else begin
              `uvm_info("DUT_WRAP", $sformatf("Filled 0d%0d RTL memory bytes with random values", fill_cnt), UVM_LOW)
-          `endif
+          end
         end
         else begin
           `uvm_error("DUT_WRAP", "No firmware specified!")
@@ -186,6 +187,9 @@ module uvmt_cv32e40x_dut_wrap #(// DUT (riscv_core) parameters.
          .data_addr_o            ( data_addr                      ),
          .data_wdata_o           ( data_wdata                     ),
          .data_rdata_i           ( data_rdata                     ),
+         .data_atop_o            (                                ), //TODO: Temp ignore
+         .data_err_i             ( '0                             ), //TODO: Temp tie off
+         .data_exokay_i          ( '0                             ), //TODO: Temp tie off
 
          .irq_i                  ( irq                            ),
          .irq_ack_o              ( irq_ack                        ),

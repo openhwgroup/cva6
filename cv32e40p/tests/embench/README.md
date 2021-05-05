@@ -89,10 +89,22 @@ unique files, dependencies in the core specific makefiles also exist.
 Copy the embench configuration directory from cv32e40p to the new core:
 >/core-v-verif/\[core\]/tests/embench
 
+Copy the embench makefile defines(EMBENCH_*) from cv32e40p to the new core:
+>/core-v-verif/\[core\]/sim/Common.mk
+
 Copy over the embench directory under *programs*. This should be empty except for a readme file.
 >/core-v-verif/\[core\]/tests/programs/embench
 
-If there are no differences in configuration necessary compared to the cv32e40p, you are now done, and can
+
+Make the following changes to the .gitignore files listed:<br>
+| File                                         | Add line |
+|----------------------------------------------|----------|
+| /core-v-verif/\[core\]/tests/.gitignore      | emb_*/   |
+| /core-v-verif/\[core\]/vendor_lib/.gitignore | embench/ |
+
+
+
+<br>If there are no differences in configuration necessary compared to the cv32e40p, you are now done, 
 run the EMBench scripts in the manner described above. However, if there are notable differences, 
 a quick description on what to check follows. For full details, please check the EMBench [documentation](https://github.com/embench/embench-iot/blob/master/doc/README.md).<br>
 
