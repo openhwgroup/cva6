@@ -177,16 +177,14 @@ interface uvmt_cv32e40x_core_cntrl_if (
     hart_id           = 32'h0000_0000;
 
     // If a override is provided via plusarg then set bootstrap pins and adjust ISS model
-    if ($value$plusargs("mtvec_addr=0x%x", mtvec_addr)) begin
+    if ($value$plusargs("mtvec_addr=0x%x", mtvec_addr) && $test$plusargs("USE_ISS")) begin
       string override;
       int fh;
 
-`ifdef ISS
       override = $sformatf("--override root/cpu/mtvec=0x%08x", {mtvec_addr[31:8], 8'h01});
       fh = $fopen("ovpsim.ic", "a");      
       $fwrite(fh, " %s\n", override);
-      $fclose(fh);
-`endif
+      $fclose(fh);      
     end
 
     qsc_stat_str =                $sformatf("\tpulp_clock_en     = %0d\n", pulp_clock_en);

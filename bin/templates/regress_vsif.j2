@@ -27,19 +27,19 @@ session {{session}} {
     top_dir: {{results_path}}/vmgr_sessions;
 {% if lsf %}
     drm: lsf;
-    max_runs_in_parallel: 30;
+    max_runs_in_parallel: {{parallel}};
     queuing_policy: round_robin;
     default_dispatch_parameters: <text>{{lsf}}</text>;
 {% endif %}
 }
 
-group cv32e40p {
+group {{project}} {
 {% if sve %}
     sve_name: {{sve}};
 {% endif %}
 {% for b in unique_builds.values() %}
     // Build:{{b.name}} {{b.description}}    
-    pre_group_script: 'cd {{b.abs_dir}} && {{b.cmd}} CV_CORE={{project}} CFG={{cfg}} CV_SIM_PREFIX= SIMULATOR={{b.simulator}} USE_ISS={{b.iss}} COV={{regress_macros.yesorno(b.cov)}} {{makeargs}}';
+    pre_group_script: 'cd {{b.abs_dir}} && {{b.cmd}} CV_CORE={{project}} CFG={{cfg}} CV_SIM_PREFIX= SIMULATOR={{b.simulator}} COV={{regress_macros.yesorno(b.cov)}} {{makeargs}}';
 
 {% endfor %}
 {% for r in regressions %}

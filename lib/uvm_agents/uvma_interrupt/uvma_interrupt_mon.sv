@@ -137,23 +137,23 @@ task uvma_interrupt_mon_c::monitor_irq();
 endtask : monitor_irq
 
 task uvma_interrupt_mon_c::monitor_irq_iss();
-`ifdef ISS
-   while(1) begin
-      @(cntxt.vif.mon_cb);
+   if ($test$plusargs("USE_ISS")) begin   
+      while(1) begin
+         @(cntxt.vif.mon_cb);
 
-      if (cntxt.vif.mon_cb.irq_ack) begin         
-         uvma_interrupt_mon_trn_c mon_trn = uvma_interrupt_mon_trn_c::type_id::create("mon_irq_trn");
-         mon_trn.action = UVMA_INTERRUPT_MON_ACTION_IRQ;
-         mon_trn.id = cntxt.vif.mon_cb.irq_id;
+         if (cntxt.vif.mon_cb.irq_ack) begin         
+            uvma_interrupt_mon_trn_c mon_trn = uvma_interrupt_mon_trn_c::type_id::create("mon_irq_trn");
+            mon_trn.action = UVMA_INTERRUPT_MON_ACTION_IRQ;
+            mon_trn.id = cntxt.vif.mon_cb.irq_id;
 
-         // Wait for the ISS to enter
-         wait (cntxt.vif.deferint == 1'b0);
-         wait (cntxt.vif.ovp_cpu_state_stepi == 1'b1);
+            // Wait for the ISS to enter
+            wait (cntxt.vif.deferint == 1'b0);
+            wait (cntxt.vif.ovp_cpu_state_stepi == 1'b1);
 
-         ap_iss.write(mon_trn);
+            ap_iss.write(mon_trn);
+         end
       end
    end
-`endif
 endtask : monitor_irq_iss
 
 

@@ -48,16 +48,18 @@ XRUN_COMP_FLAGS  ?= -64bit -disable_sem2009 -access +rwc \
                     -nowarn UEXPSC \
                     -sv -uvm -uvmhome $(XRUN_UVMHOME_ARG) \
                     $(TIMESCALE) $(SV_CMP_FLAGS)
-XRUN_RUN_BASE_FLAGS   ?= -64bit $(XRUN_GUI) -licqueue +UVM_VERBOSITY=$(XRUN_UVM_VERBOSITY) \
-                         $(XRUN_PLUSARGS) -svseed $(RNDSEED) -sv_lib $(OVP_MODEL_DPI)
+XRUN_RUN_BASE_FLAGS ?= -64bit $(XRUN_GUI) -licqueue +UVM_VERBOSITY=$(XRUN_UVM_VERBOSITY) \
+                       $(XRUN_PLUSARGS) -svseed $(RNDSEED) -sv_lib $(OVP_MODEL_DPI)
 XRUN_GUI         ?=
 XRUN_SINGLE_STEP ?=
 XRUN_ELAB_COV     = -covdut uvmt_$(CV_CORE_LC)_tb -coverage b:e:f:u
 XRUN_ELAB_COVFILE = -covfile $(abspath $(MAKE_PATH)/../tools/xrun/covfile.tcl)
 XRUN_RUN_COV      = -covscope uvmt_$(CV_CORE_LC)_tb \
 					-nowarn CGDEFN
+XRUN_RUN_BASE_FLAGS += -sv_lib $(DPI_DASM_LIB)
 
 XRUN_UVM_VERBOSITY ?= UVM_MEDIUM
+DPI_INCLUDE        ?= $(shell dirname $(shell which xrun))/../include
 
 ###############################################################################
 # Common QUIET flag defaults to -quiet unless VERBOSE is set
@@ -82,13 +84,22 @@ endif
 ################################################################################
 # Waveform generation
 # WAVES=YES enables waveform generation for entire testbench
+# WAVES_MEM=YES enables tracing memories and large vectors
 # ADV_DEBUG=YES will enable Indago waves, default is to generate SimVision waves
-ifeq ($(call IS_YES,$(WAVES)),YES)
-ifeq ($(call IS_YES,$(ADV_DEBUG)),YES)
-XRUN_RUN_WAVES_FLAGS = -input $(abspath $(MAKE_PATH)/../tools/xrun/indago.tcl)
+ifeq ($(call IS_YES,$(WAVES_MEM)),YES)
+  ifeq ($(call IS_YES,$(ADV_DEBUG)),YES)
+    XRUN_RUN_WAVES_FLAGS = -input $(abspath $(MAKE_PATH)/../tools/xrun/indago_mem.tcl)
+  else
+    XRUN_RUN_WAVES_FLAGS = -input $(abspath $(MAKE_PATH)/../tools/xrun/probe_mem.tcl)
+  endif
 else
-XRUN_RUN_WAVES_FLAGS = -input $(abspath $(MAKE_PATH)/../tools/xrun/probe.tcl)
-endif
+  ifeq ($(call IS_YES,$(WAVES)),YES)
+    ifeq ($(call IS_YES,$(ADV_DEBUG)),YES)
+      XRUN_RUN_WAVES_FLAGS = -input $(abspath $(MAKE_PATH)/../tools/xrun/indago.tcl)
+    else
+      XRUN_RUN_WAVES_FLAGS = -input $(abspath $(MAKE_PATH)/../tools/xrun/probe.tcl)
+    endif
+  endif
 endif
 
 ################################################################################
@@ -145,13 +156,10 @@ endif
 XRUN_UVM_MACROS_INC_FILE = $(DV_UVMT_PATH)/uvmt_$(CV_CORE_LC)_uvm_macros_inc.sv
 
 XRUN_FILE_LIST ?= -f $(DV_UVMT_PATH)/uvmt_$(CV_CORE_LC).flist
+XRUN_FILE_LIST += -f $(DV_UVMT_PATH)/imperas_iss.flist
+XRUN_USER_COMPILE_ARGS += +define+$(CV_CORE_UC)_TRACE_EXECUTION
 ifeq ($(call IS_YES,$(USE_ISS)),YES)
-    XRUN_FILE_LIST += -f $(DV_UVMT_PATH)/imperas_iss.flist
-    XRUN_USER_COMPILE_ARGS += +define+ISS+$(CV_CORE_UC)_TRACE_EXECUTION
     XRUN_PLUSARGS +="+USE_ISS"
-#     XRUN_PLUSARGS += +USE_ISS +ovpcfg="--controlfile $(OVP_CTRL_FILE)"
-else
-	XRUN_USER_COMPILE_ARGS += +define+$(CV_CORE_UC)_TRACE_EXECUTION
 endif
 
 # Simulate using latest elab
@@ -432,5 +440,5 @@ clean_eclipse:
 	rm  -rf workspace
 
 # All generated files plus the clone of the RTL
-clean_all: clean clean_eclipse clean_riscv-dv clean_test_programs clean-bsp clean_compliance clean_embench
+clean_all: clean clean_eclipse clean_riscv-dv clean_test_programs clean-bsp clean_compliance clean_embench clean_dpi_dasm_spike
 	rm -rf $(CV_CORE_PKG)

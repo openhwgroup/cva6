@@ -35,6 +35,7 @@ class uvme_cv32e40x_cfg_c extends uvm_object;
    //rand int unsigned             debug_clk_period;
    
    // Agent cfg handles
+   rand uvma_isacov_cfg_c     isacov_cfg;
    rand uvma_clknrst_cfg_c    clknrst_cfg;
    rand uvma_interrupt_cfg_c  interrupt_cfg;
    rand uvma_debug_cfg_c      debug_cfg;
@@ -56,6 +57,7 @@ class uvme_cv32e40x_cfg_c extends uvm_object;
       `uvm_field_int (                         sys_clk_period            , UVM_DEFAULT + UVM_DEC)
       //`uvm_field_int (                         debug_clk_period            , UVM_DEFAULT + UVM_DEC)
       
+      `uvm_field_object(isacov_cfg, UVM_DEFAULT)
       `uvm_field_object(clknrst_cfg, UVM_DEFAULT)
       `uvm_field_object(interrupt_cfg, UVM_DEFAULT)
       `uvm_field_object(debug_cfg  , UVM_DEFAULT)
@@ -90,8 +92,15 @@ class uvme_cv32e40x_cfg_c extends uvm_object;
       obi_instr_cfg.read_enabled  == 1;
       obi_data_cfg.write_enabled  == 1;
       obi_data_cfg.read_enabled   == 1;
+      isacov_cfg.enabled              == 0;  // TODO don't need "== 0" after uvma_isacov has matured enough
+      isacov_cfg.ext_i_enabled        == 1;
+      isacov_cfg.ext_m_enabled        == 1;
+      isacov_cfg.ext_c_enabled        == 1;
+      isacov_cfg.ext_zifencei_enabled == 1;
+      isacov_cfg.ext_zicsr_enabled    == 1;
 
       if (is_active == UVM_ACTIVE) {
+         isacov_cfg.is_active    == UVM_PASSIVE;
          clknrst_cfg.is_active   == UVM_ACTIVE;
          interrupt_cfg.is_active == UVM_ACTIVE;
          debug_cfg.is_active     == UVM_ACTIVE;
@@ -100,6 +109,7 @@ class uvme_cv32e40x_cfg_c extends uvm_object;
       }
       
       if (trn_log_enabled) {
+         isacov_cfg.trn_log_enabled    == 1;
          clknrst_cfg.trn_log_enabled   == 1;
          interrupt_cfg.trn_log_enabled == 1;
          debug_cfg.trn_log_enabled     == 1;
@@ -108,6 +118,7 @@ class uvme_cv32e40x_cfg_c extends uvm_object;
       }
 
       if (cov_model_enabled) {
+         isacov_cfg.cov_model_enabled    == 1;
          obi_instr_cfg.cov_model_enabled == 1;
          obi_data_cfg.cov_model_enabled  == 1;
       }
@@ -124,7 +135,8 @@ endclass : uvme_cv32e40x_cfg_c
 function uvme_cv32e40x_cfg_c::new(string name="uvme_cv32e40x_cfg");
    
    super.new(name);
-   
+
+   isacov_cfg = uvma_isacov_cfg_c::type_id::create("isacov_cfg");
    clknrst_cfg  = uvma_clknrst_cfg_c::type_id::create("clknrst_cfg");
    interrupt_cfg = uvma_interrupt_cfg_c::type_id::create("interrupt_cfg");
    debug_cfg = uvma_debug_cfg_c    ::type_id::create("debug_cfg");
