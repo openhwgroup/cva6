@@ -45,9 +45,17 @@ module perf_counters import ariane_pkg::*; (
 
   logic [riscv::CSR_MIF_EMPTY : riscv::CSR_ML1_ICACHE_MISS][riscv::XLEN-1:0] perf_counter_d, perf_counter_q;
 
+
+   logic [$clog2(NR_COMMIT_PORTS):0] inc_load, inc_store, inc_branch, inc_calls, inc_ret;
+
   always_comb begin : perf_counters
     perf_counter_d = perf_counter_q;
     data_o = 'b0;
+    inc_load   = '0;
+    inc_store  = '0;
+    inc_branch = '0;
+    inc_calls  = '0;
+    inc_ret    = '0;
 
     // don't increment counters in debug mode
     if (!debug_mode_i) begin
@@ -70,25 +78,31 @@ module perf_counters import ariane_pkg::*; (
       for (int unsigned i = 0; i < NR_COMMIT_PORTS; i++) begin
         if (commit_ack_i[i]) begin
           if (commit_instr_i[i].fu == LOAD)
-            perf_counter_d[riscv::CSR_MLOAD] = perf_counter_q[riscv::CSR_MLOAD] + 1'b1;
+            inc_load += 1'b1;
 
           if (commit_instr_i[i].fu == STORE)
-            perf_counter_d[riscv::CSR_MSTORE] = perf_counter_q[riscv::CSR_MSTORE] + 1'b1;
+            inc_store += 1'b1;
 
           if (commit_instr_i[i].fu == CTRL_FLOW)
-            perf_counter_d[riscv::CSR_MBRANCH_JUMP] = perf_counter_q[riscv::CSR_MBRANCH_JUMP] + 1'b1;
+            inc_branch += 1'b1;
 
           // The standard software calling convention uses register x1 to hold the return address on a call
           // the unconditional jump is decoded as ADD op
-          if (commit_instr_i[i].fu == CTRL_FLOW && commit_instr_i[i].op == '0 && (commit_instr_i[i].rd == 'd1 || commit_instr_i[i].rd == 'd5) ||
-             (commit_instr_i[i].op == JALR && (commit_instr_i[i].rd == 'd1 || commit_instr_i[i].rd == 'd5)) )
-            perf_counter_d[riscv::CSR_MCALL] = perf_counter_q[riscv::CSR_MCALL] + 1'b1;
+          if ( (commit_instr_i[i].fu == CTRL_FLOW && commit_instr_i[i].op == '0 && (commit_instr_i[i].rd == 'd1 || commit_instr_i[i].rd == 'd5)) ||
+               (commit_instr_i[i].op == JALR && (commit_instr_i[i].rd == 'd1 || commit_instr_i[i].rd == 'd5)) )
+            inc_calls += 1'b1;
 
           // Return from call
           if (commit_instr_i[i].op == JALR && (commit_instr_i[i].rd == 'd0))
-            perf_counter_d[riscv::CSR_MRET] = perf_counter_q[riscv::CSR_MRET] + 1'b1;
+            inc_ret += 1'b1;
         end
       end
+
+      perf_counter_d[riscv::CSR_MLOAD        ] = perf_counter_q[riscv::CSR_MLOAD        ] + inc_load;
+      perf_counter_d[riscv::CSR_MSTORE       ] = perf_counter_q[riscv::CSR_MSTORE       ] + inc_store;
+      perf_counter_d[riscv::CSR_MBRANCH_JUMP ] = perf_counter_q[riscv::CSR_MBRANCH_JUMP ] + inc_branch;
+      perf_counter_d[riscv::CSR_MCALL        ] = perf_counter_q[riscv::CSR_MCALL        ] + inc_calls;
+      perf_counter_d[riscv::CSR_MRET         ] = perf_counter_q[riscv::CSR_MRET         ] + inc_ret;
 
       if (ex_i.valid)
         perf_counter_d[riscv::CSR_MEXCEPTION] = perf_counter_q[riscv::CSR_MEXCEPTION] + 1'b1;
