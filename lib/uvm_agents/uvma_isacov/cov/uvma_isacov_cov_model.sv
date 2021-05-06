@@ -193,6 +193,7 @@ covergroup cg_instr(string name,
   option.name = name;
 
   cp_instr: coverpoint(instr.name);
+  cp_instr_prev: coverpoint(instr.name);
 
   cp_group: coverpoint (instr.group) {
     bins LOAD = {LOAD_GROUP};
@@ -744,8 +745,8 @@ function bit uvma_isacov_cov_model_c::is_csr_hazard(uvma_isacov_instr_c instr,
 
   // CSR hazard, previous instruction wrote to a valid CSR
   if (instr_prev.group inside {CSR_GROUP} &&
-      instr.is_csr_write() &&
-      !cfg.cfg_illegal_csr[instr.csr])
+      instr_prev.is_csr_write() &&
+      !cfg.cfg_illegal_csr[instr_prev.csr])
     return 1;
 
   return 0;
