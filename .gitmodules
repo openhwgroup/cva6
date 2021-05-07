@@ -1,57 +1,57 @@
-[submodule "src/axi_mem_if"]
-	path = src/axi_mem_if
+[submodule "corev_apu/axi_mem_if"]
+	path = corev_apu/axi_mem_if
 	url = https://github.com/pulp-platform/axi_mem_if.git
-[submodule "src/axi_node"]
-	path = src/axi_node
+[submodule "corev_apu/axi_node"]
+	path = corev_apu/axi_node
 	url = https://github.com/pulp-platform/axi_node.git
-[submodule "src/fpga-support"]
-	path = src/fpga-support
+[submodule "corev_apu/fpga-support"]
+	path = corev_apu/fpga-support
 	url = https://github.com/pulp-platform/fpga-support.git
-[submodule "src/common_cells"]
-	path = src/common_cells
+[submodule "common/submodules/common_cells"]
+	path = common/submodules/common_cells
 	url = https://github.com/pulp-platform/common_cells.git
-[submodule "src/axi"]
-	path = src/axi
+[submodule "corev_apu/axi"]
+	path = corev_apu/axi
 	url = https://github.com/pulp-platform/axi.git
-[submodule "src/register_interface"]
-	path = src/register_interface
+[submodule "corev_apu/register_interface"]
+	path = corev_apu/register_interface
 	url = https://github.com/pulp-platform/register_interface.git
-[submodule "fpga/src/apb_uart"]
-	path = fpga/src/apb_uart
+[submodule "corev_apu/fpga/src/apb_uart"]
+	path = corev_apu/fpga/src/apb_uart
 	url = https://github.com/pulp-platform/apb_uart.git
-[submodule "fpga/src/apb_node"]
-	path = fpga/src/apb_node
+[submodule "corev_apu/fpga/src/apb_node"]
+	path = corev_apu/fpga/src/apb_node
 	url = https://github.com/pulp-platform/apb_node.git
-[submodule "fpga/src/axi2apb"]
-    path = fpga/src/axi2apb
-    url = https://github.com/pulp-platform/axi2apb.git
-[submodule "fpga/src/axi_slice"]
-    path = fpga/src/axi_slice
-    url = https://github.com/pulp-platform/axi_slice.git
-[submodule "src/tech_cells_generic"]
-	path = src/tech_cells_generic
+[submodule "corev_apu/fpga/src/axi2apb"]
+	path = corev_apu/fpga/src/axi2apb
+	url = https://github.com/pulp-platform/axi2apb.git
+[submodule "corev_apu/fpga/src/axi_slice"]
+	path = corev_apu/fpga/src/axi_slice
+	url = https://github.com/pulp-platform/axi_slice.git
+[submodule "corev_apu/src/tech_cells_generic"]
+	path = corev_apu/src/tech_cells_generic
 	url = https://github.com/pulp-platform/tech_cells_generic.git
-[submodule "src/fpu"]
-	path = src/fpu
+[submodule "core/fpu"]
+	path = core/fpu
 	url = https://github.com/pulp-platform/fpnew.git
-[submodule "fpga/src/ariane-ethernet"]
-	path = fpga/src/ariane-ethernet
+[submodule "corev_apu/fpga/src/ariane-ethernet"]
+	path = corev_apu/fpga/src/ariane-ethernet
 	url = https://github.com/lowRISC/ariane-ethernet.git
-[submodule "src/axi_riscv_atomics"]
-	path = src/axi_riscv_atomics
+[submodule "corev_apu/src/axi_riscv_atomics"]
+	path = corev_apu/src/axi_riscv_atomics
 	url = https://github.com/pulp-platform/axi_riscv_atomics.git
-[submodule "src/riscv-dbg"]
-	path = src/riscv-dbg
+[submodule "corev_apu/riscv-dbg"]
+	path = corev_apu/riscv-dbg
 	url = https://github.com/pulp-platform/riscv-dbg.git
-[submodule "src/rv_plic"]
-	path = src/rv_plic
+[submodule "corev_apu/rv_plic"]
+	path = corev_apu/rv_plic
 	url = https://github.com/pulp-platform/rv_plic.git
-[submodule "fpga/src/apb_timer"]
-	path = fpga/src/apb_timer
+[submodule "corev_apu/fpga/src/apb_timer"]
+	path = corev_apu/fpga/src/apb_timer
 	url = https://github.com/pulp-platform/apb_timer.git
-[submodule "tb/dromajo"]
-	path = tb/dromajo
+[submodule "corev_apu/tb/dromajo"]
+	path = corev_apu/tb/dromajo
 	url = https://github.com/kabylkas/dromajo.git
-[submodule "tb/common_verification"]
-	path = tb/common_verification
+[submodule "corev_apu/tb/common_verification"]
+	path = corev_apu/tb/common_verification
 	url = https://github.com/pulp-platform/common_verification.git
