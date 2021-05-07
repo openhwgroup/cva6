@@ -234,7 +234,7 @@ module uvmt_cv32e40p_step_compare
     endfunction // compare
     
     int cycles = 0;
-    always @(posedge uvmt_cv32e40p_tb.dut_wrap.cv32e40p_wrapper_i.core_i.clk) begin
+    always @(posedge `CV32E40P_CORE.clk) begin
         cycles++;
     end
 
