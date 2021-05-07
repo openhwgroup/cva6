@@ -1,6 +1,6 @@
 # Verification Plans
 
-This directory contains all common ISA Verification Plans and plan templates applicable all CORE-V cores.
+This directory contains Verification Plans and plan templates applicable all CORE-V cores.
 
 Refer to the co-locted VerificationPlanning101.md for a description of the philosophy and implementation of CORE-V verification plans.
 
