@@ -14,8 +14,7 @@ builds:
   uvmt_cv32e40x:
     # required: the make command to create the build
     cmd: make comp
-    dir: cv32e40x/sim/uvmt    
-    iss: 1
+    dir: cv32e40x/sim/uvmt
 
 # List of tests
 tests:

@@ -39,6 +39,7 @@ import os
 import sys
 import subprocess
 import jinja2
+import glob
 import re
 
 
@@ -216,7 +217,10 @@ def main():
   #Check if benchmark run succeeded
   if not run_passed(res.stdout, args.type):
     logging.fatal(f"EMBench benchmark run failed")
-
+    log_file = get_log_file(args.core, paths, args.type)
+    if log_file:
+        logging.info('For more debug check EMBench log: {}'.format(log_file))
+    sys.exit(1)
 
   if check_result(res.stdout, args.target, args.type) and args.target != 0:
     print(f"Benchmark run met target")
@@ -324,6 +328,7 @@ def build_paths(core):
   paths['libcfg'] = paths['core'] + '/tests/embench/config/corev32'
   paths['libpy'] = paths['core'] + '/tests/embench/pylib'
   paths['vlib'] = paths['core'] + '/vendor_lib'
+  paths['emb_logs'] = paths['core'] + '/vendor_lib/embench/logs'
   paths['make'] = paths['core'] + '/sim/uvmt'
   paths['embench'] = paths['vlib'] + '/embench'
   paths['emcfg'] = paths['embench'] + '/config/corev32'
@@ -390,6 +395,17 @@ def check_python_version(major, minor):
         log.error('ERROR: Requires Python {mjr}.{mnr} or later'.format(mjr=major, mnr=minor))
         sys.exit(1)
 
+def get_log_file(core, paths, log_type):
+    '''Find the log file from EMBench by looking for the latest touched file'''
+    last_mtime = 0
+    file = None    
+    for f in glob.glob(os.path.join(paths['emb_logs'], '{}-*.log'.format(log_type))):
+        if last_mtime < os.stat(f).st_mtime:
+            last_mtime = os.stat(f).st_mtime
+            file = f
+
+    print('Latest log = {}'.format(file))
+    return file
 
 #run main
 if __name__ == '__main__':

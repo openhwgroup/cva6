@@ -73,6 +73,7 @@ module uvmt_cv32e40x_step_compare
    bit  miscompare;
    bit  is_stall_sim = 0;
    bit  ignore_dpc_check = 0;
+   bit  use_iss = 0;
 
   // FIXME:strichmo:when running random interrupts and random debug requests it is possible to enter debug mode 
   // (while also acking an interrupt) when the debug program counter may or may not yet be pointing to the interrupt
@@ -88,6 +89,11 @@ module uvmt_cv32e40x_step_compare
     end
   end
 
+  initial begin
+    if ($test$plusargs("USE_ISS"))
+      use_iss = 1;
+  end
+  
   // Set the is_stall_sim flag if random stalls are enabled
   // This will turn off some unpredictable checks:
   // - CSR wire checks
@@ -155,7 +161,7 @@ module uvmt_cv32e40x_step_compare
       end
 
       // Compare CSR's
-      `ifdef ISS
+      if (use_iss) begin
         foreach(`CV32E40X_RM_RVVI_STATE.csr[index]) begin
            step_compare_if.num_csr_checks++;
            ignore = 0;
@@ -222,9 +228,8 @@ module uvmt_cv32e40x_step_compare
            if (!ignore)
              check_32bit(.compared(index), .expected(`CV32E40X_RM_RVVI_STATE.csr[index]), .actual(csr_val));
 
-        end // foreach (ovp.cpu.csr[index])
-        
-      `endif      
+        end // foreach (ovp.cpu.csr[index])        
+      end // if (use_iss)
     endfunction // compare
     
     // RTL->RM CSR : mcycle, minstret, mcycleh, minstreth
@@ -270,86 +275,88 @@ module uvmt_cv32e40x_step_compare
    initial state <= IDLE; // cause an event for always @*
    
    always @(*) begin
-      case (state)
-        IDLE: begin
-            state <= RTL_STEP;
-        end
-        
-        RTL_STEP: begin
-            clknrst_if.start_clk();
-            fork
-                begin
-                    @step_compare_if.riscv_retire;
-                    clknrst_if.stop_clk();
-                    state <= RTL_VALID;
-                end
-                begin
-                    @step_compare_if.riscv_trap;
-                    state <= RTL_TRAP;
-                end
-                begin
-                    @step_compare_if.riscv_halt;
-                    state <= RTL_HALT;
-                end
-            join_any
-            disable fork;
-        end
+      if (use_iss) begin
+        case (state)
+          IDLE: begin
+              state <= RTL_STEP;
+          end
+          
+          RTL_STEP: begin
+              clknrst_if.start_clk();
+              fork
+                  begin
+                      @step_compare_if.riscv_retire;
+                      clknrst_if.stop_clk();
+                      state <= RTL_VALID;
+                  end
+                  begin
+                      @step_compare_if.riscv_trap;
+                      state <= RTL_TRAP;
+                  end
+                  begin
+                      @step_compare_if.riscv_halt;
+                      state <= RTL_HALT;
+                  end
+              join_any
+              disable fork;
+          end
 
-        RTL_VALID: begin
-            state <= RM_STEP;
-        end
-        
-        RTL_TRAP: begin
-            //state <= RM_STEP; // TODO: RTL/RVVI needs additional work
-            state <= RTL_STEP;
-        end
-        
-        RTL_HALT: begin
-            state <= RTL_STEP;
-        end
+          RTL_VALID: begin
+              state <= RM_STEP;
+          end
+          
+          RTL_TRAP: begin
+              //state <= RM_STEP; // TODO: RTL/RVVI needs additional work
+              state <= RTL_STEP;
+          end
+          
+          RTL_HALT: begin
+              state <= RTL_STEP;
+          end
 
-        RM_STEP: begin
-            pushRTL2RM("ret_rtl");
-            `CV32E40X_RM_RVVI_CONTROL.stepi();
-            fork
-                begin
-                    @step_compare_if.ovp_cpu_valid;
-                    ->`CV32E40X_TRACER.ovp_retire;
-                    state <= RM_VALID;
-                end
-                begin
-                    @step_compare_if.ovp_cpu_trap;
-                    state <= RM_TRAP;
-                end
-                begin
-                    @step_compare_if.ovp_cpu_halt;
-                    state <= RM_HALT;
-                end
-            join_any
-            disable fork;
-        end
+          RM_STEP: begin
+              pushRTL2RM("ret_rtl");
+              `CV32E40X_RM_RVVI_CONTROL.stepi();
+              fork
+                  begin
+                      @step_compare_if.ovp_cpu_valid;
+                      ->`CV32E40X_TRACER.ovp_retire;
+                      state <= RM_VALID;
+                  end
+                  begin
+                      @step_compare_if.ovp_cpu_trap;
+                      state <= RM_TRAP;
+                  end
+                  begin
+                      @step_compare_if.ovp_cpu_halt;
+                      state <= RM_HALT;
+                  end
+              join_any
+              disable fork;
+          end
 
-        RM_VALID: begin
-            state <= CMP;
-        end
-        
-        RM_TRAP: begin
-            //state <= CMP; // TODO: needs enabling after RTL/RVVI fix
-            state <= RM_STEP;
-        end
-        
-        RM_HALT: begin
-            state <= RM_STEP;
-        end
+          RM_VALID: begin
+              state <= CMP;
+          end
+          
+          RM_TRAP: begin
+              //state <= CMP; // TODO: needs enabling after RTL/RVVI fix
+              state <= RM_STEP;
+          end
+          
+          RM_HALT: begin
+              state <= RM_STEP;
+          end
 
-        CMP: begin 
-             compare();
-             ->ev_compare;
-             instruction_count += 1;           
-             //state <= RTL_STEP;
-             state <= IDLE;
-        end
-      endcase // case (state)
+          CMP: begin 
+              compare();
+              ->ev_compare;
+              instruction_count += 1;           
+              //state <= RTL_STEP;
+              state <= IDLE;
+          end
+        endcase // case (state)
+      end
    end
 
    always @(instruction_count) begin

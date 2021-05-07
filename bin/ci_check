@@ -79,6 +79,7 @@ parser.add_argument("-c", "--check_only",    help="Check previosu results (do no
 parser.add_argument("-k", "--keep",          help="Keep previous cloned or generated files",          action="store_true")
 parser.add_argument("-v", "--verilator",     help="Run Verilator on the CORE testbench",              action="store_true")
 parser.add_argument("-u", "--no_uvm",        help="DO NOT run CI regression on the UVM testbench",    action="store_true")
+parser.add_argument('--iss',                 help='Force USE_ISS flag to each test run (use 0 or 1), default: Enabled')
 parser.add_argument("--repo",                help="Use this repo for the RTL, not one in Makefile",   type=str)
 parser.add_argument("--branch",              help="Use this branch for the RTL, not one in Makefile", type=str)
 parser.add_argument("--hash",                help="Use this hash for the RTL, not one in Makefile",   type=str)
@@ -183,7 +184,13 @@ def load_regress_yaml(regression):
     '''Load the regression yaml and return the dictionary'''
     full_regression = os.path.join(topdir, '{}/regress'.format(args.core.lower()), regression + '.yaml')
     fh = open(full_regression, 'r')
-    dict = yaml.load(fh)
+    # Newer PyYAMLs must specify explicit loader (policy) or will issue warnings
+    # Older PyYAMLs will not support the Loader argument
+    # So try the new way first, then catch to the old way
+    try:
+        dict = yaml.load(fh, Loader=yaml.FullLoader)
+    except AttributeError:
+        dict = yaml.load(fh)
     fh.close()
 
     return dict
@@ -339,10 +346,16 @@ if (uvm):
                     except KeyError:
                         num = 1
 
-                    try:                    
-                        iss = key['iss']
-                    except KeyError:
-                        iss = 1
+                    # The iss command-line switch takes precedence,
+                    # Otherwise use what is in the regression yaml if defined
+                    # Otherwise set to 1                    
+                    if args.iss != None:
+                        iss = int(args.iss)
+                    else:
+                        try:                    
+                            iss = key['iss']
+                        except KeyError:
+                            iss = 1
 
                     for n in range(num):                    
                         # Add directory
