@@ -1,7 +1,27 @@
+<!--
+
+ Copyright 2020, 2021 OpenHW Group
+
+ Licensed under the Solderpad Hardware Licence, Version 2.0 (the "License");
+ you may not use this file except in compliance with the License.
+ You may obtain a copy of the License at
+
+     https://solderpad.org/licenses/
+
+ Unless required by applicable law or agreed to in writing, software
+ distributed under the License is distributed on an "AS IS" BASIS,
+ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ See the License for the specific language governing permissions and
+ limitations under the License.
+
+ SPDX-License-Identifier: Apache-2.0 WITH SHL-2.0
+
+-->
+
 # How to Write a Verification Plan (Testplan)
 Verification plans are documents that defines _what_ is to be verified.  They go by many names including Testplan, DV plan or just Vplan.  A complete, high quality verification plan can be the most valuable item produced by a verification project.
 ## Format of a Verificaton Plan
-CORE-V projects use spreadsheets to capture Testplans.  I know, I know, we _all_ hate spreadsheets, but they really are the best format for this type of data.  The template for the spreadsheet is simple enough that you can use either Microsoft Office Excel or LibreOffice Calc.  The Verification Plan [template](https://github.com/openhwgroup/core-v-docs/blob/master/verif/CV32E40P/VerificationPlan/CORE-V_VerifPlan_Template.xlsx) for the CV32E40P is located at the root of the [VerificationPlan](https://github.com/openhwgroup/core-v-docs/blob/master/verif/CV32E40P/VerificationPlan) directory.
+CORE-V projects use spreadsheets to capture Testplans<sup>1</sup>. The template for the spreadsheet is simple enough that you can use either Microsoft Office Excel or LibreOffice Calc.  The Verification Plan [template](https://github.com/openhwgroup/core-v-docs/blob/master/verif/CV32E40P/VerificationPlan/CORE-V_VerifPlan_Template.xlsx) for the CV32E40P is located at the root of the [VerificationPlan](https://github.com/openhwgroup/core-v-docs/blob/master/verif/CV32E40P/VerificationPlan) directory.
 ## Verification Planning
 A key activity of any verification effort is to capture a Verification Plan.  The purpose of a verification plan is to identify what features need to be verified; the success criteria of the feature and the coverage metrics for testing the feature.  Testplans also allow us to reason about the capabilities of the verification environment.
 
@@ -46,10 +66,9 @@ A summary of what stimulus and/or configuration needs to be generated/checked/co
 * Program counter updates appropriately
 ### Pass/Fail Criteria
 Here we attempt to answer the question, "how will the testbench know the test passed?".  There are several methods that are typically used in CORE-V projects, and it is common to use more than one for a given item in a Verification Plan.
-* **Self Checking**: A self-checking test encodes the correct result directly into the testcase and compares what the DUT does against this "known good" outcome.  See the [RISCY Testcases](https://core-v-docs-verif-strat.readthedocs.io/en/latest/pulp_verif.html#ri5cy-testcases) section of the Verification Strategy for an example of this.  This strategy is used extensively by the RISC-V Foundation Compliance tests.
-* **Signature Check**: This is a more sophisitcated form of a self checking test.  The results of the test are used to calculate a signature and this is compared against a "known good" signature.  This strategy is also used by the RISC-V Foundation Compliance tests.
-* **Check against ISS**: Here, the testcase does not "know" the correct outcome of the test, it merely provides stimulus to the DUT.  The pass/fail criteria is determined a verification environment (testbench) component, in this case the **_Instruction Set Simulator_** (ISS), and the verification environment must compare the actual results from the DUT and the expected results from the ISS (or other reference model). When practical, this is the preferred approach because it makes testcase maintenance simplier.
-* **Check against RM**: The pass/fail criteria is determined by a **_Reference Model_** (RM).  An RM is a verification environment (testbench) component which models some or all of the DUT behavior.  In this context RM is a more generic term for ISS.  Use this criteria when you suspect that the ISS will not model the specific behavior needed.
+* **Self Checking**: A self-checking test-program encodes the correct result directly into the testcase and compares what the DUT does against this "known good" outcome.  See the [RISCY Testcases](https://core-v-docs-verif-strat.readthedocs.io/en/latest/pulp_verif.html#ri5cy-testcases) section of the Verification Strategy for an example of this.  This strategy is used extensively by the RISC-V Foundation Compliance tests.
+* **Signature Check**: This is a more sophisitcated form of a self checking test-program.  The results of the test are used to calculate a signature and this is compared against a "known good" signature.  This strategy is also used by the RISC-V Foundation Compliance tests.
+* **Check against RM**: Here, the test-program does not "know" the correct output of the test.  Instead, the pass/fail criteria is determined by a **_Reference Model_** (RM).  An RM is a verification environment (testbench) component which models some or all of the DUT behavior.  The verification environment must compare the actual results from the DUT and the expected results from the RM.  When practical, this is the preferred approach because it makes testcase maintenance simplier.
 * **Assertion Check**: Failure is detected by an assertion, typically coded in SVA.
 * **Any/All**: Any (or all) of the above pass/fail criteria can be reasonably assumed to catch a non-compliance of a specific feature/requirement.
 * **Other**: If one of the above Pass/Fail Criteria does not fit your needs, specify it here.
@@ -71,3 +90,5 @@ How will we know that the Feature is verified (covered)?  There are several choi
 * **Code Coverage:** the Feature is deemed to be tested when the specific conditions in the RTL have been exercised.
 ### Link to Coverage
 This field is used to link the Feature to coverage data generated in Regression.  Leave this blank for now as this information is tool dependent.
+<br><br><br>
+<sup>1</sup>I know, I know, we _all_ hate spreadsheets, but they really are the best format for this type of data.
