@@ -233,6 +233,11 @@ module uvmt_cv32e40p_step_compare
       `endif      
     endfunction // compare
     
+    int cycles = 0;
+    always @(posedge `CV32E40P_CORE.clk) begin
+        cycles++;
+    end
+
     // RTL->RM CSR : mcycle, minstret, mcycleh, minstreth
     function automatic void pushRTL2RM(string message);
         logic [ 5:0] gpr_addr;
@@ -243,6 +248,9 @@ module uvmt_cv32e40p_step_compare
           gpr_value = `CV32E40P_TRACER.insn_regs_write[0].value;
           `CV32E40P_RM.GPR_rtl[gpr_addr] = gpr_value;
         end
+        // Pass cycles and reset
+        `CV32E40P_RM.cycles = cycles;
+        cycles = 0;
     endfunction // pushRTL2RM
     
     /*
