@@ -1,0 +1,76 @@
+---
+## 
+## Copyright 2021 OpenHW Group
+## Copyright 2021 Datum Technology Corporation
+## SPDX-License-Identifier: Apache-2.0 WITH SHL-2.1
+## 
+## Licensed under the Solderpad Hardware License v 2.1 (the "License"); you may
+## not use this file except in compliance with the License, or, at your option,
+## the Apache License version 2.0. You may obtain a copy of the License at
+## 
+##     https://solderpad.org/licenses/SHL-2.1/
+## 
+## Unless required by applicable law or agreed to in writing, any work
+## distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+## WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+## License for the specific language governing permissions and limitations
+## under the License.
+## 
+
+
+settings: # Regressions runner settings
+   priority: medium
+   max-concurrent-jobs: 10
+
+parameters:
+   init:
+   library:
+   compilation:
+      max-data-width: 32
+      max-address-width: 32
+   elaboration:
+   simulation:
+   results-processing:
+   results-upload:
+   shutdown:
+
+sets:
+   basic: # This is a 'set'
+      reads: # This is a test grouping
+         test-name: "reads"
+         parameters: null
+         regressions:
+            - { name: "sanity", type: "rand-seeds", count: 1 }
+            - { name: "nightly", type: "rand-seeds", count: 10 }
+            - { name: "weekly", type: "rand-seeds", count: 20 }
+      writes:
+         test-name: "writes"
+         parameters: null
+         regressions:
+            - { name: "sanity", type: "rand-seeds", count: 1 }
+            - { name: "nightly", type: "rand-seeds", count: 15 }
+            - { name: "weekly", type: "rand-seeds", count: 30 }
+      all_access:
+         test-name: "all_access"
+         parameters: null
+         regressions:
+            - { name: "sanity", type: "rand-seeds", count: 1 }
+            - { name: "nightly", type: "rand-seeds", count: 20 }
+            - { name: "weekly", type: "rand-seeds", count: 50 }
+   
+   performance: # This is another 'set'
+      bursts:
+         test-name: "all_access"
+         parameters: 
+            max-burst: 100
+         regressions:
+            - { name: "nightly", type: "soak", minutes: 10 }
+            - { name: "weekly", type: "soak", minutes: 60 }
+      sustained:
+         test-name: "all_access"
+         parameters:
+            max-burst: 0
+         regressions:
+            - { name: "nightly", type: "soak", minutes: 10 }
+            - { name: "weekly", type: "soak", minutes: 60 }
+   
