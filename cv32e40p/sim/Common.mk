@@ -15,9 +15,12 @@ export SHELL = /bin/bash
 
 CV_CORE_REPO   ?= https://github.com/openhwgroup/cv32e40p
 CV_CORE_BRANCH ?= master
-CV_CORE_HASH   ?= 120ac3e
-CV_CORE_TAG    ?= cv32e40p_v1.0.0
-#CV32E40P_TAG    ?= none
+CV_CORE_HASH   ?= a8a3847
+CV_CORE_TAG    ?= none
+# The CV_CORE_HASH above points to an equivalent RTL with respect to v1.0.0 RTL freeze version
+# There are some implementation and testbench updates in the above hash
+# Set CV_CORE_TAG as below to point to the exact cv32e40p repo as that used at RTL freeze
+#CV_CORE_TAG    ?= cv32e40p_v1.0.0
 
 RISCVDV_REPO    ?= https://github.com/google/riscv-dv
 RISCVDV_BRANCH  ?= master

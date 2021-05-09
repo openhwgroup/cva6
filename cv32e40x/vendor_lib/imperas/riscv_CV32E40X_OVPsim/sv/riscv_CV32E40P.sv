@@ -569,12 +569,14 @@ module CPU
     endfunction
     
     initial begin
-        ovpcfg_load();
-        elf_load();
-        ovpEntry(ovpcfg, elf_file);
-        `ifndef UVM
-        $finish;
-        `endif
+        if ($test$plusargs("USE_ISS")) begin            
+            ovpcfg_load();
+            elf_load();
+            ovpEntry(ovpcfg, elf_file);
+            `ifndef UVM
+            $finish;
+            `endif
+        end
     end
     
     `ifndef UVM

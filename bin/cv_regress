@@ -71,24 +71,6 @@ def check_valid_test(project, name):
     logger.fatal('Test name: {} is not valid'.format(name))
     os.sys.exit(2)
 
-def is_test_indexed(project, name):
-    '''Determine if a test requires an index or not.  Required for metrics test directory finding'''
-    test_dirs = (os.path.join(get_project_path(project), 'tests/programs/corev-dv'),
-                 os.path.join(get_project_path(project), 'tests/programs/custom'),
-    )
-
-    for t in test_dirs:
-        test_yaml = os.path.join(t, name, 'test.yaml')
-        if os.path.exists(test_yaml):
-            test_spec = yaml.load(open(test_yaml))            
-            if '<RUN_INDEX>' in test_spec['name']:
-                return True
-            else:
-                return False
-
-    logger.fatal('Fell through is_test_indexed for project: {}, name {}'.format(project, name))
-    os.sys.exit(2)
-
 def get_filter_dir():
     '''Fetch Vmanager filter path using project'''
     return os.path.abspath(os.path.join(os.path.dirname(__file__), 'vmgr'))
@@ -104,8 +86,14 @@ def read_file(args, file):
     '''Read a YAML definition filelist'''
     full_regress_file = os.path.join(get_regress_path(args.project), file)
     stream = open(full_regress_file, 'r')
-    logger.info('Reading regression: {}'.format(full_regress_file))
-    testlist = yaml.load(stream)
+    logger.info('Reading regression: {}'.format(full_regress_file))    
+    # Newer PyYAMLs must specify explicit loader (policy) or will issue warnings
+    # Older PyYAMLs will not support the Loader argument
+    # So try the new way first, then catch to the old way
+    try:
+        testlist = yaml.load(stream, Loader=yaml.FullLoader)
+    except AttributeError:
+        testlist = yaml.load(stream)
     stream.close()
     pp = pprint.PrettyPrinter()
     logger.debug('Read YAML:')
@@ -152,16 +140,17 @@ def read_file(args, file):
             test.set_cov()
         if args.make:
             test.sub_make(args.make)
+        if args.iss != None:            
+            test.iss = args.iss
 
         # Determine if a test is valid, skip for compliance tests
         # Since it is not possible to determine apriori if a compliance test is valid
         if not 'compliance' in test.cmd:
             check_valid_test(args.project, test.name)
 
-            # Determine if a test is indexed for setting test iterations
-            test.indexed = is_test_indexed(args.project, test.name)
-            if test.indexed and test.num > 1 and args.num:
-                test.num = int(args.num)
+        # Determine if a test is indexed for setting test iterations
+        if args.num:
+            test.num = int(args.num)
 
         regression.add_test(test)
 
@@ -171,8 +160,12 @@ def read_file(args, file):
 VALID_SIMULATORS = ('dsim', 'vsim', 'vcs', 'xrun')
 DEFAULT_SIMULATOR = 'dsim'
 VALID_PROJECTS = ('cv32e40p', 'cv32e40x', 'cv64')
-DEFAULT_PROJECT = 'cv32e40p'
+try:
+    DEFAULT_PROJECT = os.environ['CV_CORE'] 
+except KeyError:    
+    DEFAULT_PROJECT = 'cv32e40p'
 DEFAULT_CFG = 'default'
+DEFAULT_PARALLEL = '30'
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -185,6 +178,8 @@ parser.add_argument('-d', '--debug', help='Emit debug messages from logger', act
 parser.add_argument('-s', '--simulator', help='Select simulator', choices=VALID_SIMULATORS, default=DEFAULT_SIMULATOR)
 parser.add_argument('-c', '--cov', help='Enable coverage', action='store_true')
 parser.add_argument('--cfg', default=DEFAULT_CFG, help='Test configuration to test')
+parser.add_argument('--iss', default=None, help='Force USE_ISS flag to each test run')
+parser.add_argument('--parallel', default=DEFAULT_PARALLEL, help='For VSIF only, set number of parallel jobs')
 parser.add_argument('-m', '--metrics', help='Select Metrics waves output', action='store_true')
 parser.add_argument('-n', '--num', help='Force number of iterations for tests with multiple iteration')
 parser.add_argument('--lsf', help='If applicable for output format, set LSF args to dispatch jobs')
@@ -266,6 +261,7 @@ if args.vsif:
     out_fh.write(template.render(session=os.path.splitext(os.path.basename(args.outfile))[0],
                                  results_path=get_results_path(args.project),
                                  project=args.project,
+                                 parallel=args.parallel,
                                  cfg=args.cfg,
                                  regressions=regressions,
                                  makeargs=' '.join(args.makearg) if args.makearg else '',

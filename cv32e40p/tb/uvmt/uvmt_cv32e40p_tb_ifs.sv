@@ -181,12 +181,10 @@ interface uvmt_cv32e40p_core_cntrl_if (
       string override;
       int fh;
 
-`ifdef ISS
       override = $sformatf("--override root/cpu/mtvec=0x%08x", {mtvec_addr[31:8], 8'h01});
       fh = $fopen("ovpsim.ic", "a");      
       $fwrite(fh, " %s\n", override);
       $fclose(fh);
-`endif
     end
 
     qsc_stat_str =                $sformatf("\tpulp_clock_en     = %0d\n", pulp_clock_en);

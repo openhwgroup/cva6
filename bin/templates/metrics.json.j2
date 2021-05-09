@@ -24,8 +24,8 @@
 
 {% import 'regress_macros.j2' as regress_macros %}
 
-{% set common_dsim_make_vars = "CV_CORE=" + project + " DSIM_WORK=/mux-flow/build/repo/dsim_work DSIM_RESULTS=/mux-flow/build/results" %}
-{% set common_dsim_make_vars_waves = "CV_CORE=" + project + " DSIM_WORK=/mux-flow/build/repo/dsim_work DSIM_RESULTS=/mux-flow/build/results WAVES=1" %}
+{% set common_dsim_make_vars = "CV_CORE=" + project + " COMP=0 DSIM_WORK=/mux-flow/build/repo/dsim_work DSIM_RESULTS=/mux-flow/build/results" %}
+{% set common_dsim_make_vars_waves = "CV_CORE=" + project + " COMP=0 DSIM_WORK=/mux-flow/build/repo/dsim_work DSIM_RESULTS=/mux-flow/build/results WAVES=1" %}
 [
 {% for r in regressions %}
 {% for t in r.tests.values()|sort(attribute='name') %}

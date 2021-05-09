@@ -75,18 +75,19 @@ module mm_ram
 
     localparam int                        RND_IRQ_ID     = 31;    
 
-    localparam int                        MMADDR_PRINT      = 32'h1000_0000;
-    localparam int                        MMADDR_TESTSTATUS = 32'h2000_0000;
-    localparam int                        MMADDR_EXIT       = 32'h2000_0004;
-    localparam int                        MMADDR_SIGBEGIN   = 32'h2000_0008;
-    localparam int                        MMADDR_SIGEND     = 32'h2000_000C;
-    localparam int                        MMADDR_SIGDUMP    = 32'h2000_0010;
-    localparam int                        MMADDR_TIMERREG   = 32'h1500_0000;
-    localparam int                        MMADDR_TIMERVAL   = 32'h1500_0004;
-    localparam int                        MMADDR_DBG        = 32'h1500_0008;
-    localparam int                        MMADDR_RNDSTALL   = 16'h1600;
-    localparam int                        MMADDR_RNDNUM     = 32'h1500_1000;
-    localparam int                        MMADDR_TICKS      = 32'h1500_1004;
+    localparam int                        MMADDR_PRINT          = 32'h1000_0000;
+    localparam int                        MMADDR_TESTSTATUS     = 32'h2000_0000;
+    localparam int                        MMADDR_EXIT           = 32'h2000_0004;
+    localparam int                        MMADDR_SIGBEGIN       = 32'h2000_0008;
+    localparam int                        MMADDR_SIGEND         = 32'h2000_000C;
+    localparam int                        MMADDR_SIGDUMP        = 32'h2000_0010;
+    localparam int                        MMADDR_TIMERREG       = 32'h1500_0000;
+    localparam int                        MMADDR_TIMERVAL       = 32'h1500_0004;
+    localparam int                        MMADDR_DBG            = 32'h1500_0008;
+    localparam int                        MMADDR_RNDSTALL       = 16'h1600;
+    localparam int                        MMADDR_RNDNUM         = 32'h1500_1000;
+    localparam int                        MMADDR_TICKS          = 32'h1500_1004;
+    localparam int                        MMADDR_TICKS_PRINT    = 32'h1500_1008;
 
     // UVM info tags
     localparam string                     MM_RAM_TAG = "MM_RAM";
@@ -151,6 +152,7 @@ module mm_ram
     logic [31:0]                   cycle_count_q;
     logic                          cycle_count_overflow_q;
     logic                          cycle_count_clear;
+    logic                          cycle_count_print;
 
     // debugger control signals
     logic [31:0]                   debugger_wdata;
@@ -205,6 +207,21 @@ module mm_ram
                 rnd_stall_regs[RND_STALL_DATA_GNT]    = 2;
                 rnd_stall_regs[RND_STALL_DATA_VALID]  = 2;
                 rnd_stall_regs[RND_STALL_DATA_MAX]    = 8;
+            end
+            else if ($test$plusargs("rvalid_singles_stall")) begin
+                `uvm_info(RNDSTALL_TAG, "Single-cycle data and instr stall configuration", UVM_LOW)
+                // This "knob" creates single-cycle stalls on data and instr loads/stores.
+                // Used for testing performance impact of instruction fetch policies.
+                rnd_stall_regs[RND_STALL_DATA_EN]     = 1;
+                rnd_stall_regs[RND_STALL_DATA_MODE]   = 1;
+                rnd_stall_regs[RND_STALL_DATA_GNT]    = 0;
+                rnd_stall_regs[RND_STALL_DATA_VALID]  = 1;
+                rnd_stall_regs[RND_STALL_DATA_MAX]    = 1;
+                rnd_stall_regs[RND_STALL_INSTR_EN]     = 1;
+                rnd_stall_regs[RND_STALL_INSTR_MODE]   = 1;
+                rnd_stall_regs[RND_STALL_INSTR_GNT]    = 0;
+                rnd_stall_regs[RND_STALL_INSTR_VALID]  = 1;
+                rnd_stall_regs[RND_STALL_INSTR_MAX]    = 1;
             end
             else begin
                 randcase
@@ -283,6 +300,7 @@ module mm_ram
         rnd_stall_we        = '0;
         rnd_num_req         = '0;
         cycle_count_clear   = '0;
+        cycle_count_print   = '0;
         select_rdata_d      = RAM;
         transaction         = T_PER;
 
@@ -395,6 +413,8 @@ module mm_ram
                     rnd_stall_we    = data_we_i;
                 end else if (data_addr_i == MMADDR_TICKS) begin
                     cycle_count_clear = 1;
+                end else if (data_addr_i == MMADDR_TICKS_PRINT) begin
+                    cycle_count_print = 1;
                 end else begin
                     // out of bounds write
                 end
@@ -457,6 +477,7 @@ module mm_ram
          || data_addr_i == MMADDR_SIGEND
          || data_addr_i == MMADDR_SIGDUMP
          || data_addr_i == MMADDR_TICKS
+         || data_addr_i == MMADDR_TICKS_PRINT
          || data_addr_i[31:16] == MMADDR_RNDSTALL))
            else `uvm_fatal(MM_RAM_TAG, $sformatf("out of bounds write to %08x with %08x", data_addr_i, data_wdata_i))
 `endif
@@ -541,6 +562,15 @@ module mm_ram
             cycle_count_q <= '0;
             cycle_count_overflow_q <= 0;
         end else begin
+
+            if (cycle_count_print) begin
+`ifndef VERILATOR
+                `uvm_info(MM_RAM_TAG, $sformatf("Cycle count is %0d", cycle_count_q), UVM_LOW);
+`else
+                $display("MM_RAM: Cycle count is %0d", cycle_count_q);
+`endif
+            end
+
             if (cycle_count_clear) begin
                 cycle_count_q <= '0;
             end else begin
