@@ -8,7 +8,7 @@ This is an experimental fork/branch of the CVA6 repo used to prototype a new dir
 Use at your own risk.
 
 ## New Directory Structure:
-This branch features a new directory structure that cleanly separates the [CVA6 RISC-V CPU](#cva6-risc-v-cpu) core from its [FPGA Emulation](#fpga-emulation) platform known as COREV-APU.
+This branch features a new directory structure that cleanly separates the [CVA6 RISC-V CPU](#cva6-risc-v-cpu) core from its [FPGA Emulation](#corev-apu-fpga-emulation) platform known as COREV-APU.
 Files, directories and submodules under `cva6` are for the core _only_ and should not have any dependencies on the APU.
 Files, directories and submodules under `corev_apu` are for the FPGA Emulation platform.
 The CVA6 core can be compiled stand-alone, but obviously the APU is dependent on the core.
@@ -101,7 +101,7 @@ Make sure that your `RISCV` environment variable points to your RISC-V installat
 <br><br>
 Checkout the repository and initialize all submodules:
 ```
-$ git clone -b cva6_reorg https://github.com/MikeOpenHWGroup/cva6.git cva6_reorg
+$ git clone -b cva6_reorg https://github.com/openhwgroup/cva6.git cva6_reorg
 $ cd cva6_reorg
 $ git submodule update --init --recursive
 ```
@@ -180,11 +180,11 @@ $ make sim elf-bin=$RISCV/riscv64-unknown-elf/bin/pk target-options=hello.elf  b
 
 > Be patient! RTL simulation is way slower than Spike. If you think that you ran into problems you can inspect the trace files.
 
-## FPGA Emulation
+## COREV-APU FPGA Emulation
 
 We currently only provide support for the [Genesys 2 board](https://reference.digilentinc.com/reference/programmable-logic/genesys-2/reference-manual). We provide pre-build bitstream and memory configuration files for the Genesys 2 [here](https://github.com/openhwgroup/cva6/releases).
 
-Tested on Vivado 2018.2. The FPGA SoC currently contains the following peripherals:
+Tested on Vivado 2018.2. The FPGA currently contains the following peripherals:
 
 - DDR3 memory controller
 - SPI controller to conncet to an SDCard
