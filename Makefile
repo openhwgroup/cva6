@@ -79,37 +79,21 @@ endif
 
 # Sources
 # Package files -> compile first
-ariane_pkg := core/include/riscv_pkg.sv                          \
-              corev_apu/riscv-dbg/src/dm_pkg.sv                   \
-              core/include/ariane_pkg.sv                         \
-              core/include/std_cache_pkg.sv                      \
-              core/include/wt_cache_pkg.sv                       \
-              corev_apu/axi/src/axi_pkg.sv                        \
-              corev_apu/register_interface/src/reg_intf.sv        \
-              corev_apu/register_interface/src/reg_intf_pkg.sv    \
-              core/include/axi_intf.sv                           \
-              corev_apu/tb/ariane_soc_pkg.sv                          \
-              corev_apu/tb/ariane_axi_soc_pkg.sv                      \
-              core/include/ariane_axi_pkg.sv                     \
-              core/fpu/src/fpnew_pkg.sv                      \
+ariane_pkg := core/include/riscv_pkg.sv                              \
+              corev_apu/riscv-dbg/src/dm_pkg.sv                      \
+              core/include/ariane_pkg.sv                             \
+              core/include/std_cache_pkg.sv                          \
+              core/include/wt_cache_pkg.sv                           \
+              corev_apu/axi/src/axi_pkg.sv                           \
+              corev_apu/register_interface/src/reg_intf.sv           \
+              corev_apu/register_interface/src/reg_intf_pkg.sv       \
+              core/include/axi_intf.sv                               \
+              corev_apu/tb/ariane_soc_pkg.sv                         \
+              corev_apu/tb/ariane_axi_soc_pkg.sv                     \
+              core/include/ariane_axi_pkg.sv                         \
+              core/fpu/src/fpnew_pkg.sv                              \
               core/fpu/src/fpu_div_sqrt_mvp/hdl/defs_div_sqrt_mvp.sv
 ariane_pkg := $(addprefix $(root-dir), $(ariane_pkg))
-
-#ariane_pkg := include/riscv_pkg.sv                          \
-#              src/riscv-dbg/src/dm_pkg.sv                   \
-#              include/ariane_pkg.sv                         \
-#              include/std_cache_pkg.sv                      \
-#              include/wt_cache_pkg.sv                       \
-#              src/axi/src/axi_pkg.sv                        \
-#              src/register_interface/src/reg_intf.sv        \
-#              src/register_interface/src/reg_intf_pkg.sv    \
-#              include/axi_intf.sv                           \
-#              tb/ariane_soc_pkg.sv                          \
-#              tb/ariane_axi_soc_pkg.sv                      \
-#              include/ariane_axi_pkg.sv                     \
-#              src/fpu/src/fpnew_pkg.sv                      \
-#              src/fpu/src/fpu_div_sqrt_mvp/hdl/defs_div_sqrt_mvp.sv
-#ariane_pkg := $(addprefix $(root-dir), $(ariane_pkg))
 
 # utility modules
 util := include/instr_tracer_pkg.sv                         \
