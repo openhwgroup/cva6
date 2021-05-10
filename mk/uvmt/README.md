@@ -104,6 +104,15 @@ The basic format to run a test is `make test SIMULATOR=<sim> TEST=<test-program>
 is the name of a [test-program](https://core-v-docs-verif-strat.readthedocs.io/en/latest/sim_tests.html#test-program)
 (either C or RISC-V assembler) located in <CV_CORE>/tests/programs/custom/<testprogram>.
 
+Importing the source code in DVT Eclipse IDE [dvt](https://www.dvteclipse.com/products/dvt-eclipse-ide)
+----------------------
+Alongside the simulator-specific Makefiles, there is also a makefile called `dvt.mk`.
+The command `make SIMULATOR=<sim> open_in_dvt_ide` will import the core-v-verif testbench and RTL source code 
+in the DVT Eclipse IDE.
+<br> <br>
+**Note:** `CV_CORE/sim/uvmt/Makefile` is the 'root' Makefile from which users can invoke DVT.
+<br>
+
 Running the envrionment with Metrics [dsim](https://metrics.ca)
 ----------------------
 The command **make SIMULATOR=dsim sanity** will run the sanity testcase using _dsim_.

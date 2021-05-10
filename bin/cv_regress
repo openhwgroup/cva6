@@ -71,31 +71,6 @@ def check_valid_test(project, name):
     logger.fatal('Test name: {} is not valid'.format(name))
     os.sys.exit(2)
 
-def is_test_indexed(project, name):
-    '''Determine if a test requires an index or not.  Required for metrics test directory finding'''
-    test_dirs = (os.path.join(get_project_path(project), 'tests/programs/corev-dv'),
-                 os.path.join(get_project_path(project), 'tests/programs/custom'),
-    )
-
-    for t in test_dirs:
-        test_yaml = os.path.join(t, name, 'test.yaml')
-        if os.path.exists(test_yaml):
-            # Newer PyYAMLs must specify explicit loader (policy) or will issue warnings
-            # Older PyYAMLs will not support the Loader argument
-            # So try the new way first, then catch to the old way
-            try:
-                test_spec = yaml.load(open(test_yaml), Loader=yaml.FullLoader)
-            except AttributeError:
-                test_spec = yaml.load(open(test_yaml))
-
-            if '<RUN_INDEX>' in test_spec['name']:
-                return True
-            else:
-                return False
-
-    logger.fatal('Fell through is_test_indexed for project: {}, name {}'.format(project, name))
-    os.sys.exit(2)
-
 def get_filter_dir():
     '''Fetch Vmanager filter path using project'''
     return os.path.abspath(os.path.join(os.path.dirname(__file__), 'vmgr'))
@@ -173,10 +148,9 @@ def read_file(args, file):
         if not 'compliance' in test.cmd:
             check_valid_test(args.project, test.name)
 
-            # Determine if a test is indexed for setting test iterations
-            test.indexed = is_test_indexed(args.project, test.name)
-            if test.indexed and test.num > 1 and args.num:
-                test.num = int(args.num)
+        # Determine if a test is indexed for setting test iterations
+        if args.num:
+            test.num = int(args.num)
 
         regression.add_test(test)
 
@@ -186,7 +160,10 @@ def read_file(args, file):
 VALID_SIMULATORS = ('dsim', 'vsim', 'vcs', 'xrun')
 DEFAULT_SIMULATOR = 'dsim'
 VALID_PROJECTS = ('cv32e40p', 'cv32e40x', 'cv64')
-DEFAULT_PROJECT = 'cv32e40p'
+try:
+    DEFAULT_PROJECT = os.environ['CV_CORE'] 
+except KeyError:    
+    DEFAULT_PROJECT = 'cv32e40p'
 DEFAULT_CFG = 'default'
 DEFAULT_PARALLEL = '30'
 
