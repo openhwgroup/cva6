@@ -129,6 +129,8 @@ module CPU
     
     // From RTL
     bit [31:0] GPR_rtl[32];
+    bit [31:0] cycles;
+
 /*
     always @state.notify begin
         if (state.valid) begin
@@ -237,14 +239,18 @@ module CPU
             output int _deferint,
             output int _irq_i,
             output int _haltreq,
-            output int _resethaltreq);
+            output int _resethaltreq,
+            output int _cycles
+            );
         
         _terminate          = SysBus.Shutdown;
         _reset              = SysBus.reset;
         _deferint           = SysBus.deferint;
         _irq_i              = SysBus.irq_i;
-        _haltreq            = SysBus.haltreq ;
-        _resethaltreq       = SysBus.resethaltreq ;
+        _haltreq            = SysBus.haltreq;
+        _resethaltreq       = SysBus.resethaltreq;
+        
+        _cycles             = cycles;
     endfunction
         
     function automatic void setDECODE (input string value, input int insn, input int isize);
@@ -569,12 +575,14 @@ module CPU
     endfunction
     
     initial begin
-        ovpcfg_load();
-        elf_load();
-        ovpEntry(ovpcfg, elf_file);
-        `ifndef UVM
-        $finish;
-        `endif
+        if ($test$plusargs("USE_ISS")) begin            
+            ovpcfg_load();
+            elf_load();
+            ovpEntry(ovpcfg, elf_file);
+            `ifndef UVM
+            $finish;
+            `endif
+        end
     end
     
     `ifndef UVM
