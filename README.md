@@ -8,7 +8,7 @@ This is an experimental fork/branch of the CVA6 repo used to prototype a new dir
 Use at your own risk.
 
 ## New Directory Structure:
-This branch features a new directory structure that cleanly separates the CVA6 RISC-V CPU core from its [FPGA Emulation](#fpga-emulation) platform known as COREV-APU.
+This branch features a new directory structure that cleanly separates the [CVA6 RISC-V CPU](#cva6-risc-v-cpu) core from its [FPGA Emulation](#fpga-emulation) platform known as COREV-APU.
 Files, directories and submodules under `cva6` are for the core _only_ and should not have any dependencies on the APU.
 Files, directories and submodules under `corev_apu` are for the FPGA Emulation platform.
 The CVA6 core can be compiled stand-alone, but obviously the APU is dependent on the core.
@@ -27,7 +27,6 @@ There should be no sources in this directory used to build anything other than t
 
 #### corev_apu
 Source code for the CVA6 APU, exclusive of the CVA6 core.
-An illustration of the COREV APU is below (see FPGA Emulation, below).
 There should be no sources in this directory used to build the CVA6 core.
 
 #### docs
@@ -139,7 +138,7 @@ $ spike-dasm < trace_hart_00.dasm > logfile.txt
 To build, compile and run the CVA6 core-only in its example testbench using Verilator (known to work with V4.108):
 ```
 $ cd core/example_tb
-$ make veri-run
+$ make veri_run
 ```
 `make help` will print all supported targets.
 
