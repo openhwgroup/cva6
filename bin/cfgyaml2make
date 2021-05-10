@@ -79,7 +79,13 @@ def read_file(file):
 
     stream = open(matches[0], 'r')
     logger.debug('Reading cfg specification: {}'.format(matches[0]))
-    cfg_spec = yaml.load(stream)
+    # Newer PyYAMLs must specify explicit loader (policy) or will issue warnings
+    # Older PyYAMLs will not support the Loader argument
+    # So try the new way first, then catch to the old way
+    try:
+        cfg_spec = yaml.load(stream, Loader=yaml.FullLoader)
+    except AttributeError:
+        cfg_spec = yaml.load(stream)
     stream.close()
 
     # Validation

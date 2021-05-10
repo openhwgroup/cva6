@@ -44,9 +44,13 @@ simulator for the purposes of ensuring a pull-request can be safely made.  Note 
 be able to be executed in any directory where previously it required the user to *cd* to ci/.  Please 
 refer to *ci_check*'s help utility for more details on options
 
+If required, the step and compare ISS can be disabled for this regression by setting _--iss=0_
+
 *Examples:*
 > \# Run CI sanity regression on Xcelium<br>
 % ci_check -s xrun<br>
+> \# Run CI sanity regression on Xcelium with the ISS disabled<br>
+% ci_check -s xrun --iss=0<br>
 > \# Get help of all available options<br>
 % ci_check --help
 

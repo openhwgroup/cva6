@@ -38,6 +38,7 @@ package uvme_cv32e40x_pkg;
    import uvml_hrtbt_pkg  ::*;
    import uvml_sb_pkg     ::*;
    import uvml_trn_pkg    ::*;  
+   import uvma_isacov_pkg::*;
    import uvma_clknrst_pkg::*;
    import uvma_interrupt_pkg::*;
    import uvma_debug_pkg::*;

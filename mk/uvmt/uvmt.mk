@@ -92,6 +92,7 @@ export RUN_INDEX       ?= 0
 export DV_UVMT_PATH           = $(CORE_V_VERIF)/$(CV_CORE_LC)/tb/uvmt
 export DV_UVME_PATH           = $(CORE_V_VERIF)/$(CV_CORE_LC)/env/uvme
 export DV_UVML_HRTBT_PATH     = $(CORE_V_VERIF)/lib/uvm_libs/uvml_hrtbt
+export DV_UVMA_ISACOV_PATH    = $(CORE_V_VERIF)/lib/uvm_agents/uvma_isacov
 export DV_UVMA_CLKNRST_PATH   = $(CORE_V_VERIF)/lib/uvm_agents/uvma_clknrst
 export DV_UVMA_INTERRUPT_PATH = $(CORE_V_VERIF)/lib/uvm_agents/uvma_interrupt
 export DV_UVMA_DEBUG_PATH     = $(CORE_V_VERIF)/lib/uvm_agents/uvma_debug
@@ -124,6 +125,12 @@ COMPLIANCE_PKG   := $(CORE_V_VERIF)/$(CV_CORE_LC)/vendor_lib/riscv/riscv-complia
 # EMBench benchmarking suite
 EMBENCH_PKG	:= $(CORE_V_VERIF)/$(CV_CORE_LC)/vendor_lib/embench
 EMBENCH_TESTS	:= $(CORE_V_VERIF)/$(CV_CORE_LC)/tests/programs/embench
+
+# Disassembler
+DPI_DASM_PKG       := $(CORE_V_VERIF)/lib/dpi_dasm
+DPI_DASM_SPIKE_PKG := $(CORE_V_VERIF)/$(CV_CORE_LC)/vendor_lib/dpi_dasm_spike
+export DPI_DASM_ROOT       = $(DPI_DASM_PKG)
+export DPI_DASM_SPIKE_ROOT = $(DPI_DASM_SPIKE_PKG)
 
 # TB source files for the CV32E core
 TBSRC_TOP   := $(TBSRC_HOME)/uvmt/uvmt_$(CV_CORE_LC)_tb.sv
@@ -176,6 +183,9 @@ clone_riscv-dv:
 clone_embench:
 	$(CLONE_EMBENCH_CMD)
 
+clone_dpi_dasm_spike:
+	$(CLONE_DPI_DASM_SPIKE_CMD)
+
 $(CV_CORE_PKG):
 	echo "Cloning"
 	$(CLONE_CV_CORE_CMD)
@@ -188,6 +198,9 @@ $(COMPLIANCE_PKG):
 
 $(EMBENCH_PKG):
 	$(CLONE_EMBENCH_CMD)
+
+$(DPI_DASM_SPIKE_PKG):
+	$(CLONE_DPI_DASM_SPIKE_CMD)
 
 ###############################################################################
 # RISC-V Compliance Test-suite
@@ -334,3 +347,6 @@ clean_embench:
 	rm -rf $(EMBENCH_PKG)
 	cd $(EMBENCH_TESTS) && \
 	find . ! -path . ! -path ./README.md -delete
+
+clean_dpi_dasm_spike:
+	rm -rf $(DPI_DASM_SPIKE_PKG)

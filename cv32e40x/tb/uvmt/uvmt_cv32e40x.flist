@@ -23,6 +23,7 @@
 -f ${DV_UVML_SB_PATH}/uvml_sb_pkg.flist
 
 // Agents
+-f ${DV_UVMA_ISACOV_PATH}/uvma_isacov_pkg.flist
 -f ${DV_UVMA_CLKNRST_PATH}/uvma_clknrst_pkg.flist
 -f ${DV_UVMA_INTERRUPT_PATH}/uvma_interrupt_pkg.flist
 -f ${DV_UVMA_OBI_PATH}/uvma_obi_pkg.flist

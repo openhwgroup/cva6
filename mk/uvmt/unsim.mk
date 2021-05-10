@@ -24,6 +24,8 @@ no_rule:
 	@echo 'no SIMULATOR and rule/target specified.'
 	@echo 'Usage: make SIMULATOR=<simulator> <target>'
 	@echo 'e.g: make SIMULATOR=xrun hello-world'
+	@exit 1
 
 %::
 	@echo '$(SIMULATOR): unknown simulator'
+	@exit 1
