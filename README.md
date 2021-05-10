@@ -4,16 +4,22 @@
 
 # EXPERIMENTAL EXPERIMENTAL EXPERIMENTAL
 
-This is an experimental fork/branch of the CVA6 repo used to prototype a new directory/file structurei for this repository.
+This is an experimental fork/branch of the CVA6 repo used to prototype a new directory/file structure for this repository.
 Use at your own risk.
 
-### New Directory Structure:
+## New Directory Structure:
+This branch features a new directory structure that cleanly separates the CVA6 RISC-V CPU core from its [FPGA Emulation](#fpga-emulation) platform known as COREV-APU.
+Files, directories and submodules under `cva6` are for the core _only_ and should not have any dependencies on the APU.
+Files, directories and submodules under `corev_apu` are for the FPGA Emulation platform.
+The CVA6 core can be compiled stand-alone, but obviously the APU is dependent on the core.
+
 #### ci
 Scriptware for CI.
 Unchanged.
 
 #### common
 Source code used by both the CVA6 Core and the COREV APU.
+Subdirectories from here are `local` for common files that are hosted in this repo and `submodules` that are hosted in other repos.
 
 #### core
 Source code for the CVA6 Core only.
@@ -31,19 +37,6 @@ Unchanged.
 #### scripts
 General scriptware.
 Unchanged.
-
-### To try the new structure
-Checkout the repository and initialize all submodules:
-```
-$ git clone -b reorg3_proto https://github.com/MikeOpenHWGroup/cva6.git reorg3_proto
-$ cd reorg3_proto
-$ git submodule update --init --recursive
-$ cd core/example_tb
-$ make
-```
-To run the example_tb you will need Verilator (known to work with V4.108).
-Support for Cadence Xcelium (xrun) and Metrics DSIM is there also.
-
 
 # CVA6 RISC-V CPU
 
@@ -104,15 +97,17 @@ Created by [gh-md-toc](https://github.com/ekalinin/github-markdown-toc)
 
 ## Getting Started
 
-Go and get the [RISC-V tools](https://github.com/riscv/riscv-tools). Make sure that your `RISCV` environment variable points to your RISC-V installation (see the RISC-V tools and related projects for further information).
-
-Checkout the repository and initialize all submodules
+Go and get the [RISC-V tools](https://github.com/riscv/riscv-tools).
+Make sure that your `RISCV` environment variable points to your RISC-V installation (see the RISC-V tools and related projects for further information).
+<br><br>
+Checkout the repository and initialize all submodules:
 ```
-$ git clone https://github.com/openhwgroup/cva6.git
+$ git clone -b cva6_reorg https://github.com/MikeOpenHWGroup/cva6.git cva6_reorg
+$ cd cva6_reorg
 $ git submodule update --init --recursive
 ```
 
-Build the Verilator model of CVA6 by using the Makefile:
+Build the Verilator model of the COREV-APU by using the Makefile:
 ```
 $ make verilate
 ```
@@ -122,19 +117,32 @@ To build the verilator model with support for vcd files run
 $ make verilate DEBUG=1
 ```
 
-This will create a C++ model of the core including a SystemVerilog wrapper and link it against a C++ testbench (in the `tb` subfolder). The binary can be found in the `work-ver` and accepts a RISC-V ELF binary as an argument, e.g.:
+This will create a C++ model of the core including a SystemVerilog wrapper and link it against a C++ testbench (in the `tb` subfolder).
+The binary can be found in the `work-ver` and accepts a RISC-V ELF binary as an argument, e.g.:
 
 ```
 $ work-ver/Variane_testharness rv64um-v-divuw
 ```
 
-The Verilator testbench makes use of the `riscv-fesvr`. This means that you can use the `riscv-tests` repository as well as `riscv-pk` out-of-the-box. As a general rule of thumb the Verilator model will behave like Spike (exception for being orders of magnitudes slower).
+The Verilator testbench makes use of the `riscv-fesvr`.
+This means that you can use the `riscv-tests` repository as well as `riscv-pk` out-of-the-box.
+As a general rule of thumb the Verilator model will behave like Spike (exception for being orders of magnitudes slower).
 
-Both, the Verilator model as well as the Questa simulation will produce trace logs. The Verilator trace is more basic but you can feed the log to `spike-dasm` to resolve instructions to mnemonics. Unfortunately value inspection is currently not possible for the Verilator trace file.
+Both the Verilator model as well as the Questa simulation will produce trace logs.
+The Verilator trace is more basic but you can feed the log to `spike-dasm` to resolve instructions to mnemonics.
+Unfortunately value inspection is currently not possible for the Verilator trace file.
 
 ```
 $ spike-dasm < trace_hart_00.dasm > logfile.txt
 ```
+
+To build, compile and run the CVA6 core-only in its example testbench using Verilator (known to work with V4.108):
+```
+$ cd core/example_tb
+$ make veri-run
+```
+`make help` will print all supported targets.
+
 
 ### Running User-Space Applications
 
