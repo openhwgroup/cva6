@@ -15,14 +15,24 @@ export SHELL = /bin/bash
 
 CV_CORE_REPO   ?= https://github.com/openhwgroup/cv32e40x
 CV_CORE_BRANCH ?= master
-CV_CORE_HASH   ?= 07c8644ed08e0caaa19848bc218632e9f2e75675
+CV_CORE_HASH   ?= ed7cfdfdcd8c86cd2df41dfad25810997221756e
 CV_CORE_TAG    ?= none
 
 RISCVDV_REPO    ?= https://github.com/google/riscv-dv
 RISCVDV_BRANCH  ?= master
 RISCVDV_HASH    ?= 0b625258549e733082c12e5dc749f05aefb07d5a
 
+EMBENCH_REPO    ?= https://github.com/embench/embench-iot.git
+EMBENCH_BRANCH  ?= master
+EMBENCH_HASH		?= 6934ddd1ff445245ee032d4258fdeb9828b72af4
+
 COMPLIANCE_REPO   ?= https://github.com/strichmo/riscv-arch-test.git
 COMPLIANCE_BRANCH ?= strichmo/pr/cv32e40x_initial_old_compliance
 # 2020-08-19
 COMPLIANCE_HASH   ?= cf29051b177ba61b8c39de91c33d20d202697423
+
+# This Spike repo is only cloned when the DPI disassembler needs to be rebuilt 
+# Typically users can simply use the checked-in shared library
+DPI_DASM_SPIKE_REPO   ?= https://github.com/riscv/riscv-isa-sim.git
+DPI_DASM_SPIKE_BRANCH ?= master
+DPI_DASM_SPIKE_HASH   ?= 8faa928819fb551325e76b463fc0c978e22f5be3

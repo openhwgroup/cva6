@@ -36,11 +36,10 @@ DSIM_CODE_COV_SCOPE    ?= $(MAKE_PATH)/../tools/dsim/ccov_scopes.txt
 DSIM_USE_ISS           ?= YES
 
 DSIM_FILE_LIST ?= -f $(DV_UVMT_PATH)/uvmt_$(CV_CORE_LC).flist
+DSIM_FILE_LIST         += -f $(DV_UVMT_PATH)/imperas_iss.flist
+DSIM_USER_COMPILE_ARGS += "+define+$(CV_CORE_UC)_TRACE_EXECUTION"
 ifeq ($(USE_ISS),YES)
-    DSIM_FILE_LIST         += -f $(DV_UVMT_PATH)/imperas_iss.flist
-    DSIM_USER_COMPILE_ARGS += "+define+ISS+$(CV_CORE_UC)_TRACE_EXECUTION"
-#    DSIM_USER_COMPILE_ARGS += "+define+CV32E40P_ASSERT_ON+ISS+CV32E40P_TRACE_EXECUTION"
-#    DSIM_RUN_FLAGS         += +ovpcfg="--controlfile $(OVP_CTRL_FILE)"
+	DSIM_RUN_FLAGS     += +USE_ISS
 endif
 
 # Seed management for constrained-random sims. This is an intentional repeat
@@ -161,6 +160,7 @@ custom: comp $(CUSTOM_DIR)/$(CUSTOM_PROG).hex $(CUSTOM_DIR)/$(CUSTOM_PROG).elf
 	$(DSIM) -l dsim-$(CUSTOM_PROG).log -image $(DSIM_IMAGE) \
 		-work $(DSIM_WORK) $(DSIM_RUN_FLAGS) $(DSIM_DMP_FLAGS) \
 		-sv_lib $(UVM_HOME)/src/dpi/libuvm_dpi.so \
+		-sv_lib $(DPI_DASM_LIB) \
 		-sv_lib $(OVP_MODEL_DPI) \
 		+UVM_TESTNAME=$(UVM_TESTNAME) \
 		+firmware=$(CUSTOM_DIR)/$(CUSTOM_PROG).hex \
@@ -203,6 +203,7 @@ test: $(DSIM_SIM_PREREQ) $(TEST_TEST_DIR)/$(TEST_PROGRAM)$(OPT_RUN_INDEX_SUFFIX)
 			$(DSIM_DMP_FLAGS) \
 			$(TEST_PLUSARGS) \
 			-sv_lib $(UVM_HOME)/src/dpi/libuvm_dpi.so \
+			-sv_lib $(DPI_DASM_LIB) \
 			-sv_lib $(OVP_MODEL_DPI) \
 			+UVM_TESTNAME=$(TEST_UVM_TEST) \
 			+firmware=$(TEST_TEST_DIR)/$(TEST_PROGRAM)$(OPT_RUN_INDEX_SUFFIX).hex \
@@ -214,6 +215,7 @@ asm: comp $(ASM_DIR)/$(ASM_PROG).hex $(ASM_DIR)/$(ASM_PROG).elf
 	$(DSIM) -l dsim-$(ASM_PROG).log -image $(DSIM_IMAGE) \
 		-work $(DSIM_WORK) $(DSIM_RUN_FLAGS) $(DSIM_DMP_FLAGS) \
 		-sv_lib $(UVM_HOME)/src/dpi/libuvm_dpi.so \
+		-sv_lib $(DPI_DASM_LIB) \
 		-sv_lib $(OVP_MODEL_DPI) \
 		+UVM_TESTNAME=$(UVM_TESTNAME) \
 		+firmware=$(ASM_DIR)/$(ASM_PROG).hex \
@@ -246,6 +248,7 @@ compliance: comp build_compliance
 	$(DSIM) -l dsim-$(COMPLIANCE_PROG).log -image $(DSIM_IMAGE) \
 		-work $(DSIM_WORK) $(DSIM_RUN_FLAGS) $(DSIM_DMP_FLAGS) $(TEST_PLUSARGS) \
 		-sv_lib $(UVM_HOME)/src/dpi/libuvm_dpi.so \
+		-sv_lib $(DPI_DASM_LIB) \
 		-sv_lib $(OVP_MODEL_DPI) \
 		+UVM_TESTNAME=$(UVM_TESTNAME) \
 		+firmware=$(COMPLIANCE_PKG)/work/$(RISCV_ISA)/$(COMPLIANCE_PROG).hex \
@@ -263,6 +266,7 @@ no-test-program: comp
 	$(DSIM) -l dsim-$(UVM_TESTNAME).log -image $(DSIM_IMAGE) \
 		-work $(DSIM_WORK) $(DSIM_RUN_FLAGS) $(DSIM_DMP_FLAGS) \
 		-sv_lib $(UVM_HOME)/src/dpi/libuvm_dpi.so \
+		-sv_lib $(DPI_DASM_LIB) \
 		-sv_lib $(OVP_MODEL_DPI) \
 		+UVM_TESTNAME=$(UVM_TESTNAME)
 #		+firmware=$(CUSTOM_DIR)/$(CUSTOM_PROG).hex \
@@ -279,6 +283,7 @@ dsim-firmware-unit-test: comp
 	$(DSIM) -l dsim-$(UNIT_TEST).log -image $(DSIM_IMAGE) \
 		-work $(DSIM_WORK) $(DSIM_RUN_FLAGS) $(DSIM_DMP_FLAGS) \
 		-sv_lib $(UVM_HOME)/src/dpi/libuvm_dpi.so \
+		-sv_lib $(DPI_DASM_LIB) \
 		-sv_lib $(OVP_MODEL_DPI) \
 		+UVM_TESTNAME=uvmt_$(CV_CORE_LC)_firmware_test_c \
 		+firmware=$(FIRMWARE)/firmware_unit_test.hex \
@@ -362,6 +367,6 @@ clean:
 	rm -rf $(DSIM_RESULTS)
 
 # All generated files plus the clone of the RTL
-clean_all: clean clean_riscv-dv clean_test_programs clean-bsp clean_compliance
+clean_all: clean clean_riscv-dv clean_test_programs clean-bsp clean_compliance clean_embench clean_dpi_dasm_spike
 	rm -rf $(CV_CORE_PKG)
 
