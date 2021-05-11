@@ -196,90 +196,21 @@ covergroup cg_instr(string name,
   cp_instr_prev: coverpoint(instr.name);
 
   cp_group: coverpoint (instr.group) {
-    bins LOAD = {LOAD_GROUP};
-    bins STORE = {STORE_GROUP};
-    bins MISALIGN_LOAD = {MISALIGN_LOAD_GROUP};
-    bins MISALIGN_STORE = {MISALIGN_STORE_GROUP};
-    bins ALU = {ALU_GROUP};
-    bins BRANCH = {BRANCH_GROUP};
-    bins JUMP = {JUMP_GROUP};
-    bins FENCE = {FENCE_GROUP};
-    bins FENCE_I = {FENCE_I_GROUP};
-    bins RET = {RET_GROUP};
-    bins WFI = {WFI_GROUP};
-    bins CSR = {CSR_GROUP};
-    bins ENV = {ENV_GROUP};
-    bins MUL = {MUL_GROUP};
-    bins MULTI_MUL = {MULTI_MUL_GROUP};
-    bins DIV = {DIV_GROUP};
-    bins ALOAD  = {ALOAD_GROUP} with (ext_a_enabled);
-    bins ASTORE = {ASTORE_GROUP} with (ext_a_enabled);
-    bins AMEM   = {AMEM_GROUP} with (ext_a_enabled);
+    illegal_bins ILL_EXT_A = {ALOAD_GROUP, ASTORE_GROUP, AMEM_GROUP} with (!ext_a_enabled);
   }
-  cp_group_prev:  coverpoint (instr_prev.group) iff (instr_prev != null) {
-    bins LOAD = {LOAD_GROUP} with (seq_instr_group_x2_enabled);
-    bins STORE = {STORE_GROUP} with (seq_instr_group_x2_enabled);
-    bins MISALIGN_LOAD = {MISALIGN_LOAD_GROUP} with (seq_instr_group_x2_enabled);
-    bins MISALIGN_STORE = {MISALIGN_STORE_GROUP} with (seq_instr_group_x2_enabled);
-    bins ALU = {ALU_GROUP} with (seq_instr_group_x2_enabled);
-    bins BRANCH = {BRANCH_GROUP} with (seq_instr_group_x2_enabled);
-    bins JUMP = {JUMP_GROUP} with (seq_instr_group_x2_enabled);
-    bins FENCE = {FENCE_GROUP} with (seq_instr_group_x2_enabled);
-    bins FENCE_I = {FENCE_I_GROUP} with (seq_instr_group_x2_enabled);
-    bins RET = {RET_GROUP} with (seq_instr_group_x2_enabled);
-    bins WFI = {WFI_GROUP} with (seq_instr_group_x2_enabled);
-    bins CSR = {CSR_GROUP} with (seq_instr_group_x2_enabled);
-    bins ENV = {ENV_GROUP} with (seq_instr_group_x2_enabled);
-    bins MUL = {MUL_GROUP} with (seq_instr_group_x2_enabled);
-    bins MULTI_MUL = {MULTI_MUL_GROUP} with (seq_instr_group_x2_enabled);
-    bins DIV = {DIV_GROUP} with (seq_instr_group_x2_enabled);
-    bins ALOAD  = {ALOAD_GROUP} with (seq_instr_group_x2_enabled && ext_a_enabled);
-    bins ASTORE = {ASTORE_GROUP} with (seq_instr_group_x2_enabled && ext_a_enabled);
-    bins AMEM   = {AMEM_GROUP} with (seq_instr_group_x2_enabled && ext_a_enabled);
+  cp_group_prev:  coverpoint instr_prev.group iff (instr_prev != null) {
+    ignore_bins IGN_X2_OFF = {[0:$]} with (!seq_instr_group_x2_enabled);
+    illegal_bins ILL_EXT_A = {ALOAD_GROUP, ASTORE_GROUP, AMEM_GROUP} with (!ext_a_enabled);
   }
 
   cp_group_prev2: coverpoint (instr_prev2.group) iff (instr_prev2 != null) {
-    bins LOAD = {LOAD_GROUP} with (seq_instr_group_x3_enabled);
-    bins STORE = {STORE_GROUP} with (seq_instr_group_x3_enabled);
-    bins MISALIGN_LOAD = {MISALIGN_LOAD_GROUP} with (seq_instr_group_x3_enabled);
-    bins MISALIGN_STORE = {MISALIGN_STORE_GROUP} with (seq_instr_group_x3_enabled);
-    bins ALU = {ALU_GROUP} with (seq_instr_group_x3_enabled);
-    bins BRANCH = {BRANCH_GROUP} with (seq_instr_group_x3_enabled);
-    bins JUMP = {JUMP_GROUP} with (seq_instr_group_x3_enabled);
-    bins FENCE = {FENCE_GROUP} with (seq_instr_group_x3_enabled);
-    bins FENCE_I = {FENCE_I_GROUP} with (seq_instr_group_x3_enabled);
-    bins RET = {RET_GROUP} with (seq_instr_group_x3_enabled);
-    bins WFI = {WFI_GROUP} with (seq_instr_group_x3_enabled);
-    bins CSR = {CSR_GROUP} with (seq_instr_group_x3_enabled);
-    bins ENV = {ENV_GROUP} with (seq_instr_group_x3_enabled);
-    bins MUL = {MUL_GROUP} with (seq_instr_group_x3_enabled);
-    bins MULTI_MUL = {MULTI_MUL_GROUP} with (seq_instr_group_x3_enabled);
-    bins DIV = {DIV_GROUP} with (seq_instr_group_x3_enabled);
-    bins ALOAD  = {ALOAD_GROUP} with (seq_instr_group_x3_enabled && ext_a_enabled);
-    bins ASTORE = {ASTORE_GROUP} with (seq_instr_group_x3_enabled && ext_a_enabled);
-    bins AMEM   = {AMEM_GROUP} with (seq_instr_group_x3_enabled && ext_a_enabled);
+    ignore_bins IGN_X3_OFF = {[0:$]} with (!seq_instr_group_x3_enabled);
+    illegal_bins ILL_EXT_A = {ALOAD_GROUP, ASTORE_GROUP, AMEM_GROUP} with (!ext_a_enabled);
   }
 
   cp_group_prev3: coverpoint (instr_prev3.group) iff (instr_prev3 != null) {
-    bins LOAD = {LOAD_GROUP} with (seq_instr_group_x4_enabled);
-    bins STORE = {STORE_GROUP} with (seq_instr_group_x4_enabled);
-    bins MISALIGN_LOAD = {MISALIGN_LOAD_GROUP} with (seq_instr_group_x4_enabled);
-    bins MISALIGN_STORE = {MISALIGN_STORE_GROUP} with (seq_instr_group_x4_enabled);
-    bins ALU = {ALU_GROUP} with (seq_instr_group_x4_enabled);
-    bins BRANCH = {BRANCH_GROUP} with (seq_instr_group_x4_enabled);
-    bins JUMP = {JUMP_GROUP} with (seq_instr_group_x4_enabled);
-    bins FENCE = {FENCE_GROUP} with (seq_instr_group_x4_enabled);
-    bins FENCE_I = {FENCE_I_GROUP} with (seq_instr_group_x4_enabled);
-    bins RET = {RET_GROUP} with (seq_instr_group_x4_enabled);
-    bins WFI = {WFI_GROUP} with (seq_instr_group_x4_enabled);
-    bins CSR = {CSR_GROUP} with (seq_instr_group_x4_enabled);
-    bins ENV = {ENV_GROUP} with (seq_instr_group_x4_enabled);
-    bins MUL = {MUL_GROUP} with (seq_instr_group_x4_enabled);
-    bins MULTI_MUL = {MULTI_MUL_GROUP} with (seq_instr_group_x4_enabled);
-    bins DIV = {DIV_GROUP} with (seq_instr_group_x4_enabled);
-    bins ALOAD  = {ALOAD_GROUP} with (seq_instr_group_x4_enabled && ext_a_enabled);
-    bins ASTORE = {ASTORE_GROUP} with (seq_instr_group_x4_enabled && ext_a_enabled);
-    bins AMEM   = {AMEM_GROUP} with (seq_instr_group_x4_enabled && ext_a_enabled);
+    ignore_bins IGN_X4_OFF = {[0:$]} with (!seq_instr_group_x4_enabled);
+    illegal_bins ILL_EXT_A = {ALOAD_GROUP, ASTORE_GROUP, AMEM_GROUP} with (!ext_a_enabled);
   }
 
   cp_raw_hazard: coverpoint(raw_hazard) {
