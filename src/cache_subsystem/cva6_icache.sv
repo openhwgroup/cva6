@@ -457,7 +457,7 @@ end else begin : gen_piton_offset
       cmp_en_q      <= '0;
       cache_en_q    <= '0;
       flush_q       <= '0;
-      state_q       <= IDLE;
+      state_q       <= FLUSH;
       cl_offset_q   <= '0;
       repl_way_oh_q <= '0;
       inv_q         <= '0;
