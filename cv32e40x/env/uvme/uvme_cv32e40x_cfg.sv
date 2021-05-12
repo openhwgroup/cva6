@@ -28,7 +28,7 @@ class uvme_cv32e40x_cfg_c extends uvm_object;
    // Integrals
    rand bit                      enabled;
    rand uvm_active_passive_enum  is_active;
-   rand bit                      use_isacov;
+   bit                           use_isacov;
 
    rand bit                      scoreboarding_enabled;
    rand bit                      cov_model_enabled;
@@ -68,7 +68,6 @@ class uvme_cv32e40x_cfg_c extends uvm_object;
       soft cov_model_enabled      == 1;
       soft trn_log_enabled        == 1;
       soft sys_clk_period         == uvme_cv32e40x_sys_default_clk_period; // see uvme_cv32e40x_constants.sv
-      //soft debug_clk_period       == uvme_cv32e40x_debug_default_clk_period;
    }
    
    constraint agent_cfg_cons {
@@ -125,7 +124,7 @@ class uvme_cv32e40x_cfg_c extends uvm_object;
     * Creates sub-configuration objects.
     */
    extern function new(string name="uvme_cv32e40x_cfg");
-   
+
 endclass : uvme_cv32e40x_cfg_c
 
 
