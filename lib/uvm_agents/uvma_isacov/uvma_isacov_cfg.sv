@@ -36,6 +36,7 @@ class uvma_isacov_cfg_c extends uvm_object;
   rand bit                     seq_instr_group_x2_enabled;
   rand bit                     seq_instr_group_x3_enabled;
   rand bit                     seq_instr_group_x4_enabled;
+  rand bit                     reg_crosses_enabled;
 
   // Bitmask to enable/disable CSRs in coverage model
   // Mode configurations above will set cfg_illegal_csr settings when predictable
@@ -59,6 +60,7 @@ class uvma_isacov_cfg_c extends uvm_object;
     `uvm_field_int(seq_instr_group_x2_enabled, UVM_DEFAULT);
     `uvm_field_int(seq_instr_group_x3_enabled, UVM_DEFAULT);
     `uvm_field_int(seq_instr_group_x4_enabled, UVM_DEFAULT);
+    `uvm_field_int(reg_crosses_enabled, UVM_DEFAULT);
     `uvm_field_int(cfg_illegal_csr, UVM_DEFAULT | UVM_NOPRINT);
   `uvm_object_utils_end;
 
