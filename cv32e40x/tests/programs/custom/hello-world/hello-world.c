@@ -74,7 +74,7 @@ int main(int argc, char *argv[])
 
     /* Check MIMPID CSR: 0x0 is the value assigned by the OpenHW Group to the first release of CV32E40X */
     if (mimpid_rval != 0x00000000) {
-      printf("\tERROR: CSR MARCHID reads as 0x%x - should be 0x00000000 for this release of CV32E40X.\n\n", mimpid_rval);
+      printf("\tERROR: CSR MIMPID reads as 0x%x - should be 0x00000000 for this release of CV32E40X.\n\n", mimpid_rval);
       return EXIT_FAILURE;
     }
 
