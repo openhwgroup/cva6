@@ -73,6 +73,29 @@ covergroup cg_jtype(string name) with function sample (uvma_isacov_instr_c instr
   cp_immj: coverpoint instr.immj;
 endgroup : cg_jtype
 
+covergroup cg_csrtype(string name,
+                      bit[CSR_MASK_WL-1:0] cfg_illegal_csr) with function sample (uvma_isacov_instr_c instr);
+  option.per_instance = 1;
+  option.name = name;
+
+  cp_rs1: coverpoint instr.rs1;
+  cp_rd: coverpoint instr.rd;
+  cp_csr: coverpoint instr.csr {
+    bins CSR[] = {[USTATUS:VLENB]} with (cfg_illegal_csr[item] == 0);
+  }
+endgroup : cg_csrtype
+
+covergroup cg_csritype(string name,
+                       bit[CSR_MASK_WL-1:0] cfg_illegal_csr) with function sample (uvma_isacov_instr_c instr);
+  option.per_instance = 1;
+  option.name = name;
+  
+  cp_rd: coverpoint instr.rd;
+  cp_csr: coverpoint instr.csr {
+    bins CSR[] = {[USTATUS:VLENB]} with (cfg_illegal_csr[item] == 0);
+  }
+  cp_immu: coverpoint instr.immu[4:0];
+endgroup : cg_csritype
 
 covergroup cg_cr(string name) with function sample (uvma_isacov_instr_c instr);
   option.per_instance = 1;
@@ -155,6 +178,140 @@ covergroup cg_cj(string name) with function sample (uvma_isacov_instr_c instr);
   cp_c_immj: coverpoint instr.c_immj;
 endgroup : cg_cj
 
+covergroup cg_instr(string name,
+                    bit seq_instr_group_x2_enabled,
+                    bit seq_instr_group_x3_enabled,
+                    bit seq_instr_group_x4_enabled,
+                    bit [CSR_MASK_WL-1:0] cfg_illegal_csr,
+                    bit ext_a_enabled) with function sample (uvma_isacov_instr_c instr,
+                                                             uvma_isacov_instr_c instr_prev,
+                                                             uvma_isacov_instr_c instr_prev2,
+                                                             uvma_isacov_instr_c instr_prev3,
+                                                             bit raw_hazard,
+                                                             bit csr_hazard);
+  option.per_instance = 1;
+  option.name = name;
+
+  cp_instr: coverpoint(instr.name);
+  cp_instr_prev: coverpoint(instr.name);
+
+  cp_group: coverpoint (instr.group) {
+    bins LOAD = {LOAD_GROUP};
+    bins STORE = {STORE_GROUP};
+    bins MISALIGN_LOAD = {MISALIGN_LOAD_GROUP};
+    bins MISALIGN_STORE = {MISALIGN_STORE_GROUP};
+    bins ALU = {ALU_GROUP};
+    bins BRANCH = {BRANCH_GROUP};
+    bins JUMP = {JUMP_GROUP};
+    bins FENCE = {FENCE_GROUP};
+    bins FENCE_I = {FENCE_I_GROUP};
+    bins RET = {RET_GROUP};
+    bins WFI = {WFI_GROUP};
+    bins CSR = {CSR_GROUP};
+    bins ENV = {ENV_GROUP};
+    bins MUL = {MUL_GROUP};
+    bins MULTI_MUL = {MULTI_MUL_GROUP};
+    bins DIV = {DIV_GROUP};
+    bins ALOAD  = {ALOAD_GROUP} with (ext_a_enabled);
+    bins ASTORE = {ASTORE_GROUP} with (ext_a_enabled);
+    bins AMEM   = {AMEM_GROUP} with (ext_a_enabled);
+  }
+  cp_group_prev:  coverpoint (instr_prev.group) iff (instr_prev != null) {
+    bins LOAD = {LOAD_GROUP} with (seq_instr_group_x2_enabled);
+    bins STORE = {STORE_GROUP} with (seq_instr_group_x2_enabled);
+    bins MISALIGN_LOAD = {MISALIGN_LOAD_GROUP} with (seq_instr_group_x2_enabled);
+    bins MISALIGN_STORE = {MISALIGN_STORE_GROUP} with (seq_instr_group_x2_enabled);
+    bins ALU = {ALU_GROUP} with (seq_instr_group_x2_enabled);
+    bins BRANCH = {BRANCH_GROUP} with (seq_instr_group_x2_enabled);
+    bins JUMP = {JUMP_GROUP} with (seq_instr_group_x2_enabled);
+    bins FENCE = {FENCE_GROUP} with (seq_instr_group_x2_enabled);
+    bins FENCE_I = {FENCE_I_GROUP} with (seq_instr_group_x2_enabled);
+    bins RET = {RET_GROUP} with (seq_instr_group_x2_enabled);
+    bins WFI = {WFI_GROUP} with (seq_instr_group_x2_enabled);
+    bins CSR = {CSR_GROUP} with (seq_instr_group_x2_enabled);
+    bins ENV = {ENV_GROUP} with (seq_instr_group_x2_enabled);
+    bins MUL = {MUL_GROUP} with (seq_instr_group_x2_enabled);
+    bins MULTI_MUL = {MULTI_MUL_GROUP} with (seq_instr_group_x2_enabled);
+    bins DIV = {DIV_GROUP} with (seq_instr_group_x2_enabled);
+    bins ALOAD  = {ALOAD_GROUP} with (seq_instr_group_x2_enabled && ext_a_enabled);
+    bins ASTORE = {ASTORE_GROUP} with (seq_instr_group_x2_enabled && ext_a_enabled);
+    bins AMEM   = {AMEM_GROUP} with (seq_instr_group_x2_enabled && ext_a_enabled);
+  }
+
+  cp_group_prev2: coverpoint (instr_prev2.group) iff (instr_prev2 != null) {
+    bins LOAD = {LOAD_GROUP} with (seq_instr_group_x3_enabled);
+    bins STORE = {STORE_GROUP} with (seq_instr_group_x3_enabled);
+    bins MISALIGN_LOAD = {MISALIGN_LOAD_GROUP} with (seq_instr_group_x3_enabled);
+    bins MISALIGN_STORE = {MISALIGN_STORE_GROUP} with (seq_instr_group_x3_enabled);
+    bins ALU = {ALU_GROUP} with (seq_instr_group_x3_enabled);
+    bins BRANCH = {BRANCH_GROUP} with (seq_instr_group_x3_enabled);
+    bins JUMP = {JUMP_GROUP} with (seq_instr_group_x3_enabled);
+    bins FENCE = {FENCE_GROUP} with (seq_instr_group_x3_enabled);
+    bins FENCE_I = {FENCE_I_GROUP} with (seq_instr_group_x3_enabled);
+    bins RET = {RET_GROUP} with (seq_instr_group_x3_enabled);
+    bins WFI = {WFI_GROUP} with (seq_instr_group_x3_enabled);
+    bins CSR = {CSR_GROUP} with (seq_instr_group_x3_enabled);
+    bins ENV = {ENV_GROUP} with (seq_instr_group_x3_enabled);
+    bins MUL = {MUL_GROUP} with (seq_instr_group_x3_enabled);
+    bins MULTI_MUL = {MULTI_MUL_GROUP} with (seq_instr_group_x3_enabled);
+    bins DIV = {DIV_GROUP} with (seq_instr_group_x3_enabled);
+    bins ALOAD  = {ALOAD_GROUP} with (seq_instr_group_x3_enabled && ext_a_enabled);
+    bins ASTORE = {ASTORE_GROUP} with (seq_instr_group_x3_enabled && ext_a_enabled);
+    bins AMEM   = {AMEM_GROUP} with (seq_instr_group_x3_enabled && ext_a_enabled);
+  }
+
+  cp_group_prev3: coverpoint (instr_prev3.group) iff (instr_prev3 != null) {
+    bins LOAD = {LOAD_GROUP} with (seq_instr_group_x4_enabled);
+    bins STORE = {STORE_GROUP} with (seq_instr_group_x4_enabled);
+    bins MISALIGN_LOAD = {MISALIGN_LOAD_GROUP} with (seq_instr_group_x4_enabled);
+    bins MISALIGN_STORE = {MISALIGN_STORE_GROUP} with (seq_instr_group_x4_enabled);
+    bins ALU = {ALU_GROUP} with (seq_instr_group_x4_enabled);
+    bins BRANCH = {BRANCH_GROUP} with (seq_instr_group_x4_enabled);
+    bins JUMP = {JUMP_GROUP} with (seq_instr_group_x4_enabled);
+    bins FENCE = {FENCE_GROUP} with (seq_instr_group_x4_enabled);
+    bins FENCE_I = {FENCE_I_GROUP} with (seq_instr_group_x4_enabled);
+    bins RET = {RET_GROUP} with (seq_instr_group_x4_enabled);
+    bins WFI = {WFI_GROUP} with (seq_instr_group_x4_enabled);
+    bins CSR = {CSR_GROUP} with (seq_instr_group_x4_enabled);
+    bins ENV = {ENV_GROUP} with (seq_instr_group_x4_enabled);
+    bins MUL = {MUL_GROUP} with (seq_instr_group_x4_enabled);
+    bins MULTI_MUL = {MULTI_MUL_GROUP} with (seq_instr_group_x4_enabled);
+    bins DIV = {DIV_GROUP} with (seq_instr_group_x4_enabled);
+    bins ALOAD  = {ALOAD_GROUP} with (seq_instr_group_x4_enabled && ext_a_enabled);
+    bins ASTORE = {ASTORE_GROUP} with (seq_instr_group_x4_enabled && ext_a_enabled);
+    bins AMEM   = {AMEM_GROUP} with (seq_instr_group_x4_enabled && ext_a_enabled);
+  }
+
+  cp_raw_hazard: coverpoint(raw_hazard) {
+    bins NO_RAW_HAZARD  = {0};
+    bins RAW_HAZARD     = {1};
+  }
+
+  cp_csr_hazard: coverpoint(csr_hazard) {
+    bins NO_CSR_HAZARD  = {0};
+    bins CSR_HAZARD     = {1};
+  }
+
+  cp_csr: coverpoint(instr_prev.csr) iff (instr_prev != null) {
+    bins CSR[] = {[USTATUS:VLENB]} with (cfg_illegal_csr[item] == 0);
+  }
+
+  cross_seq_x2: cross cp_group, cp_group_prev;  
+  cross_seq_x3: cross cp_group, cp_group_prev, cp_group_prev2;
+  cross_seq_x4: cross cp_group, cp_group_prev, cp_group_prev2, cp_group_prev3;
+
+  // FIXME: This will need more filtering
+  cross_seq_raw_hazard: cross cp_group, cp_group_prev, cp_raw_hazard {
+    // Ignore non-hazard bins
+    ignore_bins IGN_HAZ = binsof(cp_raw_hazard) intersect {0};
+  }
+
+  cross_csr_hazard: cross cp_csr, cp_instr, cp_csr_hazard {
+    // Ignore non-hazard bins
+    ignore_bins IGN_HAZ = binsof(cp_csr_hazard) intersect {0};
+  }
+endgroup : cg_instr
+
 
 class uvma_isacov_cov_model_c extends uvm_component;
 
@@ -162,6 +319,11 @@ class uvma_isacov_cov_model_c extends uvm_component;
 
   // Objects
   uvma_isacov_cfg_c cfg;
+
+  // Store previous instruction
+  uvma_isacov_instr_c instr_prev;
+  uvma_isacov_instr_c instr_prev2;
+  uvma_isacov_instr_c instr_prev3;
 
   // Covergroups
   //32I:
@@ -242,14 +404,16 @@ class uvma_isacov_cov_model_c extends uvm_component;
   cg_cr c_add_cg;
   cg_css c_swsp_cg;
   //Zicsr:
-  cg_itype csrrw_cg;  // TODO define type for named "csr" imm
-  cg_itype csrrs_cg;
-  cg_itype csrrc_cg;
-  cg_itype csrrwi_cg;
-  cg_itype csrrsi_cg;
-  cg_itype csrrci_cg;
+  cg_csrtype  csrrw_cg;
+  cg_csrtype  csrrs_cg;
+  cg_csrtype  csrrc_cg;
+  cg_csritype csrrwi_cg;
+  cg_csritype csrrsi_cg;
+  cg_csritype csrrci_cg;
   //Zifence_i:
   cg_itype fence_i_cg;  // TODO own cg? (not itype)
+  // Instruction groups
+  cg_instr  instr_cg;
 
   // TLM
   uvm_tlm_analysis_fifo #(uvma_isacov_mon_trn_c) mon_trn_fifo;
@@ -259,6 +423,10 @@ class uvma_isacov_cov_model_c extends uvm_component;
   extern virtual task run_phase(uvm_phase phase);
   extern function void sample (uvma_isacov_instr_c instr);
 
+  extern function bit is_raw_hazard(uvma_isacov_instr_c instr,
+                                    uvma_isacov_instr_c instr_prev);
+  extern function bit is_csr_hazard(uvma_isacov_instr_c instr,
+                                    uvma_isacov_instr_c instr_prev);
 endclass : uvma_isacov_cov_model_c
 
 
@@ -367,16 +535,22 @@ function void uvma_isacov_cov_model_c::build_phase(uvm_phase phase);
       c_swsp_cg     = new("c_swsp_cg");
     end
     if (cfg.ext_zicsr_enabled) begin
-      csrrw_cg  = new("csrrw_cg");
-      csrrs_cg  = new("csrrs_cg");
-      csrrc_cg  = new("csrrc_cg");
-      csrrwi_cg = new("csrrwi_cg");
-      csrrsi_cg = new("csrrsi_cg");
-      csrrci_cg = new("csrrci_cg");
+      csrrw_cg  = new("csrrw_cg", cfg.cfg_illegal_csr);
+      csrrs_cg  = new("csrrs_cg", cfg.cfg_illegal_csr);
+      csrrc_cg  = new("csrrc_cg", cfg.cfg_illegal_csr);
+      csrrwi_cg = new("csrrwi_cg", cfg.cfg_illegal_csr);
+      csrrsi_cg = new("csrrsi_cg", cfg.cfg_illegal_csr);
+      csrrci_cg = new("csrrci_cg", cfg.cfg_illegal_csr);
     end
     if (cfg.ext_zifencei_enabled) begin
       fence_i_cg = new("fence_i_cg");
     end
+    instr_cg = new("instr_cg",
+                   .seq_instr_group_x2_enabled(cfg.seq_instr_group_x2_enabled),
+                   .seq_instr_group_x3_enabled(cfg.seq_instr_group_x3_enabled),
+                   .seq_instr_group_x4_enabled(cfg.seq_instr_group_x4_enabled),
+                   .cfg_illegal_csr(cfg.cfg_illegal_csr),
+                   .ext_a_enabled(cfg.ext_a_enabled));
   end
 
   mon_trn_fifo = new("mon_trn_fifo", this);
@@ -533,4 +707,47 @@ function void uvma_isacov_cov_model_c::sample (uvma_isacov_instr_c instr);
     $display("TODO error if no match found");
   end
 
-endfunction
+  instr_cg.sample(instr, 
+                  instr_prev, 
+                  instr_prev2, 
+                  instr_prev3, 
+                  .raw_hazard(is_raw_hazard(instr, instr_prev)),
+                  .csr_hazard(is_csr_hazard(instr, instr_prev))
+                  );
+
+  // Move instructions down the pipeline
+  instr_prev3 = instr_prev2;
+  instr_prev2 = instr_prev;
+  instr_prev  = instr;
+endfunction : sample
+
+function bit uvma_isacov_cov_model_c::is_raw_hazard(uvma_isacov_instr_c instr,
+                                                    uvma_isacov_instr_c instr_prev);
+
+  if (instr_prev == null)
+    return 0;
+
+  // RAW hazard, destination register in previous is used as source in next register
+  if (instr_prev.rd_valid && 
+      instr_prev.rd != 0 &&
+      (((instr_prev.rd == instr.rs1) && instr.rs1_valid) ||
+       ((instr_prev.rd == instr.rs2) && instr.rs2_valid)))
+    return 1;
+
+  return 0;
+endfunction : is_raw_hazard
+
+function bit uvma_isacov_cov_model_c::is_csr_hazard(uvma_isacov_instr_c instr,
+                                                    uvma_isacov_instr_c instr_prev);
+
+  if (instr_prev == null)
+    return 0;
+
+  // CSR hazard, previous instruction wrote to a valid CSR
+  if (instr_prev.group inside {CSR_GROUP} &&
+      instr_prev.is_csr_write() &&
+      !cfg.cfg_illegal_csr[instr_prev.csr])
+    return 1;
+
+  return 0;
+endfunction : is_csr_hazard

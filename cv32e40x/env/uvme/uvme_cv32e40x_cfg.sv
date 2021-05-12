@@ -28,11 +28,12 @@ class uvme_cv32e40x_cfg_c extends uvm_object;
    // Integrals
    rand bit                      enabled;
    rand uvm_active_passive_enum  is_active;
+   rand bit                      use_isacov;
+
    rand bit                      scoreboarding_enabled;
    rand bit                      cov_model_enabled;
    rand bit                      trn_log_enabled;
-   rand int unsigned             sys_clk_period;
-   //rand int unsigned             debug_clk_period;
+   rand int unsigned             sys_clk_period;   
    
    // Agent cfg handles
    rand uvma_isacov_cfg_c     isacov_cfg;
@@ -40,13 +41,7 @@ class uvme_cv32e40x_cfg_c extends uvm_object;
    rand uvma_interrupt_cfg_c  interrupt_cfg;
    rand uvma_debug_cfg_c      debug_cfg;
    rand uvma_obi_cfg_c        obi_instr_cfg;
-   rand uvma_obi_cfg_c        obi_data_cfg;
-   
-   // Objects   
-   // TODO Add scoreboard configuration handles
-   //      Ex: rand uvml_sb_cfg_c  sb_egress_cfg;
-   //          rand uvml_sb_cfg_c  sb_ingress_cfg;
-   
+   rand uvma_obi_cfg_c        obi_data_cfg;      
    
    `uvm_object_utils_begin(uvme_cv32e40x_cfg_c)
       `uvm_field_int (                         enabled                     , UVM_DEFAULT          )
@@ -54,8 +49,7 @@ class uvme_cv32e40x_cfg_c extends uvm_object;
       `uvm_field_int (                         scoreboarding_enabled       , UVM_DEFAULT          )
       `uvm_field_int (                         cov_model_enabled           , UVM_DEFAULT          )
       `uvm_field_int (                         trn_log_enabled             , UVM_DEFAULT          )
-      `uvm_field_int (                         sys_clk_period            , UVM_DEFAULT + UVM_DEC)
-      //`uvm_field_int (                         debug_clk_period            , UVM_DEFAULT + UVM_DEC)
+      `uvm_field_int (                         sys_clk_period            , UVM_DEFAULT + UVM_DEC)      
       
       `uvm_field_object(isacov_cfg, UVM_DEFAULT)
       `uvm_field_object(clknrst_cfg, UVM_DEFAULT)
@@ -63,10 +57,7 @@ class uvme_cv32e40x_cfg_c extends uvm_object;
       `uvm_field_object(debug_cfg  , UVM_DEFAULT)
       `uvm_field_object(obi_instr_cfg, UVM_DEFAULT)
       `uvm_field_object(obi_data_cfg, UVM_DEFAULT)
-            
-      // TODO Add scoreboard cfg field macros
-      //      Ex: `uvm_field_object(sb_egress_cfg , UVM_DEFAULT)
-      //          `uvm_field_object(sb_ingress_cfg, UVM_DEFAULT)
+
    `uvm_object_utils_end
    
    
@@ -92,13 +83,18 @@ class uvme_cv32e40x_cfg_c extends uvm_object;
       obi_instr_cfg.read_enabled  == 1;
       obi_data_cfg.write_enabled  == 1;
       obi_data_cfg.read_enabled   == 1;
-      isacov_cfg.enabled              == 0;  // TODO don't need "== 0" after uvma_isacov has matured enough
-      isacov_cfg.ext_i_enabled        == 1;
-      isacov_cfg.ext_m_enabled        == 1;
-      isacov_cfg.ext_c_enabled        == 1;
-      isacov_cfg.ext_zifencei_enabled == 1;
-      isacov_cfg.ext_zicsr_enabled    == 1;
-
+      isacov_cfg.enabled                    == use_isacov;  // TODO don't need "== 0" after uvma_isacov has matured enough
+      isacov_cfg.ext_i_enabled              == 1;
+      isacov_cfg.ext_m_enabled              == 1;
+      isacov_cfg.ext_c_enabled              == 1;
+      isacov_cfg.ext_a_enabled              == 0;
+      isacov_cfg.ext_zifencei_enabled       == 1;
+      isacov_cfg.ext_zicsr_enabled          == 1;
+      isacov_cfg.mode_u_enabled             == 0;
+      isacov_cfg.mode_s_enabled             == 0;
+      isacov_cfg.seq_instr_group_x2_enabled == 1;
+      isacov_cfg.seq_instr_group_x3_enabled == 1;
+      isacov_cfg.seq_instr_group_x4_enabled == 0;
       if (is_active == UVM_ACTIVE) {
          isacov_cfg.is_active    == UVM_PASSIVE;
          clknrst_cfg.is_active   == UVM_ACTIVE;
@@ -143,10 +139,7 @@ function uvme_cv32e40x_cfg_c::new(string name="uvme_cv32e40x_cfg");
    obi_instr_cfg = uvma_obi_cfg_c::type_id::create("obi_instr_cfg");
    obi_data_cfg  = uvma_obi_cfg_c::type_id::create("obi_data_cfg");
       
-   // TODO Create scoreboard cfg objects
-   //      Ex: sb_egress_cfg  = uvml_sb_cfg_c::type_id::create("sb_egress_cfg" );
-   //          sb_ingress_cfg = uvml_sb_cfg_c::type_id::create("sb_ingress_cfg");
-   
+   use_isacov = $test$plusargs("USE_ISACOV") ? 1 : 0;
 endfunction : new
 
 
