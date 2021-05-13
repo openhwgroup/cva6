@@ -272,7 +272,8 @@ covergroup cg_instr(string name,
   cp_group: coverpoint (instr.group) {
     illegal_bins ILL_EXT_A = {ALOAD_GROUP, ASTORE_GROUP, AMEM_GROUP} with (!ext_a_enabled);
   }
-  cp_group_prev:  coverpoint instr_prev.group iff (instr_prev != null) {
+
+  cp_group_prev:  coverpoint (instr_prev.group) iff (instr_prev != null) {
     ignore_bins IGN_X2_OFF = {[0:$]} with (!seq_instr_group_x2_enabled);
     illegal_bins ILL_EXT_A = {ALOAD_GROUP, ASTORE_GROUP, AMEM_GROUP} with (!ext_a_enabled);
   }
@@ -709,7 +710,7 @@ function void uvma_isacov_cov_model_c::sample (uvma_isacov_instr_c instr);
   end
 
   if (!have_sampled) begin
-    $display("TODO error if no match found");
+    `uvm_info("ISACOV", $sformatf("Could not sample instruction: %s", instr.name.name()), UVM_DEBUG);
   end
 
   instr_cg.sample(instr, 
