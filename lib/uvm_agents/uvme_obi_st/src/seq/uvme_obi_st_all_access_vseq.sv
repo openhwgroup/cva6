@@ -26,7 +26,7 @@
  */
 class uvme_obi_st_all_access_vseq_c extends uvme_obi_st_base_vseq_c;
    
-   rand uvma_obi_storage_slv_seq_c  slv_seq;
+   rand uvma_obi_memory_storage_slv_seq_c  slv_seq;
    rand int unsigned                num_all_access;
    
    
@@ -63,7 +63,7 @@ endfunction : new
 
 task uvme_obi_st_all_access_vseq_c::body();
    
-   uvma_obi_mstr_seq_item_c  _req;
+   uvma_obi_memory_mstr_seq_item_c  _req;
    
    fork
       begin

@@ -31,9 +31,9 @@ class uvme_obi_st_slv_sb_delay_c extends uvm_component;
    uvme_obi_st_cntxt_c  cntxt;
    
    // TLM
-   uvm_analysis_export  #(uvma_obi_mon_trn_c)  in_export;
-   uvm_tlm_analysis_fifo#(uvma_obi_mon_trn_c)  in_fifo  ;
-   uvm_analysis_port    #(uvma_obi_mon_trn_c)  out_ap   ;
+   uvm_analysis_export  #(uvma_obi_memory_mon_trn_c)  in_export;
+   uvm_tlm_analysis_fifo#(uvma_obi_memory_mon_trn_c)  in_fifo  ;
+   uvm_analysis_port    #(uvma_obi_memory_mon_trn_c)  out_ap   ;
    
    
    `uvm_component_utils_begin(uvme_obi_st_slv_sb_delay_c)
@@ -106,14 +106,14 @@ endfunction: connect_phase
 
 task uvme_obi_st_slv_sb_delay_c::run_phase(uvm_phase phase);
    
-   uvma_obi_mon_trn_c  in_trn, out_trn;
+   uvma_obi_memory_mon_trn_c  in_trn, out_trn;
    
    super.run_phase(phase);
    
    forever begin
       // Get next transaction and copy it
       in_fifo.get(in_trn);
-      out_trn = uvma_obi_mon_trn_c::type_id::create("out_trn");
+      out_trn = uvma_obi_memory_mon_trn_c::type_id::create("out_trn");
       out_trn.copy(in_trn);
       
       // Send transaction to analysis port

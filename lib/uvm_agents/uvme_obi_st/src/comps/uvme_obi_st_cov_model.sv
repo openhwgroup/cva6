@@ -30,16 +30,16 @@ class uvme_obi_st_cov_model_c extends uvm_component;
    // Coverage targets
    uvme_obi_st_cfg_c         cfg;
    uvme_obi_st_cntxt_c       cntxt;
-   uvma_obi_mstr_seq_item_c  mstr_seq_item;
-   uvma_obi_slv_seq_item_c   slv_seq_item;
-   uvma_obi_mon_trn_c        mstr_mon_trn;
-   uvma_obi_mon_trn_c        slv_mon_trn;
+   uvma_obi_memory_mstr_seq_item_c  mstr_seq_item;
+   uvma_obi_memory_slv_seq_item_c   slv_seq_item;
+   uvma_obi_memory_mon_trn_c        mstr_mon_trn;
+   uvma_obi_memory_mon_trn_c        slv_mon_trn;
    
    // TLM
-   uvm_tlm_analysis_fifo#(uvma_obi_mstr_seq_item_c)  mstr_seq_item_fifo;
-   uvm_tlm_analysis_fifo#(uvma_obi_slv_seq_item_c )  slv_seq_item_fifo ;
-   uvm_tlm_analysis_fifo#(uvma_obi_mon_trn_c      )  mstr_mon_trn_fifo ;
-   uvm_tlm_analysis_fifo#(uvma_obi_mon_trn_c      )  slv_mon_trn_fifo  ;
+   uvm_tlm_analysis_fifo#(uvma_obi_memory_mstr_seq_item_c)  mstr_seq_item_fifo;
+   uvm_tlm_analysis_fifo#(uvma_obi_memory_slv_seq_item_c )  slv_seq_item_fifo ;
+   uvm_tlm_analysis_fifo#(uvma_obi_memory_mon_trn_c      )  mstr_mon_trn_fifo ;
+   uvm_tlm_analysis_fifo#(uvma_obi_memory_mon_trn_c      )  slv_mon_trn_fifo  ;
    
    
    `uvm_component_utils_begin(uvme_obi_st_cov_model_c)

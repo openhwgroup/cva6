@@ -17,14 +17,20 @@
 // 
 
 
-`ifndef __UVME_OBI_ST_TDEFS_SV__
-`define __UVME_OBI_ST_TDEFS_SV__
+`ifndef __UVMA_OBI_MEMORY_IF_CHKR_SV__
+`define __UVMA_OBI_MEMORY_IF_CHKR_SV__
 
 
-// Scoreboard specialization
-typedef uvml_sb_simplex_c#(
-   .T_ACT_TRN(uvma_obi_memory_mon_trn_c)
-) uvme_obi_st_sb_simplex_c;
+/**
+ * Encapsulates assertions targeting uvma_obi_if.
+ */
+module uvma_obi_memory_if_chkr(
+   uvma_obi_memory_if  obi_memory_if
+);
+   
+   // TODO Add assertions to uvma_obi_memory_if_chkr
+   
+endmodule : uvma_obi_memory_if_chkr
 
 
-`endif // __UVME_OBI_ST_TDEFS_SV__
+`endif // __UVMA_OBI_IF_MEMORY_CHKR_SV__

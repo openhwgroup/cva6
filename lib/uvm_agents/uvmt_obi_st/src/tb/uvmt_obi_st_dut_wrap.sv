@@ -24,8 +24,8 @@
  * Module wrapper for Open Bus Interface RTL DUT. All ports are SV interfaces.
  */
 module uvmt_obi_st_dut_wrap(
-   uvma_obi_if  mstr_if,
-   uvma_obi_if  slv_if
+   uvma_obi_memory_if  mstr_if,
+   uvma_obi_memory_if  slv_if
 );
    assign slv_if.req    = mstr_if.req   ;
    assign slv_if.addr   = mstr_if.addr  ;

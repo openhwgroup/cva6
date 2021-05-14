@@ -32,8 +32,8 @@ class uvme_obi_st_env_c extends uvm_env;
    uvme_obi_st_cntxt_c  cntxt;
    
    // Agents
-   uvma_obi_agent_c  mstr_agent;
-   uvma_obi_agent_c  slv_agent ;
+   uvma_obi_memory_agent_c  mstr_agent;
+   uvma_obi_memory_agent_c  slv_agent ;
    
    // Components
    uvme_obi_st_cov_model_c     cov_model;
@@ -191,8 +191,8 @@ endfunction: connect_phase
 function void uvme_obi_st_env_c::assign_cfg();
    
    uvm_config_db#(uvme_obi_st_cfg_c)::set(this, "*"         , "cfg", cfg         );
-   uvm_config_db#(uvma_obi_cfg_c   )::set(this, "mstr_agent", "cfg", cfg.mstr_cfg);
-   uvm_config_db#(uvma_obi_cfg_c   )::set(this, "slv_agent" , "cfg", cfg.slv_cfg );
+   uvm_config_db#(uvma_obi_memory_cfg_c   )::set(this, "mstr_agent", "cfg", cfg.mstr_cfg);
+   uvm_config_db#(uvma_obi_memory_cfg_c   )::set(this, "slv_agent" , "cfg", cfg.slv_cfg );
    uvm_config_db#(uvml_sb_cfg_c    )::set(this, "sb"        , "cfg", cfg.sb_cfg  );
    
 endfunction: assign_cfg
@@ -201,8 +201,8 @@ endfunction: assign_cfg
 function void uvme_obi_st_env_c::assign_cntxt();
    
    uvm_config_db#(uvme_obi_st_cntxt_c)::set(this, "*"         , "cntxt", cntxt           );
-   uvm_config_db#(uvma_obi_cntxt_c   )::set(this, "mstr_agent", "cntxt", cntxt.mstr_cntxt);
-   uvm_config_db#(uvma_obi_cntxt_c   )::set(this, "slv_agent" , "cntxt", cntxt.slv_cntxt );
+   uvm_config_db#(uvma_obi_memory_cntxt_c   )::set(this, "mstr_agent", "cntxt", cntxt.mstr_cntxt);
+   uvm_config_db#(uvma_obi_memory_cntxt_c   )::set(this, "slv_agent" , "cntxt", cntxt.slv_cntxt );
    uvm_config_db#(uvml_sb_cntxt_c    )::set(this, "sb"        , "cntxt", cntxt.sb_cntxt  );
    
 endfunction: assign_cntxt
@@ -210,8 +210,8 @@ endfunction: assign_cntxt
 
 function void uvme_obi_st_env_c::create_agents();
    
-   mstr_agent = uvma_obi_agent_c::type_id::create("mstr_agent", this);
-   slv_agent  = uvma_obi_agent_c::type_id::create("slv_agent" , this);
+   mstr_agent = uvma_obi_memory_agent_c::type_id::create("mstr_agent", this);
+   slv_agent  = uvma_obi_memory_agent_c::type_id::create("slv_agent" , this);
    
 endfunction: create_agents
 

@@ -17,14 +17,11 @@
 // 
 
 
-`ifndef __UVME_OBI_ST_TDEFS_SV__
-`define __UVME_OBI_ST_TDEFS_SV__
+// Directories
++incdir+${DV_UVMA_OBI_MEMORY_SRC_PATH}
++incdir+${DV_UVMA_OBI_MEMORY_SRC_PATH}/comps
++incdir+${DV_UVMA_OBI_MEMORY_SRC_PATH}/obj
++incdir+${DV_UVMA_OBI_MEMORY_SRC_PATH}/seq
 
-
-// Scoreboard specialization
-typedef uvml_sb_simplex_c#(
-   .T_ACT_TRN(uvma_obi_memory_mon_trn_c)
-) uvme_obi_st_sb_simplex_c;
-
-
-`endif // __UVME_OBI_ST_TDEFS_SV__
+// Files
+${DV_UVMA_OBI_MEMORY_SRC_PATH}/uvma_obi_memory_pkg.sv

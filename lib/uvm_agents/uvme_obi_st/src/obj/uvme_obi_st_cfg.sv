@@ -36,8 +36,8 @@ class uvme_obi_st_cfg_c extends uvm_object;
    rand bit                      trn_log_enabled;
    
    // Objects
-   rand uvma_obi_cfg_c  mstr_cfg;
-   rand uvma_obi_cfg_c  slv_cfg;
+   rand uvma_obi_memory_cfg_c  mstr_cfg;
+   rand uvma_obi_memory_cfg_c  slv_cfg;
    rand uvml_sb_cfg_c   sb_cfg;
    
    
@@ -99,10 +99,10 @@ class uvme_obi_st_cfg_c extends uvm_object;
       mstr_cfg.data_width  == slv_cfg.data_width ;
       mstr_cfg.id_width    == slv_cfg.id_width   ;
       
-      mstr_cfg.drv_mode == UVMA_OBI_MODE_MSTR ;
-      mstr_cfg.drv_idle == UVMA_OBI_DRV_IDLE_X;
-      slv_cfg .drv_mode == UVMA_OBI_MODE_SLV  ;
-      slv_cfg .drv_idle == UVMA_OBI_DRV_IDLE_X;
+      mstr_cfg.drv_mode == UVMA_OBI_MEMORY_MODE_MSTR ;
+      mstr_cfg.drv_idle == UVMA_OBI_MEMORY_DRV_IDLE_X;
+      slv_cfg .drv_mode == UVMA_OBI_MEMORY_MODE_SLV  ;
+      slv_cfg .drv_idle == UVMA_OBI_MEMORY_DRV_IDLE_X;
    }
    
    constraint sb_cfg_cons {
@@ -128,8 +128,8 @@ function uvme_obi_st_cfg_c::new(string name="uvme_obi_st_cfg");
    
    super.new(name);
    
-   mstr_cfg = uvma_obi_cfg_c::type_id::create("mstr_cfg");
-   slv_cfg  = uvma_obi_cfg_c::type_id::create("slv_cfg" );
+   mstr_cfg = uvma_obi_memory_cfg_c::type_id::create("mstr_cfg");
+   slv_cfg  = uvma_obi_memory_cfg_c::type_id::create("slv_cfg" );
    sb_cfg   = uvml_sb_cfg_c ::type_id::create("sb_cfg"  );
    
 endfunction : new

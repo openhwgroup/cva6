@@ -28,8 +28,8 @@
 class uvme_obi_st_cntxt_c extends uvm_object;
    
    // Agent context handles
-   uvma_obi_cntxt_c  mstr_cntxt;
-   uvma_obi_cntxt_c  slv_cntxt;
+   uvma_obi_memory_cntxt_c  mstr_cntxt;
+   uvma_obi_memory_cntxt_c  slv_cntxt;
    
    // Scoreboard context handle
    uvml_sb_cntxt_c  sb_cntxt;
@@ -62,8 +62,8 @@ function uvme_obi_st_cntxt_c::new(string name="uvme_obi_st_cntxt");
    
    super.new(name);
    
-   mstr_cntxt = uvma_obi_cntxt_c::type_id::create("mstr_cntxt");
-   slv_cntxt  = uvma_obi_cntxt_c::type_id::create("slv_cntxt" );
+   mstr_cntxt = uvma_obi_memory_cntxt_c::type_id::create("mstr_cntxt");
+   slv_cntxt  = uvma_obi_memory_cntxt_c::type_id::create("slv_cntxt" );
    sb_cntxt   = uvml_sb_cntxt_c ::type_id::create("sb_cntxt"  );
    
    sample_cfg_e   = new("sample_cfg_e"  );

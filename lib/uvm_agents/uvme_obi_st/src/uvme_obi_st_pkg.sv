@@ -27,7 +27,7 @@
 `include "uvml_logs_macros.sv"
 `include "uvml_trn_macros.sv"
 `include "uvml_sb_macros.sv"
-`include "uvma_obi_macros.sv"
+`include "uvma_obi_memory_macros.sv"
 `include "uvme_obi_st_macros.sv"
 
 // Interface(s) / Module(s) / Checker(s)

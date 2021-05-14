@@ -225,8 +225,8 @@ def do_cmp_rtl(target_design):
 
 
 def do_cmp_dv(filelist_path, lib_name):
-    if (dbg):
-        print("Call to do_cmp_dv(filelist_path='" + filelist_path + "', lib_name='" + lib_name + "')")
+    #if (dbg):
+    print("Call to do_cmp_dv(filelist_path='" + filelist_path + "', lib_name='" + lib_name + "')")
     print("************")
     print("Compiling DV")
     print("************")
