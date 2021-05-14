@@ -65,7 +65,7 @@ class uvma_obi_memory_mstr_seq_item_c extends uvma_obi_memory_base_seq_item_c;
     * Describe defaults_cons
     */
    constraint defaults_cons {
-      /*soft*/ //id             == __uid;
+      /*soft*/ id             == __uid;
       /*soft*/ req_latency    == 0;
       /*soft*/ rready_latency == 0;
       /*soft*/ rready_hold    == 1;
