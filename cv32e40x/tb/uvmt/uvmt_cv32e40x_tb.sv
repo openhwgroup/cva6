@@ -411,7 +411,7 @@ bind cv32e40x_wrapper
         if (!clknrst_if.reset_n) begin
             count_issue <= 32'h0;
         end else begin
-            if ((dut_wrap.cv32e40x_wrapper_i.core_i.id_stage_i.id_valid_o && dut_wrap.cv32e40x_wrapper_i.core_i.is_decoding &&
+            if ((dut_wrap.cv32e40x_wrapper_i.core_i.id_stage_i.id_valid_o && dut_wrap.cv32e40x_wrapper_i.core_i.is_decoding && !dut_wrap.cv32e40x_wrapper_i.core_i.id_stage_i.multi_cycle_id_stall &&
                !dut_wrap.cv32e40x_wrapper_i.core_i.controller_i.controller_fsm_i.illegal_insn_i) ||
                 (dut_wrap.cv32e40x_wrapper_i.core_i.is_decoding && dut_wrap.cv32e40x_wrapper_i.core_i.controller_i.controller_fsm_i.ebrk_insn_i &&
                  !dut_wrap.cv32e40x_wrapper_i.core_i.controller_i.debug_trigger_match_i &&
