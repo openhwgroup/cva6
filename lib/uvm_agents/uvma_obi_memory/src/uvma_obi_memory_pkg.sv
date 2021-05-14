@@ -43,7 +43,7 @@ package uvma_obi_memory_pkg;
    import uvml_hrtbt_pkg::*;
    import uvml_trn_pkg  ::*;
    import uvml_logs_pkg ::*;
-   import uvml_ral_pkg  ::*;
+   //import uvml_ral_pkg  ::*;
    
    // Constants / Structs / Enums
    `include "uvma_obi_memory_constants.sv"
@@ -72,7 +72,7 @@ package uvma_obi_memory_pkg;
    `include "uvma_obi_memory_seq_lib.sv"
    
    // Misc.
-   `include "uvma_obi_memory_reg_adapter.sv"
+   //`include "uvma_obi_memory_reg_adapter.sv"
    
 endpackage : uvma_obi_memory_pkg
 

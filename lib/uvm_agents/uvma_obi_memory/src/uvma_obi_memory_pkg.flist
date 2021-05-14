@@ -18,10 +18,10 @@
 
 
 // Directories
-+incdir+${DV_UVMA_OBI_MEMORY_SRC_PATH}
-+incdir+${DV_UVMA_OBI_MEMORY_SRC_PATH}/comps
-+incdir+${DV_UVMA_OBI_MEMORY_SRC_PATH}/obj
-+incdir+${DV_UVMA_OBI_MEMORY_SRC_PATH}/seq
++incdir+${DV_UVMA_OBI_MEMORY_PATH}/src
++incdir+${DV_UVMA_OBI_MEMORY_PATH}/src/comps
++incdir+${DV_UVMA_OBI_MEMORY_PATH}/src/obj
++incdir+${DV_UVMA_OBI_MEMORY_PATH}/src/seq
 
 // Files
-${DV_UVMA_OBI_MEMORY_SRC_PATH}/uvma_obi_memory_pkg.sv
+${DV_UVMA_OBI_MEMORY_PATH}/src/uvma_obi_memory_pkg.sv

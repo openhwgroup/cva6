@@ -183,7 +183,8 @@ endfunction : get_and_set_cntxt
 function void uvma_obi_memory_agent_c::retrieve_vif();
    
    if (!uvm_config_db#(virtual uvma_obi_memory_if)::get(this, "", "vif", cntxt.vif)) begin
-      `uvm_fatal("VIF", $sformatf("Could not find vif handle of type %s in uvm_config_db", $typename(cntxt.vif)))
+      //`uvm_fatal("VIF", $sformatf("Could not find vif handle of type %s in uvm_config_db", $typename(cntxt.vif)))
+      `uvm_warning("VIF", $sformatf("Could not find vif handle of type %s in uvm_config_db", $typename(cntxt.vif)))
    end
    else begin
       `uvm_info("VIF", $sformatf("Found vif handle of type %s in uvm_config_db", $typename(cntxt.vif)), UVM_DEBUG)
@@ -240,8 +241,8 @@ endfunction : connect_cov_model
 
 function void uvma_obi_memory_agent_c::connect_trn_loggers();
    
-   drv_mstr_ap.connect(seq_item_logger.analysis_export);
-   drv_slv_ap .connect(seq_item_logger.analysis_export);
+   //drv_mstr_ap.connect(seq_item_logger.analysis_export);
+   //drv_slv_ap .connect(seq_item_logger.analysis_export);
    mon_ap     .connect(mon_trn_logger .analysis_export);
    
 endfunction : connect_trn_loggers

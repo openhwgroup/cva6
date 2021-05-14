@@ -37,6 +37,7 @@ class uvme_cv32e40p_cntxt_c extends uvm_object;
    uvma_debug_cntxt_c      debug_cntxt;
    uvma_obi_cntxt_c        obi_instr_cntxt;
    uvma_obi_cntxt_c        obi_data_cntxt;
+   uvma_obi_memory_cntxt_c obi_memory_cntxt;
    
    // TODO Add scoreboard context handles
    //      Ex: uvme_cv32e40p_sb_cntxt_c  sb_egress_cntxt;
@@ -48,11 +49,12 @@ class uvme_cv32e40p_cntxt_c extends uvm_object;
    
    
    `uvm_object_utils_begin(uvme_cv32e40p_cntxt_c)
-      `uvm_field_object(clknrst_cntxt,   UVM_DEFAULT)
-      `uvm_field_object(interrupt_cntxt, UVM_DEFAULT)
-      `uvm_field_object(debug_cntxt  ,   UVM_DEFAULT)
-      `uvm_field_object(obi_instr_cntxt, UVM_DEFAULT)
-      `uvm_field_object(obi_data_cntxt,  UVM_DEFAULT)
+      `uvm_field_object(clknrst_cntxt,    UVM_DEFAULT)
+      `uvm_field_object(interrupt_cntxt,  UVM_DEFAULT)
+      `uvm_field_object(debug_cntxt  ,    UVM_DEFAULT)
+      `uvm_field_object(obi_instr_cntxt,  UVM_DEFAULT)
+      `uvm_field_object(obi_data_cntxt,   UVM_DEFAULT)
+      `uvm_field_object(obi_memory_cntxt, UVM_DEFAULT)
       
       // TODO Add scoreboard context field macros
       //      Ex: `uvm_field_object(sb_egress_cntxt , UVM_DEFAULT)
@@ -75,13 +77,14 @@ function uvme_cv32e40p_cntxt_c::new(string name="uvme_cv32e40p_cntxt");
    
    super.new(name);
    
-   clknrst_cntxt   = uvma_clknrst_cntxt_c::type_id::create("clknrst_cntxt");
-   interrupt_cntxt = uvma_interrupt_cntxt_c::type_id::create("interrupt_cntxt");
-   //debug_cntxt = uvma_debug_cntxt_c::type_id::create("debug_cntxt");
-   debug_cntxt = uvma_debug_cntxt_c::type_id::create("debug_cntxt");
-   obi_instr_cntxt = uvma_obi_cntxt_c::type_id::create("obi_instr_cntxt");
-   obi_data_cntxt  = uvma_obi_cntxt_c::type_id::create("obi_data_cntxt");
-   //debug_cntxt = uvma_debug_cntxt_c::type_id::create("debug_cntxt");
+   clknrst_cntxt     = uvma_clknrst_cntxt_c   ::type_id::create("clknrst_cntxt");
+   interrupt_cntxt   = uvma_interrupt_cntxt_c ::type_id::create("interrupt_cntxt");
+   //debug_cntxt       = uvma_debug_cntxt_c     ::type_id::create("debug_cntxt");
+   debug_cntxt       = uvma_debug_cntxt_c     ::type_id::create("debug_cntxt");
+   obi_instr_cntxt   = uvma_obi_cntxt_c       ::type_id::create("obi_instr_cntxt");
+   obi_data_cntxt    = uvma_obi_cntxt_c       ::type_id::create("obi_data_cntxt");
+   obi_memory_cntxt  = uvma_obi_memory_cntxt_c::type_id::create("obi_memory_cntxt");
+   //debug_cntxt     = uvma_debug_cntxt_c       ::type_id::create("debug_cntxt");
    
    // TODO Create uvme_cv32e40p_cntxt_c scoreboard context objects
    //      Ex: sb_egress_cntxt  = uvma_cv32e40p_sb_cntxt_c::type_id::create("sb_egress_cntxt" );
