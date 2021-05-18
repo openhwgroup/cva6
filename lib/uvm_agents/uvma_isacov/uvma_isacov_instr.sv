@@ -16,50 +16,14 @@
 // SPDX-License-Identifier: Apache-2.0 WITH SHL-2.0
 
 
-typedef enum {
-  UNKNOWN,  // TODO this should not be needed?
-
-  // 32I
-  LUI, AUIPC, JAL, JALR,
-  BEQ, BNE, BLT, BGE, BLTU, BGEU,
-  LB, LH, LW, LBU, LHU, SB, SH, SW,
-  ADDI, SLTI, SLTIU, XORI, ORI, ANDI, SLLI, SRLI, SRAI,
-  ADD, SUB, SLL, SLT, SLTU, XOR, SRL, SRA, OR, AND,
-  FENCE, ECALL, EBREAK, DRET, MRET, WFI,
-
-  // 32M
-  MUL, MULH, MULHSU, MULHU,
-  DIV, DIVU, REM, REMU,
-
-  // 32C
-  C_ADDI4SPN, C_LW, C_SW,
-  C_ADDI, C_JAL, C_LI, C_ADDI16SP, C_LUI, C_SRLI, C_SRAI,
-  C_ANDI, C_SUB, C_XOR, C_OR, C_AND, C_J, C_BEQZ, C_BNEZ,
-  C_SLLI, C_LWSP, C_JR, C_MV, C_EBREAK, C_JALR, C_ADD, C_SWSP,
-
-  // Zicsr
-  CSRRW, CSRRS, CSRRC,
-  CSRRWI, CSRRSI, CSRRCI,
-
-  // Zifencei
-  FENCE_I
-} instr_name_t;
-
-typedef enum {
-  // RV32 types
-  R_TYPE,
-  I_TYPE,
-  S_TYPE,
-  B_TYPE,
-  U_TYPE,
-  J_TYPE,
-
-  UNKNOWN_TYPE // Delete when all are implemented
-} instr_type_t;
 
 class uvma_isacov_instr_c extends uvm_object;
   
-  instr_name_t name;
+  instr_name_t  name;
+  instr_type_t  itype;
+  instr_group_t group;
+
+  instr_csr_t   csr;
 
   bit [4:0] rs1;
   bit [4:0] rs2;
@@ -69,6 +33,11 @@ class uvma_isacov_instr_c extends uvm_object;
   bit [12:1] immb;
   bit [19:0] immu;
   bit [20:1] immj;
+
+  // Valid flags for fields (to calculate hazards and other coverage)
+  bit rs1_valid;
+  bit rs2_valid;
+  bit rd_valid;
 
   bit [2:0] c_rs1p;
   bit [2:0] c_rs2p;
@@ -86,9 +55,16 @@ class uvma_isacov_instr_c extends uvm_object;
 
   `uvm_object_utils_begin(uvma_isacov_instr_c);
     `uvm_field_enum(instr_name_t, name, UVM_ALL_ON | UVM_NOPRINT);
-    `uvm_field_int(rs1, UVM_ALL_ON | UVM_NOPRINT);
-    `uvm_field_int(rs2, UVM_ALL_ON | UVM_NOPRINT);
-    `uvm_field_int(rd, UVM_ALL_ON | UVM_NOPRINT);
+    `uvm_field_enum(instr_type_t, itype, UVM_ALL_ON | UVM_NOPRINT);
+    `uvm_field_enum(instr_group_t, group, UVM_ALL_ON | UVM_NOPRINT);
+    `uvm_field_enum(instr_csr_t, csr, UVM_ALL_ON | UVM_NOPRINT);
+
+    `uvm_field_int(rs1_valid, UVM_ALL_ON | UVM_NOPRINT);
+    `uvm_field_int(rs1_valid, UVM_ALL_ON | UVM_NOPRINT);
+    `uvm_field_int(rs2_valid, UVM_ALL_ON | UVM_NOPRINT);
+    `uvm_field_int(rs2_valid, UVM_ALL_ON | UVM_NOPRINT);
+    `uvm_field_int(rd_valid, UVM_ALL_ON | UVM_NOPRINT);
+    `uvm_field_int(rd_valid, UVM_ALL_ON | UVM_NOPRINT);
 
     `uvm_field_int(immi, UVM_ALL_ON | UVM_NOPRINT);
     `uvm_field_int(imms, UVM_ALL_ON | UVM_NOPRINT);
@@ -116,26 +92,81 @@ class uvma_isacov_instr_c extends uvm_object;
 
   extern function string convert2string();
 
-  extern function instr_type_t get_instr_type();
+  extern function void set_valid_flags();
+  extern function bit is_csr_write();
 endclass : uvma_isacov_instr_c
 
 function uvma_isacov_instr_c::new(string name = "isacov_instr");
   super.new(name);
 endfunction : new
 
-function instr_type_t uvma_isacov_instr_c::get_instr_type();
-  if (name inside {ADD,SUB,SLL,SLT,SLTU,XOR,SRL,SRA,OR,AND}) 
-    return R_TYPE;
-
-  return UNKNOWN_TYPE;
-endfunction : get_instr_type
-
 function string uvma_isacov_instr_c::convert2string();
-  instr_type_t instr_type = this.get_instr_type();
 
-  if (instr_type == R_TYPE) begin
+  if (itype == R_TYPE) begin
     return $sformatf("%s x%0d, x%0d, x%0d", name.name(), rd, rs1, rs2);
+  end
+  if (itype == CSR_TYPE) begin
+    return $sformatf("%s x%0d, %s, x%0d", name.name(), rd, csr.name(), rs1);
   end
 
   return name.name();
 endfunction : convert2string
+
+function void uvma_isacov_instr_c::set_valid_flags();
+  if (itype == R_TYPE) begin
+    rs1_valid = 1;
+    rs2_valid = 1;
+    rd_valid = 1;
+    return;
+  end
+  
+  if (itype == I_TYPE) begin
+    rs1_valid = 1;
+    rd_valid = 1;
+  end
+
+  if (itype == S_TYPE) begin
+    rs1_valid = 1;
+    rs2_valid = 1;    
+  end
+
+  if (itype == B_TYPE) begin
+    rs1_valid = 1;
+    rs2_valid = 1;    
+  end
+
+  if (itype == U_TYPE) begin
+    rd_valid = 1;
+  end
+
+  if (itype == J_TYPE) begin
+    rd_valid = 1;
+  end
+
+  if (itype == CSR_TYPE) begin
+    rs1_valid = 1;
+    rd_valid = 1;
+  end
+
+  if (itype == CSRI_TYPE) begin
+    rd_valid = 1;
+  end
+
+endfunction : set_valid_flags
+
+function bit uvma_isacov_instr_c::is_csr_write();
+  // Using Table 9.1 in RISC-V specification to define a CSR write
+  if (name inside {CSRRW}) 
+    return 1;
+
+  if (name inside {CSRRS, CSRRC} && rs1 != 0) 
+    return 1;
+
+  if (name inside {CSRRWI})
+    return 1;
+
+  if (name inside {CSRRSI, CSRRCI} && immu != 0)
+    return 1;
+
+  return 0;
+endfunction : is_csr_write
