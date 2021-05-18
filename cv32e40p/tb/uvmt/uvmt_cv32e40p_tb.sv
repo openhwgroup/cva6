@@ -115,6 +115,17 @@ module uvmt_cv32e40p_tb;
                             )
                             dut_wrap (.*);
 
+  // Bind in OBI memory interface
+  bind cv32e40p_wrapper
+    uvma_obi_memory_if obi_memory_instr_if_i (.clk      (clk_i),
+                                              .reset_n  (rst_ni)
+                                              );
+
+  bind cv32e40p_wrapper
+    uvma_obi_memory_if obi_memory_data_if_i  (.clk      (clk_i),
+                                              .reset_n  (rst_ni)
+                                              );
+
   // Bind in OBI interfaces (montioring only supported currently)
   bind cv32e40p_wrapper
     uvma_obi_if obi_instr_if_i(.clk(clk_i),
@@ -129,6 +140,7 @@ module uvmt_cv32e40p_tb;
                                .rvalid(instr_rvalid_i),
                                .rready(1'b1)
                                );
+
 
   bind cv32e40p_wrapper
     uvma_obi_if obi_data_if_i(.clk(clk_i),
@@ -160,7 +172,7 @@ module uvmt_cv32e40p_tb;
                                          .rvalid(instr_rvalid_i),
                                          .rready(1'b1)
                                         );
-bind cv32e40p_wrapper
+  bind cv32e40p_wrapper
     uvma_obi_assert#(
                      .ADDR_WIDTH(32),
                      .DATA_WIDTH(32)
@@ -191,11 +203,11 @@ bind cv32e40p_wrapper
                                                       .id_stage_instr_rdata_i(id_stage_i.instr_rdata_i),
                                                       .branch_taken_ex(id_stage_i.branch_taken_ex),
                                                       .ctrl_fsm_cs(id_stage_i.controller_i.ctrl_fsm_cs),
-                                                      .debug_mode_q(id_stage_i.controller_i.debug_mode_q),                                                      
+                                                      .debug_mode_q(id_stage_i.controller_i.debug_mode_q),
                                                       .*);
-    
+
    // Debug assertion and coverage interface
-   uvmt_cv32e40p_debug_cov_assert_if debug_cov_assert_if(    
+   uvmt_cv32e40p_debug_cov_assert_if debug_cov_assert_if(
     .clk_i(clknrst_if.clk),
     .rst_ni(clknrst_if.reset_n),
     .fetch_enable_i(dut_wrap.cv32e40p_wrapper_i.core_i.fetch_enable_i),
