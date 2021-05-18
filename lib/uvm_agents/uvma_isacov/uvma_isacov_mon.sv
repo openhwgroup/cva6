@@ -78,40 +78,51 @@ task uvma_isacov_mon_c::sample_instr();
   @(cntxt.vif.retire);
 
   mon_trn = uvma_isacov_mon_trn_c::type_id::create("mon_trn");
-  mon_trn.instr = new();
+  mon_trn.instr = uvma_isacov_instr_c::type_id::create("mon_instr");
 
   instr_name = dasm_name(cntxt.vif.insn);
   if (instr_name_lookup.exists(instr_name)) begin
-    mon_trn.instr.name = instr_name_lookup[instr_name];
+    mon_trn.instr.name = instr_name_lookup[instr_name];    
   end else begin
     mon_trn.instr.name = UNKNOWN;
     `uvm_warning("ISACOVMON", $sformatf("TODO: error couldn't look up '%s'", instr_name));
   end
-  mon_trn.instr.name =
-    cntxt.vif.is_compressed ?
-      (mon_trn.instr.name == JAL) ?
-        (cntxt.vif.insn[11:7] == 5'b00000) ?
-          C_J :
-        (cntxt.vif.insn[11:7] == 5'b00001) ?
-          C_JAL :
-        UNKNOWN :
-      (mon_trn.instr.name == LW) ?
-        C_LW :
-      UNKNOWN :
-    mon_trn.instr.name;  // TODO get non de-compressed binary input instead of this
+  // mon_trn.instr.name =
+  //   cntxt.vif.is_compressed ?
+  //     (mon_trn.instr.name == JAL) ?
+  //       (cntxt.vif.insn[11:7] == 5'b00000) ?
+  //         C_J :
+  //       (cntxt.vif.insn[11:7] == 5'b00001) ?
+  //         C_JAL :
+  //       UNKNOWN :
+  //     (mon_trn.instr.name == LW) ?
+  //       C_LW :
+  //     UNKNOWN :
+  //  mon_trn.instr.name;  // TODO get non de-compressed binary input instead of this
+  
+  mon_trn.instr.itype = get_instr_type(mon_trn.instr.name);
+  mon_trn.instr.group = get_instr_group(mon_trn.instr.name);
 
-  mon_trn.instr.rs1 = dasm_rs1(cntxt.vif.insn);
-  mon_trn.instr.rs2 = dasm_rs2(cntxt.vif.insn);
-  mon_trn.instr.rd = dasm_rd(cntxt.vif.insn);
+  mon_trn.instr.rs1  = dasm_rs1(cntxt.vif.insn);
+  mon_trn.instr.rs2  = dasm_rs2(cntxt.vif.insn);
+  mon_trn.instr.rd   = dasm_rd(cntxt.vif.insn);
   mon_trn.instr.immi = dasm_i_imm(cntxt.vif.insn);
   mon_trn.instr.imms = dasm_s_imm(cntxt.vif.insn);
   mon_trn.instr.immb = dasm_sb_imm(cntxt.vif.insn);
   mon_trn.instr.immu = dasm_u_imm(cntxt.vif.insn);
   mon_trn.instr.immj = dasm_uj_imm(cntxt.vif.insn);
-
+  
   mon_trn.instr.c_immj = dasm_rvc_j_imm(cntxt.vif.insn);
   mon_trn.instr.c_rs1p = cntxt.vif.insn[9:7];  // TODO use disassembler
   mon_trn.instr.c_rdp = cntxt.vif.insn[4:2];  // TODO use disassembler
+  
+  if (mon_trn.instr.group == CSR_GROUP) begin
+    if (!$cast(mon_trn.instr.csr, dasm_csr(cntxt.vif.insn))) begin
+      `uvm_warning("ISACOVMON", $sformatf("CSR: 0x%03x unmappable", dasm_csr(cntxt.vif.insn)));
+    end
+  end
+
+  mon_trn.instr.set_valid_flags();
 
   ap.write(mon_trn);
 
