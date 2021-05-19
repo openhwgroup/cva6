@@ -324,11 +324,16 @@ typedef enum bit[CSR_ADDR_WL-1:0] {
 
 // Package level methods to map instruction to type
 function instr_type_t get_instr_type(instr_name_t name);
+  instr_name_t itypes[] = '{
+    LB, LH, LW, LBU, LHU,
+    ADDI, SLTI, SLTIU, XORI, ORI, ANDI, SLLI, SRLI, SRAI,
+    JALR
+    };
+
   if (name inside {ADD,SUB,SLL,SLT,SLTU,XOR,SRL,SRA,OR,AND}) 
     return R_TYPE;
 
-  if (name inside {ADDI,SLTI,SLTIU,XORI,ORI,
-                   LB,LH,LBU,LHU,JALR})
+  if (name inside {itypes})
     return I_TYPE;
 
   if (name inside {SB,SH,SW})

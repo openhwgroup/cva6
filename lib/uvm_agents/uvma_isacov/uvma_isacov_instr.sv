@@ -112,7 +112,7 @@ function string uvma_isacov_instr_c::convert2string();
     return $sformatf("%s x%0d, %0d(x%0d)", name.name(), rs2, imms, rs1);
   end
   if (itype == B_TYPE) begin
-    return $sformatf("%s x%0d, x%0d, %0d)", name.name(), rs1, rs1, immb);
+    return $sformatf("%s x%0d, x%0d, %0d", name.name(), rs1, rs1, immb);
   end
   if (itype == U_TYPE) begin
     return $sformatf("%s x%0d, %0d", name.name(), rd, immu);
@@ -121,6 +121,7 @@ function string uvma_isacov_instr_c::convert2string();
     return $sformatf("%s x%0d, %0d", name.name(), rd, immj);
   end
   if (itype == CSR_TYPE) begin
+    // TODO should print CSR name like assembly code does?
     return $sformatf("%s x%0d, x%0d, %0d", name.name(), rd, rs1, immi);
   end
 
