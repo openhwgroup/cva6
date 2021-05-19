@@ -105,8 +105,23 @@ function string uvma_isacov_instr_c::convert2string();
   if (itype == R_TYPE) begin
     return $sformatf("%s x%0d, x%0d, x%0d", name.name(), rd, rs1, rs2);
   end
+  if (itype == I_TYPE) begin
+    return $sformatf("%s x%0d, x%0d, %0d", name.name(), rd, rs1, immi);
+  end
+  if (itype == S_TYPE) begin
+    return $sformatf("%s x%0d, %0d(x%0d)", name.name(), rs2, imms, rs1);
+  end
+  if (itype == B_TYPE) begin
+    return $sformatf("%s x%0d, x%0d, %0d)", name.name(), rs1, rs1, immb);
+  end
+  if (itype == U_TYPE) begin
+    return $sformatf("%s x%0d, %0d", name.name(), rd, immu);
+  end
+  if (itype == J_TYPE) begin
+    return $sformatf("%s x%0d, %0d", name.name(), rd, immj);
+  end
   if (itype == CSR_TYPE) begin
-    return $sformatf("%s x%0d, %s, x%0d", name.name(), rd, csr.name(), rs1);
+    return $sformatf("%s x%0d, x%0d, %0d", name.name(), rd, rs1, immi);
   end
 
   return name.name();
