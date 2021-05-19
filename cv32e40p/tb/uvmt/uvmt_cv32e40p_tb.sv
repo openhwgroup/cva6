@@ -70,17 +70,12 @@ module uvmt_cv32e40p_tb;
    bit [31:0] evalue;
 
    // Agent interfaces
-   uvma_clknrst_if              clknrst_if          (); // clock and resets from the clknrst agent
-   uvma_clknrst_if              clknrst_if_iss      ();
-   uvma_debug_if                debug_if            ();
-   uvma_interrupt_if            interrupt_if        (); // Interrupts
-   uvma_obi_memory_if           obi_memory_instr_if ();
-   uvma_obi_memory_if           obi_memory_data_if  ();
-
-   assign obi_memory_instr_if.clk     = clknrst_if.clk;
-   assign obi_memory_instr_if.reset_n = clknrst_if.reset_n;
-   assign obi_memory_data_if.clk      = clknrst_if.clk;
-   assign obi_memory_data_if.reset_n  = clknrst_if.reset_n;
+   uvma_clknrst_if     clknrst_if          (); // clock and resets from the clknrst agent
+   uvma_clknrst_if     clknrst_if_iss      ();
+   uvma_debug_if       debug_if            ();
+   uvma_interrupt_if   interrupt_if        (); // Interrupts
+   uvma_obi_memory_if  obi_memory_instr_if ();
+   uvma_obi_memory_if  obi_memory_data_if  ();
 
    // DUT Wrapper Interfaces
    uvmt_cv32e40p_vp_status_if       vp_status_if(.tests_passed(),
@@ -105,7 +100,7 @@ module uvmt_cv32e40p_tb;
    uvmt_cv32e40p_step_compare_if step_compare_if();
    uvmt_cv32e40p_isa_covg_if     isa_covg_if();
 
-   
+
   /**
    * DUT WRAPPER instance:
    * This is an update of the riscv_wrapper.sv from PULP-Platform RI5CY project with
@@ -286,7 +281,7 @@ module uvmt_cv32e40p_tb;
                                         .step_compare_if(step_compare_if),
                                         .isa_covg_if(isa_covg_if)
                                 );
-                        
+
     /**
     * Step-and-Compare logic 
     */
@@ -301,7 +296,7 @@ module uvmt_cv32e40p_tb;
     // Connect step-and-compare signals to interrupt_if for functional coverage of instructions and interrupts
     assign interrupt_if.deferint = iss_wrap.b1.deferint;
     assign interrupt_if.ovp_cpu_state_stepi = step_compare_if.ovp_cpu_state_stepi;
-    
+
     // Interrupt modeling logic - used to time interrupt entry from RTL to the ISS    
     wire [31:0] irq_enabled;
     reg [31:0] irq_deferint_ack;
@@ -366,9 +361,9 @@ module uvmt_cv32e40p_tb;
       */
     always @(negedge step_compare_if.ovp_cpu_state_stepi) begin
       if (iss_wrap.b1.deferint == 0) begin
-        iss_wrap.b1.deferint <= 1'b1;          
+        iss_wrap.b1.deferint <= 1'b1;
         deferint_ack <= 1'b1;
-        irq_deferint_ack <= '0;          
+        irq_deferint_ack <= '0;
       end
       irq_deferint_sleep <= '0;
     end
@@ -383,7 +378,7 @@ module uvmt_cv32e40p_tb;
       else if (dut_wrap.irq_ack)
         irq_deferint_ack <= (1 << dut_wrap.irq_id);
     end
-    
+
     always @(posedge clknrst_if.clk or negedge clknrst_if.reset_n) begin
       if (!clknrst_if.reset_n)
         irq_deferint_sleep <= '0;
@@ -391,7 +386,7 @@ module uvmt_cv32e40p_tb;
         irq_deferint_sleep <= irq_enabled;
     end
 
-    always @*        
+    always @*
       iss_wrap.b1.irq_i = iss_wrap.b1.deferint ? dut_wrap.irq :
                           !deferint_ack ? irq_deferint_ack :
                           irq_deferint_sleep;
@@ -405,17 +400,17 @@ module uvmt_cv32e40p_tb;
       end
       else begin
         for (int irq_idx=0; irq_idx<32; irq_idx++) begin
-                      
+
           // Leave ISS side asserted as long as RTL interrupt line is asserted
           if (dut_wrap.cv32e40p_wrapper_i.irq_i[irq_idx]) 
-            irq_mip[irq_idx] <= 1'b1;          
+            irq_mip[irq_idx] <= 1'b1;
           // If deferint is low and ovp_cpu_state_stepi is asserted, then interrupt was consumed by model
           // Clear it now to avoid mip miscompare
           else if (step_compare_if.ovp_cpu_state_stepi && iss_wrap.b1.deferint == 0)
             irq_mip[irq_idx] <= 1'b0;
           // If RTL interrupt deasserts, but the core has not taken the interrupt, then clear ISS irq
           else if (iss_wrap.b1.deferint == 1)
-            irq_mip[irq_idx] <= 1'b0;            
+            irq_mip[irq_idx] <= 1'b0;
         end
       end
     end
@@ -463,7 +458,7 @@ module uvmt_cv32e40p_tb;
                   // Only drive haltreq if we have an external request
                   if (dut_wrap.cv32e40p_wrapper_i.core_i.id_stage_i.controller_i.ctrl_fsm_cs inside {cv32e40p_pkg::DBG_TAKEN_ID, cv32e40p_pkg::DBG_TAKEN_IF} &&
                       dut_wrap.cv32e40p_wrapper_i.core_i.id_stage_i.controller_i.debug_req_pending) begin
-                          
+
                       debug_req_state <= DBG_TAKEN;
                       // Already in sync, assert halreq right away
                       if (count_retire == count_issue) begin
@@ -504,29 +499,29 @@ module uvmt_cv32e40p_tb;
 
      // Specify time format for simulation (units_number, precision_number, suffix_string, minimum_field_width)
      $timeformat(-9, 3, " ns", 8);
-      
+
      // Add interfaces handles to uvm_config_db
      uvm_config_db#(virtual uvma_debug_if                    )::set(.cntxt(null), .inst_name("*.env.debug_agent"),     .field_name("vif"),              .value(debug_if)                                   );
      uvm_config_db#(virtual uvma_clknrst_if                  )::set(.cntxt(null), .inst_name("*.env.clknrst_agent"),   .field_name("vif"),              .value(clknrst_if)                                 );
      uvm_config_db#(virtual uvma_interrupt_if                )::set(.cntxt(null), .inst_name("*.env.interrupt_agent"), .field_name("vif"),              .value(interrupt_if)                               );
      uvm_config_db#(virtual uvma_obi_if                      )::set(.cntxt(null), .inst_name("*.env.obi_instr_agent"), .field_name("vif"),              .value(dut_wrap.cv32e40p_wrapper_i.obi_instr_if_i) );
      uvm_config_db#(virtual uvma_obi_if                      )::set(.cntxt(null), .inst_name("*.env.obi_data_agent"),  .field_name("vif"),              .value(dut_wrap.cv32e40p_wrapper_i.obi_data_if_i)  );
-     uvm_config_db#(virtual uvma_obi_memory_if               )::set(.cntxt(null), .inst_name("*"),                     .field_name("vif"),              .value(obi_memory_instr_if)                        );
-     uvm_config_db#(virtual uvma_obi_memory_if               )::set(.cntxt(null), .inst_name("*"),                     .field_name("vif"),              .value(obi_memory_data_if)                         );
+     uvm_config_db#(virtual uvma_obi_memory_if               )::set(.cntxt(null), .inst_name("*"),                     .field_name("vif"),              .value(obi_memory_instr_if.dut_mstr_mp)            );
+     uvm_config_db#(virtual uvma_obi_memory_if               )::set(.cntxt(null), .inst_name("*"),                     .field_name("vif"),              .value(obi_memory_data_if.dut_mstr_mp)             );
      uvm_config_db#(virtual uvmt_cv32e40p_vp_status_if       )::set(.cntxt(null), .inst_name("*"),                     .field_name("vp_status_vif"),    .value(vp_status_if)                               );
      uvm_config_db#(virtual uvmt_cv32e40p_core_cntrl_if      )::set(.cntxt(null), .inst_name("*"),                     .field_name("core_cntrl_vif"),   .value(core_cntrl_if)                              );
      uvm_config_db#(virtual uvmt_cv32e40p_core_status_if     )::set(.cntxt(null), .inst_name("*"),                     .field_name("core_status_vif"),  .value(core_status_if)                             );
      uvm_config_db#(virtual uvmt_cv32e40p_step_compare_if    )::set(.cntxt(null), .inst_name("*"),                     .field_name("step_compare_vif"), .value(step_compare_if)                            );
      uvm_config_db#(virtual uvmt_cv32e40p_isa_covg_if        )::set(.cntxt(null), .inst_name("*"),                     .field_name("isa_covg_vif"),     .value(isa_covg_if)                                );
      uvm_config_db#(virtual uvmt_cv32e40p_debug_cov_assert_if)::set(.cntxt(null), .inst_name("*.env"),                 .field_name("debug_cov_vif"),    .value(debug_cov_assert_if)                        );
-      
+
      // Make the DUT Wrapper Virtual Peripheral's status outputs available to the base_test
      uvm_config_db#(bit      )::set(.cntxt(null), .inst_name("*"), .field_name("tp"),     .value(1'b0)        );
      uvm_config_db#(bit      )::set(.cntxt(null), .inst_name("*"), .field_name("tf"),     .value(1'b0)        );
      uvm_config_db#(bit      )::set(.cntxt(null), .inst_name("*"), .field_name("evalid"), .value(1'b0)        );
      uvm_config_db#(bit[31:0])::set(.cntxt(null), .inst_name("*"), .field_name("evalue"), .value(32'h00000000));
 
-	 // DUT and ENV parameters
+     // DUT and ENV parameters
      uvm_config_db#(int)::set(.cntxt(null), .inst_name("*"), .field_name("CORE_PARAM_PULP_XPULP"),       .value(CORE_PARAM_PULP_XPULP)      );
      uvm_config_db#(int)::set(.cntxt(null), .inst_name("*"), .field_name("CORE_PARAM_PULP_CLUSTER"),     .value(CORE_PARAM_PULP_CLUSTER)    );
      uvm_config_db#(int)::set(.cntxt(null), .inst_name("*"), .field_name("CORE_PARAM_PULP_ZFINX"),       .value(CORE_PARAM_PULP_ZFINX)      );
@@ -534,7 +529,7 @@ module uvmt_cv32e40p_tb;
      uvm_config_db#(int)::set(.cntxt(null), .inst_name("*"), .field_name("ENV_PARAM_INSTR_ADDR_WIDTH"),  .value(ENV_PARAM_INSTR_ADDR_WIDTH) );
      uvm_config_db#(int)::set(.cntxt(null), .inst_name("*"), .field_name("ENV_PARAM_INSTR_DATA_WIDTH"),  .value(ENV_PARAM_INSTR_DATA_WIDTH) );
      uvm_config_db#(int)::set(.cntxt(null), .inst_name("*"), .field_name("ENV_PARAM_RAM_ADDR_WIDTH"),    .value(ENV_PARAM_RAM_ADDR_WIDTH)   );
-      
+
      // Run test
      uvm_top.enable_print_topology = 0; // ENV coders enable this as a debug aid
      uvm_top.finish_on_completion  = 1;

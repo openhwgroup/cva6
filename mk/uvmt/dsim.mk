@@ -35,9 +35,10 @@ DSIM_RUN_FLAGS         ?=
 DSIM_CODE_COV_SCOPE    ?= $(MAKE_PATH)/../tools/dsim/ccov_scopes.txt
 DSIM_USE_ISS           ?= YES
 
-DSIM_FILE_LIST ?= -f $(DV_UVMT_PATH)/uvmt_$(CV_CORE_LC).flist
+DSIM_FILE_LIST         ?= -f $(DV_UVMT_PATH)/uvmt_$(CV_CORE_LC).flist
 DSIM_FILE_LIST         += -f $(DV_UVMT_PATH)/imperas_iss.flist
-DSIM_USER_COMPILE_ARGS += "+define+$(CV_CORE_UC)_TRACE_EXECUTION"
+DSIM_COMPILE_ARGS      += +define+$(CV_CORE_UC)_TRACE_EXECUTION
+DSIM_USER_COMPILE_ARGS ?=
 ifeq ($(USE_ISS),YES)
 	DSIM_RUN_FLAGS     += +USE_ISS
 endif
@@ -84,7 +85,7 @@ DSIM_DMP_FLAGS ?= -waves $(DSIM_DMP_FILE)
 endif
 
 ifneq ($(CCOV), 0)
-	DSIM_USER_COMPILE_ARGS += -code-cov block -code-cov-scope-specs $(DSIM_CODE_COV_SCOPE)
+	DSIM_COMPILE_ARGS += -code-cov block -code-cov-scope-specs $(DSIM_CODE_COV_SCOPE)
 	DSIM_RUN_FLAGS         += -code-cov block -code-cov-scope-specs $(DSIM_CODE_COV_SCOPE)
 endif
 
@@ -117,6 +118,7 @@ comp: mk_results $(CV_CORE_PKG) $(OVP_MODEL_DPI)
 		$(DSIM_UVM_ARGS) \
 		$(DSIM_ACC_FLAGS) \
 		$(CFG_COMPILE_FLAGS) \
+		$(DSIM_COMPILE_ARGS) \
 		$(DSIM_USER_COMPILE_ARGS) \
 		+incdir+$(DV_UVME_PATH) \
 		+incdir+$(DV_UVMT_PATH) \
