@@ -73,6 +73,7 @@ module uvmt_cv32e40p_step_compare
    bit  miscompare;
    bit  is_stall_sim = 0;
    bit  ignore_dpc_check = 0;
+   bit  use_iss = 0;
 
   // FIXME:strichmo:when running random interrupts and random debug requests it is possible to enter debug mode 
   // (while also acking an interrupt) when the debug program counter may or may not yet be pointing to the interrupt
@@ -86,6 +87,11 @@ module uvmt_cv32e40p_step_compare
     else begin
       ignore_dpc_check = 0;
     end
+  end
+
+  initial begin
+    if ($test$plusargs("USE_ISS"))
+      use_iss = 1;
   end
 
   // Set the is_stall_sim flag if random stalls are enabled
@@ -155,82 +161,79 @@ module uvmt_cv32e40p_step_compare
       end
 
       // Compare CSR's
-      `ifdef ISS
-        foreach(`CV32E40P_RM_RVVI_STATE.csr[index]) begin
-           step_compare_if.num_csr_checks++;
-           ignore = 0;
-           csr_val = 0;
-           
-           // CSR timing at instruction retirement is not completely deterministic in this simple model in presence of OBI stalls
-           if (is_stall_sim)
-            ignore = 1;
-           case (index)
-             "marchid"       : csr_val = cv32e40p_pkg::MARCHID; // warning!  defined in cv32e40p_pkg
-             
-             "mcountinhibit" : csr_val = `CV32E40P_CORE.cs_registers_i.mcountinhibit_q;
+      foreach(`CV32E40P_RM_RVVI_STATE.csr[index]) begin
+          step_compare_if.num_csr_checks++;
+          ignore = 0;
+          csr_val = 0;
+          
+          // CSR timing at instruction retirement is not completely deterministic in this simple model in presence of OBI stalls
+          if (is_stall_sim)
+          ignore = 1;
+          case (index)
+            "marchid"       : csr_val = cv32e40p_pkg::MARCHID; // warning!  defined in cv32e40p_pkg
+            
+            "mcountinhibit" : csr_val = `CV32E40P_CORE.cs_registers_i.mcountinhibit_q;
 
-             "mvendorid"     : csr_val = {cv32e40p_pkg::MVENDORID_BANK, cv32e40p_pkg::MVENDORID_OFFSET};
-             "mstatus"       : if (step_compare_if.deferint_prime == 0) ignore = 1;
-                               else csr_val = {`CV32E40P_CORE.cs_registers_i.mstatus_q.mprv, // Not documented in Rev 4.5 of user_manual.doc but is in the design
-                                          4'b0,
-                                          `CV32E40P_CORE.cs_registers_i.mstatus_q.mpp,
-                                          3'b0,
-                                          `CV32E40P_CORE.cs_registers_i.mstatus_q.mpie,
-                                          2'b0,
-                                          `CV32E40P_CORE.cs_registers_i.mstatus_q.upie,
-                                          `CV32E40P_CORE.cs_registers_i.mstatus_q.mie,
-                                          2'b0,
-                                          `CV32E40P_CORE.cs_registers_i.mstatus_q.uie};
-             "misa"          : csr_val = `CV32E40P_CORE.cs_registers_i.MISA_VALUE;
-             "mie"           : csr_val = `CV32E40P_CORE.cs_registers_i.mie_q;
-             "mtvec"         : csr_val = {`CV32E40P_CORE.cs_registers_i.mtvec_q, 6'h0, `CV32E40P_CORE.cs_registers_i.mtvec_mode_q};
-             "mscratch"      : csr_val = `CV32E40P_CORE.cs_registers_i.mscratch_q;                          
-             "mepc"          : if (step_compare_if.deferint_prime == 0) ignore = 1;
-                               else csr_val = `CV32E40P_CORE.cs_registers_i.mepc_q;             
-             "mcause"        : if (step_compare_if.deferint_prime == 0) ignore = 1;
-                               else csr_val = {`CV32E40P_CORE.cs_registers_i.mcause_q[5],
-                                               26'b0,
-                                               `CV32E40P_CORE.cs_registers_i.mcause_q[4:0]};
-            //  "mip"           : if (step_compare_if.deferint_prime == 0 || iss_wrap.b1.deferint == 0) ignore = 1;
-            //                    else csr_val = `CV32E40P_CORE.cs_registers_i.mip;
-             "mip"           : ignore = 1;      
-             "mhartid"       : csr_val = `CV32E40P_CORE.cs_registers_i.hart_id_i; 
+            "mvendorid"     : csr_val = {cv32e40p_pkg::MVENDORID_BANK, cv32e40p_pkg::MVENDORID_OFFSET};
+            "mstatus"       : if (step_compare_if.deferint_prime == 0) ignore = 1;
+                              else csr_val = {`CV32E40P_CORE.cs_registers_i.mstatus_q.mprv, // Not documented in Rev 4.5 of user_manual.doc but is in the design
+                                        4'b0,
+                                        `CV32E40P_CORE.cs_registers_i.mstatus_q.mpp,
+                                        3'b0,
+                                        `CV32E40P_CORE.cs_registers_i.mstatus_q.mpie,
+                                        2'b0,
+                                        `CV32E40P_CORE.cs_registers_i.mstatus_q.upie,
+                                        `CV32E40P_CORE.cs_registers_i.mstatus_q.mie,
+                                        2'b0,
+                                        `CV32E40P_CORE.cs_registers_i.mstatus_q.uie};
+            "misa"          : csr_val = `CV32E40P_CORE.cs_registers_i.MISA_VALUE;
+            "mie"           : csr_val = `CV32E40P_CORE.cs_registers_i.mie_q;
+            "mtvec"         : csr_val = {`CV32E40P_CORE.cs_registers_i.mtvec_q, 6'h0, `CV32E40P_CORE.cs_registers_i.mtvec_mode_q};
+            "mscratch"      : csr_val = `CV32E40P_CORE.cs_registers_i.mscratch_q;                          
+            "mepc"          : if (step_compare_if.deferint_prime == 0) ignore = 1;
+                              else csr_val = `CV32E40P_CORE.cs_registers_i.mepc_q;             
+            "mcause"        : if (step_compare_if.deferint_prime == 0) ignore = 1;
+                              else csr_val = {`CV32E40P_CORE.cs_registers_i.mcause_q[5],
+                                              26'b0,
+                                              `CV32E40P_CORE.cs_registers_i.mcause_q[4:0]};
+          //  "mip"           : if (step_compare_if.deferint_prime == 0 || iss_wrap.b1.deferint == 0) ignore = 1;
+          //                    else csr_val = `CV32E40P_CORE.cs_registers_i.mip;
+            "mip"           : ignore = 1;      
+            "mhartid"       : csr_val = `CV32E40P_CORE.cs_registers_i.hart_id_i; 
 
-             // only valid in DEBUG Mode
-             "dcsr"          : begin
-                               csr_val = `CV32E40P_CORE.cs_registers_i.dcsr_q;     
-                               if (iss_wrap.b1.DM==0) ignore = 1;
-             end
-             "dpc"           : begin
-                               csr_val = `CV32E40P_CORE.cs_registers_i.depc_q;       
-                               if (iss_wrap.b1.DM==0) ignore = 1;
-                               if (ignore_dpc_check) ignore = 1;                               
-             end
+            // only valid in DEBUG Mode
+            "dcsr"          : begin
+                              csr_val = `CV32E40P_CORE.cs_registers_i.dcsr_q;     
+                              if (iss_wrap.b1.DM==0) ignore = 1;
+            end
+            "dpc"           : begin
+                              csr_val = `CV32E40P_CORE.cs_registers_i.depc_q;       
+                              if (iss_wrap.b1.DM==0) ignore = 1;
+                              if (ignore_dpc_check) ignore = 1;                               
+            end
 
-             "dscratch0"     : csr_val = `CV32E40P_CORE.cs_registers_i.dscratch0_q;
-             "dscratch1"     : csr_val = `CV32E40P_CORE.cs_registers_i.dscratch1_q;
-             "pmpcfg0"       : csr_val = `CV32E40P_CORE.cs_registers_i.pmp_reg_q.pmpcfg_packed[0];
-             "pmpcfg1"       : csr_val = `CV32E40P_CORE.cs_registers_i.pmp_reg_q.pmpcfg_packed[1];
-             "pmpcfg2"       : csr_val = `CV32E40P_CORE.cs_registers_i.pmp_reg_q.pmpcfg_packed[2];
-             "pmpcfg3"       : csr_val = `CV32E40P_CORE.cs_registers_i.pmp_reg_q.pmpcfg_packed[3];
-             "tselect"       : csr_val = 32'h0000_0000;
-             "tdata1"        : csr_val = `CV32E40P_CORE.cs_registers_i.tmatch_control_rdata;
-             "tdata2"        : csr_val = `CV32E40P_CORE.cs_registers_i.tmatch_value_rdata;
-             "tdata3"        : csr_val = 32'h0000_0000;
-             "tinfo"         : csr_val = `CV32E40P_CORE.cs_registers_i.tinfo_types;
-             "time"          : ignore  = 1;
-             default: begin
-                `uvm_error("STEP_COMPARE", $sformatf("index=%s does not match a CSR name", index))
-                ignore = 1;
-             end
-           endcase // case (index)
+            "dscratch0"     : csr_val = `CV32E40P_CORE.cs_registers_i.dscratch0_q;
+            "dscratch1"     : csr_val = `CV32E40P_CORE.cs_registers_i.dscratch1_q;
+            "pmpcfg0"       : csr_val = `CV32E40P_CORE.cs_registers_i.pmp_reg_q.pmpcfg_packed[0];
+            "pmpcfg1"       : csr_val = `CV32E40P_CORE.cs_registers_i.pmp_reg_q.pmpcfg_packed[1];
+            "pmpcfg2"       : csr_val = `CV32E40P_CORE.cs_registers_i.pmp_reg_q.pmpcfg_packed[2];
+            "pmpcfg3"       : csr_val = `CV32E40P_CORE.cs_registers_i.pmp_reg_q.pmpcfg_packed[3];
+            "tselect"       : csr_val = 32'h0000_0000;
+            "tdata1"        : csr_val = `CV32E40P_CORE.cs_registers_i.tmatch_control_rdata;
+            "tdata2"        : csr_val = `CV32E40P_CORE.cs_registers_i.tmatch_value_rdata;
+            "tdata3"        : csr_val = 32'h0000_0000;
+            "tinfo"         : csr_val = `CV32E40P_CORE.cs_registers_i.tinfo_types;
+            "time"          : ignore  = 1;
+            default: begin
+              `uvm_error("STEP_COMPARE", $sformatf("index=%s does not match a CSR name", index))
+              ignore = 1;
+            end
+          endcase // case (index)
 
-           if (!ignore)
-             check_32bit(.compared(index), .expected(`CV32E40P_RM_RVVI_STATE.csr[index]), .actual(csr_val));
+          if (!ignore)
+            check_32bit(.compared(index), .expected(`CV32E40P_RM_RVVI_STATE.csr[index]), .actual(csr_val));
 
-        end // foreach (ovp.cpu.csr[index])
-        
-      `endif      
+      end // foreach (ovp.cpu.csr[index])      
     endfunction // compare
     
     // RTL->RM CSR : mcycle, minstret, mcycleh, minstreth
@@ -276,86 +279,88 @@ module uvmt_cv32e40p_step_compare
    initial state <= IDLE; // cause an event for always @*
    
    always @(*) begin
-      case (state)
-        IDLE: begin
-            state <= RTL_STEP;
-        end
-        
-        RTL_STEP: begin
-            clknrst_if.start_clk();
-            fork
-                begin
-                    @step_compare_if.riscv_retire;
-                    clknrst_if.stop_clk();
-                    state <= RTL_VALID;
-                end
-                begin
-                    @step_compare_if.riscv_trap;
-                    state <= RTL_TRAP;
-                end
-                begin
-                    @step_compare_if.riscv_halt;
-                    state <= RTL_HALT;
-                end
-            join_any
-            disable fork;
-        end
+     if (use_iss) begin
+        case (state)
+          IDLE: begin
+              state <= RTL_STEP;
+          end
+          
+          RTL_STEP: begin
+              clknrst_if.start_clk();
+              fork
+                  begin
+                      @step_compare_if.riscv_retire;
+                      clknrst_if.stop_clk();
+                      state <= RTL_VALID;
+                  end
+                  begin
+                      @step_compare_if.riscv_trap;
+                      state <= RTL_TRAP;
+                  end
+                  begin
+                      @step_compare_if.riscv_halt;
+                      state <= RTL_HALT;
+                  end
+              join_any
+              disable fork;
+          end
 
-        RTL_VALID: begin
-            state <= RM_STEP;
-        end
-        
-        RTL_TRAP: begin
-            //state <= RM_STEP; // TODO: RTL/RVVI needs additional work
-            state <= RTL_STEP;
-        end
-        
-        RTL_HALT: begin
-            state <= RTL_STEP;
-        end
+          RTL_VALID: begin
+              state <= RM_STEP;
+          end
+          
+          RTL_TRAP: begin
+              //state <= RM_STEP; // TODO: RTL/RVVI needs additional work
+              state <= RTL_STEP;
+          end
+          
+          RTL_HALT: begin
+              state <= RTL_STEP;
+          end
 
-        RM_STEP: begin
-            pushRTL2RM("ret_rtl");
-            `CV32E40P_RM_RVVI_CONTROL.stepi();
-            fork
-                begin
-                    @step_compare_if.ovp_cpu_valid;
-                    ->`CV32E40P_TRACER.ovp_retire;
-                    state <= RM_VALID;
-                end
-                begin
-                    @step_compare_if.ovp_cpu_trap;
-                    state <= RM_TRAP;
-                end
-                begin
-                    @step_compare_if.ovp_cpu_halt;
-                    state <= RM_HALT;
-                end
-            join_any
-            disable fork;
-        end
+          RM_STEP: begin
+              pushRTL2RM("ret_rtl");
+              `CV32E40P_RM_RVVI_CONTROL.stepi();
+              fork
+                  begin
+                      @step_compare_if.ovp_cpu_valid;
+                      ->`CV32E40P_TRACER.ovp_retire;
+                      state <= RM_VALID;
+                  end
+                  begin
+                      @step_compare_if.ovp_cpu_trap;
+                      state <= RM_TRAP;
+                  end
+                  begin
+                      @step_compare_if.ovp_cpu_halt;
+                      state <= RM_HALT;
+                  end
+              join_any
+              disable fork;
+          end
 
-        RM_VALID: begin
-            state <= CMP;
-        end
-        
-        RM_TRAP: begin
-            //state <= CMP; // TODO: needs enabling after RTL/RVVI fix
-            state <= RM_STEP;
-        end
-        
-        RM_HALT: begin
-            state <= RM_STEP;
-        end
+          RM_VALID: begin
+              state <= CMP;
+          end
+          
+          RM_TRAP: begin
+              //state <= CMP; // TODO: needs enabling after RTL/RVVI fix
+              state <= RM_STEP;
+          end
+          
+          RM_HALT: begin
+              state <= RM_STEP;
+          end
 
-        CMP: begin 
-             compare();
-             ->ev_compare;
-             instruction_count += 1;           
-             //state <= RTL_STEP;
-             state <= IDLE;
-        end
-      endcase // case (state)
+          CMP: begin 
+              compare();
+              ->ev_compare;
+              instruction_count += 1;           
+              //state <= RTL_STEP;
+              state <= IDLE;
+          end
+        endcase // case (state)
+     end
    end
 
    always @(instruction_count) begin

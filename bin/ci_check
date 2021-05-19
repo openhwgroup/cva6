@@ -295,11 +295,11 @@ if (uvm):
                 if (build_cmd != ''):
                     build_cmd = build_cmd.replace('dsim', svtool)
                     if (args.repo):
-                        build_cmd = build_cmd + ' {}_REPO='.format(args.core.upper()) + args.repo
+                        build_cmd = build_cmd + ' CV_CORE_REPO=' + args.repo
                     if (args.branch):
-                        build_cmd = build_cmd + ' {}_BRANCH='.format(args.core.upper()) + args.branch
+                        build_cmd = build_cmd + ' CV_CORE_BRANCH=' + args.branch
                     if (args.hash):
-                        build_cmd = build_cmd + ' {}_HASH='.format(args.core.upper()) + args.hash
+                        build_cmd = build_cmd + ' CV_CORE_HASH=' + args.hash
                     if (prcmd or debug):
                         print(build_cmd)
                     else:

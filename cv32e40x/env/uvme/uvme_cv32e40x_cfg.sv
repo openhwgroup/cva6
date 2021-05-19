@@ -32,6 +32,8 @@ class uvme_cv32e40x_cfg_c extends uvm_object;
    // Integrals
    rand bit                      enabled;
    rand uvm_active_passive_enum  is_active;
+   bit                           use_isacov;
+
    rand bit                      scoreboarding_enabled;
    rand bit                      cov_model_enabled;
    rand bit                      trn_log_enabled;
@@ -92,12 +94,20 @@ class uvme_cv32e40x_cfg_c extends uvm_object;
       obi_instr_cfg.read_enabled  == 1;
       obi_data_cfg.write_enabled  == 1;
       obi_data_cfg.read_enabled   == 1;
-      isacov_cfg.enabled              == 0;  // TODO don't need "== 0" after uvma_isacov has matured enough
-      isacov_cfg.ext_i_enabled        == 1;
-      isacov_cfg.ext_m_enabled        == 1;
-      isacov_cfg.ext_c_enabled        == 1;
-      isacov_cfg.ext_zifencei_enabled == 1;
-      isacov_cfg.ext_zicsr_enabled    == 1;
+
+      isacov_cfg.enabled                    == use_isacov;  // TODO don't need "== 0" after uvma_isacov has matured enough
+      isacov_cfg.ext_i_enabled              == 1;
+      isacov_cfg.ext_m_enabled              == 1;
+      isacov_cfg.ext_c_enabled              == 1;
+      isacov_cfg.ext_a_enabled              == 0;
+      isacov_cfg.ext_zifencei_enabled       == 1;
+      isacov_cfg.ext_zicsr_enabled          == 1;
+      isacov_cfg.mode_u_enabled             == 0;
+      isacov_cfg.mode_s_enabled             == 0;
+      isacov_cfg.seq_instr_group_x2_enabled == 1;
+      isacov_cfg.seq_instr_group_x3_enabled == 1;
+      isacov_cfg.seq_instr_group_x4_enabled == 0;
+      isacov_cfg.reg_crosses_enabled        == 0;
 
       rvfi_cfg.nret == uvme_cv32e40x_pkg::RVFI_NRET;
 
@@ -135,7 +145,6 @@ class uvme_cv32e40x_cfg_c extends uvm_object;
     * Creates sub-configuration objects.
     */
    extern function new(string name="uvme_cv32e40x_cfg");
-   
    /**
     * Run after randomizing this class
     */
