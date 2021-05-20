@@ -166,7 +166,7 @@ bind cv32e40x_wrapper
                                                       .mie_n(cs_registers_i.mie_bypass_o),
                                                       .mstatus_mie(cs_registers_i.mstatus_q.mie),
                                                       .mtvec_mode_q(cs_registers_i.mtvec_q[1:0]),
-                                                      .if_stage_instr_rvalid_i(if_stage_i.m_c_obi_instr_if.rvalid),
+                                                      .if_stage_instr_rvalid_i(if_stage_i.m_c_obi_instr_if.s_rvalid.rvalid),
                                                       .if_stage_instr_rdata_i(if_stage_i.m_c_obi_instr_if.resp_payload.rdata),
                                                       .id_stage_instr_valid_i(id_stage_i.if_id_pipe_i.instr_valid),
                                                       .id_stage_instr_rdata_i(id_stage_i.if_id_pipe_i.instr.bus_resp.rdata),
@@ -183,7 +183,7 @@ bind cv32e40x_wrapper
       .clk_i(clknrst_if.clk),
       .rst_ni(clknrst_if.reset_n),
       .fetch_enable_i(dut_wrap.cv32e40x_wrapper_i.core_i.fetch_enable_i),
-      .if_stage_instr_rvalid_i(dut_wrap.cv32e40x_wrapper_i.core_i.if_stage_i.m_c_obi_instr_if.rvalid),
+      .if_stage_instr_rvalid_i(dut_wrap.cv32e40x_wrapper_i.core_i.if_stage_i.m_c_obi_instr_if.s_rvalid.rvalid),
       .if_stage_instr_rdata_i(dut_wrap.cv32e40x_wrapper_i.core_i.if_stage_i.m_c_obi_instr_if.resp_payload.rdata),
       .id_stage_instr_valid_i(dut_wrap.cv32e40x_wrapper_i.core_i.id_stage_i.if_id_pipe_i.instr_valid),
       .id_stage_instr_rdata_i(dut_wrap.cv32e40x_wrapper_i.core_i.id_stage_i.if_id_pipe_i.instr.bus_resp.rdata),
@@ -227,7 +227,7 @@ bind cv32e40x_wrapper
       .csr_access(dut_wrap.cv32e40x_wrapper_i.core_i.id_stage_i.csr_en),
       .csr_op(dut_wrap.cv32e40x_wrapper_i.core_i.id_stage_i.csr_op),
       .csr_op_dec(dut_wrap.cv32e40x_wrapper_i.core_i.id_stage_i.decoder_i.csr_op),
-      .csr_addr(dut_wrap.cv32e40x_wrapper_i.core_i.csr_addr),
+      .csr_addr(dut_wrap.cv32e40x_wrapper_i.core_i.cs_registers_i.csr_addr),
       .csr_we_int(dut_wrap.cv32e40x_wrapper_i.core_i.cs_registers_i.csr_we_int),
       .irq_ack_o(dut_wrap.cv32e40x_wrapper_i.core_i.irq_ack_o),
       .irq_id_o(dut_wrap.cv32e40x_wrapper_i.core_i.irq_id_o),
@@ -276,7 +276,7 @@ bind cv32e40x_wrapper
       
       assign clknrst_if_iss.reset_n = clknrst_if.reset_n;
       generate for (genvar gv_i = 0; gv_i < 32; gv_i++) begin : get_gpr
-        assign step_compare_if.riscy_GPR[gv_i] = dut_wrap.cv32e40x_wrapper_i.core_i.id_stage_i.register_file_wrapper_i.register_file_i.mem[gv_i];
+        assign step_compare_if.riscy_GPR[gv_i] = dut_wrap.cv32e40x_wrapper_i.core_i.register_file_wrapper_i.register_file_i.mem[gv_i];
       end
       endgenerate
 
@@ -411,7 +411,7 @@ bind cv32e40x_wrapper
         if (!clknrst_if.reset_n) begin
             count_issue <= 32'h0;
         end else begin
-            if ((dut_wrap.cv32e40x_wrapper_i.core_i.id_stage_i.id_valid_o && dut_wrap.cv32e40x_wrapper_i.core_i.is_decoding &&
+            if ((dut_wrap.cv32e40x_wrapper_i.core_i.id_stage_i.id_valid_o && dut_wrap.cv32e40x_wrapper_i.core_i.is_decoding && !dut_wrap.cv32e40x_wrapper_i.core_i.id_stage_i.multi_cycle_id_stall &&
                !dut_wrap.cv32e40x_wrapper_i.core_i.controller_i.controller_fsm_i.illegal_insn_i) ||
                 (dut_wrap.cv32e40x_wrapper_i.core_i.is_decoding && dut_wrap.cv32e40x_wrapper_i.core_i.controller_i.controller_fsm_i.ebrk_insn_i &&
                  !dut_wrap.cv32e40x_wrapper_i.core_i.controller_i.debug_trigger_match_i &&
