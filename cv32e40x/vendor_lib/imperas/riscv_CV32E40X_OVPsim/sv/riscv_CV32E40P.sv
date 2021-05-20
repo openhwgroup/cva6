@@ -48,6 +48,9 @@ interface RVVI_state #(
     bit [(XLEN-1):0] f[32];
     bit [(XLEN-1):0] csr[string];
     
+    // Temporary hack for volatile CSR reads
+    bit [31:0] GPR_rtl[32];
+
 endinterface
 
 typedef enum { IDLE, STEPI, STOP, CONT } rvvi_c_e;
@@ -129,6 +132,8 @@ module CPU
     
     // From RTL
     bit [31:0] GPR_rtl[32];
+    bit use_rvvi = 0;
+
 /*
     always @state.notify begin
         if (state.valid) begin
@@ -258,7 +263,10 @@ module CPU
     endfunction
     
     function automatic void getGPR (input int index, output longint value);
-        value = GPR_rtl[index];
+        if (use_rvvi)
+            value = state.GPR_rtl[index];
+        else
+            value = GPR_rtl[index];
     endfunction
     
     function automatic void setFPR (input int index, input longint value);
@@ -569,6 +577,7 @@ module CPU
     endfunction
     
     initial begin
+        use_rvvi = $test$plusargs("USE_RVVI") ? 1: 0;
         if ($test$plusargs("USE_ISS")) begin            
             ovpcfg_load();
             elf_load();

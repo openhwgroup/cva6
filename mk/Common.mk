@@ -627,6 +627,16 @@ vcs-unit-test:  $(FIRMWARE)/firmware_unit_test.hex
 vcs-unit-test:  vcsify $(FIRMWARE)/firmware_unit_test.hex
 vcs-unit-test:  vcs-run
 
+################################################################################
+# Open a DVT Eclipse IDE instance with the project imported automatically
+ifeq ($(MAKECMDGOALS), open_in_dvt_ide)
+include $(CORE_V_VERIF)/mk/uvmt/dvt.mk
+else
+ifeq ($(MAKECMDGOALS), create_dvt_build_file)
+include $(CORE_V_VERIF)/mk/uvmt/dvt.mk
+endif
+endif
+
 ###############################################################################
 # Build disassembler
 

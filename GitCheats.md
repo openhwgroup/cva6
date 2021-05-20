@@ -102,3 +102,18 @@ $ git remote -v<br>
   \> metrics	git@gitlab.openhwgroup.metrics.ca:cv32e40p_verif/cv32e40p_verif.git (push)<br>
   \> origin	https://github.com/openhwgroup/core-v-verif (fetch)<br>
   \> origin	https://github.com/openhwgroup/core-v-verif (push)<br>
+
+### Rebasing a previous commit
+\# https://stackoverflow.com/questions/3042437/how-to-change-the-commit-author-for-one-specific-commit<br>
+\# https://docs.github.com/en/github/getting-started-with-github/about-git-rebase#an-example-of-using-git-rebase<br>
+$ cd \<working_dir\><br>
+$ git rebase --interactive HEAD~7<br>
+\# This pops an editor session of the last seven commits<br>
+\# In this example, change two commits from "pick" to "edit"<br>
+\# Quit the editors and then do the following at the command-line...<br>
+$ git commit --amend --author="Mike Thompson <mike@openhwgroup.org>" --no-edit<br>
+$ git rebase --continue<br>
+$ git commit --amend --author="Jean-Roch Coulon <jean-roch.coulon@invia.fr>" --no-edit<br>
+$ git rebase --continue<br>
+$ git remote -v<br>
+$ git push -f<br>

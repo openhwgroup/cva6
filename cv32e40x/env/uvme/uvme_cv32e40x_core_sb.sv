@@ -155,18 +155,21 @@ function void uvme_cv32e40x_core_sb_c::check_phase(uvm_phase phase);
                                      rvfi_instr_reorder_q.size()));
    end
 
-   // RVFI Instruction queue must be complete at the end of the test
-   if (rvfi_instr_q.size()) begin
-      `uvm_error("CORESB", $sformatf("RVFI expected instruction queue is not empty at end of test (size: %0d)",                                     
-                                     rvfi_instr_q.size()));
-   end
+   // RVFI Instruction and RVVI instruction queues must be complete at the end of the test
+   // Allow case where only single RVFI exists but RVVI has not finished yet
+   if (!(rvfi_instr_q.size() == 1 && rvvi_state_q.size() == 0)) begin
+      if (rvfi_instr_q.size()) begin
+         `uvm_error("CORESB", $sformatf("RVFI expected instruction queue is not empty at end of test (size: %0d)",                                     
+                                       rvfi_instr_q.size()));
+      end
 
-   // RVVI Instruction queue must be complete at the end of the test
-   if (rvvi_state_q.size()) begin
-      `uvm_error("CORESB", $sformatf("RVVI expected instruction queue is not empty at end of test (size: %0d)",                                     
-                                     rvvi_state_q.size()));
+      // RVVI Instruction queue must be complete at the end of the test
+      if (rvvi_state_q.size()) begin
+         `uvm_error("CORESB", $sformatf("RVVI expected instruction queue is not empty at end of test (size: %0d)",                                     
+                                       rvvi_state_q.size()));
+      end
    end
-
+   
 endfunction : check_phase
 
 function void uvme_cv32e40x_core_sb_c::report_phase(uvm_phase phase);

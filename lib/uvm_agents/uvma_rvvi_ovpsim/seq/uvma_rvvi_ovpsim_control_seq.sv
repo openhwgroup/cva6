@@ -61,6 +61,8 @@ task uvma_rvvi_ovpsim_control_seq_c::step_rm(uvma_rvfi_instr_seq_item_c#(ILEN,XL
       halt == (rvfi_instr.intr && (rvfi_instr.pc_rdata == 32'h1a11_0800));
       mip == rvfi_instr.csr_mip;
       mcause == rvfi_instr.csr_mcause;
+      rd1_addr == rvfi_instr.rd1_addr;
+      rd1_wdata == rvfi_instr.rd1_wdata;
    });
    finish_item(step_rm_seq);
 
