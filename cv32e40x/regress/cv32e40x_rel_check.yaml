@@ -129,13 +129,14 @@ tests:
     dir: cv32e40x/sim/uvmt    
     cmd: make gen_corev-dv test COREV=YES TEST=corev_rand_jump_stress_test
     num: 2
-
-  corev_rand_interrupt:
-    build: uvmt_cv32e40x
-    description: Generated corev-dv random interrupt test
-    dir: cv32e40x/sim/uvmt    
-    cmd: make gen_corev-dv test COREV=YES TEST=corev_rand_interrupt
-    num: 2
+  
+  # FIXME:mikeopenhwgroup:Temporarily removing due to known false negative with DSIM
+  # corev_rand_interrupt:
+  #   build: uvmt_cv32e40x
+  #   description: Generated corev-dv random interrupt test
+  #   dir: cv32e40x/sim/uvmt    
+  #   cmd: make gen_corev-dv test COREV=YES TEST=corev_rand_interrupt
+  #   num: 2
 
   # FIXME:strichmo:This is currently known to not work, update later
   # corev_rand_debug:
@@ -161,14 +162,15 @@ tests:
   #   cmd: make gen_corev-dv test COREV=YES TEST=corev_rand_debug_ebreak
   #   num: 2
 
-  corev_rand_interrupt_wfi:
-    build: uvmt_cv32e40x
-    description: Generated corev-dv random interrupt WFI test
-    dir: cv32e40x/sim/uvmt    
-    cmd: make gen_corev-dv test COREV=YES TEST=corev_rand_interrupt_wfi
-    num: 2
+# FIXME:mikeopenhwgroup:Temporarily removing due to known false negative with DSIM
+#  corev_rand_interrupt_wfi:
+#    build: uvmt_cv32e40x
+#    description: Generated corev-dv random interrupt WFI test
+#    dir: cv32e40x/sim/uvmt    
+#    cmd: make gen_corev-dv test COREV=YES TEST=corev_rand_interrupt_wfi
+#    num: 2
 
-  
+
   # FIXME:strichmo:This is currently known to not work, update later
   # corev_rand_interrupt_debug:
   #   build: uvmt_cv32e40x
@@ -177,19 +179,21 @@ tests:
   #   cmd: make gen_corev-dv test COREV=YES TEST=corev_rand_interrupt_debug
   #   num: 2
 
-  corev_rand_interrupt_exception:
-    build: uvmt_cv32e40x
-    description: Generated corev-dv random interrupt WFI test with exceptions
-    dir: cv32e40x/sim/uvmt    
-    cmd: make gen_corev-dv test COREV=YES TEST=corev_rand_interrupt_exception
-    num: 2
+# FIXME:mikeopenhwgroup:Temporarily removing due to known false negative with DSIM
+#  corev_rand_interrupt_exception:
+#    build: uvmt_cv32e40x
+#    description: Generated corev-dv random interrupt WFI test with exceptions
+#    dir: cv32e40x/sim/uvmt    
+#    cmd: make gen_corev-dv test COREV=YES TEST=corev_rand_interrupt_exception
+#    num: 2
 
-  corev_rand_interrupt_nested:
-    build: uvmt_cv32e40x
-    description: Generated corev-dv random interrupt WFI test with random nested interrupts
-    dir: cv32e40x/sim/uvmt    
-    cmd: make gen_corev-dv test COREV=YES TEST=corev_rand_interrupt_nested
-    num: 2
+# FIXME:mikeopenhwgroup:Temporarily removing due to known false negative with DSIM
+#  corev_rand_interrupt_nested:
+#    build: uvmt_cv32e40x
+#    description: Generated corev-dv random interrupt WFI test with random nested interrupts
+#    dir: cv32e40x/sim/uvmt    
+#    cmd: make gen_corev-dv test COREV=YES TEST=corev_rand_interrupt_nested
+#    num: 2
 
   illegal:
     build: uvmt_cv32e40x
