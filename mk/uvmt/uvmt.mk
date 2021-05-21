@@ -307,8 +307,8 @@ isacov_logdiff:
 			| sed 's/\(.*\)   \(.*\)/\1/' | awk '{$$1=$$2=$$3=$$4=$$5=""; $$0=$$0; $$1=$$1; print $$0}' \
 			| tail -n +2 > trace.tmp
 		@cat $(ISACOV_AGENTLOG) \
-			| awk -F '\t' '{print $$2}' \
-			| tr A-Z a-z | tail -n +2 > agent.tmp
+			| awk -F '\t' '{print $$2}' | tr A-Z a-z \
+			| tail -n +2 > agent.tmp
 	@echo diffing the instruction sequences...
 		@diff trace.tmp agent.tmp
 
