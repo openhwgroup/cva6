@@ -288,6 +288,24 @@ embench: $(EMBENCH_PKG)
 	-d $(EMB_DEBUG_ARG) \
 
 ###############################################################################
+# ISACOV (ISA coverage)
+#   Compare the log against the tracer log.
+#   This checks that sampling went correctly without false positives/negatives.
+
+ISACOV_LOGDIR = $($(SIMULATOR_UC)_RESULTS)/$(CFG)/$(TEST)_$(RUN_INDEX)
+ISACOV_TRACELOG = $(ISACOV_LOGDIR)/trace_core_00000000.log
+ISACOV_AGENTLOG = $(ISACOV_LOGDIR)/uvm_test_top.env.isacov_agent.trn.log
+
+isacov_logdiff:
+	@echo checking that env/dirs/files are as expected...
+		@printenv TEST > /dev/null || (echo specify TEST; false)
+		@ls $(ISACOV_LOGDIR) > /dev/null
+		@ls $(ISACOV_TRACELOG) > /dev/null
+		@ls $(ISACOV_AGENTLOG) > /dev/null
+	@echo filtering logs...
+		@cat $(ISACOV_AGENTLOG) | awk -F '\t' '{print $$2}' > tmp
+
+###############################################################################
 # Include the targets/rules for the selected SystemVerilog simulator
 #ifeq ($(SIMULATOR), unsim)
 #include unsim.mk
