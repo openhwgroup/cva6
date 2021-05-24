@@ -40,15 +40,15 @@
         "wavesCmd": "cd {{t.dir}}; {{t.cmd}} CV_CORE={{project}} CFG={{cfg}} SIMULATOR={{t.simulator}} USE_ISS={{regress_macros.yesorno(t.iss)}} RNDSEED=<seed> {{common_dsim_make_vars_waves}} {{makeargs}}",
 {% if t.results %}
         "metricsFile": "{{cfg}}/{{t.results}}{{test_suffix}}/metrics.db",
-        "wavesFile": "{{cfg}}/{{t.results}}{{test_suffix}}/{{t.name}}{{test_suffix}}.vcd",
+        "wavesFile": "{{cfg}}/{{t.results}}{{test_suffix}}/dsim.vcd",
 {% else %}
         "metricsFile": "{{cfg}}/{{t.name}}{{test_suffix}}/metrics.db",
-        "wavesFile": "{{cfg}}/{{t.name}}{{test_suffix}}/{{t.name}}{{test_suffix}}.vcd",
+        "wavesFile": "{{cfg}}/{{t.name}}{{test_suffix}}/dsim.vcd",
 {% endif %}
         "seed" : "random",
         "iterations": {{t.num}},
         "isPass": "{{t.simulation_passed}}",
-        "isFail": "... MISCOMPARE!"
+        "isFail": "{{t.simulation_failed}}"
     }{% if not is_last_test %},{% endif %}
 
 {% endfor %}
