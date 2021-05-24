@@ -1,27 +1,14 @@
-###############################################################################
-#
-# Copyright 2020 Thales DIS Design Services SAS
+# Copyright 2021 Thales DIS design services SAS
 #
 # Licensed under the Solderpad Hardware Licence, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
-# You may obtain a copy of the License at
+# SPDX-License-Identifier: Apache-2.0 WITH SHL-2.0
+# You may obtain a copy of the License at https://solderpad.org/licenses/
 #
-#     https://solderpad.org/licenses/
-#
-# Unless required by applicable law or agreed to in writing, software
-# distributed under the License is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-# See the License for the specific language governing permissions and
-# limitations under the License.
-#
-###############################################################################
-#
-# Original Author: Jean-Roch COULON (jean-roch.coulon@invia.fr)
-#
-###############################################################################
+# Original Author: Jean-Roch COULON (jean-roch.coulon@thalesgroup.fr)
 
 # Customise this to a fast local disk
-export ROOT_PROJECT=$(cd "$(dirname "${BASH_SOURCE[0]}")/../" && pwd)
+export ROOT_PROJECT=$(cd "$(dirname "${BASH_SOURCE[0]}")/../../" && pwd)
 export TOP=$ROOT_PROJECT/tools
 
 # where to install the tools
@@ -34,7 +21,7 @@ fi
 if ! [ -n "$VERILATOR_ROOT" ]; then
   export VERILATOR_ROOT=$TOP/verilator-4.110/
 fi
-cva6/install-verilator.sh
+cva6/regress/install-verilator.sh
 
 export PATH=$RISCV/bin:$VERILATOR_ROOT/bin:$PATH
 export LIBRARY_PATH=$RISCV/lib
@@ -70,4 +57,4 @@ fi
 if ! [ -n "$SPIKE_ROOT" ]; then
   export SPIKE_ROOT=$TOP/spike/
 fi
-cva6/install-spike.sh
+cva6/regress/install-spike.sh

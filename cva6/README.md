@@ -19,9 +19,9 @@ to run the test scripts.
 ## Test execution
 Run one of the shell scripts:
 
-- `source cva6/dv-riscv-compliance.sh`:
+- `source cva6/regress/dv-riscv-compliance.sh`:
 [riscv-compliance](https://github.com/riscv/riscv-compliance) test suite,
-- `source cva6/dv-riscv-tests.sh`:
+- `source cva6/regress/dv-riscv-tests.sh`:
 [riscv-tests](https://github.com/riscv/riscv-tests) test suite.
 
 These tests are using [riscv-dv](https://github.com/ThalesGroup/riscv-dv)

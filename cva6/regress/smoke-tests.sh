@@ -1,24 +1,11 @@
-###############################################################################
-#
-# Copyright 2020 Thales DIS Design Services SAS
+# Copyright 2021 Thales DIS design services SAS
 #
 # Licensed under the Solderpad Hardware Licence, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
-# You may obtain a copy of the License at
+# SPDX-License-Identifier: Apache-2.0 WITH SHL-2.0
+# You may obtain a copy of the License at https://solderpad.org/licenses/
 #
-#     https://solderpad.org/licenses/
-#
-# Unless required by applicable law or agreed to in writing, software
-# distributed under the License is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-# See the License for the specific language governing permissions and
-# limitations under the License.
-#
-###############################################################################
-#
-# Original Author: Jean-Roch COULON (jean-roch.coulon@invia.fr)
-#
-###############################################################################
+# Original Author: Jean-Roch COULON (jean-roch.coulon@thalesgroup.fr)
 
 # where are the tools
 if ! [ -n "$RISCV" ]; then
@@ -27,10 +14,10 @@ if ! [ -n "$RISCV" ]; then
 fi
 
 # install the required tools
-source ./cva6/install-cva6.sh
-source ./cva6/install-riscv-dv.sh
-source ./cva6/install-riscv-compliance.sh
-source ./cva6/install-riscv-tests.sh
+source ./cva6/regress/install-cva6.sh
+source ./cva6/regress/install-riscv-dv.sh
+source ./cva6/regress/install-riscv-compliance.sh
+source ./cva6/regress/install-riscv-tests.sh
 
 if ! [ -n "$DV_SIMULATORS" ]; then
   DV_SIMULATORS=veri-uvm,spike
