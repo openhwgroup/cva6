@@ -92,3 +92,30 @@ How will we know that the Feature is verified (covered)?  There are several choi
 This field is used to link the Feature to coverage data generated in Regression.  Leave this blank for now as this information is tool dependent.
 <br><br><br>
 <sup>1</sup>I know, I know, we _all_ hate spreadsheets, but they really are the best format for this type of data.
+
+## Verification Plan Reviews
+As core-v-verif is an open-source project it is necessary to enable open, comprehensive reviews with a broad set of stakeholders and interested parties in any proposed
+Verification Plan.  At a minumum, design and verification leads, and related design engineers and verification engineers must be involved in a review.  The review should be
+made open to all other interested contributors, utilizing collaboration tools as necessary.
+
+Please use the following procedure when introducting a new verification plan or introducing a major edit to an existing Verification Plan.
+
+1. The initial revision of the Verification Plan is created and added to the repository in a PR.  Note that the respective Verification Plan status page should always be up-to-date with current review status of the Vplan.
+2. Create an Issue in core-v-verif https://github.com/openhwgroup/core-v-verif/issues/new/choose
+   - The issue should be a Task
+   - The issue should carry a core-specific label **if** the vplan is core-specific
+   - The issue should have a link to the checked-in Vplan on GitHub.
+   - The issue should be assigned to the Verification Plan Owner.
+3. Arrange for a review call for the verification plan on Zoom, Teams or another appropriate platform.  Try to select a time to maximize attendance.
+    - Add the following people as required attendees:
+      - Verificaiton plan owner
+      - Desiger responsbile for DUT feature being verified
+      - Verification lead for project
+4. Announce the verification plan review call and the Issue on Mattermost in the TWG: Verification channel.  Included a link to the meeting call.
+5. Reviewers should pre-review the plan and provided comments in one of two ways.
+    - (Preferable) directly annotate the spreadsheet via the comment mechanism in Excel and attach to the Issue when finished
+    - Provided comments directly as comments on the GitHub issue
+6. After the review meeting the Verification Plan Owner should incorporate feedback and apply a PR to update the plan.
+7. Move the status in the README.md file accordingly to indiciate a reviewed plan
+
+Note that a similar procedure should be followed for reviewing final vplan annotation after the vplan is fully executed.
