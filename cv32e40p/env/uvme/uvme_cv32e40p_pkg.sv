@@ -73,8 +73,8 @@ package uvme_cv32e40p_pkg;
    `include "uvme_cv32e40p_random_debug_vseq.sv" 
    `include "uvme_cv32e40p_random_debug_reset_vseq.sv" 
    `include "uvme_cv32e40p_random_debug_bootset_vseq.sv" 
-
-
+   `include "uvme_cv32e40p_vp_vseq.sv" 
+   `include "uvme_cv32e40p_instr_vseq.sv" 
 
 endpackage : uvme_cv32e40p_pkg
 

@@ -299,9 +299,10 @@ endfunction: connect_coverage_model
 
 function void uvme_cv32e40p_env_c::assemble_vsequencer();
    
-   vsequencer.clknrst_sequencer   = clknrst_agent.sequencer;
-   vsequencer.interrupt_sequencer = interrupt_agent.sequencer;
-   vsequencer.debug_sequencer     = debug_agent.sequencer;
+   vsequencer.clknrst_sequencer    = clknrst_agent   .sequencer;
+   vsequencer.interrupt_sequencer  = interrupt_agent .sequencer;
+   vsequencer.debug_sequencer      = debug_agent     .sequencer;
+   vsequencer.obi_memory_sequencer = obi_memory_agent.sequencer;
    
 endfunction: assemble_vsequencer
 

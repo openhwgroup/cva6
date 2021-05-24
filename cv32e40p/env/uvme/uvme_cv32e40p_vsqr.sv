@@ -32,9 +32,10 @@ class uvme_cv32e40p_vsqr_c extends uvm_sequencer#(
    uvme_cv32e40p_cntxt_c  cntxt;
    
    // Sequencer handles
-   uvma_clknrst_sqr_c    clknrst_sequencer;
-   uvma_interrupt_sqr_c  interrupt_sequencer;
-   uvma_debug_sqr_c    debug_sequencer;
+   uvma_clknrst_sqr_c     clknrst_sequencer;
+   uvma_interrupt_sqr_c   interrupt_sequencer;
+   uvma_debug_sqr_c       debug_sequencer;
+   uvma_obi_memory_sqr_c  obi_memory_sequencer;
    
    
    `uvm_component_utils_begin(uvme_cv32e40p_vsqr_c)
