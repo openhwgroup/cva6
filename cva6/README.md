@@ -1,9 +1,19 @@
 # CVA6: Verification Environment for the CVA6 CORE-V processor core
 
+- [Directories](#directories)
 - [Prerequisites](#prerequisites)
 - [Test execution](#test-execution)
 - [Environment variables](#environment-variables)
 - [32-bit configuration](#32-bit-configuration)
+
+## Directories:
+- **bsp**:   the "board support package" for test-programs compiled/assembled/linked for the CVA6.  This BSP is used by both the `core` testbench and the `uvmt_cva6` UVM verification environment.
+- **env**:   the UVM environment class and its associated infrastrucutre.
+- **sim**:   directory where you run the simulations.
+- **tb**:    the Testbench module that instanitates the core.
+- **tests**: this is where all the testcases are.
+
+There are README files in each directory with additional information.
 
 ## Prerequisites
 To execute tests on CVA6 core, you need a RISC-V toolchain.
