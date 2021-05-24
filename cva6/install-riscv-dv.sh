@@ -43,10 +43,10 @@ echo $DV_BRANCH
 echo $DV_HASH
 echo $DV_PATCH
 
-mkdir -p uvm
-if ! [ -d uvm/riscv-dv ]; then
-  git clone $DV_REPO -b $DV_BRANCH uvm/riscv-dv
-  cd uvm/riscv-dv; git checkout $DV_HASH; 
+mkdir -p cva6/sim
+if ! [ -d cva6/sim/riscv-dv ]; then
+  git clone $DV_REPO -b $DV_BRANCH cva6/sim/riscv-dv
+  cd cva6/sim/riscv-dv; git checkout $DV_HASH; 
   if [ -f "$DV_PATCH" ]; then
     git apply $DV_PATCH
   fi
@@ -54,4 +54,4 @@ if ! [ -d uvm/riscv-dv ]; then
 fi
 
 # install riscv-dv dependencies
-cd uvm/riscv-dv; pip3 install -r requirements.txt; cd -
+cd cva6/sim/riscv-dv; pip3 install -r requirements.txt; cd -

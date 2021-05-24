@@ -39,6 +39,6 @@ if ! [ -n "$DV_SIMULATORS" ]; then
   DV_SIMULATORS=verilator,spike
 fi
 
-cd uvm/riscv-dv
-python3 run.py --testlist=../../cva6/tests/testlist_riscv-compliance-$DV_TARGET.yaml --target $DV_TARGET --iss=$DV_SIMULATORS $DV_OPTS
-cd ../..
+cd cva6/sim/riscv-dv
+python3 run.py --testlist=../../tests/testlist_riscv-compliance-$DV_TARGET.yaml --target $DV_TARGET --iss=$DV_SIMULATORS $DV_OPTS
+cd ../../..
