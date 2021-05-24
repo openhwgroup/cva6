@@ -29,6 +29,7 @@ logger = logging.getLogger(__name__)
 DEFAULT_ISS = 'YES'
 DEFAULT_COV = 'NO'
 DEFAULT_SIMULATION_PASSED = 'SIMULATION PASSED'
+DEFAULT_SIMULATION_FAILED = 'SIMULATION FAILED'
 DEFAULT_SKIP_SIM = []
 
 def get_proj_root():
@@ -71,6 +72,7 @@ class Test:
         # Set defaults
         self.skip_sim = DEFAULT_SKIP_SIM
         self.simulation_passed = DEFAULT_SIMULATION_PASSED
+        self.simulation_failed = DEFAULT_SIMULATION_FAILED
         self.iss = DEFAULT_ISS
         self.num = 1
 
