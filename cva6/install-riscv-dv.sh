@@ -30,6 +30,7 @@ if ! [ -n "$RISCV_OBJCOPY" ]; then
 fi
 export SPIKE_PATH=$SPIKE_ROOT/bin
 export RTL_PATH=$ROOT_PROJECT/core-v-cores/cva6
+export TB_PATH=$ROOT_PROJECT/cva6/tb/core
 export TESTS_PATH=$ROOT_PROJECT/cva6/tests
 
 if ! [ -n "$DV_REPO" ]; then
