@@ -71,12 +71,12 @@ class uvma_rvfi_mon_trn_logger_c#(int ILEN=DEFAULT_ILEN,
       else
          instr = $sformatf("%s N/A", instr);
 
-      if (t.halt) 
+      if (t.insn_interrupt)
+         instr = $sformatf("%s INTR %0d", instr, t.insn_interrupt_id);
+      if (t.insn_nmi)
+         instr = $sformatf("%s NMI", instr);
+      if (t.insn_debug_halt)
          instr = $sformatf("%s HALT", instr);
-      if (t.intr) 
-         instr = $sformatf("%s INTR", instr);
-      if (t.trap) 
-         instr = $sformatf("%s TRAP", instr);
 
       fwrite(instr);
 

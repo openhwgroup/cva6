@@ -169,7 +169,7 @@ function void uvme_cv32e40x_core_sb_c::check_phase(uvm_phase phase);
                                        rvvi_state_q.size()));
       end
    end
-   
+
 endfunction : check_phase
 
 function void uvme_cv32e40x_core_sb_c::report_phase(uvm_phase phase);
@@ -277,13 +277,19 @@ function void uvme_cv32e40x_core_sb_c::check_instr(uvma_rvfi_instr_seq_item_c#(I
    pc_checked_cnt++;
    
    
-   // CHECK: PC
-   if (rvfi_instr.pc_rdata != rvvi_state.pc) begin
-      `uvm_error("CORESB", $sformatf("PC Mismatch, order: %0d, rvfi.pc = 0x%08x, rvvi.pc = 0x%08x", 
-                                     rvfi_instr.order, rvfi_instr.pc_rdata, rvvi_state.pc));
+   // CHECK: ORDER
+   if (rvfi_instr.order != rvvi_state.order - fixme_rvvi_order_adjust) begin
+      `uvm_error("CORESB", $sformatf("ORDER mismatch, rvfi.order = %0d, rvvi.order = %0d, rvvi_order_adjust = %0d", 
+                                     rvfi_instr.order, rvvi_state.order, fixme_rvvi_order_adjust));
    end
 
-   // CHECK: insn   
+   // CHECK: PC
+   if (rvfi_instr.pc_rdata != rvvi_state.pc) begin
+      `uvm_error("CORESB", $sformatf("PC Mismatch, rvfi_order: %0d, rvvi_order: %0d, rvfi.pc = 0x%08x, rvvi.pc = 0x%08x", 
+                                     rvfi_instr.order, rvvi_state.order, rvfi_instr.pc_rdata, rvvi_state.pc));
+   end
+
+   // CHECK: insn
    if (rvfi_instr.insn != rvvi_state.insn) begin
       `uvm_error("CORESB", $sformatf("INSN Mismatch, order: %0d, rvfi.insn = 0x%08x, rvvi.insn = 0x%08x", 
                                      rvfi_instr.order, rvfi_instr.insn, rvvi_state.insn));

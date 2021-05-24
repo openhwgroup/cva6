@@ -56,11 +56,12 @@ task uvma_rvvi_ovpsim_control_seq_c::step_rm(uvma_rvfi_instr_seq_item_c#(ILEN,XL
    start_item(step_rm_seq);
    assert(step_rm_seq.randomize() with {
       action == UVMA_RVVI_STEPI;
-      intr == rvfi_instr.intr;
-      // FIXME:strichmo:hack to test debug halt...works unless we change debug handler address!
-      halt == (rvfi_instr.intr && (rvfi_instr.pc_rdata == 32'h1a11_0800));
-      mip == rvfi_instr.csr_mip;
-      mcause == rvfi_instr.csr_mcause;
+      intr == rvfi_instr.insn_interrupt;
+      halt == rvfi_instr.insn_debug_halt;
+      nmi  == rvfi_instr.insn_nmi;
+      intr_id == rvfi_instr.insn_interrupt_id;
+      
+      mip == rvfi_instr.csr_mip;      
       rd1_addr == rvfi_instr.rd1_addr;
       rd1_wdata == rvfi_instr.rd1_wdata;
    });

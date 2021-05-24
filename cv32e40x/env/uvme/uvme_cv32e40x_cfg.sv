@@ -110,6 +110,8 @@ class uvme_cv32e40x_cfg_c extends uvm_object;
       isacov_cfg.reg_crosses_enabled        == 0;
 
       rvfi_cfg.nret == uvme_cv32e40x_pkg::RVFI_NRET;
+      rvfi_cfg.nmi_handler_enabled        == 0; // FIXME:strichmo:implement when NMI implemented in e40x
+      rvfi_cfg.debug_halt_handler_enabled == 1;
 
       if (is_active == UVM_ACTIVE) {
          isacov_cfg.is_active    == UVM_PASSIVE;
