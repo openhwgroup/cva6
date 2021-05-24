@@ -33,7 +33,7 @@ source ./cva6/install-riscv-compliance.sh
 source ./cva6/install-riscv-tests.sh
 
 if ! [ -n "$DV_SIMULATORS" ]; then
-  DV_SIMULATORS=verilator,spike
+  DV_SIMULATORS=veri-uvm,spike
 fi
 
 cd cva6/sim/riscv-dv

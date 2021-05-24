@@ -54,7 +54,7 @@ The default values are:
 - `DV_HASH`: `8ff0a5ecb56269cfff94b59c9f7f4e267630ef20`
 - `DV_PATCH`: no default value
 - `DV_TARGET`: `rv64gc`
-- `DV_SIMULATORS`: `verilator,spike`
+- `DV_SIMULATORS`: `veri-uvm,spike`
 - `DV_TESTLISTS`: `../../cva6/tests/testlist_riscv-tests-$DV_TARGET-p.yaml
 ../../cva6/tests/testlist_riscv-tests-$DV_TARGET-v.yaml`
 - `DV_OPTS`: no default value

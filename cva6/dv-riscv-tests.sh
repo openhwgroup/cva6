@@ -36,7 +36,7 @@ if ! [ -n "$DV_TARGET" ]; then
 fi
 
 if ! [ -n "$DV_SIMULATORS" ]; then
-  DV_SIMULATORS=verilator,spike
+  DV_SIMULATORS=veri-uvm,spike
 fi
 
 if ! [ -n "$DV_TESTLISTS" ]; then
