@@ -104,6 +104,7 @@ task uvme_cv32e40p_instr_vseq_c::body();
       end
       else begin
          if (mon_trn.access_type == UVMA_OBI_MEMORY_ACCESS_READ) begin
+            // TODO: need to figured out what a proper error response is
             slv_rsp.rdata = 32'hdead_beef;
          end
       end

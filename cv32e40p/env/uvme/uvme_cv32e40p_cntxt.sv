@@ -44,7 +44,7 @@ class uvme_cv32e40p_cntxt_c extends uvm_object;
    //          uvme_cv32e40p_sb_cntxt_c  sb_ingress_cntxt;
    
    // Memory modelling
-   bit [31:0]  mem[2**8];
+   bit [31:0]  mem[2**`UVME_CV32E40P_MEM_SIZE];
    bit         instr_mem_delay_enabled = 0;
    
    // Events
