@@ -37,10 +37,13 @@
 //    - The core RTL is dependent on tb/ariane_soc_pkg.sv
 //      (RTL should not depend on TB code)
 ${CVA6_REPO_DIR}/core/include/riscv_pkg.sv
-${CVA6_REPO_DIR}/corev_apu/riscv-dbg/src/dm_pkg.sv   // TODO: should not be needed.
+// TODO: should not be needed.
+${CVA6_REPO_DIR}/corev_apu/riscv-dbg/src/dm_pkg.sv
 ${CVA6_REPO_DIR}/core/include/ariane_pkg.sv
-${CVA6_REPO_DIR}/corev_apu/tb/ariane_soc_pkg.sv      // TODO: should not be needed.
-${CVA6_REPO_DIR}/corev_apu/axi/src/axi_pkg.sv        // TODO: ariane_axi_pkg is dependent on this.
+// TODO: should not be needed.
+${CVA6_REPO_DIR}/corev_apu/tb/ariane_soc_pkg.sv
+// TODO: ariane_axi_pkg is dependent on this.
+${CVA6_REPO_DIR}/corev_apu/axi/src/axi_pkg.sv
 ${CVA6_REPO_DIR}/corev_apu/fpga-support/rtl/SyncSpRamBeNx64.sv
 
 // Packages
@@ -84,7 +87,8 @@ ${CVA6_REPO_DIR}/core/fpu/src/fpu_div_sqrt_mvp/hdl/preprocess_mvp.sv
 // Top-level source files (not necessarily instantiated at the top of the cva6).
 ${CVA6_REPO_DIR}/core/ariane.sv
 ${CVA6_REPO_DIR}/core/alu.sv
-${CVA6_REPO_DIR}/core/fpu_wrap.sv  // Note: depends on fpnew_pkg, above
+// Note: depends on fpnew_pkg, above
+${CVA6_REPO_DIR}/core/fpu_wrap.sv
 ${CVA6_REPO_DIR}/core/branch_unit.sv
 ${CVA6_REPO_DIR}/core/compressed_decoder.sv
 ${CVA6_REPO_DIR}/core/controller.sv
@@ -106,7 +110,8 @@ ${CVA6_REPO_DIR}/core/perf_counters.sv
 ${CVA6_REPO_DIR}/core/ptw.sv
 ${CVA6_REPO_DIR}/core/ariane_regfile_ff.sv
 ${CVA6_REPO_DIR}/core/re_name.sv
-${CVA6_REPO_DIR}/core/scoreboard.sv // NOTE: scoreboard.sv modified for DSIM (unchanged for other simulators)
+// NOTE: scoreboard.sv modified for DSIM (unchanged for other simulators)
+${CVA6_REPO_DIR}/core/scoreboard.sv
 ${CVA6_REPO_DIR}/core/store_buffer.sv
 ${CVA6_REPO_DIR}/core/amo_buffer.sv
 ${CVA6_REPO_DIR}/core/store_unit.sv
@@ -133,7 +138,8 @@ ${CVA6_REPO_DIR}/core/cache_subsystem/wt_cache_subsystem.sv
 ${CVA6_REPO_DIR}/core/cache_subsystem/wt_axi_adapter.sv
 
 // Physical Memory Protection
-${CVA6_REPO_DIR}/core/pmp/src/pmp.sv // NOTE: pmp.sv modified for DSIM (unchanged for other simulators)
+// NOTE: pmp.sv modified for DSIM (unchanged for other simulators)
+${CVA6_REPO_DIR}/core/pmp/src/pmp.sv
 ${CVA6_REPO_DIR}/core/pmp/src/pmp_entry.sv
 
 // Tracer (behavioral code, not RTL)
