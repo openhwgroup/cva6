@@ -542,6 +542,48 @@ module ariane_testharness #(
     .rdata_o    ( rdata                                                                       )
   );
 
+
+  // L2SPM
+  
+  logic                         req_l2;
+  logic                         we_l2;
+  logic [AXI_ADDRESS_WIDTH-1:0] addr_l2;
+  logic [AXI_DATA_WIDTH/8-1:0]  be_l2;
+  logic [AXI_DATA_WIDTH-1:0]    wdata_l2;
+  logic [AXI_DATA_WIDTH-1:0]    rdata_l2;
+   
+  axi2mem #(
+    .AXI_ID_WIDTH   ( ariane_soc::IdWidthSlave ),
+    .AXI_ADDR_WIDTH ( AXI_ADDRESS_WIDTH        ),
+    .AXI_DATA_WIDTH ( AXI_DATA_WIDTH           ),
+    .AXI_USER_WIDTH ( AXI_USER_WIDTH           )
+  ) i_axi2mem_l2 (
+    .clk_i  ( clk_i                     ),
+    .rst_ni ( ndmreset_n                ),
+    .slave  ( master[ariane_soc::L2SPM] ),
+    .req_o  ( req_l2                    ),
+    .we_o   ( we_l2                     ),
+    .addr_o ( addr_l2                   ),
+    .be_o   ( be_l2                     ),
+    .data_o ( wdata_l2                  ),
+    .data_i ( rdata_l2                  )
+  );
+
+   generic_memory #(
+     .ADDR_WIDTH ( $clog2(ariane_soc::L2SPMLength >> 3) ), //16
+     .DATA_WIDTH ( 64                                   )
+   )(
+   .CLK   (clk_i                               ),
+   .INITN (ndmreset_n                          ),   
+   .CEN   (req_l2                              ),
+   .A     (addr_l2[$clog2(ariane_soc::L2SPMLength >> 3)-1:3]),
+   .WEN   (we_l2                               ),
+   .D     (wdata_l2                            ),
+   .BEN   (be_l2                               ),
+   .Q     (rdata_l2                            )     
+   );
+   
+   
   // ---------------
   // AXI Xbar
   // ---------------
@@ -573,7 +615,8 @@ module ariane_testharness #(
       ariane_soc::SPIBase,
       ariane_soc::EthernetBase,
       ariane_soc::GPIOBase,
-      ariane_soc::DRAMBase
+      ariane_soc::DRAMBase,
+      ariane_soc::L2SPMBase
     }),
     .end_addr_i   ({
       ariane_soc::DebugBase    + ariane_soc::DebugLength - 1,
@@ -585,7 +628,8 @@ module ariane_testharness #(
       ariane_soc::SPIBase      + ariane_soc::SPILength - 1,
       ariane_soc::EthernetBase + ariane_soc::EthernetLength -1,
       ariane_soc::GPIOBase     + ariane_soc::GPIOLength - 1,
-      ariane_soc::DRAMBase     + ariane_soc::DRAMLength - 1
+      ariane_soc::DRAMBase     + ariane_soc::DRAMLength - 1,
+      ariane_soc::L2SPMBase    + ariane_soc::L2SPMLength -1
     }),
     .valid_rule_i (ariane_soc::ValidRule)
   );

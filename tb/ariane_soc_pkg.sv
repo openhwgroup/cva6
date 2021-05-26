@@ -24,16 +24,17 @@ package ariane_soc;
   localparam IdWidthSlave = IdWidth + $clog2(NrSlaves);
 
   typedef enum int unsigned {
-    DRAM     = 0,
-    GPIO     = 1,
-    Ethernet = 2,
-    SPI      = 3,
-    Timer    = 4,
-    UART     = 5,
-    PLIC     = 6,
-    CLINT    = 7,
-    ROM      = 8,
-    Debug    = 9
+    L2SPM    = 0,
+    DRAM     = 1,
+    GPIO     = 2,
+    Ethernet = 3,
+    SPI      = 4,
+    Timer    = 5,
+    UART     = 6,
+    PLIC     = 7,
+    CLINT    = 8,
+    ROM      = 9,
+    Debug    = 10
   } axi_slaves_t;
 
   localparam NB_PERIPHERALS = Debug + 1;
@@ -50,6 +51,8 @@ package ariane_soc;
   localparam logic[63:0] GPIOLength     = 64'h1000;
   localparam logic[63:0] DRAMLength     = 64'h40000000; // 1GByte of DDR (split between two chips on Genesys2)
   localparam logic[63:0] SRAMLength     = 64'h1800000;  // 24 MByte of SRAM
+  localparam logic[63:0] L2SPMLength    = 64'h80000; // 512kB of scratchpad memory 
+ 
   // Instantiate AXI protocol checkers
   localparam bit GenProtocolChecker = 1'b0;
 
@@ -63,7 +66,8 @@ package ariane_soc;
     SPIBase      = 64'h2000_0000,
     EthernetBase = 64'h3000_0000,
     GPIOBase     = 64'h4000_0000,
-    DRAMBase     = 64'h8000_0000
+    DRAMBase     = 64'h8000_0000,
+    L2SPMBase    = 64'hC000_0000
   } soc_bus_start_t;
 
   localparam NrRegion = 1;
