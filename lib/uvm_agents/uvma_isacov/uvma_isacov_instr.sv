@@ -31,7 +31,7 @@ class uvma_isacov_instr_c extends uvm_object;
   bit [11:0] immi;
   bit [11:0] imms;
   bit [12:1] immb;
-  bit [19:0] immu;
+  bit [31:12] immu;
   bit [20:1] immj;
 
   // Valid flags for fields (to calculate hazards and other coverage)
@@ -123,7 +123,7 @@ function string uvma_isacov_instr_c::convert2string();
     return $sformatf("%s x%0d, x%0d, %0d", name.name(), rs1, rs2, $signed(immb));
   end
   if (itype == U_TYPE) begin
-    return $sformatf("%s x%0d, 0x%0x", name.name(), rd, immu);
+    return $sformatf("%s x%0d, 0x%0x", name.name(), rd, {immu, 12'd0});
   end
   if (itype == J_TYPE) begin
     return $sformatf("%s x%0d, %0d", name.name(), rd, $signed(immj));

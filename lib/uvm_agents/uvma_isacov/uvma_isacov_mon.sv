@@ -109,7 +109,7 @@ task uvma_isacov_mon_c::sample_instr();
   mon_trn.instr.immi = dasm_i_imm(cntxt.vif.insn);
   mon_trn.instr.imms = dasm_s_imm(cntxt.vif.insn);
   mon_trn.instr.immb = dasm_sb_imm(cntxt.vif.insn);
-  mon_trn.instr.immu = dasm_u_imm(cntxt.vif.insn);
+  mon_trn.instr.immu = dasm_u_imm(cntxt.vif.insn) >> 12;
   mon_trn.instr.immj = dasm_uj_imm(cntxt.vif.insn);
   
   mon_trn.instr.c_immj = dasm_rvc_j_imm(cntxt.vif.insn);
