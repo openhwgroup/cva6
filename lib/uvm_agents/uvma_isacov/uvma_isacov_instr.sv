@@ -120,7 +120,7 @@ function string uvma_isacov_instr_c::convert2string();
     return $sformatf("%s x%0d, %0d(x%0d)", name.name(), rs2, $signed(imms), rs1);
   end
   if (itype == B_TYPE) begin
-    return $sformatf("%s x%0d, x%0d, %0d", name.name(), rs1, rs2, $signed(immb));
+    return $sformatf("%s x%0d, x%0d, %0d", name.name(), rs1, rs2, $signed({immb, 1'b0}));
   end
   if (itype == U_TYPE) begin
     return $sformatf("%s x%0d, 0x%0x", name.name(), rd, {immu, 12'd0});

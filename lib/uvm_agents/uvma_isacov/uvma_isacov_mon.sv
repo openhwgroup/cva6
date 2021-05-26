@@ -74,6 +74,7 @@ task uvma_isacov_mon_c::sample_instr();
 
   uvma_isacov_mon_trn_c mon_trn;
   string                instr_name;
+  bit [63:0]            insn;  // TODO name "instr" and fix inconsistency
 
   @(cntxt.vif.retire);
 
@@ -103,22 +104,24 @@ task uvma_isacov_mon_c::sample_instr();
   mon_trn.instr.itype = get_instr_type(mon_trn.instr.name);
   mon_trn.instr.group = get_instr_group(mon_trn.instr.name);
 
-  mon_trn.instr.rs1  = dasm_rs1(cntxt.vif.insn);
-  mon_trn.instr.rs2  = dasm_rs2(cntxt.vif.insn);
-  mon_trn.instr.rd   = dasm_rd(cntxt.vif.insn);
-  mon_trn.instr.immi = dasm_i_imm(cntxt.vif.insn);
-  mon_trn.instr.imms = dasm_s_imm(cntxt.vif.insn);
-  mon_trn.instr.immb = dasm_sb_imm(cntxt.vif.insn);
-  mon_trn.instr.immu = dasm_u_imm(cntxt.vif.insn) >> 12;
-  mon_trn.instr.immj = dasm_uj_imm(cntxt.vif.insn);
+  insn = $signed(cntxt.vif.insn);  // dpi_dasm expects even 32-bit words as 64 bits
+
+  mon_trn.instr.rs1  = dasm_rs1(insn);
+  mon_trn.instr.rs2  = dasm_rs2(insn);
+  mon_trn.instr.rd   = dasm_rd(insn);
+  mon_trn.instr.immi = dasm_i_imm(insn);
+  mon_trn.instr.imms = dasm_s_imm(insn);
+  mon_trn.instr.immb = dasm_sb_imm(insn) >> 1;
+  mon_trn.instr.immu = dasm_u_imm(insn) >> 12;
+  mon_trn.instr.immj = dasm_uj_imm(insn);
   
-  mon_trn.instr.c_immj = dasm_rvc_j_imm(cntxt.vif.insn);
-  mon_trn.instr.c_rs1p = cntxt.vif.insn[9:7];  // TODO use disassembler
-  mon_trn.instr.c_rdp = cntxt.vif.insn[4:2];  // TODO use disassembler
+  mon_trn.instr.c_immj = dasm_rvc_j_imm(insn);
+  mon_trn.instr.c_rs1p = insn[9:7];  // TODO use disassembler
+  mon_trn.instr.c_rdp = insn[4:2];  // TODO use disassembler
   
   if (mon_trn.instr.group == CSR_GROUP) begin
-    if (!$cast(mon_trn.instr.csr, dasm_csr(cntxt.vif.insn))) begin
-      `uvm_warning("ISACOVMON", $sformatf("CSR: 0x%03x unmappable", dasm_csr(cntxt.vif.insn)));
+    if (!$cast(mon_trn.instr.csr, dasm_csr(insn))) begin
+      `uvm_warning("ISACOVMON", $sformatf("CSR: 0x%03x unmappable", dasm_csr(insn)));
     end
   end
 
