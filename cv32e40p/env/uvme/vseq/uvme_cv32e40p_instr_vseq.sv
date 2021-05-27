@@ -73,7 +73,7 @@ task uvme_cv32e40p_instr_vseq_c::body();
    
    forever begin
       // Wait for the monitor to send us the mstr's "req" with an access request
-      p_sequencer.obi_memory_sqr.mon_trn_fifo.get(mon_trn);
+      p_sequencer.obi_memory_instr_sequencer.mon_trn_fifo.get(mon_trn);
       `uvm_info("OBI_MEMORY_SLV_SEQ", $sformatf("Got mon_trn:\n%s", mon_trn.sprint()), UVM_HIGH)
       
       error  = mon_trn.err;
@@ -110,7 +110,7 @@ task uvme_cv32e40p_instr_vseq_c::body();
       end
       
       //slv_rsp.start(p_sequencer.obi_memory_instr_sqr);
-      slv_rsp.set_sequencer(p_sequencer.obi_memory_instr_sqr);
+      slv_rsp.set_sequencer(p_sequencer.obi_memory_instr_sequencer);
       `uvm_send(slv_rsp)
    end
    

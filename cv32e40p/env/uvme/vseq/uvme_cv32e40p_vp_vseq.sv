@@ -163,7 +163,7 @@ task uvme_cv32e40p_vp_vseq_c::body();
             fork
                begin
                   while (interrupt_timer_value > 0) begin
-                     @(cntxt.obi_memory_cntxt.vif.clk);
+                     @(cntxt.obi_memory_data_cntxt.vif.clk);
                      interrupt_timer_value--;
                   end
                   irq_o();
