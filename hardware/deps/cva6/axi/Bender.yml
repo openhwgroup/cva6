@@ -1,0 +1,56 @@
+package:
+  name: axi
+  authors:
+    - "Andreas Kurth <akurth@iis.ee.ethz.ch>" # current maintainer
+    - "Fabian Schuiki <fschuiki@iis.ee.ethz.ch>"
+    - "Florian Zaruba <zarubaf@iis.ee.ethz.ch>"
+
+dependencies:
+  common_cells: { git: "https://github.com/pulp-platform/common_cells.git", version: 1.10.0 }
+  common_verification: { git: "https://github.com/pulp-platform/common_verification.git", version: 0.1.1 }
+
+export_include_dirs:
+  - include
+
+sources:
+  # Source files grouped in levels. Files in level 0 have no dependencies on files in this
+  # package. Files in level 1 only depend on files in level 0, files in level 2 on files in
+  # levels 1 and 0, etc. Files within a level are ordered alphabetically.
+  # Level 0
+  - src/axi_pkg.sv
+  # Level 1
+  - src/axi_intf.sv
+  # Level 2
+  - src/axi_address_resolver.sv
+  - src/axi_arbiter.sv
+  - src/axi_atop_filter.sv
+  - src/axi_cut.sv
+  - src/axi_delayer.sv
+  - src/axi_join.sv
+  - src/axi_lite_cut.sv
+  - src/axi_lite_join.sv
+  - src/axi_lite_to_axi.sv
+  - src/axi_modify_address.sv
+  - src/axi_to_axi_lite.sv
+  # Level 3
+  - src/axi_id_remap.sv
+  - src/axi_lite_multicut.sv
+  - src/axi_lite_xbar.sv
+  - src/axi_multicut.sv
+
+  - target: synth_test
+    files:
+      - test/synth_bench.sv
+
+  - target: simulation
+    files:
+      - src/axi_test.sv
+
+  - target: test
+    files:
+      - test/tb_axi_atop_filter.sv
+      - test/tb_axi_id_remap.sv
+      - test/tb_axi_delayer.sv
+      - test/tb_axi_lite_to_axi.sv
+      - test/tb_axi_lite_xbar.sv
+      - test/tb_axi_to_axi_lite.sv

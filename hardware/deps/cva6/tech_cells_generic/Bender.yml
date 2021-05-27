@@ -1,0 +1,43 @@
+package:
+  name: tech_cells_generic
+  description: "Technology-agnostic building blocks."
+
+sources:
+  - target: all(fpga, xilinx)
+    files:
+      - src/cluster_clock_gating_xilinx.sv
+      - src/pulp_clock_gating_xilinx.sv
+      - src/pulp_clock_mux2_xilinx.sv
+
+  - target: not(all(fpga, xilinx))
+    files:
+      - src/cluster_clock_gating.sv
+      - src/pulp_clock_gating.sv
+      - src/pulp_clock_mux2.sv
+
+  - target: not(synthesis)
+    files:
+      - src/cluster_clock_and2.sv
+      - src/cluster_clock_buffer.sv
+      - src/cluster_clock_inverter.sv
+      - src/cluster_clock_mux2.sv
+      - src/cluster_clock_xor2.sv
+      - src/cluster_level_shifter_in.sv
+      - src/cluster_level_shifter_in_clamp.sv
+      - src/cluster_level_shifter_inout.sv
+      - src/cluster_level_shifter_out.sv
+      - src/cluster_level_shifter_out_clamp.sv
+      - src/generic_memory.sv
+      - src/generic_rom.sv
+      - src/pad_functional.sv
+      - src/pulp_buffer.sv
+      - src/pulp_clock_and2.sv
+      - src/pulp_clock_buffer.sv
+      - src/pulp_clock_gating_async.sv
+      - src/pulp_clock_inverter.sv
+      - src/pulp_clock_xor2.sv
+      - src/pulp_level_shifter_in.sv
+      - src/pulp_level_shifter_in_clamp.sv
+      - src/pulp_level_shifter_out.sv
+      - src/pulp_level_shifter_out_clamp.sv
+      - src/pulp_power_gating.sv

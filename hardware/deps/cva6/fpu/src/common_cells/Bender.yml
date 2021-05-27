@@ -1,0 +1,102 @@
+package:
+  name: common_cells
+  authors:
+    - "Florian Zaruba <zarubaf@iis.ee.ethz.ch>"
+    - "Fabian Schuiki <fschuiki@iis.ee.ethz.ch>"
+    - "Michael Schaffner <schaffner@iis.ee.ethz.ch>"
+    - "Andreas Kurth <akurth@iis.ee.ethz.ch>"
+    - "Manuel Eggimann <meggimann@iis.ee.ethz.ch>"
+    - "Stefan Mach <smach@iis.ee.ethz.ch>"
+
+dependencies:
+  common_verification: { git: "https://github.com/pulp-platform/common_verification.git", version: 0.1.1 }
+  tech_cells_generic: { git: "https://github.com/pulp-platform/tech_cells_generic.git", version: 0.1.1 }
+
+export_include_dirs:
+  - include
+
+sources:
+  # Source files grouped in levels. Files in level 0 have no dependencies on files in this package.
+  # Files in level 1 only depend on files in level 0, files in level 2 on files in levels 1 and 0,
+  # etc. Files within a level are ordered alphabetically.
+  # Level 0
+  - src/cdc_2phase.sv
+  - src/cf_math_pkg.sv
+  - src/clk_div.sv
+  - src/counter.sv
+  - src/edge_propagator_tx.sv
+  - src/fifo_v3.sv
+  - src/graycode.sv
+  - src/lfsr_16bit.sv
+  - src/lfsr_8bit.sv
+  - src/lzc.sv
+  - src/mv_filter.sv
+  - src/onehot_to_bin.sv
+  - src/plru_tree.sv
+  - src/popcount.sv
+  - src/rr_arb_tree.sv
+  - src/rstgen_bypass.sv
+  - src/serial_deglitch.sv
+  - src/shift_reg.sv
+  - src/spill_register.sv
+  - src/stream_demux.sv
+  - src/stream_filter.sv
+  - src/stream_fork.sv
+  - src/stream_mux.sv
+  - src/sync.sv
+  - src/sync_wedge.sv
+  # Level 1
+  - src/cdc_fifo_2phase.sv
+  - src/cdc_fifo_gray.sv
+  - src/edge_detect.sv
+  - src/id_queue.sv
+  - src/rstgen.sv
+  - src/stream_delay.sv
+  # Level 2
+  - src/fall_through_register.sv
+  - src/stream_arbiter_flushable.sv
+  - src/stream_register.sv
+  # Level 3
+  - src/stream_arbiter.sv
+
+  - target: simulation
+    files:
+      - src/sram.sv
+
+  - target: test
+    files:
+      - test/cdc_2phase_tb.sv
+      - test/cdc_fifo_tb.sv
+      - test/fifo_tb.sv
+      - test/graycode_tb.sv
+      - test/id_queue_tb.sv
+      - test/popcount_tb.sv
+      - test/stream_register_tb.sv
+
+  - target: synth_test
+    files:
+      # Level 0
+      - test/cdc_2phase_synth.sv
+      - test/id_queue_synth.sv
+      - test/stream_arbiter_synth.sv
+      # Level 1
+      - test/synth_bench.sv
+
+  # Deprecated modules
+  # Level 0
+  - src/deprecated/clock_divider_counter.sv
+  - src/deprecated/fifo_v1.sv
+  - src/deprecated/fifo_v2.sv
+  - src/deprecated/find_first_one.sv
+  - src/deprecated/generic_LFSR_8bit.sv
+  - src/deprecated/generic_fifo.sv
+  - src/deprecated/prioarbiter.sv
+  - src/deprecated/pulp_sync.sv
+  - src/deprecated/pulp_sync_wedge.sv
+  - src/deprecated/rrarbiter.sv
+  # Level 1
+  - src/deprecated/clock_divider.sv
+
+  # Depend on deprecated modules
+  - src/edge_propagator.sv
+  - src/edge_propagator_rx.sv

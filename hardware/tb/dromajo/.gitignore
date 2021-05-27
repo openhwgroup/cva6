@@ -1,0 +1,12 @@
+*.o
+*.bootram
+*.mainram
+*.hex
+*.re_regs
+*.dtb
+*.d
+snap.*
+dromajo
+libdromajo_cosim.a
+*.swp
+tags

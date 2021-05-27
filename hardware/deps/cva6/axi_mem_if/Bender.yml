@@ -1,0 +1,12 @@
+package:
+  name: axi_mem_if
+  authors: [ "Florian Zaruba <zarubaf@iis.ee.ethz.ch>"]
+
+dependencies:
+  axi: { git: "git@iis-git.ee.ethz.ch:sasa/axi.git", rev: master }
+
+sources:
+  - src/axi2mem.sv
+  - src/deprecated/axi_mem_if.sv
+  - src/deprecated/axi_mem_if_var_latency.sv
+  - src/deprecated/axi_mem_if_wrap.sv

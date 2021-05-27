@@ -1,0 +1,21 @@
+variables:
+  VSIM: vsim-10.6b -64
+  VLIB: vlib-10.6b
+  VLOG: vlog-10.6b -64
+  SYNOPSYS_DC: synopsys-2016.03 dc_shell -64bit
+
+before_script:
+  - export PATH=~fschuiki/.cargo/bin:$PATH
+  - mkdir -p build
+
+modelsim:
+  script:
+    - bender vsim
+    - cd build
+    - ../scripts/compile_vsim.sh
+    - ../scripts/run_vsim.sh
+
+synopsys:
+  script:
+    - cd build
+    - ../scripts/synth.sh

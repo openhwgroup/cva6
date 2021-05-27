@@ -1,0 +1,23 @@
+package:
+  name: common_verification
+  authors:
+    - "Andreas Kurth <akurth@iis.ee.ethz.ch>"
+
+sources:
+  # Files in this package are meant for simulation only.
+  - target: simulation
+    files:
+    # Source files grouped in levels. Files in level 0 have no dependencies on files in this
+    # package. Files in level 1 only depend on files in level 0, files in level 2 on files in
+    # levels 1 and 0, etc. Files within a level are ordered alphabetically.
+    # Level 0
+    - src/clk_rst_gen.sv
+    - src/rand_id_queue.sv
+    - src/rand_stream_mst.sv
+    - src/rand_synch_holdable_driver.sv
+    - src/rand_verif_pkg.sv
+    - src/sim_timeout.sv
+    # Level 1
+    - src/rand_synch_driver.sv
+    # Level 2
+    - src/rand_stream_slv.sv

@@ -1,0 +1,15 @@
+[options]
+mode prove
+depth 100
+
+[engines]
+smtbmc
+
+[script]
+read -formal fifo_v3.sv
+read -formal fifo_v3_properties.sv
+prep -top fifo_v3
+
+[files]
+fifo_v3_properties.sv
+../src/fifo_v3.sv

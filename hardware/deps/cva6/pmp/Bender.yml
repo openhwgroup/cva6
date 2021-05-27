@@ -1,0 +1,18 @@
+package:
+  name: pmp
+  authors:
+    - "Moritz Schneider <moritz.schneider@inf.ethz.ch>"
+
+export_include_dirs:
+  - include
+
+sources:
+  # packages
+  - include/riscv.sv
+  # sources
+  - src/pmp_entry.sv
+  - src/pmp.sv
+
+  - target: simulation
+    files:
+      - tb/pmp_tb.sv
