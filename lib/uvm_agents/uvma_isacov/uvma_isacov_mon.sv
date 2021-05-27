@@ -74,54 +74,43 @@ task uvma_isacov_mon_c::sample_instr();
 
   uvma_isacov_mon_trn_c mon_trn;
   string                instr_name;
-  bit [63:0]            insn;  // TODO name "instr" and fix inconsistency
+  bit [63:0]            instr;
 
   @(cntxt.vif.retire);
 
   mon_trn = uvma_isacov_mon_trn_c::type_id::create("mon_trn");
   mon_trn.instr = uvma_isacov_instr_c::type_id::create("mon_instr");
 
-  instr_name = dasm_name(cntxt.vif.insn);
+  instr_name = dasm_name(cntxt.vif.instr);
   if (instr_name_lookup.exists(instr_name)) begin
     mon_trn.instr.name = instr_name_lookup[instr_name];    
   end else begin
     mon_trn.instr.name = UNKNOWN;
-    `uvm_warning("ISACOVMON", $sformatf("TODO: error couldn't look up '%s'", instr_name));
+    `uvm_warning("ISACOVMON", $sformatf("error couldn't look up '%s'", instr_name));
   end
-  // mon_trn.instr.name =
-  //   cntxt.vif.is_compressed ?
-  //     (mon_trn.instr.name == JAL) ?
-  //       (cntxt.vif.insn[11:7] == 5'b00000) ?
-  //         C_J :
-  //       (cntxt.vif.insn[11:7] == 5'b00001) ?
-  //         C_JAL :
-  //       UNKNOWN :
-  //     (mon_trn.instr.name == LW) ?
-  //       C_LW :
-  //     UNKNOWN :
-  //  mon_trn.instr.name;  // TODO get non de-compressed binary input instead of this
   
   mon_trn.instr.itype = get_instr_type(mon_trn.instr.name);
   mon_trn.instr.group = get_instr_group(mon_trn.instr.name);
 
-  insn = $signed(cntxt.vif.insn);  // dpi_dasm expects even 32-bit words as 64 bits
+  instr = $signed(cntxt.vif.instr);  // dpi_dasm expects even 32-bit words as 64 bits
 
-  mon_trn.instr.rs1  = dasm_rs1(insn);
-  mon_trn.instr.rs2  = dasm_rs2(insn);
-  mon_trn.instr.rd   = dasm_rd(insn);
-  mon_trn.instr.immi = dasm_i_imm(insn);
-  mon_trn.instr.imms = dasm_s_imm(insn);
-  mon_trn.instr.immb = dasm_sb_imm(insn) >> 1;
-  mon_trn.instr.immu = dasm_u_imm(insn) >> 12;
-  mon_trn.instr.immj = dasm_uj_imm(insn);
+  mon_trn.instr.rs1  = dasm_rs1(instr);
+  mon_trn.instr.rs2  = dasm_rs2(instr);
+  mon_trn.instr.rd   = dasm_rd(instr);
+  mon_trn.instr.immi = dasm_i_imm(instr);
+  mon_trn.instr.imms = dasm_s_imm(instr);
+  mon_trn.instr.immb = dasm_sb_imm(instr) >> 1;
+  mon_trn.instr.immu = dasm_u_imm(instr) >> 12;
+  mon_trn.instr.immj = dasm_uj_imm(instr);
   
-  mon_trn.instr.c_immj = dasm_rvc_j_imm(insn);
-  mon_trn.instr.c_rs1p = insn[9:7];  // TODO use disassembler
-  mon_trn.instr.c_rdp = insn[4:2];  // TODO use disassembler
+  mon_trn.instr.c_immj = dasm_rvc_j_imm(instr);
+  mon_trn.instr.c_rs1p = instr[9:7];  // TODO use disassembler
+  mon_trn.instr.c_rdp = instr[4:2];  // TODO use disassembler
+  // TODO make sure RVC instrs don't arrive as decompressed instrs
   
   if (mon_trn.instr.group == CSR_GROUP) begin
-    if (!$cast(mon_trn.instr.csr, dasm_csr(insn))) begin
-      `uvm_warning("ISACOVMON", $sformatf("CSR: 0x%03x unmappable", dasm_csr(insn)));
+    if (!$cast(mon_trn.instr.csr, dasm_csr(instr))) begin
+      `uvm_warning("ISACOVMON", $sformatf("CSR: 0x%03x unmappable", dasm_csr(instr)));
     end
   end
 

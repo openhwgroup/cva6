@@ -23,7 +23,7 @@ interface uvma_isacov_if;
   //   1) use RVFI, and/or 2) use a TLM port instead.
 
   event        retire;
-  logic [31:0] insn;
+  logic [31:0] instr;
   logic        is_compressed;
 
 endinterface
