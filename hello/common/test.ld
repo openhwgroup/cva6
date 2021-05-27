@@ -9,7 +9,9 @@
 
 /* The OUTPUT_ARCH command specifies the machine architecture where the
    argument is one of the names used in the BFD library. More
-   specifically one of the entires in bfd/cpu-mips.c */
+   specifically one of the entires in bfd/cpu-mips.c 
+   See LICENSE for license details.
+*/
 
 OUTPUT_ARCH( "riscv" )
 ENTRY(_start)
