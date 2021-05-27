@@ -289,7 +289,7 @@ task uvme_cv32e40p_vp_vseq_c::vp_address_range_check(ref uvma_obi_memory_mon_trn
    add_latencies(slv_rsp);
    
    if (mon_req.access_type == UVMA_OBI_MEMORY_ACCESS_WRITE) begin
-      `uvm_info("OBI_VP", $sformatf("Call to virtual peripheral 'address_range_check:\n'", mon_req.sprint()), UVM_LOW)
+      `uvm_info("OBI_VP", $sformatf("Call to virtual peripheral 'address_range_check:\n'%s", mon_req.sprint()), UVM_LOW)
       //slv_rsp.start(p_sequencer.obi_memory_data_sequencer);
       slv_rsp.set_sequencer(p_sequencer.obi_memory_data_sequencer);
       `uvm_send(slv_rsp)
@@ -312,7 +312,7 @@ task uvme_cv32e40p_vp_vseq_c::vp_virtual_printer(ref uvma_obi_memory_mon_trn_c m
    add_latencies(slv_rsp);
    
    if (mon_req.access_type == UVMA_OBI_MEMORY_ACCESS_WRITE) begin
-      `uvm_info("OBI_VP", $sformatf("Call to virtual peripheral 'virtual_printer:\n'", mon_req.sprint()), UVM_LOW)
+      `uvm_info("OBI_VP", $sformatf("Call to virtual peripheral 'virtual_printer:\n'%s", mon_req.sprint()), UVM_LOW)
       $write("%c", mon_req.data[7:0]);
    end
    
@@ -331,7 +331,7 @@ task uvme_cv32e40p_vp_vseq_c::vp_interrupt_timer_control(ref uvma_obi_memory_mon
    add_latencies(slv_rsp);
    
    if (mon_req.access_type == UVMA_OBI_MEMORY_ACCESS_WRITE) begin
-      `uvm_info("OBI_VP", $sformatf("Call to virtual peripheral 'interrupt_timer_control:\n'", mon_req.sprint()), UVM_LOW)
+      `uvm_info("OBI_VP", $sformatf("Call to virtual peripheral 'interrupt_timer_control:\n'%s", mon_req.sprint()), UVM_LOW)
       interrupt_timer_value = mon_req.data;
       ->interrupt_timer_start;
    end
@@ -358,7 +358,7 @@ task uvme_cv32e40p_vp_vseq_c::vp_debug_control(ref uvma_obi_memory_mon_trn_c mon
    add_latencies(slv_rsp);
    
    if (mon_req.access_type == UVMA_OBI_MEMORY_ACCESS_WRITE) begin
-      `uvm_info("OBI_VP", $sformatf("Call to virtual peripheral 'interrupt_timer_control:\n'", mon_req.sprint()), UVM_LOW)
+      `uvm_info("OBI_VP", $sformatf("Call to virtual peripheral 'interrupt_timer_control:\n'%s", mon_req.sprint()), UVM_LOW)
       
       // Extract fields from write data
       dbg_req_value       = mon_req.data[31];
@@ -410,7 +410,7 @@ task uvme_cv32e40p_vp_vseq_c::vp_rand_num_gen(ref uvma_obi_memory_mon_trn_c mon_
    add_latencies(slv_rsp);
    
    if (mon_req.access_type == UVMA_OBI_MEMORY_ACCESS_READ) begin
-      `uvm_info("OBI_VP", $sformatf("Call to virtual peripheral 'rand_num_gen:\n'", mon_req.sprint()), UVM_LOW)
+      `uvm_info("OBI_VP", $sformatf("Call to virtual peripheral 'rand_num_gen:\n'%s", mon_req.sprint()), UVM_LOW)
       slv_rsp.rdata = $urandom();
    end
    
@@ -427,7 +427,7 @@ task uvme_cv32e40p_vp_vseq_c::vp_cycle_counter(ref uvma_obi_memory_mon_trn_c mon
    
    `uvm_create  (slv_rsp)
    add_latencies(slv_rsp);
-   `uvm_info("OBI_VP", $sformatf("Call to virtual peripheral 'cycle_counter:\n'", mon_req.sprint()), UVM_LOW)
+   `uvm_info("OBI_VP", $sformatf("Call to virtual peripheral 'cycle_counter:\n'%s", mon_req.sprint()), UVM_LOW)
    
    if (mon_req.access_type == UVMA_OBI_MEMORY_ACCESS_READ) begin
       slv_rsp.rdata = cycle_counter;
@@ -451,7 +451,7 @@ task uvme_cv32e40p_vp_vseq_c::vp_instr_mem_intf_stall_ctrl(ref uvma_obi_memory_m
    add_latencies(slv_rsp);
    
    if (mon_req.access_type == UVMA_OBI_MEMORY_ACCESS_WRITE) begin
-      `uvm_info("OBI_VP", $sformatf("Call to virtual peripheral 'mem_intf_stall_ctrl:\n'", mon_req.sprint()), UVM_LOW)
+      `uvm_info("OBI_VP", $sformatf("Call to virtual peripheral 'mem_intf_stall_ctrl:\n'%s", mon_req.sprint()), UVM_LOW)
       cntxt.instr_mem_delay_enabled = 1;
    end
    
@@ -470,7 +470,7 @@ task uvme_cv32e40p_vp_vseq_c::vp_vp_status_flags(ref uvma_obi_memory_mon_trn_c m
    add_latencies(slv_rsp);
    
    if (mon_req.access_type == UVMA_OBI_MEMORY_ACCESS_WRITE) begin
-      `uvm_info("OBI_VP", $sformatf("Call to virtual peripheral 'vp_status_flags:\n'", mon_req.sprint()), UVM_LOW)
+      `uvm_info("OBI_VP", $sformatf("Call to virtual peripheral 'vp_status_flags:\n'%s", mon_req.sprint()), UVM_LOW)
       if (mon_req.address == 32'h2000_0000) begin
          if (mon_req.data == 'd123456789) begin
             //wait(cntxt.misc_vif.clk === 1);
@@ -526,7 +526,7 @@ task uvme_cv32e40p_vp_vseq_c::vp_sig_writer(ref uvma_obi_memory_mon_trn_c mon_re
    end
    
    if (mon_req.access_type == UVMA_OBI_MEMORY_ACCESS_WRITE) begin
-      `uvm_info("OBI_VP", $sformatf("Call to virtual peripheral 'sig_writer:\n'", mon_req.sprint()), UVM_LOW)
+      `uvm_info("OBI_VP", $sformatf("Call to virtual peripheral 'sig_writer:\n'%s", mon_req.sprint()), UVM_LOW)
       if (mon_req.address == 32'h2000_0008) begin
          signature_start_address = mon_req.data;
       end
