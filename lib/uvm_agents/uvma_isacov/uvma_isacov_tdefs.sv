@@ -329,8 +329,14 @@ function instr_type_t get_instr_type(instr_name_t name);
     ADDI, SLTI, SLTIU, XORI, ORI, ANDI, SLLI, SRLI, SRAI,
     JALR
     };
+  instr_name_t rtypes[] = '{
+    // I-ext
+    ADD, SUB, SLL, SLT, SLTU, XOR, SRL, SRA, OR, AND,
+    // M-ext
+    MUL, MULH, MULHSU, MULHU, DIV, DIVU, REM, REMU
+    };
 
-  if (name inside {ADD,SUB,SLL,SLT,SLTU,XOR,SRL,SRA,OR,AND}) 
+  if (name inside {rtypes})
     return R_TYPE;
 
   if (name inside {itypes})
