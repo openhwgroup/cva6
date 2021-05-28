@@ -10,7 +10,7 @@ This repository contains the hardware files needed to build the Ariane-SoC and i
 
 ## Hello World:
 
-###Compile the code:
+To compile the code, from this folder:
 
 ```
 cd ..
@@ -32,6 +32,8 @@ First do `make bender` to locally install bender. Then:
 cd hardware
 
 make update
+
+make scripts
 
 make sim elf-bin=../hello/hello.riscv
 
