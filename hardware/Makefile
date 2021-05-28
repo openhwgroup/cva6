@@ -39,7 +39,7 @@ $(error RISCV not set - please point your RISCV variable to your RISCV installat
 endif
 
 ifndef QUESTASIM_HOME
-$(error Please set QUESTASIM_HOME)
+$(error QUESTASIM not set - please point to your QUESTA installation)
 endif
 
 # spike tandem verification
@@ -50,31 +50,6 @@ ifdef spike-tandem
     endif
 endif
 
-# Sources
-# Package files -> compile first
-ariane_pkg := deps/cva6/include/riscv_pkg.sv                          \
-              deps/cva6/src/riscv-dbg/src/dm_pkg.sv                   \
-              deps/cva6/include/ariane_pkg.sv                         \
-              deps/cva6/include/std_cache_pkg.sv                      \
-              deps/cva6/include/wt_cache_pkg.sv                       \
-              deps/cva6/src/axi/src/axi_pkg.sv                        \
-              deps/cva6/src/register_interface/src/reg_intf.sv        \
-              deps/cva6/src/register_interface/src/reg_intf_pkg.sv    \
-              deps/cva6/include/axi_intf.sv                           \
-              host/ariane_soc_pkg.sv                          \
-              host/ariane_axi_soc_pkg.sv                      \
-              deps/cva6/include/ariane_axi_pkg.sv                     \
-              deps/cva6/src/fpu/src/fpnew_pkg.sv                      \
-              deps/cva6/src/fpu/src/fpu_div_sqrt_mvp/hdl/defs_div_sqrt_mvp.sv
-ariane_pkg := $(addprefix $(root-dir), $(ariane_pkg))
-
-# utility modules
-util := deps/cva6/include/instr_tracer_pkg.sv                         \
-        deps/cva6/src/util/instr_tracer_if.sv                         \
-        deps/cva6/src/util/instr_tracer.sv                            \
-        deps/cva6/src/tech_cells_generic/src/cluster_clock_gating.sv  \
-        tb/common/mock_uart.sv                              \
-        deps/cva6/src/util/sram.sv
 
 ifdef spike-tandem
     util += tb/common/spike.sv
@@ -116,98 +91,6 @@ ifdef spike-tandem
     CFLAGS += -Itb/riscv-isa-sim/install/include/spike
 endif
 
-# this list contains the standalone components
-src :=  $(filter-out deps/cva6/src/ariane_regfile.sv, $(wildcard deps/cva6/src/*.sv))              \
-        $(filter-out deps/cva6/src/fpu/src/fpnew_pkg.sv, $(wildcard deps/cva6/src/fpu/src/*.sv))   \
-        $(filter-out deps/cva6/src/fpu/src/fpu_div_sqrt_mvp/hdl/defs_div_sqrt_mvp.sv,    \
-        $(wildcard deps/cva6/src/fpu/src/fpu_div_sqrt_mvp/hdl/*.sv))                     \
-        $(wildcard deps/cva6/src/frontend/*.sv)                                          \
-        $(filter-out deps/cva6/src/cache_subsystem/std_no_dcache.sv,                     \
-        $(wildcard deps/cva6/src/cache_subsystem/*.sv))                                  \
-        $(wildcard ../bootrom/*.sv)                                               \
-        $(wildcard deps/cva6/src/clint/*.sv)                                             \
-        $(wildcard ../fpga/src/axi2apb/src/*.sv)                                  \
-        $(wildcard ../fpga/src/apb_timer/*.sv)                                    \
-        $(wildcard ../fpga/src/axi_slice/src/*.sv)                                \
-        $(wildcard deps/cva6/src/axi_node/src/*.sv)                                      \
-        $(wildcard deps/cva6/src/axi_riscv_atomics/src/*.sv)                             \
-        $(wildcard deps/cva6/src/axi_mem_if/src/*.sv)                                    \
-        $(wildcard deps/cva6/src/pmp/src/*.sv)                                           \
-        deps/cva6/src/rv_plic/rtl/rv_plic_target.sv                                      \
-        deps/cva6/src/rv_plic/rtl/rv_plic_gateway.sv                                     \
-        deps/cva6/src/rv_plic/rtl/plic_regmap.sv                                         \
-        deps/cva6/src/rv_plic/rtl/plic_top.sv                                            \
-        deps/cva6/src/riscv-dbg/src/dmi_cdc.sv                                           \
-        deps/cva6/src/riscv-dbg/src/dmi_jtag.sv                                          \
-        deps/cva6/src/riscv-dbg/src/dmi_jtag_tap.sv                                      \
-        deps/cva6/src/riscv-dbg/src/dm_csrs.sv                                           \
-        deps/cva6/src/riscv-dbg/src/dm_mem.sv                                            \
-        deps/cva6/src/riscv-dbg/src/dm_sba.sv                                            \
-        deps/cva6/src/riscv-dbg/src/dm_top.sv                                            \
-        deps/cva6/src/riscv-dbg/debug_rom/debug_rom.sv                                   \
-        deps/cva6/src/register_interface/src/apb_to_reg.sv                               \
-        deps/cva6/src/axi/src/axi_multicut.sv                                            \
-        deps/cva6/src/common_cells/src/deprecated/generic_fifo.sv                        \
-        deps/cva6/src/common_cells/src/deprecated/pulp_sync.sv                           \
-        deps/cva6/src/common_cells/src/deprecated/find_first_one.sv                      \
-        deps/cva6/src/common_cells/src/rstgen_bypass.sv                                  \
-        deps/cva6/src/common_cells/src/rstgen.sv                                         \
-        deps/cva6/src/common_cells/src/stream_mux.sv                                     \
-        deps/cva6/src/common_cells/src/stream_demux.sv                                   \
-        deps/cva6/src/common_cells/src/exp_backoff.sv                                    \
-        deps/cva6/src/util/axi_master_connect.sv                                         \
-        deps/cva6/src/util/axi_slave_connect.sv                                          \
-        deps/cva6/src/util/axi_master_connect_rev.sv                                     \
-        deps/cva6/src/util/axi_slave_connect_rev.sv                                      \
-        deps/cva6/src/axi/src/axi_cut.sv                                                 \
-        deps/cva6/src/axi/src/axi_join.sv                                                \
-        deps/cva6/src/axi/src/axi_delayer.sv                                             \
-        deps/cva6/src/axi/src/axi_to_axi_lite.sv                                         \
-        deps/cva6/src/fpga-support/rtl/SyncSpRamBeNx64.sv                                \
-        deps/cva6/src/common_cells/src/unread.sv                                         \
-        deps/cva6/src/common_cells/src/sync.sv                                           \
-        deps/cva6/src/common_cells/src/cdc_2phase.sv                                     \
-        deps/cva6/src/common_cells/src/spill_register.sv                                 \
-        deps/cva6/src/common_cells/src/sync_wedge.sv                                     \
-        deps/cva6/src/common_cells/src/edge_detect.sv                                    \
-        deps/cva6/src/common_cells/src/stream_arbiter.sv                                 \
-        deps/cva6/src/common_cells/src/stream_arbiter_flushable.sv                       \
-        deps/cva6/src/common_cells/src/deprecated/fifo_v1.sv                             \
-        deps/cva6/src/common_cells/src/deprecated/fifo_v2.sv                             \
-        deps/cva6/src/common_cells/src/fifo_v3.sv                                        \
-        deps/cva6/src/common_cells/src/lzc.sv                                            \
-        deps/cva6/src/common_cells/src/popcount.sv                                       \
-        deps/cva6/src/common_cells/src/rr_arb_tree.sv                                    \
-        deps/cva6/src/common_cells/src/deprecated/rrarbiter.sv                           \
-        deps/cva6/src/common_cells/src/stream_delay.sv                                   \
-        deps/cva6/src/common_cells/src/lfsr_8bit.sv                                      \
-        deps/cva6/src/common_cells/src/lfsr_16bit.sv                                     \
-        deps/cva6/src/common_cells/src/delta_counter.sv                                  \
-        deps/cva6/src/common_cells/src/counter.sv                                        \
-        deps/cva6/src/common_cells/src/shift_reg.sv                                      \
-        deps/cva6/src/tech_cells_generic/src/pulp_clock_gating.sv                        \
-        deps/cva6/src/tech_cells_generic/src/cluster_clock_inverter.sv                   \
-        deps/cva6/src/tech_cells_generic/src/pulp_clock_mux2.sv                          \
-        deps/cva6/src/tech_cells_generic/src/generic_memory.sv                           \
-        host/host_domain.sv                                               \
-        host/ariane_peripherals.sv                                               \
-        tb/common/uart.sv                                                      \
-        tb/common/SimDTM.sv                                                    \
-        tb/common/SimJTAG.sv
-
-src := $(addprefix $(root-dir), $(src))
-
-uart_src := $(wildcard ../fpga/src/apb_uart/src/*.vhd)
-uart_src := $(addprefix $(root-dir), $(uart_src))
-
-fpga_src :=  $(wildcard ../fpga/src/*.sv) $(wildcard ../fpga/src/bootrom/*.sv) $(wildcard ../fpga/src/ariane-ethernet/*.sv)
-fpga_src := $(addprefix $(root-dir), $(fpga_src))
-
-# look for testbenches
-tbs := tb/ariane_tb.sv host/host_domain.sv
-
-# Search here for include files (e.g.: non-standalone components)
-incdir := deps/cva6/src/common_cells/include/
 # Compile and sim flags
 compile_flag     += +cover=bcfst+/dut -incr -64 -nologo -quiet -suppress 13262 -permissive +define+$(defines)
 uvm-flags        += +UVM_NO_RELNOTES +UVM_VERBOSITY=LOW
@@ -249,50 +132,30 @@ endif
 bender:
 	curl --proto '=https' --tlsv1.2 https://fabianschuiki.github.io/bender/init -sSf | sh
 
+update:
+	./bender update
+
 libbender:
 	@vlib work
 	vmap work ./work
 
-# Build the TB and module using QuestaSim
-build: $(library) $(library)/.build-srcs $(library)/.build-tb $(dpi-library)/ariane_dpi.so
-	# Optimize top level
-	vopt$(questa_version) $(compile_flag) -work $(library)  $(top_level) -o $(top_level)_optimized +acc -check_synthesis
-
-# src files
-$(library)/.build-srcs: $(util) $(library)
-	vlog$(questa_version) $(compile_flag) -work $(library) $(filter %.sv,$(ariane_pkg)) $(list_incdir) -suppress 2583
-	# vcom$(questa_version) $(compile_flag_vhd) -work $(library) -pedanticerrors $(filter %.vhd,$(ariane_pkg))
-	vlog$(questa_version) $(compile_flag) -work $(library) $(filter %.sv,$(util)) $(list_incdir) -suppress 2583
-	# Suppress message that always_latch may not be checked thoroughly by QuestaSim.
-	vcom$(questa_version) $(compile_flag_vhd) -work $(library) -pedanticerrors $(filter %.vhd,$(uart_src))
-	# vcom$(questa_version) $(compile_flag_vhd) -work $(library) -pedanticerrors $(filter %.vhd,$(src))
-	vlog$(questa_version) $(compile_flag) -work $(library) -pedanticerrors $(filter %.sv,$(src)) $(list_incdir) -suppress 2583
-	touch $(library)/.build-srcs
-
 
 scripts:
 	./bender script vsim \
-		--vlog-arg="$(compile_flag)  -work work -suppress 2583 -suppress 13314" --vcom-arg="$(compile_flag_vhd) -work work -pedanticerrors" \
+		--vlog-arg="$(compile_flag)  -work  $(library) -suppress 2583 -suppress 13314" --vcom-arg="$(compile_flag_vhd) -work  $(library) -pedanticerrors" \
     -t test > compile.tcl
 
-bender-build: libbender $(util) $(library)
+benderrun: libbender $(util) $(library)
 	@test -f Bender.lock || { echo "ERROR: Bender.lock file does not exist. Did you run make checkout in bender mode?"; exit 1; }
-	vsim -do 'source compile.tcl; quit'
+	vsim -c -do 'source compile.tcl; quit'
 	touch $(library)/.build-srcs
 
-bender2: bender-build $(dpi)
+bendertb: benderrun $(dpi)
 	touch $(library)/.build-tb
+
+build: bendertb 	$(dpi-library)/ariane_dpi.so
 	vopt $(compile_flag) -work $(library)  $(top_level) -o $(top_level)_optimized +acc -check_synthesis
 
-bender3: bender2 	$(dpi-library)/ariane_dpi.so
-	vopt $(compile_flag) -work $(library)  $(top_level) -o $(top_level)_optimized +acc -check_synthesis
-
-
-# build TBs
-$(library)/.build-tb: $(dpi)
-	# Compile top level
-	vlog$(questa_version) $(compile_flag) -sv $(tbs) -work $(library)
-	touch $(library)/.build-tb
 
 $(library):
 	vlib${questa_version} $(library)
@@ -316,16 +179,13 @@ generate-trace-vsim:
 	make sim preload=$(preload) elf-bin= batch-mode=1
 	make generate-trace
 
-sim: build
+run: 
 	vsim${questa_version} +permissive $(questa-flags) $(questa-cmd) -lib $(library) +MAX_CYCLES=$(max_cycles) +UVM_TESTNAME=$(test_case) \
 	+BASEDIR=$(riscv-test-dir) $(uvm-flags) $(QUESTASIM_FLAGS) -gblso $(SPIKE_ROOT)/lib/libfesvr.so -sv_lib $(dpi-library)/ariane_dpi  \
 	${top_level}_optimized +permissive-off ++$(elf-bin) ++$(target-options) | tee sim.log
 
 
-simbender: 
-	vsim${questa_version} +permissive $(questa-flags) $(questa-cmd) -lib $(library) +MAX_CYCLES=$(max_cycles) +UVM_TESTNAME=$(test_case) \
-	+BASEDIR=$(riscv-test-dir) $(uvm-flags) $(QUESTASIM_FLAGS) -gblso $(SPIKE_ROOT)/lib/libfesvr.so -sv_lib $(dpi-library)/ariane_dpi  \
-	${top_level}_optimized +permissive-off ++$(elf-bin) ++$(target-options) | tee sim.log
+sim: build run
 
 clean:
 	rm -rf $(riscv-torture-dir)/output/test*

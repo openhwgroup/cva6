@@ -1,0 +1,39 @@
+# Hardware
+
+## Repository
+
+This repository contains the hardware files needed to build the Ariane-SoC and it is organized as follows:
+
+- `deps` contains the core (`cva6`) as a standalone component
+- `host` contains the host-system: it wraps the core and plugs it into the `axi_node` to which the slaves are attached
+- `tb` contains the testbench
+
+## Hello World:
+
+###Compile the code:
+
+```
+cd ..
+
+source setup.sh
+
+cd hello
+
+make clean all
+
+```
+
+
+### RTL BUILD
+
+First do `make bender` to locally install bender. Then:
+
+```
+cd hardware
+
+make update
+
+make sim elf-bin=../hello/hello.riscv
+
+```
+
