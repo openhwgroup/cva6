@@ -108,6 +108,9 @@ function string uvma_isacov_instr_c::convert2string();
   if (name inside {SLLI, SRLI, SRAI}) begin
     return $sformatf("%s x%0d, x%0d, 0x%0x", name.name(), rd, rs1, rs2);
   end
+  if (name == FENCE_I) begin
+    return $sformatf("fence.i");
+  end
 
   // Printing based on instruction format type
   if (itype == R_TYPE) begin
