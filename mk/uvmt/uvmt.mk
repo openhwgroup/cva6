@@ -310,7 +310,11 @@ isacov_logdiff:
 			| awk -F '\t' '{print $$2}' | tr A-Z a-z \
 			| tail -n +2 > agent.tmp
 	@echo diffing the instruction sequences...
-		@diff trace.tmp agent.tmp
+		@echo saving to $(ISACOV_LOGDIR)/isacov_logdiff
+		@rm -rf $(ISACOV_LOGDIR)/isacov_logdiff
+		@diff trace.tmp agent.tmp > $(ISACOV_LOGDIR)/isacov_logdiff; true
+		@rm -rf trace.tmp agent.tmp
+		@(test ! -s $(ISACOV_LOGDIR)/isacov_logdiff && echo OK) || (echo FAIL; false)
 
 ###############################################################################
 # Include the targets/rules for the selected SystemVerilog simulator
