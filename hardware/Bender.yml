@@ -1,0 +1,26 @@
+package:
+  name: ariane-soc
+  authors:
+    - "Luca Valente"
+
+dependencies:
+  cva6: { path: "deps/cva6" }
+  apb_uart: { path: "../fpga/src/apb_uart" }
+  
+sources:
+  - deps/cva6/src/tech_cells_generic/src/generic_memory.sv
+  - host/ariane_soc_pkg.sv
+  - host/ariane_axi_soc_pkg.sv
+  - host/ariane_peripherals.sv
+  - host/host_domain.sv                                               
+  - tb/common/uart.sv                                                     
+  - tb/common/SimDTM.sv                                                   
+  - tb/common/SimJTAG.sv
+
+  - target: test
+    files:
+      - deps/cva6/src/util/sram.sv
+      - ../bootrom/bootrom.sv
+      - tb/common/mock_uart.sv
+      - tb/ariane_tb.sv
+
