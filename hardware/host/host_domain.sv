@@ -546,13 +546,22 @@ module host_domain
 
 
   // L2SPM
-  
-  logic                         req_l2;
-  logic                         we_l2;
-  logic [AXI_ADDRESS_WIDTH-1:0] addr_l2;
-  logic [AXI_DATA_WIDTH/8-1:0]  be_l2;
-  logic [AXI_DATA_WIDTH-1:0]    wdata_l2;
-  logic [AXI_DATA_WIDTH-1:0]    rdata_l2;
+   localparam NB_BANKS =4;
+   
+  logic                         core_req_l2;
+  logic                         core_we_l2;
+  logic [AXI_ADDRESS_WIDTH-1:0] core_addr_l2;
+  logic [AXI_DATA_WIDTH/8-1:0]  core_be_l2;
+  logic [AXI_DATA_WIDTH-1:0]    core_wdata_l2;
+  logic [AXI_DATA_WIDTH-1:0]    core_rdata_l2;
+
+  logic [3:0]                        mem_req_l2;
+  logic [3:0]                        mem_wen_l2;
+  logic [3:0]                        mem_gnt_l2;
+  logic [3:0][AXI_ADDRESS_WIDTH-1:0] mem_addr_l2;
+  logic [3:0][AXI_DATA_WIDTH/8-1:0]  mem_be_l2;
+  logic [3:0][AXI_DATA_WIDTH-1:0]    mem_wdata_l2;
+  logic [3:0][AXI_DATA_WIDTH-1:0]    mem_rdata_l2;
    
   axi2mem #(
     .AXI_ID_WIDTH   ( ariane_soc::IdWidthSlave ),
@@ -563,28 +572,72 @@ module host_domain
     .clk_i  ( clk_i                     ),
     .rst_ni ( ndmreset_n                ),
     .slave  ( master[ariane_soc::L2SPM] ),
-    .req_o  ( req_l2                    ),
-    .we_o   ( we_l2                     ),
-    .addr_o ( addr_l2                   ),
-    .be_o   ( be_l2                     ),
-    .data_o ( wdata_l2                  ),
-    .data_i ( rdata_l2                  )
+    .req_o  ( core_req_l2                    ),
+    .we_o   ( core_we_l2                     ),
+    .addr_o ( core_addr_l2                   ),
+    .be_o   ( core_be_l2                     ),
+    .data_o ( core_wdata_l2                  ),
+    .data_i ( core_rdata_l2                  )
   );
 
-   generic_memory #(
-     .ADDR_WIDTH ( $clog2(ariane_soc::L2SPMLength >> 3) ), //16
-     .DATA_WIDTH ( 64                                   )
-   )(
-   .CLK   (clk_i                               ),
-   .INITN (ndmreset_n                          ),   
-   .CEN   (req_l2                              ),
-   .A     (addr_l2[$clog2(ariane_soc::L2SPMLength >> 3)-1:3]),
-   .WEN   (we_l2                               ),
-   .D     (wdata_l2                            ),
-   .BEN   (be_l2                               ),
-   .Q     (rdata_l2                            )     
-   );
-   
+     
+   tcdm_interconnect #(
+    .NumIn        ( 1                           ),
+    .NumOut       ( 4                           ), // NUM BANKS
+    .AddrWidth    ( AXI_ADDRESS_WIDTH           ),
+    .DataWidth    ( AXI_DATA_WIDTH              ),
+    .AddrMemWidth ( 15                          ),
+    .WriteRespOn  ( 1                           ),
+    .RespLat      ( 1                           ),
+    .Topology     ( tcdm_interconnect_pkg::LIC  )
+  ) i_tcdm_interconnect (
+    .clk_i,
+    .rst_ni,
+
+    .req_i    ( core_req_l2                            ),
+    .add_i    ( core_addr_l2 - ariane_soc::L2SPMBase    ),
+    .wen_i    ( ~core_we_l2                            ),
+    .wdata_i  ( core_wdata_l2                          ),
+    .be_i     ( core_be_l2                             ),
+    .gnt_o    (                             ),
+    .vld_o    (                         ),
+    .rdata_o  ( core_rdata_l2                        ),
+                         
+    .req_o    ( mem_req_l2                         ),
+    .gnt_i    ( mem_gnt_l2                         ),
+    .add_o    ( mem_addr_l2                         ),
+    .wen_o    ( mem_wen_l2                         ),
+    .wdata_o  ( mem_wdata_l2                       ),
+    .be_o     ( mem_be_l2                          ),
+    .rdata_i  ( mem_rdata_l2                     )
+  );
+
+
+  
+       for(genvar i=0; i<NB_BANKS; i++) begin : CUTS
+        
+        //Perform TCDM handshaking for constant 1 cycle latency
+        assign mem_gnt_l2[i] = mem_req_l2[i];
+
+          tc_sram #(
+            .NumWords  ( 32768               ), // 2^15 lines of 64 bits each (256kB), 4 Banks -> 1 MB total memory
+            .DataWidth ( 64                  ),
+            .NumPorts  ( 1                   )
+          ) bank_i (
+            .clk_i,
+            .rst_ni,
+            .req_i   (  mem_req_l2[i]                                  ),
+            .we_i    (  ~mem_wen_l2[i]                                 ),
+            .addr_i  (  mem_addr_l2[i][15+3+$clog2(NB_BANKS)-1:3+$clog2(NB_BANKS)] ), // Remove LSBs for byte addressing (3 bits)
+                                                                                                                // and bank selection (log2(NB_BANKS) bits)
+            .wdata_i (  mem_wdata_l2[i]                                  ),
+            .be_i    (  mem_be_l2[i]                                     ),
+            .rdata_o (  mem_rdata_l2[i]                                )
+          );
+
+
+       end // block: CUTS
+      
    
   // ---------------
   // AXI Xbar

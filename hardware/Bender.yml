@@ -7,7 +7,9 @@ dependencies:
   cva6: { path: "deps/cva6" }
   apb_uart: { path: "../fpga/src/apb_uart" }
   axi: { git: "https://github.com/pulp-platform/axi.git", version: "0.29.0" } 
+  tcdm_interconnect: { git: "https://github.com/pulp-platform/cluster_interconnect.git", version: "1.1.2" }
   
+
 sources:
   - deps/cva6/src/tech_cells_generic/src/generic_memory.sv
   - host/ariane_soc_pkg.sv

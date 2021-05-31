@@ -143,7 +143,7 @@ libbender:
 scripts:
 	./bender script vsim \
 		--vlog-arg="$(compile_flag)  -work  $(library) -suppress 2583 -suppress 13314" --vcom-arg="$(compile_flag_vhd) -work  $(library) -pedanticerrors" \
-    -t test > compile.tcl
+    -t rtl -t test > compile.tcl
 
 benderrun: libbender $(util) $(library)
 	@test -f Bender.lock || { echo "ERROR: Bender.lock file does not exist. Did you run make checkout in bender mode?"; exit 1; }
