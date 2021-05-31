@@ -19,10 +19,19 @@ package ariane_soc;
 
   localparam NrSlaves = 2; // actually masters, but slaves on the crossbar
 
+  typedef struct packed {
+      logic [31:0] idx;
+      logic [63:0] start_addr;
+      logic [63:0] end_addr;
+   } addr_map_rule_t;
+
   // 4 is recommended by AXI standard, so lets stick to it, do not change
+  // The ID width of the master ports is wider than that of the slave ports.
+  // The additional ID bits are used by the internal multiplexers to route responses. 
+  // The ID width of the master ports must be AxiIdWidthSlvPorts + $clog_2(NoSlvPorts).
   localparam IdWidth   = 4;
   localparam IdWidthSlave = IdWidth + $clog2(NrSlaves);
-
+/*  
   typedef enum int unsigned {
     L2SPM    = 0,
     DRAM     = 1,
@@ -35,9 +44,23 @@ package ariane_soc;
     CLINT    = 8,
     ROM      = 9,
     Debug    = 10
-  } axi_slaves_t;
+  } axi_slaves_t;*/
 
-  localparam NB_PERIPHERALS = Debug + 1;
+  typedef enum int unsigned {
+    L2SPM    = 10,
+    DRAM     = 9,
+    GPIO     = 8,
+    Ethernet = 7,
+    SPI      = 6,
+    Timer    = 5,
+    UART     = 4,
+    PLIC     = 3,
+    CLINT    = 2,
+    ROM      = 1,
+    Debug    = 0
+  } axi_slaves_t;
+   
+  localparam NB_PERIPHERALS = L2SPM + 1;
 
 
   localparam logic[63:0] DebugLength    = 64'h1000;

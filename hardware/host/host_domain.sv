@@ -13,7 +13,9 @@
 // Description: Test-harness for Ariane
 //              Instantiates an AXI-Bus and memories
 
-module host_domain #(
+module host_domain 
+  import axi_pkg::xbar_cfg_t;
+#(
   parameter int unsigned AXI_USER_WIDTH    = 1,
   parameter int unsigned AXI_ADDRESS_WIDTH = 64,
   parameter int unsigned AXI_DATA_WIDTH    = 64,
@@ -587,53 +589,113 @@ module host_domain #(
   // ---------------
   // AXI Xbar
   // ---------------
-  typedef logic [ariane_soc::NrRegion-1:0][ariane_soc::NB_PERIPHERALS-1:0][AXI_ADDRESS_WIDTH-1:0] addr_map_t;
-  
-  axi_node_intf_wrap #(
-    .NB_SLAVE           ( ariane_soc::NrSlaves       ),
-    .NB_MASTER          ( ariane_soc::NB_PERIPHERALS ),
-    .NB_REGION          ( ariane_soc::NrRegion       ),
-    .AXI_ADDR_WIDTH     ( AXI_ADDRESS_WIDTH          ),
-    .AXI_DATA_WIDTH     ( AXI_DATA_WIDTH             ),
-    .AXI_USER_WIDTH     ( AXI_USER_WIDTH             ),
-    .AXI_ID_WIDTH       ( ariane_soc::IdWidth        )
-    // .MASTER_SLICE_DEPTH ( 0                          ),
-    // .SLAVE_SLICE_DEPTH  ( 0                          )
-  ) i_axi_xbar (
-    .clk          ( clk_i      ),
-    .rst_n        ( ndmreset_n ),
-    .test_en_i    ( test_en    ),
-    .slave        ( slave      ),
-    .master       ( master     ),
-    .start_addr_i ({
-      ariane_soc::DebugBase,
-      ariane_soc::ROMBase,
-      ariane_soc::CLINTBase,
-      ariane_soc::PLICBase,
-      ariane_soc::UARTBase,
-      ariane_soc::TimerBase,
-      ariane_soc::SPIBase,
-      ariane_soc::EthernetBase,
-      ariane_soc::GPIOBase,
-      ariane_soc::DRAMBase,
-      ariane_soc::L2SPMBase
-    }),
-    .end_addr_i   ({
-      ariane_soc::DebugBase    + ariane_soc::DebugLength - 1,
-      ariane_soc::ROMBase      + ariane_soc::ROMLength - 1,
-      ariane_soc::CLINTBase    + ariane_soc::CLINTLength - 1,
-      ariane_soc::PLICBase     + ariane_soc::PLICLength - 1,
-      ariane_soc::UARTBase     + ariane_soc::UARTLength - 1,
-      ariane_soc::TimerBase    + ariane_soc::TimerLength - 1,
-      ariane_soc::SPIBase      + ariane_soc::SPILength - 1,
-      ariane_soc::EthernetBase + ariane_soc::EthernetLength -1,
-      ariane_soc::GPIOBase     + ariane_soc::GPIOLength - 1,
-      ariane_soc::DRAMBase     + ariane_soc::DRAMLength - 1,
-      ariane_soc::L2SPMBase    + ariane_soc::L2SPMLength -1
-    }),
-    .valid_rule_i (ariane_soc::ValidRule)
+  localparam xbar_cfg_t AXI_XBAR_CFG = '{
+                                         NoSlvPorts: ariane_soc::NrSlaves,
+                                         NoMstPorts: ariane_soc::NB_PERIPHERALS,
+                                         MaxMstTrans: ariane_soc::NB_PERIPHERALS,
+                                         MaxSlvTrans: ariane_soc::NrSlaves,
+                                         FallThrough: 1'b0,        
+                                         LatencyMode: axi_pkg::NO_LATENCY, // CUT_ALL_AX | axi_pkg::DemuxW,
+                                         AxiIdWidthSlvPorts: ariane_soc::IdWidth,
+                                         AxiIdUsedSlvPorts: ariane_soc::IdWidth,
+                                         UniqueIds: 1'b0,
+                                         AxiAddrWidth: AXI_ADDRESS_WIDTH,
+                                         AxiDataWidth: AXI_DATA_WIDTH,
+                                         NoAddrRules: ariane_soc::NB_PERIPHERALS
+                                         };
+
+  ariane_soc::addr_map_rule_t [ariane_soc::NB_PERIPHERALS-1:0] addr_map;
+
+  assign addr_map[0] = '{
+    idx:  0,
+    start_addr: ariane_soc::DebugBase,
+    end_addr:   ariane_soc::DebugBase    + ariane_soc::DebugLength  
+  };
+  assign addr_map[1] = '{ 
+    idx:  1,
+    start_addr: ariane_soc::ROMBase,
+    end_addr:   ariane_soc::ROMBase      + ariane_soc::ROMLength  
+  };
+  assign addr_map[2] = '{ 
+    idx:  2,
+    start_addr: ariane_soc::CLINTBase,
+    end_addr:   ariane_soc::CLINTBase    + ariane_soc::CLINTLength  
+  };
+  assign addr_map[3] = '{
+    idx:  3,
+    start_addr: ariane_soc::PLICBase,
+    end_addr:   ariane_soc::PLICBase     + ariane_soc::PLICLength  
+  };
+  assign addr_map[4] = '{ 
+    idx:  4,
+    start_addr: ariane_soc::UARTBase,
+    end_addr:   ariane_soc::UARTBase     + ariane_soc::UARTLength  
+  };
+  assign addr_map[5] = '{ 
+    idx:  5,
+    start_addr: ariane_soc::TimerBase,
+    end_addr:   ariane_soc::TimerBase    + ariane_soc::TimerLength  
+  };
+  assign addr_map[6] = '{
+    idx:  6,
+    start_addr: ariane_soc::SPIBase,
+    end_addr:   ariane_soc::SPIBase      + ariane_soc::SPILength  
+  };
+  assign addr_map[7] = '{ 
+    idx:  7,
+    start_addr: ariane_soc::EthernetBase,
+    end_addr:   ariane_soc::EthernetBase + ariane_soc::EthernetLength  
+  };
+  assign addr_map[8] = '{ 
+    idx:  8,
+    start_addr: ariane_soc::GPIOBase,
+    end_addr:   ariane_soc::GPIOBase     + ariane_soc::GPIOLength  
+  };
+  assign addr_map[9] = '{
+    idx:  9,
+    start_addr: ariane_soc::DRAMBase,
+    end_addr:   ariane_soc::DRAMBase     + ariane_soc::DRAMLength  
+  };
+  assign addr_map[10] = '{ 
+    idx:  10,
+    start_addr: ariane_soc::L2SPMBase,
+    end_addr:   ariane_soc::L2SPMBase     + ariane_soc::L2SPMLength  
+  };
+
+  axi_xbar_intf #(
+    .AXI_USER_WIDTH         ( AXI_USER_WIDTH                        ),
+    .Cfg                    ( AXI_XBAR_CFG                          ),
+    .rule_t                 ( ariane_soc::addr_map_rule_t           )
+  ) i_xbar (
+    .clk_i,
+    .rst_ni,
+    .test_i                 (1'b0),
+    .slv_ports              (slave),
+    .mst_ports              (master),
+    .addr_map_i             (addr_map),
+    .en_default_mst_port_i  ('0), // disable default master port for all slave ports
+    .default_mst_port_i     ('0)
   );
 
+  // ---------------
+  // GPIO
+  // ---------------
+
+        assign master[ariane_soc::GPIO].aw_ready = 1'b1;
+        assign master[ariane_soc::GPIO].ar_ready = 1'b1;
+        assign master[ariane_soc::GPIO].w_ready = 1'b1;
+
+        assign master[ariane_soc::GPIO].b_valid = master[ariane_soc::GPIO].aw_valid;
+        assign master[ariane_soc::GPIO].b_id = master[ariane_soc::GPIO].aw_id;
+        assign master[ariane_soc::GPIO].b_resp = axi_pkg::RESP_SLVERR;
+        assign master[ariane_soc::GPIO].b_user = '0;
+
+        assign master[ariane_soc::GPIO].r_valid = master[ariane_soc::GPIO].ar_valid;
+        assign master[ariane_soc::GPIO].r_resp = axi_pkg::RESP_SLVERR;
+        assign master[ariane_soc::GPIO].r_data = 'hdeadbeef;
+        assign master[ariane_soc::GPIO].r_last = 1'b1;
+
+   
   // ---------------
   // CLINT
   // ---------------

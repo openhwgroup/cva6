@@ -6,6 +6,7 @@ package:
 dependencies:
   cva6: { path: "deps/cva6" }
   apb_uart: { path: "../fpga/src/apb_uart" }
+  axi: { git: "https://github.com/pulp-platform/axi.git", version: "0.29.0" } 
   
 sources:
   - deps/cva6/src/tech_cells_generic/src/generic_memory.sv
