@@ -34,11 +34,26 @@ module uvmt_cv32e40x_tb;
    import uvmt_cv32e40x_pkg::*;
    import uvme_cv32e40x_pkg::*;
 
+   // CORE parameters
 `ifdef SET_NUM_MHPMCOUNTERS
    parameter int CORE_PARAM_NUM_MHPMCOUNTERS = `SET_NUM_MHPMCOUNTERS;
 `else
    parameter int CORE_PARAM_NUM_MHPMCOUNTERS = 1;
 `endif
+   parameter int unsigned               CORE_PARAM_PMA_NUM_REGIONS = 0;
+   parameter cv32e40x_pkg::pma_region_t CORE_PARAM_PMA_CFG[0:0] = '{'z};
+   /*
+   parameter int unsigned               CORE_PARAM_PMA_NUM_REGIONS = 1;
+   parameter cv32e40x_pkg::pma_region_t CORE_PARAM_PMA_CFG[CORE_PARAM_PMA_NUM_REGIONS-1:0] =
+      '{cv32e40x_pkg::pma_region_t'{
+         word_addr_low  : '0,
+         word_addr_high : -1,
+         main           :  0,
+         bufferable     :  0,
+         cacheable      :  0,
+         atomic         :  0
+      }};
+   */
 
    // ENV (testbench) parameters
    parameter int ENV_PARAM_INSTR_ADDR_WIDTH  = 32;
@@ -89,6 +104,8 @@ module uvmt_cv32e40x_tb;
    */
    uvmt_cv32e40x_dut_wrap  #(
                              .NUM_MHPMCOUNTERS  (CORE_PARAM_NUM_MHPMCOUNTERS),
+                             .PMA_NUM_REGIONS   (CORE_PARAM_PMA_NUM_REGIONS),
+                             .PMA_CFG           (CORE_PARAM_PMA_CFG),
                              .INSTR_ADDR_WIDTH  (ENV_PARAM_INSTR_ADDR_WIDTH),
                              .INSTR_RDATA_WIDTH (ENV_PARAM_INSTR_DATA_WIDTH),
                              .RAM_ADDR_WIDTH    (ENV_PARAM_RAM_ADDR_WIDTH)

@@ -39,8 +39,10 @@
 /**
  * Module wrapper for CV32E40X RTL DUT.
  */
-module uvmt_cv32e40x_dut_wrap #(// DUT (riscv_core) parameters.                            
+module uvmt_cv32e40x_dut_wrap import cv32e40x_pkg::*; #(// DUT (riscv_core) parameters.
                             parameter NUM_MHPMCOUNTERS    =  1,
+                            parameter int unsigned PMA_NUM_REGIONS = 0,
+                            parameter pma_region_t PMA_CFG[(PMA_NUM_REGIONS ? (PMA_NUM_REGIONS-1) : 0):0] = '{'z},
                             // Remaining parameters are used by TB components only
                                       INSTR_ADDR_WIDTH    =  32,
                                       INSTR_RDATA_WIDTH   =  32,
@@ -156,7 +158,9 @@ module uvmt_cv32e40x_dut_wrap #(// DUT (riscv_core) parameters.
     // --------------------------------------------
     // instantiate the core
     cv32e40x_wrapper #(                 
-                      .NUM_MHPMCOUNTERS (NUM_MHPMCOUNTERS)
+                      .NUM_MHPMCOUNTERS (NUM_MHPMCOUNTERS),
+                      .PMA_NUM_REGIONS  (PMA_NUM_REGIONS),
+                      .PMA_CFG          (PMA_CFG)
                       )
     cv32e40x_wrapper_i
         (
