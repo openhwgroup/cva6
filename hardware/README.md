@@ -17,7 +17,7 @@ cd ..
 
 source setup.sh
 
-cd hello
+cd software/hello
 
 make clean all
 
@@ -35,7 +35,7 @@ make update
 
 make scripts
 
-make sim elf-bin=../hello/hello.riscv
+make sim elf-bin=../software/hello/hello.riscv
 
 ```
 
