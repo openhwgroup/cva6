@@ -319,10 +319,10 @@ def do_sim(snapshot, test_name, seed, args):
 
 def run_xsim_bin(name, args):
     bin_path = vivado_path + name
-    if (dbg):
-        print("Call to run_xsim_bin(name='" + name + "', args='"  + args + "')")
-        print("System call is " + bin_path + " " + args)
-    subprocess.call(bin_path + " " + args, shell=True)
+    #if (dbg):
+    print("Call to run_xsim_bin(name='" + name + "', args='"  + args + "')")
+    print("System call is " + bin_path + " " + args)
+    #subprocess.call(bin_path + " " + args, shell=True)
 
 
 

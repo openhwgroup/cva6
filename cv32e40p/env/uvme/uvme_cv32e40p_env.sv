@@ -17,7 +17,9 @@
 
 `ifndef __UVME_CV32E40P_ENV_SV__
 `define __UVME_CV32E40P_ENV_SV__
-
+// Forward type declarations
+typedef class uvme_cv32e40p_instr_vseq_c ;
+typedef class uvme_cv32e40p_vp_vseq_c ;
 
 /**
  * Top-level component that encapsulates, builds and connects all other
@@ -76,6 +78,11 @@ class uvme_cv32e40p_env_c extends uvm_env;
     * Print out final elaboration
     */
    extern virtual function void end_of_elaboration_phase(uvm_phase phase);   
+
+   /**
+    * Creates and starts the instruction and virtual peripheral sequences in active mode.
+    */
+   extern virtual task run_phase(uvm_phase phase); 
 
    /**
     * Assigns configuration handles to components using UVM Configuration Database.
@@ -193,6 +200,28 @@ function void uvme_cv32e40p_env_c::connect_phase(uvm_phase phase);
    end
    
 endfunction: connect_phase
+
+
+task uvme_cv32e40p_env_c::run_phase(uvm_phase phase);
+   
+   uvme_cv32e40p_instr_vseq_c  instr_vseq;
+   uvme_cv32e40p_vp_vseq_c     vp_vseq;
+   
+   if (cfg.is_active) begin
+      fork
+         begin
+            instr_vseq = uvme_cv32e40p_instr_vseq_c::type_id::create("instr_vseq");
+            instr_vseq.start(vsequencer);
+         end
+         
+         //begin
+         //   vp_vseq = uvme_cv32e40p_vp_vseq_c::type_id::create("vp_vseq");
+         //   vp_vseq.start(vsequencer);
+         //end
+      join_none
+   end
+   
+endtask : run_phase
 
 
 function void uvme_cv32e40p_env_c::end_of_elaboration_phase(uvm_phase phase);

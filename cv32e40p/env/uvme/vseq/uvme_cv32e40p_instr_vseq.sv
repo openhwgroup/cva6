@@ -56,9 +56,18 @@ endclass : uvme_cv32e40p_instr_vseq_c
 
 
 function uvme_cv32e40p_instr_vseq_c::new(string name="uvme_cv32e40p_instr_vseq");
-   
+
+   int fd;
+
    super.new(name);
-   
+   if($value$plusargs("firmware=%s", mem_contents_location)) begin
+     // First, check if it exists...
+     fd = $fopen (mem_contents_location, "r");   
+     if (fd)  `uvm_info ("OBI_MEMORY_SLV_SEQ", $sformatf("%s was opened successfully : (fd=%0d)", mem_contents_location, fd), UVM_LOW)
+     else     `uvm_fatal("OBI_MEMORY_SLV_SEQ", $sformatf("%s was NOT opened successfully : (fd=%0d)", mem_contents_location, fd))
+     $fclose(fd);
+   end
+
 endfunction : new
 
 

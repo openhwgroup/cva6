@@ -169,6 +169,7 @@ module uvmt_cv32e40p_dut_wrap #(
     assign obi_memory_instr_if.wuser     = 'b0;
     assign obi_memory_instr_if.aid       = 'b0;
     assign obi_memory_instr_if.rid       = 'b0;
+    assign obi_memory_instr_if.we        = 'b0;
     // Data bus is read/write, OBI v1.0
     assign obi_memory_instr_if.gntpar    = 'b0;
     assign obi_memory_instr_if.err       = 'b0;
