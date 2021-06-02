@@ -113,11 +113,11 @@ task uvma_debug_drv_c::run_phase(uvm_phase phase);
 endtask : run_phase
 
 
-// WARNING If no time is consumed by this task, a zero-delay oscillation loop will occur and stall simulation
 task uvma_debug_drv_c::drv_req(uvma_debug_seq_item_c req);
 
+   @(cntxt.vif.drv_cb); // WARNING If no time is consumed by this task, a zero-delay oscillation loop will occur and stall simulation
    `uvm_info("DEBUGDRV", $sformatf("Driving debug:\n%s",req.sprint()), UVM_HIGH)
-   @(cntxt.vif.drv_cb) cntxt.vif.drv_cb.debug_drv <= 1'b1;
+   cntxt.vif.drv_cb.debug_drv <= 1'b1;
    repeat (req.active_cycles) @(cntxt.vif.mon_cb);
    cntxt.vif.drv_cb.debug_drv <= 1'b0;
    `uvm_info("DEBUGDRV", $sformatf("Released debug:\n%s",req.sprint()), UVM_HIGH)
