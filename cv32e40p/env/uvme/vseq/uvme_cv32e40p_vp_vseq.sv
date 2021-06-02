@@ -132,7 +132,7 @@ endclass : uvme_cv32e40p_vp_vseq_c
 function uvme_cv32e40p_vp_vseq_c::new(string name="uvme_cv32e40p_vp_vseq");
    
    super.new(name);
-   this.randomize();
+   void'(this.randomize());
    
 endfunction : new
 
