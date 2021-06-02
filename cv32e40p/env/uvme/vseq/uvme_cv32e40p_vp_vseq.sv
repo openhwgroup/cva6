@@ -132,6 +132,7 @@ endclass : uvme_cv32e40p_vp_vseq_c
 function uvme_cv32e40p_vp_vseq_c::new(string name="uvme_cv32e40p_vp_vseq");
    
    super.new(name);
+   this.randomize();
    
 endfunction : new
 
@@ -142,6 +143,7 @@ task uvme_cv32e40p_vp_vseq_c::body();
    
    fork
       begin
+         `uvm_info("OBI_MEMORY_SLV_SEQ", "Started", UVM_LOW)
          forever begin
             // Wait for the monitor to send us the mstr's "req" with an access request
             p_sequencer.obi_memory_data_sequencer.mon_trn_fifo.get(mon_trn);
@@ -152,6 +154,7 @@ task uvme_cv32e40p_vp_vseq_c::body();
       
       begin
          forever begin
+            //`uvm_info("OBI_MEMORY_SLV_SEQ", $sformatf("Waiting %0d ps", cycle_counter_frequency), UVM_LOW)
             #(cycle_counter_frequency * 1ps);
             cycle_counter++;
          end
@@ -159,6 +162,7 @@ task uvme_cv32e40p_vp_vseq_c::body();
       
       begin
          forever begin
+            `uvm_info("OBI_MEMORY_SLV_SEQ", "Waiting for interrupt_timer_start", UVM_LOW)
             @interrupt_timer_start;
             fork
                begin
