@@ -40,20 +40,29 @@ module uvmt_cv32e40x_tb;
 `else
    parameter int CORE_PARAM_NUM_MHPMCOUNTERS = 1;
 `endif
-   parameter int unsigned               CORE_PARAM_PMA_NUM_REGIONS = 0;
-   parameter cv32e40x_pkg::pma_region_t CORE_PARAM_PMA_CFG[0:0] = '{'z};
-   /*
-   parameter int unsigned               CORE_PARAM_PMA_NUM_REGIONS = 1;
-   parameter cv32e40x_pkg::pma_region_t CORE_PARAM_PMA_CFG[CORE_PARAM_PMA_NUM_REGIONS-1:0] =
-      '{cv32e40x_pkg::pma_region_t'{
-         word_addr_low  : '0,
-         word_addr_high : -1,
-         main           :  0,
-         bufferable     :  0,
-         cacheable      :  0,
-         atomic         :  0
-      }};
-   */
+
+   `ifdef PMA_CUSTOM_CFG
+      parameter int unsigned               CORE_PARAM_PMA_NUM_REGIONS = 2;
+      parameter cv32e40x_pkg::pma_region_t CORE_PARAM_PMA_CFG[CORE_PARAM_PMA_NUM_REGIONS-1:0] = '{
+         cv32e40x_pkg::pma_region_t'{
+            word_addr_low  : '0,
+            word_addr_high : -1,
+            main           : 1,
+            bufferable     : 0,
+            cacheable      : 0,
+            atomic         : 1},
+         cv32e40x_pkg::pma_region_t'{
+            word_addr_low  : 'hC8,
+            word_addr_high : 'hCA,
+            main           : 0,
+            bufferable     : 0,
+            cacheable      : 0,
+            atomic         : 0}
+         };
+   `else
+      parameter int unsigned               CORE_PARAM_PMA_NUM_REGIONS = 0;
+      parameter cv32e40x_pkg::pma_region_t CORE_PARAM_PMA_CFG[0:0] = '{'z};
+   `endif
 
    // ENV (testbench) parameters
    parameter int ENV_PARAM_INSTR_ADDR_WIDTH  = 32;
