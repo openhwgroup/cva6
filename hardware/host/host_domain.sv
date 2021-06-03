@@ -546,93 +546,116 @@ module host_domain
 
 
   // L2SPM
-   localparam NB_BANKS =4;
+   localparam NB_L2_BANKS = 4;
+   localparam AXI64_2_TCDM32_N_PORTS = 4; // Do not change, to achieve full bandwith from 64 bit AXI and 32 bit tcdm we need 4 ports!
+                                          // It is hardcoded in the axi2tcdm_wrap module.
+   localparam L2_BANK_SIZE = 32768 ; // 2^15 words (32 bits)
+   localparam L2_BANK_ADDR_WIDTH = $clog2(L2_BANK_SIZE);
+   localparam L2_DATA_WIDTH = 32 ; // Do not change
    
-  logic                         core_req_l2;
-  logic                         core_we_l2;
-  logic [AXI_ADDRESS_WIDTH-1:0] core_addr_l2;
-  logic [AXI_DATA_WIDTH/8-1:0]  core_be_l2;
-  logic [AXI_DATA_WIDTH-1:0]    core_wdata_l2;
-  logic [AXI_DATA_WIDTH-1:0]    core_rdata_l2;
+    
+   XBAR_TCDM_BUS axi_bridge_2_interconnect[AXI64_2_TCDM32_N_PORTS]();
 
-  logic [3:0]                        mem_req_l2;
-  logic [3:0]                        mem_wen_l2;
-  logic [3:0]                        mem_gnt_l2;
-  logic [3:0][AXI_ADDRESS_WIDTH-1:0] mem_addr_l2;
-  logic [3:0][AXI_DATA_WIDTH/8-1:0]  mem_be_l2;
-  logic [3:0][AXI_DATA_WIDTH-1:0]    mem_wdata_l2;
-  logic [3:0][AXI_DATA_WIDTH-1:0]    mem_rdata_l2;
+  logic [AXI64_2_TCDM32_N_PORTS-1:0]                          core_req_l2;
+  logic [AXI64_2_TCDM32_N_PORTS-1:0] [31:0]                   core_add_l2;
+  logic [AXI64_2_TCDM32_N_PORTS-1:0]                          core_wen_l2;
+  logic [AXI64_2_TCDM32_N_PORTS-1:0] [L2_DATA_WIDTH-1:0]      core_wdata_l2;
+  logic [AXI64_2_TCDM32_N_PORTS-1:0] [3:0]                    core_be_l2;
+  logic [AXI64_2_TCDM32_N_PORTS-1:0]                          core_gnt_l2;
+  logic [AXI64_2_TCDM32_N_PORTS-1:0]                          core_r_valid_l2;
+  logic [AXI64_2_TCDM32_N_PORTS-1:0] [L2_DATA_WIDTH-1:0]      core_r_rdata_l2;
+ 
+   // binding
+   generate
+    for(genvar i=0; i<AXI64_2_TCDM32_N_PORTS; i++) begin : axi_bridge_2_interconnect_unrolling
+      assign core_req_l2    [i] = axi_bridge_2_interconnect[i].req;
+      assign core_add_l2    [i] = axi_bridge_2_interconnect[i].add  - ariane_soc::L2SPMBase;
+      assign core_wen_l2    [i] = axi_bridge_2_interconnect[i].wen;
+      assign core_be_l2     [i] = axi_bridge_2_interconnect[i].be;
+      assign core_wdata_l2  [i] = axi_bridge_2_interconnect[i].wdata;
+      assign axi_bridge_2_interconnect[i].gnt     = core_gnt_l2     [i];
+
+       
+      assign axi_bridge_2_interconnect[i].r_rdata = core_r_rdata_l2 [i];
+      assign axi_bridge_2_interconnect[i].r_valid = core_r_valid_l2 [i];
+      assign axi_bridge_2_interconnect[i].r_opc   = '0;
+    end // cores_unrolling
+   endgenerate
+     
+  logic [NB_L2_BANKS-1:0]                          mem_req_l2;
+  logic [NB_L2_BANKS-1:0]                          mem_wen_l2;
+  logic [NB_L2_BANKS-1:0]                          mem_gnt_l2;
+  logic [NB_L2_BANKS-1:0][L2_BANK_ADDR_WIDTH-1:0]  mem_addr_l2;
+  logic [NB_L2_BANKS-1:0][3:0]                     mem_be_l2;
+  logic [NB_L2_BANKS-1:0][32-1:0]                  mem_wdata_l2;
+  logic [NB_L2_BANKS-1:0][32-1:0]                  mem_rdata_l2;
    
-  axi2mem #(
+  axi2tcdm_wrap #(
     .AXI_ID_WIDTH   ( ariane_soc::IdWidthSlave ),
-    .AXI_ADDR_WIDTH ( AXI_ADDRESS_WIDTH        ),
-    .AXI_DATA_WIDTH ( AXI_DATA_WIDTH           ),
-    .AXI_USER_WIDTH ( AXI_USER_WIDTH           )
+    .AXI_USER_WIDTH ( AXI_USER_WIDTH           ),
+    .AXI_ADDR_WIDTH ( AXI_ADDRESS_WIDTH        )
   ) i_axi2mem_l2 (
-    .clk_i  ( clk_i                     ),
-    .rst_ni ( ndmreset_n                ),
-    .slave  ( master[ariane_soc::L2SPM] ),
-    .req_o  ( core_req_l2                    ),
-    .we_o   ( core_we_l2                     ),
-    .addr_o ( core_addr_l2                   ),
-    .be_o   ( core_be_l2                     ),
-    .data_o ( core_wdata_l2                  ),
-    .data_i ( core_rdata_l2                  )
+    .clk_i       ( clk_i                     ),
+    .rst_ni      ( ndmreset_n                ),
+    .test_en_i   ( test_en                   ),
+    .axi_slave   ( master[ariane_soc::L2SPM] ),
+    .tcdm_master ( axi_bridge_2_interconnect ),
+    .busy_o      (                           )
   );
 
      
    tcdm_interconnect #(
-    .NumIn        ( 1                           ),
-    .NumOut       ( 4                           ), // NUM BANKS
-    .AddrWidth    ( AXI_ADDRESS_WIDTH           ),
-    .DataWidth    ( AXI_DATA_WIDTH              ),
-    .AddrMemWidth ( 15                          ),
+    .NumIn        ( AXI64_2_TCDM32_N_PORTS      ),
+    .NumOut       ( NB_L2_BANKS                 ), // NUM BANKS
+    .AddrWidth    ( 32                          ),
+    .DataWidth    ( L2_DATA_WIDTH               ),
+    .AddrMemWidth ( L2_BANK_ADDR_WIDTH          ),
     .WriteRespOn  ( 1                           ),
     .RespLat      ( 1                           ),
     .Topology     ( tcdm_interconnect_pkg::LIC  )
   ) i_tcdm_interconnect (
     .clk_i,
-    .rst_ni,
+    .rst_ni   ( ndmreset_n                             ),
 
     .req_i    ( core_req_l2                            ),
-    .add_i    ( core_addr_l2 - ariane_soc::L2SPMBase    ),
-    .wen_i    ( ~core_we_l2                            ),
+    .add_i    ( core_add_l2                            ),
+    .wen_i    ( core_wen_l2                            ),
     .wdata_i  ( core_wdata_l2                          ),
     .be_i     ( core_be_l2                             ),
-    .gnt_o    (                             ),
-    .vld_o    (                         ),
-    .rdata_o  ( core_rdata_l2                        ),
+    .gnt_o    ( core_gnt_l2                            ),                        
+    .vld_o    ( core_r_valid_l2                        ),
+    .rdata_o  ( core_r_rdata_l2                        ),
                          
     .req_o    ( mem_req_l2                         ),
     .gnt_i    ( mem_gnt_l2                         ),
-    .add_o    ( mem_addr_l2                         ),
+    .add_o    ( mem_addr_l2                        ),
     .wen_o    ( mem_wen_l2                         ),
     .wdata_o  ( mem_wdata_l2                       ),
     .be_o     ( mem_be_l2                          ),
-    .rdata_i  ( mem_rdata_l2                     )
+    .rdata_i  ( mem_rdata_l2                       )
   );
 
 
-  
-       for(genvar i=0; i<NB_BANKS; i++) begin : CUTS
-        
+
+       for(genvar i=0; i<NB_L2_BANKS; i++) begin : CUTS
+
         //Perform TCDM handshaking for constant 1 cycle latency
         assign mem_gnt_l2[i] = mem_req_l2[i];
-
+          
           tc_sram #(
-            .NumWords  ( 32768               ), // 2^15 lines of 64 bits each (256kB), 4 Banks -> 1 MB total memory
-            .DataWidth ( 64                  ),
-            .NumPorts  ( 1                   )
+            .NumWords  ( L2_BANK_SIZE        ), // 2^15 lines of 32 bits each (128kB), 4 Banks -> 512 kB total memory
+            .DataWidth ( L2_DATA_WIDTH       ),
+            .NumPorts  ( 1                   ),
+            .SimInit   ( "none"              )
           ) bank_i (
             .clk_i,
             .rst_ni,
-            .req_i   (  mem_req_l2[i]                                  ),
-            .we_i    (  ~mem_wen_l2[i]                                 ),
-            .addr_i  (  mem_addr_l2[i][15+3+$clog2(NB_BANKS)-1:3+$clog2(NB_BANKS)] ), // Remove LSBs for byte addressing (3 bits)
-                                                                                                                // and bank selection (log2(NB_BANKS) bits)
+            .req_i   (  mem_req_l2[i]                                    ),
+            .we_i    (  ~mem_wen_l2[i]                                   ),
+            .addr_i  (  mem_addr_l2[i]                                   ),
             .wdata_i (  mem_wdata_l2[i]                                  ),
             .be_i    (  mem_be_l2[i]                                     ),
-            .rdata_o (  mem_rdata_l2[i]                                )
+            .rdata_o (  mem_rdata_l2[i]                                  )
           );
 
 
