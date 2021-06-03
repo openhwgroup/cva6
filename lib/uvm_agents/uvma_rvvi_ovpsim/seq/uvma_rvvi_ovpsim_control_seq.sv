@@ -57,7 +57,7 @@ task uvma_rvvi_ovpsim_control_seq_c::step_rm(uvma_rvfi_instr_seq_item_c#(ILEN,XL
    assert(step_rm_seq.randomize() with {
       action == UVMA_RVVI_STEPI;
       intr == rvfi_instr.insn_interrupt;
-      halt == rvfi_instr.insn_debug_halt;
+      halt == rvfi_instr.insn_dbg_req;
       nmi  == rvfi_instr.insn_nmi;
       intr_id == rvfi_instr.insn_interrupt_id;
       

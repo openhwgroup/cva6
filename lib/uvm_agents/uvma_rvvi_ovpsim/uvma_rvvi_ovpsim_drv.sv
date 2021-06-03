@@ -140,13 +140,15 @@ task uvma_rvvi_ovpsim_drv_c::stepi(REQ req);
       rvvi_ovpsim_cntxt.control_vif.stepi();
       @(rvvi_ovpsim_cntxt.state_vif.notify);
       rvvi_ovpsim_cntxt.ovpsim_bus_vif.haltreq = 1'b0;
-      @(posedge rvvi_ovpsim_cntxt.ovpsim_bus_vif.Clk);    
+      @(posedge rvvi_ovpsim_cntxt.ovpsim_bus_vif.Clk);
    end
 
    // Step the ISS and wait for ISS to complete
    rvvi_ovpsim_cntxt.ovpsim_bus_vif.irq_i = rvvi_ovpsim_seq_item.mip;
    if (rvvi_ovpsim_seq_item.rd1_addr != 0)
       rvvi_ovpsim_cntxt.state_vif.GPR_rtl[rvvi_ovpsim_seq_item.rd1_addr] = rvvi_ovpsim_seq_item.rd1_wdata;
+
+   
    rvvi_ovpsim_cntxt.control_vif.stepi();
    @(rvvi_ovpsim_cntxt.state_vif.notify);
 

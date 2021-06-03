@@ -50,6 +50,7 @@ class uvme_cv32e40x_core_sb_c extends uvm_scoreboard;
    // Check counters
    int unsigned pc_checked_cnt;
    int unsigned gpr_checked_cnt;
+   int unsigned csr_checked_cnt;
 
    // Analysis exports
    uvm_analysis_imp_core_sb_rvfi_instr#(uvma_rvfi_instr_seq_item_c#(ILEN,XLEN), uvme_cv32e40x_core_sb_c) rvfi_instr_export;   
@@ -109,7 +110,16 @@ class uvme_cv32e40x_core_sb_c extends uvm_scoreboard;
    extern virtual function void check_instr(uvma_rvfi_instr_seq_item_c#(ILEN,XLEN) rvfi_instr,
                                             uvma_rvvi_state_seq_item_c#(ILEN,XLEN) rvvi_state);
 
+   /**
+    * Check a GPR
+    */
    extern virtual function void check_gpr(uvma_rvfi_instr_seq_item_c#(ILEN,XLEN) rvfi_instr,
+                                          uvma_rvvi_state_seq_item_c#(ILEN,XLEN) rvvi_state);
+
+   /**
+    * Check a CSR
+    */
+   extern virtual function void check_csr(uvma_rvfi_instr_seq_item_c#(ILEN,XLEN) rvfi_instr,
                                           uvma_rvvi_state_seq_item_c#(ILEN,XLEN) rvvi_state);
 
    extern virtual function void check_instr_queue();
@@ -183,6 +193,7 @@ endfunction : pre_abort
 function void uvme_cv32e40x_core_sb_c::print_instr_checked_stats();
    `uvm_info("CORESB", $sformatf("checked %0d instruction retirements", pc_checked_cnt), UVM_NONE);
    `uvm_info("CORESB", $sformatf("checked %0d GPR updates", gpr_checked_cnt), UVM_NONE);
+   `uvm_info("CORESB", $sformatf("checked %0d CSRs", csr_checked_cnt), UVM_NONE);
 endfunction : print_instr_checked_stats
 
 function void uvme_cv32e40x_core_sb_c::write_core_sb_rvfi_instr(uvma_rvfi_instr_seq_item_c#(ILEN,XLEN) rvfi_instr);
@@ -242,17 +253,18 @@ function void uvme_cv32e40x_core_sb_c::write_core_sb_rvvi_state(uvma_rvvi_state_
 
    // Validate against expected order
    // FIXME:strichmo:Currently the OVPSim RVVI will incrmeent order for the "interrupt" intruction
-   // This should be fixed in OVPSIM   
+   // This should be fixed in OVPSIM
    if (rvvi_state.order != next_rvvi_order) begin
       `uvm_error("CORESB", $sformatf("Received RVVI out of order: %0d, exp_order, %0d",
                                      rvvi_state.order, next_rvvi_order));
-      return;                                     
+      return;
    end
-   next_rvvi_order++;   
+   next_rvvi_order++;
 
    rvvi_state_q.push_back(rvvi_state);
 
    check_instr_queue();
+
 endfunction : write_core_sb_rvvi_state
 
 function void uvme_cv32e40x_core_sb_c::check_instr_queue();
@@ -266,7 +278,12 @@ function void uvme_cv32e40x_core_sb_c::check_instr_queue();
       
       // Now check GPR state
       check_gpr(rvfi_instr, rvvi_state);
+
+      // Check CSRs
+      if (!cfg.disable_csr_check) 
+         check_csr(rvfi_instr, rvvi_state);
    end
+
 endfunction : check_instr_queue
 
 function void uvme_cv32e40x_core_sb_c::check_instr(uvma_rvfi_instr_seq_item_c#(ILEN,XLEN) rvfi_instr,
@@ -299,10 +316,12 @@ function void uvme_cv32e40x_core_sb_c::check_instr(uvma_rvfi_instr_seq_item_c#(I
    if (pc_checked_cnt && ((pc_checked_cnt % PC_CHECKED_HEARTBEAT)== 0)) begin
       `uvm_info("CORE_SB", $sformatf("Compared %0d instructions", pc_checked_cnt), UVM_LOW);
    end
+
 endfunction : check_instr
 
 function void uvme_cv32e40x_core_sb_c::check_gpr(uvma_rvfi_instr_seq_item_c#(ILEN,XLEN) rvfi_instr,
                                                  uvma_rvvi_state_seq_item_c#(ILEN,XLEN) rvvi_state);
+
    gpr_checked_cnt++;
 
    if (rvfi_instr.rd1_addr != 0)
@@ -319,6 +338,39 @@ function void uvme_cv32e40x_core_sb_c::check_gpr(uvma_rvfi_instr_seq_item_c#(ILE
                                           i, rvvi_state.x[i]));
       end
    end
+
 endfunction : check_gpr
 
-`endif // __UVME_CV32E40X_CORE_SB_SV__
+function void uvme_cv32e40x_core_sb_c::check_csr(uvma_rvfi_instr_seq_item_c#(ILEN,XLEN) rvfi_instr,
+                                                 uvma_rvvi_state_seq_item_c#(ILEN,XLEN) rvvi_state);
+
+   foreach (rvfi_instr.csrs[i]) begin
+      string csr = rvfi_instr.csrs[i].csr;   
+      bit[XLEN-1:0] exp_csr_value;
+
+      // FIXME: Remove when RVVI fixed to include all CSRs
+      if (csr == "mcause") continue;
+      if (csr == "mstatus") continue;
+
+      // Ensure that CSR from RVFI exists in the RVVI state object      
+      if (!rvvi_state.csr.exists(csr)) begin
+         `uvm_fatal("CORESB", $sformatf("CSR %s from RVFI does not exist in RVVI state interface", csr));
+      end
+
+      csr_checked_cnt++;
+
+      exp_csr_value = (rvfi_instr.csrs[i].wmask & rvfi_instr.csrs[i].wdata) |
+                      (~rvfi_instr.csrs[i].wmask & rvfi_instr.csrs[i].rdata);
+
+      if (exp_csr_value != rvvi_state.csr[csr]) begin
+         `uvm_error("CORESB", $sformatf("CSR Mismatch, order: %0d, csr: %s, rvfi = 0x%08x, rvvi = 0x%08x",
+                                        rvfi_instr.order,
+                                        csr,                                        
+                                        exp_csr_value,
+                                        rvvi_state.csr[csr]));
+      end
+   end
+   
+endfunction : check_csr
+
+`endif // __UVME_CV32E40X_CORE_SB_SV_

@@ -36,6 +36,7 @@ interface uvma_rvfi_instr_if
     input [ILEN-1:0]           rvfi_insn,
     input                      rvfi_trap,
     input                      rvfi_halt,
+    input                      rvfi_dbg,
     input                      rvfi_intr,    
     input [MODE_WL-1:0]        rvfi_mode,
     input [IXL_WL-1:0]         rvfi_ixl,
@@ -71,10 +72,6 @@ interface uvma_rvfi_instr_if
   // Local variables
   // -------------------------------------------------------------------
 
-  // Temporary ports to connect to current tracer
-  // Remove when connecting to a native RVFI interface    
-  event retire_evt;
-
   // -------------------------------------------------------------------
   // Begin module code
   // -------------------------------------------------------------------
@@ -95,6 +92,7 @@ interface uvma_rvfi_instr_if
         rvfi_insn,
         rvfi_trap,
         rvfi_halt,
+        rvfi_dbg,
         rvfi_intr,
         rvfi_mode,
         rvfi_ixl,
@@ -116,8 +114,8 @@ interface uvma_rvfi_instr_if
         rvfi_mem_wdata,
         rvfi_mem_wmask,
 
-        csr_mip,
-        csr_mcause;
+        csr_mcause,
+        csr_mip
   endclocking : mon_cb
 
   modport passive_mp    (clocking mon_cb);
