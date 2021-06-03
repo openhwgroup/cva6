@@ -24,5 +24,11 @@ int main(void) {
   printf("Hello, PMA test!\n");
   printf("\n");
 
+  void (*pma_fault_function)(void) = (void (*)(void))0x10000;
+  pma_fault_function();
+
+  printf("\n");
+  printf("Goodbye, PMA test!\n");
+  printf("\n");
   return 0;
 }
