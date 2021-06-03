@@ -170,7 +170,7 @@ endfunction : get_and_set_cntxt
 
 function void uvma_rvfi_agent_c::retrieve_vif();
    
-   // Retrieve instructions retirments
+   // Retrieve instruction interface
    cntxt.instr_vif = new[cfg.nret];
    for (int i = 0; i < cfg.nret; i++) begin
       if (!uvm_config_db#(virtual uvma_rvfi_instr_if#(ILEN,XLEN))::get(this, "", $sformatf("instr_vif%0d", i), cntxt.instr_vif[i])) begin
@@ -180,6 +180,22 @@ function void uvma_rvfi_agent_c::retrieve_vif();
       else begin
          `uvm_info("VIF", $sformatf("Found vif handle of type %s in uvm_config_db", 
                                     $typename(cntxt.instr_vif[i])), UVM_DEBUG)
+      end
+   end
+
+   // Create virtual interface and fetch virtual interface for each supported CSR   
+   foreach (cfg.csrs[c]) begin
+      string csr = cfg.csrs[c];
+      cntxt.csr_vif[csr] = new[cfg.nret];
+      for (int i = 0; i < cfg.nret; i++) begin
+         if (!uvm_config_db#(virtual uvma_rvfi_csr_if#(XLEN))::get(this, "", $sformatf("csr_%s_vif%0d", csr, i), cntxt.csr_vif[csr][i])) begin
+            `uvm_fatal("VIF", $sformatf("Could not find vif handle of type %s, csr [%s] in uvm_config_db", 
+                                       $typename(cntxt.csr_vif[csr][i]), csr))
+         end
+         else begin
+            `uvm_info("VIF", $sformatf("Found vif handle of type %s, csr [%s] in uvm_config_db", 
+                                       $typename(cntxt.csr_vif[csr][i]), csr), UVM_DEBUG)
+         end
       end
    end
 

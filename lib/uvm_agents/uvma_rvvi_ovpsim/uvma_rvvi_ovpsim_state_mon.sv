@@ -104,6 +104,11 @@ task uvma_rvvi_ovpsim_state_mon_c::monitor_rvvi_state();
          end
       end
       
+      // Monitor CSRs
+      foreach (cntxt.state_vif.csr[csr]) begin         
+         mon_trn.csr[csr] = cntxt.state_vif.csr[csr];   
+      end
+
       `uvm_info(log_tag, $sformatf("%s", mon_trn.convert2string()), UVM_HIGH);
 
       ap.write(mon_trn);

@@ -18,7 +18,6 @@
 `ifndef __UVMA_RVFI_CNTXT_SV__
 `define __UVMA_RVFI_CNTXT_SV__
 
-
 /**
  * Object encapsulating all state variables for all Rvfi agent
  * (uvma_rvfi_agent_c) components.
@@ -30,11 +29,9 @@ class uvma_rvfi_cntxt_c#(int ILEN=DEFAULT_ILEN,
    // The number of interfaces will be equal to the _nret_ value in the configuration object
    virtual uvma_rvfi_instr_if#(ILEN,XLEN) instr_vif[];
    
-   // Handle to CSR interface      
-   // Indexed by offset into the CSR
-   // FIXME: Add this
-   //virtual uvma_rvfi_csr_if    csr_vif[int unsigned];
-      
+   // Handle to CSR interfaces
+   virtual uvma_rvfi_csr_if#(XLEN)        csr_vif[string][];
+
    // Events
    uvm_event  sample_cfg_e;
    uvm_event  sample_cntxt_e;

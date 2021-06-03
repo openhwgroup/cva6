@@ -38,6 +38,8 @@ class uvma_rvvi_state_seq_item_c#(int ILEN=32, int XLEN=32) extends uvml_trn_seq
 
    bit [XLEN-1:0] x[32];
 
+   bit [XLEN-1:0] csr[string];
+   
    static protected string _log_format_string = "0x%08x %s 0x%01x 0x%08x";
 
    `uvm_object_utils_begin(uvma_rvvi_state_seq_item_c)
@@ -53,6 +55,7 @@ class uvma_rvvi_state_seq_item_c#(int ILEN=32, int XLEN=32) extends uvml_trn_seq
       `uvm_field_int(pcnext, UVM_DEFAULT)      
       `uvm_field_aa_int_int_unsigned(gpr_update, UVM_DEFAULT)
       `uvm_field_sarray_int(x, UVM_DEFAULT)
+      `uvm_field_aa_int_string(csr, UVM_DEFAULT)
    `uvm_object_utils_end
    
    /**

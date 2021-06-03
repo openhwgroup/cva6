@@ -43,12 +43,11 @@ class uvma_rvfi_cfg_c#(int ILEN=DEFAULT_ILEN,
    rand bit                      nmi_handler_enabled;
    rand bit [XLEN-1:0]           nmi_handler_addr;
 
-   // Configuration of debug handler (if present)
-   rand bit                      debug_halt_handler_enabled;
-   rand bit [XLEN-1:0]           debug_halt_handler_addr;
-
    // Name for the instruction retirment ports (nret of these)
    string                        instr_name[int];
+
+   // Supported CSRs for this core
+   string                        csrs[$];
 
    `uvm_object_utils_begin(uvma_rvfi_cfg_c)
       `uvm_field_int (                         enabled                    , UVM_DEFAULT)
@@ -58,8 +57,7 @@ class uvma_rvfi_cfg_c#(int ILEN=DEFAULT_ILEN,
       `uvm_field_int (                         trn_log_enabled            , UVM_DEFAULT)
       `uvm_field_int (                         nmi_handler_enabled        , UVM_DEFAULT)
       `uvm_field_int (                         nmi_handler_addr           , UVM_DEFAULT)
-      `uvm_field_int (                         debug_halt_handler_enabled , UVM_DEFAULT)
-      `uvm_field_int (                         debug_halt_handler_addr    , UVM_DEFAULT)
+      `uvm_field_queue_string (                csrs                       , UVM_DEFAULT)
    `uvm_object_utils_end
       
    constraint valid_nret {

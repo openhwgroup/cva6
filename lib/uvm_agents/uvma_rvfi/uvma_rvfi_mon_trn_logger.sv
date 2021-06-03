@@ -75,8 +75,8 @@ class uvma_rvfi_mon_trn_logger_c#(int ILEN=DEFAULT_ILEN,
          instr = $sformatf("%s INTR %0d", instr, t.insn_interrupt_id);
       if (t.insn_nmi)
          instr = $sformatf("%s NMI", instr);
-      if (t.insn_debug_halt)
-         instr = $sformatf("%s HALT", instr);
+      if (t.dbg)
+         instr = $sformatf("%s DEBUG", instr);
 
       fwrite(instr);
 

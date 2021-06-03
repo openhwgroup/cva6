@@ -49,7 +49,8 @@ package uvma_rvfi_pkg;
    `include "uvma_rvfi_cntxt.sv"
    
    // High-level transactions
-   `include "seq/uvma_rvfi_instr_seq_item.sv"   
+   `include "seq/uvma_rvfi_csr_seq_item.sv"   
+   `include "seq/uvma_rvfi_instr_seq_item.sv"
    `include "uvma_rvfi_mon_trn_logger.sv"
    
    // Agent components   
@@ -60,7 +61,8 @@ endpackage : uvma_rvfi_pkg
 
 // Interface(s) / Module(s) / Checker(s)
 `include "uvma_rvfi_instr_if.sv"
-//`include "uvma_rvfi_csr_if.sv"
+`include "uvma_rvfi_csr_if.sv"
 `include "uvma_rvfi_assert.sv"
 
 `endif // __UVMA_RVFI_PKG_SV__
+
