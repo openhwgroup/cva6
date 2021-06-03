@@ -350,8 +350,7 @@ function void uvme_cv32e40x_core_sb_c::check_csr(uvma_rvfi_instr_seq_item_c#(ILE
 
       // FIXME: Remove when RVVI fixed to include all CSRs
       if (csr == "mcause") continue;
-      if (csr == "mstatus") continue;
-
+   
       // Ensure that CSR from RVFI exists in the RVVI state object      
       if (!rvvi_state.csr.exists(csr)) begin
          `uvm_fatal("CORESB", $sformatf("CSR %s from RVFI does not exist in RVVI state interface", csr));
