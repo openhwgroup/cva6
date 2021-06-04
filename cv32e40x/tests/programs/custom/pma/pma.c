@@ -15,40 +15,55 @@
 //
 // SPDX-License-Identifier:Apache-2.0 WITH SHL-2.0
 
-// TODO should license be just Apache, or Solderpad?
-
 #include <stdio.h>
 #include <stdlib.h>
 
 #define  EXCEPTION_INSN_ACCESS_FAULT  1
+#define  NOEXEC_ADDR  0x10000  // must match pma config to cause exec fault
+#define  MTVAL_READ  0
 
-static volatile int iaf_occured = 0;
+static volatile int mcause;
+static volatile int mepc;
+static volatile int mtval;
+
+static void (*pma_fault_function)(void) = (void (*)(void))NOEXEC_ADDR;
 
 void u_sw_irq_handler(void) {  // overrides a "weak" symbol in the bsp
-  unsigned int mcause = -1;
-
   __asm__ volatile("csrr %0, mcause" : "=r"(mcause));
+  __asm__ volatile("csrr %0, mepc" : "=r"(mepc));
+  __asm__ volatile("csrr %0, mtval" : "=r"(mtval));
 
   if (mcause == EXCEPTION_INSN_ACCESS_FAULT) {
-    // TODO check "iaf_expected"?
-    iaf_occured = 1;
     printf("in exception handler for instruction access fault\n");
     return;  // should continue test, assuming no intermediary ABI function call
   } else {
-    printf("error: pma test unexpected mcause value\n");
+    printf("error: unexpected mcause value\n");
     while (1)
       ;
   }
 }
 
+void reset_volatiles(void) {
+  mcause = -1;
+  mepc = -1;
+  mtval = -1;
+}
+
 int main(void) {
   printf("\nHello, PMA test!\n\n");
 
-  void (*pma_fault_function)(void) = (void (*)(void))0x10000;  // TODO magicnum
-  iaf_occured = 0;
+  reset_volatiles();
   pma_fault_function();
-  if (!iaf_occured) {
-    printf("error: pma test expected instruction access fault\n");
+  if (mcause != EXCEPTION_INSN_ACCESS_FAULT) {
+    printf("error: expected instruction access fault\n");
+    return EXIT_FAILURE;
+  }
+  if (mepc != NOEXEC_ADDR) {
+    printf("error: expected different mepc\n");
+    return EXIT_FAILURE;
+  }
+  if (mtval != MTVAL_READ) {
+    printf("error: expected different mtval\n");
     return EXIT_FAILURE;
   }
 
