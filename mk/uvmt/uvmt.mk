@@ -288,6 +288,35 @@ embench: $(EMBENCH_PKG)
 	-d $(EMB_DEBUG_ARG) \
 
 ###############################################################################
+# ISACOV (ISA coverage)
+#   Compare the log against the tracer log.
+#   This checks that sampling went correctly without false positives/negatives.
+
+ISACOV_LOGDIR = $($(SIMULATOR_UC)_RESULTS)/$(CFG)/$(TEST)_$(RUN_INDEX)
+ISACOV_TRACELOG = $(ISACOV_LOGDIR)/trace_core_00000000.log
+ISACOV_AGENTLOG = $(ISACOV_LOGDIR)/uvm_test_top.env.isacov_agent.trn.log
+
+isacov_logdiff:
+	@echo checking that env/dirs/files are as expected...
+		@printenv TEST > /dev/null || (echo specify TEST; false)
+		@ls $(ISACOV_LOGDIR) > /dev/null
+		@ls $(ISACOV_TRACELOG) > /dev/null
+		@ls $(ISACOV_AGENTLOG) > /dev/null
+	@echo filtering logs...
+		@cat $(ISACOV_TRACELOG) \
+			| sed 's/\(.*\)   \(.*\)/\1/' | awk '{$$1=$$2=$$3=$$4=$$5=""; $$0=$$0; $$1=$$1; print $$0}' \
+			| tail -n +2 > trace.tmp
+		@cat $(ISACOV_AGENTLOG) \
+			| awk -F '\t' '{print $$2}' | tr A-Z a-z \
+			| tail -n +2 > agent.tmp
+	@echo diffing the instruction sequences...
+		@echo saving to $(ISACOV_LOGDIR)/isacov_logdiff
+		@rm -rf $(ISACOV_LOGDIR)/isacov_logdiff
+		@diff trace.tmp agent.tmp > $(ISACOV_LOGDIR)/isacov_logdiff; true
+		@rm -rf trace.tmp agent.tmp
+		@(test ! -s $(ISACOV_LOGDIR)/isacov_logdiff && echo OK) || (echo FAIL; false)
+
+###############################################################################
 # Include the targets/rules for the selected SystemVerilog simulator
 #ifeq ($(SIMULATOR), unsim)
 #include unsim.mk
