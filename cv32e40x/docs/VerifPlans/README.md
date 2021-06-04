@@ -33,7 +33,7 @@ _Refer to the VerifPlans/ISA/RV32/Simulation directory for specific Verification
 | Feature | Capture | Review | Comment |
 |---------|---------|--------|---------|
 | CSRs | Incomplete | Incomplete | |
-| PMA  | Incomplete | Incomplete | |
+| PMA  | Complete | Ready For Review | |
 | User mode | N/A| N/A | Not a CV32E40X Feature |
 
 ### Micro-architecure
@@ -43,4 +43,5 @@ _Refer to the VerifPlans/ISA/RV32/Simulation directory for specific Verification
 | OBI     | Inomplete | Incomplete | |
 | Sleep Unit | Incomplete | Incomplete | |
 | Pipelines | Incomplete | Incomplete  | |
+| Bus errors | Complete | Ready For Reveiw ||
 

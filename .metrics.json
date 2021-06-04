@@ -7,25 +7,25 @@
     "list": [
       {
         "name":     "uvmt_cv32e40p",
-        "image":    "gcr.io/openhwgroup-metrics-project/cv32-simulation-tools:20210322.7.0-12052021",        
+        "image":    "gcr.io/openhwgroup-metrics-project/cv32-simulation-tools:20210322.10.0-01062021",
         "cmd":      "cd cv32e40p/sim/uvmt; make corev-dv CV_CORE=cv32e40p SIMULATOR=dsim DSIM_WORK=/mux-flow/build/repo/dsim_work DSIM_RESULTS=/mux-flow/build/results; make comp CV_CORE=cv32e40p SIMULATOR=dsim DSIM_WORK=/mux-flow/build/repo/dsim_work DSIM_RESULTS=/mux-flow/build/results",
         "wavesCmd": "cd cv32e40p/sim/uvmt; make corev-dv CV_CORE=cv32e40p SIMULATOR=dsim DSIM_WORK=/mux-flow/build/repo/dsim_work DSIM_RESULTS=/mux-flow/build/results; make comp CV_CORE=cv32e40p SIMULATOR=dsim DSIM_WORK=/mux-flow/build/repo/dsim_work DSIM_RESULTS=/mux-flow/build/results WAVES=1"
       },
       {
         "name":     "uvmt_cv32e40p_compliance_build",
-        "image":    "gcr.io/openhwgroup-metrics-project/cv32-simulation-tools:20210322.7.0-12052021",        
+        "image":    "gcr.io/openhwgroup-metrics-project/cv32-simulation-tools:20210322.10.0-01062021",               
         "cmd":      "cd cv32e40p/sim/uvmt; make all_compliance; make comp CV_CORE=cv32e40p SIMULATOR=dsim DSIM_WORK=/mux-flow/build/repo/dsim_work DSIM_RESULTS=/mux-flow/build/results",
         "wavesCmd": "cd cv32e40p/sim/uvmt; make all_compliance; make comp CV_CORE=cv32e40p SIMULATOR=dsim DSIM_WORK=/mux-flow/build/repo/dsim_work DSIM_RESULTS=/mux-flow/build/results WAVES=1"
       },
       {
         "name":     "uvmt_cv32e40x",
-        "image":    "gcr.io/openhwgroup-metrics-project/cv32-simulation-tools:20210322.7.0-12052021",
+        "image":    "gcr.io/openhwgroup-metrics-project/cv32-simulation-tools:20210322.10.0-01062021",
         "cmd":      "cd cv32e40x/sim/uvmt; make corev-dv CV_CORE=cv32e40x SIMULATOR=dsim DSIM_WORK=/mux-flow/build/repo/dsim_work DSIM_RESULTS=/mux-flow/build/results; make comp CV_CORE=cv32e40x SIMULATOR=dsim DSIM_WORK=/mux-flow/build/repo/dsim_work DSIM_RESULTS=/mux-flow/build/results",
         "wavesCmd": "cd cv32e40x/sim/uvmt; make corev-dv CV_CORE=cv32e40x SIMULATOR=dsim DSIM_WORK=/mux-flow/build/repo/dsim_work DSIM_RESULTS=/mux-flow/build/results; make comp CV_CORE=cv32e40x SIMULATOR=dsim DSIM_WORK=/mux-flow/build/repo/dsim_work DSIM_RESULTS=/mux-flow/build/results WAVES=1"
       },
       {
-        "name":     "uvmt_cv32e40x_compliance_build",
-        "image":    "gcr.io/openhwgroup-metrics-project/cv32-simulation-tools:20210322.7.0-12052021",
+        "name":     "uvmt_cv32e40x_compliance_build",        
+        "image":    "gcr.io/openhwgroup-metrics-project/cv32-simulation-tools:20210322.10.0-01062021",
         "cmd":      "cd cv32e40x/sim/uvmt; make all_compliance; make comp CV_CORE=cv32e40x SIMULATOR=dsim DSIM_WORK=/mux-flow/build/repo/dsim_work DSIM_RESULTS=/mux-flow/build/results",
         "wavesCmd": "cd cv32e40x/sim/uvmt; make all_compliance; make comp CV_CORE=cv32e40x SIMULATOR=dsim DSIM_WORK=/mux-flow/build/repo/dsim_work DSIM_RESULTS=/mux-flow/build/results WAVES=1"
       }
