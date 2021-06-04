@@ -1,0 +1,6 @@
+corev_apu/tb/ariane_tb.sv
+corev_apu/tb/ariane_testharness.sv
+corev_apu/tb/ariane_peripherals.sv
+corev_apu/tb/common/uart.sv
+corev_apu/tb/common/SimDTM.sv
+corev_apu/tb/common/SimJTAG.sv

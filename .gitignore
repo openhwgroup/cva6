@@ -26,7 +26,12 @@ build/
 *.o
 uart
 work-ver/*
-fpga/work-fpga
+corev_apu/fpga/work-fpga
+corev_apu/fpga/ariane.*
+corev_apu/fpga/reports
+corev_apu/fpga/scripts/add_sources.tcl
+corev_apu/fpga/.Xil
+*.mif
 stdout/
 work-dpi/
 tb/riscv-isa-sim/
