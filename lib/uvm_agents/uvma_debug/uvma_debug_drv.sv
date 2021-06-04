@@ -113,21 +113,15 @@ task uvma_debug_drv_c::run_phase(uvm_phase phase);
 endtask : run_phase
 
 
-
 task uvma_debug_drv_c::drv_req(uvma_debug_seq_item_c req);
-   `uvm_info("DEBUGDRV", $sformatf("Driving debug: %s",req.sprint()), UVM_HIGH); 
-   cntxt.vif.drv_cb.debug_drv <= 1'b1;
- //  while(1) begin
-       repeat (req.active_cycles) @(cntxt.vif.mon_cb);
-       cntxt.vif.drv_cb.debug_drv <= 1'b0;           
- //  end
 
-   // TODO Implement uvma_debug_drv_c::drv_req()
-   //      Ex: cntxt.vif.drv_cb.abc <= req.abc;
-   //          cntxt.vif.drv_cb.xyz <= req.xyz;
-   
-   // WARNING If no time is consumed by this task, a zero-delay oscillation loop will occur and stall simulation
-   
+   @(cntxt.vif.drv_cb); // WARNING If no time is consumed by this task, a zero-delay oscillation loop will occur and stall simulation
+   `uvm_info("DEBUGDRV", $sformatf("Driving debug:\n%s",req.sprint()), UVM_HIGH)
+   cntxt.vif.drv_cb.debug_drv <= 1'b1;
+   repeat (req.active_cycles) @(cntxt.vif.mon_cb);
+   cntxt.vif.drv_cb.debug_drv <= 1'b0;
+   `uvm_info("DEBUGDRV", $sformatf("Released debug:\n%s",req.sprint()), UVM_HIGH)
+
 endtask : drv_req
 
 
