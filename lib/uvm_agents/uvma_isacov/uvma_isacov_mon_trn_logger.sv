@@ -41,13 +41,13 @@ endfunction : new
 
 function void uvma_isacov_mon_trn_logger_c::print_header();
 
-  fwrite("time, instr");
+  fwrite("time\tinstr");
 
 endfunction : print_header
 
 
 function void uvma_isacov_mon_trn_logger_c::write(uvma_isacov_mon_trn_c t);
 
-  fwrite($sformatf("%t, %s", $time, t.convert2string()));
+  fwrite($sformatf("%t\t%s", $time, t.convert2string()));
 
 endfunction : write
