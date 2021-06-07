@@ -77,6 +77,8 @@ src/axi_mem_if/src/axi2mem.sv
 src/tech_cells_generic/src/pulp_clock_gating.sv
 src/tech_cells_generic/src/cluster_clock_inverter.sv
 src/tech_cells_generic/src/pulp_clock_mux2.sv
+src/pmp/src/pmp.sv
+src/pmp/src/pmp_entry.sv
 src/axi_adapter.sv
 src/alu.sv
 src/fpu_wrap.sv
