@@ -13,7 +13,9 @@
 // Description: Ariane Top-level wrapper to break out SV structs to logic vectors.
 
 
-module ariane_verilog_wrap #(
+module ariane_verilog_wrap
+    import ariane_pkg::*;
+#(
   parameter int unsigned               RASDepth              = 2,
   parameter int unsigned               BTBEntries            = 32,
   parameter int unsigned               BHTEntries            = 128,
