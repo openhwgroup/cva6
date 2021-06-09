@@ -19,28 +19,33 @@
 #include <stdlib.h>
 
 #define  EXCEPTION_INSN_ACCESS_FAULT  1
-#define  NOEXEC_ADDR  0x10000  // must match pma config to cause exec fault
+#define  WORD_ADDR_HIGH 0x1FFFFFFF  // NB! Needs pma in vPlan's "Test configuration 3"
+#define  ADDR_HIGH  (WORD_ADDR_HIGH << 2)
+#define  NOEXEC_ADDR  ADDR_HIGH
 #define  MTVAL_READ  0
 
-static volatile int mcause;
-static volatile int mepc;
-static volatile int mtval;
+static volatile int mcause = 0;
+static volatile int mepc = 0;
+static volatile int mtval = 0;
 
 static void (*pma_fault_function)(void) = (void (*)(void))NOEXEC_ADDR;
+
+static void assert_or_die(uint32_t actual, uint32_t expect, char *msg) {
+  if (actual != expect) {
+    printf(msg);
+    exit(EXIT_FAILURE);
+  }
+}
 
 void u_sw_irq_handler(void) {  // overrides a "weak" symbol in the bsp
   __asm__ volatile("csrr %0, mcause" : "=r"(mcause));
   __asm__ volatile("csrr %0, mepc" : "=r"(mepc));
   __asm__ volatile("csrr %0, mtval" : "=r"(mtval));
 
-  if (mcause == EXCEPTION_INSN_ACCESS_FAULT) {
-    printf("in exception handler for instruction access fault\n");
-    return;  // should continue test, assuming no intermediary ABI function call
-  } else {
-    printf("error: unexpected mcause value\n");
-    while (1)
-      ;
-  }
+  //printf("exec in u_sw_irq_handler\n");
+  assert_or_die(mcause, EXCEPTION_INSN_ACCESS_FAULT, "error: unexpected mcause value\n");
+
+  return;  // should continue test, assuming no intermediary ABI function call
 }
 
 void reset_volatiles(void) {
@@ -51,21 +56,15 @@ void reset_volatiles(void) {
 
 int main(void) {
   printf("\nHello, PMA test!\n\n");
+  assert_or_die(mcause, 0, "error: mcause variable should initially be 0\n");
+  assert_or_die(mepc, 0, "error: mepc variable should initially be 0\n");
+  assert_or_die(mtval, 0, "error: mtval variable should initially be 0\n");
 
   reset_volatiles();
   pma_fault_function();
-  if (mcause != EXCEPTION_INSN_ACCESS_FAULT) {
-    printf("error: expected instruction access fault\n");
-    return EXIT_FAILURE;
-  }
-  if (mepc != NOEXEC_ADDR) {
-    printf("error: expected different mepc\n");
-    return EXIT_FAILURE;
-  }
-  if (mtval != MTVAL_READ) {
-    printf("error: expected different mtval\n");
-    return EXIT_FAILURE;
-  }
+  assert_or_die(mcause, EXCEPTION_INSN_ACCESS_FAULT, "error: expected instruction access fault\n");
+  assert_or_die(mepc, NOEXEC_ADDR, "error: expected different mepc\n");
+  assert_or_die(mtval, MTVAL_READ, "error: expected different mtval\n");
 
   printf("\nGoodbye, PMA test!\n\n");
   return EXIT_SUCCESS;

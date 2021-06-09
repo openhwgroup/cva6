@@ -42,11 +42,12 @@ module uvmt_cv32e40x_tb;
 `endif
 
    `ifdef PMA_CUSTOM_CFG
+      // "Configuration 3" from the vPlan (at the time of writing)
       parameter int unsigned               CORE_PARAM_PMA_NUM_REGIONS = 1;
       parameter cv32e40x_pkg::pma_region_t CORE_PARAM_PMA_CFG[CORE_PARAM_PMA_NUM_REGIONS-1:0] = '{
          cv32e40x_pkg::pma_region_t'{
             word_addr_low  : '0,
-            word_addr_high : 'h8000 >> 2,  // wo/ linker file feeding into SV, 0x8000 hopes to be outside .text
+            word_addr_high : 'h 1FFF_FFFF,
             main           : 1,
             bufferable     : 0,
             cacheable      : 0,
