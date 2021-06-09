@@ -19,14 +19,15 @@
 #include <stdlib.h>
 
 #define  EXCEPTION_INSN_ACCESS_FAULT  1
-#define  WORD_ADDR_HIGH 0x1FFFFFFF  // NB! Needs pma in vPlan's "Test configuration 3"
+//#define  WORD_ADDR_HIGH 0x1FFFFFFF  // NB! Needs pma in vPlan's "Test configuration 3"
+#define  WORD_ADDR_HIGH (0x1A110800 >> 2)  // TODO this uses dbg addr
 #define  ADDR_HIGH  (WORD_ADDR_HIGH << 2)
 #define  NOEXEC_ADDR  ADDR_HIGH
 #define  MTVAL_READ  0
 
-static volatile int mcause = 0;
-static volatile int mepc = 0;
-static volatile int mtval = 0;
+static volatile uint32_t mcause = 0;
+static volatile uint32_t mepc = 0;
+static volatile uint32_t mtval = 0;
 
 static void (*pma_fault_function)(void) = (void (*)(void))NOEXEC_ADDR;
 
@@ -54,17 +55,37 @@ void reset_volatiles(void) {
   mtval = -1;
 }
 
+uint32_t load_natty(void) {
+  uint32_t word;
+
+  __asm__ volatile("lw %0, 4(%1)" : "=r"(word) : "r"(NOEXEC_ADDR));
+
+  return word;
+}
+
 int main(void) {
   printf("\nHello, PMA test!\n\n");
   assert_or_die(mcause, 0, "error: mcause variable should initially be 0\n");
   assert_or_die(mepc, 0, "error: mepc variable should initially be 0\n");
   assert_or_die(mtval, 0, "error: mtval variable should initially be 0\n");
 
+  // TODO "mtval" should in the future not be read-only read-zero.
+
+  // Exec should only work for "main memory" regions
   reset_volatiles();
   pma_fault_function();
   assert_or_die(mcause, EXCEPTION_INSN_ACCESS_FAULT, "error: expected instruction access fault\n");
   assert_or_die(mepc, NOEXEC_ADDR, "error: expected different mepc\n");
   assert_or_die(mtval, MTVAL_READ, "error: expected different mtval\n");
+
+  // Non-naturally aligned loads
+  uint32_t word = 0;
+  reset_volatiles();
+  word = load_natty();
+  assert_or_die(!word, 0, "error: load should not yield zero\n");  // TODO ensure memory content matches
+  assert_or_die(mcause, -1, "error: natty access should not change mcause\n");
+  assert_or_die(mepc, -1, "error: natty access should not change mepc\n");
+  assert_or_die(mtval, -1, "error: natty access should not change mtval\n");
 
   printf("\nGoodbye, PMA test!\n\n");
   return EXIT_SUCCESS;
