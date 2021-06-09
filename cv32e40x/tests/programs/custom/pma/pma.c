@@ -55,14 +55,6 @@ void reset_volatiles(void) {
   mtval = -1;
 }
 
-uint32_t load_natty(void) {
-  uint32_t word;
-
-  __asm__ volatile("lw %0, 4(%1)" : "=r"(word) : "r"(NOEXEC_ADDR));
-
-  return word;
-}
-
 int main(void) {
   printf("\nHello, PMA test!\n\n");
   assert_or_die(mcause, 0, "error: mcause variable should initially be 0\n");
@@ -78,14 +70,27 @@ int main(void) {
   assert_or_die(mepc, NOEXEC_ADDR, "error: expected different mepc\n");
   assert_or_die(mtval, MTVAL_READ, "error: expected different mtval\n");
 
-  // Non-naturally aligned loads
+  // Non-naturally aligned loads within I/O regions
+  //sanity check that aligned load is no problem
   uint32_t word = 0;
   reset_volatiles();
-  word = load_natty();
+  __asm__ volatile("lw %0, 4(%1)" : "=r"(word) : "r"(NOEXEC_ADDR));
   assert_or_die(!word, 0, "error: load should not yield zero\n");  // TODO ensure memory content matches
   assert_or_die(mcause, -1, "error: natty access should not change mcause\n");
   assert_or_die(mepc, -1, "error: natty access should not change mepc\n");
   assert_or_die(mtval, -1, "error: natty access should not change mtval\n");
+  //check that misaligned load will except
+ /* TODO enable when RTL is implemented
+  reset_volatiles();
+  __asm__ volatile("lw %0, 5(%1)" : "=r"(word) : "r"(NOEXEC_ADDR));
+  assert_or_die(mcause, EXCEPTION_INSN_ACCESS_FAULT, "error: misaligned IO load should except\n");
+  assert_or_die(mepc, (NOEXEC_ADDR + 5), "error: misaligned IO load unexpected mepc\n");
+  assert_or_die(mtval, MTVAL_READ, "error: misaligned IO load unexpected mtval\n");
+ */
+  // TODO all kinds of misaligned access to IO should fail
+  // TODO also check that misaligned to MAIN does not fail
+
+  // TODO refactor and clean this function
 
   printf("\nGoodbye, PMA test!\n\n");
   return EXIT_SUCCESS;
