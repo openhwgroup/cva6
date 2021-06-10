@@ -170,6 +170,8 @@ module uvmt_cv32e40p_step_compare
           if (is_stall_sim)
           ignore = 1;
           case (index)
+            "minstret"      : ignore = 1;      
+          
             "marchid"       : csr_val = cv32e40p_pkg::MARCHID; // warning!  defined in cv32e40p_pkg
             
             "mcountinhibit" : csr_val = `CV32E40P_CORE.cs_registers_i.mcountinhibit_q;
@@ -224,6 +226,9 @@ module uvmt_cv32e40p_step_compare
             "tdata3"        : csr_val = 32'h0000_0000;
             "tinfo"         : csr_val = `CV32E40P_CORE.cs_registers_i.tinfo_types;
             "time"          : ignore  = 1;
+            
+            "cycle"         : ignore  = 1;
+            "instret"       : ignore  = 1;
             default: begin
               `uvm_error("STEP_COMPARE", $sformatf("index=%s does not match a CSR name", index))
               ignore = 1;
@@ -244,7 +249,7 @@ module uvmt_cv32e40p_step_compare
         if (`CV32E40P_TRACER.insn_regs_write.size()) begin
           gpr_addr  = `CV32E40P_TRACER.insn_regs_write[0].addr;
           gpr_value = `CV32E40P_TRACER.insn_regs_write[0].value;
-          `CV32E40P_RM.GPR_rtl[gpr_addr] = gpr_value;
+          `CV32E40P_RM.state.GPR_rtl[gpr_addr] = gpr_value;
         end
     endfunction // pushRTL2RM
     
