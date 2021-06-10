@@ -19,6 +19,7 @@
 #include <stdlib.h>
 
 #define  EXCEPTION_INSN_ACCESS_FAULT  1
+#define  EXCEPTION_LOAD_ACCESS_FAULT  5
 //#define  WORD_ADDR_HIGH 0x1FFFFFFF  // NB! Needs pma in vPlan's "Test configuration 3"
 #define  WORD_ADDR_HIGH (0x1A110800 >> 2)  // TODO this uses dbg addr
 #define  ADDR_HIGH  (WORD_ADDR_HIGH << 2)
@@ -34,6 +35,7 @@ static void (*pma_fault_function)(void) = (void (*)(void))NOEXEC_ADDR;
 static void assert_or_die(uint32_t actual, uint32_t expect, char *msg) {
   if (actual != expect) {
     printf(msg);
+    printf("expected = 0x%lx (%ld), got = 0x%lx (%ld)\n", expect, (int32_t)expect, actual, (int32_t)actual);
     exit(EXIT_FAILURE);
   }
 }
@@ -63,15 +65,19 @@ int main(void) {
 
   // TODO "mtval" should in the future not be read-only read-zero.
 
+
   // Exec should only work for "main memory" regions
+
   reset_volatiles();
   pma_fault_function();
   assert_or_die(mcause, EXCEPTION_INSN_ACCESS_FAULT, "error: expected instruction access fault\n");
   assert_or_die(mepc, NOEXEC_ADDR, "error: expected different mepc\n");
   assert_or_die(mtval, MTVAL_READ, "error: expected different mtval\n");
 
+
   // Non-naturally aligned loads within I/O regions
-  //sanity check that aligned load is no problem
+
+  // sanity check that aligned load is no problem
   uint32_t word = 0;
   reset_volatiles();
   __asm__ volatile("lw %0, 4(%1)" : "=r"(word) : "r"(NOEXEC_ADDR));
@@ -79,18 +85,26 @@ int main(void) {
   assert_or_die(mcause, -1, "error: natty access should not change mcause\n");
   assert_or_die(mepc, -1, "error: natty access should not change mepc\n");
   assert_or_die(mtval, -1, "error: natty access should not change mtval\n");
-  //check that misaligned load will except
- /* TODO enable when RTL is implemented
+
+  // check that misaligned load will except
+  /* TODO enable when RTL is implemented
   reset_volatiles();
   __asm__ volatile("lw %0, 5(%1)" : "=r"(word) : "r"(NOEXEC_ADDR));
-  assert_or_die(mcause, EXCEPTION_INSN_ACCESS_FAULT, "error: misaligned IO load should except\n");
+  assert_or_die(mcause, EXCEPTION_LOAD_ACCESS_FAULT, "error: misaligned IO load should except\n");
   assert_or_die(mepc, (NOEXEC_ADDR + 5), "error: misaligned IO load unexpected mepc\n");
   assert_or_die(mtval, MTVAL_READ, "error: misaligned IO load unexpected mtval\n");
- */
-  // TODO all kinds of misaligned access to IO should fail
-  // TODO also check that misaligned to MAIN does not fail
+  */
+  // TODO more kinds of |addr[0:1]? Try LH too?
 
-  // TODO refactor and clean this function
+  // check that misaligned to MAIN does not fail
+  reset_volatiles();
+  word = 0;
+  __asm__ volatile("lw %0, 0(%1)" : "=r"(word) : "r"(0x80));
+  assert_or_die(!word, 0, "error: load from main should not yield zero\n");
+  assert_or_die(mcause, -1, "error: main access should not change mcause\n");
+  assert_or_die(mepc, -1, "error: main access should not change mepc\n");
+  assert_or_die(mtval, -1, "error: main access should not change mtval\n");
+
 
   printf("\nGoodbye, PMA test!\n\n");
   return EXIT_SUCCESS;
