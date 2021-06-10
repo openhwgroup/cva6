@@ -48,7 +48,8 @@ module uvmt_cv32e40x_tb;
          cv32e40x_pkg::pma_region_t'{
             word_addr_low  : '0,
             //word_addr_high : 'h 1FFF_FFFF,
-            word_addr_high : 'h 1a11_0800 >> 2,  // TODO vplan doesn't use dbg addr
+            // TODO using dbg addr + an offset allowing arbitrary stores etc
+            word_addr_high : ('h 1a11_0800 + 'd 16) >> 2,  // TODO vplan doesn't use dbg addr
             main           : 1,
             bufferable     : 0,
             cacheable      : 0,
