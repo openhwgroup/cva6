@@ -131,6 +131,7 @@ task uvma_rvfi_instr_mon_c::monitor_rvfi_instr();
          mon_trn.insn     = cntxt.instr_vif[nret_id].mon_cb.rvfi_insn;
          mon_trn.trap     = cntxt.instr_vif[nret_id].mon_cb.rvfi_trap;
          mon_trn.halt     = cntxt.instr_vif[nret_id].mon_cb.rvfi_halt;
+         mon_trn.dbg      = cntxt.instr_vif[nret_id].mon_cb.rvfi_dbg;
          mon_trn.intr     = cntxt.instr_vif[nret_id].mon_cb.rvfi_intr;
          $cast(mon_trn.mode, cntxt.instr_vif[nret_id].mon_cb.rvfi_mode);
          mon_trn.ixl      = cntxt.instr_vif[nret_id].mon_cb.rvfi_ixl;
@@ -161,6 +162,36 @@ task uvma_rvfi_instr_mon_c::monitor_rvfi_instr();
          mon_trn.csr_mip    = cntxt.instr_vif[nret_id].mon_cb.csr_mip;
          mon_trn.csr_mcause = cntxt.instr_vif[nret_id].mon_cb.csr_mcause;
 
+         // Determine if interrupt is nmi or interrupt
+         mon_trn.insn_nmi        = 0;
+         mon_trn.insn_dbg_req    = 0;
+         mon_trn.insn_interrupt  = 0;
+   
+         if (mon_trn.intr) begin
+            if (mon_trn.dbg)
+               mon_trn.insn_dbg_req = 1;
+            else if (cfg.nmi_handler_enabled && mon_trn.pc_rdata == cfg.nmi_handler_addr)
+               mon_trn.insn_nmi = 1;
+            else if (mon_trn.csr_mcause[31]) begin
+               mon_trn.insn_interrupt    = 1;
+               mon_trn.insn_interrupt_id = { 1'b0, cntxt.csr_vif["mcause"][nret_id].mon_cb.rvfi_csr_rdata[30:0] };               
+            end
+         end
+
+         // Get the CSRs
+         foreach (cfg.csrs[c]) begin
+            string csr = cfg.csrs[c];
+            uvma_rvfi_csr_seq_item_c csr_trn = uvma_rvfi_csr_seq_item_c#(XLEN)::type_id::create({csr, "_trn"});
+
+            csr_trn.csr = csr;
+            csr_trn.nret_id = nret_id;
+            csr_trn.rmask = cntxt.csr_vif[csr][nret_id].mon_cb.rvfi_csr_rmask;
+            csr_trn.wmask = cntxt.csr_vif[csr][nret_id].mon_cb.rvfi_csr_wmask;
+            csr_trn.rdata = cntxt.csr_vif[csr][nret_id].mon_cb.rvfi_csr_rdata;
+            csr_trn.wdata = cntxt.csr_vif[csr][nret_id].mon_cb.rvfi_csr_wdata;
+
+            mon_trn.csrs.push_back(csr_trn);
+         end
          `uvm_info(log_tag, $sformatf("%s", mon_trn.convert2string()), UVM_HIGH);
 
          ap.write(mon_trn);

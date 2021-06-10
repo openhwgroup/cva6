@@ -29,9 +29,15 @@ class uvma_rvfi_instr_seq_item_c#(int ILEN=DEFAULT_ILEN,
    rand bit [ILEN-1:0]           insn;
    rand bit                      trap;
    rand bit                      halt;
+   rand bit                      dbg;
    rand bit                      intr;   
    rand uvma_rvfi_mode           mode;
    rand bit [IXL_WL-1:0]         ixl;
+
+   rand bit                      insn_nmi;
+   rand bit                      insn_dbg_req;
+   rand bit                      insn_interrupt;
+   rand int unsigned             insn_interrupt_id;
 
    rand bit [XLEN-1:0]           pc_rdata;
    rand bit [XLEN-1:0]           pc_wdata;
@@ -60,13 +66,16 @@ class uvma_rvfi_instr_seq_item_c#(int ILEN=DEFAULT_ILEN,
    rand bit [ILEN-1:0]           csr_mip;
    rand bit [ILEN-1:0]           csr_mcause;
 
+   uvma_rvfi_csr_seq_item_c      csrs[$];
+
    static protected string _log_format_string = "0x%08x %s 0x%01x 0x%08x";
 
-   `uvm_object_utils_begin(uvma_rvfi_instr_seq_item_c)
+   `uvm_object_param_utils_begin(uvma_rvfi_instr_seq_item_c)
       `uvm_field_int(order, UVM_DEFAULT)
       `uvm_field_int(insn, UVM_DEFAULT)
       `uvm_field_int(trap, UVM_DEFAULT)
       `uvm_field_int(halt, UVM_DEFAULT)
+      `uvm_field_int(dbg, UVM_DEFAULT)
       `uvm_field_int(intr, UVM_DEFAULT)      
       `uvm_field_enum(uvma_rvfi_mode, mode, UVM_DEFAULT)
       `uvm_field_int(ixl, UVM_DEFAULT)
@@ -90,6 +99,11 @@ class uvma_rvfi_instr_seq_item_c#(int ILEN=DEFAULT_ILEN,
 
       `uvm_field_int(csr_mip, UVM_DEFAULT)      
       `uvm_field_int(csr_mcause, UVM_DEFAULT)
+
+      `uvm_field_int(insn_nmi, UVM_DEFAULT)
+      `uvm_field_int(insn_dbg_req, UVM_DEFAULT)
+      `uvm_field_int(insn_interrupt, UVM_DEFAULT)
+      `uvm_field_int(insn_interrupt_id, UVM_DEFAULT)
    `uvm_object_utils_end
    
    /**
@@ -141,11 +155,17 @@ function string uvma_rvfi_instr_seq_item_c::convert2string();
       convert2string = $sformatf("%s rd: x%0d = 0x%08x", convert2string, rd1_addr, rd1_wdata);
    if (rd2_addr)
       convert2string = $sformatf("%s rd2: x%0d = 0x%08x", convert2string, rd2_addr, rd2_wdata);
-   if (trap)
-      convert2string = $sformatf("%s TRAP", convert2string);
+   // if (trap)
+   //    convert2string = $sformatf("%s TRAP", convert2string);
    if (halt)
       convert2string = $sformatf("%s HALT", convert2string);
-
+   if (insn_interrupt) 
+      convert2string = $sformatf("%s INTR %0d", convert2string, this.insn_interrupt_id);
+   if (insn_nmi)
+      convert2string = $sformatf("%s NMI", convert2string);
+   if (dbg)
+      convert2string = $sformatf("%s DEBUG", convert2string);
+   
 endfunction : convert2string
 
 function string uvma_rvfi_instr_seq_item_c::get_insn_word_str();

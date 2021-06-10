@@ -27,12 +27,14 @@ class uvme_cv32e40x_cfg_c extends uvm_object;
 
    // Status of plusarg to control testbench features
    bit                           use_iss  = 0;
-   bit                           use_rvvi = 0;   
+   bit                           use_rvvi = 0;
+   bit                           disable_csr_check;
 
    // Integrals
    rand bit                      enabled;
    rand uvm_active_passive_enum  is_active;
    bit                           use_isacov;
+   
 
    rand bit                      scoreboarding_enabled;
    rand bit                      cov_model_enabled;
@@ -56,8 +58,9 @@ class uvme_cv32e40x_cfg_c extends uvm_object;
       `uvm_field_int (                         scoreboarding_enabled       , UVM_DEFAULT          )
       `uvm_field_int (                         cov_model_enabled           , UVM_DEFAULT          )
       `uvm_field_int (                         trn_log_enabled             , UVM_DEFAULT          )
-      `uvm_field_int (                         sys_clk_period            , UVM_DEFAULT + UVM_DEC)      
-      
+      `uvm_field_int (                         sys_clk_period              , UVM_DEFAULT | UVM_DEC)      
+      `uvm_field_int (                         disable_csr_check           , UVM_DEFAULT)
+
       `uvm_field_object(isacov_cfg, UVM_DEFAULT)
       `uvm_field_object(clknrst_cfg, UVM_DEFAULT)
       `uvm_field_object(interrupt_cfg, UVM_DEFAULT)
@@ -110,6 +113,7 @@ class uvme_cv32e40x_cfg_c extends uvm_object;
       isacov_cfg.reg_crosses_enabled        == 0;
 
       rvfi_cfg.nret == uvme_cv32e40x_pkg::RVFI_NRET;
+      rvfi_cfg.nmi_handler_enabled        == 0; // FIXME:strichmo:implement when NMI implemented in e40x      
 
       if (is_active == UVM_ACTIVE) {
          isacov_cfg.is_active    == UVM_PASSIVE;
@@ -162,7 +166,10 @@ function uvme_cv32e40x_cfg_c::new(string name="uvme_cv32e40x_cfg");
 
    if ($test$plusargs("USE_RVVI")) 
       use_rvvi = 1;
-      
+   
+   if ($test$plusargs("disable_csr_chk")) 
+      disable_csr_check = 1;
+
    isacov_cfg = uvma_isacov_cfg_c::type_id::create("isacov_cfg");
    clknrst_cfg  = uvma_clknrst_cfg_c::type_id::create("clknrst_cfg");
    interrupt_cfg = uvma_interrupt_cfg_c::type_id::create("interrupt_cfg");
@@ -175,7 +182,33 @@ endfunction : new
 
 function void uvme_cv32e40x_cfg_c::post_randomize();
    rvfi_cfg.instr_name[0] = "INSTR";
+
+   // Configure the supported CSRs for checking in the CV32E40X
+   rvfi_cfg.csrs.push_back("marchid");
+   //rvfi_cfg.csrs.push_back("mcountinhibit");
+   rvfi_cfg.csrs.push_back("mstatus");
+   rvfi_cfg.csrs.push_back("misa");
+   rvfi_cfg.csrs.push_back("mtvec");
+   rvfi_cfg.csrs.push_back("mvendorid");
+   //rvfi_cfg.csrs.push_back("mscratch");
+   //rvfi_cfg.csrs.push_back("mepc");
+   rvfi_cfg.csrs.push_back("mcause");
+   //rvfi_cfg.csrs.push_back("mip");
+   //rvfi_cfg.csrs.push_back("mhartid");
+   rvfi_cfg.csrs.push_back("dcsr");
+   //rvfi_cfg.csrs.push_back("dpc");
+   //rvfi_cfg.csrs.push_back("dscratch0");
+   //rvfi_cfg.csrs.push_back("dscratch1");
+   //rvfi_cfg.csrs.push_back("tselect");
+   // FIXME:strichmo:Looks like RVFI bug
+   rvfi_cfg.csrs.push_back("tdata1");
+   //rvfi_cfg.csrs.push_back("tdata2");
+   //rvfi_cfg.csrs.push_back("tdata3");
+   rvfi_cfg.csrs.push_back("tinfo");
+   
 endfunction : post_randomize
 
 `endif // __UVME_CV32E40X_CFG_SV__
+
+
 
