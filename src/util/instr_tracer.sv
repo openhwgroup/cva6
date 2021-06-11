@@ -20,7 +20,7 @@
 
 module instr_tracer (
   instr_tracer_if   tracer_if,
-  input logic[63:0] hart_id_i
+  input logic[riscv::XLEN-1:0] hart_id_i
 );
 
   // keep the decoded instructions in a queue
