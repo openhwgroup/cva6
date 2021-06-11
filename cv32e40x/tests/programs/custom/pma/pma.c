@@ -93,7 +93,7 @@ static void check_load_vs_regfile(void) {
   */
 
   // TODO is C really aware that t0 is being used here? Doesn't mangle the caller?
-  // TODO can one programmatically confirm that these addresses are indeed in such regions as desired?
+  // TODO can one programmatically confirm that these addresses are indeed in such regions as intended?
 }
 
 int main(void) {
@@ -176,12 +176,37 @@ int main(void) {
   assert_or_die(mtval, -1, "error: misaligned store to main affected mtval\n");
 
 
-  // Split load access fault leaves regfile untouched
+  // Misaligned load fault shouldn't touch regfile
 
-  // TODO title
+  // check that various split load access fault leaves regfile untouched
   check_load_vs_regfile();
 
-  // TODO finish load supress
+
+  // Misaligned store fault shouldn't reach bus in second access
+
+  // check IO store failing in first access
+  __asm__ volatile("sw %0, 0(%1)" : : "r"(0xAAAAAAAA), "r"(IO_ADDR));
+  __asm__ volatile("sw %0, 4(%1)" : : "r"(0xBBBBBBBB), "r"(IO_ADDR));
+  __asm__ volatile("sw %0, 2(%1)" : : "r"(0x11223344), "r"(IO_ADDR));
+  /* TODO enable when RTL is implemented
+  __asm__ volatile("lw %0, 0(%1)" : "=r"(tmp) : "r"(IO_ADDR));
+  assert_or_die(tmp, 0xAAAAAAAA, "error: misaligned first store entered bus\n");
+  __asm__ volatile("lw %0, 4(%1)" : "=r"(tmp) : "r"(IO_ADDR));
+  assert_or_die(tmp, 0xBBBBBBBB, "error: misaligned second store entered bus\n");
+  */
+  // TODO how to programmatically confirm that these region settings match as intended?
+
+  // check IO to MAIN store failing in first access
+  __asm__ volatile("sw %0, -4(%1)" : : "r"(0xAAAAAAAA), "r"(MEM_ADDR_1));
+  __asm__ volatile("sw %0, 0(%1)" : : "r"(0xBBBBBBBB), "r"(MEM_ADDR_1));
+  __asm__ volatile("sw %0, -2(%1)" : : "r"(0x22334455), "r"(MEM_ADDR_1));
+  /* TODO enable when RTL is implemented
+  __asm__ volatile("lw %0, -4(%1)" : "=r"(tmp) : "r"(MEM_ADDR_1));
+  assert_or_die(tmp, 0xAAAAAAAA, "error: misaligned IO/MAIN first store entered bus\n");
+  __asm__ volatile("lw %0, 0(%1)" : "=r"(tmp) : "r"(MEM_ADDR_1));
+  assert_or_die(tmp, 0xBBBBBBBB, "error: misaligned IO/MAIN second store entered bus\n");
+  */
+  // TODO how to programmatically confirm that these region settings match as intended?
 
 
   printf("\nGoodbye, PMA test!\n\n");
