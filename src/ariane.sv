@@ -30,7 +30,7 @@ module ariane import ariane_pkg::*; #(
   input  logic                         rst_ni,
   // Core ID, Cluster ID and boot address are considered more or less static
   input  logic [riscv::VLEN-1:0]       boot_addr_i,  // reset boot address
-  input  logic [riscv::VLEN-1:0]       hart_id_i,    // hart id in a multicore environment (reflected in a CSR)
+  input  logic [riscv::XLEN-1:0]       hart_id_i,    // hart id in a multicore environment (reflected in a CSR)
 
   // Interrupt inputs
   input  logic [1:0]                   irq_i,        // level sensitive IR lines, mip & sip (async)
@@ -501,7 +501,7 @@ module ariane import ariane_pkg::*; #(
     .commit_instr_i         ( commit_instr_id_commit        ),
     .commit_ack_i           ( commit_ack                    ),
     .boot_addr_i            ( boot_addr_i[riscv::VLEN-1:0]  ),
-    .hart_id_i              ( hart_id_i[riscv::VLEN-1:0]    ),
+    .hart_id_i              ( hart_id_i[riscv::XLEN-1:0]    ),
     .ex_i                   ( ex_commit                     ),
     .csr_op_i               ( csr_op_commit_csr             ),
     .csr_write_fflags_i     ( csr_write_fflags_commit_cs    ),

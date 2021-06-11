@@ -30,7 +30,7 @@ module csr_regfile import ariane_pkg::*; #(
     input  logic [NrCommitPorts-1:0]              commit_ack_i,   // Commit acknowledged a instruction -> increase instret CSR
     // Core and Cluster ID
     input  logic[riscv::VLEN-1:0] boot_addr_i,                // Address from which to start booting, mtvec is set to the same address
-    input  logic[riscv::VLEN-1:0] hart_id_i,                  // Hart id in a multicore environment (reflected in a CSR)
+    input  logic[riscv::XLEN-1:0] hart_id_i,                  // Hart id in a multicore environment (reflected in a CSR)
     // we are taking an exception
     input exception_t             ex_i,                       // We've got an exception from the commit stage, take it
 

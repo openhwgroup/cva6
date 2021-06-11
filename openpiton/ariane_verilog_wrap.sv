@@ -42,7 +42,7 @@ module ariane_verilog_wrap #(
   output                      spc_grst_l,   // this is an openpiton-specific name, do not change (hier. paths in TB use this)
   // Core ID, Cluster ID and boot address are considered more or less static
   input  [riscv::VLEN-1:0]               boot_addr_i,  // reset boot address
-  input  [riscv::VLEN-1:0]               hart_id_i,    // hart id in a multicore environment (reflected in a CSR)
+  input  [riscv::XLEN-1:0]               hart_id_i,    // hart id in a multicore environment (reflected in a CSR)
   // Interrupt inputs
   input  [1:0]                irq_i,        // level sensitive IR lines, mip & sip (async)
   input                       ipi_i,        // inter-processor interrupts (async)
