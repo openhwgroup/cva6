@@ -21,10 +21,10 @@
 #define  EXCEPTION_INSN_ACCESS_FAULT  1
 #define  EXCEPTION_LOAD_ACCESS_FAULT  5
 #define  EXCEPTION_STOREAMO_ACCESS_FAULT  7
-//#define  WORD_ADDR_HIGH 0x1FFFFFFF  // NB! Needs pma in vPlan's "Test configuration 3"
-#define  WORD_ADDR_HIGH ((0x1A110800 + 16) >> 2)  // TODO this uses dbg addr (plus offset)
-#define  ADDR_HIGH  (WORD_ADDR_HIGH << 2)
-#define  IO_ADDR  ADDR_HIGH
+//#define  WORD_ADDR_HIGH 0x1FFFFFFF  // TODO needs pma in vPlan's "Test configuration 3"
+#define  MEM_ADDR_0  0
+#define  IO_ADDR  (0x1A110800 + 16)  // TODO this uses dbg addr (plus offset)
+#define  MEM_ADDR_1  0x1A111000  // TODO this is after ".debugger"
 #define  MTVAL_READ  0
 
 static volatile uint32_t mcause = 0;
@@ -52,10 +52,48 @@ void u_sw_irq_handler(void) {  // overrides a "weak" symbol in the bsp
   return;  // should continue test, assuming no intermediary ABI function call
 }
 
-void reset_volatiles(void) {
+static void reset_volatiles(void) {
   mcause = -1;
   mepc = -1;
   mtval = -1;
+}
+
+static void check_load_vs_regfile(void) {
+  // within this scope, t0 regs etc should be free to use (ABI, not preserved)
+  uint32_t tmp;
+
+  // check misaligned in IO
+  __asm__ volatile("sw %0, 0(%1)" : : "r"(0xAAAAAAAA), "r"(IO_ADDR));
+  __asm__ volatile("sw %0, 4(%1)" : : "r"(0xBBBBBBBB), "r"(IO_ADDR));
+  __asm__ volatile("li t0, 0x11223344");
+  __asm__ volatile("lw t0, 3(%0)" : : "r"(IO_ADDR));
+  __asm__ volatile("mv %0, t0" : "=r"(tmp));
+  /* TODO enable when RTL is implemented
+  assert_or_die(tmp, 0x11223344, "error: misaligned IO load shouldn't touch regfile\n");
+  */
+
+  // check misaligned border from IO to MAIN
+  __asm__ volatile("sw %0, -4(%1)" : : "r"(0xAAAAAAAA), "r"(MEM_ADDR_1));
+  __asm__ volatile("sw %0, 0(%1)" : : "r"(0xBBBBBBBB), "r"(MEM_ADDR_1));
+  __asm__ volatile("li t0, 0x22334455");
+  __asm__ volatile("lw t0, 0(%0)" : : "r"(MEM_ADDR_1 - 3));
+  __asm__ volatile("mv %0, t0" : "=r"(tmp));
+  /* TODO enable when RTL is implemented
+  assert_or_die(tmp, 0x22334455, "error: misaligned IO/MAIN load shouldn't touch regfile\n");
+  */
+
+  // check misaligned border from MAIN to IO
+  __asm__ volatile("sw %0, -4(%1)" : : "r"(0xAAAAAAAA), "r"(IO_ADDR));
+  __asm__ volatile("sw %0, 0(%1)" : : "r"(0xBBBBBBBB), "r"(IO_ADDR));
+  __asm__ volatile("li t0, 0x33445566");
+  __asm__ volatile("lw t0, 0(%0)" : : "r"(IO_ADDR - 1));
+  __asm__ volatile("mv %0, t0" : "=r"(tmp));
+  /* TODO enable when RTL is implemented
+  assert_or_die(tmp, 0x33445566, "error: misaligned MAIN/IO load shouldn't touch regfile\n");
+  */
+
+  // TODO is C really aware that t0 is being used here? Doesn't mangle the caller?
+  // TODO can one programmatically confirm that these addresses are indeed in such regions as desired?
 }
 
 int main(void) {
@@ -136,6 +174,14 @@ int main(void) {
   assert_or_die(mcause, -1, "error: misaligned store to main affected mcause\n");
   assert_or_die(mepc, -1, "error: misaligned store to main affected mepc\n");
   assert_or_die(mtval, -1, "error: misaligned store to main affected mtval\n");
+
+
+  // Split load access fault leaves regfile untouched
+
+  // TODO title
+  check_load_vs_regfile();
+
+  // TODO finish load supress
 
 
   printf("\nGoodbye, PMA test!\n\n");

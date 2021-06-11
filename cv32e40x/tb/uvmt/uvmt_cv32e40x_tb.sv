@@ -43,13 +43,20 @@ module uvmt_cv32e40x_tb;
 
    `ifdef PMA_CUSTOM_CFG
       // "Configuration 3" from the vPlan (at the time of writing)
-      parameter int unsigned               CORE_PARAM_PMA_NUM_REGIONS = 1;
+      parameter int unsigned               CORE_PARAM_PMA_NUM_REGIONS = 2;
       parameter cv32e40x_pkg::pma_region_t CORE_PARAM_PMA_CFG[CORE_PARAM_PMA_NUM_REGIONS-1:0] = '{
          cv32e40x_pkg::pma_region_t'{
             word_addr_low  : '0,
             //word_addr_high : 'h 1FFF_FFFF,
             // TODO using dbg addr + an offset allowing arbitrary stores etc
             word_addr_high : ('h 1a11_0800 + 'd 16) >> 2,  // TODO vplan doesn't use dbg addr
+            main           : 1,
+            bufferable     : 0,
+            cacheable      : 0,
+            atomic         : 1},
+         cv32e40x_pkg::pma_region_t'{
+            word_addr_low  : 'h 1A11_1000 >> 2,  // TODO this is after ".debugger", use something better
+            word_addr_high : 'h FFFF_FFFF,
             main           : 1,
             bufferable     : 0,
             cacheable      : 0,
