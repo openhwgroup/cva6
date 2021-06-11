@@ -22,6 +22,7 @@ module rvfi_tracer import ariane_pkg::*; #(
   initial f = $fopen($sformatf("trace_rvfi_hart_%h.dasm", HART_ID), "w");
   final $fclose(f);
 
+  logic [31:0] cycles;
   // Generate the trace based on RVFI
   logic [63:0] pc64;
   always_ff @(posedge clk_i) begin
@@ -60,7 +61,6 @@ module rvfi_tracer import ariane_pkg::*; #(
     if (cycles > SIM_FINISH) $finish(1);
   end
 
-  logic [31:0] cycles;
   always_ff @(posedge clk_i or negedge rst_ni)
     if (~rst_ni)
       cycles <= 0;
