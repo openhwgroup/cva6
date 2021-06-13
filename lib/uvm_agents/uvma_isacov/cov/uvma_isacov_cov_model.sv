@@ -136,7 +136,7 @@ covergroup cg_csritype(
   cp_csr: coverpoint instr.csr {
     bins CSR[] = {[USTATUS:VLENB]} with (cfg_illegal_csr[item] == 0);
   }
-  cp_immu: coverpoint instr.immu[4:0];
+  cp_immu: coverpoint instr.immu[31:12];
 endgroup : cg_csritype
 
 covergroup cg_cr(

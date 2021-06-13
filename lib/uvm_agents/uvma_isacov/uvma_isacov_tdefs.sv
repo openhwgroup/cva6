@@ -311,7 +311,7 @@ typedef enum bit[CSR_ADDR_WL-1:0] {
   TDATA3         = 'h7A3,
   TINFO          = 'h7A4,
   MCONTEXT       = 'h7A8,
-  SMCONTEXT      = 'h7AA,
+  SCONTEXT       = 'h7AA,
   DCSR           = 'h7B0,
   DPC            = 'h7B1,
   DSCRATCH0      = 'h7B2,
