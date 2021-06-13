@@ -223,6 +223,11 @@ XRUN_COMP_COREV_DV_FLAGS += -nowarn BNDWRN
 XRUN_RUN_COV    += -nowarn COVCGN
 XRUN_RUN_COV    += -nowarn CGPIZE
 
+# Empty overgroup warnings (we purposely empty covergroups as part of filtering w/ configuration variables)
+XRUN_RUN_COV    += -nowarn WCRTUP
+XRUN_RUN_COV    += -nowarn WCOVPT
+XRUN_RUN_COV    += -nowarn WCROSS
+
 # Un-named covergroup instances
 XRUN_RUN_COV    += -nowarn CGDEFN
 
