@@ -114,6 +114,7 @@ int main(void) {
   assert_or_die(mcause, EXCEPTION_INSN_ACCESS_FAULT, "error: expected instruction access fault\n");
   assert_or_die(mepc, IO_ADDR, "error: expected different mepc\n");
   assert_or_die(mtval, MTVAL_READ, "error: expected different mtval\n");
+  // TODO check for both implicit (like above) and explicit IO region?
 
 
   // Non-naturally aligned loads within I/O regions

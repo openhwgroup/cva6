@@ -43,17 +43,25 @@ module uvmt_cv32e40x_tb;
 
    `ifdef PMA_CUSTOM_CFG
       // "Configuration 3" from the vPlan (at the time of writing)
-      parameter int unsigned               CORE_PARAM_PMA_NUM_REGIONS = 2;
+      parameter int unsigned               CORE_PARAM_PMA_NUM_REGIONS = 3;
       parameter cv32e40x_pkg::pma_region_t CORE_PARAM_PMA_CFG[CORE_PARAM_PMA_NUM_REGIONS-1:0] = '{
+         // Overlap "shadow" of main code (.text), for testing overlap priority
          cv32e40x_pkg::pma_region_t'{
             word_addr_low  : '0,
-            //word_addr_high : 'h 1FFF_FFFF,
-            // TODO using dbg addr + an offset allowing arbitrary stores etc
-            word_addr_high : ('h 1a11_0800 + 'd 16) >> 2,  // TODO vplan doesn't use dbg addr
+            word_addr_high : ('h 1a11_0800 + 'd 16) >> 2,  // should be identical to the prioritized region below
+            main           : 0,  // Would stop all execution, but should be overruled
+            bufferable     : 0,
+            cacheable      : 0,
+            atomic         : 0},
+         // Main code (.text) is executable up til into dbg region (TODO use vplan's configs)
+         cv32e40x_pkg::pma_region_t'{
+            word_addr_low  : '0,
+            word_addr_high : ('h 1a11_0800 + 'd 16) >> 2,  // TODO vplan doesn't use this (dbg) addr
             main           : 1,
             bufferable     : 0,
             cacheable      : 0,
             atomic         : 1},
+         // Second portion of dbg up til end is exec  (TODO use vplan's configs)
          cv32e40x_pkg::pma_region_t'{
             word_addr_low  : 'h 1A11_1000 >> 2,  // TODO this is after ".debugger", use something better
             word_addr_high : 'h FFFF_FFFF,
