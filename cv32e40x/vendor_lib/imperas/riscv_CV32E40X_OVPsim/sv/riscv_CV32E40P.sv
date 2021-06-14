@@ -19,7 +19,10 @@
 //`define DEBUG
 //`define UVM
 
+`include "typedefs.sv"
 `include "interface.sv"
+
+`include "riscv_datatype.h"
 
 interface RVVI_state #(
     parameter int ILEN = 32,
@@ -49,6 +52,7 @@ interface RVVI_state #(
     // Registers
     bit [(XLEN-1):0] x[32];
     bit [(XLEN-1):0] f[32];
+    bit [(XLEN-1):0] c[4096];
     bit [(XLEN-1):0] csr[string];
     
     // Temporary hack for volatile CSR reads
@@ -150,21 +154,19 @@ module CPU #(
 
     import "DPI-C" context task ovpEntry(input string s1, input string s2);
     import "DPI-C" context function void ovpExit();
+    
+    import "DPI-C" context function void ovpPack(output sharedT shared);
 
     export "DPI-C" task     busFetch;
     export "DPI-C" task     busLoad;
     export "DPI-C" task     busStore;
     export "DPI-C" task     busWait;
     
-    export "DPI-C" function setGPR;
     export "DPI-C" function getGPR;
-    export "DPI-C" function setFPR;
     export "DPI-C" function setCSR;
     export "DPI-C" function getState;
-    export "DPI-C" function putState;
     
-    export "DPI-C" task     setRETIRE;
-    export "DPI-C" task     setTRAP;
+    export "DPI-C" task     setRESULT;
     export "DPI-C" function setDECODE;
     
     RVVI_state   state();
@@ -173,6 +175,8 @@ module CPU #(
     RVVI_bus     bus();
     
     bit [31:0] cycles;
+
+    sharedT shared;
 
     //
     // Format message for UVM/SV environment
@@ -209,51 +213,52 @@ module CPU #(
         busStep;
     endtask
     
-    // Called at end of instruction transaction
-    task setRETIRE;
-        input int hart;
-        input int retPC;
-        input int nextPC;
-        input longint count;
+    function automatic void unpack;
+        int i;
+        ovpPack(shared);
+
+        for (i=0; i<32; i++) begin
+            state.x[i] = shared.x[i];
+            state.f[i] = shared.f[i];
+        end
+
+        for (i=0; i<4096; i++) begin
+            if (state.c[i] != shared.csr[i]) begin
+                //$display("RTL CSR[%03x] = %08x", i, shared.csr[i]);
+                state.c[i] = shared.csr[i];
+            end
+        end
+
+        SysBus.irq_ack_o    = shared.irq_ack_o;
+        SysBus.irq_id_o     = shared.irq_id_o;
+        SysBus.DM           = shared.DM;
+    endfunction
     
-        control.idle();
+    // Called at end of instruction transaction
+    task setRESULT;
+        input int isvalid;
         
+        control.idle();
+
+        unpack();
+                
         // RVVI_S
-        state.trap   = 0; 
-        state.valid  = 1;
-        state.pc     = retPC;
-        state.pcnext = nextPC;
-        state.order  = count;
+        if (isvalid) begin
+            state.valid = 1;
+            state.trap  = 0;
+            state.pc    = shared.retPC;
+        end else begin
+            state.valid = 0;
+            state.trap  = 1;
+            state.pc    = shared.excPC;
+        end
+        
+        state.pcnext = shared.nextPC;
+        state.order  = shared.count;
+        
         ->state.notify;
     endtask
 
-    task setTRAP;
-        input int hart;
-        input int excPC;
-        input int nextPC;
-        input longint count;
-        
-        control.idle();
-        
-        // RVVI_S
-        state.trap   = 1; 
-        state.valid  = 0;
-        state.pc     = excPC;
-        state.pcnext = nextPC;
-        state.order  = count;
-        ->state.notify;
-    endtask
-        
-    function automatic void putState (
-            input int _irq_ack_o,
-            input int _irq_id_o,
-            input int _DM);
-        
-        SysBus.irq_ack_o    = _irq_ack_o;
-        SysBus.irq_id_o     = _irq_id_o;
-        SysBus.DM           = _DM;
-    endfunction
-        
     function automatic void getState (
             output int _terminate,
             output int _reset,
@@ -280,16 +285,8 @@ module CPU #(
         state.isize  = isize;
     endfunction
     
-    function automatic void setGPR (input int index, input longint value);
-        state.x[index] = value;
-    endfunction
-    
     function automatic void getGPR (input int index, output longint value);
         value = state.GPR_rtl[index];
-    endfunction
-    
-    function automatic void setFPR (input int index, input longint value);
-        state.f[index] = value;
     endfunction
     
     function automatic void setCSR (input string index, input longint value);
