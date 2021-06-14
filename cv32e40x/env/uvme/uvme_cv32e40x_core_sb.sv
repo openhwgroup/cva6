@@ -38,11 +38,6 @@ class uvme_cv32e40x_core_sb_c extends uvm_scoreboard;
    int unsigned next_rvfi_order = 1;
    int unsigned next_rvvi_order = 1;
 
-   // FIXME:Temporary hack until RVVI state interface bug in OVPSim
-   // Currently OVPSim will increment order even for non-valid instructions (i.e. traps and interrupts)
-   // which are not actually valid retirements from the ISS
-   int unsigned fixme_rvvi_order_adjust = 0;
-
    // Maintain copy of GPRs updated by RVFI, workaround for limitiation of RVVI to only 
    // report changed register writes (misses writes that do not actually change a value)
    bit[XLEN-1:0] x[32];
@@ -244,16 +239,11 @@ function void uvme_cv32e40x_core_sb_c::write_core_sb_rvvi_state(uvma_rvvi_state_
    if (!cfg.scoreboarding_enabled)
       return;
 
-   // Skip over interrupt/halt instructions (not really instruction retirements)
-   if (rvvi_state.intr || rvvi_state.halt) begin
-      fixme_rvvi_order_adjust++;
-      next_rvvi_order++; // FIXME:Remove this too when fixed in OVPsim
+   // Discard invalid RVVI state updates
+   if (!rvvi_state.valid) 
       return;
-   end
-
+      
    // Validate against expected order
-   // FIXME:strichmo:Currently the OVPSim RVVI will incrmeent order for the "interrupt" intruction
-   // This should be fixed in OVPSIM
    if (rvvi_state.order != next_rvvi_order) begin
       `uvm_error("CORESB", $sformatf("Received RVVI out of order: %0d, exp_order, %0d",
                                      rvvi_state.order, next_rvvi_order));
@@ -295,9 +285,9 @@ function void uvme_cv32e40x_core_sb_c::check_instr(uvma_rvfi_instr_seq_item_c#(I
    
    
    // CHECK: ORDER
-   if (rvfi_instr.order != rvvi_state.order - fixme_rvvi_order_adjust) begin
-      `uvm_error("CORESB", $sformatf("ORDER mismatch, rvfi.order = %0d, rvvi.order = %0d, rvvi_order_adjust = %0d", 
-                                     rvfi_instr.order, rvvi_state.order, fixme_rvvi_order_adjust));
+   if (rvfi_instr.order != rvvi_state.order) begin
+      `uvm_error("CORESB", $sformatf("ORDER mismatch, rvfi.order = %0d, rvvi.order = %0d",
+                                     rvfi_instr.order, rvvi_state.order));
    end
 
    // CHECK: PC
