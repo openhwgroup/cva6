@@ -16,15 +16,18 @@
  *
  */
  
-`include "interface.sv"
 //`define DEBUG
 //`define UVM
+
+`include "interface.sv"
 
 interface RVVI_state #(
     parameter int ILEN = 32,
     parameter int XLEN = 32
 );
-
+    //
+    // RISCV output signals
+    //
     event            notify;
     
     bit              valid; // Retired instruction
@@ -48,6 +51,8 @@ interface RVVI_state #(
     bit [(XLEN-1):0] f[32];
     bit [(XLEN-1):0] csr[string];
     
+    // Temporary hack for volatile CSR reads
+    bit [31:0] GPR_rtl[32];
 endinterface
 
 typedef enum { IDLE, STEPI, STOP, CONT } rvvi_c_e;
@@ -88,14 +93,54 @@ interface RVVI_control;
         cmd = CONT;
         ->notify;
     endfunction
-    
 endinterface
 
-module CPU 
-#(
+interface RVVI_io;
+    bit         reset;
+    
+    bit  [31:0] irq_i;     // Active high level sensitive interrupt inputs
+    bit         irq_ack_o; // Interrupt acknowledge
+    bit  [4:0]  irq_id_o;  // Interrupt index for taken interrupt - only valid on irq_ack_o = 1
+    bit         deferint;
+    
+    bit         haltreq;
+    bit         resethaltreq;
+    bit         DM;
+    
+    bit         Shutdown;
+endinterface
+
+interface RVVI_bus;
+    bit     Clk;
+    
+    bit     [31:0] DAddr;   // Data Bus Address
+    bit     [31:0] DData;   // Data Bus LSU Data
+    bit     [3:0]  Dbe;     // Data Bus Lane enables (byte format)
+    bit     [2:0]  DSize;   // Data Bus Size of transfer 1-4 bytes
+    bit            Dwr;     // Data Bus write
+    bit            Drd;     // Data Bus read
+    
+    bit     [31:0] IAddr;   // Instruction Bus Address
+    bit     [31:0] IData;   // Instruction Bus Data
+    bit     [3:0]  Ibe;     // Instruction Bus Lane enables (byte format)
+    bit     [2:0]  ISize;   // Instruction Bus Size of transfer 1-4 bytes
+    bit            Ird;     // Instruction Bus read
+    
+    //
+    // Bus direct transactors
+    //
+    function automatic int read(input int address);
+        if (!ram.mem.exists(address)) ram.mem[address] = 'h0;
+        return ram.mem[address];
+    endfunction
+    function automatic void write(input int address, input int data);
+        ram.mem[address] = data;
+    endfunction
+endinterface
+
+module CPU #(
     parameter int ID = 0
-)
-(
+)(
     BUS SysBus
 );
 
@@ -104,9 +149,7 @@ module CPU
 `endif
 
     import "DPI-C" context task ovpEntry(input string s1, input string s2);
-    `ifndef UVM
     import "DPI-C" context function void ovpExit();
-    `endif
 
     export "DPI-C" task     busFetch;
     export "DPI-C" task     busLoad;
@@ -126,43 +169,21 @@ module CPU
     
     RVVI_state   state();
     RVVI_control control();
+    RVVI_io      io();
+    RVVI_bus     bus();
     
-    // From RTL
-    bit [31:0] GPR_rtl[32];
     bit [31:0] cycles;
-
-/*
-    always @state.notify begin
-        if (state.valid) begin
-            $display("<R> %s", state.decode);
-        end else if (state.trap) begin
-            $display("<E> %s", state.decode);
-        end else begin
-            $display("ERROR: %s", state.decode);
-        end
-    end
-    
-    always @control.notify begin
-        if (control.cmd == IDLE) begin
-            $display("<C> idle");
-        end else if (control.cmd == STEPI) begin
-            $display("<C> stepi");
-        end else if (control.cmd == STOP) begin
-            $display("<C> stop");
-        end else if (control.cmd == CONT) begin
-            $display("<C> continue");
-        end
-    end
-*/
 
     //
     // Format message for UVM/SV environment
     //
     function automatic void msginfo (input string msg);
-    `ifdef UVM
-        `uvm_info("riscv_CV32E40P", msg, UVM_DEBUG);
-    `else
-        $display("riscv_CV32E40P: %s", msg);
+    `ifdef DEBUG
+        `ifdef UVM
+            `uvm_info("riscv_CV32E40P", msg, UVM_DEBUG);
+        `else
+            $display("riscv_CV32E40P: %s", msg);
+        `endif
     `endif
     endfunction
     
@@ -249,7 +270,7 @@ module CPU
         _irq_i              = SysBus.irq_i;
         _haltreq            = SysBus.haltreq;
         _resethaltreq       = SysBus.resethaltreq;
-        
+
         _cycles             = cycles;
     endfunction
         
@@ -264,7 +285,7 @@ module CPU
     endfunction
     
     function automatic void getGPR (input int index, output longint value);
-        value = GPR_rtl[index];
+        value = state.GPR_rtl[index];
     endfunction
     
     function automatic void setFPR (input int index, input longint value);
@@ -345,9 +366,7 @@ module CPU
         Uns32 ble    = getBLE(address, size);
         Uns32 dValue = getData(address, data);
         
-        `ifdef DEBUG
         msginfo($sformatf("%08X = %02x", address, data));
-        `endif
         wValue = SysBus.read(idx) & ~(byte2bit(ble));
         wValue |= (dValue & byte2bit(ble));
         
@@ -364,15 +383,11 @@ module CPU
         automatic Uns32 dValue = getData(address, data);
 
         if (artifact) begin
-            `ifdef DEBUG
             msginfo($sformatf("[%x]<=(%0d)%x ELF_LOAD", address, size, dValue));
-            `endif
             dmiWrite(address, size, data);
 
         end else begin
-            `ifdef DEBUG
             msginfo($sformatf("[%x]<=(%0d)%x Store", address, size, dValue));
-            `endif
             SysBus.DAddr  <= address;
             SysBus.DSize  <= size;
             SysBus.Dwr    <= 1;
@@ -459,9 +474,7 @@ module CPU
             data = setData(address, SysBus.DData);
             SysBus.Drd   <= 0;
             
-            `ifdef DEBUG
             msginfo($sformatf("[%x]=>(%0d)%x Load", address, size, data));
-            `endif
         end
     endtask
     
@@ -523,9 +536,7 @@ module CPU
             data = setData(address, SysBus.IData);
             SysBus.Ird   <= 0;
             
-            `ifdef DEBUG
             msginfo($sformatf("[%x]=>(%0d)%x Fetch", address, size, data));
-            `endif
         end
     endtask
     
@@ -575,20 +586,18 @@ module CPU
     endfunction
     
     initial begin
-        if ($test$plusargs("USE_ISS")) begin            
-            ovpcfg_load();
-            elf_load();
-            ovpEntry(ovpcfg, elf_file);
-            `ifndef UVM
-            $finish;
-            `endif
-        end
+        ovpcfg_load();
+        elf_load();
+        ovpEntry(ovpcfg, elf_file);
+    `ifndef UVM
+        $finish;
+    `endif
     end
     
-    `ifndef UVM
+`ifndef UVM
     final begin
         ovpExit();
     end
-    `endif
+`endif
  
 endmodule
