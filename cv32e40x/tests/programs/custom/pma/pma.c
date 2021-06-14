@@ -47,7 +47,7 @@ void u_sw_irq_handler(void) {  // overrides a "weak" symbol in the bsp
   __asm__ volatile("csrr %0, mtval" : "=r"(mtval));
 
   //printf("exec in u_sw_irq_handler\n");
-  assert_or_die(mcause, EXCEPTION_INSN_ACCESS_FAULT, "error: unexpected mcause value\n");
+  assert_or_die(mcause, EXCEPTION_INSN_ACCESS_FAULT, "error: handler, unexpected mcause value\n");
 
   return;  // should continue test, assuming no intermediary ABI function call
 }
@@ -208,6 +208,37 @@ int main(void) {
   assert_or_die(tmp, 0xBBBBBBBB, "error: misaligned IO/MAIN second store entered bus\n");
   */
   // TODO how to programmatically confirm that these region settings match as intended?
+
+
+  // Atomics should work only where it is allowed
+
+  // Sanity check that atomic ops (lr/sc) to allowed regions is ok
+  reset_volatiles();
+  /* TODO enable when RTL is implemented
+  __asm__ volatile("lr.w %0, 0(%1)" : "=r"(tmp) : "r"(MEM_ADDR_1));
+  __asm__ volatile("sc.w %0, %0, 0(%1)" : "=r"(tmp) : "r"(MEM_ADDR_1));
+  */
+  assert_or_die(mcause, -1, "error: atomics to legal region should not except\n");
+  assert_or_die(mepc, -1, "error: atomics to legal region unexpected mepc\n");
+  assert_or_die(mtval, -1, "error: atomics to legal region unexpected mtval\n");
+
+  // Load-reserved to disallowed regions raises precise exception
+  reset_volatiles();
+  /* TODO enable when RTL is implemented
+  __asm__ volatile("lr.w %0, 0(%1)" : "=r"(tmp) : "r"(IO_ADDR));
+  assert_or_die(mcause, EXCEPTION_LOAD_ACCESS_FAULT, "error: load-reserved to non-atomic should except\n");
+  assert_or_die(mepc, IO_ADDR, "error: load-reserved to non-atomic unexpected mepc\n");
+  assert_or_die(mtval, MTVAL_READ, "error: load-reserved to non-atomic unexpected mtval\n");
+  */
+
+  // Store-conditional to disallowed regions raises precise exception
+  reset_volatiles();
+  /* TODO enable when RTL is implemented
+  __asm__ volatile("sc.w %0, %0, 0(%1)" : "=r"(tmp) : "r"(IO_ADDR));
+  assert_or_die(mcause, EXCEPTION_STOREAMO_ACCESS_FAULT, "error: store-conditional to non-atomic should except\n");
+  assert_or_die(mepc, IO_ADDR, "error: store-conditional to non-atomic unexpected mepc\n");
+  assert_or_die(mtval, MTVAL_READ, "error: store-conditional to non-atomic unexpected mtval\n");
+  */
 
 
   printf("\nGoodbye, PMA test!\n\n");
