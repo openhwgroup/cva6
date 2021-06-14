@@ -34,8 +34,9 @@ class uvma_rvvi_mon_trn_logger_c#(int ILEN=DEFAULT_ILEN,
 
    `uvm_component_utils(uvma_rvvi_mon_trn_logger_c)
 
-   const string format_header_str = "%15s: RVVI %6s %8s %8s %s %3s %8s";
-   const string format_instr_str  = "%15s: RVVI %6d %8x %8s %s x%2s %8s";
+   const string format_header_str     = "%15s: RVVI %6s %8s %8s %s %3s %8s";
+   const string format_instr_str      = "%15s: RVVI %6d %8x %8s %s x%2s %8s";
+   const string format_non_instr_str  = "%15s: RVVI %s";
 
    /**
     * Default constructor.
@@ -54,7 +55,15 @@ class uvma_rvvi_mon_trn_logger_c#(int ILEN=DEFAULT_ILEN,
       //fwrite($sformatf("%t: %s: %s", $time, agent_name, t.convert2string()));
    endfunction : write
    
-   virtual function void write_rvvi_state(uvma_rvvi_state_seq_item_c t);      
+   virtual function void write_rvvi_state(uvma_rvvi_state_seq_item_c t);
+      if (t.valid)
+         log_valid_insn(t);
+      else 
+         log_invalid_insn(t);         
+   endfunction : write_rvvi_state
+
+   virtual function void log_valid_insn(uvma_rvvi_state_seq_item_c t);      
+
       string  gpr_index_str = "--";
       string  gpr_data_str  = "--------";
 
@@ -72,7 +81,24 @@ class uvma_rvvi_mon_trn_logger_c#(int ILEN=DEFAULT_ILEN,
                        get_mode_str(t.mode),                       
                        gpr_index_str,
                        gpr_data_str));
-   endfunction : write_rvvi_state
+                       
+   endfunction : log_valid_insn
+
+   virtual function void log_invalid_insn(uvma_rvvi_state_seq_item_c t);      
+
+      string action;
+
+      if (t.intr)
+         action = "INTR";
+      if (t.trap)
+         action = "TRAP";
+      if (t.halt)
+         action = "HALT";
+
+      fwrite($sformatf(format_non_instr_str, $sformatf("%t", $time),
+                       action));
+
+   endfunction : log_invalid_insn
 
    /**
     * Writes log header to disk

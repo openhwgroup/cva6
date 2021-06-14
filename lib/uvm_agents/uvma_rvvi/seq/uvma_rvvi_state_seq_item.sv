@@ -84,17 +84,24 @@ function uvma_rvvi_state_seq_item_c::new(string name="uvma_rvvi_seq_item");
 endfunction : new
 
 function string uvma_rvvi_state_seq_item_c::convert2string();
-   convert2string = $sformatf("Order: %0d, insn: 0x%08x, pc: 0x%08x, mode: %s, ixl: 0x%01x", 
-                              order, insn, pc, mode.name(), ixl);
+   convert2string = "";
+
+   if (valid) begin
+      convert2string = { convert2string, 
+                         $sformatf("Order: %0d, insn: 0x%08x, pc: 0x%08x, mode: %s, ixl: 0x%01x", 
+                                   order, insn, pc, mode.name(), ixl)
+      };
+   end
+            
    if (trap)
-      convert2string = $sformatf("%s TRAP", convert2string);
+      convert2string = { convert2string, " TRAP" };
    if (halt)
-      convert2string = $sformatf("%s HALT", convert2string);
+      convert2string = { convert2string, " HALT" };
    if (intr)
-      convert2string = $sformatf("%s INTR", convert2string);
+      convert2string = { convert2string, " INTR" };
 
    foreach (gpr_update[i]) begin
-      convert2string = $sformatf("%s GPR[%02d]: 0x%08x", convert2string, i, gpr_update[i]);
+      convert2string = { convert2string, $sformatf(" GPR[%02d]: 0x%08x", i, gpr_update[i]) };
    end
 endfunction : convert2string
 
