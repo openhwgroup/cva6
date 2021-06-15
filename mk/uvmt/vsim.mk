@@ -74,6 +74,7 @@ OPT_RV_ISA_DIR = $(if $(RISCV_ISA),/$(RISCV_ISA),)
 VLOG_FLAGS    ?= \
 				-suppress 2577 \
 				-suppress 2583 \
+				-suppress 13185 \
 				-suppress 13314 \
 				-suppress 13288 \
         		-suppress 2181 \
@@ -106,6 +107,9 @@ VSIM_FLAGS        += $(VSIM_USER_FLAGS)
 VSIM_FLAGS        += $(USER_RUN_FLAGS)
 VSIM_FLAGS        += -sv_seed $(RNDSEED)
 VSIM_FLAGS        += -suppress 7031
+VSIM_FLAGS        += -suppress 8858
+VSIM_FLAGS        += -suppress 8522
+VSIM_FLAGS        += -suppress 8550
 VSIM_DEBUG_FLAGS  ?= -debugdb
 VSIM_GUI_FLAGS    ?= -gui -debugdb
 VSIM_SCRIPT_DIR	   = $(abspath $(MAKE_PATH)/../tools/vsim)
