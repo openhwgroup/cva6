@@ -247,7 +247,43 @@ class cv32e40x_asm_program_gen extends corev_asm_program_gen;
     end
     gen_section(get_label($sformatf("%0smode_intr_handler", mode_prefix), hart),
                 interrupt_handler_instr);
+
+
+    //generate nmi section
+    gen_nmi_handler_section(hart);
+
   endfunction : gen_interrupt_handler_section
+
+  // generate NMI handler.
+  // will be placed at a fixed address in memory, set in linker file
+  //TODO: verify correct functionality when NMI test capability is ready
+  virtual function void gen_nmi_handler_section(int hart);
+    string nmi_handler_instr[$];
+
+    // Insert section info so linker can place
+    // debug code at the correct adress   
+    instr_stream.push_back(".section .nmi, \"ax\"");
+    
+    // read relevant csr's 
+    nmi_handler_instr.push_back($sformatf("csrr x%0d, mepc", cfg.gpr[0]));
+    nmi_handler_instr.push_back($sformatf("csrr x%0d, mcause", cfg.gpr[0]));
+    nmi_handler_instr.push_back($sformatf("csrr x%0d, mtval", cfg.gpr[0]));
+    nmi_handler_instr.push_back($sformatf("csrr x%0d, mie", cfg.gpr[0]));
+
+    //set error and end
+    nmi_handler_instr.push_back($sformatf("li a0, test_ret_val"));
+    nmi_handler_instr.push_back($sformatf("li t0, test_fail"));
+    nmi_handler_instr.push_back($sformatf("sw t0, 0(a0)"));
+
+
+    nmi_handler_instr.push_back($sformatf("la x%0d, test_done", cfg.scratch_reg));
+    nmi_handler_instr.push_back($sformatf("jalr x%0d, 0", cfg.scratch_reg));
+    
+    
+    gen_section(get_label($sformatf("nmi_handler"), hart),
+                nmi_handler_instr);
+
+  endfunction : gen_nmi_handler_section
 
   // Override gen_stack_section to add debugger stack generation section  
   // Implmeneted as a post-step to super.gen_stack_section()
