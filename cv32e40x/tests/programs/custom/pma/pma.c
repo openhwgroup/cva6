@@ -72,28 +72,60 @@ static void check_load_vs_regfile(void) {
   assert_or_die(tmp, 0x11223344, "error: misaligned IO load shouldn't touch regfile\n");
   */
 
-  // check misaligned border from IO to MAIN
+  // check misaligned border from IO to MEM
   __asm__ volatile("sw %0, -4(%1)" : : "r"(0xAAAAAAAA), "r"(MEM_ADDR_1));
   __asm__ volatile("sw %0, 0(%1)" : : "r"(0xBBBBBBBB), "r"(MEM_ADDR_1));
   __asm__ volatile("li t0, 0x22334455");
   __asm__ volatile("lw t0, 0(%0)" : : "r"(MEM_ADDR_1 - 3));
   __asm__ volatile("mv %0, t0" : "=r"(tmp));
   /* TODO enable when RTL is implemented
-  assert_or_die(tmp, 0x22334455, "error: misaligned IO/MAIN load shouldn't touch regfile\n");
+  assert_or_die(tmp, 0x22334455, "error: misaligned IO/MEM load shouldn't touch regfile\n");
   */
 
-  // check misaligned border from MAIN to IO
+  // check misaligned border from MEM to IO
   __asm__ volatile("sw %0, -4(%1)" : : "r"(0xAAAAAAAA), "r"(IO_ADDR));
   __asm__ volatile("sw %0, 0(%1)" : : "r"(0xBBBBBBBB), "r"(IO_ADDR));
   __asm__ volatile("li t0, 0x33445566");
   __asm__ volatile("lw t0, 0(%0)" : : "r"(IO_ADDR - 1));
   __asm__ volatile("mv %0, t0" : "=r"(tmp));
   /* TODO enable when RTL is implemented
-  assert_or_die(tmp, 0x33445566, "error: misaligned MAIN/IO load shouldn't touch regfile\n");
+  assert_or_die(tmp, 0x33445566, "error: misaligned MEM/IO load shouldn't touch regfile\n");
   */
 
   // TODO is C really aware that t0 is being used here? Doesn't mangle the caller?
   // TODO can one programmatically confirm that these addresses are indeed in such regions as intended?
+}
+
+static void check_zce_push(void) {
+  uint32_t defaults[] = {0xAAAAAAAA, 0xBBBBBBBB, 0xCCCCCCCC, 0xDDDDDDDD};
+  uint32_t sp;
+  uint32_t ra;
+  uint32_t tmp;
+
+  // Prologue
+  __asm__ volatile("mv %0, sp" : "=r"(sp));  // Saving "sp", for we shall tamper with it
+
+  // Setup
+  __asm__ volatile("mv sp, %0" : : "r"(MEM_ADDR_1 + 4));  // Set "sp" to have room for 1 MEM before entering IO
+  __asm__ volatile("mv %0, ra" : "=r"(ra));  // Saving "ra" for later use
+  __asm__ volatile("sw %0, 0(%1)" : : "r"(defaults[0]), "r"(MEM_ADDR_1));
+  __asm__ volatile("sw %0, -4(%1)" : : "r"(defaults[1]), "r"(MEM_ADDR_1));
+  __asm__ volatile("sw %0, -8(%1)" : : "r"(defaults[2]), "r"(MEM_ADDR_1));
+  __asm__ volatile("sw %0, -12(%1)" : : "r"(defaults[3]), "r"(MEM_ADDR_1));
+
+  // Test
+  /* TODO enabled when RTL is implemented
+  __asm__ volatile(".word 0x000240AB");  // TODO "push {ra, s0-s1}, -16"
+  __asm__ volatile("lw %0, 0(%1)" : "=r"(tmp) : "r"(MEM_ADDR_1));
+  assert_or_die(tmp, ra, "error: PUSH to MEM should SW successfully\n");
+  */
+  __asm__ volatile("lw %0, -4(%1)" : "=r"(tmp) : "r"(MEM_ADDR_1));
+  assert_or_die(tmp, defaults[1], "error: PUSH to IO should not SW\n");
+  __asm__ volatile("lw %0, -8(%1)" : "=r"(tmp) : "r"(MEM_ADDR_1));
+  assert_or_die(tmp, defaults[2], "error: Trailing PUSHes to IO should not SW\n");
+
+  // Epilogue
+  __asm__ volatile("mv sp, %0" : : "r"(sp));
 }
 
 int main(void) {
@@ -138,7 +170,7 @@ int main(void) {
   */
   // TODO more kinds of |addr[0:1]? Try LH too?
 
-  // check that misaligned to MAIN does not fail
+  // check that misaligned to MEM does not fail
   reset_volatiles();
   tmp = 0;
   __asm__ volatile("lw %0, 0(%1)" : "=r"(tmp) : "r"(0x80));
@@ -168,7 +200,7 @@ int main(void) {
   assert_or_die(mtval, MTVAL_READ, "error: misaligned store unexpected mtval\n");
   */
 
-  // check that misaligned store to MAIN is alright
+  // check that misaligned store to MEM is alright
   reset_volatiles();
   tmp = 0xCCCCCCCC;
   __asm__ volatile("sw %0, -9(%1)" : "=r"(tmp) : "r"(IO_ADDR));
@@ -197,15 +229,15 @@ int main(void) {
   */
   // TODO how to programmatically confirm that these region settings match as intended?
 
-  // check IO to MAIN store failing in first access
+  // check IO to MEM store failing in first access
   __asm__ volatile("sw %0, -4(%1)" : : "r"(0xAAAAAAAA), "r"(MEM_ADDR_1));
   __asm__ volatile("sw %0, 0(%1)" : : "r"(0xBBBBBBBB), "r"(MEM_ADDR_1));
   __asm__ volatile("sw %0, -2(%1)" : : "r"(0x22334455), "r"(MEM_ADDR_1));
   /* TODO enable when RTL is implemented
   __asm__ volatile("lw %0, -4(%1)" : "=r"(tmp) : "r"(MEM_ADDR_1));
-  assert_or_die(tmp, 0xAAAAAAAA, "error: misaligned IO/MAIN first store entered bus\n");
+  assert_or_die(tmp, 0xAAAAAAAA, "error: misaligned IO/MEM first store entered bus\n");
   __asm__ volatile("lw %0, 0(%1)" : "=r"(tmp) : "r"(MEM_ADDR_1));
-  assert_or_die(tmp, 0xBBBBBBBB, "error: misaligned IO/MAIN second store entered bus\n");
+  assert_or_die(tmp, 0xBBBBBBBB, "error: misaligned IO/MEM second store entered bus\n");
   */
   // TODO how to programmatically confirm that these region settings match as intended?
 
@@ -239,6 +271,18 @@ int main(void) {
   assert_or_die(mepc, IO_ADDR, "error: store-conditional to non-atomic unexpected mepc\n");
   assert_or_die(mtval, MTVAL_READ, "error: store-conditional to non-atomic unexpected mtval\n");
   */
+
+
+  // TODO Zce title
+
+  // Push instrs should fault to IO but pass for MEM
+  check_zce_push();
+
+  // TODO Pop title
+  //TODO implement test
+
+  // TODO Table jump title
+  //TODO implement test
 
 
   printf("\nGoodbye, PMA test!\n\n");
