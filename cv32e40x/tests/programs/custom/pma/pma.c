@@ -105,7 +105,7 @@ static void check_zce_push(void) {
   // Prologue
   __asm__ volatile("mv %0, sp" : "=r"(sp));  // Saving "sp", for we shall tamper with it
 
-  // Setup
+  // Setup preparations
   __asm__ volatile("mv sp, %0" : : "r"(MEM_ADDR_1 + 4));  // Set "sp" to have room for 1 MEM before entering IO
   __asm__ volatile("mv %0, ra" : "=r"(ra));  // Saving "ra" for later use
   __asm__ volatile("sw %0, 0(%1)" : : "r"(defaults[0]), "r"(MEM_ADDR_1));
@@ -113,9 +113,19 @@ static void check_zce_push(void) {
   __asm__ volatile("sw %0, -8(%1)" : : "r"(defaults[2]), "r"(MEM_ADDR_1));
   __asm__ volatile("sw %0, -12(%1)" : : "r"(defaults[3]), "r"(MEM_ADDR_1));
 
-  // Test
+  // Run the push stimuli
   /* TODO enabled when RTL is implemented
   __asm__ volatile(".word 0x000240AB");  // TODO "push {ra, s0-s1}, -16"
+  */
+
+  // Epilogue
+  __asm__ volatile("mv sp, %0" : : "r"(sp));  // Better restore this quickly
+
+  // Assert results
+  /* TODO enabled when RTL is implemented
+  assert_or_die(mcause, EXCEPTION_STOREAMO_ACCESS_FAULT, "error: bad push should except\n");
+  assert_or_die(mepc, (MEM_ADDR_1 - 4), "error: bad push, unexpected mepc\n");
+  assert_or_die(mtval, MTVAL_READ, "error: bad push, unexpected mtval\n");
   __asm__ volatile("lw %0, 0(%1)" : "=r"(tmp) : "r"(MEM_ADDR_1));
   assert_or_die(tmp, ra, "error: PUSH to MEM should SW successfully\n");
   */
@@ -123,9 +133,53 @@ static void check_zce_push(void) {
   assert_or_die(tmp, defaults[1], "error: PUSH to IO should not SW\n");
   __asm__ volatile("lw %0, -8(%1)" : "=r"(tmp) : "r"(MEM_ADDR_1));
   assert_or_die(tmp, defaults[2], "error: Trailing PUSHes to IO should not SW\n");
+}
 
-  // Epilogue
+static void check_zce_pop(void) {
+  uint32_t defaults[] = {0xAAAAAAAA, 0xBBBBBBBB, 0xCCCCCCCC, 0xDDDDDDDD};
+  register uint32_t sp asm ("s8");  // (ask C to not use the registers needed for testing)
+  register uint32_t s0 asm ("s9");
+  register uint32_t s1 asm ("s10");
+  register uint32_t ra asm ("s11");  // Hereby pledge to not intentionally use s11, to prevent ra getting corrupted
+  uint32_t tmp;
+
+  // Prologue
+  __asm__ volatile("mv %0, sp" : "=r"(sp));  // Saving "sp", for we shall tamper with it
+  __asm__ volatile("mv %0, ra" : "=r"(ra));  // Saving "ra", for we shall tamper with it
+
+  // Setup
+  __asm__ volatile("mv sp, %0" : : "r"(MEM_ADDR_1 + 4 - 16));  // Set previous "sp" to have room for 1 MEM before entering IO
+  __asm__ volatile("sw %0, 0(%1)" : : "r"(defaults[0]), "r"(MEM_ADDR_1));
+  __asm__ volatile("sw %0, -4(%1)" : : "r"(defaults[1]), "r"(MEM_ADDR_1));
+  __asm__ volatile("sw %0, -8(%1)" : : "r"(defaults[2]), "r"(MEM_ADDR_1));
+  __asm__ volatile("sw %0, -12(%1)" : : "r"(defaults[3]), "r"(MEM_ADDR_1));
+  __asm__ volatile("mv %0, s0" : "=r"(s0));  // Will check against this later
+  __asm__ volatile("mv %0, s1" : "=r"(s1));  // Will check against this later
+
+  // Run the instruction
+  /* TODO enable when RTL is implemented
+  __asm__ volatile("pop {ra, s0-s1}, 16");
+  */
+
+  // Epilogue 1/2
   __asm__ volatile("mv sp, %0" : : "r"(sp));
+
+  // Assert results
+  /* TODO enable when RTL is implemented
+  assert_or_die(mcause, EXCEPTION_LOAD_ACCESS_FAULT, "error: bad pop should except\n");
+  assert_or_die(mepc, (MEM_ADDR_1 - 4), "error: bad pop, unexpected mepc\n");
+  assert_or_die(mtval, MTVAL_READ, "error: bad pop, unexpected mtval\n");
+  __asm__ volatile("mv %0, ra" : "=r"(tmp));
+  assert_or_die(tmp, defaults[0], "error: POP from MEM should LW ra successfully\n");
+  */
+  __asm__ volatile("mv %0, s0" : "=r"(tmp));
+  assert_or_die(tmp, s0, "error: POP from IO should not LW\n");
+  __asm__ volatile("mv %0, s1" : "=r"(tmp));
+  assert_or_die(tmp, s1, "error: POP from IO should not continue LWing\n");
+  //TODO are assertions good enough that C accidentally using the same registers will either be caught or not be a problem?
+
+  // Epilogue 2/2
+  __asm__ volatile("mv ra, %0" : : "r"(ra));
 }
 
 int main(void) {
@@ -278,8 +332,8 @@ int main(void) {
   // Push instrs should fault to IO but pass for MEM
   check_zce_push();
 
-  // TODO Pop title
-  //TODO implement test
+  // Pop instrs should fault to IO but pass for MEM
+  check_zce_pop();
 
   // TODO Table jump title
   //TODO implement test
