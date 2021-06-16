@@ -13,15 +13,9 @@
 
 export SHELL = /bin/bash
 
-#CV_CORE_REPO   ?= https://github.com/openhwgroup/cv32e40x
-#CV_CORE_BRANCH ?= master
-#CV_CORE_HASH   ?= ed7cfdfdcd8c86cd2df41dfad25810997221756e
-#CV_CORE_TAG    ?= none
-
-# Pointing to RVFI implementation branch from Halfdan Bechmann
-CV_CORE_REPO   ?= https://github.com/silabs-halfdan/cv32e40x.git
-CV_CORE_BRANCH ?= rvfi_integration
-CV_CORE_HASH   ?= bd989fa7f91be07996bf02f6023594e0e30f53fa
+CV_CORE_REPO   ?= https://github.com/openhwgroup/cv32e40x
+CV_CORE_BRANCH ?= master
+CV_CORE_HASH   ?= 1ab04be3fb34e7e23a4490971657d212c0642ed1
 CV_CORE_TAG    ?= none
 
 RISCVDV_REPO    ?= https://github.com/google/riscv-dv
