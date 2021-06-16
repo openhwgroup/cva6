@@ -27,7 +27,7 @@ The following environment variables can be set for any make invocation to run te
 | CV_CORE              | The core to simulate by default.  Can be overridden on any make command line.  Typically specified in the same case as the directory in which the testbench resides (e.g. cv32e40p, cva6).  However makefiles have access to internally defined CV_CORE_LC and CV_CORE_UC variables to get expected cases of the CV_CORE name (e.g. for macros, etc that might typically be capitalized). |
 | CV_SW_TOOLCHAIN      | Points to SW toolchain installation for compiling, assembling, and/or linking test programs.  **A toolchain is required for running any tests in the _uvmt_ environment** |
 | CV_SW_MARCH          | Architecture of tool chain to invoke.  Defaults to _unknown_ |
-| CV_RESULTS           | Optional simulator output redirection path. Defaults to blank, i.e. simulation outputs will be located in <i>&lt;core></i>/mk/uvmt/<i>&lt;simulator></i>_results. |
+| CV_RESULTS           | Optional simulator output redirection path. Defaults to blank, i.e. simulation outputs will be located in <i>&lt;core></i>/mk/uvmt/<i>&lt;simulator></i>_results if a relative path is given.  Optionally an absolute path can be used as well and simulation outputs will be located in  $(CV_RESULTS)/<i>&lt;simulator></i>_results |
 <br>
 
 Imperas OVPsim Instruction Set Simulator

@@ -30,7 +30,7 @@ VSIM 					= $(CV_SIM_PREFIX) vsim
 VWORK     				= work
 
 # Paths
-VSIM_RESULTS           ?= $(if $(CV_RESULTS),$(CV_RESULTS)/riviera_results,$(MAKE_PATH)/riviera_results)
+VSIM_RESULTS           ?= $(if $(CV_RESULTS),$(abspath $(CV_RESULTS))/riviera_results,$(MAKE_PATH)/riviera_results)
 VSIM_COREVDV_RESULTS   ?= $(VSIM_RESULTS)/corev-dv
 VSIM_COV_MERGE_DIR     ?= $(VSIM_RESULTS)/merged
 UVM_HOME               ?= ${ALDEC_PATH}/vlib/uvm-1.2/src/
