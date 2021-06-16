@@ -92,12 +92,12 @@ ariane_pkg := core/include/riscv_pkg.sv                              \
 ariane_pkg := $(addprefix $(root-dir), $(ariane_pkg))
 
 # utility modules
-util := include/instr_tracer_pkg.sv                         \
-        src/util/instr_tracer_if.sv                         \
-        src/util/instr_tracer.sv                            \
-        src/tech_cells_generic/src/cluster_clock_gating.sv  \
-        tb/common/mock_uart.sv                              \
-        src/util/sram.sv
+util := core/include/instr_tracer_pkg.sv                              \
+        common/local/util/instr_tracer_if.sv                          \
+        common/local/util/instr_tracer.sv                             \
+        corev_apu/src/tech_cells_generic/src/cluster_clock_gating.sv  \
+        corev_apu/tb/common/mock_uart.sv                              \
+        common/local/util/sram.sv
 
 ifdef spike-tandem
     util += tb/common/spike.sv
@@ -230,7 +230,7 @@ src := $(addprefix $(root-dir), $(src))
 uart_src := $(wildcard corev_apu/fpga/src/apb_uart/src/*.vhd)
 uart_src := $(addprefix $(root-dir), $(uart_src))
 
-fpga_src :=  $(wildcard fpga/src/*.sv) $(wildcard fpga/src/bootrom/*.sv) $(wildcard fpga/src/ariane-ethernet/*.sv)
+fpga_src :=  $(wildcard corev_apu/fpga/src/*.sv) $(wildcard corev_apu/fpga/src/bootrom/*.sv) $(wildcard corev_apu/fpga/src/ariane-ethernet/*.sv)
 fpga_src := $(addprefix $(root-dir), $(fpga_src))
 
 # look for testbenches
@@ -727,22 +727,22 @@ check-torture:
 	grep 'All signatures match for $(test-location)' $(riscv-torture-dir)/$(test-location).log
 	diff -s $(riscv-torture-dir)/$(test-location).spike.sig $(riscv-torture-dir)/$(test-location).rtlsim.sig
 
-fpga_filter := $(addprefix $(root-dir), bootrom/bootrom.sv)
+fpga_filter := $(addprefix $(root-dir), corev_apu/bootrom/bootrom.sv)
 fpga_filter += $(addprefix $(root-dir), core/include/instr_tracer_pkg.sv)
 fpga_filter += $(addprefix $(root-dir), src/util/ex_trace_item.sv)
 fpga_filter += $(addprefix $(root-dir), src/util/instr_trace_item.sv)
-fpga_filter += $(addprefix $(root-dir), src/util/instr_tracer_if.sv)
-fpga_filter += $(addprefix $(root-dir), src/util/instr_tracer.sv)
+fpga_filter += $(addprefix $(root-dir), common/local/util/instr_tracer_if.sv)
+fpga_filter += $(addprefix $(root-dir), common/local/util/instr_tracer.sv)
 
 fpga: $(ariane_pkg) $(util) $(src) $(fpga_src) $(uart_src)
 	@echo "[FPGA] Generate sources"
-	@echo read_vhdl        {$(uart_src)}    > fpga/scripts/add_sources.tcl
-	@echo read_verilog -sv {$(ariane_pkg)} >> fpga/scripts/add_sources.tcl
-	@echo read_verilog -sv {$(filter-out $(fpga_filter), $(util))}     >> fpga/scripts/add_sources.tcl
-	@echo read_verilog -sv {$(filter-out $(fpga_filter), $(src))} 	   >> fpga/scripts/add_sources.tcl
-	@echo read_verilog -sv {$(fpga_src)}   >> fpga/scripts/add_sources.tcl
+	@echo read_vhdl        {$(uart_src)}    > corev_apu/fpga/scripts/add_sources.tcl
+	@echo read_verilog -sv {$(ariane_pkg)} >> corev_apu/fpga/scripts/add_sources.tcl
+	@echo read_verilog -sv {$(filter-out $(fpga_filter), $(util))}     >> corev_apu/fpga/scripts/add_sources.tcl
+	@echo read_verilog -sv {$(filter-out $(fpga_filter), $(src))} 	   >> corev_apu/fpga/scripts/add_sources.tcl
+	@echo read_verilog -sv {$(fpga_src)}   >> corev_apu/fpga/scripts/add_sources.tcl
 	@echo "[FPGA] Generate Bitstream"
-	cd fpga && make BOARD=$(BOARD) XILINX_PART=$(XILINX_PART) XILINX_BOARD=$(XILINX_BOARD) CLK_PERIOD_NS=$(CLK_PERIOD_NS)
+	cd corev_apu/fpga && make BOARD=$(BOARD) XILINX_PART=$(XILINX_PART) XILINX_BOARD=$(XILINX_BOARD) CLK_PERIOD_NS=$(CLK_PERIOD_NS)
 
 .PHONY: fpga
 
