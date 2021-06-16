@@ -56,12 +56,16 @@ class uvmt_cv32e40x_base_test_c extends uvm_test;
    `uvm_component_utils_end
 
    
+   bit [31:0] tmp_nmi_handler_addr;
+
    constraint env_cfg_cons {
       env_cfg.enabled         == 1;
       env_cfg.is_active       == UVM_ACTIVE;
       env_cfg.trn_log_enabled == 1;
 
-      env_cfg.rvfi_cfg.nmi_handler_addr        == core_cntrl_vif.nmi_addr;      
+      // FIXME:STRICHMO:undo temp variable when Issue 675 is solved
+      //env_cfg.rvfi_cfg.nmi_handler_addr        == core_cntrl_vif.nmi_addr;
+      env_cfg.rvfi_cfg.nmi_handler_addr        == tmp_nmi_handler_addr;
    }
    
    constraint test_type_default_cons {
@@ -123,7 +127,12 @@ class uvmt_cv32e40x_base_test_c extends uvm_test;
     * This is done by checking the properties of the phase argument.
     */
    extern virtual function void phase_ended(uvm_phase phase);
-   
+
+   /**
+    * pre_randomize hook
+    */
+   extern function void pre_randomize();
+
    /**
     * Retrieves virtual interfaces from UVM configuration database.
     */
@@ -380,7 +389,7 @@ endfunction : create_cfg
 
 
 function void uvmt_cv32e40x_base_test_c::randomize_test();
-   
+      
    test_cfg.process_cli_args();
    if (!this.randomize()) begin
       `uvm_fatal("BASE TEST", "Failed to randomize test");
@@ -465,5 +474,12 @@ task uvmt_cv32e40x_base_test_c::watchdog_timer();
    
 endtask : watchdog_timer
 
+
+// FIXME:STRICHMO:Remove when 675 fixed
+function void uvmt_cv32e40x_base_test_c::pre_randomize();
+
+   tmp_nmi_handler_addr = core_cntrl_vif.nmi_addr;   
+
+endfunction : pre_randomize
 
 `endif // __UVMT_CV32E40X_BASE_TEST_SV__
