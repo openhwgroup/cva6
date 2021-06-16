@@ -115,7 +115,7 @@ interface uvma_rvfi_instr_if
         rvfi_mem_wmask,
 
         csr_mcause,
-        csr_mip
+        csr_mip;
   endclocking : mon_cb
 
   modport passive_mp    (clocking mon_cb);
