@@ -168,6 +168,7 @@ module uvmt_cv32e40x_dut_wrap #(// DUT (riscv_core) parameters.
          .boot_addr_i            ( core_cntrl_if.boot_addr        ),
          .mtvec_addr_i           ( core_cntrl_if.mtvec_addr       ),
          .dm_halt_addr_i         ( core_cntrl_if.dm_halt_addr     ),
+         .nmi_addr_i             ( core_cntrl_if.nmi_addr         ),
          .hart_id_i              ( core_cntrl_if.hart_id          ),
          .dm_exception_addr_i    ( core_cntrl_if.dm_exception_addr),
 
