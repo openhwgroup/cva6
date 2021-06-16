@@ -58,8 +58,8 @@ module uvmt_cv32e40x_tb;
             word_addr_low  : '0,
             word_addr_high : ('h 1a11_0800 + 'd 16) >> 2,  // TODO vplan doesn't use this (dbg) addr
             main           : 1,
-            bufferable     : 0,
-            cacheable      : 0,
+            bufferable     : 1,
+            cacheable      : 1,
             atomic         : 1},
          // Second portion of dbg up til end is exec  (TODO use vplan's configs)
          cv32e40x_pkg::pma_region_t'{

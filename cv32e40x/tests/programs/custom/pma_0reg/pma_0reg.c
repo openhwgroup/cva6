@@ -36,9 +36,6 @@ int main(void) {
   */
 
 
-  // TODO stimulate testing of Cacheable/Bufferable?
-
-
   printf("\ngoodbye pma_0reg\n\n");
   return EXIT_SUCCESS;
 }
