@@ -19,6 +19,15 @@
 `ifndef __INCL_TYPEDEFS_SV
 `define __INCL_TYPEDEFS_SV
 
+typedef byte     Int8;
+typedef shortint Int16;
+typedef int      Int32;
+typedef longint  Int64;
+typedef byte     unsigned Uns8;
+typedef shortint unsigned Uns16;
+typedef int      unsigned Uns32;
+typedef longint  unsigned Uns64;
+
 //
 // Address label monitor type
 //
@@ -26,7 +35,5 @@ typedef struct {
     int addr;
     int enable;
 } watchT;
-
-typedef int unsigned Uns32;
 
 `endif

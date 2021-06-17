@@ -1,6 +1,6 @@
 /*
  *
- * Copyright (c) 2005-2020 Imperas Software Ltd., www.imperas.com
+ * Copyright (c) 2005-2021 Imperas Software Ltd., www.imperas.com
  *
  * The contents of this file are provided under the Software License
  * Agreement that you accepted before downloading this file.
@@ -16,24 +16,32 @@
  *
  */
 
-`ifndef __INCL_TYPEDEFS_SV
-`define __INCL_TYPEDEFS_SV
-
-typedef byte     Int8;
-typedef shortint Int16;
-typedef int      Int32;
-typedef longint  Int64;
-typedef byte     unsigned Uns8;
-typedef shortint unsigned Uns16;
-typedef int      unsigned Uns32;
-typedef longint  unsigned Uns64;
-
-//
-// Address label monitor type
-//
 typedef struct {
-    int addr;
-    int enable;
-} watchT;
+    Uns64 retPC;
+    Uns64 excPC;
+    Uns64 nextPC;
 
-`endif
+    //Uns64 x[32];
+    //Uns64 f[32];
+    //Uns64 csr[4096];
+
+    Uns64 order;
+    Uns64 trap;
+
+    // Signals to SV
+    Uns64 irq_ack_o;
+    Uns64 irq_id_o;
+    Uns64 DM;
+} RMDataT;
+
+typedef struct {
+    // Signals from SV
+    Uns64 reset;
+    Uns64 deferint;
+    Uns64 irq_i;
+    Uns64 haltreq;
+    Uns64 resethaltreq;
+    Uns64 terminate;
+
+    Uns64 cycles;
+} SVDataT;

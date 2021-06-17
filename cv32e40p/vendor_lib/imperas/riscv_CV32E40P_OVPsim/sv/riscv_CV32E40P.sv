@@ -19,7 +19,10 @@
 //`define DEBUG
 //`define UVM
 
+`include "typedefs.sv"
 `include "interface.sv"
+
+`include "riscv_datatype.h"
 
 interface RVVI_state #(
     parameter int ILEN = 32,
@@ -49,6 +52,7 @@ interface RVVI_state #(
     // Registers
     bit [(XLEN-1):0] x[32];
     bit [(XLEN-1):0] f[32];
+    bit [(XLEN-1):0] c[4096];
     bit [(XLEN-1):0] csr[string];
     
     // Temporary hack for volatile CSR reads
@@ -148,8 +152,10 @@ module CPU #(
     import uvm_pkg::*;
 `endif
 
-    import "DPI-C" context task ovpEntry(input string s1, input string s2);
-    import "DPI-C" context function void ovpExit();
+    import "DPI-C" context task          opEntry(input string s1, input string s2);
+    import "DPI-C" context function void svPull(output RMDataT RMData);
+    import "DPI-C" context function void svPush(output SVDataT SVData);
+    import "DPI-C" context function void opExit();
 
     export "DPI-C" task     busFetch;
     export "DPI-C" task     busLoad;
@@ -158,13 +164,11 @@ module CPU #(
     
     export "DPI-C" function setGPR;
     export "DPI-C" function getGPR;
-    export "DPI-C" function setFPR;
-    export "DPI-C" function setCSR;
-    export "DPI-C" function getState;
-    export "DPI-C" function putState;
     
-    export "DPI-C" task     setRETIRE;
-    export "DPI-C" task     setTRAP;
+    export "DPI-C" function setCSR;
+    export "DPI-C" function opPull;
+    
+    export "DPI-C" task     setRESULT;
     export "DPI-C" function setDECODE;
     
     RVVI_state   state();
@@ -173,6 +177,9 @@ module CPU #(
     RVVI_bus     bus();
     
     bit [31:0] cycles;
+
+    RMDataT RMData;
+    SVDataT SVData;
 
     //
     // Format message for UVM/SV environment
@@ -209,87 +216,82 @@ module CPU #(
         busStep;
     endtask
     
-    // Called at end of instruction transaction
-    task setRETIRE;
-        input int hart;
-        input int retPC;
-        input int nextPC;
-        input longint count;
+    //
+    // getstate values set by RM
+    //
+    function automatic void getstate;
+        int i;
+        svPull(RMData);
+
+/*
+        for (i=0; i<32; i++) begin
+            state.x[i] = RMData.x[i];
+            state.f[i] = RMData.f[i];
+        end
+
+        for (i=0; i<4096; i++) begin
+            if (state.c[i] != RMData.csr[i]) begin
+                state.c[i] = RMData.csr[i];
+            end
+        end
+*/
+        SysBus.irq_ack_o   = RMData.irq_ack_o;
+        SysBus.irq_id_o    = RMData.irq_id_o;
+        SysBus.DM          = RMData.DM;
+    endfunction
     
-        control.idle();
+    // Called at end of instruction transaction
+    task setRESULT;
+        input int isvalid;
         
+        control.idle();
+
+        getstate();
+                
         // RVVI_S
-        state.trap   = 0; 
-        state.valid  = 1;
-        state.pc     = retPC;
-        state.pcnext = nextPC;
-        state.order  = count;
+        if (isvalid) begin
+            state.valid = 1;
+            state.trap  = 0;
+            state.pc    = RMData.retPC;
+        end else begin
+            state.valid = 0;
+            state.trap  = 1;
+            state.pc    = RMData.excPC;
+        end
+        
+        state.pcnext = RMData.nextPC;
+        state.order  = RMData.order;
+        
         ->state.notify;
     endtask
 
-    task setTRAP;
-        input int hart;
-        input int excPC;
-        input int nextPC;
-        input longint count;
+    //
+    // pack values to be used by RM
+    //
+    function automatic void opPull;
+        SVData.reset         = SysBus.reset;
+        SVData.deferint      = SysBus.deferint;
+        SVData.irq_i         = SysBus.irq_i;
+        SVData.haltreq       = SysBus.haltreq;
+        SVData.resethaltreq  = SysBus.resethaltreq;
+        SVData.terminate     = SysBus.Shutdown;
+        SVData.cycles        = cycles;
         
-        control.idle();
-        
-        // RVVI_S
-        state.trap   = 1; 
-        state.valid  = 0;
-        state.pc     = excPC;
-        state.pcnext = nextPC;
-        state.order  = count;
-        ->state.notify;
-    endtask
-        
-    function automatic void putState (
-            input int _irq_ack_o,
-            input int _irq_id_o,
-            input int _DM);
-        
-        SysBus.irq_ack_o    = _irq_ack_o;
-        SysBus.irq_id_o     = _irq_id_o;
-        SysBus.DM           = _DM;
+        svPush(SVData);
     endfunction
-        
-    function automatic void getState (
-            output int _terminate,
-            output int _reset,
-            output int _deferint,
-            output int _irq_i,
-            output int _haltreq,
-            output int _resethaltreq,
-            output int _cycles
-            );
-        
-        _terminate          = SysBus.Shutdown;
-        _reset              = SysBus.reset;
-        _deferint           = SysBus.deferint;
-        _irq_i              = SysBus.irq_i;
-        _haltreq            = SysBus.haltreq;
-        _resethaltreq       = SysBus.resethaltreq;
 
-        _cycles             = cycles;
-    endfunction
-        
     function automatic void setDECODE (input string value, input int insn, input int isize);
         state.decode = value;
         state.insn   = insn;
         state.isize  = isize;
     endfunction
     
-    function automatic void setGPR (input int index, input longint value);
-        state.x[index] = value;
-    endfunction
-    
     function automatic void getGPR (input int index, output longint value);
         value = state.GPR_rtl[index];
     endfunction
     
-    function automatic void setFPR (input int index, input longint value);
-        state.f[index] = value;
+    function automatic void setGPR (input int index, input longint value);
+        state.x[index] = value;
     endfunction
     
     function automatic void setCSR (input string index, input longint value);
@@ -588,7 +590,7 @@ module CPU #(
     initial begin
         ovpcfg_load();
         elf_load();
-        ovpEntry(ovpcfg, elf_file);
+        opEntry(ovpcfg, elf_file);
     `ifndef UVM
         $finish;
     `endif
@@ -596,7 +598,7 @@ module CPU #(
     
 `ifndef UVM
     final begin
-        ovpExit();
+        opExit();
     end
 `endif
  
