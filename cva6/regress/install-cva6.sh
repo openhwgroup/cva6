@@ -35,8 +35,8 @@ export NUM_JOBS=24
 # install the required tools for cva6
 if ! [ -n "$CVA6_REPO" ]; then
   CVA6_REPO="https://github.com/ThalesGroup/cva6.git"
-  CVA6_BRANCH="master-verif"
-  CVA6_HASH="22f718c0f25e1abaae46aafe4b1760ff0be903d0"
+  CVA6_BRANCH="pr/thales-cva6_reorg"
+  CVA6_HASH="6a8d9c7d7137f453ff0bb989fcbeff227fd5e084"
   CVA6_PATCH=
 fi
 echo $CVA6_REPO

@@ -7,11 +7,12 @@
 - [32-bit configuration](#32-bit-configuration)
 
 ## Directories:
-- **bsp**:   the "board support package" for test-programs compiled/assembled/linked for the CVA6.  This BSP is used by both the `core` testbench and the `uvmt_cva6` UVM verification environment.
-- **env**:   the UVM environment class and its associated infrastrucutre.
-- **sim**:   directory where you run the simulations.
-- **tb**:    the Testbench module that instanitates the core.
-- **tests**: this is where all the testcases are.
+- **bsp**:   board support package for test-programs compiled/assembled/linked for the CVA6.
+This BSP is used by both `core` testbench and `uvmt_cva6` UVM verification environment.
+- **regress**: scripts to install tools, test suites, CVA6 code and to execute tests
+- **sim**:   simulation environment (e.g. riscv-dv)
+- **tb**:    testbench module instancing the core
+- **tests**: source of test cases and test lists
 
 There are README files in each directory with additional information.
 
@@ -45,12 +46,12 @@ The default values are:
 
 - `RISCV_GCC`: `$RISCV/bin/riscv-none-elf-gcc`
 - `RISCV_OBJCOPY`: `$RISCV/bin/riscv-none-elf-objcopy`
-- `VERILATOR_ROOT`: `../tools/verilator-4.014` to install in core-v-verif/tools
+- `VERILATOR_ROOT`: `../tools/verilator-4.110` to install in core-v-verif/tools
 - `SPIKE_ROOT`: `../tools/spike` to install in core-v-verif/tools
 
 - `CVA6_REPO`: `https://github.com/ThalesGroup/cva6.git`
-- `CVA6_BRANCH`: `master-verif`
-- `CVA6_HASH`: `22f718c0f25e1abaae46aafe4b1760ff0be903d0`
+- `CVA6_BRANCH`: `pr/thales-cva6_reorg`
+- `CVA6_HASH`: `6a8d9c7d7137f453ff0bb989fcbeff227fd5e084`
 - `CVA6_PATCH`: no default value
 - `COMPLIANCE_REPO`: `https://github.com/riscv/riscv-compliance.git`
 - `COMPLIANCE_BRANCH`: `master`
@@ -60,8 +61,8 @@ The default values are:
 - `TESTS_BRANCH`: `master`
 - `TESTS_HASH`: `f92842f91644092960ac7946a61ec2895e543cec`
 - `DV_REPO`: `https://github.com/ThalesGroup/riscv-dv.git`
-- `DV_BRANCH`: `oss`
-- `DV_HASH`: `8ff0a5ecb56269cfff94b59c9f7f4e267630ef20`
+- `DV_BRANCH`: `thales-cva6_reorg`
+- `DV_HASH`: `969046070a6444b1b6fa55222d18efdfc6dbbbbc`
 - `DV_PATCH`: no default value
 - `DV_TARGET`: `rv64gc`
 - `DV_SIMULATORS`: `veri-uvm,spike`
@@ -70,13 +71,10 @@ The default values are:
 - `DV_OPTS`: no default value
 
 ## 32-bit configuration
-To test the CVA6 in 32-bit configuration, `XLEN` has to be set to 32
-instead to 64. This can be done by patching the `riscv_pk.sv` file.
-Additionally, the architecture used for building the tests has to be
-modified.
+To test the CVA6 in 32-bit configuration, use `DV_TARGET` with
+a 32-bit variant.
 
 The following environment variables have to be modified before executing
 test script.
 
 - `DV_TARGET`: `rv32ima` as C, F, D extensions are not yet supported
-

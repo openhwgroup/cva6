@@ -22,8 +22,8 @@ export TESTS_PATH=$ROOT_PROJECT/cva6/tests
 
 if ! [ -n "$DV_REPO" ]; then
   export DV_REPO="https://github.com/ThalesGroup/riscv-dv.git"
-  export DV_BRANCH="oss"
-  export DV_HASH="8ff0a5ecb56269cfff94b59c9f7f4e267630ef20"
+  export DV_BRANCH="thales-cva6_reorg"
+  export DV_HASH="969046070a6444b1b6fa55222d18efdfc6dbbbbc"
   export DV_PATCH=
 fi
 echo $DV_REPO
