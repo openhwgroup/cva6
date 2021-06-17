@@ -48,6 +48,14 @@ SECTIONS
   /* CORE-V: we want a fixed entry point */
   PROVIDE(__boot_address = 0x80);
 
+  /* NMI interrupt handler fixed entry point */
+  /* TODO: fix when address is set */
+  .nmi(0x30CAFE):
+  {
+        PROVIDE(nmi_handler = .);
+        KEEP(*(.nmi));
+  } > ram
+
   /* CORE-V: interrupt vectors */
   .vectors (ORIGIN(ram)):
   {
