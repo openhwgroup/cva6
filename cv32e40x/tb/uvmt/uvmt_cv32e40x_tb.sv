@@ -71,6 +71,7 @@ module uvmt_cv32e40x_tb;
                                                   .mtvec_addr(),
                                                   .dm_halt_addr(),
                                                   .dm_exception_addr(),
+                                                  .nmi_addr(),
                                                   .hart_id(),
                                                   .debug_req(),
                                                   .load_instr_mem()); // Static and quasi-static core control inputs.
@@ -95,7 +96,109 @@ module uvmt_cv32e40x_tb;
                             )
                             dut_wrap (.*);
 
-  // Bind in OBI interfaces (montioring only supported currently)
+  bind cv32e40x_wrapper
+    uvma_rvfi_instr_if#(uvme_cv32e40x_pkg::ILEN,
+                        uvme_cv32e40x_pkg::XLEN) rvfi_instr_if_0_i(.clk(clk_i),
+                                                                   .reset_n(rst_ni),
+    
+                                                                   .rvfi_valid(rvfi_i.rvfi_valid[0]),
+                                                                   .rvfi_order(rvfi_i.rvfi_order[uvma_rvfi_pkg::ORDER_WL*0+:uvma_rvfi_pkg::ORDER_WL]),
+                                                                   .rvfi_insn(rvfi_i.rvfi_insn[uvme_cv32e40x_pkg::ILEN*0+:uvme_cv32e40x_pkg::ILEN]),
+                                                                   .rvfi_trap(rvfi_i.rvfi_trap[0]),
+                                                                   .rvfi_halt(rvfi_i.rvfi_halt[0]),
+                                                                   .rvfi_intr(rvfi_i.rvfi_intr[0]),
+                                                                   .rvfi_dbg(rvfi_i.rvfi_dbg[0]),
+                                                                   .rvfi_mode(rvfi_i.rvfi_mode[uvma_rvfi_pkg::MODE_WL*0+:uvma_rvfi_pkg::MODE_WL]),
+                                                                   .rvfi_ixl(rvfi_i.rvfi_ixl[uvma_rvfi_pkg::IXL_WL*0+:uvma_rvfi_pkg::IXL_WL]),
+                                                                   .rvfi_pc_rdata(rvfi_i.rvfi_pc_rdata[uvme_cv32e40x_pkg::XLEN*0+:uvme_cv32e40x_pkg::XLEN]),
+                                                                   .rvfi_pc_wdata(rvfi_i.rvfi_pc_wdata[uvme_cv32e40x_pkg::XLEN*0+:uvme_cv32e40x_pkg::XLEN]),
+                                                                   .rvfi_rs1_addr(rvfi_i.rvfi_rs1_addr[uvma_rvfi_pkg::GPR_ADDR_WL*0+:uvma_rvfi_pkg::GPR_ADDR_WL]),
+                                                                   .rvfi_rs1_rdata(rvfi_i.rvfi_rs1_rdata[uvme_cv32e40x_pkg::XLEN*0+:uvme_cv32e40x_pkg::XLEN]),    
+                                                                   .rvfi_rs2_addr(rvfi_i.rvfi_rs2_addr[uvma_rvfi_pkg::GPR_ADDR_WL*0+:uvma_rvfi_pkg::GPR_ADDR_WL]),
+                                                                   .rvfi_rs2_rdata(rvfi_i.rvfi_rs2_rdata[uvme_cv32e40x_pkg::XLEN*0+:uvme_cv32e40x_pkg::XLEN]),    
+                                                                   .rvfi_rs3_addr('0),
+                                                                   .rvfi_rs3_rdata('0),
+                                                                   .rvfi_rd1_addr(rvfi_i.rvfi_rd_addr[uvma_rvfi_pkg::GPR_ADDR_WL*0+:uvma_rvfi_pkg::GPR_ADDR_WL]),
+                                                                   .rvfi_rd1_wdata(rvfi_i.rvfi_rd_wdata[uvme_cv32e40x_pkg::XLEN*0+:uvme_cv32e40x_pkg::XLEN]),
+                                                                   .rvfi_rd2_addr('0),
+                                                                   .rvfi_rd2_wdata('0),
+                                                                   .rvfi_mem_addr(rvfi_i.rvfi_mem_addr[uvme_cv32e40x_pkg::XLEN*0+:uvme_cv32e40x_pkg::XLEN]),
+                                                                   .rvfi_mem_rdata(rvfi_i.rvfi_mem_rdata[uvme_cv32e40x_pkg::XLEN*0+:uvme_cv32e40x_pkg::XLEN]),
+                                                                   .rvfi_mem_rmask(rvfi_i.rvfi_mem_rmask[uvme_cv32e40x_pkg::XLEN/8*0+:uvme_cv32e40x_pkg::XLEN/8]),
+                                                                   .rvfi_mem_wdata(rvfi_i.rvfi_mem_wdata[uvme_cv32e40x_pkg::XLEN*0+:uvme_cv32e40x_pkg::XLEN]),
+                                                                   .rvfi_mem_wmask(rvfi_i.rvfi_mem_wmask[uvme_cv32e40x_pkg::XLEN/8*0+:uvme_cv32e40x_pkg::XLEN/8]),
+                                                                   .csr_mcause(core_i.cs_registers_i.mcause_q),
+                                                                   .csr_mip(core_i.cs_registers_i.mip)                                                                   
+                                                                   );
+
+  // RVFI CSR binds
+  `RVFI_CSR_BIND(marchid)
+  `RVFI_CSR_BIND(mcountinhibit)
+  `RVFI_CSR_BIND(mstatus)
+  `RVFI_CSR_BIND(mvendorid)
+  `RVFI_CSR_BIND(misa)
+  `RVFI_CSR_BIND(mtvec)
+  `RVFI_CSR_BIND(mscratch)
+  `RVFI_CSR_BIND(mepc)
+  `RVFI_CSR_BIND(mcause)
+  `RVFI_CSR_BIND(mip)
+  `RVFI_CSR_BIND(mhartid)
+  `RVFI_CSR_BIND(dcsr)
+  `RVFI_CSR_BIND(dpc)
+  `RVFI_CSR_BIND(tselect)
+  `RVFI_CSR_BIND(tinfo)  
+
+  // dscratch0
+  bind cv32e40x_wrapper
+    uvma_rvfi_csr_if#(uvme_cv32e40x_pkg::XLEN) rvfi_csr_dscratch0_if_0_i(.clk(clk_i),
+                                                                         .reset_n(rst_ni),
+                                                                         .rvfi_csr_rmask(rvfi_i.rvfi_csr_dscratch_rmask[0]),
+                                                                         .rvfi_csr_wmask(rvfi_i.rvfi_csr_dscratch_wmask[0]),
+                                                                         .rvfi_csr_rdata(rvfi_i.rvfi_csr_dscratch_rdata[0]),
+                                                                         .rvfi_csr_wdata(rvfi_i.rvfi_csr_dscratch_wdata[0])
+    );
+
+  // dscratch1
+  bind cv32e40x_wrapper
+    uvma_rvfi_csr_if#(uvme_cv32e40x_pkg::XLEN) rvfi_csr_dscratch1_if_0_i(.clk(clk_i),
+                                                                         .reset_n(rst_ni),
+                                                                         .rvfi_csr_rmask(rvfi_i.rvfi_csr_dscratch_rmask[1]),
+                                                                         .rvfi_csr_wmask(rvfi_i.rvfi_csr_dscratch_wmask[1]),
+                                                                         .rvfi_csr_rdata(rvfi_i.rvfi_csr_dscratch_rdata[1]),
+                                                                         .rvfi_csr_wdata(rvfi_i.rvfi_csr_dscratch_wdata[1])
+    );
+
+  // tdata1
+  bind cv32e40x_wrapper
+    uvma_rvfi_csr_if#(uvme_cv32e40x_pkg::XLEN) rvfi_csr_tdata1_if_0_i(.clk(clk_i),
+                                                                     .reset_n(rst_ni),
+                                                                     .rvfi_csr_rmask(rvfi_i.rvfi_csr_tdata_rmask[1]),
+                                                                     .rvfi_csr_wmask(rvfi_i.rvfi_csr_tdata_wmask[1]),
+                                                                     .rvfi_csr_rdata(rvfi_i.rvfi_csr_tdata_rdata[1]),
+                                                                     .rvfi_csr_wdata(rvfi_i.rvfi_csr_tdata_wdata[1])
+    );
+
+  // tdata2
+  bind cv32e40x_wrapper
+    uvma_rvfi_csr_if#(uvme_cv32e40x_pkg::XLEN) rvfi_csr_tdata2_if_0_i(.clk(clk_i),
+                                                                     .reset_n(rst_ni),
+                                                                     .rvfi_csr_rmask(rvfi_i.rvfi_csr_tdata_rmask[2]),
+                                                                     .rvfi_csr_wmask(rvfi_i.rvfi_csr_tdata_wmask[2]),
+                                                                     .rvfi_csr_rdata(rvfi_i.rvfi_csr_tdata_rdata[2]),
+                                                                     .rvfi_csr_wdata(rvfi_i.rvfi_csr_tdata_wdata[2])
+    );
+
+  // tdata3
+  bind cv32e40x_wrapper
+    uvma_rvfi_csr_if#(uvme_cv32e40x_pkg::XLEN) rvfi_csr_tdata3_if_0_i(.clk(clk_i),
+                                                                     .reset_n(rst_ni),
+                                                                     .rvfi_csr_rmask(rvfi_i.rvfi_csr_tdata_rmask[3]),
+                                                                     .rvfi_csr_wmask(rvfi_i.rvfi_csr_tdata_wmask[3]),
+                                                                     .rvfi_csr_rdata(rvfi_i.rvfi_csr_tdata_rdata[3]),
+                                                                     .rvfi_csr_wdata(rvfi_i.rvfi_csr_tdata_wdata[3])
+    );
+
+  // OBI interfaces (montioring only supported currently)
   bind cv32e40x_wrapper
     uvma_obi_if obi_instr_if_i(.clk(clk_i),
                                .reset_n(rst_ni),
@@ -252,6 +355,7 @@ bind cv32e40x_wrapper
 
     uvmt_cv32e40x_debug_assert u_debug_assert(.cov_assert_if(debug_cov_assert_if));
 
+    //uvmt_cv32e40x_rvvi_handcar u_rvvi_handcar();
     /**
     * ISS WRAPPER instance:
     */   
@@ -329,16 +433,22 @@ bind cv32e40x_wrapper
         end
       end
 
+      bit use_rvvi = 0;
+      initial begin
+        if ($test$plusargs("USE_RVVI"))
+          use_rvvi = 1;
+      end
+
       /**
        * When the ID stage commits, we set deferint to the ISS to signal to look at the interrrupts
        */
       always @(posedge clknrst_if.clk or negedge clknrst_if.reset_n) begin
         if (!clknrst_if_iss.reset_n) begin
-          iss_wrap.b1.deferint <= 1'b1;
+          if (!use_rvvi) iss_wrap.b1.deferint <= 1'b1;
           deferint_ack <= 1'b1;
         end
         else if (id_start && !step_compare_if.deferint_prime) begin
-          iss_wrap.b1.deferint <= 1'b0;
+          if (!use_rvvi) iss_wrap.b1.deferint <= 1'b0;
           deferint_ack <= step_compare_if.deferint_prime_ack;
         end
       end
@@ -348,7 +458,7 @@ bind cv32e40x_wrapper
         */
       always @(negedge step_compare_if.ovp_cpu_state_stepi) begin
         if (iss_wrap.b1.deferint == 0) begin
-          iss_wrap.b1.deferint <= 1'b1;          
+          if (!use_rvvi) iss_wrap.b1.deferint <= 1'b1;          
           deferint_ack <= 1'b1;
           irq_deferint_ack <= '0;          
         end
@@ -374,9 +484,11 @@ bind cv32e40x_wrapper
       end
 
       always @*        
-        iss_wrap.b1.irq_i = iss_wrap.b1.deferint ? dut_wrap.irq :
-                            !deferint_ack ? irq_deferint_ack :
-                            irq_deferint_sleep;
+        if (!use_rvvi) begin
+          iss_wrap.b1.irq_i = iss_wrap.b1.deferint ? dut_wrap.irq :
+                              !deferint_ack ? irq_deferint_ack :
+                              irq_deferint_sleep;
+        end
 
       /**
        * Interrupt assertion to iss_wrap, note this runs on the ISS clock (skewed from core clock)
@@ -494,6 +606,33 @@ bind cv32e40x_wrapper
      uvm_config_db#(virtual uvma_interrupt_if           )::set(.cntxt(null), .inst_name("*.env.interrupt_agent"), .field_name("vif"),      .value(interrupt_if));
      uvm_config_db#(virtual uvma_obi_if                 )::set(.cntxt(null), .inst_name("*.env.obi_instr_agent"), .field_name("vif"),      .value(dut_wrap.cv32e40x_wrapper_i.obi_instr_if_i));
      uvm_config_db#(virtual uvma_obi_if                 )::set(.cntxt(null), .inst_name("*.env.obi_data_agent"),  .field_name("vif"),      .value(dut_wrap.cv32e40x_wrapper_i.obi_data_if_i));
+     uvm_config_db#(virtual uvma_rvfi_instr_if          )::set(.cntxt(null), .inst_name("*.env.rvfi_agent"), .field_name("instr_vif0"),.value(dut_wrap.cv32e40x_wrapper_i.rvfi_instr_if_0_i));
+     `RVFI_CSR_UVM_CONFIG_DB_SET(marchid)
+     `RVFI_CSR_UVM_CONFIG_DB_SET(mcountinhibit)
+     `RVFI_CSR_UVM_CONFIG_DB_SET(mstatus)
+     `RVFI_CSR_UVM_CONFIG_DB_SET(misa)
+     `RVFI_CSR_UVM_CONFIG_DB_SET(mtvec)
+     `RVFI_CSR_UVM_CONFIG_DB_SET(mvendorid)
+     `RVFI_CSR_UVM_CONFIG_DB_SET(mscratch)
+     `RVFI_CSR_UVM_CONFIG_DB_SET(mepc)
+     `RVFI_CSR_UVM_CONFIG_DB_SET(mcause)
+     `RVFI_CSR_UVM_CONFIG_DB_SET(mip)
+     `RVFI_CSR_UVM_CONFIG_DB_SET(mhartid)
+     `RVFI_CSR_UVM_CONFIG_DB_SET(dcsr)
+     `RVFI_CSR_UVM_CONFIG_DB_SET(dpc)
+     `RVFI_CSR_UVM_CONFIG_DB_SET(dscratch0)
+     `RVFI_CSR_UVM_CONFIG_DB_SET(dscratch1)
+     `RVFI_CSR_UVM_CONFIG_DB_SET(tselect)
+     `RVFI_CSR_UVM_CONFIG_DB_SET(tdata1)
+     `RVFI_CSR_UVM_CONFIG_DB_SET(tdata2)
+     `RVFI_CSR_UVM_CONFIG_DB_SET(tdata3)
+     `RVFI_CSR_UVM_CONFIG_DB_SET(tinfo)     
+
+     uvm_config_db#(virtual RVVI_state#(.ILEN(uvme_cv32e40x_pkg::ILEN),
+                                        .XLEN(uvme_cv32e40x_pkg::XLEN)
+                                        ))::set(.cntxt(null), .inst_name("*.env.rvvi_agent"), .field_name("state_vif"), .value(iss_wrap.cpu.state));
+     uvm_config_db#(virtual RVVI_control                )::set(.cntxt(null), .inst_name("*.env.rvvi_agent"), .field_name("control_vif"), .value(iss_wrap.cpu.control));
+     uvm_config_db#(virtual BUS                         )::set(.cntxt(null), .inst_name("*.env.rvvi_agent"), .field_name("ovpsim_bus_vif"), .value(iss_wrap.b1));
      uvm_config_db#(virtual uvmt_cv32e40x_vp_status_if      )::set(.cntxt(null), .inst_name("*"), .field_name("vp_status_vif"),       .value(vp_status_if)      );
      uvm_config_db#(virtual uvmt_cv32e40x_core_cntrl_if     )::set(.cntxt(null), .inst_name("*"), .field_name("core_cntrl_vif"),      .value(core_cntrl_if)     );
      uvm_config_db#(virtual uvmt_cv32e40x_core_status_if    )::set(.cntxt(null), .inst_name("*"), .field_name("core_status_vif"),     .value(core_status_if)    );     
@@ -622,3 +761,4 @@ endmodule : uvmt_cv32e40x_tb
 `default_nettype wire
 
 `endif // __UVMT_CV32E40X_TB_SV__
+

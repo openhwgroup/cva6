@@ -11,12 +11,13 @@ if { [find -scope uvmt_cv32e40x_tb.dut_wrap.cv32e40x_wrapper_i -instance tracer_
 # If the iss_wrap exists dump the string of the ISS disassembled instruction
 if { [find -scope uvmt_cv32e40x_tb -instance iss_wrap] != ""} {
     ida_probe -wave -wave_probe_args="uvmt_cv32e40x_tb.iss_wrap.cpu.state.decode -depth 1"    
+    ida_probe -wave -wave_probe_args="uvmt_cv32e40x_tb.iss_wrap.cpu.state.csr    -depth 1"    
 }
 
 # Only execute if we are not in interactive mode 
 # When in interactive (gui) mode the env variable INDAGO_ENABLE_INTERACTIVE_DEBUG will exist
 if { ![info exists ::env(INDAGO_ENABLE_INTERACTIVE_DEBUG)] } {
-	run
+    run
     exit
 }
 

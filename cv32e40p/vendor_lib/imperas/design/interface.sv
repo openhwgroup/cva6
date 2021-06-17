@@ -16,8 +16,6 @@
  *
  */
  
- `include "typedefs.sv"
-
 `ifndef __INCL_INTERFACE_SV
 `define __INCL_INTERFACE_SV
 
