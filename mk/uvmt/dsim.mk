@@ -41,6 +41,9 @@ DSIM_USER_COMPILE_ARGS += "+define+$(CV_CORE_UC)_TRACE_EXECUTION"
 ifeq ($(USE_ISS),YES)
 	DSIM_RUN_FLAGS     += +USE_ISS
 endif
+ifeq ($(call IS_YES,$(USE_RVVI)),YES)
+    DSIM_RUN_FLAGS     += +USE_RVVI
+endif
 
 # Seed management for constrained-random sims. This is an intentional repeat
 # of the root Makefile: dsim regressions use random seeds by default.
