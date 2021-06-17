@@ -271,7 +271,7 @@ class cv32e40x_asm_program_gen extends corev_asm_program_gen;
     nmi_handler_instr.push_back($sformatf("csrr x%0d, mie", cfg.gpr[0]));
 
     nmi_handler_instr.push_back($sformatf("la x%0d, test_done", cfg.scratch_reg));
-    nmi_handler_instr.push_back($sformatf("c.jr x%0d", cfg.scratch_reg));
+    nmi_handler_instr.push_back($sformatf("jr x%0d", cfg.scratch_reg));
     
     
     gen_section(get_label($sformatf("nmi_handler"), hart),
