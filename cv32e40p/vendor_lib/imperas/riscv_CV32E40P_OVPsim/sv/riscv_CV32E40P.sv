@@ -152,19 +152,21 @@ module CPU #(
     import uvm_pkg::*;
 `endif
 
-    import "DPI-C" context task ovpEntry(input string s1, input string s2);
-    import "DPI-C" context function void ovpExit();
-    
-    import "DPI-C" context function void ovpPack(output sharedT shared);
+    import "DPI-C" context task          opEntry(input string s1, input string s2);
+    import "DPI-C" context function void svPull(output RMDataT RMData);
+    import "DPI-C" context function void svPush(output SVDataT SVData);
+    import "DPI-C" context function void opExit();
 
     export "DPI-C" task     busFetch;
     export "DPI-C" task     busLoad;
     export "DPI-C" task     busStore;
     export "DPI-C" task     busWait;
     
+    export "DPI-C" function setGPR;
     export "DPI-C" function getGPR;
+    
     export "DPI-C" function setCSR;
-    export "DPI-C" function getState;
+    export "DPI-C" function opPull;
     
     export "DPI-C" task     setRESULT;
     export "DPI-C" function setDECODE;
@@ -176,7 +178,8 @@ module CPU #(
     
     bit [31:0] cycles;
 
-    sharedT shared;
+    RMDataT RMData;
+    SVDataT SVData;
 
     //
     // Format message for UVM/SV environment
@@ -213,25 +216,28 @@ module CPU #(
         busStep;
     endtask
     
-    function automatic void unpack;
+    //
+    // getstate values set by RM
+    //
+    function automatic void getstate;
         int i;
-        ovpPack(shared);
+        svPull(RMData);
 
+/*
         for (i=0; i<32; i++) begin
-            state.x[i] = shared.x[i];
-            state.f[i] = shared.f[i];
+            state.x[i] = RMData.x[i];
+            state.f[i] = RMData.f[i];
         end
 
         for (i=0; i<4096; i++) begin
-            if (state.c[i] != shared.csr[i]) begin
-                //$display("RTL CSR[%03x] = %08x", i, shared.csr[i]);
-                state.c[i] = shared.csr[i];
+            if (state.c[i] != RMData.csr[i]) begin
+                state.c[i] = RMData.csr[i];
             end
         end
-
-        SysBus.irq_ack_o    = shared.irq_ack_o;
-        SysBus.irq_id_o     = shared.irq_id_o;
-        SysBus.DM           = shared.DM;
+*/
+        SysBus.irq_ack_o   = RMData.irq_ack_o;
+        SysBus.irq_id_o    = RMData.irq_id_o;
+        SysBus.DM          = RMData.DM;
     endfunction
     
     // Called at end of instruction transaction
@@ -240,45 +246,40 @@ module CPU #(
         
         control.idle();
 
-        unpack();
+        getstate();
                 
         // RVVI_S
         if (isvalid) begin
             state.valid = 1;
             state.trap  = 0;
-            state.pc    = shared.retPC;
+            state.pc    = RMData.retPC;
         end else begin
             state.valid = 0;
             state.trap  = 1;
-            state.pc    = shared.excPC;
+            state.pc    = RMData.excPC;
         end
         
-        state.pcnext = shared.nextPC;
-        state.order  = shared.count;
+        state.pcnext = RMData.nextPC;
+        state.order  = RMData.order;
         
         ->state.notify;
     endtask
 
-    function automatic void getState (
-            output int _terminate,
-            output int _reset,
-            output int _deferint,
-            output int _irq_i,
-            output int _haltreq,
-            output int _resethaltreq,
-            output int _cycles
-            );
+    //
+    // pack values to be used by RM
+    //
+    function automatic void opPull;
+        SVData.reset         = SysBus.reset;
+        SVData.deferint      = SysBus.deferint;
+        SVData.irq_i         = SysBus.irq_i;
+        SVData.haltreq       = SysBus.haltreq;
+        SVData.resethaltreq  = SysBus.resethaltreq;
+        SVData.terminate     = SysBus.Shutdown;
+        SVData.cycles        = cycles;
         
-        _terminate          = SysBus.Shutdown;
-        _reset              = SysBus.reset;
-        _deferint           = SysBus.deferint;
-        _irq_i              = SysBus.irq_i;
-        _haltreq            = SysBus.haltreq;
-        _resethaltreq       = SysBus.resethaltreq;
-
-        _cycles             = cycles;
+        svPush(SVData);
     endfunction
-        
+
     function automatic void setDECODE (input string value, input int insn, input int isize);
         state.decode = value;
         state.insn   = insn;
@@ -287,6 +288,10 @@ module CPU #(
     
     function automatic void getGPR (input int index, output longint value);
         value = state.GPR_rtl[index];
+    endfunction
+    
+    function automatic void setGPR (input int index, input longint value);
+        state.x[index] = value;
     endfunction
     
     function automatic void setCSR (input string index, input longint value);
@@ -585,7 +590,7 @@ module CPU #(
     initial begin
         ovpcfg_load();
         elf_load();
-        ovpEntry(ovpcfg, elf_file);
+        opEntry(ovpcfg, elf_file);
     `ifndef UVM
         $finish;
     `endif
@@ -593,7 +598,7 @@ module CPU #(
     
 `ifndef UVM
     final begin
-        ovpExit();
+        opExit();
     end
 `endif
  
