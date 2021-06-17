@@ -176,7 +176,12 @@ module alu import ariane_pkg::*;(
             ADDW, SUBW: result_o = {{riscv::XLEN-32{adder_result[31]}}, adder_result[31:0]};
             // Shift Operations
             SLL,
-            SRL, SRA: result_o = shift_result;
+            SRL, SRA: begin
+                if (riscv::XLEN==64)
+                    result_o = shift_result;
+                else
+                    result_o = shift_result32;  
+            end
             // Shifts 32 bit
             SLLW,
             SRLW, SRAW: result_o = {{riscv::XLEN-32{shift_result32[31]}}, shift_result32[31:0]};
