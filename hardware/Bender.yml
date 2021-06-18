@@ -23,7 +23,8 @@ sources:
   - host/ariane_peripherals.sv
   - host/cva6_subsystem.sv
   - host/l2_subsystem.sv
-  - host/host_domain.sv                                               
+  - host/host_domain.sv
+  - host/al_saqr.sv
   - tb/common/uart.sv                                                     
   - tb/common/SimDTM.sv                                                   
   - tb/common/SimJTAG.sv
