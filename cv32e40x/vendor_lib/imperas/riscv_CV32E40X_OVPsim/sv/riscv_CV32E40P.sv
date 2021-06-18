@@ -133,16 +133,6 @@ interface RVVI_bus;
     bit            StoreBusFaultNMI;    // Artifact to signal memory interface error (E40X)
     bit            InstructionBusFault; // Artifact to signal memory interface error (E40X)
     
-    //
-    // Bus direct transactors
-    //
-    function automatic int read(input int address);
-        if (!ram.mem.exists(address)) ram.mem[address] = 'h0;
-        return ram.mem[address];
-    endfunction
-    function automatic void write(input int address, input int data);
-        ram.mem[address] = data;
-    endfunction
 endinterface
 
 module CPU #(
@@ -360,10 +350,10 @@ module CPU #(
         Uns32 dValue = getData(address, data);
         
         msginfo($sformatf("%08X = %02x", address, data));
-        wValue = bus.read(idx) & ~(byte2bit(ble));
+        wValue = read(idx) & ~(byte2bit(ble));
         wValue |= (dValue & byte2bit(ble));
         
-        bus.write(idx, wValue);
+        write(idx, wValue);
     endfunction
     
     task busStore32;
@@ -439,7 +429,7 @@ module CPU #(
         Uns32 idx = address >> 2;
         Uns32 ble = getBLE(address, size);
         
-        rValue = bus.read(idx) & byte2bit(ble);
+        rValue = read(idx) & byte2bit(ble);
         
         data = setData(address, rValue);
     endfunction
@@ -567,6 +557,18 @@ module CPU #(
             fault = fault_lo | fault_hi; // TODO
         end
     endtask
+    
+    //
+    // Bus direct transactors
+    //
+    function automatic int read(input int address);
+        if (!ram.mem.exists(address)) ram.mem[address] = 'h0;
+        return ram.mem[address];
+    endfunction
+
+    function automatic void write(input int address, input int data);
+        ram.mem[address] = data;
+    endfunction
 
     string elf_file;
     function automatic void elf_load();
