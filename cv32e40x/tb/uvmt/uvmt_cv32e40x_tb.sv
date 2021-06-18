@@ -70,6 +70,26 @@ module uvmt_cv32e40x_tb;
             cacheable      : 0,
             atomic         : 1}
          };
+   `elsif PMA_DEBUG_CFG
+      parameter int unsigned               CORE_PARAM_PMA_NUM_REGIONS = 2;
+      parameter cv32e40x_pkg::pma_region_t CORE_PARAM_PMA_CFG[CORE_PARAM_PMA_NUM_REGIONS-1:0] = '{
+         // Everything is initially executable
+         cv32e40x_pkg::pma_region_t'{
+            word_addr_low  : '0,
+            word_addr_high : 'h FFFF_FFFF,
+            main           : 1,
+            bufferable     : 0,
+            cacheable      : 0,
+            atomic         : 1},
+         // A small region below "dbg" is forbidden to facilitate pma exception testing
+         cv32e40x_pkg::pma_region_t'{
+            word_addr_low  : ('h 1a11_0800 - 'd 16) >> 2,
+            word_addr_high : 'h 1a11_0800 >> 2,
+            main           : 0,
+            bufferable     : 0,
+            cacheable      : 0,
+            atomic         : 0}
+         };
    `else
       parameter int unsigned               CORE_PARAM_PMA_NUM_REGIONS = 0;
       parameter cv32e40x_pkg::pma_region_t CORE_PARAM_PMA_CFG[0:0] = '{'z};
