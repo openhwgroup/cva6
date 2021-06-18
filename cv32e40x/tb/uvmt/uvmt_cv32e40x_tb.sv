@@ -142,11 +142,18 @@ module uvmt_cv32e40x_tb;
   `RVFI_CSR_BIND(mepc)
   `RVFI_CSR_BIND(mcause)
   `RVFI_CSR_BIND(mip)
+  `RVFI_CSR_BIND(mie)
   `RVFI_CSR_BIND(mhartid)
+  `RVFI_CSR_BIND(mcontext)
+  `RVFI_CSR_BIND(scontext)
+  `RVFI_CSR_BIND(mimpid)
+  `RVFI_CSR_BIND(minstret)
+  `RVFI_CSR_BIND(minstreth)
+
   `RVFI_CSR_BIND(dcsr)
   `RVFI_CSR_BIND(dpc)
   `RVFI_CSR_BIND(tselect)
-  `RVFI_CSR_BIND(tinfo)  
+  `RVFI_CSR_BIND(tinfo)
 
   // dscratch0
   bind cv32e40x_wrapper
@@ -607,6 +614,7 @@ bind cv32e40x_wrapper
      uvm_config_db#(virtual uvma_obi_if                 )::set(.cntxt(null), .inst_name("*.env.obi_instr_agent"), .field_name("vif"),      .value(dut_wrap.cv32e40x_wrapper_i.obi_instr_if_i));
      uvm_config_db#(virtual uvma_obi_if                 )::set(.cntxt(null), .inst_name("*.env.obi_data_agent"),  .field_name("vif"),      .value(dut_wrap.cv32e40x_wrapper_i.obi_data_if_i));
      uvm_config_db#(virtual uvma_rvfi_instr_if          )::set(.cntxt(null), .inst_name("*.env.rvfi_agent"), .field_name("instr_vif0"),.value(dut_wrap.cv32e40x_wrapper_i.rvfi_instr_if_0_i));
+
      `RVFI_CSR_UVM_CONFIG_DB_SET(marchid)
      `RVFI_CSR_UVM_CONFIG_DB_SET(mcountinhibit)
      `RVFI_CSR_UVM_CONFIG_DB_SET(mstatus)
@@ -617,11 +625,18 @@ bind cv32e40x_wrapper
      `RVFI_CSR_UVM_CONFIG_DB_SET(mepc)
      `RVFI_CSR_UVM_CONFIG_DB_SET(mcause)
      `RVFI_CSR_UVM_CONFIG_DB_SET(mip)
+     `RVFI_CSR_UVM_CONFIG_DB_SET(mie)
      `RVFI_CSR_UVM_CONFIG_DB_SET(mhartid)
+     `RVFI_CSR_UVM_CONFIG_DB_SET(mimpid)
+     `RVFI_CSR_UVM_CONFIG_DB_SET(minstret)
+     `RVFI_CSR_UVM_CONFIG_DB_SET(minstreth)
+     `RVFI_CSR_UVM_CONFIG_DB_SET(mcontext)
+
      `RVFI_CSR_UVM_CONFIG_DB_SET(dcsr)
      `RVFI_CSR_UVM_CONFIG_DB_SET(dpc)
      `RVFI_CSR_UVM_CONFIG_DB_SET(dscratch0)
      `RVFI_CSR_UVM_CONFIG_DB_SET(dscratch1)
+     `RVFI_CSR_UVM_CONFIG_DB_SET(scontext)
      `RVFI_CSR_UVM_CONFIG_DB_SET(tselect)
      `RVFI_CSR_UVM_CONFIG_DB_SET(tdata1)
      `RVFI_CSR_UVM_CONFIG_DB_SET(tdata2)

@@ -154,8 +154,13 @@ class uvme_cv32e40x_cfg_c extends uvm_object;
     */
    extern function void post_randomize();
 
-endclass : uvme_cv32e40x_cfg_c
+   /**
+    * Configure the CSRs to be checked in the RVFI/RVVI scoreboard
+    * Could be overridden as necessary by specialized tests
+    */
+   extern virtual function void configure_csr_rvfi_checks();
 
+endclass : uvme_cv32e40x_cfg_c
 
 function uvme_cv32e40x_cfg_c::new(string name="uvme_cv32e40x_cfg");
    
@@ -183,6 +188,12 @@ endfunction : new
 function void uvme_cv32e40x_cfg_c::post_randomize();
    rvfi_cfg.instr_name[0] = "INSTR";
 
+   configure_csr_rvfi_checks();
+
+endfunction : post_randomize
+
+function void uvme_cv32e40x_cfg_c::configure_csr_rvfi_checks();
+
    // Configure the supported CSRs for checking in the CV32E40X
    rvfi_cfg.csrs.push_back("marchid");
    //rvfi_cfg.csrs.push_back("mcountinhibit");
@@ -190,25 +201,31 @@ function void uvme_cv32e40x_cfg_c::post_randomize();
    rvfi_cfg.csrs.push_back("misa");
    rvfi_cfg.csrs.push_back("mtvec");
    rvfi_cfg.csrs.push_back("mvendorid");
-   //rvfi_cfg.csrs.push_back("mscratch");
+   rvfi_cfg.csrs.push_back("mscratch");
    //rvfi_cfg.csrs.push_back("mepc");
    rvfi_cfg.csrs.push_back("mcause");
+   rvfi_cfg.csrs.push_back("mie");
+   rvfi_cfg.csrs.push_back("mimpid");
+   rvfi_cfg.csrs.push_back("minstret");
+   rvfi_cfg.csrs.push_back("minstreth");
    //rvfi_cfg.csrs.push_back("mip");
-   //rvfi_cfg.csrs.push_back("mhartid");
+   rvfi_cfg.csrs.push_back("mhartid");
+   rvfi_cfg.csrs.push_back("mcontext");
+
    rvfi_cfg.csrs.push_back("dcsr");
-   //rvfi_cfg.csrs.push_back("dpc");
-   //rvfi_cfg.csrs.push_back("dscratch0");
-   //rvfi_cfg.csrs.push_back("dscratch1");
-   //rvfi_cfg.csrs.push_back("tselect");
-   // FIXME:strichmo:Looks like RVFI bug
+   rvfi_cfg.csrs.push_back("dpc");
+   rvfi_cfg.csrs.push_back("dscratch0");
+   rvfi_cfg.csrs.push_back("dscratch1");
+   rvfi_cfg.csrs.push_back("scontext");
+
+   rvfi_cfg.csrs.push_back("tselect");   
    rvfi_cfg.csrs.push_back("tdata1");
-   //rvfi_cfg.csrs.push_back("tdata2");
-   //rvfi_cfg.csrs.push_back("tdata3");
+   rvfi_cfg.csrs.push_back("tdata2");
+   rvfi_cfg.csrs.push_back("tdata3");
    rvfi_cfg.csrs.push_back("tinfo");
-   
-endfunction : post_randomize
+
+endfunction : configure_csr_rvfi_checks
 
 `endif // __UVME_CV32E40X_CFG_SV__
-
 
 
