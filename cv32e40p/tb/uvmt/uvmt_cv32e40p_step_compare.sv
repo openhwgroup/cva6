@@ -100,7 +100,11 @@ module uvmt_cv32e40p_step_compare
   // - Non-written GPR registers (per instructions)
   // Note that register writebacks to GPRs will still be checked during each instruction retirement even with stalls
   always @(posedge clknrst_if.reset_n) begin
+`ifndef USE_OBI_MEM_AGENT
     is_stall_sim = `CV32E40P_MMRAM.is_stall_sim();
+`else // USE_OBI_MEM_AGENT
+    is_stall_sim = 1;
+`endif // USE_OBI_MEM_AGENT
     if (is_stall_sim) begin
       `uvm_info("Step-andCompare", $sformatf("is_stall_sim set to 1, disabling CSR wire checks and stable GPR register checks"), UVM_NONE)
     end

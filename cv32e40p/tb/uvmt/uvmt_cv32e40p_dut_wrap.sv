@@ -111,6 +111,7 @@ module uvmt_cv32e40p_dut_wrap #(
       if(core_cntrl_if.load_instr_mem === 1'b1) begin
         `uvm_info("DUT_WRAP", "load_instr_mem asserted!", UVM_NONE)
 
+`ifndef USE_OBI_MEM_AGENT
         // Load the pre-compiled firmware
         if($value$plusargs("firmware=%s", firmware)) begin
           // First, check if it exists...
@@ -144,6 +145,7 @@ module uvmt_cv32e40p_dut_wrap #(
         else begin
           `uvm_error("DUT_WRAP", "No firmware specified!")
         end
+`endif // USE_OBI_MEM_AGENT
       end
       else begin
         `uvm_info("DUT_WRAP", "NO TEST PROGRAM", UVM_NONE)
@@ -156,7 +158,7 @@ module uvmt_cv32e40p_dut_wrap #(
     assign obi_memory_instr_if.reset_n   = clknrst_if.reset_n;
     assign obi_memory_data_if.clk        = clknrst_if.clk;
     assign obi_memory_data_if.reset_n    = clknrst_if.reset_n;
-    // Data bus is read-only, OBI v1.0
+    // Instruction bus is read-only, OBI v1.0
     assign obi_memory_instr_if.gntpar    = 'b0;
     assign obi_memory_instr_if.err       = 'b0;
     assign obi_memory_instr_if.ruser     = 'b0;
@@ -171,18 +173,18 @@ module uvmt_cv32e40p_dut_wrap #(
     assign obi_memory_instr_if.rid       = 'b0;
     assign obi_memory_instr_if.we        = 'b0;
     // Data bus is read/write, OBI v1.0
-    assign obi_memory_instr_if.gntpar    = 'b0;
-    assign obi_memory_instr_if.err       = 'b0;
-    assign obi_memory_instr_if.ruser     = 'b0;
-    assign obi_memory_instr_if.rid       = 'b0;
-    assign obi_memory_instr_if.exokay    = 'b0;
-    assign obi_memory_instr_if.rvalidpar = 'b0;
-    assign obi_memory_instr_if.rchk      = 'b0;
-    assign obi_memory_instr_if.auser     = 'b0;
-    assign obi_memory_instr_if.ruser     = 'b0;
-    assign obi_memory_instr_if.wuser     = 'b0;
-    assign obi_memory_instr_if.aid       = 'b0;
-    assign obi_memory_instr_if.rid       = 'b0;
+    assign obi_memory_data_if.gntpar     = 'b0;
+    assign obi_memory_data_if.err        = 'b0;
+    assign obi_memory_data_if.ruser      = 'b0;
+    assign obi_memory_data_if.rid        = 'b0;
+    assign obi_memory_data_if.exokay     = 'b0;
+    assign obi_memory_data_if.rvalidpar  = 'b0;
+    assign obi_memory_data_if.rchk       = 'b0;
+    assign obi_memory_data_if.auser      = 'b0;
+    assign obi_memory_data_if.ruser      = 'b0;
+    assign obi_memory_data_if.wuser      = 'b0;
+    assign obi_memory_data_if.aid        = 'b0;
+    assign obi_memory_data_if.rid        = 'b0;
 
     // --------------------------------------------
     // Connect to uvma_interrupt_if
@@ -259,11 +261,19 @@ module uvmt_cv32e40p_dut_wrap #(
          .apu_result_i           ( {32{1'b0}}                     ),
          .apu_flags_i            ( {5{1'b0}}                      ), // APU_NUSFLAGS_CPU
 
+`ifndef USE_OBI_MEM_AGENT
          .irq_i                  ( irq                            ),
          .irq_ack_o              ( irq_ack                        ),
          .irq_id_o               ( irq_id                         ),
 
          .debug_req_i            ( debug_req                      ),
+`else // USE_OBI_MEM_AGENT
+         .irq_i                  ( {32{1'b0}}                     ),
+         .irq_ack_o              ( irq_ack                        ),
+         .irq_id_o               ( irq_id                         ),
+
+         .debug_req_i            ( 1'b0                           ),
+`endif // USE_OBI_MEM_AGENT
          .debug_havereset_o      ( debug_havereset                ),
          .debug_running_o        ( debug_running                  ),
          .debug_halted_o         ( debug_halted                   ),
@@ -272,6 +282,7 @@ module uvmt_cv32e40p_dut_wrap #(
          .core_sleep_o           ( core_status_if.core_busy       )
         ); // cv32e40p_wrapper_i
 
+`ifndef USE_OBI_MEM_AGENT
     // this handles read to RAM and memory mapped virtual (pseudo) peripherals
     mm_ram #(
         .RAM_ADDR_WIDTH    (RAM_ADDR_WIDTH),
@@ -301,7 +312,7 @@ module uvmt_cv32e40p_dut_wrap #(
          .irq_ack_i      ( irq_ack                         ),
          .irq_o          ( irq_vp                          ),
 
-         .debug_req_o    ( debug_req_vp                       ),
+         .debug_req_o    ( debug_req_vp                    ),
 
          .pc_core_id_i   ( cv32e40p_wrapper_i.core_i.pc_id ),
 
@@ -310,6 +321,7 @@ module uvmt_cv32e40p_dut_wrap #(
          .exit_valid_o   ( vp_status_if.exit_valid         ),
          .exit_value_o   ( vp_status_if.exit_value         )
         ); //ram_i
+`endif // USE_OBI_MEM_AGENT
 
 endmodule : uvmt_cv32e40p_dut_wrap
 

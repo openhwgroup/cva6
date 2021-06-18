@@ -150,16 +150,16 @@ function void uvme_cv32e40p_env_c::build_phase(uvm_phase phase);
    
    void'(uvm_config_db#(uvme_cv32e40p_cfg_c)::get(this, "", "cfg", cfg));
    if (!cfg) begin
-      `uvm_fatal("CFG", "Configuration handle is null")
+      `uvm_fatal("UVME_CV32E40P_ENV", "Configuration handle is null")
    end
    else begin
-      `uvm_info("CFG", $sformatf("Found configuration handle:\n%s", cfg.sprint()), UVM_DEBUG)
+      `uvm_info("UVME_CV32E40P_ENV", $sformatf("Found configuration handle:\n%s", cfg.sprint()), UVM_DEBUG)
    end
    
    if (cfg.enabled) begin
       void'(uvm_config_db#(uvme_cv32e40p_cntxt_c)::get(this, "", "cntxt", cntxt));
       if (!cntxt) begin
-         `uvm_info("CNTXT", "Context handle is null; creating.", UVM_DEBUG)
+         `uvm_info("UVME_CV32E40P_ENV", "Context handle is null; creating.", UVM_DEBUG)
          cntxt = uvme_cv32e40p_cntxt_c::type_id::create("cntxt");
       end
       
@@ -227,7 +227,7 @@ endtask : run_phase
 function void uvme_cv32e40p_env_c::end_of_elaboration_phase(uvm_phase phase);
    super.end_of_elaboration_phase(phase);
 
-   `uvm_info("UVMECV32E40PENV", $sformatf("Configuration:\n%s", cfg.sprint()), UVM_LOW)
+   `uvm_info("UVME_CV32E40P_ENV", $sformatf("Top-level environment configuration:\n%s", cfg.sprint()), UVM_LOW)
 
 endfunction : end_of_elaboration_phase
 
@@ -293,12 +293,12 @@ function void uvme_cv32e40p_env_c::create_cov_model();
    cov_model = uvme_cv32e40p_cov_model_c::type_id::create("cov_model", this);
    void'(uvm_config_db#(virtual uvmt_cv32e40p_isa_covg_if)::get(this, "", "isa_covg_vif", cntxt.isa_covg_vif));
    if (cntxt.isa_covg_vif == null) begin
-      `uvm_fatal("CNTXT", $sformatf("No uvmt_cv32e40p_isa_covg_if found in config database"))
+      `uvm_fatal("UVME_CV32E40P_ENV", $sformatf("No uvmt_cv32e40p_isa_covg_if found in config database"))
    end
 
    void'(uvm_config_db#(virtual uvmt_cv32e40p_debug_cov_assert_if)::get(this, "", "debug_cov_vif", cntxt.debug_cov_vif));
    if (cntxt.debug_cov_vif == null) begin
-      `uvm_fatal("CNTXT", $sformatf("No uvmt_cv32e40p_debug_cov_assert_if found in config database"))
+      `uvm_fatal("UVME_CV32E40P_ENV", $sformatf("No uvmt_cv32e40p_debug_cov_assert_if found in config database"))
    end
 endfunction: create_cov_model
 

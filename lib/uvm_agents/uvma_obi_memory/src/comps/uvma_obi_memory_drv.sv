@@ -466,18 +466,52 @@ endtask : drv_slv_req
 
 
 task uvma_obi_memory_drv_c::drv_slv_read_req(ref uvma_obi_memory_slv_seq_item_c req);
-   
+   `uvm_info("OBI_MEMORY_DRV", $sformatf("drv_slv_read_req: %8h", req.rdata), UVM_NONE)
+
    // Latency cycles
    repeat (req.gnt_latency) begin
       @(vif_slv_mp.drv_slv_cb);
    end
-   
+
+   // Address phase
+   vif_slv_mp.drv_slv_cb.gnt <= 1'b1;
+   @(vif_slv_mp.drv_slv_cb);
+   if (req.tail_length > 0) begin
+      repeat (req.tail_length) begin
+         @(vif_slv_mp.drv_slv_cb);
+      end
+      vif_slv_mp.drv_slv_cb.gnt <= 1'b0;
+   end
+   else begin
+      // yes, this is redundant - makes the code easier to follow (?)
+      vif_slv_mp.drv_slv_cb.gnt <= 1'b1;
+   end
+
+   // Response phase
+   vif_slv_mp.drv_slv_cb.rvalid <= 1'b1;
+   vif_slv_mp.drv_slv_cb.err    <= 1'b0; //req.err;
+   for (int unsigned ii=0; ii<cfg.data_width; ii++) begin
+      vif_slv_mp.drv_slv_cb.rdata[ii] <= req.rdata[ii];
+   end
+   @(vif_slv_mp.drv_slv_cb);
+
+   // Idle
+   vif_slv_mp.drv_slv_cb.rvalid <= 1'b0;
+   drv_slv_idle();
+   `uvm_info("OBI_MEMORY_DRV", "drv_slv_read_req FIN", UVM_NONE)
+
+/*
+   // Latency cycles
+   repeat (req.gnt_latency) begin
+      @(vif_slv_mp.drv_slv_cb);
+   end
+
    // Address phase
    vif_slv_mp.drv_slv_cb.gnt <= 1'b1;
    repeat (req.access_latency) begin
       @(vif_slv_mp.drv_slv_cb);
    end
-   
+
    // Response phase
    vif_slv_mp.drv_slv_cb.rvalid <= 1'b1;
    vif_slv_mp.drv_slv_cb.err <= req.err;
@@ -493,12 +527,12 @@ task uvma_obi_memory_drv_c::drv_slv_read_req(ref uvma_obi_memory_slv_seq_item_c 
    while (vif_slv_mp.drv_slv_cb.rready !== 1'b1) begin
       @(vif_slv_mp.drv_slv_cb);
    end
-   
+
    // Hold cycles
    repeat (req.hold_duration) begin
       @(vif_slv_mp.drv_slv_cb);
    end
-   
+
    // Idle
    vif_slv_mp.drv_slv_cb.gnt    <= 1'b0;
    vif_slv_mp.drv_slv_cb.rvalid <= 1'b0;
@@ -506,7 +540,7 @@ task uvma_obi_memory_drv_c::drv_slv_read_req(ref uvma_obi_memory_slv_seq_item_c 
    repeat (req.tail_length) begin
       @(vif_slv_mp.drv_slv_cb);
    end
-   
+*/
 endtask : drv_slv_read_req
 
 
