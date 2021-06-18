@@ -43,6 +43,9 @@ package uvme_cv32e40x_pkg;
    import uvma_interrupt_pkg::*;
    import uvma_debug_pkg::*;
    import uvma_obi_pkg::*;
+   import uvma_rvfi_pkg::*;
+   import uvma_rvvi_pkg::*; 
+   import uvma_rvvi_ovpsim_pkg::*; 
    
    // Constants / Structs / Enums
    `include "uvme_cv32e40x_constants.sv"
@@ -62,6 +65,7 @@ package uvme_cv32e40x_pkg;
    `include "uvme_rv32isa_covg.sv"
    `include "uvme_cv32e40x_cov_model.sv"
    `include "uvme_cv32e40x_sb.sv"
+   `include "uvme_cv32e40x_core_sb.sv"
    `include "uvme_cv32e40x_vsqr.sv"
    `include "uvme_cv32e40x_env.sv"
    

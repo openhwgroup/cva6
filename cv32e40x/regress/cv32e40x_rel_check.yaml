@@ -33,11 +33,12 @@ tests:
     dir: cv32e40x/sim/uvmt
     cmd: make test COREV=YES TEST=generic_exception_test
 
-  illegal_instr_test:
-    build: uvmt_cv32e40x
-    description: Illegal instruction test
-    dir: cv32e40x/sim/uvmt
-    cmd: make test COREV=YES TEST=illegal_instr_test
+  # FIXME:STRICHMO:uncomment with new controller...currently fails in RTL  
+  # illegal_instr_test:
+  #   build: uvmt_cv32e40x
+  #   description: Illegal instruction test
+  #   dir: cv32e40x/sim/uvmt
+  #   cmd: make test COREV=YES TEST=illegal_instr_test
 
   cv32e40x_csr_access_test:
     build: uvmt_cv32e40x

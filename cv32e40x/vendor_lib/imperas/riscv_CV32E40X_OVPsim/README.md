@@ -1,12 +1,12 @@
-Imperas OVP Fixed Model of OpenHW CV32E40X CPU for SystemVerilog encapsulation
+Imperas OVP Fixed Model of OpenHW CV32E40P CPU for SystemVerilog encapsulation
 ==============================================================================
-A Complete, Fully Functional, Configurable CV32E40X Simulation Model
+A Complete, Fully Functional, Configurable CV32E40P Simulation Model
 ===
 
 Author: Imperas Software, Ltd., using OVP Open Standard APIs  
-Date   : 20210209 
-Version: 20200821.11  
-License: Simulation Model CV32E40X licensed under [Software License Agreement for Open Virtual Platforms Technology](OVP_IMPERAS_LICENSE.pdf)
+Date   : 20210617 
+Version: 20200821.13  
+License: Simulation Model CV32E40P licensed under [Software License Agreement for Open Virtual Platforms Technology](OVP_IMPERAS_LICENSE.pdf)
 RISC-V Specifications currently supported:
 - RISC-V Instruction Set Manual, Volume I: User-Level ISA (User Architecture Version 2.3)
 - RISC-V Instruction Set Manual, Volume II: Privileged Architecture (Privileged Architecture Version 1.11)
@@ -19,11 +19,11 @@ RISC-V Specifications currently supported:
 
 
 
-About Imperas OVP OpenHW CV32E40X Model
+About Imperas OVP OpenHW CV32E40P Model
 ---
-The **riscv_CV32E40X_OVPsim** fixed model implements the functionality of the RISC-V Foundation's public User and Privilege specifications, configured for the OpenHW Group CV32E40X processor.
+The **riscv_CV32E40P_OVPsim** fixed model implements the functionality of the RISC-V Foundation's public User and Privilege specifications, configured for the OpenHW Group CV32E40P processor.
 
-The fixed model is provided as a shared object, riscv_CV32E40X.dpi.so, with a System Verilog DPI interface allowing it to be used in any compatible System Verilog simulator.
+The fixed model is provided as a shared object, riscv_CV32E40P.dpi.so, with a System Verilog DPI interface allowing it to be used in any compatible System Verilog simulator.
 
 The simulator is developed, licensed and maintained by [Imperas Software](http://www.imperas.com/riscv) and it is fully compliant to the OVP open standard APIs. 
 
@@ -41,15 +41,15 @@ For GDB debug add the command line argument _-gdbconsole_, this will start the G
 For Eclipse debug add the command line argument _-gdbegui_, this will start the Eclipse eGui debugger and connect to the virtual platform.
 
 
-Using OpenHW CV32E40X Model
+Using OpenHW CV32E40P Model
 ---
-The documentation for this CV32E40X model is in the document:
-[OVP_Model_Specific_Information_openhwgroup_riscv_CV32E40X.pdf](./doc/OVP_Model_Specific_Information_openhwgroup_riscv_CV32E40X.pdf)
+The documentation for this CV32E40P model is in the document:
+[OVP_Model_Specific_Information_openhwgroup_riscv_CV32E40P.pdf](./doc/OVP_Model_Specific_Information_openhwgroup_riscv_CV32E40P.pdf)
 
   
-Extending CV32E40X Model and building your own models and platforms
+Extending CV32E40P Model and building your own models and platforms
 ---
-CV32E40X Model is a fixed function simulation of one configurable processor model in a fixed platform. Full extendable platform simulations of reference designs booting FreeRTOS, Linux, SMP Linux etc. are available as open source and are available from [www.IMPERAS.com](http://www.imperas.com), [www.OVPworld.org](http://www.OVPworld.org).  
+CV32E40P Model is a fixed function simulation of one configurable processor model in a fixed platform. Full extendable platform simulations of reference designs booting FreeRTOS, Linux, SMP Linux etc. are available as open source and are available from [www.IMPERAS.com](http://www.imperas.com), [www.OVPworld.org](http://www.OVPworld.org).  
 
 
 About Open Virtual Platforms (OVP) and Imperas Software
@@ -61,8 +61,8 @@ About Open Virtual Platforms (OVP) and Imperas Software
 [www.imperas.com](http://www.imperas.com/riscv).
 
 ![OVP Image ](http://www.imperas.com/sites/default/files/partner-logos/ovp_0.jpg)  
-![Imperas Imperas](http://www.imperas.com/sites/all/themes/tophit/logo.png)  
+![Imperas Imperas](https://www.imperas.com/sites/default/files/imperas-web-logo_2.png)  
 ---
 
 
-This is the CV32E40X/README.md  
+This is the CV32E40P/README.md  

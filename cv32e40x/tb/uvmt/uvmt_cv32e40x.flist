@@ -28,6 +28,9 @@
 -f ${DV_UVMA_INTERRUPT_PATH}/uvma_interrupt_pkg.flist
 -f ${DV_UVMA_OBI_PATH}/uvma_obi_pkg.flist
 -f ${DV_UVMA_DEBUG_PATH}/uvma_debug_pkg.flist
+-f ${DV_UVMA_RVFI_PATH}/uvma_rvfi_pkg.flist
+-f ${DV_UVMA_RVVI_PATH}/uvma_rvvi_pkg.flist
+-f ${DV_UVMA_RVVI_OVPSIM_PATH}/uvma_rvvi_ovpsim_pkg.flist
 
 // Environments
 -f ${DV_UVME_PATH}/uvme_cv32e40x_pkg.flist

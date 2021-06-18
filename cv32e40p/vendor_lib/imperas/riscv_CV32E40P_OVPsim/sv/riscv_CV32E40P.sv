@@ -16,15 +16,21 @@
  *
  */
  
-`include "interface.sv"
 //`define DEBUG
 //`define UVM
+
+`include "typedefs.sv"
+`include "interface.sv"
+
+`include "riscv_datatype.h"
 
 interface RVVI_state #(
     parameter int ILEN = 32,
     parameter int XLEN = 32
 );
-
+    //
+    // RISCV output signals
+    //
     event            notify;
     
     bit              valid; // Retired instruction
@@ -46,8 +52,11 @@ interface RVVI_state #(
     // Registers
     bit [(XLEN-1):0] x[32];
     bit [(XLEN-1):0] f[32];
+    bit [(XLEN-1):0] c[4096];
     bit [(XLEN-1):0] csr[string];
     
+    // Temporary hack for volatile CSR reads
+    bit [31:0] GPR_rtl[32];
 endinterface
 
 typedef enum { IDLE, STEPI, STOP, CONT } rvvi_c_e;
@@ -88,14 +97,54 @@ interface RVVI_control;
         cmd = CONT;
         ->notify;
     endfunction
-    
 endinterface
 
-module CPU 
-#(
+interface RVVI_io;
+    bit         reset;
+    
+    bit  [31:0] irq_i;     // Active high level sensitive interrupt inputs
+    bit         irq_ack_o; // Interrupt acknowledge
+    bit  [4:0]  irq_id_o;  // Interrupt index for taken interrupt - only valid on irq_ack_o = 1
+    bit         deferint;
+    
+    bit         haltreq;
+    bit         resethaltreq;
+    bit         DM;
+    
+    bit         Shutdown;
+endinterface
+
+interface RVVI_bus;
+    bit     Clk;
+    
+    bit     [31:0] DAddr;   // Data Bus Address
+    bit     [31:0] DData;   // Data Bus LSU Data
+    bit     [3:0]  Dbe;     // Data Bus Lane enables (byte format)
+    bit     [2:0]  DSize;   // Data Bus Size of transfer 1-4 bytes
+    bit            Dwr;     // Data Bus write
+    bit            Drd;     // Data Bus read
+    
+    bit     [31:0] IAddr;   // Instruction Bus Address
+    bit     [31:0] IData;   // Instruction Bus Data
+    bit     [3:0]  Ibe;     // Instruction Bus Lane enables (byte format)
+    bit     [2:0]  ISize;   // Instruction Bus Size of transfer 1-4 bytes
+    bit            Ird;     // Instruction Bus read
+    
+    //
+    // Bus direct transactors
+    //
+    function automatic int read(input int address);
+        if (!ram.mem.exists(address)) ram.mem[address] = 'h0;
+        return ram.mem[address];
+    endfunction
+    function automatic void write(input int address, input int data);
+        ram.mem[address] = data;
+    endfunction
+endinterface
+
+module CPU #(
     parameter int ID = 0
-)
-(
+)(
     BUS SysBus
 );
 
@@ -103,10 +152,10 @@ module CPU
     import uvm_pkg::*;
 `endif
 
-    import "DPI-C" context task ovpEntry(input string s1, input string s2);
-    `ifndef UVM
-    import "DPI-C" context function void ovpExit();
-    `endif
+    import "DPI-C" context task          opEntry(input string s1, input string s2);
+    import "DPI-C" context function void svPull(output RMDataT RMData);
+    import "DPI-C" context function void svPush(output SVDataT SVData);
+    import "DPI-C" context function void opExit();
 
     export "DPI-C" task     busFetch;
     export "DPI-C" task     busLoad;
@@ -115,54 +164,33 @@ module CPU
     
     export "DPI-C" function setGPR;
     export "DPI-C" function getGPR;
-    export "DPI-C" function setFPR;
-    export "DPI-C" function setCSR;
-    export "DPI-C" function getState;
-    export "DPI-C" function putState;
     
-    export "DPI-C" task     setRETIRE;
-    export "DPI-C" task     setTRAP;
+    export "DPI-C" function setCSR;
+    export "DPI-C" function opPull;
+    
+    export "DPI-C" task     setRESULT;
     export "DPI-C" function setDECODE;
     
     RVVI_state   state();
     RVVI_control control();
+    RVVI_io      io();
+    RVVI_bus     bus();
     
-    // From RTL
-    bit [31:0] GPR_rtl[32];
     bit [31:0] cycles;
 
-/*
-    always @state.notify begin
-        if (state.valid) begin
-            $display("<R> %s", state.decode);
-        end else if (state.trap) begin
-            $display("<E> %s", state.decode);
-        end else begin
-            $display("ERROR: %s", state.decode);
-        end
-    end
-    
-    always @control.notify begin
-        if (control.cmd == IDLE) begin
-            $display("<C> idle");
-        end else if (control.cmd == STEPI) begin
-            $display("<C> stepi");
-        end else if (control.cmd == STOP) begin
-            $display("<C> stop");
-        end else if (control.cmd == CONT) begin
-            $display("<C> continue");
-        end
-    end
-*/
+    RMDataT RMData;
+    SVDataT SVData;
 
     //
     // Format message for UVM/SV environment
     //
     function automatic void msginfo (input string msg);
-    `ifdef UVM
-        `uvm_info("riscv_CV32E40P", msg, UVM_DEBUG);
-    `else
-        $display("riscv_CV32E40P: %s", msg);
+    `ifdef DEBUG
+        `ifdef UVM
+            `uvm_info("riscv_CV32E40P", msg, UVM_DEBUG);
+        `else
+            $display("riscv_CV32E40P: %s", msg);
+        `endif
     `endif
     endfunction
     
@@ -188,87 +216,82 @@ module CPU
         busStep;
     endtask
     
-    // Called at end of instruction transaction
-    task setRETIRE;
-        input int hart;
-        input int retPC;
-        input int nextPC;
-        input longint count;
+    //
+    // getstate values set by RM
+    //
+    function automatic void getstate;
+        int i;
+        svPull(RMData);
+
+/*
+        for (i=0; i<32; i++) begin
+            state.x[i] = RMData.x[i];
+            state.f[i] = RMData.f[i];
+        end
+
+        for (i=0; i<4096; i++) begin
+            if (state.c[i] != RMData.csr[i]) begin
+                state.c[i] = RMData.csr[i];
+            end
+        end
+*/
+        SysBus.irq_ack_o   = RMData.irq_ack_o;
+        SysBus.irq_id_o    = RMData.irq_id_o;
+        SysBus.DM          = RMData.DM;
+    endfunction
     
-        control.idle();
+    // Called at end of instruction transaction
+    task setRESULT;
+        input int isvalid;
         
+        control.idle();
+
+        getstate();
+                
         // RVVI_S
-        state.trap   = 0; 
-        state.valid  = 1;
-        state.pc     = retPC;
-        state.pcnext = nextPC;
-        state.order  = count;
+        if (isvalid) begin
+            state.valid = 1;
+            state.trap  = 0;
+            state.pc    = RMData.retPC;
+        end else begin
+            state.valid = 0;
+            state.trap  = 1;
+            state.pc    = RMData.excPC;
+        end
+        
+        state.pcnext = RMData.nextPC;
+        state.order  = RMData.order;
+        
         ->state.notify;
     endtask
 
-    task setTRAP;
-        input int hart;
-        input int excPC;
-        input int nextPC;
-        input longint count;
+    //
+    // pack values to be used by RM
+    //
+    function automatic void opPull;
+        SVData.reset         = SysBus.reset;
+        SVData.deferint      = SysBus.deferint;
+        SVData.irq_i         = SysBus.irq_i;
+        SVData.haltreq       = SysBus.haltreq;
+        SVData.resethaltreq  = SysBus.resethaltreq;
+        SVData.terminate     = SysBus.Shutdown;
+        SVData.cycles        = cycles;
         
-        control.idle();
-        
-        // RVVI_S
-        state.trap   = 1; 
-        state.valid  = 0;
-        state.pc     = excPC;
-        state.pcnext = nextPC;
-        state.order  = count;
-        ->state.notify;
-    endtask
-        
-    function automatic void putState (
-            input int _irq_ack_o,
-            input int _irq_id_o,
-            input int _DM);
-        
-        SysBus.irq_ack_o    = _irq_ack_o;
-        SysBus.irq_id_o     = _irq_id_o;
-        SysBus.DM           = _DM;
+        svPush(SVData);
     endfunction
-        
-    function automatic void getState (
-            output int _terminate,
-            output int _reset,
-            output int _deferint,
-            output int _irq_i,
-            output int _haltreq,
-            output int _resethaltreq,
-            output int _cycles
-            );
-        
-        _terminate          = SysBus.Shutdown;
-        _reset              = SysBus.reset;
-        _deferint           = SysBus.deferint;
-        _irq_i              = SysBus.irq_i;
-        _haltreq            = SysBus.haltreq;
-        _resethaltreq       = SysBus.resethaltreq;
-        
-        _cycles             = cycles;
-    endfunction
-        
+
     function automatic void setDECODE (input string value, input int insn, input int isize);
         state.decode = value;
         state.insn   = insn;
         state.isize  = isize;
     endfunction
     
+    function automatic void getGPR (input int index, output longint value);
+        value = state.GPR_rtl[index];
+    endfunction
+    
     function automatic void setGPR (input int index, input longint value);
         state.x[index] = value;
-    endfunction
-    
-    function automatic void getGPR (input int index, output longint value);
-        value = GPR_rtl[index];
-    endfunction
-    
-    function automatic void setFPR (input int index, input longint value);
-        state.f[index] = value;
     endfunction
     
     function automatic void setCSR (input string index, input longint value);
@@ -345,9 +368,7 @@ module CPU
         Uns32 ble    = getBLE(address, size);
         Uns32 dValue = getData(address, data);
         
-        `ifdef DEBUG
         msginfo($sformatf("%08X = %02x", address, data));
-        `endif
         wValue = SysBus.read(idx) & ~(byte2bit(ble));
         wValue |= (dValue & byte2bit(ble));
         
@@ -364,15 +385,11 @@ module CPU
         automatic Uns32 dValue = getData(address, data);
 
         if (artifact) begin
-            `ifdef DEBUG
             msginfo($sformatf("[%x]<=(%0d)%x ELF_LOAD", address, size, dValue));
-            `endif
             dmiWrite(address, size, data);
 
         end else begin
-            `ifdef DEBUG
             msginfo($sformatf("[%x]<=(%0d)%x Store", address, size, dValue));
-            `endif
             SysBus.DAddr  <= address;
             SysBus.DSize  <= size;
             SysBus.Dwr    <= 1;
@@ -459,9 +476,7 @@ module CPU
             data = setData(address, SysBus.DData);
             SysBus.Drd   <= 0;
             
-            `ifdef DEBUG
             msginfo($sformatf("[%x]=>(%0d)%x Load", address, size, data));
-            `endif
         end
     endtask
     
@@ -523,9 +538,7 @@ module CPU
             data = setData(address, SysBus.IData);
             SysBus.Ird   <= 0;
             
-            `ifdef DEBUG
             msginfo($sformatf("[%x]=>(%0d)%x Fetch", address, size, data));
-            `endif
         end
     endtask
     
@@ -575,20 +588,18 @@ module CPU
     endfunction
     
     initial begin
-        if ($test$plusargs("USE_ISS")) begin            
-            ovpcfg_load();
-            elf_load();
-            ovpEntry(ovpcfg, elf_file);
-            `ifndef UVM
-            $finish;
-            `endif
-        end
+        ovpcfg_load();
+        elf_load();
+        opEntry(ovpcfg, elf_file);
+    `ifndef UVM
+        $finish;
+    `endif
     end
     
-    `ifndef UVM
+`ifndef UVM
     final begin
-        ovpExit();
+        opExit();
     end
-    `endif
+`endif
  
 endmodule

@@ -74,6 +74,7 @@ module uvmt_cv32e40x_step_compare
    bit  is_stall_sim = 0;
    bit  ignore_dpc_check = 0;
    bit  use_iss = 0;
+   bit  use_rvvi = 0;
 
   // FIXME:strichmo:when running random interrupts and random debug requests it is possible to enter debug mode 
   // (while also acking an interrupt) when the debug program counter may or may not yet be pointing to the interrupt
@@ -92,6 +93,8 @@ module uvmt_cv32e40x_step_compare
   initial begin
     if ($test$plusargs("USE_ISS"))
       use_iss = 1;
+    if ($test$plusargs("USE_RVVI"))
+      use_rvvi = 1;
   end
   
   // Set the is_stall_sim flag if random stalls are enabled
@@ -161,7 +164,7 @@ module uvmt_cv32e40x_step_compare
       end
 
       // Compare CSR's
-      if (use_iss) begin
+      if (use_iss && !use_rvvi) begin
         foreach(`CV32E40X_RM_RVVI_STATE.csr[index]) begin
            step_compare_if.num_csr_checks++;
            ignore = 0;
@@ -171,6 +174,8 @@ module uvmt_cv32e40x_step_compare
            if (is_stall_sim)
             ignore = 1;
            case (index)
+             "minstret"      : ignore = 1;
+           
              "marchid"       : csr_val = cv32e40x_pkg::MARCHID; // warning!  defined in cv32e40x_pkg
              
              "mcountinhibit" : csr_val = `CV32E40X_CORE.cs_registers_i.mcountinhibit_q;
@@ -218,7 +223,141 @@ module uvmt_cv32e40x_step_compare
              "tdata2"        : csr_val = `CV32E40X_CORE.cs_registers_i.tmatch_value_rdata;
              "tdata3"        : csr_val = 32'h0000_0000;
              "tinfo"         : csr_val = `CV32E40X_CORE.cs_registers_i.tinfo_types;
-             "time"          : ignore  = 1;
+             
+            "time"          : ignore  = 1;
+            
+            "mcontext"      : ignore  = 1;
+            "scontext"      : ignore  = 1;
+
+            "cycle"         : ignore  = 1;
+            "cycleh"        : ignore  = 1;
+            "instret"       : ignore  = 1;
+            "instreth"      : ignore  = 1;
+            "minstret"      : ignore  = 1;      
+            "minstreth"     : ignore  = 1;
+            
+            "mimpid"        : ignore  = 1;
+            
+            "hpmcounter3"   : ignore  = 1;
+            "hpmcounter4"   : ignore  = 1;
+            "hpmcounter5"   : ignore  = 1;
+            "hpmcounter6"   : ignore  = 1;
+            "hpmcounter7"   : ignore  = 1;
+            "hpmcounter8"   : ignore  = 1;
+            "hpmcounter9"   : ignore  = 1;
+            "hpmcounter10"  : ignore  = 1;
+            "hpmcounter11"  : ignore  = 1;
+            "hpmcounter12"  : ignore  = 1;
+            "hpmcounter13"  : ignore  = 1;
+            "hpmcounter14"  : ignore  = 1;
+            "hpmcounter15"  : ignore  = 1;
+            "hpmcounter16"  : ignore  = 1;
+            "hpmcounter17"  : ignore  = 1;
+            "hpmcounter18"  : ignore  = 1;
+            "hpmcounter19"  : ignore  = 1;
+            "hpmcounter20"  : ignore  = 1;
+            "hpmcounter21"  : ignore  = 1;
+            "hpmcounter22"  : ignore  = 1;
+            "hpmcounter23"  : ignore  = 1;
+            "hpmcounter24"  : ignore  = 1;
+            "hpmcounter25"  : ignore  = 1;
+            "hpmcounter26"  : ignore  = 1;
+            "hpmcounter27"  : ignore  = 1;
+            "hpmcounter28"  : ignore  = 1;
+            "hpmcounter29"  : ignore  = 1;
+            "hpmcounter30"  : ignore  = 1;
+            "hpmcounter31"  : ignore  = 1;
+            
+            "hpmcounterh3"  : ignore  = 1;
+            "hpmcounterh4"  : ignore  = 1;
+            "hpmcounterh5"  : ignore  = 1;
+            "hpmcounterh6"  : ignore  = 1;
+            "hpmcounterh7"  : ignore  = 1;
+            "hpmcounterh8"  : ignore  = 1;
+            "hpmcounterh9"  : ignore  = 1;
+            "hpmcounterh10" : ignore  = 1;
+            "hpmcounterh11" : ignore  = 1;
+            "hpmcounterh12" : ignore  = 1;
+            "hpmcounterh13" : ignore  = 1;
+            "hpmcounterh14" : ignore  = 1;
+            "hpmcounterh15" : ignore  = 1;
+            "hpmcounterh16" : ignore  = 1;
+            "hpmcounterh17" : ignore  = 1;
+            "hpmcounterh18" : ignore  = 1;
+            "hpmcounterh19" : ignore  = 1;
+            "hpmcounterh20" : ignore  = 1;
+            "hpmcounterh21" : ignore  = 1;
+            "hpmcounterh22" : ignore  = 1;
+            "hpmcounterh23" : ignore  = 1;
+            "hpmcounterh24" : ignore  = 1;
+            "hpmcounterh25" : ignore  = 1;
+            "hpmcounterh26" : ignore  = 1;
+            "hpmcounterh27" : ignore  = 1;
+            "hpmcounterh28" : ignore  = 1;
+            "hpmcounterh29" : ignore  = 1;
+            "hpmcounterh30" : ignore  = 1;
+            "hpmcounterh31" : ignore  = 1;
+
+            "mhpmcounter3"  : ignore  = 1;
+            "mhpmcounter4"  : ignore  = 1;
+            "mhpmcounter5"  : ignore  = 1;
+            "mhpmcounter6"  : ignore  = 1;
+            "mhpmcounter7"  : ignore  = 1;
+            "mhpmcounter8"  : ignore  = 1;
+            "mhpmcounter9"  : ignore  = 1;
+            "mhpmcounter10" : ignore  = 1;
+            "mhpmcounter11" : ignore  = 1;
+            "mhpmcounter12" : ignore  = 1;
+            "mhpmcounter13" : ignore  = 1;
+            "mhpmcounter14" : ignore  = 1;
+            "mhpmcounter15" : ignore  = 1;
+            "mhpmcounter16" : ignore  = 1;
+            "mhpmcounter17" : ignore  = 1;
+            "mhpmcounter18" : ignore  = 1;
+            "mhpmcounter19" : ignore  = 1;
+            "mhpmcounter20" : ignore  = 1;
+            "mhpmcounter21" : ignore  = 1;
+            "mhpmcounter22" : ignore  = 1;
+            "mhpmcounter23" : ignore  = 1;
+            "mhpmcounter24" : ignore  = 1;
+            "mhpmcounter25" : ignore  = 1;
+            "mhpmcounter26" : ignore  = 1;
+            "mhpmcounter27" : ignore  = 1;
+            "mhpmcounter28" : ignore  = 1;
+            "mhpmcounter29" : ignore  = 1;
+            "mhpmcounter30" : ignore  = 1;
+            "mhpmcounter31" : ignore  = 1;
+            
+            "mhpmcounterh3" : ignore  = 1;
+            "mhpmcounterh4" : ignore  = 1;
+            "mhpmcounterh5" : ignore  = 1;
+            "mhpmcounterh6" : ignore  = 1;
+            "mhpmcounterh7" : ignore  = 1;
+            "mhpmcounterh8" : ignore  = 1;
+            "mhpmcounterh9" : ignore  = 1;
+            "mhpmcounterh10": ignore  = 1;
+            "mhpmcounterh11": ignore  = 1;
+            "mhpmcounterh12": ignore  = 1;
+            "mhpmcounterh13": ignore  = 1;
+            "mhpmcounterh14": ignore  = 1;
+            "mhpmcounterh15": ignore  = 1;
+            "mhpmcounterh16": ignore  = 1;
+            "mhpmcounterh17": ignore  = 1;
+            "mhpmcounterh18": ignore  = 1;
+            "mhpmcounterh19": ignore  = 1;
+            "mhpmcounterh20": ignore  = 1;
+            "mhpmcounterh21": ignore  = 1;
+            "mhpmcounterh22": ignore  = 1;
+            "mhpmcounterh23": ignore  = 1;
+            "mhpmcounterh24": ignore  = 1;
+            "mhpmcounterh25": ignore  = 1;
+            "mhpmcounterh26": ignore  = 1;
+            "mhpmcounterh27": ignore  = 1;
+            "mhpmcounterh28": ignore  = 1;
+            "mhpmcounterh29": ignore  = 1;
+            "mhpmcounterh30": ignore  = 1;
+            "mhpmcounterh31": ignore  = 1;
+
              default: begin
                 `uvm_error("STEP_COMPARE", $sformatf("index=%s does not match a CSR name", index))
                 ignore = 1;
@@ -240,7 +379,7 @@ module uvmt_cv32e40x_step_compare
         if (`CV32E40X_TRACER.insn_regs_write.size()) begin
           gpr_addr  = `CV32E40X_TRACER.insn_regs_write[0].addr;
           gpr_value = `CV32E40X_TRACER.insn_regs_write[0].value;
-          `CV32E40X_RM.GPR_rtl[gpr_addr] = gpr_value;
+          `CV32E40X_RM.state.GPR_rtl[gpr_addr] = gpr_value;
         end
     endfunction // pushRTL2RM
     
@@ -275,7 +414,7 @@ module uvmt_cv32e40x_step_compare
    initial state <= IDLE; // cause an event for always @*
    
    always @(*) begin
-      if (use_iss) begin
+      if (use_iss && !use_rvvi) begin
         case (state)
           IDLE: begin
               state <= RTL_STEP;
@@ -368,43 +507,6 @@ module uvmt_cv32e40x_step_compare
       end
    end
    
-
-`ifdef COVERAGE
-   coverage cov1;
-   initial begin
-       cov1 = new();
-   end
-
-    function void split(input string in_s, output string s1, s2);
-        automatic int i;
-        for (i=0; i<in_s.len(); i++) begin
-            if (in_s.getc(i) == ":")
-                break;
-         end
-         if (i==0 ) begin
-            `uvm_fatal("STEP COMPARE", $sformatf(": not found in split '%0s'", in_s))
-         end
-         s1 = in_s.substr(0,i-1);
-         s2 = in_s.substr(i+1,in_s.len()-1);
-    endfunction
-
-
-    function automatic void sample();
-        string decode = `CV32E40X_RM.Decode;
-        string ins_str, op[4], key, val;
-        int i;
-        ins_t ins;
-        int num = $sscanf (decode, "%s %s %s %s %s", ins_str, op[0], op[1], op[2], op[3]);
-        ins.ins_str = ins_str;
-        for (i=0; i<num-1; i++) begin
-            split(op[i], key, val);
-            ins.ops[i].key=key;
-            ins.ops[i].val=val;
-        end
-        cov1.sample (ins);
-    endfunction
-`endif
-
 endmodule: uvmt_cv32e40x_step_compare
 
 `endif //__UVMT_CV32E40X_STEP_COMPARE_SV__

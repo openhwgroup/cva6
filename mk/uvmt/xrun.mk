@@ -161,6 +161,9 @@ XRUN_USER_COMPILE_ARGS += +define+$(CV_CORE_UC)_TRACE_EXECUTION
 ifeq ($(call IS_YES,$(USE_ISS)),YES)
     XRUN_PLUSARGS +="+USE_ISS"
 endif
+ifeq ($(call IS_YES,$(USE_RVVI)),YES)
+    XRUN_PLUSARGS +="+USE_RVVI"
+endif
 
 # Simulate using latest elab
 XRUN_RUN_FLAGS        ?= 
@@ -293,7 +296,7 @@ gen_ovpsim_ic:
 		echo "$(CFG_OVPSIM)" > $(XRUN_RESULTS)/$(CFG)/$(TEST_NAME)_$(RUN_INDEX)/ovpsim.ic; \
 	fi
 ifneq ($(CFG_OVPSIM),)
-export IMPERAS_TOOLS=$(XRUN_RESULTS)/$(CFG)/$(TEST_NAME)_$(RUN_INDEX)/ovpsim.ic
+export IMPERAS_TOOLS=ovpsim.ic
 endif
 
 ################################################################################
@@ -305,7 +308,6 @@ ifeq ($(shell echo $(TEST) | head -c 6),corev_)
 endif
 
 test: $(XRUN_SIM_PREREQ) $(TEST_TEST_DIR)/$(TEST_PROGRAM)$(OPT_RUN_INDEX_SUFFIX).hex gen_ovpsim_ic
-	echo $(IMPERAS_TOOLS)
 	mkdir -p $(XRUN_RESULTS)/$(CFG)/$(TEST_NAME)_$(RUN_INDEX) && \
 	cd $(XRUN_RESULTS)/$(CFG)/$(TEST_NAME)_$(RUN_INDEX) && \
 		$(XRUN) \
