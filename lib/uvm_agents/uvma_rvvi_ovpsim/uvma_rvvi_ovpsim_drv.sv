@@ -104,8 +104,8 @@ task uvma_rvvi_ovpsim_drv_c::reset_phase(uvm_phase phase);
 
    super.reset_phase(phase);
 
-   rvvi_ovpsim_cntxt.ovpsim_bus_vif.deferint = 1'b1;
-   rvvi_ovpsim_cntxt.ovpsim_bus_vif.irq_i    = '0;
+   rvvi_ovpsim_cntxt.ovpsim_io_vif.deferint = 1'b1;
+   rvvi_ovpsim_cntxt.ovpsim_io_vif.irq_i    = '0;
 
 endtask : reset_phase
 
@@ -127,24 +127,24 @@ task uvma_rvvi_ovpsim_drv_c::stepi(REQ req);
 
    // Signal an interrupt to the ISS if mcause and rvfi_intr signals external interrupt  
    if (rvvi_ovpsim_seq_item.intr) begin
-      rvvi_ovpsim_cntxt.ovpsim_bus_vif.deferint = 1'b0;
-      rvvi_ovpsim_cntxt.ovpsim_bus_vif.irq_i    = 1 << (rvvi_ovpsim_seq_item.intr_id);
+      rvvi_ovpsim_cntxt.ovpsim_io_vif.deferint = 1'b0;
+      rvvi_ovpsim_cntxt.ovpsim_io_vif.irq_i    = 1 << (rvvi_ovpsim_seq_item.intr_id);
       rvvi_ovpsim_cntxt.control_vif.stepi();
       @(rvvi_ovpsim_cntxt.state_vif.notify);
-      rvvi_ovpsim_cntxt.ovpsim_bus_vif.deferint = 1'b1;
+      rvvi_ovpsim_cntxt.ovpsim_io_vif.deferint = 1'b1;
       @(posedge rvvi_ovpsim_cntxt.ovpsim_bus_vif.Clk);
    end
    
    if (rvvi_ovpsim_seq_item.halt) begin
-      rvvi_ovpsim_cntxt.ovpsim_bus_vif.haltreq  = 1'b1;      
+      rvvi_ovpsim_cntxt.ovpsim_io_vif.haltreq  = 1'b1;      
       rvvi_ovpsim_cntxt.control_vif.stepi();
       @(rvvi_ovpsim_cntxt.state_vif.notify);
-      rvvi_ovpsim_cntxt.ovpsim_bus_vif.haltreq = 1'b0;
+      rvvi_ovpsim_cntxt.ovpsim_io_vif.haltreq = 1'b0;
       @(posedge rvvi_ovpsim_cntxt.ovpsim_bus_vif.Clk);
    end
 
    // Step the ISS and wait for ISS to complete
-   rvvi_ovpsim_cntxt.ovpsim_bus_vif.irq_i = rvvi_ovpsim_seq_item.mip;
+   rvvi_ovpsim_cntxt.ovpsim_io_vif.irq_i = rvvi_ovpsim_seq_item.mip;
    if (rvvi_ovpsim_seq_item.rd1_addr != 0)
       rvvi_ovpsim_cntxt.state_vif.GPR_rtl[rvvi_ovpsim_seq_item.rd1_addr] = rvvi_ovpsim_seq_item.rd1_wdata;
 

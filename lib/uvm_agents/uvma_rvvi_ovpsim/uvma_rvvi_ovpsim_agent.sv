@@ -106,13 +106,22 @@ function void uvma_rvvi_ovpsim_agent_c::retrieve_vif();
    super.retrieve_vif();
    
    // OVPSIM BUS VIF : FIXME:strichmo:would be ideal to incorporate into common rvvi 
-   if (!uvm_config_db#(virtual BUS)::get(this, "", $sformatf("ovpsim_bus_vif"), rvvi_ovpsim_cntxt.ovpsim_bus_vif)) begin
+   if (!uvm_config_db#(virtual RVVI_bus)::get(this, "", $sformatf("ovpsim_bus_vif"), rvvi_ovpsim_cntxt.ovpsim_bus_vif)) begin
       `uvm_fatal("VIF", $sformatf("Could not find vif handle of type %s in uvm_config_db", 
                                     $typename(rvvi_ovpsim_cntxt.ovpsim_bus_vif)))
    end
    else begin
       `uvm_info("VIF", $sformatf("Found vif handle of type %s in uvm_config_db", 
                                  $typename(rvvi_ovpsim_cntxt.ovpsim_bus_vif)), UVM_DEBUG)
+   end
+
+   if (!uvm_config_db#(virtual RVVI_io)::get(this, "", $sformatf("ovpsim_io_vif"), rvvi_ovpsim_cntxt.ovpsim_io_vif)) begin
+      `uvm_fatal("VIF", $sformatf("Could not find vif handle of type %s in uvm_config_db", 
+                                    $typename(rvvi_ovpsim_cntxt.ovpsim_io_vif)))
+   end
+   else begin
+      `uvm_info("VIF", $sformatf("Found vif handle of type %s in uvm_config_db", 
+                                 $typename(rvvi_ovpsim_cntxt.ovpsim_io_vif)), UVM_DEBUG)
    end
 endfunction : retrieve_vif
 
