@@ -7,6 +7,7 @@
 
 #define  DBG_ADDR  0x1A110800
 #define  IO_ADDR  (DBG_ADDR - 16)
+#define  IO_ADDR_2  (IO_ADDR + 4)
 #define  MCAUSE_INSTRUCTION_ACCESS_FAULT  1
 #define  MTVAL_READ  0
 
@@ -24,23 +25,7 @@ typedef union {
 
 volatile int g_debug_entered = 0;
 volatile int g_expect_exception = 0;
-
-static void assert_or_die(uint32_t actual, uint32_t expect, char *msg) {
-  if (actual != expect) {
-    printf(msg);
-    printf("expected = 0x%lx (%ld), got = 0x%lx (%ld)\n", expect, (int32_t)expect, actual, (int32_t)actual);
-    exit(EXIT_FAILURE);
-  }
-}
-
-void u_sw_irq_handler(void) {  // overrides a "weak" symbol in the bsp
-  uint32_t mcause;
-
-  __asm__ volatile("csrr %0, mcause" : "=r"(mcause));
-  assert_or_die(mcause, MCAUSE_INSTRUCTION_ACCESS_FAULT, "error: irq, unexpected mcause value\n");
-
-  return;  // should continue test, assuming no intermediary ABI function call touched "ra"
-}
+volatile int g_expect_dmexcept = 0;
 
 __attribute__((naked))
 void debugger_epilogue(void) {
@@ -72,6 +57,31 @@ void debugger_epilogue(void) {
     ;
 }
 
+static void assert_or_die(uint32_t actual, uint32_t expect, char *msg) {
+  if (actual != expect) {
+    printf(msg);
+    printf("expected = 0x%lx (%ld), got = 0x%lx (%ld)\n", expect, (int32_t)expect, actual, (int32_t)actual);
+    exit(EXIT_FAILURE);
+  }
+}
+
+__attribute__((section(".debugger_exception")))
+void dm_exception(void) {
+  // TODO possible to check "cmderr"?
+  printf("dm_exception handled");
+  g_expect_dmexcept = 0;
+  debugger_epilogue();
+}
+
+void u_sw_irq_handler(void) {  // overrides a "weak" symbol in the bsp
+  uint32_t mcause;
+
+  __asm__ volatile("csrr %0, mcause" : "=r"(mcause));
+  assert_or_die(mcause, MCAUSE_INSTRUCTION_ACCESS_FAULT, "error: irq, unexpected mcause value\n");
+
+  return;  // should continue test, assuming no intermediary ABI function call touched "ra"
+}
+
 void debugger(void) {
   uint32_t dcsr, dpc;
   uint32_t mcause, mepc, mtval;
@@ -99,9 +109,16 @@ void debugger(void) {
       && (mtval == MTVAL_READ);
 
     if (exception_handled) {
-      printf("exception handled\n");
+      printf("single-step exception handled\n");
       g_expect_exception = 0;
     }
+  }
+
+  // Handle the dm_exception test
+  if (g_expect_dmexcept) {
+    ((void (*)(void))IO_ADDR_2)();
+    while (1)
+      ;
   }
 
   debugger_epilogue();
@@ -175,7 +192,10 @@ int main(void) {
   }
 
   // Test that pma exception within debug mode goes as expected
-  //TODO write test
+  g_expect_dmexcept = 1;
+  if (g_expect_dmexcept) {
+    assert_or_die(1, 0, "error: should have handled dm_exception test\n");
+  }
 
   printf("\ngoodbye pma_debug\n\n");
   return EXIT_SUCCESS;
