@@ -20,7 +20,8 @@
 
 module MONITOR 
 (
-    BUS SysBus
+    RVVI_bus bus,
+    RVVI_io  io
 );
     int     fd_sym;
     string  fn_sym;
@@ -187,48 +188,48 @@ module MONITOR
     int int_machine_timer_cnt;
     
     always @(*) begin
-        DAddr  = SysBus.DAddr;
-        DData  = SysBus.DData;
-        Dbe    = SysBus.Dbe;
-        DSize  = SysBus.DSize;
-        IAddr  = SysBus.IAddr;
-        IData  = SysBus.IData;
-        Ibe    = SysBus.Ibe;
-        ISize  = SysBus.ISize;
+        DAddr  = bus.DAddr;
+        DData  = bus.DData;
+        Dbe    = bus.Dbe;
+        DSize  = bus.DSize;
+        IAddr  = bus.IAddr;
+        IData  = bus.IData;
+        Ibe    = bus.Ibe;
+        ISize  = bus.ISize;
         
-        reset  = SysBus.reset;
-        MSWInt = SysBus.irq_i[3];
-        MTInt  = SysBus.irq_i[7];
-        MEInt  = SysBus.irq_i[11];
+        reset  = io.reset;
+        MSWInt = io.irq_i[3];
+        MTInt  = io.irq_i[7];
+        MEInt  = io.irq_i[11];
 
-        IF     = (SysBus.Ird==1);
-        LD     = (SysBus.Drd==1);
-        ST     = (SysBus.Dwr==1);
+        IF     = (bus.Ird==1);
+        LD     = (bus.Drd==1);
+        ST     = (bus.Dwr==1);
         RD     = IF | LD;
         WR     = ST;
     end
     
-    always @(posedge SysBus.Clk) begin
-        if (SysBus.Ird) begin
+    always @(posedge bus.Clk) begin
+        if (bus.Ird) begin
             // EXIT
-            if (_test_exit.enable && SysBus.IAddr==_test_exit.addr) begin
-                if (!SysBus.Shutdown) $display("Fetch: Exit Label");
-                SysBus.Shutdown = 1;
+            if (_test_exit.enable && bus.IAddr==_test_exit.addr) begin
+                if (!io.Shutdown) $display("Fetch: Exit Label");
+                io.Shutdown = 1;
             end
             // TRAP
-            if (trap_vector.enable && SysBus.IAddr==trap_vector.addr) begin
+            if (trap_vector.enable && bus.IAddr==trap_vector.addr) begin
                 $display("Fetch: Trap Label");
-                SysBus.Shutdown = 1;
+                io.Shutdown = 1;
             end
         end
         
-        if (SysBus.Drd) begin
+        if (bus.Drd) begin
         end
         
-        if (SysBus.Dwr) begin
+        if (bus.Dwr) begin
             // STDOUT
-            if (_test_stdout.enable && SysBus.DAddr==_test_stdout.addr) begin
-                automatic int c = SysBus.DData&'hff;
+            if (_test_stdout.enable && bus.DAddr==_test_stdout.addr) begin
+                automatic int c = bus.DData&'hff;
                 $write("%c", c);
                 $fwrite(fd_stdout, "%c", c);
                 $fflush(fd_stdout);
@@ -237,28 +238,28 @@ module MONITOR
             //
             // Interrupt Generation
             //
-            if (_test_intc_machine_external.enable && SysBus.DAddr==_test_intc_machine_external.addr) begin
-                int_machine_external_cnt = SysBus.DData;
+            if (_test_intc_machine_external.enable && bus.DAddr==_test_intc_machine_external.addr) begin
+                int_machine_external_cnt = bus.DData;
                 if (int_machine_external_cnt == 0) begin
                     // Interrupt Clear
-                    $display("SysBus.irq_i[11] = 0");
-                    SysBus.irq_i[11] = 0;
+                    $display("io.irq_i[11] = 0");
+                    io.irq_i[11] = 0;
                 end
             end  
-            if (_test_intc_machine_software.enable && SysBus.DAddr==_test_intc_machine_software.addr) begin
-                int_machine_software_cnt = SysBus.DData;
+            if (_test_intc_machine_software.enable && bus.DAddr==_test_intc_machine_software.addr) begin
+                int_machine_software_cnt = bus.DData;
                 if (int_machine_software_cnt == 0) begin
                     // Interrupt Clear
-                    $display("SysBus.irq_i[3] = 0");
-                    SysBus.irq_i[3] = 0;
+                    $display("io.irq_i[3] = 0");
+                    io.irq_i[3] = 0;
                 end
             end
-            if (_test_intc_machine_timer.enable && SysBus.DAddr==_test_intc_machine_timer.addr) begin
-                int_machine_timer_cnt = SysBus.DData;
+            if (_test_intc_machine_timer.enable && bus.DAddr==_test_intc_machine_timer.addr) begin
+                int_machine_timer_cnt = bus.DData;
                 if (int_machine_timer_cnt == 0) begin
                     // Interrupt Clear
-                    $display("SysBus.irq_i[7] = 0");
-                    SysBus.irq_i[7] = 0;
+                    $display("io.irq_i[7] = 0");
+                    io.irq_i[7] = 0;
                 end
             end
         end
@@ -266,27 +267,27 @@ module MONITOR
         // Machine External Interrupt Generation
         if (int_machine_external_cnt > 1) begin
             int_machine_external_cnt = int_machine_external_cnt - 1;
-        end else if ((int_machine_external_cnt == 1) && (SysBus.irq_i[11] == 0)) begin
-            $display("SysBus.irq_i[11] = 1");
-            SysBus.irq_i[11] = 1;
+        end else if ((int_machine_external_cnt == 1) && (io.irq_i[11] == 0)) begin
+            $display("io.irq_i[11] = 1");
+            io.irq_i[11] = 1;
         end 
    
         // Machine_timer Interrupt Generation
         if (int_machine_timer_cnt > 1) begin
             int_machine_timer_cnt = int_machine_timer_cnt - 1;
-        end else if ((int_machine_timer_cnt == 1) && (SysBus.irq_i[7] == 0)) begin
-            $display("SysBus.irq_i[7] = 1");
-            SysBus.irq_i[7] = 1;        
+        end else if ((int_machine_timer_cnt == 1) && (io.irq_i[7] == 0)) begin
+            $display("io.irq_i[7] = 1");
+            io.irq_i[7] = 1;        
         end
 
         // Machine_software Interrupt Generation
         if (int_machine_software_cnt > 1) begin
             int_machine_software_cnt = int_machine_software_cnt - 1;
-        end else if ((int_machine_software_cnt == 1) && (SysBus.irq_i[3] == 0)) begin
-            $display("SysBus.irq_i[3] = 1");
-            SysBus.irq_i[3] = 1;        
+        end else if ((int_machine_software_cnt == 1) && (io.irq_i[3] == 0)) begin
+            $display("io.irq_i[3] = 1");
+            io.irq_i[3] = 1;        
         end
-    end // always @ (posedge SysBus.Clk)
+    end // always @ (posedge bus.Clk)
     
     final begin
         dumpSignature();

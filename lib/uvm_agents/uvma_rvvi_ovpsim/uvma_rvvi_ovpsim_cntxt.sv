@@ -27,7 +27,8 @@ class uvma_rvvi_ovpsim_cntxt_c#(int ILEN=uvma_rvvi_pkg::DEFAULT_ILEN,
                                 int XLEN=uvma_rvvi_pkg::DEFAULT_XLEN) extends uvma_rvvi_cntxt_c#(ILEN,XLEN);
 
    // FIXME: to get access to deferint, should be part of RVVI
-   virtual BUS                     ovpsim_bus_vif;
+   virtual RVVI_bus                     ovpsim_bus_vif;
+   virtual RVVI_io                      ovpsim_io_vif;
    
    `uvm_object_param_utils_begin(uvma_rvvi_ovpsim_cntxt_c)
    `uvm_object_utils_end

@@ -20,9 +20,8 @@
 //`define UVM
 
 `include "typedefs.sv"
-`include "interface.sv"
 
-`include "riscv_datatype.h"
+`include "riscv_CV32E40P.h"
 
 interface RVVI_state #(
     parameter int ILEN = 32,
@@ -105,7 +104,7 @@ interface RVVI_io;
     bit  [31:0] irq_i;     // Active high level sensitive interrupt inputs
     bit         irq_ack_o; // Interrupt acknowledge
     bit  [4:0]  irq_id_o;  // Interrupt index for taken interrupt - only valid on irq_ack_o = 1
-    bit         deferint;
+    bit         deferint;  // Artifact signal to gate the last stage of interrupt
     
     bit         haltreq;
     bit         resethaltreq;
@@ -130,6 +129,10 @@ interface RVVI_bus;
     bit     [2:0]  ISize;   // Instruction Bus Size of transfer 1-4 bytes
     bit            Ird;     // Instruction Bus read
     
+    bit            LoadBusFaultNMI;     // Artifact to signal memory interface error (E40X)
+    bit            StoreBusFaultNMI;    // Artifact to signal memory interface error (E40X)
+    bit            InstructionBusFault; // Artifact to signal memory interface error (E40X)
+    
     //
     // Bus direct transactors
     //
@@ -145,14 +148,15 @@ endinterface
 module CPU #(
     parameter int ID = 0
 )(
-    BUS SysBus
+    RVVI_bus bus,
+    RVVI_io  io
 );
 
 `ifdef UVM
     import uvm_pkg::*;
 `endif
 
-    import "DPI-C" context task          opEntry(input string s1, input string s2);
+    import "DPI-C" context task          opEntry(input string s1, input string s2, input string s3);
     import "DPI-C" context function void svPull(output RMDataT RMData);
     import "DPI-C" context function void svPush(output SVDataT SVData);
     import "DPI-C" context function void opExit();
@@ -173,8 +177,6 @@ module CPU #(
     
     RVVI_state   state();
     RVVI_control control();
-    RVVI_io      io();
-    RVVI_bus     bus();
     
     bit [31:0] cycles;
 
@@ -206,38 +208,26 @@ module CPU #(
     task busStep;
         if (control.ssmode) begin
             while (control.cmd != STEPI) begin
-                @(posedge SysBus.Clk);
+                @(posedge bus.Clk);
             end
         end
     endtask
     
     task busWait;
-        @(posedge SysBus.Clk);
+        @(posedge bus.Clk);
         busStep;
     endtask
     
     //
-    // getstate values set by RM
+    // getState values set by RM
     //
-    function automatic void getstate;
+    function automatic void getState;
         int i;
         svPull(RMData);
 
-/*
-        for (i=0; i<32; i++) begin
-            state.x[i] = RMData.x[i];
-            state.f[i] = RMData.f[i];
-        end
-
-        for (i=0; i<4096; i++) begin
-            if (state.c[i] != RMData.csr[i]) begin
-                state.c[i] = RMData.csr[i];
-            end
-        end
-*/
-        SysBus.irq_ack_o   = RMData.irq_ack_o;
-        SysBus.irq_id_o    = RMData.irq_id_o;
-        SysBus.DM          = RMData.DM;
+        io.irq_ack_o   = RMData.irq_ack_o;
+        io.irq_id_o    = RMData.irq_id_o;
+        io.DM          = RMData.DM;
     endfunction
     
     // Called at end of instruction transaction
@@ -246,7 +236,7 @@ module CPU #(
         
         control.idle();
 
-        getstate();
+        getState();
                 
         // RVVI_S
         if (isvalid) begin
@@ -269,12 +259,13 @@ module CPU #(
     // pack values to be used by RM
     //
     function automatic void opPull;
-        SVData.reset         = SysBus.reset;
-        SVData.deferint      = SysBus.deferint;
-        SVData.irq_i         = SysBus.irq_i;
-        SVData.haltreq       = SysBus.haltreq;
-        SVData.resethaltreq  = SysBus.resethaltreq;
-        SVData.terminate     = SysBus.Shutdown;
+        SVData.reset         = io.reset;
+        SVData.deferint      = io.deferint;
+        SVData.irq_i         = io.irq_i;
+        SVData.haltreq       = io.haltreq;
+        SVData.resethaltreq  = io.resethaltreq;
+        
+        SVData.terminate     = io.Shutdown;
         SVData.cycles        = cycles;
         
         svPush(SVData);
@@ -369,17 +360,18 @@ module CPU #(
         Uns32 dValue = getData(address, data);
         
         msginfo($sformatf("%08X = %02x", address, data));
-        wValue = SysBus.read(idx) & ~(byte2bit(ble));
+        wValue = bus.read(idx) & ~(byte2bit(ble));
         wValue |= (dValue & byte2bit(ble));
         
-        SysBus.write(idx, wValue);
+        bus.write(idx, wValue);
     endfunction
     
     task busStore32;
-        input int address;
-        input int size;
-        input int data;
-        input int artifact;
+        output int fault; 
+        input  int address;
+        input  int size;
+        input  int data;
+        input  int artifact;
         
         automatic Uns32 ble    = getBLE(address, size);
         automatic Uns32 dValue = getData(address, data);
@@ -390,24 +382,25 @@ module CPU #(
 
         end else begin
             msginfo($sformatf("[%x]<=(%0d)%x Store", address, size, dValue));
-            SysBus.DAddr  <= address;
-            SysBus.DSize  <= size;
-            SysBus.Dwr    <= 1;
-            SysBus.Dbe    <= ble;
-            SysBus.DData  <= dValue;
+            bus.DAddr  <= address;
+            bus.DSize  <= size;
+            bus.Dwr    <= 1;
+            bus.Dbe    <= ble;
+            bus.DData  <= dValue;
             
             // wait for the transfer to complete
             busWait;
-            SysBus.Dwr    <= 0;
+            bus.Dwr    <= 0;
+            fault       = 0; // TODO
         end
     endtask
      
     task busStore;
+        output int fault; 
         input  int address;
         input  int size;
         input  int data;
         input  int artifact;
-        output int fault; 
         
         //
         // Are we over an address boundary ?
@@ -418,11 +411,11 @@ module CPU #(
         
         // Aligned access
         if (overflow < 4) begin
-            busStore32(address, size, data, artifact);
+            busStore32(fault, address, size, data, artifact);
         
         // Misaligned access
         end else begin
-            int lo, hi, address_lo, address_hi, size_lo, size_hi;
+            int lo, hi, address_lo, address_hi, size_lo, size_hi, fault_lo, fault_hi;
             
             // generate a data for 2 transactions
             lo = data;
@@ -435,12 +428,10 @@ module CPU #(
             address_lo = address;
             address_hi = (address & ~('h3)) + 4;
              
-            busStore32(address_lo, size_lo, lo, artifact);
-            busStore32(address_hi, size_hi, hi, artifact);
+            busStore32(fault_lo, address_lo, size_lo, lo, artifact);
+            busStore32(fault_hi, address_hi, size_hi, hi, artifact);
+            fault = fault_lo | fault_hi; // TODO
         end
-        
-        // Determine fault logic
-        fault = 0;
     endtask
 
     function automatic void dmiRead(input int address, input int size, output int data);
@@ -448,12 +439,13 @@ module CPU #(
         Uns32 idx = address >> 2;
         Uns32 ble = getBLE(address, size);
         
-        rValue = SysBus.read(idx) & byte2bit(ble);
+        rValue = bus.read(idx) & byte2bit(ble);
         
         data = setData(address, rValue);
     endfunction
 
     task busLoad32;
+        output int fault;
         input  int address;
         input  int size;
         output int data; 
@@ -466,56 +458,56 @@ module CPU #(
             dmiRead(address, size, data);
 
         end else begin
-            SysBus.DAddr <= address;
-            SysBus.DSize <= size;
-            SysBus.Dbe   <= ble;
-            SysBus.Drd   <= 1;
+            bus.DAddr <= address;
+            bus.DSize <= size;
+            bus.Dbe   <= ble;
+            bus.Drd   <= 1;
             
             // Wait for the transfer to complete & ssmode
             busWait;
-            data = setData(address, SysBus.DData);
-            SysBus.Drd   <= 0;
+            data = setData(address, bus.DData);
+            fault = 0; // ToDo
+            bus.Drd   <= 0;
             
             msginfo($sformatf("[%x]=>(%0d)%x Load", address, size, data));
         end
     endtask
     
     task busLoad;
+        output int fault;
         input  int address;
         input  int size;
         output int data; 
         input  int artifact; 
-        output int fault; 
 
         //
         // Are we over an address boundary ?
         // firstly consider 32 bit
         //
-        int overflow;
+        int overflow;        
         overflow = (address & 'h3) + (size - 1);
         
         // Aligned access
         if (overflow < 4) begin
-            busLoad32(address, size, data, artifact, 0);
+            busLoad32(fault, address, size, data, artifact, 0);
         
         // Misaligned access
         end else begin
-            int lo, hi, address_lo, address_hi;
+            int lo, hi, address_lo, address_hi, fault_lo, fault_hi;
             
             // generate a wide data value
             address_lo = address & ~('h3);
             address_hi = address_lo + 4;
-            busLoad32(address_lo, 4, lo, artifact, 0);
-            busLoad32(address_hi, 4, hi, artifact, 0);
+            busLoad32(fault_lo, address_lo, 4, lo, artifact, 0);
+            busLoad32(fault_hi, address_hi, 4, hi, artifact, 0);
         
             data = {hi, lo} >> ((address & 'h3) * 8);
+            fault = fault_lo | fault_hi; // TODO
         end
-
-        // Determine fault logic
-        fault = 0;
     endtask
 
     task busFetch32;
+        output int fault;
         input  int address;
         input  int size;
         output int data; 
@@ -528,21 +520,23 @@ module CPU #(
 
         end else begin
             busStep;
-            SysBus.IAddr <= address;
-            SysBus.ISize <= size;
-            SysBus.Ibe   <= ble;
-            SysBus.Ird   <= 1;
+            bus.IAddr <= address;
+            bus.ISize <= size;
+            bus.Ibe   <= ble;
+            bus.Ird   <= 1;
             
             // Wait for the transfer to complete & ssmode
             busWait;
-            data = setData(address, SysBus.IData);
-            SysBus.Ird   <= 0;
+            data  = setData(address, bus.IData);
+            fault = 0; // TODO
+            bus.Ird   <= 0;
             
             msginfo($sformatf("[%x]=>(%0d)%x Fetch", address, size, data));
         end
     endtask
     
     task busFetch;
+        output int fault;
         input  int address;
         input  int size;
         output int data; 
@@ -557,19 +551,20 @@ module CPU #(
         
         // Aligned access
         if (overflow < 4) begin
-            busFetch32(address, size, data, artifact);
+            busFetch32(fault, address, size, data, artifact);
         
         // Misaligned access
         end else begin
-            int lo, hi, address_lo, address_hi;
+            int lo, hi, address_lo, address_hi, fault_lo, fault_hi;
             
             // generate a wide data value
             address_lo = address & ~('h3);
             address_hi = address_lo + 4;
-            busFetch32(address_lo, 4, lo, artifact);
-            busFetch32(address_hi, 4, hi, artifact);
+            busFetch32(fault_lo, address_lo, 4, lo, artifact);
+            busFetch32(fault_hi, address_hi, 4, hi, artifact);
         
             data = {hi, lo} >> ((address & 'h3) * 8);
+            fault = fault_lo | fault_hi; // TODO
         end
     endtask
 
@@ -590,7 +585,8 @@ module CPU #(
     initial begin
         ovpcfg_load();
         elf_load();
-        opEntry(ovpcfg, elf_file);
+        opEntry(ovpcfg, elf_file, "CV32E40P");
+        //opEntry(ovpcfg, elf_file, "CV32E40X");
     `ifndef UVM
         $finish;
     `endif

@@ -200,7 +200,7 @@ module uvmt_cv32e40x_step_compare
                                else csr_val = `CV32E40X_CORE.cs_registers_i.mepc_q;             
              "mcause"        : if (step_compare_if.deferint_prime == 0) ignore = 1;
                                else csr_val = `CV32E40X_CORE.cs_registers_i.mcause_q;
-            //  "mip"           : if (step_compare_if.deferint_prime == 0 || iss_wrap.b1.deferint == 0) ignore = 1;
+            //  "mip"           : if (step_compare_if.deferint_prime == 0 || iss_wrap.io.deferint == 0) ignore = 1;
             //                    else csr_val = `CV32E40X_CORE.cs_registers_i.mip;
              "mip"           : ignore = 1;      
              "mhartid"       : csr_val = `CV32E40X_CORE.cs_registers_i.hart_id_i; 
@@ -208,11 +208,11 @@ module uvmt_cv32e40x_step_compare
              // only valid in DEBUG Mode
              "dcsr"          : begin
                                csr_val = `CV32E40X_CORE.cs_registers_i.dcsr_q;     
-                               if (iss_wrap.b1.DM==0) ignore = 1;
+                               if (iss_wrap.io.DM==0) ignore = 1;
              end
              "dpc"           : begin
                                csr_val = `CV32E40X_CORE.cs_registers_i.dpc_q;       
-                               if (iss_wrap.b1.DM==0) ignore = 1;
+                               if (iss_wrap.io.DM==0) ignore = 1;
                                if (ignore_dpc_check) ignore = 1;                               
              end
 

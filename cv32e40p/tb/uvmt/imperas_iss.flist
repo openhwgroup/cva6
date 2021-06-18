@@ -22,7 +22,6 @@ ${TBSRC_HOME}/uvmt/uvmt_cv32e40p_iss_wrap.sv
 // Vendor Libraries
 +incdir+${DV_OVPM_DESIGN}
 ${DV_OVPM_DESIGN}/typedefs.sv
-${DV_OVPM_DESIGN}/interface.sv
 ${DV_OVPM_DESIGN}/monitor.sv
 ${DV_OVPM_DESIGN}/ram.sv
 
