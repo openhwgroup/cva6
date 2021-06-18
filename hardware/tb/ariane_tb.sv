@@ -19,7 +19,7 @@ import uvm_pkg::*;
 
 `include "uvm_macros.svh"
 
-`define MAIN_MEM(P) dut.i_sram.gen_cut[0].gen_mem.i_ram.Mem_DP[(``P``)]
+`define MAIN_MEM(P) dut.i_cva_subsystem.i_sram.gen_cut[0].gen_mem.i_ram.Mem_DP[(``P``)]
 
 import "DPI-C" function read_elf(input string filename);
 import "DPI-C" function byte get_section(output longint address, output longint len);

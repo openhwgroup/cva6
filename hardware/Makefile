@@ -81,11 +81,11 @@ CFLAGS := -I$(QUESTASIM_HOME)/include         \
           $(if $(DROMAJO), -I../tb/dromajo/src,) \
           -std=c++11 -I../tb/dpi -O3
 
-ifdef XCELIUM_HOME
-CFLAGS += -I$(XCELIUM_HOME)/tools/include
-else
-$(warning XCELIUM_HOME not set which is necessary for compiling DPIs when using XCELIUM)
-endif
+#ifdef XCELIUM_HOME
+#CFLAGS += -I$(XCELIUM_HOME)/tools/include
+#else
+#$(warning XCELIUM_HOME not set which is necessary for compiling DPIs when using XCELIUM)
+#endif
 
 ifdef spike-tandem
     CFLAGS += -Itb/riscv-isa-sim/install/include/spike

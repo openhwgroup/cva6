@@ -21,6 +21,8 @@ sources:
   - include/tcdm_macros.sv
   - host/axi2tcdm_wrap.sv
   - host/ariane_peripherals.sv
+  - host/cva6_subsystem.sv
+  - host/l2_subsystem.sv
   - host/host_domain.sv                                               
   - tb/common/uart.sv                                                     
   - tb/common/SimDTM.sv                                                   
