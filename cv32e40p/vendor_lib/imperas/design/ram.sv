@@ -30,7 +30,7 @@ module RAM
     parameter int RAM_BYTE_SIZE  = 'h20000
 )
 (
-    BUS SysBus
+    RVVI_bus bus
 );
 
     // Sparse memory supported by all RTL simulators
@@ -58,12 +58,12 @@ module RAM
         return BitEn;
     endfunction
     
-    always @(posedge SysBus.Clk) begin
-        isROM = (SysBus.IAddr>=loROM && SysBus.IAddr<=hiROM);
-        isRAM = (SysBus.DAddr>=loRAM && SysBus.DAddr<=hiRAM);
+    always @(posedge bus.Clk) begin
+        isROM = (bus.IAddr>=loROM && bus.IAddr<=hiROM);
+        isRAM = (bus.DAddr>=loRAM && bus.DAddr<=hiRAM);
         
-        daddr4 = SysBus.DAddr >> 2;
-        iaddr4 = SysBus.IAddr >> 2;
+        daddr4 = bus.DAddr >> 2;
+        iaddr4 = bus.IAddr >> 2;
         
         // Uninitialized Memory
         if (!mem.exists(daddr4)) mem[daddr4] = 'h0;
@@ -71,20 +71,20 @@ module RAM
 
         // READ (ROM & RAM)
         if (isROM || isRAM) begin
-            if (SysBus.Drd==1) begin
-                SysBus.DData = mem[daddr4] & byte2bit(SysBus.Dbe);
-                //$display("Load  %08x <= [%08X]", SysBus.DData, daddr4);
+            if (bus.Drd==1) begin
+                bus.DData = mem[daddr4] & byte2bit(bus.Dbe);
+                //$display("Load  %08x <= [%08X]", bus.DData, daddr4);
             end
         end
-        if (SysBus.Drd == 1 && SysBus.DAddr==32'h1500_1000) begin
-            SysBus.DData = dut_wrap.data_rdata;
+        if (bus.Drd == 1 && bus.DAddr==32'h1500_1000) begin
+            bus.DData = dut_wrap.data_rdata;
         end
 
         // WRITE
         if (isRAM) begin
-            if (SysBus.Dwr==1) begin
-                value = mem[daddr4] & ~(byte2bit(SysBus.Dbe));
-                mem[daddr4] = value | (SysBus.DData & byte2bit(SysBus.Dbe));
+            if (bus.Dwr==1) begin
+                value = mem[daddr4] & ~(byte2bit(bus.Dbe));
+                mem[daddr4] = value | (bus.DData & byte2bit(bus.Dbe));
                 //$display("Store %08x <= %08X", daddr4, mem[daddr4]);
                 
             end
@@ -92,23 +92,23 @@ module RAM
         
         // EXEC
         if (isROM) begin
-            if (SysBus.Ird==1) begin
-                SysBus.IData = mem[iaddr4] & byte2bit(SysBus.Ibe);
-                //$display("Fetch %08x <= [%08X]", SysBus.IData, iaddr4);
+            if (bus.Ird==1) begin
+                bus.IData = mem[iaddr4] & byte2bit(bus.Ibe);
+                //$display("Fetch %08x <= [%08X]", bus.IData, iaddr4);
             end
         end
         
         // checkers
-        if (SysBus.Ird==1 && isROM==0) begin
-            //$display("ERROR: Fetch Address %08X does not have EXECUTE permission", SysBus.IAddr);
+        if (bus.Ird==1 && isROM==0) begin
+            //$display("ERROR: Fetch Address %08X does not have EXECUTE permission", bus.IAddr);
             //$finish;
         end
-        if (SysBus.Drd==1 && isROM==0 && isRAM==0) begin
-            //$display("ERROR: Load Address %08X does not have READ permission", SysBus.DAddr);
+        if (bus.Drd==1 && isROM==0 && isRAM==0) begin
+            //$display("ERROR: Load Address %08X does not have READ permission", bus.DAddr);
             //$finish;
         end
-        if (SysBus.Dwr==1 && isRAM==0) begin
-            //$display("ERROR: Store Address %08X does not have WRITE permission", SysBus.DAddr);
+        if (bus.Dwr==1 && isRAM==0) begin
+            //$display("ERROR: Store Address %08X does not have WRITE permission", bus.DAddr);
             //$finish;
         end
 

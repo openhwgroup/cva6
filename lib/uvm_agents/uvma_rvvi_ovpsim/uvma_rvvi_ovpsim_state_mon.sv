@@ -82,14 +82,14 @@ task uvma_rvvi_ovpsim_state_mon_c::monitor_rvvi_state();
       // FIXME: Currently the OVPSIM RVVI treats deferint cycles as an instruction
       // but it really isn't.  This is better handlded at the RVVI interface
       // Additionally fields like order should not be incremented
-      if (!rvvi_ovpsim_cntxt.ovpsim_bus_vif.deferint) begin
+      if (!rvvi_ovpsim_cntxt.ovpsim_io_vif.deferint) begin
          mon_trn.intr = 1;
       end
 
       // FIXME: Currently the OVPSIM RVVI treats halt cycles as an instruction
       // but it really isn't.  This is better handlded at the RVVI interface
       // Additionally fields like order should not be incremented
-      if (rvvi_ovpsim_cntxt.ovpsim_bus_vif.haltreq) begin
+      if (rvvi_ovpsim_cntxt.ovpsim_io_vif.haltreq) begin
          mon_trn.halt = 1;
       end
 
