@@ -212,8 +212,8 @@ task uvma_obi_memory_drv_c::drv_pre_reset(uvm_phase phase);
    vif_slv_mp.drv_slv_cb.rvalid <= 'b0;
 
    case (cfg.drv_mode)
-      UVMA_OBI_MEMORY_MODE_MSTR: #1step;//@(vif_mstr_mp.drv_mstr_cb);
-      UVMA_OBI_MEMORY_MODE_SLV : #1step;//@(vif_slv_mp .drv_slv_cb );
+      UVMA_OBI_MEMORY_MODE_MSTR: /*#1step;*/@(vif_mstr_mp.drv_mstr_cb);
+      UVMA_OBI_MEMORY_MODE_SLV : /*#1step;*/@(vif_slv_mp .drv_slv_cb );
       
       default: `uvm_fatal("OBI_MEMORY_DRV", $sformatf("Invalid drv_mode: %0d", cfg.drv_mode))
    endcase
@@ -225,12 +225,12 @@ task uvma_obi_memory_drv_c::drv_in_reset(uvm_phase phase);
    
    case (cfg.drv_mode)
       UVMA_OBI_MEMORY_MODE_MSTR: begin
-         #1step;//@(vif_mstr_mp.drv_mstr_cb);
+         /*#1step;*/@(vif_mstr_mp.drv_mstr_cb);
          drv_mstr_idle();
       end
       
       UVMA_OBI_MEMORY_MODE_SLV : begin
-         #1step;//@(vif_slv_mp.drv_slv_cb);
+         /*#1step;*/@(vif_slv_mp.drv_slv_cb);
          drv_slv_idle();
       end
       
@@ -475,7 +475,7 @@ task uvma_obi_memory_drv_c::drv_slv_read_req(ref uvma_obi_memory_slv_seq_item_c 
 
    // Address phase
    vif_slv_mp.drv_slv_cb.gnt <= 1'b1;
-   @(vif_slv_mp.drv_slv_cb);
+   //@(vif_slv_mp.drv_slv_cb);
    if (req.tail_length > 0) begin
       repeat (req.tail_length) begin
          @(vif_slv_mp.drv_slv_cb);
@@ -486,18 +486,25 @@ task uvma_obi_memory_drv_c::drv_slv_read_req(ref uvma_obi_memory_slv_seq_item_c 
       // yes, this is redundant - makes the code easier to follow (?)
       vif_slv_mp.drv_slv_cb.gnt <= 1'b1;
    end
+   `uvm_info("OBI_MEMORY_DRV", "drv_slv_read_req ADDRESS PHASE complete", UVM_NONE)
 
    // Response phase
-   vif_slv_mp.drv_slv_cb.rvalid <= 1'b1;
-   vif_slv_mp.drv_slv_cb.err    <= 1'b0; //req.err;
-   for (int unsigned ii=0; ii<cfg.data_width; ii++) begin
-      vif_slv_mp.drv_slv_cb.rdata[ii] <= req.rdata[ii];
-   end
-   @(vif_slv_mp.drv_slv_cb);
+   //fork
+   //   begin
+         vif_slv_mp.drv_slv_cb.rvalid <= 1'b1;
+         vif_slv_mp.drv_slv_cb.err    <= 1'b0; //req.err;
+         for (int unsigned ii=0; ii<cfg.data_width; ii++) begin
+            vif_slv_mp.drv_slv_cb.rdata[ii] <= req.rdata[ii];
+         end
+         @(vif_slv_mp.drv_slv_cb);
 
-   // Idle
-   vif_slv_mp.drv_slv_cb.rvalid <= 1'b0;
-   drv_slv_idle();
+         // Idle
+         vif_slv_mp.drv_slv_cb.rvalid <= 1'b0;
+         drv_slv_idle();
+         `uvm_info("OBI_MEMORY_DRV", "drv_slv_read_req RESPONSE PHASE complete", UVM_NONE)
+   //   end
+   //join_none
+
    `uvm_info("OBI_MEMORY_DRV", "drv_slv_read_req FIN", UVM_NONE)
 
 /*

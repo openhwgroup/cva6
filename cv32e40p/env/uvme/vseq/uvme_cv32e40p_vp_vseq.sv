@@ -147,7 +147,7 @@ task uvme_cv32e40p_vp_vseq_c::body();
          forever begin
             // Wait for the monitor to send us the mstr's "req" with an access request
             p_sequencer.obi_memory_data_sequencer.mon_trn_fifo.get(mon_trn);
-            `uvm_info("OBI_MEMORY_SLV_SEQ", $sformatf("Got mon_trn:\n%s", mon_trn.sprint()), UVM_HIGH)
+            `uvm_info("OBI_MEMORY_SLV_SEQ", $sformatf("Got mon_trn:\n%s", mon_trn.sprint()), UVM_LOW)
             do_response(mon_trn);
          end
       end
@@ -477,27 +477,26 @@ task uvme_cv32e40p_vp_vseq_c::vp_vp_status_flags(ref uvma_obi_memory_mon_trn_c m
       `uvm_info("OBI_VP", $sformatf("Call to virtual peripheral 'vp_status_flags:\n'%s", mon_req.sprint()), UVM_LOW)
       if (mon_req.address == 32'h2000_0000) begin
          if (mon_req.data == 'd123456789) begin
-            //wait(cntxt.misc_vif.clk === 1);
-            //cntxt.misc_vif.tests_passed = 1;
-            //wait(cntxt.misc_vif.clk === 0);
-            //cntxt.misc_vif.tests_passed = 0;
+            `uvm_info("OBI_VP", $sformatf("END OF SIM Call to virtual peripheral 'vp_status_flags:\n'%s", mon_req.sprint()), UVM_LOW)
+            wait(cntxt.misc_vif.clk === 1);
+            cntxt.misc_vif.tests_passed = 1;
+            wait(cntxt.misc_vif.clk === 0);
+            cntxt.misc_vif.tests_passed = 0;
          end
          else if (mon_req.data == 'd1) begin
-            //wait(cntxt.misc_vif.clk === 1);
-            //cntxt.misc_vif.tests_failed = 1;
-            //wait(cntxt.misc_vif.clk === 0);
-            //cntxt.misc_vif.tests_failed = 0;
+            wait(cntxt.misc_vif.clk === 1);
+            cntxt.misc_vif.tests_failed = 1;
+            wait(cntxt.misc_vif.clk === 0);
+            cntxt.misc_vif.tests_failed = 0;
          end
       end
       else if (mon_req.address == 32'h2000_0004) begin
-          /*
          wait(cntxt.misc_vif.clk === 1);
          cntxt.misc_vif.exit_valid = 1;
          cntxt.misc_vif.exit_value = mon_req.data;
          wait(cntxt.misc_vif.clk === 0);
          cntxt.misc_vif.exit_valid = 0;
          cntxt.misc_vif.exit_value = 0;
-         */
       end
    end
    

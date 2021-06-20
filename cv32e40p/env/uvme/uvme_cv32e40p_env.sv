@@ -214,10 +214,10 @@ task uvme_cv32e40p_env_c::run_phase(uvm_phase phase);
             instr_vseq.start(vsequencer);
          end
          
-         //begin
-         //   vp_vseq = uvme_cv32e40p_vp_vseq_c::type_id::create("vp_vseq");
-         //   vp_vseq.start(vsequencer);
-         //end
+         begin
+            vp_vseq = uvme_cv32e40p_vp_vseq_c::type_id::create("vp_vseq");
+            vp_vseq.start(vsequencer);
+         end
       join_none
    end
    
