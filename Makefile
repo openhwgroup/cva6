@@ -73,7 +73,12 @@ endif
 
 # Sources
 # Package files -> compile first
-ariane_pkg := core/include/riscv_pkg.sv                              \
+ifeq ($(findstring 32, $(variant)),32)
+    ariane_pkg := core/include/cv32a6_imac_sv0_config_pkg.sv
+else
+    ariane_pkg := core/include/cv64a6_imacfd_sv39_config_pkg.sv
+endif
+ariane_pkg += core/include/riscv_pkg.sv                              \
               corev_apu/riscv-dbg/src/dm_pkg.sv                      \
               core/include/ariane_pkg.sv                             \
               core/include/ariane_rvfi_pkg.sv                        \
@@ -140,11 +145,6 @@ ifdef spike-tandem
     CFLAGS += -Itb/riscv-isa-sim/install/include/spike
 endif
 
-ifeq ($(findstring 32, $(variant)),32)
-    CVA6_VARIANT = CV32A6
-else
-    CVA6_VARIANT = CV64A6
-endif
 
 # this list contains the standalone components
 src :=  $(filter-out core/ariane_regfile.sv, $(wildcard core/*.sv))                  \
@@ -296,10 +296,10 @@ endif
 
 vcs_build: $(dpi-library)/ariane_dpi.so
 	vlogan -full64 -nc -sverilog -ntb_opts uvm-1.2
-	vlogan -full64 -nc -sverilog -ntb_opts uvm-1.2 +define+$(CVA6_VARIANT) +define+WT_CACHE $(filter %.sv,$(ariane_pkg)) +incdir+core/include/+$(VCS_HOME)/etc/uvm-1.2/dpi
-	vlogan -full64 -nc -sverilog -ntb_opts uvm-1.2 +define+$(CVA6_VARIANT) +define+WT_CACHE $(filter %.sv,$(util)) +incdir+common/local/util+core/include/+src/util/+$(VCS_HOME)/etc/uvm-1.2/dpi
+	vlogan -full64 -nc -sverilog -ntb_opts uvm-1.2 +define+WT_CACHE $(filter %.sv,$(ariane_pkg)) +incdir+core/include/+$(VCS_HOME)/etc/uvm-1.2/dpi
+	vlogan -full64 -nc -sverilog -ntb_opts uvm-1.2 +define+WT_CACHE $(filter %.sv,$(util)) +incdir+common/local/util+core/include/+src/util/+$(VCS_HOME)/etc/uvm-1.2/dpi
 	vhdlan -full64 $(filter %.vhd,$(uart_src))
-	vlogan -full64 -nc -sverilog -ntb_opts uvm-1.2 -assert svaext +define+$(CVA6_VARIANT) +define+WT_CACHE $(filter %.sv,$(src)) +incdir+core/include/+common/submodules/common_cells/include/+common/local/util/+$(VCS_HOME)/etc/uvm-1.2/dpi
+	vlogan -full64 -nc -sverilog -ntb_opts uvm-1.2 -assert svaext +define+WT_CACHE $(filter %.sv,$(src)) +incdir+core/include/+common/submodules/common_cells/include/+common/local/util/+$(VCS_HOME)/etc/uvm-1.2/dpi
 	vlogan -full64 -nc -sverilog -ntb_opts uvm-1.2 $(tbs)
 	vcs -full64 -timescale=1ns/1ns -ntb_opts uvm-1.2 work.ariane_tb
 
@@ -569,7 +569,6 @@ verilate_command := $(verilator)                                                
                     -Wno-BLKANDNBLK                                                                              \
                     -Wno-style                                                                                   \
                     $(if ($(PRELOAD)!=""), -DPRELOAD=1,)                                                         \
-                    -D$(CVA6_VARIANT)                                                                                      \
                     $(if $(DROMAJO), -DDROMAJO=1,)                                                               \
                     $(if $(PROFILE),--stats --stats-vars --profile-cfuncs,)                                      \
                     $(if $(DEBUG),--trace --trace-structs,)                                                      \

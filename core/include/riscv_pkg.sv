@@ -14,7 +14,15 @@
  *
  * Description: Common RISC-V definitions.
  */
+
+import cva6_config_pkg::*;
+
 package riscv;
+
+    // ----------------------
+    // Import cva6 config from cva6_config_pkg
+    // ----------------------
+    localparam XLEN = cva6_config_pkg::cva6_config_XLEN;
 
     // ----------------------
     // Data and Address length
@@ -27,12 +35,6 @@ package riscv;
        ModeSv57 = 10,
        ModeSv64 = 11
     } vm_mode_t;
-
-`ifdef CV32A6
-    localparam XLEN = 32;
-`else
-    localparam XLEN = 64;
-`endif
 
     // Warning: When using STD_CACHE, configuration must be PLEN=56 and VLEN=64
     // Warning: VLEN must be superior or equal to PLEN
