@@ -38,11 +38,10 @@ class uvma_rvfi_agent_c#(int ILEN=DEFAULT_ILEN,
    // TLM   
    uvm_analysis_port#(uvma_rvfi_instr_seq_item_c#(ILEN,XLEN)) instr_mon_ap[];   
    
-   `uvm_component_utils_begin(uvma_rvfi_agent_c)
+   `uvm_component_param_utils_begin(uvma_rvfi_agent_c)
       `uvm_field_object(cfg  , UVM_DEFAULT)
       `uvm_field_object(cntxt, UVM_DEFAULT)
    `uvm_component_utils_end
-   
    
    /**
     * Default constructor.

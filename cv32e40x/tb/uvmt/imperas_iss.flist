@@ -16,7 +16,6 @@
 // 
 
 // CV32 test bench files
-${TBSRC_HOME}/uvmt/uvmt_cv32e40x_step_compare.sv
 ${TBSRC_HOME}/uvmt/uvmt_cv32e40x_iss_wrap.sv
 
 // Vendor Libraries

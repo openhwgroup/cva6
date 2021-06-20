@@ -585,13 +585,15 @@ module CPU #(
     endfunction
     
     initial begin
-        ovpcfg_load();
-        elf_load();
-        opEntry(ovpcfg, elf_file, "CV32E40P");
-        //opEntry(ovpcfg, elf_file, "CV32E40X");
-    `ifndef UVM
-        $finish;
-    `endif
+        if ($test$plusargs("USE_ISS")) begin
+            ovpcfg_load();
+            elf_load();
+            opEntry(ovpcfg, elf_file, "CV32E40P");
+            //opEntry(ovpcfg, elf_file, "CV32E40X");
+            `ifndef UVM
+            $finish;
+            `endif
+        end
     end
     
 `ifndef UVM

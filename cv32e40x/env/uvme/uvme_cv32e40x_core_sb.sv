@@ -312,8 +312,11 @@ endfunction : check_instr
 function void uvme_cv32e40x_core_sb_c::check_gpr(uvma_rvfi_instr_seq_item_c#(ILEN,XLEN) rvfi_instr,
                                                  uvma_rvvi_state_seq_item_c#(ILEN,XLEN) rvvi_state);
 
-   gpr_checked_cnt++;
+   // gpt_checked_cnt represents the GPR "updates" checked, so skip writes to x0
+   if (rvfi_instr.rd1_addr !=0 || rvfi_instr.rd2_addr != 0)
+      gpr_checked_cnt++;
 
+   // Update the local register map
    if (rvfi_instr.rd1_addr != 0)
       x[rvfi_instr.rd1_addr] = rvfi_instr.rd1_wdata;
    if (rvfi_instr.rd2_addr != 0)

@@ -23,13 +23,13 @@
 -f ${DV_UVML_SB_PATH}/uvml_sb_pkg.flist
 
 // Agents
+-f ${DV_UVMA_RVFI_PATH}/uvma_rvfi_pkg.flist
+-f ${DV_UVMA_RVVI_PATH}/uvma_rvvi_pkg.flist
 -f ${DV_UVMA_ISACOV_PATH}/uvma_isacov_pkg.flist
 -f ${DV_UVMA_CLKNRST_PATH}/uvma_clknrst_pkg.flist
 -f ${DV_UVMA_INTERRUPT_PATH}/uvma_interrupt_pkg.flist
 -f ${DV_UVMA_OBI_PATH}/uvma_obi_pkg.flist
 -f ${DV_UVMA_DEBUG_PATH}/uvma_debug_pkg.flist
--f ${DV_UVMA_RVFI_PATH}/uvma_rvfi_pkg.flist
--f ${DV_UVMA_RVVI_PATH}/uvma_rvvi_pkg.flist
 -f ${DV_UVMA_RVVI_OVPSIM_PATH}/uvma_rvvi_ovpsim_pkg.flist
 
 // Environments
@@ -60,4 +60,4 @@ ${TBSRC_HOME}/core/tb_riscv/riscv_random_interrupt_generator.sv
 
 // FIXME:STR:Find a better location
 ${DV_UVMT_PATH}/uvmt_cv32e40x_interrupt_assert.sv
-${DV_UVMT_PATH}/uvmt_cv32e40x_debug_assert.sv
+//${DV_UVMT_PATH}/uvmt_cv32e40x_debug_assert.sv

@@ -42,8 +42,7 @@ class uvmt_cv32e40x_base_test_c extends uvm_test;
    
    // Handles testbench interfaces
    virtual uvmt_cv32e40x_vp_status_if    vp_status_vif;  // virtual peripheral status
-   virtual uvmt_cv32e40x_core_cntrl_if   core_cntrl_vif; // control inputs to the core
-   virtual uvmt_cv32e40x_step_compare_if step_compare_vif;
+   virtual uvmt_cv32e40x_core_cntrl_if   core_cntrl_vif; // control inputs to the core   
    
    // Default sequences
    rand uvme_cv32e40x_reset_vseq_c  reset_vseq;
@@ -342,11 +341,6 @@ function void uvmt_cv32e40x_base_test_c::phase_ended(uvm_phase phase);
      // then mark test as failed
      if (!tp && !evalid && !tf) `uvm_error("END_OF_TEST", "DUT WRAPPER virtual peripheral failed to flag test passed and failed to signal exit value.")   
 
-     // Report on number of ISS step and compare checks if the ISS is used     
-     if (env_cfg.use_iss && !env_cfg.use_rvvi) begin
-       step_compare_vif.report_step_compare(); 
-     end
-
      print_banner("test finished");
    end
    
@@ -368,13 +362,6 @@ function void uvmt_cv32e40x_base_test_c::retrieve_vifs();
    else begin
       `uvm_info("VIF", $sformatf("Found core_cntrl_vif handle of type %s in uvm_config_db", $typename(core_cntrl_vif)), UVM_DEBUG)
    end
-
-   if (!uvm_config_db#(virtual uvmt_cv32e40x_step_compare_if)::get(this, "", "step_compare_vif", step_compare_vif)) begin
-      `uvm_fatal("VIF", $sformatf("Could not find step_compare_vif handle of type %s in uvm_config_db", $typename(step_compare_vif)))
-   end
-   else begin
-      `uvm_info("VIF", $sformatf("Found step_compare_vif handle of type %s in uvm_config_db", $typename(step_compare_vif)), UVM_DEBUG)
-   end   
    
 endfunction : retrieve_vifs
 
@@ -383,7 +370,6 @@ function void uvmt_cv32e40x_base_test_c::create_cfg();
    
    test_cfg = uvmt_cv32e40x_test_cfg_c::type_id::create("test_cfg");
    env_cfg  = uvme_cv32e40x_cfg_c     ::type_id::create("env_cfg" );
-   //ral      = env_cfg.ral;
    
 endfunction : create_cfg
 

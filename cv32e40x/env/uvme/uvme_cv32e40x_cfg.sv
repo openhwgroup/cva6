@@ -26,15 +26,12 @@
 class uvme_cv32e40x_cfg_c extends uvm_object;
 
    // Status of plusarg to control testbench features
-   bit                           use_iss  = 0;
-   bit                           use_rvvi = 0;
+   bit                           use_iss  = 0;   
    bit                           disable_csr_check;
 
    // Integrals
    rand bit                      enabled;
-   rand uvm_active_passive_enum  is_active;
-   bit                           use_isacov;
-   
+   rand uvm_active_passive_enum  is_active;   
 
    rand bit                      scoreboarding_enabled;
    rand bit                      cov_model_enabled;
@@ -81,7 +78,7 @@ class uvme_cv32e40x_cfg_c extends uvm_object;
    }
    
    constraint scoreboard_cons {
-      (!(use_iss && use_rvvi)) -> (scoreboarding_enabled == 0);
+      (!use_iss) -> (scoreboarding_enabled == 0);
    }
    constraint agent_cfg_cons {
       if (enabled) {
@@ -90,15 +87,15 @@ class uvme_cv32e40x_cfg_c extends uvm_object;
          debug_cfg.enabled     == 1;
          obi_instr_cfg.enabled == 1;
          obi_data_cfg.enabled  == 1;
-         rvfi_cfg.enabled      == 1;
-         rvvi_cfg.enabled      == 1;
+         rvfi_cfg.enabled      == 1;         
+         rvvi_cfg.enabled      == use_iss;
       }
       obi_instr_cfg.write_enabled == 0;
       obi_instr_cfg.read_enabled  == 1;
       obi_data_cfg.write_enabled  == 1;
       obi_data_cfg.read_enabled   == 1;
 
-      isacov_cfg.enabled                    == use_isacov;  // TODO don't need "== 0" after uvma_isacov has matured enough
+      isacov_cfg.enabled                    == 1;
       isacov_cfg.ext_i_enabled              == 1;
       isacov_cfg.ext_m_enabled              == 1;
       isacov_cfg.ext_c_enabled              == 1;
@@ -123,8 +120,7 @@ class uvme_cv32e40x_cfg_c extends uvm_object;
          obi_instr_cfg.is_active == UVM_PASSIVE;
          obi_data_cfg.is_active  == UVM_PASSIVE;
          rvfi_cfg.is_active      == UVM_PASSIVE;
-         (use_rvvi) -> rvvi_cfg.is_active == UVM_ACTIVE;
-         (!use_rvvi)-> rvvi_cfg.is_active == UVM_PASSIVE;
+         rvvi_cfg.is_active      == UVM_ACTIVE;         
       }
       
       if (trn_log_enabled) {
@@ -138,7 +134,10 @@ class uvme_cv32e40x_cfg_c extends uvm_object;
          rvvi_cfg.trn_log_enabled      == 1;
       }
 
-      if (cov_model_enabled) {
+      // FIXME:strichmo:restore when debug coverage model is fixed
+      debug_cfg.cov_model_enabled == 0;
+
+      if (cov_model_enabled) {         
          isacov_cfg.cov_model_enabled    == 1;
          obi_instr_cfg.cov_model_enabled == 1;
          obi_data_cfg.cov_model_enabled  == 1;
@@ -168,9 +167,6 @@ function uvme_cv32e40x_cfg_c::new(string name="uvme_cv32e40x_cfg");
 
    if ($test$plusargs("USE_ISS")) 
       use_iss = 1;
-
-   if ($test$plusargs("USE_RVVI")) 
-      use_rvvi = 1;
    
    if ($test$plusargs("disable_csr_chk")) 
       disable_csr_check = 1;

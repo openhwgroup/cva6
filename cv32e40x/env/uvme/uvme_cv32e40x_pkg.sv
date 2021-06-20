@@ -54,15 +54,13 @@ package uvme_cv32e40x_pkg;
    // Objects
    `include "uvme_cv32e40x_cfg.sv"
    `include "uvme_cv32e40x_cntxt.sv"
-   `include "uvme_rv32isa_covg_trn.sv"
 
    // Predictor
    `include "uvme_cv32e40x_prd.sv"
    
    // Environment components
    `include "uvme_interrupt_covg.sv"
-   `include "uvme_debug_covg.sv"
-   `include "uvme_rv32isa_covg.sv"
+   `include "uvme_debug_covg.sv"   
    `include "uvme_cv32e40x_cov_model.sv"
    `include "uvme_cv32e40x_sb.sv"
    `include "uvme_cv32e40x_core_sb.sv"

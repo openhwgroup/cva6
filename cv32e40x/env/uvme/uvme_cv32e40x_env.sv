@@ -37,14 +37,14 @@ class uvme_cv32e40x_env_c extends uvm_env;
    uvme_cv32e40x_vsqr_c       vsequencer;
    
    // Agents
-   uvma_isacov_agent_c           isacov_agent;
-   uvma_clknrst_agent_c          clknrst_agent;
-   uvma_interrupt_agent_c        interrupt_agent;
-   uvma_debug_agent_c            debug_agent;
-   uvma_obi_agent_c              obi_instr_agent;
-   uvma_obi_agent_c              obi_data_agent;
-   uvma_rvfi_agent_c#(ILEN,XLEN) rvfi_agent;
-   uvma_rvvi_agent_c#(ILEN,XLEN) rvvi_agent;
+   uvma_isacov_agent_c#(ILEN,XLEN)  isacov_agent;
+   uvma_clknrst_agent_c             clknrst_agent;
+   uvma_interrupt_agent_c           interrupt_agent;
+   uvma_debug_agent_c               debug_agent;
+   uvma_obi_agent_c                 obi_instr_agent;
+   uvma_obi_agent_c                 obi_data_agent;
+   uvma_rvfi_agent_c#(ILEN,XLEN)    rvfi_agent;
+   uvma_rvvi_agent_c#(ILEN,XLEN)    rvvi_agent;
 
    `uvm_component_utils_begin(uvme_cv32e40x_env_c)
       `uvm_field_object(cfg  , UVM_DEFAULT)
@@ -233,8 +233,7 @@ endfunction: assign_cfg
 
 
 function void uvme_cv32e40x_env_c::assign_cntxt();
-
-   // TODO uvma_isacov_agent
+   
    uvm_config_db#(uvme_cv32e40x_cntxt_c)::set(this, "*", "cntxt", cntxt);
    uvm_config_db#(uvma_clknrst_cntxt_c)::set(this, "clknrst_agent", "cntxt", cntxt.clknrst_cntxt);
    uvm_config_db#(uvma_interrupt_cntxt_c)::set(this, "interrupt_agent", "cntxt", cntxt.interrupt_cntxt);
@@ -249,7 +248,7 @@ endfunction: assign_cntxt
 
 function void uvme_cv32e40x_env_c::create_agents();
 
-   isacov_agent = uvma_isacov_agent_c::type_id::create("isacov_agent", this);
+   isacov_agent = uvma_isacov_agent_c#(ILEN,XLEN)::type_id::create("isacov_agent", this);
    clknrst_agent = uvma_clknrst_agent_c::type_id::create("clknrst_agent", this);
    interrupt_agent = uvma_interrupt_agent_c::type_id::create("interrupt_agent", this);
    debug_agent = uvma_debug_agent_c::type_id::create("debug_agent", this);
@@ -280,16 +279,15 @@ endfunction: create_vsequencer
 
 function void uvme_cv32e40x_env_c::create_cov_model();
    
-   cov_model = uvme_cv32e40x_cov_model_c::type_id::create("cov_model", this);
-   void'(uvm_config_db#(virtual uvmt_cv32e40x_isa_covg_if)::get(this, "", "isa_covg_vif", cntxt.isa_covg_vif));
-   if (cntxt.isa_covg_vif == null) begin
-      `uvm_fatal("CNTXT", $sformatf("No uvmt_cv32e40x_isa_covg_if found in config database"))
-   end
+   cov_model = uvme_cv32e40x_cov_model_c::type_id::create("cov_model", this);   
 
+   // FIXME:strichmo:restore with new controller
+   /*
    void'(uvm_config_db#(virtual uvmt_cv32e40x_debug_cov_assert_if)::get(this, "", "debug_cov_vif", cntxt.debug_cov_vif));
    if (cntxt.debug_cov_vif == null) begin
       `uvm_fatal("CNTXT", $sformatf("No uvmt_cv32e40x_debug_cov_assert_if found in config database"))
    end
+   */
 endfunction: create_cov_model
 
 
@@ -321,7 +319,9 @@ endfunction: connect_scoreboard
 function void uvme_cv32e40x_env_c::connect_coverage_model();
    
    interrupt_agent.monitor.ap_iss.connect(cov_model.interrupt_covg.interrupt_mon_export);      
-   
+   foreach (rvfi_agent.instr_mon_ap[i])
+      rvfi_agent.instr_mon_ap[i].connect(isacov_agent.monitor.rvfi_instr_export);
+
 endfunction: connect_coverage_model
 
 

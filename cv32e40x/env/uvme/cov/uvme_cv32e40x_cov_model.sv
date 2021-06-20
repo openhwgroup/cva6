@@ -29,15 +29,13 @@ class uvme_cv32e40x_cov_model_c extends uvm_component;
    uvme_cv32e40x_cfg_c    cfg;
    uvme_cv32e40x_cntxt_c  cntxt;
 
-   uvme_rv32isa_covg   isa_covg;   
-   uvme_interrupt_covg interrupt_covg;
-   uvme_debug_covg debug_covg;
+   uvme_interrupt_covg    interrupt_covg;   
+   uvme_debug_covg        debug_covg;
 
    `uvm_component_utils_begin(uvme_cv32e40x_cov_model_c)
       `uvm_field_object(cfg  , UVM_DEFAULT)
       `uvm_field_object(cntxt, UVM_DEFAULT)
-   `uvm_component_utils_end
-      
+   `uvm_component_utils_end      
    
    /**
     * Default constructor.
@@ -58,23 +56,7 @@ class uvme_cv32e40x_cov_model_c extends uvm_component;
     * Describe uvme_cv32e40x_cov_model_c::run_phase()
     */
    extern virtual task run_phase(uvm_phase phase);
-   
-   /**
-    * TODO Describe uvme_cv32e40x_cov_model_c::sample_cfg()
-    */
-   extern virtual function void sample_cfg();
-   
-   /**
-    * TODO Describe uvme_cv32e40x_cov_model_c::sample_cntxt()
-    */
-   extern virtual function void sample_cntxt();
-   
-   // TODO Add coverage functions to uvme_cv32e40x_cov_model_c
-   //      Ex: /**
-   //           * Samples trn via debug_cg
-   //           */
-   //          extern function void sample_debug();
-   
+      
 endclass : uvme_cv32e40x_cov_model_c
 
 
@@ -100,67 +82,27 @@ function void uvme_cv32e40x_cov_model_c::build_phase(uvm_phase phase);
    if (!cntxt) begin
       `uvm_fatal("CNTXT", "Context handle is null")
    end
-
-   isa_covg = uvme_rv32isa_covg::type_id::create("isa_covg", this);
-   uvm_config_db#(uvme_cv32e40x_cntxt_c)::set(this, "isa_covg", "cntxt", cntxt);
    
    interrupt_covg = uvme_interrupt_covg::type_id::create("interrupt_covg", this);
    uvm_config_db#(uvme_cv32e40x_cntxt_c)::set(this, "interrupt_covg", "cntxt", cntxt);
 
+   /* FIXME:strichmo:restore when debug is fixed
    debug_covg = uvme_debug_covg::type_id::create("debug_covg", this);
    uvm_config_db#(uvme_cv32e40x_cntxt_c)::set(this, "debug_covg", "cntxt", cntxt);
-   
+   */
 endfunction : build_phase
 
 function void uvme_cv32e40x_cov_model_c::connect_phase(uvm_phase phase);
    
    super.connect_phase(phase);
 
-   isa_covg.ap.connect(interrupt_covg.rv32isa_export);
 endfunction : connect_phase
 
 task uvme_cv32e40x_cov_model_c::run_phase(uvm_phase phase);
    
    super.run_phase(phase);
-   
-   fork
-      // Configuration
-      forever begin
-         cntxt.sample_cfg_e.wait_trigger();
-         sample_cfg();
-      end
       
-      // Context
-      forever begin
-         cntxt.sample_cntxt_e.wait_trigger();
-         sample_cntxt();
-      end
-      
-      // TODO Implement uvme_cv32e40x_cov_model_c::run_phase()
-      //      Ex: forever begin
-      //             debug_fifo.get(debug_trn);
-      //             sample_debug();
-      //          end
-   join_none
-   
 endtask : run_phase
-
-
-function void uvme_cv32e40x_cov_model_c::sample_cfg();
-   
-   // TODO Implement uvme_cv32e40x_cov_model_c::sample_cfg();
-   //      Ex: cv32e40x_cfg_cg.sample();
-   
-endfunction : sample_cfg
-
-
-function void uvme_cv32e40x_cov_model_c::sample_cntxt();
-   
-   // TODO Implement uvme_cv32e40x_cov_model_c::sample_cntxt();
-   //      Ex: cv32e40x_cntxt_cg.sample();
-   
-endfunction : sample_cntxt
-
 
 
 `endif // __UVME_CV32E40X_COV_MODEL_SV__

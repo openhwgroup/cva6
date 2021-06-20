@@ -25,10 +25,8 @@
  */
 class uvme_cv32e40x_cntxt_c extends uvm_object;
 
-   // Virtual interface for ISA coverage
-   virtual uvmt_cv32e40x_isa_covg_if isa_covg_vif;
-
    // Virtual interface for Debug coverage
+   // FIXME:strichmo:The debug coverage interface needs to be reimplemented for new controller
    virtual uvmt_cv32e40x_debug_cov_assert_if debug_cov_vif;
 
    // Agent context handles
@@ -40,7 +38,6 @@ class uvme_cv32e40x_cntxt_c extends uvm_object;
    uvma_rvfi_cntxt_c#(ILEN,XLEN) rvfi_cntxt;
    uvma_rvvi_cntxt_c#(ILEN,XLEN) rvvi_cntxt;
 
-   
    // Events
    uvm_event  sample_cfg_e;
    uvm_event  sample_cntxt_e;

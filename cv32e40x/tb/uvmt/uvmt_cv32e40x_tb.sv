@@ -77,11 +77,6 @@ module uvmt_cv32e40x_tb;
                                                   .load_instr_mem()); // Static and quasi-static core control inputs.
    uvmt_cv32e40x_core_status_if     core_status_if(.core_busy(),
                                                    .sec_lvl());     // Core status outputs 
-
-   // Step and compare interface
-   uvmt_cv32e40x_step_compare_if step_compare_if();
-   uvmt_cv32e40x_isa_covg_if     isa_covg_if();
-
    
   /**
    * DUT WRAPPER instance:
@@ -268,7 +263,8 @@ bind cv32e40x_wrapper
                                        );
 
   // Bind in verification modules to the design
-  
+  // FIXME:strichmo:Fix interrupt assertions
+  /*
   bind cv32e40x_core 
     uvmt_cv32e40x_interrupt_assert interrupt_assert_i(.mcause_n({cs_registers_i.mcause_n[31], cs_registers_i.mcause_n[4:0]}),
                                                       .mip(cs_registers_i.mip),
@@ -285,10 +281,13 @@ bind cv32e40x_wrapper
                                                       .debug_mode_q(controller_i.controller_fsm_i.debug_mode_q),
                                                       .*);
    
+   */
+
     // Debug assertion and coverage interface
 
     // Instantiate debug assertions
     
+    /* FIXME:STRICHMO:restore debug coverage assertions eventually
     uvmt_cv32e40x_debug_cov_assert_if debug_cov_assert_if(    
       .clk_i(clknrst_if.clk),
       .rst_ni(clknrst_if.reset_n),
@@ -359,8 +358,10 @@ bind cv32e40x_wrapper
       .is_mulhsu(),
       .pending_enabled_irq()
     );
+  */
 
-    uvmt_cv32e40x_debug_assert u_debug_assert(.cov_assert_if(debug_cov_assert_if));
+    // FIXME:strichmo Must re-enable debug assertions
+    //uvmt_cv32e40x_debug_assert u_debug_assert(.cov_assert_if(debug_cov_assert_if));
 
     //uvmt_cv32e40x_rvvi_handcar u_rvvi_handcar();
     /**
@@ -370,157 +371,12 @@ bind cv32e40x_wrapper
                                 .ID (0)
                                )
                                iss_wrap ( .clk_period(clknrst_if.clk_period),
-                                          .clknrst_if(clknrst_if_iss),
-                                          .step_compare_if(step_compare_if),
-                                          .isa_covg_if(isa_covg_if)
+                                          .clknrst_if(clknrst_if_iss)
                                  );
-                          
-     /**
-      * Step-and-Compare logic 
-      */
-      uvmt_cv32e40x_step_compare step_compare (.clknrst_if(clknrst_if),
-                                               .step_compare_if(step_compare_if) );
-
-      always @(dut_wrap.cv32e40x_wrapper_i.tracer_i.retire) -> step_compare_if.riscv_retire;
-      assign step_compare_if.insn_pc   = dut_wrap.cv32e40x_wrapper_i.tracer_i.insn_pc;
-            
-      
+                                
       assign clknrst_if_iss.reset_n = clknrst_if.reset_n;
-      generate for (genvar gv_i = 0; gv_i < 32; gv_i++) begin : get_gpr
-        assign step_compare_if.riscy_GPR[gv_i] = dut_wrap.cv32e40x_wrapper_i.core_i.register_file_wrapper_i.register_file_i.mem[gv_i];
-      end
-      endgenerate
 
-      // Connect step-and-compare signals to interrupt_if for functional coverage of instructions and interrupts
-      assign interrupt_if.deferint = iss_wrap.io.deferint;
-      assign interrupt_if.ovp_cpu_state_stepi = step_compare_if.ovp_cpu_state_stepi;
-      
-      // Interrupt modeling logic - used to time interrupt entry from RTL to the ISS    
-      wire [31:0] irq_enabled;
-      reg [31:0] irq_deferint_ack;
-      reg [31:0] irq_deferint_sleep;
-      reg        deferint_ack;      
-      reg [31:0] irq_mip;
-      reg core_sleep_o_d;
-
-      always @(posedge clknrst_if.clk or negedge clknrst_if.reset_n) begin
-        if (!clknrst_if.reset_n)
-          core_sleep_o_d <= 1'b0;
-        else
-          core_sleep_o_d <= dut_wrap.cv32e40x_wrapper_i.core_sleep_o;
-      end
-
-      // Advance acknowledged interrupt to ISS when next valid instruction decode executes
-      // Ignoring any instructon decodes in debug mode
-      wire id_start = dut_wrap.cv32e40x_wrapper_i.core_i.id_stage_i.id_valid_o &
-                      dut_wrap.cv32e40x_wrapper_i.core_i.is_decoding  &
-                      ~dut_wrap.cv32e40x_wrapper_i.core_i.debug_mode;
-
-      assign irq_enabled = dut_wrap.cv32e40x_wrapper_i.irq_i & dut_wrap.cv32e40x_wrapper_i.core_i.cs_registers_i.mie_n;
-
-      /**
-       * step_compare_if.deferint_prime is set to 0 (asserted) when the controller in ID commits to an interrupt
-         derefint_prime is then reset to 1 when the ID stage commits to the next instruction (which should be the MTVEC entry address)
-      */
-      always @(posedge clknrst_if.clk or negedge clknrst_if.reset_n) begin
-        if (!clknrst_if_iss.reset_n) begin
-          step_compare_if.deferint_prime     <= 1'b1;
-          step_compare_if.deferint_prime_ack <= 1'b1;
-        end
-        else if (dut_wrap.irq_ack) begin
-          step_compare_if.deferint_prime     <= 1'b0;
-          step_compare_if.deferint_prime_ack <= 1'b0;
-        end
-        else if (core_sleep_o_d && irq_enabled) begin
-          step_compare_if.deferint_prime <= 1'b0;
-        end
-        else if (id_start && !step_compare_if.deferint_prime) begin
-          step_compare_if.deferint_prime     <= 1'b1;
-          step_compare_if.deferint_prime_ack <= 1'b1;
-        end
-      end
-
-      bit use_rvvi = 0;
-      initial begin
-        if ($test$plusargs("USE_RVVI"))
-          use_rvvi = 1;
-      end
-
-      /**
-       * When the ID stage commits, we set deferint to the ISS to signal to look at the interrrupts
-       */
-      always @(posedge clknrst_if.clk or negedge clknrst_if.reset_n) begin
-        if (!clknrst_if_iss.reset_n) begin
-          if (!use_rvvi) iss_wrap.io.deferint <= 1'b1;
-          deferint_ack <= 1'b1;
-        end
-        else if (id_start && !step_compare_if.deferint_prime) begin
-          if (!use_rvvi) iss_wrap.io.deferint <= 1'b0;
-          deferint_ack <= step_compare_if.deferint_prime_ack;
-        end
-      end
-
-      /**
-        * deferint deassertion logic, on negedge of ovp_cpu_state_stepi from the ISS the deferint has been consumed 
-        */
-      always @(negedge step_compare_if.ovp_cpu_state_stepi) begin
-        if (iss_wrap.io.deferint == 0) begin
-          if (!use_rvvi) iss_wrap.io.deferint <= 1'b1;          
-          deferint_ack <= 1'b1;
-          irq_deferint_ack <= '0;          
-        end
-        irq_deferint_sleep <= '0;
-      end
-
-      /**
-        * irq_deferint_ack will capture the asserted interrupt to present to the ISS later
-        * since the autoclear/ack interface can clear the IRQ long before the ISS sees it
-        */
-      always @(posedge clknrst_if.clk or negedge clknrst_if.reset_n) begin
-        if (!clknrst_if.reset_n)
-          irq_deferint_ack <= '0;
-        else if (dut_wrap.irq_ack)
-          irq_deferint_ack <= (1 << dut_wrap.irq_id);
-      end
-      
-      always @(posedge clknrst_if.clk or negedge clknrst_if.reset_n) begin
-        if (!clknrst_if.reset_n)
-          irq_deferint_sleep <= '0;
-        else if (core_sleep_o_d)
-          irq_deferint_sleep <= irq_enabled;
-      end
-
-      always @*        
-        if (!use_rvvi) begin
-          iss_wrap.io.irq_i = iss_wrap.io.deferint ? dut_wrap.irq :
-                              !deferint_ack ? irq_deferint_ack :
-                              irq_deferint_sleep;
-        end
-
-      /**
-       * Interrupt assertion to iss_wrap, note this runs on the ISS clock (skewed from core clock)
-       */
-      always @(posedge clknrst_if.clk or negedge clknrst_if.reset_n) begin
-        if (!clknrst_if.reset_n) begin
-          irq_mip <= '0;
-        end
-        else begin
-          for (int irq_idx=0; irq_idx<32; irq_idx++) begin
-                        
-            // Leave ISS side asserted as long as RTL interrupt line is asserted
-            if (dut_wrap.cv32e40x_wrapper_i.irq_i[irq_idx]) 
-              irq_mip[irq_idx] <= 1'b1;          
-            // If deferint is low and ovp_cpu_state_stepi is asserted, then interrupt was consumed by model
-            // Clear it now to avoid mip miscompare
-            else if (step_compare_if.ovp_cpu_state_stepi && iss_wrap.io.deferint == 0)
-              irq_mip[irq_idx] <= 1'b0;
-            // If RTL interrupt deasserts, but the core has not taken the interrupt, then clear ISS irq
-            else if (iss_wrap.io.deferint == 1)
-              irq_mip[irq_idx] <= 1'b0;            
-          end
-        end
-      end
-
+/* - FIXME:STRICHMO:move the debug modeling code into the debug
       // Count number of issued and retired instructions
       // This makes synchronizing haltreq to RM easier
       logic [31:0] count_issue;
@@ -591,6 +447,7 @@ bind cv32e40x_wrapper
             endcase
         end
       end
+*/
 
    /**
     * Test bench entry point.
@@ -652,9 +509,8 @@ bind cv32e40x_wrapper
      uvm_config_db#(virtual uvmt_cv32e40x_vp_status_if      )::set(.cntxt(null), .inst_name("*"), .field_name("vp_status_vif"),       .value(vp_status_if)      );
      uvm_config_db#(virtual uvmt_cv32e40x_core_cntrl_if     )::set(.cntxt(null), .inst_name("*"), .field_name("core_cntrl_vif"),      .value(core_cntrl_if)     );
      uvm_config_db#(virtual uvmt_cv32e40x_core_status_if    )::set(.cntxt(null), .inst_name("*"), .field_name("core_status_vif"),     .value(core_status_if)    );     
-     uvm_config_db#(virtual uvmt_cv32e40x_step_compare_if   )::set(.cntxt(null), .inst_name("*"), .field_name("step_compare_vif"),    .value(step_compare_if));
-     uvm_config_db#(virtual uvmt_cv32e40x_isa_covg_if       )::set(.cntxt(null), .inst_name("*"), .field_name("isa_covg_vif"),        .value(isa_covg_if));
-     uvm_config_db#(virtual uvmt_cv32e40x_debug_cov_assert_if)::set(.cntxt(null), .inst_name("*.env"), .field_name("debug_cov_vif"),.value(debug_cov_assert_if));
+     // FIXME:strichmo:restore as debug is fixed
+     //uvm_config_db#(virtual uvmt_cv32e40x_debug_cov_assert_if)::set(.cntxt(null), .inst_name("*.env"), .field_name("debug_cov_vif"),.value(debug_cov_assert_if));
       
      // Make the DUT Wrapper Virtual Peripheral's status outputs available to the base_test
      uvm_config_db#(bit      )::set(.cntxt(null), .inst_name("*"), .field_name("tp"),     .value(1'b0)        );
