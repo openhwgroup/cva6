@@ -33,6 +33,12 @@ endif
 
 .DEFAULT_GOAL := help
 
+ifeq ($(findstring 32, $(variant)),32)
+    FLIST_CORE := $(CVA6_REPO_DIR)/core/Flist.cv32a6_imac_sv0
+else
+    FLIST_CORE := $(CVA6_REPO_DIR)/core/Flist.cv64a6_imacfd_sv39
+endif
+
 ###############################################################################
 # Cadence Xcelium specific commands, variables
 ###############################################################################
@@ -50,7 +56,7 @@ XRUN_COMP = $(XRUN_COMP_FLAGS) \
             $(XRUN_DISABLED_WARNINGS) \
             $(XRUN_UVMHOME_ARG) \
             -l $(XRUN_COMPL_LOG) \
-            -f $(CVA6_REPO_DIR)/core/Flist.cva6 \
+            -f $(FLIST_CORE) \
             -f $(CVA6_TB_DIR)/Flist.cva6_tb \
             -top cva6_core_only_tb \
             -elaborate
@@ -92,7 +98,7 @@ DSIM_COMP = $(DSIM_COMP_FLAGS) \
             $(DSIM_UVMHOME_ARG) \
             -l $(DSIM_COMPL_LOG) \
             -genimage $(DSIM_IMAGE) \
-            -f $(CVA6_REPO_DIR)/core/Flist.cva6 \
+            -f $(FLIST_CORE) \
             -f $(CVA6_TB_DIR)/Flist.cva6_tb
 
 dsim_comp:
@@ -155,7 +161,7 @@ verilate:
 		-Wall --cc  --vpi --exe \
 		--top-module cva6_core_only_tb \
 		--Mdir $(VERILATOR_WORK_DIR) -O3 \
-		-f $(CVA6_REPO_DIR)/core/Flist.cva6 \
+		-f $(FLIST_CORE) \
 		-f $(CVA6_TB_DIR)/Flist.cva6_tb \
 		$(CVA6_TB_DIR)/cva6_tb_verilator.cpp
 
