@@ -21,10 +21,9 @@
 #define  EXCEPTION_INSN_ACCESS_FAULT  1
 #define  EXCEPTION_LOAD_ACCESS_FAULT  5
 #define  EXCEPTION_STOREAMO_ACCESS_FAULT  7
-//#define  WORD_ADDR_HIGH 0x1FFFFFFF  // TODO needs pma in vPlan's "Test configuration 3"
 #define  MEM_ADDR_0  0
-#define  IO_ADDR  (0x1A110800 + 16)  // TODO this uses dbg addr (plus offset)
-#define  MEM_ADDR_1  0x1A111000  // TODO this is after ".debugger"
+#define  IO_ADDR  (0x1A110800 + 16)
+#define  MEM_ADDR_1  0x1A111000
 #define  MTVAL_READ  0
 #define  MTBLJALVEC  0  // TODO update when RTL is implemented
 #define  TBLJ_TARGET_ADDR  (IO_ADDR + 8)
@@ -95,7 +94,6 @@ static void check_load_vs_regfile(void) {
   assert_or_die(tmp, 0x33445566, "error: misaligned MEM/IO load shouldn't touch regfile\n");
   */
 
-  // TODO is C really aware that t0 is being used here? Doesn't mangle the caller?
   // TODO can one programmatically confirm that these addresses are indeed in such regions as intended?
 }
 
@@ -216,7 +214,6 @@ int main(void) {
   assert_or_die(mcause, EXCEPTION_INSN_ACCESS_FAULT, "error: expected instruction access fault\n");
   assert_or_die(mepc, IO_ADDR, "error: expected different mepc\n");
   assert_or_die(mtval, MTVAL_READ, "error: expected different mtval\n");
-  // TODO check for both implicit (like above) and explicit IO region?
 
 
   // Non-naturally aligned loads within I/O regions
