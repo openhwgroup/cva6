@@ -75,7 +75,7 @@ function void uvma_isacov_mon_c::build_phase(uvm_phase phase);
   repeat(in.num) begin
     string instr_name_key = convert_instr_to_spike_name(in.name());
         
-    `uvm_info("ISACOV", $sformatf("Converting: %s to %s", in.name(), instr_name_key), UVM_LOW);
+    `uvm_info("ISACOV", $sformatf("Converting: %s to %s", in.name(), instr_name_key), UVM_DEBUG);
     instr_name_lookup[instr_name_key] = in;
     in = in.next;
   end
@@ -99,7 +99,7 @@ function string uvma_isacov_mon_c::convert_instr_to_spike_name(string instr_name
   // But fence.i is encoded as fence_i in the disassembler
   if (spike_instr_name == "fence.i")
     spike_instr_name = "fence_i";
-    
+
   return spike_instr_name;
 
 endfunction : convert_instr_to_spike_name
