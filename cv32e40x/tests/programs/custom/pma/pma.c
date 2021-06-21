@@ -26,6 +26,8 @@
 #define  IO_ADDR  (0x1A110800 + 16)  // TODO this uses dbg addr (plus offset)
 #define  MEM_ADDR_1  0x1A111000  // TODO this is after ".debugger"
 #define  MTVAL_READ  0
+#define  MTBLJALVEC  0  // TODO update when RTL is implemented
+#define  TBLJ_TARGET_ADDR  (IO_ADDR + 8)
 
 static volatile uint32_t mcause = 0;
 static volatile uint32_t mepc = 0;
@@ -50,6 +52,7 @@ void u_sw_irq_handler(void) {  // overrides a "weak" symbol in the bsp
   assert_or_die(mcause, EXCEPTION_INSN_ACCESS_FAULT, "error: handler, unexpected mcause value\n");
 
   return;  // should continue test, assuming no intermediary ABI function call
+  // TODO ensure it works for the non-function-call expected faults too  (or turn them into function calls)
 }
 
 static void reset_volatiles(void) {
@@ -180,6 +183,19 @@ static void check_zce_pop(void) {
 
   // Epilogue 2/2
   __asm__ volatile("mv ra, %0" : : "r"(ra));
+}
+
+static int fail_first_tblj(void) {
+  int mepc = -1;
+
+  /* TODO enable when RTL is implemented
+  // TODO make sure the target address is non-executable, so we can check if mtval matches first fetch
+  __asm__ volatile("c.tbljal 0");
+  */
+  __asm__ volatile("auipc %0, 0" : "=r"(mepc));
+  mepc -= 4;
+
+  return mepc;
 }
 
 int main(void) {
@@ -327,7 +343,7 @@ int main(void) {
   */
 
 
-  // TODO Zce title
+  // Check Zce-related PMA features
 
   // Push instrs should fault to IO but pass for MEM
   check_zce_push();
@@ -335,8 +351,24 @@ int main(void) {
   // Pop instrs should fault to IO but pass for MEM
   check_zce_pop();
 
-  // TODO Table jump title
-  //TODO implement test
+  // Table jump failing first fetch should be the fault of the table jump
+  reset_volatiles();
+  tmp = fail_first_tblj();
+  /* TODO enable when RTL is implemented
+  assert_or_die(mcause, EXCEPTION_INSN_ACCESS_FAULT, "error: tblj failing first should instruction access fault\n");
+  assert_or_die(mepc, tmp, "error: tblj first expected different mepc\n");
+  assert_or_die(mtval, MTBLJALVEC, "error: tblj first expected different mtval\n");
+  */
+
+  // Table jump failing second fetch should be the fault of the target
+  reset_volatiles();
+  /* TODO enable when RTL is implemented
+  make sure table is executable but target is not
+  __asm__ volatile("c.tbljal 1");
+  assert_or_die(mcause, EXCEPTION_INSN_ACCESS_FAULT, "error: tblj failing second should instruction access fault\n");
+  assert_or_die(mepc, TBLJ_TARGET_ADDR, "error: tblj second expected different mepc\n");
+  assert_or_die(mtval, MTVAL_READ, "error: tblj second expected different mtval\n");
+  */
 
 
   printf("\nGoodbye, PMA test!\n\n");
