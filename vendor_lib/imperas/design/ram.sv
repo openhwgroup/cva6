@@ -33,8 +33,6 @@ module RAM
     RVVI_bus bus
 );
 
-    // Sparse memory supported by all RTL simulators
-    reg [31:0] mem [bit[29:0]];
 
     Uns32 daddr4, iaddr4;
     Uns32 value;
@@ -66,13 +64,13 @@ module RAM
         iaddr4 = bus.IAddr >> 2;
         
         // Uninitialized Memory
-        if (!mem.exists(daddr4)) mem[daddr4] = 'h0;
-        if (!mem.exists(iaddr4)) mem[iaddr4] = 'h0;
+        if (!bus.mem.exists(daddr4)) bus.mem[daddr4] = 'h0;
+        if (!bus.mem.exists(iaddr4)) bus.mem[iaddr4] = 'h0;
 
         // READ (ROM & RAM)
         if (isROM || isRAM) begin
             if (bus.Drd==1) begin
-                bus.DData = mem[daddr4] & byte2bit(bus.Dbe);
+                bus.DData = bus.mem[daddr4] & byte2bit(bus.Dbe);
                 //$display("Load  %08x <= [%08X]", bus.DData, daddr4);
             end
         end
@@ -80,9 +78,9 @@ module RAM
         // WRITE
         if (isRAM) begin
             if (bus.Dwr==1) begin
-                value = mem[daddr4] & ~(byte2bit(bus.Dbe));
-                mem[daddr4] = value | (bus.DData & byte2bit(bus.Dbe));
-                //$display("Store %08x <= %08X", daddr4, mem[daddr4]);
+                value = bus.mem[daddr4] & ~(byte2bit(bus.Dbe));
+                bus.mem[daddr4] = value | (bus.DData & byte2bit(bus.Dbe));
+                //$display("Store %08x <= %08X", daddr4, bus.mem[daddr4]);
                 
             end
         end
@@ -90,7 +88,7 @@ module RAM
         // EXEC
         if (isROM) begin
             if (bus.Ird==1) begin
-                bus.IData = mem[iaddr4] & byte2bit(bus.Ibe);
+                bus.IData = bus.mem[iaddr4] & byte2bit(bus.Ibe);
                 //$display("Fetch %08x <= [%08X]", bus.IData, iaddr4);
             end
         end

@@ -133,15 +133,18 @@ interface RVVI_bus;
     bit            StoreBusFaultNMI;    // Artifact to signal memory interface error (E40X)
     bit            InstructionBusFault; // Artifact to signal memory interface error (E40X)
 
+    // Sparse memory supported by all RTL simulators
+    reg [31:0] mem [bit[29:0]];
+
     //
     // Bus direct transactors
     //
     function automatic int read(input int address);
-        if (!ram.mem.exists(address)) ram.mem[address] = 'h0;
-        return ram.mem[address];
+        if (!mem.exists(address)) mem[address] = 'h0;
+        return mem[address];
     endfunction
     function automatic void write(input int address, input int data);
-        ram.mem[address] = data;
+        mem[address] = data;
     endfunction
 endinterface
 

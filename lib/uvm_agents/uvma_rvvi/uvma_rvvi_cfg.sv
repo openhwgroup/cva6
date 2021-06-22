@@ -91,7 +91,7 @@ function void uvma_rvvi_cfg_c::do_print(uvm_printer printer);
 
    foreach (volatile_mem_range_q[i]) begin
       printer.print_string($sformatf("volatile_mem_range_q[%0d]", i),
-                           $sformatf($sformatf("0x%%0%0dx:0x%%0%0dx", XLEN/4),
+                           $sformatf($sformatf("0x%%0%0dx:0x%%0%0dx", XLEN/4, XLEN/4),
                                      volatile_mem_range_q[i].addr_lo, volatile_mem_range_q[i].addr_hi));
    end
 
