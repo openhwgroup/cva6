@@ -45,9 +45,16 @@ module uvmt_cv32e40x_iss_wrap
                 .ROM_BYTE_SIZE(ROM_BYTE_SIZE),
                 .RAM_BYTE_SIZE(RAM_BYTE_SIZE)) ram(bus);
 
-   CPU #(.ID(ID)) cpu(bus, io);
+   CPU #(.ID(ID), .VARIANT("CV32E40X")) cpu(bus, io);
 
+   bit use_iss = 0;
+   
    assign bus.Clk = clknrst_if.clk;
+
+   initial begin
+      if ($test$plusargs("USE_ISS"))
+         use_iss = 1;
+   end
 
    initial begin
      clknrst_if.clk = 1'b0;

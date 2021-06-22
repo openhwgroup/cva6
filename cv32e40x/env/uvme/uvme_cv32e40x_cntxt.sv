@@ -37,7 +37,7 @@ class uvme_cv32e40x_cntxt_c extends uvm_object;
    uvma_obi_cntxt_c              obi_data_cntxt;
    uvma_rvfi_cntxt_c#(ILEN,XLEN) rvfi_cntxt;
    uvma_rvvi_cntxt_c#(ILEN,XLEN) rvvi_cntxt;
-
+  
    // Events
    uvm_event  sample_cfg_e;
    uvm_event  sample_cntxt_e;

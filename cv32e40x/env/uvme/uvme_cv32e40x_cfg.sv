@@ -27,11 +27,12 @@ class uvme_cv32e40x_cfg_c extends uvm_object;
 
    // Status of plusarg to control testbench features
    bit                           use_iss  = 0;   
-   bit                           disable_csr_check;
+   bit                           disable_csr_check = 0;
 
    // Integrals
    rand bit                      enabled;
-   rand uvm_active_passive_enum  is_active;   
+   rand uvm_active_passive_enum  is_active;
+   
 
    rand bit                      scoreboarding_enabled;
    rand bit                      cov_model_enabled;
@@ -78,7 +79,7 @@ class uvme_cv32e40x_cfg_c extends uvm_object;
    }
    
    constraint scoreboard_cons {
-      (!use_iss) -> (scoreboarding_enabled == 0);
+      (!use_iss) -> (scoreboarding_enabled == 0);      
    }
    constraint agent_cfg_cons {
       if (enabled) {
@@ -223,5 +224,6 @@ function void uvme_cv32e40x_cfg_c::configure_csr_rvfi_checks();
 endfunction : configure_csr_rvfi_checks
 
 `endif // __UVME_CV32E40X_CFG_SV__
+
 
 

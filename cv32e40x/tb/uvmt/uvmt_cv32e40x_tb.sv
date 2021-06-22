@@ -376,7 +376,8 @@ bind cv32e40x_wrapper
                                 
       assign clknrst_if_iss.reset_n = clknrst_if.reset_n;
 
-/* - FIXME:STRICHMO:move the debug modeling code into the debug
+      // FIXME:strichmo Must re-enable debug modeling
+      /*
       // Count number of issued and retired instructions
       // This makes synchronizing haltreq to RM easier
       logic [31:0] count_issue;
@@ -494,6 +495,33 @@ bind cv32e40x_wrapper
      `RVFI_CSR_UVM_CONFIG_DB_SET(dscratch0)
      `RVFI_CSR_UVM_CONFIG_DB_SET(dscratch1)
      `RVFI_CSR_UVM_CONFIG_DB_SET(scontext)
+     `RVFI_CSR_UVM_CONFIG_DB_SET(tselect)
+     `RVFI_CSR_UVM_CONFIG_DB_SET(tdata1)
+     `RVFI_CSR_UVM_CONFIG_DB_SET(tdata2)
+     `RVFI_CSR_UVM_CONFIG_DB_SET(tdata3)
+     `RVFI_CSR_UVM_CONFIG_DB_SET(tinfo)     
+
+     uvm_config_db#(virtual RVVI_state#(.ILEN(uvme_cv32e40x_pkg::ILEN),
+                                        .XLEN(uvme_cv32e40x_pkg::XLEN)
+                                        ))::set(.cntxt(null), .inst_name("*.env.rvvi_agent"), .field_name("state_vif"), .value(iss_wrap.cpu.state));
+     uvm_config_db#(virtual RVVI_control                )::set(.cntxt(null), .inst_name("*.env.rvvi_agent"), .field_name("control_vif"), .value(iss_wrap.cpu.control));
+     uvm_config_db#(virtual RVVI_bus                    )::set(.cntxt(null), .inst_name("*.env.rvvi_agent"), .field_name("ovpsim_bus_vif"), .value(iss_wrap.bus));
+     uvm_config_db#(virtual RVVI_io                     )::set(.cntxt(null), .inst_name("*.env.rvvi_agent"), .field_name("ovpsim_io_vif"), .value(iss_wrap.io));
+     `RVFI_CSR_UVM_CONFIG_DB_SET(marchid)
+     `RVFI_CSR_UVM_CONFIG_DB_SET(mcountinhibit)
+     `RVFI_CSR_UVM_CONFIG_DB_SET(mstatus)
+     `RVFI_CSR_UVM_CONFIG_DB_SET(misa)
+     `RVFI_CSR_UVM_CONFIG_DB_SET(mtvec)
+     `RVFI_CSR_UVM_CONFIG_DB_SET(mvendorid)
+     `RVFI_CSR_UVM_CONFIG_DB_SET(mscratch)
+     `RVFI_CSR_UVM_CONFIG_DB_SET(mepc)
+     `RVFI_CSR_UVM_CONFIG_DB_SET(mcause)
+     `RVFI_CSR_UVM_CONFIG_DB_SET(mip)
+     `RVFI_CSR_UVM_CONFIG_DB_SET(mhartid)
+     `RVFI_CSR_UVM_CONFIG_DB_SET(dcsr)
+     `RVFI_CSR_UVM_CONFIG_DB_SET(dpc)
+     `RVFI_CSR_UVM_CONFIG_DB_SET(dscratch0)
+     `RVFI_CSR_UVM_CONFIG_DB_SET(dscratch1)
      `RVFI_CSR_UVM_CONFIG_DB_SET(tselect)
      `RVFI_CSR_UVM_CONFIG_DB_SET(tdata1)
      `RVFI_CSR_UVM_CONFIG_DB_SET(tdata2)
