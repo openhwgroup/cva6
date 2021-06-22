@@ -10,6 +10,6 @@
 
 package cva6_config_pkg;
 
-    localparam cva6_config_XLEN = 32;
+    localparam CVA6ConfigXlen = 32;
 
 endpackage

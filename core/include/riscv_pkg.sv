@@ -22,7 +22,7 @@ package riscv;
     // ----------------------
     // Import cva6 config from cva6_config_pkg
     // ----------------------
-    localparam XLEN = cva6_config_pkg::cva6_config_XLEN;
+    localparam XLEN = cva6_config_pkg::CVA6ConfigXlen;
 
     // ----------------------
     // Data and Address length
