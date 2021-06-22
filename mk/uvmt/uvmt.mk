@@ -104,8 +104,9 @@ export DV_UVML_TRN_PATH         = $(CORE_V_VERIF)/lib/uvm_libs/uvml_trn
 export DV_UVML_LOGS_PATH        = $(CORE_V_VERIF)/lib/uvm_libs/uvml_logs
 export DV_UVML_SB_PATH          = $(CORE_V_VERIF)/lib/uvm_libs/uvml_sb
 
-export DV_OVPM_HOME             = $(CORE_V_VERIF)/$(CV_CORE_LC)/vendor_lib/imperas
-export DV_OVPM_MODEL            = $(DV_OVPM_HOME)/riscv_$(CV_CORE_UC)_OVPsim
+export DV_OVPM_HOME             = $(CORE_V_VERIF)/vendor_lib/imperas
+export DV_OVPM_MODEL            = $(DV_OVPM_HOME)/imperas_DV_COREV
+
 export DV_OVPM_DESIGN           = $(DV_OVPM_HOME)/design
 
 DV_UVMT_SRCS                  = $(wildcard $(DV_UVMT_PATH)/*.sv))
