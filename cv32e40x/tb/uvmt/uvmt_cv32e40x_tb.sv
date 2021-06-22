@@ -532,9 +532,11 @@ bind cv32e40x_wrapper
 
    assign core_cntrl_if.clk = clknrst_if.clk;
 
-   always @(dut_wrap.cv32e40x_wrapper_i.tracer_i.retire) -> isacov_if.retire;
-   assign isacov_if.instr = dut_wrap.cv32e40x_wrapper_i.tracer_i.insn_val;
-   assign isacov_if.is_compressed = dut_wrap.cv32e40x_wrapper_i.tracer_i.insn_compressed;
+
+   //TODO verify these are correct with regards to isacov function
+   always @(dut_wrap.cv32e40x_wrapper_i.rvfi_instr_if_0_i.rvfi_valid) -> isacov_if.retire;
+   assign isacov_if.instr = dut_wrap.cv32e40x_wrapper_i.rvfi_instr_if_0_i.rvfi_insn;
+   //assign isacov_if.is_compressed = dut_wrap.cv32e40x_wrapper_i.tracer_i.insn_compressed;
 
    // Capture the test status and exit pulse flags
    // TODO: put this logic in the vp_status_if (makes it easier to pass to ENV)
