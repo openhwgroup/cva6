@@ -41,60 +41,6 @@ module uvmt_cv32e40x_tb;
    parameter int CORE_PARAM_NUM_MHPMCOUNTERS = 1;
 `endif
 
-   `ifdef PMA_CUSTOM_CFG
-      // "Configuration 3" from the vPlan (at the time of writing)
-      parameter int unsigned               CORE_PARAM_PMA_NUM_REGIONS = 3;
-      parameter cv32e40x_pkg::pma_region_t CORE_PARAM_PMA_CFG[CORE_PARAM_PMA_NUM_REGIONS-1:0] = '{
-         // Overlap "shadow" of main code (.text), for testing overlap priority
-         cv32e40x_pkg::pma_region_t'{
-            word_addr_low  : '0,
-            word_addr_high : ('h 1a11_0800 + 'd 16) >> 2,  // should be identical to the prioritized region below
-            main           : 0,  // Would stop all execution, but should be overruled
-            bufferable     : 0,
-            cacheable      : 0,
-            atomic         : 0},
-         // Main code (.text) is executable up til into dbg region (TODO use vplan's configs)
-         cv32e40x_pkg::pma_region_t'{
-            word_addr_low  : '0,
-            word_addr_high : ('h 1a11_0800 + 'd 16) >> 2,  // TODO vplan doesn't use this (dbg) addr
-            main           : 1,
-            bufferable     : 1,
-            cacheable      : 1,
-            atomic         : 1},
-         // Second portion of dbg up til end is exec  (TODO use vplan's configs)
-         cv32e40x_pkg::pma_region_t'{
-            word_addr_low  : 'h 1A11_1000 >> 2,  // TODO this is after ".debugger", use something better
-            word_addr_high : 'h FFFF_FFFF,
-            main           : 1,
-            bufferable     : 0,
-            cacheable      : 0,
-            atomic         : 1}
-         };
-   `elsif PMA_DEBUG_CFG
-      parameter int unsigned               CORE_PARAM_PMA_NUM_REGIONS = 2;
-      parameter cv32e40x_pkg::pma_region_t CORE_PARAM_PMA_CFG[CORE_PARAM_PMA_NUM_REGIONS-1:0] = '{
-         // Everything is initially executable
-         cv32e40x_pkg::pma_region_t'{
-            word_addr_low  : '0,
-            word_addr_high : 'h FFFF_FFFF,
-            main           : 1,
-            bufferable     : 0,
-            cacheable      : 0,
-            atomic         : 1},
-         // A small region below "dbg" is forbidden to facilitate pma exception testing
-         cv32e40x_pkg::pma_region_t'{
-            word_addr_low  : ('h 1a11_0800 - 'd 16) >> 2,
-            word_addr_high : 'h 1a11_0800 >> 2,
-            main           : 0,
-            bufferable     : 0,
-            cacheable      : 0,
-            atomic         : 0}
-         };
-   `else
-      parameter int unsigned               CORE_PARAM_PMA_NUM_REGIONS = 0;
-      parameter cv32e40x_pkg::pma_region_t CORE_PARAM_PMA_CFG[0:0] = '{'z};
-   `endif
-
    // ENV (testbench) parameters
    parameter int ENV_PARAM_INSTR_ADDR_WIDTH  = 32;
    parameter int ENV_PARAM_INSTR_DATA_WIDTH  = 32;
@@ -144,8 +90,8 @@ module uvmt_cv32e40x_tb;
    */
    uvmt_cv32e40x_dut_wrap  #(
                              .NUM_MHPMCOUNTERS  (CORE_PARAM_NUM_MHPMCOUNTERS),
-                             .PMA_NUM_REGIONS   (CORE_PARAM_PMA_NUM_REGIONS),
-                             .PMA_CFG           (CORE_PARAM_PMA_CFG),
+                             .PMA_NUM_REGIONS   (uvmt_cv32e40x_pkg::CORE_PARAM_PMA_NUM_REGIONS),
+                             .PMA_CFG           (uvmt_cv32e40x_pkg::CORE_PARAM_PMA_CFG),
                              .INSTR_ADDR_WIDTH  (ENV_PARAM_INSTR_ADDR_WIDTH),
                              .INSTR_RDATA_WIDTH (ENV_PARAM_INSTR_DATA_WIDTH),
                              .RAM_ADDR_WIDTH    (ENV_PARAM_RAM_ADDR_WIDTH)
