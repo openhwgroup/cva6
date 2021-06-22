@@ -15,8 +15,6 @@
  * Description: Common RISC-V definitions.
  */
 
-import cva6_config_pkg::*;
-
 package riscv;
 
     // ----------------------
