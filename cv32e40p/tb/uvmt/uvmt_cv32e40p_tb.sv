@@ -626,6 +626,17 @@ bind cv32e40p_wrapper
       end
    end
    
+   // FIXME:strichmo:Remove this code when RVFI/RVVI is ported into the cv32e40p
+   // emulate volatile register updates of RND_NUM register
+   always @(posedge dut_wrap.ram_i.clk_i) begin
+      if (dut_wrap.ram_i.rst_ni) begin
+         if (dut_wrap.ram_i.rnd_num_req) begin
+            #1ns;
+            iss_wrap.bus.mem[dut_wrap.ram_i.MMADDR_RNDNUM >> 2] = dut_wrap.ram_i.rnd_num;
+         end
+      end
+   end
+
 endmodule : uvmt_cv32e40p_tb
 `default_nettype wire
 

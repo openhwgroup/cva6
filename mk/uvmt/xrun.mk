@@ -161,6 +161,9 @@ XRUN_USER_COMPILE_ARGS += +define+$(CV_CORE_UC)_TRACE_EXECUTION
 ifeq ($(call IS_YES,$(USE_ISS)),YES)
     XRUN_PLUSARGS +="+USE_ISS"
 endif
+ifeq ($(call IS_YES,$(USE_RVVI)),YES)
+    XRUN_PLUSARGS +="+USE_RVVI"
+endif
 
 # Simulate using latest elab
 XRUN_RUN_FLAGS        ?= 

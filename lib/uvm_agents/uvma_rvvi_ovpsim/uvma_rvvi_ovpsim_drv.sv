@@ -125,6 +125,15 @@ task uvma_rvvi_ovpsim_drv_c::stepi(REQ req);
    // Stop the clock
    stop_clknrst();
 
+   // Check for read of volatile memory locations, backdoor init the RVVI memory when found to ensure
+   // the ISS sees the same data as the DUT
+   if (rvvi_ovpsim_seq_item.mem_rmask && cfg.is_mem_addr_volatile(rvvi_ovpsim_seq_item.mem_addr)) begin
+      `uvm_info("RVVIDRV", $sformatf("Setting volatile bus read data @ 0x%08x to 0x%08x", 
+                                     rvvi_ovpsim_seq_item.mem_addr, 
+                                     rvvi_ovpsim_seq_item.mem_rdata), UVM_LOW);
+      rvvi_ovpsim_cntxt.ovpsim_bus_vif.write(rvvi_ovpsim_seq_item.mem_addr >> 2, rvvi_ovpsim_seq_item.mem_rdata);
+   end
+
    // Signal an interrupt to the ISS if mcause and rvfi_intr signals external interrupt  
    if (rvvi_ovpsim_seq_item.intr) begin
       rvvi_ovpsim_cntxt.ovpsim_io_vif.deferint = 1'b0;
@@ -136,7 +145,7 @@ task uvma_rvvi_ovpsim_drv_c::stepi(REQ req);
    end
    
    if (rvvi_ovpsim_seq_item.halt) begin
-      rvvi_ovpsim_cntxt.ovpsim_io_vif.haltreq  = 1'b1;      
+      rvvi_ovpsim_cntxt.ovpsim_io_vif.haltreq  = 1'b1;
       rvvi_ovpsim_cntxt.control_vif.stepi();
       @(rvvi_ovpsim_cntxt.state_vif.notify);
       rvvi_ovpsim_cntxt.ovpsim_io_vif.haltreq = 1'b0;

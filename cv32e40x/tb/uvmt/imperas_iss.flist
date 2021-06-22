@@ -25,4 +25,4 @@ ${DV_OVPM_DESIGN}/monitor.sv
 ${DV_OVPM_DESIGN}/ram.sv
 
 +incdir+${DV_OVPM_MODEL}/sv
-${DV_OVPM_MODEL}/sv/riscv_CV32E40X.sv
+${DV_OVPM_MODEL}/sv/imperas_CV32.sv

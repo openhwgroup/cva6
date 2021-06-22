@@ -79,6 +79,13 @@ task uvma_rvvi_ovpsim_state_mon_c::monitor_rvvi_state();
       mon_trn.pc       = cntxt.state_vif.pc;
       mon_trn.pcnext   = cntxt.state_vif.pcnext;
 
+      // Trap instructions which have an mcause[31] set to 0 are exceptions
+      // These exceptions will have a valid RVFI instruciton to compare against,
+      // so go ahead and set the valid flag to ensure we check it in the scoreboard
+      if (mon_trn.trap && cntxt.state_vif.csr["mcause"][31] == 0) begin
+         mon_trn.valid = 1;
+      end
+      
       // FIXME: Currently the OVPSIM RVVI treats deferint cycles as an instruction
       // but it really isn't.  This is better handlded at the RVVI interface
       // Additionally fields like order should not be incremented

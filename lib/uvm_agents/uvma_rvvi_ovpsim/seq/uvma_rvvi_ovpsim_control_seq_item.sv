@@ -42,7 +42,12 @@ class uvma_rvvi_ovpsim_control_seq_item_c#(int ILEN=uvma_rvvi_pkg::DEFAULT_ILEN,
 
    // Backdoor hint of register write for testing volatile CSR registers and ensuring RM tracks register value
    rand bit [GPR_ADDR_WL-1:0]    rd1_addr;
-   rand bit [XLEN-1:0]           rd1_wdata;  
+   rand bit [XLEN-1:0]           rd1_wdata;
+
+   // Backdoor hint of memory read for ensuring memory model is updated with volatile read data
+   rand bit [XLEN-1:0]           mem_addr;
+   rand bit [XLEN-1:0]           mem_rdata;
+   rand bit [XLEN/8-1:0]         mem_rmask;
 
    static protected string _log_format_string = "0x%08x %s 0x%01x 0x%08x";
 
@@ -54,6 +59,9 @@ class uvma_rvvi_ovpsim_control_seq_item_c#(int ILEN=uvma_rvvi_pkg::DEFAULT_ILEN,
       `uvm_field_int(intr_id, UVM_DEFAULT)
       `uvm_field_int(rd1_addr, UVM_DEFAULT)
       `uvm_field_int(rd1_wdata, UVM_DEFAULT)
+      `uvm_field_int(mem_addr, UVM_DEFAULT)
+      `uvm_field_int(mem_rdata, UVM_DEFAULT)
+      `uvm_field_int(mem_rmask, UVM_DEFAULT)
    `uvm_object_utils_end
    
    /**
@@ -78,10 +86,13 @@ function uvma_rvvi_ovpsim_control_seq_item_c::new(string name="uvma_rvvi_ovpsim_
 endfunction : new
 
 function string uvma_rvvi_ovpsim_control_seq_item_c::convert2string();
+
    return action.name();
+   
 endfunction : convert2string
 
 `pragma protect end
 
 
 `endif // __UVMA_RVVI_OVPSIM_CONTROL_SEQ_ITEM_SV__
+
