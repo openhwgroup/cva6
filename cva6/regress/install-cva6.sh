@@ -36,7 +36,7 @@ export NUM_JOBS=24
 if ! [ -n "$CVA6_REPO" ]; then
   CVA6_REPO="https://github.com/ThalesGroup/cva6.git"
   CVA6_BRANCH="pr/thales-cva6_reorg"
-  CVA6_HASH="6a8d9c7d7137f453ff0bb989fcbeff227fd5e084"
+  CVA6_HASH="656d14c2df7fe54ac580ae17cf44f1f9b3587c6b"
   CVA6_PATCH=
 fi
 echo $CVA6_REPO

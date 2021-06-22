@@ -159,6 +159,7 @@ verilate:
 		-Wno-BLKANDNBLK \
 		-Wno-style \
 		-Wall --cc  --vpi --exe \
+		-DRVFI_TRACE=1 \
 		--top-module cva6_core_only_tb \
 		--Mdir $(VERILATOR_WORK_DIR) -O3 \
 		-f $(FLIST_CORE) \
