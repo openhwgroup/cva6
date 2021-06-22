@@ -60,9 +60,9 @@ module cva6_core_only_tb #(
   ariane_axi_soc::resp_t   axi_ariane_resp;
   rvfi_pkg::rvfi_port_t    rvfi;
 
-  ariane #(
+  ariane_wrapper #(
     .ArianeCfg  ( ariane_soc::ArianeSocCfg )
-  ) i_cva6 (
+  ) i_cva6_wrapper (
     .clk_i                ( tb_clk                    ),
     .rst_ni               ( tb_rstn                   ),
     .boot_addr_i          ( 64'h0000_0000_8000_0000   ), //ariane_soc::ROMBase
