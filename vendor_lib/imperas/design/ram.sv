@@ -76,9 +76,6 @@ module RAM
                 //$display("Load  %08x <= [%08X]", bus.DData, daddr4);
             end
         end
-        if (bus.Drd == 1 && bus.DAddr==32'h1500_1000) begin
-            bus.DData = dut_wrap.data_rdata;
-        end
 
         // WRITE
         if (isRAM) begin

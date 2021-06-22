@@ -40,12 +40,12 @@ class uvme_cv32e40x_cfg_c extends uvm_object;
    rand int unsigned             sys_clk_period;
    
    // Agent cfg handles
-   rand uvma_isacov_cfg_c     isacov_cfg;
-   rand uvma_clknrst_cfg_c    clknrst_cfg;
-   rand uvma_interrupt_cfg_c  interrupt_cfg;
-   rand uvma_debug_cfg_c      debug_cfg;
-   rand uvma_obi_cfg_c        obi_instr_cfg;
-   rand uvma_obi_cfg_c        obi_data_cfg;
+   rand uvma_isacov_cfg_c           isacov_cfg;
+   rand uvma_clknrst_cfg_c          clknrst_cfg;
+   rand uvma_interrupt_cfg_c        interrupt_cfg;
+   rand uvma_debug_cfg_c            debug_cfg;
+   rand uvma_obi_cfg_c              obi_instr_cfg;
+   rand uvma_obi_cfg_c              obi_data_cfg;
    rand uvma_rvfi_cfg_c#(ILEN,XLEN) rvfi_cfg;
    rand uvma_rvvi_cfg_c#(ILEN,XLEN) rvvi_cfg;
    
@@ -59,14 +59,14 @@ class uvme_cv32e40x_cfg_c extends uvm_object;
       `uvm_field_int (                         sys_clk_period              , UVM_DEFAULT | UVM_DEC)      
       `uvm_field_int (                         disable_csr_check           , UVM_DEFAULT)
 
-      `uvm_field_object(isacov_cfg, UVM_DEFAULT)
-      `uvm_field_object(clknrst_cfg, UVM_DEFAULT)
-      `uvm_field_object(interrupt_cfg, UVM_DEFAULT)
-      `uvm_field_object(debug_cfg  , UVM_DEFAULT)
-      `uvm_field_object(obi_instr_cfg, UVM_DEFAULT)
-      `uvm_field_object(obi_data_cfg, UVM_DEFAULT)
-      `uvm_field_object(rvfi_cfg, UVM_DEFAULT)
-      `uvm_field_object(rvvi_cfg, UVM_DEFAULT)
+      `uvm_field_object(isacov_cfg    , UVM_DEFAULT)
+      `uvm_field_object(clknrst_cfg   , UVM_DEFAULT)
+      `uvm_field_object(interrupt_cfg , UVM_DEFAULT)
+      `uvm_field_object(debug_cfg     , UVM_DEFAULT)
+      `uvm_field_object(obi_instr_cfg , UVM_DEFAULT)
+      `uvm_field_object(obi_data_cfg  , UVM_DEFAULT)
+      `uvm_field_object(rvfi_cfg      , UVM_DEFAULT)
+      `uvm_field_object(rvvi_cfg      , UVM_DEFAULT)
    `uvm_object_utils_end
       
    constraint defaults_cons {
@@ -184,6 +184,10 @@ endfunction : new
 
 function void uvme_cv32e40x_cfg_c::post_randomize();
    rvfi_cfg.instr_name[0] = "INSTR";
+
+   // Set volatile locations for virtual peripherals
+   rvvi_cfg.add_volatile_mem_addr_range(32'h1500_1000, 32'h1500_1007);
+   rvvi_cfg.add_volatile_mem_addr_range(32'h1600_0000, 32'h1600_0fff);
 
    configure_csr_rvfi_checks();
 

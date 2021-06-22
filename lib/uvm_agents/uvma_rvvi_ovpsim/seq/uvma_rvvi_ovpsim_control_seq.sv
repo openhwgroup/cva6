@@ -64,9 +64,14 @@ task uvma_rvvi_ovpsim_control_seq_c::step_rm(uvma_rvfi_instr_seq_item_c#(ILEN,XL
       mip == rvfi_instr.csr_mip;      
       rd1_addr == rvfi_instr.rd1_addr;
       rd1_wdata == rvfi_instr.rd1_wdata;
+
+      mem_addr == rvfi_instr.mem_addr;
+      mem_rdata == rvfi_instr.mem_rdata;
+      mem_rmask == rvfi_instr.mem_rmask;
    });
    finish_item(step_rm_seq);
 
 endtask : step_rm
 
 `endif // __UVMA_RVVI_OVPSIM_CONTROL_SEQ_SV__
+
