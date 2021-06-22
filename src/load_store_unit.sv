@@ -386,7 +386,7 @@ module load_store_unit import ariane_pkg::*; #(
 
     lsu_bypass lsu_bypass_i (
         .lsu_req_i          ( lsu_req_i   ),
-        .lus_req_valid_i    ( lsu_valid_i ),
+        .lsu_req_valid_i    ( lsu_valid_i ),
         .pop_ld_i           ( pop_ld      ),
         .pop_st_i           ( pop_st      ),
 
@@ -413,7 +413,7 @@ module lsu_bypass import ariane_pkg::*; (
     input  logic      flush_i,
 
     input  lsu_ctrl_t lsu_req_i,
-    input  logic      lus_req_valid_i,
+    input  logic      lsu_req_valid_i,
     input  logic      pop_ld_i,
     input  logic      pop_st_i,
 
@@ -441,7 +441,7 @@ module lsu_bypass import ariane_pkg::*; (
 
         mem_n = mem_q;
         // we've got a valid LSU request
-        if (lus_req_valid_i) begin
+        if (lsu_req_valid_i) begin
             mem_n[write_pointer_q] = lsu_req_i;
             write_pointer++;
             status_cnt++;
