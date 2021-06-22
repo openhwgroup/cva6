@@ -42,9 +42,11 @@ module ariane import ariane_pkg::*; #(
   // firesim trace port
   output traced_instr_pkg::trace_port_t trace_o,
 `endif
+`ifdef RVFI_TRACE
   // RISC-V formal interface port (`rvfi`):
   // Can be left open when formal tracing is not needed.
   output ariane_rvfi_pkg::rvfi_port_t  rvfi_o,
+`endif
 `ifdef PITON_ARIANE
   // L15 (memory side)
   output wt_cache_pkg::l15_req_t       l15_req_o,
@@ -897,6 +899,7 @@ module ariane import ariane_pkg::*; #(
 `endif // VERILATOR
 //pragma translate_on
 
+`ifdef RVFI_TRACE
   always_comb
     for (int i = 0; i < NR_COMMIT_PORTS; i++) begin
       logic exception, mem_exception;
@@ -928,5 +931,6 @@ module ariane import ariane_pkg::*; #(
       rvfi_o[i].rd_wdata = ariane_pkg::is_rd_fpr(commit_instr_id_commit[i].op) == 0 ? wdata_commit_id[i] : commit_instr_id_commit[i].result;
       rvfi_o[i].pc_rdata = commit_instr_id_commit[i].pc;
     end
+`endif
 
 endmodule // ariane

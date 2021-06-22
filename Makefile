@@ -296,11 +296,11 @@ endif
 
 vcs_build: $(dpi-library)/ariane_dpi.so
 	vlogan -full64 -nc -sverilog -ntb_opts uvm-1.2
-	vlogan -full64 -nc -sverilog -ntb_opts uvm-1.2 +define+WT_CACHE $(filter %.sv,$(ariane_pkg)) +incdir+core/include/+$(VCS_HOME)/etc/uvm-1.2/dpi
-	vlogan -full64 -nc -sverilog -ntb_opts uvm-1.2 +define+WT_CACHE $(filter %.sv,$(util)) +incdir+common/local/util+core/include/+src/util/+$(VCS_HOME)/etc/uvm-1.2/dpi
+	vlogan -full64 -nc -sverilog -ntb_opts uvm-1.2 +define+WT_CACHE +define+RVFI_TRACE $(filter %.sv,$(ariane_pkg)) +incdir+core/include/+$(VCS_HOME)/etc/uvm-1.2/dpi
+	vlogan -full64 -nc -sverilog -ntb_opts uvm-1.2 +define+WT_CACHE +define+RVFI_TRACE $(filter %.sv,$(util)) +incdir+common/local/util+core/include/+src/util/+$(VCS_HOME)/etc/uvm-1.2/dpi
 	vhdlan -full64 $(filter %.vhd,$(uart_src))
-	vlogan -full64 -nc -sverilog -ntb_opts uvm-1.2 -assert svaext +define+WT_CACHE $(filter %.sv,$(src)) +incdir+core/include/+common/submodules/common_cells/include/+common/local/util/+$(VCS_HOME)/etc/uvm-1.2/dpi
-	vlogan -full64 -nc -sverilog -ntb_opts uvm-1.2 $(tbs)
+	vlogan -full64 -nc -sverilog -ntb_opts uvm-1.2 -assert svaext +define+WT_CACHE +define+RVFI_TRACE $(filter %.sv,$(src)) +incdir+core/include/+common/submodules/common_cells/include/+common/local/util/+$(VCS_HOME)/etc/uvm-1.2/dpi
+	vlogan -full64 -nc -sverilog -ntb_opts uvm-1.2 $(tbs) +define+RVFI_TRACE
 	vcs -full64 -timescale=1ns/1ns -ntb_opts uvm-1.2 work.ariane_tb
 
 vcs: vcs_build
@@ -552,7 +552,7 @@ xrun-ci: xrun-asm-tests xrun-amo-tests xrun-mul-tests xrun-fp-tests xrun-benchma
 verilate_command := $(verilator)                                                                                 \
                     $(filter-out %.vhd, $(ariane_pkg))                                                           \
                     $(filter-out core/fpu_wrap.sv, $(filter-out %.vhd, $(src)))                                  \
-                    +define+$(defines)                                                                           \
+                    +define+$(defines) -DRVFI_TRACE=1                                                            \
                     common/local/util/sram.sv                                                                    \
                     corev_apu/tb/common/mock_uart.sv                                                             \
                     +incdir+corev_apu/axi_node                                                                   \
