@@ -49,9 +49,9 @@ The default values are:
 - `VERILATOR_ROOT`: `../tools/verilator-4.110` to install in core-v-verif/tools
 - `SPIKE_ROOT`: `../tools/spike` to install in core-v-verif/tools
 
-- `CVA6_REPO`: `https://github.com/ThalesGroup/cva6.git`
-- `CVA6_BRANCH`: `pr/thales-cva6_reorg`
-- `CVA6_HASH`: `6a8d9c7d7137f453ff0bb989fcbeff227fd5e084`
+- `CVA6_REPO`: `https://github.com/openhwgroup/cva6.git`
+- `CVA6_BRANCH`: `cva6_reorg`
+- `CVA6_HASH`: `95b1070a76d2399ff4a95af70082514b0d0c5743`
 - `CVA6_PATCH`: no default value
 - `COMPLIANCE_REPO`: `https://github.com/riscv/riscv-compliance.git`
 - `COMPLIANCE_BRANCH`: `master`
