@@ -341,10 +341,6 @@ function void uvme_cv32e40x_core_sb_c::check_csr(uvma_rvfi_instr_seq_item_c#(ILE
       string csr = rvfi_instr.csrs[i].csr;   
       bit[XLEN-1:0] exp_csr_value;
 
-      // FIXME: Remove when RVVI fixed to include all CSRs
-      if (csr == "mcause") continue;
-
-
       // TODO:MT temporarily disabled while working on controller update
       if (csr == "minstret") continue;
       if (csr == "minstreth") continue;
@@ -414,7 +410,7 @@ function void uvme_cv32e40x_core_sb_c::check_csr(uvma_rvfi_instr_seq_item_c#(ILE
       
       if (csr == "instret") continue;
       if (csr == "instreth") continue;
-      
+
       if (csr == "cycle") continue;
       if (csr == "cycleh") continue;
    
