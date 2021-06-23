@@ -124,7 +124,7 @@ module host_domain
 
    
    XBAR_TCDM_BUS axi_bridge_2_interconnect[AXI64_2_TCDM32_N_PORTS]();
-   XBAR_TCDM_BUS udma_tcdm_channels[NB_UDMA_TCDM_CHANNEL]();
+   XBAR_TCDM_BUS udma_2_tcdm_channels[NB_UDMA_TCDM_CHANNEL]();
    
  
    cva6_subsytem # (
@@ -165,7 +165,8 @@ module host_domain
      ) i_l2_subsystem   (
       .clk_i                     ( clk_i                     ),
       .rst_ni                    ( ndmreset_n                ),
-      .axi_bridge_2_interconnect ( axi_bridge_2_interconnect )
+      .axi_bridge_2_interconnect ( axi_bridge_2_interconnect ),
+      .udma_tcdm_channels        ( udma_2_tcdm_channels      )
      );
 
 
@@ -175,59 +176,59 @@ module host_domain
        .AXI_DATA_WIDTH ( AXI_DATA_WIDTH           ),
        .AXI_USER_WIDTH ( AXI_USER_WIDTH           )
       ) (
-      .clk_i                     ( clk_i                     ),
-      .rst_ni                    ( ndmreset_n                ),
-      .axi_apb_slave             ( apb_axi_bus               ),
-      .udma_tcdm_channels        ( udma_tcdm_channels        ),
+      .clk_i                  ( clk_i                          ),
+      .rst_ni                 ( ndmreset_n                     ),
+      .axi_apb_slave          ( apb_axi_bus                    ),
+      .udma_tcdm_channels     ( udma_2_tcdm_channels           ),
 
-      .spi_clk         ( spi_clk_o                      ),
-      .spi_csn         ( spi_csn_o                      ),
-      .spi_oen         ( spi_oen_o                      ),
-      .spi_sdo         ( spi_sdo_o                      ),
-      .spi_sdi         ( spi_sdi_i                      ),
-                                                   
-      .sdio_clk_o      ( sdclk_o                        ),
-      .sdio_cmd_o      ( sdcmd_o                        ),
-      .sdio_cmd_i      ( sdcmd_i                        ),
-      .sdio_cmd_oen_o  ( sdcmd_oen_o                    ),
-      .sdio_data_o     ( sddata_o                       ),
-      .sdio_data_i     ( sddata_i                       ),
-      .sdio_data_oen_o ( sddata_oen_o                   ),
-                                                   
-      .cam_clk_i       ( cam_clk_i                      ),
-      .cam_data_i      ( cam_data_i                     ),
-      .cam_hsync_i     ( cam_hsync_i                    ),
-      .cam_vsync_i     ( cam_vsync_i                    ),
-                                                   
-      .i2s_slave_sd0_i ( i2s_slave_sd0_i                ),
-      .i2s_slave_sd1_i ( i2s_slave_sd1_i                ),
-      .i2s_slave_ws_i  ( i2s_slave_ws_i                 ),
-      .i2s_slave_ws_o  ( i2s_slave_ws_o                 ),
-      .i2s_slave_ws_oe ( i2s_slave_ws_oe                ),
-      .i2s_slave_sck_i ( i2s_slave_sck_i                ),
-      .i2s_slave_sck_o ( i2s_slave_sck_o                ),
-      .i2s_slave_sck_oe( i2s_slave_sck_oe               ),
-                                                   
-      .uart_rx_i       ( uart_rx                        ),
-      .uart_tx_o       ( uart_tx                        ),
-                                                   
-      .i2c_scl_i       ( i2c_scl_i                      ),
-      .i2c_scl_o       ( i2c_scl_o                      ),
-      .i2c_scl_oe      ( i2c_scl_oe_o                   ),
-      .i2c_sda_i       ( i2c_sda_i                      ),
-      .i2c_sda_o       ( i2c_sda_o                      ),
-      .i2c_sda_oe      ( i2c_sda_oe_o                   ),
-                                                   
-      .hyper_cs_no     ( hyper_cs_no                    ),
-      .hyper_ck_o      ( hyper_ck_o                     ),
-      .hyper_ck_no     ( hyper_ck_no                    ),
-      .hyper_rwds_o    ( hyper_rwds_o                   ),
-      .hyper_rwds_i    ( hyper_rwds_i                   ),
-      .hyper_rwds_oe_o ( hyper_rwds_oe_o                ),
-      .hyper_dq_i      ( hyper_dq_i                     ),
-      .hyper_dq_o      ( hyper_dq_o                     ),
-      .hyper_dq_oe_o   ( hyper_dq_oe_o                  ),
-      .hyper_reset_no  ( hyper_reset_no                 )
+      .spi_clk                ( spi_clk_o                      ),
+      .spi_csn                ( spi_csn_o                      ),
+      .spi_oen                ( spi_oen_o                      ),
+      .spi_sdo                ( spi_sdo_o                      ),
+      .spi_sdi                ( spi_sdi_i                      ),
+                                                          
+      .sdio_clk_o             ( sdclk_o                        ),
+      .sdio_cmd_o             ( sdcmd_o                        ),
+      .sdio_cmd_i             ( sdcmd_i                        ),
+      .sdio_cmd_oen_o         ( sdcmd_oen_o                    ),
+      .sdio_data_o            ( sddata_o                       ),
+      .sdio_data_i            ( sddata_i                       ),
+      .sdio_data_oen_o        ( sddata_oen_o                   ),
+                                                          
+      .cam_clk_i              ( cam_clk_i                      ),
+      .cam_data_i             ( cam_data_i                     ),
+      .cam_hsync_i            ( cam_hsync_i                    ),
+      .cam_vsync_i            ( cam_vsync_i                    ),
+                                                          
+      .i2s_slave_sd0_i        ( i2s_slave_sd0_i                ),
+      .i2s_slave_sd1_i        ( i2s_slave_sd1_i                ),
+      .i2s_slave_ws_i         ( i2s_slave_ws_i                 ),
+      .i2s_slave_ws_o         ( i2s_slave_ws_o                 ),
+      .i2s_slave_ws_oe        ( i2s_slave_ws_oe                ),
+      .i2s_slave_sck_i        ( i2s_slave_sck_i                ),
+      .i2s_slave_sck_o        ( i2s_slave_sck_o                ),
+      .i2s_slave_sck_oe       ( i2s_slave_sck_oe               ),
+                                                          
+      .uart_rx_i              ( uart_rx                        ),
+      .uart_tx_o              ( uart_tx                        ),
+                                                          
+      .i2c_scl_i              ( i2c_scl_i                      ),
+      .i2c_scl_o              ( i2c_scl_o                      ),
+      .i2c_scl_oe             ( i2c_scl_oe_o                   ),
+      .i2c_sda_i              ( i2c_sda_i                      ),
+      .i2c_sda_o              ( i2c_sda_o                      ),
+      .i2c_sda_oe             ( i2c_sda_oe_o                   ),
+                                                          
+      .hyper_cs_no            ( hyper_cs_no                    ),
+      .hyper_ck_o             ( hyper_ck_o                     ),
+      .hyper_ck_no            ( hyper_ck_no                    ),
+      .hyper_rwds_o           ( hyper_rwds_o                   ),
+      .hyper_rwds_i           ( hyper_rwds_i                   ),
+      .hyper_rwds_oe_o        ( hyper_rwds_oe_o                ),
+      .hyper_dq_i             ( hyper_dq_i                     ),
+      .hyper_dq_o             ( hyper_dq_o                     ),
+      .hyper_dq_oe_o          ( hyper_dq_oe_o                  ),
+      .hyper_reset_no         ( hyper_reset_no                 )
 
       );
                      

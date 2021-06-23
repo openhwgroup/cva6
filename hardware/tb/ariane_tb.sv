@@ -39,6 +39,18 @@ module ariane_tb;
     logic rst_ni;
     logic rtc_i;
 
+    parameter  USE_HYPER_MODELS    = 1;
+
+    wire [7:0]            w_hyper_dq0    ;
+    wire [7:0]            w_hyper_dq1    ;
+    wire                  w_hyper_ck     ;
+    wire                  w_hyper_ckn    ;
+    wire                  w_hyper_csn0   ;
+    wire                  w_hyper_csn1   ;
+    wire                  w_hyper_rwds0  ;
+    wire                  w_hyper_rwds1  ;
+    wire                  w_hyper_reset  ;
+
     longint unsigned cycles;
     longint unsigned max_cycles;
 
@@ -55,8 +67,58 @@ module ariane_tb;
         .clk_i,
         .rst_ni,
         .rtc_i,
-        .exit_o
-    );
+        .exit_o,
+        .pad_hyper_dq0     ( w_hyper_dq0         ),
+        .pad_hyper_dq1     ( w_hyper_dq1         ),
+        .pad_hyper_ck      ( w_hyper_ck          ),
+        .pad_hyper_ckn     ( w_hyper_ckn         ),
+        .pad_hyper_csn0    ( w_hyper_csn0        ),
+        .pad_hyper_csn1    ( w_hyper_csn1        ),
+        .pad_hyper_rwds0   ( w_hyper_rwds0       ),
+        .pad_hyper_rwds1   ( w_hyper_rwds1       ),
+        .pad_hyper_reset   ( w_hyper_reset       )
+   );
+
+// Hyperram and hyperflash modules
+   generate
+      if(USE_HYPER_MODELS == 1) begin
+         s27ks0641 #(
+            .TimingModel  ("S27KS0641DPBHI020")
+         ) hyperram_model (
+            .DQ7      ( w_hyper_dq0[7] ),
+            .DQ6      ( w_hyper_dq0[6] ),
+            .DQ5      ( w_hyper_dq0[5] ),
+            .DQ4      ( w_hyper_dq0[4] ),
+            .DQ3      ( w_hyper_dq0[3] ),
+            .DQ2      ( w_hyper_dq0[2] ),
+            .DQ1      ( w_hyper_dq0[1] ),
+            .DQ0      ( w_hyper_dq0[0] ),
+            .RWDS     ( w_hyper_rwds0  ),
+            .CSNeg    ( w_hyper_csn1   ),
+            .CK       ( w_hyper_ck     ),
+            .CKNeg    ( w_hyper_ckn    ),
+            .RESETNeg ( w_hyper_reset  )
+         );
+         s26ks512s #(
+            .TimingModel   ( "S26KS512SDPBHI000"),
+            .mem_file_name ( "./vectors/hyper_stim.slm" )
+         ) hyperflash_model (
+            .DQ7      ( w_hyper_dq0[7] ),
+            .DQ6      ( w_hyper_dq0[6] ),
+            .DQ5      ( w_hyper_dq0[5] ),
+            .DQ4      ( w_hyper_dq0[4] ),
+            .DQ3      ( w_hyper_dq0[3] ),
+            .DQ2      ( w_hyper_dq0[2] ),
+            .DQ1      ( w_hyper_dq0[1] ),
+            .DQ0      ( w_hyper_dq0[0] ),
+            .RWDS     ( w_hyper_rwds0  ),
+            .CSNeg    ( w_hyper_csn0   ),
+            .CK       ( w_hyper_ck     ),
+            .CKNeg    ( w_hyper_ckn    ),
+            .RESETNeg ( w_hyper_reset  )
+         );
+      end
+   endgenerate
 
 `ifdef SPIKE_TANDEM
     spike #(

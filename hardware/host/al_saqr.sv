@@ -27,12 +27,32 @@ module al_saqr
   parameter bit          StallRandomOutput = 1'b0,
   parameter bit          StallRandomInput  = 1'b0
 ) (
-  input  logic                           clk_i,
-  input  logic                           rtc_i,
-  input  logic                           rst_ni,
-  output logic [31:0]                    exit_o
+  input  logic             clk_i,
+  input  logic             rtc_i,
+  input  logic             rst_ni,
+  output logic [31:0]      exit_o,
+  inout  wire [7:0]        pad_hyper_dq0    ,
+  inout  wire [7:0]        pad_hyper_dq1    ,
+  inout  wire              pad_hyper_ck     ,
+  inout  wire              pad_hyper_ckn    ,
+  inout  wire              pad_hyper_csn0   ,
+  inout  wire              pad_hyper_csn1   ,
+  inout  wire              pad_hyper_rwds0  ,
+  inout  wire              pad_hyper_rwds1  ,
+  inout  wire              pad_hyper_reset  
 );
 
+   
+  logic [1:0]                  s_hyper_cs_n;
+  logic                        s_hyper_ck;
+  logic                        s_hyper_ck_n;
+  logic [1:0]                  s_hyper_rwds_o;
+  logic                        s_hyper_rwds_i;
+  logic [1:0]                  s_hyper_rwds_oe;
+  logic [15:0]                 s_hyper_dq_i;
+  logic [15:0]                 s_hyper_dq_o;
+  logic [1:0]                  s_hyper_dq_oe;
+  logic                        s_hyper_reset_n;
    
     host_domain #(
         .NUM_WORDS         ( NUM_WORDS ),
@@ -40,11 +60,46 @@ module al_saqr
         .StallRandomOutput ( 1'b1      ),
         .StallRandomInput  ( 1'b1      )
     ) i_host_domain (
-        .clk_i,
-        .rst_ni,
-        .rtc_i,
-        .exit_o
+      .clk_i,
+      .rst_ni,
+      .rtc_i,
+      .exit_o,
+                                                                          
+      .hyper_cs_no            ( s_hyper_cs_n                    ),
+      .hyper_ck_o             ( s_hyper_ck                      ),
+      .hyper_ck_no            ( s_hyper_ck_n                    ),
+      .hyper_rwds_o           ( s_hyper_rwds_o                  ),
+      .hyper_rwds_i           ( s_hyper_rwds_i                  ),
+      .hyper_rwds_oe_o        ( s_hyper_rwds_oe                 ),
+      .hyper_dq_i             ( s_hyper_dq_i                    ),
+      .hyper_dq_o             ( s_hyper_dq_o                    ),
+      .hyper_dq_oe_o          ( s_hyper_dq_oe                   ),
+      .hyper_reset_no         ( s_hyper_reset_n                 )     
     );
 
+   pad_frame #()
+    i_pad_frame
+      (       
+      .hyper_cs_ni            ( s_hyper_cs_n                    ),
+      .hyper_ck_i             ( s_hyper_ck                      ),
+      .hyper_ck_ni            ( s_hyper_ck_n                    ),
+      .hyper_rwds_i           ( s_hyper_rwds_o                  ),
+      .hyper_rwds_o           ( s_hyper_rwds_i                  ),
+      .hyper_rwds_oe_i        ( s_hyper_rwds_oe                 ),
+      .hyper_dq_o             ( s_hyper_dq_i                    ),
+      .hyper_dq_i             ( s_hyper_dq_o                    ),
+      .hyper_dq_oe_i          ( s_hyper_dq_oe                   ),
+      .hyper_reset_ni         ( s_hyper_reset_n                 ),
 
+      .pad_hyper_dq0          ( pad_hyper_dq0                   ),
+      .pad_hyper_dq1          ( pad_hyper_dq1                   ),
+      .pad_hyper_ck           ( pad_hyper_ck                    ),
+      .pad_hyper_ckn          ( pad_hyper_ckn                   ),
+      .pad_hyper_csn0         ( pad_hyper_csn0                  ),
+      .pad_hyper_csn1         ( pad_hyper_csn1                  ),
+      .pad_hyper_rwds0        ( pad_hyper_rwds0                 ),
+      .pad_hyper_rwds1        ( pad_hyper_rwds1                 ),
+      .pad_hyper_reset        ( pad_hyper_reset                 )
+     );
+   
 endmodule

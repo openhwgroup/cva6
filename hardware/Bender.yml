@@ -20,6 +20,7 @@ dependencies:
   udma_filter: { git: "https://github.com/pulp-platform/udma_filter.git", version: 1.0.2 }
   udma_external_per: { git: "https://github.com/pulp-platform/udma_external_per.git", version: 1.0.3 }
   udma_hyper: { git: "https://github.com/pulp-platform/udma_hyper.git", rev: "83ab704f9d1c5f9e5353268c901fe95c36bcea36" }
+  tech_cells_generic: { git: "https://github.com/pulp-platform/tech_cells_generic.git", version: 0.2.3 }
 
 export_include_dirs:
   - include/
@@ -34,10 +35,14 @@ sources:
   - host/axi2tcdm_wrap.sv
   - host/ariane_peripherals.sv
   - host/udma_subsystem.sv
+  - ../fpga/src/axi2apb/src/axi2apb.sv
+  - ../fpga/src/axi2apb/src/axi2apb_64_32.sv
+  - ../fpga/src/axi2apb/src/axi2apb_wrap.sv
   - host/apb_subsystem.sv
   - host/cva6_subsystem.sv
   - host/l2_subsystem.sv
   - host/host_domain.sv
+  - host/pad_frame.sv
   - host/al_saqr.sv
   - tb/common/uart.sv                                                     
   - tb/common/SimDTM.sv                                                   
@@ -50,3 +55,7 @@ sources:
       - tb/common/mock_uart.sv
       - tb/ariane_tb.sv
 
+  - target: vip
+    files:
+      - tb/vip/hyperflash_model/s26ks512s.v
+      - tb/vip/hyperram_model/s27ks0641.v
