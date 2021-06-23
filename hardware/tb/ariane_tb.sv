@@ -13,6 +13,7 @@
 // Description: Top level testbench module. Instantiates the top level DUT, configures
 //              the virtual interfaces and starts the test passed by +UVM_TEST+
 
+`timescale 1ns/1ns
 
 import ariane_pkg::*;
 import uvm_pkg::*;

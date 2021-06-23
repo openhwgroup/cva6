@@ -33,7 +33,7 @@ module axi_to_reg #(
   ) axi_lite (clk_i);
 
   //  convert axi to axi-lite
-  axi_to_axi_lite #(
+  axi_to_axi_lite_cva6 #(
     /// Maximum number of outstanding reads.
     .NUM_PENDING_RD (1),
     /// Maximum number of outstanding writes.

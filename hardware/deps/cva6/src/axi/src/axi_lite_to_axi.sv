@@ -13,7 +13,7 @@
 
 /// An AXI4-Lite to AXI4 adapter.
 module axi_lite_to_axi (
-  AXI_LITE.Slave  in,
+  AXI_LITE_CVA6.Slave  in,
   AXI_BUS.Master  out
 );
 

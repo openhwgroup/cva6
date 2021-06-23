@@ -23,7 +23,7 @@ module axi_lite_to_reg #(
 )(
   input  logic clk_i  ,
   input  logic rst_ni ,
-  AXI_LITE.in  axi_i  ,
+  AXI_LITE_CVA6.in  axi_i  ,
   REG_BUS.out  reg_o
 );
 

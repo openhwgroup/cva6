@@ -18,7 +18,7 @@
 /// and write channels that the adapter can handle.
 ///
 /// Burst accesses are not yet supported and DO NOT produce an error.
-module axi_to_axi_lite #(
+module axi_to_axi_lite_cva6 #(
   /// Maximum number of outstanding reads.
   parameter int NUM_PENDING_RD = 1,
   /// Maximum number of outstanding writes.
@@ -28,7 +28,7 @@ module axi_to_axi_lite #(
   input logic     rst_ni,
   input logic     testmode_i,
   AXI_BUS.Slave   in,
-  AXI_LITE.Master out
+  AXI_LITE_CVA6.Master out
 );
 
   `ifndef SYNTHESIS

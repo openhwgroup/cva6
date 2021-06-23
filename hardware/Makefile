@@ -142,7 +142,7 @@ libbender:
 
 scripts:
 	./bender script vsim \
-		--vlog-arg="$(compile_flag)  -work  $(library) -suppress 2583 -suppress 13314" --vcom-arg="$(compile_flag_vhd) -work  $(library) -pedanticerrors" \
+		--vlog-arg="$(compile_flag)  -work  $(library) -suppress 2583 -suppress 13314 " --vcom-arg="$(compile_flag_vhd) -work  $(library) -pedanticerrors" \
     -t rtl -t test > compile.tcl
 
 benderrun: libbender $(util) $(library)

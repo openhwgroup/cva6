@@ -35,7 +35,8 @@ module cva6_subsytem
   input  logic                           rst_ni,
   output logic [31:0]                    exit_o,
   output logic                           rst_no,
-  AXI_BUS.Master                         l2_axi_master
+  AXI_BUS.Master                         l2_axi_master,
+  AXI_BUS.Master                         apb_axi_master
 );
      // disable test-enable
   logic        test_en;
@@ -554,7 +555,13 @@ module cva6_subsytem
   // ---------------
 
   `AXI_ASSIGN(l2_axi_master,master[ariane_soc::L2SPM])
-  
+
+  // ---------------
+  // AXI APB Slave
+  // ---------------
+
+  `AXI_ASSIGN(apb_axi_master,master[ariane_soc::APB_SLVS])
+   
   // ---------------
   // AXI Xbar
   // ---------------
@@ -629,6 +636,11 @@ module cva6_subsytem
     idx:  10,
     start_addr: ariane_soc::L2SPMBase,
     end_addr:   ariane_soc::L2SPMBase     + ariane_soc::L2SPMLength  
+  };
+  assign addr_map[11] = '{ 
+    idx:  11,
+    start_addr: ariane_soc::APB_SLVSBase,
+    end_addr:   ariane_soc::APB_SLVSBase     + ariane_soc::APB_SLVSLength  
   };
 
   axi_xbar_intf #(

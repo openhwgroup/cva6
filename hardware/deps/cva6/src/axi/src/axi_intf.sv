@@ -270,7 +270,7 @@ endinterface
 
 
 /// An AXI4-Lite interface.
-interface AXI_LITE #(
+interface AXI_LITE_CVA6 #(
   parameter AXI_ADDR_WIDTH = -1,
   parameter AXI_DATA_WIDTH = -1
 );

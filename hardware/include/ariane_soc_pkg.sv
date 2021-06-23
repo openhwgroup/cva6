@@ -31,22 +31,9 @@ package ariane_soc;
   // The ID width of the master ports must be AxiIdWidthSlvPorts + $clog_2(NoSlvPorts).
   localparam IdWidth   = 4;
   localparam IdWidthSlave = IdWidth + $clog2(NrSlaves);
-/*  
-  typedef enum int unsigned {
-    L2SPM    = 0,
-    DRAM     = 1,
-    GPIO     = 2,
-    Ethernet = 3,
-    SPI      = 4,
-    Timer    = 5,
-    UART     = 6,
-    PLIC     = 7,
-    CLINT    = 8,
-    ROM      = 9,
-    Debug    = 10
-  } axi_slaves_t;*/
 
   typedef enum int unsigned {
+    APB_SLVS = 11,
     L2SPM    = 10,
     DRAM     = 9,
     GPIO     = 8,
@@ -60,7 +47,7 @@ package ariane_soc;
     Debug    = 0
   } axi_slaves_t;
    
-  localparam NB_PERIPHERALS = L2SPM + 1;
+  localparam NB_PERIPHERALS = APB_SLVS + 1;
 
 
   localparam logic[63:0] DebugLength    = 64'h1000;
@@ -74,8 +61,8 @@ package ariane_soc;
   localparam logic[63:0] GPIOLength     = 64'h1000;
   localparam logic[63:0] DRAMLength     = 64'h40000000; // 1GByte of DDR (split between two chips on Genesys2)
   localparam logic[63:0] SRAMLength     = 64'h1800000;  // 24 MByte of SRAM
-  localparam logic[63:0] L2SPMLength    = 64'h100000; // 1MB of scratchpad memory 
- 
+  localparam logic[63:0] L2SPMLength    = 64'h100000;   // 1MB of scratchpad memory 
+  localparam logic [63:0] APB_SLVSLength = 64'h2000;     // 1 slave = 4 KB (UDMA = 2 slaves)
   // Instantiate AXI protocol checkers
   localparam bit GenProtocolChecker = 1'b0;
 
@@ -90,9 +77,12 @@ package ariane_soc;
     EthernetBase = 64'h3000_0000,
     GPIOBase     = 64'h4000_0000,
     DRAMBase     = 64'h8000_0000,
-    L2SPMBase    = 64'hC000_0000
-  } soc_bus_start_t;
+    L2SPMBase    = 64'hC000_0000,
+    APB_SLVSBase = 64'hC100_0000
+  } soc_bus_start_t; 
+  // Let x = NB_PERIPHERALS: as long as Base(xth slave)+Length(xth slave) is < 1_0000_0000 we can cut the 32 MSBs addresses without any worries. 
 
+  
   localparam NrRegion = 1;
   localparam logic [NrRegion-1:0][NB_PERIPHERALS-1:0] ValidRule = {{NrRegion * NB_PERIPHERALS}{1'b1}};
 

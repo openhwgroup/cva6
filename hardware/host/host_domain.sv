@@ -39,8 +39,11 @@ module host_domain
                                           // It is hardcoded in the axi2tcdm_wrap module.
    localparam L2_BANK_SIZE = 32768 ; // 2^15 words (32 bits)
    localparam L2_BANK_ADDR_WIDTH = $clog2(L2_BANK_SIZE);
+   localparam L2_MEM_ADDR_WIDTH = $clog2(L2_BANK_SIZE * NB_L2_BANKS) - $clog2(NB_L2_BANKS); 
    localparam L2_DATA_WIDTH = 32 ; // Do not change
 
+   localparam NB_UDMA_TCDM_CHANNEL = 2;
+   
    logic                                 ndmreset_n;
    
    AXI_BUS #(
@@ -50,7 +53,17 @@ module host_domain
      .AXI_USER_WIDTH ( AXI_USER_WIDTH           )
    ) l2_axi_bus();
  
+   AXI_BUS #(
+     .AXI_ADDR_WIDTH ( AXI_ADDRESS_WIDTH        ),
+     .AXI_DATA_WIDTH ( AXI_DATA_WIDTH           ),
+     .AXI_ID_WIDTH   ( ariane_soc::IdWidthSlave ),
+     .AXI_USER_WIDTH ( AXI_USER_WIDTH           )
+   ) apb_axi_bus();
+
+   
    XBAR_TCDM_BUS axi_bridge_2_interconnect[AXI64_2_TCDM32_N_PORTS]();
+   XBAR_TCDM_BUS udma_tcdm_channels[NB_UDMA_TCDM_CHANNEL]();
+   
  
    cva6_subsytem # (
         .NUM_WORDS         ( NUM_WORDS ),
@@ -62,8 +75,9 @@ module host_domain
         .rst_ni,
         .rtc_i,
         .exit_o,
-        .rst_no ( ndmreset_n ),
-        .l2_axi_master ( l2_axi_bus )
+        .rst_no         ( ndmreset_n  ),
+        .l2_axi_master  ( l2_axi_bus  ),
+        .apb_axi_master ( apb_axi_bus )
     );
    
    
@@ -90,6 +104,20 @@ module host_domain
       .clk_i                     ( clk_i                     ),
       .rst_ni                    ( ndmreset_n                ),
       .axi_bridge_2_interconnect ( axi_bridge_2_interconnect )
- );
+     );
+
+
+      apb_subsystem #(
+       .L2_ADDR_WIDTH  ( L2_MEM_ADDR_WIDTH        ),
+       .AXI_ADDR_WIDTH ( AXI_ADDRESS_WIDTH        ),
+       .AXI_DATA_WIDTH ( AXI_DATA_WIDTH           ),
+       .AXI_USER_WIDTH ( AXI_USER_WIDTH           )
+      ) (
+      .clk_i                     ( clk_i                     ),
+      .rst_ni                    ( ndmreset_n                ),
+      .axi_apb_slave             ( apb_axi_bus               ),
+      .udma_tcdm_channels        ( udma_tcdm_channels        )
+      );
+                     
    
 endmodule
