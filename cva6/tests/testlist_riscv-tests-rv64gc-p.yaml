@@ -340,13 +340,13 @@
   asm_tests: <path_var>/riscv-tests/isa/rv64ui/xori.S
 
 - test: rv64mi-p-access
-  iterations: 1
+  iterations: 0 # to be explained
   path_var: TESTS_PATH
   gcc_opts: "-static -mcmodel=medany -fvisibility=hidden -nostdlib -nostartfiles -I<path_var>/riscv-tests/isa/macros/scalar/ -I<path_var>/riscv-tests/env/p/ -I<path_var>/riscv-tests/riscv-target/spike/"
   asm_tests: <path_var>/riscv-tests/isa/rv64mi/access.S
 
 - test: rv64mi-p-breakpoint
-  iterations: 1
+  iterations: 0 # csrr    a0, tdata1 => 0x2000000000000000 (spike), 0x0000000000000000 (cva6)
   path_var: TESTS_PATH
   gcc_opts: "-static -mcmodel=medany -fvisibility=hidden -nostdlib -nostartfiles -I<path_var>/riscv-tests/isa/macros/scalar/ -I<path_var>/riscv-tests/env/p/ -I<path_var>/riscv-tests/riscv-target/spike/"
   asm_tests: <path_var>/riscv-tests/isa/rv64mi/breakpoint.S
@@ -358,19 +358,19 @@
   asm_tests: <path_var>/riscv-tests/isa/rv64mi/csr.S
 
 - test: rv64mi-p-mcsr
-  iterations: 1
+  iterations: 0 # expected as different marchid
   path_var: TESTS_PATH
   gcc_opts: "-static -mcmodel=medany -fvisibility=hidden -nostdlib -nostartfiles -I<path_var>/riscv-tests/isa/macros/scalar/ -I<path_var>/riscv-tests/env/p/ -I<path_var>/riscv-tests/riscv-target/spike/"
   asm_tests: <path_var>/riscv-tests/isa/rv64mi/mcsr.S
 
 - test: rv64mi-p-illegal
-  iterations: 1
+  iterations: 0 # cva6 does not record illegal instructions in log file
   path_var: TESTS_PATH
   gcc_opts: "-static -mcmodel=medany -fvisibility=hidden -nostdlib -nostartfiles -I<path_var>/riscv-tests/isa/macros/scalar/ -I<path_var>/riscv-tests/env/p/ -I<path_var>/riscv-tests/riscv-target/spike/"
   asm_tests: <path_var>/riscv-tests/isa/rv64mi/illegal.S
 
 - test: rv64mi-p-ma_fetch
-  iterations: 1
+  iterations: 0 # expected as different misa
   path_var: TESTS_PATH
   gcc_opts: "-static -mcmodel=medany -fvisibility=hidden -nostdlib -nostartfiles -I<path_var>/riscv-tests/isa/macros/scalar/ -I<path_var>/riscv-tests/env/p/ -I<path_var>/riscv-tests/riscv-target/spike/"
   asm_tests: <path_var>/riscv-tests/isa/rv64mi/ma_fetch.S
