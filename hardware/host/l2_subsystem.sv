@@ -61,7 +61,7 @@ module l2_subsystem
    generate
     for(genvar i=0; i<UDMA_TCDM_N_PORTS; i++) begin : udma_tcdm_channels_unrolling
       assign core_req_l2    [i+AXI64_2_TCDM32_N_PORTS] = udma_tcdm_channels[i].req;
-      assign core_add_l2    [i+AXI64_2_TCDM32_N_PORTS] = udma_tcdm_channels[i].add  - ariane_soc::L2SPMBase;
+      assign core_add_l2    [i+AXI64_2_TCDM32_N_PORTS] = udma_tcdm_channels[i].add  - 32'h1C00_0000; // udma_core believes that L2 is @ 1C00_0000 as in pulpissimo
       assign core_wen_l2    [i+AXI64_2_TCDM32_N_PORTS] = udma_tcdm_channels[i].wen;
       assign core_be_l2     [i+AXI64_2_TCDM32_N_PORTS] = udma_tcdm_channels[i].be;
       assign core_wdata_l2  [i+AXI64_2_TCDM32_N_PORTS] = udma_tcdm_channels[i].wdata;

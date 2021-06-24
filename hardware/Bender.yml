@@ -48,6 +48,11 @@ sources:
   - tb/common/SimDTM.sv                                                   
   - tb/common/SimJTAG.sv
 
+  - target: vip
+    files:
+      - tb/vip/hyperflash_model/s26ks512s.v
+      - tb/vip/hyperram_model/s27ks0641.v
+      
   - target: test
     files:
       - deps/cva6/src/util/sram.sv
@@ -55,7 +60,3 @@ sources:
       - tb/common/mock_uart.sv
       - tb/ariane_tb.sv
 
-  - target: vip
-    files:
-      - tb/vip/hyperflash_model/s26ks512s.v
-      - tb/vip/hyperram_model/s27ks0641.v

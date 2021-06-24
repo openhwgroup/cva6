@@ -87,6 +87,8 @@ module apb_subsystem
     output logic                       hyper_reset_no
 );
 
+   logic [31:0]                        apb_udma_address;
+   
    APB_BUS  #(
                .APB_ADDR_WIDTH(32),
                .APB_DATA_WIDTH(32)
@@ -108,7 +110,9 @@ module apb_subsystem
            .axi_slave(axi_apb_slave),
            .apb_master(apb_peripheral_bus)
          );
-   
+
+   assign apb_udma_address = apb_peripheral_bus.paddr  - ariane_soc::APB_SLVSBase + 32'h1A10_0000 ;
+                            
    udma_subsystem
      #(
         .L2_ADDR_WIDTH  ( L2_ADDR_WIDTH ), 
@@ -148,7 +152,7 @@ module apb_subsystem
          .L2_wo_rvalid_i  ( udma_tcdm_channels[1].r_valid  ),
          .L2_wo_rdata_i   ( udma_tcdm_channels[1].r_rdata  ),
 
-         .udma_apb_paddr  ( apb_peripheral_bus.paddr       ),
+         .udma_apb_paddr  ( apb_udma_address               ),
          .udma_apb_pwdata ( apb_peripheral_bus.pwdata      ),
          .udma_apb_pwrite ( apb_peripheral_bus.pwrite      ),
          .udma_apb_psel   ( apb_peripheral_bus.psel        ),

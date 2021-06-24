@@ -38,10 +38,10 @@ module pad_frame
     pad_functional_pu padinst_hyper_csno0  (.OEN( 1'b0              ), .I( hyper_cs_ni[0]     ), .O(                   ), .PAD( pad_hyper_csn0    ), .PEN(1'b1 ) );
     pad_functional_pu padinst_hyper_csno1  (.OEN( 1'b0              ), .I( hyper_cs_ni[1]     ), .O(                   ), .PAD( pad_hyper_csn1    ), .PEN(1'b1 ) );
     pad_functional_pu padinst_hyper_ck     (.OEN( 1'b0              ), .I( hyper_ck_i         ), .O(                   ), .PAD( pad_hyper_ck      ), .PEN(1'b1 ) );
-    pad_functional_pu padinst_hyper_ckno   (.OEN( 1'b0              ), .I( out_hyper_ckn_i    ), .O(                   ), .PAD( pad_hyper_ckn     ), .PEN(1'b1 ) );
-    pad_functional_pu padinst_hyper_rwds0  (.OEN(~oe_hyper_rwds0_i  ), .I( hyper_rwds_i[0]    ), .O( hyper_rwds_o      ), .PAD( pad_hyper_rwds0   ), .PEN(1'b1 ) );
-    pad_functional_pu padinst_hyper_rwds1  (.OEN(~oe_hyper_rwds1_i  ), .I( hyper_rwds_i[1]    ), .O( hyper_rwds_o      ), .PAD( pad_hyper_rwds1   ), .PEN(1'b1 ) );
-    pad_functional_pu padinst_hyper_resetn (.OEN( 1'b0              ), .I( hyper_resetn_i     ), .O(                   ), .PAD( pad_hyper_reset   ), .PEN(1'b1 ) );
+    pad_functional_pu padinst_hyper_ckno   (.OEN( 1'b0              ), .I( hyper_ck_ni        ), .O(                   ), .PAD( pad_hyper_ckn     ), .PEN(1'b1 ) );
+    pad_functional_pu padinst_hyper_rwds0  (.OEN(~hyper_rwds_oe_i[0]), .I( hyper_rwds_i[0]    ), .O( hyper_rwds_o      ), .PAD( pad_hyper_rwds0   ), .PEN(1'b1 ) );
+    pad_functional_pu padinst_hyper_rwds1  (.OEN(~hyper_rwds_oe_i[1]), .I( hyper_rwds_i[1]    ), .O(                   ), .PAD( pad_hyper_rwds1   ), .PEN(1'b1 ) );
+    pad_functional_pu padinst_hyper_resetn (.OEN( 1'b0              ), .I( hyper_reset_ni     ), .O(                   ), .PAD( pad_hyper_reset   ), .PEN(1'b1 ) );
 
     genvar j;
     generate
