@@ -1,0 +1,94 @@
+# Copyright 2021 OpenHW Group
+# Licensed under the Apache License, Version 2.0, see LICENSE for details.
+# SPDX-License-Identifier: Apache-2.0
+
+# Run functional regression checks
+name: ci
+on: [push, pull_request]
+
+jobs:
+  #######
+  # ISA #
+  #######
+  base-isa:
+    name: Base ISA Tests
+    runs-on: ubuntu-latest
+    env:
+      RISCV: /riscv
+    steps:
+    - uses: actions/checkout@v2
+      with:
+        submodules: recursive
+    - name: Prepare
+      run: ci/setup.sh
+    - name: run asm tests (Write-Back Cache)
+      run: make run-asm-tests-verilator defines=WB_DCACHE
+    - name: run asm tests (Write-through Cache)
+      run: make run-asm-tests-verilator defines=WT_DCACHE
+
+  mul-isa:
+    name: Mul/Div ISA Tests
+    runs-on: ubuntu-latest
+    env:
+      RISCV: /riscv
+    steps:
+    - uses: actions/checkout@v2
+      with:
+        submodules: recursive
+    - name: Prepare
+      run: ci/setup.sh
+    - name: run mul tests (Write-Back Cache)
+      run: make run-mul-verilator defines=WB_DCACHE
+    - name: run mul tests (Write-through Cache)
+      run: make run-mul-verilator defines=WT_DCACHE
+
+  amo-isa:
+    name: Atomic ISA Tests
+    runs-on: ubuntu-latest
+    env:
+      RISCV: /riscv
+    steps:
+    - uses: actions/checkout@v2
+      with:
+        submodules: recursive
+    - name: Prepare
+      run: ci/setup.sh
+    - name: run amo tests (Write-Back Cache)
+      run: make run-amo-verilator defines=WB_DCACHE
+    - name: run amo tests (Write-through Cache)
+      run: make run-amo-verilator defines=WT_DCACHE
+
+  fp-isa:
+    name: Floating-point ISA Tests
+    runs-on: ubuntu-latest
+    env:
+      RISCV: /riscv
+    steps:
+    - uses: actions/checkout@v2
+      with:
+        submodules: recursive
+    - name: Prepare
+      run: ci/setup.sh
+    - name: run fp tests (Write-through Cache)
+      run: make run-fp-verilator defines=WT_DCACHE
+    - name: run fp tests (Write-Back Cache)
+      run: make run-fp-verilator defines=WB_DCACHE
+
+  ##############
+  # Benchmarks #
+  ##############
+  benchmarks:
+    name: Benchmarks
+    runs-on: ubuntu-latest
+    env:
+      RISCV: /riscv
+    steps:
+    - uses: actions/checkout@v2
+      with:
+        submodules: recursive
+    - name: Prepare
+      run: ci/setup.sh
+    - name: run riscv benchmarks (Write-Back Cache)
+      run: make run-benchmarks-verilator defines=WB_DCACHE
+    - name: run riscv benchmarks (Write-through Cache)
+      run: make run-benchmarks-verilator  defines=WT_DCACHE

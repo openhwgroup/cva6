@@ -36,13 +36,6 @@ root-dir := $(dir $(mkfile_path))
 
 support_verilator_4 := $(shell ($(verilator) --version | grep '4\.') > /dev/null 2>&1 ; echo $$?)
 ifeq ($(support_verilator_4), 0)
-	ifndef verilator_threads
-		ifeq ($(shell test `nproc` -ge 4; echo $$?),0)
-			verilator_threads := 4
-		else ifeq ($(shell test `nproc` -ge 2; echo $$?),0)
-			verilator_threads := 2
-		endif
-	endif
 endif
 
 ifndef RISCV
@@ -327,8 +320,8 @@ $(dpi-library)/ariane_dpi.so: $(dpi)
 # single test runs on Questa can be started by calling make <testname>, e.g. make towers.riscv
 # the test names are defined in ci/riscv-asm-tests.list, and in ci/riscv-benchmarks.list
 # if you want to run in batch mode, use make <testname> batch-mode=1
-# alternatively you can call make sim elf-bin=<path/to/elf-bin> in order to load an arbitrary binary		
- 
+# alternatively you can call make sim elf-bin=<path/to/elf-bin> in order to load an arbitrary binary
+
 generate-trace-vsim:
 	make sim preload=$(preload) elf-bin= batch-mode=1
 	make generate-trace
@@ -467,7 +460,7 @@ xrun_sim: xrun_comp
 		++$(elf-bin)
 
 #-e "set_severity_pack_assert_off {warning}; set_pack_assert_off {numeric_std}" TODO: This will remove assertion warning at the beginning of the simulation.
-	 
+
 xrun_all: xrun_clean xrun_comp xrun_sim
 
 $(addprefix xrun_, $(riscv-asm-tests)): xrun_comp
@@ -514,7 +507,7 @@ xrun-fp-tests: $(addprefix xrun_, $(riscv-fp-tests))
 	$(MAKE) xrun-check-fp-tests
 
 xrun-check-asm-tests:
-	ci/check-tests.sh $(XRUN_RESULTS_DIR)/isa/asm/ $(shell wc -l $(riscv-asm-tests-list) | awk -F " " '{ print $1 }') 
+	ci/check-tests.sh $(XRUN_RESULTS_DIR)/isa/asm/ $(shell wc -l $(riscv-asm-tests-list) | awk -F " " '{ print $1 }')
 
 xrun-check-amo-tests:
 	ci/check-tests.sh $(XRUN_RESULTS_DIR)/isa/amo/ $(shell wc -l $(riscv-amo-tests-list) | awk -F " " '{ print $1 }')
@@ -563,6 +556,7 @@ verilate_command := $(verilator)                                                
                     -CFLAGS "$(CFLAGS)$(if $(PROFILE), -g -pg,) $(if $(DROMAJO), -DDROMAJO=1,) -DVL_DEBUG"       \
                     -Wall --cc  --vpi                                                                            \
                     $(list_incdir) --top-module ariane_testharness                                               \
+					--threads-dpi none 																			 \
                     --Mdir $(ver-library) -O3                                                                    \
                     --exe tb/ariane_tb.cpp tb/dpi/SimDTM.cc tb/dpi/SimJTAG.cc                                    \
 					tb/dpi/remote_bitbang.cc tb/dpi/msim_helper.cc $(if $(DROMAJO), tb/dpi/dromajo_cosim_dpi.cc,)
