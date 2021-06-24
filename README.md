@@ -1,4 +1,4 @@
-[![Build Status](https://travis-ci.org/openhwgroup/cva6.svg?branch=master)](https://travis-ci.org/openhwgroup/cva6)
+![Build Status](https://github.com/openhwgroup/cva6/actions/workflows/ci.yml/badge.svg?branch=master)
 
 # CVA6 RISC-V CPU
 
