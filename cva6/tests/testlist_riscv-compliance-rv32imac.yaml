@@ -99,7 +99,7 @@
   asm_tests: <path_var>/riscv-compliance/riscv-test-suite/rv64i/src/SRAIW.S
 
 - test: rv32uc-rvc
-  iterations: 0
+  iterations: 1
   path_var: TESTS_PATH
   gcc_opts: "-static -mcmodel=medany -fvisibility=hidden -nostdlib -nostartfiles -I<path_var>/riscv-compliance/riscv-test-env/ -I<path_var>/riscv-compliance/riscv-test-env/p/ -I<path_var>/riscv-compliance/riscv-target/spike/"
   asm_tests: <path_var>/riscv-compliance/riscv-test-suite/rv32uc/src/rvc.S
@@ -771,19 +771,19 @@
   asm_tests: <path_var>/riscv-compliance/riscv-test-suite/rv32si/src/csr.S
   
 - test: rv32imc-C-LW
-  iterations: 0
+  iterations: 1
   path_var: TESTS_PATH
   gcc_opts: "-static -mcmodel=medany -fvisibility=hidden -nostdlib -nostartfiles -I<path_var>/riscv-compliance/riscv-test-env/ -I<path_var>/riscv-compliance/riscv-test-env/p/ -I<path_var>/riscv-compliance/riscv-target/spike/"
   asm_tests: <path_var>/riscv-compliance/riscv-test-suite/rv32imc/src/C-LW.S
   
 - test: rv32imc-C-LWSP
-  iterations: 0
+  iterations: 1
   path_var: TESTS_PATH
   gcc_opts: "-static -mcmodel=medany -fvisibility=hidden -nostdlib -nostartfiles -I<path_var>/riscv-compliance/riscv-test-env/ -I<path_var>/riscv-compliance/riscv-test-env/p/ -I<path_var>/riscv-compliance/riscv-target/spike/"
   asm_tests: <path_var>/riscv-compliance/riscv-test-suite/rv32imc/src/C-LWSP.S
   
 - test: rv32imc-C-ADD
-  iterations: 0
+  iterations: 1
   path_var: TESTS_PATH
   gcc_opts: "-static -mcmodel=medany -fvisibility=hidden -nostdlib -nostartfiles -I<path_var>/riscv-compliance/riscv-test-env/ -I<path_var>/riscv-compliance/riscv-test-env/p/ -I<path_var>/riscv-compliance/riscv-target/spike/"
   asm_tests: <path_var>/riscv-compliance/riscv-test-suite/rv32imc/src/C-ADD.S
@@ -795,127 +795,127 @@
   asm_tests: <path_var>/riscv-compliance/riscv-test-suite/rv32imc/src/C-JAL.S
 
 - test: rv32imc-C-SRAI
-  iterations: 0
+  iterations: 1
   path_var: TESTS_PATH
   gcc_opts: "-static -mcmodel=medany -fvisibility=hidden -nostdlib -nostartfiles -I<path_var>/riscv-compliance/riscv-test-env/ -I<path_var>/riscv-compliance/riscv-test-env/p/ -I<path_var>/riscv-compliance/riscv-target/spike/"
   asm_tests: <path_var>/riscv-compliance/riscv-test-suite/rv32imc/src/C-SRAI.S
   
 - test: rv32imc-C-JALR
-  iterations: 0
+  iterations: 1
   path_var: TESTS_PATH
   gcc_opts: "-static -mcmodel=medany -fvisibility=hidden -nostdlib -nostartfiles -I<path_var>/riscv-compliance/riscv-test-env/ -I<path_var>/riscv-compliance/riscv-test-env/p/ -I<path_var>/riscv-compliance/riscv-target/spike/"
   asm_tests: <path_var>/riscv-compliance/riscv-test-suite/rv32imc/src/C-JALR.S
   
 - test: rv32imc-C-XOR
-  iterations: 0
+  iterations: 1
   path_var: TESTS_PATH
   gcc_opts: "-static -mcmodel=medany -fvisibility=hidden -nostdlib -nostartfiles -I<path_var>/riscv-compliance/riscv-test-env/ -I<path_var>/riscv-compliance/riscv-test-env/p/ -I<path_var>/riscv-compliance/riscv-target/spike/"
   asm_tests: <path_var>/riscv-compliance/riscv-test-suite/rv32imc/src/C-XOR.S
   
 - test: rv32imc-C-SUB
-  iterations: 0
+  iterations: 1
   path_var: TESTS_PATH
   gcc_opts: "-static -mcmodel=medany -fvisibility=hidden -nostdlib -nostartfiles -I<path_var>/riscv-compliance/riscv-test-env/ -I<path_var>/riscv-compliance/riscv-test-env/p/ -I<path_var>/riscv-compliance/riscv-target/spike/"
   asm_tests: <path_var>/riscv-compliance/riscv-test-suite/rv32imc/src/C-SUB.S
   
 - test: rv32imc-C-ADDI
-  iterations: 0
+  iterations: 1
   path_var: TESTS_PATH
   gcc_opts: "-static -mcmodel=medany -fvisibility=hidden -nostdlib -nostartfiles -I<path_var>/riscv-compliance/riscv-test-env/ -I<path_var>/riscv-compliance/riscv-test-env/p/ -I<path_var>/riscv-compliance/riscv-target/spike/"
   asm_tests: <path_var>/riscv-compliance/riscv-test-suite/rv32imc/src/C-ADDI.S
   
 - test: rv32imc-C-BEQZ
-  iterations: 0
+  iterations: 1
   path_var: TESTS_PATH
   gcc_opts: "-static -mcmodel=medany -fvisibility=hidden -nostdlib -nostartfiles -I<path_var>/riscv-compliance/riscv-test-env/ -I<path_var>/riscv-compliance/riscv-test-env/p/ -I<path_var>/riscv-compliance/riscv-target/spike/"
   asm_tests: <path_var>/riscv-compliance/riscv-test-suite/rv32imc/src/C-BEQZ.S
   
 - test: rv32imc-C-ADDI16SP
-  iterations: 0
+  iterations: 1
   path_var: TESTS_PATH
   gcc_opts: "-static -mcmodel=medany -fvisibility=hidden -nostdlib -nostartfiles -I<path_var>/riscv-compliance/riscv-test-env/ -I<path_var>/riscv-compliance/riscv-test-env/p/ -I<path_var>/riscv-compliance/riscv-target/spike/"
   asm_tests: <path_var>/riscv-compliance/riscv-test-suite/rv32imc/src/C-ADDI16SP.S
   
 - test: rv32imc-C-LI
-  iterations: 0
+  iterations: 1
   path_var: TESTS_PATH
   gcc_opts: "-static -mcmodel=medany -fvisibility=hidden -nostdlib -nostartfiles -I<path_var>/riscv-compliance/riscv-test-env/ -I<path_var>/riscv-compliance/riscv-test-env/p/ -I<path_var>/riscv-compliance/riscv-target/spike/"
   asm_tests: <path_var>/riscv-compliance/riscv-test-suite/rv32imc/src/C-LI.S
   
 - test: rv32imc-C-SW
-  iterations: 0
+  iterations: 1
   path_var: TESTS_PATH
   gcc_opts: "-static -mcmodel=medany -fvisibility=hidden -nostdlib -nostartfiles -I<path_var>/riscv-compliance/riscv-test-env/ -I<path_var>/riscv-compliance/riscv-test-env/p/ -I<path_var>/riscv-compliance/riscv-target/spike/"
   asm_tests: <path_var>/riscv-compliance/riscv-test-suite/rv32imc/src/C-SW.S
   
 - test: rv32imc-C-OR
-  iterations: 0
+  iterations: 1
   path_var: TESTS_PATH
   gcc_opts: "-static -mcmodel=medany -fvisibility=hidden -nostdlib -nostartfiles -I<path_var>/riscv-compliance/riscv-test-env/ -I<path_var>/riscv-compliance/riscv-test-env/p/ -I<path_var>/riscv-compliance/riscv-target/spike/"
   asm_tests: <path_var>/riscv-compliance/riscv-test-suite/rv32imc/src/C-OR.S
   
 - test: rv32imc-C-ADDI4SPN
-  iterations: 0
+  iterations: 1
   path_var: TESTS_PATH
   gcc_opts: "-static -mcmodel=medany -fvisibility=hidden -nostdlib -nostartfiles -I<path_var>/riscv-compliance/riscv-test-env/ -I<path_var>/riscv-compliance/riscv-test-env/p/ -I<path_var>/riscv-compliance/riscv-target/spike/"
   asm_tests: <path_var>/riscv-compliance/riscv-test-suite/rv32imc/src/C-ADDI4SPN.S
   
 - test: rv32imc-C-AND
-  iterations: 0
+  iterations: 1
   path_var: TESTS_PATH
   gcc_opts: "-static -mcmodel=medany -fvisibility=hidden -nostdlib -nostartfiles -I<path_var>/riscv-compliance/riscv-test-env/ -I<path_var>/riscv-compliance/riscv-test-env/p/ -I<path_var>/riscv-compliance/riscv-target/spike/"
   asm_tests: <path_var>/riscv-compliance/riscv-test-suite/rv32imc/src/C-AND.S
   
 - test: rv32imc-C-SRLI
-  iterations: 0
+  iterations: 1
   path_var: TESTS_PATH
   gcc_opts: "-static -mcmodel=medany -fvisibility=hidden -nostdlib -nostartfiles -I<path_var>/riscv-compliance/riscv-test-env/ -I<path_var>/riscv-compliance/riscv-test-env/p/ -I<path_var>/riscv-compliance/riscv-target/spike/"
   asm_tests: <path_var>/riscv-compliance/riscv-test-suite/rv32imc/src/C-SRLI.S
   
 - test: rv32imc-C-SWSP
-  iterations: 0
+  iterations: 1
   path_var: TESTS_PATH
   gcc_opts: "-static -mcmodel=medany -fvisibility=hidden -nostdlib -nostartfiles -I<path_var>/riscv-compliance/riscv-test-env/ -I<path_var>/riscv-compliance/riscv-test-env/p/ -I<path_var>/riscv-compliance/riscv-target/spike/"
   asm_tests: <path_var>/riscv-compliance/riscv-test-suite/rv32imc/src/C-SWSP.S
   
 - test: rv32imc-C-SLLI
-  iterations: 0
+  iterations: 1
   path_var: TESTS_PATH
   gcc_opts: "-static -mcmodel=medany -fvisibility=hidden -nostdlib -nostartfiles -I<path_var>/riscv-compliance/riscv-test-env/ -I<path_var>/riscv-compliance/riscv-test-env/p/ -I<path_var>/riscv-compliance/riscv-target/spike/"
   asm_tests: <path_var>/riscv-compliance/riscv-test-suite/rv32imc/src/C-SLLI.S
   
 - test: rv32imc-C-JR
-  iterations: 0
+  iterations: 1
   path_var: TESTS_PATH
   gcc_opts: "-static -mcmodel=medany -fvisibility=hidden -nostdlib -nostartfiles -I<path_var>/riscv-compliance/riscv-test-env/ -I<path_var>/riscv-compliance/riscv-test-env/p/ -I<path_var>/riscv-compliance/riscv-target/spike/"
   asm_tests: <path_var>/riscv-compliance/riscv-test-suite/rv32imc/src/C-JR.S
   
 - test: rv32imc-C-BNEZ
-  iterations: 0
+  iterations: 1
   path_var: TESTS_PATH
   gcc_opts: "-static -mcmodel=medany -fvisibility=hidden -nostdlib -nostartfiles -I<path_var>/riscv-compliance/riscv-test-env/ -I<path_var>/riscv-compliance/riscv-test-env/p/ -I<path_var>/riscv-compliance/riscv-target/spike/"
   asm_tests: <path_var>/riscv-compliance/riscv-test-suite/rv32imc/src/C-BNEZ.S
   
 - test: rv32imc-C-MV
-  iterations: 0
+  iterations: 1
   path_var: TESTS_PATH
   gcc_opts: "-static -mcmodel=medany -fvisibility=hidden -nostdlib -nostartfiles -I<path_var>/riscv-compliance/riscv-test-env/ -I<path_var>/riscv-compliance/riscv-test-env/p/ -I<path_var>/riscv-compliance/riscv-target/spike/"
   asm_tests: <path_var>/riscv-compliance/riscv-test-suite/rv32imc/src/C-MV.S
   
 - test: rv32imc-C-LUI
-  iterations: 0
+  iterations: 1
   path_var: TESTS_PATH
   gcc_opts: "-static -mcmodel=medany -fvisibility=hidden -nostdlib -nostartfiles -I<path_var>/riscv-compliance/riscv-test-env/ -I<path_var>/riscv-compliance/riscv-test-env/p/ -I<path_var>/riscv-compliance/riscv-target/spike/"
   asm_tests: <path_var>/riscv-compliance/riscv-test-suite/rv32imc/src/C-LUI.S
   
 - test: rv32imc-C-J
-  iterations: 0
+  iterations: 1
   path_var: TESTS_PATH
   gcc_opts: "-static -mcmodel=medany -fvisibility=hidden -nostdlib -nostartfiles -I<path_var>/riscv-compliance/riscv-test-env/ -I<path_var>/riscv-compliance/riscv-test-env/p/ -I<path_var>/riscv-compliance/riscv-target/spike/"
   asm_tests: <path_var>/riscv-compliance/riscv-test-suite/rv32imc/src/C-J.S
   
 - test: rv32imc-C-ANDI
-  iterations: 0
+  iterations: 1
   path_var: TESTS_PATH
   gcc_opts: "-static -mcmodel=medany -fvisibility=hidden -nostdlib -nostartfiles -I<path_var>/riscv-compliance/riscv-test-env/ -I<path_var>/riscv-compliance/riscv-test-env/p/ -I<path_var>/riscv-compliance/riscv-target/spike/"
   asm_tests: <path_var>/riscv-compliance/riscv-test-suite/rv32imc/src/C-ANDI.S

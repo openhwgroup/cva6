@@ -33,6 +33,6 @@ stdout.txt
 .vscode
 cva6/tests/riscv-compliance/
 cva6/tests/riscv-tests/
-uvm/riscv-dv/
+cva6/sim/riscv-dv/
 riviera_results/
 */vendor_lib/dpi_dasm_spike/
