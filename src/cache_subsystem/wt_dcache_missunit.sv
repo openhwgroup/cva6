@@ -150,14 +150,14 @@ module wt_dcache_missunit import ariane_pkg::*; import wt_cache_pkg::*; #(
   );
 
   // generate random cacheline index
-  lfsr_8bit #(
-    .WIDTH ( ariane_pkg::DCACHE_SET_ASSOC )
+  lfsr #(
+    .LfsrWidth  ( ariane_pkg::DCACHE_SET_ASSOC        ),
+    .OutWidth   ( $clog2(ariane_pkg::DCACHE_SET_ASSOC))
   ) i_lfsr_inv (
     .clk_i          ( clk_i       ),
     .rst_ni         ( rst_ni      ),
     .en_i           ( update_lfsr ),
-    .refill_way_oh  (             ),
-    .refill_way_bin ( rnd_way     )
+    .out_o          ( rnd_way     )
   );
 
   assign repl_way               = (all_ways_valid) ? rnd_way : inv_way;
