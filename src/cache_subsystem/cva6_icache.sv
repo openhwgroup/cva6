@@ -369,14 +369,14 @@ end else begin : gen_piton_offset
   );
 
   // generate random cacheline index
-  lfsr_8bit #(
-    .WIDTH (ICACHE_SET_ASSOC)
+  lfsr #(
+    .LfsrWidth  ( ariane_pkg::ICACHE_SET_ASSOC        ),
+    .OutWidth   ( $clog2(ariane_pkg::ICACHE_SET_ASSOC))
   ) i_lfsr (
     .clk_i          ( clk_i       ),
     .rst_ni         ( rst_ni      ),
     .en_i           ( update_lfsr ),
-    .refill_way_oh  (             ),
-    .refill_way_bin ( rnd_way     )
+    .out_o          ( rnd_way     )
   );
 
 

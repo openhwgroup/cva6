@@ -200,6 +200,7 @@ src :=  $(filter-out src/ariane_regfile.sv, $(wildcard src/*.sv))              \
         src/common_cells/src/rr_arb_tree.sv                                    \
         src/common_cells/src/deprecated/rrarbiter.sv                           \
         src/common_cells/src/stream_delay.sv                                   \
+        src/common_cells/src/lfsr.sv                                           \
         src/common_cells/src/lfsr_8bit.sv                                      \
         src/common_cells/src/lfsr_16bit.sv                                     \
         src/common_cells/src/delta_counter.sv                                  \
