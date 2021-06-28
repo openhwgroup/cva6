@@ -19,11 +19,16 @@ package apb_soc_pkg;
       logic [31:0] end_addr;
    } addr_map_rule_t;
 
-   localparam logic[31:0] UDMALength = 32'h2000;
+   localparam NUM_APB_SLAVES = 2;
    
+     
+   localparam logic [31:0] UDMALength    = 32'h2000;
+   localparam logic [31:0] EVNTGENLength = 32'h1000;
+  
    
    typedef enum logic [31:0] {
-     UDMABase     = 32'hC100_0000
+     UDMABase     = 32'hC100_0000,
+     EVNTGENBase  = 32'hC100_2000
     } soc_apb_bus_start_t;
    
 endpackage

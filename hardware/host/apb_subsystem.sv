@@ -87,14 +87,23 @@ module apb_subsystem
     output logic                       hyper_reset_no
 );
 
-   logic [31:0]                        apb_udma_address;
-   
+  
    APB_BUS  #(
                .APB_ADDR_WIDTH(32),
                .APB_DATA_WIDTH(32)
-   ) apb_peripheral_bus();
-  
+   ) apb_peripheral_master_bus();
 
+   APB_BUS  #(
+               .APB_ADDR_WIDTH(32),
+               .APB_DATA_WIDTH(32)
+   ) apb_udma_master_bus();
+
+   APB_BUS  #(
+               .APB_ADDR_WIDTH(32),
+               .APB_DATA_WIDTH(32)
+   ) apb_evnt_gen_master_bus();
+  
+   
    axi2apb_wrap #(
          .AXI_ADDR_WIDTH ( AXI_ADDR_WIDTH           ),
          .AXI_DATA_WIDTH ( AXI_DATA_WIDTH           ),
@@ -105,13 +114,24 @@ module apb_subsystem
          )(
            .clk_i,
            .rst_ni,
-           .test_en_i (1'b0),
+           .test_en_i  ( 1'b0                       ),
            
-           .axi_slave(axi_apb_slave),
-           .apb_master(apb_peripheral_bus)
+           .axi_slave  ( axi_apb_slave              ),
+           .apb_master ( apb_peripheral_master_bus  )
          );
 
-   assign apb_udma_address = apb_peripheral_bus.paddr  - ariane_soc::APB_SLVSBase + 32'h1A10_0000 ;
+   periph_bus_wrap #(
+                     )(
+    .clk_i,
+    .rst_ni,
+    .apb_slave(apb_peripheral_master_bus),
+    .udma_master(apb_udma_master_bus),
+    .evnt_gen_master(apb_evnt_gen_master_bus)
+    );
+   
+
+   logic [31:0]                        apb_udma_address;     
+   assign apb_udma_address = apb_udma_master_bus.paddr  - apb_soc_pkg::UDMABase + 32'h1A10_0000 ;
                             
    udma_subsystem
      #(
@@ -153,13 +173,13 @@ module apb_subsystem
          .L2_wo_rdata_i   ( udma_tcdm_channels[1].r_rdata  ),
 
          .udma_apb_paddr  ( apb_udma_address               ),
-         .udma_apb_pwdata ( apb_peripheral_bus.pwdata      ),
-         .udma_apb_pwrite ( apb_peripheral_bus.pwrite      ),
-         .udma_apb_psel   ( apb_peripheral_bus.psel        ),
-         .udma_apb_penable( apb_peripheral_bus.penable     ),
-         .udma_apb_prdata ( apb_peripheral_bus.prdata      ),
-         .udma_apb_pready ( apb_peripheral_bus.pready      ),
-         .udma_apb_pslverr( apb_peripheral_bus.pslverr     ),
+         .udma_apb_pwdata ( apb_udma_master_bus.pwdata      ),
+         .udma_apb_pwrite ( apb_udma_master_bus.pwrite      ),
+         .udma_apb_psel   ( apb_udma_master_bus.psel        ),
+         .udma_apb_penable( apb_udma_master_bus.penable     ),
+         .udma_apb_prdata ( apb_udma_master_bus.prdata      ),
+         .udma_apb_pready ( apb_udma_master_bus.pready      ),
+         .udma_apb_pslverr( apb_udma_master_bus.pslverr     ),
         
          .spi_clk         ( spi_clk_o                      ),
          .spi_csn         ( spi_csn_o                      ),

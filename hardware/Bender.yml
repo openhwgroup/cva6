@@ -21,7 +21,8 @@ dependencies:
   udma_external_per: { git: "https://github.com/pulp-platform/udma_external_per.git", version: 1.0.3 }
   udma_hyper: { git: "https://github.com/pulp-platform/udma_hyper.git", rev: "83ab704f9d1c5f9e5353268c901fe95c36bcea36" }
   tech_cells_generic: { git: "https://github.com/pulp-platform/tech_cells_generic.git", version: 0.2.3 }
-
+  apb_node: { git: "https://github.com/pulp-platform/apb_node.git", version: 0.1.1 }
+  
 export_include_dirs:
   - include/
 
@@ -38,6 +39,7 @@ sources:
   - ../fpga/src/axi2apb/src/axi2apb.sv
   - ../fpga/src/axi2apb/src/axi2apb_64_32.sv
   - ../fpga/src/axi2apb/src/axi2apb_wrap.sv
+  - host/periph_bus_wrap.sv
   - host/apb_subsystem.sv
   - host/cva6_subsystem.sv
   - host/l2_subsystem.sv
