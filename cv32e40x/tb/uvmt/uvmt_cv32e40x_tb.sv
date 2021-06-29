@@ -31,6 +31,7 @@
 module uvmt_cv32e40x_tb;
 
    import uvm_pkg::*;
+   import cv32e40x_pkg::*;
    import uvmt_cv32e40x_pkg::*;
    import uvme_cv32e40x_pkg::*;
 
@@ -40,9 +41,8 @@ module uvmt_cv32e40x_tb;
    parameter int CORE_PARAM_NUM_MHPMCOUNTERS = 1;
 `endif
 
-   parameter int PMA_NUM_REGIONS = 2;
-   parameter cv32e40x_pkg::pma_region_t PMA_CFG[PMA_NUM_REGIONS-1:0] = '{ '{32'h0000_0000, 32'h0fff_ffff, 1'b1, 1'b1, 1'b0, 1'b1},
-                                                                          '{32'h2000_0000, 32'h2fff_ffff, 1'b0, 1'b0, 1'b0, 1'b0} };
+   parameter int PMA_NUM_REGIONS = 0;
+   parameter cv32e40x_pkg::pma_region_t PMA_CFG[(PMA_NUM_REGIONS ? (PMA_NUM_REGIONS-1) : 0):0] = '{default:PMA_R_DEFAULT};
 
    // ENV (testbench) parameters
    parameter int ENV_PARAM_INSTR_ADDR_WIDTH  = 32;
@@ -561,7 +561,7 @@ bind cv32e40x_wrapper
      uvm_config_db#(virtual uvma_obi_if                 )::set(.cntxt(null), .inst_name("*.env.obi_data_agent"),  .field_name("vif"),      .value(dut_wrap.cv32e40x_wrapper_i.obi_data_if_i));
      uvm_config_db#(virtual uvma_rvfi_instr_if          )::set(.cntxt(null), .inst_name("*.env.rvfi_agent"), .field_name("instr_vif0"),.value(dut_wrap.cv32e40x_wrapper_i.rvfi_instr_if_0_i));
 
-     `RVFI_CSR_UVM_CONFIG_DB_SET(marchid)     
+     `RVFI_CSR_UVM_CONFIG_DB_SET(marchid)
      `RVFI_CSR_UVM_CONFIG_DB_SET(mcountinhibit)
      `RVFI_CSR_UVM_CONFIG_DB_SET(mstatus)
      `RVFI_CSR_UVM_CONFIG_DB_SET(misa)
