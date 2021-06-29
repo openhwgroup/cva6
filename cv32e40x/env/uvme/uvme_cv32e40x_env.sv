@@ -37,6 +37,7 @@ class uvme_cv32e40x_env_c extends uvm_env;
    uvme_cv32e40x_vsqr_c       vsequencer;
    
    // Agents
+   uvma_cv32e40x_core_cntrl_agent_c core_cntrl_agent;
    uvma_isacov_agent_c#(ILEN,XLEN)  isacov_agent;
    uvma_clknrst_agent_c             clknrst_agent;
    uvma_interrupt_agent_c           interrupt_agent;
@@ -176,7 +177,6 @@ function void uvme_cv32e40x_env_c::build_phase(uvm_phase phase);
    
 endfunction : build_phase
 
-
 function void uvme_cv32e40x_env_c::connect_phase(uvm_phase phase);
    
    super.connect_phase(phase);
@@ -211,15 +211,14 @@ endfunction: connect_phase
 
 function void uvme_cv32e40x_env_c::end_of_elaboration_phase(uvm_phase phase);
    super.end_of_elaboration_phase(phase);
-
-   `uvm_info("UVMECV32E40XENV", $sformatf("Configuration:\n%s", cfg.sprint()), UVM_LOW)
-
+   
 endfunction : end_of_elaboration_phase
 
 function void uvme_cv32e40x_env_c::assign_cfg();
 
    uvm_config_db#(uvme_cv32e40x_cfg_c)::set(this, "*", "cfg", cfg);
 
+   uvm_config_db#(uvma_core_cntrl_cfg_c)::set(this, "*core_cntrl_agent", "cfg", cfg);
    uvm_config_db#(uvma_isacov_cfg_c)::set(this, "*isacov_agent", "cfg", cfg.isacov_cfg);
    uvm_config_db#(uvma_clknrst_cfg_c)::set(this, "*clknrst_agent", "cfg", cfg.clknrst_cfg);
    uvm_config_db#(uvma_interrupt_cfg_c)::set(this, "*interrupt_agent", "cfg", cfg.interrupt_cfg);
@@ -248,6 +247,7 @@ endfunction: assign_cntxt
 
 function void uvme_cv32e40x_env_c::create_agents();
 
+   core_cntrl_agent = uvma_cv32e40x_core_cntrl_agent_c::type_id::create("core_cntrl_agent", this);
    isacov_agent = uvma_isacov_agent_c#(ILEN,XLEN)::type_id::create("isacov_agent", this);
    clknrst_agent = uvma_clknrst_agent_c::type_id::create("clknrst_agent", this);
    interrupt_agent = uvma_interrupt_agent_c::type_id::create("interrupt_agent", this);

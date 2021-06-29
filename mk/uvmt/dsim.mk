@@ -44,6 +44,12 @@ endif
 ifeq ($(call IS_YES,$(USE_RVVI)),YES)
     DSIM_RUN_FLAGS     += +USE_RVVI
 endif
+ifeq ($(call IS_YES,$(TEST_DISABLE_ALL_CSR_CHECKS)),YES)
+	DSIM_RUN_FLAGS +="+DISABLE_ALL_CSR_CHECKS"
+endif
+ifneq ($(TEST_DISABLE_CSR_CHECK),)
+	DSIM_RUN_FLAGS += +DISABLE_CSR_CHECK=$(TEST_DISABLE_CSR_CHECK)
+endif
 
 # Seed management for constrained-random sims. This is an intentional repeat
 # of the root Makefile: dsim regressions use random seeds by default.

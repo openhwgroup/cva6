@@ -130,7 +130,7 @@ task uvma_rvvi_ovpsim_drv_c::stepi(REQ req);
    if (rvvi_ovpsim_seq_item.mem_rmask && cfg.is_mem_addr_volatile(rvvi_ovpsim_seq_item.mem_addr)) begin
       `uvm_info("RVVIDRV", $sformatf("Setting volatile bus read data @ 0x%08x to 0x%08x", 
                                      rvvi_ovpsim_seq_item.mem_addr, 
-                                     rvvi_ovpsim_seq_item.mem_rdata), UVM_LOW);
+                                     rvvi_ovpsim_seq_item.mem_rdata), UVM_HIGH);
       rvvi_ovpsim_cntxt.ovpsim_bus_vif.write(rvvi_ovpsim_seq_item.mem_addr >> 2, rvvi_ovpsim_seq_item.mem_rdata);
    end
 

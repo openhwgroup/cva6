@@ -15,10 +15,11 @@
 // limitations under the License.
 
 
-`ifndef __UVMA_ISACOV_CONSTANTS_SV__
-`define __UVMA_ISACOV_CONSTANTS_SV__
+`ifndef __UVMA_CORE_CNTRL_MACROS_SV__
+`define __UVMA_CORE_CNTRL_MACROS_SV__
 
-localparam DEFAULT_ILEN     = 32;
-localparam DEFAULT_XLEN     = 32;
 
-`endif // __UVMA_ISACOV_CONSTANTS_SV__
+
+
+
+`endif // __UVMA_CORE_CNTRL_MACROS_SV__

@@ -33,6 +33,9 @@ class uvma_rvvi_cfg_c#(int ILEN=DEFAULT_ILEN,
       bit [XLEN-1:0] addr_hi;
    } mem_range_t;
 
+   // Core configuration
+   uvma_core_cntrl_cfg_c         core_cfg;
+
    // Common options
    rand bit                      enabled;
    rand uvm_active_passive_enum  is_active;
