@@ -126,7 +126,7 @@ def read_file(test, type, run_index):
 
 def emit_make(test_spec, prefix):
     '''Emit a hash from the YAML test specification into a makefile that can be included'''
-    fh = tempfile.NamedTemporaryFile(mode='w', delete=False)        
+    fh = tempfile.NamedTemporaryFile(mode='w', delete=False)
     for k,v in sorted(test_spec.items()):
         fh.write('{}{}={}\n'.format('' if not prefix else prefix.upper() + '_', k.upper(), v.rstrip()))
     fh.close()
