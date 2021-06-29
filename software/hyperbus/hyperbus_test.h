@@ -28,7 +28,7 @@
 #define pulp_read32(add) (*(volatile unsigned int *)(long)(add))
 
 static inline void barrier() {
-  __asm__ __volatile__ ("" : : : "memory");
+    __sync_synchronize();
 }
 
 static inline void wait_cycles(const unsigned cycles)
@@ -135,8 +135,11 @@ static inline void kick_reg_write_hyper(unsigned int tran_id){
 }
 
 static inline void kick_mem_write_hyper(unsigned int tran_id){
+  barrier();
   pulp_write32(UDMA_HYPERBUS_OFFSET + tran_id*CONFIG_REG_OFFSET + 0x18, 0x01); // Write is declared for the external mem
+  barrier();
   pulp_write32(UDMA_HYPERBUS_OFFSET + tran_id*CONFIG_REG_OFFSET + 0x14, 0x14); // Write transaction is kicked
+  barrier();
   pulp_write32(UDMA_HYPERBUS_OFFSET + tran_id*CONFIG_REG_OFFSET + 0x14, 0x00); // Write transaction information is reset
 }
 
@@ -147,8 +150,8 @@ static inline void kick_flash_write_hyper(unsigned int tran_id){
 }
 
 static inline void kick_read_hyper(unsigned int tran_id){
-  //  barrier();
-  //pulp_write32(UDMA_HYPERBUS_OFFSET + tran_id*CONFIG_REG_OFFSET + 0x18, 0x05);     // Read is declared for the external mem
+  barrier();
+  pulp_write32(UDMA_HYPERBUS_OFFSET + tran_id*CONFIG_REG_OFFSET + 0x18, 0x05);     // Read is declared for the external mem
   barrier();
   pulp_write32(UDMA_HYPERBUS_OFFSET + tran_id*CONFIG_REG_OFFSET + 0x08, 0x14);     // Read transaction is kicked
   barrier();
@@ -227,6 +230,7 @@ static inline void udma_hyper_dwrite(unsigned int len, unsigned int ext_addr, un
   else set_en_latency_add(1); 
 
   set_tx_param_hyper(len, ext_addr, l2_addr, tran_id);
+  barrier();
   kick_mem_write_hyper(tran_id);
 }
 
@@ -310,9 +314,6 @@ static inline void udma_hyper_dread(unsigned int len, unsigned int ext_addr, uns
   else set_en_latency_add(0);
 
   set_rx_param_hyper(len, ext_addr, l2_addr, tran_id);
-  barrier();
-  pulp_write32(UDMA_HYPERBUS_OFFSET + tran_id*CONFIG_REG_OFFSET + 0x18, 0x05);     // Read is declared for the external mem
-  barrier();
   kick_read_hyper(tran_id);
 }
 

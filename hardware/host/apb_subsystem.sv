@@ -30,6 +30,9 @@ module apb_subsystem
     input  logic                       rst_ni,
     AXI_BUS.Slave                      axi_apb_slave,
     XBAR_TCDM_BUS.Master               udma_tcdm_channels[1:0],
+
+    output logic            [32*4-1:0] events_o,
+
     // SPIM
     output logic     [N_SPI-1:0]       spi_clk,
     output logic     [N_SPI-1:0] [3:0] spi_csn,
@@ -140,7 +143,7 @@ module apb_subsystem
      ) 
      (
 
-         .events_o        (                               ),
+         .events_o        ( events_o                      ),
          
          .event_valid_i   ( '0                            ),
          .event_data_i    ( '0                            ),

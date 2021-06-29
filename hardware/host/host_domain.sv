@@ -107,7 +107,9 @@ module host_domain
    localparam NB_UDMA_TCDM_CHANNEL = 2;
    
    logic                                 ndmreset_n;
+   logic [32*4-1:0]                      s_udma_events;
    
+
    AXI_BUS #(
      .AXI_ADDR_WIDTH ( AXI_ADDRESS_WIDTH        ),
      .AXI_DATA_WIDTH ( AXI_DATA_WIDTH           ),
@@ -137,9 +139,10 @@ module host_domain
         .rst_ni,
         .rtc_i,
         .exit_o,
-        .rst_no         ( ndmreset_n  ),
-        .l2_axi_master  ( l2_axi_bus  ),
-        .apb_axi_master ( apb_axi_bus )
+        .udma_events_i  ( s_udma_events ),
+        .rst_no         ( ndmreset_n    ),
+        .l2_axi_master  ( l2_axi_bus    ),
+        .apb_axi_master ( apb_axi_bus   )
     );
    
    
@@ -181,6 +184,8 @@ module host_domain
       .axi_apb_slave          ( apb_axi_bus                    ),
       .udma_tcdm_channels     ( udma_2_tcdm_channels           ),
 
+      .events_o               ( s_udma_events                  ),
+         
       .spi_clk                ( spi_clk_o                      ),
       .spi_csn                ( spi_csn_o                      ),
       .spi_oen                ( spi_oen_o                      ),

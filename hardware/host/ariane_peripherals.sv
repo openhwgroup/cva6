@@ -10,45 +10,46 @@
 
 // Xilinx Peripehrals
 module ariane_peripherals #(
-    parameter int AxiAddrWidth = -1,
-    parameter int AxiDataWidth = -1,
-    parameter int AxiIdWidth   = -1,
-    parameter int AxiUserWidth = 1,
-    parameter bit InclUART     = 1,
-    parameter bit InclSPI      = 0,
-    parameter bit InclEthernet = 0,
-    parameter bit InclGPIO     = 0,
-    parameter bit InclTimer    = 1
+    parameter  int AxiAddrWidth = -1,
+    parameter  int AxiDataWidth = -1,
+    parameter  int AxiIdWidth   = -1,
+    parameter  int AxiUserWidth = 1,
+    parameter  bit InclUART     = 1,
+    parameter  bit InclSPI      = 0,
+    parameter  bit InclEthernet = 0,
+    parameter  bit InclGPIO     = 0,
+    parameter  bit InclTimer    = 1
 ) (
-    input  logic       clk_i           , // Clock
-    input  logic       rst_ni          , // Asynchronous reset active low
-    AXI_BUS.Slave      plic            ,
-    AXI_BUS.Slave      uart            ,
-    AXI_BUS.Slave      spi             ,
-    AXI_BUS.Slave      ethernet        ,
-    AXI_BUS.Slave      timer           ,
-    output logic [1:0] irq_o           ,
+    input  logic            clk_i           , // Clock
+    input  logic            rst_ni          , // Asynchronous reset active low
+    AXI_BUS.Slave           plic            ,
+    AXI_BUS.Slave           uart            ,
+    AXI_BUS.Slave           spi             ,
+    AXI_BUS.Slave           ethernet        ,
+    AXI_BUS.Slave           timer           ,
+    input  logic [32*4-1:0] udma_evt_i      ,
+    output logic [1:0]      irq_o           ,
     // UART
-    input  logic       rx_i            ,
-    output logic       tx_o            ,
-    // Ethernet
-    input  wire        eth_txck        ,
-    input  wire        eth_rxck        ,
-    input  wire        eth_rxctl       ,
-    input  wire [3:0]  eth_rxd         ,
-    output wire        eth_rst_n       ,
-    output wire        eth_tx_en       ,
-    output wire [3:0]  eth_txd         ,
-    inout  wire        phy_mdio        ,
-    output logic       eth_mdc         ,
-    // MDIO Interface
-    inout              mdio            ,
-    output             mdc             ,
-    // SPI
-    output logic       spi_clk_o       ,
-    output logic       spi_mosi        ,
-    input  logic       spi_miso        ,
-    output logic       spi_ss
+    input  logic            rx_i            ,
+    output logic            tx_o            ,
+    // Ethernet             
+    input  wire             eth_txck        ,
+    input  wire             eth_rxck        ,
+    input  wire             eth_rxctl       ,
+    input  wire [3:0]       eth_rxd         ,
+    output wire             eth_rst_n       ,
+    output wire             eth_tx_en       ,
+    output wire [3:0]       eth_txd         ,
+    inout  wire             phy_mdio        ,
+    output logic            eth_mdc         ,
+    // MDIO Interface       
+    inout                   mdio            ,
+    output                  mdc             ,
+    // SPI                  
+    output logic            spi_clk_o       ,
+    output logic            spi_mosi        ,
+    input  logic            spi_miso        ,
+    output logic            spi_ss
 );
 
     // ---------------
@@ -57,8 +58,10 @@ module ariane_peripherals #(
     logic [ariane_soc::NumSources-1:0] irq_sources;
 
     // Unused interrupt sources
-    assign irq_sources[ariane_soc::NumSources-1:7] = '0;
-
+    assign irq_sources[ariane_soc::NumSources-1:9] = '0;
+    assign irq_sources[7] = udma_evt_i[34]; // rx hyper transaction   
+    assign irq_sources[8] = udma_evt_i[35]; // tx hyper transaction
+                        
     REG_BUS #(
         .ADDR_WIDTH ( 32 ),
         .DATA_WIDTH ( 32 )

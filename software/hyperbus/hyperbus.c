@@ -21,9 +21,10 @@
 #include <stdio.h>
 #include <stdint.h>
 #include "./hyperbus_test.h"
-
+#include "../common/encoding.h"
 #define BUFFER_SIZE 32
-
+//#define VERBOSE
+//#define EXTRA_VERBOSE
 
 int main() {
 
@@ -38,38 +39,66 @@ int main() {
     int id1, id2;
     int pass = 0;
     int periph_id = 8;
-    //    int channel = UDMA_EVENT_ID(periph_id);
 
-    //    printf("UDMA_EVENT_ID %d\n",channel);
-
+    // PLIC setup for hyper tx
+    int plic_base = 0x0C000000;
+    int tx_hyper_plic_id = 9;
+    int rx_hyper_plic_id = 8;
+    int plic_en_bits = plic_base + 0x2080;
+    // set tx interrupt priority to 1
+    pulp_write32(plic_base+tx_hyper_plic_id*4, 1);
+    //enable interrupt for context 1 
+    pulp_write32(plic_en_bits, 1<<(tx_hyper_plic_id));
+    
     udma_hyper_setup();
-    //printf(" current frequency %d \n", __rt_freq_periph_get());
-   
+  
     for (int i=0; i< (BUFFER_SIZE); i++)
     {
         tx_buffer[i] = 0xffff0000+i;
     } 
     hyper_addr = 1;
+
+  #ifdef VERBOSE
     printf("hyper_addr: %d \n", hyper_addr);
-    
+  #endif
+    barrier();
     udma_hyper_dwrite((BUFFER_SIZE*4),(unsigned int) hyper_addr, (unsigned int)tx_buffer, 128, 0);
+    barrier();
+    
+  #ifdef VERBOSE
     printf("started writing\n");
-    int busy=udma_hyper_busy(id1);
-    printf("BUSY: %d ID:%d \n", udma_hyper_busy(id1), id1);
+    int busy=udma_hyper_busy(0);
+    printf("BUSY: %d ID:%d \n", udma_hyper_busy(0), 0);
     if(busy) {
       udma_hyper_wait(0);
       printf("BUSY: %d \n", udma_hyper_busy(0));
     }
+  #endif
+
+    // wfi until reading the tx hyper id from the PLIC
+    while(pulp_read32(plic_base+0x201004)!=tx_hyper_plic_id) {
+      asm volatile ("wfi");
+          }
+
+    // PLIC setup for RX
+    pulp_write32(plic_base+rx_hyper_plic_id*4, 1);
+    pulp_write32(plic_en_bits, 1<<(rx_hyper_plic_id));
     
     udma_hyper_dread((BUFFER_SIZE*4),(unsigned int) hyper_addr, (unsigned int)rx_buffer, 128, 0);
-    
-    udma_hyper_wait(0); 
-    
+
+    // wfi until reading the rx hyper id from the PLIC
+    while(pulp_read32(plic_base+0x201004)!=rx_hyper_plic_id) {
+      asm volatile ("wfi");
+          }
+
+  #ifdef VERBOSE
     printf("start reading\n");
+  #endif
     for (int i=0; i< BUFFER_SIZE; i++)
       {      
-      
+      #ifdef EXTRA_VERBOSE
       printf("rx_buffer[%d] = %x, expected: %x \n", i, rx_buffer[i], tx_buffer[i]);
+      #endif
       error += rx_buffer[i] ^ tx_buffer[i];
       
       }

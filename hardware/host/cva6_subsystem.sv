@@ -35,6 +35,7 @@ module cva6_subsytem
   input  logic                           rst_ni,
   output logic [31:0]                    exit_o,
   output logic                           rst_no,
+  input  logic [32*4-1:0]                udma_events_i,
   AXI_BUS.Master                         l2_axi_master,
   AXI_BUS.Master                         apb_axi_master
 );
@@ -738,6 +739,7 @@ module cva6_subsytem
     .spi       ( master[ariane_soc::SPI]      ),
     .ethernet  ( master[ariane_soc::Ethernet] ),
     .timer     ( master[ariane_soc::Timer]    ),
+    .udma_evt_i( udma_events_i                ),
     .irq_o     ( irqs                         ),
     .rx_i      ( rx                           ),
     .tx_o      ( tx                           ),
