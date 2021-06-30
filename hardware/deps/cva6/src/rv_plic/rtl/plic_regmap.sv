@@ -32,7 +32,7 @@ always_comb begin
   ie_o = '0;
   ie_we_o = '0;
   ie_re_o = '0;
-  ip_re_o = '0;   
+  ip_re_o = '0;
   threshold_o = '0;
   threshold_we_o = '0;
   threshold_re_o = '0;
@@ -40,8 +40,10 @@ always_comb begin
   cc_we_o = '0;
   cc_re_o = '0;
   if (req_i.valid) begin
+    // WRITE
     if (req_i.write) begin
       unique case(req_i.addr)
+      // SOURCES PRIORITY
         32'hc000000: begin
           prio_o[0][2:0] = req_i.wdata[2:0];
           prio_we_o[0] = 1'b1;
@@ -1066,6 +1068,7 @@ always_comb begin
           prio_o[255][2:0] = req_i.wdata[2:0];
           prio_we_o[255] = 1'b1;
         end
+      // INTERRUPT ENABLES 
         32'hc002000: begin
           ie_o[0][31:0] = req_i.wdata[31:0];
           ie_we_o[0] = 1'b1;
@@ -1130,6 +1133,7 @@ always_comb begin
           ie_o[1][255:224] = req_i.wdata[31:0];
           ie_we_o[1] = 1'b1;
         end
+      // THRESHOLDS 
         32'hc200000: begin
           threshold_o[0][2:0] = req_i.wdata[2:0];
           threshold_we_o[0] = 1'b1;
@@ -1138,6 +1142,7 @@ always_comb begin
           threshold_o[1][2:0] = req_i.wdata[2:0];
           threshold_we_o[1] = 1'b1;
         end
+      // CLAIM COMPLETE 
         32'hc200004: begin
           cc_o[0][7:0] = req_i.wdata[7:0];
           cc_we_o[0] = 1'b1;
@@ -1149,7 +1154,9 @@ always_comb begin
         default: resp_o.error = 1'b1;
       endcase
     end else begin
+    // READ
       unique case(req_i.addr)
+      // SOURCES PRIORITY
         32'hc000000: begin
           resp_o.rdata[2:0] = prio_i[0][2:0];
           prio_re_o[0] = 1'b1;
@@ -2174,6 +2181,7 @@ always_comb begin
           resp_o.rdata[2:0] = prio_i[255][2:0];
           prio_re_o[255] = 1'b1;
         end
+      // INTERRUPT PENDINGS
         32'hc001000: begin
           resp_o.rdata[31:0] = ip_i[0][31:0];
           ip_re_o[0] = 1'b1;
@@ -2183,7 +2191,7 @@ always_comb begin
           ip_re_o[0] = 1'b1;
         end
         32'hc001008: begin
-          resp_o.rdata[31:0] = ip_i[0][95:63];
+          resp_o.rdata[31:0] = ip_i[0][95:64];
           ip_re_o[0] = 1'b1;
         end
         32'hc00100c: begin
@@ -2206,6 +2214,7 @@ always_comb begin
           resp_o.rdata[31:0] = ip_i[0][255:224];
           ip_re_o[0] = 1'b1;
         end
+      // INTERRUPT ENABLES
         32'hc002000: begin
           resp_o.rdata[31:0] = ie_i[0][31:0];
           ie_re_o[0] = 1'b1;
@@ -2270,6 +2279,7 @@ always_comb begin
           resp_o.rdata[31:0] = ie_i[1][255:224];
           ie_re_o[1] = 1'b1;
         end
+      // THRESHOLD
         32'hc200000: begin
           resp_o.rdata[2:0] = threshold_i[0][2:0];
           threshold_re_o[0] = 1'b1;
@@ -2278,6 +2288,7 @@ always_comb begin
           resp_o.rdata[2:0] = threshold_i[1][2:0];
           threshold_re_o[1] = 1'b1;
         end
+      // CLAIM COMPLETE 
         32'hc200004: begin
           resp_o.rdata[7:0] = cc_i[0][7:0];
           cc_re_o[0] = 1'b1;
