@@ -51,9 +51,12 @@ task uvma_rvvi_ovpsim_control_seq_c::step_rm(uvma_rvfi_instr_seq_item_c#(ILEN,XL
 
    // Send sequence item to step the RM
    uvma_rvvi_ovpsim_control_seq_item_c#(ILEN,XLEN) step_rm_seq;
+   bit [XLEN-1:0] csr_mip;
 
    step_rm_seq = uvma_rvvi_ovpsim_control_seq_item_c#(ILEN,XLEN)::type_id::create("step_rm_seq");
    start_item(step_rm_seq);
+   csr_mip = rvfi_instr.csrs["mip"].get_csr_retirement_data();
+
    assert(step_rm_seq.randomize() with {
       action == UVMA_RVVI_STEPI;
       intr == rvfi_instr.insn_interrupt;
@@ -61,7 +64,7 @@ task uvma_rvvi_ovpsim_control_seq_c::step_rm(uvma_rvfi_instr_seq_item_c#(ILEN,XL
       nmi  == rvfi_instr.insn_nmi;
       intr_id == rvfi_instr.insn_interrupt_id;
       
-      mip == rvfi_instr.csr_mip;      
+      mip == csr_mip;      
       rd1_addr == rvfi_instr.rd1_addr;
       rd1_wdata == rvfi_instr.rd1_wdata;
 
