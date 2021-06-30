@@ -154,7 +154,7 @@ module CPU #(
 
     import "DPI-C" context task          opEntry(input string s1, input string s2);
     import "DPI-C" context function void svPull(output RMDataT RMData);
-    import "DPI-C" context function void svPush(output SVDataT SVData);
+    import "DPI-C" context function void svPush(input  SVDataT SVData);
     import "DPI-C" context function void opExit();
 
     export "DPI-C" task     busFetch;
