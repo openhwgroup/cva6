@@ -18,42 +18,10 @@ interface uvme_cv32e40x_core_cntrl_if
     logic [31:0] hart_id;
 
     logic [31:0] num_mhpmcounters;    
+    pma_region_t pma_cfg[];
 
     // Testcase asserts this to load memory (not really a core control signal)
     logic        load_instr_mem;
-    pma_region_t pma_cfg[];
-
-  covergroup core_cntrl_cg;
-
-    boot_address: coverpoint boot_addr {
-      bins low  = {[32'h0000_0000 : 32'h0000_FFFF]};
-      bins med  = {[32'h0001_0000 : 32'hEFFF_FFFF]};
-      bins high = {[32'hF000_0000 : 32'hFFFF_FFFF]};
-    }
-    mtvec_address: coverpoint mtvec_addr {
-      bins low  = {[32'h0000_0000 : 32'h0000_FFFF]};
-      bins med  = {[32'h0001_0000 : 32'hEFFF_FFFF]};
-      bins high = {[32'hF000_0000 : 32'hFFFF_FFFF]};
-    }
-    debug_module_halt_address: coverpoint dm_halt_addr {
-      bins low  = {[32'h0000_0000 : 32'h0000_FFFF]};
-      bins med  = {[32'h0001_0000 : 32'hEFFF_FFFF]};
-      bins high = {[32'hF000_0000 : 32'hFFFF_FFFF]};
-    }
-    debug_module_exception_address: coverpoint dm_exception_addr {
-      bins low  = {[32'h0000_0000 : 32'h0000_FFFF]};
-      bins med  = {[32'h0001_0000 : 32'hEFFF_FFFF]};
-      bins high = {[32'hF000_0000 : 32'hFFFF_FFFF]};
-    }
-    hart_id: coverpoint hart_id {
-      bins low  = {[32'h0000_0000 : 32'h0000_FFFF]};
-      bins med  = {[32'h0001_0000 : 32'hEFFF_FFFF]};
-      bins high = {[32'hF000_0000 : 32'hFFFF_FFFF]};
-    }
-
-  endgroup: core_cntrl_cg
-
-  core_cntrl_cg core_cntrl_cg_inst = new();
 
   clocking drv_cb @(posedge clk);
     output fetch_en;

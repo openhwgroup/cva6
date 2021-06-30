@@ -21,8 +21,7 @@
 `define __UVMA_CV32E40X_CORE_CNTRL_AGENT_SV__
 
 /**
- * Top-level component that encapsulates, builds and connects all others.
- * Capable of driving/monitoring Clock & Reset interface.
+ * Core control agent defined for the CV32E40X
  */
 class uvma_cv32e40x_core_cntrl_agent_c extends uvma_core_cntrl_agent_c;
    

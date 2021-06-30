@@ -26,9 +26,7 @@ class uvma_core_cntrl_drv_c extends uvm_driver;
 
    // Objects
    uvma_core_cntrl_cfg_c    cfg;
-   uvma_core_cntrl_cntxt_c  cntxt;
-   
-   string log_tag = "RVVIDRV";
+   uvma_core_cntrl_cntxt_c  cntxt;   
 
    `uvm_component_utils_begin(uvma_core_cntrl_drv_c)
       `uvm_field_object(cfg  , UVM_DEFAULT)

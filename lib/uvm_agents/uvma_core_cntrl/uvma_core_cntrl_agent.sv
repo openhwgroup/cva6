@@ -21,8 +21,11 @@
 `define __UVMA_CORE_CNTRL_AGENT_SV__
 
 /**
- * Top-level component that encapsulates, builds and connects all others.
- * Capable of driving/monitoring Clock & Reset interface.
+ * Virtual base class agent for Core Control
+ * Encapsulates:
+ * - Paraameter sampling
+ * - Bootstrap pin randomization and driving
+ * - Core configuration and randomization
  */
 virtual class uvma_core_cntrl_agent_c extends uvm_agent;
    
@@ -32,9 +35,7 @@ virtual class uvma_core_cntrl_agent_c extends uvm_agent;
 
    // Components   
    uvma_core_cntrl_sqr_c    sequencer;
-   uvma_core_cntrl_drv_c    driver;
-
-   string log_tag = "RVVIAGT";
+   uvma_core_cntrl_drv_c    driver;   
 
    `uvm_field_utils_begin(uvma_core_cntrl_agent_c)
       `uvm_field_object(cfg  , UVM_DEFAULT)

@@ -20,7 +20,7 @@
 `define __UVMA_CV32E40X_CORE_CNTRL_DRV_SV__
 
 /**
- * Component driving a Clock & Reset virtual interface (uvma_core_cntrl_if).
+ * Component driving bootstrap pins and other misecllaneous I/O for cv32e40x core
  */
 class uvma_cv32e40x_core_cntrl_drv_c extends uvma_core_cntrl_drv_c;
 
