@@ -58,9 +58,10 @@ module ariane_peripherals #(
     logic [ariane_soc::NumSources-1:0] irq_sources;
 
     // Unused interrupt sources
-    assign irq_sources[ariane_soc::NumSources-1:9] = '0;
-    assign irq_sources[7] = udma_evt_i[34]; // rx hyper transaction   
-    assign irq_sources[8] = udma_evt_i[35]; // tx hyper transaction
+    assign irq_sources[ariane_soc::NumSources-1:59] = '0;
+    assign irq_sources[56:7] = '0;
+    assign irq_sources[57] = udma_evt_i[34]; // rx hyper transaction   
+    assign irq_sources[58] = udma_evt_i[35]; // tx hyper transaction
                         
     REG_BUS #(
         .ADDR_WIDTH ( 32 ),

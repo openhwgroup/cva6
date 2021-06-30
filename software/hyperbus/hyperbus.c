@@ -42,13 +42,13 @@ int main() {
 
     // PLIC setup for hyper tx
     int plic_base = 0x0C000000;
-    int tx_hyper_plic_id = 9;
-    int rx_hyper_plic_id = 8;
+    int tx_hyper_plic_id = 59;
+    int rx_hyper_plic_id = 58;
     int plic_en_bits = plic_base + 0x2080;
     // set tx interrupt priority to 1
     pulp_write32(plic_base+tx_hyper_plic_id*4, 1);
     //enable interrupt for context 1 
-    pulp_write32(plic_en_bits, 1<<(tx_hyper_plic_id));
+    pulp_write32(plic_en_bits+(((int)(tx_hyper_plic_id/32))*4), 1<<(tx_hyper_plic_id%32));
     
     udma_hyper_setup();
   
@@ -82,7 +82,7 @@ int main() {
 
     // PLIC setup for RX
     pulp_write32(plic_base+rx_hyper_plic_id*4, 1);
-    pulp_write32(plic_en_bits, 1<<(rx_hyper_plic_id));
+    pulp_write32(plic_en_bits+(((int)(rx_hyper_plic_id/32))*4), 1<<(rx_hyper_plic_id%32));
     
     udma_hyper_dread((BUFFER_SIZE*4),(unsigned int) hyper_addr, (unsigned int)rx_buffer, 128, 0);
 
