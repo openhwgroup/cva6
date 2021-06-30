@@ -87,9 +87,9 @@ function string uvma_isacov_mon_c::convert_instr_to_spike_name(string instr_name
   string spike_instr_name;
 
   foreach (instr_name[i]) begin
-    string chr = instr_name[i];
-    
-    chr = chr.tolower();
+    string chr;
+
+    chr = instr_name.substr(i,i).tolower();
 
     if (chr == "_") chr = ".";
   

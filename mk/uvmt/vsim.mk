@@ -110,6 +110,7 @@ VSIM_FLAGS        += -suppress 7031
 VSIM_FLAGS        += -suppress 8858
 VSIM_FLAGS        += -suppress 8522
 VSIM_FLAGS        += -suppress 8550
+VSIM_FLAGS        += -permit_unmatched_virtual_intf
 VSIM_DEBUG_FLAGS  ?= -debugdb
 VSIM_GUI_FLAGS    ?= -gui -debugdb
 VSIM_SCRIPT_DIR	   = $(abspath $(MAKE_PATH)/../tools/vsim)
@@ -119,6 +120,12 @@ VSIM_UVM_ARGS      = +incdir+$(UVM_HOME)/src $(UVM_HOME)/src/uvm_pkg.sv
 VSIM_FLAGS += -sv_lib $(basename $(OVP_MODEL_DPI))
 ifeq ($(call IS_YES,$(USE_ISS)),YES)
 VSIM_FLAGS += +USE_ISS
+endif
+ifeq ($(call IS_YES,$(TEST_DISABLE_ALL_CSR_CHECKS)),YES)
+VSIM_FLAGS +="+DISABLE_ALL_CSR_CHECKS"
+endif
+ifneq ($(TEST_DISABLE_CSR_CHECK),)
+VSIM_FLAGS += +DISABLE_CSR_CHECK=$(TEST_DISABLE_CSR_CHECK)
 endif
 
 VSIM_FLAGS += -sv_lib $(basename $(DPI_DASM_LIB))

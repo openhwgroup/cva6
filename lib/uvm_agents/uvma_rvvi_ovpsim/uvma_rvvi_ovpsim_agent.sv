@@ -36,10 +36,22 @@ class uvma_rvvi_ovpsim_agent_c#(int ILEN=uvma_rvvi_pkg::DEFAULT_ILEN,
    extern function new(string name="uvma_rvvi_ovpsim_agent", uvm_component parent=null);
 
    /**
+    * End of elaboration phase
+    * 1. Emit ovpsim.ic control file
+    */
+   extern function void end_of_elaboration_phase(uvm_phase phase);
+
+   /**
+    * Emit ovpsim.ic control file based on core configuration
+    */
+   extern virtual function void configure_iss();
+
+   /**
     * Uses uvm_config_db to retrieve the Virtual Interface (vif) associated with this
     * agent.
     */
    extern virtual function void retrieve_vif();   
+
    /**
     * Creates sub-components.
     */
@@ -72,13 +84,57 @@ function uvma_rvvi_ovpsim_agent_c::new(string name="uvma_rvvi_ovpsim_agent", uvm
 
 endfunction : new
 
+function void uvma_rvvi_ovpsim_agent_c::end_of_elaboration_phase(uvm_phase phase);
+
+   super.end_of_elaboration_phase(phase);
+
+   if (cfg.is_active == UVM_ACTIVE)
+      configure_iss();
+
+endfunction : end_of_elaboration_phase
+
+function void uvma_rvvi_ovpsim_agent_c::configure_iss();
+   // Append opetions from the core configuration into the ovpsim.ic file to ensure the Imperas ISS
+   // is configured as the core this RVVI is attached to
+
+   int fh;
+   
+   fh = $fopen(cfg.core_cfg.iss_control_file, "a");
+
+   $fwrite(fh, "\n");
+
+   // Boot strap pins   
+   $fwrite(fh, $sformatf("--override root/cpu/mhartid=%0d\n", cfg.core_cfg.hart_id));
+   $fwrite(fh, $sformatf("--override root/cpu/startaddress=0x%08x\n", cfg.core_cfg.boot_addr));
+   // Specification forces mtvec[0] high at reset regardless of bootstrap pin state of mtvec_addr_i]0]
+   $fwrite(fh, $sformatf("--override root/cpu/mtvec=0x%08x\n", cfg.core_cfg.mtvec_addr| 32'h1)); 
+   $fwrite(fh, $sformatf("--override root/cpu/nmi_address=0x%08x\n", cfg.core_cfg.nmi_addr));
+   $fwrite(fh, $sformatf("--override root/cpu/debug_address=0x%08x\n", cfg.core_cfg.dm_halt_addr));
+   $fwrite(fh, $sformatf("--override root/cpu/dexc_address=0x%08x\n", cfg.core_cfg.dm_exception_addr));
+
+   // Parameters
+
+   // NUM_MHPMCOUNTERS - Set zero in the noinhibit_mask to enable a counter, starting from index 3
+   $fwrite(fh, $sformatf("--override root/cpu/noinhibit_mask=0x%08x\n", cfg.core_cfg.get_noinhibit_mask()));
+
+   // PMA Regsions
+   $fwrite(fh, $sformatf("--override root/cpu/extension/PMA_NUM_REGIONS=%0d\n", cfg.core_cfg.pma_regions.size()));
+   foreach (cfg.core_cfg.pma_regions[i]) begin
+      $fwrite(fh, $sformatf("--override root/cpu/extension/word_addr_low%0d=0x%08x\n", i, cfg.core_cfg.pma_regions[i].word_addr_low));
+      $fwrite(fh, $sformatf("--override root/cpu/extension/word_addr_high%0d=0x%08x\n", i, cfg.core_cfg.pma_regions[i].word_addr_high));
+      $fwrite(fh, $sformatf("--override root/cpu/extension/main%0d=%0d\n", i, cfg.core_cfg.pma_regions[i].main));
+      $fwrite(fh, $sformatf("--override root/cpu/extension/bufferable%0d=%0d\n", i, cfg.core_cfg.pma_regions[i].bufferable));
+      $fwrite(fh, $sformatf("--override root/cpu/extension/cacheable%0d=%0d\n", i, cfg.core_cfg.pma_regions[i].cacheable));
+      $fwrite(fh, $sformatf("--override root/cpu/extension/atomic%0d=%0d\n", i, cfg.core_cfg.pma_regions[i].atomic));
+   end
+
+   $fclose(fh);
+   
+endfunction : configure_iss
+
 function void uvma_rvvi_ovpsim_agent_c::get_and_set_cntxt();
    
    super.get_and_set_cntxt();
-   // void'(uvm_config_db#(uvma_rvvi_cntxt_c#(ILEN,XLEN))::get(this, "", "cntxt", cntxt));
-   // if (!cntxt) begin
-   //    `uvm_fatal("RVVIOVPAGT", "Context handle is null");      
-   // end   
    
 endfunction : get_and_set_cntxt
 

@@ -35,7 +35,10 @@ class uvma_rvfi_instr_mon_c#(int ILEN=DEFAULT_ILEN,
    
    // TLM
    uvm_analysis_port#(uvma_rvfi_instr_seq_item_c#(ILEN,XLEN))  ap;   
-   
+
+   // Generated from the core configuration before starting execution
+   protected string csrs[$];
+
    string log_tag = "RVFIMONLOG";
 
    `uvm_component_utils_begin(uvma_rvfi_instr_mon_c)
@@ -54,7 +57,7 @@ class uvma_rvfi_instr_mon_c#(int ILEN=DEFAULT_ILEN,
     * 2. Builds ap.
     */
    extern virtual function void build_phase(uvm_phase phase);
-   
+
    /**
     * Oversees monitoring via monitor_clk() and monitor_reset() tasks in parallel
     * forks.
@@ -179,8 +182,7 @@ task uvma_rvfi_instr_mon_c::monitor_rvfi_instr();
          end
 
          // Get the CSRs
-         foreach (cfg.csrs[c]) begin
-            string csr = cfg.csrs[c];
+         foreach (cntxt.csr_vif[csr]) begin
             uvma_rvfi_csr_seq_item_c csr_trn = uvma_rvfi_csr_seq_item_c#(XLEN)::type_id::create({csr, "_trn"});
 
             csr_trn.csr = csr;

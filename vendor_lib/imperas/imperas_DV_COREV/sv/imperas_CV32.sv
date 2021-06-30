@@ -598,12 +598,15 @@ module CPU #(
     endfunction
     
     initial begin
-        ovpcfg_load();
-        elf_load();
-        opEntry(ovpcfg, elf_file, VARIANT);
-    `ifndef UVM
-        $finish;
-    `endif
+        if ($test$plusargs("USE_ISS")) begin
+            #1;
+            ovpcfg_load();
+            elf_load();
+            opEntry(ovpcfg, elf_file, VARIANT);
+        `ifndef UVM
+            $finish;
+        `endif
+        end
     end
     
 `ifndef UVM
