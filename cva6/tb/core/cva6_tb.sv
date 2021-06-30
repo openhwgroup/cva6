@@ -191,7 +191,7 @@ module cva6_core_only_tb #(
   AXI_BUS #(
     .AXI_ADDR_WIDTH ( AXI_ADDRESS_WIDTH        ),
     .AXI_DATA_WIDTH ( AXI_DATA_WIDTH           ),
-    .AXI_ID_WIDTH   ( ariane_soc::DRAM ),
+    .AXI_ID_WIDTH   ( ariane_soc::IdWidthSlave ),
     .AXI_USER_WIDTH ( AXI_USER_WIDTH           )
   ) cva6_axi_bus();
 
@@ -203,7 +203,7 @@ module cva6_core_only_tb #(
   );
 
   axi2mem #(
-    .AXI_ID_WIDTH   ( ariane_soc::DRAM ),
+    .AXI_ID_WIDTH   ( ariane_soc::IdWidthSlave ),
     .AXI_ADDR_WIDTH ( AXI_ADDRESS_WIDTH        ),
     .AXI_DATA_WIDTH ( AXI_DATA_WIDTH           ),
     .AXI_USER_WIDTH ( AXI_USER_WIDTH           )
