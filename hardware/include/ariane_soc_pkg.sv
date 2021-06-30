@@ -14,7 +14,7 @@ package ariane_soc;
   // M-Mode Hart, S-Mode Hart
   localparam int unsigned NumTargets = 2;
   // Uart, SPI, Ethernet, reserved
-  localparam int unsigned NumSources = 30;
+  localparam int unsigned NumSources = 255;
   localparam int unsigned MaxPriority = 7;
 
   localparam NrSlaves = 2; // actually masters, but slaves on the crossbar
