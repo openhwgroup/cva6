@@ -44,7 +44,7 @@ endif
 ###############################################################################
 XRUN                   ?= xrun
 XRUN_COMP_FLAGS        ?= -sv -64bit -disable_sem2009 -access +rwc -timescale 1ns/1ps
-XRUN_ACC_FLAGS         ?= 
+XRUN_ACC_FLAGS         ?=
 XRUN_DISABLED_WARNINGS ?= -nowarn UEXPSC
 XRUN_UVMHOME_ARG       ?= -uvm -uvmhome CDNS-1.2-ML
 XRUN_COMPL_LOG         ?= xrun_compl.log
@@ -137,52 +137,6 @@ dsim_clean_all:
 	rm -rf $(DSIM_RESULTS_DIR)
 
 ###############################################################################
-# Verilator
-###############################################################################
-
-VERILATOR             ?= verilator
-VERILATOR_FLAGS       ?= 
-VERILATOR_WORK_DIR    ?= verilator_work
-VERILATOR_RESULTS_DIR ?= verilator_results
-
-verilate:
-	@echo "[VERILATOR] Building Model"
-	$(VERILATOR) \
-		-Werror-PINMISSING \
-		-Werror-IMPLICIT \
-		-Wno-fatal \
-		-Wno-PINCONNECTEMPTY \
-		-Wno-ASSIGNDLY \
-		-Wno-DECLFILENAME \
-		-Wno-UNUSED \
-		-Wno-UNOPTFLAT \
-		-Wno-BLKANDNBLK \
-		-Wno-style \
-		-Wall --cc  --vpi --exe \
-		-DRVFI_TRACE=1 \
-		--top-module cva6_core_only_tb \
-		--Mdir $(VERILATOR_WORK_DIR) -O3 \
-		-f $(FLIST_CORE) \
-		-f $(CVA6_TB_DIR)/Flist.cva6_tb \
-		$(CVA6_TB_DIR)/cva6_tb_verilator.cpp
-
-veri_comp: verilate
-	@echo "[VERILATOR] Compiling Model"
-	$(MAKE) -C $(VERILATOR_WORK_DIR) -f Vcva6_core_only_tb.mk
-
-veri_run: veri_comp
-	@echo "[VERILATOR] Running Model"
-	mkdir -p $(VERILATOR_RESULTS_DIR) && \
-	cp $(VERILATOR_WORK_DIR)/Vcva6_core_only_tb $(VERILATOR_RESULTS_DIR)
-	cd $(VERILATOR_RESULTS_DIR) && \
-		./Vcva6_core_only_tb $(VERILATOR_FLAGS)
-
-veri_clean_all:
-	@echo "[VERILATOR] Cleanup (both work and results dirs)"
-	rm -rf $(VERILATOR_WORK_DIR)
-	rm -rf $(VERILATOR_RESULTS_DIR)
-
-###############################################################################
 # Common targets and rules
 ###############################################################################
 
@@ -193,10 +147,6 @@ help:
 	@echo "Shell environment:"
 	@echo "   CVA6_REPO_DIR  : $(CVA6_REPO_DIR)"
 	@echo "   CVA6_TB_DIR    : $(CVA6_TB_DIR)"
-	@echo "Verilator targets:"
-	@echo "   make verilate  : Builds verilator"
-	@echo "   make veri_comp : Builds and compiles verilator"
-	@echo "   make veri_run  : Builds, compiles and runs"
 	@echo "DSIM targets:"
 	@echo "   make dsim_comp : Compiles with DSIM"
 	@echo "   make dsim_run  : Compiles and runs with DSIM"
