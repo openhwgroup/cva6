@@ -36,9 +36,6 @@ class uvma_rvfi_instr_mon_c#(int ILEN=DEFAULT_ILEN,
    // TLM
    uvm_analysis_port#(uvma_rvfi_instr_seq_item_c#(ILEN,XLEN))  ap;   
 
-   // Generated from the core configuration before starting execution
-   protected string csrs[$];
-
    string log_tag = "RVFIMONLOG";
 
    `uvm_component_utils_begin(uvma_rvfi_instr_mon_c)
@@ -127,6 +124,7 @@ task uvma_rvfi_instr_mon_c::monitor_rvfi_instr();
       @(cntxt.instr_vif[nret_id].mon_cb);
       if (cntxt.instr_vif[nret_id].mon_cb.rvfi_valid) begin
          uvma_rvfi_instr_seq_item_c#(ILEN,XLEN) mon_trn;
+
          mon_trn = uvma_rvfi_instr_seq_item_c#(ILEN,XLEN)::type_id::create("rvfi_instr_mon_trn");
 
          mon_trn.nret_id  = nret_id;
@@ -162,25 +160,6 @@ task uvma_rvfi_instr_mon_c::monitor_rvfi_instr();
          mon_trn.mem_wdata = cntxt.instr_vif[nret_id].mon_cb.rvfi_mem_wdata;
          mon_trn.mem_wmask = cntxt.instr_vif[nret_id].mon_cb.rvfi_mem_wmask;
 
-         mon_trn.csr_mip    = cntxt.instr_vif[nret_id].mon_cb.csr_mip;
-         mon_trn.csr_mcause = cntxt.instr_vif[nret_id].mon_cb.csr_mcause;
-
-         // Determine if interrupt is nmi or interrupt
-         mon_trn.insn_nmi        = 0;
-         mon_trn.insn_dbg_req    = 0;
-         mon_trn.insn_interrupt  = 0;
-   
-         if (mon_trn.intr) begin
-            if (mon_trn.dbg)
-               mon_trn.insn_dbg_req = 1;
-            else if (cfg.nmi_handler_enabled && mon_trn.pc_rdata == cfg.nmi_handler_addr)
-               mon_trn.insn_nmi = 1;
-            else if (mon_trn.csr_mcause[31]) begin
-               mon_trn.insn_interrupt    = 1;
-               mon_trn.insn_interrupt_id = { 1'b0, cntxt.csr_vif["mcause"][nret_id].mon_cb.rvfi_csr_rdata[30:0] };               
-            end
-         end
-
          // Get the CSRs
          foreach (cntxt.csr_vif[csr]) begin
             uvma_rvfi_csr_seq_item_c csr_trn = uvma_rvfi_csr_seq_item_c#(XLEN)::type_id::create({csr, "_trn"});
@@ -192,8 +171,30 @@ task uvma_rvfi_instr_mon_c::monitor_rvfi_instr();
             csr_trn.rdata = cntxt.csr_vif[csr][nret_id].mon_cb.rvfi_csr_rdata;
             csr_trn.wdata = cntxt.csr_vif[csr][nret_id].mon_cb.rvfi_csr_wdata;
 
-            mon_trn.csrs.push_back(csr_trn);
+            mon_trn.csrs[csr] = csr_trn;
          end
+
+         // Determine if interrupt is nmi or interrupt
+         mon_trn.insn_nmi        = 0;
+         mon_trn.insn_dbg_req    = 0;
+         mon_trn.insn_interrupt  = 0;
+   
+         if (mon_trn.intr) begin
+             bit [XLEN-1:0] csr_mcause = mon_trn.csrs["mcause"].get_csr_retirement_data();
+
+            if (mon_trn.dbg) begin
+               bit [XLEN-1:0] csr_dcsr = mon_trn.csrs["dcsr"].get_csr_retirement_data();
+               if (csr_dcsr[8:6] == 3'h3)
+                  mon_trn.insn_dbg_req = 1;
+            end
+            else if (cfg.nmi_handler_enabled && mon_trn.pc_rdata == cfg.nmi_handler_addr)
+               mon_trn.insn_nmi = 1;
+            else if (csr_mcause[31]) begin               
+               mon_trn.insn_interrupt    = 1;
+               mon_trn.insn_interrupt_id = { 1'b0, csr_mcause[XLEN-2:0] };
+            end
+         end
+
          `uvm_info(log_tag, $sformatf("%s", mon_trn.convert2string()), UVM_HIGH);
 
          ap.write(mon_trn);
