@@ -20,15 +20,17 @@ package apb_soc_pkg;
    } addr_map_rule_t;
 
    localparam NUM_APB_SLAVES = 2;
+
+   localparam NUM_GPIO = 64;
    
      
    localparam logic [31:0] UDMALength    = 32'h2000;
-   localparam logic [31:0] EVNTGENLength = 32'h1000;
+   localparam logic [31:0] GPIOSLength   = 32'h1000;
   
    
    typedef enum logic [31:0] {
      UDMABase     = 32'hC100_0000,
-     EVNTGENBase  = 32'hC100_2000
+     GPIOSBase    = 32'hC100_2000
     } soc_apb_bus_start_t;
    
 endpackage

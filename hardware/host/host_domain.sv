@@ -30,7 +30,8 @@ module host_domain
   parameter int unsigned N_SPI             = 4,
   parameter int unsigned N_UART            = 4,
   parameter int unsigned CAM_DATA_WIDTH    = 8,
-  parameter int unsigned N_I2C             = 1
+  parameter int unsigned N_I2C             = 1,
+  parameter int unsigned NUM_GPIO          = 64
 ) (
   input  logic                           clk_i,
   input  logic                           rtc_i,
@@ -90,7 +91,13 @@ module host_domain
   input  logic [15:0]                hyper_dq_i,
   output logic [15:0]                hyper_dq_o,
   output logic [1:0]                 hyper_dq_oe_o,
-  output logic                       hyper_reset_no
+  output logic                       hyper_reset_no,
+
+  // GPIOs
+  input  logic   [NUM_GPIO-1:0]       gpio_in,
+  output logic   [NUM_GPIO-1:0]       gpio_out,
+  output logic   [NUM_GPIO-1:0]       gpio_dir
+
 );
 
    // When changing these parameters, change the L2 size accordingly in ariane_soc_pkg
@@ -177,7 +184,8 @@ module host_domain
        .L2_ADDR_WIDTH  ( L2_MEM_ADDR_WIDTH        ),
        .AXI_ADDR_WIDTH ( AXI_ADDRESS_WIDTH        ),
        .AXI_DATA_WIDTH ( AXI_DATA_WIDTH           ),
-       .AXI_USER_WIDTH ( AXI_USER_WIDTH           )
+       .AXI_USER_WIDTH ( AXI_USER_WIDTH           ),
+       .NUM_GPIO       ( NUM_GPIO                 )
       ) (
       .clk_i                  ( clk_i                          ),
       .rst_ni                 ( ndmreset_n                     ),
@@ -233,7 +241,11 @@ module host_domain
       .hyper_dq_i             ( hyper_dq_i                     ),
       .hyper_dq_o             ( hyper_dq_o                     ),
       .hyper_dq_oe_o          ( hyper_dq_oe_o                  ),
-      .hyper_reset_no         ( hyper_reset_no                 )
+      .hyper_reset_no         ( hyper_reset_no                 ),
+
+      .gpio_in                ( gpio_in                        ),
+      .gpio_out               ( gpio_out                       ),
+      .gpio_dir               ( gpio_dir                       )
 
       );
                      

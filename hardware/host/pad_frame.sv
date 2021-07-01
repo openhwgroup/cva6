@@ -12,26 +12,32 @@
 module pad_frame
     (
      // HYPERBUS
-     input  logic  [1:0]       hyper_cs_ni        ,
-     input  logic              hyper_ck_i         ,
-     input  logic              hyper_ck_ni        ,
-     input  logic  [1:0]       hyper_rwds_i       ,
-     output logic              hyper_rwds_o       ,
-     input  logic  [1:0]       hyper_rwds_oe_i    ,
-     output logic  [15:0]      hyper_dq_o         ,
-     input  logic  [15:0]      hyper_dq_i         ,
-     input  logic  [1:0]       hyper_dq_oe_i      ,
-     input  logic              hyper_reset_ni     ,
+     input logic [1:0]   hyper_cs_ni ,
+     input logic         hyper_ck_i ,
+     input logic         hyper_ck_ni ,
+     input logic [1:0]   hyper_rwds_i ,
+     output logic        hyper_rwds_o ,
+     input logic [1:0]   hyper_rwds_oe_i ,
+     output logic [15:0] hyper_dq_o ,
+     input logic [15:0]  hyper_dq_i ,
+     input logic [1:0]   hyper_dq_oe_i ,
+     input logic         hyper_reset_ni ,
 
-     inout wire [7:0]          pad_hyper_dq0      ,
-     inout wire [7:0]          pad_hyper_dq1      ,
-     inout wire                pad_hyper_ck       ,
-     inout wire                pad_hyper_ckn      ,
-     inout wire                pad_hyper_csn0     ,
-     inout wire                pad_hyper_csn1     ,
-     inout wire                pad_hyper_rwds0    ,
-     inout wire                pad_hyper_rwds1    ,
-     inout wire                pad_hyper_reset    
+     inout wire [7:0]    pad_hyper_dq0 ,
+     inout wire [7:0]    pad_hyper_dq1 ,
+     inout wire          pad_hyper_ck ,
+     inout wire          pad_hyper_ckn ,
+     inout wire          pad_hyper_csn0 ,
+     inout wire          pad_hyper_csn1 ,
+     inout wire          pad_hyper_rwds0 ,
+     inout wire          pad_hyper_rwds1 ,
+     inout wire          pad_hyper_reset ,
+
+     input wire [63:0]   gpio_pad_out,
+     output wire [63:0]  gpio_pad_in,
+     input wire [63:0]   gpio_pad_dir,
+
+     inout wire [63:0]   pad_gpio
      );
 
   
@@ -47,6 +53,13 @@ module pad_frame
     generate
        for (j=0; j<8; j++) begin
                 pad_functional_pu padinst_hyper_dqio0  (.OEN(~hyper_dq_oe_i[0]   ), .I( hyper_dq_i[j]   ), .O( hyper_dq_o[j]  ), .PAD( pad_hyper_dq0[j]   ), .PEN(1'b1 ) );
+        end
+    endgenerate
+
+    genvar i;
+    generate
+       for (i=0; i<64; i++) begin
+                pad_functional_pu padinst_gpio  (.OEN(~gpio_pad_dir[i]   ), .I( gpio_pad_out[i]   ), .O( gpio_pad_in[i]  ), .PAD( pad_gpio[i]   ), .PEN(1'b1 ) );
         end
     endgenerate
 

@@ -24,7 +24,8 @@ module apb_subsystem
     parameter int unsigned N_UART         = 4,
     parameter int unsigned CAM_DATA_WIDTH = 8,
     parameter int unsigned N_I2C          = 1,
-    parameter int unsigned N_HYPER        = 1 
+    parameter int unsigned N_HYPER        = 1,
+    parameter int unsigned NUM_GPIO       = 64 
 ) (
     input  logic                       clk_i,
     input  logic                       rst_ni,
@@ -87,7 +88,12 @@ module apb_subsystem
     input  logic [15:0]                hyper_dq_i,
     output logic [15:0]                hyper_dq_o,
     output logic [1:0]                 hyper_dq_oe_o,
-    output logic                       hyper_reset_no
+    output logic                       hyper_reset_no,
+
+    // GPIOs
+    input  logic   [NUM_GPIO-1:0]       gpio_in,
+    output logic   [NUM_GPIO-1:0]       gpio_out,
+    output logic   [NUM_GPIO-1:0]       gpio_dir
 );
 
   
@@ -104,7 +110,7 @@ module apb_subsystem
    APB_BUS  #(
                .APB_ADDR_WIDTH(32),
                .APB_DATA_WIDTH(32)
-   ) apb_evnt_gen_master_bus();
+   ) apb_gpio_master_bus();
   
    
    axi2apb_wrap #(
@@ -129,7 +135,7 @@ module apb_subsystem
     .rst_ni,
     .apb_slave(apb_peripheral_master_bus),
     .udma_master(apb_udma_master_bus),
-    .evnt_gen_master(apb_evnt_gen_master_bus)
+    .gpio_master(apb_gpio_master_bus)
     );
    
 
@@ -236,5 +242,32 @@ module apb_subsystem
       );
    
      
+    apb_gpio #(
+        .APB_ADDR_WIDTH (32),
+        .PAD_NUM        (NUM_GPIO),
+        .NBIT_PADCFG    (4) // we actually use padrick for pads' configuration
+    ) i_apb_gpio (
+        .HCLK            ( clk_i              ),
+        .HRESETn         ( rst_ni             ),
+
+        .dft_cg_enable_i ( dft_cg_enable_i    ),
+
+        .PADDR           ( apb_gpio_master_bus.paddr   ),
+        .PWDATA          ( apb_gpio_master_bus.pwdata  ),
+        .PWRITE          ( apb_gpio_master_bus.pwrite  ),
+        .PSEL            ( apb_gpio_master_bus.psel    ),
+        .PENABLE         ( apb_gpio_master_bus.penable ),
+        .PRDATA          ( apb_gpio_master_bus.prdata  ),
+        .PREADY          ( apb_gpio_master_bus.pready  ),
+        .PSLVERR         ( apb_gpio_master_bus.pslverr ),
+
+        .gpio_in_sync    (                   ),
+
+        .gpio_in         ( gpio_in            ),
+        .gpio_out        ( gpio_out           ),
+        .gpio_dir        ( gpio_dir           ),
+        .gpio_padcfg     (                    ),
+        .interrupt       (                    )
+    );
    
 endmodule

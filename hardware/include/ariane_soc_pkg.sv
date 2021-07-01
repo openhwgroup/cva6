@@ -19,6 +19,7 @@ package ariane_soc;
 
   localparam NrSlaves = 2; // actually masters, but slaves on the crossbar
 
+   
   typedef struct packed {
       logic [31:0] idx;
       logic [63:0] start_addr;

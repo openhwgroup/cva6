@@ -14,6 +14,7 @@
 
 module al_saqr 
   import axi_pkg::xbar_cfg_t;
+  import apb_soc_pkg::NUM_GPIO;  
 #(
   parameter int unsigned AXI_USER_WIDTH    = 1,
   parameter int unsigned AXI_ADDRESS_WIDTH = 64,
@@ -39,10 +40,11 @@ module al_saqr
   inout  wire              pad_hyper_csn1   ,
   inout  wire              pad_hyper_rwds0  ,
   inout  wire              pad_hyper_rwds1  ,
-  inout  wire              pad_hyper_reset  
+  inout  wire              pad_hyper_reset  ,
+  inout  wire [63:0]       pad_gpio
 );
 
-   
+      
   logic [1:0]                  s_hyper_cs_n;
   logic                        s_hyper_ck;
   logic                        s_hyper_ck_n;
@@ -53,12 +55,17 @@ module al_saqr
   logic [15:0]                 s_hyper_dq_o;
   logic [1:0]                  s_hyper_dq_oe;
   logic                        s_hyper_reset_n;
+
+  logic [NUM_GPIO-1:0]         s_gpio_pad_in;
+  logic [NUM_GPIO-1:0]         s_gpio_pad_out;
+  logic [NUM_GPIO-1:0]         s_gpio_pad_dir;
    
     host_domain #(
         .NUM_WORDS         ( NUM_WORDS ),
         .InclSimDTM        ( 1'b1      ),
         .StallRandomOutput ( 1'b1      ),
-        .StallRandomInput  ( 1'b1      )
+        .StallRandomInput  ( 1'b1      ),
+        .NUM_GPIO          ( NUM_GPIO  )
     ) i_host_domain (
       .clk_i,
       .rst_ni,
@@ -74,7 +81,12 @@ module al_saqr
       .hyper_dq_i             ( s_hyper_dq_i                    ),
       .hyper_dq_o             ( s_hyper_dq_o                    ),
       .hyper_dq_oe_o          ( s_hyper_dq_oe                   ),
-      .hyper_reset_no         ( s_hyper_reset_n                 )     
+      .hyper_reset_no         ( s_hyper_reset_n                 ),     
+
+      .gpio_in                ( s_gpio_pad_in                    ),
+      .gpio_out               ( s_gpio_pad_out                   ),
+      .gpio_dir               ( s_gpio_pad_dir                   )
+
     );
 
    pad_frame #()
@@ -99,7 +111,13 @@ module al_saqr
       .pad_hyper_csn1         ( pad_hyper_csn1                  ),
       .pad_hyper_rwds0        ( pad_hyper_rwds0                 ),
       .pad_hyper_rwds1        ( pad_hyper_rwds1                 ),
-      .pad_hyper_reset        ( pad_hyper_reset                 )
+      .pad_hyper_reset        ( pad_hyper_reset                 ),
+
+
+      .gpio_pad_out           ( s_gpio_pad_out                  ),
+      .gpio_pad_in            ( s_gpio_pad_in                   ),
+      .gpio_pad_dir           ( s_gpio_pad_dir                  ),      
+      .pad_gpio               ( pad_gpio                        )
      );
    
 endmodule

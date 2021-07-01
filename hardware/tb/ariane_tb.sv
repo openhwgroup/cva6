@@ -39,7 +39,7 @@ module ariane_tb;
     logic rst_ni;
     logic rtc_i;
 
-    parameter  USE_HYPER_MODELS    = 1;
+    parameter  USE_HYPER_MODELS    = 0;
 
     wire [7:0]            w_hyper_dq0    ;
     wire [7:0]            w_hyper_dq1    ;
@@ -51,12 +51,21 @@ module ariane_tb;
     wire                  w_hyper_rwds1  ;
     wire                  w_hyper_reset  ;
 
+    wire [63:0]           w_gpios        ; 
+   
     longint unsigned cycles;
     longint unsigned max_cycles;
 
     logic [31:0] exit_o;
 
     string binary = "";
+
+    genvar j;
+    generate
+       for (j=0; j<32; j++) begin
+          assign w_gpios[63-j] = w_gpios[j] ? 1 : 0 ;          
+        end
+    endgenerate
 
     al_saqr #(
         .NUM_WORDS         ( NUM_WORDS ),
@@ -76,7 +85,8 @@ module ariane_tb;
         .pad_hyper_csn1    ( w_hyper_csn1        ),
         .pad_hyper_rwds0   ( w_hyper_rwds0       ),
         .pad_hyper_rwds1   ( w_hyper_rwds1       ),
-        .pad_hyper_reset   ( w_hyper_reset       )
+        .pad_hyper_reset   ( w_hyper_reset       ),
+        .pad_gpio          ( w_gpios             )
    );
 
 // Hyperram and hyperflash modules

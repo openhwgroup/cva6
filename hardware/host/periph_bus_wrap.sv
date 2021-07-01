@@ -20,7 +20,7 @@ module periph_bus_wrap
     input logic    rst_ni,
     APB_BUS.Slave  apb_slave,
     APB_BUS.Master udma_master,
-    APB_BUS.Master evnt_gen_master
+    APB_BUS.Master gpio_master
 );
 
     APB_BUS
@@ -44,9 +44,9 @@ module periph_bus_wrap
     assign s_start_addr[0] = apb_soc_pkg::UDMABase;
     assign s_end_addr[0]   = apb_soc_pkg::UDMABase + apb_soc_pkg::UDMALength - 1;
 
-    `APB_ASSIGN_MASTER(s_masters[1], evnt_gen_master);
-    assign s_start_addr[1] = apb_soc_pkg::EVNTGENBase;
-    assign s_end_addr[1]   = apb_soc_pkg::EVNTGENBase + apb_soc_pkg::EVNTGENLength - 1;
+    `APB_ASSIGN_MASTER(s_masters[1], gpio_master);
+    assign s_start_addr[1] = apb_soc_pkg::GPIOSBase;
+    assign s_end_addr[1]   = apb_soc_pkg::GPIOSBase + apb_soc_pkg::GPIOSLength - 1;
 
     apb_node_wrap #(
         .NB_MASTER      ( apb_soc_pkg::NUM_APB_SLAVES ),
