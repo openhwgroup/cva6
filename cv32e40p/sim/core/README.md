@@ -34,8 +34,8 @@ Point your environment variable `RISCV` to your RISC-V toolchain. Call `make`
 to run the default test (hello_world).
 
 Running your own Assembler programs
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-Admittedly, this needs work. If you have a C or assembly program in `../../tests/core/custom`
+-----------------------------
+If you have a C or assembly program in `../../tests/core/custom`
 then the following will work with Verilator:<br>
 ```
 make custom CUSTOM_PROG=dhrystone
