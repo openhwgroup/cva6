@@ -32,16 +32,19 @@ module al_saqr
   input  logic             rtc_i,
   input  logic             rst_ni,
   output logic [31:0]      exit_o,
-  inout  wire [7:0]        pad_hyper_dq0    ,
-  inout  wire [7:0]        pad_hyper_dq1    ,
-  inout  wire              pad_hyper_ck     ,
-  inout  wire              pad_hyper_ckn    ,
-  inout  wire              pad_hyper_csn0   ,
-  inout  wire              pad_hyper_csn1   ,
-  inout  wire              pad_hyper_rwds0  ,
-  inout  wire              pad_hyper_rwds1  ,
-  inout  wire              pad_hyper_reset  ,
-  inout  wire [63:0]       pad_gpio
+  inout  wire [7:0]        pad_hyper_dq0,
+  inout  wire [7:0]        pad_hyper_dq1,
+  inout  wire              pad_hyper_ck,
+  inout  wire              pad_hyper_ckn,
+  inout  wire              pad_hyper_csn0,
+  inout  wire              pad_hyper_csn1,
+  inout  wire              pad_hyper_rwds0,
+  inout  wire              pad_hyper_rwds1,
+  inout  wire              pad_hyper_reset,
+  inout  wire [63:0]       pad_gpio,
+  // CVA6 DEBUG UART
+  input  logic             cva6_uart_rx_i,
+  output logic             cva6_uart_tx_o   
 );
 
       
@@ -85,7 +88,10 @@ module al_saqr
 
       .gpio_in                ( s_gpio_pad_in                    ),
       .gpio_out               ( s_gpio_pad_out                   ),
-      .gpio_dir               ( s_gpio_pad_dir                   )
+      .gpio_dir               ( s_gpio_pad_dir                   ),
+
+      .cva6_uart_rx_i         ( cva6_uart_rx_i                   ),
+      .cva6_uart_tx_o         ( cva6_uart_tx_o                   )
 
     );
 

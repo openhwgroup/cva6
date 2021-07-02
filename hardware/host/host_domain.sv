@@ -33,70 +33,75 @@ module host_domain
   parameter int unsigned N_I2C             = 1,
   parameter int unsigned NUM_GPIO          = 64
 ) (
-  input  logic                           clk_i,
-  input  logic                           rtc_i,
-  input  logic                           rst_ni,
-  output logic [31:0]                    exit_o,
-   // SPIM
-  output logic     [N_SPI-1:0]       spi_clk,
-  output logic     [N_SPI-1:0] [3:0] spi_csn,
-  output logic     [N_SPI-1:0] [3:0] spi_oen,
-  output logic     [N_SPI-1:0] [3:0] spi_sdo,
-  input  logic     [N_SPI-1:0] [3:0] spi_sdi,
+  input logic                      clk_i,
+  input logic                      rtc_i,
+  input logic                      rst_ni,
+  output logic [31:0]              exit_o,
+
+  // CVA6 DEBUG UART
+  input  logic                     cva6_uart_rx_i,
+  output logic                     cva6_uart_tx_o,   
+
+  // SPIM
+  output logic [N_SPI-1:0]         spi_clk,
+  output logic [N_SPI-1:0] [3:0]   spi_csn,
+  output logic [N_SPI-1:0] [3:0]   spi_oen,
+  output logic [N_SPI-1:0] [3:0]   spi_sdo,
+  input logic [N_SPI-1:0] [3:0]    spi_sdi,
 
   // I2C
-  input  logic           [N_I2C-1:0] i2c_scl_i,
-  output logic           [N_I2C-1:0] i2c_scl_o,
-  output logic           [N_I2C-1:0] i2c_scl_oe,
-  input  logic           [N_I2C-1:0] i2c_sda_i,
-  output logic           [N_I2C-1:0] i2c_sda_o,
-  output logic           [N_I2C-1:0] i2c_sda_oe,
+  input logic [N_I2C-1:0]          i2c_scl_i,
+  output logic [N_I2C-1:0]         i2c_scl_o,
+  output logic [N_I2C-1:0]         i2c_scl_oe,
+  input logic [N_I2C-1:0]          i2c_sda_i,
+  output logic [N_I2C-1:0]         i2c_sda_o,
+  output logic [N_I2C-1:0]         i2c_sda_oe,
 
   // CAM
-  input  logic                       cam_clk_i,
-  input  logic  [CAM_DATA_WIDTH-1:0] cam_data_i,
-  input  logic                       cam_hsync_i,
-  input  logic                       cam_vsync_i,
+  input logic                      cam_clk_i,
+  input logic [CAM_DATA_WIDTH-1:0] cam_data_i,
+  input logic                      cam_hsync_i,
+  input logic                      cam_vsync_i,
 
   // UART
-  input  logic          [N_UART-1:0] uart_rx_i,
-  output logic          [N_UART-1:0] uart_tx_o,
+  input logic [N_UART-1:0]         uart_rx_i,
+  output logic [N_UART-1:0]        uart_tx_o,
 
   // SDIO
-  output logic                       sdio_clk_o,
-  output logic                       sdio_cmd_o,
-  input  logic                       sdio_cmd_i,
-  output logic                       sdio_cmd_oen_o,
-  output logic                 [3:0] sdio_data_o,
-  input  logic                 [3:0] sdio_data_i,
-  output logic                 [3:0] sdio_data_oen_o,
+  output logic                     sdio_clk_o,
+  output logic                     sdio_cmd_o,
+  input logic                      sdio_cmd_i,
+  output logic                     sdio_cmd_oen_o,
+  output logic [3:0]               sdio_data_o,
+  input logic [3:0]                sdio_data_i,
+  output logic [3:0]               sdio_data_oen_o,
   
   // I2S
-  input  logic                       i2s_slave_sd0_i,
-  input  logic                       i2s_slave_sd1_i,
-  input  logic                       i2s_slave_ws_i,
-  output logic                       i2s_slave_ws_o,
-  output logic                       i2s_slave_ws_oe,
-  input  logic                       i2s_slave_sck_i,
-  output logic                       i2s_slave_sck_o,
-  output logic                       i2s_slave_sck_oe,
+  input logic                      i2s_slave_sd0_i,
+  input logic                      i2s_slave_sd1_i,
+  input logic                      i2s_slave_ws_i,
+  output logic                     i2s_slave_ws_o,
+  output logic                     i2s_slave_ws_oe,
+  input logic                      i2s_slave_sck_i,
+  output logic                     i2s_slave_sck_o,
+  output logic                     i2s_slave_sck_oe,
 
   // HYPERBUS
-  output logic [1:0]                 hyper_cs_no,
-  output logic                       hyper_ck_o,
-  output logic                       hyper_ck_no,
-  output logic [1:0]                 hyper_rwds_o,
-  input  logic                       hyper_rwds_i,
-  output logic [1:0]                 hyper_rwds_oe_o,
-  input  logic [15:0]                hyper_dq_i,
-  output logic [15:0]                hyper_dq_o,
-  output logic [1:0]                 hyper_dq_oe_o,
-  output logic                       hyper_reset_no,
+  output logic [1:0]               hyper_cs_no,
+  output logic                     hyper_ck_o,
+  output logic                     hyper_ck_no,
+  output logic [1:0]               hyper_rwds_o,
+  input logic                      hyper_rwds_i,
+  output logic [1:0]               hyper_rwds_oe_o,
+  input logic [15:0]               hyper_dq_i,
+  output logic [15:0]              hyper_dq_o,
+  output logic [1:0]               hyper_dq_oe_o,
+  output logic                     hyper_reset_no,
 
   // GPIOs
-  input  logic   [NUM_GPIO-1:0]       gpio_in,
-  output logic   [NUM_GPIO-1:0]       gpio_out,
-  output logic   [NUM_GPIO-1:0]       gpio_dir
+  input logic [NUM_GPIO-1:0]       gpio_in,
+  output logic [NUM_GPIO-1:0]      gpio_out,
+  output logic [NUM_GPIO-1:0]      gpio_dir
 
 );
 
@@ -146,10 +151,12 @@ module host_domain
         .rst_ni,
         .rtc_i,
         .exit_o,
-        .udma_events_i  ( s_udma_events ),
-        .rst_no         ( ndmreset_n    ),
-        .l2_axi_master  ( l2_axi_bus    ),
-        .apb_axi_master ( apb_axi_bus   )
+        .udma_events_i  ( s_udma_events  ),
+        .rst_no         ( ndmreset_n     ),
+        .l2_axi_master  ( l2_axi_bus     ),
+        .apb_axi_master ( apb_axi_bus    ),
+        .cva6_uart_rx_i ( cva6_uart_rx_i ),
+        .cva6_uart_tx_o ( cva6_uart_tx_o )
     );
    
    

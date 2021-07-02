@@ -36,6 +36,9 @@ module cva6_subsytem
   output logic [31:0]                    exit_o,
   output logic                           rst_no,
   input  logic [32*4-1:0]                udma_events_i,
+  // CVA6 DEBUG UART
+  input  logic                           cva6_uart_rx_i,
+  output logic                           cva6_uart_tx_o,   
   AXI_BUS.Master                         l2_axi_master,
   AXI_BUS.Master                         apb_axi_master
 );
@@ -741,8 +744,8 @@ module cva6_subsytem
     .timer     ( master[ariane_soc::Timer]    ),
     .udma_evt_i( udma_events_i                ),
     .irq_o     ( irqs                         ),
-    .rx_i      ( rx                           ),
-    .tx_o      ( tx                           ),
+    .rx_i      ( cva6_uart_rx_i               ),
+    .tx_o      ( cva6_uart_tx_o               ),
     .eth_txck  ( ),
     .eth_rxck  ( ),
     .eth_rxctl ( ),
@@ -760,7 +763,6 @@ module cva6_subsytem
     .spi_ss    ( )
   );
 
-  uart_bus #(.BAUD_RATE(115200), .PARITY_EN(0)) i_uart_bus (.rx(tx), .tx(rx), .rx_en(1'b1));
 
   // ---------------
   // Core

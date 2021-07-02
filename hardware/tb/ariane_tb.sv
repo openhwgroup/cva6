@@ -52,6 +52,10 @@ module ariane_tb;
     wire                  w_hyper_reset  ;
 
     wire [63:0]           w_gpios        ; 
+
+    wire                  w_cva6_uart_rx ;
+    wire                  w_cva6_uart_tx ;
+   
    
     longint unsigned cycles;
     longint unsigned max_cycles;
@@ -86,7 +90,9 @@ module ariane_tb;
         .pad_hyper_rwds0   ( w_hyper_rwds0       ),
         .pad_hyper_rwds1   ( w_hyper_rwds1       ),
         .pad_hyper_reset   ( w_hyper_reset       ),
-        .pad_gpio          ( w_gpios             )
+        .pad_gpio          ( w_gpios             ),
+        .cva6_uart_rx_i    ( w_cva6_uart_rx      ),
+        .cva6_uart_tx_o    ( w_cva6_uart_tx      )
    );
 
 // Hyperram and hyperflash modules
@@ -129,6 +135,8 @@ module ariane_tb;
          );
       end
    endgenerate
+
+   uart_bus #(.BAUD_RATE(115200), .PARITY_EN(0)) i_uart_bus (.rx(w_cva6_uart_tx), .tx(w_cva6_uart_rx), .rx_en(1'b1));
 
 `ifdef SPIKE_TANDEM
     spike #(
