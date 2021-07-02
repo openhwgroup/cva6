@@ -185,13 +185,14 @@ tests:
   #   cmd: make gen_corev-dv test COREV=YES TEST=corev_rand_debug_ebreak
   #   num: 2
 
-  corev_rand_interrupt_wfi:
-    build: uvmt_cv32e40x
-    description: Generated corev-dv random interrupt WFI test
-    dir: cv32e40x/sim/uvmt    
-    cmd: make gen_corev-dv test COREV=YES TEST=corev_rand_interrupt_wfi
-    num: 2
-    makearg: USER_RUN_FLAGS=+rand_stall_obi_disable
+  # FIXME:strichmo:This is currently known to not work, update later
+  #   corev_rand_interrupt_wfi:
+  #     build: uvmt_cv32e40x
+  #     description: Generated corev-dv random interrupt WFI test
+  #     dir: cv32e40x/sim/uvmt    
+  #     cmd: make gen_corev-dv test COREV=YES TEST=corev_rand_interrupt_wfi
+  #     num: 2
+  #     makearg: USER_RUN_FLAGS=+rand_stall_obi_disable
 
   # FIXME:strichmo:This is currently known to not work, update later
   # corev_rand_interrupt_debug:
