@@ -193,7 +193,6 @@ task uvma_rvvi_ovpsim_drv_c::stop_clknrst();
 
    uvma_clknrst_stop_clk_seq_c stop_clk_seq;
    stop_clk_seq = uvma_clknrst_stop_clk_seq_c::type_id::create("stop_clk_seq");
-   assert(stop_clk_seq.randomize());
    stop_clk_seq.start(clknrst_sequencer);
 
 endtask : stop_clknrst
@@ -202,7 +201,6 @@ task uvma_rvvi_ovpsim_drv_c::restart_clknrst();
 
    uvma_clknrst_restart_clk_seq_c restart_clk_seq;
    restart_clk_seq = uvma_clknrst_restart_clk_seq_c::type_id::create("restart_clk_seq");
-   assert(restart_clk_seq.randomize());
    restart_clk_seq.start(clknrst_sequencer);
 
 endtask : restart_clknrst
