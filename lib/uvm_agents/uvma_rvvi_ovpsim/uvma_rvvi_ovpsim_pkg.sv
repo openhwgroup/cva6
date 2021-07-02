@@ -35,7 +35,8 @@ package uvma_rvvi_ovpsim_pkg;
    import uvml_hrtbt_pkg::*;
    import uvml_trn_pkg  ::*;
    import uvml_logs_pkg ::*;
-   import uvma_clknrst_pkg::*;   
+   import uvma_clknrst_pkg::*;
+   import uvma_core_cntrl_pkg::*;
    import uvma_rvfi_pkg ::*;
    import uvma_rvvi_pkg ::*;
 

@@ -34,7 +34,7 @@ class uvma_rvfi_mon_trn_logger_c#(int ILEN=DEFAULT_ILEN,
    const string format_instr_str  = "%15s: RVFI %6d %8x %8s %s x%2d %08x x%2d %08x x%2d %08x";
    const string format_mem_str    = "%06s %08x %08s";
 
-   `uvm_component_utils(uvma_rvfi_mon_trn_logger_c)
+   `uvm_component_param_utils(uvma_rvfi_mon_trn_logger_c)
    
    /**
     * Default constructor.

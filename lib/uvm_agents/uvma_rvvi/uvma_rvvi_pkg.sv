@@ -34,7 +34,8 @@ package uvma_rvvi_pkg;
    import uvm_pkg       ::*;
    import uvml_hrtbt_pkg::*;
    import uvml_trn_pkg  ::*;
-   import uvml_logs_pkg ::*;   
+   import uvml_logs_pkg ::*;
+   import uvma_core_cntrl_pkg::*;
    import uvma_rvfi_pkg ::*;
 
    // Forward decl of sequencer for p_sequencer delcaration

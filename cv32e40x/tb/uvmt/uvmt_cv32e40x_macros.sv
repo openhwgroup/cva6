@@ -31,6 +31,17 @@
                                                                             .rvfi_csr_wdata(rvfi_i.rvfi_csr_``csr_name``_wdata) \
     );
 
+`define RVFI_CSR_IDX_BIND(csr_name,csr_suffix,idx) \
+  bind cv32e40x_wrapper \
+    uvma_rvfi_csr_if#(uvme_cv32e40x_pkg::XLEN) rvfi_csr_``csr_name````idx````csr_suffix``_if_0_i( \
+                                                                           .clk(clk_i), \
+                                                                           .reset_n(rst_ni), \
+                                                                           .rvfi_csr_rmask(rvfi_i.rvfi_csr_``csr_name````csr_suffix``_rmask[``idx``]), \
+                                                                           .rvfi_csr_wmask(rvfi_i.rvfi_csr_``csr_name````csr_suffix``_wmask[``idx``]), \
+                                                                           .rvfi_csr_rdata(rvfi_i.rvfi_csr_``csr_name````csr_suffix``_rdata[``idx``]), \
+                                                                           .rvfi_csr_wdata(rvfi_i.rvfi_csr_``csr_name````csr_suffix``_wdata[``idx``]) \
+    );
+
 // Create uvm_config_db::set call for a CSR interface
 `define RVFI_CSR_UVM_CONFIG_DB_SET(csr_name) \
   uvm_config_db#(virtual uvma_rvfi_csr_if)::set(.cntxt(null), \

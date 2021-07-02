@@ -37,17 +37,18 @@ module uvmt_cv32e40p_iss_wrap
     uvmt_cv32e40p_isa_covg_if     isa_covg_if
    );
 
-    BUS         b1();
+    RVVI_bus bus();
+    RVVI_io  io();
 
-    MONITOR     mon(b1);
+    MONITOR     mon(bus, io);
     RAM         #(
                 .ROM_START_ADDR(ROM_START_ADDR),
                 .ROM_BYTE_SIZE(ROM_BYTE_SIZE),
-                .RAM_BYTE_SIZE(RAM_BYTE_SIZE)) ram(b1);
+                .RAM_BYTE_SIZE(RAM_BYTE_SIZE)) ram(bus);
 
-    CPU #(.ID(ID)) cpu(b1);
+    CPU #(.ID(ID), .VARIANT("CV32E40P")) cpu(bus, io);
 
-   assign b1.Clk = clknrst_if.clk;
+   assign bus.Clk = clknrst_if.clk;
    
    // monitor rvvi updates
    always @(cpu.state.notify) begin

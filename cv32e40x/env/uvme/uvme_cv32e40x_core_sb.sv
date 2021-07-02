@@ -23,7 +23,8 @@
 class uvme_cv32e40x_core_sb_c extends uvm_scoreboard;   
    
    // Fail-safe to kill the test with fatal error if the reorder queue gets to a certain size
-   localparam RVFI_INSTR_REORDER_QUEUE_SIZE_LIMIT = 16;
+   localparam RVFI_INSTR_REORDER_QUEUE_SIZE_LIMIT = 2;
+   localparam RVFI_INSTR_QUEUE_SIZE_LIMIT = 2;
 
    // Objects
    uvme_cv32e40x_cfg_c    cfg;
@@ -192,6 +193,8 @@ function void uvme_cv32e40x_core_sb_c::print_instr_checked_stats();
 endfunction : print_instr_checked_stats
 
 function void uvme_cv32e40x_core_sb_c::write_core_sb_rvfi_instr(uvma_rvfi_instr_seq_item_c#(ILEN,XLEN) rvfi_instr);
+
+   // Skip if scoreboard disabled
    if (!cfg.scoreboarding_enabled)
       return;
 
@@ -226,10 +229,16 @@ function void uvme_cv32e40x_core_sb_c::write_core_sb_rvfi_instr(uvma_rvfi_instr_
       next_rvfi_order++;      
    end
 
-   // Fatal check for size limit
+   // Fatal check for reorder size limit
    if (rvfi_instr_reorder_q.size() >= RVFI_INSTR_REORDER_QUEUE_SIZE_LIMIT) begin
-      `uvm_fatal("CORE_SB", $sformatf("The RVFI reorder instruction queue is too large, size: %0d, next_rvfi_order: %0d", 
+      `uvm_error("CORE_SB", $sformatf("The RVFI reorder instruction queue is too large, size: %0d, next_rvfi_order: %0d", 
                                       rvfi_instr_reorder_q.size(), next_rvfi_order));
+   end
+
+   // Fatal check for rvfi queue size limit
+   if (rvfi_instr_q.size() >= RVFI_INSTR_QUEUE_SIZE_LIMIT) begin
+      `uvm_error("CORE_SB", $sformatf("The RVFI instruction queue is too large, size: %0d, next_rvfi_order: %0d", 
+                                      rvfi_instr_q.size(), next_rvfi_order));
    end
 
    check_instr_queue();
@@ -270,7 +279,7 @@ function void uvme_cv32e40x_core_sb_c::check_instr_queue();
       check_gpr(rvfi_instr, rvvi_state);
 
       // Check CSRs
-      if (!cfg.disable_csr_check) 
+      if (!cfg.disable_all_csr_checks)
          check_csr(rvfi_instr, rvvi_state);
    end
 
@@ -312,8 +321,11 @@ endfunction : check_instr
 function void uvme_cv32e40x_core_sb_c::check_gpr(uvma_rvfi_instr_seq_item_c#(ILEN,XLEN) rvfi_instr,
                                                  uvma_rvvi_state_seq_item_c#(ILEN,XLEN) rvvi_state);
 
-   gpr_checked_cnt++;
+   // gpt_checked_cnt represents the GPR "updates" checked, so skip writes to x0
+   if (rvfi_instr.rd1_addr !=0 || rvfi_instr.rd2_addr != 0)
+      gpr_checked_cnt++;
 
+   // Update the local register map
    if (rvfi_instr.rd1_addr != 0)
       x[rvfi_instr.rd1_addr] = rvfi_instr.rd1_wdata;
    if (rvfi_instr.rd2_addr != 0)
@@ -338,9 +350,9 @@ function void uvme_cv32e40x_core_sb_c::check_csr(uvma_rvfi_instr_seq_item_c#(ILE
       string csr = rvfi_instr.csrs[i].csr;   
       bit[XLEN-1:0] exp_csr_value;
 
-      // FIXME: Remove when RVVI fixed to include all CSRs
-      if (csr == "mcause") continue;
-   
+      // Skip disabled CSR checks from configuration object
+      if (cfg.is_csr_check_disabled(csr)) continue;      
+            
       // Ensure that CSR from RVFI exists in the RVVI state object      
       if (!rvvi_state.csr.exists(csr)) begin
          `uvm_fatal("CORESB", $sformatf("CSR %s from RVFI does not exist in RVVI state interface", csr));
@@ -348,8 +360,7 @@ function void uvme_cv32e40x_core_sb_c::check_csr(uvma_rvfi_instr_seq_item_c#(ILE
 
       csr_checked_cnt++;
 
-      exp_csr_value = (rvfi_instr.csrs[i].wmask & rvfi_instr.csrs[i].wdata) |
-                      (~rvfi_instr.csrs[i].wmask & rvfi_instr.csrs[i].rdata);
+      exp_csr_value = rvfi_instr.csrs[i].get_csr_retirement_data();
 
       if (exp_csr_value != rvvi_state.csr[csr]) begin
          `uvm_error("CORESB", $sformatf("CSR Mismatch, order: %0d, csr: %s, rvfi = 0x%08x, rvvi = 0x%08x",

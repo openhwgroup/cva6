@@ -213,7 +213,7 @@ _wait3:
 
     # Enable debug_req in VP
     li a1, debug_req_reg
-    li t0, 0xc0050003
+    li t0, 0xc0050005
     sw t0, 0(a1)
  
     # Call trigger function
@@ -238,7 +238,7 @@ _wait3:
 
     # Enable debug_req in VP
     li a1, debug_req_reg
-    li t0, 0xc0050018
+    li t0, 0xc005001a
     sw t0, 0(a1)
 
     # Enable interrupt
@@ -246,7 +246,7 @@ _wait3:
     li t0, 0x40000000
     sw t0, 0(a1)
     li a1, timer_val_addr
-    li t0, 17
+    li t0, 18
     sw t0, 0(a1)
 
     # Call trigger function
@@ -271,7 +271,7 @@ _wait3:
 
     # Enable debug_req in VP
     li a1, debug_req_reg
-    li t0, 0xc0050019
+    li t0, 0xc005001b
     sw t0, 0(a1)
 
     # Enable interrupt
@@ -279,7 +279,7 @@ _wait3:
     li t0, 0x40000000
     sw t0, 0(a1)
     li a1, timer_val_addr
-    li t0, 18
+    li t0, 19
     sw t0, 0(a1)
 
     # Call trigger function
@@ -304,7 +304,7 @@ _wait3:
 
     # Enable debug_req in VP
     li a1, debug_req_reg
-    li t0, 0xc005001d
+    li t0, 0xc005001f
     sw t0, 0(a1)
 
     # Enable interrupt
@@ -312,7 +312,7 @@ _wait3:
     li t0, 0x40000000
     sw t0, 0(a1)
     li a1, timer_val_addr
-    li t0, 22
+    li t0, 23
     sw t0, 0(a1)
 
     # Call trigger function
@@ -337,7 +337,7 @@ _wait3:
 
     # Enable debug_req in VP
     li a1, debug_req_reg
-    li t0, 0xc005001d
+    li t0, 0xc005001f
     sw t0, 0(a1)
 
     # Enable interrupt
@@ -345,7 +345,7 @@ _wait3:
     li t0, 0x40000000
     sw t0, 0(a1)
     li a1, timer_val_addr
-    li t0, 22
+    li t0, 23
     sw t0, 0(a1)
 
     # Call trigger function
@@ -370,7 +370,7 @@ _wait3:
 
     # Enable debug_req in VP
     li a1, debug_req_reg
-    li t0, 0xc0050021
+    li t0, 0xc0050023
     sw t0, 0(a1)
 
     # Enable interrupt
@@ -378,7 +378,7 @@ _wait3:
     li t0, 0x40000000
     sw t0, 0(a1)
     li a1, timer_val_addr
-    li t0, 26
+    li t0, 27
     sw t0, 0(a1)
 
     # Call trigger function

@@ -291,7 +291,7 @@ bind cv32e40p_wrapper
     assign clknrst_if_iss.reset_n = clknrst_if.reset_n;
 
     // Connect step-and-compare signals to interrupt_if for functional coverage of instructions and interrupts
-    assign interrupt_if.deferint = iss_wrap.b1.deferint;
+    assign interrupt_if.deferint = iss_wrap.io.deferint;
     assign interrupt_if.ovp_cpu_state_stepi = step_compare_if.ovp_cpu_state_stepi;
     
     // Interrupt modeling logic - used to time interrupt entry from RTL to the ISS    
@@ -344,11 +344,11 @@ bind cv32e40p_wrapper
       */
     always @(posedge clknrst_if.clk or negedge clknrst_if.reset_n) begin
       if (!clknrst_if_iss.reset_n) begin
-        iss_wrap.b1.deferint <= 1'b1;
+        iss_wrap.io.deferint <= 1'b1;
         deferint_ack <= 1'b1;
       end
       else if (id_start && !step_compare_if.deferint_prime) begin
-        iss_wrap.b1.deferint <= 1'b0;
+        iss_wrap.io.deferint <= 1'b0;
         deferint_ack <= step_compare_if.deferint_prime_ack;
       end
     end
@@ -357,8 +357,8 @@ bind cv32e40p_wrapper
       * deferint deassertion logic, on negedge of ovp_cpu_state_stepi from the ISS the deferint has been consumed 
       */
     always @(negedge step_compare_if.ovp_cpu_state_stepi) begin
-      if (iss_wrap.b1.deferint == 0) begin
-        iss_wrap.b1.deferint <= 1'b1;          
+      if (iss_wrap.io.deferint == 0) begin
+        iss_wrap.io.deferint <= 1'b1;          
         deferint_ack <= 1'b1;
         irq_deferint_ack <= '0;          
       end
@@ -384,7 +384,7 @@ bind cv32e40p_wrapper
     end
 
     always @*        
-      iss_wrap.b1.irq_i = iss_wrap.b1.deferint ? dut_wrap.irq :
+      iss_wrap.io.irq_i = iss_wrap.io.deferint ? dut_wrap.irq :
                           !deferint_ack ? irq_deferint_ack :
                           irq_deferint_sleep;
 
@@ -403,10 +403,10 @@ bind cv32e40p_wrapper
             irq_mip[irq_idx] <= 1'b1;          
           // If deferint is low and ovp_cpu_state_stepi is asserted, then interrupt was consumed by model
           // Clear it now to avoid mip miscompare
-          else if (step_compare_if.ovp_cpu_state_stepi && iss_wrap.b1.deferint == 0)
+          else if (step_compare_if.ovp_cpu_state_stepi && iss_wrap.io.deferint == 0)
             irq_mip[irq_idx] <= 1'b0;
           // If RTL interrupt deasserts, but the core has not taken the interrupt, then clear ISS irq
-          else if (iss_wrap.b1.deferint == 1)
+          else if (iss_wrap.io.deferint == 1)
             irq_mip[irq_idx] <= 1'b0;            
         end
       end
@@ -445,12 +445,12 @@ bind cv32e40p_wrapper
 
     always @(posedge clknrst_if_iss.clk or negedge clknrst_if_iss.reset_n) begin
       if (!clknrst_if_iss.reset_n) begin
-          iss_wrap.b1.haltreq <= 1'b0;
+          iss_wrap.io.haltreq <= 1'b0;
           debug_req_state <= INACTIVE;
       end else begin
           unique case(debug_req_state)
               INACTIVE: begin
-                  iss_wrap.b1.haltreq <= 1'b0;
+                  iss_wrap.io.haltreq <= 1'b0;
 
                   // Only drive haltreq if we have an external request
                   if (dut_wrap.cv32e40p_wrapper_i.core_i.id_stage_i.controller_i.ctrl_fsm_cs inside {cv32e40p_pkg::DBG_TAKEN_ID, cv32e40p_pkg::DBG_TAKEN_IF} &&
@@ -459,20 +459,20 @@ bind cv32e40p_wrapper
                       debug_req_state <= DBG_TAKEN;
                       // Already in sync, assert halreq right away
                       if (count_retire == count_issue) begin
-                          iss_wrap.b1.haltreq <= 1'b1;
+                          iss_wrap.io.haltreq <= 1'b1;
                       end
                   end
               end
               DBG_TAKEN: begin
                   // Assert haltreq when we are in sync
                   if (count_retire == count_issue) begin
-                      iss_wrap.b1.haltreq <= 1'b1;
+                      iss_wrap.io.haltreq <= 1'b1;
                       debug_req_state <= DRIVE_REQ;
                   end
               end
               DRIVE_REQ: begin
                   // Deassert haltreq when DM is observed
-                  if(iss_wrap.b1.DM == 1'b1) begin
+                  if(iss_wrap.io.DM == 1'b1) begin
                       debug_req_state <= INACTIVE;
                   end
               end
@@ -626,6 +626,17 @@ bind cv32e40p_wrapper
       end
    end
    
+   // FIXME:strichmo:Remove this code when RVFI/RVVI is ported into the cv32e40p
+   // emulate volatile register updates of RND_NUM register
+   always @(posedge dut_wrap.ram_i.clk_i) begin
+      if (dut_wrap.ram_i.rst_ni) begin
+         if (dut_wrap.ram_i.rnd_num_req) begin
+            #1ns;
+            iss_wrap.bus.mem[dut_wrap.ram_i.MMADDR_RNDNUM >> 2] = dut_wrap.ram_i.rnd_num;
+         end
+      end
+   end
+
 endmodule : uvmt_cv32e40p_tb
 `default_nettype wire
 

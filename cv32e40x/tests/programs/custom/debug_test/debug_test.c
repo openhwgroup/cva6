@@ -192,7 +192,7 @@ int main(int argc, char *argv[])
     printf("\nBasic test checking debug functionality.\n");
 
     printf("------------------------\n");
-    printf(" Test1: check initilazation values\n");
+    printf(" Test1: check initialization values\n");
     //check_debug_status(0,0);
 
     temp1 = 0xFFFFFFFF;

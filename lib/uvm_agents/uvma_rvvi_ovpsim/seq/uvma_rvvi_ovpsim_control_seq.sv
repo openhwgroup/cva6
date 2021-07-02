@@ -51,22 +51,37 @@ task uvma_rvvi_ovpsim_control_seq_c::step_rm(uvma_rvfi_instr_seq_item_c#(ILEN,XL
 
    // Send sequence item to step the RM
    uvma_rvvi_ovpsim_control_seq_item_c#(ILEN,XLEN) step_rm_seq;
+   bit [XLEN-1:0] csr_mip;
+   bit [XLEN-1:0] csr_dcsr;
 
    step_rm_seq = uvma_rvvi_ovpsim_control_seq_item_c#(ILEN,XLEN)::type_id::create("step_rm_seq");
    start_item(step_rm_seq);
+   csr_mip  = rvfi_instr.csrs["mip"].get_csr_retirement_data();
+   csr_dcsr = rvfi_instr.csrs["dcsr"].get_csr_retirement_data();
+
    assert(step_rm_seq.randomize() with {
       action == UVMA_RVVI_STEPI;
+
       intr == rvfi_instr.insn_interrupt;
-      halt == rvfi_instr.insn_dbg_req;
+      dbg == (rvfi_instr.dbg && rvfi_instr.intr);
+      
+      dcsr_cause == csr_dcsr[8:6];
+
       nmi  == rvfi_instr.insn_nmi;
       intr_id == rvfi_instr.insn_interrupt_id;
       
-      mip == rvfi_instr.csr_mip;      
+      mip == csr_mip;      
       rd1_addr == rvfi_instr.rd1_addr;
       rd1_wdata == rvfi_instr.rd1_wdata;
+
+      mem_addr == rvfi_instr.mem_addr;
+      mem_rdata == rvfi_instr.mem_rdata;
+      mem_rmask == rvfi_instr.mem_rmask;
    });
    finish_item(step_rm_seq);
 
 endtask : step_rm
 
 `endif // __UVMA_RVVI_OVPSIM_CONTROL_SEQ_SV__
+
+

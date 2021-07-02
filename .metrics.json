@@ -18,13 +18,13 @@
         "wavesCmd": "cd cv32e40p/sim/uvmt; make all_compliance; make comp CV_CORE=cv32e40p SIMULATOR=dsim DSIM_WORK=/mux-flow/build/repo/dsim_work DSIM_RESULTS=/mux-flow/build/results WAVES=1"
       },
       {
-        "name":     "uvmt_cv32e40x",
+        "name":     "uvmt_cv32e40x",        
         "image":    "gcr.io/openhwgroup-metrics-project/cv32-simulation-tools:20210621.1.0-29062021",
         "cmd":      "cd cv32e40x/sim/uvmt; make corev-dv CV_CORE=cv32e40x SIMULATOR=dsim DSIM_WORK=/mux-flow/build/repo/dsim_work DSIM_RESULTS=/mux-flow/build/results; make comp CV_CORE=cv32e40x SIMULATOR=dsim DSIM_WORK=/mux-flow/build/repo/dsim_work DSIM_RESULTS=/mux-flow/build/results",
         "wavesCmd": "cd cv32e40x/sim/uvmt; make corev-dv CV_CORE=cv32e40x SIMULATOR=dsim DSIM_WORK=/mux-flow/build/repo/dsim_work DSIM_RESULTS=/mux-flow/build/results; make comp CV_CORE=cv32e40x SIMULATOR=dsim DSIM_WORK=/mux-flow/build/repo/dsim_work DSIM_RESULTS=/mux-flow/build/results WAVES=1"
       },
       {
-        "name":     "uvmt_cv32e40x_compliance_build",
+        "name":     "uvmt_cv32e40x_compliance_build",        
         "image":    "gcr.io/openhwgroup-metrics-project/cv32-simulation-tools:20210621.1.0-29062021",
         "cmd":      "cd cv32e40x/sim/uvmt; make all_compliance; make comp CV_CORE=cv32e40x SIMULATOR=dsim DSIM_WORK=/mux-flow/build/repo/dsim_work DSIM_RESULTS=/mux-flow/build/results",
         "wavesCmd": "cd cv32e40x/sim/uvmt; make all_compliance; make comp CV_CORE=cv32e40x SIMULATOR=dsim DSIM_WORK=/mux-flow/build/repo/dsim_work DSIM_RESULTS=/mux-flow/build/results WAVES=1"
@@ -141,17 +141,6 @@
         "resultsDir": "/mux-flow/build/results",
         "builds":    ["uvmt_cv32e40x"],
         "listCmd":   "/mux-flow/build/repo/bin/cv_regress --core=cv32e40x --cfg=default --file=cv32e40x_ci_check --metrics --outfile=/mux-flow/build/repo/cv32e40x_ci_check.json",
-        "listFile":  "/mux-flow/build/repo/cv32e40x_ci_check.json"
-      }
-    },
-    {
-      "name":        "cv32e40x_ci_check_dev_rvvi",
-      "description": "Commit sanity for CV32E40X using dynamic test generation and the RVVI scoreboard",
-      "verbose":     "true",
-      "tests": {
-        "resultsDir": "/mux-flow/build/results",
-        "builds":    ["uvmt_cv32e40x"],
-        "listCmd":   "/mux-flow/build/repo/bin/cv_regress --core=cv32e40x --cfg=default --file=cv32e40x_ci_check --metrics --outfile=/mux-flow/build/repo/cv32e40x_ci_check.json --makearg=USE_RVVI=1",
         "listFile":  "/mux-flow/build/repo/cv32e40x_ci_check.json"
       }
     },
