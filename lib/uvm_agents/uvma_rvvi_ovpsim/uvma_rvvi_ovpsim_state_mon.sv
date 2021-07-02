@@ -28,6 +28,8 @@
 class uvma_rvvi_ovpsim_state_mon_c#(int ILEN=uvma_rvvi_pkg::DEFAULT_ILEN,
                                     int XLEN=uvma_rvvi_pkg::DEFAULT_XLEN) extends uvma_rvvi_state_mon_c#(ILEN,XLEN);
 
+   int unsigned rvvi_order = 1;
+
    `uvm_component_utils_begin(uvma_rvvi_ovpsim_state_mon_c)      
    `uvm_component_utils_end
    
@@ -101,6 +103,15 @@ task uvma_rvvi_ovpsim_state_mon_c::monitor_rvvi_state();
       // Additionally fields like order should not be incremented
       if (rvvi_ovpsim_cntxt.ovpsim_io_vif.haltreq) begin
          mon_trn.halt = 1;
+      end
+   
+      // FIXME:strichmo:hack using order incrementing as a proxy for valid until we better fix valid
+      if (mon_trn.order == rvvi_order) begin
+         mon_trn.valid = 1;
+         rvvi_order++;
+      end
+      else begin
+         mon_trn.valid = 0;
       end
 
       foreach (mon_trn.x[i])

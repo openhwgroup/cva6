@@ -28,8 +28,11 @@ class uvma_rvvi_ovpsim_control_seq_item_c#(int ILEN=uvma_rvvi_pkg::DEFAULT_ILEN,
    // Set to signal this instructions is first instruction of interrupt handler
    rand bit intr;
 
-   // Set to signal entry into debugger handler
-   rand bit halt;
+   // Set to signal entry into debug handler
+   rand bit dbg;
+
+   // If the debug handler is entered, this enum is valid and specifies the DCSR CAUSE of why debug was entered
+   rand dcsr_cause_t dcsr_cause;
 
    // Set to signal entry into NMI handler
    rand bit nmi;
@@ -53,7 +56,8 @@ class uvma_rvvi_ovpsim_control_seq_item_c#(int ILEN=uvma_rvvi_pkg::DEFAULT_ILEN,
 
    `uvm_object_param_utils_begin(uvma_rvvi_ovpsim_control_seq_item_c#(ILEN,XLEN))      
       `uvm_field_int(intr, UVM_DEFAULT)
-      `uvm_field_int(halt, UVM_DEFAULT)
+      `uvm_field_int(dbg, UVM_DEFAULT)
+      `uvm_field_enum(dcsr_cause_t, dcsr_cause, UVM_DEFAULT)
       `uvm_field_int(nmi, UVM_DEFAULT)
       `uvm_field_int(mip, UVM_DEFAULT)
       `uvm_field_int(intr_id, UVM_DEFAULT)

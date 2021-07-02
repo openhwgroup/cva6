@@ -495,5 +495,16 @@ bit [CSR_ADDR_WL-1:0] csr_name2addr[string] = '{
   "vlenb"          : VLENB
 };
 
+typedef enum bit[2:0] {
+  CAUSE_RSVD0        = 3'h0,
+  CAUSE_EBREAK       = 3'h1,
+  CAUSE_TRIGGER      = 3'h2,
+  CAUSE_HALTREQ      = 3'h3,
+  CAUSE_STEP         = 3'h4,
+  CAUSE_RESETHALTREQ = 3'h5,
+  CAUSE_RSVD6        = 3'h6,
+  CAUSE_RSVD7        = 3'h7  
+} dcsr_cause_t;
+
 `endif // __UVMA_CORE_CNTRL_TDEFS_SV__
 

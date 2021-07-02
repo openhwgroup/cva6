@@ -143,8 +143,9 @@ task uvma_rvvi_ovpsim_drv_c::stepi(REQ req);
       rvvi_ovpsim_cntxt.ovpsim_io_vif.deferint = 1'b1;
       @(posedge rvvi_ovpsim_cntxt.ovpsim_bus_vif.Clk);
    end
-   
-   if (rvvi_ovpsim_seq_item.halt) begin
+
+   // External halt request to debug mode
+   if (rvvi_ovpsim_seq_item.dbg && rvvi_ovpsim_seq_item.dcsr_cause == CAUSE_HALTREQ) begin
       rvvi_ovpsim_cntxt.ovpsim_io_vif.haltreq  = 1'b1;
       rvvi_ovpsim_cntxt.control_vif.stepi();
       @(rvvi_ovpsim_cntxt.state_vif.notify);
@@ -152,12 +153,22 @@ task uvma_rvvi_ovpsim_drv_c::stepi(REQ req);
       @(posedge rvvi_ovpsim_cntxt.ovpsim_bus_vif.Clk);
    end
 
-   // Step the ISS and wait for ISS to complete
+   // Single-step - debug re-entry seems to need an extra instruction cycle on control interface
+   if (rvvi_ovpsim_seq_item.dbg && rvvi_ovpsim_seq_item.dcsr_cause == CAUSE_STEP) begin
+      rvvi_ovpsim_cntxt.control_vif.stepi();
+      @(rvvi_ovpsim_cntxt.state_vif.notify);
+      @(posedge rvvi_ovpsim_cntxt.ovpsim_bus_vif.Clk);
+   end
+
+   // Update irq_i to match mip CSR
    rvvi_ovpsim_cntxt.ovpsim_io_vif.irq_i = rvvi_ovpsim_seq_item.mip;
+
+   // If the RVFI instruction wrote to a GPR, update it in the volatile backdoor register back
+   // so the ISS can update voltaile reads (e.g. mcycle, I/O registers, etc.)
    if (rvvi_ovpsim_seq_item.rd1_addr != 0)
       rvvi_ovpsim_cntxt.state_vif.GPR_rtl[rvvi_ovpsim_seq_item.rd1_addr] = rvvi_ovpsim_seq_item.rd1_wdata;
-
    
+   // Step the ISS and wait for ISS to complete   
    rvvi_ovpsim_cntxt.control_vif.stepi();
    @(rvvi_ovpsim_cntxt.state_vif.notify);
 
