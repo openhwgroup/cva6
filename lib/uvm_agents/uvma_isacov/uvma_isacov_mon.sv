@@ -139,12 +139,18 @@ function void uvma_isacov_mon_c::write_rvfi_instr(uvma_rvfi_instr_seq_item_c#(IL
   
   mon_trn.instr.c_immj = dasm_rvc_j_imm(instr);
   mon_trn.instr.c_rs1p = instr[9:7];  // TODO use disassembler
-  mon_trn.instr.c_rdp = instr[4:2];  // TODO use disassembler
-  // TODO make sure RVC instrs don't arrive as decompressed instrs
+  mon_trn.instr.c_rdp = instr[4:2];  // TODO use disassembler  
   
+  // Cast CSR address unless illegal CSR
   if (mon_trn.instr.group == CSR_GROUP) begin
-    if (!$cast(mon_trn.instr.csr, dasm_csr(instr))) begin
-      `uvm_warning("ISACOVMON", $sformatf("CSR: 0x%03x unmappable", dasm_csr(instr)));
+    if (!$cast(mon_trn.instr.csr, dasm_csr(instr))) begin      
+      // If trap is signaled then throw out this instruction
+      if (rvfi_instr.trap)
+        return;
+
+      // Consider it a fatal error to have unmapped CSR,
+      // this implies we need to update CSR enumerations
+      `uvm_fatal("ISACOVMON", $sformatf("CSR: 0x%03x unmappable", dasm_csr(instr)));
     end
   end
 
