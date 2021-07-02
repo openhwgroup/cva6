@@ -175,19 +175,13 @@ task uvma_rvfi_instr_mon_c::monitor_rvfi_instr();
          end
 
          // Determine if interrupt is nmi or interrupt
-         mon_trn.insn_nmi        = 0;
-         mon_trn.insn_dbg_req    = 0;
+         mon_trn.insn_nmi        = 0;         
          mon_trn.insn_interrupt  = 0;
    
-         if (mon_trn.intr) begin
+         if (mon_trn.intr && !mon_trn.dbg) begin
              bit [XLEN-1:0] csr_mcause = mon_trn.csrs["mcause"].get_csr_retirement_data();
 
-            if (mon_trn.dbg) begin
-               bit [XLEN-1:0] csr_dcsr = mon_trn.csrs["dcsr"].get_csr_retirement_data();
-               if (csr_dcsr[8:6] == 3'h3)
-                  mon_trn.insn_dbg_req = 1;
-            end
-            else if (cfg.nmi_handler_enabled && mon_trn.pc_rdata == cfg.nmi_handler_addr)
+            if (cfg.nmi_handler_enabled && mon_trn.pc_rdata == cfg.nmi_handler_addr)
                mon_trn.insn_nmi = 1;
             else if (csr_mcause[31]) begin               
                mon_trn.insn_interrupt    = 1;

@@ -23,7 +23,8 @@
 class uvme_cv32e40x_core_sb_c extends uvm_scoreboard;   
    
    // Fail-safe to kill the test with fatal error if the reorder queue gets to a certain size
-   localparam RVFI_INSTR_REORDER_QUEUE_SIZE_LIMIT = 16;
+   localparam RVFI_INSTR_REORDER_QUEUE_SIZE_LIMIT = 2;
+   localparam RVFI_INSTR_QUEUE_SIZE_LIMIT = 2;
 
    // Objects
    uvme_cv32e40x_cfg_c    cfg;
@@ -192,6 +193,8 @@ function void uvme_cv32e40x_core_sb_c::print_instr_checked_stats();
 endfunction : print_instr_checked_stats
 
 function void uvme_cv32e40x_core_sb_c::write_core_sb_rvfi_instr(uvma_rvfi_instr_seq_item_c#(ILEN,XLEN) rvfi_instr);
+
+   // Skip if scoreboard disabled
    if (!cfg.scoreboarding_enabled)
       return;
 
@@ -226,10 +229,16 @@ function void uvme_cv32e40x_core_sb_c::write_core_sb_rvfi_instr(uvma_rvfi_instr_
       next_rvfi_order++;      
    end
 
-   // Fatal check for size limit
+   // Fatal check for reorder size limit
    if (rvfi_instr_reorder_q.size() >= RVFI_INSTR_REORDER_QUEUE_SIZE_LIMIT) begin
-      `uvm_fatal("CORE_SB", $sformatf("The RVFI reorder instruction queue is too large, size: %0d, next_rvfi_order: %0d", 
+      `uvm_error("CORE_SB", $sformatf("The RVFI reorder instruction queue is too large, size: %0d, next_rvfi_order: %0d", 
                                       rvfi_instr_reorder_q.size(), next_rvfi_order));
+   end
+
+   // Fatal check for rvfi queue size limit
+   if (rvfi_instr_q.size() >= RVFI_INSTR_QUEUE_SIZE_LIMIT) begin
+      `uvm_error("CORE_SB", $sformatf("The RVFI instruction queue is too large, size: %0d, next_rvfi_order: %0d", 
+                                      rvfi_instr_q.size(), next_rvfi_order));
    end
 
    check_instr_queue();
