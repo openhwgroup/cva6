@@ -23,7 +23,8 @@ dependencies:
   tech_cells_generic: { git: "https://github.com/pulp-platform/tech_cells_generic.git", version: 0.2.3 }
   apb_node: { git: "https://github.com/pulp-platform/apb_node.git", version: 0.1.1 }
   apb_gpio: { git: "https://github.com/pulp-platform/apb_gpio.git", rev: "0e9f142f2f11278445c953ad011fce1c7ed85b66" }
-
+  hyperbus: { git: "git@iis-git.ee.ethz.ch:bslk/hyperbus.git", rev: "4da94a0cf41bfd7386e655ab37afa5575a336033" }
+  register_interface:  { git: "https://github.com/pulp-platform/register_interface.git", version: 0.2.2  }
 
 export_include_dirs:
   - include/

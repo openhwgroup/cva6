@@ -39,7 +39,7 @@ module ariane_tb;
     logic rst_ni;
     logic rtc_i;
 
-    parameter  USE_HYPER_MODELS    = 0;
+    parameter  USE_HYPER_MODELS    = 1;
 
     wire [7:0]            w_hyper_dq0    ;
     wire [7:0]            w_hyper_dq1    ;
