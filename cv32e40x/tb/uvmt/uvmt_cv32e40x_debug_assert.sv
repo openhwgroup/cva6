@@ -469,12 +469,11 @@ module uvmt_cv32e40x_debug_assert
             debug_cause_pri <= 3'b000;
         end else begin
             // Debug evaluated in decode state with valid instructions only
-/* TODO:ropeders
-            if(cov_assert_if.ctrl_fsm_cs == cv32e40x_pkg::DECODE & !cov_assert_if.debug_mode_q) begin
-                if(cov_assert_if.is_decoding & cov_assert_if.id_stage_instr_valid_i) begin
+            if((cov_assert_if.ctrl_fsm_cs == cv32e40x_pkg::FUNCTIONAL) && !cov_assert_if.debug_mode_q) begin
+                if(cov_assert_if.is_decoding && cov_assert_if.id_stage_instr_valid_i) begin
                     if(cov_assert_if.trigger_match_i)
                         debug_cause_pri <= 3'b010;
-                    else if((cov_assert_if.dcsr_q[15]) & (cov_assert_if.is_ebreak | cov_assert_if.is_cebreak))
+                    else if(cov_assert_if.dcsr_q[15] && (cov_assert_if.is_ebreak || cov_assert_if.is_cebreak))
                         debug_cause_pri <= 3'b001;
                     else if(cov_assert_if.debug_req_i) 
                         debug_cause_pri <= 3'b011;
@@ -482,17 +481,14 @@ module uvmt_cv32e40x_debug_assert
                         debug_cause_pri <= 3'b100;
                     else
                         debug_cause_pri <= 3'b000;
-
                 end
-
-            end else if(cov_assert_if.ctrl_fsm_cs == cv32e40x_pkg::DBG_TAKEN_IF) begin
+            end else if(cov_assert_if.ctrl_fsm_cs == cv32e40x_pkg::DEBUG_TAKEN) begin
                 if(cov_assert_if.debug_req_i) begin
                     debug_cause_pri <= 3'b011;
                 end else if(cov_assert_if.dcsr_q[2]) begin
                     debug_cause_pri <= 3'b100;
                 end
             end
-*/
         end
     end
 
