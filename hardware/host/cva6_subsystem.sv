@@ -572,26 +572,24 @@ module cva6_subsytem
   // AXI hyperbus Slave
   // ---------------
 
-//  `AXI_ASSIGN(apb_axi_master,master[ariane_soc::APB_SLVS])
-    localparam RegAw  = 32;
-    localparam RegDw  = 32;
+  localparam RegAw  = 32;
+  localparam RegDw  = 32;
 
-    typedef logic [RegAw-1:0]   reg_addr_t;
-    typedef logic [RegDw-1:0]   reg_data_t;
-    typedef logic [RegDw/8-1:0] reg_strb_t;
+  typedef logic [RegAw-1:0]   reg_addr_t;
+  typedef logic [RegDw-1:0]   reg_data_t;
+  typedef logic [RegDw/8-1:0] reg_strb_t;
 
-    `REG_BUS_TYPEDEF_REQ(reg_req_t, reg_addr_t, reg_data_t, reg_strb_t)
-    `REG_BUS_TYPEDEF_RSP(reg_rsp_t, reg_data_t)
+  `REG_BUS_TYPEDEF_REQ(reg_req_t, reg_addr_t, reg_data_t, reg_strb_t)
+  `REG_BUS_TYPEDEF_RSP(reg_rsp_t, reg_data_t)
 
-    reg_req_t   reg_req;
-    reg_rsp_t   reg_rsp;
+  reg_req_t   reg_req;
+  reg_rsp_t   reg_rsp;
 
-assign reg_req.addr  = '0;
-assign reg_req.write = '0;
-assign reg_req.wdata = '0;
-assign reg_req.wstrb = '0;
-assign reg_req.valid = '0;    
-   // typedef axi_pkg::xbar_rule_32_t rule_t;
+  assign reg_req.addr  = '0;
+  assign reg_req.write = '0;
+  assign reg_req.wdata = '0;
+  assign reg_req.wstrb = '0;
+  assign reg_req.valid = '0;    
 
   ariane_axi_soc::req_t    axi_hyper_req;
   ariane_axi_soc::resp_t   axi_hyper_rsp;
@@ -617,7 +615,7 @@ assign reg_req.valid = '0;
     wire  [7:0] hyper_dq_wire;
 
     wire        hyper_reset_n_wire;
-       // modell
+   
     tristate_shim i_tristate_shim_rwds (
         .out_ena_i  ( hyper_rwds_oe   ),
         .out_i      ( hyper_rwds_o    ),
@@ -634,22 +632,22 @@ assign reg_req.valid = '0;
         );
     end
    hyperbus #(
-        .NumChips       ( 2           ),
-        .AxiAddrWidth   ( AXI_ADDRESS_WIDTH        ),
-        .AxiDataWidth   ( AXI_DATA_WIDTH           ),
-        .AxiIdWidth     ( ariane_soc::IdWidthSlave ),
+        .NumChips       ( 2                           ),
+        .AxiAddrWidth   ( AXI_ADDRESS_WIDTH           ),
+        .AxiDataWidth   ( AXI_DATA_WIDTH              ),
+        .AxiIdWidth     ( ariane_soc::IdWidthSlave    ),
         .axi_req_t      ( ariane_axi_soc::req_t       ),
         .axi_rsp_t      ( ariane_axi_soc::resp_t      ),
         .axi_w_chan_t   ( ariane_axi_soc::w_chan_t    ),
-        .RegAddrWidth   ( RegAw       ),
-        .RegDataWidth   ( RegDw       ),
-        .reg_req_t      ( reg_req_t   ),
-        .reg_rsp_t      ( reg_rsp_t   ),
-        .axi_rule_t     ( axi_pkg::xbar_rule_32_t ),//ariane_soc::addr_map_rule_t      ),
-        .RxFifoLogDepth ( 4           ),
-        .TxFifoLogDepth ( 4           ),
-        .RstChipBase    ( 'hC100_3000 ),  // Base address for all chips
-        .RstChipSpace   ( 'h10000    )   // 64 KiB: Current maximum HyperBus device size
+        .RegAddrWidth   ( RegAw                       ),
+        .RegDataWidth   ( RegDw                       ),
+        .reg_req_t      ( reg_req_t                   ),
+        .reg_rsp_t      ( reg_rsp_t                   ),
+        .axi_rule_t     ( ariane_soc::addr_map_rule_t ),
+        .RxFifoLogDepth ( 4                           ),
+        .TxFifoLogDepth ( 4                           ),
+        .RstChipBase    ( 'hC100_3000                 ),  // Base address for all chips
+        .RstChipSpace   ( 'h800000                    )   // 64 KiB: Current maximum HyperBus device size
 
     ) axi_hyperbus (
         .clk_phy_i              ( clk_i                 ),
