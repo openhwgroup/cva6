@@ -320,7 +320,7 @@ module host_domain
          .axi_rule_t     ( ariane_soc::addr_map_rule_t ),
          .RxFifoLogDepth ( 4                           ),
          .TxFifoLogDepth ( 4                           ),
-         .RstChipBase    ( 'hC100_3000                 ),  // Base address for all chips
+         .RstChipBase    ( 'h8000_0000                 ),  // Base address for all chips
          .RstChipSpace   ( 'h800000                    )   // 8 MB
      ) axi_hyperbus (
          .clk_phy_i              ( clk_i                 ),

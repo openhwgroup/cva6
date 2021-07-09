@@ -594,71 +594,72 @@ module cva6_subsytem
 
   ariane_soc::addr_map_rule_t [ariane_soc::NB_PERIPHERALS-1:0] addr_map;
 
-  assign addr_map[0] = '{
-    idx:  0,
+ assign addr_map[ariane_soc::Debug] = '{
+    idx:  ariane_soc::Debug,
     start_addr: ariane_soc::DebugBase,
     end_addr:   ariane_soc::DebugBase    + ariane_soc::DebugLength  
   };
-  assign addr_map[1] = '{ 
-    idx:  1,
+  assign addr_map[ariane_soc::ROM] = '{ 
+    idx:  ariane_soc::ROM,
     start_addr: ariane_soc::ROMBase,
     end_addr:   ariane_soc::ROMBase      + ariane_soc::ROMLength  
   };
-  assign addr_map[2] = '{ 
-    idx:  2,
+  assign addr_map[ariane_soc::CLINT] = '{ 
+    idx:  ariane_soc::CLINT,
     start_addr: ariane_soc::CLINTBase,
     end_addr:   ariane_soc::CLINTBase    + ariane_soc::CLINTLength  
   };
-  assign addr_map[3] = '{
-    idx:  3,
+  assign addr_map[ariane_soc::PLIC] = '{
+    idx:  ariane_soc::PLIC,
     start_addr: ariane_soc::PLICBase,
     end_addr:   ariane_soc::PLICBase     + ariane_soc::PLICLength  
   };
-  assign addr_map[4] = '{ 
-    idx:  4,
+  assign addr_map[ariane_soc::UART] = '{ 
+    idx:  ariane_soc::UART,
     start_addr: ariane_soc::UARTBase,
     end_addr:   ariane_soc::UARTBase     + ariane_soc::UARTLength  
   };
-  assign addr_map[5] = '{ 
-    idx:  5,
+  assign addr_map[ariane_soc::Timer] = '{ 
+    idx:  ariane_soc::Timer,
     start_addr: ariane_soc::TimerBase,
     end_addr:   ariane_soc::TimerBase    + ariane_soc::TimerLength  
   };
-  assign addr_map[6] = '{
-    idx:  6,
+  assign addr_map[ariane_soc::SPI] = '{
+    idx:  ariane_soc::SPI,
     start_addr: ariane_soc::SPIBase,
     end_addr:   ariane_soc::SPIBase      + ariane_soc::SPILength  
   };
-  assign addr_map[7] = '{ 
-    idx:  7,
+  assign addr_map[ariane_soc::Ethernet] = '{ 
+    idx:  ariane_soc::Ethernet,
     start_addr: ariane_soc::EthernetBase,
     end_addr:   ariane_soc::EthernetBase + ariane_soc::EthernetLength  
   };
-  assign addr_map[8] = '{ 
-    idx:  8,
+  assign addr_map[ariane_soc::GPIO] = '{ 
+    idx:  ariane_soc::GPIO,
     start_addr: ariane_soc::GPIOBase,
     end_addr:   ariane_soc::GPIOBase     + ariane_soc::GPIOLength  
   };
-  assign addr_map[9] = '{
-    idx:  9,
-    start_addr: ariane_soc::DRAMBase,
-    end_addr:   ariane_soc::DRAMBase     + ariane_soc::DRAMLength  
-  };
-  assign addr_map[10] = '{ 
-    idx:  10,
+  assign addr_map[ariane_soc::HYAXI] = '{ 
+    idx:  ariane_soc::HYAXI,
+    start_addr: ariane_soc::HYAXIBase,
+    end_addr:   ariane_soc::HYAXIBase     + ariane_soc::HYAXILength  
+  }; 
+  assign addr_map[ariane_soc::L2SPM] = '{ 
+    idx:  ariane_soc::L2SPM,
     start_addr: ariane_soc::L2SPMBase,
     end_addr:   ariane_soc::L2SPMBase     + ariane_soc::L2SPMLength  
   };
-  assign addr_map[11] = '{ 
-    idx:  11,
+  assign addr_map[ariane_soc::APB_SLVS] = '{ 
+    idx:  ariane_soc::APB_SLVS,
     start_addr: ariane_soc::APB_SLVSBase,
     end_addr:   ariane_soc::APB_SLVSBase     + ariane_soc::APB_SLVSLength  
   };
-  assign addr_map[12] = '{ 
-    idx:  12,
-    start_addr: ariane_soc::HYAXIBase,
-    end_addr:   ariane_soc::HYAXIBase     + ariane_soc::HYAXILength  
+ assign addr_map[ariane_soc::DRAM] = '{
+    idx:  ariane_soc::DRAM,
+    start_addr: ariane_soc::DRAMBase,
+    end_addr:   ariane_soc::DRAMBase     + ariane_soc::DRAMLength  
   };
+
 
   axi_xbar_intf #(
     .AXI_USER_WIDTH         ( AXI_USER_WIDTH                        ),

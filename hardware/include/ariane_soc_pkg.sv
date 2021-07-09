@@ -34,10 +34,10 @@ package ariane_soc;
   localparam IdWidthSlave = IdWidth + $clog2(NrSlaves);
 
   typedef enum int unsigned {
-    HYAXI    = 12,
+    DRAM     = 12,
     APB_SLVS = 11,
     L2SPM    = 10,
-    DRAM     = 9,
+    HYAXI    = 9,
     GPIO     = 8,
     Ethernet = 7,
     SPI      = 6,
@@ -49,7 +49,7 @@ package ariane_soc;
     Debug    = 0
   } axi_slaves_t;
    
-  localparam NB_PERIPHERALS = HYAXI + 1;
+  localparam NB_PERIPHERALS = DRAM + 1;
 
 
   localparam logic[63:0] DebugLength    = 64'h1000;
@@ -61,11 +61,11 @@ package ariane_soc;
   localparam logic[63:0] SPILength      = 64'h800000;
   localparam logic[63:0] EthernetLength = 64'h10000;
   localparam logic[63:0] GPIOLength     = 64'h1000;
-  localparam logic[63:0] DRAMLength     = 64'h40000000; // 1GByte of DDR (split between two chips on Genesys2)
+  localparam logic[63:0] HYAXILength    = 64'h800000;   // 8MB of hyperram
   localparam logic[63:0] SRAMLength     = 64'h1800000;  // 24 MByte of SRAM
   localparam logic[63:0] L2SPMLength    = 64'h100000;   // 1MB of scratchpad memory 
   localparam logic[63:0] APB_SLVSLength = 64'h3000;     // 1 slave = 4 KB (UDMA = 2 slaves + arbitrary 3rd slave)
-  localparam logic[63:0] HYAXILength    = 64'h800000;   // 8MB of hyperram
+  localparam logic[63:0] DRAMLength     = 64'h40000000; // 1GByte of DDR (split between two chips on Genesys2)
   // Instantiate AXI protocol checkers
   localparam bit GenProtocolChecker = 1'b0;
 
@@ -79,10 +79,10 @@ package ariane_soc;
     SPIBase      = 64'h2000_0000,
     EthernetBase = 64'h3000_0000,
     GPIOBase     = 64'h4000_0000,
-    DRAMBase     = 64'h8000_0000,
+    HYAXIBase    = 64'h8000_0000,
     L2SPMBase    = 64'hC000_0000,
     APB_SLVSBase = 64'hC100_0000,
-    HYAXIBase    = 64'hC100_3000
+    DRAMBase     = 64'hC100_3000
   } soc_bus_start_t; 
   // Let x = NB_PERIPHERALS: as long as Base(xth slave)+Length(xth slave) is < 1_0000_0000 we can cut the 32 MSBs addresses without any worries. 
 
@@ -97,14 +97,14 @@ package ariane_soc;
     // idempotent region
     NrNonIdempotentRules:  1,
     NonIdempotentAddrBase: {64'b0},
-    NonIdempotentLength:   {DRAMBase},
+    NonIdempotentLength:   {HYAXIBase},
     NrExecuteRegionRules:  3,
-    ExecuteRegionAddrBase: {DRAMBase,   ROMBase,   DebugBase},
-    ExecuteRegionLength:   {DRAMLength, ROMLength, DebugLength},
+    ExecuteRegionAddrBase: {HYAXIBase,   ROMBase,   DebugBase},
+    ExecuteRegionLength:   {HYAXILength, ROMLength, DebugLength},
     // cached region
     NrCachedRegionRules:    1,
-    CachedRegionAddrBase:  {DRAMBase},
-    CachedRegionLength:    {DRAMLength},
+    CachedRegionAddrBase:  {HYAXIBase},
+    CachedRegionLength:    {HYAXILength},
     //  cache config
     Axi64BitCompliant:      1'b1,
     SwapEndianess:          1'b0,
