@@ -14,7 +14,6 @@
 //              Instantiates an AXI-Bus and memories
 
 `include "axi/assign.svh"
-`include "register_interface/typedef.svh"
 
 module cva6_subsytem 
   import axi_pkg::xbar_cfg_t;
@@ -41,7 +40,8 @@ module cva6_subsytem
   input  logic                           cva6_uart_rx_i,
   output logic                           cva6_uart_tx_o,   
   AXI_BUS.Master                         l2_axi_master,
-  AXI_BUS.Master                         apb_axi_master
+  AXI_BUS.Master                         apb_axi_master,
+  AXI_BUS.Master                         hyper_axi_master
 );
      // disable test-enable
   logic        test_en;
@@ -572,125 +572,7 @@ module cva6_subsytem
   // AXI hyperbus Slave
   // ---------------
 
-  localparam RegAw  = 32;
-  localparam RegDw  = 32;
-
-  typedef logic [RegAw-1:0]   reg_addr_t;
-  typedef logic [RegDw-1:0]   reg_data_t;
-  typedef logic [RegDw/8-1:0] reg_strb_t;
-
-  `REG_BUS_TYPEDEF_REQ(reg_req_t, reg_addr_t, reg_data_t, reg_strb_t)
-  `REG_BUS_TYPEDEF_RSP(reg_rsp_t, reg_data_t)
-
-  reg_req_t   reg_req;
-  reg_rsp_t   reg_rsp;
-
-  assign reg_req.addr  = '0;
-  assign reg_req.write = '0;
-  assign reg_req.wdata = '0;
-  assign reg_req.wstrb = '0;
-  assign reg_req.valid = '0;    
-
-  ariane_axi_soc::req_t    axi_hyper_req;
-  ariane_axi_soc::resp_t   axi_hyper_rsp;
-
-
-  axi_slave_connect i_axi_slave_connect_hyper (
-    .axi_req_o(axi_hyper_req),
-    .axi_resp_i(axi_hyper_rsp),
-    .slave(master[ariane_soc::HYAXI])
-  );
-
-    wire  [1:0] hyper_cs_n_wire;
-    wire        hyper_ck_wire;
-    wire        hyper_ck_n_wire;
-    wire        hyper_rwds_o;
-    wire        hyper_rwds_i;
-    wire        hyper_rwds_oe;
-    wire        hyper_rwds_wire;
-
-    wire  [7:0] hyper_dq_i;
-    wire  [7:0] hyper_dq_o;
-    wire        hyper_dq_oe;
-    wire  [7:0] hyper_dq_wire;
-
-    wire        hyper_reset_n_wire;
-   
-    tristate_shim i_tristate_shim_rwds (
-        .out_ena_i  ( hyper_rwds_oe   ),
-        .out_i      ( hyper_rwds_o    ),
-        .in_o       ( hyper_rwds_i    ),
-        .line_io    ( hyper_rwds_wire )
-    );
-
-    for (genvar i = 0; i < 8; i++) begin
-        tristate_shim i_tristate_shim_dq (
-            .out_ena_i  ( hyper_dq_oe       ),
-            .out_i      ( hyper_dq_o    [i] ),
-            .in_o       ( hyper_dq_i    [i] ),
-            .line_io    ( hyper_dq_wire [i] )
-        );
-    end
-   hyperbus #(
-        .NumChips       ( 2                           ),
-        .AxiAddrWidth   ( AXI_ADDRESS_WIDTH           ),
-        .AxiDataWidth   ( AXI_DATA_WIDTH              ),
-        .AxiIdWidth     ( ariane_soc::IdWidthSlave    ),
-        .axi_req_t      ( ariane_axi_soc::req_t       ),
-        .axi_rsp_t      ( ariane_axi_soc::resp_t      ),
-        .axi_w_chan_t   ( ariane_axi_soc::w_chan_t    ),
-        .RegAddrWidth   ( RegAw                       ),
-        .RegDataWidth   ( RegDw                       ),
-        .reg_req_t      ( reg_req_t                   ),
-        .reg_rsp_t      ( reg_rsp_t                   ),
-        .axi_rule_t     ( ariane_soc::addr_map_rule_t ),
-        .RxFifoLogDepth ( 4                           ),
-        .TxFifoLogDepth ( 4                           ),
-        .RstChipBase    ( 'hC100_3000                 ),  // Base address for all chips
-        .RstChipSpace   ( 'h800000                    )   // 64 KiB: Current maximum HyperBus device size
-
-    ) axi_hyperbus (
-        .clk_phy_i              ( clk_i                 ),
-        .rst_phy_ni             ( ndmreset_n            ),
-        .clk_sys_i              ( clk_i                 ),
-        .rst_sys_ni             ( ndmreset_n            ),
-        .test_mode_i            ( '0                    ),
-        .axi_req_i              ( axi_hyper_req         ),
-        .axi_rsp_o              ( axi_hyper_rsp         ),
-        .reg_req_i              ( reg_req               ),
-        .reg_rsp_o              ( reg_rsp               ),
-        .hyper_cs_no            ( hyper_cs_n_wire       ),
-        .hyper_ck_o             ( hyper_ck_wire         ),
-        .hyper_ck_no            ( hyper_ck_n_wire       ),
-        .hyper_rwds_o           ( hyper_rwds_o          ),
-        .hyper_rwds_i           ( hyper_rwds_i          ),
-        .hyper_rwds_oe_o        ( hyper_rwds_oe         ),
-        .hyper_dq_i             ( hyper_dq_i            ),
-        .hyper_dq_o             ( hyper_dq_o            ),
-        .hyper_dq_oe_o          ( hyper_dq_oe           ),
-        .hyper_reset_no         ( hyper_reset_n_wire    )
-    );
-
-
-      s27ks0641 #(
-        /*.mem_file_name ( "s27ks0641.mem"    ),*/
-        .TimingModel   ( "S27KS0641DPBHI020"    )
-    ) i_s27ks0641 (
-      .DQ7           ( hyper_dq_wire[7]      ),
-      .DQ6           ( hyper_dq_wire[6]      ),
-      .DQ5           ( hyper_dq_wire[5]      ),
-      .DQ4           ( hyper_dq_wire[4]      ),
-      .DQ3           ( hyper_dq_wire[3]      ),
-      .DQ2           ( hyper_dq_wire[2]      ),
-      .DQ1           ( hyper_dq_wire[1]      ),
-      .DQ0           ( hyper_dq_wire[0]      ),
-      .RWDS          ( hyper_rwds_wire       ),
-      .CSNeg         ( hyper_cs_n_wire[0]    ),
-      .CK            ( hyper_ck_wire         ),
-      .CKNeg         ( hyper_ck_n_wire       ),
-      .RESETNeg      ( hyper_reset_n_wire    )
-    );
-
+  `AXI_ASSIGN(hyper_axi_master,master[ariane_soc::HYAXI])
 
   // ---------------
   // AXI Xbar

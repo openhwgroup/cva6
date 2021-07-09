@@ -13,6 +13,8 @@
 // Description: Test-harness for Ariane
 //              Instantiates an AXI-Bus and memories
 
+`include "register_interface/typedef.svh"
+
 module host_domain 
   import axi_pkg::xbar_cfg_t;
 #(
@@ -101,8 +103,19 @@ module host_domain
   // GPIOs
   input logic [NUM_GPIO-1:0]       gpio_in,
   output logic [NUM_GPIO-1:0]      gpio_out,
-  output logic [NUM_GPIO-1:0]      gpio_dir
+  output logic [NUM_GPIO-1:0]      gpio_dir,
 
+  // PHY interface
+  output logic [1:0]               axi_hyper_cs_no,
+  output logic                     axi_hyper_ck_o,
+  output logic                     axi_hyper_ck_no,
+  output logic                     axi_hyper_rwds_o,
+  input  logic                     axi_hyper_rwds_i,
+  output logic                     axi_hyper_rwds_oe_o,
+  input  logic [7:0]               axi_hyper_dq_i,
+  output logic [7:0]               axi_hyper_dq_o,
+  output logic                     axi_hyper_dq_oe_o,
+  output logic                     axi_hyper_reset_no
 );
 
    // When changing these parameters, change the L2 size accordingly in ariane_soc_pkg
@@ -117,10 +130,25 @@ module host_domain
                                           // It is hardcoded in the axi2tcdm_wrap module.
 
    localparam NB_UDMA_TCDM_CHANNEL = 2;
+
+   localparam RegAw  = 32;
+   localparam RegDw  = 32;
    
    logic                                 ndmreset_n;
    logic [32*4-1:0]                      s_udma_events;
-   
+ 
+   typedef logic [RegAw-1:0]   reg_addr_t;
+   typedef logic [RegDw-1:0]   reg_data_t;
+   typedef logic [RegDw/8-1:0] reg_strb_t;
+ 
+   `REG_BUS_TYPEDEF_REQ(reg_req_t, reg_addr_t, reg_data_t, reg_strb_t)
+   `REG_BUS_TYPEDEF_RSP(reg_rsp_t, reg_data_t)
+ 
+   reg_req_t   reg_req;
+   reg_rsp_t   reg_rsp;
+
+   ariane_axi_soc::req_t    axi_hyper_req;
+   ariane_axi_soc::resp_t   axi_hyper_rsp;
 
    AXI_BUS #(
      .AXI_ADDR_WIDTH ( AXI_ADDRESS_WIDTH        ),
@@ -136,6 +164,12 @@ module host_domain
      .AXI_USER_WIDTH ( AXI_USER_WIDTH           )
    ) apb_axi_bus();
 
+   AXI_BUS #(
+     .AXI_ADDR_WIDTH ( AXI_ADDRESS_WIDTH        ),
+     .AXI_DATA_WIDTH ( AXI_DATA_WIDTH           ),
+     .AXI_ID_WIDTH   ( ariane_soc::IdWidthSlave ),
+     .AXI_USER_WIDTH ( AXI_USER_WIDTH           )
+   ) hyper_axi_bus();
    
    XBAR_TCDM_BUS axi_bridge_2_interconnect[AXI64_2_TCDM32_N_PORTS]();
    XBAR_TCDM_BUS udma_2_tcdm_channels[NB_UDMA_TCDM_CHANNEL]();
@@ -151,16 +185,17 @@ module host_domain
         .rst_ni,
         .rtc_i,
         .exit_o,
-        .udma_events_i  ( s_udma_events  ),
-        .rst_no         ( ndmreset_n     ),
-        .l2_axi_master  ( l2_axi_bus     ),
-        .apb_axi_master ( apb_axi_bus    ),
-        .cva6_uart_rx_i ( cva6_uart_rx_i ),
-        .cva6_uart_tx_o ( cva6_uart_tx_o )
+        .udma_events_i    ( s_udma_events  ),
+        .rst_no           ( ndmreset_n     ),
+        .l2_axi_master    ( l2_axi_bus     ),
+        .apb_axi_master   ( apb_axi_bus    ),
+        .hyper_axi_master ( hyper_axi_bus  ),
+        .cva6_uart_rx_i   ( cva6_uart_rx_i ),
+        .cva6_uart_tx_o   ( cva6_uart_tx_o )
     );
    
    
-    axi2tcdm_wrap #(
+   axi2tcdm_wrap #(
       .AXI_ID_WIDTH   ( ariane_soc::IdWidthSlave ),
       .AXI_USER_WIDTH ( AXI_USER_WIDTH           ),
       .AXI_ADDR_WIDTH ( AXI_ADDRESS_WIDTH        )
@@ -174,7 +209,7 @@ module host_domain
     );
 
 
-    l2_subsystem #(
+   l2_subsystem #(
       .NB_L2_BANKS        ( NB_L2_BANKS              ),
       .L2_BANK_SIZE       ( L2_BANK_SIZE             ), 
       .L2_BANK_ADDR_WIDTH ( L2_BANK_ADDR_WIDTH       ),
@@ -187,13 +222,13 @@ module host_domain
      );
 
 
-      apb_subsystem #(
+   apb_subsystem #(
        .L2_ADDR_WIDTH  ( L2_MEM_ADDR_WIDTH        ),
        .AXI_ADDR_WIDTH ( AXI_ADDRESS_WIDTH        ),
        .AXI_DATA_WIDTH ( AXI_DATA_WIDTH           ),
        .AXI_USER_WIDTH ( AXI_USER_WIDTH           ),
        .NUM_GPIO       ( NUM_GPIO                 )
-      ) (
+     ) (
       .clk_i                  ( clk_i                          ),
       .rst_ni                 ( ndmreset_n                     ),
       .axi_apb_slave          ( apb_axi_bus                    ),
@@ -256,5 +291,58 @@ module host_domain
 
       );
                      
-   
+
+   assign reg_req.addr  = '0;
+   assign reg_req.write = '0;
+   assign reg_req.wdata = '0;
+   assign reg_req.wstrb = '0;
+   assign reg_req.valid = '0;    
+ 
+ 
+   axi_slave_connect i_axi_slave_connect_hyper (
+     .axi_req_o(axi_hyper_req),
+     .axi_resp_i(axi_hyper_rsp),
+     .slave(hyper_axi_bus)
+   );
+  
+    hyperbus #(
+         .NumChips       ( 2                           ),
+         .AxiAddrWidth   ( AXI_ADDRESS_WIDTH           ),
+         .AxiDataWidth   ( AXI_DATA_WIDTH              ),
+         .AxiIdWidth     ( ariane_soc::IdWidthSlave    ),
+         .axi_req_t      ( ariane_axi_soc::req_t       ),
+         .axi_rsp_t      ( ariane_axi_soc::resp_t      ),
+         .axi_w_chan_t   ( ariane_axi_soc::w_chan_t    ),
+         .RegAddrWidth   ( RegAw                       ),
+         .RegDataWidth   ( RegDw                       ),
+         .reg_req_t      ( reg_req_t                   ),
+         .reg_rsp_t      ( reg_rsp_t                   ),
+         .axi_rule_t     ( ariane_soc::addr_map_rule_t ),
+         .RxFifoLogDepth ( 4                           ),
+         .TxFifoLogDepth ( 4                           ),
+         .RstChipBase    ( 'hC100_3000                 ),  // Base address for all chips
+         .RstChipSpace   ( 'h800000                    )   // 8 MB
+     ) axi_hyperbus (
+         .clk_phy_i              ( clk_i                 ),
+         .rst_phy_ni             ( ndmreset_n            ),
+         .clk_sys_i              ( clk_i                 ),
+         .rst_sys_ni             ( ndmreset_n            ),
+         .test_mode_i            ( '0                    ),
+         .axi_req_i              ( axi_hyper_req         ),
+         .axi_rsp_o              ( axi_hyper_rsp         ),
+         .reg_req_i              ( reg_req               ),
+         .reg_rsp_o              ( reg_rsp               ),
+         .hyper_cs_no            ( axi_hyper_cs_no       ),
+         .hyper_ck_o             ( axi_hyper_ck_o        ),
+         .hyper_ck_no            ( axi_hyper_ck_no       ),
+         .hyper_rwds_o           ( axi_hyper_rwds_o      ),
+         .hyper_rwds_i           ( axi_hyper_rwds_i      ),
+         .hyper_rwds_oe_o        ( axi_hyper_rwds_oe_o   ),
+         .hyper_dq_i             ( axi_hyper_dq_i        ),
+         .hyper_dq_o             ( axi_hyper_dq_o        ),
+         .hyper_dq_oe_o          ( axi_hyper_dq_oe_o     ),
+         .hyper_reset_no         ( axi_hyper_reset_no    )
+     );
+ 
+ 
 endmodule

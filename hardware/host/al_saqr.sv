@@ -44,7 +44,19 @@ module al_saqr
   inout  wire [63:0]       pad_gpio,
   // CVA6 DEBUG UART
   input  logic             cva6_uart_rx_i,
-  output logic             cva6_uart_tx_o   
+  output logic             cva6_uart_tx_o,
+
+  output logic [1:0]       axi_hyper_cs_no,
+  output logic             axi_hyper_ck_o,
+  output logic             axi_hyper_ck_no,
+  output logic             axi_hyper_rwds_o,
+  input  logic             axi_hyper_rwds_i,
+  output logic             axi_hyper_rwds_oe_o,
+  input  logic [7:0]       axi_hyper_dq_i,
+  output logic [7:0]       axi_hyper_dq_o,
+  output logic             axi_hyper_dq_oe_o,
+  output logic             axi_hyper_reset_no
+
 );
 
       
@@ -91,7 +103,18 @@ module al_saqr
       .gpio_dir               ( s_gpio_pad_dir                   ),
 
       .cva6_uart_rx_i         ( cva6_uart_rx_i                   ),
-      .cva6_uart_tx_o         ( cva6_uart_tx_o                   )
+      .cva6_uart_tx_o         ( cva6_uart_tx_o                   ),
+
+      .axi_hyper_cs_no        ( axi_hyper_cs_no                  ),
+      .axi_hyper_ck_o         ( axi_hyper_ck_o                   ),
+      .axi_hyper_ck_no        ( axi_hyper_ck_no                  ),
+      .axi_hyper_rwds_o       ( axi_hyper_rwds_o                 ),
+      .axi_hyper_rwds_i       ( axi_hyper_rwds_i                 ),
+      .axi_hyper_rwds_oe_o    ( axi_hyper_rwds_oe_o              ),
+      .axi_hyper_dq_i         ( axi_hyper_dq_i                   ),
+      .axi_hyper_dq_o         ( axi_hyper_dq_o                   ),
+      .axi_hyper_dq_oe_o      ( axi_hyper_dq_oe_o                ),
+      .axi_hyper_reset_no     ( axi_hyper_reset_no               )
 
     );
 

@@ -56,7 +56,37 @@ module ariane_tb;
     wire                  w_cva6_uart_rx ;
     wire                  w_cva6_uart_tx ;
    
-   
+    wire  [1:0] axi_hyper_cs_n_wire;
+    wire        axi_hyper_ck_wire;
+    wire        axi_hyper_ck_n_wire;
+    wire        axi_hyper_rwds_o;
+    wire        axi_hyper_rwds_i;
+    wire        axi_hyper_rwds_oe;
+    wire        axi_hyper_rwds_wire;
+ 
+    wire  [7:0] axi_hyper_dq_i;
+    wire  [7:0] axi_hyper_dq_o;
+    wire        axi_hyper_dq_oe;
+    wire  [7:0] axi_hyper_dq_wire;
+ 
+    wire        axi_hyper_reset_n_wire;
+    
+    tristate_shim i_tristate_shim_rwds (
+        .out_ena_i  (  axi_hyper_rwds_oe   ),
+        .out_i      (  axi_hyper_rwds_o    ),
+        .in_o       (  axi_hyper_rwds_i    ),
+        .line_io    (  axi_hyper_rwds_wire )
+    );
+ 
+    for (genvar i = 0; i < 8; i++) begin
+        tristate_shim i_tristate_shim_dq (
+            .out_ena_i  ( axi_hyper_dq_oe       ),
+            .out_i      ( axi_hyper_dq_o    [i] ),
+            .in_o       ( axi_hyper_dq_i    [i] ),
+            .line_io    ( axi_hyper_dq_wire [i] )
+        );
+    end
+  
     longint unsigned cycles;
     longint unsigned max_cycles;
 
@@ -81,19 +111,48 @@ module ariane_tb;
         .rst_ni,
         .rtc_i,
         .exit_o,
-        .pad_hyper_dq0     ( w_hyper_dq0         ),
-        .pad_hyper_dq1     ( w_hyper_dq1         ),
-        .pad_hyper_ck      ( w_hyper_ck          ),
-        .pad_hyper_ckn     ( w_hyper_ckn         ),
-        .pad_hyper_csn0    ( w_hyper_csn0        ),
-        .pad_hyper_csn1    ( w_hyper_csn1        ),
-        .pad_hyper_rwds0   ( w_hyper_rwds0       ),
-        .pad_hyper_rwds1   ( w_hyper_rwds1       ),
-        .pad_hyper_reset   ( w_hyper_reset       ),
-        .pad_gpio          ( w_gpios             ),
-        .cva6_uart_rx_i    ( w_cva6_uart_rx      ),
-        .cva6_uart_tx_o    ( w_cva6_uart_tx      )
+        .pad_hyper_dq0       ( w_hyper_dq0            ),
+        .pad_hyper_dq1       ( w_hyper_dq1            ),
+        .pad_hyper_ck        ( w_hyper_ck             ),
+        .pad_hyper_ckn       ( w_hyper_ckn            ),
+        .pad_hyper_csn0      ( w_hyper_csn0           ),
+        .pad_hyper_csn1      ( w_hyper_csn1           ),
+        .pad_hyper_rwds0     ( w_hyper_rwds0          ),
+        .pad_hyper_rwds1     ( w_hyper_rwds1          ),
+        .pad_hyper_reset     ( w_hyper_reset          ),
+        .pad_gpio            ( w_gpios                ),
+        .cva6_uart_rx_i      ( w_cva6_uart_rx         ),
+        .cva6_uart_tx_o      ( w_cva6_uart_tx         ),
+        .axi_hyper_cs_no     ( axi_hyper_cs_n_wire    ),
+        .axi_hyper_ck_o      ( axi_hyper_ck_wire      ),
+        .axi_hyper_ck_no     ( axi_hyper_ck_n_wire    ),
+        .axi_hyper_rwds_o    ( axi_hyper_rwds_o       ),
+        .axi_hyper_rwds_i    ( axi_hyper_rwds_i       ),
+        .axi_hyper_rwds_oe_o ( axi_hyper_rwds_oe      ),
+        .axi_hyper_dq_i      ( axi_hyper_dq_i         ),
+        .axi_hyper_dq_o      ( axi_hyper_dq_o         ),
+        .axi_hyper_dq_oe_o   ( axi_hyper_dq_oe        ),
+        .axi_hyper_reset_no  ( axi_hyper_reset_n_wire )
    );
+
+   s27ks0641 #(
+         /*.mem_file_name ( "s27ks0641.mem"    ),*/
+         .TimingModel   ( "S27KS0641DPBHI020"    )
+     ) i_s27ks0641 (
+       .DQ7           ( axi_hyper_dq_wire[7]      ),
+       .DQ6           ( axi_hyper_dq_wire[6]      ),
+       .DQ5           ( axi_hyper_dq_wire[5]      ),
+       .DQ4           ( axi_hyper_dq_wire[4]      ),
+       .DQ3           ( axi_hyper_dq_wire[3]      ),
+       .DQ2           ( axi_hyper_dq_wire[2]      ),
+       .DQ1           ( axi_hyper_dq_wire[1]      ),
+       .DQ0           ( axi_hyper_dq_wire[0]      ),
+       .RWDS          ( axi_hyper_rwds_wire       ),
+       .CSNeg         ( axi_hyper_cs_n_wire[0]    ),
+       .CK            ( axi_hyper_ck_wire         ),
+       .CKNeg         ( axi_hyper_ck_n_wire       ),
+       .RESETNeg      ( axi_hyper_reset_n_wire    )
+     );
 
 // Hyperram and hyperflash modules
    generate
