@@ -586,10 +586,15 @@ module cva6_subsytem
     reg_req_t   reg_req;
     reg_rsp_t   reg_rsp;
 
-    typedef axi_pkg::xbar_rule_32_t rule_t;
+assign reg_req.addr  = '0;
+assign reg_req.write = '0;
+assign reg_req.wdata = '0;
+assign reg_req.wstrb = '0;
+assign reg_req.valid = '0;    
+   // typedef axi_pkg::xbar_rule_32_t rule_t;
 
   ariane_axi_soc::req_t    axi_hyper_req;
-  ariane_axi_soc::resp_t   axi_hyper_resp;
+  ariane_axi_soc::resp_t   axi_hyper_rsp;
 
 
   axi_slave_connect i_axi_slave_connect_hyper (
@@ -613,7 +618,21 @@ module cva6_subsytem
 
     wire        hyper_reset_n_wire;
        // modell
+    tristate_shim i_tristate_shim_rwds (
+        .out_ena_i  ( hyper_rwds_oe   ),
+        .out_i      ( hyper_rwds_o    ),
+        .in_o       ( hyper_rwds_i    ),
+        .line_io    ( hyper_rwds_wire )
+    );
 
+    for (genvar i = 0; i < 8; i++) begin
+        tristate_shim i_tristate_shim_dq (
+            .out_ena_i  ( hyper_dq_oe       ),
+            .out_i      ( hyper_dq_o    [i] ),
+            .in_o       ( hyper_dq_i    [i] ),
+            .line_io    ( hyper_dq_wire [i] )
+        );
+    end
    hyperbus #(
         .NumChips       ( 2           ),
         .AxiAddrWidth   ( AXI_ADDRESS_WIDTH        ),
@@ -626,11 +645,11 @@ module cva6_subsytem
         .RegDataWidth   ( RegDw       ),
         .reg_req_t      ( reg_req_t   ),
         .reg_rsp_t      ( reg_rsp_t   ),
-        .axi_rule_t     ( rule_t      ),
+        .axi_rule_t     ( axi_pkg::xbar_rule_32_t ),//ariane_soc::addr_map_rule_t      ),
         .RxFifoLogDepth ( 4           ),
         .TxFifoLogDepth ( 4           ),
         .RstChipBase    ( 'hC100_3000 ),  // Base address for all chips
-        .RstChipSpace   ( 'h800000    )   // 64 KiB: Current maximum HyperBus device size
+        .RstChipSpace   ( 'h10000    )   // 64 KiB: Current maximum HyperBus device size
 
     ) axi_hyperbus (
         .clk_phy_i              ( clk_i                 ),
@@ -754,6 +773,11 @@ module cva6_subsytem
     idx:  11,
     start_addr: ariane_soc::APB_SLVSBase,
     end_addr:   ariane_soc::APB_SLVSBase     + ariane_soc::APB_SLVSLength  
+  };
+  assign addr_map[12] = '{ 
+    idx:  12,
+    start_addr: ariane_soc::HYAXIBase,
+    end_addr:   ariane_soc::HYAXIBase     + ariane_soc::HYAXILength  
   };
 
   axi_xbar_intf #(
