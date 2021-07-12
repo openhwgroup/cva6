@@ -51,7 +51,7 @@ module fpu_wrap import ariane_pkg::*; (
 
     // Features (enabled formats, vectors etc.)
     localparam fpnew_pkg::fpu_features_t FPU_FEATURES = '{
-      Width:         64,
+      Width:         riscv::XLEN, // parameterized using XLEN
       EnableVectors: ariane_pkg::XFVEC,
       EnableNanBox:  1'b1,
       FpFmtMask:     {RVF, RVD, XF16, XF8, XF16ALT},
