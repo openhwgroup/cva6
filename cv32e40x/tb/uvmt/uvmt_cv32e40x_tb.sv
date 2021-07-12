@@ -542,12 +542,6 @@ bind cv32e40x_wrapper
     */
    initial begin : test_bench_entry_point
 
-	 `ifdef PULP
-		 `ifdef NO_PULP
-			 $fatal("%m: FATAL ERROR: cannot define both PULP and NO_PULP.\n");
-		 `endif
-	 `endif
-
      // Specify time format for simulation (units_number, precision_number, suffix_string, minimum_field_width)
      $timeformat(-9, 3, " ns", 8);
       

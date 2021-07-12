@@ -14,12 +14,8 @@ _start:
 .globl _start_main
 .section .text
 _start_main:
-
-	#ifdef NO_PULP
+	
 	#define EXP_MISA 0x40001104
-	#else
-	#define EXP_MISA 0x40801104
-	#endif
 
 ###############################################################################
 #
