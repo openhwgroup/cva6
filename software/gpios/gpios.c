@@ -20,6 +20,7 @@
 
 #include <stdio.h>
 #include <stdint.h>
+#include "utils.h"
 #include "../common/encoding.h"
 #define BUFFER_SIZE 32
 #define ARCHI_GPIO_ADDR 0xC1002000

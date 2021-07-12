@@ -20,6 +20,7 @@
 
 #include <stdio.h>
 #include <stdint.h>
+#include "utils.h"
 #include "./hyperbus_test.h"
 #include "../common/encoding.h"
 #define BUFFER_SIZE 32

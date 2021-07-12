@@ -21,13 +21,13 @@
 //#include "util.h"
 #include <stdio.h>
 #include <stdlib.h>
+#include "utils.h"
 #define N 20
 
 const int RESULT_FIB[N] = {0, 1, 1, 2, 3, 5, 8, 13, 21, 34, 55, 89, 144, 233, 377, 610, 987, 1597, 2584, 4181};
 
 int main(int argc, char const *argv[]) {
   int * b;
-  b=0xC1003080;
   int i;
   b[0]=0;
   b[1]=1;

@@ -12,7 +12,7 @@
 // Date: Unknown
 // Description: This module takes data over UART and prints them to the console
 //              A string is printed to the console as soon as a '\n' character is found
-`timescale 1ns/1ns
+`timescale 1ps/1ps
 interface uart_bus #(
     parameter int unsigned BAUD_RATE = 115200,
     parameter int unsigned PARITY_EN = 0
@@ -24,7 +24,8 @@ interface uart_bus #(
 
 /* pragma translate_off */
 `ifndef VERILATOR
-  localparam time BIT_PERIOD = (1000000000 / BAUD_RATE) * 1ns;
+  time          BIT_PERIOD = 64'd1000000000000 / BAUD_RATE *1ps;    
+   
 
   logic [7:0]       character;
   logic [256*8-1:0] stringa;

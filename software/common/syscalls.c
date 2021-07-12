@@ -124,21 +124,6 @@ void _init(int cid, int nc)
 }
 
 #undef putchar
-int putchar(int ch)
-{
-  static __thread char buf[64] __attribute__((aligned(64)));
-  static __thread int buflen = 0;
-
-  buf[buflen++] = ch;
-
-  if (ch == '\n' || buflen == sizeof(buf))
-  {
-    syscall(SYS_write, 1, (uintptr_t)buf, buflen);
-    buflen = 0;
-  }
-
-  return 0;
-}
 
 void printhex(uint64_t x)
 {
@@ -346,7 +331,7 @@ static void vprintfmt(void (*putch)(int, void**), void **putdat, const char *fmt
   }
 }
 
-int printf(const char* fmt, ...)
+int virtual_printf(const char* fmt, ...)
 {
   va_list ap;
   va_start(ap, fmt);
