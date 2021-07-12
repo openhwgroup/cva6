@@ -4,7 +4,7 @@ compile_flags:
     +define+PMA_DEBUG_CFG
 ovpsim: >
     --override root/cpu/misa_Extensions=0x001104
-    --override root/cpu/marchid=4
+    --override root/cpu/marchid=20
     --override root/cpu/noinhibit_mask=0xFFFFFFF0
     --override root/cpu/extension/PMA_NUM_REGIONS=2
     --override root/cpu/extension/word_addr_low1=0

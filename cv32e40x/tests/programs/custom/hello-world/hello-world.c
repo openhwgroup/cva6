@@ -27,19 +27,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-//FIXME: the core tb does not have the ability to select PULP/NO_PULP at
-//       compile-time, so we set a default MISA to NO_PULP value.  This
-//       needs to be fixed, but for now does not affect UVM env.
 #define EXP_MISA 0x40001104
-
-#ifdef NO_PULP
-#define EXP_MISA 0x40001104
-#endif
-
-#ifdef PULP
-#define EXP_MISA 0x40801104
-#endif
-
 
 int main(int argc, char *argv[])
 {
@@ -67,8 +55,8 @@ int main(int argc, char *argv[])
     }
 
     /* Check MARCHID CSR: 0x4 is the value assigned by the RISC-V Foundation to CV32E40X */
-    if (marchid_rval != 0x00000004) {
-      printf("\tERROR: CSR MARCHID reads as 0x%x - should be 0x00000004 for CV32E40X.\n\n", marchid_rval);
+    if (marchid_rval != 20) {
+      printf("\tERROR: CSR MARCHID reads as 0x%x - should be 0x00000014 for CV32E40X.\n\n", marchid_rval);
       return EXIT_FAILURE;
     }
 
