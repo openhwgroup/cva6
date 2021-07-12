@@ -27,7 +27,9 @@
 const int RESULT_FIB[N] = {0, 1, 1, 2, 3, 5, 8, 13, 21, 34, 55, 89, 144, 233, 377, 610, 987, 1597, 2584, 4181};
 
 int main(int argc, char const *argv[]) {
-  int * b;
+  uart_sim_cfg();
+  int b[N];
+  int b_addr=&b;
   int i;
   b[0]=0;
   b[1]=1;
@@ -36,8 +38,11 @@ int main(int argc, char const *argv[]) {
     {
       b[i]=b[i-1]+b[i-2];
       if(b[i]!=RESULT_FIB[i])
-        return 1;
+        { 
+          printf("%d, not %d\n", b[i],RESULT_FIB[i]);
+          uart_wait_tx_done();
+          return 1;
+        }
     }
-
   return 0;
 }

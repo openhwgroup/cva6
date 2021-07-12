@@ -24,13 +24,6 @@
 #define HYPERBUS_DEVICE_NUM 8
 #define CONFIG_REG_OFFSET 0x80
 
-#define pulp_write32(add, val_) (*(volatile unsigned int *)(long)(add) = val_)
-#define pulp_read32(add) (*(volatile unsigned int *)(long)(add))
-
-static inline void barrier() {
-    __sync_synchronize();
-}
-
 static inline void wait_cycles(const unsigned cycles)
 {
   /**
