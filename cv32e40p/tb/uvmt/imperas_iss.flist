@@ -22,9 +22,8 @@ ${TBSRC_HOME}/uvmt/uvmt_cv32e40p_iss_wrap.sv
 // Vendor Libraries
 +incdir+${DV_OVPM_DESIGN}
 ${DV_OVPM_DESIGN}/typedefs.sv
-${DV_OVPM_DESIGN}/interface.sv
 ${DV_OVPM_DESIGN}/monitor.sv
 ${DV_OVPM_DESIGN}/ram.sv
 
 +incdir+${DV_OVPM_MODEL}/sv
-${DV_OVPM_MODEL}/sv/riscv_CV32E40P.sv
+${DV_OVPM_MODEL}/sv/imperas_CV32.sv

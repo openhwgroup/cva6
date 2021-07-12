@@ -104,8 +104,8 @@ task uvma_rvvi_ovpsim_drv_c::reset_phase(uvm_phase phase);
 
    super.reset_phase(phase);
 
-   rvvi_ovpsim_cntxt.ovpsim_bus_vif.deferint = 1'b1;
-   rvvi_ovpsim_cntxt.ovpsim_bus_vif.irq_i    = '0;
+   rvvi_ovpsim_cntxt.ovpsim_io_vif.deferint = 1'b1;
+   rvvi_ovpsim_cntxt.ovpsim_io_vif.irq_i    = '0;
 
 endtask : reset_phase
 
@@ -125,30 +125,50 @@ task uvma_rvvi_ovpsim_drv_c::stepi(REQ req);
    // Stop the clock
    stop_clknrst();
 
+   // Check for read of volatile memory locations, backdoor init the RVVI memory when found to ensure
+   // the ISS sees the same data as the DUT
+   if (rvvi_ovpsim_seq_item.mem_rmask && cfg.is_mem_addr_volatile(rvvi_ovpsim_seq_item.mem_addr)) begin
+      `uvm_info("RVVIDRV", $sformatf("Setting volatile bus read data @ 0x%08x to 0x%08x", 
+                                     rvvi_ovpsim_seq_item.mem_addr, 
+                                     rvvi_ovpsim_seq_item.mem_rdata), UVM_HIGH);
+      rvvi_ovpsim_cntxt.ovpsim_bus_vif.write(rvvi_ovpsim_seq_item.mem_addr >> 2, rvvi_ovpsim_seq_item.mem_rdata);
+   end
+
    // Signal an interrupt to the ISS if mcause and rvfi_intr signals external interrupt  
    if (rvvi_ovpsim_seq_item.intr) begin
-      rvvi_ovpsim_cntxt.ovpsim_bus_vif.deferint = 1'b0;
-      rvvi_ovpsim_cntxt.ovpsim_bus_vif.irq_i    = 1 << (rvvi_ovpsim_seq_item.intr_id);
+      rvvi_ovpsim_cntxt.ovpsim_io_vif.deferint = 1'b0;
+      rvvi_ovpsim_cntxt.ovpsim_io_vif.irq_i    = 1 << (rvvi_ovpsim_seq_item.intr_id);
       rvvi_ovpsim_cntxt.control_vif.stepi();
       @(rvvi_ovpsim_cntxt.state_vif.notify);
-      rvvi_ovpsim_cntxt.ovpsim_bus_vif.deferint = 1'b1;
-      @(posedge rvvi_ovpsim_cntxt.ovpsim_bus_vif.Clk);
-   end
-   
-   if (rvvi_ovpsim_seq_item.halt) begin
-      rvvi_ovpsim_cntxt.ovpsim_bus_vif.haltreq  = 1'b1;      
-      rvvi_ovpsim_cntxt.control_vif.stepi();
-      @(rvvi_ovpsim_cntxt.state_vif.notify);
-      rvvi_ovpsim_cntxt.ovpsim_bus_vif.haltreq = 1'b0;
+      rvvi_ovpsim_cntxt.ovpsim_io_vif.deferint = 1'b1;
       @(posedge rvvi_ovpsim_cntxt.ovpsim_bus_vif.Clk);
    end
 
-   // Step the ISS and wait for ISS to complete
-   rvvi_ovpsim_cntxt.ovpsim_bus_vif.irq_i = rvvi_ovpsim_seq_item.mip;
+   // External halt request to debug mode
+   if (rvvi_ovpsim_seq_item.dbg && rvvi_ovpsim_seq_item.dcsr_cause == CAUSE_HALTREQ) begin
+      rvvi_ovpsim_cntxt.ovpsim_io_vif.haltreq  = 1'b1;
+      rvvi_ovpsim_cntxt.control_vif.stepi();
+      @(rvvi_ovpsim_cntxt.state_vif.notify);
+      rvvi_ovpsim_cntxt.ovpsim_io_vif.haltreq = 1'b0;
+      @(posedge rvvi_ovpsim_cntxt.ovpsim_bus_vif.Clk);
+   end
+
+   // Single-step - debug re-entry seems to need an extra instruction cycle on control interface
+   if (rvvi_ovpsim_seq_item.dbg && rvvi_ovpsim_seq_item.dcsr_cause == CAUSE_STEP) begin
+      rvvi_ovpsim_cntxt.control_vif.stepi();
+      @(rvvi_ovpsim_cntxt.state_vif.notify);
+      @(posedge rvvi_ovpsim_cntxt.ovpsim_bus_vif.Clk);
+   end
+
+   // Update irq_i to match mip CSR
+   rvvi_ovpsim_cntxt.ovpsim_io_vif.irq_i = rvvi_ovpsim_seq_item.mip;
+
+   // If the RVFI instruction wrote to a GPR, update it in the volatile backdoor register back
+   // so the ISS can update voltaile reads (e.g. mcycle, I/O registers, etc.)
    if (rvvi_ovpsim_seq_item.rd1_addr != 0)
       rvvi_ovpsim_cntxt.state_vif.GPR_rtl[rvvi_ovpsim_seq_item.rd1_addr] = rvvi_ovpsim_seq_item.rd1_wdata;
-
    
+   // Step the ISS and wait for ISS to complete   
    rvvi_ovpsim_cntxt.control_vif.stepi();
    @(rvvi_ovpsim_cntxt.state_vif.notify);
 
@@ -173,7 +193,6 @@ task uvma_rvvi_ovpsim_drv_c::stop_clknrst();
 
    uvma_clknrst_stop_clk_seq_c stop_clk_seq;
    stop_clk_seq = uvma_clknrst_stop_clk_seq_c::type_id::create("stop_clk_seq");
-   assert(stop_clk_seq.randomize());
    stop_clk_seq.start(clknrst_sequencer);
 
 endtask : stop_clknrst
@@ -182,7 +201,6 @@ task uvma_rvvi_ovpsim_drv_c::restart_clknrst();
 
    uvma_clknrst_restart_clk_seq_c restart_clk_seq;
    restart_clk_seq = uvma_clknrst_restart_clk_seq_c::type_id::create("restart_clk_seq");
-   assert(restart_clk_seq.randomize());
    restart_clk_seq.start(clknrst_sequencer);
 
 endtask : restart_clknrst

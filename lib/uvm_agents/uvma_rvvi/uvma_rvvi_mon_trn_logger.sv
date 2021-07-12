@@ -66,6 +66,7 @@ class uvma_rvvi_mon_trn_logger_c#(int ILEN=DEFAULT_ILEN,
 
       string  gpr_index_str = "--";
       string  gpr_data_str  = "--------";
+      string  log_str;
 
       if (t.gpr_update.size()) begin
          int unsigned index;
@@ -74,14 +75,20 @@ class uvma_rvvi_mon_trn_logger_c#(int ILEN=DEFAULT_ILEN,
          gpr_data_str = $sformatf("%08x", t.gpr_update[index]);
       end
 
-      fwrite($sformatf(format_instr_str, $sformatf("%t", $time),
-                       t.order,
-                       t.pc,
-                       t.get_insn_word_str(),
-                       get_mode_str(t.mode),                       
-                       gpr_index_str,
-                       gpr_data_str));
-                       
+      log_str = $sformatf(format_instr_str, 
+                          $sformatf("%t", $time),
+                          t.order,
+                          t.pc,
+                          t.get_insn_word_str(),
+                          get_mode_str(t.mode),                       
+                          gpr_index_str,
+                          gpr_data_str);
+
+      if (t.trap)
+         log_str = { log_str, " TRAP" };
+
+      fwrite(log_str);
+
    endfunction : log_valid_insn
 
    virtual function void log_invalid_insn(uvma_rvvi_state_seq_item_c t);      

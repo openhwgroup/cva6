@@ -35,7 +35,7 @@ typedef enum {
   DIV, DIVU, REM, REMU,
 
   // 32C
-  C_ADDI4SPN, C_LW, C_SW,
+  C_ADDI4SPN, C_LW, C_SW, C_NOP,
   C_ADDI, C_JAL, C_LI, C_ADDI16SP, C_LUI, C_SRLI, C_SRAI,
   C_ANDI, C_SUB, C_XOR, C_OR, C_AND, C_J, C_BEQZ, C_BNEZ,
   C_SLLI, C_LWSP, C_JR, C_MV, C_EBREAK, C_JALR, C_ADD, C_SWSP,
@@ -73,7 +73,7 @@ typedef enum {
    STORE_GROUP, 
    MISALIGN_LOAD_GROUP,
    MISALIGN_STORE_GROUP,
-   ALU_GROUP,
+   ALU_GROUP,   
    BRANCH_GROUP,
    JUMP_GROUP,
    FENCE_GROUP,
@@ -384,7 +384,9 @@ function instr_group_t get_instr_group(instr_name_t name);
                    XOR,XORI,OR,ORI,AND,ANDI,
                    SLT,SLTI,SLTU,SLTIU,
                    C_ADD,C_ADDI,C_ADDI16SP,
-                   C_ADDI4SPN,C_SLLI}) 
+                   C_LI,C_LUI,C_MV,C_NOP,
+                   C_XOR,C_SRLI,C_AND,C_ANDI,C_OR,
+                   C_SUB,C_ADDI4SPN,C_SLLI,C_SRAI}) 
     return ALU_GROUP;
 
   if (name inside {BEQ,BNE,BLT,BGE,BLTU,BGEU,

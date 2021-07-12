@@ -27,7 +27,10 @@
  */
 class uvma_rvfi_cfg_c#(int ILEN=DEFAULT_ILEN,
                        int XLEN=DEFAULT_XLEN) extends uvm_object;
-   
+
+   // Core configuration (used to extract list of CSRs)
+   uvma_core_cntrl_cfg_c         core_cfg;
+
    // Common options
    rand bit                      enabled;
    rand uvm_active_passive_enum  is_active;
@@ -46,9 +49,6 @@ class uvma_rvfi_cfg_c#(int ILEN=DEFAULT_ILEN,
    // Name for the instruction retirment ports (nret of these)
    string                        instr_name[int];
 
-   // Supported CSRs for this core
-   string                        csrs[$];
-
    `uvm_object_utils_begin(uvma_rvfi_cfg_c)
       `uvm_field_int (                         enabled                    , UVM_DEFAULT)
       `uvm_field_int (                         nret                       , UVM_DEFAULT)
@@ -57,7 +57,6 @@ class uvma_rvfi_cfg_c#(int ILEN=DEFAULT_ILEN,
       `uvm_field_int (                         trn_log_enabled            , UVM_DEFAULT)
       `uvm_field_int (                         nmi_handler_enabled        , UVM_DEFAULT)
       `uvm_field_int (                         nmi_handler_addr           , UVM_DEFAULT)
-      `uvm_field_queue_string (                csrs                       , UVM_DEFAULT)
    `uvm_object_utils_end
       
    constraint valid_nret {

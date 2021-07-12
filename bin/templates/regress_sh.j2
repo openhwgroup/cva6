@@ -79,7 +79,7 @@ popd > /dev/null
 # --> Test: {{t.name}} : {{t.description}}
 {% if t.precmd %}
 #  Test (Precommand): {{t.name}} {{t.description}}
-{% set cmd = t.precmd + ' CV_CORE=' + project + 'CFG=' + cfg + ' SIMULATOR=' + t.simulator + ' SEED=random GEN_NUM_TESTS=' + t.num + makeargs %}
+{% set cmd = t.precmd + ' CV_CORE=' + project + 'CFG=' + cfg + ' SIMULATOR=' + t.simulator + ' SEED=random GEN_NUM_TESTS=' + t.num + makeargs + ' ' + t.makearg %}
 echo "{{session}}: Running precmd: [cd {{t.abs_dir}} && {{cmd}}]
 pushd {{t.abs_dir}} > /dev/null
 {{cmd}} >& /dev/null;

@@ -45,9 +45,7 @@ task uvma_clknrst_stop_clk_seq_c::body();
 
    clknrst_seq_item = uvma_clknrst_seq_item_c::type_id::create("clknrst_seq_item");
    start_item(clknrst_seq_item);
-   assert(clknrst_seq_item.randomize() with {
-      action == UVMA_CLKNRST_SEQ_ITEM_ACTION_STOP_CLK;
-   });
+   clknrst_seq_item.action = UVMA_CLKNRST_SEQ_ITEM_ACTION_STOP_CLK;
    finish_item(clknrst_seq_item);
 
 endtask : body

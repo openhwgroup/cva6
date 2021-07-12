@@ -35,7 +35,6 @@ class uvma_rvfi_instr_seq_item_c#(int ILEN=DEFAULT_ILEN,
    rand bit [IXL_WL-1:0]         ixl;
 
    rand bit                      insn_nmi;
-   rand bit                      insn_dbg_req;
    rand bit                      insn_interrupt;
    rand int unsigned             insn_interrupt_id;
 
@@ -63,10 +62,7 @@ class uvma_rvfi_instr_seq_item_c#(int ILEN=DEFAULT_ILEN,
    rand bit [XLEN-1:0]           mem_wdata;
    rand bit [XLEN-1:0]           mem_wmask;
 
-   rand bit [ILEN-1:0]           csr_mip;
-   rand bit [ILEN-1:0]           csr_mcause;
-
-   uvma_rvfi_csr_seq_item_c      csrs[$];
+   uvma_rvfi_csr_seq_item_c      csrs[string];
 
    static protected string _log_format_string = "0x%08x %s 0x%01x 0x%08x";
 
@@ -97,13 +93,11 @@ class uvma_rvfi_instr_seq_item_c#(int ILEN=DEFAULT_ILEN,
       `uvm_field_int(mem_wmask, UVM_DEFAULT)
       `uvm_field_int(mem_wdata, UVM_DEFAULT)
 
-      `uvm_field_int(csr_mip, UVM_DEFAULT)      
-      `uvm_field_int(csr_mcause, UVM_DEFAULT)
-
-      `uvm_field_int(insn_nmi, UVM_DEFAULT)
-      `uvm_field_int(insn_dbg_req, UVM_DEFAULT)
+      `uvm_field_int(insn_nmi, UVM_DEFAULT)      
       `uvm_field_int(insn_interrupt, UVM_DEFAULT)
       `uvm_field_int(insn_interrupt_id, UVM_DEFAULT)
+
+      `uvm_field_aa_object_string(csrs, UVM_DEFAULT)      
    `uvm_object_utils_end
    
    /**

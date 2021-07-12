@@ -36,7 +36,8 @@ package uvma_rvfi_pkg;
    import uvml_hrtbt_pkg::*;
    import uvml_trn_pkg  ::*;
    import uvml_logs_pkg ::*;
-
+   import uvma_core_cntrl_pkg::*;
+   
    // Analysis implementation declarations
    `uvm_analysis_imp_decl(_rvfi_instr)
 
