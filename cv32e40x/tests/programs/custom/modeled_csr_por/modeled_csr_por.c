@@ -441,8 +441,8 @@ int main(int argc, char *argv[])
     ++err_cnt;
   }
 
-  if (marchid_rval != 0x4) {
-    printf("ERROR: CSR MARCHID not 0x4!\n\n");
+  if (marchid_rval != 0x14) {
+    printf("ERROR: CSR MARCHID not 0x14!\n\n");
     ++err_cnt;
   }
 
