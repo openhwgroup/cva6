@@ -31,6 +31,10 @@ class uvme_cv32e40p_cntxt_c extends uvm_object;
    // Virtual interface for Debug coverage
    virtual uvmt_cv32e40p_debug_cov_assert_if debug_cov_vif;
 
+   // Virtual interface for Virtual Peripherals
+   // TODO: needs a better name than "misc_vif"
+   virtual uvmt_cv32e40p_vp_status_if   misc_vif; //vp_status_if,
+
    // Agent context handles
    uvma_clknrst_cntxt_c    clknrst_cntxt;
    uvma_interrupt_cntxt_c  interrupt_cntxt;

@@ -55,7 +55,9 @@ module uvmt_cv32e40p_dut_wrap #(
                            (
                             uvma_clknrst_if              clknrst_if,
                             uvma_interrupt_if            interrupt_if,
+`ifndef USE_OBI_MEM_AGENT
                             uvmt_cv32e40p_vp_status_if   vp_status_if,
+`endif
                             uvmt_cv32e40p_core_cntrl_if  core_cntrl_if,
                             uvmt_cv32e40p_core_status_if core_status_if,
                             uvma_obi_memory_if           obi_memory_instr_if,

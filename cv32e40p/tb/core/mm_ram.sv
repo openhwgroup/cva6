@@ -487,7 +487,8 @@ module mm_ram
                 `uvm_fatal(MM_RAM_TAG, "cycle counter read after overflow");
             end
         end else if (select_rdata_q == ERR) begin
-            `uvm_fatal(MM_RAM_TAG, $sformatf("out of bounds read from %08x", data_addr_i));
+            `uvm_error(MM_RAM_TAG, $sformatf("out of bounds read from %08x (RAM_ADDR_WIDTH=%0d; dm_halt_addri=%08x, DBG_ADDR_WIDTH=%0d)",
+                                             data_addr_i, RAM_ADDR_WIDTH, dm_halt_addr_i, DBG_ADDR_WIDTH))
 `endif
         end
     end
