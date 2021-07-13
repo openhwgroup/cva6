@@ -160,7 +160,7 @@
    /**
     * Creates sub-configuration objects.
     */
-   extern function new(string name="uvme_cv32e40x_cfg");
+   extern function new(string name="uvme_cv_base_cfg");
 
    /**
     * post randomization hooks
@@ -206,7 +206,7 @@
 
  endclass : uvma_core_cntrl_cfg_c
 
-function uvma_core_cntrl_cfg_c::new(string name="uvme_cv32e40x_cfg");
+function uvma_core_cntrl_cfg_c::new(string name="uvme_cv_base_cfg");
    
    super.new(name);
 
