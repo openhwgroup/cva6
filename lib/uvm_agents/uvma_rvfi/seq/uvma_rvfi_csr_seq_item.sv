@@ -51,7 +51,7 @@ class uvma_rvfi_csr_seq_item_c#(int XLEN=DEFAULT_XLEN) extends uvml_trn_seq_item
    /**
     * Fetch the value of the CSR at instruction retirement taking into account write data and write mask
     */
-   extern virtual function bit[XLEN-1:0] get_csr_retirement_data();
+   extern virtual function bit[uvma_rvfi_csr_seq_item_c::XLEN-1:0] get_csr_retirement_data();
 
    /**
     * One-liner log message

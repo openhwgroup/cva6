@@ -22,7 +22,6 @@ localparam CSR_ADDR_WL = 12;
 localparam CSR_MASK_WL = (1 << CSR_ADDR_WL);
 
 localparam MAX_XLEN   = 128;
-localparam HART_ID_WL = 32;
 
 localparam MAX_NUM_MHPMCOUNTERS = 29;
 localparam MAX_NUM_HPMCOUNTERS  = 29;

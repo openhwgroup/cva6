@@ -75,17 +75,28 @@
 
    // Common bootstrap addresses
    // The valid bits should be constrained if the bootstrap signal is not valid for this core configuration
-   rand bit [HART_ID_WL-1:0]     hart_id;
+   rand bit [MAX_XLEN-1:0]       hart_id;
+   bit                           hart_id_plusarg_valid;
+
    rand bit [MAX_XLEN-1:0]       boot_addr;
    rand bit                      boot_addr_valid;
+   bit                           boot_addr_plusarg_valid;
+
    rand bit [MAX_XLEN-1:0]       mtvec_addr;
    rand bit                      mtvec_addr_valid;
+   bit                           mtvec_addr_plusarg_valid;
+
    rand bit [MAX_XLEN-1:0]       dm_halt_addr;
    rand bit                      dm_halt_addr_valid;
+   bit                           dm_halt_addr_plusarg_valid;
+
    rand bit [MAX_XLEN-1:0]       dm_exception_addr;
    rand bit                      dm_exception_addr_valid;
+   bit                           dm_exception_addr_plusarg_valid;
+   
    rand bit [MAX_XLEN-1:0]       nmi_addr;
    rand bit                      nmi_addr_valid;
+   bit                           nmi_addr_plusarg_valid;
 
    `uvm_field_utils_begin(uvma_core_cntrl_cfg_c);
       `uvm_field_int (                         enabled                        , UVM_DEFAULT          )
@@ -120,14 +131,19 @@
       `uvm_field_int(                          hart_id                        , UVM_DEFAULT          )
       `uvm_field_int(                          boot_addr                      , UVM_DEFAULT          )
       `uvm_field_int(                          boot_addr_valid                , UVM_DEFAULT          )
+      `uvm_field_int(                          boot_addr_plusarg_valid        , UVM_DEFAULT          )
       `uvm_field_int(                          mtvec_addr                     , UVM_DEFAULT          )
       `uvm_field_int(                          mtvec_addr_valid               , UVM_DEFAULT          )
+      `uvm_field_int(                          mtvec_addr_plusarg_valid       , UVM_DEFAULT          )      
       `uvm_field_int(                          dm_halt_addr                   , UVM_DEFAULT          )
       `uvm_field_int(                          dm_halt_addr_valid             , UVM_DEFAULT          )
+      `uvm_field_int(                          dm_halt_addr_plusarg_valid     , UVM_DEFAULT          )
       `uvm_field_int(                          dm_exception_addr              , UVM_DEFAULT          )
       `uvm_field_int(                          dm_exception_addr_valid        , UVM_DEFAULT          )
+      `uvm_field_int(                          dm_exception_addr_plusarg_valid, UVM_DEFAULT          )
       `uvm_field_int(                          nmi_addr                       , UVM_DEFAULT          )
       `uvm_field_int(                          nmi_addr_valid                 , UVM_DEFAULT          )
+      `uvm_field_int(                          nmi_addr_plusarg_valid         , UVM_DEFAULT          )
    `uvm_field_utils_end
       
    constraint defaults_cons {
@@ -174,6 +190,11 @@
    extern function void do_print(uvm_printer printer);
 
    /**    
+    * Read a plusarg to fix a configuration value
+    */
+   extern function bit read_cfg_plusarg_xlen(string field, ref bit[MAX_XLEN-1:0] value);
+
+   /**    
     * Set unsupported_csr_mask based on extensions/modes supported
     */
    extern virtual function void set_unsupported_csr_mask();
@@ -213,7 +234,55 @@ function uvma_core_cntrl_cfg_c::new(string name="uvme_cv32e40x_cfg");
    if ($test$plusargs("USE_ISS")) 
       use_iss = 1;
 
+   // Read plusargs for defaults
+   if (read_cfg_plusarg_xlen("hart_id", hart_id)) begin
+      hart_id_plusarg_valid = 1;
+      hart_id.rand_mode(0);
+   end
+
+   if (read_cfg_plusarg_xlen("boot_addr", boot_addr)) begin
+      boot_addr_plusarg_valid = 1;
+      boot_addr.rand_mode(0);
+   end
+
+   if (read_cfg_plusarg_xlen("mtvec_addr", mtvec_addr)) begin
+      mtvec_addr_plusarg_valid = 1;
+      mtvec_addr.rand_mode(0);
+   end
+   
+   if (read_cfg_plusarg_xlen("dm_halt_addr", dm_halt_addr)) begin
+      dm_halt_addr_plusarg_valid = 1;
+      dm_halt_addr.rand_mode(0);
+   end
+
+   if (read_cfg_plusarg_xlen("dm_exception_addr", dm_exception_addr)) begin
+      dm_exception_addr_plusarg_valid = 1;
+      dm_exception_addr.rand_mode(0);
+   end
+
+   if (read_cfg_plusarg_xlen("nmi_addr", nmi_addr)) begin
+      nmi_addr_plusarg_valid = 1;
+      nmi_addr.rand_mode(0);
+   end
+
 endfunction : new
+
+function bit uvma_core_cntrl_cfg_c::read_cfg_plusarg_xlen(string field, ref bit[MAX_XLEN-1:0] value);
+
+   string str_val;
+
+   if ($value$plusargs($sformatf("%s=0x%%s", field), str_val)) begin
+      value = str_val.atohex();
+      return 1;
+   end
+   if ($value$plusargs($sformatf("%s=%%s", field), str_val)) begin
+      value = str_val.atoi();
+      return 1;
+   end
+
+   return 0;
+
+endfunction : read_cfg_plusarg_xlen
 
 function void uvma_core_cntrl_cfg_c::post_randomize();
 
@@ -449,4 +518,5 @@ function void uvma_core_cntrl_cfg_c::disable_csr_check(string name);
 endfunction : disable_csr_check
 
 `endif // __UVMA_CORE_CNTRL_CFG_SV__
+
 
