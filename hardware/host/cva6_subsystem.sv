@@ -369,22 +369,19 @@ module cva6_subsytem
   // AXI hyperbus Slave
   // ---------------
 
-//  TODO: insert axi_riscv_atmoics_wrap fro axi_hyper
-//  axi_riscv_atomics_wrap #(
-//    .AXI_ADDR_WIDTH ( AXI_ADDRESS_WIDTH        ),
-//    .AXI_DATA_WIDTH ( AXI_DATA_WIDTH           ),
-//    .AXI_ID_WIDTH   ( ariane_soc::IdWidthSlave ),
-//    .AXI_USER_WIDTH ( AXI_USER_WIDTH           ),
-//    .AXI_MAX_WRITE_TXNS ( 1  ),
-//    .RISCV_WORD_WIDTH   ( 64 )
-//  ) i_axi_riscv_atomics (
-//    .clk_i,
-//    .rst_ni ( ndmreset_n               ),
-//    .slv    ( master[ariane_soc::DRAM] ),
-//    .mst    ( dram                     )
-//  );
-
-  `AXI_ASSIGN(hyper_axi_master,master[ariane_soc::HYAXI])
+  axi_riscv_atomics_wrap #(
+    .AXI_ADDR_WIDTH ( AXI_ADDRESS_WIDTH        ),
+    .AXI_DATA_WIDTH ( AXI_DATA_WIDTH           ),
+    .AXI_ID_WIDTH   ( ariane_soc::IdWidthSlave ),
+    .AXI_USER_WIDTH ( AXI_USER_WIDTH           ),
+    .AXI_MAX_WRITE_TXNS ( 1  ),
+    .RISCV_WORD_WIDTH   ( 64 )
+  ) i_axi_riscv_atomics (
+    .clk_i,
+    .rst_ni ( ndmreset_n                ),
+    .slv    ( master[ariane_soc::HYAXI] ),
+    .mst    ( hyper_axi_master          )
+  );
 
   // ---------------
   // AXI Xbar
