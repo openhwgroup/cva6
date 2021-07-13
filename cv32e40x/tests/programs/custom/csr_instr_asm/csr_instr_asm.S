@@ -36,11 +36,7 @@ _start:
 .section .text
 _start_main:
 
-  #ifdef NO_PULP
   #define EXP_MISA 0x40001104
-  #else
-  #define EXP_MISA 0x40801104
-  #endif
 
 # CSR 0x340 is a 32-bit R/W scratch-pad
   # Immediates
