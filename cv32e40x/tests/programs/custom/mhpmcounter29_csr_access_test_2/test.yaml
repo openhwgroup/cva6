@@ -4,6 +4,6 @@ description: >
     CSR access test with NUM_MHPMCOUNTER = 29 (CANNOT run with ISS)
 ovpsim: >
     --override root/cpu/misa_Extensions=0x001104
-    --override root/cpu/marchid=4
+    --override root/cpu/marchid=20
     --override root/cpu/noinhibit_mask=0000000000
 
