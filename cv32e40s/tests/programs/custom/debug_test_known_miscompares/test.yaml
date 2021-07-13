@@ -1,0 +1,10 @@
+# Test definition YAML for test
+
+# Debug trigger directed test
+# Asserts debug_req_i  while processing an illegal insn
+name: debug_test_known_miscompares
+uvm_test: uvmt_$(CV_CORE_LC)_firmware_test_c
+program: debug_test_known_miscompares
+description: >
+    Debug trigger directed test for tests with known failures in step-and-compare
+
