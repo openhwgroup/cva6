@@ -82,6 +82,15 @@ to run the ADD IMMEDIATE test from riscv_tests:
 <br>To run I-LBU-01.S from the riscv_compliance_tests:
 * `make questa-unit-test I_LBU_01`
 
+If you have a C or assembly program in `../../tests/programs/custom`
+then the following will work with Questa:<br>
+```
+make questa-custom CUSTOM_PROG=hello-world
+make questa-custom CUSTOM_PROG=dhrystone
+make questa-custom CUSTOM_PROG=coremark
+make questa-custom CUSTOM_PROG=fibonacci
+```
+
 Running the testbench with VCS (vcs)
 ----------------------
 Point your environment variable `RISCV` to your RISC-V toolchain.
