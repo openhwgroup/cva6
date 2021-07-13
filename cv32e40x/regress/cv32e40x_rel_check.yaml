@@ -38,6 +38,8 @@ tests:
     description: Illegal instruction test
     dir: cv32e40x/sim/uvmt
     cmd: make test COREV=YES TEST=illegal_instr_test
+    # FIXME:strichmo:Restore dsim when Issue #712 is fixed by Metrics
+    skip_sim: dsim
 
   cv32e40x_csr_access_test:
     build: uvmt_cv32e40x
@@ -215,12 +217,16 @@ tests:
     description: Misalign test
     dir: cv32e40x/sim/uvmt
     cmd: make test COREV=YES TEST=misalign
+    # FIXME:strichmo:Restore dsim when Issue #712 is fixed by Metrics
+    skip_sim: dsim
 
   dhrystone:
     build: uvmt_cv32e40x
     description: Dhrystone test
     dir: cv32e40x/sim/uvmt
     cmd: make test COREV=YES TEST=dhrystone
+    # FIXME:strichmo:Restore dsim when Issue #712 is fixed by Metrics
+    skip_sim: dsim
 
   debug_test:
     build: uvmt_cv32e40x
