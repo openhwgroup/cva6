@@ -56,9 +56,18 @@ endclass : uvme_cv32e40p_instr_vseq_c
 
 
 function uvme_cv32e40p_instr_vseq_c::new(string name="uvme_cv32e40p_instr_vseq");
-   
+
+   int fd;
+
    super.new(name);
-   
+   if($value$plusargs("firmware=%s", mem_contents_location)) begin
+     // First, check if it exists...
+     fd = $fopen (mem_contents_location, "r");   
+     if (fd)  `uvm_info ("OBI_MEMORY_SLV_SEQ", $sformatf("%s was opened successfully : (fd=%0d)", mem_contents_location, fd), UVM_LOW)
+     else     `uvm_fatal("OBI_MEMORY_SLV_SEQ", $sformatf("%s was NOT opened successfully : (fd=%0d)", mem_contents_location, fd))
+     $fclose(fd);
+   end
+
 endfunction : new
 
 
@@ -80,6 +89,10 @@ task uvme_cv32e40p_instr_vseq_c::body();
       `uvm_info("OBI_MEMORY_SLV_SEQ", $sformatf("Loading memory contents from %s", mem_contents_location), UVM_LOW)
       $readmemh(mem_contents_location, cntxt.mem);
    end
+
+   for (int jj=0; jj<32'h100; jj +=4) begin
+      `uvm_info("OBI_MEMORY_SLV_SEQ", $sformatf("addr:%8h; data: %2h %2h %2h %2h", jj, cntxt.mem[jj+3], cntxt.mem[jj+2], cntxt.mem[jj+1], cntxt.mem[jj+0]), UVM_DEBUG)
+   end
    
    forever begin
       // Wait for the monitor to send us the mstr's "req" with an access request
@@ -87,7 +100,7 @@ task uvme_cv32e40p_instr_vseq_c::body();
       `uvm_info("OBI_MEMORY_SLV_SEQ", $sformatf("Got mon_trn:\n%s", mon_trn.sprint()), UVM_HIGH)
       
       error  = mon_trn.err;
-      error |= (mon_trn.address > (2**8));
+      //error |= (mon_trn.address > (2**8));
       
       `uvm_create(slv_rsp)
       slv_rsp.err            = error;
@@ -109,7 +122,11 @@ task uvme_cv32e40p_instr_vseq_c::body();
             cntxt.mem[mon_trn.address] = mon_trn.data;
          end
          else begin
-            slv_rsp.rdata = cntxt.mem[mon_trn.address];
+            slv_rsp.rdata[31:24] = cntxt.mem[mon_trn.address+3];
+            slv_rsp.rdata[23:16] = cntxt.mem[mon_trn.address+2];
+            slv_rsp.rdata[15:08] = cntxt.mem[mon_trn.address+1];
+            slv_rsp.rdata[07:00] = cntxt.mem[mon_trn.address+0];
+            `uvm_info("INSTR VSEQ", $sformatf("addr: %8h;  rdata: %8h", mon_trn.address, slv_rsp.rdata), UVM_NONE)
          end
       end
       else begin
