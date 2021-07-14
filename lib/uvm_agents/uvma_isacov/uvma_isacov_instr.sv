@@ -39,6 +39,7 @@ class uvma_isacov_instr_c extends uvm_object;
   bit rs2_valid;
   bit rd_valid;
 
+  
   bit [2:0] c_rs1p;
   bit [2:0] c_rs2p;
   bit [2:0] c_rdp;
@@ -53,18 +54,31 @@ class uvma_isacov_instr_c extends uvm_object;
   bit [7:0] c_immb;
   bit [5:0] c_immss;
 
+  bit[31:0]     rs1_value;
+  instr_value_t rs1_value_type;
+  bit[31:0]     rs2_value;
+  instr_value_t rs2_value_type;
+  bit[31:0]     rd_value;
+  instr_value_t rd_value_type;
+
   `uvm_object_utils_begin(uvma_isacov_instr_c);
     `uvm_field_enum(instr_name_t, name, UVM_ALL_ON | UVM_NOPRINT);
     `uvm_field_enum(instr_type_t, itype, UVM_ALL_ON | UVM_NOPRINT);
     `uvm_field_enum(instr_group_t, group, UVM_ALL_ON | UVM_NOPRINT);
     `uvm_field_enum(instr_csr_t, csr, UVM_ALL_ON | UVM_NOPRINT);
 
+    `uvm_field_int(rs1,       UVM_ALL_ON | UVM_NOPRINT);
+    `uvm_field_int(rs1_value, UVM_ALL_ON | UVM_NOPRINT);
     `uvm_field_int(rs1_valid, UVM_ALL_ON | UVM_NOPRINT);
-    `uvm_field_int(rs1_valid, UVM_ALL_ON | UVM_NOPRINT);
+    `uvm_field_enum(instr_value_t, rs1_value_type, UVM_ALL_ON | UVM_NOPRINT);
+    `uvm_field_int(rs2,       UVM_ALL_ON | UVM_NOPRINT);
+    `uvm_field_int(rs2_value, UVM_ALL_ON | UVM_NOPRINT);
     `uvm_field_int(rs2_valid, UVM_ALL_ON | UVM_NOPRINT);
-    `uvm_field_int(rs2_valid, UVM_ALL_ON | UVM_NOPRINT);
-    `uvm_field_int(rd_valid, UVM_ALL_ON | UVM_NOPRINT);
-    `uvm_field_int(rd_valid, UVM_ALL_ON | UVM_NOPRINT);
+    `uvm_field_enum(instr_value_t, rs2_value_type, UVM_ALL_ON | UVM_NOPRINT);
+    `uvm_field_int(rd,        UVM_ALL_ON | UVM_NOPRINT);    
+    `uvm_field_int(rd_value,  UVM_ALL_ON | UVM_NOPRINT);
+    `uvm_field_int(rd_valid,  UVM_ALL_ON | UVM_NOPRINT);
+    `uvm_field_enum(instr_value_t, rd_value_type, UVM_ALL_ON | UVM_NOPRINT);
 
     `uvm_field_int(immi, UVM_ALL_ON | UVM_NOPRINT);
     `uvm_field_int(imms, UVM_ALL_ON | UVM_NOPRINT);
@@ -94,6 +108,8 @@ class uvma_isacov_instr_c extends uvm_object;
 
   extern function void set_valid_flags();
   extern function bit is_csr_write();
+  extern function instr_value_t get_instr_value_type(bit[31:0] value, bit is_signed);
+
 endclass : uvma_isacov_instr_c
 
 function uvma_isacov_instr_c::new(string name = "isacov_instr");
@@ -199,3 +215,14 @@ function bit uvma_isacov_instr_c::is_csr_write();
 
   return 0;
 endfunction : is_csr_write
+
+function instr_value_t uvma_isacov_instr_c::get_instr_value_type(bit[31:0] value, bit is_signed);
+  if (value == 0)
+    return ZERO;
+
+  if (is_signed) 
+    return value[31] ? NEGATIVE : POSITIVE;
+
+  return NON_ZERO;
+  
+endfunction : get_instr_value_type

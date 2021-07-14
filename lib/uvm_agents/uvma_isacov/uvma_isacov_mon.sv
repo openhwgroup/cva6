@@ -160,6 +160,18 @@ function void uvma_isacov_mon_c::write_rvfi_instr(uvma_rvfi_instr_seq_item_c#(IL
   end
 
   mon_trn.instr.set_valid_flags();
+  if (mon_trn.instr.rs1_valid) begin
+    mon_trn.instr.rs1_value = rvfi_instr.rs1_rdata;    
+    mon_trn.instr.rs1_value_type = mon_trn.instr.get_instr_value_type(mon_trn.instr.rs1_value, rs1_is_signed[mon_trn.instr.name]);
+  end
+  if (mon_trn.instr.rs2_valid) begin
+    mon_trn.instr.rs2_value = rvfi_instr.rs2_rdata;
+    mon_trn.instr.rs2_value_type = mon_trn.instr.get_instr_value_type(mon_trn.instr.rs2_value, rs2_is_signed[mon_trn.instr.name]);
+  end
+  if (mon_trn.instr.rd_valid) begin
+    mon_trn.instr.rd_value  = rvfi_instr.rd1_wdata;
+    mon_trn.instr.rd_value_type = mon_trn.instr.get_instr_value_type(mon_trn.instr.rd_value, rd_is_signed[mon_trn.instr.name]);
+  end
 
   ap.write(mon_trn);
 

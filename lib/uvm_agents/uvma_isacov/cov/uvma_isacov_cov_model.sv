@@ -17,7 +17,12 @@
 
 
 covergroup cg_rtype(
-    string name, bit reg_crosses_enabled
+    string name,     
+    bit reg_crosses_enabled,
+    bit reg_hazards_enabled,
+    bit rs1_is_signed = 1,
+    bit rs2_is_signed = 1,
+    bit rd_is_signed  = 1
 ) with function sample (
     uvma_isacov_instr_c instr
 );
@@ -28,14 +33,70 @@ covergroup cg_rtype(
   cp_rs2: coverpoint instr.rs2;
   cp_rd: coverpoint instr.rd;
 
+  cp_rd_rs1_hazard: coverpoint instr.rd {
+    ignore_bins IGN_RS1_HAZARD_OFF = {[0:$]} with (!reg_hazards_enabled);
+    bins RD[] = {[0:31]} iff (instr.rd == instr.rs1);
+  }
+
+  cp_rd_rs2_hazard: coverpoint instr.rd {
+    ignore_bins IGN_RS2_HAZARD_OFF = {[0:$]} with (!reg_hazards_enabled);
+    bins RD[] = {[0:31]} iff (instr.rd == instr.rs2);
+  }
+
   cross_rd_rs1_rs2: cross cp_rd, cp_rs1, cp_rs2 {
     ignore_bins IGN_OFF = cross_rd_rs1_rs2 with (!reg_crosses_enabled);
   }
+
+  cp_rs1_value: coverpoint instr.rs1_value_type {
+    ignore_bins POS_OFF = {POSITIVE} with (!rs1_is_signed);
+    ignore_bins NEG_OFF = {NEGATIVE} with (!rs1_is_signed);
+    ignore_bins NON_ZERO_OFF = {NON_ZERO} with (rs1_is_signed);
+  }
+
+  cp_rs2_value: coverpoint instr.rs2_value_type {
+    ignore_bins POS_OFF = {POSITIVE} with (!rs2_is_signed);
+    ignore_bins NEG_OFF = {NEGATIVE} with (!rs2_is_signed);
+    ignore_bins NON_ZERO_OFF = {NON_ZERO} with (rs2_is_signed);
+  }
+
+  cross_rs1_rs2_value: cross cp_rs1_value, cp_rs2_value;
+
+  cp_rd_value: coverpoint instr.rd_value_type {
+    ignore_bins POS_OFF = {POSITIVE} with (!rd_is_signed);
+    ignore_bins NEG_OFF = {NEGATIVE} with (!rd_is_signed);
+    ignore_bins NON_ZERO_OFF = {NON_ZERO} with (rd_is_signed);
+  }
+
+  `ISACOV_CP_BITWISE(cp_rs1_toggle, instr.rs1_value, 1)
+  `ISACOV_CP_BITWISE(cp_rs2_toggle, instr.rs2_value, 1)
+  `ISACOV_CP_BITWISE(cp_rd_toggle,  instr.rd_value,  1)
+
 endgroup : cg_rtype
 
+covergroup cg_div_special_results(
+    string name,
+    bit check_overflow
+) with function sample (
+    uvma_isacov_instr_c instr
+);
+  option.per_instance = 1;
+  option.name = name;
+
+  cp_div_zero : coverpoint instr.rs2_value_type {
+    bins ZERO = {ZERO};
+  }
+
+  cp_div_arithmetic_overflow : coverpoint instr.rs1_value {
+    //ignore_bins IGN_OVERFLOW = {[0:$]} with (!check_overflow);
+    bins OFLOW = {32'h8000_0000} with (check_overflow) iff (instr.rs2_value == 32'hffff_ffff);
+  }
+
+endgroup : cg_div_special_results
 
 covergroup cg_itype(
-    string name, bit reg_crosses_enabled
+    string name, 
+    bit reg_crosses_enabled,
+    bit reg_hazards_enabled
 ) with function sample (
     uvma_isacov_instr_c instr
 );
@@ -45,6 +106,11 @@ covergroup cg_itype(
   cp_rs1: coverpoint instr.rs1;
   cp_rd: coverpoint instr.rd;
   cp_immi: coverpoint instr.immi;
+
+  cp_rd_rs1_hazard: coverpoint instr.rd {
+    ignore_bins IGN_RS1_HAZARD_OFF = {[0:$]} with (!reg_hazards_enabled);
+    bins RD[] = {[0:31]} iff (instr.rd == instr.rs1);
+  }
 
   cross_rd_rs1: cross cp_rd, cp_rs1 {
     ignore_bins IGN_OFF = cross_rd_rs1 with (!reg_crosses_enabled);
@@ -140,7 +206,9 @@ covergroup cg_csritype(
 endgroup : cg_csritype
 
 covergroup cg_cr(
-    string name, bit reg_crosses_enabled
+    string name, 
+    bit reg_crosses_enabled,
+    bit reg_hazards_enabled
 ) with function sample (
     uvma_isacov_instr_c instr
 );
@@ -150,9 +218,15 @@ covergroup cg_cr(
   cp_c_rdrs1: coverpoint instr.c_rdrs1;
   cp_c_rs2: coverpoint instr.c_rs2;
 
+  cp_rd_rs2_hazard: coverpoint instr.rd {
+    ignore_bins IGN_RS2_HAZARD_OFF = {[0:$]} with (!reg_hazards_enabled);
+    bins RD[] = {[0:31]} iff (instr.rd == instr.rs2);
+  }
+
   cross_rdrs1_rs2: cross cp_c_rdrs1, cp_c_rs2 {
     ignore_bins IGN_OFF = cross_rdrs1_rs2 with (!reg_crosses_enabled);
   }
+
 endgroup : cg_cr
 
 
@@ -333,93 +407,115 @@ class uvma_isacov_cov_model_c extends uvm_component;
 
   // Covergroups
   //32I:
-  cg_rtype slli_cg;  // TODO own cg?
-  cg_rtype srli_cg;  // TODO own cg?
-  cg_rtype srai_cg;  // TODO own cg?
-  cg_rtype add_cg;
-  cg_rtype sub_cg;
-  cg_rtype sll_cg;
-  cg_rtype slt_cg;
-  cg_rtype sltu_cg;
-  cg_rtype xor_cg;
-  cg_rtype srl_cg;
-  cg_rtype sra_cg;
-  cg_rtype or_cg;
-  cg_rtype and_cg;
-  cg_itype jalr_cg;
-  cg_itype lb_cg;
-  cg_itype lh_cg;
-  cg_itype lw_cg;
-  cg_itype lbu_cg;
-  cg_itype lhu_cg;
-  cg_itype addi_cg;
-  cg_itype slti_cg;
-  cg_itype sltiu_cg;
-  cg_itype xori_cg;
-  cg_itype ori_cg;
-  cg_itype andi_cg;
-  cg_itype fence_cg;  // TODO own cg?
-  cg_itype ecall_cg;  // TODO own cg?
-  cg_itype ebreak_cg;  // TODO own cg?
-  cg_stype sb_cg;
-  cg_stype sh_cg;
-  cg_stype sw_cg;
-  cg_btype beq_cg;
-  cg_btype bne_cg;
-  cg_btype blt_cg;
-  cg_btype bge_cg;
-  cg_btype bltu_cg;
-  cg_btype bgeu_cg;
-  cg_utype lui_cg;
-  cg_utype auipc_cg;
-  cg_jtype jal_cg;
+  cg_rtype instr_i_slli_cg;
+  cg_rtype instr_i_srli_cg;
+  cg_rtype instr_i_srai_cg;
+  cg_rtype instr_i_add_cg;
+  cg_rtype instr_i_sub_cg;
+  cg_rtype instr_i_sll_cg;
+  cg_rtype instr_i_slt_cg;
+  cg_rtype instr_i_sltu_cg;
+  cg_rtype instr_i_xor_cg;
+  cg_rtype instr_i_srl_cg;
+  cg_rtype instr_i_sra_cg;
+  cg_rtype instr_i_or_cg;
+  cg_rtype instr_i_and_cg;
+
+  cg_itype instr_i_jalr_cg;
+  cg_itype instr_i_lb_cg;
+  cg_itype instr_i_lh_cg;
+  cg_itype instr_i_lw_cg;
+  cg_itype instr_i_lbu_cg;
+  cg_itype instr_i_lhu_cg;
+  cg_itype instr_i_addi_cg;
+  cg_itype instr_i_slti_cg;
+  cg_itype instr_i_sltiu_cg;
+  cg_itype instr_i_xori_cg;
+  cg_itype instr_i_ori_cg;
+  cg_itype instr_i_andi_cg;
+  cg_itype instr_i_fence_cg;  // TODO own cg?
+  cg_itype instr_i_ecall_cg;  // TODO own cg?
+  cg_itype instr_i_ebreak_cg;  // TODO own cg?
+
+  cg_stype instr_i_sb_cg;
+  cg_stype instr_i_sh_cg;
+  cg_stype instr_i_sw_cg;
+
+  cg_btype instr_i_beq_cg;
+  cg_btype instr_i_bne_cg;
+  cg_btype instr_i_blt_cg;
+  cg_btype instr_i_bge_cg;
+  cg_btype instr_i_bltu_cg;
+  cg_btype instr_i_bgeu_cg;
+
+  cg_utype instr_i_lui_cg;
+  cg_utype instr_i_auipc_cg;
+
+  cg_jtype instr_i_jal_cg;
+
   //32M:
-  cg_rtype mul_cg;
-  cg_rtype mulh_cg;
-  cg_rtype mulhsu_cg;
-  cg_rtype mulhu_cg;
-  cg_rtype div_cg;
-  cg_rtype divu_cg;
-  cg_rtype rem_cg;
-  cg_rtype remu_cg;
+  cg_rtype instr_m_mul_cg;
+  cg_rtype instr_m_mulh_cg;
+  cg_rtype instr_m_mulhsu_cg;
+  cg_rtype instr_m_mulhu_cg;
+  cg_rtype instr_m_div_cg;
+  cg_div_special_results instr_m_div_results_cg;
+  cg_rtype instr_m_divu_cg;
+  cg_div_special_results instr_m_divu_results_cg;
+  cg_rtype instr_m_rem_cg;
+  cg_div_special_results instr_m_rem_results_cg;
+  cg_rtype instr_m_remu_cg;
+  cg_div_special_results instr_m_remu_results_cg;
+
   //32C:
-  cg_ciw c_addi4spn_cg;
-  cg_cl c_lw_cg;
-  cg_cs c_sw_cg;
-  cg_ci c_addi_cg;
-  cg_cj c_jal_cg;
-  cg_ci c_li_cg;
-  cg_ci c_addi16sp_cg;
-  cg_ci c_lui_cg;  // TODO need "cg_ci_lui" specialization?
-  cg_cb c_srli_cg;
-  cg_cb c_srai_cg;
-  cg_cb c_andi_cg;
-  cg_ca c_sub_cg;
-  cg_ca c_xor_cg;
-  cg_ca c_or_cg;
-  cg_ca c_and_cg;
-  cg_cj c_j_cg;
-  cg_cb c_beqz_cg;
-  cg_cb c_bnez_cg;
-  cg_ci c_slli_cg;
-  cg_ci c_lwsp_cg;
-  cg_cr c_jr_cg;
-  cg_cr c_mv_cg;
-  cg_cr c_ebreak_cg;  // TODO should have own cg?
-  cg_cr c_jalr_cg;
-  cg_cr c_add_cg;
-  cg_css c_swsp_cg;
+  cg_ciw instr_c_addi4spn_cg;
+
+  cg_cl  instr_c_lw_cg;
+
+  cg_cs  instr_c_sw_cg;
+
+  cg_ci  instr_c_addi_cg;
+  cg_ci  instr_c_slli_cg;
+  cg_ci  instr_c_lwsp_cg;
+  cg_ci  instr_c_li_cg;
+  cg_ci  instr_c_addi16sp_cg;
+  cg_ci  instr_c_lui_cg;  // TODO need "cg_ci_lui" specialization?
+
+  cg_cj  instr_c_jal_cg;
+  cg_cj  instr_c_j_cg;
+
+  cg_cb  instr_c_srli_cg;
+  cg_cb  instr_c_srai_cg;
+  cg_cb  instr_c_andi_cg;
+  cg_cb  instr_c_beqz_cg;
+  cg_cb  instr_c_bnez_cg;
+
+  cg_ca  instr_c_sub_cg;
+  cg_ca  instr_c_xor_cg;
+  cg_ca  instr_c_or_cg;
+  cg_ca  instr_c_and_cg;
+  
+  cg_cr  instr_c_jr_cg;
+  cg_cr  instr_c_mv_cg;
+  cg_cr  instr_c_ebreak_cg;  // TODO should have own cg?
+  cg_cr  instr_c_jalr_cg;
+  cg_cr  instr_c_add_cg;
+
+  cg_css instr_c_swsp_cg;
+  
   //Zicsr:
-  cg_csrtype  csrrw_cg;
-  cg_csrtype  csrrs_cg;
-  cg_csrtype  csrrc_cg;
-  cg_csritype csrrwi_cg;
-  cg_csritype csrrsi_cg;
-  cg_csritype csrrci_cg;
+  cg_csrtype  instr_csrrw_cg;
+  cg_csrtype  instr_csrrs_cg;
+  cg_csrtype  instr_csrrc_cg;
+  cg_csritype instr_csrrwi_cg;
+  cg_csritype instr_csrrsi_cg;
+  cg_csritype instr_csrrci_cg;
+
   //Zifence_i:
-  cg_itype fence_i_cg;  // TODO own cg? (not itype)
+  cg_itype    instr_fence_i_cg;  // TODO own cg? (not itype)
+
   // Instruction groups
-  cg_instr  instr_cg;
+  cg_instr    group_cg;
 
   // TLM
   uvm_tlm_analysis_fifo #(uvma_isacov_mon_trn_c) mon_trn_fifo;
@@ -454,104 +550,153 @@ function void uvma_isacov_cov_model_c::build_phase(uvm_phase phase);
 
   if (cfg.enabled && cfg.cov_model_enabled) begin
     if (cfg.core_cfg.ext_i_supported) begin
-      lui_cg    = new("lui_cg");
-      auipc_cg  = new("auipc_cg");
-      jal_cg    = new("jal_cg");
-      jalr_cg   = new("jalr_cg", .reg_crosses_enabled(cfg.reg_crosses_enabled));
+      instr_i_lui_cg    = new("instr_i_lui_cg");
+      instr_i_auipc_cg  = new("instr_i_auipc_cg");
+      instr_i_jal_cg    = new("instr_i_jal_cg");
+      instr_i_jalr_cg   = new("instr_i_jalr_cg", .reg_crosses_enabled(cfg.reg_crosses_enabled), .reg_hazards_enabled(cfg.reg_hazards_enabled));
 
-      beq_cg    = new("beq_cg", .reg_crosses_enabled(cfg.reg_crosses_enabled));
-      bne_cg    = new("bne_cg", .reg_crosses_enabled(cfg.reg_crosses_enabled));
-      blt_cg    = new("blt_cg", .reg_crosses_enabled(cfg.reg_crosses_enabled));
-      bge_cg    = new("bge_cg", .reg_crosses_enabled(cfg.reg_crosses_enabled));
-      bltu_cg   = new("bltu_cg", .reg_crosses_enabled(cfg.reg_crosses_enabled));
-      bgeu_cg   = new("bgeu_cg", .reg_crosses_enabled(cfg.reg_crosses_enabled));
+      instr_i_beq_cg    = new("instr_i_beq_cg", .reg_crosses_enabled(cfg.reg_crosses_enabled));
+      instr_i_bne_cg    = new("instr_i_bne_cg", .reg_crosses_enabled(cfg.reg_crosses_enabled));
+      instr_i_blt_cg    = new("instr_i_blt_cg", .reg_crosses_enabled(cfg.reg_crosses_enabled));
+      instr_i_bge_cg    = new("instr_i_bge_cg", .reg_crosses_enabled(cfg.reg_crosses_enabled));
+      instr_i_bltu_cg   = new("instr_i_bltu_cg", .reg_crosses_enabled(cfg.reg_crosses_enabled));
+      instr_i_bgeu_cg   = new("instr_i_bgeu_cg", .reg_crosses_enabled(cfg.reg_crosses_enabled));
 
-      lb_cg     = new("lb_cg", .reg_crosses_enabled(cfg.reg_crosses_enabled));
-      lh_cg     = new("lh_cg", .reg_crosses_enabled(cfg.reg_crosses_enabled));
-      lw_cg     = new("lw_cg", .reg_crosses_enabled(cfg.reg_crosses_enabled));
-      lbu_cg    = new("lbu_cg", .reg_crosses_enabled(cfg.reg_crosses_enabled));
-      lhu_cg    = new("lhu_cg", .reg_crosses_enabled(cfg.reg_crosses_enabled));
-      sb_cg     = new("sb_cg", .reg_crosses_enabled(cfg.reg_crosses_enabled));
-      sh_cg     = new("sh_cg", .reg_crosses_enabled(cfg.reg_crosses_enabled));
-      sw_cg     = new("sw_cg", .reg_crosses_enabled(cfg.reg_crosses_enabled));
+      instr_i_lb_cg     = new("instr_i_lb_cg",  .reg_crosses_enabled(cfg.reg_crosses_enabled), .reg_hazards_enabled(cfg.reg_hazards_enabled));
+      instr_i_lh_cg     = new("instr_i_lh_cg",  .reg_crosses_enabled(cfg.reg_crosses_enabled), .reg_hazards_enabled(cfg.reg_hazards_enabled));
+      instr_i_lw_cg     = new("instr_i_lw_cg",  .reg_crosses_enabled(cfg.reg_crosses_enabled), .reg_hazards_enabled(cfg.reg_hazards_enabled));
+      instr_i_lbu_cg    = new("instr_i_lbu_cg", .reg_crosses_enabled(cfg.reg_crosses_enabled), .reg_hazards_enabled(cfg.reg_hazards_enabled));
+      instr_i_lhu_cg    = new("instr_i_lhu_cg", .reg_crosses_enabled(cfg.reg_crosses_enabled), .reg_hazards_enabled(cfg.reg_hazards_enabled));
 
-      addi_cg   = new("addi_cg", .reg_crosses_enabled(cfg.reg_crosses_enabled));
-      slti_cg   = new("slti_cg", .reg_crosses_enabled(cfg.reg_crosses_enabled));
-      sltiu_cg  = new("sltiu_cg", .reg_crosses_enabled(cfg.reg_crosses_enabled));
-      xori_cg   = new("xori_cg", .reg_crosses_enabled(cfg.reg_crosses_enabled));
-      ori_cg    = new("ori_cg", .reg_crosses_enabled(cfg.reg_crosses_enabled));
-      andi_cg   = new("andi_cg", .reg_crosses_enabled(cfg.reg_crosses_enabled));
-      slli_cg   = new("slli_cg", .reg_crosses_enabled(cfg.reg_crosses_enabled));
-      srli_cg   = new("srli_cg", .reg_crosses_enabled(cfg.reg_crosses_enabled));
-      srai_cg   = new("srai_cg", .reg_crosses_enabled(cfg.reg_crosses_enabled));
+      instr_i_sb_cg     = new("instr_i_sb_cg", .reg_crosses_enabled(cfg.reg_crosses_enabled));
+      instr_i_sh_cg     = new("instr_i_sh_cg", .reg_crosses_enabled(cfg.reg_crosses_enabled));
+      instr_i_sw_cg     = new("instr_i_sw_cg", .reg_crosses_enabled(cfg.reg_crosses_enabled));
 
-      add_cg    = new("add_cg", .reg_crosses_enabled(cfg.reg_crosses_enabled));
-      sub_cg    = new("sub_cg", .reg_crosses_enabled(cfg.reg_crosses_enabled));
-      sll_cg    = new("sll_cg", .reg_crosses_enabled(cfg.reg_crosses_enabled));
-      slt_cg    = new("slt_cg", .reg_crosses_enabled(cfg.reg_crosses_enabled));
-      sltu_cg   = new("sltu_cg", .reg_crosses_enabled(cfg.reg_crosses_enabled));
-      xor_cg    = new("xor_cg", .reg_crosses_enabled(cfg.reg_crosses_enabled));
-      srl_cg    = new("srl_cg", .reg_crosses_enabled(cfg.reg_crosses_enabled));
-      sra_cg    = new("sra_cg", .reg_crosses_enabled(cfg.reg_crosses_enabled));
-      or_cg     = new("or_cg", .reg_crosses_enabled(cfg.reg_crosses_enabled));
-      and_cg    = new("and_cg", .reg_crosses_enabled(cfg.reg_crosses_enabled));
+      instr_i_addi_cg   = new("instr_i_addi_cg",  .reg_crosses_enabled(cfg.reg_crosses_enabled), .reg_hazards_enabled(cfg.reg_hazards_enabled));
+      instr_i_slti_cg   = new("instr_i_slti_cg",  .reg_crosses_enabled(cfg.reg_crosses_enabled), .reg_hazards_enabled(cfg.reg_hazards_enabled));
+      instr_i_sltiu_cg  = new("instr_i_sltiu_cg", .reg_crosses_enabled(cfg.reg_crosses_enabled), .reg_hazards_enabled(cfg.reg_hazards_enabled));
+      instr_i_xori_cg   = new("instr_i_xori_cg",  .reg_crosses_enabled(cfg.reg_crosses_enabled), .reg_hazards_enabled(cfg.reg_hazards_enabled));
+      instr_i_ori_cg    = new("instr_i_ori_cg",   .reg_crosses_enabled(cfg.reg_crosses_enabled), .reg_hazards_enabled(cfg.reg_hazards_enabled));
+      instr_i_andi_cg   = new("instr_i_andi_cg",  .reg_crosses_enabled(cfg.reg_crosses_enabled), .reg_hazards_enabled(cfg.reg_hazards_enabled));
+      instr_i_slli_cg   = new("instr_i_slli_cg",  .reg_crosses_enabled(cfg.reg_crosses_enabled), .reg_hazards_enabled(cfg.reg_hazards_enabled));
+      instr_i_srli_cg   = new("instr_i_srli_cg",  .reg_crosses_enabled(cfg.reg_crosses_enabled), .reg_hazards_enabled(cfg.reg_hazards_enabled));
+      instr_i_srai_cg   = new("instr_i_srai_cg",  .reg_crosses_enabled(cfg.reg_crosses_enabled), .reg_hazards_enabled(cfg.reg_hazards_enabled));
 
-      fence_cg  = new("fence_cg", .reg_crosses_enabled(cfg.reg_crosses_enabled));
-      ecall_cg  = new("ecall_cg", .reg_crosses_enabled(cfg.reg_crosses_enabled));
-      ebreak_cg = new("ebreak_cg", .reg_crosses_enabled(cfg.reg_crosses_enabled));
+      instr_i_add_cg    = new("instr_i_add_cg",  .reg_crosses_enabled(cfg.reg_crosses_enabled), .reg_hazards_enabled(cfg.reg_hazards_enabled));
+      instr_i_sub_cg    = new("instr_i_sub_cg",  .reg_crosses_enabled(cfg.reg_crosses_enabled), .reg_hazards_enabled(cfg.reg_hazards_enabled));
+      instr_i_sll_cg    = new("instr_i_sll_cg",  .reg_crosses_enabled(cfg.reg_crosses_enabled), .reg_hazards_enabled(cfg.reg_hazards_enabled));
+      instr_i_slt_cg    = new("instr_i_slt_cg",  .reg_crosses_enabled(cfg.reg_crosses_enabled), .reg_hazards_enabled(cfg.reg_hazards_enabled));
+      instr_i_sltu_cg   = new("instr_i_sltu_cg", .reg_crosses_enabled(cfg.reg_crosses_enabled), .reg_hazards_enabled(cfg.reg_hazards_enabled));
+      instr_i_xor_cg    = new("instr_i_xor_cg",  .reg_crosses_enabled(cfg.reg_crosses_enabled), .reg_hazards_enabled(cfg.reg_hazards_enabled));
+      instr_i_srl_cg    = new("instr_i_srl_cg",  .reg_crosses_enabled(cfg.reg_crosses_enabled), .reg_hazards_enabled(cfg.reg_hazards_enabled));
+      instr_i_sra_cg    = new("instr_i_sra_cg",  .reg_crosses_enabled(cfg.reg_crosses_enabled), .reg_hazards_enabled(cfg.reg_hazards_enabled));
+      instr_i_or_cg     = new("instr_i_or_cg",   .reg_crosses_enabled(cfg.reg_crosses_enabled), .reg_hazards_enabled(cfg.reg_hazards_enabled));
+      instr_i_and_cg    = new("instr_i_and_cg",  .reg_crosses_enabled(cfg.reg_crosses_enabled), .reg_hazards_enabled(cfg.reg_hazards_enabled));
+
+      instr_i_fence_cg  = new("instr_i_fence_cg",  .reg_crosses_enabled(cfg.reg_crosses_enabled), .reg_hazards_enabled(cfg.reg_hazards_enabled));
+      instr_i_ecall_cg  = new("instr_i_ecall_cg",  .reg_crosses_enabled(cfg.reg_crosses_enabled), .reg_hazards_enabled(cfg.reg_hazards_enabled));
+      instr_i_ebreak_cg = new("instr_i_ebreak_cg", .reg_crosses_enabled(cfg.reg_crosses_enabled), .reg_hazards_enabled(cfg.reg_hazards_enabled));
     end
     if (cfg.core_cfg.ext_m_supported) begin
-      mul_cg    = new("mul_cg", .reg_crosses_enabled(cfg.reg_crosses_enabled));
-      mulh_cg   = new("mulh_cg", .reg_crosses_enabled(cfg.reg_crosses_enabled));
-      mulhsu_cg = new("mulhsu_cg", .reg_crosses_enabled(cfg.reg_crosses_enabled));
-      mulhu_cg  = new("mulhu_cg", .reg_crosses_enabled(cfg.reg_crosses_enabled));
-      div_cg    = new("div_cg", .reg_crosses_enabled(cfg.reg_crosses_enabled));
-      divu_cg   = new("divu_cg", .reg_crosses_enabled(cfg.reg_crosses_enabled));
-      rem_cg    = new("rem_cg", .reg_crosses_enabled(cfg.reg_crosses_enabled));
-      remu_cg   = new("remu_cg", .reg_crosses_enabled(cfg.reg_crosses_enabled));
+      instr_m_mul_cg    = new("instr_m_mul_cg",    
+                              .reg_crosses_enabled(cfg.reg_crosses_enabled), 
+                              .reg_hazards_enabled(cfg.reg_hazards_enabled), 
+                              .rs1_is_signed(rs1_is_signed[MUL]),
+                              .rs2_is_signed(rs2_is_signed[MUL]),
+                              .rd_is_signed(rd_is_signed[MUL]));
+      instr_m_mulh_cg   = new("instr_m_mulh_cg",   
+                              .reg_crosses_enabled(cfg.reg_crosses_enabled), 
+                              .reg_hazards_enabled(cfg.reg_hazards_enabled), 
+                              .rs1_is_signed(rs1_is_signed[MULH]),
+                              .rs2_is_signed(rs2_is_signed[MULH]),
+                              .rd_is_signed(rd_is_signed[MULH]));
+      instr_m_mulhsu_cg = new("instr_m_mulhsu_cg", 
+                              .reg_crosses_enabled(cfg.reg_crosses_enabled), 
+                              .reg_hazards_enabled(cfg.reg_hazards_enabled),
+                              .rs1_is_signed(rs1_is_signed[MULHSU]),
+                              .rs2_is_signed(rs2_is_signed[MULHSU]),
+                              .rd_is_signed(rd_is_signed[MULHSU]));
+      instr_m_mulhu_cg  = new("instr_m_mulhu_cg",  
+                              .reg_crosses_enabled(cfg.reg_crosses_enabled), 
+                              .reg_hazards_enabled(cfg.reg_hazards_enabled), 
+                              .rs1_is_signed(rs1_is_signed[MULHU]),
+                              .rs2_is_signed(rs2_is_signed[MULHU]),
+                              .rd_is_signed(rd_is_signed[MULHU]));
+      instr_m_div_cg    = new("instr_m_div_cg",    
+                              .reg_crosses_enabled(cfg.reg_crosses_enabled), 
+                              .reg_hazards_enabled(cfg.reg_hazards_enabled), 
+                              .rs1_is_signed(rs1_is_signed[DIV]),
+                              .rs2_is_signed(rs2_is_signed[DIV]),
+                              .rd_is_signed(rd_is_signed[DIV]));      
+      instr_m_div_results_cg = new("instr_m_div_results_cg",
+                                    .check_overflow(1));
+      instr_m_divu_cg   = new("instr_m_divu_cg",   
+                              .reg_crosses_enabled(cfg.reg_crosses_enabled), 
+                              .reg_hazards_enabled(cfg.reg_hazards_enabled), 
+                              .rs1_is_signed(rs1_is_signed[DIVU]),
+                              .rs2_is_signed(rs2_is_signed[DIVU]),
+                              .rd_is_signed(rd_is_signed[DIVU]));                              
+      instr_m_divu_results_cg = new("instr_m_udiv_results_cg",    
+                                    .check_overflow(0));
+      instr_m_rem_cg    = new("instr_m_rem_cg",
+                              .reg_crosses_enabled(cfg.reg_crosses_enabled), 
+                              .reg_hazards_enabled(cfg.reg_hazards_enabled), 
+                              .rs1_is_signed(rs1_is_signed[REM]),
+                              .rs2_is_signed(rs2_is_signed[REM]),
+                              .rd_is_signed(rd_is_signed[REM]));    
+      instr_m_rem_results_cg = new("instr_m_rem_results_cg",    
+                                   .check_overflow(1));
+      instr_m_remu_cg   = new("instr_m_remu_cg",
+                              .reg_crosses_enabled(cfg.reg_crosses_enabled), 
+                              .reg_hazards_enabled(cfg.reg_hazards_enabled), 
+                              .rs1_is_signed(rs1_is_signed[REMU]),
+                              .rs2_is_signed(rs2_is_signed[REMU]),
+                              .rd_is_signed(rd_is_signed[REMU]));    
+      instr_m_remu_results_cg = new("instr_m_remu_results_cg",
+                                    .check_overflow(0));
     end
     if (cfg.core_cfg.ext_c_supported) begin
-      c_addi4spn_cg = new("c_addi4spn_cg");
-      c_lw_cg       = new("c_lw_cg", .reg_crosses_enabled(cfg.reg_crosses_enabled));
-      c_sw_cg       = new("c_sw_cg", .reg_crosses_enabled(cfg.reg_crosses_enabled));
+      instr_c_addi4spn_cg = new("instr_c_addi4spn_cg");
+      instr_c_lw_cg       = new("instr_c_lw_cg", .reg_crosses_enabled(cfg.reg_crosses_enabled));
+      instr_c_sw_cg       = new("instr_c_sw_cg", .reg_crosses_enabled(cfg.reg_crosses_enabled));
 
-      c_addi_cg     = new("c_addi_cg");
-      c_jal_cg      = new("c_jal_cg");
-      c_li_cg       = new("c_li_cg");
-      c_addi16sp_cg = new("c_addi16sp_cg");
-      c_lui_cg      = new("c_lui_cg");
-      c_srli_cg     = new("c_srli_cg");
-      c_srai_cg     = new("c_srai_cg");
-      c_andi_cg     = new("c_andi_cg");
-      c_sub_cg      = new("c_sub_cg", .reg_crosses_enabled(cfg.reg_crosses_enabled));
-      c_xor_cg      = new("c_xor_cg", .reg_crosses_enabled(cfg.reg_crosses_enabled));
-      c_or_cg       = new("c_or_cg", .reg_crosses_enabled(cfg.reg_crosses_enabled));
-      c_and_cg      = new("c_and_cg", .reg_crosses_enabled(cfg.reg_crosses_enabled));
-      c_j_cg        = new("c_j_cg");
-      c_beqz_cg     = new("c_beqz_cg");
-      c_bnez_cg     = new("c_bnez_cg");
+      instr_c_addi_cg     = new("instr_c_addi_cg");
+      instr_c_jal_cg      = new("instr_c_jal_cg");
+      instr_c_li_cg       = new("instr_c_li_cg");
+      instr_c_addi16sp_cg = new("instr_c_addi16sp_cg");
+      instr_c_lui_cg      = new("instr_c_lui_cg");
+      instr_c_srli_cg     = new("instr_c_srli_cg");
+      instr_c_srai_cg     = new("instr_c_srai_cg");
+      instr_c_andi_cg     = new("instr_c_andi_cg");
+      instr_c_sub_cg      = new("instr_c_sub_cg", .reg_crosses_enabled(cfg.reg_crosses_enabled));
+      instr_c_xor_cg      = new("instr_c_xor_cg", .reg_crosses_enabled(cfg.reg_crosses_enabled));
+      instr_c_or_cg       = new("instr_c_or_cg", .reg_crosses_enabled(cfg.reg_crosses_enabled));
+      instr_c_and_cg      = new("instr_c_and_cg", .reg_crosses_enabled(cfg.reg_crosses_enabled));
+      instr_c_j_cg        = new("instr_c_j_cg");
+      instr_c_beqz_cg     = new("instr_c_beqz_cg");
+      instr_c_bnez_cg     = new("instr_c_bnez_cg");
 
-      c_slli_cg     = new("c_slli_cg");
-      c_lwsp_cg     = new("c_lwsp_cg");
-      c_jr_cg       = new("c_jr_cg", .reg_crosses_enabled(cfg.reg_crosses_enabled));
-      c_mv_cg       = new("c_mv_cg", .reg_crosses_enabled(cfg.reg_crosses_enabled));
-      c_ebreak_cg   = new("c_ebreak_cg", .reg_crosses_enabled(cfg.reg_crosses_enabled));
-      c_jalr_cg     = new("c_jalr_cg", .reg_crosses_enabled(cfg.reg_crosses_enabled));
-      c_add_cg      = new("c_add_cg", .reg_crosses_enabled(cfg.reg_crosses_enabled));
-      c_swsp_cg     = new("c_swsp_cg");
+      instr_c_slli_cg     = new("instr_c_slli_cg");
+      instr_c_lwsp_cg     = new("instr_c_lwsp_cg");
+      instr_c_jr_cg       = new("instr_c_jr_cg", .reg_crosses_enabled(cfg.reg_crosses_enabled), .reg_hazards_enabled(0));
+      instr_c_mv_cg       = new("instr_c_mv_cg", .reg_crosses_enabled(cfg.reg_crosses_enabled), .reg_hazards_enabled(cfg.reg_hazards_enabled));
+      instr_c_ebreak_cg   = new("instr_c_ebreak_cg", .reg_crosses_enabled(cfg.reg_crosses_enabled), .reg_hazards_enabled(0));
+      instr_c_jalr_cg     = new("instr_c_jalr_cg", .reg_crosses_enabled(cfg.reg_crosses_enabled), .reg_hazards_enabled(0));
+      instr_c_add_cg      = new("instr_c_add_cg", .reg_crosses_enabled(cfg.reg_crosses_enabled), .reg_hazards_enabled(cfg.reg_hazards_enabled));
+      instr_c_swsp_cg     = new("instr_c_swsp_cg");
     end
     if (cfg.core_cfg.ext_zicsri_supported) begin
-      csrrw_cg  = new("csrrw_cg", cfg.core_cfg.unsupported_csr_mask, .reg_crosses_enabled(cfg.reg_crosses_enabled));
-      csrrs_cg  = new("csrrs_cg", cfg.core_cfg.unsupported_csr_mask, .reg_crosses_enabled(cfg.reg_crosses_enabled));
-      csrrc_cg  = new("csrrc_cg", cfg.core_cfg.unsupported_csr_mask, .reg_crosses_enabled(cfg.reg_crosses_enabled));
-      csrrwi_cg = new("csrrwi_cg", cfg.core_cfg.unsupported_csr_mask, .reg_crosses_enabled(cfg.reg_crosses_enabled));
-      csrrsi_cg = new("csrrsi_cg", cfg.core_cfg.unsupported_csr_mask, .reg_crosses_enabled(cfg.reg_crosses_enabled));
-      csrrci_cg = new("csrrci_cg", cfg.core_cfg.unsupported_csr_mask, .reg_crosses_enabled(cfg.reg_crosses_enabled));
+      instr_csrrw_cg  = new("instr_csrrw_cg", cfg.core_cfg.unsupported_csr_mask, .reg_crosses_enabled(cfg.reg_crosses_enabled));
+      instr_csrrs_cg  = new("instr_csrrs_cg", cfg.core_cfg.unsupported_csr_mask, .reg_crosses_enabled(cfg.reg_crosses_enabled));
+      instr_csrrc_cg  = new("instr_csrrc_cg", cfg.core_cfg.unsupported_csr_mask, .reg_crosses_enabled(cfg.reg_crosses_enabled));
+      instr_csrrwi_cg = new("instr_csrrwi_cg", cfg.core_cfg.unsupported_csr_mask, .reg_crosses_enabled(cfg.reg_crosses_enabled));
+      instr_csrrsi_cg = new("instr_csrrsi_cg", cfg.core_cfg.unsupported_csr_mask, .reg_crosses_enabled(cfg.reg_crosses_enabled));
+      instr_csrrci_cg = new("instr_csrrci_cg", cfg.core_cfg.unsupported_csr_mask, .reg_crosses_enabled(cfg.reg_crosses_enabled));
     end
     if (cfg.core_cfg.ext_zifencei_supported) begin
-      fence_i_cg = new("fence_i_cg", .reg_crosses_enabled(cfg.reg_crosses_enabled));
+      instr_fence_i_cg = new("instr_fence_i_cg", .reg_crosses_enabled(cfg.reg_crosses_enabled), .reg_hazards_enabled(cfg.reg_hazards_enabled));
     end
-    instr_cg = new("instr_cg",
+    group_cg = new("group_cg",
                    .seq_instr_group_x2_enabled(cfg.seq_instr_group_x2_enabled),
                    .seq_instr_group_x3_enabled(cfg.seq_instr_group_x3_enabled),
                    .seq_instr_group_x4_enabled(cfg.seq_instr_group_x4_enabled),
@@ -587,51 +732,51 @@ function void uvma_isacov_cov_model_c::sample (uvma_isacov_instr_c instr);
   if (!have_sampled && cfg.core_cfg.ext_i_supported) begin
     have_sampled = 1;
     case (instr.name)
-      LUI:   lui_cg.sample(instr);
-      AUIPC: auipc_cg.sample(instr);
-      JAL:   jal_cg.sample(instr);
-      JALR:  jalr_cg.sample(instr);
+      LUI:   instr_i_lui_cg.sample(instr);
+      AUIPC: instr_i_auipc_cg.sample(instr);
+      JAL:   instr_i_jal_cg.sample(instr);
+      JALR:  instr_i_jalr_cg.sample(instr);
 
-      BEQ:  beq_cg.sample(instr);
-      BNE:  bne_cg.sample(instr);
-      BLT:  blt_cg.sample(instr);
-      BGE:  bge_cg.sample(instr);
-      BLTU: bltu_cg.sample(instr);
-      BGEU: bgeu_cg.sample(instr);
+      BEQ:  instr_i_beq_cg.sample(instr);
+      BNE:  instr_i_bne_cg.sample(instr);
+      BLT:  instr_i_blt_cg.sample(instr);
+      BGE:  instr_i_bge_cg.sample(instr);
+      BLTU: instr_i_bltu_cg.sample(instr);
+      BGEU: instr_i_bgeu_cg.sample(instr);
 
-      LB:  lb_cg.sample(instr);
-      LH:  lh_cg.sample(instr);
-      LW:  lw_cg.sample(instr);
-      LBU: lbu_cg.sample(instr);
-      LHU: lhu_cg.sample(instr);
-      SB:  sb_cg.sample(instr);
-      SH:  sh_cg.sample(instr);
-      SW:  sw_cg.sample(instr);
+      LB:  instr_i_lb_cg.sample(instr);
+      LH:  instr_i_lh_cg.sample(instr);
+      LW:  instr_i_lw_cg.sample(instr);
+      LBU: instr_i_lbu_cg.sample(instr);
+      LHU: instr_i_lhu_cg.sample(instr);
+      SB:  instr_i_sb_cg.sample(instr);
+      SH:  instr_i_sh_cg.sample(instr);
+      SW:  instr_i_sw_cg.sample(instr);
 
-      ADDI:  addi_cg.sample(instr);
-      SLTI:  slti_cg.sample(instr);
-      SLTIU: sltiu_cg.sample(instr);
-      XORI:  xori_cg.sample(instr);
-      ORI:   ori_cg.sample(instr);
-      ANDI:  andi_cg.sample(instr);
-      SLLI:  slli_cg.sample(instr);
-      SRLI:  srli_cg.sample(instr);
-      SRAI:  srai_cg.sample(instr);
+      ADDI:  instr_i_addi_cg.sample(instr);
+      SLTI:  instr_i_slti_cg.sample(instr);
+      SLTIU: instr_i_sltiu_cg.sample(instr);
+      XORI:  instr_i_xori_cg.sample(instr);
+      ORI:   instr_i_ori_cg.sample(instr);
+      ANDI:  instr_i_andi_cg.sample(instr);
+      SLLI:  instr_i_slli_cg.sample(instr);
+      SRLI:  instr_i_srli_cg.sample(instr);
+      SRAI:  instr_i_srai_cg.sample(instr);
 
-      ADD:  add_cg.sample(instr);
-      SUB:  sub_cg.sample(instr);
-      SLL:  sll_cg.sample(instr);
-      SLT:  slt_cg.sample(instr);
-      SLTU: sltu_cg.sample(instr);
-      XOR:  xor_cg.sample(instr);
-      SRL:  srl_cg.sample(instr);
-      SRA:  sra_cg.sample(instr);
-      OR:   or_cg.sample(instr);
-      AND:  and_cg.sample(instr);
+      ADD:  instr_i_add_cg.sample(instr);      
+      SUB:  instr_i_sub_cg.sample(instr);
+      SLL:  instr_i_sll_cg.sample(instr);
+      SLT:  instr_i_slt_cg.sample(instr);
+      SLTU: instr_i_sltu_cg.sample(instr);
+      XOR:  instr_i_xor_cg.sample(instr);
+      SRL:  instr_i_srl_cg.sample(instr);
+      SRA:  instr_i_sra_cg.sample(instr);
+      OR:   instr_i_or_cg.sample(instr);
+      AND:  instr_i_and_cg.sample(instr);
 
-      FENCE:  fence_cg.sample(instr);
-      ECALL:  ecall_cg.sample(instr);
-      EBREAK: ebreak_cg.sample(instr);
+      FENCE:  instr_i_fence_cg.sample(instr);
+      ECALL:  instr_i_ecall_cg.sample(instr);
+      EBREAK: instr_i_ebreak_cg.sample(instr);
 
       default: have_sampled = 0;
     endcase
@@ -640,14 +785,27 @@ function void uvma_isacov_cov_model_c::sample (uvma_isacov_instr_c instr);
   if (!have_sampled && cfg.core_cfg.ext_m_supported) begin
     have_sampled = 1;
     case (instr.name)
-      MUL:     mul_cg.sample(instr);
-      MULH:    mulh_cg.sample(instr);
-      MULHSU:  mulhsu_cg.sample(instr);
-      MULHU:   mulhu_cg.sample(instr);
-      DIV:     div_cg.sample(instr);
-      DIVU:    divu_cg.sample(instr);
-      REM:     rem_cg.sample(instr);
-      REMU:    remu_cg.sample(instr);
+      MUL:     instr_m_mul_cg.sample(instr);
+      MULH:    instr_m_mulh_cg.sample(instr);
+      MULHSU:  instr_m_mulhsu_cg.sample(instr);
+      MULHU:   instr_m_mulhu_cg.sample(instr);
+      DIV: begin
+               instr_m_div_results_cg.sample(instr);
+               instr_m_div_cg.sample(instr);
+               
+      end    
+      DIVU: begin
+               instr_m_divu_cg.sample(instr);
+               instr_m_divu_results_cg.sample(instr);
+      end    
+      REM: begin
+               instr_m_rem_cg.sample(instr);
+               instr_m_rem_results_cg.sample(instr);
+      end    
+      REMU: begin
+               instr_m_remu_cg.sample(instr);
+               instr_m_remu_results_cg.sample(instr);
+      end    
       default: have_sampled = 0;
     endcase
   end
@@ -655,34 +813,34 @@ function void uvma_isacov_cov_model_c::sample (uvma_isacov_instr_c instr);
   if (!have_sampled && cfg.core_cfg.ext_c_supported) begin
     have_sampled = 1;
     case (instr.name)
-      C_ADDI4SPN: c_addi4spn_cg.sample(instr);
-      C_LW:       c_lw_cg.sample(instr);
-      C_SW:       c_sw_cg.sample(instr);
+      C_ADDI4SPN: instr_c_addi4spn_cg.sample(instr);
+      C_LW:       instr_c_lw_cg.sample(instr);
+      C_SW:       instr_c_sw_cg.sample(instr);
 
-      C_ADDI:     c_addi_cg.sample(instr);
-      C_JAL:      c_jal_cg.sample(instr);
-      C_LI:       c_li_cg.sample(instr);
-      C_ADDI16SP: c_addi16sp_cg.sample(instr);
-      C_LUI:      c_lui_cg.sample(instr);
-      C_SRLI:     c_srli_cg.sample(instr);
-      C_SRAI:     c_srai_cg.sample(instr);
-      C_ANDI:     c_andi_cg.sample(instr);
-      C_SUB:      c_sub_cg.sample(instr);
-      C_XOR:      c_xor_cg.sample(instr);
-      C_OR:       c_or_cg.sample(instr);
-      C_AND:      c_and_cg.sample(instr);
-      C_J:        c_j_cg.sample(instr);
-      C_BEQZ:     c_beqz_cg.sample(instr);
-      C_BNEZ:     c_bnez_cg.sample(instr);
+      C_ADDI:     instr_c_addi_cg.sample(instr);
+      C_JAL:      instr_c_jal_cg.sample(instr);
+      C_LI:       instr_c_li_cg.sample(instr);
+      C_ADDI16SP: instr_c_addi16sp_cg.sample(instr);
+      C_LUI:      instr_c_lui_cg.sample(instr);
+      C_SRLI:     instr_c_srli_cg.sample(instr);
+      C_SRAI:     instr_c_srai_cg.sample(instr);
+      C_ANDI:     instr_c_andi_cg.sample(instr);
+      C_SUB:      instr_c_sub_cg.sample(instr);
+      C_XOR:      instr_c_xor_cg.sample(instr);
+      C_OR:       instr_c_or_cg.sample(instr);
+      C_AND:      instr_c_and_cg.sample(instr);
+      C_J:        instr_c_j_cg.sample(instr);
+      C_BEQZ:     instr_c_beqz_cg.sample(instr);
+      C_BNEZ:     instr_c_bnez_cg.sample(instr);
 
-      C_SLLI:   c_slli_cg.sample(instr);
-      C_LWSP:   c_lwsp_cg.sample(instr);
-      C_JR:     c_jr_cg.sample(instr);
-      C_MV:     c_mv_cg.sample(instr);
-      C_EBREAK: c_ebreak_cg.sample(instr);
-      C_JALR:   c_jalr_cg.sample(instr);
-      C_ADD:    c_add_cg.sample(instr);
-      C_SWSP:   c_swsp_cg.sample(instr);
+      C_SLLI:   instr_c_slli_cg.sample(instr);
+      C_LWSP:   instr_c_lwsp_cg.sample(instr);
+      C_JR:     instr_c_jr_cg.sample(instr);
+      C_MV:     instr_c_mv_cg.sample(instr);
+      C_EBREAK: instr_c_ebreak_cg.sample(instr);
+      C_JALR:   instr_c_jalr_cg.sample(instr);
+      C_ADD:    instr_c_add_cg.sample(instr);
+      C_SWSP:   instr_c_swsp_cg.sample(instr);
 
       default: have_sampled = 0;
     endcase
@@ -691,12 +849,12 @@ function void uvma_isacov_cov_model_c::sample (uvma_isacov_instr_c instr);
   if (!have_sampled && cfg.core_cfg.ext_zicsri_supported) begin
     have_sampled = 1;
     case (instr.name)
-      CSRRW:   csrrw_cg.sample(instr);
-      CSRRS:   csrrs_cg.sample(instr);
-      CSRRC:   csrrc_cg.sample(instr);
-      CSRRWI:  csrrwi_cg.sample(instr);
-      CSRRSI:  csrrsi_cg.sample(instr);
-      CSRRCI:  csrrci_cg.sample(instr);
+      CSRRW:   instr_csrrw_cg.sample(instr);
+      CSRRS:   instr_csrrs_cg.sample(instr);
+      CSRRC:   instr_csrrc_cg.sample(instr);
+      CSRRWI:  instr_csrrwi_cg.sample(instr);
+      CSRRSI:  instr_csrrsi_cg.sample(instr);
+      CSRRCI:  instr_csrrci_cg.sample(instr);
       default: have_sampled = 0;
     endcase
   end
@@ -704,7 +862,7 @@ function void uvma_isacov_cov_model_c::sample (uvma_isacov_instr_c instr);
   if (!have_sampled && cfg.core_cfg.ext_zifencei_supported) begin
     have_sampled = 1;
     case (instr.name)
-      FENCE_I: fence_i_cg.sample(instr);
+      FENCE_I: instr_fence_i_cg.sample(instr);
       default: have_sampled = 0;
     endcase
   end
@@ -713,7 +871,7 @@ function void uvma_isacov_cov_model_c::sample (uvma_isacov_instr_c instr);
     `uvm_info("ISACOV", $sformatf("Could not sample instruction: %s", instr.name.name()), UVM_DEBUG);
   end
 
-  instr_cg.sample(instr, 
+  group_cg.sample(instr, 
                   instr_prev, 
                   instr_prev2, 
                   instr_prev3, 

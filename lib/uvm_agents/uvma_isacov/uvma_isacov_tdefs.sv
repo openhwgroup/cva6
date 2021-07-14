@@ -324,6 +324,35 @@ typedef enum bit[CSR_ADDR_WL-1:0] {
   VLENB          = 'hC22
 } instr_csr_t;
 
+bit rs1_is_signed[instr_name_t] = '{
+  MULH   : 1,
+  MULHSU : 1,
+  DIV    : 1,
+  REM    : 1,
+  default: 0
+};
+
+bit rs2_is_signed[instr_name_t] = '{
+  MULH   : 1,  
+  DIV    : 1,
+  REM    : 1,
+  default: 0
+};
+
+bit rd_is_signed[instr_name_t] = '{
+  MULH   : 1,
+  MULHSU : 1,
+  DIV    : 1,
+  REM    : 1,
+  default: 0
+};
+
+typedef enum {
+  ZERO,     // For signed and unsigned values
+  NON_ZERO, // For unsigned values
+  POSITIVE, // For signed values
+  NEGATIVE  // For signed value
+} instr_value_t;
 
 // Package level methods to map instruction to type
 function instr_type_t get_instr_type(instr_name_t name);
