@@ -154,7 +154,7 @@ task uvme_cv32e40p_vp_vseq_c::body();
       
       begin
          forever begin
-            //`uvm_info("OBI_MEMORY_SLV_SEQ", $sformatf("Waiting %0d ps", cycle_counter_frequency), UVM_LOW)
+            `uvm_info("OBI_MEMORY_SLV_SEQ", $sformatf("Waiting %0d ps", cycle_counter_frequency), UVM_LOW)
             #(cycle_counter_frequency * 1ps);
             cycle_counter++;
          end
@@ -184,7 +184,7 @@ task uvme_cv32e40p_vp_vseq_c::body();
    
 endtask : body
 
-/*
+
 task uvme_cv32e40p_vp_vseq_c::do_response(ref uvma_obi_memory_mon_trn_c mon_req);
    
    bit  vp_handled = 1;
@@ -215,7 +215,7 @@ task uvme_cv32e40p_vp_vseq_c::do_response(ref uvma_obi_memory_mon_trn_c mon_req)
    end
    
 endtask : do_response
-*/
+
 
 task uvme_cv32e40p_vp_vseq_c::do_response(ref uvma_obi_memory_mon_trn_c mon_req);
 
@@ -383,17 +383,17 @@ task uvme_cv32e40p_vp_vseq_c::vp_debug_control(ref uvma_obi_memory_mon_trn_c mon
             end
             
             if (request_mode) begin
-               //cntxt.misc_vif.debugger_wdata = dbg_req_value;
+               cntxt.debug_vif.debugger_wdata = dbg_req_value;
                if (rand_pulse_duration) begin
                   #($urandom_range(0, dbg_pulse_duration) * 1ns);
                end
                else begin
                   #(dbg_pulse_duration * 1ns);
                end
-               //cntxt.misc_vif.debugger_wdata = !dbg_req_value;
+               cntxt.debug_vif.debugger_wdata = !dbg_req_value;
             end
             else begin
-               //cntxt.misc_vif.debugger_wdata = dbg_req_value;
+               cntxt.debug_vif.debugger_wdata = dbg_req_value;
             end
          end
       join_none
@@ -558,8 +558,8 @@ endtask : vp_sig_writer
 
 task uvme_cv32e40p_vp_vseq_c::irq_o();
    
-   //wait (cntxt.misc_vif.clk === 1);
-   //cntxt.misc_vif.irq_o = 1;
+   wait (cntxt.intr_vif.clk === 1);
+   cntxt.intr_vif.irq_o = 1;
    
 endtask : irq_o
 
