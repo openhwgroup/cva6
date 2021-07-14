@@ -33,6 +33,7 @@ module uvmt_cv32e40x_debug_assert
   string info_tag = "CV32E40X_DEBUG_ASSERT";
   logic [31:0] pc_at_dbg_req; // Capture PC when debug_req_i or ebreak is active
   logic [31:0] pc_at_ebreak; // Capture PC when ebreak
+  logic [31:0] rvfi_pc_wdata;
   logic [31:0] halt_addr_at_entry;
   logic halt_addr_at_entry_flag;
   logic [31:0] exception_addr_at_entry;
@@ -109,8 +110,10 @@ module uvmt_cv32e40x_debug_assert
 
     // Check that debug with cause ebreak is correct
     property p_cebreak_debug_mode;
+1; /* TODO:ropeders
         $rose(cov_assert_if.debug_mode_q) && (cov_assert_if.dcsr_q[8:6] == cv32e40x_pkg::DBG_CAUSE_EBREAK)
         |-> debug_cause_pri == cv32e40x_pkg::DBG_CAUSE_EBREAK;
+*/
     endproperty
 
     a_cebreak_debug_mode: assert property(p_cebreak_debug_mode)
@@ -290,7 +293,9 @@ module uvmt_cv32e40x_debug_assert
     // If pending debug req, illegal insn will not assert
     // until resume
     property p_mmode_dret;
+1; /* TODO:ropeders
         !cov_assert_if.debug_mode_q && cov_assert_if.is_dret && !cov_assert_if.debug_req_i   |-> ##1 cov_assert_if.illegal_insn_q;
+*/
     endproperty
 
     a_mmode_dret : assert property(p_mmode_dret)
@@ -352,10 +357,8 @@ module uvmt_cv32e40x_debug_assert
     // not pc from interrupt handler
     // PC is checked in another assertion
     property p_debug_req_and_irq;
-1; /* TODO:ropeders
-        cov_assert_if.debug_req_i && cov_assert_if.pending_enabled_irq  && cov_assert_if.ctrl_fsm_cs == cv32e40x_pkg::DECODE
+        cov_assert_if.debug_req_i && cov_assert_if.pending_enabled_irq  && cov_assert_if.ctrl_fsm_cs == cv32e40x_pkg::FUNCTIONAL
         |-> (decode_valid & cov_assert_if.id_valid) [->1:2] ##0 cov_assert_if.debug_mode_q;
-*/
     endproperty
 
     a_debug_req_and_irq : assert property(p_debug_req_and_irq)
@@ -378,30 +381,35 @@ module uvmt_cv32e40x_debug_assert
     // comes while flushing due to an illegal insn, causing
     // dpc to be set to the exception handler entry addr
     property p_illegal_insn_debug_req;
-1; /* TODO:ropeders
-        (cov_assert_if.ctrl_fsm_cs == cv32e40x_pkg::FLUSH_EX | cov_assert_if.ctrl_fsm_cs == cv32e40x_pkg::FLUSH_WB) && cov_assert_if.illegal_insn_q & cov_assert_if.debug_req_i & !cov_assert_if.debug_mode_q|-> decode_valid [->1:2] ##0 cov_assert_if.debug_mode_q &&  cov_assert_if.depc_q == cov_assert_if.mtvec;
-*/
+        (cov_assert_if.ctrl_fsm_cs == cv32e40x_pkg::FUNCTIONAL) && cov_assert_if.illegal_insn_q & cov_assert_if.debug_req_i & !cov_assert_if.debug_mode_q|-> decode_valid [->1:2] ##0 cov_assert_if.debug_mode_q &&  cov_assert_if.depc_q == cov_assert_if.mtvec;
     endproperty
     
     a_illegal_insn_debug_req : assert property(p_illegal_insn_debug_req)
         else
             `uvm_error(info_tag, "Debug mode not entered correctly while handling illegal instruction!");
-// -------------------------------------------
+    // -------------------------------------------
     // Capture internal states for use in checking
     // -------------------------------------------
     always @(posedge cov_assert_if.clk_i or negedge cov_assert_if.rst_ni) begin
         if(!cov_assert_if.rst_ni) begin
             pc_at_dbg_req <= 32'h0;
             pc_at_ebreak <= 32'h0;
+            rvfi_pc_wdata <= 32'h0;
         end else begin
-            // Capture debug pc
-/* TODO:ropeders
-            if(cov_assert_if.ctrl_fsm_cs == cv32e40x_pkg::DBG_TAKEN_ID) begin
-                pc_at_dbg_req <= cov_assert_if.id_stage_pc;
-            end else if(cov_assert_if.ctrl_fsm_cs == cv32e40x_pkg::DBG_TAKEN_IF) begin
-                pc_at_dbg_req <= cov_assert_if.if_stage_pc;
+            // Capture rvfi pc_wdata
+            if (cov_assert_if.rvfi_valid) begin
+                // rvfi_pc_wdata may change before next rvfi_valid, so better save it for later use
+                rvfi_pc_wdata <= cov_assert_if.rvfi_pc_wdata;
             end
-*/
+
+            // Capture debug pc
+            if(cov_assert_if.ctrl_fsm_cs == cv32e40x_pkg::DEBUG_TAKEN) begin
+                pc_at_dbg_req <= rvfi_pc_wdata;
+                if (cov_assert_if.rvfi_valid) begin
+                    // If there is a newer rvfi_pc_wdata available, we want that instead of the one we saved
+                    pc_at_dbg_req <= cov_assert_if.rvfi_pc_wdata;
+                end
+            end
 
             // Capture pc at ebreak
             if(cov_assert_if.is_ebreak || cov_assert_if.is_cebreak ) begin
@@ -433,13 +441,11 @@ module uvmt_cv32e40x_debug_assert
           halt_addr_at_entry_flag <= 1'b0;
       end else begin
           if(!halt_addr_at_entry_flag) begin
-/* TODO:ropeders
-              if(cov_assert_if.ctrl_fsm_cs == cv32e40x_pkg::DBG_TAKEN_ID | cov_assert_if.ctrl_fsm_cs == cv32e40x_pkg::DBG_TAKEN_IF) begin
+              if(cov_assert_if.ctrl_fsm_cs == cv32e40x_pkg::DEBUG_TAKEN) begin
                   halt_addr_at_entry <= {cov_assert_if.dm_halt_addr_i[31:2], 2'b00};
                   tdata2_at_entry <= cov_assert_if.tdata2;
                   halt_addr_at_entry_flag <= 1'b1;
               end
-*/
           end
 
           // Clear flag while not in dmode or we see ebreak in debug
@@ -458,8 +464,11 @@ module uvmt_cv32e40x_debug_assert
 
     assign cov_assert_if.addr_match   = (cov_assert_if.id_stage_pc == cov_assert_if.tdata2);
     assign cov_assert_if.dpc_will_hit = (cov_assert_if.depc_n == cov_assert_if.tdata2);
+/* TODO:ropeders is the is_wfi prediction/connection 100% alright?
     assign cov_assert_if.is_wfi = cov_assert_if.id_stage_instr_valid_i & cov_assert_if.id_valid &
                                   ((cov_assert_if.id_stage_instr_rdata_i & WFI_INSTR_MASK) == WFI_INSTR_DATA);
+*/
+    assign cov_assert_if.is_wfi = cov_assert_if.id_stage_wfi_insn;
     assign cov_assert_if.pending_enabled_irq = |(cov_assert_if.irq_i & cov_assert_if.mie_q);
     assign cov_assert_if.is_dret             = cov_assert_if.id_valid & cov_assert_if.id_stage_instr_valid_i & cov_assert_if.is_decoding & (cov_assert_if.id_stage_instr_rdata_i == 32'h7B200073);
 

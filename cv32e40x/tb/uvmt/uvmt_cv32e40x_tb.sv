@@ -370,7 +370,7 @@ bind cv32e40x_wrapper
     // Debug assertion and coverage interface
 
     // Instantiate debug assertions
-    
+
     uvmt_cv32e40x_debug_cov_assert_if debug_cov_assert_if(    
       .clk_i(clknrst_if.clk),
       .rst_ni(clknrst_if.reset_n),
@@ -380,16 +380,18 @@ bind cv32e40x_wrapper
       .id_stage_instr_valid_i(dut_wrap.cv32e40x_wrapper_i.core_i.id_stage_i.if_id_pipe_i.instr_valid),
       .id_stage_instr_rdata_i(dut_wrap.cv32e40x_wrapper_i.core_i.id_stage_i.if_id_pipe_i.instr.bus_resp.rdata),
       .id_stage_is_compressed(dut_wrap.cv32e40x_wrapper_i.core_i.id_stage_i.if_id_pipe_i.is_compressed),
+      .id_stage_wfi_insn     (dut_wrap.cv32e40x_wrapper_i.core_i.id_stage_i.id_ex_pipe_o.wfi_insn),  // TODO:ropeders "ex_stage"?
       .id_valid(dut_wrap.cv32e40x_wrapper_i.core_i.id_stage_i.id_valid),
-      //TODO:ropeders .is_decoding(dut_wrap.cv32e40x_wrapper_i.core_i.is_decoding),
-      .id_stage_pc(dut_wrap.cv32e40x_wrapper_i.core_i.id_stage_i.if_id_pipe_i.pc),
+      .is_decoding(1),  //dut_wrap.cv32e40x_wrapper_i.core_i.is_decoding),  // TODO:ropeders figure out correct source
       .if_stage_pc(dut_wrap.cv32e40x_wrapper_i.core_i.if_stage_i.pc_if_o),
+      .id_stage_pc(dut_wrap.cv32e40x_wrapper_i.core_i.id_stage_i.if_id_pipe_i.pc),
+      .wb_stage_pc(dut_wrap.cv32e40x_wrapper_i.core_i.wb_stage_i.ex_wb_pipe_i.pc),
       .mie_q(dut_wrap.cv32e40x_wrapper_i.core_i.cs_registers_i.mie_q),
       .ctrl_fsm_cs(dut_wrap.cv32e40x_wrapper_i.core_i.controller_i.controller_fsm_i.ctrl_fsm_cs),
-      //TODO:ropeders .illegal_insn_i(dut_wrap.cv32e40x_wrapper_i.core_i.controller_i.controller_fsm_i.illegal_insn_i),
+      .illegal_insn_i(dut_wrap.cv32e40x_wrapper_i.core_i.wb_stage_i.ex_wb_pipe_i.illegal_insn),
       //TODO:ropeders .illegal_insn_q(dut_wrap.cv32e40x_wrapper_i.core_i.controller_i.controller_fsm_i.illegal_insn_q),
       //TODO:ropeders .ecall_insn_i(dut_wrap.cv32e40x_wrapper_i.core_i.controller_i.controller_fsm_i.ecall_insn_i),
-      .debug_req_i(dut_wrap.cv32e40x_wrapper_i.core_i.controller_i.controller_fsm_i.debug_req_i),
+      .debug_req_i(dut_wrap.cv32e40x_wrapper_i.core_i.controller_i.controller_fsm_i.debug_req_i),  // TODO:ropeders "pending_debug"?
       .debug_mode_q(dut_wrap.cv32e40x_wrapper_i.core_i.controller_i.controller_fsm_i.debug_mode_q),
       .dcsr_q(dut_wrap.cv32e40x_wrapper_i.core_i.cs_registers_i.dcsr_q),
       .depc_q(dut_wrap.cv32e40x_wrapper_i.core_i.cs_registers_i.dpc_q),
@@ -429,7 +431,9 @@ bind cv32e40x_wrapper
       .irq_i(dut_wrap.cv32e40x_wrapper_i.core_i.irq_i),
       //TODO:ropeders .pc_set(dut_wrap.cv32e40x_wrapper_i.core_i.pc_set),
       .boot_addr_i(dut_wrap.cv32e40x_wrapper_i.core_i.boot_addr_i),
-      //TODO:ropeders .branch_in_decode(dut_wrap.cv32e40x_wrapper_i.core_i.controller_i.controller_fsm_i.branch_in_id),
+      .rvfi_valid(dut_wrap.cv32e40x_wrapper_i.rvfi_i.rvfi_valid),
+      .rvfi_pc_wdata(dut_wrap.cv32e40x_wrapper_i.rvfi_i.rvfi_pc_wdata),
+      // TODO:ropeders .branch_in_decode(dut_wrap.cv32e40x_wrapper_i.core_i.controller_i.controller_fsm_i.branch_in_id),
 
       .is_wfi(),
       .in_wfi(),
