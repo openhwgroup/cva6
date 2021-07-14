@@ -93,7 +93,6 @@ sources:
     - src/cache_subsystem/wt_l15_adapter.sv
     - src/cache_subsystem/wt_dcache_mem.sv
     - src/cache_subsystem/cva6_icache_axi_wrapper.sv
-    - src/cache_subsystem/std_cache_subsystem.sv
     - src/cache_subsystem/wt_dcache.sv
     - src/clint/axi_lite_interface.sv
     - src/clint/clint.sv
@@ -196,25 +195,24 @@ sources:
         - src/util/instr_tracer.sv
     - target: all(fpga, xilinx)
       files:
-      - ../../../fpga/src/ariane_peripherals_xilinx.sv
-      - ../../../fpga/src/ariane_xilinx.sv
       - ../../../fpga/src/fan_ctrl.sv
       - ../../../fpga/src/bootrom/bootrom.sv
-      - ../../../fpga/src/ariane-ethernet/ssio_ddr_in.sv
-      - ../../../fpga/src/ariane-ethernet/rgmii_soc.sv
-      - ../../../fpga/src/ariane-ethernet/axis_gmii_rx.sv
-      - ../../../fpga/src/ariane-ethernet/oddr.sv
-      - ../../../fpga/src/ariane-ethernet/axis_gmii_tx.sv
-      - ../../../fpga/src/ariane-ethernet/dualmem_widen8.sv
-      - ../../../fpga/src/ariane-ethernet/rgmii_phy_if.sv
-      - ../../../fpga/src/ariane-ethernet/dualmem_widen.sv
-      - ../../../fpga/src/ariane-ethernet/rgmii_lfsr.sv
-      - ../../../fpga/src/ariane-ethernet/rgmii_core.sv
-      - ../../../fpga/src/ariane-ethernet/eth_mac_1g.sv
-      - ../../../fpga/src/ariane-ethernet/eth_mac_1g_rgmii.sv
-      - ../../../fpga/src/ariane-ethernet/eth_mac_1g_rgmii_fifo.sv
-      - ../../../fpga/src/ariane-ethernet/iddr.sv
-      - ../../../fpga/src/ariane-ethernet/framing_top.sv
+      - src/util/sram.sv
+##      - ../../../fpga/src/ariane-ethernet/ssio_ddr_in.sv
+##      - ../../../fpga/src/ariane-ethernet/rgmii_soc.sv
+##      - ../../../fpga/src/ariane-ethernet/axis_gmii_rx.sv
+##      - ../../../fpga/src/ariane-ethernet/oddr.sv
+##      - ../../../fpga/src/ariane-ethernet/axis_gmii_tx.sv
+##      - ../../../fpga/src/ariane-ethernet/dualmem_widen8.sv
+##      - ../../../fpga/src/ariane-ethernet/rgmii_phy_if.sv
+##      - ../../../fpga/src/ariane-ethernet/dualmem_widen.sv
+##      - ../../../fpga/src/ariane-ethernet/rgmii_lfsr.sv
+##      - ../../../fpga/src/ariane-ethernet/rgmii_core.sv
+##      - ../../../fpga/src/ariane-ethernet/eth_mac_1g.sv
+##      - ../../../fpga/src/ariane-ethernet/eth_mac_1g_rgmii.sv
+##      - ../../../fpga/src/ariane-ethernet/eth_mac_1g_rgmii_fifo.sv
+##      - ../../../fpga/src/ariane-ethernet/iddr.sv
+##      - ../../../fpga/src/ariane-ethernet/framing_top.sv
       - ../../../fpga/src/apb_uart/src/apb_uart.vhd
       - ../../../fpga/src/apb_uart/src/uart_transmitter.vhd
       - ../../../fpga/src/apb_uart/src/uart_interrupt.vhd

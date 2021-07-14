@@ -32,6 +32,8 @@ elf-bin        ?= tmp/riscv-tests/build/benchmarks/dhrystone.riscv
 mkfile_path := $(abspath $(lastword $(MAKEFILE_LIST)))
 root-dir := $(dir $(mkfile_path))
 
+BENDER_FPGA_SCRIPTS_DIR = fpga/alsaqr/tcl/generated
+
 BENDER_BUILD_DIR:=.
 
 ifndef RISCV
@@ -139,6 +141,9 @@ libbender:
 	@vlib work
 	vmap work ./work
 
+scripts-bender-fpga: | Bender.lock
+	mkdir -p fpga/alsaqr/tcl/generated
+	./bender script vivado -t fpga -t xilinx > $(BENDER_FPGA_SCRIPTS_DIR)/compile.tcl
 
 scripts:
 	./bender script vsim \

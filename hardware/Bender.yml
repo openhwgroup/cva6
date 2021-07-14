@@ -53,6 +53,13 @@ sources:
   - tb/common/SimDTM.sv                                                   
   - tb/common/SimJTAG.sv
 
+  - target: all(fpga,xilinx)
+    defines:
+      FPGA_TARGET_XILINX: ~
+      WT_DCACHE: ~
+    files:
+      - ../fpga/src/pad_functional_xilinx/pad_functional_xilinx.sv
+      
   - target: vip
     files:
       - tb/vip/hyperflash_model/s26ks512s.v
