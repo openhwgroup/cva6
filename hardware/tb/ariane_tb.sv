@@ -39,6 +39,31 @@ module ariane_tb;
 
     parameter  USE_HYPER_MODELS    = 1;
 
+  `ifdef jtag_rbb_enable 
+    parameter int   jtag_enable = '1 ;
+  `else  
+    parameter int   jtag_enable = '0 ;
+  `endif
+    
+    wire                  s_dmi_req_valid;
+    wire                  s_dmi_req_ready;
+    wire [ 6:0]           s_dmi_req_bits_addr;
+    wire [ 1:0]           s_dmi_req_bits_op;
+    wire [31:0]           s_dmi_req_bits_data;
+    wire                  s_dmi_resp_valid;
+    wire                  s_dmi_resp_ready;
+    wire [ 1:0]           s_dmi_resp_bits_resp;
+    wire [31:0]           s_dmi_resp_bits_data;   
+    wire                  s_dmi_exit;
+   
+    wire                  s_jtag_TCK       ;
+    wire                  s_jtag_TMS       ;
+    wire                  s_jtag_TDI       ;
+    wire                  s_jtag_TRSTn     ;
+    wire                  s_jtag_TDO_data  ;
+    wire                  s_jtag_TDO_driven;
+    wire                  s_jtag_exit      ;
+   
     wire [7:0]            w_hyper_dq0    ;
     wire [7:0]            w_hyper_dq1    ;
     wire                  w_hyper_ck     ;
@@ -99,38 +124,92 @@ module ariane_tb;
         end
     endgenerate
 
+  assign exit_o              = (jtag_enable[0]) ? s_jtag_exit          : s_dmi_exit;
+   
+  if (1) begin
+    SimDTM i_SimDTM (
+      .clk                  ( clk_i                 ),
+      .reset                ( ~rst_ni               ),
+      .debug_req_valid      ( s_dmi_req_valid       ),
+      .debug_req_ready      ( s_dmi_req_ready       ),
+      .debug_req_bits_addr  ( s_dmi_req_bits_addr   ),
+      .debug_req_bits_op    ( s_dmi_req_bits_op     ),
+      .debug_req_bits_data  ( s_dmi_req_bits_data   ),
+      .debug_resp_valid     ( s_dmi_resp_valid      ),
+      .debug_resp_ready     ( s_dmi_resp_ready      ),
+      .debug_resp_bits_resp ( s_dmi_resp_bits_resp  ),
+      .debug_resp_bits_data ( s_dmi_resp_bits_data  ), 
+      .exit                 ( s_dmi_exit            )
+    );
+  end else begin
+    assign dmi_req_valid = '0;
+    assign debug_req_bits_op = '0;
+    assign dmi_exit = 1'b0;
+  end   
+   
+  // SiFive's SimJTAG Module
+  // Converts to DPI calls
+  SimJTAG i_SimJTAG (
+    .clock                ( clk_i                ),
+    .reset                ( ~rst_ni              ),
+    .enable               ( jtag_enable[0]       ),
+    .init_done            ( rst_ni               ),
+    .jtag_TCK             ( s_jtag_TCK           ),
+    .jtag_TMS             ( s_jtag_TMS           ),
+    .jtag_TDI             ( s_jtag_TDI           ),
+    .jtag_TRSTn           ( s_jtag_TRSTn         ),
+    .jtag_TDO_data        ( s_jtag_TDO_data      ),
+    .jtag_TDO_driven      ( s_jtag_TDO_driven    ),
+    .exit                 ( s_jtag_exit          )
+  );
+   
     al_saqr #(
-        .NUM_WORDS         ( NUM_WORDS ),
-        .InclSimDTM        ( 1'b1      ),
-        .StallRandomOutput ( 1'b1      ),
-        .StallRandomInput  ( 1'b1      )
+        .NUM_WORDS         ( NUM_WORDS     ),
+        .InclSimDTM        ( 1'b1          ),
+        .StallRandomOutput ( 1'b1          ),
+        .StallRandomInput  ( 1'b1          ),
+        .JtagEnable        ( jtag_enable[0])
     ) dut (
         .clk_i,
         .rst_ni,
         .rtc_i,
-        .exit_o,
-        .pad_hyper_dq0       ( w_hyper_dq0            ),
-        .pad_hyper_dq1       ( w_hyper_dq1            ),
-        .pad_hyper_ck        ( w_hyper_ck             ),
-        .pad_hyper_ckn       ( w_hyper_ckn            ),
-        .pad_hyper_csn0      ( w_hyper_csn0           ),
-        .pad_hyper_csn1      ( w_hyper_csn1           ),
-        .pad_hyper_rwds0     ( w_hyper_rwds0          ),
-        .pad_hyper_rwds1     ( w_hyper_rwds1          ),
-        .pad_hyper_reset     ( w_hyper_reset          ),
-        .pad_gpio            ( w_gpios                ),
-        .cva6_uart_rx_i      ( w_cva6_uart_rx         ),
-        .cva6_uart_tx_o      ( w_cva6_uart_tx         ),
-        .axi_hyper_cs_no     ( axi_hyper_cs_n_wire    ),
-        .axi_hyper_ck_o      ( axi_hyper_ck_wire      ),
-        .axi_hyper_ck_no     ( axi_hyper_ck_n_wire    ),
-        .axi_hyper_rwds_o    ( axi_hyper_rwds_o       ),
-        .axi_hyper_rwds_i    ( axi_hyper_rwds_i       ),
-        .axi_hyper_rwds_oe_o ( axi_hyper_rwds_oe      ),
-        .axi_hyper_dq_i      ( axi_hyper_dq_i         ),
-        .axi_hyper_dq_o      ( axi_hyper_dq_o         ),
-        .axi_hyper_dq_oe_o   ( axi_hyper_dq_oe        ),
-        .axi_hyper_reset_no  ( axi_hyper_reset_n_wire )
+        .dmi_req_valid        ( s_dmi_req_valid        ),
+        .dmi_req_ready        ( s_dmi_req_ready        ),
+        .dmi_req_bits_addr    ( s_dmi_req_bits_addr    ),
+        .dmi_req_bits_op      ( s_dmi_req_bits_op      ),
+        .dmi_req_bits_data    ( s_dmi_req_bits_data    ),
+        .dmi_resp_valid       ( s_dmi_resp_valid       ),
+        .dmi_resp_ready       ( s_dmi_resp_ready       ),
+        .dmi_resp_bits_resp   ( s_dmi_resp_bits_resp   ),
+        .dmi_resp_bits_data   ( s_dmi_resp_bits_data   ),                      
+        .jtag_TCK             ( s_jtag_TCK             ),
+        .jtag_TMS             ( s_jtag_TMS             ),
+        .jtag_TDI             ( s_jtag_TDI             ),
+        .jtag_TRSTn           ( s_jtag_TRSTn           ),
+        .jtag_TDO_data        ( s_jtag_TDO_data        ),
+        .jtag_TDO_driven      ( s_jtag_TDO_driven      ),
+        .pad_hyper_dq0        ( w_hyper_dq0            ),
+        .pad_hyper_dq1        ( w_hyper_dq1            ),
+        .pad_hyper_ck         ( w_hyper_ck             ),
+        .pad_hyper_ckn        ( w_hyper_ckn            ),
+        .pad_hyper_csn0       ( w_hyper_csn0           ),
+        .pad_hyper_csn1       ( w_hyper_csn1           ),
+        .pad_hyper_rwds0      ( w_hyper_rwds0          ),
+        .pad_hyper_rwds1      ( w_hyper_rwds1          ),
+        .pad_hyper_reset      ( w_hyper_reset          ),
+        .pad_gpio             ( w_gpios                ),
+        .cva6_uart_rx_i       ( w_cva6_uart_rx         ),
+        .cva6_uart_tx_o       ( w_cva6_uart_tx         ),
+        .axi_hyper_cs_no      ( axi_hyper_cs_n_wire    ),
+        .axi_hyper_ck_o       ( axi_hyper_ck_wire      ),
+        .axi_hyper_ck_no      ( axi_hyper_ck_n_wire    ),
+        .axi_hyper_rwds_o     ( axi_hyper_rwds_o       ),
+        .axi_hyper_rwds_i     ( axi_hyper_rwds_i       ),
+        .axi_hyper_rwds_oe_o  ( axi_hyper_rwds_oe      ),
+        .axi_hyper_dq_i       ( axi_hyper_dq_i         ),
+        .axi_hyper_dq_o       ( axi_hyper_dq_o         ),
+        .axi_hyper_dq_oe_o    ( axi_hyper_dq_oe        ),
+        .axi_hyper_reset_no   ( axi_hyper_reset_n_wire )
    );
 
    s27ks0641 #(

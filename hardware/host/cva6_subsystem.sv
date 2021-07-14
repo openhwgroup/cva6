@@ -28,28 +28,46 @@ module cva6_subsytem
 `endif
   parameter int unsigned NUM_WORDS         = 2**25,         // memory size
   parameter bit          StallRandomOutput = 1'b0,
-  parameter bit          StallRandomInput  = 1'b0
+  parameter bit          StallRandomInput  = 1'b0,
+  parameter bit          JtagEnable        = 1'b1
 ) (
-  input  logic                           clk_i,
-  input  logic                           rtc_i,
-  input  logic                           rst_ni,
-  output logic [31:0]                    exit_o,
-  output logic                           rst_no,
-  input  logic [32*4-1:0]                udma_events_i,
+  input  logic            clk_i,
+  input  logic            rtc_i,
+  input  logic            rst_ni,
+  output logic [31:0]     exit_o,
+  output logic            rst_no,
+  input  logic [32*4-1:0] udma_events_i,
+  // FROM SimDTM
+  input  logic            dmi_req_valid,
+  output logic            dmi_req_ready,
+  input  logic [ 6:0]     dmi_req_bits_addr,
+  input  logic [ 1:0]     dmi_req_bits_op,
+  input  logic [31:0]     dmi_req_bits_data,
+  output logic            dmi_resp_valid,
+  input  logic            dmi_resp_ready,
+  output logic [ 1:0]     dmi_resp_bits_resp,
+  output logic [31:0]     dmi_resp_bits_data,
+  // JTAG
+  input  logic            jtag_TCK,
+  input  logic            jtag_TMS,
+  input  logic            jtag_TDI,
+  input  logic            jtag_TRSTn,
+  output logic            jtag_TDO_data,
+  output logic            jtag_TDO_driven,
   // CVA6 DEBUG UART
-  input  logic                           cva6_uart_rx_i,
-  output logic                           cva6_uart_tx_o,   
-  AXI_BUS.Master                         l2_axi_master,
-  AXI_BUS.Master                         apb_axi_master,
-  AXI_BUS.Master                         hyper_axi_master
+  input  logic            cva6_uart_rx_i,
+  output logic            cva6_uart_tx_o,   
+  AXI_BUS.Master          l2_axi_master,
+  AXI_BUS.Master          apb_axi_master,
+  AXI_BUS.Master          hyper_axi_master
 );
      // disable test-enable
   logic        test_en;
   logic        ndmreset;
   logic        ndmreset_n;
   logic        debug_req_core;
-
-  int          jtag_enable;
+  
+  logic        jtag_enable;
   logic        init_done;
   logic [31:0] jtag_exit, dmi_exit;
 
@@ -72,10 +90,6 @@ module cva6_subsytem
   logic        jtag_resp_ready;
   logic        jtag_resp_valid;
 
-  logic        dmi_req_valid;
-  logic        dmi_resp_ready;
-  logic        dmi_resp_valid;
-
   dm::dmi_req_t  jtag_dmi_req;
   dm::dmi_req_t  dmi_req;
 
@@ -83,7 +97,8 @@ module cva6_subsytem
   dm::dmi_resp_t debug_resp;
 
   assign test_en = 1'b0;
-
+  assign jtag_enable = JtagEnable;
+   
   AXI_BUS #(
     .AXI_ADDR_WIDTH ( AXI_ADDRESS_WIDTH   ),
     .AXI_DATA_WIDTH ( AXI_DATA_WIDTH      ),
@@ -113,33 +128,15 @@ module cva6_subsytem
   assign rst_no    = ndmreset_n;
    
   initial begin
-    if (!$value$plusargs("jtag_rbb_enable=%b", jtag_enable)) jtag_enable = 'h0;
     if (riscv::XLEN != 32 & riscv::XLEN != 64) $error("XLEN different from 32 and 64");
   end
 
   // debug if MUX
-  assign debug_req_valid     = (jtag_enable[0]) ? jtag_req_valid     : dmi_req_valid;
-  assign debug_resp_ready    = (jtag_enable[0]) ? jtag_resp_ready    : dmi_resp_ready;
-  assign debug_req           = (jtag_enable[0]) ? jtag_dmi_req       : dmi_req;
-  assign exit_o              = (jtag_enable[0]) ? jtag_exit          : dmi_exit;
-  assign jtag_resp_valid     = (jtag_enable[0]) ? debug_resp_valid   : 1'b0;
-  assign dmi_resp_valid      = (jtag_enable[0]) ? 1'b0               : debug_resp_valid;
-
-  // SiFive's SimJTAG Module
-  // Converts to DPI calls
-  SimJTAG i_SimJTAG (
-    .clock                ( clk_i                ),
-    .reset                ( ~rst_ni              ),
-    .enable               ( jtag_enable[0]       ),
-    .init_done            ( init_done            ),
-    .jtag_TCK             ( jtag_TCK             ),
-    .jtag_TMS             ( jtag_TMS             ),
-    .jtag_TDI             ( jtag_TDI             ),
-    .jtag_TRSTn           ( jtag_TRSTn           ),
-    .jtag_TDO_data        ( jtag_TDO_data        ),
-    .jtag_TDO_driven      ( jtag_TDO_driven      ),
-    .exit                 ( jtag_exit            )
-  );
+  assign debug_req_valid     = (jtag_enable) ? jtag_req_valid     : dmi_req_valid;
+  assign debug_resp_ready    = (jtag_enable) ? jtag_resp_ready    : dmi_resp_ready;
+  assign debug_req           = (jtag_enable) ? jtag_dmi_req       : dmi_req;
+  assign jtag_resp_valid     = (jtag_enable) ? debug_resp_valid   : 1'b0;
+  assign dmi_resp_valid      = (jtag_enable) ? 1'b0               : debug_resp_valid;
 
   dmi_jtag i_dmi_jtag (
     .clk_i            ( clk_i           ),
@@ -160,31 +157,15 @@ module cva6_subsytem
     .tdo_oe_o         ( jtag_TDO_driven )
   );
 
+  assign dmi_req_ready = debug_req_ready ;    
+  assign dmi_req.addr = dmi_req_bits_addr;
+  assign dmi_req.data = dmi_req_bits_data;
   // SiFive's SimDTM Module
   // Converts to DPI calls
-  logic [1:0] debug_req_bits_op;
-  assign dmi_req.op = dm::dtm_op_e'(debug_req_bits_op);
+  assign dmi_req.op = dm::dtm_op_e'(dmi_req_bits_op);
 
-  if (InclSimDTM) begin
-    SimDTM i_SimDTM (
-      .clk                  ( clk_i                 ),
-      .reset                ( ~rst_ni               ),
-      .debug_req_valid      ( dmi_req_valid         ),
-      .debug_req_ready      ( debug_req_ready       ),
-      .debug_req_bits_addr  ( dmi_req.addr          ),
-      .debug_req_bits_op    ( debug_req_bits_op     ),
-      .debug_req_bits_data  ( dmi_req.data          ),
-      .debug_resp_valid     ( dmi_resp_valid        ),
-      .debug_resp_ready     ( dmi_resp_ready        ),
-      .debug_resp_bits_resp ( debug_resp.resp       ),
-      .debug_resp_bits_data ( debug_resp.data       ),
-      .exit                 ( dmi_exit              )
-    );
-  end else begin
-    assign dmi_req_valid = '0;
-    assign debug_req_bits_op = '0;
-    assign dmi_exit = 1'b0;
-  end
+  assign dmi_resp_bits_data = debug_resp.data;
+  assign dmi_resp_bits_resp = debug_resp.resp;
 
   // this delay window allows the core to read and execute init code
   // from the bootrom before the first debug request can interrupt

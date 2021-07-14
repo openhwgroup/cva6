@@ -29,6 +29,7 @@ module host_domain
   parameter int unsigned NUM_WORDS         = 2**25,         // memory size
   parameter bit          StallRandomOutput = 1'b0,
   parameter bit          StallRandomInput  = 1'b0,
+  parameter bit          JtagEnable        = 1'b1,
   parameter int unsigned N_SPI             = 4,
   parameter int unsigned N_UART            = 4,
   parameter int unsigned CAM_DATA_WIDTH    = 8,
@@ -43,6 +44,25 @@ module host_domain
   // CVA6 DEBUG UART
   input  logic                     cva6_uart_rx_i,
   output logic                     cva6_uart_tx_o,   
+
+  // FROM SimDTM
+  input  logic                     dmi_req_valid,
+  output logic                     dmi_req_ready,
+  input  logic [ 6:0]              dmi_req_bits_addr,
+  input  logic [ 1:0]              dmi_req_bits_op,
+  input  logic [31:0]              dmi_req_bits_data,
+  output logic                     dmi_resp_valid,
+  input  logic                     dmi_resp_ready,
+  output logic [ 1:0]              dmi_resp_bits_resp,
+  output logic [31:0]              dmi_resp_bits_data,
+
+  // JTAG
+  input  logic                     jtag_TCK,
+  input  logic                     jtag_TMS,
+  input  logic                     jtag_TDI,
+  input  logic                     jtag_TRSTn,
+  output logic                     jtag_TDO_data,
+  output logic                     jtag_TDO_driven,
 
   // SPIM
   output logic [N_SPI-1:0]         spi_clk,
@@ -176,22 +196,38 @@ module host_domain
    
  
    cva6_subsytem # (
-        .NUM_WORDS         ( NUM_WORDS ),
-        .InclSimDTM        ( 1'b1      ),
-        .StallRandomOutput ( 1'b1      ),
-        .StallRandomInput  ( 1'b1      )
+        .NUM_WORDS         ( NUM_WORDS  ),
+        .InclSimDTM        ( 1'b1       ),
+        .StallRandomOutput ( 1'b1       ),
+        .StallRandomInput  ( 1'b1       ),
+        .JtagEnable        ( JtagEnable )
    ) i_cva_subsystem (
         .clk_i,
         .rst_ni,
         .rtc_i,
         .exit_o,
-        .udma_events_i    ( s_udma_events  ),
-        .rst_no           ( ndmreset_n     ),
-        .l2_axi_master    ( l2_axi_bus     ),
-        .apb_axi_master   ( apb_axi_bus    ),
-        .hyper_axi_master ( hyper_axi_bus  ),
-        .cva6_uart_rx_i   ( cva6_uart_rx_i ),
-        .cva6_uart_tx_o   ( cva6_uart_tx_o )
+        .dmi_req_valid,
+        .dmi_req_ready,
+        .dmi_req_bits_addr,
+        .dmi_req_bits_op,
+        .dmi_req_bits_data,
+        .dmi_resp_valid,
+        .dmi_resp_ready,
+        .dmi_resp_bits_resp,
+        .dmi_resp_bits_data,                      
+        .jtag_TCK,
+        .jtag_TMS,
+        .jtag_TDI,
+        .jtag_TRSTn,
+        .jtag_TDO_data,
+        .jtag_TDO_driven,
+        .udma_events_i        ( s_udma_events        ),
+        .rst_no               ( ndmreset_n           ),
+        .l2_axi_master        ( l2_axi_bus           ),
+        .apb_axi_master       ( apb_axi_bus          ),
+        .hyper_axi_master     ( hyper_axi_bus        ),
+        .cva6_uart_rx_i       ( cva6_uart_rx_i       ),
+        .cva6_uart_tx_o       ( cva6_uart_tx_o       )
     );
    
    
