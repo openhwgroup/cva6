@@ -189,13 +189,6 @@ function void uvma_obi_memory_agent_c::retrieve_vif();
       `uvm_info("VIF", $sformatf("Found vif handle of type %s in uvm_config_db", $typename(cntxt.vif)), UVM_DEBUG)
    end
 
-   if (!uvm_config_db#(virtual uvme_cv32e40p_misc_if)::get(this, "", "vif", cntxt.misc_vif)) begin
-      `uvm_fatal("VIF", $sformatf("Could not find vif handle of type %s in uvm_config_db", $typename(cntxt.misc_vif)))
-   end
-   else begin
-      `uvm_info("VIF", $sformatf("Found vif handle of type %s in uvm_config_db", $typename(cntxt.misc_vif)), UVM_NONE/*TODO DEBUG*/)
-   end
-
 endfunction : retrieve_vif
 
 

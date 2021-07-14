@@ -186,38 +186,6 @@ endtask : body
 
 
 task uvme_cv32e40p_vp_vseq_c::do_response(ref uvma_obi_memory_mon_trn_c mon_req);
-   
-   bit  vp_handled = 1;
-   
-   case(mon_req.address)
-      32'h1000_0000               : vp_virtual_printer          (mon_req);
-      32'h1500_0000, 32'h1500_0004: vp_interrupt_timer_control  (mon_req);
-      32'h1500_0008               : vp_debug_control            (mon_req);
-      32'h1500_1000               : vp_rand_num_gen             (mon_req);
-      32'h1500_1004               : vp_cycle_counter            (mon_req);
-      32'h1600_????               : vp_instr_mem_intf_stall_ctrl(mon_req);
-      32'h2000_0000, 32'h2000_0004: vp_vp_status_flags          (mon_req);
-      32'h2000_0008, 32'h2000_000C,
-      32'h2000_0010               : vp_sig_writer               (mon_req);
-      
-      default: begin
-         vp_handled = 0;
-      end
-   endcase
-   
-   if (!vp_handled) begin
-      if (mon_req.address >= 2**20) begin
-         vp_address_range_check(mon_req);
-      end
-      else begin
-         
-      end
-   end
-   
-endtask : do_response
-
-
-task uvme_cv32e40p_vp_vseq_c::do_response(ref uvma_obi_memory_mon_trn_c mon_req);
 
    uvma_obi_memory_slv_seq_item_c  slv_rsp;
    
@@ -383,17 +351,17 @@ task uvme_cv32e40p_vp_vseq_c::vp_debug_control(ref uvma_obi_memory_mon_trn_c mon
             end
             
             if (request_mode) begin
-               cntxt.debug_vif.debugger_wdata = dbg_req_value;
+               cntxt.debug_vif.debug_drv = dbg_req_value;
                if (rand_pulse_duration) begin
                   #($urandom_range(0, dbg_pulse_duration) * 1ns);
                end
                else begin
                   #(dbg_pulse_duration * 1ns);
                end
-               cntxt.debug_vif.debugger_wdata = !dbg_req_value;
+               cntxt.debug_vif.debug_drv = !dbg_req_value;
             end
             else begin
-               cntxt.debug_vif.debugger_wdata = dbg_req_value;
+               cntxt.debug_vif.debug_drv = dbg_req_value;
             end
          end
       join_none
@@ -478,25 +446,25 @@ task uvme_cv32e40p_vp_vseq_c::vp_vp_status_flags(ref uvma_obi_memory_mon_trn_c m
       if (mon_req.address == 32'h2000_0000) begin
          if (mon_req.data == 'd123456789) begin
             `uvm_info("OBI_VP", $sformatf("END OF SIM Call to virtual peripheral 'vp_status_flags:\n'%s", mon_req.sprint()), UVM_LOW)
-            wait(cntxt.misc_vif.clk === 1);
-            cntxt.misc_vif.tests_passed = 1;
-            wait(cntxt.misc_vif.clk === 0);
-            cntxt.misc_vif.tests_passed = 0;
+            //wait(cntxt.vp_status_vif.clk === 1);
+            cntxt.vp_status_vif.tests_passed = 1;
+            //wait(cntxt.vp_status_vif.clk === 0);
+            //cntxt.vp_status_vif.tests_passed = 0;
          end
          else if (mon_req.data == 'd1) begin
-            wait(cntxt.misc_vif.clk === 1);
-            cntxt.misc_vif.tests_failed = 1;
-            wait(cntxt.misc_vif.clk === 0);
-            cntxt.misc_vif.tests_failed = 0;
+            //wait(cntxt.vp_status_vif.clk === 1);
+            cntxt.vp_status_vif.tests_failed = 1;
+            //wait(cntxt.vp_status_vif.clk === 0);
+            //cntxt.vp_status_vif.tests_failed = 0;
          end
       end
       else if (mon_req.address == 32'h2000_0004) begin
-         wait(cntxt.misc_vif.clk === 1);
-         cntxt.misc_vif.exit_valid = 1;
-         cntxt.misc_vif.exit_value = mon_req.data;
-         wait(cntxt.misc_vif.clk === 0);
-         cntxt.misc_vif.exit_valid = 0;
-         cntxt.misc_vif.exit_value = 0;
+         //wait(cntxt.vp_status_vif.clk === 1);
+         cntxt.vp_status_vif.exit_valid = 1;
+         cntxt.vp_status_vif.exit_value = mon_req.data;
+         //wait(cntxt.vp_status_vif.clk === 0);
+         //cntxt.vp_status_vif.exit_valid = 0;
+         //cntxt.vp_status_vif.exit_value = 0;
       end
    end
    
@@ -559,7 +527,8 @@ endtask : vp_sig_writer
 task uvme_cv32e40p_vp_vseq_c::irq_o();
    
    wait (cntxt.intr_vif.clk === 1);
-   cntxt.intr_vif.irq_o = 1;
+   //TODO: add control logic to define which interrupts are set/cleared
+   cntxt.intr_vif.irq_drv = 32'h0000_0001;
    
 endtask : irq_o
 
