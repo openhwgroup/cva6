@@ -25,11 +25,12 @@
  */
 class uvme_cv32e40p_cntxt_c extends uvm_object;
 
-   // Virtual interface for ISA coverage
-   virtual uvmt_cv32e40p_isa_covg_if isa_covg_vif;
-
-   // Virtual interface for Debug coverage
-   virtual uvmt_cv32e40p_debug_cov_assert_if debug_cov_vif;
+   virtual uvmt_cv32e40p_isa_covg_if          isa_covg_vif ; ///< Virtual interface for ISA coverage  
+   virtual uvmt_cv32e40p_debug_cov_assert_if  debug_cov_vif; ///< Virtual interface for Debug coverage
+   virtual uvmt_cv32e40p_vp_status_if         vp_status_vif; ///< Virtual interface for Virtual Peripherals
+   virtual uvma_interrupt_if                  intr_vif     ; ///< Virtual interface for interrupts 
+   virtual uvma_debug_if                      debug_vif    ; ///< Virtual interface for debug 
+   
 
    // Agent context handles
    uvma_clknrst_cntxt_c    clknrst_cntxt;
@@ -39,20 +40,24 @@ class uvme_cv32e40p_cntxt_c extends uvm_object;
    uvma_obi_cntxt_c        obi_data_cntxt;
    uvma_obi_memory_cntxt_c obi_memory_instr_cntxt;
    uvma_obi_memory_cntxt_c obi_memory_data_cntxt;
-   
+
    // TODO Add scoreboard context handles
    //      Ex: uvme_cv32e40p_sb_cntxt_c  sb_egress_cntxt;
    //          uvme_cv32e40p_sb_cntxt_c  sb_ingress_cntxt;
-   
+
    // Memory modelling
-   bit [31:0]  mem[2**`UVME_CV32E40P_MEM_SIZE];
-   bit         instr_mem_delay_enabled = 0;
-   
+   // TODO: why is the memory here?
+   //       IMHO it should be in a STATIC member of uvma_obi_memory_cntxt_c
+   //       so that is it accessible by both obi_memory_instr_cntxt and obi_memory_data_cntxt.
+   localparam n_bytes = `UVMA_OBI_MEMORY_SIZE_MiB * 1_048_576;
+   bit [7:0]  mem [n_bytes];
+   bit        instr_mem_delay_enabled = 0;
+
    // Events
    uvm_event  sample_cfg_e;
    uvm_event  sample_cntxt_e;
-   
-   
+
+
    `uvm_object_utils_begin(uvme_cv32e40p_cntxt_c)
       `uvm_field_object(clknrst_cntxt         , UVM_DEFAULT)
       `uvm_field_object(interrupt_cntxt       , UVM_DEFAULT)

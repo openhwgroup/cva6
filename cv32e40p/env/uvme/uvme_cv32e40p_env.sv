@@ -17,7 +17,9 @@
 
 `ifndef __UVME_CV32E40P_ENV_SV__
 `define __UVME_CV32E40P_ENV_SV__
-
+// Forward type declarations
+typedef class uvme_cv32e40p_instr_vseq_c ;
+typedef class uvme_cv32e40p_vp_vseq_c ;
 
 /**
  * Top-level component that encapsulates, builds and connects all other
@@ -76,6 +78,16 @@ class uvme_cv32e40p_env_c extends uvm_env;
     * Print out final elaboration
     */
    extern virtual function void end_of_elaboration_phase(uvm_phase phase);   
+
+   /**
+    * Creates and starts the instruction and virtual peripheral sequences in active mode.
+    */
+   extern virtual task run_phase(uvm_phase phase);
+
+   /**
+    * Get virtual interface handles from UVM Configuration Database.
+    */
+   extern virtual function void retrieve_vifs();
 
    /**
     * Assigns configuration handles to components using UVM Configuration Database.
@@ -143,19 +155,20 @@ function void uvme_cv32e40p_env_c::build_phase(uvm_phase phase);
    
    void'(uvm_config_db#(uvme_cv32e40p_cfg_c)::get(this, "", "cfg", cfg));
    if (!cfg) begin
-      `uvm_fatal("CFG", "Configuration handle is null")
+      `uvm_fatal("UVME_CV32E40P_ENV", "Configuration handle is null")
    end
    else begin
-      `uvm_info("CFG", $sformatf("Found configuration handle:\n%s", cfg.sprint()), UVM_DEBUG)
+      `uvm_info("UVME_CV32E40P_ENV", $sformatf("Found configuration handle:\n%s", cfg.sprint()), UVM_DEBUG)
    end
    
    if (cfg.enabled) begin
       void'(uvm_config_db#(uvme_cv32e40p_cntxt_c)::get(this, "", "cntxt", cntxt));
       if (!cntxt) begin
-         `uvm_info("CNTXT", "Context handle is null; creating.", UVM_DEBUG)
+         `uvm_info("UVME_CV32E40P_ENV", "Context handle is null; creating.", UVM_DEBUG)
          cntxt = uvme_cv32e40p_cntxt_c::type_id::create("cntxt");
       end
       
+      retrieve_vifs        ();
       assign_cfg           ();
       assign_cntxt         ();
       create_agents        ();      
@@ -195,15 +208,74 @@ function void uvme_cv32e40p_env_c::connect_phase(uvm_phase phase);
 endfunction: connect_phase
 
 
+task uvme_cv32e40p_env_c::run_phase(uvm_phase phase);
+   
+   uvme_cv32e40p_instr_vseq_c  instr_vseq;
+   uvme_cv32e40p_vp_vseq_c     vp_vseq;
+   
+   if (cfg.is_active) begin
+      fork
+         begin
+            instr_vseq = uvme_cv32e40p_instr_vseq_c::type_id::create("instr_vseq");
+            instr_vseq.start(vsequencer);
+         end
+         
+         begin
+            vp_vseq = uvme_cv32e40p_vp_vseq_c::type_id::create("vp_vseq");
+            vp_vseq.start(vsequencer);
+         end
+      join_none
+   end
+   
+endtask : run_phase
+
+
 function void uvme_cv32e40p_env_c::end_of_elaboration_phase(uvm_phase phase);
    super.end_of_elaboration_phase(phase);
 
-   `uvm_info("UVMECV32E40PENV", $sformatf("Configuration:\n%s", cfg.sprint()), UVM_LOW)
+   `uvm_info("UVME_CV32E40P_ENV", $sformatf("Top-level environment configuration:\n%s", cfg.sprint()), UVM_LOW)
 
 endfunction : end_of_elaboration_phase
 
+
+function void uvme_cv32e40p_env_c::retrieve_vifs();
+
+	if (!uvm_config_db#(virtual uvmt_cv32e40p_vp_status_if)::get(this, "", "vp_status_vif", cntxt.vp_status_vif)) begin
+		`uvm_fatal("VIF", $sformatf("Could not find vp_status_vif handle of type %s in uvm_config_db", $typename(cntxt.vp_status_vif)))
+	end
+	else begin
+		`uvm_info("VIF", $sformatf("Found vp_status_vif handle of type %s in uvm_config_db", $typename(cntxt.vp_status_vif)), UVM_DEBUG)
+	end
+	
+	if (!uvm_config_db#(virtual uvma_interrupt_if)::get(this, "", "intr_vif" cntxt.intr_vif)) begin
+		`uvm_fatal("VIF", $sformatf("Could not find intr_vif handle of type %s in uvm_config_db", $typename(cntxt.intr_vif)))
+	end
+	else begin
+		`uvm_info("VIF", $sformatf("Found intr_vif handle of type %s in uvm_config_db", $typename(cntxt.intr_vif)), UVM_DEBUG)
+	end
+	
+	if (!uvm_config_db#(virtual uvma_debug_if)::get(this, "", "debug_vif" cntxt.debug_vif)) begin
+		`uvm_fatal("VIF", $sformatf("Could not find debug_vif handle of type %s in uvm_config_db", $typename(cntxt.debug_vif)))
+	end
+	else begin
+		`uvm_info("VIF", $sformatf("Found debug_vif handle of type %s in uvm_config_db", $typename(cntxt.debug_vif)), UVM_DEBUG)
+	end
+	
+	if (!uvm_config_db#(virtual uvmt_cv32e40p_isa_covg_if)::get(this, "", "isa_covg_vif", cntxt.isa_covg_vif));
+	if (cntxt.isa_covg_vif == null) begin
+		`uvm_fatal("UVME_CV32E40P_ENV", $sformatf("No uvmt_cv32e40p_isa_covg_if found in config database"))
+	end
+
+	void'(uvm_config_db#(virtual uvmt_cv32e40p_debug_cov_assert_if)::get(this, "", "debug_cov_vif", cntxt.debug_cov_vif));
+	if (cntxt.debug_cov_vif == null) begin
+		`uvm_fatal("UVME_CV32E40P_ENV", $sformatf("No uvmt_cv32e40p_debug_cov_assert_if found in config database"))
+	end
+	
+endfunction: retrieve_vifs
+
+
 function void uvme_cv32e40p_env_c::assign_cfg();
-   
+
    uvm_config_db#(uvme_cv32e40p_cfg_c)  ::set(this, "*",                      "cfg", cfg);
    uvm_config_db#(uvma_clknrst_cfg_c)   ::set(this, "*clknrst_agent",         "cfg", cfg.clknrst_cfg);
    uvm_config_db#(uvma_interrupt_cfg_c) ::set(this, "*interrupt_agent",       "cfg", cfg.interrupt_cfg);
@@ -259,18 +331,11 @@ function void uvme_cv32e40p_env_c::create_vsequencer();
    
 endfunction: create_vsequencer
 
+
 function void uvme_cv32e40p_env_c::create_cov_model();
    
    cov_model = uvme_cv32e40p_cov_model_c::type_id::create("cov_model", this);
-   void'(uvm_config_db#(virtual uvmt_cv32e40p_isa_covg_if)::get(this, "", "isa_covg_vif", cntxt.isa_covg_vif));
-   if (cntxt.isa_covg_vif == null) begin
-      `uvm_fatal("CNTXT", $sformatf("No uvmt_cv32e40p_isa_covg_if found in config database"))
-   end
-
-   void'(uvm_config_db#(virtual uvmt_cv32e40p_debug_cov_assert_if)::get(this, "", "debug_cov_vif", cntxt.debug_cov_vif));
-   if (cntxt.debug_cov_vif == null) begin
-      `uvm_fatal("CNTXT", $sformatf("No uvmt_cv32e40p_debug_cov_assert_if found in config database"))
-   end
+   
 endfunction: create_cov_model
 
 

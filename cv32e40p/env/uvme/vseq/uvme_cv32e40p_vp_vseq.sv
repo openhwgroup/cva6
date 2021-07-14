@@ -132,7 +132,7 @@ endclass : uvme_cv32e40p_vp_vseq_c
 function uvme_cv32e40p_vp_vseq_c::new(string name="uvme_cv32e40p_vp_vseq");
    
    super.new(name);
-   this.randomize();
+   void'(this.randomize());
    
 endfunction : new
 
@@ -147,14 +147,14 @@ task uvme_cv32e40p_vp_vseq_c::body();
          forever begin
             // Wait for the monitor to send us the mstr's "req" with an access request
             p_sequencer.obi_memory_data_sequencer.mon_trn_fifo.get(mon_trn);
-            `uvm_info("OBI_MEMORY_SLV_SEQ", $sformatf("Got mon_trn:\n%s", mon_trn.sprint()), UVM_HIGH)
+            `uvm_info("OBI_MEMORY_SLV_SEQ", $sformatf("Got mon_trn:\n%s", mon_trn.sprint()), UVM_LOW)
             do_response(mon_trn);
          end
       end
       
       begin
          forever begin
-            //`uvm_info("OBI_MEMORY_SLV_SEQ", $sformatf("Waiting %0d ps", cycle_counter_frequency), UVM_LOW)
+            `uvm_info("OBI_MEMORY_SLV_SEQ", $sformatf("Waiting %0d ps", cycle_counter_frequency), UVM_LOW)
             #(cycle_counter_frequency * 1ps);
             cycle_counter++;
          end
@@ -184,7 +184,7 @@ task uvme_cv32e40p_vp_vseq_c::body();
    
 endtask : body
 
-/*
+
 task uvme_cv32e40p_vp_vseq_c::do_response(ref uvma_obi_memory_mon_trn_c mon_req);
    
    bit  vp_handled = 1;
@@ -215,7 +215,7 @@ task uvme_cv32e40p_vp_vseq_c::do_response(ref uvma_obi_memory_mon_trn_c mon_req)
    end
    
 endtask : do_response
-*/
+
 
 task uvme_cv32e40p_vp_vseq_c::do_response(ref uvma_obi_memory_mon_trn_c mon_req);
 
@@ -383,17 +383,17 @@ task uvme_cv32e40p_vp_vseq_c::vp_debug_control(ref uvma_obi_memory_mon_trn_c mon
             end
             
             if (request_mode) begin
-               //cntxt.misc_vif.debugger_wdata = dbg_req_value;
+               cntxt.debug_vif.debugger_wdata = dbg_req_value;
                if (rand_pulse_duration) begin
                   #($urandom_range(0, dbg_pulse_duration) * 1ns);
                end
                else begin
                   #(dbg_pulse_duration * 1ns);
                end
-               //cntxt.misc_vif.debugger_wdata = !dbg_req_value;
+               cntxt.debug_vif.debugger_wdata = !dbg_req_value;
             end
             else begin
-               //cntxt.misc_vif.debugger_wdata = dbg_req_value;
+               cntxt.debug_vif.debugger_wdata = dbg_req_value;
             end
          end
       join_none
@@ -477,27 +477,26 @@ task uvme_cv32e40p_vp_vseq_c::vp_vp_status_flags(ref uvma_obi_memory_mon_trn_c m
       `uvm_info("OBI_VP", $sformatf("Call to virtual peripheral 'vp_status_flags:\n'%s", mon_req.sprint()), UVM_LOW)
       if (mon_req.address == 32'h2000_0000) begin
          if (mon_req.data == 'd123456789) begin
-            //wait(cntxt.misc_vif.clk === 1);
-            //cntxt.misc_vif.tests_passed = 1;
-            //wait(cntxt.misc_vif.clk === 0);
-            //cntxt.misc_vif.tests_passed = 0;
+            `uvm_info("OBI_VP", $sformatf("END OF SIM Call to virtual peripheral 'vp_status_flags:\n'%s", mon_req.sprint()), UVM_LOW)
+            wait(cntxt.misc_vif.clk === 1);
+            cntxt.misc_vif.tests_passed = 1;
+            wait(cntxt.misc_vif.clk === 0);
+            cntxt.misc_vif.tests_passed = 0;
          end
          else if (mon_req.data == 'd1) begin
-            //wait(cntxt.misc_vif.clk === 1);
-            //cntxt.misc_vif.tests_failed = 1;
-            //wait(cntxt.misc_vif.clk === 0);
-            //cntxt.misc_vif.tests_failed = 0;
+            wait(cntxt.misc_vif.clk === 1);
+            cntxt.misc_vif.tests_failed = 1;
+            wait(cntxt.misc_vif.clk === 0);
+            cntxt.misc_vif.tests_failed = 0;
          end
       end
       else if (mon_req.address == 32'h2000_0004) begin
-          /*
          wait(cntxt.misc_vif.clk === 1);
          cntxt.misc_vif.exit_valid = 1;
          cntxt.misc_vif.exit_value = mon_req.data;
          wait(cntxt.misc_vif.clk === 0);
          cntxt.misc_vif.exit_valid = 0;
          cntxt.misc_vif.exit_value = 0;
-         */
       end
    end
    
@@ -559,8 +558,8 @@ endtask : vp_sig_writer
 
 task uvme_cv32e40p_vp_vseq_c::irq_o();
    
-   //wait (cntxt.misc_vif.clk === 1);
-   //cntxt.misc_vif.irq_o = 1;
+   wait (cntxt.intr_vif.clk === 1);
+   cntxt.intr_vif.irq_o = 1;
    
 endtask : irq_o
 
