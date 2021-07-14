@@ -335,11 +335,7 @@ endfunction: create_vsequencer
 function void uvme_cv32e40p_env_c::create_cov_model();
    
    cov_model = uvme_cv32e40p_cov_model_c::type_id::create("cov_model", this);
-<<<<<<< HEAD
    
-=======
-  
->>>>>>> branch 'merge_obi_mem' of https://github.com/datum-dpoulin/core-v-verif.git
 endfunction: create_cov_model
 
 
