@@ -51,7 +51,7 @@ class uvma_rvfi_csr_seq_item_c#(int XLEN=DEFAULT_XLEN) extends uvml_trn_seq_item
    /**
     * Fetch the value of the CSR at instruction retirement taking into account write data and write mask
     */
-   extern virtual function bit[XLEN-1:0] get_csr_retirement_data();
+   extern virtual function bit[uvma_rvfi_csr_seq_item_c::XLEN-1:0] get_csr_retirement_data();
 
    /**
     * One-liner log message
@@ -61,14 +61,13 @@ class uvma_rvfi_csr_seq_item_c#(int XLEN=DEFAULT_XLEN) extends uvml_trn_seq_item
 endclass : uvma_rvfi_csr_seq_item_c
 
 `pragma protect begin
-
 function uvma_rvfi_csr_seq_item_c::new(string name="uvma_rvfi_csr_seq_item");
    
    super.new(name);
    
 endfunction : new
 
-function bit [XLEN-1:0] uvma_rvfi_csr_seq_item_c::get_csr_retirement_data();
+function bit [uvma_rvfi_csr_seq_item_c::XLEN-1:0] uvma_rvfi_csr_seq_item_c::get_csr_retirement_data();
 
    // Any bits with wmask set should use the wdata
    // All other bits should use the rdata
@@ -85,5 +84,4 @@ function string uvma_rvfi_csr_seq_item_c::convert2string();
 endfunction : convert2string
 
 `pragma protect end
-
 `endif // __UVMA_RVFI_CSR_SEQ_ITEM_SV__

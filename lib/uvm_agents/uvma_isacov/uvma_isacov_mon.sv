@@ -110,9 +110,14 @@ function void uvma_isacov_mon_c::write_rvfi_instr(uvma_rvfi_instr_seq_item_c#(IL
   string                instr_name;
   bit [63:0]            instr;
 
+  if (rvfi_instr.trap) begin
+    `uvm_info("ISACOV", $sformatf("Skip coverage of trapped instruction: 0x%08x", rvfi_instr.insn), UVM_HIGH);
+    return;
+  end
+
   mon_trn = uvma_isacov_mon_trn_c::type_id::create("mon_trn");
   mon_trn.instr = uvma_isacov_instr_c::type_id::create("mon_instr");
-
+  
   instr_name = dasm_name(rvfi_instr.insn);
   if (instr_name_lookup.exists(instr_name)) begin
     mon_trn.instr.name = instr_name_lookup[instr_name];    

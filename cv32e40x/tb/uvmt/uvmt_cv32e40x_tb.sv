@@ -35,6 +35,7 @@ module uvmt_cv32e40x_tb;
    import uvmt_cv32e40x_pkg::*;
    import uvme_cv32e40x_pkg::*;
 
+   // CORE parameters
 `ifdef SET_NUM_MHPMCOUNTERS
    parameter int CORE_PARAM_NUM_MHPMCOUNTERS = `SET_NUM_MHPMCOUNTERS;
 `else
@@ -78,8 +79,8 @@ module uvmt_cv32e40x_tb;
    */
    uvmt_cv32e40x_dut_wrap  #(
                              .NUM_MHPMCOUNTERS  (CORE_PARAM_NUM_MHPMCOUNTERS),
-                             .PMA_NUM_REGIONS   (PMA_NUM_REGIONS),
-                             .PMA_CFG           (PMA_CFG),
+                             .PMA_NUM_REGIONS   (uvmt_cv32e40x_pkg::CORE_PARAM_PMA_NUM_REGIONS),
+                             .PMA_CFG           (uvmt_cv32e40x_pkg::CORE_PARAM_PMA_CFG),
                              .INSTR_ADDR_WIDTH  (ENV_PARAM_INSTR_ADDR_WIDTH),
                              .INSTR_RDATA_WIDTH (ENV_PARAM_INSTR_DATA_WIDTH),
                              .RAM_ADDR_WIDTH    (ENV_PARAM_RAM_ADDR_WIDTH)
@@ -349,25 +350,22 @@ bind cv32e40x_wrapper
                                        );
 
   // Bind in verification modules to the design
-  // FIXME:strichmo:Fix interrupt assertions
-  /*
   bind cv32e40x_core 
-    uvmt_cv32e40x_interrupt_assert interrupt_assert_i(.mcause_n({cs_registers_i.mcause_n[31], cs_registers_i.mcause_n[4:0]}),
+    uvmt_cv32e40x_interrupt_assert interrupt_assert_i(.mcause_n({cs_registers_i.mcause_n.interrupt, cs_registers_i.mcause_n.exception_code}),
                                                       .mip(cs_registers_i.mip),
                                                       .mie_q(cs_registers_i.mie_q),
-                                                      .mie_n(cs_registers_i.mie_bypass_o),
                                                       .mstatus_mie(cs_registers_i.mstatus_q.mie),
-                                                      .mtvec_mode_q(cs_registers_i.mtvec_q[1:0]),
+                                                      .mtvec_mode_q(cs_registers_i.mtvec_q.mode),
                                                       .if_stage_instr_rvalid_i(if_stage_i.m_c_obi_instr_if.s_rvalid.rvalid),
                                                       .if_stage_instr_rdata_i(if_stage_i.m_c_obi_instr_if.resp_payload.rdata),
                                                       .id_stage_instr_valid_i(id_stage_i.if_id_pipe_i.instr_valid),
                                                       .id_stage_instr_rdata_i(id_stage_i.if_id_pipe_i.instr.bus_resp.rdata),
-                                                      .branch_taken_ex(id_stage_i.branch_taken_ex_o),
+                                                      .branch_taken_ex(controller_i.controller_fsm_i.branch_taken_ex),
                                                       .ctrl_fsm_cs(controller_i.controller_fsm_i.ctrl_fsm_cs),
                                                       .debug_mode_q(controller_i.controller_fsm_i.debug_mode_q),
                                                       .*);
-   
-   */
+
+
 
     // Debug assertion and coverage interface
 
@@ -537,12 +535,6 @@ bind cv32e40x_wrapper
     * Test bench entry point.
     */
    initial begin : test_bench_entry_point
-
-	 `ifdef PULP
-		 `ifdef NO_PULP
-			 $fatal("%m: FATAL ERROR: cannot define both PULP and NO_PULP.\n");
-		 `endif
-	 `endif
 
      // Specify time format for simulation (units_number, precision_number, suffix_string, minimum_field_width)
      $timeformat(-9, 3, " ns", 8);

@@ -17,14 +17,14 @@ tests:
     description: UVM Hello World Test
     dir: cv32e40x/sim/uvmt
     cmd: make test COREV=YES TEST=hello-world
-    makearg: USER_RUN_FLAGS=+rand_stall_obi_disable
 
   interrupt_test:
     build: uvmt_cv32e40x
     description: Interrupt directed test  
     dir: cv32e40x/sim/uvmt
     cmd: make test COREV=YES TEST=interrupt_test
-    makearg: USER_RUN_FLAGS=+rand_stall_obi_disable
+    # FIXME:strichmo:Restore dsim when Issue #712 is fixed by Metrics
+    skip_sim: dsim
 
   corev_rand_interrupt:
     build: uvmt_cv32e40x
@@ -32,33 +32,31 @@ tests:
     dir: cv32e40x/sim/uvmt
     cmd: make gen_corev-dv test COREV=YES TEST=corev_rand_interrupt
     num: 2
-    makearg: USER_RUN_FLAGS=+rand_stall_obi_disable
 
   illegal:
     build: uvmt_cv32e40x
     dir: cv32e40x/sim/uvmt
     cmd: make test COREV=YES TEST=illegal
-    makearg: USER_RUN_FLAGS=+rand_stall_obi_disable
 
   debug_test:
     build: uvmt_cv32e40x
     dir: cv32e40x/sim/uvmt
     cmd: make test COREV=YES TEST=debug_test
     makearg: USER_RUN_FLAGS=+rand_stall_obi_disable
+    # FIXME:strichmo:Restore dsim when Issue #712 is fixed by Metrics
+    skip_sim: dsim
 
   csr_instructions:
     build: uvmt_cv32e40x
     description: CSR Instruction Test
     dir: cv32e40x/sim/uvmt
     cmd: make test COREV=YES TEST=csr_instructions
-    makearg: USER_RUN_FLAGS=+rand_stall_obi_disable
 
   riscv_arithmetic_basic_test_0:
     build: uvmt_cv32e40x
     description: Static riscv-dv arithmetic test 0
     dir: cv32e40x/sim/uvmt
     cmd: make test COREV=YES TEST=riscv_arithmetic_basic_test_0
-    makearg: USER_RUN_FLAGS=+rand_stall_obi_disable
 
   corev_rand_arithmetic_base_test:
     build: uvmt_cv32e40x
@@ -66,7 +64,6 @@ tests:
     dir: cv32e40x/sim/uvmt
     cmd: make gen_corev-dv test COREV=YES TEST=corev_rand_arithmetic_base_test
     num: 2
-    makearg: USER_RUN_FLAGS=+rand_stall_obi_disable
 
   corev_rand_instr_test:
     build: uvmt_cv32e40x  
@@ -74,7 +71,8 @@ tests:
     dir: cv32e40x/sim/uvmt
     cmd: make gen_corev-dv test COREV=YES TEST=corev_rand_instr_test
     num: 2
-    makearg: USER_RUN_FLAGS=+rand_stall_obi_disable
+    # FIXME:strichmo:Restore dsim when Issue #712 is fixed by Metrics
+    skip_sim: dsim
 
   corev_rand_jump_stress_test:
     build: uvmt_cv32e40x  
@@ -82,5 +80,4 @@ tests:
     dir: cv32e40x/sim/uvmt
     cmd: make gen_corev-dv test COREV=YES TEST=corev_rand_jump_stress_test
     num: 2
-    makearg: USER_RUN_FLAGS=+rand_stall_obi_disable
 
