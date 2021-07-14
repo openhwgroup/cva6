@@ -42,6 +42,15 @@ module al_saqr
   inout wire          pad_hyper_rwds0,
   inout wire          pad_hyper_rwds1,
   inout wire          pad_hyper_reset,
+  inout wire [7:0]    pad_axi_hyper_dq0,
+  inout wire [7:0]    pad_axi_hyper_dq1,
+  inout wire          pad_axi_hyper_ck,
+  inout wire          pad_axi_hyper_ckn,
+  inout wire          pad_axi_hyper_csn0,
+  inout wire          pad_axi_hyper_csn1,
+  inout wire          pad_axi_hyper_rwds0,
+  inout wire          pad_axi_hyper_rwds1,
+  inout wire          pad_axi_hyper_reset,
   inout wire [63:0]   pad_gpio,
   // CVA6 DEBUG UART
   input logic         cva6_uart_rx_i,
@@ -87,6 +96,16 @@ module al_saqr
   logic [15:0]                 s_hyper_dq_o;
   logic [1:0]                  s_hyper_dq_oe;
   logic                        s_hyper_reset_n;
+  logic [1:0]                  s_axi_hyper_cs_n;
+  logic                        s_axi_hyper_ck;
+  logic                        s_axi_hyper_ck_n;
+  logic [1:0]                  s_axi_hyper_rwds_o;
+  logic                        s_axi_hyper_rwds_i;
+  logic [1:0]                  s_axi_hyper_rwds_oe;
+  logic [15:0]                 s_axi_hyper_dq_i;
+  logic [15:0]                 s_axi_hyper_dq_o;
+  logic [1:0]                  s_axi_hyper_dq_oe;
+  logic                        s_axi_hyper_reset_n;
 
   logic [NUM_GPIO-1:0]         s_gpio_pad_in;
   logic [NUM_GPIO-1:0]         s_gpio_pad_out;
@@ -137,16 +156,16 @@ module al_saqr
       .cva6_uart_rx_i         ( cva6_uart_rx_i                   ),
       .cva6_uart_tx_o         ( cva6_uart_tx_o                   ),
 
-      .axi_hyper_cs_no        ( axi_hyper_cs_no                  ),
-      .axi_hyper_ck_o         ( axi_hyper_ck_o                   ),
-      .axi_hyper_ck_no        ( axi_hyper_ck_no                  ),
-      .axi_hyper_rwds_o       ( axi_hyper_rwds_o                 ),
-      .axi_hyper_rwds_i       ( axi_hyper_rwds_i                 ),
-      .axi_hyper_rwds_oe_o    ( axi_hyper_rwds_oe_o              ),
-      .axi_hyper_dq_i         ( axi_hyper_dq_i                   ),
-      .axi_hyper_dq_o         ( axi_hyper_dq_o                   ),
-      .axi_hyper_dq_oe_o      ( axi_hyper_dq_oe_o                ),
-      .axi_hyper_reset_no     ( axi_hyper_reset_no               )
+      .axi_hyper_cs_no        ( s_axi_hyper_cs_n                 ),
+      .axi_hyper_ck_o         ( s_axi_hyper_ck                   ),
+      .axi_hyper_ck_no        ( s_axi_hyper_ck_n                 ),
+      .axi_hyper_rwds_o       ( s_axi_hyper_rwds_o               ),
+      .axi_hyper_rwds_i       ( s_axi_hyper_rwds_i               ),
+      .axi_hyper_rwds_oe_o    ( s_axi_hyper_rwds_oe              ),
+      .axi_hyper_dq_i         ( s_axi_hyper_dq_i                 ),
+      .axi_hyper_dq_o         ( s_axi_hyper_dq_o                 ),
+      .axi_hyper_dq_oe_o      ( s_axi_hyper_dq_oe                ),
+      .axi_hyper_reset_no     ( s_axi_hyper_reset_n              )
 
     );
 
@@ -174,6 +193,26 @@ module al_saqr
       .pad_hyper_rwds1        ( pad_hyper_rwds1                 ),
       .pad_hyper_reset        ( pad_hyper_reset                 ),
 
+      .axi_hyper_cs_ni            ( s_axi_hyper_cs_n                    ),
+      .axi_hyper_ck_i             ( s_axi_hyper_ck                      ),
+      .axi_hyper_ck_ni            ( s_axi_hyper_ck_n                    ),
+      .axi_hyper_rwds_i           ( s_axi_hyper_rwds_o                  ),
+      .axi_hyper_rwds_o           ( s_axi_hyper_rwds_i                  ),
+      .axi_hyper_rwds_oe_i        ( s_axi_hyper_rwds_oe                 ),
+      .axi_hyper_dq_o             ( s_axi_hyper_dq_i                    ),
+      .axi_hyper_dq_i             ( s_axi_hyper_dq_o                    ),
+      .axi_hyper_dq_oe_i          ( s_axi_hyper_dq_oe                   ),
+      .axi_hyper_reset_ni         ( s_axi_hyper_reset_n                 ),
+
+      .pad_axi_hyper_dq0          ( pad_axi_hyper_dq0                   ),
+      .pad_axi_hyper_dq1          ( pad_axi_hyper_dq1                   ),
+      .pad_axi_hyper_ck           ( pad_axi_hyper_ck                    ),
+      .pad_axi_hyper_ckn          ( pad_axi_hyper_ckn                   ),
+      .pad_axi_hyper_csn0         ( pad_axi_hyper_csn0                  ),
+      .pad_axi_hyper_csn1         ( pad_axi_hyper_csn1                  ),
+      .pad_axi_hyper_rwds0        ( pad_axi_hyper_rwds0                 ),
+      .pad_axi_hyper_rwds1        ( pad_axi_hyper_rwds1                 ),
+      .pad_axi_hyper_reset        ( pad_axi_hyper_reset                 ),
 
       .gpio_pad_out           ( s_gpio_pad_out                  ),
       .gpio_pad_in            ( s_gpio_pad_in                   ),

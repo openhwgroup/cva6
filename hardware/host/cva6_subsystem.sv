@@ -69,14 +69,6 @@ module cva6_subsytem
   
   logic        jtag_enable;
   logic        init_done;
-  logic [31:0] jtag_exit, dmi_exit;
-
-  logic        jtag_TCK;
-  logic        jtag_TMS;
-  logic        jtag_TDI;
-  logic        jtag_TRSTn;
-  logic        jtag_TDO_data;
-  logic        jtag_TDO_driven;
 
   logic        debug_req_valid;
   logic        debug_req_ready;
