@@ -61,7 +61,7 @@ class uvma_obi_memory_slv_seq_item_c extends uvma_obi_memory_base_seq_item_c;
       /*soft*/ gnt_latency    == 1;
       /*soft*/ access_latency == 1;
       /*soft*/ hold_duration  == 1;
-      /*soft*/ tail_length    == 1;
+      soft tail_length    == 1;
    }
    
    /**

@@ -92,12 +92,12 @@ class uvme_cv32e40p_cfg_c extends uvm_object;
          obi_memory_instr_cfg.enabled  == 1;
          obi_memory_data_cfg.enabled   == 1;
       }
-      obi_instr_cfg.write_enabled == 0;
-      obi_instr_cfg.read_enabled  == 1;
-      obi_data_cfg.write_enabled  == 1;
-      obi_data_cfg.read_enabled   == 1;
-      obi_memory_instr_cfg.mode   == UVMA_OBI_MEMORY_MODE_SLV;
-      obi_memory_data_cfg .mode   == UVMA_OBI_MEMORY_MODE_SLV;
+      obi_instr_cfg.write_enabled   == 0;
+      obi_instr_cfg.read_enabled    == 1;
+      obi_data_cfg.write_enabled    == 1;
+      obi_data_cfg.read_enabled     == 1;
+      obi_memory_instr_cfg.drv_mode == UVMA_OBI_MEMORY_MODE_SLV;
+      obi_memory_data_cfg.drv_mode  == UVMA_OBI_MEMORY_MODE_SLV;
 
       if (is_active == UVM_ACTIVE) {
          clknrst_cfg.is_active           == UVM_ACTIVE;

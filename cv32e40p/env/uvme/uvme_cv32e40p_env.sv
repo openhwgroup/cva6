@@ -240,37 +240,37 @@ endfunction : end_of_elaboration_phase
 
 function void uvme_cv32e40p_env_c::retrieve_vifs();
 
-	if (!uvm_config_db#(virtual uvmt_cv32e40p_vp_status_if)::get(this, "", "vp_status_vif", cntxt.vp_status_vif)) begin
-		`uvm_fatal("VIF", $sformatf("Could not find vp_status_vif handle of type %s in uvm_config_db", $typename(cntxt.vp_status_vif)))
-	end
-	else begin
-		`uvm_info("VIF", $sformatf("Found vp_status_vif handle of type %s in uvm_config_db", $typename(cntxt.vp_status_vif)), UVM_DEBUG)
-	end
-	
-	if (!uvm_config_db#(virtual uvma_interrupt_if)::get(this, "", "intr_vif" cntxt.intr_vif)) begin
-		`uvm_fatal("VIF", $sformatf("Could not find intr_vif handle of type %s in uvm_config_db", $typename(cntxt.intr_vif)))
-	end
-	else begin
-		`uvm_info("VIF", $sformatf("Found intr_vif handle of type %s in uvm_config_db", $typename(cntxt.intr_vif)), UVM_DEBUG)
-	end
-	
-	if (!uvm_config_db#(virtual uvma_debug_if)::get(this, "", "debug_vif" cntxt.debug_vif)) begin
-		`uvm_fatal("VIF", $sformatf("Could not find debug_vif handle of type %s in uvm_config_db", $typename(cntxt.debug_vif)))
-	end
-	else begin
-		`uvm_info("VIF", $sformatf("Found debug_vif handle of type %s in uvm_config_db", $typename(cntxt.debug_vif)), UVM_DEBUG)
-	end
-	
-	if (!uvm_config_db#(virtual uvmt_cv32e40p_isa_covg_if)::get(this, "", "isa_covg_vif", cntxt.isa_covg_vif));
-	if (cntxt.isa_covg_vif == null) begin
-		`uvm_fatal("UVME_CV32E40P_ENV", $sformatf("No uvmt_cv32e40p_isa_covg_if found in config database"))
-	end
-
-	void'(uvm_config_db#(virtual uvmt_cv32e40p_debug_cov_assert_if)::get(this, "", "debug_cov_vif", cntxt.debug_cov_vif));
-	if (cntxt.debug_cov_vif == null) begin
-		`uvm_fatal("UVME_CV32E40P_ENV", $sformatf("No uvmt_cv32e40p_debug_cov_assert_if found in config database"))
-	end
-	
+   if (!uvm_config_db#(virtual uvmt_cv32e40p_vp_status_if)::get(this, "", "vp_status_vif", cntxt.vp_status_vif)) begin
+      `uvm_fatal("VIF", $sformatf("Could not find vp_status_vif handle of type %s in uvm_config_db", $typename(cntxt.vp_status_vif)))
+   end
+   else begin
+      `uvm_info("VIF", $sformatf("Found vp_status_vif handle of type %s in uvm_config_db", $typename(cntxt.vp_status_vif)), UVM_DEBUG)
+   end
+   
+   if (!uvm_config_db#(virtual uvma_interrupt_if)::get(this, "", "intr_vif" cntxt.intr_vif)) begin
+      `uvm_fatal("VIF", $sformatf("Could not find intr_vif handle of type %s in uvm_config_db", $typename(cntxt.intr_vif)))
+   end
+   else begin
+      `uvm_info("VIF", $sformatf("Found intr_vif handle of type %s in uvm_config_db", $typename(cntxt.intr_vif)), UVM_DEBUG)
+   end
+   
+   if (!uvm_config_db#(virtual uvma_debug_if)::get(this, "", "debug_vif" cntxt.debug_vif)) begin
+      `uvm_fatal("VIF", $sformatf("Could not find debug_vif handle of type %s in uvm_config_db", $typename(cntxt.debug_vif)))
+   end
+   else begin
+      `uvm_info("VIF", $sformatf("Found debug_vif handle of type %s in uvm_config_db", $typename(cntxt.debug_vif)), UVM_DEBUG)
+   end
+   
+   if (!uvm_config_db#(virtual uvmt_cv32e40p_isa_covg_if)::get(this, "", "isa_covg_vif", cntxt.isa_covg_vif));
+   if (cntxt.isa_covg_vif == null) begin
+      `uvm_fatal("UVME_CV32E40P_ENV", $sformatf("No uvmt_cv32e40p_isa_covg_if found in config database"))
+   end
+   
+   void'(uvm_config_db#(virtual uvmt_cv32e40p_debug_cov_assert_if)::get(this, "", "debug_cov_vif", cntxt.debug_cov_vif));
+   if (cntxt.debug_cov_vif == null) begin
+      `uvm_fatal("UVME_CV32E40P_ENV", $sformatf("No uvmt_cv32e40p_debug_cov_assert_if found in config database"))
+   end
+   
 endfunction: retrieve_vifs
 
 

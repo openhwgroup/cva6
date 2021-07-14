@@ -207,9 +207,13 @@ endtask : run_phase
 
 task uvma_obi_memory_drv_c::drv_pre_reset(uvm_phase phase);
    
+   //cntxt.vif.gnt = 0;
+   vif_slv_mp.drv_slv_cb.gnt    <= 1'b0;
+   vif_slv_mp.drv_slv_cb.rvalid <= 'b0;
+
    case (cfg.drv_mode)
-      UVMA_OBI_MEMORY_MODE_MSTR: @(vif_mstr_mp.drv_mstr_cb);
-      UVMA_OBI_MEMORY_MODE_SLV : @(vif_slv_mp .drv_slv_cb );
+      UVMA_OBI_MEMORY_MODE_MSTR: /*#1step;*/@(vif_mstr_mp.drv_mstr_cb);
+      UVMA_OBI_MEMORY_MODE_SLV : /*#1step;*/@(vif_slv_mp .drv_slv_cb );
       
       default: `uvm_fatal("OBI_MEMORY_DRV", $sformatf("Invalid drv_mode: %0d", cfg.drv_mode))
    endcase
@@ -221,12 +225,12 @@ task uvma_obi_memory_drv_c::drv_in_reset(uvm_phase phase);
    
    case (cfg.drv_mode)
       UVMA_OBI_MEMORY_MODE_MSTR: begin
-         @(vif_mstr_mp.drv_mstr_cb);
+         /*#1step;*/@(vif_mstr_mp.drv_mstr_cb);
          drv_mstr_idle();
       end
       
       UVMA_OBI_MEMORY_MODE_SLV : begin
-         @(vif_slv_mp.drv_slv_cb);
+         /*#1step;*/@(vif_slv_mp.drv_slv_cb);
          drv_slv_idle();
       end
       
@@ -462,18 +466,59 @@ endtask : drv_slv_req
 
 
 task uvma_obi_memory_drv_c::drv_slv_read_req(ref uvma_obi_memory_slv_seq_item_c req);
-   
+   `uvm_info("OBI_MEMORY_DRV", $sformatf("drv_slv_read_req: %8h", req.rdata), UVM_NONE)
+
    // Latency cycles
    repeat (req.gnt_latency) begin
       @(vif_slv_mp.drv_slv_cb);
    end
-   
+
+   // Address phase
+   vif_slv_mp.drv_slv_cb.gnt <= 1'b1;
+   //@(vif_slv_mp.drv_slv_cb);
+   if (req.tail_length > 0) begin
+      repeat (req.tail_length) begin
+         @(vif_slv_mp.drv_slv_cb);
+      end
+      vif_slv_mp.drv_slv_cb.gnt <= 1'b0;
+   end
+   else begin
+      // yes, this is redundant - makes the code easier to follow (?)
+      vif_slv_mp.drv_slv_cb.gnt <= 1'b1;
+   end
+   `uvm_info("OBI_MEMORY_DRV", "drv_slv_read_req ADDRESS PHASE complete", UVM_NONE)
+
+   // Response phase
+   //fork
+   //   begin
+         vif_slv_mp.drv_slv_cb.rvalid <= 1'b1;
+         vif_slv_mp.drv_slv_cb.err    <= 1'b0; //req.err;
+         for (int unsigned ii=0; ii<cfg.data_width; ii++) begin
+            vif_slv_mp.drv_slv_cb.rdata[ii] <= req.rdata[ii];
+         end
+         @(vif_slv_mp.drv_slv_cb);
+
+         // Idle
+         vif_slv_mp.drv_slv_cb.rvalid <= 1'b0;
+         drv_slv_idle();
+         `uvm_info("OBI_MEMORY_DRV", "drv_slv_read_req RESPONSE PHASE complete", UVM_NONE)
+   //   end
+   //join_none
+
+   `uvm_info("OBI_MEMORY_DRV", "drv_slv_read_req FIN", UVM_NONE)
+
+/*
+   // Latency cycles
+   repeat (req.gnt_latency) begin
+      @(vif_slv_mp.drv_slv_cb);
+   end
+
    // Address phase
    vif_slv_mp.drv_slv_cb.gnt <= 1'b1;
    repeat (req.access_latency) begin
       @(vif_slv_mp.drv_slv_cb);
    end
-   
+
    // Response phase
    vif_slv_mp.drv_slv_cb.rvalid <= 1'b1;
    vif_slv_mp.drv_slv_cb.err <= req.err;
@@ -489,12 +534,12 @@ task uvma_obi_memory_drv_c::drv_slv_read_req(ref uvma_obi_memory_slv_seq_item_c 
    while (vif_slv_mp.drv_slv_cb.rready !== 1'b1) begin
       @(vif_slv_mp.drv_slv_cb);
    end
-   
+
    // Hold cycles
    repeat (req.hold_duration) begin
       @(vif_slv_mp.drv_slv_cb);
    end
-   
+
    // Idle
    vif_slv_mp.drv_slv_cb.gnt    <= 1'b0;
    vif_slv_mp.drv_slv_cb.rvalid <= 1'b0;
@@ -502,7 +547,7 @@ task uvma_obi_memory_drv_c::drv_slv_read_req(ref uvma_obi_memory_slv_seq_item_c 
    repeat (req.tail_length) begin
       @(vif_slv_mp.drv_slv_cb);
    end
-   
+*/
 endtask : drv_slv_read_req
 
 
@@ -627,6 +672,7 @@ task uvma_obi_memory_drv_c::drv_slv_idle();
       UVMA_OBI_MEMORY_DRV_IDLE_SAME: ;// Do nothing;
       
       UVMA_OBI_MEMORY_DRV_IDLE_ZEROS: begin
+         //`uvm_info("OBI_MEMORY_DRV", $sformatf("Invalid drv_zeros: %0d", cfg.drv_idle), UVM_NONE)
          vif_slv_mp.drv_slv_cb.rdata <= '0;
          vif_slv_mp.drv_slv_cb.err   <= '0;
          vif_slv_mp.drv_slv_cb.ruser <= '0;
@@ -634,6 +680,7 @@ task uvma_obi_memory_drv_c::drv_slv_idle();
       end
       
       UVMA_OBI_MEMORY_DRV_IDLE_RANDOM: begin
+         `uvm_info("OBI_MEMORY_DRV", $sformatf("Invalid drv_random: %0d", cfg.drv_idle), UVM_NONE)
          vif_slv_mp.drv_slv_cb.rdata <= $urandom();
          vif_slv_mp.drv_slv_cb.err   <= $urandom();
          vif_slv_mp.drv_slv_cb.ruser <= $urandom();
@@ -641,6 +688,7 @@ task uvma_obi_memory_drv_c::drv_slv_idle();
       end
       
       UVMA_OBI_MEMORY_DRV_IDLE_X: begin
+         `uvm_info("OBI_MEMORY_DRV", $sformatf("Invalid drv_idle: %0d", cfg.drv_idle), UVM_NONE)
          vif_slv_mp.drv_slv_cb.rdata <= 'X;
          vif_slv_mp.drv_slv_cb.err   <= 'X;
          vif_slv_mp.drv_slv_cb.ruser <= 'X;
@@ -648,6 +696,7 @@ task uvma_obi_memory_drv_c::drv_slv_idle();
       end
       
       UVMA_OBI_MEMORY_DRV_IDLE_Z: begin
+         `uvm_info("OBI_MEMORY_DRV", $sformatf("Invalid drv_Z: %0d", cfg.drv_idle), UVM_NONE)
          vif_slv_mp.drv_slv_cb.rdata <= 'Z;
          vif_slv_mp.drv_slv_cb.err   <= 'Z;
          vif_slv_mp.drv_slv_cb.ruser <= 'Z;

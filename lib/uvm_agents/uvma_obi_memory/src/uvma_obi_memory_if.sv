@@ -74,7 +74,7 @@ interface uvma_obi_memory_if #(
    /**
     * Used by DUT in 'mstr' mode.
     */
-   clocking dut_mstr_cb @(posedge clk);
+   clocking dut_mstr_cb @(posedge clk or reset_n);
       input   gnt      ,
               gntpar   ,
               rvalid   ,
@@ -105,7 +105,7 @@ interface uvma_obi_memory_if #(
    /**
     * Used by DUT in 'slv' mode.
     */
-   clocking dut_slv_cb @(posedge clk);
+   clocking dut_slv_cb @(posedge clk or reset_n);
       input   req      ,
               addr     ,
               we       ,
@@ -136,7 +136,7 @@ interface uvma_obi_memory_if #(
    /**
     * Used by uvma_obi_memory_drv_c.
     */
-   clocking drv_mstr_cb @(posedge clk);
+   clocking drv_mstr_cb @(posedge clk or reset_n);
       input   gnt      ,
               gntpar   ,
               rvalid   ,
@@ -167,7 +167,7 @@ interface uvma_obi_memory_if #(
    /**
     * Used by uvma_obi_memory_drv_c.
     */
-   clocking drv_slv_cb @(posedge clk);
+   clocking drv_slv_cb @(posedge clk or reset_n);
       input   req      ,
               addr     ,
               we       ,
@@ -198,7 +198,7 @@ interface uvma_obi_memory_if #(
    /**
     * Used by uvma_obi_memory_mon_c.
     */
-   clocking mon_cb @(posedge clk);
+   clocking mon_cb @(posedge clk or reset_n);
       input   req      ,
               gnt      ,
               addr     ,

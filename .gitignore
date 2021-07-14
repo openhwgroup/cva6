@@ -10,6 +10,7 @@
 *.vcd
 *.vsif
 *.sve
+*.sdb
 dsim.env
 dsim.log
 dsim_results
