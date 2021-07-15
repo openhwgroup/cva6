@@ -1,0 +1,4 @@
+name: coremark
+uvm_test: uvmt_cv32e40s_firmware_test_c
+description: >
+    Runs the CoreMark benchmark

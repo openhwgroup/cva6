@@ -1,0 +1,6 @@
+name: interrupt_bootstrap
+uvm_test: uvmt_$(CV_CORE_LC)_firmware_test_c
+description: >
+    Interrupt directed test for mtvec_addr_i bootstrap pins
+plusargs: >
+    +mtvec_addr=0x00000201
