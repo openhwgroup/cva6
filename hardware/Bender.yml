@@ -59,6 +59,7 @@ sources:
       WT_DCACHE: ~
     files:
       - ../fpga/src/pad_functional_xilinx/pad_functional_xilinx.sv
+      - ./fpga/alsaqr_xilinx.sv
       
   - target: vip
     files:

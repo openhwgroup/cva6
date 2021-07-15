@@ -105,6 +105,13 @@ module cva6_subsytem
     .AXI_USER_WIDTH ( AXI_USER_WIDTH           )
   ) master[ariane_soc::NB_PERIPHERALS-1:0]();
 
+  AXI_BUS #(
+    .AXI_ADDR_WIDTH ( AXI_ADDRESS_WIDTH        ),
+    .AXI_DATA_WIDTH ( AXI_DATA_WIDTH           ),
+    .AXI_ID_WIDTH   ( ariane_soc::IdWidthSlave ),
+    .AXI_USER_WIDTH ( AXI_USER_WIDTH           )
+  ) hyper_axi_master_cut();
+
   rstgen i_rstgen_main (
     .clk_i        ( clk_i                ),
     .rst_ni       ( rst_ni & (~ndmreset) ),
@@ -342,6 +349,19 @@ module cva6_subsytem
   // AXI hyperbus Slave
   // ---------------
 
+  axi_cut_intf #(
+    .BYPASS     ( 1'b0                     ),
+    .ADDR_WIDTH ( AXI_ADDRESS_WIDTH        ),
+    .DATA_WIDTH ( AXI_DATA_WIDTH           ),
+    .ID_WIDTH   ( ariane_soc::IdWidthSlave ),
+    .USER_WIDTH ( AXI_USER_WIDTH           )
+  ) (
+    .clk_i,
+    .rst_ni ( ndmreset_n                ),
+    .in     ( master[ariane_soc::HYAXI] ),
+    .out    ( hyper_axi_master_cut      )
+  );
+                 
   axi_riscv_atomics_wrap #(
     .AXI_ADDR_WIDTH ( AXI_ADDRESS_WIDTH        ),
     .AXI_DATA_WIDTH ( AXI_DATA_WIDTH           ),
@@ -352,7 +372,7 @@ module cva6_subsytem
   ) i_axi_riscv_atomics (
     .clk_i,
     .rst_ni ( ndmreset_n                ),
-    .slv    ( master[ariane_soc::HYAXI] ),
+    .slv    ( hyper_axi_master_cut      ),
     .mst    ( hyper_axi_master          )
   );
 

@@ -163,7 +163,6 @@ sources:
     - src/util/axi_slave_connect.sv
     - src/util/axi_master_connect_rev.sv
     - src/util/axi_slave_connect_rev.sv
-    - src/axi/src/axi_cut.sv
     - src/axi/src/axi_join.sv
     - src/axi/src/axi_delayer.sv
     - src/axi/src/axi_to_axi_lite.sv
