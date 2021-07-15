@@ -27,8 +27,11 @@
  */
 class uvma_rvvi_ovpsim_cfg_c#(int ILEN=uvma_rvvi_pkg::DEFAULT_ILEN,
                               int XLEN=uvma_rvvi_pkg::DEFAULT_XLEN) extends uvma_rvvi_cfg_c#(ILEN,XLEN);
-   
+
+   string ovpsim_mem_path;
+      
    `uvm_object_utils_begin(uvma_rvvi_ovpsim_cfg_c)
+      `uvm_field_string(ovpsim_mem_path, UVM_DEFAULT)
    `uvm_object_utils_end
       
    /**
