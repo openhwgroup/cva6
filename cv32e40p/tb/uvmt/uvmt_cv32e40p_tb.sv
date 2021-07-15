@@ -632,7 +632,7 @@ bind cv32e40p_wrapper
       if (dut_wrap.ram_i.rst_ni) begin
          if (dut_wrap.ram_i.rnd_num_req) begin
             #1ns;
-            iss_wrap.bus.mem[dut_wrap.ram_i.MMADDR_RNDNUM >> 2] = dut_wrap.ram_i.rnd_num;
+            iss_wrap.ram.mem[dut_wrap.ram_i.MMADDR_RNDNUM >> 2] = dut_wrap.ram_i.rnd_num;
          end
       end
    end
