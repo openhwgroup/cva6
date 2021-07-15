@@ -56,21 +56,22 @@ module uvmt_cv32e40x_debug_assert
   default clocking @(posedge cov_assert_if.clk_i); endclocking
   default disable iff !(cov_assert_if.rst_ni);
   
-  assign cov_assert_if.is_ebreak = cov_assert_if.is_decoding &
-                                   cov_assert_if.id_stage_instr_valid_i &
-                     (cov_assert_if.id_stage_instr_rdata_i == 32'h00100073) & 
-                     cov_assert_if.id_stage_is_compressed == 1'b0;
+  assign cov_assert_if.is_ebreak =
+    cov_assert_if.wb_stage_instr_valid_i
+    && (cov_assert_if.wb_stage_instr_rdata_i == 32'h0010_0073);
+    // TODO:ropeders && (cov_assert_if.wb_stage_is_compressed == 1'b0);
 
-  assign cov_assert_if.is_cebreak = cov_assert_if.is_decoding &
-                                    cov_assert_if.id_stage_instr_valid_i &
-                     (cov_assert_if.id_stage_instr_rdata_i == 32'h00100073) & 
-                     cov_assert_if.id_stage_is_compressed == 1'b1;
+  assign cov_assert_if.is_cebreak =
+    cov_assert_if.wb_stage_instr_valid_i
+    && (cov_assert_if.wb_stage_instr_rdata_i == 32'h0000_9002);
+    // TODO:ropeders && (cov_assert_if.wb_stage_is_compressed == 1'b1);
 
-  assign cov_assert_if.is_mulhsu = cov_assert_if.is_decoding &
-                                   cov_assert_if.id_stage_instr_valid_i & 
-                                   cov_assert_if.id_stage_instr_rdata_i[31:25] == 7'h1 &
-                                   cov_assert_if.id_stage_instr_rdata_i[14:12] == 3'b010 &
-                                   cov_assert_if.id_stage_instr_rdata_i[6:0]   == 7'h33;
+  assign cov_assert_if.is_mulhsu =
+    cov_assert_if.is_decoding
+    && cov_assert_if.id_stage_instr_valid_i
+    && (cov_assert_if.id_stage_instr_rdata_i[31:25] == 7'h1)
+    && (cov_assert_if.id_stage_instr_rdata_i[14:12] == 3'b010)
+    && (cov_assert_if.id_stage_instr_rdata_i[6:0]   == 7'h33);
 
 
   // TODO:ropeders uncomment and fix
@@ -110,10 +111,8 @@ module uvmt_cv32e40x_debug_assert
 
     // Check that debug with cause ebreak is correct
     property p_cebreak_debug_mode;
-1; /* TODO:ropeders
         $rose(cov_assert_if.debug_mode_q) && (cov_assert_if.dcsr_q[8:6] == cv32e40x_pkg::DBG_CAUSE_EBREAK)
         |-> debug_cause_pri == cv32e40x_pkg::DBG_CAUSE_EBREAK;
-*/
     endproperty
 
     a_cebreak_debug_mode: assert property(p_cebreak_debug_mode)
@@ -496,6 +495,8 @@ module uvmt_cv32e40x_debug_assert
                     debug_cause_pri <= 3'b011;
                 end else if(cov_assert_if.dcsr_q[2]) begin
                     debug_cause_pri <= 3'b100;
+                end else if(cov_assert_if.dcsr_q[15] && (cov_assert_if.is_ebreak || cov_assert_if.is_cebreak)) begin
+                    debug_cause_pri <= 3'b001;
                 end
             end
         end
