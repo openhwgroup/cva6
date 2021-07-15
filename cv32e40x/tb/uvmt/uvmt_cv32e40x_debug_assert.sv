@@ -493,10 +493,10 @@ module uvmt_cv32e40x_debug_assert
             end else if(cov_assert_if.ctrl_fsm_cs == cv32e40x_pkg::DEBUG_TAKEN) begin
                 if(cov_assert_if.debug_req_i) begin
                     debug_cause_pri <= 3'b011;
-                end else if(cov_assert_if.dcsr_q[2]) begin
-                    debug_cause_pri <= 3'b100;
                 end else if(cov_assert_if.dcsr_q[15] && (cov_assert_if.is_ebreak || cov_assert_if.is_cebreak)) begin
                     debug_cause_pri <= 3'b001;
+                end else if(cov_assert_if.dcsr_q[2]) begin
+                    debug_cause_pri <= 3'b100;
                 end
             end
         end
