@@ -129,6 +129,11 @@ class uvmt_cv32e40s_base_test_c extends uvm_test;
    extern virtual function void phase_ended(uvm_phase phase);
 
    /**
+    * post_randomize hook to complete configuration of test/environment config object
+    */
+   extern function void post_randomize();
+
+   /**
     * Retrieves virtual interfaces from UVM configuration database.
     */
    extern function void retrieve_vifs();
@@ -348,6 +353,20 @@ function void uvmt_cv32e40s_base_test_c::phase_ended(uvm_phase phase);
    end
    
 endfunction : phase_ended
+
+function void uvmt_cv32e40s_base_test_c::post_randomize();
+
+   // Point the RVVI in the cv32e40s environment to the OVPSIM mem path
+   begin
+      uvma_rvvi_ovpsim_cfg_c#(uvme_cv32e40s_pkg::ILEN, uvme_cv32e40s_pkg::XLEN) rvvi_ovpsim_cfg;
+      if (!$cast(rvvi_ovpsim_cfg, env_cfg.rvvi_cfg)) begin
+         `uvm_fatal("RVVICFG", "Could not cast rvvi_cfg to rvvi_ovpsim_cfg");
+      end
+
+      rvvi_ovpsim_cfg.ovpsim_mem_path = "uvmt_cv32e40s_tb.iss_wrap.ram.mem";
+   end
+
+endfunction : post_randomize
 
 
 function void uvmt_cv32e40s_base_test_c::retrieve_vifs();
