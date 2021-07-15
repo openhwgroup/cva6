@@ -39,6 +39,8 @@ module RAM
     bit isROM, isRAM;
     Uns32 loROM, hiROM;
     Uns32 loRAM, hiRAM;
+
+    reg [31:0] mem [bit[29:0]];
     
     initial begin
         loROM = ROM_START_ADDR;
@@ -64,13 +66,13 @@ module RAM
         iaddr4 = bus.IAddr >> 2;
         
         // Uninitialized Memory
-        if (!bus.mem.exists(daddr4)) bus.mem[daddr4] = 'h0;
-        if (!bus.mem.exists(iaddr4)) bus.mem[iaddr4] = 'h0;
+        if (!mem.exists(daddr4)) mem[daddr4] = 'h0;
+        if (!mem.exists(iaddr4)) mem[iaddr4] = 'h0;
 
         // READ (ROM & RAM)
         if (isROM || isRAM) begin
             if (bus.Drd==1) begin
-                bus.DData = bus.mem[daddr4] & byte2bit(bus.Dbe);
+                bus.DData = mem[daddr4] & byte2bit(bus.Dbe);
                 //$display("Load  %08x <= [%08X]", bus.DData, daddr4);
             end
         end
@@ -78,9 +80,9 @@ module RAM
         // WRITE
         if (isRAM) begin
             if (bus.Dwr==1) begin
-                value = bus.mem[daddr4] & ~(byte2bit(bus.Dbe));
-                bus.mem[daddr4] = value | (bus.DData & byte2bit(bus.Dbe));
-                //$display("Store %08x <= %08X", daddr4, bus.mem[daddr4]);
+                value = mem[daddr4] & ~(byte2bit(bus.Dbe));
+                mem[daddr4] = value | (bus.DData & byte2bit(bus.Dbe));
+                //$display("Store %08x <= %08X", daddr4, mem[daddr4]);
                 
             end
         end
@@ -88,7 +90,7 @@ module RAM
         // EXEC
         if (isROM) begin
             if (bus.Ird==1) begin
-                bus.IData = bus.mem[iaddr4] & byte2bit(bus.Ibe);
+                bus.IData = mem[iaddr4] & byte2bit(bus.Ibe);
                 //$display("Fetch %08x <= [%08X]", bus.IData, iaddr4);
             end
         end

@@ -363,9 +363,7 @@ function void uvmt_cv32e40x_base_test_c::post_randomize();
          `uvm_fatal("RVVICFG", "Could not cast rvvi_cfg to rvvi_ovpsim_cfg");
       end
 
-      // FIXME: Lee Moore, please revert this commented out line when mem variable is moved back to ram
-      //rvvi_ovpsim_cfg.ovpsim_mem_path = "uvmt_cv32e40x_tb.iss_wrap.ram.mem";
-      rvvi_ovpsim_cfg.ovpsim_mem_path = "uvmt_cv32e40x_tb.iss_wrap.bus.mem";
+      rvvi_ovpsim_cfg.ovpsim_mem_path = "uvmt_cv32e40x_tb.iss_wrap.ram.mem";
    end
 
 endfunction : post_randomize
