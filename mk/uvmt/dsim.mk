@@ -40,6 +40,8 @@ DSIM_FILE_LIST         += -f $(DV_UVMT_PATH)/imperas_iss.flist
 DSIM_USER_COMPILE_ARGS += "+define+UVM +define+$(CV_CORE_UC)_TRACE_EXECUTION"
 ifeq ($(USE_ISS),YES)
 	DSIM_RUN_FLAGS     += +USE_ISS
+else
+	DSIM_RUN_FLAGS     += +DISABLE_OVPSIM
 endif
 ifeq ($(call IS_YES,$(USE_RVVI)),YES)
     DSIM_RUN_FLAGS     += +USE_RVVI

@@ -1,4 +1,4 @@
-###############################################################################
+USE_ISS###############################################################################
 #
 # Copyright 2020 OpenHW Group
 # 
@@ -92,6 +92,8 @@ VSIM_FLAGS += -sv_lib $(basename $(OVP_MODEL_DPI))
 
 ifeq ($(call IS_YES,$(USE_ISS)),YES)
 VSIM_FLAGS += +USE_ISS
+else
+VSIM_FLAGS += +DISABLE_OVPSIM
 endif
 
 VSIM_FLAGS += -sv_lib $(basename $(DPI_DASM_LIB))

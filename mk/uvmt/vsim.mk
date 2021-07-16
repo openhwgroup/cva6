@@ -92,6 +92,7 @@ VLOG_FLAGS += $(DPILIB_VLOG_OPT)
 # Add the ISS to compilation
 VLOG_FILE_LIST += -f $(DV_UVMT_PATH)/imperas_iss.flist
 VLOG_FLAGS += "+define+$(CV_CORE_UC)_TRACE_EXECUTION"
+VLOG_FLAGS += "+define+UVM"
 
 ###############################################################################
 # VOPT (Optimization)
@@ -120,6 +121,8 @@ VSIM_UVM_ARGS      = +incdir+$(UVM_HOME)/src $(UVM_HOME)/src/uvm_pkg.sv
 VSIM_FLAGS += -sv_lib $(basename $(OVP_MODEL_DPI))
 ifeq ($(call IS_YES,$(USE_ISS)),YES)
 VSIM_FLAGS += +USE_ISS
+else
+VSIM_FLAGS += +DISABLE_OVPSIM
 endif
 ifeq ($(call IS_YES,$(TEST_DISABLE_ALL_CSR_CHECKS)),YES)
 VSIM_FLAGS +="+DISABLE_ALL_CSR_CHECKS"

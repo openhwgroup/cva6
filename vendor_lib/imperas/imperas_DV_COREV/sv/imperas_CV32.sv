@@ -137,10 +137,6 @@ interface RVVI_bus;
     bit            StoreBusFaultNMI;    // Artifact to signal memory interface error (E40X)
     bit            InstructionBusFault; // Artifact to signal memory interface error (E40X)
 
-    function automatic void write(input int address, input int data);
-        ram.mem[address] = data;
-    endfunction
-
 endinterface
 
 module CPU #(
