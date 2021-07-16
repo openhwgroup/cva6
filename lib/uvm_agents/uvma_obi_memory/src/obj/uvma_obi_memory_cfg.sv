@@ -35,6 +35,8 @@ class uvma_obi_memory_cfg_c extends uvm_object;
    rand bit                      trn_log_enabled;
    
    // Protocol parameters
+   rand uvma_obi_memory_version_enum   version;
+   rand bit                     ignore_rready;
    rand int unsigned            auser_width;
    rand int unsigned            wuser_width;
    rand int unsigned            ruser_width;
@@ -43,6 +45,7 @@ class uvma_obi_memory_cfg_c extends uvm_object;
    rand int unsigned            id_width   ;
    rand uvma_obi_memory_mode_enum      drv_mode   ;
    rand uvma_obi_memory_drv_idle_enum  drv_idle   ;
+   rand int unsigned                   drv_slv_gnt_latency;
    
    
    `uvm_object_utils_begin(uvma_obi_memory_cfg_c)
@@ -65,20 +68,23 @@ class uvma_obi_memory_cfg_c extends uvm_object;
    
    
    constraint defaults_cons {
-      soft enabled           == 1;
-      soft is_active         == UVM_PASSIVE;
-      soft sqr_arb_mode      == UVM_SEQ_ARB_FIFO;
-      soft cov_model_enabled == 0;
-      soft trn_log_enabled   == 1;
+      soft enabled              == 1;
+      soft is_active            == UVM_PASSIVE;
+      soft sqr_arb_mode         == UVM_SEQ_ARB_FIFO;
+      soft cov_model_enabled    == 0;
+      soft trn_log_enabled      == 1;
       
-      /*soft*/ auser_width  == uvma_obi_memory_default_auser_width;
-      /*soft*/ wuser_width  == uvma_obi_memory_default_wuser_width;
-      /*soft*/ ruser_width  == uvma_obi_memory_default_ruser_width;
-      /*soft*/ addr_width   == uvma_obi_memory_default_addr_width ;
-      /*soft*/ data_width   == uvma_obi_memory_default_data_width ;
-      /*soft*/ id_width     == uvma_obi_memory_default_id_width   ;
-      soft drv_mode     == UVMA_OBI_MEMORY_MODE_MSTR;
-      soft drv_idle     == UVMA_OBI_MEMORY_DRV_IDLE_ZEROS;
+      /*soft*/ version          == UVMA_OBI_MEMORY_VERSION_1p1;
+      /*soft*/ ignore_rready    == ;
+      /*soft*/ auser_width      == uvma_obi_memory_default_auser_width;
+      /*soft*/ wuser_width      == uvma_obi_memory_default_wuser_width;
+      /*soft*/ ruser_width      == uvma_obi_memory_default_ruser_width;
+      /*soft*/ addr_width       == uvma_obi_memory_default_addr_width ;
+      /*soft*/ data_width       == uvma_obi_memory_default_data_width ;
+      /*soft*/ id_width         == uvma_obi_memory_default_id_width   ;
+      soft drv_mode             == UVMA_OBI_MEMORY_MODE_MSTR;
+      soft drv_idle             == UVMA_OBI_MEMORY_DRV_IDLE_ZEROS;
+      soft drv_slv_gnt_latency  == 1;
    }
    
    

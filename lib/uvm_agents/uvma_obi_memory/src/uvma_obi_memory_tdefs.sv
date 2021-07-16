@@ -49,6 +49,11 @@ typedef bit [(`UVMA_OBI_MEMORY_RCHK_MAX_WIDTH    -1):0]  uvma_obi_memory_rchk_b_
 
 
 typedef enum {
+   UVMA_OBI_MEMORY_VERSION_1p1,
+   UVMA_OBI_MEMORY_VERSION_1p2
+} uvma_obi_memory_version_enum;
+
+typedef enum {
    UVMA_OBI_MEMORY_MODE_MSTR,
    UVMA_OBI_MEMORY_MODE_SLV
 } uvma_obi_memory_mode_enum;
