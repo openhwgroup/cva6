@@ -96,7 +96,10 @@ endgroup : cg_div_special_results
 covergroup cg_itype(
     string name, 
     bit reg_crosses_enabled,
-    bit reg_hazards_enabled
+    bit reg_hazards_enabled,
+    bit rs1_is_signed = 1,
+    bit immi_is_signed = 1,
+    bit rd_is_signed  = 1
 ) with function sample (
     uvma_isacov_instr_c instr
 );
@@ -105,7 +108,6 @@ covergroup cg_itype(
 
   cp_rs1: coverpoint instr.rs1;
   cp_rd: coverpoint instr.rd;
-  cp_immi: coverpoint instr.immi;
 
   cp_rd_rs1_hazard: coverpoint instr.rd {
     ignore_bins IGN_RS1_HAZARD_OFF = {[0:$]} with (!reg_hazards_enabled);
@@ -115,11 +117,132 @@ covergroup cg_itype(
   cross_rd_rs1: cross cp_rd, cp_rs1 {
     ignore_bins IGN_OFF = cross_rd_rs1 with (!reg_crosses_enabled);
   }
+
+  cp_rs1_value: coverpoint instr.rs1_value_type {
+    ignore_bins POS_OFF = {POSITIVE} with (!rs1_is_signed);
+    ignore_bins NEG_OFF = {NEGATIVE} with (!rs1_is_signed);
+    ignore_bins NON_ZERO_OFF = {NON_ZERO} with (rs1_is_signed);
+  }
+
+  cp_immi_value: coverpoint instr.immi_value_type {
+    ignore_bins POS_OFF = {POSITIVE} with (!immi_is_signed);
+    ignore_bins NEG_OFF = {NEGATIVE} with (!immi_is_signed);
+    ignore_bins NON_ZERO_OFF = {NON_ZERO} with (immi_is_signed);
+  }
+
+  cross_rs1_immi_value: cross cp_rs1_value, cp_immi_value;
+
+  cp_rd_value: coverpoint instr.rd_value_type {
+    ignore_bins POS_OFF = {POSITIVE} with (!rd_is_signed);
+    ignore_bins NEG_OFF = {NEGATIVE} with (!rd_is_signed);
+    ignore_bins NON_ZERO_OFF = {NON_ZERO} with (rd_is_signed);
+  }
+
+  `ISACOV_CP_BITWISE(cp_rs1_toggle,  instr.rs1_value, 1)
+  `ISACOV_CP_BITWISE_12(cp_imm1_toggle, instr.immi, 1)
+  `ISACOV_CP_BITWISE(cp_rd_toggle,   instr.rd_value,  1)
+
 endgroup : cg_itype
 
+covergroup cg_itype_slt (
+    string name, 
+    bit reg_crosses_enabled,
+    bit reg_hazards_enabled,
+    bit rs1_is_signed = 1,
+    bit immi_is_signed = 1,
+    bit rd_is_signed  = 1
+) with function sample (
+    uvma_isacov_instr_c instr
+);
+  option.per_instance = 1;
+  option.name = name;
+
+  cp_rs1: coverpoint instr.rs1;
+  cp_rd: coverpoint instr.rd;
+
+  cp_rd_rs1_hazard: coverpoint instr.rd {
+    ignore_bins IGN_RS1_HAZARD_OFF = {[0:$]} with (!reg_hazards_enabled);
+    bins RD[] = {[0:31]} iff (instr.rd == instr.rs1);
+  }
+
+  cross_rd_rs1: cross cp_rd, cp_rs1 {
+    ignore_bins IGN_OFF = cross_rd_rs1 with (!reg_crosses_enabled);
+  }
+
+  cp_rs1_value: coverpoint instr.rs1_value_type {
+    ignore_bins POS_OFF = {POSITIVE} with (!rs1_is_signed);
+    ignore_bins NEG_OFF = {NEGATIVE} with (!rs1_is_signed);
+    ignore_bins NON_ZERO_OFF = {NON_ZERO} with (rs1_is_signed);
+  }
+
+  cp_immi_value: coverpoint instr.immi_value_type {
+    ignore_bins POS_OFF = {POSITIVE} with (!immi_is_signed);
+    ignore_bins NEG_OFF = {NEGATIVE} with (!immi_is_signed);
+    ignore_bins NON_ZERO_OFF = {NON_ZERO} with (immi_is_signed);
+  }
+
+  cross_rs1_immi_value: cross cp_rs1_value, cp_immi_value;
+
+  cp_rd_value: coverpoint instr.rd_value_type {
+    bins SLT[] = {[0:1]};
+  }
+
+  `ISACOV_CP_BITWISE(cp_rs1_toggle,  instr.rs1_value, 1)
+  `ISACOV_CP_BITWISE_12(cp_imm1_toggle, instr.immi, 1)
+
+endgroup : cg_itype_slt
+
+covergroup cg_itype_shift (
+    string name, 
+    bit reg_crosses_enabled,
+    bit reg_hazards_enabled,
+    bit rs1_is_signed = 1,
+    bit immi_is_signed = 1,
+    bit rd_is_signed  = 1
+) with function sample (
+    uvma_isacov_instr_c instr
+);
+  option.per_instance = 1;
+  option.name = name;
+
+  cp_rs1: coverpoint instr.rs1;
+  cp_rd: coverpoint instr.rd;
+
+  cp_rd_rs1_hazard: coverpoint instr.rd {
+    ignore_bins IGN_RS1_HAZARD_OFF = {[0:$]} with (!reg_hazards_enabled);
+    bins RD[] = {[0:31]} iff (instr.rd == instr.rs1);
+  }
+
+  cross_rd_rs1: cross cp_rd, cp_rs1 {
+    ignore_bins IGN_OFF = cross_rd_rs1 with (!reg_crosses_enabled);
+  }
+
+  cp_rs1_value: coverpoint instr.rs1_value_type {
+    ignore_bins POS_OFF = {POSITIVE} with (!rs1_is_signed);
+    ignore_bins NEG_OFF = {NEGATIVE} with (!rs1_is_signed);
+    ignore_bins NON_ZERO_OFF = {NON_ZERO} with (rs1_is_signed);
+  }
+
+  cp_immi_value: coverpoint instr.immi {
+    bins SHAMT[] = {[0:31]};
+  }
+
+  cross_rs1_immi_value: cross cp_rs1_value, cp_immi_value;
+
+  cp_rd_value: coverpoint instr.rd_value_type {
+    ignore_bins POS_OFF = {POSITIVE} with (!rd_is_signed);
+    ignore_bins NEG_OFF = {NEGATIVE} with (!rd_is_signed);
+    ignore_bins NON_ZERO_OFF = {NON_ZERO} with (rd_is_signed);
+  }
+
+  `ISACOV_CP_BITWISE(cp_rs1_toggle,  instr.rs1_value, 1)
+  `ISACOV_CP_BITWISE(cp_rd_toggle,   instr.rd_value,  1)
+
+endgroup : cg_itype_shift
 
 covergroup cg_stype(
-    string name, bit reg_crosses_enabled
+    string name, 
+    bit reg_crosses_enabled    
 ) with function sample (
     uvma_isacov_instr_c instr
 );
@@ -128,29 +251,46 @@ covergroup cg_stype(
 
   cp_rs1: coverpoint instr.rs1;
   cp_rs2: coverpoint instr.rs2;
-  cp_imms: coverpoint instr.imms;
-
-  cross_rs1_rs2: cross cp_rs1, cp_rs2 {
-    ignore_bins IGN_OFF =  cross_rs1_rs2 with (!reg_crosses_enabled);
-  }
-endgroup : cg_stype
-
-
-covergroup cg_btype(
-    string name, bit reg_crosses_enabled
-) with function sample (
-    uvma_isacov_instr_c instr
-);
-  option.per_instance = 1;
-  option.name = name;
-
-  cp_rs1: coverpoint instr.rs1;
-  cp_rs2: coverpoint instr.rs2;
-  cp_immb: coverpoint instr.immb;
 
   cross_rs1_rs2: cross cp_rs1, cp_rs2 {
     ignore_bins IGN_OFF = cross_rs1_rs2 with (!reg_crosses_enabled);
   }
+
+  cp_imms_value: coverpoint instr.imms_value_type {
+    ignore_bins NON_ZERO_OFF = {NON_ZERO};
+  }
+
+  `ISACOV_CP_BITWISE(cp_rs1_toggle, instr.rs1_value, 1)
+  `ISACOV_CP_BITWISE(cp_rs2_toggle, instr.rs2_value, 1)
+  `ISACOV_CP_BITWISE_12(cp_imms_toggle, instr.imms, 1)
+
+endgroup : cg_stype
+
+
+covergroup cg_btype(
+    string name, 
+    bit reg_crosses_enabled
+) with function sample (
+    uvma_isacov_instr_c instr
+);
+  option.per_instance = 1;
+  option.name = name;
+
+  cp_rs1: coverpoint instr.rs1;
+  cp_rs2: coverpoint instr.rs2;  
+
+  cross_rs1_rs2: cross cp_rs1, cp_rs2 {
+    ignore_bins IGN_OFF = cross_rs1_rs2 with (!reg_crosses_enabled);
+  }
+
+  cp_imms_value: coverpoint instr.imms_value_type {
+    ignore_bins NON_ZERO_OFF = {NON_ZERO};
+  }
+
+  `ISACOV_CP_BITWISE(cp_rs1_toggle, instr.rs1_value, 1)
+  `ISACOV_CP_BITWISE(cp_rs2_toggle, instr.rs2_value, 1)
+  `ISACOV_CP_BITWISE_12(cp_immb_toggle, instr.immb, 1)
+
 endgroup : cg_btype
 
 
@@ -159,7 +299,15 @@ covergroup cg_utype(string name) with function sample (uvma_isacov_instr_c instr
   option.name = name;
 
   cp_rd: coverpoint instr.rd;
-  cp_immu: coverpoint instr.immu;
+
+  cp_immu_value: coverpoint instr.immu_value_type {
+    ignore_bins POS_OFF = {POSITIVE};
+    ignore_bins NEG_OFF = {NEGATIVE};
+  }
+
+  `ISACOV_CP_BITWISE(cp_rd_toggle, instr.rd_value, 1)
+  `ISACOV_CP_BITWISE_20(cp_immu_toggle, instr.immu, 1)
+
 endgroup : cg_utype
 
 
@@ -167,8 +315,15 @@ covergroup cg_jtype(string name) with function sample (uvma_isacov_instr_c instr
   option.per_instance = 1;
   option.name = name;
 
-  cp_rd: coverpoint instr.rd;
-  cp_immj: coverpoint instr.immj;
+  cp_rd: coverpoint instr.rd;  
+
+  cp_immj_value: coverpoint instr.immu_value_type {
+    ignore_bins NON_ZERO_OFF = {NON_ZERO};
+  }
+
+  `ISACOV_CP_BITWISE(cp_rd_toggle, instr.rd_value, 1)
+  `ISACOV_CP_BITWISE_20(cp_immj_toggle, instr.immj, 1)
+
 endgroup : cg_jtype
 
 covergroup cg_csrtype(
@@ -406,10 +561,7 @@ class uvma_isacov_cov_model_c extends uvm_component;
   uvma_isacov_instr_c instr_prev3;
 
   // Covergroups
-  //32I:
-  cg_rtype instr_i_slli_cg;
-  cg_rtype instr_i_srli_cg;
-  cg_rtype instr_i_srai_cg;
+  //32I:  
   cg_rtype instr_i_add_cg;
   cg_rtype instr_i_sub_cg;
   cg_rtype instr_i_sll_cg;
@@ -428,11 +580,15 @@ class uvma_isacov_cov_model_c extends uvm_component;
   cg_itype instr_i_lbu_cg;
   cg_itype instr_i_lhu_cg;
   cg_itype instr_i_addi_cg;
-  cg_itype instr_i_slti_cg;
-  cg_itype instr_i_sltiu_cg;
+  cg_itype_slt instr_i_slti_cg;
+  cg_itype_slt instr_i_sltiu_cg;
   cg_itype instr_i_xori_cg;
   cg_itype instr_i_ori_cg;
   cg_itype instr_i_andi_cg;
+  cg_itype_shift instr_i_slli_cg;
+  cg_itype_shift instr_i_srli_cg;
+  cg_itype_shift instr_i_srai_cg;
+
   cg_itype instr_i_fence_cg;  // TODO own cg?
   cg_itype instr_i_ecall_cg;  // TODO own cg?
   cg_itype instr_i_ebreak_cg;  // TODO own cg?

@@ -61,6 +61,12 @@ class uvma_isacov_instr_c extends uvm_object;
   bit[31:0]     rd_value;
   instr_value_t rd_value_type;
 
+  instr_value_t immi_value_type;
+  instr_value_t imms_value_type;
+  instr_value_t immb_value_type;
+  instr_value_t immu_value_type;
+  instr_value_t immj_value_type;
+
   `uvm_object_utils_begin(uvma_isacov_instr_c);
     `uvm_field_enum(instr_name_t, name, UVM_ALL_ON | UVM_NOPRINT);
     `uvm_field_enum(instr_type_t, itype, UVM_ALL_ON | UVM_NOPRINT);
@@ -81,10 +87,15 @@ class uvma_isacov_instr_c extends uvm_object;
     `uvm_field_enum(instr_value_t, rd_value_type, UVM_ALL_ON | UVM_NOPRINT);
 
     `uvm_field_int(immi, UVM_ALL_ON | UVM_NOPRINT);
+    `uvm_field_enum(instr_value_t, immi_value_type, UVM_ALL_ON | UVM_NOPRINT);    
     `uvm_field_int(imms, UVM_ALL_ON | UVM_NOPRINT);
+    `uvm_field_enum(instr_value_t, imms_value_type, UVM_ALL_ON | UVM_NOPRINT);    
     `uvm_field_int(immb, UVM_ALL_ON | UVM_NOPRINT);
+    `uvm_field_enum(instr_value_t, immb_value_type, UVM_ALL_ON | UVM_NOPRINT);
     `uvm_field_int(immu, UVM_ALL_ON | UVM_NOPRINT);
+    `uvm_field_enum(instr_value_t, immu_value_type, UVM_ALL_ON | UVM_NOPRINT);
     `uvm_field_int(immj, UVM_ALL_ON | UVM_NOPRINT);
+    `uvm_field_enum(instr_value_t, immj_value_type, UVM_ALL_ON | UVM_NOPRINT);
 
     `uvm_field_int(c_rs1p,    UVM_ALL_ON | UVM_NOPRINT);
     `uvm_field_int(c_rs2p,    UVM_ALL_ON | UVM_NOPRINT);
@@ -108,7 +119,7 @@ class uvma_isacov_instr_c extends uvm_object;
 
   extern function void set_valid_flags();
   extern function bit is_csr_write();
-  extern function instr_value_t get_instr_value_type(bit[31:0] value, bit is_signed);
+  extern function instr_value_t get_instr_value_type(bit[31:0] value, int unsigned width, bit is_signed);
 
 endclass : uvma_isacov_instr_c
 
@@ -216,13 +227,14 @@ function bit uvma_isacov_instr_c::is_csr_write();
   return 0;
 endfunction : is_csr_write
 
-function instr_value_t uvma_isacov_instr_c::get_instr_value_type(bit[31:0] value, bit is_signed);
+function instr_value_t uvma_isacov_instr_c::get_instr_value_type(bit[31:0] value, int unsigned width, bit is_signed);
   if (value == 0)
     return ZERO;
 
   if (is_signed) 
-    return value[31] ? NEGATIVE : POSITIVE;
+    return value[width-1] ? NEGATIVE : POSITIVE;
 
   return NON_ZERO;
   
 endfunction : get_instr_value_type
+

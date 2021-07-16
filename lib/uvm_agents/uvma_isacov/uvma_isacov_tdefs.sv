@@ -329,6 +329,9 @@ bit rs1_is_signed[instr_name_t] = '{
   MULHSU : 1,
   DIV    : 1,
   REM    : 1,
+  ADDI   : 1,
+  SLTI   : 1,
+  SRA    : 1,
   default: 0
 };
 
@@ -339,11 +342,31 @@ bit rs2_is_signed[instr_name_t] = '{
   default: 0
 };
 
+bit immi_is_signed[instr_name_t] = '{  
+  JALR   : 1,
+  LB     : 1,
+  LH     : 1,
+  LW     : 1,
+  LBU    : 1,
+  LHU    : 1,
+  SLTI   : 1,
+  SLTIU  : 1,
+  XORI   : 1,
+  ORI    : 1,
+  ANDI   : 1,
+  SLLI   : 0,
+  SRLI   : 0,
+  SRAI   : 0,
+  default: 0
+};
+
 bit rd_is_signed[instr_name_t] = '{
   MULH   : 1,
   MULHSU : 1,
   DIV    : 1,
   REM    : 1,
+  LH     : 1,
+  LB     : 1,
   default: 0
 };
 

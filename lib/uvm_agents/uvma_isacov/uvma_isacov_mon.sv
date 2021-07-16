@@ -145,7 +145,7 @@ function void uvma_isacov_mon_c::write_rvfi_instr(uvma_rvfi_instr_seq_item_c#(IL
   mon_trn.instr.c_immj = dasm_rvc_j_imm(instr);
   mon_trn.instr.c_rs1p = instr[9:7];  // TODO use disassembler
   mon_trn.instr.c_rdp = instr[4:2];  // TODO use disassembler  
-  
+    
   // Cast CSR address unless illegal CSR
   if (mon_trn.instr.group == CSR_GROUP) begin
     if (!$cast(mon_trn.instr.csr, dasm_csr(instr))) begin      
@@ -159,18 +159,33 @@ function void uvma_isacov_mon_c::write_rvfi_instr(uvma_rvfi_instr_seq_item_c#(IL
     end
   end
 
+  if (mon_trn.instr.itype == B_TYPE) 
+    mon_trn.instr.immb_value_type = mon_trn.instr.get_instr_value_type(mon_trn.instr.imms, 13, 1);
+
+  if (mon_trn.instr.itype == S_TYPE) 
+    mon_trn.instr.imms_value_type = mon_trn.instr.get_instr_value_type(mon_trn.instr.imms, 12, 1);
+
+  if (mon_trn.instr.itype == U_TYPE) 
+    mon_trn.instr.immu_value_type = mon_trn.instr.get_instr_value_type(mon_trn.instr.immu, 20, 0);
+
+  if (mon_trn.instr.itype == I_TYPE) 
+    mon_trn.instr.immi_value_type = mon_trn.instr.get_instr_value_type(mon_trn.instr.immi, 12, immi_is_signed[mon_trn.instr.name]);
+
+  if (mon_trn.instr.itype == J_TYPE) 
+    mon_trn.instr.immj_value_type = mon_trn.instr.get_instr_value_type(mon_trn.instr.immj, 20, 1);
+
   mon_trn.instr.set_valid_flags();
   if (mon_trn.instr.rs1_valid) begin
     mon_trn.instr.rs1_value = rvfi_instr.rs1_rdata;    
-    mon_trn.instr.rs1_value_type = mon_trn.instr.get_instr_value_type(mon_trn.instr.rs1_value, rs1_is_signed[mon_trn.instr.name]);
+    mon_trn.instr.rs1_value_type = mon_trn.instr.get_instr_value_type(mon_trn.instr.rs1_value, 32, rs1_is_signed[mon_trn.instr.name]);
   end
   if (mon_trn.instr.rs2_valid) begin
     mon_trn.instr.rs2_value = rvfi_instr.rs2_rdata;
-    mon_trn.instr.rs2_value_type = mon_trn.instr.get_instr_value_type(mon_trn.instr.rs2_value, rs2_is_signed[mon_trn.instr.name]);
+    mon_trn.instr.rs2_value_type = mon_trn.instr.get_instr_value_type(mon_trn.instr.rs2_value, 32, rs2_is_signed[mon_trn.instr.name]);
   end
   if (mon_trn.instr.rd_valid) begin
     mon_trn.instr.rd_value  = rvfi_instr.rd1_wdata;
-    mon_trn.instr.rd_value_type = mon_trn.instr.get_instr_value_type(mon_trn.instr.rd_value, rd_is_signed[mon_trn.instr.name]);
+    mon_trn.instr.rd_value_type = mon_trn.instr.get_instr_value_type(mon_trn.instr.rd_value, 32, rd_is_signed[mon_trn.instr.name]);
   end
 
   ap.write(mon_trn);
