@@ -327,6 +327,9 @@ module cva6_subsytem
   bootrom i_bootrom (
     .clk_i      ( clk_i     ),
     .req_i      ( rom_req   ),
+ `ifdef FPGA_EMUL
+    .rst        ( ndmreset_n),
+ `endif                   
     .addr_i     ( rom_addr  ),
     .rdata_o    ( rom_rdata )
   );
@@ -358,8 +361,8 @@ module cva6_subsytem
   ) (
     .clk_i,
     .rst_ni ( ndmreset_n                ),
-    .in     ( master[ariane_soc::HYAXI] ),
-    .out    ( hyper_axi_master_cut      )
+    .in     ( hyper_axi_master_cut      ),
+    .out    ( hyper_axi_master          )
   );
                  
   axi_riscv_atomics_wrap #(
@@ -372,8 +375,8 @@ module cva6_subsytem
   ) i_axi_riscv_atomics (
     .clk_i,
     .rst_ni ( ndmreset_n                ),
-    .slv    ( hyper_axi_master_cut      ),
-    .mst    ( hyper_axi_master          )
+    .slv    ( master[ariane_soc::HYAXI] ),
+    .mst    ( hyper_axi_master_cut      )
   );
 
   // ---------------

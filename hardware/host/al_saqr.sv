@@ -71,17 +71,7 @@ module al_saqr
   input  logic        jtag_TDI,
   input  logic        jtag_TRSTn,
   output logic        jtag_TDO_data,
-  output logic        jtag_TDO_driven,
-  output logic [1:0]  axi_hyper_cs_no,
-  output logic        axi_hyper_ck_o,
-  output logic        axi_hyper_ck_no,
-  output logic        axi_hyper_rwds_o,
-  input logic         axi_hyper_rwds_i,
-  output logic        axi_hyper_rwds_oe_o,
-  input logic [7:0]   axi_hyper_dq_i,
-  output logic [7:0]  axi_hyper_dq_o,
-  output logic        axi_hyper_dq_oe_o,
-  output logic        axi_hyper_reset_no
+  output logic        jtag_TDO_driven
 
 );
 

@@ -26,7 +26,7 @@ set_max_delay -datapath_only -from [get_pins i_alsaqr/i_host_domain/i_cva_subsys
 
 
 # reset signal
-set_false_path -from [get_ports rst_ni]
+set_false_path -from [get_ports pad_reset]
 
 # Set ASYNC_REG attribute for ff synchronizers to place them closer together and
 # increase MTBF
@@ -56,13 +56,14 @@ set jitter_sys 5.000
 
 # Create RWDS clock
 create_clock -period 100.000 -name rwds_clk [get_ports FMC_hyper_rwds0]
+set_property CLOCK_DEDICATED_ROUTE FALSE [get_nets i_alsaqr/i_pad_frame/padinst_axi_hyper_rwds0/iobuf_i/O]
 
 # Create the PHY clock
-create_clock -name clk_phy -period ${tck_phy} [get_pins i_alsaqr/i_host_domain/axi_hyperbus/clk_phy_i]
+create_generated_clock -name clk_phy  -source  [get_pins i_clk_manager/clk_out1] [get_pins i_alsaqr/i_host_domain/axi_hyperbus/clk_phy_i]
 set_clock_uncertainty [expr {${jitter_phy}*${tck_phy}}] clk_phy
 
 # Create the system clock
-create_clock -name clk_sys -period ${tck_sys} [get_ports i_alsaqr/i_host_domain/axi_hyperbus/clk_sys_i]
+create_generated_clock -name clk_sys -source  [get_pins i_clk_manager/clk_out1]  [get_pins i_alsaqr/i_host_domain/axi_hyperbus/clk_sys_i]
 set_clock_uncertainty [expr {${jitter_sys}*${tck_sys}}] clk_sys
 
 # Create generated clock for for outgoing RWDS after delay
@@ -80,6 +81,28 @@ create_generated_clock  -name clk_rx -edges {1 2 3} -edge_shift "$clk_rx_shift $
 # Inform tool that system and PHY-derived clocks are asynchronous, but may have timed arcs between them
 set_clock_groups -asynchronous -allow_paths -group {clk_sys} -group {clk_phy clk_tx clk_rwds_in clk_rx}
 
+# Input Delay Constraint
+ set input_clock         clk_tx;           # Name of input clock
+ set skew_bre            0.6;             # Data invalid before the rising clock edge
+ set skew_are            0.6;             # Data invalid after the rising clock edge
+ set skew_bfe            0.6;             # Data invalid before the falling clock edge
+ set skew_afe            0.6;             # Data invalid after the falling clock edge
+ set input_ports         {{FMC_hyper_dqio*} FMC_hyper_rwds0};   # List of input ports
+ set phy_period          200
+
+ set_input_delay -clock $input_clock -max [expr $phy_period/2 + $skew_afe] [get_ports $input_ports];
+ set_input_delay -clock $input_clock -min [expr $phy_period/2 - $skew_bfe] [get_ports $input_ports] -add_delay;
+ set_input_delay -clock $input_clock -max [expr $phy_period/2 + $skew_are] [get_ports $input_ports] -clock_fall -add_delay;
+ set_input_delay -clock $input_clock -min [expr $phy_period/2 - $skew_bre] [get_ports $input_ports] -clock_fall -add_delay;
+
+# Input Delay Constraint
+ set input_clock         rwds_clk;      # Name of input clock
+ set skew_bre            0.45+1;             # Data invalid before the rising clock edge
+ set skew_are            0.45+1;             # Data invalid after the rising clock edge
+ set skew_bfe            0.45+1;             # Data invalid before the falling clock edge
+ set skew_afe            0.45+1;             # Data invalid after the falling clock edge
+ set input_ports         {FMC_hyper_dqio*};   # List of input ports
+ 
 # Constrain i_cdc_fifo_gray CDC FIFOs (clocks already async above)
 set async_pins [get_pins -hierarchical -filter async]
 set_ungroup [get_designs cdc_fifo_gray*] false

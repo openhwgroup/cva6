@@ -82,8 +82,8 @@ module alsaqr_xilinx
    // divide clock by two
    logic       rtc;
    
-   always_ff @(posedge s_clk or negedge ndmreset_n) begin
-     if (~ndmreset_n) begin
+   always_ff @(posedge s_clk or negedge reset_n) begin
+     if (~reset_n) begin
        rtc <= 0;
      end else begin
        rtc <= rtc ^ 1'b1;
@@ -123,7 +123,7 @@ module alsaqr_xilinx
         .jtag_TCK             ( pad_jtag_tck    ),
         .jtag_TMS             ( pad_jtag_tms    ),
         .jtag_TDI             ( pad_jtag_tdi    ),
-        .jtag_TRSTn           ( pad_jtag_trst   ),
+        .jtag_TRSTn           ( 1'b1            ),
         .jtag_TDO_data        ( pad_jtag_tdo    ),
         .jtag_TDO_driven      (                 ),
         .pad_hyper_dq0        (                 ),

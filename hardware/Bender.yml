@@ -57,8 +57,10 @@ sources:
     defines:
       FPGA_TARGET_XILINX: ~
       WT_DCACHE: ~
+      FPGA_EMUL: ~
     files:
       - ../fpga/src/pad_functional_xilinx/pad_functional_xilinx.sv
+      - ./fpga/boot_rom.sv
       - ./fpga/alsaqr_xilinx.sv
       
   - target: vip
@@ -69,7 +71,7 @@ sources:
   - target: test
     files:
       - deps/cva6/src/util/sram.sv
-      - ../bootrom/bootrom.sv
+      - ../fpga/src/bootrom/bootrom.sv
       - tb/common/mock_uart.sv
       - tb/ariane_tb.sv
 

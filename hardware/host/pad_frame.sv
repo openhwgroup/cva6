@@ -61,7 +61,7 @@ module pad_frame
      inout wire [63:0]   pad_gpio
      );
 
-  
+`ifndef FPGA_EMUL  
     pad_functional_pu padinst_hyper_csno0  (.OEN( 1'b0              ), .I( hyper_cs_ni[0]     ), .O(                   ), .PAD( pad_hyper_csn0    ), .PEN(1'b1 ) );
     pad_functional_pu padinst_hyper_csno1  (.OEN( 1'b0              ), .I( hyper_cs_ni[1]     ), .O(                   ), .PAD( pad_hyper_csn1    ), .PEN(1'b1 ) );
     pad_functional_pu padinst_hyper_ck     (.OEN( 1'b0              ), .I( hyper_ck_i         ), .O(                   ), .PAD( pad_hyper_ck      ), .PEN(1'b1 ) );
@@ -76,7 +76,8 @@ module pad_frame
                 pad_functional_pu padinst_hyper_dqio0  (.OEN(~hyper_dq_oe_i[0]   ), .I( hyper_dq_i[j]   ), .O( hyper_dq_o[j]  ), .PAD( pad_hyper_dq0[j]   ), .PEN(1'b1 ) );
         end
     endgenerate
-
+`endif //  `ifndef FPGA_EMUL
+   
     pad_functional_pu padinst_axi_hyper_csno0  (.OEN( 1'b0                  ), .I( axi_hyper_cs_ni[0]     ), .O(                   ), .PAD( pad_axi_hyper_csn0    ), .PEN(1'b1 ) );
     pad_functional_pu padinst_axi_hyper_csno1  (.OEN( 1'b0                  ), .I( axi_hyper_cs_ni[1]     ), .O(                   ), .PAD( pad_axi_hyper_csn1    ), .PEN(1'b1 ) );
     pad_functional_pu padinst_axi_hyper_ck     (.OEN( 1'b0                  ), .I( axi_hyper_ck_i         ), .O(                   ), .PAD( pad_axi_hyper_ck      ), .PEN(1'b1 ) );
@@ -91,12 +92,14 @@ module pad_frame
                 pad_functional_pu padinst_axi_hyper_dqio0  (.OEN(~axi_hyper_dq_oe_i[0]   ), .I( axi_hyper_dq_i[k]   ), .O( axi_hyper_dq_o[k]  ), .PAD( pad_axi_hyper_dq0[k]   ), .PEN(1'b1 ) );
         end
     endgenerate
-       
+   
+`ifndef FPGA_EMUL       
     genvar i;
     generate
        for (i=0; i<64; i++) begin
                 pad_functional_pu padinst_gpio  (.OEN(~gpio_pad_dir[i]   ), .I( gpio_pad_out[i]   ), .O( gpio_pad_in[i]  ), .PAD( pad_gpio[i]   ), .PEN(1'b1 ) );
         end
     endgenerate
-
+`endif
+   
 endmodule

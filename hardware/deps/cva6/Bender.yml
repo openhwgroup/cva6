@@ -195,7 +195,6 @@ sources:
     - target: all(fpga, xilinx)
       files:
       - ../../../fpga/src/fan_ctrl.sv
-      - ../../../fpga/src/bootrom/bootrom.sv
       - src/util/sram.sv
 ##      - ../../../fpga/src/ariane-ethernet/ssio_ddr_in.sv
 ##      - ../../../fpga/src/ariane-ethernet/rgmii_soc.sv
