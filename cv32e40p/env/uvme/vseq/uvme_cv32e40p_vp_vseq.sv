@@ -32,6 +32,7 @@ class uvme_cv32e40p_vp_vseq_c extends uvme_cv32e40p_base_vseq_c;
         longint unsigned  cycle_counter = 0;
         event             interrupt_timer_start;
         int unsigned      interrupt_timer_value;
+        bit [31:0]        interrupt_timer_mask = 0;
    rand int unsigned      max_latency;
         int unsigned      signature_start_address;
         int unsigned      signature_end_address;
@@ -41,6 +42,7 @@ class uvme_cv32e40p_vp_vseq_c extends uvme_cv32e40p_base_vseq_c;
       `uvm_field_int(cycle_counter_frequency, UVM_DEFAULT + UVM_DEC)
       `uvm_field_int(cycle_counter          , UVM_DEFAULT + UVM_DEC)
       `uvm_field_int(interrupt_timer_value  , UVM_DEFAULT + UVM_DEC)
+      `uvm_field_int(interrupt_timer_mask   , UVM_DEFAULT          )
       `uvm_field_int(max_latency            , UVM_DEFAULT + UVM_DEC)
       `uvm_field_int(signature_start_address, UVM_DEFAULT          )
       `uvm_field_int(signature_end_address  , UVM_DEFAULT          )
@@ -70,6 +72,11 @@ class uvme_cv32e40p_vp_vseq_c extends uvme_cv32e40p_base_vseq_c;
     * TODO Describe uvme_cv32e40p_vp_vseq_c::do_response()
     */
    extern virtual task do_response(ref uvma_obi_memory_mon_trn_c mon_req);
+   
+   /**
+    * TODO Describe uvme_cv32e40p_vp_vseq_c::do_mem_operation()
+    */
+   extern virtual task do_mem_operation(ref uvma_obi_memory_mon_trn_c mon_req);
    
    /**
     * TODO Describe uvme_cv32e40p_vp_vseq_c::vp_address_range_check()
@@ -147,14 +154,21 @@ task uvme_cv32e40p_vp_vseq_c::body();
          forever begin
             // Wait for the monitor to send us the mstr's "req" with an access request
             p_sequencer.obi_memory_data_sequencer.mon_trn_fifo.get(mon_trn);
-            `uvm_info("OBI_MEMORY_SLV_SEQ", $sformatf("Got mon_trn:\n%s", mon_trn.sprint()), UVM_LOW)
+            @(cntxt.obi_memory_data_cntxt.vif.drv_slv_cb);
+            cntxt.obi_memory_data_cntxt.vif.drv_slv_cb.gnt <= 1'b1;
+            @(cntxt.obi_memory_data_cntxt.vif.drv_slv_cb);
+            cntxt.obi_memory_data_cntxt.vif.drv_slv_cb.gnt <= 1'b0;
+            for (int unsigned ii=0; ii<cfg.obi_memory_data_cfg.addr_width; ii++) begin
+               mon_trn.address[ii] = cntxt.obi_memory_data_cntxt.vif.mon_cb.addr[ii];
+            end
+            `uvm_info("OBI_MEMORY_SLV_SEQ", $sformatf("Got mon_trn:\n%s", mon_trn.sprint()), UVM_DEBUG)
             do_response(mon_trn);
          end
       end
       
       begin
          forever begin
-            `uvm_info("OBI_MEMORY_SLV_SEQ", $sformatf("Waiting %0d ps", cycle_counter_frequency), UVM_LOW)
+            `uvm_info("OBI_MEMORY_SLV_SEQ", $sformatf("Waiting %0d ps", cycle_counter_frequency), UVM_DEBUG)
             #(cycle_counter_frequency * 1ps);
             cycle_counter++;
          end
@@ -164,17 +178,21 @@ task uvme_cv32e40p_vp_vseq_c::body();
          forever begin
             `uvm_info("OBI_MEMORY_SLV_SEQ", "Waiting for interrupt_timer_start", UVM_LOW)
             @interrupt_timer_start;
+                  `uvm_info("OBI_MEMORY_SLV_SEQ", "@interrupt_timer_start", UVM_LOW)
             fork
                begin
                   while (interrupt_timer_value > 0) begin
                      @(cntxt.obi_memory_data_cntxt.vif.clk);
-                     interrupt_timer_value--;
+                     interrupt_timer_value = (interrupt_timer_value-1) & interrupt_timer_mask;
                   end
+                  `uvm_info("OBI_MEMORY_SLV_SEQ", "Done waiting for interrupt_timer_value to be 0", UVM_LOW)
                   irq_o();
                end
                
                begin
+                  `uvm_info("OBI_MEMORY_SLV_SEQ", "Waiting for interrupt_timer_start", UVM_LOW)
                   @interrupt_timer_start;
+                  `uvm_info("OBI_MEMORY_SLV_SEQ", "@interrupt_timer_start", UVM_LOW)
                end
             join_any
             disable fork;
@@ -209,6 +227,7 @@ task uvme_cv32e40p_vp_vseq_c::do_response(ref uvma_obi_memory_mon_trn_c mon_req)
    endcase
    
    if (!vp_handled) begin
+      `uvm_info("OBI_MEMORY_SLV_SEQ", $sformatf("VP not handled: x%h", mon_req.address), UVM_HIGH)
       if (mon_req.address >= 2**20) begin
          vp_address_range_check(mon_req);
       end
@@ -216,51 +235,62 @@ task uvme_cv32e40p_vp_vseq_c::do_response(ref uvma_obi_memory_mon_trn_c mon_req)
          error  = mon_req.err;
          error |= (mon_req.address > (2**`UVME_CV32E40P_MEM_SIZE));
 
-         `uvm_create(slv_rsp)
-         slv_rsp.err = error;
-         if (cntxt.instr_mem_delay_enabled) begin
-            slv_rsp.gnt_latency    = $urandom_range(1,max_latency);
-            slv_rsp.access_latency = $urandom_range(1,max_latency);
-            slv_rsp.hold_duration  = $urandom_range(1,max_latency);
-            slv_rsp.tail_length    = $urandom_range(1,max_latency);
-         end
-         else begin
-            slv_rsp.gnt_latency    = 1;
-            slv_rsp.access_latency = 1;
-            slv_rsp.hold_duration  = 1;
-            slv_rsp.tail_length    = 1;
-         end
-
          if (!error) begin
-            if (mon_req.access_type == UVMA_OBI_MEMORY_ACCESS_WRITE) begin
-               cntxt.mem[mon_req.address] = mon_req.data;
-            end
-            else begin
-               slv_rsp.rdata = cntxt.mem[mon_req.address];
-            end
+            do_mem_operation(mon_req);
          end
          else begin
+            `uvm_create(slv_rsp)
+            add_latencies(slv_rsp);
+            slv_rsp.err = error;
+            `uvm_info("OBI_MEMORY_SLV_SEQ", $sformatf("Error!\n%s", mon_req.sprint()), UVM_LOW)
             if (mon_req.access_type == UVMA_OBI_MEMORY_ACCESS_READ) begin
                // TODO: need to figured out what a proper error response is
                slv_rsp.rdata = 32'hdead_beef;
             end
+            slv_rsp.set_sequencer(p_sequencer.obi_memory_data_sequencer);
+            `uvm_send(slv_rsp)
          end
 
-         slv_rsp.set_sequencer(p_sequencer.obi_memory_data_sequencer);
-         `uvm_send(slv_rsp)
       end
    end
    
 endtask : do_response
 
+
+task uvme_cv32e40p_vp_vseq_c::do_mem_operation(ref uvma_obi_memory_mon_trn_c mon_req);
+
+   uvma_obi_memory_slv_seq_item_c  slv_rsp;
+   `uvm_create(slv_rsp)
+   add_latencies(slv_rsp);
+   
+   `uvm_info("OBI_MEMORY_SLV_SEQ", $sformatf("Performing operation:\n%s", mon_req.sprint()), UVM_NONE)
+   if (mon_req.access_type == UVMA_OBI_MEMORY_ACCESS_WRITE) begin
+      foreach (mon_req.be[ii]) begin
+         if (mon_req.be[ii]) begin
+            cntxt.mem[mon_req.address+ii] = mon_req.data[ii*8+:8];
+         end
+      end
+   end
+   else begin
+      slv_rsp.rdata[31:24] = cntxt.mem[mon_req.address+3];
+      slv_rsp.rdata[23:16] = cntxt.mem[mon_req.address+2];
+      slv_rsp.rdata[15:08] = cntxt.mem[mon_req.address+1];
+      slv_rsp.rdata[07:00] = cntxt.mem[mon_req.address+0];
+   end
+   
+   slv_rsp.set_sequencer(p_sequencer.obi_memory_data_sequencer);
+   `uvm_send(slv_rsp)
+
+endtask : do_mem_operation
+
+
 task uvme_cv32e40p_vp_vseq_c::vp_address_range_check(ref uvma_obi_memory_mon_trn_c mon_req);
 
    uvma_obi_memory_slv_seq_item_c  slv_rsp;
    
-   `uvm_create  (slv_rsp)
-   add_latencies(slv_rsp);
-   
    if (mon_req.access_type == UVMA_OBI_MEMORY_ACCESS_WRITE) begin
+      `uvm_create  (slv_rsp)
+      add_latencies(slv_rsp);
       `uvm_info("OBI_VP", $sformatf("Call to virtual peripheral 'address_range_check:\n'%s", mon_req.sprint()), UVM_LOW)
       //slv_rsp.start(p_sequencer.obi_memory_data_sequencer);
       slv_rsp.set_sequencer(p_sequencer.obi_memory_data_sequencer);
@@ -268,9 +298,7 @@ task uvme_cv32e40p_vp_vseq_c::vp_address_range_check(ref uvma_obi_memory_mon_trn
       `uvm_fatal("VP_VSEQ", $sformatf("Ending simulation due to:\n%s", mon_req.sprint()))
    end
    else begin
-      //slv_rsp.start(p_sequencer.obi_memory_data_sequencer);
-      slv_rsp.set_sequencer(p_sequencer.obi_memory_data_sequencer);
-      `uvm_send(slv_rsp)
+      do_mem_operation(mon_req);
    end
    
 endtask : vp_address_range_check
@@ -280,17 +308,18 @@ task uvme_cv32e40p_vp_vseq_c::vp_virtual_printer(ref uvma_obi_memory_mon_trn_c m
 
    uvma_obi_memory_slv_seq_item_c  slv_rsp;
    
-   `uvm_create  (slv_rsp)
-   add_latencies(slv_rsp);
-   
    if (mon_req.access_type == UVMA_OBI_MEMORY_ACCESS_WRITE) begin
+      `uvm_create  (slv_rsp)
+      add_latencies(slv_rsp);
       `uvm_info("OBI_VP", $sformatf("Call to virtual peripheral 'virtual_printer:\n'%s", mon_req.sprint()), UVM_LOW)
       $write("%c", mon_req.data[7:0]);
+      //slv_rsp.start(p_sequencer.obi_memory_data_sequencer);
+      slv_rsp.set_sequencer(p_sequencer.obi_memory_data_sequencer);
+      `uvm_send(slv_rsp)
    end
-   
-   //slv_rsp.start(p_sequencer.obi_memory_data_sequencer);
-   slv_rsp.set_sequencer(p_sequencer.obi_memory_data_sequencer);
-   `uvm_send(slv_rsp)
+   else begin
+      do_mem_operation(mon_req);
+   end
    
 endtask : vp_virtual_printer
 
@@ -299,18 +328,27 @@ task uvme_cv32e40p_vp_vseq_c::vp_interrupt_timer_control(ref uvma_obi_memory_mon
    
    uvma_obi_memory_slv_seq_item_c  slv_rsp;
    
-   `uvm_create  (slv_rsp)
-   add_latencies(slv_rsp);
-   
    if (mon_req.access_type == UVMA_OBI_MEMORY_ACCESS_WRITE) begin
-      `uvm_info("OBI_VP", $sformatf("Call to virtual peripheral 'interrupt_timer_control:\n'%s", mon_req.sprint()), UVM_LOW)
-      interrupt_timer_value = mon_req.data;
-      ->interrupt_timer_start;
+      `uvm_create  (slv_rsp)
+      add_latencies(slv_rsp);
+      `uvm_info("OBI_VP", $sformatf("Call to virtual peripheral 'interrupt_timer_control':\n%s", mon_req.sprint()), UVM_LOW)
+      if (mon_req.address == 32'h1500_0000) begin
+         interrupt_timer_value = mon_req.data;
+         ->interrupt_timer_start;
+      end
+      else if (mon_req.address == 32'h1500_0004) begin
+         interrupt_timer_mask = mon_req.data;
+      end
+      else begin
+         `uvm_info("OBI_VP", $sformatf("Call to virtual peripheral 'interrupt_timer_control:\n'%s", mon_req.sprint()), UVM_LOW)
+      end
+      //slv_rsp.start(p_sequencer.obi_memory_data_sequencer);
+      slv_rsp.set_sequencer(p_sequencer.obi_memory_data_sequencer);
+      `uvm_send(slv_rsp)
    end
-   
-   //slv_rsp.start(p_sequencer.obi_memory_data_sequencer);
-   slv_rsp.set_sequencer(p_sequencer.obi_memory_data_sequencer);
-   `uvm_send(slv_rsp)
+   else begin
+      do_mem_operation(mon_req);
+   end
    
 endtask : vp_interrupt_timer_control
 
@@ -326,10 +364,10 @@ task uvme_cv32e40p_vp_vseq_c::vp_debug_control(ref uvma_obi_memory_mon_trn_c mon
    int unsigned           dbg_pulse_duration  = 0;
    int unsigned           start_delay         = 0;
    
-   `uvm_create  (slv_rsp)
-   add_latencies(slv_rsp);
    
    if (mon_req.access_type == UVMA_OBI_MEMORY_ACCESS_WRITE) begin
+      `uvm_create  (slv_rsp)
+      add_latencies(slv_rsp);
       `uvm_info("OBI_VP", $sformatf("Call to virtual peripheral 'interrupt_timer_control:\n'%s", mon_req.sprint()), UVM_LOW)
       
       // Extract fields from write data
@@ -365,11 +403,13 @@ task uvme_cv32e40p_vp_vseq_c::vp_debug_control(ref uvma_obi_memory_mon_trn_c mon
             end
          end
       join_none
+      //slv_rsp.start(p_sequencer.obi_memory_data_sequencer);
+      slv_rsp.set_sequencer(p_sequencer.obi_memory_data_sequencer);
+      `uvm_send(slv_rsp)
    end
-   
-   //slv_rsp.start(p_sequencer.obi_memory_data_sequencer);
-   slv_rsp.set_sequencer(p_sequencer.obi_memory_data_sequencer);
-   `uvm_send(slv_rsp)
+   else begin
+      do_mem_operation(mon_req);
+   end
    
 endtask : vp_debug_control
 
@@ -419,17 +459,18 @@ task uvme_cv32e40p_vp_vseq_c::vp_instr_mem_intf_stall_ctrl(ref uvma_obi_memory_m
 
    uvma_obi_memory_slv_seq_item_c  slv_rsp;
    
-   `uvm_create  (slv_rsp)
-   add_latencies(slv_rsp);
-   
    if (mon_req.access_type == UVMA_OBI_MEMORY_ACCESS_WRITE) begin
+      `uvm_create  (slv_rsp)
+      add_latencies(slv_rsp);
       `uvm_info("OBI_VP", $sformatf("Call to virtual peripheral 'mem_intf_stall_ctrl:\n'%s", mon_req.sprint()), UVM_LOW)
       cntxt.instr_mem_delay_enabled = 1;
+      //slv_rsp.start(p_sequencer.obi_memory_data_sequencer);
+      slv_rsp.set_sequencer(p_sequencer.obi_memory_data_sequencer);
+      `uvm_send(slv_rsp)
    end
-   
-   //slv_rsp.start(p_sequencer.obi_memory_data_sequencer);
-   slv_rsp.set_sequencer(p_sequencer.obi_memory_data_sequencer);
-   `uvm_send(slv_rsp)
+   else begin
+      do_mem_operation(mon_req);
+   end
    
 endtask : vp_instr_mem_intf_stall_ctrl
 
@@ -438,10 +479,10 @@ task uvme_cv32e40p_vp_vseq_c::vp_vp_status_flags(ref uvma_obi_memory_mon_trn_c m
 
    uvma_obi_memory_slv_seq_item_c  slv_rsp;
    
-   `uvm_create  (slv_rsp)
-   add_latencies(slv_rsp);
    
    if (mon_req.access_type == UVMA_OBI_MEMORY_ACCESS_WRITE) begin
+      `uvm_create  (slv_rsp)
+      add_latencies(slv_rsp);
       `uvm_info("OBI_VP", $sformatf("Call to virtual peripheral 'vp_status_flags:\n'%s", mon_req.sprint()), UVM_LOW)
       if (mon_req.address == 32'h2000_0000) begin
          if (mon_req.data == 'd123456789) begin
@@ -466,11 +507,13 @@ task uvme_cv32e40p_vp_vseq_c::vp_vp_status_flags(ref uvma_obi_memory_mon_trn_c m
          //cntxt.vp_status_vif.exit_valid = 0;
          //cntxt.vp_status_vif.exit_value = 0;
       end
+      //slv_rsp.start(p_sequencer.obi_memory_data_sequencer);
+      slv_rsp.set_sequencer(p_sequencer.obi_memory_data_sequencer);
+      `uvm_send(slv_rsp)
    end
-   
-   //slv_rsp.start(p_sequencer.obi_memory_data_sequencer);
-   slv_rsp.set_sequencer(p_sequencer.obi_memory_data_sequencer);
-   `uvm_send(slv_rsp)
+   else begin
+      do_mem_operation(mon_req);
+   end
    
 endtask : vp_vp_status_flags
 
@@ -481,9 +524,6 @@ task uvme_cv32e40p_vp_vseq_c::vp_sig_writer(ref uvma_obi_memory_mon_trn_c mon_re
    string                          sig_file     = "";
    int                             sig_fd       = 0;
    bit                             use_sig_file = 0;
-   
-   `uvm_create  (slv_rsp)
-   add_latencies(slv_rsp);
    
    if ($value$plusargs("signature=%s", sig_file)) begin
       sig_fd = $fopen(sig_file, "w");
@@ -497,6 +537,8 @@ task uvme_cv32e40p_vp_vseq_c::vp_sig_writer(ref uvma_obi_memory_mon_trn_c mon_re
    end
    
    if (mon_req.access_type == UVMA_OBI_MEMORY_ACCESS_WRITE) begin
+      `uvm_create  (slv_rsp)
+      add_latencies(slv_rsp);
       `uvm_info("OBI_VP", $sformatf("Call to virtual peripheral 'sig_writer:\n'%s", mon_req.sprint()), UVM_LOW)
       if (mon_req.address == 32'h2000_0008) begin
          signature_start_address = mon_req.data;
@@ -515,17 +557,20 @@ task uvme_cv32e40p_vp_vseq_c::vp_sig_writer(ref uvma_obi_memory_mon_trn_c mon_re
             end
          end
       end
+      //slv_rsp.start(p_sequencer.obi_memory_data_sequencer);
+      slv_rsp.set_sequencer(p_sequencer.obi_memory_data_sequencer);
+      `uvm_send(slv_rsp)
    end
-   
-   //slv_rsp.start(p_sequencer.obi_memory_data_sequencer);
-   slv_rsp.set_sequencer(p_sequencer.obi_memory_data_sequencer);
-   `uvm_send(slv_rsp)
+   else begin
+      do_mem_operation(mon_req);
+   end
    
 endtask : vp_sig_writer
 
 
 task uvme_cv32e40p_vp_vseq_c::irq_o();
    
+   `uvm_info("OBI_MEMORY_SLV_SEQ", "Call to irq_o()", UVM_LOW)
    wait (cntxt.intr_vif.clk === 1);
    //TODO: add control logic to define which interrupts are set/cleared
    cntxt.intr_vif.irq_drv = 32'h0000_0001;

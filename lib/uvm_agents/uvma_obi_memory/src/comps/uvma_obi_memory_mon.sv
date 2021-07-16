@@ -228,47 +228,33 @@ task uvma_obi_memory_mon_c::mon_trn(output uvma_obi_memory_mon_trn_c trn);
    cntxt.mon_rready_latency = 0;
    cntxt.mon_rp_hold        = 0;
    
-   // Wait for req
-   while (vif_passive_mp.mon_cb.req !== 1'b1) begin
-      @(vif_passive_mp.mon_cb);
-   end
+   // 'Early' Address phase
+   @(vif_passive_mp.mon_cb.req === 1'b1)
+   `uvm_info("OBI_MEMORY_MON", $sformatf("req is 1"), UVM_MEDIUM/*HIGH*/)
    trn_start = $realtime();
-   
-   // Address phase
    sample_trn_from_vif(trn);
    if (cfg.enabled && cfg.is_active && (cfg.drv_mode == UVMA_OBI_MEMORY_MODE_SLV)) begin
       send_trn_to_sequencer(trn);
+      `uvm_info("OBI_MEMORY_MON", $sformatf("sent trn to sequencer"), UVM_MEDIUM/*HIGH*/)
    end
    
-   // Wait for gnt
-   while (vif_passive_mp.mon_cb.gnt !== 1'b1) begin
-      @(vif_passive_mp.mon_cb);
-      // TODO Check that trn's fields haven't changed
-      cntxt.mon_gnt_latency++;
-   end
+   // 'Real' Address phase
+   @(/*(vif_passive_mp.mon_cb.req === 1'b1) && */(vif_passive_mp.mon_cb.gnt === 1'b1))
+   `uvm_info("OBI_MEMORY_MON", $sformatf("real address phase"), UVM_MEDIUM/*HIGH*/)
+   sample_trn_from_vif(trn);
    
-   // Wait for rvalid
-   while (vif_passive_mp.mon_cb.rvalid !== 1'b1) begin
-      @(vif_passive_mp.mon_cb);
-      // TODO Check that trn's fields haven't changed
-      cntxt.mon_rvalid_latency++;
-   end
-   
-   // Wait for rready
-   while ((vif_passive_mp.mon_cb.rvalid === 1'b1) && (vif_passive_mp.mon_cb.rready !== 1'b1)) begin
-      @(vif_passive_mp.mon_cb);
+   if (trn.access_type == UVMA_OBI_MEMORY_ACCESS_READ) begin// Wait for rvalid
+      while (vif_passive_mp.mon_cb.rvalid !== 1'b1) begin
+         `uvm_info("OBI_MEMORY_MON", $sformatf("not READ"), UVM_MEDIUM/*HIGH*/)
+         @(vif_passive_mp.mon_cb);
+         // TODO Check that trn's fields haven't changed
+         cntxt.mon_rvalid_latency++;
+      end
       sample_trn_from_vif(trn);
       // TODO Check that trn's fields haven't changed
       cntxt.mon_rready_latency++;
    end
    
-   // Response phase
-   while ((vif_passive_mp.mon_cb.rvalid === 1'b1) && (vif_passive_mp.mon_cb.rready === 1'b1) && (vif_passive_mp.mon_cb.req === 1'b0)) begin
-      sample_trn_from_vif(trn);
-      // TODO Check that trn's fields haven't changed
-      @(vif_passive_mp.mon_cb);
-      cntxt.mon_rp_hold++;
-   end
    trn.__timestamp_start = trn_start;
    
 endtask : mon_trn

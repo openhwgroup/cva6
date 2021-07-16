@@ -474,17 +474,17 @@ task uvma_obi_memory_drv_c::drv_slv_read_req(ref uvma_obi_memory_slv_seq_item_c 
    end
 
    // Address phase
-   vif_slv_mp.drv_slv_cb.gnt <= 1'b1;
+   //vif_slv_mp.drv_slv_cb.gnt <= 1'b1;
    //@(vif_slv_mp.drv_slv_cb);
    if (req.tail_length > 0) begin
       repeat (req.tail_length) begin
          @(vif_slv_mp.drv_slv_cb);
       end
-      vif_slv_mp.drv_slv_cb.gnt <= 1'b0;
+      //vif_slv_mp.drv_slv_cb.gnt <= 1'b0;
    end
    else begin
       // yes, this is redundant - makes the code easier to follow (?)
-      vif_slv_mp.drv_slv_cb.gnt <= 1'b1;
+      //vif_slv_mp.drv_slv_cb.gnt <= 1'b1;
    end
    `uvm_info("OBI_MEMORY_DRV", "drv_slv_read_req ADDRESS PHASE complete", UVM_NONE)
 
