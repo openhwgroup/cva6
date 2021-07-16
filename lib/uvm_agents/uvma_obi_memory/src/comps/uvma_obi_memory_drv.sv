@@ -85,7 +85,7 @@ class uvma_obi_memory_drv_c extends uvm_driver#(
    /**
     * Drives the 'gnt' signal in response to 'req' being asserted.
     */
-   extern task slv_drv_gnt(arguments);
+   extern task slv_drv_gnt();
    
    /**
     * TODO Describe uvma_obi_drv::get_next_item()
@@ -304,12 +304,14 @@ task uvma_obi_memory_drv_c::slv_drv_gnt();
       case (cntxt.reset_state)
          UVMA_OBI_MEMORY_RESET_STATE_POST_RESET: begin
             @(vif_slv_mp.drv_slv_cb.req === 1'b1);
-            repeat (cfg.drv_slv_gnt_latency) begin
+            if (cfg.drv_slv_gnt) begin
+               repeat (cfg.drv_slv_gnt_latency) begin
+                  @(vif_slv_mp.drv_slv_cb);
+               end
+               vif_slv_mp.drv_slv_cb.gnt <= 1'b1;
                @(vif_slv_mp.drv_slv_cb);
+               vif_slv_mp.drv_slv_cb.gnt <= 1'b0;
             end
-            vif_slv_mp.drv_slv_cb.gnt <= 1'b1;
-            @(vif_slv_mp.drv_slv_cb);
-            vif_slv_mp.drv_slv_cb.gnt <= 1'b0;
          end
          
          default: @(vif_slv_mp.drv_slv_cb);
