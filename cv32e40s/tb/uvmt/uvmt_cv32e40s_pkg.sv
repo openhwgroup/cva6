@@ -27,7 +27,6 @@
 `include "uvmt_cv32e40s_macros.sv"
 
 
-
 /**
  * Encapsulates all the types and test cases for the verification of an
  * CV32E40S RTL design.
@@ -38,7 +37,7 @@ package uvmt_cv32e40s_pkg;
    import uvme_cv32e40s_pkg::*;
    import uvml_hrtbt_pkg::*;
    import uvml_logs_pkg::*;
-   //import uvma_debug_pkg::*;
+   import uvma_rvvi_ovpsim_pkg::*;
    
    // Constants / Parameters / Structs / Enums
    `include "uvmt_cv32e40s_constants.sv"
