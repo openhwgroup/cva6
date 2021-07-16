@@ -633,12 +633,15 @@ module CPU #(
     endfunction
     
     initial begin
-        ovpcfg_load();
-        elf_load();
-        svimp_entry(ovpcfg, elf_file, VARIANT);
-    `ifndef UVM
-        $finish;
-    `endif
+        if (!$test$plusargs("DISABLE_OVPSIM")) begin
+            #1;
+            ovpcfg_load();
+            elf_load();
+            svimp_entry(ovpcfg, elf_file, VARIANT);
+        `ifndef UVM
+            $finish;
+        `endif
+        end
     end
     
 `ifndef UVM
