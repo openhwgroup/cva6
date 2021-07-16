@@ -68,7 +68,7 @@ static void check_load_vs_regfile(void) {
   __asm__ volatile("sw %0, 0(%1)" : : "r"(0xAAAAAAAA), "r"(IO_ADDR));
   __asm__ volatile("sw %0, 4(%1)" : : "r"(0xBBBBBBBB), "r"(IO_ADDR));
   __asm__ volatile("li t0, 0x11223344");
-  __asm__ volatile("lw t0, 3(%0)" : : "r"(IO_ADDR));
+  // TODO enable when RTL is implemented: __asm__ volatile("lw t0, 3(%0)" : : "r"(IO_ADDR));
   __asm__ volatile("mv %0, t0" : "=r"(tmp));
   /* TODO enable when RTL is implemented
   assert_or_die(tmp, 0x11223344, "error: misaligned IO load shouldn't touch regfile\n");
@@ -78,7 +78,7 @@ static void check_load_vs_regfile(void) {
   __asm__ volatile("sw %0, -4(%1)" : : "r"(0xAAAAAAAA), "r"(MEM_ADDR_1));
   __asm__ volatile("sw %0, 0(%1)" : : "r"(0xBBBBBBBB), "r"(MEM_ADDR_1));
   __asm__ volatile("li t0, 0x22334455");
-  __asm__ volatile("lw t0, 0(%0)" : : "r"(MEM_ADDR_1 - 3));
+  // TODO enable when RTL is implemented: __asm__ volatile("lw t0, 0(%0)" : : "r"(MEM_ADDR_1 - 3));
   __asm__ volatile("mv %0, t0" : "=r"(tmp));
   /* TODO enable when RTL is implemented
   assert_or_die(tmp, 0x22334455, "error: misaligned IO/MEM load shouldn't touch regfile\n");
@@ -88,7 +88,7 @@ static void check_load_vs_regfile(void) {
   __asm__ volatile("sw %0, -4(%1)" : : "r"(0xAAAAAAAA), "r"(IO_ADDR));
   __asm__ volatile("sw %0, 0(%1)" : : "r"(0xBBBBBBBB), "r"(IO_ADDR));
   __asm__ volatile("li t0, 0x33445566");
-  __asm__ volatile("lw t0, 0(%0)" : : "r"(IO_ADDR - 1));
+  // TODO enable when RTL is implemented: __asm__ volatile("lw t0, 0(%0)" : : "r"(IO_ADDR - 1));
   __asm__ volatile("mv %0, t0" : "=r"(tmp));
   /* TODO enable when RTL is implemented
   assert_or_die(tmp, 0x33445566, "error: misaligned MEM/IO load shouldn't touch regfile\n");
