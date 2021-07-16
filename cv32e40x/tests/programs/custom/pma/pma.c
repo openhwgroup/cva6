@@ -216,37 +216,6 @@ int main(void) {
   assert_or_die(mtval, MTVAL_READ, "error: expected different mtval\n");
 
 
-  // Non-naturally aligned loads within I/O regions
-
-  // sanity check that aligned load is no problem
-  reset_volatiles();
-  tmp = 0;
-  __asm__ volatile("lw %0, 4(%1)" : "=r"(tmp) : "r"(IO_ADDR));
-  assert_or_die(!tmp, 0, "error: load should not yield zero\n");  // TODO ensure memory content matches
-  assert_or_die(mcause, -1, "error: natty access should not change mcause\n");
-  assert_or_die(mepc, -1, "error: natty access should not change mepc\n");
-  assert_or_die(mtval, -1, "error: natty access should not change mtval\n");
-
-  // check that misaligned load will except
-  /* TODO enable when RTL is implemented
-  reset_volatiles();
-  __asm__ volatile("lw %0, 5(%1)" : "=r"(tmp) : "r"(IO_ADDR));
-  assert_or_die(mcause, EXCEPTION_LOAD_ACCESS_FAULT, "error: misaligned IO load should except\n");
-  assert_or_die(mepc, (IO_ADDR + 5), "error: misaligned IO load unexpected mepc\n");
-  assert_or_die(mtval, MTVAL_READ, "error: misaligned IO load unexpected mtval\n");
-  */
-  // TODO more kinds of |addr[0:1]? Try LH too?
-
-  // check that misaligned to MEM does not fail
-  reset_volatiles();
-  tmp = 0;
-  __asm__ volatile("lw %0, 0(%1)" : "=r"(tmp) : "r"(0x80));
-  assert_or_die(!tmp, 0, "error: load from main should not yield zero\n");
-  assert_or_die(mcause, -1, "error: main access should not change mcause\n");
-  assert_or_die(mepc, -1, "error: main access should not change mepc\n");
-  assert_or_die(mtval, -1, "error: main access should not change mtval\n");
-
-
   // Non-naturally aligned stores to I/O regions
 
   // sanity check that aligned stores are ok
@@ -274,6 +243,37 @@ int main(void) {
   assert_or_die(mcause, -1, "error: misaligned store to main affected mcause\n");
   assert_or_die(mepc, -1, "error: misaligned store to main affected mepc\n");
   assert_or_die(mtval, -1, "error: misaligned store to main affected mtval\n");
+
+
+  // Non-naturally aligned loads within I/O regions
+
+  // sanity check that aligned load is no problem
+  reset_volatiles();
+  tmp = 0;
+  __asm__ volatile("lw %0, 0(%1)" : "=r"(tmp) : "r"(IO_ADDR));  // Depends on "store" test filling memory first
+  assert_or_die(!tmp, 0, "error: load should not yield zero\n");  // TODO ensure memory content matches
+  assert_or_die(mcause, -1, "error: natty access should not change mcause\n");
+  assert_or_die(mepc, -1, "error: natty access should not change mepc\n");
+  assert_or_die(mtval, -1, "error: natty access should not change mtval\n");
+
+  // check that misaligned load will except
+  /* TODO enable when RTL is implemented
+  reset_volatiles();
+  __asm__ volatile("lw %0, 5(%1)" : "=r"(tmp) : "r"(IO_ADDR));
+  assert_or_die(mcause, EXCEPTION_LOAD_ACCESS_FAULT, "error: misaligned IO load should except\n");
+  assert_or_die(mepc, (IO_ADDR + 5), "error: misaligned IO load unexpected mepc\n");
+  assert_or_die(mtval, MTVAL_READ, "error: misaligned IO load unexpected mtval\n");
+  */
+  // TODO more kinds of |addr[0:1]? Try LH too?
+
+  // check that misaligned to MEM does not fail
+  reset_volatiles();
+  tmp = 0;
+  __asm__ volatile("lw %0, 0(%1)" : "=r"(tmp) : "r"(0x80));
+  assert_or_die(!tmp, 0, "error: load from main should not yield zero\n");
+  assert_or_die(mcause, -1, "error: main access should not change mcause\n");
+  assert_or_die(mepc, -1, "error: main access should not change mepc\n");
+  assert_or_die(mtval, -1, "error: main access should not change mtval\n");
 
 
   // Misaligned load fault shouldn't touch regfile
