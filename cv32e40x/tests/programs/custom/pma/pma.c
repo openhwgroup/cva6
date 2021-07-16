@@ -287,7 +287,7 @@ int main(void) {
   // check IO store failing in first access
   __asm__ volatile("sw %0, 0(%1)" : : "r"(0xAAAAAAAA), "r"(IO_ADDR));
   __asm__ volatile("sw %0, 4(%1)" : : "r"(0xBBBBBBBB), "r"(IO_ADDR));
-  __asm__ volatile("sw %0, 2(%1)" : : "r"(0x11223344), "r"(IO_ADDR));
+  // TODO enable when RTL is implemented: __asm__ volatile("sw %0, 2(%1)" : : "r"(0x11223344), "r"(IO_ADDR));
   /* TODO enable when RTL is implemented
   __asm__ volatile("lw %0, 0(%1)" : "=r"(tmp) : "r"(IO_ADDR));
   assert_or_die(tmp, 0xAAAAAAAA, "error: misaligned first store entered bus\n");
@@ -299,7 +299,7 @@ int main(void) {
   // check IO to MEM store failing in first access
   __asm__ volatile("sw %0, -4(%1)" : : "r"(0xAAAAAAAA), "r"(MEM_ADDR_1));
   __asm__ volatile("sw %0, 0(%1)" : : "r"(0xBBBBBBBB), "r"(MEM_ADDR_1));
-  __asm__ volatile("sw %0, -2(%1)" : : "r"(0x22334455), "r"(MEM_ADDR_1));
+  // TODO enable when RTL is implemented: __asm__ volatile("sw %0, -2(%1)" : : "r"(0x22334455), "r"(MEM_ADDR_1));
   /* TODO enable when RTL is implemented
   __asm__ volatile("lw %0, -4(%1)" : "=r"(tmp) : "r"(MEM_ADDR_1));
   assert_or_die(tmp, 0xAAAAAAAA, "error: misaligned IO/MEM first store entered bus\n");
