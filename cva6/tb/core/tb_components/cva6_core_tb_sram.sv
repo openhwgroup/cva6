@@ -128,6 +128,7 @@ module sync_sram_nx64
   logic [7:0] Mem_init[0:'hFFFFFF];
 
   initial begin
+    for(int k=0; k<'hFFFFFF;k++) Mem_init[k] = 'h0;
     $readmemh("./Mem_init.txt", Mem_init);
   end
 
