@@ -139,6 +139,12 @@ interface RVVI_bus;
 
 endinterface
 
+interface RVVI_memory;
+
+    reg [31:0] mem [bit[29:0]];
+
+endinterface
+
 module CPU #(
     parameter int ID = 0,
     parameter string VARIANT = "UNSET"
@@ -182,11 +188,11 @@ module CPU #(
     // Bus direct transactors
     //
     function automatic int read(input int address);
-        if (!ram.mem.exists(address)) ram.mem[address] = 'h0;
-        return ram.mem[address];
+        if (!ram.memory.mem.exists(address)) ram.memory.mem[address] = 'h0;
+        return ram.memory.mem[address];
     endfunction
     function automatic void write(input int address, input int data);
-        ram.mem[address] = data;
+        ram.memory.mem[address] = data;
     endfunction
 
     //

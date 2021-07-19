@@ -127,8 +127,8 @@ module uvmt_cv32e40x_dut_wrap
                 rnd_byte = $random();
                 uvmt_cv32e40x_tb.dut_wrap.ram_i.dp_ram_i.mem[index]=rnd_byte;
                 if ($test$plusargs("USE_ISS")) begin
-                  uvmt_cv32e40x_tb.iss_wrap.ram.mem[index/4][((((index%4)+1)*8)-1)-:8]=rnd_byte; // convert byte to 32-bit addressing
-                end                
+                  uvmt_cv32e40x_tb.iss_wrap.memory.mem[index/4][((((index%4)+1)*8)-1)-:8]=rnd_byte; // convert byte to 32-bit addressing
+                end
              end
           end
           if ($test$plusargs("USE_ISS")) begin

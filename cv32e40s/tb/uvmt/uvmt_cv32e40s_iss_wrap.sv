@@ -36,14 +36,15 @@ module uvmt_cv32e40s_iss_wrap
     uvma_clknrst_if               clknrst_if    
    );
    
-   RVVI_bus bus();
-   RVVI_io  io();
+   RVVI_bus    bus();
+   RVVI_io     io();
+   RVVI_memory memory();
 
    MONITOR     mon(bus, io);
    RAM         #(
                 .ROM_START_ADDR(ROM_START_ADDR),
                 .ROM_BYTE_SIZE(ROM_BYTE_SIZE),
-                .RAM_BYTE_SIZE(RAM_BYTE_SIZE)) ram(bus);
+                .RAM_BYTE_SIZE(RAM_BYTE_SIZE)) ram(bus, memory);
 
    // FIXME:strichmo:This should be switched to CV32E40X when Imperas releases the model update
    CPU #(.ID(ID), .VARIANT("CV32E40X")) cpu(bus, io);

@@ -356,15 +356,6 @@ endfunction : phase_ended
 
 function void uvmt_cv32e40x_base_test_c::post_randomize();
 
-   // Point the RVVI in the cv32e40x environment to the OVPSIM mem path
-   begin
-      uvma_rvvi_ovpsim_cfg_c#(uvme_cv32e40x_pkg::ILEN, uvme_cv32e40x_pkg::XLEN) rvvi_ovpsim_cfg;
-      if (!$cast(rvvi_ovpsim_cfg, env_cfg.rvvi_cfg)) begin
-         `uvm_fatal("RVVICFG", "Could not cast rvvi_cfg to rvvi_ovpsim_cfg");
-      end
-
-      rvvi_ovpsim_cfg.ovpsim_mem_path = "uvmt_cv32e40x_tb.iss_wrap.ram.mem";
-   end
 
 endfunction : post_randomize
 

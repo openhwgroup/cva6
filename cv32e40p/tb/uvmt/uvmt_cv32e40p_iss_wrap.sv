@@ -37,14 +37,15 @@ module uvmt_cv32e40p_iss_wrap
     uvmt_cv32e40p_isa_covg_if     isa_covg_if
    );
 
-    RVVI_bus bus();
-    RVVI_io  io();
+    RVVI_bus    bus();
+    RVVI_io     io();
+    RVVI_memory memory();
 
     MONITOR     mon(bus, io);
     RAM         #(
                 .ROM_START_ADDR(ROM_START_ADDR),
                 .ROM_BYTE_SIZE(ROM_BYTE_SIZE),
-                .RAM_BYTE_SIZE(RAM_BYTE_SIZE)) ram(bus);
+                .RAM_BYTE_SIZE(RAM_BYTE_SIZE)) ram(bus, memory);
 
     CPU #(.ID(ID), .VARIANT("CV32E40P")) cpu(bus, io);
 
