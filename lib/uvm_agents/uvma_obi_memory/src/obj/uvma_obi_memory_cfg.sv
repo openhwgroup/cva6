@@ -45,6 +45,7 @@ class uvma_obi_memory_cfg_c extends uvm_object;
    rand int unsigned            id_width   ;
    rand uvma_obi_memory_mode_enum      drv_mode   ;
    rand uvma_obi_memory_drv_idle_enum  drv_idle   ;
+   rand int unsigned                   drv_slv_gnt_latency;
    rand bit                            drv_slv_gnt;
    
    
@@ -86,6 +87,7 @@ class uvma_obi_memory_cfg_c extends uvm_object;
       /*soft*/ id_width         == uvma_obi_memory_default_id_width   ;
       soft drv_mode             == UVMA_OBI_MEMORY_MODE_MSTR;
       soft drv_idle             == UVMA_OBI_MEMORY_DRV_IDLE_ZEROS;
+      soft drv_slv_gnt_latency  == 1;
       soft drv_slv_gnt          == 0;
    }
    

@@ -293,31 +293,18 @@ task uvma_obi_memory_drv_c::slv_drv_gnt();
 
    // TODO Replace this fixed behavior with sequences
    
-   fork
-      begin : post_reset
-         forever begin
-            wait (cfg.enabled && cfg.is_active);
-            wait (cntxt.reset_state == UVMA_OBI_MEMORY_RESET_STATE_POST_RESET)
+   forever begin
+      wait (cfg.enabled && cfg.is_active);
+      
+      case (cntxt.reset_state)
+         UVMA_OBI_MEMORY_RESET_STATE_POST_RESET: begin
+            @(vif_slv_mp.drv_slv_cb.req === 1'b1);
             if (cfg.drv_slv_gnt) begin
-               `uvm_info("OBI_MEMORY_DRV", $sformatf("Asserting GNT"), UVM_DEBUG)
-               vif_slv_mp.drv_slv_cb.gnt <= 1'b0;
-            end
-            while (vif_slv_mp.drv_slv_cb.req !== 1'b1) begin
-              @(vif_slv_mp.drv_slv_cb);
-              if (cfg.drv_slv_gnt) begin
-                  `uvm_info("OBI_MEMORY_DRV", $sformatf("Randomizing GNT"), UVM_DEBUG)
-                  vif_slv_mp.drv_slv_cb.gnt <= $urandom();
+               repeat (cfg.drv_slv_gnt_latency) begin
+                  @(vif_slv_mp.drv_slv_cb);
                end
-            end
-            if (cfg.drv_slv_gnt) begin
-               `uvm_info("OBI_MEMORY_DRV", $sformatf("Asserting GNT"), UVM_DEBUG)
                vif_slv_mp.drv_slv_cb.gnt <= 1'b1;
-            end
-            while (vif_slv_mp.drv_slv_cb.req === 1'b1) begin
                @(vif_slv_mp.drv_slv_cb);
-            end
-            if (cfg.drv_slv_gnt) begin
-               `uvm_info("OBI_MEMORY_DRV", $sformatf("De-asserting GNT"), UVM_DEBUG)
                vif_slv_mp.drv_slv_cb.gnt <= 1'b0;
             end
          end
