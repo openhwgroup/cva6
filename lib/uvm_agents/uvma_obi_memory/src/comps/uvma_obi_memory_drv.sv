@@ -288,7 +288,6 @@ task uvma_obi_memory_drv_c::drv_post_reset(uvm_phase phase);
    
 endtask : drv_post_reset
 
-
 task uvma_obi_memory_drv_c::slv_drv_gnt();
 
    // TODO Replace this fixed behavior with sequences
@@ -299,31 +298,21 @@ task uvma_obi_memory_drv_c::slv_drv_gnt();
       case (cntxt.reset_state)
          UVMA_OBI_MEMORY_RESET_STATE_POST_RESET: begin
             @(vif_slv_mp.drv_slv_cb.req === 1'b1);
-            if (cfg.drv_slv_gnt) begin
-               repeat (cfg.drv_slv_gnt_latency) begin
-                  @(vif_slv_mp.drv_slv_cb);
-               end
+            //if (cfg.drv_slv_gnt) begin
+               //repeat (cfg.drv_slv_gnt_latency) begin
+               //   @(vif_slv_mp.drv_slv_cb);
+               //end
                vif_slv_mp.drv_slv_cb.gnt <= 1'b1;
                @(vif_slv_mp.drv_slv_cb);
+               //TODO: deassertion should be randomized
                vif_slv_mp.drv_slv_cb.gnt <= 1'b0;
-            end
+            //end
          end
-      end
-         
-      begin : pre_or_in_reset
-         forever begin
-            wait (cfg.enabled && cfg.is_active);
-            @(vif_slv_mp.drv_slv_cb);
-            wait (cntxt.reset_state != UVMA_OBI_MEMORY_RESET_STATE_POST_RESET)
-            if (cfg.drv_slv_gnt) begin
-               vif_slv_mp.drv_slv_cb.gnt <= 1'b0;
-            end
-         end
-      end
-   join
+         default: @(vif_slv_mp.drv_slv_cb);
+      endcase
+   end
    
 endtask : slv_drv_gnt
-
 
 task uvma_obi_memory_drv_c::get_next_item(output uvma_obi_memory_base_seq_item_c req);
    
