@@ -35,12 +35,12 @@ module bootrom
    assign wea  = 8'b00000000;
    assign dina = 64'h00000000_00000000;
 
-   xilinx_rom_bank_256x64 rom_mem_i (
+   xilinx_rom_bank_1024x64 rom_mem_i (
                                       .clka  (clk_i),
                                       .rsta  (~rst),
-                                      .ena   (~req_i),
+                                      .ena   (req_i),
                                       .wea   (wea),
-                                      .addra (addr_i[9:2]),
+                                      .addra (addr_i[12:3]),
                                       .dina  (dina),
                                       .douta (rdata_o)
                                       );
