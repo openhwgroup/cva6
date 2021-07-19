@@ -178,8 +178,10 @@ task uvma_obi_memory_mon_c::observe_reset();
          begin
             wait (cntxt.vif.reset_n === 0);
             cntxt.reset_state = UVMA_OBI_MEMORY_RESET_STATE_IN_RESET;
+            `uvm_info("OBI_MEMORY_MON", $sformatf("RESET_STATE_IN_RESET"), UVM_NONE)
             wait (cntxt.vif.reset_n === 1);
             cntxt.reset_state = UVMA_OBI_MEMORY_RESET_STATE_POST_RESET;
+            `uvm_info("OBI_MEMORY_MON", $sformatf("RESET_STATE_POST_RESET"), UVM_NONE)
          end
          
          begin
@@ -228,32 +230,28 @@ task uvma_obi_memory_mon_c::mon_trn(output uvma_obi_memory_mon_trn_c trn);
    cntxt.mon_rready_latency = 0;
    cntxt.mon_rp_hold        = 0;
    
-   // 'Early' Address phase
-   @(vif_passive_mp.mon_cb.req === 1'b1)
-   `uvm_info("OBI_MEMORY_MON", $sformatf("req is 1"), UVM_MEDIUM/*HIGH*/)
+   // Address phase
+   @((vif_passive_mp.mon_cb.req === 1'b1) && (vif_passive_mp.mon_cb.gnt === 1'b1))
    trn_start = $realtime();
-   sample_trn_from_vif(trn);
+   //while ((vif_passive_mp.mon_cb.req === 1'b1) && (vif_passive_mp.mon_cb.gnt === 1'b1)) begin
+      sample_trn_from_vif(trn);
+   //   @(vif_passive_mp.mon_cb);
+   //end
    if (cfg.enabled && cfg.is_active && (cfg.drv_mode == UVMA_OBI_MEMORY_MODE_SLV)) begin
       send_trn_to_sequencer(trn);
       `uvm_info("OBI_MEMORY_MON", $sformatf("sent trn to sequencer"), UVM_MEDIUM/*HIGH*/)
    end
    
-   // 'Real' Address phase
-   @(/*(vif_passive_mp.mon_cb.req === 1'b1) && */(vif_passive_mp.mon_cb.gnt === 1'b1))
-   `uvm_info("OBI_MEMORY_MON", $sformatf("real address phase"), UVM_MEDIUM/*HIGH*/)
-   sample_trn_from_vif(trn);
-   
-   if (trn.access_type == UVMA_OBI_MEMORY_ACCESS_READ) begin// Wait for rvalid
-      while (vif_passive_mp.mon_cb.rvalid !== 1'b1) begin
-         `uvm_info("OBI_MEMORY_MON", $sformatf("not READ"), UVM_MEDIUM/*HIGH*/)
-         @(vif_passive_mp.mon_cb);
-         // TODO Check that trn's fields haven't changed
-         cntxt.mon_rvalid_latency++;
-      end
-      sample_trn_from_vif(trn);
-      // TODO Check that trn's fields haven't changed
-      cntxt.mon_rready_latency++;
-   end
+   //if (trn.access_type == UVMA_OBI_MEMORY_ACCESS_READ) begin// Wait for rvalid
+   //   while (vif_passive_mp.mon_cb.rvalid !== 1'b1) begin
+   //      @(vif_passive_mp.mon_cb);
+   //      // TODO Check that trn's fields haven't changed
+   //      cntxt.mon_rvalid_latency++;
+   //   end
+   //   for (int unsigned ii=0; ii<cfg.data_width; ii++) begin
+   //      trn.data[ii] = vif_passive_mp.mon_cb.rdata[ii];
+   //   end
+   //end
    
    trn.__timestamp_start = trn_start;
    

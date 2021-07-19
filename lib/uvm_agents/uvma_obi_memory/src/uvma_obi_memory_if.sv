@@ -183,8 +183,8 @@ interface uvma_obi_memory_if #(
               achk     ,
               rready   ,
               rreadypar;
-      output  gnt      ,
-              gntpar   ,
+      inout   gnt      ;
+      output  gntpar   ,
               rvalid   ,
               rdata    ,
               err      ,

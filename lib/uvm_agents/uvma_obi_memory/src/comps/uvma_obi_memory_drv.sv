@@ -85,7 +85,7 @@ class uvma_obi_memory_drv_c extends uvm_driver#(
    /**
     * Drives the 'gnt' signal in response to 'req' being asserted.
     */
-   extern task slv_drv_gnt(arguments);
+   extern task slv_drv_gnt();
    
    /**
     * TODO Describe uvma_obi_drv::get_next_item()
@@ -193,22 +193,13 @@ task uvma_obi_memory_drv_c::run_phase(uvm_phase phase);
    forever begin
       wait (cfg.enabled && cfg.is_active);
       
-      fork
-         begin
-            case (cntxt.reset_state)
-               UVMA_OBI_MEMORY_RESET_STATE_PRE_RESET : drv_pre_reset (phase);
-               UVMA_OBI_MEMORY_RESET_STATE_IN_RESET  : drv_in_reset  (phase);
-               UVMA_OBI_MEMORY_RESET_STATE_POST_RESET: drv_post_reset(phase);
-               
-               default: `uvm_fatal("OBI_MEMORY_DRV", $sformatf("Invalid reset_state: %0d", cntxt.reset_state))
-            endcase
-         end
+      case (cntxt.reset_state)
+         UVMA_OBI_MEMORY_RESET_STATE_PRE_RESET : drv_pre_reset (phase);
+         UVMA_OBI_MEMORY_RESET_STATE_IN_RESET  : drv_in_reset  (phase);
+         UVMA_OBI_MEMORY_RESET_STATE_POST_RESET: drv_post_reset(phase);
          
-         begin
-            wait (!(cfg.enabled && cfg.is_active));
-         end
-      join_any
-      disable fork;
+         default: `uvm_fatal("OBI_MEMORY_DRV", $sformatf("Invalid reset_state: %0d", cntxt.reset_state))
+      endcase
    end
    
 endtask : run_phase
@@ -238,7 +229,9 @@ task uvma_obi_memory_drv_c::drv_in_reset(uvm_phase phase);
       end
       
       UVMA_OBI_MEMORY_MODE_SLV : begin
+         vif_slv_mp.drv_slv_cb.rdata <= '0;
          @(vif_slv_mp.drv_slv_cb);
+         vif_slv_mp.drv_slv_cb.rdata <= '0;
          drv_slv_idle();
       end
       
@@ -280,7 +273,7 @@ task uvma_obi_memory_drv_c::drv_post_reset(uvm_phase phase);
          if (!$cast(slv_req, req)) begin
             `uvm_fatal("OBI_MEMORY_DRV", $sformatf("Could not cast 'req' (%s) to 'slv_req' (%s)", $typename(req), $typename(slv_req)))
          end
-         `uvm_info("OBI_MEMORY_DRV", $sformatf("Got slv_req:\n%s", slv_req.sprint()), UVM_MEDIUM/*HIGH*/)
+         `uvm_info("OBI_MEMORY_DRV", $sformatf("Got slv_req:\n%s", slv_req.sprint()), UVM_NONE/*HIGH*/)
          drv_slv_req(slv_req);
          
          // 2. Send out to TLM and tell sequencer we're ready for the next sequence item
@@ -297,24 +290,50 @@ endtask : drv_post_reset
 
 
 task uvma_obi_memory_drv_c::slv_drv_gnt();
+
+   // TODO Replace this fixed behavior with sequences
    
-   forever begin
-      wait (cfg.enabled && cfg.is_active);
-      
-      case (cntxt.reset_state)
-         UVMA_OBI_MEMORY_RESET_STATE_POST_RESET: begin
-            @(vif_slv_mp.drv_slv_cb.req === 1'b1);
-            repeat (cfg.drv_slv_gnt_latency) begin
+   fork
+      begin : post_reset
+         forever begin
+            wait (cfg.enabled && cfg.is_active);
+            wait (cntxt.reset_state == UVMA_OBI_MEMORY_RESET_STATE_POST_RESET)
+            if (cfg.drv_slv_gnt) begin
+               `uvm_info("OBI_MEMORY_DRV", $sformatf("Asserting GNT"), UVM_DEBUG)
+               vif_slv_mp.drv_slv_cb.gnt <= 1'b0;
+            end
+            while (vif_slv_mp.drv_slv_cb.req !== 1'b1) begin
+              @(vif_slv_mp.drv_slv_cb);
+              if (cfg.drv_slv_gnt) begin
+                  `uvm_info("OBI_MEMORY_DRV", $sformatf("Randomizing GNT"), UVM_DEBUG)
+                  vif_slv_mp.drv_slv_cb.gnt <= $urandom();
+               end
+            end
+            if (cfg.drv_slv_gnt) begin
+               `uvm_info("OBI_MEMORY_DRV", $sformatf("Asserting GNT"), UVM_DEBUG)
+               vif_slv_mp.drv_slv_cb.gnt <= 1'b1;
+            end
+            while (vif_slv_mp.drv_slv_cb.req === 1'b1) begin
                @(vif_slv_mp.drv_slv_cb);
             end
-            vif_slv_mp.drv_slv_cb.gnt <= 1'b1;
-            @(vif_slv_mp.drv_slv_cb);
-            vif_slv_mp.drv_slv_cb.gnt <= 1'b0;
+            if (cfg.drv_slv_gnt) begin
+               `uvm_info("OBI_MEMORY_DRV", $sformatf("De-asserting GNT"), UVM_DEBUG)
+               vif_slv_mp.drv_slv_cb.gnt <= 1'b0;
+            end
          end
+      end
          
-         default: @(vif_slv_mp.drv_slv_cb);
-      endcase
-   end
+      begin : pre_or_in_reset
+         forever begin
+            wait (cfg.enabled && cfg.is_active);
+            @(vif_slv_mp.drv_slv_cb);
+            wait (cntxt.reset_state != UVMA_OBI_MEMORY_RESET_STATE_POST_RESET)
+            if (cfg.drv_slv_gnt) begin
+               vif_slv_mp.drv_slv_cb.gnt <= 1'b0;
+            end
+         end
+      end
+   join
    
 endtask : slv_drv_gnt
 
@@ -500,10 +519,10 @@ task uvma_obi_memory_drv_c::drv_slv_read_req(ref uvma_obi_memory_slv_seq_item_c 
    
    `uvm_info("OBI_MEMORY_DRV", $sformatf("drv_slv_read_req: %8h", req.rdata), UVM_NONE)
 
-   @((vif_slv_mp.drv_slv_cb.gnt === 1'b1) && (vif_slv_mp.drv_slv_cb.req === 1'b1));
-   repeat (req.access_latency) begin
-      @(vif_slv_mp.drv_slv_cb);
-   end
+   //@((vif_slv_mp.drv_slv_cb.gnt === 1'b1) && (vif_slv_mp.drv_slv_cb.req === 1'b1));
+   //repeat (req.access_latency) begin
+   //   @(vif_slv_mp.drv_slv_cb);
+   //end
    vif_slv_mp.drv_slv_cb.rvalid <= 1'b1;
    vif_slv_mp.drv_slv_cb.err    <= req.err;
    for (int unsigned ii=0; ii<cfg.data_width; ii++) begin
@@ -516,6 +535,10 @@ task uvma_obi_memory_drv_c::drv_slv_read_req(ref uvma_obi_memory_slv_seq_item_c 
    drv_slv_idle();
 
    `uvm_info("OBI_MEMORY_DRV", "drv_slv_read_req FIN", UVM_NONE)
+   //repeat (10) begin
+   //   @(vif_slv_mp.drv_slv_cb);
+   //end
+   //`uvm_fatal("OBI_MEMORY_DRV", "drv_slv_read_req FIN")
    
 endtask : drv_slv_read_req
 
@@ -524,7 +547,7 @@ task uvma_obi_memory_drv_c::drv_slv_write_req(ref uvma_obi_memory_slv_seq_item_c
    
    `uvm_info("OBI_MEMORY_DRV", $sformatf("drv_slv_write_req: %8h", req.rdata), UVM_NONE)
 
-   @((vif_slv_mp.drv_slv_cb.gnt === 1'b1) && (vif_slv_mp.drv_slv_cb.req === 1'b1));
+   //@((vif_slv_mp.drv_slv_cb.gnt === 1'b1) && (vif_slv_mp.drv_slv_cb.req === 1'b1));
    repeat (req.access_latency) begin
       @(vif_slv_mp.drv_slv_cb);
    end

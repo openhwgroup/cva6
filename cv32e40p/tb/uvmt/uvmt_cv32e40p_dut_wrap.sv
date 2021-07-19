@@ -132,12 +132,12 @@ module uvmt_cv32e40p_dut_wrap #(
                  fill_cnt++;
                 rnd_byte = $random();
                 uvmt_cv32e40p_tb.dut_wrap.ram_i.dp_ram_i.mem[index]=rnd_byte;
-                if ($test$plusargs("USE_ISS")) begin                
+                if ($test$plusargs("USE_ISS")) begin
                   uvmt_cv32e40p_tb.iss_wrap.ram.mem[index/4][((((index%4)+1)*8)-1)-:8]=rnd_byte; // convert byte to 32-bit addressing
-                end                
+                end
              end
           end
-          if ($test$plusargs("USE_ISS")) begin          
+          if ($test$plusargs("USE_ISS")) begin
              `uvm_info("DUT_WRAP", $sformatf("Filled 0d%0d RTL and ISS memory bytes with random values", fill_cnt), UVM_LOW)
           end
           else begin
@@ -324,6 +324,21 @@ module uvmt_cv32e40p_dut_wrap #(
          .exit_value_o   ( vp_status_if.exit_value         )
         ); //ram_i
 `endif // USE_OBI_MEM_AGENT
+
+/*
+`ifdef USE_OBI_MEM_AGENT
+initial begin
+   force obi_memory_data_if.gnt = 1'b1;
+   force obi_memory_data_if.rvalid = 1'b0;
+   force obi_memory_data_if.rdata = 32'h0000_0000;
+   wait (obi_memory_data_if.reset_n == 1'b0);
+   release obi_memory_data_if.gnt;
+   release obi_memory_data_if.rvalid;
+   release obi_memory_data_if.rdata;
+end
+`endif
+*/
+
 
 endmodule : uvmt_cv32e40p_dut_wrap
 

@@ -288,7 +288,8 @@ task uvme_cv32e40p_vp_vseq_c::vp_address_range_check(ref uvma_obi_memory_mon_trn
       //slv_rsp.start(p_sequencer.obi_memory_data_sequencer);
       slv_rsp.set_sequencer(p_sequencer.obi_memory_data_sequencer);
       `uvm_send(slv_rsp)
-      `uvm_fatal("VP_VSEQ", $sformatf("Ending simulation due to:\n%s", mon_req.sprint()))
+      //`uvm_fatal("VP_VSEQ", $sformatf("Ending simulation due to:\n%s", mon_req.sprint()))
+      `uvm_info("VP_VSEQ", $sformatf("mon_req:\n%s", mon_req.sprint()), UVM_NONE)
    end
    else begin
       do_mem_operation(mon_req);
