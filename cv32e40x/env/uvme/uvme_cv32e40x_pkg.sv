@@ -38,30 +38,36 @@ package uvme_cv32e40x_pkg;
    import uvml_hrtbt_pkg  ::*;
    import uvml_sb_pkg     ::*;
    import uvml_trn_pkg    ::*;  
+   import uvma_core_cntrl_pkg::*;
    import uvma_isacov_pkg::*;
    import uvma_clknrst_pkg::*;
    import uvma_interrupt_pkg::*;
    import uvma_debug_pkg::*;
    import uvma_obi_pkg::*;
+   import uvma_rvfi_pkg::*;
+   import uvma_rvvi_pkg::*; 
+   import uvma_rvvi_ovpsim_pkg::*; 
    
    // Constants / Structs / Enums
    `include "uvme_cv32e40x_constants.sv"
    `include "uvme_cv32e40x_tdefs.sv"
       
    // Objects
-   `include "uvme_cv32e40x_cfg.sv"
+   `include "uvma_cv32e40x_core_cntrl_cntxt.sv"
+   `include "uvme_cv32e40x_cfg.sv"   
+   `include "uvma_cv32e40x_core_cntrl_drv.sv"   
+   `include "uvma_cv32e40x_core_cntrl_agent.sv"
    `include "uvme_cv32e40x_cntxt.sv"
-   `include "uvme_rv32isa_covg_trn.sv"
 
    // Predictor
    `include "uvme_cv32e40x_prd.sv"
    
    // Environment components
    `include "uvme_interrupt_covg.sv"
-   `include "uvme_debug_covg.sv"
-   `include "uvme_rv32isa_covg.sv"
+   `include "uvme_debug_covg.sv"   
    `include "uvme_cv32e40x_cov_model.sv"
    `include "uvme_cv32e40x_sb.sv"
+   `include "uvme_cv32e40x_core_sb.sv"
    `include "uvme_cv32e40x_vsqr.sv"
    `include "uvme_cv32e40x_env.sv"
    
@@ -74,9 +80,9 @@ package uvme_cv32e40x_pkg;
    `include "uvme_cv32e40x_random_debug_reset_vseq.sv" 
    `include "uvme_cv32e40x_random_debug_bootset_vseq.sv" 
 
-
-
 endpackage : uvme_cv32e40x_pkg
 
+// Interfaces
+`include "uvme_cv32e40x_core_cntrl_if.sv"
 
 `endif // __UVME_CV32E40X_PKG_SV__

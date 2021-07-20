@@ -16,15 +16,14 @@ tests:
     build: uvmt_cv32e40x
     description: UVM Hello World Test
     dir: cv32e40x/sim/uvmt
-    cmd: make hello-world
     cmd: make test COREV=YES TEST=hello-world
-    
+
   interrupt_test:
     build: uvmt_cv32e40x
     description: Interrupt directed test  
     dir: cv32e40x/sim/uvmt
     cmd: make test COREV=YES TEST=interrupt_test
-    
+
   corev_rand_interrupt:
     build: uvmt_cv32e40x
     description: Interrupt random test
@@ -41,6 +40,7 @@ tests:
     build: uvmt_cv32e40x
     dir: cv32e40x/sim/uvmt
     cmd: make test COREV=YES TEST=debug_test
+    makearg: USER_RUN_FLAGS=+rand_stall_obi_disable
 
   csr_instructions:
     build: uvmt_cv32e40x

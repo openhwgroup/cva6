@@ -1,0 +1,6 @@
+name: corev_rand_interrupt_wfi_mem_stress
+uvm_test: uvmt_$(CV_CORE_LC)_firmware_test_c
+description: >
+    Random interrupt generator test with WFI
+plusargs: >
+    +gen_irq_noise

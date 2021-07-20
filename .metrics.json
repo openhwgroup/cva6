@@ -7,27 +7,39 @@
     "list": [
       {
         "name":     "uvmt_cv32e40p",
-        "image":    "gcr.io/openhwgroup-metrics-project/cv32-simulation-tools:20210322.10.0-01062021",
+        "image":    "gcr.io/openhwgroup-metrics-project/cv32-simulation-tools:20210621.1.0-29062021",
         "cmd":      "cd cv32e40p/sim/uvmt; make corev-dv CV_CORE=cv32e40p SIMULATOR=dsim DSIM_WORK=/mux-flow/build/repo/dsim_work DSIM_RESULTS=/mux-flow/build/results; make comp CV_CORE=cv32e40p SIMULATOR=dsim DSIM_WORK=/mux-flow/build/repo/dsim_work DSIM_RESULTS=/mux-flow/build/results",
         "wavesCmd": "cd cv32e40p/sim/uvmt; make corev-dv CV_CORE=cv32e40p SIMULATOR=dsim DSIM_WORK=/mux-flow/build/repo/dsim_work DSIM_RESULTS=/mux-flow/build/results; make comp CV_CORE=cv32e40p SIMULATOR=dsim DSIM_WORK=/mux-flow/build/repo/dsim_work DSIM_RESULTS=/mux-flow/build/results WAVES=1"
       },
       {
         "name":     "uvmt_cv32e40p_compliance_build",
-        "image":    "gcr.io/openhwgroup-metrics-project/cv32-simulation-tools:20210322.10.0-01062021",               
+        "image":    "gcr.io/openhwgroup-metrics-project/cv32-simulation-tools:20210621.1.0-29062021",
         "cmd":      "cd cv32e40p/sim/uvmt; make all_compliance; make comp CV_CORE=cv32e40p SIMULATOR=dsim DSIM_WORK=/mux-flow/build/repo/dsim_work DSIM_RESULTS=/mux-flow/build/results",
         "wavesCmd": "cd cv32e40p/sim/uvmt; make all_compliance; make comp CV_CORE=cv32e40p SIMULATOR=dsim DSIM_WORK=/mux-flow/build/repo/dsim_work DSIM_RESULTS=/mux-flow/build/results WAVES=1"
       },
       {
         "name":     "uvmt_cv32e40x",
-        "image":    "gcr.io/openhwgroup-metrics-project/cv32-simulation-tools:20210322.10.0-01062021",
+        "image":    "gcr.io/openhwgroup-metrics-project/cv32-simulation-tools:20210621.1.0-29062021",
         "cmd":      "cd cv32e40x/sim/uvmt; make corev-dv CV_CORE=cv32e40x SIMULATOR=dsim DSIM_WORK=/mux-flow/build/repo/dsim_work DSIM_RESULTS=/mux-flow/build/results; make comp CV_CORE=cv32e40x SIMULATOR=dsim DSIM_WORK=/mux-flow/build/repo/dsim_work DSIM_RESULTS=/mux-flow/build/results",
         "wavesCmd": "cd cv32e40x/sim/uvmt; make corev-dv CV_CORE=cv32e40x SIMULATOR=dsim DSIM_WORK=/mux-flow/build/repo/dsim_work DSIM_RESULTS=/mux-flow/build/results; make comp CV_CORE=cv32e40x SIMULATOR=dsim DSIM_WORK=/mux-flow/build/repo/dsim_work DSIM_RESULTS=/mux-flow/build/results WAVES=1"
       },
       {
-        "name":     "uvmt_cv32e40x_compliance_build",        
-        "image":    "gcr.io/openhwgroup-metrics-project/cv32-simulation-tools:20210322.10.0-01062021",
+        "name":     "uvmt_cv32e40x_compliance_build",
+        "image":    "gcr.io/openhwgroup-metrics-project/cv32-simulation-tools:20210621.1.0-29062021",
         "cmd":      "cd cv32e40x/sim/uvmt; make all_compliance; make comp CV_CORE=cv32e40x SIMULATOR=dsim DSIM_WORK=/mux-flow/build/repo/dsim_work DSIM_RESULTS=/mux-flow/build/results",
         "wavesCmd": "cd cv32e40x/sim/uvmt; make all_compliance; make comp CV_CORE=cv32e40x SIMULATOR=dsim DSIM_WORK=/mux-flow/build/repo/dsim_work DSIM_RESULTS=/mux-flow/build/results WAVES=1"
+      },
+      {
+        "name":     "uvmt_cv32e40s",
+        "image":    "gcr.io/openhwgroup-metrics-project/cv32-simulation-tools:20210621.1.0-29062021",
+        "cmd":      "cd cv32e40s/sim/uvmt; make corev-dv CV_CORE=cv32e40s SIMULATOR=dsim DSIM_WORK=/mux-flow/build/repo/dsim_work DSIM_RESULTS=/mux-flow/build/results; make comp CV_CORE=cv32e40s SIMULATOR=dsim DSIM_WORK=/mux-flow/build/repo/dsim_work DSIM_RESULTS=/mux-flow/build/results",
+        "wavesCmd": "cd cv32e40s/sim/uvmt; make corev-dv CV_CORE=cv32e40s SIMULATOR=dsim DSIM_WORK=/mux-flow/build/repo/dsim_work DSIM_RESULTS=/mux-flow/build/results; make comp CV_CORE=cv32e40s SIMULATOR=dsim DSIM_WORK=/mux-flow/build/repo/dsim_work DSIM_RESULTS=/mux-flow/build/results WAVES=1"
+      },
+      {
+        "name":     "uvmt_cv32e40s_compliance_build",
+        "image":    "gcr.io/openhwgroup-metrics-project/cv32-simulation-tools:20210621.1.0-29062021",
+        "cmd":      "cd cv32e40s/sim/uvmt; make all_compliance; make comp CV_CORE=cv32e40s SIMULATOR=dsim DSIM_WORK=/mux-flow/build/repo/dsim_work DSIM_RESULTS=/mux-flow/build/results",
+        "wavesCmd": "cd cv32e40s/sim/uvmt; make all_compliance; make comp CV_CORE=cv32e40s SIMULATOR=dsim DSIM_WORK=/mux-flow/build/repo/dsim_work DSIM_RESULTS=/mux-flow/build/results WAVES=1"
       }
     ]
   },
@@ -185,7 +197,7 @@
         "resultsDir": "/mux-flow/build/results",
         "builds":    ["uvmt_cv32e40x"],
         "timeout":   "8h",
-        "listCmd":   "/mux-flow/build/repo/bin/cv_regress --core=cv32e40x --file=cv32e40X_fulL --metrics --outfile=/mux-flow/build/repo/cv32e40x_full_covg_no_pulp.json",
+        "listCmd":   "/mux-flow/build/repo/bin/cv_regress --core=cv32e40x --file=cv32e40x_full --metrics --outfile=/mux-flow/build/repo/cv32e40x_full_covg_no_pulp.json",
         "listFile":  "/mux-flow/build/repo/cv32e40x_full.json"
       }
     },
@@ -199,6 +211,85 @@
         "timeout":   "6h",
         "listCmd":   "/mux-flow/build/repo/bin/cv_regress --core=cv32e40x --file=cv32e40x_interrupt --metrics --outfile=/mux-flow/build/repo/cv32e40x_interrupt.json",
         "listFile":  "/mux-flow/build/repo/cv32e40x_interrupt.json"
+      }
+    },
+    {
+      "name":        "cv32e40s_compliance_dev",
+      "description": "RISC-V Compliance Test-suite for CV32E40S",
+      "verbose":     "true",
+      "tests": {
+        "resultsDir": "/mux-flow/build/results",
+        "builds":    ["uvmt_cv32e40s_compliance_build"],
+        "listCmd":   "/mux-flow/build/repo/bin/cv_regress --core=cv32e40s --file=cv32e40s_compliance --metrics --outfile=/mux-flow/build/repo/cv32e40s_compliance.json",
+        "listFile":  "/mux-flow/build/repo/cv32e40s_compliance.json"
+      }
+    },
+    {
+      "name":        "cv32e40s_ci_check_dev",
+      "description": "Commit sanity for CV32E40S using dynamic test generation",
+      "verbose":     "true",
+      "tests": {
+        "resultsDir": "/mux-flow/build/results",
+        "builds":    ["uvmt_cv32e40s"],
+        "listCmd":   "/mux-flow/build/repo/bin/cv_regress --core=cv32e40s --cfg=default --file=cv32e40s_ci_check --metrics --outfile=/mux-flow/build/repo/cv32e40s_ci_check.json",
+        "listFile":  "/mux-flow/build/repo/cv32e40s_ci_check.json"
+      }
+    },
+    {
+      "name":        "cv32e40s_rel_check_release",
+      "description": "Release branch check for CV32E40S using dynamic test generation",
+      "verbose":     "true",
+      "tests": {
+        "resultsDir": "/mux-flow/build/results",
+        "builds":    ["uvmt_cv32e40s"],
+        "listCmd":   "/mux-flow/build/repo/bin/cv_regress --core=cv32e40s --file=cv32e40s_rel_check --metrics --outfile=/mux-flow/build/repo/cv32e40s_rel_check.json",
+        "listFile":  "/mux-flow/build/repo/cv32e40s_rel_check.json"
+      }
+    },
+    {
+      "name":        "cv32e40s_rel_check_master",
+      "description": "Release branch check for CV32E40S using dynamic test generation",
+      "verbose":     "true",
+      "tests": {
+        "resultsDir": "/mux-flow/build/results",
+        "builds":    ["uvmt_cv32e40s"],
+        "listCmd":   "/mux-flow/build/repo/bin/cv_regress --core=cv32e40s --file=cv32e40s_rel_check --metrics --outfile=/mux-flow/build/repo/cv32e40s_rel_check.json",
+        "listFile":  "/mux-flow/build/repo/cv32e40s_rel_check.json"
+      }
+    },
+    {
+      "name":        "cv32e40s_full_stall",
+      "description": "Full regression for CV32 using dynamic test generation with random RAM stalls",
+      "verbose":     "true",
+      "tests": {
+        "resultsDir": "/mux-flow/build/results",
+        "builds":    ["uvmt_cv32e40s"],
+        "listCmd":   "/mux-flow/build/repo/bin/cv_regress --core=cv32e40s --file=cv32e40s_full --metrics --makearg=USER_RUN_FLAGS=+rand_stall_obi_all --outfile=/mux-flow/build/repo/cv32e40s_full.json",
+        "listFile":  "/mux-flow/build/repo/cv32e40s_full.json"
+      }
+    },
+    {
+      "name":        "cv32e40s_full",
+      "description": "Directed and random interrupt tests for CV32E40S",
+      "verbose":     "true",
+      "tests": {
+        "resultsDir": "/mux-flow/build/results",
+        "builds":    ["uvmt_cv32e40s"],
+        "timeout":   "8h",
+        "listCmd":   "/mux-flow/build/repo/bin/cv_regress --core=cv32e40s --file=cv32e40s_full --metrics --outfile=/mux-flow/build/repo/cv32e40s_full_covg_no_pulp.json",
+        "listFile":  "/mux-flow/build/repo/cv32e40s_full.json"
+      }
+    },
+    {
+      "name":        "cv32e40s_interrupt",
+      "description": "Directed and random interrupt tests for CV32E40S",
+      "verbose":     "true",
+      "tests": {
+        "resultsDir": "/mux-flow/build/results",
+        "builds":    ["uvmt_cv32e40s"],
+        "timeout":   "6h",
+        "listCmd":   "/mux-flow/build/repo/bin/cv_regress --core=cv32e40s --file=cv32e40s_interrupt --metrics --outfile=/mux-flow/build/repo/cv32e40s_interrupt.json",
+        "listFile":  "/mux-flow/build/repo/cv32e40s_interrupt.json"
       }
     }
   ]
