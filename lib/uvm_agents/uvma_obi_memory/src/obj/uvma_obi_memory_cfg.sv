@@ -87,8 +87,8 @@ class uvma_obi_memory_cfg_c extends uvm_object;
       /*soft*/ id_width         == uvma_obi_memory_default_id_width   ;
       soft drv_mode             == UVMA_OBI_MEMORY_MODE_MSTR;
       soft drv_idle             == UVMA_OBI_MEMORY_DRV_IDLE_ZEROS;
-      soft drv_slv_gnt_latency  == 1;
-      soft drv_slv_gnt          == 0;
+      soft drv_slv_gnt_latency  == 0;
+      soft drv_slv_gnt          == 1;
    }
    
    

@@ -45,12 +45,8 @@ class uvme_cv32e40p_cntxt_c extends uvm_object;
    //          uvme_cv32e40p_sb_cntxt_c  sb_ingress_cntxt;
 
    // Memory modelling
-   // TODO: why is the memory here?
-   //       IMHO it should be in a STATIC member of uvma_obi_memory_cntxt_c
-   //       so that is it accessible by both obi_memory_instr_cntxt and obi_memory_data_cntxt.
-   localparam n_bytes = `UVMA_OBI_MEMORY_SIZE_MiB * 1_048_576;
-   bit [7:0]  mem [n_bytes];
-   bit        instr_mem_delay_enabled = 0;
+   mem_arr  mem;
+   bit      instr_mem_delay_enabled = 0;
 
    // Events
    uvm_event  sample_cfg_e;

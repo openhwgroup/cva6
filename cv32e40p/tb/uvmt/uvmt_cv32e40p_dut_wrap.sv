@@ -101,19 +101,21 @@ module uvmt_cv32e40p_dut_wrap #(
 
     assign debug_req = debug_req_vp | debug_req_uvma;
 
-
+    
+    
     // Load the Instruction Memory 
+`ifndef USE_OBI_MEM_AGENT
     initial begin: load_instruction_memory
       string firmware;
       int    fd;
        int   fill_cnt;
-       bit [7:0] rnd_byte;
+       bit [7:0]  rnd_byte;
+
       `uvm_info("DUT_WRAP", "waiting for load_instr_mem to be asserted.", UVM_DEBUG)
       wait(core_cntrl_if.load_instr_mem !== 1'bX);
       if(core_cntrl_if.load_instr_mem === 1'b1) begin
         `uvm_info("DUT_WRAP", "load_instr_mem asserted!", UVM_NONE)
 
-`ifndef USE_OBI_MEM_AGENT
         // Load the pre-compiled firmware
         if($value$plusargs("firmware=%s", firmware)) begin
           // First, check if it exists...
@@ -129,7 +131,7 @@ module uvmt_cv32e40p_dut_wrap #(
           fill_cnt = 0;
           for (int index=0; index < 2**RAM_ADDR_WIDTH; index++) begin
              if (uvmt_cv32e40p_tb.dut_wrap.ram_i.dp_ram_i.mem[index] === 8'hXX) begin
-                 fill_cnt++;
+                fill_cnt++;
                 rnd_byte = $random();
                 uvmt_cv32e40p_tb.dut_wrap.ram_i.dp_ram_i.mem[index]=rnd_byte;
                 if ($test$plusargs("USE_ISS")) begin
@@ -147,12 +149,12 @@ module uvmt_cv32e40p_dut_wrap #(
         else begin
           `uvm_error("DUT_WRAP", "No firmware specified!")
         end
-`endif // USE_OBI_MEM_AGENT
       end
       else begin
         `uvm_info("DUT_WRAP", "NO TEST PROGRAM", UVM_NONE)
       end
     end
+`endif // USE_OBI_MEM_AGENT
 
     // --------------------------------------------
     // Connect clk and reset for OBI MEM Agent
@@ -270,11 +272,11 @@ module uvmt_cv32e40p_dut_wrap #(
 
          .debug_req_i            ( debug_req                      ),
 `else // USE_OBI_MEM_AGENT
-         .irq_i                  ( {32{1'b0}}                     ),
+         .irq_i                  ( irq_uvma                       ),
          .irq_ack_o              ( irq_ack                        ),
          .irq_id_o               ( irq_id                         ),
 
-         .debug_req_i            ( 1'b0                           ),
+         .debug_req_i            ( debug_req_uvma                 ),
 `endif // USE_OBI_MEM_AGENT
          .debug_havereset_o      ( debug_havereset                ),
          .debug_running_o        ( debug_running                  ),

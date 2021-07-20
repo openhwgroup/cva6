@@ -119,7 +119,7 @@ task uvme_cv32e40p_instr_vseq_c::body();
       
       if (!error) begin
          if (mon_trn.access_type == UVMA_OBI_MEMORY_ACCESS_WRITE) begin
-            cntxt.mem[mon_trn.address] = mon_trn.data;
+            //cntxt.mem[mon_trn.address] = mon_trn.data;
          end
          else begin
             slv_rsp.rdata[31:24] = cntxt.mem[mon_trn.address+3];

@@ -21,6 +21,10 @@
 `define __UVMA_OBI_MEMORY_CNTXT_SV__
 
 
+// Forward type declarations
+typedef class uvma_obi_memory_mon_trn_c;
+
+
 /**
  * Object encapsulating all state variables for all Open Bus Interface agent
  * (uvma_obi_agent_c) components.
@@ -38,6 +42,9 @@ class uvma_obi_memory_cntxt_c extends uvm_object;
    int unsigned               mon_rready_latency = 0;
    int unsigned               mon_rp_hold        = 0;
    
+   // Queues
+   uvma_obi_memory_mon_trn_c  mon_outstanding_reads_q[$];
+   
    // Events
    uvm_event  sample_cfg_e;
    uvm_event  sample_cntxt_e;
@@ -46,6 +53,8 @@ class uvma_obi_memory_cntxt_c extends uvm_object;
    `uvm_object_utils_begin(uvma_obi_memory_cntxt_c)
       `uvm_field_enum(uvma_obi_memory_reset_state_enum, reset_state, UVM_DEFAULT)
       `uvm_field_enum(uvma_obi_memory_phases_enum     , mon_phase  , UVM_DEFAULT)
+      
+      `uvm_field_queue_object(mon_outstanding_reads_q, UVM_DEFAULT)
       
       `uvm_field_event(sample_cfg_e  , UVM_DEFAULT)
       `uvm_field_event(sample_cntxt_e, UVM_DEFAULT)
@@ -82,6 +91,8 @@ function void uvma_obi_memory_cntxt_c::reset();
    mon_rvalid_latency = 0;
    mon_rready_latency = 0;
    mon_rp_hold        = 0;
+   
+   mon_outstanding_reads_q.delete();
    
 endfunction : reset
 
