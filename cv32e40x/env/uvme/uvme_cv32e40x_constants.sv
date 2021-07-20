@@ -21,5 +21,12 @@
 parameter uvme_cv32e40x_sys_default_clk_period   =  1_500; // 10ns
 parameter uvme_cv32e40x_debug_default_clk_period = 10_000; // 10ns
 
+// For RVFI/RVVI
+parameter ILEN = 32;
+parameter XLEN = 32;
+parameter RVFI_NRET = 1;
+
+// Control how often to print core scoreboard checked heartbeat messages
+parameter PC_CHECKED_HEARTBEAT = 10_000;
 
 `endif // __UVME_CV32E40X_CONSTANTS_SV__

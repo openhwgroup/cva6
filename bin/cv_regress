@@ -20,16 +20,14 @@
 # 
 ################################################################################
 #
-# cv32_regress: python script to generate a tool-specific regression based
-#               upon YAML specifications of regressions
+# cv_regress: python script to generate a tool-specific regression based
+#             upon YAML specifications of regressions
 #
 # Author: Steve Richmond
 #  email: steve.richmond@silabs.com
 #
 # Written with Python 3.5.1 on RHEL 7.7.  Your python mileage may vary.
 #
-# Restriction:
-#     - Needs to be launched from the ci directory.
 #
 # TODO:
 ################################################################################
@@ -159,7 +157,7 @@ def read_file(args, file):
 # Start of script
 VALID_SIMULATORS = ('dsim', 'vsim', 'vcs', 'xrun')
 DEFAULT_SIMULATOR = 'dsim'
-VALID_PROJECTS = ('cv32e40p', 'cv32e40x', 'cv64')
+VALID_PROJECTS = ('cv32e40p', 'cv32e40x', 'cv32e40s', 'cv64')
 try:
     DEFAULT_PROJECT = os.environ['CV_CORE'] 
 except KeyError:    

@@ -34,15 +34,13 @@ class uvme_cv32e40x_vsqr_c extends uvm_sequencer#(
    // Sequencer handles
    uvma_clknrst_sqr_c    clknrst_sequencer;
    uvma_interrupt_sqr_c  interrupt_sequencer;
-   uvma_debug_sqr_c    debug_sequencer;
-   
+   uvma_debug_sqr_c      debug_sequencer;
    
    `uvm_component_utils_begin(uvme_cv32e40x_vsqr_c)
       `uvm_field_object(cfg  , UVM_DEFAULT)
       `uvm_field_object(cntxt, UVM_DEFAULT)
    `uvm_component_utils_end
    
-  
    /**
     * Default constructor.
     */

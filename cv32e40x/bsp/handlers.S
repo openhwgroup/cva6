@@ -15,6 +15,7 @@
 */
 
 /* Exception codes */
+#define EXCEPTION_INSN_ACCESS_FAULT 1
 #define EXCEPTION_ILLEGAL_INSN 2
 #define EXCEPTION_BREAKPOINT 3
 #define EXCEPTION_ECALL_M 11
@@ -148,6 +149,8 @@ u_sw_irq_handler:
 	sw t5, 56(sp)
 	sw t6, 60(sp)
 	csrr t0, mcause
+	li t1, EXCEPTION_INSN_ACCESS_FAULT
+	beq t0, t1, handle_insn_access_fault
 	li t1, EXCEPTION_ILLEGAL_INSN
 	beq t0, t1, handle_illegal_insn
 	li t1, EXCEPTION_ECALL_M
@@ -168,6 +171,11 @@ handle_ebreak:
 
 handle_illegal_insn:
 	la a0, illegal_insn_msg
+	jal ra, puts
+	j end_handler_incr_mepc
+
+handle_insn_access_fault:
+	la a0, insn_access_fault_msg
 	jal ra, puts
 	j end_handler_incr_mepc
 
@@ -211,6 +219,8 @@ end_handler_ret:
 	mret
 
 .section .rodata
+insn_access_fault_msg:
+	.string "CV32E40X BSP: instruction access fault exception handler entered\n"
 illegal_insn_msg:
 	.string "CV32E40X BSP: illegal instruction exception handler entered\n"
 ecall_msg:

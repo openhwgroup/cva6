@@ -1,0 +1,25 @@
+# Test definition YAML for corev-dv test generator
+
+# corev-dv generator test
+name: corev_rand_interrupt
+uvm_test: $(CV_CORE_LC)_instr_base_test
+description: >
+    RISCV-DV generated random debug tests
+plusargs: >
+    +instr_cnt=50000
+    +num_of_sub_program=0
+    +directed_instr_0=riscv_int_numeric_corner_stream,4
+    +no_fence=1
+    +no_data_page=1
+    +no_branch_jump=0
+    +boot_mode=m
+    +no_csr_instr=1
+    +no_wfi=0
+    +no_ebreak=0
+    +no_dret=1
+    +set_dcsr_ebreak=1
+    +enable_misaligned_instr=1
+    +enable_ebreak_in_debug_rom=0
+    +set_dcsr_ebreak=0
+    +enable_debug_single_step=0
+    +gen_debug_section=1
