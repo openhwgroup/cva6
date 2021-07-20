@@ -37,12 +37,12 @@ The core-v-verif project is not a single verification environment that is
 capbable of supporting any-and-all CORE-V cores. Rather, core-v-verif supports
 the verification of multiple cores by enablng the rapid creation of core-specific
 verification environments.  There is no attempt to define a one-size-fits-all
-environment as these inevidibly lead to either bloated code, needless complexity
+environment as these inevitably lead to either bloated code, needless complexity
 or both.  Instead, the idea is to create a toolkit that allows for the rapid
 development of core-specific environments using a set of high-level reusable
 components and a standard UVM framework.
 
-UVM environments are often described as a heirarchy with the device-under-test
+UVM environments are often described as a hierarchy with the device-under-test
 (the core) at the bottom and testcases at the top.  In between are various
 components with increasing degress of abstraction as we go from the bottom
 levels (the register-transfer level) to the middle layers (transaction-level)
@@ -121,11 +121,11 @@ Testbench Modules
 
 The two modules of the Testbench Layer are the "DUT Wrapper" and the "Testbench".
 The purpose of the wrapper is to conceal as many core-specific physical attributes
-as possible.  As hinted at abovem this is done by keeping control of the core's
+as possible.  As hinted at above this is done by keeping control of the core's
 memory interface(s) and mapping all other ports to one of the non-memory
 interface types.
 
-The wrapper instaniates a memory model that connects directly to the core's
+The wrapper instantiates a memory model that connects directly to the core's
 instruction and data interface(s). This memory model also supports a number of
 memory mapped virtual peripherals. The core's memory interface is not "seen" by
 any other part of the environment, so this interface (or these interfaces, as
