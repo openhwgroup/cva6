@@ -59,27 +59,27 @@ create_clock -period 100.000 -name rwds_clk [get_ports FMC_hyper_rwds0]
 set_property CLOCK_DEDICATED_ROUTE FALSE [get_nets i_alsaqr/i_pad_frame/padinst_axi_hyper_rwds0/iobuf_i/O]
 
 # Create the PHY clock
-create_generated_clock -name clk_phy  -source  [get_pins i_clk_manager/clk_out1] [get_pins i_alsaqr/i_host_domain/axi_hyperbus/clk_phy_i]
-set_clock_uncertainty [expr {${jitter_phy}*${tck_phy}}] clk_phy
-
-# Create the system clock
-create_generated_clock -name clk_sys -source  [get_pins i_clk_manager/clk_out1]  [get_pins i_alsaqr/i_host_domain/axi_hyperbus/clk_sys_i]
-set_clock_uncertainty [expr {${jitter_sys}*${tck_sys}}] clk_sys
+#create_generated_clock -name clk_phy  -source  [get_pins i_clk_manager/clk_out1] [get_pins i_alsaqr/i_host_domain/axi_hyperbus/clk_phy_i]
+#set_clock_uncertainty [expr {${jitter_phy}*${tck_phy}}] clk_phy
+#
+## Create the system clock
+#create_generated_clock -name clk_sys -source  [get_pins i_clk_manager/clk_out1]  [get_pins i_alsaqr/i_host_domain/axi_hyperbus/clk_sys_i]
+#set_clock_uncertainty [expr {${jitter_sys}*${tck_sys}}] clk_sys
 
 # Create generated clock for for outgoing RWDS after delay
 set clk_tx_shift [expr 0.25*${tck_phy}]
 create_generated_clock  -name clk_tx -edges {1 2 3} -edge_shift "$clk_tx_shift $clk_tx_shift $clk_tx_shift" \
-    -source i_alsaqr/i_host_domain/axi_hyperbus/i_phy/i_trx/i_delay_tx_clk_90/i_delay/clk_i \
+    -source alsaqr_clk \
     i_alsaqr/i_host_domain/axi_hyperbus/i_phy/i_trx/i_delay_tx_clk_90/i_delay/clk_o
 
 # Create generated clock for incoming RWDS after delay
 set clk_rx_shift [expr 0.25*${tck_phy}]
 create_generated_clock  -name clk_rx -edges {1 2 3} -edge_shift "$clk_rx_shift $clk_rx_shift $clk_rx_shift" \
-    -source i_alsaqr/i_host_domain/axi_hyperbus/i_phy/i_trx/i_delay_rx_rwds_90/i_delay/clk_i \
+    -source alsaqr_clk \
     i_alsaqr/i_host_domain/axi_hyperbus/i_phy/i_trx/i_delay_rx_rwds_90/i_delay/clk_o
 
 # Inform tool that system and PHY-derived clocks are asynchronous, but may have timed arcs between them
-set_clock_groups -asynchronous -allow_paths -group {clk_sys} -group {clk_phy clk_tx clk_rwds_in clk_rx}
+set_clock_groups -asynchronous -allow_paths -group {alsaqr_clk} -group { clk_tx rwds_clk clk_rx}
 
 # Input Delay Constraint
  set input_clock         clk_tx;           # Name of input clock
