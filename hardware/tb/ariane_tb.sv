@@ -28,7 +28,7 @@ module ariane_tb;
 
     static uvm_cmdline_processor uvcl = uvm_cmdline_processor::get_inst();
 
-    localparam int unsigned CLOCK_PERIOD = 20ns;
+    localparam int unsigned CLOCK_PERIOD = 100ns;
     // toggle with RTC period
     localparam int unsigned RTC_CLOCK_PERIOD = 30.517us;
 
@@ -250,7 +250,7 @@ module ariane_tb;
       end
    endgenerate
 
-   uart_bus #(.BAUD_RATE(115200), .PARITY_EN(0)) i_uart_bus (.rx(w_cva6_uart_tx), .tx(w_cva6_uart_rx), .rx_en(1'b1));
+   uart_bus #(.BAUD_RATE(9600), .PARITY_EN(0)) i_uart_bus (.rx(w_cva6_uart_tx), .tx(w_cva6_uart_rx), .rx_en(1'b1));
 
 `ifdef SPIKE_TANDEM
     spike #(

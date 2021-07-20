@@ -123,7 +123,7 @@ module l2_subsystem
             .NumWords  ( L2_BANK_SIZE        ), // 2^15 lines of 32 bits each (128kB), 4 Banks -> 512 kB total memory
             .DataWidth ( L2_DATA_WIDTH       ),
             .NumPorts  ( 1                   ),
-            .SimInit   ( "none"              )
+            .SimInit   ( "random"            )
           ) bank_i (
             .clk_i,
             .rst_ni,

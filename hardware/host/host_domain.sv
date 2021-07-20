@@ -356,8 +356,8 @@ module host_domain
          .axi_rule_t     ( ariane_soc::addr_map_rule_t ),
          .RxFifoLogDepth ( 4                           ),
          .TxFifoLogDepth ( 4                           ),
-         .RstChipBase    ( 'h8000_0000                 ),  // Base address for all chips
-         .RstChipSpace   ( 'h800000                    )   // 8 MB
+         .RstChipBase    ( ariane_soc::HYAXIBase       ),  // Base address for all chips
+         .RstChipSpace   ( ariane_soc::HYAXILength     )   // 8 MB
      ) axi_hyperbus (
          .clk_phy_i              ( clk_i                 ),
          .rst_phy_ni             ( ndmreset_n            ),
