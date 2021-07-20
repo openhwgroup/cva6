@@ -1,4 +1,3 @@
-
 // Copyright (C) 2017 ETH Zurich, University of Bologna
 //
 // Licensed under the Solderpad Hardware Licence, Version 2.0 (the "License");
