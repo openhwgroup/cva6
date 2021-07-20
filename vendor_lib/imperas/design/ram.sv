@@ -30,17 +30,17 @@ module RAM
     parameter int RAM_BYTE_SIZE  = 'h20000
 )
 (
-    RVVI_bus bus,
-    RVVI_memory memory
+    RVVI_bus bus   
 );
-
 
     Uns32 daddr4, iaddr4;
     Uns32 value;
     bit isROM, isRAM;
     Uns32 loROM, hiROM;
     Uns32 loRAM, hiRAM;
-    
+
+    RVVI_memory memory();
+
     initial begin
         loROM = ROM_START_ADDR;
         hiROM = loROM + ROM_BYTE_SIZE - 1;

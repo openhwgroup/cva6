@@ -37,14 +37,13 @@ module uvmt_cv32e40x_iss_wrap
    );
    
    RVVI_bus     bus();
-   RVVI_io      io();
-   RVVI_memory  memory();
+   RVVI_io      io();   
 
    MONITOR     mon(bus, io);
    RAM         #(
                 .ROM_START_ADDR(ROM_START_ADDR),
                 .ROM_BYTE_SIZE(ROM_BYTE_SIZE),
-                .RAM_BYTE_SIZE(RAM_BYTE_SIZE)) ram(bus, memory);
+                .RAM_BYTE_SIZE(RAM_BYTE_SIZE)) ram(bus);
 
    CPU #(.ID(ID), .VARIANT("CV32E40X")) cpu(bus, io);
 
