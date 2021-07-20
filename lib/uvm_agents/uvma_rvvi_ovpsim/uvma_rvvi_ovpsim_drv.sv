@@ -132,25 +132,12 @@ task uvma_rvvi_ovpsim_drv_c::stepi(REQ req);
    // Check for read of volatile memory locations, backdoor init the RVVI memory when found to ensure
    // the ISS sees the same data as the DUT
    if (rvvi_ovpsim_seq_item.mem_rmask && cfg.is_mem_addr_volatile(rvvi_ovpsim_seq_item.mem_addr)) begin
-      string mem_hdl_path;
 
       `uvm_info("RVVIDRV", $sformatf("Setting volatile bus read data @ 0x%08x to 0x%08x", 
                                      rvvi_ovpsim_seq_item.mem_addr, 
                                      rvvi_ovpsim_seq_item.mem_rdata), UVM_HIGH);
 
-      // Construct an HDL path to the memory in the OVPSIM model and backdoor write to it
-      if (rvvi_ovpsim_cfg.ovpsim_mem_path == "") begin
-         `uvm_fatal("RVVIOVPDRV", 
-                    $sformatf("Volatile memory address of 0x%08x read, but no ovpsim_mem_path configured",
-                              rvvi_ovpsim_seq_item.mem_addr));
-      end
-
-      mem_hdl_path = { rvvi_ovpsim_cfg.ovpsim_mem_path, $sformatf("[%0d]", rvvi_ovpsim_seq_item.mem_addr >> 2) };
-
-      if (!uvm_hdl_deposit(mem_hdl_path, rvvi_ovpsim_seq_item.mem_rdata)) begin
-         `uvm_fatal("RVVIOVPDRV",
-                    $sformatf("Backdoor memory write to path failed: [%s]", mem_hdl_path));
-      end      
+      rvvi_ovpsim_cntxt.ovpsim_mem_vif.mem[rvvi_ovpsim_seq_item.mem_addr >> 2] = rvvi_ovpsim_seq_item.mem_rdata;
    end
 
    // Signal an interrupt to the ISS if mcause and rvfi_intr signals external interrupt  
