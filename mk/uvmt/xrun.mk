@@ -38,7 +38,7 @@ INDAGO            = $(CV_TOOL_PREFIX) indago
 IMC               = $(CV_SIM_PREFIX) imc
 
 # Paths
-XRUN_RESULTS         ?= $(if $(CV_RESULTS),$(CV_RESULTS)/xrun_results,$(MAKE_PATH)/xrun_results)
+XRUN_RESULTS         ?= $(if $(CV_RESULTS),$(abspath $(CV_RESULTS))/xrun_results,$(MAKE_PATH)/xrun_results)
 XRUN_COREVDV_RESULTS ?= $(XRUN_RESULTS)/corev-dv
 XRUN_DIR             ?= $(XRUN_RESULTS)/$(CFG)/xcelium.d
 XRUN_UVMHOME_ARG     ?= CDNS-1.2-ML
