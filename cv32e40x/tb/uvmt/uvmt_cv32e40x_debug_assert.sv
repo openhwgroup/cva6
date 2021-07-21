@@ -252,7 +252,7 @@ module uvmt_cv32e40x_debug_assert
     // Exception while single step -> PC is set to exception handler before
     // debug
     property p_single_step_exception;
-        !cov_assert_if.debug_mode_q && cov_assert_if.dcsr_q[2] && cov_assert_if.illegal_insn_q |-> ##[1:20] cov_assert_if.debug_mode_q && (cov_assert_if.depc_q == cov_assert_if.mtvec);
+        !cov_assert_if.debug_mode_q && cov_assert_if.dcsr_q[2] && illegal_insn_q |-> ##[1:20] cov_assert_if.debug_mode_q && (cov_assert_if.depc_q == cov_assert_if.mtvec);
     endproperty
 
     a_single_step_exception : assert property(p_single_step_exception)
@@ -292,9 +292,8 @@ module uvmt_cv32e40x_debug_assert
     // If pending debug req, illegal insn will not assert
     // until resume
     property p_mmode_dret;
-1; /* TODO:ropeders
-        !cov_assert_if.debug_mode_q && cov_assert_if.is_dret && !cov_assert_if.debug_req_i   |-> ##1 cov_assert_if.illegal_insn_q;
-*/
+        !cov_assert_if.debug_mode_q && cov_assert_if.is_dret && !cov_assert_if.debug_req_i
+        |-> ##1 illegal_insn_q;
     endproperty
 
     a_mmode_dret : assert property(p_mmode_dret)
@@ -380,8 +379,15 @@ module uvmt_cv32e40x_debug_assert
     // comes while flushing due to an illegal insn, causing
     // dpc to be set to the exception handler entry addr
     property p_illegal_insn_debug_req;
-        (cov_assert_if.ctrl_fsm_cs == cv32e40x_pkg::FUNCTIONAL) && cov_assert_if.illegal_insn_q & cov_assert_if.debug_req_i & !cov_assert_if.debug_mode_q|-> decode_valid [->1:2] ##0 cov_assert_if.debug_mode_q &&  cov_assert_if.depc_q == cov_assert_if.mtvec;
+        // TODO:ropeders (cov_assert_if.ctrl_fsm_cs == cv32e40x_pkg::FUNCTIONAL) && cov_assert_if.illegal_insn_q
+        (cov_assert_if.ctrl_fsm_cs == cv32e40x_pkg::FUNCTIONAL) && illegal_insn_q
+        && cov_assert_if.debug_req_i && !cov_assert_if.debug_mode_q
+        |-> decode_valid [->1:10] ##0 cov_assert_if.debug_mode_q && (cov_assert_if.depc_q == cov_assert_if.mtvec);
+        // TODO:ropeders |-> decode_valid [->1:2] ##0 cov_assert_if.debug_mode_q && (cov_assert_if.depc_q == cov_assert_if.mtvec);
     endproperty
+
+    logic illegal_insn_q;
+    always @(posedge cov_assert_if.clk_i) illegal_insn_q <= cov_assert_if.illegal_insn_i;
     
     a_illegal_insn_debug_req : assert property(p_illegal_insn_debug_req)
         else
