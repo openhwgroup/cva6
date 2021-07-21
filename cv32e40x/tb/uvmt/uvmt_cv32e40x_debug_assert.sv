@@ -74,8 +74,7 @@ module uvmt_cv32e40x_debug_assert
     && (cov_assert_if.id_stage_instr_rdata_i[6:0]   == 7'h33);
 
 
-  // TODO:ropeders uncomment and fix
-  //assign decode_valid =  cov_assert_if.id_stage_instr_valid_i & cov_assert_if.ctrl_fsm_cs == cv32e40x_pkg::DECODE;
+  assign decode_valid = cov_assert_if.id_stage_instr_valid_i && (cov_assert_if.ctrl_fsm_cs == cv32e40x_pkg::FUNCTIONAL);
     // ---------------------------------------
     // Assertions
     // ---------------------------------------
@@ -83,8 +82,9 @@ module uvmt_cv32e40x_debug_assert
     // check that we enter debug mode when expected. 
     // CSR checks are done in other assertions
     property p_enter_debug;
-        $changed(debug_cause_pri) && (debug_cause_pri != 3'b000) && !cov_assert_if.debug_mode_q
-        |-> decode_valid [->1:2] ##0 cov_assert_if.debug_mode_q;
+        $changed(debug_cause_pri) && (debug_cause_pri != 0) && !cov_assert_if.debug_mode_q
+        |-> decode_valid [->1:10] ##0 cov_assert_if.debug_mode_q;
+        // TODO:ropeders |-> decode_valid [->1:2] ##0 cov_assert_if.debug_mode_q;
     endproperty
     a_enter_debug: assert property(p_enter_debug)
         else
@@ -478,7 +478,7 @@ module uvmt_cv32e40x_debug_assert
         end else begin
             // Debug evaluated in decode state with valid instructions only
             if((cov_assert_if.ctrl_fsm_cs == cv32e40x_pkg::FUNCTIONAL) && !cov_assert_if.debug_mode_q) begin
-                if(cov_assert_if.is_decoding && cov_assert_if.id_stage_instr_valid_i) begin
+                if (1) begin // TODO:ropeders if (cov_assert_if.is_decoding && cov_assert_if.id_stage_instr_valid_i) begin
                     if(cov_assert_if.trigger_match_i)
                         debug_cause_pri <= 3'b010;
                     else if(cov_assert_if.dcsr_q[15] && (cov_assert_if.is_ebreak || cov_assert_if.is_cebreak))
@@ -491,10 +491,10 @@ module uvmt_cv32e40x_debug_assert
                         debug_cause_pri <= 3'b000;
                 end
             end else if(cov_assert_if.ctrl_fsm_cs == cv32e40x_pkg::DEBUG_TAKEN) begin
-                if(cov_assert_if.debug_req_i) begin
-                    debug_cause_pri <= 3'b011;
-                end else if(cov_assert_if.dcsr_q[15] && (cov_assert_if.is_ebreak || cov_assert_if.is_cebreak)) begin
+                if(cov_assert_if.dcsr_q[15] && (cov_assert_if.is_ebreak || cov_assert_if.is_cebreak)) begin
                     debug_cause_pri <= 3'b001;
+                end else if(cov_assert_if.debug_req_i) begin
+                    debug_cause_pri <= 3'b011;
                 end else if(cov_assert_if.dcsr_q[2]) begin
                     debug_cause_pri <= 3'b100;
                 end

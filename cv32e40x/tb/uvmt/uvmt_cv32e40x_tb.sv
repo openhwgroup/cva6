@@ -393,7 +393,7 @@ bind cv32e40x_wrapper
       .illegal_insn_i(dut_wrap.cv32e40x_wrapper_i.core_i.wb_stage_i.ex_wb_pipe_i.illegal_insn),
       //TODO:ropeders .illegal_insn_q(dut_wrap.cv32e40x_wrapper_i.core_i.controller_i.controller_fsm_i.illegal_insn_q),
       //TODO:ropeders .ecall_insn_i(dut_wrap.cv32e40x_wrapper_i.core_i.controller_i.controller_fsm_i.ecall_insn_i),
-      .debug_req_i(dut_wrap.cv32e40x_wrapper_i.core_i.controller_i.controller_fsm_i.debug_req_i),  // TODO:ropeders "pending_debug"?
+      .debug_req_i(dut_wrap.cv32e40x_wrapper_i.core_i.controller_i.controller_fsm_i.pending_debug),  // TODO:ropeders "debug_req_i"?
       .debug_mode_q(dut_wrap.cv32e40x_wrapper_i.core_i.controller_i.controller_fsm_i.debug_mode_q),
       .dcsr_q(dut_wrap.cv32e40x_wrapper_i.core_i.cs_registers_i.dcsr_q),
       .depc_q(dut_wrap.cv32e40x_wrapper_i.core_i.cs_registers_i.dpc_q),
@@ -405,7 +405,7 @@ bind cv32e40x_wrapper
       .mepc_q(dut_wrap.cv32e40x_wrapper_i.core_i.cs_registers_i.mepc_q),
       .tdata1(dut_wrap.cv32e40x_wrapper_i.core_i.cs_registers_i.tmatch_control_rdata),
       .tdata2(dut_wrap.cv32e40x_wrapper_i.core_i.cs_registers_i.tmatch_value_rdata),
-      //TODO:ropeders .trigger_match_i(dut_wrap.cv32e40x_wrapper_i.core_i.controller_i.controller_fsm_i.debug_trigger_match_i),
+      .trigger_match_i(dut_wrap.cv32e40x_wrapper_i.core_i.controller_i.controller_fsm_i.debug_trigger_match_id_i),  // TODO:ropeders
       .mcountinhibit_q(dut_wrap.cv32e40x_wrapper_i.core_i.cs_registers_i.mcountinhibit_q),
       .mcycle(dut_wrap.cv32e40x_wrapper_i.core_i.cs_registers_i.mhpmcounter_q[0]),
       .minstret(dut_wrap.cv32e40x_wrapper_i.core_i.cs_registers_i.mhpmcounter_q[2]),
