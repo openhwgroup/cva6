@@ -261,21 +261,26 @@ task uvme_cv32e40p_vp_vseq_c::do_mem_operation(ref uvma_obi_memory_mon_trn_c mon
    `uvm_create(slv_rsp)
    add_latencies(slv_rsp);
    
-   `uvm_info("VP_VSEQ", $sformatf("Performing operation:\n%s", mon_req.sprint()), UVM_HIGH)
+   `uvm_info("VP_VSEQ", $sformatf("Performing operation:\n%s", mon_req.sprint()),
+             //UVM_HIGH)
+             UVM_NONE)
    if (mon_req.access_type == UVMA_OBI_MEMORY_ACCESS_WRITE) begin
-      foreach (mon_req.be[ii]) begin
-         if (mon_req.be[ii] == 1) begin
-            cntxt.mem[mon_req.address+ii] = mon_req.data[ii*8+:8];
-         end
-      end
-      `uvm_info("VP_VSEQ", $sformatf("addr: %8h;  wdata: %8h", mon_req.address, {mon_req.data[3],mon_req.data[2],mon_req.data[1],mon_req.data[0]}), UVM_HIGH/*NONE*/)
+      if (mon_req.be[3]) cntxt.mem[mon_req.address+3] = slv_rsp.rdata[31:24];
+      if (mon_req.be[2]) cntxt.mem[mon_req.address+2] = slv_rsp.rdata[23:16];
+      if (mon_req.be[1]) cntxt.mem[mon_req.address+1] = slv_rsp.rdata[15:08];
+      if (mon_req.be[0]) cntxt.mem[mon_req.address+0] = slv_rsp.rdata[07:00];
+      `uvm_info("VP_VSEQ", $sformatf("addr: %8h; be: %1h; wdata: %8h", mon_req.address, mon_req.be, {mon_req.data[3],mon_req.data[2],mon_req.data[1],mon_req.data[0]}),
+      //          UVM_HIGH)
+                UVM_NONE)
    end
    else begin
-      slv_rsp.rdata[31:24] = cntxt.mem[mon_req.address+3];
-      slv_rsp.rdata[23:16] = cntxt.mem[mon_req.address+2];
-      slv_rsp.rdata[15:08] = cntxt.mem[mon_req.address+1];
-      slv_rsp.rdata[07:00] = cntxt.mem[mon_req.address+0];
-      `uvm_info("VP_VSEQ", $sformatf("addr: %8h;  rdata: %8h", mon_req.address, slv_rsp.rdata), UVM_HIGH/*NONE*/)
+      if (mon_req.be[3]) slv_rsp.rdata[31:24] = cntxt.mem[mon_req.address+3];
+      if (mon_req.be[2]) slv_rsp.rdata[23:16] = cntxt.mem[mon_req.address+2];
+      if (mon_req.be[1]) slv_rsp.rdata[15:08] = cntxt.mem[mon_req.address+1];
+      if (mon_req.be[0]) slv_rsp.rdata[07:00] = cntxt.mem[mon_req.address+0];
+      `uvm_info("VP_VSEQ", $sformatf("addr: %8h; be: %1h; rdata: %8h", mon_req.address, mon_req.be, slv_rsp.rdata),
+      //          UVM_HIGH)
+                UVM_NONE)
    end
    
    slv_rsp.set_sequencer(p_sequencer.obi_memory_data_sequencer);
