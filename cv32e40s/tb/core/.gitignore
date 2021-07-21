@@ -1,0 +1,16 @@
+csmith/platform.info
+csmith/test.c
+csmith/test.elf
+csmith/test_ref
+csmith/output_ref.txt
+csmith/output_sim.txt
+platform.info
+memory_dump.bin
+riscv-fesvr
+riscv-isa-sim
+modelsim.ini
+DVEfiles
+csrc
+inter.vpd
+ucli.key
+vc_hdrs.h

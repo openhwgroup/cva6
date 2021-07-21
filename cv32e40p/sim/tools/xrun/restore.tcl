@@ -5,7 +5,7 @@
 #
 # You can restore this configuration with:
 #
-#      xrun -l xrun-hello-world.log -64bit -R -input ../xrun/restore.tcl +UVM_VERBOSITY=UVM_LOW +=+USE_ISS -sv_lib /wrk/gtumbush/mcu/OpenHW/iss_integration_fork/cv32/sim/uvmt_cv32/../../../vendor_lib/imperas/riscv_CV32E40P_OVPsim/bin/Linux64/riscv_CV32E40P.dpi.so +elf_file=/wrk/gtumbush/mcu/OpenHW/iss_integration_fork/cv32/sim/uvmt_cv32/../../../cv32/tests/core/custom/illegal.elf +nm_file=/wrk/gtumbush/mcu/OpenHW/iss_integration_fork/cv32/sim/uvmt_cv32/../../../cv32/tests/core/custom/illegal.nm +UVM_TESTNAME=uvmt_cv32_firmware_test_c +firmware=/wrk/gtumbush/mcu/OpenHW/iss_integration_fork/cv32/sim/uvmt_cv32/../../../cv32/tests/core/custom/illegal.hex -input /wrk/gtumbush/mcu/OpenHW/iss_integration_fork/cv32/sim/xrun/restore.tcl
+#      xrun -l xrun-hello-world.log -64bit -R -input ../xrun/restore.tcl +UVM_VERBOSITY=UVM_LOW +=+USE_ISS -sv_lib /wrk/gtumbush/mcu/OpenHW/iss_integration_fork/cv32/sim/uvmt_cv32/../../../vendor_lib/imperas/riscv_CV32E40P_OVPsim/bin/Linux64/riscv_CV32.dpi.so +elf_file=/wrk/gtumbush/mcu/OpenHW/iss_integration_fork/cv32/sim/uvmt_cv32/../../../cv32/tests/core/custom/illegal.elf +nm_file=/wrk/gtumbush/mcu/OpenHW/iss_integration_fork/cv32/sim/uvmt_cv32/../../../cv32/tests/core/custom/illegal.nm +UVM_TESTNAME=uvmt_cv32_firmware_test_c +firmware=/wrk/gtumbush/mcu/OpenHW/iss_integration_fork/cv32/sim/uvmt_cv32/../../../cv32/tests/core/custom/illegal.hex -input /wrk/gtumbush/mcu/OpenHW/iss_integration_fork/cv32/sim/xrun/restore.tcl
 #
 
 set tcl_prompt1 {puts -nonewline "xcelium> "}

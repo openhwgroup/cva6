@@ -11,6 +11,7 @@ if { [find -scope uvmt_cv32e40p_tb.dut_wrap.cv32e40p_wrapper_i -instance tracer_
 # If the iss_wrap exists dump the string of the ISS disassembled instruction
 if { [find -scope uvmt_cv32e40p_tb -instance iss_wrap] != ""} {
     ida_probe -wave -wave_probe_args="uvmt_cv32e40p_tb.iss_wrap.cpu.state.decode -depth 1"    
+    ida_probe -wave -wave_probe_args="uvmt_cv32e40p_tb.iss_wrap.cpu.state.csr -depth 1"    
 }
 
 run
