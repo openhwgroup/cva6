@@ -436,6 +436,7 @@ endfunction : create_cntxt
 function void uvmt_cv32e40p_base_test_c::assign_cntxt();
    
    uvm_config_db#(uvme_cv32e40p_cntxt_c)::set(this, "env", "cntxt", env_cntxt);
+   env_cntxt.vp_status_vif = this.vp_status_vif;
    
 endfunction : assign_cntxt
 

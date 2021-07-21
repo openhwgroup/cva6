@@ -489,29 +489,24 @@ task uvme_cv32e40p_vp_vseq_c::vp_vp_status_flags(ref uvma_obi_memory_mon_trn_c m
    if (mon_req.access_type == UVMA_OBI_MEMORY_ACCESS_WRITE) begin
       `uvm_create  (slv_rsp)
       add_latencies(slv_rsp);
-      `uvm_info("VP_VSEQ", $sformatf("Call to virtual peripheral 'vp_status_flags':\n%s", mon_req.sprint()), /*UVM_DEBUG*/UVM_LOW)
+      `uvm_info("VP_VSEQ", $sformatf("Call to virtual peripheral 'vp_status_flags':\n%s", mon_req.sprint()), UVM_DEBUG)
       if (mon_req.address == 32'h2000_0000) begin
          if (mon_req.data == 'd123456789) begin
-            `uvm_info("VP_VSEQ", "virtual peripheral END OF SIM Call", /*UVM_DEBUG*/UVM_LOW)
-            //wait(cntxt.vp_status_vif.clk === 1);
+            `uvm_info("VP_VSEQ", "virtual peripheral: TEST PASSED", UVM_DEBUG)
             cntxt.vp_status_vif.tests_passed = 1;
-            //wait(cntxt.vp_status_vif.clk === 0);
-            //cntxt.vp_status_vif.tests_passed = 0;
+            cntxt.vp_status_vif.exit_valid   = 1;
+            cntxt.vp_status_vif.exit_value   = 0;
          end
          else if (mon_req.data == 'd1) begin
-            //wait(cntxt.vp_status_vif.clk === 1);
             cntxt.vp_status_vif.tests_failed = 1;
-            //wait(cntxt.vp_status_vif.clk === 0);
-            //cntxt.vp_status_vif.tests_failed = 0;
+            cntxt.vp_status_vif.exit_valid   = 1;
+            cntxt.vp_status_vif.exit_value   = 1;
          end
       end
       else if (mon_req.address == 32'h2000_0004) begin
-         //wait(cntxt.vp_status_vif.clk === 1);
+         `uvm_info("VP_VSEQ", "virtual peripheral: END OF SIM", UVM_DEBUG)
          cntxt.vp_status_vif.exit_valid = 1;
          cntxt.vp_status_vif.exit_value = mon_req.data;
-         //wait(cntxt.vp_status_vif.clk === 0);
-         //cntxt.vp_status_vif.exit_valid = 0;
-         //cntxt.vp_status_vif.exit_value = 0;
       end
       //slv_rsp.start(p_sequencer.obi_memory_data_sequencer);
       slv_rsp.set_sequencer(p_sequencer.obi_memory_data_sequencer);
