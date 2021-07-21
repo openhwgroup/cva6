@@ -190,6 +190,7 @@ task uvma_obi_memory_drv_c::run_phase(uvm_phase phase);
       begin : chan_a
          forever begin
             wait (cfg.enabled && cfg.is_active);
+            @(vif_slv_mp.drv_slv_cb);
             slv_drv_gnt();
          end
       end
@@ -310,24 +311,25 @@ task uvma_obi_memory_drv_c::slv_drv_gnt();
       
    case (cntxt.reset_state)
       UVMA_OBI_MEMORY_RESET_STATE_POST_RESET: begin
+         // TODO: randomly assert GNT 0 or more cycles before REQ
          if (vif_slv_mp.drv_slv_cb.req === 1'b1) begin
+            `uvm_info("OBI_MEMORY_DRV::slv_drv_gnt", "req is 1", UVM_HIGH)
             if (cfg.drv_slv_gnt) begin
                repeat (cfg.drv_slv_gnt_latency) begin
                   @(vif_slv_mp.drv_slv_cb);
                end
                vif_slv_mp.drv_slv_cb.gnt <= 1'b1;
+               `uvm_info("OBI_MEMORY_DRV::slv_drv_gnt", "gnt asserted", UVM_HIGH)
+               @(vif_slv_mp.drv_slv_cb);
+               vif_slv_mp.drv_slv_cb.gnt <= 1'b0;
+               `uvm_info("OBI_MEMORY_DRV::slv_drv_gnt", "gnt deasserted", UVM_HIGH)
             end
          end
          else begin
-            if (cfg.drv_slv_gnt) begin
-               //TODO: deassertion should be randomized
-               vif_slv_mp.drv_slv_cb.gnt <= 0;
-            end
+            `uvm_info("OBI_MEMORY_DRV::slv_drv_gnt", "req is 0", UVM_HIGH)
          end
-         @(vif_slv_mp.drv_slv_cb);
       end
       
-      default: @(vif_slv_mp.drv_slv_cb);
    endcase
    
 endtask : slv_drv_gnt
