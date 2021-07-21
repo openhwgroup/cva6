@@ -39,21 +39,25 @@
 /**
  * Module wrapper for CV32E40X RTL DUT.
  */
-module uvmt_cv32e40x_dut_wrap #(// DUT (riscv_core) parameters.                            
-                            parameter NUM_MHPMCOUNTERS    =  1,
-                            // Remaining parameters are used by TB components only
-                                      INSTR_ADDR_WIDTH    =  32,
-                                      INSTR_RDATA_WIDTH   =  32,
-                                      RAM_ADDR_WIDTH      =  20
-                           )
+module uvmt_cv32e40x_dut_wrap 
+  import cv32e40x_pkg::*;
 
-                           (
-                            uvma_clknrst_if              clknrst_if,
-                            uvma_interrupt_if            interrupt_if,
-                            uvmt_cv32e40x_vp_status_if       vp_status_if,
-                            uvmt_cv32e40x_core_cntrl_if      core_cntrl_if,
-                            uvmt_cv32e40x_core_status_if     core_status_if                            
-                           );
+  #(// DUT (riscv_core) parameters.                            
+    parameter NUM_MHPMCOUNTERS    =  1,
+    parameter int unsigned PMA_NUM_REGIONS =  0,
+    parameter pma_region_t PMA_CFG[(PMA_NUM_REGIONS ? (PMA_NUM_REGIONS-1) : 0):0] = '{default:PMA_R_DEFAULT},
+    // Remaining parameters are used by TB components only
+              INSTR_ADDR_WIDTH    =  32,
+              INSTR_RDATA_WIDTH   =  32,
+              RAM_ADDR_WIDTH      =  20
+   )
+  (
+  uvma_clknrst_if              clknrst_if,
+  uvma_interrupt_if            interrupt_if,
+  uvmt_cv32e40x_vp_status_if       vp_status_if,
+  uvme_cv32e40x_core_cntrl_if      core_cntrl_if,
+  uvmt_cv32e40x_core_status_if     core_status_if                            
+  );
 
     import uvm_pkg::*; // needed for the UVM messaging service (`uvm_info(), etc.)
 
@@ -119,12 +123,12 @@ module uvmt_cv32e40x_dut_wrap #(// DUT (riscv_core) parameters.
           fill_cnt = 0;
           for (int index=0; index < 2**RAM_ADDR_WIDTH; index++) begin
              if (uvmt_cv32e40x_tb.dut_wrap.ram_i.dp_ram_i.mem[index] === 8'hXX) begin
-                 fill_cnt++;
+                fill_cnt++;
                 rnd_byte = $random();
                 uvmt_cv32e40x_tb.dut_wrap.ram_i.dp_ram_i.mem[index]=rnd_byte;
                 if ($test$plusargs("USE_ISS")) begin
-                  uvmt_cv32e40x_tb.iss_wrap.ram.mem[index/4][((((index%4)+1)*8)-1)-:8]=rnd_byte; // convert byte to 32-bit addressing
-                end                
+                  uvmt_cv32e40x_tb.iss_wrap.ram.memory.mem[index/4][((((index%4)+1)*8)-1)-:8]=rnd_byte; // convert byte to 32-bit addressing
+                end
              end
           end
           if ($test$plusargs("USE_ISS")) begin
@@ -154,9 +158,26 @@ module uvmt_cv32e40x_dut_wrap #(// DUT (riscv_core) parameters.
     assign irq = irq_uvma | irq_vp;
 
     // --------------------------------------------
+    // Connect to core_cntrl_if
+    assign core_cntrl_if.num_mhpmcounters = NUM_MHPMCOUNTERS;
+    initial begin
+      core_cntrl_if.pma_cfg = new[PMA_NUM_REGIONS];
+      foreach (core_cntrl_if.pma_cfg[i]) begin
+        core_cntrl_if.pma_cfg[i].word_addr_low  = PMA_CFG[i].word_addr_low;
+        core_cntrl_if.pma_cfg[i].word_addr_high = PMA_CFG[i].word_addr_high;
+        core_cntrl_if.pma_cfg[i].main           = PMA_CFG[i].main;
+        core_cntrl_if.pma_cfg[i].bufferable     = PMA_CFG[i].bufferable;
+        core_cntrl_if.pma_cfg[i].cacheable      = PMA_CFG[i].cacheable;
+        core_cntrl_if.pma_cfg[i].atomic         = PMA_CFG[i].atomic;
+      end
+    end
+
+    // --------------------------------------------
     // instantiate the core
-    cv32e40x_wrapper #(                 
-                      .NUM_MHPMCOUNTERS (NUM_MHPMCOUNTERS)
+    cv32e40x_wrapper #(
+                      .NUM_MHPMCOUNTERS (NUM_MHPMCOUNTERS),
+                      .PMA_NUM_REGIONS  (PMA_NUM_REGIONS),
+                      .PMA_CFG          (PMA_CFG)
                       )
     cv32e40x_wrapper_i
         (
@@ -168,6 +189,7 @@ module uvmt_cv32e40x_dut_wrap #(// DUT (riscv_core) parameters.
          .boot_addr_i            ( core_cntrl_if.boot_addr        ),
          .mtvec_addr_i           ( core_cntrl_if.mtvec_addr       ),
          .dm_halt_addr_i         ( core_cntrl_if.dm_halt_addr     ),
+         .nmi_addr_i             ( core_cntrl_if.nmi_addr         ),
          .hart_id_i              ( core_cntrl_if.hart_id          ),
          .dm_exception_addr_i    ( core_cntrl_if.dm_exception_addr),
 

@@ -66,9 +66,12 @@ package uvma_clknrst_pkg;
    
    // Sequences
    `include "uvma_clknrst_base_seq.sv"
+   `include "uvma_clknrst_stop_clk_seq.sv"
+   `include "uvma_clknrst_restart_clk_seq.sv"
    `include "uvma_clknrst_seq_lib.sv"
    
 endpackage : uvma_clknrst_pkg
 
 
 `endif // __UVMA_CLKNRST_PKG_SV__
+

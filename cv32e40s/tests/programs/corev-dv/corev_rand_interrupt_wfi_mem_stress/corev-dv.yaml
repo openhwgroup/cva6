@@ -1,0 +1,18 @@
+name: corev_rand_interrupt_wfi_mem_stress
+uvm_test: $(CV_CORE_LC)_instr_base_test
+description: >
+    RISCV-DV generated random interrupt tests with WFI with memory stress test to cover load/store combinations
+plusargs: >
+    +instr_cnt=30000
+    +num_of_sub_program=2
+    +directed_instr_0=corev_compressed_load_store_wfi_stress_instr_stream,20
+    +directed_instr_1=corev_interrupt_csr_wfi_instr_stream,2
+    +directed_instr_2=corev_jalr_wfi_instr,1
+    +no_fence=0
+    +disable_compressed_instr=0
+    +randomize_csr=1
+    +boot_mode=m
+    +no_csr_instr=0
+    +enable_interrupt=1
+    +enable_fast_interrupt_handler=1
+    +no_wfi=0

@@ -1,0 +1,4 @@
+name: pma_0reg
+uvm_test: uvmt_$(CV_CORE_LC)_firmware_test_c
+description: >
+    Directed test for the PMA when zero regions are defined.

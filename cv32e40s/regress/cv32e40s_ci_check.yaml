@@ -1,0 +1,86 @@
+# YAML file to specify the ci_check regression testlist.
+name: cv32e40s_ci_check
+description: Commit sanity for the cv32e40s
+
+builds:
+  corev-dv:
+    cmd: make comp_corev-dv
+    dir: cv32e40s/sim/uvmt
+    
+  uvmt_cv32e40s:
+    cmd: make comp
+    dir: cv32e40s/sim/uvmt
+
+tests:
+  hello-world:
+    build: uvmt_cv32e40s
+    description: UVM Hello World Test
+    dir: cv32e40s/sim/uvmt
+    cmd: make test COREV=YES TEST=hello-world
+    makearg: USER_RUN_FLAGS=+rand_stall_obi_disable
+
+  interrupt_test:
+    build: uvmt_cv32e40s
+    description: Interrupt directed test  
+    dir: cv32e40s/sim/uvmt
+    cmd: make test COREV=YES TEST=interrupt_test
+    makearg: USER_RUN_FLAGS=+rand_stall_obi_disable
+
+  corev_rand_interrupt:
+    build: uvmt_cv32e40s
+    description: Interrupt random test
+    dir: cv32e40s/sim/uvmt
+    cmd: make gen_corev-dv test COREV=YES TEST=corev_rand_interrupt
+    num: 2
+    makearg: USER_RUN_FLAGS=+rand_stall_obi_disable
+
+  illegal:
+    build: uvmt_cv32e40s
+    dir: cv32e40s/sim/uvmt
+    cmd: make test COREV=YES TEST=illegal
+    makearg: USER_RUN_FLAGS=+rand_stall_obi_disable
+
+  debug_test:
+    build: uvmt_cv32e40s
+    dir: cv32e40s/sim/uvmt
+    cmd: make test COREV=YES TEST=debug_test
+    makearg: USER_RUN_FLAGS=+rand_stall_obi_disable
+
+  csr_instructions:
+    build: uvmt_cv32e40s
+    description: CSR Instruction Test
+    dir: cv32e40s/sim/uvmt
+    cmd: make test COREV=YES TEST=csr_instructions
+    makearg: USER_RUN_FLAGS=+rand_stall_obi_disable
+
+  riscv_arithmetic_basic_test_0:
+    build: uvmt_cv32e40s
+    description: Static riscv-dv arithmetic test 0
+    dir: cv32e40s/sim/uvmt
+    cmd: make test COREV=YES TEST=riscv_arithmetic_basic_test_0
+    makearg: USER_RUN_FLAGS=+rand_stall_obi_disable
+
+  corev_rand_arithmetic_base_test:
+    build: uvmt_cv32e40s
+    description: Generated corev-dv random arithmetic test
+    dir: cv32e40s/sim/uvmt
+    cmd: make gen_corev-dv test COREV=YES TEST=corev_rand_arithmetic_base_test
+    num: 2
+    makearg: USER_RUN_FLAGS=+rand_stall_obi_disable
+
+  corev_rand_instr_test:
+    build: uvmt_cv32e40s  
+    description: Generated corev-dv random instruction test
+    dir: cv32e40s/sim/uvmt
+    cmd: make gen_corev-dv test COREV=YES TEST=corev_rand_instr_test
+    num: 2
+    makearg: USER_RUN_FLAGS=+rand_stall_obi_disable
+
+  corev_rand_jump_stress_test:
+    build: uvmt_cv32e40s  
+    description: Generated corev-dv jump stress test
+    dir: cv32e40s/sim/uvmt
+    cmd: make gen_corev-dv test COREV=YES TEST=corev_rand_jump_stress_test
+    num: 2
+    makearg: USER_RUN_FLAGS=+rand_stall_obi_disable
+
