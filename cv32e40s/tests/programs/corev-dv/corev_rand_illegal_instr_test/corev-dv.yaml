@@ -1,0 +1,17 @@
+name: corev_rand_illegal_instr_test
+uvm_test: $(CV_CORE_LC)_instr_base_test
+description: >
+    RISCV-DV generated random instruction test with illegal instructions
+plusargs: >
+    +instr_cnt=30000
+    +num_of_sub_program=5
+    +directed_instr_0=riscv_load_store_rand_instr_stream,4
+    +directed_instr_1=riscv_loop_instr,4
+    +directed_instr_2=riscv_hazard_instr_stream,4
+    +directed_instr_3=riscv_load_store_hazard_instr_stream,4
+    +directed_instr_4=riscv_multi_page_load_store_instr_stream,4
+    +directed_instr_5=riscv_mem_region_stress_test,4
+    +directed_instr_6=riscv_jal_instr,4
+    +illegal_instr_ratio=10
+    +hint_instr_ratio=5
+

@@ -38,9 +38,10 @@ package uvmt_cv32e40x_pkg;
    import uvme_cv32e40x_pkg::*;
    import uvml_hrtbt_pkg::*;
    import uvml_logs_pkg::*;
-   //import uvma_debug_pkg::*;
+   import uvma_rvvi_ovpsim_pkg::*;
    
-   // Constants / Structs / Enums
+   
+   // Constants / Parameters / Structs / Enums
    `include "uvmt_cv32e40x_constants.sv"
    `include "uvmt_cv32e40x_tdefs.sv"
    
