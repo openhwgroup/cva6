@@ -45,8 +45,7 @@ module uvmt_cv32e40s_iss_wrap
                 .ROM_BYTE_SIZE(ROM_BYTE_SIZE),
                 .RAM_BYTE_SIZE(RAM_BYTE_SIZE)) ram(bus);
 
-   // FIXME:strichmo:This should be switched to CV32E40X when Imperas releases the model update
-   CPU #(.ID(ID), .VARIANT("CV32E40X")) cpu(bus, io);
+   CPU #(.ID(ID), .VARIANT("CV32E40S")) cpu(bus, io);
 
    bit use_iss = 0;
    
