@@ -201,21 +201,15 @@ task uvme_cv32e40p_vp_vseq_c::do_response(ref uvma_obi_memory_mon_trn_c mon_req)
    uvma_obi_memory_slv_seq_item_c  slv_rsp;
    
    bit  vp_handled = 1;
-   bit  error;
+   bit  err_req, err_siz;
    
-   // "remap debug code to end of memory"
-   // from mm_ram.sv
-   /*
-   if ( (data_addr_i >= dm_halt_addr_i) &&
-        (data_addr_i < (dm_halt_addr_i + (2 ** DBG_ADDR_WIDTH)) )
-      )
-      // remap debug code to end of memory
-      data_addr_dec  = (data_addr_i[RAM_ADDR_WIDTH-1:0] - dm_halt_addr_i[RAM_ADDR_WIDTH-1:0]) + 2**RAM_ADDR_WIDTH - 2**DBG_ADDR_WIDTH;
-   */
-   // @MIKE: We need to translate /\ /\ into code that applies here \/ \/
-   if ((mon_req.address >= 2**20) && (mon_req.address < (2**22 + (2**14)))) begin
-      mon_req.address  = (mon_req.address[21:0] - 2**20) + 2**22 - 2**14;
-   end
+   // TODO: remap debug code to end of memory from mm_ram.sv
+   //if ( (data_addr_i >= dm_halt_addr_i) &&
+   //     (data_addr_i < (dm_halt_addr_i + (2 ** DBG_ADDR_WIDTH)) )
+   //   )
+   //   // remap debug code to end of memory
+   //   data_addr_dec  = (data_addr_i[RAM_ADDR_WIDTH-1:0] - dm_halt_addr_i[RAM_ADDR_WIDTH-1:0]) + 2**RAM_ADDR_WIDTH - 2**DBG_ADDR_WIDTH;
+   `uvm_info("VP_VSEQ", $sformatf("mon_req.address before data_addr_dec remap: x%h", mon_req.address), UVM_HIGH/*NONE*/)
    
    
    case(mon_req.address[31:0])
@@ -236,30 +230,25 @@ task uvme_cv32e40p_vp_vseq_c::do_response(ref uvma_obi_memory_mon_trn_c mon_req)
    
    if (!vp_handled) begin
       `uvm_info("VP_VSEQ", $sformatf("VP not handled: x%h", mon_req.address), UVM_HIGH)
-      if (0/*mon_req.address[31:0] >= 2**20*/) begin
-         `uvm_info("VP_VSEQ", $sformatf("address >= 2^20: x%h", mon_req.address), UVM_LOW)
-         vp_address_range_check(mon_req);
+      err_req  = mon_req.err;
+      if (err_req) `uvm_info("VP_VSEQ", $sformatf("ERROR1: mon_req.err=%0b", mon_req.err), UVM_HIGH/*NONE*/)
+      err_siz = (mon_req.address > (2**`UVME_CV32E40P_MEM_SIZE));
+      if (err_siz) `uvm_info("VP_VSEQ", $sformatf("ERROR2: mon_req.address=%0h", mon_req.address), UVM_HIGH/*NONE*/)
+
+      if (!(err_req | err_siz)) begin
+         do_mem_operation(mon_req);
       end
       else begin
-         error  = mon_req.err;
-         error |= (mon_req.address > (2**`UVME_CV32E40P_MEM_SIZE));
-
-         if (!error) begin
-            do_mem_operation(mon_req);
+         `uvm_create(slv_rsp)
+         add_latencies(slv_rsp);
+         slv_rsp.err = 1'b1;
+         `uvm_info("VP_VSEQ", $sformatf("Error!\n%s", mon_req.sprint()), UVM_LOW)
+         if (mon_req.access_type == UVMA_OBI_MEMORY_ACCESS_READ) begin
+            // TODO: need to figured out what a proper error response is
+            slv_rsp.rdata = 32'hdead_beef;
          end
-         else begin
-            `uvm_create(slv_rsp)
-            add_latencies(slv_rsp);
-            slv_rsp.err = error;
-            `uvm_info("VP_VSEQ", $sformatf("Error!\n%s", mon_req.sprint()), UVM_LOW)
-            if (mon_req.access_type == UVMA_OBI_MEMORY_ACCESS_READ) begin
-               // TODO: need to figured out what a proper error response is
-               slv_rsp.rdata = 32'hdead_beef;
-            end
-            slv_rsp.set_sequencer(p_sequencer.obi_memory_data_sequencer);
-            `uvm_send(slv_rsp)
-         end
-
+         slv_rsp.set_sequencer(p_sequencer.obi_memory_data_sequencer);
+         `uvm_send(slv_rsp)
       end
    end
    
@@ -279,14 +268,14 @@ task uvme_cv32e40p_vp_vseq_c::do_mem_operation(ref uvma_obi_memory_mon_trn_c mon
             cntxt.mem[mon_req.address+ii] = mon_req.data[ii*8+:8];
          end
       end
-      `uvm_info("VP_VSEQ", $sformatf("addr: %8h;  wdata: %8h", mon_req.address, {mon_req.data[3],mon_req.data[2],mon_req.data[1],mon_req.data[0]}), UVM_NONE)
+      `uvm_info("VP_VSEQ", $sformatf("addr: %8h;  wdata: %8h", mon_req.address, {mon_req.data[3],mon_req.data[2],mon_req.data[1],mon_req.data[0]}), UVM_HIGH/*NONE*/)
    end
    else begin
       slv_rsp.rdata[31:24] = cntxt.mem[mon_req.address+3];
       slv_rsp.rdata[23:16] = cntxt.mem[mon_req.address+2];
       slv_rsp.rdata[15:08] = cntxt.mem[mon_req.address+1];
       slv_rsp.rdata[07:00] = cntxt.mem[mon_req.address+0];
-      `uvm_info("VP_VSEQ", $sformatf("addr: %8h;  rdata: %8h", mon_req.address, slv_rsp.rdata), UVM_NONE)
+      `uvm_info("VP_VSEQ", $sformatf("addr: %8h;  rdata: %8h", mon_req.address, slv_rsp.rdata), UVM_HIGH/*NONE*/)
    end
    
    slv_rsp.set_sequencer(p_sequencer.obi_memory_data_sequencer);
@@ -307,7 +296,7 @@ task uvme_cv32e40p_vp_vseq_c::vp_address_range_check(ref uvma_obi_memory_mon_trn
       slv_rsp.set_sequencer(p_sequencer.obi_memory_data_sequencer);
       `uvm_send(slv_rsp)
       //`uvm_fatal("VP_VSEQ", $sformatf("Ending simulation due to:\n%s", mon_req.sprint()))
-      `uvm_info("VP_VSEQ", $sformatf("mon_req:\n%s", mon_req.sprint()), UVM_NONE)
+      `uvm_info("VP_VSEQ", $sformatf("mon_req:\n%s", mon_req.sprint()), UVM_HIGH/*NONE*/)
    end
    else begin
       do_mem_operation(mon_req);
@@ -323,7 +312,7 @@ task uvme_cv32e40p_vp_vseq_c::vp_virtual_printer(ref uvma_obi_memory_mon_trn_c m
    if (mon_req.access_type == UVMA_OBI_MEMORY_ACCESS_WRITE) begin
       `uvm_create  (slv_rsp)
       add_latencies(slv_rsp);
-      `uvm_info("VP_VSEQ", $sformatf("Call to virtual peripheral 'virtual_printer':\n%s", mon_req.sprint()), UVM_LOW)
+      `uvm_info("VP_VSEQ", $sformatf("Call to virtual peripheral 'virtual_printer':\n%s", mon_req.sprint()), UVM_DEBUG/*UVM_LOW*/)
       $write("%c", mon_req.data[7:0]);
       //slv_rsp.start(p_sequencer.obi_memory_data_sequencer);
       slv_rsp.set_sequencer(p_sequencer.obi_memory_data_sequencer);
@@ -495,10 +484,10 @@ task uvme_cv32e40p_vp_vseq_c::vp_vp_status_flags(ref uvma_obi_memory_mon_trn_c m
    if (mon_req.access_type == UVMA_OBI_MEMORY_ACCESS_WRITE) begin
       `uvm_create  (slv_rsp)
       add_latencies(slv_rsp);
-      `uvm_info("VP_VSEQ", $sformatf("Call to virtual peripheral 'vp_status_flags':\n%s", mon_req.sprint()), UVM_LOW)
+      `uvm_info("VP_VSEQ", $sformatf("Call to virtual peripheral 'vp_status_flags':\n%s", mon_req.sprint()), /*UVM_DEBUG*/UVM_LOW)
       if (mon_req.address == 32'h2000_0000) begin
          if (mon_req.data == 'd123456789) begin
-            `uvm_info("VP_VSEQ", $sformatf("END OF SIM Call to virtual peripheral 'vp_status_flags':\n%s", mon_req.sprint()), UVM_LOW)
+            `uvm_info("VP_VSEQ", "virtual peripheral END OF SIM Call", /*UVM_DEBUG*/UVM_LOW)
             //wait(cntxt.vp_status_vif.clk === 1);
             cntxt.vp_status_vif.tests_passed = 1;
             //wait(cntxt.vp_status_vif.clk === 0);
@@ -560,12 +549,12 @@ task uvme_cv32e40p_vp_vseq_c::vp_sig_writer(ref uvma_obi_memory_mon_trn_c mon_re
       end
       else if (mon_req.address == 32'h2000_0010) begin
          for (int unsigned ii=signature_start_address; ii<signature_end_address; ii++) begin
-            `uvm_info("VP_VSEQ", "Dumping signature", UVM_NONE)
+            `uvm_info("VP_VSEQ", "Dumping signature", UVM_HIGH/*NONE*/)
             if (use_sig_file) begin
                $fdisplay(sig_fd, "%x%x%x%x", cntxt.mem[ii+3], cntxt.mem[ii+2], cntxt.mem[ii+1], cntxt.mem[ii+0]);
             end
             else begin
-               `uvm_info("VP_VSEQ", $sformatf("%x%x%x%x", cntxt.mem[ii+3], cntxt.mem[ii+2], cntxt.mem[ii+1], cntxt.mem[ii+0]), UVM_NONE)
+               `uvm_info("VP_VSEQ", $sformatf("%x%x%x%x", cntxt.mem[ii+3], cntxt.mem[ii+2], cntxt.mem[ii+1], cntxt.mem[ii+0]), UVM_HIGH/*NONE*/)
             end
          end
       end

@@ -126,7 +126,7 @@ task uvme_cv32e40p_instr_vseq_c::body();
             slv_rsp.rdata[23:16] = cntxt.mem[mon_trn.address+2];
             slv_rsp.rdata[15:08] = cntxt.mem[mon_trn.address+1];
             slv_rsp.rdata[07:00] = cntxt.mem[mon_trn.address+0];
-            `uvm_info("INSTR VSEQ", $sformatf("addr: %8h;  rdata: %8h", mon_trn.address, slv_rsp.rdata), UVM_NONE)
+            `uvm_info("INSTR VSEQ", $sformatf("addr: %8h;  rdata: %8h", mon_trn.address, slv_rsp.rdata), UVM_HIGH/*NONE*/)
          end
       end
       else begin
