@@ -372,7 +372,7 @@ endif
 	@echo ""
 	$(RISCV_EXE_PREFIX)readelf -a $< > $*.readelf
 	@echo ""
-	$(RISCV_EXE_PREFIX)objdump -D -S $*.elf > $*.objdump
+	$(RISCV_EXE_PREFIX)objdump -d -S $*.elf > $*.objdump
 
 bsp:
 	@echo "$(BANNER)"
@@ -634,6 +634,10 @@ include $(CORE_V_VERIF)/mk/uvmt/dvt.mk
 else
 ifeq ($(MAKECMDGOALS), create_dvt_build_file)
 include $(CORE_V_VERIF)/mk/uvmt/dvt.mk
+else
+ifeq ($(MAKECMDGOALS), dvt_dump_env_vars)
+include $(CORE_V_VERIF)/mk/uvmt/dvt.mk
+endif
 endif
 endif
 
