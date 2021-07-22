@@ -6281,6 +6281,18 @@ test_done:
     sw a1,0(a0)
     sw a1,0(a0)
 
+###############################################################
+# DAVID: this is the extra store (write) and load (read)
+extra_store_load:
+    li  x18, 0x12345678
+    li  x17, 0x000ffffc
+    sw  x18, 0(x17)
+
+    li  x15, 0x000ffffc
+    lw  x16, 0(x15)
+    bne x16, x18, csr_fail
+###############################################################
+
 csr_pass:
     li x18, 123456789
     li x17, 0x20000000
