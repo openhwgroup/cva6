@@ -156,6 +156,10 @@ module host_domain
    
    logic                                 ndmreset_n;
    logic [32*4-1:0]                      s_udma_events;
+
+   logic                                 phy_clk;
+   logic                                 phy_clk_90;
+   
  
    typedef logic [RegAw-1:0]   reg_addr_t;
    typedef logic [RegDw-1:0]   reg_data_t;
@@ -340,7 +344,16 @@ module host_domain
      .axi_resp_i(axi_hyper_rsp),
      .slave(hyper_axi_bus)
    );
-  
+
+   clk_gen_hyper i_clk_gen_hyper (
+          .clk_i,
+          .rst_ni   ( ndmreset_n ),
+          .clk0_o   ( phy_clk    ),
+          .clk90_o  ( phy_clk_90 ),
+          .clk180_o (            ),
+          .clk270_o (            )
+          );
+   
     hyperbus #(
          .NumChips       ( 2                           ),
          .AxiAddrWidth   ( AXI_ADDRESS_WIDTH           ),
@@ -359,7 +372,8 @@ module host_domain
          .RstChipBase    ( ariane_soc::HYAXIBase       ),  // Base address for all chips
          .RstChipSpace   ( ariane_soc::HYAXILength     )   // 8 MB
      ) axi_hyperbus (
-         .clk_phy_i              ( clk_i                 ),
+         .clk_phy_i              ( phy_clk               ),
+         .clk_phy_i_90           ( phy_clk_90            ),
          .rst_phy_ni             ( ndmreset_n            ),
          .clk_sys_i              ( clk_i                 ),
          .rst_sys_ni             ( ndmreset_n            ),

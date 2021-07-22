@@ -1,6 +1,6 @@
 #Create constraint for the clock input of the zcu102 board
 create_clock -period 8.000 -name ref_clk [get_ports ref_clk_p]
-set_property CLOCK_DEDICATED_ROUTE ANY_CMT_COLUMN [get_nets ref_clk]
+set_property CLOCK_DEDICATED_ROUTE ANY_CMT_COLUMN [get_nets i_sysclk_iobuf/O]
 
 #alsaqr clock
 create_clock -period 100.000 -name alsaqr_clk [get_pins i_clk_manager/clk_out1]
@@ -16,7 +16,7 @@ set_input_delay -clock tck -clock_fall 5.000 [get_ports pad_jtag_tdi]
 set_input_delay -clock tck -clock_fall 5.000 [get_ports pad_jtag_tms]
 set_output_delay -clock tck 5.000 [get_ports pad_jtag_tdo]
 
-set_max_delay -to   [get_ports pad_jtag_tdo] 20.000
+set_max_delay -to [get_ports pad_jtag_tdo] 20.000
 set_max_delay -from [get_ports pad_jtag_tms] 20.000
 set_max_delay -from [get_ports pad_jtag_tdi] 20.000
 
@@ -40,7 +40,7 @@ set_false_path -from [get_ports pad_reset]
 
 # Create clocks (10 MHz)
 #create_clock -period 100.000 -name pulp_soc_clk [get_pins i_pulp/soc_domain_i/pulp_soc_i/i_clk_rst_gen/i_fpga_clk_gen/soc_clk_o]
-#create_clock -period 100.000 -name pulp_cluster_clk [get_pins i_pulp/soc_domain_i/pulp_soc_i/i_clk_rst_gen/i_fpga_clk_gen/cluster_clk_o] 
+#create_clock -period 100.000 -name pulp_cluster_clk [get_pins i_pulp/soc_domain_i/pulp_soc_i/i_clk_rst_gen/i_fpga_clk_gen/cluster_clk_o]
 #create_clock -period 100.000 -name pulp_periph_clk [get_pins i_pulp/soc_domain_i/pulp_soc_i/i_clk_rst_gen/i_fpga_clk_gen/per_clk_o]
 
 # Create asynchronous clock group between slow-clk and SoC clock. Those clocks
@@ -49,69 +49,45 @@ set_false_path -from [get_ports pad_reset]
 
 
 #Hyper bus
-set tck_phy 100.000
-set tck_sys 100.00
-set jitter_phy 5.000
-set jitter_sys 5.000
 
 # Create RWDS clock
 create_clock -period 100.000 -name rwds_clk [get_ports FMC_hyper_rwds0]
 set_property CLOCK_DEDICATED_ROUTE FALSE [get_nets i_alsaqr/i_pad_frame/padinst_axi_hyper_rwds0/iobuf_i/O]
 
 # Create the PHY clock
-#create_generated_clock -name clk_phy  -source  [get_pins i_clk_manager/clk_out1] [get_pins i_alsaqr/i_host_domain/axi_hyperbus/clk_phy_i]
-#set_clock_uncertainty [expr {${jitter_phy}*${tck_phy}}] clk_phy
-#
-## Create the system clock
-#create_generated_clock -name clk_sys -source  [get_pins i_clk_manager/clk_out1]  [get_pins i_alsaqr/i_host_domain/axi_hyperbus/clk_sys_i]
-#set_clock_uncertainty [expr {${jitter_sys}*${tck_sys}}] clk_sys
-
-# Create generated clock for for outgoing RWDS after delay
-set clk_tx_shift [expr 0.25*${tck_phy}]
-create_generated_clock  -name clk_tx -edges {1 2 3} -edge_shift "$clk_tx_shift $clk_tx_shift $clk_tx_shift" \
-    -source alsaqr_clk \
-    i_alsaqr/i_host_domain/axi_hyperbus/i_phy/i_trx/i_delay_tx_clk_90/i_delay/clk_o
-
-# Create generated clock for incoming RWDS after delay
-set clk_rx_shift [expr 0.25*${tck_phy}]
-create_generated_clock  -name clk_rx -edges {1 2 3} -edge_shift "$clk_rx_shift $clk_rx_shift $clk_rx_shift" \
-    -source alsaqr_clk \
-    i_alsaqr/i_host_domain/axi_hyperbus/i_phy/i_trx/i_delay_rx_rwds_90/i_delay/clk_o
+create_generated_clock -name clk_phy -source [get_pins  i_clk_manager/clk_out1] -divide_by 2 [get_pins i_alsaqr/i_host_domain/i_clk_gen_hyper/clk0_o]
+create_generated_clock -name clk_phy_90 -source [get_pins  i_clk_manager/clk_out1] -edges {2 4 6} [get_pins i_alsaqr/i_host_domain/i_clk_gen_hyper/clk90_o]
 
 # Inform tool that system and PHY-derived clocks are asynchronous, but may have timed arcs between them
-set_clock_groups -asynchronous -allow_paths -group {alsaqr_clk} -group { clk_tx rwds_clk clk_rx}
+set_clock_groups -asynchronous -group [get_clocks -of_objects [get_pins  i_clk_manager/clk_out1]] -group [get_clocks -of_objects [get_pins i_alsaqr/i_host_domain/i_clk_gen_hyper/clk90_o]] -group [get_clocks -of_objects [get_pins i_alsaqr/i_host_domain/i_clk_gen_hyper/clk0_o]]
 
-# Input Delay Constraint
- set input_clock         clk_tx;           # Name of input clock
- set skew_bre            0.6;             # Data invalid before the rising clock edge
- set skew_are            0.6;             # Data invalid after the rising clock edge
- set skew_bfe            0.6;             # Data invalid before the falling clock edge
- set skew_afe            0.6;             # Data invalid after the falling clock edge
- set input_ports         {{FMC_hyper_dqio*} FMC_hyper_rwds0};   # List of input ports
- set phy_period          200
 
- set_input_delay -clock $input_clock -max [expr $phy_period/2 + $skew_afe] [get_ports $input_ports];
- set_input_delay -clock $input_clock -min [expr $phy_period/2 - $skew_bfe] [get_ports $input_ports] -add_delay;
- set_input_delay -clock $input_clock -max [expr $phy_period/2 + $skew_are] [get_ports $input_ports] -clock_fall -add_delay;
- set_input_delay -clock $input_clock -min [expr $phy_period/2 - $skew_bre] [get_ports $input_ports] -clock_fall -add_delay;
+set_false_path -from [get_clocks clk_phy_90] -to [get_clocks clk_phy]
+set_false_path -from [get_clocks clk_phy_90] -to [get_clocks rwds_clk]
 
-# Input Delay Constraint
- set input_clock         rwds_clk;      # Name of input clock
- set skew_bre            0.45+1;             # Data invalid before the rising clock edge
- set skew_are            0.45+1;             # Data invalid after the rising clock edge
- set skew_bfe            0.45+1;             # Data invalid before the falling clock edge
- set skew_afe            0.45+1;             # Data invalid after the falling clock edge
- set input_ports         {FMC_hyper_dqio*};   # List of input ports
- 
-# Constrain i_cdc_fifo_gray CDC FIFOs (clocks already async above)
-set async_pins [get_pins -hierarchical -filter async]
-set_ungroup [get_designs cdc_fifo_gray*] false
-set_boundary_optimization [get_designs cdc_fifo_gray*] false
-set_max_delay [expr min(${tck_sys}, ${tck_phy})] -through ${async_pins} -through ${async_pins}
-set_false_path -hold -through ${async_pins} -through ${async_pins}
-
-# Constrain config register false paths to PHY
+## Constrain config register false paths to PHY
 set cfg_from  [get_pins i_alsaqr/i_host_domain/axi_hyperbus/i_cfg_regs/cfg_o*]
 set cfg_to    [get_pins i_alsaqr/i_host_domain/axi_hyperbus/i_phy/cfg_i*]
-set_max_delay [expr min(${tck_sys}, ${tck_phy})] -through ${cfg_from} -through ${cfg_to}
+set_max_delay 25.000 -through ${cfg_from} -through ${cfg_to}
 set_false_path -hold -through ${cfg_from} -through ${cfg_to}
+
+set des i_alsaqr/i_host_domain/axi_hyperbus/i_cdc_2phase_trans
+set async_ports [get_pins $des/*/async_*]
+set_max_delay 25.000 -through ${async_ports} -through ${async_ports}
+set_false_path -hold -through ${async_ports} -through ${async_ports}
+
+set des i_alsaqr/i_host_domain/axi_hyperbus/i_cdc_2phase_trans
+set async_ports [get_pins $des/*/async_*]
+set_max_delay 25.000 -through ${async_ports} -through ${async_ports}
+set_false_path -hold -through ${async_ports} -through ${async_ports}
+
+set des i_alsaqr/i_host_domain/axi_hyperbus/i_cdc_fifo_tx
+set async_ports [get_pins $des/*/async_*]
+set_max_delay 25.000 -through ${async_ports} -through ${async_ports}
+set_false_path -hold -through ${async_ports} -through ${async_ports}
+
+set des i_alsaqr/i_host_domain/axi_hyperbus/i_cdc_fifo_rx
+set async_ports [get_pins $des/*/async_*]
+set_max_delay 25.000 -through ${async_ports} -through ${async_ports}
+set_false_path -hold -through ${async_ports} -through ${async_ports}
+ 
