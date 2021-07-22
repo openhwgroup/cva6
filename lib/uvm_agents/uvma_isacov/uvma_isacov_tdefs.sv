@@ -332,6 +332,9 @@ bit rs1_is_signed[instr_name_t] = '{
   ADDI   : 1,
   SLTI   : 1,
   SRA    : 1,
+  ADD    : 1,
+  SUB    : 1,
+  SLT    : 1,
   default: 0
 };
 
@@ -339,6 +342,9 @@ bit rs2_is_signed[instr_name_t] = '{
   MULH   : 1,  
   DIV    : 1,
   REM    : 1,
+  ADD    : 1,
+  SUB    : 1,
+  SLT    : 1,
   default: 0
 };
 
@@ -367,6 +373,9 @@ bit rd_is_signed[instr_name_t] = '{
   REM    : 1,
   LH     : 1,
   LB     : 1,
+  ADD    : 1,
+  SRA    : 1,
+  SUB    : 1,
   default: 0
 };
 
@@ -422,14 +431,27 @@ function instr_type_t get_instr_type(instr_name_t name);
 endfunction : get_instr_type
 
 // Package level methods to map instruction to type
-function instr_group_t get_instr_group(instr_name_t name);
-  if (name inside {LB,LH,LW,LBU,LHU,C_LW,C_LWSP})
+function instr_group_t get_instr_group(instr_name_t name, bit[31:0] mem_addr);
+
+  if (name inside {LB,LH,LW,LBU,LHU,C_LW,C_LWSP}) begin
+    if (name inside {LH, LHU} && mem_addr[0])
+      return MISALIGN_LOAD_GROUP;
+
+    if (name inside {LW, C_LW, C_LWSP} && mem_addr[1:0])
+      return MISALIGN_LOAD_GROUP;
+
     return LOAD_GROUP;
+  end
 
-  if (name inside {SB,SH,SW,C_SW,C_SWSP})
+  if (name inside {SB,SH,SW,C_SW,C_SWSP}) begin
+    if (name inside {SH} && mem_addr[0])
+      return MISALIGN_STORE_GROUP;
+
+    if (name inside {SW, C_SW, C_SWSP} && mem_addr[1:0])
+      return MISALIGN_STORE_GROUP;
+
     return STORE_GROUP;
-
-  // FIXME: Need to implement unaligned access
+  end 
 
   if (name inside {SLL,SLLI,SRL,SRLI,SRA,SRAI,
                    ADD,ADDI,SUB,LUI,AUIPC,

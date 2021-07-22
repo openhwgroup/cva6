@@ -25,6 +25,9 @@ class uvma_isacov_instr_c extends uvm_object;
 
   instr_csr_t   csr;
 
+  bit[31:0] pc;
+  bit[31:0] mem_addr;
+  
   bit [4:0] rs1;
   bit [4:0] rs2;
   bit [4:0] rd;
@@ -130,42 +133,43 @@ endfunction : new
 function string uvma_isacov_instr_c::convert2string();
   // Printing for a few special-formatting cases
   if (name inside {LW, LH, LB, LHU, LBU}) begin
-    return $sformatf("%s x%0d, %0d(x%0d)", name.name(), rd, $signed(immi), rs1);
+    return $sformatf("0x%08x %s x%0d, %0d(x%0d)", pc, name.name(), rd, $signed(immi), rs1);
   end
   if (name inside {SLLI, SRLI, SRAI}) begin
-    return $sformatf("%s x%0d, x%0d, 0x%0x", name.name(), rd, rs1, rs2);
+    return $sformatf("0x%08x %s x%0d, x%0d, 0x%0x", pc, name.name(), rd, rs1, rs2);
   end
   if (name == FENCE_I) begin
-    return $sformatf("fence.i");
+    return $sformatf("0x%08x fence.i", pc);
   end
 
   // Printing based on instruction format type
   if (itype == R_TYPE) begin
-    return $sformatf("%s x%0d, x%0d, x%0d", name.name(), rd, rs1, rs2);
+    return $sformatf("0x%08x %s x%0d, x%0d, x%0d", pc, name.name(), rd, rs1, rs2);
   end
   if (itype == I_TYPE) begin
-    return $sformatf("%s x%0d, x%0d, %0d", name.name(), rd, rs1, $signed(immi));
+    return $sformatf("0x%08x %s x%0d, x%0d, %0d", pc, name.name(), rd, rs1, $signed(immi));
   end
   if (itype == S_TYPE) begin
-    return $sformatf("%s x%0d, %0d(x%0d)", name.name(), rs2, $signed(imms), rs1);
+    return $sformatf("0x%08x %s x%0d, %0d(x%0d)", pc, name.name(), rs2, $signed(imms), rs1);
   end
   if (itype == B_TYPE) begin
-    return $sformatf("%s x%0d, x%0d, %0d", name.name(), rs1, rs2, $signed({immb, 1'b0}));
+    return $sformatf("0x%08x %s x%0d, x%0d, %0d", pc, name.name(), rs1, rs2, $signed({immb, 1'b0}));
   end
   if (itype == U_TYPE) begin
-    return $sformatf("%s x%0d, 0x%0x", name.name(), rd, {immu, 12'd0});
+    return $sformatf("0x%08x %s x%0d, 0x%0x", pc, name.name(), rd, {immu, 12'd0});
   end
   if (itype == J_TYPE) begin
-    return $sformatf("%s x%0d, %0d", name.name(), rd, $signed(immj));
+    return $sformatf("0x%08x %s x%0d, %0d", pc, name.name(), rd, $signed(immj));
   end
   if (itype == CSR_TYPE) begin
     // TODO should print CSR name like assembly code does?
     //return $sformatf("%s x%0d, x%0d, %0d", name.name(), rd, rs1, immi);
-    return $sformatf("%s x%0d, x%0d, 0x%0x", name.name(), rd, rs1, immi);
+    return $sformatf("0x%08x %s x%0d, x%0d, 0x%0x", pc, name.name(), rd, rs1, immi);
   end
 
   // Default printing of just the instruction name
-  return name.name();
+  return $sformatf("0x%08x %s", pc, name.name());
+
 endfunction : convert2string
 
 function void uvma_isacov_instr_c::set_valid_flags();
