@@ -36,7 +36,7 @@ _start:
 .section .text
 _start_main:
 
-  #define EXP_MISA 0x40001104
+  #define EXP_MISA 0x40101104
 
 # CSR 0x340 is a 32-bit R/W scratch-pad
   # Immediates

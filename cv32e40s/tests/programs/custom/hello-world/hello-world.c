@@ -27,7 +27,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-#define EXP_MISA 0x40001104
+#define EXP_MISA 0x40101104
 
 int main(int argc, char *argv[])
 {
