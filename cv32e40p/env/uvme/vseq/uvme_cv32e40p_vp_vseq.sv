@@ -204,11 +204,11 @@ task uvme_cv32e40p_vp_vseq_c::do_response(ref uvma_obi_memory_mon_trn_c mon_req)
    bit  err_req, err_siz;
    
    // TODO: remap debug code to end of memory from mm_ram.sv
-   //if ( (data_addr_i >= dm_halt_addr_i) &&
-   //     (data_addr_i < (dm_halt_addr_i + (2 ** DBG_ADDR_WIDTH)) )
+   //if ( (mon_req.address >= dm_halt_addr_i) &&
+   //     (mon_req.address < (dm_halt_addr_i + (2 ** `UVME_CV32E40P_MEM_SIZE)) )
    //   )
    //   // remap debug code to end of memory
-   //   data_addr_dec  = (data_addr_i[RAM_ADDR_WIDTH-1:0] - dm_halt_addr_i[RAM_ADDR_WIDTH-1:0]) + 2**RAM_ADDR_WIDTH - 2**DBG_ADDR_WIDTH;
+   //   mon_req.address  = (mon_req.address[RAM_ADDR_WIDTH-1:0] - mon_req.address[RAM_ADDR_WIDTH-1:0]) + 2**`UVME_CV32E40P_MEM_SIZE - 2**DBG_ADDR_WIDTH;
    `uvm_info("VP_VSEQ", $sformatf("mon_req.address before data_addr_dec remap: x%h", mon_req.address), UVM_HIGH/*NONE*/)
    
    
@@ -270,7 +270,8 @@ task uvme_cv32e40p_vp_vseq_c::do_mem_operation(ref uvma_obi_memory_mon_trn_c mon
       if (mon_req.be[1]) cntxt.mem[mon_req.address+1] = mon_req.data[15:08];
       if (mon_req.be[0]) cntxt.mem[mon_req.address+0] = mon_req.data[07:00];
       `uvm_info("VP_VSEQ", $sformatf("expected addr: %8h; be: %1h; wdata: %8h", mon_req.address, mon_req.be, {mon_req.data[3],mon_req.data[2],mon_req.data[1],mon_req.data[0]}),
-                UVM_NONE)
+                UVM_HIGH)
+      //        UVM_NONE)
       `uvm_info("VP_VSEQ", $sformatf("actual addr: %8h; be: %1h; wdata: %8h", mon_req.address, mon_req.be, {cntxt.mem[mon_req.address+3],cntxt.mem[mon_req.address+2],cntxt.mem[mon_req.address+1],cntxt.mem[mon_req.address+0]}),
       //          UVM_HIGH)
                 UVM_NONE)
