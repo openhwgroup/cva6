@@ -75,6 +75,7 @@ module uvmt_cv32e40x_debug_assert
 
 
   assign decode_valid = cov_assert_if.id_stage_instr_valid_i && (cov_assert_if.ctrl_fsm_cs == cv32e40x_pkg::FUNCTIONAL);
+
     // ---------------------------------------
     // Assertions
     // ---------------------------------------
@@ -375,23 +376,35 @@ module uvmt_cv32e40x_debug_assert
         else
             `uvm_error(info_tag, "Debug mode not entered correctly at reset!");
 
+
     // Check that we cover the case where a debug_req_i
     // comes while flushing due to an illegal insn, causing
     // dpc to be set to the exception handler entry addr
-    property p_illegal_insn_debug_req;
-        // TODO:ropeders (cov_assert_if.ctrl_fsm_cs == cv32e40x_pkg::FUNCTIONAL) && cov_assert_if.illegal_insn_q
-        (cov_assert_if.ctrl_fsm_cs == cv32e40x_pkg::FUNCTIONAL) && illegal_insn_q
-        && cov_assert_if.debug_req_i && !cov_assert_if.debug_mode_q
-        |-> decode_valid [->1:10] ##0 cov_assert_if.debug_mode_q && (cov_assert_if.depc_q == cov_assert_if.mtvec);
-        // TODO:ropeders |-> decode_valid [->1:2] ##0 cov_assert_if.debug_mode_q && (cov_assert_if.depc_q == cov_assert_if.mtvec);
-    endproperty
+
+    sequence s_illegal_insn_debug_req_ante;  // Antecedent
+        wb_execs_illegal && !cov_assert_if.debug_mode_q
+        ##1 cov_assert_if.debug_req_i && !cov_assert_if.debug_mode_q;
+    endsequence
+
+    sequence s_illegal_insn_debug_req_conse;  // Consequent
+        decode_valid [->1:2]
+        ##0 cov_assert_if.debug_mode_q && (cov_assert_if.depc_q == cov_assert_if.mtvec);
+    endsequence
+
+    logic wb_execs_illegal;
+    assign wb_execs_illegal = cov_assert_if.wb_illegal && cov_assert_if.wb_valid;
 
     logic illegal_insn_q;
     always @(posedge cov_assert_if.clk_i) illegal_insn_q <= cov_assert_if.illegal_insn_i;
+
+    // Need to confirm that the assertion can be reached for non-trivial cases
+    cov_illegal_insn_debug_req_nonzero : cover property(
+        s_illegal_insn_debug_req_ante |-> s_illegal_insn_debug_req_conse ##0 (cov_assert_if.depc_q != 0));
     
-    a_illegal_insn_debug_req : assert property(p_illegal_insn_debug_req)
-        else
-            `uvm_error(info_tag, "Debug mode not entered correctly while handling illegal instruction!");
+    a_illegal_insn_debug_req : assert property(s_illegal_insn_debug_req_ante |-> s_illegal_insn_debug_req_conse)
+        else `uvm_error(info_tag, "Debug mode not entered correctly while handling illegal instruction!");
+
+
     // -------------------------------------------
     // Capture internal states for use in checking
     // -------------------------------------------

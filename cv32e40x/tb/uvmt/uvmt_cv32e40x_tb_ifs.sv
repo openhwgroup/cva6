@@ -136,6 +136,9 @@ interface uvmt_cv32e40x_debug_cov_assert_if
     input         wb_stage_instr_valid_i,
     input  [31:0] wb_stage_instr_rdata_i,
     input  [31:0] wb_stage_pc, // Program counter in writeback
+    input         wb_illegal,
+    input         wb_valid,
+    input         wb_halt,
     input         is_decoding,
     input         id_valid,
     input wire ctrl_state_e  ctrl_fsm_cs,            // Controller FSM states with debug_req
