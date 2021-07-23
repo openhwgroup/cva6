@@ -3,7 +3,7 @@ create_clock -period 8.000 -name ref_clk [get_ports ref_clk_p]
 set_property CLOCK_DEDICATED_ROUTE ANY_CMT_COLUMN [get_nets i_sysclk_iobuf/O]
 
 #alsaqr clock
-create_clock -period 100.000 -name alsaqr_clk [get_pins i_clk_manager/clk_out1]
+create_clock -period 100.000  [get_pins i_clk_manager/clk_out1]
 
 ## JTAG
 create_clock -period 100.000 -name tck -waveform {0.000 50.000} [get_ports pad_jtag_tck]

@@ -345,7 +345,11 @@ module host_domain
      .slave(hyper_axi_bus)
    );
 
-   clk_gen_hyper i_clk_gen_hyper (
+`ifdef FPGA_EMUL
+(* DONT_TOUCH = "TRUE" *)   clk_gen_hyper i_clk_gen_hyper (
+`else
+          clk_gen_hyper i_clk_gen_hyper (                                                           
+`endif
           .clk_i,
           .rst_ni   ( ndmreset_n ),
           .clk0_o   ( phy_clk    ),
