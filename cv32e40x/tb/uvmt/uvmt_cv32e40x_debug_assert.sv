@@ -76,6 +76,7 @@ module uvmt_cv32e40x_debug_assert
 
   assign decode_valid = cov_assert_if.id_stage_instr_valid_i && (cov_assert_if.ctrl_fsm_cs == cv32e40x_pkg::FUNCTIONAL);
 
+
     // ---------------------------------------
     // Assertions
     // ---------------------------------------
@@ -84,7 +85,7 @@ module uvmt_cv32e40x_debug_assert
     // CSR checks are done in other assertions
     property p_enter_debug;
         $changed(debug_cause_pri) && (debug_cause_pri != 0) && !cov_assert_if.debug_mode_q
-        |-> decode_valid [->1:10] ##0 cov_assert_if.debug_mode_q;
+        |-> decode_valid [->1:20] ##0 cov_assert_if.debug_mode_q;
         // TODO:ropeders |-> decode_valid [->1:2] ##0 cov_assert_if.debug_mode_q;
     endproperty
     a_enter_debug: assert property(p_enter_debug)
@@ -498,7 +499,7 @@ module uvmt_cv32e40x_debug_assert
             // Debug evaluated in decode state with valid instructions only
             if((cov_assert_if.ctrl_fsm_cs == cv32e40x_pkg::FUNCTIONAL) && !cov_assert_if.debug_mode_q) begin
                 if (1) begin // TODO:ropeders if (cov_assert_if.is_decoding && cov_assert_if.id_stage_instr_valid_i) begin
-                    if(cov_assert_if.trigger_match_i)
+                    if (cov_assert_if.trigger_match_i)
                         debug_cause_pri <= 3'b010;
                     else if(cov_assert_if.dcsr_q[15] && (cov_assert_if.is_ebreak || cov_assert_if.is_cebreak))
                         debug_cause_pri <= 3'b001;
