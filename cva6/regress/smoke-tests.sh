@@ -23,11 +23,11 @@ if ! [ -n "$DV_SIMULATORS" ]; then
   DV_SIMULATORS=veri-uvm,spike
 fi
 
-cd cva6/sim/riscv-dv
-python3 run.py --testlist=../../tests/testlist_riscv-tests-rv64gc-v.yaml --test rv64ui-v-add --target rv64gc --iss=$DV_SIMULATORS $DV_OPTS
-python3 run.py --testlist=../../tests/testlist_riscv-tests-rv64gc-p.yaml --test rv64ui-p-add --target rv64gc --iss=$DV_SIMULATORS $DV_OPTS
-python3 run.py --testlist=../../tests/testlist_riscv-compliance-rv64gc.yaml --test rv32i-I-ADD-01 --target rv64gc --iss=$DV_SIMULATORS $DV_OPTS
-make -C ../../../core-v-cores/cva6 clean
-python3 run.py --testlist=../../tests/testlist_riscv-compliance-rv32ima.yaml --test rv32i-I-ADD-01 --target rv32imac --iss=$DV_SIMULATORS $DV_OPTS
-python3 run.py --testlist=../../tests/testlist_riscv-tests-rv32ima-p.yaml --test rv32ui-p-add --target rv32imac --iss=$DV_SIMULATORS $DV_OPTS
-cd ../../..
+cd cva6/sim/
+python3 cva6.py --testlist=../tests/testlist_riscv-tests-rv64gc-v.yaml --test rv64ui-v-add --iss_yaml cva6.yaml --target rv64gc --iss=$DV_SIMULATORS $DV_OPTS
+python3 cva6.py --testlist=../tests/testlist_riscv-tests-rv64gc-p.yaml --test rv64ui-p-add --iss_yaml cva6.yaml --target rv64gc --iss=$DV_SIMULATORS $DV_OPTS
+python3 cva6.py --testlist=../tests/testlist_riscv-compliance-rv64gc.yaml --test rv32i-I-ADD-01 --iss_yaml cva6.yaml --target rv64gc --iss=$DV_SIMULATORS $DV_OPTS
+make -C ../../core-v-cores/cva6 clean
+python3 cva6.py --testlist=../tests/testlist_riscv-compliance-rv32ima.yaml --test rv32i-I-ADD-01 --iss_yaml cva6.yaml --target rv32imac --iss=$DV_SIMULATORS $DV_OPTS
+python3 cva6.py --testlist=../tests/testlist_riscv-tests-rv32ima-p.yaml --test rv32ui-p-add --iss_yaml cva6.yaml --target rv32imac --iss=$DV_SIMULATORS $DV_OPTS
+cd -
