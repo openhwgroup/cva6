@@ -28,6 +28,9 @@ class uvme_cv32e40x_cntxt_c extends uvm_object;
    // Virtual interface for Debug coverage
    // FIXME:strichmo:The debug coverage interface needs to be reimplemented for new controller
    virtual uvmt_cv32e40x_debug_cov_assert_if debug_cov_vif;
+   virtual uvmt_cv32e40x_vp_status_if        vp_status_vif; ///< Virtual interface for Virtual Peripherals
+   virtual uvma_interrupt_if                 intr_vif     ; ///< Virtual interface for interrupts 
+   virtual uvma_debug_if                     debug_vif    ; ///< Virtual interface for debug 
 
    // Agent context handles
    uvma_cv32e40x_core_cntrl_cntxt_c  core_cntrl_cntxt;
@@ -36,23 +39,31 @@ class uvme_cv32e40x_cntxt_c extends uvm_object;
    uvma_debug_cntxt_c                debug_cntxt;
    uvma_obi_cntxt_c                  obi_instr_cntxt;
    uvma_obi_cntxt_c                  obi_data_cntxt;
+   uvma_obi_memory_cntxt_c           obi_memory_instr_cntxt;
+   uvma_obi_memory_cntxt_c           obi_memory_data_cntxt;
    uvma_rvfi_cntxt_c#(ILEN,XLEN)     rvfi_cntxt;
    uvma_rvvi_cntxt_c#(ILEN,XLEN)     rvvi_cntxt;
   
+   // Memory modelling
+   mem_arr  mem;
+   bit      instr_mem_delay_enabled = 0;
+
    // Events
    uvm_event  sample_cfg_e;
    uvm_event  sample_cntxt_e;
    
    
    `uvm_object_utils_begin(uvme_cv32e40x_cntxt_c)
-      `uvm_field_object(core_cntrl_cntxt,  UVM_DEFAULT)
-      `uvm_field_object(clknrst_cntxt,     UVM_DEFAULT)
-      `uvm_field_object(interrupt_cntxt,   UVM_DEFAULT)
-      `uvm_field_object(debug_cntxt  ,     UVM_DEFAULT)
-      `uvm_field_object(obi_instr_cntxt,   UVM_DEFAULT)
-      `uvm_field_object(obi_data_cntxt,    UVM_DEFAULT)
-      `uvm_field_object(rvfi_cntxt,        UVM_DEFAULT)
-      `uvm_field_object(rvvi_cntxt,        UVM_DEFAULT)
+      `uvm_field_object(core_cntrl_cntxt,       UVM_DEFAULT)
+      `uvm_field_object(clknrst_cntxt,          UVM_DEFAULT)
+      `uvm_field_object(interrupt_cntxt,        UVM_DEFAULT)
+      `uvm_field_object(debug_cntxt  ,          UVM_DEFAULT)
+      `uvm_field_object(obi_instr_cntxt,        UVM_DEFAULT)
+      `uvm_field_object(obi_data_cntxt,         UVM_DEFAULT)
+      `uvm_field_object(obi_memory_instr_cntxt, UVM_DEFAULT)
+      `uvm_field_object(obi_memory_data_cntxt , UVM_DEFAULT)
+      `uvm_field_object(rvfi_cntxt,             UVM_DEFAULT)
+      `uvm_field_object(rvvi_cntxt,             UVM_DEFAULT)
             
       `uvm_field_event(sample_cfg_e  , UVM_DEFAULT)
       `uvm_field_event(sample_cntxt_e, UVM_DEFAULT)
@@ -77,6 +88,8 @@ function uvme_cv32e40x_cntxt_c::new(string name="uvme_cv32e40x_cntxt");
    debug_cntxt      = uvma_debug_cntxt_c::type_id::create("debug_cntxt");
    obi_instr_cntxt  = uvma_obi_cntxt_c::type_id::create("obi_instr_cntxt");
    obi_data_cntxt   = uvma_obi_cntxt_c::type_id::create("obi_data_cntxt");
+   obi_memory_instr_cntxt = uvma_obi_memory_cntxt_c::type_id::create("obi_memory_instr_cntxt");
+   obi_memory_data_cntxt  = uvma_obi_memory_cntxt_c::type_id::create("obi_memory_data_cntxt" );
    rvfi_cntxt       = uvma_rvfi_cntxt_c#(ILEN,XLEN)::type_id::create("rvfi_cntxt");
    rvvi_cntxt       = uvma_rvvi_ovpsim_cntxt_c#(ILEN,XLEN)::type_id::create("rvvi_cntxt");
 
