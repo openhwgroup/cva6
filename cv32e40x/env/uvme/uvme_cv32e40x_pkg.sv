@@ -44,10 +44,14 @@ package uvme_cv32e40x_pkg;
    import uvma_interrupt_pkg::*;
    import uvma_debug_pkg::*;
    import uvma_obi_pkg::*;
+   import uvma_obi_memory_pkg::*;
    import uvma_rvfi_pkg::*;
    import uvma_rvvi_pkg::*; 
    import uvma_rvvi_ovpsim_pkg::*; 
    
+   // Forward decls
+   typedef class uvme_cv32e40x_vsqr_c;
+
    // Constants / Structs / Enums
    `include "uvme_cv32e40x_constants.sv"
    `include "uvme_cv32e40x_tdefs.sv"
@@ -61,7 +65,18 @@ package uvme_cv32e40x_pkg;
 
    // Predictor
    `include "uvme_cv32e40x_prd.sv"
-   
+
+   // Virtual sequences
+   `include "uvme_cv32e40x_base_vseq.sv"
+   `include "uvme_cv32e40x_reset_vseq.sv"
+   `include "uvme_cv32e40x_instr_vseq.sv"
+   `include "uvme_cv32e40x_vp_vseq.sv"
+   `include "uvme_cv32e40x_interrupt_noise_vseq.sv"
+   `include "uvme_cv32e40x_vseq_lib.sv"
+   `include "uvme_cv32e40x_random_debug_vseq.sv" 
+   `include "uvme_cv32e40x_random_debug_reset_vseq.sv" 
+   `include "uvme_cv32e40x_random_debug_bootset_vseq.sv" 
+
    // Environment components
    `include "uvme_interrupt_covg.sv"
    `include "uvme_debug_covg.sv"   
@@ -71,18 +86,10 @@ package uvme_cv32e40x_pkg;
    `include "uvme_cv32e40x_vsqr.sv"
    `include "uvme_cv32e40x_env.sv"
    
-   // Virtual sequences
-   `include "uvme_cv32e40x_base_vseq.sv"
-   `include "uvme_cv32e40x_reset_vseq.sv"
-   `include "uvme_cv32e40x_interrupt_noise_vseq.sv"
-   `include "uvme_cv32e40x_vseq_lib.sv"
-   `include "uvme_cv32e40x_random_debug_vseq.sv" 
-   `include "uvme_cv32e40x_random_debug_reset_vseq.sv" 
-   `include "uvme_cv32e40x_random_debug_bootset_vseq.sv" 
-
 endpackage : uvme_cv32e40x_pkg
 
 // Interfaces
 `include "uvme_cv32e40x_core_cntrl_if.sv"
 
 `endif // __UVME_CV32E40X_PKG_SV__
+

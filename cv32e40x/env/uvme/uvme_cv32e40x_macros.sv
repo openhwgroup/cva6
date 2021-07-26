@@ -20,6 +20,6 @@
 
 `define per_instance_fcov `ifndef DSIM option.per_instance = 1; `endif
 
-
+`define UVME_CV32E40X_MEM_SIZE 22
 
 `endif // __UVME_CV32E40X_MACROS_SV__

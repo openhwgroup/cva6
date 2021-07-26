@@ -61,7 +61,15 @@ module uvmt_cv32e40x_tb;
    uvma_clknrst_if              clknrst_if(); // clock and resets from the clknrst agent
    uvma_clknrst_if              clknrst_if_iss();
    uvma_debug_if                debug_if();
-   uvma_interrupt_if            interrupt_if(); // Interrupts
+   uvma_interrupt_if            interrupt_if();
+   uvma_obi_memory_if           obi_instr_if_i(
+     .clk(clknrst_if.clk),
+     .reset_n(clknrst_if.reset_n)
+   );
+   uvma_obi_memory_if           obi_data_if_i(
+     .clk(clknrst_if.clk),
+     .reset_n(clknrst_if.reset_n)
+   );
 
    // DUT Wrapper Interfaces
    uvmt_cv32e40x_vp_status_if       vp_status_if(.tests_passed(),
@@ -549,8 +557,13 @@ bind cv32e40x_wrapper
      uvm_config_db#(virtual uvma_interrupt_if           )::set(.cntxt(null), .inst_name("*.env.interrupt_agent"), .field_name("vif"),      .value(interrupt_if));
      uvm_config_db#(virtual uvma_obi_if                 )::set(.cntxt(null), .inst_name("*.env.obi_instr_agent"), .field_name("vif"),      .value(dut_wrap.cv32e40x_wrapper_i.obi_instr_if_i));
      uvm_config_db#(virtual uvma_obi_if                 )::set(.cntxt(null), .inst_name("*.env.obi_data_agent"),  .field_name("vif"),      .value(dut_wrap.cv32e40x_wrapper_i.obi_data_if_i));
+     uvm_config_db#(virtual uvma_obi_memory_if          )::set(.cntxt(null), .inst_name("*.env.obi_memory_instr_agent"), .field_name("vif"), .value(obi_instr_if_i) );
+     uvm_config_db#(virtual uvma_obi_memory_if          )::set(.cntxt(null), .inst_name("*.env.obi_memory_data_agent"),  .field_name("vif"), .value(obi_data_if_i) );
      uvm_config_db#(virtual uvma_rvfi_instr_if          )::set(.cntxt(null), .inst_name("*.env.rvfi_agent"), .field_name("instr_vif0"),.value(dut_wrap.cv32e40x_wrapper_i.rvfi_instr_if_0_i));
-
+     uvm_config_db#(virtual uvmt_cv32e40x_vp_status_if  )::set(.cntxt(null), .inst_name("*"),                .field_name("vp_status_vif"),    .value(vp_status_if) );
+     uvm_config_db#(virtual uvma_interrupt_if           )::set(.cntxt(null), .inst_name("*.env"),            .field_name("intr_vif"),         .value(interrupt_if) );
+     uvm_config_db#(virtual uvma_debug_if               )::set(.cntxt(null), .inst_name("*.env"),            .field_name("debug_vif"),        .value(debug_if)     );
+//     uvm_config_db#(virtual uvmt_cv32e40x_debug_cov_assert_if)::set(.cntxt(null), .inst_name("*.env"),       .field_name("debug_cov_vif"),    .value(debug_cov_assert_if));
      `RVFI_CSR_UVM_CONFIG_DB_SET(marchid)
      `RVFI_CSR_UVM_CONFIG_DB_SET(mcountinhibit)
      `RVFI_CSR_UVM_CONFIG_DB_SET(mstatus)
@@ -580,7 +593,7 @@ bind cv32e40x_wrapper
      `RVFI_CSR_UVM_CONFIG_DB_SET(tdata1)
      `RVFI_CSR_UVM_CONFIG_DB_SET(tdata2)
      `RVFI_CSR_UVM_CONFIG_DB_SET(tdata3)
-     `RVFI_CSR_UVM_CONFIG_DB_SET(tinfo)     
+     `RVFI_CSR_UVM_CONFIG_DB_SET(tinfo)
 
      `RVFI_CSR_UVM_CONFIG_DB_SET(mhpmevent3)
      `RVFI_CSR_UVM_CONFIG_DB_SET(mhpmevent4)
