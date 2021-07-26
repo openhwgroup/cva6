@@ -15,20 +15,21 @@ export SHELL = /bin/bash
 
 CV_CORE_REPO   ?= https://github.com/openhwgroup/cv32e40p
 CV_CORE_BRANCH ?= master
-CV_CORE_HASH   ?= a8a3847
+CV_CORE_HASH   ?= 523b80f
 CV_CORE_TAG    ?= none
-# The CV_CORE_HASH above points to an equivalent RTL with respect to v1.0.0 RTL freeze version
-# There are some implementation and testbench updates in the above hash
+# The CV_CORE_HASH above points to version of the RTL that is newer, but
+# ilogically equivalent RTL with respect to v1.0.0 RTL freeze version.
+# There are some implementation and testbench updates in the above hash.
 # Set CV_CORE_TAG as below to point to the exact cv32e40p repo as that used at RTL freeze
 #CV_CORE_TAG    ?= cv32e40p_v1.0.0
 
 RISCVDV_REPO    ?= https://github.com/google/riscv-dv
 RISCVDV_BRANCH  ?= master
-RISCVDV_HASH		?= 0b625258549e733082c12e5dc749f05aefb07d5a
+RISCVDV_HASH    ?= 0b625258549e733082c12e5dc749f05aefb07d5a
 
 EMBENCH_REPO    ?= https://github.com/embench/embench-iot.git
 EMBENCH_BRANCH  ?= master
-EMBENCH_HASH		?= 6934ddd1ff445245ee032d4258fdeb9828b72af4
+EMBENCH_HASH    ?= 6934ddd1ff445245ee032d4258fdeb9828b72af4
 
 COMPLIANCE_REPO   ?= https://github.com/riscv/riscv-compliance
 COMPLIANCE_BRANCH ?= master

@@ -79,11 +79,6 @@ class uvmt_cv32e40x_firmware_test_c extends uvmt_cv32e40x_base_test_c;
     */
    extern virtual task irq_noise();
 
-   /**
-    *  Randomly assert/deassert fetch_enable_i
-    */
-   extern virtual task random_fetch_toggle();
-
 endclass : uvmt_cv32e40x_firmware_test_c
 
 
@@ -103,30 +98,7 @@ endtask : reset_phase
 
 task uvmt_cv32e40x_firmware_test_c::configure_phase(uvm_phase phase);
    
-   //string firmware;
-   //int    fd;
-   
    super.configure_phase(phase);
-
-   /*
-   ** Moved to uvmt_cv32e40x_dut_wrap.sv to avoid XMRs across packages.
-   ** TODO: delete all this once you are confident of the approach.
-   **
-    // Load the pre-compiled firmware
-    if($value$plusargs("firmware=%s", firmware)) begin
-      // First, check if it exists...
-      fd = $fopen (firmware, "r");   
-      if (fd)  `uvm_info("TEST", $sformatf("%s was opened successfully : (fd=%0d)", firmware, fd), UVM_NONE)
-      else     `uvm_fatal("TEST", $sformatf("%s was NOT opened successfully : (fd=%0d)", firmware, fd))
-      $fclose(fd);
-      // Now load it...
-      `uvm_info("TEST", $sformatf("loading firmware %0s", firmware), UVM_NONE)
-      $readmemh(firmware, uvmt_cv32e40x_tb.dut_wrap.ram_i.dp_ram_i.mem);
-    end
-    else begin
-      `uvm_error("TEST", "No firmware specified!")
-    end
-   */
 
 endtask : configure_phase
 
@@ -148,12 +120,6 @@ task uvmt_cv32e40x_firmware_test_c::run_phase(uvm_phase phase);
     join_none
    end
 
-   if ($test$plusargs("random_fetch_toggle")) begin
-     fork
-       random_fetch_toggle();
-     join_none
-   end
-
    if ($test$plusargs("reset_debug")) begin
     fork
       reset_debug();
@@ -167,8 +133,7 @@ task uvmt_cv32e40x_firmware_test_c::run_phase(uvm_phase phase);
 
    phase.raise_objection(this);
    @(posedge env_cntxt.clknrst_cntxt.vif.reset_n);
-   repeat (33) @(posedge env_cntxt.clknrst_cntxt.vif.clk);
-   core_cntrl_vif.go_fetch(); // Assert the Core's fetch_en
+   repeat (33) @(posedge env_cntxt.clknrst_cntxt.vif.clk);   
    `uvm_info("TEST", "Started RUN", UVM_NONE)
    // The firmware is expected to write exit status and pass/fail indication to the Virtual Peripheral
    wait (
@@ -234,31 +199,5 @@ task uvmt_cv32e40x_firmware_test_c::irq_noise();
     break;
   end
 endtask : irq_noise
-
-task uvmt_cv32e40x_firmware_test_c::random_fetch_toggle();
-  `uvm_info("TEST", "Starting random_fetch_toggle thread in UVM test", UVM_NONE);
-  while (1) begin
-    int unsigned fetch_assert_cycles;
-    int unsigned fetch_deassert_cycles;
-
-    // Randomly assert for a random number of cycles
-    randcase
-      9: fetch_assert_cycles = $urandom_range(100_000, 100);
-      1: fetch_assert_cycles = $urandom_range(100, 1);
-      1: fetch_assert_cycles = $urandom_range(3, 1);
-    endcase
-    repeat (fetch_assert_cycles) @(core_cntrl_vif.drv_cb);
-    core_cntrl_vif.stop_fetch();
-
-    // Randomly dessert for a random number of cycles
-    randcase    
-      3: fetch_deassert_cycles = $urandom_range(100, 1);
-      1: fetch_deassert_cycles = $urandom_range(3, 1);
-    endcase
-    repeat (fetch_deassert_cycles) @(core_cntrl_vif.drv_cb);
-    core_cntrl_vif.go_fetch();
-  end
-  
-endtask : random_fetch_toggle
 
 `endif // __UVMT_CV32E40X_FIRMWARE_TEST_SV__

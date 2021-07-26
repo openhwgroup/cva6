@@ -1,0 +1,5 @@
+name: branch_zero
+uvm_test: uvmt_$(CV_CORE_LC)_firmware_test_c
+description: >
+    Directed test that targets branches with zero offsets
+

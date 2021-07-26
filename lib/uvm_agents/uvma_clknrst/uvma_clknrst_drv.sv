@@ -143,10 +143,20 @@ task uvma_clknrst_drv_c::drv_req(uvma_clknrst_seq_item_c req);
             `uvm_warning("CLKNRST", {"Attempting to stop clock generation while it is already inactive. Ignoring req:\n", req.sprint()})
          end
          else begin
+            wait (cntxt.vif.clk == 1'b0);
             cntxt.vif.stop_clk();
          end
       end
-      
+
+      UVMA_CLKNRST_SEQ_ITEM_ACTION_RESTART_CLK: begin
+         if (cntxt.vif.clk_active) begin
+            `uvm_warning("CLKNRST", {"Attempting to restart clock generation while it is already active. Ignoring req:\n", req.sprint()})
+         end
+         else begin
+            cntxt.vif.start_clk();
+         end
+      end
+
       UVMA_CLKNRST_SEQ_ITEM_ACTION_ASSERT_RESET: begin
          `uvm_info("CLKNRST", $sformatf("Asserting reset for %0t", (req.rst_deassert_period * 1ps)), UVM_MEDIUM)
          cntxt.vif.reset_n = '0;

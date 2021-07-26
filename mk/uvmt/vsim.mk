@@ -32,7 +32,7 @@ VCOVER                  = vcover
 
 # Paths
 VWORK     				= work
-VSIM_RESULTS           ?= $(if $(CV_RESULTS),$(CV_RESULTS)/vsim_results,$(MAKE_PATH)/vsim_results)
+VSIM_RESULTS           ?= $(if $(CV_RESULTS),$(abspath $(CV_RESULTS))/vsim_results,$(MAKE_PATH)/vsim_results)
 VSIM_COREVDV_RESULTS   ?= $(VSIM_RESULTS)/corev-dv
 VSIM_COV_MERGE_DIR     ?= $(VSIM_RESULTS)/$(CFG)/merged
 UVM_HOME               ?= $(abspath $(shell which $(VLIB))/../../verilog_src/uvm-1.2/src)
@@ -74,6 +74,7 @@ OPT_RV_ISA_DIR = $(if $(RISCV_ISA),/$(RISCV_ISA),)
 VLOG_FLAGS    ?= \
 				-suppress 2577 \
 				-suppress 2583 \
+				-suppress 13185 \
 				-suppress 13314 \
 				-suppress 13288 \
         		-suppress 2181 \
@@ -91,6 +92,7 @@ VLOG_FLAGS += $(DPILIB_VLOG_OPT)
 # Add the ISS to compilation
 VLOG_FILE_LIST += -f $(DV_UVMT_PATH)/imperas_iss.flist
 VLOG_FLAGS += "+define+$(CV_CORE_UC)_TRACE_EXECUTION"
+VLOG_FLAGS += "+define+UVM"
 
 ###############################################################################
 # VOPT (Optimization)
@@ -106,6 +108,10 @@ VSIM_FLAGS        += $(VSIM_USER_FLAGS)
 VSIM_FLAGS        += $(USER_RUN_FLAGS)
 VSIM_FLAGS        += -sv_seed $(RNDSEED)
 VSIM_FLAGS        += -suppress 7031
+VSIM_FLAGS        += -suppress 8858
+VSIM_FLAGS        += -suppress 8522
+VSIM_FLAGS        += -suppress 8550
+VSIM_FLAGS        += -permit_unmatched_virtual_intf
 VSIM_DEBUG_FLAGS  ?= -debugdb
 VSIM_GUI_FLAGS    ?= -gui -debugdb
 VSIM_SCRIPT_DIR	   = $(abspath $(MAKE_PATH)/../tools/vsim)
@@ -115,6 +121,14 @@ VSIM_UVM_ARGS      = +incdir+$(UVM_HOME)/src $(UVM_HOME)/src/uvm_pkg.sv
 VSIM_FLAGS += -sv_lib $(basename $(OVP_MODEL_DPI))
 ifeq ($(call IS_YES,$(USE_ISS)),YES)
 VSIM_FLAGS += +USE_ISS
+else
+VSIM_FLAGS += +DISABLE_OVPSIM
+endif
+ifeq ($(call IS_YES,$(TEST_DISABLE_ALL_CSR_CHECKS)),YES)
+VSIM_FLAGS +="+DISABLE_ALL_CSR_CHECKS"
+endif
+ifneq ($(TEST_DISABLE_CSR_CHECK),)
+VSIM_FLAGS += +DISABLE_CSR_CHECK=$(TEST_DISABLE_CSR_CHECK)
 endif
 
 VSIM_FLAGS += -sv_lib $(basename $(DPI_DASM_LIB))

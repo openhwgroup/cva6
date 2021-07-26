@@ -89,22 +89,27 @@ EMB_DEBUG_ARG       = $(if $(filter $(YES_VALS),$(EMB_DEBUG)),YES,NO)
 export RUN_INDEX       ?= 0
 
 # UVM Environment
-export DV_UVMT_PATH            = $(CORE_V_VERIF)/$(CV_CORE_LC)/tb/uvmt
-export DV_UVME_PATH            = $(CORE_V_VERIF)/$(CV_CORE_LC)/env/uvme
-export DV_UVML_HRTBT_PATH      = $(CORE_V_VERIF)/lib/uvm_libs/uvml_hrtbt
-export DV_UVMA_ISACOV_PATH     = $(CORE_V_VERIF)/lib/uvm_agents/uvma_isacov
-export DV_UVMA_CLKNRST_PATH    = $(CORE_V_VERIF)/lib/uvm_agents/uvma_clknrst
-export DV_UVMA_INTERRUPT_PATH  = $(CORE_V_VERIF)/lib/uvm_agents/uvma_interrupt
-export DV_UVMA_DEBUG_PATH      = $(CORE_V_VERIF)/lib/uvm_agents/uvma_debug
-export DV_UVMA_OBI_PATH        = $(CORE_V_VERIF)/lib/uvm_agents/uvma_obi
-export DV_UVMA_OBI_MEMORY_PATH = $(CORE_V_VERIF)/lib/uvm_agents/uvma_obi_memory
-export DV_UVML_TRN_PATH        = $(CORE_V_VERIF)/lib/uvm_libs/uvml_trn
-export DV_UVML_LOGS_PATH       = $(CORE_V_VERIF)/lib/uvm_libs/uvml_logs
-export DV_UVML_SB_PATH         = $(CORE_V_VERIF)/lib/uvm_libs/uvml_sb
+export DV_UVMT_PATH             = $(CORE_V_VERIF)/$(CV_CORE_LC)/tb/uvmt
+export DV_UVME_PATH             = $(CORE_V_VERIF)/$(CV_CORE_LC)/env/uvme
+export DV_UVML_HRTBT_PATH       = $(CORE_V_VERIF)/lib/uvm_libs/uvml_hrtbt
+export DV_UVMA_CORE_CNTRL_PATH  = $(CORE_V_VERIF)/lib/uvm_agents/uvma_core_cntrl
+export DV_UVMA_ISACOV_PATH      = $(CORE_V_VERIF)/lib/uvm_agents/uvma_isacov
+export DV_UVMA_RVFI_PATH        = $(CORE_V_VERIF)/lib/uvm_agents/uvma_rvfi
+export DV_UVMA_RVVI_PATH        = $(CORE_V_VERIF)/lib/uvm_agents/uvma_rvvi
+export DV_UVMA_RVVI_OVPSIM_PATH = $(CORE_V_VERIF)/lib/uvm_agents/uvma_rvvi_ovpsim
+export DV_UVMA_CLKNRST_PATH     = $(CORE_V_VERIF)/lib/uvm_agents/uvma_clknrst
+export DV_UVMA_INTERRUPT_PATH   = $(CORE_V_VERIF)/lib/uvm_agents/uvma_interrupt
+export DV_UVMA_DEBUG_PATH       = $(CORE_V_VERIF)/lib/uvm_agents/uvma_debug
+export DV_UVMA_OBI_PATH         = $(CORE_V_VERIF)/lib/uvm_agents/uvma_obi
+export DV_UVMA_OBI_MEMORY_PATH  = $(CORE_V_VERIF)/lib/uvm_agents/uvma_obi_memory
+export DV_UVML_TRN_PATH         = $(CORE_V_VERIF)/lib/uvm_libs/uvml_trn
+export DV_UVML_LOGS_PATH        = $(CORE_V_VERIF)/lib/uvm_libs/uvml_logs
+export DV_UVML_SB_PATH          = $(CORE_V_VERIF)/lib/uvm_libs/uvml_sb
 
-export DV_OVPM_HOME           = $(CORE_V_VERIF)/$(CV_CORE_LC)/vendor_lib/imperas
-export DV_OVPM_MODEL          = $(DV_OVPM_HOME)/riscv_$(CV_CORE_UC)_OVPsim
-export DV_OVPM_DESIGN         = $(DV_OVPM_HOME)/design
+export DV_OVPM_HOME             = $(CORE_V_VERIF)/vendor_lib/imperas
+export DV_OVPM_MODEL            = $(DV_OVPM_HOME)/imperas_DV_COREV
+
+export DV_OVPM_DESIGN           = $(DV_OVPM_HOME)/design
 
 DV_UVMT_SRCS                  = $(wildcard $(DV_UVMT_PATH)/*.sv))
 
@@ -287,6 +292,35 @@ embench: $(EMBENCH_PKG)
 	-tgt $(EMB_TARGET) \
 	-f $(EMB_CPU_MHZ) \
 	-d $(EMB_DEBUG_ARG) \
+
+###############################################################################
+# ISACOV (ISA coverage)
+#   Compare the log against the tracer log.
+#   This checks that sampling went correctly without false positives/negatives.
+
+ISACOV_LOGDIR = $($(SIMULATOR_UC)_RESULTS)/$(CFG)/$(TEST)_$(RUN_INDEX)
+ISACOV_TRACELOG = $(ISACOV_LOGDIR)/trace_core_00000000.log
+ISACOV_AGENTLOG = $(ISACOV_LOGDIR)/uvm_test_top.env.isacov_agent.trn.log
+
+isacov_logdiff:
+	@echo checking that env/dirs/files are as expected...
+		@printenv TEST > /dev/null || (echo specify TEST; false)
+		@ls $(ISACOV_LOGDIR) > /dev/null
+		@ls $(ISACOV_TRACELOG) > /dev/null
+		@ls $(ISACOV_AGENTLOG) > /dev/null
+	@echo filtering logs...
+		@cat $(ISACOV_TRACELOG) \
+			| sed 's/\(.*\)   \(.*\)/\1/' | awk '{$$1=$$2=$$3=$$4=$$5=""; $$0=$$0; $$1=$$1; print $$0}' \
+			| tail -n +2 > trace.tmp
+		@cat $(ISACOV_AGENTLOG) \
+			| awk -F '\t' '{print $$2}' | tr A-Z a-z \
+			| tail -n +2 > agent.tmp
+	@echo diffing the instruction sequences...
+		@echo saving to $(ISACOV_LOGDIR)/isacov_logdiff
+		@rm -rf $(ISACOV_LOGDIR)/isacov_logdiff
+		@diff trace.tmp agent.tmp > $(ISACOV_LOGDIR)/isacov_logdiff; true
+		@rm -rf trace.tmp agent.tmp
+		@(test ! -s $(ISACOV_LOGDIR)/isacov_logdiff && echo OK) || (echo FAIL; false)
 
 ###############################################################################
 # Include the targets/rules for the selected SystemVerilog simulator

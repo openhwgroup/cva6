@@ -95,8 +95,16 @@ def read_file(test, type, run_index):
     stream.close()
     test_spec['test_dir'] = os.path.dirname(matches[0])
 
+    # Debug the YAML parsing
+    pp = pprint.PrettyPrinter()
+    logger.debug('Read YAML:')
+    logger.debug(pp.pformat(test_spec))
+
     # Substitute <RUN_INDEX>
-    for k in test_spec:
+    for k in test_spec:        
+        if k == 'disable_csr_check':
+            test_spec[k] = '+'.join(test_spec[k])
+        test_spec[k] = str(test_spec[k])
         test_spec[k] = re.sub('<RUN_INDEX>', run_index, test_spec[k])
 
     # Validation

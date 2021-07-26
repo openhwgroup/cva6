@@ -38,7 +38,7 @@ INDAGO            = $(CV_TOOL_PREFIX) indago
 IMC               = $(CV_SIM_PREFIX) imc
 
 # Paths
-XRUN_RESULTS         ?= $(if $(CV_RESULTS),$(CV_RESULTS)/xrun_results,$(MAKE_PATH)/xrun_results)
+XRUN_RESULTS         ?= $(if $(CV_RESULTS),$(abspath $(CV_RESULTS))/xrun_results,$(MAKE_PATH)/xrun_results)
 XRUN_COREVDV_RESULTS ?= $(XRUN_RESULTS)/corev-dv
 XRUN_DIR             ?= $(XRUN_RESULTS)/$(CFG)/xcelium.d
 XRUN_UVMHOME_ARG     ?= CDNS-1.2-ML
@@ -158,8 +158,20 @@ XRUN_UVM_MACROS_INC_FILE = $(DV_UVMT_PATH)/uvmt_$(CV_CORE_LC)_uvm_macros_inc.sv
 XRUN_FILE_LIST ?= -f $(DV_UVMT_PATH)/uvmt_$(CV_CORE_LC).flist
 XRUN_FILE_LIST += -f $(DV_UVMT_PATH)/imperas_iss.flist
 XRUN_USER_COMPILE_ARGS += +define+$(CV_CORE_UC)_TRACE_EXECUTION
+XRUN_USER_COMPILE_ARGS += +define+UVM
 ifeq ($(call IS_YES,$(USE_ISS)),YES)
-    XRUN_PLUSARGS +="+USE_ISS"
+	XRUN_PLUSARGS += +USE_ISS
+else
+    XRUN_PLUSARGS += +DISABLE_OVPSIM
+endif
+ifeq ($(call IS_YES,$(USE_RVVI)),YES)
+    XRUN_PLUSARGS +="+USE_RVVI"
+endif
+ifeq ($(call IS_YES,$(TEST_DISABLE_ALL_CSR_CHECKS)),YES)
+    XRUN_PLUSARGS +="+DISABLE_ALL_CSR_CHECKS"
+endif
+ifneq ($(TEST_DISABLE_CSR_CHECK),)
+	XRUN_PLUSARGS += +DISABLE_CSR_CHECK=$(TEST_DISABLE_CSR_CHECK)
 endif
 
 # Simulate using latest elab
@@ -222,6 +234,11 @@ XRUN_COMP_COREV_DV_FLAGS += -nowarn BNDWRN
 # instance reporting warings for covergroups
 XRUN_RUN_COV    += -nowarn COVCGN
 XRUN_RUN_COV    += -nowarn CGPIZE
+
+# Empty overgroup warnings (we purposely empty covergroups as part of filtering w/ configuration variables)
+XRUN_RUN_COV    += -nowarn WCRTUP
+XRUN_RUN_COV    += -nowarn WCOVPT
+XRUN_RUN_COV    += -nowarn WCROSS
 
 # Un-named covergroup instances
 XRUN_RUN_COV    += -nowarn CGDEFN
@@ -288,7 +305,7 @@ gen_ovpsim_ic:
 		echo "$(CFG_OVPSIM)" > $(XRUN_RESULTS)/$(CFG)/$(TEST_NAME)_$(RUN_INDEX)/ovpsim.ic; \
 	fi
 ifneq ($(CFG_OVPSIM),)
-export IMPERAS_TOOLS=$(XRUN_RESULTS)/$(CFG)/$(TEST_NAME)_$(RUN_INDEX)/ovpsim.ic
+export IMPERAS_TOOLS=ovpsim.ic
 endif
 
 ################################################################################
@@ -300,7 +317,6 @@ ifeq ($(shell echo $(TEST) | head -c 6),corev_)
 endif
 
 test: $(XRUN_SIM_PREREQ) $(TEST_TEST_DIR)/$(TEST_PROGRAM)$(OPT_RUN_INDEX_SUFFIX).hex gen_ovpsim_ic
-	echo $(IMPERAS_TOOLS)
 	mkdir -p $(XRUN_RESULTS)/$(CFG)/$(TEST_NAME)_$(RUN_INDEX) && \
 	cd $(XRUN_RESULTS)/$(CFG)/$(TEST_NAME)_$(RUN_INDEX) && \
 		$(XRUN) \
@@ -314,6 +330,7 @@ test: $(XRUN_SIM_PREREQ) $(TEST_TEST_DIR)/$(TEST_PROGRAM)$(OPT_RUN_INDEX_SUFFIX)
 			+elf_file=$(TEST_TEST_DIR)/$(TEST_PROGRAM)$(OPT_RUN_INDEX_SUFFIX).elf \
 			+nm_file=$(TEST_TEST_DIR)/$(TEST_PROGRAM)$(OPT_RUN_INDEX_SUFFIX).nm \
 			+firmware=$(TEST_TEST_DIR)/$(TEST_PROGRAM)$(OPT_RUN_INDEX_SUFFIX).hex
+	$(POST_TEST)
 
 ################################################################################
 # Custom test-programs.  See comment in dsim.mk for more info

@@ -40,7 +40,6 @@ module uvmt_cv32e40x_interrupt_assert
     input [5:0]  mcause_n, // mcause_n[5]: interrupt, mcause_n[4]: vector
     input [31:0] mip,     // machine interrupt pending
     input [31:0] mie_q,   // machine interrupt enable
-    input [31:0] mie_n,   // machine interrupt enable
     input        mstatus_mie, // machine mode interrupt enable
     input [1:0]  mtvec_mode_q, // machine mode interrupt vector mode
 
@@ -107,8 +106,8 @@ module uvmt_cv32e40x_interrupt_assert
   // ---------------------------------------------------------------------------
   // Begin module code
   // ---------------------------------------------------------------------------
-  assign pending_enabled_irq   = irq_i & mie_n;
-  assign pending_enabled_irq_q = irq_q & mie_n;
+  assign pending_enabled_irq   = irq_i & mie_q;
+  assign pending_enabled_irq_q = irq_q & mie_q;
 
   // ---------------------------------------------------------------------------
   // Interrupt interface checks
@@ -134,12 +133,12 @@ module uvmt_cv32e40x_interrupt_assert
 
   // irq_id_o is never a disabled irq
   property p_irq_id_o_mie_enabled;
-    irq_ack_o |-> mie_n[irq_id_o];
+    irq_ack_o |-> mie_q[irq_id_o];
   endproperty    
   a_irq_id_o_mie_enabled: assert property(p_irq_id_o_mie_enabled)
     else
       `uvm_error(info_tag,
-                 $sformatf("irq_id_o output is 0x%0x which is disabled in MIE: 0x%08x", irq_id_o, mie_n));
+                 $sformatf("irq_id_o output is 0x%0x which is disabled in MIE: 0x%08x", irq_id_o, mie_q));
 
   // irq_ack_o cannot be asserted if mstatus_mie is deasserted
   property p_irq_id_o_mstatus_mie_enabled;

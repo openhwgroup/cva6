@@ -37,3 +37,9 @@ cva6/tests/riscv-tests/
 uvm/riscv-dv/
 riviera_results/
 */vendor_lib/dpi_dasm_spike/
+work*
+vsim.dbg
+*.wlf
+transcript
+.lib-rtl
+.opt-rtl

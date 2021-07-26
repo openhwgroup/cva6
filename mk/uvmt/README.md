@@ -4,7 +4,7 @@ This directory contains the Makefiles to run all tests of the UVM environment.
 The UVM testcases are at `CV_CORE/tests/uvmt`, and the test-programs can be
 found in `CV_CORE/tests/program`.  See the README in those directories for more information.
 <br><br>
-Please refer to the [Verification Strategy](https://core-v-docs-verif-strat.readthedocs.io/en/latest/sim_tests.html#simulation-tests-in-the-uvm-environments)
+Please refer to the [Verification Strategy](https://core-v-verif-verification-strategy.readthedocs.io/en/master/)
 for a discussion on the distinction between a _testcase_ (a SystemVerilog class extended from uvm_test that instantiates and controls the UVM environment) and a _test-program_ (a C or assembler program that runs on the core RTL model) in this environment.
 <br><br>
 To run the UVM environment you will need:
@@ -27,7 +27,7 @@ The following environment variables can be set for any make invocation to run te
 | CV_CORE              | The core to simulate by default.  Can be overridden on any make command line.  Typically specified in the same case as the directory in which the testbench resides (e.g. cv32e40p, cva6).  However makefiles have access to internally defined CV_CORE_LC and CV_CORE_UC variables to get expected cases of the CV_CORE name (e.g. for macros, etc that might typically be capitalized). |
 | CV_SW_TOOLCHAIN      | Points to SW toolchain installation for compiling, assembling, and/or linking test programs.  **A toolchain is required for running any tests in the _uvmt_ environment** |
 | CV_SW_MARCH          | Architecture of tool chain to invoke.  Defaults to _unknown_ |
-| CV_RESULTS           | Optional simulator output redirection path. Defaults to blank, i.e. simulation outputs will be located in <i>&lt;core></i>/mk/uvmt/<i>&lt;simulator></i>_results. |
+| CV_RESULTS           | Optional simulator output redirection path. Defaults to blank, i.e. simulation outputs will be located in <i>&lt;core></i>/mk/uvmt/<i>&lt;simulator></i>_results if a relative path is given.  Optionally an absolute path can be used as well and simulation outputs will be located in  $(CV_RESULTS)/<i>&lt;simulator></i>_results |
 <br>
 
 Imperas OVPsim Instruction Set Simulator

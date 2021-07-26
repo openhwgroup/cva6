@@ -1,7 +1,7 @@
 # Git cheat-sheet.
 A few examples to illustrate use of `git` on the command-line.<br><br>
 PLEASE READ CAREFULLY the [CONTRIBUTING.md](https://github.com/openhwgroup/core-v-verif/blob/master/CONTRIBUTING.md)
-file in this directory.  You MUST follow the specified flow to contribute to this repository.
+file in this directory.  You must follow the specified flow to contribute to this repository.
 
 If you have a suggestion to improve this document please either submit a pull-request, open an issue or email mike@openhwgroup.org.
 
