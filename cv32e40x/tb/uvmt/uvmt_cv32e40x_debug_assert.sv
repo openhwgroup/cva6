@@ -176,8 +176,8 @@ module uvmt_cv32e40x_debug_assert
     // Trigger match results in debug mode
     property p_trigger_match;
         cov_assert_if.trigger_match_i ##0 cov_assert_if.tdata1[2] ##0 !cov_assert_if.debug_mode_q
-        ##0 cov_assert_if.id_stage_instr_valid_i ##0 cov_assert_if.is_decoding
-        |-> decode_valid [->2]
+        |-> !decode_valid [->1]
+        ##0 decode_valid [->1]
         ##0 cov_assert_if.debug_mode_q && (cov_assert_if.dcsr_q[8:6] === cv32e40x_pkg::DBG_CAUSE_TRIGGER)
             && (cov_assert_if.depc_q == tdata2_at_entry) && (cov_assert_if.id_stage_pc == halt_addr_at_entry);
     endproperty   
