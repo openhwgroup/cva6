@@ -94,7 +94,8 @@ module uvmt_cv32e40x_debug_assert
 
     // Checck that depc gets the correct value when debug mode is entered.
     property p_debug_mode_pc;
-        $rose(first_debug_ins) |-> cov_assert_if.debug_mode_q && (prev_id_pc == halt_addr_at_entry) && (cov_assert_if.depc_q == pc_at_dbg_req);
+        $rose(first_debug_ins)
+        |-> cov_assert_if.debug_mode_q && (prev_id_pc == halt_addr_at_entry) && (cov_assert_if.depc_q == pc_at_dbg_req);
     endproperty   
 
     a_debug_mode_pc: assert property(p_debug_mode_pc)
@@ -299,8 +300,7 @@ module uvmt_cv32e40x_debug_assert
     endproperty
 
     a_mmode_dret : assert property(p_mmode_dret)
-        else
-            `uvm_error(info_tag, "Executing dret in M-mode did not result in illegal instruction");
+        else `uvm_error(info_tag, "Executing dret in M-mode did not result in illegal instruction");
 
     // dret in D-mode will restore pc and exit D-mode
     property p_dmode_dret;
@@ -489,7 +489,7 @@ module uvmt_cv32e40x_debug_assert
 */
     assign cov_assert_if.is_wfi = cov_assert_if.id_stage_wfi_insn;
     assign cov_assert_if.pending_enabled_irq = |(cov_assert_if.irq_i & cov_assert_if.mie_q);
-    assign cov_assert_if.is_dret             = cov_assert_if.id_valid & cov_assert_if.id_stage_instr_valid_i & cov_assert_if.is_decoding & (cov_assert_if.id_stage_instr_rdata_i == 32'h7B200073);
+    assign cov_assert_if.is_dret = cov_assert_if.wb_valid && (cov_assert_if.wb_stage_instr_rdata_i == 32'h 7B20_0073);
 
     // Track which debug cause should be expected
     always@ (posedge cov_assert_if.clk_i or negedge cov_assert_if.rst_ni) begin
