@@ -175,15 +175,17 @@ module uvmt_cv32e40x_debug_assert
 
     // Trigger match results in debug mode
     property p_trigger_match;
-        cov_assert_if.trigger_match_i ##0 cov_assert_if.tdata1[2] ##0 !cov_assert_if.debug_mode_q ##0 cov_assert_if.id_stage_instr_valid_i ##0 cov_assert_if.is_decoding
-        |-> decode_valid [->2] ##0 (cov_assert_if.debug_mode_q && (cov_assert_if.dcsr_q[8:6]=== cv32e40x_pkg::DBG_CAUSE_TRIGGER) && 
-                                                            (cov_assert_if.depc_q == tdata2_at_entry)) &&
-                                                            (cov_assert_if.id_stage_pc == halt_addr_at_entry);
+        cov_assert_if.trigger_match_i ##0 cov_assert_if.tdata1[2] ##0 !cov_assert_if.debug_mode_q
+        ##0 cov_assert_if.id_stage_instr_valid_i ##0 cov_assert_if.is_decoding
+        |-> decode_valid [->2]
+        ##0 cov_assert_if.debug_mode_q && (cov_assert_if.dcsr_q[8:6] === cv32e40x_pkg::DBG_CAUSE_TRIGGER)
+            && (cov_assert_if.depc_q == tdata2_at_entry) && (cov_assert_if.id_stage_pc == halt_addr_at_entry);
     endproperty   
 
     a_trigger_match: assert property(p_trigger_match)
-        else
-            `uvm_error(info_tag, $sformatf("Debug mode not correctly entered after trigger match depc=%08x,  tdata2=%08x", cov_assert_if.depc_q, tdata2_at_entry)); 
+        else `uvm_error(info_tag,
+            $sformatf("Debug mode not correctly entered after trigger match depc=%08x, tdata2=%08x",
+                cov_assert_if.depc_q, tdata2_at_entry));
 
     // Address match without trigger enabled should NOT result in debug mode
     property p_trigger_match_disabled;
@@ -302,14 +304,37 @@ module uvmt_cv32e40x_debug_assert
     a_mmode_dret : assert property(p_mmode_dret)
         else `uvm_error(info_tag, "Executing dret in M-mode did not result in illegal instruction");
 
-    // dret in D-mode will restore pc and exit D-mode
-    property p_dmode_dret;
-        cov_assert_if.debug_mode_q && cov_assert_if.is_dret |-> decode_valid [->2] ##0  !cov_assert_if.debug_mode_q && (cov_assert_if.id_stage_pc == cov_assert_if.depc_q);
+
+    // dret in D-mode will restore pc (if no re-entry or interrupt intervenes)
+
+    sequence s_dmode_dret_pc_ante;  // Antecedent
+        cov_assert_if.debug_mode_q && cov_assert_if.is_dret
+        ##1 (!cov_assert_if.debug_req_i && !cov_assert_if.irq_ack_o) throughout (decode_valid [->1]);
+    endsequence
+
+    sequence s_dmode_dret_pc_conse;  // Consequent
+        decode_valid && !cov_assert_if.debug_mode_q && (cov_assert_if.id_stage_pc == cov_assert_if.depc_q);
+    endsequence
+
+    cov_dmode_dret_pc : cover property(s_dmode_dret_pc_ante |-> s_dmode_dret_pc_conse ##0 (cov_assert_if.depc_q != 0));
+
+    a_dmode_dret_pc : assert property(s_dmode_dret_pc_ante |-> s_dmode_dret_pc_conse)
+        else `uvm_error(info_tag, "Dret did not cause correct return from debug mode");
+
+
+    // dret in D-mode will exit D-mode
+
+    property p_dmode_dret_exit;
+        cov_assert_if.debug_mode_q && cov_assert_if.is_dret
+        |=> !cov_assert_if.debug_mode_q;
+        // TODO:ropeders also assert, stays in mmode until decode_valid if no debug_request
     endproperty
 
-    a_dmode_dret : assert property(p_dmode_dret)
-        else
-            `uvm_error(info_tag, "Dret did not cause correct return from debug mode");
+    a_dmode_dret_exit : assert property(p_dmode_dret_exit)
+        else `uvm_error(info_tag, "Dret did not exit debug mode");
+
+    // TODO:ropeders what is missing from these dret assertions?
+
 
     // Check that trigger regs cannot be written from M-mode
     // TSEL, and TDATA3 are tied to zero, hence no register to check 
