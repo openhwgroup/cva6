@@ -110,10 +110,10 @@ list_incdir := $(foreach dir, ${incdir}, +incdir+$(dir))
 ifdef batch-mode
 	questa-flags += -c
 	questa-cmd   := -do "coverage save -onexit tmp/$@.ucdb; run -a; quit -code [coverage attribute -name TESTSTATUS -concise]"
-	questa-cmd   += -do " log -r /*; run -all;"
+	questa-cmd   += -do " set StdArithNoWarnings 1; set NumericStdNoWarnings 1; log -r /*; run -all;"
 else
-	questa-cmd   := -do " log -r /*; run -all;"
-endif
+	questa-cmd   := -do " set StdArithNoWarnings 1; set NumericStdNoWarnings 1; log -r /*; run -all;"
+endif 
 # we want to preload the memories
 ifdef preload
 	questa-cmd += +PRELOAD=$(preload)
@@ -189,8 +189,8 @@ generate-trace-vsim:
 	make sim preload=$(preload) elf-bin= batch-mode=1
 	make generate-trace
 
-run: 
-	vsim${questa_version} +permissive $(questa-flags) $(questa-cmd) -lib $(library) +MAX_CYCLES=$(max_cycles) +UVM_TESTNAME=$(test_case)  -t 1ps \
+run:
+	vsim${questa_version} +permissive $(questa-flags) $(questa-cmd) -lib $(library) +MAX_CYCLES=$(max_cycles) +UVM_TESTNAME=$(test_case) -t 1ps \
 	+BASEDIR=$(riscv-test-dir) $(uvm-flags) $(QUESTASIM_FLAGS) -gblso $(SPIKE_ROOT)/lib/libfesvr.so -sv_lib $(dpi-library)/ariane_dpi  \
 	${top_level}_optimized +permissive-off ++$(elf-bin) ++$(target-options) | tee sim.log
 

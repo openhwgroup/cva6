@@ -28,7 +28,7 @@ module ariane_tb;
 
     static uvm_cmdline_processor uvcl = uvm_cmdline_processor::get_inst();
 
-    localparam int unsigned CLOCK_PERIOD = 100ns;
+    localparam int unsigned CLOCK_PERIOD = 56832ps;
     // toggle with RTC period
     localparam int unsigned RTC_CLOCK_PERIOD = 30.517us;
 
@@ -36,7 +36,9 @@ module ariane_tb;
     logic clk_i;
     logic rst_ni;
     logic rtc_i;
-
+    logic rst_DTM;
+   
+   
     parameter  USE_HYPER_MODELS    = 1;
 
   `ifdef jtag_rbb_enable 
@@ -108,7 +110,7 @@ module ariane_tb;
   if (1) begin
     SimDTM i_SimDTM (
       .clk                  ( clk_i                 ),
-      .reset                ( ~rst_ni               ),
+      .reset                ( ~rst_DTM              ),
       .debug_req_valid      ( s_dmi_req_valid       ),
       .debug_req_ready      ( s_dmi_req_ready       ),
       .debug_req_bits_addr  ( s_dmi_req_bits_addr   ),
@@ -149,7 +151,6 @@ module ariane_tb;
         .StallRandomInput  ( 1'b1          ),
         .JtagEnable        ( jtag_enable[0])
     ) dut (
-        .clk_i,
         .rst_ni,
         .rtc_i,
         .dmi_req_valid        ( s_dmi_req_valid        ),
@@ -250,7 +251,7 @@ module ariane_tb;
       end
    endgenerate
 
-   uart_bus #(.BAUD_RATE(9600), .PARITY_EN(0)) i_uart_bus (.rx(w_cva6_uart_tx), .tx(w_cva6_uart_rx), .rx_en(1'b1));
+   uart_bus #(.BAUD_RATE(115200), .PARITY_EN(0)) i_uart_bus (.rx(w_cva6_uart_tx), .tx(w_cva6_uart_rx), .rx_en(1'b1));
 
 `ifdef SPIKE_TANDEM
     spike #(
@@ -275,9 +276,13 @@ module ariane_tb;
     initial begin
         clk_i = 1'b0;
         rst_ni = 1'b0;
+        rst_DTM = 1'b0;
         repeat(8)
             #(CLOCK_PERIOD/2) clk_i = ~clk_i;
         rst_ni = 1'b1;
+        repeat(200)
+           #(CLOCK_PERIOD/2) clk_i = ~clk_i;
+        rst_DTM = 1'b1;       
         forever begin
             #(CLOCK_PERIOD/2) clk_i = 1'b1;
             #(CLOCK_PERIOD/2) clk_i = 1'b0;
@@ -291,12 +296,14 @@ module ariane_tb;
 
     initial begin
         forever begin
-            rtc_i = 1'b0;
-            #(RTC_CLOCK_PERIOD/2) rtc_i = 1'b1;
+            rtc_i = 1'b1;
             #(RTC_CLOCK_PERIOD/2) rtc_i = 1'b0;
+            #(RTC_CLOCK_PERIOD/2) rtc_i = 1'b1;
         end
     end
-
+   
+   
+   
     initial begin
         forever begin
 
@@ -326,7 +333,7 @@ module ariane_tb;
 
             void'(read_elf(binary));
             // wait with preloading, otherwise randomization will overwrite the existing value
-            wait(rst_ni);
+            wait(rst_DTM);
 
            
             // while there are more sections to process

@@ -25,6 +25,8 @@ dependencies:
   apb_gpio: { git: "https://github.com/pulp-platform/apb_gpio.git", rev: "0e9f142f2f11278445c953ad011fce1c7ed85b66" }
   hyperbus: { git: "git@iis-git.ee.ethz.ch:bslk/hyperbus.git", rev: "b6bc5197ce106c138ac3731a7faee482017e2d45" }
   register_interface:  { git: "https://github.com/pulp-platform/register_interface.git", version: 0.2.2  }
+  apb_fll_if: { git: "https://github.com/pulp-platform/apb_fll_if.git", version: 0.1.3 }
+  generic_FLL: { git: "https://github.com/pulp-platform/generic_FLL.git", rev: "1c92dc73a940392182fd4cb7b86f35649b349595" }
 
 export_include_dirs:
   - include/
@@ -43,6 +45,9 @@ sources:
   - ../fpga/src/axi2apb/src/axi2apb_64_32.sv
   - ../fpga/src/axi2apb/src/axi2apb_wrap.sv
   - host/periph_bus_wrap.sv
+  - host/apb_fll_wrap.sv
+  - host/freqmeter.sv
+  - host/alsaqr_clk_rst_gen.sv
   - host/apb_subsystem.sv
   - host/cva6_subsystem.sv
   - host/l2_subsystem.sv
@@ -60,6 +65,7 @@ sources:
       FPGA_EMUL: ~
     files:
       - ../fpga/src/pad_functional_xilinx/pad_functional_xilinx.sv
+      - ./fpga/fpga_clk_gen.sv
       - ./fpga/boot_rom.sv
       - ./fpga/alsaqr_xilinx.sv
       

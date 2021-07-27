@@ -34,8 +34,9 @@ module cva6_subsytem
   input  logic            clk_i,
   input  logic            rtc_i,
   input  logic            rst_ni,
+  input  logic            sync_rst_ni,
   output logic [31:0]     exit_o,
-  output logic            rst_no,
+  output logic            dm_rst_o,
   input  logic [32*4-1:0] udma_events_i,
   // FROM SimDTM
   input  logic            dmi_req_valid,
@@ -112,19 +113,12 @@ module cva6_subsytem
     .AXI_USER_WIDTH ( AXI_USER_WIDTH           )
   ) hyper_axi_master_cut();
 
-  rstgen i_rstgen_main (
-    .clk_i        ( clk_i                ),
-    .rst_ni       ( rst_ni & (~ndmreset) ),
-    .test_mode_i  ( test_en              ),
-    .rst_no       ( ndmreset_n           ),
-    .init_no      (                      ) // keep open
-  );
-
+  assign ndmreset_n = sync_rst_ni;
+   
   // ---------------
   // Debug
   // ---------------
   assign init_done = rst_ni;
-  assign rst_no    = ndmreset_n;
    
   initial begin
     if (riscv::XLEN != 32 & riscv::XLEN != 64) $error("XLEN different from 32 and 64");
@@ -215,7 +209,7 @@ module cva6_subsytem
     .clk_i                ( clk_i                       ),
     .rst_ni               ( rst_ni                      ), // PoR
     .testmode_i           ( test_en                     ),
-    .ndmreset_o           ( ndmreset                    ),
+    .ndmreset_o           ( dm_rst_o                    ),
     .dmactive_o           (                             ), // active debug session
     .debug_req_o          ( debug_req_core_ungtd        ),
     .unavailable_i        ( '0                          ),
@@ -461,8 +455,8 @@ module cva6_subsytem
     .Cfg                    ( AXI_XBAR_CFG                          ),
     .rule_t                 ( ariane_soc::addr_map_rule_t           )
   ) i_xbar (
-    .clk_i,
-    .rst_ni,
+    .clk_i                  (clk_i),
+    .rst_ni                 (ndmreset_n),
     .test_i                 (1'b0),
     .slv_ports              (slave),
     .mst_ports              (master),

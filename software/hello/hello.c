@@ -11,7 +11,7 @@ int main(int argc, char const *argv[]) {
   int test_freq = 10000000;
   #else
   int baud_rate = 115200;
-  int test_freq = 50000000;
+  int test_freq = 17500000;
   #endif  
   uart_set_cfg(0,(test_freq/baud_rate)>>4);
   printf("Hello CVA6!\n");
