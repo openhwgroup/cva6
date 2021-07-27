@@ -30,9 +30,9 @@ class uvme_cv32e40x_vp_vseq_c extends uvme_cv32e40x_base_vseq_c;
    // Fields
    rand int unsigned      cycle_counter_frequency; ///< Measured in picoseconds
         longint unsigned  cycle_counter = 0;
-        event             interrupt_timer_start;
+        event             interrupt_timer_start;        
         int unsigned      interrupt_timer_value;
-        bit [31:0]        interrupt_timer_mask = 0;
+        bit [31:0]        interrupt_value = 0;
    rand int unsigned      max_latency;
         int unsigned      signature_start_address;
         int unsigned      signature_end_address;
@@ -42,7 +42,7 @@ class uvme_cv32e40x_vp_vseq_c extends uvme_cv32e40x_base_vseq_c;
       `uvm_field_int(cycle_counter_frequency, UVM_DEFAULT + UVM_DEC)
       `uvm_field_int(cycle_counter          , UVM_DEFAULT + UVM_DEC)
       `uvm_field_int(interrupt_timer_value  , UVM_DEFAULT + UVM_DEC)
-      `uvm_field_int(interrupt_timer_mask   , UVM_DEFAULT          )
+      `uvm_field_int(interrupt_value        , UVM_DEFAULT          )
       `uvm_field_int(max_latency            , UVM_DEFAULT + UVM_DEC)
       `uvm_field_int(signature_start_address, UVM_DEFAULT          )
       `uvm_field_int(signature_end_address  , UVM_DEFAULT          )
@@ -169,26 +169,15 @@ task uvme_cv32e40x_vp_vseq_c::body();
       
       begin
          forever begin
-            `uvm_info("VP_VSEQ", "Waiting for interrupt_timer_start", UVM_LOW)
+            `uvm_info("VP_VSEQ", "Waiting for interrupt_timer_start", UVM_HIGH)
             @interrupt_timer_start;
-                  `uvm_info("VP_VSEQ", "@interrupt_timer_start", UVM_LOW)
-            fork
-               begin
-                  while (interrupt_timer_value > 0) begin
-                     @(cntxt.obi_memory_data_cntxt.vif.clk);
-                     interrupt_timer_value = (interrupt_timer_value-1) & interrupt_timer_mask;
-                  end
-                  `uvm_info("VP_VSEQ", "Done waiting for interrupt_timer_value to be 0", UVM_LOW)
-                  irq_o();
-               end
-               
-               begin
-                  `uvm_info("VP_VSEQ", "Waiting for interrupt_timer_start", UVM_LOW)
-                  @interrupt_timer_start;
-                  `uvm_info("VP_VSEQ", "@interrupt_timer_start", UVM_LOW)
-               end
-            join_any
-            disable fork;
+            `uvm_info("VP_VSEQ", "@interrupt_timer_start", UVM_HIGH)
+            while (interrupt_timer_value > 0) begin
+               @(cntxt.interrupt_cntxt.vif.drv_cb);
+               interrupt_timer_value = interrupt_timer_value - 1;
+            end
+            `uvm_info("VP_VSEQ", "Done waiting for interrupt_timer_value to be 0", UVM_HIGH)
+            irq_o();
          end
       end
    join_none
@@ -232,7 +221,8 @@ task uvme_cv32e40x_vp_vseq_c::do_response(ref uvma_obi_memory_mon_trn_c mon_req)
       `uvm_info("VP_VSEQ", $sformatf("VP not handled: x%h", mon_req.address), UVM_HIGH)
       err_req  = mon_req.err;
       if (err_req) `uvm_info("VP_VSEQ", $sformatf("ERROR1: mon_req.err=%0b", mon_req.err), UVM_HIGH/*NONE*/)
-      err_siz = (mon_req.address > (2**`UVME_CV32E40X_MEM_SIZE));
+      //err_siz = (mon_req.address > (2**`UVME_CV32E40X_MEM_SIZE));
+      err_siz = 0;
       if (err_siz) `uvm_info("VP_VSEQ", $sformatf("ERROR2: mon_req.address=%0h", mon_req.address), UVM_HIGH/*NONE*/)
 
       if (!(err_req | err_siz)) begin
@@ -333,16 +323,16 @@ task uvme_cv32e40x_vp_vseq_c::vp_interrupt_timer_control(ref uvma_obi_memory_mon
    if (mon_req.access_type == UVMA_OBI_MEMORY_ACCESS_WRITE) begin
       `uvm_create  (slv_rsp)
       add_latencies(slv_rsp);
-      `uvm_info("VP_VSEQ", $sformatf("Call to virtual peripheral 'interrupt_timer_control':\n%s", mon_req.sprint()), UVM_LOW)
+      `uvm_info("VP_VSEQ", $sformatf("Call to virtual peripheral 'interrupt_timer_control':\n%s", mon_req.sprint()), UVM_HIGH)
       if (mon_req.address == 32'h1500_0000) begin
-         interrupt_timer_mask = mon_req.data;
+         interrupt_value = mon_req.data;
       end
       else if (mon_req.address == 32'h1500_0004) begin
          interrupt_timer_value = mon_req.data;
          ->interrupt_timer_start;
       end
       else begin
-         `uvm_info("VP_VSEQ", $sformatf("Call to virtual peripheral 'interrupt_timer_control':\n%s", mon_req.sprint()), UVM_LOW)
+         `uvm_info("VP_VSEQ", $sformatf("Call to virtual peripheral 'interrupt_timer_control':\n%s", mon_req.sprint()), UVM_HIGH)
       end
       //slv_rsp.start(p_sequencer.obi_memory_data_sequencer);
       slv_rsp.set_sequencer(p_sequencer.obi_memory_data_sequencer);
@@ -370,7 +360,7 @@ task uvme_cv32e40x_vp_vseq_c::vp_debug_control(ref uvma_obi_memory_mon_trn_c mon
    if (mon_req.access_type == UVMA_OBI_MEMORY_ACCESS_WRITE) begin
       `uvm_create  (slv_rsp)
       add_latencies(slv_rsp);
-      `uvm_info("VP_VSEQ", $sformatf("Call to virtual peripheral 'vp_debug_control':\n%s", mon_req.sprint()), UVM_LOW)
+      `uvm_info("VP_VSEQ", $sformatf("Call to virtual peripheral 'vp_debug_control':\n%s", mon_req.sprint()), UVM_HIGH)
       
       // Extract fields from write data
       dbg_req_value       = mon_req.data[31];
@@ -424,7 +414,7 @@ task uvme_cv32e40x_vp_vseq_c::vp_rand_num_gen(ref uvma_obi_memory_mon_trn_c mon_
    add_latencies(slv_rsp);
    
    if (mon_req.access_type == UVMA_OBI_MEMORY_ACCESS_READ) begin
-      `uvm_info("VP_VSEQ", $sformatf("Call to virtual peripheral 'rand_num_gen':\n%s", mon_req.sprint()), UVM_LOW)
+      `uvm_info("VP_VSEQ", $sformatf("Call to virtual peripheral 'rand_num_gen':\n%s", mon_req.sprint()), UVM_HIGH)
       slv_rsp.rdata = $urandom();
    end
    
@@ -567,10 +557,8 @@ endtask : vp_sig_writer
 
 task uvme_cv32e40x_vp_vseq_c::irq_o();
    
-   `uvm_info("VP_VSEQ", "Call to irq_o()", UVM_LOW)
-   wait (cntxt.intr_vif.clk === 1);
-   //TODO: add control logic to define which interrupts are set/cleared
-   cntxt.intr_vif.irq_drv = 32'h0000_0001;
+   `uvm_info("VP_VSEQ", "Call to irq_o()", UVM_HIGH)
+   cntxt.interrupt_cntxt.vif.drv_cb.irq_drv <= interrupt_value;
    
 endtask : irq_o
 

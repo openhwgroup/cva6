@@ -366,9 +366,7 @@ endif
 	@echo "$(BANNER)"
 	$(RISCV_EXE_PREFIX)objcopy -O verilog \
 		$< \
-		$@ \
-		--change-section-address  .debugger=0x3FC000 \
-		--change-section-address  .debugger_exception=0x3FC800
+		$@
 	@echo ""
 	$(RISCV_EXE_PREFIX)readelf -a $< > $*.readelf
 	@echo ""

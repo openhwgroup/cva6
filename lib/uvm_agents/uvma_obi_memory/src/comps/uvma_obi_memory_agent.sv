@@ -223,7 +223,8 @@ endfunction : connect_sequencer_and_driver
 
 function void uvma_obi_memory_agent_c::connect_rsp_path();
    
-   monitor.ap          .connect(driver   .mon_trn_fifo.analysis_export);
+   // FIXME:This conenction is a memory leak (driver never drains FIFO)
+   //monitor.ap          .connect(driver   .mon_trn_fifo.analysis_export);
    monitor.sequencer_ap.connect(sequencer.mon_trn_fifo.analysis_export);
    
 endfunction : connect_rsp_path
