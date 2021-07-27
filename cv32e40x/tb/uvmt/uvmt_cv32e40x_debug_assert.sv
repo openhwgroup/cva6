@@ -187,23 +187,30 @@ module uvmt_cv32e40x_debug_assert
             $sformatf("Debug mode not correctly entered after trigger match depc=%08x, tdata2=%08x",
                 cov_assert_if.depc_q, tdata2_at_entry));
 
+
     // Address match without trigger enabled should NOT result in debug mode
+
     property p_trigger_match_disabled;
         $rose(cov_assert_if.addr_match) && !cov_assert_if.debug_mode_q |-> ##[1:6] !cov_assert_if.debug_mode_q;
     endproperty
 
     a_trigger_match_disabled: assert property(p_trigger_match_disabled)
-        else
-            `uvm_error(info_tag, "Trigger match with tdata[2]==0 resulted in debug mode");
+        else `uvm_error(info_tag, "Trigger match with tdata[2]==0 resulted in debug mode");
+
 
     // Exception in debug mode results in pc->dm_exception_addr_i
+
     property p_debug_mode_exception;
-        $rose(cov_assert_if.illegal_insn_i) && cov_assert_if.debug_mode_q && cov_assert_if.is_decoding |-> (decode_valid & cov_assert_if.id_valid) [->2] ##0 cov_assert_if.debug_mode_q && (cov_assert_if.id_stage_pc == exception_addr_at_entry);
+        $rose(cov_assert_if.illegal_insn_i) && cov_assert_if.debug_mode_q
+        |=> (decode_valid && cov_assert_if.id_valid) [->1]
+        ##0 cov_assert_if.debug_mode_q && (cov_assert_if.id_stage_pc == exception_addr_at_entry);
     endproperty
 
     a_debug_mode_exception : assert property(p_debug_mode_exception)
-        else
-            `uvm_error(info_tag, $sformatf("Exception in debug mode not handled incorrectly. dm=%d, pc=%08x", cov_assert_if.debug_mode_q, cov_assert_if.id_stage_pc));
+        else `uvm_error(info_tag,
+            $sformatf("Exception in debug mode not handled incorrectly. dm=%d, pc=%08x",
+                cov_assert_if.debug_mode_q, cov_assert_if.id_stage_pc));
+
 
     // ECALL in debug mode results in pc->dm_exception_addr_i
     property p_debug_mode_ecall;
@@ -382,20 +389,20 @@ module uvmt_cv32e40x_debug_assert
     // not pc from interrupt handler
     // PC is checked in another assertion
     property p_debug_req_and_irq;
-        cov_assert_if.debug_req_i && cov_assert_if.pending_enabled_irq  && cov_assert_if.ctrl_fsm_cs == cv32e40x_pkg::FUNCTIONAL
-        |-> (decode_valid & cov_assert_if.id_valid) [->1:2] ##0 cov_assert_if.debug_mode_q;
+        cov_assert_if.debug_req_i && (cov_assert_if.pending_enabled_irq != 0)
+        && cov_assert_if.ctrl_fsm_cs == cv32e40x_pkg::FUNCTIONAL
+        |-> (decode_valid && cov_assert_if.id_valid) [->1:20] ##0 cov_assert_if.debug_mode_q;
+        // TODO:ropeders |-> (decode_valid && cov_assert_if.id_valid) [->1:2] ##0 cov_assert_if.debug_mode_q;
     endproperty
 
     a_debug_req_and_irq : assert property(p_debug_req_and_irq)
-        else
-            `uvm_error(info_tag, "Debug mode not entered after debug_req_i and irq on same cycle");
+        else `uvm_error(info_tag, "Debug mode not entered after debug_req_i and irq on same cycle");
 
     // debug_req at reset should result in debug mode and no instructions
     // executed
     property p_debug_at_reset;
         cov_assert_if.ctrl_fsm_cs == cv32e40x_pkg::RESET && cov_assert_if.debug_req_i |->
         decode_valid [->1:2] ##0 cov_assert_if.debug_mode_q && (cov_assert_if.depc_q == boot_addr_at_entry);
- 
     endproperty    
 
     a_debug_at_reset : assert property(p_debug_at_reset)

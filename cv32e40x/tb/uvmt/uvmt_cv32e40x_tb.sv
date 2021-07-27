@@ -434,7 +434,7 @@ bind cv32e40x_wrapper
       .dm_exception_addr_i(dut_wrap.cv32e40x_wrapper_i.core_i.dm_exception_addr_i),
       .core_sleep_o(dut_wrap.cv32e40x_wrapper_i.core_i.core_sleep_o),
       .irq_i(dut_wrap.cv32e40x_wrapper_i.core_i.irq_i),
-      //TODO:ropeders .pc_set(dut_wrap.cv32e40x_wrapper_i.core_i.pc_set),
+      .pc_set(dut_wrap.cv32e40x_wrapper_i.core_i.ctrl_fsm.pc_set),
       .boot_addr_i(dut_wrap.cv32e40x_wrapper_i.core_i.boot_addr_i),
       .rvfi_valid(dut_wrap.cv32e40x_wrapper_i.rvfi_i.rvfi_valid),
       .rvfi_pc_wdata(dut_wrap.cv32e40x_wrapper_i.rvfi_i.rvfi_pc_wdata),
