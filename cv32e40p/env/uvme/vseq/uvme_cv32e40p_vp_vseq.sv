@@ -257,39 +257,30 @@ endtask : do_response
 
 task uvme_cv32e40p_vp_vseq_c::do_mem_operation(ref uvma_obi_memory_mon_trn_c mon_req);
 
-   uvma_obi_memory_slv_seq_item_c  slv_rsp;
+   bit                             [31:0]  word_aligned_addr;
+   uvma_obi_memory_slv_seq_item_c          slv_rsp;
+
    `uvm_create(slv_rsp)
    add_latencies(slv_rsp);
-   
-   `uvm_info("VP_VSEQ", $sformatf("Performing operation:\n%s", mon_req.sprint()),
+
+   word_aligned_addr = { mon_req.address[31:2], 2'b00 };
+
+   `uvm_info("VP_VSEQ", $sformatf("memory operation:\n%s", mon_req.sprint()),
              //UVM_HIGH)
              UVM_NONE)
    if (mon_req.access_type == UVMA_OBI_MEMORY_ACCESS_WRITE) begin
-      if (mon_req.be[3]) cntxt.mem[mon_req.address+3] = mon_req.data[31:24];
-      if (mon_req.be[2]) cntxt.mem[mon_req.address+2] = mon_req.data[23:16];
-      if (mon_req.be[1]) cntxt.mem[mon_req.address+1] = mon_req.data[15:08];
-      if (mon_req.be[0]) cntxt.mem[mon_req.address+0] = mon_req.data[07:00];
-      `uvm_info("VP_VSEQ", $sformatf("expected addr: %8h; be: %1h; wdata: %8h", mon_req.address, mon_req.be, {mon_req.data[3],mon_req.data[2],mon_req.data[1],mon_req.data[0]}),
-                UVM_HIGH)
-      //        UVM_NONE)
-      `uvm_info("VP_VSEQ", $sformatf("actual addr: %8h; be: %1h; wdata: %8h", mon_req.address, mon_req.be, {cntxt.mem[mon_req.address+3],cntxt.mem[mon_req.address+2],cntxt.mem[mon_req.address+1],cntxt.mem[mon_req.address+0]}),
-      //          UVM_HIGH)
-                UVM_NONE)
+      if (mon_req.be[3]) cntxt.mem[word_aligned_addr + 3] = mon_req.data[31:24];
+      if (mon_req.be[2]) cntxt.mem[word_aligned_addr + 2] = mon_req.data[23:16];
+      if (mon_req.be[1]) cntxt.mem[word_aligned_addr + 1] = mon_req.data[15:08];
+      if (mon_req.be[0]) cntxt.mem[word_aligned_addr + 0] = mon_req.data[07:00];
    end
    else begin
-      if (mon_req.be[3]) slv_rsp.rdata[31:24] = cntxt.mem[mon_req.address+3];
-      if (mon_req.be[2]) slv_rsp.rdata[23:16] = cntxt.mem[mon_req.address+2];
-      if (mon_req.be[1]) slv_rsp.rdata[15:08] = cntxt.mem[mon_req.address+1];
-      if (mon_req.be[0]) slv_rsp.rdata[07:00] = cntxt.mem[mon_req.address+0];
-      //`uvm_info("VP_VSEQ", $sformatf("addr: %8h; be: %1h; rdata: %8h", mon_req.address, mon_req.be, slv_rsp.rdata),
-      ////          UVM_HIGH)
-      //          UVM_NONE)
-      `uvm_info("VP_VSEQ", $sformatf("expected addr: %8h; be: %1h; wdata: %8h", mon_req.address, mon_req.be, {mon_req.data[3],mon_req.data[2],mon_req.data[1],mon_req.data[0]}),
-                UVM_NONE)
-      `uvm_info("VP_VSEQ", $sformatf("actual addr: %8h; be: %1h; wdata: %8h", mon_req.address, mon_req.be, {cntxt.mem[mon_req.address+3],cntxt.mem[mon_req.address+2],cntxt.mem[mon_req.address+1],cntxt.mem[mon_req.address+0]}),
-                UVM_NONE)
+      if (mon_req.be[3]) slv_rsp.rdata[31:24] = cntxt.mem[word_aligned_addr + 3];
+      if (mon_req.be[2]) slv_rsp.rdata[23:16] = cntxt.mem[word_aligned_addr + 2];
+      if (mon_req.be[1]) slv_rsp.rdata[15:08] = cntxt.mem[word_aligned_addr + 1];
+      if (mon_req.be[0]) slv_rsp.rdata[07:00] = cntxt.mem[word_aligned_addr + 0];
    end
-   
+
    slv_rsp.set_sequencer(p_sequencer.obi_memory_data_sequencer);
    `uvm_send(slv_rsp)
 
