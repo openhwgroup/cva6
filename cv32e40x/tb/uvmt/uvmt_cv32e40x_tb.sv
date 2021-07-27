@@ -395,7 +395,7 @@ bind cv32e40x_wrapper
       .wb_valid(dut_wrap.cv32e40x_wrapper_i.core_i.wb_stage_i.instr_valid),  // TODO:ropeders ex_wb_pipe.instr_valid),
       .wb_halt(dut_wrap.cv32e40x_wrapper_i.core_i.wb_stage_i.ctrl_fsm_i.halt_wb),
       //TODO:ropeders .illegal_insn_q(dut_wrap.cv32e40x_wrapper_i.core_i.controller_i.controller_fsm_i.illegal_insn_q),
-      //TODO:ropeders .ecall_insn_i(dut_wrap.cv32e40x_wrapper_i.core_i.controller_i.controller_fsm_i.ecall_insn_i),
+      .ecall_insn_i(dut_wrap.cv32e40x_wrapper_i.core_i.ex_wb_pipe.ecall_insn),
       .debug_req_i(dut_wrap.cv32e40x_wrapper_i.core_i.controller_i.controller_fsm_i.pending_debug),  // TODO:ropeders "debug_req_i"?
       .debug_mode_q(dut_wrap.cv32e40x_wrapper_i.core_i.controller_i.controller_fsm_i.debug_mode_q),
       .dcsr_q(dut_wrap.cv32e40x_wrapper_i.core_i.cs_registers_i.dcsr_q),

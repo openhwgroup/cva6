@@ -214,8 +214,10 @@ module uvmt_cv32e40x_debug_assert
 
     // ECALL in debug mode results in pc->dm_exception_addr_i
     property p_debug_mode_ecall;
-        $rose(cov_assert_if.ecall_insn_i) && cov_assert_if.debug_mode_q  && cov_assert_if.is_decoding && cov_assert_if.id_stage_instr_valid_i
-        |-> (decode_valid & cov_assert_if.id_valid) [->1:3] ##0 cov_assert_if.debug_mode_q && (cov_assert_if.id_stage_pc == exception_addr_at_entry);
+        $rose(cov_assert_if.ecall_insn_i) && cov_assert_if.debug_mode_q
+        && cov_assert_if.is_decoding && cov_assert_if.id_stage_instr_valid_i
+        |-> (decode_valid && cov_assert_if.id_valid) [->1:3]
+        ##0 cov_assert_if.debug_mode_q && (cov_assert_if.id_stage_pc == exception_addr_at_entry);
     endproperty
 
     a_debug_mode_ecall : assert property(p_debug_mode_ecall)
