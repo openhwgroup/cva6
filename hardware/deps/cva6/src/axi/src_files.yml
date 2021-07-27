@@ -1,0 +1,25 @@
+axi:
+  files:
+    - src/axi_pkg.sv
+    - src/axi_test.sv
+    - src/axi_intf.sv
+
+    - src/axi_atop_filter.sv
+    - src/axi_arbiter.sv
+    - src/axi_address_resolver.sv
+
+    - src/axi_to_axi_lite.sv
+    - src/axi_lite_to_axi.sv
+    - src/axi_lite_xbar.sv
+    - src/axi_lite_cut.sv
+    - src/axi_lite_multicut.sv
+    - src/axi_lite_join.sv
+
+    - src/axi_cut.sv
+    - src/axi_multicut.sv
+    - src/axi_join.sv
+    - src/axi_modify_address.sv
+
+    - src/axi_delayer.sv
+
+    - src/axi_id_remap.sv

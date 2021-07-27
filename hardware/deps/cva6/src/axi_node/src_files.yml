@@ -1,0 +1,25 @@
+axi_node:
+  incdirs: [
+    ./src/,
+  ]
+  files: [
+    src/apb_regs_top.sv,
+    src/axi_address_decoder_AR.sv,
+    src/axi_address_decoder_AW.sv,
+    src/axi_address_decoder_BR.sv,
+    src/axi_address_decoder_BW.sv,
+    src/axi_address_decoder_DW.sv,
+    src/axi_node_arbiter.sv,
+    src/axi_AR_allocator.sv,
+    src/axi_AW_allocator.sv,
+    src/axi_BR_allocator.sv,
+    src/axi_BW_allocator.sv,
+    src/axi_DW_allocator.sv,
+    src/axi_multiplexer.sv,
+    src/axi_node.sv,
+    src/axi_node_intf_wrap.sv,
+    src/axi_node_wrap_with_slices.sv,
+    src/axi_regs_top.sv,
+    src/axi_request_block.sv,
+    src/axi_response_block.sv,
+  ]

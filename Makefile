@@ -215,6 +215,7 @@ src :=  $(filter-out src/ariane_regfile.sv, $(wildcard src/*.sv))              \
         src/tech_cells_generic/src/pulp_clock_gating.sv                        \
         src/tech_cells_generic/src/cluster_clock_inverter.sv                   \
         src/tech_cells_generic/src/pulp_clock_mux2.sv                          \
+        src/tech_cells_generic/src/generic_memory.sv                           \
         tb/ariane_testharness.sv                                               \
         tb/ariane_peripherals.sv                                               \
         tb/common/uart.sv                                                      \

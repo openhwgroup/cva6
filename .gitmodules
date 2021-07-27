@@ -1,21 +1,3 @@
-[submodule "src/axi_mem_if"]
-	path = src/axi_mem_if
-	url = https://github.com/pulp-platform/axi_mem_if.git
-[submodule "src/axi_node"]
-	path = src/axi_node
-	url = https://github.com/pulp-platform/axi_node.git
-[submodule "src/fpga-support"]
-	path = src/fpga-support
-	url = https://github.com/pulp-platform/fpga-support.git
-[submodule "src/common_cells"]
-	path = src/common_cells
-	url = https://github.com/pulp-platform/common_cells.git
-[submodule "src/axi"]
-	path = src/axi
-	url = https://github.com/pulp-platform/axi.git
-[submodule "src/register_interface"]
-	path = src/register_interface
-	url = https://github.com/pulp-platform/register_interface.git
 [submodule "fpga/src/apb_uart"]
 	path = fpga/src/apb_uart
 	url = https://github.com/pulp-platform/apb_uart.git
@@ -28,30 +10,9 @@
 [submodule "fpga/src/axi_slice"]
     path = fpga/src/axi_slice
     url = https://github.com/pulp-platform/axi_slice.git
-[submodule "src/tech_cells_generic"]
-	path = src/tech_cells_generic
-	url = https://github.com/pulp-platform/tech_cells_generic.git
-[submodule "src/fpu"]
-	path = src/fpu
-	url = https://github.com/pulp-platform/fpnew.git
 [submodule "fpga/src/ariane-ethernet"]
 	path = fpga/src/ariane-ethernet
 	url = https://github.com/lowRISC/ariane-ethernet.git
-[submodule "src/axi_riscv_atomics"]
-	path = src/axi_riscv_atomics
-	url = https://github.com/pulp-platform/axi_riscv_atomics.git
-[submodule "src/riscv-dbg"]
-	path = src/riscv-dbg
-	url = https://github.com/pulp-platform/riscv-dbg.git
-[submodule "src/rv_plic"]
-	path = src/rv_plic
-	url = https://github.com/pulp-platform/rv_plic.git
 [submodule "fpga/src/apb_timer"]
 	path = fpga/src/apb_timer
 	url = https://github.com/pulp-platform/apb_timer.git
-[submodule "tb/dromajo"]
-	path = tb/dromajo
-	url = https://github.com/kabylkas/dromajo.git
-[submodule "tb/common_verification"]
-	path = tb/common_verification
-	url = https://github.com/pulp-platform/common_verification.git

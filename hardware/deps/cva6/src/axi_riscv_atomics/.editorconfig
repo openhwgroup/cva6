@@ -1,0 +1,19 @@
+# EditorConfig (http://editorconfig.org/)
+root = true
+
+# Default Settings
+[*]
+charset = utf-8
+end_of_line = lf
+indent_size = 4
+indent_style = space
+insert_final_newline = true
+tab_width = 4
+trim_trailing_whitespace = true
+max_line_length = 100
+
+[Makefile]
+indent_style = tab
+
+[*.yml]
+indent_size = 2

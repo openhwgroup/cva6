@@ -1,0 +1,23 @@
+package:
+  name: axi_riscv_atomics
+  authors: ["Andreas Kurth <akurth@iis.ee.ethz.ch>", "Samuel Riedel <sriedel@student.ethz.ch>"]
+
+dependencies:
+  axi: { git: "https://github.com/pulp-platform/axi.git", version: 0.6.0 }
+  common_cells: { git: "https://github.com/pulp-platform/common_cells.git", version: 1.10.0 }
+
+sources:
+  # Source files grouped in levels.  Files in level 0 have no dependencies on files in this package.
+  # Files in level 1 only depend on files in level 0, files in level 2 on files in levels 1 and 0,
+  # etc.  Files within a level are ordered alphabetically.
+  # Level 0
+  - src/axi_res_tbl.sv
+  - src/axi_riscv_amos_alu.sv
+  # Level 1
+  - src/axi_riscv_amos.sv
+  - src/axi_riscv_lrsc.sv
+  # Level 2
+  - src/axi_riscv_atomics.sv
+  - src/axi_riscv_lrsc_wrap.sv
+  # Level 3
+  - src/axi_riscv_atomics_wrap.sv

@@ -1,0 +1,21 @@
+{signal: [
+  {name: 'clk',   wave: 'p.|....'},
+  {name: 'write', wave: 'x0|...x'},
+  {name: 'rdata', wave: 'x.|..2x', data: ["data"]},
+  {name: 'wdata', wave: 'x.|....'},
+  {name: 'wstrb', wave: 'x.|....'},
+  {name: 'error', wave: 'x.|..2x', data: ["error"]},
+  {name: 'valid', wave: '01|...0'},
+  {name: 'ready', wave: 'x0|..1x'},
+]}
+
+{signal: [
+  {name: 'clk',   wave: 'p.|....'},
+  {name: 'write', wave: 'x1|...x'},
+  {name: 'rdata', wave: 'x.|....'},
+  {name: 'wdata', wave: 'x2|...x', data: ["data"]},
+  {name: 'wstrb', wave: 'x2|...x', data: ["strb"]},
+  {name: 'error', wave: 'x.|..2x', data: ["error"]},
+  {name: 'valid', wave: '01|...0'},
+  {name: 'ready', wave: 'x0|..1x'},
+]}
