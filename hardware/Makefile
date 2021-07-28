@@ -126,9 +126,8 @@ endif
 
 # remote bitbang is enabled
 ifdef rbb
-	questa-cmd += +jtag_rbb_enable=1
-else
-	questa-cmd += +jtag_rbb_enable=0
+	compile_flag += +define+jtag_rbb  +jtag_rbb_enable=1
+	questa-cmd += +define+jtag_rbb  +jtag_rbb_enable=1
 endif
 
 bender:

@@ -41,7 +41,7 @@ module ariane_tb;
    
     parameter  USE_HYPER_MODELS    = 1;
 
-  `ifdef jtag_rbb_enable 
+  `ifdef jtag_rbb 
     parameter int   jtag_enable = '1 ;
   `else  
     parameter int   jtag_enable = '0 ;
@@ -107,7 +107,7 @@ module ariane_tb;
 
   assign exit_o              = (jtag_enable[0]) ? s_jtag_exit          : s_dmi_exit;
    
-  if (1) begin
+  if (~jtag_enable[0]) begin
     SimDTM i_SimDTM (
       .clk                  ( clk_i                 ),
       .reset                ( ~rst_DTM              ),
