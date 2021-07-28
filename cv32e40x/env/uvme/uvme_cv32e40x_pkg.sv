@@ -38,6 +38,7 @@ package uvme_cv32e40x_pkg;
    import uvml_hrtbt_pkg  ::*;
    import uvml_sb_pkg     ::*;
    import uvml_trn_pkg    ::*;  
+   import uvml_mem_pkg    ::*;  
    import uvma_core_cntrl_pkg::*;
    import uvma_isacov_pkg::*;
    import uvma_clknrst_pkg::*;
@@ -69,8 +70,11 @@ package uvme_cv32e40x_pkg;
    // Virtual sequences
    `include "uvme_cv32e40x_base_vseq.sv"
    `include "uvme_cv32e40x_reset_vseq.sv"
-   `include "uvme_cv32e40x_instr_vseq.sv"
-   `include "uvme_cv32e40x_vp_vseq.sv"
+//   `include "uvme_cv32e40x_instr_vseq.sv"
+   //`include "uvme_cv32e40x_vp_vseq.sv"
+   `include "uvme_cv32e40x_vp_debug_control_seq.sv"
+   `include "uvme_cv32e40x_vp_interrupt_timer_seq.sv"
+   `include "uvme_cv32e40x_vp_status_flags_seq.sv"
    `include "uvme_cv32e40x_interrupt_noise_vseq.sv"
    `include "uvme_cv32e40x_vseq_lib.sv"
    `include "uvme_cv32e40x_random_debug_vseq.sv" 

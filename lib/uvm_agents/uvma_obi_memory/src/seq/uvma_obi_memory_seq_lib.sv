@@ -25,7 +25,16 @@
 `include "uvma_obi_memory_mstr_base_seq.sv"
 `include "uvma_obi_memory_slv_base_seq.sv"
 `include "uvma_obi_memory_storage_slv_seq.sv"
+`include "uvma_obi_memory_vp_base_seq.sv"
+`include "uvma_obi_memory_vp_cycle_counter_seq.sv"
+`include "uvma_obi_memory_vp_debug_control_seq.sv"
+`include "uvma_obi_memory_vp_interrupt_timer_seq.sv"
+`include "uvma_obi_memory_vp_rand_num_seq.sv"
+`include "uvma_obi_memory_vp_sig_writer_seq.sv"
+`include "uvma_obi_memory_vp_virtual_printer_seq.sv"
 
+`include "uvma_obi_memory_slv_seq.sv"
+`include "uvma_obi_memory_fw_preload_seq.sv"
 
 /**
  * Object holding sequence library for Open Bus Interface agent.
@@ -36,8 +45,7 @@ class uvma_obi_memory_seq_lib_c extends uvm_sequence_library#(
 );
    
    `uvm_object_utils          (uvma_obi_memory_seq_lib_c)
-   `uvm_sequence_library_utils(uvma_obi_memory_seq_lib_c)
-   
+   `uvm_sequence_library_utils(uvma_obi_memory_seq_lib_c)   
    
    /**
     * Initializes sequence library
@@ -59,3 +67,4 @@ endfunction : new
 
 
 `endif // __UVMA_OBI_MEMORY_SEQ_LIB_SV__
+
