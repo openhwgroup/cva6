@@ -122,20 +122,25 @@ module uvmt_cv32e40x_debug_assert
         else
             `uvm_error(info_tag,$sformatf("Debug mode with wrong cause after ebreak, case = %d",cov_assert_if.dcsr_q[8:6]));
 
+
     // c.ebreak without dcsr.ebreakm results in exception at mtvec
     // Exclude single stepping as the sequence gets very complicated
+
     property p_cebreak_exception;
-        disable iff(cov_assert_if.debug_req_i | !cov_assert_if.rst_ni)
-        $rose(cov_assert_if.is_cebreak) && cov_assert_if.dcsr_q[15] == 1'b0 && !cov_assert_if.debug_mode_q  && cov_assert_if.is_decoding && cov_assert_if.id_valid &&
-        !cov_assert_if.debug_req_i && !cov_assert_if.dcsr_q[2]
-        |-> (decode_valid) [->1:2] ##0  !cov_assert_if.debug_mode_q && (cov_assert_if.mcause_q[5:0] === cv32e40x_pkg::EXC_CAUSE_BREAKPOINT) 
-                                                                && (cov_assert_if.mepc_q == pc_at_ebreak) &&
-                                                                   (cov_assert_if.id_stage_pc == cov_assert_if.mtvec);
+        disable iff(!cov_assert_if.rst_ni)
+        $rose(cov_assert_if.is_cebreak) && !cov_assert_if.debug_mode_q && !cov_assert_if.debug_req_i
+        && !cov_assert_if.dcsr_q[2] && !cov_assert_if.dcsr_q[15]
+        ##0 (!cov_assert_if.debug_req_i && !cov_assert_if.irq_ack_o) throughout (!decode_valid[->1] ##0 decode_valid[->1])
+        // TODO:ropeders need assertions for what happens if cebreak and req/irq?
+        |->
+        !cov_assert_if.debug_mode_q && (cov_assert_if.mcause_q[5:0] === cv32e40x_pkg::EXC_CAUSE_BREAKPOINT)
+        && (cov_assert_if.mepc_q == pc_at_ebreak) && (cov_assert_if.id_stage_pc == cov_assert_if.mtvec);
     endproperty
-    
+
     a_cebreak_exception: assert property(p_cebreak_exception)
         else
             `uvm_error(info_tag,$sformatf("Exception not entered correctly after c.ebreak with dcsr.ebreak=0"));
+
 
     // ebreak without dcsr.ebreakm results in exception at mtvec
     // Exclude single stepping as the sequence gets very complicated
@@ -468,7 +473,7 @@ module uvmt_cv32e40x_debug_assert
 
             // Capture pc at ebreak
             if(cov_assert_if.is_ebreak || cov_assert_if.is_cebreak ) begin
-                pc_at_ebreak <= cov_assert_if.id_stage_pc;
+                pc_at_ebreak <= cov_assert_if.wb_stage_pc;
             end
        end
     end        
