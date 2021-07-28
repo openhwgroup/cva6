@@ -62,23 +62,23 @@ class uvma_obi_memory_mon_c extends uvm_monitor;
    extern virtual task run_phase(uvm_phase phase);
    
    /**
-    * Updates the context's reset state.
+    * Monitors vif_passive_mp for asynchronous reset and updates the context's reset state.
     */
    extern task observe_reset();
    
    /**
     * TODO Describe uvma_obi_memory_mon_c::mon_chan_a_pre_reset/mon_chan_a_in_reset/mon_chan_a_post_reset()
     */
-   extern task mon_chan_a_pre_reset (uvm_phase phase);
-   extern task mon_chan_a_in_reset  (uvm_phase phase);
-   extern task mon_chan_a_post_reset(uvm_phase phase);
+   extern task mon_chan_a_pre_reset ();
+   extern task mon_chan_a_in_reset  ();
+   extern task mon_chan_a_post_reset();
    
    /**
     * TODO Describe uvma_obi_memory_mon_c::mon_chan_r_pre_reset/mon_chan_r_in_reset/mon_chan_r_post_reset()
     */
-   extern task mon_chan_r_pre_reset (uvm_phase phase);
-   extern task mon_chan_r_in_reset  (uvm_phase phase);
-   extern task mon_chan_r_post_reset(uvm_phase phase);
+   extern task mon_chan_r_pre_reset ();
+   extern task mon_chan_r_in_reset  ();
+   extern task mon_chan_r_post_reset();
    
    /**
     * TODO Describe uvma_obi_memory_mon_c::mon_chan_a_trn()
@@ -140,51 +140,31 @@ task uvma_obi_memory_mon_c::run_phase(uvm_phase phase);
    
    super.run_phase(phase);
    
-   fork
-      observe_reset();
-      
-      begin : chan_a
-         forever begin
-            wait (cfg.enabled);
-            
-            fork
-               begin
-                  case (cntxt.reset_state)
-                     UVMA_OBI_MEMORY_RESET_STATE_PRE_RESET : mon_chan_a_pre_reset (phase);
-                     UVMA_OBI_MEMORY_RESET_STATE_IN_RESET  : mon_chan_a_in_reset  (phase);
-                     UVMA_OBI_MEMORY_RESET_STATE_POST_RESET: mon_chan_a_post_reset(phase);
-                  endcase
-               end
-               
-               begin
-                  wait (!cfg.enabled);
-               end
-            join_any
-            disable fork;
+   if (cfg.enabled) begin
+      fork
+         observe_reset();
+         
+         begin : chan_a
+            forever begin
+               case (cntxt.reset_state)
+                  UVMA_OBI_MEMORY_RESET_STATE_PRE_RESET : mon_chan_a_pre_reset ();
+                  UVMA_OBI_MEMORY_RESET_STATE_IN_RESET  : mon_chan_a_in_reset  ();
+                  UVMA_OBI_MEMORY_RESET_STATE_POST_RESET: mon_chan_a_post_reset();
+               endcase
+            end
          end
-      end
-      
-      begin : chan_r
-         forever begin
-            wait (cfg.enabled);
-            
-            fork
-               begin
-                  case (cntxt.reset_state)
-                     UVMA_OBI_MEMORY_RESET_STATE_PRE_RESET : mon_chan_r_pre_reset (phase);
-                     UVMA_OBI_MEMORY_RESET_STATE_IN_RESET  : mon_chan_r_in_reset  (phase);
-                     UVMA_OBI_MEMORY_RESET_STATE_POST_RESET: mon_chan_r_post_reset(phase);
-                  endcase
-               end
-               
-               begin
-                  wait (!cfg.enabled);
-               end
-            join_any
-            disable fork;
+         
+         begin : chan_r
+            forever begin
+               case (cntxt.reset_state)
+                  UVMA_OBI_MEMORY_RESET_STATE_PRE_RESET : mon_chan_r_pre_reset ();
+                  UVMA_OBI_MEMORY_RESET_STATE_IN_RESET  : mon_chan_r_in_reset  ();
+                  UVMA_OBI_MEMORY_RESET_STATE_POST_RESET: mon_chan_r_post_reset();
+               endcase
+            end
          end
-      end
-   join_none
+      join_none
+   end
    
 endtask : run_phase
 
@@ -192,43 +172,32 @@ endtask : run_phase
 task uvma_obi_memory_mon_c::observe_reset();
    
    forever begin
-      wait (cfg.enabled);
-      
-      fork
-         begin
-            wait (cntxt.vif.reset_n === 0);
-            cntxt.reset_state = UVMA_OBI_MEMORY_RESET_STATE_IN_RESET;
-            `uvm_info("OBI_MEMORY_MON", $sformatf("RESET_STATE_IN_RESET"), UVM_NONE)
-            wait (cntxt.vif.reset_n === 1);
-            cntxt.reset_state = UVMA_OBI_MEMORY_RESET_STATE_POST_RESET;
-            `uvm_info("OBI_MEMORY_MON", $sformatf("RESET_STATE_POST_RESET"), UVM_NONE)
-         end
-         
-         begin
-            wait (!cfg.enabled);
-         end
-      join_any
-      disable fork;
+      wait (cntxt.vif.reset_n === 0);
+      cntxt.reset_state = UVMA_OBI_MEMORY_RESET_STATE_IN_RESET;
+      `uvm_info("OBI_MEMORY_MON", $sformatf("RESET_STATE_IN_RESET"), UVM_NONE)
+      wait (cntxt.vif.reset_n === 1);
+      cntxt.reset_state = UVMA_OBI_MEMORY_RESET_STATE_POST_RESET;
+      `uvm_info("OBI_MEMORY_MON", $sformatf("RESET_STATE_POST_RESET"), UVM_NONE)
    end
    
 endtask : observe_reset
 
 
-task uvma_obi_memory_mon_c::mon_chan_a_pre_reset(uvm_phase phase);
+task uvma_obi_memory_mon_c::mon_chan_a_pre_reset();
    
    @(vif_passive_mp.mon_cb);
    
 endtask : mon_chan_a_pre_reset
 
 
-task uvma_obi_memory_mon_c::mon_chan_a_in_reset(uvm_phase phase);
+task uvma_obi_memory_mon_c::mon_chan_a_in_reset();
    
    @(vif_passive_mp.mon_cb);
    
 endtask : mon_chan_a_in_reset
 
 
-task uvma_obi_memory_mon_c::mon_chan_a_post_reset(uvm_phase phase);
+task uvma_obi_memory_mon_c::mon_chan_a_post_reset();
    
    uvma_obi_memory_mon_trn_c  trn;
    
@@ -245,21 +214,21 @@ task uvma_obi_memory_mon_c::mon_chan_a_post_reset(uvm_phase phase);
 endtask : mon_chan_a_post_reset
 
 
-task uvma_obi_memory_mon_c::mon_chan_r_pre_reset(uvm_phase phase);
+task uvma_obi_memory_mon_c::mon_chan_r_pre_reset();
    
    @(vif_passive_mp.mon_cb);
    
 endtask : mon_chan_r_pre_reset
 
 
-task uvma_obi_memory_mon_c::mon_chan_r_in_reset(uvm_phase phase);
+task uvma_obi_memory_mon_c::mon_chan_r_in_reset();
    
    @(vif_passive_mp.mon_cb);
    
 endtask : mon_chan_r_in_reset
 
 
-task uvma_obi_memory_mon_c::mon_chan_r_post_reset(uvm_phase phase);
+task uvma_obi_memory_mon_c::mon_chan_r_post_reset();
    
    uvma_obi_memory_mon_trn_c  trn;
    
@@ -312,12 +281,7 @@ endtask : mon_chan_r_trn
 
 function void uvma_obi_memory_mon_c::process_trn(ref uvma_obi_memory_mon_trn_c trn);
    
-   trn.auser_width = cfg.auser_width;
-   trn.wuser_width = cfg.wuser_width;
-   trn.ruser_width = cfg.ruser_width;
-   trn.addr_width  = cfg.addr_width ;
-   trn.data_width  = cfg.data_width ;
-   trn.id_width    = cfg.id_width   ;
+   trn.cfg = cfg;
    
    trn.gnt_latency    = cntxt.mon_gnt_latency   ;
    trn.rvalid_latency = cntxt.mon_rvalid_latency;

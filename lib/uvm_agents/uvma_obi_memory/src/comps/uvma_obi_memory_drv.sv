@@ -70,17 +70,17 @@ class uvma_obi_memory_drv_c extends uvm_driver#(
    /**
     * Called by run_phase() while agent is in pre-reset state.
     */
-   extern task drv_pre_reset(uvm_phase phase);
+   extern task drv_pre_reset();
    
    /**
     * Called by run_phase() while agent is in reset state.
     */
-   extern task drv_in_reset(uvm_phase phase);
+   extern task drv_in_reset();
    
    /**
     * Called by run_phase() while agent is in post-reset state.
     */
-   extern task drv_post_reset(uvm_phase phase);
+   extern task drv_post_reset();
    
    /**
     * Drives the 'gnt' signal in response to 'req' being asserted.
@@ -186,33 +186,33 @@ task uvma_obi_memory_drv_c::run_phase(uvm_phase phase);
    
    super.run_phase(phase);
    
-   fork
-      begin : chan_a
-         forever begin
-            wait (cfg.enabled && cfg.is_active);
-            @(vif_slv_mp.drv_slv_cb);
-            slv_drv_gnt();
+   if (cfg.enabled && cfg.is_active) begin
+      fork
+         begin : chan_a
+            forever begin
+               @(vif_slv_mp.drv_slv_cb);
+               slv_drv_gnt();
+            end
          end
-      end
-      
-      begin : chan_r
-         forever begin
-            wait (cfg.enabled && cfg.is_active);
-            case (cntxt.reset_state)
-               UVMA_OBI_MEMORY_RESET_STATE_PRE_RESET : drv_pre_reset (phase);
-               UVMA_OBI_MEMORY_RESET_STATE_IN_RESET  : drv_in_reset  (phase);
-               UVMA_OBI_MEMORY_RESET_STATE_POST_RESET: drv_post_reset(phase);
-               
-               default: `uvm_fatal("OBI_MEMORY_DRV", $sformatf("Invalid reset_state: %0d", cntxt.reset_state))
-            endcase
+         
+         begin : chan_r
+            forever begin
+               case (cntxt.reset_state)
+                  UVMA_OBI_MEMORY_RESET_STATE_PRE_RESET : drv_pre_reset ();
+                  UVMA_OBI_MEMORY_RESET_STATE_IN_RESET  : drv_in_reset  ();
+                  UVMA_OBI_MEMORY_RESET_STATE_POST_RESET: drv_post_reset();
+                  
+                  default: `uvm_fatal("OBI_MEMORY_DRV", $sformatf("Invalid reset_state: %0d", cntxt.reset_state))
+               endcase
+            end
          end
-      end
-   join_none
+      join_none
+   end
    
 endtask : run_phase
 
 
-task uvma_obi_memory_drv_c::drv_pre_reset(uvm_phase phase);
+task uvma_obi_memory_drv_c::drv_pre_reset();
    
    vif_slv_mp.drv_slv_cb.gnt    <= 1'b0;
    vif_slv_mp.drv_slv_cb.rvalid <= 1'b0;
@@ -227,7 +227,7 @@ task uvma_obi_memory_drv_c::drv_pre_reset(uvm_phase phase);
 endtask : drv_pre_reset
 
 
-task uvma_obi_memory_drv_c::drv_in_reset(uvm_phase phase);
+task uvma_obi_memory_drv_c::drv_in_reset();
    
    case (cfg.drv_mode)
       UVMA_OBI_MEMORY_MODE_MSTR: begin
@@ -248,7 +248,7 @@ task uvma_obi_memory_drv_c::drv_in_reset(uvm_phase phase);
 endtask : drv_in_reset
 
 
-task uvma_obi_memory_drv_c::drv_post_reset(uvm_phase phase);
+task uvma_obi_memory_drv_c::drv_post_reset();
    
    uvma_obi_memory_mstr_seq_item_c  mstr_req;
    uvma_obi_memory_slv_seq_item_c   slv_req;
@@ -338,15 +338,7 @@ endtask : slv_drv_gnt
 task uvma_obi_memory_drv_c::prep_req(ref uvma_obi_memory_base_seq_item_c req);
    
    `uvml_hrtbt()
-   
-   // Copy cfg fields
-   req.mode        = cfg.drv_mode   ;
-   req.auser_width = cfg.auser_width;
-   req.wuser_width = cfg.wuser_width;
-   req.ruser_width = cfg.ruser_width;
-   req.addr_width  = cfg.addr_width ;
-   req.data_width  = cfg.data_width ;
-   req.id_width    = cfg.id_width   ;
+   req.cfg = cfg;
    
 endtask : prep_req
 

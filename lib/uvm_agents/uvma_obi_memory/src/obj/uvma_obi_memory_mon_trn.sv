@@ -39,18 +39,11 @@ class uvma_obi_memory_mon_trn_c extends uvml_trn_mon_trn_c;
    bit                               err        ; ///< Error
    
    // Metadata
-   int unsigned  gnt_latency   ; ///< Number of cycles before gnt is asserted after req is asserted
-   int unsigned  rvalid_latency; ///< Number of cycles before rvalid is asserted after gnt is asserted
-   int unsigned  rready_latency; ///< Number of cycles before rready is asserted after rvalid is asserted
-   int unsigned  rp_hold       ; ///< Length of RP phase (in clk cycles)
-   
-   // Parameters
-   int unsigned  auser_width;
-   int unsigned  wuser_width;
-   int unsigned  ruser_width;
-   int unsigned  addr_width ;
-   int unsigned  data_width ;
-   int unsigned  id_width   ;
+   uvma_obi_memory_cfg_c  cfg           ; ///< Handle to agent's configuration object
+   int unsigned           gnt_latency   ; ///< Number of cycles before gnt is asserted after req is asserted
+   int unsigned           rvalid_latency; ///< Number of cycles before rvalid is asserted after gnt is asserted
+   int unsigned           rready_latency; ///< Number of cycles before rready is asserted after rvalid is asserted
+   int unsigned           rp_hold       ; ///< Length of RP phase (in clk cycles)
    
    
    `uvm_object_utils_begin(uvma_obi_memory_mon_trn_c)

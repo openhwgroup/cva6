@@ -34,10 +34,11 @@ class uvma_obi_memory_slv_seq_item_c extends uvma_obi_memory_base_seq_item_c;
    rand bit                        err  ; ///< Error.
    
    // Metadata
-   rand int unsigned   gnt_latency   ; ///< Measured in clock cycles
-   rand int unsigned   access_latency; ///< Measured in clock cycles
-   rand int unsigned   hold_duration ; ///< Measured in clock cycles
-   rand int unsigned   tail_length   ; ///< Measured in clock cycles
+   uvma_obi_memory_cfg_c      cfg           ; ///< Handle to agent's configuration object
+   rand int unsigned          gnt_latency   ; ///< Measured in clock cycles
+   rand int unsigned          access_latency; ///< Measured in clock cycles
+   rand int unsigned          hold_duration ; ///< Measured in clock cycles
+   rand int unsigned          tail_length   ; ///< Measured in clock cycles
    uvma_obi_memory_mon_trn_c  orig_trn      ; ///< Monitored transaction to which this seq_item is responding
    
    
