@@ -41,8 +41,8 @@ class uvma_obi_memory_drv_c extends uvm_driver#(
    uvm_tlm_analysis_fifo #(uvma_obi_memory_mon_trn_c      )  mon_trn_fifo;
    
    // Handles to virtual interface modports
-   virtual uvma_obi_memory_if.active_mstr_mp  vif_mstr_mp;
-   virtual uvma_obi_memory_if.active_slv_mp   vif_slv_mp ;
+   virtual uvma_obi_memory_if.active_mstr_mp  mstr_mp;
+   virtual uvma_obi_memory_if.active_slv_mp   slv_mp ;
    
    
    `uvm_component_utils_begin(uvma_obi_memory_drv_c)
@@ -172,8 +172,8 @@ function void uvma_obi_memory_drv_c::build_phase(uvm_phase phase);
       `uvm_fatal("CNTXT", "Context handle is null")
    end
    uvm_config_db#(uvma_obi_memory_cntxt_c)::set(this, "*", "cntxt", cntxt);
-   vif_mstr_mp = cntxt.vif.active_mstr_mp;
-   vif_slv_mp  = cntxt.vif.active_slv_mp ;
+   mstr_mp = cntxt.vif.active_mstr_mp;
+   slv_mp  = cntxt.vif.active_slv_mp ;
    
    mstr_ap      = new("mstr_ap"     , this);
    slv_ap       = new("slv_ap"      , this);
@@ -190,7 +190,7 @@ task uvma_obi_memory_drv_c::run_phase(uvm_phase phase);
       fork
          begin : chan_a
             forever begin
-               @(vif_slv_mp.drv_slv_cb);
+               @(slv_mp.drv_slv_cb);
                slv_drv_gnt();
             end
          end
@@ -214,12 +214,12 @@ endtask : run_phase
 
 task uvma_obi_memory_drv_c::drv_pre_reset();
    
-   vif_slv_mp.drv_slv_cb.gnt    <= 1'b0;
-   vif_slv_mp.drv_slv_cb.rvalid <= 1'b0;
+   slv_mp.drv_slv_cb.gnt    <= 1'b0;
+   slv_mp.drv_slv_cb.rvalid <= 1'b0;
 
    case (cfg.drv_mode)
-      UVMA_OBI_MEMORY_MODE_MSTR: @(vif_mstr_mp.drv_mstr_cb);
-      UVMA_OBI_MEMORY_MODE_SLV : @(vif_slv_mp .drv_slv_cb );
+      UVMA_OBI_MEMORY_MODE_MSTR: @(mstr_mp.drv_mstr_cb);
+      UVMA_OBI_MEMORY_MODE_SLV : @(slv_mp .drv_slv_cb );
       
       default: `uvm_fatal("OBI_MEMORY_DRV", $sformatf("Invalid drv_mode: %0d", cfg.drv_mode))
    endcase
@@ -231,14 +231,14 @@ task uvma_obi_memory_drv_c::drv_in_reset();
    
    case (cfg.drv_mode)
       UVMA_OBI_MEMORY_MODE_MSTR: begin
-         @(vif_mstr_mp.drv_mstr_cb);
+         @(mstr_mp.drv_mstr_cb);
          drv_mstr_idle();
       end
       
       UVMA_OBI_MEMORY_MODE_SLV : begin
-         vif_slv_mp.drv_slv_cb.rdata <= '0;
-         @(vif_slv_mp.drv_slv_cb);
-         vif_slv_mp.drv_slv_cb.rdata <= '0;
+         slv_mp.drv_slv_cb.rdata <= '0;
+         @(slv_mp.drv_slv_cb);
+         slv_mp.drv_slv_cb.rdata <= '0;
          drv_slv_idle();
       end
       
@@ -293,9 +293,9 @@ task uvma_obi_memory_drv_c::drv_post_reset();
             seq_item_port.item_done();
          end
          else begin
-            vif_slv_mp.drv_slv_cb.rvalid <= 1'b0;
+            slv_mp.drv_slv_cb.rvalid <= 1'b0;
             drv_slv_idle();
-            @(vif_slv_mp.drv_slv_cb);
+            @(slv_mp.drv_slv_cb);
          end
       end
       
@@ -312,16 +312,16 @@ task uvma_obi_memory_drv_c::slv_drv_gnt();
    case (cntxt.reset_state)
       UVMA_OBI_MEMORY_RESET_STATE_POST_RESET: begin
          // TODO: randomly assert GNT 0 or more cycles before REQ
-         if (vif_slv_mp.drv_slv_cb.req === 1'b1) begin
+         if (slv_mp.drv_slv_cb.req === 1'b1) begin
             `uvm_info("OBI_MEMORY_DRV::slv_drv_gnt", "req is 1", UVM_HIGH)
             if (cfg.drv_slv_gnt) begin
                repeat (cfg.drv_slv_gnt_latency) begin
-                  @(vif_slv_mp.drv_slv_cb);
+                  @(slv_mp.drv_slv_cb);
                end
-               vif_slv_mp.drv_slv_cb.gnt <= 1'b1;
+               slv_mp.drv_slv_cb.gnt <= 1'b1;
                `uvm_info("OBI_MEMORY_DRV::slv_drv_gnt", "gnt asserted", UVM_HIGH)
-               @(vif_slv_mp.drv_slv_cb);
-               vif_slv_mp.drv_slv_cb.gnt <= 1'b0;
+               @(slv_mp.drv_slv_cb);
+               slv_mp.drv_slv_cb.gnt <= 1'b0;
                `uvm_info("OBI_MEMORY_DRV::slv_drv_gnt", "gnt deasserted", UVM_HIGH)
             end
          end
@@ -364,58 +364,58 @@ task uvma_obi_memory_drv_c::drv_mstr_read_req(ref uvma_obi_memory_mstr_seq_item_
    
    // Req Latency cycles
    repeat (req.req_latency) begin
-      @(vif_mstr_mp.drv_mstr_cb);
+      @(mstr_mp.drv_mstr_cb);
    end
    
    // Address phase
-   vif_mstr_mp.drv_mstr_cb.req <= 1'b1;
-   vif_mstr_mp.drv_mstr_cb.we  <= req.access_type;
+   mstr_mp.drv_mstr_cb.req <= 1'b1;
+   mstr_mp.drv_mstr_cb.we  <= req.access_type;
    for (int unsigned ii=0; ii<cfg.addr_width; ii++) begin
-      vif_mstr_mp.drv_mstr_cb.addr[ii] <= req.address[ii];
+      mstr_mp.drv_mstr_cb.addr[ii] <= req.address[ii];
    end
    for (int unsigned ii=0; ii<(cfg.data_width/8); ii++) begin
-      vif_mstr_mp.drv_mstr_cb.be[ii] <= req.be[ii];
+      mstr_mp.drv_mstr_cb.be[ii] <= req.be[ii];
    end
    for (int unsigned ii=0; ii<cfg.auser_width; ii++) begin
-      vif_mstr_mp.drv_mstr_cb.auser[ii] <= req.auser[ii];
+      mstr_mp.drv_mstr_cb.auser[ii] <= req.auser[ii];
    end
    for (int unsigned ii=0; ii<cfg.id_width; ii++) begin
-      vif_mstr_mp.drv_mstr_cb.aid[ii] <= req.id[ii];
+      mstr_mp.drv_mstr_cb.aid[ii] <= req.id[ii];
    end
    
    // Wait for grant
-   while (vif_mstr_mp.drv_mstr_cb.gnt !== 1'b1) begin
-      @(vif_mstr_mp.drv_mstr_cb);
+   while (mstr_mp.drv_mstr_cb.gnt !== 1'b1) begin
+      @(mstr_mp.drv_mstr_cb);
    end
    
    // Wait for rvalid
-   if (vif_mstr_mp.drv_mstr_cb.rvalid !== 1'b1) begin
-      while (vif_mstr_mp.drv_mstr_cb.rvalid !== 1'b1) begin
-         @(vif_mstr_mp.drv_mstr_cb);
+   if (mstr_mp.drv_mstr_cb.rvalid !== 1'b1) begin
+      while (mstr_mp.drv_mstr_cb.rvalid !== 1'b1) begin
+         @(mstr_mp.drv_mstr_cb);
       end
    end
    repeat (req.rready_latency) begin
-      @(vif_mstr_mp.drv_mstr_cb);
+      @(mstr_mp.drv_mstr_cb);
    end
    
    // Response phase
-   vif_mstr_mp.drv_mstr_cb.rready <= 1'b1;
-   vif_mstr_mp.drv_mstr_cb.req    <= 1'b0;
+   mstr_mp.drv_mstr_cb.rready <= 1'b1;
+   mstr_mp.drv_mstr_cb.req    <= 1'b0;
    repeat (req.rready_hold) begin
-      if (vif_mstr_mp.drv_mstr_cb.rvalid !== 1'b1) begin
+      if (mstr_mp.drv_mstr_cb.rvalid !== 1'b1) begin
          break;
       end
-      @(vif_mstr_mp.drv_mstr_cb);
+      @(mstr_mp.drv_mstr_cb);
    end
-   while (vif_mstr_mp.drv_mstr_cb.rvalid === 1'b1) begin
-      @(vif_mstr_mp.drv_mstr_cb);
+   while (mstr_mp.drv_mstr_cb.rvalid === 1'b1) begin
+      @(mstr_mp.drv_mstr_cb);
    end
    
    // Tail
-   vif_mstr_mp.drv_mstr_cb.rready <= 1'b0;
+   mstr_mp.drv_mstr_cb.rready <= 1'b0;
    drv_mstr_idle();
    repeat (req.tail_length) begin
-      @(vif_mstr_mp.drv_mstr_cb);
+      @(mstr_mp.drv_mstr_cb);
    end
    
 endtask : drv_mstr_read_req
@@ -425,62 +425,62 @@ task uvma_obi_memory_drv_c::drv_mstr_write_req(ref uvma_obi_memory_mstr_seq_item
    
    // Req Latency cycles
    repeat (req.req_latency) begin
-      @(vif_mstr_mp.drv_mstr_cb);
+      @(mstr_mp.drv_mstr_cb);
    end
    
    // Address phase
-   vif_mstr_mp.drv_mstr_cb.req <= 1'b1;
-   vif_mstr_mp.drv_mstr_cb.we  <= req.access_type;
+   mstr_mp.drv_mstr_cb.req <= 1'b1;
+   mstr_mp.drv_mstr_cb.we  <= req.access_type;
    for (int unsigned ii=0; ii<cfg.addr_width; ii++) begin
-      vif_mstr_mp.drv_mstr_cb.addr[ii] <= req.address[ii];
+      mstr_mp.drv_mstr_cb.addr[ii] <= req.address[ii];
    end
    for (int unsigned ii=0; ii<cfg.data_width; ii++) begin
-      vif_mstr_mp.drv_mstr_cb.wdata[ii] <= req.wdata[ii];
+      mstr_mp.drv_mstr_cb.wdata[ii] <= req.wdata[ii];
    end
    for (int unsigned ii=0; ii<(cfg.data_width/8); ii++) begin
-      vif_mstr_mp.drv_mstr_cb.be[ii] <= req.be[ii];
+      mstr_mp.drv_mstr_cb.be[ii] <= req.be[ii];
    end
    for (int unsigned ii=0; ii<cfg.auser_width; ii++) begin
-      vif_mstr_mp.drv_mstr_cb.auser[ii] <= req.auser[ii];
+      mstr_mp.drv_mstr_cb.auser[ii] <= req.auser[ii];
    end
    for (int unsigned ii=0; ii<cfg.wuser_width; ii++) begin
-      vif_mstr_mp.drv_mstr_cb.wuser[ii] <= req.wuser[ii];
+      mstr_mp.drv_mstr_cb.wuser[ii] <= req.wuser[ii];
    end
    for (int unsigned ii=0; ii<cfg.id_width; ii++) begin
-      vif_mstr_mp.drv_mstr_cb.aid[ii] <= req.id[ii];
+      mstr_mp.drv_mstr_cb.aid[ii] <= req.id[ii];
    end
    
    // Wait for grant
-   while (vif_mstr_mp.drv_mstr_cb.gnt !== 1'b1) begin
-      @(vif_mstr_mp.drv_mstr_cb);
+   while (mstr_mp.drv_mstr_cb.gnt !== 1'b1) begin
+      @(mstr_mp.drv_mstr_cb);
    end
    
    // Wait for rvalid
-   while (vif_mstr_mp.drv_mstr_cb.rvalid !== 1'b1) begin
-      @(vif_mstr_mp.drv_mstr_cb);
+   while (mstr_mp.drv_mstr_cb.rvalid !== 1'b1) begin
+      @(mstr_mp.drv_mstr_cb);
    end
    repeat (req.rready_latency) begin
-      @(vif_mstr_mp.drv_mstr_cb);
+      @(mstr_mp.drv_mstr_cb);
    end
    
    // Response phase
-   vif_mstr_mp.drv_mstr_cb.rready <= 1'b1;
-   vif_mstr_mp.drv_mstr_cb.req    <= 1'b0;
+   mstr_mp.drv_mstr_cb.rready <= 1'b1;
+   mstr_mp.drv_mstr_cb.req    <= 1'b0;
    repeat (req.rready_hold) begin
-      if (vif_mstr_mp.drv_mstr_cb.rvalid !== 1'b1) begin
+      if (mstr_mp.drv_mstr_cb.rvalid !== 1'b1) begin
          break;
       end
-      @(vif_mstr_mp.drv_mstr_cb);
+      @(mstr_mp.drv_mstr_cb);
    end
-   while (vif_mstr_mp.drv_mstr_cb.rvalid === 1'b1) begin
-      @(vif_mstr_mp.drv_mstr_cb);
+   while (mstr_mp.drv_mstr_cb.rvalid === 1'b1) begin
+      @(mstr_mp.drv_mstr_cb);
    end
    
    // Tail
-   vif_mstr_mp.drv_mstr_cb.rready <= 1'b0;
+   mstr_mp.drv_mstr_cb.rready <= 1'b0;
    drv_mstr_idle();
    repeat (req.tail_length) begin
-      @(vif_mstr_mp.drv_mstr_cb);
+      @(mstr_mp.drv_mstr_cb);
    end
    
 endtask : drv_mstr_write_req
@@ -506,12 +506,12 @@ endtask : drv_slv_req
 task uvma_obi_memory_drv_c::drv_slv_read_req(ref uvma_obi_memory_slv_seq_item_c req);
 
    `uvm_info("OBI_MEMORY_DRV", $sformatf("drv_slv_read_req: %8h", req.rdata), UVM_HIGH)
-   vif_slv_mp.drv_slv_cb.rvalid <= 1'b1;
-   vif_slv_mp.drv_slv_cb.err    <= req.err;
+   slv_mp.drv_slv_cb.rvalid <= 1'b1;
+   slv_mp.drv_slv_cb.err    <= req.err;
    for (int unsigned ii=0; ii<cfg.data_width; ii++) begin
-      vif_slv_mp.drv_slv_cb.rdata[ii] <= req.rdata[ii];
+      slv_mp.drv_slv_cb.rdata[ii] <= req.rdata[ii];
    end
-   @(vif_slv_mp.drv_slv_cb);
+   @(slv_mp.drv_slv_cb);
    `uvm_info("OBI_MEMORY_DRV", "drv_slv_read_req FIN", UVM_HIGH)
    
 endtask : drv_slv_read_req
@@ -520,9 +520,9 @@ endtask : drv_slv_read_req
 task uvma_obi_memory_drv_c::drv_slv_write_req(ref uvma_obi_memory_slv_seq_item_c req);
 
    `uvm_info("OBI_MEMORY_DRV", $sformatf("drv_slv_write_req: %8h", req.rdata), UVM_HIGH)
-   vif_slv_mp.drv_slv_cb.rvalid <= 1'b1;
-   vif_slv_mp.drv_slv_cb.err <= req.err;
-   @(vif_slv_mp.drv_slv_cb);
+   slv_mp.drv_slv_cb.rvalid <= 1'b1;
+   slv_mp.drv_slv_cb.err <= req.err;
+   @(slv_mp.drv_slv_cb);
    `uvm_info("OBI_MEMORY_DRV", "drv_slv_write_req FIN", UVM_HIGH)
    
 endtask : drv_slv_write_req
@@ -552,50 +552,50 @@ endtask : process_slv_rsp
 
 task uvma_obi_memory_drv_c::drv_mstr_idle();
    
-   vif_mstr_mp.drv_mstr_cb.req    <= '0;
-   vif_mstr_mp.drv_mstr_cb.rready <= '0;
+   mstr_mp.drv_mstr_cb.req    <= '0;
+   mstr_mp.drv_mstr_cb.rready <= '0;
    
    case (cfg.drv_idle)
       UVMA_OBI_MEMORY_DRV_IDLE_SAME: ;// Do nothing;
       
       UVMA_OBI_MEMORY_DRV_IDLE_ZEROS: begin
-         vif_mstr_mp.drv_mstr_cb.addr  <= '0;
-         vif_mstr_mp.drv_mstr_cb.we    <= '0;
-         vif_mstr_mp.drv_mstr_cb.be    <= '0;
-         vif_mstr_mp.drv_mstr_cb.wdata <= '0;
-         vif_mstr_mp.drv_mstr_cb.auser <= '0;
-         vif_mstr_mp.drv_mstr_cb.wuser <= '0;
-         vif_mstr_mp.drv_mstr_cb.aid   <= '0;
+         mstr_mp.drv_mstr_cb.addr  <= '0;
+         mstr_mp.drv_mstr_cb.we    <= '0;
+         mstr_mp.drv_mstr_cb.be    <= '0;
+         mstr_mp.drv_mstr_cb.wdata <= '0;
+         mstr_mp.drv_mstr_cb.auser <= '0;
+         mstr_mp.drv_mstr_cb.wuser <= '0;
+         mstr_mp.drv_mstr_cb.aid   <= '0;
       end
       
       UVMA_OBI_MEMORY_DRV_IDLE_RANDOM: begin
-         vif_mstr_mp.drv_mstr_cb.addr  <= $urandom();
-         vif_mstr_mp.drv_mstr_cb.we    <= $urandom();
-         vif_mstr_mp.drv_mstr_cb.be    <= $urandom();
-         vif_mstr_mp.drv_mstr_cb.wdata <= $urandom();
-         vif_mstr_mp.drv_mstr_cb.auser <= $urandom();
-         vif_mstr_mp.drv_mstr_cb.wuser <= $urandom();
-         vif_mstr_mp.drv_mstr_cb.aid   <= $urandom();
+         mstr_mp.drv_mstr_cb.addr  <= $urandom();
+         mstr_mp.drv_mstr_cb.we    <= $urandom();
+         mstr_mp.drv_mstr_cb.be    <= $urandom();
+         mstr_mp.drv_mstr_cb.wdata <= $urandom();
+         mstr_mp.drv_mstr_cb.auser <= $urandom();
+         mstr_mp.drv_mstr_cb.wuser <= $urandom();
+         mstr_mp.drv_mstr_cb.aid   <= $urandom();
       end
       
       UVMA_OBI_MEMORY_DRV_IDLE_X: begin
-         vif_mstr_mp.drv_mstr_cb.addr  <= 'X;
-         vif_mstr_mp.drv_mstr_cb.we    <= 'X;
-         vif_mstr_mp.drv_mstr_cb.be    <= 'X;
-         vif_mstr_mp.drv_mstr_cb.wdata <= 'X;
-         vif_mstr_mp.drv_mstr_cb.auser <= 'X;
-         vif_mstr_mp.drv_mstr_cb.wuser <= 'X;
-         vif_mstr_mp.drv_mstr_cb.aid   <= 'X;
+         mstr_mp.drv_mstr_cb.addr  <= 'X;
+         mstr_mp.drv_mstr_cb.we    <= 'X;
+         mstr_mp.drv_mstr_cb.be    <= 'X;
+         mstr_mp.drv_mstr_cb.wdata <= 'X;
+         mstr_mp.drv_mstr_cb.auser <= 'X;
+         mstr_mp.drv_mstr_cb.wuser <= 'X;
+         mstr_mp.drv_mstr_cb.aid   <= 'X;
       end
       
       UVMA_OBI_MEMORY_DRV_IDLE_Z: begin
-         vif_mstr_mp.drv_mstr_cb.addr  <= 'Z;
-         vif_mstr_mp.drv_mstr_cb.we    <= 'Z;
-         vif_mstr_mp.drv_mstr_cb.be    <= 'Z;
-         vif_mstr_mp.drv_mstr_cb.wdata <= 'Z;
-         vif_mstr_mp.drv_mstr_cb.auser <= 'Z;
-         vif_mstr_mp.drv_mstr_cb.wuser <= 'Z;
-         vif_mstr_mp.drv_mstr_cb.aid   <= 'Z;
+         mstr_mp.drv_mstr_cb.addr  <= 'Z;
+         mstr_mp.drv_mstr_cb.we    <= 'Z;
+         mstr_mp.drv_mstr_cb.be    <= 'Z;
+         mstr_mp.drv_mstr_cb.wdata <= 'Z;
+         mstr_mp.drv_mstr_cb.auser <= 'Z;
+         mstr_mp.drv_mstr_cb.wuser <= 'Z;
+         mstr_mp.drv_mstr_cb.aid   <= 'Z;
       end
       
       default: `uvm_fatal("OBI_MEMORY_DRV", $sformatf("Invalid drv_idle: %0d", cfg.drv_idle))
@@ -611,34 +611,34 @@ task uvma_obi_memory_drv_c::drv_slv_idle();
       
       UVMA_OBI_MEMORY_DRV_IDLE_ZEROS: begin
          //`uvm_info("OBI_MEMORY_DRV", $sformatf("Invalid drv_zeros: %0d", cfg.drv_idle), UVM_NONE)
-         vif_slv_mp.drv_slv_cb.rdata <= '0;
-         vif_slv_mp.drv_slv_cb.err   <= '0;
-         vif_slv_mp.drv_slv_cb.ruser <= '0;
-         vif_slv_mp.drv_slv_cb.rid   <= '0;
+         slv_mp.drv_slv_cb.rdata <= '0;
+         slv_mp.drv_slv_cb.err   <= '0;
+         slv_mp.drv_slv_cb.ruser <= '0;
+         slv_mp.drv_slv_cb.rid   <= '0;
       end
       
       UVMA_OBI_MEMORY_DRV_IDLE_RANDOM: begin
          `uvm_info("OBI_MEMORY_DRV", $sformatf("Invalid drv_random: %0d", cfg.drv_idle), UVM_NONE)
-         vif_slv_mp.drv_slv_cb.rdata <= $urandom();
-         vif_slv_mp.drv_slv_cb.err   <= $urandom();
-         vif_slv_mp.drv_slv_cb.ruser <= $urandom();
-         vif_slv_mp.drv_slv_cb.rid   <= $urandom();
+         slv_mp.drv_slv_cb.rdata <= $urandom();
+         slv_mp.drv_slv_cb.err   <= $urandom();
+         slv_mp.drv_slv_cb.ruser <= $urandom();
+         slv_mp.drv_slv_cb.rid   <= $urandom();
       end
       
       UVMA_OBI_MEMORY_DRV_IDLE_X: begin
          `uvm_info("OBI_MEMORY_DRV", $sformatf("Invalid drv_idle: %0d", cfg.drv_idle), UVM_NONE)
-         vif_slv_mp.drv_slv_cb.rdata <= 'X;
-         vif_slv_mp.drv_slv_cb.err   <= 'X;
-         vif_slv_mp.drv_slv_cb.ruser <= 'X;
-         vif_slv_mp.drv_slv_cb.rid   <= 'X;
+         slv_mp.drv_slv_cb.rdata <= 'X;
+         slv_mp.drv_slv_cb.err   <= 'X;
+         slv_mp.drv_slv_cb.ruser <= 'X;
+         slv_mp.drv_slv_cb.rid   <= 'X;
       end
       
       UVMA_OBI_MEMORY_DRV_IDLE_Z: begin
          `uvm_info("OBI_MEMORY_DRV", $sformatf("Invalid drv_Z: %0d", cfg.drv_idle), UVM_NONE)
-         vif_slv_mp.drv_slv_cb.rdata <= 'Z;
-         vif_slv_mp.drv_slv_cb.err   <= 'Z;
-         vif_slv_mp.drv_slv_cb.ruser <= 'Z;
-         vif_slv_mp.drv_slv_cb.rid   <= 'Z;
+         slv_mp.drv_slv_cb.rdata <= 'Z;
+         slv_mp.drv_slv_cb.err   <= 'Z;
+         slv_mp.drv_slv_cb.ruser <= 'Z;
+         slv_mp.drv_slv_cb.rid   <= 'Z;
       end
       
       default: `uvm_fatal("OBI_MEMORY_DRV", $sformatf("Invalid drv_idle: %0d", cfg.drv_idle))
