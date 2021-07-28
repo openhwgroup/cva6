@@ -245,8 +245,10 @@ module uvmt_cv32e40x_debug_assert
     // Debug request while sleeping makes core wake up and enter debug mode
     // wit cause=haltreq
     property p_sleep_debug_req;
-        cov_assert_if.in_wfi && cov_assert_if.debug_req_i |=> !cov_assert_if.core_sleep_o |-> decode_valid [->1:2] ##0 cov_assert_if.debug_mode_q &&
-        cov_assert_if.dcsr_q[8:6] == cv32e40x_pkg::DBG_CAUSE_HALTREQ;
+        cov_assert_if.in_wfi && cov_assert_if.debug_req_i
+        |=> !cov_assert_if.core_sleep_o
+        ##0 !decode_valid [->1] ##0 decode_valid [->1]
+        ##0 cov_assert_if.debug_mode_q && (cov_assert_if.dcsr_q[8:6] == cv32e40x_pkg::DBG_CAUSE_HALTREQ);
     endproperty
 
     a_sleep_debug_req : assert property(p_sleep_debug_req)
@@ -471,20 +473,17 @@ module uvmt_cv32e40x_debug_assert
        end
     end        
 
-    // Keep track of wfi state
-    always @(posedge cov_assert_if.clk_i or negedge cov_assert_if.rst_ni) begin
+  // Keep track of wfi state
+  always @(posedge cov_assert_if.clk_i or negedge cov_assert_if.rst_ni) begin
     if (!cov_assert_if.rst_ni) begin
       cov_assert_if.in_wfi <= 1'b0;
-    end
-    else begin
-      // Enter wfi if we have a valid instruction, not in debug mode and not
-      // single stepping
-      if (cov_assert_if.is_wfi && !cov_assert_if.debug_mode_q && cov_assert_if.is_decoding && cov_assert_if.id_stage_instr_valid_i & !cov_assert_if.dcsr_q[2]) begin
+    end else begin
+      // Enter wfi if we have a valid instruction, and conditions allow it (e.g. no single-step etc)
+      if (cov_assert_if.is_wfi && cov_assert_if.wb_valid
+          && !cov_assert_if.debug_req_i && !cov_assert_if.debug_mode_q && !cov_assert_if.dcsr_q[2])
         cov_assert_if.in_wfi <= 1'b1;
-
-      end else if (cov_assert_if.pending_enabled_irq || cov_assert_if.debug_req_i)
+      if (cov_assert_if.pending_enabled_irq || cov_assert_if.debug_req_i)
         cov_assert_if.in_wfi <= 1'b0;
-       
     end
   end
 
@@ -517,11 +516,8 @@ module uvmt_cv32e40x_debug_assert
 
     assign cov_assert_if.addr_match   = (cov_assert_if.id_stage_pc == cov_assert_if.tdata2);
     assign cov_assert_if.dpc_will_hit = (cov_assert_if.depc_n == cov_assert_if.tdata2);
-/* TODO:ropeders is the is_wfi prediction/connection 100% alright?
-    assign cov_assert_if.is_wfi = cov_assert_if.id_stage_instr_valid_i & cov_assert_if.id_valid &
-                                  ((cov_assert_if.id_stage_instr_rdata_i & WFI_INSTR_MASK) == WFI_INSTR_DATA);
-*/
-    assign cov_assert_if.is_wfi = cov_assert_if.id_stage_wfi_insn;
+    assign cov_assert_if.is_wfi = cov_assert_if.wb_valid
+                                  && ((cov_assert_if.wb_stage_instr_rdata_i & WFI_INSTR_MASK) == WFI_INSTR_DATA);
     assign cov_assert_if.pending_enabled_irq = |(cov_assert_if.irq_i & cov_assert_if.mie_q);
     assign cov_assert_if.is_dret = cov_assert_if.wb_valid && (cov_assert_if.wb_stage_instr_rdata_i == 32'h 7B20_0073);
 
