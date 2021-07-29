@@ -30,17 +30,10 @@ class uvma_obi_memory_base_seq_item_c extends uvml_trn_seq_item_c;
    rand uvma_obi_memory_access_type_enum  access_type; ///< Read or write
    
    // Metadata
-   uvma_obi_memory_mode_enum  mode;
-   int unsigned               auser_width;
-   int unsigned               wuser_width;
-   int unsigned               ruser_width;
-   int unsigned               addr_width ;
-   int unsigned               data_width ;
-   int unsigned               id_width   ;
+   uvma_obi_memory_cfg_c  cfg; ///< Handle to agent's configuration object
    
    
    `uvm_object_utils_begin(uvma_obi_memory_base_seq_item_c)
-      `uvm_field_enum(uvma_obi_memory_mode_enum       , mode       , UVM_DEFAULT)
       `uvm_field_enum(uvma_obi_memory_access_type_enum, access_type, UVM_DEFAULT)
    `uvm_object_utils_end
    

@@ -85,9 +85,9 @@ task uvma_obi_memory_vp_interrupt_timer_seq_c::vp_body(uvma_obi_memory_mon_trn_c
 
    `uvm_create  (slv_rsp)
    slv_rsp.err = 1'b0;
-   slv_rsp.gnt_latency    = 1;
+   //slv_rsp.gnt_latency    = 1;
    slv_rsp.access_latency = 1;
-   slv_rsp.hold_duration  = 1;
+   //slv_rsp.hold_duration  = 1;
    slv_rsp.tail_length    = 1;   
 
    if (mon_trn.access_type == UVMA_OBI_MEMORY_ACCESS_WRITE) begin

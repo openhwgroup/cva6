@@ -211,9 +211,9 @@ function void uvma_obi_memory_slv_seq_c::add_latencies(ref uvma_obi_memory_slv_s
    //    slv_rsp.tail_length    = $urandom_range(1,max_latency);
    // end
    // else begin
-      slv_rsp.gnt_latency    = 1;
+      //slv_rsp.gnt_latency    = 1;
       slv_rsp.access_latency = 0;
-      slv_rsp.hold_duration  = 1;
+      //slv_rsp.hold_duration  = 1;
       slv_rsp.tail_length    = 1;
    // end
    
