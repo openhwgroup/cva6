@@ -205,10 +205,6 @@ task uvma_obi_memory_mon_c::mon_chan_a_post_reset();
    
    mon_chan_a_trn(trn);
    trn.cfg = cfg;
-   trn.gnt_latency    = cntxt.mon_gnt_latency   ;
-   trn.rvalid_latency = cntxt.mon_rvalid_latency;
-   trn.rready_latency = cntxt.mon_rready_latency;
-   trn.rp_hold        = cntxt.mon_rp_hold       ;
    cntxt.mon_outstanding_reads_q.push_back(trn);
    `uvm_info("OBI_MEMORY_MON", $sformatf("monitored transaction on channel A:\n%s", trn.sprint()), UVM_HIGH)
    process_a_trn(trn);
@@ -243,10 +239,6 @@ task uvma_obi_memory_mon_c::mon_chan_r_post_reset();
    
    mon_chan_r_trn(trn);
    trn.cfg = cfg;
-   trn.gnt_latency    = cntxt.mon_gnt_latency   ;
-   trn.rvalid_latency = cntxt.mon_rvalid_latency;
-   trn.rready_latency = cntxt.mon_rready_latency;
-   trn.rp_hold        = cntxt.mon_rp_hold       ;
    `uvm_info("OBI_MEMORY_MON", $sformatf("monitored transaction on channel R:\n%s", trn.sprint()), UVM_HIGH)
    process_r_trn(trn);
    `uvm_info("OBI_MEMORY_MON", $sformatf("monitored transaction on channel R after process_r_trn():\n%s", trn.sprint()), UVM_HIGH)
