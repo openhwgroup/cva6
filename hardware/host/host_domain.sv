@@ -14,6 +14,7 @@
 //              Instantiates an AXI-Bus and memories
 
 `include "register_interface/typedef.svh"
+`include "axi/assign.svh"
 
 module host_domain 
   import axi_pkg::xbar_cfg_t;
@@ -174,8 +175,8 @@ module host_domain
    reg_req_t   reg_req;
    reg_rsp_t   reg_rsp;
 
-   ariane_axi_soc::req_t    axi_hyper_req;
-   ariane_axi_soc::resp_t   axi_hyper_rsp;
+   ariane_axi_soc::req_slv_t    axi_hyper_req;
+   ariane_axi_soc::resp_slv_t   axi_hyper_rsp;
 
    AXI_BUS #(
      .AXI_ADDR_WIDTH ( AXI_ADDRESS_WIDTH        ),
@@ -347,12 +348,8 @@ module host_domain
    assign reg_req.wstrb = '0;
    assign reg_req.valid = '0;    
  
- 
-   axi_slave_connect i_axi_slave_connect_hyper (
-     .axi_req_o(axi_hyper_req),
-     .axi_resp_i(axi_hyper_rsp),
-     .slave(hyper_axi_bus)
-   );
+  `AXI_ASSIGN_TO_REQ(axi_hyper_req,hyper_axi_bus)
+  `AXI_ASSIGN_FROM_RESP(hyper_axi_bus,axi_hyper_rsp)
 
 `ifdef FPGA_EMUL
 (* DONT_TOUCH = "TRUE" *)   clk_gen_hyper i_clk_gen_hyper (
@@ -372,8 +369,8 @@ module host_domain
          .AxiAddrWidth   ( AXI_ADDRESS_WIDTH           ),
          .AxiDataWidth   ( AXI_DATA_WIDTH              ),
          .AxiIdWidth     ( ariane_soc::IdWidthSlave    ),
-         .axi_req_t      ( ariane_axi_soc::req_t       ),
-         .axi_rsp_t      ( ariane_axi_soc::resp_t      ),
+         .axi_req_t      ( ariane_axi_soc::req_slv_t   ),
+         .axi_rsp_t      ( ariane_axi_soc::resp_slv_t  ),
          .axi_w_chan_t   ( ariane_axi_soc::w_chan_t    ),
          .RegAddrWidth   ( RegAw                       ),
          .RegDataWidth   ( RegDw                       ),

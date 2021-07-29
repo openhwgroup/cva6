@@ -131,7 +131,9 @@ module cva6_subsytem
   assign jtag_resp_valid     = (jtag_enable) ? debug_resp_valid   : 1'b0;
   assign dmi_resp_valid      = (jtag_enable) ? 1'b0               : debug_resp_valid;
 
-  dmi_jtag i_dmi_jtag (
+  dmi_jtag  #(
+    .IdcodeValue ( 32'h20001001)
+    ) i_dmi_jtag (
     .clk_i            ( clk_i           ),
     .rst_ni           ( rst_ni          ),
     .testmode_i       ( test_en         ),
@@ -494,8 +496,7 @@ module cva6_subsytem
     .axi_req_o(axi_clint_req),
     .axi_resp_i(axi_clint_resp),
     .slave(master[ariane_soc::CLINT])
-  );
-
+  );   
   // ---------------
   // Peripherals
   // ---------------

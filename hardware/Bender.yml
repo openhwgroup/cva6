@@ -78,6 +78,8 @@ sources:
     files:
       - deps/cva6/src/util/sram.sv
       - ../bootrom/bootrom.sv
+      - tb/common/jtag_pkg.sv
+      - tb/common/jtag_intf.sv
       - tb/common/mock_uart.sv
       - tb/ariane_tb.sv
 

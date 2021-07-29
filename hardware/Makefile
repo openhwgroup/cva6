@@ -27,7 +27,7 @@ test-location  ?= output/test
 # set to either nothing or -log
 torture-logs   :=
 # custom elf bin to run with sim or sim-verilator
-elf-bin        ?= tmp/riscv-tests/build/benchmarks/dhrystone.riscv
+elf-bin        ?= ../software/hello/hello.riscv
 # root path
 mkfile_path := $(abspath $(lastword $(MAKEFILE_LIST)))
 root-dir := $(dir $(mkfile_path))
@@ -117,6 +117,7 @@ endif
 # we want to preload the memories
 ifdef preload
 	questa-cmd += +PRELOAD=$(preload)
+  compile_flag +=  +PRELOAD=$(preload)
 	elf-bin = none
 endif
 
