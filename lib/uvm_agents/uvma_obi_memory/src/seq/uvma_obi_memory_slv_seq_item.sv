@@ -58,13 +58,6 @@ class uvma_obi_memory_slv_seq_item_c extends uvma_obi_memory_base_seq_item_c;
       soft tail_length    == 1;
    }
    
-   /**
-    * Describe rules_cons
-    */
-   constraint rules_cons {
-      mode == UVMA_OBI_MEMORY_MODE_SLV;
-   }
-   
    
    /**
     * Default constructor.

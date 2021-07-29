@@ -105,9 +105,9 @@ task uvma_obi_memory_storage_slv_seq_c::do_response(ref uvma_obi_memory_mon_trn_
             //if (_req.randomize()) begin
                _req.access_type    = UVMA_OBI_MEMORY_ACCESS_READ;
                _req.err            = error;
-               _req.gnt_latency    = 1;
+               //_req.gnt_latency    = 1;
                _req.access_latency = 1;
-               _req.hold_duration  = 1;
+               //_req.hold_duration  = 1;
                _req.tail_length    = 1;
                foreach (_req.rdata[ii]) begin
                   if (ii < cfg.data_width) begin
@@ -135,9 +135,9 @@ task uvma_obi_memory_storage_slv_seq_c::do_response(ref uvma_obi_memory_mon_trn_
                _req.access_type    = UVMA_OBI_MEMORY_ACCESS_READ;
                _req.err            = error;
                _req.rdata          = 0;
-               _req.gnt_latency    = 1;
+               //_req.gnt_latency    = 1;
                _req.access_latency = 1;
-               _req.hold_duration  = 1;
+               //_req.hold_duration  = 1;
                _req.tail_length    = 1;
                `uvm_send(_req)
             //end
@@ -168,9 +168,9 @@ task uvma_obi_memory_storage_slv_seq_c::do_response(ref uvma_obi_memory_mon_trn_
          `uvm_create(_req)
          _req.access_type    = UVMA_OBI_MEMORY_ACCESS_WRITE;
          _req.err            = error;
-         _req.gnt_latency    = 1;
+         //_req.gnt_latency    = 1;
          _req.access_latency = 1;
-         _req.hold_duration  = 1;
+         //_req.hold_duration  = 1;
          _req.tail_length    = 1;
          `uvm_send(_req)
       end
