@@ -215,7 +215,8 @@ task uvma_obi_memory_mon_c::mon_chan_a_post_reset();
       `uvm_info("OBI_MEMORY_MON", $sformatf("Sent trn to sequencer"), UVM_HIGH)
    end
    `uvml_hrtbt()
-   
+   @(passive_mp.mon_cb);
+
 endtask : mon_chan_a_post_reset
 
 
@@ -244,7 +245,8 @@ task uvma_obi_memory_mon_c::mon_chan_r_post_reset();
    `uvm_info("OBI_MEMORY_MON", $sformatf("monitored transaction on channel R after process_r_trn():\n%s", trn.sprint()), UVM_HIGH)
    ap.write(trn);
    `uvml_hrtbt()
-   
+   @(passive_mp.mon_cb);
+
 endtask : mon_chan_r_post_reset
 
 
@@ -258,9 +260,7 @@ task uvma_obi_memory_mon_c::mon_chan_a_trn(output uvma_obi_memory_mon_trn_c trn)
    end
    
    sample_trn_a_from_vif(trn);
-   trn.__timestamp_start = $realtime();
-   
-   @(passive_mp.mon_cb);
+   trn.__timestamp_start = $realtime();   
    
 endtask : mon_chan_a_trn
 
@@ -271,7 +271,7 @@ task uvma_obi_memory_mon_c::mon_chan_r_trn(output uvma_obi_memory_mon_trn_c trn)
    
    trn = uvma_obi_memory_mon_trn_c::type_id::create("trn");
    
-   while (passive_mp.mon_cb.rvalid !== 1'b1) begin
+   while ((passive_mp.mon_cb.rvalid !== 1'b1) && (passive_mp.mon_cb.rready !== 1'b1)) begin
       @(passive_mp.mon_cb);
       trn.rvalid_latency++;
    end
@@ -285,9 +285,7 @@ task uvma_obi_memory_mon_c::mon_chan_r_trn(output uvma_obi_memory_mon_trn_c trn)
    end
    else begin
       `uvm_error("OBI_MON", $sformatf("No outstanding read for observed rvalid assertion:\n%s", trn.sprint()))
-   end
-   
-   @(passive_mp.mon_cb);
+   end   
    
 endtask : mon_chan_r_trn
 
@@ -295,12 +293,10 @@ endtask : mon_chan_r_trn
 function void uvma_obi_memory_mon_c::process_a_trn(ref uvma_obi_memory_mon_trn_c trn);
    
    
-   
 endfunction : process_a_trn
 
 
 function void uvma_obi_memory_mon_c::process_r_trn(ref uvma_obi_memory_mon_trn_c trn);
-   
    
    
 endfunction : process_r_trn
