@@ -170,14 +170,17 @@ module uvmt_cv32e40x_debug_assert
 
 
     // ebreak during debug mode results in relaunch
+
     property p_ebreak_during_debug_mode;
-        $rose(cov_assert_if.is_ebreak) ##0 cov_assert_if.debug_mode_q   |-> decode_valid [->2] ##0 cov_assert_if.debug_mode_q && 
-                                                     (cov_assert_if.id_stage_pc == halt_addr_at_entry); // TODO should check no change in dpc and dcsr
+        $rose(cov_assert_if.is_ebreak) && cov_assert_if.debug_mode_q
+        |-> !decode_valid [->1] ##0 decode_valid [->1]
+        ##0 cov_assert_if.debug_mode_q && (cov_assert_if.id_stage_pc == halt_addr_at_entry);
+        // TODO should check no change in dpc and dcsr
     endproperty
 
     a_ebreak_during_debug_mode: assert property(p_ebreak_during_debug_mode)
-        else
-            `uvm_error(info_tag,$sformatf("Debug mode not restarted after ebreak"));
+        else `uvm_error(info_tag,$sformatf("Debug mode not restarted after ebreak"));
+
 
     // Trigger match results in debug mode
     property p_trigger_match;
