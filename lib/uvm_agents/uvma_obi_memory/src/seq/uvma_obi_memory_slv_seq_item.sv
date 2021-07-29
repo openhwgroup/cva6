@@ -31,13 +31,10 @@ class uvma_obi_memory_slv_seq_item_c extends uvma_obi_memory_base_seq_item_c;
    rand uvma_obi_memory_data_b_t   rdata; ///< Read data.
    rand uvma_obi_memory_ruser_b_t  ruser; ///< Response phase User signals. Only valid for read transactions. Undefined for write transactions.
    rand uvma_obi_memory_id_b_t     rid  ; ///< Response Phase transaction identifier.
-   rand bit                        err  ; ///< Error.
+   rand uvma_obi_memory_err_b_t    err  ; ///< Error.
    
    // Metadata
-   uvma_obi_memory_cfg_c      cfg           ; ///< Handle to agent's configuration object
-   rand int unsigned          gnt_latency   ; ///< Measured in clock cycles
    rand int unsigned          access_latency; ///< Measured in clock cycles
-   rand int unsigned          hold_duration ; ///< Measured in clock cycles
    rand int unsigned          tail_length   ; ///< Measured in clock cycles
    uvma_obi_memory_mon_trn_c  orig_trn      ; ///< Monitored transaction to which this seq_item is responding
    
@@ -48,9 +45,7 @@ class uvma_obi_memory_slv_seq_item_c extends uvma_obi_memory_base_seq_item_c;
       `uvm_field_int(rid   , UVM_DEFAULT)
       `uvm_field_int(err   , UVM_DEFAULT)
       
-      `uvm_field_int(gnt_latency   , UVM_DEFAULT + UVM_DEC + UVM_NOCOMPARE)
       `uvm_field_int(access_latency, UVM_DEFAULT + UVM_DEC + UVM_NOCOMPARE)
-      `uvm_field_int(hold_duration , UVM_DEFAULT + UVM_DEC + UVM_NOCOMPARE)
       `uvm_field_int(tail_length   , UVM_DEFAULT + UVM_DEC + UVM_NOCOMPARE)
       
       `uvm_field_object(orig_trn, UVM_DEFAULT + UVM_NOCOMPARE)
@@ -59,9 +54,7 @@ class uvma_obi_memory_slv_seq_item_c extends uvma_obi_memory_base_seq_item_c;
    
    constraint defaults_cons {
       /*soft*/ err            == 0;
-      /*soft*/ gnt_latency    == 1;
       /*soft*/ access_latency == 1;
-      /*soft*/ hold_duration  == 1;
       soft tail_length    == 1;
    }
    
@@ -71,7 +64,6 @@ class uvma_obi_memory_slv_seq_item_c extends uvma_obi_memory_base_seq_item_c;
    constraint rules_cons {
       mode == UVMA_OBI_MEMORY_MODE_SLV;
    }
-
    
    
    /**
