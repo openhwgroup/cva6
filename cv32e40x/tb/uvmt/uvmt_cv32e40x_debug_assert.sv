@@ -59,12 +59,10 @@ module uvmt_cv32e40x_debug_assert
   assign cov_assert_if.is_ebreak =
     cov_assert_if.wb_stage_instr_valid_i
     && (cov_assert_if.wb_stage_instr_rdata_i == 32'h0010_0073);
-    // TODO:ropeders && (cov_assert_if.wb_stage_is_compressed == 1'b0);
 
   assign cov_assert_if.is_cebreak =
     cov_assert_if.wb_stage_instr_valid_i
     && (cov_assert_if.wb_stage_instr_rdata_i == 32'h0000_9002);
-    // TODO:ropeders && (cov_assert_if.wb_stage_is_compressed == 1'b1);
 
   assign cov_assert_if.is_mulhsu =
     cov_assert_if.is_decoding
@@ -144,19 +142,21 @@ module uvmt_cv32e40x_debug_assert
 
     // ebreak without dcsr.ebreakm results in exception at mtvec
     // Exclude single stepping as the sequence gets very complicated
+
     property p_ebreak_exception;
-        disable iff(cov_assert_if.debug_req_i | !cov_assert_if.rst_ni)
-        $rose(cov_assert_if.is_ebreak) && cov_assert_if.dcsr_q[15] == 1'b0 && !cov_assert_if.debug_mode_q  && cov_assert_if.is_decoding && cov_assert_if.id_valid &&
-        !cov_assert_if.debug_req_i && !cov_assert_if.dcsr_q[2] 
-        |-> (decode_valid) [->1:2] ##0  !cov_assert_if.debug_mode_q && (cov_assert_if.mcause_q[5:0] === cv32e40x_pkg::EXC_CAUSE_BREAKPOINT) 
-                                                                && (cov_assert_if.mepc_q == pc_at_ebreak) &&
-                                                                   (cov_assert_if.id_stage_pc == cov_assert_if.mtvec);
+        disable iff(!cov_assert_if.rst_ni)
+        $rose(cov_assert_if.is_ebreak) && !cov_assert_if.dcsr_q[15]
+        && !cov_assert_if.debug_mode_q && !cov_assert_if.dcsr_q[2]
+        ##0 (!cov_assert_if.debug_req_i && !cov_assert_if.irq_ack_o) throughout (!decode_valid[->1] ##0 decode_valid[->1])
+        |->
+        !cov_assert_if.debug_mode_q && (cov_assert_if.mcause_q[5:0] === cv32e40x_pkg::EXC_CAUSE_BREAKPOINT)
+        && (cov_assert_if.mepc_q == pc_at_ebreak) && (cov_assert_if.id_stage_pc == cov_assert_if.mtvec);
     endproperty
-    
-    // TODO: Fails formal as above
+
     a_ebreak_exception: assert property(p_ebreak_exception)
-        else
-            `uvm_error(info_tag,$sformatf("Exception not entered correctly after ebreak with dcsr.ebreak=0"));
+        else `uvm_error(info_tag,$sformatf("Exception not entered correctly after ebreak with dcsr.ebreak=0"));
+
+
     // c.ebreak during debug mode results in relaunch of debug mode
 
     property p_cebreak_during_debug_mode;
@@ -167,6 +167,7 @@ module uvmt_cv32e40x_debug_assert
     a_cebreak_during_debug_mode: assert property(p_cebreak_during_debug_mode)
         else
             `uvm_error(info_tag,$sformatf("Debug mode not restarted after c.ebreak"));
+
 
     // ebreak during debug mode results in relaunch
     property p_ebreak_during_debug_mode;
