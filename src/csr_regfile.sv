@@ -925,7 +925,7 @@ module csr_regfile import ariane_pkg::*; #(
             // check counter-enabled counter CSR accesses
             // counter address range is C00 to C1F
             if (csr_addr_i inside {[riscv::CSR_CYCLE:riscv::CSR_HPM_COUNTER_31]}) begin
-                unique case (csr_addr.csr_decode.priv_lvl)
+                unique case (priv_lvl_o)
                     riscv::PRIV_LVL_M: privilege_violation = 1'b0;
                     riscv::PRIV_LVL_S: privilege_violation = ~mcounteren_q[csr_addr_i[4:0]];
                     riscv::PRIV_LVL_U: privilege_violation = ~mcounteren_q[csr_addr_i[4:0]] & ~scounteren_q[csr_addr_i[4:0]];
