@@ -85,7 +85,7 @@ class uvma_obi_memory_drv_c extends uvm_driver#(
    /**
     * Drives the 'gnt' signal in response to 'req' being asserted.
     */
-   extern task slv_drv_gnt();
+   extern task drv_slv_gnt();
    
    /**
     * TODO Describe uvma_obi_drv::prep_req()
@@ -191,7 +191,7 @@ task uvma_obi_memory_drv_c::run_phase(uvm_phase phase);
          begin : chan_a
             forever begin
                @(slv_mp.drv_slv_cb);
-               slv_drv_gnt();
+               drv_slv_gnt();
             end
          end
          
@@ -305,34 +305,43 @@ task uvma_obi_memory_drv_c::drv_post_reset();
 endtask : drv_post_reset
 
 
-task uvma_obi_memory_drv_c::slv_drv_gnt();
-
-   // TODO: Replace this fixed behavior with sequences
-      
+task uvma_obi_memory_drv_c::drv_slv_gnt();
+   
+   int unsigned effective_latency = 0;
+   
    case (cntxt.reset_state)
       UVMA_OBI_MEMORY_RESET_STATE_POST_RESET: begin
-         // TODO: randomly assert GNT 0 or more cycles before REQ
+         
          if (slv_mp.drv_slv_cb.req === 1'b1) begin
-            `uvm_info("OBI_MEMORY_DRV::slv_drv_gnt", "req is 1", UVM_HIGH)
+            `uvm_info("OBI_MEMORY_DRV::drv_slv_gnt", "req is 1", UVM_HIGH)
             if (cfg.drv_slv_gnt) begin
-               repeat (cfg.drv_slv_gnt_latency) begin
+               
+               case (cfg.drv_slv_gnt_mode)
+                  UVMA_OBI_MEMORY_DRV_SLV_GNT_MODE_CONSTANT      : effective_latency = 0;
+                  UVMA_OBI_MEMORY_DRV_SLV_GNT_MODE_FIXED_LATENCY : effective_latency = cfg.drv_slv_gnt_fixed_latency;
+                  UVMA_OBI_MEMORY_DRV_SLV_GNT_MODE_RANDOM_LATENCY: begin
+                     effective_latency = $urandom_range(cfg.drv_slv_gnt_random_latency_min, cfg.drv_slv_gnt_random_latency_max);
+                  end
+               endcase
+               `uvm_info("OBI_MEMORY_DRV::drv_slv_gnt", $sformatf("gnt latency is %0d", effective_latency), UVM_HIGH)
+               repeat (effective_latency) begin
                   @(slv_mp.drv_slv_cb);
                end
                slv_mp.drv_slv_cb.gnt <= 1'b1;
-               `uvm_info("OBI_MEMORY_DRV::slv_drv_gnt", "gnt asserted", UVM_HIGH)
+               `uvm_info("OBI_MEMORY_DRV::drv_slv_gnt", "gnt asserted", UVM_HIGH)
                @(slv_mp.drv_slv_cb);
                slv_mp.drv_slv_cb.gnt <= 1'b0;
-               `uvm_info("OBI_MEMORY_DRV::slv_drv_gnt", "gnt deasserted", UVM_HIGH)
+               `uvm_info("OBI_MEMORY_DRV::drv_slv_gnt", "gnt deasserted", UVM_HIGH)
             end
          end
          else begin
-            `uvm_info("OBI_MEMORY_DRV::slv_drv_gnt", "req is 0", UVM_HIGH)
+            `uvm_info("OBI_MEMORY_DRV::drv_slv_gnt", "req is 0", UVM_HIGH)
          end
       end
       
    endcase
    
-endtask : slv_drv_gnt
+endtask : drv_slv_gnt
 
 
 task uvma_obi_memory_drv_c::prep_req(ref uvma_obi_memory_base_seq_item_c req);

@@ -80,11 +80,16 @@ typedef enum {
    UVMA_OBI_MEMORY_PHASE_ACCESS
 } uvma_obi_memory_phases_enum;
 
-
 typedef enum {
    UVMA_OBI_MEMORY_ACCESS_READ ,
    UVMA_OBI_MEMORY_ACCESS_WRITE
 } uvma_obi_memory_access_type_enum;
+
+typedef enum {
+   UVMA_OBI_MEMORY_DRV_SLV_GNT_MODE_CONSTANT      ,
+   UVMA_OBI_MEMORY_DRV_SLV_GNT_MODE_FIXED_LATENCY ,
+   UVMA_OBI_MEMORY_DRV_SLV_GNT_MODE_RANDOM_LATENCY
+} uvma_obi_memory_drv_slv_gnt_mode_enum;
 
 
 `endif // __UVMA_OBI_MEMORY_TDEFS_SV__
