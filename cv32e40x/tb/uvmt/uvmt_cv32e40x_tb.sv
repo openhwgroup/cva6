@@ -424,10 +424,10 @@ bind cv32e40x_wrapper
       //                                       is the only property sensitive to inst_ret. Will
       //                                       this work in the general case?
       //TODO:ropeders .inst_ret(dut_wrap.cv32e40x_wrapper_i.core_i.cs_registers_i.mhpmevent_minstret_i),
-      .csr_access(dut_wrap.cv32e40x_wrapper_i.core_i.id_stage_i.csr_en),
-      .csr_op(dut_wrap.cv32e40x_wrapper_i.core_i.id_stage_i.csr_op),
-      .csr_op_dec(dut_wrap.cv32e40x_wrapper_i.core_i.id_stage_i.decoder_i.csr_op),
-      //TODO:ropeders .csr_addr(dut_wrap.cv32e40x_wrapper_i.core_i.cs_registers_i.csr_addr),
+      .csr_access(dut_wrap.cv32e40x_wrapper_i.core_i.ex_wb_pipe.csr_en),
+      .csr_op(dut_wrap.cv32e40x_wrapper_i.core_i.ex_wb_pipe.csr_op),
+      // TODO:ropeders .csr_op_dec(dut_wrap.cv32e40x_wrapper_i.core_i.ex_wb_pipe.decoder_i.csr_op),
+      .csr_addr(dut_wrap.cv32e40x_wrapper_i.core_i.ex_wb_pipe.csr_addr),
       .csr_we_int(dut_wrap.cv32e40x_wrapper_i.core_i.cs_registers_i.csr_we_int),
       .irq_ack_o(dut_wrap.cv32e40x_wrapper_i.core_i.irq_ack_o),
       .irq_id_o(dut_wrap.cv32e40x_wrapper_i.core_i.irq_id_o),

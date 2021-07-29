@@ -375,16 +375,20 @@ module uvmt_cv32e40x_debug_assert
         else
             `uvm_error(info_tag, "Writing tdata2 from M-mode not allowed to change register value!");
 
+
     // Check that mcycle works as expected when not sleeping
     // Counter can be written an arbitrary value, check that
     // it changed only when not being written to
+
     property p_mcycle_count;
-        !cov_assert_if.mcountinhibit_q[0] && !cov_assert_if.core_sleep_o  && !(cov_assert_if.csr_we_int && (cov_assert_if.csr_addr ==12'hB00 || cov_assert_if.csr_addr == 12'hB80)) |=>  $changed(cov_assert_if.mcycle);
+        !cov_assert_if.mcountinhibit_q[0] && !cov_assert_if.core_sleep_o
+        && !(cov_assert_if.csr_we_int && (cov_assert_if.csr_addr ==12'hB00 || cov_assert_if.csr_addr == 12'hB80))
+        |=> $changed(cov_assert_if.mcycle);
     endproperty
 
     a_mcycle_count : assert property(p_mcycle_count)
-        else
-            `uvm_error(info_tag, "Mcycle not counting when mcountinhibit[0] is cleared!");
+        else `uvm_error(info_tag, "Mcycle not counting when mcountinhibit[0] is cleared!");
+
 
     // Check that minstret works as expected when not sleeping
     // Check only when not written to
