@@ -5,3 +5,4 @@ qsort.riscv
 rsort.riscv
 towers.riscv
 vvadd.riscv
+pmp.riscv

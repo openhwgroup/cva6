@@ -283,26 +283,26 @@ module csr_regfile import ariane_pkg::*; #(
                 riscv::CSR_PMPCFG0:          csr_rdata = pmpcfg_q[7:0];
                 riscv::CSR_PMPCFG2:          csr_rdata = pmpcfg_q[15:8];
                 // PMPADDR
-                // Important: we only support granularity 8 bytes (G=2)
+                // Important: we only support granularity 8 bytes (G=1)
                 // -> last bit of pmpaddr must be set 0/1 based on the mode:
                 // NA4, NAPOT: 1
                 // TOR, OFF:   0
-                riscv::CSR_PMPADDR0:         csr_rdata = {10'b0, pmpaddr_q[0][riscv::PLEN-3:1], (pmpcfg_q[0].addr_mode[1] == 1'b1 ? 1'b1 : 1'b0)};
-                riscv::CSR_PMPADDR1:         csr_rdata = {10'b0, pmpaddr_q[1][riscv::PLEN-3:1], (pmpcfg_q[1].addr_mode[1] == 1'b1 ? 1'b1 : 1'b0)};
-                riscv::CSR_PMPADDR2:         csr_rdata = {10'b0, pmpaddr_q[2][riscv::PLEN-3:1], (pmpcfg_q[2].addr_mode[1] == 1'b1 ? 1'b1 : 1'b0)};
-                riscv::CSR_PMPADDR3:         csr_rdata = {10'b0, pmpaddr_q[3][riscv::PLEN-3:1], (pmpcfg_q[3].addr_mode[1] == 1'b1 ? 1'b1 : 1'b0)};
-                riscv::CSR_PMPADDR4:         csr_rdata = {10'b0, pmpaddr_q[4][riscv::PLEN-3:1], (pmpcfg_q[4].addr_mode[1] == 1'b1 ? 1'b1 : 1'b0)};
-                riscv::CSR_PMPADDR5:         csr_rdata = {10'b0, pmpaddr_q[5][riscv::PLEN-3:1], (pmpcfg_q[5].addr_mode[1] == 1'b1 ? 1'b1 : 1'b0)};
-                riscv::CSR_PMPADDR6:         csr_rdata = {10'b0, pmpaddr_q[6][riscv::PLEN-3:1], (pmpcfg_q[6].addr_mode[1] == 1'b1 ? 1'b1 : 1'b0)};
-                riscv::CSR_PMPADDR7:         csr_rdata = {10'b0, pmpaddr_q[7][riscv::PLEN-3:1], (pmpcfg_q[7].addr_mode[1] == 1'b1 ? 1'b1 : 1'b0)};
-                riscv::CSR_PMPADDR8:         csr_rdata = {10'b0, pmpaddr_q[8][riscv::PLEN-3:1], (pmpcfg_q[8].addr_mode[1] == 1'b1 ? 1'b1 : 1'b0)};
-                riscv::CSR_PMPADDR9:         csr_rdata = {10'b0, pmpaddr_q[9][riscv::PLEN-3:1], (pmpcfg_q[9].addr_mode[1] == 1'b1 ? 1'b1 : 1'b0)};
-                riscv::CSR_PMPADDR10:        csr_rdata = {10'b0, pmpaddr_q[10][riscv::PLEN-3:1], (pmpcfg_q[10].addr_mode[1] == 1'b1 ? 1'b1 : 1'b0)};
-                riscv::CSR_PMPADDR11:        csr_rdata = {10'b0, pmpaddr_q[11][riscv::PLEN-3:1], (pmpcfg_q[11].addr_mode[1] == 1'b1 ? 1'b1 : 1'b0)};
-                riscv::CSR_PMPADDR12:        csr_rdata = {10'b0, pmpaddr_q[12][riscv::PLEN-3:1], (pmpcfg_q[12].addr_mode[1] == 1'b1 ? 1'b1 : 1'b0)};
-                riscv::CSR_PMPADDR13:        csr_rdata = {10'b0, pmpaddr_q[13][riscv::PLEN-3:1], (pmpcfg_q[13].addr_mode[1] == 1'b1 ? 1'b1 : 1'b0)};
-                riscv::CSR_PMPADDR14:        csr_rdata = {10'b0, pmpaddr_q[14][riscv::PLEN-3:1], (pmpcfg_q[14].addr_mode[1] == 1'b1 ? 1'b1 : 1'b0)};
-                riscv::CSR_PMPADDR15:        csr_rdata = {10'b0, pmpaddr_q[15][riscv::PLEN-3:1], (pmpcfg_q[15].addr_mode[1] == 1'b1 ? 1'b1 : 1'b0)};
+                riscv::CSR_PMPADDR0:         csr_rdata = {10'b0, pmpaddr_q[ 0][riscv::PLEN-3:1], (pmpcfg_q[ 0].addr_mode[1] == 1'b1 ? pmpaddr_q[ 0][0] : 1'b0)};
+                riscv::CSR_PMPADDR1:         csr_rdata = {10'b0, pmpaddr_q[ 1][riscv::PLEN-3:1], (pmpcfg_q[ 1].addr_mode[1] == 1'b1 ? pmpaddr_q[ 1][0] : 1'b0)};
+                riscv::CSR_PMPADDR2:         csr_rdata = {10'b0, pmpaddr_q[ 2][riscv::PLEN-3:1], (pmpcfg_q[ 2].addr_mode[1] == 1'b1 ? pmpaddr_q[ 2][0] : 1'b0)};
+                riscv::CSR_PMPADDR3:         csr_rdata = {10'b0, pmpaddr_q[ 3][riscv::PLEN-3:1], (pmpcfg_q[ 3].addr_mode[1] == 1'b1 ? pmpaddr_q[ 3][0] : 1'b0)};
+                riscv::CSR_PMPADDR4:         csr_rdata = {10'b0, pmpaddr_q[ 4][riscv::PLEN-3:1], (pmpcfg_q[ 4].addr_mode[1] == 1'b1 ? pmpaddr_q[ 4][0] : 1'b0)};
+                riscv::CSR_PMPADDR5:         csr_rdata = {10'b0, pmpaddr_q[ 5][riscv::PLEN-3:1], (pmpcfg_q[ 5].addr_mode[1] == 1'b1 ? pmpaddr_q[ 5][0] : 1'b0)};
+                riscv::CSR_PMPADDR6:         csr_rdata = {10'b0, pmpaddr_q[ 6][riscv::PLEN-3:1], (pmpcfg_q[ 6].addr_mode[1] == 1'b1 ? pmpaddr_q[ 6][0] : 1'b0)};
+                riscv::CSR_PMPADDR7:         csr_rdata = {10'b0, pmpaddr_q[ 7][riscv::PLEN-3:1], (pmpcfg_q[ 7].addr_mode[1] == 1'b1 ? pmpaddr_q[ 7][0] : 1'b0)};
+                riscv::CSR_PMPADDR8:         csr_rdata = {10'b0, pmpaddr_q[ 8][riscv::PLEN-3:1], (pmpcfg_q[ 8].addr_mode[1] == 1'b1 ? pmpaddr_q[ 8][0] : 1'b0)};
+                riscv::CSR_PMPADDR9:         csr_rdata = {10'b0, pmpaddr_q[ 9][riscv::PLEN-3:1], (pmpcfg_q[ 9].addr_mode[1] == 1'b1 ? pmpaddr_q[ 9][0] : 1'b0)};
+                riscv::CSR_PMPADDR10:        csr_rdata = {10'b0, pmpaddr_q[10][riscv::PLEN-3:1], (pmpcfg_q[10].addr_mode[1] == 1'b1 ? pmpaddr_q[10][0] : 1'b0)};
+                riscv::CSR_PMPADDR11:        csr_rdata = {10'b0, pmpaddr_q[11][riscv::PLEN-3:1], (pmpcfg_q[11].addr_mode[1] == 1'b1 ? pmpaddr_q[11][0] : 1'b0)};
+                riscv::CSR_PMPADDR12:        csr_rdata = {10'b0, pmpaddr_q[12][riscv::PLEN-3:1], (pmpcfg_q[12].addr_mode[1] == 1'b1 ? pmpaddr_q[12][0] : 1'b0)};
+                riscv::CSR_PMPADDR13:        csr_rdata = {10'b0, pmpaddr_q[13][riscv::PLEN-3:1], (pmpcfg_q[13].addr_mode[1] == 1'b1 ? pmpaddr_q[13][0] : 1'b0)};
+                riscv::CSR_PMPADDR14:        csr_rdata = {10'b0, pmpaddr_q[14][riscv::PLEN-3:1], (pmpcfg_q[14].addr_mode[1] == 1'b1 ? pmpaddr_q[14][0] : 1'b0)};
+                riscv::CSR_PMPADDR15:        csr_rdata = {10'b0, pmpaddr_q[15][riscv::PLEN-3:1], (pmpcfg_q[15].addr_mode[1] == 1'b1 ? pmpaddr_q[15][0] : 1'b0)};
                 default: read_access_exception = 1'b1;
             endcase
         end
@@ -925,7 +925,7 @@ module csr_regfile import ariane_pkg::*; #(
             // check counter-enabled counter CSR accesses
             // counter address range is C00 to C1F
             if (csr_addr_i inside {[riscv::CSR_CYCLE:riscv::CSR_HPM_COUNTER_31]}) begin
-                unique case (csr_addr.csr_decode.priv_lvl)
+                unique case (priv_lvl_o)
                     riscv::PRIV_LVL_M: privilege_violation = 1'b0;
                     riscv::PRIV_LVL_S: privilege_violation = ~mcounteren_q[csr_addr_i[4:0]];
                     riscv::PRIV_LVL_U: privilege_violation = ~mcounteren_q[csr_addr_i[4:0]] & ~scounteren_q[csr_addr_i[4:0]];
@@ -1152,7 +1152,11 @@ module csr_regfile import ariane_pkg::*; #(
             // pmp
             for(int i = 0; i < 16; i++) begin
                 if(i < NrPMPEntries) begin
-                    pmpcfg_q[i] <= pmpcfg_d[i];
+                    // We only support >=8-byte granularity, NA4 is disabled
+                    if(pmpcfg_q[i].addr_mode != riscv::NA4) 
+                        pmpcfg_q[i] <= pmpcfg_d[i];
+                    else
+                        pmpcfg_q[i] <= pmpcfg_q[i];
                     pmpaddr_q[i] <= pmpaddr_d[i];
                 end else begin
                     pmpcfg_q[i] <= '0;
