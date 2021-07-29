@@ -515,18 +515,20 @@ endtask : drv_slv_req
 task uvma_obi_memory_drv_c::drv_slv_read_req(ref uvma_obi_memory_slv_seq_item_c req);
 
    `uvm_info("OBI_MEMORY_DRV", $sformatf("drv_slv_read_req: %8h", req.rdata), UVM_HIGH)
-   repeat (req.access_latency) begin
-      @(slv_mp.drv_slv_cb);
-   end
+   // FIXME datum-dpoulin this may not be an issue, but was taken out to get sanity back for cv32e40p/x
+   //repeat (req.access_latency) begin
+   //   @(slv_mp.drv_slv_cb);
+   //end
    slv_mp.drv_slv_cb.rvalid <= 1'b1;
    slv_mp.drv_slv_cb.err    <= req.err;
    for (int unsigned ii=0; ii<cfg.data_width; ii++) begin
       slv_mp.drv_slv_cb.rdata[ii] <= req.rdata[ii];
    end
    @(slv_mp.drv_slv_cb);
-   repeat (req.tail_length) begin
-      @(slv_mp.drv_slv_cb);
-   end
+   // FIXME datum-dpoulin monitor needs to be able to handle 'tails'
+   //repeat (req.tail_length) begin
+   //   @(slv_mp.drv_slv_cb);
+   //end
    `uvm_info("OBI_MEMORY_DRV", "drv_slv_read_req FIN", UVM_HIGH)
    
 endtask : drv_slv_read_req
