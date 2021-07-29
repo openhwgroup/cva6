@@ -141,6 +141,7 @@ function void uvma_isacov_mon_c::write_rvfi_instr(uvma_rvfi_instr_seq_item_c#(IL
 
   instr = $signed(rvfi_instr.insn);
 
+  // Disassemble the instruction using Spike (via DPI)
   mon_trn.instr.rs1  = dasm_rs1(instr);
   mon_trn.instr.rs2  = dasm_rs2(instr);
   mon_trn.instr.rd   = dasm_rd(instr);
@@ -153,7 +154,10 @@ function void uvma_isacov_mon_c::write_rvfi_instr(uvma_rvfi_instr_seq_item_c#(IL
   mon_trn.instr.c_immj = dasm_rvc_j_imm(instr);
   mon_trn.instr.c_rs1p = instr[9:7];  // TODO use disassembler
   mon_trn.instr.c_rdp = instr[4:2];  // TODO use disassembler  
-    
+
+  mon_trn.instr.pc = rvfi_instr.pc_rdata;
+  mon_trn.instr.mem_addr = rvfi_instr.mem_addr;
+
   // Cast CSR address unless illegal CSR
   if (mon_trn.instr.group == CSR_GROUP) begin
     if (!$cast(mon_trn.instr.csr, dasm_csr(instr))) begin      
@@ -199,10 +203,10 @@ function void uvma_isacov_mon_c::write_rvfi_instr(uvma_rvfi_instr_seq_item_c#(IL
     mon_trn.instr.rd_value_type = mon_trn.instr.get_instr_value_type(mon_trn.instr.rd_value, 32, rd_is_signed[mon_trn.instr.name]);
   end
 
-  // Set PC value
-  mon_trn.instr.pc = rvfi_instr.pc_rdata;
-
-  mon_trn.instr.mem_addr = rvfi_instr.mem_addr;
+  // // For branches determine if the branch was taken by evaluating the instruction
+  // if (mon_trn.instr.is_conditional_branch()) begin
+  //   instr.branch_taken = mon_trn.instr.is_branch_taken();
+  // end
 
   // Write to analysis port
   ap.write(mon_trn);

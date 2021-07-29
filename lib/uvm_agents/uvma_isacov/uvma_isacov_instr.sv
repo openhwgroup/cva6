@@ -41,7 +41,6 @@ class uvma_isacov_instr_c extends uvm_object;
   bit rs1_valid;
   bit rs2_valid;
   bit rd_valid;
-
   
   bit [2:0] c_rs1p;
   bit [2:0] c_rs2p;
@@ -114,6 +113,7 @@ class uvma_isacov_instr_c extends uvm_object;
     `uvm_field_int(c_immi,    UVM_ALL_ON | UVM_NOPRINT);
     `uvm_field_int(c_immb,    UVM_ALL_ON | UVM_NOPRINT);
     `uvm_field_int(c_immss,   UVM_ALL_ON | UVM_NOPRINT);    
+
   `uvm_object_utils_end;
 
   extern function new(string name = "isacov_instr");
@@ -122,6 +122,9 @@ class uvma_isacov_instr_c extends uvm_object;
 
   extern function void set_valid_flags();
   extern function bit is_csr_write();
+  extern function bit is_conditional_branch();
+  extern function bit is_branch_taken();
+
   extern function instr_value_t get_instr_value_type(bit[31:0] value, int unsigned width, bit is_signed);
 
 endclass : uvma_isacov_instr_c
@@ -241,4 +244,31 @@ function instr_value_t uvma_isacov_instr_c::get_instr_value_type(bit[31:0] value
   return NON_ZERO;
   
 endfunction : get_instr_value_type
+
+function bit uvma_isacov_instr_c::is_conditional_branch();
+
+  if (name inside {BEQ, BNE, BLT, BGE, BLTU, BGEU, C_BEQZ, C_BNEZ}) 
+    return 1;
+
+  return 0;
+
+endfunction : is_conditional_branch
+
+
+function bit uvma_isacov_instr_c::is_branch_taken();
+
+  case (name)
+    BEQ:  return (rs1_value == rs2_value) ? 1 : 0;
+    BNE:  return (rs1_value != rs2_value) ? 1 : 0;
+    BLT:  return ($signed(rs1_value) <  $signed(rs2_value)) ? 1 : 0;
+    BGE:  return ($signed(rs1_value) >= $signed(rs2_value)) ? 1 : 0;
+    BLTU: return (rs1_value <  rs2_value) ? 1 : 0;
+    BGEU: return (rs1_value >= rs2_value) ? 1 : 0;
+    C_BEQZ: return (!rs1_value) ? 1 : 0;
+    C_BNEZ: return (rs1_value)  ? 1 : 0;
+  endcase
+
+  `uvm_fatal("ISACOVBRANCH", $sformatf("Called is_branch_taken for non-branch instruction: %s", name.name()));
+
+endfunction : is_branch_taken
 
