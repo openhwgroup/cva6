@@ -173,10 +173,14 @@ function void uvme_cv32e40x_env_c::build_phase(uvm_phase phase);
          cntxt = uvme_cv32e40x_cntxt_c::type_id::create("cntxt");
       end
       
+      // FIXME:strichmo:This should be 
+      cntxt.obi_memory_instr_cntxt.mem = cntxt.mem;
+      cntxt.obi_memory_data_cntxt.mem  = cntxt.mem;      
+
       retrieve_vifs        ();
       assign_cfg           ();
       assign_cntxt         ();
-      create_agents        ();      
+      create_agents        ();
       create_env_components();
       
       if (cfg.is_active) begin
@@ -231,19 +235,67 @@ endfunction : end_of_elaboration_phase
 
 task uvme_cv32e40x_env_c::run_phase(uvm_phase phase);
    
-   uvme_cv32e40x_instr_vseq_c  instr_vseq;
-   uvme_cv32e40x_vp_vseq_c     vp_vseq;
-   
+   // uvme_cv32e40x_instr_vseq_c  instr_vseq;
+   // uvme_cv32e40x_vp_vseq_c     vp_vseq;
+
+   uvma_obi_memory_fw_preload_seq_c fw_preload_seq;
+   uvma_obi_memory_slv_seq_c        instr_slv_seq;
+   uvma_obi_memory_slv_seq_c        data_slv_seq;
+
    if (cfg.is_active) begin
       fork
-         begin
-            instr_vseq = uvme_cv32e40x_instr_vseq_c::type_id::create("instr_vseq");
-            instr_vseq.start(vsequencer);
+         // begin
+         //    instr_vseq = uvme_cv32e40x_instr_vseq_c::type_id::create("instr_vseq");
+         //    instr_vseq.start(vsequencer);
+         // end
+
+         begin : spawn_obi_instr_fw_preload_thread
+            fw_preload_seq = uvma_obi_memory_fw_preload_seq_c::type_id::create("fw_preload_seq");
+            void'(fw_preload_seq.randomize());
+            fw_preload_seq.start(obi_memory_instr_agent.sequencer);
          end
-         
-         begin
-            vp_vseq = uvme_cv32e40x_vp_vseq_c::type_id::create("vp_vseq");
-            vp_vseq.start(vsequencer);
+
+         begin : obi_instr_slv_thread
+            instr_slv_seq = uvma_obi_memory_slv_seq_c::type_id::create("instr_slv_seq");
+            void'(instr_slv_seq.randomize());
+            instr_slv_seq.start(obi_memory_instr_agent.sequencer);
+         end
+
+         begin : obi_data_slv_thread
+            data_slv_seq = uvma_obi_memory_slv_seq_c::type_id::create("data_slv_seq");
+
+            // Install the virtual peripheral registers             
+            void'(data_slv_seq.register_vp_vseq("vp_rand_num", 32'h1500_1000, 1, uvma_obi_memory_vp_rand_num_seq_c::get_type()));
+            void'(data_slv_seq.register_vp_vseq("vp_virtual_printer", 32'h1000_0000, 11, uvma_obi_memory_vp_virtual_printer_seq_c::get_type()));
+            void'(data_slv_seq.register_vp_vseq("vp_sig_writer", 32'h2000_0008, 3, uvma_obi_memory_vp_sig_writer_seq_c::get_type()));
+            void'(data_slv_seq.register_vp_vseq("vp_cycle_counter", 32'h1500_1004, 1, uvma_obi_memory_vp_cycle_counter_seq_c::get_type()));
+
+            begin
+               uvme_cv32e40x_vp_status_flags_seq_c vp_seq;
+               if (!$cast(vp_seq, data_slv_seq.register_vp_vseq("vp_status_flags", 32'h2000_0000, 2, uvme_cv32e40x_vp_status_flags_seq_c::get_type()))) begin
+                  `uvm_fatal("CV32E40XVPSEQ", $sformatf("Could not cast vp_status_flags correctly"));
+               end
+               vp_seq.cv32e40x_cntxt = cntxt;
+            end
+
+            begin
+               uvme_cv32e40x_vp_interrupt_timer_seq_c vp_seq;
+               if (!$cast(vp_seq, data_slv_seq.register_vp_vseq("vp_interrupt_timer", 32'h1500_0000, 2, uvme_cv32e40x_vp_interrupt_timer_seq_c::get_type()))) begin
+                  `uvm_fatal("CV32E40XVPSEQ", $sformatf("Could not cast vp_interrupt_timer correctly"));
+               end
+               vp_seq.cv32e40x_cntxt = cntxt;
+            end
+
+            begin
+               uvme_cv32e40x_vp_debug_control_seq_c vp_seq;
+               if (!$cast(vp_seq, data_slv_seq.register_vp_vseq("vp_debug_control", 32'h1500_0008, 1, uvme_cv32e40x_vp_debug_control_seq_c::get_type()))) begin
+                  `uvm_fatal("CV32E40XVPSEQ", $sformatf("Could not cast vp_debug_control correctly"));
+               end
+               vp_seq.cv32e40x_cntxt = cntxt;
+            end
+
+            void'(data_slv_seq.randomize());
+            data_slv_seq.start(obi_memory_data_agent.sequencer);
          end
       join_none
    end
@@ -411,3 +463,5 @@ endfunction: assemble_vsequencer
 
 
 `endif // __UVME_CV32E40X_ENV_SV__
+
+

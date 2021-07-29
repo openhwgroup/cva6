@@ -21,6 +21,7 @@
 -f ${DV_UVML_TRN_PATH}/uvml_trn_pkg.flist
 -f ${DV_UVML_LOGS_PATH}/uvml_logs_pkg.flist
 -f ${DV_UVML_SB_PATH}/uvml_sb_pkg.flist
+-f ${DV_UVML_MEM_PATH}/uvml_mem_pkg.flist
 
 // Agents
 -f ${DV_UVMA_CLKNRST_PATH}/uvma_clknrst_pkg.flist

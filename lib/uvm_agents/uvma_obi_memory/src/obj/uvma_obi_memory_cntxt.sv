@@ -34,6 +34,9 @@ class uvma_obi_memory_cntxt_c extends uvm_object;
    // Handle to agent interface
    virtual uvma_obi_memory_if  vif;
    
+   // Handle to memory storage for active slaves
+   uvml_mem_c mem;
+
    // Integrals
    uvma_obi_memory_reset_state_enum  reset_state        = UVMA_OBI_MEMORY_RESET_STATE_PRE_RESET;
    uvma_obi_memory_phases_enum       mon_phase          = UVMA_OBI_MEMORY_PHASE_INACTIVE;

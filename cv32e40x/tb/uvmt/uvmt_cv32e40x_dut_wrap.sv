@@ -155,6 +155,7 @@ module uvmt_cv32e40x_dut_wrap
     assign obi_instr_if_i.aid       = 'b0;
     assign obi_instr_if_i.rid       = 'b0;
     assign obi_instr_if_i.we        = 'b0;    
+    assign obi_instr_if_i.be        = 'hf; // Always assumes 32-bit full bus reads on instruction OBI
 
     // --------------------------------------------
     // OBI Data agent v1.0 signal tie-offs
