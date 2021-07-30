@@ -237,7 +237,10 @@ endtask : mon_chan_r_in_reset
 task uvma_obi_memory_mon_c::mon_chan_r_post_reset();
    
    uvma_obi_memory_mon_trn_c  trn;
-   
+      
+   wait (cntxt.mon_outstanding_reads_q.size());
+   trn = cntxt.mon_outstanding_reads_q.pop_front();
+
    mon_chan_r_trn(trn);
    trn.cfg = cfg;
    `uvm_info("OBI_MEMORY_MON", $sformatf("monitored transaction on channel R:\n%s", trn.sprint()), UVM_HIGH)
@@ -265,9 +268,7 @@ task uvma_obi_memory_mon_c::mon_chan_a_trn(output uvma_obi_memory_mon_trn_c trn)
 endtask : mon_chan_a_trn
 
 
-task uvma_obi_memory_mon_c::mon_chan_r_trn(output uvma_obi_memory_mon_trn_c trn);
-   
-   uvma_obi_memory_mon_trn_c  trn_a;
+task uvma_obi_memory_mon_c::mon_chan_r_trn(output uvma_obi_memory_mon_trn_c trn);   
    
    trn = uvma_obi_memory_mon_trn_c::type_id::create("trn");
    
@@ -278,14 +279,6 @@ task uvma_obi_memory_mon_c::mon_chan_r_trn(output uvma_obi_memory_mon_trn_c trn)
    
    sample_trn_r_from_vif(trn);
    trn.__timestamp_end = $realtime();
-   if (cntxt.mon_outstanding_reads_q.size()) begin
-      trn_a = cntxt.mon_outstanding_reads_q.pop_front();
-      trn.__timestamp_start = trn_a.__timestamp_start;
-      trn.address = trn_a.address;
-   end
-   else begin
-      `uvm_error("OBI_MON", $sformatf("No outstanding read for observed rvalid assertion:\n%s", trn.sprint()))
-   end   
    
 endtask : mon_chan_r_trn
 
@@ -333,29 +326,16 @@ task uvma_obi_memory_mon_c::sample_trn_a_from_vif(ref uvma_obi_memory_mon_trn_c 
    for (int unsigned ii=0; ii<cfg.auser_width; ii++) begin
       trn.auser[ii] = passive_mp.mon_cb.auser[ii];
    end
-   for (int unsigned ii=0; ii<cfg.wuser_width; ii++) begin
-      trn.wuser[ii] = passive_mp.mon_cb.wuser[ii];
-   end
-   for (int unsigned ii=0; ii<cfg.ruser_width; ii++) begin
-      trn.ruser[ii] = passive_mp.mon_cb.ruser[ii];
-   end
-   for (int unsigned ii=0; ii<cfg.id_width; ii++) begin
-      trn.id[ii] = passive_mp.mon_cb.rid[ii];
+   if (trn.access_type == UVMA_OBI_MEMORY_ACCESS_WRITE) begin
+      for (int unsigned ii=0; ii<cfg.wuser_width; ii++) begin
+         trn.wuser[ii] = passive_mp.mon_cb.wuser[ii];
+      end
    end
    
    if (trn.access_type == UVMA_OBI_MEMORY_ACCESS_WRITE) begin
       for (int unsigned ii=0; ii<cfg.data_width; ii++) begin
          trn.data[ii] = passive_mp.mon_cb.wdata[ii];
       end
-   end
-   else if (trn.access_type == UVMA_OBI_MEMORY_ACCESS_READ) begin
-      for (int unsigned ii=0; ii<cfg.data_width; ii++) begin
-         trn.data[ii] = passive_mp.mon_cb.rdata[ii];
-      end
-   end
-   else begin
-      `uvm_error("OBI_MEMORY_MON", $sformatf("Invalid value for access_type:%d", trn.access_type))
-      trn.__has_error = 1;
    end
    
 endtask : sample_trn_a_from_vif
@@ -364,30 +344,7 @@ endtask : sample_trn_a_from_vif
 task uvma_obi_memory_mon_c::sample_trn_r_from_vif(ref uvma_obi_memory_mon_trn_c trn);
    
    trn.__originator = this.get_full_name();
-   
-   if (passive_mp.mon_cb.we === 1'b1) begin
-      trn.access_type = UVMA_OBI_MEMORY_ACCESS_WRITE;
-   end
-   else if (passive_mp.mon_cb.we === 1'b0) begin
-      trn.access_type = UVMA_OBI_MEMORY_ACCESS_READ;
-   end
-   else begin
-      `uvm_error("OBI_MEMORY_MON", $sformatf("Invalid value for we:%b", passive_mp.mon_cb.we))
-      trn.__has_error = 1;
-   end
-   
-   for (int unsigned ii=0; ii<cfg.addr_width; ii++) begin
-      trn.address[ii] = passive_mp.mon_cb.addr[ii];
-   end
-   for (int unsigned ii=0; ii<(cfg.data_width/8); ii++) begin
-      trn.be[ii] = passive_mp.mon_cb.be[ii];
-   end
-   for (int unsigned ii=0; ii<cfg.auser_width; ii++) begin
-      trn.auser[ii] = passive_mp.mon_cb.auser[ii];
-   end
-   for (int unsigned ii=0; ii<cfg.wuser_width; ii++) begin
-      trn.wuser[ii] = passive_mp.mon_cb.wuser[ii];
-   end
+      
    for (int unsigned ii=0; ii<cfg.ruser_width; ii++) begin
       trn.ruser[ii] = passive_mp.mon_cb.ruser[ii];
    end
@@ -395,19 +352,10 @@ task uvma_obi_memory_mon_c::sample_trn_r_from_vif(ref uvma_obi_memory_mon_trn_c 
       trn.id[ii] = passive_mp.mon_cb.rid[ii];
    end
    
-   if (trn.access_type == UVMA_OBI_MEMORY_ACCESS_WRITE) begin
-      for (int unsigned ii=0; ii<cfg.data_width; ii++) begin
-         trn.data[ii] = passive_mp.mon_cb.wdata[ii];
-      end
-   end
-   else if (trn.access_type == UVMA_OBI_MEMORY_ACCESS_READ) begin
+   if (trn.access_type == UVMA_OBI_MEMORY_ACCESS_READ) begin
       for (int unsigned ii=0; ii<cfg.data_width; ii++) begin
          trn.data[ii] = passive_mp.mon_cb.rdata[ii];
       end
-   end
-   else begin
-      `uvm_error("OBI_MEMORY_MON", $sformatf("Invalid value for access_type:%d", trn.access_type))
-      trn.__has_error = 1;
    end
    
 endtask : sample_trn_r_from_vif
