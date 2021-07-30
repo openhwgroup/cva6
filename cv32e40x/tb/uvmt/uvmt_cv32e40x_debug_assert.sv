@@ -301,14 +301,15 @@ module uvmt_cv32e40x_debug_assert
 
 
     // Single step WFI must not result in sleeping
+
     property p_single_step_wfi;
-        !cov_assert_if.debug_mode_q && cov_assert_if.dcsr_q[2] && cov_assert_if.is_wfi |->
-                decode_valid [->2] ##0 cov_assert_if.debug_mode_q && !cov_assert_if.core_sleep_o;
+        !cov_assert_if.debug_mode_q && cov_assert_if.dcsr_q[2] && cov_assert_if.is_wfi
+        |-> decode_valid [->1] ##0 cov_assert_if.debug_mode_q && !cov_assert_if.core_sleep_o;
     endproperty
 
     a_single_step_wfi : assert property(p_single_step_wfi)
-        else
-            `uvm_error(info_tag, "Debug mode not entered after single step WFI or core went sleeping");
+        else `uvm_error(info_tag, "Debug mode not entered after single step WFI or core went sleeping");
+
 
     // Executing with single step with no irq results in debug mode
     property p_single_step;
