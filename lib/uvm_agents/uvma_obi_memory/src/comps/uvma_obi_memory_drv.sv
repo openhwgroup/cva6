@@ -188,9 +188,8 @@ task uvma_obi_memory_drv_c::run_phase(uvm_phase phase);
    
    if (cfg.enabled && cfg.is_active) begin
       fork
-         begin : chan_a
+         begin : chan_a            
             forever begin
-               @(slv_mp.drv_slv_cb);
                drv_slv_gnt();
             end
          end
@@ -312,33 +311,37 @@ task uvma_obi_memory_drv_c::drv_slv_gnt();
    case (cntxt.reset_state)
       UVMA_OBI_MEMORY_RESET_STATE_POST_RESET: begin
          
-         if (slv_mp.drv_slv_cb.req === 1'b1) begin
-            `uvm_info("OBI_MEMORY_DRV::drv_slv_gnt", "req is 1", UVM_HIGH)
-            if (cfg.drv_slv_gnt) begin
-               
-               case (cfg.drv_slv_gnt_mode)
-                  UVMA_OBI_MEMORY_DRV_SLV_GNT_MODE_CONSTANT      : effective_latency = 0;
-                  UVMA_OBI_MEMORY_DRV_SLV_GNT_MODE_FIXED_LATENCY : effective_latency = cfg.drv_slv_gnt_fixed_latency;
-                  UVMA_OBI_MEMORY_DRV_SLV_GNT_MODE_RANDOM_LATENCY: begin
-                     effective_latency = $urandom_range(cfg.drv_slv_gnt_random_latency_min, cfg.drv_slv_gnt_random_latency_max);
-                  end
-               endcase
-               `uvm_info("OBI_MEMORY_DRV::drv_slv_gnt", $sformatf("gnt latency is %0d", effective_latency), UVM_HIGH)
-               repeat (effective_latency) begin
-                  @(slv_mp.drv_slv_cb);
-               end
-               slv_mp.drv_slv_cb.gnt <= 1'b1;
-               `uvm_info("OBI_MEMORY_DRV::drv_slv_gnt", "gnt asserted", UVM_HIGH)
-               @(slv_mp.drv_slv_cb);
-               slv_mp.drv_slv_cb.gnt <= 1'b0;
-               `uvm_info("OBI_MEMORY_DRV::drv_slv_gnt", "gnt deasserted", UVM_HIGH)
+         
+         // Pre-calculate the "next" latency
+         case (cfg.drv_slv_gnt_mode)
+            UVMA_OBI_MEMORY_DRV_SLV_GNT_MODE_CONSTANT      : effective_latency = 0;
+            UVMA_OBI_MEMORY_DRV_SLV_GNT_MODE_FIXED_LATENCY : effective_latency = cfg.drv_slv_gnt_fixed_latency;
+            UVMA_OBI_MEMORY_DRV_SLV_GNT_MODE_RANDOM_LATENCY: begin
+               effective_latency = $urandom_range(cfg.drv_slv_gnt_random_latency_min, cfg.drv_slv_gnt_random_latency_max);
             end
-         end
-         else begin
-            `uvm_info("OBI_MEMORY_DRV::drv_slv_gnt", "req is 0", UVM_HIGH)
+         endcase
+
+         if (effective_latency == 0) 
+            slv_mp.drv_slv_cb.gnt <= 1'b1;                  
+         else
+            slv_mp.drv_slv_cb.gnt <= 1'b0;
+
+         @(slv_mp.drv_slv_cb);
+         
+         // Break out of this loop upon the next req and gnt
+         while (!(slv_mp.drv_slv_cb.req && slv_mp.drv_slv_cb.gnt)) begin            
+            if (effective_latency && slv_mp.drv_slv_cb.req)
+               effective_latency--;
+
+            // Only count down a non-zero effective latency if someone is requesting
+            if (!effective_latency)
+               slv_mp.drv_slv_cb.gnt <= 1'b1;            
+            
+            @(slv_mp.drv_slv_cb);
          end
       end
-      
+      // If we are in another reset state, it is critical to advance time within the reset loop
+      default: @(slv_mp.drv_slv_cb);         
    endcase
    
 endtask : drv_slv_gnt
