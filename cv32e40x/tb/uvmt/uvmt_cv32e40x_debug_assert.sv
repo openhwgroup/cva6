@@ -275,15 +275,15 @@ module uvmt_cv32e40x_debug_assert
         else
             `uvm_error(info_tag, "Accessing debug regs in M-mode did not result in illegal instruction");
 
-    // Exception while single step -> PC is set to exception handler before
-    // debug
+
+    // Exception while single step -> PC is set to exception handler before debug
     property p_single_step_exception;
-        !cov_assert_if.debug_mode_q && cov_assert_if.dcsr_q[2] && illegal_insn_q |-> ##[1:20] cov_assert_if.debug_mode_q && (cov_assert_if.depc_q == cov_assert_if.mtvec);
+        !cov_assert_if.debug_mode_q && cov_assert_if.dcsr_q[2] && cov_assert_if.illegal_insn_i && cov_assert_if.wb_valid
+        |-> ##[1:20] cov_assert_if.debug_mode_q && (cov_assert_if.depc_q == cov_assert_if.mtvec);
     endproperty
 
     a_single_step_exception : assert property(p_single_step_exception)
-        else
-            `uvm_error(info_tag, "PC not set to exception handler after single step with exception");
+        else `uvm_error(info_tag, "PC not set to exception handler after single step with exception");
 
     // Trigger during single step 
     property p_single_step_trigger;
