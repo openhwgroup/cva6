@@ -423,7 +423,7 @@ bind cv32e40x_wrapper
       // Second attempt: (based on OK input).  This passes, but maybe only because p_minstret_count
       //                                       is the only property sensitive to inst_ret. Will
       //                                       this work in the general case?
-      //TODO:ropeders .inst_ret(dut_wrap.cv32e40x_wrapper_i.core_i.cs_registers_i.mhpmevent_minstret_i),
+      .inst_ret(dut_wrap.cv32e40x_wrapper_i.core_i.ctrl_fsm.mhpmevent.minstret),
       .csr_access(dut_wrap.cv32e40x_wrapper_i.core_i.ex_wb_pipe.csr_en),
       .csr_op(dut_wrap.cv32e40x_wrapper_i.core_i.ex_wb_pipe.csr_op),
       // TODO:ropeders .csr_op_dec(dut_wrap.cv32e40x_wrapper_i.core_i.ex_wb_pipe.decoder_i.csr_op),

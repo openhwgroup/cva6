@@ -392,6 +392,7 @@ module uvmt_cv32e40x_debug_assert
 
     // Check that minstret works as expected when not sleeping
     // Check only when not written to
+
     property p_minstret_count;
         !cov_assert_if.mcountinhibit_q[2] && cov_assert_if.inst_ret && !cov_assert_if.core_sleep_o
         && !(cov_assert_if.csr_we_int && (cov_assert_if.csr_addr == 12'hB02 || cov_assert_if.csr_addr == 12'hB82))
@@ -401,6 +402,7 @@ module uvmt_cv32e40x_debug_assert
     a_minstret_count : assert property(p_minstret_count)
         else
             `uvm_error(info_tag, "Minstret not counting when mcountinhibit[2] is cleared!");
+
 
     // Check debug_req_i and irq on same cycle. 
     // Should result in debug mode with regular pc in depc,
