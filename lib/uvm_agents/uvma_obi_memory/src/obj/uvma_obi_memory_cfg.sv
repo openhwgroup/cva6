@@ -43,10 +43,13 @@ class uvma_obi_memory_cfg_c extends uvm_object;
    rand int unsigned            addr_width ;
    rand int unsigned            data_width ;
    rand int unsigned            id_width   ;
-   rand uvma_obi_memory_mode_enum      drv_mode   ;
-   rand uvma_obi_memory_drv_idle_enum  drv_idle   ;
-   rand int unsigned                   drv_slv_gnt_latency;
-   rand bit                            drv_slv_gnt;
+   rand uvma_obi_memory_mode_enum              drv_mode   ;
+   rand uvma_obi_memory_drv_idle_enum          drv_idle   ;
+   rand bit                                    drv_slv_gnt;
+   rand uvma_obi_memory_drv_slv_gnt_mode_enum  drv_slv_gnt_mode;
+   rand int unsigned                           drv_slv_gnt_fixed_latency;
+   rand int unsigned                           drv_slv_gnt_random_latency_min;
+   rand int unsigned                           drv_slv_gnt_random_latency_max;
    
    
    `uvm_object_utils_begin(uvma_obi_memory_cfg_c)
@@ -64,9 +67,13 @@ class uvma_obi_memory_cfg_c extends uvm_object;
       `uvm_field_int (                        addr_width , UVM_DEFAULT + UVM_DEC)
       `uvm_field_int (                        data_width , UVM_DEFAULT + UVM_DEC)
       `uvm_field_int (                        id_width   , UVM_DEFAULT + UVM_DEC)
-      `uvm_field_enum(uvma_obi_memory_mode_enum    , drv_mode   , UVM_DEFAULT)
-      `uvm_field_enum(uvma_obi_memory_drv_idle_enum, drv_idle   , UVM_DEFAULT)
-      `uvm_field_int (                               drv_slv_gnt, UVM_DEFAULT)
+      `uvm_field_enum(uvma_obi_memory_mode_enum            , drv_mode                      , UVM_DEFAULT)
+      `uvm_field_enum(uvma_obi_memory_drv_idle_enum        , drv_idle                      , UVM_DEFAULT)
+      `uvm_field_int (                                       drv_slv_gnt                   , UVM_DEFAULT)
+      `uvm_field_enum(uvma_obi_memory_drv_slv_gnt_mode_enum, drv_slv_gnt_mode              , UVM_DEFAULT)
+      `uvm_field_int (                                       drv_slv_gnt_fixed_latency     , UVM_DEFAULT)
+      `uvm_field_int (                                       drv_slv_gnt_random_latency_min, UVM_DEFAULT)
+      `uvm_field_int (                                       drv_slv_gnt_random_latency_max, UVM_DEFAULT)
    `uvm_object_utils_end
    
    
@@ -77,18 +84,21 @@ class uvma_obi_memory_cfg_c extends uvm_object;
       soft cov_model_enabled    == 0;
       soft trn_log_enabled      == 1;
       
-      /*soft*/ version          == UVMA_OBI_MEMORY_VERSION_1P1;
-      /*soft*/ ignore_rready    == 1;
-      /*soft*/ auser_width      == uvma_obi_memory_default_auser_width;
-      /*soft*/ wuser_width      == uvma_obi_memory_default_wuser_width;
-      /*soft*/ ruser_width      == uvma_obi_memory_default_ruser_width;
-      /*soft*/ addr_width       == uvma_obi_memory_default_addr_width ;
-      /*soft*/ data_width       == uvma_obi_memory_default_data_width ;
-      /*soft*/ id_width         == uvma_obi_memory_default_id_width   ;
-      soft drv_mode             == UVMA_OBI_MEMORY_MODE_MSTR;
-      soft drv_idle             == UVMA_OBI_MEMORY_DRV_IDLE_ZEROS;
-      soft drv_slv_gnt_latency  == 0;
-      soft drv_slv_gnt          == 1;
+      /*soft*/ version                    == UVMA_OBI_MEMORY_VERSION_1P1;
+      /*soft*/ ignore_rready              == 1;
+      /*soft*/ auser_width                == uvma_obi_memory_default_auser_width;
+      /*soft*/ wuser_width                == uvma_obi_memory_default_wuser_width;
+      /*soft*/ ruser_width                == uvma_obi_memory_default_ruser_width;
+      /*soft*/ addr_width                 == uvma_obi_memory_default_addr_width ;
+      /*soft*/ data_width                 == uvma_obi_memory_default_data_width ;
+      /*soft*/ id_width                   == uvma_obi_memory_default_id_width   ;
+      soft drv_mode                       == UVMA_OBI_MEMORY_MODE_MSTR;
+      soft drv_idle                       == UVMA_OBI_MEMORY_DRV_IDLE_ZEROS;
+      soft drv_slv_gnt                    == 1;
+      soft drv_slv_gnt_mode               == UVMA_OBI_MEMORY_DRV_SLV_GNT_MODE_CONSTANT;
+      soft drv_slv_gnt_fixed_latency      == uvma_obi_memory_default_drv_slv_gnt_fixed_latency;
+      soft drv_slv_gnt_random_latency_min == uvma_obi_memory_default_drv_slv_gnt_random_latency_min;
+      soft drv_slv_gnt_random_latency_max == uvma_obi_memory_default_drv_slv_gnt_random_latency_max;
    }
    
    
