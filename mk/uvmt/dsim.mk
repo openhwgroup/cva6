@@ -37,9 +37,20 @@ DSIM_USE_ISS           ?= YES
 
 DSIM_FILE_LIST ?= -f $(DV_UVMT_PATH)/uvmt_$(CV_CORE_LC).flist
 DSIM_FILE_LIST         += -f $(DV_UVMT_PATH)/imperas_iss.flist
-DSIM_USER_COMPILE_ARGS += "+define+$(CV_CORE_UC)_TRACE_EXECUTION"
+DSIM_USER_COMPILE_ARGS += "+define+UVM +define+$(CV_CORE_UC)_TRACE_EXECUTION"
 ifeq ($(USE_ISS),YES)
 	DSIM_RUN_FLAGS     += +USE_ISS
+else
+	DSIM_RUN_FLAGS     += +DISABLE_OVPSIM
+endif
+ifeq ($(call IS_YES,$(USE_RVVI)),YES)
+    DSIM_RUN_FLAGS     += +USE_RVVI
+endif
+ifeq ($(call IS_YES,$(TEST_DISABLE_ALL_CSR_CHECKS)),YES)
+	DSIM_RUN_FLAGS +="+DISABLE_ALL_CSR_CHECKS"
+endif
+ifneq ($(TEST_DISABLE_CSR_CHECK),)
+	DSIM_RUN_FLAGS += +DISABLE_CSR_CHECK=$(TEST_DISABLE_CSR_CHECK)
 endif
 
 # Seed management for constrained-random sims. This is an intentional repeat

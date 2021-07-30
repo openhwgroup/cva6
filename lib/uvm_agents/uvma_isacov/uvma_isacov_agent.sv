@@ -15,17 +15,17 @@
 //
 // SPDX-License-Identifier: Apache-2.0 WITH SHL-2.0
 
+class uvma_isacov_agent_c#(int ILEN=DEFAULT_ILEN,
+                           int XLEN=DEFAULT_XLEN) extends uvm_agent;
 
-class uvma_isacov_agent_c extends uvm_agent;
-
-  `uvm_component_utils(uvma_isacov_agent_c);
+  `uvm_component_param_utils(uvma_isacov_agent_c);
 
   // Objects
   uvma_isacov_cfg_c                          cfg;
   uvma_isacov_cntxt_c                        cntxt;
 
   // Components
-  uvma_isacov_mon_c                          monitor;
+  uvma_isacov_mon_c#(ILEN,XLEN)              monitor;
   uvma_isacov_cov_model_c                    cov_model;
   uvma_isacov_mon_trn_logger_c               mon_trn_logger;
 
@@ -49,7 +49,6 @@ function uvma_isacov_agent_c::new(string name = "uvma_isacov_agent", uvm_compone
   super.new(name, parent);
 
 endfunction : new
-
 
 function void uvma_isacov_agent_c::build_phase(uvm_phase phase);
 
@@ -115,7 +114,7 @@ endfunction : retrieve_vif
 
 function void uvma_isacov_agent_c::create_components();
 
-  monitor        = uvma_isacov_mon_c::type_id::create("monitor", this);
+  monitor        = uvma_isacov_mon_c#(ILEN,XLEN)::type_id::create("monitor", this);
   cov_model      = uvma_isacov_cov_model_c::type_id::create("cov_model", this);
   mon_trn_logger = uvma_isacov_mon_trn_logger_c::type_id::create("mon_trn_logger", this);
 

@@ -60,7 +60,7 @@ The testbench has been modified in the following ways:
 1. Fix several Lint errors (Metrics dsim strictly enforces the IEEE-1800
    type-checking rules).
 2. Update parameters as appropriate.
-3. Some RTL files were placed in the core director – these have been
+3. Some RTL files were placed in the core directory – these have been
    moved out.
 4. Support UVM error messages.
 5. (TBD) Updates to the end-of-simulation flags in the Virtual

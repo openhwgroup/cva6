@@ -1,0 +1,21 @@
+# YAML file to specify the ci_check regression testlist.
+name: cv32e40p_ci_check
+description: Commit sanity for the cv32e40p
+
+builds:
+  corev-dv:
+    cmd: make comp_corev-dv
+    dir: cv32e40p/sim/uvmt
+    
+  uvmt_cv32e40p:
+    cmd: make comp
+    dir: cv32e40p/sim/uvmt
+
+tests:
+  hello-world:
+    build: uvmt_cv32e40p
+    description: UVM Hello World Test
+    dir: cv32e40p/sim/uvmt    
+    cmd: make test COREV=YES TEST=hello-world
+    num: 500
+  

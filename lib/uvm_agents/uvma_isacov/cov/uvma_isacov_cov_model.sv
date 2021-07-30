@@ -136,7 +136,7 @@ covergroup cg_csritype(
   cp_csr: coverpoint instr.csr {
     bins CSR[] = {[USTATUS:VLENB]} with (cfg_illegal_csr[item] == 0);
   }
-  cp_immu: coverpoint instr.immu[4:0];
+  cp_uimm: coverpoint instr.rs1;
 endgroup : cg_csritype
 
 covergroup cg_cr(
@@ -257,12 +257,12 @@ covergroup cg_instr(string name,
                     bit seq_instr_group_x3_enabled,
                     bit seq_instr_group_x4_enabled,
                     bit [CSR_MASK_WL-1:0] cfg_illegal_csr,
-                    bit ext_a_enabled) with function sample (uvma_isacov_instr_c instr,
-                                                             uvma_isacov_instr_c instr_prev,
-                                                             uvma_isacov_instr_c instr_prev2,
-                                                             uvma_isacov_instr_c instr_prev3,
-                                                             bit raw_hazard,
-                                                             bit csr_hazard);
+                    bit ext_a_supported) with function sample (uvma_isacov_instr_c instr,
+                                                               uvma_isacov_instr_c instr_prev,
+                                                               uvma_isacov_instr_c instr_prev2,
+                                                               uvma_isacov_instr_c instr_prev3,
+                                                               bit raw_hazard,
+                                                               bit csr_hazard);
   option.per_instance = 1;
   option.name = name;
 
@@ -270,22 +270,22 @@ covergroup cg_instr(string name,
   cp_instr_prev: coverpoint(instr.name);
 
   cp_group: coverpoint (instr.group) {
-    illegal_bins ILL_EXT_A = {ALOAD_GROUP, ASTORE_GROUP, AMEM_GROUP} with (!ext_a_enabled);
+    illegal_bins ILL_EXT_A = {ALOAD_GROUP, ASTORE_GROUP, AMEM_GROUP} with (!ext_a_supported);
   }
 
   cp_group_prev:  coverpoint (instr_prev.group) iff (instr_prev != null) {
     ignore_bins IGN_X2_OFF = {[0:$]} with (!seq_instr_group_x2_enabled);
-    illegal_bins ILL_EXT_A = {ALOAD_GROUP, ASTORE_GROUP, AMEM_GROUP} with (!ext_a_enabled);
+    illegal_bins ILL_EXT_A = {ALOAD_GROUP, ASTORE_GROUP, AMEM_GROUP} with (!ext_a_supported);
   }
 
   cp_group_prev2: coverpoint (instr_prev2.group) iff (instr_prev2 != null) {
     ignore_bins IGN_X3_OFF = {[0:$]} with (!seq_instr_group_x3_enabled);
-    illegal_bins ILL_EXT_A = {ALOAD_GROUP, ASTORE_GROUP, AMEM_GROUP} with (!ext_a_enabled);
+    illegal_bins ILL_EXT_A = {ALOAD_GROUP, ASTORE_GROUP, AMEM_GROUP} with (!ext_a_supported);
   }
 
   cp_group_prev3: coverpoint (instr_prev3.group) iff (instr_prev3 != null) {
     ignore_bins IGN_X4_OFF = {[0:$]} with (!seq_instr_group_x4_enabled);
-    illegal_bins ILL_EXT_A = {ALOAD_GROUP, ASTORE_GROUP, AMEM_GROUP} with (!ext_a_enabled);
+    illegal_bins ILL_EXT_A = {ALOAD_GROUP, ASTORE_GROUP, AMEM_GROUP} with (!ext_a_supported);
   }
 
   cp_raw_hazard: coverpoint(raw_hazard) {
@@ -453,7 +453,7 @@ function void uvma_isacov_cov_model_c::build_phase(uvm_phase phase);
   end
 
   if (cfg.enabled && cfg.cov_model_enabled) begin
-    if (cfg.ext_i_enabled) begin
+    if (cfg.core_cfg.ext_i_supported) begin
       lui_cg    = new("lui_cg");
       auipc_cg  = new("auipc_cg");
       jal_cg    = new("jal_cg");
@@ -500,7 +500,7 @@ function void uvma_isacov_cov_model_c::build_phase(uvm_phase phase);
       ecall_cg  = new("ecall_cg", .reg_crosses_enabled(cfg.reg_crosses_enabled));
       ebreak_cg = new("ebreak_cg", .reg_crosses_enabled(cfg.reg_crosses_enabled));
     end
-    if (cfg.ext_m_enabled) begin
+    if (cfg.core_cfg.ext_m_supported) begin
       mul_cg    = new("mul_cg", .reg_crosses_enabled(cfg.reg_crosses_enabled));
       mulh_cg   = new("mulh_cg", .reg_crosses_enabled(cfg.reg_crosses_enabled));
       mulhsu_cg = new("mulhsu_cg", .reg_crosses_enabled(cfg.reg_crosses_enabled));
@@ -510,7 +510,7 @@ function void uvma_isacov_cov_model_c::build_phase(uvm_phase phase);
       rem_cg    = new("rem_cg", .reg_crosses_enabled(cfg.reg_crosses_enabled));
       remu_cg   = new("remu_cg", .reg_crosses_enabled(cfg.reg_crosses_enabled));
     end
-    if (cfg.ext_c_enabled) begin
+    if (cfg.core_cfg.ext_c_supported) begin
       c_addi4spn_cg = new("c_addi4spn_cg");
       c_lw_cg       = new("c_lw_cg", .reg_crosses_enabled(cfg.reg_crosses_enabled));
       c_sw_cg       = new("c_sw_cg", .reg_crosses_enabled(cfg.reg_crosses_enabled));
@@ -540,23 +540,23 @@ function void uvma_isacov_cov_model_c::build_phase(uvm_phase phase);
       c_add_cg      = new("c_add_cg", .reg_crosses_enabled(cfg.reg_crosses_enabled));
       c_swsp_cg     = new("c_swsp_cg");
     end
-    if (cfg.ext_zicsr_enabled) begin
-      csrrw_cg  = new("csrrw_cg", cfg.cfg_illegal_csr, .reg_crosses_enabled(cfg.reg_crosses_enabled));
-      csrrs_cg  = new("csrrs_cg", cfg.cfg_illegal_csr, .reg_crosses_enabled(cfg.reg_crosses_enabled));
-      csrrc_cg  = new("csrrc_cg", cfg.cfg_illegal_csr, .reg_crosses_enabled(cfg.reg_crosses_enabled));
-      csrrwi_cg = new("csrrwi_cg", cfg.cfg_illegal_csr, .reg_crosses_enabled(cfg.reg_crosses_enabled));
-      csrrsi_cg = new("csrrsi_cg", cfg.cfg_illegal_csr, .reg_crosses_enabled(cfg.reg_crosses_enabled));
-      csrrci_cg = new("csrrci_cg", cfg.cfg_illegal_csr, .reg_crosses_enabled(cfg.reg_crosses_enabled));
+    if (cfg.core_cfg.ext_zicsri_supported) begin
+      csrrw_cg  = new("csrrw_cg", cfg.core_cfg.unsupported_csr_mask, .reg_crosses_enabled(cfg.reg_crosses_enabled));
+      csrrs_cg  = new("csrrs_cg", cfg.core_cfg.unsupported_csr_mask, .reg_crosses_enabled(cfg.reg_crosses_enabled));
+      csrrc_cg  = new("csrrc_cg", cfg.core_cfg.unsupported_csr_mask, .reg_crosses_enabled(cfg.reg_crosses_enabled));
+      csrrwi_cg = new("csrrwi_cg", cfg.core_cfg.unsupported_csr_mask, .reg_crosses_enabled(cfg.reg_crosses_enabled));
+      csrrsi_cg = new("csrrsi_cg", cfg.core_cfg.unsupported_csr_mask, .reg_crosses_enabled(cfg.reg_crosses_enabled));
+      csrrci_cg = new("csrrci_cg", cfg.core_cfg.unsupported_csr_mask, .reg_crosses_enabled(cfg.reg_crosses_enabled));
     end
-    if (cfg.ext_zifencei_enabled) begin
+    if (cfg.core_cfg.ext_zifencei_supported) begin
       fence_i_cg = new("fence_i_cg", .reg_crosses_enabled(cfg.reg_crosses_enabled));
     end
     instr_cg = new("instr_cg",
                    .seq_instr_group_x2_enabled(cfg.seq_instr_group_x2_enabled),
                    .seq_instr_group_x3_enabled(cfg.seq_instr_group_x3_enabled),
                    .seq_instr_group_x4_enabled(cfg.seq_instr_group_x4_enabled),
-                   .cfg_illegal_csr(cfg.cfg_illegal_csr),
-                   .ext_a_enabled(cfg.ext_a_enabled));
+                   .cfg_illegal_csr(cfg.core_cfg.unsupported_csr_mask),
+                   .ext_a_supported(cfg.core_cfg.ext_a_supported));
   end
 
   mon_trn_fifo = new("mon_trn_fifo", this);
@@ -584,7 +584,7 @@ function void uvma_isacov_cov_model_c::sample (uvma_isacov_instr_c instr);
 
   logic have_sampled = 0;
 
-  if (!have_sampled && cfg.ext_i_enabled) begin
+  if (!have_sampled && cfg.core_cfg.ext_i_supported) begin
     have_sampled = 1;
     case (instr.name)
       LUI:   lui_cg.sample(instr);
@@ -637,7 +637,7 @@ function void uvma_isacov_cov_model_c::sample (uvma_isacov_instr_c instr);
     endcase
   end
 
-  if (!have_sampled && cfg.ext_m_enabled) begin
+  if (!have_sampled && cfg.core_cfg.ext_m_supported) begin
     have_sampled = 1;
     case (instr.name)
       MUL:     mul_cg.sample(instr);
@@ -652,7 +652,7 @@ function void uvma_isacov_cov_model_c::sample (uvma_isacov_instr_c instr);
     endcase
   end
 
-  if (!have_sampled && cfg.ext_c_enabled) begin
+  if (!have_sampled && cfg.core_cfg.ext_c_supported) begin
     have_sampled = 1;
     case (instr.name)
       C_ADDI4SPN: c_addi4spn_cg.sample(instr);
@@ -688,7 +688,7 @@ function void uvma_isacov_cov_model_c::sample (uvma_isacov_instr_c instr);
     endcase
   end
 
-  if (!have_sampled && cfg.ext_zicsr_enabled) begin
+  if (!have_sampled && cfg.core_cfg.ext_zicsri_supported) begin
     have_sampled = 1;
     case (instr.name)
       CSRRW:   csrrw_cg.sample(instr);
@@ -701,7 +701,7 @@ function void uvma_isacov_cov_model_c::sample (uvma_isacov_instr_c instr);
     endcase
   end
 
-  if (!have_sampled && cfg.ext_zifencei_enabled) begin
+  if (!have_sampled && cfg.core_cfg.ext_zifencei_supported) begin
     have_sampled = 1;
     case (instr.name)
       FENCE_I: fence_i_cg.sample(instr);
@@ -752,7 +752,7 @@ function bit uvma_isacov_cov_model_c::is_csr_hazard(uvma_isacov_instr_c instr,
   // CSR hazard, previous instruction wrote to a valid CSR
   if (instr_prev.group inside {CSR_GROUP} &&
       instr_prev.is_csr_write() &&
-      !cfg.cfg_illegal_csr[instr_prev.csr])
+      !cfg.core_cfg.unsupported_csr_mask[instr_prev.csr])
     return 1;
 
   return 0;

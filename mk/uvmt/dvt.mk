@@ -40,7 +40,7 @@ endif
 endif
 endif
 
-.PHONY: open_in_dvt_ide check_dvt_home create_dvt_build_dir create_dvt_build_file
+.PHONY: open_in_dvt_ide check_dvt_home create_dvt_build_dir create_dvt_build_file dvt_dump_env_vars
 
 create_dvt_build_dir:
 	@ mkdir -p $(CORE_V_VERIF)/.dvt
@@ -51,9 +51,18 @@ create_dvt_build_file: create_dvt_build_dir $(CV_CORE_PKG)
 open_in_dvt_ide: check_dvt_home create_dvt_build_file
 	$(DVT_COMMAND)
 
+define NEWLINE
+
+
+endef
+
+ENV_VARS := $(foreach v, $(.VARIABLES), $(if $(filter file,$(origin $(v))),  $(if $(filter-out .% NEWLINE%, $(v)), export $(v)='$($(v))' $(NEWLINE) )))
+dvt_dump_env_vars:
+	$(ENV_VARS)
+
 check_dvt_home:
 ifndef DVT_HOME
-	@echo "DVT_HOME env var is not set!"; \
+	@ echo "DVT_HOME env var is not set!"; \
 	exit 1; \
 endif
 endif

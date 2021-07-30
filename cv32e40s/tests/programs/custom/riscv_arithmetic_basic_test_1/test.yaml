@@ -1,0 +1,4 @@
+name: riscv_arithmetic_basic_test_1
+uvm_test: uvmt_$(CV_CORE_LC)_firmware_test_c
+description: >
+    Basic sanity arithmetic test 1

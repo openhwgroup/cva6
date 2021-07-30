@@ -486,7 +486,7 @@ module mm_ram
 `ifndef VERILATOR
             //uvmt_cv32e40p_tb.iss_wrap.ram.RND_STALL = data_rdata_mux;
             `RND_STALL = data_rdata_mux;
-            `uvm_fatal(MM_RAM_TAG, $sformatf("out of bounds read from %08x\nRandom stall generator is not supported with Verilator", data_addr_i));
+            `uvm_fatal(MM_RAM_TAG, $sformatf("out of bounds read from %08x", data_addr_i));
 `endif
         end else if (select_rdata_q == RND_NUM) begin
             data_rdata_mux = rnd_num;

@@ -4,7 +4,7 @@ This directory contains the Makefiles to run all tests of the UVM environment.
 The UVM testcases are at `CV_CORE/tests/uvmt`, and the test-programs can be
 found in `CV_CORE/tests/program`.  See the README in those directories for more information.
 <br><br>
-Please refer to the [Verification Strategy](https://core-v-docs-verif-strat.readthedocs.io/en/latest/sim_tests.html#simulation-tests-in-the-uvm-environments)
+Please refer to the [Verification Strategy](https://core-v-verif-verification-strategy.readthedocs.io/en/master/)
 for a discussion on the distinction between a _testcase_ (a SystemVerilog class extended from uvm_test that instantiates and controls the UVM environment) and a _test-program_ (a C or assembler program that runs on the core RTL model) in this environment.
 <br><br>
 To run the UVM environment you will need:

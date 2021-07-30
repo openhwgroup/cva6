@@ -1,0 +1,20 @@
+[options]
+mode bmc
+depth 34
+expect pass,fail
+
+[engines]
+#btor btormc
+smtbmc boolector
+
+[script]
+read_verilog -sv miter.sv
+read_ilang mutated.il
+prep -top miter
+fmcombine miter ref uut
+flatten
+opt -fast
+
+[files]
+miter.sv
+mutated.il
