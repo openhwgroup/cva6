@@ -330,10 +330,10 @@ task uvma_obi_memory_drv_c::drv_slv_gnt();
          
          // Break out of this loop upon the next req and gnt
          while (!(slv_mp.drv_slv_cb.req && slv_mp.drv_slv_cb.gnt)) begin            
+            // Only count down a non-zero effective latency if someone is requesting (req asserted)
             if (effective_latency && slv_mp.drv_slv_cb.req)
                effective_latency--;
-
-            // Only count down a non-zero effective latency if someone is requesting
+            
             if (!effective_latency)
                slv_mp.drv_slv_cb.gnt <= 1'b1;            
             
