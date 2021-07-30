@@ -285,15 +285,20 @@ module uvmt_cv32e40x_debug_assert
     a_single_step_exception : assert property(p_single_step_exception)
         else `uvm_error(info_tag, "PC not set to exception handler after single step with exception");
 
+
     // Trigger during single step 
+
     property p_single_step_trigger;
-        !cov_assert_if.debug_mode_q && cov_assert_if.dcsr_q[2] && cov_assert_if.addr_match && cov_assert_if.tdata1[2] && cov_assert_if.id_stage_instr_valid_i|->
-                ##[1:20] cov_assert_if.debug_mode_q && (cov_assert_if.dcsr_q[8:6] == cv32e40x_pkg::DBG_CAUSE_TRIGGER) && (cov_assert_if.depc_q == pc_at_dbg_req);
+        !cov_assert_if.debug_mode_q && cov_assert_if.dcsr_q[2]
+        && cov_assert_if.addr_match && cov_assert_if.wb_valid && cov_assert_if.tdata1[2]
+        |-> ##[1:20] cov_assert_if.debug_mode_q && (cov_assert_if.dcsr_q[8:6] == cv32e40x_pkg::DBG_CAUSE_TRIGGER)
+        && (cov_assert_if.depc_q == pc_at_dbg_req);
     endproperty
 
     a_single_step_trigger : assert property (p_single_step_trigger)
-        else
-            `uvm_error(info_tag, $sformatf("Single step and trigger error: depc = %08x, cause = %d",cov_assert_if.depc_q, cov_assert_if.dcsr_q[8:6]));
+        else `uvm_error(info_tag,
+        $sformatf("Single step and trigger error: depc = %08x, cause = %d",cov_assert_if.depc_q, cov_assert_if.dcsr_q[8:6]));
+
 
     // Single step WFI must not result in sleeping
     property p_single_step_wfi;
@@ -476,9 +481,14 @@ module uvmt_cv32e40x_debug_assert
             // Capture debug pc
             if(cov_assert_if.ctrl_fsm_cs == cv32e40x_pkg::DEBUG_TAKEN) begin
                 pc_at_dbg_req <= rvfi_pc_wdata;
+
                 if (cov_assert_if.rvfi_valid) begin
                     // If there is a newer rvfi_pc_wdata available, we want that instead of the one we saved
                     pc_at_dbg_req <= cov_assert_if.rvfi_pc_wdata;
+                end
+
+                if (cov_assert_if.addr_match && !cov_assert_if.tdata1[18]) begin
+                    pc_at_dbg_req <= cov_assert_if.wb_stage_pc;
                 end
             end
 
@@ -530,7 +540,7 @@ module uvmt_cv32e40x_debug_assert
           exception_addr_at_entry = {cov_assert_if.dm_exception_addr_i[31:2], 2'b00};
   end
 
-    assign cov_assert_if.addr_match   = (cov_assert_if.id_stage_pc == cov_assert_if.tdata2);
+    assign cov_assert_if.addr_match   = (cov_assert_if.wb_stage_pc == cov_assert_if.tdata2);
     assign cov_assert_if.dpc_will_hit = (cov_assert_if.depc_n == cov_assert_if.tdata2);
     assign cov_assert_if.is_wfi = cov_assert_if.wb_valid
                                   && ((cov_assert_if.wb_stage_instr_rdata_i & WFI_INSTR_MASK) == WFI_INSTR_DATA);
