@@ -162,8 +162,8 @@ package ariane_pkg;
     localparam bit RVD = riscv::IS_XLEN64; // Is D extension enabled
 `else
     // Floating-point extensions configuration
-    localparam bit RVF = riscv::IS_XLEN64; // Is F extension enabled
-    localparam bit RVD = riscv::IS_XLEN64; // Is D extension enabled
+    localparam bit RVF = (riscv::IS_XLEN64 | riscv::IS_XLEN32) & riscv::FPU_EN; // Is F extension enabled for both 32 Bit and 64 bit CPU  
+    localparam bit RVD = (riscv::IS_XLEN64 ? 1:0) & riscv::FPU_EN;              // Is D extension enabled for only 64 bit CPU
 `endif
     localparam bit RVA = 1'b1; // Is A extension enabled
 

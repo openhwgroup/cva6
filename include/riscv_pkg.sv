@@ -35,6 +35,7 @@ package riscv;
     localparam VLEN       = (XLEN == 32) ? 32 : 64;    // virtual address length
     localparam PLEN       = (XLEN == 32) ? 32 : 56;    // physical address length
 
+    localparam IS_XLEN32  = (XLEN == 32) ? 1'b1 : 1'b0;
     localparam IS_XLEN64  = (XLEN == 32) ? 1'b0 : 1'b1;
     localparam ModeW      = (XLEN == 32) ? 1 : 4;
     localparam ASIDW      = (XLEN == 32) ? 9 : 16;
@@ -43,6 +44,8 @@ package riscv;
     localparam SV         = (MODE_SV == ModeSv32) ? 32 : 39;
     localparam VPN2       = (VLEN-31 < 8) ? VLEN-31 : 8;
 
+    localparam  FPU_EN     = 1'b1; // This bit is to select FPU in the design, FPU_EN = 1'b0 disables FPU in the design
+  
     typedef logic [XLEN-1:0] xlen_t;
 
     // --------------------
