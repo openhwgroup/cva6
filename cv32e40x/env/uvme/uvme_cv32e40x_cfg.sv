@@ -72,7 +72,7 @@ class uvme_cv32e40x_cfg_c extends uvma_core_cntrl_cfg_c;
       ext_c_supported        == 1;
       ext_m_supported        == 1;
       ext_zifencei_supported == 1;
-      ext_zicsri_supported   == 1;
+      ext_zicsr_supported   == 1;
 
       ext_a_supported == 0;
       ext_p_supported == 0;
@@ -125,6 +125,7 @@ class uvme_cv32e40x_cfg_c extends uvma_core_cntrl_cfg_c;
       isacov_cfg.seq_instr_group_x3_enabled == 1;
       isacov_cfg.seq_instr_group_x4_enabled == 0;
       isacov_cfg.reg_crosses_enabled        == 0;
+      isacov_cfg.reg_hazards_enabled        == 1;
 
       rvfi_cfg.nret == uvme_cv32e40x_pkg::RVFI_NRET;
       rvfi_cfg.nmi_handler_enabled        == 0; // FIXME:strichmo:implement when NMI implemented in e40x      
