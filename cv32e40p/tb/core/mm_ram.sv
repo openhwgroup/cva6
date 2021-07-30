@@ -97,6 +97,18 @@ module mm_ram
 
     enum logic {T_RAM, T_PER} transaction;
 
+`ifdef CORE_TB
+    integer null_rnd_stall;
+    integer null_rnd_num;
+    integer null_ticks;
+    `define RND_STALL null_rnd_stall
+    `define RND_NUM   null_rnd_num
+    `define TICKS     null_ticks
+`else  // CORE_TB
+    `define RND_STALL uvmt_cv32e40p_tb.iss_wrap.ram.RND_STALL
+    `define RND_NUM   uvmt_cv32e40p_tb.iss_wrap.ram.RND_NUM
+    `define TICKS     uvmt_cv32e40p_tb.iss_wrap.ram.TICKS
+`endif // CORE_TB
 
     integer                        i;
 
@@ -472,18 +484,21 @@ module mm_ram
         end else if(select_rdata_q == RND_STALL) begin
             data_rdata_mux = rnd_stall_rdata;
 `ifndef VERILATOR
-            uvmt_cv32e40p_tb.iss_wrap.ram.RND_STALL = data_rdata_mux;
+            //uvmt_cv32e40p_tb.iss_wrap.ram.RND_STALL = data_rdata_mux;
+            `RND_STALL = data_rdata_mux;
             `uvm_fatal(MM_RAM_TAG, $sformatf("out of bounds read from %08x\nRandom stall generator is not supported with Verilator", data_addr_i));
 `endif
         end else if (select_rdata_q == RND_NUM) begin
             data_rdata_mux = rnd_num;
 `ifndef VERILATOR
-            uvmt_cv32e40p_tb.iss_wrap.ram.RND_NUM = data_rdata_mux;
+            //uvmt_cv32e40p_tb.iss_wrap.ram.RND_NUM = data_rdata_mux;
+            `RND_NUM = data_rdata_mux;
 `endif
         end else if (select_rdata_q == TICKS) begin
             data_rdata_mux = cycle_count_q;
 `ifndef VERILATOR
-            uvmt_cv32e40p_tb.iss_wrap.ram.TICKS = data_rdata_mux;
+            //uvmt_cv32e40p_tb.iss_wrap.ram.TICKS = data_rdata_mux;
+            `TICKS = data_rdata_mux;
             if (cycle_count_overflow_q) begin
                 `uvm_fatal(MM_RAM_TAG, "cycle counter read after overflow");
             end
