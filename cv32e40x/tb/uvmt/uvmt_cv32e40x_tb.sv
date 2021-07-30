@@ -325,37 +325,85 @@ module uvmt_cv32e40x_tb;
                               );
 
   bind cv32e40x_wrapper
-    uvma_obi_assert#(
-                     .ADDR_WIDTH(32),
-                     .DATA_WIDTH(32)
-                    ) obi_instr_assert_i(.clk(clk_i),
-                                         .reset_n(rst_ni),
-                                         .req(instr_req_o),
-                                         .gnt(instr_gnt_i),
-                                         .addr(instr_addr_o),
-                                         .be('1), // Assume full word reads from instruction OBI
-                                         .we('0),
-                                         .wdata('0),
-                                         .rdata(instr_rdata_i),
-                                         .rvalid(instr_rvalid_i),
-                                         .rready(1'b1)
-                                        );
-bind cv32e40x_wrapper
-    uvma_obi_assert#(
-                     .ADDR_WIDTH(32),
-                     .DATA_WIDTH(32)
-                    ) obi_data_assert_i(.clk(clk_i),
-                                        .reset_n(rst_ni),
-                                        .req(data_req_o),
-                                        .gnt(data_gnt_i),
-                                        .addr(data_addr_o),
-                                        .be(data_be_o),
-                                        .we(data_we_o),
-                                        .wdata(data_wdata_o),
-                                        .rdata(data_rdata_i),
-                                        .rvalid(data_rvalid_i),
-                                        .rready(1'b1)
-                                       );
+    uvma_obi_memory_assert#(
+      .ADDR_WIDTH(32),
+      .DATA_WIDTH(32),
+      .AUSER_WIDTH(0),
+      .WUSER_WIDTH(0),
+      .RUSER_WIDTH(0),
+      .ID_WIDTH(0),
+      .ACHK_WIDTH(0),
+      .RCHK_WIDTH(0),
+      .IS_1P2(1)
+    ) obi_instr_memory_assert_i(.clk(clk_i),
+                                .reset_n(rst_ni),
+                                .req(instr_req_o),
+                                .gnt(instr_gnt_i),
+                                .addr(instr_addr_o),
+                                .be('1), // Assume full word reads from instruction OBI
+                                .we('0),
+                                .wdata('0),
+                                .auser('0),
+                                .wuser('0),
+                                .aid('0),
+                                .atop('0),
+                                .memtype(instr_memtype_o),
+                                .prot(instr_prot_o),
+                                .reqpar(~instr_req_o),
+                                .gntpar(~instr_gnt_i),
+                                .achk('0),
+
+                                .rready(1'b1),
+                                .rdata(instr_rdata_i),
+                                .rvalid(instr_rvalid_i),
+                                .err(instr_err_i),
+                                .ruser('0),
+                                .rid('0),
+                                .exokay('0),
+                                .rvalidpar(~instr_rvalid_i),
+                                .rreadypar(1'b0),
+                                .rchk('0)
+    );
+
+  bind cv32e40x_wrapper
+    uvma_obi_memory_assert#(
+      .ADDR_WIDTH(32),
+      .DATA_WIDTH(32),
+      .AUSER_WIDTH(0),
+      .WUSER_WIDTH(0),
+      .RUSER_WIDTH(0),
+      .ID_WIDTH(0),
+      .ACHK_WIDTH(0),
+      .RCHK_WIDTH(0),
+      .IS_1P2(1)
+    ) obi_data_memory_assert_i(.clk(clk_i),
+                               .reset_n(rst_ni),
+                               .req(data_req_o),
+                               .gnt(data_gnt_i),
+                               .addr(data_addr_o),
+                               .be(data_be_o),
+                               .we(data_we_o),
+                               .wdata(data_wdata_o),
+                               .auser('0),
+                               .wuser('0),
+                               .aid('0),
+                               .atop(data_atop_o),
+                               .memtype(data_memtype_o),
+                               .prot(data_prot_o),
+                               .reqpar(~data_req_o),
+                               .gntpar(~data_gnt_i),
+                               .achk('0),
+                               .rready(1'b1),
+                               .rdata(data_rdata_i),
+                               .rvalid(data_rvalid_i),
+                               .err(data_err_i),
+                               .ruser('0),
+                               .rid('0),
+                               .exokay(data_exokay_i),
+                               .rvalidpar(~data_rvalid_i),
+                               .rreadypar(1'b0),
+                               .rchk('0)
+    );
 
   // Bind in verification modules to the design
   bind cv32e40x_core 

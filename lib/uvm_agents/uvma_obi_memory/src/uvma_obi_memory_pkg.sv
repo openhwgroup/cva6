@@ -28,6 +28,8 @@
 
 // Interfaces / Modules / Checkers
 `include "uvma_obi_memory_if.sv"
+`include "uvma_obi_memory_assert.sv"
+`include "uvma_obi_memory_1p2_assert.sv"
 `ifdef UVMA_OBI_MEMORY_INC_IF_CHKR
 `include "uvma_obi_memory_if_chkr.sv"
 `endif
