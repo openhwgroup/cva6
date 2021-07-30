@@ -90,15 +90,17 @@ module uvmt_cv32e40x_debug_assert
         else
             `uvm_error(info_tag, $sformatf("Debug mode not entered after exepected cause %d", debug_cause_pri));
 
+
     // Checck that depc gets the correct value when debug mode is entered.
+
     property p_debug_mode_pc;
         $rose(first_debug_ins)
         |-> cov_assert_if.debug_mode_q && (prev_id_pc == halt_addr_at_entry) && (cov_assert_if.depc_q == pc_at_dbg_req);
     endproperty   
 
     a_debug_mode_pc: assert property(p_debug_mode_pc)
-        else
-            `uvm_error(info_tag, $sformatf("Debug mode entered with wrong pc. pc==%08x",prev_id_pc));
+        else `uvm_error(info_tag, $sformatf("Debug mode entered with wrong pc. pc==%08x",prev_id_pc));
+
 
     // Check that debug with cause haltreq is correct
     property p_debug_mode_ext_req;
@@ -265,10 +267,13 @@ module uvmt_cv32e40x_debug_assert
         else
             `uvm_error(info_tag, $sformatf("Did not exit sleep(== %d) after debug_req_i. Debug_mode = %d cause = %d", cov_assert_if.core_sleep_o, cov_assert_if.debug_mode_q, cov_assert_if.dcsr_q[8:6]));
 
+
     // Accessing debug regs in m-mode is illegal
+
     property p_debug_regs_mmode;
-        cov_assert_if.csr_access && !cov_assert_if.debug_mode_q && cov_assert_if.id_stage_instr_rdata_i[31:20] inside {'h7B0, 'h7B1, 'h7B2, 'h7B3} |->
-                 cov_assert_if.illegal_insn_i; 
+        cov_assert_if.csr_access && !cov_assert_if.debug_mode_q
+        && cov_assert_if.id_stage_instr_rdata_i[31:20] inside {'h7B0, 'h7B1, 'h7B2, 'h7B3}
+        |-> cov_assert_if.illegal_insn_i;
     endproperty
 
     a_debug_regs_mmode : assert property(p_debug_regs_mmode)
@@ -488,7 +493,7 @@ module uvmt_cv32e40x_debug_assert
                     pc_at_dbg_req <= cov_assert_if.rvfi_pc_wdata;
                 end
 
-                if (cov_assert_if.addr_match && !cov_assert_if.tdata1[18]) begin
+                if (cov_assert_if.addr_match && !cov_assert_if.tdata1[18] && cov_assert_if.wb_valid) begin
                     pc_at_dbg_req <= cov_assert_if.wb_stage_pc;
                 end
             end
