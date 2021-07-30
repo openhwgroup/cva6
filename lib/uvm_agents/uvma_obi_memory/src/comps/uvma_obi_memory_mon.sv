@@ -88,7 +88,7 @@ class uvma_obi_memory_mon_c extends uvm_monitor;
    /**
     * TODO Describe uvma_obi_memory_mon_c::mon_chan_r_trn()
     */
-   extern task mon_chan_r_trn(output uvma_obi_memory_mon_trn_c trn);
+   extern task mon_chan_r_trn(uvma_obi_memory_mon_trn_c trn);
    
    /**
     * User hooks for modifying transactions after they've been sampled but before they're sent out the analysis port(s).
@@ -268,11 +268,11 @@ task uvma_obi_memory_mon_c::mon_chan_a_trn(output uvma_obi_memory_mon_trn_c trn)
 endtask : mon_chan_a_trn
 
 
-task uvma_obi_memory_mon_c::mon_chan_r_trn(output uvma_obi_memory_mon_trn_c trn);   
-   
-   trn = uvma_obi_memory_mon_trn_c::type_id::create("trn");
-   
-   while ((passive_mp.mon_cb.rvalid !== 1'b1) && (passive_mp.mon_cb.rready !== 1'b1)) begin
+task uvma_obi_memory_mon_c::mon_chan_r_trn(uvma_obi_memory_mon_trn_c trn);   
+      
+   // 1.1 only requires rvalid
+   // fixme:strichmo:for 1.2 this must take rready into account as well
+   while (passive_mp.mon_cb.rvalid !== 1'b1) begin
       @(passive_mp.mon_cb);
       trn.rvalid_latency++;
    end
