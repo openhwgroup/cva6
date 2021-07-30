@@ -127,8 +127,13 @@ endif
 
 # remote bitbang is enabled
 ifdef rbb
-	compile_flag += +define+jtag_rbb  +jtag_rbb_enable=1
-	questa-cmd += +define+jtag_rbb  +jtag_rbb_enable=1
+	compile_flag += +define+JTAG_RBB  +jtag_rbb_enable=1
+	questa-cmd += +define+JTAG_RBB  +jtag_rbb_enable=1
+endif
+
+ifdef localjtag
+	compile_flag += +define+USE_LOCAL_JTAG
+	questa-cmd += +define+USE_LOCAL_JTAG 
 endif
 
 bender:
@@ -190,7 +195,7 @@ generate-trace-vsim:
 	make generate-trace
 
 run:
-	vsim${questa_version} +permissive $(questa-flags) $(questa-cmd) -lib $(library) +MAX_CYCLES=$(max_cycles) +UVM_TESTNAME=$(test_case) -t 1ps \
+	vsim${questa_version} +permissive $(questa-flags) $(questa-cmd) -lib $(library) +MAX_CYCLES=$(max_cycles) +UVM_TESTNAME=$(test_case) +STRING=$(elf-bin) -t 1ps \
 	+BASEDIR=$(riscv-test-dir) $(uvm-flags) $(QUESTASIM_FLAGS) -gblso $(SPIKE_ROOT)/lib/libfesvr.so -sv_lib $(dpi-library)/ariane_dpi  \
 	${top_level}_optimized +permissive-off ++$(elf-bin) ++$(target-options) | tee sim.log
 

@@ -43,16 +43,22 @@ module ariane_tb;
     localparam ENABLE_DM_TESTS = 0;
    
     parameter  USE_HYPER_MODELS    = 1;
+
+  `ifdef USE_LOCAL_JTAG 
     parameter  LOCAL_JTAG          = 1;
     parameter  CHECK_LOCAL_JTAG    = 0; 
-   
+  `else
+    parameter  LOCAL_JTAG          = 0;
+    parameter  CHECK_LOCAL_JTAG    = 0; 
+  `endif
+
   `ifdef POSTLAYOUT
     localparam int unsigned JtagSampleDelay = (REFClockPeriod < 10ns) ? 2 : 1;
   `else
     localparam int unsigned JtagSampleDelay = 0;
   `endif    
 
-  `ifdef jtag_rbb 
+  `ifdef JTAG_RBB 
     parameter int   jtag_enable = '1 ;
   `else  
     parameter int   jtag_enable = '0 ;
@@ -132,7 +138,7 @@ module ariane_tb;
 
     logic [31:0] exit_o;
 
-    string binary = "../software/hello/hello.riscv";
+    string        binary ;
 
     genvar j;
     generate
@@ -372,16 +378,21 @@ module ariane_tb;
     end
 
 
-   initial  begin: memory_init
+   initial  begin: local_jtag_preload
 
-      repeat(30000)
-            #(CLOCK_PERIOD/2);
-      debug_module_init();
-      load_binary(binary);
-      #(REFClockPeriod);
-      jtag_ariane_wakeup();
-      jtag_read_eoc();
-      
+      if(LOCAL_JTAG) begin
+        if ( $value$plusargs ("STRING=%s", binary));
+          $display("Testing %s", binary);
+
+        repeat(30000)
+              #(CLOCK_PERIOD/2);
+        debug_module_init();
+        load_binary(binary);
+        #(REFClockPeriod);
+        jtag_ariane_wakeup();
+        jtag_read_eoc();
+      end
+
    end
    
   task debug_module_init;
@@ -419,12 +430,11 @@ module ariane_tb;
   endtask // debug_module_init
    
    task jtag_data_preload;
-    logic [127:0] rdata;
+    logic [63:0] rdata;
 
     automatic dm::sbcs_t sbcs = '{
       sbautoincrement: 1'b1,
       sbreadondata   : 1'b1,
-      sbaccess       : 2'd2,
       default        : 1'b0
     };
 
@@ -463,19 +473,20 @@ module ariane_tb;
       sbcs.sbreadonaddr = 1;
       riscv_dbg.write_dmi(dm::SBCS, sbcs);
       foreach (sections[addr]) begin
-        $display(" Checking %h", addr << 4);
-        riscv_dbg.write_dmi(dm::SBAddress0, (addr << 4));
+        $display(" Checking %h", addr << 3);
+        riscv_dbg.write_dmi(dm::SBAddress0, (addr << 3));
         for (int i = 0; i < sections[addr]; i++) begin
-          if (i % 20 == 0) $display(" -- Word %0d/%0d", i, sections[addr]);
-          for (int j = 0; j < 4; j++) begin
-            riscv_dbg.read_dmi(dm::SBData0, rdata[j*32+:32]);
-            // Wait until SBA is free to read another 32 bits
-            do riscv_dbg.read_dmi(dm::SBCS, sbcs);
-            while (sbcs.sbbusy);
-          end
+          riscv_dbg.read_dmi(dm::SBData1, rdata[63:32]);
+          // Wait until SBA is free to read another 32 bits
+          do riscv_dbg.read_dmi(dm::SBCS, sbcs);
+          while (sbcs.sbbusy);           
+          riscv_dbg.read_dmi(dm::SBData0, rdata[32:0]);
+          // Wait until SBA is free to read another 32 bits
+          do riscv_dbg.read_dmi(dm::SBCS, sbcs);
+          while (sbcs.sbbusy);
           if (rdata != memory[addr + i])
             $error("Mismatch detected at %h, expected %0d, actual %0d",
-              (addr + i) << 4, memory[addr + 1], rdata);
+              (addr + i) << 3, memory[addr + 1], rdata);
         end
       end
     end
@@ -551,22 +562,25 @@ module ariane_tb;
     debug_module_init();
     sbcs.sbreadonaddr = 1;
     sbcs.sbautoincrement = 0;
-    sbcs.sbaccess = 2;
     riscv_dbg.write_dmi(dm::SBCS, sbcs);
     do riscv_dbg.read_dmi(dm::SBCS, sbcs);
     while (sbcs.sbbusy);
 
-    riscv_dbg.write_dmi(dm::SBAddress0, 32'h8000_1000);
+    riscv_dbg.write_dmi(dm::SBAddress0, 32'h8000_1000); // tohost address
     riscv_dbg.wait_idle(10);
-    do riscv_dbg.read_dmi(dm::SBData0, retval);
-    while (~retval[31]);
+    do begin 
+       riscv_dbg.read_dmi(dm::SBData0, retval);
+       # 100ns;
+    end while (~retval[0]);
      
 
-    if (retval[30:0]!=0) begin
-        `uvm_error( "Core Test",  $sformatf("*** FAILED *** (tohost = %0d)",retval[30:0]))
+    if (retval[31:1]!=0) begin
+        `uvm_error( "Core Test",  $sformatf("*** FAILED *** (tohost = %0d)",retval[31:1]))
     end else begin
-        `uvm_info( "Core Test",  $sformatf("*** SUCCESS *** (tohost = %0d)", (retval[30:0])), UVM_LOW)
+        `uvm_info( "Core Test",  $sformatf("*** SUCCESS *** (tohost = %0d)", (retval[31:1])), UVM_LOW)
     end
+
+     $finish;
      
   endtask // jtag_read_eoc
 
