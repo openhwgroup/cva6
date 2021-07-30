@@ -11,7 +11,7 @@ This repository contains the hardware files needed to build the Ariane-SoC and i
 
 ## Architecture 
 
-![alt text](https://github.com/AlSaqr-platform/cva6/blob/master/hardware/docs/RTL.jpg)
+![alt text](https://github.com/AlSaqr-platform/cva6/blob/FLLs/hardware/docs/RTL.jpg)
 
 ## Hello World:
 
@@ -49,6 +49,10 @@ make scripts_vips
 make sim elf-bin=../software/hello/hello.riscv
 
 ```
+
+Doing so will load the elf binary through the DMI interface, driven by the SimDTM, communicating with FESVR, the host.
+
+To load the code through JTAG interface, you can add the `localjtag=1` option and do `make localjtag=1 scripts_vip`. Be aware that the preload of the code is slower in this case. 
 
 ### FPGA Emulation
 
