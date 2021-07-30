@@ -265,9 +265,6 @@ task uvme_cv32e40p_vp_vseq_c::do_mem_operation(ref uvma_obi_memory_mon_trn_c mon
 
    word_aligned_addr = { mon_req.address[31:2], 2'b00 };
 
-   `uvm_info("VP_VSEQ", $sformatf("memory operation:\n%s", mon_req.sprint()),
-             //UVM_HIGH)
-             UVM_NONE)
    if (mon_req.access_type == UVMA_OBI_MEMORY_ACCESS_WRITE) begin
       if (mon_req.be[3]) cntxt.mem[word_aligned_addr + 3] = mon_req.data[31:24];
       if (mon_req.be[2]) cntxt.mem[word_aligned_addr + 2] = mon_req.data[23:16];
@@ -295,11 +292,8 @@ task uvme_cv32e40p_vp_vseq_c::vp_address_range_check(ref uvma_obi_memory_mon_trn
       `uvm_create  (slv_rsp)
       add_latencies(slv_rsp);
       `uvm_info("VP_VSEQ", $sformatf("Call to virtual peripheral 'address_range_check':\n'%s", mon_req.sprint()), UVM_LOW)
-      //slv_rsp.start(p_sequencer.obi_memory_data_sequencer);
       slv_rsp.set_sequencer(p_sequencer.obi_memory_data_sequencer);
       `uvm_send(slv_rsp)
-      //`uvm_fatal("VP_VSEQ", $sformatf("Ending simulation due to:\n%s", mon_req.sprint()))
-      `uvm_info("VP_VSEQ", $sformatf("mon_req:\n%s", mon_req.sprint()), UVM_HIGH/*NONE*/)
    end
    else begin
       do_mem_operation(mon_req);
