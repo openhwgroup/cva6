@@ -55,7 +55,10 @@ module uvmt_cv32e40p_dut_wrap #(
                            (
                             uvma_clknrst_if              clknrst_if,
                             uvma_interrupt_if            interrupt_if,
-`ifndef USE_OBI_MEM_AGENT
+`ifdef USE_OBI_MEM_AGENT
+                            // vp_status_if is driven by ENV and used in TB
+                            uvma_interrupt_if            vp_interrupt_if,
+`else
                             uvmt_cv32e40p_vp_status_if   vp_status_if,
 `endif
                             uvmt_cv32e40p_core_cntrl_if  core_cntrl_if,
@@ -195,6 +198,13 @@ module uvmt_cv32e40p_dut_wrap #(
     assign interrupt_if.clk                     = clknrst_if.clk;
     assign interrupt_if.reset_n                 = clknrst_if.reset_n;
     assign irq_uvma                             = interrupt_if.irq;
+`ifdef USE_OBI_MEM_AGENT
+    assign vp_interrupt_if.clk                  = clknrst_if.clk;
+    assign vp_interrupt_if.reset_n              = clknrst_if.reset_n;
+    assign irq_vp                               = vp_interrupt_if.irq;
+`else
+    // irq_vp is driven by mm_ram
+`endif
     assign interrupt_if.irq_id                  = irq_id;
     assign interrupt_if.irq_ack                 = irq_ack;
 

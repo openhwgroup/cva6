@@ -6281,8 +6281,7 @@ test_done:
     sw a1,0(a0)
     sw a1,0(a0)
 
-###############################################################
-# DAVID: this is the extra store (write) and load (read)
+# extraneous, manually added, store (write) and load (read)
 extra_store_load:
     li  x18, 0x12345678
     li  x17, 0x000ffffc
@@ -6291,7 +6290,6 @@ extra_store_load:
     li  x15, 0x000ffffc
     lw  x16, 0(x15)
     bne x16, x18, csr_fail
-###############################################################
 
 csr_pass:
     li x18, 123456789

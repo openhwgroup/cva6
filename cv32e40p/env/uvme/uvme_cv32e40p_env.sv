@@ -246,14 +246,16 @@ function void uvme_cv32e40p_env_c::retrieve_vifs();
    else begin
       `uvm_info("VIF", $sformatf("Found vp_status_vif handle of type %s in uvm_config_db", $typename(cntxt.vp_status_vif)), UVM_DEBUG)
    end
-   
+
+`ifdef USE_OBI_MEM_AGENT
    if (!uvm_config_db#(virtual uvma_interrupt_if)::get(this, "", "intr_vif", cntxt.intr_vif)) begin
       `uvm_fatal("VIF", $sformatf("Could not find intr_vif handle of type %s in uvm_config_db", $typename(cntxt.intr_vif)))
    end
    else begin
       `uvm_info("VIF", $sformatf("Found intr_vif handle of type %s in uvm_config_db", $typename(cntxt.intr_vif)), UVM_DEBUG)
    end
-   
+`endif // USE_OBI_MEM_AGENT
+
    if (!uvm_config_db#(virtual uvma_debug_if)::get(this, "", "debug_vif", cntxt.debug_vif)) begin
       `uvm_fatal("VIF", $sformatf("Could not find debug_vif handle of type %s in uvm_config_db", $typename(cntxt.debug_vif)))
    end
