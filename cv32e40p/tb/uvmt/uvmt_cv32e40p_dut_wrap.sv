@@ -1,6 +1,6 @@
 //
 // Copyright 2020 OpenHW Group
-// Copyright 2020 Datum Technologies
+// Copyright 2020 Datum Technology Corporation
 // Copyright 2020 Silicon Labs, Inc.
 // 
 // Licensed under the Solderpad Hardware Licence, Version 2.0 (the "License");
@@ -39,8 +39,8 @@
 /**
  * Module wrapper for CV32E40P RTL DUT.
  */
-module uvmt_cv32e40p_dut_wrap #(// DUT (riscv_core) parameters.
-                            // https://github.com/openhwgroup/core-v-docs/blob/master/cores/cv32e40pe40p/CV32E40PE40P_and%20CV32E40PE40_Features_Parameters.pdf
+module uvmt_cv32e40p_dut_wrap #(
+                            // CV32E40P parameters.  See User Manual.
                             parameter PULP_XPULP          =  0,
                                       PULP_CLUSTER        =  0,
                                       FPU                 =  0,
@@ -49,15 +49,22 @@ module uvmt_cv32e40p_dut_wrap #(// DUT (riscv_core) parameters.
                             // Remaining parameters are used by TB components only
                                       INSTR_ADDR_WIDTH    =  32,
                                       INSTR_RDATA_WIDTH   =  32,
-                                      RAM_ADDR_WIDTH      =  20
+                                      RAM_ADDR_WIDTH      =  22
                            )
 
                            (
                             uvma_clknrst_if              clknrst_if,
                             uvma_interrupt_if            interrupt_if,
-                            uvmt_cv32e40p_vp_status_if       vp_status_if,
-                            uvmt_cv32e40p_core_cntrl_if      core_cntrl_if,
-                            uvmt_cv32e40p_core_status_if     core_status_if                            
+`ifdef USE_OBI_MEM_AGENT
+                            // vp_status_if is driven by ENV and used in TB
+                            uvma_interrupt_if            vp_interrupt_if,
+`else
+                            uvmt_cv32e40p_vp_status_if   vp_status_if,
+`endif
+                            uvmt_cv32e40p_core_cntrl_if  core_cntrl_if,
+                            uvmt_cv32e40p_core_status_if core_status_if,
+                            uvma_obi_memory_if           obi_memory_instr_if,
+                            uvma_obi_memory_if           obi_memory_data_if
                            );
 
     import uvm_pkg::*; // needed for the UVM messaging service (`uvm_info(), etc.)
@@ -96,14 +103,17 @@ module uvmt_cv32e40p_dut_wrap #(// DUT (riscv_core) parameters.
     assign debug_req_uvma    = debug_if.debug_req;
 
     assign debug_req = debug_req_vp | debug_req_uvma;
-   
 
+    
+    
     // Load the Instruction Memory 
+`ifndef USE_OBI_MEM_AGENT
     initial begin: load_instruction_memory
       string firmware;
       int    fd;
        int   fill_cnt;
-       bit [7:0] rnd_byte;
+       bit [7:0]  rnd_byte;
+
       `uvm_info("DUT_WRAP", "waiting for load_instr_mem to be asserted.", UVM_DEBUG)
       wait(core_cntrl_if.load_instr_mem !== 1'bX);
       if(core_cntrl_if.load_instr_mem === 1'b1) begin
@@ -124,15 +134,15 @@ module uvmt_cv32e40p_dut_wrap #(// DUT (riscv_core) parameters.
           fill_cnt = 0;
           for (int index=0; index < 2**RAM_ADDR_WIDTH; index++) begin
              if (uvmt_cv32e40p_tb.dut_wrap.ram_i.dp_ram_i.mem[index] === 8'hXX) begin
-                 fill_cnt++;
+                fill_cnt++;
                 rnd_byte = $random();
                 uvmt_cv32e40p_tb.dut_wrap.ram_i.dp_ram_i.mem[index]=rnd_byte;
-                if ($test$plusargs("USE_ISS")) begin                
+                if ($test$plusargs("USE_ISS")) begin
                   uvmt_cv32e40p_tb.iss_wrap.ram.memory.mem[index/4][((((index%4)+1)*8)-1)-:8]=rnd_byte; // convert byte to 32-bit addressing
-                end                
+                end
              end
           end
-          if ($test$plusargs("USE_ISS")) begin          
+          if ($test$plusargs("USE_ISS")) begin
              `uvm_info("DUT_WRAP", $sformatf("Filled 0d%0d RTL and ISS memory bytes with random values", fill_cnt), UVM_LOW)
           end
           else begin
@@ -147,12 +157,54 @@ module uvmt_cv32e40p_dut_wrap #(// DUT (riscv_core) parameters.
         `uvm_info("DUT_WRAP", "NO TEST PROGRAM", UVM_NONE)
       end
     end
+`endif // USE_OBI_MEM_AGENT
+
+    // --------------------------------------------
+    // Connect clk and reset for OBI MEM Agent
+    assign obi_memory_instr_if.clk       = clknrst_if.clk;
+    assign obi_memory_instr_if.reset_n   = clknrst_if.reset_n;
+    assign obi_memory_data_if.clk        = clknrst_if.clk;
+    assign obi_memory_data_if.reset_n    = clknrst_if.reset_n;
+    // Instruction bus is read-only, OBI v1.0
+    assign obi_memory_instr_if.gntpar    = 'b0;
+    assign obi_memory_instr_if.err       = 'b0;
+    assign obi_memory_instr_if.ruser     = 'b0;
+    assign obi_memory_instr_if.rid       = 'b0;
+    assign obi_memory_instr_if.exokay    = 'b0;
+    assign obi_memory_instr_if.rvalidpar = 'b0;
+    assign obi_memory_instr_if.rchk      = 'b0;
+    assign obi_memory_instr_if.auser     = 'b0;
+    assign obi_memory_instr_if.ruser     = 'b0;
+    assign obi_memory_instr_if.wuser     = 'b0;
+    assign obi_memory_instr_if.aid       = 'b0;
+    assign obi_memory_instr_if.rid       = 'b0;
+    assign obi_memory_instr_if.we        = 'b0;
+    // Data bus is read/write, OBI v1.0
+    assign obi_memory_data_if.gntpar     = 'b0;
+    assign obi_memory_data_if.err        = 'b0;
+    assign obi_memory_data_if.ruser      = 'b0;
+    assign obi_memory_data_if.rid        = 'b0;
+    assign obi_memory_data_if.exokay     = 'b0;
+    assign obi_memory_data_if.rvalidpar  = 'b0;
+    assign obi_memory_data_if.rchk       = 'b0;
+    assign obi_memory_data_if.auser      = 'b0;
+    assign obi_memory_data_if.ruser      = 'b0;
+    assign obi_memory_data_if.wuser      = 'b0;
+    assign obi_memory_data_if.aid        = 'b0;
+    assign obi_memory_data_if.rid        = 'b0;
 
     // --------------------------------------------
     // Connect to uvma_interrupt_if
     assign interrupt_if.clk                     = clknrst_if.clk;
     assign interrupt_if.reset_n                 = clknrst_if.reset_n;
     assign irq_uvma                             = interrupt_if.irq;
+`ifdef USE_OBI_MEM_AGENT
+    assign vp_interrupt_if.clk                  = clknrst_if.clk;
+    assign vp_interrupt_if.reset_n              = clknrst_if.reset_n;
+    assign irq_vp                               = vp_interrupt_if.irq;
+`else
+    // irq_vp is driven by mm_ram
+`endif
     assign interrupt_if.irq_id                  = irq_id;
     assign interrupt_if.irq_ack                 = irq_ack;
 
@@ -181,6 +233,7 @@ module uvmt_cv32e40p_dut_wrap #(// DUT (riscv_core) parameters.
          .hart_id_i              ( core_cntrl_if.hart_id          ),
          .dm_exception_addr_i    ( core_cntrl_if.dm_exception_addr),
 
+`ifndef USE_OBI_MEM_AGENT
          .instr_req_o            ( instr_req                      ),
          .instr_gnt_i            ( instr_gnt                      ),
          .instr_rvalid_i         ( instr_rvalid                   ),
@@ -195,8 +248,24 @@ module uvmt_cv32e40p_dut_wrap #(// DUT (riscv_core) parameters.
          .data_addr_o            ( data_addr                      ),
          .data_wdata_o           ( data_wdata                     ),
          .data_rdata_i           ( data_rdata                     ),
+`else // USE_OBI_MEM_AGENT
+         .instr_req_o            ( obi_memory_instr_if.req        ), // core to agent
+         .instr_gnt_i            ( obi_memory_instr_if.gnt        ), // agent to core
+         .instr_rvalid_i         ( obi_memory_instr_if.rvalid     ),
+         .instr_addr_o           ( obi_memory_instr_if.addr       ),
+         .instr_rdata_i          ( obi_memory_instr_if.rdata      ),
 
-    		 // APU not verified in cv32e40p (future work)
+         .data_req_o             ( obi_memory_data_if.req         ),
+         .data_gnt_i             ( obi_memory_data_if.gnt         ),
+         .data_rvalid_i          ( obi_memory_data_if.rvalid      ),
+         .data_we_o              ( obi_memory_data_if.we          ),
+         .data_be_o              ( obi_memory_data_if.be          ),
+         .data_addr_o            ( obi_memory_data_if.addr        ),
+         .data_wdata_o           ( obi_memory_data_if.wdata       ),
+         .data_rdata_i           ( obi_memory_data_if.rdata       ),
+`endif // USE_OBI_MEM_AGENT
+
+         // APU not verified in cv32e40p (future work)
          .apu_req_o              (                                ),
          .apu_gnt_i              ( 1'b0                           ),
          .apu_operands_o         (                                ),
@@ -206,23 +275,33 @@ module uvmt_cv32e40p_dut_wrap #(// DUT (riscv_core) parameters.
          .apu_result_i           ( {32{1'b0}}                     ),
          .apu_flags_i            ( {5{1'b0}}                      ), // APU_NUSFLAGS_CPU
 
+`ifndef USE_OBI_MEM_AGENT
          .irq_i                  ( irq                            ),
          .irq_ack_o              ( irq_ack                        ),
          .irq_id_o               ( irq_id                         ),
 
          .debug_req_i            ( debug_req                      ),
+`else // USE_OBI_MEM_AGENT
+         .irq_i                  ( irq_uvma                       ),
+         .irq_ack_o              ( irq_ack                        ),
+         .irq_id_o               ( irq_id                         ),
+
+         .debug_req_i            ( debug_req_uvma                 ),
+`endif // USE_OBI_MEM_AGENT
          .debug_havereset_o      ( debug_havereset                ),
          .debug_running_o        ( debug_running                  ),
          .debug_halted_o         ( debug_halted                   ),
 
          .fetch_enable_i         ( core_cntrl_if.fetch_en         ),
          .core_sleep_o           ( core_status_if.core_busy       )
-        ); //riscv_core_i
+        ); // cv32e40p_wrapper_i
 
+`ifndef USE_OBI_MEM_AGENT
     // this handles read to RAM and memory mapped virtual (pseudo) peripherals
-    mm_ram #(.RAM_ADDR_WIDTH    (RAM_ADDR_WIDTH),
-             .INSTR_RDATA_WIDTH (INSTR_RDATA_WIDTH)
-            )
+    mm_ram #(
+        .RAM_ADDR_WIDTH    (RAM_ADDR_WIDTH),
+        .INSTR_RDATA_WIDTH (INSTR_RDATA_WIDTH)
+        )
     ram_i
         (.clk_i          ( clknrst_if.clk                  ),
          .rst_ni         ( clknrst_if.reset_n              ),
@@ -247,15 +326,38 @@ module uvmt_cv32e40p_dut_wrap #(// DUT (riscv_core) parameters.
          .irq_ack_i      ( irq_ack                         ),
          .irq_o          ( irq_vp                          ),
 
-         .debug_req_o    ( debug_req_vp                       ),
+         .debug_req_o    ( debug_req_vp                    ),
 
          .pc_core_id_i   ( cv32e40p_wrapper_i.core_i.pc_id ),
 
+//`ifndef USE_OBI_MEM_AGENT
          .tests_passed_o ( vp_status_if.tests_passed       ),
          .tests_failed_o ( vp_status_if.tests_failed       ),
          .exit_valid_o   ( vp_status_if.exit_valid         ),
          .exit_value_o   ( vp_status_if.exit_value         )
+//`else // USE_OBI_MEM_AGENT
+//         .tests_passed_o (                                 ),
+//         .tests_failed_o (                                 ),
+//         .exit_valid_o   (                                 ),
+//         .exit_value_o   (                                 )
+//`endif // USE_OBI_MEM_AGENT
         ); //ram_i
+`endif // USE_OBI_MEM_AGENT
+
+/*
+`ifdef USE_OBI_MEM_AGENT
+initial begin
+   force obi_memory_data_if.gnt = 1'b1;
+   force obi_memory_data_if.rvalid = 1'b0;
+   force obi_memory_data_if.rdata = 32'h0000_0000;
+   wait (obi_memory_data_if.reset_n == 1'b0);
+   release obi_memory_data_if.gnt;
+   release obi_memory_data_if.rvalid;
+   release obi_memory_data_if.rdata;
+end
+`endif
+*/
+
 
 endmodule : uvmt_cv32e40p_dut_wrap
 

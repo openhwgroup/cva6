@@ -34,14 +34,15 @@
  */
 package uvme_cv32e40p_pkg;
    
-   import uvm_pkg         ::*;
-   import uvml_hrtbt_pkg  ::*;
-   import uvml_sb_pkg     ::*;
-   import uvml_trn_pkg    ::*;  
-   import uvma_clknrst_pkg::*;
-   import uvma_interrupt_pkg::*;
-   import uvma_debug_pkg::*;
-   import uvma_obi_pkg::*;
+   import uvm_pkg            ::*;
+   import uvml_hrtbt_pkg     ::*;
+   import uvml_sb_pkg        ::*;
+   import uvml_trn_pkg       ::*;
+   import uvma_clknrst_pkg   ::*;
+   import uvma_interrupt_pkg ::*;
+   import uvma_debug_pkg     ::*;
+   import uvma_obi_pkg       ::*;
+   import uvma_obi_memory_pkg::*;
    
    // Constants / Structs / Enums
    `include "uvme_cv32e40p_constants.sv"
@@ -72,8 +73,8 @@ package uvme_cv32e40p_pkg;
    `include "uvme_cv32e40p_random_debug_vseq.sv" 
    `include "uvme_cv32e40p_random_debug_reset_vseq.sv" 
    `include "uvme_cv32e40p_random_debug_bootset_vseq.sv" 
-
-
+   `include "uvme_cv32e40p_vp_vseq.sv" 
+   `include "uvme_cv32e40p_instr_vseq.sv" 
 
 endpackage : uvme_cv32e40p_pkg
 
