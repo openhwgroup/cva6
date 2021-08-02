@@ -133,6 +133,10 @@ interface uvmt_cv32e40x_debug_cov_assert_if
     input         id_stage_wfi_insn,
     input  [31:0] if_stage_pc, // Program counter in fetch
     input  [31:0] id_stage_pc, // Program counter in decode
+    input         ex_stage_csr_en,
+    input         ex_valid,
+    input  [31:0] ex_stage_instr_rdata_i,
+    input  [31:0] ex_stage_pc,
     input         wb_stage_instr_valid_i,
     input  [31:0] wb_stage_instr_rdata_i,
     input  [31:0] wb_stage_pc, // Program counter in writeback

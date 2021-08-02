@@ -385,6 +385,10 @@ bind cv32e40x_wrapper
       .is_decoding(1),  //dut_wrap.cv32e40x_wrapper_i.core_i.is_decoding),  // TODO:ropeders figure out correct source
       .if_stage_pc(dut_wrap.cv32e40x_wrapper_i.core_i.if_stage_i.pc_if_o),
       .id_stage_pc(dut_wrap.cv32e40x_wrapper_i.core_i.id_stage_i.if_id_pipe_i.pc),
+      .ex_stage_csr_en (dut_wrap.cv32e40x_wrapper_i.core_i.id_ex_pipe.csr_en),
+      .ex_valid(dut_wrap.cv32e40x_wrapper_i.core_i.ex_stage_i.instr_valid),
+      .ex_stage_instr_rdata_i(dut_wrap.cv32e40x_wrapper_i.core_i.id_ex_pipe.instr.bus_resp.rdata),
+      .ex_stage_pc(dut_wrap.cv32e40x_wrapper_i.core_i.id_ex_pipe.pc),
       .wb_stage_instr_rdata_i(dut_wrap.cv32e40x_wrapper_i.core_i.ex_wb_pipe.instr.bus_resp.rdata),
       .wb_stage_instr_valid_i(dut_wrap.cv32e40x_wrapper_i.core_i.ex_wb_pipe.instr_valid),
       .wb_stage_pc           (dut_wrap.cv32e40x_wrapper_i.core_i.wb_stage_i.ex_wb_pipe_i.pc),

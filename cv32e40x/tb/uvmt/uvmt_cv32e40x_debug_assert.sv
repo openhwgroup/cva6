@@ -271,9 +271,13 @@ module uvmt_cv32e40x_debug_assert
     // Accessing debug regs in m-mode is illegal
 
     property p_debug_regs_mmode;
-        cov_assert_if.csr_access && !cov_assert_if.debug_mode_q
-        && cov_assert_if.id_stage_instr_rdata_i[31:20] inside {'h7B0, 'h7B1, 'h7B2, 'h7B3}
-        |-> cov_assert_if.illegal_insn_i;
+        int tmp;
+        cov_assert_if.ex_stage_csr_en && cov_assert_if.ex_valid && !cov_assert_if.debug_mode_q
+        && cov_assert_if.ex_stage_instr_rdata_i[31:20] inside {'h7B0, 'h7B1, 'h7B2, 'h7B3}
+        ##0 (1, tmp = cov_assert_if.ex_stage_pc)
+        |=>
+        (cov_assert_if.wb_stage_pc == tmp) [->1]
+        ##0 cov_assert_if.illegal_insn_i;
     endproperty
 
     a_debug_regs_mmode : assert property(p_debug_regs_mmode)
