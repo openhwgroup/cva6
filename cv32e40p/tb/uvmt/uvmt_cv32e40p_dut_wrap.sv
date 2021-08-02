@@ -49,7 +49,7 @@ module uvmt_cv32e40p_dut_wrap #(
                             // Remaining parameters are used by TB components only
                                       INSTR_ADDR_WIDTH    =  32,
                                       INSTR_RDATA_WIDTH   =  32,
-                                      RAM_ADDR_WIDTH      =  20
+                                      RAM_ADDR_WIDTH      =  22
                            )
 
                            (
@@ -330,17 +330,17 @@ module uvmt_cv32e40p_dut_wrap #(
 
          .pc_core_id_i   ( cv32e40p_wrapper_i.core_i.pc_id ),
 
-`ifndef USE_OBI_MEM_AGENT
+//`ifndef USE_OBI_MEM_AGENT
          .tests_passed_o ( vp_status_if.tests_passed       ),
          .tests_failed_o ( vp_status_if.tests_failed       ),
          .exit_valid_o   ( vp_status_if.exit_valid         ),
          .exit_value_o   ( vp_status_if.exit_value         )
-`else // USE_OBI_MEM_AGENT
-         .tests_passed_o (                                 ),
-         .tests_failed_o (                                 ),
-         .exit_valid_o   (                                 ),
-         .exit_value_o   (                                 )
-`endif // USE_OBI_MEM_AGENT
+//`else // USE_OBI_MEM_AGENT
+//         .tests_passed_o (                                 ),
+//         .tests_failed_o (                                 ),
+//         .exit_valid_o   (                                 ),
+//         .exit_value_o   (                                 )
+//`endif // USE_OBI_MEM_AGENT
         ); //ram_i
 `endif // USE_OBI_MEM_AGENT
 

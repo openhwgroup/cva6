@@ -213,20 +213,22 @@ task uvme_cv32e40p_env_c::run_phase(uvm_phase phase);
    uvme_cv32e40p_instr_vseq_c  instr_vseq;
    uvme_cv32e40p_vp_vseq_c     vp_vseq;
    
+`ifdef USE_OBI_MEM_AGENT
    if (cfg.is_active) begin
       fork
          begin
             instr_vseq = uvme_cv32e40p_instr_vseq_c::type_id::create("instr_vseq");
             instr_vseq.start(vsequencer);
          end
-         
+
          begin
             vp_vseq = uvme_cv32e40p_vp_vseq_c::type_id::create("vp_vseq");
             vp_vseq.start(vsequencer);
          end
       join_none
    end
-   
+`endif // USE_OBI_MEM_AGENT
+
 endtask : run_phase
 
 
@@ -311,9 +313,11 @@ function void uvme_cv32e40p_env_c::create_agents();
    debug_agent             = uvma_debug_agent_c     ::type_id::create("debug_agent",            this);
    obi_instr_agent         = uvma_obi_agent_c       ::type_id::create("obi_instr_agent",        this);
    obi_data_agent          = uvma_obi_agent_c       ::type_id::create("obi_data_agent",         this);
+`ifdef USE_OBI_MEM_AGENT
    obi_memory_instr_agent  = uvma_obi_memory_agent_c::type_id::create("obi_memory_instr_agent", this);
    obi_memory_data_agent   = uvma_obi_memory_agent_c::type_id::create("obi_memory_data_agent",  this);
-   
+`endif //USE_OBI_MEM_AGENT
+
 endfunction: create_agents
 
 
@@ -373,9 +377,11 @@ function void uvme_cv32e40p_env_c::assemble_vsequencer();
    vsequencer.clknrst_sequencer          = clknrst_agent         .sequencer;
    vsequencer.interrupt_sequencer        = interrupt_agent       .sequencer;
    vsequencer.debug_sequencer            = debug_agent           .sequencer;
+`ifdef USE_OBI_MEM_AGENT
    vsequencer.obi_memory_instr_sequencer = obi_memory_instr_agent.sequencer;
    vsequencer.obi_memory_data_sequencer  = obi_memory_data_agent .sequencer;
-   
+`endif // USE_OBI_MEM_AGENT
+
 endfunction: assemble_vsequencer
 
 

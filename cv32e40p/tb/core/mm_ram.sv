@@ -471,7 +471,7 @@ module mm_ram
             data_rdata_mux = core_data_rdata;
         end else if(select_rdata_q == RND_STALL) begin
             data_rdata_mux = rnd_stall_rdata;
-`ifndef VERILATOR            
+`ifndef VERILATOR
             `uvm_fatal(MM_RAM_TAG, $sformatf("out of bounds read from %08x\nRandom stall generator is not supported with Verilator", data_addr_i));
 `endif
         end else if (select_rdata_q == RND_NUM) begin
