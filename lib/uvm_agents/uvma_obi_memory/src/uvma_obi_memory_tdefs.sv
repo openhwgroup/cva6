@@ -32,6 +32,7 @@ typedef logic [(`UVMA_OBI_MEMORY_ID_MAX_WIDTH      -1):0]  uvma_obi_memory_id_l_
 typedef logic                                              uvma_obi_memory_err_l_t    ;
 typedef logic [5:0]                                        uvma_obi_memory_atop_l_t   ;
 typedef logic [1:0]                                        uvma_obi_memory_memtype_l_t;
+typedef logic [2:0]                                        uvma_obi_memory_prot_l_t   ;
 typedef logic [(`UVMA_OBI_MEMORY_ACHK_MAX_WIDTH    -1):0]  uvma_obi_memory_achk_l_t   ;
 typedef logic [(`UVMA_OBI_MEMORY_RCHK_MAX_WIDTH    -1):0]  uvma_obi_memory_rchk_l_t   ;
 
@@ -44,8 +45,10 @@ typedef bit [(`UVMA_OBI_MEMORY_DATA_MAX_WIDTH    -1):0]  uvma_obi_memory_data_b_
 typedef bit [((`UVMA_OBI_MEMORY_DATA_MAX_WIDTH/8)-1):0]  uvma_obi_memory_be_b_t     ;
 typedef bit [(`UVMA_OBI_MEMORY_ID_MAX_WIDTH      -1):0]  uvma_obi_memory_id_b_t     ;
 typedef bit                                              uvma_obi_memory_err_b_t    ;
+typedef bit                                              uvma_obi_memory_exokay_b_t ;
 typedef bit [5:0]                                        uvma_obi_memory_atop_b_t   ;
 typedef bit [1:0]                                        uvma_obi_memory_memtype_b_t;
+typedef bit [2:0]                                        uvma_obi_memory_prot_b_t   ;
 typedef bit [(`UVMA_OBI_MEMORY_ACHK_MAX_WIDTH    -1):0]  uvma_obi_memory_achk_b_t   ;
 typedef bit [(`UVMA_OBI_MEMORY_RCHK_MAX_WIDTH    -1):0]  uvma_obi_memory_rchk_b_t   ;
 
@@ -91,5 +94,20 @@ typedef enum {
    UVMA_OBI_MEMORY_DRV_SLV_GNT_MODE_RANDOM_LATENCY
 } uvma_obi_memory_drv_slv_gnt_mode_enum;
 
+typedef enum {
+   UVMA_OBI_MEMORY_DRV_SLV_RVALID_MODE_CONSTANT      ,
+   UVMA_OBI_MEMORY_DRV_SLV_RVALID_MODE_FIXED_LATENCY ,
+   UVMA_OBI_MEMORY_DRV_SLV_RVALID_MODE_RANDOM_LATENCY
+} uvma_obi_memory_drv_slv_rvalid_mode_enum;
+
+typedef enum {
+   UVMA_OBI_MEMORY_DRV_SLV_ERR_MODE_OK,
+   UVMA_OBI_MEMORY_DRV_SLV_ERR_MODE_RANDOM
+} uvma_obi_memory_drv_slv_err_mode_enum;
+
+typedef enum {
+   UVMA_OBI_MEMORY_DRV_SLV_EXOKAY_MODE_SUCCESS,
+   UVMA_OBI_MEMORY_DRV_SLV_EXOKAY_MODE_RANDOM
+} uvma_obi_memory_drv_slv_exokay_mode_enum;
 
 `endif // __UVMA_OBI_MEMORY_TDEFS_SV__

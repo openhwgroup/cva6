@@ -146,10 +146,6 @@ module uvma_obi_memory_1p2_assert
   else 
     `uvm_error(info_tag, "reqpar signal not stable in address phase")
 
-  a_gntpar_stable: assert property(p_addr_signal_stable(gntpar))
-  else 
-    `uvm_error(info_tag, "gntpar signal not stable in address phase")
-
   a_achk_stable: assert property(p_addr_signal_stable(achk))
   else 
     `uvm_error(info_tag, "achk signal not stable in address phase")

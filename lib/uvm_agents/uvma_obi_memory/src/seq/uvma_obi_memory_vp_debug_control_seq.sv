@@ -73,10 +73,6 @@ task uvma_obi_memory_vp_debug_control_seq_c::vp_body(uvma_obi_memory_mon_trn_c m
 
    `uvm_create  (slv_rsp)
    slv_rsp.err = 1'b0;
-   //slv_rsp.gnt_latency    = 1;
-   slv_rsp.access_latency = 1;
-   //slv_rsp.hold_duration  = 1;
-   slv_rsp.tail_length    = 1;   
 
    if (mon_trn.access_type == UVMA_OBI_MEMORY_ACCESS_WRITE) begin
 
@@ -92,6 +88,7 @@ task uvma_obi_memory_vp_debug_control_seq_c::vp_body(uvma_obi_memory_mon_trn_c m
       slv_rsp.rdata = 0;
    end
    
+   add_latencies(slv_rsp);
    slv_rsp.set_sequencer(p_sequencer);
    `uvm_send(slv_rsp)
 

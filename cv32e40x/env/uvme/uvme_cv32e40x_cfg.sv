@@ -121,13 +121,16 @@ class uvme_cv32e40x_cfg_c extends uvma_core_cntrl_cfg_c;
          obi_memory_instr_cfg.enabled  == 1;
          obi_memory_data_cfg.enabled   == 1;
       }
-      obi_instr_cfg.write_enabled     == 0;
-      obi_instr_cfg.read_enabled      == 1;
-      obi_data_cfg.write_enabled      == 1;
-      obi_data_cfg.read_enabled       == 1;
-      obi_memory_instr_cfg.drv_mode   == UVMA_OBI_MEMORY_MODE_SLV;
-      obi_memory_data_cfg.drv_mode    == UVMA_OBI_MEMORY_MODE_SLV;
-
+      obi_instr_cfg.write_enabled        == 0;
+      obi_instr_cfg.read_enabled         == 1;
+      obi_data_cfg.write_enabled         == 1;
+      obi_data_cfg.read_enabled          == 1;
+      obi_memory_instr_cfg.version       == UVMA_OBI_MEMORY_VERSION_1P2;
+      obi_memory_instr_cfg.drv_mode      == UVMA_OBI_MEMORY_MODE_SLV;
+      obi_memory_instr_cfg.write_enabled == 0;
+      obi_memory_data_cfg.version        == UVMA_OBI_MEMORY_VERSION_1P2;
+      obi_memory_data_cfg.drv_mode       == UVMA_OBI_MEMORY_MODE_SLV;
+      
       isacov_cfg.enabled                    == 1;
       isacov_cfg.seq_instr_group_x2_enabled == 1;
       isacov_cfg.seq_instr_group_x3_enabled == 1;
@@ -168,8 +171,8 @@ class uvme_cv32e40x_cfg_c extends uvma_core_cntrl_cfg_c;
 
       if (cov_model_enabled) {         
          isacov_cfg.cov_model_enabled            == 1;
-         obi_instr_cfg.cov_model_enabled         == 1;
-         obi_data_cfg.cov_model_enabled          == 1;
+         obi_instr_cfg.cov_model_enabled         == 0;
+         obi_data_cfg.cov_model_enabled          == 0;
          obi_memory_instr_cfg.cov_model_enabled  == 1;
          obi_memory_data_cfg.cov_model_enabled   == 1;
       }
@@ -308,5 +311,7 @@ endfunction : configure_disable_csr_checks
 
 
 `endif // __UVME_CV32E40X_CFG_SV__
+
+
 
 

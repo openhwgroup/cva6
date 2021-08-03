@@ -105,16 +105,10 @@ task uvme_cv32e40p_instr_vseq_c::body();
       `uvm_create(slv_rsp)
       slv_rsp.err            = error;
       if (cntxt.instr_mem_delay_enabled) begin
-         //slv_rsp.gnt_latency    = $urandom_range(1,max_latency);
-         slv_rsp.access_latency = $urandom_range(1,max_latency);
-         //slv_rsp.hold_duration  = $urandom_range(1,max_latency);
-         slv_rsp.tail_length    = $urandom_range(1,max_latency);
+         slv_rsp.rvalid_latency = cfg.obi_memory_instr_cfg.calc_random_rvalid_latency();
       end
       else begin
-         //slv_rsp.gnt_latency    = 1;
-         slv_rsp.access_latency = 1;
-         //slv_rsp.hold_duration  = 1;
-         slv_rsp.tail_length    = 1;
+         slv_rsp.rvalid_latency = 0;
       end
       
       if (!error) begin

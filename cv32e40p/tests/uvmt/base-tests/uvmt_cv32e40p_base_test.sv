@@ -230,29 +230,11 @@ endfunction : connect_phase
 
 
 task uvmt_cv32e40p_base_test_c::run_phase(uvm_phase phase);
-   
-   uvme_cv32e40p_vp_vseq_c     vp_vseq;
-   uvme_cv32e40p_instr_vseq_c  instr_vseq;
-   
+      
    
    super.run_phase(phase);
    
    watchdog_timer();
-   
-   /*
-   vp_vseq    = uvme_cv32e40p_vp_vseq_c   ::type_id::create("vp_vseq"   );
-   instr_vseq = uvme_cv32e40p_instr_vseq_c::type_id::create("instr_vseq");
-   
-   fork
-      begin
-         vp_vseq.start(env.vsequencer);
-      end
-      
-      begin
-         instr_vseq.start(env.vsequencer);
-      end
-   join_none
-   */
    
 endtask : run_phase
 

@@ -69,10 +69,6 @@ task uvme_cv32e40x_vp_status_flags_seq_c::vp_body(uvma_obi_memory_mon_trn_c mon_
 
    `uvm_create(slv_rsp)
    slv_rsp.err = 1'b0;
-   //slv_rsp.gnt_latency    = 1;
-   slv_rsp.access_latency = 1;
-   //slv_rsp.hold_duration  = 1;
-   slv_rsp.tail_length    = 1;   
 
    if (mon_trn.access_type == UVMA_OBI_MEMORY_ACCESS_WRITE) begin
       `uvm_info("VP_VSEQ", $sformatf("Call to virtual peripheral 'vp_status_flags':\n%s", mon_trn.sprint()), UVM_DEBUG)
@@ -99,6 +95,7 @@ task uvme_cv32e40x_vp_status_flags_seq_c::vp_body(uvma_obi_memory_mon_trn_c mon_
       slv_rsp.rdata = 0;
    end
 
+   add_latencies(slv_rsp);
    slv_rsp.set_sequencer(p_sequencer);
    `uvm_send(slv_rsp)
 

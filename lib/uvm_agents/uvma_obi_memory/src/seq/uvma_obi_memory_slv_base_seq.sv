@@ -49,6 +49,21 @@ class uvma_obi_memory_slv_base_seq_c extends uvma_obi_memory_base_seq_c;
     */
    extern virtual task do_response(ref uvma_obi_memory_mon_trn_c mon_req);
    
+   /**
+    * Standard method to add a random ralid latency
+    */
+   extern virtual function void add_latencies(uvma_obi_memory_slv_seq_item_c slv_rsp);
+
+   /**
+    * Standard method to add a random error response as based on cfg knobs
+    */
+   extern virtual function void add_err(uvma_obi_memory_slv_seq_item_c slv_rsp);
+
+   /**
+    * Standard method to add a random exclusive okay response as based on cfg knobs
+    */
+   extern virtual function void add_exokay(uvma_obi_memory_mon_trn_c mon_req, uvma_obi_memory_slv_seq_item_c slv_rsp);
+
 endclass : uvma_obi_memory_slv_base_seq_c
 
 
@@ -78,6 +93,31 @@ task uvma_obi_memory_slv_base_seq_c::do_response(ref uvma_obi_memory_mon_trn_c m
    `uvm_fatal("OBI_MEMORY_SLV_SEQ", "Call to pure virtual task")
    
 endtask : do_response
+
+function void uvma_obi_memory_slv_base_seq_c::add_latencies(uvma_obi_memory_slv_seq_item_c slv_rsp);
+
+   slv_rsp.rvalid_latency = cfg.calc_random_rvalid_latency();
+   
+endfunction : add_latencies
+
+function void uvma_obi_memory_slv_base_seq_c::add_err(uvma_obi_memory_slv_seq_item_c slv_rsp);
+
+   slv_rsp.err = cfg.calc_random_err();
+   
+endfunction : add_err
+
+function void uvma_obi_memory_slv_base_seq_c::add_exokay(uvma_obi_memory_mon_trn_c mon_req, uvma_obi_memory_slv_seq_item_c slv_rsp);
+
+   // Only respond exokay == 1 to SC or LR as signaled by atop
+   if (mon_req.atop[5] != 1'b1 || !(mon_req.atop[4:0] inside {5'h2, 5'h3})) begin
+      slv_rsp.exokay = 0;
+      return;
+   end
+
+   slv_rsp.exokay = cfg.calc_random_exokay();
+   
+endfunction : add_exokay
+
 
 
 `endif // __UVMA_OBI_MEMORY_SLV_BASE_SEQ_SV__

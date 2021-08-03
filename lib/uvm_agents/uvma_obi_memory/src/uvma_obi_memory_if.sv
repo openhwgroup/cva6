@@ -232,7 +232,7 @@ interface uvma_obi_memory_if #(
    modport active_mstr_mp(clocking drv_mstr_cb); ///< Used by uvma_obi_drv_c in 'mstr' mode.
    modport active_slv_mp (clocking drv_slv_cb ); ///< Used by uvma_obi_drv_c in 'slv' mode.
    modport passive_mp    (clocking mon_cb     ); ///< Used by uvma_obi_mon_c.
-   
+
 endinterface : uvma_obi_memory_if
 
 

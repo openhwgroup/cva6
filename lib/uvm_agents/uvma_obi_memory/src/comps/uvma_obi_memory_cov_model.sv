@@ -20,6 +20,55 @@
 `ifndef __UVMA_OBI_MEMORY_COV_MODEL_SV__
 `define __UVMA_OBI_MEMORY_COV_MODEL_SV__
 
+   /*
+   * Covergroups
+   * Decalred at package-level to enable mutliple instances per monitor class (e.g. read/write)
+   */
+covergroup cg_obi_delay(string name) with function sample(uvma_obi_memory_mon_trn_c trn);
+   option.per_instance = 1;
+   option.name         = name;
+
+   req_to_gnt: coverpoint (trn.gnt_latency) {
+      bins dly[] = { [0:3] };
+   }
+   rready_to_rvalid: coverpoint (trn.rvalid_latency) {
+      bins dly[] = { [0:3] };
+   }
+
+   dly_cross: cross req_to_gnt, rready_to_rvalid;
+
+endgroup : cg_obi_delay
+
+covergroup cg_obi(string name,
+                  bit write_enabled,
+                  bit read_enabled,
+                  bit is_1p2)
+   with function sample(uvma_obi_memory_mon_trn_c trn);
+
+   option.per_instance = 1;
+   option.name         = name;
+
+   we: coverpoint (trn.access_type) {
+      ignore_bins IGN_WRITE = {UVMA_OBI_MEMORY_ACCESS_WRITE} with (!write_enabled);
+      ignore_bins IGN_READ =  {UVMA_OBI_MEMORY_ACCESS_READ} with (!read_enabled);
+      bins WRITE = {UVMA_OBI_MEMORY_ACCESS_WRITE};
+      bins READ = {UVMA_OBI_MEMORY_ACCESS_READ};
+   }
+
+   memtype: coverpoint (trn.memtype) {
+      ignore_bins IGN_MEMTYPE = {[0:$]} with (!is_1p2);
+   }
+
+   prot: coverpoint (trn.prot) {
+      ignore_bins IGN_MEMTYPE = {[0:$]} with (!is_1p2);
+      ignore_bins IGN_RSVD_PRIV = {3'b100, 3'b101};
+   }
+
+   err: coverpoint (trn.err) {
+      ignore_bins IGN_ERR = {[0:$]} with (!is_1p2);
+   }
+
+endgroup : cg_obi
 
 /**
  * Component encapsulating Open Bus Interface functional coverage model.
@@ -29,58 +78,22 @@ class uvma_obi_memory_cov_model_c extends uvm_component;
    // Objects
    uvma_obi_memory_cfg_c            cfg;
    uvma_obi_memory_cntxt_c          cntxt;
-   uvma_obi_memory_mon_trn_c        mon_trn;
-   uvma_obi_memory_mstr_seq_item_c  mstr_seq_item;
-   uvma_obi_memory_slv_seq_item_c   slv_seq_item;
    
    // TLM
    uvm_tlm_analysis_fifo#(uvma_obi_memory_mon_trn_c      )  mon_trn_fifo      ;
    uvm_tlm_analysis_fifo#(uvma_obi_memory_mstr_seq_item_c)  mstr_seq_item_fifo;
    uvm_tlm_analysis_fifo#(uvma_obi_memory_slv_seq_item_c )  slv_seq_item_fifo ;
-   
-   
+
+   // Covergroup instances   
+   cg_obi       obi_cg;
+   cg_obi_delay wr_delay_cg;
+   cg_obi_delay rd_delay_cg;
+
    `uvm_component_utils_begin(uvma_obi_memory_cov_model_c)
       `uvm_field_object(cfg  , UVM_DEFAULT)
       `uvm_field_object(cntxt, UVM_DEFAULT)
    `uvm_component_utils_end
-   
-   
-   // TODO Add covergroup(s) to uvma_obi_memory_cov_model_c
-   //      Ex: covergroup obi_cfg_cg;
-   //             abc_cp : coverpoint cfg.abc;
-   //             xyz_cp : coverpoint cfg.xyz;
-   //          endgroup : obi_cfg_cg
-   //          
-   //          covergroup obi_cntxt_cg;
-   //             abc_cp : coverpoint cntxt.abc;
-   //             xyz_cp : coverpoint cntxt.xyz;
-   //          endgroup : obi_cntxt_cg
-   //          
-   //          covergroup obi_mon_trn_cg;
-   //             address_cp : coverpoint mon_trn.address {
-   //                bins low   = {16'h0000_0000, 16'h4FFF_FFFF};
-   //                bins med   = {16'h5000_0000, 16'h9FFF_FFFF};
-   //                bins high  = {16'hA000_0000, 16'hFFFF_FFFF};
-   //             }
-   //          endgroup : obi_mon_trn_cg
-   //          
-   //          covergroup obi_mstr_seq_item_cg;
-   //             address_cp : coverpoint mstr_seq_item.address {
-   //                bins low   = {16'h0000_0000, 16'h5FFF_FFFF};
-   //                bins med   = {16'h6000_0000, 16'hAFFF_FFFF};
-   //                bins high  = {16'hB000_0000, 16'hFFFF_FFFF};
-   //             }
-   //          endgroup : obi_mstr_seq_item_trn_cg
-   //          
-   //          covergroup obi_slv_seq_item_cg;
-   //             address_cp : coverpoint slv_seq_item.address {
-   //                bins low   = {16'h0000_0000, 16'h5FFF_FFFF};
-   //                bins med   = {16'h6000_0000, 16'hAFFF_FFFF};
-   //                bins high  = {16'hB000_0000, 16'hFFFF_FFFF};
-   //             }
-   //          endgroup : obi_slv_seq_item_trn_cg
-   
-   
+      
    /**
     * Default constructor.
     */
@@ -108,9 +121,9 @@ class uvma_obi_memory_cov_model_c extends uvm_component;
    extern function void sample_cntxt();
    
    /**
-    * TODO Describe uvma_obi_memory_cov_model_c::sample_mon_trn()
+    * Sample covergroups for monitored OBI transactions
     */
-   extern function void sample_mon_trn();
+   extern function void sample_mon_trn(uvma_obi_memory_mon_trn_c trn);
    
    /**
     * TODO Describe uvma_obi_memory_cov_model_c::sample_mstr_seq_item()
@@ -150,14 +163,22 @@ function void uvma_obi_memory_cov_model_c::build_phase(uvm_phase phase);
    mstr_seq_item_fifo = new("mstr_seq_item_fifo", this);
    slv_seq_item_fifo  = new("slv_seq_item_fifo" , this);
    
-endfunction : build_phase
+   if (cfg.enabled && cfg.cov_model_enabled) begin
+      obi_cg = new("obi_cg", 
+                   .read_enabled(cfg.read_enabled), 
+                   .write_enabled(cfg.write_enabled),
+                   .is_1p2(cfg.version >= UVMA_OBI_MEMORY_VERSION_1P2));
+      if (cfg.read_enabled)  rd_delay_cg = new("rd_delay_cg");
+      if (cfg.write_enabled) wr_delay_cg = new("wr_delay_cg");
+   end
 
+endfunction : build_phase
 
 task uvma_obi_memory_cov_model_c::run_phase(uvm_phase phase);
    
    super.run_phase(phase);
    
-   if (cfg.enabled && cfg.cov_model_enabled) begin
+   if (cfg.enabled && cfg.cov_model_enabled) begin      
       fork
          // Configuration
          forever begin
@@ -173,18 +194,24 @@ task uvma_obi_memory_cov_model_c::run_phase(uvm_phase phase);
          
          // Monitor transactions
          forever begin
+            uvma_obi_memory_mon_trn_c mon_trn;
+
             mon_trn_fifo.get(mon_trn);
-            sample_mon_trn();
+            sample_mon_trn(mon_trn);
          end
          
          // 'mstr' sequence items
          forever begin
+            uvma_obi_memory_mstr_seq_item_c mstr_seq_item;
+
             mstr_seq_item_fifo.get(mstr_seq_item);
             sample_mstr_seq_item();
          end
          
          // 'slv' sequence items
          forever begin
+            uvma_obi_memory_slv_seq_item_c slv_seq_item;
+
             slv_seq_item_fifo.get(slv_seq_item);
             sample_slv_seq_item();
          end
@@ -208,9 +235,11 @@ function void uvma_obi_memory_cov_model_c::sample_cntxt();
 endfunction : sample_cntxt
 
 
-function void uvma_obi_memory_cov_model_c::sample_mon_trn();
+function void uvma_obi_memory_cov_model_c::sample_mon_trn(uvma_obi_memory_mon_trn_c trn);
    
-   // TODO Implement uvma_obi_memory_cov_model_c::sample_mon_trn();
+   obi_cg.sample(trn);
+   if (cfg.write_enabled) wr_delay_cg.sample(trn);   
+   if (cfg.read_enabled)  rd_delay_cg.sample(trn);   
    
 endfunction : sample_mon_trn
 
@@ -230,3 +259,4 @@ endfunction : sample_slv_seq_item
 
 
 `endif // __UVMA_OBI_MEMORY_COV_MODEL_SV__
+

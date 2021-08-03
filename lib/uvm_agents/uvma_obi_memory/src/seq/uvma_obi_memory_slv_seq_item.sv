@@ -28,36 +28,33 @@
 class uvma_obi_memory_slv_seq_item_c extends uvma_obi_memory_base_seq_item_c;
    
    // Data
-   rand uvma_obi_memory_data_b_t   rdata; ///< Read data.
-   rand uvma_obi_memory_ruser_b_t  ruser; ///< Response phase User signals. Only valid for read transactions. Undefined for write transactions.
-   rand uvma_obi_memory_id_b_t     rid  ; ///< Response Phase transaction identifier.
-   rand uvma_obi_memory_err_b_t    err  ; ///< Error.
+   rand uvma_obi_memory_data_b_t   rdata   ; ///< Read data.
+   rand uvma_obi_memory_ruser_b_t  ruser   ; ///< Response phase User signals. Only valid for read transactions. Undefined for write transactions.
+   rand uvma_obi_memory_id_b_t     rid     ; ///< Response Phase transaction identifier.
+   rand uvma_obi_memory_err_b_t    err     ; ///< Error.
+   rand uvma_obi_memory_exokay_b_t exokay  ; ///< Atomic acceess response
    
    // Metadata
-   rand int unsigned          access_latency; ///< Measured in clock cycles
-   rand int unsigned          tail_length   ; ///< Measured in clock cycles
+   rand int unsigned          rvalid_latency; ///< Number of clock cycles to wait before driving rvalid for a slave response
    uvma_obi_memory_mon_trn_c  orig_trn      ; ///< Monitored transaction to which this seq_item is responding
    
    
    `uvm_object_utils_begin(uvma_obi_memory_slv_seq_item_c)
-      `uvm_field_int(rdata , UVM_DEFAULT)
-      `uvm_field_int(ruser , UVM_DEFAULT)
-      `uvm_field_int(rid   , UVM_DEFAULT)
-      `uvm_field_int(err   , UVM_DEFAULT)
+      `uvm_field_int(rdata  , UVM_DEFAULT)
+      `uvm_field_int(ruser  , UVM_DEFAULT)
+      `uvm_field_int(rid    , UVM_DEFAULT)
+      `uvm_field_int(err    , UVM_DEFAULT)
+      `uvm_field_int(exokay , UVM_DEFAULT)
       
-      `uvm_field_int(access_latency, UVM_DEFAULT + UVM_DEC + UVM_NOCOMPARE)
-      `uvm_field_int(tail_length   , UVM_DEFAULT + UVM_DEC + UVM_NOCOMPARE)
+      `uvm_field_int(rvalid_latency, UVM_DEFAULT + UVM_DEC + UVM_NOCOMPARE)      
       
       `uvm_field_object(orig_trn, UVM_DEFAULT + UVM_NOCOMPARE)
    `uvm_object_utils_end
    
    
    constraint defaults_cons {
-      /*soft*/ err            == 0;
-      /*soft*/ access_latency == 1;
-      soft tail_length    == 1;
+      /*soft*/ err == 0;      
    }
-   
    
    /**
     * Default constructor.
@@ -75,3 +72,4 @@ endfunction : new
 
 
 `endif // __UVMA_OBI_MEMORY_SLV_SEQ_ITEM_SV__
+
