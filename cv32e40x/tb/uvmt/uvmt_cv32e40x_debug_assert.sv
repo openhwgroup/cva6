@@ -42,6 +42,7 @@ module uvmt_cv32e40x_debug_assert
   // Locally track which debug cause should be used
   logic [2:0] debug_cause_pri;
   logic [31:0] boot_addr_at_entry;
+  logic expecting_irq;
 
   // Locally track pc in ID stage to detect first instruction of debug code
   logic [31:0] prev_id_pc;
@@ -481,11 +482,32 @@ module uvmt_cv32e40x_debug_assert
             pc_at_dbg_req <= 32'h0;
             pc_at_ebreak <= 32'h0;
             rvfi_pc_wdata <= 32'h0;
+            expecting_irq <= 0;
         end else begin
-            // Capture rvfi pc_wdata
+            if (cov_assert_if.irq_ack_o) begin
+                expecting_irq <= 1;
+            //TODO end else if (cov_assert_if.rvfi_valid) begin
+            end else if (cov_assert_if.id_valid) begin
+                expecting_irq <= 0;
+            end
+
+            // Capture rvfi pc_wdata  (and debug pc, upon rvfi_valid)
             if (cov_assert_if.rvfi_valid) begin
                 // rvfi_pc_wdata may change before next rvfi_valid, so better save it for later use
                 rvfi_pc_wdata <= cov_assert_if.rvfi_pc_wdata;
+                pc_at_dbg_req <= cov_assert_if.rvfi_pc_wdata;
+
+                //TODO:ropeders if ((cov_assert_if.rvfi_insn == 'h 0010_0073) || (cov_assert_if.rvfi_insn == 'h 0000_9002)) begin
+                if (debug_cause_pri == 1) begin  // ebreak
+                    pc_at_dbg_req <= cov_assert_if.rvfi_pc_rdata;
+                end
+
+                //TODO:ropeders if ((cov_assert_if.rvfi_pc_rdata == cov_assert_if.tdata2) && !cov_assert_if.tdata1[18]) begin
+                //TODO:ropeders if (debug_cause_pri == 2) begin  //trigger
+                if (cov_assert_if.trigger_match_i) begin  //trigger
+                    // trigger sets pc to the instr's own addr  (when timing==0)
+                    pc_at_dbg_req <= cov_assert_if.rvfi_pc_rdata;
+                end
             end
 
             // Capture debug pc
@@ -500,6 +522,15 @@ module uvmt_cv32e40x_debug_assert
                 if (cov_assert_if.addr_match && !cov_assert_if.tdata1[18] && cov_assert_if.wb_valid) begin
                     pc_at_dbg_req <= cov_assert_if.wb_stage_pc;
                 end
+
+                if (expecting_irq) begin
+                    // Irq-given pc was already set when the irq came in, keep using that pc
+                    pc_at_dbg_req <= pc_at_dbg_req;
+                end
+            end
+
+            if (cov_assert_if.irq_ack_o) begin
+                pc_at_dbg_req <= cov_assert_if.mtvec + (cov_assert_if.irq_id_o << 2);
             end
 
             // Capture pc at ebreak

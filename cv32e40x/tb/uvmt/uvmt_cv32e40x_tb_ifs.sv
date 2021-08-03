@@ -154,7 +154,9 @@ interface uvmt_cv32e40x_debug_cov_assert_if
     input  [31:0] boot_addr_i,
 
     input         rvfi_valid,
+    input  [31:0] rvfi_pc_rdata,
     input  [31:0] rvfi_pc_wdata,
+    input  [31:0] rvfi_insn,
 
     // Debug signals
     input         debug_req_i, // From controller

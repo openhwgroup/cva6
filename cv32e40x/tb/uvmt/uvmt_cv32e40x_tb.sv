@@ -413,7 +413,8 @@ bind cv32e40x_wrapper
       .mepc_q(dut_wrap.cv32e40x_wrapper_i.core_i.cs_registers_i.mepc_q),
       .tdata1(dut_wrap.cv32e40x_wrapper_i.core_i.cs_registers_i.tmatch_control_rdata),
       .tdata2(dut_wrap.cv32e40x_wrapper_i.core_i.cs_registers_i.tmatch_value_rdata),
-      .trigger_match_i(dut_wrap.cv32e40x_wrapper_i.core_i.controller_i.controller_fsm_i.trigger_match_in_wb),  // TODO:ropeders
+      .trigger_match_i(dut_wrap.cv32e40x_wrapper_i.core_i.ex_wb_pipe.trigger_match),
+        // TODO:ropeders dut_wrap.cv32e40x_wrapper_i.core_i.controller_i.controller_fsm_i.trigger_match_in_wb
       .mcountinhibit_q(dut_wrap.cv32e40x_wrapper_i.core_i.cs_registers_i.mcountinhibit_q),
       .mcycle(dut_wrap.cv32e40x_wrapper_i.core_i.cs_registers_i.mhpmcounter_q[0]),
       .minstret(dut_wrap.cv32e40x_wrapper_i.core_i.cs_registers_i.mhpmcounter_q[2]),
@@ -443,6 +444,8 @@ bind cv32e40x_wrapper
       .boot_addr_i(dut_wrap.cv32e40x_wrapper_i.core_i.boot_addr_i),
       .rvfi_valid(dut_wrap.cv32e40x_wrapper_i.rvfi_i.rvfi_valid),
       .rvfi_pc_wdata(dut_wrap.cv32e40x_wrapper_i.rvfi_i.rvfi_pc_wdata),
+      .rvfi_pc_rdata(dut_wrap.cv32e40x_wrapper_i.rvfi_i.rvfi_pc_rdata),
+      .rvfi_insn(dut_wrap.cv32e40x_wrapper_i.rvfi_i.rvfi_insn),
       // TODO:ropeders .branch_in_decode(dut_wrap.cv32e40x_wrapper_i.core_i.controller_i.controller_fsm_i.branch_in_id),
 
       .is_wfi(),
