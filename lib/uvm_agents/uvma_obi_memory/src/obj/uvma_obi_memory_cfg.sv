@@ -33,7 +33,10 @@ class uvma_obi_memory_cfg_c extends uvm_object;
    rand uvm_sequencer_arb_mode   sqr_arb_mode;
    rand bit                      cov_model_enabled;
    rand bit                      trn_log_enabled;
-   
+
+   bit                           stall_disable;
+   bit                           rvalid_singles_stall;
+
    // Protocol parameters
    rand uvma_obi_memory_version_enum    version;
    rand bit                             ignore_rready;
@@ -51,20 +54,20 @@ class uvma_obi_memory_cfg_c extends uvm_object;
    rand uvma_obi_memory_mode_enum       drv_mode   ;
    rand uvma_obi_memory_drv_idle_enum   drv_idle   ;
 
-   rand bit                                    drv_slv_gnt;
-   rand uvma_obi_memory_drv_slv_gnt_mode_enum  drv_slv_gnt_mode;
-   rand int unsigned                           drv_slv_gnt_fixed_latency;
-   rand int unsigned                           drv_slv_gnt_random_latency_min;
-   rand int unsigned                           drv_slv_gnt_random_latency_max;
-   
+   rand bit                                       drv_slv_gnt;
+   rand uvma_obi_memory_drv_slv_gnt_mode_enum     drv_slv_gnt_mode;
+   rand int unsigned                              drv_slv_gnt_fixed_latency;
+   rand int unsigned                              drv_slv_gnt_random_latency_min;
+   rand int unsigned                              drv_slv_gnt_random_latency_max;
+      
    rand uvma_obi_memory_drv_slv_rvalid_mode_enum  drv_slv_rvalid_mode;
    rand int unsigned                              drv_slv_rvalid_fixed_latency;
    rand int unsigned                              drv_slv_rvalid_random_latency_min;
    rand int unsigned                              drv_slv_rvalid_random_latency_max;
 
-   rand uvma_obi_memory_drv_slv_err_mode_enum  drv_slv_err_mode;
-   rand int unsigned                           drv_slv_err_ok_wgt;
-   rand int unsigned                           drv_slv_err_fault_wgt;
+   rand uvma_obi_memory_drv_slv_err_mode_enum     drv_slv_err_mode;
+   rand int unsigned                              drv_slv_err_ok_wgt;
+   rand int unsigned                              drv_slv_err_fault_wgt;
    
    rand uvma_obi_memory_drv_slv_exokay_mode_enum drv_slv_exokay_mode;
    rand int unsigned                             drv_slv_exokay_failure_wgt;
@@ -76,6 +79,9 @@ class uvma_obi_memory_cfg_c extends uvm_object;
       `uvm_field_enum(uvm_sequencer_arb_mode , sqr_arb_mode     , UVM_DEFAULT)
       `uvm_field_int (                         cov_model_enabled, UVM_DEFAULT)
       `uvm_field_int (                         trn_log_enabled  , UVM_DEFAULT)
+
+      `uvm_field_int (                         stall_disable            , UVM_DEFAULT)
+      `uvm_field_int (                         rvalid_singles_stall     , UVM_DEFAULT)
       
       `uvm_field_enum(uvma_obi_memory_version_enum, version, UVM_DEFAULT)
       `uvm_field_int (                        auser_width  , UVM_DEFAULT + UVM_DEC)
@@ -136,6 +142,25 @@ class uvma_obi_memory_cfg_c extends uvm_object;
       soft drv_slv_exokay_mode            == UVMA_OBI_MEMORY_DRV_SLV_EXOKAY_MODE_SUCCESS;
    }
 
+   constraint stall_disable_cons {
+      // Implement the plusarg +rand_stall_obi_disable
+      stall_disable -> (drv_slv_gnt_mode == UVMA_OBI_MEMORY_DRV_SLV_GNT_MODE_CONSTANT);
+      stall_disable -> (drv_slv_rvalid_mode == UVMA_OBI_MEMORY_DRV_SLV_RVALID_MODE_CONSTANT);
+   }
+
+   constraint rvalid_single_stall_cons {
+      // Implement the plusarg +rand_stall_obi_disabl
+      // 0-cycle gnt stall
+      // 1-cycle rvalid stall
+      if (rvalid_singles_stall) {
+         drv_slv_gnt_mode == UVMA_OBI_MEMORY_DRV_SLV_GNT_MODE_FIXED_LATENCY;
+         drv_slv_gnt_fixed_latency == 0;
+
+         drv_slv_rvalid_mode == UVMA_OBI_MEMORY_DRV_SLV_RVALID_MODE_FIXED_LATENCY;
+         drv_slv_rvalid_fixed_latency == 0;
+      }
+   }
+
    constraint gnt_min_max_cons {
       drv_slv_gnt_random_latency_min <= drv_slv_gnt_random_latency_max;
    }  
@@ -188,6 +213,14 @@ function uvma_obi_memory_cfg_c::new(string name="uvma_obi_memory_cfg");
    
    super.new(name);
    
+   // Read plusargs to determine any special randomizations
+   if ($test$plusargs("rand_stall_obi_disable")) begin
+      stall_disable = 1;
+   end
+   else if ($test$plusargs("rvalid_singles_stall")) begin
+      rvalid_singles_stall = 1;
+   end
+
 endfunction : new
 
 
@@ -260,3 +293,4 @@ function bit uvma_obi_memory_cfg_c::calc_random_exokay();
 endfunction : calc_random_exokay
 
 `endif // __UVMA_OBI_MEMORY_CFG_SV__
+

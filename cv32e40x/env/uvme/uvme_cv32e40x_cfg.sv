@@ -38,6 +38,7 @@ class uvme_cv32e40x_cfg_c extends uvma_core_cntrl_cfg_c;
    rand uvma_obi_memory_cfg_c       obi_memory_instr_cfg;
    rand uvma_obi_memory_cfg_c       obi_memory_data_cfg;
    rand uvma_rvfi_cfg_c#(ILEN,XLEN) rvfi_cfg;
+
    rand uvma_rvvi_cfg_c#(ILEN,XLEN) rvvi_cfg;
    
    `uvm_object_utils_begin(uvme_cv32e40x_cfg_c)
@@ -128,8 +129,12 @@ class uvme_cv32e40x_cfg_c extends uvma_core_cntrl_cfg_c;
       obi_memory_instr_cfg.version       == UVMA_OBI_MEMORY_VERSION_1P2;
       obi_memory_instr_cfg.drv_mode      == UVMA_OBI_MEMORY_MODE_SLV;
       obi_memory_instr_cfg.write_enabled == 0;
+      soft obi_memory_instr_cfg.drv_slv_gnt_random_latency_max    <= 3;
+      soft obi_memory_instr_cfg.drv_slv_rvalid_random_latency_max <= 6;
       obi_memory_data_cfg.version        == UVMA_OBI_MEMORY_VERSION_1P2;
       obi_memory_data_cfg.drv_mode       == UVMA_OBI_MEMORY_MODE_SLV;
+      soft obi_memory_data_cfg.drv_slv_gnt_random_latency_max    <= 3;
+      soft obi_memory_data_cfg.drv_slv_rvalid_random_latency_max <= 6;
       
       isacov_cfg.enabled                    == 1;
       isacov_cfg.seq_instr_group_x2_enabled == 1;
