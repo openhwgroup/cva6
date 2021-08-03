@@ -287,7 +287,8 @@ module uvmt_cv32e40x_debug_assert
 
     // Exception while single step -> PC is set to exception handler before debug
     property p_single_step_exception;
-        !cov_assert_if.debug_mode_q && cov_assert_if.dcsr_q[2] && cov_assert_if.illegal_insn_i && cov_assert_if.wb_valid
+        !cov_assert_if.debug_mode_q && cov_assert_if.dcsr_q[2]
+        && cov_assert_if.illegal_insn_i && cov_assert_if.wb_valid && !cov_assert_if.trigger_match_i
         |-> ##[1:20] cov_assert_if.debug_mode_q && (cov_assert_if.depc_q == cov_assert_if.mtvec);
     endproperty
 
