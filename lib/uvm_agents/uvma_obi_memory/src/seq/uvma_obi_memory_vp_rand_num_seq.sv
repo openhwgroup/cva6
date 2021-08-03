@@ -59,7 +59,7 @@ task uvma_obi_memory_vp_rand_num_seq_c::vp_body(uvma_obi_memory_mon_trn_c mon_tr
 
    `uvm_info("VPRNDSEQ", $sformatf("Issuing a random number: 0x%08x", slv_rsp.rdata), UVM_HIGH);
    
-   add_latencies(slv_rsp);
+   add_r_fields(mon_trn, slv_rsp);
    `uvm_send(slv_rsp)
 
 endtask : vp_body

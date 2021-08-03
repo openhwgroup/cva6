@@ -42,26 +42,26 @@ module uvma_obi_memory_1p2_assert
     input [((AUSER_WIDTH == 0) ? 0 : AUSER_WIDTH - 1) : 0] auser,
     input [((WUSER_WIDTH == 0) ? 0 : WUSER_WIDTH - 1) : 0] wuser,
     input [((ID_WIDTH == 0) ? 0 : ID_WIDTH - 1) : 0]       aid,
-    input [5:0]              atop,
-    input [1:0]              memtype,
-    input [2:0]              prot,
-    input                    reqpar,
-    input                    gntpar,
-    input [((ACHK_WIDTH == 0) ? 0 : ACHK_WIDTH - 1) : 0] achk,
+    input [5:0]                                            atop,
+    input [1:0]                                            memtype,
+    input [2:0]                                            prot,
+    input                                                  reqpar,
+    input                                                  gntpar,
+    input [((ACHK_WIDTH == 0) ? 0 : ACHK_WIDTH - 1) : 0]   achk,
 
     // R bus 1P1
     input [DATA_WIDTH-1:0]   rdata,
     input                    rvalid,
 
     // R bus 1P2
-    input                    rready,
-    input                    err,
+    input                                                  rready,
+    input                                                  err,
     input [((RUSER_WIDTH == 0) ? 0 : RUSER_WIDTH - 1) : 0] ruser,
     input [((ID_WIDTH == 0) ? 0 : ID_WIDTH - 1) : 0]       rid,
-    input                    exokay,
-    input                    rvalidpar,
-    input                    rreadypar,
-    input [((RCHK_WIDTH == 0) ? 0 : RCHK_WIDTH - 1) : 0] rchk
+    input                                                  exokay,
+    input                                                  rvalidpar,
+    input                                                  rreadypar,
+    input [((RCHK_WIDTH == 0) ? 0 : RCHK_WIDTH - 1) : 0]   rchk
   );
 
   // ---------------------------------------------------------------------------

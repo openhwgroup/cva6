@@ -30,6 +30,7 @@ typedef logic [(`UVMA_OBI_MEMORY_DATA_MAX_WIDTH    -1):0]  uvma_obi_memory_data_
 typedef logic [((`UVMA_OBI_MEMORY_DATA_MAX_WIDTH/8)-1):0]  uvma_obi_memory_be_l_t     ;
 typedef logic [(`UVMA_OBI_MEMORY_ID_MAX_WIDTH      -1):0]  uvma_obi_memory_id_l_t     ;
 typedef logic                                              uvma_obi_memory_err_l_t    ;
+typedef logic                                              uvma_obi_memory_exokay_l_t ;
 typedef logic [5:0]                                        uvma_obi_memory_atop_l_t   ;
 typedef logic [1:0]                                        uvma_obi_memory_memtype_l_t;
 typedef logic [2:0]                                        uvma_obi_memory_prot_l_t   ;

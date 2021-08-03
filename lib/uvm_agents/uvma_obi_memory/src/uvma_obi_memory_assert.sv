@@ -178,7 +178,7 @@ module uvma_obi_memory_assert
 
   // R-7 At least one byte enable must be set
   property p_be_not_zero;
-    req |-> be != 0;
+    req ##0 we |-> be != 0;
   endproperty : p_be_not_zero
   a_be_not_zero : assert property(p_be_not_zero)
   else
@@ -202,7 +202,7 @@ module uvma_obi_memory_assert
     be_inside_contiguous_be = be inside {contiguous_be};
   end
   property p_be_contiguous;
-    req |-> be_inside_contiguous_be;
+    req ##0 we |-> be_inside_contiguous_be;
   endproperty : p_be_contiguous
   a_be_contiguous : assert property(p_be_contiguous)
   else

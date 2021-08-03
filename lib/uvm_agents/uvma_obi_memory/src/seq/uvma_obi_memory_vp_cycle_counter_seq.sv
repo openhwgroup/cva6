@@ -96,7 +96,7 @@ task uvma_obi_memory_vp_cycle_counter_seq_c::vp_body(uvma_obi_memory_mon_trn_c m
       slv_rsp.rdata = cycle_counter;
    end
 
-   add_latencies(slv_rsp);
+   add_r_fields(mon_trn, slv_rsp);
    slv_rsp.set_sequencer(p_sequencer);
    `uvm_send(slv_rsp)
 

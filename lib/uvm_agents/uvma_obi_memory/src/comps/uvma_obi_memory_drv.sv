@@ -143,7 +143,7 @@ class uvma_obi_memory_drv_c extends uvm_driver#(
    extern task drv_mstr_idle();
    
    /**
-    * TODO Describe uvma_obi_memory_drv_c::drv_slv_idle()
+    * Drive an idle response state onto the OBI (including rvalid == 0)
     */
    extern task drv_slv_idle();
    
@@ -215,6 +215,10 @@ task uvma_obi_memory_drv_c::drv_pre_reset();
    
    slv_mp.drv_slv_cb.gnt    <= 1'b0;
    slv_mp.drv_slv_cb.rvalid <= 1'b0;
+   if (cfg.is_1p2_or_higher()) begin
+      slv_mp.drv_slv_cb.gntpar    <= 1'b1;
+      slv_mp.drv_slv_cb.rvalidpar <= 1'b1;
+   end
 
    case (cfg.drv_mode)
       UVMA_OBI_MEMORY_MODE_MSTR: @(mstr_mp.drv_mstr_cb);
@@ -286,13 +290,10 @@ task uvma_obi_memory_drv_c::drv_post_reset();
             drv_slv_req(slv_req);
             
             // 2. Send out to TLM and tell sequencer we're ready for the next sequence item
-            //wait_for_rsp(slv_rsp);
-            //process_slv_rsp(slv_req, slv_rsp);
             slv_ap.write(slv_req);
             seq_item_port.item_done();
          end
          else begin
-            slv_mp.drv_slv_cb.rvalid <= 1'b0;
             drv_slv_idle();
             @(slv_mp.drv_slv_cb);
          end
@@ -312,11 +313,21 @@ task uvma_obi_memory_drv_c::drv_slv_gnt();
          // Pre-calculate the "next" latency
          int unsigned effective_latency = cfg.calc_random_gnt_latency();
 
-         if (effective_latency == 0) 
+         // In case 0 latency was selected, we must go ahead and drive gnt (combinatorial path)
+         if (effective_latency == 0) begin
             slv_mp.drv_slv_cb.gnt <= 1'b1; 
-         else
+            if (cfg.is_1p2_or_higher()) begin
+               slv_mp.drv_slv_cb.gntpar <= 1'b0;
+            end
+         end
+         else begin
             slv_mp.drv_slv_cb.gnt <= 1'b0;
+            if (cfg.is_1p2_or_higher()) begin
+               slv_mp.drv_slv_cb.gntpar <= 1'b1;
+            end
+         end
 
+         // Advance the clock
          @(slv_mp.drv_slv_cb);
          
          // Break out of this loop upon the next req and gnt
@@ -325,9 +336,13 @@ task uvma_obi_memory_drv_c::drv_slv_gnt();
             if (effective_latency && slv_mp.drv_slv_cb.req)
                effective_latency--;
             
-            if (!effective_latency)
-               slv_mp.drv_slv_cb.gnt <= 1'b1;            
-            
+            if (!effective_latency) begin
+               slv_mp.drv_slv_cb.gnt <= 1'b1;
+               if (cfg.is_1p2_or_higher()) begin
+                  slv_mp.drv_slv_cb.gntpar <= 1'b0;
+               end
+            end
+
             @(slv_mp.drv_slv_cb);
          end
       end
@@ -513,7 +528,12 @@ task uvma_obi_memory_drv_c::drv_slv_read_req(ref uvma_obi_memory_slv_seq_item_c 
       @(slv_mp.drv_slv_cb);
    end
    slv_mp.drv_slv_cb.rvalid <= 1'b1;
-   slv_mp.drv_slv_cb.err    <= req.err;
+   if (cfg.is_1p2_or_higher()) begin
+      slv_mp.drv_slv_cb.rvalidpar <= 1'b0;
+      slv_mp.drv_slv_cb.rid       <= req.rid;
+      slv_mp.drv_slv_cb.err       <= req.err;
+      slv_mp.drv_slv_cb.exokay    <= req.exokay;
+   end
    for (int unsigned ii=0; ii<cfg.data_width; ii++) begin
       slv_mp.drv_slv_cb.rdata[ii] <= req.rdata[ii];
    end
@@ -533,7 +553,12 @@ task uvma_obi_memory_drv_c::drv_slv_write_req(ref uvma_obi_memory_slv_seq_item_c
       @(slv_mp.drv_slv_cb);
    end
    slv_mp.drv_slv_cb.rvalid <= 1'b1;
-   slv_mp.drv_slv_cb.err <= req.err;
+   if (cfg.is_1p2_or_higher()) begin
+      slv_mp.drv_slv_cb.rvalidpar <= 1'b0;
+      slv_mp.drv_slv_cb.rid       <= req.rid;
+      slv_mp.drv_slv_cb.err       <= req.err;
+      slv_mp.drv_slv_cb.exokay    <= req.exokay;
+   end
    @(slv_mp.drv_slv_cb);
    `uvm_info("OBI_MEMORY_DRV", "drv_slv_write_req FIN", UVM_HIGH)
    drv_slv_idle();
@@ -620,6 +645,9 @@ endtask : drv_mstr_idle
 task uvma_obi_memory_drv_c::drv_slv_idle();
    
    slv_mp.drv_slv_cb.rvalid <= '0;
+   if (cfg.is_1p2_or_higher()) begin
+      slv_mp.drv_slv_cb.rvalidpar <= 1'b1;
+   end
 
    case (cfg.drv_idle)
    

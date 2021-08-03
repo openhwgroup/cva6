@@ -84,15 +84,16 @@ class uvma_obi_memory_cfg_c extends uvm_object;
       `uvm_field_int (                         rvalid_singles_stall     , UVM_DEFAULT)
       
       `uvm_field_enum(uvma_obi_memory_version_enum, version, UVM_DEFAULT)
-      `uvm_field_int (                        auser_width  , UVM_DEFAULT + UVM_DEC)
-      `uvm_field_int (                        wuser_width  , UVM_DEFAULT + UVM_DEC)
-      `uvm_field_int (                        ruser_width  , UVM_DEFAULT + UVM_DEC)
-      `uvm_field_int (                        auser_width  , UVM_DEFAULT + UVM_DEC)
-      `uvm_field_int (                        addr_width   , UVM_DEFAULT + UVM_DEC)
-      `uvm_field_int (                        data_width   , UVM_DEFAULT + UVM_DEC)
-      `uvm_field_int (                        id_width     , UVM_DEFAULT + UVM_DEC)
-      `uvm_field_int (                        read_enabled , UVM_DEFAULT + UVM_DEC)
-      `uvm_field_int (                        write_enabled, UVM_DEFAULT + UVM_DEC)
+      `uvm_field_int (                        auser_width  , UVM_DEFAULT | UVM_DEC)
+      `uvm_field_int (                        wuser_width  , UVM_DEFAULT | UVM_DEC)
+      `uvm_field_int (                        ruser_width  , UVM_DEFAULT | UVM_DEC)      
+      `uvm_field_int (                        addr_width   , UVM_DEFAULT | UVM_DEC)
+      `uvm_field_int (                        achk_width   , UVM_DEFAULT | UVM_DEC)
+      `uvm_field_int (                        rchk_width   , UVM_DEFAULT | UVM_DEC)
+      `uvm_field_int (                        data_width   , UVM_DEFAULT | UVM_DEC)
+      `uvm_field_int (                        id_width     , UVM_DEFAULT | UVM_DEC)
+      `uvm_field_int (                        read_enabled , UVM_DEFAULT | UVM_DEC)
+      `uvm_field_int (                        write_enabled, UVM_DEFAULT | UVM_DEC)
       `uvm_field_enum(uvma_obi_memory_mode_enum               , drv_mode                      , UVM_DEFAULT)
       `uvm_field_enum(uvma_obi_memory_drv_idle_enum           , drv_idle                      , UVM_DEFAULT)      
       `uvm_field_int (                                          drv_slv_gnt                   , UVM_DEFAULT)
@@ -121,12 +122,14 @@ class uvma_obi_memory_cfg_c extends uvm_object;
       
       soft version                        == UVMA_OBI_MEMORY_VERSION_1P1;
       /*soft*/ ignore_rready              == 1;
-      /*soft*/ auser_width                == uvma_obi_memory_default_auser_width;
-      /*soft*/ wuser_width                == uvma_obi_memory_default_wuser_width;
-      /*soft*/ ruser_width                == uvma_obi_memory_default_ruser_width;
-      /*soft*/ addr_width                 == uvma_obi_memory_default_addr_width ;
-      /*soft*/ data_width                 == uvma_obi_memory_default_data_width ;
-      /*soft*/ id_width                   == uvma_obi_memory_default_id_width   ;
+      soft auser_width                    == uvma_obi_memory_default_auser_width;
+      soft wuser_width                    == uvma_obi_memory_default_wuser_width;
+      soft ruser_width                    == uvma_obi_memory_default_ruser_width;
+      soft addr_width                     == uvma_obi_memory_default_addr_width ;
+      soft data_width                     == uvma_obi_memory_default_data_width ;
+      soft id_width                       == uvma_obi_memory_default_id_width   ;
+      soft achk_width                     == uvma_obi_memory_default_achk_width ;
+      soft rchk_width                     == uvma_obi_memory_default_rchk_width ;
       soft write_enabled                  == 1;
       soft read_enabled                   == 1;
       soft drv_mode                       == UVMA_OBI_MEMORY_MODE_MSTR;
@@ -204,7 +207,12 @@ class uvma_obi_memory_cfg_c extends uvm_object;
    /**
     * Calculate a random atomic exokay response from random knobs
     */
-   extern function bit calc_random_exokay();
+   extern function bit calc_random_exokay();   
+
+   /**
+    * Returns 1 if this OBI agent supports version 1.2 or higher    
+    */
+   extern function bit is_1p2_or_higher();
 
 endclass : uvma_obi_memory_cfg_c
 
@@ -291,6 +299,12 @@ function bit uvma_obi_memory_cfg_c::calc_random_exokay();
    return exokay;
 
 endfunction : calc_random_exokay
+
+function bit uvma_obi_memory_cfg_c::is_1p2_or_higher();
+
+   return (version >= UVMA_OBI_MEMORY_VERSION_1P2) ? 1 : 0;
+
+endfunction : is_1p2_or_higher
 
 `endif // __UVMA_OBI_MEMORY_CFG_SV__
 

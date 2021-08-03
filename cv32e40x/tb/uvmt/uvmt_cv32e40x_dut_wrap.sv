@@ -141,36 +141,31 @@ module uvmt_cv32e40x_dut_wrap
     // end
 
     // --------------------------------------------
-    // OBI Instruction agent v1.0 signal tie-offs
-    assign obi_instr_if_i.gntpar    = 'b0;
-    assign obi_instr_if_i.err       = 'b0;
-    assign obi_instr_if_i.ruser     = 'b0;
-    assign obi_instr_if_i.rid       = 'b0;
-    assign obi_instr_if_i.exokay    = 'b0;
-    assign obi_instr_if_i.rvalidpar = 'b0;
-    assign obi_instr_if_i.rchk      = 'b0;
-    assign obi_instr_if_i.auser     = 'b0;
-    assign obi_instr_if_i.ruser     = 'b0;
-    assign obi_instr_if_i.wuser     = 'b0;
-    assign obi_instr_if_i.aid       = 'b0;
-    assign obi_instr_if_i.rid       = 'b0;
+    // OBI Instruction agent v1.2 signal tie-offs    
     assign obi_instr_if_i.we        = 'b0;    
     assign obi_instr_if_i.be        = 'hf; // Always assumes 32-bit full bus reads on instruction OBI
+    assign obi_instr_if_i.auser     = 'b0;
+    assign obi_instr_if_i.wuser     = 'b0;
+    assign obi_instr_if_i.aid       = 'b0;
+    assign obi_instr_if_i.memtype   = 'b0;
+    assign obi_instr_if_i.prot      = 'b0;
+    assign obi_instr_if_i.reqpar    = ~obi_instr_if_i.req;
+    assign obi_instr_if_i.exokay    = 'b0;
+    assign obi_instr_if_i.achk      = 'b0;
+    assign obi_instr_if_i.rready    = 1'b1;
+    assign obi_instr_if_i.rreadypar = 1'b0;
 
     // --------------------------------------------
-    // OBI Data agent v1.0 signal tie-offs
-    assign obi_data_if_i.gntpar     = 'b0;
-    assign obi_data_if_i.err        = 'b0;
-    assign obi_data_if_i.ruser      = 'b0;
-    assign obi_data_if_i.rid        = 'b0;
-    assign obi_data_if_i.exokay     = 'b0;
-    assign obi_data_if_i.rvalidpar  = 'b0;
-    assign obi_data_if_i.rchk       = 'b0;
+    // OBI Data agent v12.2 signal tie-offs    
     assign obi_data_if_i.auser      = 'b0;
-    assign obi_data_if_i.ruser      = 'b0;
     assign obi_data_if_i.wuser      = 'b0;
     assign obi_data_if_i.aid        = 'b0;
-    assign obi_data_if_i.rid        = 'b0;
+    assign obi_data_if_i.memtype    = 'b0;
+    assign obi_data_if_i.prot       = 'b0;
+    assign obi_data_if_i.reqpar     = ~obi_data_if_i.req;
+    assign obi_data_if_i.achk       = 'b0;
+    assign obi_data_if_i.rready     = 1'b1;
+    assign obi_data_if_i.rreadypar  = 1'b0;
 
     // --------------------------------------------
     // Connect to uvma_interrupt_if
@@ -220,7 +215,7 @@ module uvmt_cv32e40x_dut_wrap
          .instr_rvalid_i         ( obi_instr_if_i.rvalid          ),
          .instr_addr_o           ( obi_instr_if_i.addr            ),
          .instr_rdata_i          ( obi_instr_if_i.rdata           ),
-         .instr_err_i            ( '0                             ), //TODO: Temp tie off to get "debug_test" to pass
+         .instr_err_i            ( obi_instr_if_i.err             ),
 
          .data_req_o             ( obi_data_if_i.req              ),
          .data_gnt_i             ( obi_data_if_i.gnt              ),
@@ -230,9 +225,9 @@ module uvmt_cv32e40x_dut_wrap
          .data_addr_o            ( obi_data_if_i.addr             ),
          .data_wdata_o           ( obi_data_if_i.wdata            ),
          .data_rdata_i           ( obi_data_if_i.rdata            ),
-         .data_atop_o            (                                ), //TODO: Temp ignore
-         .data_err_i             ( '0                             ), //TODO: Temp tie off
-         .data_exokay_i          ( '0                             ), //TODO: Temp tie off
+         .data_atop_o            ( obi_data_if_i.atop             ),
+         .data_err_i             ( obi_data_if_i.err              ),
+         .data_exokay_i          ( obi_data_if_i.exokay           ),
 
          .irq_i                  ( interrupt_if.irq               ),
          .irq_ack_o              ( irq_ack                        ),
@@ -292,5 +287,6 @@ module uvmt_cv32e40x_dut_wrap
 endmodule : uvmt_cv32e40x_dut_wrap
 
 `endif // __UVMT_CV32E40X_DUT_WRAP_SV__
+
 
 

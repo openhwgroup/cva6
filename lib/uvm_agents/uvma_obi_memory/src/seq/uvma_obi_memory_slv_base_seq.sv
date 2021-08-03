@@ -48,7 +48,12 @@ class uvma_obi_memory_slv_base_seq_c extends uvma_obi_memory_base_seq_c;
     * TODO Describe uvma_obi_memory_slv_base_seq_c::do_response()
     */
    extern virtual task do_response(ref uvma_obi_memory_mon_trn_c mon_req);
-   
+
+   /**
+    * Convenience function to encapsulate the add_* reponse functions to generate all non-data response fields
+    */
+   extern virtual function void add_r_fields(uvma_obi_memory_mon_trn_c mon_req, uvma_obi_memory_slv_seq_item_c slv_rsp);
+
    /**
     * Standard method to add a random ralid latency
     */
@@ -63,6 +68,16 @@ class uvma_obi_memory_slv_base_seq_c extends uvma_obi_memory_base_seq_c;
     * Standard method to add a random exclusive okay response as based on cfg knobs
     */
    extern virtual function void add_exokay(uvma_obi_memory_mon_trn_c mon_req, uvma_obi_memory_slv_seq_item_c slv_rsp);
+
+   /**
+    * Standard method to add a random or custom ruser, default implementation writes 0
+    */
+   extern virtual function void add_rchk(uvma_obi_memory_slv_seq_item_c slv_rsp);
+
+   /**
+    * Standard method to add a random or custom rchk, default implementation writes 0
+    */
+   extern virtual function void add_ruser(uvma_obi_memory_slv_seq_item_c slv_rsp);
 
 endclass : uvma_obi_memory_slv_base_seq_c
 
@@ -87,7 +102,6 @@ task uvma_obi_memory_slv_base_seq_c::body();
    
 endtask : body
 
-
 task uvma_obi_memory_slv_base_seq_c::do_response(ref uvma_obi_memory_mon_trn_c mon_req);
    
    `uvm_fatal("OBI_MEMORY_SLV_SEQ", "Call to pure virtual task")
@@ -99,6 +113,21 @@ function void uvma_obi_memory_slv_base_seq_c::add_latencies(uvma_obi_memory_slv_
    slv_rsp.rvalid_latency = cfg.calc_random_rvalid_latency();
    
 endfunction : add_latencies
+
+function void uvma_obi_memory_slv_base_seq_c::add_r_fields(uvma_obi_memory_mon_trn_c mon_req, uvma_obi_memory_slv_seq_item_c slv_rsp);
+
+   // This is just a convenience function
+   // Take care to leave rchk last as it will likely incorporate a checksum of all other response fields
+
+   slv_rsp.rid = mon_req.aid;
+   if (cfg.version >= UVMA_OBI_MEMORY_VERSION_1P2) begin
+      add_err(slv_rsp);
+      add_exokay(mon_req, slv_rsp);
+      add_ruser(slv_rsp);
+      add_rchk(slv_rsp);
+   end
+
+endfunction : add_r_fields
 
 function void uvma_obi_memory_slv_base_seq_c::add_err(uvma_obi_memory_slv_seq_item_c slv_rsp);
 
@@ -118,6 +147,18 @@ function void uvma_obi_memory_slv_base_seq_c::add_exokay(uvma_obi_memory_mon_trn
    
 endfunction : add_exokay
 
+
+function void uvma_obi_memory_slv_base_seq_c::add_ruser(uvma_obi_memory_slv_seq_item_c slv_rsp);
+
+   slv_rsp.ruser = '0;
+   
+endfunction : add_ruser
+
+function void uvma_obi_memory_slv_base_seq_c::add_rchk(uvma_obi_memory_slv_seq_item_c slv_rsp);
+
+   slv_rsp.err = '0;
+   
+endfunction : add_rchk
 
 
 `endif // __UVMA_OBI_MEMORY_SLV_BASE_SEQ_SV__

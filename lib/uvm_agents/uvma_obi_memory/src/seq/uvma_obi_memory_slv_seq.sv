@@ -67,13 +67,7 @@ class uvma_obi_memory_slv_seq_c extends uvma_obi_memory_slv_base_seq_c;
    /**
     * TODO Describe uvma_obi_memory_slv_seq_c::do_mem_operation()
     */
-   extern virtual task do_mem_operation(ref uvma_obi_memory_mon_trn_c mon_req);
-   
-   /**
-    * TODO Describe uvma_obi_memory_slv_seq_c::vp_address_range_check()
-    */
-   extern virtual task vp_address_range_check(ref uvma_obi_memory_mon_trn_c mon_req);   
-   
+   extern virtual task do_mem_operation(ref uvma_obi_memory_mon_trn_c mon_req);   
 
 endclass : uvma_obi_memory_slv_seq_c
 
@@ -134,16 +128,13 @@ task uvma_obi_memory_slv_seq_c::do_response(ref uvma_obi_memory_mon_trn_c mon_re
       uvma_obi_memory_slv_seq_item_c  slv_rsp;
 
       `uvm_create(slv_rsp)
-      add_latencies(slv_rsp);
-      if (cfg.version >= UVMA_OBI_MEMORY_VERSION_1P2) begin
-         slv_rsp.err = 1'b1;
-         add_exokay(mon_req, slv_rsp);
-      end      
+
       `uvm_info("SLV_SEQ", $sformatf("Error!\n%s", mon_req.sprint()), UVM_LOW)
       if (mon_req.access_type == UVMA_OBI_MEMORY_ACCESS_READ) begin
          // TODO: need to figured out what a proper error response is
          slv_rsp.rdata = 32'hdead_beef;
       end
+      add_r_fields(mon_req, slv_rsp);
       slv_rsp.set_sequencer(p_sequencer);
       `uvm_send(slv_rsp)
    end
@@ -157,11 +148,6 @@ task uvma_obi_memory_slv_seq_c::do_mem_operation(ref uvma_obi_memory_mon_trn_c m
    uvma_obi_memory_slv_seq_item_c  slv_rsp;
    `uvm_create(slv_rsp)
    slv_rsp.access_type = mon_req.access_type;
-   add_latencies(slv_rsp);
-   if (cfg.version >= UVMA_OBI_MEMORY_VERSION_1P2) begin
-      add_err(slv_rsp);
-      add_exokay(mon_req, slv_rsp);
-   end
 
    word_aligned_addr = { mon_req.address[31:2], 2'h0 };
 
@@ -179,33 +165,11 @@ task uvma_obi_memory_slv_seq_c::do_mem_operation(ref uvma_obi_memory_mon_trn_c m
       if (mon_req.be[0]) slv_rsp.rdata[07:00] = cntxt.mem.read(word_aligned_addr+0);
    end
    
+   add_r_fields(mon_req, slv_rsp);
    slv_rsp.set_sequencer(p_sequencer);
    `uvm_send(slv_rsp)
 
 endtask : do_mem_operation
-
-task uvma_obi_memory_slv_seq_c::vp_address_range_check(ref uvma_obi_memory_mon_trn_c mon_req);
-
-   uvma_obi_memory_slv_seq_item_c  slv_rsp;
-   
-   if (mon_req.access_type == UVMA_OBI_MEMORY_ACCESS_WRITE) begin
-      `uvm_create  (slv_rsp)
-      add_latencies(slv_rsp);
-      if (cfg.version >= UVMA_OBI_MEMORY_VERSION_1P2) begin
-         add_err(slv_rsp);
-         add_exokay(mon_req, slv_rsp);
-      end
-
-      `uvm_info("SLV_SEQ", $sformatf("Call to virtual peripheral 'address_range_check':\n'%s", mon_req.sprint()), UVM_LOW)      
-      slv_rsp.set_sequencer(p_sequencer);
-      `uvm_send(slv_rsp)      
-      `uvm_info("SLV_SEQ", $sformatf("mon_req:\n%s", mon_req.sprint()), UVM_HIGH/*NONE*/)
-   end
-   else begin
-      do_mem_operation(mon_req);
-   end
-   
-endtask : vp_address_range_check
 
 function uvma_obi_memory_vp_base_seq_c uvma_obi_memory_slv_seq_c::register_vp_vseq(string name, bit[31:0] start_addr, int unsigned num_words, uvm_object_wrapper seq_type);
 

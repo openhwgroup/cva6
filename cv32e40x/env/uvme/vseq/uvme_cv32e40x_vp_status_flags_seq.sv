@@ -95,7 +95,7 @@ task uvme_cv32e40x_vp_status_flags_seq_c::vp_body(uvma_obi_memory_mon_trn_c mon_
       slv_rsp.rdata = 0;
    end
 
-   add_latencies(slv_rsp);
+   add_r_fields(mon_trn, slv_rsp);
    slv_rsp.set_sequencer(p_sequencer);
    `uvm_send(slv_rsp)
 

@@ -122,17 +122,36 @@ class uvme_cv32e40x_cfg_c extends uvma_core_cntrl_cfg_c;
          obi_memory_instr_cfg.enabled  == 1;
          obi_memory_data_cfg.enabled   == 1;
       }
+      // fixme:strichmo:Old OBI - to be deprecated
       obi_instr_cfg.write_enabled        == 0;
       obi_instr_cfg.read_enabled         == 1;
       obi_data_cfg.write_enabled         == 1;
       obi_data_cfg.read_enabled          == 1;
+
       obi_memory_instr_cfg.version       == UVMA_OBI_MEMORY_VERSION_1P2;
       obi_memory_instr_cfg.drv_mode      == UVMA_OBI_MEMORY_MODE_SLV;
       obi_memory_instr_cfg.write_enabled == 0;
+      obi_memory_instr_cfg.addr_width    == XLEN;
+      obi_memory_instr_cfg.data_width    == XLEN;
+      obi_memory_instr_cfg.id_width      == 0;
+      obi_memory_instr_cfg.achk_width    == 0;
+      obi_memory_instr_cfg.rchk_width    == 0;
+      obi_memory_instr_cfg.auser_width   == 0;
+      obi_memory_instr_cfg.ruser_width   == 0;
+      obi_memory_instr_cfg.wuser_width   == 0;
       soft obi_memory_instr_cfg.drv_slv_gnt_random_latency_max    <= 3;
       soft obi_memory_instr_cfg.drv_slv_rvalid_random_latency_max <= 6;
+
       obi_memory_data_cfg.version        == UVMA_OBI_MEMORY_VERSION_1P2;
-      obi_memory_data_cfg.drv_mode       == UVMA_OBI_MEMORY_MODE_SLV;
+      obi_memory_data_cfg.drv_mode       == UVMA_OBI_MEMORY_MODE_SLV;      
+      obi_memory_data_cfg.addr_width     == XLEN;
+      obi_memory_data_cfg.data_width     == XLEN;
+      obi_memory_data_cfg.id_width       == 0;
+      obi_memory_data_cfg.achk_width     == 0;
+      obi_memory_data_cfg.rchk_width     == 0;
+      obi_memory_data_cfg.auser_width    == 0;
+      obi_memory_data_cfg.ruser_width    == 0;
+      obi_memory_data_cfg.wuser_width    == 0;
       soft obi_memory_data_cfg.drv_slv_gnt_random_latency_max    <= 3;
       soft obi_memory_data_cfg.drv_slv_rvalid_random_latency_max <= 6;
       

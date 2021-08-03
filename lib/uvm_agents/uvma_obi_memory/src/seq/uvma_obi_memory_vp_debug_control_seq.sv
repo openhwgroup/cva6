@@ -88,7 +88,7 @@ task uvma_obi_memory_vp_debug_control_seq_c::vp_body(uvma_obi_memory_mon_trn_c m
       slv_rsp.rdata = 0;
    end
    
-   add_latencies(slv_rsp);
+   add_r_fields(mon_trn, slv_rsp);
    slv_rsp.set_sequencer(p_sequencer);
    `uvm_send(slv_rsp)
 

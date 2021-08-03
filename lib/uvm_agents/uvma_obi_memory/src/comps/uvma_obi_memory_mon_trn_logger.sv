@@ -75,7 +75,7 @@ class uvma_obi_memory_mon_trn_logger_c extends uvml_logs_mon_trn_logger_c#(
       data_str  = $sformatf("%b", t.data );
       auser_str = $sformatf("%h", t.auser);
       be_str    = $sformatf("%b", t.be   );
-      id_str    = $sformatf("%b", t.id   );
+      id_str    = $sformatf("%b", t.aid  );
       
       fwrite($sformatf(" %t | %s | %s | %s | %s | %s | %s | %h | %s | %s ", $realtime(), access_str, id_str, auser_str, wuser_str, ruser_str, err_str, t.address, be_str, data_str));
       

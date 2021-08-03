@@ -70,7 +70,6 @@ interface uvma_obi_memory_if #(
    wire                      rreadypar; ///< Parity bit for rready signal (odd parity).
    wire [(RCHK_WIDTH-1):0]   rchk     ; ///< Checksum for address phase signals (except rchk itself).
    
-   
    /**
     * Used by DUT in 'mstr' mode.
     */
