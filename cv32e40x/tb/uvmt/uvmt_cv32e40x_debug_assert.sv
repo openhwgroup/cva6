@@ -139,11 +139,12 @@ module uvmt_cv32e40x_debug_assert
         disable iff(!cov_assert_if.rst_ni)
         $rose(cov_assert_if.is_cebreak) && !cov_assert_if.debug_mode_q && !cov_assert_if.debug_req_i
         && !cov_assert_if.dcsr_q[2] && !cov_assert_if.dcsr_q[15]
-        ##0 (!cov_assert_if.debug_req_i && !cov_assert_if.irq_ack_o) throughout (!decode_valid[->1] ##0 decode_valid[->1])
-        // TODO:ropeders need assertions for what happens if cebreak and req/irq?
+        ##0 (!cov_assert_if.debug_req_i && !cov_assert_if.irq_ack_o throughout !decode_valid[->1])
+        ##0 (!cov_assert_if.debug_req_i && !cov_assert_if.irq_ack_o throughout decode_valid[->1])
         |->
         !cov_assert_if.debug_mode_q && (cov_assert_if.mcause_q[5:0] === cv32e40x_pkg::EXC_CAUSE_BREAKPOINT)
         && (cov_assert_if.mepc_q == pc_at_ebreak) && (cov_assert_if.id_stage_pc == cov_assert_if.mtvec);
+        // TODO:ropeders need assertions for what happens if cebreak and req/irq?
     endproperty
 
     a_cebreak_exception: assert property(p_cebreak_exception)
@@ -158,7 +159,8 @@ module uvmt_cv32e40x_debug_assert
         disable iff(!cov_assert_if.rst_ni)
         $rose(cov_assert_if.is_ebreak) && !cov_assert_if.dcsr_q[15]
         && !cov_assert_if.debug_mode_q && !cov_assert_if.dcsr_q[2]
-        ##0 (!cov_assert_if.debug_req_i && !cov_assert_if.irq_ack_o) throughout (!decode_valid[->1] ##0 decode_valid[->1])
+        ##0 (!cov_assert_if.debug_req_i && !cov_assert_if.irq_ack_o throughout !decode_valid[->1])
+        ##0 (!cov_assert_if.debug_req_i && !cov_assert_if.irq_ack_o throughout decode_valid[->1])
         |->
         !cov_assert_if.debug_mode_q && (cov_assert_if.mcause_q[5:0] === cv32e40x_pkg::EXC_CAUSE_BREAKPOINT)
         && (cov_assert_if.mepc_q == pc_at_ebreak) && (cov_assert_if.id_stage_pc == cov_assert_if.mtvec);
@@ -358,7 +360,7 @@ module uvmt_cv32e40x_debug_assert
 
     sequence s_dmode_dret_pc_ante;  // Antecedent
         cov_assert_if.debug_mode_q && cov_assert_if.is_dret
-        ##1 (!cov_assert_if.debug_req_i && !cov_assert_if.irq_ack_o) throughout (decode_valid [->1]);
+        ##1 (!cov_assert_if.debug_req_i && !cov_assert_if.irq_ack_o throughout decode_valid[->1]);
     endsequence
 
     sequence s_dmode_dret_pc_conse;  // Consequent
