@@ -378,7 +378,11 @@ endif
 	@echo ""
 	$(RISCV_EXE_PREFIX)readelf -a $< > $*.readelf
 	@echo ""
-	$(RISCV_EXE_PREFIX)objdump -d -S $*.elf > $*.objdump
+	$(RISCV_EXE_PREFIX)objdump \
+		-d \
+		-M no-aliases \
+		-M numeric \
+		-S $*.elf > $*.objdump
 
 bsp:
 	@echo "$(BANNER)"
