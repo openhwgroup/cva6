@@ -94,7 +94,8 @@ module uvmt_cv32e40x_debug_assert
 
     property p_debug_mode_pc;
         $rose(first_debug_ins)
-        |-> cov_assert_if.debug_mode_q && (prev_id_pc == halt_addr_at_entry) && (cov_assert_if.depc_q == pc_at_dbg_req);
+        |-> cov_assert_if.debug_mode_q && (prev_id_pc == halt_addr_at_entry);
+        // TODO:ropeders && (cov_assert_if.depc_q == pc_at_dbg_req);
     endproperty   
 
     a_debug_mode_pc: assert property(p_debug_mode_pc)
@@ -515,6 +516,8 @@ module uvmt_cv32e40x_debug_assert
                 if (cov_assert_if.addr_match && !cov_assert_if.tdata1[18] && cov_assert_if.wb_valid) begin
                     pc_at_dbg_req <= cov_assert_if.wb_stage_pc;
                 end
+
+                // TODO:ropeders this pc modelling is incomplete; I have updates but am waiting for a prerequisite rtl change
             end
 
             // Capture pc at ebreak
