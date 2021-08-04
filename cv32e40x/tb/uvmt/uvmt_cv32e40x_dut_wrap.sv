@@ -90,56 +90,6 @@ module uvmt_cv32e40x_dut_wrap
     assign debug_if.clk      = clknrst_if.clk;
     assign debug_if.reset_n  = clknrst_if.reset_n;
 
-    // Load the Instruction Memory 
-    // initial begin: load_instruction_memory
-    //   string firmware;
-    //   int    fd;
-    //    int   fill_cnt;
-    //    bit [7:0] rnd_byte;
-    //   `uvm_info("DUT_WRAP", "waiting for load_instr_mem to be asserted.", UVM_DEBUG)
-    //   wait(core_cntrl_if.load_instr_mem !== 1'bX);
-    //   if(core_cntrl_if.load_instr_mem === 1'b1) begin
-    //     `uvm_info("DUT_WRAP", "load_instr_mem asserted!", UVM_NONE)
-
-    //     // Load the pre-compiled firmware
-    //     if($value$plusargs("firmware=%s", firmware)) begin
-    //       // First, check if it exists...
-    //       fd = $fopen (firmware, "r");   
-    //       if (fd)  `uvm_info ("DUT_WRAP", $sformatf("%s was opened successfully : (fd=%0d)", firmware, fd), UVM_DEBUG)
-    //       else     `uvm_fatal("DUT_WRAP", $sformatf("%s was NOT opened successfully : (fd=%0d)", firmware, fd))
-    //       $fclose(fd);
-    //       // Now load it...
-    //       `uvm_info("DUT_WRAP", $sformatf("loading firmware %0s", firmware), UVM_NONE)
-    //       $readmemh(firmware, uvmt_cv32e40x_tb.dut_wrap.ram_i.dp_ram_i.mem);
-    //       // Initialize RTL and ISS memory with (the same) random value to
-    //       // prevent X propagation through the core RTL.
-    //       fill_cnt = 0;
-    //       for (int index=0; index < 2**RAM_ADDR_WIDTH; index++) begin
-    //          if (uvmt_cv32e40x_tb.dut_wrap.ram_i.dp_ram_i.mem[index] === 8'hXX) begin
-    //             fill_cnt++;
-    //             rnd_byte = $random();
-    //             uvmt_cv32e40x_tb.dut_wrap.ram_i.dp_ram_i.mem[index]=rnd_byte;
-    //             if ($test$plusargs("USE_ISS")) begin
-    //               uvmt_cv32e40x_tb.iss_wrap.ram.memory.mem[index/4][((((index%4)+1)*8)-1)-:8]=rnd_byte; // convert byte to 32-bit addressing
-    //             end
-    //          end
-    //       end
-    //       if ($test$plusargs("USE_ISS")) begin
-    //          `uvm_info("DUT_WRAP", $sformatf("Filled 0d%0d RTL and ISS memory bytes with random values", fill_cnt), UVM_LOW)
-    //       end
-    //       else begin
-    //          `uvm_info("DUT_WRAP", $sformatf("Filled 0d%0d RTL memory bytes with random values", fill_cnt), UVM_LOW)
-    //       end
-    //     end
-    //     else begin
-    //       `uvm_error("DUT_WRAP", "No firmware specified!")
-    //     end
-    //   end
-    //   else begin
-    //     `uvm_info("DUT_WRAP", "NO TEST PROGRAM", UVM_NONE)
-    //   end
-    // end
-
     // --------------------------------------------
     // OBI Instruction agent v1.2 signal tie-offs    
     assign obi_instr_if_i.we        = 'b0;    
@@ -147,11 +97,11 @@ module uvmt_cv32e40x_dut_wrap
     assign obi_instr_if_i.auser     = 'b0;
     assign obi_instr_if_i.wuser     = 'b0;
     assign obi_instr_if_i.aid       = 'b0;
-    assign obi_instr_if_i.memtype   = 'b0;
-    assign obi_instr_if_i.prot      = 'b0;
+    assign obi_instr_if_i.atop      = 'b0;
+    assign obi_instr_if_i.wdata     = 'b0;
     assign obi_instr_if_i.reqpar    = ~obi_instr_if_i.req;
-    assign obi_instr_if_i.exokay    = 'b0;
     assign obi_instr_if_i.achk      = 'b0;
+    assign obi_instr_if_i.rchk      = 'b0;
     assign obi_instr_if_i.rready    = 1'b1;
     assign obi_instr_if_i.rreadypar = 1'b0;
 
@@ -160,10 +110,9 @@ module uvmt_cv32e40x_dut_wrap
     assign obi_data_if_i.auser      = 'b0;
     assign obi_data_if_i.wuser      = 'b0;
     assign obi_data_if_i.aid        = 'b0;
-    assign obi_data_if_i.memtype    = 'b0;
-    assign obi_data_if_i.prot       = 'b0;
     assign obi_data_if_i.reqpar     = ~obi_data_if_i.req;
     assign obi_data_if_i.achk       = 'b0;
+    assign obi_data_if_i.rchk       = 'b0;
     assign obi_data_if_i.rready     = 1'b1;
     assign obi_data_if_i.rreadypar  = 1'b0;
 
@@ -211,10 +160,12 @@ module uvmt_cv32e40x_dut_wrap
          .dm_exception_addr_i    ( core_cntrl_if.dm_exception_addr),
 
          .instr_req_o            ( obi_instr_if_i.req             ),
-         .instr_gnt_i            ( obi_instr_if_i.gnt             ),
-         .instr_rvalid_i         ( obi_instr_if_i.rvalid          ),
+         .instr_gnt_i            ( obi_instr_if_i.gnt             ),         
          .instr_addr_o           ( obi_instr_if_i.addr            ),
+         .instr_prot_o           ( obi_instr_if_i.prot            ),
+         .instr_memtype_o        ( obi_instr_if_i.memtype         ),
          .instr_rdata_i          ( obi_instr_if_i.rdata           ),
+         .instr_rvalid_i         ( obi_instr_if_i.rvalid          ),
          .instr_err_i            ( obi_instr_if_i.err             ),
 
          .data_req_o             ( obi_data_if_i.req              ),
@@ -224,6 +175,8 @@ module uvmt_cv32e40x_dut_wrap
          .data_be_o              ( obi_data_if_i.be               ),
          .data_addr_o            ( obi_data_if_i.addr             ),
          .data_wdata_o           ( obi_data_if_i.wdata            ),
+         .data_prot_o            ( obi_data_if_i.prot             ),
+         .data_memtype_o         ( obi_data_if_i.memtype          ),
          .data_rdata_i           ( obi_data_if_i.rdata            ),
          .data_atop_o            ( obi_data_if_i.atop             ),
          .data_err_i             ( obi_data_if_i.err              ),
@@ -240,49 +193,7 @@ module uvmt_cv32e40x_dut_wrap
 
          .fetch_enable_i         ( core_cntrl_if.fetch_en         ),
          .core_sleep_o           ( core_status_if.core_busy       )
-        ); //riscv_core_i
-
-    
-
-    // this handles read to RAM and memory mapped virtual (pseudo) peripherals
-    /*
-    mm_ram #(.RAM_ADDR_WIDTH    (RAM_ADDR_WIDTH),
-             .INSTR_RDATA_WIDTH (INSTR_RDATA_WIDTH)
-            )
-    ram_i
-        (.clk_i          ( clknrst_if.clk                  ),
-         .rst_ni         ( clknrst_if.reset_n              ),
-         .dm_halt_addr_i ( core_cntrl_if.dm_halt_addr      ),
-
-         .instr_req_i    ( instr_req                       ),
-         .instr_addr_i   ( instr_addr                      ),
-         .instr_rdata_o  ( instr_rdata                     ),
-         .instr_rvalid_o ( instr_rvalid                    ),
-         .instr_gnt_o    ( instr_gnt                       ),
-
-         .data_req_i     ( data_req                        ),
-         .data_addr_i    ( data_addr                       ),
-         .data_we_i      ( data_we                         ),
-         .data_be_i      ( data_be                         ),
-         .data_wdata_i   ( data_wdata                      ),
-         .data_rdata_o   ( data_rdata                      ),
-         .data_rvalid_o  ( data_rvalid                     ),
-         .data_gnt_o     ( data_gnt                        ),
-
-         .irq_id_i       ( irq_id                          ),
-         .irq_ack_i      ( irq_ack                         ),
-         .irq_o          ( irq_vp                          ),
-
-         .debug_req_o    ( debug_req_vp                       ),
-
-         .pc_core_id_i   ( cv32e40x_wrapper_i.core_i.if_id_pipe.pc ),
-
-         .tests_passed_o ( vp_status_if.tests_passed       ),
-         .tests_failed_o ( vp_status_if.tests_failed       ),
-         .exit_valid_o   ( vp_status_if.exit_valid         ),
-         .exit_value_o   ( vp_status_if.exit_value         )
-        ); //ram_i
-    */
+        );
 
 endmodule : uvmt_cv32e40x_dut_wrap
 

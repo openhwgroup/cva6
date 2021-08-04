@@ -324,8 +324,8 @@ module uvmt_cv32e40x_tb;
                               .rready(1'b1)
                               );
 
-  bind cv32e40x_wrapper
-    uvma_obi_memory_assert#(
+  bind uvmt_cv32e40x_dut_wrap
+    uvma_obi_memory_assert_if_wrp#(
       .ADDR_WIDTH(32),
       .DATA_WIDTH(32),
       .AUSER_WIDTH(0),
@@ -335,38 +335,10 @@ module uvmt_cv32e40x_tb;
       .ACHK_WIDTH(0),
       .RCHK_WIDTH(0),
       .IS_1P2(1)
-    ) obi_instr_memory_assert_i(.clk(clk_i),
-                                .reset_n(rst_ni),
-                                .req(instr_req_o),
-                                .gnt(instr_gnt_i),
-                                .addr(instr_addr_o),
-                                .be(obi_instr_if_i.be),
-                                .we(obi_instr_if_i.we),
-                                .wdata(obi_instr_if_i.wdata),
-                                .auser(obi_instr_if_i.auser[0]),
-                                .wuser(obi_instr_if_i.wuser[0]),
-                                .aid(obi_instr_if_i.aid[0]),
-                                .atop(obi_instr_if_i.atop),
-                                .memtype(instr_memtype_o),
-                                .prot(instr_prot_o),
-                                .reqpar(obi_instr_if_i.reqpar),
-                                .gntpar(obi_instr_if_i.gntpar),
-                                .achk(obi_instr_if_i.achk[0]),
+    ) obi_instr_memory_assert_i(.obi(obi_instr_if_i));
 
-                                .rready(obi_instr_if_i.rready),
-                                .rdata(instr_rdata_i),
-                                .rvalid(instr_rvalid_i),
-                                .err(instr_err_i),
-                                .ruser(obi_instr_if_i.ruser[0]),
-                                .rid(obi_instr_if_i.rid[0]),
-                                .exokay(obi_instr_if_i.exokay),
-                                .rvalidpar(obi_instr_if_i.rvalidpar),
-                                .rreadypar(obi_instr_if_i.rreadypar),
-                                .rchk(obi_instr_if_i.rchk[0])
-    );
-
-  bind cv32e40x_wrapper
-    uvma_obi_memory_assert#(
+  bind uvmt_cv32e40x_dut_wrap
+    uvma_obi_memory_assert_if_wrp#(
       .ADDR_WIDTH(32),
       .DATA_WIDTH(32),
       .AUSER_WIDTH(0),
@@ -376,35 +348,7 @@ module uvmt_cv32e40x_tb;
       .ACHK_WIDTH(0),
       .RCHK_WIDTH(0),
       .IS_1P2(1)
-    ) obi_data_memory_assert_i(.clk(clk_i),
-                               .reset_n(rst_ni),
-                               .req(data_req_o),
-                               .gnt(data_gnt_i),
-                               .addr(data_addr_o),
-                               .be(data_be_o),
-                               .we(data_we_o),
-                               .wdata(data_wdata_o),
-                               .auser(obi_data_if_i.auser[0]),
-                               .wuser(obi_data_if_i.wuser[0]),
-                               .aid(obi_data_if_i.aid[0]),
-                               .atop(data_atop_o),
-                               .memtype(data_memtype_o),
-                               .prot(data_prot_o),
-                               .reqpar(obi_data_if_i.reqpar),
-                               .gntpar(obi_data_if_i.gntpar),
-                               .achk(obi_data_if_i.achk[0]),
-
-                               .rready(obi_data_if_i.rready),
-                               .rdata(data_rdata_i),
-                               .rvalid(data_rvalid_i),
-                               .err(data_err_i),
-                               .ruser(obi_data_if_i.ruser[0]),
-                               .rid(obi_data_if_i.rid[0]),
-                               .exokay(data_exokay_i),
-                               .rvalidpar(~data_rvalid_i),
-                               .rreadypar(obi_data_if_i.rreadypar),
-                               .rchk(obi_data_if_i.rchk[0])
-    );
+    ) obi_data_memory_assert_i(.obi(obi_data_if_i));
 
   // Bind in verification modules to the design
   bind cv32e40x_core 
