@@ -5,7 +5,11 @@ Use the provided CORE-V_Simulation VerifPlan_Template.xlsx spreadsheet as your t
 
 ## Verification Plan Status
 
+*Update: 8/2/21 The Vplans are being updates to take advantage of new features offered by the ISACOV UVM Agent.  These updates
+will be rolled into the coverage models for the cv32e40x and cv32e40s first but eventually will be integrated into all RV32 CoreV testbenches*
+
 The tables below capture the current status of the Verification Plan for RV32 ISA by ISA extension.  Under the heading `Review` is one of following:
+* **Not Captured**: Vplan has not been captured.
 * **Ready for Review**: Vplan has been captured and is awaiting review.
 * **Reviewed**: Vplan has been reviewed, and is waiting for updates to address review feedback.
 * **Waiting for Signoff**: Vplan has been reviewed and review comments addressed by the author.  Document is now waiting for reviewers to signoff on the post-review updates.
@@ -15,10 +19,13 @@ The tables below capture the current status of the Verification Plan for RV32 IS
 
 | Feature | Capture | Review | Comment |
 |---------|---------|--------|---------|
-| RV32I | Complete | Complete | |
-| M extension | Complete | Complete | |
-| C extension | Complete | Complete | |
-| Zifencei extension | Complete | Complete | |
-| Zicsr extension | Complete | Complete | |
-| Counter extension | Complete | Complete | |
-| Instruction Exceptions | Complete | Complete |  |
+| RV32I | Complete | Complete | Reviewed and integrated on 7/30/21 |
+| M extension | Complete | Complete | Reviewed and integrated on 7/30/21 |
+| C extension | In progress | Not Captured | |
+| A extension | In progress | Not Captured | |
+| Zifencei extension | In progress | Not Captured | |
+| Zicsr extension | In progress | Not Captured | |
+| B extension | In progress | Not Captured | |
+| Zce extension | In progress | Not Captured | |
+| Counter extension | In progress | Not Captured | |
+| Instruction Exceptions | In progress | Not Captured |  |

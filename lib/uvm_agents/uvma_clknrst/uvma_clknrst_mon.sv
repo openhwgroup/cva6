@@ -169,7 +169,8 @@ task uvma_clknrst_mon_c::monitor_reset(output uvma_clknrst_mon_trn_c trn);
             2'b10: begin
                cntxt.mon_reset_assert_timestamp = $realtime();
                trn.event_type = UVMA_CLKNRST_MON_TRN_EVENT_RESET_ASSERTED;
-               trn.timestamp  = $realtime();
+               //trn.timestamp  = $realtime();
+               trn.__timestamp_start  = $realtime();
                sampled_trn = 1;
             end
             
@@ -177,14 +178,16 @@ task uvma_clknrst_mon_c::monitor_reset(output uvma_clknrst_mon_trn_c trn);
             2'b01: begin
                trn.reset_pulse_length = $realtime() - cntxt.mon_reset_assert_timestamp;
                trn.event_type = UVMA_CLKNRST_MON_TRN_EVENT_RESET_DEASSERTED;
-               trn.timestamp  = $realtime();
+               //trn.timestamp  = $realtime();
+               trn.__timestamp_end  = $realtime();
                sampled_trn = 1;
             end
             
             2'bX0: begin
                cntxt.mon_reset_assert_timestamp = $realtime();
                trn.event_type = UVMA_CLKNRST_MON_TRN_EVENT_RESET_ASSERTED;
-               trn.timestamp  = $realtime();
+               //trn.timestamp  = $realtime();
+               trn.__timestamp_start  = $realtime();
                sampled_trn = 1;
             end
          endcase
