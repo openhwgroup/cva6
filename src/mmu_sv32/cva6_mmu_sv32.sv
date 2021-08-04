@@ -17,7 +17,7 @@
 // Description: Memory Management Unit for CV32A6, contains TLB and
 //              address translation unit. Sv32 as defined in RISC-V
 //              privilege specification 1.11-WIP.
-//              This module is an adaptation of the MMU Sv39 developed 
+//              This module is an adaptation of the MMU Sv39 developed
 //              by Florian Zaruba to the Sv32 standard.
 //
 // =========================================================================== //
@@ -236,7 +236,7 @@ module cva6_mmu_sv32 import ariane_pkg::*; #(
             if (itlb_is_4M) begin
                 icache_areq_o.fetch_paddr[21:12] = icache_areq_i.fetch_vaddr[21:12];
             end
-         
+
 
             // ---------
             // ITLB Hit

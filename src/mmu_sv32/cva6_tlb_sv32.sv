@@ -15,7 +15,7 @@
 //         Sebastien Jacq - sjthales on github.com
 //
 // Description: Translation Lookaside Buffer, Sv32 , fully set-associative
-//              This module is an adaptation of the Sv39 TLB developed 
+//              This module is an adaptation of the Sv39 TLB developed
 //              by Florian Zaruba and David Schaffenrath to the Sv32 standard.
 //
 // =========================================================================== //

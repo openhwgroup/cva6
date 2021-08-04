@@ -327,13 +327,13 @@ module ptw import ariane_pkg::*; #(
                             end
                         end
                     end
-                    
+
                     // Check if this access was actually allowed from a PMP perspective
                     if (!allow_access) begin
                         itlb_update_o.valid = 1'b0;
                         dtlb_update_o.valid = 1'b0;
                         // we have to return the failed address in bad_addr
-                        ptw_pptr_n = ptw_pptr_q; 
+                        ptw_pptr_n = ptw_pptr_q;
                         state_d = PROPAGATE_ACCESS_ERROR;
                     end
                 end

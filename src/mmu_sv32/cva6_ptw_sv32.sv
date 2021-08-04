@@ -15,7 +15,7 @@
 //         Sebastien Jacq - sjthales on github.com
 //
 // Description: Hardware-PTW (Page-Table-Walker) for MMU Sv32.
-//              This module is an adaptation of the Sv39 PTW developed 
+//              This module is an adaptation of the Sv39 PTW developed
 //              by Florian Zaruba and David Schaffenrath to the Sv32 standard.
 //
 // =========================================================================== //
@@ -162,7 +162,7 @@ module cva6_ptw_sv32 import ariane_pkg::*; #(
         .allow_o       ( allow_access       )
     );
 
-    
+
     assign req_port_o.data_be = be_gen(req_port_o.address_index[2:0],req_port_o.data_size );
 
     //-------------------
@@ -330,13 +330,13 @@ module cva6_ptw_sv32 import ariane_pkg::*; #(
                             end
                         end
                     end
-                    
+
                     // Check if this access was actually allowed from a PMP perspective
                     if (!allow_access) begin
                         itlb_update_o.valid = 1'b0;
                         dtlb_update_o.valid = 1'b0;
                         // we have to return the failed address in bad_addr
-                        ptw_pptr_n = ptw_pptr_q; 
+                        ptw_pptr_n = ptw_pptr_q;
                         state_d = PROPAGATE_ACCESS_ERROR;
                     end
                 end
