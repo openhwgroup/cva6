@@ -30,9 +30,12 @@ const int unsigned  uvma_obi_memory_default_id_width    = `UVMA_OBI_MEMORY_ID_DE
 const int unsigned  uvma_obi_memory_default_achk_width  = `UVMA_OBI_MEMORY_ACHK_DEFAULT_WIDTH ; // Measured in bits (b)
 const int unsigned  uvma_obi_memory_default_rchk_width  = `UVMA_OBI_MEMORY_RCHK_DEFAULT_WIDTH ; // Measured in bits (b)
 
-const int unsigned  uvma_obi_memory_default_drv_slv_gnt_fixed_latency       =  1;
-const int unsigned  uvma_obi_memory_default_drv_slv_gnt_random_latency_min  =  0;
-const int unsigned  uvma_obi_memory_default_drv_slv_gnt_random_latency_max  = 10;
+const int unsigned  uvma_obi_memory_default_drv_slv_gnt_fixed_latency          =  1;
+const int unsigned  uvma_obi_memory_default_drv_slv_gnt_random_latency_min     =  0;
+const int unsigned  uvma_obi_memory_default_drv_slv_gnt_random_latency_max     = 10;
 
+const int unsigned  uvma_obi_memory_default_drv_slv_rvalid_fixed_latency       =  1;
+const int unsigned  uvma_obi_memory_default_drv_slv_rvalid_random_latency_min  =  0;
+const int unsigned  uvma_obi_memory_default_drv_slv_rvalid_random_latency_max  = 10;
 
 `endif // __UVMA_OBI_MEMORY_CONSTANTS_SV__

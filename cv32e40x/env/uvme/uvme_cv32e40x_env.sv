@@ -235,20 +235,12 @@ endfunction : end_of_elaboration_phase
 
 task uvme_cv32e40x_env_c::run_phase(uvm_phase phase);
    
-   // uvme_cv32e40x_instr_vseq_c  instr_vseq;
-   // uvme_cv32e40x_vp_vseq_c     vp_vseq;
-
    uvma_obi_memory_fw_preload_seq_c fw_preload_seq;
    uvma_obi_memory_slv_seq_c        instr_slv_seq;
    uvma_obi_memory_slv_seq_c        data_slv_seq;
 
    if (cfg.is_active) begin
       fork
-         // begin
-         //    instr_vseq = uvme_cv32e40x_instr_vseq_c::type_id::create("instr_vseq");
-         //    instr_vseq.start(vsequencer);
-         // end
-
          begin : spawn_obi_instr_fw_preload_thread
             fw_preload_seq = uvma_obi_memory_fw_preload_seq_c::type_id::create("fw_preload_seq");
             void'(fw_preload_seq.randomize());

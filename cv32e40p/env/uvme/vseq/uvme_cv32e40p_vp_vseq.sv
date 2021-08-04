@@ -574,16 +574,10 @@ endtask : irq_o
 function void uvme_cv32e40p_vp_vseq_c::add_latencies(ref uvma_obi_memory_slv_seq_item_c slv_rsp);
    
    if (cntxt.instr_mem_delay_enabled) begin
-      //slv_rsp.gnt_latency    = $urandom_range(1,max_latency);
-      slv_rsp.access_latency = $urandom_range(1,max_latency);
-      //slv_rsp.hold_duration  = $urandom_range(1,max_latency);
-      slv_rsp.tail_length    = $urandom_range(1,max_latency);
+      slv_rsp.rvalid_latency = cfg.obi_memory_data_cfg.calc_random_rvalid_latency();
    end
    else begin
-      //slv_rsp.gnt_latency    = 1;
-      slv_rsp.access_latency = 1;
-      //slv_rsp.hold_duration  = 1;
-      slv_rsp.tail_length    = 1;
+      slv_rsp.rvalid_latency = 0;
    end
    
 endfunction : add_latencies

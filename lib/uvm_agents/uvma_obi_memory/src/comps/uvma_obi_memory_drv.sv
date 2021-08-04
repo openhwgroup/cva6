@@ -86,7 +86,7 @@ class uvma_obi_memory_drv_c extends uvm_driver#(
     * Drives the 'gnt' signal in response to 'req' being asserted.
     */
    extern task drv_slv_gnt();
-   
+
    /**
     * TODO Describe uvma_obi_drv::prep_req()
     */
@@ -143,7 +143,7 @@ class uvma_obi_memory_drv_c extends uvm_driver#(
    extern task drv_mstr_idle();
    
    /**
-    * TODO Describe uvma_obi_memory_drv_c::drv_slv_idle()
+    * Drive an idle response state onto the OBI (including rvalid == 0)
     */
    extern task drv_slv_idle();
    
@@ -188,7 +188,7 @@ task uvma_obi_memory_drv_c::run_phase(uvm_phase phase);
    
    if (cfg.enabled && cfg.is_active) begin
       fork
-         begin : chan_a            
+         begin : chan_a         
             forever begin
                drv_slv_gnt();
             end
@@ -215,6 +215,10 @@ task uvma_obi_memory_drv_c::drv_pre_reset();
    
    slv_mp.drv_slv_cb.gnt    <= 1'b0;
    slv_mp.drv_slv_cb.rvalid <= 1'b0;
+   if (cfg.is_1p2_or_higher()) begin
+      slv_mp.drv_slv_cb.gntpar    <= 1'b1;
+      slv_mp.drv_slv_cb.rvalidpar <= 1'b1;
+   end
 
    case (cfg.drv_mode)
       UVMA_OBI_MEMORY_MODE_MSTR: @(mstr_mp.drv_mstr_cb);
@@ -286,13 +290,10 @@ task uvma_obi_memory_drv_c::drv_post_reset();
             drv_slv_req(slv_req);
             
             // 2. Send out to TLM and tell sequencer we're ready for the next sequence item
-            //wait_for_rsp(slv_rsp);
-            //process_slv_rsp(slv_req, slv_rsp);
             slv_ap.write(slv_req);
             seq_item_port.item_done();
          end
          else begin
-            slv_mp.drv_slv_cb.rvalid <= 1'b0;
             drv_slv_idle();
             @(slv_mp.drv_slv_cb);
          end
@@ -306,26 +307,27 @@ endtask : drv_post_reset
 
 task uvma_obi_memory_drv_c::drv_slv_gnt();
    
-   int unsigned effective_latency = 0;
-   
    case (cntxt.reset_state)
-      UVMA_OBI_MEMORY_RESET_STATE_POST_RESET: begin
-         
+      UVMA_OBI_MEMORY_RESET_STATE_POST_RESET: begin         
          
          // Pre-calculate the "next" latency
-         case (cfg.drv_slv_gnt_mode)
-            UVMA_OBI_MEMORY_DRV_SLV_GNT_MODE_CONSTANT      : effective_latency = 0;
-            UVMA_OBI_MEMORY_DRV_SLV_GNT_MODE_FIXED_LATENCY : effective_latency = cfg.drv_slv_gnt_fixed_latency;
-            UVMA_OBI_MEMORY_DRV_SLV_GNT_MODE_RANDOM_LATENCY: begin
-               effective_latency = $urandom_range(cfg.drv_slv_gnt_random_latency_min, cfg.drv_slv_gnt_random_latency_max);
+         int unsigned effective_latency = cfg.calc_random_gnt_latency();
+
+         // In case 0 latency was selected, we must go ahead and drive gnt (combinatorial path)
+         if (effective_latency == 0) begin
+            slv_mp.drv_slv_cb.gnt <= 1'b1; 
+            if (cfg.is_1p2_or_higher()) begin
+               slv_mp.drv_slv_cb.gntpar <= 1'b0;
             end
-         endcase
-
-         if (effective_latency == 0) 
-            slv_mp.drv_slv_cb.gnt <= 1'b1;                  
-         else
+         end
+         else begin
             slv_mp.drv_slv_cb.gnt <= 1'b0;
+            if (cfg.is_1p2_or_higher()) begin
+               slv_mp.drv_slv_cb.gntpar <= 1'b1;
+            end
+         end
 
+         // Advance the clock
          @(slv_mp.drv_slv_cb);
          
          // Break out of this loop upon the next req and gnt
@@ -334,9 +336,13 @@ task uvma_obi_memory_drv_c::drv_slv_gnt();
             if (effective_latency && slv_mp.drv_slv_cb.req)
                effective_latency--;
             
-            if (!effective_latency)
-               slv_mp.drv_slv_cb.gnt <= 1'b1;            
-            
+            if (!effective_latency) begin
+               slv_mp.drv_slv_cb.gnt <= 1'b1;
+               if (cfg.is_1p2_or_higher()) begin
+                  slv_mp.drv_slv_cb.gntpar <= 1'b0;
+               end
+            end
+
             @(slv_mp.drv_slv_cb);
          end
       end
@@ -345,7 +351,6 @@ task uvma_obi_memory_drv_c::drv_slv_gnt();
    endcase
    
 endtask : drv_slv_gnt
-
 
 task uvma_obi_memory_drv_c::prep_req(ref uvma_obi_memory_base_seq_item_c req);
    
@@ -518,21 +523,24 @@ endtask : drv_slv_req
 task uvma_obi_memory_drv_c::drv_slv_read_req(ref uvma_obi_memory_slv_seq_item_c req);
 
    `uvm_info("OBI_MEMORY_DRV", $sformatf("drv_slv_read_req: %8h", req.rdata), UVM_HIGH)
-   // FIXME datum-dpoulin this may not be an issue, but was taken out to get sanity back for cv32e40p/x
-   //repeat (req.access_latency) begin
-   //   @(slv_mp.drv_slv_cb);
-   //end
+   `uvm_info("OBI_MEMORY_DRV", $sformatf("drv latency: %0d", req.rvalid_latency), UVM_HIGH)
+   repeat (req.rvalid_latency) begin
+      @(slv_mp.drv_slv_cb);
+   end
    slv_mp.drv_slv_cb.rvalid <= 1'b1;
-   slv_mp.drv_slv_cb.err    <= req.err;
+   if (cfg.is_1p2_or_higher()) begin
+      slv_mp.drv_slv_cb.rvalidpar <= 1'b0;
+      slv_mp.drv_slv_cb.rid       <= req.rid;
+      slv_mp.drv_slv_cb.err       <= req.err;
+      slv_mp.drv_slv_cb.exokay    <= req.exokay;
+   end
    for (int unsigned ii=0; ii<cfg.data_width; ii++) begin
       slv_mp.drv_slv_cb.rdata[ii] <= req.rdata[ii];
    end
    @(slv_mp.drv_slv_cb);
-   // FIXME datum-dpoulin monitor needs to be able to handle 'tails'
-   //repeat (req.tail_length) begin
-   //   @(slv_mp.drv_slv_cb);
-   //end
    `uvm_info("OBI_MEMORY_DRV", "drv_slv_read_req FIN", UVM_HIGH)
+   drv_slv_idle();
+   
    
 endtask : drv_slv_read_req
 
@@ -540,10 +548,20 @@ endtask : drv_slv_read_req
 task uvma_obi_memory_drv_c::drv_slv_write_req(ref uvma_obi_memory_slv_seq_item_c req);
 
    `uvm_info("OBI_MEMORY_DRV", $sformatf("drv_slv_write_req: %8h", req.rdata), UVM_HIGH)
+   `uvm_info("OBI_MEMORY_DRV", $sformatf("drv latency: %0d", req.rvalid_latency), UVM_HIGH)
+   repeat (req.rvalid_latency) begin
+      @(slv_mp.drv_slv_cb);
+   end
    slv_mp.drv_slv_cb.rvalid <= 1'b1;
-   slv_mp.drv_slv_cb.err <= req.err;
+   if (cfg.is_1p2_or_higher()) begin
+      slv_mp.drv_slv_cb.rvalidpar <= 1'b0;
+      slv_mp.drv_slv_cb.rid       <= req.rid;
+      slv_mp.drv_slv_cb.err       <= req.err;
+      slv_mp.drv_slv_cb.exokay    <= req.exokay;
+   end
    @(slv_mp.drv_slv_cb);
    `uvm_info("OBI_MEMORY_DRV", "drv_slv_write_req FIN", UVM_HIGH)
+   drv_slv_idle();
    
 endtask : drv_slv_write_req
 
@@ -626,7 +644,13 @@ endtask : drv_mstr_idle
 
 task uvma_obi_memory_drv_c::drv_slv_idle();
    
+   slv_mp.drv_slv_cb.rvalid <= '0;
+   if (cfg.is_1p2_or_higher()) begin
+      slv_mp.drv_slv_cb.rvalidpar <= 1'b1;
+   end
+
    case (cfg.drv_idle)
+   
       UVMA_OBI_MEMORY_DRV_IDLE_SAME: ;// Do nothing;
       
       UVMA_OBI_MEMORY_DRV_IDLE_ZEROS: begin

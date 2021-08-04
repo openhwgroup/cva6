@@ -24,10 +24,9 @@
  * Virtual sequence implementing the cv32e40x virtual peripherals.
  * TODO Move most of the functionality to a cv32e env base class.
  */
-virtual class uvma_obi_memory_vp_base_seq_c extends uvma_obi_memory_base_seq_c;
+virtual class uvma_obi_memory_vp_base_seq_c extends uvma_obi_memory_slv_base_seq_c;
 
-   // Should be initialized when the sequence is started  
-   uvma_obi_memory_mon_trn_c       mon_trn_q[$];
+   uvma_obi_memory_mon_trn_c       mon_trn_q[$]; // Used to add transactions to execute (monitored requests)
 
    `uvm_field_utils_begin(uvma_obi_memory_vp_base_seq_c)
    `uvm_field_utils_end

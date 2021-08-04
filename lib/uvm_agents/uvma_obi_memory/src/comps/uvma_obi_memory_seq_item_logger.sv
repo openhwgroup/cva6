@@ -150,7 +150,7 @@ class uvma_obi_memory_seq_item_logger_c extends uvml_logs_seq_item_logger_c#(
       
       auser_str = $sformatf("%h", t.orig_trn.auser);
       be_str    = $sformatf("%b", t.orig_trn.be   );
-      id_str    = $sformatf("%b", t.orig_trn.id   );
+      id_str    = $sformatf("%b", t.orig_trn.aid  );
       
       fwrite($sformatf(" %t | %s | %s | %s | %s | %s | %s | %h | %s | %s ", $realtime(), access_str, id_str, auser_str, wuser_str, ruser_str, err_str, t.orig_trn.address, be_str, data_str));
       

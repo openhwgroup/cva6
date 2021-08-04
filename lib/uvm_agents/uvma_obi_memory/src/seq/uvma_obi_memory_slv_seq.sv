@@ -25,7 +25,7 @@
  * Virtual sequence implementing the cv32e40x virtual peripherals.
  * TODO Move most of the functionality to a cv32e env base class.
  */
-class uvma_obi_memory_slv_seq_c extends uvma_obi_memory_base_seq_c;
+class uvma_obi_memory_slv_seq_c extends uvma_obi_memory_slv_base_seq_c;
            
    // Queue of virtual peripheral sequences to spawn when this sequence is spawned
    uvma_obi_memory_vp_base_seq_c vp_seq_q[$];
@@ -67,18 +67,7 @@ class uvma_obi_memory_slv_seq_c extends uvma_obi_memory_base_seq_c;
    /**
     * TODO Describe uvma_obi_memory_slv_seq_c::do_mem_operation()
     */
-   extern virtual task do_mem_operation(ref uvma_obi_memory_mon_trn_c mon_req);
-   
-   /**
-    * TODO Describe uvma_obi_memory_slv_seq_c::vp_address_range_check()
-    */
-   extern virtual task vp_address_range_check(ref uvma_obi_memory_mon_trn_c mon_req);   
-   
-   /**
-    * TODO Describe uvma_obi_memory_slv_seq_c::add_latencies()
-    */
-   extern virtual function void add_latencies(ref uvma_obi_memory_slv_seq_item_c slv_rsp);
-
+   extern virtual task do_mem_operation(ref uvma_obi_memory_mon_trn_c mon_req);   
 
 endclass : uvma_obi_memory_slv_seq_c
 
@@ -114,7 +103,6 @@ endtask : body
 
 task uvma_obi_memory_slv_seq_c::do_response(ref uvma_obi_memory_mon_trn_c mon_req);
    
-   bit  vp_handled;
    bit  err_req;
    bit  err_siz;
    
@@ -123,45 +111,44 @@ task uvma_obi_memory_slv_seq_c::do_response(ref uvma_obi_memory_mon_trn_c mon_re
    // Check the virtual peripheral address hash table to see if transaction should be sent to a virtual peripheral   
    if (vp_seq_table.exists(mon_req.address)) begin
       vp_seq_table[mon_req.address].mon_trn_q.push_back(mon_req);
-      vp_handled = 1;      
+      return;
    end
 
-   if (!vp_handled) begin
-      `uvm_info("SLV_SEQ", $sformatf("VP not handled: x%h", mon_req.address), UVM_HIGH)
-      err_req  = mon_req.err;
-      if (err_req) `uvm_info("SLV_SEQ", $sformatf("ERROR1: mon_req.err=%0b", mon_req.err), UVM_HIGH/*NONE*/)
-      //err_siz = (mon_req.address > (2**`UVME_CV32E40X_MEM_SIZE));
-      err_siz = 0;
-      if (err_siz) `uvm_info("SLV_SEQ", $sformatf("ERROR2: mon_req.address=%0h", mon_req.address), UVM_HIGH/*NONE*/)
+   // If we fell through, then handle the transaction locally   
+   `uvm_info("SLV_SEQ", $sformatf("VP not handled: x%h", mon_req.address), UVM_HIGH)
+   err_req  = mon_req.err;
+   if (err_req) `uvm_info("SLV_SEQ", $sformatf("ERROR1: mon_req.err=%0b", mon_req.err), UVM_HIGH/*NONE*/)   
+   err_siz = 0;
+   if (err_siz) `uvm_info("SLV_SEQ", $sformatf("ERROR2: mon_req.address=%0h", mon_req.address), UVM_HIGH/*NONE*/)
 
-      if (!(err_req | err_siz)) begin
-         do_mem_operation(mon_req);
-      end
-      else begin
-         uvma_obi_memory_slv_seq_item_c  slv_rsp;
+   if (!(err_req | err_siz)) begin
+      do_mem_operation(mon_req);
+   end
+   else begin
+      uvma_obi_memory_slv_seq_item_c  slv_rsp;
 
-         `uvm_create(slv_rsp)
-         add_latencies(slv_rsp);
-         slv_rsp.err = 1'b1;
-         `uvm_info("SLV_SEQ", $sformatf("Error!\n%s", mon_req.sprint()), UVM_LOW)
-         if (mon_req.access_type == UVMA_OBI_MEMORY_ACCESS_READ) begin
-            // TODO: need to figured out what a proper error response is
-            slv_rsp.rdata = 32'hdead_beef;
-         end
-         slv_rsp.set_sequencer(p_sequencer);
-         `uvm_send(slv_rsp)
+      `uvm_create(slv_rsp)
+
+      `uvm_info("SLV_SEQ", $sformatf("Error!\n%s", mon_req.sprint()), UVM_LOW)
+      if (mon_req.access_type == UVMA_OBI_MEMORY_ACCESS_READ) begin
+         // TODO: need to figured out what a proper error response is
+         slv_rsp.rdata = 32'hdead_beef;
       end
+      add_r_fields(mon_req, slv_rsp);
+      slv_rsp.set_sequencer(p_sequencer);
+      `uvm_send(slv_rsp)
    end
    
 endtask : do_response
 
 task uvma_obi_memory_slv_seq_c::do_mem_operation(ref uvma_obi_memory_mon_trn_c mon_req);
+
    bit [31:0] word_aligned_addr;
 
    uvma_obi_memory_slv_seq_item_c  slv_rsp;
    `uvm_create(slv_rsp)
-   add_latencies(slv_rsp);
-   
+   slv_rsp.access_type = mon_req.access_type;
+
    word_aligned_addr = { mon_req.address[31:2], 2'h0 };
 
    `uvm_info("SLV_SEQ", $sformatf("Performing operation:\n%s", mon_req.sprint()), UVM_HIGH)
@@ -178,46 +165,11 @@ task uvma_obi_memory_slv_seq_c::do_mem_operation(ref uvma_obi_memory_mon_trn_c m
       if (mon_req.be[0]) slv_rsp.rdata[07:00] = cntxt.mem.read(word_aligned_addr+0);
    end
    
+   add_r_fields(mon_req, slv_rsp);
    slv_rsp.set_sequencer(p_sequencer);
    `uvm_send(slv_rsp)
 
 endtask : do_mem_operation
-
-task uvma_obi_memory_slv_seq_c::vp_address_range_check(ref uvma_obi_memory_mon_trn_c mon_req);
-
-   uvma_obi_memory_slv_seq_item_c  slv_rsp;
-   
-   if (mon_req.access_type == UVMA_OBI_MEMORY_ACCESS_WRITE) begin
-      `uvm_create  (slv_rsp)
-      add_latencies(slv_rsp);
-      `uvm_info("SLV_SEQ", $sformatf("Call to virtual peripheral 'address_range_check':\n'%s", mon_req.sprint()), UVM_LOW)      
-      slv_rsp.set_sequencer(p_sequencer);
-      `uvm_send(slv_rsp)      
-      `uvm_info("SLV_SEQ", $sformatf("mon_req:\n%s", mon_req.sprint()), UVM_HIGH/*NONE*/)
-   end
-   else begin
-      do_mem_operation(mon_req);
-   end
-   
-endtask : vp_address_range_check
-
-function void uvma_obi_memory_slv_seq_c::add_latencies(ref uvma_obi_memory_slv_seq_item_c slv_rsp);
-   
-   // FIXME:strichmo:Common slave latency needs to be implemented
-   // if (cntxt.instr_mem_delay_enabled) begin
-   //    slv_rsp.gnt_latency    = $urandom_range(1,max_latency);
-   //    slv_rsp.access_latency = $urandom_range(1,max_latency);
-   //    slv_rsp.hold_duration  = $urandom_range(1,max_latency);
-   //    slv_rsp.tail_length    = $urandom_range(1,max_latency);
-   // end
-   // else begin
-      //slv_rsp.gnt_latency    = 1;
-      slv_rsp.access_latency = 0;
-      //slv_rsp.hold_duration  = 1;
-      slv_rsp.tail_length    = 1;
-   // end
-   
-endfunction : add_latencies
 
 function uvma_obi_memory_vp_base_seq_c uvma_obi_memory_slv_seq_c::register_vp_vseq(string name, bit[31:0] start_addr, int unsigned num_words, uvm_object_wrapper seq_type);
 

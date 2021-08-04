@@ -32,19 +32,25 @@ class uvma_obi_memory_mon_trn_c extends uvml_trn_mon_trn_c;
    uvma_obi_memory_addr_l_t          address    ; ///< Read/Write Address
    uvma_obi_memory_data_l_t          data       ; ///< Read/Write Data
    uvma_obi_memory_be_l_t            be         ; ///< Byte Enable. Is set for the bytes to write/read.
-   uvma_obi_memory_auser_l_t         auser      ; ///< Address Phase User signals. Valid for both read and write transactions.
-   uvma_obi_memory_wuser_l_t         wuser      ; ///< Additional Address Phase User signals. Only valid for write transactions.
-   uvma_obi_memory_ruser_l_t         ruser      ; ///< Response phase User signals. Only valid for read transactions. Undefined for write transactions.
-   uvma_obi_memory_id_l_t            id         ; ///< Address/Response Phase transaction identifier.
-   uvma_obi_memory_err_l_t           err        ; ///< Error
-   
+   uvma_obi_memory_auser_l_t         auser      ; ///< Address Phase User signals. Valid for both read and write transactions. (1p2 only)
+   uvma_obi_memory_wuser_l_t         wuser      ; ///< Additional Address Phase User signals. Only valid for write transactions. (1p2 only)
+   uvma_obi_memory_ruser_l_t         ruser      ; ///< Response phase User signals. Only valid for read transactions. Undefined for write transactions. (1p2 only)
+   uvma_obi_memory_id_l_t            aid        ; ///< Address Phase transaction identifier. (1p2 only)
+   uvma_obi_memory_id_l_t            rid        ; ///< Address Phase transaction identifier. (1p2 only)
+   uvma_obi_memory_err_l_t           err        ; ///< Error (1p2 only)
+   uvma_obi_memory_exokay_l_t        exokay     ; ///< Exclusive access response (1p2 only)
+   uvma_obi_memory_atop_l_t          atop       ; ///< Atomic attributes of transaction (1p2 only)
+   uvma_obi_memory_memtype_l_t       memtype    ; ///< Bufferable and cacheable attributes of transactions (1p2 only)
+   uvma_obi_memory_prot_l_t          prot       ; ///< Memory access type and privilege level of transaction
+   uvma_obi_memory_achk_l_t          achk       ; ///< Address signal checksum
+   uvma_obi_memory_rchk_l_t          rchk       ; ///< Response signal checksum
+
    // Metadata
    uvma_obi_memory_cfg_c  cfg           ; ///< Handle to agent's configuration object
    int unsigned           gnt_latency   ; ///< Number of cycles before gnt is asserted after req is asserted
    int unsigned           rvalid_latency; ///< Number of cycles before rvalid is asserted after gnt is asserted
    //int unsigned           rready_latency; ///< Number of cycles before rready is asserted after rvalid is asserted
-   
-   
+      
    `uvm_object_utils_begin(uvma_obi_memory_mon_trn_c)
       `uvm_field_enum(uvma_obi_memory_access_type_enum, access_type, UVM_DEFAULT          )
       `uvm_field_int (                                  address    , UVM_DEFAULT          )
@@ -53,12 +59,17 @@ class uvma_obi_memory_mon_trn_c extends uvml_trn_mon_trn_c;
       `uvm_field_int (                                  auser      , UVM_DEFAULT          )
       `uvm_field_int (                                  wuser      , UVM_DEFAULT          )
       `uvm_field_int (                                  ruser      , UVM_DEFAULT          )
-      `uvm_field_int (                                  id         , UVM_DEFAULT          )
+      `uvm_field_int (                                  aid        , UVM_DEFAULT          )
+      `uvm_field_int (                                  rid        , UVM_DEFAULT          )
       `uvm_field_int (                                  err        , UVM_DEFAULT          )
+      `uvm_field_int (                                  atop       , UVM_DEFAULT          )
+      `uvm_field_int (                                  memtype    , UVM_DEFAULT          )
+      `uvm_field_int (                                  prot       , UVM_DEFAULT          )
+      `uvm_field_int (                                  achk       , UVM_DEFAULT          )
+      `uvm_field_int (                                  rchk       , UVM_DEFAULT          )
       
       `uvm_field_int(gnt_latency   , UVM_DEFAULT + UVM_DEC + UVM_NOCOMPARE)
       `uvm_field_int(rvalid_latency, UVM_DEFAULT + UVM_DEC + UVM_NOCOMPARE)
-      //`uvm_field_int(rready_latency, UVM_DEFAULT + UVM_DEC + UVM_NOCOMPARE)
    `uvm_object_utils_end
    
    
@@ -78,3 +89,5 @@ endfunction : new
 
 
 `endif // __UVMA_OBI_MEMORY_MON_TRN_SV__
+
+

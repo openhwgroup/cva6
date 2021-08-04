@@ -44,7 +44,6 @@ class uvma_obi_memory_mon_c extends uvm_monitor;
       `uvm_field_object(cntxt, UVM_DEFAULT)
    `uvm_component_utils_end
    
-   
    /**
     * Default constructor.
     */
@@ -93,8 +92,8 @@ class uvma_obi_memory_mon_c extends uvm_monitor;
    /**
     * User hooks for modifying transactions after they've been sampled but before they're sent out the analysis port(s).
     */
-   extern virtual function void process_a_trn(ref uvma_obi_memory_mon_trn_c trn);
-   extern virtual function void process_r_trn(ref uvma_obi_memory_mon_trn_c trn);
+   extern virtual function void process_a_trn(uvma_obi_memory_mon_trn_c trn);
+   extern virtual function void process_r_trn(uvma_obi_memory_mon_trn_c trn);
    
    /**
     * TODO Describe uvma_obi_memory_mon_c::send_trn_to_sequencer()
@@ -104,8 +103,8 @@ class uvma_obi_memory_mon_c extends uvm_monitor;
    /**
     * TODO Describe uvma_obi_memory_mon_c::sample_trn_a_from_vif()
     */
-   extern task sample_trn_a_from_vif(ref uvma_obi_memory_mon_trn_c trn);
-   extern task sample_trn_r_from_vif(ref uvma_obi_memory_mon_trn_c trn);
+   extern task sample_trn_a_from_vif(uvma_obi_memory_mon_trn_c trn);
+   extern task sample_trn_r_from_vif(uvma_obi_memory_mon_trn_c trn);
    
 endclass : uvma_obi_memory_mon_c
 
@@ -283,13 +282,13 @@ task uvma_obi_memory_mon_c::mon_chan_r_trn(uvma_obi_memory_mon_trn_c trn);
 endtask : mon_chan_r_trn
 
 
-function void uvma_obi_memory_mon_c::process_a_trn(ref uvma_obi_memory_mon_trn_c trn);
+function void uvma_obi_memory_mon_c::process_a_trn(uvma_obi_memory_mon_trn_c trn);
    
    
 endfunction : process_a_trn
 
 
-function void uvma_obi_memory_mon_c::process_r_trn(ref uvma_obi_memory_mon_trn_c trn);
+function void uvma_obi_memory_mon_c::process_r_trn(uvma_obi_memory_mon_trn_c trn);
    
    
 endfunction : process_r_trn
@@ -301,8 +300,7 @@ task uvma_obi_memory_mon_c::send_trn_to_sequencer(ref uvma_obi_memory_mon_trn_c 
    
 endtask : send_trn_to_sequencer
 
-
-task uvma_obi_memory_mon_c::sample_trn_a_from_vif(ref uvma_obi_memory_mon_trn_c trn);
+task uvma_obi_memory_mon_c::sample_trn_a_from_vif(uvma_obi_memory_mon_trn_c trn);
    
    trn.__originator = this.get_full_name();
    
@@ -322,42 +320,61 @@ task uvma_obi_memory_mon_c::sample_trn_a_from_vif(ref uvma_obi_memory_mon_trn_c 
    end
    for (int unsigned ii=0; ii<(cfg.data_width/8); ii++) begin
       trn.be[ii] = passive_mp.mon_cb.be[ii];
-   end
-   for (int unsigned ii=0; ii<cfg.auser_width; ii++) begin
-      trn.auser[ii] = passive_mp.mon_cb.auser[ii];
-   end
-   if (trn.access_type == UVMA_OBI_MEMORY_ACCESS_WRITE) begin
-      for (int unsigned ii=0; ii<cfg.wuser_width; ii++) begin
-         trn.wuser[ii] = passive_mp.mon_cb.wuser[ii];
-      end
-   end
-   
+   end   
    if (trn.access_type == UVMA_OBI_MEMORY_ACCESS_WRITE) begin
       for (int unsigned ii=0; ii<cfg.data_width; ii++) begin
          trn.data[ii] = passive_mp.mon_cb.wdata[ii];
       end
    end
-   
+
+   // 1P2 signals
+   if (cfg.is_1p2_or_higher()) begin      
+      for (int unsigned ii=0; ii<cfg.auser_width; ii++) begin
+         trn.auser[ii] = passive_mp.mon_cb.auser[ii];
+      end
+      if (trn.access_type == UVMA_OBI_MEMORY_ACCESS_WRITE) begin
+         for (int unsigned ii=0; ii<cfg.wuser_width; ii++) begin
+            trn.wuser[ii] = passive_mp.mon_cb.wuser[ii];
+         end
+      end
+      for (int unsigned ii=0; ii<cfg.id_width; ii++) begin
+         trn.aid[ii] = passive_mp.mon_cb.aid[ii];
+      end
+      trn.atop    = passive_mp.mon_cb.atop;
+      trn.memtype = passive_mp.mon_cb.memtype;
+      trn.prot    = passive_mp.mon_cb.prot;
+      for (int unsigned ii=0; ii<cfg.achk_width; ii++) begin
+         trn.achk = passive_mp.mon_cb.achk[ii];
+      end
+   end
+
 endtask : sample_trn_a_from_vif
 
 
-task uvma_obi_memory_mon_c::sample_trn_r_from_vif(ref uvma_obi_memory_mon_trn_c trn);
+task uvma_obi_memory_mon_c::sample_trn_r_from_vif(uvma_obi_memory_mon_trn_c trn);
    
    trn.__originator = this.get_full_name();
       
-   for (int unsigned ii=0; ii<cfg.ruser_width; ii++) begin
-      trn.ruser[ii] = passive_mp.mon_cb.ruser[ii];
-   end
-   for (int unsigned ii=0; ii<cfg.id_width; ii++) begin
-      trn.id[ii] = passive_mp.mon_cb.rid[ii];
-   end
-   
    if (trn.access_type == UVMA_OBI_MEMORY_ACCESS_READ) begin
       for (int unsigned ii=0; ii<cfg.data_width; ii++) begin
          trn.data[ii] = passive_mp.mon_cb.rdata[ii];
       end
    end
-   
+
+   // 1P2 signals
+   if (cfg.is_1p2_or_higher()) begin      
+      trn.err = passive_mp.mon_cb.err;
+      for (int unsigned ii=0; ii<cfg.ruser_width; ii++) begin
+         trn.ruser[ii] = passive_mp.mon_cb.ruser[ii];
+      end
+      for (int unsigned ii=0; ii<cfg.id_width; ii++) begin
+         trn.rid[ii] = passive_mp.mon_cb.rid[ii];
+      end
+      trn.exokay     = passive_mp.mon_cb.exokay;
+      for (int unsigned ii=0; ii<cfg.rchk_width; ii++) begin
+         trn.rchk = passive_mp.mon_cb.rchk[ii];
+      end
+   end
 endtask : sample_trn_r_from_vif
 
 

@@ -70,7 +70,6 @@ interface uvma_obi_memory_if #(
    wire                      rreadypar; ///< Parity bit for rready signal (odd parity).
    wire [(RCHK_WIDTH-1):0]   rchk     ; ///< Checksum for address phase signals (except rchk itself).
    
-   
    /**
     * Used by DUT in 'mstr' mode.
     */
@@ -232,7 +231,7 @@ interface uvma_obi_memory_if #(
    modport active_mstr_mp(clocking drv_mstr_cb); ///< Used by uvma_obi_drv_c in 'mstr' mode.
    modport active_slv_mp (clocking drv_slv_cb ); ///< Used by uvma_obi_drv_c in 'slv' mode.
    modport passive_mp    (clocking mon_cb     ); ///< Used by uvma_obi_mon_c.
-   
+
 endinterface : uvma_obi_memory_if
 
 

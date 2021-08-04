@@ -324,38 +324,31 @@ module uvmt_cv32e40x_tb;
                               .rready(1'b1)
                               );
 
-  bind cv32e40x_wrapper
-    uvma_obi_assert#(
-                     .ADDR_WIDTH(32),
-                     .DATA_WIDTH(32)
-                    ) obi_instr_assert_i(.clk(clk_i),
-                                         .reset_n(rst_ni),
-                                         .req(instr_req_o),
-                                         .gnt(instr_gnt_i),
-                                         .addr(instr_addr_o),
-                                         .be('1), // Assume full word reads from instruction OBI
-                                         .we('0),
-                                         .wdata('0),
-                                         .rdata(instr_rdata_i),
-                                         .rvalid(instr_rvalid_i),
-                                         .rready(1'b1)
-                                        );
-bind cv32e40x_wrapper
-    uvma_obi_assert#(
-                     .ADDR_WIDTH(32),
-                     .DATA_WIDTH(32)
-                    ) obi_data_assert_i(.clk(clk_i),
-                                        .reset_n(rst_ni),
-                                        .req(data_req_o),
-                                        .gnt(data_gnt_i),
-                                        .addr(data_addr_o),
-                                        .be(data_be_o),
-                                        .we(data_we_o),
-                                        .wdata(data_wdata_o),
-                                        .rdata(data_rdata_i),
-                                        .rvalid(data_rvalid_i),
-                                        .rready(1'b1)
-                                       );
+  bind uvmt_cv32e40x_dut_wrap
+    uvma_obi_memory_assert_if_wrp#(
+      .ADDR_WIDTH(32),
+      .DATA_WIDTH(32),
+      .AUSER_WIDTH(0),
+      .WUSER_WIDTH(0),
+      .RUSER_WIDTH(0),
+      .ID_WIDTH(0),
+      .ACHK_WIDTH(0),
+      .RCHK_WIDTH(0),
+      .IS_1P2(1)
+    ) obi_instr_memory_assert_i(.obi(obi_instr_if_i));
+
+  bind uvmt_cv32e40x_dut_wrap
+    uvma_obi_memory_assert_if_wrp#(
+      .ADDR_WIDTH(32),
+      .DATA_WIDTH(32),
+      .AUSER_WIDTH(0),
+      .WUSER_WIDTH(0),
+      .RUSER_WIDTH(0),
+      .ID_WIDTH(0),
+      .ACHK_WIDTH(0),
+      .RCHK_WIDTH(0),
+      .IS_1P2(1)
+    ) obi_data_memory_assert_i(.obi(obi_data_if_i));
 
   // Bind in verification modules to the design
   bind cv32e40x_core 

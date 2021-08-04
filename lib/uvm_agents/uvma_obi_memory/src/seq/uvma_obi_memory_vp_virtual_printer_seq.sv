@@ -63,13 +63,7 @@ task uvma_obi_memory_vp_virtual_printer_seq_c::vp_body(uvma_obi_memory_mon_trn_c
       slv_rsp.rdata =0;
    end
 
-   // fixme:strichmo:This should be a randomized rvalid latency
-   slv_rsp.err = 1'b0;
-   //slv_rsp.gnt_latency    = 1;
-   slv_rsp.access_latency = 1;
-   //slv_rsp.hold_duration  = 1;
-   slv_rsp.tail_length    = 1;
-
+   add_r_fields(mon_trn, slv_rsp);
    `uvm_send(slv_rsp)
 
 endtask : vp_body
