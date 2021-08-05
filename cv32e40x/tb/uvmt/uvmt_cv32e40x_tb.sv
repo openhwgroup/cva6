@@ -397,7 +397,7 @@ bind cv32e40x_wrapper
       .ctrl_fsm_cs(dut_wrap.cv32e40x_wrapper_i.core_i.controller_i.controller_fsm_i.ctrl_fsm_cs),
       .illegal_insn_i(dut_wrap.cv32e40x_wrapper_i.core_i.ex_wb_pipe.illegal_insn),
       .wb_illegal(dut_wrap.cv32e40x_wrapper_i.core_i.ex_wb_pipe.illegal_insn),
-      .wb_valid(dut_wrap.cv32e40x_wrapper_i.core_i.wb_stage_i.instr_valid),  // TODO:ropeders ex_wb_pipe.instr_valid),
+      .wb_valid(dut_wrap.cv32e40x_wrapper_i.core_i.wb_stage_i.wb_valid_o),
       .wb_halt(dut_wrap.cv32e40x_wrapper_i.core_i.wb_stage_i.ctrl_fsm_i.halt_wb),
       //TODO:ropeders .illegal_insn_q(dut_wrap.cv32e40x_wrapper_i.core_i.controller_i.controller_fsm_i.illegal_insn_q),
       .ecall_insn_i(dut_wrap.cv32e40x_wrapper_i.core_i.ex_wb_pipe.ecall_insn),
