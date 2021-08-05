@@ -359,6 +359,7 @@ endif
 clean_test_programs: clean-bsp
 	find $(CORE_V_VERIF)/$(CV_CORE_LC)/tests/uvmt/test-programs -name *.o       -exec rm {} \;
 	find $(CORE_V_VERIF)/$(CV_CORE_LC)/tests/uvmt/test-programs -name *.hex     -exec rm {} \;
+	find $(CORE_V_VERIF)/$(CV_CORE_LC)/tests/uvmt/test-programs -name *.itb     -exec rm {} \;
 	find $(CORE_V_VERIF)/$(CV_CORE_LC)/tests/uvmt/test-programs -name *.elf     -exec rm {} \;
 	find $(CORE_V_VERIF)/$(CV_CORE_LC)/tests/uvmt/test-programs -name *.map     -exec rm {} \;
 	find $(CORE_V_VERIF)/$(CV_CORE_LC)/tests/uvmt/test-programs -name *.readelf -exec rm {} \;

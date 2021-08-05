@@ -427,7 +427,9 @@ hello-world:
 	$(MAKE) test TEST=hello-world
 
 custom: VSIM_TEST=$(CUSTOM_PROG)
-custom: VSIM_FLAGS += +firmware=$(CUSTOM_DIR)/$(CUSTOM_PROG).hex +elf_file=$(CUSTOM_DIR)/$(CUSTOM_PROG).elf
+custom: VSIM_FLAGS += +firmware=$(CUSTOM_DIR)/$(CUSTOM_PROG).hex
+custom: VSIM_FLAGS += +elf_file=$(CUSTOM_DIR)/$(CUSTOM_PROG).elf
+custom: VSIM_FLAGS += +itb_file=$(CUSTOM_DIR)/$(CUSTOM_PROG).itb
 custom: TEST_UVM_TEST=uvmt_$(CV_CORE_LC)_firmware_test_c
 custom: $(CUSTOM_DIR)/$(CUSTOM_PROG).hex run
 
@@ -440,7 +442,9 @@ export OPT_RUN_INDEX_SUFFIX=_$(RUN_INDEX)
 endif
 
 test: VSIM_TEST=$(TEST_PROGRAM)
-test: VSIM_FLAGS += +firmware=$(TEST_TEST_DIR)/$(TEST_PROGRAM)$(OPT_RUN_INDEX_SUFFIX).hex +elf_file=$(TEST_TEST_DIR)/$(TEST_PROGRAM)$(OPT_RUN_INDEX_SUFFIX).elf
+test: VSIM_FLAGS += +firmware=$(TEST_TEST_DIR)/$(TEST_PROGRAM)$(OPT_RUN_INDEX_SUFFIX).hex 
+test: VSIM_FLAGS += +elf_file=$(TEST_TEST_DIR)/$(TEST_PROGRAM)$(OPT_RUN_INDEX_SUFFIX).elf
+test: VSIM_FLAGS += +itb_file=$(TEST_TEST_DIR)/$(TEST_PROGRAM)$(OPT_RUN_INDEX_SUFFIX).itb
 test: $(TEST_TEST_DIR)/$(TEST_PROGRAM)$(OPT_RUN_INDEX_SUFFIX).hex run
 
 ################################################################################

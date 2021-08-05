@@ -375,6 +375,13 @@ endif
 		-M no-aliases \
 		-M numeric \
 		-S $*.elf > $*.objdump
+	$(RISCV_EXE_PREFIX)objdump \
+                -d \
+                -S \
+				-M no-aliases \
+				-M numeric \
+                -l \
+				$*.elf | ${CORE_V_VERIF}/bin/objdump2itb - > $*.itb
 
 bsp:
 	@echo "$(BANNER)"
