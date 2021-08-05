@@ -44,7 +44,6 @@ module uvmt_cv32e40x_debug_assert
   logic [31:0] boot_addr_at_entry;
 
   // Locally track pc in ID stage to detect first instruction of debug code
-  logic [31:0] prev_id_pc;
   logic first_debug_ins_flag;
   logic first_debug_ins;
   logic decode_valid;
@@ -94,12 +93,13 @@ module uvmt_cv32e40x_debug_assert
 
     property p_debug_mode_pc;
         $rose(first_debug_ins)
-        |-> cov_assert_if.debug_mode_q && (prev_id_pc == halt_addr_at_entry);
-        // TODO:ropeders && (cov_assert_if.depc_q == pc_at_dbg_req);
+        |->
+        cov_assert_if.debug_mode_q && (cov_assert_if.wb_stage_pc == halt_addr_at_entry)
+        && (cov_assert_if.depc_q == pc_at_dbg_req);
     endproperty   
 
     a_debug_mode_pc: assert property(p_debug_mode_pc)
-        else `uvm_error(info_tag, $sformatf("Debug mode entered with wrong pc. pc==%08x",prev_id_pc));
+        else `uvm_error(info_tag, $sformatf("Debug mode entered with wrong pc. pc==%08x", cov_assert_if.wb_stage_pc));
 
 
     // Check that dcsr.cause is as expected
@@ -528,7 +528,9 @@ module uvmt_cv32e40x_debug_assert
        end
     end        
 
+
   // Keep track of wfi state
+
   always @(posedge cov_assert_if.clk_i or negedge cov_assert_if.rst_ni) begin
     if (!cov_assert_if.rst_ni) begin
       cov_assert_if.in_wfi <= 1'b0;
@@ -542,7 +544,9 @@ module uvmt_cv32e40x_debug_assert
     end
   end
 
+
   // Capture dm_halt_addr_i value
+
   always@ (posedge cov_assert_if.clk_i or negedge cov_assert_if.rst_ni) begin
       if(!cov_assert_if.rst_ni) begin
           halt_addr_at_entry_flag <= 1'b0;
@@ -576,7 +580,9 @@ module uvmt_cv32e40x_debug_assert
     assign cov_assert_if.pending_enabled_irq = |(cov_assert_if.irq_i & cov_assert_if.mie_q);
     assign cov_assert_if.is_dret = cov_assert_if.wb_valid && (cov_assert_if.wb_stage_instr_rdata_i == 32'h 7B20_0073);
 
+
     // Track which debug cause should be expected
+
     always@ (posedge cov_assert_if.clk_i or negedge cov_assert_if.rst_ni) begin
         if( !cov_assert_if.rst_ni) begin
             debug_cause_pri <= 3'b000;
@@ -596,25 +602,32 @@ module uvmt_cv32e40x_debug_assert
         end
     end
 
-    // Track PC in id stage to detect first instruction of debug code
+
+    // Detect first instruction of debug code
+
+    assign first_debug_ins =
+        cov_assert_if.debug_mode_q && cov_assert_if.wb_valid
+        && !first_debug_ins_flag && started_decoding_in_debug;
+
+    logic started_decoding_in_debug;
+
     always@ (posedge cov_assert_if.clk_i or negedge cov_assert_if.rst_ni) begin
         if( !cov_assert_if.rst_ni) begin
-            prev_id_pc <= 32'h0;
-            first_debug_ins_flag <= 1'b0;
-            first_debug_ins <= 1'b0;
+            first_debug_ins_flag <= 0;
+            started_decoding_in_debug <= 0;
         end else begin
-            prev_id_pc <= cov_assert_if.id_stage_pc;
-            first_debug_ins <= 1'b0;
             if(cov_assert_if.debug_mode_q) begin
-                if(!first_debug_ins_flag) begin
-                    if(cov_assert_if.wb_valid) begin
-                        first_debug_ins_flag <= 1'b1;
-                        first_debug_ins <= 1'b1;
-                    end
+                if(cov_assert_if.wb_valid) begin
+                    first_debug_ins_flag <= 1;
+                end
+                if(cov_assert_if.id_valid) begin
+                    started_decoding_in_debug <= 1;
                 end
             end else begin
-                first_debug_ins_flag <= 1'b0;
+                first_debug_ins_flag <= 0;
+                started_decoding_in_debug <= 0;
             end
         end
     end
+
 endmodule : uvmt_cv32e40x_debug_assert
