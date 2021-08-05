@@ -353,7 +353,7 @@ include $(CFG_FLAGS_MAKE)
 endif
 endif
 
-ifeq ($(CV_CORE),cv32e40p)
+ifeq ($(CV_CORE),CV32E40P)
 OBJCOPY_REMAP_FLAGS = --change-section-address  .debugger=0x3FC000 \
  		              --change-section-address  .debugger_exception=0x3FC800
 else
