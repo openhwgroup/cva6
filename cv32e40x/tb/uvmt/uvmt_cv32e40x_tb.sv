@@ -382,7 +382,6 @@ bind cv32e40x_wrapper
       .id_stage_is_compressed(dut_wrap.cv32e40x_wrapper_i.core_i.id_stage_i.if_id_pipe_i.is_compressed),
       .id_stage_wfi_insn     (dut_wrap.cv32e40x_wrapper_i.core_i.id_stage_i.id_ex_pipe_o.wfi_insn),  // TODO:ropeders "ex_stage"?
       .id_valid(dut_wrap.cv32e40x_wrapper_i.core_i.id_stage_i.id_valid),
-      .is_decoding(1),  //dut_wrap.cv32e40x_wrapper_i.core_i.is_decoding),  // TODO:ropeders figure out correct source
       .if_stage_pc(dut_wrap.cv32e40x_wrapper_i.core_i.if_stage_i.pc_if_o),
       .id_stage_pc(dut_wrap.cv32e40x_wrapper_i.core_i.id_stage_i.if_id_pipe_i.pc),
       .ex_stage_csr_en (dut_wrap.cv32e40x_wrapper_i.core_i.id_ex_pipe.csr_en),

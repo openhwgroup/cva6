@@ -65,11 +65,11 @@ module uvmt_cv32e40x_debug_assert
     && (cov_assert_if.wb_stage_instr_rdata_i == 32'h0000_9002);
 
   assign cov_assert_if.is_mulhsu =
-    cov_assert_if.is_decoding
-    && cov_assert_if.id_stage_instr_valid_i
-    && (cov_assert_if.id_stage_instr_rdata_i[31:25] == 7'h1)
-    && (cov_assert_if.id_stage_instr_rdata_i[14:12] == 3'b010)
-    && (cov_assert_if.id_stage_instr_rdata_i[6:0]   == 7'h33);
+    cov_assert_if.wb_stage_instr_valid_i
+    && cov_assert_if.wb_stage_instr_valid_i
+    && (cov_assert_if.wb_stage_instr_rdata_i[31:25] == 7'h1)
+    && (cov_assert_if.wb_stage_instr_rdata_i[14:12] == 3'b010)
+    && (cov_assert_if.wb_stage_instr_rdata_i[6:0]   == 7'h33);
 
 
   assign decode_valid = cov_assert_if.id_stage_instr_valid_i && (cov_assert_if.ctrl_fsm_cs == cv32e40x_pkg::FUNCTIONAL);
@@ -240,14 +240,15 @@ module uvmt_cv32e40x_debug_assert
     // ECALL in debug mode results in pc->dm_exception_addr_i
     property p_debug_mode_ecall;
         $rose(cov_assert_if.ecall_insn_i) && cov_assert_if.debug_mode_q
-        && cov_assert_if.is_decoding && cov_assert_if.id_stage_instr_valid_i
-        |-> (decode_valid && cov_assert_if.id_valid) [->1:3]
+        |->
+        (decode_valid && cov_assert_if.id_valid) [->1:3]
         ##0 cov_assert_if.debug_mode_q && (cov_assert_if.id_stage_pc == exception_addr_at_entry);
     endproperty
 
     a_debug_mode_ecall : assert property(p_debug_mode_ecall)
-        else
-            `uvm_error(info_tag, $sformatf("ECALL in debug mode not handled incorrectly. dm=%d, pc=%08x", cov_assert_if.debug_mode_q, cov_assert_if.id_stage_pc));
+        else `uvm_error(info_tag,
+            $sformatf("ECALL in debug mode not handled incorrectly. dm=%d, pc=%08x",
+                cov_assert_if.debug_mode_q, cov_assert_if.id_stage_pc));
 
     // IRQ in debug mode are masked
     property p_irq_in_debug;
@@ -606,7 +607,7 @@ module uvmt_cv32e40x_debug_assert
             first_debug_ins <= 1'b0;
             if(cov_assert_if.debug_mode_q) begin
                 if(!first_debug_ins_flag) begin
-                    if(cov_assert_if.is_decoding & cov_assert_if.id_stage_instr_valid_i) begin
+                    if(cov_assert_if.wb_valid) begin
                         first_debug_ins_flag <= 1'b1;
                         first_debug_ins <= 1'b1;
                     end
