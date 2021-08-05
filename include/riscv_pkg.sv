@@ -33,7 +33,7 @@ package riscv;
     // Warning: When using STD_CACHE, configuration must be PLEN=56 and VLEN=64
     // Warning: VLEN must be superior or equal to PLEN
     localparam VLEN       = (XLEN == 32) ? 32 : 64;    // virtual address length
-    localparam PLEN       = (XLEN == 32) ? 32 : 56;    // physical address length
+    localparam PLEN       = (XLEN == 32) ? 34 : 56;    // physical address length
 
     localparam IS_XLEN32  = (XLEN == 32) ? 1'b1 : 1'b0;
     localparam IS_XLEN64  = (XLEN == 32) ? 1'b0 : 1'b1;
@@ -267,10 +267,10 @@ package riscv;
     // ----------------------
     // Virtual Memory
     // ----------------------
-    // memory management, pte
+    // memory management, pte for sv39
     typedef struct packed {
         logic [9:0]  reserved;
-        logic [PLEN-12-1:0] ppn;
+        logic [44-1:0] ppn; // PPN length for 
         logic [1:0]  rsw;
         logic d;
         logic a;
@@ -281,6 +281,20 @@ package riscv;
         logic r;
         logic v;
     } pte_t;
+
+    // memory management, pte for sv32
+    typedef struct packed {
+        logic [22-1:0] ppn; // PPN length for 
+        logic [1:0]  rsw;
+        logic d;
+        logic a;
+        logic g;
+        logic u;
+        logic x;
+        logic w;
+        logic r;
+        logic v;
+    } pte_sv32_t;
 
     // ----------------------
     // Exception Cause Codes
@@ -637,8 +651,17 @@ package riscv;
         return {csr, 5'h0, 3'h2, dest, 7'h73};
     endfunction
 
+    function automatic logic [31:0] branch(logic [4:0] src2, logic [4:0] src1, logic [2:0] funct3, logic [11:0] offset);
+        // OpCode Branch
+        return {offset[11], offset[9:4], src2, src1, funct3, offset[3:0], offset[10], 7'b11_000_11};
+    endfunction
+
     function automatic logic [31:0] ebreak ();
         return 32'h00100073;
+    endfunction
+
+    function automatic logic [31:0] wfi ();
+        return 32'h10500073;
     endfunction
 
     function automatic logic [31:0] nop ();

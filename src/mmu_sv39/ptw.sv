@@ -78,6 +78,7 @@ module ptw import ariane_pkg::*; #(
       IDLE,
       WAIT_GRANT,
       PTE_LOOKUP,
+      WAIT_RVALID,
       PROPAGATE_ERROR,
       PROPAGATE_ACCESS_ERROR
     } state_q, state_d;
@@ -92,8 +93,6 @@ module ptw import ariane_pkg::*; #(
     logic global_mapping_q, global_mapping_n;
     // latched tag signal
     logic tag_valid_n,      tag_valid_q;
-    // latched kill signal
-    logic kill_req_q,       kill_req_d;
     // register the ASID
     logic [ASID_WIDTH-1:0]  tlb_update_asid_q, tlb_update_asid_n;
     // register the VPN we need to walk, SV39 defines a 39 bit virtual address
@@ -109,8 +108,8 @@ module ptw import ariane_pkg::*; #(
     // directly output the correct physical address
     assign req_port_o.address_index = ptw_pptr_q[DCACHE_INDEX_WIDTH-1:0];
     assign req_port_o.address_tag   = ptw_pptr_q[DCACHE_INDEX_WIDTH+DCACHE_TAG_WIDTH-1:DCACHE_INDEX_WIDTH];
-    // kill this request
-    assign req_port_o.kill_req      = kill_req_q;
+    // we are never going to kill this request
+    assign req_port_o.kill_req      = '0;
     // we are never going to write with the HPTW
     assign req_port_o.data_wdata    = 64'b0;
     // -----------
@@ -179,7 +178,6 @@ module ptw import ariane_pkg::*; #(
         // default assignments
         // PTW memory interface
         tag_valid_n            = 1'b0;
-        kill_req_d             = 1'b0;
         req_port_o.data_req    = 1'b0;
         req_port_o.data_be     = 8'hFF;
         req_port_o.data_size   = 2'b11;
@@ -329,13 +327,13 @@ module ptw import ariane_pkg::*; #(
                             end
                         end
                     end
-                    
+
                     // Check if this access was actually allowed from a PMP perspective
                     if (!allow_access) begin
                         itlb_update_o.valid = 1'b0;
                         dtlb_update_o.valid = 1'b0;
                         // we have to return the failed address in bad_addr
-                        ptw_pptr_n = ptw_pptr_q; 
+                        ptw_pptr_n = ptw_pptr_q;
                         state_d = PROPAGATE_ACCESS_ERROR;
                     end
                 end
@@ -349,6 +347,11 @@ module ptw import ariane_pkg::*; #(
             PROPAGATE_ACCESS_ERROR: begin
                 state_d     = IDLE;
                 ptw_access_exception_o = 1'b1;
+            end
+            // wait for the rvalid before going back to IDLE
+            WAIT_RVALID: begin
+                if (data_rvalid_q)
+                    state_d = IDLE;
             end
             default: begin
                 state_d = IDLE;
@@ -364,11 +367,10 @@ module ptw import ariane_pkg::*; #(
             // 1. in the PTE Lookup check whether we still need to wait for an rvalid
             // 2. waiting for a grant, if so: wait for it
             // if not, go back to idle
-            if ((state_q == PTE_LOOKUP && !data_rvalid_q) || ((state_q == WAIT_GRANT) && req_port_i.data_gnt)) begin
-                tag_valid_n = 1'b1;
-                kill_req_d  = 1'b1;
-            end
-            state_d = IDLE;
+            if ((state_q == PTE_LOOKUP && !data_rvalid_q) || ((state_q == WAIT_GRANT) && req_port_i.data_gnt))
+                state_d = WAIT_RVALID;
+            else
+                state_d = IDLE;
         end
     end
 
@@ -385,7 +387,6 @@ module ptw import ariane_pkg::*; #(
             global_mapping_q   <= 1'b0;
             data_rdata_q       <= '0;
             data_rvalid_q      <= 1'b0;
-            kill_req_q         <= 1'b0;
         end else begin
             state_q            <= state_d;
             ptw_pptr_q         <= ptw_pptr_n;
@@ -397,7 +398,6 @@ module ptw import ariane_pkg::*; #(
             global_mapping_q   <= global_mapping_n;
             data_rdata_q       <= req_port_i.data_rdata;
             data_rvalid_q      <= req_port_i.data_rvalid;
-            kill_req_q         <= kill_req_d;
         end
     end
 

@@ -611,6 +611,11 @@ package ariane_pkg;
                                                  // we want jump accordingly e.g.: +4, +2
     } scoreboard_entry_t;
 
+    // ---------------
+    // MMU instanciation
+    // ---------------
+     localparam bit MMU_PRESENT = 1'b1;  // MMU is present
+
     // --------------------
     // Atomics
     // --------------------
@@ -635,7 +640,7 @@ package ariane_pkg;
         logic                  valid;      // valid flag
         logic                  is_2M;      //
         logic                  is_1G;      //
-        logic [26:0]           vpn;
+        logic [27-1:0]         vpn;        // VPN (39bits) = 27bits + 12bits offset
         logic [ASID_WIDTH-1:0] asid;
         riscv::pte_t           content;
     } tlb_update_t;
@@ -643,6 +648,14 @@ package ariane_pkg;
     // Bits required for representation of physical address space as 4K pages
     // (e.g. 27*4K == 39bit address space).
     localparam PPN4K_WIDTH = 38;
+
+    typedef struct packed {
+        logic                  valid;      // valid flag
+        logic                  is_4M;      //
+        logic [20-1:0]         vpn;        //VPN (32bits) = 20bits + 12bits offset
+        logic [9-1:0]          asid;       //ASID length = 9 for Sv32 mmu
+        riscv::pte_sv32_t      content;
+    } tlb_update_sv32_t;
 
     typedef enum logic [1:0] {
       FE_NONE,

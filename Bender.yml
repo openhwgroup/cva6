@@ -54,9 +54,12 @@ sources:
     - src/compressed_decoder.sv
     - src/axi_shim.sv
     - src/ex_stage.sv
-    - src/mmu.sv
-    - src/ptw.sv
-    - src/mult.sv
+    - src/mmu_sv39/mmu.sv
+    - src/mmu_sv39/ptw.sv
+    - src/mmu_sv39/mult.sv
+    - src/mmu_sv32/cva6_mmu_sv32.sv
+    - src/mmu_sv32/cva6_ptw_sv32.sv
+    - src/mmu_sv32/cva6_mult_sv32.sv
     - src/load_unit.sv
     - src/issue_read_operands.sv
     - src/pmp/src/pmp_entry.sv

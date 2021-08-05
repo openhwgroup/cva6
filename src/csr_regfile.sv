@@ -1072,6 +1072,7 @@ module csr_regfile import ariane_pkg::*; #(
 `endif
             dcsr_q                 <= '0;
             dcsr_q.prv             <= riscv::PRIV_LVL_M;
+            dcsr_q.xdebugver       <= 4'h4;
             dpc_q                  <= '0;
             dscratch0_q            <= {riscv::XLEN{1'b0}};
             dscratch1_q            <= {riscv::XLEN{1'b0}};
