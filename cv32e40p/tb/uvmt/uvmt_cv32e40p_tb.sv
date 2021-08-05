@@ -75,8 +75,10 @@ module uvmt_cv32e40p_tb;
    uvma_debug_if       debug_if            ();
    uvma_interrupt_if   interrupt_if        (); // Interrupts
    uvma_interrupt_if   vp_interrupt_if     (); // Interrupts
-   uvma_obi_memory_if  obi_memory_instr_if ();
-   uvma_obi_memory_if  obi_memory_data_if  ();
+   uvma_obi_memory_if  obi_memory_instr_if (.clk(clknrst_if.clk),
+                                            .reset_n(clknrst_if.reset_n));
+   uvma_obi_memory_if  obi_memory_data_if  (.clk(clknrst_if.clk),
+                                            .reset_n(clknrst_if.reset_n));
 
    // DUT Wrapper Interfaces
    uvmt_cv32e40p_vp_status_if       vp_status_if(.tests_passed(),
@@ -118,68 +120,31 @@ module uvmt_cv32e40p_tb;
                             )
                             dut_wrap (.*);
 
-  // Bind in OBI interfaces (montioring only supported currently)
-  bind cv32e40p_wrapper
-    uvma_obi_if obi_instr_if_i(.clk(clk_i),
-                               .reset_n(rst_ni),
-                               .req(instr_req_o),
-                               .gnt(instr_gnt_i),
-                               .addr(instr_addr_o),
-                               .be('0),
-                               .we('0),
-                               .wdata('0),
-                               .rdata(instr_rdata_i),
-                               .rvalid(instr_rvalid_i),
-                               .rready(1'b1)
-                               );
+  bind uvmt_cv32e40p_dut_wrap
+    uvma_obi_memory_assert_if_wrp#(
+      .ADDR_WIDTH(32),
+      .DATA_WIDTH(32),
+      .AUSER_WIDTH(0),
+      .WUSER_WIDTH(0),
+      .RUSER_WIDTH(0),
+      .ID_WIDTH(0),
+      .ACHK_WIDTH(0),
+      .RCHK_WIDTH(0),
+      .IS_1P2(0)
+    ) obi_instr_memory_assert_i(.obi(obi_memory_instr_if));
 
-
-  bind cv32e40p_wrapper
-    uvma_obi_if obi_data_if_i(.clk(clk_i),
-                              .reset_n(rst_ni),
-                              .req(data_req_o),
-                              .gnt(data_gnt_i),
-                              .addr(data_addr_o),
-                              .be(data_be_o),
-                              .we(data_we_o),
-                              .wdata(data_wdata_o),
-                              .rdata(data_rdata_i),
-                              .rvalid(data_rvalid_i),
-                              .rready(1'b1)
-                              );
-
-  bind cv32e40p_wrapper
-    uvma_obi_assert#(
-                     .ADDR_WIDTH(32),
-                     .DATA_WIDTH(32)
-                    ) obi_instr_assert_i(.clk(clk_i),
-                                         .reset_n(rst_ni),
-                                         .req(instr_req_o),
-                                         .gnt(instr_gnt_i),
-                                         .addr(instr_addr_o),
-                                         .be('1), // Assume full word reads from instruction OBI
-                                         .we('0),
-                                         .wdata('0),
-                                         .rdata(instr_rdata_i),
-                                         .rvalid(instr_rvalid_i),
-                                         .rready(1'b1)
-                                        );
-  bind cv32e40p_wrapper
-    uvma_obi_assert#(
-                     .ADDR_WIDTH(32),
-                     .DATA_WIDTH(32)
-                    ) obi_data_assert_i(.clk(clk_i),
-                                        .reset_n(rst_ni),
-                                        .req(data_req_o),
-                                        .gnt(data_gnt_i),
-                                        .addr(data_addr_o),
-                                        .be(data_be_o),
-                                        .we(data_we_o),
-                                        .wdata(data_wdata_o),
-                                        .rdata(data_rdata_i),
-                                        .rvalid(data_rvalid_i),
-                                        .rready(1'b1)
-                                       );
+  bind uvmt_cv32e40p_dut_wrap
+    uvma_obi_memory_assert_if_wrp#(
+      .ADDR_WIDTH(32),
+      .DATA_WIDTH(32),
+      .AUSER_WIDTH(0),
+      .WUSER_WIDTH(0),
+      .RUSER_WIDTH(0),
+      .ID_WIDTH(0),
+      .ACHK_WIDTH(0),
+      .RCHK_WIDTH(0),
+      .IS_1P2(0)
+    ) obi_data_memory_assert_i(.obi(obi_memory_data_if));
 
   // Bind in verification modules to the design
   bind cv32e40p_core 
@@ -505,8 +470,6 @@ module uvmt_cv32e40p_tb;
      uvm_config_db#(virtual uvma_debug_if                    )::set(.cntxt(null), .inst_name("*.env.debug_agent"),            .field_name("vif"),              .value(debug_if)                                   );
      uvm_config_db#(virtual uvma_clknrst_if                  )::set(.cntxt(null), .inst_name("*.env.clknrst_agent"),          .field_name("vif"),              .value(clknrst_if)                                 );
      uvm_config_db#(virtual uvma_interrupt_if                )::set(.cntxt(null), .inst_name("*.env.interrupt_agent"),        .field_name("vif"),              .value(interrupt_if)                               );
-     uvm_config_db#(virtual uvma_obi_if                      )::set(.cntxt(null), .inst_name("*.env.obi_instr_agent"),        .field_name("vif"),              .value(dut_wrap.cv32e40p_wrapper_i.obi_instr_if_i) );
-     uvm_config_db#(virtual uvma_obi_if                      )::set(.cntxt(null), .inst_name("*.env.obi_data_agent"),         .field_name("vif"),              .value(dut_wrap.cv32e40p_wrapper_i.obi_data_if_i)  );
      uvm_config_db#(virtual uvma_obi_memory_if               )::set(.cntxt(null), .inst_name("*.env.obi_memory_instr_agent"), .field_name("vif"),              .value(obi_memory_instr_if)                        );
      uvm_config_db#(virtual uvma_obi_memory_if               )::set(.cntxt(null), .inst_name("*.env.obi_memory_data_agent"),  .field_name("vif"),              .value(obi_memory_data_if)                         );
      uvm_config_db#(virtual uvmt_cv32e40p_vp_status_if       )::set(.cntxt(null), .inst_name("*"),                            .field_name("vp_status_vif"),    .value(vp_status_if)                               );
@@ -517,7 +480,7 @@ module uvmt_cv32e40p_tb;
      uvm_config_db#(virtual uvmt_cv32e40p_debug_cov_assert_if)::set(.cntxt(null), .inst_name("*.env"),                        .field_name("debug_cov_vif"),    .value(debug_cov_assert_if)                        );
      uvm_config_db#(virtual uvmt_cv32e40p_vp_status_if       )::set(.cntxt(null), .inst_name("*.env"),                        .field_name("vp_status_vif"),    .value(vp_status_if)                               );
      uvm_config_db#(virtual uvmt_cv32e40p_isa_covg_if        )::set(.cntxt(null), .inst_name("*.env"),                        .field_name("isa_covg_vif"),     .value(isa_covg_if)                                );
-   //uvm_config_db#(virtual uvma_interrupt_if                )::set(.cntxt(null), .inst_name("*.env"),                        .field_name("intr_vif"),         .value(interrupt_if)                               );
+     uvm_config_db#(virtual uvma_interrupt_if                )::set(.cntxt(null), .inst_name("*.env"),                        .field_name("intr_vif"),         .value(interrupt_if)                               );
      uvm_config_db#(virtual uvma_debug_if                    )::set(.cntxt(null), .inst_name("*.env"),                        .field_name("debug_vif"),        .value(debug_if)                                   );
 
      // Make the DUT Wrapper Virtual Peripheral's status outputs available to the base_test
@@ -635,19 +598,6 @@ module uvmt_cv32e40p_tb;
          end
       end
    end
-
-`ifndef USE_OBI_MEM_AGENT
-   // FIXME:strichmo:Remove this code when RVFI/RVVI is ported into the cv32e40p
-   // emulate volatile register updates of RND_NUM register
-   always @(posedge dut_wrap.ram_i.clk_i) begin
-      if (dut_wrap.ram_i.rst_ni) begin
-         if (dut_wrap.ram_i.rnd_num_req) begin
-            #1ns;
-            iss_wrap.ram.memory.mem[dut_wrap.ram_i.MMADDR_RNDNUM >> 2] = dut_wrap.ram_i.rnd_num;
-         end
-      end
-   end
-`endif // USE_OBI_MEM_AGENT
 
 endmodule : uvmt_cv32e40p_tb
 `default_nettype wire

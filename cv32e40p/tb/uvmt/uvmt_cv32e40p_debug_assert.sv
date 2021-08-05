@@ -460,7 +460,8 @@ module uvmt_cv32e40p_debug_assert
             debug_cause_pri <= 3'b000;
         end else begin
             // Debug evaluated in decode state with valid instructions only
-            if(cov_assert_if.ctrl_fsm_cs == cv32e40p_pkg::DECODE & !cov_assert_if.debug_mode_q) begin
+            //if(cov_assert_if.ctrl_fsm_cs == cv32e40p_pkg::DECODE & !cov_assert_if.debug_mode_q) begin
+            if(cov_assert_if.ctrl_fsm_cs == cv32e40p_pkg::DECODE) begin
                 if(cov_assert_if.is_decoding & cov_assert_if.id_stage_instr_valid_i) begin
                     if(cov_assert_if.trigger_match_i)
                         debug_cause_pri <= 3'b010;

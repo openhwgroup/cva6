@@ -172,8 +172,7 @@ function void uvme_cv32e40x_env_c::build_phase(uvm_phase phase);
          `uvm_info("CNTXT", "Context handle is null; creating.", UVM_DEBUG)
          cntxt = uvme_cv32e40x_cntxt_c::type_id::create("cntxt");
       end
-      
-      // FIXME:strichmo:This should be 
+            
       cntxt.obi_memory_instr_cntxt.mem = cntxt.mem;
       cntxt.obi_memory_data_cntxt.mem  = cntxt.mem;      
 
