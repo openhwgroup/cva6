@@ -501,17 +501,18 @@ module uvmt_cv32e40x_debug_assert
             pc_at_ebreak <= 32'h0;
         end else begin
             // Capture debug pc
+            if (cov_assert_if.ctrl_fsm_cs == cv32e40x_pkg::BOOT_SET) begin
+                pc_at_dbg_req <= {cov_assert_if.boot_addr_i[31:1], 1'b0};
+            end
             if (cov_assert_if.rvfi_valid) begin
                 pc_at_dbg_req <= cov_assert_if.rvfi_pc_wdata;
                 if ((debug_cause_pri == 2) && !started_decoding_in_debug) begin  // trigger
                     pc_at_dbg_req <= cov_assert_if.rvfi_pc_rdata;
                 end
             end
-            //if(cov_assert_if.ctrl_fsm_cs == cv32e40x_pkg::DEBUG_TAKEN) begin
-                if (cov_assert_if.addr_match && !cov_assert_if.tdata1[18] && cov_assert_if.wb_valid) begin
-                    pc_at_dbg_req <= cov_assert_if.wb_stage_pc;
-                end
-            //end
+            if (cov_assert_if.addr_match && !cov_assert_if.tdata1[18] && cov_assert_if.wb_valid) begin  // trigger
+                pc_at_dbg_req <= cov_assert_if.wb_stage_pc;
+            end
             if (debug_cause_pri == 1) begin  // ebreak
                 pc_at_dbg_req <= cov_assert_if.rvfi_pc_rdata;
             end
