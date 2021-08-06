@@ -22,6 +22,7 @@
 typedef class uvme_cv32e40p_vp_debug_control_seq_c;
 typedef class uvme_cv32e40p_vp_interrupt_timer_seq_c;
 typedef class uvme_cv32e40p_vp_status_flags_seq_c;
+typedef class uvme_cv32e40p_vp_rand_num_seq_c;
 
 /**
  * Top-level component that encapsulates, builds and connects all other
@@ -235,12 +236,19 @@ task uvme_cv32e40p_env_c::run_phase(uvm_phase phase);
             data_slv_seq = uvma_obi_memory_slv_seq_c::type_id::create("data_slv_seq");
 
             // Install the virtual peripheral registers             
-            // FIXME:strichmo:When RVVI/RVFI ported, the core-specific random number sequence is no longer needed
-            //void'(data_slv_seq.register_vp_vseq("vp_rand_num", 32'h1500_1000, 1, uvma_obi_memory_vp_rand_num_seq_c::get_type()));
-            void'(data_slv_seq.register_vp_vseq("vp_rand_num", 32'h1500_1000, 1, uvme_cv32e40p_vp_rand_num_seq_c::get_type()));
             void'(data_slv_seq.register_vp_vseq("vp_virtual_printer", 32'h1000_0000, 11, uvma_obi_memory_vp_virtual_printer_seq_c::get_type()));
             void'(data_slv_seq.register_vp_vseq("vp_sig_writer", 32'h2000_0008, 3, uvma_obi_memory_vp_sig_writer_seq_c::get_type()));
             void'(data_slv_seq.register_vp_vseq("vp_cycle_counter", 32'h1500_1004, 1, uvma_obi_memory_vp_cycle_counter_seq_c::get_type()));
+
+            // FIXME:strichmo:When RVVI/RVFI ported, the core-specific random number sequence is no longer needed
+            //void'(data_slv_seq.register_vp_vseq("vp_rand_num", 32'h1500_1000, 1, uvma_obi_memory_vp_rand_num_seq_c::get_type()));
+            begin
+               uvme_cv32e40p_vp_rand_num_seq_c vp_seq;
+               if (!$cast(vp_seq, data_slv_seq.register_vp_vseq("vp_rand_num", 32'h1500_1000, 1, uvme_cv32e40p_vp_rand_num_seq_c::get_type()))) begin
+                  `uvm_fatal("CV32E40PVPSEQ", $sformatf("Could not cast vp_rand_num correctly"));
+               end
+               vp_seq.cv32e40p_cntxt = cntxt;
+            end
 
             begin
                uvme_cv32e40p_vp_status_flags_seq_c vp_seq;
@@ -315,7 +323,16 @@ function void uvme_cv32e40p_env_c::retrieve_vifs();
    if (cntxt.debug_cov_vif == null) begin
       `uvm_fatal("UVME_CV32E40P_ENV", $sformatf("No uvmt_cv32e40p_debug_cov_assert_if found in config database"))
    end
-   
+
+   // fixme:strichmo:This is a hack, that can be removed when RVFI/RVVI is enabled
+   // This enables the vp_rnd_num_seq to backdoor update memories when a "volatile" register is read
+   if (!uvm_config_db#(virtual RVVI_memory)::get(this, "", "rvvi_memory_vif", cntxt.rvvi_memory_vif)) begin
+      `uvm_fatal("VIF", $sformatf("Could not find rvvi_memory_vif handle of type %s in uvm_config_db", $typename(cntxt.rvvi_memory_vif)))
+   end
+   else begin
+      `uvm_info("VIF", $sformatf("Found rvvi_memory_vifhandle of type %s in uvm_config_db", $typename(cntxt.rvvi_memory_vif)), UVM_DEBUG)
+   end
+
 endfunction: retrieve_vifs
 
 

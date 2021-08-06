@@ -30,7 +30,10 @@ class uvme_cv32e40p_cntxt_c extends uvm_object;
    virtual uvmt_cv32e40p_vp_status_if         vp_status_vif; ///< Virtual interface for Virtual Peripherals
    virtual uvma_interrupt_if                  intr_vif     ; ///< Virtual interface for interrupts 
    virtual uvma_debug_if                      debug_vif    ; ///< Virtual interface for debug 
-   
+
+   // Hack to support backdoor updating of memory for vitual peripherals until we properly port RVFI/RVVI
+   virtual RVVI_memory                        rvvi_memory_vif;
+
    // Agent context handles
    uvma_clknrst_cntxt_c    clknrst_cntxt;
    uvma_interrupt_cntxt_c  interrupt_cntxt;

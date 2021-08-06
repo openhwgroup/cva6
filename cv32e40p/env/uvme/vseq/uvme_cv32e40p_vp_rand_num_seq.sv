@@ -26,6 +26,8 @@
  */
 class uvme_cv32e40p_vp_rand_num_seq_c extends uvma_obi_memory_vp_base_seq_c;
 
+   uvme_cv32e40p_cntxt_c cv32e40p_cntxt;
+
    `uvm_object_utils_begin(uvme_cv32e40p_vp_rand_num_seq_c)
    `uvm_object_utils_end
       
@@ -60,13 +62,7 @@ task uvme_cv32e40p_vp_rand_num_seq_c::vp_body(uvma_obi_memory_mon_trn_c mon_trn)
    `uvm_info("VPRNDSEQ", $sformatf("Issuing a random number: 0x%08x", slv_rsp.rdata), UVM_HIGH);
    
    // Temporary hack to write the random number into ISS memory so that ISS can "see" the random number GPR register load as the RTL
-   begin
-      string path = $sformatf("uvmt_cv32e40p_tb.iss_wrap.ram.memory.mem[%0d]", mon_trn.address >> 2);
-      int retval = uvm_hdl_deposit(path, slv_rsp.rdata);
-      if (retval == 0) begin
-         `uvm_fatal("VPRNDSEQ", $sformatf("Failed writing random number to ISS memory: %s", path));
-      end
-   end
+   cv32e40p_cntxt.rvvi_memory_vif.mem[mon_trn.address >> 2] = slv_rsp.rdata;
 
    add_r_fields(mon_trn, slv_rsp);
    `uvm_send(slv_rsp)
