@@ -142,10 +142,6 @@ module uvma_obi_memory_1p2_assert
   else 
     `uvm_error(info_tag, "prot signal not stable in address phase")
 
-  a_reqpar_stable: assert property(p_addr_signal_stable(reqpar))
-  else 
-    `uvm_error(info_tag, "reqpar signal not stable in address phase")
-
   a_achk_stable: assert property(p_addr_signal_stable(achk))
   else 
     `uvm_error(info_tag, "achk signal not stable in address phase")
@@ -182,14 +178,6 @@ module uvma_obi_memory_1p2_assert
   a_exokay_stable: assert property(p_r_signal_stable(exokay))
   else 
     `uvm_error(info_tag, "exokay signal not stable in response phase")
-
-  a_rvalidpar_stable: assert property(p_r_signal_stable(rvalidpar))
-  else 
-    `uvm_error(info_tag, "rvalidpar signal not stable in response phase")
-
-  a_rreadypar_stable: assert property(p_r_signal_stable(rreadypar))
-  else 
-    `uvm_error(info_tag, "rreadypar signal not stable in response phase")
 
   a_rchk_stable: assert property(p_r_signal_stable(rchk))
   else 
@@ -268,37 +256,5 @@ module uvma_obi_memory_1p2_assert
   a_exokay_lr_sc: assert property(p_exokay_lr_sc)
   else
     `uvm_error(info_tag, "EXOKAY may only asserted in response to an LR or SC transaction (signaled via atop)")
-
-  // R-13 reqpar signal shall be the inverse of req at each clock edge
-  property p_reqpar;
-    reqpar == ~req;
-  endproperty : p_reqpar
-  a_reqpar: assert property(p_reqpar)
-  else
-    `uvm_error(info_tag, "reqpar must always be inverse of req")
-
-  // R-14 gntpar signal shall be the inverse of gnt at each clock edge
-  property p_gntpar;
-    gntpar == ~gnt;
-  endproperty : p_gntpar
-  a_gntpar: assert property(p_gntpar)
-  else
-    `uvm_error(info_tag, "gntpar must always be inverse of gnt")
-  
-  // R-15 rvalidpar signal shall be the inverse of rvalid at each clock edge
-  property p_rvalidpar;
-    rvalidpar == ~rvalid;
-  endproperty : p_rvalidpar
-  a_rvalidpar: assert property(p_rvalidpar)
-  else
-    `uvm_error(info_tag, "rvalidpar must always be inverse of rvalid")
-
-  // R-16 rreadypar signal shall be the inverse of rready at each clock edge
-  property p_rreadypar;
-    rreadypar == ~rready;
-  endproperty : p_rreadypar
-  a_rreadypar: assert property(p_rreadypar)
-  else
-    `uvm_error(info_tag, "rreadypar must always be inverse of rready")
 
 endmodule : uvma_obi_memory_1p2_assert

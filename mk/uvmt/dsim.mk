@@ -38,7 +38,7 @@ DSIM_USE_ISS           ?= YES
 DSIM_FILE_LIST         ?= -f $(DV_UVMT_PATH)/uvmt_$(CV_CORE_LC).flist
 DSIM_FILE_LIST         += -f $(DV_UVMT_PATH)/imperas_iss.flist
 DSIM_COMPILE_ARGS      += +define+$(CV_CORE_UC)_TRACE_EXECUTION
-#DSIM_USER_COMPILE_ARGS ?= +define+USE_OBI_MEM_AGENT
+
 DSIM_USER_COMPILE_ARGS ?=
 ifeq ($(USE_ISS),YES)
 	DSIM_RUN_FLAGS     += +USE_ISS

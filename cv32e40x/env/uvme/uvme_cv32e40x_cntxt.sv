@@ -46,7 +46,6 @@ class uvme_cv32e40x_cntxt_c extends uvm_object;
   
    // Memory modelling
    rand uvml_mem_c                   mem;   
-   bit      instr_mem_delay_enabled = 0;
 
    // Events
    uvm_event  sample_cfg_e;
