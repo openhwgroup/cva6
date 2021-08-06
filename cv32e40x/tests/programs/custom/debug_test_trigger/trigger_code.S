@@ -112,17 +112,10 @@ _jmp_multicycle_insn:
     jal ra, _trigger_code_multicycle_insn
     j __trigger_done
 
-# Assembly code for generating
-# cycle accurate debug_req
-# and irq
-_trigger_test_combo:
-    addi sp,sp,-30
-    sw t0, 0(sp)
-    sw t1, 4(sp)
-    sw a0, 8(sp)
-    sw a1, 12(sp)
-    sw a2, 16(sp)
-    sw ra, 20(sp)
+# Enter debug mode to set tdata1 and tdata2 for triggering on execution of instruction at _trigger_code
+_trigger_setup:
+    addi sp,sp,-8
+    sw ra, 4(sp)
 
     # Don't expect trigger match
     li a0, 0
@@ -146,10 +139,10 @@ _wait1:
     la a1, glb_hart_status
     lw t0, 0(a1)
     la a1, glb_debug_status
-    lw t1, 0(a1)    
+    lw t1, 0(a1)
     bne t0, t1, _wait1
 
-    # Check csrs
+    // Check csrs
     csrr t0, 0x7A1
     li t1, 2<<28 | 1<<27 | 1<<12 | 1<<6 | 1<<2
     bne t0, t1, __trigger_fail
@@ -158,7 +151,47 @@ _wait1:
     la t1, _trigger_code
     bne t0, t1, __trigger_fail
 
-    # Expect trigger
+    lw ra, 4(sp)
+    addi sp,sp,8
+
+    ret
+
+# Assembly code for generating
+# cycle accurate debug_req
+# and irq
+_trigger_test_combo:
+    addi sp,sp,-30
+    sw t0, 0(sp)
+    sw t1, 4(sp)
+    sw a0, 8(sp)
+    sw a1, 12(sp)
+    sw a2, 16(sp)
+    sw ra, 20(sp)
+
+    jal ra, _trigger_setup
+
+    # ----------------------------------------------------
+    # Test 10: Expect trigger and return to the same instruction
+    # Debugger will clear tdata[2] to avoid re-triggering upon return
+    # ----------------------------------------------------
+    la a1, glb_hart_status
+    li t0, 10
+    sw t0, 0(a1)
+    
+    la a1, glb_expect_debug_entry
+    li t0, 1
+    sw t0, 0(a1)
+    
+    # execute trigger code
+    li a0, 0
+    jal ra, _trigger_test
+
+    # Re-set the triger to re-enable
+    jal ra, _trigger_setup
+
+    # ----------------------------------------------------
+    # Test 8: Expect trigger with dpc changed in debugger handler to avoid
+    # ----------------------------------------------------
     la a1, glb_hart_status
     li t0, 8
     sw t0, 0(a1)
@@ -167,7 +200,7 @@ _wait1:
     li t0, 1
     sw t0, 0(a1)
     
-    // execute trigger code
+    # execute trigger code
     li a0, 1
     jal ra, _trigger_test
 
@@ -177,7 +210,7 @@ _wait2:
     la a1, glb_debug_status
     lw t1, 0(a1)    
     bne t0, t1, _wait2
-    
+
     # Setup trigger again
     la a1, glb_hart_status
     li t0, 7
@@ -199,8 +232,9 @@ _wait3:
     lw t1, 0(a1)    
     bne t0, t1, _wait3
 
-
-    #debug_req and trigger on same cycle
+    # ----------------------------------------------------
+    # debug_req and trigger on same cycle
+    # ----------------------------------------------------
     # Set hart status
     la a1, glb_hart_status
     li t0, 8
@@ -220,7 +254,9 @@ _wait3:
     li a0, 1
     jal ra, _trigger_code
 
-    #debug_req and irq when trigger on ebreak
+    # ----------------------------------------------------
+    # debug_req and irq when trigger on ebreak
+    # ----------------------------------------------------
     # Set hart status
     la a1, glb_hart_status
     li t0, 81
@@ -236,7 +272,9 @@ _wait3:
     li t0, 1
     sw t0, 0(a1)
 
+    # ----------------------------------------------------
     # Enable debug_req in VP
+    # ----------------------------------------------------
     li a1, debug_req_reg
     li t0, 0xc005001a
     sw t0, 0(a1)
@@ -253,7 +291,9 @@ _wait3:
     li a0, 0
     jal ra, _trigger_test_ebreak
 
-    #debug_req and irq when trigger on c.ebreak
+    # ----------------------------------------------------
+    # debug_req and irq when trigger on c.ebreak
+    # ----------------------------------------------------
     # Set hart status
     la a1, glb_hart_status
     li t0, 82
@@ -286,7 +326,9 @@ _wait3:
     li a0, 1
     jal ra, _trigger_test_ebreak
 
-    #debug_req and irq when trigger on illegal insn
+    # ----------------------------------------------------
+    # debug_req and irq when trigger on illegal insn
+    # ----------------------------------------------------
     # Set hart status
     la a1, glb_hart_status
     li t0, 83
@@ -319,7 +361,9 @@ _wait3:
     li a0, 2
     jal ra, _trigger_test_ebreak
 
-    #debug_req and irq when trigger on branch insn
+    # ----------------------------------------------------
+    # debug_req and irq when trigger on branch insn
+    # ----------------------------------------------------
     # Set hart status
     la a1, glb_hart_status
     li t0, 84
@@ -352,7 +396,9 @@ _wait3:
     li a0, 3
     jal ra, _trigger_test_ebreak
 
-    #debug_req and irq when trigger on multicycle insn
+    # ----------------------------------------------------
+    # debug_req and irq when trigger on multicycle insn
+    # ----------------------------------------------------
     # Set hart status
     la a1, glb_hart_status
     li t0, 85
@@ -409,7 +455,9 @@ _wait3:
     li t1, 9
     bne t0, t1, __trigger_fail
 
+    # ----------------------------------------------------
     # trigger match in debug mode
+    # ----------------------------------------------------
     la a1, glb_hart_status
     li t0, 15
     sw t0, 0(a1)
