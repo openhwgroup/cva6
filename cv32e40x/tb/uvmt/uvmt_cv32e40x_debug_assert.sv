@@ -46,6 +46,8 @@ module uvmt_cv32e40x_debug_assert
   logic first_debug_ins_flag;
   logic first_debug_ins;
   logic decode_valid;
+  logic started_decoding_in_debug;
+
   // ---------------------------------------------------------------------------
   // Clocking blocks
   // ---------------------------------------------------------------------------
@@ -607,8 +609,6 @@ module uvmt_cv32e40x_debug_assert
     assign first_debug_ins =
         cov_assert_if.debug_mode_q && cov_assert_if.wb_valid
         && !first_debug_ins_flag && started_decoding_in_debug;
-
-    logic started_decoding_in_debug;
 
     always@ (posedge cov_assert_if.clk_i or negedge cov_assert_if.rst_ni) begin
         if( !cov_assert_if.rst_ni) begin
