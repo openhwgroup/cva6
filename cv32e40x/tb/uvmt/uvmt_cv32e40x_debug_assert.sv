@@ -33,7 +33,6 @@ module uvmt_cv32e40x_debug_assert
   string info_tag = "CV32E40X_DEBUG_ASSERT";
   logic [31:0] pc_at_dbg_req; // Capture PC when debug_req_i or ebreak is active
   logic [31:0] pc_at_ebreak; // Capture PC when ebreak
-  logic [31:0] rvfi_pc_wdata;
   logic [31:0] halt_addr_at_entry;
   logic halt_addr_at_entry_flag;
   logic [31:0] exception_addr_at_entry;
@@ -493,32 +492,32 @@ module uvmt_cv32e40x_debug_assert
     // -------------------------------------------
     // Capture internal states for use in checking
     // -------------------------------------------
+
     always @(posedge cov_assert_if.clk_i or negedge cov_assert_if.rst_ni) begin
         if(!cov_assert_if.rst_ni) begin
             pc_at_dbg_req <= 32'h0;
             pc_at_ebreak <= 32'h0;
-            rvfi_pc_wdata <= 32'h0;
         end else begin
-            // Capture rvfi pc_wdata
-            if (cov_assert_if.rvfi_valid) begin
-                // rvfi_pc_wdata may change before next rvfi_valid, so better save it for later use
-                rvfi_pc_wdata <= cov_assert_if.rvfi_pc_wdata;
-            end
-
             // Capture debug pc
-            if(cov_assert_if.ctrl_fsm_cs == cv32e40x_pkg::DEBUG_TAKEN) begin
-                pc_at_dbg_req <= rvfi_pc_wdata;
-
-                if (cov_assert_if.rvfi_valid) begin
-                    // If there is a newer rvfi_pc_wdata available, we want that instead of the one we saved
-                    pc_at_dbg_req <= cov_assert_if.rvfi_pc_wdata;
+            if (cov_assert_if.rvfi_valid) begin
+                pc_at_dbg_req <= cov_assert_if.rvfi_pc_wdata;
+                if ((debug_cause_pri == 2) && !started_decoding_in_debug) begin  // trigger
+                    pc_at_dbg_req <= cov_assert_if.rvfi_pc_rdata;
                 end
-
+            end
+            //if(cov_assert_if.ctrl_fsm_cs == cv32e40x_pkg::DEBUG_TAKEN) begin
                 if (cov_assert_if.addr_match && !cov_assert_if.tdata1[18] && cov_assert_if.wb_valid) begin
                     pc_at_dbg_req <= cov_assert_if.wb_stage_pc;
                 end
-
-                // TODO:ropeders this pc modelling is incomplete; I have updates but am waiting for a prerequisite rtl change
+            //end
+            if (debug_cause_pri == 1) begin  // ebreak
+                pc_at_dbg_req <= cov_assert_if.rvfi_pc_rdata;
+            end
+            if (cov_assert_if.irq_ack_o) begin
+                pc_at_dbg_req <= cov_assert_if.mtvec + (cov_assert_if.irq_id_o << 2);
+            end
+            if(cov_assert_if.debug_mode_q && started_decoding_in_debug) begin
+                pc_at_dbg_req <= pc_at_dbg_req;
             end
 
             // Capture pc at ebreak

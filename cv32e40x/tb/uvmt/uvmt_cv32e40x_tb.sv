@@ -442,6 +442,7 @@ bind cv32e40x_wrapper
       .boot_addr_i(dut_wrap.cv32e40x_wrapper_i.core_i.boot_addr_i),
       .rvfi_valid(dut_wrap.cv32e40x_wrapper_i.rvfi_i.rvfi_valid),
       .rvfi_pc_wdata(dut_wrap.cv32e40x_wrapper_i.rvfi_i.rvfi_pc_wdata),
+      .rvfi_pc_rdata(dut_wrap.cv32e40x_wrapper_i.rvfi_i.rvfi_pc_rdata),
       // TODO:ropeders .branch_in_decode(dut_wrap.cv32e40x_wrapper_i.core_i.controller_i.controller_fsm_i.branch_in_id),
 
       .is_wfi(),
