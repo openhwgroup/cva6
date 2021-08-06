@@ -68,7 +68,7 @@ static void check_load_vs_regfile(void) {
   __asm__ volatile("sw %0, 0(%1)" : : "r"(0xAAAAAAAA), "r"(IO_ADDR));
   __asm__ volatile("sw %0, 4(%1)" : : "r"(0xBBBBBBBB), "r"(IO_ADDR));
   __asm__ volatile("li t0, 0x11223344");
-  __asm__ volatile("lw t0, 3(%0)" : : "r"(IO_ADDR));
+  // TODO enable when RTL is implemented: __asm__ volatile("lw t0, 3(%0)" : : "r"(IO_ADDR));
   __asm__ volatile("mv %0, t0" : "=r"(tmp));
   /* TODO enable when RTL is implemented
   assert_or_die(tmp, 0x11223344, "error: misaligned IO load shouldn't touch regfile\n");
@@ -78,7 +78,7 @@ static void check_load_vs_regfile(void) {
   __asm__ volatile("sw %0, -4(%1)" : : "r"(0xAAAAAAAA), "r"(MEM_ADDR_1));
   __asm__ volatile("sw %0, 0(%1)" : : "r"(0xBBBBBBBB), "r"(MEM_ADDR_1));
   __asm__ volatile("li t0, 0x22334455");
-  __asm__ volatile("lw t0, 0(%0)" : : "r"(MEM_ADDR_1 - 3));
+  // TODO enable when RTL is implemented: __asm__ volatile("lw t0, 0(%0)" : : "r"(MEM_ADDR_1 - 3));
   __asm__ volatile("mv %0, t0" : "=r"(tmp));
   /* TODO enable when RTL is implemented
   assert_or_die(tmp, 0x22334455, "error: misaligned IO/MEM load shouldn't touch regfile\n");
@@ -88,7 +88,7 @@ static void check_load_vs_regfile(void) {
   __asm__ volatile("sw %0, -4(%1)" : : "r"(0xAAAAAAAA), "r"(IO_ADDR));
   __asm__ volatile("sw %0, 0(%1)" : : "r"(0xBBBBBBBB), "r"(IO_ADDR));
   __asm__ volatile("li t0, 0x33445566");
-  __asm__ volatile("lw t0, 0(%0)" : : "r"(IO_ADDR - 1));
+  // TODO enable when RTL is implemented: __asm__ volatile("lw t0, 0(%0)" : : "r"(IO_ADDR - 1));
   __asm__ volatile("mv %0, t0" : "=r"(tmp));
   /* TODO enable when RTL is implemented
   assert_or_die(tmp, 0x33445566, "error: misaligned MEM/IO load shouldn't touch regfile\n");
@@ -216,37 +216,6 @@ int main(void) {
   assert_or_die(mtval, MTVAL_READ, "error: expected different mtval\n");
 
 
-  // Non-naturally aligned loads within I/O regions
-
-  // sanity check that aligned load is no problem
-  reset_volatiles();
-  tmp = 0;
-  __asm__ volatile("lw %0, 4(%1)" : "=r"(tmp) : "r"(IO_ADDR));
-  assert_or_die(!tmp, 0, "error: load should not yield zero\n");  // TODO ensure memory content matches
-  assert_or_die(mcause, -1, "error: natty access should not change mcause\n");
-  assert_or_die(mepc, -1, "error: natty access should not change mepc\n");
-  assert_or_die(mtval, -1, "error: natty access should not change mtval\n");
-
-  // check that misaligned load will except
-  /* TODO enable when RTL is implemented
-  reset_volatiles();
-  __asm__ volatile("lw %0, 5(%1)" : "=r"(tmp) : "r"(IO_ADDR));
-  assert_or_die(mcause, EXCEPTION_LOAD_ACCESS_FAULT, "error: misaligned IO load should except\n");
-  assert_or_die(mepc, (IO_ADDR + 5), "error: misaligned IO load unexpected mepc\n");
-  assert_or_die(mtval, MTVAL_READ, "error: misaligned IO load unexpected mtval\n");
-  */
-  // TODO more kinds of |addr[0:1]? Try LH too?
-
-  // check that misaligned to MEM does not fail
-  reset_volatiles();
-  tmp = 0;
-  __asm__ volatile("lw %0, 0(%1)" : "=r"(tmp) : "r"(0x80));
-  assert_or_die(!tmp, 0, "error: load from main should not yield zero\n");
-  assert_or_die(mcause, -1, "error: main access should not change mcause\n");
-  assert_or_die(mepc, -1, "error: main access should not change mepc\n");
-  assert_or_die(mtval, -1, "error: main access should not change mtval\n");
-
-
   // Non-naturally aligned stores to I/O regions
 
   // sanity check that aligned stores are ok
@@ -276,6 +245,37 @@ int main(void) {
   assert_or_die(mtval, -1, "error: misaligned store to main affected mtval\n");
 
 
+  // Non-naturally aligned loads within I/O regions
+
+  // sanity check that aligned load is no problem
+  reset_volatiles();
+  tmp = 0;
+  __asm__ volatile("lw %0, 0(%1)" : "=r"(tmp) : "r"(IO_ADDR));  // Depends on "store" test filling memory first
+  assert_or_die(!tmp, 0, "error: load should not yield zero\n");  // TODO ensure memory content matches
+  assert_or_die(mcause, -1, "error: natty access should not change mcause\n");
+  assert_or_die(mepc, -1, "error: natty access should not change mepc\n");
+  assert_or_die(mtval, -1, "error: natty access should not change mtval\n");
+
+  // check that misaligned load will except
+  /* TODO enable when RTL is implemented
+  reset_volatiles();
+  __asm__ volatile("lw %0, 5(%1)" : "=r"(tmp) : "r"(IO_ADDR));
+  assert_or_die(mcause, EXCEPTION_LOAD_ACCESS_FAULT, "error: misaligned IO load should except\n");
+  assert_or_die(mepc, (IO_ADDR + 5), "error: misaligned IO load unexpected mepc\n");
+  assert_or_die(mtval, MTVAL_READ, "error: misaligned IO load unexpected mtval\n");
+  */
+  // TODO more kinds of |addr[0:1]? Try LH too?
+
+  // check that misaligned to MEM does not fail
+  reset_volatiles();
+  tmp = 0;
+  __asm__ volatile("lw %0, 0(%1)" : "=r"(tmp) : "r"(0x80));
+  assert_or_die(!tmp, 0, "error: load from main should not yield zero\n");
+  assert_or_die(mcause, -1, "error: main access should not change mcause\n");
+  assert_or_die(mepc, -1, "error: main access should not change mepc\n");
+  assert_or_die(mtval, -1, "error: main access should not change mtval\n");
+
+
   // Misaligned load fault shouldn't touch regfile
 
   // check that various split load access fault leaves regfile untouched
@@ -287,7 +287,7 @@ int main(void) {
   // check IO store failing in first access
   __asm__ volatile("sw %0, 0(%1)" : : "r"(0xAAAAAAAA), "r"(IO_ADDR));
   __asm__ volatile("sw %0, 4(%1)" : : "r"(0xBBBBBBBB), "r"(IO_ADDR));
-  __asm__ volatile("sw %0, 2(%1)" : : "r"(0x11223344), "r"(IO_ADDR));
+  // TODO enable when RTL is implemented: __asm__ volatile("sw %0, 2(%1)" : : "r"(0x11223344), "r"(IO_ADDR));
   /* TODO enable when RTL is implemented
   __asm__ volatile("lw %0, 0(%1)" : "=r"(tmp) : "r"(IO_ADDR));
   assert_or_die(tmp, 0xAAAAAAAA, "error: misaligned first store entered bus\n");
@@ -299,7 +299,7 @@ int main(void) {
   // check IO to MEM store failing in first access
   __asm__ volatile("sw %0, -4(%1)" : : "r"(0xAAAAAAAA), "r"(MEM_ADDR_1));
   __asm__ volatile("sw %0, 0(%1)" : : "r"(0xBBBBBBBB), "r"(MEM_ADDR_1));
-  __asm__ volatile("sw %0, -2(%1)" : : "r"(0x22334455), "r"(MEM_ADDR_1));
+  // TODO enable when RTL is implemented: __asm__ volatile("sw %0, -2(%1)" : : "r"(0x22334455), "r"(MEM_ADDR_1));
   /* TODO enable when RTL is implemented
   __asm__ volatile("lw %0, -4(%1)" : "=r"(tmp) : "r"(MEM_ADDR_1));
   assert_or_die(tmp, 0xAAAAAAAA, "error: misaligned IO/MEM first store entered bus\n");
