@@ -37,8 +37,6 @@ class uvme_cv32e40x_cntxt_c extends uvm_object;
    uvma_clknrst_cntxt_c              clknrst_cntxt;
    uvma_interrupt_cntxt_c            interrupt_cntxt;
    uvma_debug_cntxt_c                debug_cntxt;
-   uvma_obi_cntxt_c                  obi_instr_cntxt;
-   uvma_obi_cntxt_c                  obi_data_cntxt;
    uvma_obi_memory_cntxt_c           obi_memory_instr_cntxt;
    uvma_obi_memory_cntxt_c           obi_memory_data_cntxt;
    uvma_rvfi_cntxt_c#(ILEN,XLEN)     rvfi_cntxt;
@@ -56,8 +54,6 @@ class uvme_cv32e40x_cntxt_c extends uvm_object;
       `uvm_field_object(clknrst_cntxt,          UVM_DEFAULT)
       `uvm_field_object(interrupt_cntxt,        UVM_DEFAULT)
       `uvm_field_object(debug_cntxt  ,          UVM_DEFAULT)
-      `uvm_field_object(obi_instr_cntxt,        UVM_DEFAULT)
-      `uvm_field_object(obi_data_cntxt,         UVM_DEFAULT)
       `uvm_field_object(obi_memory_instr_cntxt, UVM_DEFAULT)
       `uvm_field_object(obi_memory_data_cntxt , UVM_DEFAULT)
       `uvm_field_object(rvfi_cntxt,             UVM_DEFAULT)
@@ -88,8 +84,6 @@ function uvme_cv32e40x_cntxt_c::new(string name="uvme_cv32e40x_cntxt");
    clknrst_cntxt    = uvma_clknrst_cntxt_c::type_id::create("clknrst_cntxt");
    interrupt_cntxt  = uvma_interrupt_cntxt_c::type_id::create("interrupt_cntxt");
    debug_cntxt      = uvma_debug_cntxt_c::type_id::create("debug_cntxt");
-   obi_instr_cntxt  = uvma_obi_cntxt_c::type_id::create("obi_instr_cntxt");
-   obi_data_cntxt   = uvma_obi_cntxt_c::type_id::create("obi_data_cntxt");
    obi_memory_instr_cntxt = uvma_obi_memory_cntxt_c::type_id::create("obi_memory_instr_cntxt");
    obi_memory_data_cntxt  = uvma_obi_memory_cntxt_c::type_id::create("obi_memory_data_cntxt" );
    rvfi_cntxt       = uvma_rvfi_cntxt_c#(ILEN,XLEN)::type_id::create("rvfi_cntxt");

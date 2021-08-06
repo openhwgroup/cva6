@@ -312,7 +312,7 @@ custom: $(CUSTOM_DIR)/$(CUSTOM_PROG).hex run
 
 # corev-dv tests needs an added run_index suffix
 ifeq ($(shell echo $(TEST) | head -c 6),corev_)
-  OPT_RUN_INDEX_SUFFIX=_$(RUN_INDEX)
+export OPT_RUN_INDEX_SUFFIX=_$(RUN_INDEX)
 endif
 
 test: VSIM_TEST=$(TEST_PROGRAM)

@@ -44,7 +44,6 @@ package uvme_cv32e40x_pkg;
    import uvma_clknrst_pkg::*;
    import uvma_interrupt_pkg::*;
    import uvma_debug_pkg::*;
-   import uvma_obi_pkg::*;
    import uvma_obi_memory_pkg::*;
    import uvma_rvfi_pkg::*;
    import uvma_rvvi_pkg::*; 
