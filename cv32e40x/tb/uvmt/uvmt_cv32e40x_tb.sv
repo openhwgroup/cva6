@@ -295,35 +295,6 @@ module uvmt_cv32e40x_tb;
                                                                      .rvfi_csr_wdata(rvfi_i.rvfi_csr_tdata_wdata[3])
     );
 
-  // OBI interfaces (montioring only supported currently)
-  bind cv32e40x_wrapper
-    uvma_obi_if obi_instr_if_i(.clk(clk_i),
-                               .reset_n(rst_ni),
-                               .req(instr_req_o),
-                               .gnt(instr_gnt_i),
-                               .addr(instr_addr_o),
-                               .be('0),
-                               .we('0),
-                               .wdata('0),
-                               .rdata(instr_rdata_i),
-                               .rvalid(instr_rvalid_i),
-                               .rready(1'b1)
-                               );
-
-  bind cv32e40x_wrapper
-    uvma_obi_if obi_data_if_i(.clk(clk_i),
-                              .reset_n(rst_ni),
-                              .req(data_req_o),
-                              .gnt(data_gnt_i),
-                              .addr(data_addr_o),
-                              .be(data_be_o),
-                              .we(data_we_o),
-                              .wdata(data_wdata_o),
-                              .rdata(data_rdata_i),
-                              .rvalid(data_rvalid_i),
-                              .rready(1'b1)
-                              );
-
   bind uvmt_cv32e40x_dut_wrap
     uvma_obi_memory_assert_if_wrp#(
       .ADDR_WIDTH(32),
@@ -548,8 +519,6 @@ module uvmt_cv32e40x_tb;
      uvm_config_db#(virtual uvma_debug_if               )::set(.cntxt(null), .inst_name("*.env.debug_agent"), .field_name("vif"), .value(debug_if));
      uvm_config_db#(virtual uvma_clknrst_if             )::set(.cntxt(null), .inst_name("*.env.clknrst_agent"), .field_name("vif"),        .value(clknrst_if));
      uvm_config_db#(virtual uvma_interrupt_if           )::set(.cntxt(null), .inst_name("*.env.interrupt_agent"), .field_name("vif"),      .value(interrupt_if));
-     uvm_config_db#(virtual uvma_obi_if                 )::set(.cntxt(null), .inst_name("*.env.obi_instr_agent"), .field_name("vif"),      .value(dut_wrap.cv32e40x_wrapper_i.obi_instr_if_i));
-     uvm_config_db#(virtual uvma_obi_if                 )::set(.cntxt(null), .inst_name("*.env.obi_data_agent"),  .field_name("vif"),      .value(dut_wrap.cv32e40x_wrapper_i.obi_data_if_i));
      uvm_config_db#(virtual uvma_obi_memory_if          )::set(.cntxt(null), .inst_name("*.env.obi_memory_instr_agent"), .field_name("vif"), .value(obi_instr_if_i) );
      uvm_config_db#(virtual uvma_obi_memory_if          )::set(.cntxt(null), .inst_name("*.env.obi_memory_data_agent"),  .field_name("vif"), .value(obi_data_if_i) );
      uvm_config_db#(virtual uvma_rvfi_instr_if          )::set(.cntxt(null), .inst_name("*.env.rvfi_agent"), .field_name("instr_vif0"),.value(dut_wrap.cv32e40x_wrapper_i.rvfi_instr_if_0_i));
