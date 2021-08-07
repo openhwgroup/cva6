@@ -32,7 +32,7 @@ class uvmt_cv32e40s_base_test_c extends uvm_test;
    // Objects
    rand uvmt_cv32e40s_test_cfg_c   test_cfg ;
    rand uvme_cv32e40s_cfg_c        env_cfg  ;
-   uvme_cv32e40s_cntxt_c           env_cntxt;
+   rand uvme_cv32e40s_cntxt_c      env_cntxt;
    uvml_logs_rs_text_c             rs       ;   
    uvml_logs_reg_logger_cbs_c      reg_cbs  ;
    

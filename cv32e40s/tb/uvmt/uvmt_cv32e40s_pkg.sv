@@ -44,14 +44,11 @@ package uvmt_cv32e40s_pkg;
    `include "uvmt_cv32e40s_tdefs.sv"
    
    // Virtual sequence library
-   // TODO Add virtual sequences
-   //      Ex: `include "uvmt_cv32e40s_sanity_vseq.sv"
    `include "uvmt_cv32e40s_vseq_lib.sv"
    
    // Base test case
    `include "uvmt_cv32e40s_test_cfg.sv"
    `include "uvmt_cv32e40s_base_test.sv"  // all testcases should extend from this testcase
-   //`include "uvmt_cv32e40s_smoke_test.sv" // smoke test has multile XMRs that are illegal according to the LRM
 
    // Compilance tests
    `include "uvmt_cv32e40s_firmware_test.sv"

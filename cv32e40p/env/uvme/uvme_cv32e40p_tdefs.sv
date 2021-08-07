@@ -114,4 +114,7 @@ typedef struct {
     bit[31:0]    pc;
 } ins_t;
 
+
+typedef logic [7:0]  mem_arr[2**22];
+
 `endif // __UVME_CV32E40P_TDEFS_SV__
