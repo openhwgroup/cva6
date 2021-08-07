@@ -1,6 +1,6 @@
 //
 // Copyright 2020 OpenHW Group
-// Copyright 2020 Datum Technologies
+// Copyright 2020 Datum Technology Corporation
 // 
 // Licensed under the Solderpad Hardware Licence, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -32,7 +32,7 @@ class uvmt_cv32e40p_base_test_c extends uvm_test;
    // Objects
    rand uvmt_cv32e40p_test_cfg_c   test_cfg ;
    rand uvme_cv32e40p_cfg_c        env_cfg  ;
-   uvme_cv32e40p_cntxt_c           env_cntxt;
+   rand uvme_cv32e40p_cntxt_c      env_cntxt;
    uvml_logs_rs_text_c             rs       ;   
    uvml_logs_reg_logger_cbs_c      reg_cbs  ;
    
@@ -230,6 +230,7 @@ endfunction : connect_phase
 
 
 task uvmt_cv32e40p_base_test_c::run_phase(uvm_phase phase);
+      
    
    super.run_phase(phase);
    
@@ -384,7 +385,6 @@ function void uvmt_cv32e40p_base_test_c::randomize_test();
    if (!this.randomize()) begin
       `uvm_fatal("BASE TEST", "Failed to randomize test");
    end
-   `uvm_info("BASE TEST", $sformatf("Top-level environment configuration:\n%s", env_cfg.sprint()), UVM_NONE)
    `uvm_info("BASE TEST", $sformatf("Testcase configuration:\n%s", test_cfg.sprint()), UVM_NONE)
    
 endfunction : randomize_test
@@ -418,6 +418,7 @@ endfunction : create_cntxt
 function void uvmt_cv32e40p_base_test_c::assign_cntxt();
    
    uvm_config_db#(uvme_cv32e40p_cntxt_c)::set(this, "env", "cntxt", env_cntxt);
+   env_cntxt.vp_status_vif = this.vp_status_vif;
    
 endfunction : assign_cntxt
 

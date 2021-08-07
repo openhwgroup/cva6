@@ -110,9 +110,17 @@ function void uvma_isacov_mon_c::write_rvfi_instr(uvma_rvfi_instr_seq_item_c#(IL
   string                instr_name;
   bit [63:0]            instr;
 
+  // Some trapped instructions should not be logged in functional coverage
+  // Will use mcause value to determine whether to skip
+  // 1 - Instruction access fault
+  // 2 - Illegal instruction
   if (rvfi_instr.trap) begin
-    `uvm_info("ISACOV", $sformatf("Skip coverage of trapped instruction: 0x%08x", rvfi_instr.insn), UVM_HIGH);
-    return;
+    if (rvfi_instr.csrs["mcause"].get_csr_retirement_data() inside {1,2}) begin
+      `uvm_info("ISACOV", $sformatf("Skip coverage of trapped instruction: 0x%08x, mcause: 0x%08x", 
+                                    rvfi_instr.insn,
+                                    rvfi_instr.csrs["mcause"].get_csr_retirement_data()), UVM_HIGH);
+      return;
+    end
   end
 
   mon_trn = uvma_isacov_mon_trn_c::type_id::create("mon_trn");
@@ -129,10 +137,11 @@ function void uvma_isacov_mon_c::write_rvfi_instr(uvma_rvfi_instr_seq_item_c#(IL
   `uvm_info("ISACOVMON", $sformatf("rvfi = 0x%08x %s", rvfi_instr.insn, instr_name), UVM_HIGH);
 
   mon_trn.instr.itype = get_instr_type(mon_trn.instr.name);
-  mon_trn.instr.group = get_instr_group(mon_trn.instr.name);
+  mon_trn.instr.group = get_instr_group(mon_trn.instr.name, rvfi_instr.mem_addr);
 
   instr = $signed(rvfi_instr.insn);
 
+  // Disassemble the instruction using Spike (via DPI)
   mon_trn.instr.rs1  = dasm_rs1(instr);
   mon_trn.instr.rs2  = dasm_rs2(instr);
   mon_trn.instr.rd   = dasm_rd(instr);
@@ -145,7 +154,10 @@ function void uvma_isacov_mon_c::write_rvfi_instr(uvma_rvfi_instr_seq_item_c#(IL
   mon_trn.instr.c_immj = dasm_rvc_j_imm(instr);
   mon_trn.instr.c_rs1p = instr[9:7];  // TODO use disassembler
   mon_trn.instr.c_rdp = instr[4:2];  // TODO use disassembler  
-  
+
+  mon_trn.instr.pc = rvfi_instr.pc_rdata;
+  mon_trn.instr.mem_addr = rvfi_instr.mem_addr;
+
   // Cast CSR address unless illegal CSR
   if (mon_trn.instr.group == CSR_GROUP) begin
     if (!$cast(mon_trn.instr.csr, dasm_csr(instr))) begin      
@@ -159,8 +171,44 @@ function void uvma_isacov_mon_c::write_rvfi_instr(uvma_rvfi_instr_seq_item_c#(IL
     end
   end
 
+  // Set enumerations for each immediate value (if applicable)
+  if (mon_trn.instr.itype == B_TYPE) 
+    mon_trn.instr.immb_value_type = mon_trn.instr.get_instr_value_type(mon_trn.instr.imms, 13, 1);
+
+  if (mon_trn.instr.itype == S_TYPE) 
+    mon_trn.instr.imms_value_type = mon_trn.instr.get_instr_value_type(mon_trn.instr.imms, 12, 1);
+
+  if (mon_trn.instr.itype == U_TYPE) 
+    mon_trn.instr.immu_value_type = mon_trn.instr.get_instr_value_type(mon_trn.instr.immu, 20, 0);
+
+  if (mon_trn.instr.itype == I_TYPE) 
+    mon_trn.instr.immi_value_type = mon_trn.instr.get_instr_value_type(mon_trn.instr.immi, 12, immi_is_signed[mon_trn.instr.name]);
+
+  if (mon_trn.instr.itype == J_TYPE) 
+    mon_trn.instr.immj_value_type = mon_trn.instr.get_instr_value_type(mon_trn.instr.immj, 20, 1);
+
   mon_trn.instr.set_valid_flags();
 
+  // Set enumerations for register values as reported from RVFI
+  if (mon_trn.instr.rs1_valid) begin
+    mon_trn.instr.rs1_value = rvfi_instr.rs1_rdata;    
+    mon_trn.instr.rs1_value_type = mon_trn.instr.get_instr_value_type(mon_trn.instr.rs1_value, 32, rs1_is_signed[mon_trn.instr.name]);
+  end
+  if (mon_trn.instr.rs2_valid) begin
+    mon_trn.instr.rs2_value = rvfi_instr.rs2_rdata;
+    mon_trn.instr.rs2_value_type = mon_trn.instr.get_instr_value_type(mon_trn.instr.rs2_value, 32, rs2_is_signed[mon_trn.instr.name]);
+  end
+  if (mon_trn.instr.rd_valid) begin
+    mon_trn.instr.rd_value  = rvfi_instr.rd1_wdata;
+    mon_trn.instr.rd_value_type = mon_trn.instr.get_instr_value_type(mon_trn.instr.rd_value, 32, rd_is_signed[mon_trn.instr.name]);
+  end
+
+  // // For branches determine if the branch was taken by evaluating the instruction
+  // if (mon_trn.instr.is_conditional_branch()) begin
+  //   instr.branch_taken = mon_trn.instr.is_branch_taken();
+  // end
+
+  // Write to analysis port
   ap.write(mon_trn);
 
 endfunction : write_rvfi_instr
