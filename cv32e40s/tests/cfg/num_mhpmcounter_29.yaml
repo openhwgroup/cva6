@@ -3,6 +3,4 @@ description: Configuration for CV32E40S simulations with NUM_MHPMCOUNTER set to 
 compile_flags: 
     +define+SET_NUM_MHPMCOUNTERS=29
 ovpsim: >
-    --override root/cpu/misa_Extensions=0x001104
-    --override root/cpu/marchid=21
 cflags: >

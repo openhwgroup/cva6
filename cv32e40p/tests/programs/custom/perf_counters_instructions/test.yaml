@@ -3,4 +3,4 @@ uvm_test: uvmt_$(CV_CORE_LC)_firmware_test_c
 description: >
     Performance Counters Basic Test
 plusargs: >
-    +max_data_zero_instr_stall
+    +rand_stall_obi_disable

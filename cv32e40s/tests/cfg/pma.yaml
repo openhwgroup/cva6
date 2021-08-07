@@ -3,9 +3,6 @@ description: PMA configuration for regions and attributes
 compile_flags:
     +define+PMA_CUSTOM_CFG
 ovpsim: >
-    --override root/cpu/misa_Extensions=0x001104
-    --override root/cpu/marchid=21
-    --override root/cpu/noinhibit_mask=0xFFFFFFF0
     --override root/cpu/extension/PMA_NUM_REGIONS=3
     --override root/cpu/extension/word_addr_low2=0
     --override root/cpu/extension/word_addr_high2=0x06844204

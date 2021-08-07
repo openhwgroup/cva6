@@ -79,6 +79,9 @@ _debugger_start:
 	li t0,7
 	beq t2,t0,_debugger_trigger_setup    // Test 7
 
+    li t0,10
+    beq t2,t0, _debugger_trigger_match_no_dpc // Test 10
+
 	li t0,8
 	beq t2,t0,_debugger_trigger_match    // Test 8
 
@@ -98,10 +101,10 @@ _debugger_start:
     beq t2, t0, _debugger_trigger_match_multicycle_insn
 
 	li t0,9
-	beq t2,t0,_debugger_trigger_disable    // Test 9
+	beq t2,t0, _debugger_trigger_disable    // Test 9
 
 	li t0,13
-	beq t2,t0,_debugger_mret_call    // Test 13
+	beq t2,t0, _debugger_mret_call    // Test 13
 
     li t0,15
     beq t2,t0, _debugger_trigger_in_debug // Test 15
@@ -123,6 +126,22 @@ _debugger_trigger_setup:
    	li   t1, 4<<28 | 2<<6 | 3<<0 | 1<<15
     csrw dcsr, t1 
 	j    _debugger_end
+
+_debugger_trigger_match_no_dpc:
+	// Expect DCSR
+	//   31:28 XDEBUGER Version = 4
+	//    8:6   Cause           = 2 Trigger
+	//    1:0   Privelege       = 3 Machine
+	// TBD FIXME BUG documentation update needed
+	li   t1, 4<<28 | 2<<6 | 3<<0 | 1<<15
+	csrr t2,dcsr
+	bne  t1,t2,_debugger_fail
+
+    // Clear the tdata1 execute field (tdata1[2]) to avoid re-entering the trigger when dret executes    
+    csrci tdata1, 0x4
+
+    j _debugger_end
+
 _debugger_trigger_match:
 	// Expect DCSR
 	//   31:28 XDEBUGER Version = 4
