@@ -212,7 +212,7 @@ endif
 
 # corev-dv tests needs an added run_index suffix
 ifeq ($(shell echo $(TEST) | head -c 6),corev_)
-  OPT_RUN_INDEX_SUFFIX=_$(RUN_INDEX)
+export OPT_RUN_INDEX_SUFFIX=_$(RUN_INDEX)
 endif
 
 test: $(VCS_SIM_PREREQ) $(TEST_TEST_DIR)/$(TEST_PROGRAM)$(OPT_RUN_INDEX_SUFFIX).hex gen_ovpsim_ic
