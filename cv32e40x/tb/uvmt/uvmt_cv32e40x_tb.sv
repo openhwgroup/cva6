@@ -1,6 +1,6 @@
 //
 // Copyright 2020 OpenHW Group
-// Copyright 2020 Datum Technologies
+// Copyright 2020 Datum Technology Corporation
 // Copyright 2020 Silicon Labs, Inc.
 // 
 // Licensed under the Solderpad Hardware Licence, Version 2.0 (the "License");
@@ -61,7 +61,15 @@ module uvmt_cv32e40x_tb;
    uvma_clknrst_if              clknrst_if(); // clock and resets from the clknrst agent
    uvma_clknrst_if              clknrst_if_iss();
    uvma_debug_if                debug_if();
-   uvma_interrupt_if            interrupt_if(); // Interrupts
+   uvma_interrupt_if            interrupt_if();
+   uvma_obi_memory_if           obi_instr_if_i(
+     .clk(clknrst_if.clk),
+     .reset_n(clknrst_if.reset_n)
+   );
+   uvma_obi_memory_if           obi_data_if_i(
+     .clk(clknrst_if.clk),
+     .reset_n(clknrst_if.reset_n)
+   );
 
    // DUT Wrapper Interfaces
    uvmt_cv32e40x_vp_status_if       vp_status_if(.tests_passed(),
@@ -287,67 +295,31 @@ module uvmt_cv32e40x_tb;
                                                                      .rvfi_csr_wdata(rvfi_i.rvfi_csr_tdata_wdata[3])
     );
 
-  // OBI interfaces (montioring only supported currently)
-  bind cv32e40x_wrapper
-    uvma_obi_if obi_instr_if_i(.clk(clk_i),
-                               .reset_n(rst_ni),
-                               .req(instr_req_o),
-                               .gnt(instr_gnt_i),
-                               .addr(instr_addr_o),
-                               .be('0),
-                               .we('0),
-                               .wdata('0),
-                               .rdata(instr_rdata_i),
-                               .rvalid(instr_rvalid_i),
-                               .rready(1'b1)
-                               );
+  bind uvmt_cv32e40x_dut_wrap
+    uvma_obi_memory_assert_if_wrp#(
+      .ADDR_WIDTH(32),
+      .DATA_WIDTH(32),
+      .AUSER_WIDTH(0),
+      .WUSER_WIDTH(0),
+      .RUSER_WIDTH(0),
+      .ID_WIDTH(0),
+      .ACHK_WIDTH(0),
+      .RCHK_WIDTH(0),
+      .IS_1P2(1)
+    ) obi_instr_memory_assert_i(.obi(obi_instr_if_i));
 
-  bind cv32e40x_wrapper
-    uvma_obi_if obi_data_if_i(.clk(clk_i),
-                              .reset_n(rst_ni),
-                              .req(data_req_o),
-                              .gnt(data_gnt_i),
-                              .addr(data_addr_o),
-                              .be(data_be_o),
-                              .we(data_we_o),
-                              .wdata(data_wdata_o),
-                              .rdata(data_rdata_i),
-                              .rvalid(data_rvalid_i),
-                              .rready(1'b1)
-                              );
-
-  bind cv32e40x_wrapper
-    uvma_obi_assert#(
-                     .ADDR_WIDTH(32),
-                     .DATA_WIDTH(32)
-                    ) obi_instr_assert_i(.clk(clk_i),
-                                         .reset_n(rst_ni),
-                                         .req(instr_req_o),
-                                         .gnt(instr_gnt_i),
-                                         .addr(instr_addr_o),
-                                         .be('1), // Assume full word reads from instruction OBI
-                                         .we('0),
-                                         .wdata('0),
-                                         .rdata(instr_rdata_i),
-                                         .rvalid(instr_rvalid_i),
-                                         .rready(1'b1)
-                                        );
-bind cv32e40x_wrapper
-    uvma_obi_assert#(
-                     .ADDR_WIDTH(32),
-                     .DATA_WIDTH(32)
-                    ) obi_data_assert_i(.clk(clk_i),
-                                        .reset_n(rst_ni),
-                                        .req(data_req_o),
-                                        .gnt(data_gnt_i),
-                                        .addr(data_addr_o),
-                                        .be(data_be_o),
-                                        .we(data_we_o),
-                                        .wdata(data_wdata_o),
-                                        .rdata(data_rdata_i),
-                                        .rvalid(data_rvalid_i),
-                                        .rready(1'b1)
-                                       );
+  bind uvmt_cv32e40x_dut_wrap
+    uvma_obi_memory_assert_if_wrp#(
+      .ADDR_WIDTH(32),
+      .DATA_WIDTH(32),
+      .AUSER_WIDTH(0),
+      .WUSER_WIDTH(0),
+      .RUSER_WIDTH(0),
+      .ID_WIDTH(0),
+      .ACHK_WIDTH(0),
+      .RCHK_WIDTH(0),
+      .IS_1P2(1)
+    ) obi_data_memory_assert_i(.obi(obi_data_if_i));
 
   // Bind in verification modules to the design
   bind cv32e40x_core 
@@ -358,8 +330,8 @@ bind cv32e40x_wrapper
                                                       .mtvec_mode_q(cs_registers_i.mtvec_q.mode),
                                                       .if_stage_instr_rvalid_i(if_stage_i.m_c_obi_instr_if.s_rvalid.rvalid),
                                                       .if_stage_instr_rdata_i(if_stage_i.m_c_obi_instr_if.resp_payload.rdata),
-                                                      .id_stage_instr_valid_i(id_stage_i.if_id_pipe_i.instr_valid),
-                                                      .id_stage_instr_rdata_i(id_stage_i.if_id_pipe_i.instr.bus_resp.rdata),
+                                                      .id_stage_instr_valid_i(wb_stage_i.instr_valid),
+                                                      .id_stage_instr_rdata_i(wb_stage_i.ex_wb_pipe_i.instr.bus_resp.rdata),
                                                       .branch_taken_ex(controller_i.controller_fsm_i.branch_taken_ex),
                                                       .ctrl_fsm_cs(controller_i.controller_fsm_i.ctrl_fsm_cs),
                                                       .debug_mode_q(controller_i.controller_fsm_i.debug_mode_q),
@@ -547,10 +519,13 @@ bind cv32e40x_wrapper
      uvm_config_db#(virtual uvma_debug_if               )::set(.cntxt(null), .inst_name("*.env.debug_agent"), .field_name("vif"), .value(debug_if));
      uvm_config_db#(virtual uvma_clknrst_if             )::set(.cntxt(null), .inst_name("*.env.clknrst_agent"), .field_name("vif"),        .value(clknrst_if));
      uvm_config_db#(virtual uvma_interrupt_if           )::set(.cntxt(null), .inst_name("*.env.interrupt_agent"), .field_name("vif"),      .value(interrupt_if));
-     uvm_config_db#(virtual uvma_obi_if                 )::set(.cntxt(null), .inst_name("*.env.obi_instr_agent"), .field_name("vif"),      .value(dut_wrap.cv32e40x_wrapper_i.obi_instr_if_i));
-     uvm_config_db#(virtual uvma_obi_if                 )::set(.cntxt(null), .inst_name("*.env.obi_data_agent"),  .field_name("vif"),      .value(dut_wrap.cv32e40x_wrapper_i.obi_data_if_i));
+     uvm_config_db#(virtual uvma_obi_memory_if          )::set(.cntxt(null), .inst_name("*.env.obi_memory_instr_agent"), .field_name("vif"), .value(obi_instr_if_i) );
+     uvm_config_db#(virtual uvma_obi_memory_if          )::set(.cntxt(null), .inst_name("*.env.obi_memory_data_agent"),  .field_name("vif"), .value(obi_data_if_i) );
      uvm_config_db#(virtual uvma_rvfi_instr_if          )::set(.cntxt(null), .inst_name("*.env.rvfi_agent"), .field_name("instr_vif0"),.value(dut_wrap.cv32e40x_wrapper_i.rvfi_instr_if_0_i));
-
+     uvm_config_db#(virtual uvmt_cv32e40x_vp_status_if  )::set(.cntxt(null), .inst_name("*"),                .field_name("vp_status_vif"),    .value(vp_status_if) );
+     uvm_config_db#(virtual uvma_interrupt_if           )::set(.cntxt(null), .inst_name("*.env"),            .field_name("intr_vif"),         .value(interrupt_if) );
+     uvm_config_db#(virtual uvma_debug_if               )::set(.cntxt(null), .inst_name("*.env"),            .field_name("debug_vif"),        .value(debug_if)     );
+//     uvm_config_db#(virtual uvmt_cv32e40x_debug_cov_assert_if)::set(.cntxt(null), .inst_name("*.env"),       .field_name("debug_cov_vif"),    .value(debug_cov_assert_if));
      `RVFI_CSR_UVM_CONFIG_DB_SET(marchid)
      `RVFI_CSR_UVM_CONFIG_DB_SET(mcountinhibit)
      `RVFI_CSR_UVM_CONFIG_DB_SET(mstatus)
@@ -580,7 +555,7 @@ bind cv32e40x_wrapper
      `RVFI_CSR_UVM_CONFIG_DB_SET(tdata1)
      `RVFI_CSR_UVM_CONFIG_DB_SET(tdata2)
      `RVFI_CSR_UVM_CONFIG_DB_SET(tdata3)
-     `RVFI_CSR_UVM_CONFIG_DB_SET(tinfo)     
+     `RVFI_CSR_UVM_CONFIG_DB_SET(tinfo)
 
      `RVFI_CSR_UVM_CONFIG_DB_SET(mhpmevent3)
      `RVFI_CSR_UVM_CONFIG_DB_SET(mhpmevent4)

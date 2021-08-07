@@ -52,11 +52,13 @@ module uvmt_cv32e40s_dut_wrap
               RAM_ADDR_WIDTH      =  20
    )
   (
-  uvma_clknrst_if              clknrst_if,
-  uvma_interrupt_if            interrupt_if,
-  uvmt_cv32e40s_vp_status_if       vp_status_if,
-  uvme_cv32e40s_core_cntrl_if      core_cntrl_if,
-  uvmt_cv32e40s_core_status_if     core_status_if                            
+    uvma_clknrst_if              clknrst_if,
+    uvma_interrupt_if            interrupt_if,
+    uvmt_cv32e40s_vp_status_if   vp_status_if,
+    uvme_cv32e40s_core_cntrl_if  core_cntrl_if,
+    uvmt_cv32e40s_core_status_if core_status_if,
+    uvma_obi_memory_if           obi_instr_if_i,
+    uvma_obi_memory_if           obi_data_if_i
   );
 
     import uvm_pkg::*; // needed for the UVM messaging service (`uvm_info(), etc.)
@@ -93,59 +95,32 @@ module uvmt_cv32e40s_dut_wrap
     assign debug_if.clk      = clknrst_if.clk;
     assign debug_if.reset_n  = clknrst_if.reset_n;
     assign debug_req_uvma    = debug_if.debug_req;
-
-    assign debug_req = debug_req_vp | debug_req_uvma;
    
+    // --------------------------------------------
+    // OBI Instruction agent v1.2 signal tie-offs    
+    assign obi_instr_if_i.we        = 'b0;    
+    assign obi_instr_if_i.be        = 'hf; // Always assumes 32-bit full bus reads on instruction OBI
+    assign obi_instr_if_i.auser     = 'b0;
+    assign obi_instr_if_i.wuser     = 'b0;
+    assign obi_instr_if_i.aid       = 'b0;
+    assign obi_instr_if_i.atop      = 'b0;
+    assign obi_instr_if_i.wdata     = 'b0;
+    assign obi_instr_if_i.reqpar    = ~obi_instr_if_i.req;
+    assign obi_instr_if_i.achk      = 'b0;
+    assign obi_instr_if_i.rchk      = 'b0;
+    assign obi_instr_if_i.rready    = 1'b1;
+    assign obi_instr_if_i.rreadypar = 1'b0;
 
-    // Load the Instruction Memory 
-    initial begin: load_instruction_memory
-      string firmware;
-      int    fd;
-       int   fill_cnt;
-       bit [7:0] rnd_byte;
-      `uvm_info("DUT_WRAP", "waiting for load_instr_mem to be asserted.", UVM_DEBUG)
-      wait(core_cntrl_if.load_instr_mem !== 1'bX);
-      if(core_cntrl_if.load_instr_mem === 1'b1) begin
-        `uvm_info("DUT_WRAP", "load_instr_mem asserted!", UVM_NONE)
-
-        // Load the pre-compiled firmware
-        if($value$plusargs("firmware=%s", firmware)) begin
-          // First, check if it exists...
-          fd = $fopen (firmware, "r");   
-          if (fd)  `uvm_info ("DUT_WRAP", $sformatf("%s was opened successfully : (fd=%0d)", firmware, fd), UVM_DEBUG)
-          else     `uvm_fatal("DUT_WRAP", $sformatf("%s was NOT opened successfully : (fd=%0d)", firmware, fd))
-          $fclose(fd);
-          // Now load it...
-          `uvm_info("DUT_WRAP", $sformatf("loading firmware %0s", firmware), UVM_NONE)
-          $readmemh(firmware, uvmt_cv32e40s_tb.dut_wrap.ram_i.dp_ram_i.mem);
-          // Initialize RTL and ISS memory with (the same) random value to
-          // prevent X propagation through the core RTL.
-          fill_cnt = 0;
-          for (int index=0; index < 2**RAM_ADDR_WIDTH; index++) begin
-             if (uvmt_cv32e40s_tb.dut_wrap.ram_i.dp_ram_i.mem[index] === 8'hXX) begin
-                 fill_cnt++;
-                rnd_byte = $random();
-                uvmt_cv32e40s_tb.dut_wrap.ram_i.dp_ram_i.mem[index]=rnd_byte;
-                if ($test$plusargs("USE_ISS")) begin
-                  uvmt_cv32e40s_tb.iss_wrap.ram.memory.mem[index/4][((((index%4)+1)*8)-1)-:8]=rnd_byte; // convert byte to 32-bit addressing
-                end                
-             end
-          end
-          if ($test$plusargs("USE_ISS")) begin
-             `uvm_info("DUT_WRAP", $sformatf("Filled 0d%0d RTL and ISS memory bytes with random values", fill_cnt), UVM_LOW)
-          end
-          else begin
-             `uvm_info("DUT_WRAP", $sformatf("Filled 0d%0d RTL memory bytes with random values", fill_cnt), UVM_LOW)
-          end
-        end
-        else begin
-          `uvm_error("DUT_WRAP", "No firmware specified!")
-        end
-      end
-      else begin
-        `uvm_info("DUT_WRAP", "NO TEST PROGRAM", UVM_NONE)
-      end
-    end
+    // --------------------------------------------
+    // OBI Data agent v12.2 signal tie-offs    
+    assign obi_data_if_i.auser      = 'b0;
+    assign obi_data_if_i.wuser      = 'b0;
+    assign obi_data_if_i.aid        = 'b0;
+    assign obi_data_if_i.reqpar     = ~obi_data_if_i.req;
+    assign obi_data_if_i.achk       = 'b0;
+    assign obi_data_if_i.rchk       = 'b0;
+    assign obi_data_if_i.rready     = 1'b1;
+    assign obi_data_if_i.rreadypar  = 1'b0;
 
     // --------------------------------------------
     // Connect to uvma_interrupt_if
@@ -193,30 +168,34 @@ module uvmt_cv32e40s_dut_wrap
          .hart_id_i              ( core_cntrl_if.hart_id          ),
          .dm_exception_addr_i    ( core_cntrl_if.dm_exception_addr),
 
-         .instr_req_o            ( instr_req                      ),
-         .instr_gnt_i            ( instr_gnt                      ),
-         .instr_rvalid_i         ( instr_rvalid                   ),
-         .instr_addr_o           ( instr_addr                     ),
-         .instr_rdata_i          ( instr_rdata                    ),
-         .instr_err_i            ( '0                             ), //TODO: Temp tie off to get "debug_test" to pass
+         .instr_req_o            ( obi_instr_if_i.req             ),
+         .instr_gnt_i            ( obi_instr_if_i.gnt             ),         
+         .instr_addr_o           ( obi_instr_if_i.addr            ),
+         .instr_prot_o           ( obi_instr_if_i.prot            ),
+         .instr_memtype_o        ( obi_instr_if_i.memtype         ),
+         .instr_rdata_i          ( obi_instr_if_i.rdata           ),
+         .instr_rvalid_i         ( obi_instr_if_i.rvalid          ),
+         .instr_err_i            ( obi_instr_if_i.err             ),
 
-         .data_req_o             ( data_req                       ),
-         .data_gnt_i             ( data_gnt                       ),
-         .data_rvalid_i          ( data_rvalid                    ),
-         .data_we_o              ( data_we                        ),
-         .data_be_o              ( data_be                        ),
-         .data_addr_o            ( data_addr                      ),
-         .data_wdata_o           ( data_wdata                     ),
-         .data_rdata_i           ( data_rdata                     ),
-         .data_atop_o            (                                ), //TODO: Temp ignore
-         .data_err_i             ( '0                             ), //TODO: Temp tie off
-         .data_exokay_i          ( '0                             ), //TODO: Temp tie off
+         .data_req_o             ( obi_data_if_i.req              ),
+         .data_gnt_i             ( obi_data_if_i.gnt              ),
+         .data_rvalid_i          ( obi_data_if_i.rvalid           ),
+         .data_we_o              ( obi_data_if_i.we               ),
+         .data_be_o              ( obi_data_if_i.be               ),
+         .data_addr_o            ( obi_data_if_i.addr             ),
+         .data_wdata_o           ( obi_data_if_i.wdata            ),
+         .data_prot_o            ( obi_data_if_i.prot             ),
+         .data_memtype_o         ( obi_data_if_i.memtype          ),
+         .data_rdata_i           ( obi_data_if_i.rdata            ),
+         .data_atop_o            ( obi_data_if_i.atop             ),
+         .data_err_i             ( obi_data_if_i.err              ),
+         .data_exokay_i          ( obi_data_if_i.exokay           ),
 
-         .irq_i                  ( irq                            ),
+         .irq_i                  ( interrupt_if.irq               ),
          .irq_ack_o              ( irq_ack                        ),
          .irq_id_o               ( irq_id                         ),
 
-         .debug_req_i            ( debug_req                      ),
+         .debug_req_i            ( debug_if.debug_req             ),
          .debug_havereset_o      ( debug_havereset                ),
          .debug_running_o        ( debug_running                  ),
          .debug_halted_o         ( debug_halted                   ),
@@ -224,44 +203,6 @@ module uvmt_cv32e40s_dut_wrap
          .fetch_enable_i         ( core_cntrl_if.fetch_en         ),
          .core_sleep_o           ( core_status_if.core_busy       )
         ); //riscv_core_i
-
-    // this handles read to RAM and memory mapped virtual (pseudo) peripherals
-    mm_ram #(.RAM_ADDR_WIDTH    (RAM_ADDR_WIDTH),
-             .INSTR_RDATA_WIDTH (INSTR_RDATA_WIDTH)
-            )
-    ram_i
-        (.clk_i          ( clknrst_if.clk                  ),
-         .rst_ni         ( clknrst_if.reset_n              ),
-         .dm_halt_addr_i ( core_cntrl_if.dm_halt_addr      ),
-
-         .instr_req_i    ( instr_req                       ),
-         .instr_addr_i   ( instr_addr                      ),
-         .instr_rdata_o  ( instr_rdata                     ),
-         .instr_rvalid_o ( instr_rvalid                    ),
-         .instr_gnt_o    ( instr_gnt                       ),
-
-         .data_req_i     ( data_req                        ),
-         .data_addr_i    ( data_addr                       ),
-         .data_we_i      ( data_we                         ),
-         .data_be_i      ( data_be                         ),
-         .data_wdata_i   ( data_wdata                      ),
-         .data_rdata_o   ( data_rdata                      ),
-         .data_rvalid_o  ( data_rvalid                     ),
-         .data_gnt_o     ( data_gnt                        ),
-
-         .irq_id_i       ( irq_id                          ),
-         .irq_ack_i      ( irq_ack                         ),
-         .irq_o          ( irq_vp                          ),
-
-         .debug_req_o    ( debug_req_vp                       ),
-
-         .pc_core_id_i   ( cv32e40s_wrapper_i.core_i.if_id_pipe.pc ),
-
-         .tests_passed_o ( vp_status_if.tests_passed       ),
-         .tests_failed_o ( vp_status_if.tests_failed       ),
-         .exit_valid_o   ( vp_status_if.exit_valid         ),
-         .exit_value_o   ( vp_status_if.exit_value         )
-        ); //ram_i
 
 endmodule : uvmt_cv32e40s_dut_wrap
 
