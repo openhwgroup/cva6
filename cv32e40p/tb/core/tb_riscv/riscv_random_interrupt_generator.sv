@@ -27,6 +27,10 @@
 import perturbation_defines::*;
 
 module riscv_random_interrupt_generator
+`ifndef VERILATOR
+  import uvm_pkg::*;
+  `include "uvm_macros.svh"
+`endif
 (
     input logic           rst_ni,
     input logic           clk_i,
@@ -106,6 +110,7 @@ begin
     int temp,i, min_irq_cycles, max_irq_cycles, min_irq_id, max_irq_id;
     irq_random = 1'b0;
     irq_id_random  = '0;
+
     while(1) begin
 
         irq_random    = 1'b0;
@@ -119,14 +124,17 @@ begin
         min_irq_cycles = irq_min_cycles_i;
         max_irq_cycles = irq_max_cycles_i;
 
+        temp = 0;
         temp = value.randomize() with{
             n >= min_irq_id;
             n <= max_irq_id;
         };
-        temp = wait_cycles.randomize() with{
+        temp += wait_cycles.randomize() with{
             n >= min_irq_cycles;
             n <= max_irq_cycles;
         };
+        if (temp) `uvm_error("RISCV_RANDOM_INTERRUPT_GENERATOR", "Randomization failure")
+
         while(wait_cycles.n != 0) begin
             @(posedge clk_i);
             wait_cycles.n--;
@@ -140,17 +148,15 @@ begin
         for(i=0; i<max_irq_cycles; i++) begin
             @(posedge clk_i);
         end
-    end
+    end // while(1)
 end
 
 
 //Monitor Process
 initial
 begin
-    int pc_value;
     irq_monitor    = 1'b0;
     irq_id_monitor = '0;
-    pc_value = 0;
     wait(irq_mode_q == PC_TRIG);
     wait(irq_pc_id_i == irq_pc_trig_i);
     irq_monitor    = 1'b1;
@@ -173,5 +179,5 @@ begin
     end
 end
 
-`endif
+`endif //VERILATOR
 endmodule
