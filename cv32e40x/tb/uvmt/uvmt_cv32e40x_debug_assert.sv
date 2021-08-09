@@ -79,14 +79,24 @@ module uvmt_cv32e40x_debug_assert
     // Assertions
     // ---------------------------------------
 
+    // Helper sequence: Go to next WB retirement
+
+    sequence s_conse_next_retire;  // Should only be used in consequent (not antecedent)
+        ($fell(cov_assert_if.wb_stage_instr_valid_i) [->1]  // Finish current preoccupation
+            ##0 cov_assert_if.wb_valid [->1])  // Go to next WB done
+        or
+        (cov_assert_if.wb_valid [->1]  // Go directly to next WB done
+            ##0 (cov_assert_if.dcsr_q[8:6] == 3))  // Need good reason to forgo $fell(instr_valid)
+        ;
+    endsequence
+
+
     // Check that we enter debug mode when expected. CSR checks are done in other assertions
 
     property p_enter_debug;
         $changed(debug_cause_pri) && (debug_cause_pri != 0) && !cov_assert_if.debug_mode_q
-        |=>
-        (($fell(cov_assert_if.wb_stage_instr_valid_i) [->1] ##0 cov_assert_if.wb_valid [->1])
-         or (cov_assert_if.wb_valid [->1])
-        )
+        |->
+        s_conse_next_retire
         ##0 cov_assert_if.debug_mode_q;
     endproperty
 
@@ -180,8 +190,9 @@ module uvmt_cv32e40x_debug_assert
 
     property p_cebreak_during_debug_mode;
         $rose(cov_assert_if.is_cebreak) && cov_assert_if.debug_mode_q
-        |-> !decode_valid [->1] ##0 decode_valid [->1]
-        ##0 cov_assert_if.debug_mode_q && (cov_assert_if.id_stage_pc == halt_addr_at_entry);
+        |->
+        s_conse_next_retire
+        ##0 cov_assert_if.debug_mode_q && (cov_assert_if.wb_stage_pc == halt_addr_at_entry);
         // TODO should check no change in dpc and dcsr
     endproperty
 
@@ -455,16 +466,17 @@ module uvmt_cv32e40x_debug_assert
     a_debug_req_and_irq : assert property(p_debug_req_and_irq)
         else `uvm_error(info_tag, "Debug mode not entered after debug_req_i and irq on same cycle");
 
-    // debug_req at reset should result in debug mode and no instructions
-    // executed
+
+    // debug_req at reset should result in debug mode and no instructions executed
+
     property p_debug_at_reset;
-        cov_assert_if.ctrl_fsm_cs == cv32e40x_pkg::RESET && cov_assert_if.debug_req_i |->
+        (cov_assert_if.ctrl_fsm_cs == cv32e40x_pkg::RESET) && cov_assert_if.debug_req_i
+        |->
         decode_valid [->1:2] ##0 cov_assert_if.debug_mode_q && (cov_assert_if.depc_q == boot_addr_at_entry);
     endproperty    
 
     a_debug_at_reset : assert property(p_debug_at_reset)
-        else
-            `uvm_error(info_tag, "Debug mode not entered correctly at reset!");
+        else `uvm_error(info_tag, "Debug mode not entered correctly at reset!");
 
 
     // Check that we cover the case where a debug_req_i
