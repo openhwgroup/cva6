@@ -79,13 +79,17 @@ module uvmt_cv32e40x_debug_assert
     // Assertions
     // ---------------------------------------
 
-    // check that we enter debug mode when expected. 
-    // CSR checks are done in other assertions
+    // Check that we enter debug mode when expected. CSR checks are done in other assertions
+
     property p_enter_debug;
         $changed(debug_cause_pri) && (debug_cause_pri != 0) && !cov_assert_if.debug_mode_q
-        |-> decode_valid [->1:20] ##0 cov_assert_if.debug_mode_q;
-        // TODO:ropeders |-> decode_valid [->1:2] ##0 cov_assert_if.debug_mode_q;
+        |=>
+        (($fell(cov_assert_if.wb_stage_instr_valid_i) [->1] ##0 cov_assert_if.wb_valid [->1])
+         or (cov_assert_if.wb_valid [->1])
+        )
+        ##0 cov_assert_if.debug_mode_q;
     endproperty
+
     a_enter_debug: assert property(p_enter_debug)
         else `uvm_error(info_tag, $sformatf("Debug mode not entered after exepected cause %d", debug_cause_pri));
 
