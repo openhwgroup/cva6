@@ -502,21 +502,21 @@ module uvmt_cv32e40x_debug_assert
         end else begin
             // Capture debug pc
             if (cov_assert_if.ctrl_fsm_cs == cv32e40x_pkg::BOOT_SET) begin
-                pc_at_dbg_req <= {cov_assert_if.boot_addr_i[31:1], 1'b0};
+                pc_at_dbg_req <= {cov_assert_if.boot_addr_i[31:2], 2'b00};
             end
             if (cov_assert_if.rvfi_valid) begin
                 pc_at_dbg_req <= cov_assert_if.rvfi_pc_wdata;
                 if ((debug_cause_pri == 2) && !started_decoding_in_debug) begin  // trigger
                     pc_at_dbg_req <= cov_assert_if.rvfi_pc_rdata;
                 end
+                if ((debug_cause_pri == 1) && !started_decoding_in_debug) begin  // ebreak
+                    pc_at_dbg_req <= cov_assert_if.rvfi_pc_rdata;
+                end
             end
             if (cov_assert_if.addr_match && !cov_assert_if.tdata1[18] && cov_assert_if.wb_valid) begin  // trigger
                 pc_at_dbg_req <= cov_assert_if.wb_stage_pc;
             end
-            if (debug_cause_pri == 1) begin  // ebreak
-                pc_at_dbg_req <= cov_assert_if.rvfi_pc_rdata;
-            end
-            if (cov_assert_if.irq_ack_o) begin
+            if (cov_assert_if.irq_ack_o) begin  // interrupt
                 pc_at_dbg_req <= cov_assert_if.mtvec + (cov_assert_if.irq_id_o << 2);
             end
             if(cov_assert_if.debug_mode_q && started_decoding_in_debug) begin
@@ -562,8 +562,11 @@ module uvmt_cv32e40x_debug_assert
           end
 
           // Clear flag while not in dmode or we see ebreak in debug
-          if((!cov_assert_if.debug_mode_q & halt_addr_at_entry_flag) | (cov_assert_if.debug_mode_q & (cov_assert_if.is_ebreak | cov_assert_if.is_cebreak)))
+          if ((!cov_assert_if.debug_mode_q && halt_addr_at_entry_flag)
+              || (cov_assert_if.debug_mode_q && (cov_assert_if.is_ebreak || cov_assert_if.is_cebreak)))
+          begin
               halt_addr_at_entry_flag <= 1'b0;
+          end
 
           // Capture boot addr
           if(cov_assert_if.ctrl_fsm_cs == cv32e40x_pkg::BOOT_SET)
