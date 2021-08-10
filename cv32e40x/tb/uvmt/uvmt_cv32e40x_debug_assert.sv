@@ -45,7 +45,6 @@ module uvmt_cv32e40x_debug_assert
   // Locally track pc in ID stage to detect first instruction of debug code
   logic first_debug_ins_flag;
   logic first_debug_ins;
-  logic decode_valid;
   logic started_decoding_in_debug;
 
   // ---------------------------------------------------------------------------
@@ -70,9 +69,6 @@ module uvmt_cv32e40x_debug_assert
     && (cov_assert_if.wb_stage_instr_rdata_i[31:25] == 7'h1)
     && (cov_assert_if.wb_stage_instr_rdata_i[14:12] == 3'b010)
     && (cov_assert_if.wb_stage_instr_rdata_i[6:0]   == 7'h33);
-
-
-  assign decode_valid = cov_assert_if.id_stage_instr_valid_i && (cov_assert_if.ctrl_fsm_cs == cv32e40x_pkg::FUNCTIONAL);
 
 
     // ---------------------------------------
@@ -153,19 +149,18 @@ module uvmt_cv32e40x_debug_assert
 
     property p_cebreak_exception;
         disable iff(!cov_assert_if.rst_ni)
-        $rose(cov_assert_if.is_cebreak) && !cov_assert_if.debug_mode_q && !cov_assert_if.debug_req_i
+        $rose(cov_assert_if.is_cebreak) && !cov_assert_if.debug_mode_q
         && !cov_assert_if.dcsr_q[2] && !cov_assert_if.dcsr_q[15]
-        ##0 (!cov_assert_if.debug_req_i && !cov_assert_if.irq_ack_o throughout !decode_valid[->1])
-        ##0 (!cov_assert_if.debug_req_i && !cov_assert_if.irq_ack_o throughout decode_valid[->1])
+        ##0 (!cov_assert_if.debug_req_i && !cov_assert_if.irq_ack_o throughout ##1 cov_assert_if.wb_valid [->1])
+        // TODO:ropeders can this specificity be in consequent instead?
         |->
         !cov_assert_if.debug_mode_q && (cov_assert_if.mcause_q[5:0] === cv32e40x_pkg::EXC_CAUSE_BREAKPOINT)
-        && (cov_assert_if.mepc_q == pc_at_ebreak) && (cov_assert_if.id_stage_pc == cov_assert_if.mtvec);
+        && (cov_assert_if.mepc_q == pc_at_ebreak) && (cov_assert_if.wb_stage_pc == cov_assert_if.mtvec);
         // TODO:ropeders need assertions for what happens if cebreak and req/irq?
     endproperty
 
     a_cebreak_exception: assert property(p_cebreak_exception)
-        else
-            `uvm_error(info_tag,$sformatf("Exception not entered correctly after c.ebreak with dcsr.ebreak=0"));
+        else `uvm_error(info_tag,$sformatf("Exception not entered correctly after c.ebreak with dcsr.ebreak=0"));
 
 
     // ebreak without dcsr.ebreakm results in exception at mtvec
@@ -175,11 +170,11 @@ module uvmt_cv32e40x_debug_assert
         disable iff(!cov_assert_if.rst_ni)
         $rose(cov_assert_if.is_ebreak) && !cov_assert_if.dcsr_q[15]
         && !cov_assert_if.debug_mode_q && !cov_assert_if.dcsr_q[2]
-        ##0 (!cov_assert_if.debug_req_i && !cov_assert_if.irq_ack_o throughout !decode_valid[->1])
-        ##0 (!cov_assert_if.debug_req_i && !cov_assert_if.irq_ack_o throughout decode_valid[->1])
+        ##0 (!cov_assert_if.debug_req_i && !cov_assert_if.irq_ack_o throughout ##1 cov_assert_if.wb_valid [->1])
+        // TODO:ropeders can this specificity be in consequent instead?
         |->
         !cov_assert_if.debug_mode_q && (cov_assert_if.mcause_q[5:0] === cv32e40x_pkg::EXC_CAUSE_BREAKPOINT)
-        && (cov_assert_if.mepc_q == pc_at_ebreak) && (cov_assert_if.id_stage_pc == cov_assert_if.mtvec);
+        && (cov_assert_if.mepc_q == pc_at_ebreak) && (cov_assert_if.wb_stage_pc == cov_assert_if.mtvec);
     endproperty
 
     a_ebreak_exception: assert property(p_ebreak_exception)
@@ -388,16 +383,22 @@ module uvmt_cv32e40x_debug_assert
 
     sequence s_dmode_dret_pc_ante;  // Antecedent
         cov_assert_if.debug_mode_q && cov_assert_if.is_dret
-        ##1 (!cov_assert_if.debug_req_i && !cov_assert_if.irq_ack_o throughout decode_valid[->1]);
+        ##1 (!cov_assert_if.debug_req_i && !cov_assert_if.irq_ack_o throughout cov_assert_if.wb_stage_instr_valid_i[->1]);
+        // TODO:ropeders can this req/irq clause be in consequent?
     endsequence
 
-    sequence s_dmode_dret_pc_conse;  // Consequent
-        decode_valid && !cov_assert_if.debug_mode_q && (cov_assert_if.id_stage_pc == cov_assert_if.depc_q);
-    endsequence
+    property p_dmode_dret_pc;
+        int dpc; (1, dpc =cov_assert_if.depc_q) ##0
+        s_dmode_dret_pc_ante
+        |->
+        !cov_assert_if.debug_mode_q && (cov_assert_if.wb_stage_pc == dpc)
+        ##0 (cov_assert_if.wb_valid
+            or (##1 !$changed(cov_assert_if.wb_stage_pc) throughout (cov_assert_if.wb_valid [->1])));
+    endproperty
 
-    cov_dmode_dret_pc : cover property(s_dmode_dret_pc_ante |-> s_dmode_dret_pc_conse ##0 (cov_assert_if.depc_q != 0));
+    cov_dmode_dret_pc : cover property(s_dmode_dret_pc_ante |-> (cov_assert_if.depc_q != 0));
 
-    a_dmode_dret_pc : assert property(s_dmode_dret_pc_ante |-> s_dmode_dret_pc_conse)
+    a_dmode_dret_pc : assert property(p_dmode_dret_pc)
         else `uvm_error(info_tag, "Dret did not cause correct return from debug mode");
 
 
@@ -406,7 +407,7 @@ module uvmt_cv32e40x_debug_assert
     property p_dmode_dret_exit;
         cov_assert_if.debug_mode_q && cov_assert_if.is_dret
         |=> !cov_assert_if.debug_mode_q;
-        // TODO:ropeders also assert, stays in mmode until decode_valid if no debug_request
+        // TODO:ropeders also assert, stays in mmode until wb_valid if no debug_request
     endproperty
 
     a_dmode_dret_exit : assert property(p_dmode_dret_exit)
