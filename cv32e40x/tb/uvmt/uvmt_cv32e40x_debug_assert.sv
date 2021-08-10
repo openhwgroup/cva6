@@ -247,7 +247,7 @@ module uvmt_cv32e40x_debug_assert
     a_debug_mode_exception : assert property(p_debug_mode_exception)
         else `uvm_error(info_tag,
             $sformatf("Exception in debug mode not handled incorrectly. dm=%d, pc=%08x",
-                cov_assert_if.debug_mode_q, cov_assert_if.id_stage_pc));
+                cov_assert_if.debug_mode_q, cov_assert_if.wb_stage_pc));
 
 
     // ECALL in debug mode results in pc->dm_exception_addr_i
@@ -261,7 +261,7 @@ module uvmt_cv32e40x_debug_assert
     a_debug_mode_ecall : assert property(p_debug_mode_ecall)
         else `uvm_error(info_tag,
             $sformatf("ECALL in debug mode not handled incorrectly. dm=%d, pc=%08x",
-                cov_assert_if.debug_mode_q, cov_assert_if.id_stage_pc));
+                cov_assert_if.debug_mode_q, cov_assert_if.wb_stage_pc));
 
     // IRQ in debug mode are masked
     property p_irq_in_debug;
@@ -357,7 +357,7 @@ module uvmt_cv32e40x_debug_assert
 
     property p_single_step;
         !cov_assert_if.debug_mode_q && cov_assert_if.dcsr_q[2] && !cov_assert_if.dcsr_q[11]
-        && cov_assert_if.id_stage_instr_valid_i
+        && cov_assert_if.wb_stage_instr_valid_i
         |=>
         s_conse_next_retire
         ##0 cov_assert_if.debug_mode_q;
@@ -418,21 +418,26 @@ module uvmt_cv32e40x_debug_assert
 
     // Check that trigger regs cannot be written from M-mode
     // TSEL, and TDATA3 are tied to zero, hence no register to check 
+
     property p_mmode_tdata1_write;
-        !cov_assert_if.debug_mode_q && cov_assert_if.csr_access && cov_assert_if.csr_op == 'h1 && cov_assert_if.id_stage_instr_rdata_i[31:20] == 'h7A1 |-> ##2 $stable(cov_assert_if.tdata1);
+        !cov_assert_if.debug_mode_q && cov_assert_if.csr_access && cov_assert_if.csr_op == 'h1
+        && cov_assert_if.id_stage_instr_rdata_i[31:20] == 'h7A1
+        |->
+        ##2 $stable(cov_assert_if.tdata1);
     endproperty
 
     a_mmode_tdata1_write : assert property(p_mmode_tdata1_write)
-        else
-            `uvm_error(info_tag, "Writing tdata1 from M-mode not allowed to change register value!");
+        else `uvm_error(info_tag, "Writing tdata1 from M-mode not allowed to change register value!");
 
-  property p_mmode_tdata2_write;
-        !cov_assert_if.debug_mode_q && cov_assert_if.csr_access && cov_assert_if.csr_op == 'h1 && cov_assert_if.id_stage_instr_rdata_i[31:20] == 'h7A2 |-> ##2 $stable(cov_assert_if.tdata2);
+    property p_mmode_tdata2_write;
+        !cov_assert_if.debug_mode_q && cov_assert_if.csr_access && cov_assert_if.csr_op == 'h1
+        && cov_assert_if.id_stage_instr_rdata_i[31:20] == 'h7A2
+        |->
+        ##2 $stable(cov_assert_if.tdata2);
     endproperty
 
     a_mmode_tdata2_write : assert property(p_mmode_tdata2_write)
-        else
-            `uvm_error(info_tag, "Writing tdata2 from M-mode not allowed to change register value!");
+        else `uvm_error(info_tag, "Writing tdata2 from M-mode not allowed to change register value!");
 
 
     // Check that mcycle works as expected when not sleeping
