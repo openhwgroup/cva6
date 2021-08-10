@@ -60,7 +60,7 @@ endtask : wait_n_clocks
 
 task uvme_cv32e40s_vp_debug_control_seq_c::set_debug_req(bit debug_req);
 
-   cv32e40s_cntxt.debug_vif.debug_drv = debug_req;
+   cv32e40s_cntxt.debug_vif.drv_cb.debug_drv <= debug_req;
 
 endtask : set_debug_req
 
