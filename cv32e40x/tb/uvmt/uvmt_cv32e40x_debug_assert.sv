@@ -259,8 +259,8 @@ module uvmt_cv32e40x_debug_assert
     property p_debug_mode_ecall;
         $rose(cov_assert_if.ecall_insn_i) && cov_assert_if.debug_mode_q
         |->
-        (decode_valid && cov_assert_if.id_valid) [->1:3]
-        ##0 cov_assert_if.debug_mode_q && (cov_assert_if.id_stage_pc == exception_addr_at_entry);
+        s_conse_next_retire
+        ##0 cov_assert_if.debug_mode_q && (cov_assert_if.wb_stage_pc == exception_addr_at_entry);
     endproperty
 
     a_debug_mode_ecall : assert property(p_debug_mode_ecall)
@@ -291,8 +291,9 @@ module uvmt_cv32e40x_debug_assert
 
     property p_sleep_debug_req;
         cov_assert_if.in_wfi && cov_assert_if.debug_req_i
-        |=> !cov_assert_if.core_sleep_o
-        ##0 !decode_valid [->1] ##0 decode_valid [->1]
+        |=>
+        !cov_assert_if.core_sleep_o
+        ##0 s_conse_next_retire
         ##0 cov_assert_if.debug_mode_q && (cov_assert_if.dcsr_q[8:6] == cv32e40x_pkg::DBG_CAUSE_HALTREQ);
     endproperty
 
@@ -348,7 +349,9 @@ module uvmt_cv32e40x_debug_assert
 
     property p_single_step_wfi;
         !cov_assert_if.debug_mode_q && cov_assert_if.dcsr_q[2] && cov_assert_if.is_wfi
-        |-> decode_valid [->1] ##0 cov_assert_if.debug_mode_q && !cov_assert_if.core_sleep_o;
+        |->
+        s_conse_next_retire
+        ##0 cov_assert_if.debug_mode_q && !cov_assert_if.core_sleep_o;
     endproperty
 
     a_single_step_wfi : assert property(p_single_step_wfi)
@@ -356,13 +359,18 @@ module uvmt_cv32e40x_debug_assert
 
 
     // Executing with single step with no irq results in debug mode
+
     property p_single_step;
-        !cov_assert_if.debug_mode_q && cov_assert_if.dcsr_q[2] && !cov_assert_if.dcsr_q[11] && decode_valid |=>  decode_valid [->1] ##0 cov_assert_if.debug_mode_q;
+        !cov_assert_if.debug_mode_q && cov_assert_if.dcsr_q[2] && !cov_assert_if.dcsr_q[11]
+        && cov_assert_if.id_stage_instr_valid_i
+        |=>
+        s_conse_next_retire
+        ##0 cov_assert_if.debug_mode_q;
     endproperty
 
     a_single_step: assert property(p_single_step)
-        else
-            `uvm_error(info_tag, "Debug mode not entered for single step");
+        else `uvm_error(info_tag, "Debug mode not entered for single step");
+
 
     // dret in M-mode will cause illegal instruction
     // If pending debug req, illegal insn will not assert
@@ -461,8 +469,9 @@ module uvmt_cv32e40x_debug_assert
     property p_debug_req_and_irq;
         cov_assert_if.debug_req_i && (cov_assert_if.pending_enabled_irq != 0)
         && cov_assert_if.ctrl_fsm_cs == cv32e40x_pkg::FUNCTIONAL
-        |-> (decode_valid && cov_assert_if.id_valid) [->1:20] ##0 cov_assert_if.debug_mode_q;
-        // TODO:ropeders |-> (decode_valid && cov_assert_if.id_valid) [->1:2] ##0 cov_assert_if.debug_mode_q;
+        |->
+        s_conse_next_retire
+        ##0 cov_assert_if.debug_mode_q;
     endproperty
 
     a_debug_req_and_irq : assert property(p_debug_req_and_irq)
@@ -474,7 +483,8 @@ module uvmt_cv32e40x_debug_assert
     property p_debug_at_reset;
         (cov_assert_if.ctrl_fsm_cs == cv32e40x_pkg::RESET) && cov_assert_if.debug_req_i
         |->
-        decode_valid [->1:2] ##0 cov_assert_if.debug_mode_q && (cov_assert_if.depc_q == boot_addr_at_entry);
+        s_conse_next_retire
+        ##0 cov_assert_if.debug_mode_q && (cov_assert_if.depc_q == boot_addr_at_entry);
     endproperty    
 
     a_debug_at_reset : assert property(p_debug_at_reset)
@@ -491,7 +501,7 @@ module uvmt_cv32e40x_debug_assert
     endsequence
 
     sequence s_illegal_insn_debug_req_conse;  // Consequent
-        decode_valid [->1:2]
+        s_conse_next_retire
         ##0 cov_assert_if.debug_mode_q && (cov_assert_if.depc_q == cov_assert_if.mtvec);
     endsequence
 
