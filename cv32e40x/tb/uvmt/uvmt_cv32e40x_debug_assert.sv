@@ -204,8 +204,9 @@ module uvmt_cv32e40x_debug_assert
 
     property p_ebreak_during_debug_mode;
         $rose(cov_assert_if.is_ebreak) && cov_assert_if.debug_mode_q
-        |-> !decode_valid [->1] ##0 decode_valid [->1]
-        ##0 cov_assert_if.debug_mode_q && (cov_assert_if.id_stage_pc == halt_addr_at_entry);
+        |->
+        s_conse_next_retire
+        ##0 cov_assert_if.debug_mode_q && (cov_assert_if.wb_stage_pc == halt_addr_at_entry);
         // TODO should check no change in dpc and dcsr
     endproperty
 
@@ -217,10 +218,10 @@ module uvmt_cv32e40x_debug_assert
 
     property p_trigger_match;
         cov_assert_if.trigger_match_i ##0 cov_assert_if.tdata1[2] ##0 !cov_assert_if.debug_mode_q
-        |-> !decode_valid [->1]
-        ##0 decode_valid [->1]
+        |->
+        s_conse_next_retire
         ##0 cov_assert_if.debug_mode_q && (cov_assert_if.dcsr_q[8:6] === cv32e40x_pkg::DBG_CAUSE_TRIGGER)
-            && (cov_assert_if.depc_q == tdata2_at_entry) && (cov_assert_if.id_stage_pc == halt_addr_at_entry);
+            && (cov_assert_if.depc_q == tdata2_at_entry) && (cov_assert_if.wb_stage_pc == halt_addr_at_entry);
     endproperty   
 
     a_trigger_match: assert property(p_trigger_match)
@@ -243,8 +244,9 @@ module uvmt_cv32e40x_debug_assert
 
     property p_debug_mode_exception;
         $rose(cov_assert_if.illegal_insn_i) && cov_assert_if.debug_mode_q
-        |=> (decode_valid && cov_assert_if.id_valid) [->1]
-        ##0 cov_assert_if.debug_mode_q && (cov_assert_if.id_stage_pc == exception_addr_at_entry);
+        |=>
+        s_conse_next_retire
+        ##0 cov_assert_if.debug_mode_q && (cov_assert_if.wb_stage_pc == exception_addr_at_entry);
     endproperty
 
     a_debug_mode_exception : assert property(p_debug_mode_exception)
@@ -590,8 +592,11 @@ module uvmt_cv32e40x_debug_assert
       end
   end
   always@ (posedge cov_assert_if.clk_i)  begin
-      if((cov_assert_if.illegal_insn_i | cov_assert_if.ecall_insn_i) & cov_assert_if.pc_set & cov_assert_if.debug_mode_q)
+      if ((cov_assert_if.illegal_insn_i || cov_assert_if.ecall_insn_i)
+          && cov_assert_if.pc_set && cov_assert_if.debug_mode_q && cov_assert_if.wb_valid)
+      begin
           exception_addr_at_entry = {cov_assert_if.dm_exception_addr_i[31:2], 2'b00};
+      end
   end
 
     assign cov_assert_if.addr_match   = (cov_assert_if.wb_stage_pc == cov_assert_if.tdata2);
