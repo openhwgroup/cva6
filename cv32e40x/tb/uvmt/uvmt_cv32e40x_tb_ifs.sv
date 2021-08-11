@@ -113,8 +113,10 @@ interface uvmt_cv32e40x_debug_cov_assert_if
     input  clk_i,
     input  rst_ni,
 
+    // TODO:ropeders remove the commented-away signals when confirmed to be superfluous
+
     // Core inputs
-    input         fetch_enable_i, // external core fetch enable
+    //input         fetch_enable_i, // external core fetch enable
 
     // External interrupt interface
     input  [31:0] irq_i,
@@ -122,6 +124,7 @@ interface uvmt_cv32e40x_debug_cov_assert_if
     input  [4:0]  irq_id_o,
     input  [31:0] mie_q,
 
+/*
     // Instruction fetch stage
     input         if_stage_instr_rvalid_i, // Instruction word is valid
     input  [31:0] if_stage_instr_rdata_i, // Instruction word data
@@ -133,6 +136,7 @@ interface uvmt_cv32e40x_debug_cov_assert_if
     input         id_stage_wfi_insn,
     input  [31:0] if_stage_pc, // Program counter in fetch
     input  [31:0] id_stage_pc, // Program counter in decode
+*/
     input         ex_stage_csr_en,
     input         ex_valid,
     input  [31:0] ex_stage_instr_rdata_i,
@@ -142,12 +146,14 @@ interface uvmt_cv32e40x_debug_cov_assert_if
     input  [31:0] wb_stage_pc, // Program counter in writeback
     input         wb_illegal,
     input         wb_valid,
+/*
     input         wb_halt,
     input         wb_stage_wfi_insn,
+*/
     input         id_valid,
     input wire ctrl_state_e  ctrl_fsm_cs,            // Controller FSM states with debug_req
     input         illegal_insn_i,
-    input         illegal_insn_q, // output from controller
+    //input         illegal_insn_q, // output from controller
     input         ecall_insn_i,
 
     input  [31:0] boot_addr_i,
@@ -157,10 +163,10 @@ interface uvmt_cv32e40x_debug_cov_assert_if
     input  [31:0] rvfi_pc_rdata,
 
     // Debug signals
-    input         debug_req_i, // From controller
+    input         debug_req_i, // From controller  //TODO:ropeders rename debug_pending?
     input         debug_mode_q, // From controller
     input  [31:0] dcsr_q, // From controller
-    input  [31:0] depc_q, // From cs regs
+    input  [31:0] depc_q, // From cs regs  //TODO:ropeders rename "dpc_q"
     input  [31:0] depc_n, // 
     input  [31:0] dm_halt_addr_i,
     input  [31:0] dm_exception_addr_i,
@@ -177,14 +183,15 @@ interface uvmt_cv32e40x_debug_cov_assert_if
     input  [63:0] mcycle,
     input  [63:0] minstret,
     input  inst_ret,
+
     // WFI Interface
     input  core_sleep_o,
 
-    input  fence_i,
-      
+    //input  fence_i,
+
     input  csr_access,
     input  [1:0] csr_op,
-    input  [1:0] csr_op_dec,
+    //input  [1:0] csr_op_dec,
     input  [11:0] csr_addr,
     input  csr_we_int,
 
@@ -197,11 +204,12 @@ interface uvmt_cv32e40x_debug_cov_assert_if
     output logic is_dret,
     output logic is_mulhsu,
     output logic [31:0] pending_enabled_irq,
-    input  pc_set,
-    input  branch_in_decode
+    input  pc_set
+    //input  branch_in_decode
 );
 
   clocking mon_cb @(posedge clk_i);    
+/*
     input #1step
     fetch_enable_i,
 
@@ -264,6 +272,7 @@ interface uvmt_cv32e40x_debug_cov_assert_if
     pending_enabled_irq,
     pc_set,
     branch_in_decode;
+*/
   endclocking : mon_cb
 
 endinterface : uvmt_cv32e40x_debug_cov_assert_if
