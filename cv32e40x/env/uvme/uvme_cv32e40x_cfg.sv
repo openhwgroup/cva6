@@ -151,11 +151,9 @@ class uvme_cv32e40x_cfg_c extends uvma_core_cntrl_cfg_c;
          rvvi_cfg.trn_log_enabled      == 1;
       }
 
-      // FIXME:strichmo:restore when debug coverage model is fixed
-      debug_cfg.cov_model_enabled == 0;
-
       if (cov_model_enabled) {         
          isacov_cfg.cov_model_enabled    == 1;
+         debug_cfg.cov_model_enabled     == 1;
          obi_instr_cfg.cov_model_enabled == 1;
          obi_data_cfg.cov_model_enabled  == 1;
       }
