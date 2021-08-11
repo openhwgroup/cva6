@@ -421,9 +421,9 @@ module uvmt_cv32e40x_debug_assert
 
     property p_mmode_tdata1_write;
         !cov_assert_if.debug_mode_q && cov_assert_if.csr_access && cov_assert_if.csr_op == 'h1
-        && cov_assert_if.id_stage_instr_rdata_i[31:20] == 'h7A1
+        && cov_assert_if.wb_stage_instr_rdata_i[31:20] == 'h7A1
         |->
-        ##2 $stable(cov_assert_if.tdata1);
+        ##0 $stable(cov_assert_if.tdata1) [*4];
     endproperty
 
     a_mmode_tdata1_write : assert property(p_mmode_tdata1_write)
@@ -431,9 +431,9 @@ module uvmt_cv32e40x_debug_assert
 
     property p_mmode_tdata2_write;
         !cov_assert_if.debug_mode_q && cov_assert_if.csr_access && cov_assert_if.csr_op == 'h1
-        && cov_assert_if.id_stage_instr_rdata_i[31:20] == 'h7A2
+        && cov_assert_if.wb_stage_instr_rdata_i[31:20] == 'h7A2
         |->
-        ##2 $stable(cov_assert_if.tdata2);
+        ##0 $stable(cov_assert_if.tdata2) [*4];
     endproperty
 
     a_mmode_tdata2_write : assert property(p_mmode_tdata2_write)
