@@ -272,14 +272,16 @@ module uvmt_cv32e40x_debug_assert
         else
             `uvm_error(info_tag, $sformatf("IRQ not ignored while in debug mode"));
 
+
     // WFI in debug mode does not sleep
+
     property p_wfi_in_debug;
         cov_assert_if.debug_mode_q && $rose(cov_assert_if.is_wfi) |-> ##6 !cov_assert_if.core_sleep_o;
+        // TODO:ropeders should/could the consequent be more specific?
     endproperty
 
     a_wfi_in_debug : assert property(p_wfi_in_debug)
-        else
-            `uvm_error(info_tag, $sformatf("WFI in debug mode cause core_sleep_o=1"));
+        else `uvm_error(info_tag, $sformatf("WFI in debug mode cause core_sleep_o=1"));
 
 
     // Debug request while sleeping makes core wake up and enter debug mode with cause=haltreq
@@ -372,7 +374,7 @@ module uvmt_cv32e40x_debug_assert
     // until resume
     property p_mmode_dret;
         !cov_assert_if.debug_mode_q && cov_assert_if.is_dret && !cov_assert_if.debug_req_i
-        |-> ##1 illegal_insn_q;
+        |-> cov_assert_if.illegal_insn_i;
     endproperty
 
     a_mmode_dret : assert property(p_mmode_dret)
@@ -513,9 +515,6 @@ module uvmt_cv32e40x_debug_assert
 
     logic wb_execs_illegal;
     assign wb_execs_illegal = cov_assert_if.wb_illegal && cov_assert_if.wb_valid;
-
-    logic illegal_insn_q;
-    always @(posedge cov_assert_if.clk_i) illegal_insn_q <= cov_assert_if.illegal_insn_i;
 
     // Need to confirm that the assertion can be reached for non-trivial cases
     cov_illegal_insn_debug_req_nonzero : cover property(
