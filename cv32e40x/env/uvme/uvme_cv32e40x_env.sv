@@ -257,7 +257,7 @@ task uvme_cv32e40x_env_c::run_phase(uvm_phase phase);
             void'(data_slv_seq.register_vp_vseq("vp_rand_num", 32'h1500_1000, 1, uvma_obi_memory_vp_rand_num_seq_c::get_type()));
             void'(data_slv_seq.register_vp_vseq("vp_virtual_printer", 32'h1000_0000, 11, uvma_obi_memory_vp_virtual_printer_seq_c::get_type()));
             void'(data_slv_seq.register_vp_vseq("vp_sig_writer", 32'h2000_0008, 3, uvma_obi_memory_vp_sig_writer_seq_c::get_type()));
-            void'(data_slv_seq.register_vp_vseq("vp_cycle_counter", 32'h1500_1004, 1, uvma_obi_memory_vp_cycle_counter_seq_c::get_type()));
+            void'(data_slv_seq.register_vp_vseq("vp_cycle_counter", 32'h1500_1004, 2, uvma_obi_memory_vp_cycle_counter_seq_c::get_type()));
 
             begin
                uvme_cv32e40x_vp_status_flags_seq_c vp_seq;

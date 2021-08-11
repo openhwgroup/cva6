@@ -50,9 +50,20 @@ class uvma_obi_memory_vp_cycle_counter_seq_c extends uvma_obi_memory_vp_base_seq
    extern virtual task vp_body(uvma_obi_memory_mon_trn_c mon_trn);
 
    /**
+    * Implements the virtual register to read or write the counter
+    */
+   extern virtual task rw_counter(uvma_obi_memory_mon_trn_c mon_trn, uvma_obi_memory_slv_seq_item_c slv_rsp);
+
+   /**
+    * Implements the virtual register to read or write the counter
+    */
+   extern virtual task print_counter(uvma_obi_memory_mon_trn_c mon_trn);
+
+   /**
     * Implements the counting thread, should always be fork-join_none'd
     */
    extern virtual task count_cycles();
+
 
 endclass : uvma_obi_memory_vp_cycle_counter_seq_c
 
@@ -81,20 +92,10 @@ task uvma_obi_memory_vp_cycle_counter_seq_c::vp_body(uvma_obi_memory_mon_trn_c m
    
    slv_rsp.err = 1'b0;
 
-   if (mon_trn.access_type == UVMA_OBI_MEMORY_ACCESS_WRITE) begin
-      // First stop the thread, reset counter to write data, then restart
-      
-      _stop_count_cycles = 1;
-      wait (_stop_count_cycles == 0);
-
-      cycle_counter = mon_trn.data;
-      fork         
-         count_cycles();
-      join_none
-   end
-   else if (mon_trn.access_type == UVMA_OBI_MEMORY_ACCESS_READ) begin      
-      slv_rsp.rdata = cycle_counter;
-   end
+   case (mon_trn.address)
+      32'h1500_1004: rw_counter(mon_trn, slv_rsp);
+      32'h1500_1008: print_counter(mon_trn);
+   endcase
 
    add_r_fields(mon_trn, slv_rsp);
    slv_rsp.set_sequencer(p_sequencer);
@@ -127,4 +128,32 @@ task uvma_obi_memory_vp_cycle_counter_seq_c::count_cycles();
 
 endtask : count_cycles
 
+task uvma_obi_memory_vp_cycle_counter_seq_c::rw_counter(uvma_obi_memory_mon_trn_c mon_trn, uvma_obi_memory_slv_seq_item_c slv_rsp);
+
+   if (mon_trn.access_type == UVMA_OBI_MEMORY_ACCESS_WRITE) begin
+      // First stop the thread, reset counter to write data, then restart
+      
+      _stop_count_cycles = 1;
+      wait (_stop_count_cycles == 0);
+
+      cycle_counter = mon_trn.data;
+      fork         
+         count_cycles();
+      join_none
+   end
+   else if (mon_trn.access_type == UVMA_OBI_MEMORY_ACCESS_READ) begin      
+      slv_rsp.rdata = cycle_counter;
+   end
+
+endtask : rw_counter
+
+task uvma_obi_memory_vp_cycle_counter_seq_c::print_counter(uvma_obi_memory_mon_trn_c mon_trn);
+
+   if (mon_trn.access_type == UVMA_OBI_MEMORY_ACCESS_WRITE) begin
+      `uvm_info("CYCLE", $sformatf("Cycle count is %0d", cycle_counter), UVM_LOW);
+   end
+
+endtask : print_counter
+
 `endif // __UVMA_OBI_MEMORY_VP_CYCLE_COUNTER_SEQ_SV__
+
