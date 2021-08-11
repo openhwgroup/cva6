@@ -113,30 +113,12 @@ interface uvmt_cv32e40x_debug_cov_assert_if
     input  clk_i,
     input  rst_ni,
 
-    // TODO:ropeders remove the commented-away signals when confirmed to be superfluous
-
-    // Core inputs
-    //input         fetch_enable_i, // external core fetch enable
-
     // External interrupt interface
     input  [31:0] irq_i,
     input         irq_ack_o,
     input  [4:0]  irq_id_o,
     input  [31:0] mie_q,
 
-/*
-    // Instruction fetch stage
-    input         if_stage_instr_rvalid_i, // Instruction word is valid
-    input  [31:0] if_stage_instr_rdata_i, // Instruction word data
-
-    // Instruction ID stage (determines executed instructions)  
-    input         id_stage_instr_valid_i, // instruction word is valid
-    input  [31:0] id_stage_instr_rdata_i, // Instruction word data
-    input         id_stage_is_compressed,
-    input         id_stage_wfi_insn,
-    input  [31:0] if_stage_pc, // Program counter in fetch
-    input  [31:0] id_stage_pc, // Program counter in decode
-*/
     input         ex_stage_csr_en,
     input         ex_valid,
     input  [31:0] ex_stage_instr_rdata_i,
@@ -146,14 +128,9 @@ interface uvmt_cv32e40x_debug_cov_assert_if
     input  [31:0] wb_stage_pc, // Program counter in writeback
     input         wb_illegal,
     input         wb_valid,
-/*
-    input         wb_halt,
-    input         wb_stage_wfi_insn,
-*/
     input         id_valid,
     input wire ctrl_state_e  ctrl_fsm_cs,            // Controller FSM states with debug_req
     input         illegal_insn_i,
-    //input         illegal_insn_q, // output from controller
     input         ecall_insn_i,
 
     input  [31:0] boot_addr_i,
@@ -191,7 +168,6 @@ interface uvmt_cv32e40x_debug_cov_assert_if
 
     input  csr_access,
     input  [1:0] csr_op,
-    //input  [1:0] csr_op_dec,
     input  [11:0] csr_addr,
     input  csr_we_int,
 
@@ -210,28 +186,17 @@ interface uvmt_cv32e40x_debug_cov_assert_if
 
   clocking mon_cb @(posedge clk_i);    
     input #1step
-    //fetch_enable_i,
 
     irq_i,
     irq_ack_o,
     irq_id_o,
     mie_q,
 
-    //if_stage_instr_rvalid_i,
-    //if_stage_instr_rdata_i,
-
-    //id_stage_instr_valid_i,
-    //id_stage_instr_rdata_i,
-    //id_stage_is_compressed,
-
     wb_stage_instr_valid_i,
     wb_stage_instr_rdata_i,
 
-    //id_stage_pc,
-    //if_stage_pc,
     ctrl_fsm_cs,
     illegal_insn_i,
-    //illegal_insn_q,
     ecall_insn_i,
     boot_addr_i, 
     rvfi_pc_wdata,
@@ -258,7 +223,6 @@ interface uvmt_cv32e40x_debug_cov_assert_if
     core_sleep_o,
     csr_access,
     csr_op,
-    //csr_op_dec,
     csr_addr,
     is_wfi,
     in_wfi,
