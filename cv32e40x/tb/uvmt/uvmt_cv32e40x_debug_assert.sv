@@ -393,7 +393,7 @@ module uvmt_cv32e40x_debug_assert
         |->
         !cov_assert_if.debug_mode_q && (cov_assert_if.wb_stage_pc == dpc)
         ##0 (cov_assert_if.wb_valid
-            or (##1 !$changed(cov_assert_if.wb_stage_pc) throughout (cov_assert_if.wb_valid [->1])));
+            or ##1 (!$changed(cov_assert_if.wb_stage_pc) throughout (cov_assert_if.wb_valid [->1])));
     endproperty
 
     cov_dmode_dret_pc : cover property(s_dmode_dret_pc_ante |-> (cov_assert_if.depc_q != 0));
