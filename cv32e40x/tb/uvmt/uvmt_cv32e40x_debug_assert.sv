@@ -422,7 +422,7 @@ module uvmt_cv32e40x_debug_assert
     // TSEL, and TDATA3 are tied to zero, hence no register to check 
 
     property p_mmode_tdata1_write;
-        !cov_assert_if.debug_mode_q && cov_assert_if.csr_access && cov_assert_if.csr_op == 'h1
+        !cov_assert_if.debug_mode_q && cov_assert_if.csr_access && cov_assert_if.csr_op == 'h1  // TODO:ropeders also "set" op?
         && cov_assert_if.wb_stage_instr_rdata_i[31:20] == 'h7A1
         |->
         ##0 $stable(cov_assert_if.tdata1) [*4];
@@ -504,7 +504,7 @@ module uvmt_cv32e40x_debug_assert
     // dpc to be set to the exception handler entry addr
 
     sequence s_illegal_insn_debug_req_ante;  // Antecedent
-        wb_execs_illegal && !cov_assert_if.debug_mode_q
+        cov_assert_if.wb_illegal && cov_assert_if.wb_valid && !cov_assert_if.debug_mode_q
         ##1 cov_assert_if.debug_req_i && !cov_assert_if.debug_mode_q;
     endsequence
 
@@ -512,9 +512,6 @@ module uvmt_cv32e40x_debug_assert
         s_conse_next_retire
         ##0 cov_assert_if.debug_mode_q && (cov_assert_if.depc_q == cov_assert_if.mtvec);
     endsequence
-
-    logic wb_execs_illegal;
-    assign wb_execs_illegal = cov_assert_if.wb_illegal && cov_assert_if.wb_valid;
 
     // Need to confirm that the assertion can be reached for non-trivial cases
     cov_illegal_insn_debug_req_nonzero : cover property(
