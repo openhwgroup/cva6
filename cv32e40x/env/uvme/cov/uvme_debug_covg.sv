@@ -159,7 +159,7 @@ class uvme_debug_covg extends uvm_component;
         dm : coverpoint cntxt.debug_cov_vif.mon_cb.debug_mode_q {
             bins hit  = {1};
         }
-        ill : coverpoint cntxt.debug_cov_vif.mon_cb.illegal_insn_q {
+        ill : coverpoint cntxt.debug_cov_vif.mon_cb.illegal_insn_i {
             bins hit = {1};
         }
         ex_in_debug : cross dm, ill;
@@ -268,16 +268,16 @@ class uvme_debug_covg extends uvm_component;
         ill : coverpoint cntxt.debug_cov_vif.mon_cb.illegal_insn_i {
             bins hit = {1};
         }
-         ebreak : coverpoint cntxt.debug_cov_vif.mon_cb.is_ebreak { 
+        ebreak : coverpoint cntxt.debug_cov_vif.mon_cb.is_ebreak {
             bins active= {1'b1};
         }
-         cebreak : coverpoint cntxt.debug_cov_vif.mon_cb.is_cebreak { 
+        cebreak : coverpoint cntxt.debug_cov_vif.mon_cb.is_cebreak {
             bins active= {1'b1};
         }
-         branch : coverpoint cntxt.debug_cov_vif.mon_cb.branch_in_decode { 
+        branch : coverpoint cntxt.debug_cov_vif.mon_cb.branch_in_ex {
             bins active= {1'b1};
         }
-         mulhsu : coverpoint cntxt.debug_cov_vif.mon_cb.is_mulhsu { 
+        mulhsu : coverpoint cntxt.debug_cov_vif.mon_cb.is_mulhsu {
             bins active= {1'b1};
         }
         dreq_and_ill : cross dreq, ill;
@@ -293,7 +293,7 @@ class uvme_debug_covg extends uvm_component;
     covergroup cg_debug_regs_d_mode;
         `per_instance_fcov
         mode : coverpoint cntxt.debug_cov_vif.mon_cb.debug_mode_q {
-            bins M = {1} ;
+            bins M = {1};
         }
 
         access : coverpoint cntxt.debug_cov_vif.mon_cb.csr_access {
@@ -303,37 +303,38 @@ class uvme_debug_covg extends uvm_component;
             bins read = {'h0};
             bins write = {'h1};
         }
-        addr  : coverpoint cntxt.debug_cov_vif.mon_cb.id_stage_instr_rdata_i[31:20] { // csr addr not updated if illegal access
+        addr : coverpoint cntxt.debug_cov_vif.mon_cb.wb_stage_instr_rdata_i[31:20] { // csr addr not updated if illegal access
             bins dcsr = {'h7B0};
             bins dpc = {'h7B1};
             bins dscratch0 = {'h7B2};
             bins dscratch1 = {'h7B3};
         }
-        dregs_access : cross mode, access, op,addr;
+        dregs_access : cross mode, access, op, addr;
     endgroup
 
     // Cover access to dcsr, dpc and dscratch0/1 in M-mode
     covergroup cg_debug_regs_m_mode;
         `per_instance_fcov
         mode : coverpoint cntxt.debug_cov_vif.mon_cb.debug_mode_q {
-            bins M = {0} ;
+            bins M = {0};
         }
 
         access : coverpoint cntxt.debug_cov_vif.mon_cb.csr_access {
             bins hit = {1};
         }
-        op : coverpoint cntxt.debug_cov_vif.mon_cb.csr_op_dec {
+        op : coverpoint cntxt.debug_cov_vif.mon_cb.csr_op {
             bins read = {1'h0};
             bins write = {1'h1};
         }
-        addr  : coverpoint cntxt.debug_cov_vif.mon_cb.id_stage_instr_rdata_i[31:20] { // csr addr not updated if illegal access
+        addr : coverpoint cntxt.debug_cov_vif.mon_cb.wb_stage_instr_rdata_i[31:20] { // csr addr not updated if illegal access
             bins dcsr = {'h7B0};
             bins dpc = {'h7B1};
             bins dscratch0 = {'h7B2};
             bins dscratch1 = {'h7B3};
         }
-        dregs_access : cross mode, access, op,addr;
+        dregs_access : cross mode, access, op, addr;
     endgroup
+
     // Cover access to trigger registers
     // Do we need to cover all READ/WRITE/SET/CLEAR from m-mode?
     covergroup cg_trigger_regs;
@@ -346,14 +347,14 @@ class uvme_debug_covg extends uvm_component;
             bins read = {'h0};
             bins write = {'h1};
         }
-        addr  : coverpoint cntxt.debug_cov_vif.mon_cb.id_stage_instr_rdata_i[31:20]{ // csr addr not updated if illegal access
+        addr : coverpoint cntxt.debug_cov_vif.mon_cb.wb_stage_instr_rdata_i[31:20] { // csr addr not updated if illegal access
             bins tsel = {'h7A0};
             bins tdata1 = {'h7A1};
             bins tdata2 = {'h7A2};
             bins tdata3 = {'h7A3};
             bins tinfo  = {'h7A4};
         }
-        tregs_access : cross mode, access, op,addr;
+        tregs_access : cross mode, access, op, addr;
     endgroup
 
     // Cover that we run with counters mcycle and minstret enabled
@@ -366,10 +367,10 @@ class uvme_debug_covg extends uvm_component;
     // Cover that we get a debug_req_i while in RESET state
     covergroup cg_debug_at_reset;
         `per_instance_fcov
-        state : coverpoint cntxt.debug_cov_vif.mon_cb.ctrl_fsm_cs { 
+        state : coverpoint cntxt.debug_cov_vif.mon_cb.ctrl_fsm_cs {
             bins reset= {cv32e40x_pkg::RESET};
         }
-         dbg : coverpoint cntxt.debug_cov_vif.mon_cb.debug_req_i { 
+         dbg : coverpoint cntxt.debug_cov_vif.mon_cb.debug_req_i {
             bins active= {1'b1};
         }
         dbg_at_reset : cross state, dbg;
@@ -378,10 +379,10 @@ class uvme_debug_covg extends uvm_component;
     // Cover that we execute fence and fence.i in debug mode
     covergroup cg_fence_in_debug;
         `per_instance_fcov
-        mode : coverpoint cntxt.debug_cov_vif.mon_cb.debug_mode_q { 
+        mode : coverpoint cntxt.debug_cov_vif.mon_cb.debug_mode_q {
             bins debug= {1'b1};
         }
-        fence : coverpoint cntxt.debug_cov_vif.mon_cb.fence_i { 
+        fence : coverpoint cntxt.debug_cov_vif.mon_cb.fence_i {
             bins active= {1'b1};
         }
         fence_in_debug : cross mode, fence;
@@ -390,22 +391,22 @@ class uvme_debug_covg extends uvm_component;
     // Cover that we get all combinations of debug causes
     covergroup cg_debug_causes;
         `per_instance_fcov
-        tmatch : coverpoint cntxt.debug_cov_vif.mon_cb.trigger_match_i { 
+        tmatch : coverpoint cntxt.debug_cov_vif.mon_cb.trigger_match_i {
             bins match= {1'b1};
         }
-        tnomatch : coverpoint cntxt.debug_cov_vif.mon_cb.trigger_match_i { 
+        tnomatch : coverpoint cntxt.debug_cov_vif.mon_cb.trigger_match_i {
             bins nomatch= {1'b0};
         }
-         ebreak : coverpoint cntxt.debug_cov_vif.mon_cb.is_ebreak { 
+         ebreak : coverpoint cntxt.debug_cov_vif.mon_cb.is_ebreak {
             bins active= {1'b1};
         }
-         cebreak : coverpoint cntxt.debug_cov_vif.mon_cb.is_cebreak { 
+         cebreak : coverpoint cntxt.debug_cov_vif.mon_cb.is_cebreak {
             bins active= {1'b1};
         }
-         dbg_req : coverpoint cntxt.debug_cov_vif.mon_cb.debug_req_i { 
+         dbg_req : coverpoint cntxt.debug_cov_vif.mon_cb.debug_req_i {
             bins active= {1'b1};
         }
-         step : coverpoint cntxt.debug_cov_vif.mon_cb.dcsr_q[2] & !cntxt.debug_cov_vif.mon_cb.debug_mode_q { 
+         step : coverpoint cntxt.debug_cov_vif.mon_cb.dcsr_q[2] & !cntxt.debug_cov_vif.mon_cb.debug_mode_q {
             bins active= {1'b1};
         }
         trig_vs_ebreak : cross tmatch, ebreak;

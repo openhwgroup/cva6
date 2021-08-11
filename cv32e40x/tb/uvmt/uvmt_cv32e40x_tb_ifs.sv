@@ -187,7 +187,7 @@ interface uvmt_cv32e40x_debug_cov_assert_if
     // WFI Interface
     input  core_sleep_o,
 
-    //input  fence_i,
+    input  fence_i,
 
     input  csr_access,
     input  [1:0] csr_op,
@@ -204,35 +204,34 @@ interface uvmt_cv32e40x_debug_cov_assert_if
     output logic is_dret,
     output logic is_mulhsu,
     output logic [31:0] pending_enabled_irq,
-    input  pc_set
-    //input  branch_in_decode
+    input  pc_set,
+    input  branch_in_ex
 );
 
   clocking mon_cb @(posedge clk_i);    
-/*
     input #1step
-    fetch_enable_i,
+    //fetch_enable_i,
 
     irq_i,
     irq_ack_o,
     irq_id_o,
     mie_q,
 
-    if_stage_instr_rvalid_i,
-    if_stage_instr_rdata_i,
+    //if_stage_instr_rvalid_i,
+    //if_stage_instr_rdata_i,
 
-    id_stage_instr_valid_i,
-    id_stage_instr_rdata_i,
-    id_stage_is_compressed,
+    //id_stage_instr_valid_i,
+    //id_stage_instr_rdata_i,
+    //id_stage_is_compressed,
 
     wb_stage_instr_valid_i,
     wb_stage_instr_rdata_i,
 
-    id_stage_pc,
-    if_stage_pc,
+    //id_stage_pc,
+    //if_stage_pc,
     ctrl_fsm_cs,
     illegal_insn_i,
-    illegal_insn_q,
+    //illegal_insn_q,
     ecall_insn_i,
     boot_addr_i, 
     rvfi_pc_wdata,
@@ -259,7 +258,7 @@ interface uvmt_cv32e40x_debug_cov_assert_if
     core_sleep_o,
     csr_access,
     csr_op,
-    csr_op_dec,
+    //csr_op_dec,
     csr_addr,
     is_wfi,
     in_wfi,
@@ -271,8 +270,7 @@ interface uvmt_cv32e40x_debug_cov_assert_if
     is_mulhsu,
     pending_enabled_irq,
     pc_set,
-    branch_in_decode;
-*/
+    branch_in_ex;
   endclocking : mon_cb
 
 endinterface : uvmt_cv32e40x_debug_cov_assert_if
