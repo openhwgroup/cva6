@@ -59,8 +59,6 @@ package uvme_cv32e40x_pkg;
    // Objects
    `include "uvma_cv32e40x_core_cntrl_cntxt.sv"
    `include "uvme_cv32e40x_cfg.sv"   
-   `include "uvma_cv32e40x_core_cntrl_drv.sv"   
-   `include "uvma_cv32e40x_core_cntrl_agent.sv"
    `include "uvme_cv32e40x_cntxt.sv"
 
    // Predictor
@@ -69,19 +67,21 @@ package uvme_cv32e40x_pkg;
    // Virtual sequences
    `include "uvme_cv32e40x_base_vseq.sv"
    `include "uvme_cv32e40x_reset_vseq.sv"
-//   `include "uvme_cv32e40x_instr_vseq.sv"
-   //`include "uvme_cv32e40x_vp_vseq.sv"
    `include "uvme_cv32e40x_vp_debug_control_seq.sv"
    `include "uvme_cv32e40x_vp_interrupt_timer_seq.sv"
    `include "uvme_cv32e40x_vp_status_flags_seq.sv"
    `include "uvme_cv32e40x_interrupt_noise_vseq.sv"
    `include "uvme_cv32e40x_vseq_lib.sv"
+   `include "uvme_cv32e40x_core_cntrl_base_seq.sv"
+   `include "uvme_cv32e40x_core_cntrl_fetch_toggle_seq.sv"
    `include "uvme_cv32e40x_random_debug_vseq.sv" 
    `include "uvme_cv32e40x_random_debug_reset_vseq.sv" 
    `include "uvme_cv32e40x_random_debug_bootset_vseq.sv" 
 
    // Environment components
    `include "uvme_interrupt_covg.sv"
+   `include "uvma_cv32e40x_core_cntrl_drv.sv"   
+   `include "uvma_cv32e40x_core_cntrl_agent.sv"
    `include "uvme_debug_covg.sv"   
    `include "uvme_cv32e40x_cov_model.sv"
    `include "uvme_cv32e40x_sb.sv"
