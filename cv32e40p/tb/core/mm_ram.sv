@@ -15,6 +15,9 @@
 // This maps the dp_ram module to the instruction and data ports of the RI5CY
 // processor core and some pseudo peripherals
 
+// DVT LINTER waivers are fine because this is not a UVM component.
+//@DVT_LINTER_WAIVER_START "MT20210811_1" disable SVTB.29.1.3.1, SVTB.29.1.7
+
 module mm_ram
 `ifndef VERILATOR
   import uvm_pkg::*;
@@ -183,8 +186,8 @@ module mm_ram
     string                         sig_file;
     string                         sig_string;
     bit                            use_sig_file;
-    integer                        sig_fd;
-    integer                        errno;
+    int                            sig_fd;
+    int                            errno;
     string                         error_str;
 
     // uhh, align?
@@ -836,3 +839,5 @@ module mm_ram
 `endif
 
 endmodule // ram
+
+//@DVT_LINTER_WAIVER_END "MT20210811_1"

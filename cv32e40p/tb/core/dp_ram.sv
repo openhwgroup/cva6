@@ -9,6 +9,9 @@
 // CONDITIONS OF ANY KIND, either express or implied. See the License for the
 // specific language governing permissions and limitations under the License.
 
+// DVT LINTER waivers are fine because this is not a UVM component.
+//@DVT_LINTER_WAIVER_START "MT20210811_0" disable SVTB.29.1.3.1, SVTB.29.1.7
+
 module dp_ram
     #(parameter ADDR_WIDTH = 8,
       parameter INSTR_RDATA_WIDTH = 128)
@@ -80,3 +83,5 @@ module dp_ram
     endtask
 
 endmodule // dp_ram
+
+//@DVT_LINTER_WAIVER_END "MT20210811_0"
