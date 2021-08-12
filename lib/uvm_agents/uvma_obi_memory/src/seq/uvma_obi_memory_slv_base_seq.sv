@@ -120,6 +120,7 @@ function void uvma_obi_memory_slv_base_seq_c::add_r_fields(uvma_obi_memory_mon_t
    // Take care to leave rchk last as it will likely incorporate a checksum of all other response fields
 
    slv_rsp.rid = mon_req.aid;
+   add_latencies(slv_rsp);
    if (cfg.version >= UVMA_OBI_MEMORY_VERSION_1P2) begin
       add_err(slv_rsp);
       add_exokay(mon_req, slv_rsp);

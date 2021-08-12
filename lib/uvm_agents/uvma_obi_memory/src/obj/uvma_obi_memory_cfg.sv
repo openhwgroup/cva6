@@ -160,7 +160,7 @@ class uvma_obi_memory_cfg_c extends uvm_object;
          drv_slv_gnt_fixed_latency == 0;
 
          drv_slv_rvalid_mode == UVMA_OBI_MEMORY_DRV_SLV_RVALID_MODE_FIXED_LATENCY;
-         drv_slv_rvalid_fixed_latency == 0;
+         drv_slv_rvalid_fixed_latency == 1;
       }
    }
 
