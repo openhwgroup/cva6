@@ -23,6 +23,10 @@
 
 `include "imperas_CV32.h"
 
+`ifndef DMI_RAM_PATH
+  `define DMI_RAM_PATH ram.memory.mem
+`endif
+
 interface RVVI_state #(
     parameter int ILEN = 32,
     parameter int XLEN = 32
@@ -139,12 +143,6 @@ interface RVVI_bus;
 
 endinterface
 
-interface RVVI_memory;
-
-    reg [31:0] mem [bit[29:0]];
-
-endinterface
-
 module CPU #(
     parameter int ID = 0,
     parameter string VARIANT = "UNSET"
@@ -188,11 +186,11 @@ module CPU #(
     // Bus direct transactors
     //
     function automatic int read(input int address);
-        if (!ram.memory.mem.exists(address)) ram.memory.mem[address] = 'h0;
-        return ram.memory.mem[address];
+        if (!`DMI_RAM_PATH.exists(address)) `DMI_RAM_PATH[address] = 'h0;
+        return `DMI_RAM_PATH[address];
     endfunction
     function automatic void write(input int address, input int data);
-        ram.memory.mem[address] = data;
+        `DMI_RAM_PATH[address] = data;
     endfunction
 
     //
@@ -332,7 +330,7 @@ module CPU #(
     
     function automatic void svexp_setCSR (input string name, input int index, input longint value);
         state.csr[name] = value;
-        state.c[index] = value;
+        state.c[index]  = value;
     endfunction
 
     //
