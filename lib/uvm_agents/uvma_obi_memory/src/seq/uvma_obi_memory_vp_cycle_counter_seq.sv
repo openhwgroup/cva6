@@ -92,9 +92,9 @@ task uvma_obi_memory_vp_cycle_counter_seq_c::vp_body(uvma_obi_memory_mon_trn_c m
    
    slv_rsp.err = 1'b0;
 
-   case (mon_trn.address)
-      32'h1500_1004: rw_counter(mon_trn, slv_rsp);
-      32'h1500_1008: print_counter(mon_trn);
+   case (get_vp_index(mon_trn))
+      0: rw_counter(mon_trn, slv_rsp);
+      1: print_counter(mon_trn);
    endcase
 
    add_r_fields(mon_trn, slv_rsp);

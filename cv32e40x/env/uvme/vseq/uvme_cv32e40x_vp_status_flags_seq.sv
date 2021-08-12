@@ -72,24 +72,27 @@ task uvme_cv32e40x_vp_status_flags_seq_c::vp_body(uvma_obi_memory_mon_trn_c mon_
 
    if (mon_trn.access_type == UVMA_OBI_MEMORY_ACCESS_WRITE) begin
       `uvm_info("VP_VSEQ", $sformatf("Call to virtual peripheral 'vp_status_flags':\n%s", mon_trn.sprint()), UVM_DEBUG)
-      if (mon_trn.address == 32'h2000_0000) begin
-         if (mon_trn.data == 'd123456789) begin
-            `uvm_info("VP_VSEQ", "virtual peripheral: TEST PASSED", UVM_DEBUG)
-            cv32e40x_cntxt.vp_status_vif.tests_passed = 1;
-            cv32e40x_cntxt.vp_status_vif.exit_valid   = 1;
-            cv32e40x_cntxt.vp_status_vif.exit_value   = 0;
+
+      case (get_vp_index(mon_trn))
+         0:  begin
+            if (mon_trn.data == 'd123456789) begin
+               `uvm_info("VP_VSEQ", "virtual peripheral: TEST PASSED", UVM_DEBUG)
+               cv32e40x_cntxt.vp_status_vif.tests_passed = 1;
+               cv32e40x_cntxt.vp_status_vif.exit_valid   = 1;
+               cv32e40x_cntxt.vp_status_vif.exit_value   = 0;
+            end         
+            else if (mon_trn.data == 'd1) begin
+               cv32e40x_cntxt.vp_status_vif.tests_failed = 1;
+               cv32e40x_cntxt.vp_status_vif.exit_valid   = 1;
+              cv32e40x_cntxt.vp_status_vif.exit_value   = 1;
+            end
          end
-         else if (mon_trn.data == 'd1) begin
-            cv32e40x_cntxt.vp_status_vif.tests_failed = 1;
-            cv32e40x_cntxt.vp_status_vif.exit_valid   = 1;
-            cv32e40x_cntxt.vp_status_vif.exit_value   = 1;
-         end
-      end
-      else if (mon_trn.address == 32'h2000_0004) begin
-         `uvm_info("VP_VSEQ", "virtual peripheral: END OF SIM", UVM_DEBUG)
-         cv32e40x_cntxt.vp_status_vif.exit_valid = 1;
-         cv32e40x_cntxt.vp_status_vif.exit_value = mon_trn.data;
-      end      
+         1: begin
+            `uvm_info("VP_VSEQ", "virtual peripheral: END OF SIM", UVM_DEBUG)
+            cv32e40x_cntxt.vp_status_vif.exit_valid = 1;
+            cv32e40x_cntxt.vp_status_vif.exit_value = mon_trn.data;
+         end      
+      endcase
    end
    else if (mon_trn.access_type == UVMA_OBI_MEMORY_ACCESS_READ) begin
       slv_rsp.rdata = 0;

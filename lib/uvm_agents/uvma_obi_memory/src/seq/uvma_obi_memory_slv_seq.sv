@@ -45,7 +45,7 @@ class uvma_obi_memory_slv_seq_c extends uvma_obi_memory_slv_base_seq_c;
     * Register sequences with a range of addresses on this OBI
     */
    extern virtual function uvma_obi_memory_vp_base_seq_c register_vp_vseq(string name, 
-                                                                          bit[31:0] start_addr, 
+                                                                          bit[31:0] start_address, 
                                                                           int unsigned num_words,
                                                                           uvm_object_wrapper seq_type);
 
@@ -171,7 +171,10 @@ task uvma_obi_memory_slv_seq_c::do_mem_operation(ref uvma_obi_memory_mon_trn_c m
 
 endtask : do_mem_operation
 
-function uvma_obi_memory_vp_base_seq_c uvma_obi_memory_slv_seq_c::register_vp_vseq(string name, bit[31:0] start_addr, int unsigned num_words, uvm_object_wrapper seq_type);
+function uvma_obi_memory_vp_base_seq_c uvma_obi_memory_slv_seq_c::register_vp_vseq(string name, 
+                                                                                   bit[31:0] start_address, 
+                                                                                   int unsigned num_words, 
+                                                                                   uvm_object_wrapper seq_type);
 
    uvma_obi_memory_vp_base_seq_c vp_seq;
 
@@ -186,9 +189,13 @@ function uvma_obi_memory_vp_base_seq_c uvma_obi_memory_slv_seq_c::register_vp_vs
       `uvm_fatal("OBIVPVSEQ", $sformatf("Could not cast seq_type of type name: %s to a uvma_obi_memory_vp_base_seq_c type", seq_type.get_type_name()))
    end
 
+   // Configure fields in the virtual peripheral sequence
+   vp_seq.start_address = start_address;
+   vp_seq.num_words     = num_words;
+
    // Use hash to efficiently look up word-aligned addresses to this handle
    for (int unsigned word = 0; word < num_words; word++) begin
-      bit[31:0] addr = (start_addr & ~32'h3) + (4 * word);
+      bit[31:0] addr = (start_address & ~32'h3) + (4 * word);
 
       // If an address is being claimed twice, then issue a fatal error
       if (vp_seq_table.exists(addr)) begin
