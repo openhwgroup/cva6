@@ -303,7 +303,9 @@ hello-world:
 	$(MAKE) test TEST=hello-world
 
 custom: VSIM_TEST=$(CUSTOM_PROG)
-custom: VSIM_FLAGS += +firmware=$(CUSTOM_DIR)/$(CUSTOM_PROG).hex +elf_file=$(CUSTOM_DIR)/$(CUSTOM_PROG).elf
+custom: VSIM_FLAGS += +firmware=$(CUSTOM_DIR)/$(CUSTOM_PROG).hex 
+custom: VSIM_FLAGS += +elf_file=$(CUSTOM_DIR)/$(CUSTOM_PROG).elf
+custom: VSIM_FLAGS += +itb_file=$(CUSTOM_DIR)/$(CUSTOM_PROG).itb
 custom: TEST_UVM_TEST=uvmt_$(CV_CORE_LC)_firmware_test_c
 custom: $(CUSTOM_DIR)/$(CUSTOM_PROG).hex run
 
