@@ -41,6 +41,7 @@ module uvmt_cv32e40x_debug_assert
   // Locally track which debug cause should be used
   logic [2:0] debug_cause_pri;
   logic [31:0] boot_addr_at_entry;
+  logic [31:0] mtvec_addr;
 
   // Locally track pc in ID stage to detect first instruction of debug code
   logic first_debug_ins_flag;
@@ -69,6 +70,8 @@ module uvmt_cv32e40x_debug_assert
     && (cov_assert_if.wb_stage_instr_rdata_i[31:25] == 7'h1)
     && (cov_assert_if.wb_stage_instr_rdata_i[14:12] == 3'b010)
     && (cov_assert_if.wb_stage_instr_rdata_i[6:0]   == 7'h33);
+
+  assign mtvec_addr = {cov_assert_if.mtvec[31:2], 2'b00};
 
 
     // ---------------------------------------
@@ -155,7 +158,7 @@ module uvmt_cv32e40x_debug_assert
         // TODO:ropeders can this specificity be in consequent instead?
         |->
         !cov_assert_if.debug_mode_q && (cov_assert_if.mcause_q[5:0] === cv32e40x_pkg::EXC_CAUSE_BREAKPOINT)
-        && (cov_assert_if.mepc_q == pc_at_ebreak) && (cov_assert_if.wb_stage_pc == cov_assert_if.mtvec);
+        && (cov_assert_if.mepc_q == pc_at_ebreak) && (cov_assert_if.wb_stage_pc == mtvec_addr);
         // TODO:ropeders need assertions for what happens if cebreak and req/irq?
     endproperty
 
@@ -174,7 +177,7 @@ module uvmt_cv32e40x_debug_assert
         // TODO:ropeders can this specificity be in consequent instead?
         |->
         !cov_assert_if.debug_mode_q && (cov_assert_if.mcause_q[5:0] === cv32e40x_pkg::EXC_CAUSE_BREAKPOINT)
-        && (cov_assert_if.mepc_q == pc_at_ebreak) && (cov_assert_if.wb_stage_pc == cov_assert_if.mtvec);
+        && (cov_assert_if.mepc_q == pc_at_ebreak) && (cov_assert_if.wb_stage_pc == mtvec_addr);
     endproperty
 
     a_ebreak_exception: assert property(p_ebreak_exception)
@@ -321,7 +324,7 @@ module uvmt_cv32e40x_debug_assert
     property p_single_step_exception;
         !cov_assert_if.debug_mode_q && cov_assert_if.dcsr_q[2]
         && cov_assert_if.illegal_insn_i && cov_assert_if.wb_valid && !cov_assert_if.trigger_match_i
-        |-> ##[1:20] cov_assert_if.debug_mode_q && (cov_assert_if.depc_q == cov_assert_if.mtvec);
+        |-> ##[1:20] cov_assert_if.debug_mode_q && (cov_assert_if.depc_q == mtvec_addr);
     endproperty
 
     a_single_step_exception : assert property(p_single_step_exception)
@@ -510,7 +513,7 @@ module uvmt_cv32e40x_debug_assert
 
     sequence s_illegal_insn_debug_req_conse;  // Consequent
         s_conse_next_retire
-        ##0 cov_assert_if.debug_mode_q && (cov_assert_if.depc_q == cov_assert_if.mtvec);
+        ##0 cov_assert_if.debug_mode_q && (cov_assert_if.depc_q == mtvec_addr);
     endsequence
 
     logic wb_execs_illegal;
@@ -550,7 +553,11 @@ module uvmt_cv32e40x_debug_assert
                 pc_at_dbg_req <= cov_assert_if.wb_stage_pc;
             end
             if (cov_assert_if.irq_ack_o) begin  // interrupt
-                pc_at_dbg_req <= cov_assert_if.mtvec + (cov_assert_if.irq_id_o << 2);
+                if (cov_assert_if.mtvec[1:0] == 0) begin
+                    pc_at_dbg_req <= mtvec_addr;
+                end else if (cov_assert_if.mtvec[1:0] == 1) begin
+                    pc_at_dbg_req <= mtvec_addr + (cov_assert_if.irq_id_o << 2);
+                end
             end
             if(cov_assert_if.debug_mode_q && started_decoding_in_debug) begin
                 pc_at_dbg_req <= pc_at_dbg_req;
