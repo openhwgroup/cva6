@@ -295,13 +295,13 @@ class uvme_debug_covg extends uvm_component;
         mode : coverpoint cntxt.debug_cov_vif.mon_cb.debug_mode_q {
             bins M = {1};
         }
-
-        access : coverpoint cntxt.debug_cov_vif.mon_cb.csr_access {
+        access : coverpoint (cntxt.debug_cov_vif.mon_cb.csr_access && cntxt.debug_cov_vif.mon_cb.wb_valid) {
             bins hit = {1};
         }
         op : coverpoint cntxt.debug_cov_vif.mon_cb.csr_op {
             bins read = {'h0};
             bins write = {'h1};
+            // TODO:ropeders also SET and CLEAR?
         }
         addr : coverpoint cntxt.debug_cov_vif.mon_cb.wb_stage_instr_rdata_i[31:20] { // csr addr not updated if illegal access
             bins dcsr = {'h7B0};
@@ -318,13 +318,13 @@ class uvme_debug_covg extends uvm_component;
         mode : coverpoint cntxt.debug_cov_vif.mon_cb.debug_mode_q {
             bins M = {0};
         }
-
-        access : coverpoint cntxt.debug_cov_vif.mon_cb.csr_access {
+        access : coverpoint (cntxt.debug_cov_vif.mon_cb.csr_access && cntxt.debug_cov_vif.mon_cb.wb_valid) {
             bins hit = {1};
         }
         op : coverpoint cntxt.debug_cov_vif.mon_cb.csr_op {
             bins read = {1'h0};
             bins write = {1'h1};
+            // TODO:ropeders also SET and CLEAR?
         }
         addr : coverpoint cntxt.debug_cov_vif.mon_cb.wb_stage_instr_rdata_i[31:20] { // csr addr not updated if illegal access
             bins dcsr = {'h7B0};
@@ -336,11 +336,11 @@ class uvme_debug_covg extends uvm_component;
     endgroup
 
     // Cover access to trigger registers
-    // Do we need to cover all READ/WRITE/SET/CLEAR from m-mode?
+    // TODO Do we need to cover all READ/WRITE/SET/CLEAR from m-mode?
     covergroup cg_trigger_regs;
         `per_instance_fcov
         mode : coverpoint cntxt.debug_cov_vif.mon_cb.debug_mode_q; // Only M and D supported
-        access : coverpoint cntxt.debug_cov_vif.mon_cb.csr_access {
+        access : coverpoint (cntxt.debug_cov_vif.mon_cb.csr_access && cntxt.debug_cov_vif.mon_cb.wb_valid) {
             bins hit = {1};
         }
         op : coverpoint cntxt.debug_cov_vif.mon_cb.csr_op {
