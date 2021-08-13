@@ -140,7 +140,7 @@ interface uvmt_cv32e40x_debug_cov_assert_if
     input  [31:0] rvfi_pc_rdata,
 
     // Debug signals
-    input         debug_req_i, // From controller  //TODO:ropeders rename debug_pending?
+    input         debug_req_i, // From controller
     input         debug_mode_q, // From controller
     input  [31:0] dcsr_q, // From controller
     input  [31:0] depc_q, // From cs regs  //TODO:ropeders rename "dpc_q"
@@ -194,6 +194,7 @@ interface uvmt_cv32e40x_debug_cov_assert_if
 
     wb_stage_instr_valid_i,
     wb_stage_instr_rdata_i,
+    wb_valid,
 
     ctrl_fsm_cs,
     illegal_insn_i,

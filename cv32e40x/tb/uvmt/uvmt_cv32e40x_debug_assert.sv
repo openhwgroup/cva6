@@ -370,8 +370,7 @@ module uvmt_cv32e40x_debug_assert
 
 
     // dret in M-mode will cause illegal instruction
-    // If pending debug req, illegal insn will not assert
-    // until resume
+    // If pending debug req, illegal insn will not assert until resume
     property p_mmode_dret;
         !cov_assert_if.debug_mode_q && cov_assert_if.is_dret && !cov_assert_if.debug_req_i
         |-> cov_assert_if.illegal_insn_i;
@@ -471,15 +470,15 @@ module uvmt_cv32e40x_debug_assert
 
 
     // Check debug_req_i and irq on same cycle. 
-    // Should result in debug mode with regular pc in depc,
-    // not pc from interrupt handler
+    // Should result in debug mode with regular pc in dpc, not pc from interrupt handler
     // PC is checked in another assertion
     property p_debug_req_and_irq;
         cov_assert_if.debug_req_i && (cov_assert_if.pending_enabled_irq != 0)
-        && cov_assert_if.ctrl_fsm_cs == cv32e40x_pkg::FUNCTIONAL
+        && cov_assert_if.ctrl_fsm_cs == cv32e40x_pkg::FUNCTIONAL  // TODO:ropeders is this really needed?
         |->
         s_conse_next_retire
         ##0 cov_assert_if.debug_mode_q;
+        // TODO:ropeders should dpc be checked here?
     endproperty
 
     a_debug_req_and_irq : assert property(p_debug_req_and_irq)

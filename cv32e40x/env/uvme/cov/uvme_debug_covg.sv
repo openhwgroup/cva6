@@ -159,7 +159,7 @@ class uvme_debug_covg extends uvm_component;
         dm : coverpoint cntxt.debug_cov_vif.mon_cb.debug_mode_q {
             bins hit  = {1};
         }
-        ill : coverpoint cntxt.debug_cov_vif.mon_cb.illegal_insn_i {
+        ill : coverpoint (cntxt.debug_cov_vif.mon_cb.illegal_insn_i && cntxt.debug_cov_vif.mon_cb.wb_valid) {
             bins hit = {1};
         }
         ex_in_debug : cross dm, ill;
@@ -228,7 +228,7 @@ class uvme_debug_covg extends uvm_component;
         wfi : coverpoint cntxt.debug_cov_vif.mon_cb.is_wfi {
             bins hit = {1};
         }
-        ill : coverpoint cntxt.debug_cov_vif.mon_cb.illegal_insn_i {
+        ill : coverpoint (cntxt.debug_cov_vif.mon_cb.illegal_insn_i && cntxt.debug_cov_vif.mon_cb.wb_valid) {
             bins hit = {1};
         }
         pc_will_trig : coverpoint cntxt.debug_cov_vif.mon_cb.dpc_will_hit {
@@ -265,7 +265,7 @@ class uvme_debug_covg extends uvm_component;
         trigger : coverpoint cntxt.debug_cov_vif.mon_cb.trigger_match_i {
             bins hit = {1};
         }
-        ill : coverpoint cntxt.debug_cov_vif.mon_cb.illegal_insn_i {
+        ill : coverpoint (cntxt.debug_cov_vif.mon_cb.illegal_insn_i && cntxt.debug_cov_vif.mon_cb.wb_valid) {
             bins hit = {1};
         }
         ebreak : coverpoint cntxt.debug_cov_vif.mon_cb.is_ebreak {

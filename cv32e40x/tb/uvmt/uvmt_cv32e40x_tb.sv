@@ -387,7 +387,7 @@ bind cv32e40x_wrapper
       .wb_illegal(dut_wrap.cv32e40x_wrapper_i.core_i.ex_wb_pipe.illegal_insn),
       .wb_valid(dut_wrap.cv32e40x_wrapper_i.core_i.wb_stage_i.wb_valid_o),
       .ecall_insn_i(dut_wrap.cv32e40x_wrapper_i.core_i.ex_wb_pipe.ecall_insn),
-      .debug_req_i(dut_wrap.cv32e40x_wrapper_i.core_i.controller_i.controller_fsm_i.pending_debug),  // TODO:ropeders "debug_req_i"?
+      .debug_req_i(dut_wrap.cv32e40x_wrapper_i.core_i.controller_i.controller_fsm_i.debug_req_i),
       .debug_mode_q(dut_wrap.cv32e40x_wrapper_i.core_i.controller_i.controller_fsm_i.debug_mode_q),
       .dcsr_q(dut_wrap.cv32e40x_wrapper_i.core_i.cs_registers_i.dcsr_q),
       .depc_q(dut_wrap.cv32e40x_wrapper_i.core_i.cs_registers_i.dpc_q),
