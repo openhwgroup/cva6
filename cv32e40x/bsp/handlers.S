@@ -18,7 +18,10 @@
 #define EXCEPTION_INSN_ACCESS_FAULT 1
 #define EXCEPTION_ILLEGAL_INSN 2
 #define EXCEPTION_BREAKPOINT 3
+#define EXCEPTION_LOAD_ACCESS_FAULT 5
+#define EXCEPTION_STORE_ACCESS_FAULT 7
 #define EXCEPTION_ECALL_M 11
+#define EXCEPTION_INSN_BUS_FAULT 48
 
 .section .text.handlers
 .global __no_irq_handler
@@ -42,6 +45,7 @@
 .global m_fast13_irq_handler
 .global m_fast14_irq_handler
 .global m_fast15_irq_handler
+.global end_handler_ret
 
 .weak u_sw_irq_handler
 .weak m_software_irq_handler
@@ -64,6 +68,8 @@
 .weak m_fast14_irq_handler
 .weak m_fast15_irq_handler
 
+.weak handle_insn_access_fault
+.weak handle_insn_bus_fault
 
 /* exception handling */
 __no_irq_handler:
@@ -157,6 +163,8 @@ u_sw_irq_handler:
 	beq t0, t1, handle_ecall
 	li t1, EXCEPTION_BREAKPOINT
 	beq t0, t1, handle_ebreak
+	li t1, EXCEPTION_INSN_BUS_FAULT
+	beq t0, t1, handle_insn_bus_fault
 	j handle_unknown
 
 handle_ecall:
@@ -178,6 +186,12 @@ handle_insn_access_fault:
 	la a0, insn_access_fault_msg
 	jal ra, puts
 	j end_handler_incr_mepc
+
+handle_insn_bus_fault:
+	la a0, insn_bus_fault_msg
+	jal ra, puts
+	/* Do not advnace the mepc, tests should handle this appropriately */
+	j end_handler_ret
 
 handle_unknown:
 	la a0, unknown_msg
@@ -221,6 +235,8 @@ end_handler_ret:
 .section .rodata
 insn_access_fault_msg:
 	.string "CV32E40X BSP: instruction access fault exception handler entered\n"
+insn_bus_fault_msg:
+	.string "CV32E40X BSP: instruction bus fault exception handler entered\n"
 illegal_insn_msg:
 	.string "CV32E40X BSP: illegal instruction exception handler entered\n"
 ecall_msg:

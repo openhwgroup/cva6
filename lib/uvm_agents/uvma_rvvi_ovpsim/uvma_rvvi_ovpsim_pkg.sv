@@ -37,6 +37,7 @@ package uvma_rvvi_ovpsim_pkg;
    import uvml_logs_pkg ::*;
    import uvma_clknrst_pkg::*;
    import uvma_core_cntrl_pkg::*;
+   import uvma_obi_memory_pkg::*;
    import uvma_rvfi_pkg ::*;
    import uvma_rvvi_pkg ::*;
 
@@ -53,6 +54,7 @@ package uvma_rvvi_ovpsim_pkg;
    
    // Sequences   
    `include "seq/uvma_rvvi_ovpsim_control_seq.sv"
+   `include "seq/uvma_rvvi_ovpsim_obi_seq.sv"
 
    // Agent components   
    `include "uvma_rvvi_ovpsim_state_mon.sv"
