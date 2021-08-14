@@ -89,10 +89,10 @@ task uvma_obi_memory_vp_interrupt_timer_seq_c::vp_body(uvma_obi_memory_mon_trn_c
    if (mon_trn.access_type == UVMA_OBI_MEMORY_ACCESS_WRITE) begin
 
       `uvm_info("VP_VSEQ", $sformatf("Call to virtual peripheral 'interrupt_timer_control':\n%s", mon_trn.sprint()), UVM_HIGH)
-      if (mon_trn.address == 32'h1500_0000) begin
+      if (get_vp_index(mon_trn) == 0) begin
          interrupt_value = mon_trn.data;
       end
-      else if (mon_trn.address == 32'h1500_0004) begin
+      else if (get_vp_index(mon_trn) == 1) begin
          interrupt_timer_value = mon_trn.data;
          ->interrupt_timer_start;
       end
