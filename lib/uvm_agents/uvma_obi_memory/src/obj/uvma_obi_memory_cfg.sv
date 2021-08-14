@@ -73,6 +73,20 @@ class uvma_obi_memory_cfg_c extends uvm_object;
    rand int unsigned                             drv_slv_exokay_failure_wgt;
    rand int unsigned                             drv_slv_exokay_success_wgt;
    
+   // Directed error generation memory address range
+   // If the valid bit is asserted any address in range will repsond with error = 1
+   bit [31:0]                                    directed_slv_err_addr_min;
+   bit [31:0]                                    directed_slv_err_addr_max;
+   bit                                           directed_slv_err_valid;
+
+   // Directed exokay generation memory address range
+   // if the "valid" bit is asserted any address in range will respond
+   // with exokay == 0
+   bit [31:0]                                    directed_slv_exokay_addr_min;
+   bit [31:0]                                    directed_slv_exokay_addr_max;
+   bit                                           directed_slv_exokay_valid;
+   
+
    `uvm_object_utils_begin(uvma_obi_memory_cfg_c)
       `uvm_field_int (                         enabled          , UVM_DEFAULT)
       `uvm_field_enum(uvm_active_passive_enum, is_active        , UVM_DEFAULT)
@@ -111,6 +125,13 @@ class uvma_obi_memory_cfg_c extends uvm_object;
       `uvm_field_enum(uvma_obi_memory_drv_slv_exokay_mode_enum, drv_slv_exokay_mode        , UVM_DEFAULT)
       `uvm_field_int (                                          drv_slv_exokay_failure_wgt , UVM_DEFAULT | UVM_DEC)
       `uvm_field_int (                                          drv_slv_exokay_success_wgt , UVM_DEFAULT | UVM_DEC)
+
+      `uvm_field_int ( directed_slv_err_addr_min      , UVM_DEFAULT)
+      `uvm_field_int ( directed_slv_err_addr_max      , UVM_DEFAULT)
+      `uvm_field_int ( directed_slv_err_valid         , UVM_DEFAULT)
+      `uvm_field_int ( directed_slv_exokay_addr_min   , UVM_DEFAULT)
+      `uvm_field_int ( directed_slv_exokay_addr_max   , UVM_DEFAULT)
+      `uvm_field_int ( directed_slv_exokay_valid      , UVM_DEFAULT)
    `uvm_object_utils_end
    
    constraint defaults_cons {
@@ -202,12 +223,12 @@ class uvma_obi_memory_cfg_c extends uvm_object;
    /**
     * Calculate a random bus error from random knobs
     */
-   extern function bit calc_random_err();
+   extern function bit calc_random_err(bit[31:0] addr);
 
    /**
     * Calculate a random atomic exokay response from random knobs
     */
-   extern function bit calc_random_exokay();   
+   extern function bit calc_random_exokay(bit[31:0] addr);   
 
    /**
     * Returns 1 if this OBI agent supports version 1.2 or higher    
@@ -264,9 +285,17 @@ function int unsigned uvma_obi_memory_cfg_c::calc_random_rvalid_latency();
 
 endfunction : calc_random_rvalid_latency
 
-function bit uvma_obi_memory_cfg_c::calc_random_err();
+function bit uvma_obi_memory_cfg_c::calc_random_err(bit[31:0] addr);
 
    bit err;
+
+   
+   // Check for a directed error reponse first
+   if (directed_slv_err_valid && 
+       (addr >= directed_slv_err_addr_min) &&
+       (addr <= directed_slv_err_addr_max)) begin
+      return 1;
+   end
 
    case (drv_slv_err_mode)
       UVMA_OBI_MEMORY_DRV_SLV_ERR_MODE_OK      : err = 0;
@@ -282,9 +311,16 @@ function bit uvma_obi_memory_cfg_c::calc_random_err();
 
 endfunction : calc_random_err
 
-function bit uvma_obi_memory_cfg_c::calc_random_exokay();
+function bit uvma_obi_memory_cfg_c::calc_random_exokay(bit[31:0] addr);
 
    bit exokay;
+
+   // Check for a directed error reponse first
+   if (directed_slv_exokay_valid && 
+       (addr <= directed_slv_exokay_addr_min) &&
+       (addr <= directed_slv_exokay_addr_min)) begin
+      return 0;
+   end
 
    case (drv_slv_exokay_mode)
       UVMA_OBI_MEMORY_DRV_SLV_EXOKAY_MODE_SUCCESS : exokay = 1;
@@ -307,4 +343,5 @@ function bit uvma_obi_memory_cfg_c::is_1p2_or_higher();
 endfunction : is_1p2_or_higher
 
 `endif // __UVMA_OBI_MEMORY_CFG_SV__
+
 

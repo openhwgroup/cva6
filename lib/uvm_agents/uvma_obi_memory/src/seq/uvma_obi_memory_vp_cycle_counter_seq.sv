@@ -50,6 +50,11 @@ class uvma_obi_memory_vp_cycle_counter_seq_c extends uvma_obi_memory_vp_base_seq
    extern virtual task vp_body(uvma_obi_memory_mon_trn_c mon_trn);
 
    /**
+    * Implement accessor to return number of register
+    */
+   extern virtual function int unsigned get_num_words();
+
+   /**
     * Implements the virtual register to read or write the counter
     */
    extern virtual task rw_counter(uvma_obi_memory_mon_trn_c mon_trn, uvma_obi_memory_slv_seq_item_c slv_rsp);
@@ -84,12 +89,19 @@ task uvma_obi_memory_vp_cycle_counter_seq_c::body();
 
 endtask : body
 
+function int unsigned uvma_obi_memory_vp_cycle_counter_seq_c::get_num_words();
+
+   return 2;
+
+endfunction : get_num_words
+
 task uvma_obi_memory_vp_cycle_counter_seq_c::vp_body(uvma_obi_memory_mon_trn_c mon_trn);
    
    uvma_obi_memory_slv_seq_item_c  slv_rsp;
    
    `uvm_create(slv_rsp)
    
+   slv_rsp.orig_trn = mon_trn;
    slv_rsp.err = 1'b0;
 
    case (get_vp_index(mon_trn))

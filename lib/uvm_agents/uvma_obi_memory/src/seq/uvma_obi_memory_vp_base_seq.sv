@@ -33,11 +33,6 @@ virtual class uvma_obi_memory_vp_base_seq_c extends uvma_obi_memory_slv_base_seq
    // Should be filled in during registration
    bit [31:0] start_address; 
 
-   // The configured number of virtual perhperal registers (each 32-bits wide) supported by 
-   // this virtual peripheral sequence
-   // Should be filled in during registration
-   int unsigned num_words;
-
    `uvm_field_utils_begin(uvma_obi_memory_vp_base_seq_c)
    `uvm_field_utils_end
       
@@ -58,9 +53,14 @@ virtual class uvma_obi_memory_vp_base_seq_c extends uvma_obi_memory_slv_base_seq
    extern virtual function int unsigned get_vp_index(uvma_obi_memory_mon_trn_c mon_trn);
 
    /**
-    * Derived classes must implement
+    * Derived classes must implement the operation of the virtual peripheral
     */
    pure virtual task vp_body(uvma_obi_memory_mon_trn_c mon_trn);
+
+   /**
+    * Derived classes must implement accessor to return number of virtual peripheral registers
+    */
+   pure virtual function int unsigned get_num_words();
 
 endclass : uvma_obi_memory_vp_base_seq_c
 
@@ -98,12 +98,12 @@ function int unsigned uvma_obi_memory_vp_base_seq_c::get_vp_index(uvma_obi_memor
    index = (mon_trn.address - start_address) >> 2;
 
    // Fatal if the index is greater than expected
-   if (index >= num_words) begin
+   if (index >= get_num_words()) begin
       `uvm_fatal("FATAL", $sformatf("%s: get_vp_index(), mon_trn.address 0x%08x base address 0x%08x, should only have %0s vp registers", 
                                     this.get_name(), 
                                     mon_trn.address,
                                     start_address,
-                                    num_words));
+                                    get_num_words()));
    end
 
    return index;

@@ -132,7 +132,7 @@ endfunction : add_r_fields
 
 function void uvma_obi_memory_slv_base_seq_c::add_err(uvma_obi_memory_slv_seq_item_c slv_rsp);
 
-   slv_rsp.err = cfg.calc_random_err();
+   slv_rsp.err = cfg.calc_random_err(slv_rsp.orig_trn.address);
    
 endfunction : add_err
 
@@ -144,7 +144,7 @@ function void uvma_obi_memory_slv_base_seq_c::add_exokay(uvma_obi_memory_mon_trn
       return;
    end
 
-   slv_rsp.exokay = cfg.calc_random_exokay();
+   slv_rsp.exokay = cfg.calc_random_exokay(slv_rsp.orig_trn.address);
    
 endfunction : add_exokay
 
@@ -157,7 +157,8 @@ endfunction : add_ruser
 
 function void uvma_obi_memory_slv_base_seq_c::add_rchk(uvma_obi_memory_slv_seq_item_c slv_rsp);
 
-   slv_rsp.err = '0;
+   // FIXME:strichmo:need to implement this
+   // slv_rsp.rchk = '0;
    
 endfunction : add_rchk
 

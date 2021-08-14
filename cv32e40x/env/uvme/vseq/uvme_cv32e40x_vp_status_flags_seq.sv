@@ -25,6 +25,8 @@
  */
 class uvme_cv32e40x_vp_status_flags_seq_c extends uvma_obi_memory_vp_base_seq_c;
 
+   localparam NUM_WORDS = 2;
+
    uvme_cv32e40x_cntxt_c cv32e40x_cntxt;
 
    `uvm_object_utils_begin(uvme_cv32e40x_vp_status_flags_seq_c)
@@ -34,6 +36,11 @@ class uvme_cv32e40x_vp_status_flags_seq_c extends uvma_obi_memory_vp_base_seq_c;
     * Default constructor.
     */
    extern function new(string name="uvme_cv32e40x_vp_status_flags_seq_c");
+   
+   /**
+    * Implement number of peripherals
+    */
+   extern virtual function int unsigned get_num_words();
    
    /**
     * Implement sequence that will return a random number
@@ -63,11 +70,18 @@ task uvme_cv32e40x_vp_status_flags_seq_c::body();
 
 endtask : body
 
+function int unsigned uvme_cv32e40x_vp_status_flags_seq_c::get_num_words();
+
+   return NUM_WORDS;
+
+endfunction  : get_num_words
+
 task uvme_cv32e40x_vp_status_flags_seq_c::vp_body(uvma_obi_memory_mon_trn_c mon_trn);
 
    uvma_obi_memory_slv_seq_item_c  slv_rsp;
 
    `uvm_create(slv_rsp)
+   slv_rsp.orig_trn = mon_trn;
    slv_rsp.err = 1'b0;
 
    if (mon_trn.access_type == UVMA_OBI_MEMORY_ACCESS_WRITE) begin
