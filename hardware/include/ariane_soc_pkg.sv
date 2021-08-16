@@ -58,9 +58,9 @@ package ariane_soc;
   localparam logic[63:0] TimerLength    = 64'h1000;
   localparam logic[63:0] SPILength      = 64'h800000;
   localparam logic[63:0] EthernetLength = 64'h10000;
-  localparam logic[63:0] HYAXILength    = 64'h800000;   // 8MB of hyperram
+  localparam logic[63:0] HYAXILength    = 64'h8000000;  // 128MB of hyperram
   localparam logic[63:0] L2SPMLength    = 64'h100000;   // 1MB of scratchpad memory 
-  localparam logic[63:0] APB_SLVSLength = 64'h4000;     // 1 slave = 4 KB (UDMA = 2 slaves + FLLs)
+  localparam logic[63:0] APB_SLVSLength = 64'h5000;     // 1 slave = 4 KB ( UDMA(2 slaves) + GPIOs + FLLs + AXI_HYPER_REGS )
   // Instantiate AXI protocol checkers
   localparam bit GenProtocolChecker = 1'b0;
 

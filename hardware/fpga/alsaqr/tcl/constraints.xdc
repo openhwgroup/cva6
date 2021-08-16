@@ -3,7 +3,8 @@ create_clock -period 8.000 -name ref_clk [get_ports ref_clk_p]
 set_property CLOCK_DEDICATED_ROUTE ANY_CMT_COLUMN [get_nets i_sysclk_iobuf/O]
 
 #alsaqr clock
-create_clock -period 100.000  [get_pins i_clk_manager/clk_out1]
+create_clock -period 100.000  [get_pins  i_alsaqr/i_host_domain/i_apb_subsystem/i_alsaqr_clk_rst_gen/i_fpga_clk_gen/i_clk_manager/clk_out1]
+create_clock -period 100.000  [get_pins  i_alsaqr/i_host_domain/i_apb_subsystem/i_alsaqr_clk_rst_gen/i_fpga_clk_gen/i_clk_manager/clk_out2]
 
 ## JTAG
 create_clock -period 100.000 -name tck -waveform {0.000 50.000} [get_ports pad_jtag_tck]
@@ -55,11 +56,11 @@ create_clock -period 100.000 -name rwds_clk [get_ports FMC_hyper_rwds0]
 set_property CLOCK_DEDICATED_ROUTE FALSE [get_nets i_alsaqr/i_pad_frame/padinst_axi_hyper_rwds0/iobuf_i/O]
 
 # Create the PHY clock
-create_generated_clock -name clk_phy -source [get_pins  i_clk_manager/clk_out1] -divide_by 2 [get_pins i_alsaqr/i_host_domain/i_clk_gen_hyper/clk0_o]
-create_generated_clock -name clk_phy_90 -source [get_pins  i_clk_manager/clk_out1] -edges {2 4 6} [get_pins i_alsaqr/i_host_domain/i_clk_gen_hyper/clk90_o]
+create_generated_clock -name clk_phy -source [get_pins  i_alsaqr/i_host_domain/i_apb_subsystem/i_alsaqr_clk_rst_gen/i_fpga_clk_gen/i_clk_manager/clk_out1] -divide_by 2 [get_pins i_alsaqr/i_host_domain/i_clk_gen_hyper/clk0_o]
+create_generated_clock -name clk_phy_90 -source [get_pins   i_alsaqr/i_host_domain/i_apb_subsystem/i_alsaqr_clk_rst_gen/i_fpga_clk_gen/i_clk_manager/clk_out1] -edges {2 4 6} [get_pins i_alsaqr/i_host_domain/i_clk_gen_hyper/clk90_o]
 
 # Inform tool that system and PHY-derived clocks are asynchronous, but may have timed arcs between them
-set_clock_groups -asynchronous -group [get_clocks -of_objects [get_pins  i_clk_manager/clk_out1]] -group [get_clocks -of_objects [get_pins i_alsaqr/i_host_domain/i_clk_gen_hyper/clk90_o]] -group [get_clocks -of_objects [get_pins i_alsaqr/i_host_domain/i_clk_gen_hyper/clk0_o]]
+set_clock_groups -asynchronous -group [get_clocks -of_objects [get_pins   i_alsaqr/i_host_domain/i_apb_subsystem/i_alsaqr_clk_rst_gen/i_fpga_clk_gen/i_clk_manager/clk_out1]] -group [get_clocks -of_objects [get_pins i_alsaqr/i_host_domain/i_clk_gen_hyper/clk90_o]] -group [get_clocks -of_objects [get_pins i_alsaqr/i_host_domain/i_clk_gen_hyper/clk0_o]]
 
 
 set_false_path -from [get_clocks clk_phy_90] -to [get_clocks clk_phy]

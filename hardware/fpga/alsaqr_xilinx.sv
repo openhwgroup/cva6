@@ -65,31 +65,10 @@ module alsaqr_xilinx
       .IB(ref_clk_n),
       .O(ref_clk)
       );
+   
    logic       s_locked;
    logic       s_clk;
    
-   xilinx_clk_mngr i_clk_manager
-    (
-     .resetn(reset_n),
-     .clk_in1(ref_clk),
-     .clk_out1(s_clk),
-     .locked(s_locked)
-     );
-
-   // ---------------
-   // RTC for CLINT
-   // ---------------
-   // divide clock by two
-   logic       rtc;
-   
-   always_ff @(posedge s_clk or negedge reset_n) begin
-     if (~reset_n) begin
-       rtc <= 0;
-     end else begin
-       rtc <= rtc ^ 1'b1;
-     end
-   end   
-
    logic       reset_n;
 
    assign reset_n = ~pad_reset & pad_jtag_trst;
@@ -108,9 +87,8 @@ module alsaqr_xilinx
     al_saqr #(
         .JtagEnable        ( 1'b1          )
     ) i_alsaqr (
-        .clk_i                ( s_clk           ),
         .rst_ni               ( reset_n         ),
-        .rtc_i                ( rtc             ),
+        .rtc_i                ( ref_clk         ),
         .dmi_req_valid        (                 ),
         .dmi_req_ready        (                 ),
         .dmi_req_bits_addr    (                 ),

@@ -14,6 +14,7 @@
 //              Instantiates an AXI-Bus and memories
 
 `include "register_interface/typedef.svh"
+`include "register_interface/assign.svh"
 `include "axi/assign.svh"
 
 module host_domain 
@@ -201,7 +202,13 @@ module host_domain
    
    XBAR_TCDM_BUS axi_bridge_2_interconnect[AXI64_2_TCDM32_N_PORTS]();
    XBAR_TCDM_BUS udma_2_tcdm_channels[NB_UDMA_TCDM_CHANNEL]();
-   
+  
+   REG_BUS #(
+        .ADDR_WIDTH( RegAw ),
+        .DATA_WIDTH( RegDw )
+    ) i_hyaxicfg_rbus (
+        .clk_i (s_soc_clk)
+    ); 
  
    cva6_subsytem # (
         .NUM_WORDS         ( NUM_WORDS  ),
@@ -273,7 +280,7 @@ module host_domain
        .AXI_DATA_WIDTH ( AXI_DATA_WIDTH           ),
        .AXI_USER_WIDTH ( AXI_USER_WIDTH           ),
        .NUM_GPIO       ( NUM_GPIO                 )
-     ) (
+     ) i_apb_subsystem (
       .clk_i                  ( s_soc_clk                      ),
       .rtc_i                  ( rtc_i                          ),
       .rst_ni                 ( rst_ni                         ),
@@ -282,6 +289,7 @@ module host_domain
       .rstn_soc_sync_o        ( s_synch_soc_rst                ),
       .rstn_global_sync_o     ( s_synch_global_rst             ),
       .axi_apb_slave          ( apb_axi_bus                    ),
+      .hyaxicfg_reg_master    ( i_hyaxicfg_rbus                ),
       .udma_tcdm_channels     ( udma_2_tcdm_channels           ),
 
       .events_o               ( s_udma_events                  ),
@@ -341,13 +349,9 @@ module host_domain
 
       );
                      
-
-   assign reg_req.addr  = '0;
-   assign reg_req.write = '0;
-   assign reg_req.wdata = '0;
-   assign reg_req.wstrb = '0;
-   assign reg_req.valid = '0;    
- 
+  `REG_BUS_ASSIGN_TO_REQ(reg_req,i_hyaxicfg_rbus)
+  `REG_BUS_ASSIGN_FROM_RSP(i_hyaxicfg_rbus,reg_rsp)
+    
   `AXI_ASSIGN_TO_REQ(axi_hyper_req,hyper_axi_bus)
   `AXI_ASSIGN_FROM_RESP(hyper_axi_bus,axi_hyper_rsp)
 
