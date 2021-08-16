@@ -54,7 +54,7 @@
    rand bit                      ext_f_supported;
    rand bit                      ext_d_supported;
    rand bit                      ext_zifencei_supported;
-   rand bit                      ext_zicsri_supported;
+   rand bit                      ext_zicsr_supported;
 
    rand bit                      mode_s_supported;
    rand bit                      mode_u_supported;
@@ -118,7 +118,7 @@
       `uvm_field_int(                          ext_d_supported                , UVM_DEFAULT          )
       `uvm_field_int(                          ext_v_supported                , UVM_DEFAULT          )
       `uvm_field_int(                          ext_zifencei_supported         , UVM_DEFAULT          )
-      `uvm_field_int(                          ext_zicsri_supported           , UVM_DEFAULT          )
+      `uvm_field_int(                          ext_zicsr_supported            , UVM_DEFAULT          )
       `uvm_field_int(                          mode_s_supported               , UVM_DEFAULT          )
       `uvm_field_int(                          mode_u_supported               , UVM_DEFAULT          )
       `uvm_field_int(                          pmp_supported                  , UVM_DEFAULT          )
@@ -176,7 +176,7 @@
    /**
     * Creates sub-configuration objects.
     */
-   extern function new(string name="uvme_cv32e40x_cfg");
+   extern function new(string name="uvme_cv_base_cfg");
 
    /**
     * post randomization hooks
@@ -227,7 +227,7 @@
 
  endclass : uvma_core_cntrl_cfg_c
 
-function uvma_core_cntrl_cfg_c::new(string name="uvme_cv32e40x_cfg");
+function uvma_core_cntrl_cfg_c::new(string name="uvme_cv_base_cfg");
    
    super.new(name);
 

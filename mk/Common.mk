@@ -366,13 +366,22 @@ endif
 	@echo "$(BANNER)"
 	$(RISCV_EXE_PREFIX)objcopy -O verilog \
 		$< \
-		$@ \
-		--change-section-address  .debugger=0x3FC000 \
-		--change-section-address  .debugger_exception=0x3FC800
+		$@		
 	@echo ""
 	$(RISCV_EXE_PREFIX)readelf -a $< > $*.readelf
 	@echo ""
-	$(RISCV_EXE_PREFIX)objdump -D -S $*.elf > $*.objdump
+	$(RISCV_EXE_PREFIX)objdump \
+		-d \
+		-M no-aliases \
+		-M numeric \
+		-S $*.elf > $*.objdump
+	$(RISCV_EXE_PREFIX)objdump \
+                -d \
+                -S \
+				-M no-aliases \
+				-M numeric \
+                -l \
+				$*.elf | ${CORE_V_VERIF}/bin/objdump2itb - > $*.itb
 
 bsp:
 	@echo "$(BANNER)"
@@ -634,6 +643,10 @@ include $(CORE_V_VERIF)/mk/uvmt/dvt.mk
 else
 ifeq ($(MAKECMDGOALS), create_dvt_build_file)
 include $(CORE_V_VERIF)/mk/uvmt/dvt.mk
+else
+ifeq ($(MAKECMDGOALS), dvt_dump_env_vars)
+include $(CORE_V_VERIF)/mk/uvmt/dvt.mk
+endif
 endif
 endif
 

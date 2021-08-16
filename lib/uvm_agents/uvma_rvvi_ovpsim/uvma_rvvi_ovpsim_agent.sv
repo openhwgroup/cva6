@@ -179,6 +179,16 @@ function void uvma_rvvi_ovpsim_agent_c::retrieve_vif();
       `uvm_info("VIF", $sformatf("Found vif handle of type %s in uvm_config_db", 
                                  $typename(rvvi_ovpsim_cntxt.ovpsim_io_vif)), UVM_DEBUG)
    end
+
+   if (!uvm_config_db#(virtual RVVI_memory)::get(this, "", $sformatf("ovpsim_mem_vif"), rvvi_ovpsim_cntxt.ovpsim_mem_vif)) begin
+      `uvm_fatal("VIF", $sformatf("Could not find vif handle of type %s in uvm_config_db", 
+                                    $typename(rvvi_ovpsim_cntxt.ovpsim_mem_vif)))
+   end
+   else begin
+      `uvm_info("VIF", $sformatf("Found vif handle of type %s in uvm_config_db", 
+                                 $typename(rvvi_ovpsim_cntxt.ovpsim_mem_vif)), UVM_DEBUG)
+   end
+
 endfunction : retrieve_vif
 
 
@@ -200,10 +210,12 @@ task uvma_rvvi_ovpsim_agent_c::run_phase(uvm_phase phase);
 
    if (cfg.is_active == UVM_ACTIVE) begin
       uvma_rvvi_ovpsim_control_seq_c#(ILEN,XLEN) control_seq = uvma_rvvi_ovpsim_control_seq_c#(ILEN, XLEN)::type_id::create("control_seq");
+      uvma_rvvi_ovpsim_obi_seq_c#(ILEN, XLEN) obi_seq = uvma_rvvi_ovpsim_obi_seq_c#(ILEN, XLEN)::type_id::create("obi_seq");
 
-      `uvm_info("RVVIOVPAGT", "Starting the RVVI control sequence...", UVM_LOW);
+      `uvm_info("RVVIOVPAGT", "Starting the RVVI sequences...", UVM_LOW);
       fork
          control_seq.start(sequencer);
+         obi_seq.start(sequencer);
       join_none
    end
 

@@ -38,7 +38,7 @@ INDAGO            = $(CV_TOOL_PREFIX) indago
 IMC               = $(CV_SIM_PREFIX) imc
 
 # Paths
-XRUN_RESULTS         ?= $(if $(CV_RESULTS),$(CV_RESULTS)/xrun_results,$(MAKE_PATH)/xrun_results)
+XRUN_RESULTS         ?= $(if $(CV_RESULTS),$(abspath $(CV_RESULTS))/xrun_results,$(MAKE_PATH)/xrun_results)
 XRUN_COREVDV_RESULTS ?= $(XRUN_RESULTS)/corev-dv
 XRUN_DIR             ?= $(XRUN_RESULTS)/$(CFG)/xcelium.d
 XRUN_UVMHOME_ARG     ?= CDNS-1.2-ML
@@ -158,8 +158,11 @@ XRUN_UVM_MACROS_INC_FILE = $(DV_UVMT_PATH)/uvmt_$(CV_CORE_LC)_uvm_macros_inc.sv
 XRUN_FILE_LIST ?= -f $(DV_UVMT_PATH)/uvmt_$(CV_CORE_LC).flist
 XRUN_FILE_LIST += -f $(DV_UVMT_PATH)/imperas_iss.flist
 XRUN_USER_COMPILE_ARGS += +define+$(CV_CORE_UC)_TRACE_EXECUTION
+XRUN_USER_COMPILE_ARGS += +define+UVM
 ifeq ($(call IS_YES,$(USE_ISS)),YES)
-    XRUN_PLUSARGS +="+USE_ISS"
+	XRUN_PLUSARGS += +USE_ISS
+else
+    XRUN_PLUSARGS += +DISABLE_OVPSIM
 endif
 ifeq ($(call IS_YES,$(USE_RVVI)),YES)
     XRUN_PLUSARGS +="+USE_RVVI"
@@ -310,8 +313,14 @@ endif
 
 # corev-dv tests needs an added run_index_suffix, blank for other tests
 ifeq ($(shell echo $(TEST) | head -c 6),corev_)
-	OPT_RUN_INDEX_SUFFIX=_$(RUN_INDEX)
+export OPT_RUN_INDEX_SUFFIX=_$(RUN_INDEX)
 endif
+
+check:
+	echo "it is"	
+	echo $(OPT_RUN_INDEX_SUFFIX)
+	echo $(RUN_INDEX)
+	echo $(TEST)
 
 test: $(XRUN_SIM_PREREQ) $(TEST_TEST_DIR)/$(TEST_PROGRAM)$(OPT_RUN_INDEX_SUFFIX).hex gen_ovpsim_ic
 	mkdir -p $(XRUN_RESULTS)/$(CFG)/$(TEST_NAME)_$(RUN_INDEX) && \
@@ -326,7 +335,8 @@ test: $(XRUN_SIM_PREREQ) $(TEST_TEST_DIR)/$(TEST_PROGRAM)$(OPT_RUN_INDEX_SUFFIX)
 			+UVM_TESTNAME=$(TEST_UVM_TEST) \
 			+elf_file=$(TEST_TEST_DIR)/$(TEST_PROGRAM)$(OPT_RUN_INDEX_SUFFIX).elf \
 			+nm_file=$(TEST_TEST_DIR)/$(TEST_PROGRAM)$(OPT_RUN_INDEX_SUFFIX).nm \
-			+firmware=$(TEST_TEST_DIR)/$(TEST_PROGRAM)$(OPT_RUN_INDEX_SUFFIX).hex
+			+firmware=$(TEST_TEST_DIR)/$(TEST_PROGRAM)$(OPT_RUN_INDEX_SUFFIX).hex \
+			+itb_file=$(TEST_TEST_DIR)/$(TEST_PROGRAM)$(OPT_RUN_INDEX_SUFFIX).itb			
 	$(POST_TEST)
 
 ################################################################################

@@ -1,0 +1,11 @@
+# Test definition YAML for corev-dv test generator
+
+name: corev_rand_jump_stress_test
+uvm_test: $(CV_CORE_LC)_instr_base_test
+description: >
+    RISCV-DV generated jump stress test
+plusargs: >
+    +instr_cnt=5000
+    +num_of_sub_program=5
+    +directed_instr_1=riscv_jal_instr,20
+

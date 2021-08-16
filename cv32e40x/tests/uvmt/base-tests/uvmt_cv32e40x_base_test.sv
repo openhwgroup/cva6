@@ -32,7 +32,7 @@ class uvmt_cv32e40x_base_test_c extends uvm_test;
    // Objects
    rand uvmt_cv32e40x_test_cfg_c   test_cfg ;
    rand uvme_cv32e40x_cfg_c        env_cfg  ;
-   uvme_cv32e40x_cntxt_c           env_cntxt;
+   rand uvme_cv32e40x_cntxt_c      env_cntxt;
    uvml_logs_rs_text_c             rs       ;   
    uvml_logs_reg_logger_cbs_c      reg_cbs  ;
    
@@ -127,6 +127,11 @@ class uvmt_cv32e40x_base_test_c extends uvm_test;
     * This is done by checking the properties of the phase argument.
     */
    extern virtual function void phase_ended(uvm_phase phase);
+
+   /**
+    * post_randomize hook to complete configuration of test/environment config object
+    */
+   extern function void post_randomize();
 
    /**
     * Retrieves virtual interfaces from UVM configuration database.
@@ -348,6 +353,11 @@ function void uvmt_cv32e40x_base_test_c::phase_ended(uvm_phase phase);
    end
    
 endfunction : phase_ended
+
+function void uvmt_cv32e40x_base_test_c::post_randomize();
+
+
+endfunction : post_randomize
 
 
 function void uvmt_cv32e40x_base_test_c::retrieve_vifs();

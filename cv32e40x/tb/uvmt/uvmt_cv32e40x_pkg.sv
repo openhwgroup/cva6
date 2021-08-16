@@ -1,6 +1,6 @@
 //
 // Copyright 2020 OpenHW Group
-// Copyright 2020 Datum Technologies
+// Copyright 2020 Datum Technology Corporation
 // 
 // Licensed under the Solderpad Hardware Licence, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -38,7 +38,8 @@ package uvmt_cv32e40x_pkg;
    import uvme_cv32e40x_pkg::*;
    import uvml_hrtbt_pkg::*;
    import uvml_logs_pkg::*;
-   //import uvma_debug_pkg::*;
+   import uvma_rvvi_ovpsim_pkg::*;
+   
    
    // Constants / Parameters / Structs / Enums
    `include "uvmt_cv32e40x_constants.sv"

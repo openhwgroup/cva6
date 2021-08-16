@@ -21,6 +21,7 @@
 `define __UVME_CV32E40X_TDEFS_SV__
 
 
+
 // The following pseudo-instructions have been removed:
 // BEQZ, BGEZ, BGT,BGTU,BGTZ, BLE,BLEU,BLEZ,BLTZ, BNEZ, ILLEGAL
 // J, JR, MV, NOT, NEG, NEGW, RET, SEQZ, SGTZ, SLTZ, SNEZ
@@ -113,5 +114,11 @@ typedef struct {
     bit          compressed;
     bit[31:0]    pc;
 } ins_t;
+
+typedef enum {
+    FETCH_CONSTANT,
+    FETCH_INITIAL_DELAY_CONSTANT,
+    FETCH_RANDOM_TOGGLE
+} fetch_toggle_t;
 
 `endif // __UVME_CV32E40X_TDEFS_SV__

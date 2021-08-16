@@ -36,7 +36,7 @@ DVE              = $(CV_TOOL_PREFIX)dve
 URG               = $(CV_SIM_PREFIX)urg
 
 # Paths
-VCS_RESULTS     ?= $(if $(CV_RESULTS),$(CV_RESULTS)/vcs_results,$(MAKE_PATH)/vcs_results)
+VCS_RESULTS     ?= $(if $(CV_RESULTS),$(abspath $(CV_RESULTS))/vcs_results,$(MAKE_PATH)/vcs_results)
 VCS_COREVDV_RESULTS ?= $(VCS_RESULTS)/corev-dv
 VCS_DIR         ?= $(VCS_RESULTS)/$(CFG)/vcs.d
 VCS_ELAB_COV     = -cm line+cond+tgl+fsm+branch+assert  -cm_dir $(MAKECMDGOALS)/$(MAKECMDGOALS).vdb
@@ -133,7 +133,9 @@ VCS_FILE_LIST ?= -f $(DV_UVMT_PATH)/uvmt_$(CV_CORE_LC).flist
 VCS_FILE_LIST += -f $(DV_UVMT_PATH)/imperas_iss.flist
 VCS_USER_COMPILE_ARGS += +define+$(CV_CORE_UC)_TRACE_EXECUTION
 ifeq ($(call IS_YES,$(USE_ISS)),YES)
-    VCS_PLUSARGS +="+USE_ISS"
+    VCS_PLUSARGS += +USE_ISS
+else
+	VCS_PLUSARGS += +DISABLE_OVPSIM
 endif
 
 VCS_RUN_BASE_FLAGS   ?= $(VCS_GUI) \
@@ -210,7 +212,7 @@ endif
 
 # corev-dv tests needs an added run_index suffix
 ifeq ($(shell echo $(TEST) | head -c 6),corev_)
-  OPT_RUN_INDEX_SUFFIX=_$(RUN_INDEX)
+export OPT_RUN_INDEX_SUFFIX=_$(RUN_INDEX)
 endif
 
 test: $(VCS_SIM_PREREQ) $(TEST_TEST_DIR)/$(TEST_PROGRAM)$(OPT_RUN_INDEX_SUFFIX).hex gen_ovpsim_ic
@@ -223,6 +225,7 @@ test: $(VCS_SIM_PREREQ) $(TEST_TEST_DIR)/$(TEST_PROGRAM)$(OPT_RUN_INDEX_SUFFIX).
 			$(TEST_PLUSARGS) \
 			+UVM_TESTNAME=$(TEST_UVM_TEST) \
 			+elf_file=$(TEST_TEST_DIR)/$(TEST_PROGRAM)$(OPT_RUN_INDEX_SUFFIX).elf \
+			+itb_file=$(TEST_TEST_DIR)/$(TEST_PROGRAM)$(OPT_RUN_INDEX_SUFFIX).itb \
 			+firmware=$(TEST_TEST_DIR)/$(TEST_PROGRAM)$(OPT_RUN_INDEX_SUFFIX).hex
 
 ################################################################################

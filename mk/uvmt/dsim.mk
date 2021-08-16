@@ -27,7 +27,7 @@ DSIM                    = dsim
 DSIM_HOME              ?= /tools/Metrics/dsim
 DSIM_CMP_FLAGS         ?= $(TIMESCALE) $(SV_CMP_FLAGS) -top uvmt_$(CV_CORE_LC)_tb -suppress MultiBlockWrite
 DSIM_UVM_ARGS          ?= +incdir+$(UVM_HOME)/src $(UVM_HOME)/src/uvm_pkg.sv
-DSIM_RESULTS           ?= $(if $(CV_RESULTS),$(CV_RESULTS)/dsim_results,$(MAKE_PATH)/dsim_results)
+DSIM_RESULTS           ?= $(if $(CV_RESULTS),$(abspath $(CV_RESULTS))/dsim_results,$(MAKE_PATH)/dsim_results)
 DSIM_COREVDV_RESULTS   ?= $(DSIM_RESULTS)/corev-dv
 DSIM_WORK              ?= $(DSIM_RESULTS)/$(CFG)/dsim_work
 DSIM_IMAGE             ?= dsim.out
@@ -35,11 +35,15 @@ DSIM_RUN_FLAGS         ?=
 DSIM_CODE_COV_SCOPE    ?= $(MAKE_PATH)/../tools/dsim/ccov_scopes.txt
 DSIM_USE_ISS           ?= YES
 
-DSIM_FILE_LIST ?= -f $(DV_UVMT_PATH)/uvmt_$(CV_CORE_LC).flist
+DSIM_FILE_LIST         ?= -f $(DV_UVMT_PATH)/uvmt_$(CV_CORE_LC).flist
 DSIM_FILE_LIST         += -f $(DV_UVMT_PATH)/imperas_iss.flist
-DSIM_USER_COMPILE_ARGS += "+define+UVM +define+$(CV_CORE_UC)_TRACE_EXECUTION"
+DSIM_COMPILE_ARGS      += +define+$(CV_CORE_UC)_TRACE_EXECUTION
+
+DSIM_USER_COMPILE_ARGS ?=
 ifeq ($(USE_ISS),YES)
 	DSIM_RUN_FLAGS     += +USE_ISS
+else
+	DSIM_RUN_FLAGS     += +DISABLE_OVPSIM
 endif
 ifeq ($(call IS_YES,$(USE_RVVI)),YES)
     DSIM_RUN_FLAGS     += +USE_RVVI
@@ -93,7 +97,7 @@ DSIM_DMP_FLAGS ?= -waves $(DSIM_DMP_FILE)
 endif
 
 ifneq ($(CCOV), 0)
-	DSIM_USER_COMPILE_ARGS += -code-cov block -code-cov-scope-specs $(DSIM_CODE_COV_SCOPE)
+	DSIM_COMPILE_ARGS += -code-cov block -code-cov-scope-specs $(DSIM_CODE_COV_SCOPE)
 	DSIM_RUN_FLAGS         += -code-cov block -code-cov-scope-specs $(DSIM_CODE_COV_SCOPE)
 endif
 
@@ -126,6 +130,7 @@ comp: mk_results $(CV_CORE_PKG) $(OVP_MODEL_DPI)
 		$(DSIM_UVM_ARGS) \
 		$(DSIM_ACC_FLAGS) \
 		$(CFG_COMPILE_FLAGS) \
+		$(DSIM_COMPILE_ARGS) \
 		$(DSIM_USER_COMPILE_ARGS) \
 		+incdir+$(DV_UVME_PATH) \
 		+incdir+$(DV_UVMT_PATH) \
@@ -198,7 +203,7 @@ endif
 
 # Corev-dv needs an optional run index suffix
 ifeq ($(shell echo $(TEST) | head -c 6),corev_)
-	OPT_RUN_INDEX_SUFFIX=_$(RUN_INDEX)
+export OPT_RUN_INDEX_SUFFIX=_$(RUN_INDEX)
 endif
 
 test: $(DSIM_SIM_PREREQ) $(TEST_TEST_DIR)/$(TEST_PROGRAM)$(OPT_RUN_INDEX_SUFFIX).hex gen_ovpsim_ic
@@ -216,7 +221,8 @@ test: $(DSIM_SIM_PREREQ) $(TEST_TEST_DIR)/$(TEST_PROGRAM)$(OPT_RUN_INDEX_SUFFIX)
 			-sv_lib $(OVP_MODEL_DPI) \
 			+UVM_TESTNAME=$(TEST_UVM_TEST) \
 			+firmware=$(TEST_TEST_DIR)/$(TEST_PROGRAM)$(OPT_RUN_INDEX_SUFFIX).hex \
-			+elf_file=$(TEST_TEST_DIR)/$(TEST_PROGRAM)$(OPT_RUN_INDEX_SUFFIX).elf
+			+elf_file=$(TEST_TEST_DIR)/$(TEST_PROGRAM)$(OPT_RUN_INDEX_SUFFIX).elf \
+			+itb_file=$(TEST_TEST_DIR)/$(TEST_PROGRAM)$(OPT_RUN_INDEX_SUFFIX).itb
 
 # Similar to above, but for the ASM directory.
 asm: comp $(ASM_DIR)/$(ASM_PROG).hex $(ASM_DIR)/$(ASM_PROG).elf

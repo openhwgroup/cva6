@@ -38,8 +38,6 @@ tests:
     description: Illegal instruction test
     dir: cv32e40x/sim/uvmt
     cmd: make test COREV=YES TEST=illegal_instr_test
-    # FIXME:strichmo:Restore dsim when Issue #712 is fixed by Metrics
-    skip_sim: dsim
 
   cv32e40x_csr_access_test:
     build: uvmt_cv32e40x
@@ -142,8 +140,6 @@ tests:
     dir: cv32e40x/sim/uvmt    
     cmd: make gen_corev-dv test COREV=YES TEST=corev_rand_interrupt
     num: 2    
-    # FIXME:strichmo:Restore dsim when Issue #712 is fixed by Metrics
-    skip_sim: dsim
 
   # FIXME:strichmo:This is currently known to not work, update later
   # corev_rand_debug:
@@ -217,16 +213,12 @@ tests:
     description: Misalign test
     dir: cv32e40x/sim/uvmt
     cmd: make test COREV=YES TEST=misalign
-    # FIXME:strichmo:Restore dsim when Issue #712 is fixed by Metrics
-    skip_sim: dsim
 
   dhrystone:
     build: uvmt_cv32e40x
     description: Dhrystone test
     dir: cv32e40x/sim/uvmt
     cmd: make test COREV=YES TEST=dhrystone
-    # FIXME:strichmo:Restore dsim when Issue #712 is fixed by Metrics
-    skip_sim: dsim
 
   debug_test:
     build: uvmt_cv32e40x
@@ -234,15 +226,12 @@ tests:
     dir: cv32e40x/sim/uvmt
     cmd: make test COREV=YES TEST=debug_test
     makearg: USER_RUN_FLAGS=+rand_stall_obi_disable
-    # FIXME:strichmo:Restore dsim when Issue #712 is fixed by Metrics
-    skip_sim: dsim
 
-  # FIXME:strichmo:This is currently known to not work, update later
-  # debug_test_reset:
-  #   build: uvmt_cv32e40x
-  #   description: Debug reset test
-  #   dir: cv32e40x/sim/uvmt
-  #   cmd: make test COREV=YES TEST=debug_test_reset
+  debug_test_reset:
+    build: uvmt_cv32e40x
+    description: Debug reset test
+    dir: cv32e40x/sim/uvmt
+    cmd: make test COREV=YES TEST=debug_test_reset
 
   interrupt_bootstrap:
     build: uvmt_cv32e40x
@@ -255,8 +244,6 @@ tests:
     description: Interrupt test
     dir: cv32e40x/sim/uvmt
     cmd: make test COREV=YES TEST=interrupt_test
-    # FIXME:strichmo:Restore dsim when Issue #712 is fixed by Metrics
-    skip_sim: dsim
 
   isa_fcov_holes:
     build: uvmt_cv32e40x

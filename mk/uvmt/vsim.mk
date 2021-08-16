@@ -32,7 +32,7 @@ VCOVER                  = vcover
 
 # Paths
 VWORK     				= work
-VSIM_RESULTS           ?= $(if $(CV_RESULTS),$(CV_RESULTS)/vsim_results,$(MAKE_PATH)/vsim_results)
+VSIM_RESULTS           ?= $(if $(CV_RESULTS),$(abspath $(CV_RESULTS))/vsim_results,$(MAKE_PATH)/vsim_results)
 VSIM_COREVDV_RESULTS   ?= $(VSIM_RESULTS)/corev-dv
 VSIM_COV_MERGE_DIR     ?= $(VSIM_RESULTS)/$(CFG)/merged
 UVM_HOME               ?= $(abspath $(shell which $(VLIB))/../../verilog_src/uvm-1.2/src)
@@ -92,6 +92,7 @@ VLOG_FLAGS += $(DPILIB_VLOG_OPT)
 # Add the ISS to compilation
 VLOG_FILE_LIST += -f $(DV_UVMT_PATH)/imperas_iss.flist
 VLOG_FLAGS += "+define+$(CV_CORE_UC)_TRACE_EXECUTION"
+VLOG_FLAGS += "+define+UVM"
 
 ###############################################################################
 # VOPT (Optimization)
@@ -120,6 +121,8 @@ VSIM_UVM_ARGS      = +incdir+$(UVM_HOME)/src $(UVM_HOME)/src/uvm_pkg.sv
 VSIM_FLAGS += -sv_lib $(basename $(OVP_MODEL_DPI))
 ifeq ($(call IS_YES,$(USE_ISS)),YES)
 VSIM_FLAGS += +USE_ISS
+else
+VSIM_FLAGS += +DISABLE_OVPSIM
 endif
 ifeq ($(call IS_YES,$(TEST_DISABLE_ALL_CSR_CHECKS)),YES)
 VSIM_FLAGS +="+DISABLE_ALL_CSR_CHECKS"
@@ -424,7 +427,9 @@ hello-world:
 	$(MAKE) test TEST=hello-world
 
 custom: VSIM_TEST=$(CUSTOM_PROG)
-custom: VSIM_FLAGS += +firmware=$(CUSTOM_DIR)/$(CUSTOM_PROG).hex +elf_file=$(CUSTOM_DIR)/$(CUSTOM_PROG).elf
+custom: VSIM_FLAGS += +firmware=$(CUSTOM_DIR)/$(CUSTOM_PROG).hex
+custom: VSIM_FLAGS += +elf_file=$(CUSTOM_DIR)/$(CUSTOM_PROG).elf
+custom: VSIM_FLAGS += +itb_file=$(CUSTOM_DIR)/$(CUSTOM_PROG).itb
 custom: TEST_UVM_TEST=uvmt_$(CV_CORE_LC)_firmware_test_c
 custom: $(CUSTOM_DIR)/$(CUSTOM_PROG).hex run
 
@@ -433,11 +438,13 @@ custom: $(CUSTOM_DIR)/$(CUSTOM_PROG).hex run
 
 # corev-dv tests needs an added run_index suffix
 ifeq ($(shell echo $(TEST) | head -c 6),corev_)
-  OPT_RUN_INDEX_SUFFIX=_$(RUN_INDEX)
+export OPT_RUN_INDEX_SUFFIX=_$(RUN_INDEX)
 endif
 
 test: VSIM_TEST=$(TEST_PROGRAM)
-test: VSIM_FLAGS += +firmware=$(TEST_TEST_DIR)/$(TEST_PROGRAM)$(OPT_RUN_INDEX_SUFFIX).hex +elf_file=$(TEST_TEST_DIR)/$(TEST_PROGRAM)$(OPT_RUN_INDEX_SUFFIX).elf
+test: VSIM_FLAGS += +firmware=$(TEST_TEST_DIR)/$(TEST_PROGRAM)$(OPT_RUN_INDEX_SUFFIX).hex 
+test: VSIM_FLAGS += +elf_file=$(TEST_TEST_DIR)/$(TEST_PROGRAM)$(OPT_RUN_INDEX_SUFFIX).elf
+test: VSIM_FLAGS += +itb_file=$(TEST_TEST_DIR)/$(TEST_PROGRAM)$(OPT_RUN_INDEX_SUFFIX).itb
 test: $(TEST_TEST_DIR)/$(TEST_PROGRAM)$(OPT_RUN_INDEX_SUFFIX).hex run
 
 ################################################################################

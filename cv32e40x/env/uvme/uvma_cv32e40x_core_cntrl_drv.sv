@@ -34,8 +34,6 @@ class uvma_cv32e40x_core_cntrl_drv_c extends uvma_core_cntrl_drv_c;
    
    extern task drive_bootstrap();
 
-   extern task run_phase(uvm_phase phase);
-
 endclass : uvma_cv32e40x_core_cntrl_drv_c
 
 function uvma_cv32e40x_core_cntrl_drv_c::new(string name="uvma_cv32e40x_core_cntrl_drv", uvm_component parent=null);
@@ -59,15 +57,5 @@ task uvma_cv32e40x_core_cntrl_drv_c::drive_bootstrap();
    e40x_cntxt.core_cntrl_vif.fetch_en          = 1'b0;
 
 endtask : drive_bootstrap
-
-task uvma_cv32e40x_core_cntrl_drv_c::run_phase(uvm_phase phase);
-   uvma_cv32e40x_core_cntrl_cntxt_c e40x_cntxt;
-
-   $cast(e40x_cntxt, cntxt);
-
-   repeat (1) @(e40x_cntxt.core_cntrl_vif.drv_cb);
-   e40x_cntxt.core_cntrl_vif.drv_cb.fetch_en <= 1;
-
-endtask : run_phase
 
 `endif // __UVMA_CV32E$0x_CORE_CNTRL_DRV_SV__

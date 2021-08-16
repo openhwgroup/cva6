@@ -47,6 +47,16 @@ class uvma_cv32e40x_core_cntrl_agent_c extends uvma_core_cntrl_agent_c;
     */
    extern virtual function void retrieve_vif();
 
+   /**
+    * Spawn active sequnces
+    */
+   extern virtual task run_phase(uvm_phase phase);
+
+   /**
+    * Spawn fetch enable control sequence
+    */
+   extern virtual task start_fetch_toggle_seq();
+
 endclass : uvma_cv32e40x_core_cntrl_agent_c
 
 function uvma_cv32e40x_core_cntrl_agent_c::new(string name="uvma_cv32e40x_core_cntrl_agent", uvm_component parent=null);
@@ -86,7 +96,22 @@ function void uvma_cv32e40x_core_cntrl_agent_c::get_and_set_cntxt();
    
 endfunction : get_and_set_cntxt
 
+task uvma_cv32e40x_core_cntrl_agent_c::run_phase(uvm_phase phase);
+   
+   if (cfg.is_active) begin
+      fork
+         start_fetch_toggle_seq();      
+      join_none
+   end
 
+endtask : run_phase
 
+task uvma_cv32e40x_core_cntrl_agent_c::start_fetch_toggle_seq();
+
+  uvme_cv32e40x_fetch_toggle_seq_c fetch_toggle_seq = uvme_cv32e40x_fetch_toggle_seq_c::type_id::create("fetch_toggle_seq");
+  void'(fetch_toggle_seq.randomize());
+  fetch_toggle_seq.start(this.sequencer);
+
+endtask : start_fetch_toggle_seq
 
 `endif // __UVMA_CV32E40X_CORE_CNTRL_AGENT_SV__

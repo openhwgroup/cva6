@@ -2,6 +2,7 @@
 *.nm
 *.elf
 *.hex
+*.itb
 *.map
 *.o
 *.objdump
@@ -10,6 +11,7 @@
 *.vcd
 *.vsif
 *.sve
+*.sdb
 dsim.env
 dsim.log
 dsim_results
@@ -36,3 +38,9 @@ cva6/tests/riscv-tests/
 uvm/riscv-dv/
 riviera_results/
 */vendor_lib/dpi_dasm_spike/
+work*
+vsim.dbg
+*.wlf
+transcript
+.lib-rtl
+.opt-rtl

@@ -30,7 +30,7 @@ VSIM 					= $(CV_SIM_PREFIX) vsim
 VWORK     				= work
 
 # Paths
-VSIM_RESULTS           ?= $(if $(CV_RESULTS),$(CV_RESULTS)/riviera_results,$(MAKE_PATH)/riviera_results)
+VSIM_RESULTS           ?= $(if $(CV_RESULTS),$(abspath $(CV_RESULTS))/riviera_results,$(MAKE_PATH)/riviera_results)
 VSIM_COREVDV_RESULTS   ?= $(VSIM_RESULTS)/corev-dv
 VSIM_COV_MERGE_DIR     ?= $(VSIM_RESULTS)/merged
 UVM_HOME               ?= ${ALDEC_PATH}/vlib/uvm-1.2/src/
@@ -92,6 +92,8 @@ VSIM_FLAGS += -sv_lib $(basename $(OVP_MODEL_DPI))
 
 ifeq ($(call IS_YES,$(USE_ISS)),YES)
 VSIM_FLAGS += +USE_ISS
+else
+VSIM_FLAGS += +DISABLE_OVPSIM
 endif
 
 VSIM_FLAGS += -sv_lib $(basename $(DPI_DASM_LIB))
@@ -301,7 +303,9 @@ hello-world:
 	$(MAKE) test TEST=hello-world
 
 custom: VSIM_TEST=$(CUSTOM_PROG)
-custom: VSIM_FLAGS += +firmware=$(CUSTOM_DIR)/$(CUSTOM_PROG).hex +elf_file=$(CUSTOM_DIR)/$(CUSTOM_PROG).elf
+custom: VSIM_FLAGS += +firmware=$(CUSTOM_DIR)/$(CUSTOM_PROG).hex 
+custom: VSIM_FLAGS += +elf_file=$(CUSTOM_DIR)/$(CUSTOM_PROG).elf
+custom: VSIM_FLAGS += +itb_file=$(CUSTOM_DIR)/$(CUSTOM_PROG).itb
 custom: TEST_UVM_TEST=uvmt_$(CV_CORE_LC)_firmware_test_c
 custom: $(CUSTOM_DIR)/$(CUSTOM_PROG).hex run
 
@@ -310,7 +314,7 @@ custom: $(CUSTOM_DIR)/$(CUSTOM_PROG).hex run
 
 # corev-dv tests needs an added run_index suffix
 ifeq ($(shell echo $(TEST) | head -c 6),corev_)
-  OPT_RUN_INDEX_SUFFIX=_$(RUN_INDEX)
+export OPT_RUN_INDEX_SUFFIX=_$(RUN_INDEX)
 endif
 
 test: VSIM_TEST=$(TEST_PROGRAM)

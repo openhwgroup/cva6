@@ -111,10 +111,14 @@ endtask : reset_phase
 
 task uvma_rvvi_ovpsim_drv_c::stepi(REQ req);
 
-   uvma_rvvi_ovpsim_cntxt_c#(ILEN,XLEN)            rvvi_ovpsim_cntxt;
+   uvma_rvvi_ovpsim_cfg_c#(ILEN,XLEN)              rvvi_ovpsim_cfg;
+   uvma_rvvi_ovpsim_cntxt_c#(ILEN,XLEN)            rvvi_ovpsim_cntxt;   
    uvma_rvvi_ovpsim_control_seq_item_c#(ILEN,XLEN) rvvi_ovpsim_seq_item;
 
    // Cast into the OVPSIM context to get access to the BUS interface
+   if (!$cast(rvvi_ovpsim_cfg, cfg)) begin
+      `uvm_fatal(log_tag, "Failed to cast RVVI cfg to RVVI ovpsim_cfg");
+   end
    if (!$cast(rvvi_ovpsim_cntxt, cntxt)) begin
       `uvm_fatal(log_tag, "Failed to cast RVVI cntxt to RVVI ovpsim_cntxt");
    end
@@ -128,10 +132,12 @@ task uvma_rvvi_ovpsim_drv_c::stepi(REQ req);
    // Check for read of volatile memory locations, backdoor init the RVVI memory when found to ensure
    // the ISS sees the same data as the DUT
    if (rvvi_ovpsim_seq_item.mem_rmask && cfg.is_mem_addr_volatile(rvvi_ovpsim_seq_item.mem_addr)) begin
+
       `uvm_info("RVVIDRV", $sformatf("Setting volatile bus read data @ 0x%08x to 0x%08x", 
                                      rvvi_ovpsim_seq_item.mem_addr, 
                                      rvvi_ovpsim_seq_item.mem_rdata), UVM_HIGH);
-      rvvi_ovpsim_cntxt.ovpsim_bus_vif.write(rvvi_ovpsim_seq_item.mem_addr >> 2, rvvi_ovpsim_seq_item.mem_rdata);
+
+      rvvi_ovpsim_cntxt.ovpsim_mem_vif.mem[rvvi_ovpsim_seq_item.mem_addr >> 2] = rvvi_ovpsim_seq_item.mem_rdata;
    end
 
    // Signal an interrupt to the ISS if mcause and rvfi_intr signals external interrupt  

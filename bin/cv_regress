@@ -157,7 +157,7 @@ def read_file(args, file):
 # Start of script
 VALID_SIMULATORS = ('dsim', 'vsim', 'vcs', 'xrun')
 DEFAULT_SIMULATOR = 'dsim'
-VALID_PROJECTS = ('cv32e40p', 'cv32e40x', 'cv64')
+VALID_PROJECTS = ('cv32e40p', 'cv32e40x', 'cv32e40s', 'cv64')
 try:
     DEFAULT_PROJECT = os.environ['CV_CORE'] 
 except KeyError:    
