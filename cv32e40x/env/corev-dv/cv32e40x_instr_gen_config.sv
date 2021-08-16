@@ -41,7 +41,7 @@ class cv32e40x_instr_gen_config extends riscv_instr_gen_config;
     // Debug pointer may not be the return address, stack pointer, nor thread pointer
     if (!gen_debug_section) {
       dp == ZERO;
-    } else {      
+    } else {
       !(dp inside {sp, tp, ra, scratch_reg, GP, RA, ZERO});
       foreach (gpr[i]) {
         !(gpr[i] inside {dp});
@@ -67,11 +67,11 @@ class cv32e40x_instr_gen_config extends riscv_instr_gen_config;
     if (!enable_fast_interrupt_handler) {
       knob_zero_fast_intr_handlers == 1;
     }
-    
+
     // Nver use fast handler for exceptions (interrupt 0)
     use_fast_intr_handler[0] == 0;
 
-    knob_zero_fast_intr_handlers -> !use_fast_intr_handler;    
+    knob_zero_fast_intr_handlers -> !use_fast_intr_handler;
 
     // VECTORED mode required for any fast interrupts
     if (use_fast_intr_handler) {
@@ -85,7 +85,7 @@ class cv32e40x_instr_gen_config extends riscv_instr_gen_config;
     `uvm_field_enum(riscv_reg_t, dp, UVM_DEFAULT)
     `uvm_field_enum(riscv_reg_t, scratch_reg, UVM_DEFAULT)
     `uvm_field_int(enable_fast_interrupt_handler, UVM_DEFAULT)
-    `uvm_field_int(use_fast_intr_handler, UVM_DEFAULT)    
+    `uvm_field_int(use_fast_intr_handler, UVM_DEFAULT)
   `uvm_object_utils_end
 
   function new(string name="");
@@ -104,13 +104,13 @@ class cv32e40x_instr_gen_config extends riscv_instr_gen_config;
 
     // In the debug ROM some combinations are not valid because they use the same register (dscratch0)
     if (gen_debug_section) begin
-      if ((enable_ebreak_in_debug_rom || set_dcsr_ebreak) && 
+      if ((enable_ebreak_in_debug_rom || set_dcsr_ebreak) &&
            enable_debug_single_step) begin
-        `uvm_fatal("CVINSTGENCFG", 
+        `uvm_fatal("CVINSTGENCFG",
                    $sformatf("Illegal combination of debug plusargs: enable_ebreak_in_debug_rom = %0d, set_dcsr_ebreakl = %0d, enable_debug_single_step = %0d",
                              enable_ebreak_in_debug_rom, set_dcsr_ebreak, enable_debug_single_step))
       end
-    end    
+    end
   endfunction : post_randomize
 
 endclass : cv32e40x_instr_gen_config

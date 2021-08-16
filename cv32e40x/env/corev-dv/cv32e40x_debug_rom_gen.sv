@@ -1,13 +1,13 @@
 //Copyright 2020 Silicon Labs, Inc.
-  
+
 //This file, and derivatives thereof are licensed under the
 //Solderpad License, Version 2.0 (the "License");
 //Use of this file means you agree to the terms and conditions
 //of the license and are in full compliance with the License.
 //You may obtain a copy of the License at
-//  
+//
 //    https://solderpad.org/licenses/SHL-2.0/
-//  
+//
 //Unless required by applicable law or agreed to in writing, software
 //and hardware implementations thereof
 //distributed under the License is distributed on an "AS IS" BASIS,
@@ -31,7 +31,7 @@ class cv32e40x_debug_rom_gen extends riscv_debug_rom_gen;
 
         // CORE-V Addition
         // Insert section info so linker can place
-        // debug code at the correct adress        
+        // debug code at the correct adress
         instr_stream.push_back(".section .debugger, \"ax\"");
 
         // CORE-V Addition
@@ -49,8 +49,8 @@ class cv32e40x_debug_rom_gen extends riscv_debug_rom_gen;
         end
 
         // The following is directly copied from riscv_debug_rom_gen.sv
-        // Changes: 
-        // - Altering the stack push/pop to use custom debugger stack            
+        // Changes:
+        // - Altering the stack push/pop to use custom debugger stack
         if (!cfg.gen_debug_section) begin
             // If the debug section should not be generated, we just populate it
             // with a dret instruction.
@@ -99,7 +99,7 @@ class cv32e40x_debug_rom_gen extends riscv_debug_rom_gen;
             gen_sub_program(hart, sub_program[hart], sub_program_name,
                             cfg.num_debug_sub_program, 1'b1, "debug_sub");
             main_program[hart] = riscv_instr_sequence::type_id::create("debug_program");
-            main_program[hart].instr_cnt = cfg.debug_program_instr_cnt;            
+            main_program[hart].instr_cnt = cfg.debug_program_instr_cnt;
             main_program[hart].is_debug_program = 1;
             main_program[hart].cfg = cfg;
             `DV_CHECK_RANDOMIZE_FATAL(main_program[hart])
@@ -110,12 +110,12 @@ class cv32e40x_debug_rom_gen extends riscv_debug_rom_gen;
             main_program[hart].generate_instr_stream(.no_label(1'b1));
             insert_sub_program(sub_program[hart], debug_main);
             debug_main = {debug_main, main_program[hart].instr_string_list};
-            
+
 
             // Create the ebreak end
             if (cfg.enable_ebreak_in_debug_rom) begin
                 gen_ebreak_footer();
-            end            
+            end
             pop_gpr_from_debugger_stack(cfg_corev, debug_end);
             if (cfg.enable_ebreak_in_debug_rom) begin
                 gen_restore_ebreak_scratch_reg();
@@ -138,9 +138,9 @@ class cv32e40x_debug_rom_gen extends riscv_debug_rom_gen;
                 endcase
             end
 
-            debug_end = {debug_end, dret};            
+            debug_end = {debug_end, dret};
 
-            gen_section($sformatf("%0sdebug_end", hart_prefix(hart)), debug_end);            
+            gen_section($sformatf("%0sdebug_end", hart_prefix(hart)), debug_end);
         end
         gen_debug_exception_handler();
     endfunction : gen_program
@@ -151,10 +151,10 @@ class cv32e40x_debug_rom_gen extends riscv_debug_rom_gen;
         instr_stream.push_back(".section .debugger_exception, \"ax\"");
         super.gen_debug_exception_handler();
 
-        // Inser section info to place remaining code in the 
+        // Inser section info to place remaining code in the
         // original section
         instr_stream.push_back(".section text");
     endfunction : gen_debug_exception_handler
-    
+
 endclass : cv32e40x_debug_rom_gen
 

@@ -18,20 +18,20 @@
 /*
  * corev_misc_instr_lib
  *
- * corev_ecall_isntr_stream: Directed test stream to inject ECALL in tests 
+ * corev_ecall_isntr_stream: Directed test stream to inject ECALL in tests
  */
 
  class corev_ecall_instr_stream extends riscv_load_store_rand_instr_stream;
-  
+
   rand int unsigned ecall_cnt;
 
   constraint ecall_c {
-    ecall_cnt inside {[1:5]};    
+    ecall_cnt inside {[1:5]};
   }
 
   `uvm_object_utils(corev_ecall_instr_stream)
   `uvm_object_new
-  
+
   virtual function void add_mixed_instr(int instr_cnt);
     super.add_mixed_instr(instr_cnt);
 
@@ -71,7 +71,7 @@ class corev_jal_wfi_instr extends riscv_jal_instr;
   function new(string name = "");
     super.new(name);
   endfunction : new
-  
+
   function void post_randomize();
     int unsigned next_label;
 
@@ -103,7 +103,7 @@ class corev_jal_wfi_instr extends riscv_jal_instr;
       if (i + 1 < instr_list.size()) begin
         if (instr_list[i].instr_name == WFI && instr_list[i+1].instr_name != WFI) begin
           instr_list[i].label = instr_list[i+1].label;
-          instr_list[i+1].label = $sformatf("%0d", next_label++); 
+          instr_list[i+1].label = $sformatf("%0d", next_label++);
         end
       end
     end
@@ -117,7 +117,7 @@ endclass : corev_jal_wfi_instr
  *
  * Generates a compressed or non-compressed NOP (pseduo-op)
  */
- 
+
 class corev_nop_instr extends riscv_directed_instr_stream;
 
   `uvm_object_utils(corev_nop_instr)
@@ -147,7 +147,7 @@ endclass : corev_nop_instr
  *
  * Generates a XORI with a -1 immediate value to tesdt logical not pseudo-op
  */
- 
+
 class corev_xori_not_instr extends riscv_directed_instr_stream;
 
   `uvm_object_utils(corev_xori_not_instr)
@@ -218,14 +218,14 @@ class corev_jalr_wfi_instr extends riscv_directed_instr_stream;
   function new(string name = "");
     super.new(name);
   endfunction : new
-  
+
   function void post_randomize();
     riscv_pseudo_instr la_instr;
     riscv_instr        instr;
     riscv_instr_name_t allowed_instr[];
 
     // ---------------------------------------
-    // First instruction: load the address of fwd label (1)    
+    // First instruction: load the address of fwd label (1)
     // ---------------------------------------
     la_instr = riscv_pseudo_instr::type_id::create("LA");
     `DV_CHECK_RANDOMIZE_WITH_FATAL(la_instr,
@@ -234,7 +234,7 @@ class corev_jalr_wfi_instr extends riscv_directed_instr_stream;
       , "Failed randomizing LA"
     )
     la_instr.imm_str = "1f";
-    la_instr.comment = "start corev_jalr_wfi_instr";    
+    la_instr.comment = "start corev_jalr_wfi_instr";
     insert_instr(la_instr, 0);
 
     // ---------------------------------------
@@ -266,8 +266,8 @@ class corev_jalr_wfi_instr extends riscv_directed_instr_stream;
         allowed_instr = {allowed_instr, C_JALR};
       end
     end
-    instr = riscv_instr::get_rand_instr(.include_instr(allowed_instr));    
-    `DV_CHECK_RANDOMIZE_WITH_FATAL(instr,    
+    instr = riscv_instr::get_rand_instr(.include_instr(allowed_instr));
+    `DV_CHECK_RANDOMIZE_WITH_FATAL(instr,
       instr_name == JALR -> rd == ZERO;
       rs1 == fwd_addr_reg;
       , "Could not randomize JR"
@@ -283,13 +283,13 @@ class corev_jalr_wfi_instr extends riscv_directed_instr_stream;
       allowed_instr = {allowed_instr, C_J, C_JAL};
     end
     //instr = riscv_instr::type_id::create("LI");
-    instr = riscv_instr::get_rand_instr(.include_instr(allowed_instr));    
-    `DV_CHECK_RANDOMIZE_WITH_FATAL(instr,      
-      (instr_name inside {JALR, JAL}) -> rd == ZERO;      
+    instr = riscv_instr::get_rand_instr(.include_instr(allowed_instr));
+    `DV_CHECK_RANDOMIZE_WITH_FATAL(instr,
+      (instr_name inside {JALR, JAL}) -> rd == ZERO;
       , "Could not randomize jump"
     )
     instr.imm_str = "3f";
-    instr.label   = "2";       
+    instr.label   = "2";
     insert_instr(instr, 4);
 
     // ---------------------------------------
@@ -302,8 +302,8 @@ class corev_jalr_wfi_instr extends riscv_directed_instr_stream;
         allowed_instr = {allowed_instr, C_JALR};
       end
     end
-    instr = riscv_instr::get_rand_instr(.include_instr(allowed_instr));    
-    `DV_CHECK_RANDOMIZE_WITH_FATAL(instr,      
+    instr = riscv_instr::get_rand_instr(.include_instr(allowed_instr));
+    `DV_CHECK_RANDOMIZE_WITH_FATAL(instr,
       instr_name == JALR -> rd == ZERO;
       rs1 == bwd_addr_reg;
       , "Could not randomize jump back"
@@ -316,7 +316,7 @@ class corev_jalr_wfi_instr extends riscv_directed_instr_stream;
     // Final instruction (NOP)
     // ---------------------------------------
     instr = riscv_instr::get_instr(NOP);
-    instr.label  = "3";    
+    instr.label  = "3";
     insert_instr(instr, 6);
 
     foreach(instr_list[i]) begin
