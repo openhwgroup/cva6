@@ -24,11 +24,13 @@ import "DPI-C" function read_elf(input string filename);
 import "DPI-C" function byte get_section(output longint address, output longint len);
 import "DPI-C" context function byte read_section(input longint address, inout byte buffer[]);
 
+
 module ariane_tb;
 
     static uvm_cmdline_processor uvcl = uvm_cmdline_processor::get_inst();
 
-    localparam int unsigned CLOCK_PERIOD = 100ns;
+    localparam int unsigned CLOCK_PERIOD   = 56832ps;
+    localparam int unsigned REFClockPeriod = 56832ps;
     // toggle with RTC period
     localparam int unsigned RTC_CLOCK_PERIOD = 30.517us;
 
@@ -36,14 +38,43 @@ module ariane_tb;
     logic clk_i;
     logic rst_ni;
     logic rtc_i;
+    logic rst_DTM;
 
+    localparam ENABLE_DM_TESTS = 0;
+   
     parameter  USE_HYPER_MODELS    = 1;
 
-  `ifdef jtag_rbb_enable 
+  `ifdef USE_LOCAL_JTAG 
+    parameter  LOCAL_JTAG          = 1;
+    parameter  CHECK_LOCAL_JTAG    = 0; 
+  `else
+    parameter  LOCAL_JTAG          = 0;
+    parameter  CHECK_LOCAL_JTAG    = 0; 
+  `endif
+
+  `ifdef POSTLAYOUT
+    localparam int unsigned JtagSampleDelay = (REFClockPeriod < 10ns) ? 2 : 1;
+  `else
+    localparam int unsigned JtagSampleDelay = 0;
+  `endif    
+
+  `ifdef JTAG_RBB 
     parameter int   jtag_enable = '1 ;
   `else  
     parameter int   jtag_enable = '0 ;
   `endif
+
+    localparam logic [15:0] PartNumber = 1; 
+    logic program_loaded = 0;
+    logic  eoc;
+    logic [31:0]  retval = 32'h0;  // Store return value
+    localparam logic [31:0] dm_idcode  = (dm::DbgVersion013 << 28) | (PartNumber << 12) | 32'b1; 
+    localparam AxiWideBeWidth    = ariane_axi_soc::DataWidth / 8;
+    localparam AxiWideByteOffset = $clog2(AxiWideBeWidth);
+    typedef logic [ariane_axi_soc::AddrWidth-1:0] addr_t;
+    typedef logic [ariane_axi_soc::DataWidth-1:0] data_t;   
+    data_t memory[bit [31:0]];
+    int sections [bit [31:0]];
     
     wire                  s_dmi_req_valid;
     wire                  s_dmi_req_ready;
@@ -63,6 +94,19 @@ module ariane_tb;
     wire                  s_jtag_TDO_data  ;
     wire                  s_jtag_TDO_driven;
     wire                  s_jtag_exit      ;
+  
+    string                stimuli_file      ;
+    logic                 s_tck         ;
+    logic                 s_tms         ;
+    logic                 s_tdi         ;
+    logic                 s_trstn       ;
+    logic                 s_tdo         ;
+
+    wire                  s_jtag2alsaqr_tck       ;
+    wire                  s_jtag2alsaqr_tms       ;
+    wire                  s_jtag2alsaqr_tdi       ;
+    wire                  s_jtag2alsaqr_trstn     ;
+    wire                  s_jtag2alsaqr_tdo       ;
    
     wire [7:0]            w_hyper_dq0    ;
     wire [7:0]            w_hyper_dq1    ;
@@ -94,7 +138,7 @@ module ariane_tb;
 
     logic [31:0] exit_o;
 
-    string binary = "";
+    string        binary ;
 
     genvar j;
     generate
@@ -104,11 +148,18 @@ module ariane_tb;
     endgenerate
 
   assign exit_o              = (jtag_enable[0]) ? s_jtag_exit          : s_dmi_exit;
-   
-  if (1) begin
+
+  assign s_jtag2alsaqr_tck    = LOCAL_JTAG  ?  s_tck   : s_jtag_TCK   ;
+  assign s_jtag2alsaqr_tms    = LOCAL_JTAG  ?  s_tms   : s_jtag_TMS   ;
+  assign s_jtag2alsaqr_tdi    = LOCAL_JTAG  ?  s_tdi   : s_jtag_TDI   ;
+  assign s_jtag2alsaqr_trstn  = LOCAL_JTAG  ?  s_trstn : s_jtag_TRSTn ;
+  assign s_jtag_TDO_data      = s_jtag2alsaqr_tdo       ;
+  assign s_tdo                = s_jtag2alsaqr_tdo       ;
+  
+  if (~jtag_enable[0] & !LOCAL_JTAG) begin
     SimDTM i_SimDTM (
       .clk                  ( clk_i                 ),
-      .reset                ( ~rst_ni               ),
+      .reset                ( ~rst_DTM              ),
       .debug_req_valid      ( s_dmi_req_valid       ),
       .debug_req_ready      ( s_dmi_req_ready       ),
       .debug_req_bits_addr  ( s_dmi_req_bits_addr   ),
@@ -143,13 +194,12 @@ module ariane_tb;
   );
    
     al_saqr #(
-        .NUM_WORDS         ( NUM_WORDS     ),
-        .InclSimDTM        ( 1'b1          ),
-        .StallRandomOutput ( 1'b1          ),
-        .StallRandomInput  ( 1'b1          ),
-        .JtagEnable        ( jtag_enable[0])
+        .NUM_WORDS         ( NUM_WORDS                   ),
+        .InclSimDTM        ( 1'b1                        ),
+        .StallRandomOutput ( 1'b1                        ),
+        .StallRandomInput  ( 1'b1                        ),
+        .JtagEnable        ( jtag_enable[0] | LOCAL_JTAG )
     ) dut (
-        .clk_i,
         .rst_ni,
         .rtc_i,
         .dmi_req_valid        ( s_dmi_req_valid        ),
@@ -161,11 +211,11 @@ module ariane_tb;
         .dmi_resp_ready       ( s_dmi_resp_ready       ),
         .dmi_resp_bits_resp   ( s_dmi_resp_bits_resp   ),
         .dmi_resp_bits_data   ( s_dmi_resp_bits_data   ),                      
-        .jtag_TCK             ( s_jtag_TCK             ),
-        .jtag_TMS             ( s_jtag_TMS             ),
-        .jtag_TDI             ( s_jtag_TDI             ),
-        .jtag_TRSTn           ( s_jtag_TRSTn           ),
-        .jtag_TDO_data        ( s_jtag_TDO_data        ),
+        .jtag_TCK             ( s_jtag2alsaqr_tck      ),
+        .jtag_TMS             ( s_jtag2alsaqr_tms      ),
+        .jtag_TDI             ( s_jtag2alsaqr_tdi      ),
+        .jtag_TRSTn           ( s_jtag2alsaqr_trstn    ),
+        .jtag_TDO_data        ( s_jtag2alsaqr_tdo      ),
         .jtag_TDO_driven      ( s_jtag_TDO_driven      ),
         .pad_hyper_dq0        ( w_hyper_dq0            ),
         .pad_hyper_dq1        ( w_hyper_dq1            ),
@@ -191,8 +241,9 @@ module ariane_tb;
    );
 
    s27ks0641 #(
-         /*.mem_file_name ( "s27ks0641.mem"    ),*/
-         .TimingModel   ( "S27KS0641DPBHI020"    )
+         .TimingModel   ( "S27KS0641DPBHI020"    ),
+         .UserPreload   ( 1'b0                   ),
+         .mem_file_name ( "hyper.mem"            )
      ) i_s27ks0641 (
             .DQ7      ( w_axi_hyper_dq0[7] ),
             .DQ6      ( w_axi_hyper_dq0[6] ),
@@ -213,7 +264,9 @@ module ariane_tb;
    generate
       if(USE_HYPER_MODELS == 1) begin
          s27ks0641 #(
-            .TimingModel  ("S27KS0641DPBHI020")
+            .TimingModel   ( "S27KS0641DPBHI020" ),
+            .UserPreload   ( 1'b0                ),
+            .mem_file_name ( "hyper.mem"         )
          ) hyperram_model (
             .DQ7      ( w_hyper_dq0[7] ),
             .DQ6      ( w_hyper_dq0[6] ),
@@ -231,7 +284,8 @@ module ariane_tb;
          );
          s26ks512s #(
             .TimingModel   ( "S26KS512SDPBHI000"),
-            .mem_file_name ( "./vectors/hyper_stim.slm" )
+            .UserPreload   ( 1'b0               ),
+            .mem_file_name ( "hyper.mem"        )
          ) hyperflash_model (
             .DQ7      ( w_hyper_dq0[7] ),
             .DQ6      ( w_hyper_dq0[6] ),
@@ -250,40 +304,48 @@ module ariane_tb;
       end
    endgenerate
 
-   uart_bus #(.BAUD_RATE(9600), .PARITY_EN(0)) i_uart_bus (.rx(w_cva6_uart_tx), .tx(w_cva6_uart_rx), .rx_en(1'b1));
+   uart_bus #(.BAUD_RATE(115200), .PARITY_EN(0)) i_uart_bus (.rx(w_cva6_uart_tx), .tx(w_cva6_uart_rx), .rx_en(1'b1));
 
-`ifdef SPIKE_TANDEM
-    spike #(
-        .Size ( NUM_WORDS * 8 )
-    ) i_spike (
-        .clk_i,
-        .rst_ni,
-        .clint_tick_i   ( rtc_i                               ),
-        .commit_instr_i ( dut.i_ariane.commit_instr_id_commit ),
-        .commit_ack_i   ( dut.i_ariane.commit_ack             ),
-        .exception_i    ( dut.i_ariane.ex_commit              ),
-        .waddr_i        ( dut.i_ariane.waddr_commit_id        ),
-        .wdata_i        ( dut.i_ariane.wdata_commit_id        ),
-        .priv_lvl_i     ( dut.i_ariane.priv_lvl               )
-    );
-    initial begin
-        $display("Running binary in tandem mode");
+    initial begin: reset_jtag
+      jtag_mst.tdi = 0;
+      jtag_mst.tms = 0;
     end
-`endif
+  
+    // JTAG Definition
+    typedef jtag_test::riscv_dbg #(
+      .IrLength       (5                 ),
+      .TA             (REFClockPeriod*0.1),
+      .TT             (REFClockPeriod*0.9),
+      .JtagSampleDelay(JtagSampleDelay   )
+    ) riscv_dbg_t;
+  
+    // JTAG driver
+    JTAG_DV jtag_mst (s_tck);
+    riscv_dbg_t::jtag_driver_t jtag_driver = new(jtag_mst);
+    riscv_dbg_t riscv_dbg = new(jtag_driver);
+  
+    assign s_trstn      = jtag_mst.trst_n;
+    assign s_tms        = jtag_mst.tms;
+    assign s_tdi        = jtag_mst.tdi;
+    assign jtag_mst.tdo = s_tdo;
 
     // Clock process
     initial begin
         clk_i = 1'b0;
         rst_ni = 1'b0;
+        rst_DTM = 1'b0;
+        jtag_mst.trst_n = 1'b0;
+       
         repeat(8)
             #(CLOCK_PERIOD/2) clk_i = ~clk_i;
         rst_ni = 1'b1;
+        repeat(200)
+           #(CLOCK_PERIOD/2) clk_i = ~clk_i;
+        rst_DTM = 1'b1;
+        jtag_mst.trst_n = 1'b1;       
         forever begin
             #(CLOCK_PERIOD/2) clk_i = 1'b1;
             #(CLOCK_PERIOD/2) clk_i = 1'b0;
-
-            //if (cycles > max_cycles)
-            //    $fatal(1, "Simulation reached maximum cycle count of %d", max_cycles);
 
             cycles++;
         end
@@ -291,12 +353,15 @@ module ariane_tb;
 
     initial begin
         forever begin
-            rtc_i = 1'b0;
-            #(RTC_CLOCK_PERIOD/2) rtc_i = 1'b1;
+            rtc_i = 1'b1;
             #(RTC_CLOCK_PERIOD/2) rtc_i = 1'b0;
+            #(RTC_CLOCK_PERIOD/2) rtc_i = 1'b1;
         end
     end
+   
 
+   assign s_tck = clk_i;
+   
     initial begin
         forever begin
 
@@ -312,40 +377,212 @@ module ariane_tb;
         end
     end
 
-    // for faster simulation we can directly preload the ELF
-    // Note that we are loosing the capabilities to use risc-fesvr though
-    // TODO : preload the ELF on the hyperram instead of the legacy DRAM
-    initial begin
-        automatic logic [7:0][7:0] mem_row;
-        longint address, len;
-        byte buffer[];
-        void'(uvcl.get_arg_value("+PRELOAD=", binary));
 
-        if (binary != "") begin
-            `uvm_info( "Core Test", $sformatf("Preloading ELF: %s", binary), UVM_LOW)
+   initial  begin: local_jtag_preload
 
-            void'(read_elf(binary));
-            // wait with preloading, otherwise randomization will overwrite the existing value
-            wait(rst_ni);
+      if(LOCAL_JTAG) begin
+        if ( $value$plusargs ("STRING=%s", binary));
+          $display("Testing %s", binary);
 
-           
-            // while there are more sections to process
-            while (get_section(address, len)) begin
-                automatic int num_words = (len+7)/8;
-                `uvm_info( "Core Test", $sformatf("Loading Address: %x, Length: %x", address, len),
-UVM_LOW)
-                buffer = new [num_words*8];
-                void'(read_section(address, buffer));
-                // preload memories
-                // 64-bit
-                for (int i = 0; i < num_words; i++) begin
-                    mem_row = '0;
-                    for (int j = 0; j < 8; j++) begin
-                        mem_row[j] = buffer[i*8 + j];
-                    end
-                end
-            end
-        end
+        repeat(30000)
+              #(CLOCK_PERIOD/2);
+        debug_module_init();
+        load_binary(binary);
+        #(REFClockPeriod);
+        jtag_ariane_wakeup();
+        jtag_read_eoc();
+      end
+
+   end
+   
+  task debug_module_init;
+    logic [31:0]  idcode;
+    automatic dm::sbcs_t sbcs;
+
+`ifdef POSTLAYOUT
+    #(0.05 * REFClockPeriod);
+`endif
+
+    $info(" JTAG Preloading start time");
+    riscv_dbg.wait_idle(300);
+
+`ifdef POSTLAYOUT
+    #(0.05 * REFClockPeriod);
+`endif
+
+    $info(" Start getting idcode of JTAG");
+    riscv_dbg.get_idcode(idcode);
+
+    // Check Idcode
+    assert (idcode == dm_idcode)
+    else $error(" Wrong IDCode, expected: %h, actual: %h", dm_idcode, idcode);
+    $display(" IDCode = %h", idcode);
+
+    $info(" Activating Debug Module");
+    // Activate Debug Module
+    riscv_dbg.write_dmi(dm::DMControl, 32'h0000_0001);
+
+    $info(" SBA BUSY ");
+    // Wait until SBA is free
+    do riscv_dbg.read_dmi(dm::SBCS, sbcs);
+    while (sbcs.sbbusy);
+    $info(" SBA FREE");
+  endtask // debug_module_init
+   
+   task jtag_data_preload;
+    logic [63:0] rdata;
+
+    automatic dm::sbcs_t sbcs = '{
+      sbautoincrement: 1'b1,
+      sbreadondata   : 1'b1,
+      default        : 1'b0
+    };
+
+    $display("======== Initializing the Debug Module ========");
+
+    debug_module_init();
+    riscv_dbg.write_dmi(dm::SBCS, sbcs);
+    do riscv_dbg.read_dmi(dm::SBCS, sbcs);
+    while (sbcs.sbbusy);
+
+    $display("======== Preload data to SRAM ========");
+
+    // Start writing to SRAM
+    foreach (sections[addr]) begin
+      $display("Writing %h with %0d words", addr << 3, sections[addr]); // word = 8 bytes here
+       riscv_dbg.write_dmi(dm::SBAddress0, (addr << 3));
+       do riscv_dbg.read_dmi(dm::SBCS, sbcs);
+       while (sbcs.sbbusy);
+      for (int i = 0; i < sections[addr]; i++) begin
+        // $info(" Loading words to SRAM ");
+        $display(" -- Word %0d/%0d", i, sections[addr]);
+        riscv_dbg.write_dmi(dm::SBData1, memory[addr + i][63:32]);
+        do riscv_dbg.read_dmi(dm::SBCS, sbcs);
+        while (sbcs.sbbusy);           
+        riscv_dbg.write_dmi(dm::SBData0, memory[addr + i][32:0]);
+        // Wait until SBA is free to write next 32 bits
+        do riscv_dbg.read_dmi(dm::SBCS, sbcs);
+        while (sbcs.sbbusy);
+      end
     end
+
+    // Check loaded data
+    if (CHECK_LOCAL_JTAG) begin
+      $display("======== Checking loaded data ========");
+      // Set SBCS register to read data
+      sbcs.sbreadonaddr = 1;
+      riscv_dbg.write_dmi(dm::SBCS, sbcs);
+      foreach (sections[addr]) begin
+        $display(" Checking %h", addr << 3);
+        riscv_dbg.write_dmi(dm::SBAddress0, (addr << 3));
+        for (int i = 0; i < sections[addr]; i++) begin
+          riscv_dbg.read_dmi(dm::SBData1, rdata[63:32]);
+          // Wait until SBA is free to read another 32 bits
+          do riscv_dbg.read_dmi(dm::SBCS, sbcs);
+          while (sbcs.sbbusy);           
+          riscv_dbg.read_dmi(dm::SBData0, rdata[32:0]);
+          // Wait until SBA is free to read another 32 bits
+          do riscv_dbg.read_dmi(dm::SBCS, sbcs);
+          while (sbcs.sbbusy);
+          if (rdata != memory[addr + i])
+            $error("Mismatch detected at %h, expected %0d, actual %0d",
+              (addr + i) << 3, memory[addr + 1], rdata);
+        end
+      end
+    end
+
+    $display("======== Preloading finished ========");
+
+    // Preloading finished. Can now start executing
+    sbcs.sbreadonaddr = 0;
+    sbcs.sbreadondata = 0;
+    riscv_dbg.write_dmi(dm::SBCS, sbcs);
+
+  endtask // jtag_data_preload
+
+
+  // Load ELF binary file
+  task load_binary;
+    input string binary;                   // File name
+    addr_t       section_addr, section_len;
+    byte         buffer[];
+    // Read ELF
+    void'(read_elf(binary));
+    $display("Reading %s", binary);
+    while (get_section(section_addr, section_len)) begin
+      // Read Sections
+      automatic int num_words = (section_len + AxiWideBeWidth - 1)/AxiWideBeWidth;
+      $display("Reading section %x with %0d words", section_addr, num_words);
+
+      sections[section_addr >> AxiWideByteOffset] = num_words;
+      buffer                                      = new[num_words * AxiWideBeWidth];
+      void'(read_section(section_addr, buffer));
+      for (int i = 0; i < num_words; i++) begin
+        automatic logic [AxiWideBeWidth-1:0][7:0] word = '0;
+        for (int j = 0; j < AxiWideBeWidth; j++) begin
+          word[j] = buffer[i * AxiWideBeWidth + j];
+        end
+        memory[section_addr/AxiWideBeWidth + i] = word;
+      end
+    end
+
+    // Call the JTAG preload task
+    jtag_data_preload();
+
+  endtask // load_binary
+
+  
+  task jtag_ariane_wakeup;
+
+    $info("======== Waking up Ariane using JTAG ========");
+    // Generate the interrupt
+    riscv_dbg.write_dmi(dm::DMControl, 32'h0000_0003);
+
+    # 150ns; 
+     
+    riscv_dbg.write_dmi(dm::DMControl, 32'h0000_0001);
+    // Wait till end of computation
+    program_loaded = 1;
+
+    // When task completed reading the return value using JTAG
+    // Mainly used for post synthesis part
+    $info("======== Wait for Completion ========");
+
+  endtask // execute_application
+
+  task jtag_read_eoc;
+
+    automatic dm::sbcs_t sbcs = '{
+      sbautoincrement: 1'b1,
+      sbreadondata   : 1'b1,
+      default        : 1'b0
+    };
+
+    // Initialize the dm module again, otherwise it will not work
+    debug_module_init();
+    sbcs.sbreadonaddr = 1;
+    sbcs.sbautoincrement = 0;
+    riscv_dbg.write_dmi(dm::SBCS, sbcs);
+    do riscv_dbg.read_dmi(dm::SBCS, sbcs);
+    while (sbcs.sbbusy);
+
+    riscv_dbg.write_dmi(dm::SBAddress0, 32'h8000_1000); // tohost address
+    riscv_dbg.wait_idle(10);
+    do begin 
+       riscv_dbg.read_dmi(dm::SBData0, retval);
+       # 100ns;
+    end while (~retval[0]);
+     
+
+    if (retval[31:1]!=0) begin
+        `uvm_error( "Core Test",  $sformatf("*** FAILED *** (tohost = %0d)",retval[31:1]))
+    end else begin
+        `uvm_info( "Core Test",  $sformatf("*** SUCCESS *** (tohost = %0d)", (retval[31:1])), UVM_LOW)
+    end
+
+     $finish;
+     
+  endtask // jtag_read_eoc
+
 endmodule // ariane_tb
 

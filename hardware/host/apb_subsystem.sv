@@ -29,7 +29,13 @@ module apb_subsystem
 ) (
     input  logic                       clk_i,
     input  logic                       rst_ni,
+    input  logic                       rtc_i,
+    input  logic                       rst_dm_i,
+    output logic                       rstn_soc_sync_o,
+    output logic                       rstn_global_sync_o,
+    output logic                       clk_soc_o,
     AXI_BUS.Slave                      axi_apb_slave,
+    REG_BUS.out                        hyaxicfg_reg_master,
     XBAR_TCDM_BUS.Master               udma_tcdm_channels[1:0],
 
     output logic            [32*4-1:0] events_o,
@@ -96,7 +102,10 @@ module apb_subsystem
     output logic   [NUM_GPIO-1:0]       gpio_dir
 );
 
-  
+   logic                                s_clk_per;
+   logic                                s_rstn_soc_sync;
+   assign rstn_soc_sync_o = s_rstn_soc_sync;
+   
    APB_BUS  #(
                .APB_ADDR_WIDTH(32),
                .APB_DATA_WIDTH(32)
@@ -112,7 +121,31 @@ module apb_subsystem
                .APB_DATA_WIDTH(32)
    ) apb_gpio_master_bus();
   
+   APB_BUS  #(
+               .APB_ADDR_WIDTH(32),
+               .APB_DATA_WIDTH(32)
+   ) apb_fll_master_bus();
+
+   APB_BUS  #(
+               .APB_ADDR_WIDTH(32),
+               .APB_DATA_WIDTH(32)
+   ) apb_hyaxicfg_master_bus();
    
+   FLL_BUS  #(
+               .FLL_ADDR_WIDTH( 2),
+               .FLL_DATA_WIDTH(32)
+   ) soc_fll_bus();
+   
+   FLL_BUS  #(
+               .FLL_ADDR_WIDTH( 2),
+               .FLL_DATA_WIDTH(32)
+   ) per_fll_bus();
+   
+   FLL_BUS  #(
+               .FLL_ADDR_WIDTH( 2),
+               .FLL_DATA_WIDTH(32)
+   ) cluster_fll_bus();
+  
    axi2apb_wrap #(
          .AXI_ADDR_WIDTH ( AXI_ADDR_WIDTH           ),
          .AXI_DATA_WIDTH ( AXI_DATA_WIDTH           ),
@@ -121,8 +154,8 @@ module apb_subsystem
          .APB_ADDR_WIDTH ( 32                       ),
          .APB_DATA_WIDTH ( 32                       )
          )(
-           .clk_i,
-           .rst_ni,
+           .clk_i      ( clk_soc_o                  ),
+           .rst_ni     ( s_rstn_soc_sync            ),
            .test_en_i  ( 1'b0                       ),
            
            .axi_slave  ( axi_apb_slave              ),
@@ -131,11 +164,13 @@ module apb_subsystem
 
    periph_bus_wrap #(
                      )(
-    .clk_i,
-    .rst_ni,
+    .clk_i(clk_soc_o),
+    .rst_ni(s_rstn_soc_sync),
     .apb_slave(apb_peripheral_master_bus),
     .udma_master(apb_udma_master_bus),
-    .gpio_master(apb_gpio_master_bus)
+    .gpio_master(apb_gpio_master_bus),
+    .fll_master(apb_fll_master_bus),
+    .hyaxicfg_master(apb_hyaxicfg_master_bus)
     );
    
 
@@ -158,10 +193,10 @@ module apb_subsystem
          .dft_test_mode_i ( 1'b0                          ),
          .dft_cg_enable_i ( 1'b0                          ),
 
-         .sys_clk_i       (clk_i                          ),
-         .sys_resetn_i    (rst_ni                         ),
+         .sys_clk_i       ( clk_soc_o                     ),
+         .sys_resetn_i    ( s_rstn_soc_sync               ),
                                                           
-         .periph_clk_i    ( clk_i                         ),
+         .periph_clk_i    ( s_clk_per                     ), 
 
          .L2_ro_wen_o     ( udma_tcdm_channels[0].wen     ),
          .L2_ro_req_o     ( udma_tcdm_channels[0].req     ),
@@ -247,10 +282,10 @@ module apb_subsystem
         .PAD_NUM        (NUM_GPIO),
         .NBIT_PADCFG    (4) // we actually use padrick for pads' configuration
     ) i_apb_gpio (
-        .HCLK            ( clk_i              ),
-        .HRESETn         ( rst_ni             ),
-
-        .dft_cg_enable_i ( dft_cg_enable_i    ),
+        .HCLK            ( clk_soc_o                   ), 
+        .HRESETn         ( s_rstn_soc_sync             ),
+                                                       
+        .dft_cg_enable_i ( dft_cg_enable_i             ),
 
         .PADDR           ( apb_gpio_master_bus.paddr   ),
         .PWDATA          ( apb_gpio_master_bus.pwdata  ),
@@ -269,5 +304,53 @@ module apb_subsystem
         .gpio_padcfg     (                    ),
         .interrupt       (                    )
     );
+
+    apb_fll_if_wrap #(
+        .APB_ADDR_WIDTH (32)
+    ) i_apb_fll (
+       .clk_i              ( clk_soc_o          ),
+       .rst_ni             ( s_rstn_soc_sync    ),
+       .apb_fll_slave      ( apb_fll_master_bus ),
+       .soc_fll_master     ( soc_fll_bus        ),
+       .per_fll_master     ( per_fll_bus        ),
+       .cluster_fll_master ( cluster_fll_bus    )
+    );
+
+    alsaqr_clk_rst_gen i_alsaqr_clk_rst_gen   
+      (
+        .ref_clk_i          ( rtc_i              ),
+        .rstn_glob_i        ( rst_ni             ),
+        .rst_dm_i           ( rst_dm_i           ),
+        .test_mode_i        ( 1'b0               ),
+        .sel_fll_clk_i      ( 1'b0               ), 
+        .shift_enable_i     ( 1'b0               ),               
+        .soc_fll_slave      ( soc_fll_bus        ),
+        .per_fll_slave      ( per_fll_bus        ),
+        .cluster_fll_slave  ( cluster_fll_bus    ),
+        .rstn_soc_sync_o    ( s_rstn_soc_sync    ),
+        .rstn_global_sync_o ( rstn_global_sync_o ), 
+        .rstn_cluster_sync_o(                    ),
+        .clk_soc_o          ( clk_soc_o          ),
+        .clk_per_o          ( s_clk_per          ),
+        .clk_cluster_o      (                    )                 
+       );
+
+   
+    apb_to_reg i_apb_to_hyaxicfg
+      (
+       .clk_i     ( clk_soc_o       ),
+       .rst_ni    ( s_rstn_soc_sync ),
+ 
+       .penable_i ( apb_hyaxicfg_master_bus.penable ),
+       .pwrite_i  ( apb_hyaxicfg_master_bus.pwrite  ),
+       .paddr_i   ( apb_hyaxicfg_master_bus.paddr   ),
+       .psel_i    ( apb_hyaxicfg_master_bus.psel    ),
+       .pwdata_i  ( apb_hyaxicfg_master_bus.pwdata  ),
+       .prdata_o  ( apb_hyaxicfg_master_bus.prdata  ),
+       .pready_o  ( apb_hyaxicfg_master_bus.pready  ),
+       .pslverr_o ( apb_hyaxicfg_master_bus.pslverr ),
+
+       .reg_o     ( hyaxicfg_reg_master             )
+      );      
    
 endmodule

@@ -41,3 +41,37 @@ interface XBAR_TCDM_BUS;
       );
 
 endinterface // XBAR_TCDM_BUS
+
+
+interface FLL_BUS
+#(
+    parameter FLL_ADDR_WIDTH = 2,
+    parameter FLL_DATA_WIDTH = 32
+);
+
+    logic                       req;
+    logic                       wrn;
+    logic [FLL_ADDR_WIDTH-1:0]  add;
+    logic [FLL_DATA_WIDTH-1:0]  data;
+    logic                       ack;
+    logic [FLL_DATA_WIDTH-1:0]  r_data;
+    logic                       lock;
+
+
+   // Master Side
+   //***************************************
+   modport Master
+   (
+      output      req, wrn, add, data,
+      input       ack, r_data, lock
+   );
+
+   // Slave Side
+   //***************************************
+   modport Slave
+   (
+      input       req, wrn, add, data,
+      output      ack, r_data, lock
+   );
+
+endinterface

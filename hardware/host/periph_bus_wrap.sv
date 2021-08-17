@@ -20,7 +20,9 @@ module periph_bus_wrap
     input logic    rst_ni,
     APB_BUS.Slave  apb_slave,
     APB_BUS.Master udma_master,
-    APB_BUS.Master gpio_master
+    APB_BUS.Master gpio_master,
+    APB_BUS.Master fll_master,
+    APB_BUS.Master hyaxicfg_master
 );
 
     APB_BUS
@@ -48,7 +50,15 @@ module periph_bus_wrap
     assign s_start_addr[1] = apb_soc_pkg::GPIOSBase;
     assign s_end_addr[1]   = apb_soc_pkg::GPIOSBase + apb_soc_pkg::GPIOSLength - 1;
 
-    apb_node_wrap #(
+    `APB_ASSIGN_MASTER(s_masters[2], fll_master);
+    assign s_start_addr[2] = apb_soc_pkg::FLLBase;
+    assign s_end_addr[2]   = apb_soc_pkg::FLLBase + apb_soc_pkg::FLLLength - 1;
+   
+    `APB_ASSIGN_MASTER(s_masters[3], hyaxicfg_master);
+    assign s_start_addr[3] = apb_soc_pkg::HYAXICFGBase;
+    assign s_end_addr[3]   = apb_soc_pkg::HYAXICFGBase + apb_soc_pkg::HYAXICFGLength - 1 ;
+
+   apb_node_wrap #(
         .NB_MASTER      ( apb_soc_pkg::NUM_APB_SLAVES ),
         .APB_ADDR_WIDTH ( 32                          ),
         .APB_DATA_WIDTH ( 32                          )
@@ -56,8 +66,8 @@ module periph_bus_wrap
         .clk_i        ( clk_i        ),
         .rst_ni       ( rst_ni       ),
 
-        .apb_slave    ( apb_slave      ),
-        .apb_masters  ( s_masters      ),
+        .apb_slave    ( apb_slave    ),
+        .apb_masters  ( s_masters    ),
 
         .start_addr_i ( s_start_addr ),
         .end_addr_i   ( s_end_addr   )

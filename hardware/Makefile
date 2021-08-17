@@ -27,7 +27,7 @@ test-location  ?= output/test
 # set to either nothing or -log
 torture-logs   :=
 # custom elf bin to run with sim or sim-verilator
-elf-bin        ?= tmp/riscv-tests/build/benchmarks/dhrystone.riscv
+elf-bin        ?= ../software/hello/hello.riscv
 # root path
 mkfile_path := $(abspath $(lastword $(MAKEFILE_LIST)))
 root-dir := $(dir $(mkfile_path))
@@ -110,13 +110,14 @@ list_incdir := $(foreach dir, ${incdir}, +incdir+$(dir))
 ifdef batch-mode
 	questa-flags += -c
 	questa-cmd   := -do "coverage save -onexit tmp/$@.ucdb; run -a; quit -code [coverage attribute -name TESTSTATUS -concise]"
-	questa-cmd   += -do " log -r /*; run -all;"
+	questa-cmd   += -do " set StdArithNoWarnings 1; set NumericStdNoWarnings 1; log -r /*; run -all;"
 else
-	questa-cmd   := -do " log -r /*; run -all;"
-endif
+	questa-cmd   := -do " set StdArithNoWarnings 1; set NumericStdNoWarnings 1; log -r /*; run -all;"
+endif 
 # we want to preload the memories
 ifdef preload
 	questa-cmd += +PRELOAD=$(preload)
+  compile_flag +=  +PRELOAD=$(preload)
 	elf-bin = none
 endif
 
@@ -126,9 +127,13 @@ endif
 
 # remote bitbang is enabled
 ifdef rbb
-	questa-cmd += +jtag_rbb_enable=1
-else
-	questa-cmd += +jtag_rbb_enable=0
+	compile_flag += +define+JTAG_RBB  +jtag_rbb_enable=1
+	questa-cmd += +define+JTAG_RBB  +jtag_rbb_enable=1
+endif
+
+ifdef localjtag
+	compile_flag += +define+USE_LOCAL_JTAG
+	questa-cmd += +define+USE_LOCAL_JTAG 
 endif
 
 bender:
@@ -189,8 +194,8 @@ generate-trace-vsim:
 	make sim preload=$(preload) elf-bin= batch-mode=1
 	make generate-trace
 
-run: 
-	vsim${questa_version} +permissive $(questa-flags) $(questa-cmd) -lib $(library) +MAX_CYCLES=$(max_cycles) +UVM_TESTNAME=$(test_case)  -t 1ps \
+run:
+	vsim${questa_version} +permissive $(questa-flags) $(questa-cmd) -lib $(library) +MAX_CYCLES=$(max_cycles) +UVM_TESTNAME=$(test_case) +STRING=$(elf-bin) -t 1ps \
 	+BASEDIR=$(riscv-test-dir) $(uvm-flags) $(QUESTASIM_FLAGS) -gblso $(SPIKE_ROOT)/lib/libfesvr.so -sv_lib $(dpi-library)/ariane_dpi  \
 	${top_level}_optimized +permissive-off ++$(elf-bin) ++$(target-options) | tee sim.log
 

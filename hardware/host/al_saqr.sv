@@ -29,7 +29,6 @@ module al_saqr
   parameter bit          StallRandomInput  = 1'b0,
   parameter bit          JtagEnable        = 1'b1
 ) (
-  input logic         clk_i,
   input logic         rtc_i,
   input logic         rst_ni,
   output logic [31:0] exit_o,
@@ -109,7 +108,6 @@ module al_saqr
         .NUM_GPIO          ( NUM_GPIO   ),
         .JtagEnable        ( JtagEnable )
     ) i_host_domain (
-      .clk_i,
       .rst_ni,
       .rtc_i,
       .exit_o,
