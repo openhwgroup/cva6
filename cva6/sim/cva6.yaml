@@ -65,17 +65,17 @@
   precmd: >
     make -f Makefile vcs_comp variant=<variant> user-define="+define+WT_CACHE"
   cmd: >
-    ./vcs_results/simv
+    make -f Makefile vcs_run
   postcmd: >
     <tool_path>/spike-dasm < ./trace_rvfi_hart_00.dasm > log
 
-- iss: vcs-uvm-gui
+- iss: vcs-uvm-verdi
   path_var: RTL_PATH
   tool_path: SPIKE_PATH
   tb_path: TB_PATH
   precmd: >
-    make -f Makefile vcs_comp variant=<variant> user-define="+define+WT_CACHE"
+    make -f Makefile vcs_comp variant=<variant> user-define="+define+WT_CACHE" VERDI=1
   cmd: >
-    ./vcs_results/simv -gui
+    make -f Makefile vcs_run
   postcmd: >
     <tool_path>/spike-dasm < ./trace_rvfi_hart_00.dasm > log
