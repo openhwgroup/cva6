@@ -81,8 +81,11 @@ module uvmt_cv32e40x_debug_assert
     // Helper sequence: Go to next WB retirement
 
     sequence s_conse_next_retire;  // Should only be used in consequent (not antecedent)
-        ($fell(cov_assert_if.wb_stage_instr_valid_i) [->1]  // Finish current preoccupation
+        ($fell(cov_assert_if.wb_stage_instr_valid_i) [->1]  // Finish current WB preoccupation
             ##0 cov_assert_if.wb_valid [->1])  // Go to next WB done
+        or
+        ($fell(cov_assert_if.ex_valid) [->1]  // Finish current EX preoccupation
+            ##0 cov_assert_if.wb_valid [->2])  // Go to next two WB done
         or
         (cov_assert_if.wb_valid [->1]  // Go directly to next WB done
             ##0 (cov_assert_if.dcsr_q[8:6] == 3))  // Need good reason to forgo $fell(instr_valid)
