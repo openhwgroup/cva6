@@ -434,10 +434,11 @@ endfunction: connect_scoreboard
 
 
 function void uvme_cv32e40x_env_c::connect_coverage_model();
-   
-   interrupt_agent.monitor.ap_iss.connect(cov_model.interrupt_covg.interrupt_mon_export);      
-   foreach (rvfi_agent.instr_mon_ap[i])
+   isacov_agent.monitor.ap.connect(cov_model.interrupt_covg.instr_mon_export);
+   foreach (rvfi_agent.instr_mon_ap[i]) begin
       rvfi_agent.instr_mon_ap[i].connect(isacov_agent.monitor.rvfi_instr_export);
+      rvfi_agent.instr_mon_ap[i].connect(cov_model.interrupt_covg.interrupt_mon_export);
+   end
 
 endfunction: connect_coverage_model
 
