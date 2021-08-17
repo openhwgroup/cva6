@@ -39,12 +39,16 @@ int main() {
     int error =0;
     int id1, id2;
     int pass = 0;
-    int periph_id = 8;
+    int periph_id = 28;
 
     // PLIC setup for hyper tx
     int plic_base = 0x0C000000;
-    int tx_hyper_plic_id = 59;
-    int rx_hyper_plic_id = 58;
+    int tx_hyper_plic_id = 123;
+    int rx_hyper_plic_id = 122;
+    // Plics events for a periph with id = N are mapped as
+    // n_evt[i]=N*4+8+i , with i=[0:3].
+    // Each periph has 4 event signals it can use. The first
+    // 8 events are already mapped to other non-udma signals.
     int plic_en_bits = plic_base + 0x2080;
     // set tx interrupt priority to 1
     pulp_write32(plic_base+tx_hyper_plic_id*4, 1);
