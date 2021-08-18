@@ -37,7 +37,7 @@ module cva6_core_only_tb #(
   localparam CLK_REPORT_COUNT  =  100;
   localparam CLK_TIMEOUT_COUNT = 1000000;
   localparam CLK_PERIOD        =   10;
-  localparam RESET_ASSERT_TIME = 1234;
+  localparam RESET_ASSERT_TIME =  123;
 
   reg     r_tb_clk;
   reg     r_tb_rstn;
