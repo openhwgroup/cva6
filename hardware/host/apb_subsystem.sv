@@ -20,7 +20,7 @@ module apb_subsystem
     parameter int unsigned AXI_ADDR_WIDTH = 64,
     parameter int unsigned AXI_DATA_WIDTH = 64,
     parameter int unsigned L2_ADDR_WIDTH  = 32, // L2 address space
-    parameter int unsigned N_SPI          = 10,
+    parameter int unsigned N_SPI          = 11,
     parameter int unsigned N_UART         = 7,
     parameter int unsigned N_SDIO         = 2,
     parameter int unsigned N_CAM          = 2,
@@ -91,7 +91,11 @@ module apb_subsystem
     // GPIOs
     input logic [NUM_GPIO-1:0]                  gpio_in,
     output logic [NUM_GPIO-1:0]                 gpio_out,
-    output logic [NUM_GPIO-1:0]                 gpio_dir
+    output logic [NUM_GPIO-1:0]                 gpio_dir,
+
+    // ADV TIMERS
+    output logic [3:0]                          pwm0_o,
+    output logic [3:0]                          pwm1_o
 );
 
    logic                                s_clk_per;
@@ -122,6 +126,11 @@ module apb_subsystem
                .APB_ADDR_WIDTH(32),
                .APB_DATA_WIDTH(32)
    ) apb_hyaxicfg_master_bus();
+
+   APB_BUS  #(
+               .APB_ADDR_WIDTH(32),
+               .APB_DATA_WIDTH(32)
+   ) apb_advtimer_master_bus();
    
    FLL_BUS  #(
                .FLL_ADDR_WIDTH( 2),
@@ -162,7 +171,8 @@ module apb_subsystem
     .udma_master(apb_udma_master_bus),
     .gpio_master(apb_gpio_master_bus),
     .fll_master(apb_fll_master_bus),
-    .hyaxicfg_master(apb_hyaxicfg_master_bus)
+    .hyaxicfg_master(apb_hyaxicfg_master_bus),
+    .advtimer_master(apb_advtimer_master_bus)
     );
    
 
@@ -259,7 +269,7 @@ module apb_subsystem
 
       );
    
-     
+    logic [31:0] s_gpio_sync; 
     apb_gpio #(
         .APB_ADDR_WIDTH (32),
         .PAD_NUM        (NUM_GPIO),
@@ -268,7 +278,7 @@ module apb_subsystem
         .HCLK            ( clk_soc_o                   ), 
         .HRESETn         ( s_rstn_soc_sync             ),
                                                        
-        .dft_cg_enable_i ( dft_cg_enable_i             ),
+        .dft_cg_enable_i ( 1'b0                        ),
 
         .PADDR           ( apb_gpio_master_bus.paddr   ),
         .PWDATA          ( apb_gpio_master_bus.pwdata  ),
@@ -279,7 +289,7 @@ module apb_subsystem
         .PREADY          ( apb_gpio_master_bus.pready  ),
         .PSLVERR         ( apb_gpio_master_bus.pslverr ),
 
-        .gpio_in_sync    (                   ),
+        .gpio_in_sync    ( s_gpio_sync                 ),
 
         .gpio_in         ( gpio_in            ),
         .gpio_out        ( gpio_out           ),
@@ -335,5 +345,35 @@ module apb_subsystem
 
        .reg_o     ( hyaxicfg_reg_master             )
       );      
+
+    apb_adv_timer #(
+        .APB_ADDR_WIDTH ( 32             ),
+        .EXTSIG_NUM     ( 32             )
+    ) i_apb_adv_timer0 (
+        .HCLK            ( s_clk_per               ),
+        .HRESETn         ( s_rstn_soc_sync         ),
+
+        .dft_cg_enable_i ( 1'b0                    ),
+
+        .PADDR           ( apb_advtimer_master_bus.paddr   ),
+        .PWDATA          ( apb_advtimer_master_bus.pwdata  ),
+        .PWRITE          ( apb_advtimer_master_bus.pwrite  ),
+        .PSEL            ( apb_advtimer_master_bus.psel    ),
+        .PENABLE         ( apb_advtimer_master_bus.penable ),
+        .PRDATA          ( apb_advtimer_master_bus.prdata  ),
+        .PREADY          ( apb_advtimer_master_bus.pready  ),
+        .PSLVERR         ( apb_advtimer_master_bus.pslverr ),
+
+        .low_speed_clk_i ( rtc_i                   ),
+        .ext_sig_i       ( s_gpio_sync             ),
+
+        .events_o        (                         ),
+
+        .ch_0_o          ( pwm0_o                  ),
+        .ch_1_o          ( pwm1_o                  ),
+        .ch_2_o          (                         ),
+        .ch_3_o          (                         )
+    );
+
    
 endmodule

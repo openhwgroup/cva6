@@ -11,10 +11,10 @@
 module udma_subsystem
 #(
     parameter L2_DATA_WIDTH  = 32,
-    parameter L2_ADDR_WIDTH  = 19,   //L2 addr space of 2MB
+    parameter L2_ADDR_WIDTH  = 19,  //L2 addr space of 2MB
     parameter APB_ADDR_WIDTH = 12,  //APB slaves are 4KB by default
     parameter TRANS_SIZE     = 20,  //max uDMA transaction size of 1MB
-    parameter N_SPI          = 10,
+    parameter N_SPI          = 11,
     parameter N_UART         = 7,
     parameter N_SDIO         = 2,
     parameter N_CAM          = 2,
@@ -160,11 +160,11 @@ module udma_subsystem
 
     localparam PER_ID_UART    = 0;                  
     localparam PER_ID_SPIM    = PER_ID_UART   + N_UART   ; // 7
-    localparam PER_ID_I2C     = PER_ID_SPIM   + N_SPI    ; // 17   
-    localparam PER_ID_SDIO    = PER_ID_I2C    + N_I2C    ; // 23
-    localparam PER_ID_CAM     = PER_ID_SDIO   + N_SDIO   ; // 25
-    localparam PER_ID_FILTER  = PER_ID_CAM    + N_CAM    ; // 27
-    localparam PER_ID_HYPER   = PER_ID_FILTER + N_FILTER ; // 28
+    localparam PER_ID_I2C     = PER_ID_SPIM   + N_SPI    ; // 18   
+    localparam PER_ID_SDIO    = PER_ID_I2C    + N_I2C    ; // 24
+    localparam PER_ID_CAM     = PER_ID_SDIO   + N_SDIO   ; // 26
+    localparam PER_ID_FILTER  = PER_ID_CAM    + N_CAM    ; // 28
+    localparam PER_ID_HYPER   = PER_ID_FILTER + N_FILTER ; // 29
     
 
     logic [N_TX_CHANNELS-1:0] [L2_AWIDTH_NOAL-1 : 0] s_tx_cfg_startaddr;

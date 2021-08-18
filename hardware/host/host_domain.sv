@@ -32,7 +32,7 @@ module host_domain
   parameter bit          StallRandomOutput = 1'b0,
   parameter bit          StallRandomInput  = 1'b0,
   parameter bit          JtagEnable        = 1'b1,
-  parameter int unsigned N_SPI             = 10,
+  parameter int unsigned N_SPI             = 11,
   parameter int unsigned N_UART            = 7,
   parameter int unsigned N_SDIO            = 2,
   parameter int unsigned N_CAM             = 2,

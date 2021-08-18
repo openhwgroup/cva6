@@ -22,7 +22,8 @@ module periph_bus_wrap
     APB_BUS.Master udma_master,
     APB_BUS.Master gpio_master,
     APB_BUS.Master fll_master,
-    APB_BUS.Master hyaxicfg_master
+    APB_BUS.Master hyaxicfg_master,
+    APB_BUS.Master advtimer_master
 );
 
     APB_BUS
@@ -58,6 +59,11 @@ module periph_bus_wrap
     assign s_start_addr[3] = apb_soc_pkg::HYAXICFGBase;
     assign s_end_addr[3]   = apb_soc_pkg::HYAXICFGBase + apb_soc_pkg::HYAXICFGLength - 1 ;
 
+    `APB_ASSIGN_MASTER(s_masters[4], advtimer_master);
+    assign s_start_addr[4] = apb_soc_pkg::ADVTIMERBase;
+    assign s_end_addr[4]   = apb_soc_pkg::ADVTIMERBase + apb_soc_pkg::ADVTIMERLength - 1 ;
+
+   
    apb_node_wrap #(
         .NB_MASTER      ( apb_soc_pkg::NUM_APB_SLAVES ),
         .APB_ADDR_WIDTH ( 32                          ),
