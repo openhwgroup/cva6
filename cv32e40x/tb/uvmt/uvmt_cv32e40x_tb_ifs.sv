@@ -144,6 +144,7 @@ interface uvmt_cv32e40x_debug_cov_assert_if
     input         wb_valid,
     input         wb_halt,
     input         wb_stage_wfi_insn,
+    input         wb_err,
     input         id_valid,
     input wire ctrl_state_e  ctrl_fsm_cs,            // Controller FSM states with debug_req
     input         illegal_insn_i,

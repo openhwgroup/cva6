@@ -364,6 +364,7 @@ module uvmt_cv32e40x_tb;
       .wb_stage_instr_valid_i(dut_wrap.cv32e40x_wrapper_i.core_i.ex_wb_pipe.instr_valid),
       .wb_stage_pc           (dut_wrap.cv32e40x_wrapper_i.core_i.wb_stage_i.ex_wb_pipe_i.pc),
       .wb_stage_wfi_insn     (dut_wrap.cv32e40x_wrapper_i.core_i.ex_wb_pipe.wfi_insn),
+      .wb_err                (dut_wrap.cv32e40x_wrapper_i.core_i.ex_wb_pipe.instr.bus_resp.err),
       .mie_q(dut_wrap.cv32e40x_wrapper_i.core_i.cs_registers_i.mie_q),
       .ctrl_fsm_cs(dut_wrap.cv32e40x_wrapper_i.core_i.controller_i.controller_fsm_i.ctrl_fsm_cs),
       .illegal_insn_i(dut_wrap.cv32e40x_wrapper_i.core_i.ex_wb_pipe.illegal_insn),

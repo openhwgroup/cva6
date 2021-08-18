@@ -58,15 +58,16 @@ module uvmt_cv32e40x_debug_assert
   
   assign cov_assert_if.is_ebreak =
     cov_assert_if.wb_stage_instr_valid_i
+    && !cov_assert_if.wb_err
     && (cov_assert_if.wb_stage_instr_rdata_i == 32'h0010_0073);
 
   assign cov_assert_if.is_cebreak =
     cov_assert_if.wb_stage_instr_valid_i
+    && !cov_assert_if.wb_err
     && (cov_assert_if.wb_stage_instr_rdata_i == 32'h0000_9002);
 
   assign cov_assert_if.is_mulhsu =
     cov_assert_if.wb_stage_instr_valid_i
-    && cov_assert_if.wb_stage_instr_valid_i
     && (cov_assert_if.wb_stage_instr_rdata_i[31:25] == 7'h1)
     && (cov_assert_if.wb_stage_instr_rdata_i[14:12] == 3'b010)
     && (cov_assert_if.wb_stage_instr_rdata_i[6:0]   == 7'h33);
@@ -626,10 +627,15 @@ module uvmt_cv32e40x_debug_assert
 
     assign cov_assert_if.addr_match   = (cov_assert_if.wb_stage_pc == cov_assert_if.tdata2);
     assign cov_assert_if.dpc_will_hit = (cov_assert_if.depc_n == cov_assert_if.tdata2);
-    assign cov_assert_if.is_wfi = cov_assert_if.wb_valid
-                                  && ((cov_assert_if.wb_stage_instr_rdata_i & WFI_INSTR_MASK) == WFI_INSTR_DATA);
+    assign cov_assert_if.is_wfi =
+        cov_assert_if.wb_valid
+        && ((cov_assert_if.wb_stage_instr_rdata_i & WFI_INSTR_MASK) == WFI_INSTR_DATA)
+        && !cov_assert_if.wb_err;
     assign cov_assert_if.pending_enabled_irq = |(cov_assert_if.irq_i & cov_assert_if.mie_q);
-    assign cov_assert_if.is_dret = cov_assert_if.wb_valid && (cov_assert_if.wb_stage_instr_rdata_i == 32'h 7B20_0073);
+    assign cov_assert_if.is_dret =
+        cov_assert_if.wb_valid
+        && (cov_assert_if.wb_stage_instr_rdata_i == 32'h 7B20_0073)
+        && !cov_assert_if.wb_err;
 
 
     // Track which debug cause should be expected
