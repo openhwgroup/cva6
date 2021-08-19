@@ -46,15 +46,34 @@ void load_misaligned_memio(void) {__asm__ volatile("lw t0, 0(%0)" : : "r"(IO_ADD
 void store_first_access(void) {__asm__ volatile("sw %0, 2(%1)" : : "r"(0x11223344), "r"(IO_ADDR));}
 void store_second_access(void) {__asm__ volatile("sw %0, -2(%1)" : : "r"(0x22334455), "r"(MEM_ADDR_1));}
 
+__attribute__((naked))
 void provoke(void (*f)(void)) {
+  // Prolog
+  __asm__ volatile("addi sp,sp,-64");
+  __asm__ volatile("sw ra, 0(sp)");
+  __asm__ volatile("sw a0, 4(sp)");
+  __asm__ volatile("sw a1, 8(sp)");
+  __asm__ volatile("sw a2, 12(sp)");
+  __asm__ volatile("sw a3, 16(sp)");
+  __asm__ volatile("sw a4, 20(sp)");
+  __asm__ volatile("sw a5, 24(sp)");
+  __asm__ volatile("sw a6, 28(sp)");
+  __asm__ volatile("sw a7, 32(sp)");
+  __asm__ volatile("sw t0, 36(sp)");
+  __asm__ volatile("sw t1, 40(sp)");
+  __asm__ volatile("sw t2, 44(sp)");
+  __asm__ volatile("sw t3, 48(sp)");
+  __asm__ volatile("sw t4, 52(sp)");
+  __asm__ volatile("sw t5, 56(sp)");
+  __asm__ volatile("sw t6, 60(sp)");
+
   // Let trap handler know where to continue
   __asm__ volatile("addi %0, ra, 0" : "=r"(retpc));
 
-  // Call the function that might trap
+  // Call the function that shall trap
   f();
 
-  // TODO:ropeders is it ok to tamper with the stack like this? (Handler return forgoes epilog.)
-  // Only main() will have an adverse impact, and it is easier to deal with.
+  // Handler must do epilog
 }
 
 static void assert_or_die(uint32_t actual, uint32_t expect, char *msg) {
@@ -65,14 +84,33 @@ static void assert_or_die(uint32_t actual, uint32_t expect, char *msg) {
   }
 }
 
+__attribute__((naked))
 void u_sw_irq_handler(void) {  // overrides a "weak" symbol in the bsp
   __asm__ volatile("csrr %0, mcause" : "=r"(mcause));
   __asm__ volatile("csrr %0, mepc" : "=r"(mepc));
   __asm__ volatile("csrr %0, mtval" : "=r"(mtval));
 
   __asm__ volatile("csrw mepc, %0" : : "r"(retpc));
-
   printf("exec in u_sw_irq_handler, mcause=%lx, mepc=%lx, retpc=%lx\n", mcause, mepc, retpc);
+
+  // provoke() did prolog, handler does epilog
+  __asm__ volatile("lw ra, 0(sp)");
+  __asm__ volatile("lw a0, 4(sp)");
+  __asm__ volatile("lw a1, 8(sp)");
+  __asm__ volatile("lw a2, 12(sp)");
+  __asm__ volatile("lw a3, 16(sp)");
+  __asm__ volatile("lw a4, 20(sp)");
+  __asm__ volatile("lw a5, 24(sp)");
+  __asm__ volatile("lw a6, 28(sp)");
+  __asm__ volatile("lw a7, 32(sp)");
+  __asm__ volatile("lw t0, 36(sp)");
+  __asm__ volatile("lw t1, 40(sp)");
+  __asm__ volatile("lw t2, 44(sp)");
+  __asm__ volatile("lw t3, 48(sp)");
+  __asm__ volatile("lw t4, 52(sp)");
+  __asm__ volatile("lw t5, 56(sp)");
+  __asm__ volatile("lw t6, 60(sp)");
+  __asm__ volatile("addi sp,sp,64");
   __asm__ volatile("mret");
 }
 
@@ -388,5 +426,5 @@ int main(void) {
 
 
   printf("\nGoodbye, PMA test!\n\n");
-  exit(EXIT_SUCCESS);  // The stack cannot be trusted to do a normal return
+  return EXIT_SUCCESS;
 }
