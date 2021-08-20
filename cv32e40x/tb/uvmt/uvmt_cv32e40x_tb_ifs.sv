@@ -130,9 +130,21 @@ interface uvmt_cv32e40x_debug_cov_assert_if
     input         id_stage_instr_valid_i, // instruction word is valid
     input  [31:0] id_stage_instr_rdata_i, // Instruction word data
     input         id_stage_is_compressed,
-    input  [31:0] id_stage_pc, // Program counter in decode
+    input         id_stage_wfi_insn,
     input  [31:0] if_stage_pc, // Program counter in fetch
-    input         is_decoding,
+    input  [31:0] id_stage_pc, // Program counter in decode
+    input         ex_stage_csr_en,
+    input         ex_valid,
+    input  [31:0] ex_stage_instr_rdata_i,
+    input  [31:0] ex_stage_pc,
+    input         wb_stage_instr_valid_i,
+    input  [31:0] wb_stage_instr_rdata_i,
+    input  [31:0] wb_stage_pc, // Program counter in writeback
+    input         wb_illegal,
+    input         wb_valid,
+    input         wb_halt,
+    input         wb_stage_wfi_insn,
+    input         wb_err,
     input         id_valid,
     input wire ctrl_state_e  ctrl_fsm_cs,            // Controller FSM states with debug_req
     input         illegal_insn_i,
@@ -140,6 +152,10 @@ interface uvmt_cv32e40x_debug_cov_assert_if
     input         ecall_insn_i,
 
     input  [31:0] boot_addr_i,
+
+    input         rvfi_valid,
+    input  [31:0] rvfi_pc_wdata,
+    input  [31:0] rvfi_pc_rdata,
 
     // Debug signals
     input         debug_req_i, // From controller
@@ -201,13 +217,19 @@ interface uvmt_cv32e40x_debug_cov_assert_if
     id_stage_instr_valid_i,
     id_stage_instr_rdata_i,
     id_stage_is_compressed,
+
+    wb_stage_instr_valid_i,
+    wb_stage_instr_rdata_i,
+
     id_stage_pc,
     if_stage_pc,
     ctrl_fsm_cs,
     illegal_insn_i,
     illegal_insn_q,
     ecall_insn_i,
-    boot_addr_i,
+    boot_addr_i, 
+    rvfi_pc_wdata,
+    rvfi_pc_rdata,
     debug_req_i,
     debug_mode_q,
     dcsr_q,

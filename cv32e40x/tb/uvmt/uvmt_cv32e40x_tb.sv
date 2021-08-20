@@ -343,7 +343,6 @@ module uvmt_cv32e40x_tb;
 
     // Instantiate debug assertions
 
-    /* FIXME:STRICHMO:restore debug coverage assertions eventually
     uvmt_cv32e40x_debug_cov_assert_if debug_cov_assert_if(
       .clk_i(clknrst_if.clk),
       .rst_ni(clknrst_if.reset_n),
@@ -353,16 +352,28 @@ module uvmt_cv32e40x_tb;
       .id_stage_instr_valid_i(dut_wrap.cv32e40x_wrapper_i.core_i.id_stage_i.if_id_pipe_i.instr_valid),
       .id_stage_instr_rdata_i(dut_wrap.cv32e40x_wrapper_i.core_i.id_stage_i.if_id_pipe_i.instr.bus_resp.rdata),
       .id_stage_is_compressed(dut_wrap.cv32e40x_wrapper_i.core_i.id_stage_i.if_id_pipe_i.is_compressed),
-      .id_valid(dut_wrap.cv32e40x_wrapper_i.core_i.id_valid),
-      .is_decoding(dut_wrap.cv32e40x_wrapper_i.core_i.is_decoding),
-      .id_stage_pc(dut_wrap.cv32e40x_wrapper_i.core_i.id_stage_i.if_id_pipe_i.pc),
+      .id_stage_wfi_insn     (dut_wrap.cv32e40x_wrapper_i.core_i.id_stage_i.id_ex_pipe_o.wfi_insn),  // TODO:ropeders "ex_stage"?
+      .id_valid(dut_wrap.cv32e40x_wrapper_i.core_i.id_stage_i.id_valid),
       .if_stage_pc(dut_wrap.cv32e40x_wrapper_i.core_i.if_stage_i.pc_if_o),
+      .id_stage_pc(dut_wrap.cv32e40x_wrapper_i.core_i.id_stage_i.if_id_pipe_i.pc),
+      .ex_stage_csr_en (dut_wrap.cv32e40x_wrapper_i.core_i.id_ex_pipe.csr_en),
+      .ex_valid(dut_wrap.cv32e40x_wrapper_i.core_i.ex_stage_i.instr_valid),
+      .ex_stage_instr_rdata_i(dut_wrap.cv32e40x_wrapper_i.core_i.id_ex_pipe.instr.bus_resp.rdata),
+      .ex_stage_pc(dut_wrap.cv32e40x_wrapper_i.core_i.id_ex_pipe.pc),
+      .wb_stage_instr_rdata_i(dut_wrap.cv32e40x_wrapper_i.core_i.ex_wb_pipe.instr.bus_resp.rdata),
+      .wb_stage_instr_valid_i(dut_wrap.cv32e40x_wrapper_i.core_i.ex_wb_pipe.instr_valid),
+      .wb_stage_pc           (dut_wrap.cv32e40x_wrapper_i.core_i.wb_stage_i.ex_wb_pipe_i.pc),
+      .wb_stage_wfi_insn     (dut_wrap.cv32e40x_wrapper_i.core_i.ex_wb_pipe.wfi_insn),
+      .wb_err                (dut_wrap.cv32e40x_wrapper_i.core_i.ex_wb_pipe.instr.bus_resp.err),
       .mie_q(dut_wrap.cv32e40x_wrapper_i.core_i.cs_registers_i.mie_q),
       .ctrl_fsm_cs(dut_wrap.cv32e40x_wrapper_i.core_i.controller_i.controller_fsm_i.ctrl_fsm_cs),
-      .illegal_insn_i(dut_wrap.cv32e40x_wrapper_i.core_i.controller_i.controller_fsm_i.illegal_insn_i),
-      .illegal_insn_q(dut_wrap.cv32e40x_wrapper_i.core_i.controller_i.controller_fsm_i.illegal_insn_q),
-      .ecall_insn_i(dut_wrap.cv32e40x_wrapper_i.core_i.controller_i.controller_fsm_i.ecall_insn_i),
-      .debug_req_i(dut_wrap.cv32e40x_wrapper_i.core_i.controller_i.controller_fsm_i.debug_req_pending),
+      .illegal_insn_i(dut_wrap.cv32e40x_wrapper_i.core_i.ex_wb_pipe.illegal_insn),
+      .wb_illegal(dut_wrap.cv32e40x_wrapper_i.core_i.ex_wb_pipe.illegal_insn),
+      .wb_valid(dut_wrap.cv32e40x_wrapper_i.core_i.wb_stage_i.wb_valid_o),
+      .wb_halt(dut_wrap.cv32e40x_wrapper_i.core_i.wb_stage_i.ctrl_fsm_i.halt_wb),
+      //TODO:ropeders .illegal_insn_q(dut_wrap.cv32e40x_wrapper_i.core_i.controller_i.controller_fsm_i.illegal_insn_q),
+      .ecall_insn_i(dut_wrap.cv32e40x_wrapper_i.core_i.ex_wb_pipe.ecall_insn),
+      .debug_req_i(dut_wrap.cv32e40x_wrapper_i.core_i.controller_i.controller_fsm_i.pending_debug),  // TODO:ropeders "debug_req_i"?
       .debug_mode_q(dut_wrap.cv32e40x_wrapper_i.core_i.controller_i.controller_fsm_i.debug_mode_q),
       .dcsr_q(dut_wrap.cv32e40x_wrapper_i.core_i.cs_registers_i.dcsr_q),
       .depc_q(dut_wrap.cv32e40x_wrapper_i.core_i.cs_registers_i.dpc_q),
@@ -370,11 +381,11 @@ module uvmt_cv32e40x_tb;
       .mcause_q(
         {dut_wrap.cv32e40x_wrapper_i.core_i.cs_registers_i.mcause_q[31],
         dut_wrap.cv32e40x_wrapper_i.core_i.cs_registers_i.mcause_q[4:0]}),
-      .mtvec({dut_wrap.cv32e40x_wrapper_i.core_i.cs_registers_i.mtvec_q[31:8], 8'h00}),
+      .mtvec(dut_wrap.cv32e40x_wrapper_i.core_i.cs_registers_i.mtvec_q),
       .mepc_q(dut_wrap.cv32e40x_wrapper_i.core_i.cs_registers_i.mepc_q),
       .tdata1(dut_wrap.cv32e40x_wrapper_i.core_i.cs_registers_i.tmatch_control_rdata),
       .tdata2(dut_wrap.cv32e40x_wrapper_i.core_i.cs_registers_i.tmatch_value_rdata),
-      .trigger_match_i(dut_wrap.cv32e40x_wrapper_i.core_i.controller_i.controller_fsm_i.debug_trigger_match_i),
+      .trigger_match_i(dut_wrap.cv32e40x_wrapper_i.core_i.controller_i.controller_fsm_i.trigger_match_in_wb),  // TODO:ropeders
       .mcountinhibit_q(dut_wrap.cv32e40x_wrapper_i.core_i.cs_registers_i.mcountinhibit_q),
       .mcycle(dut_wrap.cv32e40x_wrapper_i.core_i.cs_registers_i.mhpmcounter_q[0]),
       .minstret(dut_wrap.cv32e40x_wrapper_i.core_i.cs_registers_i.mhpmcounter_q[2]),
@@ -388,11 +399,11 @@ module uvmt_cv32e40x_tb;
       // Second attempt: (based on OK input).  This passes, but maybe only because p_minstret_count
       //                                       is the only property sensitive to inst_ret. Will
       //                                       this work in the general case?
-      .inst_ret(dut_wrap.cv32e40x_wrapper_i.core_i.cs_registers_i.mhpmevent_minstret_i),
-      .csr_access(dut_wrap.cv32e40x_wrapper_i.core_i.id_stage_i.csr_en),
-      .csr_op(dut_wrap.cv32e40x_wrapper_i.core_i.id_stage_i.csr_op),
-      .csr_op_dec(dut_wrap.cv32e40x_wrapper_i.core_i.id_stage_i.decoder_i.csr_op),
-      .csr_addr(dut_wrap.cv32e40x_wrapper_i.core_i.cs_registers_i.csr_addr),
+      .inst_ret(dut_wrap.cv32e40x_wrapper_i.core_i.ctrl_fsm.mhpmevent.minstret),
+      .csr_access(dut_wrap.cv32e40x_wrapper_i.core_i.ex_wb_pipe.csr_en),
+      .csr_op(dut_wrap.cv32e40x_wrapper_i.core_i.ex_wb_pipe.csr_op),
+      // TODO:ropeders .csr_op_dec(dut_wrap.cv32e40x_wrapper_i.core_i.ex_wb_pipe.decoder_i.csr_op),
+      .csr_addr(dut_wrap.cv32e40x_wrapper_i.core_i.ex_wb_pipe.csr_addr),
       .csr_we_int(dut_wrap.cv32e40x_wrapper_i.core_i.cs_registers_i.csr_we_int),
       .irq_ack_o(dut_wrap.cv32e40x_wrapper_i.core_i.irq_ack_o),
       .irq_id_o(dut_wrap.cv32e40x_wrapper_i.core_i.irq_id_o),
@@ -400,9 +411,12 @@ module uvmt_cv32e40x_tb;
       .dm_exception_addr_i(dut_wrap.cv32e40x_wrapper_i.core_i.dm_exception_addr_i),
       .core_sleep_o(dut_wrap.cv32e40x_wrapper_i.core_i.core_sleep_o),
       .irq_i(dut_wrap.cv32e40x_wrapper_i.core_i.irq_i),
-      .pc_set(dut_wrap.cv32e40x_wrapper_i.core_i.pc_set),
+      .pc_set(dut_wrap.cv32e40x_wrapper_i.core_i.ctrl_fsm.pc_set),
       .boot_addr_i(dut_wrap.cv32e40x_wrapper_i.core_i.boot_addr_i),
-      .branch_in_decode(dut_wrap.cv32e40x_wrapper_i.core_i.controller_i.controller_fsm_i.branch_in_id),
+      .rvfi_valid(dut_wrap.cv32e40x_wrapper_i.rvfi_i.rvfi_valid),
+      .rvfi_pc_wdata(dut_wrap.cv32e40x_wrapper_i.rvfi_i.rvfi_pc_wdata),
+      .rvfi_pc_rdata(dut_wrap.cv32e40x_wrapper_i.rvfi_i.rvfi_pc_rdata),
+      // TODO:ropeders .branch_in_decode(dut_wrap.cv32e40x_wrapper_i.core_i.controller_i.controller_fsm_i.branch_in_id),
 
       .is_wfi(),
       .in_wfi(),
@@ -414,10 +428,8 @@ module uvmt_cv32e40x_tb;
       .is_mulhsu(),
       .pending_enabled_irq()
     );
-  */
 
-    // FIXME:strichmo Must re-enable debug assertions
-    //uvmt_cv32e40x_debug_assert u_debug_assert(.cov_assert_if(debug_cov_assert_if));
+    uvmt_cv32e40x_debug_assert u_debug_assert(.cov_assert_if(debug_cov_assert_if));
 
     //uvmt_cv32e40x_rvvi_handcar u_rvvi_handcar();
     /**
