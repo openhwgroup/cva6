@@ -36,13 +36,13 @@ volatile uint32_t  bus_fault_count     = 0;
 volatile uint32_t  bus_fault_count_exp = 3;
 
 // Special handler for instruction bus faults
-void handle_insn_bus_fault(void) {  
+void handle_insn_bus_fault(void) {
   if (++bus_fault_count == bus_fault_count_exp) {
     *(ERR_VALID + 6*0) = 0;
-    
+
     asm volatile("fence");
   }
-  
+
   asm volatile("j end_handler_ret");
 }
 
@@ -71,7 +71,7 @@ int test_word_aligned_i_error() {
 
   // Inject errors via OBI VP and call function
   bus_fault_count_exp = 4;
-  *(ERR_ADDR_MIN + 6*0) = (uint32_t) bus_error_func_word_align;  
+  *(ERR_ADDR_MIN + 6*0) = (uint32_t) bus_error_func_word_align;
   *(ERR_ADDR_MAX + 6*0) = (uint32_t) bus_error_func_word_align;
   *(ERR_VALID + 6*0)    = 1;
   asm volatile("fence");

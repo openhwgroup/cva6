@@ -1,19 +1,19 @@
 
 // Copyright 2020 OpenHW Group
 // Copyright 2020 Datum Technology Corporation
-// 
+//
 // Licensed under the Solderpad Hardware Licence, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
-// 
+//
 //     https://solderpad.org/licenses/
-// 
+//
 // Unless required by applicable law or agreed to in writing, software
 // distributed under the License is distributed on an "AS IS" BASIS,
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
-// 
+//
 
 
 
@@ -30,13 +30,13 @@
 interface uvmt_cv32e40x_clk_gen_if (output logic core_clock, output logic core_reset_n);
 
    import uvm_pkg::*;
-   
+
    bit       start_clk               = 0;
    // TODO: get the uvme_cv32e40x_* values from random ENV CFG members.
    realtime  core_clock_period       = 1500ps; // uvme_cv32e40x_clk_period * 1ps;
    realtime  reset_deassert_duration = 7400ps; // uvme_cv32e40x_reset_deassert_duarion * 1ps;
    realtime  reset_assert_duration   = 7400ps; // uvme_cv32e40x_reset_assert_duarion * 1ps;
-      
+
    /**
     * Generates clock and reset signals.
     * If reset_n comes up de-asserted (1'b1), wait a bit, then assert, then de-assert
@@ -58,20 +58,20 @@ interface uvmt_cv32e40x_clk_gen_if (output logic core_clock, output logic core_r
          end
       join_none
    end
-   
+
    /**
     * Sets clock period in ps.
     */
    function void set_clk_period ( real clk_period );
       core_clock_period = clk_period * 1ps;
    endfunction : set_clk_period
-   
+
    /** Triggers the generation of clk. */
    function void start();
       start_clk = 1;
       `uvm_info("CLK_GEN_IF", "uvmt_cv32e40x_clk_gen_if.start() called", UVM_NONE)
    endfunction : start
-   
+
 endinterface : uvmt_cv32e40x_clk_gen_if
 
 /**
@@ -126,7 +126,7 @@ interface uvmt_cv32e40x_debug_cov_assert_if
     input         if_stage_instr_rvalid_i, // Instruction word is valid
     input  [31:0] if_stage_instr_rdata_i, // Instruction word data
 
-    // Instruction ID stage (determines executed instructions)  
+    // Instruction ID stage (determines executed instructions)
     input         id_stage_instr_valid_i, // instruction word is valid
     input  [31:0] id_stage_instr_rdata_i, // Instruction word data
     input         id_stage_is_compressed,
@@ -146,7 +146,7 @@ interface uvmt_cv32e40x_debug_cov_assert_if
     input         debug_mode_q, // From controller
     input  [31:0] dcsr_q, // From controller
     input  [31:0] depc_q, // From cs regs
-    input  [31:0] depc_n, // 
+    input  [31:0] depc_n, //
     input  [31:0] dm_halt_addr_i,
     input  [31:0] dm_exception_addr_i,
 
@@ -166,7 +166,7 @@ interface uvmt_cv32e40x_debug_cov_assert_if
     input  core_sleep_o,
 
     input  fence_i,
-      
+
     input  csr_access,
     input  [1:0] csr_op,
     input  [1:0] csr_op_dec,
@@ -186,7 +186,7 @@ interface uvmt_cv32e40x_debug_cov_assert_if
     input  branch_in_decode
 );
 
-  clocking mon_cb @(posedge clk_i);    
+  clocking mon_cb @(posedge clk_i);
     input #1step
     fetch_enable_i,
 
@@ -207,7 +207,7 @@ interface uvmt_cv32e40x_debug_cov_assert_if
     illegal_insn_i,
     illegal_insn_q,
     ecall_insn_i,
-    boot_addr_i, 
+    boot_addr_i,
     debug_req_i,
     debug_mode_q,
     dcsr_q,
@@ -226,7 +226,7 @@ interface uvmt_cv32e40x_debug_cov_assert_if
     mcycle,
     minstret,
     inst_ret,
-    
+
     core_sleep_o,
     csr_access,
     csr_op,

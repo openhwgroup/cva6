@@ -1,5 +1,5 @@
-<!--- SPDX-License-Identifier: Apache-2.0 WITH SHL-2.0 ---> 
-This is the root directory of the CV32E40X Verification Plan (aka Test Plan).  
+<!--- SPDX-License-Identifier: Apache-2.0 WITH SHL-2.0 --->
+This is the root directory of the CV32E40X Verification Plan (aka Test Plan).
 Each sub-directory is the verification plan for a specific CV32E40X high-level feature of the same name.
 
 Use the provided CORE-V_Simulation VerifPlan_Template.xlsx spreadsheet as your template to capture a Verification Plan.

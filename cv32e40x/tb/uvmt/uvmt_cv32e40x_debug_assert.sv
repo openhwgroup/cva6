@@ -1,21 +1,21 @@
 //
 // Copyright 2020 OpenHW Group
 // Copyright 2020 Datum Technology Corporation
-// 
+//
 // Licensed under the Solderpad Hardware Licence, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
-// 
+//
 //     https://solderpad.org/licenses/
-// 
+//
 // Unless required by applicable law or agreed to in writing, software
 // distributed under the License is distributed on an "AS IS" BASIS,
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
-// 
+//
 
-module uvmt_cv32e40x_debug_assert  
+module uvmt_cv32e40x_debug_assert
   import uvm_pkg::*;
   import cv32e40x_pkg::*;
   (
@@ -24,7 +24,7 @@ module uvmt_cv32e40x_debug_assert
 
   // ---------------------------------------------------------------------------
   // Local parameters
-  // ---------------------------------------------------------------------------  
+  // ---------------------------------------------------------------------------
     localparam WFI_INSTR_MASK = 32'hffffffff;
     localparam WFI_INSTR_DATA = 32'h10500073;
   // ---------------------------------------------------------------------------
@@ -54,19 +54,19 @@ module uvmt_cv32e40x_debug_assert
   // Single clock, single reset design, use default clocking
   default clocking @(posedge cov_assert_if.clk_i); endclocking
   default disable iff !(cov_assert_if.rst_ni);
-  
+
   assign cov_assert_if.is_ebreak = cov_assert_if.is_decoding &
                                    cov_assert_if.id_stage_instr_valid_i &
-                     (cov_assert_if.id_stage_instr_rdata_i == 32'h00100073) & 
+                     (cov_assert_if.id_stage_instr_rdata_i == 32'h00100073) &
                      cov_assert_if.id_stage_is_compressed == 1'b0;
 
   assign cov_assert_if.is_cebreak = cov_assert_if.is_decoding &
                                     cov_assert_if.id_stage_instr_valid_i &
-                     (cov_assert_if.id_stage_instr_rdata_i == 32'h00100073) & 
+                     (cov_assert_if.id_stage_instr_rdata_i == 32'h00100073) &
                      cov_assert_if.id_stage_is_compressed == 1'b1;
 
   assign cov_assert_if.is_mulhsu = cov_assert_if.is_decoding &
-                                   cov_assert_if.id_stage_instr_valid_i & 
+                                   cov_assert_if.id_stage_instr_valid_i &
                                    cov_assert_if.id_stage_instr_rdata_i[31:25] == 7'h1 &
                                    cov_assert_if.id_stage_instr_rdata_i[14:12] == 3'b010 &
                                    cov_assert_if.id_stage_instr_rdata_i[6:0]   == 7'h33;
@@ -77,7 +77,7 @@ module uvmt_cv32e40x_debug_assert
     // Assertions
     // ---------------------------------------
 
-    // check that we enter debug mode when expected. 
+    // check that we enter debug mode when expected.
     // CSR checks are done in other assertions
     property p_enter_debug;
         $changed(debug_cause_pri) && (debug_cause_pri != 3'b000) && !cov_assert_if.debug_mode_q
@@ -90,7 +90,7 @@ module uvmt_cv32e40x_debug_assert
     // Checck that depc gets the correct value when debug mode is entered.
     property p_debug_mode_pc;
         $rose(first_debug_ins) |-> cov_assert_if.debug_mode_q && (prev_id_pc == halt_addr_at_entry) && (cov_assert_if.depc_q == pc_at_dbg_req);
-    endproperty   
+    endproperty
 
     a_debug_mode_pc: assert property(p_debug_mode_pc)
         else
@@ -98,10 +98,10 @@ module uvmt_cv32e40x_debug_assert
 
     // Check that debug with cause haltreq is correct
     property p_debug_mode_ext_req;
-        $rose(cov_assert_if.debug_mode_q) && (cov_assert_if.dcsr_q[8:6] == cv32e40x_pkg::DBG_CAUSE_HALTREQ) 
+        $rose(cov_assert_if.debug_mode_q) && (cov_assert_if.dcsr_q[8:6] == cv32e40x_pkg::DBG_CAUSE_HALTREQ)
         |-> debug_cause_pri == cv32e40x_pkg::DBG_CAUSE_HALTREQ;
     endproperty
-    
+
     a_debug_mode_ext_req: assert property(p_debug_mode_ext_req)
         else
             `uvm_error(info_tag, $sformatf("Debug cause not correct for haltreq, cause = %d",cov_assert_if.dcsr_q[8:6]));
@@ -122,11 +122,11 @@ module uvmt_cv32e40x_debug_assert
         disable iff(cov_assert_if.debug_req_i | !cov_assert_if.rst_ni)
         $rose(cov_assert_if.is_cebreak) && cov_assert_if.dcsr_q[15] == 1'b0 && !cov_assert_if.debug_mode_q  && cov_assert_if.is_decoding && cov_assert_if.id_valid &&
         !cov_assert_if.debug_req_i && !cov_assert_if.dcsr_q[2]
-        |-> (decode_valid) [->1:2] ##0  !cov_assert_if.debug_mode_q && (cov_assert_if.mcause_q[5:0] === cv32e40x_pkg::EXC_CAUSE_BREAKPOINT) 
+        |-> (decode_valid) [->1:2] ##0  !cov_assert_if.debug_mode_q && (cov_assert_if.mcause_q[5:0] === cv32e40x_pkg::EXC_CAUSE_BREAKPOINT)
                                                                 && (cov_assert_if.mepc_q == pc_at_ebreak) &&
                                                                    (cov_assert_if.id_stage_pc == cov_assert_if.mtvec);
     endproperty
-    
+
     a_cebreak_exception: assert property(p_cebreak_exception)
         else
             `uvm_error(info_tag,$sformatf("Exception not entered correctly after c.ebreak with dcsr.ebreak=0"));
@@ -136,12 +136,12 @@ module uvmt_cv32e40x_debug_assert
     property p_ebreak_exception;
         disable iff(cov_assert_if.debug_req_i | !cov_assert_if.rst_ni)
         $rose(cov_assert_if.is_ebreak) && cov_assert_if.dcsr_q[15] == 1'b0 && !cov_assert_if.debug_mode_q  && cov_assert_if.is_decoding && cov_assert_if.id_valid &&
-        !cov_assert_if.debug_req_i && !cov_assert_if.dcsr_q[2] 
-        |-> (decode_valid) [->1:2] ##0  !cov_assert_if.debug_mode_q && (cov_assert_if.mcause_q[5:0] === cv32e40x_pkg::EXC_CAUSE_BREAKPOINT) 
+        !cov_assert_if.debug_req_i && !cov_assert_if.dcsr_q[2]
+        |-> (decode_valid) [->1:2] ##0  !cov_assert_if.debug_mode_q && (cov_assert_if.mcause_q[5:0] === cv32e40x_pkg::EXC_CAUSE_BREAKPOINT)
                                                                 && (cov_assert_if.mepc_q == pc_at_ebreak) &&
                                                                    (cov_assert_if.id_stage_pc == cov_assert_if.mtvec);
     endproperty
-    
+
     // TODO: Fails formal as above
     a_ebreak_exception: assert property(p_ebreak_exception)
         else
@@ -159,7 +159,7 @@ module uvmt_cv32e40x_debug_assert
 
     // ebreak during debug mode results in relaunch
     property p_ebreak_during_debug_mode;
-        $rose(cov_assert_if.is_ebreak) ##0 cov_assert_if.debug_mode_q   |-> decode_valid [->2] ##0 cov_assert_if.debug_mode_q && 
+        $rose(cov_assert_if.is_ebreak) ##0 cov_assert_if.debug_mode_q   |-> decode_valid [->2] ##0 cov_assert_if.debug_mode_q &&
                                                      (cov_assert_if.id_stage_pc == halt_addr_at_entry); // TODO should check no change in dpc and dcsr
     endproperty
 
@@ -170,14 +170,14 @@ module uvmt_cv32e40x_debug_assert
     // Trigger match results in debug mode
     property p_trigger_match;
         cov_assert_if.trigger_match_i ##0 cov_assert_if.tdata1[2] ##0 !cov_assert_if.debug_mode_q ##0 cov_assert_if.id_stage_instr_valid_i ##0 cov_assert_if.is_decoding
-        |-> decode_valid [->2] ##0 (cov_assert_if.debug_mode_q && (cov_assert_if.dcsr_q[8:6]=== cv32e40x_pkg::DBG_CAUSE_TRIGGER) && 
+        |-> decode_valid [->2] ##0 (cov_assert_if.debug_mode_q && (cov_assert_if.dcsr_q[8:6]=== cv32e40x_pkg::DBG_CAUSE_TRIGGER) &&
                                                             (cov_assert_if.depc_q == tdata2_at_entry)) &&
                                                             (cov_assert_if.id_stage_pc == halt_addr_at_entry);
-    endproperty   
+    endproperty
 
     a_trigger_match: assert property(p_trigger_match)
         else
-            `uvm_error(info_tag, $sformatf("Debug mode not correctly entered after trigger match depc=%08x,  tdata2=%08x", cov_assert_if.depc_q, tdata2_at_entry)); 
+            `uvm_error(info_tag, $sformatf("Debug mode not correctly entered after trigger match depc=%08x,  tdata2=%08x", cov_assert_if.depc_q, tdata2_at_entry));
 
     // Address match without trigger enabled should NOT result in debug mode
     property p_trigger_match_disabled;
@@ -239,7 +239,7 @@ module uvmt_cv32e40x_debug_assert
     // Accessing debug regs in m-mode is illegal
     property p_debug_regs_mmode;
         cov_assert_if.csr_access && !cov_assert_if.debug_mode_q && cov_assert_if.id_stage_instr_rdata_i[31:20] inside {'h7B0, 'h7B1, 'h7B2, 'h7B3} |->
-                 cov_assert_if.illegal_insn_i; 
+                 cov_assert_if.illegal_insn_i;
     endproperty
 
     a_debug_regs_mmode : assert property(p_debug_regs_mmode)
@@ -256,7 +256,7 @@ module uvmt_cv32e40x_debug_assert
         else
             `uvm_error(info_tag, "PC not set to exception handler after single step with exception");
 
-    // Trigger during single step 
+    // Trigger during single step
     property p_single_step_trigger;
         !cov_assert_if.debug_mode_q && cov_assert_if.dcsr_q[2] && cov_assert_if.addr_match && cov_assert_if.tdata1[2] && cov_assert_if.id_stage_instr_valid_i|->
                 ##[1:20] cov_assert_if.debug_mode_q && (cov_assert_if.dcsr_q[8:6] == cv32e40x_pkg::DBG_CAUSE_TRIGGER) && (cov_assert_if.depc_q == pc_at_dbg_req);
@@ -306,7 +306,7 @@ module uvmt_cv32e40x_debug_assert
             `uvm_error(info_tag, "Dret did not cause correct return from debug mode");
 
     // Check that trigger regs cannot be written from M-mode
-    // TSEL, and TDATA3 are tied to zero, hence no register to check 
+    // TSEL, and TDATA3 are tied to zero, hence no register to check
     property p_mmode_tdata1_write;
         !cov_assert_if.debug_mode_q && cov_assert_if.csr_access && cov_assert_if.csr_op == 'h1 && cov_assert_if.id_stage_instr_rdata_i[31:20] == 'h7A1 |-> ##2 $stable(cov_assert_if.tdata1);
     endproperty
@@ -346,7 +346,7 @@ module uvmt_cv32e40x_debug_assert
         else
             `uvm_error(info_tag, "Minstret not counting when mcountinhibit[2] is cleared!");
 
-    // Check debug_req_i and irq on same cycle. 
+    // Check debug_req_i and irq on same cycle.
     // Should result in debug mode with regular pc in depc,
     // not pc from interrupt handler
     // PC is checked in another assertion
@@ -364,8 +364,8 @@ module uvmt_cv32e40x_debug_assert
     property p_debug_at_reset;
         cov_assert_if.ctrl_fsm_cs == cv32e40x_pkg::RESET && cov_assert_if.debug_req_i |->
         decode_valid [->1:2] ##0 cov_assert_if.debug_mode_q && (cov_assert_if.depc_q == boot_addr_at_entry);
- 
-    endproperty    
+
+    endproperty
 
     a_debug_at_reset : assert property(p_debug_at_reset)
         else
@@ -377,7 +377,7 @@ module uvmt_cv32e40x_debug_assert
     property p_illegal_insn_debug_req;
         (cov_assert_if.ctrl_fsm_cs == cv32e40x_pkg::FLUSH_EX | cov_assert_if.ctrl_fsm_cs == cv32e40x_pkg::FLUSH_WB) && cov_assert_if.illegal_insn_q & cov_assert_if.debug_req_i & !cov_assert_if.debug_mode_q|-> decode_valid [->1:2] ##0 cov_assert_if.debug_mode_q &&  cov_assert_if.depc_q == cov_assert_if.mtvec;
     endproperty
-    
+
     a_illegal_insn_debug_req : assert property(p_illegal_insn_debug_req)
         else
             `uvm_error(info_tag, "Debug mode not entered correctly while handling illegal instruction!");
@@ -401,7 +401,7 @@ module uvmt_cv32e40x_debug_assert
                 pc_at_ebreak <= cov_assert_if.id_stage_pc;
             end
        end
-    end        
+    end
 
     // Keep track of wfi state
     always @(posedge cov_assert_if.clk_i or negedge cov_assert_if.rst_ni) begin
@@ -416,7 +416,7 @@ module uvmt_cv32e40x_debug_assert
 
       end else if (cov_assert_if.pending_enabled_irq || cov_assert_if.debug_req_i)
         cov_assert_if.in_wfi <= 1'b0;
-       
+
     end
   end
 
@@ -466,7 +466,7 @@ module uvmt_cv32e40x_debug_assert
                         debug_cause_pri <= 3'b010;
                     else if((cov_assert_if.dcsr_q[15]) & (cov_assert_if.is_ebreak | cov_assert_if.is_cebreak))
                         debug_cause_pri <= 3'b001;
-                    else if(cov_assert_if.debug_req_i) 
+                    else if(cov_assert_if.debug_req_i)
                         debug_cause_pri <= 3'b011;
                     else if(cov_assert_if.dcsr_q[2])
                         debug_cause_pri <= 3'b100;

@@ -40,7 +40,7 @@ class cv32e40x_instr_base_test extends corev_instr_base_test;
     super.build_phase(phase);
   endfunction
 
-  virtual function void override_asm_program_gen();    
+  virtual function void override_asm_program_gen();
     uvm_factory::get().set_type_override_by_type(corev_asm_program_gen::get_type(),
                                                  cv32e40x_asm_program_gen::get_type());
   endfunction

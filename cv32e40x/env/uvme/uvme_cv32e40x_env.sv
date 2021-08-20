@@ -5,9 +5,9 @@
 // Licensed under the Solderpad Hardware Licence, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
-// 
+//
 //     https://solderpad.org/licenses/
-// 
+//
 // Unless required by applicable law or agreed to in writing, software
 // distributed under the License is distributed on an "AS IS" BASIS,
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -24,18 +24,18 @@
  * CV32E40X environment components.
  */
 class uvme_cv32e40x_env_c extends uvm_env;
-   
+
    // Objects
    uvme_cv32e40x_cfg_c    cfg;
    uvme_cv32e40x_cntxt_c  cntxt;
-      
+
    // Components
    uvme_cv32e40x_cov_model_c  cov_model;
    uvme_cv32e40x_prd_c        predictor;
    uvme_cv32e40x_sb_c         sb;
    uvme_cv32e40x_core_sb_c    core_sb;
    uvme_cv32e40x_vsqr_c       vsequencer;
-   
+
    // Agents
    uvma_cv32e40x_core_cntrl_agent_c core_cntrl_agent;
    uvma_isacov_agent_c#(ILEN,XLEN)  isacov_agent;
@@ -51,21 +51,21 @@ class uvme_cv32e40x_env_c extends uvm_env;
       `uvm_field_object(cfg  , UVM_DEFAULT)
       `uvm_field_object(cntxt, UVM_DEFAULT)
    `uvm_component_utils_end
-   
+
    /**
     * Default constructor.
     */
    extern function new(string name="uvme_cv32e40x_env", uvm_component parent=null);
-   
+
    /**
     * 1. Ensures cfg & cntxt handles are not null
     * 2. Assigns cfg and cntxt handles via assign_cfg() & assign_cntxt()
     * 3. Builds all components via create_<x>()
     */
    extern virtual function void build_phase(uvm_phase phase);
-   
+
    /**
-    * 1. Connects agents to predictor via connect_predictor()    
+    * 1. Connects agents to predictor via connect_predictor()
     * 3. Connects predictor & agents to scoreboard via connect_scoreboard()
     * 4. Assembles virtual sequencer handles via assemble_vsequencer()
     * 5. Connects agents to coverage model via connect_coverage_model()
@@ -75,7 +75,7 @@ class uvme_cv32e40x_env_c extends uvm_env;
    /**
     * Print out final elaboration
     */
-   extern virtual function void end_of_elaboration_phase(uvm_phase phase);   
+   extern virtual function void end_of_elaboration_phase(uvm_phase phase);
 
    /**
     * Creates and starts the instruction and virtual peripheral sequences in active mode.
@@ -91,37 +91,37 @@ class uvme_cv32e40x_env_c extends uvm_env;
     * Assigns configuration handles to components using UVM Configuration Database.
     */
    extern virtual function void assign_cfg();
-   
+
    /**
     * Assigns context handles to components using UVM Configuration Database.
     */
    extern virtual function void assign_cntxt();
-   
+
    /**
     * Creates agent components.
     */
    extern virtual function void create_agents();
-   
+
    /**
     * Creates additional (non-agent) environment components (and objects).
     */
    extern virtual function void create_env_components();
-   
+
    /**
     * Creates environment's virtual sequencer.
     */
    extern virtual function void create_vsequencer();
-   
+
    /**
     * Creates environment's coverage model.
     */
    extern virtual function void create_cov_model();
-   
+
    /**
     * Connects agents to predictor.
     */
    extern virtual function void connect_predictor();
-   
+
    /**
     * Connects the RVFI to the RVVI for step and compare feedback
     */
@@ -131,31 +131,31 @@ class uvme_cv32e40x_env_c extends uvm_env;
     * Connects scoreboards components to agents/predictor.
     */
    extern virtual function void connect_scoreboard();
-      
+
    /**
     * Connects environment coverage model to agents/scoreboards/predictor.
     */
    extern virtual function void connect_coverage_model();
-   
+
    /**
     * Assembles virtual sequencer from agent sequencers.
     */
    extern virtual function void assemble_vsequencer();
-   
+
 endclass : uvme_cv32e40x_env_c
 
 
 function uvme_cv32e40x_env_c::new(string name="uvme_cv32e40x_env", uvm_component parent=null);
-   
+
    super.new(name, parent);
-   
+
 endfunction : new
 
 
 function void uvme_cv32e40x_env_c::build_phase(uvm_phase phase);
-   
+
    super.build_phase(phase);
-   
+
    void'(uvm_config_db#(uvme_cv32e40x_cfg_c)::get(this, "", "cfg", cfg));
    if (!cfg) begin
       `uvm_fatal("CFG", "Configuration handle is null")
@@ -163,39 +163,39 @@ function void uvme_cv32e40x_env_c::build_phase(uvm_phase phase);
    else begin
       `uvm_info("CFG", $sformatf("Found configuration handle:\n%s", cfg.sprint()), UVM_DEBUG)
    end
-   
+
    if (cfg.enabled) begin
       void'(uvm_config_db#(uvme_cv32e40x_cntxt_c)::get(this, "", "cntxt", cntxt));
       if (!cntxt) begin
          `uvm_info("CNTXT", "Context handle is null; creating.", UVM_DEBUG)
          cntxt = uvme_cv32e40x_cntxt_c::type_id::create("cntxt");
       end
-            
+
       cntxt.obi_memory_instr_cntxt.mem = cntxt.mem;
-      cntxt.obi_memory_data_cntxt.mem  = cntxt.mem;      
+      cntxt.obi_memory_data_cntxt.mem  = cntxt.mem;
 
       retrieve_vifs        ();
       assign_cfg           ();
       assign_cntxt         ();
       create_agents        ();
       create_env_components();
-      
+
       if (cfg.is_active) begin
          create_vsequencer();
       end
-      
+
       if (cfg.cov_model_enabled) begin
          create_cov_model();
       end
    end
-   
+
 endfunction : build_phase
 
 function void uvme_cv32e40x_env_c::connect_phase(uvm_phase phase);
-   
+
    super.connect_phase(phase);
-   
-   if (cfg.enabled) begin      
+
+   if (cfg.enabled) begin
       if (cfg.rvvi_cfg.is_active == UVM_ACTIVE) begin
          uvma_rvvi_ovpsim_agent_c rvvi_ovpsim_agent;
 
@@ -210,28 +210,28 @@ function void uvme_cv32e40x_env_c::connect_phase(uvm_phase phase);
          connect_predictor ();
          connect_scoreboard();
       end
-      
-      if (cfg.is_active) begin         
+
+      if (cfg.is_active) begin
          assemble_vsequencer();
       end
-      
+
       if (cfg.cov_model_enabled) begin
          connect_coverage_model();
       end
    end
-   
+
 endfunction: connect_phase
 
 
 function void uvme_cv32e40x_env_c::end_of_elaboration_phase(uvm_phase phase);
 
    super.end_of_elaboration_phase(phase);
-   
+
 endfunction : end_of_elaboration_phase
 
 
 task uvme_cv32e40x_env_c::run_phase(uvm_phase phase);
-   
+
    uvma_obi_memory_fw_preload_seq_c fw_preload_seq;
    uvma_obi_memory_slv_seq_c        instr_slv_seq;
    uvma_obi_memory_slv_seq_c        data_slv_seq;
@@ -253,7 +253,7 @@ task uvme_cv32e40x_env_c::run_phase(uvm_phase phase);
          begin : obi_data_slv_thread
             data_slv_seq = uvma_obi_memory_slv_seq_c::type_id::create("data_slv_seq");
 
-            // Install the virtual peripheral registers             
+            // Install the virtual peripheral registers
             void'(data_slv_seq.register_vp_vseq("vp_rand_num", 32'h1500_1000,  uvma_obi_memory_vp_rand_num_seq_c::get_type()));
             void'(data_slv_seq.register_vp_vseq("vp_virtual_printer", 32'h1000_0000, uvma_obi_memory_vp_virtual_printer_seq_c::get_type()));
             void'(data_slv_seq.register_vp_vseq("vp_sig_writer", 32'h2000_0008, uvma_obi_memory_vp_sig_writer_seq_c::get_type()));
@@ -262,7 +262,7 @@ task uvme_cv32e40x_env_c::run_phase(uvm_phase phase);
             begin
                uvma_obi_memory_vp_directed_slv_resp_seq_c#(2) vp_seq;
                if (!$cast(vp_seq, data_slv_seq.register_vp_vseq("vp_directed_slv_resp", 32'h1500_1080, uvma_obi_memory_vp_directed_slv_resp_seq_c#(2)::get_type()))) begin
-                  `uvm_fatal("CV32E40XVPSEQ", $sformatf("Could not cast vp_directed_slv_resp correctly"));                  
+                  `uvm_fatal("CV32E40XVPSEQ", $sformatf("Could not cast vp_directed_slv_resp correctly"));
                end
                vp_seq.obi_cfg[0] = cfg.obi_memory_instr_cfg;
                vp_seq.obi_cfg[1] = cfg.obi_memory_data_cfg;
@@ -297,7 +297,7 @@ task uvme_cv32e40x_env_c::run_phase(uvm_phase phase);
          end
       join_none
    end
-   
+
 endtask : run_phase
 
 
@@ -309,14 +309,14 @@ function void uvme_cv32e40x_env_c::retrieve_vifs();
    else begin
       `uvm_info("VIF", $sformatf("Found vp_status_vif handle of type %s in uvm_config_db", $typename(cntxt.vp_status_vif)), UVM_DEBUG)
    end
-   
+
    if (!uvm_config_db#(virtual uvma_interrupt_if)::get(this, "", "intr_vif", cntxt.intr_vif)) begin
       `uvm_fatal("VIF", $sformatf("Could not find intr_vif handle of type %s in uvm_config_db", $typename(cntxt.intr_vif)))
    end
    else begin
       `uvm_info("VIF", $sformatf("Found intr_vif handle of type %s in uvm_config_db", $typename(cntxt.intr_vif)), UVM_DEBUG)
    end
-   
+
    if (!uvm_config_db#(virtual uvma_debug_if)::get(this, "", "debug_vif", cntxt.debug_vif)) begin
       `uvm_fatal("VIF", $sformatf("Could not find debug_vif handle of type %s in uvm_config_db", $typename(cntxt.debug_vif)))
    end
@@ -324,12 +324,12 @@ function void uvme_cv32e40x_env_c::retrieve_vifs();
       `uvm_info("VIF", $sformatf("Found debug_vif handle of type %s in uvm_config_db", $typename(cntxt.debug_vif)), UVM_DEBUG)
    end
 
-   // FIXME:strichmo:Restore later when debug brought back up      
+   // FIXME:strichmo:Restore later when debug brought back up
    // void'(uvm_config_db#(virtual uvmt_cv32e40x_debug_cov_assert_if)::get(this, "", "debug_cov_vif", cntxt.debug_cov_vif));
    // if (cntxt.debug_cov_vif == null) begin
    //    `uvm_fatal("UVME_CV32E40X_ENV", $sformatf("No uvmt_cv32e40x_debug_cov_assert_if found in config database"))
    // end
-   
+
 endfunction: retrieve_vifs
 
 function void uvme_cv32e40x_env_c::assign_cfg();
@@ -345,12 +345,12 @@ function void uvme_cv32e40x_env_c::assign_cfg();
    uvm_config_db#(uvma_obi_memory_cfg_c)::set(this, "obi_memory_data_agent",  "cfg", cfg.obi_memory_data_cfg);
    uvm_config_db#(uvma_rvfi_cfg_c#(ILEN,XLEN))::set(this, "rvfi_agent", "cfg", cfg.rvfi_cfg);
    uvm_config_db#(uvma_rvvi_cfg_c#(ILEN,XLEN))::set(this, "rvvi_agent", "cfg", cfg.rvvi_cfg);
-   
+
 endfunction: assign_cfg
 
 
 function void uvme_cv32e40x_env_c::assign_cntxt();
-   
+
    uvm_config_db#(uvme_cv32e40x_cntxt_c)::set(this, "*", "cntxt", cntxt);
    uvm_config_db#(uvma_clknrst_cntxt_c)::set(this, "clknrst_agent", "cntxt", cntxt.clknrst_cntxt);
    uvm_config_db#(uvma_interrupt_cntxt_c)::set(this, "interrupt_agent", "cntxt", cntxt.interrupt_cntxt);
@@ -359,7 +359,7 @@ function void uvme_cv32e40x_env_c::assign_cntxt();
    uvm_config_db#(uvma_obi_memory_cntxt_c)::set(this, "obi_memory_data_agent",  "cntxt", cntxt.obi_memory_data_cntxt);
    uvm_config_db#(uvma_rvfi_cntxt_c#(ILEN,XLEN))::set(this, "rvfi_agent", "cntxt", cntxt.rvfi_cntxt);
    uvm_config_db#(uvma_rvvi_cntxt_c#(ILEN,XLEN))::set(this, "rvvi_agent", "cntxt", cntxt.rvvi_cntxt);
-   
+
 endfunction: assign_cntxt
 
 
@@ -379,25 +379,25 @@ endfunction: create_agents
 
 
 function void uvme_cv32e40x_env_c::create_env_components();
-   
+
    if (cfg.scoreboarding_enabled) begin
       predictor = uvme_cv32e40x_prd_c::type_id::create("predictor", this);
       sb        = uvme_cv32e40x_sb_c::type_id::create("sb"       , this);
       core_sb   = uvme_cv32e40x_core_sb_c::type_id::create("core_sb", this);
    end
-   
+
 endfunction: create_env_components
 
 
 function void uvme_cv32e40x_env_c::create_vsequencer();
-   
+
    vsequencer = uvme_cv32e40x_vsqr_c::type_id::create("vsequencer", this);
-   
+
 endfunction: create_vsequencer
 
 function void uvme_cv32e40x_env_c::create_cov_model();
-   
-   cov_model = uvme_cv32e40x_cov_model_c::type_id::create("cov_model", this);   
+
+   cov_model = uvme_cv32e40x_cov_model_c::type_id::create("cov_model", this);
 
    // FIXME:strichmo:restore with new controller
    /*
@@ -410,13 +410,13 @@ endfunction: create_cov_model
 
 
 function void uvme_cv32e40x_env_c::connect_predictor();
-      
+
 endfunction: connect_predictor
 
 function void uvme_cv32e40x_env_c::connect_rvfi_rvvi();
 
    foreach (rvfi_agent.instr_mon_ap[i])
-      rvfi_agent.instr_mon_ap[i].connect(rvvi_agent.sequencer.rvfi_instr_export);   
+      rvfi_agent.instr_mon_ap[i].connect(rvvi_agent.sequencer.rvfi_instr_export);
 
    obi_memory_instr_agent.monitor.ap.connect(rvvi_agent.sequencer.obi_i_export);
    obi_memory_data_agent.monitor.ap.connect(rvvi_agent.sequencer.obi_d_export);
@@ -424,18 +424,18 @@ function void uvme_cv32e40x_env_c::connect_rvfi_rvvi();
 endfunction : connect_rvfi_rvvi
 
 function void uvme_cv32e40x_env_c::connect_scoreboard();
-   
+
    // Connect the CORE Scoreboard
    rvvi_agent.state_mon_ap.connect(core_sb.rvvi_state_export);
    foreach (rvfi_agent.instr_mon_ap[i])
-      rvfi_agent.instr_mon_ap[i].connect(core_sb.rvfi_instr_export);   
-   
+      rvfi_agent.instr_mon_ap[i].connect(core_sb.rvfi_instr_export);
+
 endfunction: connect_scoreboard
 
 
 function void uvme_cv32e40x_env_c::connect_coverage_model();
-   
-   interrupt_agent.monitor.ap_iss.connect(cov_model.interrupt_covg.interrupt_mon_export);      
+
+   interrupt_agent.monitor.ap_iss.connect(cov_model.interrupt_covg.interrupt_mon_export);
    foreach (rvfi_agent.instr_mon_ap[i])
       rvfi_agent.instr_mon_ap[i].connect(isacov_agent.monitor.rvfi_instr_export);
 
@@ -443,13 +443,13 @@ endfunction: connect_coverage_model
 
 
 function void uvme_cv32e40x_env_c::assemble_vsequencer();
-   
+
    vsequencer.clknrst_sequencer   = clknrst_agent.sequencer;
    vsequencer.interrupt_sequencer = interrupt_agent.sequencer;
    vsequencer.debug_sequencer     = debug_agent.sequencer;
    vsequencer.obi_memory_instr_sequencer = obi_memory_instr_agent.sequencer;
    vsequencer.obi_memory_data_sequencer  = obi_memory_data_agent .sequencer;
-   
+
 endfunction: assemble_vsequencer
 
 
