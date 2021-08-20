@@ -477,6 +477,13 @@ package pkg_alsaqr_periph_padframe;
       logic        cs0n_i;
       logic        cs1n_i;
       logic        dq0_i;
+      logic        dq1_i;
+      logic        dq2_i;
+      logic        dq3_i;
+      logic        dq4_i;
+      logic        dq5_i;
+      logic        dq6_i;
+      logic        dq7_i;
       logic        dq_oe;
       logic        resetn_i;
       logic        rwds_i;
@@ -485,6 +492,13 @@ package pkg_alsaqr_periph_padframe;
 
    typedef struct packed {
       logic        dq0_o;
+      logic        dq1_o;
+      logic        dq2_o;
+      logic        dq3_o;
+      logic        dq4_o;
+      logic        dq5_o;
+      logic        dq6_o;
+      logic        dq7_o;
       logic        rwds_o;
      } pad_domain_periphs_port_group_hyper1_pad2soc_t;
 

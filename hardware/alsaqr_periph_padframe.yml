@@ -437,6 +437,7 @@ pad_domains:
               rwds_o: pad2chip
               oen: ~rwds_oe_i
           - name: hyper_dq{i}_i
+            multiple: 8
             connections:
               chip2pad: dq{i}_i
               dq{i}_o: pad2chip

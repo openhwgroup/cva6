@@ -3006,6 +3006,34 @@ module alsaqr_periph_padframe_periphs_muxer
           mux_to_pads_o.pad_mx_hyper1_0.chip2pad = port_signals_soc2pad_i.hyper1.dq0_i;
           mux_to_pads_o.pad_mx_hyper1_0.oen = ~port_signals_soc2pad_i.hyper1.dq_oe;
        end
+       PAD_MUX_GROUP_MX_HYPER_PAD_MX_HYPER1_0_SEL_HYPER1_HYPER_DQ1_I: begin
+          mux_to_pads_o.pad_mx_hyper1_0.chip2pad = port_signals_soc2pad_i.hyper1.dq1_i;
+          mux_to_pads_o.pad_mx_hyper1_0.oen = ~port_signals_soc2pad_i.hyper1.dq_oe;
+       end
+       PAD_MUX_GROUP_MX_HYPER_PAD_MX_HYPER1_0_SEL_HYPER1_HYPER_DQ2_I: begin
+          mux_to_pads_o.pad_mx_hyper1_0.chip2pad = port_signals_soc2pad_i.hyper1.dq2_i;
+          mux_to_pads_o.pad_mx_hyper1_0.oen = ~port_signals_soc2pad_i.hyper1.dq_oe;
+       end
+       PAD_MUX_GROUP_MX_HYPER_PAD_MX_HYPER1_0_SEL_HYPER1_HYPER_DQ3_I: begin
+          mux_to_pads_o.pad_mx_hyper1_0.chip2pad = port_signals_soc2pad_i.hyper1.dq3_i;
+          mux_to_pads_o.pad_mx_hyper1_0.oen = ~port_signals_soc2pad_i.hyper1.dq_oe;
+       end
+       PAD_MUX_GROUP_MX_HYPER_PAD_MX_HYPER1_0_SEL_HYPER1_HYPER_DQ4_I: begin
+          mux_to_pads_o.pad_mx_hyper1_0.chip2pad = port_signals_soc2pad_i.hyper1.dq4_i;
+          mux_to_pads_o.pad_mx_hyper1_0.oen = ~port_signals_soc2pad_i.hyper1.dq_oe;
+       end
+       PAD_MUX_GROUP_MX_HYPER_PAD_MX_HYPER1_0_SEL_HYPER1_HYPER_DQ5_I: begin
+          mux_to_pads_o.pad_mx_hyper1_0.chip2pad = port_signals_soc2pad_i.hyper1.dq5_i;
+          mux_to_pads_o.pad_mx_hyper1_0.oen = ~port_signals_soc2pad_i.hyper1.dq_oe;
+       end
+       PAD_MUX_GROUP_MX_HYPER_PAD_MX_HYPER1_0_SEL_HYPER1_HYPER_DQ6_I: begin
+          mux_to_pads_o.pad_mx_hyper1_0.chip2pad = port_signals_soc2pad_i.hyper1.dq6_i;
+          mux_to_pads_o.pad_mx_hyper1_0.oen = ~port_signals_soc2pad_i.hyper1.dq_oe;
+       end
+       PAD_MUX_GROUP_MX_HYPER_PAD_MX_HYPER1_0_SEL_HYPER1_HYPER_DQ7_I: begin
+          mux_to_pads_o.pad_mx_hyper1_0.chip2pad = port_signals_soc2pad_i.hyper1.dq7_i;
+          mux_to_pads_o.pad_mx_hyper1_0.oen = ~port_signals_soc2pad_i.hyper1.dq_oe;
+       end
        PAD_MUX_GROUP_MX_HYPER_PAD_MX_HYPER1_0_SEL_HYPER1_HYPER_RST: begin
           mux_to_pads_o.pad_mx_hyper1_0.chip2pad = port_signals_soc2pad_i.hyper1.resetn_i;
           mux_to_pads_o.pad_mx_hyper1_0.oen = 1'b0;
@@ -3114,6 +3142,34 @@ module alsaqr_periph_padframe_periphs_muxer
        end
        PAD_MUX_GROUP_MX_HYPER_PAD_MX_HYPER1_1_SEL_HYPER1_HYPER_DQ0_I: begin
           mux_to_pads_o.pad_mx_hyper1_1.chip2pad = port_signals_soc2pad_i.hyper1.dq0_i;
+          mux_to_pads_o.pad_mx_hyper1_1.oen = ~port_signals_soc2pad_i.hyper1.dq_oe;
+       end
+       PAD_MUX_GROUP_MX_HYPER_PAD_MX_HYPER1_1_SEL_HYPER1_HYPER_DQ1_I: begin
+          mux_to_pads_o.pad_mx_hyper1_1.chip2pad = port_signals_soc2pad_i.hyper1.dq1_i;
+          mux_to_pads_o.pad_mx_hyper1_1.oen = ~port_signals_soc2pad_i.hyper1.dq_oe;
+       end
+       PAD_MUX_GROUP_MX_HYPER_PAD_MX_HYPER1_1_SEL_HYPER1_HYPER_DQ2_I: begin
+          mux_to_pads_o.pad_mx_hyper1_1.chip2pad = port_signals_soc2pad_i.hyper1.dq2_i;
+          mux_to_pads_o.pad_mx_hyper1_1.oen = ~port_signals_soc2pad_i.hyper1.dq_oe;
+       end
+       PAD_MUX_GROUP_MX_HYPER_PAD_MX_HYPER1_1_SEL_HYPER1_HYPER_DQ3_I: begin
+          mux_to_pads_o.pad_mx_hyper1_1.chip2pad = port_signals_soc2pad_i.hyper1.dq3_i;
+          mux_to_pads_o.pad_mx_hyper1_1.oen = ~port_signals_soc2pad_i.hyper1.dq_oe;
+       end
+       PAD_MUX_GROUP_MX_HYPER_PAD_MX_HYPER1_1_SEL_HYPER1_HYPER_DQ4_I: begin
+          mux_to_pads_o.pad_mx_hyper1_1.chip2pad = port_signals_soc2pad_i.hyper1.dq4_i;
+          mux_to_pads_o.pad_mx_hyper1_1.oen = ~port_signals_soc2pad_i.hyper1.dq_oe;
+       end
+       PAD_MUX_GROUP_MX_HYPER_PAD_MX_HYPER1_1_SEL_HYPER1_HYPER_DQ5_I: begin
+          mux_to_pads_o.pad_mx_hyper1_1.chip2pad = port_signals_soc2pad_i.hyper1.dq5_i;
+          mux_to_pads_o.pad_mx_hyper1_1.oen = ~port_signals_soc2pad_i.hyper1.dq_oe;
+       end
+       PAD_MUX_GROUP_MX_HYPER_PAD_MX_HYPER1_1_SEL_HYPER1_HYPER_DQ6_I: begin
+          mux_to_pads_o.pad_mx_hyper1_1.chip2pad = port_signals_soc2pad_i.hyper1.dq6_i;
+          mux_to_pads_o.pad_mx_hyper1_1.oen = ~port_signals_soc2pad_i.hyper1.dq_oe;
+       end
+       PAD_MUX_GROUP_MX_HYPER_PAD_MX_HYPER1_1_SEL_HYPER1_HYPER_DQ7_I: begin
+          mux_to_pads_o.pad_mx_hyper1_1.chip2pad = port_signals_soc2pad_i.hyper1.dq7_i;
           mux_to_pads_o.pad_mx_hyper1_1.oen = ~port_signals_soc2pad_i.hyper1.dq_oe;
        end
        PAD_MUX_GROUP_MX_HYPER_PAD_MX_HYPER1_1_SEL_HYPER1_HYPER_RST: begin
@@ -3226,6 +3282,34 @@ module alsaqr_periph_padframe_periphs_muxer
           mux_to_pads_o.pad_mx_hyper1_2.chip2pad = port_signals_soc2pad_i.hyper1.dq0_i;
           mux_to_pads_o.pad_mx_hyper1_2.oen = ~port_signals_soc2pad_i.hyper1.dq_oe;
        end
+       PAD_MUX_GROUP_MX_HYPER_PAD_MX_HYPER1_2_SEL_HYPER1_HYPER_DQ1_I: begin
+          mux_to_pads_o.pad_mx_hyper1_2.chip2pad = port_signals_soc2pad_i.hyper1.dq1_i;
+          mux_to_pads_o.pad_mx_hyper1_2.oen = ~port_signals_soc2pad_i.hyper1.dq_oe;
+       end
+       PAD_MUX_GROUP_MX_HYPER_PAD_MX_HYPER1_2_SEL_HYPER1_HYPER_DQ2_I: begin
+          mux_to_pads_o.pad_mx_hyper1_2.chip2pad = port_signals_soc2pad_i.hyper1.dq2_i;
+          mux_to_pads_o.pad_mx_hyper1_2.oen = ~port_signals_soc2pad_i.hyper1.dq_oe;
+       end
+       PAD_MUX_GROUP_MX_HYPER_PAD_MX_HYPER1_2_SEL_HYPER1_HYPER_DQ3_I: begin
+          mux_to_pads_o.pad_mx_hyper1_2.chip2pad = port_signals_soc2pad_i.hyper1.dq3_i;
+          mux_to_pads_o.pad_mx_hyper1_2.oen = ~port_signals_soc2pad_i.hyper1.dq_oe;
+       end
+       PAD_MUX_GROUP_MX_HYPER_PAD_MX_HYPER1_2_SEL_HYPER1_HYPER_DQ4_I: begin
+          mux_to_pads_o.pad_mx_hyper1_2.chip2pad = port_signals_soc2pad_i.hyper1.dq4_i;
+          mux_to_pads_o.pad_mx_hyper1_2.oen = ~port_signals_soc2pad_i.hyper1.dq_oe;
+       end
+       PAD_MUX_GROUP_MX_HYPER_PAD_MX_HYPER1_2_SEL_HYPER1_HYPER_DQ5_I: begin
+          mux_to_pads_o.pad_mx_hyper1_2.chip2pad = port_signals_soc2pad_i.hyper1.dq5_i;
+          mux_to_pads_o.pad_mx_hyper1_2.oen = ~port_signals_soc2pad_i.hyper1.dq_oe;
+       end
+       PAD_MUX_GROUP_MX_HYPER_PAD_MX_HYPER1_2_SEL_HYPER1_HYPER_DQ6_I: begin
+          mux_to_pads_o.pad_mx_hyper1_2.chip2pad = port_signals_soc2pad_i.hyper1.dq6_i;
+          mux_to_pads_o.pad_mx_hyper1_2.oen = ~port_signals_soc2pad_i.hyper1.dq_oe;
+       end
+       PAD_MUX_GROUP_MX_HYPER_PAD_MX_HYPER1_2_SEL_HYPER1_HYPER_DQ7_I: begin
+          mux_to_pads_o.pad_mx_hyper1_2.chip2pad = port_signals_soc2pad_i.hyper1.dq7_i;
+          mux_to_pads_o.pad_mx_hyper1_2.oen = ~port_signals_soc2pad_i.hyper1.dq_oe;
+       end
        PAD_MUX_GROUP_MX_HYPER_PAD_MX_HYPER1_2_SEL_HYPER1_HYPER_RST: begin
           mux_to_pads_o.pad_mx_hyper1_2.chip2pad = port_signals_soc2pad_i.hyper1.resetn_i;
           mux_to_pads_o.pad_mx_hyper1_2.oen = 1'b0;
@@ -3334,6 +3418,34 @@ module alsaqr_periph_padframe_periphs_muxer
        end
        PAD_MUX_GROUP_MX_HYPER_PAD_MX_HYPER1_3_SEL_HYPER1_HYPER_DQ0_I: begin
           mux_to_pads_o.pad_mx_hyper1_3.chip2pad = port_signals_soc2pad_i.hyper1.dq0_i;
+          mux_to_pads_o.pad_mx_hyper1_3.oen = ~port_signals_soc2pad_i.hyper1.dq_oe;
+       end
+       PAD_MUX_GROUP_MX_HYPER_PAD_MX_HYPER1_3_SEL_HYPER1_HYPER_DQ1_I: begin
+          mux_to_pads_o.pad_mx_hyper1_3.chip2pad = port_signals_soc2pad_i.hyper1.dq1_i;
+          mux_to_pads_o.pad_mx_hyper1_3.oen = ~port_signals_soc2pad_i.hyper1.dq_oe;
+       end
+       PAD_MUX_GROUP_MX_HYPER_PAD_MX_HYPER1_3_SEL_HYPER1_HYPER_DQ2_I: begin
+          mux_to_pads_o.pad_mx_hyper1_3.chip2pad = port_signals_soc2pad_i.hyper1.dq2_i;
+          mux_to_pads_o.pad_mx_hyper1_3.oen = ~port_signals_soc2pad_i.hyper1.dq_oe;
+       end
+       PAD_MUX_GROUP_MX_HYPER_PAD_MX_HYPER1_3_SEL_HYPER1_HYPER_DQ3_I: begin
+          mux_to_pads_o.pad_mx_hyper1_3.chip2pad = port_signals_soc2pad_i.hyper1.dq3_i;
+          mux_to_pads_o.pad_mx_hyper1_3.oen = ~port_signals_soc2pad_i.hyper1.dq_oe;
+       end
+       PAD_MUX_GROUP_MX_HYPER_PAD_MX_HYPER1_3_SEL_HYPER1_HYPER_DQ4_I: begin
+          mux_to_pads_o.pad_mx_hyper1_3.chip2pad = port_signals_soc2pad_i.hyper1.dq4_i;
+          mux_to_pads_o.pad_mx_hyper1_3.oen = ~port_signals_soc2pad_i.hyper1.dq_oe;
+       end
+       PAD_MUX_GROUP_MX_HYPER_PAD_MX_HYPER1_3_SEL_HYPER1_HYPER_DQ5_I: begin
+          mux_to_pads_o.pad_mx_hyper1_3.chip2pad = port_signals_soc2pad_i.hyper1.dq5_i;
+          mux_to_pads_o.pad_mx_hyper1_3.oen = ~port_signals_soc2pad_i.hyper1.dq_oe;
+       end
+       PAD_MUX_GROUP_MX_HYPER_PAD_MX_HYPER1_3_SEL_HYPER1_HYPER_DQ6_I: begin
+          mux_to_pads_o.pad_mx_hyper1_3.chip2pad = port_signals_soc2pad_i.hyper1.dq6_i;
+          mux_to_pads_o.pad_mx_hyper1_3.oen = ~port_signals_soc2pad_i.hyper1.dq_oe;
+       end
+       PAD_MUX_GROUP_MX_HYPER_PAD_MX_HYPER1_3_SEL_HYPER1_HYPER_DQ7_I: begin
+          mux_to_pads_o.pad_mx_hyper1_3.chip2pad = port_signals_soc2pad_i.hyper1.dq7_i;
           mux_to_pads_o.pad_mx_hyper1_3.oen = ~port_signals_soc2pad_i.hyper1.dq_oe;
        end
        PAD_MUX_GROUP_MX_HYPER_PAD_MX_HYPER1_3_SEL_HYPER1_HYPER_RST: begin
@@ -3446,6 +3558,34 @@ module alsaqr_periph_padframe_periphs_muxer
           mux_to_pads_o.pad_mx_hyper1_4.chip2pad = port_signals_soc2pad_i.hyper1.dq0_i;
           mux_to_pads_o.pad_mx_hyper1_4.oen = ~port_signals_soc2pad_i.hyper1.dq_oe;
        end
+       PAD_MUX_GROUP_MX_HYPER_PAD_MX_HYPER1_4_SEL_HYPER1_HYPER_DQ1_I: begin
+          mux_to_pads_o.pad_mx_hyper1_4.chip2pad = port_signals_soc2pad_i.hyper1.dq1_i;
+          mux_to_pads_o.pad_mx_hyper1_4.oen = ~port_signals_soc2pad_i.hyper1.dq_oe;
+       end
+       PAD_MUX_GROUP_MX_HYPER_PAD_MX_HYPER1_4_SEL_HYPER1_HYPER_DQ2_I: begin
+          mux_to_pads_o.pad_mx_hyper1_4.chip2pad = port_signals_soc2pad_i.hyper1.dq2_i;
+          mux_to_pads_o.pad_mx_hyper1_4.oen = ~port_signals_soc2pad_i.hyper1.dq_oe;
+       end
+       PAD_MUX_GROUP_MX_HYPER_PAD_MX_HYPER1_4_SEL_HYPER1_HYPER_DQ3_I: begin
+          mux_to_pads_o.pad_mx_hyper1_4.chip2pad = port_signals_soc2pad_i.hyper1.dq3_i;
+          mux_to_pads_o.pad_mx_hyper1_4.oen = ~port_signals_soc2pad_i.hyper1.dq_oe;
+       end
+       PAD_MUX_GROUP_MX_HYPER_PAD_MX_HYPER1_4_SEL_HYPER1_HYPER_DQ4_I: begin
+          mux_to_pads_o.pad_mx_hyper1_4.chip2pad = port_signals_soc2pad_i.hyper1.dq4_i;
+          mux_to_pads_o.pad_mx_hyper1_4.oen = ~port_signals_soc2pad_i.hyper1.dq_oe;
+       end
+       PAD_MUX_GROUP_MX_HYPER_PAD_MX_HYPER1_4_SEL_HYPER1_HYPER_DQ5_I: begin
+          mux_to_pads_o.pad_mx_hyper1_4.chip2pad = port_signals_soc2pad_i.hyper1.dq5_i;
+          mux_to_pads_o.pad_mx_hyper1_4.oen = ~port_signals_soc2pad_i.hyper1.dq_oe;
+       end
+       PAD_MUX_GROUP_MX_HYPER_PAD_MX_HYPER1_4_SEL_HYPER1_HYPER_DQ6_I: begin
+          mux_to_pads_o.pad_mx_hyper1_4.chip2pad = port_signals_soc2pad_i.hyper1.dq6_i;
+          mux_to_pads_o.pad_mx_hyper1_4.oen = ~port_signals_soc2pad_i.hyper1.dq_oe;
+       end
+       PAD_MUX_GROUP_MX_HYPER_PAD_MX_HYPER1_4_SEL_HYPER1_HYPER_DQ7_I: begin
+          mux_to_pads_o.pad_mx_hyper1_4.chip2pad = port_signals_soc2pad_i.hyper1.dq7_i;
+          mux_to_pads_o.pad_mx_hyper1_4.oen = ~port_signals_soc2pad_i.hyper1.dq_oe;
+       end
        PAD_MUX_GROUP_MX_HYPER_PAD_MX_HYPER1_4_SEL_HYPER1_HYPER_RST: begin
           mux_to_pads_o.pad_mx_hyper1_4.chip2pad = port_signals_soc2pad_i.hyper1.resetn_i;
           mux_to_pads_o.pad_mx_hyper1_4.oen = 1'b0;
@@ -3554,6 +3694,34 @@ module alsaqr_periph_padframe_periphs_muxer
        end
        PAD_MUX_GROUP_MX_HYPER_PAD_MX_HYPER1_5_SEL_HYPER1_HYPER_DQ0_I: begin
           mux_to_pads_o.pad_mx_hyper1_5.chip2pad = port_signals_soc2pad_i.hyper1.dq0_i;
+          mux_to_pads_o.pad_mx_hyper1_5.oen = ~port_signals_soc2pad_i.hyper1.dq_oe;
+       end
+       PAD_MUX_GROUP_MX_HYPER_PAD_MX_HYPER1_5_SEL_HYPER1_HYPER_DQ1_I: begin
+          mux_to_pads_o.pad_mx_hyper1_5.chip2pad = port_signals_soc2pad_i.hyper1.dq1_i;
+          mux_to_pads_o.pad_mx_hyper1_5.oen = ~port_signals_soc2pad_i.hyper1.dq_oe;
+       end
+       PAD_MUX_GROUP_MX_HYPER_PAD_MX_HYPER1_5_SEL_HYPER1_HYPER_DQ2_I: begin
+          mux_to_pads_o.pad_mx_hyper1_5.chip2pad = port_signals_soc2pad_i.hyper1.dq2_i;
+          mux_to_pads_o.pad_mx_hyper1_5.oen = ~port_signals_soc2pad_i.hyper1.dq_oe;
+       end
+       PAD_MUX_GROUP_MX_HYPER_PAD_MX_HYPER1_5_SEL_HYPER1_HYPER_DQ3_I: begin
+          mux_to_pads_o.pad_mx_hyper1_5.chip2pad = port_signals_soc2pad_i.hyper1.dq3_i;
+          mux_to_pads_o.pad_mx_hyper1_5.oen = ~port_signals_soc2pad_i.hyper1.dq_oe;
+       end
+       PAD_MUX_GROUP_MX_HYPER_PAD_MX_HYPER1_5_SEL_HYPER1_HYPER_DQ4_I: begin
+          mux_to_pads_o.pad_mx_hyper1_5.chip2pad = port_signals_soc2pad_i.hyper1.dq4_i;
+          mux_to_pads_o.pad_mx_hyper1_5.oen = ~port_signals_soc2pad_i.hyper1.dq_oe;
+       end
+       PAD_MUX_GROUP_MX_HYPER_PAD_MX_HYPER1_5_SEL_HYPER1_HYPER_DQ5_I: begin
+          mux_to_pads_o.pad_mx_hyper1_5.chip2pad = port_signals_soc2pad_i.hyper1.dq5_i;
+          mux_to_pads_o.pad_mx_hyper1_5.oen = ~port_signals_soc2pad_i.hyper1.dq_oe;
+       end
+       PAD_MUX_GROUP_MX_HYPER_PAD_MX_HYPER1_5_SEL_HYPER1_HYPER_DQ6_I: begin
+          mux_to_pads_o.pad_mx_hyper1_5.chip2pad = port_signals_soc2pad_i.hyper1.dq6_i;
+          mux_to_pads_o.pad_mx_hyper1_5.oen = ~port_signals_soc2pad_i.hyper1.dq_oe;
+       end
+       PAD_MUX_GROUP_MX_HYPER_PAD_MX_HYPER1_5_SEL_HYPER1_HYPER_DQ7_I: begin
+          mux_to_pads_o.pad_mx_hyper1_5.chip2pad = port_signals_soc2pad_i.hyper1.dq7_i;
           mux_to_pads_o.pad_mx_hyper1_5.oen = ~port_signals_soc2pad_i.hyper1.dq_oe;
        end
        PAD_MUX_GROUP_MX_HYPER_PAD_MX_HYPER1_5_SEL_HYPER1_HYPER_RST: begin
@@ -3666,6 +3834,34 @@ module alsaqr_periph_padframe_periphs_muxer
           mux_to_pads_o.pad_mx_hyper1_6.chip2pad = port_signals_soc2pad_i.hyper1.dq0_i;
           mux_to_pads_o.pad_mx_hyper1_6.oen = ~port_signals_soc2pad_i.hyper1.dq_oe;
        end
+       PAD_MUX_GROUP_MX_HYPER_PAD_MX_HYPER1_6_SEL_HYPER1_HYPER_DQ1_I: begin
+          mux_to_pads_o.pad_mx_hyper1_6.chip2pad = port_signals_soc2pad_i.hyper1.dq1_i;
+          mux_to_pads_o.pad_mx_hyper1_6.oen = ~port_signals_soc2pad_i.hyper1.dq_oe;
+       end
+       PAD_MUX_GROUP_MX_HYPER_PAD_MX_HYPER1_6_SEL_HYPER1_HYPER_DQ2_I: begin
+          mux_to_pads_o.pad_mx_hyper1_6.chip2pad = port_signals_soc2pad_i.hyper1.dq2_i;
+          mux_to_pads_o.pad_mx_hyper1_6.oen = ~port_signals_soc2pad_i.hyper1.dq_oe;
+       end
+       PAD_MUX_GROUP_MX_HYPER_PAD_MX_HYPER1_6_SEL_HYPER1_HYPER_DQ3_I: begin
+          mux_to_pads_o.pad_mx_hyper1_6.chip2pad = port_signals_soc2pad_i.hyper1.dq3_i;
+          mux_to_pads_o.pad_mx_hyper1_6.oen = ~port_signals_soc2pad_i.hyper1.dq_oe;
+       end
+       PAD_MUX_GROUP_MX_HYPER_PAD_MX_HYPER1_6_SEL_HYPER1_HYPER_DQ4_I: begin
+          mux_to_pads_o.pad_mx_hyper1_6.chip2pad = port_signals_soc2pad_i.hyper1.dq4_i;
+          mux_to_pads_o.pad_mx_hyper1_6.oen = ~port_signals_soc2pad_i.hyper1.dq_oe;
+       end
+       PAD_MUX_GROUP_MX_HYPER_PAD_MX_HYPER1_6_SEL_HYPER1_HYPER_DQ5_I: begin
+          mux_to_pads_o.pad_mx_hyper1_6.chip2pad = port_signals_soc2pad_i.hyper1.dq5_i;
+          mux_to_pads_o.pad_mx_hyper1_6.oen = ~port_signals_soc2pad_i.hyper1.dq_oe;
+       end
+       PAD_MUX_GROUP_MX_HYPER_PAD_MX_HYPER1_6_SEL_HYPER1_HYPER_DQ6_I: begin
+          mux_to_pads_o.pad_mx_hyper1_6.chip2pad = port_signals_soc2pad_i.hyper1.dq6_i;
+          mux_to_pads_o.pad_mx_hyper1_6.oen = ~port_signals_soc2pad_i.hyper1.dq_oe;
+       end
+       PAD_MUX_GROUP_MX_HYPER_PAD_MX_HYPER1_6_SEL_HYPER1_HYPER_DQ7_I: begin
+          mux_to_pads_o.pad_mx_hyper1_6.chip2pad = port_signals_soc2pad_i.hyper1.dq7_i;
+          mux_to_pads_o.pad_mx_hyper1_6.oen = ~port_signals_soc2pad_i.hyper1.dq_oe;
+       end
        PAD_MUX_GROUP_MX_HYPER_PAD_MX_HYPER1_6_SEL_HYPER1_HYPER_RST: begin
           mux_to_pads_o.pad_mx_hyper1_6.chip2pad = port_signals_soc2pad_i.hyper1.resetn_i;
           mux_to_pads_o.pad_mx_hyper1_6.oen = 1'b0;
@@ -3774,6 +3970,34 @@ module alsaqr_periph_padframe_periphs_muxer
        end
        PAD_MUX_GROUP_MX_HYPER_PAD_MX_HYPER1_7_SEL_HYPER1_HYPER_DQ0_I: begin
           mux_to_pads_o.pad_mx_hyper1_7.chip2pad = port_signals_soc2pad_i.hyper1.dq0_i;
+          mux_to_pads_o.pad_mx_hyper1_7.oen = ~port_signals_soc2pad_i.hyper1.dq_oe;
+       end
+       PAD_MUX_GROUP_MX_HYPER_PAD_MX_HYPER1_7_SEL_HYPER1_HYPER_DQ1_I: begin
+          mux_to_pads_o.pad_mx_hyper1_7.chip2pad = port_signals_soc2pad_i.hyper1.dq1_i;
+          mux_to_pads_o.pad_mx_hyper1_7.oen = ~port_signals_soc2pad_i.hyper1.dq_oe;
+       end
+       PAD_MUX_GROUP_MX_HYPER_PAD_MX_HYPER1_7_SEL_HYPER1_HYPER_DQ2_I: begin
+          mux_to_pads_o.pad_mx_hyper1_7.chip2pad = port_signals_soc2pad_i.hyper1.dq2_i;
+          mux_to_pads_o.pad_mx_hyper1_7.oen = ~port_signals_soc2pad_i.hyper1.dq_oe;
+       end
+       PAD_MUX_GROUP_MX_HYPER_PAD_MX_HYPER1_7_SEL_HYPER1_HYPER_DQ3_I: begin
+          mux_to_pads_o.pad_mx_hyper1_7.chip2pad = port_signals_soc2pad_i.hyper1.dq3_i;
+          mux_to_pads_o.pad_mx_hyper1_7.oen = ~port_signals_soc2pad_i.hyper1.dq_oe;
+       end
+       PAD_MUX_GROUP_MX_HYPER_PAD_MX_HYPER1_7_SEL_HYPER1_HYPER_DQ4_I: begin
+          mux_to_pads_o.pad_mx_hyper1_7.chip2pad = port_signals_soc2pad_i.hyper1.dq4_i;
+          mux_to_pads_o.pad_mx_hyper1_7.oen = ~port_signals_soc2pad_i.hyper1.dq_oe;
+       end
+       PAD_MUX_GROUP_MX_HYPER_PAD_MX_HYPER1_7_SEL_HYPER1_HYPER_DQ5_I: begin
+          mux_to_pads_o.pad_mx_hyper1_7.chip2pad = port_signals_soc2pad_i.hyper1.dq5_i;
+          mux_to_pads_o.pad_mx_hyper1_7.oen = ~port_signals_soc2pad_i.hyper1.dq_oe;
+       end
+       PAD_MUX_GROUP_MX_HYPER_PAD_MX_HYPER1_7_SEL_HYPER1_HYPER_DQ6_I: begin
+          mux_to_pads_o.pad_mx_hyper1_7.chip2pad = port_signals_soc2pad_i.hyper1.dq6_i;
+          mux_to_pads_o.pad_mx_hyper1_7.oen = ~port_signals_soc2pad_i.hyper1.dq_oe;
+       end
+       PAD_MUX_GROUP_MX_HYPER_PAD_MX_HYPER1_7_SEL_HYPER1_HYPER_DQ7_I: begin
+          mux_to_pads_o.pad_mx_hyper1_7.chip2pad = port_signals_soc2pad_i.hyper1.dq7_i;
           mux_to_pads_o.pad_mx_hyper1_7.oen = ~port_signals_soc2pad_i.hyper1.dq_oe;
        end
        PAD_MUX_GROUP_MX_HYPER_PAD_MX_HYPER1_7_SEL_HYPER1_HYPER_RST: begin
@@ -3886,6 +4110,34 @@ module alsaqr_periph_padframe_periphs_muxer
           mux_to_pads_o.pad_mx_hyper1_8.chip2pad = port_signals_soc2pad_i.hyper1.dq0_i;
           mux_to_pads_o.pad_mx_hyper1_8.oen = ~port_signals_soc2pad_i.hyper1.dq_oe;
        end
+       PAD_MUX_GROUP_MX_HYPER_PAD_MX_HYPER1_8_SEL_HYPER1_HYPER_DQ1_I: begin
+          mux_to_pads_o.pad_mx_hyper1_8.chip2pad = port_signals_soc2pad_i.hyper1.dq1_i;
+          mux_to_pads_o.pad_mx_hyper1_8.oen = ~port_signals_soc2pad_i.hyper1.dq_oe;
+       end
+       PAD_MUX_GROUP_MX_HYPER_PAD_MX_HYPER1_8_SEL_HYPER1_HYPER_DQ2_I: begin
+          mux_to_pads_o.pad_mx_hyper1_8.chip2pad = port_signals_soc2pad_i.hyper1.dq2_i;
+          mux_to_pads_o.pad_mx_hyper1_8.oen = ~port_signals_soc2pad_i.hyper1.dq_oe;
+       end
+       PAD_MUX_GROUP_MX_HYPER_PAD_MX_HYPER1_8_SEL_HYPER1_HYPER_DQ3_I: begin
+          mux_to_pads_o.pad_mx_hyper1_8.chip2pad = port_signals_soc2pad_i.hyper1.dq3_i;
+          mux_to_pads_o.pad_mx_hyper1_8.oen = ~port_signals_soc2pad_i.hyper1.dq_oe;
+       end
+       PAD_MUX_GROUP_MX_HYPER_PAD_MX_HYPER1_8_SEL_HYPER1_HYPER_DQ4_I: begin
+          mux_to_pads_o.pad_mx_hyper1_8.chip2pad = port_signals_soc2pad_i.hyper1.dq4_i;
+          mux_to_pads_o.pad_mx_hyper1_8.oen = ~port_signals_soc2pad_i.hyper1.dq_oe;
+       end
+       PAD_MUX_GROUP_MX_HYPER_PAD_MX_HYPER1_8_SEL_HYPER1_HYPER_DQ5_I: begin
+          mux_to_pads_o.pad_mx_hyper1_8.chip2pad = port_signals_soc2pad_i.hyper1.dq5_i;
+          mux_to_pads_o.pad_mx_hyper1_8.oen = ~port_signals_soc2pad_i.hyper1.dq_oe;
+       end
+       PAD_MUX_GROUP_MX_HYPER_PAD_MX_HYPER1_8_SEL_HYPER1_HYPER_DQ6_I: begin
+          mux_to_pads_o.pad_mx_hyper1_8.chip2pad = port_signals_soc2pad_i.hyper1.dq6_i;
+          mux_to_pads_o.pad_mx_hyper1_8.oen = ~port_signals_soc2pad_i.hyper1.dq_oe;
+       end
+       PAD_MUX_GROUP_MX_HYPER_PAD_MX_HYPER1_8_SEL_HYPER1_HYPER_DQ7_I: begin
+          mux_to_pads_o.pad_mx_hyper1_8.chip2pad = port_signals_soc2pad_i.hyper1.dq7_i;
+          mux_to_pads_o.pad_mx_hyper1_8.oen = ~port_signals_soc2pad_i.hyper1.dq_oe;
+       end
        PAD_MUX_GROUP_MX_HYPER_PAD_MX_HYPER1_8_SEL_HYPER1_HYPER_RST: begin
           mux_to_pads_o.pad_mx_hyper1_8.chip2pad = port_signals_soc2pad_i.hyper1.resetn_i;
           mux_to_pads_o.pad_mx_hyper1_8.oen = 1'b0;
@@ -3994,6 +4246,34 @@ module alsaqr_periph_padframe_periphs_muxer
        end
        PAD_MUX_GROUP_MX_HYPER_PAD_MX_HYPER1_9_SEL_HYPER1_HYPER_DQ0_I: begin
           mux_to_pads_o.pad_mx_hyper1_9.chip2pad = port_signals_soc2pad_i.hyper1.dq0_i;
+          mux_to_pads_o.pad_mx_hyper1_9.oen = ~port_signals_soc2pad_i.hyper1.dq_oe;
+       end
+       PAD_MUX_GROUP_MX_HYPER_PAD_MX_HYPER1_9_SEL_HYPER1_HYPER_DQ1_I: begin
+          mux_to_pads_o.pad_mx_hyper1_9.chip2pad = port_signals_soc2pad_i.hyper1.dq1_i;
+          mux_to_pads_o.pad_mx_hyper1_9.oen = ~port_signals_soc2pad_i.hyper1.dq_oe;
+       end
+       PAD_MUX_GROUP_MX_HYPER_PAD_MX_HYPER1_9_SEL_HYPER1_HYPER_DQ2_I: begin
+          mux_to_pads_o.pad_mx_hyper1_9.chip2pad = port_signals_soc2pad_i.hyper1.dq2_i;
+          mux_to_pads_o.pad_mx_hyper1_9.oen = ~port_signals_soc2pad_i.hyper1.dq_oe;
+       end
+       PAD_MUX_GROUP_MX_HYPER_PAD_MX_HYPER1_9_SEL_HYPER1_HYPER_DQ3_I: begin
+          mux_to_pads_o.pad_mx_hyper1_9.chip2pad = port_signals_soc2pad_i.hyper1.dq3_i;
+          mux_to_pads_o.pad_mx_hyper1_9.oen = ~port_signals_soc2pad_i.hyper1.dq_oe;
+       end
+       PAD_MUX_GROUP_MX_HYPER_PAD_MX_HYPER1_9_SEL_HYPER1_HYPER_DQ4_I: begin
+          mux_to_pads_o.pad_mx_hyper1_9.chip2pad = port_signals_soc2pad_i.hyper1.dq4_i;
+          mux_to_pads_o.pad_mx_hyper1_9.oen = ~port_signals_soc2pad_i.hyper1.dq_oe;
+       end
+       PAD_MUX_GROUP_MX_HYPER_PAD_MX_HYPER1_9_SEL_HYPER1_HYPER_DQ5_I: begin
+          mux_to_pads_o.pad_mx_hyper1_9.chip2pad = port_signals_soc2pad_i.hyper1.dq5_i;
+          mux_to_pads_o.pad_mx_hyper1_9.oen = ~port_signals_soc2pad_i.hyper1.dq_oe;
+       end
+       PAD_MUX_GROUP_MX_HYPER_PAD_MX_HYPER1_9_SEL_HYPER1_HYPER_DQ6_I: begin
+          mux_to_pads_o.pad_mx_hyper1_9.chip2pad = port_signals_soc2pad_i.hyper1.dq6_i;
+          mux_to_pads_o.pad_mx_hyper1_9.oen = ~port_signals_soc2pad_i.hyper1.dq_oe;
+       end
+       PAD_MUX_GROUP_MX_HYPER_PAD_MX_HYPER1_9_SEL_HYPER1_HYPER_DQ7_I: begin
+          mux_to_pads_o.pad_mx_hyper1_9.chip2pad = port_signals_soc2pad_i.hyper1.dq7_i;
           mux_to_pads_o.pad_mx_hyper1_9.oen = ~port_signals_soc2pad_i.hyper1.dq_oe;
        end
        PAD_MUX_GROUP_MX_HYPER_PAD_MX_HYPER1_9_SEL_HYPER1_HYPER_RST: begin
@@ -4106,6 +4386,34 @@ module alsaqr_periph_padframe_periphs_muxer
           mux_to_pads_o.pad_mx_hyper1_10.chip2pad = port_signals_soc2pad_i.hyper1.dq0_i;
           mux_to_pads_o.pad_mx_hyper1_10.oen = ~port_signals_soc2pad_i.hyper1.dq_oe;
        end
+       PAD_MUX_GROUP_MX_HYPER_PAD_MX_HYPER1_10_SEL_HYPER1_HYPER_DQ1_I: begin
+          mux_to_pads_o.pad_mx_hyper1_10.chip2pad = port_signals_soc2pad_i.hyper1.dq1_i;
+          mux_to_pads_o.pad_mx_hyper1_10.oen = ~port_signals_soc2pad_i.hyper1.dq_oe;
+       end
+       PAD_MUX_GROUP_MX_HYPER_PAD_MX_HYPER1_10_SEL_HYPER1_HYPER_DQ2_I: begin
+          mux_to_pads_o.pad_mx_hyper1_10.chip2pad = port_signals_soc2pad_i.hyper1.dq2_i;
+          mux_to_pads_o.pad_mx_hyper1_10.oen = ~port_signals_soc2pad_i.hyper1.dq_oe;
+       end
+       PAD_MUX_GROUP_MX_HYPER_PAD_MX_HYPER1_10_SEL_HYPER1_HYPER_DQ3_I: begin
+          mux_to_pads_o.pad_mx_hyper1_10.chip2pad = port_signals_soc2pad_i.hyper1.dq3_i;
+          mux_to_pads_o.pad_mx_hyper1_10.oen = ~port_signals_soc2pad_i.hyper1.dq_oe;
+       end
+       PAD_MUX_GROUP_MX_HYPER_PAD_MX_HYPER1_10_SEL_HYPER1_HYPER_DQ4_I: begin
+          mux_to_pads_o.pad_mx_hyper1_10.chip2pad = port_signals_soc2pad_i.hyper1.dq4_i;
+          mux_to_pads_o.pad_mx_hyper1_10.oen = ~port_signals_soc2pad_i.hyper1.dq_oe;
+       end
+       PAD_MUX_GROUP_MX_HYPER_PAD_MX_HYPER1_10_SEL_HYPER1_HYPER_DQ5_I: begin
+          mux_to_pads_o.pad_mx_hyper1_10.chip2pad = port_signals_soc2pad_i.hyper1.dq5_i;
+          mux_to_pads_o.pad_mx_hyper1_10.oen = ~port_signals_soc2pad_i.hyper1.dq_oe;
+       end
+       PAD_MUX_GROUP_MX_HYPER_PAD_MX_HYPER1_10_SEL_HYPER1_HYPER_DQ6_I: begin
+          mux_to_pads_o.pad_mx_hyper1_10.chip2pad = port_signals_soc2pad_i.hyper1.dq6_i;
+          mux_to_pads_o.pad_mx_hyper1_10.oen = ~port_signals_soc2pad_i.hyper1.dq_oe;
+       end
+       PAD_MUX_GROUP_MX_HYPER_PAD_MX_HYPER1_10_SEL_HYPER1_HYPER_DQ7_I: begin
+          mux_to_pads_o.pad_mx_hyper1_10.chip2pad = port_signals_soc2pad_i.hyper1.dq7_i;
+          mux_to_pads_o.pad_mx_hyper1_10.oen = ~port_signals_soc2pad_i.hyper1.dq_oe;
+       end
        PAD_MUX_GROUP_MX_HYPER_PAD_MX_HYPER1_10_SEL_HYPER1_HYPER_RST: begin
           mux_to_pads_o.pad_mx_hyper1_10.chip2pad = port_signals_soc2pad_i.hyper1.resetn_i;
           mux_to_pads_o.pad_mx_hyper1_10.oen = 1'b0;
@@ -4216,6 +4524,34 @@ module alsaqr_periph_padframe_periphs_muxer
           mux_to_pads_o.pad_mx_hyper1_11.chip2pad = port_signals_soc2pad_i.hyper1.dq0_i;
           mux_to_pads_o.pad_mx_hyper1_11.oen = ~port_signals_soc2pad_i.hyper1.dq_oe;
        end
+       PAD_MUX_GROUP_MX_HYPER_PAD_MX_HYPER1_11_SEL_HYPER1_HYPER_DQ1_I: begin
+          mux_to_pads_o.pad_mx_hyper1_11.chip2pad = port_signals_soc2pad_i.hyper1.dq1_i;
+          mux_to_pads_o.pad_mx_hyper1_11.oen = ~port_signals_soc2pad_i.hyper1.dq_oe;
+       end
+       PAD_MUX_GROUP_MX_HYPER_PAD_MX_HYPER1_11_SEL_HYPER1_HYPER_DQ2_I: begin
+          mux_to_pads_o.pad_mx_hyper1_11.chip2pad = port_signals_soc2pad_i.hyper1.dq2_i;
+          mux_to_pads_o.pad_mx_hyper1_11.oen = ~port_signals_soc2pad_i.hyper1.dq_oe;
+       end
+       PAD_MUX_GROUP_MX_HYPER_PAD_MX_HYPER1_11_SEL_HYPER1_HYPER_DQ3_I: begin
+          mux_to_pads_o.pad_mx_hyper1_11.chip2pad = port_signals_soc2pad_i.hyper1.dq3_i;
+          mux_to_pads_o.pad_mx_hyper1_11.oen = ~port_signals_soc2pad_i.hyper1.dq_oe;
+       end
+       PAD_MUX_GROUP_MX_HYPER_PAD_MX_HYPER1_11_SEL_HYPER1_HYPER_DQ4_I: begin
+          mux_to_pads_o.pad_mx_hyper1_11.chip2pad = port_signals_soc2pad_i.hyper1.dq4_i;
+          mux_to_pads_o.pad_mx_hyper1_11.oen = ~port_signals_soc2pad_i.hyper1.dq_oe;
+       end
+       PAD_MUX_GROUP_MX_HYPER_PAD_MX_HYPER1_11_SEL_HYPER1_HYPER_DQ5_I: begin
+          mux_to_pads_o.pad_mx_hyper1_11.chip2pad = port_signals_soc2pad_i.hyper1.dq5_i;
+          mux_to_pads_o.pad_mx_hyper1_11.oen = ~port_signals_soc2pad_i.hyper1.dq_oe;
+       end
+       PAD_MUX_GROUP_MX_HYPER_PAD_MX_HYPER1_11_SEL_HYPER1_HYPER_DQ6_I: begin
+          mux_to_pads_o.pad_mx_hyper1_11.chip2pad = port_signals_soc2pad_i.hyper1.dq6_i;
+          mux_to_pads_o.pad_mx_hyper1_11.oen = ~port_signals_soc2pad_i.hyper1.dq_oe;
+       end
+       PAD_MUX_GROUP_MX_HYPER_PAD_MX_HYPER1_11_SEL_HYPER1_HYPER_DQ7_I: begin
+          mux_to_pads_o.pad_mx_hyper1_11.chip2pad = port_signals_soc2pad_i.hyper1.dq7_i;
+          mux_to_pads_o.pad_mx_hyper1_11.oen = ~port_signals_soc2pad_i.hyper1.dq_oe;
+       end
        PAD_MUX_GROUP_MX_HYPER_PAD_MX_HYPER1_11_SEL_HYPER1_HYPER_RST: begin
           mux_to_pads_o.pad_mx_hyper1_11.chip2pad = port_signals_soc2pad_i.hyper1.resetn_i;
           mux_to_pads_o.pad_mx_hyper1_11.oen = 1'b0;
@@ -4324,6 +4660,34 @@ module alsaqr_periph_padframe_periphs_muxer
        end
        PAD_MUX_GROUP_MX_HYPER_PAD_MX_HYPER1_12_SEL_HYPER1_HYPER_DQ0_I: begin
           mux_to_pads_o.pad_mx_hyper1_12.chip2pad = port_signals_soc2pad_i.hyper1.dq0_i;
+          mux_to_pads_o.pad_mx_hyper1_12.oen = ~port_signals_soc2pad_i.hyper1.dq_oe;
+       end
+       PAD_MUX_GROUP_MX_HYPER_PAD_MX_HYPER1_12_SEL_HYPER1_HYPER_DQ1_I: begin
+          mux_to_pads_o.pad_mx_hyper1_12.chip2pad = port_signals_soc2pad_i.hyper1.dq1_i;
+          mux_to_pads_o.pad_mx_hyper1_12.oen = ~port_signals_soc2pad_i.hyper1.dq_oe;
+       end
+       PAD_MUX_GROUP_MX_HYPER_PAD_MX_HYPER1_12_SEL_HYPER1_HYPER_DQ2_I: begin
+          mux_to_pads_o.pad_mx_hyper1_12.chip2pad = port_signals_soc2pad_i.hyper1.dq2_i;
+          mux_to_pads_o.pad_mx_hyper1_12.oen = ~port_signals_soc2pad_i.hyper1.dq_oe;
+       end
+       PAD_MUX_GROUP_MX_HYPER_PAD_MX_HYPER1_12_SEL_HYPER1_HYPER_DQ3_I: begin
+          mux_to_pads_o.pad_mx_hyper1_12.chip2pad = port_signals_soc2pad_i.hyper1.dq3_i;
+          mux_to_pads_o.pad_mx_hyper1_12.oen = ~port_signals_soc2pad_i.hyper1.dq_oe;
+       end
+       PAD_MUX_GROUP_MX_HYPER_PAD_MX_HYPER1_12_SEL_HYPER1_HYPER_DQ4_I: begin
+          mux_to_pads_o.pad_mx_hyper1_12.chip2pad = port_signals_soc2pad_i.hyper1.dq4_i;
+          mux_to_pads_o.pad_mx_hyper1_12.oen = ~port_signals_soc2pad_i.hyper1.dq_oe;
+       end
+       PAD_MUX_GROUP_MX_HYPER_PAD_MX_HYPER1_12_SEL_HYPER1_HYPER_DQ5_I: begin
+          mux_to_pads_o.pad_mx_hyper1_12.chip2pad = port_signals_soc2pad_i.hyper1.dq5_i;
+          mux_to_pads_o.pad_mx_hyper1_12.oen = ~port_signals_soc2pad_i.hyper1.dq_oe;
+       end
+       PAD_MUX_GROUP_MX_HYPER_PAD_MX_HYPER1_12_SEL_HYPER1_HYPER_DQ6_I: begin
+          mux_to_pads_o.pad_mx_hyper1_12.chip2pad = port_signals_soc2pad_i.hyper1.dq6_i;
+          mux_to_pads_o.pad_mx_hyper1_12.oen = ~port_signals_soc2pad_i.hyper1.dq_oe;
+       end
+       PAD_MUX_GROUP_MX_HYPER_PAD_MX_HYPER1_12_SEL_HYPER1_HYPER_DQ7_I: begin
+          mux_to_pads_o.pad_mx_hyper1_12.chip2pad = port_signals_soc2pad_i.hyper1.dq7_i;
           mux_to_pads_o.pad_mx_hyper1_12.oen = ~port_signals_soc2pad_i.hyper1.dq_oe;
        end
        PAD_MUX_GROUP_MX_HYPER_PAD_MX_HYPER1_12_SEL_HYPER1_HYPER_RST: begin
@@ -7715,6 +8079,566 @@ module alsaqr_periph_padframe_periphs_muxer
           end
           default: begin
             port_signals_pad2soc_o.hyper1.dq0_o = 1'b0;
+          end
+       endcase
+     end
+   end
+
+
+  // Port Signal dq1_o
+  logic [12:0] port_mux_sel_hyper1_dq1_o_req;
+  logic [PORT_MUX_GROUP_MX_HYPER_SEL_WIDTH-1:0] port_mux_sel_hyper1_dq1_o_arbitrated;
+  logic port_mux_sel_hyper1_dq1_o_no_connection;
+
+   assign port_mux_sel_hyper1_dq1_o_req[PORT_MUX_GROUP_MX_HYPER_SEL_PAD_MX_HYPER1_0] = s_reg2hw.pad_mx_hyper1_0_mux_sel.q == PAD_MUX_GROUP_MX_HYPER_PAD_MX_HYPER1_0_SEL_HYPER1_HYPER_DQ1_I ? 1'b1 : 1'b0;
+   assign port_mux_sel_hyper1_dq1_o_req[PORT_MUX_GROUP_MX_HYPER_SEL_PAD_MX_HYPER1_1] = s_reg2hw.pad_mx_hyper1_1_mux_sel.q == PAD_MUX_GROUP_MX_HYPER_PAD_MX_HYPER1_1_SEL_HYPER1_HYPER_DQ1_I ? 1'b1 : 1'b0;
+   assign port_mux_sel_hyper1_dq1_o_req[PORT_MUX_GROUP_MX_HYPER_SEL_PAD_MX_HYPER1_2] = s_reg2hw.pad_mx_hyper1_2_mux_sel.q == PAD_MUX_GROUP_MX_HYPER_PAD_MX_HYPER1_2_SEL_HYPER1_HYPER_DQ1_I ? 1'b1 : 1'b0;
+   assign port_mux_sel_hyper1_dq1_o_req[PORT_MUX_GROUP_MX_HYPER_SEL_PAD_MX_HYPER1_3] = s_reg2hw.pad_mx_hyper1_3_mux_sel.q == PAD_MUX_GROUP_MX_HYPER_PAD_MX_HYPER1_3_SEL_HYPER1_HYPER_DQ1_I ? 1'b1 : 1'b0;
+   assign port_mux_sel_hyper1_dq1_o_req[PORT_MUX_GROUP_MX_HYPER_SEL_PAD_MX_HYPER1_4] = s_reg2hw.pad_mx_hyper1_4_mux_sel.q == PAD_MUX_GROUP_MX_HYPER_PAD_MX_HYPER1_4_SEL_HYPER1_HYPER_DQ1_I ? 1'b1 : 1'b0;
+   assign port_mux_sel_hyper1_dq1_o_req[PORT_MUX_GROUP_MX_HYPER_SEL_PAD_MX_HYPER1_5] = s_reg2hw.pad_mx_hyper1_5_mux_sel.q == PAD_MUX_GROUP_MX_HYPER_PAD_MX_HYPER1_5_SEL_HYPER1_HYPER_DQ1_I ? 1'b1 : 1'b0;
+   assign port_mux_sel_hyper1_dq1_o_req[PORT_MUX_GROUP_MX_HYPER_SEL_PAD_MX_HYPER1_6] = s_reg2hw.pad_mx_hyper1_6_mux_sel.q == PAD_MUX_GROUP_MX_HYPER_PAD_MX_HYPER1_6_SEL_HYPER1_HYPER_DQ1_I ? 1'b1 : 1'b0;
+   assign port_mux_sel_hyper1_dq1_o_req[PORT_MUX_GROUP_MX_HYPER_SEL_PAD_MX_HYPER1_7] = s_reg2hw.pad_mx_hyper1_7_mux_sel.q == PAD_MUX_GROUP_MX_HYPER_PAD_MX_HYPER1_7_SEL_HYPER1_HYPER_DQ1_I ? 1'b1 : 1'b0;
+   assign port_mux_sel_hyper1_dq1_o_req[PORT_MUX_GROUP_MX_HYPER_SEL_PAD_MX_HYPER1_8] = s_reg2hw.pad_mx_hyper1_8_mux_sel.q == PAD_MUX_GROUP_MX_HYPER_PAD_MX_HYPER1_8_SEL_HYPER1_HYPER_DQ1_I ? 1'b1 : 1'b0;
+   assign port_mux_sel_hyper1_dq1_o_req[PORT_MUX_GROUP_MX_HYPER_SEL_PAD_MX_HYPER1_9] = s_reg2hw.pad_mx_hyper1_9_mux_sel.q == PAD_MUX_GROUP_MX_HYPER_PAD_MX_HYPER1_9_SEL_HYPER1_HYPER_DQ1_I ? 1'b1 : 1'b0;
+   assign port_mux_sel_hyper1_dq1_o_req[PORT_MUX_GROUP_MX_HYPER_SEL_PAD_MX_HYPER1_10] = s_reg2hw.pad_mx_hyper1_10_mux_sel.q == PAD_MUX_GROUP_MX_HYPER_PAD_MX_HYPER1_10_SEL_HYPER1_HYPER_DQ1_I ? 1'b1 : 1'b0;
+   assign port_mux_sel_hyper1_dq1_o_req[PORT_MUX_GROUP_MX_HYPER_SEL_PAD_MX_HYPER1_11] = s_reg2hw.pad_mx_hyper1_11_mux_sel.q == PAD_MUX_GROUP_MX_HYPER_PAD_MX_HYPER1_11_SEL_HYPER1_HYPER_DQ1_I ? 1'b1 : 1'b0;
+   assign port_mux_sel_hyper1_dq1_o_req[PORT_MUX_GROUP_MX_HYPER_SEL_PAD_MX_HYPER1_12] = s_reg2hw.pad_mx_hyper1_12_mux_sel.q == PAD_MUX_GROUP_MX_HYPER_PAD_MX_HYPER1_12_SEL_HYPER1_HYPER_DQ1_I ? 1'b1 : 1'b0;
+
+   lzc #(
+     .WIDTH(13),
+     .MODE(1'b0)
+   ) i_port_muxsel_hyper1_dq1_o_arbiter (
+     .in_i(port_mux_sel_hyper1_dq1_o_req),
+     .cnt_o(port_mux_sel_hyper1_dq1_o_arbitrated),
+     .empty_o(port_mux_sel_hyper1_dq1_o_no_connection)
+   );
+
+   always_comb begin
+     if (port_mux_sel_hyper1_dq1_o_no_connection) begin
+        port_signals_pad2soc_o.hyper1.dq1_o = 1'b0;
+     end else begin
+        unique case (port_mux_sel_hyper1_dq1_o_arbitrated)
+          PORT_MUX_GROUP_MX_HYPER_SEL_PAD_MX_HYPER1_0: begin
+            port_signals_pad2soc_o.hyper1.dq1_o = pads_to_mux_i.pad_mx_hyper1_0.pad2chip;
+          end
+          PORT_MUX_GROUP_MX_HYPER_SEL_PAD_MX_HYPER1_1: begin
+            port_signals_pad2soc_o.hyper1.dq1_o = pads_to_mux_i.pad_mx_hyper1_1.pad2chip;
+          end
+          PORT_MUX_GROUP_MX_HYPER_SEL_PAD_MX_HYPER1_2: begin
+            port_signals_pad2soc_o.hyper1.dq1_o = pads_to_mux_i.pad_mx_hyper1_2.pad2chip;
+          end
+          PORT_MUX_GROUP_MX_HYPER_SEL_PAD_MX_HYPER1_3: begin
+            port_signals_pad2soc_o.hyper1.dq1_o = pads_to_mux_i.pad_mx_hyper1_3.pad2chip;
+          end
+          PORT_MUX_GROUP_MX_HYPER_SEL_PAD_MX_HYPER1_4: begin
+            port_signals_pad2soc_o.hyper1.dq1_o = pads_to_mux_i.pad_mx_hyper1_4.pad2chip;
+          end
+          PORT_MUX_GROUP_MX_HYPER_SEL_PAD_MX_HYPER1_5: begin
+            port_signals_pad2soc_o.hyper1.dq1_o = pads_to_mux_i.pad_mx_hyper1_5.pad2chip;
+          end
+          PORT_MUX_GROUP_MX_HYPER_SEL_PAD_MX_HYPER1_6: begin
+            port_signals_pad2soc_o.hyper1.dq1_o = pads_to_mux_i.pad_mx_hyper1_6.pad2chip;
+          end
+          PORT_MUX_GROUP_MX_HYPER_SEL_PAD_MX_HYPER1_7: begin
+            port_signals_pad2soc_o.hyper1.dq1_o = pads_to_mux_i.pad_mx_hyper1_7.pad2chip;
+          end
+          PORT_MUX_GROUP_MX_HYPER_SEL_PAD_MX_HYPER1_8: begin
+            port_signals_pad2soc_o.hyper1.dq1_o = pads_to_mux_i.pad_mx_hyper1_8.pad2chip;
+          end
+          PORT_MUX_GROUP_MX_HYPER_SEL_PAD_MX_HYPER1_9: begin
+            port_signals_pad2soc_o.hyper1.dq1_o = pads_to_mux_i.pad_mx_hyper1_9.pad2chip;
+          end
+          PORT_MUX_GROUP_MX_HYPER_SEL_PAD_MX_HYPER1_10: begin
+            port_signals_pad2soc_o.hyper1.dq1_o = pads_to_mux_i.pad_mx_hyper1_10.pad2chip;
+          end
+          PORT_MUX_GROUP_MX_HYPER_SEL_PAD_MX_HYPER1_11: begin
+            port_signals_pad2soc_o.hyper1.dq1_o = pads_to_mux_i.pad_mx_hyper1_11.pad2chip;
+          end
+          PORT_MUX_GROUP_MX_HYPER_SEL_PAD_MX_HYPER1_12: begin
+            port_signals_pad2soc_o.hyper1.dq1_o = pads_to_mux_i.pad_mx_hyper1_12.pad2chip;
+          end
+          default: begin
+            port_signals_pad2soc_o.hyper1.dq1_o = 1'b0;
+          end
+       endcase
+     end
+   end
+
+
+  // Port Signal dq2_o
+  logic [12:0] port_mux_sel_hyper1_dq2_o_req;
+  logic [PORT_MUX_GROUP_MX_HYPER_SEL_WIDTH-1:0] port_mux_sel_hyper1_dq2_o_arbitrated;
+  logic port_mux_sel_hyper1_dq2_o_no_connection;
+
+   assign port_mux_sel_hyper1_dq2_o_req[PORT_MUX_GROUP_MX_HYPER_SEL_PAD_MX_HYPER1_0] = s_reg2hw.pad_mx_hyper1_0_mux_sel.q == PAD_MUX_GROUP_MX_HYPER_PAD_MX_HYPER1_0_SEL_HYPER1_HYPER_DQ2_I ? 1'b1 : 1'b0;
+   assign port_mux_sel_hyper1_dq2_o_req[PORT_MUX_GROUP_MX_HYPER_SEL_PAD_MX_HYPER1_1] = s_reg2hw.pad_mx_hyper1_1_mux_sel.q == PAD_MUX_GROUP_MX_HYPER_PAD_MX_HYPER1_1_SEL_HYPER1_HYPER_DQ2_I ? 1'b1 : 1'b0;
+   assign port_mux_sel_hyper1_dq2_o_req[PORT_MUX_GROUP_MX_HYPER_SEL_PAD_MX_HYPER1_2] = s_reg2hw.pad_mx_hyper1_2_mux_sel.q == PAD_MUX_GROUP_MX_HYPER_PAD_MX_HYPER1_2_SEL_HYPER1_HYPER_DQ2_I ? 1'b1 : 1'b0;
+   assign port_mux_sel_hyper1_dq2_o_req[PORT_MUX_GROUP_MX_HYPER_SEL_PAD_MX_HYPER1_3] = s_reg2hw.pad_mx_hyper1_3_mux_sel.q == PAD_MUX_GROUP_MX_HYPER_PAD_MX_HYPER1_3_SEL_HYPER1_HYPER_DQ2_I ? 1'b1 : 1'b0;
+   assign port_mux_sel_hyper1_dq2_o_req[PORT_MUX_GROUP_MX_HYPER_SEL_PAD_MX_HYPER1_4] = s_reg2hw.pad_mx_hyper1_4_mux_sel.q == PAD_MUX_GROUP_MX_HYPER_PAD_MX_HYPER1_4_SEL_HYPER1_HYPER_DQ2_I ? 1'b1 : 1'b0;
+   assign port_mux_sel_hyper1_dq2_o_req[PORT_MUX_GROUP_MX_HYPER_SEL_PAD_MX_HYPER1_5] = s_reg2hw.pad_mx_hyper1_5_mux_sel.q == PAD_MUX_GROUP_MX_HYPER_PAD_MX_HYPER1_5_SEL_HYPER1_HYPER_DQ2_I ? 1'b1 : 1'b0;
+   assign port_mux_sel_hyper1_dq2_o_req[PORT_MUX_GROUP_MX_HYPER_SEL_PAD_MX_HYPER1_6] = s_reg2hw.pad_mx_hyper1_6_mux_sel.q == PAD_MUX_GROUP_MX_HYPER_PAD_MX_HYPER1_6_SEL_HYPER1_HYPER_DQ2_I ? 1'b1 : 1'b0;
+   assign port_mux_sel_hyper1_dq2_o_req[PORT_MUX_GROUP_MX_HYPER_SEL_PAD_MX_HYPER1_7] = s_reg2hw.pad_mx_hyper1_7_mux_sel.q == PAD_MUX_GROUP_MX_HYPER_PAD_MX_HYPER1_7_SEL_HYPER1_HYPER_DQ2_I ? 1'b1 : 1'b0;
+   assign port_mux_sel_hyper1_dq2_o_req[PORT_MUX_GROUP_MX_HYPER_SEL_PAD_MX_HYPER1_8] = s_reg2hw.pad_mx_hyper1_8_mux_sel.q == PAD_MUX_GROUP_MX_HYPER_PAD_MX_HYPER1_8_SEL_HYPER1_HYPER_DQ2_I ? 1'b1 : 1'b0;
+   assign port_mux_sel_hyper1_dq2_o_req[PORT_MUX_GROUP_MX_HYPER_SEL_PAD_MX_HYPER1_9] = s_reg2hw.pad_mx_hyper1_9_mux_sel.q == PAD_MUX_GROUP_MX_HYPER_PAD_MX_HYPER1_9_SEL_HYPER1_HYPER_DQ2_I ? 1'b1 : 1'b0;
+   assign port_mux_sel_hyper1_dq2_o_req[PORT_MUX_GROUP_MX_HYPER_SEL_PAD_MX_HYPER1_10] = s_reg2hw.pad_mx_hyper1_10_mux_sel.q == PAD_MUX_GROUP_MX_HYPER_PAD_MX_HYPER1_10_SEL_HYPER1_HYPER_DQ2_I ? 1'b1 : 1'b0;
+   assign port_mux_sel_hyper1_dq2_o_req[PORT_MUX_GROUP_MX_HYPER_SEL_PAD_MX_HYPER1_11] = s_reg2hw.pad_mx_hyper1_11_mux_sel.q == PAD_MUX_GROUP_MX_HYPER_PAD_MX_HYPER1_11_SEL_HYPER1_HYPER_DQ2_I ? 1'b1 : 1'b0;
+   assign port_mux_sel_hyper1_dq2_o_req[PORT_MUX_GROUP_MX_HYPER_SEL_PAD_MX_HYPER1_12] = s_reg2hw.pad_mx_hyper1_12_mux_sel.q == PAD_MUX_GROUP_MX_HYPER_PAD_MX_HYPER1_12_SEL_HYPER1_HYPER_DQ2_I ? 1'b1 : 1'b0;
+
+   lzc #(
+     .WIDTH(13),
+     .MODE(1'b0)
+   ) i_port_muxsel_hyper1_dq2_o_arbiter (
+     .in_i(port_mux_sel_hyper1_dq2_o_req),
+     .cnt_o(port_mux_sel_hyper1_dq2_o_arbitrated),
+     .empty_o(port_mux_sel_hyper1_dq2_o_no_connection)
+   );
+
+   always_comb begin
+     if (port_mux_sel_hyper1_dq2_o_no_connection) begin
+        port_signals_pad2soc_o.hyper1.dq2_o = 1'b0;
+     end else begin
+        unique case (port_mux_sel_hyper1_dq2_o_arbitrated)
+          PORT_MUX_GROUP_MX_HYPER_SEL_PAD_MX_HYPER1_0: begin
+            port_signals_pad2soc_o.hyper1.dq2_o = pads_to_mux_i.pad_mx_hyper1_0.pad2chip;
+          end
+          PORT_MUX_GROUP_MX_HYPER_SEL_PAD_MX_HYPER1_1: begin
+            port_signals_pad2soc_o.hyper1.dq2_o = pads_to_mux_i.pad_mx_hyper1_1.pad2chip;
+          end
+          PORT_MUX_GROUP_MX_HYPER_SEL_PAD_MX_HYPER1_2: begin
+            port_signals_pad2soc_o.hyper1.dq2_o = pads_to_mux_i.pad_mx_hyper1_2.pad2chip;
+          end
+          PORT_MUX_GROUP_MX_HYPER_SEL_PAD_MX_HYPER1_3: begin
+            port_signals_pad2soc_o.hyper1.dq2_o = pads_to_mux_i.pad_mx_hyper1_3.pad2chip;
+          end
+          PORT_MUX_GROUP_MX_HYPER_SEL_PAD_MX_HYPER1_4: begin
+            port_signals_pad2soc_o.hyper1.dq2_o = pads_to_mux_i.pad_mx_hyper1_4.pad2chip;
+          end
+          PORT_MUX_GROUP_MX_HYPER_SEL_PAD_MX_HYPER1_5: begin
+            port_signals_pad2soc_o.hyper1.dq2_o = pads_to_mux_i.pad_mx_hyper1_5.pad2chip;
+          end
+          PORT_MUX_GROUP_MX_HYPER_SEL_PAD_MX_HYPER1_6: begin
+            port_signals_pad2soc_o.hyper1.dq2_o = pads_to_mux_i.pad_mx_hyper1_6.pad2chip;
+          end
+          PORT_MUX_GROUP_MX_HYPER_SEL_PAD_MX_HYPER1_7: begin
+            port_signals_pad2soc_o.hyper1.dq2_o = pads_to_mux_i.pad_mx_hyper1_7.pad2chip;
+          end
+          PORT_MUX_GROUP_MX_HYPER_SEL_PAD_MX_HYPER1_8: begin
+            port_signals_pad2soc_o.hyper1.dq2_o = pads_to_mux_i.pad_mx_hyper1_8.pad2chip;
+          end
+          PORT_MUX_GROUP_MX_HYPER_SEL_PAD_MX_HYPER1_9: begin
+            port_signals_pad2soc_o.hyper1.dq2_o = pads_to_mux_i.pad_mx_hyper1_9.pad2chip;
+          end
+          PORT_MUX_GROUP_MX_HYPER_SEL_PAD_MX_HYPER1_10: begin
+            port_signals_pad2soc_o.hyper1.dq2_o = pads_to_mux_i.pad_mx_hyper1_10.pad2chip;
+          end
+          PORT_MUX_GROUP_MX_HYPER_SEL_PAD_MX_HYPER1_11: begin
+            port_signals_pad2soc_o.hyper1.dq2_o = pads_to_mux_i.pad_mx_hyper1_11.pad2chip;
+          end
+          PORT_MUX_GROUP_MX_HYPER_SEL_PAD_MX_HYPER1_12: begin
+            port_signals_pad2soc_o.hyper1.dq2_o = pads_to_mux_i.pad_mx_hyper1_12.pad2chip;
+          end
+          default: begin
+            port_signals_pad2soc_o.hyper1.dq2_o = 1'b0;
+          end
+       endcase
+     end
+   end
+
+
+  // Port Signal dq3_o
+  logic [12:0] port_mux_sel_hyper1_dq3_o_req;
+  logic [PORT_MUX_GROUP_MX_HYPER_SEL_WIDTH-1:0] port_mux_sel_hyper1_dq3_o_arbitrated;
+  logic port_mux_sel_hyper1_dq3_o_no_connection;
+
+   assign port_mux_sel_hyper1_dq3_o_req[PORT_MUX_GROUP_MX_HYPER_SEL_PAD_MX_HYPER1_0] = s_reg2hw.pad_mx_hyper1_0_mux_sel.q == PAD_MUX_GROUP_MX_HYPER_PAD_MX_HYPER1_0_SEL_HYPER1_HYPER_DQ3_I ? 1'b1 : 1'b0;
+   assign port_mux_sel_hyper1_dq3_o_req[PORT_MUX_GROUP_MX_HYPER_SEL_PAD_MX_HYPER1_1] = s_reg2hw.pad_mx_hyper1_1_mux_sel.q == PAD_MUX_GROUP_MX_HYPER_PAD_MX_HYPER1_1_SEL_HYPER1_HYPER_DQ3_I ? 1'b1 : 1'b0;
+   assign port_mux_sel_hyper1_dq3_o_req[PORT_MUX_GROUP_MX_HYPER_SEL_PAD_MX_HYPER1_2] = s_reg2hw.pad_mx_hyper1_2_mux_sel.q == PAD_MUX_GROUP_MX_HYPER_PAD_MX_HYPER1_2_SEL_HYPER1_HYPER_DQ3_I ? 1'b1 : 1'b0;
+   assign port_mux_sel_hyper1_dq3_o_req[PORT_MUX_GROUP_MX_HYPER_SEL_PAD_MX_HYPER1_3] = s_reg2hw.pad_mx_hyper1_3_mux_sel.q == PAD_MUX_GROUP_MX_HYPER_PAD_MX_HYPER1_3_SEL_HYPER1_HYPER_DQ3_I ? 1'b1 : 1'b0;
+   assign port_mux_sel_hyper1_dq3_o_req[PORT_MUX_GROUP_MX_HYPER_SEL_PAD_MX_HYPER1_4] = s_reg2hw.pad_mx_hyper1_4_mux_sel.q == PAD_MUX_GROUP_MX_HYPER_PAD_MX_HYPER1_4_SEL_HYPER1_HYPER_DQ3_I ? 1'b1 : 1'b0;
+   assign port_mux_sel_hyper1_dq3_o_req[PORT_MUX_GROUP_MX_HYPER_SEL_PAD_MX_HYPER1_5] = s_reg2hw.pad_mx_hyper1_5_mux_sel.q == PAD_MUX_GROUP_MX_HYPER_PAD_MX_HYPER1_5_SEL_HYPER1_HYPER_DQ3_I ? 1'b1 : 1'b0;
+   assign port_mux_sel_hyper1_dq3_o_req[PORT_MUX_GROUP_MX_HYPER_SEL_PAD_MX_HYPER1_6] = s_reg2hw.pad_mx_hyper1_6_mux_sel.q == PAD_MUX_GROUP_MX_HYPER_PAD_MX_HYPER1_6_SEL_HYPER1_HYPER_DQ3_I ? 1'b1 : 1'b0;
+   assign port_mux_sel_hyper1_dq3_o_req[PORT_MUX_GROUP_MX_HYPER_SEL_PAD_MX_HYPER1_7] = s_reg2hw.pad_mx_hyper1_7_mux_sel.q == PAD_MUX_GROUP_MX_HYPER_PAD_MX_HYPER1_7_SEL_HYPER1_HYPER_DQ3_I ? 1'b1 : 1'b0;
+   assign port_mux_sel_hyper1_dq3_o_req[PORT_MUX_GROUP_MX_HYPER_SEL_PAD_MX_HYPER1_8] = s_reg2hw.pad_mx_hyper1_8_mux_sel.q == PAD_MUX_GROUP_MX_HYPER_PAD_MX_HYPER1_8_SEL_HYPER1_HYPER_DQ3_I ? 1'b1 : 1'b0;
+   assign port_mux_sel_hyper1_dq3_o_req[PORT_MUX_GROUP_MX_HYPER_SEL_PAD_MX_HYPER1_9] = s_reg2hw.pad_mx_hyper1_9_mux_sel.q == PAD_MUX_GROUP_MX_HYPER_PAD_MX_HYPER1_9_SEL_HYPER1_HYPER_DQ3_I ? 1'b1 : 1'b0;
+   assign port_mux_sel_hyper1_dq3_o_req[PORT_MUX_GROUP_MX_HYPER_SEL_PAD_MX_HYPER1_10] = s_reg2hw.pad_mx_hyper1_10_mux_sel.q == PAD_MUX_GROUP_MX_HYPER_PAD_MX_HYPER1_10_SEL_HYPER1_HYPER_DQ3_I ? 1'b1 : 1'b0;
+   assign port_mux_sel_hyper1_dq3_o_req[PORT_MUX_GROUP_MX_HYPER_SEL_PAD_MX_HYPER1_11] = s_reg2hw.pad_mx_hyper1_11_mux_sel.q == PAD_MUX_GROUP_MX_HYPER_PAD_MX_HYPER1_11_SEL_HYPER1_HYPER_DQ3_I ? 1'b1 : 1'b0;
+   assign port_mux_sel_hyper1_dq3_o_req[PORT_MUX_GROUP_MX_HYPER_SEL_PAD_MX_HYPER1_12] = s_reg2hw.pad_mx_hyper1_12_mux_sel.q == PAD_MUX_GROUP_MX_HYPER_PAD_MX_HYPER1_12_SEL_HYPER1_HYPER_DQ3_I ? 1'b1 : 1'b0;
+
+   lzc #(
+     .WIDTH(13),
+     .MODE(1'b0)
+   ) i_port_muxsel_hyper1_dq3_o_arbiter (
+     .in_i(port_mux_sel_hyper1_dq3_o_req),
+     .cnt_o(port_mux_sel_hyper1_dq3_o_arbitrated),
+     .empty_o(port_mux_sel_hyper1_dq3_o_no_connection)
+   );
+
+   always_comb begin
+     if (port_mux_sel_hyper1_dq3_o_no_connection) begin
+        port_signals_pad2soc_o.hyper1.dq3_o = 1'b0;
+     end else begin
+        unique case (port_mux_sel_hyper1_dq3_o_arbitrated)
+          PORT_MUX_GROUP_MX_HYPER_SEL_PAD_MX_HYPER1_0: begin
+            port_signals_pad2soc_o.hyper1.dq3_o = pads_to_mux_i.pad_mx_hyper1_0.pad2chip;
+          end
+          PORT_MUX_GROUP_MX_HYPER_SEL_PAD_MX_HYPER1_1: begin
+            port_signals_pad2soc_o.hyper1.dq3_o = pads_to_mux_i.pad_mx_hyper1_1.pad2chip;
+          end
+          PORT_MUX_GROUP_MX_HYPER_SEL_PAD_MX_HYPER1_2: begin
+            port_signals_pad2soc_o.hyper1.dq3_o = pads_to_mux_i.pad_mx_hyper1_2.pad2chip;
+          end
+          PORT_MUX_GROUP_MX_HYPER_SEL_PAD_MX_HYPER1_3: begin
+            port_signals_pad2soc_o.hyper1.dq3_o = pads_to_mux_i.pad_mx_hyper1_3.pad2chip;
+          end
+          PORT_MUX_GROUP_MX_HYPER_SEL_PAD_MX_HYPER1_4: begin
+            port_signals_pad2soc_o.hyper1.dq3_o = pads_to_mux_i.pad_mx_hyper1_4.pad2chip;
+          end
+          PORT_MUX_GROUP_MX_HYPER_SEL_PAD_MX_HYPER1_5: begin
+            port_signals_pad2soc_o.hyper1.dq3_o = pads_to_mux_i.pad_mx_hyper1_5.pad2chip;
+          end
+          PORT_MUX_GROUP_MX_HYPER_SEL_PAD_MX_HYPER1_6: begin
+            port_signals_pad2soc_o.hyper1.dq3_o = pads_to_mux_i.pad_mx_hyper1_6.pad2chip;
+          end
+          PORT_MUX_GROUP_MX_HYPER_SEL_PAD_MX_HYPER1_7: begin
+            port_signals_pad2soc_o.hyper1.dq3_o = pads_to_mux_i.pad_mx_hyper1_7.pad2chip;
+          end
+          PORT_MUX_GROUP_MX_HYPER_SEL_PAD_MX_HYPER1_8: begin
+            port_signals_pad2soc_o.hyper1.dq3_o = pads_to_mux_i.pad_mx_hyper1_8.pad2chip;
+          end
+          PORT_MUX_GROUP_MX_HYPER_SEL_PAD_MX_HYPER1_9: begin
+            port_signals_pad2soc_o.hyper1.dq3_o = pads_to_mux_i.pad_mx_hyper1_9.pad2chip;
+          end
+          PORT_MUX_GROUP_MX_HYPER_SEL_PAD_MX_HYPER1_10: begin
+            port_signals_pad2soc_o.hyper1.dq3_o = pads_to_mux_i.pad_mx_hyper1_10.pad2chip;
+          end
+          PORT_MUX_GROUP_MX_HYPER_SEL_PAD_MX_HYPER1_11: begin
+            port_signals_pad2soc_o.hyper1.dq3_o = pads_to_mux_i.pad_mx_hyper1_11.pad2chip;
+          end
+          PORT_MUX_GROUP_MX_HYPER_SEL_PAD_MX_HYPER1_12: begin
+            port_signals_pad2soc_o.hyper1.dq3_o = pads_to_mux_i.pad_mx_hyper1_12.pad2chip;
+          end
+          default: begin
+            port_signals_pad2soc_o.hyper1.dq3_o = 1'b0;
+          end
+       endcase
+     end
+   end
+
+
+  // Port Signal dq4_o
+  logic [12:0] port_mux_sel_hyper1_dq4_o_req;
+  logic [PORT_MUX_GROUP_MX_HYPER_SEL_WIDTH-1:0] port_mux_sel_hyper1_dq4_o_arbitrated;
+  logic port_mux_sel_hyper1_dq4_o_no_connection;
+
+   assign port_mux_sel_hyper1_dq4_o_req[PORT_MUX_GROUP_MX_HYPER_SEL_PAD_MX_HYPER1_0] = s_reg2hw.pad_mx_hyper1_0_mux_sel.q == PAD_MUX_GROUP_MX_HYPER_PAD_MX_HYPER1_0_SEL_HYPER1_HYPER_DQ4_I ? 1'b1 : 1'b0;
+   assign port_mux_sel_hyper1_dq4_o_req[PORT_MUX_GROUP_MX_HYPER_SEL_PAD_MX_HYPER1_1] = s_reg2hw.pad_mx_hyper1_1_mux_sel.q == PAD_MUX_GROUP_MX_HYPER_PAD_MX_HYPER1_1_SEL_HYPER1_HYPER_DQ4_I ? 1'b1 : 1'b0;
+   assign port_mux_sel_hyper1_dq4_o_req[PORT_MUX_GROUP_MX_HYPER_SEL_PAD_MX_HYPER1_2] = s_reg2hw.pad_mx_hyper1_2_mux_sel.q == PAD_MUX_GROUP_MX_HYPER_PAD_MX_HYPER1_2_SEL_HYPER1_HYPER_DQ4_I ? 1'b1 : 1'b0;
+   assign port_mux_sel_hyper1_dq4_o_req[PORT_MUX_GROUP_MX_HYPER_SEL_PAD_MX_HYPER1_3] = s_reg2hw.pad_mx_hyper1_3_mux_sel.q == PAD_MUX_GROUP_MX_HYPER_PAD_MX_HYPER1_3_SEL_HYPER1_HYPER_DQ4_I ? 1'b1 : 1'b0;
+   assign port_mux_sel_hyper1_dq4_o_req[PORT_MUX_GROUP_MX_HYPER_SEL_PAD_MX_HYPER1_4] = s_reg2hw.pad_mx_hyper1_4_mux_sel.q == PAD_MUX_GROUP_MX_HYPER_PAD_MX_HYPER1_4_SEL_HYPER1_HYPER_DQ4_I ? 1'b1 : 1'b0;
+   assign port_mux_sel_hyper1_dq4_o_req[PORT_MUX_GROUP_MX_HYPER_SEL_PAD_MX_HYPER1_5] = s_reg2hw.pad_mx_hyper1_5_mux_sel.q == PAD_MUX_GROUP_MX_HYPER_PAD_MX_HYPER1_5_SEL_HYPER1_HYPER_DQ4_I ? 1'b1 : 1'b0;
+   assign port_mux_sel_hyper1_dq4_o_req[PORT_MUX_GROUP_MX_HYPER_SEL_PAD_MX_HYPER1_6] = s_reg2hw.pad_mx_hyper1_6_mux_sel.q == PAD_MUX_GROUP_MX_HYPER_PAD_MX_HYPER1_6_SEL_HYPER1_HYPER_DQ4_I ? 1'b1 : 1'b0;
+   assign port_mux_sel_hyper1_dq4_o_req[PORT_MUX_GROUP_MX_HYPER_SEL_PAD_MX_HYPER1_7] = s_reg2hw.pad_mx_hyper1_7_mux_sel.q == PAD_MUX_GROUP_MX_HYPER_PAD_MX_HYPER1_7_SEL_HYPER1_HYPER_DQ4_I ? 1'b1 : 1'b0;
+   assign port_mux_sel_hyper1_dq4_o_req[PORT_MUX_GROUP_MX_HYPER_SEL_PAD_MX_HYPER1_8] = s_reg2hw.pad_mx_hyper1_8_mux_sel.q == PAD_MUX_GROUP_MX_HYPER_PAD_MX_HYPER1_8_SEL_HYPER1_HYPER_DQ4_I ? 1'b1 : 1'b0;
+   assign port_mux_sel_hyper1_dq4_o_req[PORT_MUX_GROUP_MX_HYPER_SEL_PAD_MX_HYPER1_9] = s_reg2hw.pad_mx_hyper1_9_mux_sel.q == PAD_MUX_GROUP_MX_HYPER_PAD_MX_HYPER1_9_SEL_HYPER1_HYPER_DQ4_I ? 1'b1 : 1'b0;
+   assign port_mux_sel_hyper1_dq4_o_req[PORT_MUX_GROUP_MX_HYPER_SEL_PAD_MX_HYPER1_10] = s_reg2hw.pad_mx_hyper1_10_mux_sel.q == PAD_MUX_GROUP_MX_HYPER_PAD_MX_HYPER1_10_SEL_HYPER1_HYPER_DQ4_I ? 1'b1 : 1'b0;
+   assign port_mux_sel_hyper1_dq4_o_req[PORT_MUX_GROUP_MX_HYPER_SEL_PAD_MX_HYPER1_11] = s_reg2hw.pad_mx_hyper1_11_mux_sel.q == PAD_MUX_GROUP_MX_HYPER_PAD_MX_HYPER1_11_SEL_HYPER1_HYPER_DQ4_I ? 1'b1 : 1'b0;
+   assign port_mux_sel_hyper1_dq4_o_req[PORT_MUX_GROUP_MX_HYPER_SEL_PAD_MX_HYPER1_12] = s_reg2hw.pad_mx_hyper1_12_mux_sel.q == PAD_MUX_GROUP_MX_HYPER_PAD_MX_HYPER1_12_SEL_HYPER1_HYPER_DQ4_I ? 1'b1 : 1'b0;
+
+   lzc #(
+     .WIDTH(13),
+     .MODE(1'b0)
+   ) i_port_muxsel_hyper1_dq4_o_arbiter (
+     .in_i(port_mux_sel_hyper1_dq4_o_req),
+     .cnt_o(port_mux_sel_hyper1_dq4_o_arbitrated),
+     .empty_o(port_mux_sel_hyper1_dq4_o_no_connection)
+   );
+
+   always_comb begin
+     if (port_mux_sel_hyper1_dq4_o_no_connection) begin
+        port_signals_pad2soc_o.hyper1.dq4_o = 1'b0;
+     end else begin
+        unique case (port_mux_sel_hyper1_dq4_o_arbitrated)
+          PORT_MUX_GROUP_MX_HYPER_SEL_PAD_MX_HYPER1_0: begin
+            port_signals_pad2soc_o.hyper1.dq4_o = pads_to_mux_i.pad_mx_hyper1_0.pad2chip;
+          end
+          PORT_MUX_GROUP_MX_HYPER_SEL_PAD_MX_HYPER1_1: begin
+            port_signals_pad2soc_o.hyper1.dq4_o = pads_to_mux_i.pad_mx_hyper1_1.pad2chip;
+          end
+          PORT_MUX_GROUP_MX_HYPER_SEL_PAD_MX_HYPER1_2: begin
+            port_signals_pad2soc_o.hyper1.dq4_o = pads_to_mux_i.pad_mx_hyper1_2.pad2chip;
+          end
+          PORT_MUX_GROUP_MX_HYPER_SEL_PAD_MX_HYPER1_3: begin
+            port_signals_pad2soc_o.hyper1.dq4_o = pads_to_mux_i.pad_mx_hyper1_3.pad2chip;
+          end
+          PORT_MUX_GROUP_MX_HYPER_SEL_PAD_MX_HYPER1_4: begin
+            port_signals_pad2soc_o.hyper1.dq4_o = pads_to_mux_i.pad_mx_hyper1_4.pad2chip;
+          end
+          PORT_MUX_GROUP_MX_HYPER_SEL_PAD_MX_HYPER1_5: begin
+            port_signals_pad2soc_o.hyper1.dq4_o = pads_to_mux_i.pad_mx_hyper1_5.pad2chip;
+          end
+          PORT_MUX_GROUP_MX_HYPER_SEL_PAD_MX_HYPER1_6: begin
+            port_signals_pad2soc_o.hyper1.dq4_o = pads_to_mux_i.pad_mx_hyper1_6.pad2chip;
+          end
+          PORT_MUX_GROUP_MX_HYPER_SEL_PAD_MX_HYPER1_7: begin
+            port_signals_pad2soc_o.hyper1.dq4_o = pads_to_mux_i.pad_mx_hyper1_7.pad2chip;
+          end
+          PORT_MUX_GROUP_MX_HYPER_SEL_PAD_MX_HYPER1_8: begin
+            port_signals_pad2soc_o.hyper1.dq4_o = pads_to_mux_i.pad_mx_hyper1_8.pad2chip;
+          end
+          PORT_MUX_GROUP_MX_HYPER_SEL_PAD_MX_HYPER1_9: begin
+            port_signals_pad2soc_o.hyper1.dq4_o = pads_to_mux_i.pad_mx_hyper1_9.pad2chip;
+          end
+          PORT_MUX_GROUP_MX_HYPER_SEL_PAD_MX_HYPER1_10: begin
+            port_signals_pad2soc_o.hyper1.dq4_o = pads_to_mux_i.pad_mx_hyper1_10.pad2chip;
+          end
+          PORT_MUX_GROUP_MX_HYPER_SEL_PAD_MX_HYPER1_11: begin
+            port_signals_pad2soc_o.hyper1.dq4_o = pads_to_mux_i.pad_mx_hyper1_11.pad2chip;
+          end
+          PORT_MUX_GROUP_MX_HYPER_SEL_PAD_MX_HYPER1_12: begin
+            port_signals_pad2soc_o.hyper1.dq4_o = pads_to_mux_i.pad_mx_hyper1_12.pad2chip;
+          end
+          default: begin
+            port_signals_pad2soc_o.hyper1.dq4_o = 1'b0;
+          end
+       endcase
+     end
+   end
+
+
+  // Port Signal dq5_o
+  logic [12:0] port_mux_sel_hyper1_dq5_o_req;
+  logic [PORT_MUX_GROUP_MX_HYPER_SEL_WIDTH-1:0] port_mux_sel_hyper1_dq5_o_arbitrated;
+  logic port_mux_sel_hyper1_dq5_o_no_connection;
+
+   assign port_mux_sel_hyper1_dq5_o_req[PORT_MUX_GROUP_MX_HYPER_SEL_PAD_MX_HYPER1_0] = s_reg2hw.pad_mx_hyper1_0_mux_sel.q == PAD_MUX_GROUP_MX_HYPER_PAD_MX_HYPER1_0_SEL_HYPER1_HYPER_DQ5_I ? 1'b1 : 1'b0;
+   assign port_mux_sel_hyper1_dq5_o_req[PORT_MUX_GROUP_MX_HYPER_SEL_PAD_MX_HYPER1_1] = s_reg2hw.pad_mx_hyper1_1_mux_sel.q == PAD_MUX_GROUP_MX_HYPER_PAD_MX_HYPER1_1_SEL_HYPER1_HYPER_DQ5_I ? 1'b1 : 1'b0;
+   assign port_mux_sel_hyper1_dq5_o_req[PORT_MUX_GROUP_MX_HYPER_SEL_PAD_MX_HYPER1_2] = s_reg2hw.pad_mx_hyper1_2_mux_sel.q == PAD_MUX_GROUP_MX_HYPER_PAD_MX_HYPER1_2_SEL_HYPER1_HYPER_DQ5_I ? 1'b1 : 1'b0;
+   assign port_mux_sel_hyper1_dq5_o_req[PORT_MUX_GROUP_MX_HYPER_SEL_PAD_MX_HYPER1_3] = s_reg2hw.pad_mx_hyper1_3_mux_sel.q == PAD_MUX_GROUP_MX_HYPER_PAD_MX_HYPER1_3_SEL_HYPER1_HYPER_DQ5_I ? 1'b1 : 1'b0;
+   assign port_mux_sel_hyper1_dq5_o_req[PORT_MUX_GROUP_MX_HYPER_SEL_PAD_MX_HYPER1_4] = s_reg2hw.pad_mx_hyper1_4_mux_sel.q == PAD_MUX_GROUP_MX_HYPER_PAD_MX_HYPER1_4_SEL_HYPER1_HYPER_DQ5_I ? 1'b1 : 1'b0;
+   assign port_mux_sel_hyper1_dq5_o_req[PORT_MUX_GROUP_MX_HYPER_SEL_PAD_MX_HYPER1_5] = s_reg2hw.pad_mx_hyper1_5_mux_sel.q == PAD_MUX_GROUP_MX_HYPER_PAD_MX_HYPER1_5_SEL_HYPER1_HYPER_DQ5_I ? 1'b1 : 1'b0;
+   assign port_mux_sel_hyper1_dq5_o_req[PORT_MUX_GROUP_MX_HYPER_SEL_PAD_MX_HYPER1_6] = s_reg2hw.pad_mx_hyper1_6_mux_sel.q == PAD_MUX_GROUP_MX_HYPER_PAD_MX_HYPER1_6_SEL_HYPER1_HYPER_DQ5_I ? 1'b1 : 1'b0;
+   assign port_mux_sel_hyper1_dq5_o_req[PORT_MUX_GROUP_MX_HYPER_SEL_PAD_MX_HYPER1_7] = s_reg2hw.pad_mx_hyper1_7_mux_sel.q == PAD_MUX_GROUP_MX_HYPER_PAD_MX_HYPER1_7_SEL_HYPER1_HYPER_DQ5_I ? 1'b1 : 1'b0;
+   assign port_mux_sel_hyper1_dq5_o_req[PORT_MUX_GROUP_MX_HYPER_SEL_PAD_MX_HYPER1_8] = s_reg2hw.pad_mx_hyper1_8_mux_sel.q == PAD_MUX_GROUP_MX_HYPER_PAD_MX_HYPER1_8_SEL_HYPER1_HYPER_DQ5_I ? 1'b1 : 1'b0;
+   assign port_mux_sel_hyper1_dq5_o_req[PORT_MUX_GROUP_MX_HYPER_SEL_PAD_MX_HYPER1_9] = s_reg2hw.pad_mx_hyper1_9_mux_sel.q == PAD_MUX_GROUP_MX_HYPER_PAD_MX_HYPER1_9_SEL_HYPER1_HYPER_DQ5_I ? 1'b1 : 1'b0;
+   assign port_mux_sel_hyper1_dq5_o_req[PORT_MUX_GROUP_MX_HYPER_SEL_PAD_MX_HYPER1_10] = s_reg2hw.pad_mx_hyper1_10_mux_sel.q == PAD_MUX_GROUP_MX_HYPER_PAD_MX_HYPER1_10_SEL_HYPER1_HYPER_DQ5_I ? 1'b1 : 1'b0;
+   assign port_mux_sel_hyper1_dq5_o_req[PORT_MUX_GROUP_MX_HYPER_SEL_PAD_MX_HYPER1_11] = s_reg2hw.pad_mx_hyper1_11_mux_sel.q == PAD_MUX_GROUP_MX_HYPER_PAD_MX_HYPER1_11_SEL_HYPER1_HYPER_DQ5_I ? 1'b1 : 1'b0;
+   assign port_mux_sel_hyper1_dq5_o_req[PORT_MUX_GROUP_MX_HYPER_SEL_PAD_MX_HYPER1_12] = s_reg2hw.pad_mx_hyper1_12_mux_sel.q == PAD_MUX_GROUP_MX_HYPER_PAD_MX_HYPER1_12_SEL_HYPER1_HYPER_DQ5_I ? 1'b1 : 1'b0;
+
+   lzc #(
+     .WIDTH(13),
+     .MODE(1'b0)
+   ) i_port_muxsel_hyper1_dq5_o_arbiter (
+     .in_i(port_mux_sel_hyper1_dq5_o_req),
+     .cnt_o(port_mux_sel_hyper1_dq5_o_arbitrated),
+     .empty_o(port_mux_sel_hyper1_dq5_o_no_connection)
+   );
+
+   always_comb begin
+     if (port_mux_sel_hyper1_dq5_o_no_connection) begin
+        port_signals_pad2soc_o.hyper1.dq5_o = 1'b0;
+     end else begin
+        unique case (port_mux_sel_hyper1_dq5_o_arbitrated)
+          PORT_MUX_GROUP_MX_HYPER_SEL_PAD_MX_HYPER1_0: begin
+            port_signals_pad2soc_o.hyper1.dq5_o = pads_to_mux_i.pad_mx_hyper1_0.pad2chip;
+          end
+          PORT_MUX_GROUP_MX_HYPER_SEL_PAD_MX_HYPER1_1: begin
+            port_signals_pad2soc_o.hyper1.dq5_o = pads_to_mux_i.pad_mx_hyper1_1.pad2chip;
+          end
+          PORT_MUX_GROUP_MX_HYPER_SEL_PAD_MX_HYPER1_2: begin
+            port_signals_pad2soc_o.hyper1.dq5_o = pads_to_mux_i.pad_mx_hyper1_2.pad2chip;
+          end
+          PORT_MUX_GROUP_MX_HYPER_SEL_PAD_MX_HYPER1_3: begin
+            port_signals_pad2soc_o.hyper1.dq5_o = pads_to_mux_i.pad_mx_hyper1_3.pad2chip;
+          end
+          PORT_MUX_GROUP_MX_HYPER_SEL_PAD_MX_HYPER1_4: begin
+            port_signals_pad2soc_o.hyper1.dq5_o = pads_to_mux_i.pad_mx_hyper1_4.pad2chip;
+          end
+          PORT_MUX_GROUP_MX_HYPER_SEL_PAD_MX_HYPER1_5: begin
+            port_signals_pad2soc_o.hyper1.dq5_o = pads_to_mux_i.pad_mx_hyper1_5.pad2chip;
+          end
+          PORT_MUX_GROUP_MX_HYPER_SEL_PAD_MX_HYPER1_6: begin
+            port_signals_pad2soc_o.hyper1.dq5_o = pads_to_mux_i.pad_mx_hyper1_6.pad2chip;
+          end
+          PORT_MUX_GROUP_MX_HYPER_SEL_PAD_MX_HYPER1_7: begin
+            port_signals_pad2soc_o.hyper1.dq5_o = pads_to_mux_i.pad_mx_hyper1_7.pad2chip;
+          end
+          PORT_MUX_GROUP_MX_HYPER_SEL_PAD_MX_HYPER1_8: begin
+            port_signals_pad2soc_o.hyper1.dq5_o = pads_to_mux_i.pad_mx_hyper1_8.pad2chip;
+          end
+          PORT_MUX_GROUP_MX_HYPER_SEL_PAD_MX_HYPER1_9: begin
+            port_signals_pad2soc_o.hyper1.dq5_o = pads_to_mux_i.pad_mx_hyper1_9.pad2chip;
+          end
+          PORT_MUX_GROUP_MX_HYPER_SEL_PAD_MX_HYPER1_10: begin
+            port_signals_pad2soc_o.hyper1.dq5_o = pads_to_mux_i.pad_mx_hyper1_10.pad2chip;
+          end
+          PORT_MUX_GROUP_MX_HYPER_SEL_PAD_MX_HYPER1_11: begin
+            port_signals_pad2soc_o.hyper1.dq5_o = pads_to_mux_i.pad_mx_hyper1_11.pad2chip;
+          end
+          PORT_MUX_GROUP_MX_HYPER_SEL_PAD_MX_HYPER1_12: begin
+            port_signals_pad2soc_o.hyper1.dq5_o = pads_to_mux_i.pad_mx_hyper1_12.pad2chip;
+          end
+          default: begin
+            port_signals_pad2soc_o.hyper1.dq5_o = 1'b0;
+          end
+       endcase
+     end
+   end
+
+
+  // Port Signal dq6_o
+  logic [12:0] port_mux_sel_hyper1_dq6_o_req;
+  logic [PORT_MUX_GROUP_MX_HYPER_SEL_WIDTH-1:0] port_mux_sel_hyper1_dq6_o_arbitrated;
+  logic port_mux_sel_hyper1_dq6_o_no_connection;
+
+   assign port_mux_sel_hyper1_dq6_o_req[PORT_MUX_GROUP_MX_HYPER_SEL_PAD_MX_HYPER1_0] = s_reg2hw.pad_mx_hyper1_0_mux_sel.q == PAD_MUX_GROUP_MX_HYPER_PAD_MX_HYPER1_0_SEL_HYPER1_HYPER_DQ6_I ? 1'b1 : 1'b0;
+   assign port_mux_sel_hyper1_dq6_o_req[PORT_MUX_GROUP_MX_HYPER_SEL_PAD_MX_HYPER1_1] = s_reg2hw.pad_mx_hyper1_1_mux_sel.q == PAD_MUX_GROUP_MX_HYPER_PAD_MX_HYPER1_1_SEL_HYPER1_HYPER_DQ6_I ? 1'b1 : 1'b0;
+   assign port_mux_sel_hyper1_dq6_o_req[PORT_MUX_GROUP_MX_HYPER_SEL_PAD_MX_HYPER1_2] = s_reg2hw.pad_mx_hyper1_2_mux_sel.q == PAD_MUX_GROUP_MX_HYPER_PAD_MX_HYPER1_2_SEL_HYPER1_HYPER_DQ6_I ? 1'b1 : 1'b0;
+   assign port_mux_sel_hyper1_dq6_o_req[PORT_MUX_GROUP_MX_HYPER_SEL_PAD_MX_HYPER1_3] = s_reg2hw.pad_mx_hyper1_3_mux_sel.q == PAD_MUX_GROUP_MX_HYPER_PAD_MX_HYPER1_3_SEL_HYPER1_HYPER_DQ6_I ? 1'b1 : 1'b0;
+   assign port_mux_sel_hyper1_dq6_o_req[PORT_MUX_GROUP_MX_HYPER_SEL_PAD_MX_HYPER1_4] = s_reg2hw.pad_mx_hyper1_4_mux_sel.q == PAD_MUX_GROUP_MX_HYPER_PAD_MX_HYPER1_4_SEL_HYPER1_HYPER_DQ6_I ? 1'b1 : 1'b0;
+   assign port_mux_sel_hyper1_dq6_o_req[PORT_MUX_GROUP_MX_HYPER_SEL_PAD_MX_HYPER1_5] = s_reg2hw.pad_mx_hyper1_5_mux_sel.q == PAD_MUX_GROUP_MX_HYPER_PAD_MX_HYPER1_5_SEL_HYPER1_HYPER_DQ6_I ? 1'b1 : 1'b0;
+   assign port_mux_sel_hyper1_dq6_o_req[PORT_MUX_GROUP_MX_HYPER_SEL_PAD_MX_HYPER1_6] = s_reg2hw.pad_mx_hyper1_6_mux_sel.q == PAD_MUX_GROUP_MX_HYPER_PAD_MX_HYPER1_6_SEL_HYPER1_HYPER_DQ6_I ? 1'b1 : 1'b0;
+   assign port_mux_sel_hyper1_dq6_o_req[PORT_MUX_GROUP_MX_HYPER_SEL_PAD_MX_HYPER1_7] = s_reg2hw.pad_mx_hyper1_7_mux_sel.q == PAD_MUX_GROUP_MX_HYPER_PAD_MX_HYPER1_7_SEL_HYPER1_HYPER_DQ6_I ? 1'b1 : 1'b0;
+   assign port_mux_sel_hyper1_dq6_o_req[PORT_MUX_GROUP_MX_HYPER_SEL_PAD_MX_HYPER1_8] = s_reg2hw.pad_mx_hyper1_8_mux_sel.q == PAD_MUX_GROUP_MX_HYPER_PAD_MX_HYPER1_8_SEL_HYPER1_HYPER_DQ6_I ? 1'b1 : 1'b0;
+   assign port_mux_sel_hyper1_dq6_o_req[PORT_MUX_GROUP_MX_HYPER_SEL_PAD_MX_HYPER1_9] = s_reg2hw.pad_mx_hyper1_9_mux_sel.q == PAD_MUX_GROUP_MX_HYPER_PAD_MX_HYPER1_9_SEL_HYPER1_HYPER_DQ6_I ? 1'b1 : 1'b0;
+   assign port_mux_sel_hyper1_dq6_o_req[PORT_MUX_GROUP_MX_HYPER_SEL_PAD_MX_HYPER1_10] = s_reg2hw.pad_mx_hyper1_10_mux_sel.q == PAD_MUX_GROUP_MX_HYPER_PAD_MX_HYPER1_10_SEL_HYPER1_HYPER_DQ6_I ? 1'b1 : 1'b0;
+   assign port_mux_sel_hyper1_dq6_o_req[PORT_MUX_GROUP_MX_HYPER_SEL_PAD_MX_HYPER1_11] = s_reg2hw.pad_mx_hyper1_11_mux_sel.q == PAD_MUX_GROUP_MX_HYPER_PAD_MX_HYPER1_11_SEL_HYPER1_HYPER_DQ6_I ? 1'b1 : 1'b0;
+   assign port_mux_sel_hyper1_dq6_o_req[PORT_MUX_GROUP_MX_HYPER_SEL_PAD_MX_HYPER1_12] = s_reg2hw.pad_mx_hyper1_12_mux_sel.q == PAD_MUX_GROUP_MX_HYPER_PAD_MX_HYPER1_12_SEL_HYPER1_HYPER_DQ6_I ? 1'b1 : 1'b0;
+
+   lzc #(
+     .WIDTH(13),
+     .MODE(1'b0)
+   ) i_port_muxsel_hyper1_dq6_o_arbiter (
+     .in_i(port_mux_sel_hyper1_dq6_o_req),
+     .cnt_o(port_mux_sel_hyper1_dq6_o_arbitrated),
+     .empty_o(port_mux_sel_hyper1_dq6_o_no_connection)
+   );
+
+   always_comb begin
+     if (port_mux_sel_hyper1_dq6_o_no_connection) begin
+        port_signals_pad2soc_o.hyper1.dq6_o = 1'b0;
+     end else begin
+        unique case (port_mux_sel_hyper1_dq6_o_arbitrated)
+          PORT_MUX_GROUP_MX_HYPER_SEL_PAD_MX_HYPER1_0: begin
+            port_signals_pad2soc_o.hyper1.dq6_o = pads_to_mux_i.pad_mx_hyper1_0.pad2chip;
+          end
+          PORT_MUX_GROUP_MX_HYPER_SEL_PAD_MX_HYPER1_1: begin
+            port_signals_pad2soc_o.hyper1.dq6_o = pads_to_mux_i.pad_mx_hyper1_1.pad2chip;
+          end
+          PORT_MUX_GROUP_MX_HYPER_SEL_PAD_MX_HYPER1_2: begin
+            port_signals_pad2soc_o.hyper1.dq6_o = pads_to_mux_i.pad_mx_hyper1_2.pad2chip;
+          end
+          PORT_MUX_GROUP_MX_HYPER_SEL_PAD_MX_HYPER1_3: begin
+            port_signals_pad2soc_o.hyper1.dq6_o = pads_to_mux_i.pad_mx_hyper1_3.pad2chip;
+          end
+          PORT_MUX_GROUP_MX_HYPER_SEL_PAD_MX_HYPER1_4: begin
+            port_signals_pad2soc_o.hyper1.dq6_o = pads_to_mux_i.pad_mx_hyper1_4.pad2chip;
+          end
+          PORT_MUX_GROUP_MX_HYPER_SEL_PAD_MX_HYPER1_5: begin
+            port_signals_pad2soc_o.hyper1.dq6_o = pads_to_mux_i.pad_mx_hyper1_5.pad2chip;
+          end
+          PORT_MUX_GROUP_MX_HYPER_SEL_PAD_MX_HYPER1_6: begin
+            port_signals_pad2soc_o.hyper1.dq6_o = pads_to_mux_i.pad_mx_hyper1_6.pad2chip;
+          end
+          PORT_MUX_GROUP_MX_HYPER_SEL_PAD_MX_HYPER1_7: begin
+            port_signals_pad2soc_o.hyper1.dq6_o = pads_to_mux_i.pad_mx_hyper1_7.pad2chip;
+          end
+          PORT_MUX_GROUP_MX_HYPER_SEL_PAD_MX_HYPER1_8: begin
+            port_signals_pad2soc_o.hyper1.dq6_o = pads_to_mux_i.pad_mx_hyper1_8.pad2chip;
+          end
+          PORT_MUX_GROUP_MX_HYPER_SEL_PAD_MX_HYPER1_9: begin
+            port_signals_pad2soc_o.hyper1.dq6_o = pads_to_mux_i.pad_mx_hyper1_9.pad2chip;
+          end
+          PORT_MUX_GROUP_MX_HYPER_SEL_PAD_MX_HYPER1_10: begin
+            port_signals_pad2soc_o.hyper1.dq6_o = pads_to_mux_i.pad_mx_hyper1_10.pad2chip;
+          end
+          PORT_MUX_GROUP_MX_HYPER_SEL_PAD_MX_HYPER1_11: begin
+            port_signals_pad2soc_o.hyper1.dq6_o = pads_to_mux_i.pad_mx_hyper1_11.pad2chip;
+          end
+          PORT_MUX_GROUP_MX_HYPER_SEL_PAD_MX_HYPER1_12: begin
+            port_signals_pad2soc_o.hyper1.dq6_o = pads_to_mux_i.pad_mx_hyper1_12.pad2chip;
+          end
+          default: begin
+            port_signals_pad2soc_o.hyper1.dq6_o = 1'b0;
+          end
+       endcase
+     end
+   end
+
+
+  // Port Signal dq7_o
+  logic [12:0] port_mux_sel_hyper1_dq7_o_req;
+  logic [PORT_MUX_GROUP_MX_HYPER_SEL_WIDTH-1:0] port_mux_sel_hyper1_dq7_o_arbitrated;
+  logic port_mux_sel_hyper1_dq7_o_no_connection;
+
+   assign port_mux_sel_hyper1_dq7_o_req[PORT_MUX_GROUP_MX_HYPER_SEL_PAD_MX_HYPER1_0] = s_reg2hw.pad_mx_hyper1_0_mux_sel.q == PAD_MUX_GROUP_MX_HYPER_PAD_MX_HYPER1_0_SEL_HYPER1_HYPER_DQ7_I ? 1'b1 : 1'b0;
+   assign port_mux_sel_hyper1_dq7_o_req[PORT_MUX_GROUP_MX_HYPER_SEL_PAD_MX_HYPER1_1] = s_reg2hw.pad_mx_hyper1_1_mux_sel.q == PAD_MUX_GROUP_MX_HYPER_PAD_MX_HYPER1_1_SEL_HYPER1_HYPER_DQ7_I ? 1'b1 : 1'b0;
+   assign port_mux_sel_hyper1_dq7_o_req[PORT_MUX_GROUP_MX_HYPER_SEL_PAD_MX_HYPER1_2] = s_reg2hw.pad_mx_hyper1_2_mux_sel.q == PAD_MUX_GROUP_MX_HYPER_PAD_MX_HYPER1_2_SEL_HYPER1_HYPER_DQ7_I ? 1'b1 : 1'b0;
+   assign port_mux_sel_hyper1_dq7_o_req[PORT_MUX_GROUP_MX_HYPER_SEL_PAD_MX_HYPER1_3] = s_reg2hw.pad_mx_hyper1_3_mux_sel.q == PAD_MUX_GROUP_MX_HYPER_PAD_MX_HYPER1_3_SEL_HYPER1_HYPER_DQ7_I ? 1'b1 : 1'b0;
+   assign port_mux_sel_hyper1_dq7_o_req[PORT_MUX_GROUP_MX_HYPER_SEL_PAD_MX_HYPER1_4] = s_reg2hw.pad_mx_hyper1_4_mux_sel.q == PAD_MUX_GROUP_MX_HYPER_PAD_MX_HYPER1_4_SEL_HYPER1_HYPER_DQ7_I ? 1'b1 : 1'b0;
+   assign port_mux_sel_hyper1_dq7_o_req[PORT_MUX_GROUP_MX_HYPER_SEL_PAD_MX_HYPER1_5] = s_reg2hw.pad_mx_hyper1_5_mux_sel.q == PAD_MUX_GROUP_MX_HYPER_PAD_MX_HYPER1_5_SEL_HYPER1_HYPER_DQ7_I ? 1'b1 : 1'b0;
+   assign port_mux_sel_hyper1_dq7_o_req[PORT_MUX_GROUP_MX_HYPER_SEL_PAD_MX_HYPER1_6] = s_reg2hw.pad_mx_hyper1_6_mux_sel.q == PAD_MUX_GROUP_MX_HYPER_PAD_MX_HYPER1_6_SEL_HYPER1_HYPER_DQ7_I ? 1'b1 : 1'b0;
+   assign port_mux_sel_hyper1_dq7_o_req[PORT_MUX_GROUP_MX_HYPER_SEL_PAD_MX_HYPER1_7] = s_reg2hw.pad_mx_hyper1_7_mux_sel.q == PAD_MUX_GROUP_MX_HYPER_PAD_MX_HYPER1_7_SEL_HYPER1_HYPER_DQ7_I ? 1'b1 : 1'b0;
+   assign port_mux_sel_hyper1_dq7_o_req[PORT_MUX_GROUP_MX_HYPER_SEL_PAD_MX_HYPER1_8] = s_reg2hw.pad_mx_hyper1_8_mux_sel.q == PAD_MUX_GROUP_MX_HYPER_PAD_MX_HYPER1_8_SEL_HYPER1_HYPER_DQ7_I ? 1'b1 : 1'b0;
+   assign port_mux_sel_hyper1_dq7_o_req[PORT_MUX_GROUP_MX_HYPER_SEL_PAD_MX_HYPER1_9] = s_reg2hw.pad_mx_hyper1_9_mux_sel.q == PAD_MUX_GROUP_MX_HYPER_PAD_MX_HYPER1_9_SEL_HYPER1_HYPER_DQ7_I ? 1'b1 : 1'b0;
+   assign port_mux_sel_hyper1_dq7_o_req[PORT_MUX_GROUP_MX_HYPER_SEL_PAD_MX_HYPER1_10] = s_reg2hw.pad_mx_hyper1_10_mux_sel.q == PAD_MUX_GROUP_MX_HYPER_PAD_MX_HYPER1_10_SEL_HYPER1_HYPER_DQ7_I ? 1'b1 : 1'b0;
+   assign port_mux_sel_hyper1_dq7_o_req[PORT_MUX_GROUP_MX_HYPER_SEL_PAD_MX_HYPER1_11] = s_reg2hw.pad_mx_hyper1_11_mux_sel.q == PAD_MUX_GROUP_MX_HYPER_PAD_MX_HYPER1_11_SEL_HYPER1_HYPER_DQ7_I ? 1'b1 : 1'b0;
+   assign port_mux_sel_hyper1_dq7_o_req[PORT_MUX_GROUP_MX_HYPER_SEL_PAD_MX_HYPER1_12] = s_reg2hw.pad_mx_hyper1_12_mux_sel.q == PAD_MUX_GROUP_MX_HYPER_PAD_MX_HYPER1_12_SEL_HYPER1_HYPER_DQ7_I ? 1'b1 : 1'b0;
+
+   lzc #(
+     .WIDTH(13),
+     .MODE(1'b0)
+   ) i_port_muxsel_hyper1_dq7_o_arbiter (
+     .in_i(port_mux_sel_hyper1_dq7_o_req),
+     .cnt_o(port_mux_sel_hyper1_dq7_o_arbitrated),
+     .empty_o(port_mux_sel_hyper1_dq7_o_no_connection)
+   );
+
+   always_comb begin
+     if (port_mux_sel_hyper1_dq7_o_no_connection) begin
+        port_signals_pad2soc_o.hyper1.dq7_o = 1'b0;
+     end else begin
+        unique case (port_mux_sel_hyper1_dq7_o_arbitrated)
+          PORT_MUX_GROUP_MX_HYPER_SEL_PAD_MX_HYPER1_0: begin
+            port_signals_pad2soc_o.hyper1.dq7_o = pads_to_mux_i.pad_mx_hyper1_0.pad2chip;
+          end
+          PORT_MUX_GROUP_MX_HYPER_SEL_PAD_MX_HYPER1_1: begin
+            port_signals_pad2soc_o.hyper1.dq7_o = pads_to_mux_i.pad_mx_hyper1_1.pad2chip;
+          end
+          PORT_MUX_GROUP_MX_HYPER_SEL_PAD_MX_HYPER1_2: begin
+            port_signals_pad2soc_o.hyper1.dq7_o = pads_to_mux_i.pad_mx_hyper1_2.pad2chip;
+          end
+          PORT_MUX_GROUP_MX_HYPER_SEL_PAD_MX_HYPER1_3: begin
+            port_signals_pad2soc_o.hyper1.dq7_o = pads_to_mux_i.pad_mx_hyper1_3.pad2chip;
+          end
+          PORT_MUX_GROUP_MX_HYPER_SEL_PAD_MX_HYPER1_4: begin
+            port_signals_pad2soc_o.hyper1.dq7_o = pads_to_mux_i.pad_mx_hyper1_4.pad2chip;
+          end
+          PORT_MUX_GROUP_MX_HYPER_SEL_PAD_MX_HYPER1_5: begin
+            port_signals_pad2soc_o.hyper1.dq7_o = pads_to_mux_i.pad_mx_hyper1_5.pad2chip;
+          end
+          PORT_MUX_GROUP_MX_HYPER_SEL_PAD_MX_HYPER1_6: begin
+            port_signals_pad2soc_o.hyper1.dq7_o = pads_to_mux_i.pad_mx_hyper1_6.pad2chip;
+          end
+          PORT_MUX_GROUP_MX_HYPER_SEL_PAD_MX_HYPER1_7: begin
+            port_signals_pad2soc_o.hyper1.dq7_o = pads_to_mux_i.pad_mx_hyper1_7.pad2chip;
+          end
+          PORT_MUX_GROUP_MX_HYPER_SEL_PAD_MX_HYPER1_8: begin
+            port_signals_pad2soc_o.hyper1.dq7_o = pads_to_mux_i.pad_mx_hyper1_8.pad2chip;
+          end
+          PORT_MUX_GROUP_MX_HYPER_SEL_PAD_MX_HYPER1_9: begin
+            port_signals_pad2soc_o.hyper1.dq7_o = pads_to_mux_i.pad_mx_hyper1_9.pad2chip;
+          end
+          PORT_MUX_GROUP_MX_HYPER_SEL_PAD_MX_HYPER1_10: begin
+            port_signals_pad2soc_o.hyper1.dq7_o = pads_to_mux_i.pad_mx_hyper1_10.pad2chip;
+          end
+          PORT_MUX_GROUP_MX_HYPER_SEL_PAD_MX_HYPER1_11: begin
+            port_signals_pad2soc_o.hyper1.dq7_o = pads_to_mux_i.pad_mx_hyper1_11.pad2chip;
+          end
+          PORT_MUX_GROUP_MX_HYPER_SEL_PAD_MX_HYPER1_12: begin
+            port_signals_pad2soc_o.hyper1.dq7_o = pads_to_mux_i.pad_mx_hyper1_12.pad2chip;
+          end
+          default: begin
+            port_signals_pad2soc_o.hyper1.dq7_o = 1'b0;
           end
        endcase
      end

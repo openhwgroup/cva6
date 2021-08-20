@@ -173,6 +173,13 @@
 
 `define ASSIGN_PERIPHS_HYPER1_PAD2SOC(load, driver) \
   assign load.dq0_i = driver.dq0_o; \
+  assign load.dq1_i = driver.dq1_o; \
+  assign load.dq2_i = driver.dq2_o; \
+  assign load.dq3_i = driver.dq3_o; \
+  assign load.dq4_i = driver.dq4_o; \
+  assign load.dq5_i = driver.dq5_o; \
+  assign load.dq6_i = driver.dq6_o; \
+  assign load.dq7_i = driver.dq7_o; \
   assign load.rwds_i = driver.rwds_o; \
 
 `define ASSIGN_PERIPHS_HYPER1_SOC2PAD(load, driver) \
@@ -181,6 +188,13 @@
   assign load.cs0n_i = driver.cs0n_o; \
   assign load.cs1n_i = driver.cs1n_o; \
   assign load.dq0_i = driver.dq0_o; \
+  assign load.dq1_i = driver.dq1_o; \
+  assign load.dq2_i = driver.dq2_o; \
+  assign load.dq3_i = driver.dq3_o; \
+  assign load.dq4_i = driver.dq4_o; \
+  assign load.dq5_i = driver.dq5_o; \
+  assign load.dq6_i = driver.dq6_o; \
+  assign load.dq7_i = driver.dq7_o; \
   assign load.dq__i = driver.dq__o; \
   assign load.resetn_i = driver.resetn_o; \
   assign load.rwds_i = driver.rwds_o; \
