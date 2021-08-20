@@ -12,9 +12,13 @@
 // Date: 18.06.2021
 // Description: AlSaqr platform, it holds host_domain and cluster
 
+`include "register_interface/typedef.svh"
+`include "register_interface/assign.svh"
+
 module al_saqr 
   import axi_pkg::xbar_cfg_t;
-  import apb_soc_pkg::NUM_GPIO;  
+  import apb_soc_pkg::NUM_GPIO;
+  import udma_subsystem_pkg::*;  
 #(
   parameter int unsigned AXI_USER_WIDTH    = 1,
   parameter int unsigned AXI_ADDRESS_WIDTH = 64,
@@ -99,7 +103,33 @@ module al_saqr
   logic [NUM_GPIO-1:0]         s_gpio_pad_in;
   logic [NUM_GPIO-1:0]         s_gpio_pad_out;
   logic [NUM_GPIO-1:0]         s_gpio_pad_dir;
+
+  logic s_soc_clk  ;
+  logic s_soc_rst_n;
+
+  pad_to_hyper_t s_pad_to_hyper;
+  hyper_to_pad_t s_hyper_to_pad;
    
+  localparam RegAw  = 32;
+  localparam RegDw  = 32;
+
+  typedef logic [RegAw-1:0]   reg_addr_t;
+  typedef logic [RegDw-1:0]   reg_data_t;
+  typedef logic [RegDw/8-1:0] reg_strb_t;
+
+  `REG_BUS_TYPEDEF_REQ(reg_req_t, reg_addr_t, reg_data_t, reg_strb_t)
+  `REG_BUS_TYPEDEF_RSP(reg_rsp_t, reg_data_t)
+ 
+  reg_req_t   reg_req;
+  reg_rsp_t   reg_rsp;
+
+   REG_BUS #(
+        .ADDR_WIDTH( RegAw ),
+        .DATA_WIDTH( RegDw )
+    ) i_padframecfg_rbus (
+        .clk_i (s_soc_clk)
+    ); 
+      
     host_domain #(
         .NUM_WORDS         ( NUM_WORDS  ),
         .InclSimDTM        ( 1'b1       ),
@@ -126,16 +156,11 @@ module al_saqr
       .jtag_TRSTn,
       .jtag_TDO_data,
       .jtag_TDO_driven,
-      .hyper_cs_no            ( s_hyper_cs_n                    ),
-      .hyper_ck_o             ( s_hyper_ck                      ),
-      .hyper_ck_no            ( s_hyper_ck_n                    ),
-      .hyper_rwds_o           ( s_hyper_rwds_o                  ),
-      .hyper_rwds_i           ( s_hyper_rwds_i                  ),
-      .hyper_rwds_oe_o        ( s_hyper_rwds_oe                 ),
-      .hyper_dq_i             ( s_hyper_dq_i                    ),
-      .hyper_dq_o             ( s_hyper_dq_o                    ),
-      .hyper_dq_oe_o          ( s_hyper_dq_oe                   ),
-      .hyper_reset_no         ( s_hyper_reset_n                 ),     
+      .soc_clk_o              ( s_soc_clk                       ),
+      .soc_rst_no             ( s_soc_rst_n                     ),
+      .padframecfg_reg_master ( i_padframecfg_rbus              ),
+      .hyper_to_pad           ( s_hyper_to_pad                  ),
+      .pad_to_hyper           ( s_pad_to_hyper                  ),    
 
       .gpio_in                ( s_gpio_pad_in                    ),
       .gpio_out               ( s_gpio_pad_out                   ),
@@ -157,19 +182,43 @@ module al_saqr
 
     );
 
+   assign s_hyper_dq_o[0] = s_hyper_to_pad.dq0_o;
+   assign s_hyper_dq_o[1] = s_hyper_to_pad.dq1_o;
+   assign s_hyper_dq_o[2] = s_hyper_to_pad.dq2_o;
+   assign s_hyper_dq_o[3] = s_hyper_to_pad.dq3_o;
+   assign s_hyper_dq_o[4] = s_hyper_to_pad.dq4_o;
+   assign s_hyper_dq_o[5] = s_hyper_to_pad.dq5_o;
+   assign s_hyper_dq_o[6] = s_hyper_to_pad.dq6_o;
+   assign s_hyper_dq_o[7] = s_hyper_to_pad.dq7_o;
+   
+   assign s_hyper_cs_n[0]    = s_hyper_to_pad.cs0n_o;
+   assign s_hyper_cs_n[1]    = s_hyper_to_pad.cs1n_o;
+   assign s_hyper_rwds_o[0]  = s_hyper_to_pad.rwds_o;
+   assign s_hyper_rwds_oe[0] = s_hyper_to_pad.rwds_oe_o;
+   assign s_hyper_dq_oe      = s_hyper_to_pad.dq_oe_o;
+   
+   assign s_pad_to_hyper.dq0_i = s_hyper_dq_i[0];
+   assign s_pad_to_hyper.dq1_i = s_hyper_dq_i[1];
+   assign s_pad_to_hyper.dq2_i = s_hyper_dq_i[2];
+   assign s_pad_to_hyper.dq3_i = s_hyper_dq_i[3];
+   assign s_pad_to_hyper.dq4_i = s_hyper_dq_i[4];
+   assign s_pad_to_hyper.dq5_i = s_hyper_dq_i[5];
+   assign s_pad_to_hyper.dq6_i = s_hyper_dq_i[6];
+   assign s_pad_to_hyper.dq7_i = s_hyper_dq_i[7];
+
    pad_frame #()
     i_pad_frame
       (       
       .hyper_cs_ni            ( s_hyper_cs_n                    ),
-      .hyper_ck_i             ( s_hyper_ck                      ),
-      .hyper_ck_ni            ( s_hyper_ck_n                    ),
+      .hyper_ck_i             ( s_hyper_to_pad.ck_o             ),
+      .hyper_ck_ni            ( s_hyper_to_pad.ckn_o            ),
       .hyper_rwds_i           ( s_hyper_rwds_o                  ),
-      .hyper_rwds_o           ( s_hyper_rwds_i                  ),
+      .hyper_rwds_o           ( s_pad_to_hyper.rwds_i           ),
       .hyper_rwds_oe_i        ( s_hyper_rwds_oe                 ),
       .hyper_dq_o             ( s_hyper_dq_i                    ),
       .hyper_dq_i             ( s_hyper_dq_o                    ),
       .hyper_dq_oe_i          ( s_hyper_dq_oe                   ),
-      .hyper_reset_ni         ( s_hyper_reset_n                 ),
+      .hyper_reset_ni         ( s_hyper_to_pad.resetn_o         ),
 
       .pad_hyper_dq0          ( pad_hyper_dq0                   ),
       .pad_hyper_dq1          ( pad_hyper_dq1                   ),
@@ -207,5 +256,22 @@ module al_saqr
       .gpio_pad_dir           ( s_gpio_pad_dir                  ),      
       .pad_gpio               ( pad_gpio                        )
      );
+
+  `REG_BUS_ASSIGN_TO_REQ(reg_req,i_padframecfg_rbus)
+  `REG_BUS_ASSIGN_FROM_RSP(i_padframecfg_rbus,reg_rsp)
+
+   alsaqr_periph_padframe #(
+            .AW     ( 32        ),
+            .DW     ( 32        ),
+            .req_t  ( reg_req_t ),
+            .resp_t ( reg_rsp_t )
+            )
+   i_alsaqr_periph_padframe
+     (
+      .clk_i          ( s_soc_clk   ),
+      .rst_ni         ( s_soc_rst_n ),
+      .config_req_i   ( reg_req     ),
+      .config_rsp_o   ( reg_rsp     )      
+      );
    
 endmodule

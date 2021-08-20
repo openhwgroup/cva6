@@ -15,6 +15,7 @@
 
 module apb_subsystem
   import apb_soc_pkg::*;
+  import udma_subsystem_pkg::*;
 #( 
     parameter int unsigned AXI_USER_WIDTH = 1,
     parameter int unsigned AXI_ADDR_WIDTH = 64,
@@ -29,73 +30,51 @@ module apb_subsystem
     parameter int unsigned N_HYPER        = 1,
     parameter int unsigned NUM_GPIO       = 64 
 ) (
-    input logic                                 clk_i,
-    input logic                                 rst_ni,
-    input logic                                 rtc_i,
-    input logic                                 rst_dm_i,
-    output logic                                rstn_soc_sync_o,
-    output logic                                rstn_global_sync_o,
-    output logic                                clk_soc_o,
-    AXI_BUS.Slave                               axi_apb_slave,
-    REG_BUS.out                                 hyaxicfg_reg_master,
-    XBAR_TCDM_BUS.Master                        udma_tcdm_channels[1:0],
+    input logic                 clk_i,
+    input logic                 rst_ni,
+    input logic                 rtc_i,
+    input logic                 rst_dm_i,
+    output logic                rstn_soc_sync_o,
+    output logic                rstn_global_sync_o,
+    output logic                clk_soc_o,
+                                AXI_BUS.Slave axi_apb_slave,
+                                REG_BUS.out hyaxicfg_reg_master,
+                                XBAR_TCDM_BUS.Master udma_tcdm_channels[1:0],
+                                REG_BUS.out padframecfg_reg_master,
 
-    output logic [32*4-1:0]                     events_o,
+    output logic [32*4-1:0]     events_o,
 
     // SPIM
-    output logic [N_SPI-1:0]                    spi_clk,
-    output logic [N_SPI-1:0] [3:0]              spi_csn,
-    output logic [N_SPI-1:0] [3:0]              spi_oen,
-    output logic [N_SPI-1:0] [3:0]              spi_sdo,
-    input logic [N_SPI-1:0] [3:0]               spi_sdi,
+    output                      qspi_to_pad_t [N_SPI-1:0] qspi_to_pad,
+    input                       pad_to_qspi_t [N_SPI-1:0] pad_to_qspi,
     
     // I2C
-    input logic [N_I2C-1:0]                     i2c_scl_i,
-    output logic [N_I2C-1:0]                    i2c_scl_o,
-    output logic [N_I2C-1:0]                    i2c_scl_oe,
-    input logic [N_I2C-1:0]                     i2c_sda_i,
-    output logic [N_I2C-1:0]                    i2c_sda_o,
-    output logic [N_I2C-1:0]                    i2c_sda_oe,
-    
+    output                      i2c_to_pad_t [N_I2C-1:0] i2c_to_pad,
+    input                       pad_to_i2c_t [N_I2C-1:0] pad_to_i2c,
+   
     // CAM
-    input logic [N_CAM-1:0]                     cam_clk_i,
-    input logic [N_CAM-1:0][CAM_DATA_WIDTH-1:0] cam_data_i,
-    input logic [N_CAM-1:0]                     cam_hsync_i,
-    input logic [N_CAM-1:0]                     cam_vsync_i,
+  	input                       pad_to_cam_t [N_CAM-1:0] pad_to_cam,
     
     // UART
-    input logic [N_UART-1:0]                    uart_rx_i,
-    output logic [N_UART-1:0]                   uart_tx_o,
+    input                       pad_to_uart_t [N_UART-1:0] pad_to_uart,
+    output                      uart_to_pad_t [N_UART-1:0] uart_to_pad,
     
     // SDIO
-    output logic [N_SDIO-1:0]                   sdio_clk_o,
-    output logic [N_SDIO-1:0]                   sdio_cmd_o,
-    input logic [N_SDIO-1:0]                    sdio_cmd_i,
-    output logic [N_SDIO-1:0]                   sdio_cmd_oen_o,
-    output logic [N_SDIO-1:0][3:0]              sdio_data_o,
-    input logic [N_SDIO-1:0][3:0]               sdio_data_i,
-    output logic [N_SDIO-1:0][3:0]              sdio_data_oen_o,
-
+    output                      sdio_to_pad_t [N_SDIO] sdio_to_pad,
+    input                       pad_to_sdio_t [N_SDIO] pad_to_sdio,
+ 
     // HYPERBUS
-    output logic [1:0]                          hyper_cs_no,
-    output logic                                hyper_ck_o,
-    output logic                                hyper_ck_no,
-    output logic [1:0]                          hyper_rwds_o,
-    input logic                                 hyper_rwds_i,
-    output logic [1:0]                          hyper_rwds_oe_o,
-    input logic [15:0]                          hyper_dq_i,
-    output logic [15:0]                         hyper_dq_o,
-    output logic [1:0]                          hyper_dq_oe_o,
-    output logic                                hyper_reset_no,
-
+    output                      hyper_to_pad_t hyper_to_pad,
+    input                       pad_to_hyper_t pad_to_hyper,
+   
     // GPIOs
-    input logic [NUM_GPIO-1:0]                  gpio_in,
-    output logic [NUM_GPIO-1:0]                 gpio_out,
-    output logic [NUM_GPIO-1:0]                 gpio_dir,
+    input logic [NUM_GPIO-1:0]  gpio_in,
+    output logic [NUM_GPIO-1:0] gpio_out,
+    output logic [NUM_GPIO-1:0] gpio_dir,
 
     // ADV TIMERS
-    output logic [3:0]                          pwm0_o,
-    output logic [3:0]                          pwm1_o
+    output logic [3:0]          pwm0_o,
+    output logic [3:0]          pwm1_o
 );
 
    logic                                s_clk_per;
@@ -131,6 +110,11 @@ module apb_subsystem
                .APB_ADDR_WIDTH(32),
                .APB_DATA_WIDTH(32)
    ) apb_advtimer_master_bus();
+   
+   APB_BUS  #(
+               .APB_ADDR_WIDTH(32),
+               .APB_DATA_WIDTH(32)
+   ) apb_padframe_master_bus();
    
    FLL_BUS  #(
                .FLL_ADDR_WIDTH( 2),
@@ -172,7 +156,8 @@ module apb_subsystem
     .gpio_master(apb_gpio_master_bus),
     .fll_master(apb_fll_master_bus),
     .hyaxicfg_master(apb_hyaxicfg_master_bus),
-    .advtimer_master(apb_advtimer_master_bus)
+    .advtimer_master(apb_advtimer_master_bus),
+    .padframe_master(apb_padframe_master_bus)
     );
    
 
@@ -219,53 +204,25 @@ module apb_subsystem
          .L2_wo_rdata_i   ( udma_tcdm_channels[1].r_rdata  ),
 
          .udma_apb_paddr  ( apb_udma_address               ),
-         .udma_apb_pwdata ( apb_udma_master_bus.pwdata      ),
-         .udma_apb_pwrite ( apb_udma_master_bus.pwrite      ),
-         .udma_apb_psel   ( apb_udma_master_bus.psel        ),
-         .udma_apb_penable( apb_udma_master_bus.penable     ),
-         .udma_apb_prdata ( apb_udma_master_bus.prdata      ),
-         .udma_apb_pready ( apb_udma_master_bus.pready      ),
-         .udma_apb_pslverr( apb_udma_master_bus.pslverr     ),
-        
-         .spi_clk         ( spi_clk_o                      ),
-         .spi_csn         ( spi_csn_o                      ),
-         .spi_oen         ( spi_oen_o                      ),
-         .spi_sdo         ( spi_sdo_o                      ),
-         .spi_sdi         ( spi_sdi_i                      ),
-                                                      
-         .sdio_clk_o      ( sdclk_o                        ),
-         .sdio_cmd_o      ( sdcmd_o                        ),
-         .sdio_cmd_i      ( sdcmd_i                        ),
-         .sdio_cmd_oen_o  ( sdcmd_oen_o                    ),
-         .sdio_data_o     ( sddata_o                       ),
-         .sdio_data_i     ( sddata_i                       ),
-         .sdio_data_oen_o ( sddata_oen_o                   ),
-                                                      
-         .cam_clk_i       ( cam_clk_i                      ),
-         .cam_data_i      ( cam_data_i                     ),
-         .cam_hsync_i     ( cam_hsync_i                    ),
-         .cam_vsync_i     ( cam_vsync_i                    ),
-                                                      
-         .uart_rx_i       ( uart_rx                        ),
-         .uart_tx_o       ( uart_tx                        ),
-                                                      
-         .i2c_scl_i       ( i2c_scl_i                      ),
-         .i2c_scl_o       ( i2c_scl_o                      ),
-         .i2c_scl_oe      ( i2c_scl_oe_o                   ),
-         .i2c_sda_i       ( i2c_sda_i                      ),
-         .i2c_sda_o       ( i2c_sda_o                      ),
-         .i2c_sda_oe      ( i2c_sda_oe_o                   ),
-                                                      
-         .hyper_cs_no     ( hyper_cs_no                    ),
-         .hyper_ck_o      ( hyper_ck_o                     ),
-         .hyper_ck_no     ( hyper_ck_no                    ),
-         .hyper_rwds_o    ( hyper_rwds_o                   ),
-         .hyper_rwds_i    ( hyper_rwds_i                   ),
-         .hyper_rwds_oe_o ( hyper_rwds_oe_o                ),
-         .hyper_dq_i      ( hyper_dq_i                     ),
-         .hyper_dq_o      ( hyper_dq_o                     ),
-         .hyper_dq_oe_o   ( hyper_dq_oe_o                  ),
-         .hyper_reset_no  ( hyper_reset_no                 )
+         .udma_apb_pwdata ( apb_udma_master_bus.pwdata     ),
+         .udma_apb_pwrite ( apb_udma_master_bus.pwrite     ),
+         .udma_apb_psel   ( apb_udma_master_bus.psel       ),
+         .udma_apb_penable( apb_udma_master_bus.penable    ),
+         .udma_apb_prdata ( apb_udma_master_bus.prdata     ),
+         .udma_apb_pready ( apb_udma_master_bus.pready     ),
+         .udma_apb_pslverr( apb_udma_master_bus.pslverr    ),
+            
+         .qspi_to_pad     ( qspi_to_pad                    ),
+         .pad_to_qspi     ( pad_to_qspi                    ),
+         .i2c_to_pad      ( i2c_to_pad                     ),
+         .pad_to_i2c      ( pad_to_i2c                     ),
+  	     .pad_to_cam      ( pad_to_cam                     ),
+         .pad_to_uart     ( pad_to_uart                    ),
+         .uart_to_pad     ( uart_to_pad                    ),
+         .sdio_to_pad     ( sdio_to_pad                    ),
+         .pad_to_sdio     ( pad_to_sdio                    ),
+         .hyper_to_pad    ( hyper_to_pad                   ),
+         .pad_to_hyper    ( pad_to_hyper                   )
 
       );
    
@@ -375,5 +332,21 @@ module apb_subsystem
         .ch_3_o          (                         )
     );
 
+    apb_to_reg i_apb_to_padframecfg
+      (
+       .clk_i     ( clk_soc_o       ),
+       .rst_ni    ( s_rstn_soc_sync ),
+ 
+       .penable_i ( apb_padframe_master_bus.penable ),
+       .pwrite_i  ( apb_padframe_master_bus.pwrite  ),
+       .paddr_i   ( apb_padframe_master_bus.paddr   ),
+       .psel_i    ( apb_padframe_master_bus.psel    ),
+       .pwdata_i  ( apb_padframe_master_bus.pwdata  ),
+       .prdata_o  ( apb_padframe_master_bus.prdata  ),
+       .pready_o  ( apb_padframe_master_bus.pready  ),
+       .pslverr_o ( apb_padframe_master_bus.pslverr ),
+
+       .reg_o     ( padframecfg_reg_master          )
+      );      
    
 endmodule

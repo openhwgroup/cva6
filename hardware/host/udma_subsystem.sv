@@ -9,6 +9,7 @@
 // specific language governing permissions and limitations under the License.
 
 module udma_subsystem
+  import udma_subsystem_pkg::*;
 #(
     parameter L2_DATA_WIDTH  = 32,
     parameter L2_ADDR_WIDTH  = 19,  //L2 addr space of 2MB
@@ -23,93 +24,70 @@ module udma_subsystem
     parameter N_HYPER        = 1 
 )
 (
-    output logic                                L2_ro_wen_o ,
-    output logic                                L2_ro_req_o ,
-    input logic                                 L2_ro_gnt_i ,
-    output logic [31:0]                         L2_ro_addr_o ,
-    output logic [L2_DATA_WIDTH/8-1:0]          L2_ro_be_o ,
-    output logic [L2_DATA_WIDTH-1:0]            L2_ro_wdata_o ,
-    input logic                                 L2_ro_rvalid_i ,
-    input logic [L2_DATA_WIDTH-1:0]             L2_ro_rdata_i ,
+    output logic                       L2_ro_wen_o ,
+    output logic                       L2_ro_req_o ,
+    input logic                        L2_ro_gnt_i ,
+    output logic [31:0]                L2_ro_addr_o ,
+    output logic [L2_DATA_WIDTH/8-1:0] L2_ro_be_o ,
+    output logic [L2_DATA_WIDTH-1:0]   L2_ro_wdata_o ,
+    input logic                        L2_ro_rvalid_i ,
+    input logic [L2_DATA_WIDTH-1:0]    L2_ro_rdata_i ,
 
-    output logic                                L2_wo_wen_o ,
-    output logic                                L2_wo_req_o ,
-    input logic                                 L2_wo_gnt_i ,
-    output logic [31:0]                         L2_wo_addr_o ,
-    output logic [L2_DATA_WIDTH-1:0]            L2_wo_wdata_o ,
-    output logic [L2_DATA_WIDTH/8-1:0]          L2_wo_be_o ,
-    input logic                                 L2_wo_rvalid_i ,
-    input logic [L2_DATA_WIDTH-1:0]             L2_wo_rdata_i ,
+    output logic                       L2_wo_wen_o ,
+    output logic                       L2_wo_req_o ,
+    input logic                        L2_wo_gnt_i ,
+    output logic [31:0]                L2_wo_addr_o ,
+    output logic [L2_DATA_WIDTH-1:0]   L2_wo_wdata_o ,
+    output logic [L2_DATA_WIDTH/8-1:0] L2_wo_be_o ,
+    input logic                        L2_wo_rvalid_i ,
+    input logic [L2_DATA_WIDTH-1:0]    L2_wo_rdata_i ,
 
-    input logic                                 dft_test_mode_i,
-    input logic                                 dft_cg_enable_i,
+    input logic                        dft_test_mode_i,
+    input logic                        dft_cg_enable_i,
 
-    input logic                                 sys_clk_i,
-    input logic                                 sys_resetn_i,
+    input logic                        sys_clk_i,
+    input logic                        sys_resetn_i,
 
-    input logic                                 periph_clk_i,
+    input logic                        periph_clk_i,
 
-    input logic [APB_ADDR_WIDTH-1:0]            udma_apb_paddr,
-    input logic [31:0]                          udma_apb_pwdata,
-    input logic                                 udma_apb_pwrite,
-    input logic                                 udma_apb_psel,
-    input logic                                 udma_apb_penable,
-    output logic [31:0]                         udma_apb_prdata,
-    output logic                                udma_apb_pready,
-    output logic                                udma_apb_pslverr,
+    input logic [APB_ADDR_WIDTH-1:0]   udma_apb_paddr,
+    input logic [31:0]                 udma_apb_pwdata,
+    input logic                        udma_apb_pwrite,
+    input logic                        udma_apb_psel,
+    input logic                        udma_apb_penable,
+    output logic [31:0]                udma_apb_prdata,
+    output logic                       udma_apb_pready,
+    output logic                       udma_apb_pslverr,
 
-    output logic [32*4-1:0]                     events_o,
+    output logic [32*4-1:0]            events_o,
 
-    input logic                                 event_valid_i,
-    input logic [7:0]                           event_data_i,
-    output logic                                event_ready_o,
+    input logic                        event_valid_i,
+    input logic [7:0]                  event_data_i,
+    output logic                       event_ready_o,
 
     // SPIM
-    output logic [N_SPI-1:0]                    spi_clk,
-    output logic [N_SPI-1:0] [3:0]              spi_csn,
-    output logic [N_SPI-1:0] [3:0]              spi_oen,
-    output logic [N_SPI-1:0] [3:0]              spi_sdo,
-    input logic [N_SPI-1:0] [3:0]               spi_sdi,
+    output                             qspi_to_pad_t [N_SPI-1:0] qspi_to_pad,
+    input                              pad_to_qspi_t [N_SPI-1:0] pad_to_qspi,
     
     // I2C
-    input logic [N_I2C-1:0]                     i2c_scl_i,
-    output logic [N_I2C-1:0]                    i2c_scl_o,
-    output logic [N_I2C-1:0]                    i2c_scl_oe,
-    input logic [N_I2C-1:0]                     i2c_sda_i,
-    output logic [N_I2C-1:0]                    i2c_sda_o,
-    output logic [N_I2C-1:0]                    i2c_sda_oe,
-    
+    output                             i2c_to_pad_t [N_I2C-1:0] i2c_to_pad,
+    input                              pad_to_i2c_t [N_I2C-1:0] pad_to_i2c,
+   
     // CAM
-    input logic [N_CAM-1:0]                     cam_clk_i,
-    input logic [N_CAM-1:0][CAM_DATA_WIDTH-1:0] cam_data_i,
-    input logic [N_CAM-1:0]                     cam_hsync_i,
-    input logic [N_CAM-1:0]                     cam_vsync_i,
+  	input                              pad_to_cam_t [N_CAM-1:0] pad_to_cam,
     
     // UART
-    input logic [N_UART-1:0]                    uart_rx_i,
-    output logic [N_UART-1:0]                   uart_tx_o,
+    input                              pad_to_uart_t [N_UART-1:0] pad_to_uart,
+    output                             uart_to_pad_t [N_UART-1:0] uart_to_pad,
     
     // SDIO
-    output logic [N_SDIO-1:0]                   sdio_clk_o,
-    output logic [N_SDIO-1:0]                   sdio_cmd_o,
-    input logic [N_SDIO-1:0]                    sdio_cmd_i,
-    output logic [N_SDIO-1:0]                   sdio_cmd_oen_o,
-    output logic [N_SDIO-1:0][3:0]              sdio_data_o,
-    input logic [N_SDIO-1:0][3:0]               sdio_data_i,
-    output logic [N_SDIO-1:0][3:0]              sdio_data_oen_o,
-
+    output                             sdio_to_pad_t [N_SDIO] sdio_to_pad,
+    input                              pad_to_sdio_t [N_SDIO] pad_to_sdio,
+ 
     // HYPERBUS
-    output logic [1:0]                          hyper_cs_no,
-    output logic                                hyper_ck_o,
-    output logic                                hyper_ck_no,
-    output logic [1:0]                          hyper_rwds_o,
-    input logic                                 hyper_rwds_i,
-    output logic [1:0]                          hyper_rwds_oe_o,
-    input logic [15:0]                          hyper_dq_i,
-    output logic [15:0]                         hyper_dq_o,
-    output logic [1:0]                          hyper_dq_oe_o,
-    output logic                                hyper_reset_no
-
+    output                             hyper_to_pad_t hyper_to_pad,
+    input                              pad_to_hyper_t pad_to_hyper
+ 
 );
 
     localparam DEST_SIZE = 2;
@@ -419,8 +397,8 @@ module udma_subsystem
                 .periph_clk_i        ( s_clk_periphs_per[PER_ID_UART+g_uart]     ),
                 .rstn_i              ( sys_resetn_i                              ),
                                                                                  
-                .uart_tx_o           ( uart_tx_o[g_uart]                         ),
-                .uart_rx_i           ( uart_rx_i[g_uart]                         ),
+                .uart_tx_o           ( uart_to_pad[g_uart].tx_o                  ),
+                .uart_rx_i           ( pad_to_uart[g_uart].rx_i                  ),
 
                 .rx_char_event_o     (                                           ),
                 .err_event_o         (                                           ),
@@ -495,23 +473,23 @@ module udma_subsystem
                 .dft_cg_enable_i     ( dft_cg_enable_i                          ),
                 .spi_eot_o           ( s_spi_eot[g_spi]                         ),
                 .spi_event_i         ( s_trigger_events                         ),
-                .spi_clk_o           ( spi_clk[g_spi]                           ),
-                .spi_csn0_o          ( spi_csn[g_spi][0]                        ),
-                .spi_csn1_o          ( spi_csn[g_spi][1]                        ),
-                .spi_csn2_o          ( spi_csn[g_spi][2]                        ),
-                .spi_csn3_o          ( spi_csn[g_spi][3]                        ),
-                .spi_oen0_o          ( spi_oen[g_spi][0]                        ),
-                .spi_oen1_o          ( spi_oen[g_spi][1]                        ),
-                .spi_oen2_o          ( spi_oen[g_spi][2]                        ),
-                .spi_oen3_o          ( spi_oen[g_spi][3]                        ),
-                .spi_sdo0_o          ( spi_sdo[g_spi][0]                        ),
-                .spi_sdo1_o          ( spi_sdo[g_spi][1]                        ),
-                .spi_sdo2_o          ( spi_sdo[g_spi][2]                        ),
-                .spi_sdo3_o          ( spi_sdo[g_spi][3]                        ),
-                .spi_sdi0_i          ( spi_sdi[g_spi][0]                        ),
-                .spi_sdi1_i          ( spi_sdi[g_spi][1]                        ),
-                .spi_sdi2_i          ( spi_sdi[g_spi][2]                        ),
-                .spi_sdi3_i          ( spi_sdi[g_spi][3]                        ),
+                .spi_clk_o           ( qspi_to_pad[g_spi].clk_o                 ),
+                .spi_csn0_o          ( qspi_to_pad[g_spi].csn0_o                ),
+                .spi_csn1_o          ( qspi_to_pad[g_spi].csn1_o                ),
+                .spi_csn2_o          ( qspi_to_pad[g_spi].csn2_o                ),
+                .spi_csn3_o          ( qspi_to_pad[g_spi].csn3_o                ),
+                .spi_oen0_o          ( qspi_to_pad[g_spi].sd0_oen_o             ),
+                .spi_oen1_o          ( qspi_to_pad[g_spi].sd1_oen_o             ),
+                .spi_oen2_o          ( qspi_to_pad[g_spi].sd2_oen_o             ),
+                .spi_oen3_o          ( qspi_to_pad[g_spi].sd3_oen_o             ),
+                .spi_sdo0_o          ( qspi_to_pad[g_spi].sd0_o                ),
+                .spi_sdo1_o          ( qspi_to_pad[g_spi].sd1_o                ),
+                .spi_sdo2_o          ( qspi_to_pad[g_spi].sd2_o                ),
+                .spi_sdo3_o          ( qspi_to_pad[g_spi].sd3_o                ),
+                .spi_sdi0_i          ( pad_to_qspi[g_spi].sd0_i                ),
+                .spi_sdi1_i          ( pad_to_qspi[g_spi].sd1_i                ),
+                .spi_sdi2_i          ( pad_to_qspi[g_spi].sd2_i                ),
+                .spi_sdi3_i          ( pad_to_qspi[g_spi].sd3_i                ),
 
                 .cfg_data_i          ( s_periph_data_to                         ),
                 .cfg_addr_i          ( s_periph_addr                            ),
@@ -654,12 +632,12 @@ module udma_subsystem
 
                 .err_o               ( s_i2c_evt[g_i2c]                          ),
 
-                .scl_i               ( i2c_scl_i[g_i2c]                          ),
-                .scl_o               ( i2c_scl_o[g_i2c]                          ),
-                .scl_oe              ( i2c_scl_oe[g_i2c]                         ),
-                .sda_i               ( i2c_sda_i[g_i2c]                          ),
-                .sda_o               ( i2c_sda_o[g_i2c]                          ),
-                .sda_oe              ( i2c_sda_oe[g_i2c]                         ),
+                .scl_i               ( pad_to_i2c[g_i2c].scl_i                   ),
+                .scl_o               ( i2c_to_pad[g_i2c].scl_o                   ),
+                .scl_oe              ( i2c_to_pad[g_i2c].scl_oe_o                ),
+                .sda_i               ( pad_to_i2c[g_i2c].sda_i                   ),
+                .sda_o               ( i2c_to_pad[g_i2c].sda_o                   ),
+                .sda_oe              ( i2c_to_pad[g_i2c].sda_oe_o                ),
                 .ext_events_i        ( s_trigger_events                          )
             );
             assign s_rx_ch_data[CH_ID_RX_I2C+g_i2c][31:8]= 'h0;
@@ -672,7 +650,10 @@ module udma_subsystem
 
     generate
        for (genvar g_sdio=0;g_sdio<N_SDIO;g_sdio++)
-       begin: i_sdio_gen            
+         begin: i_sdio_gen
+            logic [3:0]sdio_data_o;
+            logic [3:0]sdio_data_oen_o;
+            logic [3:0]sdio_data_i;
             assign s_events[4*(PER_ID_SDIO+g_sdio)]    = s_rx_ch_events[CH_ID_RX_SDIO+g_sdio];
             assign s_events[4*(PER_ID_SDIO+g_sdio)+1]  = s_tx_ch_events[CH_ID_TX_SDIO+g_sdio];
             assign s_events[4*(PER_ID_SDIO+g_sdio)+2]  = s_sdio_eot[g_sdio];
@@ -692,13 +673,13 @@ module udma_subsystem
                 .err_o               ( s_sdio_err[g_sdio] ),
                 .eot_o               ( s_sdio_eot[g_sdio] ),
             
-                .sdclk_o             ( sdio_clk_o[g_sdio]      ),
-                .sdcmd_o             ( sdio_cmd_o[g_sdio]      ),
-                .sdcmd_i             ( sdio_cmd_i[g_sdio]      ),
-                .sdcmd_oen_o         ( sdio_cmd_oen_o[g_sdio]  ),
-                .sddata_o            ( sdio_data_o[g_sdio]     ),
-                .sddata_i            ( sdio_data_i[g_sdio]     ),
-                .sddata_oen_o        ( sdio_data_oen_o[g_sdio] ),
+                .sdclk_o             ( sdio_to_pad[g_sdio].clk_o      ),
+                .sdcmd_o             ( sdio_to_pad[g_sdio].cmd_o      ),
+                .sdcmd_i             ( pad_to_sdio[g_sdio].cmd_i      ),
+                .sdcmd_oen_o         ( sdio_to_pad[g_sdio].cmd_oen_o  ),
+                .sddata_o            ( sdio_data_o                    ),
+                .sddata_i            ( sdio_data_i                    ),
+                .sddata_oen_o        ( sdio_data_oen_o                ),
             
                 .cfg_data_i          ( s_periph_data_to                              ),
                 .cfg_addr_i          ( s_periph_addr                                 ),
@@ -739,6 +720,18 @@ module udma_subsystem
                 .data_rx_valid_o     ( s_rx_ch_valid[CH_ID_RX_SDIO+g_sdio]           ),
                 .data_rx_ready_i     ( s_rx_ch_ready[CH_ID_RX_SDIO+g_sdio]           )
             );
+            assign sdio_to_pad[g_sdio].data0_o = sdio_data_o[0];
+            assign sdio_to_pad[g_sdio].data1_o = sdio_data_o[1];
+            assign sdio_to_pad[g_sdio].data2_o = sdio_data_o[2];
+            assign sdio_to_pad[g_sdio].data3_o = sdio_data_o[3];
+            assign sdio_to_pad[g_sdio].data0_oen_o = sdio_data_oen_o[0];
+            assign sdio_to_pad[g_sdio].data1_oen_o = sdio_data_oen_o[1];
+            assign sdio_to_pad[g_sdio].data2_oen_o = sdio_data_oen_o[2];
+            assign sdio_to_pad[g_sdio].data3_oen_o = sdio_data_oen_o[3];
+            assign sdio_data_i[0] = pad_to_sdio[g_sdio].data0_i;
+            assign sdio_data_i[1] = pad_to_sdio[g_sdio].data1_i;
+            assign sdio_data_i[2] = pad_to_sdio[g_sdio].data2_i;
+            assign sdio_data_i[3] = pad_to_sdio[g_sdio].data2_i;            
          end // block: assign
      endgenerate
 
@@ -746,6 +739,7 @@ module udma_subsystem
     generate
        for (genvar g_cam=0;g_cam<N_CAM;g_cam++)
         begin: i_cam_gen
+        logic  [7:0] cam_data_i;    
         assign s_events[4*(PER_ID_CAM+g_cam)]    = s_rx_ch_events[CH_ID_RX_CAM+g_cam];
         assign s_events[4*(PER_ID_CAM+g_cam)+1]  = 1'b0;
         assign s_events[4*(PER_ID_CAM+g_cam)+2]  = 1'b0;
@@ -786,12 +780,20 @@ module udma_subsystem
             .data_rx_valid_o     ( s_rx_ch_valid[CH_ID_RX_CAM+g_cam]       ),
             .data_rx_ready_i     ( s_rx_ch_ready[CH_ID_RX_CAM+g_cam]       ),
         
-            .cam_clk_i           ( cam_clk_i[g_cam]                        ),
-            .cam_data_i          ( cam_data_i[g_cam]                       ),
-            .cam_hsync_i         ( cam_hsync_i[g_cam]                      ),
-            .cam_vsync_i         ( cam_vsync_i[g_cam]                      )
+            .cam_clk_i           ( pad_to_cam[g_cam].clk_i                 ),
+            .cam_data_i          ( cam_data_i                              ),
+            .cam_hsync_i         ( pad_to_cam[g_cam].hsync_i               ),
+            .cam_vsync_i         ( pad_to_cam[g_cam].vsync_i               )
         );
         assign s_rx_ch_data[CH_ID_RX_CAM+g_cam][31:16]='h0;
+        assign cam_data_i[0] = pad_to_cam[g_cam].data0_i;
+        assign cam_data_i[1] = pad_to_cam[g_cam].data1_i;
+        assign cam_data_i[2] = pad_to_cam[g_cam].data2_i;
+        assign cam_data_i[3] = pad_to_cam[g_cam].data3_i;
+        assign cam_data_i[4] = pad_to_cam[g_cam].data4_i;
+        assign cam_data_i[5] = pad_to_cam[g_cam].data5_i;
+        assign cam_data_i[6] = pad_to_cam[g_cam].data6_i;           
+        assign cam_data_i[7] = pad_to_cam[g_cam].data7_i;           
      end // block: assign
    endgenerate
    
@@ -861,8 +863,16 @@ module udma_subsystem
     );
 
 
-
-
+    logic [1:0]  hyper_cs_no;
+    logic        hyper_ck_o;
+    logic        hyper_ck_no;
+    logic [1:0]  hyper_rwds_o;
+    logic        hyper_rwds_i;
+    logic [1:0]  hyper_rwds_oe;
+    logic [15:0] hyper_dq_i;
+    logic [15:0] hyper_dq_o;
+    logic [1:0]  hyper_dq_oe;
+    logic        hyper_reset_no;
 
     assign s_hyper_sys_clk = |s_clk_periphs_core[PER_ID_HYPER+N_CH_HYPER : PER_ID_HYPER];
     assign s_hyper_periph_clk = |s_clk_periphs_per[PER_ID_HYPER+N_CH_HYPER : PER_ID_HYPER];
@@ -951,17 +961,40 @@ module udma_subsystem
 
          //////////////TO/FROM EXTERNAL OF THE CHIP///////////////////////////
         .hyper_cs_no             ( hyper_cs_no                                      ),
-        .hyper_ck_o              ( hyper_ck_o                                       ),
-        .hyper_ck_no             ( hyper_ck_no                                      ),
+        .hyper_ck_o              ( hyper_to_pad.ck_o                                ),
+        .hyper_ck_no             ( hyper_to_pad.ckn_o                               ),
         .hyper_rwds_o            ( hyper_rwds_o                                     ),
-        .hyper_rwds_i            ( hyper_rwds_i                                     ),
-        .hyper_rwds_oe_o         ( hyper_rwds_oe_o                                  ),
+        .hyper_rwds_i            ( pad_to_hyper.rwds_i                              ),
+        .hyper_rwds_oe_o         ( hyper_rwds_oe                                    ),
         .hyper_dq_i              ( hyper_dq_i                                       ),
         .hyper_dq_o              ( hyper_dq_o                                       ),
-        .hyper_dq_oe_o           ( hyper_dq_oe_o                                    ),
-        .hyper_reset_no          ( hyper_reset_no                                   )
+        .hyper_dq_oe_o           ( hyper_dq_oe                                      ),
+        .hyper_reset_no          ( hyper_to_pad.resetn_o                            )
     );
 
-
+    assign hyper_to_pad.rwds_o  = hyper_rwds_o[0];
+    assign hyper_to_pad.rwds_oe_o = hyper_rwds_oe[0];
+    assign hyper_to_pad.dq_oe_o = hyper_dq_oe[0];
+    
+    assign hyper_to_pad.cs0n_o = hyper_cs_no[0];
+    assign hyper_to_pad.cs1n_o = hyper_cs_no[1];
+    
+    assign hyper_to_pad.dq0_o = hyper_dq_o[0];
+    assign hyper_to_pad.dq1_o = hyper_dq_o[1];
+    assign hyper_to_pad.dq2_o = hyper_dq_o[2];
+    assign hyper_to_pad.dq3_o = hyper_dq_o[3];
+    assign hyper_to_pad.dq4_o = hyper_dq_o[4];
+    assign hyper_to_pad.dq5_o = hyper_dq_o[5];
+    assign hyper_to_pad.dq6_o = hyper_dq_o[6];
+    assign hyper_to_pad.dq7_o = hyper_dq_o[7];
+    
+    assign hyper_dq_i[0] = pad_to_hyper.dq0_i;
+    assign hyper_dq_i[1] = pad_to_hyper.dq1_i;
+    assign hyper_dq_i[2] = pad_to_hyper.dq2_i;
+    assign hyper_dq_i[3] = pad_to_hyper.dq3_i;
+    assign hyper_dq_i[4] = pad_to_hyper.dq4_i;
+    assign hyper_dq_i[5] = pad_to_hyper.dq5_i;
+    assign hyper_dq_i[6] = pad_to_hyper.dq6_i;
+    assign hyper_dq_i[7] = pad_to_hyper.dq7_i;
 
 endmodule

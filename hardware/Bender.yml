@@ -5,6 +5,7 @@ package:
 
 dependencies:
   cva6: { path: "deps/cva6" }
+  alsaqr_padframe: { path: "deps/alsaqr_periph_padframe" }
   apb_uart: { path: "../fpga/src/apb_uart" }
   axi: { git: "https://github.com/pulp-platform/axi.git", version: "0.29.0" } 
   tcdm_interconnect: { git: "https://github.com/pulp-platform/cluster_interconnect.git", version: "1.1.2" }
@@ -38,6 +39,7 @@ sources:
   - include/apb_soc_pkg.sv
   - include/pulp_interfaces.sv
   - include/ariane_axi_soc_pkg.sv
+  - include/udma_subsystem_pkg.sv
   - include/tcdm_macros.sv
   - host/axi2tcdm_wrap.sv
   - host/ariane_peripherals.sv

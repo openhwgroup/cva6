@@ -1,4 +1,4 @@
-name: alsaqr_padframe
+name: alsaqr_periph_padframe
 
 manifest_version: 2
 pad_domains:
@@ -294,20 +294,20 @@ pad_domains:
         ports:
           - name: cam_pclk
             connections:
-              cam_pclk_o: pad2chip
+              clk_i: pad2chip
               oen: 1'b1
           - name: cam_hsync
             connections:
-              cam_hsync_o: pad2chip
+              hsync_o: pad2chip
               oen: 1'b1
           - name: cam_vsync
             connections:
-              cam_vsync_o: pad2chip
+              vsync_o: pad2chip
               oen: 1'b1
           - name: cam_data{i}_i
             multiple: 8
             connections:
-              cam_data{i}_o: pad2chip
+              data{i}_o: pad2chip
               oen: 1'b1
       spi_port_group: &spi_port_group
         name: spi_tlp
@@ -316,39 +316,39 @@ pad_domains:
         ports:
           - name: spi_sck
             connections:
-              chip2pad: spi_sck_i
+              chip2pad: clk_i
               oen: 1'b0
           - name: spi_cs
             connections:
-              chip2pad: spi_cs_i
+              chip2pad: csn0_i
               oen: 1'b0
           - name: spi_miso
             connections:
-              spi_miso_o: pad2chip
+              sd1_o: pad2chip
               oen: 1'b1
           - name: spi_mosi
             connections:
-              chip2pad: spi_mosi_i
+              chip2pad: sd0_i
               oen: 1'b0              
       i2c_port_group: &i2c_port_group
         name: i2c_tpl
         mux_groups: mx_i2c_tpl
         output_defaults:
-          i2c_sda_o: 1'b1
-          i2c_scl_o: 1'b1
+          sda_o: 1'b1
+          scl_o: 1'b1
         ports:
           - name: i2c_sda
             description: "Bidirectional I2C SDA signal"
             connections:
-              chip2pad: i2c_sda_i
-              i2c_sda_o: pad2chip
-              oen: ~i2c_sda_oe
+              chip2pad: sda_i
+              sda_o: pad2chip
+              oen: ~sda_oe_i
           - name: i2c_scl
             description: "Bidirectional I2C clock signal"
             connections:
-              chip2pad: i2c_scl_i
-              i2c_scl_o: pad2chip
-              oen: ~i2c_scl_oe
+              chip2pad: scl_i
+              scl_o: pad2chip
+              oen: ~scl_oe_i
       gpio_port_group: &gpio_port_group
         name: gpio_tpl
         mux_groups: mx_gpio_tpl
@@ -366,19 +366,19 @@ pad_domains:
         ports:
           - name: sdio_clk
             connections:
-              chip2pad: sdio_clk_i
-              oen: ~sdio_oe_i
+              chip2pad: clk_i
+              oen: 1'b0
           - name: sdio_cmd
             connections:
-              chip2pad: sdio_cmd_i
-              sdio_cmd_o: pad2chip
-              oen: ~sdio_oe_i
+              chip2pad: cmd_i
+              cmd_o: pad2chip
+              oen: cmd_oen_i
           - name: sdio_data{i}
             multiple: 4
             connections:
-              chip2pad: sdio_data{i}_i
-              sdio_data{i}_o: pad2chip
-              oen: sdio_data{i}_oe_i
+              chip2pad: data{i}_i
+              data{i}_o: pad2chip
+              oen: data{i}_oe_i
       uart_port_group: &uart_port_group
         name: uart_tpl
         mux_groups: mx_uart_tpl
@@ -386,11 +386,11 @@ pad_domains:
         ports:
           - name: uart_tx
             connections:
-              chip2pad: uart_tx_i
+              chip2pad: tx_i
               oen: 1'b0
           - name: uart_rx
             connections:
-              uart_rx_o: pad2chip
+              rx_o: pad2chip
               oen: 1'b0
       uart_cf_port_group: &uart_cf_port_group
         name: uart_cf_tpl
@@ -399,19 +399,19 @@ pad_domains:
         ports:
           - name: uart_tx
             connections:
-              chip2pad: uart_tx_i
+              chip2pad: tx_i
               oen: 1'b0
           - name: uart_rx
             connections:
-              uart_rx_o: pad2chip
+              rx_o: pad2chip
               oen: 1'b0
           - name: uart_rts
             connections:
-              chip2pad: uart_rts_i
+              chip2pad: rts_i
               oen: 1'b0
           - name: uart_cts
             connections:
-              uart_cts_o: pad2chip
+              cts_o: pad2chip
               oen: 1'b0
       hyper_port_group: &hyper_port_group
         name: hyper_tpl
@@ -421,29 +421,29 @@ pad_domains:
           - name: hyper_cs{i}
             multiple: 2
             connections:
-              chip2pad: hyper_cs{i}_i
+              chip2pad: cs{i}n_i
               oen: 1'b0
           - name: hyper_ck
             connections:
-              chip2pad: hyper_ck_i
+              chip2pad: ck_i
               oen: 1'b0
           - name: hyper_ckn
             connections:
-              chip2pad: hyper_ckn_o
+              chip2pad: ckn_o
               oen: 1'b0
           - name: hyper_rwds
             connections:
-              chip2pad: hyper_rwds_i
-              hyper_rwds_o: pad2chip
-              oen: hyper_rwds_oe_i
+              chip2pad: rwds_i
+              rwds_o: pad2chip
+              oen: ~rwds_oe_i
           - name: hyper_dq{i}_i
             connections:
-              chip2pad: hyper_dq{i}_i
-              hyper_dq{i}_o: pad2chip
-              oen: ~hyper_dq_oe
+              chip2pad: dq{i}_i
+              dq{i}_o: pad2chip
+              oen: ~dq_oe
           - name: hyper_rst
             connections:
-              chip2pad: hyper_rst_i
+              chip2pad: resetn_i
               oen: 1'b0
       eth_port_group: &eth_port_group
         name: eth_tpl
