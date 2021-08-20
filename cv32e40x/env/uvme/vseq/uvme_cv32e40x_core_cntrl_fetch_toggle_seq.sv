@@ -1,12 +1,12 @@
 // Copyright 2020 OpenHW Group
 // Copyright 2020 Datum Technology Corporation
-// 
+//
 // Licensed under the Solderpad Hardware Licence, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
-// 
+//
 //     https://solderpad.org/licenses/
-// 
+//
 // Unless required by applicable law or agreed to in writing, software
 // distributed under the License is distributed on an "AS IS" BASIS,
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -112,7 +112,7 @@ task uvme_cv32e40x_fetch_toggle_seq_c::fetch_random_toggle();
     cntxt.core_cntrl_vif.drv_cb.fetch_en <= 1'b0;
 
     // Randomly dessert for a random number of cycles
-    randcase    
+    randcase
       3: fetch_deassert_cycles = $urandom_range(100, 1);
       1: fetch_deassert_cycles = $urandom_range(3, 1);
     endcase

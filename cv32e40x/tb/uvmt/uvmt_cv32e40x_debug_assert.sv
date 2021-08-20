@@ -1,21 +1,21 @@
 //
 // Copyright 2020 OpenHW Group
 // Copyright 2020 Datum Technology Corporation
-// 
+//
 // Licensed under the Solderpad Hardware Licence, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
-// 
+//
 //     https://solderpad.org/licenses/
-// 
+//
 // Unless required by applicable law or agreed to in writing, software
 // distributed under the License is distributed on an "AS IS" BASIS,
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
-// 
+//
 
-module uvmt_cv32e40x_debug_assert  
+module uvmt_cv32e40x_debug_assert
   import uvm_pkg::*;
   import cv32e40x_pkg::*;
   (
@@ -24,7 +24,7 @@ module uvmt_cv32e40x_debug_assert
 
   // ---------------------------------------------------------------------------
   // Local parameters
-  // ---------------------------------------------------------------------------  
+  // ---------------------------------------------------------------------------
     localparam WFI_INSTR_MASK = 32'hffffffff;
     localparam WFI_INSTR_DATA = 32'h10500073;
   // ---------------------------------------------------------------------------
@@ -74,7 +74,6 @@ module uvmt_cv32e40x_debug_assert
 
   assign mtvec_addr = {cov_assert_if.mtvec[31:2], 2'b00};
 
-
     // ---------------------------------------
     // Assertions
     // ---------------------------------------
@@ -95,7 +94,6 @@ module uvmt_cv32e40x_debug_assert
 
 
     // Check that we enter debug mode when expected. CSR checks are done in other assertions
-
     property p_enter_debug;
         $changed(debug_cause_pri) && (debug_cause_pri != 0) && !cov_assert_if.debug_mode_q
         |->
@@ -134,10 +132,10 @@ module uvmt_cv32e40x_debug_assert
 
     // Check that debug with cause haltreq is correct
     property p_debug_mode_ext_req;
-        $rose(cov_assert_if.debug_mode_q) && (cov_assert_if.dcsr_q[8:6] == cv32e40x_pkg::DBG_CAUSE_HALTREQ) 
+        $rose(cov_assert_if.debug_mode_q) && (cov_assert_if.dcsr_q[8:6] == cv32e40x_pkg::DBG_CAUSE_HALTREQ)
         |-> debug_cause_pri == cv32e40x_pkg::DBG_CAUSE_HALTREQ;
     endproperty
-    
+
     a_debug_mode_ext_req: assert property(p_debug_mode_ext_req)
         else `uvm_error(info_tag, $sformatf("Debug cause not correct for haltreq, cause = %d",cov_assert_if.dcsr_q[8:6]));
 
@@ -230,7 +228,6 @@ module uvmt_cv32e40x_debug_assert
         else `uvm_error(info_tag,
             $sformatf("Debug mode not correctly entered after trigger match depc=%08x, tdata2=%08x",
                 cov_assert_if.depc_q, tdata2_at_entry));
-
 
     // Address match without trigger enabled should NOT result in debug mode
 
@@ -336,7 +333,6 @@ module uvmt_cv32e40x_debug_assert
 
 
     // Trigger during single step 
-
     property p_single_step_trigger;
         !cov_assert_if.debug_mode_q && cov_assert_if.dcsr_q[2]
         && cov_assert_if.addr_match && cov_assert_if.wb_valid && cov_assert_if.tdata1[2]
@@ -427,7 +423,6 @@ module uvmt_cv32e40x_debug_assert
 
     // Check that trigger regs cannot be written from M-mode
     // TSEL, and TDATA3 are tied to zero, hence no register to check 
-
     property p_mmode_tdata1_write;
         !cov_assert_if.debug_mode_q && cov_assert_if.csr_access && cov_assert_if.csr_op == 'h1
         && cov_assert_if.wb_stage_instr_rdata_i[31:20] == 'h7A1
@@ -476,7 +471,6 @@ module uvmt_cv32e40x_debug_assert
         else
             `uvm_error(info_tag, "Minstret not counting when mcountinhibit[2] is cleared!");
 
-
     // Check debug_req_i and irq on same cycle. 
     // Should result in debug mode with regular pc in depc,
     // not pc from interrupt handler
@@ -501,7 +495,7 @@ module uvmt_cv32e40x_debug_assert
         s_conse_next_retire
         ##0 cov_assert_if.debug_mode_q && (cov_assert_if.depc_q == boot_addr_at_entry);
     endproperty    
-
+      
     a_debug_at_reset : assert property(p_debug_at_reset)
         else `uvm_error(info_tag, "Debug mode not entered correctly at reset!");
 
@@ -509,7 +503,6 @@ module uvmt_cv32e40x_debug_assert
     // Check that we cover the case where a debug_req_i
     // comes while flushing due to an illegal insn, causing
     // dpc to be set to the exception handler entry addr
-
     sequence s_illegal_insn_debug_req_ante;  // Antecedent
         wb_execs_illegal && !cov_assert_if.debug_mode_q
         ##1 cov_assert_if.debug_req_i && !cov_assert_if.debug_mode_q;
@@ -572,7 +565,7 @@ module uvmt_cv32e40x_debug_assert
                 pc_at_ebreak <= cov_assert_if.wb_stage_pc;
             end
        end
-    end        
+    end
 
 
   // Keep track of wfi state

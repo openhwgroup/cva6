@@ -3,13 +3,13 @@
 ################################################################################
 #
 # Copyright 2020 OpenHW Group
-# 
+#
 # Licensed under the Solderpad Hardware Licence, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
-# 
+#
 #     https://solderpad.org/licenses/
-# 
+#
 # Unless required by applicable law or agreed to in writing, software
 # distributed under the License is distributed on an "AS IS" BASIS,
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -17,10 +17,10 @@
 # limitations under the License.
 #
 # SPDX-License-Identifier:Apache-2.0 WITH SHL-2.0
-# 
+#
 ################################################################################
 #
-# run_corev32 : python module provided to EMBench to allow the run script to 
+# run_corev32 : python module provided to EMBench to allow the run script to
 #               run simulations in core-v-verif
 #
 # Author: Marton Teilgård
@@ -84,9 +84,9 @@ def build_benchmark_cmd(bench, args):
        namespace with target specific arguments"""
 
     #CPU period
-    global cpu_per 
+    global cpu_per
     cpu_per = float(1/(args.cpu_mhz*1_000_000))
-    
+
     #Utilize "make test" environment in core-v-verif
     return ['make', '-C', args.make_path, 'test', f"TEST=emb_{bench}", f"SIMULATOR={args.simulator}", 'USE_ISS=NO']
 
@@ -94,7 +94,7 @@ def build_benchmark_cmd(bench, args):
 def decode_results(stdout_str, stderr_str):
     """Extract the results from the output string of the run. Return the
        elapsed time in milliseconds or zero if the run failed."""
-  
+
 
     global cpu_per
 
@@ -111,7 +111,7 @@ def decode_results(stdout_str, stderr_str):
 
     time = float(int(rcstr.group(1))*cpu_per)
     time_ms = time * 1000
-    
+
 
     return time_ms
 

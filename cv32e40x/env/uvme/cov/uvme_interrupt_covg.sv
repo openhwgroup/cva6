@@ -129,7 +129,7 @@ endfunction : write_interrupt
 //     end
 
 //     // For each mret decrement the interrupt count
-//     if (last_instr_trn != null && last_instr_trn.ins.asm == MRET && irq_nested_count) begin    
+//     if (last_instr_trn != null && last_instr_trn.ins.asm == MRET && irq_nested_count) begin
 //         `uvm_info("INTERRUPTCOVG", $sformatf("IRQ exited to %s", trn.ins.asm.name()), UVM_DEBUG)
 //         cg_irq_exit.sample(trn.ins);
 //         irq_nested_count--;
