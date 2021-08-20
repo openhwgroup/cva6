@@ -2,19 +2,19 @@
 // Copyright 2020 OpenHW Group
 // Copyright 2020 Datum Technology Corporation
 // Copyright 2020 Silicon Labs, Inc.
-// 
+//
 // Licensed under the Solderpad Hardware Licence, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
-// 
+//
 //     https://solderpad.org/licenses/
-// 
+//
 // Unless required by applicable law or agreed to in writing, software
 // distributed under the License is distributed on an "AS IS" BASIS,
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
-// 
+//
 ///////////////////////////////////////////////////////////////////////////////
 //
 // Modified version of the wrapper for a RI5CY testbench, containing RI5CY,
@@ -39,10 +39,10 @@
 /**
  * Module wrapper for CV32E40X RTL DUT.
  */
-module uvmt_cv32e40x_dut_wrap 
+module uvmt_cv32e40x_dut_wrap
   import cv32e40x_pkg::*;
 
-  #(// DUT (riscv_core) parameters.                            
+  #(// DUT (riscv_core) parameters.
     parameter NUM_MHPMCOUNTERS    =  1,
     parameter int unsigned PMA_NUM_REGIONS =  0,
     parameter pma_region_t PMA_CFG[(PMA_NUM_REGIONS ? (PMA_NUM_REGIONS-1) : 0):0] = '{default:PMA_R_DEFAULT},
@@ -78,7 +78,7 @@ module uvmt_cv32e40x_dut_wrap
     logic [3:0]                   data_be;
     logic [31:0]                  data_rdata;
     logic [31:0]                  data_wdata;
-    
+
     logic [31:0]                  irq;
     logic                         irq_ack;
     logic [ 4:0]                  irq_id;
@@ -91,8 +91,8 @@ module uvmt_cv32e40x_dut_wrap
     assign debug_if.reset_n  = clknrst_if.reset_n;
 
     // --------------------------------------------
-    // OBI Instruction agent v1.2 signal tie-offs    
-    assign obi_instr_if_i.we        = 'b0;    
+    // OBI Instruction agent v1.2 signal tie-offs
+    assign obi_instr_if_i.we        = 'b0;
     assign obi_instr_if_i.be        = 'hf; // Always assumes 32-bit full bus reads on instruction OBI
     assign obi_instr_if_i.auser     = 'b0;
     assign obi_instr_if_i.wuser     = 'b0;
@@ -106,7 +106,7 @@ module uvmt_cv32e40x_dut_wrap
     assign obi_instr_if_i.rreadypar = 1'b0;
 
     // --------------------------------------------
-    // OBI Data agent v12.2 signal tie-offs    
+    // OBI Data agent v12.2 signal tie-offs
     assign obi_data_if_i.auser      = 'b0;
     assign obi_data_if_i.wuser      = 'b0;
     assign obi_data_if_i.aid        = 'b0;
@@ -160,7 +160,7 @@ module uvmt_cv32e40x_dut_wrap
          .dm_exception_addr_i    ( core_cntrl_if.dm_exception_addr),
 
          .instr_req_o            ( obi_instr_if_i.req             ),
-         .instr_gnt_i            ( obi_instr_if_i.gnt             ),         
+         .instr_gnt_i            ( obi_instr_if_i.gnt             ),
          .instr_addr_o           ( obi_instr_if_i.addr            ),
          .instr_prot_o           ( obi_instr_if_i.prot            ),
          .instr_memtype_o        ( obi_instr_if_i.memtype         ),

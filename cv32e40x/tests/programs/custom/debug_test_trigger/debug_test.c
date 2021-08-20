@@ -1,19 +1,19 @@
 /*
 **
 ** Copyright 2020 OpenHW Group
-** 
+**
 ** Licensed under the Solderpad Hardware Licence, Version 2.0 (the "License");
 ** you may not use this file except in compliance with the License.
 ** You may obtain a copy of the License at
-** 
+**
 **     https://solderpad.org/licenses/
-** 
+**
 ** Unless required by applicable law or agreed to in writing, software
 ** distributed under the License is distributed on an "AS IS" BASIS,
 ** WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 ** See the License for the specific language governing permissions and
 ** limitations under the License.
-** 
+**
 *******************************************************************************
 ** Basic debugger test. Needs more work and bugs fixed
 ** It will launch a debug request and have debugger code execute (debugger.S)
@@ -35,7 +35,7 @@ volatile int glb_expect_illegal_insn    = 0;
 volatile int glb_expect_ebreak_handler  = 0;
 volatile int glb_expect_debug_entry     = 0;
 volatile int glb_expect_debug_exception = 0;
-volatile int glb_expect_irq_entry = 0; 
+volatile int glb_expect_irq_entry = 0;
 // Counter values
 // Checked at start and end of debug code
 // Only lower 32 bits checked, as simulation cannot overflow on 32 bits
@@ -46,7 +46,7 @@ volatile int glb_minstret_end = 0;
 #define TEST_FAILED  *(volatile int *)0x20000000 = 1
 #define TEST_PASSED  *(volatile int *)0x20000000 = 123456789
 
-extern int __stack_start; 
+extern int __stack_start;
 extern int _trigger_code;
 extern int _trigger_code_ebreak;
 extern int _trigger_code_cebreak;
@@ -66,8 +66,8 @@ typedef union {
 }  debug_req_control_t;
 
 #define DEBUG_REQ_CONTROL_REG *(volatile int *)0x15000008
-#define TIMER_REG_ADDR         ((volatile uint32_t *) 0x15000000)  
-#define TIMER_VAL_ADDR         ((volatile uint32_t *) 0x15000004) 
+#define TIMER_REG_ADDR         ((volatile uint32_t *) 0x15000000)
+#define TIMER_VAL_ADDR         ((volatile uint32_t *) 0x15000004)
 
 typedef union {
   struct {
@@ -192,11 +192,11 @@ int main(int argc, char *argv[])
 {
     debug_req_control_t debug_req_control;
     counters_enable();
-    
+
     // Enable interrupt
     mstatus_mie_enable();
     mie_enable(30);
- 
+
     // Assembly code from here to get better control of timing
     _trigger_test_combo();
 

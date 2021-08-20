@@ -6,7 +6,7 @@ builds:
   corev-dv:
     cmd: make comp_corev-dv
     dir: cv32e40x/sim/uvmt
-    
+
   uvmt_cv32e40x:
     cmd: make comp
     dir: cv32e40x/sim/uvmt
@@ -20,7 +20,7 @@ tests:
 
   interrupt_test:
     build: uvmt_cv32e40x
-    description: Interrupt directed test  
+    description: Interrupt directed test
     dir: cv32e40x/sim/uvmt
     cmd: make test COREV=YES TEST=interrupt_test
 
@@ -62,14 +62,14 @@ tests:
     num: 2
 
   corev_rand_instr_test:
-    build: uvmt_cv32e40x  
+    build: uvmt_cv32e40x
     description: Generated corev-dv random instruction test
     dir: cv32e40x/sim/uvmt
     cmd: make gen_corev-dv test COREV=YES TEST=corev_rand_instr_test
     num: 2
 
   corev_rand_jump_stress_test:
-    build: uvmt_cv32e40x  
+    build: uvmt_cv32e40x
     description: Generated corev-dv jump stress test
     dir: cv32e40x/sim/uvmt
     cmd: make gen_corev-dv test COREV=YES TEST=corev_rand_jump_stress_test

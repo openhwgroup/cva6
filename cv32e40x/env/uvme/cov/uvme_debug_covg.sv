@@ -40,10 +40,10 @@ class uvme_debug_covg extends uvm_component;
     /*
     * Covergroups
     */
-   
+
   covergroup cg_debug_mode_ext ;
           `per_instance_fcov
-          state: coverpoint cntxt.debug_cov_vif.mon_cb.ctrl_fsm_cs{              
+          state: coverpoint cntxt.debug_cov_vif.mon_cb.ctrl_fsm_cs{
           }
   endgroup : cg_debug_mode_ext
 
@@ -59,10 +59,10 @@ class uvme_debug_covg extends uvm_component;
           dm : coverpoint cntxt.debug_cov_vif.mon_cb.debug_mode_q {
                   bins active = {1};
           }
-          ebreak_with_ebreakm: cross ex, ebreakm_set;  
+          ebreak_with_ebreakm: cross ex, ebreakm_set;
           ebreak_in_debug : cross ex, dm;
   endgroup
-    
+
   // Cover that we execute c.ebreak with dcsr.ebreakm==1
   covergroup cg_cebreak_execute_with_ebreakm;
           `per_instance_fcov
@@ -75,7 +75,7 @@ class uvme_debug_covg extends uvm_component;
           dm : coverpoint cntxt.debug_cov_vif.mon_cb.debug_mode_q {
                   bins active = {1};
           }
-          cebreak_with_ebreakm: cross ex, ebreakm_set;  
+          cebreak_with_ebreakm: cross ex, ebreakm_set;
           cebreak_in_debug : cross ex, dm;
   endgroup
 
@@ -97,7 +97,7 @@ class uvme_debug_covg extends uvm_component;
           ebreak_regular_nodebug: cross ex, ebreakm_clear, nostep;
           ebreak_step_nodebug : cross ex, ebreakm_clear, step;
   endgroup
-    
+
   // Cover that we execute c.ebreak with dcsr.ebreakm==0
   covergroup cg_cebreak_execute_without_ebreakm;
           `per_instance_fcov
@@ -188,7 +188,7 @@ class uvme_debug_covg extends uvm_component;
         }
         ex_in_debug : cross dm, irq;
     endgroup
-    
+
     // Cover that hit a WFI insn in debug mode
     covergroup cg_wfi_in_debug;
         `per_instance_fcov
@@ -233,7 +233,7 @@ class uvme_debug_covg extends uvm_component;
         }
         pc_will_trig : coverpoint cntxt.debug_cov_vif.mon_cb.dpc_will_hit {
             bins hit = {1};
-        } 
+        }
         stepie : coverpoint cntxt.debug_cov_vif.mon_cb.dcsr_q[11];
         mmode_step : cross step, mmode;
         mmode_step_trigger_match : cross step, mmode, trigger;
@@ -268,16 +268,16 @@ class uvme_debug_covg extends uvm_component;
         ill : coverpoint cntxt.debug_cov_vif.mon_cb.illegal_insn_i {
             bins hit = {1};
         }
-         ebreak : coverpoint cntxt.debug_cov_vif.mon_cb.is_ebreak { 
+         ebreak : coverpoint cntxt.debug_cov_vif.mon_cb.is_ebreak {
             bins active= {1'b1};
         }
-         cebreak : coverpoint cntxt.debug_cov_vif.mon_cb.is_cebreak { 
+         cebreak : coverpoint cntxt.debug_cov_vif.mon_cb.is_cebreak {
             bins active= {1'b1};
         }
-         branch : coverpoint cntxt.debug_cov_vif.mon_cb.branch_in_decode { 
+         branch : coverpoint cntxt.debug_cov_vif.mon_cb.branch_in_decode {
             bins active= {1'b1};
         }
-         mulhsu : coverpoint cntxt.debug_cov_vif.mon_cb.is_mulhsu { 
+         mulhsu : coverpoint cntxt.debug_cov_vif.mon_cb.is_mulhsu {
             bins active= {1'b1};
         }
         dreq_and_ill : cross dreq, ill;
@@ -366,10 +366,10 @@ class uvme_debug_covg extends uvm_component;
     // Cover that we get a debug_req_i while in RESET state
     covergroup cg_debug_at_reset;
         `per_instance_fcov
-        state : coverpoint cntxt.debug_cov_vif.mon_cb.ctrl_fsm_cs { 
+        state : coverpoint cntxt.debug_cov_vif.mon_cb.ctrl_fsm_cs {
             bins reset= {cv32e40x_pkg::RESET};
         }
-         dbg : coverpoint cntxt.debug_cov_vif.mon_cb.debug_req_i { 
+         dbg : coverpoint cntxt.debug_cov_vif.mon_cb.debug_req_i {
             bins active= {1'b1};
         }
         dbg_at_reset : cross state, dbg;
@@ -378,10 +378,10 @@ class uvme_debug_covg extends uvm_component;
     // Cover that we execute fence and fence.i in debug mode
     covergroup cg_fence_in_debug;
         `per_instance_fcov
-        mode : coverpoint cntxt.debug_cov_vif.mon_cb.debug_mode_q { 
+        mode : coverpoint cntxt.debug_cov_vif.mon_cb.debug_mode_q {
             bins debug= {1'b1};
         }
-        fence : coverpoint cntxt.debug_cov_vif.mon_cb.fence_i { 
+        fence : coverpoint cntxt.debug_cov_vif.mon_cb.fence_i {
             bins active= {1'b1};
         }
         fence_in_debug : cross mode, fence;
@@ -390,22 +390,22 @@ class uvme_debug_covg extends uvm_component;
     // Cover that we get all combinations of debug causes
     covergroup cg_debug_causes;
         `per_instance_fcov
-        tmatch : coverpoint cntxt.debug_cov_vif.mon_cb.trigger_match_i { 
+        tmatch : coverpoint cntxt.debug_cov_vif.mon_cb.trigger_match_i {
             bins match= {1'b1};
         }
-        tnomatch : coverpoint cntxt.debug_cov_vif.mon_cb.trigger_match_i { 
+        tnomatch : coverpoint cntxt.debug_cov_vif.mon_cb.trigger_match_i {
             bins nomatch= {1'b0};
         }
-         ebreak : coverpoint cntxt.debug_cov_vif.mon_cb.is_ebreak { 
+         ebreak : coverpoint cntxt.debug_cov_vif.mon_cb.is_ebreak {
             bins active= {1'b1};
         }
-         cebreak : coverpoint cntxt.debug_cov_vif.mon_cb.is_cebreak { 
+         cebreak : coverpoint cntxt.debug_cov_vif.mon_cb.is_cebreak {
             bins active= {1'b1};
         }
-         dbg_req : coverpoint cntxt.debug_cov_vif.mon_cb.debug_req_i { 
+         dbg_req : coverpoint cntxt.debug_cov_vif.mon_cb.debug_req_i {
             bins active= {1'b1};
         }
-         step : coverpoint cntxt.debug_cov_vif.mon_cb.dcsr_q[2] & !cntxt.debug_cov_vif.mon_cb.debug_mode_q { 
+         step : coverpoint cntxt.debug_cov_vif.mon_cb.dcsr_q[2] & !cntxt.debug_cov_vif.mon_cb.debug_mode_q {
             bins active= {1'b1};
         }
         trig_vs_ebreak : cross tmatch, ebreak;
@@ -463,7 +463,7 @@ task uvme_debug_covg::run_phase(uvm_phase phase);
 
     `uvm_info("DEBUGCOVG", "The debug coverage model is running", UVM_LOW);
 
-    fork 
+    fork
         sample_debug_req_i();
         sample_clk_i();
     join_none
@@ -474,7 +474,7 @@ task uvme_debug_covg::sample_debug_req_i();
     @(posedge cntxt.debug_cov_vif.mon_cb.debug_req_i);
 
     cg_debug_mode_ext.sample();
-  end  
+  end
 endtask : sample_debug_req_i
 
 task uvme_debug_covg::sample_clk_i();

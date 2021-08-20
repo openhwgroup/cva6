@@ -22,8 +22,8 @@
 #define ERR_CODE_TEST_6      6
 #define ERR_CODE_TEST_7      7
 
-#define TIMER_REG_ADDR         ((volatile uint32_t *) 0x15000000)  
-#define TIMER_VAL_ADDR         ((volatile uint32_t *) 0x15000004) 
+#define TIMER_REG_ADDR         ((volatile uint32_t *) 0x15000000)
+#define TIMER_VAL_ADDR         ((volatile uint32_t *) 0x15000004)
 
 #define MSTATUS_MIE_BIT 3
 
