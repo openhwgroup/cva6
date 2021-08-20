@@ -526,15 +526,9 @@ pad_domains:
       - <<: *i2c_port_group
         name: i2c3
         mux_groups: [mx_cam0]
-      - name: IMU2_DRDY
+      - <<: *gpio_port_group
+        name: gpio57
         mux_groups: [mx_cam0]
-        output_defaults: 1'b1
-        ports:
-          - name: gpio57
-            connections:
-              gpio57_o: pad2chip
-              chip2pad: gpio57_i
-              oen: gpio57_dir_i
 
       - <<: *cam_port_group
         name: cam1
@@ -592,7 +586,6 @@ pad_domains:
         name: i2c5
         mux_groups: [mx_hyper]
         
-
           
         
         
