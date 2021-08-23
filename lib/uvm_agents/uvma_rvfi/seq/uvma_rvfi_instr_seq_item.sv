@@ -29,7 +29,8 @@ class uvma_rvfi_instr_seq_item_c#(int ILEN=DEFAULT_ILEN,
    rand bit [ILEN-1:0]           insn;
    rand bit                      trap;
    rand bit                      halt;
-   rand bit                      dbg;
+   rand bit                      dbg_mode;
+   rand bit [RVFI_DBG_WL-1:0]    dbg;
    rand bit                      intr;   
    rand uvma_rvfi_mode           mode;
    rand bit [IXL_WL-1:0]         ixl;
@@ -71,6 +72,7 @@ class uvma_rvfi_instr_seq_item_c#(int ILEN=DEFAULT_ILEN,
       `uvm_field_int(insn, UVM_DEFAULT)
       `uvm_field_int(trap, UVM_DEFAULT)
       `uvm_field_int(halt, UVM_DEFAULT)
+      `uvm_field_int(dbg_mode, UVM_DEFAULT)
       `uvm_field_int(dbg, UVM_DEFAULT)
       `uvm_field_int(intr, UVM_DEFAULT)      
       `uvm_field_enum(uvma_rvfi_mode, mode, UVM_DEFAULT)

@@ -55,7 +55,7 @@ module uvmt_cv32e40x_debug_assert
   // Single clock, single reset design, use default clocking
   default clocking @(posedge cov_assert_if.clk_i); endclocking
   default disable iff !(cov_assert_if.rst_ni);
-  
+
   assign cov_assert_if.is_ebreak =
     cov_assert_if.wb_stage_instr_valid_i
     && !cov_assert_if.wb_err
@@ -112,7 +112,7 @@ module uvmt_cv32e40x_debug_assert
         |->
         cov_assert_if.debug_mode_q && (cov_assert_if.wb_stage_pc == halt_addr_at_entry)
         && (cov_assert_if.depc_q == pc_at_dbg_req);
-    endproperty   
+    endproperty
 
     a_debug_mode_pc: assert property(p_debug_mode_pc)
         else `uvm_error(info_tag, $sformatf("Debug mode entered with wrong pc. pc==%08x", cov_assert_if.wb_stage_pc));
@@ -222,7 +222,7 @@ module uvmt_cv32e40x_debug_assert
         s_conse_next_retire
         ##0 cov_assert_if.debug_mode_q && (cov_assert_if.dcsr_q[8:6] === cv32e40x_pkg::DBG_CAUSE_TRIGGER)
             && (cov_assert_if.depc_q == tdata2_at_entry) && (cov_assert_if.wb_stage_pc == halt_addr_at_entry);
-    endproperty   
+    endproperty
 
     a_trigger_match: assert property(p_trigger_match)
         else `uvm_error(info_tag,
@@ -332,7 +332,7 @@ module uvmt_cv32e40x_debug_assert
         else `uvm_error(info_tag, "PC not set to exception handler after single step with exception");
 
 
-    // Trigger during single step 
+    // Trigger during single step
     property p_single_step_trigger;
         !cov_assert_if.debug_mode_q && cov_assert_if.dcsr_q[2]
         && cov_assert_if.addr_match && cov_assert_if.wb_valid && cov_assert_if.tdata1[2]
@@ -422,7 +422,7 @@ module uvmt_cv32e40x_debug_assert
 
 
     // Check that trigger regs cannot be written from M-mode
-    // TSEL, and TDATA3 are tied to zero, hence no register to check 
+    // TSEL, and TDATA3 are tied to zero, hence no register to check
     property p_mmode_tdata1_write;
         !cov_assert_if.debug_mode_q && cov_assert_if.csr_access && cov_assert_if.csr_op == 'h1
         && cov_assert_if.wb_stage_instr_rdata_i[31:20] == 'h7A1
@@ -471,7 +471,7 @@ module uvmt_cv32e40x_debug_assert
         else
             `uvm_error(info_tag, "Minstret not counting when mcountinhibit[2] is cleared!");
 
-    // Check debug_req_i and irq on same cycle. 
+    // Check debug_req_i and irq on same cycle.
     // Should result in debug mode with regular pc in depc,
     // not pc from interrupt handler
     // PC is checked in another assertion
@@ -494,8 +494,8 @@ module uvmt_cv32e40x_debug_assert
         |->
         s_conse_next_retire
         ##0 cov_assert_if.debug_mode_q && (cov_assert_if.depc_q == boot_addr_at_entry);
-    endproperty    
-      
+    endproperty
+
     a_debug_at_reset : assert property(p_debug_at_reset)
         else `uvm_error(info_tag, "Debug mode not entered correctly at reset!");
 
@@ -519,7 +519,7 @@ module uvmt_cv32e40x_debug_assert
     // Need to confirm that the assertion can be reached for non-trivial cases
     cov_illegal_insn_debug_req_nonzero : cover property(
         s_illegal_insn_debug_req_ante |-> s_illegal_insn_debug_req_conse ##0 (cov_assert_if.depc_q != 0));
-    
+
     a_illegal_insn_debug_req : assert property(s_illegal_insn_debug_req_ante |-> s_illegal_insn_debug_req_conse)
         else `uvm_error(info_tag, "Debug mode not entered correctly while handling illegal instruction!");
 

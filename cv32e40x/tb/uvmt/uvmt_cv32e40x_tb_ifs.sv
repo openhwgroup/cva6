@@ -227,7 +227,7 @@ interface uvmt_cv32e40x_debug_cov_assert_if
     illegal_insn_i,
     illegal_insn_q,
     ecall_insn_i,
-    boot_addr_i, 
+    boot_addr_i,
     rvfi_pc_wdata,
     rvfi_pc_rdata,
     debug_req_i,

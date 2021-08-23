@@ -43,7 +43,7 @@ module uvmt_cv32e40x_tb;
 `endif
 
    parameter int PMA_NUM_REGIONS = 0;
-   parameter cv32e40x_pkg::pma_region_t PMA_CFG[(PMA_NUM_REGIONS ? (PMA_NUM_REGIONS-1) : 0):0] = '{default:PMA_R_DEFAULT};
+   parameter cv32e40x_pkg::pma_region_t PMA_CFG[(PMA_NUM_REGIONS-1):0] = '{default:PMA_R_DEFAULT};
 
    // ENV (testbench) parameters
    parameter int ENV_PARAM_INSTR_ADDR_WIDTH  = 32;
@@ -106,7 +106,8 @@ module uvmt_cv32e40x_tb;
                                                                    .rvfi_trap(rvfi_i.rvfi_trap[0]),
                                                                    .rvfi_halt(rvfi_i.rvfi_halt[0]),
                                                                    .rvfi_intr(rvfi_i.rvfi_intr[0]),
-                                                                   .rvfi_dbg(rvfi_i.rvfi_dbg[0]),
+                                                                   .rvfi_dbg(rvfi_i.rvfi_dbg),
+                                                                   .rvfi_dbg_mode(rvfi_i.rvfi_dbg_mode),
                                                                    .rvfi_mode(rvfi_i.rvfi_mode[uvma_rvfi_pkg::MODE_WL*0+:uvma_rvfi_pkg::MODE_WL]),
                                                                    .rvfi_ixl(rvfi_i.rvfi_ixl[uvma_rvfi_pkg::IXL_WL*0+:uvma_rvfi_pkg::IXL_WL]),
                                                                    .rvfi_pc_rdata(rvfi_i.rvfi_pc_rdata[uvme_cv32e40x_pkg::XLEN*0+:uvme_cv32e40x_pkg::XLEN]),

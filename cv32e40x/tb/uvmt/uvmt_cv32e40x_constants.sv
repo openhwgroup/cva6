@@ -68,8 +68,8 @@
             atomic         : 0}
          };
    `else
-      parameter int unsigned               CORE_PARAM_PMA_NUM_REGIONS = 0;
-      parameter cv32e40x_pkg::pma_region_t CORE_PARAM_PMA_CFG[0:0] = '{'z};
+      parameter int                        CORE_PARAM_PMA_NUM_REGIONS = 0;
+      parameter cv32e40x_pkg::pma_region_t CORE_PARAM_PMA_CFG[-1:0] =  '{default:cv32e40x_pkg::PMA_R_DEFAULT};
    `endif
 
 
