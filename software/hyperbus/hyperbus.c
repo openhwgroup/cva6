@@ -43,8 +43,8 @@ int main() {
 
     // PLIC setup for hyper tx
     int plic_base = 0x0C000000;
-    int tx_hyper_plic_id = 127;
-    int rx_hyper_plic_id = 126;
+    int tx_hyper_plic_id = 131;
+    int rx_hyper_plic_id = 130;
     // Plics events for a periph with id = N are mapped as
     // n_evt[i]=N*4+8+i , with i=[0:3].
     // Each periph has 4 event signals it can use. The first

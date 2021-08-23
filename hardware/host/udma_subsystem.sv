@@ -15,13 +15,7 @@ module udma_subsystem
     parameter L2_ADDR_WIDTH  = 19,  //L2 addr space of 2MB
     parameter APB_ADDR_WIDTH = 12,  //APB slaves are 4KB by default
     parameter TRANS_SIZE     = 20,  //max uDMA transaction size of 1MB
-    parameter N_SPI          = 11,
-    parameter N_UART         = 7,
-    parameter N_SDIO         = 2,
-    parameter N_CAM          = 2,
-    parameter CAM_DATA_WIDTH = 8,
-    parameter N_I2C          = 6,
-    parameter N_HYPER        = 1 
+    parameter CAM_DATA_WIDTH = 8
 )
 (
     output logic                       L2_ro_wen_o ,

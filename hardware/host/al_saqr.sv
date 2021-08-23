@@ -14,11 +14,13 @@
 
 `include "register_interface/typedef.svh"
 `include "register_interface/assign.svh"
+`include "alsaqr_periph_padframe/assign.svh"
 
 module al_saqr 
   import axi_pkg::xbar_cfg_t;
   import apb_soc_pkg::NUM_GPIO;
-  import udma_subsystem_pkg::*;  
+  import udma_subsystem_pkg::*;
+  import pkg_alsaqr_periph_padframe::*; 
 #(
   parameter int unsigned AXI_USER_WIDTH    = 1,
   parameter int unsigned AXI_ADDRESS_WIDTH = 64,
@@ -109,7 +111,24 @@ module al_saqr
 
   pad_to_hyper_t s_pad_to_hyper;
   hyper_to_pad_t s_hyper_to_pad;
+
+  qspi_to_pad_t [N_SPI-1:0] s_qspi_to_pad;
+  pad_to_qspi_t [N_SPI-1:0] s_pad_to_qspi;
+  i2c_to_pad_t [N_I2C-1:0] s_i2c_to_pad;
+  pad_to_i2c_t [N_I2C-1:0] s_pad_to_i2c;
+  pad_to_cam_t [N_CAM-1:0] s_pad_to_cam;
+  pad_to_uart_t [N_UART-1:0] s_pad_to_uart;
+  uart_to_pad_t [N_UART-1:0] s_uart_to_pad;
+  sdio_to_pad_t [N_SDIO] s_sdio_to_pad;
+  pad_to_sdio_t [N_SDIO] s_pad_to_sdio;
+  pwm_to_pad_t s_pwm_to_pad;
    
+
+  static_connection_signals_pad2soc_t s_static_connection_signals_pad2soc;
+  static_connection_signals_soc2pad_t s_static_connection_signals_soc2pad;
+  port_signals_pad2soc_t              s_port_signals_pad2soc;
+  port_signals_soc2pad_t              s_port_signals_soc2pad;
+      
   localparam RegAw  = 32;
   localparam RegDw  = 32;
 
@@ -162,6 +181,16 @@ module al_saqr
       .hyper_to_pad           ( s_hyper_to_pad                  ),
       .pad_to_hyper           ( s_pad_to_hyper                  ),    
 
+      .qspi_to_pad            ( s_qspi_to_pad                   ),
+      .pad_to_qspi            ( s_pad_to_qspi                   ),
+      .i2c_to_pad             ( s_i2c_to_pad                    ),
+      .pad_to_i2c             ( s_pad_to_i2c                    ),
+  	  .pad_to_cam             ( s_pad_to_cam                    ),
+      .pad_to_uart            ( s_pad_to_uart                   ),
+      .uart_to_pad            ( s_uart_to_pad                   ),
+      .sdio_to_pad            ( s_sdio_to_pad                   ),
+      .pad_to_sdio            ( s_pad_to_sdio                   ),                     
+                     
       .gpio_in                ( s_gpio_pad_in                    ),
       .gpio_out               ( s_gpio_pad_out                   ),
       .gpio_dir               ( s_gpio_pad_dir                   ),
@@ -169,6 +198,8 @@ module al_saqr
       .cva6_uart_rx_i         ( cva6_uart_rx_i                   ),
       .cva6_uart_tx_o         ( cva6_uart_tx_o                   ),
 
+      .pwm_to_pad             ( s_pwm_to_pad                     ),
+ 
       .axi_hyper_cs_no        ( s_axi_hyper_cs_n                 ),
       .axi_hyper_ck_o         ( s_axi_hyper_ck                   ),
       .axi_hyper_ck_no        ( s_axi_hyper_ck_n                 ),
@@ -230,26 +261,26 @@ module al_saqr
       .pad_hyper_rwds1        ( pad_hyper_rwds1                 ),
       .pad_hyper_reset        ( pad_hyper_reset                 ),
 
-      .axi_hyper_cs_ni            ( s_axi_hyper_cs_n                    ),
-      .axi_hyper_ck_i             ( s_axi_hyper_ck                      ),
-      .axi_hyper_ck_ni            ( s_axi_hyper_ck_n                    ),
-      .axi_hyper_rwds_i           ( s_axi_hyper_rwds_o                  ),
-      .axi_hyper_rwds_o           ( s_axi_hyper_rwds_i                  ),
-      .axi_hyper_rwds_oe_i        ( s_axi_hyper_rwds_oe                 ),
-      .axi_hyper_dq_o             ( s_axi_hyper_dq_i                    ),
-      .axi_hyper_dq_i             ( s_axi_hyper_dq_o                    ),
-      .axi_hyper_dq_oe_i          ( s_axi_hyper_dq_oe                   ),
-      .axi_hyper_reset_ni         ( s_axi_hyper_reset_n                 ),
+      .axi_hyper_cs_ni        ( s_axi_hyper_cs_n                ),
+      .axi_hyper_ck_i         ( s_axi_hyper_ck                  ),
+      .axi_hyper_ck_ni        ( s_axi_hyper_ck_n                ),
+      .axi_hyper_rwds_i       ( s_axi_hyper_rwds_o              ),
+      .axi_hyper_rwds_o       ( s_axi_hyper_rwds_i              ),
+      .axi_hyper_rwds_oe_i    ( s_axi_hyper_rwds_oe             ),
+      .axi_hyper_dq_o         ( s_axi_hyper_dq_i                ),
+      .axi_hyper_dq_i         ( s_axi_hyper_dq_o                ),
+      .axi_hyper_dq_oe_i      ( s_axi_hyper_dq_oe               ),
+      .axi_hyper_reset_ni     ( s_axi_hyper_reset_n             ),
 
-      .pad_axi_hyper_dq0          ( pad_axi_hyper_dq0                   ),
-      .pad_axi_hyper_dq1          ( pad_axi_hyper_dq1                   ),
-      .pad_axi_hyper_ck           ( pad_axi_hyper_ck                    ),
-      .pad_axi_hyper_ckn          ( pad_axi_hyper_ckn                   ),
-      .pad_axi_hyper_csn0         ( pad_axi_hyper_csn0                  ),
-      .pad_axi_hyper_csn1         ( pad_axi_hyper_csn1                  ),
-      .pad_axi_hyper_rwds0        ( pad_axi_hyper_rwds0                 ),
-      .pad_axi_hyper_rwds1        ( pad_axi_hyper_rwds1                 ),
-      .pad_axi_hyper_reset        ( pad_axi_hyper_reset                 ),
+      .pad_axi_hyper_dq0      ( pad_axi_hyper_dq0               ),
+      .pad_axi_hyper_dq1      ( pad_axi_hyper_dq1               ),
+      .pad_axi_hyper_ck       ( pad_axi_hyper_ck                ),
+      .pad_axi_hyper_ckn      ( pad_axi_hyper_ckn               ),
+      .pad_axi_hyper_csn0     ( pad_axi_hyper_csn0              ),
+      .pad_axi_hyper_csn1     ( pad_axi_hyper_csn1              ),
+      .pad_axi_hyper_rwds0    ( pad_axi_hyper_rwds0             ),
+      .pad_axi_hyper_rwds1    ( pad_axi_hyper_rwds1             ),
+      .pad_axi_hyper_reset    ( pad_axi_hyper_reset             ),
 
       .gpio_pad_out           ( s_gpio_pad_out                  ),
       .gpio_pad_in            ( s_gpio_pad_in                   ),
@@ -270,8 +301,86 @@ module al_saqr
      (
       .clk_i          ( s_soc_clk   ),
       .rst_ni         ( s_soc_rst_n ),
+      .static_connection_signals_pad2soc(s_static_connection_signals_pad2soc),
+      .static_connection_signals_soc2pad(s_static_connection_signals_soc2pad),
+      .port_signals_pad2soc(s_port_signals_pad2soc),
+      .port_signals_soc2pad(s_port_signals_soc2pad),
       .config_req_i   ( reg_req     ),
       .config_rsp_o   ( reg_rsp     )      
       );
+
+   `ASSIGN_PERIPHS_I2C0_PAD2SOC(s_pad_to_i2c[0],s_port_signals_pad2soc.periphs.i2c0)
+   `ASSIGN_PERIPHS_I2C0_SOC2PAD(s_port_signals_soc2pad.periphs.i2c0,s_i2c_to_pad[0])
+   `ASSIGN_PERIPHS_I2C1_PAD2SOC(s_pad_to_i2c[1],s_port_signals_pad2soc.periphs.i2c1)
+   `ASSIGN_PERIPHS_I2C1_SOC2PAD(s_port_signals_soc2pad.periphs.i2c1,s_i2c_to_pad[1])
+   `ASSIGN_PERIPHS_I2C2_PAD2SOC(s_pad_to_i2c[2],s_port_signals_pad2soc.periphs.i2c2)
+   `ASSIGN_PERIPHS_I2C2_SOC2PAD(s_port_signals_soc2pad.periphs.i2c2,s_i2c_to_pad[2])
+
+   `ASSIGN_PERIPHS_SPI0_PAD2SOC(s_pad_to_qspi[0],s_port_signals_pad2soc.periphs.spi0)
+   `ASSIGN_PERIPHS_SPI0_SOC2PAD(s_port_signals_soc2pad.periphs.spi0,s_qspi_to_pad[0])
+   `ASSIGN_PERIPHS_SPI1_PAD2SOC(s_pad_to_qspi[1],s_port_signals_pad2soc.periphs.spi1)
+   `ASSIGN_PERIPHS_SPI1_SOC2PAD(s_port_signals_soc2pad.periphs.spi1,s_qspi_to_pad[1])
+   `ASSIGN_PERIPHS_SPI2_PAD2SOC(s_pad_to_qspi[2],s_port_signals_pad2soc.periphs.spi2)
+   `ASSIGN_PERIPHS_SPI2_SOC2PAD(s_port_signals_soc2pad.periphs.spi2,s_qspi_to_pad[2])
+   `ASSIGN_PERIPHS_SPI3_PAD2SOC(s_pad_to_qspi[3],s_port_signals_pad2soc.periphs.spi3)
+   `ASSIGN_PERIPHS_SPI3_SOC2PAD(s_port_signals_soc2pad.periphs.spi3,s_qspi_to_pad[3])
+   `ASSIGN_PERIPHS_SPI4_PAD2SOC(s_pad_to_qspi[4],s_port_signals_pad2soc.periphs.spi4)
+   `ASSIGN_PERIPHS_SPI4_SOC2PAD(s_port_signals_soc2pad.periphs.spi4,s_qspi_to_pad[4])
+   `ASSIGN_PERIPHS_SPI5_PAD2SOC(s_pad_to_qspi[5],s_port_signals_pad2soc.periphs.spi5)
+   `ASSIGN_PERIPHS_SPI5_SOC2PAD(s_port_signals_soc2pad.periphs.spi5,s_qspi_to_pad[5])   
+   `ASSIGN_PERIPHS_SPI6_PAD2SOC(s_pad_to_qspi[6],s_port_signals_pad2soc.periphs.spi6)
+   `ASSIGN_PERIPHS_SPI6_SOC2PAD(s_port_signals_soc2pad.periphs.spi6,s_qspi_to_pad[6])
+   
+   `ASSIGN_PERIPHS_QSPI_PAD2SOC(s_pad_to_qspi[11],s_port_signals_pad2soc.periphs.qspi)
+   `ASSIGN_PERIPHS_QSPI_SOC2PAD(s_port_signals_soc2pad.periphs.qspi,s_qspi_to_pad[11])
+
+   `ASSIGN_PERIPHS_SDIO0_PAD2SOC(s_pad_to_sdio[0],s_port_signals_pad2soc.periphs.sdio0)
+   `ASSIGN_PERIPHS_SDIO0_SOC2PAD(s_port_signals_soc2pad.periphs.sdio0,s_sdio_to_pad[0])
+
+   `ASSIGN_PERIPHS_UART0_PAD2SOC(s_pad_to_uart[0],s_port_signals_pad2soc.periphs.uart0)
+   `ASSIGN_PERIPHS_UART0_SOC2PAD(s_port_signals_soc2pad.periphs.uart0,s_uart_to_pad[0])
+   `ASSIGN_PERIPHS_UART1_PAD2SOC(s_pad_to_uart[1],s_port_signals_pad2soc.periphs.uart1)
+   `ASSIGN_PERIPHS_UART1_SOC2PAD(s_port_signals_soc2pad.periphs.uart1,s_uart_to_pad[1])
+
+   
+//   `ASSIGN_PERIPHS_UART_CF0_PAD2SOC(s_pad_to_uart[4],s_port_signals_pad2soc.periphs.uart_cf0)
+//   `ASSIGN_PERIPHS_UART_CF0_SOC2PAD(s_port_signals_soc2pad.periphs.uart_cf0,s_uart_to_pad[4])
+//   `ASSIGN_PERIPHS_UART_CF1_PAD2SOC(s_pad_to_uart[5],s_port_signals_pad2soc.periphs.uart_cf1)
+//   `ASSIGN_PERIPHS_UART_CF1_SOC2PAD(s_port_signals_soc2pad.periphs.uart_cf1,s_uart_to_pad[5])
+//   `ASSIGN_PERIPHS_UART_CF2_PAD2SOC(s_pad_to_uart[6],s_port_signals_pad2soc.periphs.uart_cf2)
+//   `ASSIGN_PERIPHS_UART_CF2_SOC2PAD(s_port_signals_soc2pad.periphs.uart_cf2,s_uart_to_pad[6])
+   
+   `ASSIGN_PERIPHS_PWM_SOC2PAD(s_port_signals_soc2pad.periphs.pwm,s_pwm_to_pad)
+     
+   `ASSIGN_PERIPHS_SPI7_PAD2SOC(s_pad_to_qspi[7],s_port_signals_pad2soc.periphs.spi7)
+   `ASSIGN_PERIPHS_SPI7_SOC2PAD(s_port_signals_soc2pad.periphs.spi7,s_qspi_to_pad[7])
+   `ASSIGN_PERIPHS_SPI8_PAD2SOC(s_pad_to_qspi[8],s_port_signals_pad2soc.periphs.spi8)
+   `ASSIGN_PERIPHS_SPI8_SOC2PAD(s_port_signals_soc2pad.periphs.spi8,s_qspi_to_pad[8])
+   `ASSIGN_PERIPHS_SPI9_PAD2SOC(s_pad_to_qspi[9],s_port_signals_pad2soc.periphs.spi9)
+   `ASSIGN_PERIPHS_SPI9_SOC2PAD(s_port_signals_soc2pad.periphs.spi9,s_qspi_to_pad[9])
+
+   `ASSIGN_PERIPHS_I2C3_PAD2SOC(s_pad_to_i2c[3],s_port_signals_pad2soc.periphs.i2c3)
+   `ASSIGN_PERIPHS_I2C3_SOC2PAD(s_port_signals_soc2pad.periphs.i2c3,s_i2c_to_pad[3])
+ 
+   `ASSIGN_PERIPHS_CAM0_PAD2SOC(s_pad_to_cam[0],s_port_signals_pad2soc.periphs.cam0)
+
+   `ASSIGN_PERIPHS_SPI10_PAD2SOC(s_pad_to_qspi[10],s_port_signals_pad2soc.periphs.spi10)
+   `ASSIGN_PERIPHS_SPI10_SOC2PAD(s_port_signals_soc2pad.periphs.spi10,s_qspi_to_pad[10])
+
+   `ASSIGN_PERIPHS_I2C4_PAD2SOC(s_pad_to_i2c[4],s_port_signals_pad2soc.periphs.i2c4)
+   `ASSIGN_PERIPHS_I2C4_SOC2PAD(s_port_signals_soc2pad.periphs.i2c4,s_i2c_to_pad[4])
+
+   `ASSIGN_PERIPHS_UART2_PAD2SOC(s_pad_to_uart[2],s_port_signals_pad2soc.periphs.uart2)
+   `ASSIGN_PERIPHS_UART2_SOC2PAD(s_port_signals_soc2pad.periphs.uart2,s_uart_to_pad[2])
+   `ASSIGN_PERIPHS_UART3_PAD2SOC(s_pad_to_uart[3],s_port_signals_pad2soc.periphs.uart3)
+   `ASSIGN_PERIPHS_UART3_SOC2PAD(s_port_signals_soc2pad.periphs.uart3,s_uart_to_pad[3])
+      
+   `ASSIGN_PERIPHS_CAM1_PAD2SOC(s_pad_to_cam[1],s_port_signals_pad2soc.periphs.cam1)
+
+//   `ASSIGN_PERIPHS_UART_CF3_PAD2SOC(s_pad_to_uart[7],s_port_signals_pad2soc.periphs.uart_cf3)
+//   `ASSIGN_PERIPHS_UART_CF3_SOC2PAD(s_port_signals_soc2pad.periphs.uart_cf3,s_uart_to_pad[7])
+
+   `ASSIGN_PERIPHS_SDIO1_PAD2SOC(s_pad_to_sdio[1],s_port_signals_pad2soc.periphs.sdio1)
+   `ASSIGN_PERIPHS_SDIO1_SOC2PAD(s_port_signals_soc2pad.periphs.sdio1,s_sdio_to_pad[1])
    
 endmodule

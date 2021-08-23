@@ -33,12 +33,7 @@ module host_domain
   parameter bit          StallRandomOutput = 1'b0,
   parameter bit          StallRandomInput  = 1'b0,
   parameter bit          JtagEnable        = 1'b1,
-  parameter int unsigned N_SPI             = 11,
-  parameter int unsigned N_UART            = 7,
-  parameter int unsigned N_SDIO            = 2,
-  parameter int unsigned N_CAM             = 2,
   parameter int unsigned CAM_DATA_WIDTH    = 8,
-  parameter int unsigned N_I2C             = 6,
   parameter int unsigned NUM_GPIO          = 64
 ) (
   input logic                 rtc_i,
@@ -92,6 +87,8 @@ module host_domain
     // HYPERBUS
   output                      hyper_to_pad_t hyper_to_pad,
   input                       pad_to_hyper_t pad_to_hyper,
+
+  output                      pwm_to_pad_t pwm_to_pad,
 
   // GPIOs
   input logic [NUM_GPIO-1:0]  gpio_in,
@@ -281,7 +278,8 @@ module host_domain
       .pad_to_sdio            ( pad_to_sdio                    ),
       .hyper_to_pad           ( hyper_to_pad                   ),
       .pad_to_hyper           ( pad_to_hyper                   ),
-
+      .pwm_to_pad             ( pwm_to_pad                     ),
+                        
       .gpio_in                ( gpio_in                        ),
       .gpio_out               ( gpio_out                       ),
       .gpio_dir               ( gpio_dir                       )

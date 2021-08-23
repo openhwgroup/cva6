@@ -10,7 +10,7 @@
 module alsaqr_periph_padframe_periphs_config_reg_top #(
     parameter type reg_req_t = logic,
     parameter type reg_rsp_t = logic,
-    parameter int AW = 9
+    parameter int AW = 10
 ) (
   input clk_i,
   input rst_ni,
@@ -67,445 +67,1048 @@ module alsaqr_periph_padframe_periphs_config_reg_top #(
   // Define SW related signals
   // Format: <reg>_<field>_{wd|we|qs}
   //        or <reg>_{wd|we|qs} if field == 1 or 0
-  logic pad_mx_can_0_cfg_chip2pad_qs;
-  logic pad_mx_can_0_cfg_chip2pad_wd;
-  logic pad_mx_can_0_cfg_chip2pad_we;
-  logic pad_mx_can_0_cfg_oen_qs;
-  logic pad_mx_can_0_cfg_oen_wd;
-  logic pad_mx_can_0_cfg_oen_we;
-  logic [3:0] pad_mx_can_0_mux_sel_qs;
-  logic [3:0] pad_mx_can_0_mux_sel_wd;
-  logic pad_mx_can_0_mux_sel_we;
-  logic pad_mx_can_1_cfg_chip2pad_qs;
-  logic pad_mx_can_1_cfg_chip2pad_wd;
-  logic pad_mx_can_1_cfg_chip2pad_we;
-  logic pad_mx_can_1_cfg_oen_qs;
-  logic pad_mx_can_1_cfg_oen_wd;
-  logic pad_mx_can_1_cfg_oen_we;
-  logic [3:0] pad_mx_can_1_mux_sel_qs;
-  logic [3:0] pad_mx_can_1_mux_sel_wd;
-  logic pad_mx_can_1_mux_sel_we;
-  logic pad_mx_can_2_cfg_chip2pad_qs;
-  logic pad_mx_can_2_cfg_chip2pad_wd;
-  logic pad_mx_can_2_cfg_chip2pad_we;
-  logic pad_mx_can_2_cfg_oen_qs;
-  logic pad_mx_can_2_cfg_oen_wd;
-  logic pad_mx_can_2_cfg_oen_we;
-  logic [3:0] pad_mx_can_2_mux_sel_qs;
-  logic [3:0] pad_mx_can_2_mux_sel_wd;
-  logic pad_mx_can_2_mux_sel_we;
-  logic pad_mx_can_3_cfg_chip2pad_qs;
-  logic pad_mx_can_3_cfg_chip2pad_wd;
-  logic pad_mx_can_3_cfg_chip2pad_we;
-  logic pad_mx_can_3_cfg_oen_qs;
-  logic pad_mx_can_3_cfg_oen_wd;
-  logic pad_mx_can_3_cfg_oen_we;
-  logic [3:0] pad_mx_can_3_mux_sel_qs;
-  logic [3:0] pad_mx_can_3_mux_sel_wd;
-  logic pad_mx_can_3_mux_sel_we;
-  logic pad_mx_cam0_0_cfg_chip2pad_qs;
-  logic pad_mx_cam0_0_cfg_chip2pad_wd;
-  logic pad_mx_cam0_0_cfg_chip2pad_we;
-  logic pad_mx_cam0_0_cfg_oen_qs;
-  logic pad_mx_cam0_0_cfg_oen_wd;
-  logic pad_mx_cam0_0_cfg_oen_we;
-  logic [4:0] pad_mx_cam0_0_mux_sel_qs;
-  logic [4:0] pad_mx_cam0_0_mux_sel_wd;
-  logic pad_mx_cam0_0_mux_sel_we;
-  logic pad_mx_cam0_1_cfg_chip2pad_qs;
-  logic pad_mx_cam0_1_cfg_chip2pad_wd;
-  logic pad_mx_cam0_1_cfg_chip2pad_we;
-  logic pad_mx_cam0_1_cfg_oen_qs;
-  logic pad_mx_cam0_1_cfg_oen_wd;
-  logic pad_mx_cam0_1_cfg_oen_we;
-  logic [4:0] pad_mx_cam0_1_mux_sel_qs;
-  logic [4:0] pad_mx_cam0_1_mux_sel_wd;
-  logic pad_mx_cam0_1_mux_sel_we;
-  logic pad_mx_cam0_2_cfg_chip2pad_qs;
-  logic pad_mx_cam0_2_cfg_chip2pad_wd;
-  logic pad_mx_cam0_2_cfg_chip2pad_we;
-  logic pad_mx_cam0_2_cfg_oen_qs;
-  logic pad_mx_cam0_2_cfg_oen_wd;
-  logic pad_mx_cam0_2_cfg_oen_we;
-  logic [4:0] pad_mx_cam0_2_mux_sel_qs;
-  logic [4:0] pad_mx_cam0_2_mux_sel_wd;
-  logic pad_mx_cam0_2_mux_sel_we;
-  logic pad_mx_cam0_3_cfg_chip2pad_qs;
-  logic pad_mx_cam0_3_cfg_chip2pad_wd;
-  logic pad_mx_cam0_3_cfg_chip2pad_we;
-  logic pad_mx_cam0_3_cfg_oen_qs;
-  logic pad_mx_cam0_3_cfg_oen_wd;
-  logic pad_mx_cam0_3_cfg_oen_we;
-  logic [4:0] pad_mx_cam0_3_mux_sel_qs;
-  logic [4:0] pad_mx_cam0_3_mux_sel_wd;
-  logic pad_mx_cam0_3_mux_sel_we;
-  logic pad_mx_cam0_4_cfg_chip2pad_qs;
-  logic pad_mx_cam0_4_cfg_chip2pad_wd;
-  logic pad_mx_cam0_4_cfg_chip2pad_we;
-  logic pad_mx_cam0_4_cfg_oen_qs;
-  logic pad_mx_cam0_4_cfg_oen_wd;
-  logic pad_mx_cam0_4_cfg_oen_we;
-  logic [4:0] pad_mx_cam0_4_mux_sel_qs;
-  logic [4:0] pad_mx_cam0_4_mux_sel_wd;
-  logic pad_mx_cam0_4_mux_sel_we;
-  logic pad_mx_cam0_5_cfg_chip2pad_qs;
-  logic pad_mx_cam0_5_cfg_chip2pad_wd;
-  logic pad_mx_cam0_5_cfg_chip2pad_we;
-  logic pad_mx_cam0_5_cfg_oen_qs;
-  logic pad_mx_cam0_5_cfg_oen_wd;
-  logic pad_mx_cam0_5_cfg_oen_we;
-  logic [4:0] pad_mx_cam0_5_mux_sel_qs;
-  logic [4:0] pad_mx_cam0_5_mux_sel_wd;
-  logic pad_mx_cam0_5_mux_sel_we;
-  logic pad_mx_cam0_6_cfg_chip2pad_qs;
-  logic pad_mx_cam0_6_cfg_chip2pad_wd;
-  logic pad_mx_cam0_6_cfg_chip2pad_we;
-  logic pad_mx_cam0_6_cfg_oen_qs;
-  logic pad_mx_cam0_6_cfg_oen_wd;
-  logic pad_mx_cam0_6_cfg_oen_we;
-  logic [4:0] pad_mx_cam0_6_mux_sel_qs;
-  logic [4:0] pad_mx_cam0_6_mux_sel_wd;
-  logic pad_mx_cam0_6_mux_sel_we;
-  logic pad_mx_cam0_7_cfg_chip2pad_qs;
-  logic pad_mx_cam0_7_cfg_chip2pad_wd;
-  logic pad_mx_cam0_7_cfg_chip2pad_we;
-  logic pad_mx_cam0_7_cfg_oen_qs;
-  logic pad_mx_cam0_7_cfg_oen_wd;
-  logic pad_mx_cam0_7_cfg_oen_we;
-  logic [4:0] pad_mx_cam0_7_mux_sel_qs;
-  logic [4:0] pad_mx_cam0_7_mux_sel_wd;
-  logic pad_mx_cam0_7_mux_sel_we;
-  logic pad_mx_cam0_8_cfg_chip2pad_qs;
-  logic pad_mx_cam0_8_cfg_chip2pad_wd;
-  logic pad_mx_cam0_8_cfg_chip2pad_we;
-  logic pad_mx_cam0_8_cfg_oen_qs;
-  logic pad_mx_cam0_8_cfg_oen_wd;
-  logic pad_mx_cam0_8_cfg_oen_we;
-  logic [4:0] pad_mx_cam0_8_mux_sel_qs;
-  logic [4:0] pad_mx_cam0_8_mux_sel_wd;
-  logic pad_mx_cam0_8_mux_sel_we;
-  logic pad_mx_cam0_9_cfg_chip2pad_qs;
-  logic pad_mx_cam0_9_cfg_chip2pad_wd;
-  logic pad_mx_cam0_9_cfg_chip2pad_we;
-  logic pad_mx_cam0_9_cfg_oen_qs;
-  logic pad_mx_cam0_9_cfg_oen_wd;
-  logic pad_mx_cam0_9_cfg_oen_we;
-  logic [4:0] pad_mx_cam0_9_mux_sel_qs;
-  logic [4:0] pad_mx_cam0_9_mux_sel_wd;
-  logic pad_mx_cam0_9_mux_sel_we;
-  logic pad_mx_cam0_10_cfg_chip2pad_qs;
-  logic pad_mx_cam0_10_cfg_chip2pad_wd;
-  logic pad_mx_cam0_10_cfg_chip2pad_we;
-  logic pad_mx_cam0_10_cfg_oen_qs;
-  logic pad_mx_cam0_10_cfg_oen_wd;
-  logic pad_mx_cam0_10_cfg_oen_we;
-  logic [4:0] pad_mx_cam0_10_mux_sel_qs;
-  logic [4:0] pad_mx_cam0_10_mux_sel_wd;
-  logic pad_mx_cam0_10_mux_sel_we;
-  logic pad_mx_cam1_0_cfg_chip2pad_qs;
-  logic pad_mx_cam1_0_cfg_chip2pad_wd;
-  logic pad_mx_cam1_0_cfg_chip2pad_we;
-  logic pad_mx_cam1_0_cfg_oen_qs;
-  logic pad_mx_cam1_0_cfg_oen_wd;
-  logic pad_mx_cam1_0_cfg_oen_we;
-  logic [4:0] pad_mx_cam1_0_mux_sel_qs;
-  logic [4:0] pad_mx_cam1_0_mux_sel_wd;
-  logic pad_mx_cam1_0_mux_sel_we;
-  logic pad_mx_cam1_1_cfg_chip2pad_qs;
-  logic pad_mx_cam1_1_cfg_chip2pad_wd;
-  logic pad_mx_cam1_1_cfg_chip2pad_we;
-  logic pad_mx_cam1_1_cfg_oen_qs;
-  logic pad_mx_cam1_1_cfg_oen_wd;
-  logic pad_mx_cam1_1_cfg_oen_we;
-  logic [4:0] pad_mx_cam1_1_mux_sel_qs;
-  logic [4:0] pad_mx_cam1_1_mux_sel_wd;
-  logic pad_mx_cam1_1_mux_sel_we;
-  logic pad_mx_cam1_2_cfg_chip2pad_qs;
-  logic pad_mx_cam1_2_cfg_chip2pad_wd;
-  logic pad_mx_cam1_2_cfg_chip2pad_we;
-  logic pad_mx_cam1_2_cfg_oen_qs;
-  logic pad_mx_cam1_2_cfg_oen_wd;
-  logic pad_mx_cam1_2_cfg_oen_we;
-  logic [4:0] pad_mx_cam1_2_mux_sel_qs;
-  logic [4:0] pad_mx_cam1_2_mux_sel_wd;
-  logic pad_mx_cam1_2_mux_sel_we;
-  logic pad_mx_cam1_3_cfg_chip2pad_qs;
-  logic pad_mx_cam1_3_cfg_chip2pad_wd;
-  logic pad_mx_cam1_3_cfg_chip2pad_we;
-  logic pad_mx_cam1_3_cfg_oen_qs;
-  logic pad_mx_cam1_3_cfg_oen_wd;
-  logic pad_mx_cam1_3_cfg_oen_we;
-  logic [4:0] pad_mx_cam1_3_mux_sel_qs;
-  logic [4:0] pad_mx_cam1_3_mux_sel_wd;
-  logic pad_mx_cam1_3_mux_sel_we;
-  logic pad_mx_cam1_4_cfg_chip2pad_qs;
-  logic pad_mx_cam1_4_cfg_chip2pad_wd;
-  logic pad_mx_cam1_4_cfg_chip2pad_we;
-  logic pad_mx_cam1_4_cfg_oen_qs;
-  logic pad_mx_cam1_4_cfg_oen_wd;
-  logic pad_mx_cam1_4_cfg_oen_we;
-  logic [4:0] pad_mx_cam1_4_mux_sel_qs;
-  logic [4:0] pad_mx_cam1_4_mux_sel_wd;
-  logic pad_mx_cam1_4_mux_sel_we;
-  logic pad_mx_cam1_5_cfg_chip2pad_qs;
-  logic pad_mx_cam1_5_cfg_chip2pad_wd;
-  logic pad_mx_cam1_5_cfg_chip2pad_we;
-  logic pad_mx_cam1_5_cfg_oen_qs;
-  logic pad_mx_cam1_5_cfg_oen_wd;
-  logic pad_mx_cam1_5_cfg_oen_we;
-  logic [4:0] pad_mx_cam1_5_mux_sel_qs;
-  logic [4:0] pad_mx_cam1_5_mux_sel_wd;
-  logic pad_mx_cam1_5_mux_sel_we;
-  logic pad_mx_cam1_6_cfg_chip2pad_qs;
-  logic pad_mx_cam1_6_cfg_chip2pad_wd;
-  logic pad_mx_cam1_6_cfg_chip2pad_we;
-  logic pad_mx_cam1_6_cfg_oen_qs;
-  logic pad_mx_cam1_6_cfg_oen_wd;
-  logic pad_mx_cam1_6_cfg_oen_we;
-  logic [4:0] pad_mx_cam1_6_mux_sel_qs;
-  logic [4:0] pad_mx_cam1_6_mux_sel_wd;
-  logic pad_mx_cam1_6_mux_sel_we;
-  logic pad_mx_cam1_7_cfg_chip2pad_qs;
-  logic pad_mx_cam1_7_cfg_chip2pad_wd;
-  logic pad_mx_cam1_7_cfg_chip2pad_we;
-  logic pad_mx_cam1_7_cfg_oen_qs;
-  logic pad_mx_cam1_7_cfg_oen_wd;
-  logic pad_mx_cam1_7_cfg_oen_we;
-  logic [4:0] pad_mx_cam1_7_mux_sel_qs;
-  logic [4:0] pad_mx_cam1_7_mux_sel_wd;
-  logic pad_mx_cam1_7_mux_sel_we;
-  logic pad_mx_cam1_8_cfg_chip2pad_qs;
-  logic pad_mx_cam1_8_cfg_chip2pad_wd;
-  logic pad_mx_cam1_8_cfg_chip2pad_we;
-  logic pad_mx_cam1_8_cfg_oen_qs;
-  logic pad_mx_cam1_8_cfg_oen_wd;
-  logic pad_mx_cam1_8_cfg_oen_we;
-  logic [4:0] pad_mx_cam1_8_mux_sel_qs;
-  logic [4:0] pad_mx_cam1_8_mux_sel_wd;
-  logic pad_mx_cam1_8_mux_sel_we;
-  logic pad_mx_cam1_9_cfg_chip2pad_qs;
-  logic pad_mx_cam1_9_cfg_chip2pad_wd;
-  logic pad_mx_cam1_9_cfg_chip2pad_we;
-  logic pad_mx_cam1_9_cfg_oen_qs;
-  logic pad_mx_cam1_9_cfg_oen_wd;
-  logic pad_mx_cam1_9_cfg_oen_we;
-  logic [4:0] pad_mx_cam1_9_mux_sel_qs;
-  logic [4:0] pad_mx_cam1_9_mux_sel_wd;
-  logic pad_mx_cam1_9_mux_sel_we;
-  logic pad_mx_cam1_10_cfg_chip2pad_qs;
-  logic pad_mx_cam1_10_cfg_chip2pad_wd;
-  logic pad_mx_cam1_10_cfg_chip2pad_we;
-  logic pad_mx_cam1_10_cfg_oen_qs;
-  logic pad_mx_cam1_10_cfg_oen_wd;
-  logic pad_mx_cam1_10_cfg_oen_we;
-  logic [4:0] pad_mx_cam1_10_mux_sel_qs;
-  logic [4:0] pad_mx_cam1_10_mux_sel_wd;
-  logic pad_mx_cam1_10_mux_sel_we;
-  logic pad_mx_sdio1_0_cfg_chip2pad_qs;
-  logic pad_mx_sdio1_0_cfg_chip2pad_wd;
-  logic pad_mx_sdio1_0_cfg_chip2pad_we;
-  logic pad_mx_sdio1_0_cfg_oen_qs;
-  logic pad_mx_sdio1_0_cfg_oen_wd;
-  logic pad_mx_sdio1_0_cfg_oen_we;
-  logic [3:0] pad_mx_sdio1_0_mux_sel_qs;
-  logic [3:0] pad_mx_sdio1_0_mux_sel_wd;
-  logic pad_mx_sdio1_0_mux_sel_we;
-  logic pad_mx_sdio1_1_cfg_chip2pad_qs;
-  logic pad_mx_sdio1_1_cfg_chip2pad_wd;
-  logic pad_mx_sdio1_1_cfg_chip2pad_we;
-  logic pad_mx_sdio1_1_cfg_oen_qs;
-  logic pad_mx_sdio1_1_cfg_oen_wd;
-  logic pad_mx_sdio1_1_cfg_oen_we;
-  logic [3:0] pad_mx_sdio1_1_mux_sel_qs;
-  logic [3:0] pad_mx_sdio1_1_mux_sel_wd;
-  logic pad_mx_sdio1_1_mux_sel_we;
-  logic pad_mx_sdio1_2_cfg_chip2pad_qs;
-  logic pad_mx_sdio1_2_cfg_chip2pad_wd;
-  logic pad_mx_sdio1_2_cfg_chip2pad_we;
-  logic pad_mx_sdio1_2_cfg_oen_qs;
-  logic pad_mx_sdio1_2_cfg_oen_wd;
-  logic pad_mx_sdio1_2_cfg_oen_we;
-  logic [3:0] pad_mx_sdio1_2_mux_sel_qs;
-  logic [3:0] pad_mx_sdio1_2_mux_sel_wd;
-  logic pad_mx_sdio1_2_mux_sel_we;
-  logic pad_mx_sdio1_3_cfg_chip2pad_qs;
-  logic pad_mx_sdio1_3_cfg_chip2pad_wd;
-  logic pad_mx_sdio1_3_cfg_chip2pad_we;
-  logic pad_mx_sdio1_3_cfg_oen_qs;
-  logic pad_mx_sdio1_3_cfg_oen_wd;
-  logic pad_mx_sdio1_3_cfg_oen_we;
-  logic [3:0] pad_mx_sdio1_3_mux_sel_qs;
-  logic [3:0] pad_mx_sdio1_3_mux_sel_wd;
-  logic pad_mx_sdio1_3_mux_sel_we;
-  logic pad_mx_sdio1_4_cfg_chip2pad_qs;
-  logic pad_mx_sdio1_4_cfg_chip2pad_wd;
-  logic pad_mx_sdio1_4_cfg_chip2pad_we;
-  logic pad_mx_sdio1_4_cfg_oen_qs;
-  logic pad_mx_sdio1_4_cfg_oen_wd;
-  logic pad_mx_sdio1_4_cfg_oen_we;
-  logic [3:0] pad_mx_sdio1_4_mux_sel_qs;
-  logic [3:0] pad_mx_sdio1_4_mux_sel_wd;
-  logic pad_mx_sdio1_4_mux_sel_we;
-  logic pad_mx_sdio1_5_cfg_chip2pad_qs;
-  logic pad_mx_sdio1_5_cfg_chip2pad_wd;
-  logic pad_mx_sdio1_5_cfg_chip2pad_we;
-  logic pad_mx_sdio1_5_cfg_oen_qs;
-  logic pad_mx_sdio1_5_cfg_oen_wd;
-  logic pad_mx_sdio1_5_cfg_oen_we;
-  logic [3:0] pad_mx_sdio1_5_mux_sel_qs;
-  logic [3:0] pad_mx_sdio1_5_mux_sel_wd;
-  logic pad_mx_sdio1_5_mux_sel_we;
-  logic pad_mx_sdio1_6_cfg_chip2pad_qs;
-  logic pad_mx_sdio1_6_cfg_chip2pad_wd;
-  logic pad_mx_sdio1_6_cfg_chip2pad_we;
-  logic pad_mx_sdio1_6_cfg_oen_qs;
-  logic pad_mx_sdio1_6_cfg_oen_wd;
-  logic pad_mx_sdio1_6_cfg_oen_we;
-  logic [3:0] pad_mx_sdio1_6_mux_sel_qs;
-  logic [3:0] pad_mx_sdio1_6_mux_sel_wd;
-  logic pad_mx_sdio1_6_mux_sel_we;
-  logic pad_mx_sdio1_7_cfg_chip2pad_qs;
-  logic pad_mx_sdio1_7_cfg_chip2pad_wd;
-  logic pad_mx_sdio1_7_cfg_chip2pad_we;
-  logic pad_mx_sdio1_7_cfg_oen_qs;
-  logic pad_mx_sdio1_7_cfg_oen_wd;
-  logic pad_mx_sdio1_7_cfg_oen_we;
-  logic [3:0] pad_mx_sdio1_7_mux_sel_qs;
-  logic [3:0] pad_mx_sdio1_7_mux_sel_wd;
-  logic pad_mx_sdio1_7_mux_sel_we;
-  logic pad_mx_hyper1_0_cfg_chip2pad_qs;
-  logic pad_mx_hyper1_0_cfg_chip2pad_wd;
-  logic pad_mx_hyper1_0_cfg_chip2pad_we;
-  logic pad_mx_hyper1_0_cfg_oen_qs;
-  logic pad_mx_hyper1_0_cfg_oen_wd;
-  logic pad_mx_hyper1_0_cfg_oen_we;
-  logic [4:0] pad_mx_hyper1_0_mux_sel_qs;
-  logic [4:0] pad_mx_hyper1_0_mux_sel_wd;
-  logic pad_mx_hyper1_0_mux_sel_we;
-  logic pad_mx_hyper1_1_cfg_chip2pad_qs;
-  logic pad_mx_hyper1_1_cfg_chip2pad_wd;
-  logic pad_mx_hyper1_1_cfg_chip2pad_we;
-  logic pad_mx_hyper1_1_cfg_oen_qs;
-  logic pad_mx_hyper1_1_cfg_oen_wd;
-  logic pad_mx_hyper1_1_cfg_oen_we;
-  logic [4:0] pad_mx_hyper1_1_mux_sel_qs;
-  logic [4:0] pad_mx_hyper1_1_mux_sel_wd;
-  logic pad_mx_hyper1_1_mux_sel_we;
-  logic pad_mx_hyper1_2_cfg_chip2pad_qs;
-  logic pad_mx_hyper1_2_cfg_chip2pad_wd;
-  logic pad_mx_hyper1_2_cfg_chip2pad_we;
-  logic pad_mx_hyper1_2_cfg_oen_qs;
-  logic pad_mx_hyper1_2_cfg_oen_wd;
-  logic pad_mx_hyper1_2_cfg_oen_we;
-  logic [4:0] pad_mx_hyper1_2_mux_sel_qs;
-  logic [4:0] pad_mx_hyper1_2_mux_sel_wd;
-  logic pad_mx_hyper1_2_mux_sel_we;
-  logic pad_mx_hyper1_3_cfg_chip2pad_qs;
-  logic pad_mx_hyper1_3_cfg_chip2pad_wd;
-  logic pad_mx_hyper1_3_cfg_chip2pad_we;
-  logic pad_mx_hyper1_3_cfg_oen_qs;
-  logic pad_mx_hyper1_3_cfg_oen_wd;
-  logic pad_mx_hyper1_3_cfg_oen_we;
-  logic [4:0] pad_mx_hyper1_3_mux_sel_qs;
-  logic [4:0] pad_mx_hyper1_3_mux_sel_wd;
-  logic pad_mx_hyper1_3_mux_sel_we;
-  logic pad_mx_hyper1_4_cfg_chip2pad_qs;
-  logic pad_mx_hyper1_4_cfg_chip2pad_wd;
-  logic pad_mx_hyper1_4_cfg_chip2pad_we;
-  logic pad_mx_hyper1_4_cfg_oen_qs;
-  logic pad_mx_hyper1_4_cfg_oen_wd;
-  logic pad_mx_hyper1_4_cfg_oen_we;
-  logic [4:0] pad_mx_hyper1_4_mux_sel_qs;
-  logic [4:0] pad_mx_hyper1_4_mux_sel_wd;
-  logic pad_mx_hyper1_4_mux_sel_we;
-  logic pad_mx_hyper1_5_cfg_chip2pad_qs;
-  logic pad_mx_hyper1_5_cfg_chip2pad_wd;
-  logic pad_mx_hyper1_5_cfg_chip2pad_we;
-  logic pad_mx_hyper1_5_cfg_oen_qs;
-  logic pad_mx_hyper1_5_cfg_oen_wd;
-  logic pad_mx_hyper1_5_cfg_oen_we;
-  logic [4:0] pad_mx_hyper1_5_mux_sel_qs;
-  logic [4:0] pad_mx_hyper1_5_mux_sel_wd;
-  logic pad_mx_hyper1_5_mux_sel_we;
-  logic pad_mx_hyper1_6_cfg_chip2pad_qs;
-  logic pad_mx_hyper1_6_cfg_chip2pad_wd;
-  logic pad_mx_hyper1_6_cfg_chip2pad_we;
-  logic pad_mx_hyper1_6_cfg_oen_qs;
-  logic pad_mx_hyper1_6_cfg_oen_wd;
-  logic pad_mx_hyper1_6_cfg_oen_we;
-  logic [4:0] pad_mx_hyper1_6_mux_sel_qs;
-  logic [4:0] pad_mx_hyper1_6_mux_sel_wd;
-  logic pad_mx_hyper1_6_mux_sel_we;
-  logic pad_mx_hyper1_7_cfg_chip2pad_qs;
-  logic pad_mx_hyper1_7_cfg_chip2pad_wd;
-  logic pad_mx_hyper1_7_cfg_chip2pad_we;
-  logic pad_mx_hyper1_7_cfg_oen_qs;
-  logic pad_mx_hyper1_7_cfg_oen_wd;
-  logic pad_mx_hyper1_7_cfg_oen_we;
-  logic [4:0] pad_mx_hyper1_7_mux_sel_qs;
-  logic [4:0] pad_mx_hyper1_7_mux_sel_wd;
-  logic pad_mx_hyper1_7_mux_sel_we;
-  logic pad_mx_hyper1_8_cfg_chip2pad_qs;
-  logic pad_mx_hyper1_8_cfg_chip2pad_wd;
-  logic pad_mx_hyper1_8_cfg_chip2pad_we;
-  logic pad_mx_hyper1_8_cfg_oen_qs;
-  logic pad_mx_hyper1_8_cfg_oen_wd;
-  logic pad_mx_hyper1_8_cfg_oen_we;
-  logic [4:0] pad_mx_hyper1_8_mux_sel_qs;
-  logic [4:0] pad_mx_hyper1_8_mux_sel_wd;
-  logic pad_mx_hyper1_8_mux_sel_we;
-  logic pad_mx_hyper1_9_cfg_chip2pad_qs;
-  logic pad_mx_hyper1_9_cfg_chip2pad_wd;
-  logic pad_mx_hyper1_9_cfg_chip2pad_we;
-  logic pad_mx_hyper1_9_cfg_oen_qs;
-  logic pad_mx_hyper1_9_cfg_oen_wd;
-  logic pad_mx_hyper1_9_cfg_oen_we;
-  logic [4:0] pad_mx_hyper1_9_mux_sel_qs;
-  logic [4:0] pad_mx_hyper1_9_mux_sel_wd;
-  logic pad_mx_hyper1_9_mux_sel_we;
-  logic pad_mx_hyper1_10_cfg_chip2pad_qs;
-  logic pad_mx_hyper1_10_cfg_chip2pad_wd;
-  logic pad_mx_hyper1_10_cfg_chip2pad_we;
-  logic pad_mx_hyper1_10_cfg_oen_qs;
-  logic pad_mx_hyper1_10_cfg_oen_wd;
-  logic pad_mx_hyper1_10_cfg_oen_we;
-  logic [4:0] pad_mx_hyper1_10_mux_sel_qs;
-  logic [4:0] pad_mx_hyper1_10_mux_sel_wd;
-  logic pad_mx_hyper1_10_mux_sel_we;
-  logic pad_mx_hyper1_11_cfg_chip2pad_qs;
-  logic pad_mx_hyper1_11_cfg_chip2pad_wd;
-  logic pad_mx_hyper1_11_cfg_chip2pad_we;
-  logic pad_mx_hyper1_11_cfg_oen_qs;
-  logic pad_mx_hyper1_11_cfg_oen_wd;
-  logic pad_mx_hyper1_11_cfg_oen_we;
-  logic [4:0] pad_mx_hyper1_11_mux_sel_qs;
-  logic [4:0] pad_mx_hyper1_11_mux_sel_wd;
-  logic pad_mx_hyper1_11_mux_sel_we;
-  logic pad_mx_hyper1_12_cfg_chip2pad_qs;
-  logic pad_mx_hyper1_12_cfg_chip2pad_wd;
-  logic pad_mx_hyper1_12_cfg_chip2pad_we;
-  logic pad_mx_hyper1_12_cfg_oen_qs;
-  logic pad_mx_hyper1_12_cfg_oen_wd;
-  logic pad_mx_hyper1_12_cfg_oen_we;
-  logic [4:0] pad_mx_hyper1_12_mux_sel_qs;
-  logic [4:0] pad_mx_hyper1_12_mux_sel_wd;
-  logic pad_mx_hyper1_12_mux_sel_we;
+  logic pad_io_a_00_cfg_chip2pad_qs;
+  logic pad_io_a_00_cfg_chip2pad_wd;
+  logic pad_io_a_00_cfg_chip2pad_we;
+  logic pad_io_a_00_cfg_oen_qs;
+  logic pad_io_a_00_cfg_oen_wd;
+  logic pad_io_a_00_cfg_oen_we;
+  logic [3:0] pad_io_a_00_mux_sel_qs;
+  logic [3:0] pad_io_a_00_mux_sel_wd;
+  logic pad_io_a_00_mux_sel_we;
+  logic pad_io_a_01_cfg_chip2pad_qs;
+  logic pad_io_a_01_cfg_chip2pad_wd;
+  logic pad_io_a_01_cfg_chip2pad_we;
+  logic pad_io_a_01_cfg_oen_qs;
+  logic pad_io_a_01_cfg_oen_wd;
+  logic pad_io_a_01_cfg_oen_we;
+  logic [3:0] pad_io_a_01_mux_sel_qs;
+  logic [3:0] pad_io_a_01_mux_sel_wd;
+  logic pad_io_a_01_mux_sel_we;
+  logic pad_io_a_02_cfg_chip2pad_qs;
+  logic pad_io_a_02_cfg_chip2pad_wd;
+  logic pad_io_a_02_cfg_chip2pad_we;
+  logic pad_io_a_02_cfg_oen_qs;
+  logic pad_io_a_02_cfg_oen_wd;
+  logic pad_io_a_02_cfg_oen_we;
+  logic [3:0] pad_io_a_02_mux_sel_qs;
+  logic [3:0] pad_io_a_02_mux_sel_wd;
+  logic pad_io_a_02_mux_sel_we;
+  logic pad_io_a_03_cfg_chip2pad_qs;
+  logic pad_io_a_03_cfg_chip2pad_wd;
+  logic pad_io_a_03_cfg_chip2pad_we;
+  logic pad_io_a_03_cfg_oen_qs;
+  logic pad_io_a_03_cfg_oen_wd;
+  logic pad_io_a_03_cfg_oen_we;
+  logic [3:0] pad_io_a_03_mux_sel_qs;
+  logic [3:0] pad_io_a_03_mux_sel_wd;
+  logic pad_io_a_03_mux_sel_we;
+  logic pad_io_a_04_cfg_chip2pad_qs;
+  logic pad_io_a_04_cfg_chip2pad_wd;
+  logic pad_io_a_04_cfg_chip2pad_we;
+  logic pad_io_a_04_cfg_oen_qs;
+  logic pad_io_a_04_cfg_oen_wd;
+  logic pad_io_a_04_cfg_oen_we;
+  logic [3:0] pad_io_a_04_mux_sel_qs;
+  logic [3:0] pad_io_a_04_mux_sel_wd;
+  logic pad_io_a_04_mux_sel_we;
+  logic pad_io_a_05_cfg_chip2pad_qs;
+  logic pad_io_a_05_cfg_chip2pad_wd;
+  logic pad_io_a_05_cfg_chip2pad_we;
+  logic pad_io_a_05_cfg_oen_qs;
+  logic pad_io_a_05_cfg_oen_wd;
+  logic pad_io_a_05_cfg_oen_we;
+  logic [3:0] pad_io_a_05_mux_sel_qs;
+  logic [3:0] pad_io_a_05_mux_sel_wd;
+  logic pad_io_a_05_mux_sel_we;
+  logic pad_io_a_06_cfg_chip2pad_qs;
+  logic pad_io_a_06_cfg_chip2pad_wd;
+  logic pad_io_a_06_cfg_chip2pad_we;
+  logic pad_io_a_06_cfg_oen_qs;
+  logic pad_io_a_06_cfg_oen_wd;
+  logic pad_io_a_06_cfg_oen_we;
+  logic [3:0] pad_io_a_06_mux_sel_qs;
+  logic [3:0] pad_io_a_06_mux_sel_wd;
+  logic pad_io_a_06_mux_sel_we;
+  logic pad_io_a_07_cfg_chip2pad_qs;
+  logic pad_io_a_07_cfg_chip2pad_wd;
+  logic pad_io_a_07_cfg_chip2pad_we;
+  logic pad_io_a_07_cfg_oen_qs;
+  logic pad_io_a_07_cfg_oen_wd;
+  logic pad_io_a_07_cfg_oen_we;
+  logic [3:0] pad_io_a_07_mux_sel_qs;
+  logic [3:0] pad_io_a_07_mux_sel_wd;
+  logic pad_io_a_07_mux_sel_we;
+  logic pad_io_a_08_cfg_chip2pad_qs;
+  logic pad_io_a_08_cfg_chip2pad_wd;
+  logic pad_io_a_08_cfg_chip2pad_we;
+  logic pad_io_a_08_cfg_oen_qs;
+  logic pad_io_a_08_cfg_oen_wd;
+  logic pad_io_a_08_cfg_oen_we;
+  logic [3:0] pad_io_a_08_mux_sel_qs;
+  logic [3:0] pad_io_a_08_mux_sel_wd;
+  logic pad_io_a_08_mux_sel_we;
+  logic pad_io_a_09_cfg_chip2pad_qs;
+  logic pad_io_a_09_cfg_chip2pad_wd;
+  logic pad_io_a_09_cfg_chip2pad_we;
+  logic pad_io_a_09_cfg_oen_qs;
+  logic pad_io_a_09_cfg_oen_wd;
+  logic pad_io_a_09_cfg_oen_we;
+  logic [3:0] pad_io_a_09_mux_sel_qs;
+  logic [3:0] pad_io_a_09_mux_sel_wd;
+  logic pad_io_a_09_mux_sel_we;
+  logic pad_io_a_10_cfg_chip2pad_qs;
+  logic pad_io_a_10_cfg_chip2pad_wd;
+  logic pad_io_a_10_cfg_chip2pad_we;
+  logic pad_io_a_10_cfg_oen_qs;
+  logic pad_io_a_10_cfg_oen_wd;
+  logic pad_io_a_10_cfg_oen_we;
+  logic [3:0] pad_io_a_10_mux_sel_qs;
+  logic [3:0] pad_io_a_10_mux_sel_wd;
+  logic pad_io_a_10_mux_sel_we;
+  logic pad_io_a_11_cfg_chip2pad_qs;
+  logic pad_io_a_11_cfg_chip2pad_wd;
+  logic pad_io_a_11_cfg_chip2pad_we;
+  logic pad_io_a_11_cfg_oen_qs;
+  logic pad_io_a_11_cfg_oen_wd;
+  logic pad_io_a_11_cfg_oen_we;
+  logic [3:0] pad_io_a_11_mux_sel_qs;
+  logic [3:0] pad_io_a_11_mux_sel_wd;
+  logic pad_io_a_11_mux_sel_we;
+  logic pad_io_a_12_cfg_chip2pad_qs;
+  logic pad_io_a_12_cfg_chip2pad_wd;
+  logic pad_io_a_12_cfg_chip2pad_we;
+  logic pad_io_a_12_cfg_oen_qs;
+  logic pad_io_a_12_cfg_oen_wd;
+  logic pad_io_a_12_cfg_oen_we;
+  logic [3:0] pad_io_a_12_mux_sel_qs;
+  logic [3:0] pad_io_a_12_mux_sel_wd;
+  logic pad_io_a_12_mux_sel_we;
+  logic pad_io_a_13_cfg_chip2pad_qs;
+  logic pad_io_a_13_cfg_chip2pad_wd;
+  logic pad_io_a_13_cfg_chip2pad_we;
+  logic pad_io_a_13_cfg_oen_qs;
+  logic pad_io_a_13_cfg_oen_wd;
+  logic pad_io_a_13_cfg_oen_we;
+  logic [3:0] pad_io_a_13_mux_sel_qs;
+  logic [3:0] pad_io_a_13_mux_sel_wd;
+  logic pad_io_a_13_mux_sel_we;
+  logic pad_io_a_14_cfg_chip2pad_qs;
+  logic pad_io_a_14_cfg_chip2pad_wd;
+  logic pad_io_a_14_cfg_chip2pad_we;
+  logic pad_io_a_14_cfg_oen_qs;
+  logic pad_io_a_14_cfg_oen_wd;
+  logic pad_io_a_14_cfg_oen_we;
+  logic [3:0] pad_io_a_14_mux_sel_qs;
+  logic [3:0] pad_io_a_14_mux_sel_wd;
+  logic pad_io_a_14_mux_sel_we;
+  logic pad_io_b_00_cfg_chip2pad_qs;
+  logic pad_io_b_00_cfg_chip2pad_wd;
+  logic pad_io_b_00_cfg_chip2pad_we;
+  logic pad_io_b_00_cfg_oen_qs;
+  logic pad_io_b_00_cfg_oen_wd;
+  logic pad_io_b_00_cfg_oen_we;
+  logic [4:0] pad_io_b_00_mux_sel_qs;
+  logic [4:0] pad_io_b_00_mux_sel_wd;
+  logic pad_io_b_00_mux_sel_we;
+  logic pad_io_b_01_cfg_chip2pad_qs;
+  logic pad_io_b_01_cfg_chip2pad_wd;
+  logic pad_io_b_01_cfg_chip2pad_we;
+  logic pad_io_b_01_cfg_oen_qs;
+  logic pad_io_b_01_cfg_oen_wd;
+  logic pad_io_b_01_cfg_oen_we;
+  logic [4:0] pad_io_b_01_mux_sel_qs;
+  logic [4:0] pad_io_b_01_mux_sel_wd;
+  logic pad_io_b_01_mux_sel_we;
+  logic pad_io_b_02_cfg_chip2pad_qs;
+  logic pad_io_b_02_cfg_chip2pad_wd;
+  logic pad_io_b_02_cfg_chip2pad_we;
+  logic pad_io_b_02_cfg_oen_qs;
+  logic pad_io_b_02_cfg_oen_wd;
+  logic pad_io_b_02_cfg_oen_we;
+  logic [4:0] pad_io_b_02_mux_sel_qs;
+  logic [4:0] pad_io_b_02_mux_sel_wd;
+  logic pad_io_b_02_mux_sel_we;
+  logic pad_io_b_03_cfg_chip2pad_qs;
+  logic pad_io_b_03_cfg_chip2pad_wd;
+  logic pad_io_b_03_cfg_chip2pad_we;
+  logic pad_io_b_03_cfg_oen_qs;
+  logic pad_io_b_03_cfg_oen_wd;
+  logic pad_io_b_03_cfg_oen_we;
+  logic [4:0] pad_io_b_03_mux_sel_qs;
+  logic [4:0] pad_io_b_03_mux_sel_wd;
+  logic pad_io_b_03_mux_sel_we;
+  logic pad_io_b_04_cfg_chip2pad_qs;
+  logic pad_io_b_04_cfg_chip2pad_wd;
+  logic pad_io_b_04_cfg_chip2pad_we;
+  logic pad_io_b_04_cfg_oen_qs;
+  logic pad_io_b_04_cfg_oen_wd;
+  logic pad_io_b_04_cfg_oen_we;
+  logic [4:0] pad_io_b_04_mux_sel_qs;
+  logic [4:0] pad_io_b_04_mux_sel_wd;
+  logic pad_io_b_04_mux_sel_we;
+  logic pad_io_b_05_cfg_chip2pad_qs;
+  logic pad_io_b_05_cfg_chip2pad_wd;
+  logic pad_io_b_05_cfg_chip2pad_we;
+  logic pad_io_b_05_cfg_oen_qs;
+  logic pad_io_b_05_cfg_oen_wd;
+  logic pad_io_b_05_cfg_oen_we;
+  logic [4:0] pad_io_b_05_mux_sel_qs;
+  logic [4:0] pad_io_b_05_mux_sel_wd;
+  logic pad_io_b_05_mux_sel_we;
+  logic pad_io_b_06_cfg_chip2pad_qs;
+  logic pad_io_b_06_cfg_chip2pad_wd;
+  logic pad_io_b_06_cfg_chip2pad_we;
+  logic pad_io_b_06_cfg_oen_qs;
+  logic pad_io_b_06_cfg_oen_wd;
+  logic pad_io_b_06_cfg_oen_we;
+  logic [4:0] pad_io_b_06_mux_sel_qs;
+  logic [4:0] pad_io_b_06_mux_sel_wd;
+  logic pad_io_b_06_mux_sel_we;
+  logic pad_io_b_07_cfg_chip2pad_qs;
+  logic pad_io_b_07_cfg_chip2pad_wd;
+  logic pad_io_b_07_cfg_chip2pad_we;
+  logic pad_io_b_07_cfg_oen_qs;
+  logic pad_io_b_07_cfg_oen_wd;
+  logic pad_io_b_07_cfg_oen_we;
+  logic [4:0] pad_io_b_07_mux_sel_qs;
+  logic [4:0] pad_io_b_07_mux_sel_wd;
+  logic pad_io_b_07_mux_sel_we;
+  logic pad_io_b_08_cfg_chip2pad_qs;
+  logic pad_io_b_08_cfg_chip2pad_wd;
+  logic pad_io_b_08_cfg_chip2pad_we;
+  logic pad_io_b_08_cfg_oen_qs;
+  logic pad_io_b_08_cfg_oen_wd;
+  logic pad_io_b_08_cfg_oen_we;
+  logic [4:0] pad_io_b_08_mux_sel_qs;
+  logic [4:0] pad_io_b_08_mux_sel_wd;
+  logic pad_io_b_08_mux_sel_we;
+  logic pad_io_b_09_cfg_chip2pad_qs;
+  logic pad_io_b_09_cfg_chip2pad_wd;
+  logic pad_io_b_09_cfg_chip2pad_we;
+  logic pad_io_b_09_cfg_oen_qs;
+  logic pad_io_b_09_cfg_oen_wd;
+  logic pad_io_b_09_cfg_oen_we;
+  logic [4:0] pad_io_b_09_mux_sel_qs;
+  logic [4:0] pad_io_b_09_mux_sel_wd;
+  logic pad_io_b_09_mux_sel_we;
+  logic pad_io_b_10_cfg_chip2pad_qs;
+  logic pad_io_b_10_cfg_chip2pad_wd;
+  logic pad_io_b_10_cfg_chip2pad_we;
+  logic pad_io_b_10_cfg_oen_qs;
+  logic pad_io_b_10_cfg_oen_wd;
+  logic pad_io_b_10_cfg_oen_we;
+  logic [4:0] pad_io_b_10_mux_sel_qs;
+  logic [4:0] pad_io_b_10_mux_sel_wd;
+  logic pad_io_b_10_mux_sel_we;
+  logic pad_io_b_11_cfg_chip2pad_qs;
+  logic pad_io_b_11_cfg_chip2pad_wd;
+  logic pad_io_b_11_cfg_chip2pad_we;
+  logic pad_io_b_11_cfg_oen_qs;
+  logic pad_io_b_11_cfg_oen_wd;
+  logic pad_io_b_11_cfg_oen_we;
+  logic [4:0] pad_io_b_11_mux_sel_qs;
+  logic [4:0] pad_io_b_11_mux_sel_wd;
+  logic pad_io_b_11_mux_sel_we;
+  logic pad_io_b_12_cfg_chip2pad_qs;
+  logic pad_io_b_12_cfg_chip2pad_wd;
+  logic pad_io_b_12_cfg_chip2pad_we;
+  logic pad_io_b_12_cfg_oen_qs;
+  logic pad_io_b_12_cfg_oen_wd;
+  logic pad_io_b_12_cfg_oen_we;
+  logic [4:0] pad_io_b_12_mux_sel_qs;
+  logic [4:0] pad_io_b_12_mux_sel_wd;
+  logic pad_io_b_12_mux_sel_we;
+  logic pad_io_b_13_cfg_chip2pad_qs;
+  logic pad_io_b_13_cfg_chip2pad_wd;
+  logic pad_io_b_13_cfg_chip2pad_we;
+  logic pad_io_b_13_cfg_oen_qs;
+  logic pad_io_b_13_cfg_oen_wd;
+  logic pad_io_b_13_cfg_oen_we;
+  logic [4:0] pad_io_b_13_mux_sel_qs;
+  logic [4:0] pad_io_b_13_mux_sel_wd;
+  logic pad_io_b_13_mux_sel_we;
+  logic pad_io_b_14_cfg_chip2pad_qs;
+  logic pad_io_b_14_cfg_chip2pad_wd;
+  logic pad_io_b_14_cfg_chip2pad_we;
+  logic pad_io_b_14_cfg_oen_qs;
+  logic pad_io_b_14_cfg_oen_wd;
+  logic pad_io_b_14_cfg_oen_we;
+  logic [4:0] pad_io_b_14_mux_sel_qs;
+  logic [4:0] pad_io_b_14_mux_sel_wd;
+  logic pad_io_b_14_mux_sel_we;
+  logic pad_io_b_15_cfg_chip2pad_qs;
+  logic pad_io_b_15_cfg_chip2pad_wd;
+  logic pad_io_b_15_cfg_chip2pad_we;
+  logic pad_io_b_15_cfg_oen_qs;
+  logic pad_io_b_15_cfg_oen_wd;
+  logic pad_io_b_15_cfg_oen_we;
+  logic [4:0] pad_io_b_15_mux_sel_qs;
+  logic [4:0] pad_io_b_15_mux_sel_wd;
+  logic pad_io_b_15_mux_sel_we;
+  logic pad_io_b_16_cfg_chip2pad_qs;
+  logic pad_io_b_16_cfg_chip2pad_wd;
+  logic pad_io_b_16_cfg_chip2pad_we;
+  logic pad_io_b_16_cfg_oen_qs;
+  logic pad_io_b_16_cfg_oen_wd;
+  logic pad_io_b_16_cfg_oen_we;
+  logic [4:0] pad_io_b_16_mux_sel_qs;
+  logic [4:0] pad_io_b_16_mux_sel_wd;
+  logic pad_io_b_16_mux_sel_we;
+  logic pad_io_b_17_cfg_chip2pad_qs;
+  logic pad_io_b_17_cfg_chip2pad_wd;
+  logic pad_io_b_17_cfg_chip2pad_we;
+  logic pad_io_b_17_cfg_oen_qs;
+  logic pad_io_b_17_cfg_oen_wd;
+  logic pad_io_b_17_cfg_oen_we;
+  logic [4:0] pad_io_b_17_mux_sel_qs;
+  logic [4:0] pad_io_b_17_mux_sel_wd;
+  logic pad_io_b_17_mux_sel_we;
+  logic pad_io_b_18_cfg_chip2pad_qs;
+  logic pad_io_b_18_cfg_chip2pad_wd;
+  logic pad_io_b_18_cfg_chip2pad_we;
+  logic pad_io_b_18_cfg_oen_qs;
+  logic pad_io_b_18_cfg_oen_wd;
+  logic pad_io_b_18_cfg_oen_we;
+  logic [4:0] pad_io_b_18_mux_sel_qs;
+  logic [4:0] pad_io_b_18_mux_sel_wd;
+  logic pad_io_b_18_mux_sel_we;
+  logic pad_io_b_19_cfg_chip2pad_qs;
+  logic pad_io_b_19_cfg_chip2pad_wd;
+  logic pad_io_b_19_cfg_chip2pad_we;
+  logic pad_io_b_19_cfg_oen_qs;
+  logic pad_io_b_19_cfg_oen_wd;
+  logic pad_io_b_19_cfg_oen_we;
+  logic [4:0] pad_io_b_19_mux_sel_qs;
+  logic [4:0] pad_io_b_19_mux_sel_wd;
+  logic pad_io_b_19_mux_sel_we;
+  logic pad_io_c_00_cfg_chip2pad_qs;
+  logic pad_io_c_00_cfg_chip2pad_wd;
+  logic pad_io_c_00_cfg_chip2pad_we;
+  logic pad_io_c_00_cfg_oen_qs;
+  logic pad_io_c_00_cfg_oen_wd;
+  logic pad_io_c_00_cfg_oen_we;
+  logic [3:0] pad_io_c_00_mux_sel_qs;
+  logic [3:0] pad_io_c_00_mux_sel_wd;
+  logic pad_io_c_00_mux_sel_we;
+  logic pad_io_c_01_cfg_chip2pad_qs;
+  logic pad_io_c_01_cfg_chip2pad_wd;
+  logic pad_io_c_01_cfg_chip2pad_we;
+  logic pad_io_c_01_cfg_oen_qs;
+  logic pad_io_c_01_cfg_oen_wd;
+  logic pad_io_c_01_cfg_oen_we;
+  logic [3:0] pad_io_c_01_mux_sel_qs;
+  logic [3:0] pad_io_c_01_mux_sel_wd;
+  logic pad_io_c_01_mux_sel_we;
+  logic pad_io_c_02_cfg_chip2pad_qs;
+  logic pad_io_c_02_cfg_chip2pad_wd;
+  logic pad_io_c_02_cfg_chip2pad_we;
+  logic pad_io_c_02_cfg_oen_qs;
+  logic pad_io_c_02_cfg_oen_wd;
+  logic pad_io_c_02_cfg_oen_we;
+  logic [3:0] pad_io_c_02_mux_sel_qs;
+  logic [3:0] pad_io_c_02_mux_sel_wd;
+  logic pad_io_c_02_mux_sel_we;
+  logic pad_io_c_03_cfg_chip2pad_qs;
+  logic pad_io_c_03_cfg_chip2pad_wd;
+  logic pad_io_c_03_cfg_chip2pad_we;
+  logic pad_io_c_03_cfg_oen_qs;
+  logic pad_io_c_03_cfg_oen_wd;
+  logic pad_io_c_03_cfg_oen_we;
+  logic [3:0] pad_io_c_03_mux_sel_qs;
+  logic [3:0] pad_io_c_03_mux_sel_wd;
+  logic pad_io_c_03_mux_sel_we;
+  logic pad_io_c_04_cfg_chip2pad_qs;
+  logic pad_io_c_04_cfg_chip2pad_wd;
+  logic pad_io_c_04_cfg_chip2pad_we;
+  logic pad_io_c_04_cfg_oen_qs;
+  logic pad_io_c_04_cfg_oen_wd;
+  logic pad_io_c_04_cfg_oen_we;
+  logic [3:0] pad_io_c_04_mux_sel_qs;
+  logic [3:0] pad_io_c_04_mux_sel_wd;
+  logic pad_io_c_04_mux_sel_we;
+  logic pad_io_c_05_cfg_chip2pad_qs;
+  logic pad_io_c_05_cfg_chip2pad_wd;
+  logic pad_io_c_05_cfg_chip2pad_we;
+  logic pad_io_c_05_cfg_oen_qs;
+  logic pad_io_c_05_cfg_oen_wd;
+  logic pad_io_c_05_cfg_oen_we;
+  logic [3:0] pad_io_c_05_mux_sel_qs;
+  logic [3:0] pad_io_c_05_mux_sel_wd;
+  logic pad_io_c_05_mux_sel_we;
+  logic pad_io_c_06_cfg_chip2pad_qs;
+  logic pad_io_c_06_cfg_chip2pad_wd;
+  logic pad_io_c_06_cfg_chip2pad_we;
+  logic pad_io_c_06_cfg_oen_qs;
+  logic pad_io_c_06_cfg_oen_wd;
+  logic pad_io_c_06_cfg_oen_we;
+  logic [3:0] pad_io_c_06_mux_sel_qs;
+  logic [3:0] pad_io_c_06_mux_sel_wd;
+  logic pad_io_c_06_mux_sel_we;
+  logic pad_io_c_07_cfg_chip2pad_qs;
+  logic pad_io_c_07_cfg_chip2pad_wd;
+  logic pad_io_c_07_cfg_chip2pad_we;
+  logic pad_io_c_07_cfg_oen_qs;
+  logic pad_io_c_07_cfg_oen_wd;
+  logic pad_io_c_07_cfg_oen_we;
+  logic [3:0] pad_io_c_07_mux_sel_qs;
+  logic [3:0] pad_io_c_07_mux_sel_wd;
+  logic pad_io_c_07_mux_sel_we;
+  logic pad_io_c_08_cfg_chip2pad_qs;
+  logic pad_io_c_08_cfg_chip2pad_wd;
+  logic pad_io_c_08_cfg_chip2pad_we;
+  logic pad_io_c_08_cfg_oen_qs;
+  logic pad_io_c_08_cfg_oen_wd;
+  logic pad_io_c_08_cfg_oen_we;
+  logic [3:0] pad_io_c_08_mux_sel_qs;
+  logic [3:0] pad_io_c_08_mux_sel_wd;
+  logic pad_io_c_08_mux_sel_we;
+  logic pad_io_c_09_cfg_chip2pad_qs;
+  logic pad_io_c_09_cfg_chip2pad_wd;
+  logic pad_io_c_09_cfg_chip2pad_we;
+  logic pad_io_c_09_cfg_oen_qs;
+  logic pad_io_c_09_cfg_oen_wd;
+  logic pad_io_c_09_cfg_oen_we;
+  logic [3:0] pad_io_c_09_mux_sel_qs;
+  logic [3:0] pad_io_c_09_mux_sel_wd;
+  logic pad_io_c_09_mux_sel_we;
+  logic pad_io_c_10_cfg_chip2pad_qs;
+  logic pad_io_c_10_cfg_chip2pad_wd;
+  logic pad_io_c_10_cfg_chip2pad_we;
+  logic pad_io_c_10_cfg_oen_qs;
+  logic pad_io_c_10_cfg_oen_wd;
+  logic pad_io_c_10_cfg_oen_we;
+  logic [3:0] pad_io_c_10_mux_sel_qs;
+  logic [3:0] pad_io_c_10_mux_sel_wd;
+  logic pad_io_c_10_mux_sel_we;
+  logic pad_io_c_11_cfg_chip2pad_qs;
+  logic pad_io_c_11_cfg_chip2pad_wd;
+  logic pad_io_c_11_cfg_chip2pad_we;
+  logic pad_io_c_11_cfg_oen_qs;
+  logic pad_io_c_11_cfg_oen_wd;
+  logic pad_io_c_11_cfg_oen_we;
+  logic [3:0] pad_io_c_11_mux_sel_qs;
+  logic [3:0] pad_io_c_11_mux_sel_wd;
+  logic pad_io_c_11_mux_sel_we;
+  logic pad_io_c_12_cfg_chip2pad_qs;
+  logic pad_io_c_12_cfg_chip2pad_wd;
+  logic pad_io_c_12_cfg_chip2pad_we;
+  logic pad_io_c_12_cfg_oen_qs;
+  logic pad_io_c_12_cfg_oen_wd;
+  logic pad_io_c_12_cfg_oen_we;
+  logic [3:0] pad_io_c_12_mux_sel_qs;
+  logic [3:0] pad_io_c_12_mux_sel_wd;
+  logic pad_io_c_12_mux_sel_we;
+  logic pad_io_c_13_cfg_chip2pad_qs;
+  logic pad_io_c_13_cfg_chip2pad_wd;
+  logic pad_io_c_13_cfg_chip2pad_we;
+  logic pad_io_c_13_cfg_oen_qs;
+  logic pad_io_c_13_cfg_oen_wd;
+  logic pad_io_c_13_cfg_oen_we;
+  logic [3:0] pad_io_c_13_mux_sel_qs;
+  logic [3:0] pad_io_c_13_mux_sel_wd;
+  logic pad_io_c_13_mux_sel_we;
+  logic pad_io_d_00_cfg_chip2pad_qs;
+  logic pad_io_d_00_cfg_chip2pad_wd;
+  logic pad_io_d_00_cfg_chip2pad_we;
+  logic pad_io_d_00_cfg_oen_qs;
+  logic pad_io_d_00_cfg_oen_wd;
+  logic pad_io_d_00_cfg_oen_we;
+  logic [4:0] pad_io_d_00_mux_sel_qs;
+  logic [4:0] pad_io_d_00_mux_sel_wd;
+  logic pad_io_d_00_mux_sel_we;
+  logic pad_io_d_01_cfg_chip2pad_qs;
+  logic pad_io_d_01_cfg_chip2pad_wd;
+  logic pad_io_d_01_cfg_chip2pad_we;
+  logic pad_io_d_01_cfg_oen_qs;
+  logic pad_io_d_01_cfg_oen_wd;
+  logic pad_io_d_01_cfg_oen_we;
+  logic [4:0] pad_io_d_01_mux_sel_qs;
+  logic [4:0] pad_io_d_01_mux_sel_wd;
+  logic pad_io_d_01_mux_sel_we;
+  logic pad_io_d_02_cfg_chip2pad_qs;
+  logic pad_io_d_02_cfg_chip2pad_wd;
+  logic pad_io_d_02_cfg_chip2pad_we;
+  logic pad_io_d_02_cfg_oen_qs;
+  logic pad_io_d_02_cfg_oen_wd;
+  logic pad_io_d_02_cfg_oen_we;
+  logic [4:0] pad_io_d_02_mux_sel_qs;
+  logic [4:0] pad_io_d_02_mux_sel_wd;
+  logic pad_io_d_02_mux_sel_we;
+  logic pad_io_d_03_cfg_chip2pad_qs;
+  logic pad_io_d_03_cfg_chip2pad_wd;
+  logic pad_io_d_03_cfg_chip2pad_we;
+  logic pad_io_d_03_cfg_oen_qs;
+  logic pad_io_d_03_cfg_oen_wd;
+  logic pad_io_d_03_cfg_oen_we;
+  logic [4:0] pad_io_d_03_mux_sel_qs;
+  logic [4:0] pad_io_d_03_mux_sel_wd;
+  logic pad_io_d_03_mux_sel_we;
+  logic pad_io_d_04_cfg_chip2pad_qs;
+  logic pad_io_d_04_cfg_chip2pad_wd;
+  logic pad_io_d_04_cfg_chip2pad_we;
+  logic pad_io_d_04_cfg_oen_qs;
+  logic pad_io_d_04_cfg_oen_wd;
+  logic pad_io_d_04_cfg_oen_we;
+  logic [4:0] pad_io_d_04_mux_sel_qs;
+  logic [4:0] pad_io_d_04_mux_sel_wd;
+  logic pad_io_d_04_mux_sel_we;
+  logic pad_io_d_05_cfg_chip2pad_qs;
+  logic pad_io_d_05_cfg_chip2pad_wd;
+  logic pad_io_d_05_cfg_chip2pad_we;
+  logic pad_io_d_05_cfg_oen_qs;
+  logic pad_io_d_05_cfg_oen_wd;
+  logic pad_io_d_05_cfg_oen_we;
+  logic [4:0] pad_io_d_05_mux_sel_qs;
+  logic [4:0] pad_io_d_05_mux_sel_wd;
+  logic pad_io_d_05_mux_sel_we;
+  logic pad_io_d_06_cfg_chip2pad_qs;
+  logic pad_io_d_06_cfg_chip2pad_wd;
+  logic pad_io_d_06_cfg_chip2pad_we;
+  logic pad_io_d_06_cfg_oen_qs;
+  logic pad_io_d_06_cfg_oen_wd;
+  logic pad_io_d_06_cfg_oen_we;
+  logic [4:0] pad_io_d_06_mux_sel_qs;
+  logic [4:0] pad_io_d_06_mux_sel_wd;
+  logic pad_io_d_06_mux_sel_we;
+  logic pad_io_d_07_cfg_chip2pad_qs;
+  logic pad_io_d_07_cfg_chip2pad_wd;
+  logic pad_io_d_07_cfg_chip2pad_we;
+  logic pad_io_d_07_cfg_oen_qs;
+  logic pad_io_d_07_cfg_oen_wd;
+  logic pad_io_d_07_cfg_oen_we;
+  logic [4:0] pad_io_d_07_mux_sel_qs;
+  logic [4:0] pad_io_d_07_mux_sel_wd;
+  logic pad_io_d_07_mux_sel_we;
+  logic pad_io_d_08_cfg_chip2pad_qs;
+  logic pad_io_d_08_cfg_chip2pad_wd;
+  logic pad_io_d_08_cfg_chip2pad_we;
+  logic pad_io_d_08_cfg_oen_qs;
+  logic pad_io_d_08_cfg_oen_wd;
+  logic pad_io_d_08_cfg_oen_we;
+  logic [4:0] pad_io_d_08_mux_sel_qs;
+  logic [4:0] pad_io_d_08_mux_sel_wd;
+  logic pad_io_d_08_mux_sel_we;
+  logic pad_io_d_09_cfg_chip2pad_qs;
+  logic pad_io_d_09_cfg_chip2pad_wd;
+  logic pad_io_d_09_cfg_chip2pad_we;
+  logic pad_io_d_09_cfg_oen_qs;
+  logic pad_io_d_09_cfg_oen_wd;
+  logic pad_io_d_09_cfg_oen_we;
+  logic [4:0] pad_io_d_09_mux_sel_qs;
+  logic [4:0] pad_io_d_09_mux_sel_wd;
+  logic pad_io_d_09_mux_sel_we;
+  logic pad_io_d_10_cfg_chip2pad_qs;
+  logic pad_io_d_10_cfg_chip2pad_wd;
+  logic pad_io_d_10_cfg_chip2pad_we;
+  logic pad_io_d_10_cfg_oen_qs;
+  logic pad_io_d_10_cfg_oen_wd;
+  logic pad_io_d_10_cfg_oen_we;
+  logic [4:0] pad_io_d_10_mux_sel_qs;
+  logic [4:0] pad_io_d_10_mux_sel_wd;
+  logic pad_io_d_10_mux_sel_we;
+  logic pad_io_d_11_cfg_chip2pad_qs;
+  logic pad_io_d_11_cfg_chip2pad_wd;
+  logic pad_io_d_11_cfg_chip2pad_we;
+  logic pad_io_d_11_cfg_oen_qs;
+  logic pad_io_d_11_cfg_oen_wd;
+  logic pad_io_d_11_cfg_oen_we;
+  logic [4:0] pad_io_d_11_mux_sel_qs;
+  logic [4:0] pad_io_d_11_mux_sel_wd;
+  logic pad_io_d_11_mux_sel_we;
+  logic pad_io_d_12_cfg_chip2pad_qs;
+  logic pad_io_d_12_cfg_chip2pad_wd;
+  logic pad_io_d_12_cfg_chip2pad_we;
+  logic pad_io_d_12_cfg_oen_qs;
+  logic pad_io_d_12_cfg_oen_wd;
+  logic pad_io_d_12_cfg_oen_we;
+  logic [4:0] pad_io_d_12_mux_sel_qs;
+  logic [4:0] pad_io_d_12_mux_sel_wd;
+  logic pad_io_d_12_mux_sel_we;
+  logic pad_io_d_13_cfg_chip2pad_qs;
+  logic pad_io_d_13_cfg_chip2pad_wd;
+  logic pad_io_d_13_cfg_chip2pad_we;
+  logic pad_io_d_13_cfg_oen_qs;
+  logic pad_io_d_13_cfg_oen_wd;
+  logic pad_io_d_13_cfg_oen_we;
+  logic [4:0] pad_io_d_13_mux_sel_qs;
+  logic [4:0] pad_io_d_13_mux_sel_wd;
+  logic pad_io_d_13_mux_sel_we;
+  logic pad_io_d_14_cfg_chip2pad_qs;
+  logic pad_io_d_14_cfg_chip2pad_wd;
+  logic pad_io_d_14_cfg_chip2pad_we;
+  logic pad_io_d_14_cfg_oen_qs;
+  logic pad_io_d_14_cfg_oen_wd;
+  logic pad_io_d_14_cfg_oen_we;
+  logic [4:0] pad_io_d_14_mux_sel_qs;
+  logic [4:0] pad_io_d_14_mux_sel_wd;
+  logic pad_io_d_14_mux_sel_we;
+  logic pad_io_d_15_cfg_chip2pad_qs;
+  logic pad_io_d_15_cfg_chip2pad_wd;
+  logic pad_io_d_15_cfg_chip2pad_we;
+  logic pad_io_d_15_cfg_oen_qs;
+  logic pad_io_d_15_cfg_oen_wd;
+  logic pad_io_d_15_cfg_oen_we;
+  logic [4:0] pad_io_d_15_mux_sel_qs;
+  logic [4:0] pad_io_d_15_mux_sel_wd;
+  logic pad_io_d_15_mux_sel_we;
+  logic pad_io_e_00_cfg_chip2pad_qs;
+  logic pad_io_e_00_cfg_chip2pad_wd;
+  logic pad_io_e_00_cfg_chip2pad_we;
+  logic pad_io_e_00_cfg_oen_qs;
+  logic pad_io_e_00_cfg_oen_wd;
+  logic pad_io_e_00_cfg_oen_we;
+  logic [4:0] pad_io_e_00_mux_sel_qs;
+  logic [4:0] pad_io_e_00_mux_sel_wd;
+  logic pad_io_e_00_mux_sel_we;
+  logic pad_io_e_01_cfg_chip2pad_qs;
+  logic pad_io_e_01_cfg_chip2pad_wd;
+  logic pad_io_e_01_cfg_chip2pad_we;
+  logic pad_io_e_01_cfg_oen_qs;
+  logic pad_io_e_01_cfg_oen_wd;
+  logic pad_io_e_01_cfg_oen_we;
+  logic [4:0] pad_io_e_01_mux_sel_qs;
+  logic [4:0] pad_io_e_01_mux_sel_wd;
+  logic pad_io_e_01_mux_sel_we;
+  logic pad_io_e_02_cfg_chip2pad_qs;
+  logic pad_io_e_02_cfg_chip2pad_wd;
+  logic pad_io_e_02_cfg_chip2pad_we;
+  logic pad_io_e_02_cfg_oen_qs;
+  logic pad_io_e_02_cfg_oen_wd;
+  logic pad_io_e_02_cfg_oen_we;
+  logic [4:0] pad_io_e_02_mux_sel_qs;
+  logic [4:0] pad_io_e_02_mux_sel_wd;
+  logic pad_io_e_02_mux_sel_we;
+  logic pad_io_e_03_cfg_chip2pad_qs;
+  logic pad_io_e_03_cfg_chip2pad_wd;
+  logic pad_io_e_03_cfg_chip2pad_we;
+  logic pad_io_e_03_cfg_oen_qs;
+  logic pad_io_e_03_cfg_oen_wd;
+  logic pad_io_e_03_cfg_oen_we;
+  logic [4:0] pad_io_e_03_mux_sel_qs;
+  logic [4:0] pad_io_e_03_mux_sel_wd;
+  logic pad_io_e_03_mux_sel_we;
+  logic pad_io_e_04_cfg_chip2pad_qs;
+  logic pad_io_e_04_cfg_chip2pad_wd;
+  logic pad_io_e_04_cfg_chip2pad_we;
+  logic pad_io_e_04_cfg_oen_qs;
+  logic pad_io_e_04_cfg_oen_wd;
+  logic pad_io_e_04_cfg_oen_we;
+  logic [4:0] pad_io_e_04_mux_sel_qs;
+  logic [4:0] pad_io_e_04_mux_sel_wd;
+  logic pad_io_e_04_mux_sel_we;
+  logic pad_io_e_05_cfg_chip2pad_qs;
+  logic pad_io_e_05_cfg_chip2pad_wd;
+  logic pad_io_e_05_cfg_chip2pad_we;
+  logic pad_io_e_05_cfg_oen_qs;
+  logic pad_io_e_05_cfg_oen_wd;
+  logic pad_io_e_05_cfg_oen_we;
+  logic [4:0] pad_io_e_05_mux_sel_qs;
+  logic [4:0] pad_io_e_05_mux_sel_wd;
+  logic pad_io_e_05_mux_sel_we;
+  logic pad_io_e_06_cfg_chip2pad_qs;
+  logic pad_io_e_06_cfg_chip2pad_wd;
+  logic pad_io_e_06_cfg_chip2pad_we;
+  logic pad_io_e_06_cfg_oen_qs;
+  logic pad_io_e_06_cfg_oen_wd;
+  logic pad_io_e_06_cfg_oen_we;
+  logic [4:0] pad_io_e_06_mux_sel_qs;
+  logic [4:0] pad_io_e_06_mux_sel_wd;
+  logic pad_io_e_06_mux_sel_we;
+  logic pad_io_e_07_cfg_chip2pad_qs;
+  logic pad_io_e_07_cfg_chip2pad_wd;
+  logic pad_io_e_07_cfg_chip2pad_we;
+  logic pad_io_e_07_cfg_oen_qs;
+  logic pad_io_e_07_cfg_oen_wd;
+  logic pad_io_e_07_cfg_oen_we;
+  logic [4:0] pad_io_e_07_mux_sel_qs;
+  logic [4:0] pad_io_e_07_mux_sel_wd;
+  logic pad_io_e_07_mux_sel_we;
+  logic pad_io_e_08_cfg_chip2pad_qs;
+  logic pad_io_e_08_cfg_chip2pad_wd;
+  logic pad_io_e_08_cfg_chip2pad_we;
+  logic pad_io_e_08_cfg_oen_qs;
+  logic pad_io_e_08_cfg_oen_wd;
+  logic pad_io_e_08_cfg_oen_we;
+  logic [4:0] pad_io_e_08_mux_sel_qs;
+  logic [4:0] pad_io_e_08_mux_sel_wd;
+  logic pad_io_e_08_mux_sel_we;
+  logic pad_io_e_09_cfg_chip2pad_qs;
+  logic pad_io_e_09_cfg_chip2pad_wd;
+  logic pad_io_e_09_cfg_chip2pad_we;
+  logic pad_io_e_09_cfg_oen_qs;
+  logic pad_io_e_09_cfg_oen_wd;
+  logic pad_io_e_09_cfg_oen_we;
+  logic [4:0] pad_io_e_09_mux_sel_qs;
+  logic [4:0] pad_io_e_09_mux_sel_wd;
+  logic pad_io_e_09_mux_sel_we;
+  logic pad_io_e_10_cfg_chip2pad_qs;
+  logic pad_io_e_10_cfg_chip2pad_wd;
+  logic pad_io_e_10_cfg_chip2pad_we;
+  logic pad_io_e_10_cfg_oen_qs;
+  logic pad_io_e_10_cfg_oen_wd;
+  logic pad_io_e_10_cfg_oen_we;
+  logic [4:0] pad_io_e_10_mux_sel_qs;
+  logic [4:0] pad_io_e_10_mux_sel_wd;
+  logic pad_io_e_10_mux_sel_we;
+  logic pad_io_e_11_cfg_chip2pad_qs;
+  logic pad_io_e_11_cfg_chip2pad_wd;
+  logic pad_io_e_11_cfg_chip2pad_we;
+  logic pad_io_e_11_cfg_oen_qs;
+  logic pad_io_e_11_cfg_oen_wd;
+  logic pad_io_e_11_cfg_oen_we;
+  logic [4:0] pad_io_e_11_mux_sel_qs;
+  logic [4:0] pad_io_e_11_mux_sel_wd;
+  logic pad_io_e_11_mux_sel_we;
+  logic pad_io_e_12_cfg_chip2pad_qs;
+  logic pad_io_e_12_cfg_chip2pad_wd;
+  logic pad_io_e_12_cfg_chip2pad_we;
+  logic pad_io_e_12_cfg_oen_qs;
+  logic pad_io_e_12_cfg_oen_wd;
+  logic pad_io_e_12_cfg_oen_we;
+  logic [4:0] pad_io_e_12_mux_sel_qs;
+  logic [4:0] pad_io_e_12_mux_sel_wd;
+  logic pad_io_e_12_mux_sel_we;
+  logic pad_io_e_13_cfg_chip2pad_qs;
+  logic pad_io_e_13_cfg_chip2pad_wd;
+  logic pad_io_e_13_cfg_chip2pad_we;
+  logic pad_io_e_13_cfg_oen_qs;
+  logic pad_io_e_13_cfg_oen_wd;
+  logic pad_io_e_13_cfg_oen_we;
+  logic [4:0] pad_io_e_13_mux_sel_qs;
+  logic [4:0] pad_io_e_13_mux_sel_wd;
+  logic pad_io_e_13_mux_sel_we;
+  logic pad_io_e_14_cfg_chip2pad_qs;
+  logic pad_io_e_14_cfg_chip2pad_wd;
+  logic pad_io_e_14_cfg_chip2pad_we;
+  logic pad_io_e_14_cfg_oen_qs;
+  logic pad_io_e_14_cfg_oen_wd;
+  logic pad_io_e_14_cfg_oen_we;
+  logic [4:0] pad_io_e_14_mux_sel_qs;
+  logic [4:0] pad_io_e_14_mux_sel_wd;
+  logic pad_io_e_14_mux_sel_we;
+  logic pad_io_f_00_cfg_chip2pad_qs;
+  logic pad_io_f_00_cfg_chip2pad_wd;
+  logic pad_io_f_00_cfg_chip2pad_we;
+  logic pad_io_f_00_cfg_oen_qs;
+  logic pad_io_f_00_cfg_oen_wd;
+  logic pad_io_f_00_cfg_oen_we;
+  logic [4:0] pad_io_f_00_mux_sel_qs;
+  logic [4:0] pad_io_f_00_mux_sel_wd;
+  logic pad_io_f_00_mux_sel_we;
+  logic pad_io_f_01_cfg_chip2pad_qs;
+  logic pad_io_f_01_cfg_chip2pad_wd;
+  logic pad_io_f_01_cfg_chip2pad_we;
+  logic pad_io_f_01_cfg_oen_qs;
+  logic pad_io_f_01_cfg_oen_wd;
+  logic pad_io_f_01_cfg_oen_we;
+  logic [4:0] pad_io_f_01_mux_sel_qs;
+  logic [4:0] pad_io_f_01_mux_sel_wd;
+  logic pad_io_f_01_mux_sel_we;
+  logic pad_io_f_02_cfg_chip2pad_qs;
+  logic pad_io_f_02_cfg_chip2pad_wd;
+  logic pad_io_f_02_cfg_chip2pad_we;
+  logic pad_io_f_02_cfg_oen_qs;
+  logic pad_io_f_02_cfg_oen_wd;
+  logic pad_io_f_02_cfg_oen_we;
+  logic [4:0] pad_io_f_02_mux_sel_qs;
+  logic [4:0] pad_io_f_02_mux_sel_wd;
+  logic pad_io_f_02_mux_sel_we;
+  logic pad_io_f_03_cfg_chip2pad_qs;
+  logic pad_io_f_03_cfg_chip2pad_wd;
+  logic pad_io_f_03_cfg_chip2pad_we;
+  logic pad_io_f_03_cfg_oen_qs;
+  logic pad_io_f_03_cfg_oen_wd;
+  logic pad_io_f_03_cfg_oen_we;
+  logic [4:0] pad_io_f_03_mux_sel_qs;
+  logic [4:0] pad_io_f_03_mux_sel_wd;
+  logic pad_io_f_03_mux_sel_we;
+  logic pad_io_f_04_cfg_chip2pad_qs;
+  logic pad_io_f_04_cfg_chip2pad_wd;
+  logic pad_io_f_04_cfg_chip2pad_we;
+  logic pad_io_f_04_cfg_oen_qs;
+  logic pad_io_f_04_cfg_oen_wd;
+  logic pad_io_f_04_cfg_oen_we;
+  logic [4:0] pad_io_f_04_mux_sel_qs;
+  logic [4:0] pad_io_f_04_mux_sel_wd;
+  logic pad_io_f_04_mux_sel_we;
+  logic pad_io_f_05_cfg_chip2pad_qs;
+  logic pad_io_f_05_cfg_chip2pad_wd;
+  logic pad_io_f_05_cfg_chip2pad_we;
+  logic pad_io_f_05_cfg_oen_qs;
+  logic pad_io_f_05_cfg_oen_wd;
+  logic pad_io_f_05_cfg_oen_we;
+  logic [4:0] pad_io_f_05_mux_sel_qs;
+  logic [4:0] pad_io_f_05_mux_sel_wd;
+  logic pad_io_f_05_mux_sel_we;
+  logic pad_io_f_06_cfg_chip2pad_qs;
+  logic pad_io_f_06_cfg_chip2pad_wd;
+  logic pad_io_f_06_cfg_chip2pad_we;
+  logic pad_io_f_06_cfg_oen_qs;
+  logic pad_io_f_06_cfg_oen_wd;
+  logic pad_io_f_06_cfg_oen_we;
+  logic [4:0] pad_io_f_06_mux_sel_qs;
+  logic [4:0] pad_io_f_06_mux_sel_wd;
+  logic pad_io_f_06_mux_sel_we;
+  logic pad_io_f_07_cfg_chip2pad_qs;
+  logic pad_io_f_07_cfg_chip2pad_wd;
+  logic pad_io_f_07_cfg_chip2pad_we;
+  logic pad_io_f_07_cfg_oen_qs;
+  logic pad_io_f_07_cfg_oen_wd;
+  logic pad_io_f_07_cfg_oen_we;
+  logic [4:0] pad_io_f_07_mux_sel_qs;
+  logic [4:0] pad_io_f_07_mux_sel_wd;
+  logic pad_io_f_07_mux_sel_we;
+  logic pad_io_f_08_cfg_chip2pad_qs;
+  logic pad_io_f_08_cfg_chip2pad_wd;
+  logic pad_io_f_08_cfg_chip2pad_we;
+  logic pad_io_f_08_cfg_oen_qs;
+  logic pad_io_f_08_cfg_oen_wd;
+  logic pad_io_f_08_cfg_oen_we;
+  logic [4:0] pad_io_f_08_mux_sel_qs;
+  logic [4:0] pad_io_f_08_mux_sel_wd;
+  logic pad_io_f_08_mux_sel_we;
+  logic pad_io_f_09_cfg_chip2pad_qs;
+  logic pad_io_f_09_cfg_chip2pad_wd;
+  logic pad_io_f_09_cfg_chip2pad_we;
+  logic pad_io_f_09_cfg_oen_qs;
+  logic pad_io_f_09_cfg_oen_wd;
+  logic pad_io_f_09_cfg_oen_we;
+  logic [4:0] pad_io_f_09_mux_sel_qs;
+  logic [4:0] pad_io_f_09_mux_sel_wd;
+  logic pad_io_f_09_mux_sel_we;
+  logic pad_io_f_10_cfg_chip2pad_qs;
+  logic pad_io_f_10_cfg_chip2pad_wd;
+  logic pad_io_f_10_cfg_chip2pad_we;
+  logic pad_io_f_10_cfg_oen_qs;
+  logic pad_io_f_10_cfg_oen_wd;
+  logic pad_io_f_10_cfg_oen_we;
+  logic [4:0] pad_io_f_10_mux_sel_qs;
+  logic [4:0] pad_io_f_10_mux_sel_wd;
+  logic pad_io_f_10_mux_sel_we;
+  logic pad_io_g_00_cfg_chip2pad_qs;
+  logic pad_io_g_00_cfg_chip2pad_wd;
+  logic pad_io_g_00_cfg_chip2pad_we;
+  logic pad_io_g_00_cfg_oen_qs;
+  logic pad_io_g_00_cfg_oen_wd;
+  logic pad_io_g_00_cfg_oen_we;
+  logic [4:0] pad_io_g_00_mux_sel_qs;
+  logic [4:0] pad_io_g_00_mux_sel_wd;
+  logic pad_io_g_00_mux_sel_we;
+  logic pad_io_g_01_cfg_chip2pad_qs;
+  logic pad_io_g_01_cfg_chip2pad_wd;
+  logic pad_io_g_01_cfg_chip2pad_we;
+  logic pad_io_g_01_cfg_oen_qs;
+  logic pad_io_g_01_cfg_oen_wd;
+  logic pad_io_g_01_cfg_oen_we;
+  logic [4:0] pad_io_g_01_mux_sel_qs;
+  logic [4:0] pad_io_g_01_mux_sel_wd;
+  logic pad_io_g_01_mux_sel_we;
+  logic pad_io_g_02_cfg_chip2pad_qs;
+  logic pad_io_g_02_cfg_chip2pad_wd;
+  logic pad_io_g_02_cfg_chip2pad_we;
+  logic pad_io_g_02_cfg_oen_qs;
+  logic pad_io_g_02_cfg_oen_wd;
+  logic pad_io_g_02_cfg_oen_we;
+  logic [4:0] pad_io_g_02_mux_sel_qs;
+  logic [4:0] pad_io_g_02_mux_sel_wd;
+  logic pad_io_g_02_mux_sel_we;
+  logic pad_io_g_03_cfg_chip2pad_qs;
+  logic pad_io_g_03_cfg_chip2pad_wd;
+  logic pad_io_g_03_cfg_chip2pad_we;
+  logic pad_io_g_03_cfg_oen_qs;
+  logic pad_io_g_03_cfg_oen_wd;
+  logic pad_io_g_03_cfg_oen_we;
+  logic [4:0] pad_io_g_03_mux_sel_qs;
+  logic [4:0] pad_io_g_03_mux_sel_wd;
+  logic pad_io_g_03_mux_sel_we;
+  logic pad_io_g_04_cfg_chip2pad_qs;
+  logic pad_io_g_04_cfg_chip2pad_wd;
+  logic pad_io_g_04_cfg_chip2pad_we;
+  logic pad_io_g_04_cfg_oen_qs;
+  logic pad_io_g_04_cfg_oen_wd;
+  logic pad_io_g_04_cfg_oen_we;
+  logic [4:0] pad_io_g_04_mux_sel_qs;
+  logic [4:0] pad_io_g_04_mux_sel_wd;
+  logic pad_io_g_04_mux_sel_we;
+  logic pad_io_g_05_cfg_chip2pad_qs;
+  logic pad_io_g_05_cfg_chip2pad_wd;
+  logic pad_io_g_05_cfg_chip2pad_we;
+  logic pad_io_g_05_cfg_oen_qs;
+  logic pad_io_g_05_cfg_oen_wd;
+  logic pad_io_g_05_cfg_oen_we;
+  logic [4:0] pad_io_g_05_mux_sel_qs;
+  logic [4:0] pad_io_g_05_mux_sel_wd;
+  logic pad_io_g_05_mux_sel_we;
+  logic pad_io_g_06_cfg_chip2pad_qs;
+  logic pad_io_g_06_cfg_chip2pad_wd;
+  logic pad_io_g_06_cfg_chip2pad_we;
+  logic pad_io_g_06_cfg_oen_qs;
+  logic pad_io_g_06_cfg_oen_wd;
+  logic pad_io_g_06_cfg_oen_we;
+  logic [4:0] pad_io_g_06_mux_sel_qs;
+  logic [4:0] pad_io_g_06_mux_sel_wd;
+  logic pad_io_g_06_mux_sel_we;
+  logic pad_io_g_07_cfg_chip2pad_qs;
+  logic pad_io_g_07_cfg_chip2pad_wd;
+  logic pad_io_g_07_cfg_chip2pad_we;
+  logic pad_io_g_07_cfg_oen_qs;
+  logic pad_io_g_07_cfg_oen_wd;
+  logic pad_io_g_07_cfg_oen_we;
+  logic [4:0] pad_io_g_07_mux_sel_qs;
+  logic [4:0] pad_io_g_07_mux_sel_wd;
+  logic pad_io_g_07_mux_sel_we;
+  logic pad_io_g_08_cfg_chip2pad_qs;
+  logic pad_io_g_08_cfg_chip2pad_wd;
+  logic pad_io_g_08_cfg_chip2pad_we;
+  logic pad_io_g_08_cfg_oen_qs;
+  logic pad_io_g_08_cfg_oen_wd;
+  logic pad_io_g_08_cfg_oen_we;
+  logic [4:0] pad_io_g_08_mux_sel_qs;
+  logic [4:0] pad_io_g_08_mux_sel_wd;
+  logic pad_io_g_08_mux_sel_we;
+  logic pad_io_g_09_cfg_chip2pad_qs;
+  logic pad_io_g_09_cfg_chip2pad_wd;
+  logic pad_io_g_09_cfg_chip2pad_we;
+  logic pad_io_g_09_cfg_oen_qs;
+  logic pad_io_g_09_cfg_oen_wd;
+  logic pad_io_g_09_cfg_oen_we;
+  logic [4:0] pad_io_g_09_mux_sel_qs;
+  logic [4:0] pad_io_g_09_mux_sel_wd;
+  logic pad_io_g_09_mux_sel_we;
+  logic pad_io_g_10_cfg_chip2pad_qs;
+  logic pad_io_g_10_cfg_chip2pad_wd;
+  logic pad_io_g_10_cfg_chip2pad_we;
+  logic pad_io_g_10_cfg_oen_qs;
+  logic pad_io_g_10_cfg_oen_wd;
+  logic pad_io_g_10_cfg_oen_we;
+  logic [4:0] pad_io_g_10_mux_sel_qs;
+  logic [4:0] pad_io_g_10_mux_sel_wd;
+  logic pad_io_g_10_mux_sel_we;
+  logic pad_io_g_11_cfg_chip2pad_qs;
+  logic pad_io_g_11_cfg_chip2pad_wd;
+  logic pad_io_g_11_cfg_chip2pad_we;
+  logic pad_io_g_11_cfg_oen_qs;
+  logic pad_io_g_11_cfg_oen_wd;
+  logic pad_io_g_11_cfg_oen_we;
+  logic [4:0] pad_io_g_11_mux_sel_qs;
+  logic [4:0] pad_io_g_11_mux_sel_wd;
+  logic pad_io_g_11_mux_sel_we;
+  logic pad_io_g_12_cfg_chip2pad_qs;
+  logic pad_io_g_12_cfg_chip2pad_wd;
+  logic pad_io_g_12_cfg_chip2pad_we;
+  logic pad_io_g_12_cfg_oen_qs;
+  logic pad_io_g_12_cfg_oen_wd;
+  logic pad_io_g_12_cfg_oen_we;
+  logic [4:0] pad_io_g_12_mux_sel_qs;
+  logic [4:0] pad_io_g_12_mux_sel_wd;
+  logic pad_io_g_12_mux_sel_we;
+  logic pad_io_g_13_cfg_chip2pad_qs;
+  logic pad_io_g_13_cfg_chip2pad_wd;
+  logic pad_io_g_13_cfg_chip2pad_we;
+  logic pad_io_g_13_cfg_oen_qs;
+  logic pad_io_g_13_cfg_oen_wd;
+  logic pad_io_g_13_cfg_oen_we;
+  logic [4:0] pad_io_g_13_mux_sel_qs;
+  logic [4:0] pad_io_g_13_mux_sel_wd;
+  logic pad_io_g_13_mux_sel_we;
+  logic pad_io_g_14_cfg_chip2pad_qs;
+  logic pad_io_g_14_cfg_chip2pad_wd;
+  logic pad_io_g_14_cfg_chip2pad_we;
+  logic pad_io_g_14_cfg_oen_qs;
+  logic pad_io_g_14_cfg_oen_wd;
+  logic pad_io_g_14_cfg_oen_we;
+  logic [4:0] pad_io_g_14_mux_sel_qs;
+  logic [4:0] pad_io_g_14_mux_sel_wd;
+  logic pad_io_g_14_mux_sel_we;
+  logic pad_pwm0_cfg_chip2pad_qs;
+  logic pad_pwm0_cfg_chip2pad_wd;
+  logic pad_pwm0_cfg_chip2pad_we;
+  logic pad_pwm0_cfg_oen_qs;
+  logic pad_pwm0_cfg_oen_wd;
+  logic pad_pwm0_cfg_oen_we;
+  logic [3:0] pad_pwm0_mux_sel_qs;
+  logic [3:0] pad_pwm0_mux_sel_wd;
+  logic pad_pwm0_mux_sel_we;
+  logic pad_pwm1_cfg_chip2pad_qs;
+  logic pad_pwm1_cfg_chip2pad_wd;
+  logic pad_pwm1_cfg_chip2pad_we;
+  logic pad_pwm1_cfg_oen_qs;
+  logic pad_pwm1_cfg_oen_wd;
+  logic pad_pwm1_cfg_oen_we;
+  logic [3:0] pad_pwm1_mux_sel_qs;
+  logic [3:0] pad_pwm1_mux_sel_wd;
+  logic pad_pwm1_mux_sel_we;
+  logic pad_pwm2_cfg_chip2pad_qs;
+  logic pad_pwm2_cfg_chip2pad_wd;
+  logic pad_pwm2_cfg_chip2pad_we;
+  logic pad_pwm2_cfg_oen_qs;
+  logic pad_pwm2_cfg_oen_wd;
+  logic pad_pwm2_cfg_oen_we;
+  logic [3:0] pad_pwm2_mux_sel_qs;
+  logic [3:0] pad_pwm2_mux_sel_wd;
+  logic pad_pwm2_mux_sel_we;
+  logic pad_pwm3_cfg_chip2pad_qs;
+  logic pad_pwm3_cfg_chip2pad_wd;
+  logic pad_pwm3_cfg_chip2pad_we;
+  logic pad_pwm3_cfg_oen_qs;
+  logic pad_pwm3_cfg_oen_wd;
+  logic pad_pwm3_cfg_oen_we;
+  logic [3:0] pad_pwm3_mux_sel_qs;
+  logic [3:0] pad_pwm3_mux_sel_wd;
+  logic pad_pwm3_mux_sel_we;
+  logic pad_pwm4_cfg_chip2pad_qs;
+  logic pad_pwm4_cfg_chip2pad_wd;
+  logic pad_pwm4_cfg_chip2pad_we;
+  logic pad_pwm4_cfg_oen_qs;
+  logic pad_pwm4_cfg_oen_wd;
+  logic pad_pwm4_cfg_oen_we;
+  logic [3:0] pad_pwm4_mux_sel_qs;
+  logic [3:0] pad_pwm4_mux_sel_wd;
+  logic pad_pwm4_mux_sel_we;
+  logic pad_pwm5_cfg_chip2pad_qs;
+  logic pad_pwm5_cfg_chip2pad_wd;
+  logic pad_pwm5_cfg_chip2pad_we;
+  logic pad_pwm5_cfg_oen_qs;
+  logic pad_pwm5_cfg_oen_wd;
+  logic pad_pwm5_cfg_oen_we;
+  logic [3:0] pad_pwm5_mux_sel_qs;
+  logic [3:0] pad_pwm5_mux_sel_wd;
+  logic pad_pwm5_mux_sel_we;
+  logic pad_pwm6_cfg_chip2pad_qs;
+  logic pad_pwm6_cfg_chip2pad_wd;
+  logic pad_pwm6_cfg_chip2pad_we;
+  logic pad_pwm6_cfg_oen_qs;
+  logic pad_pwm6_cfg_oen_wd;
+  logic pad_pwm6_cfg_oen_we;
+  logic [3:0] pad_pwm6_mux_sel_qs;
+  logic [3:0] pad_pwm6_mux_sel_wd;
+  logic pad_pwm6_mux_sel_we;
+  logic pad_pwm7_cfg_chip2pad_qs;
+  logic pad_pwm7_cfg_chip2pad_wd;
+  logic pad_pwm7_cfg_chip2pad_we;
+  logic pad_pwm7_cfg_oen_qs;
+  logic pad_pwm7_cfg_oen_wd;
+  logic pad_pwm7_cfg_oen_we;
+  logic [3:0] pad_pwm7_mux_sel_qs;
+  logic [3:0] pad_pwm7_mux_sel_wd;
+  logic pad_pwm7_mux_sel_we;
 
   // Register instances
-  // R[pad_mx_can_0_cfg]: V(False)
+  // R[pad_io_a_00_cfg]: V(False)
 
   //   F[chip2pad]: 0:0
   prim_subreg #(
     .DW      (1),
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
-  ) u_pad_mx_can_0_cfg_chip2pad (
+  ) u_pad_io_a_00_cfg_chip2pad (
     .clk_i   (clk_i    ),
     .rst_ni  (rst_ni  ),
 
     // from register interface
-    .we     (pad_mx_can_0_cfg_chip2pad_we),
-    .wd     (pad_mx_can_0_cfg_chip2pad_wd),
+    .we     (pad_io_a_00_cfg_chip2pad_we),
+    .wd     (pad_io_a_00_cfg_chip2pad_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -513,10 +1116,10 @@ module alsaqr_periph_padframe_periphs_config_reg_top #(
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.pad_mx_can_0_cfg.chip2pad.q ),
+    .q      (reg2hw.pad_io_a_00_cfg.chip2pad.q ),
 
     // to register interface (read)
-    .qs     (pad_mx_can_0_cfg_chip2pad_qs)
+    .qs     (pad_io_a_00_cfg_chip2pad_qs)
   );
 
 
@@ -525,13 +1128,13 @@ module alsaqr_periph_padframe_periphs_config_reg_top #(
     .DW      (1),
     .SWACCESS("RW"),
     .RESVAL  (1'h1)
-  ) u_pad_mx_can_0_cfg_oen (
+  ) u_pad_io_a_00_cfg_oen (
     .clk_i   (clk_i    ),
     .rst_ni  (rst_ni  ),
 
     // from register interface
-    .we     (pad_mx_can_0_cfg_oen_we),
-    .wd     (pad_mx_can_0_cfg_oen_wd),
+    .we     (pad_io_a_00_cfg_oen_we),
+    .wd     (pad_io_a_00_cfg_oen_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -539,26 +1142,26 @@ module alsaqr_periph_padframe_periphs_config_reg_top #(
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.pad_mx_can_0_cfg.oen.q ),
+    .q      (reg2hw.pad_io_a_00_cfg.oen.q ),
 
     // to register interface (read)
-    .qs     (pad_mx_can_0_cfg_oen_qs)
+    .qs     (pad_io_a_00_cfg_oen_qs)
   );
 
 
-  // R[pad_mx_can_0_mux_sel]: V(False)
+  // R[pad_io_a_00_mux_sel]: V(False)
 
   prim_subreg #(
     .DW      (4),
     .SWACCESS("RW"),
     .RESVAL  (4'h0)
-  ) u_pad_mx_can_0_mux_sel (
+  ) u_pad_io_a_00_mux_sel (
     .clk_i   (clk_i    ),
     .rst_ni  (rst_ni  ),
 
     // from register interface
-    .we     (pad_mx_can_0_mux_sel_we),
-    .wd     (pad_mx_can_0_mux_sel_wd),
+    .we     (pad_io_a_00_mux_sel_we),
+    .wd     (pad_io_a_00_mux_sel_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -566,27 +1169,27 @@ module alsaqr_periph_padframe_periphs_config_reg_top #(
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.pad_mx_can_0_mux_sel.q ),
+    .q      (reg2hw.pad_io_a_00_mux_sel.q ),
 
     // to register interface (read)
-    .qs     (pad_mx_can_0_mux_sel_qs)
+    .qs     (pad_io_a_00_mux_sel_qs)
   );
 
 
-  // R[pad_mx_can_1_cfg]: V(False)
+  // R[pad_io_a_01_cfg]: V(False)
 
   //   F[chip2pad]: 0:0
   prim_subreg #(
     .DW      (1),
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
-  ) u_pad_mx_can_1_cfg_chip2pad (
+  ) u_pad_io_a_01_cfg_chip2pad (
     .clk_i   (clk_i    ),
     .rst_ni  (rst_ni  ),
 
     // from register interface
-    .we     (pad_mx_can_1_cfg_chip2pad_we),
-    .wd     (pad_mx_can_1_cfg_chip2pad_wd),
+    .we     (pad_io_a_01_cfg_chip2pad_we),
+    .wd     (pad_io_a_01_cfg_chip2pad_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -594,10 +1197,10 @@ module alsaqr_periph_padframe_periphs_config_reg_top #(
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.pad_mx_can_1_cfg.chip2pad.q ),
+    .q      (reg2hw.pad_io_a_01_cfg.chip2pad.q ),
 
     // to register interface (read)
-    .qs     (pad_mx_can_1_cfg_chip2pad_qs)
+    .qs     (pad_io_a_01_cfg_chip2pad_qs)
   );
 
 
@@ -606,13 +1209,13 @@ module alsaqr_periph_padframe_periphs_config_reg_top #(
     .DW      (1),
     .SWACCESS("RW"),
     .RESVAL  (1'h1)
-  ) u_pad_mx_can_1_cfg_oen (
+  ) u_pad_io_a_01_cfg_oen (
     .clk_i   (clk_i    ),
     .rst_ni  (rst_ni  ),
 
     // from register interface
-    .we     (pad_mx_can_1_cfg_oen_we),
-    .wd     (pad_mx_can_1_cfg_oen_wd),
+    .we     (pad_io_a_01_cfg_oen_we),
+    .wd     (pad_io_a_01_cfg_oen_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -620,26 +1223,26 @@ module alsaqr_periph_padframe_periphs_config_reg_top #(
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.pad_mx_can_1_cfg.oen.q ),
+    .q      (reg2hw.pad_io_a_01_cfg.oen.q ),
 
     // to register interface (read)
-    .qs     (pad_mx_can_1_cfg_oen_qs)
+    .qs     (pad_io_a_01_cfg_oen_qs)
   );
 
 
-  // R[pad_mx_can_1_mux_sel]: V(False)
+  // R[pad_io_a_01_mux_sel]: V(False)
 
   prim_subreg #(
     .DW      (4),
     .SWACCESS("RW"),
     .RESVAL  (4'h0)
-  ) u_pad_mx_can_1_mux_sel (
+  ) u_pad_io_a_01_mux_sel (
     .clk_i   (clk_i    ),
     .rst_ni  (rst_ni  ),
 
     // from register interface
-    .we     (pad_mx_can_1_mux_sel_we),
-    .wd     (pad_mx_can_1_mux_sel_wd),
+    .we     (pad_io_a_01_mux_sel_we),
+    .wd     (pad_io_a_01_mux_sel_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -647,27 +1250,27 @@ module alsaqr_periph_padframe_periphs_config_reg_top #(
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.pad_mx_can_1_mux_sel.q ),
+    .q      (reg2hw.pad_io_a_01_mux_sel.q ),
 
     // to register interface (read)
-    .qs     (pad_mx_can_1_mux_sel_qs)
+    .qs     (pad_io_a_01_mux_sel_qs)
   );
 
 
-  // R[pad_mx_can_2_cfg]: V(False)
+  // R[pad_io_a_02_cfg]: V(False)
 
   //   F[chip2pad]: 0:0
   prim_subreg #(
     .DW      (1),
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
-  ) u_pad_mx_can_2_cfg_chip2pad (
+  ) u_pad_io_a_02_cfg_chip2pad (
     .clk_i   (clk_i    ),
     .rst_ni  (rst_ni  ),
 
     // from register interface
-    .we     (pad_mx_can_2_cfg_chip2pad_we),
-    .wd     (pad_mx_can_2_cfg_chip2pad_wd),
+    .we     (pad_io_a_02_cfg_chip2pad_we),
+    .wd     (pad_io_a_02_cfg_chip2pad_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -675,10 +1278,10 @@ module alsaqr_periph_padframe_periphs_config_reg_top #(
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.pad_mx_can_2_cfg.chip2pad.q ),
+    .q      (reg2hw.pad_io_a_02_cfg.chip2pad.q ),
 
     // to register interface (read)
-    .qs     (pad_mx_can_2_cfg_chip2pad_qs)
+    .qs     (pad_io_a_02_cfg_chip2pad_qs)
   );
 
 
@@ -687,13 +1290,13 @@ module alsaqr_periph_padframe_periphs_config_reg_top #(
     .DW      (1),
     .SWACCESS("RW"),
     .RESVAL  (1'h1)
-  ) u_pad_mx_can_2_cfg_oen (
+  ) u_pad_io_a_02_cfg_oen (
     .clk_i   (clk_i    ),
     .rst_ni  (rst_ni  ),
 
     // from register interface
-    .we     (pad_mx_can_2_cfg_oen_we),
-    .wd     (pad_mx_can_2_cfg_oen_wd),
+    .we     (pad_io_a_02_cfg_oen_we),
+    .wd     (pad_io_a_02_cfg_oen_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -701,26 +1304,26 @@ module alsaqr_periph_padframe_periphs_config_reg_top #(
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.pad_mx_can_2_cfg.oen.q ),
+    .q      (reg2hw.pad_io_a_02_cfg.oen.q ),
 
     // to register interface (read)
-    .qs     (pad_mx_can_2_cfg_oen_qs)
+    .qs     (pad_io_a_02_cfg_oen_qs)
   );
 
 
-  // R[pad_mx_can_2_mux_sel]: V(False)
+  // R[pad_io_a_02_mux_sel]: V(False)
 
   prim_subreg #(
     .DW      (4),
     .SWACCESS("RW"),
     .RESVAL  (4'h0)
-  ) u_pad_mx_can_2_mux_sel (
+  ) u_pad_io_a_02_mux_sel (
     .clk_i   (clk_i    ),
     .rst_ni  (rst_ni  ),
 
     // from register interface
-    .we     (pad_mx_can_2_mux_sel_we),
-    .wd     (pad_mx_can_2_mux_sel_wd),
+    .we     (pad_io_a_02_mux_sel_we),
+    .wd     (pad_io_a_02_mux_sel_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -728,27 +1331,27 @@ module alsaqr_periph_padframe_periphs_config_reg_top #(
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.pad_mx_can_2_mux_sel.q ),
+    .q      (reg2hw.pad_io_a_02_mux_sel.q ),
 
     // to register interface (read)
-    .qs     (pad_mx_can_2_mux_sel_qs)
+    .qs     (pad_io_a_02_mux_sel_qs)
   );
 
 
-  // R[pad_mx_can_3_cfg]: V(False)
+  // R[pad_io_a_03_cfg]: V(False)
 
   //   F[chip2pad]: 0:0
   prim_subreg #(
     .DW      (1),
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
-  ) u_pad_mx_can_3_cfg_chip2pad (
+  ) u_pad_io_a_03_cfg_chip2pad (
     .clk_i   (clk_i    ),
     .rst_ni  (rst_ni  ),
 
     // from register interface
-    .we     (pad_mx_can_3_cfg_chip2pad_we),
-    .wd     (pad_mx_can_3_cfg_chip2pad_wd),
+    .we     (pad_io_a_03_cfg_chip2pad_we),
+    .wd     (pad_io_a_03_cfg_chip2pad_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -756,10 +1359,10 @@ module alsaqr_periph_padframe_periphs_config_reg_top #(
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.pad_mx_can_3_cfg.chip2pad.q ),
+    .q      (reg2hw.pad_io_a_03_cfg.chip2pad.q ),
 
     // to register interface (read)
-    .qs     (pad_mx_can_3_cfg_chip2pad_qs)
+    .qs     (pad_io_a_03_cfg_chip2pad_qs)
   );
 
 
@@ -768,13 +1371,13 @@ module alsaqr_periph_padframe_periphs_config_reg_top #(
     .DW      (1),
     .SWACCESS("RW"),
     .RESVAL  (1'h1)
-  ) u_pad_mx_can_3_cfg_oen (
+  ) u_pad_io_a_03_cfg_oen (
     .clk_i   (clk_i    ),
     .rst_ni  (rst_ni  ),
 
     // from register interface
-    .we     (pad_mx_can_3_cfg_oen_we),
-    .wd     (pad_mx_can_3_cfg_oen_wd),
+    .we     (pad_io_a_03_cfg_oen_we),
+    .wd     (pad_io_a_03_cfg_oen_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -782,26 +1385,26 @@ module alsaqr_periph_padframe_periphs_config_reg_top #(
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.pad_mx_can_3_cfg.oen.q ),
+    .q      (reg2hw.pad_io_a_03_cfg.oen.q ),
 
     // to register interface (read)
-    .qs     (pad_mx_can_3_cfg_oen_qs)
+    .qs     (pad_io_a_03_cfg_oen_qs)
   );
 
 
-  // R[pad_mx_can_3_mux_sel]: V(False)
+  // R[pad_io_a_03_mux_sel]: V(False)
 
   prim_subreg #(
     .DW      (4),
     .SWACCESS("RW"),
     .RESVAL  (4'h0)
-  ) u_pad_mx_can_3_mux_sel (
+  ) u_pad_io_a_03_mux_sel (
     .clk_i   (clk_i    ),
     .rst_ni  (rst_ni  ),
 
     // from register interface
-    .we     (pad_mx_can_3_mux_sel_we),
-    .wd     (pad_mx_can_3_mux_sel_wd),
+    .we     (pad_io_a_03_mux_sel_we),
+    .wd     (pad_io_a_03_mux_sel_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -809,27 +1412,27 @@ module alsaqr_periph_padframe_periphs_config_reg_top #(
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.pad_mx_can_3_mux_sel.q ),
+    .q      (reg2hw.pad_io_a_03_mux_sel.q ),
 
     // to register interface (read)
-    .qs     (pad_mx_can_3_mux_sel_qs)
+    .qs     (pad_io_a_03_mux_sel_qs)
   );
 
 
-  // R[pad_mx_cam0_0_cfg]: V(False)
+  // R[pad_io_a_04_cfg]: V(False)
 
   //   F[chip2pad]: 0:0
   prim_subreg #(
     .DW      (1),
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
-  ) u_pad_mx_cam0_0_cfg_chip2pad (
+  ) u_pad_io_a_04_cfg_chip2pad (
     .clk_i   (clk_i    ),
     .rst_ni  (rst_ni  ),
 
     // from register interface
-    .we     (pad_mx_cam0_0_cfg_chip2pad_we),
-    .wd     (pad_mx_cam0_0_cfg_chip2pad_wd),
+    .we     (pad_io_a_04_cfg_chip2pad_we),
+    .wd     (pad_io_a_04_cfg_chip2pad_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -837,10 +1440,10 @@ module alsaqr_periph_padframe_periphs_config_reg_top #(
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.pad_mx_cam0_0_cfg.chip2pad.q ),
+    .q      (reg2hw.pad_io_a_04_cfg.chip2pad.q ),
 
     // to register interface (read)
-    .qs     (pad_mx_cam0_0_cfg_chip2pad_qs)
+    .qs     (pad_io_a_04_cfg_chip2pad_qs)
   );
 
 
@@ -849,13 +1452,13 @@ module alsaqr_periph_padframe_periphs_config_reg_top #(
     .DW      (1),
     .SWACCESS("RW"),
     .RESVAL  (1'h1)
-  ) u_pad_mx_cam0_0_cfg_oen (
+  ) u_pad_io_a_04_cfg_oen (
     .clk_i   (clk_i    ),
     .rst_ni  (rst_ni  ),
 
     // from register interface
-    .we     (pad_mx_cam0_0_cfg_oen_we),
-    .wd     (pad_mx_cam0_0_cfg_oen_wd),
+    .we     (pad_io_a_04_cfg_oen_we),
+    .wd     (pad_io_a_04_cfg_oen_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -863,1808 +1466,26 @@ module alsaqr_periph_padframe_periphs_config_reg_top #(
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.pad_mx_cam0_0_cfg.oen.q ),
+    .q      (reg2hw.pad_io_a_04_cfg.oen.q ),
 
     // to register interface (read)
-    .qs     (pad_mx_cam0_0_cfg_oen_qs)
+    .qs     (pad_io_a_04_cfg_oen_qs)
   );
 
 
-  // R[pad_mx_cam0_0_mux_sel]: V(False)
-
-  prim_subreg #(
-    .DW      (5),
-    .SWACCESS("RW"),
-    .RESVAL  (5'h0)
-  ) u_pad_mx_cam0_0_mux_sel (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
-
-    // from register interface
-    .we     (pad_mx_cam0_0_mux_sel_we),
-    .wd     (pad_mx_cam0_0_mux_sel_wd),
-
-    // from internal hardware
-    .de     (1'b0),
-    .d      ('0  ),
-
-    // to internal hardware
-    .qe     (),
-    .q      (reg2hw.pad_mx_cam0_0_mux_sel.q ),
-
-    // to register interface (read)
-    .qs     (pad_mx_cam0_0_mux_sel_qs)
-  );
-
-
-  // R[pad_mx_cam0_1_cfg]: V(False)
-
-  //   F[chip2pad]: 0:0
-  prim_subreg #(
-    .DW      (1),
-    .SWACCESS("RW"),
-    .RESVAL  (1'h0)
-  ) u_pad_mx_cam0_1_cfg_chip2pad (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
-
-    // from register interface
-    .we     (pad_mx_cam0_1_cfg_chip2pad_we),
-    .wd     (pad_mx_cam0_1_cfg_chip2pad_wd),
-
-    // from internal hardware
-    .de     (1'b0),
-    .d      ('0  ),
-
-    // to internal hardware
-    .qe     (),
-    .q      (reg2hw.pad_mx_cam0_1_cfg.chip2pad.q ),
-
-    // to register interface (read)
-    .qs     (pad_mx_cam0_1_cfg_chip2pad_qs)
-  );
-
-
-  //   F[oen]: 1:1
-  prim_subreg #(
-    .DW      (1),
-    .SWACCESS("RW"),
-    .RESVAL  (1'h1)
-  ) u_pad_mx_cam0_1_cfg_oen (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
-
-    // from register interface
-    .we     (pad_mx_cam0_1_cfg_oen_we),
-    .wd     (pad_mx_cam0_1_cfg_oen_wd),
-
-    // from internal hardware
-    .de     (1'b0),
-    .d      ('0  ),
-
-    // to internal hardware
-    .qe     (),
-    .q      (reg2hw.pad_mx_cam0_1_cfg.oen.q ),
-
-    // to register interface (read)
-    .qs     (pad_mx_cam0_1_cfg_oen_qs)
-  );
-
-
-  // R[pad_mx_cam0_1_mux_sel]: V(False)
-
-  prim_subreg #(
-    .DW      (5),
-    .SWACCESS("RW"),
-    .RESVAL  (5'h0)
-  ) u_pad_mx_cam0_1_mux_sel (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
-
-    // from register interface
-    .we     (pad_mx_cam0_1_mux_sel_we),
-    .wd     (pad_mx_cam0_1_mux_sel_wd),
-
-    // from internal hardware
-    .de     (1'b0),
-    .d      ('0  ),
-
-    // to internal hardware
-    .qe     (),
-    .q      (reg2hw.pad_mx_cam0_1_mux_sel.q ),
-
-    // to register interface (read)
-    .qs     (pad_mx_cam0_1_mux_sel_qs)
-  );
-
-
-  // R[pad_mx_cam0_2_cfg]: V(False)
-
-  //   F[chip2pad]: 0:0
-  prim_subreg #(
-    .DW      (1),
-    .SWACCESS("RW"),
-    .RESVAL  (1'h0)
-  ) u_pad_mx_cam0_2_cfg_chip2pad (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
-
-    // from register interface
-    .we     (pad_mx_cam0_2_cfg_chip2pad_we),
-    .wd     (pad_mx_cam0_2_cfg_chip2pad_wd),
-
-    // from internal hardware
-    .de     (1'b0),
-    .d      ('0  ),
-
-    // to internal hardware
-    .qe     (),
-    .q      (reg2hw.pad_mx_cam0_2_cfg.chip2pad.q ),
-
-    // to register interface (read)
-    .qs     (pad_mx_cam0_2_cfg_chip2pad_qs)
-  );
-
-
-  //   F[oen]: 1:1
-  prim_subreg #(
-    .DW      (1),
-    .SWACCESS("RW"),
-    .RESVAL  (1'h1)
-  ) u_pad_mx_cam0_2_cfg_oen (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
-
-    // from register interface
-    .we     (pad_mx_cam0_2_cfg_oen_we),
-    .wd     (pad_mx_cam0_2_cfg_oen_wd),
-
-    // from internal hardware
-    .de     (1'b0),
-    .d      ('0  ),
-
-    // to internal hardware
-    .qe     (),
-    .q      (reg2hw.pad_mx_cam0_2_cfg.oen.q ),
-
-    // to register interface (read)
-    .qs     (pad_mx_cam0_2_cfg_oen_qs)
-  );
-
-
-  // R[pad_mx_cam0_2_mux_sel]: V(False)
-
-  prim_subreg #(
-    .DW      (5),
-    .SWACCESS("RW"),
-    .RESVAL  (5'h0)
-  ) u_pad_mx_cam0_2_mux_sel (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
-
-    // from register interface
-    .we     (pad_mx_cam0_2_mux_sel_we),
-    .wd     (pad_mx_cam0_2_mux_sel_wd),
-
-    // from internal hardware
-    .de     (1'b0),
-    .d      ('0  ),
-
-    // to internal hardware
-    .qe     (),
-    .q      (reg2hw.pad_mx_cam0_2_mux_sel.q ),
-
-    // to register interface (read)
-    .qs     (pad_mx_cam0_2_mux_sel_qs)
-  );
-
-
-  // R[pad_mx_cam0_3_cfg]: V(False)
-
-  //   F[chip2pad]: 0:0
-  prim_subreg #(
-    .DW      (1),
-    .SWACCESS("RW"),
-    .RESVAL  (1'h0)
-  ) u_pad_mx_cam0_3_cfg_chip2pad (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
-
-    // from register interface
-    .we     (pad_mx_cam0_3_cfg_chip2pad_we),
-    .wd     (pad_mx_cam0_3_cfg_chip2pad_wd),
-
-    // from internal hardware
-    .de     (1'b0),
-    .d      ('0  ),
-
-    // to internal hardware
-    .qe     (),
-    .q      (reg2hw.pad_mx_cam0_3_cfg.chip2pad.q ),
-
-    // to register interface (read)
-    .qs     (pad_mx_cam0_3_cfg_chip2pad_qs)
-  );
-
-
-  //   F[oen]: 1:1
-  prim_subreg #(
-    .DW      (1),
-    .SWACCESS("RW"),
-    .RESVAL  (1'h1)
-  ) u_pad_mx_cam0_3_cfg_oen (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
-
-    // from register interface
-    .we     (pad_mx_cam0_3_cfg_oen_we),
-    .wd     (pad_mx_cam0_3_cfg_oen_wd),
-
-    // from internal hardware
-    .de     (1'b0),
-    .d      ('0  ),
-
-    // to internal hardware
-    .qe     (),
-    .q      (reg2hw.pad_mx_cam0_3_cfg.oen.q ),
-
-    // to register interface (read)
-    .qs     (pad_mx_cam0_3_cfg_oen_qs)
-  );
-
-
-  // R[pad_mx_cam0_3_mux_sel]: V(False)
-
-  prim_subreg #(
-    .DW      (5),
-    .SWACCESS("RW"),
-    .RESVAL  (5'h0)
-  ) u_pad_mx_cam0_3_mux_sel (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
-
-    // from register interface
-    .we     (pad_mx_cam0_3_mux_sel_we),
-    .wd     (pad_mx_cam0_3_mux_sel_wd),
-
-    // from internal hardware
-    .de     (1'b0),
-    .d      ('0  ),
-
-    // to internal hardware
-    .qe     (),
-    .q      (reg2hw.pad_mx_cam0_3_mux_sel.q ),
-
-    // to register interface (read)
-    .qs     (pad_mx_cam0_3_mux_sel_qs)
-  );
-
-
-  // R[pad_mx_cam0_4_cfg]: V(False)
-
-  //   F[chip2pad]: 0:0
-  prim_subreg #(
-    .DW      (1),
-    .SWACCESS("RW"),
-    .RESVAL  (1'h0)
-  ) u_pad_mx_cam0_4_cfg_chip2pad (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
-
-    // from register interface
-    .we     (pad_mx_cam0_4_cfg_chip2pad_we),
-    .wd     (pad_mx_cam0_4_cfg_chip2pad_wd),
-
-    // from internal hardware
-    .de     (1'b0),
-    .d      ('0  ),
-
-    // to internal hardware
-    .qe     (),
-    .q      (reg2hw.pad_mx_cam0_4_cfg.chip2pad.q ),
-
-    // to register interface (read)
-    .qs     (pad_mx_cam0_4_cfg_chip2pad_qs)
-  );
-
-
-  //   F[oen]: 1:1
-  prim_subreg #(
-    .DW      (1),
-    .SWACCESS("RW"),
-    .RESVAL  (1'h1)
-  ) u_pad_mx_cam0_4_cfg_oen (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
-
-    // from register interface
-    .we     (pad_mx_cam0_4_cfg_oen_we),
-    .wd     (pad_mx_cam0_4_cfg_oen_wd),
-
-    // from internal hardware
-    .de     (1'b0),
-    .d      ('0  ),
-
-    // to internal hardware
-    .qe     (),
-    .q      (reg2hw.pad_mx_cam0_4_cfg.oen.q ),
-
-    // to register interface (read)
-    .qs     (pad_mx_cam0_4_cfg_oen_qs)
-  );
-
-
-  // R[pad_mx_cam0_4_mux_sel]: V(False)
-
-  prim_subreg #(
-    .DW      (5),
-    .SWACCESS("RW"),
-    .RESVAL  (5'h0)
-  ) u_pad_mx_cam0_4_mux_sel (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
-
-    // from register interface
-    .we     (pad_mx_cam0_4_mux_sel_we),
-    .wd     (pad_mx_cam0_4_mux_sel_wd),
-
-    // from internal hardware
-    .de     (1'b0),
-    .d      ('0  ),
-
-    // to internal hardware
-    .qe     (),
-    .q      (reg2hw.pad_mx_cam0_4_mux_sel.q ),
-
-    // to register interface (read)
-    .qs     (pad_mx_cam0_4_mux_sel_qs)
-  );
-
-
-  // R[pad_mx_cam0_5_cfg]: V(False)
-
-  //   F[chip2pad]: 0:0
-  prim_subreg #(
-    .DW      (1),
-    .SWACCESS("RW"),
-    .RESVAL  (1'h0)
-  ) u_pad_mx_cam0_5_cfg_chip2pad (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
-
-    // from register interface
-    .we     (pad_mx_cam0_5_cfg_chip2pad_we),
-    .wd     (pad_mx_cam0_5_cfg_chip2pad_wd),
-
-    // from internal hardware
-    .de     (1'b0),
-    .d      ('0  ),
-
-    // to internal hardware
-    .qe     (),
-    .q      (reg2hw.pad_mx_cam0_5_cfg.chip2pad.q ),
-
-    // to register interface (read)
-    .qs     (pad_mx_cam0_5_cfg_chip2pad_qs)
-  );
-
-
-  //   F[oen]: 1:1
-  prim_subreg #(
-    .DW      (1),
-    .SWACCESS("RW"),
-    .RESVAL  (1'h1)
-  ) u_pad_mx_cam0_5_cfg_oen (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
-
-    // from register interface
-    .we     (pad_mx_cam0_5_cfg_oen_we),
-    .wd     (pad_mx_cam0_5_cfg_oen_wd),
-
-    // from internal hardware
-    .de     (1'b0),
-    .d      ('0  ),
-
-    // to internal hardware
-    .qe     (),
-    .q      (reg2hw.pad_mx_cam0_5_cfg.oen.q ),
-
-    // to register interface (read)
-    .qs     (pad_mx_cam0_5_cfg_oen_qs)
-  );
-
-
-  // R[pad_mx_cam0_5_mux_sel]: V(False)
-
-  prim_subreg #(
-    .DW      (5),
-    .SWACCESS("RW"),
-    .RESVAL  (5'h0)
-  ) u_pad_mx_cam0_5_mux_sel (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
-
-    // from register interface
-    .we     (pad_mx_cam0_5_mux_sel_we),
-    .wd     (pad_mx_cam0_5_mux_sel_wd),
-
-    // from internal hardware
-    .de     (1'b0),
-    .d      ('0  ),
-
-    // to internal hardware
-    .qe     (),
-    .q      (reg2hw.pad_mx_cam0_5_mux_sel.q ),
-
-    // to register interface (read)
-    .qs     (pad_mx_cam0_5_mux_sel_qs)
-  );
-
-
-  // R[pad_mx_cam0_6_cfg]: V(False)
-
-  //   F[chip2pad]: 0:0
-  prim_subreg #(
-    .DW      (1),
-    .SWACCESS("RW"),
-    .RESVAL  (1'h0)
-  ) u_pad_mx_cam0_6_cfg_chip2pad (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
-
-    // from register interface
-    .we     (pad_mx_cam0_6_cfg_chip2pad_we),
-    .wd     (pad_mx_cam0_6_cfg_chip2pad_wd),
-
-    // from internal hardware
-    .de     (1'b0),
-    .d      ('0  ),
-
-    // to internal hardware
-    .qe     (),
-    .q      (reg2hw.pad_mx_cam0_6_cfg.chip2pad.q ),
-
-    // to register interface (read)
-    .qs     (pad_mx_cam0_6_cfg_chip2pad_qs)
-  );
-
-
-  //   F[oen]: 1:1
-  prim_subreg #(
-    .DW      (1),
-    .SWACCESS("RW"),
-    .RESVAL  (1'h1)
-  ) u_pad_mx_cam0_6_cfg_oen (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
-
-    // from register interface
-    .we     (pad_mx_cam0_6_cfg_oen_we),
-    .wd     (pad_mx_cam0_6_cfg_oen_wd),
-
-    // from internal hardware
-    .de     (1'b0),
-    .d      ('0  ),
-
-    // to internal hardware
-    .qe     (),
-    .q      (reg2hw.pad_mx_cam0_6_cfg.oen.q ),
-
-    // to register interface (read)
-    .qs     (pad_mx_cam0_6_cfg_oen_qs)
-  );
-
-
-  // R[pad_mx_cam0_6_mux_sel]: V(False)
-
-  prim_subreg #(
-    .DW      (5),
-    .SWACCESS("RW"),
-    .RESVAL  (5'h0)
-  ) u_pad_mx_cam0_6_mux_sel (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
-
-    // from register interface
-    .we     (pad_mx_cam0_6_mux_sel_we),
-    .wd     (pad_mx_cam0_6_mux_sel_wd),
-
-    // from internal hardware
-    .de     (1'b0),
-    .d      ('0  ),
-
-    // to internal hardware
-    .qe     (),
-    .q      (reg2hw.pad_mx_cam0_6_mux_sel.q ),
-
-    // to register interface (read)
-    .qs     (pad_mx_cam0_6_mux_sel_qs)
-  );
-
-
-  // R[pad_mx_cam0_7_cfg]: V(False)
-
-  //   F[chip2pad]: 0:0
-  prim_subreg #(
-    .DW      (1),
-    .SWACCESS("RW"),
-    .RESVAL  (1'h0)
-  ) u_pad_mx_cam0_7_cfg_chip2pad (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
-
-    // from register interface
-    .we     (pad_mx_cam0_7_cfg_chip2pad_we),
-    .wd     (pad_mx_cam0_7_cfg_chip2pad_wd),
-
-    // from internal hardware
-    .de     (1'b0),
-    .d      ('0  ),
-
-    // to internal hardware
-    .qe     (),
-    .q      (reg2hw.pad_mx_cam0_7_cfg.chip2pad.q ),
-
-    // to register interface (read)
-    .qs     (pad_mx_cam0_7_cfg_chip2pad_qs)
-  );
-
-
-  //   F[oen]: 1:1
-  prim_subreg #(
-    .DW      (1),
-    .SWACCESS("RW"),
-    .RESVAL  (1'h1)
-  ) u_pad_mx_cam0_7_cfg_oen (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
-
-    // from register interface
-    .we     (pad_mx_cam0_7_cfg_oen_we),
-    .wd     (pad_mx_cam0_7_cfg_oen_wd),
-
-    // from internal hardware
-    .de     (1'b0),
-    .d      ('0  ),
-
-    // to internal hardware
-    .qe     (),
-    .q      (reg2hw.pad_mx_cam0_7_cfg.oen.q ),
-
-    // to register interface (read)
-    .qs     (pad_mx_cam0_7_cfg_oen_qs)
-  );
-
-
-  // R[pad_mx_cam0_7_mux_sel]: V(False)
-
-  prim_subreg #(
-    .DW      (5),
-    .SWACCESS("RW"),
-    .RESVAL  (5'h0)
-  ) u_pad_mx_cam0_7_mux_sel (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
-
-    // from register interface
-    .we     (pad_mx_cam0_7_mux_sel_we),
-    .wd     (pad_mx_cam0_7_mux_sel_wd),
-
-    // from internal hardware
-    .de     (1'b0),
-    .d      ('0  ),
-
-    // to internal hardware
-    .qe     (),
-    .q      (reg2hw.pad_mx_cam0_7_mux_sel.q ),
-
-    // to register interface (read)
-    .qs     (pad_mx_cam0_7_mux_sel_qs)
-  );
-
-
-  // R[pad_mx_cam0_8_cfg]: V(False)
-
-  //   F[chip2pad]: 0:0
-  prim_subreg #(
-    .DW      (1),
-    .SWACCESS("RW"),
-    .RESVAL  (1'h0)
-  ) u_pad_mx_cam0_8_cfg_chip2pad (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
-
-    // from register interface
-    .we     (pad_mx_cam0_8_cfg_chip2pad_we),
-    .wd     (pad_mx_cam0_8_cfg_chip2pad_wd),
-
-    // from internal hardware
-    .de     (1'b0),
-    .d      ('0  ),
-
-    // to internal hardware
-    .qe     (),
-    .q      (reg2hw.pad_mx_cam0_8_cfg.chip2pad.q ),
-
-    // to register interface (read)
-    .qs     (pad_mx_cam0_8_cfg_chip2pad_qs)
-  );
-
-
-  //   F[oen]: 1:1
-  prim_subreg #(
-    .DW      (1),
-    .SWACCESS("RW"),
-    .RESVAL  (1'h1)
-  ) u_pad_mx_cam0_8_cfg_oen (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
-
-    // from register interface
-    .we     (pad_mx_cam0_8_cfg_oen_we),
-    .wd     (pad_mx_cam0_8_cfg_oen_wd),
-
-    // from internal hardware
-    .de     (1'b0),
-    .d      ('0  ),
-
-    // to internal hardware
-    .qe     (),
-    .q      (reg2hw.pad_mx_cam0_8_cfg.oen.q ),
-
-    // to register interface (read)
-    .qs     (pad_mx_cam0_8_cfg_oen_qs)
-  );
-
-
-  // R[pad_mx_cam0_8_mux_sel]: V(False)
-
-  prim_subreg #(
-    .DW      (5),
-    .SWACCESS("RW"),
-    .RESVAL  (5'h0)
-  ) u_pad_mx_cam0_8_mux_sel (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
-
-    // from register interface
-    .we     (pad_mx_cam0_8_mux_sel_we),
-    .wd     (pad_mx_cam0_8_mux_sel_wd),
-
-    // from internal hardware
-    .de     (1'b0),
-    .d      ('0  ),
-
-    // to internal hardware
-    .qe     (),
-    .q      (reg2hw.pad_mx_cam0_8_mux_sel.q ),
-
-    // to register interface (read)
-    .qs     (pad_mx_cam0_8_mux_sel_qs)
-  );
-
-
-  // R[pad_mx_cam0_9_cfg]: V(False)
-
-  //   F[chip2pad]: 0:0
-  prim_subreg #(
-    .DW      (1),
-    .SWACCESS("RW"),
-    .RESVAL  (1'h0)
-  ) u_pad_mx_cam0_9_cfg_chip2pad (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
-
-    // from register interface
-    .we     (pad_mx_cam0_9_cfg_chip2pad_we),
-    .wd     (pad_mx_cam0_9_cfg_chip2pad_wd),
-
-    // from internal hardware
-    .de     (1'b0),
-    .d      ('0  ),
-
-    // to internal hardware
-    .qe     (),
-    .q      (reg2hw.pad_mx_cam0_9_cfg.chip2pad.q ),
-
-    // to register interface (read)
-    .qs     (pad_mx_cam0_9_cfg_chip2pad_qs)
-  );
-
-
-  //   F[oen]: 1:1
-  prim_subreg #(
-    .DW      (1),
-    .SWACCESS("RW"),
-    .RESVAL  (1'h1)
-  ) u_pad_mx_cam0_9_cfg_oen (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
-
-    // from register interface
-    .we     (pad_mx_cam0_9_cfg_oen_we),
-    .wd     (pad_mx_cam0_9_cfg_oen_wd),
-
-    // from internal hardware
-    .de     (1'b0),
-    .d      ('0  ),
-
-    // to internal hardware
-    .qe     (),
-    .q      (reg2hw.pad_mx_cam0_9_cfg.oen.q ),
-
-    // to register interface (read)
-    .qs     (pad_mx_cam0_9_cfg_oen_qs)
-  );
-
-
-  // R[pad_mx_cam0_9_mux_sel]: V(False)
-
-  prim_subreg #(
-    .DW      (5),
-    .SWACCESS("RW"),
-    .RESVAL  (5'h0)
-  ) u_pad_mx_cam0_9_mux_sel (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
-
-    // from register interface
-    .we     (pad_mx_cam0_9_mux_sel_we),
-    .wd     (pad_mx_cam0_9_mux_sel_wd),
-
-    // from internal hardware
-    .de     (1'b0),
-    .d      ('0  ),
-
-    // to internal hardware
-    .qe     (),
-    .q      (reg2hw.pad_mx_cam0_9_mux_sel.q ),
-
-    // to register interface (read)
-    .qs     (pad_mx_cam0_9_mux_sel_qs)
-  );
-
-
-  // R[pad_mx_cam0_10_cfg]: V(False)
-
-  //   F[chip2pad]: 0:0
-  prim_subreg #(
-    .DW      (1),
-    .SWACCESS("RW"),
-    .RESVAL  (1'h0)
-  ) u_pad_mx_cam0_10_cfg_chip2pad (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
-
-    // from register interface
-    .we     (pad_mx_cam0_10_cfg_chip2pad_we),
-    .wd     (pad_mx_cam0_10_cfg_chip2pad_wd),
-
-    // from internal hardware
-    .de     (1'b0),
-    .d      ('0  ),
-
-    // to internal hardware
-    .qe     (),
-    .q      (reg2hw.pad_mx_cam0_10_cfg.chip2pad.q ),
-
-    // to register interface (read)
-    .qs     (pad_mx_cam0_10_cfg_chip2pad_qs)
-  );
-
-
-  //   F[oen]: 1:1
-  prim_subreg #(
-    .DW      (1),
-    .SWACCESS("RW"),
-    .RESVAL  (1'h1)
-  ) u_pad_mx_cam0_10_cfg_oen (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
-
-    // from register interface
-    .we     (pad_mx_cam0_10_cfg_oen_we),
-    .wd     (pad_mx_cam0_10_cfg_oen_wd),
-
-    // from internal hardware
-    .de     (1'b0),
-    .d      ('0  ),
-
-    // to internal hardware
-    .qe     (),
-    .q      (reg2hw.pad_mx_cam0_10_cfg.oen.q ),
-
-    // to register interface (read)
-    .qs     (pad_mx_cam0_10_cfg_oen_qs)
-  );
-
-
-  // R[pad_mx_cam0_10_mux_sel]: V(False)
-
-  prim_subreg #(
-    .DW      (5),
-    .SWACCESS("RW"),
-    .RESVAL  (5'h0)
-  ) u_pad_mx_cam0_10_mux_sel (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
-
-    // from register interface
-    .we     (pad_mx_cam0_10_mux_sel_we),
-    .wd     (pad_mx_cam0_10_mux_sel_wd),
-
-    // from internal hardware
-    .de     (1'b0),
-    .d      ('0  ),
-
-    // to internal hardware
-    .qe     (),
-    .q      (reg2hw.pad_mx_cam0_10_mux_sel.q ),
-
-    // to register interface (read)
-    .qs     (pad_mx_cam0_10_mux_sel_qs)
-  );
-
-
-  // R[pad_mx_cam1_0_cfg]: V(False)
-
-  //   F[chip2pad]: 0:0
-  prim_subreg #(
-    .DW      (1),
-    .SWACCESS("RW"),
-    .RESVAL  (1'h0)
-  ) u_pad_mx_cam1_0_cfg_chip2pad (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
-
-    // from register interface
-    .we     (pad_mx_cam1_0_cfg_chip2pad_we),
-    .wd     (pad_mx_cam1_0_cfg_chip2pad_wd),
-
-    // from internal hardware
-    .de     (1'b0),
-    .d      ('0  ),
-
-    // to internal hardware
-    .qe     (),
-    .q      (reg2hw.pad_mx_cam1_0_cfg.chip2pad.q ),
-
-    // to register interface (read)
-    .qs     (pad_mx_cam1_0_cfg_chip2pad_qs)
-  );
-
-
-  //   F[oen]: 1:1
-  prim_subreg #(
-    .DW      (1),
-    .SWACCESS("RW"),
-    .RESVAL  (1'h1)
-  ) u_pad_mx_cam1_0_cfg_oen (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
-
-    // from register interface
-    .we     (pad_mx_cam1_0_cfg_oen_we),
-    .wd     (pad_mx_cam1_0_cfg_oen_wd),
-
-    // from internal hardware
-    .de     (1'b0),
-    .d      ('0  ),
-
-    // to internal hardware
-    .qe     (),
-    .q      (reg2hw.pad_mx_cam1_0_cfg.oen.q ),
-
-    // to register interface (read)
-    .qs     (pad_mx_cam1_0_cfg_oen_qs)
-  );
-
-
-  // R[pad_mx_cam1_0_mux_sel]: V(False)
-
-  prim_subreg #(
-    .DW      (5),
-    .SWACCESS("RW"),
-    .RESVAL  (5'h0)
-  ) u_pad_mx_cam1_0_mux_sel (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
-
-    // from register interface
-    .we     (pad_mx_cam1_0_mux_sel_we),
-    .wd     (pad_mx_cam1_0_mux_sel_wd),
-
-    // from internal hardware
-    .de     (1'b0),
-    .d      ('0  ),
-
-    // to internal hardware
-    .qe     (),
-    .q      (reg2hw.pad_mx_cam1_0_mux_sel.q ),
-
-    // to register interface (read)
-    .qs     (pad_mx_cam1_0_mux_sel_qs)
-  );
-
-
-  // R[pad_mx_cam1_1_cfg]: V(False)
-
-  //   F[chip2pad]: 0:0
-  prim_subreg #(
-    .DW      (1),
-    .SWACCESS("RW"),
-    .RESVAL  (1'h0)
-  ) u_pad_mx_cam1_1_cfg_chip2pad (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
-
-    // from register interface
-    .we     (pad_mx_cam1_1_cfg_chip2pad_we),
-    .wd     (pad_mx_cam1_1_cfg_chip2pad_wd),
-
-    // from internal hardware
-    .de     (1'b0),
-    .d      ('0  ),
-
-    // to internal hardware
-    .qe     (),
-    .q      (reg2hw.pad_mx_cam1_1_cfg.chip2pad.q ),
-
-    // to register interface (read)
-    .qs     (pad_mx_cam1_1_cfg_chip2pad_qs)
-  );
-
-
-  //   F[oen]: 1:1
-  prim_subreg #(
-    .DW      (1),
-    .SWACCESS("RW"),
-    .RESVAL  (1'h1)
-  ) u_pad_mx_cam1_1_cfg_oen (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
-
-    // from register interface
-    .we     (pad_mx_cam1_1_cfg_oen_we),
-    .wd     (pad_mx_cam1_1_cfg_oen_wd),
-
-    // from internal hardware
-    .de     (1'b0),
-    .d      ('0  ),
-
-    // to internal hardware
-    .qe     (),
-    .q      (reg2hw.pad_mx_cam1_1_cfg.oen.q ),
-
-    // to register interface (read)
-    .qs     (pad_mx_cam1_1_cfg_oen_qs)
-  );
-
-
-  // R[pad_mx_cam1_1_mux_sel]: V(False)
-
-  prim_subreg #(
-    .DW      (5),
-    .SWACCESS("RW"),
-    .RESVAL  (5'h0)
-  ) u_pad_mx_cam1_1_mux_sel (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
-
-    // from register interface
-    .we     (pad_mx_cam1_1_mux_sel_we),
-    .wd     (pad_mx_cam1_1_mux_sel_wd),
-
-    // from internal hardware
-    .de     (1'b0),
-    .d      ('0  ),
-
-    // to internal hardware
-    .qe     (),
-    .q      (reg2hw.pad_mx_cam1_1_mux_sel.q ),
-
-    // to register interface (read)
-    .qs     (pad_mx_cam1_1_mux_sel_qs)
-  );
-
-
-  // R[pad_mx_cam1_2_cfg]: V(False)
-
-  //   F[chip2pad]: 0:0
-  prim_subreg #(
-    .DW      (1),
-    .SWACCESS("RW"),
-    .RESVAL  (1'h0)
-  ) u_pad_mx_cam1_2_cfg_chip2pad (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
-
-    // from register interface
-    .we     (pad_mx_cam1_2_cfg_chip2pad_we),
-    .wd     (pad_mx_cam1_2_cfg_chip2pad_wd),
-
-    // from internal hardware
-    .de     (1'b0),
-    .d      ('0  ),
-
-    // to internal hardware
-    .qe     (),
-    .q      (reg2hw.pad_mx_cam1_2_cfg.chip2pad.q ),
-
-    // to register interface (read)
-    .qs     (pad_mx_cam1_2_cfg_chip2pad_qs)
-  );
-
-
-  //   F[oen]: 1:1
-  prim_subreg #(
-    .DW      (1),
-    .SWACCESS("RW"),
-    .RESVAL  (1'h1)
-  ) u_pad_mx_cam1_2_cfg_oen (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
-
-    // from register interface
-    .we     (pad_mx_cam1_2_cfg_oen_we),
-    .wd     (pad_mx_cam1_2_cfg_oen_wd),
-
-    // from internal hardware
-    .de     (1'b0),
-    .d      ('0  ),
-
-    // to internal hardware
-    .qe     (),
-    .q      (reg2hw.pad_mx_cam1_2_cfg.oen.q ),
-
-    // to register interface (read)
-    .qs     (pad_mx_cam1_2_cfg_oen_qs)
-  );
-
-
-  // R[pad_mx_cam1_2_mux_sel]: V(False)
-
-  prim_subreg #(
-    .DW      (5),
-    .SWACCESS("RW"),
-    .RESVAL  (5'h0)
-  ) u_pad_mx_cam1_2_mux_sel (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
-
-    // from register interface
-    .we     (pad_mx_cam1_2_mux_sel_we),
-    .wd     (pad_mx_cam1_2_mux_sel_wd),
-
-    // from internal hardware
-    .de     (1'b0),
-    .d      ('0  ),
-
-    // to internal hardware
-    .qe     (),
-    .q      (reg2hw.pad_mx_cam1_2_mux_sel.q ),
-
-    // to register interface (read)
-    .qs     (pad_mx_cam1_2_mux_sel_qs)
-  );
-
-
-  // R[pad_mx_cam1_3_cfg]: V(False)
-
-  //   F[chip2pad]: 0:0
-  prim_subreg #(
-    .DW      (1),
-    .SWACCESS("RW"),
-    .RESVAL  (1'h0)
-  ) u_pad_mx_cam1_3_cfg_chip2pad (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
-
-    // from register interface
-    .we     (pad_mx_cam1_3_cfg_chip2pad_we),
-    .wd     (pad_mx_cam1_3_cfg_chip2pad_wd),
-
-    // from internal hardware
-    .de     (1'b0),
-    .d      ('0  ),
-
-    // to internal hardware
-    .qe     (),
-    .q      (reg2hw.pad_mx_cam1_3_cfg.chip2pad.q ),
-
-    // to register interface (read)
-    .qs     (pad_mx_cam1_3_cfg_chip2pad_qs)
-  );
-
-
-  //   F[oen]: 1:1
-  prim_subreg #(
-    .DW      (1),
-    .SWACCESS("RW"),
-    .RESVAL  (1'h1)
-  ) u_pad_mx_cam1_3_cfg_oen (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
-
-    // from register interface
-    .we     (pad_mx_cam1_3_cfg_oen_we),
-    .wd     (pad_mx_cam1_3_cfg_oen_wd),
-
-    // from internal hardware
-    .de     (1'b0),
-    .d      ('0  ),
-
-    // to internal hardware
-    .qe     (),
-    .q      (reg2hw.pad_mx_cam1_3_cfg.oen.q ),
-
-    // to register interface (read)
-    .qs     (pad_mx_cam1_3_cfg_oen_qs)
-  );
-
-
-  // R[pad_mx_cam1_3_mux_sel]: V(False)
-
-  prim_subreg #(
-    .DW      (5),
-    .SWACCESS("RW"),
-    .RESVAL  (5'h0)
-  ) u_pad_mx_cam1_3_mux_sel (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
-
-    // from register interface
-    .we     (pad_mx_cam1_3_mux_sel_we),
-    .wd     (pad_mx_cam1_3_mux_sel_wd),
-
-    // from internal hardware
-    .de     (1'b0),
-    .d      ('0  ),
-
-    // to internal hardware
-    .qe     (),
-    .q      (reg2hw.pad_mx_cam1_3_mux_sel.q ),
-
-    // to register interface (read)
-    .qs     (pad_mx_cam1_3_mux_sel_qs)
-  );
-
-
-  // R[pad_mx_cam1_4_cfg]: V(False)
-
-  //   F[chip2pad]: 0:0
-  prim_subreg #(
-    .DW      (1),
-    .SWACCESS("RW"),
-    .RESVAL  (1'h0)
-  ) u_pad_mx_cam1_4_cfg_chip2pad (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
-
-    // from register interface
-    .we     (pad_mx_cam1_4_cfg_chip2pad_we),
-    .wd     (pad_mx_cam1_4_cfg_chip2pad_wd),
-
-    // from internal hardware
-    .de     (1'b0),
-    .d      ('0  ),
-
-    // to internal hardware
-    .qe     (),
-    .q      (reg2hw.pad_mx_cam1_4_cfg.chip2pad.q ),
-
-    // to register interface (read)
-    .qs     (pad_mx_cam1_4_cfg_chip2pad_qs)
-  );
-
-
-  //   F[oen]: 1:1
-  prim_subreg #(
-    .DW      (1),
-    .SWACCESS("RW"),
-    .RESVAL  (1'h1)
-  ) u_pad_mx_cam1_4_cfg_oen (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
-
-    // from register interface
-    .we     (pad_mx_cam1_4_cfg_oen_we),
-    .wd     (pad_mx_cam1_4_cfg_oen_wd),
-
-    // from internal hardware
-    .de     (1'b0),
-    .d      ('0  ),
-
-    // to internal hardware
-    .qe     (),
-    .q      (reg2hw.pad_mx_cam1_4_cfg.oen.q ),
-
-    // to register interface (read)
-    .qs     (pad_mx_cam1_4_cfg_oen_qs)
-  );
-
-
-  // R[pad_mx_cam1_4_mux_sel]: V(False)
-
-  prim_subreg #(
-    .DW      (5),
-    .SWACCESS("RW"),
-    .RESVAL  (5'h0)
-  ) u_pad_mx_cam1_4_mux_sel (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
-
-    // from register interface
-    .we     (pad_mx_cam1_4_mux_sel_we),
-    .wd     (pad_mx_cam1_4_mux_sel_wd),
-
-    // from internal hardware
-    .de     (1'b0),
-    .d      ('0  ),
-
-    // to internal hardware
-    .qe     (),
-    .q      (reg2hw.pad_mx_cam1_4_mux_sel.q ),
-
-    // to register interface (read)
-    .qs     (pad_mx_cam1_4_mux_sel_qs)
-  );
-
-
-  // R[pad_mx_cam1_5_cfg]: V(False)
-
-  //   F[chip2pad]: 0:0
-  prim_subreg #(
-    .DW      (1),
-    .SWACCESS("RW"),
-    .RESVAL  (1'h0)
-  ) u_pad_mx_cam1_5_cfg_chip2pad (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
-
-    // from register interface
-    .we     (pad_mx_cam1_5_cfg_chip2pad_we),
-    .wd     (pad_mx_cam1_5_cfg_chip2pad_wd),
-
-    // from internal hardware
-    .de     (1'b0),
-    .d      ('0  ),
-
-    // to internal hardware
-    .qe     (),
-    .q      (reg2hw.pad_mx_cam1_5_cfg.chip2pad.q ),
-
-    // to register interface (read)
-    .qs     (pad_mx_cam1_5_cfg_chip2pad_qs)
-  );
-
-
-  //   F[oen]: 1:1
-  prim_subreg #(
-    .DW      (1),
-    .SWACCESS("RW"),
-    .RESVAL  (1'h1)
-  ) u_pad_mx_cam1_5_cfg_oen (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
-
-    // from register interface
-    .we     (pad_mx_cam1_5_cfg_oen_we),
-    .wd     (pad_mx_cam1_5_cfg_oen_wd),
-
-    // from internal hardware
-    .de     (1'b0),
-    .d      ('0  ),
-
-    // to internal hardware
-    .qe     (),
-    .q      (reg2hw.pad_mx_cam1_5_cfg.oen.q ),
-
-    // to register interface (read)
-    .qs     (pad_mx_cam1_5_cfg_oen_qs)
-  );
-
-
-  // R[pad_mx_cam1_5_mux_sel]: V(False)
-
-  prim_subreg #(
-    .DW      (5),
-    .SWACCESS("RW"),
-    .RESVAL  (5'h0)
-  ) u_pad_mx_cam1_5_mux_sel (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
-
-    // from register interface
-    .we     (pad_mx_cam1_5_mux_sel_we),
-    .wd     (pad_mx_cam1_5_mux_sel_wd),
-
-    // from internal hardware
-    .de     (1'b0),
-    .d      ('0  ),
-
-    // to internal hardware
-    .qe     (),
-    .q      (reg2hw.pad_mx_cam1_5_mux_sel.q ),
-
-    // to register interface (read)
-    .qs     (pad_mx_cam1_5_mux_sel_qs)
-  );
-
-
-  // R[pad_mx_cam1_6_cfg]: V(False)
-
-  //   F[chip2pad]: 0:0
-  prim_subreg #(
-    .DW      (1),
-    .SWACCESS("RW"),
-    .RESVAL  (1'h0)
-  ) u_pad_mx_cam1_6_cfg_chip2pad (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
-
-    // from register interface
-    .we     (pad_mx_cam1_6_cfg_chip2pad_we),
-    .wd     (pad_mx_cam1_6_cfg_chip2pad_wd),
-
-    // from internal hardware
-    .de     (1'b0),
-    .d      ('0  ),
-
-    // to internal hardware
-    .qe     (),
-    .q      (reg2hw.pad_mx_cam1_6_cfg.chip2pad.q ),
-
-    // to register interface (read)
-    .qs     (pad_mx_cam1_6_cfg_chip2pad_qs)
-  );
-
-
-  //   F[oen]: 1:1
-  prim_subreg #(
-    .DW      (1),
-    .SWACCESS("RW"),
-    .RESVAL  (1'h1)
-  ) u_pad_mx_cam1_6_cfg_oen (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
-
-    // from register interface
-    .we     (pad_mx_cam1_6_cfg_oen_we),
-    .wd     (pad_mx_cam1_6_cfg_oen_wd),
-
-    // from internal hardware
-    .de     (1'b0),
-    .d      ('0  ),
-
-    // to internal hardware
-    .qe     (),
-    .q      (reg2hw.pad_mx_cam1_6_cfg.oen.q ),
-
-    // to register interface (read)
-    .qs     (pad_mx_cam1_6_cfg_oen_qs)
-  );
-
-
-  // R[pad_mx_cam1_6_mux_sel]: V(False)
-
-  prim_subreg #(
-    .DW      (5),
-    .SWACCESS("RW"),
-    .RESVAL  (5'h0)
-  ) u_pad_mx_cam1_6_mux_sel (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
-
-    // from register interface
-    .we     (pad_mx_cam1_6_mux_sel_we),
-    .wd     (pad_mx_cam1_6_mux_sel_wd),
-
-    // from internal hardware
-    .de     (1'b0),
-    .d      ('0  ),
-
-    // to internal hardware
-    .qe     (),
-    .q      (reg2hw.pad_mx_cam1_6_mux_sel.q ),
-
-    // to register interface (read)
-    .qs     (pad_mx_cam1_6_mux_sel_qs)
-  );
-
-
-  // R[pad_mx_cam1_7_cfg]: V(False)
-
-  //   F[chip2pad]: 0:0
-  prim_subreg #(
-    .DW      (1),
-    .SWACCESS("RW"),
-    .RESVAL  (1'h0)
-  ) u_pad_mx_cam1_7_cfg_chip2pad (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
-
-    // from register interface
-    .we     (pad_mx_cam1_7_cfg_chip2pad_we),
-    .wd     (pad_mx_cam1_7_cfg_chip2pad_wd),
-
-    // from internal hardware
-    .de     (1'b0),
-    .d      ('0  ),
-
-    // to internal hardware
-    .qe     (),
-    .q      (reg2hw.pad_mx_cam1_7_cfg.chip2pad.q ),
-
-    // to register interface (read)
-    .qs     (pad_mx_cam1_7_cfg_chip2pad_qs)
-  );
-
-
-  //   F[oen]: 1:1
-  prim_subreg #(
-    .DW      (1),
-    .SWACCESS("RW"),
-    .RESVAL  (1'h1)
-  ) u_pad_mx_cam1_7_cfg_oen (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
-
-    // from register interface
-    .we     (pad_mx_cam1_7_cfg_oen_we),
-    .wd     (pad_mx_cam1_7_cfg_oen_wd),
-
-    // from internal hardware
-    .de     (1'b0),
-    .d      ('0  ),
-
-    // to internal hardware
-    .qe     (),
-    .q      (reg2hw.pad_mx_cam1_7_cfg.oen.q ),
-
-    // to register interface (read)
-    .qs     (pad_mx_cam1_7_cfg_oen_qs)
-  );
-
-
-  // R[pad_mx_cam1_7_mux_sel]: V(False)
-
-  prim_subreg #(
-    .DW      (5),
-    .SWACCESS("RW"),
-    .RESVAL  (5'h0)
-  ) u_pad_mx_cam1_7_mux_sel (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
-
-    // from register interface
-    .we     (pad_mx_cam1_7_mux_sel_we),
-    .wd     (pad_mx_cam1_7_mux_sel_wd),
-
-    // from internal hardware
-    .de     (1'b0),
-    .d      ('0  ),
-
-    // to internal hardware
-    .qe     (),
-    .q      (reg2hw.pad_mx_cam1_7_mux_sel.q ),
-
-    // to register interface (read)
-    .qs     (pad_mx_cam1_7_mux_sel_qs)
-  );
-
-
-  // R[pad_mx_cam1_8_cfg]: V(False)
-
-  //   F[chip2pad]: 0:0
-  prim_subreg #(
-    .DW      (1),
-    .SWACCESS("RW"),
-    .RESVAL  (1'h0)
-  ) u_pad_mx_cam1_8_cfg_chip2pad (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
-
-    // from register interface
-    .we     (pad_mx_cam1_8_cfg_chip2pad_we),
-    .wd     (pad_mx_cam1_8_cfg_chip2pad_wd),
-
-    // from internal hardware
-    .de     (1'b0),
-    .d      ('0  ),
-
-    // to internal hardware
-    .qe     (),
-    .q      (reg2hw.pad_mx_cam1_8_cfg.chip2pad.q ),
-
-    // to register interface (read)
-    .qs     (pad_mx_cam1_8_cfg_chip2pad_qs)
-  );
-
-
-  //   F[oen]: 1:1
-  prim_subreg #(
-    .DW      (1),
-    .SWACCESS("RW"),
-    .RESVAL  (1'h1)
-  ) u_pad_mx_cam1_8_cfg_oen (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
-
-    // from register interface
-    .we     (pad_mx_cam1_8_cfg_oen_we),
-    .wd     (pad_mx_cam1_8_cfg_oen_wd),
-
-    // from internal hardware
-    .de     (1'b0),
-    .d      ('0  ),
-
-    // to internal hardware
-    .qe     (),
-    .q      (reg2hw.pad_mx_cam1_8_cfg.oen.q ),
-
-    // to register interface (read)
-    .qs     (pad_mx_cam1_8_cfg_oen_qs)
-  );
-
-
-  // R[pad_mx_cam1_8_mux_sel]: V(False)
-
-  prim_subreg #(
-    .DW      (5),
-    .SWACCESS("RW"),
-    .RESVAL  (5'h0)
-  ) u_pad_mx_cam1_8_mux_sel (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
-
-    // from register interface
-    .we     (pad_mx_cam1_8_mux_sel_we),
-    .wd     (pad_mx_cam1_8_mux_sel_wd),
-
-    // from internal hardware
-    .de     (1'b0),
-    .d      ('0  ),
-
-    // to internal hardware
-    .qe     (),
-    .q      (reg2hw.pad_mx_cam1_8_mux_sel.q ),
-
-    // to register interface (read)
-    .qs     (pad_mx_cam1_8_mux_sel_qs)
-  );
-
-
-  // R[pad_mx_cam1_9_cfg]: V(False)
-
-  //   F[chip2pad]: 0:0
-  prim_subreg #(
-    .DW      (1),
-    .SWACCESS("RW"),
-    .RESVAL  (1'h0)
-  ) u_pad_mx_cam1_9_cfg_chip2pad (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
-
-    // from register interface
-    .we     (pad_mx_cam1_9_cfg_chip2pad_we),
-    .wd     (pad_mx_cam1_9_cfg_chip2pad_wd),
-
-    // from internal hardware
-    .de     (1'b0),
-    .d      ('0  ),
-
-    // to internal hardware
-    .qe     (),
-    .q      (reg2hw.pad_mx_cam1_9_cfg.chip2pad.q ),
-
-    // to register interface (read)
-    .qs     (pad_mx_cam1_9_cfg_chip2pad_qs)
-  );
-
-
-  //   F[oen]: 1:1
-  prim_subreg #(
-    .DW      (1),
-    .SWACCESS("RW"),
-    .RESVAL  (1'h1)
-  ) u_pad_mx_cam1_9_cfg_oen (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
-
-    // from register interface
-    .we     (pad_mx_cam1_9_cfg_oen_we),
-    .wd     (pad_mx_cam1_9_cfg_oen_wd),
-
-    // from internal hardware
-    .de     (1'b0),
-    .d      ('0  ),
-
-    // to internal hardware
-    .qe     (),
-    .q      (reg2hw.pad_mx_cam1_9_cfg.oen.q ),
-
-    // to register interface (read)
-    .qs     (pad_mx_cam1_9_cfg_oen_qs)
-  );
-
-
-  // R[pad_mx_cam1_9_mux_sel]: V(False)
-
-  prim_subreg #(
-    .DW      (5),
-    .SWACCESS("RW"),
-    .RESVAL  (5'h0)
-  ) u_pad_mx_cam1_9_mux_sel (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
-
-    // from register interface
-    .we     (pad_mx_cam1_9_mux_sel_we),
-    .wd     (pad_mx_cam1_9_mux_sel_wd),
-
-    // from internal hardware
-    .de     (1'b0),
-    .d      ('0  ),
-
-    // to internal hardware
-    .qe     (),
-    .q      (reg2hw.pad_mx_cam1_9_mux_sel.q ),
-
-    // to register interface (read)
-    .qs     (pad_mx_cam1_9_mux_sel_qs)
-  );
-
-
-  // R[pad_mx_cam1_10_cfg]: V(False)
-
-  //   F[chip2pad]: 0:0
-  prim_subreg #(
-    .DW      (1),
-    .SWACCESS("RW"),
-    .RESVAL  (1'h0)
-  ) u_pad_mx_cam1_10_cfg_chip2pad (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
-
-    // from register interface
-    .we     (pad_mx_cam1_10_cfg_chip2pad_we),
-    .wd     (pad_mx_cam1_10_cfg_chip2pad_wd),
-
-    // from internal hardware
-    .de     (1'b0),
-    .d      ('0  ),
-
-    // to internal hardware
-    .qe     (),
-    .q      (reg2hw.pad_mx_cam1_10_cfg.chip2pad.q ),
-
-    // to register interface (read)
-    .qs     (pad_mx_cam1_10_cfg_chip2pad_qs)
-  );
-
-
-  //   F[oen]: 1:1
-  prim_subreg #(
-    .DW      (1),
-    .SWACCESS("RW"),
-    .RESVAL  (1'h1)
-  ) u_pad_mx_cam1_10_cfg_oen (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
-
-    // from register interface
-    .we     (pad_mx_cam1_10_cfg_oen_we),
-    .wd     (pad_mx_cam1_10_cfg_oen_wd),
-
-    // from internal hardware
-    .de     (1'b0),
-    .d      ('0  ),
-
-    // to internal hardware
-    .qe     (),
-    .q      (reg2hw.pad_mx_cam1_10_cfg.oen.q ),
-
-    // to register interface (read)
-    .qs     (pad_mx_cam1_10_cfg_oen_qs)
-  );
-
-
-  // R[pad_mx_cam1_10_mux_sel]: V(False)
-
-  prim_subreg #(
-    .DW      (5),
-    .SWACCESS("RW"),
-    .RESVAL  (5'h0)
-  ) u_pad_mx_cam1_10_mux_sel (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
-
-    // from register interface
-    .we     (pad_mx_cam1_10_mux_sel_we),
-    .wd     (pad_mx_cam1_10_mux_sel_wd),
-
-    // from internal hardware
-    .de     (1'b0),
-    .d      ('0  ),
-
-    // to internal hardware
-    .qe     (),
-    .q      (reg2hw.pad_mx_cam1_10_mux_sel.q ),
-
-    // to register interface (read)
-    .qs     (pad_mx_cam1_10_mux_sel_qs)
-  );
-
-
-  // R[pad_mx_sdio1_0_cfg]: V(False)
-
-  //   F[chip2pad]: 0:0
-  prim_subreg #(
-    .DW      (1),
-    .SWACCESS("RW"),
-    .RESVAL  (1'h0)
-  ) u_pad_mx_sdio1_0_cfg_chip2pad (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
-
-    // from register interface
-    .we     (pad_mx_sdio1_0_cfg_chip2pad_we),
-    .wd     (pad_mx_sdio1_0_cfg_chip2pad_wd),
-
-    // from internal hardware
-    .de     (1'b0),
-    .d      ('0  ),
-
-    // to internal hardware
-    .qe     (),
-    .q      (reg2hw.pad_mx_sdio1_0_cfg.chip2pad.q ),
-
-    // to register interface (read)
-    .qs     (pad_mx_sdio1_0_cfg_chip2pad_qs)
-  );
-
-
-  //   F[oen]: 1:1
-  prim_subreg #(
-    .DW      (1),
-    .SWACCESS("RW"),
-    .RESVAL  (1'h1)
-  ) u_pad_mx_sdio1_0_cfg_oen (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
-
-    // from register interface
-    .we     (pad_mx_sdio1_0_cfg_oen_we),
-    .wd     (pad_mx_sdio1_0_cfg_oen_wd),
-
-    // from internal hardware
-    .de     (1'b0),
-    .d      ('0  ),
-
-    // to internal hardware
-    .qe     (),
-    .q      (reg2hw.pad_mx_sdio1_0_cfg.oen.q ),
-
-    // to register interface (read)
-    .qs     (pad_mx_sdio1_0_cfg_oen_qs)
-  );
-
-
-  // R[pad_mx_sdio1_0_mux_sel]: V(False)
+  // R[pad_io_a_04_mux_sel]: V(False)
 
   prim_subreg #(
     .DW      (4),
     .SWACCESS("RW"),
     .RESVAL  (4'h0)
-  ) u_pad_mx_sdio1_0_mux_sel (
+  ) u_pad_io_a_04_mux_sel (
     .clk_i   (clk_i    ),
     .rst_ni  (rst_ni  ),
 
     // from register interface
-    .we     (pad_mx_sdio1_0_mux_sel_we),
-    .wd     (pad_mx_sdio1_0_mux_sel_wd),
+    .we     (pad_io_a_04_mux_sel_we),
+    .wd     (pad_io_a_04_mux_sel_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -2672,27 +1493,27 @@ module alsaqr_periph_padframe_periphs_config_reg_top #(
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.pad_mx_sdio1_0_mux_sel.q ),
+    .q      (reg2hw.pad_io_a_04_mux_sel.q ),
 
     // to register interface (read)
-    .qs     (pad_mx_sdio1_0_mux_sel_qs)
+    .qs     (pad_io_a_04_mux_sel_qs)
   );
 
 
-  // R[pad_mx_sdio1_1_cfg]: V(False)
+  // R[pad_io_a_05_cfg]: V(False)
 
   //   F[chip2pad]: 0:0
   prim_subreg #(
     .DW      (1),
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
-  ) u_pad_mx_sdio1_1_cfg_chip2pad (
+  ) u_pad_io_a_05_cfg_chip2pad (
     .clk_i   (clk_i    ),
     .rst_ni  (rst_ni  ),
 
     // from register interface
-    .we     (pad_mx_sdio1_1_cfg_chip2pad_we),
-    .wd     (pad_mx_sdio1_1_cfg_chip2pad_wd),
+    .we     (pad_io_a_05_cfg_chip2pad_we),
+    .wd     (pad_io_a_05_cfg_chip2pad_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -2700,10 +1521,10 @@ module alsaqr_periph_padframe_periphs_config_reg_top #(
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.pad_mx_sdio1_1_cfg.chip2pad.q ),
+    .q      (reg2hw.pad_io_a_05_cfg.chip2pad.q ),
 
     // to register interface (read)
-    .qs     (pad_mx_sdio1_1_cfg_chip2pad_qs)
+    .qs     (pad_io_a_05_cfg_chip2pad_qs)
   );
 
 
@@ -2712,13 +1533,13 @@ module alsaqr_periph_padframe_periphs_config_reg_top #(
     .DW      (1),
     .SWACCESS("RW"),
     .RESVAL  (1'h1)
-  ) u_pad_mx_sdio1_1_cfg_oen (
+  ) u_pad_io_a_05_cfg_oen (
     .clk_i   (clk_i    ),
     .rst_ni  (rst_ni  ),
 
     // from register interface
-    .we     (pad_mx_sdio1_1_cfg_oen_we),
-    .wd     (pad_mx_sdio1_1_cfg_oen_wd),
+    .we     (pad_io_a_05_cfg_oen_we),
+    .wd     (pad_io_a_05_cfg_oen_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -2726,26 +1547,26 @@ module alsaqr_periph_padframe_periphs_config_reg_top #(
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.pad_mx_sdio1_1_cfg.oen.q ),
+    .q      (reg2hw.pad_io_a_05_cfg.oen.q ),
 
     // to register interface (read)
-    .qs     (pad_mx_sdio1_1_cfg_oen_qs)
+    .qs     (pad_io_a_05_cfg_oen_qs)
   );
 
 
-  // R[pad_mx_sdio1_1_mux_sel]: V(False)
+  // R[pad_io_a_05_mux_sel]: V(False)
 
   prim_subreg #(
     .DW      (4),
     .SWACCESS("RW"),
     .RESVAL  (4'h0)
-  ) u_pad_mx_sdio1_1_mux_sel (
+  ) u_pad_io_a_05_mux_sel (
     .clk_i   (clk_i    ),
     .rst_ni  (rst_ni  ),
 
     // from register interface
-    .we     (pad_mx_sdio1_1_mux_sel_we),
-    .wd     (pad_mx_sdio1_1_mux_sel_wd),
+    .we     (pad_io_a_05_mux_sel_we),
+    .wd     (pad_io_a_05_mux_sel_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -2753,27 +1574,27 @@ module alsaqr_periph_padframe_periphs_config_reg_top #(
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.pad_mx_sdio1_1_mux_sel.q ),
+    .q      (reg2hw.pad_io_a_05_mux_sel.q ),
 
     // to register interface (read)
-    .qs     (pad_mx_sdio1_1_mux_sel_qs)
+    .qs     (pad_io_a_05_mux_sel_qs)
   );
 
 
-  // R[pad_mx_sdio1_2_cfg]: V(False)
+  // R[pad_io_a_06_cfg]: V(False)
 
   //   F[chip2pad]: 0:0
   prim_subreg #(
     .DW      (1),
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
-  ) u_pad_mx_sdio1_2_cfg_chip2pad (
+  ) u_pad_io_a_06_cfg_chip2pad (
     .clk_i   (clk_i    ),
     .rst_ni  (rst_ni  ),
 
     // from register interface
-    .we     (pad_mx_sdio1_2_cfg_chip2pad_we),
-    .wd     (pad_mx_sdio1_2_cfg_chip2pad_wd),
+    .we     (pad_io_a_06_cfg_chip2pad_we),
+    .wd     (pad_io_a_06_cfg_chip2pad_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -2781,10 +1602,10 @@ module alsaqr_periph_padframe_periphs_config_reg_top #(
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.pad_mx_sdio1_2_cfg.chip2pad.q ),
+    .q      (reg2hw.pad_io_a_06_cfg.chip2pad.q ),
 
     // to register interface (read)
-    .qs     (pad_mx_sdio1_2_cfg_chip2pad_qs)
+    .qs     (pad_io_a_06_cfg_chip2pad_qs)
   );
 
 
@@ -2793,13 +1614,13 @@ module alsaqr_periph_padframe_periphs_config_reg_top #(
     .DW      (1),
     .SWACCESS("RW"),
     .RESVAL  (1'h1)
-  ) u_pad_mx_sdio1_2_cfg_oen (
+  ) u_pad_io_a_06_cfg_oen (
     .clk_i   (clk_i    ),
     .rst_ni  (rst_ni  ),
 
     // from register interface
-    .we     (pad_mx_sdio1_2_cfg_oen_we),
-    .wd     (pad_mx_sdio1_2_cfg_oen_wd),
+    .we     (pad_io_a_06_cfg_oen_we),
+    .wd     (pad_io_a_06_cfg_oen_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -2807,26 +1628,26 @@ module alsaqr_periph_padframe_periphs_config_reg_top #(
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.pad_mx_sdio1_2_cfg.oen.q ),
+    .q      (reg2hw.pad_io_a_06_cfg.oen.q ),
 
     // to register interface (read)
-    .qs     (pad_mx_sdio1_2_cfg_oen_qs)
+    .qs     (pad_io_a_06_cfg_oen_qs)
   );
 
 
-  // R[pad_mx_sdio1_2_mux_sel]: V(False)
+  // R[pad_io_a_06_mux_sel]: V(False)
 
   prim_subreg #(
     .DW      (4),
     .SWACCESS("RW"),
     .RESVAL  (4'h0)
-  ) u_pad_mx_sdio1_2_mux_sel (
+  ) u_pad_io_a_06_mux_sel (
     .clk_i   (clk_i    ),
     .rst_ni  (rst_ni  ),
 
     // from register interface
-    .we     (pad_mx_sdio1_2_mux_sel_we),
-    .wd     (pad_mx_sdio1_2_mux_sel_wd),
+    .we     (pad_io_a_06_mux_sel_we),
+    .wd     (pad_io_a_06_mux_sel_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -2834,27 +1655,27 @@ module alsaqr_periph_padframe_periphs_config_reg_top #(
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.pad_mx_sdio1_2_mux_sel.q ),
+    .q      (reg2hw.pad_io_a_06_mux_sel.q ),
 
     // to register interface (read)
-    .qs     (pad_mx_sdio1_2_mux_sel_qs)
+    .qs     (pad_io_a_06_mux_sel_qs)
   );
 
 
-  // R[pad_mx_sdio1_3_cfg]: V(False)
+  // R[pad_io_a_07_cfg]: V(False)
 
   //   F[chip2pad]: 0:0
   prim_subreg #(
     .DW      (1),
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
-  ) u_pad_mx_sdio1_3_cfg_chip2pad (
+  ) u_pad_io_a_07_cfg_chip2pad (
     .clk_i   (clk_i    ),
     .rst_ni  (rst_ni  ),
 
     // from register interface
-    .we     (pad_mx_sdio1_3_cfg_chip2pad_we),
-    .wd     (pad_mx_sdio1_3_cfg_chip2pad_wd),
+    .we     (pad_io_a_07_cfg_chip2pad_we),
+    .wd     (pad_io_a_07_cfg_chip2pad_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -2862,10 +1683,10 @@ module alsaqr_periph_padframe_periphs_config_reg_top #(
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.pad_mx_sdio1_3_cfg.chip2pad.q ),
+    .q      (reg2hw.pad_io_a_07_cfg.chip2pad.q ),
 
     // to register interface (read)
-    .qs     (pad_mx_sdio1_3_cfg_chip2pad_qs)
+    .qs     (pad_io_a_07_cfg_chip2pad_qs)
   );
 
 
@@ -2874,13 +1695,13 @@ module alsaqr_periph_padframe_periphs_config_reg_top #(
     .DW      (1),
     .SWACCESS("RW"),
     .RESVAL  (1'h1)
-  ) u_pad_mx_sdio1_3_cfg_oen (
+  ) u_pad_io_a_07_cfg_oen (
     .clk_i   (clk_i    ),
     .rst_ni  (rst_ni  ),
 
     // from register interface
-    .we     (pad_mx_sdio1_3_cfg_oen_we),
-    .wd     (pad_mx_sdio1_3_cfg_oen_wd),
+    .we     (pad_io_a_07_cfg_oen_we),
+    .wd     (pad_io_a_07_cfg_oen_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -2888,26 +1709,26 @@ module alsaqr_periph_padframe_periphs_config_reg_top #(
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.pad_mx_sdio1_3_cfg.oen.q ),
+    .q      (reg2hw.pad_io_a_07_cfg.oen.q ),
 
     // to register interface (read)
-    .qs     (pad_mx_sdio1_3_cfg_oen_qs)
+    .qs     (pad_io_a_07_cfg_oen_qs)
   );
 
 
-  // R[pad_mx_sdio1_3_mux_sel]: V(False)
+  // R[pad_io_a_07_mux_sel]: V(False)
 
   prim_subreg #(
     .DW      (4),
     .SWACCESS("RW"),
     .RESVAL  (4'h0)
-  ) u_pad_mx_sdio1_3_mux_sel (
+  ) u_pad_io_a_07_mux_sel (
     .clk_i   (clk_i    ),
     .rst_ni  (rst_ni  ),
 
     // from register interface
-    .we     (pad_mx_sdio1_3_mux_sel_we),
-    .wd     (pad_mx_sdio1_3_mux_sel_wd),
+    .we     (pad_io_a_07_mux_sel_we),
+    .wd     (pad_io_a_07_mux_sel_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -2915,27 +1736,27 @@ module alsaqr_periph_padframe_periphs_config_reg_top #(
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.pad_mx_sdio1_3_mux_sel.q ),
+    .q      (reg2hw.pad_io_a_07_mux_sel.q ),
 
     // to register interface (read)
-    .qs     (pad_mx_sdio1_3_mux_sel_qs)
+    .qs     (pad_io_a_07_mux_sel_qs)
   );
 
 
-  // R[pad_mx_sdio1_4_cfg]: V(False)
+  // R[pad_io_a_08_cfg]: V(False)
 
   //   F[chip2pad]: 0:0
   prim_subreg #(
     .DW      (1),
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
-  ) u_pad_mx_sdio1_4_cfg_chip2pad (
+  ) u_pad_io_a_08_cfg_chip2pad (
     .clk_i   (clk_i    ),
     .rst_ni  (rst_ni  ),
 
     // from register interface
-    .we     (pad_mx_sdio1_4_cfg_chip2pad_we),
-    .wd     (pad_mx_sdio1_4_cfg_chip2pad_wd),
+    .we     (pad_io_a_08_cfg_chip2pad_we),
+    .wd     (pad_io_a_08_cfg_chip2pad_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -2943,10 +1764,10 @@ module alsaqr_periph_padframe_periphs_config_reg_top #(
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.pad_mx_sdio1_4_cfg.chip2pad.q ),
+    .q      (reg2hw.pad_io_a_08_cfg.chip2pad.q ),
 
     // to register interface (read)
-    .qs     (pad_mx_sdio1_4_cfg_chip2pad_qs)
+    .qs     (pad_io_a_08_cfg_chip2pad_qs)
   );
 
 
@@ -2955,13 +1776,13 @@ module alsaqr_periph_padframe_periphs_config_reg_top #(
     .DW      (1),
     .SWACCESS("RW"),
     .RESVAL  (1'h1)
-  ) u_pad_mx_sdio1_4_cfg_oen (
+  ) u_pad_io_a_08_cfg_oen (
     .clk_i   (clk_i    ),
     .rst_ni  (rst_ni  ),
 
     // from register interface
-    .we     (pad_mx_sdio1_4_cfg_oen_we),
-    .wd     (pad_mx_sdio1_4_cfg_oen_wd),
+    .we     (pad_io_a_08_cfg_oen_we),
+    .wd     (pad_io_a_08_cfg_oen_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -2969,26 +1790,26 @@ module alsaqr_periph_padframe_periphs_config_reg_top #(
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.pad_mx_sdio1_4_cfg.oen.q ),
+    .q      (reg2hw.pad_io_a_08_cfg.oen.q ),
 
     // to register interface (read)
-    .qs     (pad_mx_sdio1_4_cfg_oen_qs)
+    .qs     (pad_io_a_08_cfg_oen_qs)
   );
 
 
-  // R[pad_mx_sdio1_4_mux_sel]: V(False)
+  // R[pad_io_a_08_mux_sel]: V(False)
 
   prim_subreg #(
     .DW      (4),
     .SWACCESS("RW"),
     .RESVAL  (4'h0)
-  ) u_pad_mx_sdio1_4_mux_sel (
+  ) u_pad_io_a_08_mux_sel (
     .clk_i   (clk_i    ),
     .rst_ni  (rst_ni  ),
 
     // from register interface
-    .we     (pad_mx_sdio1_4_mux_sel_we),
-    .wd     (pad_mx_sdio1_4_mux_sel_wd),
+    .we     (pad_io_a_08_mux_sel_we),
+    .wd     (pad_io_a_08_mux_sel_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -2996,27 +1817,27 @@ module alsaqr_periph_padframe_periphs_config_reg_top #(
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.pad_mx_sdio1_4_mux_sel.q ),
+    .q      (reg2hw.pad_io_a_08_mux_sel.q ),
 
     // to register interface (read)
-    .qs     (pad_mx_sdio1_4_mux_sel_qs)
+    .qs     (pad_io_a_08_mux_sel_qs)
   );
 
 
-  // R[pad_mx_sdio1_5_cfg]: V(False)
+  // R[pad_io_a_09_cfg]: V(False)
 
   //   F[chip2pad]: 0:0
   prim_subreg #(
     .DW      (1),
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
-  ) u_pad_mx_sdio1_5_cfg_chip2pad (
+  ) u_pad_io_a_09_cfg_chip2pad (
     .clk_i   (clk_i    ),
     .rst_ni  (rst_ni  ),
 
     // from register interface
-    .we     (pad_mx_sdio1_5_cfg_chip2pad_we),
-    .wd     (pad_mx_sdio1_5_cfg_chip2pad_wd),
+    .we     (pad_io_a_09_cfg_chip2pad_we),
+    .wd     (pad_io_a_09_cfg_chip2pad_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -3024,10 +1845,10 @@ module alsaqr_periph_padframe_periphs_config_reg_top #(
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.pad_mx_sdio1_5_cfg.chip2pad.q ),
+    .q      (reg2hw.pad_io_a_09_cfg.chip2pad.q ),
 
     // to register interface (read)
-    .qs     (pad_mx_sdio1_5_cfg_chip2pad_qs)
+    .qs     (pad_io_a_09_cfg_chip2pad_qs)
   );
 
 
@@ -3036,13 +1857,13 @@ module alsaqr_periph_padframe_periphs_config_reg_top #(
     .DW      (1),
     .SWACCESS("RW"),
     .RESVAL  (1'h1)
-  ) u_pad_mx_sdio1_5_cfg_oen (
+  ) u_pad_io_a_09_cfg_oen (
     .clk_i   (clk_i    ),
     .rst_ni  (rst_ni  ),
 
     // from register interface
-    .we     (pad_mx_sdio1_5_cfg_oen_we),
-    .wd     (pad_mx_sdio1_5_cfg_oen_wd),
+    .we     (pad_io_a_09_cfg_oen_we),
+    .wd     (pad_io_a_09_cfg_oen_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -3050,26 +1871,26 @@ module alsaqr_periph_padframe_periphs_config_reg_top #(
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.pad_mx_sdio1_5_cfg.oen.q ),
+    .q      (reg2hw.pad_io_a_09_cfg.oen.q ),
 
     // to register interface (read)
-    .qs     (pad_mx_sdio1_5_cfg_oen_qs)
+    .qs     (pad_io_a_09_cfg_oen_qs)
   );
 
 
-  // R[pad_mx_sdio1_5_mux_sel]: V(False)
+  // R[pad_io_a_09_mux_sel]: V(False)
 
   prim_subreg #(
     .DW      (4),
     .SWACCESS("RW"),
     .RESVAL  (4'h0)
-  ) u_pad_mx_sdio1_5_mux_sel (
+  ) u_pad_io_a_09_mux_sel (
     .clk_i   (clk_i    ),
     .rst_ni  (rst_ni  ),
 
     // from register interface
-    .we     (pad_mx_sdio1_5_mux_sel_we),
-    .wd     (pad_mx_sdio1_5_mux_sel_wd),
+    .we     (pad_io_a_09_mux_sel_we),
+    .wd     (pad_io_a_09_mux_sel_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -3077,27 +1898,27 @@ module alsaqr_periph_padframe_periphs_config_reg_top #(
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.pad_mx_sdio1_5_mux_sel.q ),
+    .q      (reg2hw.pad_io_a_09_mux_sel.q ),
 
     // to register interface (read)
-    .qs     (pad_mx_sdio1_5_mux_sel_qs)
+    .qs     (pad_io_a_09_mux_sel_qs)
   );
 
 
-  // R[pad_mx_sdio1_6_cfg]: V(False)
+  // R[pad_io_a_10_cfg]: V(False)
 
   //   F[chip2pad]: 0:0
   prim_subreg #(
     .DW      (1),
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
-  ) u_pad_mx_sdio1_6_cfg_chip2pad (
+  ) u_pad_io_a_10_cfg_chip2pad (
     .clk_i   (clk_i    ),
     .rst_ni  (rst_ni  ),
 
     // from register interface
-    .we     (pad_mx_sdio1_6_cfg_chip2pad_we),
-    .wd     (pad_mx_sdio1_6_cfg_chip2pad_wd),
+    .we     (pad_io_a_10_cfg_chip2pad_we),
+    .wd     (pad_io_a_10_cfg_chip2pad_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -3105,10 +1926,10 @@ module alsaqr_periph_padframe_periphs_config_reg_top #(
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.pad_mx_sdio1_6_cfg.chip2pad.q ),
+    .q      (reg2hw.pad_io_a_10_cfg.chip2pad.q ),
 
     // to register interface (read)
-    .qs     (pad_mx_sdio1_6_cfg_chip2pad_qs)
+    .qs     (pad_io_a_10_cfg_chip2pad_qs)
   );
 
 
@@ -3117,13 +1938,13 @@ module alsaqr_periph_padframe_periphs_config_reg_top #(
     .DW      (1),
     .SWACCESS("RW"),
     .RESVAL  (1'h1)
-  ) u_pad_mx_sdio1_6_cfg_oen (
+  ) u_pad_io_a_10_cfg_oen (
     .clk_i   (clk_i    ),
     .rst_ni  (rst_ni  ),
 
     // from register interface
-    .we     (pad_mx_sdio1_6_cfg_oen_we),
-    .wd     (pad_mx_sdio1_6_cfg_oen_wd),
+    .we     (pad_io_a_10_cfg_oen_we),
+    .wd     (pad_io_a_10_cfg_oen_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -3131,26 +1952,26 @@ module alsaqr_periph_padframe_periphs_config_reg_top #(
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.pad_mx_sdio1_6_cfg.oen.q ),
+    .q      (reg2hw.pad_io_a_10_cfg.oen.q ),
 
     // to register interface (read)
-    .qs     (pad_mx_sdio1_6_cfg_oen_qs)
+    .qs     (pad_io_a_10_cfg_oen_qs)
   );
 
 
-  // R[pad_mx_sdio1_6_mux_sel]: V(False)
+  // R[pad_io_a_10_mux_sel]: V(False)
 
   prim_subreg #(
     .DW      (4),
     .SWACCESS("RW"),
     .RESVAL  (4'h0)
-  ) u_pad_mx_sdio1_6_mux_sel (
+  ) u_pad_io_a_10_mux_sel (
     .clk_i   (clk_i    ),
     .rst_ni  (rst_ni  ),
 
     // from register interface
-    .we     (pad_mx_sdio1_6_mux_sel_we),
-    .wd     (pad_mx_sdio1_6_mux_sel_wd),
+    .we     (pad_io_a_10_mux_sel_we),
+    .wd     (pad_io_a_10_mux_sel_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -3158,27 +1979,27 @@ module alsaqr_periph_padframe_periphs_config_reg_top #(
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.pad_mx_sdio1_6_mux_sel.q ),
+    .q      (reg2hw.pad_io_a_10_mux_sel.q ),
 
     // to register interface (read)
-    .qs     (pad_mx_sdio1_6_mux_sel_qs)
+    .qs     (pad_io_a_10_mux_sel_qs)
   );
 
 
-  // R[pad_mx_sdio1_7_cfg]: V(False)
+  // R[pad_io_a_11_cfg]: V(False)
 
   //   F[chip2pad]: 0:0
   prim_subreg #(
     .DW      (1),
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
-  ) u_pad_mx_sdio1_7_cfg_chip2pad (
+  ) u_pad_io_a_11_cfg_chip2pad (
     .clk_i   (clk_i    ),
     .rst_ni  (rst_ni  ),
 
     // from register interface
-    .we     (pad_mx_sdio1_7_cfg_chip2pad_we),
-    .wd     (pad_mx_sdio1_7_cfg_chip2pad_wd),
+    .we     (pad_io_a_11_cfg_chip2pad_we),
+    .wd     (pad_io_a_11_cfg_chip2pad_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -3186,10 +2007,10 @@ module alsaqr_periph_padframe_periphs_config_reg_top #(
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.pad_mx_sdio1_7_cfg.chip2pad.q ),
+    .q      (reg2hw.pad_io_a_11_cfg.chip2pad.q ),
 
     // to register interface (read)
-    .qs     (pad_mx_sdio1_7_cfg_chip2pad_qs)
+    .qs     (pad_io_a_11_cfg_chip2pad_qs)
   );
 
 
@@ -3198,13 +2019,13 @@ module alsaqr_periph_padframe_periphs_config_reg_top #(
     .DW      (1),
     .SWACCESS("RW"),
     .RESVAL  (1'h1)
-  ) u_pad_mx_sdio1_7_cfg_oen (
+  ) u_pad_io_a_11_cfg_oen (
     .clk_i   (clk_i    ),
     .rst_ni  (rst_ni  ),
 
     // from register interface
-    .we     (pad_mx_sdio1_7_cfg_oen_we),
-    .wd     (pad_mx_sdio1_7_cfg_oen_wd),
+    .we     (pad_io_a_11_cfg_oen_we),
+    .wd     (pad_io_a_11_cfg_oen_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -3212,26 +2033,26 @@ module alsaqr_periph_padframe_periphs_config_reg_top #(
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.pad_mx_sdio1_7_cfg.oen.q ),
+    .q      (reg2hw.pad_io_a_11_cfg.oen.q ),
 
     // to register interface (read)
-    .qs     (pad_mx_sdio1_7_cfg_oen_qs)
+    .qs     (pad_io_a_11_cfg_oen_qs)
   );
 
 
-  // R[pad_mx_sdio1_7_mux_sel]: V(False)
+  // R[pad_io_a_11_mux_sel]: V(False)
 
   prim_subreg #(
     .DW      (4),
     .SWACCESS("RW"),
     .RESVAL  (4'h0)
-  ) u_pad_mx_sdio1_7_mux_sel (
+  ) u_pad_io_a_11_mux_sel (
     .clk_i   (clk_i    ),
     .rst_ni  (rst_ni  ),
 
     // from register interface
-    .we     (pad_mx_sdio1_7_mux_sel_we),
-    .wd     (pad_mx_sdio1_7_mux_sel_wd),
+    .we     (pad_io_a_11_mux_sel_we),
+    .wd     (pad_io_a_11_mux_sel_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -3239,27 +2060,27 @@ module alsaqr_periph_padframe_periphs_config_reg_top #(
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.pad_mx_sdio1_7_mux_sel.q ),
+    .q      (reg2hw.pad_io_a_11_mux_sel.q ),
 
     // to register interface (read)
-    .qs     (pad_mx_sdio1_7_mux_sel_qs)
+    .qs     (pad_io_a_11_mux_sel_qs)
   );
 
 
-  // R[pad_mx_hyper1_0_cfg]: V(False)
+  // R[pad_io_a_12_cfg]: V(False)
 
   //   F[chip2pad]: 0:0
   prim_subreg #(
     .DW      (1),
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
-  ) u_pad_mx_hyper1_0_cfg_chip2pad (
+  ) u_pad_io_a_12_cfg_chip2pad (
     .clk_i   (clk_i    ),
     .rst_ni  (rst_ni  ),
 
     // from register interface
-    .we     (pad_mx_hyper1_0_cfg_chip2pad_we),
-    .wd     (pad_mx_hyper1_0_cfg_chip2pad_wd),
+    .we     (pad_io_a_12_cfg_chip2pad_we),
+    .wd     (pad_io_a_12_cfg_chip2pad_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -3267,10 +2088,10 @@ module alsaqr_periph_padframe_periphs_config_reg_top #(
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.pad_mx_hyper1_0_cfg.chip2pad.q ),
+    .q      (reg2hw.pad_io_a_12_cfg.chip2pad.q ),
 
     // to register interface (read)
-    .qs     (pad_mx_hyper1_0_cfg_chip2pad_qs)
+    .qs     (pad_io_a_12_cfg_chip2pad_qs)
   );
 
 
@@ -3279,13 +2100,13 @@ module alsaqr_periph_padframe_periphs_config_reg_top #(
     .DW      (1),
     .SWACCESS("RW"),
     .RESVAL  (1'h1)
-  ) u_pad_mx_hyper1_0_cfg_oen (
+  ) u_pad_io_a_12_cfg_oen (
     .clk_i   (clk_i    ),
     .rst_ni  (rst_ni  ),
 
     // from register interface
-    .we     (pad_mx_hyper1_0_cfg_oen_we),
-    .wd     (pad_mx_hyper1_0_cfg_oen_wd),
+    .we     (pad_io_a_12_cfg_oen_we),
+    .wd     (pad_io_a_12_cfg_oen_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -3293,26 +2114,26 @@ module alsaqr_periph_padframe_periphs_config_reg_top #(
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.pad_mx_hyper1_0_cfg.oen.q ),
+    .q      (reg2hw.pad_io_a_12_cfg.oen.q ),
 
     // to register interface (read)
-    .qs     (pad_mx_hyper1_0_cfg_oen_qs)
+    .qs     (pad_io_a_12_cfg_oen_qs)
   );
 
 
-  // R[pad_mx_hyper1_0_mux_sel]: V(False)
+  // R[pad_io_a_12_mux_sel]: V(False)
 
   prim_subreg #(
-    .DW      (5),
+    .DW      (4),
     .SWACCESS("RW"),
-    .RESVAL  (5'h0)
-  ) u_pad_mx_hyper1_0_mux_sel (
+    .RESVAL  (4'h0)
+  ) u_pad_io_a_12_mux_sel (
     .clk_i   (clk_i    ),
     .rst_ni  (rst_ni  ),
 
     // from register interface
-    .we     (pad_mx_hyper1_0_mux_sel_we),
-    .wd     (pad_mx_hyper1_0_mux_sel_wd),
+    .we     (pad_io_a_12_mux_sel_we),
+    .wd     (pad_io_a_12_mux_sel_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -3320,27 +2141,27 @@ module alsaqr_periph_padframe_periphs_config_reg_top #(
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.pad_mx_hyper1_0_mux_sel.q ),
+    .q      (reg2hw.pad_io_a_12_mux_sel.q ),
 
     // to register interface (read)
-    .qs     (pad_mx_hyper1_0_mux_sel_qs)
+    .qs     (pad_io_a_12_mux_sel_qs)
   );
 
 
-  // R[pad_mx_hyper1_1_cfg]: V(False)
+  // R[pad_io_a_13_cfg]: V(False)
 
   //   F[chip2pad]: 0:0
   prim_subreg #(
     .DW      (1),
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
-  ) u_pad_mx_hyper1_1_cfg_chip2pad (
+  ) u_pad_io_a_13_cfg_chip2pad (
     .clk_i   (clk_i    ),
     .rst_ni  (rst_ni  ),
 
     // from register interface
-    .we     (pad_mx_hyper1_1_cfg_chip2pad_we),
-    .wd     (pad_mx_hyper1_1_cfg_chip2pad_wd),
+    .we     (pad_io_a_13_cfg_chip2pad_we),
+    .wd     (pad_io_a_13_cfg_chip2pad_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -3348,10 +2169,10 @@ module alsaqr_periph_padframe_periphs_config_reg_top #(
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.pad_mx_hyper1_1_cfg.chip2pad.q ),
+    .q      (reg2hw.pad_io_a_13_cfg.chip2pad.q ),
 
     // to register interface (read)
-    .qs     (pad_mx_hyper1_1_cfg_chip2pad_qs)
+    .qs     (pad_io_a_13_cfg_chip2pad_qs)
   );
 
 
@@ -3360,13 +2181,13 @@ module alsaqr_periph_padframe_periphs_config_reg_top #(
     .DW      (1),
     .SWACCESS("RW"),
     .RESVAL  (1'h1)
-  ) u_pad_mx_hyper1_1_cfg_oen (
+  ) u_pad_io_a_13_cfg_oen (
     .clk_i   (clk_i    ),
     .rst_ni  (rst_ni  ),
 
     // from register interface
-    .we     (pad_mx_hyper1_1_cfg_oen_we),
-    .wd     (pad_mx_hyper1_1_cfg_oen_wd),
+    .we     (pad_io_a_13_cfg_oen_we),
+    .wd     (pad_io_a_13_cfg_oen_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -3374,26 +2195,26 @@ module alsaqr_periph_padframe_periphs_config_reg_top #(
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.pad_mx_hyper1_1_cfg.oen.q ),
+    .q      (reg2hw.pad_io_a_13_cfg.oen.q ),
 
     // to register interface (read)
-    .qs     (pad_mx_hyper1_1_cfg_oen_qs)
+    .qs     (pad_io_a_13_cfg_oen_qs)
   );
 
 
-  // R[pad_mx_hyper1_1_mux_sel]: V(False)
+  // R[pad_io_a_13_mux_sel]: V(False)
 
   prim_subreg #(
-    .DW      (5),
+    .DW      (4),
     .SWACCESS("RW"),
-    .RESVAL  (5'h0)
-  ) u_pad_mx_hyper1_1_mux_sel (
+    .RESVAL  (4'h0)
+  ) u_pad_io_a_13_mux_sel (
     .clk_i   (clk_i    ),
     .rst_ni  (rst_ni  ),
 
     // from register interface
-    .we     (pad_mx_hyper1_1_mux_sel_we),
-    .wd     (pad_mx_hyper1_1_mux_sel_wd),
+    .we     (pad_io_a_13_mux_sel_we),
+    .wd     (pad_io_a_13_mux_sel_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -3401,27 +2222,27 @@ module alsaqr_periph_padframe_periphs_config_reg_top #(
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.pad_mx_hyper1_1_mux_sel.q ),
+    .q      (reg2hw.pad_io_a_13_mux_sel.q ),
 
     // to register interface (read)
-    .qs     (pad_mx_hyper1_1_mux_sel_qs)
+    .qs     (pad_io_a_13_mux_sel_qs)
   );
 
 
-  // R[pad_mx_hyper1_2_cfg]: V(False)
+  // R[pad_io_a_14_cfg]: V(False)
 
   //   F[chip2pad]: 0:0
   prim_subreg #(
     .DW      (1),
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
-  ) u_pad_mx_hyper1_2_cfg_chip2pad (
+  ) u_pad_io_a_14_cfg_chip2pad (
     .clk_i   (clk_i    ),
     .rst_ni  (rst_ni  ),
 
     // from register interface
-    .we     (pad_mx_hyper1_2_cfg_chip2pad_we),
-    .wd     (pad_mx_hyper1_2_cfg_chip2pad_wd),
+    .we     (pad_io_a_14_cfg_chip2pad_we),
+    .wd     (pad_io_a_14_cfg_chip2pad_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -3429,10 +2250,10 @@ module alsaqr_periph_padframe_periphs_config_reg_top #(
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.pad_mx_hyper1_2_cfg.chip2pad.q ),
+    .q      (reg2hw.pad_io_a_14_cfg.chip2pad.q ),
 
     // to register interface (read)
-    .qs     (pad_mx_hyper1_2_cfg_chip2pad_qs)
+    .qs     (pad_io_a_14_cfg_chip2pad_qs)
   );
 
 
@@ -3441,13 +2262,13 @@ module alsaqr_periph_padframe_periphs_config_reg_top #(
     .DW      (1),
     .SWACCESS("RW"),
     .RESVAL  (1'h1)
-  ) u_pad_mx_hyper1_2_cfg_oen (
+  ) u_pad_io_a_14_cfg_oen (
     .clk_i   (clk_i    ),
     .rst_ni  (rst_ni  ),
 
     // from register interface
-    .we     (pad_mx_hyper1_2_cfg_oen_we),
-    .wd     (pad_mx_hyper1_2_cfg_oen_wd),
+    .we     (pad_io_a_14_cfg_oen_we),
+    .wd     (pad_io_a_14_cfg_oen_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -3455,26 +2276,26 @@ module alsaqr_periph_padframe_periphs_config_reg_top #(
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.pad_mx_hyper1_2_cfg.oen.q ),
+    .q      (reg2hw.pad_io_a_14_cfg.oen.q ),
 
     // to register interface (read)
-    .qs     (pad_mx_hyper1_2_cfg_oen_qs)
+    .qs     (pad_io_a_14_cfg_oen_qs)
   );
 
 
-  // R[pad_mx_hyper1_2_mux_sel]: V(False)
+  // R[pad_io_a_14_mux_sel]: V(False)
 
   prim_subreg #(
-    .DW      (5),
+    .DW      (4),
     .SWACCESS("RW"),
-    .RESVAL  (5'h0)
-  ) u_pad_mx_hyper1_2_mux_sel (
+    .RESVAL  (4'h0)
+  ) u_pad_io_a_14_mux_sel (
     .clk_i   (clk_i    ),
     .rst_ni  (rst_ni  ),
 
     // from register interface
-    .we     (pad_mx_hyper1_2_mux_sel_we),
-    .wd     (pad_mx_hyper1_2_mux_sel_wd),
+    .we     (pad_io_a_14_mux_sel_we),
+    .wd     (pad_io_a_14_mux_sel_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -3482,27 +2303,27 @@ module alsaqr_periph_padframe_periphs_config_reg_top #(
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.pad_mx_hyper1_2_mux_sel.q ),
+    .q      (reg2hw.pad_io_a_14_mux_sel.q ),
 
     // to register interface (read)
-    .qs     (pad_mx_hyper1_2_mux_sel_qs)
+    .qs     (pad_io_a_14_mux_sel_qs)
   );
 
 
-  // R[pad_mx_hyper1_3_cfg]: V(False)
+  // R[pad_io_b_00_cfg]: V(False)
 
   //   F[chip2pad]: 0:0
   prim_subreg #(
     .DW      (1),
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
-  ) u_pad_mx_hyper1_3_cfg_chip2pad (
+  ) u_pad_io_b_00_cfg_chip2pad (
     .clk_i   (clk_i    ),
     .rst_ni  (rst_ni  ),
 
     // from register interface
-    .we     (pad_mx_hyper1_3_cfg_chip2pad_we),
-    .wd     (pad_mx_hyper1_3_cfg_chip2pad_wd),
+    .we     (pad_io_b_00_cfg_chip2pad_we),
+    .wd     (pad_io_b_00_cfg_chip2pad_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -3510,10 +2331,10 @@ module alsaqr_periph_padframe_periphs_config_reg_top #(
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.pad_mx_hyper1_3_cfg.chip2pad.q ),
+    .q      (reg2hw.pad_io_b_00_cfg.chip2pad.q ),
 
     // to register interface (read)
-    .qs     (pad_mx_hyper1_3_cfg_chip2pad_qs)
+    .qs     (pad_io_b_00_cfg_chip2pad_qs)
   );
 
 
@@ -3522,13 +2343,13 @@ module alsaqr_periph_padframe_periphs_config_reg_top #(
     .DW      (1),
     .SWACCESS("RW"),
     .RESVAL  (1'h1)
-  ) u_pad_mx_hyper1_3_cfg_oen (
+  ) u_pad_io_b_00_cfg_oen (
     .clk_i   (clk_i    ),
     .rst_ni  (rst_ni  ),
 
     // from register interface
-    .we     (pad_mx_hyper1_3_cfg_oen_we),
-    .wd     (pad_mx_hyper1_3_cfg_oen_wd),
+    .we     (pad_io_b_00_cfg_oen_we),
+    .wd     (pad_io_b_00_cfg_oen_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -3536,26 +2357,26 @@ module alsaqr_periph_padframe_periphs_config_reg_top #(
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.pad_mx_hyper1_3_cfg.oen.q ),
+    .q      (reg2hw.pad_io_b_00_cfg.oen.q ),
 
     // to register interface (read)
-    .qs     (pad_mx_hyper1_3_cfg_oen_qs)
+    .qs     (pad_io_b_00_cfg_oen_qs)
   );
 
 
-  // R[pad_mx_hyper1_3_mux_sel]: V(False)
+  // R[pad_io_b_00_mux_sel]: V(False)
 
   prim_subreg #(
     .DW      (5),
     .SWACCESS("RW"),
     .RESVAL  (5'h0)
-  ) u_pad_mx_hyper1_3_mux_sel (
+  ) u_pad_io_b_00_mux_sel (
     .clk_i   (clk_i    ),
     .rst_ni  (rst_ni  ),
 
     // from register interface
-    .we     (pad_mx_hyper1_3_mux_sel_we),
-    .wd     (pad_mx_hyper1_3_mux_sel_wd),
+    .we     (pad_io_b_00_mux_sel_we),
+    .wd     (pad_io_b_00_mux_sel_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -3563,27 +2384,27 @@ module alsaqr_periph_padframe_periphs_config_reg_top #(
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.pad_mx_hyper1_3_mux_sel.q ),
+    .q      (reg2hw.pad_io_b_00_mux_sel.q ),
 
     // to register interface (read)
-    .qs     (pad_mx_hyper1_3_mux_sel_qs)
+    .qs     (pad_io_b_00_mux_sel_qs)
   );
 
 
-  // R[pad_mx_hyper1_4_cfg]: V(False)
+  // R[pad_io_b_01_cfg]: V(False)
 
   //   F[chip2pad]: 0:0
   prim_subreg #(
     .DW      (1),
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
-  ) u_pad_mx_hyper1_4_cfg_chip2pad (
+  ) u_pad_io_b_01_cfg_chip2pad (
     .clk_i   (clk_i    ),
     .rst_ni  (rst_ni  ),
 
     // from register interface
-    .we     (pad_mx_hyper1_4_cfg_chip2pad_we),
-    .wd     (pad_mx_hyper1_4_cfg_chip2pad_wd),
+    .we     (pad_io_b_01_cfg_chip2pad_we),
+    .wd     (pad_io_b_01_cfg_chip2pad_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -3591,10 +2412,10 @@ module alsaqr_periph_padframe_periphs_config_reg_top #(
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.pad_mx_hyper1_4_cfg.chip2pad.q ),
+    .q      (reg2hw.pad_io_b_01_cfg.chip2pad.q ),
 
     // to register interface (read)
-    .qs     (pad_mx_hyper1_4_cfg_chip2pad_qs)
+    .qs     (pad_io_b_01_cfg_chip2pad_qs)
   );
 
 
@@ -3603,13 +2424,13 @@ module alsaqr_periph_padframe_periphs_config_reg_top #(
     .DW      (1),
     .SWACCESS("RW"),
     .RESVAL  (1'h1)
-  ) u_pad_mx_hyper1_4_cfg_oen (
+  ) u_pad_io_b_01_cfg_oen (
     .clk_i   (clk_i    ),
     .rst_ni  (rst_ni  ),
 
     // from register interface
-    .we     (pad_mx_hyper1_4_cfg_oen_we),
-    .wd     (pad_mx_hyper1_4_cfg_oen_wd),
+    .we     (pad_io_b_01_cfg_oen_we),
+    .wd     (pad_io_b_01_cfg_oen_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -3617,26 +2438,26 @@ module alsaqr_periph_padframe_periphs_config_reg_top #(
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.pad_mx_hyper1_4_cfg.oen.q ),
+    .q      (reg2hw.pad_io_b_01_cfg.oen.q ),
 
     // to register interface (read)
-    .qs     (pad_mx_hyper1_4_cfg_oen_qs)
+    .qs     (pad_io_b_01_cfg_oen_qs)
   );
 
 
-  // R[pad_mx_hyper1_4_mux_sel]: V(False)
+  // R[pad_io_b_01_mux_sel]: V(False)
 
   prim_subreg #(
     .DW      (5),
     .SWACCESS("RW"),
     .RESVAL  (5'h0)
-  ) u_pad_mx_hyper1_4_mux_sel (
+  ) u_pad_io_b_01_mux_sel (
     .clk_i   (clk_i    ),
     .rst_ni  (rst_ni  ),
 
     // from register interface
-    .we     (pad_mx_hyper1_4_mux_sel_we),
-    .wd     (pad_mx_hyper1_4_mux_sel_wd),
+    .we     (pad_io_b_01_mux_sel_we),
+    .wd     (pad_io_b_01_mux_sel_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -3644,27 +2465,27 @@ module alsaqr_periph_padframe_periphs_config_reg_top #(
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.pad_mx_hyper1_4_mux_sel.q ),
+    .q      (reg2hw.pad_io_b_01_mux_sel.q ),
 
     // to register interface (read)
-    .qs     (pad_mx_hyper1_4_mux_sel_qs)
+    .qs     (pad_io_b_01_mux_sel_qs)
   );
 
 
-  // R[pad_mx_hyper1_5_cfg]: V(False)
+  // R[pad_io_b_02_cfg]: V(False)
 
   //   F[chip2pad]: 0:0
   prim_subreg #(
     .DW      (1),
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
-  ) u_pad_mx_hyper1_5_cfg_chip2pad (
+  ) u_pad_io_b_02_cfg_chip2pad (
     .clk_i   (clk_i    ),
     .rst_ni  (rst_ni  ),
 
     // from register interface
-    .we     (pad_mx_hyper1_5_cfg_chip2pad_we),
-    .wd     (pad_mx_hyper1_5_cfg_chip2pad_wd),
+    .we     (pad_io_b_02_cfg_chip2pad_we),
+    .wd     (pad_io_b_02_cfg_chip2pad_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -3672,10 +2493,10 @@ module alsaqr_periph_padframe_periphs_config_reg_top #(
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.pad_mx_hyper1_5_cfg.chip2pad.q ),
+    .q      (reg2hw.pad_io_b_02_cfg.chip2pad.q ),
 
     // to register interface (read)
-    .qs     (pad_mx_hyper1_5_cfg_chip2pad_qs)
+    .qs     (pad_io_b_02_cfg_chip2pad_qs)
   );
 
 
@@ -3684,13 +2505,13 @@ module alsaqr_periph_padframe_periphs_config_reg_top #(
     .DW      (1),
     .SWACCESS("RW"),
     .RESVAL  (1'h1)
-  ) u_pad_mx_hyper1_5_cfg_oen (
+  ) u_pad_io_b_02_cfg_oen (
     .clk_i   (clk_i    ),
     .rst_ni  (rst_ni  ),
 
     // from register interface
-    .we     (pad_mx_hyper1_5_cfg_oen_we),
-    .wd     (pad_mx_hyper1_5_cfg_oen_wd),
+    .we     (pad_io_b_02_cfg_oen_we),
+    .wd     (pad_io_b_02_cfg_oen_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -3698,26 +2519,26 @@ module alsaqr_periph_padframe_periphs_config_reg_top #(
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.pad_mx_hyper1_5_cfg.oen.q ),
+    .q      (reg2hw.pad_io_b_02_cfg.oen.q ),
 
     // to register interface (read)
-    .qs     (pad_mx_hyper1_5_cfg_oen_qs)
+    .qs     (pad_io_b_02_cfg_oen_qs)
   );
 
 
-  // R[pad_mx_hyper1_5_mux_sel]: V(False)
+  // R[pad_io_b_02_mux_sel]: V(False)
 
   prim_subreg #(
     .DW      (5),
     .SWACCESS("RW"),
     .RESVAL  (5'h0)
-  ) u_pad_mx_hyper1_5_mux_sel (
+  ) u_pad_io_b_02_mux_sel (
     .clk_i   (clk_i    ),
     .rst_ni  (rst_ni  ),
 
     // from register interface
-    .we     (pad_mx_hyper1_5_mux_sel_we),
-    .wd     (pad_mx_hyper1_5_mux_sel_wd),
+    .we     (pad_io_b_02_mux_sel_we),
+    .wd     (pad_io_b_02_mux_sel_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -3725,27 +2546,27 @@ module alsaqr_periph_padframe_periphs_config_reg_top #(
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.pad_mx_hyper1_5_mux_sel.q ),
+    .q      (reg2hw.pad_io_b_02_mux_sel.q ),
 
     // to register interface (read)
-    .qs     (pad_mx_hyper1_5_mux_sel_qs)
+    .qs     (pad_io_b_02_mux_sel_qs)
   );
 
 
-  // R[pad_mx_hyper1_6_cfg]: V(False)
+  // R[pad_io_b_03_cfg]: V(False)
 
   //   F[chip2pad]: 0:0
   prim_subreg #(
     .DW      (1),
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
-  ) u_pad_mx_hyper1_6_cfg_chip2pad (
+  ) u_pad_io_b_03_cfg_chip2pad (
     .clk_i   (clk_i    ),
     .rst_ni  (rst_ni  ),
 
     // from register interface
-    .we     (pad_mx_hyper1_6_cfg_chip2pad_we),
-    .wd     (pad_mx_hyper1_6_cfg_chip2pad_wd),
+    .we     (pad_io_b_03_cfg_chip2pad_we),
+    .wd     (pad_io_b_03_cfg_chip2pad_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -3753,10 +2574,10 @@ module alsaqr_periph_padframe_periphs_config_reg_top #(
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.pad_mx_hyper1_6_cfg.chip2pad.q ),
+    .q      (reg2hw.pad_io_b_03_cfg.chip2pad.q ),
 
     // to register interface (read)
-    .qs     (pad_mx_hyper1_6_cfg_chip2pad_qs)
+    .qs     (pad_io_b_03_cfg_chip2pad_qs)
   );
 
 
@@ -3765,13 +2586,13 @@ module alsaqr_periph_padframe_periphs_config_reg_top #(
     .DW      (1),
     .SWACCESS("RW"),
     .RESVAL  (1'h1)
-  ) u_pad_mx_hyper1_6_cfg_oen (
+  ) u_pad_io_b_03_cfg_oen (
     .clk_i   (clk_i    ),
     .rst_ni  (rst_ni  ),
 
     // from register interface
-    .we     (pad_mx_hyper1_6_cfg_oen_we),
-    .wd     (pad_mx_hyper1_6_cfg_oen_wd),
+    .we     (pad_io_b_03_cfg_oen_we),
+    .wd     (pad_io_b_03_cfg_oen_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -3779,26 +2600,26 @@ module alsaqr_periph_padframe_periphs_config_reg_top #(
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.pad_mx_hyper1_6_cfg.oen.q ),
+    .q      (reg2hw.pad_io_b_03_cfg.oen.q ),
 
     // to register interface (read)
-    .qs     (pad_mx_hyper1_6_cfg_oen_qs)
+    .qs     (pad_io_b_03_cfg_oen_qs)
   );
 
 
-  // R[pad_mx_hyper1_6_mux_sel]: V(False)
+  // R[pad_io_b_03_mux_sel]: V(False)
 
   prim_subreg #(
     .DW      (5),
     .SWACCESS("RW"),
     .RESVAL  (5'h0)
-  ) u_pad_mx_hyper1_6_mux_sel (
+  ) u_pad_io_b_03_mux_sel (
     .clk_i   (clk_i    ),
     .rst_ni  (rst_ni  ),
 
     // from register interface
-    .we     (pad_mx_hyper1_6_mux_sel_we),
-    .wd     (pad_mx_hyper1_6_mux_sel_wd),
+    .we     (pad_io_b_03_mux_sel_we),
+    .wd     (pad_io_b_03_mux_sel_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -3806,27 +2627,27 @@ module alsaqr_periph_padframe_periphs_config_reg_top #(
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.pad_mx_hyper1_6_mux_sel.q ),
+    .q      (reg2hw.pad_io_b_03_mux_sel.q ),
 
     // to register interface (read)
-    .qs     (pad_mx_hyper1_6_mux_sel_qs)
+    .qs     (pad_io_b_03_mux_sel_qs)
   );
 
 
-  // R[pad_mx_hyper1_7_cfg]: V(False)
+  // R[pad_io_b_04_cfg]: V(False)
 
   //   F[chip2pad]: 0:0
   prim_subreg #(
     .DW      (1),
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
-  ) u_pad_mx_hyper1_7_cfg_chip2pad (
+  ) u_pad_io_b_04_cfg_chip2pad (
     .clk_i   (clk_i    ),
     .rst_ni  (rst_ni  ),
 
     // from register interface
-    .we     (pad_mx_hyper1_7_cfg_chip2pad_we),
-    .wd     (pad_mx_hyper1_7_cfg_chip2pad_wd),
+    .we     (pad_io_b_04_cfg_chip2pad_we),
+    .wd     (pad_io_b_04_cfg_chip2pad_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -3834,10 +2655,10 @@ module alsaqr_periph_padframe_periphs_config_reg_top #(
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.pad_mx_hyper1_7_cfg.chip2pad.q ),
+    .q      (reg2hw.pad_io_b_04_cfg.chip2pad.q ),
 
     // to register interface (read)
-    .qs     (pad_mx_hyper1_7_cfg_chip2pad_qs)
+    .qs     (pad_io_b_04_cfg_chip2pad_qs)
   );
 
 
@@ -3846,13 +2667,13 @@ module alsaqr_periph_padframe_periphs_config_reg_top #(
     .DW      (1),
     .SWACCESS("RW"),
     .RESVAL  (1'h1)
-  ) u_pad_mx_hyper1_7_cfg_oen (
+  ) u_pad_io_b_04_cfg_oen (
     .clk_i   (clk_i    ),
     .rst_ni  (rst_ni  ),
 
     // from register interface
-    .we     (pad_mx_hyper1_7_cfg_oen_we),
-    .wd     (pad_mx_hyper1_7_cfg_oen_wd),
+    .we     (pad_io_b_04_cfg_oen_we),
+    .wd     (pad_io_b_04_cfg_oen_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -3860,26 +2681,26 @@ module alsaqr_periph_padframe_periphs_config_reg_top #(
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.pad_mx_hyper1_7_cfg.oen.q ),
+    .q      (reg2hw.pad_io_b_04_cfg.oen.q ),
 
     // to register interface (read)
-    .qs     (pad_mx_hyper1_7_cfg_oen_qs)
+    .qs     (pad_io_b_04_cfg_oen_qs)
   );
 
 
-  // R[pad_mx_hyper1_7_mux_sel]: V(False)
+  // R[pad_io_b_04_mux_sel]: V(False)
 
   prim_subreg #(
     .DW      (5),
     .SWACCESS("RW"),
     .RESVAL  (5'h0)
-  ) u_pad_mx_hyper1_7_mux_sel (
+  ) u_pad_io_b_04_mux_sel (
     .clk_i   (clk_i    ),
     .rst_ni  (rst_ni  ),
 
     // from register interface
-    .we     (pad_mx_hyper1_7_mux_sel_we),
-    .wd     (pad_mx_hyper1_7_mux_sel_wd),
+    .we     (pad_io_b_04_mux_sel_we),
+    .wd     (pad_io_b_04_mux_sel_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -3887,27 +2708,27 @@ module alsaqr_periph_padframe_periphs_config_reg_top #(
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.pad_mx_hyper1_7_mux_sel.q ),
+    .q      (reg2hw.pad_io_b_04_mux_sel.q ),
 
     // to register interface (read)
-    .qs     (pad_mx_hyper1_7_mux_sel_qs)
+    .qs     (pad_io_b_04_mux_sel_qs)
   );
 
 
-  // R[pad_mx_hyper1_8_cfg]: V(False)
+  // R[pad_io_b_05_cfg]: V(False)
 
   //   F[chip2pad]: 0:0
   prim_subreg #(
     .DW      (1),
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
-  ) u_pad_mx_hyper1_8_cfg_chip2pad (
+  ) u_pad_io_b_05_cfg_chip2pad (
     .clk_i   (clk_i    ),
     .rst_ni  (rst_ni  ),
 
     // from register interface
-    .we     (pad_mx_hyper1_8_cfg_chip2pad_we),
-    .wd     (pad_mx_hyper1_8_cfg_chip2pad_wd),
+    .we     (pad_io_b_05_cfg_chip2pad_we),
+    .wd     (pad_io_b_05_cfg_chip2pad_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -3915,10 +2736,10 @@ module alsaqr_periph_padframe_periphs_config_reg_top #(
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.pad_mx_hyper1_8_cfg.chip2pad.q ),
+    .q      (reg2hw.pad_io_b_05_cfg.chip2pad.q ),
 
     // to register interface (read)
-    .qs     (pad_mx_hyper1_8_cfg_chip2pad_qs)
+    .qs     (pad_io_b_05_cfg_chip2pad_qs)
   );
 
 
@@ -3927,13 +2748,13 @@ module alsaqr_periph_padframe_periphs_config_reg_top #(
     .DW      (1),
     .SWACCESS("RW"),
     .RESVAL  (1'h1)
-  ) u_pad_mx_hyper1_8_cfg_oen (
+  ) u_pad_io_b_05_cfg_oen (
     .clk_i   (clk_i    ),
     .rst_ni  (rst_ni  ),
 
     // from register interface
-    .we     (pad_mx_hyper1_8_cfg_oen_we),
-    .wd     (pad_mx_hyper1_8_cfg_oen_wd),
+    .we     (pad_io_b_05_cfg_oen_we),
+    .wd     (pad_io_b_05_cfg_oen_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -3941,26 +2762,26 @@ module alsaqr_periph_padframe_periphs_config_reg_top #(
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.pad_mx_hyper1_8_cfg.oen.q ),
+    .q      (reg2hw.pad_io_b_05_cfg.oen.q ),
 
     // to register interface (read)
-    .qs     (pad_mx_hyper1_8_cfg_oen_qs)
+    .qs     (pad_io_b_05_cfg_oen_qs)
   );
 
 
-  // R[pad_mx_hyper1_8_mux_sel]: V(False)
+  // R[pad_io_b_05_mux_sel]: V(False)
 
   prim_subreg #(
     .DW      (5),
     .SWACCESS("RW"),
     .RESVAL  (5'h0)
-  ) u_pad_mx_hyper1_8_mux_sel (
+  ) u_pad_io_b_05_mux_sel (
     .clk_i   (clk_i    ),
     .rst_ni  (rst_ni  ),
 
     // from register interface
-    .we     (pad_mx_hyper1_8_mux_sel_we),
-    .wd     (pad_mx_hyper1_8_mux_sel_wd),
+    .we     (pad_io_b_05_mux_sel_we),
+    .wd     (pad_io_b_05_mux_sel_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -3968,27 +2789,27 @@ module alsaqr_periph_padframe_periphs_config_reg_top #(
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.pad_mx_hyper1_8_mux_sel.q ),
+    .q      (reg2hw.pad_io_b_05_mux_sel.q ),
 
     // to register interface (read)
-    .qs     (pad_mx_hyper1_8_mux_sel_qs)
+    .qs     (pad_io_b_05_mux_sel_qs)
   );
 
 
-  // R[pad_mx_hyper1_9_cfg]: V(False)
+  // R[pad_io_b_06_cfg]: V(False)
 
   //   F[chip2pad]: 0:0
   prim_subreg #(
     .DW      (1),
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
-  ) u_pad_mx_hyper1_9_cfg_chip2pad (
+  ) u_pad_io_b_06_cfg_chip2pad (
     .clk_i   (clk_i    ),
     .rst_ni  (rst_ni  ),
 
     // from register interface
-    .we     (pad_mx_hyper1_9_cfg_chip2pad_we),
-    .wd     (pad_mx_hyper1_9_cfg_chip2pad_wd),
+    .we     (pad_io_b_06_cfg_chip2pad_we),
+    .wd     (pad_io_b_06_cfg_chip2pad_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -3996,10 +2817,10 @@ module alsaqr_periph_padframe_periphs_config_reg_top #(
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.pad_mx_hyper1_9_cfg.chip2pad.q ),
+    .q      (reg2hw.pad_io_b_06_cfg.chip2pad.q ),
 
     // to register interface (read)
-    .qs     (pad_mx_hyper1_9_cfg_chip2pad_qs)
+    .qs     (pad_io_b_06_cfg_chip2pad_qs)
   );
 
 
@@ -4008,13 +2829,13 @@ module alsaqr_periph_padframe_periphs_config_reg_top #(
     .DW      (1),
     .SWACCESS("RW"),
     .RESVAL  (1'h1)
-  ) u_pad_mx_hyper1_9_cfg_oen (
+  ) u_pad_io_b_06_cfg_oen (
     .clk_i   (clk_i    ),
     .rst_ni  (rst_ni  ),
 
     // from register interface
-    .we     (pad_mx_hyper1_9_cfg_oen_we),
-    .wd     (pad_mx_hyper1_9_cfg_oen_wd),
+    .we     (pad_io_b_06_cfg_oen_we),
+    .wd     (pad_io_b_06_cfg_oen_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -4022,26 +2843,26 @@ module alsaqr_periph_padframe_periphs_config_reg_top #(
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.pad_mx_hyper1_9_cfg.oen.q ),
+    .q      (reg2hw.pad_io_b_06_cfg.oen.q ),
 
     // to register interface (read)
-    .qs     (pad_mx_hyper1_9_cfg_oen_qs)
+    .qs     (pad_io_b_06_cfg_oen_qs)
   );
 
 
-  // R[pad_mx_hyper1_9_mux_sel]: V(False)
+  // R[pad_io_b_06_mux_sel]: V(False)
 
   prim_subreg #(
     .DW      (5),
     .SWACCESS("RW"),
     .RESVAL  (5'h0)
-  ) u_pad_mx_hyper1_9_mux_sel (
+  ) u_pad_io_b_06_mux_sel (
     .clk_i   (clk_i    ),
     .rst_ni  (rst_ni  ),
 
     // from register interface
-    .we     (pad_mx_hyper1_9_mux_sel_we),
-    .wd     (pad_mx_hyper1_9_mux_sel_wd),
+    .we     (pad_io_b_06_mux_sel_we),
+    .wd     (pad_io_b_06_mux_sel_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -4049,27 +2870,27 @@ module alsaqr_periph_padframe_periphs_config_reg_top #(
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.pad_mx_hyper1_9_mux_sel.q ),
+    .q      (reg2hw.pad_io_b_06_mux_sel.q ),
 
     // to register interface (read)
-    .qs     (pad_mx_hyper1_9_mux_sel_qs)
+    .qs     (pad_io_b_06_mux_sel_qs)
   );
 
 
-  // R[pad_mx_hyper1_10_cfg]: V(False)
+  // R[pad_io_b_07_cfg]: V(False)
 
   //   F[chip2pad]: 0:0
   prim_subreg #(
     .DW      (1),
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
-  ) u_pad_mx_hyper1_10_cfg_chip2pad (
+  ) u_pad_io_b_07_cfg_chip2pad (
     .clk_i   (clk_i    ),
     .rst_ni  (rst_ni  ),
 
     // from register interface
-    .we     (pad_mx_hyper1_10_cfg_chip2pad_we),
-    .wd     (pad_mx_hyper1_10_cfg_chip2pad_wd),
+    .we     (pad_io_b_07_cfg_chip2pad_we),
+    .wd     (pad_io_b_07_cfg_chip2pad_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -4077,10 +2898,10 @@ module alsaqr_periph_padframe_periphs_config_reg_top #(
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.pad_mx_hyper1_10_cfg.chip2pad.q ),
+    .q      (reg2hw.pad_io_b_07_cfg.chip2pad.q ),
 
     // to register interface (read)
-    .qs     (pad_mx_hyper1_10_cfg_chip2pad_qs)
+    .qs     (pad_io_b_07_cfg_chip2pad_qs)
   );
 
 
@@ -4089,13 +2910,13 @@ module alsaqr_periph_padframe_periphs_config_reg_top #(
     .DW      (1),
     .SWACCESS("RW"),
     .RESVAL  (1'h1)
-  ) u_pad_mx_hyper1_10_cfg_oen (
+  ) u_pad_io_b_07_cfg_oen (
     .clk_i   (clk_i    ),
     .rst_ni  (rst_ni  ),
 
     // from register interface
-    .we     (pad_mx_hyper1_10_cfg_oen_we),
-    .wd     (pad_mx_hyper1_10_cfg_oen_wd),
+    .we     (pad_io_b_07_cfg_oen_we),
+    .wd     (pad_io_b_07_cfg_oen_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -4103,26 +2924,26 @@ module alsaqr_periph_padframe_periphs_config_reg_top #(
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.pad_mx_hyper1_10_cfg.oen.q ),
+    .q      (reg2hw.pad_io_b_07_cfg.oen.q ),
 
     // to register interface (read)
-    .qs     (pad_mx_hyper1_10_cfg_oen_qs)
+    .qs     (pad_io_b_07_cfg_oen_qs)
   );
 
 
-  // R[pad_mx_hyper1_10_mux_sel]: V(False)
+  // R[pad_io_b_07_mux_sel]: V(False)
 
   prim_subreg #(
     .DW      (5),
     .SWACCESS("RW"),
     .RESVAL  (5'h0)
-  ) u_pad_mx_hyper1_10_mux_sel (
+  ) u_pad_io_b_07_mux_sel (
     .clk_i   (clk_i    ),
     .rst_ni  (rst_ni  ),
 
     // from register interface
-    .we     (pad_mx_hyper1_10_mux_sel_we),
-    .wd     (pad_mx_hyper1_10_mux_sel_wd),
+    .we     (pad_io_b_07_mux_sel_we),
+    .wd     (pad_io_b_07_mux_sel_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -4130,27 +2951,27 @@ module alsaqr_periph_padframe_periphs_config_reg_top #(
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.pad_mx_hyper1_10_mux_sel.q ),
+    .q      (reg2hw.pad_io_b_07_mux_sel.q ),
 
     // to register interface (read)
-    .qs     (pad_mx_hyper1_10_mux_sel_qs)
+    .qs     (pad_io_b_07_mux_sel_qs)
   );
 
 
-  // R[pad_mx_hyper1_11_cfg]: V(False)
+  // R[pad_io_b_08_cfg]: V(False)
 
   //   F[chip2pad]: 0:0
   prim_subreg #(
     .DW      (1),
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
-  ) u_pad_mx_hyper1_11_cfg_chip2pad (
+  ) u_pad_io_b_08_cfg_chip2pad (
     .clk_i   (clk_i    ),
     .rst_ni  (rst_ni  ),
 
     // from register interface
-    .we     (pad_mx_hyper1_11_cfg_chip2pad_we),
-    .wd     (pad_mx_hyper1_11_cfg_chip2pad_wd),
+    .we     (pad_io_b_08_cfg_chip2pad_we),
+    .wd     (pad_io_b_08_cfg_chip2pad_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -4158,10 +2979,10 @@ module alsaqr_periph_padframe_periphs_config_reg_top #(
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.pad_mx_hyper1_11_cfg.chip2pad.q ),
+    .q      (reg2hw.pad_io_b_08_cfg.chip2pad.q ),
 
     // to register interface (read)
-    .qs     (pad_mx_hyper1_11_cfg_chip2pad_qs)
+    .qs     (pad_io_b_08_cfg_chip2pad_qs)
   );
 
 
@@ -4170,13 +2991,13 @@ module alsaqr_periph_padframe_periphs_config_reg_top #(
     .DW      (1),
     .SWACCESS("RW"),
     .RESVAL  (1'h1)
-  ) u_pad_mx_hyper1_11_cfg_oen (
+  ) u_pad_io_b_08_cfg_oen (
     .clk_i   (clk_i    ),
     .rst_ni  (rst_ni  ),
 
     // from register interface
-    .we     (pad_mx_hyper1_11_cfg_oen_we),
-    .wd     (pad_mx_hyper1_11_cfg_oen_wd),
+    .we     (pad_io_b_08_cfg_oen_we),
+    .wd     (pad_io_b_08_cfg_oen_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -4184,26 +3005,26 @@ module alsaqr_periph_padframe_periphs_config_reg_top #(
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.pad_mx_hyper1_11_cfg.oen.q ),
+    .q      (reg2hw.pad_io_b_08_cfg.oen.q ),
 
     // to register interface (read)
-    .qs     (pad_mx_hyper1_11_cfg_oen_qs)
+    .qs     (pad_io_b_08_cfg_oen_qs)
   );
 
 
-  // R[pad_mx_hyper1_11_mux_sel]: V(False)
+  // R[pad_io_b_08_mux_sel]: V(False)
 
   prim_subreg #(
     .DW      (5),
     .SWACCESS("RW"),
     .RESVAL  (5'h0)
-  ) u_pad_mx_hyper1_11_mux_sel (
+  ) u_pad_io_b_08_mux_sel (
     .clk_i   (clk_i    ),
     .rst_ni  (rst_ni  ),
 
     // from register interface
-    .we     (pad_mx_hyper1_11_mux_sel_we),
-    .wd     (pad_mx_hyper1_11_mux_sel_wd),
+    .we     (pad_io_b_08_mux_sel_we),
+    .wd     (pad_io_b_08_mux_sel_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -4211,27 +3032,27 @@ module alsaqr_periph_padframe_periphs_config_reg_top #(
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.pad_mx_hyper1_11_mux_sel.q ),
+    .q      (reg2hw.pad_io_b_08_mux_sel.q ),
 
     // to register interface (read)
-    .qs     (pad_mx_hyper1_11_mux_sel_qs)
+    .qs     (pad_io_b_08_mux_sel_qs)
   );
 
 
-  // R[pad_mx_hyper1_12_cfg]: V(False)
+  // R[pad_io_b_09_cfg]: V(False)
 
   //   F[chip2pad]: 0:0
   prim_subreg #(
     .DW      (1),
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
-  ) u_pad_mx_hyper1_12_cfg_chip2pad (
+  ) u_pad_io_b_09_cfg_chip2pad (
     .clk_i   (clk_i    ),
     .rst_ni  (rst_ni  ),
 
     // from register interface
-    .we     (pad_mx_hyper1_12_cfg_chip2pad_we),
-    .wd     (pad_mx_hyper1_12_cfg_chip2pad_wd),
+    .we     (pad_io_b_09_cfg_chip2pad_we),
+    .wd     (pad_io_b_09_cfg_chip2pad_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -4239,10 +3060,10 @@ module alsaqr_periph_padframe_periphs_config_reg_top #(
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.pad_mx_hyper1_12_cfg.chip2pad.q ),
+    .q      (reg2hw.pad_io_b_09_cfg.chip2pad.q ),
 
     // to register interface (read)
-    .qs     (pad_mx_hyper1_12_cfg_chip2pad_qs)
+    .qs     (pad_io_b_09_cfg_chip2pad_qs)
   );
 
 
@@ -4251,13 +3072,13 @@ module alsaqr_periph_padframe_periphs_config_reg_top #(
     .DW      (1),
     .SWACCESS("RW"),
     .RESVAL  (1'h1)
-  ) u_pad_mx_hyper1_12_cfg_oen (
+  ) u_pad_io_b_09_cfg_oen (
     .clk_i   (clk_i    ),
     .rst_ni  (rst_ni  ),
 
     // from register interface
-    .we     (pad_mx_hyper1_12_cfg_oen_we),
-    .wd     (pad_mx_hyper1_12_cfg_oen_wd),
+    .we     (pad_io_b_09_cfg_oen_we),
+    .wd     (pad_io_b_09_cfg_oen_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -4265,26 +3086,26 @@ module alsaqr_periph_padframe_periphs_config_reg_top #(
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.pad_mx_hyper1_12_cfg.oen.q ),
+    .q      (reg2hw.pad_io_b_09_cfg.oen.q ),
 
     // to register interface (read)
-    .qs     (pad_mx_hyper1_12_cfg_oen_qs)
+    .qs     (pad_io_b_09_cfg_oen_qs)
   );
 
 
-  // R[pad_mx_hyper1_12_mux_sel]: V(False)
+  // R[pad_io_b_09_mux_sel]: V(False)
 
   prim_subreg #(
     .DW      (5),
     .SWACCESS("RW"),
     .RESVAL  (5'h0)
-  ) u_pad_mx_hyper1_12_mux_sel (
+  ) u_pad_io_b_09_mux_sel (
     .clk_i   (clk_i    ),
     .rst_ni  (rst_ni  ),
 
     // from register interface
-    .we     (pad_mx_hyper1_12_mux_sel_we),
-    .wd     (pad_mx_hyper1_12_mux_sel_wd),
+    .we     (pad_io_b_09_mux_sel_we),
+    .wd     (pad_io_b_09_mux_sel_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -4292,112 +3113,7455 @@ module alsaqr_periph_padframe_periphs_config_reg_top #(
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.pad_mx_hyper1_12_mux_sel.q ),
+    .q      (reg2hw.pad_io_b_09_mux_sel.q ),
 
     // to register interface (read)
-    .qs     (pad_mx_hyper1_12_mux_sel_qs)
+    .qs     (pad_io_b_09_mux_sel_qs)
+  );
+
+
+  // R[pad_io_b_10_cfg]: V(False)
+
+  //   F[chip2pad]: 0:0
+  prim_subreg #(
+    .DW      (1),
+    .SWACCESS("RW"),
+    .RESVAL  (1'h0)
+  ) u_pad_io_b_10_cfg_chip2pad (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    // from register interface
+    .we     (pad_io_b_10_cfg_chip2pad_we),
+    .wd     (pad_io_b_10_cfg_chip2pad_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0  ),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.pad_io_b_10_cfg.chip2pad.q ),
+
+    // to register interface (read)
+    .qs     (pad_io_b_10_cfg_chip2pad_qs)
+  );
+
+
+  //   F[oen]: 1:1
+  prim_subreg #(
+    .DW      (1),
+    .SWACCESS("RW"),
+    .RESVAL  (1'h1)
+  ) u_pad_io_b_10_cfg_oen (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    // from register interface
+    .we     (pad_io_b_10_cfg_oen_we),
+    .wd     (pad_io_b_10_cfg_oen_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0  ),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.pad_io_b_10_cfg.oen.q ),
+
+    // to register interface (read)
+    .qs     (pad_io_b_10_cfg_oen_qs)
+  );
+
+
+  // R[pad_io_b_10_mux_sel]: V(False)
+
+  prim_subreg #(
+    .DW      (5),
+    .SWACCESS("RW"),
+    .RESVAL  (5'h0)
+  ) u_pad_io_b_10_mux_sel (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    // from register interface
+    .we     (pad_io_b_10_mux_sel_we),
+    .wd     (pad_io_b_10_mux_sel_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0  ),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.pad_io_b_10_mux_sel.q ),
+
+    // to register interface (read)
+    .qs     (pad_io_b_10_mux_sel_qs)
+  );
+
+
+  // R[pad_io_b_11_cfg]: V(False)
+
+  //   F[chip2pad]: 0:0
+  prim_subreg #(
+    .DW      (1),
+    .SWACCESS("RW"),
+    .RESVAL  (1'h0)
+  ) u_pad_io_b_11_cfg_chip2pad (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    // from register interface
+    .we     (pad_io_b_11_cfg_chip2pad_we),
+    .wd     (pad_io_b_11_cfg_chip2pad_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0  ),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.pad_io_b_11_cfg.chip2pad.q ),
+
+    // to register interface (read)
+    .qs     (pad_io_b_11_cfg_chip2pad_qs)
+  );
+
+
+  //   F[oen]: 1:1
+  prim_subreg #(
+    .DW      (1),
+    .SWACCESS("RW"),
+    .RESVAL  (1'h1)
+  ) u_pad_io_b_11_cfg_oen (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    // from register interface
+    .we     (pad_io_b_11_cfg_oen_we),
+    .wd     (pad_io_b_11_cfg_oen_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0  ),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.pad_io_b_11_cfg.oen.q ),
+
+    // to register interface (read)
+    .qs     (pad_io_b_11_cfg_oen_qs)
+  );
+
+
+  // R[pad_io_b_11_mux_sel]: V(False)
+
+  prim_subreg #(
+    .DW      (5),
+    .SWACCESS("RW"),
+    .RESVAL  (5'h0)
+  ) u_pad_io_b_11_mux_sel (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    // from register interface
+    .we     (pad_io_b_11_mux_sel_we),
+    .wd     (pad_io_b_11_mux_sel_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0  ),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.pad_io_b_11_mux_sel.q ),
+
+    // to register interface (read)
+    .qs     (pad_io_b_11_mux_sel_qs)
+  );
+
+
+  // R[pad_io_b_12_cfg]: V(False)
+
+  //   F[chip2pad]: 0:0
+  prim_subreg #(
+    .DW      (1),
+    .SWACCESS("RW"),
+    .RESVAL  (1'h0)
+  ) u_pad_io_b_12_cfg_chip2pad (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    // from register interface
+    .we     (pad_io_b_12_cfg_chip2pad_we),
+    .wd     (pad_io_b_12_cfg_chip2pad_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0  ),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.pad_io_b_12_cfg.chip2pad.q ),
+
+    // to register interface (read)
+    .qs     (pad_io_b_12_cfg_chip2pad_qs)
+  );
+
+
+  //   F[oen]: 1:1
+  prim_subreg #(
+    .DW      (1),
+    .SWACCESS("RW"),
+    .RESVAL  (1'h1)
+  ) u_pad_io_b_12_cfg_oen (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    // from register interface
+    .we     (pad_io_b_12_cfg_oen_we),
+    .wd     (pad_io_b_12_cfg_oen_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0  ),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.pad_io_b_12_cfg.oen.q ),
+
+    // to register interface (read)
+    .qs     (pad_io_b_12_cfg_oen_qs)
+  );
+
+
+  // R[pad_io_b_12_mux_sel]: V(False)
+
+  prim_subreg #(
+    .DW      (5),
+    .SWACCESS("RW"),
+    .RESVAL  (5'h0)
+  ) u_pad_io_b_12_mux_sel (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    // from register interface
+    .we     (pad_io_b_12_mux_sel_we),
+    .wd     (pad_io_b_12_mux_sel_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0  ),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.pad_io_b_12_mux_sel.q ),
+
+    // to register interface (read)
+    .qs     (pad_io_b_12_mux_sel_qs)
+  );
+
+
+  // R[pad_io_b_13_cfg]: V(False)
+
+  //   F[chip2pad]: 0:0
+  prim_subreg #(
+    .DW      (1),
+    .SWACCESS("RW"),
+    .RESVAL  (1'h0)
+  ) u_pad_io_b_13_cfg_chip2pad (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    // from register interface
+    .we     (pad_io_b_13_cfg_chip2pad_we),
+    .wd     (pad_io_b_13_cfg_chip2pad_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0  ),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.pad_io_b_13_cfg.chip2pad.q ),
+
+    // to register interface (read)
+    .qs     (pad_io_b_13_cfg_chip2pad_qs)
+  );
+
+
+  //   F[oen]: 1:1
+  prim_subreg #(
+    .DW      (1),
+    .SWACCESS("RW"),
+    .RESVAL  (1'h1)
+  ) u_pad_io_b_13_cfg_oen (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    // from register interface
+    .we     (pad_io_b_13_cfg_oen_we),
+    .wd     (pad_io_b_13_cfg_oen_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0  ),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.pad_io_b_13_cfg.oen.q ),
+
+    // to register interface (read)
+    .qs     (pad_io_b_13_cfg_oen_qs)
+  );
+
+
+  // R[pad_io_b_13_mux_sel]: V(False)
+
+  prim_subreg #(
+    .DW      (5),
+    .SWACCESS("RW"),
+    .RESVAL  (5'h0)
+  ) u_pad_io_b_13_mux_sel (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    // from register interface
+    .we     (pad_io_b_13_mux_sel_we),
+    .wd     (pad_io_b_13_mux_sel_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0  ),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.pad_io_b_13_mux_sel.q ),
+
+    // to register interface (read)
+    .qs     (pad_io_b_13_mux_sel_qs)
+  );
+
+
+  // R[pad_io_b_14_cfg]: V(False)
+
+  //   F[chip2pad]: 0:0
+  prim_subreg #(
+    .DW      (1),
+    .SWACCESS("RW"),
+    .RESVAL  (1'h0)
+  ) u_pad_io_b_14_cfg_chip2pad (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    // from register interface
+    .we     (pad_io_b_14_cfg_chip2pad_we),
+    .wd     (pad_io_b_14_cfg_chip2pad_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0  ),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.pad_io_b_14_cfg.chip2pad.q ),
+
+    // to register interface (read)
+    .qs     (pad_io_b_14_cfg_chip2pad_qs)
+  );
+
+
+  //   F[oen]: 1:1
+  prim_subreg #(
+    .DW      (1),
+    .SWACCESS("RW"),
+    .RESVAL  (1'h1)
+  ) u_pad_io_b_14_cfg_oen (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    // from register interface
+    .we     (pad_io_b_14_cfg_oen_we),
+    .wd     (pad_io_b_14_cfg_oen_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0  ),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.pad_io_b_14_cfg.oen.q ),
+
+    // to register interface (read)
+    .qs     (pad_io_b_14_cfg_oen_qs)
+  );
+
+
+  // R[pad_io_b_14_mux_sel]: V(False)
+
+  prim_subreg #(
+    .DW      (5),
+    .SWACCESS("RW"),
+    .RESVAL  (5'h0)
+  ) u_pad_io_b_14_mux_sel (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    // from register interface
+    .we     (pad_io_b_14_mux_sel_we),
+    .wd     (pad_io_b_14_mux_sel_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0  ),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.pad_io_b_14_mux_sel.q ),
+
+    // to register interface (read)
+    .qs     (pad_io_b_14_mux_sel_qs)
+  );
+
+
+  // R[pad_io_b_15_cfg]: V(False)
+
+  //   F[chip2pad]: 0:0
+  prim_subreg #(
+    .DW      (1),
+    .SWACCESS("RW"),
+    .RESVAL  (1'h0)
+  ) u_pad_io_b_15_cfg_chip2pad (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    // from register interface
+    .we     (pad_io_b_15_cfg_chip2pad_we),
+    .wd     (pad_io_b_15_cfg_chip2pad_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0  ),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.pad_io_b_15_cfg.chip2pad.q ),
+
+    // to register interface (read)
+    .qs     (pad_io_b_15_cfg_chip2pad_qs)
+  );
+
+
+  //   F[oen]: 1:1
+  prim_subreg #(
+    .DW      (1),
+    .SWACCESS("RW"),
+    .RESVAL  (1'h1)
+  ) u_pad_io_b_15_cfg_oen (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    // from register interface
+    .we     (pad_io_b_15_cfg_oen_we),
+    .wd     (pad_io_b_15_cfg_oen_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0  ),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.pad_io_b_15_cfg.oen.q ),
+
+    // to register interface (read)
+    .qs     (pad_io_b_15_cfg_oen_qs)
+  );
+
+
+  // R[pad_io_b_15_mux_sel]: V(False)
+
+  prim_subreg #(
+    .DW      (5),
+    .SWACCESS("RW"),
+    .RESVAL  (5'h0)
+  ) u_pad_io_b_15_mux_sel (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    // from register interface
+    .we     (pad_io_b_15_mux_sel_we),
+    .wd     (pad_io_b_15_mux_sel_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0  ),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.pad_io_b_15_mux_sel.q ),
+
+    // to register interface (read)
+    .qs     (pad_io_b_15_mux_sel_qs)
+  );
+
+
+  // R[pad_io_b_16_cfg]: V(False)
+
+  //   F[chip2pad]: 0:0
+  prim_subreg #(
+    .DW      (1),
+    .SWACCESS("RW"),
+    .RESVAL  (1'h0)
+  ) u_pad_io_b_16_cfg_chip2pad (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    // from register interface
+    .we     (pad_io_b_16_cfg_chip2pad_we),
+    .wd     (pad_io_b_16_cfg_chip2pad_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0  ),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.pad_io_b_16_cfg.chip2pad.q ),
+
+    // to register interface (read)
+    .qs     (pad_io_b_16_cfg_chip2pad_qs)
+  );
+
+
+  //   F[oen]: 1:1
+  prim_subreg #(
+    .DW      (1),
+    .SWACCESS("RW"),
+    .RESVAL  (1'h1)
+  ) u_pad_io_b_16_cfg_oen (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    // from register interface
+    .we     (pad_io_b_16_cfg_oen_we),
+    .wd     (pad_io_b_16_cfg_oen_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0  ),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.pad_io_b_16_cfg.oen.q ),
+
+    // to register interface (read)
+    .qs     (pad_io_b_16_cfg_oen_qs)
+  );
+
+
+  // R[pad_io_b_16_mux_sel]: V(False)
+
+  prim_subreg #(
+    .DW      (5),
+    .SWACCESS("RW"),
+    .RESVAL  (5'h0)
+  ) u_pad_io_b_16_mux_sel (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    // from register interface
+    .we     (pad_io_b_16_mux_sel_we),
+    .wd     (pad_io_b_16_mux_sel_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0  ),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.pad_io_b_16_mux_sel.q ),
+
+    // to register interface (read)
+    .qs     (pad_io_b_16_mux_sel_qs)
+  );
+
+
+  // R[pad_io_b_17_cfg]: V(False)
+
+  //   F[chip2pad]: 0:0
+  prim_subreg #(
+    .DW      (1),
+    .SWACCESS("RW"),
+    .RESVAL  (1'h0)
+  ) u_pad_io_b_17_cfg_chip2pad (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    // from register interface
+    .we     (pad_io_b_17_cfg_chip2pad_we),
+    .wd     (pad_io_b_17_cfg_chip2pad_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0  ),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.pad_io_b_17_cfg.chip2pad.q ),
+
+    // to register interface (read)
+    .qs     (pad_io_b_17_cfg_chip2pad_qs)
+  );
+
+
+  //   F[oen]: 1:1
+  prim_subreg #(
+    .DW      (1),
+    .SWACCESS("RW"),
+    .RESVAL  (1'h1)
+  ) u_pad_io_b_17_cfg_oen (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    // from register interface
+    .we     (pad_io_b_17_cfg_oen_we),
+    .wd     (pad_io_b_17_cfg_oen_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0  ),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.pad_io_b_17_cfg.oen.q ),
+
+    // to register interface (read)
+    .qs     (pad_io_b_17_cfg_oen_qs)
+  );
+
+
+  // R[pad_io_b_17_mux_sel]: V(False)
+
+  prim_subreg #(
+    .DW      (5),
+    .SWACCESS("RW"),
+    .RESVAL  (5'h0)
+  ) u_pad_io_b_17_mux_sel (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    // from register interface
+    .we     (pad_io_b_17_mux_sel_we),
+    .wd     (pad_io_b_17_mux_sel_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0  ),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.pad_io_b_17_mux_sel.q ),
+
+    // to register interface (read)
+    .qs     (pad_io_b_17_mux_sel_qs)
+  );
+
+
+  // R[pad_io_b_18_cfg]: V(False)
+
+  //   F[chip2pad]: 0:0
+  prim_subreg #(
+    .DW      (1),
+    .SWACCESS("RW"),
+    .RESVAL  (1'h0)
+  ) u_pad_io_b_18_cfg_chip2pad (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    // from register interface
+    .we     (pad_io_b_18_cfg_chip2pad_we),
+    .wd     (pad_io_b_18_cfg_chip2pad_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0  ),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.pad_io_b_18_cfg.chip2pad.q ),
+
+    // to register interface (read)
+    .qs     (pad_io_b_18_cfg_chip2pad_qs)
+  );
+
+
+  //   F[oen]: 1:1
+  prim_subreg #(
+    .DW      (1),
+    .SWACCESS("RW"),
+    .RESVAL  (1'h1)
+  ) u_pad_io_b_18_cfg_oen (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    // from register interface
+    .we     (pad_io_b_18_cfg_oen_we),
+    .wd     (pad_io_b_18_cfg_oen_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0  ),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.pad_io_b_18_cfg.oen.q ),
+
+    // to register interface (read)
+    .qs     (pad_io_b_18_cfg_oen_qs)
+  );
+
+
+  // R[pad_io_b_18_mux_sel]: V(False)
+
+  prim_subreg #(
+    .DW      (5),
+    .SWACCESS("RW"),
+    .RESVAL  (5'h0)
+  ) u_pad_io_b_18_mux_sel (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    // from register interface
+    .we     (pad_io_b_18_mux_sel_we),
+    .wd     (pad_io_b_18_mux_sel_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0  ),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.pad_io_b_18_mux_sel.q ),
+
+    // to register interface (read)
+    .qs     (pad_io_b_18_mux_sel_qs)
+  );
+
+
+  // R[pad_io_b_19_cfg]: V(False)
+
+  //   F[chip2pad]: 0:0
+  prim_subreg #(
+    .DW      (1),
+    .SWACCESS("RW"),
+    .RESVAL  (1'h0)
+  ) u_pad_io_b_19_cfg_chip2pad (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    // from register interface
+    .we     (pad_io_b_19_cfg_chip2pad_we),
+    .wd     (pad_io_b_19_cfg_chip2pad_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0  ),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.pad_io_b_19_cfg.chip2pad.q ),
+
+    // to register interface (read)
+    .qs     (pad_io_b_19_cfg_chip2pad_qs)
+  );
+
+
+  //   F[oen]: 1:1
+  prim_subreg #(
+    .DW      (1),
+    .SWACCESS("RW"),
+    .RESVAL  (1'h1)
+  ) u_pad_io_b_19_cfg_oen (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    // from register interface
+    .we     (pad_io_b_19_cfg_oen_we),
+    .wd     (pad_io_b_19_cfg_oen_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0  ),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.pad_io_b_19_cfg.oen.q ),
+
+    // to register interface (read)
+    .qs     (pad_io_b_19_cfg_oen_qs)
+  );
+
+
+  // R[pad_io_b_19_mux_sel]: V(False)
+
+  prim_subreg #(
+    .DW      (5),
+    .SWACCESS("RW"),
+    .RESVAL  (5'h0)
+  ) u_pad_io_b_19_mux_sel (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    // from register interface
+    .we     (pad_io_b_19_mux_sel_we),
+    .wd     (pad_io_b_19_mux_sel_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0  ),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.pad_io_b_19_mux_sel.q ),
+
+    // to register interface (read)
+    .qs     (pad_io_b_19_mux_sel_qs)
+  );
+
+
+  // R[pad_io_c_00_cfg]: V(False)
+
+  //   F[chip2pad]: 0:0
+  prim_subreg #(
+    .DW      (1),
+    .SWACCESS("RW"),
+    .RESVAL  (1'h0)
+  ) u_pad_io_c_00_cfg_chip2pad (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    // from register interface
+    .we     (pad_io_c_00_cfg_chip2pad_we),
+    .wd     (pad_io_c_00_cfg_chip2pad_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0  ),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.pad_io_c_00_cfg.chip2pad.q ),
+
+    // to register interface (read)
+    .qs     (pad_io_c_00_cfg_chip2pad_qs)
+  );
+
+
+  //   F[oen]: 1:1
+  prim_subreg #(
+    .DW      (1),
+    .SWACCESS("RW"),
+    .RESVAL  (1'h1)
+  ) u_pad_io_c_00_cfg_oen (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    // from register interface
+    .we     (pad_io_c_00_cfg_oen_we),
+    .wd     (pad_io_c_00_cfg_oen_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0  ),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.pad_io_c_00_cfg.oen.q ),
+
+    // to register interface (read)
+    .qs     (pad_io_c_00_cfg_oen_qs)
+  );
+
+
+  // R[pad_io_c_00_mux_sel]: V(False)
+
+  prim_subreg #(
+    .DW      (4),
+    .SWACCESS("RW"),
+    .RESVAL  (4'h0)
+  ) u_pad_io_c_00_mux_sel (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    // from register interface
+    .we     (pad_io_c_00_mux_sel_we),
+    .wd     (pad_io_c_00_mux_sel_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0  ),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.pad_io_c_00_mux_sel.q ),
+
+    // to register interface (read)
+    .qs     (pad_io_c_00_mux_sel_qs)
+  );
+
+
+  // R[pad_io_c_01_cfg]: V(False)
+
+  //   F[chip2pad]: 0:0
+  prim_subreg #(
+    .DW      (1),
+    .SWACCESS("RW"),
+    .RESVAL  (1'h0)
+  ) u_pad_io_c_01_cfg_chip2pad (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    // from register interface
+    .we     (pad_io_c_01_cfg_chip2pad_we),
+    .wd     (pad_io_c_01_cfg_chip2pad_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0  ),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.pad_io_c_01_cfg.chip2pad.q ),
+
+    // to register interface (read)
+    .qs     (pad_io_c_01_cfg_chip2pad_qs)
+  );
+
+
+  //   F[oen]: 1:1
+  prim_subreg #(
+    .DW      (1),
+    .SWACCESS("RW"),
+    .RESVAL  (1'h1)
+  ) u_pad_io_c_01_cfg_oen (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    // from register interface
+    .we     (pad_io_c_01_cfg_oen_we),
+    .wd     (pad_io_c_01_cfg_oen_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0  ),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.pad_io_c_01_cfg.oen.q ),
+
+    // to register interface (read)
+    .qs     (pad_io_c_01_cfg_oen_qs)
+  );
+
+
+  // R[pad_io_c_01_mux_sel]: V(False)
+
+  prim_subreg #(
+    .DW      (4),
+    .SWACCESS("RW"),
+    .RESVAL  (4'h0)
+  ) u_pad_io_c_01_mux_sel (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    // from register interface
+    .we     (pad_io_c_01_mux_sel_we),
+    .wd     (pad_io_c_01_mux_sel_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0  ),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.pad_io_c_01_mux_sel.q ),
+
+    // to register interface (read)
+    .qs     (pad_io_c_01_mux_sel_qs)
+  );
+
+
+  // R[pad_io_c_02_cfg]: V(False)
+
+  //   F[chip2pad]: 0:0
+  prim_subreg #(
+    .DW      (1),
+    .SWACCESS("RW"),
+    .RESVAL  (1'h0)
+  ) u_pad_io_c_02_cfg_chip2pad (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    // from register interface
+    .we     (pad_io_c_02_cfg_chip2pad_we),
+    .wd     (pad_io_c_02_cfg_chip2pad_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0  ),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.pad_io_c_02_cfg.chip2pad.q ),
+
+    // to register interface (read)
+    .qs     (pad_io_c_02_cfg_chip2pad_qs)
+  );
+
+
+  //   F[oen]: 1:1
+  prim_subreg #(
+    .DW      (1),
+    .SWACCESS("RW"),
+    .RESVAL  (1'h1)
+  ) u_pad_io_c_02_cfg_oen (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    // from register interface
+    .we     (pad_io_c_02_cfg_oen_we),
+    .wd     (pad_io_c_02_cfg_oen_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0  ),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.pad_io_c_02_cfg.oen.q ),
+
+    // to register interface (read)
+    .qs     (pad_io_c_02_cfg_oen_qs)
+  );
+
+
+  // R[pad_io_c_02_mux_sel]: V(False)
+
+  prim_subreg #(
+    .DW      (4),
+    .SWACCESS("RW"),
+    .RESVAL  (4'h0)
+  ) u_pad_io_c_02_mux_sel (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    // from register interface
+    .we     (pad_io_c_02_mux_sel_we),
+    .wd     (pad_io_c_02_mux_sel_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0  ),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.pad_io_c_02_mux_sel.q ),
+
+    // to register interface (read)
+    .qs     (pad_io_c_02_mux_sel_qs)
+  );
+
+
+  // R[pad_io_c_03_cfg]: V(False)
+
+  //   F[chip2pad]: 0:0
+  prim_subreg #(
+    .DW      (1),
+    .SWACCESS("RW"),
+    .RESVAL  (1'h0)
+  ) u_pad_io_c_03_cfg_chip2pad (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    // from register interface
+    .we     (pad_io_c_03_cfg_chip2pad_we),
+    .wd     (pad_io_c_03_cfg_chip2pad_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0  ),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.pad_io_c_03_cfg.chip2pad.q ),
+
+    // to register interface (read)
+    .qs     (pad_io_c_03_cfg_chip2pad_qs)
+  );
+
+
+  //   F[oen]: 1:1
+  prim_subreg #(
+    .DW      (1),
+    .SWACCESS("RW"),
+    .RESVAL  (1'h1)
+  ) u_pad_io_c_03_cfg_oen (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    // from register interface
+    .we     (pad_io_c_03_cfg_oen_we),
+    .wd     (pad_io_c_03_cfg_oen_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0  ),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.pad_io_c_03_cfg.oen.q ),
+
+    // to register interface (read)
+    .qs     (pad_io_c_03_cfg_oen_qs)
+  );
+
+
+  // R[pad_io_c_03_mux_sel]: V(False)
+
+  prim_subreg #(
+    .DW      (4),
+    .SWACCESS("RW"),
+    .RESVAL  (4'h0)
+  ) u_pad_io_c_03_mux_sel (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    // from register interface
+    .we     (pad_io_c_03_mux_sel_we),
+    .wd     (pad_io_c_03_mux_sel_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0  ),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.pad_io_c_03_mux_sel.q ),
+
+    // to register interface (read)
+    .qs     (pad_io_c_03_mux_sel_qs)
+  );
+
+
+  // R[pad_io_c_04_cfg]: V(False)
+
+  //   F[chip2pad]: 0:0
+  prim_subreg #(
+    .DW      (1),
+    .SWACCESS("RW"),
+    .RESVAL  (1'h0)
+  ) u_pad_io_c_04_cfg_chip2pad (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    // from register interface
+    .we     (pad_io_c_04_cfg_chip2pad_we),
+    .wd     (pad_io_c_04_cfg_chip2pad_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0  ),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.pad_io_c_04_cfg.chip2pad.q ),
+
+    // to register interface (read)
+    .qs     (pad_io_c_04_cfg_chip2pad_qs)
+  );
+
+
+  //   F[oen]: 1:1
+  prim_subreg #(
+    .DW      (1),
+    .SWACCESS("RW"),
+    .RESVAL  (1'h1)
+  ) u_pad_io_c_04_cfg_oen (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    // from register interface
+    .we     (pad_io_c_04_cfg_oen_we),
+    .wd     (pad_io_c_04_cfg_oen_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0  ),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.pad_io_c_04_cfg.oen.q ),
+
+    // to register interface (read)
+    .qs     (pad_io_c_04_cfg_oen_qs)
+  );
+
+
+  // R[pad_io_c_04_mux_sel]: V(False)
+
+  prim_subreg #(
+    .DW      (4),
+    .SWACCESS("RW"),
+    .RESVAL  (4'h0)
+  ) u_pad_io_c_04_mux_sel (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    // from register interface
+    .we     (pad_io_c_04_mux_sel_we),
+    .wd     (pad_io_c_04_mux_sel_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0  ),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.pad_io_c_04_mux_sel.q ),
+
+    // to register interface (read)
+    .qs     (pad_io_c_04_mux_sel_qs)
+  );
+
+
+  // R[pad_io_c_05_cfg]: V(False)
+
+  //   F[chip2pad]: 0:0
+  prim_subreg #(
+    .DW      (1),
+    .SWACCESS("RW"),
+    .RESVAL  (1'h0)
+  ) u_pad_io_c_05_cfg_chip2pad (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    // from register interface
+    .we     (pad_io_c_05_cfg_chip2pad_we),
+    .wd     (pad_io_c_05_cfg_chip2pad_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0  ),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.pad_io_c_05_cfg.chip2pad.q ),
+
+    // to register interface (read)
+    .qs     (pad_io_c_05_cfg_chip2pad_qs)
+  );
+
+
+  //   F[oen]: 1:1
+  prim_subreg #(
+    .DW      (1),
+    .SWACCESS("RW"),
+    .RESVAL  (1'h1)
+  ) u_pad_io_c_05_cfg_oen (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    // from register interface
+    .we     (pad_io_c_05_cfg_oen_we),
+    .wd     (pad_io_c_05_cfg_oen_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0  ),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.pad_io_c_05_cfg.oen.q ),
+
+    // to register interface (read)
+    .qs     (pad_io_c_05_cfg_oen_qs)
+  );
+
+
+  // R[pad_io_c_05_mux_sel]: V(False)
+
+  prim_subreg #(
+    .DW      (4),
+    .SWACCESS("RW"),
+    .RESVAL  (4'h0)
+  ) u_pad_io_c_05_mux_sel (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    // from register interface
+    .we     (pad_io_c_05_mux_sel_we),
+    .wd     (pad_io_c_05_mux_sel_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0  ),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.pad_io_c_05_mux_sel.q ),
+
+    // to register interface (read)
+    .qs     (pad_io_c_05_mux_sel_qs)
+  );
+
+
+  // R[pad_io_c_06_cfg]: V(False)
+
+  //   F[chip2pad]: 0:0
+  prim_subreg #(
+    .DW      (1),
+    .SWACCESS("RW"),
+    .RESVAL  (1'h0)
+  ) u_pad_io_c_06_cfg_chip2pad (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    // from register interface
+    .we     (pad_io_c_06_cfg_chip2pad_we),
+    .wd     (pad_io_c_06_cfg_chip2pad_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0  ),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.pad_io_c_06_cfg.chip2pad.q ),
+
+    // to register interface (read)
+    .qs     (pad_io_c_06_cfg_chip2pad_qs)
+  );
+
+
+  //   F[oen]: 1:1
+  prim_subreg #(
+    .DW      (1),
+    .SWACCESS("RW"),
+    .RESVAL  (1'h1)
+  ) u_pad_io_c_06_cfg_oen (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    // from register interface
+    .we     (pad_io_c_06_cfg_oen_we),
+    .wd     (pad_io_c_06_cfg_oen_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0  ),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.pad_io_c_06_cfg.oen.q ),
+
+    // to register interface (read)
+    .qs     (pad_io_c_06_cfg_oen_qs)
+  );
+
+
+  // R[pad_io_c_06_mux_sel]: V(False)
+
+  prim_subreg #(
+    .DW      (4),
+    .SWACCESS("RW"),
+    .RESVAL  (4'h0)
+  ) u_pad_io_c_06_mux_sel (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    // from register interface
+    .we     (pad_io_c_06_mux_sel_we),
+    .wd     (pad_io_c_06_mux_sel_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0  ),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.pad_io_c_06_mux_sel.q ),
+
+    // to register interface (read)
+    .qs     (pad_io_c_06_mux_sel_qs)
+  );
+
+
+  // R[pad_io_c_07_cfg]: V(False)
+
+  //   F[chip2pad]: 0:0
+  prim_subreg #(
+    .DW      (1),
+    .SWACCESS("RW"),
+    .RESVAL  (1'h0)
+  ) u_pad_io_c_07_cfg_chip2pad (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    // from register interface
+    .we     (pad_io_c_07_cfg_chip2pad_we),
+    .wd     (pad_io_c_07_cfg_chip2pad_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0  ),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.pad_io_c_07_cfg.chip2pad.q ),
+
+    // to register interface (read)
+    .qs     (pad_io_c_07_cfg_chip2pad_qs)
+  );
+
+
+  //   F[oen]: 1:1
+  prim_subreg #(
+    .DW      (1),
+    .SWACCESS("RW"),
+    .RESVAL  (1'h1)
+  ) u_pad_io_c_07_cfg_oen (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    // from register interface
+    .we     (pad_io_c_07_cfg_oen_we),
+    .wd     (pad_io_c_07_cfg_oen_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0  ),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.pad_io_c_07_cfg.oen.q ),
+
+    // to register interface (read)
+    .qs     (pad_io_c_07_cfg_oen_qs)
+  );
+
+
+  // R[pad_io_c_07_mux_sel]: V(False)
+
+  prim_subreg #(
+    .DW      (4),
+    .SWACCESS("RW"),
+    .RESVAL  (4'h0)
+  ) u_pad_io_c_07_mux_sel (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    // from register interface
+    .we     (pad_io_c_07_mux_sel_we),
+    .wd     (pad_io_c_07_mux_sel_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0  ),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.pad_io_c_07_mux_sel.q ),
+
+    // to register interface (read)
+    .qs     (pad_io_c_07_mux_sel_qs)
+  );
+
+
+  // R[pad_io_c_08_cfg]: V(False)
+
+  //   F[chip2pad]: 0:0
+  prim_subreg #(
+    .DW      (1),
+    .SWACCESS("RW"),
+    .RESVAL  (1'h0)
+  ) u_pad_io_c_08_cfg_chip2pad (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    // from register interface
+    .we     (pad_io_c_08_cfg_chip2pad_we),
+    .wd     (pad_io_c_08_cfg_chip2pad_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0  ),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.pad_io_c_08_cfg.chip2pad.q ),
+
+    // to register interface (read)
+    .qs     (pad_io_c_08_cfg_chip2pad_qs)
+  );
+
+
+  //   F[oen]: 1:1
+  prim_subreg #(
+    .DW      (1),
+    .SWACCESS("RW"),
+    .RESVAL  (1'h1)
+  ) u_pad_io_c_08_cfg_oen (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    // from register interface
+    .we     (pad_io_c_08_cfg_oen_we),
+    .wd     (pad_io_c_08_cfg_oen_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0  ),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.pad_io_c_08_cfg.oen.q ),
+
+    // to register interface (read)
+    .qs     (pad_io_c_08_cfg_oen_qs)
+  );
+
+
+  // R[pad_io_c_08_mux_sel]: V(False)
+
+  prim_subreg #(
+    .DW      (4),
+    .SWACCESS("RW"),
+    .RESVAL  (4'h0)
+  ) u_pad_io_c_08_mux_sel (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    // from register interface
+    .we     (pad_io_c_08_mux_sel_we),
+    .wd     (pad_io_c_08_mux_sel_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0  ),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.pad_io_c_08_mux_sel.q ),
+
+    // to register interface (read)
+    .qs     (pad_io_c_08_mux_sel_qs)
+  );
+
+
+  // R[pad_io_c_09_cfg]: V(False)
+
+  //   F[chip2pad]: 0:0
+  prim_subreg #(
+    .DW      (1),
+    .SWACCESS("RW"),
+    .RESVAL  (1'h0)
+  ) u_pad_io_c_09_cfg_chip2pad (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    // from register interface
+    .we     (pad_io_c_09_cfg_chip2pad_we),
+    .wd     (pad_io_c_09_cfg_chip2pad_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0  ),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.pad_io_c_09_cfg.chip2pad.q ),
+
+    // to register interface (read)
+    .qs     (pad_io_c_09_cfg_chip2pad_qs)
+  );
+
+
+  //   F[oen]: 1:1
+  prim_subreg #(
+    .DW      (1),
+    .SWACCESS("RW"),
+    .RESVAL  (1'h1)
+  ) u_pad_io_c_09_cfg_oen (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    // from register interface
+    .we     (pad_io_c_09_cfg_oen_we),
+    .wd     (pad_io_c_09_cfg_oen_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0  ),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.pad_io_c_09_cfg.oen.q ),
+
+    // to register interface (read)
+    .qs     (pad_io_c_09_cfg_oen_qs)
+  );
+
+
+  // R[pad_io_c_09_mux_sel]: V(False)
+
+  prim_subreg #(
+    .DW      (4),
+    .SWACCESS("RW"),
+    .RESVAL  (4'h0)
+  ) u_pad_io_c_09_mux_sel (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    // from register interface
+    .we     (pad_io_c_09_mux_sel_we),
+    .wd     (pad_io_c_09_mux_sel_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0  ),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.pad_io_c_09_mux_sel.q ),
+
+    // to register interface (read)
+    .qs     (pad_io_c_09_mux_sel_qs)
+  );
+
+
+  // R[pad_io_c_10_cfg]: V(False)
+
+  //   F[chip2pad]: 0:0
+  prim_subreg #(
+    .DW      (1),
+    .SWACCESS("RW"),
+    .RESVAL  (1'h0)
+  ) u_pad_io_c_10_cfg_chip2pad (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    // from register interface
+    .we     (pad_io_c_10_cfg_chip2pad_we),
+    .wd     (pad_io_c_10_cfg_chip2pad_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0  ),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.pad_io_c_10_cfg.chip2pad.q ),
+
+    // to register interface (read)
+    .qs     (pad_io_c_10_cfg_chip2pad_qs)
+  );
+
+
+  //   F[oen]: 1:1
+  prim_subreg #(
+    .DW      (1),
+    .SWACCESS("RW"),
+    .RESVAL  (1'h1)
+  ) u_pad_io_c_10_cfg_oen (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    // from register interface
+    .we     (pad_io_c_10_cfg_oen_we),
+    .wd     (pad_io_c_10_cfg_oen_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0  ),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.pad_io_c_10_cfg.oen.q ),
+
+    // to register interface (read)
+    .qs     (pad_io_c_10_cfg_oen_qs)
+  );
+
+
+  // R[pad_io_c_10_mux_sel]: V(False)
+
+  prim_subreg #(
+    .DW      (4),
+    .SWACCESS("RW"),
+    .RESVAL  (4'h0)
+  ) u_pad_io_c_10_mux_sel (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    // from register interface
+    .we     (pad_io_c_10_mux_sel_we),
+    .wd     (pad_io_c_10_mux_sel_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0  ),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.pad_io_c_10_mux_sel.q ),
+
+    // to register interface (read)
+    .qs     (pad_io_c_10_mux_sel_qs)
+  );
+
+
+  // R[pad_io_c_11_cfg]: V(False)
+
+  //   F[chip2pad]: 0:0
+  prim_subreg #(
+    .DW      (1),
+    .SWACCESS("RW"),
+    .RESVAL  (1'h0)
+  ) u_pad_io_c_11_cfg_chip2pad (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    // from register interface
+    .we     (pad_io_c_11_cfg_chip2pad_we),
+    .wd     (pad_io_c_11_cfg_chip2pad_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0  ),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.pad_io_c_11_cfg.chip2pad.q ),
+
+    // to register interface (read)
+    .qs     (pad_io_c_11_cfg_chip2pad_qs)
+  );
+
+
+  //   F[oen]: 1:1
+  prim_subreg #(
+    .DW      (1),
+    .SWACCESS("RW"),
+    .RESVAL  (1'h1)
+  ) u_pad_io_c_11_cfg_oen (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    // from register interface
+    .we     (pad_io_c_11_cfg_oen_we),
+    .wd     (pad_io_c_11_cfg_oen_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0  ),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.pad_io_c_11_cfg.oen.q ),
+
+    // to register interface (read)
+    .qs     (pad_io_c_11_cfg_oen_qs)
+  );
+
+
+  // R[pad_io_c_11_mux_sel]: V(False)
+
+  prim_subreg #(
+    .DW      (4),
+    .SWACCESS("RW"),
+    .RESVAL  (4'h0)
+  ) u_pad_io_c_11_mux_sel (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    // from register interface
+    .we     (pad_io_c_11_mux_sel_we),
+    .wd     (pad_io_c_11_mux_sel_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0  ),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.pad_io_c_11_mux_sel.q ),
+
+    // to register interface (read)
+    .qs     (pad_io_c_11_mux_sel_qs)
+  );
+
+
+  // R[pad_io_c_12_cfg]: V(False)
+
+  //   F[chip2pad]: 0:0
+  prim_subreg #(
+    .DW      (1),
+    .SWACCESS("RW"),
+    .RESVAL  (1'h0)
+  ) u_pad_io_c_12_cfg_chip2pad (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    // from register interface
+    .we     (pad_io_c_12_cfg_chip2pad_we),
+    .wd     (pad_io_c_12_cfg_chip2pad_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0  ),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.pad_io_c_12_cfg.chip2pad.q ),
+
+    // to register interface (read)
+    .qs     (pad_io_c_12_cfg_chip2pad_qs)
+  );
+
+
+  //   F[oen]: 1:1
+  prim_subreg #(
+    .DW      (1),
+    .SWACCESS("RW"),
+    .RESVAL  (1'h1)
+  ) u_pad_io_c_12_cfg_oen (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    // from register interface
+    .we     (pad_io_c_12_cfg_oen_we),
+    .wd     (pad_io_c_12_cfg_oen_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0  ),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.pad_io_c_12_cfg.oen.q ),
+
+    // to register interface (read)
+    .qs     (pad_io_c_12_cfg_oen_qs)
+  );
+
+
+  // R[pad_io_c_12_mux_sel]: V(False)
+
+  prim_subreg #(
+    .DW      (4),
+    .SWACCESS("RW"),
+    .RESVAL  (4'h0)
+  ) u_pad_io_c_12_mux_sel (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    // from register interface
+    .we     (pad_io_c_12_mux_sel_we),
+    .wd     (pad_io_c_12_mux_sel_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0  ),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.pad_io_c_12_mux_sel.q ),
+
+    // to register interface (read)
+    .qs     (pad_io_c_12_mux_sel_qs)
+  );
+
+
+  // R[pad_io_c_13_cfg]: V(False)
+
+  //   F[chip2pad]: 0:0
+  prim_subreg #(
+    .DW      (1),
+    .SWACCESS("RW"),
+    .RESVAL  (1'h0)
+  ) u_pad_io_c_13_cfg_chip2pad (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    // from register interface
+    .we     (pad_io_c_13_cfg_chip2pad_we),
+    .wd     (pad_io_c_13_cfg_chip2pad_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0  ),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.pad_io_c_13_cfg.chip2pad.q ),
+
+    // to register interface (read)
+    .qs     (pad_io_c_13_cfg_chip2pad_qs)
+  );
+
+
+  //   F[oen]: 1:1
+  prim_subreg #(
+    .DW      (1),
+    .SWACCESS("RW"),
+    .RESVAL  (1'h1)
+  ) u_pad_io_c_13_cfg_oen (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    // from register interface
+    .we     (pad_io_c_13_cfg_oen_we),
+    .wd     (pad_io_c_13_cfg_oen_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0  ),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.pad_io_c_13_cfg.oen.q ),
+
+    // to register interface (read)
+    .qs     (pad_io_c_13_cfg_oen_qs)
+  );
+
+
+  // R[pad_io_c_13_mux_sel]: V(False)
+
+  prim_subreg #(
+    .DW      (4),
+    .SWACCESS("RW"),
+    .RESVAL  (4'h0)
+  ) u_pad_io_c_13_mux_sel (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    // from register interface
+    .we     (pad_io_c_13_mux_sel_we),
+    .wd     (pad_io_c_13_mux_sel_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0  ),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.pad_io_c_13_mux_sel.q ),
+
+    // to register interface (read)
+    .qs     (pad_io_c_13_mux_sel_qs)
+  );
+
+
+  // R[pad_io_d_00_cfg]: V(False)
+
+  //   F[chip2pad]: 0:0
+  prim_subreg #(
+    .DW      (1),
+    .SWACCESS("RW"),
+    .RESVAL  (1'h0)
+  ) u_pad_io_d_00_cfg_chip2pad (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    // from register interface
+    .we     (pad_io_d_00_cfg_chip2pad_we),
+    .wd     (pad_io_d_00_cfg_chip2pad_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0  ),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.pad_io_d_00_cfg.chip2pad.q ),
+
+    // to register interface (read)
+    .qs     (pad_io_d_00_cfg_chip2pad_qs)
+  );
+
+
+  //   F[oen]: 1:1
+  prim_subreg #(
+    .DW      (1),
+    .SWACCESS("RW"),
+    .RESVAL  (1'h1)
+  ) u_pad_io_d_00_cfg_oen (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    // from register interface
+    .we     (pad_io_d_00_cfg_oen_we),
+    .wd     (pad_io_d_00_cfg_oen_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0  ),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.pad_io_d_00_cfg.oen.q ),
+
+    // to register interface (read)
+    .qs     (pad_io_d_00_cfg_oen_qs)
+  );
+
+
+  // R[pad_io_d_00_mux_sel]: V(False)
+
+  prim_subreg #(
+    .DW      (5),
+    .SWACCESS("RW"),
+    .RESVAL  (5'h0)
+  ) u_pad_io_d_00_mux_sel (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    // from register interface
+    .we     (pad_io_d_00_mux_sel_we),
+    .wd     (pad_io_d_00_mux_sel_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0  ),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.pad_io_d_00_mux_sel.q ),
+
+    // to register interface (read)
+    .qs     (pad_io_d_00_mux_sel_qs)
+  );
+
+
+  // R[pad_io_d_01_cfg]: V(False)
+
+  //   F[chip2pad]: 0:0
+  prim_subreg #(
+    .DW      (1),
+    .SWACCESS("RW"),
+    .RESVAL  (1'h0)
+  ) u_pad_io_d_01_cfg_chip2pad (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    // from register interface
+    .we     (pad_io_d_01_cfg_chip2pad_we),
+    .wd     (pad_io_d_01_cfg_chip2pad_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0  ),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.pad_io_d_01_cfg.chip2pad.q ),
+
+    // to register interface (read)
+    .qs     (pad_io_d_01_cfg_chip2pad_qs)
+  );
+
+
+  //   F[oen]: 1:1
+  prim_subreg #(
+    .DW      (1),
+    .SWACCESS("RW"),
+    .RESVAL  (1'h1)
+  ) u_pad_io_d_01_cfg_oen (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    // from register interface
+    .we     (pad_io_d_01_cfg_oen_we),
+    .wd     (pad_io_d_01_cfg_oen_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0  ),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.pad_io_d_01_cfg.oen.q ),
+
+    // to register interface (read)
+    .qs     (pad_io_d_01_cfg_oen_qs)
+  );
+
+
+  // R[pad_io_d_01_mux_sel]: V(False)
+
+  prim_subreg #(
+    .DW      (5),
+    .SWACCESS("RW"),
+    .RESVAL  (5'h0)
+  ) u_pad_io_d_01_mux_sel (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    // from register interface
+    .we     (pad_io_d_01_mux_sel_we),
+    .wd     (pad_io_d_01_mux_sel_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0  ),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.pad_io_d_01_mux_sel.q ),
+
+    // to register interface (read)
+    .qs     (pad_io_d_01_mux_sel_qs)
+  );
+
+
+  // R[pad_io_d_02_cfg]: V(False)
+
+  //   F[chip2pad]: 0:0
+  prim_subreg #(
+    .DW      (1),
+    .SWACCESS("RW"),
+    .RESVAL  (1'h0)
+  ) u_pad_io_d_02_cfg_chip2pad (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    // from register interface
+    .we     (pad_io_d_02_cfg_chip2pad_we),
+    .wd     (pad_io_d_02_cfg_chip2pad_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0  ),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.pad_io_d_02_cfg.chip2pad.q ),
+
+    // to register interface (read)
+    .qs     (pad_io_d_02_cfg_chip2pad_qs)
+  );
+
+
+  //   F[oen]: 1:1
+  prim_subreg #(
+    .DW      (1),
+    .SWACCESS("RW"),
+    .RESVAL  (1'h1)
+  ) u_pad_io_d_02_cfg_oen (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    // from register interface
+    .we     (pad_io_d_02_cfg_oen_we),
+    .wd     (pad_io_d_02_cfg_oen_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0  ),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.pad_io_d_02_cfg.oen.q ),
+
+    // to register interface (read)
+    .qs     (pad_io_d_02_cfg_oen_qs)
+  );
+
+
+  // R[pad_io_d_02_mux_sel]: V(False)
+
+  prim_subreg #(
+    .DW      (5),
+    .SWACCESS("RW"),
+    .RESVAL  (5'h0)
+  ) u_pad_io_d_02_mux_sel (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    // from register interface
+    .we     (pad_io_d_02_mux_sel_we),
+    .wd     (pad_io_d_02_mux_sel_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0  ),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.pad_io_d_02_mux_sel.q ),
+
+    // to register interface (read)
+    .qs     (pad_io_d_02_mux_sel_qs)
+  );
+
+
+  // R[pad_io_d_03_cfg]: V(False)
+
+  //   F[chip2pad]: 0:0
+  prim_subreg #(
+    .DW      (1),
+    .SWACCESS("RW"),
+    .RESVAL  (1'h0)
+  ) u_pad_io_d_03_cfg_chip2pad (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    // from register interface
+    .we     (pad_io_d_03_cfg_chip2pad_we),
+    .wd     (pad_io_d_03_cfg_chip2pad_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0  ),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.pad_io_d_03_cfg.chip2pad.q ),
+
+    // to register interface (read)
+    .qs     (pad_io_d_03_cfg_chip2pad_qs)
+  );
+
+
+  //   F[oen]: 1:1
+  prim_subreg #(
+    .DW      (1),
+    .SWACCESS("RW"),
+    .RESVAL  (1'h1)
+  ) u_pad_io_d_03_cfg_oen (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    // from register interface
+    .we     (pad_io_d_03_cfg_oen_we),
+    .wd     (pad_io_d_03_cfg_oen_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0  ),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.pad_io_d_03_cfg.oen.q ),
+
+    // to register interface (read)
+    .qs     (pad_io_d_03_cfg_oen_qs)
+  );
+
+
+  // R[pad_io_d_03_mux_sel]: V(False)
+
+  prim_subreg #(
+    .DW      (5),
+    .SWACCESS("RW"),
+    .RESVAL  (5'h0)
+  ) u_pad_io_d_03_mux_sel (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    // from register interface
+    .we     (pad_io_d_03_mux_sel_we),
+    .wd     (pad_io_d_03_mux_sel_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0  ),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.pad_io_d_03_mux_sel.q ),
+
+    // to register interface (read)
+    .qs     (pad_io_d_03_mux_sel_qs)
+  );
+
+
+  // R[pad_io_d_04_cfg]: V(False)
+
+  //   F[chip2pad]: 0:0
+  prim_subreg #(
+    .DW      (1),
+    .SWACCESS("RW"),
+    .RESVAL  (1'h0)
+  ) u_pad_io_d_04_cfg_chip2pad (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    // from register interface
+    .we     (pad_io_d_04_cfg_chip2pad_we),
+    .wd     (pad_io_d_04_cfg_chip2pad_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0  ),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.pad_io_d_04_cfg.chip2pad.q ),
+
+    // to register interface (read)
+    .qs     (pad_io_d_04_cfg_chip2pad_qs)
+  );
+
+
+  //   F[oen]: 1:1
+  prim_subreg #(
+    .DW      (1),
+    .SWACCESS("RW"),
+    .RESVAL  (1'h1)
+  ) u_pad_io_d_04_cfg_oen (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    // from register interface
+    .we     (pad_io_d_04_cfg_oen_we),
+    .wd     (pad_io_d_04_cfg_oen_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0  ),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.pad_io_d_04_cfg.oen.q ),
+
+    // to register interface (read)
+    .qs     (pad_io_d_04_cfg_oen_qs)
+  );
+
+
+  // R[pad_io_d_04_mux_sel]: V(False)
+
+  prim_subreg #(
+    .DW      (5),
+    .SWACCESS("RW"),
+    .RESVAL  (5'h0)
+  ) u_pad_io_d_04_mux_sel (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    // from register interface
+    .we     (pad_io_d_04_mux_sel_we),
+    .wd     (pad_io_d_04_mux_sel_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0  ),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.pad_io_d_04_mux_sel.q ),
+
+    // to register interface (read)
+    .qs     (pad_io_d_04_mux_sel_qs)
+  );
+
+
+  // R[pad_io_d_05_cfg]: V(False)
+
+  //   F[chip2pad]: 0:0
+  prim_subreg #(
+    .DW      (1),
+    .SWACCESS("RW"),
+    .RESVAL  (1'h0)
+  ) u_pad_io_d_05_cfg_chip2pad (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    // from register interface
+    .we     (pad_io_d_05_cfg_chip2pad_we),
+    .wd     (pad_io_d_05_cfg_chip2pad_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0  ),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.pad_io_d_05_cfg.chip2pad.q ),
+
+    // to register interface (read)
+    .qs     (pad_io_d_05_cfg_chip2pad_qs)
+  );
+
+
+  //   F[oen]: 1:1
+  prim_subreg #(
+    .DW      (1),
+    .SWACCESS("RW"),
+    .RESVAL  (1'h1)
+  ) u_pad_io_d_05_cfg_oen (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    // from register interface
+    .we     (pad_io_d_05_cfg_oen_we),
+    .wd     (pad_io_d_05_cfg_oen_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0  ),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.pad_io_d_05_cfg.oen.q ),
+
+    // to register interface (read)
+    .qs     (pad_io_d_05_cfg_oen_qs)
+  );
+
+
+  // R[pad_io_d_05_mux_sel]: V(False)
+
+  prim_subreg #(
+    .DW      (5),
+    .SWACCESS("RW"),
+    .RESVAL  (5'h0)
+  ) u_pad_io_d_05_mux_sel (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    // from register interface
+    .we     (pad_io_d_05_mux_sel_we),
+    .wd     (pad_io_d_05_mux_sel_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0  ),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.pad_io_d_05_mux_sel.q ),
+
+    // to register interface (read)
+    .qs     (pad_io_d_05_mux_sel_qs)
+  );
+
+
+  // R[pad_io_d_06_cfg]: V(False)
+
+  //   F[chip2pad]: 0:0
+  prim_subreg #(
+    .DW      (1),
+    .SWACCESS("RW"),
+    .RESVAL  (1'h0)
+  ) u_pad_io_d_06_cfg_chip2pad (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    // from register interface
+    .we     (pad_io_d_06_cfg_chip2pad_we),
+    .wd     (pad_io_d_06_cfg_chip2pad_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0  ),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.pad_io_d_06_cfg.chip2pad.q ),
+
+    // to register interface (read)
+    .qs     (pad_io_d_06_cfg_chip2pad_qs)
+  );
+
+
+  //   F[oen]: 1:1
+  prim_subreg #(
+    .DW      (1),
+    .SWACCESS("RW"),
+    .RESVAL  (1'h1)
+  ) u_pad_io_d_06_cfg_oen (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    // from register interface
+    .we     (pad_io_d_06_cfg_oen_we),
+    .wd     (pad_io_d_06_cfg_oen_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0  ),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.pad_io_d_06_cfg.oen.q ),
+
+    // to register interface (read)
+    .qs     (pad_io_d_06_cfg_oen_qs)
+  );
+
+
+  // R[pad_io_d_06_mux_sel]: V(False)
+
+  prim_subreg #(
+    .DW      (5),
+    .SWACCESS("RW"),
+    .RESVAL  (5'h0)
+  ) u_pad_io_d_06_mux_sel (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    // from register interface
+    .we     (pad_io_d_06_mux_sel_we),
+    .wd     (pad_io_d_06_mux_sel_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0  ),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.pad_io_d_06_mux_sel.q ),
+
+    // to register interface (read)
+    .qs     (pad_io_d_06_mux_sel_qs)
+  );
+
+
+  // R[pad_io_d_07_cfg]: V(False)
+
+  //   F[chip2pad]: 0:0
+  prim_subreg #(
+    .DW      (1),
+    .SWACCESS("RW"),
+    .RESVAL  (1'h0)
+  ) u_pad_io_d_07_cfg_chip2pad (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    // from register interface
+    .we     (pad_io_d_07_cfg_chip2pad_we),
+    .wd     (pad_io_d_07_cfg_chip2pad_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0  ),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.pad_io_d_07_cfg.chip2pad.q ),
+
+    // to register interface (read)
+    .qs     (pad_io_d_07_cfg_chip2pad_qs)
+  );
+
+
+  //   F[oen]: 1:1
+  prim_subreg #(
+    .DW      (1),
+    .SWACCESS("RW"),
+    .RESVAL  (1'h1)
+  ) u_pad_io_d_07_cfg_oen (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    // from register interface
+    .we     (pad_io_d_07_cfg_oen_we),
+    .wd     (pad_io_d_07_cfg_oen_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0  ),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.pad_io_d_07_cfg.oen.q ),
+
+    // to register interface (read)
+    .qs     (pad_io_d_07_cfg_oen_qs)
+  );
+
+
+  // R[pad_io_d_07_mux_sel]: V(False)
+
+  prim_subreg #(
+    .DW      (5),
+    .SWACCESS("RW"),
+    .RESVAL  (5'h0)
+  ) u_pad_io_d_07_mux_sel (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    // from register interface
+    .we     (pad_io_d_07_mux_sel_we),
+    .wd     (pad_io_d_07_mux_sel_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0  ),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.pad_io_d_07_mux_sel.q ),
+
+    // to register interface (read)
+    .qs     (pad_io_d_07_mux_sel_qs)
+  );
+
+
+  // R[pad_io_d_08_cfg]: V(False)
+
+  //   F[chip2pad]: 0:0
+  prim_subreg #(
+    .DW      (1),
+    .SWACCESS("RW"),
+    .RESVAL  (1'h0)
+  ) u_pad_io_d_08_cfg_chip2pad (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    // from register interface
+    .we     (pad_io_d_08_cfg_chip2pad_we),
+    .wd     (pad_io_d_08_cfg_chip2pad_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0  ),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.pad_io_d_08_cfg.chip2pad.q ),
+
+    // to register interface (read)
+    .qs     (pad_io_d_08_cfg_chip2pad_qs)
+  );
+
+
+  //   F[oen]: 1:1
+  prim_subreg #(
+    .DW      (1),
+    .SWACCESS("RW"),
+    .RESVAL  (1'h1)
+  ) u_pad_io_d_08_cfg_oen (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    // from register interface
+    .we     (pad_io_d_08_cfg_oen_we),
+    .wd     (pad_io_d_08_cfg_oen_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0  ),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.pad_io_d_08_cfg.oen.q ),
+
+    // to register interface (read)
+    .qs     (pad_io_d_08_cfg_oen_qs)
+  );
+
+
+  // R[pad_io_d_08_mux_sel]: V(False)
+
+  prim_subreg #(
+    .DW      (5),
+    .SWACCESS("RW"),
+    .RESVAL  (5'h0)
+  ) u_pad_io_d_08_mux_sel (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    // from register interface
+    .we     (pad_io_d_08_mux_sel_we),
+    .wd     (pad_io_d_08_mux_sel_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0  ),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.pad_io_d_08_mux_sel.q ),
+
+    // to register interface (read)
+    .qs     (pad_io_d_08_mux_sel_qs)
+  );
+
+
+  // R[pad_io_d_09_cfg]: V(False)
+
+  //   F[chip2pad]: 0:0
+  prim_subreg #(
+    .DW      (1),
+    .SWACCESS("RW"),
+    .RESVAL  (1'h0)
+  ) u_pad_io_d_09_cfg_chip2pad (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    // from register interface
+    .we     (pad_io_d_09_cfg_chip2pad_we),
+    .wd     (pad_io_d_09_cfg_chip2pad_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0  ),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.pad_io_d_09_cfg.chip2pad.q ),
+
+    // to register interface (read)
+    .qs     (pad_io_d_09_cfg_chip2pad_qs)
+  );
+
+
+  //   F[oen]: 1:1
+  prim_subreg #(
+    .DW      (1),
+    .SWACCESS("RW"),
+    .RESVAL  (1'h1)
+  ) u_pad_io_d_09_cfg_oen (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    // from register interface
+    .we     (pad_io_d_09_cfg_oen_we),
+    .wd     (pad_io_d_09_cfg_oen_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0  ),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.pad_io_d_09_cfg.oen.q ),
+
+    // to register interface (read)
+    .qs     (pad_io_d_09_cfg_oen_qs)
+  );
+
+
+  // R[pad_io_d_09_mux_sel]: V(False)
+
+  prim_subreg #(
+    .DW      (5),
+    .SWACCESS("RW"),
+    .RESVAL  (5'h0)
+  ) u_pad_io_d_09_mux_sel (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    // from register interface
+    .we     (pad_io_d_09_mux_sel_we),
+    .wd     (pad_io_d_09_mux_sel_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0  ),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.pad_io_d_09_mux_sel.q ),
+
+    // to register interface (read)
+    .qs     (pad_io_d_09_mux_sel_qs)
+  );
+
+
+  // R[pad_io_d_10_cfg]: V(False)
+
+  //   F[chip2pad]: 0:0
+  prim_subreg #(
+    .DW      (1),
+    .SWACCESS("RW"),
+    .RESVAL  (1'h0)
+  ) u_pad_io_d_10_cfg_chip2pad (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    // from register interface
+    .we     (pad_io_d_10_cfg_chip2pad_we),
+    .wd     (pad_io_d_10_cfg_chip2pad_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0  ),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.pad_io_d_10_cfg.chip2pad.q ),
+
+    // to register interface (read)
+    .qs     (pad_io_d_10_cfg_chip2pad_qs)
+  );
+
+
+  //   F[oen]: 1:1
+  prim_subreg #(
+    .DW      (1),
+    .SWACCESS("RW"),
+    .RESVAL  (1'h1)
+  ) u_pad_io_d_10_cfg_oen (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    // from register interface
+    .we     (pad_io_d_10_cfg_oen_we),
+    .wd     (pad_io_d_10_cfg_oen_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0  ),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.pad_io_d_10_cfg.oen.q ),
+
+    // to register interface (read)
+    .qs     (pad_io_d_10_cfg_oen_qs)
+  );
+
+
+  // R[pad_io_d_10_mux_sel]: V(False)
+
+  prim_subreg #(
+    .DW      (5),
+    .SWACCESS("RW"),
+    .RESVAL  (5'h0)
+  ) u_pad_io_d_10_mux_sel (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    // from register interface
+    .we     (pad_io_d_10_mux_sel_we),
+    .wd     (pad_io_d_10_mux_sel_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0  ),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.pad_io_d_10_mux_sel.q ),
+
+    // to register interface (read)
+    .qs     (pad_io_d_10_mux_sel_qs)
+  );
+
+
+  // R[pad_io_d_11_cfg]: V(False)
+
+  //   F[chip2pad]: 0:0
+  prim_subreg #(
+    .DW      (1),
+    .SWACCESS("RW"),
+    .RESVAL  (1'h0)
+  ) u_pad_io_d_11_cfg_chip2pad (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    // from register interface
+    .we     (pad_io_d_11_cfg_chip2pad_we),
+    .wd     (pad_io_d_11_cfg_chip2pad_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0  ),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.pad_io_d_11_cfg.chip2pad.q ),
+
+    // to register interface (read)
+    .qs     (pad_io_d_11_cfg_chip2pad_qs)
+  );
+
+
+  //   F[oen]: 1:1
+  prim_subreg #(
+    .DW      (1),
+    .SWACCESS("RW"),
+    .RESVAL  (1'h1)
+  ) u_pad_io_d_11_cfg_oen (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    // from register interface
+    .we     (pad_io_d_11_cfg_oen_we),
+    .wd     (pad_io_d_11_cfg_oen_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0  ),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.pad_io_d_11_cfg.oen.q ),
+
+    // to register interface (read)
+    .qs     (pad_io_d_11_cfg_oen_qs)
+  );
+
+
+  // R[pad_io_d_11_mux_sel]: V(False)
+
+  prim_subreg #(
+    .DW      (5),
+    .SWACCESS("RW"),
+    .RESVAL  (5'h0)
+  ) u_pad_io_d_11_mux_sel (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    // from register interface
+    .we     (pad_io_d_11_mux_sel_we),
+    .wd     (pad_io_d_11_mux_sel_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0  ),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.pad_io_d_11_mux_sel.q ),
+
+    // to register interface (read)
+    .qs     (pad_io_d_11_mux_sel_qs)
+  );
+
+
+  // R[pad_io_d_12_cfg]: V(False)
+
+  //   F[chip2pad]: 0:0
+  prim_subreg #(
+    .DW      (1),
+    .SWACCESS("RW"),
+    .RESVAL  (1'h0)
+  ) u_pad_io_d_12_cfg_chip2pad (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    // from register interface
+    .we     (pad_io_d_12_cfg_chip2pad_we),
+    .wd     (pad_io_d_12_cfg_chip2pad_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0  ),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.pad_io_d_12_cfg.chip2pad.q ),
+
+    // to register interface (read)
+    .qs     (pad_io_d_12_cfg_chip2pad_qs)
+  );
+
+
+  //   F[oen]: 1:1
+  prim_subreg #(
+    .DW      (1),
+    .SWACCESS("RW"),
+    .RESVAL  (1'h1)
+  ) u_pad_io_d_12_cfg_oen (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    // from register interface
+    .we     (pad_io_d_12_cfg_oen_we),
+    .wd     (pad_io_d_12_cfg_oen_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0  ),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.pad_io_d_12_cfg.oen.q ),
+
+    // to register interface (read)
+    .qs     (pad_io_d_12_cfg_oen_qs)
+  );
+
+
+  // R[pad_io_d_12_mux_sel]: V(False)
+
+  prim_subreg #(
+    .DW      (5),
+    .SWACCESS("RW"),
+    .RESVAL  (5'h0)
+  ) u_pad_io_d_12_mux_sel (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    // from register interface
+    .we     (pad_io_d_12_mux_sel_we),
+    .wd     (pad_io_d_12_mux_sel_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0  ),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.pad_io_d_12_mux_sel.q ),
+
+    // to register interface (read)
+    .qs     (pad_io_d_12_mux_sel_qs)
+  );
+
+
+  // R[pad_io_d_13_cfg]: V(False)
+
+  //   F[chip2pad]: 0:0
+  prim_subreg #(
+    .DW      (1),
+    .SWACCESS("RW"),
+    .RESVAL  (1'h0)
+  ) u_pad_io_d_13_cfg_chip2pad (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    // from register interface
+    .we     (pad_io_d_13_cfg_chip2pad_we),
+    .wd     (pad_io_d_13_cfg_chip2pad_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0  ),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.pad_io_d_13_cfg.chip2pad.q ),
+
+    // to register interface (read)
+    .qs     (pad_io_d_13_cfg_chip2pad_qs)
+  );
+
+
+  //   F[oen]: 1:1
+  prim_subreg #(
+    .DW      (1),
+    .SWACCESS("RW"),
+    .RESVAL  (1'h1)
+  ) u_pad_io_d_13_cfg_oen (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    // from register interface
+    .we     (pad_io_d_13_cfg_oen_we),
+    .wd     (pad_io_d_13_cfg_oen_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0  ),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.pad_io_d_13_cfg.oen.q ),
+
+    // to register interface (read)
+    .qs     (pad_io_d_13_cfg_oen_qs)
+  );
+
+
+  // R[pad_io_d_13_mux_sel]: V(False)
+
+  prim_subreg #(
+    .DW      (5),
+    .SWACCESS("RW"),
+    .RESVAL  (5'h0)
+  ) u_pad_io_d_13_mux_sel (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    // from register interface
+    .we     (pad_io_d_13_mux_sel_we),
+    .wd     (pad_io_d_13_mux_sel_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0  ),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.pad_io_d_13_mux_sel.q ),
+
+    // to register interface (read)
+    .qs     (pad_io_d_13_mux_sel_qs)
+  );
+
+
+  // R[pad_io_d_14_cfg]: V(False)
+
+  //   F[chip2pad]: 0:0
+  prim_subreg #(
+    .DW      (1),
+    .SWACCESS("RW"),
+    .RESVAL  (1'h0)
+  ) u_pad_io_d_14_cfg_chip2pad (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    // from register interface
+    .we     (pad_io_d_14_cfg_chip2pad_we),
+    .wd     (pad_io_d_14_cfg_chip2pad_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0  ),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.pad_io_d_14_cfg.chip2pad.q ),
+
+    // to register interface (read)
+    .qs     (pad_io_d_14_cfg_chip2pad_qs)
+  );
+
+
+  //   F[oen]: 1:1
+  prim_subreg #(
+    .DW      (1),
+    .SWACCESS("RW"),
+    .RESVAL  (1'h1)
+  ) u_pad_io_d_14_cfg_oen (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    // from register interface
+    .we     (pad_io_d_14_cfg_oen_we),
+    .wd     (pad_io_d_14_cfg_oen_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0  ),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.pad_io_d_14_cfg.oen.q ),
+
+    // to register interface (read)
+    .qs     (pad_io_d_14_cfg_oen_qs)
+  );
+
+
+  // R[pad_io_d_14_mux_sel]: V(False)
+
+  prim_subreg #(
+    .DW      (5),
+    .SWACCESS("RW"),
+    .RESVAL  (5'h0)
+  ) u_pad_io_d_14_mux_sel (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    // from register interface
+    .we     (pad_io_d_14_mux_sel_we),
+    .wd     (pad_io_d_14_mux_sel_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0  ),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.pad_io_d_14_mux_sel.q ),
+
+    // to register interface (read)
+    .qs     (pad_io_d_14_mux_sel_qs)
+  );
+
+
+  // R[pad_io_d_15_cfg]: V(False)
+
+  //   F[chip2pad]: 0:0
+  prim_subreg #(
+    .DW      (1),
+    .SWACCESS("RW"),
+    .RESVAL  (1'h0)
+  ) u_pad_io_d_15_cfg_chip2pad (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    // from register interface
+    .we     (pad_io_d_15_cfg_chip2pad_we),
+    .wd     (pad_io_d_15_cfg_chip2pad_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0  ),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.pad_io_d_15_cfg.chip2pad.q ),
+
+    // to register interface (read)
+    .qs     (pad_io_d_15_cfg_chip2pad_qs)
+  );
+
+
+  //   F[oen]: 1:1
+  prim_subreg #(
+    .DW      (1),
+    .SWACCESS("RW"),
+    .RESVAL  (1'h1)
+  ) u_pad_io_d_15_cfg_oen (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    // from register interface
+    .we     (pad_io_d_15_cfg_oen_we),
+    .wd     (pad_io_d_15_cfg_oen_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0  ),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.pad_io_d_15_cfg.oen.q ),
+
+    // to register interface (read)
+    .qs     (pad_io_d_15_cfg_oen_qs)
+  );
+
+
+  // R[pad_io_d_15_mux_sel]: V(False)
+
+  prim_subreg #(
+    .DW      (5),
+    .SWACCESS("RW"),
+    .RESVAL  (5'h0)
+  ) u_pad_io_d_15_mux_sel (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    // from register interface
+    .we     (pad_io_d_15_mux_sel_we),
+    .wd     (pad_io_d_15_mux_sel_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0  ),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.pad_io_d_15_mux_sel.q ),
+
+    // to register interface (read)
+    .qs     (pad_io_d_15_mux_sel_qs)
+  );
+
+
+  // R[pad_io_e_00_cfg]: V(False)
+
+  //   F[chip2pad]: 0:0
+  prim_subreg #(
+    .DW      (1),
+    .SWACCESS("RW"),
+    .RESVAL  (1'h0)
+  ) u_pad_io_e_00_cfg_chip2pad (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    // from register interface
+    .we     (pad_io_e_00_cfg_chip2pad_we),
+    .wd     (pad_io_e_00_cfg_chip2pad_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0  ),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.pad_io_e_00_cfg.chip2pad.q ),
+
+    // to register interface (read)
+    .qs     (pad_io_e_00_cfg_chip2pad_qs)
+  );
+
+
+  //   F[oen]: 1:1
+  prim_subreg #(
+    .DW      (1),
+    .SWACCESS("RW"),
+    .RESVAL  (1'h1)
+  ) u_pad_io_e_00_cfg_oen (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    // from register interface
+    .we     (pad_io_e_00_cfg_oen_we),
+    .wd     (pad_io_e_00_cfg_oen_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0  ),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.pad_io_e_00_cfg.oen.q ),
+
+    // to register interface (read)
+    .qs     (pad_io_e_00_cfg_oen_qs)
+  );
+
+
+  // R[pad_io_e_00_mux_sel]: V(False)
+
+  prim_subreg #(
+    .DW      (5),
+    .SWACCESS("RW"),
+    .RESVAL  (5'h0)
+  ) u_pad_io_e_00_mux_sel (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    // from register interface
+    .we     (pad_io_e_00_mux_sel_we),
+    .wd     (pad_io_e_00_mux_sel_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0  ),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.pad_io_e_00_mux_sel.q ),
+
+    // to register interface (read)
+    .qs     (pad_io_e_00_mux_sel_qs)
+  );
+
+
+  // R[pad_io_e_01_cfg]: V(False)
+
+  //   F[chip2pad]: 0:0
+  prim_subreg #(
+    .DW      (1),
+    .SWACCESS("RW"),
+    .RESVAL  (1'h0)
+  ) u_pad_io_e_01_cfg_chip2pad (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    // from register interface
+    .we     (pad_io_e_01_cfg_chip2pad_we),
+    .wd     (pad_io_e_01_cfg_chip2pad_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0  ),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.pad_io_e_01_cfg.chip2pad.q ),
+
+    // to register interface (read)
+    .qs     (pad_io_e_01_cfg_chip2pad_qs)
+  );
+
+
+  //   F[oen]: 1:1
+  prim_subreg #(
+    .DW      (1),
+    .SWACCESS("RW"),
+    .RESVAL  (1'h1)
+  ) u_pad_io_e_01_cfg_oen (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    // from register interface
+    .we     (pad_io_e_01_cfg_oen_we),
+    .wd     (pad_io_e_01_cfg_oen_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0  ),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.pad_io_e_01_cfg.oen.q ),
+
+    // to register interface (read)
+    .qs     (pad_io_e_01_cfg_oen_qs)
+  );
+
+
+  // R[pad_io_e_01_mux_sel]: V(False)
+
+  prim_subreg #(
+    .DW      (5),
+    .SWACCESS("RW"),
+    .RESVAL  (5'h0)
+  ) u_pad_io_e_01_mux_sel (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    // from register interface
+    .we     (pad_io_e_01_mux_sel_we),
+    .wd     (pad_io_e_01_mux_sel_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0  ),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.pad_io_e_01_mux_sel.q ),
+
+    // to register interface (read)
+    .qs     (pad_io_e_01_mux_sel_qs)
+  );
+
+
+  // R[pad_io_e_02_cfg]: V(False)
+
+  //   F[chip2pad]: 0:0
+  prim_subreg #(
+    .DW      (1),
+    .SWACCESS("RW"),
+    .RESVAL  (1'h0)
+  ) u_pad_io_e_02_cfg_chip2pad (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    // from register interface
+    .we     (pad_io_e_02_cfg_chip2pad_we),
+    .wd     (pad_io_e_02_cfg_chip2pad_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0  ),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.pad_io_e_02_cfg.chip2pad.q ),
+
+    // to register interface (read)
+    .qs     (pad_io_e_02_cfg_chip2pad_qs)
+  );
+
+
+  //   F[oen]: 1:1
+  prim_subreg #(
+    .DW      (1),
+    .SWACCESS("RW"),
+    .RESVAL  (1'h1)
+  ) u_pad_io_e_02_cfg_oen (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    // from register interface
+    .we     (pad_io_e_02_cfg_oen_we),
+    .wd     (pad_io_e_02_cfg_oen_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0  ),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.pad_io_e_02_cfg.oen.q ),
+
+    // to register interface (read)
+    .qs     (pad_io_e_02_cfg_oen_qs)
+  );
+
+
+  // R[pad_io_e_02_mux_sel]: V(False)
+
+  prim_subreg #(
+    .DW      (5),
+    .SWACCESS("RW"),
+    .RESVAL  (5'h0)
+  ) u_pad_io_e_02_mux_sel (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    // from register interface
+    .we     (pad_io_e_02_mux_sel_we),
+    .wd     (pad_io_e_02_mux_sel_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0  ),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.pad_io_e_02_mux_sel.q ),
+
+    // to register interface (read)
+    .qs     (pad_io_e_02_mux_sel_qs)
+  );
+
+
+  // R[pad_io_e_03_cfg]: V(False)
+
+  //   F[chip2pad]: 0:0
+  prim_subreg #(
+    .DW      (1),
+    .SWACCESS("RW"),
+    .RESVAL  (1'h0)
+  ) u_pad_io_e_03_cfg_chip2pad (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    // from register interface
+    .we     (pad_io_e_03_cfg_chip2pad_we),
+    .wd     (pad_io_e_03_cfg_chip2pad_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0  ),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.pad_io_e_03_cfg.chip2pad.q ),
+
+    // to register interface (read)
+    .qs     (pad_io_e_03_cfg_chip2pad_qs)
+  );
+
+
+  //   F[oen]: 1:1
+  prim_subreg #(
+    .DW      (1),
+    .SWACCESS("RW"),
+    .RESVAL  (1'h1)
+  ) u_pad_io_e_03_cfg_oen (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    // from register interface
+    .we     (pad_io_e_03_cfg_oen_we),
+    .wd     (pad_io_e_03_cfg_oen_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0  ),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.pad_io_e_03_cfg.oen.q ),
+
+    // to register interface (read)
+    .qs     (pad_io_e_03_cfg_oen_qs)
+  );
+
+
+  // R[pad_io_e_03_mux_sel]: V(False)
+
+  prim_subreg #(
+    .DW      (5),
+    .SWACCESS("RW"),
+    .RESVAL  (5'h0)
+  ) u_pad_io_e_03_mux_sel (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    // from register interface
+    .we     (pad_io_e_03_mux_sel_we),
+    .wd     (pad_io_e_03_mux_sel_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0  ),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.pad_io_e_03_mux_sel.q ),
+
+    // to register interface (read)
+    .qs     (pad_io_e_03_mux_sel_qs)
+  );
+
+
+  // R[pad_io_e_04_cfg]: V(False)
+
+  //   F[chip2pad]: 0:0
+  prim_subreg #(
+    .DW      (1),
+    .SWACCESS("RW"),
+    .RESVAL  (1'h0)
+  ) u_pad_io_e_04_cfg_chip2pad (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    // from register interface
+    .we     (pad_io_e_04_cfg_chip2pad_we),
+    .wd     (pad_io_e_04_cfg_chip2pad_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0  ),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.pad_io_e_04_cfg.chip2pad.q ),
+
+    // to register interface (read)
+    .qs     (pad_io_e_04_cfg_chip2pad_qs)
+  );
+
+
+  //   F[oen]: 1:1
+  prim_subreg #(
+    .DW      (1),
+    .SWACCESS("RW"),
+    .RESVAL  (1'h1)
+  ) u_pad_io_e_04_cfg_oen (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    // from register interface
+    .we     (pad_io_e_04_cfg_oen_we),
+    .wd     (pad_io_e_04_cfg_oen_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0  ),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.pad_io_e_04_cfg.oen.q ),
+
+    // to register interface (read)
+    .qs     (pad_io_e_04_cfg_oen_qs)
+  );
+
+
+  // R[pad_io_e_04_mux_sel]: V(False)
+
+  prim_subreg #(
+    .DW      (5),
+    .SWACCESS("RW"),
+    .RESVAL  (5'h0)
+  ) u_pad_io_e_04_mux_sel (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    // from register interface
+    .we     (pad_io_e_04_mux_sel_we),
+    .wd     (pad_io_e_04_mux_sel_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0  ),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.pad_io_e_04_mux_sel.q ),
+
+    // to register interface (read)
+    .qs     (pad_io_e_04_mux_sel_qs)
+  );
+
+
+  // R[pad_io_e_05_cfg]: V(False)
+
+  //   F[chip2pad]: 0:0
+  prim_subreg #(
+    .DW      (1),
+    .SWACCESS("RW"),
+    .RESVAL  (1'h0)
+  ) u_pad_io_e_05_cfg_chip2pad (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    // from register interface
+    .we     (pad_io_e_05_cfg_chip2pad_we),
+    .wd     (pad_io_e_05_cfg_chip2pad_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0  ),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.pad_io_e_05_cfg.chip2pad.q ),
+
+    // to register interface (read)
+    .qs     (pad_io_e_05_cfg_chip2pad_qs)
+  );
+
+
+  //   F[oen]: 1:1
+  prim_subreg #(
+    .DW      (1),
+    .SWACCESS("RW"),
+    .RESVAL  (1'h1)
+  ) u_pad_io_e_05_cfg_oen (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    // from register interface
+    .we     (pad_io_e_05_cfg_oen_we),
+    .wd     (pad_io_e_05_cfg_oen_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0  ),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.pad_io_e_05_cfg.oen.q ),
+
+    // to register interface (read)
+    .qs     (pad_io_e_05_cfg_oen_qs)
+  );
+
+
+  // R[pad_io_e_05_mux_sel]: V(False)
+
+  prim_subreg #(
+    .DW      (5),
+    .SWACCESS("RW"),
+    .RESVAL  (5'h0)
+  ) u_pad_io_e_05_mux_sel (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    // from register interface
+    .we     (pad_io_e_05_mux_sel_we),
+    .wd     (pad_io_e_05_mux_sel_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0  ),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.pad_io_e_05_mux_sel.q ),
+
+    // to register interface (read)
+    .qs     (pad_io_e_05_mux_sel_qs)
+  );
+
+
+  // R[pad_io_e_06_cfg]: V(False)
+
+  //   F[chip2pad]: 0:0
+  prim_subreg #(
+    .DW      (1),
+    .SWACCESS("RW"),
+    .RESVAL  (1'h0)
+  ) u_pad_io_e_06_cfg_chip2pad (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    // from register interface
+    .we     (pad_io_e_06_cfg_chip2pad_we),
+    .wd     (pad_io_e_06_cfg_chip2pad_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0  ),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.pad_io_e_06_cfg.chip2pad.q ),
+
+    // to register interface (read)
+    .qs     (pad_io_e_06_cfg_chip2pad_qs)
+  );
+
+
+  //   F[oen]: 1:1
+  prim_subreg #(
+    .DW      (1),
+    .SWACCESS("RW"),
+    .RESVAL  (1'h1)
+  ) u_pad_io_e_06_cfg_oen (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    // from register interface
+    .we     (pad_io_e_06_cfg_oen_we),
+    .wd     (pad_io_e_06_cfg_oen_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0  ),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.pad_io_e_06_cfg.oen.q ),
+
+    // to register interface (read)
+    .qs     (pad_io_e_06_cfg_oen_qs)
+  );
+
+
+  // R[pad_io_e_06_mux_sel]: V(False)
+
+  prim_subreg #(
+    .DW      (5),
+    .SWACCESS("RW"),
+    .RESVAL  (5'h0)
+  ) u_pad_io_e_06_mux_sel (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    // from register interface
+    .we     (pad_io_e_06_mux_sel_we),
+    .wd     (pad_io_e_06_mux_sel_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0  ),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.pad_io_e_06_mux_sel.q ),
+
+    // to register interface (read)
+    .qs     (pad_io_e_06_mux_sel_qs)
+  );
+
+
+  // R[pad_io_e_07_cfg]: V(False)
+
+  //   F[chip2pad]: 0:0
+  prim_subreg #(
+    .DW      (1),
+    .SWACCESS("RW"),
+    .RESVAL  (1'h0)
+  ) u_pad_io_e_07_cfg_chip2pad (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    // from register interface
+    .we     (pad_io_e_07_cfg_chip2pad_we),
+    .wd     (pad_io_e_07_cfg_chip2pad_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0  ),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.pad_io_e_07_cfg.chip2pad.q ),
+
+    // to register interface (read)
+    .qs     (pad_io_e_07_cfg_chip2pad_qs)
+  );
+
+
+  //   F[oen]: 1:1
+  prim_subreg #(
+    .DW      (1),
+    .SWACCESS("RW"),
+    .RESVAL  (1'h1)
+  ) u_pad_io_e_07_cfg_oen (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    // from register interface
+    .we     (pad_io_e_07_cfg_oen_we),
+    .wd     (pad_io_e_07_cfg_oen_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0  ),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.pad_io_e_07_cfg.oen.q ),
+
+    // to register interface (read)
+    .qs     (pad_io_e_07_cfg_oen_qs)
+  );
+
+
+  // R[pad_io_e_07_mux_sel]: V(False)
+
+  prim_subreg #(
+    .DW      (5),
+    .SWACCESS("RW"),
+    .RESVAL  (5'h0)
+  ) u_pad_io_e_07_mux_sel (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    // from register interface
+    .we     (pad_io_e_07_mux_sel_we),
+    .wd     (pad_io_e_07_mux_sel_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0  ),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.pad_io_e_07_mux_sel.q ),
+
+    // to register interface (read)
+    .qs     (pad_io_e_07_mux_sel_qs)
+  );
+
+
+  // R[pad_io_e_08_cfg]: V(False)
+
+  //   F[chip2pad]: 0:0
+  prim_subreg #(
+    .DW      (1),
+    .SWACCESS("RW"),
+    .RESVAL  (1'h0)
+  ) u_pad_io_e_08_cfg_chip2pad (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    // from register interface
+    .we     (pad_io_e_08_cfg_chip2pad_we),
+    .wd     (pad_io_e_08_cfg_chip2pad_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0  ),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.pad_io_e_08_cfg.chip2pad.q ),
+
+    // to register interface (read)
+    .qs     (pad_io_e_08_cfg_chip2pad_qs)
+  );
+
+
+  //   F[oen]: 1:1
+  prim_subreg #(
+    .DW      (1),
+    .SWACCESS("RW"),
+    .RESVAL  (1'h1)
+  ) u_pad_io_e_08_cfg_oen (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    // from register interface
+    .we     (pad_io_e_08_cfg_oen_we),
+    .wd     (pad_io_e_08_cfg_oen_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0  ),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.pad_io_e_08_cfg.oen.q ),
+
+    // to register interface (read)
+    .qs     (pad_io_e_08_cfg_oen_qs)
+  );
+
+
+  // R[pad_io_e_08_mux_sel]: V(False)
+
+  prim_subreg #(
+    .DW      (5),
+    .SWACCESS("RW"),
+    .RESVAL  (5'h0)
+  ) u_pad_io_e_08_mux_sel (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    // from register interface
+    .we     (pad_io_e_08_mux_sel_we),
+    .wd     (pad_io_e_08_mux_sel_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0  ),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.pad_io_e_08_mux_sel.q ),
+
+    // to register interface (read)
+    .qs     (pad_io_e_08_mux_sel_qs)
+  );
+
+
+  // R[pad_io_e_09_cfg]: V(False)
+
+  //   F[chip2pad]: 0:0
+  prim_subreg #(
+    .DW      (1),
+    .SWACCESS("RW"),
+    .RESVAL  (1'h0)
+  ) u_pad_io_e_09_cfg_chip2pad (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    // from register interface
+    .we     (pad_io_e_09_cfg_chip2pad_we),
+    .wd     (pad_io_e_09_cfg_chip2pad_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0  ),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.pad_io_e_09_cfg.chip2pad.q ),
+
+    // to register interface (read)
+    .qs     (pad_io_e_09_cfg_chip2pad_qs)
+  );
+
+
+  //   F[oen]: 1:1
+  prim_subreg #(
+    .DW      (1),
+    .SWACCESS("RW"),
+    .RESVAL  (1'h1)
+  ) u_pad_io_e_09_cfg_oen (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    // from register interface
+    .we     (pad_io_e_09_cfg_oen_we),
+    .wd     (pad_io_e_09_cfg_oen_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0  ),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.pad_io_e_09_cfg.oen.q ),
+
+    // to register interface (read)
+    .qs     (pad_io_e_09_cfg_oen_qs)
+  );
+
+
+  // R[pad_io_e_09_mux_sel]: V(False)
+
+  prim_subreg #(
+    .DW      (5),
+    .SWACCESS("RW"),
+    .RESVAL  (5'h0)
+  ) u_pad_io_e_09_mux_sel (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    // from register interface
+    .we     (pad_io_e_09_mux_sel_we),
+    .wd     (pad_io_e_09_mux_sel_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0  ),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.pad_io_e_09_mux_sel.q ),
+
+    // to register interface (read)
+    .qs     (pad_io_e_09_mux_sel_qs)
+  );
+
+
+  // R[pad_io_e_10_cfg]: V(False)
+
+  //   F[chip2pad]: 0:0
+  prim_subreg #(
+    .DW      (1),
+    .SWACCESS("RW"),
+    .RESVAL  (1'h0)
+  ) u_pad_io_e_10_cfg_chip2pad (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    // from register interface
+    .we     (pad_io_e_10_cfg_chip2pad_we),
+    .wd     (pad_io_e_10_cfg_chip2pad_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0  ),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.pad_io_e_10_cfg.chip2pad.q ),
+
+    // to register interface (read)
+    .qs     (pad_io_e_10_cfg_chip2pad_qs)
+  );
+
+
+  //   F[oen]: 1:1
+  prim_subreg #(
+    .DW      (1),
+    .SWACCESS("RW"),
+    .RESVAL  (1'h1)
+  ) u_pad_io_e_10_cfg_oen (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    // from register interface
+    .we     (pad_io_e_10_cfg_oen_we),
+    .wd     (pad_io_e_10_cfg_oen_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0  ),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.pad_io_e_10_cfg.oen.q ),
+
+    // to register interface (read)
+    .qs     (pad_io_e_10_cfg_oen_qs)
+  );
+
+
+  // R[pad_io_e_10_mux_sel]: V(False)
+
+  prim_subreg #(
+    .DW      (5),
+    .SWACCESS("RW"),
+    .RESVAL  (5'h0)
+  ) u_pad_io_e_10_mux_sel (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    // from register interface
+    .we     (pad_io_e_10_mux_sel_we),
+    .wd     (pad_io_e_10_mux_sel_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0  ),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.pad_io_e_10_mux_sel.q ),
+
+    // to register interface (read)
+    .qs     (pad_io_e_10_mux_sel_qs)
+  );
+
+
+  // R[pad_io_e_11_cfg]: V(False)
+
+  //   F[chip2pad]: 0:0
+  prim_subreg #(
+    .DW      (1),
+    .SWACCESS("RW"),
+    .RESVAL  (1'h0)
+  ) u_pad_io_e_11_cfg_chip2pad (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    // from register interface
+    .we     (pad_io_e_11_cfg_chip2pad_we),
+    .wd     (pad_io_e_11_cfg_chip2pad_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0  ),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.pad_io_e_11_cfg.chip2pad.q ),
+
+    // to register interface (read)
+    .qs     (pad_io_e_11_cfg_chip2pad_qs)
+  );
+
+
+  //   F[oen]: 1:1
+  prim_subreg #(
+    .DW      (1),
+    .SWACCESS("RW"),
+    .RESVAL  (1'h1)
+  ) u_pad_io_e_11_cfg_oen (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    // from register interface
+    .we     (pad_io_e_11_cfg_oen_we),
+    .wd     (pad_io_e_11_cfg_oen_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0  ),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.pad_io_e_11_cfg.oen.q ),
+
+    // to register interface (read)
+    .qs     (pad_io_e_11_cfg_oen_qs)
+  );
+
+
+  // R[pad_io_e_11_mux_sel]: V(False)
+
+  prim_subreg #(
+    .DW      (5),
+    .SWACCESS("RW"),
+    .RESVAL  (5'h0)
+  ) u_pad_io_e_11_mux_sel (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    // from register interface
+    .we     (pad_io_e_11_mux_sel_we),
+    .wd     (pad_io_e_11_mux_sel_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0  ),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.pad_io_e_11_mux_sel.q ),
+
+    // to register interface (read)
+    .qs     (pad_io_e_11_mux_sel_qs)
+  );
+
+
+  // R[pad_io_e_12_cfg]: V(False)
+
+  //   F[chip2pad]: 0:0
+  prim_subreg #(
+    .DW      (1),
+    .SWACCESS("RW"),
+    .RESVAL  (1'h0)
+  ) u_pad_io_e_12_cfg_chip2pad (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    // from register interface
+    .we     (pad_io_e_12_cfg_chip2pad_we),
+    .wd     (pad_io_e_12_cfg_chip2pad_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0  ),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.pad_io_e_12_cfg.chip2pad.q ),
+
+    // to register interface (read)
+    .qs     (pad_io_e_12_cfg_chip2pad_qs)
+  );
+
+
+  //   F[oen]: 1:1
+  prim_subreg #(
+    .DW      (1),
+    .SWACCESS("RW"),
+    .RESVAL  (1'h1)
+  ) u_pad_io_e_12_cfg_oen (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    // from register interface
+    .we     (pad_io_e_12_cfg_oen_we),
+    .wd     (pad_io_e_12_cfg_oen_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0  ),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.pad_io_e_12_cfg.oen.q ),
+
+    // to register interface (read)
+    .qs     (pad_io_e_12_cfg_oen_qs)
+  );
+
+
+  // R[pad_io_e_12_mux_sel]: V(False)
+
+  prim_subreg #(
+    .DW      (5),
+    .SWACCESS("RW"),
+    .RESVAL  (5'h0)
+  ) u_pad_io_e_12_mux_sel (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    // from register interface
+    .we     (pad_io_e_12_mux_sel_we),
+    .wd     (pad_io_e_12_mux_sel_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0  ),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.pad_io_e_12_mux_sel.q ),
+
+    // to register interface (read)
+    .qs     (pad_io_e_12_mux_sel_qs)
+  );
+
+
+  // R[pad_io_e_13_cfg]: V(False)
+
+  //   F[chip2pad]: 0:0
+  prim_subreg #(
+    .DW      (1),
+    .SWACCESS("RW"),
+    .RESVAL  (1'h0)
+  ) u_pad_io_e_13_cfg_chip2pad (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    // from register interface
+    .we     (pad_io_e_13_cfg_chip2pad_we),
+    .wd     (pad_io_e_13_cfg_chip2pad_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0  ),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.pad_io_e_13_cfg.chip2pad.q ),
+
+    // to register interface (read)
+    .qs     (pad_io_e_13_cfg_chip2pad_qs)
+  );
+
+
+  //   F[oen]: 1:1
+  prim_subreg #(
+    .DW      (1),
+    .SWACCESS("RW"),
+    .RESVAL  (1'h1)
+  ) u_pad_io_e_13_cfg_oen (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    // from register interface
+    .we     (pad_io_e_13_cfg_oen_we),
+    .wd     (pad_io_e_13_cfg_oen_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0  ),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.pad_io_e_13_cfg.oen.q ),
+
+    // to register interface (read)
+    .qs     (pad_io_e_13_cfg_oen_qs)
+  );
+
+
+  // R[pad_io_e_13_mux_sel]: V(False)
+
+  prim_subreg #(
+    .DW      (5),
+    .SWACCESS("RW"),
+    .RESVAL  (5'h0)
+  ) u_pad_io_e_13_mux_sel (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    // from register interface
+    .we     (pad_io_e_13_mux_sel_we),
+    .wd     (pad_io_e_13_mux_sel_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0  ),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.pad_io_e_13_mux_sel.q ),
+
+    // to register interface (read)
+    .qs     (pad_io_e_13_mux_sel_qs)
+  );
+
+
+  // R[pad_io_e_14_cfg]: V(False)
+
+  //   F[chip2pad]: 0:0
+  prim_subreg #(
+    .DW      (1),
+    .SWACCESS("RW"),
+    .RESVAL  (1'h0)
+  ) u_pad_io_e_14_cfg_chip2pad (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    // from register interface
+    .we     (pad_io_e_14_cfg_chip2pad_we),
+    .wd     (pad_io_e_14_cfg_chip2pad_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0  ),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.pad_io_e_14_cfg.chip2pad.q ),
+
+    // to register interface (read)
+    .qs     (pad_io_e_14_cfg_chip2pad_qs)
+  );
+
+
+  //   F[oen]: 1:1
+  prim_subreg #(
+    .DW      (1),
+    .SWACCESS("RW"),
+    .RESVAL  (1'h1)
+  ) u_pad_io_e_14_cfg_oen (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    // from register interface
+    .we     (pad_io_e_14_cfg_oen_we),
+    .wd     (pad_io_e_14_cfg_oen_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0  ),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.pad_io_e_14_cfg.oen.q ),
+
+    // to register interface (read)
+    .qs     (pad_io_e_14_cfg_oen_qs)
+  );
+
+
+  // R[pad_io_e_14_mux_sel]: V(False)
+
+  prim_subreg #(
+    .DW      (5),
+    .SWACCESS("RW"),
+    .RESVAL  (5'h0)
+  ) u_pad_io_e_14_mux_sel (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    // from register interface
+    .we     (pad_io_e_14_mux_sel_we),
+    .wd     (pad_io_e_14_mux_sel_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0  ),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.pad_io_e_14_mux_sel.q ),
+
+    // to register interface (read)
+    .qs     (pad_io_e_14_mux_sel_qs)
+  );
+
+
+  // R[pad_io_f_00_cfg]: V(False)
+
+  //   F[chip2pad]: 0:0
+  prim_subreg #(
+    .DW      (1),
+    .SWACCESS("RW"),
+    .RESVAL  (1'h0)
+  ) u_pad_io_f_00_cfg_chip2pad (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    // from register interface
+    .we     (pad_io_f_00_cfg_chip2pad_we),
+    .wd     (pad_io_f_00_cfg_chip2pad_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0  ),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.pad_io_f_00_cfg.chip2pad.q ),
+
+    // to register interface (read)
+    .qs     (pad_io_f_00_cfg_chip2pad_qs)
+  );
+
+
+  //   F[oen]: 1:1
+  prim_subreg #(
+    .DW      (1),
+    .SWACCESS("RW"),
+    .RESVAL  (1'h1)
+  ) u_pad_io_f_00_cfg_oen (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    // from register interface
+    .we     (pad_io_f_00_cfg_oen_we),
+    .wd     (pad_io_f_00_cfg_oen_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0  ),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.pad_io_f_00_cfg.oen.q ),
+
+    // to register interface (read)
+    .qs     (pad_io_f_00_cfg_oen_qs)
+  );
+
+
+  // R[pad_io_f_00_mux_sel]: V(False)
+
+  prim_subreg #(
+    .DW      (5),
+    .SWACCESS("RW"),
+    .RESVAL  (5'h0)
+  ) u_pad_io_f_00_mux_sel (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    // from register interface
+    .we     (pad_io_f_00_mux_sel_we),
+    .wd     (pad_io_f_00_mux_sel_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0  ),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.pad_io_f_00_mux_sel.q ),
+
+    // to register interface (read)
+    .qs     (pad_io_f_00_mux_sel_qs)
+  );
+
+
+  // R[pad_io_f_01_cfg]: V(False)
+
+  //   F[chip2pad]: 0:0
+  prim_subreg #(
+    .DW      (1),
+    .SWACCESS("RW"),
+    .RESVAL  (1'h0)
+  ) u_pad_io_f_01_cfg_chip2pad (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    // from register interface
+    .we     (pad_io_f_01_cfg_chip2pad_we),
+    .wd     (pad_io_f_01_cfg_chip2pad_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0  ),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.pad_io_f_01_cfg.chip2pad.q ),
+
+    // to register interface (read)
+    .qs     (pad_io_f_01_cfg_chip2pad_qs)
+  );
+
+
+  //   F[oen]: 1:1
+  prim_subreg #(
+    .DW      (1),
+    .SWACCESS("RW"),
+    .RESVAL  (1'h1)
+  ) u_pad_io_f_01_cfg_oen (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    // from register interface
+    .we     (pad_io_f_01_cfg_oen_we),
+    .wd     (pad_io_f_01_cfg_oen_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0  ),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.pad_io_f_01_cfg.oen.q ),
+
+    // to register interface (read)
+    .qs     (pad_io_f_01_cfg_oen_qs)
+  );
+
+
+  // R[pad_io_f_01_mux_sel]: V(False)
+
+  prim_subreg #(
+    .DW      (5),
+    .SWACCESS("RW"),
+    .RESVAL  (5'h0)
+  ) u_pad_io_f_01_mux_sel (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    // from register interface
+    .we     (pad_io_f_01_mux_sel_we),
+    .wd     (pad_io_f_01_mux_sel_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0  ),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.pad_io_f_01_mux_sel.q ),
+
+    // to register interface (read)
+    .qs     (pad_io_f_01_mux_sel_qs)
+  );
+
+
+  // R[pad_io_f_02_cfg]: V(False)
+
+  //   F[chip2pad]: 0:0
+  prim_subreg #(
+    .DW      (1),
+    .SWACCESS("RW"),
+    .RESVAL  (1'h0)
+  ) u_pad_io_f_02_cfg_chip2pad (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    // from register interface
+    .we     (pad_io_f_02_cfg_chip2pad_we),
+    .wd     (pad_io_f_02_cfg_chip2pad_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0  ),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.pad_io_f_02_cfg.chip2pad.q ),
+
+    // to register interface (read)
+    .qs     (pad_io_f_02_cfg_chip2pad_qs)
+  );
+
+
+  //   F[oen]: 1:1
+  prim_subreg #(
+    .DW      (1),
+    .SWACCESS("RW"),
+    .RESVAL  (1'h1)
+  ) u_pad_io_f_02_cfg_oen (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    // from register interface
+    .we     (pad_io_f_02_cfg_oen_we),
+    .wd     (pad_io_f_02_cfg_oen_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0  ),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.pad_io_f_02_cfg.oen.q ),
+
+    // to register interface (read)
+    .qs     (pad_io_f_02_cfg_oen_qs)
+  );
+
+
+  // R[pad_io_f_02_mux_sel]: V(False)
+
+  prim_subreg #(
+    .DW      (5),
+    .SWACCESS("RW"),
+    .RESVAL  (5'h0)
+  ) u_pad_io_f_02_mux_sel (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    // from register interface
+    .we     (pad_io_f_02_mux_sel_we),
+    .wd     (pad_io_f_02_mux_sel_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0  ),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.pad_io_f_02_mux_sel.q ),
+
+    // to register interface (read)
+    .qs     (pad_io_f_02_mux_sel_qs)
+  );
+
+
+  // R[pad_io_f_03_cfg]: V(False)
+
+  //   F[chip2pad]: 0:0
+  prim_subreg #(
+    .DW      (1),
+    .SWACCESS("RW"),
+    .RESVAL  (1'h0)
+  ) u_pad_io_f_03_cfg_chip2pad (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    // from register interface
+    .we     (pad_io_f_03_cfg_chip2pad_we),
+    .wd     (pad_io_f_03_cfg_chip2pad_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0  ),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.pad_io_f_03_cfg.chip2pad.q ),
+
+    // to register interface (read)
+    .qs     (pad_io_f_03_cfg_chip2pad_qs)
+  );
+
+
+  //   F[oen]: 1:1
+  prim_subreg #(
+    .DW      (1),
+    .SWACCESS("RW"),
+    .RESVAL  (1'h1)
+  ) u_pad_io_f_03_cfg_oen (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    // from register interface
+    .we     (pad_io_f_03_cfg_oen_we),
+    .wd     (pad_io_f_03_cfg_oen_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0  ),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.pad_io_f_03_cfg.oen.q ),
+
+    // to register interface (read)
+    .qs     (pad_io_f_03_cfg_oen_qs)
+  );
+
+
+  // R[pad_io_f_03_mux_sel]: V(False)
+
+  prim_subreg #(
+    .DW      (5),
+    .SWACCESS("RW"),
+    .RESVAL  (5'h0)
+  ) u_pad_io_f_03_mux_sel (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    // from register interface
+    .we     (pad_io_f_03_mux_sel_we),
+    .wd     (pad_io_f_03_mux_sel_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0  ),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.pad_io_f_03_mux_sel.q ),
+
+    // to register interface (read)
+    .qs     (pad_io_f_03_mux_sel_qs)
+  );
+
+
+  // R[pad_io_f_04_cfg]: V(False)
+
+  //   F[chip2pad]: 0:0
+  prim_subreg #(
+    .DW      (1),
+    .SWACCESS("RW"),
+    .RESVAL  (1'h0)
+  ) u_pad_io_f_04_cfg_chip2pad (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    // from register interface
+    .we     (pad_io_f_04_cfg_chip2pad_we),
+    .wd     (pad_io_f_04_cfg_chip2pad_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0  ),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.pad_io_f_04_cfg.chip2pad.q ),
+
+    // to register interface (read)
+    .qs     (pad_io_f_04_cfg_chip2pad_qs)
+  );
+
+
+  //   F[oen]: 1:1
+  prim_subreg #(
+    .DW      (1),
+    .SWACCESS("RW"),
+    .RESVAL  (1'h1)
+  ) u_pad_io_f_04_cfg_oen (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    // from register interface
+    .we     (pad_io_f_04_cfg_oen_we),
+    .wd     (pad_io_f_04_cfg_oen_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0  ),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.pad_io_f_04_cfg.oen.q ),
+
+    // to register interface (read)
+    .qs     (pad_io_f_04_cfg_oen_qs)
+  );
+
+
+  // R[pad_io_f_04_mux_sel]: V(False)
+
+  prim_subreg #(
+    .DW      (5),
+    .SWACCESS("RW"),
+    .RESVAL  (5'h0)
+  ) u_pad_io_f_04_mux_sel (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    // from register interface
+    .we     (pad_io_f_04_mux_sel_we),
+    .wd     (pad_io_f_04_mux_sel_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0  ),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.pad_io_f_04_mux_sel.q ),
+
+    // to register interface (read)
+    .qs     (pad_io_f_04_mux_sel_qs)
+  );
+
+
+  // R[pad_io_f_05_cfg]: V(False)
+
+  //   F[chip2pad]: 0:0
+  prim_subreg #(
+    .DW      (1),
+    .SWACCESS("RW"),
+    .RESVAL  (1'h0)
+  ) u_pad_io_f_05_cfg_chip2pad (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    // from register interface
+    .we     (pad_io_f_05_cfg_chip2pad_we),
+    .wd     (pad_io_f_05_cfg_chip2pad_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0  ),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.pad_io_f_05_cfg.chip2pad.q ),
+
+    // to register interface (read)
+    .qs     (pad_io_f_05_cfg_chip2pad_qs)
+  );
+
+
+  //   F[oen]: 1:1
+  prim_subreg #(
+    .DW      (1),
+    .SWACCESS("RW"),
+    .RESVAL  (1'h1)
+  ) u_pad_io_f_05_cfg_oen (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    // from register interface
+    .we     (pad_io_f_05_cfg_oen_we),
+    .wd     (pad_io_f_05_cfg_oen_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0  ),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.pad_io_f_05_cfg.oen.q ),
+
+    // to register interface (read)
+    .qs     (pad_io_f_05_cfg_oen_qs)
+  );
+
+
+  // R[pad_io_f_05_mux_sel]: V(False)
+
+  prim_subreg #(
+    .DW      (5),
+    .SWACCESS("RW"),
+    .RESVAL  (5'h0)
+  ) u_pad_io_f_05_mux_sel (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    // from register interface
+    .we     (pad_io_f_05_mux_sel_we),
+    .wd     (pad_io_f_05_mux_sel_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0  ),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.pad_io_f_05_mux_sel.q ),
+
+    // to register interface (read)
+    .qs     (pad_io_f_05_mux_sel_qs)
+  );
+
+
+  // R[pad_io_f_06_cfg]: V(False)
+
+  //   F[chip2pad]: 0:0
+  prim_subreg #(
+    .DW      (1),
+    .SWACCESS("RW"),
+    .RESVAL  (1'h0)
+  ) u_pad_io_f_06_cfg_chip2pad (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    // from register interface
+    .we     (pad_io_f_06_cfg_chip2pad_we),
+    .wd     (pad_io_f_06_cfg_chip2pad_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0  ),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.pad_io_f_06_cfg.chip2pad.q ),
+
+    // to register interface (read)
+    .qs     (pad_io_f_06_cfg_chip2pad_qs)
+  );
+
+
+  //   F[oen]: 1:1
+  prim_subreg #(
+    .DW      (1),
+    .SWACCESS("RW"),
+    .RESVAL  (1'h1)
+  ) u_pad_io_f_06_cfg_oen (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    // from register interface
+    .we     (pad_io_f_06_cfg_oen_we),
+    .wd     (pad_io_f_06_cfg_oen_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0  ),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.pad_io_f_06_cfg.oen.q ),
+
+    // to register interface (read)
+    .qs     (pad_io_f_06_cfg_oen_qs)
+  );
+
+
+  // R[pad_io_f_06_mux_sel]: V(False)
+
+  prim_subreg #(
+    .DW      (5),
+    .SWACCESS("RW"),
+    .RESVAL  (5'h0)
+  ) u_pad_io_f_06_mux_sel (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    // from register interface
+    .we     (pad_io_f_06_mux_sel_we),
+    .wd     (pad_io_f_06_mux_sel_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0  ),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.pad_io_f_06_mux_sel.q ),
+
+    // to register interface (read)
+    .qs     (pad_io_f_06_mux_sel_qs)
+  );
+
+
+  // R[pad_io_f_07_cfg]: V(False)
+
+  //   F[chip2pad]: 0:0
+  prim_subreg #(
+    .DW      (1),
+    .SWACCESS("RW"),
+    .RESVAL  (1'h0)
+  ) u_pad_io_f_07_cfg_chip2pad (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    // from register interface
+    .we     (pad_io_f_07_cfg_chip2pad_we),
+    .wd     (pad_io_f_07_cfg_chip2pad_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0  ),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.pad_io_f_07_cfg.chip2pad.q ),
+
+    // to register interface (read)
+    .qs     (pad_io_f_07_cfg_chip2pad_qs)
+  );
+
+
+  //   F[oen]: 1:1
+  prim_subreg #(
+    .DW      (1),
+    .SWACCESS("RW"),
+    .RESVAL  (1'h1)
+  ) u_pad_io_f_07_cfg_oen (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    // from register interface
+    .we     (pad_io_f_07_cfg_oen_we),
+    .wd     (pad_io_f_07_cfg_oen_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0  ),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.pad_io_f_07_cfg.oen.q ),
+
+    // to register interface (read)
+    .qs     (pad_io_f_07_cfg_oen_qs)
+  );
+
+
+  // R[pad_io_f_07_mux_sel]: V(False)
+
+  prim_subreg #(
+    .DW      (5),
+    .SWACCESS("RW"),
+    .RESVAL  (5'h0)
+  ) u_pad_io_f_07_mux_sel (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    // from register interface
+    .we     (pad_io_f_07_mux_sel_we),
+    .wd     (pad_io_f_07_mux_sel_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0  ),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.pad_io_f_07_mux_sel.q ),
+
+    // to register interface (read)
+    .qs     (pad_io_f_07_mux_sel_qs)
+  );
+
+
+  // R[pad_io_f_08_cfg]: V(False)
+
+  //   F[chip2pad]: 0:0
+  prim_subreg #(
+    .DW      (1),
+    .SWACCESS("RW"),
+    .RESVAL  (1'h0)
+  ) u_pad_io_f_08_cfg_chip2pad (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    // from register interface
+    .we     (pad_io_f_08_cfg_chip2pad_we),
+    .wd     (pad_io_f_08_cfg_chip2pad_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0  ),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.pad_io_f_08_cfg.chip2pad.q ),
+
+    // to register interface (read)
+    .qs     (pad_io_f_08_cfg_chip2pad_qs)
+  );
+
+
+  //   F[oen]: 1:1
+  prim_subreg #(
+    .DW      (1),
+    .SWACCESS("RW"),
+    .RESVAL  (1'h1)
+  ) u_pad_io_f_08_cfg_oen (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    // from register interface
+    .we     (pad_io_f_08_cfg_oen_we),
+    .wd     (pad_io_f_08_cfg_oen_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0  ),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.pad_io_f_08_cfg.oen.q ),
+
+    // to register interface (read)
+    .qs     (pad_io_f_08_cfg_oen_qs)
+  );
+
+
+  // R[pad_io_f_08_mux_sel]: V(False)
+
+  prim_subreg #(
+    .DW      (5),
+    .SWACCESS("RW"),
+    .RESVAL  (5'h0)
+  ) u_pad_io_f_08_mux_sel (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    // from register interface
+    .we     (pad_io_f_08_mux_sel_we),
+    .wd     (pad_io_f_08_mux_sel_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0  ),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.pad_io_f_08_mux_sel.q ),
+
+    // to register interface (read)
+    .qs     (pad_io_f_08_mux_sel_qs)
+  );
+
+
+  // R[pad_io_f_09_cfg]: V(False)
+
+  //   F[chip2pad]: 0:0
+  prim_subreg #(
+    .DW      (1),
+    .SWACCESS("RW"),
+    .RESVAL  (1'h0)
+  ) u_pad_io_f_09_cfg_chip2pad (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    // from register interface
+    .we     (pad_io_f_09_cfg_chip2pad_we),
+    .wd     (pad_io_f_09_cfg_chip2pad_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0  ),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.pad_io_f_09_cfg.chip2pad.q ),
+
+    // to register interface (read)
+    .qs     (pad_io_f_09_cfg_chip2pad_qs)
+  );
+
+
+  //   F[oen]: 1:1
+  prim_subreg #(
+    .DW      (1),
+    .SWACCESS("RW"),
+    .RESVAL  (1'h1)
+  ) u_pad_io_f_09_cfg_oen (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    // from register interface
+    .we     (pad_io_f_09_cfg_oen_we),
+    .wd     (pad_io_f_09_cfg_oen_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0  ),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.pad_io_f_09_cfg.oen.q ),
+
+    // to register interface (read)
+    .qs     (pad_io_f_09_cfg_oen_qs)
+  );
+
+
+  // R[pad_io_f_09_mux_sel]: V(False)
+
+  prim_subreg #(
+    .DW      (5),
+    .SWACCESS("RW"),
+    .RESVAL  (5'h0)
+  ) u_pad_io_f_09_mux_sel (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    // from register interface
+    .we     (pad_io_f_09_mux_sel_we),
+    .wd     (pad_io_f_09_mux_sel_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0  ),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.pad_io_f_09_mux_sel.q ),
+
+    // to register interface (read)
+    .qs     (pad_io_f_09_mux_sel_qs)
+  );
+
+
+  // R[pad_io_f_10_cfg]: V(False)
+
+  //   F[chip2pad]: 0:0
+  prim_subreg #(
+    .DW      (1),
+    .SWACCESS("RW"),
+    .RESVAL  (1'h0)
+  ) u_pad_io_f_10_cfg_chip2pad (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    // from register interface
+    .we     (pad_io_f_10_cfg_chip2pad_we),
+    .wd     (pad_io_f_10_cfg_chip2pad_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0  ),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.pad_io_f_10_cfg.chip2pad.q ),
+
+    // to register interface (read)
+    .qs     (pad_io_f_10_cfg_chip2pad_qs)
+  );
+
+
+  //   F[oen]: 1:1
+  prim_subreg #(
+    .DW      (1),
+    .SWACCESS("RW"),
+    .RESVAL  (1'h1)
+  ) u_pad_io_f_10_cfg_oen (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    // from register interface
+    .we     (pad_io_f_10_cfg_oen_we),
+    .wd     (pad_io_f_10_cfg_oen_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0  ),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.pad_io_f_10_cfg.oen.q ),
+
+    // to register interface (read)
+    .qs     (pad_io_f_10_cfg_oen_qs)
+  );
+
+
+  // R[pad_io_f_10_mux_sel]: V(False)
+
+  prim_subreg #(
+    .DW      (5),
+    .SWACCESS("RW"),
+    .RESVAL  (5'h0)
+  ) u_pad_io_f_10_mux_sel (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    // from register interface
+    .we     (pad_io_f_10_mux_sel_we),
+    .wd     (pad_io_f_10_mux_sel_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0  ),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.pad_io_f_10_mux_sel.q ),
+
+    // to register interface (read)
+    .qs     (pad_io_f_10_mux_sel_qs)
+  );
+
+
+  // R[pad_io_g_00_cfg]: V(False)
+
+  //   F[chip2pad]: 0:0
+  prim_subreg #(
+    .DW      (1),
+    .SWACCESS("RW"),
+    .RESVAL  (1'h0)
+  ) u_pad_io_g_00_cfg_chip2pad (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    // from register interface
+    .we     (pad_io_g_00_cfg_chip2pad_we),
+    .wd     (pad_io_g_00_cfg_chip2pad_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0  ),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.pad_io_g_00_cfg.chip2pad.q ),
+
+    // to register interface (read)
+    .qs     (pad_io_g_00_cfg_chip2pad_qs)
+  );
+
+
+  //   F[oen]: 1:1
+  prim_subreg #(
+    .DW      (1),
+    .SWACCESS("RW"),
+    .RESVAL  (1'h1)
+  ) u_pad_io_g_00_cfg_oen (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    // from register interface
+    .we     (pad_io_g_00_cfg_oen_we),
+    .wd     (pad_io_g_00_cfg_oen_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0  ),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.pad_io_g_00_cfg.oen.q ),
+
+    // to register interface (read)
+    .qs     (pad_io_g_00_cfg_oen_qs)
+  );
+
+
+  // R[pad_io_g_00_mux_sel]: V(False)
+
+  prim_subreg #(
+    .DW      (5),
+    .SWACCESS("RW"),
+    .RESVAL  (5'h0)
+  ) u_pad_io_g_00_mux_sel (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    // from register interface
+    .we     (pad_io_g_00_mux_sel_we),
+    .wd     (pad_io_g_00_mux_sel_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0  ),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.pad_io_g_00_mux_sel.q ),
+
+    // to register interface (read)
+    .qs     (pad_io_g_00_mux_sel_qs)
+  );
+
+
+  // R[pad_io_g_01_cfg]: V(False)
+
+  //   F[chip2pad]: 0:0
+  prim_subreg #(
+    .DW      (1),
+    .SWACCESS("RW"),
+    .RESVAL  (1'h0)
+  ) u_pad_io_g_01_cfg_chip2pad (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    // from register interface
+    .we     (pad_io_g_01_cfg_chip2pad_we),
+    .wd     (pad_io_g_01_cfg_chip2pad_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0  ),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.pad_io_g_01_cfg.chip2pad.q ),
+
+    // to register interface (read)
+    .qs     (pad_io_g_01_cfg_chip2pad_qs)
+  );
+
+
+  //   F[oen]: 1:1
+  prim_subreg #(
+    .DW      (1),
+    .SWACCESS("RW"),
+    .RESVAL  (1'h1)
+  ) u_pad_io_g_01_cfg_oen (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    // from register interface
+    .we     (pad_io_g_01_cfg_oen_we),
+    .wd     (pad_io_g_01_cfg_oen_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0  ),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.pad_io_g_01_cfg.oen.q ),
+
+    // to register interface (read)
+    .qs     (pad_io_g_01_cfg_oen_qs)
+  );
+
+
+  // R[pad_io_g_01_mux_sel]: V(False)
+
+  prim_subreg #(
+    .DW      (5),
+    .SWACCESS("RW"),
+    .RESVAL  (5'h0)
+  ) u_pad_io_g_01_mux_sel (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    // from register interface
+    .we     (pad_io_g_01_mux_sel_we),
+    .wd     (pad_io_g_01_mux_sel_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0  ),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.pad_io_g_01_mux_sel.q ),
+
+    // to register interface (read)
+    .qs     (pad_io_g_01_mux_sel_qs)
+  );
+
+
+  // R[pad_io_g_02_cfg]: V(False)
+
+  //   F[chip2pad]: 0:0
+  prim_subreg #(
+    .DW      (1),
+    .SWACCESS("RW"),
+    .RESVAL  (1'h0)
+  ) u_pad_io_g_02_cfg_chip2pad (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    // from register interface
+    .we     (pad_io_g_02_cfg_chip2pad_we),
+    .wd     (pad_io_g_02_cfg_chip2pad_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0  ),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.pad_io_g_02_cfg.chip2pad.q ),
+
+    // to register interface (read)
+    .qs     (pad_io_g_02_cfg_chip2pad_qs)
+  );
+
+
+  //   F[oen]: 1:1
+  prim_subreg #(
+    .DW      (1),
+    .SWACCESS("RW"),
+    .RESVAL  (1'h1)
+  ) u_pad_io_g_02_cfg_oen (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    // from register interface
+    .we     (pad_io_g_02_cfg_oen_we),
+    .wd     (pad_io_g_02_cfg_oen_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0  ),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.pad_io_g_02_cfg.oen.q ),
+
+    // to register interface (read)
+    .qs     (pad_io_g_02_cfg_oen_qs)
+  );
+
+
+  // R[pad_io_g_02_mux_sel]: V(False)
+
+  prim_subreg #(
+    .DW      (5),
+    .SWACCESS("RW"),
+    .RESVAL  (5'h0)
+  ) u_pad_io_g_02_mux_sel (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    // from register interface
+    .we     (pad_io_g_02_mux_sel_we),
+    .wd     (pad_io_g_02_mux_sel_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0  ),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.pad_io_g_02_mux_sel.q ),
+
+    // to register interface (read)
+    .qs     (pad_io_g_02_mux_sel_qs)
+  );
+
+
+  // R[pad_io_g_03_cfg]: V(False)
+
+  //   F[chip2pad]: 0:0
+  prim_subreg #(
+    .DW      (1),
+    .SWACCESS("RW"),
+    .RESVAL  (1'h0)
+  ) u_pad_io_g_03_cfg_chip2pad (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    // from register interface
+    .we     (pad_io_g_03_cfg_chip2pad_we),
+    .wd     (pad_io_g_03_cfg_chip2pad_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0  ),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.pad_io_g_03_cfg.chip2pad.q ),
+
+    // to register interface (read)
+    .qs     (pad_io_g_03_cfg_chip2pad_qs)
+  );
+
+
+  //   F[oen]: 1:1
+  prim_subreg #(
+    .DW      (1),
+    .SWACCESS("RW"),
+    .RESVAL  (1'h1)
+  ) u_pad_io_g_03_cfg_oen (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    // from register interface
+    .we     (pad_io_g_03_cfg_oen_we),
+    .wd     (pad_io_g_03_cfg_oen_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0  ),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.pad_io_g_03_cfg.oen.q ),
+
+    // to register interface (read)
+    .qs     (pad_io_g_03_cfg_oen_qs)
+  );
+
+
+  // R[pad_io_g_03_mux_sel]: V(False)
+
+  prim_subreg #(
+    .DW      (5),
+    .SWACCESS("RW"),
+    .RESVAL  (5'h0)
+  ) u_pad_io_g_03_mux_sel (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    // from register interface
+    .we     (pad_io_g_03_mux_sel_we),
+    .wd     (pad_io_g_03_mux_sel_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0  ),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.pad_io_g_03_mux_sel.q ),
+
+    // to register interface (read)
+    .qs     (pad_io_g_03_mux_sel_qs)
+  );
+
+
+  // R[pad_io_g_04_cfg]: V(False)
+
+  //   F[chip2pad]: 0:0
+  prim_subreg #(
+    .DW      (1),
+    .SWACCESS("RW"),
+    .RESVAL  (1'h0)
+  ) u_pad_io_g_04_cfg_chip2pad (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    // from register interface
+    .we     (pad_io_g_04_cfg_chip2pad_we),
+    .wd     (pad_io_g_04_cfg_chip2pad_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0  ),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.pad_io_g_04_cfg.chip2pad.q ),
+
+    // to register interface (read)
+    .qs     (pad_io_g_04_cfg_chip2pad_qs)
+  );
+
+
+  //   F[oen]: 1:1
+  prim_subreg #(
+    .DW      (1),
+    .SWACCESS("RW"),
+    .RESVAL  (1'h1)
+  ) u_pad_io_g_04_cfg_oen (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    // from register interface
+    .we     (pad_io_g_04_cfg_oen_we),
+    .wd     (pad_io_g_04_cfg_oen_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0  ),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.pad_io_g_04_cfg.oen.q ),
+
+    // to register interface (read)
+    .qs     (pad_io_g_04_cfg_oen_qs)
+  );
+
+
+  // R[pad_io_g_04_mux_sel]: V(False)
+
+  prim_subreg #(
+    .DW      (5),
+    .SWACCESS("RW"),
+    .RESVAL  (5'h0)
+  ) u_pad_io_g_04_mux_sel (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    // from register interface
+    .we     (pad_io_g_04_mux_sel_we),
+    .wd     (pad_io_g_04_mux_sel_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0  ),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.pad_io_g_04_mux_sel.q ),
+
+    // to register interface (read)
+    .qs     (pad_io_g_04_mux_sel_qs)
+  );
+
+
+  // R[pad_io_g_05_cfg]: V(False)
+
+  //   F[chip2pad]: 0:0
+  prim_subreg #(
+    .DW      (1),
+    .SWACCESS("RW"),
+    .RESVAL  (1'h0)
+  ) u_pad_io_g_05_cfg_chip2pad (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    // from register interface
+    .we     (pad_io_g_05_cfg_chip2pad_we),
+    .wd     (pad_io_g_05_cfg_chip2pad_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0  ),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.pad_io_g_05_cfg.chip2pad.q ),
+
+    // to register interface (read)
+    .qs     (pad_io_g_05_cfg_chip2pad_qs)
+  );
+
+
+  //   F[oen]: 1:1
+  prim_subreg #(
+    .DW      (1),
+    .SWACCESS("RW"),
+    .RESVAL  (1'h1)
+  ) u_pad_io_g_05_cfg_oen (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    // from register interface
+    .we     (pad_io_g_05_cfg_oen_we),
+    .wd     (pad_io_g_05_cfg_oen_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0  ),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.pad_io_g_05_cfg.oen.q ),
+
+    // to register interface (read)
+    .qs     (pad_io_g_05_cfg_oen_qs)
+  );
+
+
+  // R[pad_io_g_05_mux_sel]: V(False)
+
+  prim_subreg #(
+    .DW      (5),
+    .SWACCESS("RW"),
+    .RESVAL  (5'h0)
+  ) u_pad_io_g_05_mux_sel (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    // from register interface
+    .we     (pad_io_g_05_mux_sel_we),
+    .wd     (pad_io_g_05_mux_sel_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0  ),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.pad_io_g_05_mux_sel.q ),
+
+    // to register interface (read)
+    .qs     (pad_io_g_05_mux_sel_qs)
+  );
+
+
+  // R[pad_io_g_06_cfg]: V(False)
+
+  //   F[chip2pad]: 0:0
+  prim_subreg #(
+    .DW      (1),
+    .SWACCESS("RW"),
+    .RESVAL  (1'h0)
+  ) u_pad_io_g_06_cfg_chip2pad (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    // from register interface
+    .we     (pad_io_g_06_cfg_chip2pad_we),
+    .wd     (pad_io_g_06_cfg_chip2pad_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0  ),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.pad_io_g_06_cfg.chip2pad.q ),
+
+    // to register interface (read)
+    .qs     (pad_io_g_06_cfg_chip2pad_qs)
+  );
+
+
+  //   F[oen]: 1:1
+  prim_subreg #(
+    .DW      (1),
+    .SWACCESS("RW"),
+    .RESVAL  (1'h1)
+  ) u_pad_io_g_06_cfg_oen (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    // from register interface
+    .we     (pad_io_g_06_cfg_oen_we),
+    .wd     (pad_io_g_06_cfg_oen_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0  ),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.pad_io_g_06_cfg.oen.q ),
+
+    // to register interface (read)
+    .qs     (pad_io_g_06_cfg_oen_qs)
+  );
+
+
+  // R[pad_io_g_06_mux_sel]: V(False)
+
+  prim_subreg #(
+    .DW      (5),
+    .SWACCESS("RW"),
+    .RESVAL  (5'h0)
+  ) u_pad_io_g_06_mux_sel (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    // from register interface
+    .we     (pad_io_g_06_mux_sel_we),
+    .wd     (pad_io_g_06_mux_sel_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0  ),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.pad_io_g_06_mux_sel.q ),
+
+    // to register interface (read)
+    .qs     (pad_io_g_06_mux_sel_qs)
+  );
+
+
+  // R[pad_io_g_07_cfg]: V(False)
+
+  //   F[chip2pad]: 0:0
+  prim_subreg #(
+    .DW      (1),
+    .SWACCESS("RW"),
+    .RESVAL  (1'h0)
+  ) u_pad_io_g_07_cfg_chip2pad (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    // from register interface
+    .we     (pad_io_g_07_cfg_chip2pad_we),
+    .wd     (pad_io_g_07_cfg_chip2pad_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0  ),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.pad_io_g_07_cfg.chip2pad.q ),
+
+    // to register interface (read)
+    .qs     (pad_io_g_07_cfg_chip2pad_qs)
+  );
+
+
+  //   F[oen]: 1:1
+  prim_subreg #(
+    .DW      (1),
+    .SWACCESS("RW"),
+    .RESVAL  (1'h1)
+  ) u_pad_io_g_07_cfg_oen (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    // from register interface
+    .we     (pad_io_g_07_cfg_oen_we),
+    .wd     (pad_io_g_07_cfg_oen_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0  ),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.pad_io_g_07_cfg.oen.q ),
+
+    // to register interface (read)
+    .qs     (pad_io_g_07_cfg_oen_qs)
+  );
+
+
+  // R[pad_io_g_07_mux_sel]: V(False)
+
+  prim_subreg #(
+    .DW      (5),
+    .SWACCESS("RW"),
+    .RESVAL  (5'h0)
+  ) u_pad_io_g_07_mux_sel (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    // from register interface
+    .we     (pad_io_g_07_mux_sel_we),
+    .wd     (pad_io_g_07_mux_sel_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0  ),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.pad_io_g_07_mux_sel.q ),
+
+    // to register interface (read)
+    .qs     (pad_io_g_07_mux_sel_qs)
+  );
+
+
+  // R[pad_io_g_08_cfg]: V(False)
+
+  //   F[chip2pad]: 0:0
+  prim_subreg #(
+    .DW      (1),
+    .SWACCESS("RW"),
+    .RESVAL  (1'h0)
+  ) u_pad_io_g_08_cfg_chip2pad (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    // from register interface
+    .we     (pad_io_g_08_cfg_chip2pad_we),
+    .wd     (pad_io_g_08_cfg_chip2pad_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0  ),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.pad_io_g_08_cfg.chip2pad.q ),
+
+    // to register interface (read)
+    .qs     (pad_io_g_08_cfg_chip2pad_qs)
+  );
+
+
+  //   F[oen]: 1:1
+  prim_subreg #(
+    .DW      (1),
+    .SWACCESS("RW"),
+    .RESVAL  (1'h1)
+  ) u_pad_io_g_08_cfg_oen (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    // from register interface
+    .we     (pad_io_g_08_cfg_oen_we),
+    .wd     (pad_io_g_08_cfg_oen_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0  ),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.pad_io_g_08_cfg.oen.q ),
+
+    // to register interface (read)
+    .qs     (pad_io_g_08_cfg_oen_qs)
+  );
+
+
+  // R[pad_io_g_08_mux_sel]: V(False)
+
+  prim_subreg #(
+    .DW      (5),
+    .SWACCESS("RW"),
+    .RESVAL  (5'h0)
+  ) u_pad_io_g_08_mux_sel (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    // from register interface
+    .we     (pad_io_g_08_mux_sel_we),
+    .wd     (pad_io_g_08_mux_sel_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0  ),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.pad_io_g_08_mux_sel.q ),
+
+    // to register interface (read)
+    .qs     (pad_io_g_08_mux_sel_qs)
+  );
+
+
+  // R[pad_io_g_09_cfg]: V(False)
+
+  //   F[chip2pad]: 0:0
+  prim_subreg #(
+    .DW      (1),
+    .SWACCESS("RW"),
+    .RESVAL  (1'h0)
+  ) u_pad_io_g_09_cfg_chip2pad (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    // from register interface
+    .we     (pad_io_g_09_cfg_chip2pad_we),
+    .wd     (pad_io_g_09_cfg_chip2pad_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0  ),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.pad_io_g_09_cfg.chip2pad.q ),
+
+    // to register interface (read)
+    .qs     (pad_io_g_09_cfg_chip2pad_qs)
+  );
+
+
+  //   F[oen]: 1:1
+  prim_subreg #(
+    .DW      (1),
+    .SWACCESS("RW"),
+    .RESVAL  (1'h1)
+  ) u_pad_io_g_09_cfg_oen (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    // from register interface
+    .we     (pad_io_g_09_cfg_oen_we),
+    .wd     (pad_io_g_09_cfg_oen_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0  ),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.pad_io_g_09_cfg.oen.q ),
+
+    // to register interface (read)
+    .qs     (pad_io_g_09_cfg_oen_qs)
+  );
+
+
+  // R[pad_io_g_09_mux_sel]: V(False)
+
+  prim_subreg #(
+    .DW      (5),
+    .SWACCESS("RW"),
+    .RESVAL  (5'h0)
+  ) u_pad_io_g_09_mux_sel (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    // from register interface
+    .we     (pad_io_g_09_mux_sel_we),
+    .wd     (pad_io_g_09_mux_sel_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0  ),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.pad_io_g_09_mux_sel.q ),
+
+    // to register interface (read)
+    .qs     (pad_io_g_09_mux_sel_qs)
+  );
+
+
+  // R[pad_io_g_10_cfg]: V(False)
+
+  //   F[chip2pad]: 0:0
+  prim_subreg #(
+    .DW      (1),
+    .SWACCESS("RW"),
+    .RESVAL  (1'h0)
+  ) u_pad_io_g_10_cfg_chip2pad (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    // from register interface
+    .we     (pad_io_g_10_cfg_chip2pad_we),
+    .wd     (pad_io_g_10_cfg_chip2pad_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0  ),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.pad_io_g_10_cfg.chip2pad.q ),
+
+    // to register interface (read)
+    .qs     (pad_io_g_10_cfg_chip2pad_qs)
+  );
+
+
+  //   F[oen]: 1:1
+  prim_subreg #(
+    .DW      (1),
+    .SWACCESS("RW"),
+    .RESVAL  (1'h1)
+  ) u_pad_io_g_10_cfg_oen (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    // from register interface
+    .we     (pad_io_g_10_cfg_oen_we),
+    .wd     (pad_io_g_10_cfg_oen_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0  ),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.pad_io_g_10_cfg.oen.q ),
+
+    // to register interface (read)
+    .qs     (pad_io_g_10_cfg_oen_qs)
+  );
+
+
+  // R[pad_io_g_10_mux_sel]: V(False)
+
+  prim_subreg #(
+    .DW      (5),
+    .SWACCESS("RW"),
+    .RESVAL  (5'h0)
+  ) u_pad_io_g_10_mux_sel (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    // from register interface
+    .we     (pad_io_g_10_mux_sel_we),
+    .wd     (pad_io_g_10_mux_sel_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0  ),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.pad_io_g_10_mux_sel.q ),
+
+    // to register interface (read)
+    .qs     (pad_io_g_10_mux_sel_qs)
+  );
+
+
+  // R[pad_io_g_11_cfg]: V(False)
+
+  //   F[chip2pad]: 0:0
+  prim_subreg #(
+    .DW      (1),
+    .SWACCESS("RW"),
+    .RESVAL  (1'h0)
+  ) u_pad_io_g_11_cfg_chip2pad (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    // from register interface
+    .we     (pad_io_g_11_cfg_chip2pad_we),
+    .wd     (pad_io_g_11_cfg_chip2pad_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0  ),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.pad_io_g_11_cfg.chip2pad.q ),
+
+    // to register interface (read)
+    .qs     (pad_io_g_11_cfg_chip2pad_qs)
+  );
+
+
+  //   F[oen]: 1:1
+  prim_subreg #(
+    .DW      (1),
+    .SWACCESS("RW"),
+    .RESVAL  (1'h1)
+  ) u_pad_io_g_11_cfg_oen (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    // from register interface
+    .we     (pad_io_g_11_cfg_oen_we),
+    .wd     (pad_io_g_11_cfg_oen_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0  ),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.pad_io_g_11_cfg.oen.q ),
+
+    // to register interface (read)
+    .qs     (pad_io_g_11_cfg_oen_qs)
+  );
+
+
+  // R[pad_io_g_11_mux_sel]: V(False)
+
+  prim_subreg #(
+    .DW      (5),
+    .SWACCESS("RW"),
+    .RESVAL  (5'h0)
+  ) u_pad_io_g_11_mux_sel (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    // from register interface
+    .we     (pad_io_g_11_mux_sel_we),
+    .wd     (pad_io_g_11_mux_sel_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0  ),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.pad_io_g_11_mux_sel.q ),
+
+    // to register interface (read)
+    .qs     (pad_io_g_11_mux_sel_qs)
+  );
+
+
+  // R[pad_io_g_12_cfg]: V(False)
+
+  //   F[chip2pad]: 0:0
+  prim_subreg #(
+    .DW      (1),
+    .SWACCESS("RW"),
+    .RESVAL  (1'h0)
+  ) u_pad_io_g_12_cfg_chip2pad (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    // from register interface
+    .we     (pad_io_g_12_cfg_chip2pad_we),
+    .wd     (pad_io_g_12_cfg_chip2pad_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0  ),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.pad_io_g_12_cfg.chip2pad.q ),
+
+    // to register interface (read)
+    .qs     (pad_io_g_12_cfg_chip2pad_qs)
+  );
+
+
+  //   F[oen]: 1:1
+  prim_subreg #(
+    .DW      (1),
+    .SWACCESS("RW"),
+    .RESVAL  (1'h1)
+  ) u_pad_io_g_12_cfg_oen (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    // from register interface
+    .we     (pad_io_g_12_cfg_oen_we),
+    .wd     (pad_io_g_12_cfg_oen_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0  ),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.pad_io_g_12_cfg.oen.q ),
+
+    // to register interface (read)
+    .qs     (pad_io_g_12_cfg_oen_qs)
+  );
+
+
+  // R[pad_io_g_12_mux_sel]: V(False)
+
+  prim_subreg #(
+    .DW      (5),
+    .SWACCESS("RW"),
+    .RESVAL  (5'h0)
+  ) u_pad_io_g_12_mux_sel (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    // from register interface
+    .we     (pad_io_g_12_mux_sel_we),
+    .wd     (pad_io_g_12_mux_sel_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0  ),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.pad_io_g_12_mux_sel.q ),
+
+    // to register interface (read)
+    .qs     (pad_io_g_12_mux_sel_qs)
+  );
+
+
+  // R[pad_io_g_13_cfg]: V(False)
+
+  //   F[chip2pad]: 0:0
+  prim_subreg #(
+    .DW      (1),
+    .SWACCESS("RW"),
+    .RESVAL  (1'h0)
+  ) u_pad_io_g_13_cfg_chip2pad (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    // from register interface
+    .we     (pad_io_g_13_cfg_chip2pad_we),
+    .wd     (pad_io_g_13_cfg_chip2pad_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0  ),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.pad_io_g_13_cfg.chip2pad.q ),
+
+    // to register interface (read)
+    .qs     (pad_io_g_13_cfg_chip2pad_qs)
+  );
+
+
+  //   F[oen]: 1:1
+  prim_subreg #(
+    .DW      (1),
+    .SWACCESS("RW"),
+    .RESVAL  (1'h1)
+  ) u_pad_io_g_13_cfg_oen (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    // from register interface
+    .we     (pad_io_g_13_cfg_oen_we),
+    .wd     (pad_io_g_13_cfg_oen_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0  ),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.pad_io_g_13_cfg.oen.q ),
+
+    // to register interface (read)
+    .qs     (pad_io_g_13_cfg_oen_qs)
+  );
+
+
+  // R[pad_io_g_13_mux_sel]: V(False)
+
+  prim_subreg #(
+    .DW      (5),
+    .SWACCESS("RW"),
+    .RESVAL  (5'h0)
+  ) u_pad_io_g_13_mux_sel (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    // from register interface
+    .we     (pad_io_g_13_mux_sel_we),
+    .wd     (pad_io_g_13_mux_sel_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0  ),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.pad_io_g_13_mux_sel.q ),
+
+    // to register interface (read)
+    .qs     (pad_io_g_13_mux_sel_qs)
+  );
+
+
+  // R[pad_io_g_14_cfg]: V(False)
+
+  //   F[chip2pad]: 0:0
+  prim_subreg #(
+    .DW      (1),
+    .SWACCESS("RW"),
+    .RESVAL  (1'h0)
+  ) u_pad_io_g_14_cfg_chip2pad (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    // from register interface
+    .we     (pad_io_g_14_cfg_chip2pad_we),
+    .wd     (pad_io_g_14_cfg_chip2pad_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0  ),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.pad_io_g_14_cfg.chip2pad.q ),
+
+    // to register interface (read)
+    .qs     (pad_io_g_14_cfg_chip2pad_qs)
+  );
+
+
+  //   F[oen]: 1:1
+  prim_subreg #(
+    .DW      (1),
+    .SWACCESS("RW"),
+    .RESVAL  (1'h1)
+  ) u_pad_io_g_14_cfg_oen (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    // from register interface
+    .we     (pad_io_g_14_cfg_oen_we),
+    .wd     (pad_io_g_14_cfg_oen_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0  ),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.pad_io_g_14_cfg.oen.q ),
+
+    // to register interface (read)
+    .qs     (pad_io_g_14_cfg_oen_qs)
+  );
+
+
+  // R[pad_io_g_14_mux_sel]: V(False)
+
+  prim_subreg #(
+    .DW      (5),
+    .SWACCESS("RW"),
+    .RESVAL  (5'h0)
+  ) u_pad_io_g_14_mux_sel (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    // from register interface
+    .we     (pad_io_g_14_mux_sel_we),
+    .wd     (pad_io_g_14_mux_sel_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0  ),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.pad_io_g_14_mux_sel.q ),
+
+    // to register interface (read)
+    .qs     (pad_io_g_14_mux_sel_qs)
+  );
+
+
+  // R[pad_pwm0_cfg]: V(False)
+
+  //   F[chip2pad]: 0:0
+  prim_subreg #(
+    .DW      (1),
+    .SWACCESS("RW"),
+    .RESVAL  (1'h0)
+  ) u_pad_pwm0_cfg_chip2pad (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    // from register interface
+    .we     (pad_pwm0_cfg_chip2pad_we),
+    .wd     (pad_pwm0_cfg_chip2pad_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0  ),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.pad_pwm0_cfg.chip2pad.q ),
+
+    // to register interface (read)
+    .qs     (pad_pwm0_cfg_chip2pad_qs)
+  );
+
+
+  //   F[oen]: 1:1
+  prim_subreg #(
+    .DW      (1),
+    .SWACCESS("RW"),
+    .RESVAL  (1'h1)
+  ) u_pad_pwm0_cfg_oen (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    // from register interface
+    .we     (pad_pwm0_cfg_oen_we),
+    .wd     (pad_pwm0_cfg_oen_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0  ),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.pad_pwm0_cfg.oen.q ),
+
+    // to register interface (read)
+    .qs     (pad_pwm0_cfg_oen_qs)
+  );
+
+
+  // R[pad_pwm0_mux_sel]: V(False)
+
+  prim_subreg #(
+    .DW      (4),
+    .SWACCESS("RW"),
+    .RESVAL  (4'h0)
+  ) u_pad_pwm0_mux_sel (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    // from register interface
+    .we     (pad_pwm0_mux_sel_we),
+    .wd     (pad_pwm0_mux_sel_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0  ),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.pad_pwm0_mux_sel.q ),
+
+    // to register interface (read)
+    .qs     (pad_pwm0_mux_sel_qs)
+  );
+
+
+  // R[pad_pwm1_cfg]: V(False)
+
+  //   F[chip2pad]: 0:0
+  prim_subreg #(
+    .DW      (1),
+    .SWACCESS("RW"),
+    .RESVAL  (1'h0)
+  ) u_pad_pwm1_cfg_chip2pad (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    // from register interface
+    .we     (pad_pwm1_cfg_chip2pad_we),
+    .wd     (pad_pwm1_cfg_chip2pad_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0  ),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.pad_pwm1_cfg.chip2pad.q ),
+
+    // to register interface (read)
+    .qs     (pad_pwm1_cfg_chip2pad_qs)
+  );
+
+
+  //   F[oen]: 1:1
+  prim_subreg #(
+    .DW      (1),
+    .SWACCESS("RW"),
+    .RESVAL  (1'h1)
+  ) u_pad_pwm1_cfg_oen (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    // from register interface
+    .we     (pad_pwm1_cfg_oen_we),
+    .wd     (pad_pwm1_cfg_oen_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0  ),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.pad_pwm1_cfg.oen.q ),
+
+    // to register interface (read)
+    .qs     (pad_pwm1_cfg_oen_qs)
+  );
+
+
+  // R[pad_pwm1_mux_sel]: V(False)
+
+  prim_subreg #(
+    .DW      (4),
+    .SWACCESS("RW"),
+    .RESVAL  (4'h0)
+  ) u_pad_pwm1_mux_sel (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    // from register interface
+    .we     (pad_pwm1_mux_sel_we),
+    .wd     (pad_pwm1_mux_sel_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0  ),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.pad_pwm1_mux_sel.q ),
+
+    // to register interface (read)
+    .qs     (pad_pwm1_mux_sel_qs)
+  );
+
+
+  // R[pad_pwm2_cfg]: V(False)
+
+  //   F[chip2pad]: 0:0
+  prim_subreg #(
+    .DW      (1),
+    .SWACCESS("RW"),
+    .RESVAL  (1'h0)
+  ) u_pad_pwm2_cfg_chip2pad (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    // from register interface
+    .we     (pad_pwm2_cfg_chip2pad_we),
+    .wd     (pad_pwm2_cfg_chip2pad_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0  ),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.pad_pwm2_cfg.chip2pad.q ),
+
+    // to register interface (read)
+    .qs     (pad_pwm2_cfg_chip2pad_qs)
+  );
+
+
+  //   F[oen]: 1:1
+  prim_subreg #(
+    .DW      (1),
+    .SWACCESS("RW"),
+    .RESVAL  (1'h1)
+  ) u_pad_pwm2_cfg_oen (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    // from register interface
+    .we     (pad_pwm2_cfg_oen_we),
+    .wd     (pad_pwm2_cfg_oen_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0  ),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.pad_pwm2_cfg.oen.q ),
+
+    // to register interface (read)
+    .qs     (pad_pwm2_cfg_oen_qs)
+  );
+
+
+  // R[pad_pwm2_mux_sel]: V(False)
+
+  prim_subreg #(
+    .DW      (4),
+    .SWACCESS("RW"),
+    .RESVAL  (4'h0)
+  ) u_pad_pwm2_mux_sel (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    // from register interface
+    .we     (pad_pwm2_mux_sel_we),
+    .wd     (pad_pwm2_mux_sel_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0  ),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.pad_pwm2_mux_sel.q ),
+
+    // to register interface (read)
+    .qs     (pad_pwm2_mux_sel_qs)
+  );
+
+
+  // R[pad_pwm3_cfg]: V(False)
+
+  //   F[chip2pad]: 0:0
+  prim_subreg #(
+    .DW      (1),
+    .SWACCESS("RW"),
+    .RESVAL  (1'h0)
+  ) u_pad_pwm3_cfg_chip2pad (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    // from register interface
+    .we     (pad_pwm3_cfg_chip2pad_we),
+    .wd     (pad_pwm3_cfg_chip2pad_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0  ),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.pad_pwm3_cfg.chip2pad.q ),
+
+    // to register interface (read)
+    .qs     (pad_pwm3_cfg_chip2pad_qs)
+  );
+
+
+  //   F[oen]: 1:1
+  prim_subreg #(
+    .DW      (1),
+    .SWACCESS("RW"),
+    .RESVAL  (1'h1)
+  ) u_pad_pwm3_cfg_oen (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    // from register interface
+    .we     (pad_pwm3_cfg_oen_we),
+    .wd     (pad_pwm3_cfg_oen_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0  ),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.pad_pwm3_cfg.oen.q ),
+
+    // to register interface (read)
+    .qs     (pad_pwm3_cfg_oen_qs)
+  );
+
+
+  // R[pad_pwm3_mux_sel]: V(False)
+
+  prim_subreg #(
+    .DW      (4),
+    .SWACCESS("RW"),
+    .RESVAL  (4'h0)
+  ) u_pad_pwm3_mux_sel (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    // from register interface
+    .we     (pad_pwm3_mux_sel_we),
+    .wd     (pad_pwm3_mux_sel_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0  ),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.pad_pwm3_mux_sel.q ),
+
+    // to register interface (read)
+    .qs     (pad_pwm3_mux_sel_qs)
+  );
+
+
+  // R[pad_pwm4_cfg]: V(False)
+
+  //   F[chip2pad]: 0:0
+  prim_subreg #(
+    .DW      (1),
+    .SWACCESS("RW"),
+    .RESVAL  (1'h0)
+  ) u_pad_pwm4_cfg_chip2pad (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    // from register interface
+    .we     (pad_pwm4_cfg_chip2pad_we),
+    .wd     (pad_pwm4_cfg_chip2pad_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0  ),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.pad_pwm4_cfg.chip2pad.q ),
+
+    // to register interface (read)
+    .qs     (pad_pwm4_cfg_chip2pad_qs)
+  );
+
+
+  //   F[oen]: 1:1
+  prim_subreg #(
+    .DW      (1),
+    .SWACCESS("RW"),
+    .RESVAL  (1'h1)
+  ) u_pad_pwm4_cfg_oen (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    // from register interface
+    .we     (pad_pwm4_cfg_oen_we),
+    .wd     (pad_pwm4_cfg_oen_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0  ),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.pad_pwm4_cfg.oen.q ),
+
+    // to register interface (read)
+    .qs     (pad_pwm4_cfg_oen_qs)
+  );
+
+
+  // R[pad_pwm4_mux_sel]: V(False)
+
+  prim_subreg #(
+    .DW      (4),
+    .SWACCESS("RW"),
+    .RESVAL  (4'h0)
+  ) u_pad_pwm4_mux_sel (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    // from register interface
+    .we     (pad_pwm4_mux_sel_we),
+    .wd     (pad_pwm4_mux_sel_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0  ),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.pad_pwm4_mux_sel.q ),
+
+    // to register interface (read)
+    .qs     (pad_pwm4_mux_sel_qs)
+  );
+
+
+  // R[pad_pwm5_cfg]: V(False)
+
+  //   F[chip2pad]: 0:0
+  prim_subreg #(
+    .DW      (1),
+    .SWACCESS("RW"),
+    .RESVAL  (1'h0)
+  ) u_pad_pwm5_cfg_chip2pad (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    // from register interface
+    .we     (pad_pwm5_cfg_chip2pad_we),
+    .wd     (pad_pwm5_cfg_chip2pad_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0  ),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.pad_pwm5_cfg.chip2pad.q ),
+
+    // to register interface (read)
+    .qs     (pad_pwm5_cfg_chip2pad_qs)
+  );
+
+
+  //   F[oen]: 1:1
+  prim_subreg #(
+    .DW      (1),
+    .SWACCESS("RW"),
+    .RESVAL  (1'h1)
+  ) u_pad_pwm5_cfg_oen (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    // from register interface
+    .we     (pad_pwm5_cfg_oen_we),
+    .wd     (pad_pwm5_cfg_oen_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0  ),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.pad_pwm5_cfg.oen.q ),
+
+    // to register interface (read)
+    .qs     (pad_pwm5_cfg_oen_qs)
+  );
+
+
+  // R[pad_pwm5_mux_sel]: V(False)
+
+  prim_subreg #(
+    .DW      (4),
+    .SWACCESS("RW"),
+    .RESVAL  (4'h0)
+  ) u_pad_pwm5_mux_sel (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    // from register interface
+    .we     (pad_pwm5_mux_sel_we),
+    .wd     (pad_pwm5_mux_sel_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0  ),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.pad_pwm5_mux_sel.q ),
+
+    // to register interface (read)
+    .qs     (pad_pwm5_mux_sel_qs)
+  );
+
+
+  // R[pad_pwm6_cfg]: V(False)
+
+  //   F[chip2pad]: 0:0
+  prim_subreg #(
+    .DW      (1),
+    .SWACCESS("RW"),
+    .RESVAL  (1'h0)
+  ) u_pad_pwm6_cfg_chip2pad (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    // from register interface
+    .we     (pad_pwm6_cfg_chip2pad_we),
+    .wd     (pad_pwm6_cfg_chip2pad_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0  ),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.pad_pwm6_cfg.chip2pad.q ),
+
+    // to register interface (read)
+    .qs     (pad_pwm6_cfg_chip2pad_qs)
+  );
+
+
+  //   F[oen]: 1:1
+  prim_subreg #(
+    .DW      (1),
+    .SWACCESS("RW"),
+    .RESVAL  (1'h1)
+  ) u_pad_pwm6_cfg_oen (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    // from register interface
+    .we     (pad_pwm6_cfg_oen_we),
+    .wd     (pad_pwm6_cfg_oen_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0  ),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.pad_pwm6_cfg.oen.q ),
+
+    // to register interface (read)
+    .qs     (pad_pwm6_cfg_oen_qs)
+  );
+
+
+  // R[pad_pwm6_mux_sel]: V(False)
+
+  prim_subreg #(
+    .DW      (4),
+    .SWACCESS("RW"),
+    .RESVAL  (4'h0)
+  ) u_pad_pwm6_mux_sel (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    // from register interface
+    .we     (pad_pwm6_mux_sel_we),
+    .wd     (pad_pwm6_mux_sel_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0  ),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.pad_pwm6_mux_sel.q ),
+
+    // to register interface (read)
+    .qs     (pad_pwm6_mux_sel_qs)
+  );
+
+
+  // R[pad_pwm7_cfg]: V(False)
+
+  //   F[chip2pad]: 0:0
+  prim_subreg #(
+    .DW      (1),
+    .SWACCESS("RW"),
+    .RESVAL  (1'h0)
+  ) u_pad_pwm7_cfg_chip2pad (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    // from register interface
+    .we     (pad_pwm7_cfg_chip2pad_we),
+    .wd     (pad_pwm7_cfg_chip2pad_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0  ),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.pad_pwm7_cfg.chip2pad.q ),
+
+    // to register interface (read)
+    .qs     (pad_pwm7_cfg_chip2pad_qs)
+  );
+
+
+  //   F[oen]: 1:1
+  prim_subreg #(
+    .DW      (1),
+    .SWACCESS("RW"),
+    .RESVAL  (1'h1)
+  ) u_pad_pwm7_cfg_oen (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    // from register interface
+    .we     (pad_pwm7_cfg_oen_we),
+    .wd     (pad_pwm7_cfg_oen_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0  ),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.pad_pwm7_cfg.oen.q ),
+
+    // to register interface (read)
+    .qs     (pad_pwm7_cfg_oen_qs)
+  );
+
+
+  // R[pad_pwm7_mux_sel]: V(False)
+
+  prim_subreg #(
+    .DW      (4),
+    .SWACCESS("RW"),
+    .RESVAL  (4'h0)
+  ) u_pad_pwm7_mux_sel (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    // from register interface
+    .we     (pad_pwm7_mux_sel_we),
+    .wd     (pad_pwm7_mux_sel_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0  ),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.pad_pwm7_mux_sel.q ),
+
+    // to register interface (read)
+    .qs     (pad_pwm7_mux_sel_qs)
   );
 
 
 
 
-  logic [93:0] addr_hit;
+  logic [227:0] addr_hit;
   always_comb begin
     addr_hit = '0;
-    addr_hit[ 0] = (reg_addr == ALSAQR_PERIPH_PADFRAME_PERIPHS_CONFIG_PAD_MX_CAN_0_CFG_OFFSET);
-    addr_hit[ 1] = (reg_addr == ALSAQR_PERIPH_PADFRAME_PERIPHS_CONFIG_PAD_MX_CAN_0_MUX_SEL_OFFSET);
-    addr_hit[ 2] = (reg_addr == ALSAQR_PERIPH_PADFRAME_PERIPHS_CONFIG_PAD_MX_CAN_1_CFG_OFFSET);
-    addr_hit[ 3] = (reg_addr == ALSAQR_PERIPH_PADFRAME_PERIPHS_CONFIG_PAD_MX_CAN_1_MUX_SEL_OFFSET);
-    addr_hit[ 4] = (reg_addr == ALSAQR_PERIPH_PADFRAME_PERIPHS_CONFIG_PAD_MX_CAN_2_CFG_OFFSET);
-    addr_hit[ 5] = (reg_addr == ALSAQR_PERIPH_PADFRAME_PERIPHS_CONFIG_PAD_MX_CAN_2_MUX_SEL_OFFSET);
-    addr_hit[ 6] = (reg_addr == ALSAQR_PERIPH_PADFRAME_PERIPHS_CONFIG_PAD_MX_CAN_3_CFG_OFFSET);
-    addr_hit[ 7] = (reg_addr == ALSAQR_PERIPH_PADFRAME_PERIPHS_CONFIG_PAD_MX_CAN_3_MUX_SEL_OFFSET);
-    addr_hit[ 8] = (reg_addr == ALSAQR_PERIPH_PADFRAME_PERIPHS_CONFIG_PAD_MX_CAM0_0_CFG_OFFSET);
-    addr_hit[ 9] = (reg_addr == ALSAQR_PERIPH_PADFRAME_PERIPHS_CONFIG_PAD_MX_CAM0_0_MUX_SEL_OFFSET);
-    addr_hit[10] = (reg_addr == ALSAQR_PERIPH_PADFRAME_PERIPHS_CONFIG_PAD_MX_CAM0_1_CFG_OFFSET);
-    addr_hit[11] = (reg_addr == ALSAQR_PERIPH_PADFRAME_PERIPHS_CONFIG_PAD_MX_CAM0_1_MUX_SEL_OFFSET);
-    addr_hit[12] = (reg_addr == ALSAQR_PERIPH_PADFRAME_PERIPHS_CONFIG_PAD_MX_CAM0_2_CFG_OFFSET);
-    addr_hit[13] = (reg_addr == ALSAQR_PERIPH_PADFRAME_PERIPHS_CONFIG_PAD_MX_CAM0_2_MUX_SEL_OFFSET);
-    addr_hit[14] = (reg_addr == ALSAQR_PERIPH_PADFRAME_PERIPHS_CONFIG_PAD_MX_CAM0_3_CFG_OFFSET);
-    addr_hit[15] = (reg_addr == ALSAQR_PERIPH_PADFRAME_PERIPHS_CONFIG_PAD_MX_CAM0_3_MUX_SEL_OFFSET);
-    addr_hit[16] = (reg_addr == ALSAQR_PERIPH_PADFRAME_PERIPHS_CONFIG_PAD_MX_CAM0_4_CFG_OFFSET);
-    addr_hit[17] = (reg_addr == ALSAQR_PERIPH_PADFRAME_PERIPHS_CONFIG_PAD_MX_CAM0_4_MUX_SEL_OFFSET);
-    addr_hit[18] = (reg_addr == ALSAQR_PERIPH_PADFRAME_PERIPHS_CONFIG_PAD_MX_CAM0_5_CFG_OFFSET);
-    addr_hit[19] = (reg_addr == ALSAQR_PERIPH_PADFRAME_PERIPHS_CONFIG_PAD_MX_CAM0_5_MUX_SEL_OFFSET);
-    addr_hit[20] = (reg_addr == ALSAQR_PERIPH_PADFRAME_PERIPHS_CONFIG_PAD_MX_CAM0_6_CFG_OFFSET);
-    addr_hit[21] = (reg_addr == ALSAQR_PERIPH_PADFRAME_PERIPHS_CONFIG_PAD_MX_CAM0_6_MUX_SEL_OFFSET);
-    addr_hit[22] = (reg_addr == ALSAQR_PERIPH_PADFRAME_PERIPHS_CONFIG_PAD_MX_CAM0_7_CFG_OFFSET);
-    addr_hit[23] = (reg_addr == ALSAQR_PERIPH_PADFRAME_PERIPHS_CONFIG_PAD_MX_CAM0_7_MUX_SEL_OFFSET);
-    addr_hit[24] = (reg_addr == ALSAQR_PERIPH_PADFRAME_PERIPHS_CONFIG_PAD_MX_CAM0_8_CFG_OFFSET);
-    addr_hit[25] = (reg_addr == ALSAQR_PERIPH_PADFRAME_PERIPHS_CONFIG_PAD_MX_CAM0_8_MUX_SEL_OFFSET);
-    addr_hit[26] = (reg_addr == ALSAQR_PERIPH_PADFRAME_PERIPHS_CONFIG_PAD_MX_CAM0_9_CFG_OFFSET);
-    addr_hit[27] = (reg_addr == ALSAQR_PERIPH_PADFRAME_PERIPHS_CONFIG_PAD_MX_CAM0_9_MUX_SEL_OFFSET);
-    addr_hit[28] = (reg_addr == ALSAQR_PERIPH_PADFRAME_PERIPHS_CONFIG_PAD_MX_CAM0_10_CFG_OFFSET);
-    addr_hit[29] = (reg_addr == ALSAQR_PERIPH_PADFRAME_PERIPHS_CONFIG_PAD_MX_CAM0_10_MUX_SEL_OFFSET);
-    addr_hit[30] = (reg_addr == ALSAQR_PERIPH_PADFRAME_PERIPHS_CONFIG_PAD_MX_CAM1_0_CFG_OFFSET);
-    addr_hit[31] = (reg_addr == ALSAQR_PERIPH_PADFRAME_PERIPHS_CONFIG_PAD_MX_CAM1_0_MUX_SEL_OFFSET);
-    addr_hit[32] = (reg_addr == ALSAQR_PERIPH_PADFRAME_PERIPHS_CONFIG_PAD_MX_CAM1_1_CFG_OFFSET);
-    addr_hit[33] = (reg_addr == ALSAQR_PERIPH_PADFRAME_PERIPHS_CONFIG_PAD_MX_CAM1_1_MUX_SEL_OFFSET);
-    addr_hit[34] = (reg_addr == ALSAQR_PERIPH_PADFRAME_PERIPHS_CONFIG_PAD_MX_CAM1_2_CFG_OFFSET);
-    addr_hit[35] = (reg_addr == ALSAQR_PERIPH_PADFRAME_PERIPHS_CONFIG_PAD_MX_CAM1_2_MUX_SEL_OFFSET);
-    addr_hit[36] = (reg_addr == ALSAQR_PERIPH_PADFRAME_PERIPHS_CONFIG_PAD_MX_CAM1_3_CFG_OFFSET);
-    addr_hit[37] = (reg_addr == ALSAQR_PERIPH_PADFRAME_PERIPHS_CONFIG_PAD_MX_CAM1_3_MUX_SEL_OFFSET);
-    addr_hit[38] = (reg_addr == ALSAQR_PERIPH_PADFRAME_PERIPHS_CONFIG_PAD_MX_CAM1_4_CFG_OFFSET);
-    addr_hit[39] = (reg_addr == ALSAQR_PERIPH_PADFRAME_PERIPHS_CONFIG_PAD_MX_CAM1_4_MUX_SEL_OFFSET);
-    addr_hit[40] = (reg_addr == ALSAQR_PERIPH_PADFRAME_PERIPHS_CONFIG_PAD_MX_CAM1_5_CFG_OFFSET);
-    addr_hit[41] = (reg_addr == ALSAQR_PERIPH_PADFRAME_PERIPHS_CONFIG_PAD_MX_CAM1_5_MUX_SEL_OFFSET);
-    addr_hit[42] = (reg_addr == ALSAQR_PERIPH_PADFRAME_PERIPHS_CONFIG_PAD_MX_CAM1_6_CFG_OFFSET);
-    addr_hit[43] = (reg_addr == ALSAQR_PERIPH_PADFRAME_PERIPHS_CONFIG_PAD_MX_CAM1_6_MUX_SEL_OFFSET);
-    addr_hit[44] = (reg_addr == ALSAQR_PERIPH_PADFRAME_PERIPHS_CONFIG_PAD_MX_CAM1_7_CFG_OFFSET);
-    addr_hit[45] = (reg_addr == ALSAQR_PERIPH_PADFRAME_PERIPHS_CONFIG_PAD_MX_CAM1_7_MUX_SEL_OFFSET);
-    addr_hit[46] = (reg_addr == ALSAQR_PERIPH_PADFRAME_PERIPHS_CONFIG_PAD_MX_CAM1_8_CFG_OFFSET);
-    addr_hit[47] = (reg_addr == ALSAQR_PERIPH_PADFRAME_PERIPHS_CONFIG_PAD_MX_CAM1_8_MUX_SEL_OFFSET);
-    addr_hit[48] = (reg_addr == ALSAQR_PERIPH_PADFRAME_PERIPHS_CONFIG_PAD_MX_CAM1_9_CFG_OFFSET);
-    addr_hit[49] = (reg_addr == ALSAQR_PERIPH_PADFRAME_PERIPHS_CONFIG_PAD_MX_CAM1_9_MUX_SEL_OFFSET);
-    addr_hit[50] = (reg_addr == ALSAQR_PERIPH_PADFRAME_PERIPHS_CONFIG_PAD_MX_CAM1_10_CFG_OFFSET);
-    addr_hit[51] = (reg_addr == ALSAQR_PERIPH_PADFRAME_PERIPHS_CONFIG_PAD_MX_CAM1_10_MUX_SEL_OFFSET);
-    addr_hit[52] = (reg_addr == ALSAQR_PERIPH_PADFRAME_PERIPHS_CONFIG_PAD_MX_SDIO1_0_CFG_OFFSET);
-    addr_hit[53] = (reg_addr == ALSAQR_PERIPH_PADFRAME_PERIPHS_CONFIG_PAD_MX_SDIO1_0_MUX_SEL_OFFSET);
-    addr_hit[54] = (reg_addr == ALSAQR_PERIPH_PADFRAME_PERIPHS_CONFIG_PAD_MX_SDIO1_1_CFG_OFFSET);
-    addr_hit[55] = (reg_addr == ALSAQR_PERIPH_PADFRAME_PERIPHS_CONFIG_PAD_MX_SDIO1_1_MUX_SEL_OFFSET);
-    addr_hit[56] = (reg_addr == ALSAQR_PERIPH_PADFRAME_PERIPHS_CONFIG_PAD_MX_SDIO1_2_CFG_OFFSET);
-    addr_hit[57] = (reg_addr == ALSAQR_PERIPH_PADFRAME_PERIPHS_CONFIG_PAD_MX_SDIO1_2_MUX_SEL_OFFSET);
-    addr_hit[58] = (reg_addr == ALSAQR_PERIPH_PADFRAME_PERIPHS_CONFIG_PAD_MX_SDIO1_3_CFG_OFFSET);
-    addr_hit[59] = (reg_addr == ALSAQR_PERIPH_PADFRAME_PERIPHS_CONFIG_PAD_MX_SDIO1_3_MUX_SEL_OFFSET);
-    addr_hit[60] = (reg_addr == ALSAQR_PERIPH_PADFRAME_PERIPHS_CONFIG_PAD_MX_SDIO1_4_CFG_OFFSET);
-    addr_hit[61] = (reg_addr == ALSAQR_PERIPH_PADFRAME_PERIPHS_CONFIG_PAD_MX_SDIO1_4_MUX_SEL_OFFSET);
-    addr_hit[62] = (reg_addr == ALSAQR_PERIPH_PADFRAME_PERIPHS_CONFIG_PAD_MX_SDIO1_5_CFG_OFFSET);
-    addr_hit[63] = (reg_addr == ALSAQR_PERIPH_PADFRAME_PERIPHS_CONFIG_PAD_MX_SDIO1_5_MUX_SEL_OFFSET);
-    addr_hit[64] = (reg_addr == ALSAQR_PERIPH_PADFRAME_PERIPHS_CONFIG_PAD_MX_SDIO1_6_CFG_OFFSET);
-    addr_hit[65] = (reg_addr == ALSAQR_PERIPH_PADFRAME_PERIPHS_CONFIG_PAD_MX_SDIO1_6_MUX_SEL_OFFSET);
-    addr_hit[66] = (reg_addr == ALSAQR_PERIPH_PADFRAME_PERIPHS_CONFIG_PAD_MX_SDIO1_7_CFG_OFFSET);
-    addr_hit[67] = (reg_addr == ALSAQR_PERIPH_PADFRAME_PERIPHS_CONFIG_PAD_MX_SDIO1_7_MUX_SEL_OFFSET);
-    addr_hit[68] = (reg_addr == ALSAQR_PERIPH_PADFRAME_PERIPHS_CONFIG_PAD_MX_HYPER1_0_CFG_OFFSET);
-    addr_hit[69] = (reg_addr == ALSAQR_PERIPH_PADFRAME_PERIPHS_CONFIG_PAD_MX_HYPER1_0_MUX_SEL_OFFSET);
-    addr_hit[70] = (reg_addr == ALSAQR_PERIPH_PADFRAME_PERIPHS_CONFIG_PAD_MX_HYPER1_1_CFG_OFFSET);
-    addr_hit[71] = (reg_addr == ALSAQR_PERIPH_PADFRAME_PERIPHS_CONFIG_PAD_MX_HYPER1_1_MUX_SEL_OFFSET);
-    addr_hit[72] = (reg_addr == ALSAQR_PERIPH_PADFRAME_PERIPHS_CONFIG_PAD_MX_HYPER1_2_CFG_OFFSET);
-    addr_hit[73] = (reg_addr == ALSAQR_PERIPH_PADFRAME_PERIPHS_CONFIG_PAD_MX_HYPER1_2_MUX_SEL_OFFSET);
-    addr_hit[74] = (reg_addr == ALSAQR_PERIPH_PADFRAME_PERIPHS_CONFIG_PAD_MX_HYPER1_3_CFG_OFFSET);
-    addr_hit[75] = (reg_addr == ALSAQR_PERIPH_PADFRAME_PERIPHS_CONFIG_PAD_MX_HYPER1_3_MUX_SEL_OFFSET);
-    addr_hit[76] = (reg_addr == ALSAQR_PERIPH_PADFRAME_PERIPHS_CONFIG_PAD_MX_HYPER1_4_CFG_OFFSET);
-    addr_hit[77] = (reg_addr == ALSAQR_PERIPH_PADFRAME_PERIPHS_CONFIG_PAD_MX_HYPER1_4_MUX_SEL_OFFSET);
-    addr_hit[78] = (reg_addr == ALSAQR_PERIPH_PADFRAME_PERIPHS_CONFIG_PAD_MX_HYPER1_5_CFG_OFFSET);
-    addr_hit[79] = (reg_addr == ALSAQR_PERIPH_PADFRAME_PERIPHS_CONFIG_PAD_MX_HYPER1_5_MUX_SEL_OFFSET);
-    addr_hit[80] = (reg_addr == ALSAQR_PERIPH_PADFRAME_PERIPHS_CONFIG_PAD_MX_HYPER1_6_CFG_OFFSET);
-    addr_hit[81] = (reg_addr == ALSAQR_PERIPH_PADFRAME_PERIPHS_CONFIG_PAD_MX_HYPER1_6_MUX_SEL_OFFSET);
-    addr_hit[82] = (reg_addr == ALSAQR_PERIPH_PADFRAME_PERIPHS_CONFIG_PAD_MX_HYPER1_7_CFG_OFFSET);
-    addr_hit[83] = (reg_addr == ALSAQR_PERIPH_PADFRAME_PERIPHS_CONFIG_PAD_MX_HYPER1_7_MUX_SEL_OFFSET);
-    addr_hit[84] = (reg_addr == ALSAQR_PERIPH_PADFRAME_PERIPHS_CONFIG_PAD_MX_HYPER1_8_CFG_OFFSET);
-    addr_hit[85] = (reg_addr == ALSAQR_PERIPH_PADFRAME_PERIPHS_CONFIG_PAD_MX_HYPER1_8_MUX_SEL_OFFSET);
-    addr_hit[86] = (reg_addr == ALSAQR_PERIPH_PADFRAME_PERIPHS_CONFIG_PAD_MX_HYPER1_9_CFG_OFFSET);
-    addr_hit[87] = (reg_addr == ALSAQR_PERIPH_PADFRAME_PERIPHS_CONFIG_PAD_MX_HYPER1_9_MUX_SEL_OFFSET);
-    addr_hit[88] = (reg_addr == ALSAQR_PERIPH_PADFRAME_PERIPHS_CONFIG_PAD_MX_HYPER1_10_CFG_OFFSET);
-    addr_hit[89] = (reg_addr == ALSAQR_PERIPH_PADFRAME_PERIPHS_CONFIG_PAD_MX_HYPER1_10_MUX_SEL_OFFSET);
-    addr_hit[90] = (reg_addr == ALSAQR_PERIPH_PADFRAME_PERIPHS_CONFIG_PAD_MX_HYPER1_11_CFG_OFFSET);
-    addr_hit[91] = (reg_addr == ALSAQR_PERIPH_PADFRAME_PERIPHS_CONFIG_PAD_MX_HYPER1_11_MUX_SEL_OFFSET);
-    addr_hit[92] = (reg_addr == ALSAQR_PERIPH_PADFRAME_PERIPHS_CONFIG_PAD_MX_HYPER1_12_CFG_OFFSET);
-    addr_hit[93] = (reg_addr == ALSAQR_PERIPH_PADFRAME_PERIPHS_CONFIG_PAD_MX_HYPER1_12_MUX_SEL_OFFSET);
+    addr_hit[  0] = (reg_addr == ALSAQR_PERIPH_PADFRAME_PERIPHS_CONFIG_PAD_IO_A_00_CFG_OFFSET);
+    addr_hit[  1] = (reg_addr == ALSAQR_PERIPH_PADFRAME_PERIPHS_CONFIG_PAD_IO_A_00_MUX_SEL_OFFSET);
+    addr_hit[  2] = (reg_addr == ALSAQR_PERIPH_PADFRAME_PERIPHS_CONFIG_PAD_IO_A_01_CFG_OFFSET);
+    addr_hit[  3] = (reg_addr == ALSAQR_PERIPH_PADFRAME_PERIPHS_CONFIG_PAD_IO_A_01_MUX_SEL_OFFSET);
+    addr_hit[  4] = (reg_addr == ALSAQR_PERIPH_PADFRAME_PERIPHS_CONFIG_PAD_IO_A_02_CFG_OFFSET);
+    addr_hit[  5] = (reg_addr == ALSAQR_PERIPH_PADFRAME_PERIPHS_CONFIG_PAD_IO_A_02_MUX_SEL_OFFSET);
+    addr_hit[  6] = (reg_addr == ALSAQR_PERIPH_PADFRAME_PERIPHS_CONFIG_PAD_IO_A_03_CFG_OFFSET);
+    addr_hit[  7] = (reg_addr == ALSAQR_PERIPH_PADFRAME_PERIPHS_CONFIG_PAD_IO_A_03_MUX_SEL_OFFSET);
+    addr_hit[  8] = (reg_addr == ALSAQR_PERIPH_PADFRAME_PERIPHS_CONFIG_PAD_IO_A_04_CFG_OFFSET);
+    addr_hit[  9] = (reg_addr == ALSAQR_PERIPH_PADFRAME_PERIPHS_CONFIG_PAD_IO_A_04_MUX_SEL_OFFSET);
+    addr_hit[ 10] = (reg_addr == ALSAQR_PERIPH_PADFRAME_PERIPHS_CONFIG_PAD_IO_A_05_CFG_OFFSET);
+    addr_hit[ 11] = (reg_addr == ALSAQR_PERIPH_PADFRAME_PERIPHS_CONFIG_PAD_IO_A_05_MUX_SEL_OFFSET);
+    addr_hit[ 12] = (reg_addr == ALSAQR_PERIPH_PADFRAME_PERIPHS_CONFIG_PAD_IO_A_06_CFG_OFFSET);
+    addr_hit[ 13] = (reg_addr == ALSAQR_PERIPH_PADFRAME_PERIPHS_CONFIG_PAD_IO_A_06_MUX_SEL_OFFSET);
+    addr_hit[ 14] = (reg_addr == ALSAQR_PERIPH_PADFRAME_PERIPHS_CONFIG_PAD_IO_A_07_CFG_OFFSET);
+    addr_hit[ 15] = (reg_addr == ALSAQR_PERIPH_PADFRAME_PERIPHS_CONFIG_PAD_IO_A_07_MUX_SEL_OFFSET);
+    addr_hit[ 16] = (reg_addr == ALSAQR_PERIPH_PADFRAME_PERIPHS_CONFIG_PAD_IO_A_08_CFG_OFFSET);
+    addr_hit[ 17] = (reg_addr == ALSAQR_PERIPH_PADFRAME_PERIPHS_CONFIG_PAD_IO_A_08_MUX_SEL_OFFSET);
+    addr_hit[ 18] = (reg_addr == ALSAQR_PERIPH_PADFRAME_PERIPHS_CONFIG_PAD_IO_A_09_CFG_OFFSET);
+    addr_hit[ 19] = (reg_addr == ALSAQR_PERIPH_PADFRAME_PERIPHS_CONFIG_PAD_IO_A_09_MUX_SEL_OFFSET);
+    addr_hit[ 20] = (reg_addr == ALSAQR_PERIPH_PADFRAME_PERIPHS_CONFIG_PAD_IO_A_10_CFG_OFFSET);
+    addr_hit[ 21] = (reg_addr == ALSAQR_PERIPH_PADFRAME_PERIPHS_CONFIG_PAD_IO_A_10_MUX_SEL_OFFSET);
+    addr_hit[ 22] = (reg_addr == ALSAQR_PERIPH_PADFRAME_PERIPHS_CONFIG_PAD_IO_A_11_CFG_OFFSET);
+    addr_hit[ 23] = (reg_addr == ALSAQR_PERIPH_PADFRAME_PERIPHS_CONFIG_PAD_IO_A_11_MUX_SEL_OFFSET);
+    addr_hit[ 24] = (reg_addr == ALSAQR_PERIPH_PADFRAME_PERIPHS_CONFIG_PAD_IO_A_12_CFG_OFFSET);
+    addr_hit[ 25] = (reg_addr == ALSAQR_PERIPH_PADFRAME_PERIPHS_CONFIG_PAD_IO_A_12_MUX_SEL_OFFSET);
+    addr_hit[ 26] = (reg_addr == ALSAQR_PERIPH_PADFRAME_PERIPHS_CONFIG_PAD_IO_A_13_CFG_OFFSET);
+    addr_hit[ 27] = (reg_addr == ALSAQR_PERIPH_PADFRAME_PERIPHS_CONFIG_PAD_IO_A_13_MUX_SEL_OFFSET);
+    addr_hit[ 28] = (reg_addr == ALSAQR_PERIPH_PADFRAME_PERIPHS_CONFIG_PAD_IO_A_14_CFG_OFFSET);
+    addr_hit[ 29] = (reg_addr == ALSAQR_PERIPH_PADFRAME_PERIPHS_CONFIG_PAD_IO_A_14_MUX_SEL_OFFSET);
+    addr_hit[ 30] = (reg_addr == ALSAQR_PERIPH_PADFRAME_PERIPHS_CONFIG_PAD_IO_B_00_CFG_OFFSET);
+    addr_hit[ 31] = (reg_addr == ALSAQR_PERIPH_PADFRAME_PERIPHS_CONFIG_PAD_IO_B_00_MUX_SEL_OFFSET);
+    addr_hit[ 32] = (reg_addr == ALSAQR_PERIPH_PADFRAME_PERIPHS_CONFIG_PAD_IO_B_01_CFG_OFFSET);
+    addr_hit[ 33] = (reg_addr == ALSAQR_PERIPH_PADFRAME_PERIPHS_CONFIG_PAD_IO_B_01_MUX_SEL_OFFSET);
+    addr_hit[ 34] = (reg_addr == ALSAQR_PERIPH_PADFRAME_PERIPHS_CONFIG_PAD_IO_B_02_CFG_OFFSET);
+    addr_hit[ 35] = (reg_addr == ALSAQR_PERIPH_PADFRAME_PERIPHS_CONFIG_PAD_IO_B_02_MUX_SEL_OFFSET);
+    addr_hit[ 36] = (reg_addr == ALSAQR_PERIPH_PADFRAME_PERIPHS_CONFIG_PAD_IO_B_03_CFG_OFFSET);
+    addr_hit[ 37] = (reg_addr == ALSAQR_PERIPH_PADFRAME_PERIPHS_CONFIG_PAD_IO_B_03_MUX_SEL_OFFSET);
+    addr_hit[ 38] = (reg_addr == ALSAQR_PERIPH_PADFRAME_PERIPHS_CONFIG_PAD_IO_B_04_CFG_OFFSET);
+    addr_hit[ 39] = (reg_addr == ALSAQR_PERIPH_PADFRAME_PERIPHS_CONFIG_PAD_IO_B_04_MUX_SEL_OFFSET);
+    addr_hit[ 40] = (reg_addr == ALSAQR_PERIPH_PADFRAME_PERIPHS_CONFIG_PAD_IO_B_05_CFG_OFFSET);
+    addr_hit[ 41] = (reg_addr == ALSAQR_PERIPH_PADFRAME_PERIPHS_CONFIG_PAD_IO_B_05_MUX_SEL_OFFSET);
+    addr_hit[ 42] = (reg_addr == ALSAQR_PERIPH_PADFRAME_PERIPHS_CONFIG_PAD_IO_B_06_CFG_OFFSET);
+    addr_hit[ 43] = (reg_addr == ALSAQR_PERIPH_PADFRAME_PERIPHS_CONFIG_PAD_IO_B_06_MUX_SEL_OFFSET);
+    addr_hit[ 44] = (reg_addr == ALSAQR_PERIPH_PADFRAME_PERIPHS_CONFIG_PAD_IO_B_07_CFG_OFFSET);
+    addr_hit[ 45] = (reg_addr == ALSAQR_PERIPH_PADFRAME_PERIPHS_CONFIG_PAD_IO_B_07_MUX_SEL_OFFSET);
+    addr_hit[ 46] = (reg_addr == ALSAQR_PERIPH_PADFRAME_PERIPHS_CONFIG_PAD_IO_B_08_CFG_OFFSET);
+    addr_hit[ 47] = (reg_addr == ALSAQR_PERIPH_PADFRAME_PERIPHS_CONFIG_PAD_IO_B_08_MUX_SEL_OFFSET);
+    addr_hit[ 48] = (reg_addr == ALSAQR_PERIPH_PADFRAME_PERIPHS_CONFIG_PAD_IO_B_09_CFG_OFFSET);
+    addr_hit[ 49] = (reg_addr == ALSAQR_PERIPH_PADFRAME_PERIPHS_CONFIG_PAD_IO_B_09_MUX_SEL_OFFSET);
+    addr_hit[ 50] = (reg_addr == ALSAQR_PERIPH_PADFRAME_PERIPHS_CONFIG_PAD_IO_B_10_CFG_OFFSET);
+    addr_hit[ 51] = (reg_addr == ALSAQR_PERIPH_PADFRAME_PERIPHS_CONFIG_PAD_IO_B_10_MUX_SEL_OFFSET);
+    addr_hit[ 52] = (reg_addr == ALSAQR_PERIPH_PADFRAME_PERIPHS_CONFIG_PAD_IO_B_11_CFG_OFFSET);
+    addr_hit[ 53] = (reg_addr == ALSAQR_PERIPH_PADFRAME_PERIPHS_CONFIG_PAD_IO_B_11_MUX_SEL_OFFSET);
+    addr_hit[ 54] = (reg_addr == ALSAQR_PERIPH_PADFRAME_PERIPHS_CONFIG_PAD_IO_B_12_CFG_OFFSET);
+    addr_hit[ 55] = (reg_addr == ALSAQR_PERIPH_PADFRAME_PERIPHS_CONFIG_PAD_IO_B_12_MUX_SEL_OFFSET);
+    addr_hit[ 56] = (reg_addr == ALSAQR_PERIPH_PADFRAME_PERIPHS_CONFIG_PAD_IO_B_13_CFG_OFFSET);
+    addr_hit[ 57] = (reg_addr == ALSAQR_PERIPH_PADFRAME_PERIPHS_CONFIG_PAD_IO_B_13_MUX_SEL_OFFSET);
+    addr_hit[ 58] = (reg_addr == ALSAQR_PERIPH_PADFRAME_PERIPHS_CONFIG_PAD_IO_B_14_CFG_OFFSET);
+    addr_hit[ 59] = (reg_addr == ALSAQR_PERIPH_PADFRAME_PERIPHS_CONFIG_PAD_IO_B_14_MUX_SEL_OFFSET);
+    addr_hit[ 60] = (reg_addr == ALSAQR_PERIPH_PADFRAME_PERIPHS_CONFIG_PAD_IO_B_15_CFG_OFFSET);
+    addr_hit[ 61] = (reg_addr == ALSAQR_PERIPH_PADFRAME_PERIPHS_CONFIG_PAD_IO_B_15_MUX_SEL_OFFSET);
+    addr_hit[ 62] = (reg_addr == ALSAQR_PERIPH_PADFRAME_PERIPHS_CONFIG_PAD_IO_B_16_CFG_OFFSET);
+    addr_hit[ 63] = (reg_addr == ALSAQR_PERIPH_PADFRAME_PERIPHS_CONFIG_PAD_IO_B_16_MUX_SEL_OFFSET);
+    addr_hit[ 64] = (reg_addr == ALSAQR_PERIPH_PADFRAME_PERIPHS_CONFIG_PAD_IO_B_17_CFG_OFFSET);
+    addr_hit[ 65] = (reg_addr == ALSAQR_PERIPH_PADFRAME_PERIPHS_CONFIG_PAD_IO_B_17_MUX_SEL_OFFSET);
+    addr_hit[ 66] = (reg_addr == ALSAQR_PERIPH_PADFRAME_PERIPHS_CONFIG_PAD_IO_B_18_CFG_OFFSET);
+    addr_hit[ 67] = (reg_addr == ALSAQR_PERIPH_PADFRAME_PERIPHS_CONFIG_PAD_IO_B_18_MUX_SEL_OFFSET);
+    addr_hit[ 68] = (reg_addr == ALSAQR_PERIPH_PADFRAME_PERIPHS_CONFIG_PAD_IO_B_19_CFG_OFFSET);
+    addr_hit[ 69] = (reg_addr == ALSAQR_PERIPH_PADFRAME_PERIPHS_CONFIG_PAD_IO_B_19_MUX_SEL_OFFSET);
+    addr_hit[ 70] = (reg_addr == ALSAQR_PERIPH_PADFRAME_PERIPHS_CONFIG_PAD_IO_C_00_CFG_OFFSET);
+    addr_hit[ 71] = (reg_addr == ALSAQR_PERIPH_PADFRAME_PERIPHS_CONFIG_PAD_IO_C_00_MUX_SEL_OFFSET);
+    addr_hit[ 72] = (reg_addr == ALSAQR_PERIPH_PADFRAME_PERIPHS_CONFIG_PAD_IO_C_01_CFG_OFFSET);
+    addr_hit[ 73] = (reg_addr == ALSAQR_PERIPH_PADFRAME_PERIPHS_CONFIG_PAD_IO_C_01_MUX_SEL_OFFSET);
+    addr_hit[ 74] = (reg_addr == ALSAQR_PERIPH_PADFRAME_PERIPHS_CONFIG_PAD_IO_C_02_CFG_OFFSET);
+    addr_hit[ 75] = (reg_addr == ALSAQR_PERIPH_PADFRAME_PERIPHS_CONFIG_PAD_IO_C_02_MUX_SEL_OFFSET);
+    addr_hit[ 76] = (reg_addr == ALSAQR_PERIPH_PADFRAME_PERIPHS_CONFIG_PAD_IO_C_03_CFG_OFFSET);
+    addr_hit[ 77] = (reg_addr == ALSAQR_PERIPH_PADFRAME_PERIPHS_CONFIG_PAD_IO_C_03_MUX_SEL_OFFSET);
+    addr_hit[ 78] = (reg_addr == ALSAQR_PERIPH_PADFRAME_PERIPHS_CONFIG_PAD_IO_C_04_CFG_OFFSET);
+    addr_hit[ 79] = (reg_addr == ALSAQR_PERIPH_PADFRAME_PERIPHS_CONFIG_PAD_IO_C_04_MUX_SEL_OFFSET);
+    addr_hit[ 80] = (reg_addr == ALSAQR_PERIPH_PADFRAME_PERIPHS_CONFIG_PAD_IO_C_05_CFG_OFFSET);
+    addr_hit[ 81] = (reg_addr == ALSAQR_PERIPH_PADFRAME_PERIPHS_CONFIG_PAD_IO_C_05_MUX_SEL_OFFSET);
+    addr_hit[ 82] = (reg_addr == ALSAQR_PERIPH_PADFRAME_PERIPHS_CONFIG_PAD_IO_C_06_CFG_OFFSET);
+    addr_hit[ 83] = (reg_addr == ALSAQR_PERIPH_PADFRAME_PERIPHS_CONFIG_PAD_IO_C_06_MUX_SEL_OFFSET);
+    addr_hit[ 84] = (reg_addr == ALSAQR_PERIPH_PADFRAME_PERIPHS_CONFIG_PAD_IO_C_07_CFG_OFFSET);
+    addr_hit[ 85] = (reg_addr == ALSAQR_PERIPH_PADFRAME_PERIPHS_CONFIG_PAD_IO_C_07_MUX_SEL_OFFSET);
+    addr_hit[ 86] = (reg_addr == ALSAQR_PERIPH_PADFRAME_PERIPHS_CONFIG_PAD_IO_C_08_CFG_OFFSET);
+    addr_hit[ 87] = (reg_addr == ALSAQR_PERIPH_PADFRAME_PERIPHS_CONFIG_PAD_IO_C_08_MUX_SEL_OFFSET);
+    addr_hit[ 88] = (reg_addr == ALSAQR_PERIPH_PADFRAME_PERIPHS_CONFIG_PAD_IO_C_09_CFG_OFFSET);
+    addr_hit[ 89] = (reg_addr == ALSAQR_PERIPH_PADFRAME_PERIPHS_CONFIG_PAD_IO_C_09_MUX_SEL_OFFSET);
+    addr_hit[ 90] = (reg_addr == ALSAQR_PERIPH_PADFRAME_PERIPHS_CONFIG_PAD_IO_C_10_CFG_OFFSET);
+    addr_hit[ 91] = (reg_addr == ALSAQR_PERIPH_PADFRAME_PERIPHS_CONFIG_PAD_IO_C_10_MUX_SEL_OFFSET);
+    addr_hit[ 92] = (reg_addr == ALSAQR_PERIPH_PADFRAME_PERIPHS_CONFIG_PAD_IO_C_11_CFG_OFFSET);
+    addr_hit[ 93] = (reg_addr == ALSAQR_PERIPH_PADFRAME_PERIPHS_CONFIG_PAD_IO_C_11_MUX_SEL_OFFSET);
+    addr_hit[ 94] = (reg_addr == ALSAQR_PERIPH_PADFRAME_PERIPHS_CONFIG_PAD_IO_C_12_CFG_OFFSET);
+    addr_hit[ 95] = (reg_addr == ALSAQR_PERIPH_PADFRAME_PERIPHS_CONFIG_PAD_IO_C_12_MUX_SEL_OFFSET);
+    addr_hit[ 96] = (reg_addr == ALSAQR_PERIPH_PADFRAME_PERIPHS_CONFIG_PAD_IO_C_13_CFG_OFFSET);
+    addr_hit[ 97] = (reg_addr == ALSAQR_PERIPH_PADFRAME_PERIPHS_CONFIG_PAD_IO_C_13_MUX_SEL_OFFSET);
+    addr_hit[ 98] = (reg_addr == ALSAQR_PERIPH_PADFRAME_PERIPHS_CONFIG_PAD_IO_D_00_CFG_OFFSET);
+    addr_hit[ 99] = (reg_addr == ALSAQR_PERIPH_PADFRAME_PERIPHS_CONFIG_PAD_IO_D_00_MUX_SEL_OFFSET);
+    addr_hit[100] = (reg_addr == ALSAQR_PERIPH_PADFRAME_PERIPHS_CONFIG_PAD_IO_D_01_CFG_OFFSET);
+    addr_hit[101] = (reg_addr == ALSAQR_PERIPH_PADFRAME_PERIPHS_CONFIG_PAD_IO_D_01_MUX_SEL_OFFSET);
+    addr_hit[102] = (reg_addr == ALSAQR_PERIPH_PADFRAME_PERIPHS_CONFIG_PAD_IO_D_02_CFG_OFFSET);
+    addr_hit[103] = (reg_addr == ALSAQR_PERIPH_PADFRAME_PERIPHS_CONFIG_PAD_IO_D_02_MUX_SEL_OFFSET);
+    addr_hit[104] = (reg_addr == ALSAQR_PERIPH_PADFRAME_PERIPHS_CONFIG_PAD_IO_D_03_CFG_OFFSET);
+    addr_hit[105] = (reg_addr == ALSAQR_PERIPH_PADFRAME_PERIPHS_CONFIG_PAD_IO_D_03_MUX_SEL_OFFSET);
+    addr_hit[106] = (reg_addr == ALSAQR_PERIPH_PADFRAME_PERIPHS_CONFIG_PAD_IO_D_04_CFG_OFFSET);
+    addr_hit[107] = (reg_addr == ALSAQR_PERIPH_PADFRAME_PERIPHS_CONFIG_PAD_IO_D_04_MUX_SEL_OFFSET);
+    addr_hit[108] = (reg_addr == ALSAQR_PERIPH_PADFRAME_PERIPHS_CONFIG_PAD_IO_D_05_CFG_OFFSET);
+    addr_hit[109] = (reg_addr == ALSAQR_PERIPH_PADFRAME_PERIPHS_CONFIG_PAD_IO_D_05_MUX_SEL_OFFSET);
+    addr_hit[110] = (reg_addr == ALSAQR_PERIPH_PADFRAME_PERIPHS_CONFIG_PAD_IO_D_06_CFG_OFFSET);
+    addr_hit[111] = (reg_addr == ALSAQR_PERIPH_PADFRAME_PERIPHS_CONFIG_PAD_IO_D_06_MUX_SEL_OFFSET);
+    addr_hit[112] = (reg_addr == ALSAQR_PERIPH_PADFRAME_PERIPHS_CONFIG_PAD_IO_D_07_CFG_OFFSET);
+    addr_hit[113] = (reg_addr == ALSAQR_PERIPH_PADFRAME_PERIPHS_CONFIG_PAD_IO_D_07_MUX_SEL_OFFSET);
+    addr_hit[114] = (reg_addr == ALSAQR_PERIPH_PADFRAME_PERIPHS_CONFIG_PAD_IO_D_08_CFG_OFFSET);
+    addr_hit[115] = (reg_addr == ALSAQR_PERIPH_PADFRAME_PERIPHS_CONFIG_PAD_IO_D_08_MUX_SEL_OFFSET);
+    addr_hit[116] = (reg_addr == ALSAQR_PERIPH_PADFRAME_PERIPHS_CONFIG_PAD_IO_D_09_CFG_OFFSET);
+    addr_hit[117] = (reg_addr == ALSAQR_PERIPH_PADFRAME_PERIPHS_CONFIG_PAD_IO_D_09_MUX_SEL_OFFSET);
+    addr_hit[118] = (reg_addr == ALSAQR_PERIPH_PADFRAME_PERIPHS_CONFIG_PAD_IO_D_10_CFG_OFFSET);
+    addr_hit[119] = (reg_addr == ALSAQR_PERIPH_PADFRAME_PERIPHS_CONFIG_PAD_IO_D_10_MUX_SEL_OFFSET);
+    addr_hit[120] = (reg_addr == ALSAQR_PERIPH_PADFRAME_PERIPHS_CONFIG_PAD_IO_D_11_CFG_OFFSET);
+    addr_hit[121] = (reg_addr == ALSAQR_PERIPH_PADFRAME_PERIPHS_CONFIG_PAD_IO_D_11_MUX_SEL_OFFSET);
+    addr_hit[122] = (reg_addr == ALSAQR_PERIPH_PADFRAME_PERIPHS_CONFIG_PAD_IO_D_12_CFG_OFFSET);
+    addr_hit[123] = (reg_addr == ALSAQR_PERIPH_PADFRAME_PERIPHS_CONFIG_PAD_IO_D_12_MUX_SEL_OFFSET);
+    addr_hit[124] = (reg_addr == ALSAQR_PERIPH_PADFRAME_PERIPHS_CONFIG_PAD_IO_D_13_CFG_OFFSET);
+    addr_hit[125] = (reg_addr == ALSAQR_PERIPH_PADFRAME_PERIPHS_CONFIG_PAD_IO_D_13_MUX_SEL_OFFSET);
+    addr_hit[126] = (reg_addr == ALSAQR_PERIPH_PADFRAME_PERIPHS_CONFIG_PAD_IO_D_14_CFG_OFFSET);
+    addr_hit[127] = (reg_addr == ALSAQR_PERIPH_PADFRAME_PERIPHS_CONFIG_PAD_IO_D_14_MUX_SEL_OFFSET);
+    addr_hit[128] = (reg_addr == ALSAQR_PERIPH_PADFRAME_PERIPHS_CONFIG_PAD_IO_D_15_CFG_OFFSET);
+    addr_hit[129] = (reg_addr == ALSAQR_PERIPH_PADFRAME_PERIPHS_CONFIG_PAD_IO_D_15_MUX_SEL_OFFSET);
+    addr_hit[130] = (reg_addr == ALSAQR_PERIPH_PADFRAME_PERIPHS_CONFIG_PAD_IO_E_00_CFG_OFFSET);
+    addr_hit[131] = (reg_addr == ALSAQR_PERIPH_PADFRAME_PERIPHS_CONFIG_PAD_IO_E_00_MUX_SEL_OFFSET);
+    addr_hit[132] = (reg_addr == ALSAQR_PERIPH_PADFRAME_PERIPHS_CONFIG_PAD_IO_E_01_CFG_OFFSET);
+    addr_hit[133] = (reg_addr == ALSAQR_PERIPH_PADFRAME_PERIPHS_CONFIG_PAD_IO_E_01_MUX_SEL_OFFSET);
+    addr_hit[134] = (reg_addr == ALSAQR_PERIPH_PADFRAME_PERIPHS_CONFIG_PAD_IO_E_02_CFG_OFFSET);
+    addr_hit[135] = (reg_addr == ALSAQR_PERIPH_PADFRAME_PERIPHS_CONFIG_PAD_IO_E_02_MUX_SEL_OFFSET);
+    addr_hit[136] = (reg_addr == ALSAQR_PERIPH_PADFRAME_PERIPHS_CONFIG_PAD_IO_E_03_CFG_OFFSET);
+    addr_hit[137] = (reg_addr == ALSAQR_PERIPH_PADFRAME_PERIPHS_CONFIG_PAD_IO_E_03_MUX_SEL_OFFSET);
+    addr_hit[138] = (reg_addr == ALSAQR_PERIPH_PADFRAME_PERIPHS_CONFIG_PAD_IO_E_04_CFG_OFFSET);
+    addr_hit[139] = (reg_addr == ALSAQR_PERIPH_PADFRAME_PERIPHS_CONFIG_PAD_IO_E_04_MUX_SEL_OFFSET);
+    addr_hit[140] = (reg_addr == ALSAQR_PERIPH_PADFRAME_PERIPHS_CONFIG_PAD_IO_E_05_CFG_OFFSET);
+    addr_hit[141] = (reg_addr == ALSAQR_PERIPH_PADFRAME_PERIPHS_CONFIG_PAD_IO_E_05_MUX_SEL_OFFSET);
+    addr_hit[142] = (reg_addr == ALSAQR_PERIPH_PADFRAME_PERIPHS_CONFIG_PAD_IO_E_06_CFG_OFFSET);
+    addr_hit[143] = (reg_addr == ALSAQR_PERIPH_PADFRAME_PERIPHS_CONFIG_PAD_IO_E_06_MUX_SEL_OFFSET);
+    addr_hit[144] = (reg_addr == ALSAQR_PERIPH_PADFRAME_PERIPHS_CONFIG_PAD_IO_E_07_CFG_OFFSET);
+    addr_hit[145] = (reg_addr == ALSAQR_PERIPH_PADFRAME_PERIPHS_CONFIG_PAD_IO_E_07_MUX_SEL_OFFSET);
+    addr_hit[146] = (reg_addr == ALSAQR_PERIPH_PADFRAME_PERIPHS_CONFIG_PAD_IO_E_08_CFG_OFFSET);
+    addr_hit[147] = (reg_addr == ALSAQR_PERIPH_PADFRAME_PERIPHS_CONFIG_PAD_IO_E_08_MUX_SEL_OFFSET);
+    addr_hit[148] = (reg_addr == ALSAQR_PERIPH_PADFRAME_PERIPHS_CONFIG_PAD_IO_E_09_CFG_OFFSET);
+    addr_hit[149] = (reg_addr == ALSAQR_PERIPH_PADFRAME_PERIPHS_CONFIG_PAD_IO_E_09_MUX_SEL_OFFSET);
+    addr_hit[150] = (reg_addr == ALSAQR_PERIPH_PADFRAME_PERIPHS_CONFIG_PAD_IO_E_10_CFG_OFFSET);
+    addr_hit[151] = (reg_addr == ALSAQR_PERIPH_PADFRAME_PERIPHS_CONFIG_PAD_IO_E_10_MUX_SEL_OFFSET);
+    addr_hit[152] = (reg_addr == ALSAQR_PERIPH_PADFRAME_PERIPHS_CONFIG_PAD_IO_E_11_CFG_OFFSET);
+    addr_hit[153] = (reg_addr == ALSAQR_PERIPH_PADFRAME_PERIPHS_CONFIG_PAD_IO_E_11_MUX_SEL_OFFSET);
+    addr_hit[154] = (reg_addr == ALSAQR_PERIPH_PADFRAME_PERIPHS_CONFIG_PAD_IO_E_12_CFG_OFFSET);
+    addr_hit[155] = (reg_addr == ALSAQR_PERIPH_PADFRAME_PERIPHS_CONFIG_PAD_IO_E_12_MUX_SEL_OFFSET);
+    addr_hit[156] = (reg_addr == ALSAQR_PERIPH_PADFRAME_PERIPHS_CONFIG_PAD_IO_E_13_CFG_OFFSET);
+    addr_hit[157] = (reg_addr == ALSAQR_PERIPH_PADFRAME_PERIPHS_CONFIG_PAD_IO_E_13_MUX_SEL_OFFSET);
+    addr_hit[158] = (reg_addr == ALSAQR_PERIPH_PADFRAME_PERIPHS_CONFIG_PAD_IO_E_14_CFG_OFFSET);
+    addr_hit[159] = (reg_addr == ALSAQR_PERIPH_PADFRAME_PERIPHS_CONFIG_PAD_IO_E_14_MUX_SEL_OFFSET);
+    addr_hit[160] = (reg_addr == ALSAQR_PERIPH_PADFRAME_PERIPHS_CONFIG_PAD_IO_F_00_CFG_OFFSET);
+    addr_hit[161] = (reg_addr == ALSAQR_PERIPH_PADFRAME_PERIPHS_CONFIG_PAD_IO_F_00_MUX_SEL_OFFSET);
+    addr_hit[162] = (reg_addr == ALSAQR_PERIPH_PADFRAME_PERIPHS_CONFIG_PAD_IO_F_01_CFG_OFFSET);
+    addr_hit[163] = (reg_addr == ALSAQR_PERIPH_PADFRAME_PERIPHS_CONFIG_PAD_IO_F_01_MUX_SEL_OFFSET);
+    addr_hit[164] = (reg_addr == ALSAQR_PERIPH_PADFRAME_PERIPHS_CONFIG_PAD_IO_F_02_CFG_OFFSET);
+    addr_hit[165] = (reg_addr == ALSAQR_PERIPH_PADFRAME_PERIPHS_CONFIG_PAD_IO_F_02_MUX_SEL_OFFSET);
+    addr_hit[166] = (reg_addr == ALSAQR_PERIPH_PADFRAME_PERIPHS_CONFIG_PAD_IO_F_03_CFG_OFFSET);
+    addr_hit[167] = (reg_addr == ALSAQR_PERIPH_PADFRAME_PERIPHS_CONFIG_PAD_IO_F_03_MUX_SEL_OFFSET);
+    addr_hit[168] = (reg_addr == ALSAQR_PERIPH_PADFRAME_PERIPHS_CONFIG_PAD_IO_F_04_CFG_OFFSET);
+    addr_hit[169] = (reg_addr == ALSAQR_PERIPH_PADFRAME_PERIPHS_CONFIG_PAD_IO_F_04_MUX_SEL_OFFSET);
+    addr_hit[170] = (reg_addr == ALSAQR_PERIPH_PADFRAME_PERIPHS_CONFIG_PAD_IO_F_05_CFG_OFFSET);
+    addr_hit[171] = (reg_addr == ALSAQR_PERIPH_PADFRAME_PERIPHS_CONFIG_PAD_IO_F_05_MUX_SEL_OFFSET);
+    addr_hit[172] = (reg_addr == ALSAQR_PERIPH_PADFRAME_PERIPHS_CONFIG_PAD_IO_F_06_CFG_OFFSET);
+    addr_hit[173] = (reg_addr == ALSAQR_PERIPH_PADFRAME_PERIPHS_CONFIG_PAD_IO_F_06_MUX_SEL_OFFSET);
+    addr_hit[174] = (reg_addr == ALSAQR_PERIPH_PADFRAME_PERIPHS_CONFIG_PAD_IO_F_07_CFG_OFFSET);
+    addr_hit[175] = (reg_addr == ALSAQR_PERIPH_PADFRAME_PERIPHS_CONFIG_PAD_IO_F_07_MUX_SEL_OFFSET);
+    addr_hit[176] = (reg_addr == ALSAQR_PERIPH_PADFRAME_PERIPHS_CONFIG_PAD_IO_F_08_CFG_OFFSET);
+    addr_hit[177] = (reg_addr == ALSAQR_PERIPH_PADFRAME_PERIPHS_CONFIG_PAD_IO_F_08_MUX_SEL_OFFSET);
+    addr_hit[178] = (reg_addr == ALSAQR_PERIPH_PADFRAME_PERIPHS_CONFIG_PAD_IO_F_09_CFG_OFFSET);
+    addr_hit[179] = (reg_addr == ALSAQR_PERIPH_PADFRAME_PERIPHS_CONFIG_PAD_IO_F_09_MUX_SEL_OFFSET);
+    addr_hit[180] = (reg_addr == ALSAQR_PERIPH_PADFRAME_PERIPHS_CONFIG_PAD_IO_F_10_CFG_OFFSET);
+    addr_hit[181] = (reg_addr == ALSAQR_PERIPH_PADFRAME_PERIPHS_CONFIG_PAD_IO_F_10_MUX_SEL_OFFSET);
+    addr_hit[182] = (reg_addr == ALSAQR_PERIPH_PADFRAME_PERIPHS_CONFIG_PAD_IO_G_00_CFG_OFFSET);
+    addr_hit[183] = (reg_addr == ALSAQR_PERIPH_PADFRAME_PERIPHS_CONFIG_PAD_IO_G_00_MUX_SEL_OFFSET);
+    addr_hit[184] = (reg_addr == ALSAQR_PERIPH_PADFRAME_PERIPHS_CONFIG_PAD_IO_G_01_CFG_OFFSET);
+    addr_hit[185] = (reg_addr == ALSAQR_PERIPH_PADFRAME_PERIPHS_CONFIG_PAD_IO_G_01_MUX_SEL_OFFSET);
+    addr_hit[186] = (reg_addr == ALSAQR_PERIPH_PADFRAME_PERIPHS_CONFIG_PAD_IO_G_02_CFG_OFFSET);
+    addr_hit[187] = (reg_addr == ALSAQR_PERIPH_PADFRAME_PERIPHS_CONFIG_PAD_IO_G_02_MUX_SEL_OFFSET);
+    addr_hit[188] = (reg_addr == ALSAQR_PERIPH_PADFRAME_PERIPHS_CONFIG_PAD_IO_G_03_CFG_OFFSET);
+    addr_hit[189] = (reg_addr == ALSAQR_PERIPH_PADFRAME_PERIPHS_CONFIG_PAD_IO_G_03_MUX_SEL_OFFSET);
+    addr_hit[190] = (reg_addr == ALSAQR_PERIPH_PADFRAME_PERIPHS_CONFIG_PAD_IO_G_04_CFG_OFFSET);
+    addr_hit[191] = (reg_addr == ALSAQR_PERIPH_PADFRAME_PERIPHS_CONFIG_PAD_IO_G_04_MUX_SEL_OFFSET);
+    addr_hit[192] = (reg_addr == ALSAQR_PERIPH_PADFRAME_PERIPHS_CONFIG_PAD_IO_G_05_CFG_OFFSET);
+    addr_hit[193] = (reg_addr == ALSAQR_PERIPH_PADFRAME_PERIPHS_CONFIG_PAD_IO_G_05_MUX_SEL_OFFSET);
+    addr_hit[194] = (reg_addr == ALSAQR_PERIPH_PADFRAME_PERIPHS_CONFIG_PAD_IO_G_06_CFG_OFFSET);
+    addr_hit[195] = (reg_addr == ALSAQR_PERIPH_PADFRAME_PERIPHS_CONFIG_PAD_IO_G_06_MUX_SEL_OFFSET);
+    addr_hit[196] = (reg_addr == ALSAQR_PERIPH_PADFRAME_PERIPHS_CONFIG_PAD_IO_G_07_CFG_OFFSET);
+    addr_hit[197] = (reg_addr == ALSAQR_PERIPH_PADFRAME_PERIPHS_CONFIG_PAD_IO_G_07_MUX_SEL_OFFSET);
+    addr_hit[198] = (reg_addr == ALSAQR_PERIPH_PADFRAME_PERIPHS_CONFIG_PAD_IO_G_08_CFG_OFFSET);
+    addr_hit[199] = (reg_addr == ALSAQR_PERIPH_PADFRAME_PERIPHS_CONFIG_PAD_IO_G_08_MUX_SEL_OFFSET);
+    addr_hit[200] = (reg_addr == ALSAQR_PERIPH_PADFRAME_PERIPHS_CONFIG_PAD_IO_G_09_CFG_OFFSET);
+    addr_hit[201] = (reg_addr == ALSAQR_PERIPH_PADFRAME_PERIPHS_CONFIG_PAD_IO_G_09_MUX_SEL_OFFSET);
+    addr_hit[202] = (reg_addr == ALSAQR_PERIPH_PADFRAME_PERIPHS_CONFIG_PAD_IO_G_10_CFG_OFFSET);
+    addr_hit[203] = (reg_addr == ALSAQR_PERIPH_PADFRAME_PERIPHS_CONFIG_PAD_IO_G_10_MUX_SEL_OFFSET);
+    addr_hit[204] = (reg_addr == ALSAQR_PERIPH_PADFRAME_PERIPHS_CONFIG_PAD_IO_G_11_CFG_OFFSET);
+    addr_hit[205] = (reg_addr == ALSAQR_PERIPH_PADFRAME_PERIPHS_CONFIG_PAD_IO_G_11_MUX_SEL_OFFSET);
+    addr_hit[206] = (reg_addr == ALSAQR_PERIPH_PADFRAME_PERIPHS_CONFIG_PAD_IO_G_12_CFG_OFFSET);
+    addr_hit[207] = (reg_addr == ALSAQR_PERIPH_PADFRAME_PERIPHS_CONFIG_PAD_IO_G_12_MUX_SEL_OFFSET);
+    addr_hit[208] = (reg_addr == ALSAQR_PERIPH_PADFRAME_PERIPHS_CONFIG_PAD_IO_G_13_CFG_OFFSET);
+    addr_hit[209] = (reg_addr == ALSAQR_PERIPH_PADFRAME_PERIPHS_CONFIG_PAD_IO_G_13_MUX_SEL_OFFSET);
+    addr_hit[210] = (reg_addr == ALSAQR_PERIPH_PADFRAME_PERIPHS_CONFIG_PAD_IO_G_14_CFG_OFFSET);
+    addr_hit[211] = (reg_addr == ALSAQR_PERIPH_PADFRAME_PERIPHS_CONFIG_PAD_IO_G_14_MUX_SEL_OFFSET);
+    addr_hit[212] = (reg_addr == ALSAQR_PERIPH_PADFRAME_PERIPHS_CONFIG_PAD_PWM0_CFG_OFFSET);
+    addr_hit[213] = (reg_addr == ALSAQR_PERIPH_PADFRAME_PERIPHS_CONFIG_PAD_PWM0_MUX_SEL_OFFSET);
+    addr_hit[214] = (reg_addr == ALSAQR_PERIPH_PADFRAME_PERIPHS_CONFIG_PAD_PWM1_CFG_OFFSET);
+    addr_hit[215] = (reg_addr == ALSAQR_PERIPH_PADFRAME_PERIPHS_CONFIG_PAD_PWM1_MUX_SEL_OFFSET);
+    addr_hit[216] = (reg_addr == ALSAQR_PERIPH_PADFRAME_PERIPHS_CONFIG_PAD_PWM2_CFG_OFFSET);
+    addr_hit[217] = (reg_addr == ALSAQR_PERIPH_PADFRAME_PERIPHS_CONFIG_PAD_PWM2_MUX_SEL_OFFSET);
+    addr_hit[218] = (reg_addr == ALSAQR_PERIPH_PADFRAME_PERIPHS_CONFIG_PAD_PWM3_CFG_OFFSET);
+    addr_hit[219] = (reg_addr == ALSAQR_PERIPH_PADFRAME_PERIPHS_CONFIG_PAD_PWM3_MUX_SEL_OFFSET);
+    addr_hit[220] = (reg_addr == ALSAQR_PERIPH_PADFRAME_PERIPHS_CONFIG_PAD_PWM4_CFG_OFFSET);
+    addr_hit[221] = (reg_addr == ALSAQR_PERIPH_PADFRAME_PERIPHS_CONFIG_PAD_PWM4_MUX_SEL_OFFSET);
+    addr_hit[222] = (reg_addr == ALSAQR_PERIPH_PADFRAME_PERIPHS_CONFIG_PAD_PWM5_CFG_OFFSET);
+    addr_hit[223] = (reg_addr == ALSAQR_PERIPH_PADFRAME_PERIPHS_CONFIG_PAD_PWM5_MUX_SEL_OFFSET);
+    addr_hit[224] = (reg_addr == ALSAQR_PERIPH_PADFRAME_PERIPHS_CONFIG_PAD_PWM6_CFG_OFFSET);
+    addr_hit[225] = (reg_addr == ALSAQR_PERIPH_PADFRAME_PERIPHS_CONFIG_PAD_PWM6_MUX_SEL_OFFSET);
+    addr_hit[226] = (reg_addr == ALSAQR_PERIPH_PADFRAME_PERIPHS_CONFIG_PAD_PWM7_CFG_OFFSET);
+    addr_hit[227] = (reg_addr == ALSAQR_PERIPH_PADFRAME_PERIPHS_CONFIG_PAD_PWM7_MUX_SEL_OFFSET);
   end
 
   assign addrmiss = (reg_re || reg_we) ? ~|addr_hit : 1'b0 ;
@@ -4405,950 +10569,2290 @@ module alsaqr_periph_padframe_periphs_config_reg_top #(
   // Check sub-word write is permitted
   always_comb begin
     wr_err = (reg_we &
-              ((addr_hit[ 0] & (|(ALSAQR_PERIPH_PADFRAME_PERIPHS_CONFIG_PERMIT[ 0] & ~reg_be))) |
-               (addr_hit[ 1] & (|(ALSAQR_PERIPH_PADFRAME_PERIPHS_CONFIG_PERMIT[ 1] & ~reg_be))) |
-               (addr_hit[ 2] & (|(ALSAQR_PERIPH_PADFRAME_PERIPHS_CONFIG_PERMIT[ 2] & ~reg_be))) |
-               (addr_hit[ 3] & (|(ALSAQR_PERIPH_PADFRAME_PERIPHS_CONFIG_PERMIT[ 3] & ~reg_be))) |
-               (addr_hit[ 4] & (|(ALSAQR_PERIPH_PADFRAME_PERIPHS_CONFIG_PERMIT[ 4] & ~reg_be))) |
-               (addr_hit[ 5] & (|(ALSAQR_PERIPH_PADFRAME_PERIPHS_CONFIG_PERMIT[ 5] & ~reg_be))) |
-               (addr_hit[ 6] & (|(ALSAQR_PERIPH_PADFRAME_PERIPHS_CONFIG_PERMIT[ 6] & ~reg_be))) |
-               (addr_hit[ 7] & (|(ALSAQR_PERIPH_PADFRAME_PERIPHS_CONFIG_PERMIT[ 7] & ~reg_be))) |
-               (addr_hit[ 8] & (|(ALSAQR_PERIPH_PADFRAME_PERIPHS_CONFIG_PERMIT[ 8] & ~reg_be))) |
-               (addr_hit[ 9] & (|(ALSAQR_PERIPH_PADFRAME_PERIPHS_CONFIG_PERMIT[ 9] & ~reg_be))) |
-               (addr_hit[10] & (|(ALSAQR_PERIPH_PADFRAME_PERIPHS_CONFIG_PERMIT[10] & ~reg_be))) |
-               (addr_hit[11] & (|(ALSAQR_PERIPH_PADFRAME_PERIPHS_CONFIG_PERMIT[11] & ~reg_be))) |
-               (addr_hit[12] & (|(ALSAQR_PERIPH_PADFRAME_PERIPHS_CONFIG_PERMIT[12] & ~reg_be))) |
-               (addr_hit[13] & (|(ALSAQR_PERIPH_PADFRAME_PERIPHS_CONFIG_PERMIT[13] & ~reg_be))) |
-               (addr_hit[14] & (|(ALSAQR_PERIPH_PADFRAME_PERIPHS_CONFIG_PERMIT[14] & ~reg_be))) |
-               (addr_hit[15] & (|(ALSAQR_PERIPH_PADFRAME_PERIPHS_CONFIG_PERMIT[15] & ~reg_be))) |
-               (addr_hit[16] & (|(ALSAQR_PERIPH_PADFRAME_PERIPHS_CONFIG_PERMIT[16] & ~reg_be))) |
-               (addr_hit[17] & (|(ALSAQR_PERIPH_PADFRAME_PERIPHS_CONFIG_PERMIT[17] & ~reg_be))) |
-               (addr_hit[18] & (|(ALSAQR_PERIPH_PADFRAME_PERIPHS_CONFIG_PERMIT[18] & ~reg_be))) |
-               (addr_hit[19] & (|(ALSAQR_PERIPH_PADFRAME_PERIPHS_CONFIG_PERMIT[19] & ~reg_be))) |
-               (addr_hit[20] & (|(ALSAQR_PERIPH_PADFRAME_PERIPHS_CONFIG_PERMIT[20] & ~reg_be))) |
-               (addr_hit[21] & (|(ALSAQR_PERIPH_PADFRAME_PERIPHS_CONFIG_PERMIT[21] & ~reg_be))) |
-               (addr_hit[22] & (|(ALSAQR_PERIPH_PADFRAME_PERIPHS_CONFIG_PERMIT[22] & ~reg_be))) |
-               (addr_hit[23] & (|(ALSAQR_PERIPH_PADFRAME_PERIPHS_CONFIG_PERMIT[23] & ~reg_be))) |
-               (addr_hit[24] & (|(ALSAQR_PERIPH_PADFRAME_PERIPHS_CONFIG_PERMIT[24] & ~reg_be))) |
-               (addr_hit[25] & (|(ALSAQR_PERIPH_PADFRAME_PERIPHS_CONFIG_PERMIT[25] & ~reg_be))) |
-               (addr_hit[26] & (|(ALSAQR_PERIPH_PADFRAME_PERIPHS_CONFIG_PERMIT[26] & ~reg_be))) |
-               (addr_hit[27] & (|(ALSAQR_PERIPH_PADFRAME_PERIPHS_CONFIG_PERMIT[27] & ~reg_be))) |
-               (addr_hit[28] & (|(ALSAQR_PERIPH_PADFRAME_PERIPHS_CONFIG_PERMIT[28] & ~reg_be))) |
-               (addr_hit[29] & (|(ALSAQR_PERIPH_PADFRAME_PERIPHS_CONFIG_PERMIT[29] & ~reg_be))) |
-               (addr_hit[30] & (|(ALSAQR_PERIPH_PADFRAME_PERIPHS_CONFIG_PERMIT[30] & ~reg_be))) |
-               (addr_hit[31] & (|(ALSAQR_PERIPH_PADFRAME_PERIPHS_CONFIG_PERMIT[31] & ~reg_be))) |
-               (addr_hit[32] & (|(ALSAQR_PERIPH_PADFRAME_PERIPHS_CONFIG_PERMIT[32] & ~reg_be))) |
-               (addr_hit[33] & (|(ALSAQR_PERIPH_PADFRAME_PERIPHS_CONFIG_PERMIT[33] & ~reg_be))) |
-               (addr_hit[34] & (|(ALSAQR_PERIPH_PADFRAME_PERIPHS_CONFIG_PERMIT[34] & ~reg_be))) |
-               (addr_hit[35] & (|(ALSAQR_PERIPH_PADFRAME_PERIPHS_CONFIG_PERMIT[35] & ~reg_be))) |
-               (addr_hit[36] & (|(ALSAQR_PERIPH_PADFRAME_PERIPHS_CONFIG_PERMIT[36] & ~reg_be))) |
-               (addr_hit[37] & (|(ALSAQR_PERIPH_PADFRAME_PERIPHS_CONFIG_PERMIT[37] & ~reg_be))) |
-               (addr_hit[38] & (|(ALSAQR_PERIPH_PADFRAME_PERIPHS_CONFIG_PERMIT[38] & ~reg_be))) |
-               (addr_hit[39] & (|(ALSAQR_PERIPH_PADFRAME_PERIPHS_CONFIG_PERMIT[39] & ~reg_be))) |
-               (addr_hit[40] & (|(ALSAQR_PERIPH_PADFRAME_PERIPHS_CONFIG_PERMIT[40] & ~reg_be))) |
-               (addr_hit[41] & (|(ALSAQR_PERIPH_PADFRAME_PERIPHS_CONFIG_PERMIT[41] & ~reg_be))) |
-               (addr_hit[42] & (|(ALSAQR_PERIPH_PADFRAME_PERIPHS_CONFIG_PERMIT[42] & ~reg_be))) |
-               (addr_hit[43] & (|(ALSAQR_PERIPH_PADFRAME_PERIPHS_CONFIG_PERMIT[43] & ~reg_be))) |
-               (addr_hit[44] & (|(ALSAQR_PERIPH_PADFRAME_PERIPHS_CONFIG_PERMIT[44] & ~reg_be))) |
-               (addr_hit[45] & (|(ALSAQR_PERIPH_PADFRAME_PERIPHS_CONFIG_PERMIT[45] & ~reg_be))) |
-               (addr_hit[46] & (|(ALSAQR_PERIPH_PADFRAME_PERIPHS_CONFIG_PERMIT[46] & ~reg_be))) |
-               (addr_hit[47] & (|(ALSAQR_PERIPH_PADFRAME_PERIPHS_CONFIG_PERMIT[47] & ~reg_be))) |
-               (addr_hit[48] & (|(ALSAQR_PERIPH_PADFRAME_PERIPHS_CONFIG_PERMIT[48] & ~reg_be))) |
-               (addr_hit[49] & (|(ALSAQR_PERIPH_PADFRAME_PERIPHS_CONFIG_PERMIT[49] & ~reg_be))) |
-               (addr_hit[50] & (|(ALSAQR_PERIPH_PADFRAME_PERIPHS_CONFIG_PERMIT[50] & ~reg_be))) |
-               (addr_hit[51] & (|(ALSAQR_PERIPH_PADFRAME_PERIPHS_CONFIG_PERMIT[51] & ~reg_be))) |
-               (addr_hit[52] & (|(ALSAQR_PERIPH_PADFRAME_PERIPHS_CONFIG_PERMIT[52] & ~reg_be))) |
-               (addr_hit[53] & (|(ALSAQR_PERIPH_PADFRAME_PERIPHS_CONFIG_PERMIT[53] & ~reg_be))) |
-               (addr_hit[54] & (|(ALSAQR_PERIPH_PADFRAME_PERIPHS_CONFIG_PERMIT[54] & ~reg_be))) |
-               (addr_hit[55] & (|(ALSAQR_PERIPH_PADFRAME_PERIPHS_CONFIG_PERMIT[55] & ~reg_be))) |
-               (addr_hit[56] & (|(ALSAQR_PERIPH_PADFRAME_PERIPHS_CONFIG_PERMIT[56] & ~reg_be))) |
-               (addr_hit[57] & (|(ALSAQR_PERIPH_PADFRAME_PERIPHS_CONFIG_PERMIT[57] & ~reg_be))) |
-               (addr_hit[58] & (|(ALSAQR_PERIPH_PADFRAME_PERIPHS_CONFIG_PERMIT[58] & ~reg_be))) |
-               (addr_hit[59] & (|(ALSAQR_PERIPH_PADFRAME_PERIPHS_CONFIG_PERMIT[59] & ~reg_be))) |
-               (addr_hit[60] & (|(ALSAQR_PERIPH_PADFRAME_PERIPHS_CONFIG_PERMIT[60] & ~reg_be))) |
-               (addr_hit[61] & (|(ALSAQR_PERIPH_PADFRAME_PERIPHS_CONFIG_PERMIT[61] & ~reg_be))) |
-               (addr_hit[62] & (|(ALSAQR_PERIPH_PADFRAME_PERIPHS_CONFIG_PERMIT[62] & ~reg_be))) |
-               (addr_hit[63] & (|(ALSAQR_PERIPH_PADFRAME_PERIPHS_CONFIG_PERMIT[63] & ~reg_be))) |
-               (addr_hit[64] & (|(ALSAQR_PERIPH_PADFRAME_PERIPHS_CONFIG_PERMIT[64] & ~reg_be))) |
-               (addr_hit[65] & (|(ALSAQR_PERIPH_PADFRAME_PERIPHS_CONFIG_PERMIT[65] & ~reg_be))) |
-               (addr_hit[66] & (|(ALSAQR_PERIPH_PADFRAME_PERIPHS_CONFIG_PERMIT[66] & ~reg_be))) |
-               (addr_hit[67] & (|(ALSAQR_PERIPH_PADFRAME_PERIPHS_CONFIG_PERMIT[67] & ~reg_be))) |
-               (addr_hit[68] & (|(ALSAQR_PERIPH_PADFRAME_PERIPHS_CONFIG_PERMIT[68] & ~reg_be))) |
-               (addr_hit[69] & (|(ALSAQR_PERIPH_PADFRAME_PERIPHS_CONFIG_PERMIT[69] & ~reg_be))) |
-               (addr_hit[70] & (|(ALSAQR_PERIPH_PADFRAME_PERIPHS_CONFIG_PERMIT[70] & ~reg_be))) |
-               (addr_hit[71] & (|(ALSAQR_PERIPH_PADFRAME_PERIPHS_CONFIG_PERMIT[71] & ~reg_be))) |
-               (addr_hit[72] & (|(ALSAQR_PERIPH_PADFRAME_PERIPHS_CONFIG_PERMIT[72] & ~reg_be))) |
-               (addr_hit[73] & (|(ALSAQR_PERIPH_PADFRAME_PERIPHS_CONFIG_PERMIT[73] & ~reg_be))) |
-               (addr_hit[74] & (|(ALSAQR_PERIPH_PADFRAME_PERIPHS_CONFIG_PERMIT[74] & ~reg_be))) |
-               (addr_hit[75] & (|(ALSAQR_PERIPH_PADFRAME_PERIPHS_CONFIG_PERMIT[75] & ~reg_be))) |
-               (addr_hit[76] & (|(ALSAQR_PERIPH_PADFRAME_PERIPHS_CONFIG_PERMIT[76] & ~reg_be))) |
-               (addr_hit[77] & (|(ALSAQR_PERIPH_PADFRAME_PERIPHS_CONFIG_PERMIT[77] & ~reg_be))) |
-               (addr_hit[78] & (|(ALSAQR_PERIPH_PADFRAME_PERIPHS_CONFIG_PERMIT[78] & ~reg_be))) |
-               (addr_hit[79] & (|(ALSAQR_PERIPH_PADFRAME_PERIPHS_CONFIG_PERMIT[79] & ~reg_be))) |
-               (addr_hit[80] & (|(ALSAQR_PERIPH_PADFRAME_PERIPHS_CONFIG_PERMIT[80] & ~reg_be))) |
-               (addr_hit[81] & (|(ALSAQR_PERIPH_PADFRAME_PERIPHS_CONFIG_PERMIT[81] & ~reg_be))) |
-               (addr_hit[82] & (|(ALSAQR_PERIPH_PADFRAME_PERIPHS_CONFIG_PERMIT[82] & ~reg_be))) |
-               (addr_hit[83] & (|(ALSAQR_PERIPH_PADFRAME_PERIPHS_CONFIG_PERMIT[83] & ~reg_be))) |
-               (addr_hit[84] & (|(ALSAQR_PERIPH_PADFRAME_PERIPHS_CONFIG_PERMIT[84] & ~reg_be))) |
-               (addr_hit[85] & (|(ALSAQR_PERIPH_PADFRAME_PERIPHS_CONFIG_PERMIT[85] & ~reg_be))) |
-               (addr_hit[86] & (|(ALSAQR_PERIPH_PADFRAME_PERIPHS_CONFIG_PERMIT[86] & ~reg_be))) |
-               (addr_hit[87] & (|(ALSAQR_PERIPH_PADFRAME_PERIPHS_CONFIG_PERMIT[87] & ~reg_be))) |
-               (addr_hit[88] & (|(ALSAQR_PERIPH_PADFRAME_PERIPHS_CONFIG_PERMIT[88] & ~reg_be))) |
-               (addr_hit[89] & (|(ALSAQR_PERIPH_PADFRAME_PERIPHS_CONFIG_PERMIT[89] & ~reg_be))) |
-               (addr_hit[90] & (|(ALSAQR_PERIPH_PADFRAME_PERIPHS_CONFIG_PERMIT[90] & ~reg_be))) |
-               (addr_hit[91] & (|(ALSAQR_PERIPH_PADFRAME_PERIPHS_CONFIG_PERMIT[91] & ~reg_be))) |
-               (addr_hit[92] & (|(ALSAQR_PERIPH_PADFRAME_PERIPHS_CONFIG_PERMIT[92] & ~reg_be))) |
-               (addr_hit[93] & (|(ALSAQR_PERIPH_PADFRAME_PERIPHS_CONFIG_PERMIT[93] & ~reg_be)))));
+              ((addr_hit[  0] & (|(ALSAQR_PERIPH_PADFRAME_PERIPHS_CONFIG_PERMIT[  0] & ~reg_be))) |
+               (addr_hit[  1] & (|(ALSAQR_PERIPH_PADFRAME_PERIPHS_CONFIG_PERMIT[  1] & ~reg_be))) |
+               (addr_hit[  2] & (|(ALSAQR_PERIPH_PADFRAME_PERIPHS_CONFIG_PERMIT[  2] & ~reg_be))) |
+               (addr_hit[  3] & (|(ALSAQR_PERIPH_PADFRAME_PERIPHS_CONFIG_PERMIT[  3] & ~reg_be))) |
+               (addr_hit[  4] & (|(ALSAQR_PERIPH_PADFRAME_PERIPHS_CONFIG_PERMIT[  4] & ~reg_be))) |
+               (addr_hit[  5] & (|(ALSAQR_PERIPH_PADFRAME_PERIPHS_CONFIG_PERMIT[  5] & ~reg_be))) |
+               (addr_hit[  6] & (|(ALSAQR_PERIPH_PADFRAME_PERIPHS_CONFIG_PERMIT[  6] & ~reg_be))) |
+               (addr_hit[  7] & (|(ALSAQR_PERIPH_PADFRAME_PERIPHS_CONFIG_PERMIT[  7] & ~reg_be))) |
+               (addr_hit[  8] & (|(ALSAQR_PERIPH_PADFRAME_PERIPHS_CONFIG_PERMIT[  8] & ~reg_be))) |
+               (addr_hit[  9] & (|(ALSAQR_PERIPH_PADFRAME_PERIPHS_CONFIG_PERMIT[  9] & ~reg_be))) |
+               (addr_hit[ 10] & (|(ALSAQR_PERIPH_PADFRAME_PERIPHS_CONFIG_PERMIT[ 10] & ~reg_be))) |
+               (addr_hit[ 11] & (|(ALSAQR_PERIPH_PADFRAME_PERIPHS_CONFIG_PERMIT[ 11] & ~reg_be))) |
+               (addr_hit[ 12] & (|(ALSAQR_PERIPH_PADFRAME_PERIPHS_CONFIG_PERMIT[ 12] & ~reg_be))) |
+               (addr_hit[ 13] & (|(ALSAQR_PERIPH_PADFRAME_PERIPHS_CONFIG_PERMIT[ 13] & ~reg_be))) |
+               (addr_hit[ 14] & (|(ALSAQR_PERIPH_PADFRAME_PERIPHS_CONFIG_PERMIT[ 14] & ~reg_be))) |
+               (addr_hit[ 15] & (|(ALSAQR_PERIPH_PADFRAME_PERIPHS_CONFIG_PERMIT[ 15] & ~reg_be))) |
+               (addr_hit[ 16] & (|(ALSAQR_PERIPH_PADFRAME_PERIPHS_CONFIG_PERMIT[ 16] & ~reg_be))) |
+               (addr_hit[ 17] & (|(ALSAQR_PERIPH_PADFRAME_PERIPHS_CONFIG_PERMIT[ 17] & ~reg_be))) |
+               (addr_hit[ 18] & (|(ALSAQR_PERIPH_PADFRAME_PERIPHS_CONFIG_PERMIT[ 18] & ~reg_be))) |
+               (addr_hit[ 19] & (|(ALSAQR_PERIPH_PADFRAME_PERIPHS_CONFIG_PERMIT[ 19] & ~reg_be))) |
+               (addr_hit[ 20] & (|(ALSAQR_PERIPH_PADFRAME_PERIPHS_CONFIG_PERMIT[ 20] & ~reg_be))) |
+               (addr_hit[ 21] & (|(ALSAQR_PERIPH_PADFRAME_PERIPHS_CONFIG_PERMIT[ 21] & ~reg_be))) |
+               (addr_hit[ 22] & (|(ALSAQR_PERIPH_PADFRAME_PERIPHS_CONFIG_PERMIT[ 22] & ~reg_be))) |
+               (addr_hit[ 23] & (|(ALSAQR_PERIPH_PADFRAME_PERIPHS_CONFIG_PERMIT[ 23] & ~reg_be))) |
+               (addr_hit[ 24] & (|(ALSAQR_PERIPH_PADFRAME_PERIPHS_CONFIG_PERMIT[ 24] & ~reg_be))) |
+               (addr_hit[ 25] & (|(ALSAQR_PERIPH_PADFRAME_PERIPHS_CONFIG_PERMIT[ 25] & ~reg_be))) |
+               (addr_hit[ 26] & (|(ALSAQR_PERIPH_PADFRAME_PERIPHS_CONFIG_PERMIT[ 26] & ~reg_be))) |
+               (addr_hit[ 27] & (|(ALSAQR_PERIPH_PADFRAME_PERIPHS_CONFIG_PERMIT[ 27] & ~reg_be))) |
+               (addr_hit[ 28] & (|(ALSAQR_PERIPH_PADFRAME_PERIPHS_CONFIG_PERMIT[ 28] & ~reg_be))) |
+               (addr_hit[ 29] & (|(ALSAQR_PERIPH_PADFRAME_PERIPHS_CONFIG_PERMIT[ 29] & ~reg_be))) |
+               (addr_hit[ 30] & (|(ALSAQR_PERIPH_PADFRAME_PERIPHS_CONFIG_PERMIT[ 30] & ~reg_be))) |
+               (addr_hit[ 31] & (|(ALSAQR_PERIPH_PADFRAME_PERIPHS_CONFIG_PERMIT[ 31] & ~reg_be))) |
+               (addr_hit[ 32] & (|(ALSAQR_PERIPH_PADFRAME_PERIPHS_CONFIG_PERMIT[ 32] & ~reg_be))) |
+               (addr_hit[ 33] & (|(ALSAQR_PERIPH_PADFRAME_PERIPHS_CONFIG_PERMIT[ 33] & ~reg_be))) |
+               (addr_hit[ 34] & (|(ALSAQR_PERIPH_PADFRAME_PERIPHS_CONFIG_PERMIT[ 34] & ~reg_be))) |
+               (addr_hit[ 35] & (|(ALSAQR_PERIPH_PADFRAME_PERIPHS_CONFIG_PERMIT[ 35] & ~reg_be))) |
+               (addr_hit[ 36] & (|(ALSAQR_PERIPH_PADFRAME_PERIPHS_CONFIG_PERMIT[ 36] & ~reg_be))) |
+               (addr_hit[ 37] & (|(ALSAQR_PERIPH_PADFRAME_PERIPHS_CONFIG_PERMIT[ 37] & ~reg_be))) |
+               (addr_hit[ 38] & (|(ALSAQR_PERIPH_PADFRAME_PERIPHS_CONFIG_PERMIT[ 38] & ~reg_be))) |
+               (addr_hit[ 39] & (|(ALSAQR_PERIPH_PADFRAME_PERIPHS_CONFIG_PERMIT[ 39] & ~reg_be))) |
+               (addr_hit[ 40] & (|(ALSAQR_PERIPH_PADFRAME_PERIPHS_CONFIG_PERMIT[ 40] & ~reg_be))) |
+               (addr_hit[ 41] & (|(ALSAQR_PERIPH_PADFRAME_PERIPHS_CONFIG_PERMIT[ 41] & ~reg_be))) |
+               (addr_hit[ 42] & (|(ALSAQR_PERIPH_PADFRAME_PERIPHS_CONFIG_PERMIT[ 42] & ~reg_be))) |
+               (addr_hit[ 43] & (|(ALSAQR_PERIPH_PADFRAME_PERIPHS_CONFIG_PERMIT[ 43] & ~reg_be))) |
+               (addr_hit[ 44] & (|(ALSAQR_PERIPH_PADFRAME_PERIPHS_CONFIG_PERMIT[ 44] & ~reg_be))) |
+               (addr_hit[ 45] & (|(ALSAQR_PERIPH_PADFRAME_PERIPHS_CONFIG_PERMIT[ 45] & ~reg_be))) |
+               (addr_hit[ 46] & (|(ALSAQR_PERIPH_PADFRAME_PERIPHS_CONFIG_PERMIT[ 46] & ~reg_be))) |
+               (addr_hit[ 47] & (|(ALSAQR_PERIPH_PADFRAME_PERIPHS_CONFIG_PERMIT[ 47] & ~reg_be))) |
+               (addr_hit[ 48] & (|(ALSAQR_PERIPH_PADFRAME_PERIPHS_CONFIG_PERMIT[ 48] & ~reg_be))) |
+               (addr_hit[ 49] & (|(ALSAQR_PERIPH_PADFRAME_PERIPHS_CONFIG_PERMIT[ 49] & ~reg_be))) |
+               (addr_hit[ 50] & (|(ALSAQR_PERIPH_PADFRAME_PERIPHS_CONFIG_PERMIT[ 50] & ~reg_be))) |
+               (addr_hit[ 51] & (|(ALSAQR_PERIPH_PADFRAME_PERIPHS_CONFIG_PERMIT[ 51] & ~reg_be))) |
+               (addr_hit[ 52] & (|(ALSAQR_PERIPH_PADFRAME_PERIPHS_CONFIG_PERMIT[ 52] & ~reg_be))) |
+               (addr_hit[ 53] & (|(ALSAQR_PERIPH_PADFRAME_PERIPHS_CONFIG_PERMIT[ 53] & ~reg_be))) |
+               (addr_hit[ 54] & (|(ALSAQR_PERIPH_PADFRAME_PERIPHS_CONFIG_PERMIT[ 54] & ~reg_be))) |
+               (addr_hit[ 55] & (|(ALSAQR_PERIPH_PADFRAME_PERIPHS_CONFIG_PERMIT[ 55] & ~reg_be))) |
+               (addr_hit[ 56] & (|(ALSAQR_PERIPH_PADFRAME_PERIPHS_CONFIG_PERMIT[ 56] & ~reg_be))) |
+               (addr_hit[ 57] & (|(ALSAQR_PERIPH_PADFRAME_PERIPHS_CONFIG_PERMIT[ 57] & ~reg_be))) |
+               (addr_hit[ 58] & (|(ALSAQR_PERIPH_PADFRAME_PERIPHS_CONFIG_PERMIT[ 58] & ~reg_be))) |
+               (addr_hit[ 59] & (|(ALSAQR_PERIPH_PADFRAME_PERIPHS_CONFIG_PERMIT[ 59] & ~reg_be))) |
+               (addr_hit[ 60] & (|(ALSAQR_PERIPH_PADFRAME_PERIPHS_CONFIG_PERMIT[ 60] & ~reg_be))) |
+               (addr_hit[ 61] & (|(ALSAQR_PERIPH_PADFRAME_PERIPHS_CONFIG_PERMIT[ 61] & ~reg_be))) |
+               (addr_hit[ 62] & (|(ALSAQR_PERIPH_PADFRAME_PERIPHS_CONFIG_PERMIT[ 62] & ~reg_be))) |
+               (addr_hit[ 63] & (|(ALSAQR_PERIPH_PADFRAME_PERIPHS_CONFIG_PERMIT[ 63] & ~reg_be))) |
+               (addr_hit[ 64] & (|(ALSAQR_PERIPH_PADFRAME_PERIPHS_CONFIG_PERMIT[ 64] & ~reg_be))) |
+               (addr_hit[ 65] & (|(ALSAQR_PERIPH_PADFRAME_PERIPHS_CONFIG_PERMIT[ 65] & ~reg_be))) |
+               (addr_hit[ 66] & (|(ALSAQR_PERIPH_PADFRAME_PERIPHS_CONFIG_PERMIT[ 66] & ~reg_be))) |
+               (addr_hit[ 67] & (|(ALSAQR_PERIPH_PADFRAME_PERIPHS_CONFIG_PERMIT[ 67] & ~reg_be))) |
+               (addr_hit[ 68] & (|(ALSAQR_PERIPH_PADFRAME_PERIPHS_CONFIG_PERMIT[ 68] & ~reg_be))) |
+               (addr_hit[ 69] & (|(ALSAQR_PERIPH_PADFRAME_PERIPHS_CONFIG_PERMIT[ 69] & ~reg_be))) |
+               (addr_hit[ 70] & (|(ALSAQR_PERIPH_PADFRAME_PERIPHS_CONFIG_PERMIT[ 70] & ~reg_be))) |
+               (addr_hit[ 71] & (|(ALSAQR_PERIPH_PADFRAME_PERIPHS_CONFIG_PERMIT[ 71] & ~reg_be))) |
+               (addr_hit[ 72] & (|(ALSAQR_PERIPH_PADFRAME_PERIPHS_CONFIG_PERMIT[ 72] & ~reg_be))) |
+               (addr_hit[ 73] & (|(ALSAQR_PERIPH_PADFRAME_PERIPHS_CONFIG_PERMIT[ 73] & ~reg_be))) |
+               (addr_hit[ 74] & (|(ALSAQR_PERIPH_PADFRAME_PERIPHS_CONFIG_PERMIT[ 74] & ~reg_be))) |
+               (addr_hit[ 75] & (|(ALSAQR_PERIPH_PADFRAME_PERIPHS_CONFIG_PERMIT[ 75] & ~reg_be))) |
+               (addr_hit[ 76] & (|(ALSAQR_PERIPH_PADFRAME_PERIPHS_CONFIG_PERMIT[ 76] & ~reg_be))) |
+               (addr_hit[ 77] & (|(ALSAQR_PERIPH_PADFRAME_PERIPHS_CONFIG_PERMIT[ 77] & ~reg_be))) |
+               (addr_hit[ 78] & (|(ALSAQR_PERIPH_PADFRAME_PERIPHS_CONFIG_PERMIT[ 78] & ~reg_be))) |
+               (addr_hit[ 79] & (|(ALSAQR_PERIPH_PADFRAME_PERIPHS_CONFIG_PERMIT[ 79] & ~reg_be))) |
+               (addr_hit[ 80] & (|(ALSAQR_PERIPH_PADFRAME_PERIPHS_CONFIG_PERMIT[ 80] & ~reg_be))) |
+               (addr_hit[ 81] & (|(ALSAQR_PERIPH_PADFRAME_PERIPHS_CONFIG_PERMIT[ 81] & ~reg_be))) |
+               (addr_hit[ 82] & (|(ALSAQR_PERIPH_PADFRAME_PERIPHS_CONFIG_PERMIT[ 82] & ~reg_be))) |
+               (addr_hit[ 83] & (|(ALSAQR_PERIPH_PADFRAME_PERIPHS_CONFIG_PERMIT[ 83] & ~reg_be))) |
+               (addr_hit[ 84] & (|(ALSAQR_PERIPH_PADFRAME_PERIPHS_CONFIG_PERMIT[ 84] & ~reg_be))) |
+               (addr_hit[ 85] & (|(ALSAQR_PERIPH_PADFRAME_PERIPHS_CONFIG_PERMIT[ 85] & ~reg_be))) |
+               (addr_hit[ 86] & (|(ALSAQR_PERIPH_PADFRAME_PERIPHS_CONFIG_PERMIT[ 86] & ~reg_be))) |
+               (addr_hit[ 87] & (|(ALSAQR_PERIPH_PADFRAME_PERIPHS_CONFIG_PERMIT[ 87] & ~reg_be))) |
+               (addr_hit[ 88] & (|(ALSAQR_PERIPH_PADFRAME_PERIPHS_CONFIG_PERMIT[ 88] & ~reg_be))) |
+               (addr_hit[ 89] & (|(ALSAQR_PERIPH_PADFRAME_PERIPHS_CONFIG_PERMIT[ 89] & ~reg_be))) |
+               (addr_hit[ 90] & (|(ALSAQR_PERIPH_PADFRAME_PERIPHS_CONFIG_PERMIT[ 90] & ~reg_be))) |
+               (addr_hit[ 91] & (|(ALSAQR_PERIPH_PADFRAME_PERIPHS_CONFIG_PERMIT[ 91] & ~reg_be))) |
+               (addr_hit[ 92] & (|(ALSAQR_PERIPH_PADFRAME_PERIPHS_CONFIG_PERMIT[ 92] & ~reg_be))) |
+               (addr_hit[ 93] & (|(ALSAQR_PERIPH_PADFRAME_PERIPHS_CONFIG_PERMIT[ 93] & ~reg_be))) |
+               (addr_hit[ 94] & (|(ALSAQR_PERIPH_PADFRAME_PERIPHS_CONFIG_PERMIT[ 94] & ~reg_be))) |
+               (addr_hit[ 95] & (|(ALSAQR_PERIPH_PADFRAME_PERIPHS_CONFIG_PERMIT[ 95] & ~reg_be))) |
+               (addr_hit[ 96] & (|(ALSAQR_PERIPH_PADFRAME_PERIPHS_CONFIG_PERMIT[ 96] & ~reg_be))) |
+               (addr_hit[ 97] & (|(ALSAQR_PERIPH_PADFRAME_PERIPHS_CONFIG_PERMIT[ 97] & ~reg_be))) |
+               (addr_hit[ 98] & (|(ALSAQR_PERIPH_PADFRAME_PERIPHS_CONFIG_PERMIT[ 98] & ~reg_be))) |
+               (addr_hit[ 99] & (|(ALSAQR_PERIPH_PADFRAME_PERIPHS_CONFIG_PERMIT[ 99] & ~reg_be))) |
+               (addr_hit[100] & (|(ALSAQR_PERIPH_PADFRAME_PERIPHS_CONFIG_PERMIT[100] & ~reg_be))) |
+               (addr_hit[101] & (|(ALSAQR_PERIPH_PADFRAME_PERIPHS_CONFIG_PERMIT[101] & ~reg_be))) |
+               (addr_hit[102] & (|(ALSAQR_PERIPH_PADFRAME_PERIPHS_CONFIG_PERMIT[102] & ~reg_be))) |
+               (addr_hit[103] & (|(ALSAQR_PERIPH_PADFRAME_PERIPHS_CONFIG_PERMIT[103] & ~reg_be))) |
+               (addr_hit[104] & (|(ALSAQR_PERIPH_PADFRAME_PERIPHS_CONFIG_PERMIT[104] & ~reg_be))) |
+               (addr_hit[105] & (|(ALSAQR_PERIPH_PADFRAME_PERIPHS_CONFIG_PERMIT[105] & ~reg_be))) |
+               (addr_hit[106] & (|(ALSAQR_PERIPH_PADFRAME_PERIPHS_CONFIG_PERMIT[106] & ~reg_be))) |
+               (addr_hit[107] & (|(ALSAQR_PERIPH_PADFRAME_PERIPHS_CONFIG_PERMIT[107] & ~reg_be))) |
+               (addr_hit[108] & (|(ALSAQR_PERIPH_PADFRAME_PERIPHS_CONFIG_PERMIT[108] & ~reg_be))) |
+               (addr_hit[109] & (|(ALSAQR_PERIPH_PADFRAME_PERIPHS_CONFIG_PERMIT[109] & ~reg_be))) |
+               (addr_hit[110] & (|(ALSAQR_PERIPH_PADFRAME_PERIPHS_CONFIG_PERMIT[110] & ~reg_be))) |
+               (addr_hit[111] & (|(ALSAQR_PERIPH_PADFRAME_PERIPHS_CONFIG_PERMIT[111] & ~reg_be))) |
+               (addr_hit[112] & (|(ALSAQR_PERIPH_PADFRAME_PERIPHS_CONFIG_PERMIT[112] & ~reg_be))) |
+               (addr_hit[113] & (|(ALSAQR_PERIPH_PADFRAME_PERIPHS_CONFIG_PERMIT[113] & ~reg_be))) |
+               (addr_hit[114] & (|(ALSAQR_PERIPH_PADFRAME_PERIPHS_CONFIG_PERMIT[114] & ~reg_be))) |
+               (addr_hit[115] & (|(ALSAQR_PERIPH_PADFRAME_PERIPHS_CONFIG_PERMIT[115] & ~reg_be))) |
+               (addr_hit[116] & (|(ALSAQR_PERIPH_PADFRAME_PERIPHS_CONFIG_PERMIT[116] & ~reg_be))) |
+               (addr_hit[117] & (|(ALSAQR_PERIPH_PADFRAME_PERIPHS_CONFIG_PERMIT[117] & ~reg_be))) |
+               (addr_hit[118] & (|(ALSAQR_PERIPH_PADFRAME_PERIPHS_CONFIG_PERMIT[118] & ~reg_be))) |
+               (addr_hit[119] & (|(ALSAQR_PERIPH_PADFRAME_PERIPHS_CONFIG_PERMIT[119] & ~reg_be))) |
+               (addr_hit[120] & (|(ALSAQR_PERIPH_PADFRAME_PERIPHS_CONFIG_PERMIT[120] & ~reg_be))) |
+               (addr_hit[121] & (|(ALSAQR_PERIPH_PADFRAME_PERIPHS_CONFIG_PERMIT[121] & ~reg_be))) |
+               (addr_hit[122] & (|(ALSAQR_PERIPH_PADFRAME_PERIPHS_CONFIG_PERMIT[122] & ~reg_be))) |
+               (addr_hit[123] & (|(ALSAQR_PERIPH_PADFRAME_PERIPHS_CONFIG_PERMIT[123] & ~reg_be))) |
+               (addr_hit[124] & (|(ALSAQR_PERIPH_PADFRAME_PERIPHS_CONFIG_PERMIT[124] & ~reg_be))) |
+               (addr_hit[125] & (|(ALSAQR_PERIPH_PADFRAME_PERIPHS_CONFIG_PERMIT[125] & ~reg_be))) |
+               (addr_hit[126] & (|(ALSAQR_PERIPH_PADFRAME_PERIPHS_CONFIG_PERMIT[126] & ~reg_be))) |
+               (addr_hit[127] & (|(ALSAQR_PERIPH_PADFRAME_PERIPHS_CONFIG_PERMIT[127] & ~reg_be))) |
+               (addr_hit[128] & (|(ALSAQR_PERIPH_PADFRAME_PERIPHS_CONFIG_PERMIT[128] & ~reg_be))) |
+               (addr_hit[129] & (|(ALSAQR_PERIPH_PADFRAME_PERIPHS_CONFIG_PERMIT[129] & ~reg_be))) |
+               (addr_hit[130] & (|(ALSAQR_PERIPH_PADFRAME_PERIPHS_CONFIG_PERMIT[130] & ~reg_be))) |
+               (addr_hit[131] & (|(ALSAQR_PERIPH_PADFRAME_PERIPHS_CONFIG_PERMIT[131] & ~reg_be))) |
+               (addr_hit[132] & (|(ALSAQR_PERIPH_PADFRAME_PERIPHS_CONFIG_PERMIT[132] & ~reg_be))) |
+               (addr_hit[133] & (|(ALSAQR_PERIPH_PADFRAME_PERIPHS_CONFIG_PERMIT[133] & ~reg_be))) |
+               (addr_hit[134] & (|(ALSAQR_PERIPH_PADFRAME_PERIPHS_CONFIG_PERMIT[134] & ~reg_be))) |
+               (addr_hit[135] & (|(ALSAQR_PERIPH_PADFRAME_PERIPHS_CONFIG_PERMIT[135] & ~reg_be))) |
+               (addr_hit[136] & (|(ALSAQR_PERIPH_PADFRAME_PERIPHS_CONFIG_PERMIT[136] & ~reg_be))) |
+               (addr_hit[137] & (|(ALSAQR_PERIPH_PADFRAME_PERIPHS_CONFIG_PERMIT[137] & ~reg_be))) |
+               (addr_hit[138] & (|(ALSAQR_PERIPH_PADFRAME_PERIPHS_CONFIG_PERMIT[138] & ~reg_be))) |
+               (addr_hit[139] & (|(ALSAQR_PERIPH_PADFRAME_PERIPHS_CONFIG_PERMIT[139] & ~reg_be))) |
+               (addr_hit[140] & (|(ALSAQR_PERIPH_PADFRAME_PERIPHS_CONFIG_PERMIT[140] & ~reg_be))) |
+               (addr_hit[141] & (|(ALSAQR_PERIPH_PADFRAME_PERIPHS_CONFIG_PERMIT[141] & ~reg_be))) |
+               (addr_hit[142] & (|(ALSAQR_PERIPH_PADFRAME_PERIPHS_CONFIG_PERMIT[142] & ~reg_be))) |
+               (addr_hit[143] & (|(ALSAQR_PERIPH_PADFRAME_PERIPHS_CONFIG_PERMIT[143] & ~reg_be))) |
+               (addr_hit[144] & (|(ALSAQR_PERIPH_PADFRAME_PERIPHS_CONFIG_PERMIT[144] & ~reg_be))) |
+               (addr_hit[145] & (|(ALSAQR_PERIPH_PADFRAME_PERIPHS_CONFIG_PERMIT[145] & ~reg_be))) |
+               (addr_hit[146] & (|(ALSAQR_PERIPH_PADFRAME_PERIPHS_CONFIG_PERMIT[146] & ~reg_be))) |
+               (addr_hit[147] & (|(ALSAQR_PERIPH_PADFRAME_PERIPHS_CONFIG_PERMIT[147] & ~reg_be))) |
+               (addr_hit[148] & (|(ALSAQR_PERIPH_PADFRAME_PERIPHS_CONFIG_PERMIT[148] & ~reg_be))) |
+               (addr_hit[149] & (|(ALSAQR_PERIPH_PADFRAME_PERIPHS_CONFIG_PERMIT[149] & ~reg_be))) |
+               (addr_hit[150] & (|(ALSAQR_PERIPH_PADFRAME_PERIPHS_CONFIG_PERMIT[150] & ~reg_be))) |
+               (addr_hit[151] & (|(ALSAQR_PERIPH_PADFRAME_PERIPHS_CONFIG_PERMIT[151] & ~reg_be))) |
+               (addr_hit[152] & (|(ALSAQR_PERIPH_PADFRAME_PERIPHS_CONFIG_PERMIT[152] & ~reg_be))) |
+               (addr_hit[153] & (|(ALSAQR_PERIPH_PADFRAME_PERIPHS_CONFIG_PERMIT[153] & ~reg_be))) |
+               (addr_hit[154] & (|(ALSAQR_PERIPH_PADFRAME_PERIPHS_CONFIG_PERMIT[154] & ~reg_be))) |
+               (addr_hit[155] & (|(ALSAQR_PERIPH_PADFRAME_PERIPHS_CONFIG_PERMIT[155] & ~reg_be))) |
+               (addr_hit[156] & (|(ALSAQR_PERIPH_PADFRAME_PERIPHS_CONFIG_PERMIT[156] & ~reg_be))) |
+               (addr_hit[157] & (|(ALSAQR_PERIPH_PADFRAME_PERIPHS_CONFIG_PERMIT[157] & ~reg_be))) |
+               (addr_hit[158] & (|(ALSAQR_PERIPH_PADFRAME_PERIPHS_CONFIG_PERMIT[158] & ~reg_be))) |
+               (addr_hit[159] & (|(ALSAQR_PERIPH_PADFRAME_PERIPHS_CONFIG_PERMIT[159] & ~reg_be))) |
+               (addr_hit[160] & (|(ALSAQR_PERIPH_PADFRAME_PERIPHS_CONFIG_PERMIT[160] & ~reg_be))) |
+               (addr_hit[161] & (|(ALSAQR_PERIPH_PADFRAME_PERIPHS_CONFIG_PERMIT[161] & ~reg_be))) |
+               (addr_hit[162] & (|(ALSAQR_PERIPH_PADFRAME_PERIPHS_CONFIG_PERMIT[162] & ~reg_be))) |
+               (addr_hit[163] & (|(ALSAQR_PERIPH_PADFRAME_PERIPHS_CONFIG_PERMIT[163] & ~reg_be))) |
+               (addr_hit[164] & (|(ALSAQR_PERIPH_PADFRAME_PERIPHS_CONFIG_PERMIT[164] & ~reg_be))) |
+               (addr_hit[165] & (|(ALSAQR_PERIPH_PADFRAME_PERIPHS_CONFIG_PERMIT[165] & ~reg_be))) |
+               (addr_hit[166] & (|(ALSAQR_PERIPH_PADFRAME_PERIPHS_CONFIG_PERMIT[166] & ~reg_be))) |
+               (addr_hit[167] & (|(ALSAQR_PERIPH_PADFRAME_PERIPHS_CONFIG_PERMIT[167] & ~reg_be))) |
+               (addr_hit[168] & (|(ALSAQR_PERIPH_PADFRAME_PERIPHS_CONFIG_PERMIT[168] & ~reg_be))) |
+               (addr_hit[169] & (|(ALSAQR_PERIPH_PADFRAME_PERIPHS_CONFIG_PERMIT[169] & ~reg_be))) |
+               (addr_hit[170] & (|(ALSAQR_PERIPH_PADFRAME_PERIPHS_CONFIG_PERMIT[170] & ~reg_be))) |
+               (addr_hit[171] & (|(ALSAQR_PERIPH_PADFRAME_PERIPHS_CONFIG_PERMIT[171] & ~reg_be))) |
+               (addr_hit[172] & (|(ALSAQR_PERIPH_PADFRAME_PERIPHS_CONFIG_PERMIT[172] & ~reg_be))) |
+               (addr_hit[173] & (|(ALSAQR_PERIPH_PADFRAME_PERIPHS_CONFIG_PERMIT[173] & ~reg_be))) |
+               (addr_hit[174] & (|(ALSAQR_PERIPH_PADFRAME_PERIPHS_CONFIG_PERMIT[174] & ~reg_be))) |
+               (addr_hit[175] & (|(ALSAQR_PERIPH_PADFRAME_PERIPHS_CONFIG_PERMIT[175] & ~reg_be))) |
+               (addr_hit[176] & (|(ALSAQR_PERIPH_PADFRAME_PERIPHS_CONFIG_PERMIT[176] & ~reg_be))) |
+               (addr_hit[177] & (|(ALSAQR_PERIPH_PADFRAME_PERIPHS_CONFIG_PERMIT[177] & ~reg_be))) |
+               (addr_hit[178] & (|(ALSAQR_PERIPH_PADFRAME_PERIPHS_CONFIG_PERMIT[178] & ~reg_be))) |
+               (addr_hit[179] & (|(ALSAQR_PERIPH_PADFRAME_PERIPHS_CONFIG_PERMIT[179] & ~reg_be))) |
+               (addr_hit[180] & (|(ALSAQR_PERIPH_PADFRAME_PERIPHS_CONFIG_PERMIT[180] & ~reg_be))) |
+               (addr_hit[181] & (|(ALSAQR_PERIPH_PADFRAME_PERIPHS_CONFIG_PERMIT[181] & ~reg_be))) |
+               (addr_hit[182] & (|(ALSAQR_PERIPH_PADFRAME_PERIPHS_CONFIG_PERMIT[182] & ~reg_be))) |
+               (addr_hit[183] & (|(ALSAQR_PERIPH_PADFRAME_PERIPHS_CONFIG_PERMIT[183] & ~reg_be))) |
+               (addr_hit[184] & (|(ALSAQR_PERIPH_PADFRAME_PERIPHS_CONFIG_PERMIT[184] & ~reg_be))) |
+               (addr_hit[185] & (|(ALSAQR_PERIPH_PADFRAME_PERIPHS_CONFIG_PERMIT[185] & ~reg_be))) |
+               (addr_hit[186] & (|(ALSAQR_PERIPH_PADFRAME_PERIPHS_CONFIG_PERMIT[186] & ~reg_be))) |
+               (addr_hit[187] & (|(ALSAQR_PERIPH_PADFRAME_PERIPHS_CONFIG_PERMIT[187] & ~reg_be))) |
+               (addr_hit[188] & (|(ALSAQR_PERIPH_PADFRAME_PERIPHS_CONFIG_PERMIT[188] & ~reg_be))) |
+               (addr_hit[189] & (|(ALSAQR_PERIPH_PADFRAME_PERIPHS_CONFIG_PERMIT[189] & ~reg_be))) |
+               (addr_hit[190] & (|(ALSAQR_PERIPH_PADFRAME_PERIPHS_CONFIG_PERMIT[190] & ~reg_be))) |
+               (addr_hit[191] & (|(ALSAQR_PERIPH_PADFRAME_PERIPHS_CONFIG_PERMIT[191] & ~reg_be))) |
+               (addr_hit[192] & (|(ALSAQR_PERIPH_PADFRAME_PERIPHS_CONFIG_PERMIT[192] & ~reg_be))) |
+               (addr_hit[193] & (|(ALSAQR_PERIPH_PADFRAME_PERIPHS_CONFIG_PERMIT[193] & ~reg_be))) |
+               (addr_hit[194] & (|(ALSAQR_PERIPH_PADFRAME_PERIPHS_CONFIG_PERMIT[194] & ~reg_be))) |
+               (addr_hit[195] & (|(ALSAQR_PERIPH_PADFRAME_PERIPHS_CONFIG_PERMIT[195] & ~reg_be))) |
+               (addr_hit[196] & (|(ALSAQR_PERIPH_PADFRAME_PERIPHS_CONFIG_PERMIT[196] & ~reg_be))) |
+               (addr_hit[197] & (|(ALSAQR_PERIPH_PADFRAME_PERIPHS_CONFIG_PERMIT[197] & ~reg_be))) |
+               (addr_hit[198] & (|(ALSAQR_PERIPH_PADFRAME_PERIPHS_CONFIG_PERMIT[198] & ~reg_be))) |
+               (addr_hit[199] & (|(ALSAQR_PERIPH_PADFRAME_PERIPHS_CONFIG_PERMIT[199] & ~reg_be))) |
+               (addr_hit[200] & (|(ALSAQR_PERIPH_PADFRAME_PERIPHS_CONFIG_PERMIT[200] & ~reg_be))) |
+               (addr_hit[201] & (|(ALSAQR_PERIPH_PADFRAME_PERIPHS_CONFIG_PERMIT[201] & ~reg_be))) |
+               (addr_hit[202] & (|(ALSAQR_PERIPH_PADFRAME_PERIPHS_CONFIG_PERMIT[202] & ~reg_be))) |
+               (addr_hit[203] & (|(ALSAQR_PERIPH_PADFRAME_PERIPHS_CONFIG_PERMIT[203] & ~reg_be))) |
+               (addr_hit[204] & (|(ALSAQR_PERIPH_PADFRAME_PERIPHS_CONFIG_PERMIT[204] & ~reg_be))) |
+               (addr_hit[205] & (|(ALSAQR_PERIPH_PADFRAME_PERIPHS_CONFIG_PERMIT[205] & ~reg_be))) |
+               (addr_hit[206] & (|(ALSAQR_PERIPH_PADFRAME_PERIPHS_CONFIG_PERMIT[206] & ~reg_be))) |
+               (addr_hit[207] & (|(ALSAQR_PERIPH_PADFRAME_PERIPHS_CONFIG_PERMIT[207] & ~reg_be))) |
+               (addr_hit[208] & (|(ALSAQR_PERIPH_PADFRAME_PERIPHS_CONFIG_PERMIT[208] & ~reg_be))) |
+               (addr_hit[209] & (|(ALSAQR_PERIPH_PADFRAME_PERIPHS_CONFIG_PERMIT[209] & ~reg_be))) |
+               (addr_hit[210] & (|(ALSAQR_PERIPH_PADFRAME_PERIPHS_CONFIG_PERMIT[210] & ~reg_be))) |
+               (addr_hit[211] & (|(ALSAQR_PERIPH_PADFRAME_PERIPHS_CONFIG_PERMIT[211] & ~reg_be))) |
+               (addr_hit[212] & (|(ALSAQR_PERIPH_PADFRAME_PERIPHS_CONFIG_PERMIT[212] & ~reg_be))) |
+               (addr_hit[213] & (|(ALSAQR_PERIPH_PADFRAME_PERIPHS_CONFIG_PERMIT[213] & ~reg_be))) |
+               (addr_hit[214] & (|(ALSAQR_PERIPH_PADFRAME_PERIPHS_CONFIG_PERMIT[214] & ~reg_be))) |
+               (addr_hit[215] & (|(ALSAQR_PERIPH_PADFRAME_PERIPHS_CONFIG_PERMIT[215] & ~reg_be))) |
+               (addr_hit[216] & (|(ALSAQR_PERIPH_PADFRAME_PERIPHS_CONFIG_PERMIT[216] & ~reg_be))) |
+               (addr_hit[217] & (|(ALSAQR_PERIPH_PADFRAME_PERIPHS_CONFIG_PERMIT[217] & ~reg_be))) |
+               (addr_hit[218] & (|(ALSAQR_PERIPH_PADFRAME_PERIPHS_CONFIG_PERMIT[218] & ~reg_be))) |
+               (addr_hit[219] & (|(ALSAQR_PERIPH_PADFRAME_PERIPHS_CONFIG_PERMIT[219] & ~reg_be))) |
+               (addr_hit[220] & (|(ALSAQR_PERIPH_PADFRAME_PERIPHS_CONFIG_PERMIT[220] & ~reg_be))) |
+               (addr_hit[221] & (|(ALSAQR_PERIPH_PADFRAME_PERIPHS_CONFIG_PERMIT[221] & ~reg_be))) |
+               (addr_hit[222] & (|(ALSAQR_PERIPH_PADFRAME_PERIPHS_CONFIG_PERMIT[222] & ~reg_be))) |
+               (addr_hit[223] & (|(ALSAQR_PERIPH_PADFRAME_PERIPHS_CONFIG_PERMIT[223] & ~reg_be))) |
+               (addr_hit[224] & (|(ALSAQR_PERIPH_PADFRAME_PERIPHS_CONFIG_PERMIT[224] & ~reg_be))) |
+               (addr_hit[225] & (|(ALSAQR_PERIPH_PADFRAME_PERIPHS_CONFIG_PERMIT[225] & ~reg_be))) |
+               (addr_hit[226] & (|(ALSAQR_PERIPH_PADFRAME_PERIPHS_CONFIG_PERMIT[226] & ~reg_be))) |
+               (addr_hit[227] & (|(ALSAQR_PERIPH_PADFRAME_PERIPHS_CONFIG_PERMIT[227] & ~reg_be)))));
   end
 
-  assign pad_mx_can_0_cfg_chip2pad_we = addr_hit[0] & reg_we & !reg_error;
-  assign pad_mx_can_0_cfg_chip2pad_wd = reg_wdata[0];
+  assign pad_io_a_00_cfg_chip2pad_we = addr_hit[0] & reg_we & !reg_error;
+  assign pad_io_a_00_cfg_chip2pad_wd = reg_wdata[0];
 
-  assign pad_mx_can_0_cfg_oen_we = addr_hit[0] & reg_we & !reg_error;
-  assign pad_mx_can_0_cfg_oen_wd = reg_wdata[1];
+  assign pad_io_a_00_cfg_oen_we = addr_hit[0] & reg_we & !reg_error;
+  assign pad_io_a_00_cfg_oen_wd = reg_wdata[1];
 
-  assign pad_mx_can_0_mux_sel_we = addr_hit[1] & reg_we & !reg_error;
-  assign pad_mx_can_0_mux_sel_wd = reg_wdata[3:0];
+  assign pad_io_a_00_mux_sel_we = addr_hit[1] & reg_we & !reg_error;
+  assign pad_io_a_00_mux_sel_wd = reg_wdata[3:0];
 
-  assign pad_mx_can_1_cfg_chip2pad_we = addr_hit[2] & reg_we & !reg_error;
-  assign pad_mx_can_1_cfg_chip2pad_wd = reg_wdata[0];
+  assign pad_io_a_01_cfg_chip2pad_we = addr_hit[2] & reg_we & !reg_error;
+  assign pad_io_a_01_cfg_chip2pad_wd = reg_wdata[0];
 
-  assign pad_mx_can_1_cfg_oen_we = addr_hit[2] & reg_we & !reg_error;
-  assign pad_mx_can_1_cfg_oen_wd = reg_wdata[1];
+  assign pad_io_a_01_cfg_oen_we = addr_hit[2] & reg_we & !reg_error;
+  assign pad_io_a_01_cfg_oen_wd = reg_wdata[1];
 
-  assign pad_mx_can_1_mux_sel_we = addr_hit[3] & reg_we & !reg_error;
-  assign pad_mx_can_1_mux_sel_wd = reg_wdata[3:0];
+  assign pad_io_a_01_mux_sel_we = addr_hit[3] & reg_we & !reg_error;
+  assign pad_io_a_01_mux_sel_wd = reg_wdata[3:0];
 
-  assign pad_mx_can_2_cfg_chip2pad_we = addr_hit[4] & reg_we & !reg_error;
-  assign pad_mx_can_2_cfg_chip2pad_wd = reg_wdata[0];
+  assign pad_io_a_02_cfg_chip2pad_we = addr_hit[4] & reg_we & !reg_error;
+  assign pad_io_a_02_cfg_chip2pad_wd = reg_wdata[0];
 
-  assign pad_mx_can_2_cfg_oen_we = addr_hit[4] & reg_we & !reg_error;
-  assign pad_mx_can_2_cfg_oen_wd = reg_wdata[1];
+  assign pad_io_a_02_cfg_oen_we = addr_hit[4] & reg_we & !reg_error;
+  assign pad_io_a_02_cfg_oen_wd = reg_wdata[1];
 
-  assign pad_mx_can_2_mux_sel_we = addr_hit[5] & reg_we & !reg_error;
-  assign pad_mx_can_2_mux_sel_wd = reg_wdata[3:0];
+  assign pad_io_a_02_mux_sel_we = addr_hit[5] & reg_we & !reg_error;
+  assign pad_io_a_02_mux_sel_wd = reg_wdata[3:0];
 
-  assign pad_mx_can_3_cfg_chip2pad_we = addr_hit[6] & reg_we & !reg_error;
-  assign pad_mx_can_3_cfg_chip2pad_wd = reg_wdata[0];
+  assign pad_io_a_03_cfg_chip2pad_we = addr_hit[6] & reg_we & !reg_error;
+  assign pad_io_a_03_cfg_chip2pad_wd = reg_wdata[0];
 
-  assign pad_mx_can_3_cfg_oen_we = addr_hit[6] & reg_we & !reg_error;
-  assign pad_mx_can_3_cfg_oen_wd = reg_wdata[1];
+  assign pad_io_a_03_cfg_oen_we = addr_hit[6] & reg_we & !reg_error;
+  assign pad_io_a_03_cfg_oen_wd = reg_wdata[1];
 
-  assign pad_mx_can_3_mux_sel_we = addr_hit[7] & reg_we & !reg_error;
-  assign pad_mx_can_3_mux_sel_wd = reg_wdata[3:0];
+  assign pad_io_a_03_mux_sel_we = addr_hit[7] & reg_we & !reg_error;
+  assign pad_io_a_03_mux_sel_wd = reg_wdata[3:0];
 
-  assign pad_mx_cam0_0_cfg_chip2pad_we = addr_hit[8] & reg_we & !reg_error;
-  assign pad_mx_cam0_0_cfg_chip2pad_wd = reg_wdata[0];
+  assign pad_io_a_04_cfg_chip2pad_we = addr_hit[8] & reg_we & !reg_error;
+  assign pad_io_a_04_cfg_chip2pad_wd = reg_wdata[0];
 
-  assign pad_mx_cam0_0_cfg_oen_we = addr_hit[8] & reg_we & !reg_error;
-  assign pad_mx_cam0_0_cfg_oen_wd = reg_wdata[1];
+  assign pad_io_a_04_cfg_oen_we = addr_hit[8] & reg_we & !reg_error;
+  assign pad_io_a_04_cfg_oen_wd = reg_wdata[1];
 
-  assign pad_mx_cam0_0_mux_sel_we = addr_hit[9] & reg_we & !reg_error;
-  assign pad_mx_cam0_0_mux_sel_wd = reg_wdata[4:0];
+  assign pad_io_a_04_mux_sel_we = addr_hit[9] & reg_we & !reg_error;
+  assign pad_io_a_04_mux_sel_wd = reg_wdata[3:0];
 
-  assign pad_mx_cam0_1_cfg_chip2pad_we = addr_hit[10] & reg_we & !reg_error;
-  assign pad_mx_cam0_1_cfg_chip2pad_wd = reg_wdata[0];
+  assign pad_io_a_05_cfg_chip2pad_we = addr_hit[10] & reg_we & !reg_error;
+  assign pad_io_a_05_cfg_chip2pad_wd = reg_wdata[0];
 
-  assign pad_mx_cam0_1_cfg_oen_we = addr_hit[10] & reg_we & !reg_error;
-  assign pad_mx_cam0_1_cfg_oen_wd = reg_wdata[1];
+  assign pad_io_a_05_cfg_oen_we = addr_hit[10] & reg_we & !reg_error;
+  assign pad_io_a_05_cfg_oen_wd = reg_wdata[1];
 
-  assign pad_mx_cam0_1_mux_sel_we = addr_hit[11] & reg_we & !reg_error;
-  assign pad_mx_cam0_1_mux_sel_wd = reg_wdata[4:0];
+  assign pad_io_a_05_mux_sel_we = addr_hit[11] & reg_we & !reg_error;
+  assign pad_io_a_05_mux_sel_wd = reg_wdata[3:0];
 
-  assign pad_mx_cam0_2_cfg_chip2pad_we = addr_hit[12] & reg_we & !reg_error;
-  assign pad_mx_cam0_2_cfg_chip2pad_wd = reg_wdata[0];
+  assign pad_io_a_06_cfg_chip2pad_we = addr_hit[12] & reg_we & !reg_error;
+  assign pad_io_a_06_cfg_chip2pad_wd = reg_wdata[0];
 
-  assign pad_mx_cam0_2_cfg_oen_we = addr_hit[12] & reg_we & !reg_error;
-  assign pad_mx_cam0_2_cfg_oen_wd = reg_wdata[1];
+  assign pad_io_a_06_cfg_oen_we = addr_hit[12] & reg_we & !reg_error;
+  assign pad_io_a_06_cfg_oen_wd = reg_wdata[1];
 
-  assign pad_mx_cam0_2_mux_sel_we = addr_hit[13] & reg_we & !reg_error;
-  assign pad_mx_cam0_2_mux_sel_wd = reg_wdata[4:0];
+  assign pad_io_a_06_mux_sel_we = addr_hit[13] & reg_we & !reg_error;
+  assign pad_io_a_06_mux_sel_wd = reg_wdata[3:0];
 
-  assign pad_mx_cam0_3_cfg_chip2pad_we = addr_hit[14] & reg_we & !reg_error;
-  assign pad_mx_cam0_3_cfg_chip2pad_wd = reg_wdata[0];
+  assign pad_io_a_07_cfg_chip2pad_we = addr_hit[14] & reg_we & !reg_error;
+  assign pad_io_a_07_cfg_chip2pad_wd = reg_wdata[0];
 
-  assign pad_mx_cam0_3_cfg_oen_we = addr_hit[14] & reg_we & !reg_error;
-  assign pad_mx_cam0_3_cfg_oen_wd = reg_wdata[1];
+  assign pad_io_a_07_cfg_oen_we = addr_hit[14] & reg_we & !reg_error;
+  assign pad_io_a_07_cfg_oen_wd = reg_wdata[1];
 
-  assign pad_mx_cam0_3_mux_sel_we = addr_hit[15] & reg_we & !reg_error;
-  assign pad_mx_cam0_3_mux_sel_wd = reg_wdata[4:0];
+  assign pad_io_a_07_mux_sel_we = addr_hit[15] & reg_we & !reg_error;
+  assign pad_io_a_07_mux_sel_wd = reg_wdata[3:0];
 
-  assign pad_mx_cam0_4_cfg_chip2pad_we = addr_hit[16] & reg_we & !reg_error;
-  assign pad_mx_cam0_4_cfg_chip2pad_wd = reg_wdata[0];
+  assign pad_io_a_08_cfg_chip2pad_we = addr_hit[16] & reg_we & !reg_error;
+  assign pad_io_a_08_cfg_chip2pad_wd = reg_wdata[0];
 
-  assign pad_mx_cam0_4_cfg_oen_we = addr_hit[16] & reg_we & !reg_error;
-  assign pad_mx_cam0_4_cfg_oen_wd = reg_wdata[1];
+  assign pad_io_a_08_cfg_oen_we = addr_hit[16] & reg_we & !reg_error;
+  assign pad_io_a_08_cfg_oen_wd = reg_wdata[1];
 
-  assign pad_mx_cam0_4_mux_sel_we = addr_hit[17] & reg_we & !reg_error;
-  assign pad_mx_cam0_4_mux_sel_wd = reg_wdata[4:0];
+  assign pad_io_a_08_mux_sel_we = addr_hit[17] & reg_we & !reg_error;
+  assign pad_io_a_08_mux_sel_wd = reg_wdata[3:0];
 
-  assign pad_mx_cam0_5_cfg_chip2pad_we = addr_hit[18] & reg_we & !reg_error;
-  assign pad_mx_cam0_5_cfg_chip2pad_wd = reg_wdata[0];
+  assign pad_io_a_09_cfg_chip2pad_we = addr_hit[18] & reg_we & !reg_error;
+  assign pad_io_a_09_cfg_chip2pad_wd = reg_wdata[0];
 
-  assign pad_mx_cam0_5_cfg_oen_we = addr_hit[18] & reg_we & !reg_error;
-  assign pad_mx_cam0_5_cfg_oen_wd = reg_wdata[1];
+  assign pad_io_a_09_cfg_oen_we = addr_hit[18] & reg_we & !reg_error;
+  assign pad_io_a_09_cfg_oen_wd = reg_wdata[1];
 
-  assign pad_mx_cam0_5_mux_sel_we = addr_hit[19] & reg_we & !reg_error;
-  assign pad_mx_cam0_5_mux_sel_wd = reg_wdata[4:0];
+  assign pad_io_a_09_mux_sel_we = addr_hit[19] & reg_we & !reg_error;
+  assign pad_io_a_09_mux_sel_wd = reg_wdata[3:0];
 
-  assign pad_mx_cam0_6_cfg_chip2pad_we = addr_hit[20] & reg_we & !reg_error;
-  assign pad_mx_cam0_6_cfg_chip2pad_wd = reg_wdata[0];
+  assign pad_io_a_10_cfg_chip2pad_we = addr_hit[20] & reg_we & !reg_error;
+  assign pad_io_a_10_cfg_chip2pad_wd = reg_wdata[0];
 
-  assign pad_mx_cam0_6_cfg_oen_we = addr_hit[20] & reg_we & !reg_error;
-  assign pad_mx_cam0_6_cfg_oen_wd = reg_wdata[1];
+  assign pad_io_a_10_cfg_oen_we = addr_hit[20] & reg_we & !reg_error;
+  assign pad_io_a_10_cfg_oen_wd = reg_wdata[1];
 
-  assign pad_mx_cam0_6_mux_sel_we = addr_hit[21] & reg_we & !reg_error;
-  assign pad_mx_cam0_6_mux_sel_wd = reg_wdata[4:0];
+  assign pad_io_a_10_mux_sel_we = addr_hit[21] & reg_we & !reg_error;
+  assign pad_io_a_10_mux_sel_wd = reg_wdata[3:0];
 
-  assign pad_mx_cam0_7_cfg_chip2pad_we = addr_hit[22] & reg_we & !reg_error;
-  assign pad_mx_cam0_7_cfg_chip2pad_wd = reg_wdata[0];
+  assign pad_io_a_11_cfg_chip2pad_we = addr_hit[22] & reg_we & !reg_error;
+  assign pad_io_a_11_cfg_chip2pad_wd = reg_wdata[0];
 
-  assign pad_mx_cam0_7_cfg_oen_we = addr_hit[22] & reg_we & !reg_error;
-  assign pad_mx_cam0_7_cfg_oen_wd = reg_wdata[1];
+  assign pad_io_a_11_cfg_oen_we = addr_hit[22] & reg_we & !reg_error;
+  assign pad_io_a_11_cfg_oen_wd = reg_wdata[1];
 
-  assign pad_mx_cam0_7_mux_sel_we = addr_hit[23] & reg_we & !reg_error;
-  assign pad_mx_cam0_7_mux_sel_wd = reg_wdata[4:0];
+  assign pad_io_a_11_mux_sel_we = addr_hit[23] & reg_we & !reg_error;
+  assign pad_io_a_11_mux_sel_wd = reg_wdata[3:0];
 
-  assign pad_mx_cam0_8_cfg_chip2pad_we = addr_hit[24] & reg_we & !reg_error;
-  assign pad_mx_cam0_8_cfg_chip2pad_wd = reg_wdata[0];
+  assign pad_io_a_12_cfg_chip2pad_we = addr_hit[24] & reg_we & !reg_error;
+  assign pad_io_a_12_cfg_chip2pad_wd = reg_wdata[0];
 
-  assign pad_mx_cam0_8_cfg_oen_we = addr_hit[24] & reg_we & !reg_error;
-  assign pad_mx_cam0_8_cfg_oen_wd = reg_wdata[1];
+  assign pad_io_a_12_cfg_oen_we = addr_hit[24] & reg_we & !reg_error;
+  assign pad_io_a_12_cfg_oen_wd = reg_wdata[1];
 
-  assign pad_mx_cam0_8_mux_sel_we = addr_hit[25] & reg_we & !reg_error;
-  assign pad_mx_cam0_8_mux_sel_wd = reg_wdata[4:0];
+  assign pad_io_a_12_mux_sel_we = addr_hit[25] & reg_we & !reg_error;
+  assign pad_io_a_12_mux_sel_wd = reg_wdata[3:0];
 
-  assign pad_mx_cam0_9_cfg_chip2pad_we = addr_hit[26] & reg_we & !reg_error;
-  assign pad_mx_cam0_9_cfg_chip2pad_wd = reg_wdata[0];
+  assign pad_io_a_13_cfg_chip2pad_we = addr_hit[26] & reg_we & !reg_error;
+  assign pad_io_a_13_cfg_chip2pad_wd = reg_wdata[0];
 
-  assign pad_mx_cam0_9_cfg_oen_we = addr_hit[26] & reg_we & !reg_error;
-  assign pad_mx_cam0_9_cfg_oen_wd = reg_wdata[1];
+  assign pad_io_a_13_cfg_oen_we = addr_hit[26] & reg_we & !reg_error;
+  assign pad_io_a_13_cfg_oen_wd = reg_wdata[1];
 
-  assign pad_mx_cam0_9_mux_sel_we = addr_hit[27] & reg_we & !reg_error;
-  assign pad_mx_cam0_9_mux_sel_wd = reg_wdata[4:0];
+  assign pad_io_a_13_mux_sel_we = addr_hit[27] & reg_we & !reg_error;
+  assign pad_io_a_13_mux_sel_wd = reg_wdata[3:0];
 
-  assign pad_mx_cam0_10_cfg_chip2pad_we = addr_hit[28] & reg_we & !reg_error;
-  assign pad_mx_cam0_10_cfg_chip2pad_wd = reg_wdata[0];
+  assign pad_io_a_14_cfg_chip2pad_we = addr_hit[28] & reg_we & !reg_error;
+  assign pad_io_a_14_cfg_chip2pad_wd = reg_wdata[0];
 
-  assign pad_mx_cam0_10_cfg_oen_we = addr_hit[28] & reg_we & !reg_error;
-  assign pad_mx_cam0_10_cfg_oen_wd = reg_wdata[1];
+  assign pad_io_a_14_cfg_oen_we = addr_hit[28] & reg_we & !reg_error;
+  assign pad_io_a_14_cfg_oen_wd = reg_wdata[1];
 
-  assign pad_mx_cam0_10_mux_sel_we = addr_hit[29] & reg_we & !reg_error;
-  assign pad_mx_cam0_10_mux_sel_wd = reg_wdata[4:0];
+  assign pad_io_a_14_mux_sel_we = addr_hit[29] & reg_we & !reg_error;
+  assign pad_io_a_14_mux_sel_wd = reg_wdata[3:0];
 
-  assign pad_mx_cam1_0_cfg_chip2pad_we = addr_hit[30] & reg_we & !reg_error;
-  assign pad_mx_cam1_0_cfg_chip2pad_wd = reg_wdata[0];
+  assign pad_io_b_00_cfg_chip2pad_we = addr_hit[30] & reg_we & !reg_error;
+  assign pad_io_b_00_cfg_chip2pad_wd = reg_wdata[0];
 
-  assign pad_mx_cam1_0_cfg_oen_we = addr_hit[30] & reg_we & !reg_error;
-  assign pad_mx_cam1_0_cfg_oen_wd = reg_wdata[1];
+  assign pad_io_b_00_cfg_oen_we = addr_hit[30] & reg_we & !reg_error;
+  assign pad_io_b_00_cfg_oen_wd = reg_wdata[1];
 
-  assign pad_mx_cam1_0_mux_sel_we = addr_hit[31] & reg_we & !reg_error;
-  assign pad_mx_cam1_0_mux_sel_wd = reg_wdata[4:0];
+  assign pad_io_b_00_mux_sel_we = addr_hit[31] & reg_we & !reg_error;
+  assign pad_io_b_00_mux_sel_wd = reg_wdata[4:0];
 
-  assign pad_mx_cam1_1_cfg_chip2pad_we = addr_hit[32] & reg_we & !reg_error;
-  assign pad_mx_cam1_1_cfg_chip2pad_wd = reg_wdata[0];
+  assign pad_io_b_01_cfg_chip2pad_we = addr_hit[32] & reg_we & !reg_error;
+  assign pad_io_b_01_cfg_chip2pad_wd = reg_wdata[0];
 
-  assign pad_mx_cam1_1_cfg_oen_we = addr_hit[32] & reg_we & !reg_error;
-  assign pad_mx_cam1_1_cfg_oen_wd = reg_wdata[1];
+  assign pad_io_b_01_cfg_oen_we = addr_hit[32] & reg_we & !reg_error;
+  assign pad_io_b_01_cfg_oen_wd = reg_wdata[1];
 
-  assign pad_mx_cam1_1_mux_sel_we = addr_hit[33] & reg_we & !reg_error;
-  assign pad_mx_cam1_1_mux_sel_wd = reg_wdata[4:0];
+  assign pad_io_b_01_mux_sel_we = addr_hit[33] & reg_we & !reg_error;
+  assign pad_io_b_01_mux_sel_wd = reg_wdata[4:0];
 
-  assign pad_mx_cam1_2_cfg_chip2pad_we = addr_hit[34] & reg_we & !reg_error;
-  assign pad_mx_cam1_2_cfg_chip2pad_wd = reg_wdata[0];
+  assign pad_io_b_02_cfg_chip2pad_we = addr_hit[34] & reg_we & !reg_error;
+  assign pad_io_b_02_cfg_chip2pad_wd = reg_wdata[0];
 
-  assign pad_mx_cam1_2_cfg_oen_we = addr_hit[34] & reg_we & !reg_error;
-  assign pad_mx_cam1_2_cfg_oen_wd = reg_wdata[1];
+  assign pad_io_b_02_cfg_oen_we = addr_hit[34] & reg_we & !reg_error;
+  assign pad_io_b_02_cfg_oen_wd = reg_wdata[1];
 
-  assign pad_mx_cam1_2_mux_sel_we = addr_hit[35] & reg_we & !reg_error;
-  assign pad_mx_cam1_2_mux_sel_wd = reg_wdata[4:0];
+  assign pad_io_b_02_mux_sel_we = addr_hit[35] & reg_we & !reg_error;
+  assign pad_io_b_02_mux_sel_wd = reg_wdata[4:0];
 
-  assign pad_mx_cam1_3_cfg_chip2pad_we = addr_hit[36] & reg_we & !reg_error;
-  assign pad_mx_cam1_3_cfg_chip2pad_wd = reg_wdata[0];
+  assign pad_io_b_03_cfg_chip2pad_we = addr_hit[36] & reg_we & !reg_error;
+  assign pad_io_b_03_cfg_chip2pad_wd = reg_wdata[0];
 
-  assign pad_mx_cam1_3_cfg_oen_we = addr_hit[36] & reg_we & !reg_error;
-  assign pad_mx_cam1_3_cfg_oen_wd = reg_wdata[1];
+  assign pad_io_b_03_cfg_oen_we = addr_hit[36] & reg_we & !reg_error;
+  assign pad_io_b_03_cfg_oen_wd = reg_wdata[1];
 
-  assign pad_mx_cam1_3_mux_sel_we = addr_hit[37] & reg_we & !reg_error;
-  assign pad_mx_cam1_3_mux_sel_wd = reg_wdata[4:0];
+  assign pad_io_b_03_mux_sel_we = addr_hit[37] & reg_we & !reg_error;
+  assign pad_io_b_03_mux_sel_wd = reg_wdata[4:0];
 
-  assign pad_mx_cam1_4_cfg_chip2pad_we = addr_hit[38] & reg_we & !reg_error;
-  assign pad_mx_cam1_4_cfg_chip2pad_wd = reg_wdata[0];
+  assign pad_io_b_04_cfg_chip2pad_we = addr_hit[38] & reg_we & !reg_error;
+  assign pad_io_b_04_cfg_chip2pad_wd = reg_wdata[0];
 
-  assign pad_mx_cam1_4_cfg_oen_we = addr_hit[38] & reg_we & !reg_error;
-  assign pad_mx_cam1_4_cfg_oen_wd = reg_wdata[1];
+  assign pad_io_b_04_cfg_oen_we = addr_hit[38] & reg_we & !reg_error;
+  assign pad_io_b_04_cfg_oen_wd = reg_wdata[1];
 
-  assign pad_mx_cam1_4_mux_sel_we = addr_hit[39] & reg_we & !reg_error;
-  assign pad_mx_cam1_4_mux_sel_wd = reg_wdata[4:0];
+  assign pad_io_b_04_mux_sel_we = addr_hit[39] & reg_we & !reg_error;
+  assign pad_io_b_04_mux_sel_wd = reg_wdata[4:0];
 
-  assign pad_mx_cam1_5_cfg_chip2pad_we = addr_hit[40] & reg_we & !reg_error;
-  assign pad_mx_cam1_5_cfg_chip2pad_wd = reg_wdata[0];
+  assign pad_io_b_05_cfg_chip2pad_we = addr_hit[40] & reg_we & !reg_error;
+  assign pad_io_b_05_cfg_chip2pad_wd = reg_wdata[0];
 
-  assign pad_mx_cam1_5_cfg_oen_we = addr_hit[40] & reg_we & !reg_error;
-  assign pad_mx_cam1_5_cfg_oen_wd = reg_wdata[1];
+  assign pad_io_b_05_cfg_oen_we = addr_hit[40] & reg_we & !reg_error;
+  assign pad_io_b_05_cfg_oen_wd = reg_wdata[1];
 
-  assign pad_mx_cam1_5_mux_sel_we = addr_hit[41] & reg_we & !reg_error;
-  assign pad_mx_cam1_5_mux_sel_wd = reg_wdata[4:0];
+  assign pad_io_b_05_mux_sel_we = addr_hit[41] & reg_we & !reg_error;
+  assign pad_io_b_05_mux_sel_wd = reg_wdata[4:0];
 
-  assign pad_mx_cam1_6_cfg_chip2pad_we = addr_hit[42] & reg_we & !reg_error;
-  assign pad_mx_cam1_6_cfg_chip2pad_wd = reg_wdata[0];
+  assign pad_io_b_06_cfg_chip2pad_we = addr_hit[42] & reg_we & !reg_error;
+  assign pad_io_b_06_cfg_chip2pad_wd = reg_wdata[0];
 
-  assign pad_mx_cam1_6_cfg_oen_we = addr_hit[42] & reg_we & !reg_error;
-  assign pad_mx_cam1_6_cfg_oen_wd = reg_wdata[1];
+  assign pad_io_b_06_cfg_oen_we = addr_hit[42] & reg_we & !reg_error;
+  assign pad_io_b_06_cfg_oen_wd = reg_wdata[1];
 
-  assign pad_mx_cam1_6_mux_sel_we = addr_hit[43] & reg_we & !reg_error;
-  assign pad_mx_cam1_6_mux_sel_wd = reg_wdata[4:0];
+  assign pad_io_b_06_mux_sel_we = addr_hit[43] & reg_we & !reg_error;
+  assign pad_io_b_06_mux_sel_wd = reg_wdata[4:0];
 
-  assign pad_mx_cam1_7_cfg_chip2pad_we = addr_hit[44] & reg_we & !reg_error;
-  assign pad_mx_cam1_7_cfg_chip2pad_wd = reg_wdata[0];
+  assign pad_io_b_07_cfg_chip2pad_we = addr_hit[44] & reg_we & !reg_error;
+  assign pad_io_b_07_cfg_chip2pad_wd = reg_wdata[0];
 
-  assign pad_mx_cam1_7_cfg_oen_we = addr_hit[44] & reg_we & !reg_error;
-  assign pad_mx_cam1_7_cfg_oen_wd = reg_wdata[1];
+  assign pad_io_b_07_cfg_oen_we = addr_hit[44] & reg_we & !reg_error;
+  assign pad_io_b_07_cfg_oen_wd = reg_wdata[1];
 
-  assign pad_mx_cam1_7_mux_sel_we = addr_hit[45] & reg_we & !reg_error;
-  assign pad_mx_cam1_7_mux_sel_wd = reg_wdata[4:0];
+  assign pad_io_b_07_mux_sel_we = addr_hit[45] & reg_we & !reg_error;
+  assign pad_io_b_07_mux_sel_wd = reg_wdata[4:0];
 
-  assign pad_mx_cam1_8_cfg_chip2pad_we = addr_hit[46] & reg_we & !reg_error;
-  assign pad_mx_cam1_8_cfg_chip2pad_wd = reg_wdata[0];
+  assign pad_io_b_08_cfg_chip2pad_we = addr_hit[46] & reg_we & !reg_error;
+  assign pad_io_b_08_cfg_chip2pad_wd = reg_wdata[0];
 
-  assign pad_mx_cam1_8_cfg_oen_we = addr_hit[46] & reg_we & !reg_error;
-  assign pad_mx_cam1_8_cfg_oen_wd = reg_wdata[1];
+  assign pad_io_b_08_cfg_oen_we = addr_hit[46] & reg_we & !reg_error;
+  assign pad_io_b_08_cfg_oen_wd = reg_wdata[1];
 
-  assign pad_mx_cam1_8_mux_sel_we = addr_hit[47] & reg_we & !reg_error;
-  assign pad_mx_cam1_8_mux_sel_wd = reg_wdata[4:0];
+  assign pad_io_b_08_mux_sel_we = addr_hit[47] & reg_we & !reg_error;
+  assign pad_io_b_08_mux_sel_wd = reg_wdata[4:0];
 
-  assign pad_mx_cam1_9_cfg_chip2pad_we = addr_hit[48] & reg_we & !reg_error;
-  assign pad_mx_cam1_9_cfg_chip2pad_wd = reg_wdata[0];
+  assign pad_io_b_09_cfg_chip2pad_we = addr_hit[48] & reg_we & !reg_error;
+  assign pad_io_b_09_cfg_chip2pad_wd = reg_wdata[0];
 
-  assign pad_mx_cam1_9_cfg_oen_we = addr_hit[48] & reg_we & !reg_error;
-  assign pad_mx_cam1_9_cfg_oen_wd = reg_wdata[1];
+  assign pad_io_b_09_cfg_oen_we = addr_hit[48] & reg_we & !reg_error;
+  assign pad_io_b_09_cfg_oen_wd = reg_wdata[1];
 
-  assign pad_mx_cam1_9_mux_sel_we = addr_hit[49] & reg_we & !reg_error;
-  assign pad_mx_cam1_9_mux_sel_wd = reg_wdata[4:0];
+  assign pad_io_b_09_mux_sel_we = addr_hit[49] & reg_we & !reg_error;
+  assign pad_io_b_09_mux_sel_wd = reg_wdata[4:0];
 
-  assign pad_mx_cam1_10_cfg_chip2pad_we = addr_hit[50] & reg_we & !reg_error;
-  assign pad_mx_cam1_10_cfg_chip2pad_wd = reg_wdata[0];
+  assign pad_io_b_10_cfg_chip2pad_we = addr_hit[50] & reg_we & !reg_error;
+  assign pad_io_b_10_cfg_chip2pad_wd = reg_wdata[0];
 
-  assign pad_mx_cam1_10_cfg_oen_we = addr_hit[50] & reg_we & !reg_error;
-  assign pad_mx_cam1_10_cfg_oen_wd = reg_wdata[1];
+  assign pad_io_b_10_cfg_oen_we = addr_hit[50] & reg_we & !reg_error;
+  assign pad_io_b_10_cfg_oen_wd = reg_wdata[1];
 
-  assign pad_mx_cam1_10_mux_sel_we = addr_hit[51] & reg_we & !reg_error;
-  assign pad_mx_cam1_10_mux_sel_wd = reg_wdata[4:0];
+  assign pad_io_b_10_mux_sel_we = addr_hit[51] & reg_we & !reg_error;
+  assign pad_io_b_10_mux_sel_wd = reg_wdata[4:0];
 
-  assign pad_mx_sdio1_0_cfg_chip2pad_we = addr_hit[52] & reg_we & !reg_error;
-  assign pad_mx_sdio1_0_cfg_chip2pad_wd = reg_wdata[0];
+  assign pad_io_b_11_cfg_chip2pad_we = addr_hit[52] & reg_we & !reg_error;
+  assign pad_io_b_11_cfg_chip2pad_wd = reg_wdata[0];
 
-  assign pad_mx_sdio1_0_cfg_oen_we = addr_hit[52] & reg_we & !reg_error;
-  assign pad_mx_sdio1_0_cfg_oen_wd = reg_wdata[1];
+  assign pad_io_b_11_cfg_oen_we = addr_hit[52] & reg_we & !reg_error;
+  assign pad_io_b_11_cfg_oen_wd = reg_wdata[1];
 
-  assign pad_mx_sdio1_0_mux_sel_we = addr_hit[53] & reg_we & !reg_error;
-  assign pad_mx_sdio1_0_mux_sel_wd = reg_wdata[3:0];
+  assign pad_io_b_11_mux_sel_we = addr_hit[53] & reg_we & !reg_error;
+  assign pad_io_b_11_mux_sel_wd = reg_wdata[4:0];
 
-  assign pad_mx_sdio1_1_cfg_chip2pad_we = addr_hit[54] & reg_we & !reg_error;
-  assign pad_mx_sdio1_1_cfg_chip2pad_wd = reg_wdata[0];
+  assign pad_io_b_12_cfg_chip2pad_we = addr_hit[54] & reg_we & !reg_error;
+  assign pad_io_b_12_cfg_chip2pad_wd = reg_wdata[0];
 
-  assign pad_mx_sdio1_1_cfg_oen_we = addr_hit[54] & reg_we & !reg_error;
-  assign pad_mx_sdio1_1_cfg_oen_wd = reg_wdata[1];
+  assign pad_io_b_12_cfg_oen_we = addr_hit[54] & reg_we & !reg_error;
+  assign pad_io_b_12_cfg_oen_wd = reg_wdata[1];
 
-  assign pad_mx_sdio1_1_mux_sel_we = addr_hit[55] & reg_we & !reg_error;
-  assign pad_mx_sdio1_1_mux_sel_wd = reg_wdata[3:0];
+  assign pad_io_b_12_mux_sel_we = addr_hit[55] & reg_we & !reg_error;
+  assign pad_io_b_12_mux_sel_wd = reg_wdata[4:0];
 
-  assign pad_mx_sdio1_2_cfg_chip2pad_we = addr_hit[56] & reg_we & !reg_error;
-  assign pad_mx_sdio1_2_cfg_chip2pad_wd = reg_wdata[0];
+  assign pad_io_b_13_cfg_chip2pad_we = addr_hit[56] & reg_we & !reg_error;
+  assign pad_io_b_13_cfg_chip2pad_wd = reg_wdata[0];
 
-  assign pad_mx_sdio1_2_cfg_oen_we = addr_hit[56] & reg_we & !reg_error;
-  assign pad_mx_sdio1_2_cfg_oen_wd = reg_wdata[1];
+  assign pad_io_b_13_cfg_oen_we = addr_hit[56] & reg_we & !reg_error;
+  assign pad_io_b_13_cfg_oen_wd = reg_wdata[1];
 
-  assign pad_mx_sdio1_2_mux_sel_we = addr_hit[57] & reg_we & !reg_error;
-  assign pad_mx_sdio1_2_mux_sel_wd = reg_wdata[3:0];
+  assign pad_io_b_13_mux_sel_we = addr_hit[57] & reg_we & !reg_error;
+  assign pad_io_b_13_mux_sel_wd = reg_wdata[4:0];
 
-  assign pad_mx_sdio1_3_cfg_chip2pad_we = addr_hit[58] & reg_we & !reg_error;
-  assign pad_mx_sdio1_3_cfg_chip2pad_wd = reg_wdata[0];
+  assign pad_io_b_14_cfg_chip2pad_we = addr_hit[58] & reg_we & !reg_error;
+  assign pad_io_b_14_cfg_chip2pad_wd = reg_wdata[0];
 
-  assign pad_mx_sdio1_3_cfg_oen_we = addr_hit[58] & reg_we & !reg_error;
-  assign pad_mx_sdio1_3_cfg_oen_wd = reg_wdata[1];
+  assign pad_io_b_14_cfg_oen_we = addr_hit[58] & reg_we & !reg_error;
+  assign pad_io_b_14_cfg_oen_wd = reg_wdata[1];
 
-  assign pad_mx_sdio1_3_mux_sel_we = addr_hit[59] & reg_we & !reg_error;
-  assign pad_mx_sdio1_3_mux_sel_wd = reg_wdata[3:0];
+  assign pad_io_b_14_mux_sel_we = addr_hit[59] & reg_we & !reg_error;
+  assign pad_io_b_14_mux_sel_wd = reg_wdata[4:0];
 
-  assign pad_mx_sdio1_4_cfg_chip2pad_we = addr_hit[60] & reg_we & !reg_error;
-  assign pad_mx_sdio1_4_cfg_chip2pad_wd = reg_wdata[0];
+  assign pad_io_b_15_cfg_chip2pad_we = addr_hit[60] & reg_we & !reg_error;
+  assign pad_io_b_15_cfg_chip2pad_wd = reg_wdata[0];
 
-  assign pad_mx_sdio1_4_cfg_oen_we = addr_hit[60] & reg_we & !reg_error;
-  assign pad_mx_sdio1_4_cfg_oen_wd = reg_wdata[1];
+  assign pad_io_b_15_cfg_oen_we = addr_hit[60] & reg_we & !reg_error;
+  assign pad_io_b_15_cfg_oen_wd = reg_wdata[1];
 
-  assign pad_mx_sdio1_4_mux_sel_we = addr_hit[61] & reg_we & !reg_error;
-  assign pad_mx_sdio1_4_mux_sel_wd = reg_wdata[3:0];
+  assign pad_io_b_15_mux_sel_we = addr_hit[61] & reg_we & !reg_error;
+  assign pad_io_b_15_mux_sel_wd = reg_wdata[4:0];
 
-  assign pad_mx_sdio1_5_cfg_chip2pad_we = addr_hit[62] & reg_we & !reg_error;
-  assign pad_mx_sdio1_5_cfg_chip2pad_wd = reg_wdata[0];
+  assign pad_io_b_16_cfg_chip2pad_we = addr_hit[62] & reg_we & !reg_error;
+  assign pad_io_b_16_cfg_chip2pad_wd = reg_wdata[0];
 
-  assign pad_mx_sdio1_5_cfg_oen_we = addr_hit[62] & reg_we & !reg_error;
-  assign pad_mx_sdio1_5_cfg_oen_wd = reg_wdata[1];
+  assign pad_io_b_16_cfg_oen_we = addr_hit[62] & reg_we & !reg_error;
+  assign pad_io_b_16_cfg_oen_wd = reg_wdata[1];
 
-  assign pad_mx_sdio1_5_mux_sel_we = addr_hit[63] & reg_we & !reg_error;
-  assign pad_mx_sdio1_5_mux_sel_wd = reg_wdata[3:0];
+  assign pad_io_b_16_mux_sel_we = addr_hit[63] & reg_we & !reg_error;
+  assign pad_io_b_16_mux_sel_wd = reg_wdata[4:0];
 
-  assign pad_mx_sdio1_6_cfg_chip2pad_we = addr_hit[64] & reg_we & !reg_error;
-  assign pad_mx_sdio1_6_cfg_chip2pad_wd = reg_wdata[0];
+  assign pad_io_b_17_cfg_chip2pad_we = addr_hit[64] & reg_we & !reg_error;
+  assign pad_io_b_17_cfg_chip2pad_wd = reg_wdata[0];
 
-  assign pad_mx_sdio1_6_cfg_oen_we = addr_hit[64] & reg_we & !reg_error;
-  assign pad_mx_sdio1_6_cfg_oen_wd = reg_wdata[1];
+  assign pad_io_b_17_cfg_oen_we = addr_hit[64] & reg_we & !reg_error;
+  assign pad_io_b_17_cfg_oen_wd = reg_wdata[1];
 
-  assign pad_mx_sdio1_6_mux_sel_we = addr_hit[65] & reg_we & !reg_error;
-  assign pad_mx_sdio1_6_mux_sel_wd = reg_wdata[3:0];
+  assign pad_io_b_17_mux_sel_we = addr_hit[65] & reg_we & !reg_error;
+  assign pad_io_b_17_mux_sel_wd = reg_wdata[4:0];
 
-  assign pad_mx_sdio1_7_cfg_chip2pad_we = addr_hit[66] & reg_we & !reg_error;
-  assign pad_mx_sdio1_7_cfg_chip2pad_wd = reg_wdata[0];
+  assign pad_io_b_18_cfg_chip2pad_we = addr_hit[66] & reg_we & !reg_error;
+  assign pad_io_b_18_cfg_chip2pad_wd = reg_wdata[0];
 
-  assign pad_mx_sdio1_7_cfg_oen_we = addr_hit[66] & reg_we & !reg_error;
-  assign pad_mx_sdio1_7_cfg_oen_wd = reg_wdata[1];
+  assign pad_io_b_18_cfg_oen_we = addr_hit[66] & reg_we & !reg_error;
+  assign pad_io_b_18_cfg_oen_wd = reg_wdata[1];
 
-  assign pad_mx_sdio1_7_mux_sel_we = addr_hit[67] & reg_we & !reg_error;
-  assign pad_mx_sdio1_7_mux_sel_wd = reg_wdata[3:0];
+  assign pad_io_b_18_mux_sel_we = addr_hit[67] & reg_we & !reg_error;
+  assign pad_io_b_18_mux_sel_wd = reg_wdata[4:0];
 
-  assign pad_mx_hyper1_0_cfg_chip2pad_we = addr_hit[68] & reg_we & !reg_error;
-  assign pad_mx_hyper1_0_cfg_chip2pad_wd = reg_wdata[0];
+  assign pad_io_b_19_cfg_chip2pad_we = addr_hit[68] & reg_we & !reg_error;
+  assign pad_io_b_19_cfg_chip2pad_wd = reg_wdata[0];
 
-  assign pad_mx_hyper1_0_cfg_oen_we = addr_hit[68] & reg_we & !reg_error;
-  assign pad_mx_hyper1_0_cfg_oen_wd = reg_wdata[1];
+  assign pad_io_b_19_cfg_oen_we = addr_hit[68] & reg_we & !reg_error;
+  assign pad_io_b_19_cfg_oen_wd = reg_wdata[1];
 
-  assign pad_mx_hyper1_0_mux_sel_we = addr_hit[69] & reg_we & !reg_error;
-  assign pad_mx_hyper1_0_mux_sel_wd = reg_wdata[4:0];
+  assign pad_io_b_19_mux_sel_we = addr_hit[69] & reg_we & !reg_error;
+  assign pad_io_b_19_mux_sel_wd = reg_wdata[4:0];
 
-  assign pad_mx_hyper1_1_cfg_chip2pad_we = addr_hit[70] & reg_we & !reg_error;
-  assign pad_mx_hyper1_1_cfg_chip2pad_wd = reg_wdata[0];
+  assign pad_io_c_00_cfg_chip2pad_we = addr_hit[70] & reg_we & !reg_error;
+  assign pad_io_c_00_cfg_chip2pad_wd = reg_wdata[0];
 
-  assign pad_mx_hyper1_1_cfg_oen_we = addr_hit[70] & reg_we & !reg_error;
-  assign pad_mx_hyper1_1_cfg_oen_wd = reg_wdata[1];
+  assign pad_io_c_00_cfg_oen_we = addr_hit[70] & reg_we & !reg_error;
+  assign pad_io_c_00_cfg_oen_wd = reg_wdata[1];
 
-  assign pad_mx_hyper1_1_mux_sel_we = addr_hit[71] & reg_we & !reg_error;
-  assign pad_mx_hyper1_1_mux_sel_wd = reg_wdata[4:0];
+  assign pad_io_c_00_mux_sel_we = addr_hit[71] & reg_we & !reg_error;
+  assign pad_io_c_00_mux_sel_wd = reg_wdata[3:0];
 
-  assign pad_mx_hyper1_2_cfg_chip2pad_we = addr_hit[72] & reg_we & !reg_error;
-  assign pad_mx_hyper1_2_cfg_chip2pad_wd = reg_wdata[0];
+  assign pad_io_c_01_cfg_chip2pad_we = addr_hit[72] & reg_we & !reg_error;
+  assign pad_io_c_01_cfg_chip2pad_wd = reg_wdata[0];
 
-  assign pad_mx_hyper1_2_cfg_oen_we = addr_hit[72] & reg_we & !reg_error;
-  assign pad_mx_hyper1_2_cfg_oen_wd = reg_wdata[1];
+  assign pad_io_c_01_cfg_oen_we = addr_hit[72] & reg_we & !reg_error;
+  assign pad_io_c_01_cfg_oen_wd = reg_wdata[1];
 
-  assign pad_mx_hyper1_2_mux_sel_we = addr_hit[73] & reg_we & !reg_error;
-  assign pad_mx_hyper1_2_mux_sel_wd = reg_wdata[4:0];
+  assign pad_io_c_01_mux_sel_we = addr_hit[73] & reg_we & !reg_error;
+  assign pad_io_c_01_mux_sel_wd = reg_wdata[3:0];
 
-  assign pad_mx_hyper1_3_cfg_chip2pad_we = addr_hit[74] & reg_we & !reg_error;
-  assign pad_mx_hyper1_3_cfg_chip2pad_wd = reg_wdata[0];
+  assign pad_io_c_02_cfg_chip2pad_we = addr_hit[74] & reg_we & !reg_error;
+  assign pad_io_c_02_cfg_chip2pad_wd = reg_wdata[0];
 
-  assign pad_mx_hyper1_3_cfg_oen_we = addr_hit[74] & reg_we & !reg_error;
-  assign pad_mx_hyper1_3_cfg_oen_wd = reg_wdata[1];
+  assign pad_io_c_02_cfg_oen_we = addr_hit[74] & reg_we & !reg_error;
+  assign pad_io_c_02_cfg_oen_wd = reg_wdata[1];
 
-  assign pad_mx_hyper1_3_mux_sel_we = addr_hit[75] & reg_we & !reg_error;
-  assign pad_mx_hyper1_3_mux_sel_wd = reg_wdata[4:0];
+  assign pad_io_c_02_mux_sel_we = addr_hit[75] & reg_we & !reg_error;
+  assign pad_io_c_02_mux_sel_wd = reg_wdata[3:0];
 
-  assign pad_mx_hyper1_4_cfg_chip2pad_we = addr_hit[76] & reg_we & !reg_error;
-  assign pad_mx_hyper1_4_cfg_chip2pad_wd = reg_wdata[0];
+  assign pad_io_c_03_cfg_chip2pad_we = addr_hit[76] & reg_we & !reg_error;
+  assign pad_io_c_03_cfg_chip2pad_wd = reg_wdata[0];
 
-  assign pad_mx_hyper1_4_cfg_oen_we = addr_hit[76] & reg_we & !reg_error;
-  assign pad_mx_hyper1_4_cfg_oen_wd = reg_wdata[1];
+  assign pad_io_c_03_cfg_oen_we = addr_hit[76] & reg_we & !reg_error;
+  assign pad_io_c_03_cfg_oen_wd = reg_wdata[1];
 
-  assign pad_mx_hyper1_4_mux_sel_we = addr_hit[77] & reg_we & !reg_error;
-  assign pad_mx_hyper1_4_mux_sel_wd = reg_wdata[4:0];
+  assign pad_io_c_03_mux_sel_we = addr_hit[77] & reg_we & !reg_error;
+  assign pad_io_c_03_mux_sel_wd = reg_wdata[3:0];
 
-  assign pad_mx_hyper1_5_cfg_chip2pad_we = addr_hit[78] & reg_we & !reg_error;
-  assign pad_mx_hyper1_5_cfg_chip2pad_wd = reg_wdata[0];
+  assign pad_io_c_04_cfg_chip2pad_we = addr_hit[78] & reg_we & !reg_error;
+  assign pad_io_c_04_cfg_chip2pad_wd = reg_wdata[0];
 
-  assign pad_mx_hyper1_5_cfg_oen_we = addr_hit[78] & reg_we & !reg_error;
-  assign pad_mx_hyper1_5_cfg_oen_wd = reg_wdata[1];
+  assign pad_io_c_04_cfg_oen_we = addr_hit[78] & reg_we & !reg_error;
+  assign pad_io_c_04_cfg_oen_wd = reg_wdata[1];
 
-  assign pad_mx_hyper1_5_mux_sel_we = addr_hit[79] & reg_we & !reg_error;
-  assign pad_mx_hyper1_5_mux_sel_wd = reg_wdata[4:0];
+  assign pad_io_c_04_mux_sel_we = addr_hit[79] & reg_we & !reg_error;
+  assign pad_io_c_04_mux_sel_wd = reg_wdata[3:0];
 
-  assign pad_mx_hyper1_6_cfg_chip2pad_we = addr_hit[80] & reg_we & !reg_error;
-  assign pad_mx_hyper1_6_cfg_chip2pad_wd = reg_wdata[0];
+  assign pad_io_c_05_cfg_chip2pad_we = addr_hit[80] & reg_we & !reg_error;
+  assign pad_io_c_05_cfg_chip2pad_wd = reg_wdata[0];
 
-  assign pad_mx_hyper1_6_cfg_oen_we = addr_hit[80] & reg_we & !reg_error;
-  assign pad_mx_hyper1_6_cfg_oen_wd = reg_wdata[1];
+  assign pad_io_c_05_cfg_oen_we = addr_hit[80] & reg_we & !reg_error;
+  assign pad_io_c_05_cfg_oen_wd = reg_wdata[1];
 
-  assign pad_mx_hyper1_6_mux_sel_we = addr_hit[81] & reg_we & !reg_error;
-  assign pad_mx_hyper1_6_mux_sel_wd = reg_wdata[4:0];
+  assign pad_io_c_05_mux_sel_we = addr_hit[81] & reg_we & !reg_error;
+  assign pad_io_c_05_mux_sel_wd = reg_wdata[3:0];
 
-  assign pad_mx_hyper1_7_cfg_chip2pad_we = addr_hit[82] & reg_we & !reg_error;
-  assign pad_mx_hyper1_7_cfg_chip2pad_wd = reg_wdata[0];
+  assign pad_io_c_06_cfg_chip2pad_we = addr_hit[82] & reg_we & !reg_error;
+  assign pad_io_c_06_cfg_chip2pad_wd = reg_wdata[0];
 
-  assign pad_mx_hyper1_7_cfg_oen_we = addr_hit[82] & reg_we & !reg_error;
-  assign pad_mx_hyper1_7_cfg_oen_wd = reg_wdata[1];
+  assign pad_io_c_06_cfg_oen_we = addr_hit[82] & reg_we & !reg_error;
+  assign pad_io_c_06_cfg_oen_wd = reg_wdata[1];
 
-  assign pad_mx_hyper1_7_mux_sel_we = addr_hit[83] & reg_we & !reg_error;
-  assign pad_mx_hyper1_7_mux_sel_wd = reg_wdata[4:0];
+  assign pad_io_c_06_mux_sel_we = addr_hit[83] & reg_we & !reg_error;
+  assign pad_io_c_06_mux_sel_wd = reg_wdata[3:0];
 
-  assign pad_mx_hyper1_8_cfg_chip2pad_we = addr_hit[84] & reg_we & !reg_error;
-  assign pad_mx_hyper1_8_cfg_chip2pad_wd = reg_wdata[0];
+  assign pad_io_c_07_cfg_chip2pad_we = addr_hit[84] & reg_we & !reg_error;
+  assign pad_io_c_07_cfg_chip2pad_wd = reg_wdata[0];
 
-  assign pad_mx_hyper1_8_cfg_oen_we = addr_hit[84] & reg_we & !reg_error;
-  assign pad_mx_hyper1_8_cfg_oen_wd = reg_wdata[1];
+  assign pad_io_c_07_cfg_oen_we = addr_hit[84] & reg_we & !reg_error;
+  assign pad_io_c_07_cfg_oen_wd = reg_wdata[1];
 
-  assign pad_mx_hyper1_8_mux_sel_we = addr_hit[85] & reg_we & !reg_error;
-  assign pad_mx_hyper1_8_mux_sel_wd = reg_wdata[4:0];
+  assign pad_io_c_07_mux_sel_we = addr_hit[85] & reg_we & !reg_error;
+  assign pad_io_c_07_mux_sel_wd = reg_wdata[3:0];
 
-  assign pad_mx_hyper1_9_cfg_chip2pad_we = addr_hit[86] & reg_we & !reg_error;
-  assign pad_mx_hyper1_9_cfg_chip2pad_wd = reg_wdata[0];
+  assign pad_io_c_08_cfg_chip2pad_we = addr_hit[86] & reg_we & !reg_error;
+  assign pad_io_c_08_cfg_chip2pad_wd = reg_wdata[0];
 
-  assign pad_mx_hyper1_9_cfg_oen_we = addr_hit[86] & reg_we & !reg_error;
-  assign pad_mx_hyper1_9_cfg_oen_wd = reg_wdata[1];
+  assign pad_io_c_08_cfg_oen_we = addr_hit[86] & reg_we & !reg_error;
+  assign pad_io_c_08_cfg_oen_wd = reg_wdata[1];
 
-  assign pad_mx_hyper1_9_mux_sel_we = addr_hit[87] & reg_we & !reg_error;
-  assign pad_mx_hyper1_9_mux_sel_wd = reg_wdata[4:0];
+  assign pad_io_c_08_mux_sel_we = addr_hit[87] & reg_we & !reg_error;
+  assign pad_io_c_08_mux_sel_wd = reg_wdata[3:0];
 
-  assign pad_mx_hyper1_10_cfg_chip2pad_we = addr_hit[88] & reg_we & !reg_error;
-  assign pad_mx_hyper1_10_cfg_chip2pad_wd = reg_wdata[0];
+  assign pad_io_c_09_cfg_chip2pad_we = addr_hit[88] & reg_we & !reg_error;
+  assign pad_io_c_09_cfg_chip2pad_wd = reg_wdata[0];
 
-  assign pad_mx_hyper1_10_cfg_oen_we = addr_hit[88] & reg_we & !reg_error;
-  assign pad_mx_hyper1_10_cfg_oen_wd = reg_wdata[1];
+  assign pad_io_c_09_cfg_oen_we = addr_hit[88] & reg_we & !reg_error;
+  assign pad_io_c_09_cfg_oen_wd = reg_wdata[1];
 
-  assign pad_mx_hyper1_10_mux_sel_we = addr_hit[89] & reg_we & !reg_error;
-  assign pad_mx_hyper1_10_mux_sel_wd = reg_wdata[4:0];
+  assign pad_io_c_09_mux_sel_we = addr_hit[89] & reg_we & !reg_error;
+  assign pad_io_c_09_mux_sel_wd = reg_wdata[3:0];
 
-  assign pad_mx_hyper1_11_cfg_chip2pad_we = addr_hit[90] & reg_we & !reg_error;
-  assign pad_mx_hyper1_11_cfg_chip2pad_wd = reg_wdata[0];
+  assign pad_io_c_10_cfg_chip2pad_we = addr_hit[90] & reg_we & !reg_error;
+  assign pad_io_c_10_cfg_chip2pad_wd = reg_wdata[0];
 
-  assign pad_mx_hyper1_11_cfg_oen_we = addr_hit[90] & reg_we & !reg_error;
-  assign pad_mx_hyper1_11_cfg_oen_wd = reg_wdata[1];
+  assign pad_io_c_10_cfg_oen_we = addr_hit[90] & reg_we & !reg_error;
+  assign pad_io_c_10_cfg_oen_wd = reg_wdata[1];
 
-  assign pad_mx_hyper1_11_mux_sel_we = addr_hit[91] & reg_we & !reg_error;
-  assign pad_mx_hyper1_11_mux_sel_wd = reg_wdata[4:0];
+  assign pad_io_c_10_mux_sel_we = addr_hit[91] & reg_we & !reg_error;
+  assign pad_io_c_10_mux_sel_wd = reg_wdata[3:0];
 
-  assign pad_mx_hyper1_12_cfg_chip2pad_we = addr_hit[92] & reg_we & !reg_error;
-  assign pad_mx_hyper1_12_cfg_chip2pad_wd = reg_wdata[0];
+  assign pad_io_c_11_cfg_chip2pad_we = addr_hit[92] & reg_we & !reg_error;
+  assign pad_io_c_11_cfg_chip2pad_wd = reg_wdata[0];
 
-  assign pad_mx_hyper1_12_cfg_oen_we = addr_hit[92] & reg_we & !reg_error;
-  assign pad_mx_hyper1_12_cfg_oen_wd = reg_wdata[1];
+  assign pad_io_c_11_cfg_oen_we = addr_hit[92] & reg_we & !reg_error;
+  assign pad_io_c_11_cfg_oen_wd = reg_wdata[1];
 
-  assign pad_mx_hyper1_12_mux_sel_we = addr_hit[93] & reg_we & !reg_error;
-  assign pad_mx_hyper1_12_mux_sel_wd = reg_wdata[4:0];
+  assign pad_io_c_11_mux_sel_we = addr_hit[93] & reg_we & !reg_error;
+  assign pad_io_c_11_mux_sel_wd = reg_wdata[3:0];
+
+  assign pad_io_c_12_cfg_chip2pad_we = addr_hit[94] & reg_we & !reg_error;
+  assign pad_io_c_12_cfg_chip2pad_wd = reg_wdata[0];
+
+  assign pad_io_c_12_cfg_oen_we = addr_hit[94] & reg_we & !reg_error;
+  assign pad_io_c_12_cfg_oen_wd = reg_wdata[1];
+
+  assign pad_io_c_12_mux_sel_we = addr_hit[95] & reg_we & !reg_error;
+  assign pad_io_c_12_mux_sel_wd = reg_wdata[3:0];
+
+  assign pad_io_c_13_cfg_chip2pad_we = addr_hit[96] & reg_we & !reg_error;
+  assign pad_io_c_13_cfg_chip2pad_wd = reg_wdata[0];
+
+  assign pad_io_c_13_cfg_oen_we = addr_hit[96] & reg_we & !reg_error;
+  assign pad_io_c_13_cfg_oen_wd = reg_wdata[1];
+
+  assign pad_io_c_13_mux_sel_we = addr_hit[97] & reg_we & !reg_error;
+  assign pad_io_c_13_mux_sel_wd = reg_wdata[3:0];
+
+  assign pad_io_d_00_cfg_chip2pad_we = addr_hit[98] & reg_we & !reg_error;
+  assign pad_io_d_00_cfg_chip2pad_wd = reg_wdata[0];
+
+  assign pad_io_d_00_cfg_oen_we = addr_hit[98] & reg_we & !reg_error;
+  assign pad_io_d_00_cfg_oen_wd = reg_wdata[1];
+
+  assign pad_io_d_00_mux_sel_we = addr_hit[99] & reg_we & !reg_error;
+  assign pad_io_d_00_mux_sel_wd = reg_wdata[4:0];
+
+  assign pad_io_d_01_cfg_chip2pad_we = addr_hit[100] & reg_we & !reg_error;
+  assign pad_io_d_01_cfg_chip2pad_wd = reg_wdata[0];
+
+  assign pad_io_d_01_cfg_oen_we = addr_hit[100] & reg_we & !reg_error;
+  assign pad_io_d_01_cfg_oen_wd = reg_wdata[1];
+
+  assign pad_io_d_01_mux_sel_we = addr_hit[101] & reg_we & !reg_error;
+  assign pad_io_d_01_mux_sel_wd = reg_wdata[4:0];
+
+  assign pad_io_d_02_cfg_chip2pad_we = addr_hit[102] & reg_we & !reg_error;
+  assign pad_io_d_02_cfg_chip2pad_wd = reg_wdata[0];
+
+  assign pad_io_d_02_cfg_oen_we = addr_hit[102] & reg_we & !reg_error;
+  assign pad_io_d_02_cfg_oen_wd = reg_wdata[1];
+
+  assign pad_io_d_02_mux_sel_we = addr_hit[103] & reg_we & !reg_error;
+  assign pad_io_d_02_mux_sel_wd = reg_wdata[4:0];
+
+  assign pad_io_d_03_cfg_chip2pad_we = addr_hit[104] & reg_we & !reg_error;
+  assign pad_io_d_03_cfg_chip2pad_wd = reg_wdata[0];
+
+  assign pad_io_d_03_cfg_oen_we = addr_hit[104] & reg_we & !reg_error;
+  assign pad_io_d_03_cfg_oen_wd = reg_wdata[1];
+
+  assign pad_io_d_03_mux_sel_we = addr_hit[105] & reg_we & !reg_error;
+  assign pad_io_d_03_mux_sel_wd = reg_wdata[4:0];
+
+  assign pad_io_d_04_cfg_chip2pad_we = addr_hit[106] & reg_we & !reg_error;
+  assign pad_io_d_04_cfg_chip2pad_wd = reg_wdata[0];
+
+  assign pad_io_d_04_cfg_oen_we = addr_hit[106] & reg_we & !reg_error;
+  assign pad_io_d_04_cfg_oen_wd = reg_wdata[1];
+
+  assign pad_io_d_04_mux_sel_we = addr_hit[107] & reg_we & !reg_error;
+  assign pad_io_d_04_mux_sel_wd = reg_wdata[4:0];
+
+  assign pad_io_d_05_cfg_chip2pad_we = addr_hit[108] & reg_we & !reg_error;
+  assign pad_io_d_05_cfg_chip2pad_wd = reg_wdata[0];
+
+  assign pad_io_d_05_cfg_oen_we = addr_hit[108] & reg_we & !reg_error;
+  assign pad_io_d_05_cfg_oen_wd = reg_wdata[1];
+
+  assign pad_io_d_05_mux_sel_we = addr_hit[109] & reg_we & !reg_error;
+  assign pad_io_d_05_mux_sel_wd = reg_wdata[4:0];
+
+  assign pad_io_d_06_cfg_chip2pad_we = addr_hit[110] & reg_we & !reg_error;
+  assign pad_io_d_06_cfg_chip2pad_wd = reg_wdata[0];
+
+  assign pad_io_d_06_cfg_oen_we = addr_hit[110] & reg_we & !reg_error;
+  assign pad_io_d_06_cfg_oen_wd = reg_wdata[1];
+
+  assign pad_io_d_06_mux_sel_we = addr_hit[111] & reg_we & !reg_error;
+  assign pad_io_d_06_mux_sel_wd = reg_wdata[4:0];
+
+  assign pad_io_d_07_cfg_chip2pad_we = addr_hit[112] & reg_we & !reg_error;
+  assign pad_io_d_07_cfg_chip2pad_wd = reg_wdata[0];
+
+  assign pad_io_d_07_cfg_oen_we = addr_hit[112] & reg_we & !reg_error;
+  assign pad_io_d_07_cfg_oen_wd = reg_wdata[1];
+
+  assign pad_io_d_07_mux_sel_we = addr_hit[113] & reg_we & !reg_error;
+  assign pad_io_d_07_mux_sel_wd = reg_wdata[4:0];
+
+  assign pad_io_d_08_cfg_chip2pad_we = addr_hit[114] & reg_we & !reg_error;
+  assign pad_io_d_08_cfg_chip2pad_wd = reg_wdata[0];
+
+  assign pad_io_d_08_cfg_oen_we = addr_hit[114] & reg_we & !reg_error;
+  assign pad_io_d_08_cfg_oen_wd = reg_wdata[1];
+
+  assign pad_io_d_08_mux_sel_we = addr_hit[115] & reg_we & !reg_error;
+  assign pad_io_d_08_mux_sel_wd = reg_wdata[4:0];
+
+  assign pad_io_d_09_cfg_chip2pad_we = addr_hit[116] & reg_we & !reg_error;
+  assign pad_io_d_09_cfg_chip2pad_wd = reg_wdata[0];
+
+  assign pad_io_d_09_cfg_oen_we = addr_hit[116] & reg_we & !reg_error;
+  assign pad_io_d_09_cfg_oen_wd = reg_wdata[1];
+
+  assign pad_io_d_09_mux_sel_we = addr_hit[117] & reg_we & !reg_error;
+  assign pad_io_d_09_mux_sel_wd = reg_wdata[4:0];
+
+  assign pad_io_d_10_cfg_chip2pad_we = addr_hit[118] & reg_we & !reg_error;
+  assign pad_io_d_10_cfg_chip2pad_wd = reg_wdata[0];
+
+  assign pad_io_d_10_cfg_oen_we = addr_hit[118] & reg_we & !reg_error;
+  assign pad_io_d_10_cfg_oen_wd = reg_wdata[1];
+
+  assign pad_io_d_10_mux_sel_we = addr_hit[119] & reg_we & !reg_error;
+  assign pad_io_d_10_mux_sel_wd = reg_wdata[4:0];
+
+  assign pad_io_d_11_cfg_chip2pad_we = addr_hit[120] & reg_we & !reg_error;
+  assign pad_io_d_11_cfg_chip2pad_wd = reg_wdata[0];
+
+  assign pad_io_d_11_cfg_oen_we = addr_hit[120] & reg_we & !reg_error;
+  assign pad_io_d_11_cfg_oen_wd = reg_wdata[1];
+
+  assign pad_io_d_11_mux_sel_we = addr_hit[121] & reg_we & !reg_error;
+  assign pad_io_d_11_mux_sel_wd = reg_wdata[4:0];
+
+  assign pad_io_d_12_cfg_chip2pad_we = addr_hit[122] & reg_we & !reg_error;
+  assign pad_io_d_12_cfg_chip2pad_wd = reg_wdata[0];
+
+  assign pad_io_d_12_cfg_oen_we = addr_hit[122] & reg_we & !reg_error;
+  assign pad_io_d_12_cfg_oen_wd = reg_wdata[1];
+
+  assign pad_io_d_12_mux_sel_we = addr_hit[123] & reg_we & !reg_error;
+  assign pad_io_d_12_mux_sel_wd = reg_wdata[4:0];
+
+  assign pad_io_d_13_cfg_chip2pad_we = addr_hit[124] & reg_we & !reg_error;
+  assign pad_io_d_13_cfg_chip2pad_wd = reg_wdata[0];
+
+  assign pad_io_d_13_cfg_oen_we = addr_hit[124] & reg_we & !reg_error;
+  assign pad_io_d_13_cfg_oen_wd = reg_wdata[1];
+
+  assign pad_io_d_13_mux_sel_we = addr_hit[125] & reg_we & !reg_error;
+  assign pad_io_d_13_mux_sel_wd = reg_wdata[4:0];
+
+  assign pad_io_d_14_cfg_chip2pad_we = addr_hit[126] & reg_we & !reg_error;
+  assign pad_io_d_14_cfg_chip2pad_wd = reg_wdata[0];
+
+  assign pad_io_d_14_cfg_oen_we = addr_hit[126] & reg_we & !reg_error;
+  assign pad_io_d_14_cfg_oen_wd = reg_wdata[1];
+
+  assign pad_io_d_14_mux_sel_we = addr_hit[127] & reg_we & !reg_error;
+  assign pad_io_d_14_mux_sel_wd = reg_wdata[4:0];
+
+  assign pad_io_d_15_cfg_chip2pad_we = addr_hit[128] & reg_we & !reg_error;
+  assign pad_io_d_15_cfg_chip2pad_wd = reg_wdata[0];
+
+  assign pad_io_d_15_cfg_oen_we = addr_hit[128] & reg_we & !reg_error;
+  assign pad_io_d_15_cfg_oen_wd = reg_wdata[1];
+
+  assign pad_io_d_15_mux_sel_we = addr_hit[129] & reg_we & !reg_error;
+  assign pad_io_d_15_mux_sel_wd = reg_wdata[4:0];
+
+  assign pad_io_e_00_cfg_chip2pad_we = addr_hit[130] & reg_we & !reg_error;
+  assign pad_io_e_00_cfg_chip2pad_wd = reg_wdata[0];
+
+  assign pad_io_e_00_cfg_oen_we = addr_hit[130] & reg_we & !reg_error;
+  assign pad_io_e_00_cfg_oen_wd = reg_wdata[1];
+
+  assign pad_io_e_00_mux_sel_we = addr_hit[131] & reg_we & !reg_error;
+  assign pad_io_e_00_mux_sel_wd = reg_wdata[4:0];
+
+  assign pad_io_e_01_cfg_chip2pad_we = addr_hit[132] & reg_we & !reg_error;
+  assign pad_io_e_01_cfg_chip2pad_wd = reg_wdata[0];
+
+  assign pad_io_e_01_cfg_oen_we = addr_hit[132] & reg_we & !reg_error;
+  assign pad_io_e_01_cfg_oen_wd = reg_wdata[1];
+
+  assign pad_io_e_01_mux_sel_we = addr_hit[133] & reg_we & !reg_error;
+  assign pad_io_e_01_mux_sel_wd = reg_wdata[4:0];
+
+  assign pad_io_e_02_cfg_chip2pad_we = addr_hit[134] & reg_we & !reg_error;
+  assign pad_io_e_02_cfg_chip2pad_wd = reg_wdata[0];
+
+  assign pad_io_e_02_cfg_oen_we = addr_hit[134] & reg_we & !reg_error;
+  assign pad_io_e_02_cfg_oen_wd = reg_wdata[1];
+
+  assign pad_io_e_02_mux_sel_we = addr_hit[135] & reg_we & !reg_error;
+  assign pad_io_e_02_mux_sel_wd = reg_wdata[4:0];
+
+  assign pad_io_e_03_cfg_chip2pad_we = addr_hit[136] & reg_we & !reg_error;
+  assign pad_io_e_03_cfg_chip2pad_wd = reg_wdata[0];
+
+  assign pad_io_e_03_cfg_oen_we = addr_hit[136] & reg_we & !reg_error;
+  assign pad_io_e_03_cfg_oen_wd = reg_wdata[1];
+
+  assign pad_io_e_03_mux_sel_we = addr_hit[137] & reg_we & !reg_error;
+  assign pad_io_e_03_mux_sel_wd = reg_wdata[4:0];
+
+  assign pad_io_e_04_cfg_chip2pad_we = addr_hit[138] & reg_we & !reg_error;
+  assign pad_io_e_04_cfg_chip2pad_wd = reg_wdata[0];
+
+  assign pad_io_e_04_cfg_oen_we = addr_hit[138] & reg_we & !reg_error;
+  assign pad_io_e_04_cfg_oen_wd = reg_wdata[1];
+
+  assign pad_io_e_04_mux_sel_we = addr_hit[139] & reg_we & !reg_error;
+  assign pad_io_e_04_mux_sel_wd = reg_wdata[4:0];
+
+  assign pad_io_e_05_cfg_chip2pad_we = addr_hit[140] & reg_we & !reg_error;
+  assign pad_io_e_05_cfg_chip2pad_wd = reg_wdata[0];
+
+  assign pad_io_e_05_cfg_oen_we = addr_hit[140] & reg_we & !reg_error;
+  assign pad_io_e_05_cfg_oen_wd = reg_wdata[1];
+
+  assign pad_io_e_05_mux_sel_we = addr_hit[141] & reg_we & !reg_error;
+  assign pad_io_e_05_mux_sel_wd = reg_wdata[4:0];
+
+  assign pad_io_e_06_cfg_chip2pad_we = addr_hit[142] & reg_we & !reg_error;
+  assign pad_io_e_06_cfg_chip2pad_wd = reg_wdata[0];
+
+  assign pad_io_e_06_cfg_oen_we = addr_hit[142] & reg_we & !reg_error;
+  assign pad_io_e_06_cfg_oen_wd = reg_wdata[1];
+
+  assign pad_io_e_06_mux_sel_we = addr_hit[143] & reg_we & !reg_error;
+  assign pad_io_e_06_mux_sel_wd = reg_wdata[4:0];
+
+  assign pad_io_e_07_cfg_chip2pad_we = addr_hit[144] & reg_we & !reg_error;
+  assign pad_io_e_07_cfg_chip2pad_wd = reg_wdata[0];
+
+  assign pad_io_e_07_cfg_oen_we = addr_hit[144] & reg_we & !reg_error;
+  assign pad_io_e_07_cfg_oen_wd = reg_wdata[1];
+
+  assign pad_io_e_07_mux_sel_we = addr_hit[145] & reg_we & !reg_error;
+  assign pad_io_e_07_mux_sel_wd = reg_wdata[4:0];
+
+  assign pad_io_e_08_cfg_chip2pad_we = addr_hit[146] & reg_we & !reg_error;
+  assign pad_io_e_08_cfg_chip2pad_wd = reg_wdata[0];
+
+  assign pad_io_e_08_cfg_oen_we = addr_hit[146] & reg_we & !reg_error;
+  assign pad_io_e_08_cfg_oen_wd = reg_wdata[1];
+
+  assign pad_io_e_08_mux_sel_we = addr_hit[147] & reg_we & !reg_error;
+  assign pad_io_e_08_mux_sel_wd = reg_wdata[4:0];
+
+  assign pad_io_e_09_cfg_chip2pad_we = addr_hit[148] & reg_we & !reg_error;
+  assign pad_io_e_09_cfg_chip2pad_wd = reg_wdata[0];
+
+  assign pad_io_e_09_cfg_oen_we = addr_hit[148] & reg_we & !reg_error;
+  assign pad_io_e_09_cfg_oen_wd = reg_wdata[1];
+
+  assign pad_io_e_09_mux_sel_we = addr_hit[149] & reg_we & !reg_error;
+  assign pad_io_e_09_mux_sel_wd = reg_wdata[4:0];
+
+  assign pad_io_e_10_cfg_chip2pad_we = addr_hit[150] & reg_we & !reg_error;
+  assign pad_io_e_10_cfg_chip2pad_wd = reg_wdata[0];
+
+  assign pad_io_e_10_cfg_oen_we = addr_hit[150] & reg_we & !reg_error;
+  assign pad_io_e_10_cfg_oen_wd = reg_wdata[1];
+
+  assign pad_io_e_10_mux_sel_we = addr_hit[151] & reg_we & !reg_error;
+  assign pad_io_e_10_mux_sel_wd = reg_wdata[4:0];
+
+  assign pad_io_e_11_cfg_chip2pad_we = addr_hit[152] & reg_we & !reg_error;
+  assign pad_io_e_11_cfg_chip2pad_wd = reg_wdata[0];
+
+  assign pad_io_e_11_cfg_oen_we = addr_hit[152] & reg_we & !reg_error;
+  assign pad_io_e_11_cfg_oen_wd = reg_wdata[1];
+
+  assign pad_io_e_11_mux_sel_we = addr_hit[153] & reg_we & !reg_error;
+  assign pad_io_e_11_mux_sel_wd = reg_wdata[4:0];
+
+  assign pad_io_e_12_cfg_chip2pad_we = addr_hit[154] & reg_we & !reg_error;
+  assign pad_io_e_12_cfg_chip2pad_wd = reg_wdata[0];
+
+  assign pad_io_e_12_cfg_oen_we = addr_hit[154] & reg_we & !reg_error;
+  assign pad_io_e_12_cfg_oen_wd = reg_wdata[1];
+
+  assign pad_io_e_12_mux_sel_we = addr_hit[155] & reg_we & !reg_error;
+  assign pad_io_e_12_mux_sel_wd = reg_wdata[4:0];
+
+  assign pad_io_e_13_cfg_chip2pad_we = addr_hit[156] & reg_we & !reg_error;
+  assign pad_io_e_13_cfg_chip2pad_wd = reg_wdata[0];
+
+  assign pad_io_e_13_cfg_oen_we = addr_hit[156] & reg_we & !reg_error;
+  assign pad_io_e_13_cfg_oen_wd = reg_wdata[1];
+
+  assign pad_io_e_13_mux_sel_we = addr_hit[157] & reg_we & !reg_error;
+  assign pad_io_e_13_mux_sel_wd = reg_wdata[4:0];
+
+  assign pad_io_e_14_cfg_chip2pad_we = addr_hit[158] & reg_we & !reg_error;
+  assign pad_io_e_14_cfg_chip2pad_wd = reg_wdata[0];
+
+  assign pad_io_e_14_cfg_oen_we = addr_hit[158] & reg_we & !reg_error;
+  assign pad_io_e_14_cfg_oen_wd = reg_wdata[1];
+
+  assign pad_io_e_14_mux_sel_we = addr_hit[159] & reg_we & !reg_error;
+  assign pad_io_e_14_mux_sel_wd = reg_wdata[4:0];
+
+  assign pad_io_f_00_cfg_chip2pad_we = addr_hit[160] & reg_we & !reg_error;
+  assign pad_io_f_00_cfg_chip2pad_wd = reg_wdata[0];
+
+  assign pad_io_f_00_cfg_oen_we = addr_hit[160] & reg_we & !reg_error;
+  assign pad_io_f_00_cfg_oen_wd = reg_wdata[1];
+
+  assign pad_io_f_00_mux_sel_we = addr_hit[161] & reg_we & !reg_error;
+  assign pad_io_f_00_mux_sel_wd = reg_wdata[4:0];
+
+  assign pad_io_f_01_cfg_chip2pad_we = addr_hit[162] & reg_we & !reg_error;
+  assign pad_io_f_01_cfg_chip2pad_wd = reg_wdata[0];
+
+  assign pad_io_f_01_cfg_oen_we = addr_hit[162] & reg_we & !reg_error;
+  assign pad_io_f_01_cfg_oen_wd = reg_wdata[1];
+
+  assign pad_io_f_01_mux_sel_we = addr_hit[163] & reg_we & !reg_error;
+  assign pad_io_f_01_mux_sel_wd = reg_wdata[4:0];
+
+  assign pad_io_f_02_cfg_chip2pad_we = addr_hit[164] & reg_we & !reg_error;
+  assign pad_io_f_02_cfg_chip2pad_wd = reg_wdata[0];
+
+  assign pad_io_f_02_cfg_oen_we = addr_hit[164] & reg_we & !reg_error;
+  assign pad_io_f_02_cfg_oen_wd = reg_wdata[1];
+
+  assign pad_io_f_02_mux_sel_we = addr_hit[165] & reg_we & !reg_error;
+  assign pad_io_f_02_mux_sel_wd = reg_wdata[4:0];
+
+  assign pad_io_f_03_cfg_chip2pad_we = addr_hit[166] & reg_we & !reg_error;
+  assign pad_io_f_03_cfg_chip2pad_wd = reg_wdata[0];
+
+  assign pad_io_f_03_cfg_oen_we = addr_hit[166] & reg_we & !reg_error;
+  assign pad_io_f_03_cfg_oen_wd = reg_wdata[1];
+
+  assign pad_io_f_03_mux_sel_we = addr_hit[167] & reg_we & !reg_error;
+  assign pad_io_f_03_mux_sel_wd = reg_wdata[4:0];
+
+  assign pad_io_f_04_cfg_chip2pad_we = addr_hit[168] & reg_we & !reg_error;
+  assign pad_io_f_04_cfg_chip2pad_wd = reg_wdata[0];
+
+  assign pad_io_f_04_cfg_oen_we = addr_hit[168] & reg_we & !reg_error;
+  assign pad_io_f_04_cfg_oen_wd = reg_wdata[1];
+
+  assign pad_io_f_04_mux_sel_we = addr_hit[169] & reg_we & !reg_error;
+  assign pad_io_f_04_mux_sel_wd = reg_wdata[4:0];
+
+  assign pad_io_f_05_cfg_chip2pad_we = addr_hit[170] & reg_we & !reg_error;
+  assign pad_io_f_05_cfg_chip2pad_wd = reg_wdata[0];
+
+  assign pad_io_f_05_cfg_oen_we = addr_hit[170] & reg_we & !reg_error;
+  assign pad_io_f_05_cfg_oen_wd = reg_wdata[1];
+
+  assign pad_io_f_05_mux_sel_we = addr_hit[171] & reg_we & !reg_error;
+  assign pad_io_f_05_mux_sel_wd = reg_wdata[4:0];
+
+  assign pad_io_f_06_cfg_chip2pad_we = addr_hit[172] & reg_we & !reg_error;
+  assign pad_io_f_06_cfg_chip2pad_wd = reg_wdata[0];
+
+  assign pad_io_f_06_cfg_oen_we = addr_hit[172] & reg_we & !reg_error;
+  assign pad_io_f_06_cfg_oen_wd = reg_wdata[1];
+
+  assign pad_io_f_06_mux_sel_we = addr_hit[173] & reg_we & !reg_error;
+  assign pad_io_f_06_mux_sel_wd = reg_wdata[4:0];
+
+  assign pad_io_f_07_cfg_chip2pad_we = addr_hit[174] & reg_we & !reg_error;
+  assign pad_io_f_07_cfg_chip2pad_wd = reg_wdata[0];
+
+  assign pad_io_f_07_cfg_oen_we = addr_hit[174] & reg_we & !reg_error;
+  assign pad_io_f_07_cfg_oen_wd = reg_wdata[1];
+
+  assign pad_io_f_07_mux_sel_we = addr_hit[175] & reg_we & !reg_error;
+  assign pad_io_f_07_mux_sel_wd = reg_wdata[4:0];
+
+  assign pad_io_f_08_cfg_chip2pad_we = addr_hit[176] & reg_we & !reg_error;
+  assign pad_io_f_08_cfg_chip2pad_wd = reg_wdata[0];
+
+  assign pad_io_f_08_cfg_oen_we = addr_hit[176] & reg_we & !reg_error;
+  assign pad_io_f_08_cfg_oen_wd = reg_wdata[1];
+
+  assign pad_io_f_08_mux_sel_we = addr_hit[177] & reg_we & !reg_error;
+  assign pad_io_f_08_mux_sel_wd = reg_wdata[4:0];
+
+  assign pad_io_f_09_cfg_chip2pad_we = addr_hit[178] & reg_we & !reg_error;
+  assign pad_io_f_09_cfg_chip2pad_wd = reg_wdata[0];
+
+  assign pad_io_f_09_cfg_oen_we = addr_hit[178] & reg_we & !reg_error;
+  assign pad_io_f_09_cfg_oen_wd = reg_wdata[1];
+
+  assign pad_io_f_09_mux_sel_we = addr_hit[179] & reg_we & !reg_error;
+  assign pad_io_f_09_mux_sel_wd = reg_wdata[4:0];
+
+  assign pad_io_f_10_cfg_chip2pad_we = addr_hit[180] & reg_we & !reg_error;
+  assign pad_io_f_10_cfg_chip2pad_wd = reg_wdata[0];
+
+  assign pad_io_f_10_cfg_oen_we = addr_hit[180] & reg_we & !reg_error;
+  assign pad_io_f_10_cfg_oen_wd = reg_wdata[1];
+
+  assign pad_io_f_10_mux_sel_we = addr_hit[181] & reg_we & !reg_error;
+  assign pad_io_f_10_mux_sel_wd = reg_wdata[4:0];
+
+  assign pad_io_g_00_cfg_chip2pad_we = addr_hit[182] & reg_we & !reg_error;
+  assign pad_io_g_00_cfg_chip2pad_wd = reg_wdata[0];
+
+  assign pad_io_g_00_cfg_oen_we = addr_hit[182] & reg_we & !reg_error;
+  assign pad_io_g_00_cfg_oen_wd = reg_wdata[1];
+
+  assign pad_io_g_00_mux_sel_we = addr_hit[183] & reg_we & !reg_error;
+  assign pad_io_g_00_mux_sel_wd = reg_wdata[4:0];
+
+  assign pad_io_g_01_cfg_chip2pad_we = addr_hit[184] & reg_we & !reg_error;
+  assign pad_io_g_01_cfg_chip2pad_wd = reg_wdata[0];
+
+  assign pad_io_g_01_cfg_oen_we = addr_hit[184] & reg_we & !reg_error;
+  assign pad_io_g_01_cfg_oen_wd = reg_wdata[1];
+
+  assign pad_io_g_01_mux_sel_we = addr_hit[185] & reg_we & !reg_error;
+  assign pad_io_g_01_mux_sel_wd = reg_wdata[4:0];
+
+  assign pad_io_g_02_cfg_chip2pad_we = addr_hit[186] & reg_we & !reg_error;
+  assign pad_io_g_02_cfg_chip2pad_wd = reg_wdata[0];
+
+  assign pad_io_g_02_cfg_oen_we = addr_hit[186] & reg_we & !reg_error;
+  assign pad_io_g_02_cfg_oen_wd = reg_wdata[1];
+
+  assign pad_io_g_02_mux_sel_we = addr_hit[187] & reg_we & !reg_error;
+  assign pad_io_g_02_mux_sel_wd = reg_wdata[4:0];
+
+  assign pad_io_g_03_cfg_chip2pad_we = addr_hit[188] & reg_we & !reg_error;
+  assign pad_io_g_03_cfg_chip2pad_wd = reg_wdata[0];
+
+  assign pad_io_g_03_cfg_oen_we = addr_hit[188] & reg_we & !reg_error;
+  assign pad_io_g_03_cfg_oen_wd = reg_wdata[1];
+
+  assign pad_io_g_03_mux_sel_we = addr_hit[189] & reg_we & !reg_error;
+  assign pad_io_g_03_mux_sel_wd = reg_wdata[4:0];
+
+  assign pad_io_g_04_cfg_chip2pad_we = addr_hit[190] & reg_we & !reg_error;
+  assign pad_io_g_04_cfg_chip2pad_wd = reg_wdata[0];
+
+  assign pad_io_g_04_cfg_oen_we = addr_hit[190] & reg_we & !reg_error;
+  assign pad_io_g_04_cfg_oen_wd = reg_wdata[1];
+
+  assign pad_io_g_04_mux_sel_we = addr_hit[191] & reg_we & !reg_error;
+  assign pad_io_g_04_mux_sel_wd = reg_wdata[4:0];
+
+  assign pad_io_g_05_cfg_chip2pad_we = addr_hit[192] & reg_we & !reg_error;
+  assign pad_io_g_05_cfg_chip2pad_wd = reg_wdata[0];
+
+  assign pad_io_g_05_cfg_oen_we = addr_hit[192] & reg_we & !reg_error;
+  assign pad_io_g_05_cfg_oen_wd = reg_wdata[1];
+
+  assign pad_io_g_05_mux_sel_we = addr_hit[193] & reg_we & !reg_error;
+  assign pad_io_g_05_mux_sel_wd = reg_wdata[4:0];
+
+  assign pad_io_g_06_cfg_chip2pad_we = addr_hit[194] & reg_we & !reg_error;
+  assign pad_io_g_06_cfg_chip2pad_wd = reg_wdata[0];
+
+  assign pad_io_g_06_cfg_oen_we = addr_hit[194] & reg_we & !reg_error;
+  assign pad_io_g_06_cfg_oen_wd = reg_wdata[1];
+
+  assign pad_io_g_06_mux_sel_we = addr_hit[195] & reg_we & !reg_error;
+  assign pad_io_g_06_mux_sel_wd = reg_wdata[4:0];
+
+  assign pad_io_g_07_cfg_chip2pad_we = addr_hit[196] & reg_we & !reg_error;
+  assign pad_io_g_07_cfg_chip2pad_wd = reg_wdata[0];
+
+  assign pad_io_g_07_cfg_oen_we = addr_hit[196] & reg_we & !reg_error;
+  assign pad_io_g_07_cfg_oen_wd = reg_wdata[1];
+
+  assign pad_io_g_07_mux_sel_we = addr_hit[197] & reg_we & !reg_error;
+  assign pad_io_g_07_mux_sel_wd = reg_wdata[4:0];
+
+  assign pad_io_g_08_cfg_chip2pad_we = addr_hit[198] & reg_we & !reg_error;
+  assign pad_io_g_08_cfg_chip2pad_wd = reg_wdata[0];
+
+  assign pad_io_g_08_cfg_oen_we = addr_hit[198] & reg_we & !reg_error;
+  assign pad_io_g_08_cfg_oen_wd = reg_wdata[1];
+
+  assign pad_io_g_08_mux_sel_we = addr_hit[199] & reg_we & !reg_error;
+  assign pad_io_g_08_mux_sel_wd = reg_wdata[4:0];
+
+  assign pad_io_g_09_cfg_chip2pad_we = addr_hit[200] & reg_we & !reg_error;
+  assign pad_io_g_09_cfg_chip2pad_wd = reg_wdata[0];
+
+  assign pad_io_g_09_cfg_oen_we = addr_hit[200] & reg_we & !reg_error;
+  assign pad_io_g_09_cfg_oen_wd = reg_wdata[1];
+
+  assign pad_io_g_09_mux_sel_we = addr_hit[201] & reg_we & !reg_error;
+  assign pad_io_g_09_mux_sel_wd = reg_wdata[4:0];
+
+  assign pad_io_g_10_cfg_chip2pad_we = addr_hit[202] & reg_we & !reg_error;
+  assign pad_io_g_10_cfg_chip2pad_wd = reg_wdata[0];
+
+  assign pad_io_g_10_cfg_oen_we = addr_hit[202] & reg_we & !reg_error;
+  assign pad_io_g_10_cfg_oen_wd = reg_wdata[1];
+
+  assign pad_io_g_10_mux_sel_we = addr_hit[203] & reg_we & !reg_error;
+  assign pad_io_g_10_mux_sel_wd = reg_wdata[4:0];
+
+  assign pad_io_g_11_cfg_chip2pad_we = addr_hit[204] & reg_we & !reg_error;
+  assign pad_io_g_11_cfg_chip2pad_wd = reg_wdata[0];
+
+  assign pad_io_g_11_cfg_oen_we = addr_hit[204] & reg_we & !reg_error;
+  assign pad_io_g_11_cfg_oen_wd = reg_wdata[1];
+
+  assign pad_io_g_11_mux_sel_we = addr_hit[205] & reg_we & !reg_error;
+  assign pad_io_g_11_mux_sel_wd = reg_wdata[4:0];
+
+  assign pad_io_g_12_cfg_chip2pad_we = addr_hit[206] & reg_we & !reg_error;
+  assign pad_io_g_12_cfg_chip2pad_wd = reg_wdata[0];
+
+  assign pad_io_g_12_cfg_oen_we = addr_hit[206] & reg_we & !reg_error;
+  assign pad_io_g_12_cfg_oen_wd = reg_wdata[1];
+
+  assign pad_io_g_12_mux_sel_we = addr_hit[207] & reg_we & !reg_error;
+  assign pad_io_g_12_mux_sel_wd = reg_wdata[4:0];
+
+  assign pad_io_g_13_cfg_chip2pad_we = addr_hit[208] & reg_we & !reg_error;
+  assign pad_io_g_13_cfg_chip2pad_wd = reg_wdata[0];
+
+  assign pad_io_g_13_cfg_oen_we = addr_hit[208] & reg_we & !reg_error;
+  assign pad_io_g_13_cfg_oen_wd = reg_wdata[1];
+
+  assign pad_io_g_13_mux_sel_we = addr_hit[209] & reg_we & !reg_error;
+  assign pad_io_g_13_mux_sel_wd = reg_wdata[4:0];
+
+  assign pad_io_g_14_cfg_chip2pad_we = addr_hit[210] & reg_we & !reg_error;
+  assign pad_io_g_14_cfg_chip2pad_wd = reg_wdata[0];
+
+  assign pad_io_g_14_cfg_oen_we = addr_hit[210] & reg_we & !reg_error;
+  assign pad_io_g_14_cfg_oen_wd = reg_wdata[1];
+
+  assign pad_io_g_14_mux_sel_we = addr_hit[211] & reg_we & !reg_error;
+  assign pad_io_g_14_mux_sel_wd = reg_wdata[4:0];
+
+  assign pad_pwm0_cfg_chip2pad_we = addr_hit[212] & reg_we & !reg_error;
+  assign pad_pwm0_cfg_chip2pad_wd = reg_wdata[0];
+
+  assign pad_pwm0_cfg_oen_we = addr_hit[212] & reg_we & !reg_error;
+  assign pad_pwm0_cfg_oen_wd = reg_wdata[1];
+
+  assign pad_pwm0_mux_sel_we = addr_hit[213] & reg_we & !reg_error;
+  assign pad_pwm0_mux_sel_wd = reg_wdata[3:0];
+
+  assign pad_pwm1_cfg_chip2pad_we = addr_hit[214] & reg_we & !reg_error;
+  assign pad_pwm1_cfg_chip2pad_wd = reg_wdata[0];
+
+  assign pad_pwm1_cfg_oen_we = addr_hit[214] & reg_we & !reg_error;
+  assign pad_pwm1_cfg_oen_wd = reg_wdata[1];
+
+  assign pad_pwm1_mux_sel_we = addr_hit[215] & reg_we & !reg_error;
+  assign pad_pwm1_mux_sel_wd = reg_wdata[3:0];
+
+  assign pad_pwm2_cfg_chip2pad_we = addr_hit[216] & reg_we & !reg_error;
+  assign pad_pwm2_cfg_chip2pad_wd = reg_wdata[0];
+
+  assign pad_pwm2_cfg_oen_we = addr_hit[216] & reg_we & !reg_error;
+  assign pad_pwm2_cfg_oen_wd = reg_wdata[1];
+
+  assign pad_pwm2_mux_sel_we = addr_hit[217] & reg_we & !reg_error;
+  assign pad_pwm2_mux_sel_wd = reg_wdata[3:0];
+
+  assign pad_pwm3_cfg_chip2pad_we = addr_hit[218] & reg_we & !reg_error;
+  assign pad_pwm3_cfg_chip2pad_wd = reg_wdata[0];
+
+  assign pad_pwm3_cfg_oen_we = addr_hit[218] & reg_we & !reg_error;
+  assign pad_pwm3_cfg_oen_wd = reg_wdata[1];
+
+  assign pad_pwm3_mux_sel_we = addr_hit[219] & reg_we & !reg_error;
+  assign pad_pwm3_mux_sel_wd = reg_wdata[3:0];
+
+  assign pad_pwm4_cfg_chip2pad_we = addr_hit[220] & reg_we & !reg_error;
+  assign pad_pwm4_cfg_chip2pad_wd = reg_wdata[0];
+
+  assign pad_pwm4_cfg_oen_we = addr_hit[220] & reg_we & !reg_error;
+  assign pad_pwm4_cfg_oen_wd = reg_wdata[1];
+
+  assign pad_pwm4_mux_sel_we = addr_hit[221] & reg_we & !reg_error;
+  assign pad_pwm4_mux_sel_wd = reg_wdata[3:0];
+
+  assign pad_pwm5_cfg_chip2pad_we = addr_hit[222] & reg_we & !reg_error;
+  assign pad_pwm5_cfg_chip2pad_wd = reg_wdata[0];
+
+  assign pad_pwm5_cfg_oen_we = addr_hit[222] & reg_we & !reg_error;
+  assign pad_pwm5_cfg_oen_wd = reg_wdata[1];
+
+  assign pad_pwm5_mux_sel_we = addr_hit[223] & reg_we & !reg_error;
+  assign pad_pwm5_mux_sel_wd = reg_wdata[3:0];
+
+  assign pad_pwm6_cfg_chip2pad_we = addr_hit[224] & reg_we & !reg_error;
+  assign pad_pwm6_cfg_chip2pad_wd = reg_wdata[0];
+
+  assign pad_pwm6_cfg_oen_we = addr_hit[224] & reg_we & !reg_error;
+  assign pad_pwm6_cfg_oen_wd = reg_wdata[1];
+
+  assign pad_pwm6_mux_sel_we = addr_hit[225] & reg_we & !reg_error;
+  assign pad_pwm6_mux_sel_wd = reg_wdata[3:0];
+
+  assign pad_pwm7_cfg_chip2pad_we = addr_hit[226] & reg_we & !reg_error;
+  assign pad_pwm7_cfg_chip2pad_wd = reg_wdata[0];
+
+  assign pad_pwm7_cfg_oen_we = addr_hit[226] & reg_we & !reg_error;
+  assign pad_pwm7_cfg_oen_wd = reg_wdata[1];
+
+  assign pad_pwm7_mux_sel_we = addr_hit[227] & reg_we & !reg_error;
+  assign pad_pwm7_mux_sel_wd = reg_wdata[3:0];
 
   // Read data return
   always_comb begin
     reg_rdata_next = '0;
     unique case (1'b1)
       addr_hit[0]: begin
-        reg_rdata_next[0] = pad_mx_can_0_cfg_chip2pad_qs;
-        reg_rdata_next[1] = pad_mx_can_0_cfg_oen_qs;
+        reg_rdata_next[0] = pad_io_a_00_cfg_chip2pad_qs;
+        reg_rdata_next[1] = pad_io_a_00_cfg_oen_qs;
       end
 
       addr_hit[1]: begin
-        reg_rdata_next[3:0] = pad_mx_can_0_mux_sel_qs;
+        reg_rdata_next[3:0] = pad_io_a_00_mux_sel_qs;
       end
 
       addr_hit[2]: begin
-        reg_rdata_next[0] = pad_mx_can_1_cfg_chip2pad_qs;
-        reg_rdata_next[1] = pad_mx_can_1_cfg_oen_qs;
+        reg_rdata_next[0] = pad_io_a_01_cfg_chip2pad_qs;
+        reg_rdata_next[1] = pad_io_a_01_cfg_oen_qs;
       end
 
       addr_hit[3]: begin
-        reg_rdata_next[3:0] = pad_mx_can_1_mux_sel_qs;
+        reg_rdata_next[3:0] = pad_io_a_01_mux_sel_qs;
       end
 
       addr_hit[4]: begin
-        reg_rdata_next[0] = pad_mx_can_2_cfg_chip2pad_qs;
-        reg_rdata_next[1] = pad_mx_can_2_cfg_oen_qs;
+        reg_rdata_next[0] = pad_io_a_02_cfg_chip2pad_qs;
+        reg_rdata_next[1] = pad_io_a_02_cfg_oen_qs;
       end
 
       addr_hit[5]: begin
-        reg_rdata_next[3:0] = pad_mx_can_2_mux_sel_qs;
+        reg_rdata_next[3:0] = pad_io_a_02_mux_sel_qs;
       end
 
       addr_hit[6]: begin
-        reg_rdata_next[0] = pad_mx_can_3_cfg_chip2pad_qs;
-        reg_rdata_next[1] = pad_mx_can_3_cfg_oen_qs;
+        reg_rdata_next[0] = pad_io_a_03_cfg_chip2pad_qs;
+        reg_rdata_next[1] = pad_io_a_03_cfg_oen_qs;
       end
 
       addr_hit[7]: begin
-        reg_rdata_next[3:0] = pad_mx_can_3_mux_sel_qs;
+        reg_rdata_next[3:0] = pad_io_a_03_mux_sel_qs;
       end
 
       addr_hit[8]: begin
-        reg_rdata_next[0] = pad_mx_cam0_0_cfg_chip2pad_qs;
-        reg_rdata_next[1] = pad_mx_cam0_0_cfg_oen_qs;
+        reg_rdata_next[0] = pad_io_a_04_cfg_chip2pad_qs;
+        reg_rdata_next[1] = pad_io_a_04_cfg_oen_qs;
       end
 
       addr_hit[9]: begin
-        reg_rdata_next[4:0] = pad_mx_cam0_0_mux_sel_qs;
+        reg_rdata_next[3:0] = pad_io_a_04_mux_sel_qs;
       end
 
       addr_hit[10]: begin
-        reg_rdata_next[0] = pad_mx_cam0_1_cfg_chip2pad_qs;
-        reg_rdata_next[1] = pad_mx_cam0_1_cfg_oen_qs;
+        reg_rdata_next[0] = pad_io_a_05_cfg_chip2pad_qs;
+        reg_rdata_next[1] = pad_io_a_05_cfg_oen_qs;
       end
 
       addr_hit[11]: begin
-        reg_rdata_next[4:0] = pad_mx_cam0_1_mux_sel_qs;
+        reg_rdata_next[3:0] = pad_io_a_05_mux_sel_qs;
       end
 
       addr_hit[12]: begin
-        reg_rdata_next[0] = pad_mx_cam0_2_cfg_chip2pad_qs;
-        reg_rdata_next[1] = pad_mx_cam0_2_cfg_oen_qs;
+        reg_rdata_next[0] = pad_io_a_06_cfg_chip2pad_qs;
+        reg_rdata_next[1] = pad_io_a_06_cfg_oen_qs;
       end
 
       addr_hit[13]: begin
-        reg_rdata_next[4:0] = pad_mx_cam0_2_mux_sel_qs;
+        reg_rdata_next[3:0] = pad_io_a_06_mux_sel_qs;
       end
 
       addr_hit[14]: begin
-        reg_rdata_next[0] = pad_mx_cam0_3_cfg_chip2pad_qs;
-        reg_rdata_next[1] = pad_mx_cam0_3_cfg_oen_qs;
+        reg_rdata_next[0] = pad_io_a_07_cfg_chip2pad_qs;
+        reg_rdata_next[1] = pad_io_a_07_cfg_oen_qs;
       end
 
       addr_hit[15]: begin
-        reg_rdata_next[4:0] = pad_mx_cam0_3_mux_sel_qs;
+        reg_rdata_next[3:0] = pad_io_a_07_mux_sel_qs;
       end
 
       addr_hit[16]: begin
-        reg_rdata_next[0] = pad_mx_cam0_4_cfg_chip2pad_qs;
-        reg_rdata_next[1] = pad_mx_cam0_4_cfg_oen_qs;
+        reg_rdata_next[0] = pad_io_a_08_cfg_chip2pad_qs;
+        reg_rdata_next[1] = pad_io_a_08_cfg_oen_qs;
       end
 
       addr_hit[17]: begin
-        reg_rdata_next[4:0] = pad_mx_cam0_4_mux_sel_qs;
+        reg_rdata_next[3:0] = pad_io_a_08_mux_sel_qs;
       end
 
       addr_hit[18]: begin
-        reg_rdata_next[0] = pad_mx_cam0_5_cfg_chip2pad_qs;
-        reg_rdata_next[1] = pad_mx_cam0_5_cfg_oen_qs;
+        reg_rdata_next[0] = pad_io_a_09_cfg_chip2pad_qs;
+        reg_rdata_next[1] = pad_io_a_09_cfg_oen_qs;
       end
 
       addr_hit[19]: begin
-        reg_rdata_next[4:0] = pad_mx_cam0_5_mux_sel_qs;
+        reg_rdata_next[3:0] = pad_io_a_09_mux_sel_qs;
       end
 
       addr_hit[20]: begin
-        reg_rdata_next[0] = pad_mx_cam0_6_cfg_chip2pad_qs;
-        reg_rdata_next[1] = pad_mx_cam0_6_cfg_oen_qs;
+        reg_rdata_next[0] = pad_io_a_10_cfg_chip2pad_qs;
+        reg_rdata_next[1] = pad_io_a_10_cfg_oen_qs;
       end
 
       addr_hit[21]: begin
-        reg_rdata_next[4:0] = pad_mx_cam0_6_mux_sel_qs;
+        reg_rdata_next[3:0] = pad_io_a_10_mux_sel_qs;
       end
 
       addr_hit[22]: begin
-        reg_rdata_next[0] = pad_mx_cam0_7_cfg_chip2pad_qs;
-        reg_rdata_next[1] = pad_mx_cam0_7_cfg_oen_qs;
+        reg_rdata_next[0] = pad_io_a_11_cfg_chip2pad_qs;
+        reg_rdata_next[1] = pad_io_a_11_cfg_oen_qs;
       end
 
       addr_hit[23]: begin
-        reg_rdata_next[4:0] = pad_mx_cam0_7_mux_sel_qs;
+        reg_rdata_next[3:0] = pad_io_a_11_mux_sel_qs;
       end
 
       addr_hit[24]: begin
-        reg_rdata_next[0] = pad_mx_cam0_8_cfg_chip2pad_qs;
-        reg_rdata_next[1] = pad_mx_cam0_8_cfg_oen_qs;
+        reg_rdata_next[0] = pad_io_a_12_cfg_chip2pad_qs;
+        reg_rdata_next[1] = pad_io_a_12_cfg_oen_qs;
       end
 
       addr_hit[25]: begin
-        reg_rdata_next[4:0] = pad_mx_cam0_8_mux_sel_qs;
+        reg_rdata_next[3:0] = pad_io_a_12_mux_sel_qs;
       end
 
       addr_hit[26]: begin
-        reg_rdata_next[0] = pad_mx_cam0_9_cfg_chip2pad_qs;
-        reg_rdata_next[1] = pad_mx_cam0_9_cfg_oen_qs;
+        reg_rdata_next[0] = pad_io_a_13_cfg_chip2pad_qs;
+        reg_rdata_next[1] = pad_io_a_13_cfg_oen_qs;
       end
 
       addr_hit[27]: begin
-        reg_rdata_next[4:0] = pad_mx_cam0_9_mux_sel_qs;
+        reg_rdata_next[3:0] = pad_io_a_13_mux_sel_qs;
       end
 
       addr_hit[28]: begin
-        reg_rdata_next[0] = pad_mx_cam0_10_cfg_chip2pad_qs;
-        reg_rdata_next[1] = pad_mx_cam0_10_cfg_oen_qs;
+        reg_rdata_next[0] = pad_io_a_14_cfg_chip2pad_qs;
+        reg_rdata_next[1] = pad_io_a_14_cfg_oen_qs;
       end
 
       addr_hit[29]: begin
-        reg_rdata_next[4:0] = pad_mx_cam0_10_mux_sel_qs;
+        reg_rdata_next[3:0] = pad_io_a_14_mux_sel_qs;
       end
 
       addr_hit[30]: begin
-        reg_rdata_next[0] = pad_mx_cam1_0_cfg_chip2pad_qs;
-        reg_rdata_next[1] = pad_mx_cam1_0_cfg_oen_qs;
+        reg_rdata_next[0] = pad_io_b_00_cfg_chip2pad_qs;
+        reg_rdata_next[1] = pad_io_b_00_cfg_oen_qs;
       end
 
       addr_hit[31]: begin
-        reg_rdata_next[4:0] = pad_mx_cam1_0_mux_sel_qs;
+        reg_rdata_next[4:0] = pad_io_b_00_mux_sel_qs;
       end
 
       addr_hit[32]: begin
-        reg_rdata_next[0] = pad_mx_cam1_1_cfg_chip2pad_qs;
-        reg_rdata_next[1] = pad_mx_cam1_1_cfg_oen_qs;
+        reg_rdata_next[0] = pad_io_b_01_cfg_chip2pad_qs;
+        reg_rdata_next[1] = pad_io_b_01_cfg_oen_qs;
       end
 
       addr_hit[33]: begin
-        reg_rdata_next[4:0] = pad_mx_cam1_1_mux_sel_qs;
+        reg_rdata_next[4:0] = pad_io_b_01_mux_sel_qs;
       end
 
       addr_hit[34]: begin
-        reg_rdata_next[0] = pad_mx_cam1_2_cfg_chip2pad_qs;
-        reg_rdata_next[1] = pad_mx_cam1_2_cfg_oen_qs;
+        reg_rdata_next[0] = pad_io_b_02_cfg_chip2pad_qs;
+        reg_rdata_next[1] = pad_io_b_02_cfg_oen_qs;
       end
 
       addr_hit[35]: begin
-        reg_rdata_next[4:0] = pad_mx_cam1_2_mux_sel_qs;
+        reg_rdata_next[4:0] = pad_io_b_02_mux_sel_qs;
       end
 
       addr_hit[36]: begin
-        reg_rdata_next[0] = pad_mx_cam1_3_cfg_chip2pad_qs;
-        reg_rdata_next[1] = pad_mx_cam1_3_cfg_oen_qs;
+        reg_rdata_next[0] = pad_io_b_03_cfg_chip2pad_qs;
+        reg_rdata_next[1] = pad_io_b_03_cfg_oen_qs;
       end
 
       addr_hit[37]: begin
-        reg_rdata_next[4:0] = pad_mx_cam1_3_mux_sel_qs;
+        reg_rdata_next[4:0] = pad_io_b_03_mux_sel_qs;
       end
 
       addr_hit[38]: begin
-        reg_rdata_next[0] = pad_mx_cam1_4_cfg_chip2pad_qs;
-        reg_rdata_next[1] = pad_mx_cam1_4_cfg_oen_qs;
+        reg_rdata_next[0] = pad_io_b_04_cfg_chip2pad_qs;
+        reg_rdata_next[1] = pad_io_b_04_cfg_oen_qs;
       end
 
       addr_hit[39]: begin
-        reg_rdata_next[4:0] = pad_mx_cam1_4_mux_sel_qs;
+        reg_rdata_next[4:0] = pad_io_b_04_mux_sel_qs;
       end
 
       addr_hit[40]: begin
-        reg_rdata_next[0] = pad_mx_cam1_5_cfg_chip2pad_qs;
-        reg_rdata_next[1] = pad_mx_cam1_5_cfg_oen_qs;
+        reg_rdata_next[0] = pad_io_b_05_cfg_chip2pad_qs;
+        reg_rdata_next[1] = pad_io_b_05_cfg_oen_qs;
       end
 
       addr_hit[41]: begin
-        reg_rdata_next[4:0] = pad_mx_cam1_5_mux_sel_qs;
+        reg_rdata_next[4:0] = pad_io_b_05_mux_sel_qs;
       end
 
       addr_hit[42]: begin
-        reg_rdata_next[0] = pad_mx_cam1_6_cfg_chip2pad_qs;
-        reg_rdata_next[1] = pad_mx_cam1_6_cfg_oen_qs;
+        reg_rdata_next[0] = pad_io_b_06_cfg_chip2pad_qs;
+        reg_rdata_next[1] = pad_io_b_06_cfg_oen_qs;
       end
 
       addr_hit[43]: begin
-        reg_rdata_next[4:0] = pad_mx_cam1_6_mux_sel_qs;
+        reg_rdata_next[4:0] = pad_io_b_06_mux_sel_qs;
       end
 
       addr_hit[44]: begin
-        reg_rdata_next[0] = pad_mx_cam1_7_cfg_chip2pad_qs;
-        reg_rdata_next[1] = pad_mx_cam1_7_cfg_oen_qs;
+        reg_rdata_next[0] = pad_io_b_07_cfg_chip2pad_qs;
+        reg_rdata_next[1] = pad_io_b_07_cfg_oen_qs;
       end
 
       addr_hit[45]: begin
-        reg_rdata_next[4:0] = pad_mx_cam1_7_mux_sel_qs;
+        reg_rdata_next[4:0] = pad_io_b_07_mux_sel_qs;
       end
 
       addr_hit[46]: begin
-        reg_rdata_next[0] = pad_mx_cam1_8_cfg_chip2pad_qs;
-        reg_rdata_next[1] = pad_mx_cam1_8_cfg_oen_qs;
+        reg_rdata_next[0] = pad_io_b_08_cfg_chip2pad_qs;
+        reg_rdata_next[1] = pad_io_b_08_cfg_oen_qs;
       end
 
       addr_hit[47]: begin
-        reg_rdata_next[4:0] = pad_mx_cam1_8_mux_sel_qs;
+        reg_rdata_next[4:0] = pad_io_b_08_mux_sel_qs;
       end
 
       addr_hit[48]: begin
-        reg_rdata_next[0] = pad_mx_cam1_9_cfg_chip2pad_qs;
-        reg_rdata_next[1] = pad_mx_cam1_9_cfg_oen_qs;
+        reg_rdata_next[0] = pad_io_b_09_cfg_chip2pad_qs;
+        reg_rdata_next[1] = pad_io_b_09_cfg_oen_qs;
       end
 
       addr_hit[49]: begin
-        reg_rdata_next[4:0] = pad_mx_cam1_9_mux_sel_qs;
+        reg_rdata_next[4:0] = pad_io_b_09_mux_sel_qs;
       end
 
       addr_hit[50]: begin
-        reg_rdata_next[0] = pad_mx_cam1_10_cfg_chip2pad_qs;
-        reg_rdata_next[1] = pad_mx_cam1_10_cfg_oen_qs;
+        reg_rdata_next[0] = pad_io_b_10_cfg_chip2pad_qs;
+        reg_rdata_next[1] = pad_io_b_10_cfg_oen_qs;
       end
 
       addr_hit[51]: begin
-        reg_rdata_next[4:0] = pad_mx_cam1_10_mux_sel_qs;
+        reg_rdata_next[4:0] = pad_io_b_10_mux_sel_qs;
       end
 
       addr_hit[52]: begin
-        reg_rdata_next[0] = pad_mx_sdio1_0_cfg_chip2pad_qs;
-        reg_rdata_next[1] = pad_mx_sdio1_0_cfg_oen_qs;
+        reg_rdata_next[0] = pad_io_b_11_cfg_chip2pad_qs;
+        reg_rdata_next[1] = pad_io_b_11_cfg_oen_qs;
       end
 
       addr_hit[53]: begin
-        reg_rdata_next[3:0] = pad_mx_sdio1_0_mux_sel_qs;
+        reg_rdata_next[4:0] = pad_io_b_11_mux_sel_qs;
       end
 
       addr_hit[54]: begin
-        reg_rdata_next[0] = pad_mx_sdio1_1_cfg_chip2pad_qs;
-        reg_rdata_next[1] = pad_mx_sdio1_1_cfg_oen_qs;
+        reg_rdata_next[0] = pad_io_b_12_cfg_chip2pad_qs;
+        reg_rdata_next[1] = pad_io_b_12_cfg_oen_qs;
       end
 
       addr_hit[55]: begin
-        reg_rdata_next[3:0] = pad_mx_sdio1_1_mux_sel_qs;
+        reg_rdata_next[4:0] = pad_io_b_12_mux_sel_qs;
       end
 
       addr_hit[56]: begin
-        reg_rdata_next[0] = pad_mx_sdio1_2_cfg_chip2pad_qs;
-        reg_rdata_next[1] = pad_mx_sdio1_2_cfg_oen_qs;
+        reg_rdata_next[0] = pad_io_b_13_cfg_chip2pad_qs;
+        reg_rdata_next[1] = pad_io_b_13_cfg_oen_qs;
       end
 
       addr_hit[57]: begin
-        reg_rdata_next[3:0] = pad_mx_sdio1_2_mux_sel_qs;
+        reg_rdata_next[4:0] = pad_io_b_13_mux_sel_qs;
       end
 
       addr_hit[58]: begin
-        reg_rdata_next[0] = pad_mx_sdio1_3_cfg_chip2pad_qs;
-        reg_rdata_next[1] = pad_mx_sdio1_3_cfg_oen_qs;
+        reg_rdata_next[0] = pad_io_b_14_cfg_chip2pad_qs;
+        reg_rdata_next[1] = pad_io_b_14_cfg_oen_qs;
       end
 
       addr_hit[59]: begin
-        reg_rdata_next[3:0] = pad_mx_sdio1_3_mux_sel_qs;
+        reg_rdata_next[4:0] = pad_io_b_14_mux_sel_qs;
       end
 
       addr_hit[60]: begin
-        reg_rdata_next[0] = pad_mx_sdio1_4_cfg_chip2pad_qs;
-        reg_rdata_next[1] = pad_mx_sdio1_4_cfg_oen_qs;
+        reg_rdata_next[0] = pad_io_b_15_cfg_chip2pad_qs;
+        reg_rdata_next[1] = pad_io_b_15_cfg_oen_qs;
       end
 
       addr_hit[61]: begin
-        reg_rdata_next[3:0] = pad_mx_sdio1_4_mux_sel_qs;
+        reg_rdata_next[4:0] = pad_io_b_15_mux_sel_qs;
       end
 
       addr_hit[62]: begin
-        reg_rdata_next[0] = pad_mx_sdio1_5_cfg_chip2pad_qs;
-        reg_rdata_next[1] = pad_mx_sdio1_5_cfg_oen_qs;
+        reg_rdata_next[0] = pad_io_b_16_cfg_chip2pad_qs;
+        reg_rdata_next[1] = pad_io_b_16_cfg_oen_qs;
       end
 
       addr_hit[63]: begin
-        reg_rdata_next[3:0] = pad_mx_sdio1_5_mux_sel_qs;
+        reg_rdata_next[4:0] = pad_io_b_16_mux_sel_qs;
       end
 
       addr_hit[64]: begin
-        reg_rdata_next[0] = pad_mx_sdio1_6_cfg_chip2pad_qs;
-        reg_rdata_next[1] = pad_mx_sdio1_6_cfg_oen_qs;
+        reg_rdata_next[0] = pad_io_b_17_cfg_chip2pad_qs;
+        reg_rdata_next[1] = pad_io_b_17_cfg_oen_qs;
       end
 
       addr_hit[65]: begin
-        reg_rdata_next[3:0] = pad_mx_sdio1_6_mux_sel_qs;
+        reg_rdata_next[4:0] = pad_io_b_17_mux_sel_qs;
       end
 
       addr_hit[66]: begin
-        reg_rdata_next[0] = pad_mx_sdio1_7_cfg_chip2pad_qs;
-        reg_rdata_next[1] = pad_mx_sdio1_7_cfg_oen_qs;
+        reg_rdata_next[0] = pad_io_b_18_cfg_chip2pad_qs;
+        reg_rdata_next[1] = pad_io_b_18_cfg_oen_qs;
       end
 
       addr_hit[67]: begin
-        reg_rdata_next[3:0] = pad_mx_sdio1_7_mux_sel_qs;
+        reg_rdata_next[4:0] = pad_io_b_18_mux_sel_qs;
       end
 
       addr_hit[68]: begin
-        reg_rdata_next[0] = pad_mx_hyper1_0_cfg_chip2pad_qs;
-        reg_rdata_next[1] = pad_mx_hyper1_0_cfg_oen_qs;
+        reg_rdata_next[0] = pad_io_b_19_cfg_chip2pad_qs;
+        reg_rdata_next[1] = pad_io_b_19_cfg_oen_qs;
       end
 
       addr_hit[69]: begin
-        reg_rdata_next[4:0] = pad_mx_hyper1_0_mux_sel_qs;
+        reg_rdata_next[4:0] = pad_io_b_19_mux_sel_qs;
       end
 
       addr_hit[70]: begin
-        reg_rdata_next[0] = pad_mx_hyper1_1_cfg_chip2pad_qs;
-        reg_rdata_next[1] = pad_mx_hyper1_1_cfg_oen_qs;
+        reg_rdata_next[0] = pad_io_c_00_cfg_chip2pad_qs;
+        reg_rdata_next[1] = pad_io_c_00_cfg_oen_qs;
       end
 
       addr_hit[71]: begin
-        reg_rdata_next[4:0] = pad_mx_hyper1_1_mux_sel_qs;
+        reg_rdata_next[3:0] = pad_io_c_00_mux_sel_qs;
       end
 
       addr_hit[72]: begin
-        reg_rdata_next[0] = pad_mx_hyper1_2_cfg_chip2pad_qs;
-        reg_rdata_next[1] = pad_mx_hyper1_2_cfg_oen_qs;
+        reg_rdata_next[0] = pad_io_c_01_cfg_chip2pad_qs;
+        reg_rdata_next[1] = pad_io_c_01_cfg_oen_qs;
       end
 
       addr_hit[73]: begin
-        reg_rdata_next[4:0] = pad_mx_hyper1_2_mux_sel_qs;
+        reg_rdata_next[3:0] = pad_io_c_01_mux_sel_qs;
       end
 
       addr_hit[74]: begin
-        reg_rdata_next[0] = pad_mx_hyper1_3_cfg_chip2pad_qs;
-        reg_rdata_next[1] = pad_mx_hyper1_3_cfg_oen_qs;
+        reg_rdata_next[0] = pad_io_c_02_cfg_chip2pad_qs;
+        reg_rdata_next[1] = pad_io_c_02_cfg_oen_qs;
       end
 
       addr_hit[75]: begin
-        reg_rdata_next[4:0] = pad_mx_hyper1_3_mux_sel_qs;
+        reg_rdata_next[3:0] = pad_io_c_02_mux_sel_qs;
       end
 
       addr_hit[76]: begin
-        reg_rdata_next[0] = pad_mx_hyper1_4_cfg_chip2pad_qs;
-        reg_rdata_next[1] = pad_mx_hyper1_4_cfg_oen_qs;
+        reg_rdata_next[0] = pad_io_c_03_cfg_chip2pad_qs;
+        reg_rdata_next[1] = pad_io_c_03_cfg_oen_qs;
       end
 
       addr_hit[77]: begin
-        reg_rdata_next[4:0] = pad_mx_hyper1_4_mux_sel_qs;
+        reg_rdata_next[3:0] = pad_io_c_03_mux_sel_qs;
       end
 
       addr_hit[78]: begin
-        reg_rdata_next[0] = pad_mx_hyper1_5_cfg_chip2pad_qs;
-        reg_rdata_next[1] = pad_mx_hyper1_5_cfg_oen_qs;
+        reg_rdata_next[0] = pad_io_c_04_cfg_chip2pad_qs;
+        reg_rdata_next[1] = pad_io_c_04_cfg_oen_qs;
       end
 
       addr_hit[79]: begin
-        reg_rdata_next[4:0] = pad_mx_hyper1_5_mux_sel_qs;
+        reg_rdata_next[3:0] = pad_io_c_04_mux_sel_qs;
       end
 
       addr_hit[80]: begin
-        reg_rdata_next[0] = pad_mx_hyper1_6_cfg_chip2pad_qs;
-        reg_rdata_next[1] = pad_mx_hyper1_6_cfg_oen_qs;
+        reg_rdata_next[0] = pad_io_c_05_cfg_chip2pad_qs;
+        reg_rdata_next[1] = pad_io_c_05_cfg_oen_qs;
       end
 
       addr_hit[81]: begin
-        reg_rdata_next[4:0] = pad_mx_hyper1_6_mux_sel_qs;
+        reg_rdata_next[3:0] = pad_io_c_05_mux_sel_qs;
       end
 
       addr_hit[82]: begin
-        reg_rdata_next[0] = pad_mx_hyper1_7_cfg_chip2pad_qs;
-        reg_rdata_next[1] = pad_mx_hyper1_7_cfg_oen_qs;
+        reg_rdata_next[0] = pad_io_c_06_cfg_chip2pad_qs;
+        reg_rdata_next[1] = pad_io_c_06_cfg_oen_qs;
       end
 
       addr_hit[83]: begin
-        reg_rdata_next[4:0] = pad_mx_hyper1_7_mux_sel_qs;
+        reg_rdata_next[3:0] = pad_io_c_06_mux_sel_qs;
       end
 
       addr_hit[84]: begin
-        reg_rdata_next[0] = pad_mx_hyper1_8_cfg_chip2pad_qs;
-        reg_rdata_next[1] = pad_mx_hyper1_8_cfg_oen_qs;
+        reg_rdata_next[0] = pad_io_c_07_cfg_chip2pad_qs;
+        reg_rdata_next[1] = pad_io_c_07_cfg_oen_qs;
       end
 
       addr_hit[85]: begin
-        reg_rdata_next[4:0] = pad_mx_hyper1_8_mux_sel_qs;
+        reg_rdata_next[3:0] = pad_io_c_07_mux_sel_qs;
       end
 
       addr_hit[86]: begin
-        reg_rdata_next[0] = pad_mx_hyper1_9_cfg_chip2pad_qs;
-        reg_rdata_next[1] = pad_mx_hyper1_9_cfg_oen_qs;
+        reg_rdata_next[0] = pad_io_c_08_cfg_chip2pad_qs;
+        reg_rdata_next[1] = pad_io_c_08_cfg_oen_qs;
       end
 
       addr_hit[87]: begin
-        reg_rdata_next[4:0] = pad_mx_hyper1_9_mux_sel_qs;
+        reg_rdata_next[3:0] = pad_io_c_08_mux_sel_qs;
       end
 
       addr_hit[88]: begin
-        reg_rdata_next[0] = pad_mx_hyper1_10_cfg_chip2pad_qs;
-        reg_rdata_next[1] = pad_mx_hyper1_10_cfg_oen_qs;
+        reg_rdata_next[0] = pad_io_c_09_cfg_chip2pad_qs;
+        reg_rdata_next[1] = pad_io_c_09_cfg_oen_qs;
       end
 
       addr_hit[89]: begin
-        reg_rdata_next[4:0] = pad_mx_hyper1_10_mux_sel_qs;
+        reg_rdata_next[3:0] = pad_io_c_09_mux_sel_qs;
       end
 
       addr_hit[90]: begin
-        reg_rdata_next[0] = pad_mx_hyper1_11_cfg_chip2pad_qs;
-        reg_rdata_next[1] = pad_mx_hyper1_11_cfg_oen_qs;
+        reg_rdata_next[0] = pad_io_c_10_cfg_chip2pad_qs;
+        reg_rdata_next[1] = pad_io_c_10_cfg_oen_qs;
       end
 
       addr_hit[91]: begin
-        reg_rdata_next[4:0] = pad_mx_hyper1_11_mux_sel_qs;
+        reg_rdata_next[3:0] = pad_io_c_10_mux_sel_qs;
       end
 
       addr_hit[92]: begin
-        reg_rdata_next[0] = pad_mx_hyper1_12_cfg_chip2pad_qs;
-        reg_rdata_next[1] = pad_mx_hyper1_12_cfg_oen_qs;
+        reg_rdata_next[0] = pad_io_c_11_cfg_chip2pad_qs;
+        reg_rdata_next[1] = pad_io_c_11_cfg_oen_qs;
       end
 
       addr_hit[93]: begin
-        reg_rdata_next[4:0] = pad_mx_hyper1_12_mux_sel_qs;
+        reg_rdata_next[3:0] = pad_io_c_11_mux_sel_qs;
+      end
+
+      addr_hit[94]: begin
+        reg_rdata_next[0] = pad_io_c_12_cfg_chip2pad_qs;
+        reg_rdata_next[1] = pad_io_c_12_cfg_oen_qs;
+      end
+
+      addr_hit[95]: begin
+        reg_rdata_next[3:0] = pad_io_c_12_mux_sel_qs;
+      end
+
+      addr_hit[96]: begin
+        reg_rdata_next[0] = pad_io_c_13_cfg_chip2pad_qs;
+        reg_rdata_next[1] = pad_io_c_13_cfg_oen_qs;
+      end
+
+      addr_hit[97]: begin
+        reg_rdata_next[3:0] = pad_io_c_13_mux_sel_qs;
+      end
+
+      addr_hit[98]: begin
+        reg_rdata_next[0] = pad_io_d_00_cfg_chip2pad_qs;
+        reg_rdata_next[1] = pad_io_d_00_cfg_oen_qs;
+      end
+
+      addr_hit[99]: begin
+        reg_rdata_next[4:0] = pad_io_d_00_mux_sel_qs;
+      end
+
+      addr_hit[100]: begin
+        reg_rdata_next[0] = pad_io_d_01_cfg_chip2pad_qs;
+        reg_rdata_next[1] = pad_io_d_01_cfg_oen_qs;
+      end
+
+      addr_hit[101]: begin
+        reg_rdata_next[4:0] = pad_io_d_01_mux_sel_qs;
+      end
+
+      addr_hit[102]: begin
+        reg_rdata_next[0] = pad_io_d_02_cfg_chip2pad_qs;
+        reg_rdata_next[1] = pad_io_d_02_cfg_oen_qs;
+      end
+
+      addr_hit[103]: begin
+        reg_rdata_next[4:0] = pad_io_d_02_mux_sel_qs;
+      end
+
+      addr_hit[104]: begin
+        reg_rdata_next[0] = pad_io_d_03_cfg_chip2pad_qs;
+        reg_rdata_next[1] = pad_io_d_03_cfg_oen_qs;
+      end
+
+      addr_hit[105]: begin
+        reg_rdata_next[4:0] = pad_io_d_03_mux_sel_qs;
+      end
+
+      addr_hit[106]: begin
+        reg_rdata_next[0] = pad_io_d_04_cfg_chip2pad_qs;
+        reg_rdata_next[1] = pad_io_d_04_cfg_oen_qs;
+      end
+
+      addr_hit[107]: begin
+        reg_rdata_next[4:0] = pad_io_d_04_mux_sel_qs;
+      end
+
+      addr_hit[108]: begin
+        reg_rdata_next[0] = pad_io_d_05_cfg_chip2pad_qs;
+        reg_rdata_next[1] = pad_io_d_05_cfg_oen_qs;
+      end
+
+      addr_hit[109]: begin
+        reg_rdata_next[4:0] = pad_io_d_05_mux_sel_qs;
+      end
+
+      addr_hit[110]: begin
+        reg_rdata_next[0] = pad_io_d_06_cfg_chip2pad_qs;
+        reg_rdata_next[1] = pad_io_d_06_cfg_oen_qs;
+      end
+
+      addr_hit[111]: begin
+        reg_rdata_next[4:0] = pad_io_d_06_mux_sel_qs;
+      end
+
+      addr_hit[112]: begin
+        reg_rdata_next[0] = pad_io_d_07_cfg_chip2pad_qs;
+        reg_rdata_next[1] = pad_io_d_07_cfg_oen_qs;
+      end
+
+      addr_hit[113]: begin
+        reg_rdata_next[4:0] = pad_io_d_07_mux_sel_qs;
+      end
+
+      addr_hit[114]: begin
+        reg_rdata_next[0] = pad_io_d_08_cfg_chip2pad_qs;
+        reg_rdata_next[1] = pad_io_d_08_cfg_oen_qs;
+      end
+
+      addr_hit[115]: begin
+        reg_rdata_next[4:0] = pad_io_d_08_mux_sel_qs;
+      end
+
+      addr_hit[116]: begin
+        reg_rdata_next[0] = pad_io_d_09_cfg_chip2pad_qs;
+        reg_rdata_next[1] = pad_io_d_09_cfg_oen_qs;
+      end
+
+      addr_hit[117]: begin
+        reg_rdata_next[4:0] = pad_io_d_09_mux_sel_qs;
+      end
+
+      addr_hit[118]: begin
+        reg_rdata_next[0] = pad_io_d_10_cfg_chip2pad_qs;
+        reg_rdata_next[1] = pad_io_d_10_cfg_oen_qs;
+      end
+
+      addr_hit[119]: begin
+        reg_rdata_next[4:0] = pad_io_d_10_mux_sel_qs;
+      end
+
+      addr_hit[120]: begin
+        reg_rdata_next[0] = pad_io_d_11_cfg_chip2pad_qs;
+        reg_rdata_next[1] = pad_io_d_11_cfg_oen_qs;
+      end
+
+      addr_hit[121]: begin
+        reg_rdata_next[4:0] = pad_io_d_11_mux_sel_qs;
+      end
+
+      addr_hit[122]: begin
+        reg_rdata_next[0] = pad_io_d_12_cfg_chip2pad_qs;
+        reg_rdata_next[1] = pad_io_d_12_cfg_oen_qs;
+      end
+
+      addr_hit[123]: begin
+        reg_rdata_next[4:0] = pad_io_d_12_mux_sel_qs;
+      end
+
+      addr_hit[124]: begin
+        reg_rdata_next[0] = pad_io_d_13_cfg_chip2pad_qs;
+        reg_rdata_next[1] = pad_io_d_13_cfg_oen_qs;
+      end
+
+      addr_hit[125]: begin
+        reg_rdata_next[4:0] = pad_io_d_13_mux_sel_qs;
+      end
+
+      addr_hit[126]: begin
+        reg_rdata_next[0] = pad_io_d_14_cfg_chip2pad_qs;
+        reg_rdata_next[1] = pad_io_d_14_cfg_oen_qs;
+      end
+
+      addr_hit[127]: begin
+        reg_rdata_next[4:0] = pad_io_d_14_mux_sel_qs;
+      end
+
+      addr_hit[128]: begin
+        reg_rdata_next[0] = pad_io_d_15_cfg_chip2pad_qs;
+        reg_rdata_next[1] = pad_io_d_15_cfg_oen_qs;
+      end
+
+      addr_hit[129]: begin
+        reg_rdata_next[4:0] = pad_io_d_15_mux_sel_qs;
+      end
+
+      addr_hit[130]: begin
+        reg_rdata_next[0] = pad_io_e_00_cfg_chip2pad_qs;
+        reg_rdata_next[1] = pad_io_e_00_cfg_oen_qs;
+      end
+
+      addr_hit[131]: begin
+        reg_rdata_next[4:0] = pad_io_e_00_mux_sel_qs;
+      end
+
+      addr_hit[132]: begin
+        reg_rdata_next[0] = pad_io_e_01_cfg_chip2pad_qs;
+        reg_rdata_next[1] = pad_io_e_01_cfg_oen_qs;
+      end
+
+      addr_hit[133]: begin
+        reg_rdata_next[4:0] = pad_io_e_01_mux_sel_qs;
+      end
+
+      addr_hit[134]: begin
+        reg_rdata_next[0] = pad_io_e_02_cfg_chip2pad_qs;
+        reg_rdata_next[1] = pad_io_e_02_cfg_oen_qs;
+      end
+
+      addr_hit[135]: begin
+        reg_rdata_next[4:0] = pad_io_e_02_mux_sel_qs;
+      end
+
+      addr_hit[136]: begin
+        reg_rdata_next[0] = pad_io_e_03_cfg_chip2pad_qs;
+        reg_rdata_next[1] = pad_io_e_03_cfg_oen_qs;
+      end
+
+      addr_hit[137]: begin
+        reg_rdata_next[4:0] = pad_io_e_03_mux_sel_qs;
+      end
+
+      addr_hit[138]: begin
+        reg_rdata_next[0] = pad_io_e_04_cfg_chip2pad_qs;
+        reg_rdata_next[1] = pad_io_e_04_cfg_oen_qs;
+      end
+
+      addr_hit[139]: begin
+        reg_rdata_next[4:0] = pad_io_e_04_mux_sel_qs;
+      end
+
+      addr_hit[140]: begin
+        reg_rdata_next[0] = pad_io_e_05_cfg_chip2pad_qs;
+        reg_rdata_next[1] = pad_io_e_05_cfg_oen_qs;
+      end
+
+      addr_hit[141]: begin
+        reg_rdata_next[4:0] = pad_io_e_05_mux_sel_qs;
+      end
+
+      addr_hit[142]: begin
+        reg_rdata_next[0] = pad_io_e_06_cfg_chip2pad_qs;
+        reg_rdata_next[1] = pad_io_e_06_cfg_oen_qs;
+      end
+
+      addr_hit[143]: begin
+        reg_rdata_next[4:0] = pad_io_e_06_mux_sel_qs;
+      end
+
+      addr_hit[144]: begin
+        reg_rdata_next[0] = pad_io_e_07_cfg_chip2pad_qs;
+        reg_rdata_next[1] = pad_io_e_07_cfg_oen_qs;
+      end
+
+      addr_hit[145]: begin
+        reg_rdata_next[4:0] = pad_io_e_07_mux_sel_qs;
+      end
+
+      addr_hit[146]: begin
+        reg_rdata_next[0] = pad_io_e_08_cfg_chip2pad_qs;
+        reg_rdata_next[1] = pad_io_e_08_cfg_oen_qs;
+      end
+
+      addr_hit[147]: begin
+        reg_rdata_next[4:0] = pad_io_e_08_mux_sel_qs;
+      end
+
+      addr_hit[148]: begin
+        reg_rdata_next[0] = pad_io_e_09_cfg_chip2pad_qs;
+        reg_rdata_next[1] = pad_io_e_09_cfg_oen_qs;
+      end
+
+      addr_hit[149]: begin
+        reg_rdata_next[4:0] = pad_io_e_09_mux_sel_qs;
+      end
+
+      addr_hit[150]: begin
+        reg_rdata_next[0] = pad_io_e_10_cfg_chip2pad_qs;
+        reg_rdata_next[1] = pad_io_e_10_cfg_oen_qs;
+      end
+
+      addr_hit[151]: begin
+        reg_rdata_next[4:0] = pad_io_e_10_mux_sel_qs;
+      end
+
+      addr_hit[152]: begin
+        reg_rdata_next[0] = pad_io_e_11_cfg_chip2pad_qs;
+        reg_rdata_next[1] = pad_io_e_11_cfg_oen_qs;
+      end
+
+      addr_hit[153]: begin
+        reg_rdata_next[4:0] = pad_io_e_11_mux_sel_qs;
+      end
+
+      addr_hit[154]: begin
+        reg_rdata_next[0] = pad_io_e_12_cfg_chip2pad_qs;
+        reg_rdata_next[1] = pad_io_e_12_cfg_oen_qs;
+      end
+
+      addr_hit[155]: begin
+        reg_rdata_next[4:0] = pad_io_e_12_mux_sel_qs;
+      end
+
+      addr_hit[156]: begin
+        reg_rdata_next[0] = pad_io_e_13_cfg_chip2pad_qs;
+        reg_rdata_next[1] = pad_io_e_13_cfg_oen_qs;
+      end
+
+      addr_hit[157]: begin
+        reg_rdata_next[4:0] = pad_io_e_13_mux_sel_qs;
+      end
+
+      addr_hit[158]: begin
+        reg_rdata_next[0] = pad_io_e_14_cfg_chip2pad_qs;
+        reg_rdata_next[1] = pad_io_e_14_cfg_oen_qs;
+      end
+
+      addr_hit[159]: begin
+        reg_rdata_next[4:0] = pad_io_e_14_mux_sel_qs;
+      end
+
+      addr_hit[160]: begin
+        reg_rdata_next[0] = pad_io_f_00_cfg_chip2pad_qs;
+        reg_rdata_next[1] = pad_io_f_00_cfg_oen_qs;
+      end
+
+      addr_hit[161]: begin
+        reg_rdata_next[4:0] = pad_io_f_00_mux_sel_qs;
+      end
+
+      addr_hit[162]: begin
+        reg_rdata_next[0] = pad_io_f_01_cfg_chip2pad_qs;
+        reg_rdata_next[1] = pad_io_f_01_cfg_oen_qs;
+      end
+
+      addr_hit[163]: begin
+        reg_rdata_next[4:0] = pad_io_f_01_mux_sel_qs;
+      end
+
+      addr_hit[164]: begin
+        reg_rdata_next[0] = pad_io_f_02_cfg_chip2pad_qs;
+        reg_rdata_next[1] = pad_io_f_02_cfg_oen_qs;
+      end
+
+      addr_hit[165]: begin
+        reg_rdata_next[4:0] = pad_io_f_02_mux_sel_qs;
+      end
+
+      addr_hit[166]: begin
+        reg_rdata_next[0] = pad_io_f_03_cfg_chip2pad_qs;
+        reg_rdata_next[1] = pad_io_f_03_cfg_oen_qs;
+      end
+
+      addr_hit[167]: begin
+        reg_rdata_next[4:0] = pad_io_f_03_mux_sel_qs;
+      end
+
+      addr_hit[168]: begin
+        reg_rdata_next[0] = pad_io_f_04_cfg_chip2pad_qs;
+        reg_rdata_next[1] = pad_io_f_04_cfg_oen_qs;
+      end
+
+      addr_hit[169]: begin
+        reg_rdata_next[4:0] = pad_io_f_04_mux_sel_qs;
+      end
+
+      addr_hit[170]: begin
+        reg_rdata_next[0] = pad_io_f_05_cfg_chip2pad_qs;
+        reg_rdata_next[1] = pad_io_f_05_cfg_oen_qs;
+      end
+
+      addr_hit[171]: begin
+        reg_rdata_next[4:0] = pad_io_f_05_mux_sel_qs;
+      end
+
+      addr_hit[172]: begin
+        reg_rdata_next[0] = pad_io_f_06_cfg_chip2pad_qs;
+        reg_rdata_next[1] = pad_io_f_06_cfg_oen_qs;
+      end
+
+      addr_hit[173]: begin
+        reg_rdata_next[4:0] = pad_io_f_06_mux_sel_qs;
+      end
+
+      addr_hit[174]: begin
+        reg_rdata_next[0] = pad_io_f_07_cfg_chip2pad_qs;
+        reg_rdata_next[1] = pad_io_f_07_cfg_oen_qs;
+      end
+
+      addr_hit[175]: begin
+        reg_rdata_next[4:0] = pad_io_f_07_mux_sel_qs;
+      end
+
+      addr_hit[176]: begin
+        reg_rdata_next[0] = pad_io_f_08_cfg_chip2pad_qs;
+        reg_rdata_next[1] = pad_io_f_08_cfg_oen_qs;
+      end
+
+      addr_hit[177]: begin
+        reg_rdata_next[4:0] = pad_io_f_08_mux_sel_qs;
+      end
+
+      addr_hit[178]: begin
+        reg_rdata_next[0] = pad_io_f_09_cfg_chip2pad_qs;
+        reg_rdata_next[1] = pad_io_f_09_cfg_oen_qs;
+      end
+
+      addr_hit[179]: begin
+        reg_rdata_next[4:0] = pad_io_f_09_mux_sel_qs;
+      end
+
+      addr_hit[180]: begin
+        reg_rdata_next[0] = pad_io_f_10_cfg_chip2pad_qs;
+        reg_rdata_next[1] = pad_io_f_10_cfg_oen_qs;
+      end
+
+      addr_hit[181]: begin
+        reg_rdata_next[4:0] = pad_io_f_10_mux_sel_qs;
+      end
+
+      addr_hit[182]: begin
+        reg_rdata_next[0] = pad_io_g_00_cfg_chip2pad_qs;
+        reg_rdata_next[1] = pad_io_g_00_cfg_oen_qs;
+      end
+
+      addr_hit[183]: begin
+        reg_rdata_next[4:0] = pad_io_g_00_mux_sel_qs;
+      end
+
+      addr_hit[184]: begin
+        reg_rdata_next[0] = pad_io_g_01_cfg_chip2pad_qs;
+        reg_rdata_next[1] = pad_io_g_01_cfg_oen_qs;
+      end
+
+      addr_hit[185]: begin
+        reg_rdata_next[4:0] = pad_io_g_01_mux_sel_qs;
+      end
+
+      addr_hit[186]: begin
+        reg_rdata_next[0] = pad_io_g_02_cfg_chip2pad_qs;
+        reg_rdata_next[1] = pad_io_g_02_cfg_oen_qs;
+      end
+
+      addr_hit[187]: begin
+        reg_rdata_next[4:0] = pad_io_g_02_mux_sel_qs;
+      end
+
+      addr_hit[188]: begin
+        reg_rdata_next[0] = pad_io_g_03_cfg_chip2pad_qs;
+        reg_rdata_next[1] = pad_io_g_03_cfg_oen_qs;
+      end
+
+      addr_hit[189]: begin
+        reg_rdata_next[4:0] = pad_io_g_03_mux_sel_qs;
+      end
+
+      addr_hit[190]: begin
+        reg_rdata_next[0] = pad_io_g_04_cfg_chip2pad_qs;
+        reg_rdata_next[1] = pad_io_g_04_cfg_oen_qs;
+      end
+
+      addr_hit[191]: begin
+        reg_rdata_next[4:0] = pad_io_g_04_mux_sel_qs;
+      end
+
+      addr_hit[192]: begin
+        reg_rdata_next[0] = pad_io_g_05_cfg_chip2pad_qs;
+        reg_rdata_next[1] = pad_io_g_05_cfg_oen_qs;
+      end
+
+      addr_hit[193]: begin
+        reg_rdata_next[4:0] = pad_io_g_05_mux_sel_qs;
+      end
+
+      addr_hit[194]: begin
+        reg_rdata_next[0] = pad_io_g_06_cfg_chip2pad_qs;
+        reg_rdata_next[1] = pad_io_g_06_cfg_oen_qs;
+      end
+
+      addr_hit[195]: begin
+        reg_rdata_next[4:0] = pad_io_g_06_mux_sel_qs;
+      end
+
+      addr_hit[196]: begin
+        reg_rdata_next[0] = pad_io_g_07_cfg_chip2pad_qs;
+        reg_rdata_next[1] = pad_io_g_07_cfg_oen_qs;
+      end
+
+      addr_hit[197]: begin
+        reg_rdata_next[4:0] = pad_io_g_07_mux_sel_qs;
+      end
+
+      addr_hit[198]: begin
+        reg_rdata_next[0] = pad_io_g_08_cfg_chip2pad_qs;
+        reg_rdata_next[1] = pad_io_g_08_cfg_oen_qs;
+      end
+
+      addr_hit[199]: begin
+        reg_rdata_next[4:0] = pad_io_g_08_mux_sel_qs;
+      end
+
+      addr_hit[200]: begin
+        reg_rdata_next[0] = pad_io_g_09_cfg_chip2pad_qs;
+        reg_rdata_next[1] = pad_io_g_09_cfg_oen_qs;
+      end
+
+      addr_hit[201]: begin
+        reg_rdata_next[4:0] = pad_io_g_09_mux_sel_qs;
+      end
+
+      addr_hit[202]: begin
+        reg_rdata_next[0] = pad_io_g_10_cfg_chip2pad_qs;
+        reg_rdata_next[1] = pad_io_g_10_cfg_oen_qs;
+      end
+
+      addr_hit[203]: begin
+        reg_rdata_next[4:0] = pad_io_g_10_mux_sel_qs;
+      end
+
+      addr_hit[204]: begin
+        reg_rdata_next[0] = pad_io_g_11_cfg_chip2pad_qs;
+        reg_rdata_next[1] = pad_io_g_11_cfg_oen_qs;
+      end
+
+      addr_hit[205]: begin
+        reg_rdata_next[4:0] = pad_io_g_11_mux_sel_qs;
+      end
+
+      addr_hit[206]: begin
+        reg_rdata_next[0] = pad_io_g_12_cfg_chip2pad_qs;
+        reg_rdata_next[1] = pad_io_g_12_cfg_oen_qs;
+      end
+
+      addr_hit[207]: begin
+        reg_rdata_next[4:0] = pad_io_g_12_mux_sel_qs;
+      end
+
+      addr_hit[208]: begin
+        reg_rdata_next[0] = pad_io_g_13_cfg_chip2pad_qs;
+        reg_rdata_next[1] = pad_io_g_13_cfg_oen_qs;
+      end
+
+      addr_hit[209]: begin
+        reg_rdata_next[4:0] = pad_io_g_13_mux_sel_qs;
+      end
+
+      addr_hit[210]: begin
+        reg_rdata_next[0] = pad_io_g_14_cfg_chip2pad_qs;
+        reg_rdata_next[1] = pad_io_g_14_cfg_oen_qs;
+      end
+
+      addr_hit[211]: begin
+        reg_rdata_next[4:0] = pad_io_g_14_mux_sel_qs;
+      end
+
+      addr_hit[212]: begin
+        reg_rdata_next[0] = pad_pwm0_cfg_chip2pad_qs;
+        reg_rdata_next[1] = pad_pwm0_cfg_oen_qs;
+      end
+
+      addr_hit[213]: begin
+        reg_rdata_next[3:0] = pad_pwm0_mux_sel_qs;
+      end
+
+      addr_hit[214]: begin
+        reg_rdata_next[0] = pad_pwm1_cfg_chip2pad_qs;
+        reg_rdata_next[1] = pad_pwm1_cfg_oen_qs;
+      end
+
+      addr_hit[215]: begin
+        reg_rdata_next[3:0] = pad_pwm1_mux_sel_qs;
+      end
+
+      addr_hit[216]: begin
+        reg_rdata_next[0] = pad_pwm2_cfg_chip2pad_qs;
+        reg_rdata_next[1] = pad_pwm2_cfg_oen_qs;
+      end
+
+      addr_hit[217]: begin
+        reg_rdata_next[3:0] = pad_pwm2_mux_sel_qs;
+      end
+
+      addr_hit[218]: begin
+        reg_rdata_next[0] = pad_pwm3_cfg_chip2pad_qs;
+        reg_rdata_next[1] = pad_pwm3_cfg_oen_qs;
+      end
+
+      addr_hit[219]: begin
+        reg_rdata_next[3:0] = pad_pwm3_mux_sel_qs;
+      end
+
+      addr_hit[220]: begin
+        reg_rdata_next[0] = pad_pwm4_cfg_chip2pad_qs;
+        reg_rdata_next[1] = pad_pwm4_cfg_oen_qs;
+      end
+
+      addr_hit[221]: begin
+        reg_rdata_next[3:0] = pad_pwm4_mux_sel_qs;
+      end
+
+      addr_hit[222]: begin
+        reg_rdata_next[0] = pad_pwm5_cfg_chip2pad_qs;
+        reg_rdata_next[1] = pad_pwm5_cfg_oen_qs;
+      end
+
+      addr_hit[223]: begin
+        reg_rdata_next[3:0] = pad_pwm5_mux_sel_qs;
+      end
+
+      addr_hit[224]: begin
+        reg_rdata_next[0] = pad_pwm6_cfg_chip2pad_qs;
+        reg_rdata_next[1] = pad_pwm6_cfg_oen_qs;
+      end
+
+      addr_hit[225]: begin
+        reg_rdata_next[3:0] = pad_pwm6_mux_sel_qs;
+      end
+
+      addr_hit[226]: begin
+        reg_rdata_next[0] = pad_pwm7_cfg_chip2pad_qs;
+        reg_rdata_next[1] = pad_pwm7_cfg_oen_qs;
+      end
+
+      addr_hit[227]: begin
+        reg_rdata_next[3:0] = pad_pwm7_mux_sel_qs;
       end
 
       default: begin

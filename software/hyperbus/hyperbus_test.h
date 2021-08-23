@@ -20,8 +20,8 @@
 
 
 #define ARCHI_UDMA_ADDR  0xC1000000 // = 3238002688
-#define UDMA_HYPERBUS_OFFSET (3238002688 + 128*30)
-#define HYPERBUS_DEVICE_NUM 29
+#define UDMA_HYPERBUS_OFFSET (3238002688 + 128*31)
+#define HYPERBUS_DEVICE_NUM 30
 #define CONFIG_REG_OFFSET 0x80
 
 static inline void wait_cycles(const unsigned cycles)

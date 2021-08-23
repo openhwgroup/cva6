@@ -21,13 +21,7 @@ module apb_subsystem
     parameter int unsigned AXI_ADDR_WIDTH = 64,
     parameter int unsigned AXI_DATA_WIDTH = 64,
     parameter int unsigned L2_ADDR_WIDTH  = 32, // L2 address space
-    parameter int unsigned N_SPI          = 11,
-    parameter int unsigned N_UART         = 7,
-    parameter int unsigned N_SDIO         = 2,
-    parameter int unsigned N_CAM          = 2,
     parameter int unsigned CAM_DATA_WIDTH = 8,
-    parameter int unsigned N_I2C          = 6,
-    parameter int unsigned N_HYPER        = 1,
     parameter int unsigned NUM_GPIO       = 64 
 ) (
     input logic                 clk_i,
@@ -72,9 +66,7 @@ module apb_subsystem
     output logic [NUM_GPIO-1:0] gpio_out,
     output logic [NUM_GPIO-1:0] gpio_dir,
 
-    // ADV TIMERS
-    output logic [3:0]          pwm0_o,
-    output logic [3:0]          pwm1_o
+    output                      pwm_to_pad_t pwm_to_pad
 );
 
    logic                                s_clk_per;
@@ -303,6 +295,9 @@ module apb_subsystem
        .reg_o     ( hyaxicfg_reg_master             )
       );      
 
+   logic [3:0]   pwm0_o;
+   logic [3:0]   pwm1_o;
+   
     apb_adv_timer #(
         .APB_ADDR_WIDTH ( 32             ),
         .EXTSIG_NUM     ( 32             )
@@ -331,6 +326,16 @@ module apb_subsystem
         .ch_2_o          (                         ),
         .ch_3_o          (                         )
     );
+
+   assign pwm_to_pad.pwm0_o = pwm0_o[0];
+   assign pwm_to_pad.pwm1_o = pwm0_o[1];
+   assign pwm_to_pad.pwm2_o = pwm0_o[2];
+   assign pwm_to_pad.pwm3_o = pwm0_o[3];
+   assign pwm_to_pad.pwm4_o = pwm1_o[0];
+   assign pwm_to_pad.pwm5_o = pwm1_o[1];
+   assign pwm_to_pad.pwm6_o = pwm1_o[2];
+   assign pwm_to_pad.pwm7_o = pwm1_o[3];
+   
 
     apb_to_reg i_apb_to_padframecfg
       (
