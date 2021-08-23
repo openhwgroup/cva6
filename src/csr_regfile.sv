@@ -1154,7 +1154,7 @@ module csr_regfile import ariane_pkg::*; #(
             for(int i = 0; i < 16; i++) begin
                 if(i < NrPMPEntries) begin
                     // We only support >=8-byte granularity, NA4 is disabled
-                    if(pmpcfg_q[i].addr_mode != riscv::NA4) 
+                    if(pmpcfg_d[i].addr_mode != riscv::NA4) 
                         pmpcfg_q[i] <= pmpcfg_d[i];
                     else
                         pmpcfg_q[i] <= pmpcfg_q[i];
