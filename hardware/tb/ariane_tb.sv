@@ -299,7 +299,9 @@ module ariane_tb;
             .CSNeg    ( w_hyper_csn0   ),
             .CK       ( w_hyper_ck     ),
             .CKNeg    ( w_hyper_ckn    ),
-            .RESETNeg ( w_hyper_reset  )
+            .RESETNeg ( w_hyper_reset  ),
+            .INTNeg   (                ),
+            .RSTONeg  (                )                
          );
       end
    endgenerate

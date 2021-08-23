@@ -37,7 +37,6 @@ module al_saqr
 ) (
   input logic         rtc_i,
   input logic         rst_ni,
-  output logic [31:0] exit_o,
   inout wire [7:0]    pad_hyper_dq0,
   inout wire [7:0]    pad_hyper_dq1,
   inout wire          pad_hyper_ck,
@@ -159,7 +158,6 @@ module al_saqr
     ) i_host_domain (
       .rst_ni,
       .rtc_i,
-      .exit_o,
       .dmi_req_valid,
       .dmi_req_ready,
       .dmi_req_bits_addr,

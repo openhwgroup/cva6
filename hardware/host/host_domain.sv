@@ -38,7 +38,6 @@ module host_domain
 ) (
   input logic                 rtc_i,
   input logic                 rst_ni,
-  output logic [31:0]         exit_o,
   output logic                soc_clk_o,
   output logic                soc_rst_no,
                               REG_BUS.out padframecfg_reg_master,
@@ -192,7 +191,6 @@ module host_domain
         .clk_i(s_soc_clk),
         .rst_ni(s_synch_global_rst),
         .rtc_i,
-        .exit_o,
         .dmi_req_valid,
         .dmi_req_ready,
         .dmi_req_bits_addr,

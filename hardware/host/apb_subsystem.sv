@@ -263,6 +263,7 @@ module apb_subsystem
         .ref_clk_i          ( rtc_i              ),
         .rstn_glob_i        ( rst_ni             ),
         .rst_dm_i           ( rst_dm_i           ),
+        .test_clk_i         ( 1'b0               ),
         .test_mode_i        ( 1'b0               ),
         .sel_fll_clk_i      ( 1'b0               ), 
         .shift_enable_i     ( 1'b0               ),               

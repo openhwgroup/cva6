@@ -35,7 +35,6 @@ module cva6_subsytem
   input  logic            rtc_i,
   input  logic            rst_ni,
   input  logic            sync_rst_ni,
-  output logic [31:0]     exit_o,
   output logic            dm_rst_o,
   input  logic [32*4-1:0] udma_events_i,
   // FROM SimDTM
