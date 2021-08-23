@@ -43,8 +43,8 @@ module uvmt_cv32e40x_dut_wrap
   import cv32e40x_pkg::*;
 
   #(// DUT (riscv_core) parameters.
-    parameter NUM_MHPMCOUNTERS    =  1,
-    parameter int unsigned PMA_NUM_REGIONS =  0,
+    parameter              NUM_MHPMCOUNTERS    =  1,
+    parameter int          PMA_NUM_REGIONS =  0,
     parameter pma_region_t PMA_CFG[(PMA_NUM_REGIONS-1):0] = '{default:PMA_R_DEFAULT},
     // Remaining parameters are used by TB components only
               INSTR_ADDR_WIDTH    =  32,
