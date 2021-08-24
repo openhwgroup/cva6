@@ -62,10 +62,10 @@ typedef enum {
   SH1ADD, SH2ADD, SH3ADD,
   CLZ, CTZ, CPOP,
   MIN, MAX, MINU, MAXU,
-  SEXT_B, SEXT_H, 
-  ANDN, ORN, ZNOR, ROR, RORI, ROL,
+  SEXT_B, SEXT_H, ZEXT_H,
+  ANDN, ORN, XNOR, ROR, RORI, ROL,
   REV8, ORC_B,
-  CLMUL, CLMULH, CULMULR,
+  CLMUL, CLMULH, CLMULR,
   BSET, BSETI, BCLR, BCLRI, BINV, BINVI, BEXT, BEXTI,
 
   // Zicsr
@@ -94,6 +94,11 @@ typedef enum {
   CA_TYPE,
   CB_TYPE,
   CJ_TYPE,
+
+  ZBA_TYPE,
+  ZBB_TYPE,
+  ZBC_TYPE,
+  ZBS_TYPE,
 
   CSR_TYPE,  // CSR* instruction with rs1 operand
   CSRI_TYPE, // CSR* instruction with immu operand
@@ -373,6 +378,9 @@ bit rs1_is_signed[instr_name_t] = '{
   C_ADDI16SP : 1,
   C_ADD  : 1,
   C_SUB  : 1,
+  SH1ADD : 1,
+  SH2ADD : 1,
+  SH3ADD : 1,
   default: 0
 };
 
@@ -385,6 +393,9 @@ bit rs2_is_signed[instr_name_t] = '{
   SLT    : 1,
   C_ADD  : 1,
   C_SUB  : 1,
+  SH1ADD : 1,
+  SH2ADD : 1,
+  SH3ADD : 1,
   default: 0
 };
 
@@ -430,6 +441,9 @@ bit rd_is_signed[instr_name_t] = '{
   C_ADDI16SP: 1,
   C_ADD  : 1,
   C_SUB  : 1,
+  SH1ADD : 1,
+  SH2ADD : 1,
+  SH3ADD : 1,
   default: 0
 };
 
@@ -482,10 +496,10 @@ function instr_ext_t get_instr_ext(instr_name_t name);
       SH1ADD, SH2ADD, SH3ADD,
       CLZ, CTZ, CPOP,
       MIN, MAX, MINU, MAXU,
-      SEXT_B, SEXT_H, 
-      ANDN, ORN, ZNOR, ROR, RORI, ROL,
+      SEXT_B, SEXT_H, ZEXT_H,
+      ANDN, ORN, XNOR, ROR, RORI, ROL,
       REV8, ORC_B,
-      CLMUL, CLMULH, CULMULR,
+      CLMUL, CLMULH, CLMULR,
       BSET, BSETI, BCLR, BCLRI, BINV, BINVI, BEXT, BEXTI
     })
     return B_EXT;
@@ -574,6 +588,21 @@ function instr_type_t get_instr_type(instr_name_t name);
   if (name inside {CSRRWI,CSRRSI,CSRRCI})
     return CSRI_TYPE;
 
+  if (name inside {SH1ADD,SH2ADD,SH3ADD})
+    return ZBA_TYPE;
+
+  if (name inside {CLZ,CTZ,CPOP,MIN,MINU,MAX,MAXU,
+                   SEXT_B,SEXT_H,ZEXT_H,ANDN,ORN,XNOR,
+                   ROL,ROR,RORI,REV8,ORC_B})
+    return ZBB_TYPE;
+
+  if (name inside {CLMUL,CLMULH,CLMULR})
+    return ZBC_TYPE;
+
+  if (name inside {BSET,BSETI,BCLR,BCLRI,
+                   BINV,BINVI,BEXT,BEXTI}) 
+    return ZBS_TYPE;
+
   if (name inside {JAL})
     return J_TYPE;
 
@@ -610,7 +639,15 @@ function instr_group_t get_instr_group(instr_name_t name, bit[31:0] mem_addr);
                    C_ADD,C_ADDI,C_ADDI16SP,
                    C_LI,C_LUI,C_MV,C_NOP,
                    C_XOR,C_SRLI,C_AND,C_ANDI,C_OR,
-                   C_SUB,C_ADDI4SPN,C_SLLI,C_SRAI}) 
+                   C_SUB,C_ADDI4SPN,C_SLLI,C_SRAI,
+                   SH1ADD, SH2ADD, SH3ADD,
+                   CLZ, CTZ, CPOP,
+                   MIN, MAX, MINU, MAXU,
+                   SEXT_B, SEXT_H, ZEXT_H,
+                   ANDN, ORN, XNOR, ROR, RORI, ROL,
+                   REV8, ORC_B,
+                   CLMUL, CLMULH, CLMULR,
+                   BSET, BSETI, BCLR, BCLRI, BINV, BINVI, BEXT, BEXTI})
     return ALU_GROUP;
 
   if (name inside {BEQ,BNE,BLT,BGE,BLTU,BGEU,

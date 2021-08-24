@@ -1,19 +1,19 @@
 ###############################################################################
 #
 # Copyright 2020 OpenHW Group
-# 
+#
 # Licensed under the Solderpad Hardware Licence, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
-# 
+#
 #     https://solderpad.org/licenses/
-# 
+#
 # Unless required by applicable law or agreed to in writing, software
 # distributed under the License is distributed on an "AS IS" BASIS,
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-# 
+#
 # SPDX-License-Identifier: Apache-2.0 WITH SHL-2.0
 #
 ###############################################################################
@@ -127,7 +127,7 @@ XRUN_ELAB_COV_FLAGS += $(XRUN_ELAB_COVFILE)
 XRUN_RUN_COV_FLAGS += $(XRUN_RUN_COV)
 endif
 
-# Find command to gather ucd files 
+# Find command to gather ucd files
 COV_MERGE_FIND = find "$(XRUN_RESULTS)" -type f -name "*.ucd" | grep -v d_cov | xargs dirname
 
 ifeq ($(call IS_YES,$(MERGE)),YES)
@@ -152,7 +152,7 @@ endif
 ################################################################################
 
 # File to `include "uvm_macros.svh" since Xcelium automatic UVM compilation
-# does not source the macros file. 
+# does not source the macros file.
 XRUN_UVM_MACROS_INC_FILE = $(DV_UVMT_PATH)/uvmt_$(CV_CORE_LC)_uvm_macros_inc.sv
 
 XRUN_FILE_LIST ?= -f $(DV_UVMT_PATH)/uvmt_$(CV_CORE_LC).flist
@@ -175,7 +175,7 @@ ifneq ($(TEST_DISABLE_CSR_CHECK),)
 endif
 
 # Simulate using latest elab
-XRUN_RUN_FLAGS        ?= 
+XRUN_RUN_FLAGS        ?=
 XRUN_RUN_FLAGS        += -covoverwrite
 XRUN_RUN_FLAGS        += $(XRUN_RUN_BASE_FLAGS)
 XRUN_RUN_FLAGS        += $(XRUN_RUN_COV_FLAGS)
@@ -255,7 +255,7 @@ help:
 
 .PHONY: comp test waves cov
 
-mk_xrun_dir: 
+mk_xrun_dir:
 	$(MKDIR_P) $(XRUN_DIR)
 
 # This special target is to support the special sanity target in the Common Makefile
@@ -300,13 +300,13 @@ endif
 # If the configuration specified OVPSIM arguments, generate an ovpsim.ic file and
 # set IMPERAS_TOOLS to point to it
 gen_ovpsim_ic:
+	@rm -f $(XRUN_RESULTS)/$(CFG)/$(TEST_NAME)_$(RUN_INDEX)/ovpsim.ic
+	@mkdir -p $(XRUN_RESULTS)/$(CFG)/$(TEST_NAME)_$(RUN_INDEX);
+	@touch -f $(XRUN_RESULTS)/$(CFG)/$(TEST_NAME)_$(RUN_INDEX)/ovpsim.ic
 	@if [ ! -z "$(CFG_OVPSIM)" ]; then \
-		mkdir -p $(XRUN_RESULTS)/$(CFG)/$(TEST_NAME)_$(RUN_INDEX); \
 		echo "$(CFG_OVPSIM)" > $(XRUN_RESULTS)/$(CFG)/$(TEST_NAME)_$(RUN_INDEX)/ovpsim.ic; \
 	fi
-ifneq ($(CFG_OVPSIM),)
 export IMPERAS_TOOLS=ovpsim.ic
-endif
 
 ################################################################################
 # The new general test target
@@ -317,7 +317,7 @@ export OPT_RUN_INDEX_SUFFIX=_$(RUN_INDEX)
 endif
 
 check:
-	echo "it is"	
+	echo "it is"
 	echo $(OPT_RUN_INDEX_SUFFIX)
 	echo $(RUN_INDEX)
 	echo $(TEST)
@@ -336,7 +336,7 @@ test: $(XRUN_SIM_PREREQ) $(TEST_TEST_DIR)/$(TEST_PROGRAM)$(OPT_RUN_INDEX_SUFFIX)
 			+elf_file=$(TEST_TEST_DIR)/$(TEST_PROGRAM)$(OPT_RUN_INDEX_SUFFIX).elf \
 			+nm_file=$(TEST_TEST_DIR)/$(TEST_PROGRAM)$(OPT_RUN_INDEX_SUFFIX).nm \
 			+firmware=$(TEST_TEST_DIR)/$(TEST_PROGRAM)$(OPT_RUN_INDEX_SUFFIX).hex \
-			+itb_file=$(TEST_TEST_DIR)/$(TEST_PROGRAM)$(OPT_RUN_INDEX_SUFFIX).itb			
+			+itb_file=$(TEST_TEST_DIR)/$(TEST_PROGRAM)$(OPT_RUN_INDEX_SUFFIX).itb
 	$(POST_TEST)
 
 ################################################################################
@@ -361,7 +361,7 @@ custom: $(XRUN_SIM_PREREQ) $(CUSTOM_DIR)/$(CUSTOM_PROG).hex
 #                make compliance RISCV_ISA=rv32i COMPLIANCE_PROG=I-ADD-01
 # But this does not:
 #                make compliance RISCV_ISA=rv32imc COMPLIANCE_PROG=I-ADD-01
-# 
+#
 RISCV_ISA       ?= rv32i
 COMPLIANCE_PROG ?= I-ADD-01
 
@@ -407,7 +407,7 @@ corev-dv: clean_riscv-dv \
           clone_riscv-dv \
 	  comp_corev-dv
 
-gen_corev-dv: 
+gen_corev-dv:
 	mkdir -p $(XRUN_COREVDV_RESULTS)/$(TEST)
 	# Clean old assembler generated tests in results
 	for (( idx=${GEN_START_INDEX}; idx < $$((${GEN_START_INDEX} + ${GEN_NUM_TESTS})); idx++ )); do \
@@ -455,9 +455,9 @@ cov: $(COV_MERGE)
 ###############################################################################
 # Clean up your mess!
 
-clean:	
+clean:
 	@echo "$(MAKEFILE_LIST)"
-	rm -rf $(XRUN_RESULTS)	
+	rm -rf $(XRUN_RESULTS)
 
 # Files created by Eclipse when using the Imperas ISS + debugger
 clean_eclipse:

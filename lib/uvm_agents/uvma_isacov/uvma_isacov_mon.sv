@@ -75,7 +75,7 @@ function void uvma_isacov_mon_c::build_phase(uvm_phase phase);
   repeat(in.num) begin
     string instr_name_key = convert_instr_to_spike_name(in.name());
         
-    `uvm_info("ISACOV", $sformatf("Converting: %s to %s", in.name(), instr_name_key), UVM_LOW);
+    `uvm_info("ISACOV", $sformatf("Converting: %s to %s", in.name(), instr_name_key), UVM_HIGH);
     instr_name_lookup[instr_name_key] = in;
     in = in.next;
   end
@@ -102,6 +102,22 @@ function string uvma_isacov_mon_c::convert_instr_to_spike_name(string instr_name
   // Ugh
   if (spike_instr_name == "lr.w")
     spike_instr_name = "lr_w";
+  if (spike_instr_name == "bset") 
+    spike_instr_name = "bset (args unknown)";
+  if (spike_instr_name == "bseti") 
+    spike_instr_name = "bseti (args unknown)";
+  if (spike_instr_name == "bclr") 
+    spike_instr_name = "bclr (args unknown)";
+  if (spike_instr_name == "bclri") 
+    spike_instr_name = "bclri (args unknown)";
+  if (spike_instr_name == "binv") 
+    spike_instr_name = "binv (args unknown)";
+  if (spike_instr_name == "binvi") 
+    spike_instr_name = "binvi (args unknown)";
+  if (spike_instr_name == "bext") 
+    spike_instr_name = "bext (args unknown)";
+  if (spike_instr_name == "bexti") 
+    spike_instr_name = "bexti (args unknown)";
 
   return spike_instr_name;
 
@@ -112,7 +128,7 @@ function void uvma_isacov_mon_c::write_rvfi_instr(uvma_rvfi_instr_seq_item_c#(IL
   uvma_isacov_mon_trn_c mon_trn;
   string                instr_name;
   bit [63:0]            instr;
-
+  
   // Some trapped instructions should not be logged in functional coverage
   // Will use mcause value to determine whether to skip
   // 1 - Instruction access fault

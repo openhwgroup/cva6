@@ -1,4 +1,4 @@
-// 
+//
 // Copyright 2020 OpenHW Group
 // Copyright 2020 Datum Technology Corporation
 // Copyright 2020 Silicon Labs, Inc.
@@ -6,15 +6,15 @@
 // Licensed under the Solderpad Hardware Licence, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
-// 
+//
 //     https://solderpad.org/licenses/
-// 
+//
 // Unless required by applicable law or agreed to in writing, software
 // distributed under the License is distributed on an "AS IS" BASIS,
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
-// 
+//
 
 
 `ifndef __UVMA_RVVI_OVPSIM_AGENT_SV__
@@ -24,12 +24,12 @@
  * Top-level component that encapsulates, builds and connects all others.
  * Capable of driving/monitoring Clock & Reset interface.
  */
-class uvma_rvvi_ovpsim_agent_c#(int ILEN=uvma_rvvi_pkg::DEFAULT_ILEN, 
+class uvma_rvvi_ovpsim_agent_c#(int ILEN=uvma_rvvi_pkg::DEFAULT_ILEN,
                                 int XLEN=uvma_rvvi_pkg::DEFAULT_XLEN) extends uvma_rvvi_agent_c#(ILEN,XLEN);
-   
+
    `uvm_component_param_utils_begin(uvma_rvvi_ovpsim_agent_c#(ILEN,XLEN))
    `uvm_component_utils_end
-   
+
    /**
     * Default constructor.
     */
@@ -46,11 +46,12 @@ class uvma_rvvi_ovpsim_agent_c#(int ILEN=uvma_rvvi_pkg::DEFAULT_ILEN,
     */
    extern virtual function void configure_iss();
 
+
    /**
     * Uses uvm_config_db to retrieve the Virtual Interface (vif) associated with this
     * agent.
     */
-   extern virtual function void retrieve_vif();   
+   extern virtual function void retrieve_vif();
 
    /**
     * Creates sub-components.
@@ -77,9 +78,9 @@ endclass : uvma_rvvi_ovpsim_agent_c
 
 
 function uvma_rvvi_ovpsim_agent_c::new(string name="uvma_rvvi_ovpsim_agent", uvm_component parent=null);
-   
+
    super.new(name, parent);
-   
+
    log_tag = "RVVIOVPAGT";
 
 endfunction : new
@@ -93,26 +94,64 @@ function void uvma_rvvi_ovpsim_agent_c::end_of_elaboration_phase(uvm_phase phase
 
 endfunction : end_of_elaboration_phase
 
+
 function void uvma_rvvi_ovpsim_agent_c::configure_iss();
-   // Append opetions from the core configuration into the ovpsim.ic file to ensure the Imperas ISS
+
+   // Append options from the core configuration into the ovpsim.ic file to ensure the Imperas ISS
    // is configured as the core this RVVI is attached to
+   // File is opened in append mode because the Makefile creates an ovpsim.ic file before test execution
+   // and populates any configuration YAML defined options
+   // Note that such use shoulbe be for testing only and nearly all ovpsim.ic switches should be integrated to this method
 
    int fh;
-   
+
    fh = $fopen(cfg.core_cfg.iss_control_file, "a");
 
-   $fwrite(fh, "\n");
+   // -------------------------------------------------------------------------------------
+   // ISA Extension support
+   // -------------------------------------------------------------------------------------
+   $fwrite(fh, $sformatf("--override root/cpu/misa_Extensions=0x%06x\n", cfg.core_cfg.get_misa()));
 
-   // Boot strap pins   
+   if (cfg.core_cfg.is_ext_b_supported()) begin
+      // Bitmanip version
+      case (cfg.core_cfg.bitmanip_version)
+         BITMANIP_VERSION_0P90:       $fwrite(fh, $sformatf("--override root/cpu/bitmanip_version=0.90\n"));
+         BITMANIP_VERSION_0P91:       $fwrite(fh, $sformatf("--override root/cpu/bitmanip_version=0.91\n"));
+         BITMANIP_VERSION_0P92:       $fwrite(fh, $sformatf("--override root/cpu/bitmanip_version=0.92\n"));
+         BITMANIP_VERSION_0P93:       $fwrite(fh, $sformatf("--override root/cpu/bitmanip_version=0.93\n"));
+         BITMANIP_VERSION_0P93_DRAFT: $fwrite(fh, $sformatf("--override root/cpu/bitmanip_version=0.93-draft\n"));
+         BITMANIP_VERSION_0P94:       $fwrite(fh, $sformatf("--override root/cpu/bitmanip_version=0.94\n"));
+         BITMANIP_VERSION_1P00:       $fwrite(fh, $sformatf("--override root/cpu/bitmanip_version=1.0.0\n"));
+      endcase
+
+      // Bitmanip extensions
+      $fwrite(fh, $sformatf("--override root/cpu/Zba=%0d\n", cfg.core_cfg.ext_zba_supported));
+      $fwrite(fh, $sformatf("--override root/cpu/Zbb=%0d\n", cfg.core_cfg.ext_zbb_supported));
+      $fwrite(fh, $sformatf("--override root/cpu/Zbc=%0d\n", cfg.core_cfg.ext_zbc_supported));
+      $fwrite(fh, $sformatf("--override root/cpu/Zbe=%0d\n", cfg.core_cfg.ext_zbe_supported));
+      $fwrite(fh, $sformatf("--override root/cpu/Zbf=%0d\n", cfg.core_cfg.ext_zbf_supported));
+      $fwrite(fh, $sformatf("--override root/cpu/Zbm=%0d\n", cfg.core_cfg.ext_zbm_supported));
+      $fwrite(fh, $sformatf("--override root/cpu/Zbp=%0d\n", cfg.core_cfg.ext_zbp_supported));
+      $fwrite(fh, $sformatf("--override root/cpu/Zbr=%0d\n", cfg.core_cfg.ext_zbr_supported));
+      $fwrite(fh, $sformatf("--override root/cpu/Zbs=%0d\n", cfg.core_cfg.ext_zbs_supported));
+      $fwrite(fh, $sformatf("--override root/cpu/Zbt=%0d\n", cfg.core_cfg.ext_zbt_supported));
+   end
+
+
+   // -------------------------------------------------------------------------------------
+   // Boot strap pins
+   // -------------------------------------------------------------------------------------
    $fwrite(fh, $sformatf("--override root/cpu/mhartid=%0d\n", cfg.core_cfg.hart_id));
    $fwrite(fh, $sformatf("--override root/cpu/startaddress=0x%08x\n", cfg.core_cfg.boot_addr));
    // Specification forces mtvec[0] high at reset regardless of bootstrap pin state of mtvec_addr_i]0]
-   $fwrite(fh, $sformatf("--override root/cpu/mtvec=0x%08x\n", cfg.core_cfg.mtvec_addr| 32'h1)); 
+   $fwrite(fh, $sformatf("--override root/cpu/mtvec=0x%08x\n", cfg.core_cfg.mtvec_addr| 32'h1));
    $fwrite(fh, $sformatf("--override root/cpu/nmi_address=0x%08x\n", cfg.core_cfg.nmi_addr));
    $fwrite(fh, $sformatf("--override root/cpu/debug_address=0x%08x\n", cfg.core_cfg.dm_halt_addr));
    $fwrite(fh, $sformatf("--override root/cpu/dexc_address=0x%08x\n", cfg.core_cfg.dm_exception_addr));
 
+   // -------------------------------------------------------------------------------------
    // Parameters
+   // -------------------------------------------------------------------------------------
 
    // NUM_MHPMCOUNTERS - Set zero in the noinhibit_mask to enable a counter, starting from index 3
    $fwrite(fh, $sformatf("--override root/cpu/noinhibit_mask=0x%08x\n", cfg.core_cfg.get_noinhibit_mask()));
@@ -129,13 +168,13 @@ function void uvma_rvvi_ovpsim_agent_c::configure_iss();
    end
 
    $fclose(fh);
-   
+
 endfunction : configure_iss
 
 function void uvma_rvvi_ovpsim_agent_c::get_and_set_cntxt();
-   
+
    super.get_and_set_cntxt();
-   
+
 endfunction : get_and_set_cntxt
 
 function void uvma_rvvi_ovpsim_agent_c::set_clknrst_sequencer(uvma_clknrst_sqr_c clknrst_sequencer);
@@ -160,32 +199,32 @@ function void uvma_rvvi_ovpsim_agent_c::retrieve_vif();
    end
 
    super.retrieve_vif();
-   
-   // OVPSIM BUS VIF : FIXME:strichmo:would be ideal to incorporate into common rvvi 
+
+   // OVPSIM BUS VIF : FIXME:strichmo:would be ideal to incorporate into common rvvi
    if (!uvm_config_db#(virtual RVVI_bus)::get(this, "", $sformatf("ovpsim_bus_vif"), rvvi_ovpsim_cntxt.ovpsim_bus_vif)) begin
-      `uvm_fatal("VIF", $sformatf("Could not find vif handle of type %s in uvm_config_db", 
+      `uvm_fatal("VIF", $sformatf("Could not find vif handle of type %s in uvm_config_db",
                                     $typename(rvvi_ovpsim_cntxt.ovpsim_bus_vif)))
    end
    else begin
-      `uvm_info("VIF", $sformatf("Found vif handle of type %s in uvm_config_db", 
+      `uvm_info("VIF", $sformatf("Found vif handle of type %s in uvm_config_db",
                                  $typename(rvvi_ovpsim_cntxt.ovpsim_bus_vif)), UVM_DEBUG)
    end
 
    if (!uvm_config_db#(virtual RVVI_io)::get(this, "", $sformatf("ovpsim_io_vif"), rvvi_ovpsim_cntxt.ovpsim_io_vif)) begin
-      `uvm_fatal("VIF", $sformatf("Could not find vif handle of type %s in uvm_config_db", 
+      `uvm_fatal("VIF", $sformatf("Could not find vif handle of type %s in uvm_config_db",
                                     $typename(rvvi_ovpsim_cntxt.ovpsim_io_vif)))
    end
    else begin
-      `uvm_info("VIF", $sformatf("Found vif handle of type %s in uvm_config_db", 
+      `uvm_info("VIF", $sformatf("Found vif handle of type %s in uvm_config_db",
                                  $typename(rvvi_ovpsim_cntxt.ovpsim_io_vif)), UVM_DEBUG)
    end
 
    if (!uvm_config_db#(virtual RVVI_memory)::get(this, "", $sformatf("ovpsim_mem_vif"), rvvi_ovpsim_cntxt.ovpsim_mem_vif)) begin
-      `uvm_fatal("VIF", $sformatf("Could not find vif handle of type %s in uvm_config_db", 
+      `uvm_fatal("VIF", $sformatf("Could not find vif handle of type %s in uvm_config_db",
                                     $typename(rvvi_ovpsim_cntxt.ovpsim_mem_vif)))
    end
    else begin
-      `uvm_info("VIF", $sformatf("Found vif handle of type %s in uvm_config_db", 
+      `uvm_info("VIF", $sformatf("Found vif handle of type %s in uvm_config_db",
                                  $typename(rvvi_ovpsim_cntxt.ovpsim_mem_vif)), UVM_DEBUG)
    end
 
@@ -196,7 +235,7 @@ function void uvma_rvvi_ovpsim_agent_c::create_components();
 
    state_monitor   = uvma_rvvi_ovpsim_state_mon_c#(ILEN,XLEN)::type_id::create("state_monitor"  , this);
    mon_trn_logger  = uvma_rvvi_mon_trn_logger_c#(ILEN,XLEN)::type_id::create("mon_trn_logger" , this);
-   
+
    if (cfg.is_active == UVM_ACTIVE) begin
       sequencer = uvma_rvvi_sqr_c#(ILEN,XLEN)::type_id::create("sequencer", this);
       driver = uvma_rvvi_ovpsim_drv_c#(ILEN,XLEN)::type_id::create("driver", this);

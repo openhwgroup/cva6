@@ -1,19 +1,19 @@
 ###############################################################################
 #
 # Copyright 2020 OpenHW Group
-# 
+#
 # Licensed under the Solderpad Hardware Licence, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
-# 
+#
 #     https://solderpad.org/licenses/
-# 
+#
 # Unless required by applicable law or agreed to in writing, software
 # distributed under the License is distributed on an "AS IS" BASIS,
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-# 
+#
 ###############################################################################
 #
 # VSIM-specific Makefile for the Core-V-Verif "uvmt" testbench.
@@ -55,12 +55,12 @@ QUIET=-quiet
 endif
 
 ifeq ($(USES_DPI),1)
-  DPILIB_VLOG_OPT = 
+  DPILIB_VLOG_OPT =
   DPILIB_VSIM_OPT = -sv_lib $(UVM_HOME)/../../../uvm-1.2/linux_x86_64/uvm_dpi
   DPILIB_TARGET = dpi_lib$(BITS)
 else
-  DPILIB_VLOG_OPT = +define+UVM_NO_DPI 
-  DPILIB_VSIM_OPT = 
+  DPILIB_VLOG_OPT = +define+UVM_NO_DPI
+  DPILIB_VSIM_OPT =
   DPILIB_TARGET =
 endif
 
@@ -111,6 +111,7 @@ VSIM_FLAGS        += -suppress 7031
 VSIM_FLAGS        += -suppress 8858
 VSIM_FLAGS        += -suppress 8522
 VSIM_FLAGS        += -suppress 8550
+VSIM_FLAGS        += -suppress 8549
 VSIM_FLAGS        += -permit_unmatched_virtual_intf
 VSIM_DEBUG_FLAGS  ?= -debugdb
 VSIM_GUI_FLAGS    ?= -gui -debugdb
@@ -176,7 +177,7 @@ endif
 
 ################################################################################
 # Coverage command
-COV_FLAGS = 
+COV_FLAGS =
 COV_REPORT = cov_report
 COV_MERGE_TARGET =
 COV_MERGE_FIND = find $(VSIM_RESULTS)/$(CFG) -type f -name "*.ucdb" | grep -v merged.ucdb
@@ -223,7 +224,7 @@ WAVES_CMD = \
 			-view vsim.wlf
 endif
 
-# Compute vsim (run) prereqs, by default do a full compile + run when running 
+# Compute vsim (run) prereqs, by default do a full compile + run when running
 # a test, set COMP=NO to skip vlib-vlog-vopt and just run vsim
 ifneq ($(call IS_NO,$(COMP)),NO)
 VSIM_RUN_PREREQ = opt
@@ -270,7 +271,7 @@ vopt_corev-dv:
 			-o $(CV_CORE_LC)_instr_gen_tb_top_vopt \
 			-l vopt.log
 
-gen_corev-dv: 
+gen_corev-dv:
 	mkdir -p $(VSIM_COREVDV_RESULTS)/$(TEST)
 	# Clean old assembler generated tests in results
 	for (( idx=${GEN_START_INDEX}; idx < $$((${GEN_START_INDEX} + ${GEN_NUM_TESTS})); idx++ )); do \
@@ -314,7 +315,7 @@ corev-dv: clean_riscv-dv \
 #                make compliance RISCV_ISA=rv32i COMPLIANCE_PROG=I-ADD-01
 # But this does not:
 #                make compliance RISCV_ISA=rv32imc COMPLIANCE_PROG=I-ADD-01
-# 
+#
 RISCV_ISA       ?= rv32i
 COMPLIANCE_PROG ?= I-ADD-01
 
@@ -339,20 +340,20 @@ compliance: export IMPERAS_TOOLS=$(CORE_V_VERIF)/$(CV_CORE_LC)/tests/cfg/ovpsim_
 ################################################################################
 # Questa simulation targets
 
-mk_vsim_dir: 
+mk_vsim_dir:
 	$(MKDIR_P) $(VSIM_RESULTS)/$(CFG)
 
 ################################################################################
 # If the configuration specified OVPSIM arguments, generate an ovpsim.ic file and
 # set IMPERAS_TOOLS to point to it
 gen_ovpsim_ic:
+	@rm -f $(VSIM_RESULTS)/$(CFG)/$(TEST_NAME)_$(RUN_INDEX)/ovpsim.ic
+	@mkdir -p $(VSIM_RESULTS)/$(CFG)/$(TEST_NAME)_$(RUN_INDEX)
+	@touch $(VSIM_RESULTS)/$(CFG)/$(TEST_NAME)_$(RUN_INDEX)/ovpsim.ic
 	@if [ ! -z "$(CFG_OVPSIM)" ]; then \
-		mkdir -p $(VSIM_RESULTS)/$(CFG)/$(TEST_NAME)_$(RUN_INDEX); \
 		echo "$(CFG_OVPSIM)" > $(VSIM_RESULTS)/$(CFG)/$(TEST_NAME)_$(RUN_INDEX)/ovpsim.ic; \
 	fi
-ifneq ($(CFG_OVPSIM),)
 export IMPERAS_TOOLS=$(VSIM_RESULTS)/$(CFG)/$(TEST_NAME)_$(RUN_INDEX)/ovpsim.ic
-endif
 
 # Target to create work directory in $(VSIM_RESULTS)/
 lib: mk_vsim_dir $(CV_CORE_PKG) $(TBSRC_PKG) $(TBSRC)
@@ -442,7 +443,7 @@ export OPT_RUN_INDEX_SUFFIX=_$(RUN_INDEX)
 endif
 
 test: VSIM_TEST=$(TEST_PROGRAM)
-test: VSIM_FLAGS += +firmware=$(TEST_TEST_DIR)/$(TEST_PROGRAM)$(OPT_RUN_INDEX_SUFFIX).hex 
+test: VSIM_FLAGS += +firmware=$(TEST_TEST_DIR)/$(TEST_PROGRAM)$(OPT_RUN_INDEX_SUFFIX).hex
 test: VSIM_FLAGS += +elf_file=$(TEST_TEST_DIR)/$(TEST_PROGRAM)$(OPT_RUN_INDEX_SUFFIX).elf
 test: VSIM_FLAGS += +itb_file=$(TEST_TEST_DIR)/$(TEST_PROGRAM)$(OPT_RUN_INDEX_SUFFIX).itb
 test: $(TEST_TEST_DIR)/$(TEST_PROGRAM)$(OPT_RUN_INDEX_SUFFIX).hex run

@@ -2,8 +2,7 @@ name: default
 description: Default configuration for CV32E40X simulations
 compile_flags:
 ovpsim: >
-    --override root/cpu/misa_Extensions=0x001104
-    --override root/cpu/marchid=20
+#    --showoverrides
 #    --trace --tracechange --traceshowicount --monitornets
 cflags: >
 

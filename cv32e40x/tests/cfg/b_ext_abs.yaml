@@ -1,0 +1,9 @@
+name: b_ext_abs 
+description: Enables the B extensions ZBA_ZBB_ZBS in the cv32e40x
+compile_flags: 
+    +define+ZBA_ZBB_ZBS
+ovpsim: >
+#    --showoverrides
+#    --trace --tracechange --traceshowicount --monitornets
+cflags: >
+

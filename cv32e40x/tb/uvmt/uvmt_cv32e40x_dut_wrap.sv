@@ -43,9 +43,16 @@ module uvmt_cv32e40x_dut_wrap
   import cv32e40x_pkg::*;
 
   #(// DUT (riscv_core) parameters.
+    parameter NUM_MHPMCOUNTERS    =  1,
+    parameter int unsigned PMA_NUM_REGIONS =  0,
+    parameter pma_region_t PMA_CFG[(PMA_NUM_REGIONS ? (PMA_NUM_REGIONS-1) : 0):0] = '{default:PMA_R_DEFAULT},
     parameter              NUM_MHPMCOUNTERS    =  1,
     parameter int          PMA_NUM_REGIONS =  0,
     parameter pma_region_t PMA_CFG[(PMA_NUM_REGIONS-1):0] = '{default:PMA_R_DEFAULT},
+    parameter NUM_MHPMCOUNTERS    =  1,
+    parameter cv32e40x_pkg::b_ext_e B_EXT  = cv32e40x_pkg::NONE,
+    parameter int          PMA_NUM_REGIONS =  0,
+    parameter pma_region_t PMA_CFG[(PMA_NUM_REGIONS ? (PMA_NUM_REGIONS-1) : 0):0] = '{default:PMA_R_DEFAULT},
     // Remaining parameters are used by TB components only
               INSTR_ADDR_WIDTH    =  32,
               INSTR_RDATA_WIDTH   =  32,
@@ -126,6 +133,7 @@ module uvmt_cv32e40x_dut_wrap
     // --------------------------------------------
     // Connect to core_cntrl_if
     assign core_cntrl_if.num_mhpmcounters = NUM_MHPMCOUNTERS;
+    assign core_cntrl_if.b_ext = B_EXT;
     initial begin
       core_cntrl_if.pma_cfg = new[PMA_NUM_REGIONS];
       foreach (core_cntrl_if.pma_cfg[i]) begin
@@ -140,8 +148,11 @@ module uvmt_cv32e40x_dut_wrap
 
     // --------------------------------------------
     // instantiate the core
+    defparam cv32e40x_wrapper_i.core_i.id_stage_i.B_EXT = B_EXT;
     cv32e40x_wrapper #(
                       .NUM_MHPMCOUNTERS (NUM_MHPMCOUNTERS),
+                      // FIXME:strichmo:restore this when the issue with exposing B_EXT parameter is exposed to cv32e40x_wrapper and cv32e40x_core
+                      //.B_EXT            (B_EXT),
                       .PMA_NUM_REGIONS  (PMA_NUM_REGIONS),
                       .PMA_CFG          (PMA_CFG)
                       )
