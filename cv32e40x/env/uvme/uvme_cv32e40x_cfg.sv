@@ -334,7 +334,6 @@ function void uvme_cv32e40x_cfg_c::configure_disable_csr_checks();
    disable_csr_check("mcycle");
    disable_csr_check("mcycleh");
    disable_csr_check("mtval");
-   disable_csr_check("misa");
 
    for (int i = 3; i < 32; i++) begin
       disable_csr_check($sformatf("mhpmcounter%0d", i));
