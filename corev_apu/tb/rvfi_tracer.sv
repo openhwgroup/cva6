@@ -7,15 +7,16 @@
 //
 // Original Author: Jean-Roch COULON (jean-roch.coulon@invia.fr)
 
-module rvfi_tracer import ariane_pkg::*; #(
+module rvfi_tracer #(
   parameter int unsigned SIM_FINISH  = 1000000,
   parameter logic [7:0] HART_ID      = '0,
   parameter int unsigned DEBUG_START = 0,
+  parameter int unsigned NR_COMMIT_PORTS = 2,
   parameter int unsigned DEBUG_STOP  = 0
 )(
   input logic                           clk_i,
   input logic                           rst_ni,
-  input rvfi_pkg::rvfi_port_t           rvfi_i
+  input rvfi_pkg::rvfi_instr_t[NR_COMMIT_PORTS-1:0]           rvfi_i
 );
 
   int f;
