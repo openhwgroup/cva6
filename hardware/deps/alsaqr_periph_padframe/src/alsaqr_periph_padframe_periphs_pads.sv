@@ -9,1367 +9,1447 @@ module alsaqr_periph_padframe_periphs_pads
   input mux_to_pads_t mux_to_pads_i,
   output pads_to_mux_t pads_to_mux_o,
   // Landing Pads
-  inout wire logic pad_pad_gpio0_pad,
-  inout wire logic pad_pad_gpio1_pad,
-  inout wire logic pad_pad_gpio2_pad,
-  inout wire logic pad_pad_gpio3_pad,
-  inout wire logic pad_pad_gpio4_pad,
-  inout wire logic pad_pad_gpio5_pad,
-  inout wire logic pad_pad_gpio6_pad,
-  inout wire logic pad_pad_gpio7_pad,
-  inout wire logic pad_pad_gpio8_pad,
-  inout wire logic pad_pad_gpio9_pad,
-  inout wire logic pad_pad_gpio10_pad,
-  inout wire logic pad_pad_gpio11_pad,
-  inout wire logic pad_pad_gpio12_pad,
-  inout wire logic pad_pad_gpio13_pad,
-  inout wire logic pad_pad_gpio14_pad,
-  inout wire logic pad_pad_gpio15_pad,
-  inout wire logic pad_pad_gpio16_pad,
-  inout wire logic pad_pad_gpio17_pad,
-  inout wire logic pad_pad_gpio18_pad,
-  inout wire logic pad_pad_gpio19_pad,
-  inout wire logic pad_pad_gpio20_pad,
-  inout wire logic pad_pad_gpio21_pad,
-  inout wire logic pad_pad_gpio22_pad,
-  inout wire logic pad_pad_gpio23_pad,
-  inout wire logic pad_pad_gpio24_pad,
-  inout wire logic pad_pad_gpio25_pad,
-  inout wire logic pad_pad_gpio26_pad,
-  inout wire logic pad_pad_gpio27_pad,
-  inout wire logic pad_pad_gpio28_pad,
-  inout wire logic pad_pad_gpio29_pad,
-  inout wire logic pad_pad_gpio30_pad,
-  inout wire logic pad_pad_gpio31_pad,
-  inout wire logic pad_pad_gpio32_pad,
-  inout wire logic pad_pad_gpio33_pad,
-  inout wire logic pad_pad_gpio34_pad,
-  inout wire logic pad_pad_gpio35_pad,
-  inout wire logic pad_pad_gpio36_pad,
-  inout wire logic pad_pad_gpio37_pad,
-  inout wire logic pad_pad_gpio38_pad,
-  inout wire logic pad_pad_gpio39_pad,
-  inout wire logic pad_pad_gpio40_pad,
-  inout wire logic pad_pad_gpio41_pad,
-  inout wire logic pad_pad_gpio42_pad,
-  inout wire logic pad_pad_gpio43_pad,
-  inout wire logic pad_pad_gpio44_pad,
-  inout wire logic pad_pad_gpio45_pad,
-  inout wire logic pad_pad_gpio46_pad,
-  inout wire logic pad_pad_gpio47_pad,
-  inout wire logic pad_pad_gpio48_pad,
-  inout wire logic pad_pad_gpio49_pad,
-  inout wire logic pad_pad_gpio50_pad,
-  inout wire logic pad_pad_gpio51_pad,
-  inout wire logic pad_pad_gpio52_pad,
-  inout wire logic pad_pad_gpio53_pad,
-  inout wire logic pad_pad_gpio54_pad,
-  inout wire logic pad_pad_gpio55_pad,
-  inout wire logic pad_pad_io_a_00_pad,
-  inout wire logic pad_pad_io_a_01_pad,
-  inout wire logic pad_pad_io_a_02_pad,
-  inout wire logic pad_pad_io_a_03_pad,
-  inout wire logic pad_pad_io_a_04_pad,
-  inout wire logic pad_pad_io_a_05_pad,
-  inout wire logic pad_pad_io_a_06_pad,
-  inout wire logic pad_pad_io_a_07_pad,
-  inout wire logic pad_pad_io_a_08_pad,
-  inout wire logic pad_pad_io_a_09_pad,
-  inout wire logic pad_pad_io_a_10_pad,
-  inout wire logic pad_pad_io_a_11_pad,
-  inout wire logic pad_pad_io_a_12_pad,
-  inout wire logic pad_pad_io_a_13_pad,
-  inout wire logic pad_pad_io_a_14_pad,
-  inout wire logic pad_pad_io_b_00_pad,
-  inout wire logic pad_pad_io_b_01_pad,
-  inout wire logic pad_pad_io_b_02_pad,
-  inout wire logic pad_pad_io_b_03_pad,
-  inout wire logic pad_pad_io_b_04_pad,
-  inout wire logic pad_pad_io_b_05_pad,
-  inout wire logic pad_pad_io_b_06_pad,
-  inout wire logic pad_pad_io_b_07_pad,
-  inout wire logic pad_pad_io_b_08_pad,
-  inout wire logic pad_pad_io_b_09_pad,
-  inout wire logic pad_pad_io_b_10_pad,
-  inout wire logic pad_pad_io_b_11_pad,
-  inout wire logic pad_pad_io_b_12_pad,
-  inout wire logic pad_pad_io_b_13_pad,
-  inout wire logic pad_pad_io_b_14_pad,
-  inout wire logic pad_pad_io_b_15_pad,
-  inout wire logic pad_pad_io_b_16_pad,
-  inout wire logic pad_pad_io_b_17_pad,
-  inout wire logic pad_pad_io_b_18_pad,
-  inout wire logic pad_pad_io_b_19_pad,
-  inout wire logic pad_pad_io_c_00_pad,
-  inout wire logic pad_pad_io_c_01_pad,
-  inout wire logic pad_pad_io_c_02_pad,
-  inout wire logic pad_pad_io_c_03_pad,
-  inout wire logic pad_pad_io_c_04_pad,
-  inout wire logic pad_pad_io_c_05_pad,
-  inout wire logic pad_pad_io_c_06_pad,
-  inout wire logic pad_pad_io_c_07_pad,
-  inout wire logic pad_pad_io_c_08_pad,
-  inout wire logic pad_pad_io_c_09_pad,
-  inout wire logic pad_pad_io_c_10_pad,
-  inout wire logic pad_pad_io_c_11_pad,
-  inout wire logic pad_pad_io_c_12_pad,
-  inout wire logic pad_pad_io_c_13_pad,
-  inout wire logic pad_pad_io_d_00_pad,
-  inout wire logic pad_pad_io_d_01_pad,
-  inout wire logic pad_pad_io_d_02_pad,
-  inout wire logic pad_pad_io_d_03_pad,
-  inout wire logic pad_pad_io_d_04_pad,
-  inout wire logic pad_pad_io_d_05_pad,
-  inout wire logic pad_pad_io_d_06_pad,
-  inout wire logic pad_pad_io_d_07_pad,
-  inout wire logic pad_pad_io_d_08_pad,
-  inout wire logic pad_pad_io_d_09_pad,
-  inout wire logic pad_pad_io_d_10_pad,
-  inout wire logic pad_pad_io_d_11_pad,
-  inout wire logic pad_pad_io_d_12_pad,
-  inout wire logic pad_pad_io_d_13_pad,
-  inout wire logic pad_pad_io_d_14_pad,
-  inout wire logic pad_pad_io_d_15_pad,
-  inout wire logic pad_pad_io_e_00_pad,
-  inout wire logic pad_pad_io_e_01_pad,
-  inout wire logic pad_pad_io_e_02_pad,
-  inout wire logic pad_pad_io_e_03_pad,
-  inout wire logic pad_pad_io_e_04_pad,
-  inout wire logic pad_pad_io_e_05_pad,
-  inout wire logic pad_pad_io_e_06_pad,
-  inout wire logic pad_pad_io_e_07_pad,
-  inout wire logic pad_pad_io_e_08_pad,
-  inout wire logic pad_pad_io_e_09_pad,
-  inout wire logic pad_pad_io_e_10_pad,
-  inout wire logic pad_pad_io_e_11_pad,
-  inout wire logic pad_pad_io_e_12_pad,
-  inout wire logic pad_pad_io_e_13_pad,
-  inout wire logic pad_pad_io_e_14_pad,
-  inout wire logic pad_pad_io_f_00_pad,
-  inout wire logic pad_pad_io_f_01_pad,
-  inout wire logic pad_pad_io_f_02_pad,
-  inout wire logic pad_pad_io_f_03_pad,
-  inout wire logic pad_pad_io_f_04_pad,
-  inout wire logic pad_pad_io_f_05_pad,
-  inout wire logic pad_pad_io_f_06_pad,
-  inout wire logic pad_pad_io_f_07_pad,
-  inout wire logic pad_pad_io_f_08_pad,
-  inout wire logic pad_pad_io_f_09_pad,
-  inout wire logic pad_pad_io_f_10_pad,
-  inout wire logic pad_pad_io_g_00_pad,
-  inout wire logic pad_pad_io_g_01_pad,
-  inout wire logic pad_pad_io_g_02_pad,
-  inout wire logic pad_pad_io_g_03_pad,
-  inout wire logic pad_pad_io_g_04_pad,
-  inout wire logic pad_pad_io_g_05_pad,
-  inout wire logic pad_pad_io_g_06_pad,
-  inout wire logic pad_pad_io_g_07_pad,
-  inout wire logic pad_pad_io_g_08_pad,
-  inout wire logic pad_pad_io_g_09_pad,
-  inout wire logic pad_pad_io_g_10_pad,
-  inout wire logic pad_pad_io_g_11_pad,
-  inout wire logic pad_pad_io_g_12_pad,
-  inout wire logic pad_pad_io_g_13_pad,
-  inout wire logic pad_pad_io_g_14_pad,
-  inout wire logic pad_pad_pwm0_pad,
-  inout wire logic pad_pad_pwm1_pad,
-  inout wire logic pad_pad_pwm2_pad,
-  inout wire logic pad_pad_pwm3_pad,
-  inout wire logic pad_pad_pwm4_pad,
-  inout wire logic pad_pad_pwm5_pad,
-  inout wire logic pad_pad_pwm6_pad,
-  inout wire logic pad_pad_pwm7_pad
+  inout wire logic pad_pad_gpio_a_0_pad,
+  inout wire logic pad_pad_gpio_a_1_pad,
+  inout wire logic pad_pad_gpio_a_2_pad,
+  inout wire logic pad_pad_gpio_a_3_pad,
+  inout wire logic pad_pad_gpio_a_4_pad,
+  inout wire logic pad_pad_gpio_a_5_pad,
+  inout wire logic pad_pad_gpio_a_6_pad,
+  inout wire logic pad_pad_gpio_a_7_pad,
+  inout wire logic pad_pad_gpio_a_8_pad,
+  inout wire logic pad_pad_gpio_a_9_pad,
+  inout wire logic pad_pad_gpio_a_10_pad,
+  inout wire logic pad_pad_gpio_a_11_pad,
+  inout wire logic pad_pad_gpio_a_12_pad,
+  inout wire logic pad_pad_gpio_a_13_pad,
+  inout wire logic pad_pad_gpio_a_14_pad,
+  inout wire logic pad_pad_gpio_a_15_pad,
+  inout wire logic pad_pad_gpio_a_16_pad,
+  inout wire logic pad_pad_gpio_a_17_pad,
+  inout wire logic pad_pad_gpio_a_18_pad,
+  inout wire logic pad_pad_gpio_a_19_pad,
+  inout wire logic pad_pad_gpio_a_20_pad,
+  inout wire logic pad_pad_gpio_a_21_pad,
+  inout wire logic pad_pad_gpio_a_22_pad,
+  inout wire logic pad_pad_gpio_a_23_pad,
+  inout wire logic pad_pad_gpio_a_24_pad,
+  inout wire logic pad_pad_gpio_a_25_pad,
+  inout wire logic pad_pad_gpio_a_26_pad,
+  inout wire logic pad_pad_gpio_a_27_pad,
+  inout wire logic pad_pad_gpio_a_28_pad,
+  inout wire logic pad_pad_gpio_a_29_pad,
+  inout wire logic pad_pad_gpio_a_30_pad,
+  inout wire logic pad_pad_gpio_a_31_pad,
+  inout wire logic pad_pad_gpio_a_32_pad,
+  inout wire logic pad_pad_gpio_a_33_pad,
+  inout wire logic pad_pad_gpio_a_34_pad,
+  inout wire logic pad_pad_gpio_a_35_pad,
+  inout wire logic pad_pad_gpio_a_36_pad,
+  inout wire logic pad_pad_gpio_a_37_pad,
+  inout wire logic pad_pad_gpio_a_38_pad,
+  inout wire logic pad_pad_gpio_a_39_pad,
+  inout wire logic pad_pad_gpio_a_40_pad,
+  inout wire logic pad_pad_gpio_a_41_pad,
+  inout wire logic pad_pad_gpio_a_42_pad,
+  inout wire logic pad_pad_gpio_a_43_pad,
+  inout wire logic pad_pad_gpio_a_44_pad,
+  inout wire logic pad_pad_gpio_a_45_pad,
+  inout wire logic pad_pad_gpio_a_46_pad,
+  inout wire logic pad_pad_gpio_a_47_pad,
+  inout wire logic pad_pad_gpio_a_48_pad,
+  inout wire logic pad_pad_gpio_a_49_pad,
+  inout wire logic pad_pad_gpio_a_50_pad,
+  inout wire logic pad_pad_gpio_a_51_pad,
+  inout wire logic pad_pad_gpio_a_52_pad,
+  inout wire logic pad_pad_gpio_a_53_pad,
+  inout wire logic pad_pad_gpio_a_54_pad,
+  inout wire logic pad_pad_gpio_a_55_pad,
+  inout wire logic pad_pad_gpio_b_00_pad,
+  inout wire logic pad_pad_gpio_b_01_pad,
+  inout wire logic pad_pad_gpio_b_02_pad,
+  inout wire logic pad_pad_gpio_b_03_pad,
+  inout wire logic pad_pad_gpio_b_04_pad,
+  inout wire logic pad_pad_gpio_b_05_pad,
+  inout wire logic pad_pad_gpio_b_06_pad,
+  inout wire logic pad_pad_gpio_b_07_pad,
+  inout wire logic pad_pad_gpio_b_08_pad,
+  inout wire logic pad_pad_gpio_b_09_pad,
+  inout wire logic pad_pad_gpio_b_10_pad,
+  inout wire logic pad_pad_gpio_b_11_pad,
+  inout wire logic pad_pad_gpio_b_12_pad,
+  inout wire logic pad_pad_gpio_b_13_pad,
+  inout wire logic pad_pad_gpio_b_14_pad,
+  inout wire logic pad_pad_gpio_b_15_pad,
+  inout wire logic pad_pad_gpio_b_16_pad,
+  inout wire logic pad_pad_gpio_b_17_pad,
+  inout wire logic pad_pad_gpio_b_18_pad,
+  inout wire logic pad_pad_gpio_b_19_pad,
+  inout wire logic pad_pad_gpio_b_20_pad,
+  inout wire logic pad_pad_gpio_b_21_pad,
+  inout wire logic pad_pad_gpio_b_22_pad,
+  inout wire logic pad_pad_gpio_b_23_pad,
+  inout wire logic pad_pad_gpio_b_24_pad,
+  inout wire logic pad_pad_gpio_b_25_pad,
+  inout wire logic pad_pad_gpio_b_26_pad,
+  inout wire logic pad_pad_gpio_b_27_pad,
+  inout wire logic pad_pad_gpio_b_28_pad,
+  inout wire logic pad_pad_gpio_b_29_pad,
+  inout wire logic pad_pad_gpio_b_30_pad,
+  inout wire logic pad_pad_gpio_b_31_pad,
+  inout wire logic pad_pad_gpio_b_32_pad,
+  inout wire logic pad_pad_gpio_b_33_pad,
+  inout wire logic pad_pad_gpio_b_34_pad,
+  inout wire logic pad_pad_gpio_b_35_pad,
+  inout wire logic pad_pad_gpio_b_36_pad,
+  inout wire logic pad_pad_gpio_b_37_pad,
+  inout wire logic pad_pad_gpio_b_38_pad,
+  inout wire logic pad_pad_gpio_b_39_pad,
+  inout wire logic pad_pad_gpio_b_40_pad,
+  inout wire logic pad_pad_gpio_b_41_pad,
+  inout wire logic pad_pad_gpio_b_42_pad,
+  inout wire logic pad_pad_gpio_b_43_pad,
+  inout wire logic pad_pad_gpio_b_44_pad,
+  inout wire logic pad_pad_gpio_b_45_pad,
+  inout wire logic pad_pad_gpio_b_46_pad,
+  inout wire logic pad_pad_gpio_b_47_pad,
+  inout wire logic pad_pad_gpio_b_48_pad,
+  inout wire logic pad_pad_gpio_b_49_pad,
+  inout wire logic pad_pad_gpio_b_50_pad,
+  inout wire logic pad_pad_gpio_b_51_pad,
+  inout wire logic pad_pad_gpio_b_52_pad,
+  inout wire logic pad_pad_gpio_b_53_pad,
+  inout wire logic pad_pad_gpio_b_54_pad,
+  inout wire logic pad_pad_gpio_b_55_pad,
+  inout wire logic pad_pad_gpio_b_56_pad,
+  inout wire logic pad_pad_gpio_b_57_pad,
+  inout wire logic pad_pad_gpio_b_58_pad,
+  inout wire logic pad_pad_gpio_b_59_pad,
+  inout wire logic pad_pad_gpio_b_60_pad,
+  inout wire logic pad_pad_gpio_b_61_pad,
+  inout wire logic pad_pad_gpio_c_00_pad,
+  inout wire logic pad_pad_gpio_c_01_pad,
+  inout wire logic pad_pad_gpio_c_02_pad,
+  inout wire logic pad_pad_gpio_c_03_pad,
+  inout wire logic pad_pad_gpio_d_00_pad,
+  inout wire logic pad_pad_gpio_d_01_pad,
+  inout wire logic pad_pad_gpio_d_02_pad,
+  inout wire logic pad_pad_gpio_d_03_pad,
+  inout wire logic pad_pad_gpio_d_04_pad,
+  inout wire logic pad_pad_gpio_d_05_pad,
+  inout wire logic pad_pad_gpio_d_06_pad,
+  inout wire logic pad_pad_gpio_d_07_pad,
+  inout wire logic pad_pad_gpio_d_08_pad,
+  inout wire logic pad_pad_gpio_d_09_pad,
+  inout wire logic pad_pad_gpio_d_10_pad,
+  inout wire logic pad_pad_gpio_e_00_pad,
+  inout wire logic pad_pad_gpio_e_01_pad,
+  inout wire logic pad_pad_gpio_e_02_pad,
+  inout wire logic pad_pad_gpio_e_03_pad,
+  inout wire logic pad_pad_gpio_e_04_pad,
+  inout wire logic pad_pad_gpio_e_05_pad,
+  inout wire logic pad_pad_gpio_e_06_pad,
+  inout wire logic pad_pad_gpio_e_07_pad,
+  inout wire logic pad_pad_gpio_e_08_pad,
+  inout wire logic pad_pad_gpio_e_09_pad,
+  inout wire logic pad_pad_gpio_e_10_pad,
+  inout wire logic pad_pad_gpio_e_11_pad,
+  inout wire logic pad_pad_gpio_e_12_pad,
+  inout wire logic pad_pad_gpio_f_00_pad,
+  inout wire logic pad_pad_gpio_f_01_pad,
+  inout wire logic pad_pad_gpio_f_02_pad,
+  inout wire logic pad_pad_gpio_f_03_pad,
+  inout wire logic pad_pad_gpio_f_04_pad,
+  inout wire logic pad_pad_gpio_f_05_pad,
+  inout wire logic pad_pad_gpio_f_06_pad,
+  inout wire logic pad_pad_gpio_f_07_pad,
+  inout wire logic pad_pad_gpio_f_08_pad,
+  inout wire logic pad_pad_gpio_f_09_pad,
+  inout wire logic pad_pad_gpio_f_10_pad,
+  inout wire logic pad_pad_gpio_f_11_pad,
+  inout wire logic pad_pad_gpio_f_12_pad,
+  inout wire logic pad_pad_gpio_f_13_pad,
+  inout wire logic pad_pad_gpio_f_14_pad,
+  inout wire logic pad_pad_gpio_f_15_pad,
+  inout wire logic pad_pad_gpio_f_16_pad,
+  inout wire logic pad_pad_gpio_f_17_pad,
+  inout wire logic pad_pad_gpio_f_18_pad,
+  inout wire logic pad_pad_gpio_f_19_pad,
+  inout wire logic pad_pad_gpio_f_20_pad,
+  inout wire logic pad_pad_gpio_f_21_pad,
+  inout wire logic pad_pad_gpio_f_22_pad,
+  inout wire logic pad_pad_gpio_f_23_pad,
+  inout wire logic pad_pad_gpio_f_24_pad,
+  inout wire logic pad_pad_gpio_f_25_pad,
+  inout wire logic pad_pad_gpio_pwm0_pad,
+  inout wire logic pad_pad_gpio_pwm1_pad,
+  inout wire logic pad_pad_gpio_pwm2_pad,
+  inout wire logic pad_pad_gpio_pwm3_pad,
+  inout wire logic pad_pad_gpio_pwm4_pad,
+  inout wire logic pad_pad_gpio_pwm5_pad,
+  inout wire logic pad_pad_gpio_pwm6_pad,
+  inout wire logic pad_pad_gpio_pwm7_pad
   );
 
    // Pad instantiations
-   pad_functional_pd i_pad_gpio0 (
+   pad_functional_pd i_pad_gpio_a_0 (
     .OEN(~static_connection_signals_soc2pad.gpio0_dir_i),
     .I(static_connection_signals_soc2pad.gpio0_i),
     .O(static_connection_signals_pad2soc.gpio0_o),
-    .PAD(pad_pad_gpio0_pad),
+    .PAD(pad_pad_gpio_a_0_pad),
     .PEN(1'b1)
   );
-   pad_functional_pd i_pad_gpio1 (
+   pad_functional_pd i_pad_gpio_a_1 (
     .OEN(~static_connection_signals_soc2pad.gpio1_dir_i),
     .I(static_connection_signals_soc2pad.gpio1_i),
     .O(static_connection_signals_pad2soc.gpio1_o),
-    .PAD(pad_pad_gpio1_pad),
+    .PAD(pad_pad_gpio_a_1_pad),
     .PEN(1'b1)
   );
-   pad_functional_pd i_pad_gpio2 (
+   pad_functional_pd i_pad_gpio_a_2 (
     .OEN(~static_connection_signals_soc2pad.gpio2_dir_i),
     .I(static_connection_signals_soc2pad.gpio2_i),
     .O(static_connection_signals_pad2soc.gpio2_o),
-    .PAD(pad_pad_gpio2_pad),
+    .PAD(pad_pad_gpio_a_2_pad),
     .PEN(1'b1)
   );
-   pad_functional_pd i_pad_gpio3 (
+   pad_functional_pd i_pad_gpio_a_3 (
     .OEN(~static_connection_signals_soc2pad.gpio3_dir_i),
     .I(static_connection_signals_soc2pad.gpio3_i),
     .O(static_connection_signals_pad2soc.gpio3_o),
-    .PAD(pad_pad_gpio3_pad),
+    .PAD(pad_pad_gpio_a_3_pad),
     .PEN(1'b1)
   );
-   pad_functional_pd i_pad_gpio4 (
+   pad_functional_pd i_pad_gpio_a_4 (
     .OEN(~static_connection_signals_soc2pad.gpio4_dir_i),
     .I(static_connection_signals_soc2pad.gpio4_i),
     .O(static_connection_signals_pad2soc.gpio4_o),
-    .PAD(pad_pad_gpio4_pad),
+    .PAD(pad_pad_gpio_a_4_pad),
     .PEN(1'b1)
   );
-   pad_functional_pd i_pad_gpio5 (
+   pad_functional_pd i_pad_gpio_a_5 (
     .OEN(~static_connection_signals_soc2pad.gpio5_dir_i),
     .I(static_connection_signals_soc2pad.gpio5_i),
     .O(static_connection_signals_pad2soc.gpio5_o),
-    .PAD(pad_pad_gpio5_pad),
+    .PAD(pad_pad_gpio_a_5_pad),
     .PEN(1'b1)
   );
-   pad_functional_pd i_pad_gpio6 (
+   pad_functional_pd i_pad_gpio_a_6 (
     .OEN(~static_connection_signals_soc2pad.gpio6_dir_i),
     .I(static_connection_signals_soc2pad.gpio6_i),
     .O(static_connection_signals_pad2soc.gpio6_o),
-    .PAD(pad_pad_gpio6_pad),
+    .PAD(pad_pad_gpio_a_6_pad),
     .PEN(1'b1)
   );
-   pad_functional_pd i_pad_gpio7 (
+   pad_functional_pd i_pad_gpio_a_7 (
     .OEN(~static_connection_signals_soc2pad.gpio7_dir_i),
     .I(static_connection_signals_soc2pad.gpio7_i),
     .O(static_connection_signals_pad2soc.gpio7_o),
-    .PAD(pad_pad_gpio7_pad),
+    .PAD(pad_pad_gpio_a_7_pad),
     .PEN(1'b1)
   );
-   pad_functional_pd i_pad_gpio8 (
+   pad_functional_pd i_pad_gpio_a_8 (
     .OEN(~static_connection_signals_soc2pad.gpio8_dir_i),
     .I(static_connection_signals_soc2pad.gpio8_i),
     .O(static_connection_signals_pad2soc.gpio8_o),
-    .PAD(pad_pad_gpio8_pad),
+    .PAD(pad_pad_gpio_a_8_pad),
     .PEN(1'b1)
   );
-   pad_functional_pd i_pad_gpio9 (
+   pad_functional_pd i_pad_gpio_a_9 (
     .OEN(~static_connection_signals_soc2pad.gpio9_dir_i),
     .I(static_connection_signals_soc2pad.gpio9_i),
     .O(static_connection_signals_pad2soc.gpio9_o),
-    .PAD(pad_pad_gpio9_pad),
+    .PAD(pad_pad_gpio_a_9_pad),
     .PEN(1'b1)
   );
-   pad_functional_pd i_pad_gpio10 (
+   pad_functional_pd i_pad_gpio_a_10 (
     .OEN(~static_connection_signals_soc2pad.gpio10_dir_i),
     .I(static_connection_signals_soc2pad.gpio10_i),
     .O(static_connection_signals_pad2soc.gpio10_o),
-    .PAD(pad_pad_gpio10_pad),
+    .PAD(pad_pad_gpio_a_10_pad),
     .PEN(1'b1)
   );
-   pad_functional_pd i_pad_gpio11 (
+   pad_functional_pd i_pad_gpio_a_11 (
     .OEN(~static_connection_signals_soc2pad.gpio11_dir_i),
     .I(static_connection_signals_soc2pad.gpio11_i),
     .O(static_connection_signals_pad2soc.gpio11_o),
-    .PAD(pad_pad_gpio11_pad),
+    .PAD(pad_pad_gpio_a_11_pad),
     .PEN(1'b1)
   );
-   pad_functional_pd i_pad_gpio12 (
+   pad_functional_pd i_pad_gpio_a_12 (
     .OEN(~static_connection_signals_soc2pad.gpio12_dir_i),
     .I(static_connection_signals_soc2pad.gpio12_i),
     .O(static_connection_signals_pad2soc.gpio12_o),
-    .PAD(pad_pad_gpio12_pad),
+    .PAD(pad_pad_gpio_a_12_pad),
     .PEN(1'b1)
   );
-   pad_functional_pd i_pad_gpio13 (
+   pad_functional_pd i_pad_gpio_a_13 (
     .OEN(~static_connection_signals_soc2pad.gpio13_dir_i),
     .I(static_connection_signals_soc2pad.gpio13_i),
     .O(static_connection_signals_pad2soc.gpio13_o),
-    .PAD(pad_pad_gpio13_pad),
+    .PAD(pad_pad_gpio_a_13_pad),
     .PEN(1'b1)
   );
-   pad_functional_pd i_pad_gpio14 (
+   pad_functional_pd i_pad_gpio_a_14 (
     .OEN(~static_connection_signals_soc2pad.gpio14_dir_i),
     .I(static_connection_signals_soc2pad.gpio14_i),
     .O(static_connection_signals_pad2soc.gpio14_o),
-    .PAD(pad_pad_gpio14_pad),
+    .PAD(pad_pad_gpio_a_14_pad),
     .PEN(1'b1)
   );
-   pad_functional_pd i_pad_gpio15 (
+   pad_functional_pd i_pad_gpio_a_15 (
     .OEN(~static_connection_signals_soc2pad.gpio15_dir_i),
     .I(static_connection_signals_soc2pad.gpio15_i),
     .O(static_connection_signals_pad2soc.gpio15_o),
-    .PAD(pad_pad_gpio15_pad),
+    .PAD(pad_pad_gpio_a_15_pad),
     .PEN(1'b1)
   );
-   pad_functional_pd i_pad_gpio16 (
+   pad_functional_pd i_pad_gpio_a_16 (
     .OEN(~static_connection_signals_soc2pad.gpio16_dir_i),
     .I(static_connection_signals_soc2pad.gpio16_i),
     .O(static_connection_signals_pad2soc.gpio16_o),
-    .PAD(pad_pad_gpio16_pad),
+    .PAD(pad_pad_gpio_a_16_pad),
     .PEN(1'b1)
   );
-   pad_functional_pd i_pad_gpio17 (
+   pad_functional_pd i_pad_gpio_a_17 (
     .OEN(~static_connection_signals_soc2pad.gpio17_dir_i),
     .I(static_connection_signals_soc2pad.gpio17_i),
     .O(static_connection_signals_pad2soc.gpio17_o),
-    .PAD(pad_pad_gpio17_pad),
+    .PAD(pad_pad_gpio_a_17_pad),
     .PEN(1'b1)
   );
-   pad_functional_pd i_pad_gpio18 (
+   pad_functional_pd i_pad_gpio_a_18 (
     .OEN(~static_connection_signals_soc2pad.gpio18_dir_i),
     .I(static_connection_signals_soc2pad.gpio18_i),
     .O(static_connection_signals_pad2soc.gpio18_o),
-    .PAD(pad_pad_gpio18_pad),
+    .PAD(pad_pad_gpio_a_18_pad),
     .PEN(1'b1)
   );
-   pad_functional_pd i_pad_gpio19 (
+   pad_functional_pd i_pad_gpio_a_19 (
     .OEN(~static_connection_signals_soc2pad.gpio19_dir_i),
     .I(static_connection_signals_soc2pad.gpio19_i),
     .O(static_connection_signals_pad2soc.gpio19_o),
-    .PAD(pad_pad_gpio19_pad),
+    .PAD(pad_pad_gpio_a_19_pad),
     .PEN(1'b1)
   );
-   pad_functional_pd i_pad_gpio20 (
+   pad_functional_pd i_pad_gpio_a_20 (
     .OEN(~static_connection_signals_soc2pad.gpio20_dir_i),
     .I(static_connection_signals_soc2pad.gpio20_i),
     .O(static_connection_signals_pad2soc.gpio20_o),
-    .PAD(pad_pad_gpio20_pad),
+    .PAD(pad_pad_gpio_a_20_pad),
     .PEN(1'b1)
   );
-   pad_functional_pd i_pad_gpio21 (
+   pad_functional_pd i_pad_gpio_a_21 (
     .OEN(~static_connection_signals_soc2pad.gpio21_dir_i),
     .I(static_connection_signals_soc2pad.gpio21_i),
     .O(static_connection_signals_pad2soc.gpio21_o),
-    .PAD(pad_pad_gpio21_pad),
+    .PAD(pad_pad_gpio_a_21_pad),
     .PEN(1'b1)
   );
-   pad_functional_pd i_pad_gpio22 (
+   pad_functional_pd i_pad_gpio_a_22 (
     .OEN(~static_connection_signals_soc2pad.gpio22_dir_i),
     .I(static_connection_signals_soc2pad.gpio22_i),
     .O(static_connection_signals_pad2soc.gpio22_o),
-    .PAD(pad_pad_gpio22_pad),
+    .PAD(pad_pad_gpio_a_22_pad),
     .PEN(1'b1)
   );
-   pad_functional_pd i_pad_gpio23 (
+   pad_functional_pd i_pad_gpio_a_23 (
     .OEN(~static_connection_signals_soc2pad.gpio23_dir_i),
     .I(static_connection_signals_soc2pad.gpio23_i),
     .O(static_connection_signals_pad2soc.gpio23_o),
-    .PAD(pad_pad_gpio23_pad),
+    .PAD(pad_pad_gpio_a_23_pad),
     .PEN(1'b1)
   );
-   pad_functional_pd i_pad_gpio24 (
+   pad_functional_pd i_pad_gpio_a_24 (
     .OEN(~static_connection_signals_soc2pad.gpio24_dir_i),
     .I(static_connection_signals_soc2pad.gpio24_i),
     .O(static_connection_signals_pad2soc.gpio24_o),
-    .PAD(pad_pad_gpio24_pad),
+    .PAD(pad_pad_gpio_a_24_pad),
     .PEN(1'b1)
   );
-   pad_functional_pd i_pad_gpio25 (
+   pad_functional_pd i_pad_gpio_a_25 (
     .OEN(~static_connection_signals_soc2pad.gpio25_dir_i),
     .I(static_connection_signals_soc2pad.gpio25_i),
     .O(static_connection_signals_pad2soc.gpio25_o),
-    .PAD(pad_pad_gpio25_pad),
+    .PAD(pad_pad_gpio_a_25_pad),
     .PEN(1'b1)
   );
-   pad_functional_pd i_pad_gpio26 (
+   pad_functional_pd i_pad_gpio_a_26 (
     .OEN(~static_connection_signals_soc2pad.gpio26_dir_i),
     .I(static_connection_signals_soc2pad.gpio26_i),
     .O(static_connection_signals_pad2soc.gpio26_o),
-    .PAD(pad_pad_gpio26_pad),
+    .PAD(pad_pad_gpio_a_26_pad),
     .PEN(1'b1)
   );
-   pad_functional_pd i_pad_gpio27 (
+   pad_functional_pd i_pad_gpio_a_27 (
     .OEN(~static_connection_signals_soc2pad.gpio27_dir_i),
     .I(static_connection_signals_soc2pad.gpio27_i),
     .O(static_connection_signals_pad2soc.gpio27_o),
-    .PAD(pad_pad_gpio27_pad),
+    .PAD(pad_pad_gpio_a_27_pad),
     .PEN(1'b1)
   );
-   pad_functional_pd i_pad_gpio28 (
+   pad_functional_pd i_pad_gpio_a_28 (
     .OEN(~static_connection_signals_soc2pad.gpio28_dir_i),
     .I(static_connection_signals_soc2pad.gpio28_i),
     .O(static_connection_signals_pad2soc.gpio28_o),
-    .PAD(pad_pad_gpio28_pad),
+    .PAD(pad_pad_gpio_a_28_pad),
     .PEN(1'b1)
   );
-   pad_functional_pd i_pad_gpio29 (
+   pad_functional_pd i_pad_gpio_a_29 (
     .OEN(~static_connection_signals_soc2pad.gpio29_dir_i),
     .I(static_connection_signals_soc2pad.gpio29_i),
     .O(static_connection_signals_pad2soc.gpio29_o),
-    .PAD(pad_pad_gpio29_pad),
+    .PAD(pad_pad_gpio_a_29_pad),
     .PEN(1'b1)
   );
-   pad_functional_pd i_pad_gpio30 (
+   pad_functional_pd i_pad_gpio_a_30 (
     .OEN(~static_connection_signals_soc2pad.gpio30_dir_i),
     .I(static_connection_signals_soc2pad.gpio30_i),
     .O(static_connection_signals_pad2soc.gpio30_o),
-    .PAD(pad_pad_gpio30_pad),
+    .PAD(pad_pad_gpio_a_30_pad),
     .PEN(1'b1)
   );
-   pad_functional_pd i_pad_gpio31 (
+   pad_functional_pd i_pad_gpio_a_31 (
     .OEN(~static_connection_signals_soc2pad.gpio31_dir_i),
     .I(static_connection_signals_soc2pad.gpio31_i),
     .O(static_connection_signals_pad2soc.gpio31_o),
-    .PAD(pad_pad_gpio31_pad),
+    .PAD(pad_pad_gpio_a_31_pad),
     .PEN(1'b1)
   );
-   pad_functional_pd i_pad_gpio32 (
+   pad_functional_pd i_pad_gpio_a_32 (
     .OEN(~static_connection_signals_soc2pad.gpio32_dir_i),
     .I(static_connection_signals_soc2pad.gpio32_i),
     .O(static_connection_signals_pad2soc.gpio32_o),
-    .PAD(pad_pad_gpio32_pad),
+    .PAD(pad_pad_gpio_a_32_pad),
     .PEN(1'b1)
   );
-   pad_functional_pd i_pad_gpio33 (
+   pad_functional_pd i_pad_gpio_a_33 (
     .OEN(~static_connection_signals_soc2pad.gpio33_dir_i),
     .I(static_connection_signals_soc2pad.gpio33_i),
     .O(static_connection_signals_pad2soc.gpio33_o),
-    .PAD(pad_pad_gpio33_pad),
+    .PAD(pad_pad_gpio_a_33_pad),
     .PEN(1'b1)
   );
-   pad_functional_pd i_pad_gpio34 (
+   pad_functional_pd i_pad_gpio_a_34 (
     .OEN(~static_connection_signals_soc2pad.gpio34_dir_i),
     .I(static_connection_signals_soc2pad.gpio34_i),
     .O(static_connection_signals_pad2soc.gpio34_o),
-    .PAD(pad_pad_gpio34_pad),
+    .PAD(pad_pad_gpio_a_34_pad),
     .PEN(1'b1)
   );
-   pad_functional_pd i_pad_gpio35 (
+   pad_functional_pd i_pad_gpio_a_35 (
     .OEN(~static_connection_signals_soc2pad.gpio35_dir_i),
     .I(static_connection_signals_soc2pad.gpio35_i),
     .O(static_connection_signals_pad2soc.gpio35_o),
-    .PAD(pad_pad_gpio35_pad),
+    .PAD(pad_pad_gpio_a_35_pad),
     .PEN(1'b1)
   );
-   pad_functional_pd i_pad_gpio36 (
+   pad_functional_pd i_pad_gpio_a_36 (
     .OEN(~static_connection_signals_soc2pad.gpio36_dir_i),
     .I(static_connection_signals_soc2pad.gpio36_i),
     .O(static_connection_signals_pad2soc.gpio36_o),
-    .PAD(pad_pad_gpio36_pad),
+    .PAD(pad_pad_gpio_a_36_pad),
     .PEN(1'b1)
   );
-   pad_functional_pd i_pad_gpio37 (
+   pad_functional_pd i_pad_gpio_a_37 (
     .OEN(~static_connection_signals_soc2pad.gpio37_dir_i),
     .I(static_connection_signals_soc2pad.gpio37_i),
     .O(static_connection_signals_pad2soc.gpio37_o),
-    .PAD(pad_pad_gpio37_pad),
+    .PAD(pad_pad_gpio_a_37_pad),
     .PEN(1'b1)
   );
-   pad_functional_pd i_pad_gpio38 (
+   pad_functional_pd i_pad_gpio_a_38 (
     .OEN(~static_connection_signals_soc2pad.gpio38_dir_i),
     .I(static_connection_signals_soc2pad.gpio38_i),
     .O(static_connection_signals_pad2soc.gpio38_o),
-    .PAD(pad_pad_gpio38_pad),
+    .PAD(pad_pad_gpio_a_38_pad),
     .PEN(1'b1)
   );
-   pad_functional_pd i_pad_gpio39 (
+   pad_functional_pd i_pad_gpio_a_39 (
     .OEN(~static_connection_signals_soc2pad.gpio39_dir_i),
     .I(static_connection_signals_soc2pad.gpio39_i),
     .O(static_connection_signals_pad2soc.gpio39_o),
-    .PAD(pad_pad_gpio39_pad),
+    .PAD(pad_pad_gpio_a_39_pad),
     .PEN(1'b1)
   );
-   pad_functional_pd i_pad_gpio40 (
+   pad_functional_pd i_pad_gpio_a_40 (
     .OEN(~static_connection_signals_soc2pad.gpio40_dir_i),
     .I(static_connection_signals_soc2pad.gpio40_i),
     .O(static_connection_signals_pad2soc.gpio40_o),
-    .PAD(pad_pad_gpio40_pad),
+    .PAD(pad_pad_gpio_a_40_pad),
     .PEN(1'b1)
   );
-   pad_functional_pd i_pad_gpio41 (
+   pad_functional_pd i_pad_gpio_a_41 (
     .OEN(~static_connection_signals_soc2pad.gpio41_dir_i),
     .I(static_connection_signals_soc2pad.gpio41_i),
     .O(static_connection_signals_pad2soc.gpio41_o),
-    .PAD(pad_pad_gpio41_pad),
+    .PAD(pad_pad_gpio_a_41_pad),
     .PEN(1'b1)
   );
-   pad_functional_pd i_pad_gpio42 (
+   pad_functional_pd i_pad_gpio_a_42 (
     .OEN(~static_connection_signals_soc2pad.gpio42_dir_i),
     .I(static_connection_signals_soc2pad.gpio42_i),
     .O(static_connection_signals_pad2soc.gpio42_o),
-    .PAD(pad_pad_gpio42_pad),
+    .PAD(pad_pad_gpio_a_42_pad),
     .PEN(1'b1)
   );
-   pad_functional_pd i_pad_gpio43 (
+   pad_functional_pd i_pad_gpio_a_43 (
     .OEN(~static_connection_signals_soc2pad.gpio43_dir_i),
     .I(static_connection_signals_soc2pad.gpio43_i),
     .O(static_connection_signals_pad2soc.gpio43_o),
-    .PAD(pad_pad_gpio43_pad),
+    .PAD(pad_pad_gpio_a_43_pad),
     .PEN(1'b1)
   );
-   pad_functional_pd i_pad_gpio44 (
+   pad_functional_pd i_pad_gpio_a_44 (
     .OEN(~static_connection_signals_soc2pad.gpio44_dir_i),
     .I(static_connection_signals_soc2pad.gpio44_i),
     .O(static_connection_signals_pad2soc.gpio44_o),
-    .PAD(pad_pad_gpio44_pad),
+    .PAD(pad_pad_gpio_a_44_pad),
     .PEN(1'b1)
   );
-   pad_functional_pd i_pad_gpio45 (
+   pad_functional_pd i_pad_gpio_a_45 (
     .OEN(~static_connection_signals_soc2pad.gpio45_dir_i),
     .I(static_connection_signals_soc2pad.gpio45_i),
     .O(static_connection_signals_pad2soc.gpio45_o),
-    .PAD(pad_pad_gpio45_pad),
+    .PAD(pad_pad_gpio_a_45_pad),
     .PEN(1'b1)
   );
-   pad_functional_pd i_pad_gpio46 (
+   pad_functional_pd i_pad_gpio_a_46 (
     .OEN(~static_connection_signals_soc2pad.gpio46_dir_i),
     .I(static_connection_signals_soc2pad.gpio46_i),
     .O(static_connection_signals_pad2soc.gpio46_o),
-    .PAD(pad_pad_gpio46_pad),
+    .PAD(pad_pad_gpio_a_46_pad),
     .PEN(1'b1)
   );
-   pad_functional_pd i_pad_gpio47 (
+   pad_functional_pd i_pad_gpio_a_47 (
     .OEN(~static_connection_signals_soc2pad.gpio47_dir_i),
     .I(static_connection_signals_soc2pad.gpio47_i),
     .O(static_connection_signals_pad2soc.gpio47_o),
-    .PAD(pad_pad_gpio47_pad),
+    .PAD(pad_pad_gpio_a_47_pad),
     .PEN(1'b1)
   );
-   pad_functional_pd i_pad_gpio48 (
+   pad_functional_pd i_pad_gpio_a_48 (
     .OEN(~static_connection_signals_soc2pad.gpio48_dir_i),
     .I(static_connection_signals_soc2pad.gpio48_i),
     .O(static_connection_signals_pad2soc.gpio48_o),
-    .PAD(pad_pad_gpio48_pad),
+    .PAD(pad_pad_gpio_a_48_pad),
     .PEN(1'b1)
   );
-   pad_functional_pd i_pad_gpio49 (
+   pad_functional_pd i_pad_gpio_a_49 (
     .OEN(~static_connection_signals_soc2pad.gpio49_dir_i),
     .I(static_connection_signals_soc2pad.gpio49_i),
     .O(static_connection_signals_pad2soc.gpio49_o),
-    .PAD(pad_pad_gpio49_pad),
+    .PAD(pad_pad_gpio_a_49_pad),
     .PEN(1'b1)
   );
-   pad_functional_pd i_pad_gpio50 (
+   pad_functional_pd i_pad_gpio_a_50 (
     .OEN(~static_connection_signals_soc2pad.gpio50_dir_i),
     .I(static_connection_signals_soc2pad.gpio50_i),
     .O(static_connection_signals_pad2soc.gpio50_o),
-    .PAD(pad_pad_gpio50_pad),
+    .PAD(pad_pad_gpio_a_50_pad),
     .PEN(1'b1)
   );
-   pad_functional_pd i_pad_gpio51 (
+   pad_functional_pd i_pad_gpio_a_51 (
     .OEN(~static_connection_signals_soc2pad.gpio51_dir_i),
     .I(static_connection_signals_soc2pad.gpio51_i),
     .O(static_connection_signals_pad2soc.gpio51_o),
-    .PAD(pad_pad_gpio51_pad),
+    .PAD(pad_pad_gpio_a_51_pad),
     .PEN(1'b1)
   );
-   pad_functional_pd i_pad_gpio52 (
+   pad_functional_pd i_pad_gpio_a_52 (
     .OEN(~static_connection_signals_soc2pad.gpio52_dir_i),
     .I(static_connection_signals_soc2pad.gpio52_i),
     .O(static_connection_signals_pad2soc.gpio52_o),
-    .PAD(pad_pad_gpio52_pad),
+    .PAD(pad_pad_gpio_a_52_pad),
     .PEN(1'b1)
   );
-   pad_functional_pd i_pad_gpio53 (
+   pad_functional_pd i_pad_gpio_a_53 (
     .OEN(~static_connection_signals_soc2pad.gpio53_dir_i),
     .I(static_connection_signals_soc2pad.gpio53_i),
     .O(static_connection_signals_pad2soc.gpio53_o),
-    .PAD(pad_pad_gpio53_pad),
+    .PAD(pad_pad_gpio_a_53_pad),
     .PEN(1'b1)
   );
-   pad_functional_pd i_pad_gpio54 (
+   pad_functional_pd i_pad_gpio_a_54 (
     .OEN(~static_connection_signals_soc2pad.gpio54_dir_i),
     .I(static_connection_signals_soc2pad.gpio54_i),
     .O(static_connection_signals_pad2soc.gpio54_o),
-    .PAD(pad_pad_gpio54_pad),
+    .PAD(pad_pad_gpio_a_54_pad),
     .PEN(1'b1)
   );
-   pad_functional_pd i_pad_gpio55 (
+   pad_functional_pd i_pad_gpio_a_55 (
     .OEN(~static_connection_signals_soc2pad.gpio55_dir_i),
     .I(static_connection_signals_soc2pad.gpio55_i),
     .O(static_connection_signals_pad2soc.gpio55_o),
-    .PAD(pad_pad_gpio55_pad),
+    .PAD(pad_pad_gpio_a_55_pad),
     .PEN(1'b1)
   );
-   pad_functional_pd i_pad_io_a_00 (
-    .OEN(mux_to_pads_i.pad_io_a_00.oen),
-    .I(mux_to_pads_i.pad_io_a_00.chip2pad),
-    .O(pads_to_mux_o.pad_io_a_00.pad2chip),
-    .PAD(pad_pad_io_a_00_pad),
+   pad_functional_pd i_pad_gpio_b_00 (
+    .OEN(mux_to_pads_i.pad_gpio_b_00.oen),
+    .I(mux_to_pads_i.pad_gpio_b_00.chip2pad),
+    .O(pads_to_mux_o.pad_gpio_b_00.pad2chip),
+    .PAD(pad_pad_gpio_b_00_pad),
     .PEN(1'b1)
   );
-   pad_functional_pd i_pad_io_a_01 (
-    .OEN(mux_to_pads_i.pad_io_a_01.oen),
-    .I(mux_to_pads_i.pad_io_a_01.chip2pad),
-    .O(pads_to_mux_o.pad_io_a_01.pad2chip),
-    .PAD(pad_pad_io_a_01_pad),
+   pad_functional_pd i_pad_gpio_b_01 (
+    .OEN(mux_to_pads_i.pad_gpio_b_01.oen),
+    .I(mux_to_pads_i.pad_gpio_b_01.chip2pad),
+    .O(pads_to_mux_o.pad_gpio_b_01.pad2chip),
+    .PAD(pad_pad_gpio_b_01_pad),
     .PEN(1'b1)
   );
-   pad_functional_pd i_pad_io_a_02 (
-    .OEN(mux_to_pads_i.pad_io_a_02.oen),
-    .I(mux_to_pads_i.pad_io_a_02.chip2pad),
-    .O(pads_to_mux_o.pad_io_a_02.pad2chip),
-    .PAD(pad_pad_io_a_02_pad),
+   pad_functional_pd i_pad_gpio_b_02 (
+    .OEN(mux_to_pads_i.pad_gpio_b_02.oen),
+    .I(mux_to_pads_i.pad_gpio_b_02.chip2pad),
+    .O(pads_to_mux_o.pad_gpio_b_02.pad2chip),
+    .PAD(pad_pad_gpio_b_02_pad),
     .PEN(1'b1)
   );
-   pad_functional_pd i_pad_io_a_03 (
-    .OEN(mux_to_pads_i.pad_io_a_03.oen),
-    .I(mux_to_pads_i.pad_io_a_03.chip2pad),
-    .O(pads_to_mux_o.pad_io_a_03.pad2chip),
-    .PAD(pad_pad_io_a_03_pad),
+   pad_functional_pd i_pad_gpio_b_03 (
+    .OEN(mux_to_pads_i.pad_gpio_b_03.oen),
+    .I(mux_to_pads_i.pad_gpio_b_03.chip2pad),
+    .O(pads_to_mux_o.pad_gpio_b_03.pad2chip),
+    .PAD(pad_pad_gpio_b_03_pad),
     .PEN(1'b1)
   );
-   pad_functional_pd i_pad_io_a_04 (
-    .OEN(mux_to_pads_i.pad_io_a_04.oen),
-    .I(mux_to_pads_i.pad_io_a_04.chip2pad),
-    .O(pads_to_mux_o.pad_io_a_04.pad2chip),
-    .PAD(pad_pad_io_a_04_pad),
+   pad_functional_pd i_pad_gpio_b_04 (
+    .OEN(mux_to_pads_i.pad_gpio_b_04.oen),
+    .I(mux_to_pads_i.pad_gpio_b_04.chip2pad),
+    .O(pads_to_mux_o.pad_gpio_b_04.pad2chip),
+    .PAD(pad_pad_gpio_b_04_pad),
     .PEN(1'b1)
   );
-   pad_functional_pd i_pad_io_a_05 (
-    .OEN(mux_to_pads_i.pad_io_a_05.oen),
-    .I(mux_to_pads_i.pad_io_a_05.chip2pad),
-    .O(pads_to_mux_o.pad_io_a_05.pad2chip),
-    .PAD(pad_pad_io_a_05_pad),
+   pad_functional_pd i_pad_gpio_b_05 (
+    .OEN(mux_to_pads_i.pad_gpio_b_05.oen),
+    .I(mux_to_pads_i.pad_gpio_b_05.chip2pad),
+    .O(pads_to_mux_o.pad_gpio_b_05.pad2chip),
+    .PAD(pad_pad_gpio_b_05_pad),
     .PEN(1'b1)
   );
-   pad_functional_pd i_pad_io_a_06 (
-    .OEN(mux_to_pads_i.pad_io_a_06.oen),
-    .I(mux_to_pads_i.pad_io_a_06.chip2pad),
-    .O(pads_to_mux_o.pad_io_a_06.pad2chip),
-    .PAD(pad_pad_io_a_06_pad),
+   pad_functional_pd i_pad_gpio_b_06 (
+    .OEN(mux_to_pads_i.pad_gpio_b_06.oen),
+    .I(mux_to_pads_i.pad_gpio_b_06.chip2pad),
+    .O(pads_to_mux_o.pad_gpio_b_06.pad2chip),
+    .PAD(pad_pad_gpio_b_06_pad),
     .PEN(1'b1)
   );
-   pad_functional_pd i_pad_io_a_07 (
-    .OEN(mux_to_pads_i.pad_io_a_07.oen),
-    .I(mux_to_pads_i.pad_io_a_07.chip2pad),
-    .O(pads_to_mux_o.pad_io_a_07.pad2chip),
-    .PAD(pad_pad_io_a_07_pad),
+   pad_functional_pd i_pad_gpio_b_07 (
+    .OEN(mux_to_pads_i.pad_gpio_b_07.oen),
+    .I(mux_to_pads_i.pad_gpio_b_07.chip2pad),
+    .O(pads_to_mux_o.pad_gpio_b_07.pad2chip),
+    .PAD(pad_pad_gpio_b_07_pad),
     .PEN(1'b1)
   );
-   pad_functional_pd i_pad_io_a_08 (
-    .OEN(mux_to_pads_i.pad_io_a_08.oen),
-    .I(mux_to_pads_i.pad_io_a_08.chip2pad),
-    .O(pads_to_mux_o.pad_io_a_08.pad2chip),
-    .PAD(pad_pad_io_a_08_pad),
+   pad_functional_pd i_pad_gpio_b_08 (
+    .OEN(mux_to_pads_i.pad_gpio_b_08.oen),
+    .I(mux_to_pads_i.pad_gpio_b_08.chip2pad),
+    .O(pads_to_mux_o.pad_gpio_b_08.pad2chip),
+    .PAD(pad_pad_gpio_b_08_pad),
     .PEN(1'b1)
   );
-   pad_functional_pd i_pad_io_a_09 (
-    .OEN(mux_to_pads_i.pad_io_a_09.oen),
-    .I(mux_to_pads_i.pad_io_a_09.chip2pad),
-    .O(pads_to_mux_o.pad_io_a_09.pad2chip),
-    .PAD(pad_pad_io_a_09_pad),
+   pad_functional_pd i_pad_gpio_b_09 (
+    .OEN(mux_to_pads_i.pad_gpio_b_09.oen),
+    .I(mux_to_pads_i.pad_gpio_b_09.chip2pad),
+    .O(pads_to_mux_o.pad_gpio_b_09.pad2chip),
+    .PAD(pad_pad_gpio_b_09_pad),
     .PEN(1'b1)
   );
-   pad_functional_pd i_pad_io_a_10 (
-    .OEN(mux_to_pads_i.pad_io_a_10.oen),
-    .I(mux_to_pads_i.pad_io_a_10.chip2pad),
-    .O(pads_to_mux_o.pad_io_a_10.pad2chip),
-    .PAD(pad_pad_io_a_10_pad),
+   pad_functional_pd i_pad_gpio_b_10 (
+    .OEN(mux_to_pads_i.pad_gpio_b_10.oen),
+    .I(mux_to_pads_i.pad_gpio_b_10.chip2pad),
+    .O(pads_to_mux_o.pad_gpio_b_10.pad2chip),
+    .PAD(pad_pad_gpio_b_10_pad),
     .PEN(1'b1)
   );
-   pad_functional_pd i_pad_io_a_11 (
-    .OEN(mux_to_pads_i.pad_io_a_11.oen),
-    .I(mux_to_pads_i.pad_io_a_11.chip2pad),
-    .O(pads_to_mux_o.pad_io_a_11.pad2chip),
-    .PAD(pad_pad_io_a_11_pad),
+   pad_functional_pd i_pad_gpio_b_11 (
+    .OEN(mux_to_pads_i.pad_gpio_b_11.oen),
+    .I(mux_to_pads_i.pad_gpio_b_11.chip2pad),
+    .O(pads_to_mux_o.pad_gpio_b_11.pad2chip),
+    .PAD(pad_pad_gpio_b_11_pad),
     .PEN(1'b1)
   );
-   pad_functional_pd i_pad_io_a_12 (
-    .OEN(mux_to_pads_i.pad_io_a_12.oen),
-    .I(mux_to_pads_i.pad_io_a_12.chip2pad),
-    .O(pads_to_mux_o.pad_io_a_12.pad2chip),
-    .PAD(pad_pad_io_a_12_pad),
+   pad_functional_pd i_pad_gpio_b_12 (
+    .OEN(mux_to_pads_i.pad_gpio_b_12.oen),
+    .I(mux_to_pads_i.pad_gpio_b_12.chip2pad),
+    .O(pads_to_mux_o.pad_gpio_b_12.pad2chip),
+    .PAD(pad_pad_gpio_b_12_pad),
     .PEN(1'b1)
   );
-   pad_functional_pd i_pad_io_a_13 (
-    .OEN(mux_to_pads_i.pad_io_a_13.oen),
-    .I(mux_to_pads_i.pad_io_a_13.chip2pad),
-    .O(pads_to_mux_o.pad_io_a_13.pad2chip),
-    .PAD(pad_pad_io_a_13_pad),
+   pad_functional_pd i_pad_gpio_b_13 (
+    .OEN(mux_to_pads_i.pad_gpio_b_13.oen),
+    .I(mux_to_pads_i.pad_gpio_b_13.chip2pad),
+    .O(pads_to_mux_o.pad_gpio_b_13.pad2chip),
+    .PAD(pad_pad_gpio_b_13_pad),
     .PEN(1'b1)
   );
-   pad_functional_pd i_pad_io_a_14 (
-    .OEN(mux_to_pads_i.pad_io_a_14.oen),
-    .I(mux_to_pads_i.pad_io_a_14.chip2pad),
-    .O(pads_to_mux_o.pad_io_a_14.pad2chip),
-    .PAD(pad_pad_io_a_14_pad),
+   pad_functional_pd i_pad_gpio_b_14 (
+    .OEN(mux_to_pads_i.pad_gpio_b_14.oen),
+    .I(mux_to_pads_i.pad_gpio_b_14.chip2pad),
+    .O(pads_to_mux_o.pad_gpio_b_14.pad2chip),
+    .PAD(pad_pad_gpio_b_14_pad),
     .PEN(1'b1)
   );
-   pad_functional_pd i_pad_io_b_00 (
-    .OEN(mux_to_pads_i.pad_io_b_00.oen),
-    .I(mux_to_pads_i.pad_io_b_00.chip2pad),
-    .O(pads_to_mux_o.pad_io_b_00.pad2chip),
-    .PAD(pad_pad_io_b_00_pad),
+   pad_functional_pd i_pad_gpio_b_15 (
+    .OEN(mux_to_pads_i.pad_gpio_b_15.oen),
+    .I(mux_to_pads_i.pad_gpio_b_15.chip2pad),
+    .O(pads_to_mux_o.pad_gpio_b_15.pad2chip),
+    .PAD(pad_pad_gpio_b_15_pad),
     .PEN(1'b1)
   );
-   pad_functional_pd i_pad_io_b_01 (
-    .OEN(mux_to_pads_i.pad_io_b_01.oen),
-    .I(mux_to_pads_i.pad_io_b_01.chip2pad),
-    .O(pads_to_mux_o.pad_io_b_01.pad2chip),
-    .PAD(pad_pad_io_b_01_pad),
+   pad_functional_pd i_pad_gpio_b_16 (
+    .OEN(mux_to_pads_i.pad_gpio_b_16.oen),
+    .I(mux_to_pads_i.pad_gpio_b_16.chip2pad),
+    .O(pads_to_mux_o.pad_gpio_b_16.pad2chip),
+    .PAD(pad_pad_gpio_b_16_pad),
     .PEN(1'b1)
   );
-   pad_functional_pd i_pad_io_b_02 (
-    .OEN(mux_to_pads_i.pad_io_b_02.oen),
-    .I(mux_to_pads_i.pad_io_b_02.chip2pad),
-    .O(pads_to_mux_o.pad_io_b_02.pad2chip),
-    .PAD(pad_pad_io_b_02_pad),
+   pad_functional_pd i_pad_gpio_b_17 (
+    .OEN(mux_to_pads_i.pad_gpio_b_17.oen),
+    .I(mux_to_pads_i.pad_gpio_b_17.chip2pad),
+    .O(pads_to_mux_o.pad_gpio_b_17.pad2chip),
+    .PAD(pad_pad_gpio_b_17_pad),
     .PEN(1'b1)
   );
-   pad_functional_pd i_pad_io_b_03 (
-    .OEN(mux_to_pads_i.pad_io_b_03.oen),
-    .I(mux_to_pads_i.pad_io_b_03.chip2pad),
-    .O(pads_to_mux_o.pad_io_b_03.pad2chip),
-    .PAD(pad_pad_io_b_03_pad),
+   pad_functional_pd i_pad_gpio_b_18 (
+    .OEN(mux_to_pads_i.pad_gpio_b_18.oen),
+    .I(mux_to_pads_i.pad_gpio_b_18.chip2pad),
+    .O(pads_to_mux_o.pad_gpio_b_18.pad2chip),
+    .PAD(pad_pad_gpio_b_18_pad),
     .PEN(1'b1)
   );
-   pad_functional_pd i_pad_io_b_04 (
-    .OEN(mux_to_pads_i.pad_io_b_04.oen),
-    .I(mux_to_pads_i.pad_io_b_04.chip2pad),
-    .O(pads_to_mux_o.pad_io_b_04.pad2chip),
-    .PAD(pad_pad_io_b_04_pad),
+   pad_functional_pd i_pad_gpio_b_19 (
+    .OEN(mux_to_pads_i.pad_gpio_b_19.oen),
+    .I(mux_to_pads_i.pad_gpio_b_19.chip2pad),
+    .O(pads_to_mux_o.pad_gpio_b_19.pad2chip),
+    .PAD(pad_pad_gpio_b_19_pad),
     .PEN(1'b1)
   );
-   pad_functional_pd i_pad_io_b_05 (
-    .OEN(mux_to_pads_i.pad_io_b_05.oen),
-    .I(mux_to_pads_i.pad_io_b_05.chip2pad),
-    .O(pads_to_mux_o.pad_io_b_05.pad2chip),
-    .PAD(pad_pad_io_b_05_pad),
+   pad_functional_pd i_pad_gpio_b_20 (
+    .OEN(mux_to_pads_i.pad_gpio_b_20.oen),
+    .I(mux_to_pads_i.pad_gpio_b_20.chip2pad),
+    .O(pads_to_mux_o.pad_gpio_b_20.pad2chip),
+    .PAD(pad_pad_gpio_b_20_pad),
     .PEN(1'b1)
   );
-   pad_functional_pd i_pad_io_b_06 (
-    .OEN(mux_to_pads_i.pad_io_b_06.oen),
-    .I(mux_to_pads_i.pad_io_b_06.chip2pad),
-    .O(pads_to_mux_o.pad_io_b_06.pad2chip),
-    .PAD(pad_pad_io_b_06_pad),
+   pad_functional_pd i_pad_gpio_b_21 (
+    .OEN(mux_to_pads_i.pad_gpio_b_21.oen),
+    .I(mux_to_pads_i.pad_gpio_b_21.chip2pad),
+    .O(pads_to_mux_o.pad_gpio_b_21.pad2chip),
+    .PAD(pad_pad_gpio_b_21_pad),
     .PEN(1'b1)
   );
-   pad_functional_pd i_pad_io_b_07 (
-    .OEN(mux_to_pads_i.pad_io_b_07.oen),
-    .I(mux_to_pads_i.pad_io_b_07.chip2pad),
-    .O(pads_to_mux_o.pad_io_b_07.pad2chip),
-    .PAD(pad_pad_io_b_07_pad),
+   pad_functional_pd i_pad_gpio_b_22 (
+    .OEN(mux_to_pads_i.pad_gpio_b_22.oen),
+    .I(mux_to_pads_i.pad_gpio_b_22.chip2pad),
+    .O(pads_to_mux_o.pad_gpio_b_22.pad2chip),
+    .PAD(pad_pad_gpio_b_22_pad),
     .PEN(1'b1)
   );
-   pad_functional_pd i_pad_io_b_08 (
-    .OEN(mux_to_pads_i.pad_io_b_08.oen),
-    .I(mux_to_pads_i.pad_io_b_08.chip2pad),
-    .O(pads_to_mux_o.pad_io_b_08.pad2chip),
-    .PAD(pad_pad_io_b_08_pad),
+   pad_functional_pd i_pad_gpio_b_23 (
+    .OEN(mux_to_pads_i.pad_gpio_b_23.oen),
+    .I(mux_to_pads_i.pad_gpio_b_23.chip2pad),
+    .O(pads_to_mux_o.pad_gpio_b_23.pad2chip),
+    .PAD(pad_pad_gpio_b_23_pad),
     .PEN(1'b1)
   );
-   pad_functional_pd i_pad_io_b_09 (
-    .OEN(mux_to_pads_i.pad_io_b_09.oen),
-    .I(mux_to_pads_i.pad_io_b_09.chip2pad),
-    .O(pads_to_mux_o.pad_io_b_09.pad2chip),
-    .PAD(pad_pad_io_b_09_pad),
+   pad_functional_pd i_pad_gpio_b_24 (
+    .OEN(mux_to_pads_i.pad_gpio_b_24.oen),
+    .I(mux_to_pads_i.pad_gpio_b_24.chip2pad),
+    .O(pads_to_mux_o.pad_gpio_b_24.pad2chip),
+    .PAD(pad_pad_gpio_b_24_pad),
     .PEN(1'b1)
   );
-   pad_functional_pd i_pad_io_b_10 (
-    .OEN(mux_to_pads_i.pad_io_b_10.oen),
-    .I(mux_to_pads_i.pad_io_b_10.chip2pad),
-    .O(pads_to_mux_o.pad_io_b_10.pad2chip),
-    .PAD(pad_pad_io_b_10_pad),
+   pad_functional_pd i_pad_gpio_b_25 (
+    .OEN(mux_to_pads_i.pad_gpio_b_25.oen),
+    .I(mux_to_pads_i.pad_gpio_b_25.chip2pad),
+    .O(pads_to_mux_o.pad_gpio_b_25.pad2chip),
+    .PAD(pad_pad_gpio_b_25_pad),
     .PEN(1'b1)
   );
-   pad_functional_pd i_pad_io_b_11 (
-    .OEN(mux_to_pads_i.pad_io_b_11.oen),
-    .I(mux_to_pads_i.pad_io_b_11.chip2pad),
-    .O(pads_to_mux_o.pad_io_b_11.pad2chip),
-    .PAD(pad_pad_io_b_11_pad),
+   pad_functional_pd i_pad_gpio_b_26 (
+    .OEN(mux_to_pads_i.pad_gpio_b_26.oen),
+    .I(mux_to_pads_i.pad_gpio_b_26.chip2pad),
+    .O(pads_to_mux_o.pad_gpio_b_26.pad2chip),
+    .PAD(pad_pad_gpio_b_26_pad),
     .PEN(1'b1)
   );
-   pad_functional_pd i_pad_io_b_12 (
-    .OEN(mux_to_pads_i.pad_io_b_12.oen),
-    .I(mux_to_pads_i.pad_io_b_12.chip2pad),
-    .O(pads_to_mux_o.pad_io_b_12.pad2chip),
-    .PAD(pad_pad_io_b_12_pad),
+   pad_functional_pd i_pad_gpio_b_27 (
+    .OEN(mux_to_pads_i.pad_gpio_b_27.oen),
+    .I(mux_to_pads_i.pad_gpio_b_27.chip2pad),
+    .O(pads_to_mux_o.pad_gpio_b_27.pad2chip),
+    .PAD(pad_pad_gpio_b_27_pad),
     .PEN(1'b1)
   );
-   pad_functional_pd i_pad_io_b_13 (
-    .OEN(mux_to_pads_i.pad_io_b_13.oen),
-    .I(mux_to_pads_i.pad_io_b_13.chip2pad),
-    .O(pads_to_mux_o.pad_io_b_13.pad2chip),
-    .PAD(pad_pad_io_b_13_pad),
+   pad_functional_pd i_pad_gpio_b_28 (
+    .OEN(mux_to_pads_i.pad_gpio_b_28.oen),
+    .I(mux_to_pads_i.pad_gpio_b_28.chip2pad),
+    .O(pads_to_mux_o.pad_gpio_b_28.pad2chip),
+    .PAD(pad_pad_gpio_b_28_pad),
     .PEN(1'b1)
   );
-   pad_functional_pd i_pad_io_b_14 (
-    .OEN(mux_to_pads_i.pad_io_b_14.oen),
-    .I(mux_to_pads_i.pad_io_b_14.chip2pad),
-    .O(pads_to_mux_o.pad_io_b_14.pad2chip),
-    .PAD(pad_pad_io_b_14_pad),
+   pad_functional_pd i_pad_gpio_b_29 (
+    .OEN(mux_to_pads_i.pad_gpio_b_29.oen),
+    .I(mux_to_pads_i.pad_gpio_b_29.chip2pad),
+    .O(pads_to_mux_o.pad_gpio_b_29.pad2chip),
+    .PAD(pad_pad_gpio_b_29_pad),
     .PEN(1'b1)
   );
-   pad_functional_pd i_pad_io_b_15 (
-    .OEN(mux_to_pads_i.pad_io_b_15.oen),
-    .I(mux_to_pads_i.pad_io_b_15.chip2pad),
-    .O(pads_to_mux_o.pad_io_b_15.pad2chip),
-    .PAD(pad_pad_io_b_15_pad),
+   pad_functional_pd i_pad_gpio_b_30 (
+    .OEN(mux_to_pads_i.pad_gpio_b_30.oen),
+    .I(mux_to_pads_i.pad_gpio_b_30.chip2pad),
+    .O(pads_to_mux_o.pad_gpio_b_30.pad2chip),
+    .PAD(pad_pad_gpio_b_30_pad),
     .PEN(1'b1)
   );
-   pad_functional_pd i_pad_io_b_16 (
-    .OEN(mux_to_pads_i.pad_io_b_16.oen),
-    .I(mux_to_pads_i.pad_io_b_16.chip2pad),
-    .O(pads_to_mux_o.pad_io_b_16.pad2chip),
-    .PAD(pad_pad_io_b_16_pad),
+   pad_functional_pd i_pad_gpio_b_31 (
+    .OEN(mux_to_pads_i.pad_gpio_b_31.oen),
+    .I(mux_to_pads_i.pad_gpio_b_31.chip2pad),
+    .O(pads_to_mux_o.pad_gpio_b_31.pad2chip),
+    .PAD(pad_pad_gpio_b_31_pad),
     .PEN(1'b1)
   );
-   pad_functional_pd i_pad_io_b_17 (
-    .OEN(mux_to_pads_i.pad_io_b_17.oen),
-    .I(mux_to_pads_i.pad_io_b_17.chip2pad),
-    .O(pads_to_mux_o.pad_io_b_17.pad2chip),
-    .PAD(pad_pad_io_b_17_pad),
+   pad_functional_pd i_pad_gpio_b_32 (
+    .OEN(mux_to_pads_i.pad_gpio_b_32.oen),
+    .I(mux_to_pads_i.pad_gpio_b_32.chip2pad),
+    .O(pads_to_mux_o.pad_gpio_b_32.pad2chip),
+    .PAD(pad_pad_gpio_b_32_pad),
     .PEN(1'b1)
   );
-   pad_functional_pd i_pad_io_b_18 (
-    .OEN(mux_to_pads_i.pad_io_b_18.oen),
-    .I(mux_to_pads_i.pad_io_b_18.chip2pad),
-    .O(pads_to_mux_o.pad_io_b_18.pad2chip),
-    .PAD(pad_pad_io_b_18_pad),
+   pad_functional_pd i_pad_gpio_b_33 (
+    .OEN(mux_to_pads_i.pad_gpio_b_33.oen),
+    .I(mux_to_pads_i.pad_gpio_b_33.chip2pad),
+    .O(pads_to_mux_o.pad_gpio_b_33.pad2chip),
+    .PAD(pad_pad_gpio_b_33_pad),
     .PEN(1'b1)
   );
-   pad_functional_pd i_pad_io_b_19 (
-    .OEN(mux_to_pads_i.pad_io_b_19.oen),
-    .I(mux_to_pads_i.pad_io_b_19.chip2pad),
-    .O(pads_to_mux_o.pad_io_b_19.pad2chip),
-    .PAD(pad_pad_io_b_19_pad),
+   pad_functional_pd i_pad_gpio_b_34 (
+    .OEN(mux_to_pads_i.pad_gpio_b_34.oen),
+    .I(mux_to_pads_i.pad_gpio_b_34.chip2pad),
+    .O(pads_to_mux_o.pad_gpio_b_34.pad2chip),
+    .PAD(pad_pad_gpio_b_34_pad),
     .PEN(1'b1)
   );
-   pad_functional_pd i_pad_io_c_00 (
-    .OEN(mux_to_pads_i.pad_io_c_00.oen),
-    .I(mux_to_pads_i.pad_io_c_00.chip2pad),
-    .O(pads_to_mux_o.pad_io_c_00.pad2chip),
-    .PAD(pad_pad_io_c_00_pad),
+   pad_functional_pd i_pad_gpio_b_35 (
+    .OEN(mux_to_pads_i.pad_gpio_b_35.oen),
+    .I(mux_to_pads_i.pad_gpio_b_35.chip2pad),
+    .O(pads_to_mux_o.pad_gpio_b_35.pad2chip),
+    .PAD(pad_pad_gpio_b_35_pad),
     .PEN(1'b1)
   );
-   pad_functional_pd i_pad_io_c_01 (
-    .OEN(mux_to_pads_i.pad_io_c_01.oen),
-    .I(mux_to_pads_i.pad_io_c_01.chip2pad),
-    .O(pads_to_mux_o.pad_io_c_01.pad2chip),
-    .PAD(pad_pad_io_c_01_pad),
+   pad_functional_pd i_pad_gpio_b_36 (
+    .OEN(mux_to_pads_i.pad_gpio_b_36.oen),
+    .I(mux_to_pads_i.pad_gpio_b_36.chip2pad),
+    .O(pads_to_mux_o.pad_gpio_b_36.pad2chip),
+    .PAD(pad_pad_gpio_b_36_pad),
     .PEN(1'b1)
   );
-   pad_functional_pd i_pad_io_c_02 (
-    .OEN(mux_to_pads_i.pad_io_c_02.oen),
-    .I(mux_to_pads_i.pad_io_c_02.chip2pad),
-    .O(pads_to_mux_o.pad_io_c_02.pad2chip),
-    .PAD(pad_pad_io_c_02_pad),
+   pad_functional_pd i_pad_gpio_b_37 (
+    .OEN(mux_to_pads_i.pad_gpio_b_37.oen),
+    .I(mux_to_pads_i.pad_gpio_b_37.chip2pad),
+    .O(pads_to_mux_o.pad_gpio_b_37.pad2chip),
+    .PAD(pad_pad_gpio_b_37_pad),
     .PEN(1'b1)
   );
-   pad_functional_pd i_pad_io_c_03 (
-    .OEN(mux_to_pads_i.pad_io_c_03.oen),
-    .I(mux_to_pads_i.pad_io_c_03.chip2pad),
-    .O(pads_to_mux_o.pad_io_c_03.pad2chip),
-    .PAD(pad_pad_io_c_03_pad),
+   pad_functional_pd i_pad_gpio_b_38 (
+    .OEN(mux_to_pads_i.pad_gpio_b_38.oen),
+    .I(mux_to_pads_i.pad_gpio_b_38.chip2pad),
+    .O(pads_to_mux_o.pad_gpio_b_38.pad2chip),
+    .PAD(pad_pad_gpio_b_38_pad),
     .PEN(1'b1)
   );
-   pad_functional_pd i_pad_io_c_04 (
-    .OEN(mux_to_pads_i.pad_io_c_04.oen),
-    .I(mux_to_pads_i.pad_io_c_04.chip2pad),
-    .O(pads_to_mux_o.pad_io_c_04.pad2chip),
-    .PAD(pad_pad_io_c_04_pad),
+   pad_functional_pd i_pad_gpio_b_39 (
+    .OEN(mux_to_pads_i.pad_gpio_b_39.oen),
+    .I(mux_to_pads_i.pad_gpio_b_39.chip2pad),
+    .O(pads_to_mux_o.pad_gpio_b_39.pad2chip),
+    .PAD(pad_pad_gpio_b_39_pad),
     .PEN(1'b1)
   );
-   pad_functional_pd i_pad_io_c_05 (
-    .OEN(mux_to_pads_i.pad_io_c_05.oen),
-    .I(mux_to_pads_i.pad_io_c_05.chip2pad),
-    .O(pads_to_mux_o.pad_io_c_05.pad2chip),
-    .PAD(pad_pad_io_c_05_pad),
+   pad_functional_pd i_pad_gpio_b_40 (
+    .OEN(mux_to_pads_i.pad_gpio_b_40.oen),
+    .I(mux_to_pads_i.pad_gpio_b_40.chip2pad),
+    .O(pads_to_mux_o.pad_gpio_b_40.pad2chip),
+    .PAD(pad_pad_gpio_b_40_pad),
     .PEN(1'b1)
   );
-   pad_functional_pd i_pad_io_c_06 (
-    .OEN(mux_to_pads_i.pad_io_c_06.oen),
-    .I(mux_to_pads_i.pad_io_c_06.chip2pad),
-    .O(pads_to_mux_o.pad_io_c_06.pad2chip),
-    .PAD(pad_pad_io_c_06_pad),
+   pad_functional_pd i_pad_gpio_b_41 (
+    .OEN(mux_to_pads_i.pad_gpio_b_41.oen),
+    .I(mux_to_pads_i.pad_gpio_b_41.chip2pad),
+    .O(pads_to_mux_o.pad_gpio_b_41.pad2chip),
+    .PAD(pad_pad_gpio_b_41_pad),
     .PEN(1'b1)
   );
-   pad_functional_pd i_pad_io_c_07 (
-    .OEN(mux_to_pads_i.pad_io_c_07.oen),
-    .I(mux_to_pads_i.pad_io_c_07.chip2pad),
-    .O(pads_to_mux_o.pad_io_c_07.pad2chip),
-    .PAD(pad_pad_io_c_07_pad),
+   pad_functional_pd i_pad_gpio_b_42 (
+    .OEN(mux_to_pads_i.pad_gpio_b_42.oen),
+    .I(mux_to_pads_i.pad_gpio_b_42.chip2pad),
+    .O(pads_to_mux_o.pad_gpio_b_42.pad2chip),
+    .PAD(pad_pad_gpio_b_42_pad),
     .PEN(1'b1)
   );
-   pad_functional_pd i_pad_io_c_08 (
-    .OEN(mux_to_pads_i.pad_io_c_08.oen),
-    .I(mux_to_pads_i.pad_io_c_08.chip2pad),
-    .O(pads_to_mux_o.pad_io_c_08.pad2chip),
-    .PAD(pad_pad_io_c_08_pad),
+   pad_functional_pd i_pad_gpio_b_43 (
+    .OEN(mux_to_pads_i.pad_gpio_b_43.oen),
+    .I(mux_to_pads_i.pad_gpio_b_43.chip2pad),
+    .O(pads_to_mux_o.pad_gpio_b_43.pad2chip),
+    .PAD(pad_pad_gpio_b_43_pad),
     .PEN(1'b1)
   );
-   pad_functional_pd i_pad_io_c_09 (
-    .OEN(mux_to_pads_i.pad_io_c_09.oen),
-    .I(mux_to_pads_i.pad_io_c_09.chip2pad),
-    .O(pads_to_mux_o.pad_io_c_09.pad2chip),
-    .PAD(pad_pad_io_c_09_pad),
+   pad_functional_pd i_pad_gpio_b_44 (
+    .OEN(mux_to_pads_i.pad_gpio_b_44.oen),
+    .I(mux_to_pads_i.pad_gpio_b_44.chip2pad),
+    .O(pads_to_mux_o.pad_gpio_b_44.pad2chip),
+    .PAD(pad_pad_gpio_b_44_pad),
     .PEN(1'b1)
   );
-   pad_functional_pd i_pad_io_c_10 (
-    .OEN(mux_to_pads_i.pad_io_c_10.oen),
-    .I(mux_to_pads_i.pad_io_c_10.chip2pad),
-    .O(pads_to_mux_o.pad_io_c_10.pad2chip),
-    .PAD(pad_pad_io_c_10_pad),
+   pad_functional_pd i_pad_gpio_b_45 (
+    .OEN(mux_to_pads_i.pad_gpio_b_45.oen),
+    .I(mux_to_pads_i.pad_gpio_b_45.chip2pad),
+    .O(pads_to_mux_o.pad_gpio_b_45.pad2chip),
+    .PAD(pad_pad_gpio_b_45_pad),
     .PEN(1'b1)
   );
-   pad_functional_pd i_pad_io_c_11 (
-    .OEN(mux_to_pads_i.pad_io_c_11.oen),
-    .I(mux_to_pads_i.pad_io_c_11.chip2pad),
-    .O(pads_to_mux_o.pad_io_c_11.pad2chip),
-    .PAD(pad_pad_io_c_11_pad),
+   pad_functional_pd i_pad_gpio_b_46 (
+    .OEN(mux_to_pads_i.pad_gpio_b_46.oen),
+    .I(mux_to_pads_i.pad_gpio_b_46.chip2pad),
+    .O(pads_to_mux_o.pad_gpio_b_46.pad2chip),
+    .PAD(pad_pad_gpio_b_46_pad),
     .PEN(1'b1)
   );
-   pad_functional_pd i_pad_io_c_12 (
-    .OEN(mux_to_pads_i.pad_io_c_12.oen),
-    .I(mux_to_pads_i.pad_io_c_12.chip2pad),
-    .O(pads_to_mux_o.pad_io_c_12.pad2chip),
-    .PAD(pad_pad_io_c_12_pad),
+   pad_functional_pd i_pad_gpio_b_47 (
+    .OEN(mux_to_pads_i.pad_gpio_b_47.oen),
+    .I(mux_to_pads_i.pad_gpio_b_47.chip2pad),
+    .O(pads_to_mux_o.pad_gpio_b_47.pad2chip),
+    .PAD(pad_pad_gpio_b_47_pad),
     .PEN(1'b1)
   );
-   pad_functional_pd i_pad_io_c_13 (
-    .OEN(mux_to_pads_i.pad_io_c_13.oen),
-    .I(mux_to_pads_i.pad_io_c_13.chip2pad),
-    .O(pads_to_mux_o.pad_io_c_13.pad2chip),
-    .PAD(pad_pad_io_c_13_pad),
+   pad_functional_pd i_pad_gpio_b_48 (
+    .OEN(mux_to_pads_i.pad_gpio_b_48.oen),
+    .I(mux_to_pads_i.pad_gpio_b_48.chip2pad),
+    .O(pads_to_mux_o.pad_gpio_b_48.pad2chip),
+    .PAD(pad_pad_gpio_b_48_pad),
     .PEN(1'b1)
   );
-   pad_functional_pd i_pad_io_d_00 (
-    .OEN(mux_to_pads_i.pad_io_d_00.oen),
-    .I(mux_to_pads_i.pad_io_d_00.chip2pad),
-    .O(pads_to_mux_o.pad_io_d_00.pad2chip),
-    .PAD(pad_pad_io_d_00_pad),
+   pad_functional_pd i_pad_gpio_b_49 (
+    .OEN(mux_to_pads_i.pad_gpio_b_49.oen),
+    .I(mux_to_pads_i.pad_gpio_b_49.chip2pad),
+    .O(pads_to_mux_o.pad_gpio_b_49.pad2chip),
+    .PAD(pad_pad_gpio_b_49_pad),
     .PEN(1'b1)
   );
-   pad_functional_pd i_pad_io_d_01 (
-    .OEN(mux_to_pads_i.pad_io_d_01.oen),
-    .I(mux_to_pads_i.pad_io_d_01.chip2pad),
-    .O(pads_to_mux_o.pad_io_d_01.pad2chip),
-    .PAD(pad_pad_io_d_01_pad),
+   pad_functional_pd i_pad_gpio_b_50 (
+    .OEN(mux_to_pads_i.pad_gpio_b_50.oen),
+    .I(mux_to_pads_i.pad_gpio_b_50.chip2pad),
+    .O(pads_to_mux_o.pad_gpio_b_50.pad2chip),
+    .PAD(pad_pad_gpio_b_50_pad),
     .PEN(1'b1)
   );
-   pad_functional_pd i_pad_io_d_02 (
-    .OEN(mux_to_pads_i.pad_io_d_02.oen),
-    .I(mux_to_pads_i.pad_io_d_02.chip2pad),
-    .O(pads_to_mux_o.pad_io_d_02.pad2chip),
-    .PAD(pad_pad_io_d_02_pad),
+   pad_functional_pd i_pad_gpio_b_51 (
+    .OEN(mux_to_pads_i.pad_gpio_b_51.oen),
+    .I(mux_to_pads_i.pad_gpio_b_51.chip2pad),
+    .O(pads_to_mux_o.pad_gpio_b_51.pad2chip),
+    .PAD(pad_pad_gpio_b_51_pad),
     .PEN(1'b1)
   );
-   pad_functional_pd i_pad_io_d_03 (
-    .OEN(mux_to_pads_i.pad_io_d_03.oen),
-    .I(mux_to_pads_i.pad_io_d_03.chip2pad),
-    .O(pads_to_mux_o.pad_io_d_03.pad2chip),
-    .PAD(pad_pad_io_d_03_pad),
+   pad_functional_pd i_pad_gpio_b_52 (
+    .OEN(mux_to_pads_i.pad_gpio_b_52.oen),
+    .I(mux_to_pads_i.pad_gpio_b_52.chip2pad),
+    .O(pads_to_mux_o.pad_gpio_b_52.pad2chip),
+    .PAD(pad_pad_gpio_b_52_pad),
     .PEN(1'b1)
   );
-   pad_functional_pd i_pad_io_d_04 (
-    .OEN(mux_to_pads_i.pad_io_d_04.oen),
-    .I(mux_to_pads_i.pad_io_d_04.chip2pad),
-    .O(pads_to_mux_o.pad_io_d_04.pad2chip),
-    .PAD(pad_pad_io_d_04_pad),
+   pad_functional_pd i_pad_gpio_b_53 (
+    .OEN(mux_to_pads_i.pad_gpio_b_53.oen),
+    .I(mux_to_pads_i.pad_gpio_b_53.chip2pad),
+    .O(pads_to_mux_o.pad_gpio_b_53.pad2chip),
+    .PAD(pad_pad_gpio_b_53_pad),
     .PEN(1'b1)
   );
-   pad_functional_pd i_pad_io_d_05 (
-    .OEN(mux_to_pads_i.pad_io_d_05.oen),
-    .I(mux_to_pads_i.pad_io_d_05.chip2pad),
-    .O(pads_to_mux_o.pad_io_d_05.pad2chip),
-    .PAD(pad_pad_io_d_05_pad),
+   pad_functional_pd i_pad_gpio_b_54 (
+    .OEN(mux_to_pads_i.pad_gpio_b_54.oen),
+    .I(mux_to_pads_i.pad_gpio_b_54.chip2pad),
+    .O(pads_to_mux_o.pad_gpio_b_54.pad2chip),
+    .PAD(pad_pad_gpio_b_54_pad),
     .PEN(1'b1)
   );
-   pad_functional_pd i_pad_io_d_06 (
-    .OEN(mux_to_pads_i.pad_io_d_06.oen),
-    .I(mux_to_pads_i.pad_io_d_06.chip2pad),
-    .O(pads_to_mux_o.pad_io_d_06.pad2chip),
-    .PAD(pad_pad_io_d_06_pad),
+   pad_functional_pd i_pad_gpio_b_55 (
+    .OEN(mux_to_pads_i.pad_gpio_b_55.oen),
+    .I(mux_to_pads_i.pad_gpio_b_55.chip2pad),
+    .O(pads_to_mux_o.pad_gpio_b_55.pad2chip),
+    .PAD(pad_pad_gpio_b_55_pad),
     .PEN(1'b1)
   );
-   pad_functional_pd i_pad_io_d_07 (
-    .OEN(mux_to_pads_i.pad_io_d_07.oen),
-    .I(mux_to_pads_i.pad_io_d_07.chip2pad),
-    .O(pads_to_mux_o.pad_io_d_07.pad2chip),
-    .PAD(pad_pad_io_d_07_pad),
+   pad_functional_pd i_pad_gpio_b_56 (
+    .OEN(mux_to_pads_i.pad_gpio_b_56.oen),
+    .I(mux_to_pads_i.pad_gpio_b_56.chip2pad),
+    .O(pads_to_mux_o.pad_gpio_b_56.pad2chip),
+    .PAD(pad_pad_gpio_b_56_pad),
     .PEN(1'b1)
   );
-   pad_functional_pd i_pad_io_d_08 (
-    .OEN(mux_to_pads_i.pad_io_d_08.oen),
-    .I(mux_to_pads_i.pad_io_d_08.chip2pad),
-    .O(pads_to_mux_o.pad_io_d_08.pad2chip),
-    .PAD(pad_pad_io_d_08_pad),
+   pad_functional_pd i_pad_gpio_b_57 (
+    .OEN(mux_to_pads_i.pad_gpio_b_57.oen),
+    .I(mux_to_pads_i.pad_gpio_b_57.chip2pad),
+    .O(pads_to_mux_o.pad_gpio_b_57.pad2chip),
+    .PAD(pad_pad_gpio_b_57_pad),
     .PEN(1'b1)
   );
-   pad_functional_pd i_pad_io_d_09 (
-    .OEN(mux_to_pads_i.pad_io_d_09.oen),
-    .I(mux_to_pads_i.pad_io_d_09.chip2pad),
-    .O(pads_to_mux_o.pad_io_d_09.pad2chip),
-    .PAD(pad_pad_io_d_09_pad),
+   pad_functional_pd i_pad_gpio_b_58 (
+    .OEN(mux_to_pads_i.pad_gpio_b_58.oen),
+    .I(mux_to_pads_i.pad_gpio_b_58.chip2pad),
+    .O(pads_to_mux_o.pad_gpio_b_58.pad2chip),
+    .PAD(pad_pad_gpio_b_58_pad),
     .PEN(1'b1)
   );
-   pad_functional_pd i_pad_io_d_10 (
-    .OEN(mux_to_pads_i.pad_io_d_10.oen),
-    .I(mux_to_pads_i.pad_io_d_10.chip2pad),
-    .O(pads_to_mux_o.pad_io_d_10.pad2chip),
-    .PAD(pad_pad_io_d_10_pad),
+   pad_functional_pd i_pad_gpio_b_59 (
+    .OEN(mux_to_pads_i.pad_gpio_b_59.oen),
+    .I(mux_to_pads_i.pad_gpio_b_59.chip2pad),
+    .O(pads_to_mux_o.pad_gpio_b_59.pad2chip),
+    .PAD(pad_pad_gpio_b_59_pad),
     .PEN(1'b1)
   );
-   pad_functional_pd i_pad_io_d_11 (
-    .OEN(mux_to_pads_i.pad_io_d_11.oen),
-    .I(mux_to_pads_i.pad_io_d_11.chip2pad),
-    .O(pads_to_mux_o.pad_io_d_11.pad2chip),
-    .PAD(pad_pad_io_d_11_pad),
+   pad_functional_pd i_pad_gpio_b_60 (
+    .OEN(mux_to_pads_i.pad_gpio_b_60.oen),
+    .I(mux_to_pads_i.pad_gpio_b_60.chip2pad),
+    .O(pads_to_mux_o.pad_gpio_b_60.pad2chip),
+    .PAD(pad_pad_gpio_b_60_pad),
     .PEN(1'b1)
   );
-   pad_functional_pd i_pad_io_d_12 (
-    .OEN(mux_to_pads_i.pad_io_d_12.oen),
-    .I(mux_to_pads_i.pad_io_d_12.chip2pad),
-    .O(pads_to_mux_o.pad_io_d_12.pad2chip),
-    .PAD(pad_pad_io_d_12_pad),
+   pad_functional_pd i_pad_gpio_b_61 (
+    .OEN(mux_to_pads_i.pad_gpio_b_61.oen),
+    .I(mux_to_pads_i.pad_gpio_b_61.chip2pad),
+    .O(pads_to_mux_o.pad_gpio_b_61.pad2chip),
+    .PAD(pad_pad_gpio_b_61_pad),
     .PEN(1'b1)
   );
-   pad_functional_pd i_pad_io_d_13 (
-    .OEN(mux_to_pads_i.pad_io_d_13.oen),
-    .I(mux_to_pads_i.pad_io_d_13.chip2pad),
-    .O(pads_to_mux_o.pad_io_d_13.pad2chip),
-    .PAD(pad_pad_io_d_13_pad),
+   pad_functional_pd i_pad_gpio_c_00 (
+    .OEN(mux_to_pads_i.pad_gpio_c_00.oen),
+    .I(mux_to_pads_i.pad_gpio_c_00.chip2pad),
+    .O(pads_to_mux_o.pad_gpio_c_00.pad2chip),
+    .PAD(pad_pad_gpio_c_00_pad),
     .PEN(1'b1)
   );
-   pad_functional_pd i_pad_io_d_14 (
-    .OEN(mux_to_pads_i.pad_io_d_14.oen),
-    .I(mux_to_pads_i.pad_io_d_14.chip2pad),
-    .O(pads_to_mux_o.pad_io_d_14.pad2chip),
-    .PAD(pad_pad_io_d_14_pad),
+   pad_functional_pd i_pad_gpio_c_01 (
+    .OEN(mux_to_pads_i.pad_gpio_c_01.oen),
+    .I(mux_to_pads_i.pad_gpio_c_01.chip2pad),
+    .O(pads_to_mux_o.pad_gpio_c_01.pad2chip),
+    .PAD(pad_pad_gpio_c_01_pad),
     .PEN(1'b1)
   );
-   pad_functional_pd i_pad_io_d_15 (
-    .OEN(mux_to_pads_i.pad_io_d_15.oen),
-    .I(mux_to_pads_i.pad_io_d_15.chip2pad),
-    .O(pads_to_mux_o.pad_io_d_15.pad2chip),
-    .PAD(pad_pad_io_d_15_pad),
+   pad_functional_pd i_pad_gpio_c_02 (
+    .OEN(mux_to_pads_i.pad_gpio_c_02.oen),
+    .I(mux_to_pads_i.pad_gpio_c_02.chip2pad),
+    .O(pads_to_mux_o.pad_gpio_c_02.pad2chip),
+    .PAD(pad_pad_gpio_c_02_pad),
     .PEN(1'b1)
   );
-   pad_functional_pd i_pad_io_e_00 (
-    .OEN(mux_to_pads_i.pad_io_e_00.oen),
-    .I(mux_to_pads_i.pad_io_e_00.chip2pad),
-    .O(pads_to_mux_o.pad_io_e_00.pad2chip),
-    .PAD(pad_pad_io_e_00_pad),
+   pad_functional_pd i_pad_gpio_c_03 (
+    .OEN(mux_to_pads_i.pad_gpio_c_03.oen),
+    .I(mux_to_pads_i.pad_gpio_c_03.chip2pad),
+    .O(pads_to_mux_o.pad_gpio_c_03.pad2chip),
+    .PAD(pad_pad_gpio_c_03_pad),
     .PEN(1'b1)
   );
-   pad_functional_pd i_pad_io_e_01 (
-    .OEN(mux_to_pads_i.pad_io_e_01.oen),
-    .I(mux_to_pads_i.pad_io_e_01.chip2pad),
-    .O(pads_to_mux_o.pad_io_e_01.pad2chip),
-    .PAD(pad_pad_io_e_01_pad),
+   pad_functional_pd i_pad_gpio_d_00 (
+    .OEN(mux_to_pads_i.pad_gpio_d_00.oen),
+    .I(mux_to_pads_i.pad_gpio_d_00.chip2pad),
+    .O(pads_to_mux_o.pad_gpio_d_00.pad2chip),
+    .PAD(pad_pad_gpio_d_00_pad),
     .PEN(1'b1)
   );
-   pad_functional_pd i_pad_io_e_02 (
-    .OEN(mux_to_pads_i.pad_io_e_02.oen),
-    .I(mux_to_pads_i.pad_io_e_02.chip2pad),
-    .O(pads_to_mux_o.pad_io_e_02.pad2chip),
-    .PAD(pad_pad_io_e_02_pad),
+   pad_functional_pd i_pad_gpio_d_01 (
+    .OEN(mux_to_pads_i.pad_gpio_d_01.oen),
+    .I(mux_to_pads_i.pad_gpio_d_01.chip2pad),
+    .O(pads_to_mux_o.pad_gpio_d_01.pad2chip),
+    .PAD(pad_pad_gpio_d_01_pad),
     .PEN(1'b1)
   );
-   pad_functional_pd i_pad_io_e_03 (
-    .OEN(mux_to_pads_i.pad_io_e_03.oen),
-    .I(mux_to_pads_i.pad_io_e_03.chip2pad),
-    .O(pads_to_mux_o.pad_io_e_03.pad2chip),
-    .PAD(pad_pad_io_e_03_pad),
+   pad_functional_pd i_pad_gpio_d_02 (
+    .OEN(mux_to_pads_i.pad_gpio_d_02.oen),
+    .I(mux_to_pads_i.pad_gpio_d_02.chip2pad),
+    .O(pads_to_mux_o.pad_gpio_d_02.pad2chip),
+    .PAD(pad_pad_gpio_d_02_pad),
     .PEN(1'b1)
   );
-   pad_functional_pd i_pad_io_e_04 (
-    .OEN(mux_to_pads_i.pad_io_e_04.oen),
-    .I(mux_to_pads_i.pad_io_e_04.chip2pad),
-    .O(pads_to_mux_o.pad_io_e_04.pad2chip),
-    .PAD(pad_pad_io_e_04_pad),
+   pad_functional_pd i_pad_gpio_d_03 (
+    .OEN(mux_to_pads_i.pad_gpio_d_03.oen),
+    .I(mux_to_pads_i.pad_gpio_d_03.chip2pad),
+    .O(pads_to_mux_o.pad_gpio_d_03.pad2chip),
+    .PAD(pad_pad_gpio_d_03_pad),
     .PEN(1'b1)
   );
-   pad_functional_pd i_pad_io_e_05 (
-    .OEN(mux_to_pads_i.pad_io_e_05.oen),
-    .I(mux_to_pads_i.pad_io_e_05.chip2pad),
-    .O(pads_to_mux_o.pad_io_e_05.pad2chip),
-    .PAD(pad_pad_io_e_05_pad),
+   pad_functional_pd i_pad_gpio_d_04 (
+    .OEN(mux_to_pads_i.pad_gpio_d_04.oen),
+    .I(mux_to_pads_i.pad_gpio_d_04.chip2pad),
+    .O(pads_to_mux_o.pad_gpio_d_04.pad2chip),
+    .PAD(pad_pad_gpio_d_04_pad),
     .PEN(1'b1)
   );
-   pad_functional_pd i_pad_io_e_06 (
-    .OEN(mux_to_pads_i.pad_io_e_06.oen),
-    .I(mux_to_pads_i.pad_io_e_06.chip2pad),
-    .O(pads_to_mux_o.pad_io_e_06.pad2chip),
-    .PAD(pad_pad_io_e_06_pad),
+   pad_functional_pd i_pad_gpio_d_05 (
+    .OEN(mux_to_pads_i.pad_gpio_d_05.oen),
+    .I(mux_to_pads_i.pad_gpio_d_05.chip2pad),
+    .O(pads_to_mux_o.pad_gpio_d_05.pad2chip),
+    .PAD(pad_pad_gpio_d_05_pad),
     .PEN(1'b1)
   );
-   pad_functional_pd i_pad_io_e_07 (
-    .OEN(mux_to_pads_i.pad_io_e_07.oen),
-    .I(mux_to_pads_i.pad_io_e_07.chip2pad),
-    .O(pads_to_mux_o.pad_io_e_07.pad2chip),
-    .PAD(pad_pad_io_e_07_pad),
+   pad_functional_pd i_pad_gpio_d_06 (
+    .OEN(mux_to_pads_i.pad_gpio_d_06.oen),
+    .I(mux_to_pads_i.pad_gpio_d_06.chip2pad),
+    .O(pads_to_mux_o.pad_gpio_d_06.pad2chip),
+    .PAD(pad_pad_gpio_d_06_pad),
     .PEN(1'b1)
   );
-   pad_functional_pd i_pad_io_e_08 (
-    .OEN(mux_to_pads_i.pad_io_e_08.oen),
-    .I(mux_to_pads_i.pad_io_e_08.chip2pad),
-    .O(pads_to_mux_o.pad_io_e_08.pad2chip),
-    .PAD(pad_pad_io_e_08_pad),
+   pad_functional_pd i_pad_gpio_d_07 (
+    .OEN(mux_to_pads_i.pad_gpio_d_07.oen),
+    .I(mux_to_pads_i.pad_gpio_d_07.chip2pad),
+    .O(pads_to_mux_o.pad_gpio_d_07.pad2chip),
+    .PAD(pad_pad_gpio_d_07_pad),
     .PEN(1'b1)
   );
-   pad_functional_pd i_pad_io_e_09 (
-    .OEN(mux_to_pads_i.pad_io_e_09.oen),
-    .I(mux_to_pads_i.pad_io_e_09.chip2pad),
-    .O(pads_to_mux_o.pad_io_e_09.pad2chip),
-    .PAD(pad_pad_io_e_09_pad),
+   pad_functional_pd i_pad_gpio_d_08 (
+    .OEN(mux_to_pads_i.pad_gpio_d_08.oen),
+    .I(mux_to_pads_i.pad_gpio_d_08.chip2pad),
+    .O(pads_to_mux_o.pad_gpio_d_08.pad2chip),
+    .PAD(pad_pad_gpio_d_08_pad),
     .PEN(1'b1)
   );
-   pad_functional_pd i_pad_io_e_10 (
-    .OEN(mux_to_pads_i.pad_io_e_10.oen),
-    .I(mux_to_pads_i.pad_io_e_10.chip2pad),
-    .O(pads_to_mux_o.pad_io_e_10.pad2chip),
-    .PAD(pad_pad_io_e_10_pad),
+   pad_functional_pd i_pad_gpio_d_09 (
+    .OEN(mux_to_pads_i.pad_gpio_d_09.oen),
+    .I(mux_to_pads_i.pad_gpio_d_09.chip2pad),
+    .O(pads_to_mux_o.pad_gpio_d_09.pad2chip),
+    .PAD(pad_pad_gpio_d_09_pad),
     .PEN(1'b1)
   );
-   pad_functional_pd i_pad_io_e_11 (
-    .OEN(mux_to_pads_i.pad_io_e_11.oen),
-    .I(mux_to_pads_i.pad_io_e_11.chip2pad),
-    .O(pads_to_mux_o.pad_io_e_11.pad2chip),
-    .PAD(pad_pad_io_e_11_pad),
+   pad_functional_pd i_pad_gpio_d_10 (
+    .OEN(mux_to_pads_i.pad_gpio_d_10.oen),
+    .I(mux_to_pads_i.pad_gpio_d_10.chip2pad),
+    .O(pads_to_mux_o.pad_gpio_d_10.pad2chip),
+    .PAD(pad_pad_gpio_d_10_pad),
     .PEN(1'b1)
   );
-   pad_functional_pd i_pad_io_e_12 (
-    .OEN(mux_to_pads_i.pad_io_e_12.oen),
-    .I(mux_to_pads_i.pad_io_e_12.chip2pad),
-    .O(pads_to_mux_o.pad_io_e_12.pad2chip),
-    .PAD(pad_pad_io_e_12_pad),
+   pad_functional_pd i_pad_gpio_e_00 (
+    .OEN(mux_to_pads_i.pad_gpio_e_00.oen),
+    .I(mux_to_pads_i.pad_gpio_e_00.chip2pad),
+    .O(pads_to_mux_o.pad_gpio_e_00.pad2chip),
+    .PAD(pad_pad_gpio_e_00_pad),
     .PEN(1'b1)
   );
-   pad_functional_pd i_pad_io_e_13 (
-    .OEN(mux_to_pads_i.pad_io_e_13.oen),
-    .I(mux_to_pads_i.pad_io_e_13.chip2pad),
-    .O(pads_to_mux_o.pad_io_e_13.pad2chip),
-    .PAD(pad_pad_io_e_13_pad),
+   pad_functional_pd i_pad_gpio_e_01 (
+    .OEN(mux_to_pads_i.pad_gpio_e_01.oen),
+    .I(mux_to_pads_i.pad_gpio_e_01.chip2pad),
+    .O(pads_to_mux_o.pad_gpio_e_01.pad2chip),
+    .PAD(pad_pad_gpio_e_01_pad),
     .PEN(1'b1)
   );
-   pad_functional_pd i_pad_io_e_14 (
-    .OEN(mux_to_pads_i.pad_io_e_14.oen),
-    .I(mux_to_pads_i.pad_io_e_14.chip2pad),
-    .O(pads_to_mux_o.pad_io_e_14.pad2chip),
-    .PAD(pad_pad_io_e_14_pad),
+   pad_functional_pd i_pad_gpio_e_02 (
+    .OEN(mux_to_pads_i.pad_gpio_e_02.oen),
+    .I(mux_to_pads_i.pad_gpio_e_02.chip2pad),
+    .O(pads_to_mux_o.pad_gpio_e_02.pad2chip),
+    .PAD(pad_pad_gpio_e_02_pad),
     .PEN(1'b1)
   );
-   pad_functional_pd i_pad_io_f_00 (
-    .OEN(mux_to_pads_i.pad_io_f_00.oen),
-    .I(mux_to_pads_i.pad_io_f_00.chip2pad),
-    .O(pads_to_mux_o.pad_io_f_00.pad2chip),
-    .PAD(pad_pad_io_f_00_pad),
+   pad_functional_pd i_pad_gpio_e_03 (
+    .OEN(mux_to_pads_i.pad_gpio_e_03.oen),
+    .I(mux_to_pads_i.pad_gpio_e_03.chip2pad),
+    .O(pads_to_mux_o.pad_gpio_e_03.pad2chip),
+    .PAD(pad_pad_gpio_e_03_pad),
     .PEN(1'b1)
   );
-   pad_functional_pd i_pad_io_f_01 (
-    .OEN(mux_to_pads_i.pad_io_f_01.oen),
-    .I(mux_to_pads_i.pad_io_f_01.chip2pad),
-    .O(pads_to_mux_o.pad_io_f_01.pad2chip),
-    .PAD(pad_pad_io_f_01_pad),
+   pad_functional_pd i_pad_gpio_e_04 (
+    .OEN(mux_to_pads_i.pad_gpio_e_04.oen),
+    .I(mux_to_pads_i.pad_gpio_e_04.chip2pad),
+    .O(pads_to_mux_o.pad_gpio_e_04.pad2chip),
+    .PAD(pad_pad_gpio_e_04_pad),
     .PEN(1'b1)
   );
-   pad_functional_pd i_pad_io_f_02 (
-    .OEN(mux_to_pads_i.pad_io_f_02.oen),
-    .I(mux_to_pads_i.pad_io_f_02.chip2pad),
-    .O(pads_to_mux_o.pad_io_f_02.pad2chip),
-    .PAD(pad_pad_io_f_02_pad),
+   pad_functional_pd i_pad_gpio_e_05 (
+    .OEN(mux_to_pads_i.pad_gpio_e_05.oen),
+    .I(mux_to_pads_i.pad_gpio_e_05.chip2pad),
+    .O(pads_to_mux_o.pad_gpio_e_05.pad2chip),
+    .PAD(pad_pad_gpio_e_05_pad),
     .PEN(1'b1)
   );
-   pad_functional_pd i_pad_io_f_03 (
-    .OEN(mux_to_pads_i.pad_io_f_03.oen),
-    .I(mux_to_pads_i.pad_io_f_03.chip2pad),
-    .O(pads_to_mux_o.pad_io_f_03.pad2chip),
-    .PAD(pad_pad_io_f_03_pad),
+   pad_functional_pd i_pad_gpio_e_06 (
+    .OEN(mux_to_pads_i.pad_gpio_e_06.oen),
+    .I(mux_to_pads_i.pad_gpio_e_06.chip2pad),
+    .O(pads_to_mux_o.pad_gpio_e_06.pad2chip),
+    .PAD(pad_pad_gpio_e_06_pad),
     .PEN(1'b1)
   );
-   pad_functional_pd i_pad_io_f_04 (
-    .OEN(mux_to_pads_i.pad_io_f_04.oen),
-    .I(mux_to_pads_i.pad_io_f_04.chip2pad),
-    .O(pads_to_mux_o.pad_io_f_04.pad2chip),
-    .PAD(pad_pad_io_f_04_pad),
+   pad_functional_pd i_pad_gpio_e_07 (
+    .OEN(mux_to_pads_i.pad_gpio_e_07.oen),
+    .I(mux_to_pads_i.pad_gpio_e_07.chip2pad),
+    .O(pads_to_mux_o.pad_gpio_e_07.pad2chip),
+    .PAD(pad_pad_gpio_e_07_pad),
     .PEN(1'b1)
   );
-   pad_functional_pd i_pad_io_f_05 (
-    .OEN(mux_to_pads_i.pad_io_f_05.oen),
-    .I(mux_to_pads_i.pad_io_f_05.chip2pad),
-    .O(pads_to_mux_o.pad_io_f_05.pad2chip),
-    .PAD(pad_pad_io_f_05_pad),
+   pad_functional_pd i_pad_gpio_e_08 (
+    .OEN(mux_to_pads_i.pad_gpio_e_08.oen),
+    .I(mux_to_pads_i.pad_gpio_e_08.chip2pad),
+    .O(pads_to_mux_o.pad_gpio_e_08.pad2chip),
+    .PAD(pad_pad_gpio_e_08_pad),
     .PEN(1'b1)
   );
-   pad_functional_pd i_pad_io_f_06 (
-    .OEN(mux_to_pads_i.pad_io_f_06.oen),
-    .I(mux_to_pads_i.pad_io_f_06.chip2pad),
-    .O(pads_to_mux_o.pad_io_f_06.pad2chip),
-    .PAD(pad_pad_io_f_06_pad),
+   pad_functional_pd i_pad_gpio_e_09 (
+    .OEN(mux_to_pads_i.pad_gpio_e_09.oen),
+    .I(mux_to_pads_i.pad_gpio_e_09.chip2pad),
+    .O(pads_to_mux_o.pad_gpio_e_09.pad2chip),
+    .PAD(pad_pad_gpio_e_09_pad),
     .PEN(1'b1)
   );
-   pad_functional_pd i_pad_io_f_07 (
-    .OEN(mux_to_pads_i.pad_io_f_07.oen),
-    .I(mux_to_pads_i.pad_io_f_07.chip2pad),
-    .O(pads_to_mux_o.pad_io_f_07.pad2chip),
-    .PAD(pad_pad_io_f_07_pad),
+   pad_functional_pd i_pad_gpio_e_10 (
+    .OEN(mux_to_pads_i.pad_gpio_e_10.oen),
+    .I(mux_to_pads_i.pad_gpio_e_10.chip2pad),
+    .O(pads_to_mux_o.pad_gpio_e_10.pad2chip),
+    .PAD(pad_pad_gpio_e_10_pad),
     .PEN(1'b1)
   );
-   pad_functional_pd i_pad_io_f_08 (
-    .OEN(mux_to_pads_i.pad_io_f_08.oen),
-    .I(mux_to_pads_i.pad_io_f_08.chip2pad),
-    .O(pads_to_mux_o.pad_io_f_08.pad2chip),
-    .PAD(pad_pad_io_f_08_pad),
+   pad_functional_pd i_pad_gpio_e_11 (
+    .OEN(mux_to_pads_i.pad_gpio_e_11.oen),
+    .I(mux_to_pads_i.pad_gpio_e_11.chip2pad),
+    .O(pads_to_mux_o.pad_gpio_e_11.pad2chip),
+    .PAD(pad_pad_gpio_e_11_pad),
     .PEN(1'b1)
   );
-   pad_functional_pd i_pad_io_f_09 (
-    .OEN(mux_to_pads_i.pad_io_f_09.oen),
-    .I(mux_to_pads_i.pad_io_f_09.chip2pad),
-    .O(pads_to_mux_o.pad_io_f_09.pad2chip),
-    .PAD(pad_pad_io_f_09_pad),
+   pad_functional_pd i_pad_gpio_e_12 (
+    .OEN(mux_to_pads_i.pad_gpio_e_12.oen),
+    .I(mux_to_pads_i.pad_gpio_e_12.chip2pad),
+    .O(pads_to_mux_o.pad_gpio_e_12.pad2chip),
+    .PAD(pad_pad_gpio_e_12_pad),
     .PEN(1'b1)
   );
-   pad_functional_pd i_pad_io_f_10 (
-    .OEN(mux_to_pads_i.pad_io_f_10.oen),
-    .I(mux_to_pads_i.pad_io_f_10.chip2pad),
-    .O(pads_to_mux_o.pad_io_f_10.pad2chip),
-    .PAD(pad_pad_io_f_10_pad),
+   pad_functional_pd i_pad_gpio_f_00 (
+    .OEN(mux_to_pads_i.pad_gpio_f_00.oen),
+    .I(mux_to_pads_i.pad_gpio_f_00.chip2pad),
+    .O(pads_to_mux_o.pad_gpio_f_00.pad2chip),
+    .PAD(pad_pad_gpio_f_00_pad),
     .PEN(1'b1)
   );
-   pad_functional_pd i_pad_io_g_00 (
-    .OEN(mux_to_pads_i.pad_io_g_00.oen),
-    .I(mux_to_pads_i.pad_io_g_00.chip2pad),
-    .O(pads_to_mux_o.pad_io_g_00.pad2chip),
-    .PAD(pad_pad_io_g_00_pad),
+   pad_functional_pd i_pad_gpio_f_01 (
+    .OEN(mux_to_pads_i.pad_gpio_f_01.oen),
+    .I(mux_to_pads_i.pad_gpio_f_01.chip2pad),
+    .O(pads_to_mux_o.pad_gpio_f_01.pad2chip),
+    .PAD(pad_pad_gpio_f_01_pad),
     .PEN(1'b1)
   );
-   pad_functional_pd i_pad_io_g_01 (
-    .OEN(mux_to_pads_i.pad_io_g_01.oen),
-    .I(mux_to_pads_i.pad_io_g_01.chip2pad),
-    .O(pads_to_mux_o.pad_io_g_01.pad2chip),
-    .PAD(pad_pad_io_g_01_pad),
+   pad_functional_pd i_pad_gpio_f_02 (
+    .OEN(mux_to_pads_i.pad_gpio_f_02.oen),
+    .I(mux_to_pads_i.pad_gpio_f_02.chip2pad),
+    .O(pads_to_mux_o.pad_gpio_f_02.pad2chip),
+    .PAD(pad_pad_gpio_f_02_pad),
     .PEN(1'b1)
   );
-   pad_functional_pd i_pad_io_g_02 (
-    .OEN(mux_to_pads_i.pad_io_g_02.oen),
-    .I(mux_to_pads_i.pad_io_g_02.chip2pad),
-    .O(pads_to_mux_o.pad_io_g_02.pad2chip),
-    .PAD(pad_pad_io_g_02_pad),
+   pad_functional_pd i_pad_gpio_f_03 (
+    .OEN(mux_to_pads_i.pad_gpio_f_03.oen),
+    .I(mux_to_pads_i.pad_gpio_f_03.chip2pad),
+    .O(pads_to_mux_o.pad_gpio_f_03.pad2chip),
+    .PAD(pad_pad_gpio_f_03_pad),
     .PEN(1'b1)
   );
-   pad_functional_pd i_pad_io_g_03 (
-    .OEN(mux_to_pads_i.pad_io_g_03.oen),
-    .I(mux_to_pads_i.pad_io_g_03.chip2pad),
-    .O(pads_to_mux_o.pad_io_g_03.pad2chip),
-    .PAD(pad_pad_io_g_03_pad),
+   pad_functional_pd i_pad_gpio_f_04 (
+    .OEN(mux_to_pads_i.pad_gpio_f_04.oen),
+    .I(mux_to_pads_i.pad_gpio_f_04.chip2pad),
+    .O(pads_to_mux_o.pad_gpio_f_04.pad2chip),
+    .PAD(pad_pad_gpio_f_04_pad),
     .PEN(1'b1)
   );
-   pad_functional_pd i_pad_io_g_04 (
-    .OEN(mux_to_pads_i.pad_io_g_04.oen),
-    .I(mux_to_pads_i.pad_io_g_04.chip2pad),
-    .O(pads_to_mux_o.pad_io_g_04.pad2chip),
-    .PAD(pad_pad_io_g_04_pad),
+   pad_functional_pd i_pad_gpio_f_05 (
+    .OEN(mux_to_pads_i.pad_gpio_f_05.oen),
+    .I(mux_to_pads_i.pad_gpio_f_05.chip2pad),
+    .O(pads_to_mux_o.pad_gpio_f_05.pad2chip),
+    .PAD(pad_pad_gpio_f_05_pad),
     .PEN(1'b1)
   );
-   pad_functional_pd i_pad_io_g_05 (
-    .OEN(mux_to_pads_i.pad_io_g_05.oen),
-    .I(mux_to_pads_i.pad_io_g_05.chip2pad),
-    .O(pads_to_mux_o.pad_io_g_05.pad2chip),
-    .PAD(pad_pad_io_g_05_pad),
+   pad_functional_pd i_pad_gpio_f_06 (
+    .OEN(mux_to_pads_i.pad_gpio_f_06.oen),
+    .I(mux_to_pads_i.pad_gpio_f_06.chip2pad),
+    .O(pads_to_mux_o.pad_gpio_f_06.pad2chip),
+    .PAD(pad_pad_gpio_f_06_pad),
     .PEN(1'b1)
   );
-   pad_functional_pd i_pad_io_g_06 (
-    .OEN(mux_to_pads_i.pad_io_g_06.oen),
-    .I(mux_to_pads_i.pad_io_g_06.chip2pad),
-    .O(pads_to_mux_o.pad_io_g_06.pad2chip),
-    .PAD(pad_pad_io_g_06_pad),
+   pad_functional_pd i_pad_gpio_f_07 (
+    .OEN(mux_to_pads_i.pad_gpio_f_07.oen),
+    .I(mux_to_pads_i.pad_gpio_f_07.chip2pad),
+    .O(pads_to_mux_o.pad_gpio_f_07.pad2chip),
+    .PAD(pad_pad_gpio_f_07_pad),
     .PEN(1'b1)
   );
-   pad_functional_pd i_pad_io_g_07 (
-    .OEN(mux_to_pads_i.pad_io_g_07.oen),
-    .I(mux_to_pads_i.pad_io_g_07.chip2pad),
-    .O(pads_to_mux_o.pad_io_g_07.pad2chip),
-    .PAD(pad_pad_io_g_07_pad),
+   pad_functional_pd i_pad_gpio_f_08 (
+    .OEN(mux_to_pads_i.pad_gpio_f_08.oen),
+    .I(mux_to_pads_i.pad_gpio_f_08.chip2pad),
+    .O(pads_to_mux_o.pad_gpio_f_08.pad2chip),
+    .PAD(pad_pad_gpio_f_08_pad),
     .PEN(1'b1)
   );
-   pad_functional_pd i_pad_io_g_08 (
-    .OEN(mux_to_pads_i.pad_io_g_08.oen),
-    .I(mux_to_pads_i.pad_io_g_08.chip2pad),
-    .O(pads_to_mux_o.pad_io_g_08.pad2chip),
-    .PAD(pad_pad_io_g_08_pad),
+   pad_functional_pd i_pad_gpio_f_09 (
+    .OEN(mux_to_pads_i.pad_gpio_f_09.oen),
+    .I(mux_to_pads_i.pad_gpio_f_09.chip2pad),
+    .O(pads_to_mux_o.pad_gpio_f_09.pad2chip),
+    .PAD(pad_pad_gpio_f_09_pad),
     .PEN(1'b1)
   );
-   pad_functional_pd i_pad_io_g_09 (
-    .OEN(mux_to_pads_i.pad_io_g_09.oen),
-    .I(mux_to_pads_i.pad_io_g_09.chip2pad),
-    .O(pads_to_mux_o.pad_io_g_09.pad2chip),
-    .PAD(pad_pad_io_g_09_pad),
+   pad_functional_pd i_pad_gpio_f_10 (
+    .OEN(mux_to_pads_i.pad_gpio_f_10.oen),
+    .I(mux_to_pads_i.pad_gpio_f_10.chip2pad),
+    .O(pads_to_mux_o.pad_gpio_f_10.pad2chip),
+    .PAD(pad_pad_gpio_f_10_pad),
     .PEN(1'b1)
   );
-   pad_functional_pd i_pad_io_g_10 (
-    .OEN(mux_to_pads_i.pad_io_g_10.oen),
-    .I(mux_to_pads_i.pad_io_g_10.chip2pad),
-    .O(pads_to_mux_o.pad_io_g_10.pad2chip),
-    .PAD(pad_pad_io_g_10_pad),
+   pad_functional_pd i_pad_gpio_f_11 (
+    .OEN(mux_to_pads_i.pad_gpio_f_11.oen),
+    .I(mux_to_pads_i.pad_gpio_f_11.chip2pad),
+    .O(pads_to_mux_o.pad_gpio_f_11.pad2chip),
+    .PAD(pad_pad_gpio_f_11_pad),
     .PEN(1'b1)
   );
-   pad_functional_pd i_pad_io_g_11 (
-    .OEN(mux_to_pads_i.pad_io_g_11.oen),
-    .I(mux_to_pads_i.pad_io_g_11.chip2pad),
-    .O(pads_to_mux_o.pad_io_g_11.pad2chip),
-    .PAD(pad_pad_io_g_11_pad),
+   pad_functional_pd i_pad_gpio_f_12 (
+    .OEN(mux_to_pads_i.pad_gpio_f_12.oen),
+    .I(mux_to_pads_i.pad_gpio_f_12.chip2pad),
+    .O(pads_to_mux_o.pad_gpio_f_12.pad2chip),
+    .PAD(pad_pad_gpio_f_12_pad),
     .PEN(1'b1)
   );
-   pad_functional_pd i_pad_io_g_12 (
-    .OEN(mux_to_pads_i.pad_io_g_12.oen),
-    .I(mux_to_pads_i.pad_io_g_12.chip2pad),
-    .O(pads_to_mux_o.pad_io_g_12.pad2chip),
-    .PAD(pad_pad_io_g_12_pad),
+   pad_functional_pd i_pad_gpio_f_13 (
+    .OEN(mux_to_pads_i.pad_gpio_f_13.oen),
+    .I(mux_to_pads_i.pad_gpio_f_13.chip2pad),
+    .O(pads_to_mux_o.pad_gpio_f_13.pad2chip),
+    .PAD(pad_pad_gpio_f_13_pad),
     .PEN(1'b1)
   );
-   pad_functional_pd i_pad_io_g_13 (
-    .OEN(mux_to_pads_i.pad_io_g_13.oen),
-    .I(mux_to_pads_i.pad_io_g_13.chip2pad),
-    .O(pads_to_mux_o.pad_io_g_13.pad2chip),
-    .PAD(pad_pad_io_g_13_pad),
+   pad_functional_pd i_pad_gpio_f_14 (
+    .OEN(mux_to_pads_i.pad_gpio_f_14.oen),
+    .I(mux_to_pads_i.pad_gpio_f_14.chip2pad),
+    .O(pads_to_mux_o.pad_gpio_f_14.pad2chip),
+    .PAD(pad_pad_gpio_f_14_pad),
     .PEN(1'b1)
   );
-   pad_functional_pd i_pad_io_g_14 (
-    .OEN(mux_to_pads_i.pad_io_g_14.oen),
-    .I(mux_to_pads_i.pad_io_g_14.chip2pad),
-    .O(pads_to_mux_o.pad_io_g_14.pad2chip),
-    .PAD(pad_pad_io_g_14_pad),
+   pad_functional_pd i_pad_gpio_f_15 (
+    .OEN(mux_to_pads_i.pad_gpio_f_15.oen),
+    .I(mux_to_pads_i.pad_gpio_f_15.chip2pad),
+    .O(pads_to_mux_o.pad_gpio_f_15.pad2chip),
+    .PAD(pad_pad_gpio_f_15_pad),
     .PEN(1'b1)
   );
-   pad_functional_pd i_pad_pwm0 (
-    .OEN(mux_to_pads_i.pad_pwm0.oen),
-    .I(mux_to_pads_i.pad_pwm0.chip2pad),
-    .O(pads_to_mux_o.pad_pwm0.pad2chip),
-    .PAD(pad_pad_pwm0_pad),
+   pad_functional_pd i_pad_gpio_f_16 (
+    .OEN(mux_to_pads_i.pad_gpio_f_16.oen),
+    .I(mux_to_pads_i.pad_gpio_f_16.chip2pad),
+    .O(pads_to_mux_o.pad_gpio_f_16.pad2chip),
+    .PAD(pad_pad_gpio_f_16_pad),
     .PEN(1'b1)
   );
-   pad_functional_pd i_pad_pwm1 (
-    .OEN(mux_to_pads_i.pad_pwm1.oen),
-    .I(mux_to_pads_i.pad_pwm1.chip2pad),
-    .O(pads_to_mux_o.pad_pwm1.pad2chip),
-    .PAD(pad_pad_pwm1_pad),
+   pad_functional_pd i_pad_gpio_f_17 (
+    .OEN(mux_to_pads_i.pad_gpio_f_17.oen),
+    .I(mux_to_pads_i.pad_gpio_f_17.chip2pad),
+    .O(pads_to_mux_o.pad_gpio_f_17.pad2chip),
+    .PAD(pad_pad_gpio_f_17_pad),
     .PEN(1'b1)
   );
-   pad_functional_pd i_pad_pwm2 (
-    .OEN(mux_to_pads_i.pad_pwm2.oen),
-    .I(mux_to_pads_i.pad_pwm2.chip2pad),
-    .O(pads_to_mux_o.pad_pwm2.pad2chip),
-    .PAD(pad_pad_pwm2_pad),
+   pad_functional_pd i_pad_gpio_f_18 (
+    .OEN(mux_to_pads_i.pad_gpio_f_18.oen),
+    .I(mux_to_pads_i.pad_gpio_f_18.chip2pad),
+    .O(pads_to_mux_o.pad_gpio_f_18.pad2chip),
+    .PAD(pad_pad_gpio_f_18_pad),
     .PEN(1'b1)
   );
-   pad_functional_pd i_pad_pwm3 (
-    .OEN(mux_to_pads_i.pad_pwm3.oen),
-    .I(mux_to_pads_i.pad_pwm3.chip2pad),
-    .O(pads_to_mux_o.pad_pwm3.pad2chip),
-    .PAD(pad_pad_pwm3_pad),
+   pad_functional_pd i_pad_gpio_f_19 (
+    .OEN(mux_to_pads_i.pad_gpio_f_19.oen),
+    .I(mux_to_pads_i.pad_gpio_f_19.chip2pad),
+    .O(pads_to_mux_o.pad_gpio_f_19.pad2chip),
+    .PAD(pad_pad_gpio_f_19_pad),
     .PEN(1'b1)
   );
-   pad_functional_pd i_pad_pwm4 (
-    .OEN(mux_to_pads_i.pad_pwm4.oen),
-    .I(mux_to_pads_i.pad_pwm4.chip2pad),
-    .O(pads_to_mux_o.pad_pwm4.pad2chip),
-    .PAD(pad_pad_pwm4_pad),
+   pad_functional_pd i_pad_gpio_f_20 (
+    .OEN(mux_to_pads_i.pad_gpio_f_20.oen),
+    .I(mux_to_pads_i.pad_gpio_f_20.chip2pad),
+    .O(pads_to_mux_o.pad_gpio_f_20.pad2chip),
+    .PAD(pad_pad_gpio_f_20_pad),
     .PEN(1'b1)
   );
-   pad_functional_pd i_pad_pwm5 (
-    .OEN(mux_to_pads_i.pad_pwm5.oen),
-    .I(mux_to_pads_i.pad_pwm5.chip2pad),
-    .O(pads_to_mux_o.pad_pwm5.pad2chip),
-    .PAD(pad_pad_pwm5_pad),
+   pad_functional_pd i_pad_gpio_f_21 (
+    .OEN(mux_to_pads_i.pad_gpio_f_21.oen),
+    .I(mux_to_pads_i.pad_gpio_f_21.chip2pad),
+    .O(pads_to_mux_o.pad_gpio_f_21.pad2chip),
+    .PAD(pad_pad_gpio_f_21_pad),
     .PEN(1'b1)
   );
-   pad_functional_pd i_pad_pwm6 (
-    .OEN(mux_to_pads_i.pad_pwm6.oen),
-    .I(mux_to_pads_i.pad_pwm6.chip2pad),
-    .O(pads_to_mux_o.pad_pwm6.pad2chip),
-    .PAD(pad_pad_pwm6_pad),
+   pad_functional_pd i_pad_gpio_f_22 (
+    .OEN(mux_to_pads_i.pad_gpio_f_22.oen),
+    .I(mux_to_pads_i.pad_gpio_f_22.chip2pad),
+    .O(pads_to_mux_o.pad_gpio_f_22.pad2chip),
+    .PAD(pad_pad_gpio_f_22_pad),
     .PEN(1'b1)
   );
-   pad_functional_pd i_pad_pwm7 (
-    .OEN(mux_to_pads_i.pad_pwm7.oen),
-    .I(mux_to_pads_i.pad_pwm7.chip2pad),
-    .O(pads_to_mux_o.pad_pwm7.pad2chip),
-    .PAD(pad_pad_pwm7_pad),
+   pad_functional_pd i_pad_gpio_f_23 (
+    .OEN(mux_to_pads_i.pad_gpio_f_23.oen),
+    .I(mux_to_pads_i.pad_gpio_f_23.chip2pad),
+    .O(pads_to_mux_o.pad_gpio_f_23.pad2chip),
+    .PAD(pad_pad_gpio_f_23_pad),
+    .PEN(1'b1)
+  );
+   pad_functional_pd i_pad_gpio_f_24 (
+    .OEN(mux_to_pads_i.pad_gpio_f_24.oen),
+    .I(mux_to_pads_i.pad_gpio_f_24.chip2pad),
+    .O(pads_to_mux_o.pad_gpio_f_24.pad2chip),
+    .PAD(pad_pad_gpio_f_24_pad),
+    .PEN(1'b1)
+  );
+   pad_functional_pd i_pad_gpio_f_25 (
+    .OEN(mux_to_pads_i.pad_gpio_f_25.oen),
+    .I(mux_to_pads_i.pad_gpio_f_25.chip2pad),
+    .O(pads_to_mux_o.pad_gpio_f_25.pad2chip),
+    .PAD(pad_pad_gpio_f_25_pad),
+    .PEN(1'b1)
+  );
+   pad_functional_pd i_pad_gpio_pwm0 (
+    .OEN(mux_to_pads_i.pad_gpio_pwm0.oen),
+    .I(mux_to_pads_i.pad_gpio_pwm0.chip2pad),
+    .O(pads_to_mux_o.pad_gpio_pwm0.pad2chip),
+    .PAD(pad_pad_gpio_pwm0_pad),
+    .PEN(1'b1)
+  );
+   pad_functional_pd i_pad_gpio_pwm1 (
+    .OEN(mux_to_pads_i.pad_gpio_pwm1.oen),
+    .I(mux_to_pads_i.pad_gpio_pwm1.chip2pad),
+    .O(pads_to_mux_o.pad_gpio_pwm1.pad2chip),
+    .PAD(pad_pad_gpio_pwm1_pad),
+    .PEN(1'b1)
+  );
+   pad_functional_pd i_pad_gpio_pwm2 (
+    .OEN(mux_to_pads_i.pad_gpio_pwm2.oen),
+    .I(mux_to_pads_i.pad_gpio_pwm2.chip2pad),
+    .O(pads_to_mux_o.pad_gpio_pwm2.pad2chip),
+    .PAD(pad_pad_gpio_pwm2_pad),
+    .PEN(1'b1)
+  );
+   pad_functional_pd i_pad_gpio_pwm3 (
+    .OEN(mux_to_pads_i.pad_gpio_pwm3.oen),
+    .I(mux_to_pads_i.pad_gpio_pwm3.chip2pad),
+    .O(pads_to_mux_o.pad_gpio_pwm3.pad2chip),
+    .PAD(pad_pad_gpio_pwm3_pad),
+    .PEN(1'b1)
+  );
+   pad_functional_pd i_pad_gpio_pwm4 (
+    .OEN(mux_to_pads_i.pad_gpio_pwm4.oen),
+    .I(mux_to_pads_i.pad_gpio_pwm4.chip2pad),
+    .O(pads_to_mux_o.pad_gpio_pwm4.pad2chip),
+    .PAD(pad_pad_gpio_pwm4_pad),
+    .PEN(1'b1)
+  );
+   pad_functional_pd i_pad_gpio_pwm5 (
+    .OEN(mux_to_pads_i.pad_gpio_pwm5.oen),
+    .I(mux_to_pads_i.pad_gpio_pwm5.chip2pad),
+    .O(pads_to_mux_o.pad_gpio_pwm5.pad2chip),
+    .PAD(pad_pad_gpio_pwm5_pad),
+    .PEN(1'b1)
+  );
+   pad_functional_pd i_pad_gpio_pwm6 (
+    .OEN(mux_to_pads_i.pad_gpio_pwm6.oen),
+    .I(mux_to_pads_i.pad_gpio_pwm6.chip2pad),
+    .O(pads_to_mux_o.pad_gpio_pwm6.pad2chip),
+    .PAD(pad_pad_gpio_pwm6_pad),
+    .PEN(1'b1)
+  );
+   pad_functional_pd i_pad_gpio_pwm7 (
+    .OEN(mux_to_pads_i.pad_gpio_pwm7.oen),
+    .I(mux_to_pads_i.pad_gpio_pwm7.chip2pad),
+    .O(pads_to_mux_o.pad_gpio_pwm7.pad2chip),
+    .PAD(pad_pad_gpio_pwm7_pad),
     .PEN(1'b1)
   );
 

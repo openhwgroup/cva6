@@ -3,1641 +3,2302 @@ package pkg_internal_alsaqr_periph_padframe_periphs;
   typedef struct packed{
     logic  chip2pad;
     logic  oen;
-  } mux_to_pad_pad_io_a_00_t;
+  } mux_to_pad_pad_gpio_b_00_t;
 
   typedef struct packed{
     logic  pad2chip;
-  } pad_to_mux_pad_io_a_00_t;
+  } pad_to_mux_pad_gpio_b_00_t;
 
   typedef struct packed{
     logic  chip2pad;
     logic  oen;
-  } mux_to_pad_pad_io_a_01_t;
+  } mux_to_pad_pad_gpio_b_01_t;
 
   typedef struct packed{
     logic  pad2chip;
-  } pad_to_mux_pad_io_a_01_t;
+  } pad_to_mux_pad_gpio_b_01_t;
 
   typedef struct packed{
     logic  chip2pad;
     logic  oen;
-  } mux_to_pad_pad_io_a_02_t;
+  } mux_to_pad_pad_gpio_b_02_t;
 
   typedef struct packed{
     logic  pad2chip;
-  } pad_to_mux_pad_io_a_02_t;
+  } pad_to_mux_pad_gpio_b_02_t;
 
   typedef struct packed{
     logic  chip2pad;
     logic  oen;
-  } mux_to_pad_pad_io_a_03_t;
+  } mux_to_pad_pad_gpio_b_03_t;
 
   typedef struct packed{
     logic  pad2chip;
-  } pad_to_mux_pad_io_a_03_t;
+  } pad_to_mux_pad_gpio_b_03_t;
 
   typedef struct packed{
     logic  chip2pad;
     logic  oen;
-  } mux_to_pad_pad_io_a_04_t;
+  } mux_to_pad_pad_gpio_b_04_t;
 
   typedef struct packed{
     logic  pad2chip;
-  } pad_to_mux_pad_io_a_04_t;
+  } pad_to_mux_pad_gpio_b_04_t;
 
   typedef struct packed{
     logic  chip2pad;
     logic  oen;
-  } mux_to_pad_pad_io_a_05_t;
+  } mux_to_pad_pad_gpio_b_05_t;
 
   typedef struct packed{
     logic  pad2chip;
-  } pad_to_mux_pad_io_a_05_t;
+  } pad_to_mux_pad_gpio_b_05_t;
 
   typedef struct packed{
     logic  chip2pad;
     logic  oen;
-  } mux_to_pad_pad_io_a_06_t;
+  } mux_to_pad_pad_gpio_b_06_t;
 
   typedef struct packed{
     logic  pad2chip;
-  } pad_to_mux_pad_io_a_06_t;
+  } pad_to_mux_pad_gpio_b_06_t;
 
   typedef struct packed{
     logic  chip2pad;
     logic  oen;
-  } mux_to_pad_pad_io_a_07_t;
+  } mux_to_pad_pad_gpio_b_07_t;
 
   typedef struct packed{
     logic  pad2chip;
-  } pad_to_mux_pad_io_a_07_t;
+  } pad_to_mux_pad_gpio_b_07_t;
 
   typedef struct packed{
     logic  chip2pad;
     logic  oen;
-  } mux_to_pad_pad_io_a_08_t;
+  } mux_to_pad_pad_gpio_b_08_t;
 
   typedef struct packed{
     logic  pad2chip;
-  } pad_to_mux_pad_io_a_08_t;
+  } pad_to_mux_pad_gpio_b_08_t;
 
   typedef struct packed{
     logic  chip2pad;
     logic  oen;
-  } mux_to_pad_pad_io_a_09_t;
+  } mux_to_pad_pad_gpio_b_09_t;
 
   typedef struct packed{
     logic  pad2chip;
-  } pad_to_mux_pad_io_a_09_t;
+  } pad_to_mux_pad_gpio_b_09_t;
 
   typedef struct packed{
     logic  chip2pad;
     logic  oen;
-  } mux_to_pad_pad_io_a_10_t;
+  } mux_to_pad_pad_gpio_b_10_t;
 
   typedef struct packed{
     logic  pad2chip;
-  } pad_to_mux_pad_io_a_10_t;
+  } pad_to_mux_pad_gpio_b_10_t;
 
   typedef struct packed{
     logic  chip2pad;
     logic  oen;
-  } mux_to_pad_pad_io_a_11_t;
+  } mux_to_pad_pad_gpio_b_11_t;
 
   typedef struct packed{
     logic  pad2chip;
-  } pad_to_mux_pad_io_a_11_t;
+  } pad_to_mux_pad_gpio_b_11_t;
 
   typedef struct packed{
     logic  chip2pad;
     logic  oen;
-  } mux_to_pad_pad_io_a_12_t;
+  } mux_to_pad_pad_gpio_b_12_t;
 
   typedef struct packed{
     logic  pad2chip;
-  } pad_to_mux_pad_io_a_12_t;
+  } pad_to_mux_pad_gpio_b_12_t;
 
   typedef struct packed{
     logic  chip2pad;
     logic  oen;
-  } mux_to_pad_pad_io_a_13_t;
+  } mux_to_pad_pad_gpio_b_13_t;
 
   typedef struct packed{
     logic  pad2chip;
-  } pad_to_mux_pad_io_a_13_t;
+  } pad_to_mux_pad_gpio_b_13_t;
 
   typedef struct packed{
     logic  chip2pad;
     logic  oen;
-  } mux_to_pad_pad_io_a_14_t;
+  } mux_to_pad_pad_gpio_b_14_t;
 
   typedef struct packed{
     logic  pad2chip;
-  } pad_to_mux_pad_io_a_14_t;
+  } pad_to_mux_pad_gpio_b_14_t;
 
   typedef struct packed{
     logic  chip2pad;
     logic  oen;
-  } mux_to_pad_pad_io_b_00_t;
+  } mux_to_pad_pad_gpio_b_15_t;
 
   typedef struct packed{
     logic  pad2chip;
-  } pad_to_mux_pad_io_b_00_t;
+  } pad_to_mux_pad_gpio_b_15_t;
 
   typedef struct packed{
     logic  chip2pad;
     logic  oen;
-  } mux_to_pad_pad_io_b_01_t;
+  } mux_to_pad_pad_gpio_b_16_t;
 
   typedef struct packed{
     logic  pad2chip;
-  } pad_to_mux_pad_io_b_01_t;
+  } pad_to_mux_pad_gpio_b_16_t;
 
   typedef struct packed{
     logic  chip2pad;
     logic  oen;
-  } mux_to_pad_pad_io_b_02_t;
+  } mux_to_pad_pad_gpio_b_17_t;
 
   typedef struct packed{
     logic  pad2chip;
-  } pad_to_mux_pad_io_b_02_t;
+  } pad_to_mux_pad_gpio_b_17_t;
 
   typedef struct packed{
     logic  chip2pad;
     logic  oen;
-  } mux_to_pad_pad_io_b_03_t;
+  } mux_to_pad_pad_gpio_b_18_t;
 
   typedef struct packed{
     logic  pad2chip;
-  } pad_to_mux_pad_io_b_03_t;
+  } pad_to_mux_pad_gpio_b_18_t;
 
   typedef struct packed{
     logic  chip2pad;
     logic  oen;
-  } mux_to_pad_pad_io_b_04_t;
+  } mux_to_pad_pad_gpio_b_19_t;
 
   typedef struct packed{
     logic  pad2chip;
-  } pad_to_mux_pad_io_b_04_t;
+  } pad_to_mux_pad_gpio_b_19_t;
 
   typedef struct packed{
     logic  chip2pad;
     logic  oen;
-  } mux_to_pad_pad_io_b_05_t;
+  } mux_to_pad_pad_gpio_b_20_t;
 
   typedef struct packed{
     logic  pad2chip;
-  } pad_to_mux_pad_io_b_05_t;
+  } pad_to_mux_pad_gpio_b_20_t;
 
   typedef struct packed{
     logic  chip2pad;
     logic  oen;
-  } mux_to_pad_pad_io_b_06_t;
+  } mux_to_pad_pad_gpio_b_21_t;
 
   typedef struct packed{
     logic  pad2chip;
-  } pad_to_mux_pad_io_b_06_t;
+  } pad_to_mux_pad_gpio_b_21_t;
 
   typedef struct packed{
     logic  chip2pad;
     logic  oen;
-  } mux_to_pad_pad_io_b_07_t;
+  } mux_to_pad_pad_gpio_b_22_t;
 
   typedef struct packed{
     logic  pad2chip;
-  } pad_to_mux_pad_io_b_07_t;
+  } pad_to_mux_pad_gpio_b_22_t;
 
   typedef struct packed{
     logic  chip2pad;
     logic  oen;
-  } mux_to_pad_pad_io_b_08_t;
+  } mux_to_pad_pad_gpio_b_23_t;
 
   typedef struct packed{
     logic  pad2chip;
-  } pad_to_mux_pad_io_b_08_t;
+  } pad_to_mux_pad_gpio_b_23_t;
 
   typedef struct packed{
     logic  chip2pad;
     logic  oen;
-  } mux_to_pad_pad_io_b_09_t;
+  } mux_to_pad_pad_gpio_b_24_t;
 
   typedef struct packed{
     logic  pad2chip;
-  } pad_to_mux_pad_io_b_09_t;
+  } pad_to_mux_pad_gpio_b_24_t;
 
   typedef struct packed{
     logic  chip2pad;
     logic  oen;
-  } mux_to_pad_pad_io_b_10_t;
+  } mux_to_pad_pad_gpio_b_25_t;
 
   typedef struct packed{
     logic  pad2chip;
-  } pad_to_mux_pad_io_b_10_t;
+  } pad_to_mux_pad_gpio_b_25_t;
 
   typedef struct packed{
     logic  chip2pad;
     logic  oen;
-  } mux_to_pad_pad_io_b_11_t;
+  } mux_to_pad_pad_gpio_b_26_t;
 
   typedef struct packed{
     logic  pad2chip;
-  } pad_to_mux_pad_io_b_11_t;
+  } pad_to_mux_pad_gpio_b_26_t;
 
   typedef struct packed{
     logic  chip2pad;
     logic  oen;
-  } mux_to_pad_pad_io_b_12_t;
+  } mux_to_pad_pad_gpio_b_27_t;
 
   typedef struct packed{
     logic  pad2chip;
-  } pad_to_mux_pad_io_b_12_t;
+  } pad_to_mux_pad_gpio_b_27_t;
 
   typedef struct packed{
     logic  chip2pad;
     logic  oen;
-  } mux_to_pad_pad_io_b_13_t;
+  } mux_to_pad_pad_gpio_b_28_t;
 
   typedef struct packed{
     logic  pad2chip;
-  } pad_to_mux_pad_io_b_13_t;
+  } pad_to_mux_pad_gpio_b_28_t;
 
   typedef struct packed{
     logic  chip2pad;
     logic  oen;
-  } mux_to_pad_pad_io_b_14_t;
+  } mux_to_pad_pad_gpio_b_29_t;
 
   typedef struct packed{
     logic  pad2chip;
-  } pad_to_mux_pad_io_b_14_t;
+  } pad_to_mux_pad_gpio_b_29_t;
 
   typedef struct packed{
     logic  chip2pad;
     logic  oen;
-  } mux_to_pad_pad_io_b_15_t;
+  } mux_to_pad_pad_gpio_b_30_t;
 
   typedef struct packed{
     logic  pad2chip;
-  } pad_to_mux_pad_io_b_15_t;
+  } pad_to_mux_pad_gpio_b_30_t;
 
   typedef struct packed{
     logic  chip2pad;
     logic  oen;
-  } mux_to_pad_pad_io_b_16_t;
+  } mux_to_pad_pad_gpio_b_31_t;
 
   typedef struct packed{
     logic  pad2chip;
-  } pad_to_mux_pad_io_b_16_t;
+  } pad_to_mux_pad_gpio_b_31_t;
 
   typedef struct packed{
     logic  chip2pad;
     logic  oen;
-  } mux_to_pad_pad_io_b_17_t;
+  } mux_to_pad_pad_gpio_b_32_t;
 
   typedef struct packed{
     logic  pad2chip;
-  } pad_to_mux_pad_io_b_17_t;
+  } pad_to_mux_pad_gpio_b_32_t;
 
   typedef struct packed{
     logic  chip2pad;
     logic  oen;
-  } mux_to_pad_pad_io_b_18_t;
+  } mux_to_pad_pad_gpio_b_33_t;
 
   typedef struct packed{
     logic  pad2chip;
-  } pad_to_mux_pad_io_b_18_t;
+  } pad_to_mux_pad_gpio_b_33_t;
 
   typedef struct packed{
     logic  chip2pad;
     logic  oen;
-  } mux_to_pad_pad_io_b_19_t;
+  } mux_to_pad_pad_gpio_b_34_t;
 
   typedef struct packed{
     logic  pad2chip;
-  } pad_to_mux_pad_io_b_19_t;
+  } pad_to_mux_pad_gpio_b_34_t;
 
   typedef struct packed{
     logic  chip2pad;
     logic  oen;
-  } mux_to_pad_pad_io_c_00_t;
+  } mux_to_pad_pad_gpio_b_35_t;
 
   typedef struct packed{
     logic  pad2chip;
-  } pad_to_mux_pad_io_c_00_t;
+  } pad_to_mux_pad_gpio_b_35_t;
 
   typedef struct packed{
     logic  chip2pad;
     logic  oen;
-  } mux_to_pad_pad_io_c_01_t;
+  } mux_to_pad_pad_gpio_b_36_t;
 
   typedef struct packed{
     logic  pad2chip;
-  } pad_to_mux_pad_io_c_01_t;
+  } pad_to_mux_pad_gpio_b_36_t;
 
   typedef struct packed{
     logic  chip2pad;
     logic  oen;
-  } mux_to_pad_pad_io_c_02_t;
+  } mux_to_pad_pad_gpio_b_37_t;
 
   typedef struct packed{
     logic  pad2chip;
-  } pad_to_mux_pad_io_c_02_t;
+  } pad_to_mux_pad_gpio_b_37_t;
 
   typedef struct packed{
     logic  chip2pad;
     logic  oen;
-  } mux_to_pad_pad_io_c_03_t;
+  } mux_to_pad_pad_gpio_b_38_t;
 
   typedef struct packed{
     logic  pad2chip;
-  } pad_to_mux_pad_io_c_03_t;
+  } pad_to_mux_pad_gpio_b_38_t;
 
   typedef struct packed{
     logic  chip2pad;
     logic  oen;
-  } mux_to_pad_pad_io_c_04_t;
+  } mux_to_pad_pad_gpio_b_39_t;
 
   typedef struct packed{
     logic  pad2chip;
-  } pad_to_mux_pad_io_c_04_t;
+  } pad_to_mux_pad_gpio_b_39_t;
 
   typedef struct packed{
     logic  chip2pad;
     logic  oen;
-  } mux_to_pad_pad_io_c_05_t;
+  } mux_to_pad_pad_gpio_b_40_t;
 
   typedef struct packed{
     logic  pad2chip;
-  } pad_to_mux_pad_io_c_05_t;
+  } pad_to_mux_pad_gpio_b_40_t;
 
   typedef struct packed{
     logic  chip2pad;
     logic  oen;
-  } mux_to_pad_pad_io_c_06_t;
+  } mux_to_pad_pad_gpio_b_41_t;
 
   typedef struct packed{
     logic  pad2chip;
-  } pad_to_mux_pad_io_c_06_t;
+  } pad_to_mux_pad_gpio_b_41_t;
 
   typedef struct packed{
     logic  chip2pad;
     logic  oen;
-  } mux_to_pad_pad_io_c_07_t;
+  } mux_to_pad_pad_gpio_b_42_t;
 
   typedef struct packed{
     logic  pad2chip;
-  } pad_to_mux_pad_io_c_07_t;
+  } pad_to_mux_pad_gpio_b_42_t;
 
   typedef struct packed{
     logic  chip2pad;
     logic  oen;
-  } mux_to_pad_pad_io_c_08_t;
+  } mux_to_pad_pad_gpio_b_43_t;
 
   typedef struct packed{
     logic  pad2chip;
-  } pad_to_mux_pad_io_c_08_t;
+  } pad_to_mux_pad_gpio_b_43_t;
 
   typedef struct packed{
     logic  chip2pad;
     logic  oen;
-  } mux_to_pad_pad_io_c_09_t;
+  } mux_to_pad_pad_gpio_b_44_t;
 
   typedef struct packed{
     logic  pad2chip;
-  } pad_to_mux_pad_io_c_09_t;
+  } pad_to_mux_pad_gpio_b_44_t;
 
   typedef struct packed{
     logic  chip2pad;
     logic  oen;
-  } mux_to_pad_pad_io_c_10_t;
+  } mux_to_pad_pad_gpio_b_45_t;
 
   typedef struct packed{
     logic  pad2chip;
-  } pad_to_mux_pad_io_c_10_t;
+  } pad_to_mux_pad_gpio_b_45_t;
 
   typedef struct packed{
     logic  chip2pad;
     logic  oen;
-  } mux_to_pad_pad_io_c_11_t;
+  } mux_to_pad_pad_gpio_b_46_t;
 
   typedef struct packed{
     logic  pad2chip;
-  } pad_to_mux_pad_io_c_11_t;
+  } pad_to_mux_pad_gpio_b_46_t;
 
   typedef struct packed{
     logic  chip2pad;
     logic  oen;
-  } mux_to_pad_pad_io_c_12_t;
+  } mux_to_pad_pad_gpio_b_47_t;
 
   typedef struct packed{
     logic  pad2chip;
-  } pad_to_mux_pad_io_c_12_t;
+  } pad_to_mux_pad_gpio_b_47_t;
 
   typedef struct packed{
     logic  chip2pad;
     logic  oen;
-  } mux_to_pad_pad_io_c_13_t;
+  } mux_to_pad_pad_gpio_b_48_t;
 
   typedef struct packed{
     logic  pad2chip;
-  } pad_to_mux_pad_io_c_13_t;
+  } pad_to_mux_pad_gpio_b_48_t;
 
   typedef struct packed{
     logic  chip2pad;
     logic  oen;
-  } mux_to_pad_pad_io_d_00_t;
+  } mux_to_pad_pad_gpio_b_49_t;
 
   typedef struct packed{
     logic  pad2chip;
-  } pad_to_mux_pad_io_d_00_t;
+  } pad_to_mux_pad_gpio_b_49_t;
 
   typedef struct packed{
     logic  chip2pad;
     logic  oen;
-  } mux_to_pad_pad_io_d_01_t;
+  } mux_to_pad_pad_gpio_b_50_t;
 
   typedef struct packed{
     logic  pad2chip;
-  } pad_to_mux_pad_io_d_01_t;
+  } pad_to_mux_pad_gpio_b_50_t;
 
   typedef struct packed{
     logic  chip2pad;
     logic  oen;
-  } mux_to_pad_pad_io_d_02_t;
+  } mux_to_pad_pad_gpio_b_51_t;
 
   typedef struct packed{
     logic  pad2chip;
-  } pad_to_mux_pad_io_d_02_t;
+  } pad_to_mux_pad_gpio_b_51_t;
 
   typedef struct packed{
     logic  chip2pad;
     logic  oen;
-  } mux_to_pad_pad_io_d_03_t;
+  } mux_to_pad_pad_gpio_b_52_t;
 
   typedef struct packed{
     logic  pad2chip;
-  } pad_to_mux_pad_io_d_03_t;
+  } pad_to_mux_pad_gpio_b_52_t;
 
   typedef struct packed{
     logic  chip2pad;
     logic  oen;
-  } mux_to_pad_pad_io_d_04_t;
+  } mux_to_pad_pad_gpio_b_53_t;
 
   typedef struct packed{
     logic  pad2chip;
-  } pad_to_mux_pad_io_d_04_t;
+  } pad_to_mux_pad_gpio_b_53_t;
 
   typedef struct packed{
     logic  chip2pad;
     logic  oen;
-  } mux_to_pad_pad_io_d_05_t;
+  } mux_to_pad_pad_gpio_b_54_t;
 
   typedef struct packed{
     logic  pad2chip;
-  } pad_to_mux_pad_io_d_05_t;
+  } pad_to_mux_pad_gpio_b_54_t;
 
   typedef struct packed{
     logic  chip2pad;
     logic  oen;
-  } mux_to_pad_pad_io_d_06_t;
+  } mux_to_pad_pad_gpio_b_55_t;
 
   typedef struct packed{
     logic  pad2chip;
-  } pad_to_mux_pad_io_d_06_t;
+  } pad_to_mux_pad_gpio_b_55_t;
 
   typedef struct packed{
     logic  chip2pad;
     logic  oen;
-  } mux_to_pad_pad_io_d_07_t;
+  } mux_to_pad_pad_gpio_b_56_t;
 
   typedef struct packed{
     logic  pad2chip;
-  } pad_to_mux_pad_io_d_07_t;
+  } pad_to_mux_pad_gpio_b_56_t;
 
   typedef struct packed{
     logic  chip2pad;
     logic  oen;
-  } mux_to_pad_pad_io_d_08_t;
+  } mux_to_pad_pad_gpio_b_57_t;
 
   typedef struct packed{
     logic  pad2chip;
-  } pad_to_mux_pad_io_d_08_t;
+  } pad_to_mux_pad_gpio_b_57_t;
 
   typedef struct packed{
     logic  chip2pad;
     logic  oen;
-  } mux_to_pad_pad_io_d_09_t;
+  } mux_to_pad_pad_gpio_b_58_t;
 
   typedef struct packed{
     logic  pad2chip;
-  } pad_to_mux_pad_io_d_09_t;
+  } pad_to_mux_pad_gpio_b_58_t;
 
   typedef struct packed{
     logic  chip2pad;
     logic  oen;
-  } mux_to_pad_pad_io_d_10_t;
+  } mux_to_pad_pad_gpio_b_59_t;
 
   typedef struct packed{
     logic  pad2chip;
-  } pad_to_mux_pad_io_d_10_t;
+  } pad_to_mux_pad_gpio_b_59_t;
 
   typedef struct packed{
     logic  chip2pad;
     logic  oen;
-  } mux_to_pad_pad_io_d_11_t;
+  } mux_to_pad_pad_gpio_b_60_t;
 
   typedef struct packed{
     logic  pad2chip;
-  } pad_to_mux_pad_io_d_11_t;
+  } pad_to_mux_pad_gpio_b_60_t;
 
   typedef struct packed{
     logic  chip2pad;
     logic  oen;
-  } mux_to_pad_pad_io_d_12_t;
+  } mux_to_pad_pad_gpio_b_61_t;
 
   typedef struct packed{
     logic  pad2chip;
-  } pad_to_mux_pad_io_d_12_t;
+  } pad_to_mux_pad_gpio_b_61_t;
 
   typedef struct packed{
     logic  chip2pad;
     logic  oen;
-  } mux_to_pad_pad_io_d_13_t;
+  } mux_to_pad_pad_gpio_c_00_t;
 
   typedef struct packed{
     logic  pad2chip;
-  } pad_to_mux_pad_io_d_13_t;
+  } pad_to_mux_pad_gpio_c_00_t;
 
   typedef struct packed{
     logic  chip2pad;
     logic  oen;
-  } mux_to_pad_pad_io_d_14_t;
+  } mux_to_pad_pad_gpio_c_01_t;
 
   typedef struct packed{
     logic  pad2chip;
-  } pad_to_mux_pad_io_d_14_t;
+  } pad_to_mux_pad_gpio_c_01_t;
 
   typedef struct packed{
     logic  chip2pad;
     logic  oen;
-  } mux_to_pad_pad_io_d_15_t;
+  } mux_to_pad_pad_gpio_c_02_t;
 
   typedef struct packed{
     logic  pad2chip;
-  } pad_to_mux_pad_io_d_15_t;
+  } pad_to_mux_pad_gpio_c_02_t;
 
   typedef struct packed{
     logic  chip2pad;
     logic  oen;
-  } mux_to_pad_pad_io_e_00_t;
+  } mux_to_pad_pad_gpio_c_03_t;
 
   typedef struct packed{
     logic  pad2chip;
-  } pad_to_mux_pad_io_e_00_t;
+  } pad_to_mux_pad_gpio_c_03_t;
 
   typedef struct packed{
     logic  chip2pad;
     logic  oen;
-  } mux_to_pad_pad_io_e_01_t;
+  } mux_to_pad_pad_gpio_d_00_t;
 
   typedef struct packed{
     logic  pad2chip;
-  } pad_to_mux_pad_io_e_01_t;
+  } pad_to_mux_pad_gpio_d_00_t;
 
   typedef struct packed{
     logic  chip2pad;
     logic  oen;
-  } mux_to_pad_pad_io_e_02_t;
+  } mux_to_pad_pad_gpio_d_01_t;
 
   typedef struct packed{
     logic  pad2chip;
-  } pad_to_mux_pad_io_e_02_t;
+  } pad_to_mux_pad_gpio_d_01_t;
 
   typedef struct packed{
     logic  chip2pad;
     logic  oen;
-  } mux_to_pad_pad_io_e_03_t;
+  } mux_to_pad_pad_gpio_d_02_t;
 
   typedef struct packed{
     logic  pad2chip;
-  } pad_to_mux_pad_io_e_03_t;
+  } pad_to_mux_pad_gpio_d_02_t;
 
   typedef struct packed{
     logic  chip2pad;
     logic  oen;
-  } mux_to_pad_pad_io_e_04_t;
+  } mux_to_pad_pad_gpio_d_03_t;
 
   typedef struct packed{
     logic  pad2chip;
-  } pad_to_mux_pad_io_e_04_t;
+  } pad_to_mux_pad_gpio_d_03_t;
 
   typedef struct packed{
     logic  chip2pad;
     logic  oen;
-  } mux_to_pad_pad_io_e_05_t;
+  } mux_to_pad_pad_gpio_d_04_t;
 
   typedef struct packed{
     logic  pad2chip;
-  } pad_to_mux_pad_io_e_05_t;
+  } pad_to_mux_pad_gpio_d_04_t;
 
   typedef struct packed{
     logic  chip2pad;
     logic  oen;
-  } mux_to_pad_pad_io_e_06_t;
+  } mux_to_pad_pad_gpio_d_05_t;
 
   typedef struct packed{
     logic  pad2chip;
-  } pad_to_mux_pad_io_e_06_t;
+  } pad_to_mux_pad_gpio_d_05_t;
 
   typedef struct packed{
     logic  chip2pad;
     logic  oen;
-  } mux_to_pad_pad_io_e_07_t;
+  } mux_to_pad_pad_gpio_d_06_t;
 
   typedef struct packed{
     logic  pad2chip;
-  } pad_to_mux_pad_io_e_07_t;
+  } pad_to_mux_pad_gpio_d_06_t;
 
   typedef struct packed{
     logic  chip2pad;
     logic  oen;
-  } mux_to_pad_pad_io_e_08_t;
+  } mux_to_pad_pad_gpio_d_07_t;
 
   typedef struct packed{
     logic  pad2chip;
-  } pad_to_mux_pad_io_e_08_t;
+  } pad_to_mux_pad_gpio_d_07_t;
 
   typedef struct packed{
     logic  chip2pad;
     logic  oen;
-  } mux_to_pad_pad_io_e_09_t;
+  } mux_to_pad_pad_gpio_d_08_t;
 
   typedef struct packed{
     logic  pad2chip;
-  } pad_to_mux_pad_io_e_09_t;
+  } pad_to_mux_pad_gpio_d_08_t;
 
   typedef struct packed{
     logic  chip2pad;
     logic  oen;
-  } mux_to_pad_pad_io_e_10_t;
+  } mux_to_pad_pad_gpio_d_09_t;
 
   typedef struct packed{
     logic  pad2chip;
-  } pad_to_mux_pad_io_e_10_t;
+  } pad_to_mux_pad_gpio_d_09_t;
 
   typedef struct packed{
     logic  chip2pad;
     logic  oen;
-  } mux_to_pad_pad_io_e_11_t;
+  } mux_to_pad_pad_gpio_d_10_t;
 
   typedef struct packed{
     logic  pad2chip;
-  } pad_to_mux_pad_io_e_11_t;
+  } pad_to_mux_pad_gpio_d_10_t;
 
   typedef struct packed{
     logic  chip2pad;
     logic  oen;
-  } mux_to_pad_pad_io_e_12_t;
+  } mux_to_pad_pad_gpio_e_00_t;
 
   typedef struct packed{
     logic  pad2chip;
-  } pad_to_mux_pad_io_e_12_t;
+  } pad_to_mux_pad_gpio_e_00_t;
 
   typedef struct packed{
     logic  chip2pad;
     logic  oen;
-  } mux_to_pad_pad_io_e_13_t;
+  } mux_to_pad_pad_gpio_e_01_t;
 
   typedef struct packed{
     logic  pad2chip;
-  } pad_to_mux_pad_io_e_13_t;
+  } pad_to_mux_pad_gpio_e_01_t;
 
   typedef struct packed{
     logic  chip2pad;
     logic  oen;
-  } mux_to_pad_pad_io_e_14_t;
+  } mux_to_pad_pad_gpio_e_02_t;
 
   typedef struct packed{
     logic  pad2chip;
-  } pad_to_mux_pad_io_e_14_t;
+  } pad_to_mux_pad_gpio_e_02_t;
 
   typedef struct packed{
     logic  chip2pad;
     logic  oen;
-  } mux_to_pad_pad_io_f_00_t;
+  } mux_to_pad_pad_gpio_e_03_t;
 
   typedef struct packed{
     logic  pad2chip;
-  } pad_to_mux_pad_io_f_00_t;
+  } pad_to_mux_pad_gpio_e_03_t;
 
   typedef struct packed{
     logic  chip2pad;
     logic  oen;
-  } mux_to_pad_pad_io_f_01_t;
+  } mux_to_pad_pad_gpio_e_04_t;
 
   typedef struct packed{
     logic  pad2chip;
-  } pad_to_mux_pad_io_f_01_t;
+  } pad_to_mux_pad_gpio_e_04_t;
 
   typedef struct packed{
     logic  chip2pad;
     logic  oen;
-  } mux_to_pad_pad_io_f_02_t;
+  } mux_to_pad_pad_gpio_e_05_t;
 
   typedef struct packed{
     logic  pad2chip;
-  } pad_to_mux_pad_io_f_02_t;
+  } pad_to_mux_pad_gpio_e_05_t;
 
   typedef struct packed{
     logic  chip2pad;
     logic  oen;
-  } mux_to_pad_pad_io_f_03_t;
+  } mux_to_pad_pad_gpio_e_06_t;
 
   typedef struct packed{
     logic  pad2chip;
-  } pad_to_mux_pad_io_f_03_t;
+  } pad_to_mux_pad_gpio_e_06_t;
 
   typedef struct packed{
     logic  chip2pad;
     logic  oen;
-  } mux_to_pad_pad_io_f_04_t;
+  } mux_to_pad_pad_gpio_e_07_t;
 
   typedef struct packed{
     logic  pad2chip;
-  } pad_to_mux_pad_io_f_04_t;
+  } pad_to_mux_pad_gpio_e_07_t;
 
   typedef struct packed{
     logic  chip2pad;
     logic  oen;
-  } mux_to_pad_pad_io_f_05_t;
+  } mux_to_pad_pad_gpio_e_08_t;
 
   typedef struct packed{
     logic  pad2chip;
-  } pad_to_mux_pad_io_f_05_t;
+  } pad_to_mux_pad_gpio_e_08_t;
 
   typedef struct packed{
     logic  chip2pad;
     logic  oen;
-  } mux_to_pad_pad_io_f_06_t;
+  } mux_to_pad_pad_gpio_e_09_t;
 
   typedef struct packed{
     logic  pad2chip;
-  } pad_to_mux_pad_io_f_06_t;
+  } pad_to_mux_pad_gpio_e_09_t;
 
   typedef struct packed{
     logic  chip2pad;
     logic  oen;
-  } mux_to_pad_pad_io_f_07_t;
+  } mux_to_pad_pad_gpio_e_10_t;
 
   typedef struct packed{
     logic  pad2chip;
-  } pad_to_mux_pad_io_f_07_t;
+  } pad_to_mux_pad_gpio_e_10_t;
 
   typedef struct packed{
     logic  chip2pad;
     logic  oen;
-  } mux_to_pad_pad_io_f_08_t;
+  } mux_to_pad_pad_gpio_e_11_t;
 
   typedef struct packed{
     logic  pad2chip;
-  } pad_to_mux_pad_io_f_08_t;
+  } pad_to_mux_pad_gpio_e_11_t;
 
   typedef struct packed{
     logic  chip2pad;
     logic  oen;
-  } mux_to_pad_pad_io_f_09_t;
+  } mux_to_pad_pad_gpio_e_12_t;
 
   typedef struct packed{
     logic  pad2chip;
-  } pad_to_mux_pad_io_f_09_t;
+  } pad_to_mux_pad_gpio_e_12_t;
 
   typedef struct packed{
     logic  chip2pad;
     logic  oen;
-  } mux_to_pad_pad_io_f_10_t;
+  } mux_to_pad_pad_gpio_f_00_t;
 
   typedef struct packed{
     logic  pad2chip;
-  } pad_to_mux_pad_io_f_10_t;
+  } pad_to_mux_pad_gpio_f_00_t;
 
   typedef struct packed{
     logic  chip2pad;
     logic  oen;
-  } mux_to_pad_pad_io_g_00_t;
+  } mux_to_pad_pad_gpio_f_01_t;
 
   typedef struct packed{
     logic  pad2chip;
-  } pad_to_mux_pad_io_g_00_t;
+  } pad_to_mux_pad_gpio_f_01_t;
 
   typedef struct packed{
     logic  chip2pad;
     logic  oen;
-  } mux_to_pad_pad_io_g_01_t;
+  } mux_to_pad_pad_gpio_f_02_t;
 
   typedef struct packed{
     logic  pad2chip;
-  } pad_to_mux_pad_io_g_01_t;
+  } pad_to_mux_pad_gpio_f_02_t;
 
   typedef struct packed{
     logic  chip2pad;
     logic  oen;
-  } mux_to_pad_pad_io_g_02_t;
+  } mux_to_pad_pad_gpio_f_03_t;
 
   typedef struct packed{
     logic  pad2chip;
-  } pad_to_mux_pad_io_g_02_t;
+  } pad_to_mux_pad_gpio_f_03_t;
 
   typedef struct packed{
     logic  chip2pad;
     logic  oen;
-  } mux_to_pad_pad_io_g_03_t;
+  } mux_to_pad_pad_gpio_f_04_t;
 
   typedef struct packed{
     logic  pad2chip;
-  } pad_to_mux_pad_io_g_03_t;
+  } pad_to_mux_pad_gpio_f_04_t;
 
   typedef struct packed{
     logic  chip2pad;
     logic  oen;
-  } mux_to_pad_pad_io_g_04_t;
+  } mux_to_pad_pad_gpio_f_05_t;
 
   typedef struct packed{
     logic  pad2chip;
-  } pad_to_mux_pad_io_g_04_t;
+  } pad_to_mux_pad_gpio_f_05_t;
 
   typedef struct packed{
     logic  chip2pad;
     logic  oen;
-  } mux_to_pad_pad_io_g_05_t;
+  } mux_to_pad_pad_gpio_f_06_t;
 
   typedef struct packed{
     logic  pad2chip;
-  } pad_to_mux_pad_io_g_05_t;
+  } pad_to_mux_pad_gpio_f_06_t;
 
   typedef struct packed{
     logic  chip2pad;
     logic  oen;
-  } mux_to_pad_pad_io_g_06_t;
+  } mux_to_pad_pad_gpio_f_07_t;
 
   typedef struct packed{
     logic  pad2chip;
-  } pad_to_mux_pad_io_g_06_t;
+  } pad_to_mux_pad_gpio_f_07_t;
 
   typedef struct packed{
     logic  chip2pad;
     logic  oen;
-  } mux_to_pad_pad_io_g_07_t;
+  } mux_to_pad_pad_gpio_f_08_t;
 
   typedef struct packed{
     logic  pad2chip;
-  } pad_to_mux_pad_io_g_07_t;
+  } pad_to_mux_pad_gpio_f_08_t;
 
   typedef struct packed{
     logic  chip2pad;
     logic  oen;
-  } mux_to_pad_pad_io_g_08_t;
+  } mux_to_pad_pad_gpio_f_09_t;
 
   typedef struct packed{
     logic  pad2chip;
-  } pad_to_mux_pad_io_g_08_t;
+  } pad_to_mux_pad_gpio_f_09_t;
 
   typedef struct packed{
     logic  chip2pad;
     logic  oen;
-  } mux_to_pad_pad_io_g_09_t;
+  } mux_to_pad_pad_gpio_f_10_t;
 
   typedef struct packed{
     logic  pad2chip;
-  } pad_to_mux_pad_io_g_09_t;
+  } pad_to_mux_pad_gpio_f_10_t;
 
   typedef struct packed{
     logic  chip2pad;
     logic  oen;
-  } mux_to_pad_pad_io_g_10_t;
+  } mux_to_pad_pad_gpio_f_11_t;
 
   typedef struct packed{
     logic  pad2chip;
-  } pad_to_mux_pad_io_g_10_t;
+  } pad_to_mux_pad_gpio_f_11_t;
 
   typedef struct packed{
     logic  chip2pad;
     logic  oen;
-  } mux_to_pad_pad_io_g_11_t;
+  } mux_to_pad_pad_gpio_f_12_t;
 
   typedef struct packed{
     logic  pad2chip;
-  } pad_to_mux_pad_io_g_11_t;
+  } pad_to_mux_pad_gpio_f_12_t;
 
   typedef struct packed{
     logic  chip2pad;
     logic  oen;
-  } mux_to_pad_pad_io_g_12_t;
+  } mux_to_pad_pad_gpio_f_13_t;
 
   typedef struct packed{
     logic  pad2chip;
-  } pad_to_mux_pad_io_g_12_t;
+  } pad_to_mux_pad_gpio_f_13_t;
 
   typedef struct packed{
     logic  chip2pad;
     logic  oen;
-  } mux_to_pad_pad_io_g_13_t;
+  } mux_to_pad_pad_gpio_f_14_t;
 
   typedef struct packed{
     logic  pad2chip;
-  } pad_to_mux_pad_io_g_13_t;
+  } pad_to_mux_pad_gpio_f_14_t;
 
   typedef struct packed{
     logic  chip2pad;
     logic  oen;
-  } mux_to_pad_pad_io_g_14_t;
+  } mux_to_pad_pad_gpio_f_15_t;
 
   typedef struct packed{
     logic  pad2chip;
-  } pad_to_mux_pad_io_g_14_t;
+  } pad_to_mux_pad_gpio_f_15_t;
 
   typedef struct packed{
     logic  chip2pad;
     logic  oen;
-  } mux_to_pad_pad_pwm0_t;
+  } mux_to_pad_pad_gpio_f_16_t;
 
   typedef struct packed{
     logic  pad2chip;
-  } pad_to_mux_pad_pwm0_t;
+  } pad_to_mux_pad_gpio_f_16_t;
 
   typedef struct packed{
     logic  chip2pad;
     logic  oen;
-  } mux_to_pad_pad_pwm1_t;
+  } mux_to_pad_pad_gpio_f_17_t;
 
   typedef struct packed{
     logic  pad2chip;
-  } pad_to_mux_pad_pwm1_t;
+  } pad_to_mux_pad_gpio_f_17_t;
 
   typedef struct packed{
     logic  chip2pad;
     logic  oen;
-  } mux_to_pad_pad_pwm2_t;
+  } mux_to_pad_pad_gpio_f_18_t;
 
   typedef struct packed{
     logic  pad2chip;
-  } pad_to_mux_pad_pwm2_t;
+  } pad_to_mux_pad_gpio_f_18_t;
 
   typedef struct packed{
     logic  chip2pad;
     logic  oen;
-  } mux_to_pad_pad_pwm3_t;
+  } mux_to_pad_pad_gpio_f_19_t;
 
   typedef struct packed{
     logic  pad2chip;
-  } pad_to_mux_pad_pwm3_t;
+  } pad_to_mux_pad_gpio_f_19_t;
 
   typedef struct packed{
     logic  chip2pad;
     logic  oen;
-  } mux_to_pad_pad_pwm4_t;
+  } mux_to_pad_pad_gpio_f_20_t;
 
   typedef struct packed{
     logic  pad2chip;
-  } pad_to_mux_pad_pwm4_t;
+  } pad_to_mux_pad_gpio_f_20_t;
 
   typedef struct packed{
     logic  chip2pad;
     logic  oen;
-  } mux_to_pad_pad_pwm5_t;
+  } mux_to_pad_pad_gpio_f_21_t;
 
   typedef struct packed{
     logic  pad2chip;
-  } pad_to_mux_pad_pwm5_t;
+  } pad_to_mux_pad_gpio_f_21_t;
 
   typedef struct packed{
     logic  chip2pad;
     logic  oen;
-  } mux_to_pad_pad_pwm6_t;
+  } mux_to_pad_pad_gpio_f_22_t;
 
   typedef struct packed{
     logic  pad2chip;
-  } pad_to_mux_pad_pwm6_t;
+  } pad_to_mux_pad_gpio_f_22_t;
 
   typedef struct packed{
     logic  chip2pad;
     logic  oen;
-  } mux_to_pad_pad_pwm7_t;
+  } mux_to_pad_pad_gpio_f_23_t;
 
   typedef struct packed{
     logic  pad2chip;
-  } pad_to_mux_pad_pwm7_t;
+  } pad_to_mux_pad_gpio_f_23_t;
 
   typedef struct packed{
-    mux_to_pad_pad_io_a_00_t pad_io_a_00;
-    mux_to_pad_pad_io_a_01_t pad_io_a_01;
-    mux_to_pad_pad_io_a_02_t pad_io_a_02;
-    mux_to_pad_pad_io_a_03_t pad_io_a_03;
-    mux_to_pad_pad_io_a_04_t pad_io_a_04;
-    mux_to_pad_pad_io_a_05_t pad_io_a_05;
-    mux_to_pad_pad_io_a_06_t pad_io_a_06;
-    mux_to_pad_pad_io_a_07_t pad_io_a_07;
-    mux_to_pad_pad_io_a_08_t pad_io_a_08;
-    mux_to_pad_pad_io_a_09_t pad_io_a_09;
-    mux_to_pad_pad_io_a_10_t pad_io_a_10;
-    mux_to_pad_pad_io_a_11_t pad_io_a_11;
-    mux_to_pad_pad_io_a_12_t pad_io_a_12;
-    mux_to_pad_pad_io_a_13_t pad_io_a_13;
-    mux_to_pad_pad_io_a_14_t pad_io_a_14;
-    mux_to_pad_pad_io_b_00_t pad_io_b_00;
-    mux_to_pad_pad_io_b_01_t pad_io_b_01;
-    mux_to_pad_pad_io_b_02_t pad_io_b_02;
-    mux_to_pad_pad_io_b_03_t pad_io_b_03;
-    mux_to_pad_pad_io_b_04_t pad_io_b_04;
-    mux_to_pad_pad_io_b_05_t pad_io_b_05;
-    mux_to_pad_pad_io_b_06_t pad_io_b_06;
-    mux_to_pad_pad_io_b_07_t pad_io_b_07;
-    mux_to_pad_pad_io_b_08_t pad_io_b_08;
-    mux_to_pad_pad_io_b_09_t pad_io_b_09;
-    mux_to_pad_pad_io_b_10_t pad_io_b_10;
-    mux_to_pad_pad_io_b_11_t pad_io_b_11;
-    mux_to_pad_pad_io_b_12_t pad_io_b_12;
-    mux_to_pad_pad_io_b_13_t pad_io_b_13;
-    mux_to_pad_pad_io_b_14_t pad_io_b_14;
-    mux_to_pad_pad_io_b_15_t pad_io_b_15;
-    mux_to_pad_pad_io_b_16_t pad_io_b_16;
-    mux_to_pad_pad_io_b_17_t pad_io_b_17;
-    mux_to_pad_pad_io_b_18_t pad_io_b_18;
-    mux_to_pad_pad_io_b_19_t pad_io_b_19;
-    mux_to_pad_pad_io_c_00_t pad_io_c_00;
-    mux_to_pad_pad_io_c_01_t pad_io_c_01;
-    mux_to_pad_pad_io_c_02_t pad_io_c_02;
-    mux_to_pad_pad_io_c_03_t pad_io_c_03;
-    mux_to_pad_pad_io_c_04_t pad_io_c_04;
-    mux_to_pad_pad_io_c_05_t pad_io_c_05;
-    mux_to_pad_pad_io_c_06_t pad_io_c_06;
-    mux_to_pad_pad_io_c_07_t pad_io_c_07;
-    mux_to_pad_pad_io_c_08_t pad_io_c_08;
-    mux_to_pad_pad_io_c_09_t pad_io_c_09;
-    mux_to_pad_pad_io_c_10_t pad_io_c_10;
-    mux_to_pad_pad_io_c_11_t pad_io_c_11;
-    mux_to_pad_pad_io_c_12_t pad_io_c_12;
-    mux_to_pad_pad_io_c_13_t pad_io_c_13;
-    mux_to_pad_pad_io_d_00_t pad_io_d_00;
-    mux_to_pad_pad_io_d_01_t pad_io_d_01;
-    mux_to_pad_pad_io_d_02_t pad_io_d_02;
-    mux_to_pad_pad_io_d_03_t pad_io_d_03;
-    mux_to_pad_pad_io_d_04_t pad_io_d_04;
-    mux_to_pad_pad_io_d_05_t pad_io_d_05;
-    mux_to_pad_pad_io_d_06_t pad_io_d_06;
-    mux_to_pad_pad_io_d_07_t pad_io_d_07;
-    mux_to_pad_pad_io_d_08_t pad_io_d_08;
-    mux_to_pad_pad_io_d_09_t pad_io_d_09;
-    mux_to_pad_pad_io_d_10_t pad_io_d_10;
-    mux_to_pad_pad_io_d_11_t pad_io_d_11;
-    mux_to_pad_pad_io_d_12_t pad_io_d_12;
-    mux_to_pad_pad_io_d_13_t pad_io_d_13;
-    mux_to_pad_pad_io_d_14_t pad_io_d_14;
-    mux_to_pad_pad_io_d_15_t pad_io_d_15;
-    mux_to_pad_pad_io_e_00_t pad_io_e_00;
-    mux_to_pad_pad_io_e_01_t pad_io_e_01;
-    mux_to_pad_pad_io_e_02_t pad_io_e_02;
-    mux_to_pad_pad_io_e_03_t pad_io_e_03;
-    mux_to_pad_pad_io_e_04_t pad_io_e_04;
-    mux_to_pad_pad_io_e_05_t pad_io_e_05;
-    mux_to_pad_pad_io_e_06_t pad_io_e_06;
-    mux_to_pad_pad_io_e_07_t pad_io_e_07;
-    mux_to_pad_pad_io_e_08_t pad_io_e_08;
-    mux_to_pad_pad_io_e_09_t pad_io_e_09;
-    mux_to_pad_pad_io_e_10_t pad_io_e_10;
-    mux_to_pad_pad_io_e_11_t pad_io_e_11;
-    mux_to_pad_pad_io_e_12_t pad_io_e_12;
-    mux_to_pad_pad_io_e_13_t pad_io_e_13;
-    mux_to_pad_pad_io_e_14_t pad_io_e_14;
-    mux_to_pad_pad_io_f_00_t pad_io_f_00;
-    mux_to_pad_pad_io_f_01_t pad_io_f_01;
-    mux_to_pad_pad_io_f_02_t pad_io_f_02;
-    mux_to_pad_pad_io_f_03_t pad_io_f_03;
-    mux_to_pad_pad_io_f_04_t pad_io_f_04;
-    mux_to_pad_pad_io_f_05_t pad_io_f_05;
-    mux_to_pad_pad_io_f_06_t pad_io_f_06;
-    mux_to_pad_pad_io_f_07_t pad_io_f_07;
-    mux_to_pad_pad_io_f_08_t pad_io_f_08;
-    mux_to_pad_pad_io_f_09_t pad_io_f_09;
-    mux_to_pad_pad_io_f_10_t pad_io_f_10;
-    mux_to_pad_pad_io_g_00_t pad_io_g_00;
-    mux_to_pad_pad_io_g_01_t pad_io_g_01;
-    mux_to_pad_pad_io_g_02_t pad_io_g_02;
-    mux_to_pad_pad_io_g_03_t pad_io_g_03;
-    mux_to_pad_pad_io_g_04_t pad_io_g_04;
-    mux_to_pad_pad_io_g_05_t pad_io_g_05;
-    mux_to_pad_pad_io_g_06_t pad_io_g_06;
-    mux_to_pad_pad_io_g_07_t pad_io_g_07;
-    mux_to_pad_pad_io_g_08_t pad_io_g_08;
-    mux_to_pad_pad_io_g_09_t pad_io_g_09;
-    mux_to_pad_pad_io_g_10_t pad_io_g_10;
-    mux_to_pad_pad_io_g_11_t pad_io_g_11;
-    mux_to_pad_pad_io_g_12_t pad_io_g_12;
-    mux_to_pad_pad_io_g_13_t pad_io_g_13;
-    mux_to_pad_pad_io_g_14_t pad_io_g_14;
-    mux_to_pad_pad_pwm0_t pad_pwm0;
-    mux_to_pad_pad_pwm1_t pad_pwm1;
-    mux_to_pad_pad_pwm2_t pad_pwm2;
-    mux_to_pad_pad_pwm3_t pad_pwm3;
-    mux_to_pad_pad_pwm4_t pad_pwm4;
-    mux_to_pad_pad_pwm5_t pad_pwm5;
-    mux_to_pad_pad_pwm6_t pad_pwm6;
-    mux_to_pad_pad_pwm7_t pad_pwm7;
+    logic  chip2pad;
+    logic  oen;
+  } mux_to_pad_pad_gpio_f_24_t;
+
+  typedef struct packed{
+    logic  pad2chip;
+  } pad_to_mux_pad_gpio_f_24_t;
+
+  typedef struct packed{
+    logic  chip2pad;
+    logic  oen;
+  } mux_to_pad_pad_gpio_f_25_t;
+
+  typedef struct packed{
+    logic  pad2chip;
+  } pad_to_mux_pad_gpio_f_25_t;
+
+  typedef struct packed{
+    logic  chip2pad;
+    logic  oen;
+  } mux_to_pad_pad_gpio_pwm0_t;
+
+  typedef struct packed{
+    logic  pad2chip;
+  } pad_to_mux_pad_gpio_pwm0_t;
+
+  typedef struct packed{
+    logic  chip2pad;
+    logic  oen;
+  } mux_to_pad_pad_gpio_pwm1_t;
+
+  typedef struct packed{
+    logic  pad2chip;
+  } pad_to_mux_pad_gpio_pwm1_t;
+
+  typedef struct packed{
+    logic  chip2pad;
+    logic  oen;
+  } mux_to_pad_pad_gpio_pwm2_t;
+
+  typedef struct packed{
+    logic  pad2chip;
+  } pad_to_mux_pad_gpio_pwm2_t;
+
+  typedef struct packed{
+    logic  chip2pad;
+    logic  oen;
+  } mux_to_pad_pad_gpio_pwm3_t;
+
+  typedef struct packed{
+    logic  pad2chip;
+  } pad_to_mux_pad_gpio_pwm3_t;
+
+  typedef struct packed{
+    logic  chip2pad;
+    logic  oen;
+  } mux_to_pad_pad_gpio_pwm4_t;
+
+  typedef struct packed{
+    logic  pad2chip;
+  } pad_to_mux_pad_gpio_pwm4_t;
+
+  typedef struct packed{
+    logic  chip2pad;
+    logic  oen;
+  } mux_to_pad_pad_gpio_pwm5_t;
+
+  typedef struct packed{
+    logic  pad2chip;
+  } pad_to_mux_pad_gpio_pwm5_t;
+
+  typedef struct packed{
+    logic  chip2pad;
+    logic  oen;
+  } mux_to_pad_pad_gpio_pwm6_t;
+
+  typedef struct packed{
+    logic  pad2chip;
+  } pad_to_mux_pad_gpio_pwm6_t;
+
+  typedef struct packed{
+    logic  chip2pad;
+    logic  oen;
+  } mux_to_pad_pad_gpio_pwm7_t;
+
+  typedef struct packed{
+    logic  pad2chip;
+  } pad_to_mux_pad_gpio_pwm7_t;
+
+  typedef struct packed{
+    mux_to_pad_pad_gpio_b_00_t pad_gpio_b_00;
+    mux_to_pad_pad_gpio_b_01_t pad_gpio_b_01;
+    mux_to_pad_pad_gpio_b_02_t pad_gpio_b_02;
+    mux_to_pad_pad_gpio_b_03_t pad_gpio_b_03;
+    mux_to_pad_pad_gpio_b_04_t pad_gpio_b_04;
+    mux_to_pad_pad_gpio_b_05_t pad_gpio_b_05;
+    mux_to_pad_pad_gpio_b_06_t pad_gpio_b_06;
+    mux_to_pad_pad_gpio_b_07_t pad_gpio_b_07;
+    mux_to_pad_pad_gpio_b_08_t pad_gpio_b_08;
+    mux_to_pad_pad_gpio_b_09_t pad_gpio_b_09;
+    mux_to_pad_pad_gpio_b_10_t pad_gpio_b_10;
+    mux_to_pad_pad_gpio_b_11_t pad_gpio_b_11;
+    mux_to_pad_pad_gpio_b_12_t pad_gpio_b_12;
+    mux_to_pad_pad_gpio_b_13_t pad_gpio_b_13;
+    mux_to_pad_pad_gpio_b_14_t pad_gpio_b_14;
+    mux_to_pad_pad_gpio_b_15_t pad_gpio_b_15;
+    mux_to_pad_pad_gpio_b_16_t pad_gpio_b_16;
+    mux_to_pad_pad_gpio_b_17_t pad_gpio_b_17;
+    mux_to_pad_pad_gpio_b_18_t pad_gpio_b_18;
+    mux_to_pad_pad_gpio_b_19_t pad_gpio_b_19;
+    mux_to_pad_pad_gpio_b_20_t pad_gpio_b_20;
+    mux_to_pad_pad_gpio_b_21_t pad_gpio_b_21;
+    mux_to_pad_pad_gpio_b_22_t pad_gpio_b_22;
+    mux_to_pad_pad_gpio_b_23_t pad_gpio_b_23;
+    mux_to_pad_pad_gpio_b_24_t pad_gpio_b_24;
+    mux_to_pad_pad_gpio_b_25_t pad_gpio_b_25;
+    mux_to_pad_pad_gpio_b_26_t pad_gpio_b_26;
+    mux_to_pad_pad_gpio_b_27_t pad_gpio_b_27;
+    mux_to_pad_pad_gpio_b_28_t pad_gpio_b_28;
+    mux_to_pad_pad_gpio_b_29_t pad_gpio_b_29;
+    mux_to_pad_pad_gpio_b_30_t pad_gpio_b_30;
+    mux_to_pad_pad_gpio_b_31_t pad_gpio_b_31;
+    mux_to_pad_pad_gpio_b_32_t pad_gpio_b_32;
+    mux_to_pad_pad_gpio_b_33_t pad_gpio_b_33;
+    mux_to_pad_pad_gpio_b_34_t pad_gpio_b_34;
+    mux_to_pad_pad_gpio_b_35_t pad_gpio_b_35;
+    mux_to_pad_pad_gpio_b_36_t pad_gpio_b_36;
+    mux_to_pad_pad_gpio_b_37_t pad_gpio_b_37;
+    mux_to_pad_pad_gpio_b_38_t pad_gpio_b_38;
+    mux_to_pad_pad_gpio_b_39_t pad_gpio_b_39;
+    mux_to_pad_pad_gpio_b_40_t pad_gpio_b_40;
+    mux_to_pad_pad_gpio_b_41_t pad_gpio_b_41;
+    mux_to_pad_pad_gpio_b_42_t pad_gpio_b_42;
+    mux_to_pad_pad_gpio_b_43_t pad_gpio_b_43;
+    mux_to_pad_pad_gpio_b_44_t pad_gpio_b_44;
+    mux_to_pad_pad_gpio_b_45_t pad_gpio_b_45;
+    mux_to_pad_pad_gpio_b_46_t pad_gpio_b_46;
+    mux_to_pad_pad_gpio_b_47_t pad_gpio_b_47;
+    mux_to_pad_pad_gpio_b_48_t pad_gpio_b_48;
+    mux_to_pad_pad_gpio_b_49_t pad_gpio_b_49;
+    mux_to_pad_pad_gpio_b_50_t pad_gpio_b_50;
+    mux_to_pad_pad_gpio_b_51_t pad_gpio_b_51;
+    mux_to_pad_pad_gpio_b_52_t pad_gpio_b_52;
+    mux_to_pad_pad_gpio_b_53_t pad_gpio_b_53;
+    mux_to_pad_pad_gpio_b_54_t pad_gpio_b_54;
+    mux_to_pad_pad_gpio_b_55_t pad_gpio_b_55;
+    mux_to_pad_pad_gpio_b_56_t pad_gpio_b_56;
+    mux_to_pad_pad_gpio_b_57_t pad_gpio_b_57;
+    mux_to_pad_pad_gpio_b_58_t pad_gpio_b_58;
+    mux_to_pad_pad_gpio_b_59_t pad_gpio_b_59;
+    mux_to_pad_pad_gpio_b_60_t pad_gpio_b_60;
+    mux_to_pad_pad_gpio_b_61_t pad_gpio_b_61;
+    mux_to_pad_pad_gpio_c_00_t pad_gpio_c_00;
+    mux_to_pad_pad_gpio_c_01_t pad_gpio_c_01;
+    mux_to_pad_pad_gpio_c_02_t pad_gpio_c_02;
+    mux_to_pad_pad_gpio_c_03_t pad_gpio_c_03;
+    mux_to_pad_pad_gpio_d_00_t pad_gpio_d_00;
+    mux_to_pad_pad_gpio_d_01_t pad_gpio_d_01;
+    mux_to_pad_pad_gpio_d_02_t pad_gpio_d_02;
+    mux_to_pad_pad_gpio_d_03_t pad_gpio_d_03;
+    mux_to_pad_pad_gpio_d_04_t pad_gpio_d_04;
+    mux_to_pad_pad_gpio_d_05_t pad_gpio_d_05;
+    mux_to_pad_pad_gpio_d_06_t pad_gpio_d_06;
+    mux_to_pad_pad_gpio_d_07_t pad_gpio_d_07;
+    mux_to_pad_pad_gpio_d_08_t pad_gpio_d_08;
+    mux_to_pad_pad_gpio_d_09_t pad_gpio_d_09;
+    mux_to_pad_pad_gpio_d_10_t pad_gpio_d_10;
+    mux_to_pad_pad_gpio_e_00_t pad_gpio_e_00;
+    mux_to_pad_pad_gpio_e_01_t pad_gpio_e_01;
+    mux_to_pad_pad_gpio_e_02_t pad_gpio_e_02;
+    mux_to_pad_pad_gpio_e_03_t pad_gpio_e_03;
+    mux_to_pad_pad_gpio_e_04_t pad_gpio_e_04;
+    mux_to_pad_pad_gpio_e_05_t pad_gpio_e_05;
+    mux_to_pad_pad_gpio_e_06_t pad_gpio_e_06;
+    mux_to_pad_pad_gpio_e_07_t pad_gpio_e_07;
+    mux_to_pad_pad_gpio_e_08_t pad_gpio_e_08;
+    mux_to_pad_pad_gpio_e_09_t pad_gpio_e_09;
+    mux_to_pad_pad_gpio_e_10_t pad_gpio_e_10;
+    mux_to_pad_pad_gpio_e_11_t pad_gpio_e_11;
+    mux_to_pad_pad_gpio_e_12_t pad_gpio_e_12;
+    mux_to_pad_pad_gpio_f_00_t pad_gpio_f_00;
+    mux_to_pad_pad_gpio_f_01_t pad_gpio_f_01;
+    mux_to_pad_pad_gpio_f_02_t pad_gpio_f_02;
+    mux_to_pad_pad_gpio_f_03_t pad_gpio_f_03;
+    mux_to_pad_pad_gpio_f_04_t pad_gpio_f_04;
+    mux_to_pad_pad_gpio_f_05_t pad_gpio_f_05;
+    mux_to_pad_pad_gpio_f_06_t pad_gpio_f_06;
+    mux_to_pad_pad_gpio_f_07_t pad_gpio_f_07;
+    mux_to_pad_pad_gpio_f_08_t pad_gpio_f_08;
+    mux_to_pad_pad_gpio_f_09_t pad_gpio_f_09;
+    mux_to_pad_pad_gpio_f_10_t pad_gpio_f_10;
+    mux_to_pad_pad_gpio_f_11_t pad_gpio_f_11;
+    mux_to_pad_pad_gpio_f_12_t pad_gpio_f_12;
+    mux_to_pad_pad_gpio_f_13_t pad_gpio_f_13;
+    mux_to_pad_pad_gpio_f_14_t pad_gpio_f_14;
+    mux_to_pad_pad_gpio_f_15_t pad_gpio_f_15;
+    mux_to_pad_pad_gpio_f_16_t pad_gpio_f_16;
+    mux_to_pad_pad_gpio_f_17_t pad_gpio_f_17;
+    mux_to_pad_pad_gpio_f_18_t pad_gpio_f_18;
+    mux_to_pad_pad_gpio_f_19_t pad_gpio_f_19;
+    mux_to_pad_pad_gpio_f_20_t pad_gpio_f_20;
+    mux_to_pad_pad_gpio_f_21_t pad_gpio_f_21;
+    mux_to_pad_pad_gpio_f_22_t pad_gpio_f_22;
+    mux_to_pad_pad_gpio_f_23_t pad_gpio_f_23;
+    mux_to_pad_pad_gpio_f_24_t pad_gpio_f_24;
+    mux_to_pad_pad_gpio_f_25_t pad_gpio_f_25;
+    mux_to_pad_pad_gpio_pwm0_t pad_gpio_pwm0;
+    mux_to_pad_pad_gpio_pwm1_t pad_gpio_pwm1;
+    mux_to_pad_pad_gpio_pwm2_t pad_gpio_pwm2;
+    mux_to_pad_pad_gpio_pwm3_t pad_gpio_pwm3;
+    mux_to_pad_pad_gpio_pwm4_t pad_gpio_pwm4;
+    mux_to_pad_pad_gpio_pwm5_t pad_gpio_pwm5;
+    mux_to_pad_pad_gpio_pwm6_t pad_gpio_pwm6;
+    mux_to_pad_pad_gpio_pwm7_t pad_gpio_pwm7;
   } mux_to_pads_t;
 
   typedef struct packed{
-    pad_to_mux_pad_io_a_00_t pad_io_a_00;
-    pad_to_mux_pad_io_a_01_t pad_io_a_01;
-    pad_to_mux_pad_io_a_02_t pad_io_a_02;
-    pad_to_mux_pad_io_a_03_t pad_io_a_03;
-    pad_to_mux_pad_io_a_04_t pad_io_a_04;
-    pad_to_mux_pad_io_a_05_t pad_io_a_05;
-    pad_to_mux_pad_io_a_06_t pad_io_a_06;
-    pad_to_mux_pad_io_a_07_t pad_io_a_07;
-    pad_to_mux_pad_io_a_08_t pad_io_a_08;
-    pad_to_mux_pad_io_a_09_t pad_io_a_09;
-    pad_to_mux_pad_io_a_10_t pad_io_a_10;
-    pad_to_mux_pad_io_a_11_t pad_io_a_11;
-    pad_to_mux_pad_io_a_12_t pad_io_a_12;
-    pad_to_mux_pad_io_a_13_t pad_io_a_13;
-    pad_to_mux_pad_io_a_14_t pad_io_a_14;
-    pad_to_mux_pad_io_b_00_t pad_io_b_00;
-    pad_to_mux_pad_io_b_01_t pad_io_b_01;
-    pad_to_mux_pad_io_b_02_t pad_io_b_02;
-    pad_to_mux_pad_io_b_03_t pad_io_b_03;
-    pad_to_mux_pad_io_b_04_t pad_io_b_04;
-    pad_to_mux_pad_io_b_05_t pad_io_b_05;
-    pad_to_mux_pad_io_b_06_t pad_io_b_06;
-    pad_to_mux_pad_io_b_07_t pad_io_b_07;
-    pad_to_mux_pad_io_b_08_t pad_io_b_08;
-    pad_to_mux_pad_io_b_09_t pad_io_b_09;
-    pad_to_mux_pad_io_b_10_t pad_io_b_10;
-    pad_to_mux_pad_io_b_11_t pad_io_b_11;
-    pad_to_mux_pad_io_b_12_t pad_io_b_12;
-    pad_to_mux_pad_io_b_13_t pad_io_b_13;
-    pad_to_mux_pad_io_b_14_t pad_io_b_14;
-    pad_to_mux_pad_io_b_15_t pad_io_b_15;
-    pad_to_mux_pad_io_b_16_t pad_io_b_16;
-    pad_to_mux_pad_io_b_17_t pad_io_b_17;
-    pad_to_mux_pad_io_b_18_t pad_io_b_18;
-    pad_to_mux_pad_io_b_19_t pad_io_b_19;
-    pad_to_mux_pad_io_c_00_t pad_io_c_00;
-    pad_to_mux_pad_io_c_01_t pad_io_c_01;
-    pad_to_mux_pad_io_c_02_t pad_io_c_02;
-    pad_to_mux_pad_io_c_03_t pad_io_c_03;
-    pad_to_mux_pad_io_c_04_t pad_io_c_04;
-    pad_to_mux_pad_io_c_05_t pad_io_c_05;
-    pad_to_mux_pad_io_c_06_t pad_io_c_06;
-    pad_to_mux_pad_io_c_07_t pad_io_c_07;
-    pad_to_mux_pad_io_c_08_t pad_io_c_08;
-    pad_to_mux_pad_io_c_09_t pad_io_c_09;
-    pad_to_mux_pad_io_c_10_t pad_io_c_10;
-    pad_to_mux_pad_io_c_11_t pad_io_c_11;
-    pad_to_mux_pad_io_c_12_t pad_io_c_12;
-    pad_to_mux_pad_io_c_13_t pad_io_c_13;
-    pad_to_mux_pad_io_d_00_t pad_io_d_00;
-    pad_to_mux_pad_io_d_01_t pad_io_d_01;
-    pad_to_mux_pad_io_d_02_t pad_io_d_02;
-    pad_to_mux_pad_io_d_03_t pad_io_d_03;
-    pad_to_mux_pad_io_d_04_t pad_io_d_04;
-    pad_to_mux_pad_io_d_05_t pad_io_d_05;
-    pad_to_mux_pad_io_d_06_t pad_io_d_06;
-    pad_to_mux_pad_io_d_07_t pad_io_d_07;
-    pad_to_mux_pad_io_d_08_t pad_io_d_08;
-    pad_to_mux_pad_io_d_09_t pad_io_d_09;
-    pad_to_mux_pad_io_d_10_t pad_io_d_10;
-    pad_to_mux_pad_io_d_11_t pad_io_d_11;
-    pad_to_mux_pad_io_d_12_t pad_io_d_12;
-    pad_to_mux_pad_io_d_13_t pad_io_d_13;
-    pad_to_mux_pad_io_d_14_t pad_io_d_14;
-    pad_to_mux_pad_io_d_15_t pad_io_d_15;
-    pad_to_mux_pad_io_e_00_t pad_io_e_00;
-    pad_to_mux_pad_io_e_01_t pad_io_e_01;
-    pad_to_mux_pad_io_e_02_t pad_io_e_02;
-    pad_to_mux_pad_io_e_03_t pad_io_e_03;
-    pad_to_mux_pad_io_e_04_t pad_io_e_04;
-    pad_to_mux_pad_io_e_05_t pad_io_e_05;
-    pad_to_mux_pad_io_e_06_t pad_io_e_06;
-    pad_to_mux_pad_io_e_07_t pad_io_e_07;
-    pad_to_mux_pad_io_e_08_t pad_io_e_08;
-    pad_to_mux_pad_io_e_09_t pad_io_e_09;
-    pad_to_mux_pad_io_e_10_t pad_io_e_10;
-    pad_to_mux_pad_io_e_11_t pad_io_e_11;
-    pad_to_mux_pad_io_e_12_t pad_io_e_12;
-    pad_to_mux_pad_io_e_13_t pad_io_e_13;
-    pad_to_mux_pad_io_e_14_t pad_io_e_14;
-    pad_to_mux_pad_io_f_00_t pad_io_f_00;
-    pad_to_mux_pad_io_f_01_t pad_io_f_01;
-    pad_to_mux_pad_io_f_02_t pad_io_f_02;
-    pad_to_mux_pad_io_f_03_t pad_io_f_03;
-    pad_to_mux_pad_io_f_04_t pad_io_f_04;
-    pad_to_mux_pad_io_f_05_t pad_io_f_05;
-    pad_to_mux_pad_io_f_06_t pad_io_f_06;
-    pad_to_mux_pad_io_f_07_t pad_io_f_07;
-    pad_to_mux_pad_io_f_08_t pad_io_f_08;
-    pad_to_mux_pad_io_f_09_t pad_io_f_09;
-    pad_to_mux_pad_io_f_10_t pad_io_f_10;
-    pad_to_mux_pad_io_g_00_t pad_io_g_00;
-    pad_to_mux_pad_io_g_01_t pad_io_g_01;
-    pad_to_mux_pad_io_g_02_t pad_io_g_02;
-    pad_to_mux_pad_io_g_03_t pad_io_g_03;
-    pad_to_mux_pad_io_g_04_t pad_io_g_04;
-    pad_to_mux_pad_io_g_05_t pad_io_g_05;
-    pad_to_mux_pad_io_g_06_t pad_io_g_06;
-    pad_to_mux_pad_io_g_07_t pad_io_g_07;
-    pad_to_mux_pad_io_g_08_t pad_io_g_08;
-    pad_to_mux_pad_io_g_09_t pad_io_g_09;
-    pad_to_mux_pad_io_g_10_t pad_io_g_10;
-    pad_to_mux_pad_io_g_11_t pad_io_g_11;
-    pad_to_mux_pad_io_g_12_t pad_io_g_12;
-    pad_to_mux_pad_io_g_13_t pad_io_g_13;
-    pad_to_mux_pad_io_g_14_t pad_io_g_14;
-    pad_to_mux_pad_pwm0_t pad_pwm0;
-    pad_to_mux_pad_pwm1_t pad_pwm1;
-    pad_to_mux_pad_pwm2_t pad_pwm2;
-    pad_to_mux_pad_pwm3_t pad_pwm3;
-    pad_to_mux_pad_pwm4_t pad_pwm4;
-    pad_to_mux_pad_pwm5_t pad_pwm5;
-    pad_to_mux_pad_pwm6_t pad_pwm6;
-    pad_to_mux_pad_pwm7_t pad_pwm7;
+    pad_to_mux_pad_gpio_b_00_t pad_gpio_b_00;
+    pad_to_mux_pad_gpio_b_01_t pad_gpio_b_01;
+    pad_to_mux_pad_gpio_b_02_t pad_gpio_b_02;
+    pad_to_mux_pad_gpio_b_03_t pad_gpio_b_03;
+    pad_to_mux_pad_gpio_b_04_t pad_gpio_b_04;
+    pad_to_mux_pad_gpio_b_05_t pad_gpio_b_05;
+    pad_to_mux_pad_gpio_b_06_t pad_gpio_b_06;
+    pad_to_mux_pad_gpio_b_07_t pad_gpio_b_07;
+    pad_to_mux_pad_gpio_b_08_t pad_gpio_b_08;
+    pad_to_mux_pad_gpio_b_09_t pad_gpio_b_09;
+    pad_to_mux_pad_gpio_b_10_t pad_gpio_b_10;
+    pad_to_mux_pad_gpio_b_11_t pad_gpio_b_11;
+    pad_to_mux_pad_gpio_b_12_t pad_gpio_b_12;
+    pad_to_mux_pad_gpio_b_13_t pad_gpio_b_13;
+    pad_to_mux_pad_gpio_b_14_t pad_gpio_b_14;
+    pad_to_mux_pad_gpio_b_15_t pad_gpio_b_15;
+    pad_to_mux_pad_gpio_b_16_t pad_gpio_b_16;
+    pad_to_mux_pad_gpio_b_17_t pad_gpio_b_17;
+    pad_to_mux_pad_gpio_b_18_t pad_gpio_b_18;
+    pad_to_mux_pad_gpio_b_19_t pad_gpio_b_19;
+    pad_to_mux_pad_gpio_b_20_t pad_gpio_b_20;
+    pad_to_mux_pad_gpio_b_21_t pad_gpio_b_21;
+    pad_to_mux_pad_gpio_b_22_t pad_gpio_b_22;
+    pad_to_mux_pad_gpio_b_23_t pad_gpio_b_23;
+    pad_to_mux_pad_gpio_b_24_t pad_gpio_b_24;
+    pad_to_mux_pad_gpio_b_25_t pad_gpio_b_25;
+    pad_to_mux_pad_gpio_b_26_t pad_gpio_b_26;
+    pad_to_mux_pad_gpio_b_27_t pad_gpio_b_27;
+    pad_to_mux_pad_gpio_b_28_t pad_gpio_b_28;
+    pad_to_mux_pad_gpio_b_29_t pad_gpio_b_29;
+    pad_to_mux_pad_gpio_b_30_t pad_gpio_b_30;
+    pad_to_mux_pad_gpio_b_31_t pad_gpio_b_31;
+    pad_to_mux_pad_gpio_b_32_t pad_gpio_b_32;
+    pad_to_mux_pad_gpio_b_33_t pad_gpio_b_33;
+    pad_to_mux_pad_gpio_b_34_t pad_gpio_b_34;
+    pad_to_mux_pad_gpio_b_35_t pad_gpio_b_35;
+    pad_to_mux_pad_gpio_b_36_t pad_gpio_b_36;
+    pad_to_mux_pad_gpio_b_37_t pad_gpio_b_37;
+    pad_to_mux_pad_gpio_b_38_t pad_gpio_b_38;
+    pad_to_mux_pad_gpio_b_39_t pad_gpio_b_39;
+    pad_to_mux_pad_gpio_b_40_t pad_gpio_b_40;
+    pad_to_mux_pad_gpio_b_41_t pad_gpio_b_41;
+    pad_to_mux_pad_gpio_b_42_t pad_gpio_b_42;
+    pad_to_mux_pad_gpio_b_43_t pad_gpio_b_43;
+    pad_to_mux_pad_gpio_b_44_t pad_gpio_b_44;
+    pad_to_mux_pad_gpio_b_45_t pad_gpio_b_45;
+    pad_to_mux_pad_gpio_b_46_t pad_gpio_b_46;
+    pad_to_mux_pad_gpio_b_47_t pad_gpio_b_47;
+    pad_to_mux_pad_gpio_b_48_t pad_gpio_b_48;
+    pad_to_mux_pad_gpio_b_49_t pad_gpio_b_49;
+    pad_to_mux_pad_gpio_b_50_t pad_gpio_b_50;
+    pad_to_mux_pad_gpio_b_51_t pad_gpio_b_51;
+    pad_to_mux_pad_gpio_b_52_t pad_gpio_b_52;
+    pad_to_mux_pad_gpio_b_53_t pad_gpio_b_53;
+    pad_to_mux_pad_gpio_b_54_t pad_gpio_b_54;
+    pad_to_mux_pad_gpio_b_55_t pad_gpio_b_55;
+    pad_to_mux_pad_gpio_b_56_t pad_gpio_b_56;
+    pad_to_mux_pad_gpio_b_57_t pad_gpio_b_57;
+    pad_to_mux_pad_gpio_b_58_t pad_gpio_b_58;
+    pad_to_mux_pad_gpio_b_59_t pad_gpio_b_59;
+    pad_to_mux_pad_gpio_b_60_t pad_gpio_b_60;
+    pad_to_mux_pad_gpio_b_61_t pad_gpio_b_61;
+    pad_to_mux_pad_gpio_c_00_t pad_gpio_c_00;
+    pad_to_mux_pad_gpio_c_01_t pad_gpio_c_01;
+    pad_to_mux_pad_gpio_c_02_t pad_gpio_c_02;
+    pad_to_mux_pad_gpio_c_03_t pad_gpio_c_03;
+    pad_to_mux_pad_gpio_d_00_t pad_gpio_d_00;
+    pad_to_mux_pad_gpio_d_01_t pad_gpio_d_01;
+    pad_to_mux_pad_gpio_d_02_t pad_gpio_d_02;
+    pad_to_mux_pad_gpio_d_03_t pad_gpio_d_03;
+    pad_to_mux_pad_gpio_d_04_t pad_gpio_d_04;
+    pad_to_mux_pad_gpio_d_05_t pad_gpio_d_05;
+    pad_to_mux_pad_gpio_d_06_t pad_gpio_d_06;
+    pad_to_mux_pad_gpio_d_07_t pad_gpio_d_07;
+    pad_to_mux_pad_gpio_d_08_t pad_gpio_d_08;
+    pad_to_mux_pad_gpio_d_09_t pad_gpio_d_09;
+    pad_to_mux_pad_gpio_d_10_t pad_gpio_d_10;
+    pad_to_mux_pad_gpio_e_00_t pad_gpio_e_00;
+    pad_to_mux_pad_gpio_e_01_t pad_gpio_e_01;
+    pad_to_mux_pad_gpio_e_02_t pad_gpio_e_02;
+    pad_to_mux_pad_gpio_e_03_t pad_gpio_e_03;
+    pad_to_mux_pad_gpio_e_04_t pad_gpio_e_04;
+    pad_to_mux_pad_gpio_e_05_t pad_gpio_e_05;
+    pad_to_mux_pad_gpio_e_06_t pad_gpio_e_06;
+    pad_to_mux_pad_gpio_e_07_t pad_gpio_e_07;
+    pad_to_mux_pad_gpio_e_08_t pad_gpio_e_08;
+    pad_to_mux_pad_gpio_e_09_t pad_gpio_e_09;
+    pad_to_mux_pad_gpio_e_10_t pad_gpio_e_10;
+    pad_to_mux_pad_gpio_e_11_t pad_gpio_e_11;
+    pad_to_mux_pad_gpio_e_12_t pad_gpio_e_12;
+    pad_to_mux_pad_gpio_f_00_t pad_gpio_f_00;
+    pad_to_mux_pad_gpio_f_01_t pad_gpio_f_01;
+    pad_to_mux_pad_gpio_f_02_t pad_gpio_f_02;
+    pad_to_mux_pad_gpio_f_03_t pad_gpio_f_03;
+    pad_to_mux_pad_gpio_f_04_t pad_gpio_f_04;
+    pad_to_mux_pad_gpio_f_05_t pad_gpio_f_05;
+    pad_to_mux_pad_gpio_f_06_t pad_gpio_f_06;
+    pad_to_mux_pad_gpio_f_07_t pad_gpio_f_07;
+    pad_to_mux_pad_gpio_f_08_t pad_gpio_f_08;
+    pad_to_mux_pad_gpio_f_09_t pad_gpio_f_09;
+    pad_to_mux_pad_gpio_f_10_t pad_gpio_f_10;
+    pad_to_mux_pad_gpio_f_11_t pad_gpio_f_11;
+    pad_to_mux_pad_gpio_f_12_t pad_gpio_f_12;
+    pad_to_mux_pad_gpio_f_13_t pad_gpio_f_13;
+    pad_to_mux_pad_gpio_f_14_t pad_gpio_f_14;
+    pad_to_mux_pad_gpio_f_15_t pad_gpio_f_15;
+    pad_to_mux_pad_gpio_f_16_t pad_gpio_f_16;
+    pad_to_mux_pad_gpio_f_17_t pad_gpio_f_17;
+    pad_to_mux_pad_gpio_f_18_t pad_gpio_f_18;
+    pad_to_mux_pad_gpio_f_19_t pad_gpio_f_19;
+    pad_to_mux_pad_gpio_f_20_t pad_gpio_f_20;
+    pad_to_mux_pad_gpio_f_21_t pad_gpio_f_21;
+    pad_to_mux_pad_gpio_f_22_t pad_gpio_f_22;
+    pad_to_mux_pad_gpio_f_23_t pad_gpio_f_23;
+    pad_to_mux_pad_gpio_f_24_t pad_gpio_f_24;
+    pad_to_mux_pad_gpio_f_25_t pad_gpio_f_25;
+    pad_to_mux_pad_gpio_pwm0_t pad_gpio_pwm0;
+    pad_to_mux_pad_gpio_pwm1_t pad_gpio_pwm1;
+    pad_to_mux_pad_gpio_pwm2_t pad_gpio_pwm2;
+    pad_to_mux_pad_gpio_pwm3_t pad_gpio_pwm3;
+    pad_to_mux_pad_gpio_pwm4_t pad_gpio_pwm4;
+    pad_to_mux_pad_gpio_pwm5_t pad_gpio_pwm5;
+    pad_to_mux_pad_gpio_pwm6_t pad_gpio_pwm6;
+    pad_to_mux_pad_gpio_pwm7_t pad_gpio_pwm7;
   } pads_to_mux_t;
 
 
 
   // Indices definitions
 
-  parameter PAD_MUX_GROUP_MX_A_SEL_WIDTH = 4;
-  parameter logic[3:0] PAD_MUX_GROUP_MX_A_SEL_DEFAULT = 4'd0;
-  parameter logic[3:0] PAD_MUX_GROUP_MX_A_SEL_I2C0_I2C_SCL = 4'd1;
-  parameter logic[3:0] PAD_MUX_GROUP_MX_A_SEL_I2C0_I2C_SDA = 4'd2;
-  parameter logic[3:0] PAD_MUX_GROUP_MX_A_SEL_I2C1_I2C_SCL = 4'd3;
-  parameter logic[3:0] PAD_MUX_GROUP_MX_A_SEL_I2C1_I2C_SDA = 4'd4;
-  parameter logic[3:0] PAD_MUX_GROUP_MX_A_SEL_I2C2_I2C_SCL = 4'd5;
-  parameter logic[3:0] PAD_MUX_GROUP_MX_A_SEL_I2C2_I2C_SDA = 4'd6;
-  parameter logic[3:0] PAD_MUX_GROUP_MX_A_SEL_SPI0_SPI_CS = 4'd7;
-  parameter logic[3:0] PAD_MUX_GROUP_MX_A_SEL_SPI0_SPI_MISO = 4'd8;
-  parameter logic[3:0] PAD_MUX_GROUP_MX_A_SEL_SPI0_SPI_MOSI = 4'd9;
-  parameter logic[3:0] PAD_MUX_GROUP_MX_A_SEL_SPI0_SPI_SCK = 4'd10;
-  parameter logic[3:0] PAD_MUX_GROUP_MX_A_SEL_SPI1_SPI_CS = 4'd11;
-  parameter logic[3:0] PAD_MUX_GROUP_MX_A_SEL_SPI1_SPI_MISO = 4'd12;
-  parameter logic[3:0] PAD_MUX_GROUP_MX_A_SEL_SPI1_SPI_MOSI = 4'd13;
-  parameter logic[3:0] PAD_MUX_GROUP_MX_A_SEL_SPI1_SPI_SCK = 4'd14;
-  parameter logic[3:0] PAD_MUX_GROUP_MX_A_SEL_SPI1_CS1_SPI1_CS1 = 4'd15;
+  parameter PAD_MUX_GROUP_MX_PWM_SEL_WIDTH = 4;
+  parameter logic[3:0] PAD_MUX_GROUP_MX_PWM_SEL_DEFAULT = 4'd0;
+  parameter logic[3:0] PAD_MUX_GROUP_MX_PWM_SEL_PWM_PWM0 = 4'd1;
+  parameter logic[3:0] PAD_MUX_GROUP_MX_PWM_SEL_PWM_PWM1 = 4'd2;
+  parameter logic[3:0] PAD_MUX_GROUP_MX_PWM_SEL_PWM_PWM2 = 4'd3;
+  parameter logic[3:0] PAD_MUX_GROUP_MX_PWM_SEL_PWM_PWM3 = 4'd4;
+  parameter logic[3:0] PAD_MUX_GROUP_MX_PWM_SEL_PWM_PWM4 = 4'd5;
+  parameter logic[3:0] PAD_MUX_GROUP_MX_PWM_SEL_PWM_PWM5 = 4'd6;
+  parameter logic[3:0] PAD_MUX_GROUP_MX_PWM_SEL_PWM_PWM6 = 4'd7;
+  parameter logic[3:0] PAD_MUX_GROUP_MX_PWM_SEL_PWM_PWM7 = 4'd8;
 
-  parameter PAD_MUX_GROUP_MX_B_SEL_WIDTH = 5;
-  parameter logic[4:0] PAD_MUX_GROUP_MX_B_SEL_DEFAULT = 5'd0;
-  parameter logic[4:0] PAD_MUX_GROUP_MX_B_SEL_SPI2_SPI_CS = 5'd1;
-  parameter logic[4:0] PAD_MUX_GROUP_MX_B_SEL_SPI2_SPI_MISO = 5'd2;
-  parameter logic[4:0] PAD_MUX_GROUP_MX_B_SEL_SPI2_SPI_MOSI = 5'd3;
-  parameter logic[4:0] PAD_MUX_GROUP_MX_B_SEL_SPI2_SPI_SCK = 5'd4;
-  parameter logic[4:0] PAD_MUX_GROUP_MX_B_SEL_SPI3_SPI_CS = 5'd5;
-  parameter logic[4:0] PAD_MUX_GROUP_MX_B_SEL_SPI3_SPI_MISO = 5'd6;
-  parameter logic[4:0] PAD_MUX_GROUP_MX_B_SEL_SPI3_SPI_MOSI = 5'd7;
-  parameter logic[4:0] PAD_MUX_GROUP_MX_B_SEL_SPI3_SPI_SCK = 5'd8;
-  parameter logic[4:0] PAD_MUX_GROUP_MX_B_SEL_SPI4_SPI_CS = 5'd9;
-  parameter logic[4:0] PAD_MUX_GROUP_MX_B_SEL_SPI4_SPI_MISO = 5'd10;
-  parameter logic[4:0] PAD_MUX_GROUP_MX_B_SEL_SPI4_SPI_MOSI = 5'd11;
-  parameter logic[4:0] PAD_MUX_GROUP_MX_B_SEL_SPI4_SPI_SCK = 5'd12;
-  parameter logic[4:0] PAD_MUX_GROUP_MX_B_SEL_SPI5_SPI_CS = 5'd13;
-  parameter logic[4:0] PAD_MUX_GROUP_MX_B_SEL_SPI5_SPI_MISO = 5'd14;
-  parameter logic[4:0] PAD_MUX_GROUP_MX_B_SEL_SPI5_SPI_MOSI = 5'd15;
-  parameter logic[4:0] PAD_MUX_GROUP_MX_B_SEL_SPI5_SPI_SCK = 5'd16;
-  parameter logic[4:0] PAD_MUX_GROUP_MX_B_SEL_SPI6_SPI_CS = 5'd17;
-  parameter logic[4:0] PAD_MUX_GROUP_MX_B_SEL_SPI6_SPI_MISO = 5'd18;
-  parameter logic[4:0] PAD_MUX_GROUP_MX_B_SEL_SPI6_SPI_MOSI = 5'd19;
-  parameter logic[4:0] PAD_MUX_GROUP_MX_B_SEL_SPI6_SPI_SCK = 5'd20;
+  parameter PAD_MUX_GROUP_PAD_GPIO_B_00_SEL_WIDTH = 2;
+  parameter logic[1:0] PAD_MUX_GROUP_PAD_GPIO_B_00_SEL_DEFAULT = 2'd0;
+  parameter logic[1:0] PAD_MUX_GROUP_PAD_GPIO_B_00_SEL_GPIO_B_GPIO0 = 2'd1;
+  parameter logic[1:0] PAD_MUX_GROUP_PAD_GPIO_B_00_SEL_SPI0_SPI_SCK = 2'd2;
 
-  parameter PAD_MUX_GROUP_MX_C_SEL_WIDTH = 4;
-  parameter logic[3:0] PAD_MUX_GROUP_MX_C_SEL_DEFAULT = 4'd0;
-  parameter logic[3:0] PAD_MUX_GROUP_MX_C_SEL_QSPI_QSPI_CSN = 4'd1;
-  parameter logic[3:0] PAD_MUX_GROUP_MX_C_SEL_QSPI_QSPI_SCK = 4'd2;
-  parameter logic[3:0] PAD_MUX_GROUP_MX_C_SEL_QSPI_QSPI_SD0 = 4'd3;
-  parameter logic[3:0] PAD_MUX_GROUP_MX_C_SEL_QSPI_QSPI_SD1 = 4'd4;
-  parameter logic[3:0] PAD_MUX_GROUP_MX_C_SEL_QSPI_QSPI_SD2 = 4'd5;
-  parameter logic[3:0] PAD_MUX_GROUP_MX_C_SEL_QSPI_QSPI_SD3 = 4'd6;
-  parameter logic[3:0] PAD_MUX_GROUP_MX_C_SEL_SDIO0_SDIO_CLK = 4'd7;
-  parameter logic[3:0] PAD_MUX_GROUP_MX_C_SEL_SDIO0_SDIO_CMD = 4'd8;
-  parameter logic[3:0] PAD_MUX_GROUP_MX_C_SEL_SDIO0_SDIO_DATA0 = 4'd9;
-  parameter logic[3:0] PAD_MUX_GROUP_MX_C_SEL_SDIO0_SDIO_DATA1 = 4'd10;
-  parameter logic[3:0] PAD_MUX_GROUP_MX_C_SEL_SDIO0_SDIO_DATA2 = 4'd11;
-  parameter logic[3:0] PAD_MUX_GROUP_MX_C_SEL_SDIO0_SDIO_DATA3 = 4'd12;
+  parameter PAD_MUX_GROUP_PAD_GPIO_B_01_SEL_WIDTH = 2;
+  parameter logic[1:0] PAD_MUX_GROUP_PAD_GPIO_B_01_SEL_DEFAULT = 2'd0;
+  parameter logic[1:0] PAD_MUX_GROUP_PAD_GPIO_B_01_SEL_GPIO_B_GPIO1 = 2'd1;
+  parameter logic[1:0] PAD_MUX_GROUP_PAD_GPIO_B_01_SEL_SPI0_SPI_CS0 = 2'd2;
 
-  parameter PAD_MUX_GROUP_MX_D_SEL_WIDTH = 5;
-  parameter logic[4:0] PAD_MUX_GROUP_MX_D_SEL_DEFAULT = 5'd0;
-  parameter logic[4:0] PAD_MUX_GROUP_MX_D_SEL_UART0_UART_RX = 5'd1;
-  parameter logic[4:0] PAD_MUX_GROUP_MX_D_SEL_UART0_UART_TX = 5'd2;
-  parameter logic[4:0] PAD_MUX_GROUP_MX_D_SEL_UART1_UART_RX = 5'd3;
-  parameter logic[4:0] PAD_MUX_GROUP_MX_D_SEL_UART1_UART_TX = 5'd4;
-  parameter logic[4:0] PAD_MUX_GROUP_MX_D_SEL_UART_CF0_UART_CTS = 5'd5;
-  parameter logic[4:0] PAD_MUX_GROUP_MX_D_SEL_UART_CF0_UART_RTS = 5'd6;
-  parameter logic[4:0] PAD_MUX_GROUP_MX_D_SEL_UART_CF0_UART_RX = 5'd7;
-  parameter logic[4:0] PAD_MUX_GROUP_MX_D_SEL_UART_CF0_UART_TX = 5'd8;
-  parameter logic[4:0] PAD_MUX_GROUP_MX_D_SEL_UART_CF1_UART_CTS = 5'd9;
-  parameter logic[4:0] PAD_MUX_GROUP_MX_D_SEL_UART_CF1_UART_RTS = 5'd10;
-  parameter logic[4:0] PAD_MUX_GROUP_MX_D_SEL_UART_CF1_UART_RX = 5'd11;
-  parameter logic[4:0] PAD_MUX_GROUP_MX_D_SEL_UART_CF1_UART_TX = 5'd12;
-  parameter logic[4:0] PAD_MUX_GROUP_MX_D_SEL_UART_CF2_UART_CTS = 5'd13;
-  parameter logic[4:0] PAD_MUX_GROUP_MX_D_SEL_UART_CF2_UART_RTS = 5'd14;
-  parameter logic[4:0] PAD_MUX_GROUP_MX_D_SEL_UART_CF2_UART_RX = 5'd15;
-  parameter logic[4:0] PAD_MUX_GROUP_MX_D_SEL_UART_CF2_UART_TX = 5'd16;
+  parameter PAD_MUX_GROUP_PAD_GPIO_B_02_SEL_WIDTH = 2;
+  parameter logic[1:0] PAD_MUX_GROUP_PAD_GPIO_B_02_SEL_DEFAULT = 2'd0;
+  parameter logic[1:0] PAD_MUX_GROUP_PAD_GPIO_B_02_SEL_GPIO_B_GPIO2 = 2'd1;
+  parameter logic[1:0] PAD_MUX_GROUP_PAD_GPIO_B_02_SEL_SPI0_SPI_MOSI = 2'd2;
 
-  parameter PAD_MUX_GROUP_MX_E_SEL_WIDTH = 5;
-  parameter logic[4:0] PAD_MUX_GROUP_MX_E_SEL_DEFAULT = 5'd0;
-  parameter logic[4:0] PAD_MUX_GROUP_MX_E_SEL_CAN2_CAN_CAN1_RX = 5'd1;
-  parameter logic[4:0] PAD_MUX_GROUP_MX_E_SEL_CAN2_CAN_CAN1_TX = 5'd2;
-  parameter logic[4:0] PAD_MUX_GROUP_MX_E_SEL_CAN2_CAN_CAN2_RX = 5'd3;
-  parameter logic[4:0] PAD_MUX_GROUP_MX_E_SEL_CAN2_CAN_CAN2_TX = 5'd4;
-  parameter logic[4:0] PAD_MUX_GROUP_MX_E_SEL_CAM0_CAM_DATA0_I = 5'd5;
-  parameter logic[4:0] PAD_MUX_GROUP_MX_E_SEL_CAM0_CAM_DATA1_I = 5'd6;
-  parameter logic[4:0] PAD_MUX_GROUP_MX_E_SEL_CAM0_CAM_DATA2_I = 5'd7;
-  parameter logic[4:0] PAD_MUX_GROUP_MX_E_SEL_CAM0_CAM_DATA3_I = 5'd8;
-  parameter logic[4:0] PAD_MUX_GROUP_MX_E_SEL_CAM0_CAM_DATA4_I = 5'd9;
-  parameter logic[4:0] PAD_MUX_GROUP_MX_E_SEL_CAM0_CAM_DATA5_I = 5'd10;
-  parameter logic[4:0] PAD_MUX_GROUP_MX_E_SEL_CAM0_CAM_DATA6_I = 5'd11;
-  parameter logic[4:0] PAD_MUX_GROUP_MX_E_SEL_CAM0_CAM_DATA7_I = 5'd12;
-  parameter logic[4:0] PAD_MUX_GROUP_MX_E_SEL_CAM0_CAM_HSYNC = 5'd13;
-  parameter logic[4:0] PAD_MUX_GROUP_MX_E_SEL_CAM0_CAM_PCLK = 5'd14;
-  parameter logic[4:0] PAD_MUX_GROUP_MX_E_SEL_CAM0_CAM_VSYNC = 5'd15;
-  parameter logic[4:0] PAD_MUX_GROUP_MX_E_SEL_I2C3_I2C_SCL = 5'd16;
-  parameter logic[4:0] PAD_MUX_GROUP_MX_E_SEL_I2C3_I2C_SDA = 5'd17;
-  parameter logic[4:0] PAD_MUX_GROUP_MX_E_SEL_SPI7_SPI_CS = 5'd18;
-  parameter logic[4:0] PAD_MUX_GROUP_MX_E_SEL_SPI7_SPI_MISO = 5'd19;
-  parameter logic[4:0] PAD_MUX_GROUP_MX_E_SEL_SPI7_SPI_MOSI = 5'd20;
-  parameter logic[4:0] PAD_MUX_GROUP_MX_E_SEL_SPI7_SPI_SCK = 5'd21;
-  parameter logic[4:0] PAD_MUX_GROUP_MX_E_SEL_SPI8_SPI_CS = 5'd22;
-  parameter logic[4:0] PAD_MUX_GROUP_MX_E_SEL_SPI8_SPI_MISO = 5'd23;
-  parameter logic[4:0] PAD_MUX_GROUP_MX_E_SEL_SPI8_SPI_MOSI = 5'd24;
-  parameter logic[4:0] PAD_MUX_GROUP_MX_E_SEL_SPI8_SPI_SCK = 5'd25;
-  parameter logic[4:0] PAD_MUX_GROUP_MX_E_SEL_SPI9_SPI_CS = 5'd26;
-  parameter logic[4:0] PAD_MUX_GROUP_MX_E_SEL_SPI9_SPI_MISO = 5'd27;
-  parameter logic[4:0] PAD_MUX_GROUP_MX_E_SEL_SPI9_SPI_MOSI = 5'd28;
-  parameter logic[4:0] PAD_MUX_GROUP_MX_E_SEL_SPI9_SPI_SCK = 5'd29;
+  parameter PAD_MUX_GROUP_PAD_GPIO_B_03_SEL_WIDTH = 2;
+  parameter logic[1:0] PAD_MUX_GROUP_PAD_GPIO_B_03_SEL_DEFAULT = 2'd0;
+  parameter logic[1:0] PAD_MUX_GROUP_PAD_GPIO_B_03_SEL_GPIO_B_GPIO3 = 2'd1;
+  parameter logic[1:0] PAD_MUX_GROUP_PAD_GPIO_B_03_SEL_SPI0_SPI_MISO = 2'd2;
 
-  parameter PAD_MUX_GROUP_MX_F_SEL_WIDTH = 5;
-  parameter logic[4:0] PAD_MUX_GROUP_MX_F_SEL_DEFAULT = 5'd0;
-  parameter logic[4:0] PAD_MUX_GROUP_MX_F_SEL_CAM1_CAM_DATA0_I = 5'd1;
-  parameter logic[4:0] PAD_MUX_GROUP_MX_F_SEL_CAM1_CAM_DATA1_I = 5'd2;
-  parameter logic[4:0] PAD_MUX_GROUP_MX_F_SEL_CAM1_CAM_DATA2_I = 5'd3;
-  parameter logic[4:0] PAD_MUX_GROUP_MX_F_SEL_CAM1_CAM_DATA3_I = 5'd4;
-  parameter logic[4:0] PAD_MUX_GROUP_MX_F_SEL_CAM1_CAM_DATA4_I = 5'd5;
-  parameter logic[4:0] PAD_MUX_GROUP_MX_F_SEL_CAM1_CAM_DATA5_I = 5'd6;
-  parameter logic[4:0] PAD_MUX_GROUP_MX_F_SEL_CAM1_CAM_DATA6_I = 5'd7;
-  parameter logic[4:0] PAD_MUX_GROUP_MX_F_SEL_CAM1_CAM_DATA7_I = 5'd8;
-  parameter logic[4:0] PAD_MUX_GROUP_MX_F_SEL_CAM1_CAM_HSYNC = 5'd9;
-  parameter logic[4:0] PAD_MUX_GROUP_MX_F_SEL_CAM1_CAM_PCLK = 5'd10;
-  parameter logic[4:0] PAD_MUX_GROUP_MX_F_SEL_CAM1_CAM_VSYNC = 5'd11;
-  parameter logic[4:0] PAD_MUX_GROUP_MX_F_SEL_I2C4_I2C_SCL = 5'd12;
-  parameter logic[4:0] PAD_MUX_GROUP_MX_F_SEL_I2C4_I2C_SDA = 5'd13;
-  parameter logic[4:0] PAD_MUX_GROUP_MX_F_SEL_SPI10_SPI_CS = 5'd14;
-  parameter logic[4:0] PAD_MUX_GROUP_MX_F_SEL_SPI10_SPI_MISO = 5'd15;
-  parameter logic[4:0] PAD_MUX_GROUP_MX_F_SEL_SPI10_SPI_MOSI = 5'd16;
-  parameter logic[4:0] PAD_MUX_GROUP_MX_F_SEL_SPI10_SPI_SCK = 5'd17;
-  parameter logic[4:0] PAD_MUX_GROUP_MX_F_SEL_UART2_UART_RX = 5'd18;
-  parameter logic[4:0] PAD_MUX_GROUP_MX_F_SEL_UART2_UART_TX = 5'd19;
-  parameter logic[4:0] PAD_MUX_GROUP_MX_F_SEL_UART3_UART_RX = 5'd20;
-  parameter logic[4:0] PAD_MUX_GROUP_MX_F_SEL_UART3_UART_TX = 5'd21;
+  parameter PAD_MUX_GROUP_PAD_GPIO_B_04_SEL_WIDTH = 2;
+  parameter logic[1:0] PAD_MUX_GROUP_PAD_GPIO_B_04_SEL_DEFAULT = 2'd0;
+  parameter logic[1:0] PAD_MUX_GROUP_PAD_GPIO_B_04_SEL_GPIO_B_GPIO4 = 2'd1;
+  parameter logic[1:0] PAD_MUX_GROUP_PAD_GPIO_B_04_SEL_SPI1_SPI_SCK = 2'd2;
 
-  parameter PAD_MUX_GROUP_MX_G_SEL_WIDTH = 5;
-  parameter logic[4:0] PAD_MUX_GROUP_MX_G_SEL_DEFAULT = 5'd0;
-  parameter logic[4:0] PAD_MUX_GROUP_MX_G_SEL_ETH0_ETH_RST = 5'd1;
-  parameter logic[4:0] PAD_MUX_GROUP_MX_G_SEL_ETH0_ETH_RXCK = 5'd2;
-  parameter logic[4:0] PAD_MUX_GROUP_MX_G_SEL_ETH0_ETH_RXCTL = 5'd3;
-  parameter logic[4:0] PAD_MUX_GROUP_MX_G_SEL_ETH0_ETH_RXD0 = 5'd4;
-  parameter logic[4:0] PAD_MUX_GROUP_MX_G_SEL_ETH0_ETH_RXD1 = 5'd5;
-  parameter logic[4:0] PAD_MUX_GROUP_MX_G_SEL_ETH0_ETH_RXD2 = 5'd6;
-  parameter logic[4:0] PAD_MUX_GROUP_MX_G_SEL_ETH0_ETH_RXD3 = 5'd7;
-  parameter logic[4:0] PAD_MUX_GROUP_MX_G_SEL_ETH0_ETH_TXCK = 5'd8;
-  parameter logic[4:0] PAD_MUX_GROUP_MX_G_SEL_ETH0_ETH_TXCTL = 5'd9;
-  parameter logic[4:0] PAD_MUX_GROUP_MX_G_SEL_ETH0_ETH_TXD0 = 5'd10;
-  parameter logic[4:0] PAD_MUX_GROUP_MX_G_SEL_ETH0_ETH_TXD1 = 5'd11;
-  parameter logic[4:0] PAD_MUX_GROUP_MX_G_SEL_ETH0_ETH_TXD2 = 5'd12;
-  parameter logic[4:0] PAD_MUX_GROUP_MX_G_SEL_ETH0_ETH_TXD3 = 5'd13;
-  parameter logic[4:0] PAD_MUX_GROUP_MX_G_SEL_SDIO1_SDIO_CLK = 5'd14;
-  parameter logic[4:0] PAD_MUX_GROUP_MX_G_SEL_SDIO1_SDIO_CMD = 5'd15;
-  parameter logic[4:0] PAD_MUX_GROUP_MX_G_SEL_SDIO1_SDIO_DATA0 = 5'd16;
-  parameter logic[4:0] PAD_MUX_GROUP_MX_G_SEL_SDIO1_SDIO_DATA1 = 5'd17;
-  parameter logic[4:0] PAD_MUX_GROUP_MX_G_SEL_SDIO1_SDIO_DATA2 = 5'd18;
-  parameter logic[4:0] PAD_MUX_GROUP_MX_G_SEL_SDIO1_SDIO_DATA3 = 5'd19;
-  parameter logic[4:0] PAD_MUX_GROUP_MX_G_SEL_UART_CF3_UART_CTS = 5'd20;
-  parameter logic[4:0] PAD_MUX_GROUP_MX_G_SEL_UART_CF3_UART_RTS = 5'd21;
-  parameter logic[4:0] PAD_MUX_GROUP_MX_G_SEL_UART_CF3_UART_RX = 5'd22;
-  parameter logic[4:0] PAD_MUX_GROUP_MX_G_SEL_UART_CF3_UART_TX = 5'd23;
+  parameter PAD_MUX_GROUP_PAD_GPIO_B_05_SEL_WIDTH = 2;
+  parameter logic[1:0] PAD_MUX_GROUP_PAD_GPIO_B_05_SEL_DEFAULT = 2'd0;
+  parameter logic[1:0] PAD_MUX_GROUP_PAD_GPIO_B_05_SEL_GPIO_B_GPIO5 = 2'd1;
+  parameter logic[1:0] PAD_MUX_GROUP_PAD_GPIO_B_05_SEL_SPI1_SPI_CS0 = 2'd2;
 
-  parameter PAD_MUX_GROUP_MX_PWM_PAD_PWM0_SEL_WIDTH = 4;
-  parameter logic[3:0] PAD_MUX_GROUP_MX_PWM_PAD_PWM0_SEL_DEFAULT = 4'd0;
-  parameter logic[3:0] PAD_MUX_GROUP_MX_PWM_PAD_PWM0_SEL_PWM_PWM0 = 4'd1;
-  parameter logic[3:0] PAD_MUX_GROUP_MX_PWM_PAD_PWM0_SEL_PWM_PWM1 = 4'd2;
-  parameter logic[3:0] PAD_MUX_GROUP_MX_PWM_PAD_PWM0_SEL_PWM_PWM2 = 4'd3;
-  parameter logic[3:0] PAD_MUX_GROUP_MX_PWM_PAD_PWM0_SEL_PWM_PWM3 = 4'd4;
-  parameter logic[3:0] PAD_MUX_GROUP_MX_PWM_PAD_PWM0_SEL_PWM_PWM4 = 4'd5;
-  parameter logic[3:0] PAD_MUX_GROUP_MX_PWM_PAD_PWM0_SEL_PWM_PWM5 = 4'd6;
-  parameter logic[3:0] PAD_MUX_GROUP_MX_PWM_PAD_PWM0_SEL_PWM_PWM6 = 4'd7;
-  parameter logic[3:0] PAD_MUX_GROUP_MX_PWM_PAD_PWM0_SEL_PWM_PWM7 = 4'd8;
+  parameter PAD_MUX_GROUP_PAD_GPIO_B_06_SEL_WIDTH = 2;
+  parameter logic[1:0] PAD_MUX_GROUP_PAD_GPIO_B_06_SEL_DEFAULT = 2'd0;
+  parameter logic[1:0] PAD_MUX_GROUP_PAD_GPIO_B_06_SEL_GPIO_B_GPIO6 = 2'd1;
+  parameter logic[1:0] PAD_MUX_GROUP_PAD_GPIO_B_06_SEL_SPI1_SPI_MOSI = 2'd2;
 
-  parameter PAD_MUX_GROUP_MX_PWM_PAD_PWM1_SEL_WIDTH = 4;
-  parameter logic[3:0] PAD_MUX_GROUP_MX_PWM_PAD_PWM1_SEL_DEFAULT = 4'd0;
-  parameter logic[3:0] PAD_MUX_GROUP_MX_PWM_PAD_PWM1_SEL_PWM_PWM0 = 4'd1;
-  parameter logic[3:0] PAD_MUX_GROUP_MX_PWM_PAD_PWM1_SEL_PWM_PWM1 = 4'd2;
-  parameter logic[3:0] PAD_MUX_GROUP_MX_PWM_PAD_PWM1_SEL_PWM_PWM2 = 4'd3;
-  parameter logic[3:0] PAD_MUX_GROUP_MX_PWM_PAD_PWM1_SEL_PWM_PWM3 = 4'd4;
-  parameter logic[3:0] PAD_MUX_GROUP_MX_PWM_PAD_PWM1_SEL_PWM_PWM4 = 4'd5;
-  parameter logic[3:0] PAD_MUX_GROUP_MX_PWM_PAD_PWM1_SEL_PWM_PWM5 = 4'd6;
-  parameter logic[3:0] PAD_MUX_GROUP_MX_PWM_PAD_PWM1_SEL_PWM_PWM6 = 4'd7;
-  parameter logic[3:0] PAD_MUX_GROUP_MX_PWM_PAD_PWM1_SEL_PWM_PWM7 = 4'd8;
+  parameter PAD_MUX_GROUP_PAD_GPIO_B_07_SEL_WIDTH = 2;
+  parameter logic[1:0] PAD_MUX_GROUP_PAD_GPIO_B_07_SEL_DEFAULT = 2'd0;
+  parameter logic[1:0] PAD_MUX_GROUP_PAD_GPIO_B_07_SEL_GPIO_B_GPIO7 = 2'd1;
+  parameter logic[1:0] PAD_MUX_GROUP_PAD_GPIO_B_07_SEL_SPI1_SPI_MISO = 2'd2;
 
-  parameter PAD_MUX_GROUP_MX_PWM_PAD_PWM2_SEL_WIDTH = 4;
-  parameter logic[3:0] PAD_MUX_GROUP_MX_PWM_PAD_PWM2_SEL_DEFAULT = 4'd0;
-  parameter logic[3:0] PAD_MUX_GROUP_MX_PWM_PAD_PWM2_SEL_PWM_PWM0 = 4'd1;
-  parameter logic[3:0] PAD_MUX_GROUP_MX_PWM_PAD_PWM2_SEL_PWM_PWM1 = 4'd2;
-  parameter logic[3:0] PAD_MUX_GROUP_MX_PWM_PAD_PWM2_SEL_PWM_PWM2 = 4'd3;
-  parameter logic[3:0] PAD_MUX_GROUP_MX_PWM_PAD_PWM2_SEL_PWM_PWM3 = 4'd4;
-  parameter logic[3:0] PAD_MUX_GROUP_MX_PWM_PAD_PWM2_SEL_PWM_PWM4 = 4'd5;
-  parameter logic[3:0] PAD_MUX_GROUP_MX_PWM_PAD_PWM2_SEL_PWM_PWM5 = 4'd6;
-  parameter logic[3:0] PAD_MUX_GROUP_MX_PWM_PAD_PWM2_SEL_PWM_PWM6 = 4'd7;
-  parameter logic[3:0] PAD_MUX_GROUP_MX_PWM_PAD_PWM2_SEL_PWM_PWM7 = 4'd8;
+  parameter PAD_MUX_GROUP_PAD_GPIO_B_08_SEL_WIDTH = 2;
+  parameter logic[1:0] PAD_MUX_GROUP_PAD_GPIO_B_08_SEL_DEFAULT = 2'd0;
+  parameter logic[1:0] PAD_MUX_GROUP_PAD_GPIO_B_08_SEL_GPIO_B_GPIO8 = 2'd1;
+  parameter logic[1:0] PAD_MUX_GROUP_PAD_GPIO_B_08_SEL_SPI2_SPI_SCK = 2'd2;
 
-  parameter PAD_MUX_GROUP_MX_PWM_PAD_PWM3_SEL_WIDTH = 4;
-  parameter logic[3:0] PAD_MUX_GROUP_MX_PWM_PAD_PWM3_SEL_DEFAULT = 4'd0;
-  parameter logic[3:0] PAD_MUX_GROUP_MX_PWM_PAD_PWM3_SEL_PWM_PWM0 = 4'd1;
-  parameter logic[3:0] PAD_MUX_GROUP_MX_PWM_PAD_PWM3_SEL_PWM_PWM1 = 4'd2;
-  parameter logic[3:0] PAD_MUX_GROUP_MX_PWM_PAD_PWM3_SEL_PWM_PWM2 = 4'd3;
-  parameter logic[3:0] PAD_MUX_GROUP_MX_PWM_PAD_PWM3_SEL_PWM_PWM3 = 4'd4;
-  parameter logic[3:0] PAD_MUX_GROUP_MX_PWM_PAD_PWM3_SEL_PWM_PWM4 = 4'd5;
-  parameter logic[3:0] PAD_MUX_GROUP_MX_PWM_PAD_PWM3_SEL_PWM_PWM5 = 4'd6;
-  parameter logic[3:0] PAD_MUX_GROUP_MX_PWM_PAD_PWM3_SEL_PWM_PWM6 = 4'd7;
-  parameter logic[3:0] PAD_MUX_GROUP_MX_PWM_PAD_PWM3_SEL_PWM_PWM7 = 4'd8;
+  parameter PAD_MUX_GROUP_PAD_GPIO_B_09_SEL_WIDTH = 2;
+  parameter logic[1:0] PAD_MUX_GROUP_PAD_GPIO_B_09_SEL_DEFAULT = 2'd0;
+  parameter logic[1:0] PAD_MUX_GROUP_PAD_GPIO_B_09_SEL_GPIO_B_GPIO9 = 2'd1;
+  parameter logic[1:0] PAD_MUX_GROUP_PAD_GPIO_B_09_SEL_SPI2_SPI_CS0 = 2'd2;
 
-  parameter PAD_MUX_GROUP_MX_PWM_PAD_PWM4_SEL_WIDTH = 4;
-  parameter logic[3:0] PAD_MUX_GROUP_MX_PWM_PAD_PWM4_SEL_DEFAULT = 4'd0;
-  parameter logic[3:0] PAD_MUX_GROUP_MX_PWM_PAD_PWM4_SEL_PWM_PWM0 = 4'd1;
-  parameter logic[3:0] PAD_MUX_GROUP_MX_PWM_PAD_PWM4_SEL_PWM_PWM1 = 4'd2;
-  parameter logic[3:0] PAD_MUX_GROUP_MX_PWM_PAD_PWM4_SEL_PWM_PWM2 = 4'd3;
-  parameter logic[3:0] PAD_MUX_GROUP_MX_PWM_PAD_PWM4_SEL_PWM_PWM3 = 4'd4;
-  parameter logic[3:0] PAD_MUX_GROUP_MX_PWM_PAD_PWM4_SEL_PWM_PWM4 = 4'd5;
-  parameter logic[3:0] PAD_MUX_GROUP_MX_PWM_PAD_PWM4_SEL_PWM_PWM5 = 4'd6;
-  parameter logic[3:0] PAD_MUX_GROUP_MX_PWM_PAD_PWM4_SEL_PWM_PWM6 = 4'd7;
-  parameter logic[3:0] PAD_MUX_GROUP_MX_PWM_PAD_PWM4_SEL_PWM_PWM7 = 4'd8;
+  parameter PAD_MUX_GROUP_PAD_GPIO_B_10_SEL_WIDTH = 2;
+  parameter logic[1:0] PAD_MUX_GROUP_PAD_GPIO_B_10_SEL_DEFAULT = 2'd0;
+  parameter logic[1:0] PAD_MUX_GROUP_PAD_GPIO_B_10_SEL_GPIO_B_GPIO10 = 2'd1;
+  parameter logic[1:0] PAD_MUX_GROUP_PAD_GPIO_B_10_SEL_SPI2_SPI_MOSI = 2'd2;
 
-  parameter PAD_MUX_GROUP_MX_PWM_PAD_PWM5_SEL_WIDTH = 4;
-  parameter logic[3:0] PAD_MUX_GROUP_MX_PWM_PAD_PWM5_SEL_DEFAULT = 4'd0;
-  parameter logic[3:0] PAD_MUX_GROUP_MX_PWM_PAD_PWM5_SEL_PWM_PWM0 = 4'd1;
-  parameter logic[3:0] PAD_MUX_GROUP_MX_PWM_PAD_PWM5_SEL_PWM_PWM1 = 4'd2;
-  parameter logic[3:0] PAD_MUX_GROUP_MX_PWM_PAD_PWM5_SEL_PWM_PWM2 = 4'd3;
-  parameter logic[3:0] PAD_MUX_GROUP_MX_PWM_PAD_PWM5_SEL_PWM_PWM3 = 4'd4;
-  parameter logic[3:0] PAD_MUX_GROUP_MX_PWM_PAD_PWM5_SEL_PWM_PWM4 = 4'd5;
-  parameter logic[3:0] PAD_MUX_GROUP_MX_PWM_PAD_PWM5_SEL_PWM_PWM5 = 4'd6;
-  parameter logic[3:0] PAD_MUX_GROUP_MX_PWM_PAD_PWM5_SEL_PWM_PWM6 = 4'd7;
-  parameter logic[3:0] PAD_MUX_GROUP_MX_PWM_PAD_PWM5_SEL_PWM_PWM7 = 4'd8;
+  parameter PAD_MUX_GROUP_PAD_GPIO_B_11_SEL_WIDTH = 2;
+  parameter logic[1:0] PAD_MUX_GROUP_PAD_GPIO_B_11_SEL_DEFAULT = 2'd0;
+  parameter logic[1:0] PAD_MUX_GROUP_PAD_GPIO_B_11_SEL_GPIO_B_GPIO11 = 2'd1;
+  parameter logic[1:0] PAD_MUX_GROUP_PAD_GPIO_B_11_SEL_SPI2_SPI_MISO = 2'd2;
 
-  parameter PAD_MUX_GROUP_MX_PWM_PAD_PWM6_SEL_WIDTH = 4;
-  parameter logic[3:0] PAD_MUX_GROUP_MX_PWM_PAD_PWM6_SEL_DEFAULT = 4'd0;
-  parameter logic[3:0] PAD_MUX_GROUP_MX_PWM_PAD_PWM6_SEL_PWM_PWM0 = 4'd1;
-  parameter logic[3:0] PAD_MUX_GROUP_MX_PWM_PAD_PWM6_SEL_PWM_PWM1 = 4'd2;
-  parameter logic[3:0] PAD_MUX_GROUP_MX_PWM_PAD_PWM6_SEL_PWM_PWM2 = 4'd3;
-  parameter logic[3:0] PAD_MUX_GROUP_MX_PWM_PAD_PWM6_SEL_PWM_PWM3 = 4'd4;
-  parameter logic[3:0] PAD_MUX_GROUP_MX_PWM_PAD_PWM6_SEL_PWM_PWM4 = 4'd5;
-  parameter logic[3:0] PAD_MUX_GROUP_MX_PWM_PAD_PWM6_SEL_PWM_PWM5 = 4'd6;
-  parameter logic[3:0] PAD_MUX_GROUP_MX_PWM_PAD_PWM6_SEL_PWM_PWM6 = 4'd7;
-  parameter logic[3:0] PAD_MUX_GROUP_MX_PWM_PAD_PWM6_SEL_PWM_PWM7 = 4'd8;
+  parameter PAD_MUX_GROUP_PAD_GPIO_B_12_SEL_WIDTH = 2;
+  parameter logic[1:0] PAD_MUX_GROUP_PAD_GPIO_B_12_SEL_DEFAULT = 2'd0;
+  parameter logic[1:0] PAD_MUX_GROUP_PAD_GPIO_B_12_SEL_GPIO_B_GPIO12 = 2'd1;
+  parameter logic[1:0] PAD_MUX_GROUP_PAD_GPIO_B_12_SEL_SPI3_SPI_SCK = 2'd2;
 
-  parameter PAD_MUX_GROUP_MX_PWM_PAD_PWM7_SEL_WIDTH = 4;
-  parameter logic[3:0] PAD_MUX_GROUP_MX_PWM_PAD_PWM7_SEL_DEFAULT = 4'd0;
-  parameter logic[3:0] PAD_MUX_GROUP_MX_PWM_PAD_PWM7_SEL_PWM_PWM0 = 4'd1;
-  parameter logic[3:0] PAD_MUX_GROUP_MX_PWM_PAD_PWM7_SEL_PWM_PWM1 = 4'd2;
-  parameter logic[3:0] PAD_MUX_GROUP_MX_PWM_PAD_PWM7_SEL_PWM_PWM2 = 4'd3;
-  parameter logic[3:0] PAD_MUX_GROUP_MX_PWM_PAD_PWM7_SEL_PWM_PWM3 = 4'd4;
-  parameter logic[3:0] PAD_MUX_GROUP_MX_PWM_PAD_PWM7_SEL_PWM_PWM4 = 4'd5;
-  parameter logic[3:0] PAD_MUX_GROUP_MX_PWM_PAD_PWM7_SEL_PWM_PWM5 = 4'd6;
-  parameter logic[3:0] PAD_MUX_GROUP_MX_PWM_PAD_PWM7_SEL_PWM_PWM6 = 4'd7;
-  parameter logic[3:0] PAD_MUX_GROUP_MX_PWM_PAD_PWM7_SEL_PWM_PWM7 = 4'd8;
+  parameter PAD_MUX_GROUP_PAD_GPIO_B_13_SEL_WIDTH = 2;
+  parameter logic[1:0] PAD_MUX_GROUP_PAD_GPIO_B_13_SEL_DEFAULT = 2'd0;
+  parameter logic[1:0] PAD_MUX_GROUP_PAD_GPIO_B_13_SEL_GPIO_B_GPIO13 = 2'd1;
+  parameter logic[1:0] PAD_MUX_GROUP_PAD_GPIO_B_13_SEL_SPI3_SPI_CS0 = 2'd2;
+
+  parameter PAD_MUX_GROUP_PAD_GPIO_B_14_SEL_WIDTH = 2;
+  parameter logic[1:0] PAD_MUX_GROUP_PAD_GPIO_B_14_SEL_DEFAULT = 2'd0;
+  parameter logic[1:0] PAD_MUX_GROUP_PAD_GPIO_B_14_SEL_GPIO_B_GPIO14 = 2'd1;
+  parameter logic[1:0] PAD_MUX_GROUP_PAD_GPIO_B_14_SEL_SPI3_SPI_MOSI = 2'd2;
+
+  parameter PAD_MUX_GROUP_PAD_GPIO_B_15_SEL_WIDTH = 2;
+  parameter logic[1:0] PAD_MUX_GROUP_PAD_GPIO_B_15_SEL_DEFAULT = 2'd0;
+  parameter logic[1:0] PAD_MUX_GROUP_PAD_GPIO_B_15_SEL_GPIO_B_GPIO15 = 2'd1;
+  parameter logic[1:0] PAD_MUX_GROUP_PAD_GPIO_B_15_SEL_SPI3_SPI_MISO = 2'd2;
+
+  parameter PAD_MUX_GROUP_PAD_GPIO_B_16_SEL_WIDTH = 2;
+  parameter logic[1:0] PAD_MUX_GROUP_PAD_GPIO_B_16_SEL_DEFAULT = 2'd0;
+  parameter logic[1:0] PAD_MUX_GROUP_PAD_GPIO_B_16_SEL_GPIO_B_GPIO16 = 2'd1;
+  parameter logic[1:0] PAD_MUX_GROUP_PAD_GPIO_B_16_SEL_SPI4_SPI_SCK = 2'd2;
+
+  parameter PAD_MUX_GROUP_PAD_GPIO_B_17_SEL_WIDTH = 2;
+  parameter logic[1:0] PAD_MUX_GROUP_PAD_GPIO_B_17_SEL_DEFAULT = 2'd0;
+  parameter logic[1:0] PAD_MUX_GROUP_PAD_GPIO_B_17_SEL_GPIO_B_GPIO17 = 2'd1;
+  parameter logic[1:0] PAD_MUX_GROUP_PAD_GPIO_B_17_SEL_SPI4_SPI_CS0 = 2'd2;
+
+  parameter PAD_MUX_GROUP_PAD_GPIO_B_18_SEL_WIDTH = 2;
+  parameter logic[1:0] PAD_MUX_GROUP_PAD_GPIO_B_18_SEL_DEFAULT = 2'd0;
+  parameter logic[1:0] PAD_MUX_GROUP_PAD_GPIO_B_18_SEL_GPIO_B_GPIO18 = 2'd1;
+  parameter logic[1:0] PAD_MUX_GROUP_PAD_GPIO_B_18_SEL_SPI4_SPI_MOSI = 2'd2;
+
+  parameter PAD_MUX_GROUP_PAD_GPIO_B_19_SEL_WIDTH = 2;
+  parameter logic[1:0] PAD_MUX_GROUP_PAD_GPIO_B_19_SEL_DEFAULT = 2'd0;
+  parameter logic[1:0] PAD_MUX_GROUP_PAD_GPIO_B_19_SEL_GPIO_B_GPIO19 = 2'd1;
+  parameter logic[1:0] PAD_MUX_GROUP_PAD_GPIO_B_19_SEL_SPI4_SPI_MISO = 2'd2;
+
+  parameter PAD_MUX_GROUP_PAD_GPIO_B_20_SEL_WIDTH = 2;
+  parameter logic[1:0] PAD_MUX_GROUP_PAD_GPIO_B_20_SEL_DEFAULT = 2'd0;
+  parameter logic[1:0] PAD_MUX_GROUP_PAD_GPIO_B_20_SEL_GPIO_B_GPIO20 = 2'd1;
+  parameter logic[1:0] PAD_MUX_GROUP_PAD_GPIO_B_20_SEL_SPI5_SPI_SCK = 2'd2;
+
+  parameter PAD_MUX_GROUP_PAD_GPIO_B_21_SEL_WIDTH = 2;
+  parameter logic[1:0] PAD_MUX_GROUP_PAD_GPIO_B_21_SEL_DEFAULT = 2'd0;
+  parameter logic[1:0] PAD_MUX_GROUP_PAD_GPIO_B_21_SEL_GPIO_B_GPIO21 = 2'd1;
+  parameter logic[1:0] PAD_MUX_GROUP_PAD_GPIO_B_21_SEL_SPI5_SPI_CS0 = 2'd2;
+
+  parameter PAD_MUX_GROUP_PAD_GPIO_B_22_SEL_WIDTH = 2;
+  parameter logic[1:0] PAD_MUX_GROUP_PAD_GPIO_B_22_SEL_DEFAULT = 2'd0;
+  parameter logic[1:0] PAD_MUX_GROUP_PAD_GPIO_B_22_SEL_GPIO_B_GPIO22 = 2'd1;
+  parameter logic[1:0] PAD_MUX_GROUP_PAD_GPIO_B_22_SEL_SPI5_SPI_MOSI = 2'd2;
+
+  parameter PAD_MUX_GROUP_PAD_GPIO_B_23_SEL_WIDTH = 2;
+  parameter logic[1:0] PAD_MUX_GROUP_PAD_GPIO_B_23_SEL_DEFAULT = 2'd0;
+  parameter logic[1:0] PAD_MUX_GROUP_PAD_GPIO_B_23_SEL_GPIO_B_GPIO23 = 2'd1;
+  parameter logic[1:0] PAD_MUX_GROUP_PAD_GPIO_B_23_SEL_SPI5_SPI_MISO = 2'd2;
+
+  parameter PAD_MUX_GROUP_PAD_GPIO_B_24_SEL_WIDTH = 2;
+  parameter logic[1:0] PAD_MUX_GROUP_PAD_GPIO_B_24_SEL_DEFAULT = 2'd0;
+  parameter logic[1:0] PAD_MUX_GROUP_PAD_GPIO_B_24_SEL_GPIO_B_GPIO24 = 2'd1;
+  parameter logic[1:0] PAD_MUX_GROUP_PAD_GPIO_B_24_SEL_SPI6_SPI_SCK = 2'd2;
+
+  parameter PAD_MUX_GROUP_PAD_GPIO_B_25_SEL_WIDTH = 2;
+  parameter logic[1:0] PAD_MUX_GROUP_PAD_GPIO_B_25_SEL_DEFAULT = 2'd0;
+  parameter logic[1:0] PAD_MUX_GROUP_PAD_GPIO_B_25_SEL_GPIO_B_GPIO25 = 2'd1;
+  parameter logic[1:0] PAD_MUX_GROUP_PAD_GPIO_B_25_SEL_SPI6_SPI_CS0 = 2'd2;
+
+  parameter PAD_MUX_GROUP_PAD_GPIO_B_26_SEL_WIDTH = 2;
+  parameter logic[1:0] PAD_MUX_GROUP_PAD_GPIO_B_26_SEL_DEFAULT = 2'd0;
+  parameter logic[1:0] PAD_MUX_GROUP_PAD_GPIO_B_26_SEL_GPIO_B_GPIO26 = 2'd1;
+  parameter logic[1:0] PAD_MUX_GROUP_PAD_GPIO_B_26_SEL_SPI6_SPI_MOSI = 2'd2;
+
+  parameter PAD_MUX_GROUP_PAD_GPIO_B_27_SEL_WIDTH = 2;
+  parameter logic[1:0] PAD_MUX_GROUP_PAD_GPIO_B_27_SEL_DEFAULT = 2'd0;
+  parameter logic[1:0] PAD_MUX_GROUP_PAD_GPIO_B_27_SEL_GPIO_B_GPIO27 = 2'd1;
+  parameter logic[1:0] PAD_MUX_GROUP_PAD_GPIO_B_27_SEL_SPI6_SPI_MISO = 2'd2;
+
+  parameter PAD_MUX_GROUP_PAD_GPIO_B_28_SEL_WIDTH = 2;
+  parameter logic[1:0] PAD_MUX_GROUP_PAD_GPIO_B_28_SEL_DEFAULT = 2'd0;
+  parameter logic[1:0] PAD_MUX_GROUP_PAD_GPIO_B_28_SEL_GPIO_B_GPIO28 = 2'd1;
+  parameter logic[1:0] PAD_MUX_GROUP_PAD_GPIO_B_28_SEL_QSPI_QSPI_SCK = 2'd2;
+
+  parameter PAD_MUX_GROUP_PAD_GPIO_B_29_SEL_WIDTH = 2;
+  parameter logic[1:0] PAD_MUX_GROUP_PAD_GPIO_B_29_SEL_DEFAULT = 2'd0;
+  parameter logic[1:0] PAD_MUX_GROUP_PAD_GPIO_B_29_SEL_GPIO_B_GPIO29 = 2'd1;
+  parameter logic[1:0] PAD_MUX_GROUP_PAD_GPIO_B_29_SEL_QSPI_QSPI_CSN = 2'd2;
+
+  parameter PAD_MUX_GROUP_PAD_GPIO_B_30_SEL_WIDTH = 2;
+  parameter logic[1:0] PAD_MUX_GROUP_PAD_GPIO_B_30_SEL_DEFAULT = 2'd0;
+  parameter logic[1:0] PAD_MUX_GROUP_PAD_GPIO_B_30_SEL_GPIO_B_GPIO30 = 2'd1;
+  parameter logic[1:0] PAD_MUX_GROUP_PAD_GPIO_B_30_SEL_QSPI_QSPI_SD0 = 2'd2;
+
+  parameter PAD_MUX_GROUP_PAD_GPIO_B_31_SEL_WIDTH = 2;
+  parameter logic[1:0] PAD_MUX_GROUP_PAD_GPIO_B_31_SEL_DEFAULT = 2'd0;
+  parameter logic[1:0] PAD_MUX_GROUP_PAD_GPIO_B_31_SEL_GPIO_B_GPIO31 = 2'd1;
+  parameter logic[1:0] PAD_MUX_GROUP_PAD_GPIO_B_31_SEL_QSPI_QSPI_SD1 = 2'd2;
+
+  parameter PAD_MUX_GROUP_PAD_GPIO_B_32_SEL_WIDTH = 2;
+  parameter logic[1:0] PAD_MUX_GROUP_PAD_GPIO_B_32_SEL_DEFAULT = 2'd0;
+  parameter logic[1:0] PAD_MUX_GROUP_PAD_GPIO_B_32_SEL_GPIO_B_GPIO32 = 2'd1;
+  parameter logic[1:0] PAD_MUX_GROUP_PAD_GPIO_B_32_SEL_QSPI_QSPI_SD2 = 2'd2;
+
+  parameter PAD_MUX_GROUP_PAD_GPIO_B_33_SEL_WIDTH = 2;
+  parameter logic[1:0] PAD_MUX_GROUP_PAD_GPIO_B_33_SEL_DEFAULT = 2'd0;
+  parameter logic[1:0] PAD_MUX_GROUP_PAD_GPIO_B_33_SEL_GPIO_B_GPIO33 = 2'd1;
+  parameter logic[1:0] PAD_MUX_GROUP_PAD_GPIO_B_33_SEL_QSPI_QSPI_SD3 = 2'd2;
+
+  parameter PAD_MUX_GROUP_PAD_GPIO_B_34_SEL_WIDTH = 2;
+  parameter logic[1:0] PAD_MUX_GROUP_PAD_GPIO_B_34_SEL_DEFAULT = 2'd0;
+  parameter logic[1:0] PAD_MUX_GROUP_PAD_GPIO_B_34_SEL_GPIO_B_GPIO34 = 2'd1;
+  parameter logic[1:0] PAD_MUX_GROUP_PAD_GPIO_B_34_SEL_SDIO0_SDIO_CLK = 2'd2;
+
+  parameter PAD_MUX_GROUP_PAD_GPIO_B_35_SEL_WIDTH = 2;
+  parameter logic[1:0] PAD_MUX_GROUP_PAD_GPIO_B_35_SEL_DEFAULT = 2'd0;
+  parameter logic[1:0] PAD_MUX_GROUP_PAD_GPIO_B_35_SEL_GPIO_B_GPIO35 = 2'd1;
+  parameter logic[1:0] PAD_MUX_GROUP_PAD_GPIO_B_35_SEL_SDIO0_SDIO_CMD = 2'd2;
+
+  parameter PAD_MUX_GROUP_PAD_GPIO_B_36_SEL_WIDTH = 2;
+  parameter logic[1:0] PAD_MUX_GROUP_PAD_GPIO_B_36_SEL_DEFAULT = 2'd0;
+  parameter logic[1:0] PAD_MUX_GROUP_PAD_GPIO_B_36_SEL_GPIO_B_GPIO36 = 2'd1;
+  parameter logic[1:0] PAD_MUX_GROUP_PAD_GPIO_B_36_SEL_SDIO0_SDIO_DATA0 = 2'd2;
+
+  parameter PAD_MUX_GROUP_PAD_GPIO_B_37_SEL_WIDTH = 2;
+  parameter logic[1:0] PAD_MUX_GROUP_PAD_GPIO_B_37_SEL_DEFAULT = 2'd0;
+  parameter logic[1:0] PAD_MUX_GROUP_PAD_GPIO_B_37_SEL_GPIO_B_GPIO37 = 2'd1;
+  parameter logic[1:0] PAD_MUX_GROUP_PAD_GPIO_B_37_SEL_SDIO0_SDIO_DATA1 = 2'd2;
+
+  parameter PAD_MUX_GROUP_PAD_GPIO_B_38_SEL_WIDTH = 2;
+  parameter logic[1:0] PAD_MUX_GROUP_PAD_GPIO_B_38_SEL_DEFAULT = 2'd0;
+  parameter logic[1:0] PAD_MUX_GROUP_PAD_GPIO_B_38_SEL_GPIO_B_GPIO38 = 2'd1;
+  parameter logic[1:0] PAD_MUX_GROUP_PAD_GPIO_B_38_SEL_SDIO0_SDIO_DATA2 = 2'd2;
+
+  parameter PAD_MUX_GROUP_PAD_GPIO_B_39_SEL_WIDTH = 2;
+  parameter logic[1:0] PAD_MUX_GROUP_PAD_GPIO_B_39_SEL_DEFAULT = 2'd0;
+  parameter logic[1:0] PAD_MUX_GROUP_PAD_GPIO_B_39_SEL_GPIO_B_GPIO39 = 2'd1;
+  parameter logic[1:0] PAD_MUX_GROUP_PAD_GPIO_B_39_SEL_SDIO0_SDIO_DATA3 = 2'd2;
+
+  parameter PAD_MUX_GROUP_PAD_GPIO_B_40_SEL_WIDTH = 2;
+  parameter logic[1:0] PAD_MUX_GROUP_PAD_GPIO_B_40_SEL_DEFAULT = 2'd0;
+  parameter logic[1:0] PAD_MUX_GROUP_PAD_GPIO_B_40_SEL_GPIO_B_GPIO40 = 2'd1;
+  parameter logic[1:0] PAD_MUX_GROUP_PAD_GPIO_B_40_SEL_UART0_UART_TX = 2'd2;
+
+  parameter PAD_MUX_GROUP_PAD_GPIO_B_41_SEL_WIDTH = 2;
+  parameter logic[1:0] PAD_MUX_GROUP_PAD_GPIO_B_41_SEL_DEFAULT = 2'd0;
+  parameter logic[1:0] PAD_MUX_GROUP_PAD_GPIO_B_41_SEL_GPIO_B_GPIO41 = 2'd1;
+  parameter logic[1:0] PAD_MUX_GROUP_PAD_GPIO_B_41_SEL_UART0_UART_RX = 2'd2;
+
+  parameter PAD_MUX_GROUP_PAD_GPIO_B_42_SEL_WIDTH = 2;
+  parameter logic[1:0] PAD_MUX_GROUP_PAD_GPIO_B_42_SEL_DEFAULT = 2'd0;
+  parameter logic[1:0] PAD_MUX_GROUP_PAD_GPIO_B_42_SEL_GPIO_B_GPIO42 = 2'd1;
+  parameter logic[1:0] PAD_MUX_GROUP_PAD_GPIO_B_42_SEL_UART1_UART_TX = 2'd2;
+
+  parameter PAD_MUX_GROUP_PAD_GPIO_B_43_SEL_WIDTH = 2;
+  parameter logic[1:0] PAD_MUX_GROUP_PAD_GPIO_B_43_SEL_DEFAULT = 2'd0;
+  parameter logic[1:0] PAD_MUX_GROUP_PAD_GPIO_B_43_SEL_GPIO_B_GPIO43 = 2'd1;
+  parameter logic[1:0] PAD_MUX_GROUP_PAD_GPIO_B_43_SEL_UART1_UART_RX = 2'd2;
+
+  parameter PAD_MUX_GROUP_PAD_GPIO_B_44_SEL_WIDTH = 2;
+  parameter logic[1:0] PAD_MUX_GROUP_PAD_GPIO_B_44_SEL_DEFAULT = 2'd0;
+  parameter logic[1:0] PAD_MUX_GROUP_PAD_GPIO_B_44_SEL_GPIO_B_GPIO44 = 2'd1;
+  parameter logic[1:0] PAD_MUX_GROUP_PAD_GPIO_B_44_SEL_UART_CF0_UART_TX = 2'd2;
+
+  parameter PAD_MUX_GROUP_PAD_GPIO_B_45_SEL_WIDTH = 2;
+  parameter logic[1:0] PAD_MUX_GROUP_PAD_GPIO_B_45_SEL_DEFAULT = 2'd0;
+  parameter logic[1:0] PAD_MUX_GROUP_PAD_GPIO_B_45_SEL_GPIO_B_GPIO45 = 2'd1;
+  parameter logic[1:0] PAD_MUX_GROUP_PAD_GPIO_B_45_SEL_UART_CF0_UART_RX = 2'd2;
+
+  parameter PAD_MUX_GROUP_PAD_GPIO_B_46_SEL_WIDTH = 2;
+  parameter logic[1:0] PAD_MUX_GROUP_PAD_GPIO_B_46_SEL_DEFAULT = 2'd0;
+  parameter logic[1:0] PAD_MUX_GROUP_PAD_GPIO_B_46_SEL_GPIO_B_GPIO46 = 2'd1;
+  parameter logic[1:0] PAD_MUX_GROUP_PAD_GPIO_B_46_SEL_UART_CF0_UART_RTS = 2'd2;
+
+  parameter PAD_MUX_GROUP_PAD_GPIO_B_47_SEL_WIDTH = 2;
+  parameter logic[1:0] PAD_MUX_GROUP_PAD_GPIO_B_47_SEL_DEFAULT = 2'd0;
+  parameter logic[1:0] PAD_MUX_GROUP_PAD_GPIO_B_47_SEL_GPIO_B_GPIO47 = 2'd1;
+  parameter logic[1:0] PAD_MUX_GROUP_PAD_GPIO_B_47_SEL_UART_CF0_UART_CTS = 2'd2;
+
+  parameter PAD_MUX_GROUP_PAD_GPIO_B_48_SEL_WIDTH = 2;
+  parameter logic[1:0] PAD_MUX_GROUP_PAD_GPIO_B_48_SEL_DEFAULT = 2'd0;
+  parameter logic[1:0] PAD_MUX_GROUP_PAD_GPIO_B_48_SEL_GPIO_B_GPIO48 = 2'd1;
+  parameter logic[1:0] PAD_MUX_GROUP_PAD_GPIO_B_48_SEL_UART_CF1_UART_TX = 2'd2;
+
+  parameter PAD_MUX_GROUP_PAD_GPIO_B_49_SEL_WIDTH = 2;
+  parameter logic[1:0] PAD_MUX_GROUP_PAD_GPIO_B_49_SEL_DEFAULT = 2'd0;
+  parameter logic[1:0] PAD_MUX_GROUP_PAD_GPIO_B_49_SEL_GPIO_B_GPIO49 = 2'd1;
+  parameter logic[1:0] PAD_MUX_GROUP_PAD_GPIO_B_49_SEL_UART_CF1_UART_RX = 2'd2;
+
+  parameter PAD_MUX_GROUP_PAD_GPIO_B_50_SEL_WIDTH = 2;
+  parameter logic[1:0] PAD_MUX_GROUP_PAD_GPIO_B_50_SEL_DEFAULT = 2'd0;
+  parameter logic[1:0] PAD_MUX_GROUP_PAD_GPIO_B_50_SEL_GPIO_B_GPIO50 = 2'd1;
+  parameter logic[1:0] PAD_MUX_GROUP_PAD_GPIO_B_50_SEL_UART_CF1_UART_RTS = 2'd2;
+
+  parameter PAD_MUX_GROUP_PAD_GPIO_B_51_SEL_WIDTH = 2;
+  parameter logic[1:0] PAD_MUX_GROUP_PAD_GPIO_B_51_SEL_DEFAULT = 2'd0;
+  parameter logic[1:0] PAD_MUX_GROUP_PAD_GPIO_B_51_SEL_GPIO_B_GPIO51 = 2'd1;
+  parameter logic[1:0] PAD_MUX_GROUP_PAD_GPIO_B_51_SEL_UART_CF1_UART_CTS = 2'd2;
+
+  parameter PAD_MUX_GROUP_PAD_GPIO_B_52_SEL_WIDTH = 2;
+  parameter logic[1:0] PAD_MUX_GROUP_PAD_GPIO_B_52_SEL_DEFAULT = 2'd0;
+  parameter logic[1:0] PAD_MUX_GROUP_PAD_GPIO_B_52_SEL_GPIO_B_GPIO52 = 2'd1;
+  parameter logic[1:0] PAD_MUX_GROUP_PAD_GPIO_B_52_SEL_UART_CF2_UART_TX = 2'd2;
+
+  parameter PAD_MUX_GROUP_PAD_GPIO_B_53_SEL_WIDTH = 2;
+  parameter logic[1:0] PAD_MUX_GROUP_PAD_GPIO_B_53_SEL_DEFAULT = 2'd0;
+  parameter logic[1:0] PAD_MUX_GROUP_PAD_GPIO_B_53_SEL_GPIO_B_GPIO53 = 2'd1;
+  parameter logic[1:0] PAD_MUX_GROUP_PAD_GPIO_B_53_SEL_UART_CF2_UART_RX = 2'd2;
+
+  parameter PAD_MUX_GROUP_PAD_GPIO_B_54_SEL_WIDTH = 2;
+  parameter logic[1:0] PAD_MUX_GROUP_PAD_GPIO_B_54_SEL_DEFAULT = 2'd0;
+  parameter logic[1:0] PAD_MUX_GROUP_PAD_GPIO_B_54_SEL_GPIO_B_GPIO54 = 2'd1;
+  parameter logic[1:0] PAD_MUX_GROUP_PAD_GPIO_B_54_SEL_UART_CF2_UART_RTS = 2'd2;
+
+  parameter PAD_MUX_GROUP_PAD_GPIO_B_55_SEL_WIDTH = 2;
+  parameter logic[1:0] PAD_MUX_GROUP_PAD_GPIO_B_55_SEL_DEFAULT = 2'd0;
+  parameter logic[1:0] PAD_MUX_GROUP_PAD_GPIO_B_55_SEL_GPIO_B_GPIO55 = 2'd1;
+  parameter logic[1:0] PAD_MUX_GROUP_PAD_GPIO_B_55_SEL_UART_CF2_UART_CTS = 2'd2;
+
+  parameter PAD_MUX_GROUP_PAD_GPIO_B_56_SEL_WIDTH = 2;
+  parameter logic[1:0] PAD_MUX_GROUP_PAD_GPIO_B_56_SEL_DEFAULT = 2'd0;
+  parameter logic[1:0] PAD_MUX_GROUP_PAD_GPIO_B_56_SEL_GPIO_B_GPIO56 = 2'd1;
+  parameter logic[1:0] PAD_MUX_GROUP_PAD_GPIO_B_56_SEL_I2C0_I2C_SDA = 2'd2;
+
+  parameter PAD_MUX_GROUP_PAD_GPIO_B_57_SEL_WIDTH = 2;
+  parameter logic[1:0] PAD_MUX_GROUP_PAD_GPIO_B_57_SEL_DEFAULT = 2'd0;
+  parameter logic[1:0] PAD_MUX_GROUP_PAD_GPIO_B_57_SEL_GPIO_B_GPIO57 = 2'd1;
+  parameter logic[1:0] PAD_MUX_GROUP_PAD_GPIO_B_57_SEL_I2C0_I2C_SCL = 2'd2;
+
+  parameter PAD_MUX_GROUP_PAD_GPIO_B_58_SEL_WIDTH = 2;
+  parameter logic[1:0] PAD_MUX_GROUP_PAD_GPIO_B_58_SEL_DEFAULT = 2'd0;
+  parameter logic[1:0] PAD_MUX_GROUP_PAD_GPIO_B_58_SEL_GPIO_B_GPIO58 = 2'd1;
+  parameter logic[1:0] PAD_MUX_GROUP_PAD_GPIO_B_58_SEL_I2C1_I2C_SDA = 2'd2;
+
+  parameter PAD_MUX_GROUP_PAD_GPIO_B_59_SEL_WIDTH = 2;
+  parameter logic[1:0] PAD_MUX_GROUP_PAD_GPIO_B_59_SEL_DEFAULT = 2'd0;
+  parameter logic[1:0] PAD_MUX_GROUP_PAD_GPIO_B_59_SEL_GPIO_B_GPIO59 = 2'd1;
+  parameter logic[1:0] PAD_MUX_GROUP_PAD_GPIO_B_59_SEL_I2C1_I2C_SCL = 2'd2;
+
+  parameter PAD_MUX_GROUP_PAD_GPIO_B_60_SEL_WIDTH = 2;
+  parameter logic[1:0] PAD_MUX_GROUP_PAD_GPIO_B_60_SEL_DEFAULT = 2'd0;
+  parameter logic[1:0] PAD_MUX_GROUP_PAD_GPIO_B_60_SEL_GPIO_B_GPIO60 = 2'd1;
+  parameter logic[1:0] PAD_MUX_GROUP_PAD_GPIO_B_60_SEL_I2C2_I2C_SDA = 2'd2;
+
+  parameter PAD_MUX_GROUP_PAD_GPIO_B_61_SEL_WIDTH = 2;
+  parameter logic[1:0] PAD_MUX_GROUP_PAD_GPIO_B_61_SEL_DEFAULT = 2'd0;
+  parameter logic[1:0] PAD_MUX_GROUP_PAD_GPIO_B_61_SEL_GPIO_B_GPIO61 = 2'd1;
+  parameter logic[1:0] PAD_MUX_GROUP_PAD_GPIO_B_61_SEL_I2C2_I2C_SCL = 2'd2;
+
+  parameter PAD_MUX_GROUP_PAD_GPIO_C_00_SEL_WIDTH = 2;
+  parameter logic[1:0] PAD_MUX_GROUP_PAD_GPIO_C_00_SEL_DEFAULT = 2'd0;
+  parameter logic[1:0] PAD_MUX_GROUP_PAD_GPIO_C_00_SEL_CAN2_CAN_CAN1_TX = 2'd1;
+  parameter logic[1:0] PAD_MUX_GROUP_PAD_GPIO_C_00_SEL_SPI7_SPI_SCK = 2'd2;
+
+  parameter PAD_MUX_GROUP_PAD_GPIO_C_01_SEL_WIDTH = 2;
+  parameter logic[1:0] PAD_MUX_GROUP_PAD_GPIO_C_01_SEL_DEFAULT = 2'd0;
+  parameter logic[1:0] PAD_MUX_GROUP_PAD_GPIO_C_01_SEL_CAN2_CAN_CAN1_RX = 2'd1;
+  parameter logic[1:0] PAD_MUX_GROUP_PAD_GPIO_C_01_SEL_SPI7_SPI_CS0 = 2'd2;
+
+  parameter PAD_MUX_GROUP_PAD_GPIO_C_02_SEL_WIDTH = 2;
+  parameter logic[1:0] PAD_MUX_GROUP_PAD_GPIO_C_02_SEL_DEFAULT = 2'd0;
+  parameter logic[1:0] PAD_MUX_GROUP_PAD_GPIO_C_02_SEL_CAN2_CAN_CAN2_TX = 2'd1;
+  parameter logic[1:0] PAD_MUX_GROUP_PAD_GPIO_C_02_SEL_SPI7_SPI_MOSI = 2'd2;
+
+  parameter PAD_MUX_GROUP_PAD_GPIO_C_03_SEL_WIDTH = 2;
+  parameter logic[1:0] PAD_MUX_GROUP_PAD_GPIO_C_03_SEL_DEFAULT = 2'd0;
+  parameter logic[1:0] PAD_MUX_GROUP_PAD_GPIO_C_03_SEL_CAN2_CAN_CAN2_RX = 2'd1;
+  parameter logic[1:0] PAD_MUX_GROUP_PAD_GPIO_C_03_SEL_SPI7_SPI_MISO = 2'd2;
+
+  parameter PAD_MUX_GROUP_PAD_GPIO_D_00_SEL_WIDTH = 2;
+  parameter logic[1:0] PAD_MUX_GROUP_PAD_GPIO_D_00_SEL_DEFAULT = 2'd0;
+  parameter logic[1:0] PAD_MUX_GROUP_PAD_GPIO_D_00_SEL_CAM0_CAM_PCLK = 2'd1;
+  parameter logic[1:0] PAD_MUX_GROUP_PAD_GPIO_D_00_SEL_I2C3_I2C_SDA = 2'd2;
+
+  parameter PAD_MUX_GROUP_PAD_GPIO_D_01_SEL_WIDTH = 2;
+  parameter logic[1:0] PAD_MUX_GROUP_PAD_GPIO_D_01_SEL_DEFAULT = 2'd0;
+  parameter logic[1:0] PAD_MUX_GROUP_PAD_GPIO_D_01_SEL_CAM0_CAM_HSYNC = 2'd1;
+  parameter logic[1:0] PAD_MUX_GROUP_PAD_GPIO_D_01_SEL_I2C3_I2C_SCL = 2'd2;
+
+  parameter PAD_MUX_GROUP_PAD_GPIO_D_02_SEL_WIDTH = 2;
+  parameter logic[1:0] PAD_MUX_GROUP_PAD_GPIO_D_02_SEL_DEFAULT = 2'd0;
+  parameter logic[1:0] PAD_MUX_GROUP_PAD_GPIO_D_02_SEL_CAM0_CAM_VSYNC = 2'd1;
+  parameter logic[1:0] PAD_MUX_GROUP_PAD_GPIO_D_02_SEL_I2C4_I2C_SDA = 2'd2;
+
+  parameter PAD_MUX_GROUP_PAD_GPIO_D_03_SEL_WIDTH = 2;
+  parameter logic[1:0] PAD_MUX_GROUP_PAD_GPIO_D_03_SEL_DEFAULT = 2'd0;
+  parameter logic[1:0] PAD_MUX_GROUP_PAD_GPIO_D_03_SEL_CAM0_CAM_DATA0_I = 2'd1;
+  parameter logic[1:0] PAD_MUX_GROUP_PAD_GPIO_D_03_SEL_I2C4_I2C_SCL = 2'd2;
+
+  parameter PAD_MUX_GROUP_PAD_GPIO_D_04_SEL_WIDTH = 2;
+  parameter logic[1:0] PAD_MUX_GROUP_PAD_GPIO_D_04_SEL_DEFAULT = 2'd0;
+  parameter logic[1:0] PAD_MUX_GROUP_PAD_GPIO_D_04_SEL_CAM0_CAM_DATA1_I = 2'd1;
+  parameter logic[1:0] PAD_MUX_GROUP_PAD_GPIO_D_04_SEL_I2C5_I2C_SDA = 2'd2;
+
+  parameter PAD_MUX_GROUP_PAD_GPIO_D_05_SEL_WIDTH = 2;
+  parameter logic[1:0] PAD_MUX_GROUP_PAD_GPIO_D_05_SEL_DEFAULT = 2'd0;
+  parameter logic[1:0] PAD_MUX_GROUP_PAD_GPIO_D_05_SEL_CAM0_CAM_DATA2_I = 2'd1;
+  parameter logic[1:0] PAD_MUX_GROUP_PAD_GPIO_D_05_SEL_I2C5_I2C_SCL = 2'd2;
+
+  parameter PAD_MUX_GROUP_PAD_GPIO_D_06_SEL_WIDTH = 2;
+  parameter logic[1:0] PAD_MUX_GROUP_PAD_GPIO_D_06_SEL_DEFAULT = 2'd0;
+  parameter logic[1:0] PAD_MUX_GROUP_PAD_GPIO_D_06_SEL_CAM0_CAM_DATA3_I = 2'd1;
+  parameter logic[1:0] PAD_MUX_GROUP_PAD_GPIO_D_06_SEL_UART_CF3_UART_TX = 2'd2;
+
+  parameter PAD_MUX_GROUP_PAD_GPIO_D_07_SEL_WIDTH = 2;
+  parameter logic[1:0] PAD_MUX_GROUP_PAD_GPIO_D_07_SEL_DEFAULT = 2'd0;
+  parameter logic[1:0] PAD_MUX_GROUP_PAD_GPIO_D_07_SEL_CAM0_CAM_DATA4_I = 2'd1;
+  parameter logic[1:0] PAD_MUX_GROUP_PAD_GPIO_D_07_SEL_UART_CF3_UART_RX = 2'd2;
+
+  parameter PAD_MUX_GROUP_PAD_GPIO_D_08_SEL_WIDTH = 2;
+  parameter logic[1:0] PAD_MUX_GROUP_PAD_GPIO_D_08_SEL_DEFAULT = 2'd0;
+  parameter logic[1:0] PAD_MUX_GROUP_PAD_GPIO_D_08_SEL_CAM0_CAM_DATA5_I = 2'd1;
+  parameter logic[1:0] PAD_MUX_GROUP_PAD_GPIO_D_08_SEL_UART_CF3_UART_RTS = 2'd2;
+
+  parameter PAD_MUX_GROUP_PAD_GPIO_D_09_SEL_WIDTH = 2;
+  parameter logic[1:0] PAD_MUX_GROUP_PAD_GPIO_D_09_SEL_DEFAULT = 2'd0;
+  parameter logic[1:0] PAD_MUX_GROUP_PAD_GPIO_D_09_SEL_CAM0_CAM_DATA6_I = 2'd1;
+  parameter logic[1:0] PAD_MUX_GROUP_PAD_GPIO_D_09_SEL_UART_CF3_UART_CTS = 2'd2;
+
+  parameter PAD_MUX_GROUP_PAD_GPIO_D_10_SEL_WIDTH = 1;
+  parameter logic[0:0] PAD_MUX_GROUP_PAD_GPIO_D_10_SEL_DEFAULT = 1'd0;
+  parameter logic[0:0] PAD_MUX_GROUP_PAD_GPIO_D_10_SEL_CAM0_CAM_DATA7_I = 1'd1;
+
+  parameter PAD_MUX_GROUP_PAD_GPIO_E_00_SEL_WIDTH = 2;
+  parameter logic[1:0] PAD_MUX_GROUP_PAD_GPIO_E_00_SEL_DEFAULT = 2'd0;
+  parameter logic[1:0] PAD_MUX_GROUP_PAD_GPIO_E_00_SEL_CAM1_CAM_PCLK = 2'd1;
+  parameter logic[1:0] PAD_MUX_GROUP_PAD_GPIO_E_00_SEL_SPI8_SPI_SCK = 2'd2;
+
+  parameter PAD_MUX_GROUP_PAD_GPIO_E_01_SEL_WIDTH = 2;
+  parameter logic[1:0] PAD_MUX_GROUP_PAD_GPIO_E_01_SEL_DEFAULT = 2'd0;
+  parameter logic[1:0] PAD_MUX_GROUP_PAD_GPIO_E_01_SEL_CAM1_CAM_HSYNC = 2'd1;
+  parameter logic[1:0] PAD_MUX_GROUP_PAD_GPIO_E_01_SEL_SPI8_SPI_CS0 = 2'd2;
+
+  parameter PAD_MUX_GROUP_PAD_GPIO_E_02_SEL_WIDTH = 2;
+  parameter logic[1:0] PAD_MUX_GROUP_PAD_GPIO_E_02_SEL_DEFAULT = 2'd0;
+  parameter logic[1:0] PAD_MUX_GROUP_PAD_GPIO_E_02_SEL_CAM1_CAM_VSYNC = 2'd1;
+  parameter logic[1:0] PAD_MUX_GROUP_PAD_GPIO_E_02_SEL_SPI8_SPI_MOSI = 2'd2;
+
+  parameter PAD_MUX_GROUP_PAD_GPIO_E_03_SEL_WIDTH = 2;
+  parameter logic[1:0] PAD_MUX_GROUP_PAD_GPIO_E_03_SEL_DEFAULT = 2'd0;
+  parameter logic[1:0] PAD_MUX_GROUP_PAD_GPIO_E_03_SEL_CAM1_CAM_DATA0_I = 2'd1;
+  parameter logic[1:0] PAD_MUX_GROUP_PAD_GPIO_E_03_SEL_SPI8_SPI_MISO = 2'd2;
+
+  parameter PAD_MUX_GROUP_PAD_GPIO_E_04_SEL_WIDTH = 2;
+  parameter logic[1:0] PAD_MUX_GROUP_PAD_GPIO_E_04_SEL_DEFAULT = 2'd0;
+  parameter logic[1:0] PAD_MUX_GROUP_PAD_GPIO_E_04_SEL_CAM1_CAM_DATA1_I = 2'd1;
+  parameter logic[1:0] PAD_MUX_GROUP_PAD_GPIO_E_04_SEL_SPI9_SPI_SCK = 2'd2;
+
+  parameter PAD_MUX_GROUP_PAD_GPIO_E_05_SEL_WIDTH = 2;
+  parameter logic[1:0] PAD_MUX_GROUP_PAD_GPIO_E_05_SEL_DEFAULT = 2'd0;
+  parameter logic[1:0] PAD_MUX_GROUP_PAD_GPIO_E_05_SEL_CAM1_CAM_DATA2_I = 2'd1;
+  parameter logic[1:0] PAD_MUX_GROUP_PAD_GPIO_E_05_SEL_SPI9_SPI_CS0 = 2'd2;
+
+  parameter PAD_MUX_GROUP_PAD_GPIO_E_06_SEL_WIDTH = 2;
+  parameter logic[1:0] PAD_MUX_GROUP_PAD_GPIO_E_06_SEL_DEFAULT = 2'd0;
+  parameter logic[1:0] PAD_MUX_GROUP_PAD_GPIO_E_06_SEL_CAM1_CAM_DATA3_I = 2'd1;
+  parameter logic[1:0] PAD_MUX_GROUP_PAD_GPIO_E_06_SEL_SPI9_SPI_MOSI = 2'd2;
+
+  parameter PAD_MUX_GROUP_PAD_GPIO_E_07_SEL_WIDTH = 2;
+  parameter logic[1:0] PAD_MUX_GROUP_PAD_GPIO_E_07_SEL_DEFAULT = 2'd0;
+  parameter logic[1:0] PAD_MUX_GROUP_PAD_GPIO_E_07_SEL_CAM1_CAM_DATA4_I = 2'd1;
+  parameter logic[1:0] PAD_MUX_GROUP_PAD_GPIO_E_07_SEL_SPI9_SPI_MISO = 2'd2;
+
+  parameter PAD_MUX_GROUP_PAD_GPIO_E_08_SEL_WIDTH = 2;
+  parameter logic[1:0] PAD_MUX_GROUP_PAD_GPIO_E_08_SEL_DEFAULT = 2'd0;
+  parameter logic[1:0] PAD_MUX_GROUP_PAD_GPIO_E_08_SEL_CAM1_CAM_DATA5_I = 2'd1;
+  parameter logic[1:0] PAD_MUX_GROUP_PAD_GPIO_E_08_SEL_SPI10_SPI_SCK = 2'd2;
+
+  parameter PAD_MUX_GROUP_PAD_GPIO_E_09_SEL_WIDTH = 2;
+  parameter logic[1:0] PAD_MUX_GROUP_PAD_GPIO_E_09_SEL_DEFAULT = 2'd0;
+  parameter logic[1:0] PAD_MUX_GROUP_PAD_GPIO_E_09_SEL_CAM1_CAM_DATA6_I = 2'd1;
+  parameter logic[1:0] PAD_MUX_GROUP_PAD_GPIO_E_09_SEL_SPI10_SPI_CS0 = 2'd2;
+
+  parameter PAD_MUX_GROUP_PAD_GPIO_E_10_SEL_WIDTH = 2;
+  parameter logic[1:0] PAD_MUX_GROUP_PAD_GPIO_E_10_SEL_DEFAULT = 2'd0;
+  parameter logic[1:0] PAD_MUX_GROUP_PAD_GPIO_E_10_SEL_CAM1_CAM_DATA7_I = 2'd1;
+  parameter logic[1:0] PAD_MUX_GROUP_PAD_GPIO_E_10_SEL_SPI10_SPI_MOSI = 2'd2;
+
+  parameter PAD_MUX_GROUP_PAD_GPIO_E_11_SEL_WIDTH = 1;
+  parameter logic[0:0] PAD_MUX_GROUP_PAD_GPIO_E_11_SEL_DEFAULT = 1'd0;
+  parameter logic[0:0] PAD_MUX_GROUP_PAD_GPIO_E_11_SEL_SPI10_SPI_MISO = 1'd1;
+
+  parameter PAD_MUX_GROUP_PAD_GPIO_E_12_SEL_WIDTH = 1;
+  parameter logic[0:0] PAD_MUX_GROUP_PAD_GPIO_E_12_SEL_DEFAULT = 1'd0;
+  parameter logic[0:0] PAD_MUX_GROUP_PAD_GPIO_E_12_SEL_SPI10_SPI_CS1 = 1'd1;
+
+  parameter PAD_MUX_GROUP_PAD_GPIO_F_00_SEL_WIDTH = 2;
+  parameter logic[1:0] PAD_MUX_GROUP_PAD_GPIO_F_00_SEL_DEFAULT = 2'd0;
+  parameter logic[1:0] PAD_MUX_GROUP_PAD_GPIO_F_00_SEL_ETH_ETH_RST = 2'd1;
+  parameter logic[1:0] PAD_MUX_GROUP_PAD_GPIO_F_00_SEL_SDIO1_SDIO_CLK = 2'd2;
+
+  parameter PAD_MUX_GROUP_PAD_GPIO_F_01_SEL_WIDTH = 2;
+  parameter logic[1:0] PAD_MUX_GROUP_PAD_GPIO_F_01_SEL_DEFAULT = 2'd0;
+  parameter logic[1:0] PAD_MUX_GROUP_PAD_GPIO_F_01_SEL_ETH_ETH_RXCK = 2'd1;
+  parameter logic[1:0] PAD_MUX_GROUP_PAD_GPIO_F_01_SEL_SDIO1_SDIO_CMD = 2'd2;
+
+  parameter PAD_MUX_GROUP_PAD_GPIO_F_02_SEL_WIDTH = 2;
+  parameter logic[1:0] PAD_MUX_GROUP_PAD_GPIO_F_02_SEL_DEFAULT = 2'd0;
+  parameter logic[1:0] PAD_MUX_GROUP_PAD_GPIO_F_02_SEL_ETH_ETH_RXCTL = 2'd1;
+  parameter logic[1:0] PAD_MUX_GROUP_PAD_GPIO_F_02_SEL_SDIO1_SDIO_DATA0 = 2'd2;
+
+  parameter PAD_MUX_GROUP_PAD_GPIO_F_03_SEL_WIDTH = 2;
+  parameter logic[1:0] PAD_MUX_GROUP_PAD_GPIO_F_03_SEL_DEFAULT = 2'd0;
+  parameter logic[1:0] PAD_MUX_GROUP_PAD_GPIO_F_03_SEL_ETH_ETH_RXD0 = 2'd1;
+  parameter logic[1:0] PAD_MUX_GROUP_PAD_GPIO_F_03_SEL_SDIO1_SDIO_DATA1 = 2'd2;
+
+  parameter PAD_MUX_GROUP_PAD_GPIO_F_04_SEL_WIDTH = 2;
+  parameter logic[1:0] PAD_MUX_GROUP_PAD_GPIO_F_04_SEL_DEFAULT = 2'd0;
+  parameter logic[1:0] PAD_MUX_GROUP_PAD_GPIO_F_04_SEL_ETH_ETH_RXD1 = 2'd1;
+  parameter logic[1:0] PAD_MUX_GROUP_PAD_GPIO_F_04_SEL_SDIO1_SDIO_DATA2 = 2'd2;
+
+  parameter PAD_MUX_GROUP_PAD_GPIO_F_05_SEL_WIDTH = 2;
+  parameter logic[1:0] PAD_MUX_GROUP_PAD_GPIO_F_05_SEL_DEFAULT = 2'd0;
+  parameter logic[1:0] PAD_MUX_GROUP_PAD_GPIO_F_05_SEL_ETH_ETH_RXD2 = 2'd1;
+  parameter logic[1:0] PAD_MUX_GROUP_PAD_GPIO_F_05_SEL_SDIO1_SDIO_DATA3 = 2'd2;
+
+  parameter PAD_MUX_GROUP_PAD_GPIO_F_06_SEL_WIDTH = 1;
+  parameter logic[0:0] PAD_MUX_GROUP_PAD_GPIO_F_06_SEL_DEFAULT = 1'd0;
+  parameter logic[0:0] PAD_MUX_GROUP_PAD_GPIO_F_06_SEL_ETH_ETH_RXD3 = 1'd1;
+
+  parameter PAD_MUX_GROUP_PAD_GPIO_F_07_SEL_WIDTH = 1;
+  parameter logic[0:0] PAD_MUX_GROUP_PAD_GPIO_F_07_SEL_DEFAULT = 1'd0;
+  parameter logic[0:0] PAD_MUX_GROUP_PAD_GPIO_F_07_SEL_ETH_ETH_TXCK = 1'd1;
+
+  parameter PAD_MUX_GROUP_PAD_GPIO_F_08_SEL_WIDTH = 1;
+  parameter logic[0:0] PAD_MUX_GROUP_PAD_GPIO_F_08_SEL_DEFAULT = 1'd0;
+  parameter logic[0:0] PAD_MUX_GROUP_PAD_GPIO_F_08_SEL_ETH_ETH_TXCTL = 1'd1;
+
+  parameter PAD_MUX_GROUP_PAD_GPIO_F_09_SEL_WIDTH = 1;
+  parameter logic[0:0] PAD_MUX_GROUP_PAD_GPIO_F_09_SEL_DEFAULT = 1'd0;
+  parameter logic[0:0] PAD_MUX_GROUP_PAD_GPIO_F_09_SEL_ETH_ETH_TXD0 = 1'd1;
+
+  parameter PAD_MUX_GROUP_PAD_GPIO_F_10_SEL_WIDTH = 1;
+  parameter logic[0:0] PAD_MUX_GROUP_PAD_GPIO_F_10_SEL_DEFAULT = 1'd0;
+  parameter logic[0:0] PAD_MUX_GROUP_PAD_GPIO_F_10_SEL_ETH_ETH_TXD1 = 1'd1;
+
+  parameter PAD_MUX_GROUP_PAD_GPIO_F_11_SEL_WIDTH = 1;
+  parameter logic[0:0] PAD_MUX_GROUP_PAD_GPIO_F_11_SEL_DEFAULT = 1'd0;
+  parameter logic[0:0] PAD_MUX_GROUP_PAD_GPIO_F_11_SEL_ETH_ETH_TXD2 = 1'd1;
+
+  parameter PAD_MUX_GROUP_PAD_GPIO_F_12_SEL_WIDTH = 1;
+  parameter logic[0:0] PAD_MUX_GROUP_PAD_GPIO_F_12_SEL_DEFAULT = 1'd0;
+  parameter logic[0:0] PAD_MUX_GROUP_PAD_GPIO_F_12_SEL_ETH_ETH_TXD3 = 1'd1;
+
+  parameter PAD_MUX_GROUP_PAD_GPIO_F_13_SEL_WIDTH = 1;
+  parameter logic[0:0] PAD_MUX_GROUP_PAD_GPIO_F_13_SEL_DEFAULT = 1'd0;
+  parameter logic[0:0] PAD_MUX_GROUP_PAD_GPIO_F_13_SEL_UART2_UART_TX = 1'd1;
+
+  parameter PAD_MUX_GROUP_PAD_GPIO_F_14_SEL_WIDTH = 1;
+  parameter logic[0:0] PAD_MUX_GROUP_PAD_GPIO_F_14_SEL_DEFAULT = 1'd0;
+  parameter logic[0:0] PAD_MUX_GROUP_PAD_GPIO_F_14_SEL_UART2_UART_RX = 1'd1;
+
+  parameter PAD_MUX_GROUP_PAD_GPIO_F_15_SEL_WIDTH = 1;
+  parameter logic[0:0] PAD_MUX_GROUP_PAD_GPIO_F_15_SEL_DEFAULT = 1'd0;
+  parameter logic[0:0] PAD_MUX_GROUP_PAD_GPIO_F_15_SEL_UART3_UART_TX = 1'd1;
+
+  parameter PAD_MUX_GROUP_PAD_GPIO_F_16_SEL_WIDTH = 1;
+  parameter logic[0:0] PAD_MUX_GROUP_PAD_GPIO_F_16_SEL_DEFAULT = 1'd0;
+  parameter logic[0:0] PAD_MUX_GROUP_PAD_GPIO_F_16_SEL_UART3_UART_RX = 1'd1;
+
+  parameter PAD_MUX_GROUP_PAD_GPIO_F_17_SEL_WIDTH = 1;
+  parameter logic[0:0] PAD_MUX_GROUP_PAD_GPIO_F_17_SEL_DEFAULT = 1'd0;
+  parameter logic[0:0] PAD_MUX_GROUP_PAD_GPIO_F_17_SEL_DDR_LINK_CLK_I = 1'd1;
+
+  parameter PAD_MUX_GROUP_PAD_GPIO_F_18_SEL_WIDTH = 1;
+  parameter logic[0:0] PAD_MUX_GROUP_PAD_GPIO_F_18_SEL_DEFAULT = 1'd0;
+  parameter logic[0:0] PAD_MUX_GROUP_PAD_GPIO_F_18_SEL_DDR_LINK_DDR0_IN = 1'd1;
+
+  parameter PAD_MUX_GROUP_PAD_GPIO_F_19_SEL_WIDTH = 1;
+  parameter logic[0:0] PAD_MUX_GROUP_PAD_GPIO_F_19_SEL_DEFAULT = 1'd0;
+  parameter logic[0:0] PAD_MUX_GROUP_PAD_GPIO_F_19_SEL_DDR_LINK_DDR1_IN = 1'd1;
+
+  parameter PAD_MUX_GROUP_PAD_GPIO_F_20_SEL_WIDTH = 1;
+  parameter logic[0:0] PAD_MUX_GROUP_PAD_GPIO_F_20_SEL_DEFAULT = 1'd0;
+  parameter logic[0:0] PAD_MUX_GROUP_PAD_GPIO_F_20_SEL_DDR_LINK_DDR2_IN = 1'd1;
+
+  parameter PAD_MUX_GROUP_PAD_GPIO_F_21_SEL_WIDTH = 1;
+  parameter logic[0:0] PAD_MUX_GROUP_PAD_GPIO_F_21_SEL_DEFAULT = 1'd0;
+  parameter logic[0:0] PAD_MUX_GROUP_PAD_GPIO_F_21_SEL_DDR_LINK_DDR3_IN = 1'd1;
+
+  parameter PAD_MUX_GROUP_PAD_GPIO_F_22_SEL_WIDTH = 1;
+  parameter logic[0:0] PAD_MUX_GROUP_PAD_GPIO_F_22_SEL_DEFAULT = 1'd0;
+  parameter logic[0:0] PAD_MUX_GROUP_PAD_GPIO_F_22_SEL_DDR_LINK_DDR0_OUT = 1'd1;
+
+  parameter PAD_MUX_GROUP_PAD_GPIO_F_23_SEL_WIDTH = 1;
+  parameter logic[0:0] PAD_MUX_GROUP_PAD_GPIO_F_23_SEL_DEFAULT = 1'd0;
+  parameter logic[0:0] PAD_MUX_GROUP_PAD_GPIO_F_23_SEL_DDR_LINK_DDR1_OUT = 1'd1;
+
+  parameter PAD_MUX_GROUP_PAD_GPIO_F_24_SEL_WIDTH = 1;
+  parameter logic[0:0] PAD_MUX_GROUP_PAD_GPIO_F_24_SEL_DEFAULT = 1'd0;
+  parameter logic[0:0] PAD_MUX_GROUP_PAD_GPIO_F_24_SEL_DDR_LINK_DDR2_OUT = 1'd1;
+
+  parameter PAD_MUX_GROUP_PAD_GPIO_F_25_SEL_WIDTH = 1;
+  parameter logic[0:0] PAD_MUX_GROUP_PAD_GPIO_F_25_SEL_DEFAULT = 1'd0;
+  parameter logic[0:0] PAD_MUX_GROUP_PAD_GPIO_F_25_SEL_DDR_LINK_DDR3_OUT = 1'd1;
 
   // Dynamic Pad  instance index
 
-  parameter PORT_MUX_GROUP_MX_A_SEL_WIDTH = 4;
-  parameter logic[3:0] PORT_MUX_GROUP_MX_A_SEL_PAD_IO_A_00 = 4'd0;
-  parameter logic[3:0] PORT_MUX_GROUP_MX_A_SEL_PAD_IO_A_01 = 4'd1;
-  parameter logic[3:0] PORT_MUX_GROUP_MX_A_SEL_PAD_IO_A_02 = 4'd2;
-  parameter logic[3:0] PORT_MUX_GROUP_MX_A_SEL_PAD_IO_A_03 = 4'd3;
-  parameter logic[3:0] PORT_MUX_GROUP_MX_A_SEL_PAD_IO_A_04 = 4'd4;
-  parameter logic[3:0] PORT_MUX_GROUP_MX_A_SEL_PAD_IO_A_05 = 4'd5;
-  parameter logic[3:0] PORT_MUX_GROUP_MX_A_SEL_PAD_IO_A_06 = 4'd6;
-  parameter logic[3:0] PORT_MUX_GROUP_MX_A_SEL_PAD_IO_A_07 = 4'd7;
-  parameter logic[3:0] PORT_MUX_GROUP_MX_A_SEL_PAD_IO_A_08 = 4'd8;
-  parameter logic[3:0] PORT_MUX_GROUP_MX_A_SEL_PAD_IO_A_09 = 4'd9;
-  parameter logic[3:0] PORT_MUX_GROUP_MX_A_SEL_PAD_IO_A_10 = 4'd10;
-  parameter logic[3:0] PORT_MUX_GROUP_MX_A_SEL_PAD_IO_A_11 = 4'd11;
-  parameter logic[3:0] PORT_MUX_GROUP_MX_A_SEL_PAD_IO_A_12 = 4'd12;
-  parameter logic[3:0] PORT_MUX_GROUP_MX_A_SEL_PAD_IO_A_13 = 4'd13;
-  parameter logic[3:0] PORT_MUX_GROUP_MX_A_SEL_PAD_IO_A_14 = 4'd14;
-
-  parameter PORT_MUX_GROUP_MX_B_SEL_WIDTH = 5;
-  parameter logic[4:0] PORT_MUX_GROUP_MX_B_SEL_PAD_IO_B_00 = 5'd0;
-  parameter logic[4:0] PORT_MUX_GROUP_MX_B_SEL_PAD_IO_B_01 = 5'd1;
-  parameter logic[4:0] PORT_MUX_GROUP_MX_B_SEL_PAD_IO_B_02 = 5'd2;
-  parameter logic[4:0] PORT_MUX_GROUP_MX_B_SEL_PAD_IO_B_03 = 5'd3;
-  parameter logic[4:0] PORT_MUX_GROUP_MX_B_SEL_PAD_IO_B_04 = 5'd4;
-  parameter logic[4:0] PORT_MUX_GROUP_MX_B_SEL_PAD_IO_B_05 = 5'd5;
-  parameter logic[4:0] PORT_MUX_GROUP_MX_B_SEL_PAD_IO_B_06 = 5'd6;
-  parameter logic[4:0] PORT_MUX_GROUP_MX_B_SEL_PAD_IO_B_07 = 5'd7;
-  parameter logic[4:0] PORT_MUX_GROUP_MX_B_SEL_PAD_IO_B_08 = 5'd8;
-  parameter logic[4:0] PORT_MUX_GROUP_MX_B_SEL_PAD_IO_B_09 = 5'd9;
-  parameter logic[4:0] PORT_MUX_GROUP_MX_B_SEL_PAD_IO_B_10 = 5'd10;
-  parameter logic[4:0] PORT_MUX_GROUP_MX_B_SEL_PAD_IO_B_11 = 5'd11;
-  parameter logic[4:0] PORT_MUX_GROUP_MX_B_SEL_PAD_IO_B_12 = 5'd12;
-  parameter logic[4:0] PORT_MUX_GROUP_MX_B_SEL_PAD_IO_B_13 = 5'd13;
-  parameter logic[4:0] PORT_MUX_GROUP_MX_B_SEL_PAD_IO_B_14 = 5'd14;
-  parameter logic[4:0] PORT_MUX_GROUP_MX_B_SEL_PAD_IO_B_15 = 5'd15;
-  parameter logic[4:0] PORT_MUX_GROUP_MX_B_SEL_PAD_IO_B_16 = 5'd16;
-  parameter logic[4:0] PORT_MUX_GROUP_MX_B_SEL_PAD_IO_B_17 = 5'd17;
-  parameter logic[4:0] PORT_MUX_GROUP_MX_B_SEL_PAD_IO_B_18 = 5'd18;
-  parameter logic[4:0] PORT_MUX_GROUP_MX_B_SEL_PAD_IO_B_19 = 5'd19;
-
-  parameter PORT_MUX_GROUP_MX_C_SEL_WIDTH = 4;
-  parameter logic[3:0] PORT_MUX_GROUP_MX_C_SEL_PAD_IO_C_00 = 4'd0;
-  parameter logic[3:0] PORT_MUX_GROUP_MX_C_SEL_PAD_IO_C_01 = 4'd1;
-  parameter logic[3:0] PORT_MUX_GROUP_MX_C_SEL_PAD_IO_C_02 = 4'd2;
-  parameter logic[3:0] PORT_MUX_GROUP_MX_C_SEL_PAD_IO_C_03 = 4'd3;
-  parameter logic[3:0] PORT_MUX_GROUP_MX_C_SEL_PAD_IO_C_04 = 4'd4;
-  parameter logic[3:0] PORT_MUX_GROUP_MX_C_SEL_PAD_IO_C_05 = 4'd5;
-  parameter logic[3:0] PORT_MUX_GROUP_MX_C_SEL_PAD_IO_C_06 = 4'd6;
-  parameter logic[3:0] PORT_MUX_GROUP_MX_C_SEL_PAD_IO_C_07 = 4'd7;
-  parameter logic[3:0] PORT_MUX_GROUP_MX_C_SEL_PAD_IO_C_08 = 4'd8;
-  parameter logic[3:0] PORT_MUX_GROUP_MX_C_SEL_PAD_IO_C_09 = 4'd9;
-  parameter logic[3:0] PORT_MUX_GROUP_MX_C_SEL_PAD_IO_C_10 = 4'd10;
-  parameter logic[3:0] PORT_MUX_GROUP_MX_C_SEL_PAD_IO_C_11 = 4'd11;
-  parameter logic[3:0] PORT_MUX_GROUP_MX_C_SEL_PAD_IO_C_12 = 4'd12;
-  parameter logic[3:0] PORT_MUX_GROUP_MX_C_SEL_PAD_IO_C_13 = 4'd13;
-
-  parameter PORT_MUX_GROUP_MX_D_SEL_WIDTH = 4;
-  parameter logic[3:0] PORT_MUX_GROUP_MX_D_SEL_PAD_IO_D_00 = 4'd0;
-  parameter logic[3:0] PORT_MUX_GROUP_MX_D_SEL_PAD_IO_D_01 = 4'd1;
-  parameter logic[3:0] PORT_MUX_GROUP_MX_D_SEL_PAD_IO_D_02 = 4'd2;
-  parameter logic[3:0] PORT_MUX_GROUP_MX_D_SEL_PAD_IO_D_03 = 4'd3;
-  parameter logic[3:0] PORT_MUX_GROUP_MX_D_SEL_PAD_IO_D_04 = 4'd4;
-  parameter logic[3:0] PORT_MUX_GROUP_MX_D_SEL_PAD_IO_D_05 = 4'd5;
-  parameter logic[3:0] PORT_MUX_GROUP_MX_D_SEL_PAD_IO_D_06 = 4'd6;
-  parameter logic[3:0] PORT_MUX_GROUP_MX_D_SEL_PAD_IO_D_07 = 4'd7;
-  parameter logic[3:0] PORT_MUX_GROUP_MX_D_SEL_PAD_IO_D_08 = 4'd8;
-  parameter logic[3:0] PORT_MUX_GROUP_MX_D_SEL_PAD_IO_D_09 = 4'd9;
-  parameter logic[3:0] PORT_MUX_GROUP_MX_D_SEL_PAD_IO_D_10 = 4'd10;
-  parameter logic[3:0] PORT_MUX_GROUP_MX_D_SEL_PAD_IO_D_11 = 4'd11;
-  parameter logic[3:0] PORT_MUX_GROUP_MX_D_SEL_PAD_IO_D_12 = 4'd12;
-  parameter logic[3:0] PORT_MUX_GROUP_MX_D_SEL_PAD_IO_D_13 = 4'd13;
-  parameter logic[3:0] PORT_MUX_GROUP_MX_D_SEL_PAD_IO_D_14 = 4'd14;
-  parameter logic[3:0] PORT_MUX_GROUP_MX_D_SEL_PAD_IO_D_15 = 4'd15;
-
-  parameter PORT_MUX_GROUP_MX_E_SEL_WIDTH = 4;
-  parameter logic[3:0] PORT_MUX_GROUP_MX_E_SEL_PAD_IO_E_00 = 4'd0;
-  parameter logic[3:0] PORT_MUX_GROUP_MX_E_SEL_PAD_IO_E_01 = 4'd1;
-  parameter logic[3:0] PORT_MUX_GROUP_MX_E_SEL_PAD_IO_E_02 = 4'd2;
-  parameter logic[3:0] PORT_MUX_GROUP_MX_E_SEL_PAD_IO_E_03 = 4'd3;
-  parameter logic[3:0] PORT_MUX_GROUP_MX_E_SEL_PAD_IO_E_04 = 4'd4;
-  parameter logic[3:0] PORT_MUX_GROUP_MX_E_SEL_PAD_IO_E_05 = 4'd5;
-  parameter logic[3:0] PORT_MUX_GROUP_MX_E_SEL_PAD_IO_E_06 = 4'd6;
-  parameter logic[3:0] PORT_MUX_GROUP_MX_E_SEL_PAD_IO_E_07 = 4'd7;
-  parameter logic[3:0] PORT_MUX_GROUP_MX_E_SEL_PAD_IO_E_08 = 4'd8;
-  parameter logic[3:0] PORT_MUX_GROUP_MX_E_SEL_PAD_IO_E_09 = 4'd9;
-  parameter logic[3:0] PORT_MUX_GROUP_MX_E_SEL_PAD_IO_E_10 = 4'd10;
-  parameter logic[3:0] PORT_MUX_GROUP_MX_E_SEL_PAD_IO_E_11 = 4'd11;
-  parameter logic[3:0] PORT_MUX_GROUP_MX_E_SEL_PAD_IO_E_12 = 4'd12;
-  parameter logic[3:0] PORT_MUX_GROUP_MX_E_SEL_PAD_IO_E_13 = 4'd13;
-  parameter logic[3:0] PORT_MUX_GROUP_MX_E_SEL_PAD_IO_E_14 = 4'd14;
-
-  parameter PORT_MUX_GROUP_MX_F_SEL_WIDTH = 4;
-  parameter logic[3:0] PORT_MUX_GROUP_MX_F_SEL_PAD_IO_F_00 = 4'd0;
-  parameter logic[3:0] PORT_MUX_GROUP_MX_F_SEL_PAD_IO_F_01 = 4'd1;
-  parameter logic[3:0] PORT_MUX_GROUP_MX_F_SEL_PAD_IO_F_02 = 4'd2;
-  parameter logic[3:0] PORT_MUX_GROUP_MX_F_SEL_PAD_IO_F_03 = 4'd3;
-  parameter logic[3:0] PORT_MUX_GROUP_MX_F_SEL_PAD_IO_F_04 = 4'd4;
-  parameter logic[3:0] PORT_MUX_GROUP_MX_F_SEL_PAD_IO_F_05 = 4'd5;
-  parameter logic[3:0] PORT_MUX_GROUP_MX_F_SEL_PAD_IO_F_06 = 4'd6;
-  parameter logic[3:0] PORT_MUX_GROUP_MX_F_SEL_PAD_IO_F_07 = 4'd7;
-  parameter logic[3:0] PORT_MUX_GROUP_MX_F_SEL_PAD_IO_F_08 = 4'd8;
-  parameter logic[3:0] PORT_MUX_GROUP_MX_F_SEL_PAD_IO_F_09 = 4'd9;
-  parameter logic[3:0] PORT_MUX_GROUP_MX_F_SEL_PAD_IO_F_10 = 4'd10;
-
-  parameter PORT_MUX_GROUP_MX_G_SEL_WIDTH = 4;
-  parameter logic[3:0] PORT_MUX_GROUP_MX_G_SEL_PAD_IO_G_00 = 4'd0;
-  parameter logic[3:0] PORT_MUX_GROUP_MX_G_SEL_PAD_IO_G_01 = 4'd1;
-  parameter logic[3:0] PORT_MUX_GROUP_MX_G_SEL_PAD_IO_G_02 = 4'd2;
-  parameter logic[3:0] PORT_MUX_GROUP_MX_G_SEL_PAD_IO_G_03 = 4'd3;
-  parameter logic[3:0] PORT_MUX_GROUP_MX_G_SEL_PAD_IO_G_04 = 4'd4;
-  parameter logic[3:0] PORT_MUX_GROUP_MX_G_SEL_PAD_IO_G_05 = 4'd5;
-  parameter logic[3:0] PORT_MUX_GROUP_MX_G_SEL_PAD_IO_G_06 = 4'd6;
-  parameter logic[3:0] PORT_MUX_GROUP_MX_G_SEL_PAD_IO_G_07 = 4'd7;
-  parameter logic[3:0] PORT_MUX_GROUP_MX_G_SEL_PAD_IO_G_08 = 4'd8;
-  parameter logic[3:0] PORT_MUX_GROUP_MX_G_SEL_PAD_IO_G_09 = 4'd9;
-  parameter logic[3:0] PORT_MUX_GROUP_MX_G_SEL_PAD_IO_G_10 = 4'd10;
-  parameter logic[3:0] PORT_MUX_GROUP_MX_G_SEL_PAD_IO_G_11 = 4'd11;
-  parameter logic[3:0] PORT_MUX_GROUP_MX_G_SEL_PAD_IO_G_12 = 4'd12;
-  parameter logic[3:0] PORT_MUX_GROUP_MX_G_SEL_PAD_IO_G_13 = 4'd13;
-  parameter logic[3:0] PORT_MUX_GROUP_MX_G_SEL_PAD_IO_G_14 = 4'd14;
-
   parameter PORT_MUX_GROUP_MX_PWM_SEL_WIDTH = 3;
-  parameter logic[2:0] PORT_MUX_GROUP_MX_PWM_SEL_PAD_PWM0 = 3'd0;
-  parameter logic[2:0] PORT_MUX_GROUP_MX_PWM_SEL_PAD_PWM1 = 3'd1;
-  parameter logic[2:0] PORT_MUX_GROUP_MX_PWM_SEL_PAD_PWM2 = 3'd2;
-  parameter logic[2:0] PORT_MUX_GROUP_MX_PWM_SEL_PAD_PWM3 = 3'd3;
-  parameter logic[2:0] PORT_MUX_GROUP_MX_PWM_SEL_PAD_PWM4 = 3'd4;
-  parameter logic[2:0] PORT_MUX_GROUP_MX_PWM_SEL_PAD_PWM5 = 3'd5;
-  parameter logic[2:0] PORT_MUX_GROUP_MX_PWM_SEL_PAD_PWM6 = 3'd6;
-  parameter logic[2:0] PORT_MUX_GROUP_MX_PWM_SEL_PAD_PWM7 = 3'd7;
+  parameter logic[2:0] PORT_MUX_GROUP_MX_PWM_SEL_PAD_GPIO_PWM0 = 3'd0;
+  parameter logic[2:0] PORT_MUX_GROUP_MX_PWM_SEL_PAD_GPIO_PWM1 = 3'd1;
+  parameter logic[2:0] PORT_MUX_GROUP_MX_PWM_SEL_PAD_GPIO_PWM2 = 3'd2;
+  parameter logic[2:0] PORT_MUX_GROUP_MX_PWM_SEL_PAD_GPIO_PWM3 = 3'd3;
+  parameter logic[2:0] PORT_MUX_GROUP_MX_PWM_SEL_PAD_GPIO_PWM4 = 3'd4;
+  parameter logic[2:0] PORT_MUX_GROUP_MX_PWM_SEL_PAD_GPIO_PWM5 = 3'd5;
+  parameter logic[2:0] PORT_MUX_GROUP_MX_PWM_SEL_PAD_GPIO_PWM6 = 3'd6;
+  parameter logic[2:0] PORT_MUX_GROUP_MX_PWM_SEL_PAD_GPIO_PWM7 = 3'd7;
+
+  parameter PORT_MUX_GROUP_PAD_GPIO_B_00_SEL_WIDTH = 1;
+  parameter logic[0:0] PORT_MUX_GROUP_PAD_GPIO_B_00_SEL_PAD_GPIO_B_00 = 1'd0;
+
+  parameter PORT_MUX_GROUP_PAD_GPIO_B_01_SEL_WIDTH = 1;
+  parameter logic[0:0] PORT_MUX_GROUP_PAD_GPIO_B_01_SEL_PAD_GPIO_B_01 = 1'd0;
+
+  parameter PORT_MUX_GROUP_PAD_GPIO_B_02_SEL_WIDTH = 1;
+  parameter logic[0:0] PORT_MUX_GROUP_PAD_GPIO_B_02_SEL_PAD_GPIO_B_02 = 1'd0;
+
+  parameter PORT_MUX_GROUP_PAD_GPIO_B_03_SEL_WIDTH = 1;
+  parameter logic[0:0] PORT_MUX_GROUP_PAD_GPIO_B_03_SEL_PAD_GPIO_B_03 = 1'd0;
+
+  parameter PORT_MUX_GROUP_PAD_GPIO_B_04_SEL_WIDTH = 1;
+  parameter logic[0:0] PORT_MUX_GROUP_PAD_GPIO_B_04_SEL_PAD_GPIO_B_04 = 1'd0;
+
+  parameter PORT_MUX_GROUP_PAD_GPIO_B_05_SEL_WIDTH = 1;
+  parameter logic[0:0] PORT_MUX_GROUP_PAD_GPIO_B_05_SEL_PAD_GPIO_B_05 = 1'd0;
+
+  parameter PORT_MUX_GROUP_PAD_GPIO_B_06_SEL_WIDTH = 1;
+  parameter logic[0:0] PORT_MUX_GROUP_PAD_GPIO_B_06_SEL_PAD_GPIO_B_06 = 1'd0;
+
+  parameter PORT_MUX_GROUP_PAD_GPIO_B_07_SEL_WIDTH = 1;
+  parameter logic[0:0] PORT_MUX_GROUP_PAD_GPIO_B_07_SEL_PAD_GPIO_B_07 = 1'd0;
+
+  parameter PORT_MUX_GROUP_PAD_GPIO_B_08_SEL_WIDTH = 1;
+  parameter logic[0:0] PORT_MUX_GROUP_PAD_GPIO_B_08_SEL_PAD_GPIO_B_08 = 1'd0;
+
+  parameter PORT_MUX_GROUP_PAD_GPIO_B_09_SEL_WIDTH = 1;
+  parameter logic[0:0] PORT_MUX_GROUP_PAD_GPIO_B_09_SEL_PAD_GPIO_B_09 = 1'd0;
+
+  parameter PORT_MUX_GROUP_PAD_GPIO_B_10_SEL_WIDTH = 1;
+  parameter logic[0:0] PORT_MUX_GROUP_PAD_GPIO_B_10_SEL_PAD_GPIO_B_10 = 1'd0;
+
+  parameter PORT_MUX_GROUP_PAD_GPIO_B_11_SEL_WIDTH = 1;
+  parameter logic[0:0] PORT_MUX_GROUP_PAD_GPIO_B_11_SEL_PAD_GPIO_B_11 = 1'd0;
+
+  parameter PORT_MUX_GROUP_PAD_GPIO_B_12_SEL_WIDTH = 1;
+  parameter logic[0:0] PORT_MUX_GROUP_PAD_GPIO_B_12_SEL_PAD_GPIO_B_12 = 1'd0;
+
+  parameter PORT_MUX_GROUP_PAD_GPIO_B_13_SEL_WIDTH = 1;
+  parameter logic[0:0] PORT_MUX_GROUP_PAD_GPIO_B_13_SEL_PAD_GPIO_B_13 = 1'd0;
+
+  parameter PORT_MUX_GROUP_PAD_GPIO_B_14_SEL_WIDTH = 1;
+  parameter logic[0:0] PORT_MUX_GROUP_PAD_GPIO_B_14_SEL_PAD_GPIO_B_14 = 1'd0;
+
+  parameter PORT_MUX_GROUP_PAD_GPIO_B_15_SEL_WIDTH = 1;
+  parameter logic[0:0] PORT_MUX_GROUP_PAD_GPIO_B_15_SEL_PAD_GPIO_B_15 = 1'd0;
+
+  parameter PORT_MUX_GROUP_PAD_GPIO_B_16_SEL_WIDTH = 1;
+  parameter logic[0:0] PORT_MUX_GROUP_PAD_GPIO_B_16_SEL_PAD_GPIO_B_16 = 1'd0;
+
+  parameter PORT_MUX_GROUP_PAD_GPIO_B_17_SEL_WIDTH = 1;
+  parameter logic[0:0] PORT_MUX_GROUP_PAD_GPIO_B_17_SEL_PAD_GPIO_B_17 = 1'd0;
+
+  parameter PORT_MUX_GROUP_PAD_GPIO_B_18_SEL_WIDTH = 1;
+  parameter logic[0:0] PORT_MUX_GROUP_PAD_GPIO_B_18_SEL_PAD_GPIO_B_18 = 1'd0;
+
+  parameter PORT_MUX_GROUP_PAD_GPIO_B_19_SEL_WIDTH = 1;
+  parameter logic[0:0] PORT_MUX_GROUP_PAD_GPIO_B_19_SEL_PAD_GPIO_B_19 = 1'd0;
+
+  parameter PORT_MUX_GROUP_PAD_GPIO_B_20_SEL_WIDTH = 1;
+  parameter logic[0:0] PORT_MUX_GROUP_PAD_GPIO_B_20_SEL_PAD_GPIO_B_20 = 1'd0;
+
+  parameter PORT_MUX_GROUP_PAD_GPIO_B_21_SEL_WIDTH = 1;
+  parameter logic[0:0] PORT_MUX_GROUP_PAD_GPIO_B_21_SEL_PAD_GPIO_B_21 = 1'd0;
+
+  parameter PORT_MUX_GROUP_PAD_GPIO_B_22_SEL_WIDTH = 1;
+  parameter logic[0:0] PORT_MUX_GROUP_PAD_GPIO_B_22_SEL_PAD_GPIO_B_22 = 1'd0;
+
+  parameter PORT_MUX_GROUP_PAD_GPIO_B_23_SEL_WIDTH = 1;
+  parameter logic[0:0] PORT_MUX_GROUP_PAD_GPIO_B_23_SEL_PAD_GPIO_B_23 = 1'd0;
+
+  parameter PORT_MUX_GROUP_PAD_GPIO_B_24_SEL_WIDTH = 1;
+  parameter logic[0:0] PORT_MUX_GROUP_PAD_GPIO_B_24_SEL_PAD_GPIO_B_24 = 1'd0;
+
+  parameter PORT_MUX_GROUP_PAD_GPIO_B_25_SEL_WIDTH = 1;
+  parameter logic[0:0] PORT_MUX_GROUP_PAD_GPIO_B_25_SEL_PAD_GPIO_B_25 = 1'd0;
+
+  parameter PORT_MUX_GROUP_PAD_GPIO_B_26_SEL_WIDTH = 1;
+  parameter logic[0:0] PORT_MUX_GROUP_PAD_GPIO_B_26_SEL_PAD_GPIO_B_26 = 1'd0;
+
+  parameter PORT_MUX_GROUP_PAD_GPIO_B_27_SEL_WIDTH = 1;
+  parameter logic[0:0] PORT_MUX_GROUP_PAD_GPIO_B_27_SEL_PAD_GPIO_B_27 = 1'd0;
+
+  parameter PORT_MUX_GROUP_PAD_GPIO_B_28_SEL_WIDTH = 1;
+  parameter logic[0:0] PORT_MUX_GROUP_PAD_GPIO_B_28_SEL_PAD_GPIO_B_28 = 1'd0;
+
+  parameter PORT_MUX_GROUP_PAD_GPIO_B_29_SEL_WIDTH = 1;
+  parameter logic[0:0] PORT_MUX_GROUP_PAD_GPIO_B_29_SEL_PAD_GPIO_B_29 = 1'd0;
+
+  parameter PORT_MUX_GROUP_PAD_GPIO_B_30_SEL_WIDTH = 1;
+  parameter logic[0:0] PORT_MUX_GROUP_PAD_GPIO_B_30_SEL_PAD_GPIO_B_30 = 1'd0;
+
+  parameter PORT_MUX_GROUP_PAD_GPIO_B_31_SEL_WIDTH = 1;
+  parameter logic[0:0] PORT_MUX_GROUP_PAD_GPIO_B_31_SEL_PAD_GPIO_B_31 = 1'd0;
+
+  parameter PORT_MUX_GROUP_PAD_GPIO_B_32_SEL_WIDTH = 1;
+  parameter logic[0:0] PORT_MUX_GROUP_PAD_GPIO_B_32_SEL_PAD_GPIO_B_32 = 1'd0;
+
+  parameter PORT_MUX_GROUP_PAD_GPIO_B_33_SEL_WIDTH = 1;
+  parameter logic[0:0] PORT_MUX_GROUP_PAD_GPIO_B_33_SEL_PAD_GPIO_B_33 = 1'd0;
+
+  parameter PORT_MUX_GROUP_PAD_GPIO_B_34_SEL_WIDTH = 1;
+  parameter logic[0:0] PORT_MUX_GROUP_PAD_GPIO_B_34_SEL_PAD_GPIO_B_34 = 1'd0;
+
+  parameter PORT_MUX_GROUP_PAD_GPIO_B_35_SEL_WIDTH = 1;
+  parameter logic[0:0] PORT_MUX_GROUP_PAD_GPIO_B_35_SEL_PAD_GPIO_B_35 = 1'd0;
+
+  parameter PORT_MUX_GROUP_PAD_GPIO_B_36_SEL_WIDTH = 1;
+  parameter logic[0:0] PORT_MUX_GROUP_PAD_GPIO_B_36_SEL_PAD_GPIO_B_36 = 1'd0;
+
+  parameter PORT_MUX_GROUP_PAD_GPIO_B_37_SEL_WIDTH = 1;
+  parameter logic[0:0] PORT_MUX_GROUP_PAD_GPIO_B_37_SEL_PAD_GPIO_B_37 = 1'd0;
+
+  parameter PORT_MUX_GROUP_PAD_GPIO_B_38_SEL_WIDTH = 1;
+  parameter logic[0:0] PORT_MUX_GROUP_PAD_GPIO_B_38_SEL_PAD_GPIO_B_38 = 1'd0;
+
+  parameter PORT_MUX_GROUP_PAD_GPIO_B_39_SEL_WIDTH = 1;
+  parameter logic[0:0] PORT_MUX_GROUP_PAD_GPIO_B_39_SEL_PAD_GPIO_B_39 = 1'd0;
+
+  parameter PORT_MUX_GROUP_PAD_GPIO_B_40_SEL_WIDTH = 1;
+  parameter logic[0:0] PORT_MUX_GROUP_PAD_GPIO_B_40_SEL_PAD_GPIO_B_40 = 1'd0;
+
+  parameter PORT_MUX_GROUP_PAD_GPIO_B_41_SEL_WIDTH = 1;
+  parameter logic[0:0] PORT_MUX_GROUP_PAD_GPIO_B_41_SEL_PAD_GPIO_B_41 = 1'd0;
+
+  parameter PORT_MUX_GROUP_PAD_GPIO_B_42_SEL_WIDTH = 1;
+  parameter logic[0:0] PORT_MUX_GROUP_PAD_GPIO_B_42_SEL_PAD_GPIO_B_42 = 1'd0;
+
+  parameter PORT_MUX_GROUP_PAD_GPIO_B_43_SEL_WIDTH = 1;
+  parameter logic[0:0] PORT_MUX_GROUP_PAD_GPIO_B_43_SEL_PAD_GPIO_B_43 = 1'd0;
+
+  parameter PORT_MUX_GROUP_PAD_GPIO_B_44_SEL_WIDTH = 1;
+  parameter logic[0:0] PORT_MUX_GROUP_PAD_GPIO_B_44_SEL_PAD_GPIO_B_44 = 1'd0;
+
+  parameter PORT_MUX_GROUP_PAD_GPIO_B_45_SEL_WIDTH = 1;
+  parameter logic[0:0] PORT_MUX_GROUP_PAD_GPIO_B_45_SEL_PAD_GPIO_B_45 = 1'd0;
+
+  parameter PORT_MUX_GROUP_PAD_GPIO_B_46_SEL_WIDTH = 1;
+  parameter logic[0:0] PORT_MUX_GROUP_PAD_GPIO_B_46_SEL_PAD_GPIO_B_46 = 1'd0;
+
+  parameter PORT_MUX_GROUP_PAD_GPIO_B_47_SEL_WIDTH = 1;
+  parameter logic[0:0] PORT_MUX_GROUP_PAD_GPIO_B_47_SEL_PAD_GPIO_B_47 = 1'd0;
+
+  parameter PORT_MUX_GROUP_PAD_GPIO_B_48_SEL_WIDTH = 1;
+  parameter logic[0:0] PORT_MUX_GROUP_PAD_GPIO_B_48_SEL_PAD_GPIO_B_48 = 1'd0;
+
+  parameter PORT_MUX_GROUP_PAD_GPIO_B_49_SEL_WIDTH = 1;
+  parameter logic[0:0] PORT_MUX_GROUP_PAD_GPIO_B_49_SEL_PAD_GPIO_B_49 = 1'd0;
+
+  parameter PORT_MUX_GROUP_PAD_GPIO_B_50_SEL_WIDTH = 1;
+  parameter logic[0:0] PORT_MUX_GROUP_PAD_GPIO_B_50_SEL_PAD_GPIO_B_50 = 1'd0;
+
+  parameter PORT_MUX_GROUP_PAD_GPIO_B_51_SEL_WIDTH = 1;
+  parameter logic[0:0] PORT_MUX_GROUP_PAD_GPIO_B_51_SEL_PAD_GPIO_B_51 = 1'd0;
+
+  parameter PORT_MUX_GROUP_PAD_GPIO_B_52_SEL_WIDTH = 1;
+  parameter logic[0:0] PORT_MUX_GROUP_PAD_GPIO_B_52_SEL_PAD_GPIO_B_52 = 1'd0;
+
+  parameter PORT_MUX_GROUP_PAD_GPIO_B_53_SEL_WIDTH = 1;
+  parameter logic[0:0] PORT_MUX_GROUP_PAD_GPIO_B_53_SEL_PAD_GPIO_B_53 = 1'd0;
+
+  parameter PORT_MUX_GROUP_PAD_GPIO_B_54_SEL_WIDTH = 1;
+  parameter logic[0:0] PORT_MUX_GROUP_PAD_GPIO_B_54_SEL_PAD_GPIO_B_54 = 1'd0;
+
+  parameter PORT_MUX_GROUP_PAD_GPIO_B_55_SEL_WIDTH = 1;
+  parameter logic[0:0] PORT_MUX_GROUP_PAD_GPIO_B_55_SEL_PAD_GPIO_B_55 = 1'd0;
+
+  parameter PORT_MUX_GROUP_PAD_GPIO_B_56_SEL_WIDTH = 1;
+  parameter logic[0:0] PORT_MUX_GROUP_PAD_GPIO_B_56_SEL_PAD_GPIO_B_56 = 1'd0;
+
+  parameter PORT_MUX_GROUP_PAD_GPIO_B_57_SEL_WIDTH = 1;
+  parameter logic[0:0] PORT_MUX_GROUP_PAD_GPIO_B_57_SEL_PAD_GPIO_B_57 = 1'd0;
+
+  parameter PORT_MUX_GROUP_PAD_GPIO_B_58_SEL_WIDTH = 1;
+  parameter logic[0:0] PORT_MUX_GROUP_PAD_GPIO_B_58_SEL_PAD_GPIO_B_58 = 1'd0;
+
+  parameter PORT_MUX_GROUP_PAD_GPIO_B_59_SEL_WIDTH = 1;
+  parameter logic[0:0] PORT_MUX_GROUP_PAD_GPIO_B_59_SEL_PAD_GPIO_B_59 = 1'd0;
+
+  parameter PORT_MUX_GROUP_PAD_GPIO_B_60_SEL_WIDTH = 1;
+  parameter logic[0:0] PORT_MUX_GROUP_PAD_GPIO_B_60_SEL_PAD_GPIO_B_60 = 1'd0;
+
+  parameter PORT_MUX_GROUP_PAD_GPIO_B_61_SEL_WIDTH = 1;
+  parameter logic[0:0] PORT_MUX_GROUP_PAD_GPIO_B_61_SEL_PAD_GPIO_B_61 = 1'd0;
+
+  parameter PORT_MUX_GROUP_PAD_GPIO_C_00_SEL_WIDTH = 1;
+  parameter logic[0:0] PORT_MUX_GROUP_PAD_GPIO_C_00_SEL_PAD_GPIO_C_00 = 1'd0;
+
+  parameter PORT_MUX_GROUP_PAD_GPIO_C_01_SEL_WIDTH = 1;
+  parameter logic[0:0] PORT_MUX_GROUP_PAD_GPIO_C_01_SEL_PAD_GPIO_C_01 = 1'd0;
+
+  parameter PORT_MUX_GROUP_PAD_GPIO_C_02_SEL_WIDTH = 1;
+  parameter logic[0:0] PORT_MUX_GROUP_PAD_GPIO_C_02_SEL_PAD_GPIO_C_02 = 1'd0;
+
+  parameter PORT_MUX_GROUP_PAD_GPIO_C_03_SEL_WIDTH = 1;
+  parameter logic[0:0] PORT_MUX_GROUP_PAD_GPIO_C_03_SEL_PAD_GPIO_C_03 = 1'd0;
+
+  parameter PORT_MUX_GROUP_PAD_GPIO_D_00_SEL_WIDTH = 1;
+  parameter logic[0:0] PORT_MUX_GROUP_PAD_GPIO_D_00_SEL_PAD_GPIO_D_00 = 1'd0;
+
+  parameter PORT_MUX_GROUP_PAD_GPIO_D_01_SEL_WIDTH = 1;
+  parameter logic[0:0] PORT_MUX_GROUP_PAD_GPIO_D_01_SEL_PAD_GPIO_D_01 = 1'd0;
+
+  parameter PORT_MUX_GROUP_PAD_GPIO_D_02_SEL_WIDTH = 1;
+  parameter logic[0:0] PORT_MUX_GROUP_PAD_GPIO_D_02_SEL_PAD_GPIO_D_02 = 1'd0;
+
+  parameter PORT_MUX_GROUP_PAD_GPIO_D_03_SEL_WIDTH = 1;
+  parameter logic[0:0] PORT_MUX_GROUP_PAD_GPIO_D_03_SEL_PAD_GPIO_D_03 = 1'd0;
+
+  parameter PORT_MUX_GROUP_PAD_GPIO_D_04_SEL_WIDTH = 1;
+  parameter logic[0:0] PORT_MUX_GROUP_PAD_GPIO_D_04_SEL_PAD_GPIO_D_04 = 1'd0;
+
+  parameter PORT_MUX_GROUP_PAD_GPIO_D_05_SEL_WIDTH = 1;
+  parameter logic[0:0] PORT_MUX_GROUP_PAD_GPIO_D_05_SEL_PAD_GPIO_D_05 = 1'd0;
+
+  parameter PORT_MUX_GROUP_PAD_GPIO_D_06_SEL_WIDTH = 1;
+  parameter logic[0:0] PORT_MUX_GROUP_PAD_GPIO_D_06_SEL_PAD_GPIO_D_06 = 1'd0;
+
+  parameter PORT_MUX_GROUP_PAD_GPIO_D_07_SEL_WIDTH = 1;
+  parameter logic[0:0] PORT_MUX_GROUP_PAD_GPIO_D_07_SEL_PAD_GPIO_D_07 = 1'd0;
+
+  parameter PORT_MUX_GROUP_PAD_GPIO_D_08_SEL_WIDTH = 1;
+  parameter logic[0:0] PORT_MUX_GROUP_PAD_GPIO_D_08_SEL_PAD_GPIO_D_08 = 1'd0;
+
+  parameter PORT_MUX_GROUP_PAD_GPIO_D_09_SEL_WIDTH = 1;
+  parameter logic[0:0] PORT_MUX_GROUP_PAD_GPIO_D_09_SEL_PAD_GPIO_D_09 = 1'd0;
+
+  parameter PORT_MUX_GROUP_PAD_GPIO_D_10_SEL_WIDTH = 1;
+  parameter logic[0:0] PORT_MUX_GROUP_PAD_GPIO_D_10_SEL_PAD_GPIO_D_10 = 1'd0;
+
+  parameter PORT_MUX_GROUP_PAD_GPIO_E_00_SEL_WIDTH = 1;
+  parameter logic[0:0] PORT_MUX_GROUP_PAD_GPIO_E_00_SEL_PAD_GPIO_E_00 = 1'd0;
+
+  parameter PORT_MUX_GROUP_PAD_GPIO_E_01_SEL_WIDTH = 1;
+  parameter logic[0:0] PORT_MUX_GROUP_PAD_GPIO_E_01_SEL_PAD_GPIO_E_01 = 1'd0;
+
+  parameter PORT_MUX_GROUP_PAD_GPIO_E_02_SEL_WIDTH = 1;
+  parameter logic[0:0] PORT_MUX_GROUP_PAD_GPIO_E_02_SEL_PAD_GPIO_E_02 = 1'd0;
+
+  parameter PORT_MUX_GROUP_PAD_GPIO_E_03_SEL_WIDTH = 1;
+  parameter logic[0:0] PORT_MUX_GROUP_PAD_GPIO_E_03_SEL_PAD_GPIO_E_03 = 1'd0;
+
+  parameter PORT_MUX_GROUP_PAD_GPIO_E_04_SEL_WIDTH = 1;
+  parameter logic[0:0] PORT_MUX_GROUP_PAD_GPIO_E_04_SEL_PAD_GPIO_E_04 = 1'd0;
+
+  parameter PORT_MUX_GROUP_PAD_GPIO_E_05_SEL_WIDTH = 1;
+  parameter logic[0:0] PORT_MUX_GROUP_PAD_GPIO_E_05_SEL_PAD_GPIO_E_05 = 1'd0;
+
+  parameter PORT_MUX_GROUP_PAD_GPIO_E_06_SEL_WIDTH = 1;
+  parameter logic[0:0] PORT_MUX_GROUP_PAD_GPIO_E_06_SEL_PAD_GPIO_E_06 = 1'd0;
+
+  parameter PORT_MUX_GROUP_PAD_GPIO_E_07_SEL_WIDTH = 1;
+  parameter logic[0:0] PORT_MUX_GROUP_PAD_GPIO_E_07_SEL_PAD_GPIO_E_07 = 1'd0;
+
+  parameter PORT_MUX_GROUP_PAD_GPIO_E_08_SEL_WIDTH = 1;
+  parameter logic[0:0] PORT_MUX_GROUP_PAD_GPIO_E_08_SEL_PAD_GPIO_E_08 = 1'd0;
+
+  parameter PORT_MUX_GROUP_PAD_GPIO_E_09_SEL_WIDTH = 1;
+  parameter logic[0:0] PORT_MUX_GROUP_PAD_GPIO_E_09_SEL_PAD_GPIO_E_09 = 1'd0;
+
+  parameter PORT_MUX_GROUP_PAD_GPIO_E_10_SEL_WIDTH = 1;
+  parameter logic[0:0] PORT_MUX_GROUP_PAD_GPIO_E_10_SEL_PAD_GPIO_E_10 = 1'd0;
+
+  parameter PORT_MUX_GROUP_PAD_GPIO_E_11_SEL_WIDTH = 1;
+  parameter logic[0:0] PORT_MUX_GROUP_PAD_GPIO_E_11_SEL_PAD_GPIO_E_11 = 1'd0;
+
+  parameter PORT_MUX_GROUP_PAD_GPIO_E_12_SEL_WIDTH = 1;
+  parameter logic[0:0] PORT_MUX_GROUP_PAD_GPIO_E_12_SEL_PAD_GPIO_E_12 = 1'd0;
+
+  parameter PORT_MUX_GROUP_PAD_GPIO_F_00_SEL_WIDTH = 1;
+  parameter logic[0:0] PORT_MUX_GROUP_PAD_GPIO_F_00_SEL_PAD_GPIO_F_00 = 1'd0;
+
+  parameter PORT_MUX_GROUP_PAD_GPIO_F_01_SEL_WIDTH = 1;
+  parameter logic[0:0] PORT_MUX_GROUP_PAD_GPIO_F_01_SEL_PAD_GPIO_F_01 = 1'd0;
+
+  parameter PORT_MUX_GROUP_PAD_GPIO_F_02_SEL_WIDTH = 1;
+  parameter logic[0:0] PORT_MUX_GROUP_PAD_GPIO_F_02_SEL_PAD_GPIO_F_02 = 1'd0;
+
+  parameter PORT_MUX_GROUP_PAD_GPIO_F_03_SEL_WIDTH = 1;
+  parameter logic[0:0] PORT_MUX_GROUP_PAD_GPIO_F_03_SEL_PAD_GPIO_F_03 = 1'd0;
+
+  parameter PORT_MUX_GROUP_PAD_GPIO_F_04_SEL_WIDTH = 1;
+  parameter logic[0:0] PORT_MUX_GROUP_PAD_GPIO_F_04_SEL_PAD_GPIO_F_04 = 1'd0;
+
+  parameter PORT_MUX_GROUP_PAD_GPIO_F_05_SEL_WIDTH = 1;
+  parameter logic[0:0] PORT_MUX_GROUP_PAD_GPIO_F_05_SEL_PAD_GPIO_F_05 = 1'd0;
+
+  parameter PORT_MUX_GROUP_PAD_GPIO_F_06_SEL_WIDTH = 1;
+  parameter logic[0:0] PORT_MUX_GROUP_PAD_GPIO_F_06_SEL_PAD_GPIO_F_06 = 1'd0;
+
+  parameter PORT_MUX_GROUP_PAD_GPIO_F_07_SEL_WIDTH = 1;
+  parameter logic[0:0] PORT_MUX_GROUP_PAD_GPIO_F_07_SEL_PAD_GPIO_F_07 = 1'd0;
+
+  parameter PORT_MUX_GROUP_PAD_GPIO_F_08_SEL_WIDTH = 1;
+  parameter logic[0:0] PORT_MUX_GROUP_PAD_GPIO_F_08_SEL_PAD_GPIO_F_08 = 1'd0;
+
+  parameter PORT_MUX_GROUP_PAD_GPIO_F_09_SEL_WIDTH = 1;
+  parameter logic[0:0] PORT_MUX_GROUP_PAD_GPIO_F_09_SEL_PAD_GPIO_F_09 = 1'd0;
+
+  parameter PORT_MUX_GROUP_PAD_GPIO_F_10_SEL_WIDTH = 1;
+  parameter logic[0:0] PORT_MUX_GROUP_PAD_GPIO_F_10_SEL_PAD_GPIO_F_10 = 1'd0;
+
+  parameter PORT_MUX_GROUP_PAD_GPIO_F_11_SEL_WIDTH = 1;
+  parameter logic[0:0] PORT_MUX_GROUP_PAD_GPIO_F_11_SEL_PAD_GPIO_F_11 = 1'd0;
+
+  parameter PORT_MUX_GROUP_PAD_GPIO_F_12_SEL_WIDTH = 1;
+  parameter logic[0:0] PORT_MUX_GROUP_PAD_GPIO_F_12_SEL_PAD_GPIO_F_12 = 1'd0;
+
+  parameter PORT_MUX_GROUP_PAD_GPIO_F_13_SEL_WIDTH = 1;
+  parameter logic[0:0] PORT_MUX_GROUP_PAD_GPIO_F_13_SEL_PAD_GPIO_F_13 = 1'd0;
+
+  parameter PORT_MUX_GROUP_PAD_GPIO_F_14_SEL_WIDTH = 1;
+  parameter logic[0:0] PORT_MUX_GROUP_PAD_GPIO_F_14_SEL_PAD_GPIO_F_14 = 1'd0;
+
+  parameter PORT_MUX_GROUP_PAD_GPIO_F_15_SEL_WIDTH = 1;
+  parameter logic[0:0] PORT_MUX_GROUP_PAD_GPIO_F_15_SEL_PAD_GPIO_F_15 = 1'd0;
+
+  parameter PORT_MUX_GROUP_PAD_GPIO_F_16_SEL_WIDTH = 1;
+  parameter logic[0:0] PORT_MUX_GROUP_PAD_GPIO_F_16_SEL_PAD_GPIO_F_16 = 1'd0;
+
+  parameter PORT_MUX_GROUP_PAD_GPIO_F_17_SEL_WIDTH = 1;
+  parameter logic[0:0] PORT_MUX_GROUP_PAD_GPIO_F_17_SEL_PAD_GPIO_F_17 = 1'd0;
+
+  parameter PORT_MUX_GROUP_PAD_GPIO_F_18_SEL_WIDTH = 1;
+  parameter logic[0:0] PORT_MUX_GROUP_PAD_GPIO_F_18_SEL_PAD_GPIO_F_18 = 1'd0;
+
+  parameter PORT_MUX_GROUP_PAD_GPIO_F_19_SEL_WIDTH = 1;
+  parameter logic[0:0] PORT_MUX_GROUP_PAD_GPIO_F_19_SEL_PAD_GPIO_F_19 = 1'd0;
+
+  parameter PORT_MUX_GROUP_PAD_GPIO_F_20_SEL_WIDTH = 1;
+  parameter logic[0:0] PORT_MUX_GROUP_PAD_GPIO_F_20_SEL_PAD_GPIO_F_20 = 1'd0;
+
+  parameter PORT_MUX_GROUP_PAD_GPIO_F_21_SEL_WIDTH = 1;
+  parameter logic[0:0] PORT_MUX_GROUP_PAD_GPIO_F_21_SEL_PAD_GPIO_F_21 = 1'd0;
+
+  parameter PORT_MUX_GROUP_PAD_GPIO_F_22_SEL_WIDTH = 1;
+  parameter logic[0:0] PORT_MUX_GROUP_PAD_GPIO_F_22_SEL_PAD_GPIO_F_22 = 1'd0;
+
+  parameter PORT_MUX_GROUP_PAD_GPIO_F_23_SEL_WIDTH = 1;
+  parameter logic[0:0] PORT_MUX_GROUP_PAD_GPIO_F_23_SEL_PAD_GPIO_F_23 = 1'd0;
+
+  parameter PORT_MUX_GROUP_PAD_GPIO_F_24_SEL_WIDTH = 1;
+  parameter logic[0:0] PORT_MUX_GROUP_PAD_GPIO_F_24_SEL_PAD_GPIO_F_24 = 1'd0;
+
+  parameter PORT_MUX_GROUP_PAD_GPIO_F_25_SEL_WIDTH = 1;
+  parameter logic[0:0] PORT_MUX_GROUP_PAD_GPIO_F_25_SEL_PAD_GPIO_F_25 = 1'd0;
 endpackage : pkg_internal_alsaqr_periph_padframe_periphs
