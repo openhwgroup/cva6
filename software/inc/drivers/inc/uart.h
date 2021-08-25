@@ -22,7 +22,7 @@
 
 #include <stdint.h>
 
-#define UART_BASE_ADDR 0x10000000
+#define UART_BASE_ADDR 0x1000000
 
 #define UART_REG_RBR ( UART_BASE_ADDR + 0x00) // Receiver Buffer Register (Read Only)
 #define UART_REG_DLL ( UART_BASE_ADDR + 0x00) // Divisor Latch (LS)

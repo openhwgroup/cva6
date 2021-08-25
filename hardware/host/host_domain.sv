@@ -40,7 +40,10 @@ module host_domain
   input logic                 rst_ni,
   output logic                soc_clk_o,
   output logic                soc_rst_no,
-                              REG_BUS.out padframecfg_reg_master,
+  output logic                clk_cluster_o,
+  output logic                rstn_cluster_sync_o,
+
+  REG_BUS.out                 padframecfg_reg_master,
   // CVA6 DEBUG UART
   input logic                 cva6_uart_rx_i,
   output logic                cva6_uart_tx_o, 
@@ -63,27 +66,30 @@ module host_domain
   input logic                 jtag_TRSTn,
   output logic                jtag_TDO_data,
   output logic                jtag_TDO_driven,
-
-    // SPIM
+                              
+  // SoC to cluster AXI
+  AXI_BUS.Master              cluster_axi_master,
+  AXI_BUS.Slave               cluster_axi_slave,
+  // SPIM
   output                      qspi_to_pad_t [N_SPI-1:0] qspi_to_pad,
   input                       pad_to_qspi_t [N_SPI-1:0] pad_to_qspi,
     
-    // I2C
+  // I2C
   output                      i2c_to_pad_t [N_I2C-1:0] i2c_to_pad,
   input                       pad_to_i2c_t [N_I2C-1:0] pad_to_i2c,
    
-    // CAM
+  // CAM
   input                       pad_to_cam_t [N_CAM-1:0] pad_to_cam,
     
-    // UART
+  // UART
   input                       pad_to_uart_t [N_UART-1:0] pad_to_uart,
   output                      uart_to_pad_t [N_UART-1:0] uart_to_pad,
     
-    // SDIO
+  // SDIO
   output                      sdio_to_pad_t [N_SDIO] sdio_to_pad,
   input                       pad_to_sdio_t [N_SDIO] pad_to_sdio,
  
-    // HYPERBUS
+  // HYPERBUS
   output                      hyper_to_pad_t hyper_to_pad,
   input                       pad_to_hyper_t pad_to_hyper,
 
@@ -212,6 +218,8 @@ module host_domain
         .l2_axi_master        ( l2_axi_bus           ),
         .apb_axi_master       ( apb_axi_bus          ),
         .hyper_axi_master     ( hyper_axi_bus        ),
+        .cluster_axi_master   ( cluster_axi_master   ),
+        .cluster_axi_slave    ( cluster_axi_slave    ),
         .cva6_uart_rx_i       ( cva6_uart_rx_i       ),
         .cva6_uart_tx_o       ( cva6_uart_tx_o       )
     );
@@ -258,6 +266,8 @@ module host_domain
       .clk_soc_o              ( s_soc_clk                      ),
       .rstn_soc_sync_o        ( s_synch_soc_rst                ),
       .rstn_global_sync_o     ( s_synch_global_rst             ),
+      .rstn_cluster_sync_o    ( rstn_cluster_sync_o            ),
+      .clk_cluster_o          ( clk_cluster_o                  ),                 
       .axi_apb_slave          ( apb_axi_bus                    ),
       .hyaxicfg_reg_master    ( i_hyaxicfg_rbus                ),
       .udma_tcdm_channels     ( udma_2_tcdm_channels           ),

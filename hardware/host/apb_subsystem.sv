@@ -31,10 +31,13 @@ module apb_subsystem
     output logic                rstn_soc_sync_o,
     output logic                rstn_global_sync_o,
     output logic                clk_soc_o,
-                                AXI_BUS.Slave axi_apb_slave,
-                                REG_BUS.out hyaxicfg_reg_master,
-                                XBAR_TCDM_BUS.Master udma_tcdm_channels[1:0],
-                                REG_BUS.out padframecfg_reg_master,
+    output logic                clk_cluster_o,
+    output logic                rstn_cluster_sync_o,
+   
+    AXI_BUS.Slave               axi_apb_slave,
+    REG_BUS.out                 hyaxicfg_reg_master,
+    XBAR_TCDM_BUS.Master        udma_tcdm_channels[1:0],
+    REG_BUS.out                 padframecfg_reg_master,
 
     output logic [32*4-1:0]     events_o,
 
@@ -260,22 +263,22 @@ module apb_subsystem
 
     alsaqr_clk_rst_gen i_alsaqr_clk_rst_gen   
       (
-        .ref_clk_i          ( rtc_i              ),
-        .rstn_glob_i        ( rst_ni             ),
-        .rst_dm_i           ( rst_dm_i           ),
-        .test_clk_i         ( 1'b0               ),
-        .test_mode_i        ( 1'b0               ),
-        .sel_fll_clk_i      ( 1'b0               ), 
-        .shift_enable_i     ( 1'b0               ),               
-        .soc_fll_slave      ( soc_fll_bus        ),
-        .per_fll_slave      ( per_fll_bus        ),
-        .cluster_fll_slave  ( cluster_fll_bus    ),
-        .rstn_soc_sync_o    ( s_rstn_soc_sync    ),
-        .rstn_global_sync_o ( rstn_global_sync_o ), 
-        .rstn_cluster_sync_o(                    ),
-        .clk_soc_o          ( clk_soc_o          ),
-        .clk_per_o          ( s_clk_per          ),
-        .clk_cluster_o      (                    )                 
+        .ref_clk_i          ( rtc_i               ),
+        .rstn_glob_i        ( rst_ni              ),
+        .rst_dm_i           ( rst_dm_i            ),
+        .test_clk_i         ( 1'b0                ),
+        .test_mode_i        ( 1'b0                ),
+        .sel_fll_clk_i      ( 1'b0                ), 
+        .shift_enable_i     ( 1'b0                ),               
+        .soc_fll_slave      ( soc_fll_bus         ),
+        .per_fll_slave      ( per_fll_bus         ),
+        .cluster_fll_slave  ( cluster_fll_bus     ),
+        .rstn_soc_sync_o    ( s_rstn_soc_sync     ),
+        .rstn_global_sync_o ( rstn_global_sync_o  ), 
+        .rstn_cluster_sync_o( rstn_cluster_sync_o ),
+        .clk_soc_o          ( clk_soc_o           ),
+        .clk_per_o          ( s_clk_per           ),
+        .clk_cluster_o      ( clk_cluster_o       )                 
        );
 
    

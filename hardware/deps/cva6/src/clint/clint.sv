@@ -22,14 +22,14 @@ module clint #(
     parameter int unsigned AXI_ID_WIDTH   = 10,
     parameter int unsigned NR_CORES       = 1 // Number of cores therefore also the number of timecmp registers and timer interrupts
 ) (
-    input  logic                clk_i,       // Clock
-    input  logic                rst_ni,      // Asynchronous reset active low
-    input  logic                testmode_i,
-    input  ariane_axi::req_t    axi_req_i,
-    output ariane_axi::resp_t   axi_resp_o,
-    input  logic                rtc_i,       // Real-time clock in (usually 32.768 kHz)
-    output logic [NR_CORES-1:0] timer_irq_o, // Timer interrupts
-    output logic [NR_CORES-1:0] ipi_o        // software interrupt (a.k.a inter-process-interrupt)
+    input  logic                      clk_i,       // Clock
+    input  logic                      rst_ni,      // Asynchronous reset active low
+    input  logic                      testmode_i,
+    input  ariane_axi::req_slv_t      axi_req_i,
+    output ariane_axi::resp_slv_t     axi_resp_o,
+    input  logic                      rtc_i,       // Real-time clock in (usually 32.768 kHz)
+    output logic [NR_CORES-1:0]       timer_irq_o, // Timer interrupts
+    output logic [NR_CORES-1:0]       ipi_o        // software interrupt (a.k.a inter-process-interrupt)
 );
     // register offset
     localparam logic [15:0] MSIP_BASE     = 16'h0;
@@ -61,7 +61,7 @@ module clint #(
     axi_lite_interface #(
         .AXI_ADDR_WIDTH ( AXI_ADDR_WIDTH ),
         .AXI_DATA_WIDTH ( AXI_DATA_WIDTH ),
-        .AXI_ID_WIDTH   ( AXI_ID_WIDTH    )
+        .AXI_ID_WIDTH   ( AXI_ID_WIDTH   )
     ) axi_lite_interface_i (
         .clk_i      ( clk_i      ),
         .rst_ni     ( rst_ni     ),

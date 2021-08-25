@@ -15,6 +15,8 @@
 `include "register_interface/typedef.svh"
 `include "register_interface/assign.svh"
 `include "alsaqr_periph_padframe/assign.svh"
+`include "cluster_bus_defines.sv"
+`include "pulp_soc_defines.sv"
 
 module al_saqr 
   import axi_pkg::xbar_cfg_t;
@@ -106,8 +108,43 @@ module al_saqr
   logic [NUM_GPIO-1:0]         s_gpio_pad_dir;
 
   logic s_soc_clk  ;
-  logic s_soc_rst_n;
+  logic s_soc_rst_n; 
+  logic s_cluster_clk  ;
+  logic s_cluster_rst_n;
 
+  AXI_BUS #(
+     .AXI_ADDR_WIDTH ( AXI_ADDRESS_WIDTH        ),
+     .AXI_DATA_WIDTH ( AXI_DATA_WIDTH           ),
+     .AXI_ID_WIDTH   ( ariane_soc::IdWidthSlave ),
+     .AXI_USER_WIDTH ( AXI_USER_WIDTH           )
+  ) soc_to_cluster_axi_bus();
+  AXI_BUS #(
+     .AXI_ADDR_WIDTH ( AXI_ADDRESS_WIDTH               ),
+     .AXI_DATA_WIDTH ( AXI_DATA_WIDTH                  ),
+     .AXI_ID_WIDTH   ( ariane_soc::SocToClusterIdWidth ),
+     .AXI_USER_WIDTH ( AXI_USER_WIDTH                  )
+  ) serialized_soc_to_cluster_axi_bus();   
+  AXI_BUS_ASYNC_GRAY #(
+     .AXI_ADDR_WIDTH ( AXI_ADDRESS_WIDTH               ),
+     .AXI_DATA_WIDTH ( AXI_DATA_WIDTH                  ),
+     .AXI_ID_WIDTH   ( ariane_soc::SocToClusterIdWidth ),
+     .AXI_USER_WIDTH ( AXI_USER_WIDTH                  ),
+     .LOG_DEPTH      ( 3                               )
+  ) async_soc_to_cluster_axi_bus();
+  AXI_BUS #(
+     .AXI_ADDR_WIDTH ( AXI_ADDRESS_WIDTH        ),
+     .AXI_DATA_WIDTH ( AXI_DATA_WIDTH           ),
+     .AXI_ID_WIDTH   ( ariane_soc::IdWidth      ),
+     .AXI_USER_WIDTH ( AXI_USER_WIDTH           )
+  ) cluster_to_soc_axi_bus();
+  AXI_BUS_ASYNC_GRAY #(
+     .AXI_ADDR_WIDTH ( AXI_ADDRESS_WIDTH        ),
+     .AXI_DATA_WIDTH ( AXI_DATA_WIDTH           ),
+     .AXI_ID_WIDTH   ( ariane_soc::IdWidth      ),
+     .AXI_USER_WIDTH ( AXI_USER_WIDTH           ),
+     .LOG_DEPTH      ( 3                        )
+  ) async_cluster_to_soc_axi_bus();
+   
   pad_to_hyper_t s_pad_to_hyper;
   hyper_to_pad_t s_hyper_to_pad;
 
@@ -173,8 +210,12 @@ module al_saqr
       .jtag_TRSTn,
       .jtag_TDO_data,
       .jtag_TDO_driven,
+      .cluster_axi_master     ( soc_to_cluster_axi_bus          ),
+      .cluster_axi_slave      ( cluster_to_soc_axi_bus          ),
       .soc_clk_o              ( s_soc_clk                       ),
       .soc_rst_no             ( s_soc_rst_n                     ),
+      .rstn_cluster_sync_o    ( s_cluster_rst_n                 ),
+      .clk_cluster_o          ( s_cluster_clk                   ),                 
       .padframecfg_reg_master ( i_padframecfg_rbus              ),
       .hyper_to_pad           ( s_hyper_to_pad                  ),
       .pad_to_hyper           ( s_pad_to_hyper                  ),    
@@ -286,6 +327,146 @@ module al_saqr
       .pad_gpio               ( pad_gpio                        )
      );
 
+   axi_serializer_intf #(
+     .AXI_ADDR_WIDTH ( AXI_ADDRESS_WIDTH        ),
+     .AXI_DATA_WIDTH ( AXI_DATA_WIDTH           ),
+     .AXI_ID_WIDTH   ( ariane_soc::IdWidthSlave ),
+     .AXI_USER_WIDTH ( AXI_USER_WIDTH           ),
+     .MAX_READ_TXNS  ( ariane_soc::NrSlaves     ),
+     .MAX_WRITE_TXNS ( ariane_soc::NrSlaves     )
+      ) (
+        .clk_i  ( s_soc_clk                         ),
+        .rst_ni ( s_soc_rst_n                       ),
+        .slv    ( soc_to_cluster_axi_bus            ),
+        .mst    ( serialized_soc_to_cluster_axi_bus )
+      );
+
+   axi_cdc_src_intf   #(
+     .AXI_ADDR_WIDTH ( AXI_ADDRESS_WIDTH               ),
+     .AXI_DATA_WIDTH ( AXI_DATA_WIDTH                  ),
+     .AXI_ID_WIDTH   ( ariane_soc::SocToClusterIdWidth ),
+     .AXI_USER_WIDTH ( AXI_USER_WIDTH                  ),
+     .LOG_DEPTH      ( 3                               )
+     ) soc_to_cluster_src_cdc_fifo_i 
+       (
+       .src_clk_i  ( s_soc_clk                         ),
+       .src_rst_ni ( s_soc_rst_n                       ),
+       .src        ( serialized_soc_to_cluster_axi_bus ),
+       .dst        ( async_soc_to_cluster_axi_bus      )
+       );
+   
+   axi_cdc_dst_intf   #(
+     .AXI_ADDR_WIDTH ( AXI_ADDRESS_WIDTH        ),
+     .AXI_DATA_WIDTH ( AXI_DATA_WIDTH           ),
+     .AXI_ID_WIDTH   ( ariane_soc::IdWidth      ),
+     .AXI_USER_WIDTH ( AXI_USER_WIDTH           ),
+     .LOG_DEPTH      ( 3                        )
+     ) soc_to_cluster_dst_cdc_fifo_i 
+       (
+       .dst_clk_i  ( s_soc_clk                    ),
+       .dst_rst_ni ( s_soc_rst_n                  ),
+       .src        ( async_cluster_to_soc_axi_bus ),
+       .dst        ( cluster_to_soc_axi_bus       )
+       );
+   
+    pulp_cluster
+    #(
+        .NB_CORES                     ( `NB_CORES                       ),
+        .NB_HWPE_PORTS                ( 4                               ),
+        .NB_DMAS                      ( `NB_DMAS                        ),
+        .HWPE_PRESENT                 ( 0                               ),
+        .TCDM_SIZE                    ( 64*1024                         ),
+        .NB_TCDM_BANKS                ( 16                              ),
+        .SET_ASSOCIATIVE              ( 4                               ),
+        .CACHE_LINE                   ( 1                               ),
+        .CACHE_SIZE                   ( 4096                            ),
+        .ICACHE_DATA_WIDTH            ( 128                             ),
+        .L0_BUFFER_FEATURE            ( "DISABLED"                      ),
+        .MULTICAST_FEATURE            ( "DISABLED"                      ),
+        .SHARED_ICACHE                ( "ENABLED"                       ),
+        .DIRECT_MAPPED_FEATURE        ( "DISABLED"                      ),
+        .L2_SIZE                      ( ariane_soc::L2SPMLength         ),
+        .ROM_BOOT_ADDR                ( 32'h1A000000                    ),
+        .BOOT_ADDR                    ( 32'hC0000000                    ),
+        .INSTR_RDATA_WIDTH            ( 32                              ),
+        .CLUST_FPU                    ( `CLUST_FPU                      ),
+        .CLUST_FP_DIVSQRT             ( `CLUST_FP_DIVSQRT               ),
+        .CLUST_SHARED_FP              ( `CLUST_SHARED_FP                ),
+        .CLUST_SHARED_FP_DIVSQRT      ( `CLUST_SHARED_FP_DIVSQRT        ),
+        .AXI_ADDR_WIDTH               ( AXI_ADDRESS_WIDTH               ),
+        .AXI_DATA_IN_WIDTH            ( AXI_DATA_WIDTH                  ),
+        .AXI_DATA_OUT_WIDTH           ( AXI_DATA_WIDTH                  ),
+        .AXI_USER_WIDTH               ( AXI_USER_WIDTH                  ),
+        .AXI_ID_IN_WIDTH              ( ariane_soc::SocToClusterIdWidth ),
+        .AXI_ID_OUT_WIDTH             ( ariane_soc::IdWidth             ),
+        .LOG_DEPTH                    ( 3                               ),
+        .DATA_WIDTH                   ( 32                              ),
+        .ADDR_WIDTH                   ( 32                              ),
+        .LOG_CLUSTER                  ( 3                               ),
+        .PE_ROUTING_LSB               ( 10                              ),
+        .EVNT_WIDTH                   ( 8                               )
+    )    
+    cluster_i
+    (
+        .clk_i                        ( s_cluster_clk                ),
+        .rst_ni                       ( s_cluster_rst_n              ),
+        .ref_clk_i                    ( rtc_i                        ),
+
+        .pmu_mem_pwdn_i               ( 1'b0                         ),
+        
+        .base_addr_i                  ( '0                           ),
+        
+        .dma_pe_evt_ack_i             ( '0                           ),
+        .dma_pe_evt_valid_o           (                              ),
+        .dma_pe_irq_ack_i             ( '0                           ),
+        .dma_pe_irq_valid_o           (                              ),
+        .dbg_irq_valid_i              ( '0                           ),
+        .pf_evt_ack_i                 ( '0                           ),
+        .pf_evt_valid_o               (                              ),
+        .en_sa_boot_i                 ( 1'b0                         ),
+        .test_mode_i                  ( 1'b0                         ),
+        .fetch_en_i                   ( 1'b0                         ),
+        .eoc_o                        (                              ),
+        .busy_o                       (                              ),
+        .cluster_id_i                 ( 6'b000000                    ),
+
+        .async_cluster_events_wptr_i  ( '0  ),
+        .async_cluster_events_rptr_o  (     ),
+        .async_cluster_events_data_i  ( '0  ),
+
+        .async_data_master_aw_wptr_o  ( async_cluster_to_soc_axi_bus.aw_wptr  ),
+        .async_data_master_aw_rptr_i  ( async_cluster_to_soc_axi_bus.aw_rptr  ),
+        .async_data_master_aw_data_o  ( async_cluster_to_soc_axi_bus.aw_data  ),
+        .async_data_master_ar_wptr_o  ( async_cluster_to_soc_axi_bus.ar_wptr  ),
+        .async_data_master_ar_rptr_i  ( async_cluster_to_soc_axi_bus.ar_rptr  ),
+        .async_data_master_ar_data_o  ( async_cluster_to_soc_axi_bus.ar_data  ),
+        .async_data_master_w_data_o   ( async_cluster_to_soc_axi_bus.w_data   ),
+        .async_data_master_w_wptr_o   ( async_cluster_to_soc_axi_bus.w_wptr   ),
+        .async_data_master_w_rptr_i   ( async_cluster_to_soc_axi_bus.w_rptr   ),
+        .async_data_master_r_wptr_i   ( async_cluster_to_soc_axi_bus.r_wptr   ),
+        .async_data_master_r_rptr_o   ( async_cluster_to_soc_axi_bus.r_rptr   ),
+        .async_data_master_r_data_i   ( async_cluster_to_soc_axi_bus.r_data   ),
+        .async_data_master_b_wptr_i   ( async_cluster_to_soc_axi_bus.b_wptr   ),
+        .async_data_master_b_rptr_o   ( async_cluster_to_soc_axi_bus.b_rptr   ),
+        .async_data_master_b_data_i   ( async_cluster_to_soc_axi_bus.b_data   ),
+
+        .async_data_slave_aw_wptr_i   ( async_soc_to_cluster_axi_bus.aw_wptr  ),
+        .async_data_slave_aw_rptr_o   ( async_soc_to_cluster_axi_bus.aw_rptr  ),
+        .async_data_slave_aw_data_i   ( async_soc_to_cluster_axi_bus.aw_data  ),
+        .async_data_slave_ar_wptr_i   ( async_soc_to_cluster_axi_bus.ar_wptr  ),
+        .async_data_slave_ar_rptr_o   ( async_soc_to_cluster_axi_bus.ar_rptr  ),
+        .async_data_slave_ar_data_i   ( async_soc_to_cluster_axi_bus.ar_data  ),
+        .async_data_slave_w_data_i    ( async_soc_to_cluster_axi_bus.w_data   ),
+        .async_data_slave_w_wptr_i    ( async_soc_to_cluster_axi_bus.w_wptr   ),
+        .async_data_slave_w_rptr_o    ( async_soc_to_cluster_axi_bus.w_rptr   ),
+        .async_data_slave_r_wptr_o    ( async_soc_to_cluster_axi_bus.r_wptr   ),
+        .async_data_slave_r_rptr_i    ( async_soc_to_cluster_axi_bus.r_rptr   ),
+        .async_data_slave_r_data_o    ( async_soc_to_cluster_axi_bus.r_data   ),
+        .async_data_slave_b_wptr_o    ( async_soc_to_cluster_axi_bus.b_wptr   ),
+        .async_data_slave_b_rptr_i    ( async_soc_to_cluster_axi_bus.b_rptr   ),
+        .async_data_slave_b_data_o    ( async_soc_to_cluster_axi_bus.b_data   )
+   );   
+   
   `REG_BUS_ASSIGN_TO_REQ(reg_req,i_padframecfg_rbus)
   `REG_BUS_ASSIGN_FROM_RSP(i_padframecfg_rbus,reg_rsp)
 
@@ -380,5 +561,5 @@ module al_saqr
 
    `ASSIGN_PERIPHS_SDIO1_PAD2SOC(s_pad_to_sdio[1],s_port_signals_pad2soc.periphs.sdio1)
    `ASSIGN_PERIPHS_SDIO1_SOC2PAD(s_port_signals_soc2pad.periphs.sdio1,s_sdio_to_pad[1])
-   
+
 endmodule

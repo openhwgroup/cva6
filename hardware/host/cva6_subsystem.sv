@@ -59,7 +59,9 @@ module cva6_subsytem
   output logic            cva6_uart_tx_o,   
   AXI_BUS.Master          l2_axi_master,
   AXI_BUS.Master          apb_axi_master,
-  AXI_BUS.Master          hyper_axi_master
+  AXI_BUS.Master          hyper_axi_master,
+  AXI_BUS.Master          cluster_axi_master,
+  AXI_BUS.Slave           cluster_axi_slave
 );
      // disable test-enable
   logic        test_en;
@@ -256,14 +258,13 @@ module cva6_subsytem
     .data_i     ( dm_slave_rdata            )
   );
 
-  axi_master_connect i_dm_axi_master_connect (
-    .axi_req_i(dm_axi_m_req),
-    .axi_resp_o(dm_axi_m_resp),
-    .master(slave[1])
-  );
+  `AXI_ASSIGN_FROM_REQ(slave[1],dm_axi_m_req)
+  `AXI_ASSIGN_TO_RESP(dm_axi_m_resp,slave[1])
 
+   
   axi_adapter #(
-    .DATA_WIDTH            ( AXI_DATA_WIDTH            )
+    .DATA_WIDTH            ( AXI_DATA_WIDTH            ),
+    .AXI_ID_WIDTH          ( ariane_soc::IdWidth       )
   ) i_dm_axi_master (
     .clk_i                 ( clk_i                     ),
     .rst_ni                ( rst_ni                    ),
@@ -375,6 +376,17 @@ module cva6_subsytem
   );
 
   // ---------------
+  // AXI CLUSTER Slave
+  // ---------------
+
+  `AXI_ASSIGN(cluster_axi_master,master[ariane_soc::Cluster])
+
+  // ---------------
+  // AXI CLUSTER Master
+  // ---------------
+  `AXI_ASSIGN(slave[2],cluster_axi_slave)
+   
+  // ---------------
   // AXI Xbar
   // ---------------
   localparam xbar_cfg_t AXI_XBAR_CFG = '{
@@ -404,6 +416,11 @@ module cva6_subsytem
     start_addr: ariane_soc::ROMBase,
     end_addr:   ariane_soc::ROMBase      + ariane_soc::ROMLength  
   };
+  assign addr_map[ariane_soc::UART] = '{ 
+    idx:  ariane_soc::UART,
+    start_addr: ariane_soc::UARTBase,
+    end_addr:   ariane_soc::UARTBase     + ariane_soc::UARTLength  
+  };
   assign addr_map[ariane_soc::CLINT] = '{ 
     idx:  ariane_soc::CLINT,
     start_addr: ariane_soc::CLINTBase,
@@ -414,10 +431,10 @@ module cva6_subsytem
     start_addr: ariane_soc::PLICBase,
     end_addr:   ariane_soc::PLICBase     + ariane_soc::PLICLength  
   };
-  assign addr_map[ariane_soc::UART] = '{ 
-    idx:  ariane_soc::UART,
-    start_addr: ariane_soc::UARTBase,
-    end_addr:   ariane_soc::UARTBase     + ariane_soc::UARTLength  
+  assign addr_map[ariane_soc::Cluster] = '{
+    idx:  ariane_soc::Cluster,
+    start_addr: ariane_soc::ClusterBase,
+    end_addr:   ariane_soc::ClusterBase     + ariane_soc::ClusterLength  
   };
   assign addr_map[ariane_soc::Timer] = '{ 
     idx:  ariane_soc::Timer,
@@ -472,8 +489,8 @@ module cva6_subsytem
   logic ipi;
   logic timer_irq;
 
-  ariane_axi_soc::req_t    axi_clint_req;
-  ariane_axi_soc::resp_t   axi_clint_resp;
+  ariane_axi_soc::req_slv_t    axi_clint_req;
+  ariane_axi_soc::resp_slv_t   axi_clint_resp;
 
   clint #(
     .AXI_ADDR_WIDTH ( AXI_ADDRESS_WIDTH        ),
@@ -491,11 +508,10 @@ module cva6_subsytem
     .ipi_o       ( ipi            )
   );
 
-  axi_slave_connect i_axi_slave_connect_clint (
-    .axi_req_o(axi_clint_req),
-    .axi_resp_i(axi_clint_resp),
-    .slave(master[ariane_soc::CLINT])
-  );   
+
+  `AXI_ASSIGN_TO_REQ(axi_clint_req,master[ariane_soc::CLINT])
+  `AXI_ASSIGN_FROM_RESP(master[ariane_soc::CLINT],axi_clint_resp)
+
   // ---------------
   // Peripherals
   // ---------------
