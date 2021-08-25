@@ -1,20 +1,20 @@
 // Copyright 2020 OpenHW Group
 // Copyright 2020 Datum Technology Corporation
 // Copyright 2020 Silicon Labs, Inc.
-// 
+//
 // Licensed under the Solderpad Hardware Licence, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
-// 
+//
 //     https://solderpad.org/licenses/
-// 
+//
 // Unless required by applicable law or agreed to in writing, software
 // distributed under the License is distributed on an "AS IS" BASIS,
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-// This module facilitates easy connection of a uvma_obi_memory_if instance to the assertion module, 
+// This module facilitates easy connection of a uvma_obi_memory_if instance to the assertion module,
 // which has individual wire ports
 
 module uvma_obi_memory_assert_if_wrp
@@ -59,7 +59,8 @@ module uvma_obi_memory_assert_if_wrp
     .RUSER_WIDTH(RUSER_WIDTH),
     .ID_WIDTH(ID_WIDTH),
     .ACHK_WIDTH(ACHK_WIDTH),
-    .RCHK_WIDTH(RCHK_WIDTH)
+    .RCHK_WIDTH(RCHK_WIDTH),
+    .IS_1P2(IS_1P2)
   ) u_assert(
     .clk(obi.clk),
     .reset_n(obi.reset_n),
@@ -88,6 +89,6 @@ module uvma_obi_memory_assert_if_wrp
     .rvalidpar(obi.rvalidpar),
     .rreadypar(obi.rreadypar),
     .rchk(obi.rchk[EFF_RCHK_WIDTH-1:0])
-  ); 
-  
+  );
+
 endmodule : uvma_obi_memory_assert_if_wrp
