@@ -18,6 +18,19 @@
 `ifndef __UVMA_ISACOV_TDEFS_SV__
 `define __UVMA_ISACOV_TDEFS_SV__
 
+typedef enum {
+  A_EXT,
+  B_EXT,
+  C_EXT,
+  F_EXT,
+  I_EXT,
+  M_EXT,
+  P_EXT,
+  Q_EXT,
+  ZIFENCEI_EXT,
+  ZICSR_EXT,
+  ZCE_EXT
+} instr_ext_t;
 
 typedef enum {
   UNKNOWN,  // TODO this should not be needed?
@@ -42,8 +55,18 @@ typedef enum {
 
   // 32A
   LR_W, SC_W,
-  AMOSWAP_W, AMOADD_W, AMOXOW_W, AMOAND_W,
+  AMOSWAP_W, AMOADD_W, AMOXOR_W, AMOAND_W,
   AMOOR_W, AMOMIN_W, AMOMAX_W, AMOMINU_W, AMOMAXU_W,
+
+  // 32B
+  SH1ADD, SH2ADD, SH3ADD,
+  CLZ, CTZ, CPOP,
+  MIN, MAX, MINU, MAXU,
+  SEXT_B, SEXT_H, ZEXT_H,
+  ANDN, ORN, XNOR, ROR, RORI, ROL,
+  REV8, ORC_B,
+  CLMUL, CLMULH, CLMULR,
+  BSET, BSETI, BCLR, BCLRI, BINV, BINVI, BEXT, BEXTI,
 
   // Zicsr
   CSRRW, CSRRS, CSRRC,
@@ -61,6 +84,21 @@ typedef enum {
   B_TYPE,
   U_TYPE,
   J_TYPE,
+
+  CI_TYPE,
+  CR_TYPE,
+  CSS_TYPE,
+  CIW_TYPE,
+  CL_TYPE,
+  CS_TYPE,
+  CA_TYPE,
+  CB_TYPE,
+  CJ_TYPE,
+
+  ZBA_TYPE,
+  ZBB_TYPE,
+  ZBC_TYPE,
+  ZBS_TYPE,
 
   CSR_TYPE,  // CSR* instruction with rs1 operand
   CSRI_TYPE, // CSR* instruction with immu operand
@@ -336,6 +374,13 @@ bit rs1_is_signed[instr_name_t] = '{
   ADD    : 1,
   SUB    : 1,
   SLT    : 1,
+  C_ADDI : 1,
+  C_ADDI16SP : 1,
+  C_ADD  : 1,
+  C_SUB  : 1,
+  SH1ADD : 1,
+  SH2ADD : 1,
+  SH3ADD : 1,
   default: 0
 };
 
@@ -346,6 +391,11 @@ bit rs2_is_signed[instr_name_t] = '{
   ADD    : 1,
   SUB    : 1,
   SLT    : 1,
+  C_ADD  : 1,
+  C_SUB  : 1,
+  SH1ADD : 1,
+  SH2ADD : 1,
+  SH3ADD : 1,
   default: 0
 };
 
@@ -367,6 +417,16 @@ bit immi_is_signed[instr_name_t] = '{
   default: 0
 };
 
+bit c_imm_is_signed[instr_name_t] = '{  
+  C_ADDI:  1,
+  C_LI:    1,
+  C_BEQZ:  1,
+  C_BNEZ:  1,
+  C_J:     1,
+  C_JAL:   1,
+  default: 0
+};
+
 bit rd_is_signed[instr_name_t] = '{
   MULH   : 1,
   MULHSU : 1,
@@ -377,6 +437,13 @@ bit rd_is_signed[instr_name_t] = '{
   ADD    : 1,
   SRA    : 1,
   SUB    : 1,
+  C_ADDI : 1,
+  C_ADDI16SP: 1,
+  C_ADD  : 1,
+  C_SUB  : 1,
+  SH1ADD : 1,
+  SH2ADD : 1,
+  SH3ADD : 1,
   default: 0
 };
 
@@ -386,6 +453,72 @@ typedef enum {
   POSITIVE, // For signed values
   NEGATIVE  // For signed value
 } instr_value_t;
+
+// Package level methods to map instruction to extension
+function instr_ext_t get_instr_ext(instr_name_t name);
+  if (name inside 
+    {
+      LUI, AUIPC, JAL, JALR,
+      BEQ, BNE, BLT, BGE, BLTU, BGEU,
+      LB, LH, LW, LBU, LHU, SB, SH, SW,
+      ADDI, SLTI, SLTIU, XORI, ORI, ANDI, SLLI, SRLI, SRAI,
+      ADD, SUB, SLL, SLT, SLTU, XOR, SRL, SRA, OR, AND,
+      FENCE, ECALL, EBREAK, DRET, MRET, WFI
+    })
+    return I_EXT;
+
+  if (name inside 
+    {
+      MUL, MULH, MULHSU, MULHU,
+      DIV, DIVU, REM, REMU
+    })
+    return M_EXT;
+
+  if (name inside 
+    {
+      C_ADDI4SPN, C_LW, C_SW, C_NOP,
+      C_ADDI, C_JAL, C_LI, C_ADDI16SP, C_LUI, C_SRLI, C_SRAI,
+      C_ANDI, C_SUB, C_XOR, C_OR, C_AND, C_J, C_BEQZ, C_BNEZ,
+      C_SLLI, C_LWSP, C_JR, C_MV, C_EBREAK, C_JALR, C_ADD, C_SWSP
+    })
+    return C_EXT;
+
+  if (name inside 
+    {
+      LR_W, SC_W,
+      AMOSWAP_W, AMOADD_W, AMOXOR_W, AMOAND_W,
+      AMOOR_W, AMOMIN_W, AMOMAX_W, AMOMINU_W, AMOMAXU_W
+    })
+    return A_EXT;
+
+  if (name inside 
+    {
+      SH1ADD, SH2ADD, SH3ADD,
+      CLZ, CTZ, CPOP,
+      MIN, MAX, MINU, MAXU,
+      SEXT_B, SEXT_H, ZEXT_H,
+      ANDN, ORN, XNOR, ROR, RORI, ROL,
+      REV8, ORC_B,
+      CLMUL, CLMULH, CLMULR,
+      BSET, BSETI, BCLR, BCLRI, BINV, BINVI, BEXT, BEXTI
+    })
+    return B_EXT;
+
+  if (name inside 
+    {
+      CSRRW, CSRRS, CSRRC,
+      CSRRWI, CSRRSI, CSRRCI
+    })
+    return ZICSR_EXT;
+
+  if (name inside 
+    {
+      FENCE_I
+    })
+    return ZIFENCEI_EXT;
+
+endfunction : get_instr_ext
+
 
 // Package level methods to map instruction to type
 function instr_type_t get_instr_type(instr_name_t name);
@@ -398,7 +531,10 @@ function instr_type_t get_instr_type(instr_name_t name);
     // I-ext
     ADD, SUB, SLL, SLT, SLTU, XOR, SRL, SRA, OR, AND,
     // M-ext
-    MUL, MULH, MULHSU, MULHU, DIV, DIVU, REM, REMU
+    MUL, MULH, MULHSU, MULHU, DIV, DIVU, REM, REMU,
+    // A-ext
+    LR_W, SC_W, AMOSWAP_W, AMOADD_W, AMOXOR_W, AMOAND_W,
+    AMOOR_W, AMOMIN_W, AMOMAX_W, AMOMINU_W, AMOMAXU_W
     };
 
   if (name inside {rtypes})
@@ -406,6 +542,33 @@ function instr_type_t get_instr_type(instr_name_t name);
 
   if (name inside {itypes})
     return I_TYPE;
+
+  if (name inside {C_ADDI,C_ADDI16SP,C_LWSP,C_LI,C_LUI,C_SLLI})
+    return CI_TYPE;
+
+  if (name inside {C_SWSP})
+    return CSS_TYPE;
+
+  if (name inside {C_MV, C_ADD, C_JR, C_JALR})
+    return CR_TYPE;
+
+  if (name inside {C_ADDI4SPN})
+    return CIW_TYPE;
+
+  if (name inside {C_LW})
+    return CL_TYPE;
+
+  if (name inside {C_SW})
+    return CS_TYPE;
+
+  if (name inside {C_AND, C_OR, C_XOR, C_SUB})
+    return CA_TYPE;
+
+  if (name inside {C_BEQZ, C_BNEZ, C_ANDI, C_SRAI, C_SRLI})
+    return CB_TYPE;
+
+  if (name inside {C_J, C_JAL})
+    return CJ_TYPE;
 
   if (name inside {SB,SH,SW})
     return S_TYPE;
@@ -424,6 +587,21 @@ function instr_type_t get_instr_type(instr_name_t name);
 
   if (name inside {CSRRWI,CSRRSI,CSRRCI})
     return CSRI_TYPE;
+
+  if (name inside {SH1ADD,SH2ADD,SH3ADD})
+    return ZBA_TYPE;
+
+  if (name inside {CLZ,CTZ,CPOP,MIN,MINU,MAX,MAXU,
+                   SEXT_B,SEXT_H,ZEXT_H,ANDN,ORN,XNOR,
+                   ROL,ROR,RORI,REV8,ORC_B})
+    return ZBB_TYPE;
+
+  if (name inside {CLMUL,CLMULH,CLMULR})
+    return ZBC_TYPE;
+
+  if (name inside {BSET,BSETI,BCLR,BCLRI,
+                   BINV,BINVI,BEXT,BEXTI}) 
+    return ZBS_TYPE;
 
   if (name inside {JAL})
     return J_TYPE;
@@ -461,7 +639,15 @@ function instr_group_t get_instr_group(instr_name_t name, bit[31:0] mem_addr);
                    C_ADD,C_ADDI,C_ADDI16SP,
                    C_LI,C_LUI,C_MV,C_NOP,
                    C_XOR,C_SRLI,C_AND,C_ANDI,C_OR,
-                   C_SUB,C_ADDI4SPN,C_SLLI,C_SRAI}) 
+                   C_SUB,C_ADDI4SPN,C_SLLI,C_SRAI,
+                   SH1ADD, SH2ADD, SH3ADD,
+                   CLZ, CTZ, CPOP,
+                   MIN, MAX, MINU, MAXU,
+                   SEXT_B, SEXT_H, ZEXT_H,
+                   ANDN, ORN, XNOR, ROR, RORI, ROL,
+                   REV8, ORC_B,
+                   CLMUL, CLMULH, CLMULR,
+                   BSET, BSETI, BCLR, BCLRI, BINV, BINVI, BEXT, BEXTI})
     return ALU_GROUP;
 
   if (name inside {BEQ,BNE,BLT,BGE,BLTU,BGEU,
@@ -505,7 +691,7 @@ function instr_group_t get_instr_group(instr_name_t name, bit[31:0] mem_addr);
   if (name inside {SC_W})
     return ASTORE_GROUP;
 
-  if (name inside {AMOSWAP_W,AMOADD_W,AMOXOW_W,AMOAND_W,
+  if (name inside {AMOSWAP_W,AMOADD_W,AMOXOR_W,AMOAND_W,
                    AMOOR_W,AMOMIN_W,AMOMAX_W,AMOMINU_W,AMOMAXU_W})
     return AMEM_GROUP;
   

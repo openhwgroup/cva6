@@ -188,13 +188,13 @@ custom: comp $(CUSTOM_DIR)/$(CUSTOM_PROG).hex $(CUSTOM_DIR)/$(CUSTOM_PROG).elf
 # If the configuration specified OVPSIM arguments, generate an ovpsim.ic file and
 # set IMPERAS_TOOLS to point to it
 gen_ovpsim_ic:
+	@rm -f $(DSIM_RESULTS)/$(CFG)/$(TEST_NAME)_$(RUN_INDEX)/ovpsim.ic
+	@mkdir -p $(DSIM_RESULTS)/$(CFG)/$(TEST_NAME)_$(RUN_INDEX);
+	@touch $(DSIM_RESULTS)/$(CFG)/$(TEST_NAME)_$(RUN_INDEX)/ovpsim.ic	
 	@if [ ! -z "$(CFG_OVPSIM)" ]; then \
-		mkdir -p $(DSIM_RESULTS)/$(CFG)/$(TEST_NAME)_$(RUN_INDEX); \
 		echo "$(CFG_OVPSIM)" > $(DSIM_RESULTS)/$(CFG)/$(TEST_NAME)_$(RUN_INDEX)/ovpsim.ic; \
 	fi
-ifneq ($(CFG_OVPSIM),)
 export IMPERAS_TOOLS=$(DSIM_RESULTS)/$(CFG)/$(TEST_NAME)_$(RUN_INDEX)/ovpsim.ic
-endif
 
 # Skip compile if COMP is specified and negative
 ifneq ($(call IS_NO,$(COMP)),NO)

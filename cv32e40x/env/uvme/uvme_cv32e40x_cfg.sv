@@ -27,6 +27,7 @@ class uvme_cv32e40x_cfg_c extends uvma_core_cntrl_cfg_c;
 
    // Integrals
    rand int unsigned                sys_clk_period;
+   cv32e40x_pkg::b_ext_e            b_ext;
 
    // Agent cfg handles
    rand uvma_isacov_cfg_c           isacov_cfg;
@@ -45,6 +46,7 @@ class uvme_cv32e40x_cfg_c extends uvma_core_cntrl_cfg_c;
       `uvm_field_int (                         cov_model_enabled           , UVM_DEFAULT          )
       `uvm_field_int (                         trn_log_enabled             , UVM_DEFAULT          )
       `uvm_field_int (                         sys_clk_period              , UVM_DEFAULT | UVM_DEC)
+      `uvm_field_enum (cv32e40x_pkg::b_ext_e,  b_ext                       , UVM_DEFAULT          )
 
       `uvm_field_object(isacov_cfg           , UVM_DEFAULT)
       `uvm_field_object(clknrst_cfg          , UVM_DEFAULT)
@@ -73,14 +75,35 @@ class uvme_cv32e40x_cfg_c extends uvma_core_cntrl_cfg_c;
       ext_c_supported        == 1;
       ext_m_supported        == 1;
       ext_zifencei_supported == 1;
-      ext_zicsr_supported   == 1;
+      ext_zicsr_supported    == 1;
+      ext_a_supported        == 0;
+      ext_p_supported        == 0;
+      ext_v_supported        == 0;
+      ext_f_supported        == 0;
+      ext_d_supported        == 0;
 
-      ext_a_supported == 0;
-      ext_p_supported == 0;
-      ext_b_supported == 0;
-      ext_v_supported == 0;
-      ext_f_supported == 0;
-      ext_d_supported == 0;
+      if (b_ext == cv32e40x_pkg::NONE) {
+         ext_zba_supported == 0;
+         ext_zbb_supported == 0;
+         ext_zbc_supported == 0;
+         ext_zbs_supported == 0;
+      } else if (b_ext == cv32e40x_pkg::ZBA_ZBB_ZBS) {
+         ext_zba_supported == 1;
+         ext_zbb_supported == 1;
+         ext_zbc_supported == 0;
+         ext_zbs_supported == 1;
+      } else if (b_ext == cv32e40x_pkg::ZBA_ZBB_ZBC_ZBS) {
+         ext_zba_supported == 1;
+         ext_zbb_supported == 1;
+         ext_zbc_supported == 1;
+         ext_zbs_supported == 1;
+      }
+      ext_zbe_supported == 0;
+      ext_zbf_supported == 0;
+      ext_zbm_supported == 0;
+      ext_zbp_supported == 0;
+      ext_zbr_supported == 0;
+      ext_zbt_supported == 0;
 
       mode_s_supported == 0;
       mode_u_supported == 0;
@@ -89,6 +112,8 @@ class uvme_cv32e40x_cfg_c extends uvma_core_cntrl_cfg_c;
 
       unaligned_access_supported == 1;
       unaligned_access_amo_supported == 1;
+
+      bitmanip_version        == BITMANIP_VERSION_0P93;
 
       boot_addr_valid         == 1;
       mtvec_addr_valid        == 1;
@@ -272,6 +297,8 @@ function void uvme_cv32e40x_cfg_c::sample_parameters(uvma_core_cntrl_cntxt_c cnt
 
    num_mhpmcounters = e40x_cntxt.core_cntrl_vif.num_mhpmcounters;
    pma_regions      = new[e40x_cntxt.core_cntrl_vif.pma_cfg.size()];
+   b_ext            = e40x_cntxt.core_cntrl_vif.b_ext;
+
    foreach (pma_regions[i]) begin
       pma_regions[i] = uvma_core_cntrl_pma_region_c::type_id::create($sformatf("pma_region%0d", i));
       pma_regions[i].word_addr_low  = e40x_cntxt.core_cntrl_vif.pma_cfg[i].word_addr_low;

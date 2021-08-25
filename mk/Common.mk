@@ -1,19 +1,19 @@
 ###############################################################################
 #
 # Copyright 2020 OpenHW Group
-# 
+#
 # Licensed under the Solderpad Hardware Licence, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
-# 
+#
 #     https://solderpad.org/licenses/
-# 
+#
 # Unless required by applicable law or agreed to in writing, software
 # distributed under the License is distributed on an "AS IS" BASIS,
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-# 
+#
 # SPDX-License-Identifier: Apache-2.0 WITH SHL-2.0
 #
 ###############################################################################
@@ -22,7 +22,7 @@
 # Makefiles in the "core" and "uvmt_cv32" dirs.
 #
 ###############################################################################
-# 
+#
 # Copyright 2019 Claire Wolf
 # Copyright 2019 Robert Balas
 #
@@ -179,52 +179,56 @@ OVP_MODEL_DPI   = $(DV_OVPM_MODEL)/bin/Linux64/imperas_CV32.dpi.so
 #     1. GNU:   https://github.com/riscv/riscv-gnu-toolchain
 #               Assumed to be installed at /opt/gnu.
 #
-#     2. COREV: https://www.embecosm.com/resources/tool-chain-downloads/#corev 
+#     2. COREV: https://www.embecosm.com/resources/tool-chain-downloads/#corev
 #               Assumed to be installed at /opt/corev.
 #
-#     3. PULP:  https://github.com/pulp-platform/pulp-riscv-gnu-toolchain 
+#     3. PULP:  https://github.com/pulp-platform/pulp-riscv-gnu-toolchain
 #               Assumed to be installed at /opt/pulp.
 #
 # If you do not select one of the above options, compilation will be attempted
 # using whatever is found at /opt/riscv using arch=unknown.
 #
 GNU_SW_TOOLCHAIN    ?= /opt/gnu
-GNU_MARCH           ?= unknown
+GNU_VENDOR          ?= unknown
+GNU_MARCH           ?= rv32imc
 COREV_SW_TOOLCHAIN  ?= /opt/corev
-COREV_MARCH         ?= corev
+COREV_VENDOR        ?= corev
+COREV_MARCH         ?= rv32imc
 PULP_SW_TOOLCHAIN   ?= /opt/pulp
-PULP_MARCH          ?= unknown
+PULP_VENDOR         ?= unknown
+PULP_MARCH          ?= rv32imcxpulpv2
 
 CV_SW_TOOLCHAIN  ?= /opt/riscv
-CV_SW_MARCH      ?= unknown
+CV_SW_VENDOR     ?= unknown
+CV_SW_MARCH      ?= rv32imc
+
 RISCV            ?= $(CV_SW_TOOLCHAIN)
-RISCV_PREFIX     ?= riscv32-$(CV_SW_MARCH)-elf-
+RISCV_PREFIX     ?= riscv32-$(CV_SW_VENDOR)-elf-
 RISCV_EXE_PREFIX ?= $(RISCV)/bin/$(RISCV_PREFIX)
+RISCV_MARCH      ?= $(CV_SW_MARCH)
 
 ifeq ($(call IS_YES,$(GNU)),YES)
 RISCV            = $(GNU_SW_TOOLCHAIN)
-RISCV_PREFIX     = riscv32-$(GNU_MARCH)-elf-
+RISCV_PREFIX     = riscv32-$(GNU_VENDOR)-elf-
 RISCV_EXE_PREFIX = $(RISCV)/bin/$(RISCV_PREFIX)
+RISCV_MARCH      = $(GNU_MARCH)
 endif
 
 ifeq ($(call IS_YES,$(COREV)),YES)
 RISCV            = $(COREV_SW_TOOLCHAIN)
-RISCV_PREFIX     = riscv32-$(COREV_MARCH)-elf-
+RISCV_PREFIX     = riscv32-$(COREV_VENDOR)-elf-
 RISCV_EXE_PREFIX = $(RISCV)/bin/$(RISCV_PREFIX)
+RISCV_MARCH      = $(COREV_MARCH)
 endif
 
 ifeq ($(call IS_YES,$(PULP)),YES)
 RISCV            = $(PULP_SW_TOOLCHAIN)
-RISCV_PREFIX     = riscv32-$(PULP_MARCH)-elf-
+RISCV_PREFIX     = riscv32-$(PULP_VENDOR)-elf-
 RISCV_EXE_PREFIX = $(RISCV)/bin/$(RISCV_PREFIX)
+RISCV_MARCH      = $(PULP_MARCH)
 endif
 
-CFLAGS ?= -Os -g -static -mabi=ilp32 -march=rv32imc -Wall -pedantic
-
-# FIXME:strichmo:Repeating this code until we fully deprecate CUSTOM_PROG, hopefully next PR
-ifeq ($(firstword $(subst _, ,$(CUSTOM_PROG))),pulp)
-  CFLAGS = -Os -g -D__riscv__=1 -D__LITTLE_ENDIAN__=1 -march=rv32imcxpulpv2 -Wa,-march=rv32imcxpulpv2 -fdata-sections -ffunction-sections -fdiagnostics-color=always
-endif
+CFLAGS ?= -Os -g -static -mabi=ilp32 -march=$(RISCV_MARCH) -Wall -pedantic
 
 ifeq ($(firstword $(subst _, ,$(TEST))),pulp)
   CFLAGS = -Os -g -D__riscv__=1 -D__LITTLE_ENDIAN__=1 -march=rv32imcxpulpv2 -Wa,-march=rv32imcxpulpv2 -fdata-sections -ffunction-sections -fdiagnostics-color=always
@@ -287,7 +291,7 @@ ifneq "$(SUPPORTS_MAKE_ARGS)" ""
   UNIT_TEST := $(wordlist 2,$(words $(MAKECMDGOALS)),$(MAKECMDGOALS))
   $(eval $(UNIT_TEST):;@:)
   UNIT_TEST_CMD := 1
-else 
+else
  UNIT_TEST_CMD := 0
 endif
 
@@ -366,7 +370,7 @@ endif
 	@echo "$(BANNER)"
 	$(RISCV_EXE_PREFIX)objcopy -O verilog \
 		$< \
-		$@		
+		$@
 	@echo ""
 	$(RISCV_EXE_PREFIX)readelf -a $< > $*.readelf
 	@echo ""
@@ -387,10 +391,10 @@ bsp:
 	@echo "$(BANNER)"
 	@echo "* Compiling BSP"
 	@echo "$(BANNER)"
-	make -C $(BSP) RISCV=$(RISCV) RISCV_PREFIX=$(RISCV_PREFIX) RISCV_EXE_PREFIX=$(RISCV_EXE_PREFIX)
+	make -C $(BSP) RISCV=$(RISCV) RISCV_PREFIX=$(RISCV_PREFIX) RISCV_EXE_PREFIX=$(RISCV_EXE_PREFIX) RISCV_MARCH=$(RISCV_MARCH)
 
 vars-bsp:
-	make vars -C $(BSP) RISCV=$(RISCV) RISCV_PREFIX=$(RISCV_PREFIX) RISCV_EXE_PREFIX=$(RISCV_EXE_PREFIX)
+	make vars -C $(BSP) RISCV=$(RISCV) RISCV_PREFIX=$(RISCV_PREFIX) RISCV_EXE_PREFIX=$(RISCV_EXE_PREFIX) RISCV_MARCH=$(RISCV_MARCH)
 
 clean-bsp:
 	make clean -C $(BSP)
@@ -402,7 +406,7 @@ clean-bsp:
 .PRECIOUS : %debug_test_reset.elf
 .PRECIOUS : %debug_test_trigger.elf
 .PRECIOUS : %debug_test_known_miscompares.elf
-	
+
 # Prepare file list for .elf
 # Get the source file names from the BSP directory
 PREREQ_BSP_FILES  = $(filter %.c %.S %.ld,$(wildcard $(BSP)/*))
@@ -421,25 +425,25 @@ PREREQ_TEST_FILES = $(filter %.c %.S,$(wildcard $(dir %)*))
 TEST_FILES        = $(filter %.c %.S,$(wildcard $(dir $*)*))
 
 %debug_test.elf:
-	$(RISCV_EXE_PREFIX)gcc -mabi=ilp32 -march=rv32imc -o $@ \
+	$(RISCV_EXE_PREFIX)gcc -mabi=ilp32 -march=$(RISCV_MARCH) -o $@ \
 		-Wall -pedantic -Os -g -nostartfiles -static \
 		$(BSP_FILES) \
 		$(TEST_FILES) \
 		-T $(BSP)/link.ld
 %debug_test_reset.elf:
-	$(RISCV_EXE_PREFIX)gcc -mabi=ilp32 -march=rv32imc -o $@ \
+	$(RISCV_EXE_PREFIX)gcc -mabi=ilp32 -march=$(RISCV_MARCH) -o $@ \
 		-Wall -pedantic -Os -g -nostartfiles -static \
 		$(BSP_FILES) \
 		$(TEST_FILES) \
 		-T $(BSP)/link.ld
 %debug_test_trigger.elf:
-	$(RISCV_EXE_PREFIX)gcc -mabi=ilp32 -march=rv32imc -o $@ \
+	$(RISCV_EXE_PREFIX)gcc -mabi=ilp32 -march=$(RISCV_MARCH) -o $@ \
 		-Wall -pedantic -Os -g -nostartfiles -static \
 		$(BSP_FILES) \
 		$(TEST_FILES) \
 		-T $(BSP)/link.ld
 %debug_test_known_miscompares.elf:
-	$(RISCV_EXE_PREFIX)gcc -mabi=ilp32 -march=rv32imc -o $@ \
+	$(RISCV_EXE_PREFIX)gcc -mabi=ilp32 -march=$(RISCV_MARCH) -o $@ \
 		-Wall -pedantic -Os -g -nostartfiles -static \
 		$(BSP_FILES) \
 		$(TEST_FILES) \
@@ -481,6 +485,8 @@ COREMARK_CFLAGS = \
 	make bsp
 	@echo "$(BANNER)"
 	@echo "* Compiling test-program $^"
+	@echo $(RISCV_MARCH)
+	@echo $(COREV_MARCH)
 	@echo "$(BANNER)"
 	$(RISCV_EXE_PREFIX)gcc $(CFG_CFLAGS) \
 		$(TEST_CFLAGS) \
@@ -495,10 +501,19 @@ COREMARK_CFLAGS = \
 # This target selected if only %.S exists
 %.elf: %.S
 	make bsp
-	$(RISCV_EXE_PREFIX)gcc $(CFG_CFLAGS) $(TEST_CFLAGS) $(CFLAGS) -v -o $@ \
+	@echo "$(BANNER)"
+	@echo "* Compiling test-program $^"
+	@echo "$(BANNER)"
+	$(RISCV_EXE_PREFIX)gcc $(CFG_CFLAGS) \
+		$(TEST_CFLAGS) \
+		$(CFLAGS) \
+	 	-o $@ \
 		-nostartfiles \
 		-I $(ASM) \
-		$^ -T $(BSP)/link.ld -L $(BSP) -lcv-verif
+		$^ \
+		-T $(BSP)/link.ld \
+		-L $(BSP) \
+		-lcv-verif
 
 # compile and dump RISCV_TESTS only
 #$(CV32_RISCV_TESTS_FIRMWARE)/cv32_riscv_tests_firmware.elf: $(CV32_RISCV_TESTS_FIRMWARE_OBJS) $(RISCV_TESTS_OBJS) \
@@ -614,9 +629,9 @@ $(RISCV_COMPLIANCE_TESTS)/%.o: $(RISCV_COMPLIANCE_TESTS)/%.S $(RISCV_COMPLIANCE_
 		-DTEST_FUNC_RET=$(notdir $(subst -,_,$(basename $<)))_ret $<
 
 # in dsim
-.PHONY: dsim-unit-test 
-dsim-unit-test:  firmware-unit-test-clean 
-dsim-unit-test:  $(FIRMWARE)/firmware_unit_test.hex 
+.PHONY: dsim-unit-test
+dsim-unit-test:  firmware-unit-test-clean
+dsim-unit-test:  $(FIRMWARE)/firmware_unit_test.hex
 dsim-unit-test: ALL_VSIM_FLAGS += "+firmware=$(FIRMWARE)/firmware_unit_test.hex +elf_file=$(FIRMWARE)/firmware_unit_test.elf"
 dsim-unit-test: dsim-firmware-unit-test
 
@@ -632,7 +647,7 @@ firmware-vcs-run-gui: vcsify $(FIRMWARE)/firmware.hex
 
 .PHONY: vcs-unit-test
 vcs-unit-test:  firmware-unit-test-clean
-vcs-unit-test:  $(FIRMWARE)/firmware_unit_test.hex 
+vcs-unit-test:  $(FIRMWARE)/firmware_unit_test.hex
 vcs-unit-test:  vcsify $(FIRMWARE)/firmware_unit_test.hex
 vcs-unit-test:  vcs-run
 
@@ -680,3 +695,4 @@ firmware-unit-test-clean:
 		$(FIRMWARE_OBJS) $(FIRMWARE_UNIT_TEST_OBJS)
 
 #endend
+

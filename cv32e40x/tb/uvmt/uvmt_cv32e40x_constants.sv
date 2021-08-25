@@ -18,6 +18,13 @@
 `ifndef __UVMT_CV32E40X_CONSTANTS_SV__
 `define __UVMT_CV32E40X_CONSTANTS_SV__
 
+   `ifdef ZBA_ZBB_ZBS
+      parameter cv32e40x_pkg::b_ext_e B_EXT = cv32e40x_pkg::ZBA_ZBB_ZBS;
+   `elsif ZBA_ZBB_ZBC_ZBS
+      parameter cv32e40x_pkg::b_ext_e B_EXT = cv32e40x_pkg::ZBA_ZBB_ZBC_ZBS;
+   `else
+      parameter cv32e40x_pkg::b_ext_e B_EXT = cv32e40x_pkg::NONE;
+   `endif
 
    `ifdef PMA_CUSTOM_CFG
       parameter int unsigned               CORE_PARAM_PMA_NUM_REGIONS = 3;

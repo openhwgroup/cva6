@@ -87,6 +87,7 @@ module uvmt_cv32e40x_tb;
    */
    uvmt_cv32e40x_dut_wrap  #(
                              .NUM_MHPMCOUNTERS  (CORE_PARAM_NUM_MHPMCOUNTERS),
+                             .B_EXT             (uvmt_cv32e40x_pkg::B_EXT),
                              .PMA_NUM_REGIONS   (uvmt_cv32e40x_pkg::CORE_PARAM_PMA_NUM_REGIONS),
                              .PMA_CFG           (uvmt_cv32e40x_pkg::CORE_PARAM_PMA_CFG),
                              .INSTR_ADDR_WIDTH  (ENV_PARAM_INSTR_ADDR_WIDTH),

@@ -199,13 +199,13 @@ endif
 # If the configuration specified OVPSIM arguments, generate an ovpsim.ic file and
 # set IMPERAS_TOOLS to point to it
 gen_ovpsim_ic:
+	@rm -f $(VCS_RESULTS)/$(CFG)/$(TEST_NAME)_$(RUN_INDEX)/ovpsim.ic
+	@mkdir -p $(VCS_RESULTS)/$(CFG)/$(TEST_NAME)_$(RUN_INDEX)
+	@touch $(VCS_RESULTS)/$(CFG)/$(TEST_NAME)_$(RUN_INDEX)/ovpsim.ic	
 	@if [ ! -z "$(CFG_OVPSIM)" ]; then \
-		mkdir -p $(VCS_RESULTS)/$(CFG)/$(TEST_NAME)_$(RUN_INDEX); \
 		echo "$(CFG_OVPSIM)" > $(VCS_RESULTS)/$(CFG)/$(TEST_NAME)_$(RUN_INDEX)/ovpsim.ic; \
 	fi
-ifneq ($(CFG_OVPSIM),)
 export IMPERAS_TOOLS=$(VCS_RESULTS)/$(CFG)/$(TEST_NAME)_$(RUN_INDEX)/ovpsim.ic
-endif
 
 ################################################################################
 # The new general test target
