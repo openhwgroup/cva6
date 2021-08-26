@@ -8,7 +8,7 @@ const int RESULT_FIB[N] = {0, 1, 1, 2, 3, 5, 8, 13, 21, 34, 55, 89, 144, 233, 37
 
 int main(int argc, char const *argv[]) {
   int * b;
-  b=0xC0000000;
+  b=0x10000000;
   int i;
   b[0]=0;
   b[1]=1;
@@ -19,9 +19,6 @@ int main(int argc, char const *argv[]) {
       if(b[i]!=RESULT_FIB[i])
         return 1;
     }
-//  char s[] = {'o','k','!','\n'};
-//  for (i=0;i<5;i++)
-//    uart_sendchar(s[i]);
   printf("0k!\n");
   return 0;
 }
