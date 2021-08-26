@@ -7,7 +7,7 @@ dependencies:
   cva6: { path: "deps/cva6" }
   alsaqr_padframe: { path: "deps/alsaqr_periph_padframe" }
   apb_uart: { path: "../fpga/src/apb_uart" }
-  axi: { git: "https://github.com/pulp-platform/axi.git", version: "0.29.0" } 
+  axi: { git: "https://github.com/pulp-platform/axi.git", version: "0.29.1" } 
   fpnew: { git: "https://github.com/pulp-platform/fpnew.git", version: 0.6.5 }
   tcdm_interconnect: { git: "https://github.com/pulp-platform/cluster_interconnect.git", version: "1.1.2" }
   axi2tcdm: { git: "https://github.com/AlSaqr-platform/axi2mem.git", rev: "master" }
@@ -22,15 +22,15 @@ dependencies:
   udma_filter: { git: "https://github.com/pulp-platform/udma_filter.git", version: 1.0.2 }
   udma_external_per: { git: "https://github.com/pulp-platform/udma_external_per.git", version: 1.0.3 }
   udma_hyper: { git: "https://github.com/pulp-platform/udma_hyper.git", rev: "e404cb28b8a19d48f0fd88a3806498a122932bf3" }
-  tech_cells_generic: { git: "https://github.com/pulp-platform/tech_cells_generic.git", version: 0.2.3 }
+  tech_cells_generic: { git: "https://github.com/pulp-platform/tech_cells_generic.git", version: 0.2.4 }
   apb_node: { git: "https://github.com/pulp-platform/apb_node.git", version: 0.1.1 }
   apb_gpio: { git: "https://github.com/pulp-platform/apb_gpio.git", rev: "0e9f142f2f11278445c953ad011fce1c7ed85b66" }
-  hyperbus: { git: "git@iis-git.ee.ethz.ch:bslk/hyperbus.git", rev: "b6bc5197ce106c138ac3731a7faee482017e2d45" }
-  register_interface:  { git: "https://github.com/pulp-platform/register_interface.git", version: 0.2.2  }
+  hyperbus: { git: "git@iis-git.ee.ethz.ch:bslk/hyperbus.git", rev: "c20de056a3ce0fba7cfc05982ce3ae5778591fa7" }
+  register_interface:  { git: "https://github.com/pulp-platform/register_interface.git", version: 0.3.1  }
   apb_fll_if: { git: "https://github.com/pulp-platform/apb_fll_if.git", version: 0.1.3 }
   generic_FLL: { git: "https://github.com/pulp-platform/generic_FLL.git", rev: "1c92dc73a940392182fd4cb7b86f35649b349595" }
   apb_adv_timer: { git: "https://github.com/pulp-platform/apb_adv_timer.git", version: 1.0.4 }
-  pulp_cluster: { git: "https://github.com/AlSaqr-platform/pulp_cluster.git", rev: "a4d8cb77be2a1a7f9127c1e384fa27bc36fda9d6" }
+  pulp_cluster: { git: "https://github.com/AlSaqr-platform/pulp_cluster.git", rev: "79550c4e79053cad44a049e248572012d545eb33" }
 
 export_include_dirs:
   - include/
