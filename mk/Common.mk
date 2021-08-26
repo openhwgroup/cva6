@@ -331,12 +331,12 @@ include $(GEN_FLAGS_MAKE)
 endif
 
 # If the test target is defined then read in a test specification file
-TEST_YAML_PARSE_TARGETS=test waves cov
+TEST_YAML_PARSE_TARGETS=test waves cov hex clean_hex
 ifneq ($(filter $(TEST_YAML_PARSE_TARGETS),$(MAKECMDGOALS)),)
 ifeq ($(TEST),)
 $(error ERROR must specify a TEST variable)
 endif
-TEST_FLAGS_MAKE := $(shell $(YAML2MAKE) --test=$(TEST) --yaml=test.yaml  $(YAML2MAKE_DEBUG) --run-index=$(RUN_INDEX) --prefix=TEST --core=$(CV_CORE))
+TEST_FLAGS_MAKE := $(shell $(YAML2MAKE) --test=$(TEST) --yaml=test.yaml  $(YAML2MAKE_DEBUG) --run-index=$(u) --prefix=TEST --core=$(CV_CORE))
 ifeq ($(TEST_FLAGS_MAKE),)
 $(error ERROR Could not find test.yaml for test: $(TEST))
 endif
@@ -346,7 +346,7 @@ endif
 # If a test target is defined and a CFG is defined that read in build configuration file
 # CFG is optional
 CFGYAML2MAKE = $(CORE_V_VERIF)/bin/cfgyaml2make
-CFG_YAML_PARSE_TARGETS=comp test
+CFG_YAML_PARSE_TARGETS=comp test hex clean_hex
 ifneq ($(filter $(CFG_YAML_PARSE_TARGETS),$(MAKECMDGOALS)),)
 ifneq ($(CFG),)
 CFG_FLAGS_MAKE := $(shell $(CFGYAML2MAKE) --yaml=$(CFG).yaml $(YAML2MAKE_DEBUG) --prefix=CFG --core=$(CV_CORE))
@@ -355,6 +355,11 @@ $(error ERROR Error finding or parsing configuration: $(CFG).yaml)
 endif
 include $(CFG_FLAGS_MAKE)
 endif
+endif
+
+# corev-dv tests needs an added run_index_suffix, blank for other tests
+ifeq ($(shell echo $(TEST) | head -c 6),corev_)
+export OPT_RUN_INDEX_SUFFIX=_$(RUN_INDEX)
 endif
 
 ###############################################################################
@@ -371,21 +376,52 @@ endif
 	$(RISCV_EXE_PREFIX)objcopy -O verilog \
 		$< \
 		$@
-	@echo ""
 	$(RISCV_EXE_PREFIX)readelf -a $< > $*.readelf
-	@echo ""
 	$(RISCV_EXE_PREFIX)objdump \
 		-d \
 		-M no-aliases \
 		-M numeric \
 		-S $*.elf > $*.objdump
 	$(RISCV_EXE_PREFIX)objdump \
-                -d \
-                -S \
-				-M no-aliases \
-				-M numeric \
-                -l \
-				$*.elf | ${CORE_V_VERIF}/bin/objdump2itb - > $*.itb
+    	-d \
+        -S \
+		-M no-aliases \
+		-M numeric \
+        -l \
+		$*.elf | ${CORE_V_VERIF}/bin/objdump2itb - > $*.itb
+
+# Patterned targets to generate ELF.  Used only if explicit targets do not match.
+#
+.PRECIOUS : %.elf
+
+# Single rule for compiling test source into an ELF file
+# For directed tests, TEST_FILES gathers all of the .S and .c files in a test directory
+# For corev_ tests, TEST_FILES will only point to the specific .S for the RUN_INDEX and TEST_NAME provided to make
+ifeq ($(shell echo $(TEST) | head -c 6),corev_)
+TEST_FILES        = $(filter %.c %.S,$(wildcard  $(TEST_TEST_DIR)/$(TEST_NAME)$(OPT_RUN_INDEX_SUFFIX).S))
+else
+TEST_FILES        = $(filter %.c %.S,$(wildcard  $(TEST_TEST_DIR)/*))
+endif
+
+%.elf: $(TEST_FILES)
+	make bsp
+	@echo "$(BANNER)"
+	@echo "* Compiling test-program $(@)"
+	@echo "$(BANNER)"
+	$(RISCV_EXE_PREFIX)gcc $(CFG_CFLAGS) \
+		$(TEST_CFLAGS) \
+		$(CFLAGS) \
+		-I $(ASM) \
+		-o $@ \
+		-nostartfiles \
+		$(TEST_FILES) \
+		-T $(BSP)/link.ld \
+		-L $(BSP) \
+		-lcv-verif
+
+.PHONY: hex
+# Shorthand target to only build the firmware using the hex and elf suffix rules above
+hex: $(TEST_TEST_DIR)/$(TEST_NAME)$(OPT_RUN_INDEX_SUFFIX).hex
 
 bsp:
 	@echo "$(BANNER)"
@@ -399,55 +435,7 @@ vars-bsp:
 clean-bsp:
 	make clean -C $(BSP)
 
-##############################################################################
-# Special debug_test build
-# keep raw elf files to generate helpful debugging files such as dissambler
-.PRECIOUS : %debug_test.elf
-.PRECIOUS : %debug_test_reset.elf
-.PRECIOUS : %debug_test_trigger.elf
-.PRECIOUS : %debug_test_known_miscompares.elf
-
-# Prepare file list for .elf
-# Get the source file names from the BSP directory
-PREREQ_BSP_FILES  = $(filter %.c %.S %.ld,$(wildcard $(BSP)/*))
-BSP_SOURCE_FILES  = $(notdir $(filter %.c %.S ,$(PREREQ_BSP_FILES)))
-
-# Let the user override BSP files
-# The following will build a list of BSP files that are not in test directory
-BSP_FILES = $(foreach BSP_FILE, $(BSP_SOURCE_FILES), \
-	       $(if $(wildcard  $(addprefix $(dir $*), $(BSP_FILE))),,\
-	          $(wildcard $(addprefix $(BSP)/, $(BSP_FILE))) ) \
-	     )
-
-# Get Test Files
-#  Note, the prerequisite uses '%', while the recipe uses '$*'
-PREREQ_TEST_FILES = $(filter %.c %.S,$(wildcard $(dir %)*))
-TEST_FILES        = $(filter %.c %.S,$(wildcard $(dir $*)*))
-
-%debug_test.elf:
-	$(RISCV_EXE_PREFIX)gcc -mabi=ilp32 -march=$(RISCV_MARCH) -o $@ \
-		-Wall -pedantic -Os -g -nostartfiles -static \
-		$(BSP_FILES) \
-		$(TEST_FILES) \
-		-T $(BSP)/link.ld
-%debug_test_reset.elf:
-	$(RISCV_EXE_PREFIX)gcc -mabi=ilp32 -march=$(RISCV_MARCH) -o $@ \
-		-Wall -pedantic -Os -g -nostartfiles -static \
-		$(BSP_FILES) \
-		$(TEST_FILES) \
-		-T $(BSP)/link.ld
-%debug_test_trigger.elf:
-	$(RISCV_EXE_PREFIX)gcc -mabi=ilp32 -march=$(RISCV_MARCH) -o $@ \
-		-Wall -pedantic -Os -g -nostartfiles -static \
-		$(BSP_FILES) \
-		$(TEST_FILES) \
-		-T $(BSP)/link.ld
-%debug_test_known_miscompares.elf:
-	$(RISCV_EXE_PREFIX)gcc -mabi=ilp32 -march=$(RISCV_MARCH) -o $@ \
-		-Wall -pedantic -Os -g -nostartfiles -static \
-		$(BSP_FILES) \
-		$(TEST_FILES) \
-		-T $(BSP)/link.ld
+# FIXME:strichmo:merge this into general elf rule
 COREMARK_CFLAGS = \
 	-mabi=ilp32 -march=rv32im -O3 -g -falign-functions=16 \
 	-funroll-all-loops -falign-jumps=4 -finline-functions \
@@ -460,60 +448,6 @@ COREMARK_CFLAGS = \
 		$(TEST_FILES) \
 		-T $(BSP)/link.ld
 
-# Patterned targets to generate ELF.  Used only if explicit targets do not match.
-#
-.PRECIOUS : %.elf
-# This target selected if both %.c and %.S exist
-# Note that this target will pass both sources to gcc
-%.elf: %.c %.S
-	make bsp
-	@echo "$(BANNER)"
-	@echo "* Compiling test-program $^"
-	@echo "$(BANNER)"
-	$(RISCV_EXE_PREFIX)gcc $(CFG_CFLAGS) \
-		$(TEST_CFLAGS) \
-		$(CFLAGS) \
-		-o $@ \
-		-nostartfiles \
-		$^ \
-		-T $(BSP)/link.ld \
-		-L $(BSP) \
-		-lcv-verif
-
-# This target selected if only %.c
-%.elf: %.c
-	make bsp
-	@echo "$(BANNER)"
-	@echo "* Compiling test-program $^"
-	@echo $(RISCV_MARCH)
-	@echo $(COREV_MARCH)
-	@echo "$(BANNER)"
-	$(RISCV_EXE_PREFIX)gcc $(CFG_CFLAGS) \
-		$(TEST_CFLAGS) \
-		$(CFLAGS) \
-		-o $@ \
-		-nostartfiles \
-		$^ \
-		-T $(BSP)/link.ld \
-		-L $(BSP) \
-		-lcv-verif
-
-# This target selected if only %.S exists
-%.elf: %.S
-	make bsp
-	@echo "$(BANNER)"
-	@echo "* Compiling test-program $^"
-	@echo "$(BANNER)"
-	$(RISCV_EXE_PREFIX)gcc $(CFG_CFLAGS) \
-		$(TEST_CFLAGS) \
-		$(CFLAGS) \
-	 	-o $@ \
-		-nostartfiles \
-		-I $(ASM) \
-		$^ \
-		-T $(BSP)/link.ld \
-		-L $(BSP) \
-		-lcv-verif
 
 # compile and dump RISCV_TESTS only
 #$(CV32_RISCV_TESTS_FIRMWARE)/cv32_riscv_tests_firmware.elf: $(CV32_RISCV_TESTS_FIRMWARE_OBJS) $(RISCV_TESTS_OBJS) \

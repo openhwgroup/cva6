@@ -437,11 +437,6 @@ custom: $(CUSTOM_DIR)/$(CUSTOM_PROG).hex run
 ################################################################################
 # The new general test target
 
-# corev-dv tests needs an added run_index suffix
-ifeq ($(shell echo $(TEST) | head -c 6),corev_)
-export OPT_RUN_INDEX_SUFFIX=_$(RUN_INDEX)
-endif
-
 test: VSIM_TEST=$(TEST_PROGRAM)
 test: VSIM_FLAGS += +firmware=$(TEST_TEST_DIR)/$(TEST_PROGRAM)$(OPT_RUN_INDEX_SUFFIX).hex
 test: VSIM_FLAGS += +elf_file=$(TEST_TEST_DIR)/$(TEST_PROGRAM)$(OPT_RUN_INDEX_SUFFIX).elf

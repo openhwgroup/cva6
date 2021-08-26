@@ -311,17 +311,6 @@ export IMPERAS_TOOLS=ovpsim.ic
 ################################################################################
 # The new general test target
 
-# corev-dv tests needs an added run_index_suffix, blank for other tests
-ifeq ($(shell echo $(TEST) | head -c 6),corev_)
-export OPT_RUN_INDEX_SUFFIX=_$(RUN_INDEX)
-endif
-
-check:
-	echo "it is"
-	echo $(OPT_RUN_INDEX_SUFFIX)
-	echo $(RUN_INDEX)
-	echo $(TEST)
-
 test: $(XRUN_SIM_PREREQ) $(TEST_TEST_DIR)/$(TEST_PROGRAM)$(OPT_RUN_INDEX_SUFFIX).hex gen_ovpsim_ic
 	mkdir -p $(XRUN_RESULTS)/$(CFG)/$(TEST_NAME)_$(RUN_INDEX) && \
 	cd $(XRUN_RESULTS)/$(CFG)/$(TEST_NAME)_$(RUN_INDEX) && \

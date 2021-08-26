@@ -58,7 +58,7 @@ endif
 # Seed management for constrained-random sims. This is an intentional repeat
 # of the root Makefile: dsim regressions use random seeds by default.
 DSIM_SEED    ?= random
-DSIM_RNDSEED ?= 
+DSIM_RNDSEED ?=
 
 ifeq ($(DSIM_SEED),random)
 DSIM_RNDSEED = $(shell date +%N)
@@ -118,7 +118,7 @@ hello-world:
 help:
 	dsim -help
 
-mk_results: 
+mk_results:
 	$(MKDIR_P) $(DSIM_RESULTS)
 	$(MKDIR_P) $(DSIM_WORK)
 
@@ -169,7 +169,7 @@ comp: mk_results $(CV_CORE_PKG) $(OVP_MODEL_DPI)
 #   4: Run your own "custom program" located in ../../tests/core/custom
 #      $ make custom CUSTOM_PROG=<my_custom_test_program>
 #
-custom: comp $(CUSTOM_DIR)/$(CUSTOM_PROG).hex $(CUSTOM_DIR)/$(CUSTOM_PROG).elf 
+custom: comp $(CUSTOM_DIR)/$(CUSTOM_PROG).hex $(CUSTOM_DIR)/$(CUSTOM_PROG).elf
 	mkdir -p $(DSIM_RESULTS)/$(CFG)/$(CUSTOM_PROG)_$(RUN_INDEX) && cd $(DSIM_RESULTS)/$(CFG)/$(CUSTOM_PROG)_$(RUN_INDEX)  && \
 	$(DSIM) -l dsim-$(CUSTOM_PROG).log -image $(DSIM_IMAGE) \
 		-work $(DSIM_WORK) $(DSIM_RUN_FLAGS) $(DSIM_DMP_FLAGS) \
@@ -182,7 +182,7 @@ custom: comp $(CUSTOM_DIR)/$(CUSTOM_PROG).hex $(CUSTOM_DIR)/$(CUSTOM_PROG).elf
 
 ################################################################################
 # General test execution target "test"
-# 
+#
 
 ################################################################################
 # If the configuration specified OVPSIM arguments, generate an ovpsim.ic file and
@@ -190,7 +190,7 @@ custom: comp $(CUSTOM_DIR)/$(CUSTOM_PROG).hex $(CUSTOM_DIR)/$(CUSTOM_PROG).elf
 gen_ovpsim_ic:
 	@rm -f $(DSIM_RESULTS)/$(CFG)/$(TEST_NAME)_$(RUN_INDEX)/ovpsim.ic
 	@mkdir -p $(DSIM_RESULTS)/$(CFG)/$(TEST_NAME)_$(RUN_INDEX);
-	@touch $(DSIM_RESULTS)/$(CFG)/$(TEST_NAME)_$(RUN_INDEX)/ovpsim.ic	
+	@touch $(DSIM_RESULTS)/$(CFG)/$(TEST_NAME)_$(RUN_INDEX)/ovpsim.ic
 	@if [ ! -z "$(CFG_OVPSIM)" ]; then \
 		echo "$(CFG_OVPSIM)" > $(DSIM_RESULTS)/$(CFG)/$(TEST_NAME)_$(RUN_INDEX)/ovpsim.ic; \
 	fi
@@ -199,11 +199,6 @@ export IMPERAS_TOOLS=$(DSIM_RESULTS)/$(CFG)/$(TEST_NAME)_$(RUN_INDEX)/ovpsim.ic
 # Skip compile if COMP is specified and negative
 ifneq ($(call IS_NO,$(COMP)),NO)
 DSIM_SIM_PREREQ = comp
-endif
-
-# Corev-dv needs an optional run index suffix
-ifeq ($(shell echo $(TEST) | head -c 6),corev_)
-export OPT_RUN_INDEX_SUFFIX=_$(RUN_INDEX)
 endif
 
 test: $(DSIM_SIM_PREREQ) $(TEST_TEST_DIR)/$(TEST_PROGRAM)$(OPT_RUN_INDEX_SUFFIX).hex gen_ovpsim_ic
@@ -248,7 +243,7 @@ asm: comp $(ASM_DIR)/$(ASM_PROG).hex $(ASM_DIR)/$(ASM_PROG).elf
 #                make compliance RISCV_ISA=rv32i COMPLIANCE_PROG=I-ADD-01
 # But this does not:
 #                make compliance RISCV_ISA=rv32imc COMPLIANCE_PROG=I-ADD-01
-# 
+#
 RISCV_ISA       ?= rv32i
 COMPLIANCE_PROG ?= I-ADD-01
 
@@ -333,7 +328,7 @@ comp_corev-dv:
 #riscv-test: riscv-dv
 #		+asm_file_name=$(RISCVDV_PKG)/out_2020-06-24/asm_tests/riscv_arithmetic_basic_test  \
 
-gen_corev-dv: 
+gen_corev-dv:
 	mkdir -p $(DSIM_COREVDV_RESULTS)/$(TEST)
 	# Clean old assembler generated tests in results
 	idx=$(GEN_START_INDEX); sum=$$(($(GEN_START_INDEX) + $(GEN_NUM_TESTS))); \

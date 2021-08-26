@@ -1,19 +1,19 @@
 ###############################################################################
 #
 # Copyright 2020 OpenHW Group
-# 
+#
 # Licensed under the Solderpad Hardware Licence, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
-# 
+#
 #     https://solderpad.org/licenses/
-# 
+#
 # Unless required by applicable law or agreed to in writing, software
 # distributed under the License is distributed on an "AS IS" BASIS,
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-# 
+#
 ###############################################################################
 #
 # VCS-specific Makefile for the Core-V-Verif "uvmt" testbench.
@@ -95,9 +95,9 @@ endif
 # Waveform (post-process) command line
 ifeq ($(call IS_YES,$(ADV_DEBUG)),YES)
 $(error ADV_DEBUG not yet supported by VCS )
-WAVES_CMD = cd $(VCS_RESULTS)/$(CFG)/$(TEST_NAME)_$(RUN_INDEX) && $(DVE) -vpd vcdplus.vpd 
+WAVES_CMD = cd $(VCS_RESULTS)/$(CFG)/$(TEST_NAME)_$(RUN_INDEX) && $(DVE) -vpd vcdplus.vpd
 else
-WAVES_CMD = cd $(VCS_RESULTS)/$(CFG)/$(TEST_NAME)_$(RUN_INDEX) && $(DVE) -vpd vcdplus.vpd 
+WAVES_CMD = cd $(VCS_RESULTS)/$(CFG)/$(TEST_NAME)_$(RUN_INDEX) && $(DVE) -vpd vcdplus.vpd
 endif
 
 ################################################################################
@@ -144,7 +144,7 @@ VCS_RUN_BASE_FLAGS   ?= $(VCS_GUI) \
 						-sv_lib $(DPI_DASM_LIB)
 
 # Simulate using latest elab
-VCS_RUN_FLAGS        ?= 
+VCS_RUN_FLAGS        ?=
 VCS_RUN_FLAGS        += $(VCS_RUN_BASE_FLAGS)
 VCS_RUN_FLAGS        += $(VCS_RUN_WAVES_FLAGS)
 VCS_RUN_FLAGS        += $(VCS_RUN_COV_FLAGS)
@@ -201,7 +201,7 @@ endif
 gen_ovpsim_ic:
 	@rm -f $(VCS_RESULTS)/$(CFG)/$(TEST_NAME)_$(RUN_INDEX)/ovpsim.ic
 	@mkdir -p $(VCS_RESULTS)/$(CFG)/$(TEST_NAME)_$(RUN_INDEX)
-	@touch $(VCS_RESULTS)/$(CFG)/$(TEST_NAME)_$(RUN_INDEX)/ovpsim.ic	
+	@touch $(VCS_RESULTS)/$(CFG)/$(TEST_NAME)_$(RUN_INDEX)/ovpsim.ic
 	@if [ ! -z "$(CFG_OVPSIM)" ]; then \
 		echo "$(CFG_OVPSIM)" > $(VCS_RESULTS)/$(CFG)/$(TEST_NAME)_$(RUN_INDEX)/ovpsim.ic; \
 	fi
@@ -209,11 +209,6 @@ export IMPERAS_TOOLS=$(VCS_RESULTS)/$(CFG)/$(TEST_NAME)_$(RUN_INDEX)/ovpsim.ic
 
 ################################################################################
 # The new general test target
-
-# corev-dv tests needs an added run_index suffix
-ifeq ($(shell echo $(TEST) | head -c 6),corev_)
-export OPT_RUN_INDEX_SUFFIX=_$(RUN_INDEX)
-endif
 
 test: $(VCS_SIM_PREREQ) $(TEST_TEST_DIR)/$(TEST_PROGRAM)$(OPT_RUN_INDEX_SUFFIX).hex gen_ovpsim_ic
 	echo $(IMPERAS_TOOLS)
@@ -249,7 +244,7 @@ custom: $(VCS_SIM_PREREQ) $(CUSTOM_DIR)/$(CUSTOM_PROG).hex
 #                make compliance RISCV_ISA=rv32i COMPLIANCE_PROG=I-ADD-01
 # But this does not:
 #                make compliance RISCV_ISA=rv32imc COMPLIANCE_PROG=I-ADD-01
-# 
+#
 RISCV_ISA       ?= rv32i
 COMPLIANCE_PROG ?= I-ADD-01
 
@@ -288,7 +283,7 @@ corev-dv: clean_riscv-dv \
           clone_riscv-dv \
 		  comp_corev-dv
 
-gen_corev-dv: 
+gen_corev-dv:
 	mkdir -p $(VCS_COREVDV_RESULTS)/$(TEST)
 	# Clean old assembler generated tests in results
 	for (( idx=${GEN_START_INDEX}; idx < $$((${GEN_START_INDEX} + ${GEN_NUM_TESTS})); idx++ )); do \
@@ -344,9 +339,9 @@ endif
 ###############################################################################
 # Clean up your mess!
 
-clean:	
+clean:
 	@echo "$(MAKEFILE_LIST)"
-	rm -rf $(VCS_RESULTS)	
+	rm -rf $(VCS_RESULTS)
 
 # Files created by Eclipse when using the Imperas ISS + debugger
 clean_eclipse:
