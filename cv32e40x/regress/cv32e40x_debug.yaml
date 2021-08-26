@@ -23,13 +23,21 @@ tests:
     description: Debug directed test
     dir: cv32e40x/sim/uvmt
     cmd: make test TEST=debug_test
-    num: 20
+    num: 10
 
   debug_test_reset:
     build: uvmt_cv32e40x
     description: Debug reset test
     dir: cv32e40x/sim/uvmt
     cmd: make test TEST=debug_test_reset
+    num: 10
+
+  debug_test_trigger:
+    build: uvmt_cv32e40x
+    description: Debug trigger test
+    dir: cv32e40x/sim/uvmt
+    cmd: make test TEST=debug_test_trigger
+    num: 10
 
   debug_test_boot_set:
     build: uvmt_cv32e40x
