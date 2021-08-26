@@ -420,7 +420,7 @@ gen_corev-dv:
 		+asm_file_name_opts=$(TEST) \
 		$(GEN_PLUSARGS) && \
 	for (( idx=${GEN_START_INDEX}; idx < $$((${GEN_START_INDEX} + ${GEN_NUM_TESTS})); idx++ )); do \
-		rsync --remove-source-files -t ${XRUN_COREVDV_RESULTS}/${TEST}/${TEST}_$$idx.S ${GEN_TEST_DIR}; \
+		rsync --whole-file --remove-source-files -t ${XRUN_COREVDV_RESULTS}/${TEST}/${TEST}_$$idx.S ${GEN_TEST_DIR}; \
 	done
 
 ################################################################################
