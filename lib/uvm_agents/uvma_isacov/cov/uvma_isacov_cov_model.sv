@@ -1364,23 +1364,24 @@ covergroup cg_cj(
 
 endgroup : cg_cj
 
-covergroup cg_instr(string name,
-                    bit seq_instr_group_x2_enabled,
-                    bit seq_instr_group_x3_enabled,
-                    bit seq_instr_group_x4_enabled,
-                    bit [CSR_MASK_WL-1:0] cfg_illegal_csr,
-                    bit ext_m_supported,
-                    bit ext_c_supported,
-                    bit ext_zba_supported,
-                    bit ext_zbb_supported,
-                    bit ext_zbc_supported,
-                    bit ext_zbs_supported,
-                    bit ext_a_supported) with function sample (uvma_isacov_instr_c instr,
-                                                               uvma_isacov_instr_c instr_prev,
-                                                               uvma_isacov_instr_c instr_prev2,
-                                                               uvma_isacov_instr_c instr_prev3,
-                                                               bit raw_hazard,
-                                                               bit csr_hazard);
+covergroup cg_sequential(string name,
+                         bit seq_instr_group_x2_enabled,
+                         bit seq_instr_group_x3_enabled,
+                         bit seq_instr_group_x4_enabled,
+                         bit seq_instr_x2_enabled,
+                         bit [CSR_MASK_WL-1:0] cfg_illegal_csr,
+                         bit ext_m_supported,
+                         bit ext_c_supported,
+                         bit ext_zba_supported,
+                         bit ext_zbb_supported,
+                         bit ext_zbc_supported,
+                         bit ext_zbs_supported,
+                         bit ext_a_supported) with function sample (uvma_isacov_instr_c instr,
+                                                                 uvma_isacov_instr_c instr_prev,
+                                                                 uvma_isacov_instr_c instr_prev2,
+                                                                 uvma_isacov_instr_c instr_prev3,
+                                                                 bit raw_hazard,
+                                                                 bit csr_hazard);
   option.per_instance = 1;
   option.name = name;
 
@@ -1388,34 +1389,37 @@ covergroup cg_instr(string name,
     `ISACOV_IGN_BINS
   }
 
-  cp_instr_prev: coverpoint(instr.name)  {
+  cp_instr_prev_x2: coverpoint(instr.name)  {
     `ISACOV_IGN_BINS
+    ignore_bins IGN_X2_OFF = {[0:$]} with (!seq_instr_x2_enabled);
   }
+
+  cross_seq_instr_x2: cross cp_instr, cp_instr_prev_x2;
 
   cp_group: coverpoint (instr.group) {
     illegal_bins ILL_EXT_M = {MUL_GROUP, MULTI_MUL_GROUP, DIV_GROUP} with (!ext_m_supported);
     illegal_bins ILL_EXT_A = {ALOAD_GROUP, ASTORE_GROUP, AMEM_GROUP} with (!ext_a_supported);
   }
 
-  cp_group_prev:  coverpoint (instr_prev.group) iff (instr_prev != null) {
+  cp_group_pipe_x2:  coverpoint (instr_prev.group) iff (instr_prev != null) {
     ignore_bins IGN_X2_OFF = {[0:$]} with (!seq_instr_group_x2_enabled);
     illegal_bins ILL_EXT_M = {MUL_GROUP, MULTI_MUL_GROUP, DIV_GROUP} with (!ext_m_supported);
     illegal_bins ILL_EXT_A = {ALOAD_GROUP, ASTORE_GROUP, AMEM_GROUP} with (!ext_a_supported);
   }
 
-  cp_group_prev2: coverpoint (instr_prev2.group) iff (instr_prev2 != null) {
+  cp_group_pipe_x3: coverpoint (instr_prev2.group) iff (instr_prev2 != null) {
     ignore_bins IGN_X3_OFF = {[0:$]} with (!seq_instr_group_x3_enabled);
     illegal_bins ILL_EXT_M = {MUL_GROUP, MULTI_MUL_GROUP, DIV_GROUP} with (!ext_m_supported);
     illegal_bins ILL_EXT_A = {ALOAD_GROUP, ASTORE_GROUP, AMEM_GROUP} with (!ext_a_supported);
   }
 
-  cp_group_prev3: coverpoint (instr_prev3.group) iff (instr_prev3 != null) {
+  cp_group_pipe_x4: coverpoint (instr_prev3.group) iff (instr_prev3 != null) {
     ignore_bins IGN_X4_OFF = {[0:$]} with (!seq_instr_group_x4_enabled);
     illegal_bins ILL_EXT_M = {MUL_GROUP, MULTI_MUL_GROUP, DIV_GROUP} with (!ext_m_supported);
     illegal_bins ILL_EXT_A = {ALOAD_GROUP, ASTORE_GROUP, AMEM_GROUP} with (!ext_a_supported);
   }
 
-  cp_raw_hazard: coverpoint(raw_hazard) {
+  cp_gpr_raw_hazard: coverpoint(raw_hazard) {
     bins NO_RAW_HAZARD  = {0};
     bins RAW_HAZARD     = {1};
   }
@@ -1429,21 +1433,21 @@ covergroup cg_instr(string name,
     bins CSR[] = {[USTATUS:VLENB]} with (cfg_illegal_csr[item] == 0);
   }
 
-  cross_seq_x2: cross cp_group, cp_group_prev;
-  cross_seq_x3: cross cp_group, cp_group_prev, cp_group_prev2;
-  cross_seq_x4: cross cp_group, cp_group_prev, cp_group_prev2, cp_group_prev3;
+  cross_seq_group_x2: cross cp_group, cp_group_pipe_x2;
+  cross_seq_group_x3: cross cp_group, cp_group_pipe_x2, cp_group_pipe_x3;
+  cross_seq_group_x4: cross cp_group, cp_group_pipe_x2, cp_group_pipe_x3, cp_group_pipe_x4;
 
   // FIXME: This will need more filtering
-  cross_seq_raw_hazard: cross cp_group, cp_group_prev, cp_raw_hazard {
+  cross_seq_gpr_raw_hazard: cross cp_group, cp_group_pipe_x2, cp_gpr_raw_hazard {
     // Ignore non-hazard bins
-    ignore_bins IGN_HAZ = binsof(cp_raw_hazard) intersect {0};
+    ignore_bins IGN_HAZ = binsof(cp_gpr_raw_hazard) intersect {0};
   }
 
-  cross_csr_hazard: cross cp_csr, cp_instr, cp_csr_hazard {
+  cross_seq_csr_hazard_x2: cross cp_csr, cp_instr, cp_csr_hazard {
     // Ignore non-hazard bins
     ignore_bins IGN_HAZ = binsof(cp_csr_hazard) intersect {0};
   }
-endgroup : cg_instr
+endgroup : cg_sequential
 
 
 class uvma_isacov_cov_model_c extends uvm_component;
@@ -1624,8 +1628,8 @@ class uvma_isacov_cov_model_c extends uvm_component;
   cg_zb_rstype_ext  rv32zbs_bext_cg;
   cg_zb_itype_ext   rv32zbs_bexti_cg;
 
-  // Instruction groups
-  cg_instr    group_cg;
+  // Sequential instruction coverage
+  cg_sequential     rv32_seq_cg;
 
   // TLM
   uvm_tlm_analysis_fifo #(uvma_isacov_mon_trn_c) mon_trn_fifo;
@@ -2324,19 +2328,20 @@ function void uvma_isacov_cov_model_c::build_phase(uvm_phase phase);
     // ----------------------------------------------------------------------------------------
     // ISA "Sequential" coverage
     // ----------------------------------------------------------------------------------------
-    group_cg = new("group_cg",
-                   .seq_instr_group_x2_enabled(cfg.seq_instr_group_x2_enabled),
-                   .seq_instr_group_x3_enabled(cfg.seq_instr_group_x3_enabled),
-                   .seq_instr_group_x4_enabled(cfg.seq_instr_group_x4_enabled),
-                   .cfg_illegal_csr(cfg.core_cfg.unsupported_csr_mask),
-                   .ext_m_supported(cfg.core_cfg.ext_m_supported),
-                   .ext_c_supported(cfg.core_cfg.ext_c_supported),
-                   .ext_a_supported(cfg.core_cfg.ext_a_supported),
-                   .ext_zba_supported(cfg.core_cfg.ext_zba_supported),
-                   .ext_zbb_supported(cfg.core_cfg.ext_zbb_supported),
-                   .ext_zbc_supported(cfg.core_cfg.ext_zbc_supported),
-                   .ext_zbs_supported(cfg.core_cfg.ext_zbs_supported)
-                   );
+    rv32_seq_cg = new("rev32_seq_cg",
+                      .seq_instr_group_x2_enabled(cfg.seq_instr_group_x2_enabled),
+                      .seq_instr_group_x3_enabled(cfg.seq_instr_group_x3_enabled),
+                      .seq_instr_group_x4_enabled(cfg.seq_instr_group_x4_enabled),
+                      .seq_instr_x2_enabled(cfg.seq_instr_x2_enabled),
+                      .cfg_illegal_csr(cfg.core_cfg.unsupported_csr_mask),
+                      .ext_m_supported(cfg.core_cfg.ext_m_supported),
+                      .ext_c_supported(cfg.core_cfg.ext_c_supported),
+                      .ext_a_supported(cfg.core_cfg.ext_a_supported),
+                      .ext_zba_supported(cfg.core_cfg.ext_zba_supported),
+                      .ext_zbb_supported(cfg.core_cfg.ext_zbb_supported),
+                      .ext_zbc_supported(cfg.core_cfg.ext_zbc_supported),
+                      .ext_zbs_supported(cfg.core_cfg.ext_zbs_supported)
+                      );
   end
 
   mon_trn_fifo = new("mon_trn_fifo", this);
@@ -2595,13 +2600,13 @@ function void uvma_isacov_cov_model_c::sample (uvma_isacov_instr_c instr);
     `uvm_error("ISACOV", $sformatf("Could not sample instruction: %s", instr.name.name()));
   end
 
-  group_cg.sample(instr,
-                  instr_prev,
-                  instr_prev2,
-                  instr_prev3,
-                  .raw_hazard(is_raw_hazard(instr, instr_prev)),
-                  .csr_hazard(is_csr_hazard(instr, instr_prev))
-                  );
+  rv32_seq_cg.sample(instr,
+                     instr_prev,
+                     instr_prev2,
+                     instr_prev3,
+                     .raw_hazard(is_raw_hazard(instr, instr_prev)),
+                     .csr_hazard(is_csr_hazard(instr, instr_prev))
+                     );
 
   // Move instructions down the pipeline
   instr_prev3 = instr_prev2;
