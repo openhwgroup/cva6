@@ -86,8 +86,8 @@ module host_domain
   output                      uart_to_pad_t [N_UART-1:0] uart_to_pad,
     
   // SDIO
-  output                      sdio_to_pad_t [N_SDIO] sdio_to_pad,
-  input                       pad_to_sdio_t [N_SDIO] pad_to_sdio,
+  output                      sdio_to_pad_t [N_SDIO-1:0] sdio_to_pad,
+  input                       pad_to_sdio_t [N_SDIO-1:0] pad_to_sdio,
  
   // HYPERBUS
   output                      hyper_to_pad_t hyper_to_pad,

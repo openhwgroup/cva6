@@ -11,6 +11,8 @@ export_include_dirs:
   - src/common_cells/include/
 
 sources:
+    defines:
+      WT_DCACHE: ~
     files:
     # Packages
     - include/riscv_pkg.sv

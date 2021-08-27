@@ -30,7 +30,7 @@ dependencies:
   apb_fll_if: { git: "https://github.com/pulp-platform/apb_fll_if.git", version: 0.1.3 }
   generic_FLL: { git: "https://github.com/pulp-platform/generic_FLL.git", rev: "1c92dc73a940392182fd4cb7b86f35649b349595" }
   apb_adv_timer: { git: "https://github.com/pulp-platform/apb_adv_timer.git", version: 1.0.4 }
-  pulp_cluster: { git: "https://github.com/AlSaqr-platform/pulp_cluster.git", rev: "79550c4e79053cad44a049e248572012d545eb33" }
+  pulp_cluster: { git: "https://github.com/AlSaqr-platform/pulp_cluster.git", rev: "1aa7829bf238a295cc65ce3a51107dc446afd1b3" }
 
 export_include_dirs:
   - include/
@@ -59,9 +59,6 @@ sources:
   - host/host_domain.sv
   - host/pad_frame.sv
   - host/al_saqr.sv
-  - tb/common/uart.sv                                                     
-  - tb/common/SimDTM.sv                                                   
-  - tb/common/SimJTAG.sv
 
   - target: all(fpga,xilinx)
     defines:
@@ -73,6 +70,14 @@ sources:
       - ./fpga/fpga_clk_gen.sv
       - ./fpga/boot_rom.sv
       - ./fpga/alsaqr_xilinx.sv
+
+  - target: synthesis
+    defines:
+      WT_DCACHE: ~
+    files:
+      - ../bootrom/bootrom.sv
+      - host/pads_gf22.sv
+      - host/tc_sram_gf22.sv
       
   - target: vip
     files:
@@ -81,6 +86,9 @@ sources:
       
   - target: test
     files:
+      - tb/common/uart.sv                                                     
+      - tb/common/SimDTM.sv                                                   
+      - tb/common/SimJTAG.sv
       - deps/cva6/src/util/sram.sv
       - ../bootrom/bootrom.sv
       - tb/common/jtag_pkg.sv

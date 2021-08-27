@@ -57,8 +57,8 @@ module apb_subsystem
     output                      uart_to_pad_t [N_UART-1:0] uart_to_pad,
     
     // SDIO
-    output                      sdio_to_pad_t [N_SDIO] sdio_to_pad,
-    input                       pad_to_sdio_t [N_SDIO] pad_to_sdio,
+    output                      sdio_to_pad_t [N_SDIO-1:0] sdio_to_pad,
+    input                       pad_to_sdio_t [N_SDIO-1:0] pad_to_sdio,
  
     // HYPERBUS
     output                      hyper_to_pad_t hyper_to_pad,
@@ -221,7 +221,7 @@ module apb_subsystem
 
       );
    
-    logic [31:0] s_gpio_sync; 
+    logic [63:0] s_gpio_sync; 
     apb_gpio #(
         .APB_ADDR_WIDTH (32),
         .PAD_NUM        (NUM_GPIO),
@@ -304,7 +304,7 @@ module apb_subsystem
    
     apb_adv_timer #(
         .APB_ADDR_WIDTH ( 32             ),
-        .EXTSIG_NUM     ( 32             )
+        .EXTSIG_NUM     ( 64             )
     ) i_apb_adv_timer0 (
         .HCLK            ( s_clk_per               ),
         .HRESETn         ( s_rstn_soc_sync         ),

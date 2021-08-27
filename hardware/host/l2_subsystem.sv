@@ -118,12 +118,16 @@ module l2_subsystem
 
         //Perform TCDM handshaking for constant 1 cycle latency
         assign mem_gnt_l2[i] = mem_req_l2[i];
-          
+        
+        `ifndef TARGET_SYNTHESIS          
           tc_sram #(
+            .SimInit   ( "random"            ),
+        `else
+          tc_sram_gf22 #(
+        `endif
             .NumWords  ( L2_BANK_SIZE        ), // 2^15 lines of 32 bits each (128kB), 4 Banks -> 512 kB total memory
             .DataWidth ( L2_DATA_WIDTH       ),
-            .NumPorts  ( 1                   ),
-            .SimInit   ( "random"            )
+            .NumPorts  ( 1                   )
           ) bank_i (
             .clk_i,
             .rst_ni,

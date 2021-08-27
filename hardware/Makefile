@@ -33,7 +33,7 @@ mkfile_path := $(abspath $(lastword $(MAKEFILE_LIST)))
 root-dir := $(dir $(mkfile_path))
 
 BENDER_FPGA_SCRIPTS_DIR = fpga/alsaqr/tcl/generated
-
+BENDER_SYNTH_DIR = gf22
 BENDER_BUILD_DIR:=.
 
 ifndef RISCV
@@ -149,6 +149,10 @@ libbender:
 scripts-bender-fpga: | Bender.lock
 	mkdir -p fpga/alsaqr/tcl/generated
 	./bender script vivado -t fpga -t xilinx > $(BENDER_FPGA_SCRIPTS_DIR)/compile.tcl
+
+scripts-bender-synopsys: | Bender.lock
+	echo 'set ROOT [file normalize [file dirname [info script]]/../../../]' > $(BENDER_SYNTH_DIR)/synopsys/scripts/analyze_alsaqr.tcl
+	./bender script synopsys -t rtl -t synthesis -t asic | grep -v "set ROOT" >> $(BENDER_SYNTH_DIR)/synopsys/scripts/analyze_alsaqr.tcl
 
 scripts:
 	./bender script vsim \

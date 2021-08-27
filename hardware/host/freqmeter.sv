@@ -17,6 +17,7 @@ module freq_meter
 (
     input clk
 );
+`ifndef TARGET_SYNTHESIS  
   real  past_time;
   real  current_time;
   real  PERIOD;
@@ -93,5 +94,5 @@ module freq_meter
       $fflush(FILE);
     end
   end
-
+`endif
 endmodule // freq_meter

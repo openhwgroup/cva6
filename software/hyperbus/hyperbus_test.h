@@ -22,6 +22,7 @@
 #define ARCHI_UDMA_ADDR  0xC1000000 // = 3238002688
 #define UDMA_HYPERBUS_OFFSET (3238002688 + 128*31)
 #define HYPERBUS_DEVICE_NUM 30
+#define N_CHANNEL 8
 #define CONFIG_REG_OFFSET 0x80
 
 static inline void wait_cycles(const unsigned cycles)
@@ -56,42 +57,42 @@ __wait_cycles_end:
 }
 
 static inline void set_memsel_hyper(unsigned int mem_sel){
-  pulp_write32(UDMA_HYPERBUS_OFFSET + CONFIG_REG_OFFSET*8 + 0x20, mem_sel); // hyperram 0, hyperflash 1, psram(x8) 2, psram(x16)3
+  pulp_write32(UDMA_HYPERBUS_OFFSET + CONFIG_REG_OFFSET*N_CHANNEL + 0x20, mem_sel); // hyperram 0, hyperflash 1, psram(x8) 2, psram(x16)3
 }
 
 static inline int check_memsel_hyper(){
-  return pulp_read32(UDMA_HYPERBUS_OFFSET + CONFIG_REG_OFFSET*8 + 0x20);
+  return pulp_read32(UDMA_HYPERBUS_OFFSET + CONFIG_REG_OFFSET*N_CHANNEL + 0x20);
 }
 
 static inline void set_en_latency_add(unsigned int en){
-  pulp_write32(UDMA_HYPERBUS_OFFSET + CONFIG_REG_OFFSET*8 + 0x08, en ); // REG_T_EN_LATENCY_ADD enable 1, deactivated 0
+  pulp_write32(UDMA_HYPERBUS_OFFSET + CONFIG_REG_OFFSET*N_CHANNEL + 0x08, en ); // REG_T_EN_LATENCY_ADD enable 1, deactivated 0
 }
 
 static inline void set_t_latency_access(unsigned int latency){
-  pulp_write32(UDMA_HYPERBUS_OFFSET + CONFIG_REG_OFFSET*8 + 0x04, latency); 
+  pulp_write32(UDMA_HYPERBUS_OFFSET + CONFIG_REG_OFFSET*N_CHANNEL + 0x04, latency); 
 }
 
 static inline void set_t_cs_max(unsigned int period){
-  pulp_write32(UDMA_HYPERBUS_OFFSET + CONFIG_REG_OFFSET*8 + 0x0C, period );
+  pulp_write32(UDMA_HYPERBUS_OFFSET + CONFIG_REG_OFFSET*N_CHANNEL + 0x0C, period );
 }
 
 static inline void set_pagebound_hyper(unsigned int page_bound){
 
   switch(page_bound){
      case 128:
-        pulp_write32(UDMA_HYPERBUS_OFFSET + CONFIG_REG_OFFSET*8 + 0x00, 0x00 ); // page boundary is set to every 128 bytes
+        pulp_write32(UDMA_HYPERBUS_OFFSET + CONFIG_REG_OFFSET*N_CHANNEL + 0x00, 0x00 ); // page boundary is set to every 128 bytes
         break;
      case 256:
-        pulp_write32(UDMA_HYPERBUS_OFFSET + CONFIG_REG_OFFSET*8 + 0x00, 0x01 ); // page boundary is set to every 256 bytes
+        pulp_write32(UDMA_HYPERBUS_OFFSET + CONFIG_REG_OFFSET*N_CHANNEL + 0x00, 0x01 ); // page boundary is set to every 256 bytes
         break;
      case 512:
-        pulp_write32(UDMA_HYPERBUS_OFFSET + CONFIG_REG_OFFSET*8 + 0x00, 0x02 ); // page boundary is set to every 128 bytes
+        pulp_write32(UDMA_HYPERBUS_OFFSET + CONFIG_REG_OFFSET*N_CHANNEL + 0x00, 0x02 ); // page boundary is set to every 128 bytes
         break;
      case 1024:
-        pulp_write32(UDMA_HYPERBUS_OFFSET + CONFIG_REG_OFFSET*8 + 0x00, 0x03 ); // page boundary is set to every 256 bytes
+        pulp_write32(UDMA_HYPERBUS_OFFSET + CONFIG_REG_OFFSET*N_CHANNEL + 0x00, 0x03 ); // page boundary is set to every 256 bytes
         break;
      default:
-        pulp_write32(UDMA_HYPERBUS_OFFSET + CONFIG_REG_OFFSET*8 + 0x00, 0x04 ); // page boundary is not considered
+        pulp_write32(UDMA_HYPERBUS_OFFSET + CONFIG_REG_OFFSET*N_CHANNEL + 0x00, 0x04 ); // page boundary is not considered
   }
 
 }
@@ -335,5 +336,5 @@ static inline void udma_hyper_wait(unsigned int tran_id){
 }
 
 static inline int udma_hyper_id_alloc(){
-  return pulp_read32(UDMA_HYPERBUS_OFFSET + 8*CONFIG_REG_OFFSET + 0x24);
+  return pulp_read32(UDMA_HYPERBUS_OFFSET + N_CHANNEL*CONFIG_REG_OFFSET + 0x24);
 }

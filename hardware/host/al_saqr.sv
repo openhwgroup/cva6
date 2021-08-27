@@ -62,6 +62,7 @@ module al_saqr
   input logic         cva6_uart_rx_i,
   output logic        cva6_uart_tx_o,
   // FROM SimDTM
+`ifndef TARGET_SYNTHESIS
   input logic         dmi_req_valid,
   output logic        dmi_req_ready,
   input logic [ 6:0]  dmi_req_bits_addr,
@@ -70,12 +71,13 @@ module al_saqr
   output logic        dmi_resp_valid,
   input logic         dmi_resp_ready,
   output logic [ 1:0] dmi_resp_bits_resp,
-  output logic [31:0] dmi_resp_bits_data,   
+  output logic [31:0] dmi_resp_bits_data, 
+`endif
   // JTAG
-  input  logic        jtag_TCK,
-  input  logic        jtag_TMS,
-  input  logic        jtag_TDI,
-  input  logic        jtag_TRSTn,
+  input logic         jtag_TCK,
+  input logic         jtag_TMS,
+  input logic         jtag_TDI,
+  input logic         jtag_TRSTn,
   output logic        jtag_TDO_data,
   output logic        jtag_TDO_driven
 
@@ -95,12 +97,12 @@ module al_saqr
   logic [1:0]                  s_axi_hyper_cs_n;
   logic                        s_axi_hyper_ck;
   logic                        s_axi_hyper_ck_n;
-  logic [1:0]                  s_axi_hyper_rwds_o;
+  logic                        s_axi_hyper_rwds_o;
   logic                        s_axi_hyper_rwds_i;
-  logic [1:0]                  s_axi_hyper_rwds_oe;
-  logic [15:0]                 s_axi_hyper_dq_i;
-  logic [15:0]                 s_axi_hyper_dq_o;
-  logic [1:0]                  s_axi_hyper_dq_oe;
+  logic                        s_axi_hyper_rwds_oe;
+  logic [7:0]                  s_axi_hyper_dq_i;
+  logic [7:0]                  s_axi_hyper_dq_o;
+  logic                        s_axi_hyper_dq_oe;
   logic                        s_axi_hyper_reset_n;
 
   logic [NUM_GPIO-1:0]         s_gpio_pad_in;
@@ -155,8 +157,8 @@ module al_saqr
   pad_to_cam_t [N_CAM-1:0] s_pad_to_cam;
   pad_to_uart_t [N_UART-1:0] s_pad_to_uart;
   uart_to_pad_t [N_UART-1:0] s_uart_to_pad;
-  sdio_to_pad_t [N_SDIO] s_sdio_to_pad;
-  pad_to_sdio_t [N_SDIO] s_pad_to_sdio;
+  sdio_to_pad_t [N_SDIO-1:0] s_sdio_to_pad;
+  pad_to_sdio_t [N_SDIO-1:0] s_pad_to_sdio;
   pwm_to_pad_t s_pwm_to_pad;
    
 
@@ -195,6 +197,7 @@ module al_saqr
     ) i_host_domain (
       .rst_ni,
       .rtc_i,
+`ifndef TARGET_SYNTHESIS
       .dmi_req_valid,
       .dmi_req_ready,
       .dmi_req_bits_addr,
@@ -203,7 +206,18 @@ module al_saqr
       .dmi_resp_valid,
       .dmi_resp_ready,
       .dmi_resp_bits_resp,
-      .dmi_resp_bits_data,                                                                          
+      .dmi_resp_bits_data, 
+`else                                                                         
+      .dmi_req_valid        ( '0 ), 
+      .dmi_req_ready        (    ),
+      .dmi_req_bits_addr    ( '0 ),
+      .dmi_req_bits_op      ( '0 ),
+      .dmi_req_bits_data    ( '0 ),
+      .dmi_resp_valid       (    ),
+      .dmi_resp_ready       ( '0 ),
+      .dmi_resp_bits_resp   (    ),
+      .dmi_resp_bits_data   (    ), 
+`endif
       .jtag_TCK,
       .jtag_TMS,
       .jtag_TDI,

@@ -75,8 +75,8 @@ module udma_subsystem
     output                             uart_to_pad_t [N_UART-1:0] uart_to_pad,
     
     // SDIO
-    output                             sdio_to_pad_t [N_SDIO] sdio_to_pad,
-    input                              pad_to_sdio_t [N_SDIO] pad_to_sdio,
+    output                             sdio_to_pad_t [N_SDIO-1:0] sdio_to_pad,
+    input                              pad_to_sdio_t [N_SDIO-1:0] pad_to_sdio,
  
     // HYPERBUS
     output                             hyper_to_pad_t hyper_to_pad,
@@ -89,7 +89,7 @@ module udma_subsystem
     localparam L2_AWIDTH_NOAL = L2_ADDR_WIDTH + 2;
 
     localparam N_FILTER   = 1;
-    localparam N_CH_HYPER = 8;
+    localparam N_CH_HYPER = 1;
    
     localparam N_RX_CHANNELS =   N_SPI + N_HYPER + N_SDIO + N_UART + N_I2C + N_CAM  + N_CH_HYPER;
     localparam N_TX_CHANNELS = 2*N_SPI + N_HYPER + N_SDIO + N_UART + 2*N_I2C + N_CH_HYPER;
@@ -99,7 +99,11 @@ module udma_subsystem
     localparam N_STREAMS         =   N_FILTER;
     localparam STREAM_ID_WIDTH   = 1;//$clog2(N_STREAMS)
 
-    localparam N_PERIPHS = N_SPI + N_HYPER + N_UART + N_I2C + N_CAM + N_SDIO + N_FILTER + N_CH_HYPER;
+    // TODO: N_PERIPHS has to be <= 31, including N_CH_HYPER. The udma_subsystem supports up to 32 periphs, but 
+    // including the udma core (channel 0).
+    // Now N_PERIPHS is 32, so we are not actually able to write in the HYPER's channel cfg regs (33rd periph).
+    // The default regs value work for with he hyperram (not for the flash for example!).
+    localparam N_PERIPHS = N_SPI + N_HYPER + N_UART + N_I2C + N_CAM + N_SDIO + N_FILTER + N_CH_HYPER;  
 
     // TX Channels
     localparam CH_ID_TX_UART    = 0;
@@ -108,8 +112,7 @@ module udma_subsystem
     localparam CH_ID_TX_I2C     = CH_ID_CMD_SPIM + N_SPI  ;
     localparam CH_ID_CMD_I2C    = CH_ID_TX_I2C   + N_I2C  ;
     localparam CH_ID_TX_SDIO    = CH_ID_CMD_I2C  + N_I2C  ;
-    localparam CH_ID_TX_CAM     = CH_ID_TX_SDIO  + N_SDIO ;
-    localparam CH_ID_TX_HYPER   = CH_ID_TX_CAM   + N_CAM  ;
+    localparam CH_ID_TX_HYPER   = CH_ID_TX_SDIO  + N_SDIO ;
     // Tx Ext Channel
     localparam CH_ID_TX_EXT_PER = CH_ID_TX_HYPER + N_HYPER + N_CH_HYPER;
  

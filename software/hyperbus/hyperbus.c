@@ -54,7 +54,7 @@ int main() {
     pulp_write32(plic_base+tx_hyper_plic_id*4, 1);
     //enable interrupt for context 1 
     pulp_write32(plic_en_bits+(((int)(tx_hyper_plic_id/32))*4), 1<<(tx_hyper_plic_id%32));
-    
+
     udma_hyper_setup();
   
     for (int i=0; i< (BUFFER_SIZE); i++)
