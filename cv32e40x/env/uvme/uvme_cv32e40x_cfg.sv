@@ -173,6 +173,7 @@ class uvme_cv32e40x_cfg_c extends uvma_core_cntrl_cfg_c;
       isacov_cfg.seq_instr_group_x2_enabled == 1;
       isacov_cfg.seq_instr_group_x3_enabled == 1;
       isacov_cfg.seq_instr_group_x4_enabled == 0;
+      isacov_cfg.seq_instr_x2_enabled       == 1;
       isacov_cfg.reg_crosses_enabled        == 0;
       isacov_cfg.reg_hazards_enabled        == 1;
 
