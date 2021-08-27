@@ -432,7 +432,7 @@ bsp:
 vars_bsp:
 	make vars -C $(BSP) RISCV=$(RISCV) RISCV_PREFIX=$(RISCV_PREFIX) RISCV_EXE_PREFIX=$(RISCV_EXE_PREFIX) RISCV_MARCH=$(RISCV_MARCH)
 
-clean_bsp:
+clean-bsp:
 	make clean -C $(BSP)
 
 # FIXME:strichmo:merge this into general elf rule
