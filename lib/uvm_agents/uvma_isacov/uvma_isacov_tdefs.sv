@@ -1,13 +1,13 @@
 // Copyright 2020 OpenHW Group
 // Copyright 2020 Datum Technology Corporation
 // Copyright 2020 Silicon Labs, Inc.
-// 
+//
 // Licensed under the Solderpad Hardware Licence, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
-// 
+//
 //     https://solderpad.org/licenses/
-// 
+//
 // Unless required by applicable law or agreed to in writing, software
 // distributed under the License is distributed on an "AS IS" BASIS,
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -106,12 +106,12 @@ typedef enum {
   UNKNOWN_TYPE // Delete when all are implemented
 } instr_type_t;
 
-typedef enum {  
+typedef enum {
    LOAD_GROUP,
-   STORE_GROUP, 
+   STORE_GROUP,
    MISALIGN_LOAD_GROUP,
    MISALIGN_STORE_GROUP,
-   ALU_GROUP,   
+   ALU_GROUP,
    BRANCH_GROUP,
    JUMP_GROUP,
    FENCE_GROUP,
@@ -385,7 +385,7 @@ bit rs1_is_signed[instr_name_t] = '{
 };
 
 bit rs2_is_signed[instr_name_t] = '{
-  MULH   : 1,  
+  MULH   : 1,
   DIV    : 1,
   REM    : 1,
   ADD    : 1,
@@ -399,7 +399,7 @@ bit rs2_is_signed[instr_name_t] = '{
   default: 0
 };
 
-bit immi_is_signed[instr_name_t] = '{  
+bit immi_is_signed[instr_name_t] = '{
   JALR   : 1,
   LB     : 1,
   LH     : 1,
@@ -411,13 +411,14 @@ bit immi_is_signed[instr_name_t] = '{
   XORI   : 1,
   ORI    : 1,
   ANDI   : 1,
+  ADDI   : 1,
   SLLI   : 0,
   SRLI   : 0,
   SRAI   : 0,
   default: 0
 };
 
-bit c_imm_is_signed[instr_name_t] = '{  
+bit c_imm_is_signed[instr_name_t] = '{
   C_ADDI:  1,
   C_LI:    1,
   C_BEQZ:  1,
@@ -437,6 +438,7 @@ bit rd_is_signed[instr_name_t] = '{
   ADD    : 1,
   SRA    : 1,
   SUB    : 1,
+  ADDI   : 1,
   C_ADDI : 1,
   C_ADDI16SP: 1,
   C_ADD  : 1,
@@ -456,7 +458,7 @@ typedef enum {
 
 // Package level methods to map instruction to extension
 function instr_ext_t get_instr_ext(instr_name_t name);
-  if (name inside 
+  if (name inside
     {
       LUI, AUIPC, JAL, JALR,
       BEQ, BNE, BLT, BGE, BLTU, BGEU,
@@ -467,14 +469,14 @@ function instr_ext_t get_instr_ext(instr_name_t name);
     })
     return I_EXT;
 
-  if (name inside 
+  if (name inside
     {
       MUL, MULH, MULHSU, MULHU,
       DIV, DIVU, REM, REMU
     })
     return M_EXT;
 
-  if (name inside 
+  if (name inside
     {
       C_ADDI4SPN, C_LW, C_SW, C_NOP,
       C_ADDI, C_JAL, C_LI, C_ADDI16SP, C_LUI, C_SRLI, C_SRAI,
@@ -483,7 +485,7 @@ function instr_ext_t get_instr_ext(instr_name_t name);
     })
     return C_EXT;
 
-  if (name inside 
+  if (name inside
     {
       LR_W, SC_W,
       AMOSWAP_W, AMOADD_W, AMOXOR_W, AMOAND_W,
@@ -491,7 +493,7 @@ function instr_ext_t get_instr_ext(instr_name_t name);
     })
     return A_EXT;
 
-  if (name inside 
+  if (name inside
     {
       SH1ADD, SH2ADD, SH3ADD,
       CLZ, CTZ, CPOP,
@@ -504,14 +506,14 @@ function instr_ext_t get_instr_ext(instr_name_t name);
     })
     return B_EXT;
 
-  if (name inside 
+  if (name inside
     {
       CSRRW, CSRRS, CSRRC,
       CSRRWI, CSRRSI, CSRRCI
     })
     return ZICSR_EXT;
 
-  if (name inside 
+  if (name inside
     {
       FENCE_I
     })
@@ -600,7 +602,7 @@ function instr_type_t get_instr_type(instr_name_t name);
     return ZBC_TYPE;
 
   if (name inside {BSET,BSETI,BCLR,BCLRI,
-                   BINV,BINVI,BEXT,BEXTI}) 
+                   BINV,BINVI,BEXT,BEXTI})
     return ZBS_TYPE;
 
   if (name inside {JAL})
@@ -630,7 +632,7 @@ function instr_group_t get_instr_group(instr_name_t name, bit[31:0] mem_addr);
       return MISALIGN_STORE_GROUP;
 
     return STORE_GROUP;
-  end 
+  end
 
   if (name inside {SLL,SLLI,SRL,SRLI,SRA,SRAI,
                    ADD,ADDI,SUB,LUI,AUIPC,
@@ -660,11 +662,11 @@ function instr_group_t get_instr_group(instr_name_t name, bit[31:0] mem_addr);
 
   if (name inside {FENCE})
     return FENCE_GROUP;
-  
+
   if (name inside {FENCE_I})
     return FENCE_I_GROUP;
-  
-  if (name inside {ECALL, EBREAK, C_EBREAK}) 
+
+  if (name inside {ECALL, EBREAK, C_EBREAK})
     return ENV_GROUP;
 
   if (name inside {DRET, MRET})
@@ -694,7 +696,7 @@ function instr_group_t get_instr_group(instr_name_t name, bit[31:0] mem_addr);
   if (name inside {AMOSWAP_W,AMOADD_W,AMOXOR_W,AMOAND_W,
                    AMOOR_W,AMOMIN_W,AMOMAX_W,AMOMINU_W,AMOMAXU_W})
     return AMEM_GROUP;
-  
+
   `uvm_fatal("ISACOV", $sformatf("Called get_instr_group with unmapped type: %s", name.name()));
 endfunction : get_instr_group
 

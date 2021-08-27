@@ -84,7 +84,7 @@ function void uvme_cv32e40x_cov_model_c::build_phase(uvm_phase phase);
    end
 
    interrupt_covg = uvme_interrupt_covg::type_id::create("interrupt_covg", this);
-   uvm_config_db#(uvme_cv32e40x_cntxt_c)::set(this, "interrupt_covg", "cntxt", cntxt);
+   uvm_config_db#(uvma_core_cntrl_cfg_c)::set(this, "interrupt_covg", "cfg", cfg);
 
    /* FIXME:strichmo:restore when debug is fixed
    debug_covg = uvme_debug_covg::type_id::create("debug_covg", this);
