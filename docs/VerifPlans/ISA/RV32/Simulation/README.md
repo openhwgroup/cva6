@@ -1,4 +1,4 @@
-<!--- SPDX-License-Identifier: Apache-2.0 WITH SHL-2.0 ---> 
+<!--- SPDX-License-Identifier: Apache-2.0 WITH SHL-2.0 --->
 This is the simulation testplan directory for the RV32 ISA I architecture and the supported extensions in CORE-V cores.
 
 Use the provided CORE-V_Simulation VerifPlan_Template.xlsx spreadsheet as your template to capture a Verification Plan.
@@ -21,11 +21,12 @@ The tables below capture the current status of the Verification Plan for RV32 IS
 |---------|---------|--------|---------|
 | RV32I | Complete | Complete | Reviewed and integrated on 7/30/21 |
 | M extension | Complete | Complete | Reviewed and integrated on 7/30/21 |
-| C extension | In progress | Not Captured | |
-| A extension | In progress | Not Captured | |
-| Zifencei extension | In progress | Not Captured | |
-| Zicsr extension | In progress | Not Captured | |
-| B extension | In progress | Not Captured | |
+| C extension | Complete | Complete | Reviewed and integrated on 8/27/21 |
+| A extension | Complete | Complete | Reviewed and integrated on 8/27/21 |
+| Zifencei extension | Complete | Complete | Reviewed and integrated on 8/27/21 |
+| Zicsr extension | Complete | Complete | Reviewed and integrated on 8/27/21 |
+| B extension (Zba,Zbb,Zbc,Zbs) | Complete | Complete | Reviewed and integrated on 8/27/21 |
 | Zce extension | In progress | Not Captured | |
 | Counter extension | In progress | Not Captured | |
 | Instruction Exceptions | In progress | Not Captured |  |
+| Sequential Instructions | Complete | Complete | Reviewed and integrated on 8/27/21 |
