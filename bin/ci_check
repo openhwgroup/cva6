@@ -105,6 +105,9 @@ sim_results_dir = os.path.abspath(os.path.join(uvm_results_dir, '{}_results'.for
 # Pretty (or at least, not so ugly) pass/fail summary
 def pr_result(line='/really/long/ugly/path/test.log: SIMULATION PASSED'):
     rline = line.decode('utf-8').rstrip()     # remove trailing whitespace
+    if not re.search('SIMULATION', rline):
+      print('!!! Unexpected test result: {}'.format(rline))
+      exit(1)
     plist = rline.split('/')                  # build a list from path
     res   = plist[-1]                         # result we want is in last entry of list
     iii   = res.find(':')                     # ":" is delimiter between file name and pass-or-fail
