@@ -366,7 +366,7 @@ clean_hex:
 	find $(TEST_TEST_DIR) -name *.objdump -exec rm {} \;
 	find $(TEST_TEST_DIR) -name corev_*.S -exec rm {} \;
 
-clean_test_programs: clean-bsp
+clean_test_programs: clean_bsp
 	find $(CORE_V_VERIF)/$(CV_CORE_LC)/tests/uvmt/test-programs -name *.o       -exec rm {} \;
 	find $(CORE_V_VERIF)/$(CV_CORE_LC)/tests/uvmt/test-programs -name *.hex     -exec rm {} \;
 	find $(CORE_V_VERIF)/$(CV_CORE_LC)/tests/uvmt/test-programs -name *.itb     -exec rm {} \;

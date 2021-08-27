@@ -419,7 +419,7 @@ endif
 		-L $(BSP) \
 		-lcv-verif
 
-.PHONY: hex
+.PHONY: hex clean_hex
 # Shorthand target to only build the firmware using the hex and elf suffix rules above
 hex: $(TEST_TEST_DIR)/$(TEST_NAME)$(OPT_RUN_INDEX_SUFFIX).hex
 
@@ -429,10 +429,10 @@ bsp:
 	@echo "$(BANNER)"
 	make -C $(BSP) RISCV=$(RISCV) RISCV_PREFIX=$(RISCV_PREFIX) RISCV_EXE_PREFIX=$(RISCV_EXE_PREFIX) RISCV_MARCH=$(RISCV_MARCH)
 
-vars-bsp:
+vars_bsp:
 	make vars -C $(BSP) RISCV=$(RISCV) RISCV_PREFIX=$(RISCV_PREFIX) RISCV_EXE_PREFIX=$(RISCV_EXE_PREFIX) RISCV_MARCH=$(RISCV_MARCH)
 
-clean-bsp:
+clean_bsp:
 	make clean -C $(BSP)
 
 # FIXME:strichmo:merge this into general elf rule
