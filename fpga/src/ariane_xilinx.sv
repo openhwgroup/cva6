@@ -322,21 +322,6 @@ dmi_jtag i_dmi_jtag (
 ariane_axi::req_t    dm_axi_m_req;
 ariane_axi::resp_t   dm_axi_m_resp;
 
-/*logic                dm_slave_req;
-logic                dm_slave_we;
-logic [64-1:0]       dm_slave_addr;
-logic [64/8-1:0]     dm_slave_be;
-logic [64-1:0]       dm_slave_wdata;
-logic [64-1:0]       dm_slave_rdata;
-
-logic                dm_master_req;
-logic [64-1:0]       dm_master_add;
-logic                dm_master_we;
-logic [64-1:0]       dm_master_wdata;
-logic [64/8-1:0]     dm_master_be;
-logic                dm_master_gnt;
-logic                dm_master_r_valid;
-logic [64-1:0]       dm_master_r_rdata;*/
 
 logic                      dm_slave_req;
 logic                      dm_slave_we;
@@ -399,7 +384,6 @@ axi2mem #(
 ) i_dm_axi2mem (
     .clk_i      ( clk                       ),
     .rst_ni     ( rst_n                     ),
-//    .slave      ( master[ariane_soc::Debug] ),
     .slave      ( master_to_dm[0]           ),
     .req_o      ( dm_slave_req              ),
     .we_o       ( dm_slave_we               ),
