@@ -226,7 +226,7 @@ interface uvmt_cv32e40p_core_cntrl_if (
 
   always @(posedge clk) begin
     if (lfsr_reset) begin // active high reset
-      lfsr <= $urandom(); //@DVT_LINTER_WAIVER_START "MT20210811_2" disable SVTB.29.1.3.1
+      lfsr <= $urandom(); //@DVT_LINTER_WAIVER "MT20210811_2" disable SVTB.29.1.3.1
     end
     else begin
       lfsr <= {lfsr[14:0], fb};
