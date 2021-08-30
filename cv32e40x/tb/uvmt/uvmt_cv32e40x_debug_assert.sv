@@ -1,21 +1,21 @@
 //
 // Copyright 2020 OpenHW Group
-// Copyright 2020 Datum Technologies
-// 
+// Copyright 2020 Datum Technology Corporation
+//
 // Licensed under the Solderpad Hardware Licence, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
-// 
+//
 //     https://solderpad.org/licenses/
-// 
+//
 // Unless required by applicable law or agreed to in writing, software
 // distributed under the License is distributed on an "AS IS" BASIS,
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
-// 
+//
 
-module uvmt_cv32e40x_debug_assert  
+module uvmt_cv32e40x_debug_assert
   import uvm_pkg::*;
   import cv32e40x_pkg::*;
   (
@@ -24,7 +24,7 @@ module uvmt_cv32e40x_debug_assert
 
   // ---------------------------------------------------------------------------
   // Local parameters
-  // ---------------------------------------------------------------------------  
+  // ---------------------------------------------------------------------------
     localparam WFI_INSTR_MASK = 32'hffffffff;
     localparam WFI_INSTR_DATA = 32'h10500073;
   // ---------------------------------------------------------------------------
@@ -41,6 +41,7 @@ module uvmt_cv32e40x_debug_assert
   // Locally track which debug cause should be used
   logic [2:0] debug_cause_pri;
   logic [31:0] boot_addr_at_entry;
+  logic [31:0] mtvec_addr;
 
   // Locally track pc in ID stage to detect first instruction of debug code
   logic first_debug_ins_flag;
@@ -54,22 +55,24 @@ module uvmt_cv32e40x_debug_assert
   // Single clock, single reset design, use default clocking
   default clocking @(posedge cov_assert_if.clk_i); endclocking
   default disable iff !(cov_assert_if.rst_ni);
-  
+
   assign cov_assert_if.is_ebreak =
     cov_assert_if.wb_stage_instr_valid_i
+    && !cov_assert_if.wb_err
     && (cov_assert_if.wb_stage_instr_rdata_i == 32'h0010_0073);
 
   assign cov_assert_if.is_cebreak =
     cov_assert_if.wb_stage_instr_valid_i
+    && !cov_assert_if.wb_err
     && (cov_assert_if.wb_stage_instr_rdata_i == 32'h0000_9002);
 
   assign cov_assert_if.is_mulhsu =
     cov_assert_if.wb_stage_instr_valid_i
-    && cov_assert_if.wb_stage_instr_valid_i
     && (cov_assert_if.wb_stage_instr_rdata_i[31:25] == 7'h1)
     && (cov_assert_if.wb_stage_instr_rdata_i[14:12] == 3'b010)
     && (cov_assert_if.wb_stage_instr_rdata_i[6:0]   == 7'h33);
 
+  assign mtvec_addr = {cov_assert_if.mtvec[31:2], 2'b00};
 
     // ---------------------------------------
     // Assertions
@@ -78,8 +81,11 @@ module uvmt_cv32e40x_debug_assert
     // Helper sequence: Go to next WB retirement
 
     sequence s_conse_next_retire;  // Should only be used in consequent (not antecedent)
-        ($fell(cov_assert_if.wb_stage_instr_valid_i) [->1]  // Finish current preoccupation
+        ($fell(cov_assert_if.wb_stage_instr_valid_i) [->1]  // Finish current WB preoccupation
             ##0 cov_assert_if.wb_valid [->1])  // Go to next WB done
+        or
+        ($fell(cov_assert_if.ex_valid) [->1]  // Finish current EX preoccupation
+            ##0 cov_assert_if.wb_valid [->2])  // Go to next two WB done
         or
         (cov_assert_if.wb_valid [->1]  // Go directly to next WB done
             ##0 (cov_assert_if.dcsr_q[8:6] == 3))  // Need good reason to forgo $fell(instr_valid)
@@ -88,7 +94,6 @@ module uvmt_cv32e40x_debug_assert
 
 
     // Check that we enter debug mode when expected. CSR checks are done in other assertions
-
     property p_enter_debug;
         $changed(debug_cause_pri) && (debug_cause_pri != 0) && !cov_assert_if.debug_mode_q
         |->
@@ -107,7 +112,7 @@ module uvmt_cv32e40x_debug_assert
         |->
         cov_assert_if.debug_mode_q && (cov_assert_if.wb_stage_pc == halt_addr_at_entry)
         && (cov_assert_if.depc_q == pc_at_dbg_req);
-    endproperty   
+    endproperty
 
     a_debug_mode_pc: assert property(p_debug_mode_pc)
         else `uvm_error(info_tag, $sformatf("Debug mode entered with wrong pc. pc==%08x", cov_assert_if.wb_stage_pc));
@@ -127,10 +132,10 @@ module uvmt_cv32e40x_debug_assert
 
     // Check that debug with cause haltreq is correct
     property p_debug_mode_ext_req;
-        $rose(cov_assert_if.debug_mode_q) && (cov_assert_if.dcsr_q[8:6] == cv32e40x_pkg::DBG_CAUSE_HALTREQ) 
+        $rose(cov_assert_if.debug_mode_q) && (cov_assert_if.dcsr_q[8:6] == cv32e40x_pkg::DBG_CAUSE_HALTREQ)
         |-> debug_cause_pri == cv32e40x_pkg::DBG_CAUSE_HALTREQ;
     endproperty
-    
+
     a_debug_mode_ext_req: assert property(p_debug_mode_ext_req)
         else `uvm_error(info_tag, $sformatf("Debug cause not correct for haltreq, cause = %d",cov_assert_if.dcsr_q[8:6]));
 
@@ -155,7 +160,7 @@ module uvmt_cv32e40x_debug_assert
         // TODO:ropeders can this specificity be in consequent instead?
         |->
         !cov_assert_if.debug_mode_q && (cov_assert_if.mcause_q[5:0] === cv32e40x_pkg::EXC_CAUSE_BREAKPOINT)
-        && (cov_assert_if.mepc_q == pc_at_ebreak) && (cov_assert_if.wb_stage_pc == cov_assert_if.mtvec);
+        && (cov_assert_if.mepc_q == pc_at_ebreak) && (cov_assert_if.wb_stage_pc == mtvec_addr);
         // TODO:ropeders need assertions for what happens if cebreak and req/irq?
     endproperty
 
@@ -174,7 +179,7 @@ module uvmt_cv32e40x_debug_assert
         // TODO:ropeders can this specificity be in consequent instead?
         |->
         !cov_assert_if.debug_mode_q && (cov_assert_if.mcause_q[5:0] === cv32e40x_pkg::EXC_CAUSE_BREAKPOINT)
-        && (cov_assert_if.mepc_q == pc_at_ebreak) && (cov_assert_if.wb_stage_pc == cov_assert_if.mtvec);
+        && (cov_assert_if.mepc_q == pc_at_ebreak) && (cov_assert_if.wb_stage_pc == mtvec_addr);
     endproperty
 
     a_ebreak_exception: assert property(p_ebreak_exception)
@@ -217,13 +222,12 @@ module uvmt_cv32e40x_debug_assert
         s_conse_next_retire
         ##0 cov_assert_if.debug_mode_q && (cov_assert_if.dcsr_q[8:6] === cv32e40x_pkg::DBG_CAUSE_TRIGGER)
             && (cov_assert_if.depc_q == tdata2_at_entry) && (cov_assert_if.wb_stage_pc == halt_addr_at_entry);
-    endproperty   
+    endproperty
 
     a_trigger_match: assert property(p_trigger_match)
         else `uvm_error(info_tag,
             $sformatf("Debug mode not correctly entered after trigger match depc=%08x, tdata2=%08x",
                 cov_assert_if.depc_q, tdata2_at_entry));
-
 
     // Address match without trigger enabled should NOT result in debug mode
 
@@ -321,15 +325,14 @@ module uvmt_cv32e40x_debug_assert
     property p_single_step_exception;
         !cov_assert_if.debug_mode_q && cov_assert_if.dcsr_q[2]
         && cov_assert_if.illegal_insn_i && cov_assert_if.wb_valid && !cov_assert_if.trigger_match_i
-        |-> ##[1:20] cov_assert_if.debug_mode_q && (cov_assert_if.depc_q == cov_assert_if.mtvec);
+        |-> ##[1:20] cov_assert_if.debug_mode_q && (cov_assert_if.depc_q == mtvec_addr);
     endproperty
 
     a_single_step_exception : assert property(p_single_step_exception)
         else `uvm_error(info_tag, "PC not set to exception handler after single step with exception");
 
 
-    // Trigger during single step 
-
+    // Trigger during single step
     property p_single_step_trigger;
         !cov_assert_if.debug_mode_q && cov_assert_if.dcsr_q[2]
         && cov_assert_if.addr_match && cov_assert_if.wb_valid && cov_assert_if.tdata1[2]
@@ -418,8 +421,7 @@ module uvmt_cv32e40x_debug_assert
 
 
     // Check that trigger regs cannot be written from M-mode
-    // TSEL, and TDATA3 are tied to zero, hence no register to check 
-
+    // TSEL, and TDATA3 are tied to zero, hence no register to check
     property p_mmode_tdata1_write;
         !cov_assert_if.debug_mode_q && cov_assert_if.csr_access && cov_assert_if.csr_op == 'h1  // TODO:ropeders also "set" op?
         && cov_assert_if.wb_stage_instr_rdata_i[31:20] == 'h7A1
@@ -468,9 +470,8 @@ module uvmt_cv32e40x_debug_assert
         else
             `uvm_error(info_tag, "Minstret not counting when mcountinhibit[2] is cleared!");
 
-
-    // Check debug_req_i and irq on same cycle. 
-    // Should result in debug mode with regular pc in dpc, not pc from interrupt handler
+    // Check debug_req_i and irq on same cycle.
+    // Should result in debug mode with regular pc in dpc, not pc from interrupt handler.
     // PC is checked in another assertion
     property p_debug_req_and_irq;
         cov_assert_if.debug_req_i && (cov_assert_if.pending_enabled_irq != 0)
@@ -492,7 +493,7 @@ module uvmt_cv32e40x_debug_assert
         |->
         s_conse_next_retire
         ##0 cov_assert_if.debug_mode_q && (cov_assert_if.depc_q == boot_addr_at_entry);
-    endproperty    
+    endproperty
 
     a_debug_at_reset : assert property(p_debug_at_reset)
         else `uvm_error(info_tag, "Debug mode not entered correctly at reset!");
@@ -501,7 +502,6 @@ module uvmt_cv32e40x_debug_assert
     // Check that we cover the case where a debug_req_i
     // comes while flushing due to an illegal insn, causing
     // dpc to be set to the exception handler entry addr
-
     sequence s_illegal_insn_debug_req_ante;  // Antecedent
         cov_assert_if.wb_illegal && cov_assert_if.wb_valid && !cov_assert_if.debug_mode_q
         ##1 cov_assert_if.debug_req_i && !cov_assert_if.debug_mode_q;
@@ -509,13 +509,13 @@ module uvmt_cv32e40x_debug_assert
 
     sequence s_illegal_insn_debug_req_conse;  // Consequent
         s_conse_next_retire
-        ##0 cov_assert_if.debug_mode_q && (cov_assert_if.depc_q == cov_assert_if.mtvec);
+        ##0 cov_assert_if.debug_mode_q && (cov_assert_if.depc_q == mtvec_addr);
     endsequence
 
     // Need to confirm that the assertion can be reached for non-trivial cases
     cov_illegal_insn_debug_req_nonzero : cover property(
         s_illegal_insn_debug_req_ante |-> s_illegal_insn_debug_req_conse ##0 (cov_assert_if.depc_q != 0));
-    
+
     a_illegal_insn_debug_req : assert property(s_illegal_insn_debug_req_ante |-> s_illegal_insn_debug_req_conse)
         else `uvm_error(info_tag, "Debug mode not entered correctly while handling illegal instruction!");
 
@@ -546,7 +546,11 @@ module uvmt_cv32e40x_debug_assert
                 pc_at_dbg_req <= cov_assert_if.wb_stage_pc;
             end
             if (cov_assert_if.irq_ack_o) begin  // interrupt
-                pc_at_dbg_req <= cov_assert_if.mtvec + (cov_assert_if.irq_id_o << 2);
+                if (cov_assert_if.mtvec[1:0] == 0) begin
+                    pc_at_dbg_req <= mtvec_addr;
+                end else if (cov_assert_if.mtvec[1:0] == 1) begin
+                    pc_at_dbg_req <= mtvec_addr + (cov_assert_if.irq_id_o << 2);
+                end
             end
             if(cov_assert_if.debug_mode_q && started_decoding_in_debug) begin
                 pc_at_dbg_req <= pc_at_dbg_req;
@@ -557,7 +561,7 @@ module uvmt_cv32e40x_debug_assert
                 pc_at_ebreak <= cov_assert_if.wb_stage_pc;
             end
        end
-    end        
+    end
 
 
   // Keep track of wfi state
@@ -612,10 +616,15 @@ module uvmt_cv32e40x_debug_assert
 
     assign cov_assert_if.addr_match   = (cov_assert_if.wb_stage_pc == cov_assert_if.tdata2);
     assign cov_assert_if.dpc_will_hit = (cov_assert_if.depc_n == cov_assert_if.tdata2);
-    assign cov_assert_if.is_wfi = cov_assert_if.wb_valid
-                                  && ((cov_assert_if.wb_stage_instr_rdata_i & WFI_INSTR_MASK) == WFI_INSTR_DATA);
+    assign cov_assert_if.is_wfi =
+        cov_assert_if.wb_valid
+        && ((cov_assert_if.wb_stage_instr_rdata_i & WFI_INSTR_MASK) == WFI_INSTR_DATA)
+        && !cov_assert_if.wb_err;
     assign cov_assert_if.pending_enabled_irq = |(cov_assert_if.irq_i & cov_assert_if.mie_q);
-    assign cov_assert_if.is_dret = cov_assert_if.wb_valid && (cov_assert_if.wb_stage_instr_rdata_i == 32'h 7B20_0073);
+    assign cov_assert_if.is_dret =
+        cov_assert_if.wb_valid
+        && (cov_assert_if.wb_stage_instr_rdata_i == 32'h 7B20_0073)
+        && !cov_assert_if.wb_err;
 
 
     // Track which debug cause should be expected

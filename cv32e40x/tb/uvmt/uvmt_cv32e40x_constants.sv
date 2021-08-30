@@ -1,23 +1,30 @@
 //
 // Copyright 2020 OpenHW Group
-// Copyright 2020 Datum Technologies
-// 
+// Copyright 2020 Datum Technology Corporation
+//
 // Licensed under the Solderpad Hardware Licence, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
-// 
+//
 //     https://solderpad.org/licenses/
-// 
+//
 // Unless required by applicable law or agreed to in writing, software
 // distributed under the License is distributed on an "AS IS" BASIS,
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
-// 
+//
 
 `ifndef __UVMT_CV32E40X_CONSTANTS_SV__
 `define __UVMT_CV32E40X_CONSTANTS_SV__
 
+   `ifdef ZBA_ZBB_ZBS
+      parameter cv32e40x_pkg::b_ext_e B_EXT = cv32e40x_pkg::ZBA_ZBB_ZBS;
+   `elsif ZBA_ZBB_ZBC_ZBS
+      parameter cv32e40x_pkg::b_ext_e B_EXT = cv32e40x_pkg::ZBA_ZBB_ZBC_ZBS;
+   `else
+      parameter cv32e40x_pkg::b_ext_e B_EXT = cv32e40x_pkg::NONE;
+   `endif
 
    `ifdef PMA_CUSTOM_CFG
       parameter int unsigned               CORE_PARAM_PMA_NUM_REGIONS = 3;
@@ -68,8 +75,8 @@
             atomic         : 0}
          };
    `else
-      parameter int unsigned               CORE_PARAM_PMA_NUM_REGIONS = 0;
-      parameter cv32e40x_pkg::pma_region_t CORE_PARAM_PMA_CFG[0:0] = '{'z};
+      parameter int                        CORE_PARAM_PMA_NUM_REGIONS = 0;
+      parameter cv32e40x_pkg::pma_region_t CORE_PARAM_PMA_CFG[-1:0] =  '{default:cv32e40x_pkg::PMA_R_DEFAULT};
    `endif
 
 

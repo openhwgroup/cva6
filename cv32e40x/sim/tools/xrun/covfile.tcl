@@ -47,4 +47,3 @@ set_toggle_smart_refinement
 # For performance and to avoid spurious warnings, remove these modules from code coverage collection
 # ----------------------------------------------------------------------------------
 deselect_coverage -all -module riscv_random_interrupt_generator
-deselect_coverage -all -module cv32e40x_tracer

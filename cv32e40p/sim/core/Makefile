@@ -82,16 +82,16 @@ VSIM_FLAGS       ?=  # user defined
 ALL_VSIM_FLAGS    = $(VSIM_FLAGS)
 VSIM_DEBUG_FLAGS  = -debugdb
 VSIM_GUI_FLAGS    = -gui -debugdb
-VSIM_SCRIPT_DIR	  = ../questa
+VSIM_SCRIPT_DIR	  = ../tools/vsim
 VSIM_SCRIPT       = $(VSIM_SCRIPT_DIR)/vsim.tcl
 
 # vcs configuration (hopelessly out of date)
 VCS_VERSION             = O-2018.09-SP1-1
 VCS_HOME                = /opt/synopsys/vcs-mx/$(VCS_VERSION)
 VCS                     = vcs
-VCS_FLAGS               ?= # user defined
-ALL_VCS_FLAGS               = $(VCS_FLAGS)
-VCS_SCRIPT_DIR	        = ../tools/vcs
+VCS_FLAGS              ?= # user defined
+ALL_VCS_FLAGS           = $(VCS_FLAGS)
+VCS_SCRIPT_DIR          = ../tools/vcs
 VCS_SCRIPT              = $(VCS_SCRIPT_DIR)/vcs_batch.tcl
 VCS_SCRIPT_GUI          = $(VCS_SCRIPT_DIR)/vcs.tcl
 SIMV                    = ./simv
@@ -99,7 +99,7 @@ SIMV                    = ./simv
 # dsim is the Metrics Technologies SystemVerilog simulator  (https://metrics.ca/)
 DSIM                    = dsim
 DSIM_HOME               = /tools/Metrics/dsim
-DSIM_CMP_FLAGS          = -timescale 1ns/1ps $(SV_CMP_FLAGS) -suppress MultiBlockWrite +define+CV32E40P_APU_TRACE
+DSIM_CMP_FLAGS          = +define+CORE_TB -timescale 1ns/1ps $(SV_CMP_FLAGS) -suppress MultiBlockWrite +define+CV32E40P_APU_TRACE
 DSIM_RUN_FLAGS          = -write-sql
 DSIM_UVM_ARGS           = +incdir+$(UVM_HOME)/src $(UVM_HOME)/src/uvm_pkg.sv
 DSIM_RESULTS           ?= $(PWD)/dsim_results
@@ -355,11 +355,15 @@ vsim-run-gui: vsim-all
 	$(VSIM) -work $(VWORK) $(DPILIB_VSIM_OPT) $(ALL_VSIM_FLAGS) \
 	$(RTLSRC_VOPT_TB_TOP) -do $(VSIM_SCRIPT)
 
+.PHONY: questa-custom
+questa-custom: vsim-all $(CUSTOM)/$(CUSTOM_PROG)/$(CUSTOM_PROG).hex
+questa-custom: ALL_VSIM_FLAGS += +firmware=$(CUSTOM)/$(CUSTOM_PROG)/$(CUSTOM_PROG).hex
+questa-custom: vsim-run
 
-.PHONY: questa-hello-world
-questa-hello-world: vsim-all $(CUSTOM)/hello-world.hex
-questa-hello-world: ALL_VSIM_FLAGS += +firmware=$(CUSTOM)/hello-world.hex
-questa-hello-world: vsim-run
+.PHONY: questa-custom-gui
+questa-custom-gui: vsim-all $(CUSTOM)/$(CUSTOM_PROG)/$(CUSTOM_PROG).hex
+questa-custom-gui: ALL_VSIM_FLAGS += +firmware=$(CUSTOM)/$(CUSTOM_PROG)/$(CUSTOM_PROG).hex
+questa-custom-gui: vsim-run-gui
 
 .PHONY: questa-cv32_riscv_tests
 questa-cv32_riscv_tests: vsim-all $(CV32_RISCV_TESTS_FIRMWARE)/cv32_riscv_tests_firmware.hex

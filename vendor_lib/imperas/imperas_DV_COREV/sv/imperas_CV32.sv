@@ -51,7 +51,7 @@ interface RVVI_state #(
     // Registers
     bit [(XLEN-1):0] x[32];
     bit [(XLEN-1):0] f[32];
-    bit [(XLEN-1):0] c[4096];
+    bit [(XLEN-1):0] c[bit[11:0]];
     bit [(XLEN-1):0] csr[string];
     
     // Temporary hack for volatile CSR reads
@@ -100,6 +100,10 @@ endinterface
 
 interface RVVI_io;
     bit         reset;
+    bit  [31:0] reset_addr;
+    bit         nmi;
+    bit  [31:0] nmi_cause;
+    bit  [31:0] nmi_addr;
     
     bit  [31:0] irq_i;     // Active high level sensitive interrupt inputs
     bit         irq_ack_o; // Interrupt acknowledge
@@ -133,19 +137,12 @@ interface RVVI_bus;
     bit            StoreBusFaultNMI;    // Artifact to signal memory interface error (E40X)
     bit            InstructionBusFault; // Artifact to signal memory interface error (E40X)
 
-    // Sparse memory supported by all RTL simulators
+endinterface
+
+interface RVVI_memory;
+
     reg [31:0] mem [bit[29:0]];
 
-    //
-    // Bus direct transactors
-    //
-    function automatic int read(input int address);
-        if (!mem.exists(address)) mem[address] = 'h0;
-        return mem[address];
-    endfunction
-    function automatic void write(input int address, input int data);
-        mem[address] = data;
-    endfunction
 endinterface
 
 module CPU #(
@@ -160,24 +157,24 @@ module CPU #(
     import uvm_pkg::*;
 `endif
 
-    import "DPI-C" context task          opEntry(input string s1, input string s2, input string s3);
-    import "DPI-C" context function void svPull(output RMDataT RMData);
-    import "DPI-C" context function void svPush(input SVDataT SVData);
-    import "DPI-C" context function void opExit();
+    import "DPI-C" context task          svimp_entry(input string s1, input string s2, input string s3);
+    import "DPI-C" context function void svimp_pull(output RMDataT RMData);
+    import "DPI-C" context function void svimp_push(input  SVDataT SVData);
+    import "DPI-C" context function void svimp_exit();
 
-    export "DPI-C" task     busFetch;
-    export "DPI-C" task     busLoad;
-    export "DPI-C" task     busStore;
-    export "DPI-C" task     busWait;
+    export "DPI-C" task     svexp_busFetch;
+    export "DPI-C" task     svexp_busLoad;
+    export "DPI-C" task     svexp_busStore;
+    export "DPI-C" task     svexp_busWait;
     
-    export "DPI-C" function setGPR;
-    export "DPI-C" function getGPR;
+    export "DPI-C" function svexp_setGPR;
+    export "DPI-C" function svexp_getGPR;
     
-    export "DPI-C" function setCSR;
-    export "DPI-C" function opPull;
+    export "DPI-C" function svexp_setCSR;
+    export "DPI-C" function svexp_pull;
     
-    export "DPI-C" task     setRESULT;
-    export "DPI-C" function setDECODE;
+    export "DPI-C" task     svexp_setRESULT;
+    export "DPI-C" function svexp_setDECODE;
     
     RVVI_state   state();
     RVVI_control control();
@@ -186,6 +183,17 @@ module CPU #(
 
     RMDataT RMData;
     SVDataT SVData;
+
+    //
+    // Bus direct transactors
+    //
+    function automatic int read(input int address);
+        if (!ram.memory.mem.exists(address)) ram.memory.mem[address] = 'h0;
+        return ram.memory.mem[address];
+    endfunction
+    function automatic void write(input int address, input int data);
+        ram.memory.mem[address] = data;
+    endfunction
 
     //
     // Format message for UVM/SV environment
@@ -222,20 +230,24 @@ module CPU #(
         busStep;
     endtask
     
+    task svexp_busWait;
+        busWait;
+    endtask
+    
     //
     // getState values set by RM
     //
     function automatic void getState;
         int i;
-        svPull(RMData);
+        svimp_pull(RMData);
 
-        io.irq_ack_o   = RMData.irq_ack_o;
-        io.irq_id_o    = RMData.irq_id_o;
-        io.DM          = RMData.DM;
+        io.irq_ack_o = RMData.irq_ack_o;
+        io.irq_id_o  = RMData.irq_id_o;
+        io.DM        = RMData.DM;
     endfunction
     
     // Called at end of instruction transaction
-    task setRESULT;
+    task svexp_setRESULT;
         input int isvalid;
         
         control.idle();
@@ -262,39 +274,65 @@ module CPU #(
     //
     // pack values to be used by RM
     //
-    function automatic void opPull;
-        SVData.reset         = io.reset;
-        SVData.deferint      = io.deferint;
-        SVData.irq_i         = io.irq_i;
-        SVData.haltreq       = io.haltreq;
-        SVData.resethaltreq  = io.resethaltreq;
+    function automatic void svexp_pull;
+        SVData.reset               = io.reset;
+        SVData.reset_addr          = io.reset_addr;
+        SVData.nmi                 = io.nmi;
+        SVData.nmi_cause           = io.nmi_cause;
+        SVData.nmi_addr            = io.nmi_addr;
+        
+        SVData.MSWInterrupt        = io.irq_i[3];
+        SVData.MTimerInterrupt     = io.irq_i[7];
+        SVData.MExternalInterrupt  = io.irq_i[11];
+        SVData.LocalInterrupt0     = io.irq_i[16];
+        SVData.LocalInterrupt1     = io.irq_i[17];
+        SVData.LocalInterrupt2     = io.irq_i[18];
+        SVData.LocalInterrupt3     = io.irq_i[19];
+        SVData.LocalInterrupt4     = io.irq_i[20];
+        SVData.LocalInterrupt5     = io.irq_i[21];
+        SVData.LocalInterrupt6     = io.irq_i[22];
+        SVData.LocalInterrupt7     = io.irq_i[23];
+        SVData.LocalInterrupt8     = io.irq_i[24];
+        SVData.LocalInterrupt9     = io.irq_i[25];
+        SVData.LocalInterrupt10    = io.irq_i[26];
+        SVData.LocalInterrupt11    = io.irq_i[27];
+        SVData.LocalInterrupt12    = io.irq_i[28];
+        SVData.LocalInterrupt13    = io.irq_i[29];
+        SVData.LocalInterrupt14    = io.irq_i[30];
+        SVData.LocalInterrupt15    = io.irq_i[31];
+
+        SVData.deferint            = io.deferint;
+
+        SVData.haltreq             = io.haltreq;
+        SVData.resethaltreq        = io.resethaltreq;
         
         SVData.LoadBusFaultNMI     = bus.LoadBusFaultNMI;
         SVData.StoreBusFaultNMI    = bus.StoreBusFaultNMI;
         SVData.InstructionBusFault = bus.InstructionBusFault;
         
-        SVData.terminate     = io.Shutdown;
-        SVData.cycles        = cycles;
         
-        svPush(SVData);
+        SVData.cycles              = cycles;
+        
+        svimp_push(SVData);
     endfunction
 
-    function automatic void setDECODE (input string value, input int insn, input int isize);
+    function automatic void svexp_setDECODE (input string value, input int insn, input int isize);
         state.decode = value;
         state.insn   = insn;
         state.isize  = isize;
     endfunction
     
-    function automatic void getGPR (input int index, output longint value);
+    function automatic void svexp_getGPR (input int index, output longint value);
         value = state.GPR_rtl[index];
     endfunction
     
-    function automatic void setGPR (input int index, input longint value);
+    function automatic void svexp_setGPR (input int index, input longint value);
         state.x[index] = value;
     endfunction
     
-    function automatic void setCSR (input string index, input longint value);
-        state.csr[index] = value;
+    function automatic void svexp_setCSR (input string name, input int index, input longint value);
+        state.csr[name] = value;
+        state.c[index] = value;
     endfunction
 
     //
@@ -368,10 +406,10 @@ module CPU #(
         Uns32 dValue = getData(address, data);
         
         msginfo($sformatf("%08X = %02x", address, data));
-        wValue = bus.read(idx) & ~(byte2bit(ble));
+        wValue = read(idx) & ~(byte2bit(ble));
         wValue |= (dValue & byte2bit(ble));
         
-        bus.write(idx, wValue);
+        write(idx, wValue);
     endfunction
     
     task busStore32;
@@ -403,7 +441,7 @@ module CPU #(
         end
     endtask
      
-    task busStore;
+    task svexp_busStore;
         output int fault; 
         input  int address;
         input  int size;
@@ -447,7 +485,7 @@ module CPU #(
         Uns32 idx = address >> 2;
         Uns32 ble = getBLE(address, size);
         
-        rValue = bus.read(idx) & byte2bit(ble);
+        rValue = read(idx) & byte2bit(ble);
         
         data = setData(address, rValue);
     endfunction
@@ -481,7 +519,7 @@ module CPU #(
         end
     endtask
     
-    task busLoad;
+    task svexp_busLoad;
         output int fault;
         input  int address;
         input  int size;
@@ -536,7 +574,6 @@ module CPU #(
             // Wait for the transfer to complete & ssmode
             busWait;
             data  = setData(address, bus.IData);
-            fault = 0; // TODO
             bus.Ird   <= 0;
             
             // TODO manual fault injection
@@ -550,7 +587,7 @@ module CPU #(
         end
     endtask
     
-    task busFetch;
+    task svexp_busFetch;
         output int fault;
         input  int address;
         input  int size;
@@ -598,11 +635,11 @@ module CPU #(
     endfunction
     
     initial begin
-        if ($test$plusargs("USE_ISS")) begin
+        if (!$test$plusargs("DISABLE_OVPSIM")) begin
             #1;
             ovpcfg_load();
             elf_load();
-            opEntry(ovpcfg, elf_file, VARIANT);
+            svimp_entry(ovpcfg, elf_file, VARIANT);
         `ifndef UVM
             $finish;
         `endif
@@ -611,7 +648,7 @@ module CPU #(
     
 `ifndef UVM
     final begin
-        opExit();
+        svimp_exit();
     end
 `endif
  

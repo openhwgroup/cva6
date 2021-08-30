@@ -17,7 +17,7 @@
 
 
 `include "uvma_isacov_if.sv"
-
+`include "uvma_isacov_macros.sv"
 
 package uvma_isacov_pkg;
 

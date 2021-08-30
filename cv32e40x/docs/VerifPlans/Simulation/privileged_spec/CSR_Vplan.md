@@ -1,5 +1,5 @@
 
-# *Note that this is copied from the CV32E40P.  It has not been ported to CV32E40X as of yet* 
+# *Note that this is copied from the CV32E40P.  It has not been ported to CV32E40X as of yet*
 
 ## Functional verification of CSRs in a RISC-V core
 The Controll and Status Registers in a RISC-V core are distinct from CSRs in
@@ -40,7 +40,7 @@ what the core will do when a given CSR has a specific value.
 
 In RISC-V cores, access mode behavior has four dimensions: access mode,
 privilege, existance and field specification.  These are discussed in turn,
-with emphasis placed on pre-silicon functional verification (as opposed to 
+with emphasis placed on pre-silicon functional verification (as opposed to
 post-silicon use by software).
 
 #### Access Mode
@@ -107,7 +107,7 @@ values) and then check that these values have the desired affect.  A good exampl
 is ensuring that interrupts are asserted when MSTATUS[MIE] is both 0/1 and ensuring
 that interrupts are ignored or responded to, as appropriate.
 
-Control register verification of RISC-V cores is not conceptually different than 
+Control register verification of RISC-V cores is not conceptually different than
 control register verification of non-processor ASIC/FPGA RTL.  One difference is
 that in non-processor RTL, the control path (reading the writing the CSRs) is
 typically independent of the data path (events that are affected by control

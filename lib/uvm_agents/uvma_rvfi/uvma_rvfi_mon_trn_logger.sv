@@ -30,9 +30,11 @@ class uvma_rvfi_mon_trn_logger_c#(int ILEN=DEFAULT_ILEN,
       
    uvm_analysis_imp_rvfi_instr#(uvma_rvfi_instr_seq_item_c#(ILEN,XLEN), uvma_rvfi_mon_trn_logger_c) instr_export;   
 
-   const string format_header_str = "%15s: RVFI %6s %8s %8s %s %03s %08s %03s %08s %03s %08s %06s %08s %08s";   
+   const string format_header_str = "%15s: RVFI %6s %8s %8s %s %03s %08s %03s %08s %03s %08s %03s %08s %08s %s";   
    const string format_instr_str  = "%15s: RVFI %6d %8x %8s %s x%2d %08x x%2d %08x x%2d %08x";
-   const string format_mem_str    = "%06s %08x %08s";
+   const string format_mem_str    = "%03s %08x %08s";
+
+   uvma_rvfi_instr_table_seq_item_c#(ILEN,XLEN) instr_table[bit[XLEN-1:0]];
 
    `uvm_component_param_utils(uvma_rvfi_mon_trn_logger_c)
    
@@ -44,8 +46,93 @@ class uvma_rvfi_mon_trn_logger_c#(int ILEN=DEFAULT_ILEN,
       super.new(name, parent);
       
       instr_export = new("instr_export", this);      
+
    endfunction : new
    
+   /**
+    * Build phase - attempt to load a firmware itb file (instruction table file)
+    */
+   function void build_phase(uvm_phase phase);
+
+      read_itb_file();
+
+   endfunction : build_phase
+
+   /**
+    * Read the itb file and build an instruction library
+    */
+   function void read_itb_file();
+
+      string file;
+
+      if ($value$plusargs("itb_file=%s", file)) begin
+         int unsigned itb_lineno;
+         int fh;
+         
+         fh = $fopen(file, "r");
+         if (fh == 0) begin
+            `uvm_fatal("RVFIMONLOG", $sformatf("Could not open itb file: %s", file));
+         end
+
+         while (!$feof(fh)) begin
+            string       str;
+            
+            int unsigned num;
+            int unsigned c;
+            string       src_code_q[$];
+            uvma_rvfi_instr_table_seq_item_c instr;
+
+            itb_lineno++;
+            c = $fscanf(fh, "%1s%d", str, num); 
+            instr = uvma_rvfi_instr_table_seq_item_c#(ILEN,XLEN)::type_id::create("instr");
+
+            `uvm_info("RVFIMONLOG", $sformatf("Parsing line_num: %0d with %0d lines of src", itb_lineno, num), UVM_HIGH)
+            if (c == -1) begin
+               break;
+            end
+            else if (num == 0) begin
+               src_code_q.push_back("*** N/A ***");
+            end
+            else begin
+               // Accumulate the source code
+               repeat (num) begin
+                  itb_lineno++;
+                  c = $fscanf(fh, "%1s", str);
+                  c = $fgets(str, fh);
+
+                  src_code_q.push_back(str.substr(0,str.len()-1));
+               end
+            end
+
+            instr.src_code = new[src_code_q.size()](src_code_q);
+
+            // Parse the context of the source code
+            c = $fscanf(fh, "%d %s %s %d %s %d", instr.addr, instr.src_function, instr.filename, instr.lineno, instr.mcode, num);
+            for (int i = 0; i < num; i++) begin
+               string asm_str;
+
+               c = $fscanf(fh, "%s", asm_str);
+               if (i == 0)
+                  instr.asm = asm_str;
+               else
+                  instr.asm = { instr.asm, " ", asm_str };
+            end
+            itb_lineno++;
+
+            // Fatal error if instruction already exists at the respective address
+            if (instr_table.exists(instr.addr)) begin
+               `uvm_info("RVFIMONLOG", $sformatf("%s", instr_table[instr.addr].sprint()), UVM_LOW);
+               `uvm_info("RVFIMONLOG", $sformatf("%s", instr.sprint()), UVM_LOW);
+               `uvm_fatal("RVFIMONLOG", $sformatf("%0d: Instruction at address: 0x%08x already exists in instruction table", itb_lineno, instr.addr));
+            end
+            instr_table[instr.addr] = instr;
+
+            `uvm_info("RVFIMONLOG", $sformatf("%s", instr.sprint()), UVM_DEBUG);
+         end
+      end
+
+   endfunction : read_itb_file
+
    /**
     * Writes contents of t to disk
     */
@@ -69,7 +156,7 @@ class uvma_rvfi_mon_trn_logger_c#(int ILEN=DEFAULT_ILEN,
       else if (t.mem_rmask)
          instr = $sformatf({"%s ", format_mem_str}, instr, "RD", t.mem_addr, t.get_mem_data_string());
       else
-         instr = $sformatf("%s N/A", instr);
+         instr = $sformatf("%s  -- -------- --------", instr);
 
       if (t.insn_interrupt)
          instr = $sformatf("%s INTR %0d", instr, t.insn_interrupt_id);
@@ -77,6 +164,15 @@ class uvma_rvfi_mon_trn_logger_c#(int ILEN=DEFAULT_ILEN,
          instr = $sformatf("%s NMI", instr);
       if (t.dbg)
          instr = $sformatf("%s DEBUG", instr);
+
+      if (instr_table.exists(t.pc_rdata)) begin
+         instr = $sformatf("%s %s %s %0d - %s", 
+                           instr,
+                           instr_table[t.pc_rdata].src_function,
+                           instr_table[t.pc_rdata].filename,
+                           instr_table[t.pc_rdata].lineno,
+                           instr_table[t.pc_rdata].asm);
+      end
 
       fwrite(instr);
 
@@ -87,7 +183,7 @@ class uvma_rvfi_mon_trn_logger_c#(int ILEN=DEFAULT_ILEN,
     */
    virtual function void print_header();
       fwrite($sformatf(format_header_str, $sformatf("%t", $time),
-                       "Order", "PC", "Instr", "M", "rs1", "rs1_data", "rs2", "rs2_data", "rd", "rd_data", "mem_op", "mem_addr", "mem_data"));
+                       "Order", "PC", "Instr", "M", "rs1", "rs1_data", "rs2", "rs2_data", "rd", "rd_data", "mem", "mem_addr", "mem_data", "instr"));
 
    endfunction : print_header
    
@@ -95,3 +191,4 @@ endclass : uvma_rvfi_mon_trn_logger_c
 
 
 `endif // __UVMA_RVFI_MON_TRN_LOGGER_SV__
+

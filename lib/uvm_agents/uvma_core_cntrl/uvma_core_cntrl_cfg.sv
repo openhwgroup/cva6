@@ -47,20 +47,31 @@
    rand bit                      ext_i_supported;
    rand bit                      ext_a_supported;
    rand bit                      ext_m_supported;
-   rand bit                      ext_c_supported;
-   rand bit                      ext_b_supported;
+   rand bit                      ext_c_supported;   
    rand bit                      ext_p_supported;
    rand bit                      ext_v_supported;
    rand bit                      ext_f_supported;
    rand bit                      ext_d_supported;
+   rand bit                      ext_zba_supported;
+   rand bit                      ext_zbb_supported;
+   rand bit                      ext_zbc_supported;
+   rand bit                      ext_zbe_supported;
+   rand bit                      ext_zbf_supported;
+   rand bit                      ext_zbm_supported;
+   rand bit                      ext_zbp_supported;
+   rand bit                      ext_zbr_supported;
+   rand bit                      ext_zbs_supported;
+   rand bit                      ext_zbt_supported;
    rand bit                      ext_zifencei_supported;
-   rand bit                      ext_zicsri_supported;
-
+   rand bit                      ext_zicsr_supported;
+   
    rand bit                      mode_s_supported;
    rand bit                      mode_u_supported;
 
    rand bit                      pmp_supported;   
    rand bit                      debug_supported;
+
+   rand bitmanip_version_t       bitmanip_version;
 
    rand bit                      unaligned_access_supported;
    rand bit                      unaligned_access_amo_supported;
@@ -111,21 +122,30 @@
       `uvm_field_int(                          ext_i_supported                , UVM_DEFAULT          )
       `uvm_field_int(                          ext_a_supported                , UVM_DEFAULT          )
       `uvm_field_int(                          ext_m_supported                , UVM_DEFAULT          )
-      `uvm_field_int(                          ext_c_supported                , UVM_DEFAULT          )
-      `uvm_field_int(                          ext_b_supported                , UVM_DEFAULT          )
+      `uvm_field_int(                          ext_c_supported                , UVM_DEFAULT          )      
       `uvm_field_int(                          ext_p_supported                , UVM_DEFAULT          )
       `uvm_field_int(                          ext_f_supported                , UVM_DEFAULT          )
       `uvm_field_int(                          ext_d_supported                , UVM_DEFAULT          )
       `uvm_field_int(                          ext_v_supported                , UVM_DEFAULT          )
       `uvm_field_int(                          ext_zifencei_supported         , UVM_DEFAULT          )
-      `uvm_field_int(                          ext_zicsri_supported           , UVM_DEFAULT          )
+      `uvm_field_int(                          ext_zicsr_supported            , UVM_DEFAULT          )
+      `uvm_field_int(                          ext_zba_supported              , UVM_DEFAULT          )
+      `uvm_field_int(                          ext_zbb_supported              , UVM_DEFAULT          )
+      `uvm_field_int(                          ext_zbc_supported              , UVM_DEFAULT          )
+      `uvm_field_int(                          ext_zbe_supported              , UVM_DEFAULT          )
+      `uvm_field_int(                          ext_zbf_supported              , UVM_DEFAULT          )
+      `uvm_field_int(                          ext_zbm_supported              , UVM_DEFAULT          )
+      `uvm_field_int(                          ext_zbp_supported              , UVM_DEFAULT          )
+      `uvm_field_int(                          ext_zbr_supported              , UVM_DEFAULT          )
+      `uvm_field_int(                          ext_zbs_supported              , UVM_DEFAULT          )
+      `uvm_field_int(                          ext_zbt_supported              , UVM_DEFAULT          )
       `uvm_field_int(                          mode_s_supported               , UVM_DEFAULT          )
       `uvm_field_int(                          mode_u_supported               , UVM_DEFAULT          )
       `uvm_field_int(                          pmp_supported                  , UVM_DEFAULT          )
       `uvm_field_int(                          debug_supported                , UVM_DEFAULT          )
       `uvm_field_int(                          unaligned_access_supported     , UVM_DEFAULT          )
       `uvm_field_int(                          unaligned_access_amo_supported , UVM_DEFAULT          )
-
+      `uvm_field_enum(bitmanip_version_t,      bitmanip_version               , UVM_DEFAULT          )
       `uvm_field_int(                          num_mhpmcounters               , UVM_DEFAULT          )
       `uvm_field_array_object(                 pma_regions                    , UVM_DEFAULT          )
       `uvm_field_int(                          hart_id                        , UVM_DEFAULT          )
@@ -176,7 +196,7 @@
    /**
     * Creates sub-configuration objects.
     */
-   extern function new(string name="uvme_cv32e40x_cfg");
+   extern function new(string name="uvme_cv_base_cfg");
 
    /**
     * post randomization hooks
@@ -221,13 +241,24 @@
    extern function void get_supported_csrs(ref string csrs[$]);   
 
    /**
+    * Since B extension is broken into subsections, this is a convenience function to determine
+    * if any Zb* exctensions are enabled
+    */
+   extern virtual function bit is_ext_b_supported();   
+
+   /**
+    * Emit MISA to configure the ISS based on core configuration
+    */
+   extern virtual function bit[MAX_XLEN-1:0] get_misa();
+
+   /**
     * Get Imperas ISS noinhibit_mask for configuring number of perf counters
     */
    extern virtual function bit[31:0] get_noinhibit_mask();
 
  endclass : uvma_core_cntrl_cfg_c
 
-function uvma_core_cntrl_cfg_c::new(string name="uvme_cv32e40x_cfg");
+function uvma_core_cntrl_cfg_c::new(string name="uvme_cv_base_cfg");
    
    super.new(name);
 
@@ -494,6 +525,15 @@ function void uvma_core_cntrl_cfg_c::get_supported_csrs(ref string csrs[$]);
 
 endfunction : get_supported_csrs
 
+function bit uvma_core_cntrl_cfg_c::is_ext_b_supported();
+
+   return  (ext_zba_supported ||
+            ext_zbb_supported ||
+            ext_zbc_supported ||
+            ext_zbs_supported) ? 1 : 0;
+
+endfunction : is_ext_b_supported
+
 function bit[31:0] uvma_core_cntrl_cfg_c::get_noinhibit_mask();
 
    bit [31:0] mask = 32'hffff_fff8;
@@ -517,6 +557,22 @@ function void uvma_core_cntrl_cfg_c::disable_csr_check(string name);
    
 endfunction : disable_csr_check
 
+function bit[MAX_XLEN-1:0] uvma_core_cntrl_cfg_c::get_misa();
+
+   get_misa = 0;
+
+   if (ext_a_supported)      get_misa[0] = 1;   
+   if (is_ext_b_supported()) get_misa[1] = 1;
+   if (ext_c_supported)      get_misa[2] = 1;
+   if (ext_f_supported)      get_misa[5] = 1;
+   if (ext_i_supported)      get_misa[8] = 1;
+   if (ext_m_supported)      get_misa[12] = 1;
+   if (mode_s_supported)     get_misa[18] = 1;
+   if (mode_u_supported)     get_misa[20] = 1;
+
+endfunction : get_misa
+
 `endif // __UVMA_CORE_CNTRL_CFG_SV__
+
 
 

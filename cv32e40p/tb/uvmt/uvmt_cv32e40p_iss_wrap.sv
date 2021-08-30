@@ -37,8 +37,8 @@ module uvmt_cv32e40p_iss_wrap
     uvmt_cv32e40p_isa_covg_if     isa_covg_if
    );
 
-    RVVI_bus bus();
-    RVVI_io  io();
+    RVVI_bus    bus();
+    RVVI_io     io();
 
     MONITOR     mon(bus, io);
     RAM         #(

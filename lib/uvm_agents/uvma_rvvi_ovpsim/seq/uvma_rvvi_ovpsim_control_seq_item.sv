@@ -28,11 +28,8 @@ class uvma_rvvi_ovpsim_control_seq_item_c#(int ILEN=uvma_rvvi_pkg::DEFAULT_ILEN,
    // Set to signal this instructions is first instruction of interrupt handler
    rand bit intr;
 
-   // Set to signal entry into debug handler
-   rand bit dbg;
-
-   // If the debug handler is entered, this enum is valid and specifies the DCSR CAUSE of why debug was entered
-   rand dcsr_cause_t dcsr_cause;
+   // Set to signa external debug request
+   rand bit dbg_req;
 
    // Set to signal entry into NMI handler
    rand bit nmi;
@@ -55,15 +52,14 @@ class uvma_rvvi_ovpsim_control_seq_item_c#(int ILEN=uvma_rvvi_pkg::DEFAULT_ILEN,
    static protected string _log_format_string = "0x%08x %s 0x%01x 0x%08x";
 
    `uvm_object_param_utils_begin(uvma_rvvi_ovpsim_control_seq_item_c#(ILEN,XLEN))      
-      `uvm_field_int(intr, UVM_DEFAULT)
-      `uvm_field_int(dbg, UVM_DEFAULT)
-      `uvm_field_enum(dcsr_cause_t, dcsr_cause, UVM_DEFAULT)
-      `uvm_field_int(nmi, UVM_DEFAULT)
-      `uvm_field_int(mip, UVM_DEFAULT)
-      `uvm_field_int(intr_id, UVM_DEFAULT)
-      `uvm_field_int(rd1_addr, UVM_DEFAULT)
+      `uvm_field_int(intr,      UVM_DEFAULT)
+      `uvm_field_int(dbg_req,   UVM_DEFAULT)
+      `uvm_field_int(nmi,       UVM_DEFAULT)
+      `uvm_field_int(mip,       UVM_DEFAULT)
+      `uvm_field_int(intr_id,   UVM_DEFAULT)
+      `uvm_field_int(rd1_addr,  UVM_DEFAULT)
       `uvm_field_int(rd1_wdata, UVM_DEFAULT)
-      `uvm_field_int(mem_addr, UVM_DEFAULT)
+      `uvm_field_int(mem_addr,  UVM_DEFAULT)
       `uvm_field_int(mem_rdata, UVM_DEFAULT)
       `uvm_field_int(mem_rmask, UVM_DEFAULT)
    `uvm_object_utils_end

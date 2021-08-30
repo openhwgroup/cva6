@@ -1,19 +1,19 @@
 ###############################################################################
 #
 # Copyright 2020 OpenHW Group
-# 
+#
 # Licensed under the Solderpad Hardware Licence, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
-# 
+#
 #     https://solderpad.org/licenses/
-# 
+#
 # Unless required by applicable law or agreed to in writing, software
 # distributed under the License is distributed on an "AS IS" BASIS,
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-# 
+#
 ###############################################################################
 #
 # VCS-specific Makefile for the Core-V-Verif "uvmt" testbench.
@@ -36,7 +36,7 @@ DVE              = $(CV_TOOL_PREFIX)dve
 URG               = $(CV_SIM_PREFIX)urg
 
 # Paths
-VCS_RESULTS     ?= $(if $(CV_RESULTS),$(CV_RESULTS)/vcs_results,$(MAKE_PATH)/vcs_results)
+VCS_RESULTS     ?= $(if $(CV_RESULTS),$(abspath $(CV_RESULTS))/vcs_results,$(MAKE_PATH)/vcs_results)
 VCS_COREVDV_RESULTS ?= $(VCS_RESULTS)/corev-dv
 VCS_DIR         ?= $(VCS_RESULTS)/$(CFG)/vcs.d
 VCS_ELAB_COV     = -cm line+cond+tgl+fsm+branch+assert  -cm_dir $(MAKECMDGOALS)/$(MAKECMDGOALS).vdb
@@ -95,9 +95,9 @@ endif
 # Waveform (post-process) command line
 ifeq ($(call IS_YES,$(ADV_DEBUG)),YES)
 $(error ADV_DEBUG not yet supported by VCS )
-WAVES_CMD = cd $(VCS_RESULTS)/$(CFG)/$(TEST_NAME)_$(RUN_INDEX) && $(DVE) -vpd vcdplus.vpd 
+WAVES_CMD = cd $(VCS_RESULTS)/$(CFG)/$(TEST_NAME)_$(RUN_INDEX) && $(DVE) -vpd vcdplus.vpd
 else
-WAVES_CMD = cd $(VCS_RESULTS)/$(CFG)/$(TEST_NAME)_$(RUN_INDEX) && $(DVE) -vpd vcdplus.vpd 
+WAVES_CMD = cd $(VCS_RESULTS)/$(CFG)/$(TEST_NAME)_$(RUN_INDEX) && $(DVE) -vpd vcdplus.vpd
 endif
 
 ################################################################################
@@ -133,7 +133,9 @@ VCS_FILE_LIST ?= -f $(DV_UVMT_PATH)/uvmt_$(CV_CORE_LC).flist
 VCS_FILE_LIST += -f $(DV_UVMT_PATH)/imperas_iss.flist
 VCS_USER_COMPILE_ARGS += +define+$(CV_CORE_UC)_TRACE_EXECUTION
 ifeq ($(call IS_YES,$(USE_ISS)),YES)
-    VCS_PLUSARGS +="+USE_ISS"
+    VCS_PLUSARGS += +USE_ISS
+else
+	VCS_PLUSARGS += +DISABLE_OVPSIM
 endif
 
 VCS_RUN_BASE_FLAGS   ?= $(VCS_GUI) \
@@ -142,7 +144,7 @@ VCS_RUN_BASE_FLAGS   ?= $(VCS_GUI) \
 						-sv_lib $(DPI_DASM_LIB)
 
 # Simulate using latest elab
-VCS_RUN_FLAGS        ?= 
+VCS_RUN_FLAGS        ?=
 VCS_RUN_FLAGS        += $(VCS_RUN_BASE_FLAGS)
 VCS_RUN_FLAGS        += $(VCS_RUN_WAVES_FLAGS)
 VCS_RUN_FLAGS        += $(VCS_RUN_COV_FLAGS)
@@ -197,21 +199,16 @@ endif
 # If the configuration specified OVPSIM arguments, generate an ovpsim.ic file and
 # set IMPERAS_TOOLS to point to it
 gen_ovpsim_ic:
+	@rm -f $(VCS_RESULTS)/$(CFG)/$(TEST_NAME)_$(RUN_INDEX)/ovpsim.ic
+	@mkdir -p $(VCS_RESULTS)/$(CFG)/$(TEST_NAME)_$(RUN_INDEX)
+	@touch $(VCS_RESULTS)/$(CFG)/$(TEST_NAME)_$(RUN_INDEX)/ovpsim.ic
 	@if [ ! -z "$(CFG_OVPSIM)" ]; then \
-		mkdir -p $(VCS_RESULTS)/$(CFG)/$(TEST_NAME)_$(RUN_INDEX); \
 		echo "$(CFG_OVPSIM)" > $(VCS_RESULTS)/$(CFG)/$(TEST_NAME)_$(RUN_INDEX)/ovpsim.ic; \
 	fi
-ifneq ($(CFG_OVPSIM),)
 export IMPERAS_TOOLS=$(VCS_RESULTS)/$(CFG)/$(TEST_NAME)_$(RUN_INDEX)/ovpsim.ic
-endif
 
 ################################################################################
 # The new general test target
-
-# corev-dv tests needs an added run_index suffix
-ifeq ($(shell echo $(TEST) | head -c 6),corev_)
-  OPT_RUN_INDEX_SUFFIX=_$(RUN_INDEX)
-endif
 
 test: $(VCS_SIM_PREREQ) $(TEST_TEST_DIR)/$(TEST_PROGRAM)$(OPT_RUN_INDEX_SUFFIX).hex gen_ovpsim_ic
 	echo $(IMPERAS_TOOLS)
@@ -223,6 +220,7 @@ test: $(VCS_SIM_PREREQ) $(TEST_TEST_DIR)/$(TEST_PROGRAM)$(OPT_RUN_INDEX_SUFFIX).
 			$(TEST_PLUSARGS) \
 			+UVM_TESTNAME=$(TEST_UVM_TEST) \
 			+elf_file=$(TEST_TEST_DIR)/$(TEST_PROGRAM)$(OPT_RUN_INDEX_SUFFIX).elf \
+			+itb_file=$(TEST_TEST_DIR)/$(TEST_PROGRAM)$(OPT_RUN_INDEX_SUFFIX).itb \
 			+firmware=$(TEST_TEST_DIR)/$(TEST_PROGRAM)$(OPT_RUN_INDEX_SUFFIX).hex
 
 ################################################################################
@@ -246,7 +244,7 @@ custom: $(VCS_SIM_PREREQ) $(CUSTOM_DIR)/$(CUSTOM_PROG).hex
 #                make compliance RISCV_ISA=rv32i COMPLIANCE_PROG=I-ADD-01
 # But this does not:
 #                make compliance RISCV_ISA=rv32imc COMPLIANCE_PROG=I-ADD-01
-# 
+#
 RISCV_ISA       ?= rv32i
 COMPLIANCE_PROG ?= I-ADD-01
 
@@ -285,7 +283,7 @@ corev-dv: clean_riscv-dv \
           clone_riscv-dv \
 		  comp_corev-dv
 
-gen_corev-dv: 
+gen_corev-dv:
 	mkdir -p $(VCS_COREVDV_RESULTS)/$(TEST)
 	# Clean old assembler generated tests in results
 	for (( idx=${GEN_START_INDEX}; idx < $$((${GEN_START_INDEX} + ${GEN_NUM_TESTS})); idx++ )); do \
@@ -341,9 +339,9 @@ endif
 ###############################################################################
 # Clean up your mess!
 
-clean:	
+clean:
 	@echo "$(MAKEFILE_LIST)"
-	rm -rf $(VCS_RESULTS)	
+	rm -rf $(VCS_RESULTS)
 
 # Files created by Eclipse when using the Imperas ISS + debugger
 clean_eclipse:
