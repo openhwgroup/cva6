@@ -398,18 +398,24 @@ corev-dv: clean_riscv-dv \
 
 gen_corev-dv:
 	mkdir -p $(XRUN_COREVDV_RESULTS)/$(TEST)
-	cd  $(XRUN_COREVDV_RESULTS)/$(TEST) && \
-	$(XRUN) -R -xmlibdirname ../xcelium.d \
-		$(XRUN_RUN_FLAGS) \
-		-xceligen rand_struct \
-		-l $(TEST)_$(GEN_START_INDEX)_$(GEN_NUM_TESTS).log \
-		+start_idx=$(GEN_START_INDEX) \
-		+num_of_tests=$(GEN_NUM_TESTS) \
-		+UVM_TESTNAME=$(GEN_UVM_TEST) \
-		+asm_file_name_opts=$(TEST) \
-		$(GEN_PLUSARGS) && \
+	# Clean old assembler generated tests in results
 	for (( idx=${GEN_START_INDEX}; idx < $$((${GEN_START_INDEX} + ${GEN_NUM_TESTS})); idx++ )); do \
-		rsync --whole-file --remove-source-files -t ${XRUN_COREVDV_RESULTS}/${TEST}/${TEST}_$$idx.S ${GEN_TEST_DIR}; \
+		rm -f ${XRUN_COREVDV_RESULTS}/${TEST}/${TEST}_$$idx.S; \
+	done
+	cd $(XRUN_COREVDV_RESULTS)/$(TEST) && \
+		$(XRUN) -R -xmlibdirname ../xcelium.d \
+			$(XRUN_RUN_FLAGS) \
+			-xceligen rand_struct \
+			-l $(TEST)_$(GEN_START_INDEX)_$(GEN_NUM_TESTS).log \
+			+start_idx=$(GEN_START_INDEX) \
+			+num_of_tests=$(GEN_NUM_TESTS) \
+			+UVM_TESTNAME=$(GEN_UVM_TEST) \
+			+asm_file_name_opts=$(TEST) \
+			$(GEN_PLUSARGS)
+	# Copy out final assembler files to test directory
+	for (( idx=${GEN_START_INDEX}; idx < $$((${GEN_START_INDEX} + ${GEN_NUM_TESTS})); idx++ )); do \
+		ls -l ${XRUN_COREVDV_RESULTS}/${TEST} > /dev/null; \
+		cp ${XRUN_COREVDV_RESULTS}/${TEST}/${TEST}_$$idx.S ${GEN_TEST_DIR}; \
 	done
 
 ################################################################################
