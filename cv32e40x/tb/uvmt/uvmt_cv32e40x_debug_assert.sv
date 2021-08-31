@@ -474,8 +474,8 @@ module uvmt_cv32e40x_debug_assert
     // Should result in debug mode with regular pc in dpc, not pc from interrupt handler.
     // PC is checked in another assertion
     property p_debug_req_and_irq;
-        cov_assert_if.debug_req_i && (cov_assert_if.pending_enabled_irq != 0)
-        && cov_assert_if.ctrl_fsm_cs == cv32e40x_pkg::FUNCTIONAL  // TODO:ropeders is this really needed?
+        ((cov_assert_if.debug_req_i || cov_assert_if.debug_req_q) && !cov_assert_if.debug_mode_q)
+        && (cov_assert_if.pending_enabled_irq != 0)
         |->
         s_conse_next_retire
         ##0 cov_assert_if.debug_mode_q;
@@ -644,6 +644,7 @@ module uvmt_cv32e40x_debug_assert
                     debug_cause_pri <= 3'b100;
                 else
                     debug_cause_pri <= 3'b000;
+                // TODO:ropeders should have cause 5 when RTL is ready
             end
         end
     end
