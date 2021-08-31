@@ -88,7 +88,10 @@ def build_benchmark_cmd(bench, args):
     cpu_per = float(1/(args.cpu_mhz*1_000_000))
 
     #Utilize "make test" environment in core-v-verif
-    return ['make', '-C', args.make_path, 'test', f"TEST=emb_{bench}", f"SIMULATOR={args.simulator}", 'USE_ISS=NO']
+    return ['make', '-C', args.make_path, 'test',
+            f"TEST=emb_{bench}", f"COMP=0",
+            f"SIMULATOR={args.simulator}", 'USE_ISS=NO',
+            'USER_RUN_FLAGS=+rand_stall_obi_disable']
 
 
 def decode_results(stdout_str, stderr_str):
@@ -109,9 +112,8 @@ def decode_results(stdout_str, stderr_str):
         log.debug('Warning: Failed to find result')
         return 0.0
 
-    time = float(int(rcstr.group(1))*cpu_per)
+    time = float(rcstr.group(1))*cpu_per
     time_ms = time * 1000
-
 
     return time_ms
 

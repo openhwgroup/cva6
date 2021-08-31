@@ -83,6 +83,8 @@ GEN_NUM_TESTS   ?= 1
 EMB_TYPE           ?= speed
 EMB_TARGET         ?= 0
 EMB_CPU_MHZ        ?= 1
+EMB_TIMEOUT        ?= 3600
+EMB_PARALLEL_ARG    = $(if $(filter $(YES_VALS),$(EMB_PARALLEL)),YES,NO)
 EMB_BUILD_ONLY_ARG  = $(if $(filter $(YES_VALS),$(EMB_BUILD_ONLY)),YES,NO)
 EMB_DEBUG_ARG       = $(if $(filter $(YES_VALS),$(EMB_DEBUG)),YES,NO)
 # Commont test variables
@@ -284,14 +286,16 @@ dah:
 
 embench: $(EMBENCH_PKG)
 	$(CORE_V_VERIF)/bin/run_embench.py \
-	-c $(CV_CORE) \
-	-cc $(RISCV_EXE_PREFIX)gcc \
-	-sim $(SIMULATOR) \
-	-t $(EMB_TYPE) \
-	-b $(EMB_BUILD_ONLY_ARG) \
-	-tgt $(EMB_TARGET) \
-	-f $(EMB_CPU_MHZ) \
-	-d $(EMB_DEBUG_ARG) \
+		-c $(CV_CORE) \
+		-cc $(RISCV_EXE_PREFIX)gcc \
+		-sim $(SIMULATOR) \
+		-t $(EMB_TYPE) \
+		--timeout $(EMB_TIMEOUT) \
+		--parallel $(EMB_PARALLEL_ARG) \
+		-b $(EMB_BUILD_ONLY_ARG) \
+		-tgt $(EMB_TARGET) \
+		-f $(EMB_CPU_MHZ) \
+		-d $(EMB_DEBUG_ARG)
 
 ###############################################################################
 # ISACOV (ISA coverage)
