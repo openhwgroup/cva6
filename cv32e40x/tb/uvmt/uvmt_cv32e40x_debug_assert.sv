@@ -156,7 +156,7 @@ module uvmt_cv32e40x_debug_assert
         disable iff(!cov_assert_if.rst_ni)
         $rose(cov_assert_if.is_cebreak) && !cov_assert_if.debug_mode_q
         && !cov_assert_if.dcsr_q[2] && !cov_assert_if.dcsr_q[15]
-        ##0 (!cov_assert_if.debug_req_i && !cov_assert_if.irq_ack_o throughout ##1 cov_assert_if.wb_valid [->1])
+        ##0 (!cov_assert_if.pending_debug && !cov_assert_if.irq_ack_o throughout ##1 cov_assert_if.wb_valid [->1])
         // TODO:ropeders can this specificity be in consequent instead?
         |->
         !cov_assert_if.debug_mode_q && (cov_assert_if.mcause_q[5:0] === cv32e40x_pkg::EXC_CAUSE_BREAKPOINT)
@@ -175,7 +175,7 @@ module uvmt_cv32e40x_debug_assert
         disable iff(!cov_assert_if.rst_ni)
         $rose(cov_assert_if.is_ebreak) && !cov_assert_if.dcsr_q[15]
         && !cov_assert_if.debug_mode_q && !cov_assert_if.dcsr_q[2]
-        ##0 (!cov_assert_if.debug_req_i && !cov_assert_if.irq_ack_o throughout ##1 cov_assert_if.wb_valid [->1])
+        ##0 (!cov_assert_if.pending_debug && !cov_assert_if.irq_ack_o throughout ##1 cov_assert_if.wb_valid [->1])
         // TODO:ropeders can this specificity be in consequent instead?
         |->
         !cov_assert_if.debug_mode_q && (cov_assert_if.mcause_q[5:0] === cv32e40x_pkg::EXC_CAUSE_BREAKPOINT)
@@ -375,7 +375,7 @@ module uvmt_cv32e40x_debug_assert
     // dret in M-mode will cause illegal instruction
     // If pending debug req, illegal insn will not assert until resume
     property p_mmode_dret;
-        !cov_assert_if.debug_mode_q && cov_assert_if.is_dret && !cov_assert_if.debug_req_i
+        !cov_assert_if.debug_mode_q && cov_assert_if.is_dret && !cov_assert_if.pending_debug
         |-> cov_assert_if.illegal_insn_i;
     endproperty
 
@@ -387,7 +387,7 @@ module uvmt_cv32e40x_debug_assert
 
     sequence s_dmode_dret_pc_ante;  // Antecedent
         cov_assert_if.debug_mode_q && cov_assert_if.is_dret
-        ##1 (!cov_assert_if.debug_req_i && !cov_assert_if.irq_ack_o throughout cov_assert_if.wb_stage_instr_valid_i[->1]);
+        ##1 (!cov_assert_if.pending_debug && !cov_assert_if.irq_ack_o throughout cov_assert_if.wb_stage_instr_valid_i[->1]);
         // TODO:ropeders can this req/irq clause be in consequent?
     endsequence
 
@@ -572,7 +572,7 @@ module uvmt_cv32e40x_debug_assert
     end else begin
       // Enter wfi if we have a valid instruction, and conditions allow it (e.g. no single-step etc)
       if (cov_assert_if.is_wfi && cov_assert_if.wb_valid
-          && !cov_assert_if.debug_req_i && !cov_assert_if.debug_mode_q && !cov_assert_if.dcsr_q[2])
+          && !cov_assert_if.pending_debug && !cov_assert_if.debug_mode_q && !cov_assert_if.dcsr_q[2])
         cov_assert_if.in_wfi <= 1'b1;
       if (cov_assert_if.pending_enabled_irq || cov_assert_if.debug_req_i)
         cov_assert_if.in_wfi <= 1'b0;
@@ -638,7 +638,7 @@ module uvmt_cv32e40x_debug_assert
                     debug_cause_pri <= 3'b010;
                 else if(cov_assert_if.dcsr_q[15] && (cov_assert_if.is_ebreak || cov_assert_if.is_cebreak))
                     debug_cause_pri <= 3'b001;
-                else if(cov_assert_if.debug_req_i)
+                else if(cov_assert_if.debug_req_i || cov_assert_if.debug_req_q)
                     debug_cause_pri <= 3'b011;
                 else if(cov_assert_if.dcsr_q[2])
                     debug_cause_pri <= 3'b100;

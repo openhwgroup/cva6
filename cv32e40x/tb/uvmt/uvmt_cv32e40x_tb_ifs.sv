@@ -142,6 +142,8 @@ interface uvmt_cv32e40x_debug_cov_assert_if
 
     // Debug signals
     input         debug_req_i, // From controller
+    input         debug_req_q, // From controller
+    input         pending_debug, // From controller
     input         debug_mode_q, // From controller
     input  [31:0] dcsr_q, // From controller
     input  [31:0] depc_q, // From cs regs  //TODO:ropeders rename "dpc_q"
