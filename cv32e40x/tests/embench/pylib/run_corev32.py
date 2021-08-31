@@ -90,9 +90,7 @@ def build_benchmark_cmd(bench, args):
     #Utilize "make test" environment in core-v-verif
     return ['make', '-C', args.make_path, 'test',
             f"TEST=emb_{bench}", f"COMP=0",
-            f"SIMULATOR={args.simulator}", 'USE_ISS=NO',
-            'USER_RUN_FLAGS=+rand_stall_obi_disable']
-
+            f"SIMULATOR={args.simulator}", 'USE_ISS=NO']
 
 def decode_results(stdout_str, stderr_str):
     """Extract the results from the output string of the run. Return the
