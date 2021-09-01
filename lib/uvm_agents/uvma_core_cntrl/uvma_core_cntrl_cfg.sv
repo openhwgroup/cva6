@@ -1,4 +1,4 @@
-// 
+//
 // Copyright 2020 OpenHW Group
 // Copyright 2020 Datum Technology Corporation
 // Copyright 2020 Silicon Labs, Inc.
@@ -6,15 +6,15 @@
 // Licensed under the Solderpad Hardware Licence, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
-// 
+//
 //     https://solderpad.org/licenses/
-// 
+//
 // Unless required by applicable law or agreed to in writing, software
 // distributed under the License is distributed on an "AS IS" BASIS,
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
-// 
+//
 
 `ifndef __UVMA_CORE_CNTRL_CFG_SV__
 `define __UVMA_CORE_CNTRL_CFG_SV__
@@ -47,7 +47,7 @@
    rand bit                      ext_i_supported;
    rand bit                      ext_a_supported;
    rand bit                      ext_m_supported;
-   rand bit                      ext_c_supported;   
+   rand bit                      ext_c_supported;
    rand bit                      ext_p_supported;
    rand bit                      ext_v_supported;
    rand bit                      ext_f_supported;
@@ -64,11 +64,11 @@
    rand bit                      ext_zbt_supported;
    rand bit                      ext_zifencei_supported;
    rand bit                      ext_zicsr_supported;
-   
+
    rand bit                      mode_s_supported;
    rand bit                      mode_u_supported;
 
-   rand bit                      pmp_supported;   
+   rand bit                      pmp_supported;
    rand bit                      debug_supported;
 
    rand bitmanip_version_t       bitmanip_version;
@@ -78,7 +78,7 @@
 
    // Mask of CSR addresses that are not supported in this core
    // post_randomize() will adjust this based on extension and mode support
-   bit [CSR_MASK_WL-1:0]         unsupported_csr_mask;   
+   bit [CSR_MASK_WL-1:0]         unsupported_csr_mask;
 
    // Common parameters
    int unsigned                  num_mhpmcounters;
@@ -104,7 +104,7 @@
    rand bit [MAX_XLEN-1:0]       dm_exception_addr;
    rand bit                      dm_exception_addr_valid;
    bit                           dm_exception_addr_plusarg_valid;
-   
+
    rand bit [MAX_XLEN-1:0]       nmi_addr;
    rand bit                      nmi_addr_valid;
    bit                           nmi_addr_plusarg_valid;
@@ -122,7 +122,7 @@
       `uvm_field_int(                          ext_i_supported                , UVM_DEFAULT          )
       `uvm_field_int(                          ext_a_supported                , UVM_DEFAULT          )
       `uvm_field_int(                          ext_m_supported                , UVM_DEFAULT          )
-      `uvm_field_int(                          ext_c_supported                , UVM_DEFAULT          )      
+      `uvm_field_int(                          ext_c_supported                , UVM_DEFAULT          )
       `uvm_field_int(                          ext_p_supported                , UVM_DEFAULT          )
       `uvm_field_int(                          ext_f_supported                , UVM_DEFAULT          )
       `uvm_field_int(                          ext_d_supported                , UVM_DEFAULT          )
@@ -154,7 +154,7 @@
       `uvm_field_int(                          boot_addr_plusarg_valid        , UVM_DEFAULT          )
       `uvm_field_int(                          mtvec_addr                     , UVM_DEFAULT          )
       `uvm_field_int(                          mtvec_addr_valid               , UVM_DEFAULT          )
-      `uvm_field_int(                          mtvec_addr_plusarg_valid       , UVM_DEFAULT          )      
+      `uvm_field_int(                          mtvec_addr_plusarg_valid       , UVM_DEFAULT          )
       `uvm_field_int(                          dm_halt_addr                   , UVM_DEFAULT          )
       `uvm_field_int(                          dm_halt_addr_valid             , UVM_DEFAULT          )
       `uvm_field_int(                          dm_halt_addr_plusarg_valid     , UVM_DEFAULT          )
@@ -165,27 +165,27 @@
       `uvm_field_int(                          nmi_addr_valid                 , UVM_DEFAULT          )
       `uvm_field_int(                          nmi_addr_plusarg_valid         , UVM_DEFAULT          )
    `uvm_field_utils_end
-      
+
    constraint defaults_cons {
       soft enabled                == 0;
       soft is_active              == UVM_PASSIVE;
       soft cov_model_enabled      == 1;
       soft trn_log_enabled        == 1;
    }
-   
+
    constraint scoreboard_cons {
-      (!use_iss) -> (scoreboarding_enabled == 0);      
+      (!use_iss) -> (scoreboarding_enabled == 0);
    }
-   
+
    constraint addr_xlen_align_cons {
       if (xlen == MXL_32) {
-         boot_addr[MAX_XLEN-1:32]         == '0;         
+         boot_addr[MAX_XLEN-1:32]         == '0;
          mtvec_addr[MAX_XLEN-1:32]        == '0;
          dm_halt_addr[MAX_XLEN-1:32]      == '0;
          dm_exception_addr[MAX_XLEN-1:32] == '0;
-         nmi_addr[MAX_XLEN-1:32]          == '0;      
+         nmi_addr[MAX_XLEN-1:32]          == '0;
       } else if (xlen == MXL_64) {
-         boot_addr[MAX_XLEN-1:64]         == '0;         
+         boot_addr[MAX_XLEN-1:64]         == '0;
          mtvec_addr[MAX_XLEN-1:64]        == '0;
          dm_halt_addr[MAX_XLEN-1:64]      == '0;
          dm_exception_addr[MAX_XLEN-1:64] == '0;
@@ -209,12 +209,12 @@
     */
    extern function void do_print(uvm_printer printer);
 
-   /**    
+   /**
     * Read a plusarg to fix a configuration value
     */
    extern function bit read_cfg_plusarg_xlen(string field, ref bit[MAX_XLEN-1:0] value);
 
-   /**    
+   /**
     * Set unsupported_csr_mask based on extensions/modes supported
     */
    extern virtual function void set_unsupported_csr_mask();
@@ -238,13 +238,13 @@
    /**
     * Get list of supported CSRs
     */
-   extern function void get_supported_csrs(ref string csrs[$]);   
+   extern function void get_supported_csrs(ref string csrs[$]);
 
    /**
     * Since B extension is broken into subsections, this is a convenience function to determine
     * if any Zb* exctensions are enabled
     */
-   extern virtual function bit is_ext_b_supported();   
+   extern virtual function bit is_ext_b_supported();
 
    /**
     * Emit MISA to configure the ISS based on core configuration
@@ -259,10 +259,10 @@
  endclass : uvma_core_cntrl_cfg_c
 
 function uvma_core_cntrl_cfg_c::new(string name="uvme_cv_base_cfg");
-   
+
    super.new(name);
 
-   if ($test$plusargs("USE_ISS")) 
+   if ($test$plusargs("USE_ISS"))
       use_iss = 1;
 
    // Read plusargs for defaults
@@ -280,7 +280,7 @@ function uvma_core_cntrl_cfg_c::new(string name="uvme_cv_base_cfg");
       mtvec_addr_plusarg_valid = 1;
       mtvec_addr.rand_mode(0);
    end
-   
+
    if (read_cfg_plusarg_xlen("dm_halt_addr", dm_halt_addr)) begin
       dm_halt_addr_plusarg_valid = 1;
       dm_halt_addr.rand_mode(0);
@@ -303,11 +303,16 @@ function bit uvma_core_cntrl_cfg_c::read_cfg_plusarg_xlen(string field, ref bit[
    string str_val;
 
    if ($value$plusargs($sformatf("%s=0x%%s", field), str_val)) begin
-      value = str_val.atohex();
+      if (!$sscanf(str_val, "%h", value)) begin
+        return 0;
+      end
       return 1;
    end
+
    if ($value$plusargs($sformatf("%s=%%s", field), str_val)) begin
-      value = str_val.atoi();
+      if (!$sscanf(str_val, "%d", value)) begin
+        return 0;
+      end
       return 1;
    end
 
@@ -333,7 +338,7 @@ function void uvma_core_cntrl_cfg_c::do_print(uvm_printer printer);
 
       csr = csr.first();
       while (1) begin
-         if (unsupported_csr_mask[csr]) 
+         if (unsupported_csr_mask[csr])
             printer.print_string(csr.name(), "Unsupported");
          else if (disable_all_csr_checks || disable_csr_check_mask[csr])
             printer.print_string(csr.name(), "Supported but not checked in scoreboard");
@@ -389,12 +394,12 @@ function void uvma_core_cntrl_cfg_c::set_unsupported_csr_mask();
    if (!mode_u_supported) begin
       unsupported_csr_mask[USTATUS] = 1;
       unsupported_csr_mask[UIE] = 1;
-      unsupported_csr_mask[UTVEC] = 1;    
+      unsupported_csr_mask[UTVEC] = 1;
       unsupported_csr_mask[USCRATCH] = 1;
       unsupported_csr_mask[UEPC] = 1;
       unsupported_csr_mask[UCAUSE] = 1;
       unsupported_csr_mask[UTVAL] = 1;
-      unsupported_csr_mask[UIP] = 1;  
+      unsupported_csr_mask[UIP] = 1;
       unsupported_csr_mask[CYCLE] = 1;
       unsupported_csr_mask[TIME] = 1;
       unsupported_csr_mask[INSTRET] = 1;
@@ -402,10 +407,10 @@ function void uvma_core_cntrl_cfg_c::set_unsupported_csr_mask();
       unsupported_csr_mask[TIMEH] = 1;
       unsupported_csr_mask[INSTRETH] = 1;
       unsupported_csr_mask[SCOUNTEREN] = 1;
-      
+
       for (int i = 0; i < MAX_NUM_HPMCOUNTERS; i++) begin
          unsupported_csr_mask[HPMCOUNTER3+i] = 1;
-         unsupported_csr_mask[HPMCOUNTER3H+i] = 1;         
+         unsupported_csr_mask[HPMCOUNTER3H+i] = 1;
       end
    end
 
@@ -421,7 +426,7 @@ function void uvma_core_cntrl_cfg_c::set_unsupported_csr_mask();
       unsupported_csr_mask[DCSR] = 1;
       unsupported_csr_mask[DPC] = 1;
       unsupported_csr_mask[DSCRATCH0] = 1;
-      unsupported_csr_mask[DSCRATCH1] = 1;      
+      unsupported_csr_mask[DSCRATCH1] = 1;
    end
 
    // Remove floating-point CSRs if no floating point supported
@@ -484,11 +489,11 @@ function void uvma_core_cntrl_cfg_c::read_disable_csr_check_plusargs();
    // Parse individual CSR checks
    begin
       string disable_csr_plusarg;
-      
+
 
       if ($value$plusargs("DISABLE_CSR_CHECK=%s", disable_csr_plusarg)) begin
          string csr;
-         for (int i = 0; i < disable_csr_plusarg.len(); i++) begin            
+         for (int i = 0; i < disable_csr_plusarg.len(); i++) begin
             // Read a + -> disable the accumulated CSR
             if (disable_csr_plusarg.substr(i,i) == "+") begin
                disable_csr_check(csr);
@@ -537,7 +542,7 @@ endfunction : is_ext_b_supported
 function bit[31:0] uvma_core_cntrl_cfg_c::get_noinhibit_mask();
 
    bit [31:0] mask = 32'hffff_fff8;
-   
+
    for (int i = 0; i < this.num_mhpmcounters; i++) begin
       mask[i+3] = 1'b0;
    end
@@ -553,15 +558,15 @@ function void uvma_core_cntrl_cfg_c::disable_csr_check(string name);
       `uvm_fatal("CV32E40XCFG", $sformatf("CSR [%s] does not exist", name));
    end
 
-   disable_csr_check_mask[csr_name2addr[name]] = 1;   
-   
+   disable_csr_check_mask[csr_name2addr[name]] = 1;
+
 endfunction : disable_csr_check
 
 function bit[MAX_XLEN-1:0] uvma_core_cntrl_cfg_c::get_misa();
 
    get_misa = 0;
 
-   if (ext_a_supported)      get_misa[0] = 1;   
+   if (ext_a_supported)      get_misa[0] = 1;
    if (is_ext_b_supported()) get_misa[1] = 1;
    if (ext_c_supported)      get_misa[2] = 1;
    if (ext_f_supported)      get_misa[5] = 1;
