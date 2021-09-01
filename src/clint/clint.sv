@@ -89,7 +89,6 @@ module clint #(
         if (increase_timer)
             mtime_n = mtime_q + 1;
 
-
         // written from APB bus - gets priority
         if (en && we) begin
             case (register_address) inside
@@ -153,11 +152,6 @@ module clint #(
                     end else begin
                         rdata = mtimecmp_q[$unsigned(address[AddrSelWidth-1+3:3])];
                     end
-                end
-
-                MTIME_BASE: begin
-                    if (riscv::XLEN==32)
-                        rdata_32 = mtime_q[31:0];
                 end
 
                 [MTIME_BASE:MTIME_BASE+4]: begin
