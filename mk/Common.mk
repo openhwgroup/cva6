@@ -403,6 +403,14 @@ else
 TEST_FILES        = $(filter %.c %.S,$(wildcard  $(TEST_TEST_DIR)/*))
 endif
 
+# If a test defines "default_cflags" in its yaml, then it is responsible to define ALL flags
+# Otherwise add the default cflags in the variable CFLAGS defined above
+ifneq ($(TEST_DEFAULT_CFLAGS),)
+TEST_CFLAGS += $(TEST_DEFAULT_CFLAGS)
+else
+TEST_CFLAGS += $(CFLAGS)
+endif
+
 %.elf: $(TEST_FILES)
 	make bsp
 	@echo "$(BANNER)"
@@ -410,7 +418,6 @@ endif
 	@echo "$(BANNER)"
 	$(RISCV_EXE_PREFIX)gcc $(CFG_CFLAGS) \
 		$(TEST_CFLAGS) \
-		$(CFLAGS) \
 		-I $(ASM) \
 		-o $@ \
 		-nostartfiles \
@@ -434,19 +441,6 @@ vars_bsp:
 
 clean-bsp:
 	make clean -C $(BSP)
-
-# FIXME:strichmo:merge this into general elf rule
-COREMARK_CFLAGS = \
-	-mabi=ilp32 -march=rv32im -O3 -g -falign-functions=16 \
-	-funroll-all-loops -falign-jumps=4 -finline-functions \
-	-Wall -pedantic -nostartfiles -static
-%coremark.elf:
-	$(RISCV_EXE_PREFIX)gcc $(COREMARK_CFLAGS) -o $@ \
-		-DFLAGS_STR=\""$(COREMARK_CFLAGS)"\" \
-		-DPERFORMANCE_RUN=1 -DITERATIONS=10 \
-		$(BSP_FILES) \
-		$(TEST_FILES) \
-		-T $(BSP)/link.ld
 
 
 # compile and dump RISCV_TESTS only

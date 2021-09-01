@@ -200,6 +200,17 @@ class uvme_cv32e40x_cfg_c extends uvma_core_cntrl_cfg_c;
          obi_memory_data_cfg.trn_log_enabled   == 1;
          rvfi_cfg.trn_log_enabled              == 1;
          rvvi_cfg.trn_log_enabled              == 1;
+         isacov_cfg.trn_log_enabled            == 1;
+      } else {
+         isacov_cfg.trn_log_enabled            == 0;
+         clknrst_cfg.trn_log_enabled           == 0;
+         interrupt_cfg.trn_log_enabled         == 0;
+         debug_cfg.trn_log_enabled             == 0;
+         obi_memory_instr_cfg.trn_log_enabled  == 0;
+         obi_memory_data_cfg.trn_log_enabled   == 0;
+         rvfi_cfg.trn_log_enabled              == 0;
+         rvvi_cfg.trn_log_enabled              == 0;
+         isacov_cfg.trn_log_enabled            == 0;
       }
 
       // FIXME:strichmo:restore when debug coverage model is fixed
@@ -251,6 +262,10 @@ function uvme_cv32e40x_cfg_c::new(string name="uvme_cv32e40x_cfg");
 
    if ($test$plusargs("USE_ISS"))
       use_iss = 1;
+   if ($test$plusargs("trn_log_disabled")) begin
+      trn_log_enabled = 0;
+      trn_log_enabled.rand_mode(0);
+   end
 
    isacov_cfg = uvma_isacov_cfg_c::type_id::create("isacov_cfg");
    clknrst_cfg  = uvma_clknrst_cfg_c::type_id::create("clknrst_cfg");

@@ -69,8 +69,10 @@ function void uvma_isacov_agent_c::connect_phase(uvm_phase phase);
   if (cfg.enabled) begin
     mon_ap = monitor.ap;
     mon_ap.connect(cov_model.mon_trn_fifo.analysis_export);  //TODO if cfg...enabled
-    mon_ap.connect(mon_trn_logger.analysis_export);  // TODO if cfg...enabled
-  end 
+    if (cfg.trn_log_enabled) begin
+      mon_ap.connect(mon_trn_logger.analysis_export);
+    end
+  end
 
 endfunction : connect_phase
 
