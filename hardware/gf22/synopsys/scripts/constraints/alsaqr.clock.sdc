@@ -68,25 +68,25 @@ set_clock_latency -min  $RWDS_C_Latency_Min        [get_clocks RWDS_CLK]
 #############################
 ### FLL CLOCKS DEFINITION ###
 #############################
-create_clock -name FLL_CLUSTER_CLK -period  $CLUSTER_C_Period      [get_pins i_host_domain/i_alsaqr_clk_rst_gen/i_fll_cluster/FLLCLK]
-set_ideal_network                                                  [get_pins i_host_domain/i_alsaqr_clk_rst_gen/i_fll_cluster/FLLCLK]
-set_dont_touch_network                                             [get_pins i_host_domain/i_alsaqr_clk_rst_gen/i_fll_cluster/FLLCLK]
+create_clock -name FLL_CLUSTER_CLK -period  $CLUSTER_C_Period      [get_pins i_host_domain/i_apb_subsystem/i_alsaqr_clk_rst_gen/i_fll_cluster/FLLCLK]
+set_ideal_network                                                  [get_pins i_host_domain/i_apb_subsystem/i_alsaqr_clk_rst_gen/i_fll_cluster/FLLCLK]
+set_dont_touch_network                                             [get_pins i_host_domain/i_apb_subsystem/i_alsaqr_clk_rst_gen/i_fll_cluster/FLLCLK]
 set_clock_uncertainty                       $CLUSTER_C_Uncertainty [get_clocks FLL_CLUSTER_CLK]
 set_clock_transition                        100                    [get_clocks FLL_CLUSTER_CLK]
 set_clock_latency -max                      $CLUSTER_C_Latency_Max [get_clocks FLL_CLUSTER_CLK]
 set_clock_latency -min                      $CLUSTER_C_Latency_Min [get_clocks FLL_CLUSTER_CLK]
 
-create_clock -name FLL_SOC_CLK -period      $SOC_C_Period      [get_pins i_host_domain/i_alsaqr_clk_rst_gen/i_fll_soc/FLLCLK]
-set_ideal_network                                              [get_pins i_host_domain/i_alsaqr_clk_rst_gen/i_fll_soc/FLLCLK]
-set_dont_touch_network                                         [get_pins i_host_domain/i_alsaqr_clk_rst_gen/i_fll_soc/FLLCLK]
+create_clock -name FLL_SOC_CLK -period      $SOC_C_Period      [get_pins i_host_domain/i_apb_subsystem/i_alsaqr_clk_rst_gen/i_fll_soc/FLLCLK]
+set_ideal_network                                              [get_pins i_host_domain/i_apb_subsystem/i_alsaqr_clk_rst_gen/i_fll_soc/FLLCLK]
+set_dont_touch_network                                         [get_pins i_host_domain/i_apb_subsystem/i_alsaqr_clk_rst_gen/i_fll_soc/FLLCLK]
 set_clock_uncertainty                       $SOC_C_Uncertainty [get_clocks FLL_SOC_CLK]
 set_clock_transition                        100                [get_clocks FLL_SOC_CLK]
 set_clock_latency -max                      $SOC_C_Latency_Max [get_clocks FLL_SOC_CLK]
 set_clock_latency -min                      $SOC_C_Latency_Min [get_clocks FLL_SOC_CLK]
 
-create_clock -name FLL_PER_CLK -period      $PER_C_Period      [get_pins i_host_domain/i_alsaqr_clk_rst_gen/i_fll_per/FLLCLK]
-set_ideal_network                                              [get_pins i_host_domain/i_alsaqr_clk_rst_gen/i_fll_per/FLLCLK]
-set_dont_touch_network                                         [get_pins i_host_domain/i_alsaqr_clk_rst_gen/i_fll_per/FLLCLK]
+create_clock -name FLL_PER_CLK -period      $PER_C_Period      [get_pins i_host_domain/i_apb_subsystem/i_alsaqr_clk_rst_gen/i_fll_per/FLLCLK]
+set_ideal_network                                              [get_pins i_host_domain/i_apb_subsystem/i_alsaqr_clk_rst_gen/i_fll_per/FLLCLK]
+set_dont_touch_network                                         [get_pins i_host_domain/i_apb_subsystem/i_alsaqr_clk_rst_gen/i_fll_per/FLLCLK]
 set_clock_uncertainty                       $PER_C_Uncertainty [get_clocks FLL_PER_CLK]
 set_clock_transition                        100                [get_clocks FLL_PER_CLK]
 set_clock_latency -max                      $PER_C_Latency_Max [get_clocks FLL_PER_CLK]
@@ -97,9 +97,9 @@ set_clock_latency -min                      $PER_C_Latency_Min [get_clocks FLL_P
 ### GENERATED CLOCK FROM CLOCK MUXES ###
 ########################################
 # SOC CLK
-create_generated_clock         [get_pins i_alsaqr/i_host_domain/i_clk_gen_hyper/clk0_o] \
-     -name AXI_HYPER_CLK_PHY -source [get_pins  i_host_domain/i_alsaqr_clk_rst_gen/i_fll_soc/FLLCLK] -divide_by 2
+create_generated_clock         [get_pins i_host_domain/i_clk_gen_hyper/clk0_o] \
+     -name AXI_HYPER_CLK_PHY -source [get_pins  i_host_domain/i_apb_subsystem/i_alsaqr_clk_rst_gen/i_fll_soc/FLLCLK] -divide_by 2
 
-create_generated_clock         [get_pins i_alsaqr/i_host_domain/i_clk_gen_hyper/clk90_o] \
-     -name AXI_HYPER_CLK_PHY_90 -source [get_pins  i_host_domain/i_alsaqr_clk_rst_gen/i_fll_soc/FLLCLK]  -edges {2 4 6}
+create_generated_clock         [get_pins i_host_domain/i_clk_gen_hyper/clk90_o] \
+     -name AXI_HYPER_CLK_PHY_90 -source [get_pins  i_host_domain/i_apb_subsystem/i_alsaqr_clk_rst_gen/i_fll_soc/FLLCLK]  -edges {2 4 6}
 

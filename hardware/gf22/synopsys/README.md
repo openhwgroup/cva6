@@ -10,7 +10,7 @@ This will generate the `<tech>/synopsys/scripts/analyze_alsaqr.tcl` file we need
 
 From the synopsys folder:
 ```
-synopsys dc_shell-xg-t -64 -topo -f ./scripts/go_synth.tcl alsqr.tcl
+synopsys dc_shell-xg-t -64 -f ./scripts/go_synth.tcl alsqr.tcl
 
 ```
 
@@ -26,4 +26,4 @@ There are several technology dependet cells we need to check out before launchin
  - Delay lines for the hyper
 
 You can instantiate your macros as wrapped in the tc_sram and pad files according to the `Bender.yml`.
-Support for generic memories and delay lines is still missing.
+Support for generic memories and delay linexs is still missing.

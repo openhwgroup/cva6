@@ -76,6 +76,7 @@ sources:
       WT_DCACHE: ~
     files:
       - ../bootrom/bootrom.sv
+      - host/generic_delay.sv
       - host/pads_gf22.sv
       - host/tc_sram_gf22.sv
       

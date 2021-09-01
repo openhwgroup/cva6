@@ -83,7 +83,7 @@ set_operating_conditions -max SSG_0P59V_0P00V_0P00V_0P00V_M40C
 ####################################################################
 ## ADD CONSTRAINTS
 ####################################################################
-source -echo -verbose ./scripts/constraints/alsaqr.clocks.sdc       > ${TRIAL_DIR}/reports/d06_constr_clk.rpt
+source -echo -verbose ./scripts/constraints/alsaqr.clock.sdc       > ${TRIAL_DIR}/reports/d06_constr_clk.rpt
 #source -echo -verbose ./scripts/constraints/constraints.hyper.sdc        > ${TRIAL_DIR}/reports/d05_constr_hyper.rpt
 #source -echo -verbose ./scripts/constraints/constraints.peripherals.sdc  > ${TRIAL_DIR}/reports/d07_constr_periphs.rpt
 source -echo -verbose ./scripts/constraints/alsaqr.exceptions.sdc   > ${TRIAL_DIR}/reports/d08_constr_excep.rpt
