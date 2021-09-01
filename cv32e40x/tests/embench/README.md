@@ -60,7 +60,9 @@ SIMULATOR option, are omitted.
 | EMB_BUILD_ONLY | NO         | Set this option to "YES" to only build the benchmarks                                                                                  |
 | EMB_TARGET     | 0(not set) | Set a target(float) for your EMBench score<br>Benchmark run will fail if target is not met<br>If no target is set, no checking is done |
 | EMB_CPU_MHZ    | 1          | Set the core frequency in MHz \*                                                                                                       |
+| EMB_PARALLEL   | NO         | Launches simulation jobs in parallel.  The user must set CV_SIM_PREFIX based on any configured jobs manager (e.g. LSF, SLURM, .etc.)   |
 | EMB_DEBUG      | NO         | Set this option to "YES" to increase verbosity of the script                                                                           |
+| EMB_TIMEOUT    | 3600       | Timeout for jobs to complete (in seconds)                                                                                              |
 
 <br>
 * This value is used for calculation in EMBench only. Measurement is done by cycle count, so this does not
