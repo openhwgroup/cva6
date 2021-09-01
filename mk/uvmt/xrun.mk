@@ -402,16 +402,16 @@ gen_corev-dv:
 	for (( idx=${GEN_START_INDEX}; idx < $$((${GEN_START_INDEX} + ${GEN_NUM_TESTS})); idx++ )); do \
 		rm -f ${XRUN_COREVDV_RESULTS}/${TEST}/${TEST}_$$idx.S; \
 	done
-	cd  $(XRUN_COREVDV_RESULTS)/$(TEST) && \
-	$(XRUN) -R -xmlibdirname ../xcelium.d \
-		$(XRUN_RUN_FLAGS) \
-		-xceligen rand_struct \
-		-l $(TEST)_$(GEN_START_INDEX)_$(GEN_NUM_TESTS).log \
-		+start_idx=$(GEN_START_INDEX) \
-		+num_of_tests=$(GEN_NUM_TESTS) \
-		+UVM_TESTNAME=$(GEN_UVM_TEST) \
-		+asm_file_name_opts=$(TEST) \
-		$(GEN_PLUSARGS)
+	cd $(XRUN_COREVDV_RESULTS)/$(TEST) && \
+		$(XRUN) -R -xmlibdirname ../xcelium.d \
+			$(XRUN_RUN_FLAGS) \
+			-xceligen rand_struct \
+			-l $(TEST)_$(GEN_START_INDEX)_$(GEN_NUM_TESTS).log \
+			+start_idx=$(GEN_START_INDEX) \
+			+num_of_tests=$(GEN_NUM_TESTS) \
+			+UVM_TESTNAME=$(GEN_UVM_TEST) \
+			+asm_file_name_opts=$(TEST) \
+			$(GEN_PLUSARGS)
 	# Copy out final assembler files to test directory
 	for (( idx=${GEN_START_INDEX}; idx < $$((${GEN_START_INDEX} + ${GEN_NUM_TESTS})); idx++ )); do \
 		ls -l ${XRUN_COREVDV_RESULTS}/${TEST} > /dev/null; \
