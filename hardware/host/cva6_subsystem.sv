@@ -114,6 +114,14 @@ module cva6_subsytem
     .AXI_USER_WIDTH ( AXI_USER_WIDTH           )
   ) hyper_axi_master_cut();
 
+  AXI_BUS #(
+    .AXI_ADDR_WIDTH ( AXI_ADDRESS_WIDTH        ),
+    .AXI_DATA_WIDTH ( AXI_DATA_WIDTH           ),
+    .AXI_ID_WIDTH   ( ariane_soc::IdWidthSlave ),
+    .AXI_USER_WIDTH ( AXI_USER_WIDTH           )
+  ) cluster_axi_master_cut();
+
+   
   assign ndmreset_n = sync_rst_ni;
    
   // ---------------
@@ -354,7 +362,7 @@ module cva6_subsytem
     .DATA_WIDTH ( AXI_DATA_WIDTH           ),
     .ID_WIDTH   ( ariane_soc::IdWidthSlave ),
     .USER_WIDTH ( AXI_USER_WIDTH           )
-  ) (
+  ) riscvatomics2axihyper_cut (
     .clk_i,
     .rst_ni ( ndmreset_n                ),
     .in     ( hyper_axi_master_cut      ),
@@ -379,8 +387,21 @@ module cva6_subsytem
   // AXI CLUSTER Slave
   // ---------------
 
-  `AXI_ASSIGN(cluster_axi_master,master[ariane_soc::Cluster])
+  `AXI_ASSIGN(cluster_axi_master_cut,master[ariane_soc::Cluster])
 
+  axi_cut_intf #(
+    .BYPASS     ( 1'b0                     ),
+    .ADDR_WIDTH ( AXI_ADDRESS_WIDTH        ),
+    .DATA_WIDTH ( AXI_DATA_WIDTH           ),
+    .ID_WIDTH   ( ariane_soc::IdWidthSlave ),
+    .USER_WIDTH ( AXI_USER_WIDTH           )
+  ) soc2cluster_cut (
+    .clk_i,
+    .rst_ni ( ndmreset_n                ),
+    .in     ( cluster_axi_master_cut    ),
+    .out    ( cluster_axi_master        )
+  );
+   
   // ---------------
   // AXI CLUSTER Master
   // ---------------
@@ -395,7 +416,7 @@ module cva6_subsytem
                                          MaxMstTrans: ariane_soc::NB_PERIPHERALS,
                                          MaxSlvTrans: ariane_soc::NrSlaves,
                                          FallThrough: 1'b0,        
-                                         LatencyMode: axi_pkg::NO_LATENCY, // CUT_ALL_AX | axi_pkg::DemuxW,
+                                         LatencyMode: axi_pkg::NO_LATENCY, // If you cut anything, you might want to remove the soc2cluster_cut.
                                          AxiIdWidthSlvPorts: ariane_soc::IdWidth,
                                          AxiIdUsedSlvPorts: ariane_soc::IdWidth,
                                          UniqueIds: 1'b0,

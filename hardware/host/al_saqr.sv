@@ -389,7 +389,7 @@ module al_saqr
         .NB_HWPE_PORTS                ( 4                               ),
         .NB_DMAS                      ( `NB_DMAS                        ),
         .HWPE_PRESENT                 ( 0                               ),
-        .TCDM_SIZE                    ( 64*1024                         ),
+        .TCDM_SIZE                    ( 64*2048                         ),
         .NB_TCDM_BANKS                ( 16                              ),
         .SET_ASSOCIATIVE              ( 4                               ),
         .CACHE_LINE                   ( 1                               ),

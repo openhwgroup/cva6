@@ -9,7 +9,7 @@ source scripts/area_report.tcl
 
 
 set reAnalyzeRTL "TRUE"
-set TRIAL_DIR "trial0_26_08_2021"
+set TRIAL_DIR "trial1_02_09_2021"
 set DESIGN_NAME "al_saqr"
  
 ####################################################################
