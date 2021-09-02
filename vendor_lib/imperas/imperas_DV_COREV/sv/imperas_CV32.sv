@@ -385,22 +385,21 @@ module CPU #(
     
     // shift data based upon byte address
     function automatic Uns32 getData (input int address, input int data);
-        Uns32 addr3 = address & 3;
-        Uns32 sdata = data << (addr3 * 8);
+        Uns32 addr4 = address & 3;
+        Uns32 sdata = data << (addr4 * 8);
         return sdata;
     endfunction
     
     // shift data based upon byte address
     function automatic Uns32 setData (input int address, input int data);
-        Uns32 addr3 = address & 3;
-        Uns32 sdata = data >> (addr3 * 8);
+        Uns32 addr4 = address & 3;
+        Uns32 sdata = data >> (addr4 * 8);
         return sdata;
     endfunction
     
-    function automatic void dmiWrite(input int address, input int size, input int data);
+    function automatic void dmiWrite(input int address, input int ble, input int data);
         Uns32 wValue;
         Uns32 idx    = address >> 2;
-        Uns32 ble    = getBLE(address, size);
         Uns32 dValue = getData(address, data);
         
         msginfo($sformatf("%08X = %02x", address, data));
@@ -422,7 +421,7 @@ module CPU #(
 
         if (artifact) begin
             msginfo($sformatf("[%x]<=(%0d)%x ELF_LOAD", address, size, dValue));
-            dmiWrite(address, size, data);
+            dmiWrite(address, ble, data);
 
         end else begin
             msginfo($sformatf("[%x]<=(%0d)%x Store", address, size, dValue));
@@ -478,10 +477,9 @@ module CPU #(
         end
     endtask
 
-    function automatic void dmiRead(input int address, input int size, output int data);
+    function automatic void dmiRead(input int address, input int ble, output int data);
         Uns32 rValue;
         Uns32 idx = address >> 2;
-        Uns32 ble = getBLE(address, size);
         
         rValue = read(idx) & byte2bit(ble);
         
@@ -499,7 +497,7 @@ module CPU #(
         automatic Uns32 ble = getBLE(address, size);
         
         if (artifact) begin
-            dmiRead(address, size, data);
+            dmiRead(address, ble, data);
 
         end else begin
             bus.DAddr <= address;
@@ -550,6 +548,9 @@ module CPU #(
         end
     endtask
 
+    /* always fetch 32 and cache full word for successive B/HW accesses */
+    reg [31:0] cache_waddr;
+    reg [31:0] cache_wdata;
     task busFetch32;
         output int fault;
         input  int address;
@@ -557,22 +558,30 @@ module CPU #(
         output int data; 
         input  int artifact; 
 
+        // word aligned address
+        automatic Uns32 waddr = address & ~3;
+        automatic Uns32 wdata;
+        
         automatic Uns32 ble = getBLE(address, size);
         
         if (artifact) begin
-            dmiRead(address, size, data);
+            dmiRead(address, ble, data);
 
         end else begin
-            busStep;
-            bus.IAddr <= address;
-            bus.ISize <= size;
-            bus.Ibe   <= ble;
-            bus.Ird   <= 1;
-            
-            // Wait for the transfer to complete & ssmode
-            busWait;
-            data  = setData(address, bus.IData);
-            bus.Ird   <= 0;
+            if (cache_waddr == waddr) begin
+                wdata  = setData(address, cache_wdata);
+            end else begin
+                busStep;
+                bus.IAddr <= waddr;
+                bus.ISize <= 4;
+                bus.Ibe   <= 'hF;
+                bus.Ird   <= 1;
+                
+                // Wait for the transfer to complete & ssmode
+                busWait;
+                wdata  = setData(address, bus.IData);
+                bus.Ird   <= 0;
+            end
             
             // TODO manual fault injection
             if (!artifact) begin
@@ -582,6 +591,14 @@ module CPU #(
                 bus.InstructionBusFault = fault; // TODO Generate externally
             end
             msginfo($sformatf("[%x]=>(%0d)%x Fetch", address, size, data));
+            
+            // Save for next cached access
+            cache_waddr = waddr;
+            cache_wdata = wdata;
+            
+            data = wdata & byte2bit(ble);
+            //$display("busFetch32 address=%08X cache_waddr=%08X : data=%08X cache_wdata=%08X", 
+            //    address, cache_waddr, data, cache_wdata);
         end
     endtask
     
