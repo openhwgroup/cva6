@@ -97,7 +97,7 @@ module clint #(
                 end
 
                 [MTIMECMP_BASE:MTIMECMP_BASE+8*NR_CORES]: begin
-                    if (riscv::XLEN==32) begin
+                    if (riscv::XLEN == 32) begin
                         if (be[3:0] == 4'hf)
                             mtimecmp_n[$unsigned(address[AddrSelWidth-1+3:3])][31:0] = wdata[31:0];
                         else
@@ -107,9 +107,9 @@ module clint #(
                         mtimecmp_n[$unsigned(address[AddrSelWidth-1+3:3])] = wdata;
                     end
                 end              
-                
+
                 [MTIME_BASE:MTIME_BASE+4]: begin
-                    if (riscv::XLEN==32) begin
+                    if (riscv::XLEN == 32) begin
                         if (address[2:0] == 3'h0)
                             mtime_n[31:0] = wdata[31:0];
                         else begin
@@ -128,32 +128,32 @@ module clint #(
     // APB register read logic
     always_comb begin
         rdata = 'b0;
-        
+
         if (en && !we) begin
             case (register_address) inside
                 [MSIP_BASE:MSIP_BASE+4*NR_CORES]: begin
-                    if (riscv::XLEN==32)
+                    if (riscv::XLEN == 32)
                         rdata[31:0] =  msip_q[$unsigned(address[AddrSelWidth-1+2:2])];
                     else
                         rdata = msip_q[$unsigned(address[AddrSelWidth-1+2:2])];
                 end
-                
+
                 [MTIMECMP_BASE:MTIMECMP_BASE+8*NR_CORES]: begin
-                    if (riscv::XLEN==32) begin
+                    if (riscv::XLEN == 32) begin
                         if (address[2:0] == 3'h0)
                             rdata[31:0] = mtimecmp_q[$unsigned(address[AddrSelWidth-1+3:3])][31:0];
                         else begin
                             if (address[2:0] == 3'h4)
                                 rdata[63:32] = mtimecmp_q[$unsigned(address[AddrSelWidth-1+3:3])][63:32];
                         end
-                        
+
                     end else begin
                         rdata = mtimecmp_q[$unsigned(address[AddrSelWidth-1+3:3])];
                     end
                 end
 
                 [MTIME_BASE:MTIME_BASE+4]: begin
-                    if (riscv::XLEN==32) begin
+                    if (riscv::XLEN == 32) begin
                         if (address[2:0] == 3'h0)
                             rdata[31:0] = mtime_q[31:0];
                         else begin
