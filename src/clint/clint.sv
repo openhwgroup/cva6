@@ -127,8 +127,6 @@ module clint #(
 
     // APB register read logic
     always_comb begin
-        
-        
         rdata = 'b0;
         
         if (en && !we) begin
@@ -169,7 +167,6 @@ module clint #(
                 default:;
             endcase
         end
-
     end
 
     // -----------------------------
