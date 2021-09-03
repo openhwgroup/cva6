@@ -160,10 +160,12 @@ report_timing -through [ get_pins soc_domain_i/pulp_soc_i/fc_subsystem_i/FC_CORE
 report_timing -through [ get_pins soc_domain_i/pulp_soc_i/fc_subsystem_i/FC_CORE_lFC_CORE/ex_stage_i/*     ] > ./${TRIAL_DIR}/reports/core_exstage.rpt
 report_timing -through [ get_pins soc_domain_i/pulp_soc_i/fc_subsystem_i/FC_CORE_lFC_CORE/ex_stage_i/*fpu* ] > ./${TRIAL_DIR}/reports/core_fpu.rpt
 
-report_timing -max_paths 10 -to SOC_CLK                                                                      > ./${TRIAL_DIR}/reports/timing_soc_clock.rpt
-report_timing -max_paths 10 -to PER_CLK                                                                      > ./${TRIAL_DIR}/reports/timing_per_clock.rpt
-report_timing -max_paths 10 -to CLU_CLK                                                                      > ./${TRIAL_DIR}/reports/timing_clu_clock.rpt
-report_timing -max_paths 10 -to EPE_CLK                                                                      > ./${TRIAL_DIR}/reports/timing_epe_clock.rpt
+report_timing -max_paths 10 -to FLL_SOC_CLK                                                                      > ./${TRIAL_DIR}/reports/timing_soc_clock.rpt
+report_timing -max_paths 10 -to FLL_PER_CLK                                                                      > ./${TRIAL_DIR}/reports/timing_per_clock.rpt
+report_timing -max_paths 10 -to FLL_CLUSTER_CLK                                                                  > ./${TRIAL_DIR}/reports/timing_clu_clock.rpt
+report_timing -max_paths 10 -to AXI_HYPER_CLK_PHY                                                                > ./${TRIAL_DIR}/reports/timing_axi_hyper_clock.rpt
+report_timing -max_paths 10 -to AXI_HYPER_CLK_PHY                                                                > ./${TRIAL_DIR}/reports/timing_axi_hyper_90_clock.rpt
+report_timing -max_paths 10 -to RWDS_CLK                                                                         > ./${TRIAL_DIR}/reports/timing_rwds_clock.rpt
 
 ####################################################################
 ## WRITE OUT CONSTRAINTS
