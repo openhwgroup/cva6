@@ -29,6 +29,9 @@ module cva6 import ariane_pkg::*; #(
   parameter int unsigned AxiDataWidth = ariane_axi::DataWidth,
   parameter int unsigned AxiIdWidth   = ariane_axi::IdWidth,
   parameter int unsigned AxiUserWidth = ariane_axi::UserWidth,
+  parameter type axi_ar_chan_t = ariane_axi::ar_chan_t,
+  parameter type axi_aw_chan_t = ariane_axi::aw_chan_t,
+  parameter type axi_w_chan_t  = ariane_axi::w_chan_t,
   parameter type axi_req_t = ariane_axi::req_t,
   parameter type axi_rsp_t = ariane_axi::resp_t
 ) (
@@ -728,7 +731,16 @@ module cva6 import ariane_pkg::*; #(
     // note: this only works with one cacheable region
     // not as important since this cache subsystem is about to be
     // deprecated
-    .ArianeCfg             ( ArianeCfg                   )
+    .ArianeCfg             ( ArianeCfg                   ),
+    .AxiAddrWidth          ( AxiAddrWidth                ),
+    .AxiDataWidth          ( AxiDataWidth                ),
+    .AxiIdWidth            ( AxiIdWidth                  ),
+    .AxiUserWidth          ( AxiUserWidth                ),
+    .axi_ar_chan_t         ( axi_ar_chan_t               ),
+    .axi_aw_chan_t         ( axi_aw_chan_t               ),
+    .axi_w_chan_t          ( axi_w_chan_t                ),
+    .axi_req_t             ( axi_req_t                   ),
+    .axi_rsp_t             ( axi_rsp_t                   )
   ) i_cache_subsystem (
     // to D$
     .clk_i                 ( clk_i                       ),

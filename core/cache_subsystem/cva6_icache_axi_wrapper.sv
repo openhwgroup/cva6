@@ -14,7 +14,13 @@
 //
 
 module cva6_icache_axi_wrapper import ariane_pkg::*; import wt_cache_pkg::*; #(
-  parameter ariane_cfg_t ArianeCfg = ArianeDefaultConfig  // contains cacheable regions
+  parameter ariane_cfg_t ArianeCfg = ArianeDefaultConfig,  // contains cacheable regions
+  parameter int unsigned AxiAddrWidth = 0,
+  parameter int unsigned AxiDataWidth = 0,
+  parameter int unsigned AxiIdWidth   = 0,
+  parameter int unsigned AxiUserWidth = 0,
+  parameter type axi_req_t = ariane_axi::req_t,
+  parameter type axi_rsp_t = ariane_axi::resp_t
 ) (
   input  logic              clk_i,
   input  logic              rst_ni,
@@ -30,8 +36,8 @@ module cva6_icache_axi_wrapper import ariane_pkg::*; import wt_cache_pkg::*; #(
   input  icache_dreq_i_t    dreq_i,
   output icache_dreq_o_t    dreq_o,
   // AXI refill port
-  output ariane_axi::req_t  axi_req_o,
-  input  ariane_axi::resp_t axi_resp_i
+  output axi_req_t          axi_req_o,
+  input  axi_rsp_t          axi_resp_i
 );
 
   localparam AxiNumWords = (ICACHE_LINE_WIDTH/64) * (ICACHE_LINE_WIDTH  > DCACHE_LINE_WIDTH)  +
@@ -118,9 +124,13 @@ module cva6_icache_axi_wrapper import ariane_pkg::*; import wt_cache_pkg::*; #(
   // AXI shim
   // --------
     axi_shim #(
-    .AxiUserWidth    ( AXI_USER_WIDTH         ),
-    .AxiNumWords     ( AxiNumWords            ),
-    .AxiIdWidth      ( $size(axi_resp_i.r.id) )
+    .AxiNumWords     ( AxiNumWords  ),
+    .AxiAddrWidth    ( AxiAddrWidth ),
+    .AxiDataWidth    ( AxiDataWidth ),
+    .AxiIdWidth      ( AxiIdWidth   ),
+    .AxiUserWidth    ( AxiUserWidth ),
+    .axi_req_t       ( axi_req_t    ),
+    .axi_rsp_t       ( axi_rsp_t    )
   ) i_axi_shim (
     .clk_i           ( clk_i             ),
     .rst_ni          ( rst_ni            ),
