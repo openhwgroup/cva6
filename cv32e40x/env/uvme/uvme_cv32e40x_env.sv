@@ -399,13 +399,11 @@ function void uvme_cv32e40x_env_c::create_cov_model();
 
    cov_model = uvme_cv32e40x_cov_model_c::type_id::create("cov_model", this);
 
-   // FIXME:strichmo:restore with new controller
-   /*
    void'(uvm_config_db#(virtual uvmt_cv32e40x_debug_cov_assert_if)::get(this, "", "debug_cov_vif", cntxt.debug_cov_vif));
    if (cntxt.debug_cov_vif == null) begin
       `uvm_fatal("CNTXT", $sformatf("No uvmt_cv32e40x_debug_cov_assert_if found in config database"))
    end
-   */
+
 endfunction: create_cov_model
 
 

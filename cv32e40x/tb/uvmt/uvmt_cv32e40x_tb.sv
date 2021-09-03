@@ -340,85 +340,70 @@ module uvmt_cv32e40x_tb;
                                                       .*);
 
 
+  // Debug assertion and coverage interface
 
-    // Debug assertion and coverage interface
+  // Instantiate debug assertions
 
-    // Instantiate debug assertions
-
-    uvmt_cv32e40x_debug_cov_assert_if debug_cov_assert_if(
-      .clk_i(clknrst_if.clk),
-      .rst_ni(clknrst_if.reset_n),
-      .fetch_enable_i(dut_wrap.cv32e40x_wrapper_i.core_i.fetch_enable_i),
-      .if_stage_instr_rvalid_i(dut_wrap.cv32e40x_wrapper_i.core_i.if_stage_i.m_c_obi_instr_if.s_rvalid.rvalid),
-      .if_stage_instr_rdata_i(dut_wrap.cv32e40x_wrapper_i.core_i.if_stage_i.m_c_obi_instr_if.resp_payload.rdata),
-      .id_stage_instr_valid_i(dut_wrap.cv32e40x_wrapper_i.core_i.id_stage_i.if_id_pipe_i.instr_valid),
-      .id_stage_instr_rdata_i(dut_wrap.cv32e40x_wrapper_i.core_i.id_stage_i.if_id_pipe_i.instr.bus_resp.rdata),
-      .id_stage_is_compressed(dut_wrap.cv32e40x_wrapper_i.core_i.id_stage_i.if_id_pipe_i.is_compressed),
-      .id_stage_wfi_insn     (dut_wrap.cv32e40x_wrapper_i.core_i.id_stage_i.id_ex_pipe_o.wfi_insn),  // TODO:ropeders "ex_stage"?
-      .id_valid(dut_wrap.cv32e40x_wrapper_i.core_i.id_stage_i.id_valid),
-      .if_stage_pc(dut_wrap.cv32e40x_wrapper_i.core_i.if_stage_i.pc_if_o),
-      .id_stage_pc(dut_wrap.cv32e40x_wrapper_i.core_i.id_stage_i.if_id_pipe_i.pc),
-      .ex_stage_csr_en (dut_wrap.cv32e40x_wrapper_i.core_i.id_ex_pipe.csr_en),
-      .ex_valid(dut_wrap.cv32e40x_wrapper_i.core_i.ex_stage_i.instr_valid),
-      .ex_stage_instr_rdata_i(dut_wrap.cv32e40x_wrapper_i.core_i.id_ex_pipe.instr.bus_resp.rdata),
-      .ex_stage_pc(dut_wrap.cv32e40x_wrapper_i.core_i.id_ex_pipe.pc),
-      .wb_stage_instr_rdata_i(dut_wrap.cv32e40x_wrapper_i.core_i.ex_wb_pipe.instr.bus_resp.rdata),
-      .wb_stage_instr_valid_i(dut_wrap.cv32e40x_wrapper_i.core_i.ex_wb_pipe.instr_valid),
-      .wb_stage_pc           (dut_wrap.cv32e40x_wrapper_i.core_i.wb_stage_i.ex_wb_pipe_i.pc),
-      .wb_stage_wfi_insn     (dut_wrap.cv32e40x_wrapper_i.core_i.ex_wb_pipe.wfi_insn),
-      .wb_err                (dut_wrap.cv32e40x_wrapper_i.core_i.ex_wb_pipe.instr.bus_resp.err),
-      .mie_q(dut_wrap.cv32e40x_wrapper_i.core_i.cs_registers_i.mie_q),
-      .ctrl_fsm_cs(dut_wrap.cv32e40x_wrapper_i.core_i.controller_i.controller_fsm_i.ctrl_fsm_cs),
-      .illegal_insn_i(dut_wrap.cv32e40x_wrapper_i.core_i.ex_wb_pipe.illegal_insn),
-      .wb_illegal(dut_wrap.cv32e40x_wrapper_i.core_i.ex_wb_pipe.illegal_insn),
-      .wb_valid(dut_wrap.cv32e40x_wrapper_i.core_i.wb_stage_i.wb_valid_o),
-      .wb_halt(dut_wrap.cv32e40x_wrapper_i.core_i.wb_stage_i.ctrl_fsm_i.halt_wb),
-      //TODO:ropeders .illegal_insn_q(dut_wrap.cv32e40x_wrapper_i.core_i.controller_i.controller_fsm_i.illegal_insn_q),
-      .ecall_insn_i(dut_wrap.cv32e40x_wrapper_i.core_i.ex_wb_pipe.ecall_insn),
-      .debug_req_i(dut_wrap.cv32e40x_wrapper_i.core_i.controller_i.controller_fsm_i.pending_debug),  // TODO:ropeders "debug_req_i"?
-      .debug_mode_q(dut_wrap.cv32e40x_wrapper_i.core_i.controller_i.controller_fsm_i.debug_mode_q),
-      .dcsr_q(dut_wrap.cv32e40x_wrapper_i.core_i.cs_registers_i.dcsr_q),
-      .depc_q(dut_wrap.cv32e40x_wrapper_i.core_i.cs_registers_i.dpc_q),
-      .depc_n(dut_wrap.cv32e40x_wrapper_i.core_i.cs_registers_i.dpc_n),
-      .mcause_q(
-        {dut_wrap.cv32e40x_wrapper_i.core_i.cs_registers_i.mcause_q[31],
-        dut_wrap.cv32e40x_wrapper_i.core_i.cs_registers_i.mcause_q[4:0]}),
-      .mtvec(dut_wrap.cv32e40x_wrapper_i.core_i.cs_registers_i.mtvec_q),
-      .mepc_q(dut_wrap.cv32e40x_wrapper_i.core_i.cs_registers_i.mepc_q),
-      .tdata1(dut_wrap.cv32e40x_wrapper_i.core_i.cs_registers_i.tmatch_control_rdata),
-      .tdata2(dut_wrap.cv32e40x_wrapper_i.core_i.cs_registers_i.tmatch_value_rdata),
-      .trigger_match_i(dut_wrap.cv32e40x_wrapper_i.core_i.controller_i.controller_fsm_i.trigger_match_in_wb),  // TODO:ropeders
-      .mcountinhibit_q(dut_wrap.cv32e40x_wrapper_i.core_i.cs_registers_i.mcountinhibit_q),
-      .mcycle(dut_wrap.cv32e40x_wrapper_i.core_i.cs_registers_i.mhpmcounter_q[0]),
-      .minstret(dut_wrap.cv32e40x_wrapper_i.core_i.cs_registers_i.mhpmcounter_q[2]),
-      .fence_i(dut_wrap.cv32e40x_wrapper_i.core_i.id_stage_i.decoder_i.fencei_insn_o),
-
+  bind cv32e40x_wrapper
+    uvmt_cv32e40x_debug_cov_assert_if debug_cov_assert_if (
+      .id_valid(core_i.id_stage_i.id_valid),
+      .ex_stage_csr_en(core_i.id_ex_pipe.csr_en),
+      .ex_valid(core_i.ex_stage_i.instr_valid),
+      .ex_stage_instr_rdata_i(core_i.id_ex_pipe.instr.bus_resp.rdata),
+      .ex_stage_pc(core_i.id_ex_pipe.pc),
+      .wb_stage_instr_rdata_i(core_i.ex_wb_pipe.instr.bus_resp.rdata),
+      .wb_stage_instr_valid_i(core_i.ex_wb_pipe.instr_valid),
+      .wb_stage_pc           (core_i.wb_stage_i.ex_wb_pipe_i.pc),
+      .wb_err                (core_i.ex_wb_pipe.instr.bus_resp.err),
+      .mie_q(core_i.cs_registers_i.mie_q),
+      .ctrl_fsm_cs(core_i.controller_i.controller_fsm_i.ctrl_fsm_cs),
+      .illegal_insn_i(core_i.ex_wb_pipe.illegal_insn),
+      .wb_illegal(core_i.ex_wb_pipe.illegal_insn),
+      .wb_valid(core_i.wb_stage_i.wb_valid_o),
+      .ecall_insn_i(core_i.ex_wb_pipe.ecall_insn),
+      .debug_req_i(core_i.controller_i.controller_fsm_i.debug_req_i),
+      .debug_req_q(core_i.controller_i.controller_fsm_i.debug_req_q),
+      .pending_debug(core_i.controller_i.controller_fsm_i.pending_debug),
+      .debug_mode_q(core_i.controller_i.controller_fsm_i.debug_mode_q),
+      .dcsr_q(core_i.cs_registers_i.dcsr_q),
+      .depc_q(core_i.cs_registers_i.dpc_q),
+      .depc_n(core_i.cs_registers_i.dpc_n),
+      .mcause_q({core_i.cs_registers_i.mcause_q[31], core_i.cs_registers_i.mcause_q[4:0]}),
+      .mtvec(core_i.cs_registers_i.mtvec_q),
+      .mepc_q(core_i.cs_registers_i.mepc_q),
+      .tdata1(core_i.cs_registers_i.tmatch_control_rdata),
+      .tdata2(core_i.cs_registers_i.tmatch_value_rdata),
+      .trigger_match_i(core_i.controller_i.controller_fsm_i.trigger_match_in_wb),  // TODO:ropeders
+      .mcountinhibit_q(core_i.cs_registers_i.mcountinhibit_q),
+      .mcycle(core_i.cs_registers_i.mhpmcounter_q[0]),
+      .minstret(core_i.cs_registers_i.mhpmcounter_q[2]),
+      .fence_i(core_i.id_stage_i.decoder_i.fencei_insn_o),
       // TODO: review this change from CV32E40X_HASH f6196bf to a26b194. It should be logically equivalent.
-      //assign debug_cov_assert_if.inst_ret = dut_wrap.cv32e40x_wrapper_i.core_i.cs_registers_i.inst_ret;
+      //assign debug_cov_assert_if.inst_ret = core_i.cs_registers_i.inst_ret;
       // First attempt: this causes unexpected failures of a_minstret_count
-      //assign debug_cov_assert_if.inst_ret = (dut_wrap.cv32e40x_wrapper_i.core_i.id_valid &
-      //                                       dut_wrap.cv32e40x_wrapper_i.core_i.is_decoding);
+      //assign debug_cov_assert_if.inst_ret = (core_i.id_valid &
+      //                                       core_i.is_decoding);
       // Second attempt: (based on OK input).  This passes, but maybe only because p_minstret_count
       //                                       is the only property sensitive to inst_ret. Will
       //                                       this work in the general case?
-      .inst_ret(dut_wrap.cv32e40x_wrapper_i.core_i.ctrl_fsm.mhpmevent.minstret),
-      .csr_access(dut_wrap.cv32e40x_wrapper_i.core_i.ex_wb_pipe.csr_en),
-      .csr_op(dut_wrap.cv32e40x_wrapper_i.core_i.ex_wb_pipe.csr_op),
-      // TODO:ropeders .csr_op_dec(dut_wrap.cv32e40x_wrapper_i.core_i.ex_wb_pipe.decoder_i.csr_op),
-      .csr_addr(dut_wrap.cv32e40x_wrapper_i.core_i.ex_wb_pipe.csr_addr),
-      .csr_we_int(dut_wrap.cv32e40x_wrapper_i.core_i.cs_registers_i.csr_we_int),
-      .irq_ack_o(dut_wrap.cv32e40x_wrapper_i.core_i.irq_ack_o),
-      .irq_id_o(dut_wrap.cv32e40x_wrapper_i.core_i.irq_id_o),
-      .dm_halt_addr_i(dut_wrap.cv32e40x_wrapper_i.core_i.dm_halt_addr_i),
-      .dm_exception_addr_i(dut_wrap.cv32e40x_wrapper_i.core_i.dm_exception_addr_i),
-      .core_sleep_o(dut_wrap.cv32e40x_wrapper_i.core_i.core_sleep_o),
-      .irq_i(dut_wrap.cv32e40x_wrapper_i.core_i.irq_i),
-      .pc_set(dut_wrap.cv32e40x_wrapper_i.core_i.ctrl_fsm.pc_set),
-      .boot_addr_i(dut_wrap.cv32e40x_wrapper_i.core_i.boot_addr_i),
-      .rvfi_valid(dut_wrap.cv32e40x_wrapper_i.rvfi_i.rvfi_valid),
-      .rvfi_pc_wdata(dut_wrap.cv32e40x_wrapper_i.rvfi_i.rvfi_pc_wdata),
-      .rvfi_pc_rdata(dut_wrap.cv32e40x_wrapper_i.rvfi_i.rvfi_pc_rdata),
-      // TODO:ropeders .branch_in_decode(dut_wrap.cv32e40x_wrapper_i.core_i.controller_i.controller_fsm_i.branch_in_id),
+      .inst_ret(core_i.ctrl_fsm.mhpmevent.minstret),
+      .csr_access(core_i.ex_wb_pipe.csr_en),
+      .csr_op(core_i.ex_wb_pipe.csr_op),
+      .csr_addr(core_i.ex_wb_pipe.csr_addr),
+      .csr_we_int(core_i.cs_registers_i.csr_we_int),
+      .irq_ack_o(core_i.irq_ack_o),
+      .irq_id_o(core_i.irq_id_o),
+      .dm_halt_addr_i(core_i.dm_halt_addr_i),
+      .dm_exception_addr_i(core_i.dm_exception_addr_i),
+      .core_sleep_o(core_i.core_sleep_o),
+      .irq_i(core_i.irq_i),
+      .pc_set(core_i.ctrl_fsm.pc_set),
+      .boot_addr_i(core_i.boot_addr_i),
+      .branch_in_ex(core_i.controller_i.controller_fsm_i.branch_in_ex),
+
+      .rvfi_valid(rvfi_i.rvfi_valid),
+      .rvfi_pc_wdata(rvfi_i.rvfi_pc_wdata),
+      .rvfi_pc_rdata(rvfi_i.rvfi_pc_rdata),
 
       .is_wfi(),
       .in_wfi(),
@@ -428,10 +413,12 @@ module uvmt_cv32e40x_tb;
       .is_cebreak(),
       .is_dret(),
       .is_mulhsu(),
-      .pending_enabled_irq()
+      .pending_enabled_irq(),
+
+      .*
     );
 
-    uvmt_cv32e40x_debug_assert u_debug_assert(.cov_assert_if(debug_cov_assert_if));
+    bind cv32e40x_wrapper uvmt_cv32e40x_debug_assert u_debug_assert(.cov_assert_if(debug_cov_assert_if));
 
     //uvmt_cv32e40x_rvvi_handcar u_rvvi_handcar();
     /**
@@ -671,8 +658,7 @@ module uvmt_cv32e40x_tb;
      uvm_config_db#(virtual uvmt_cv32e40x_vp_status_if      )::set(.cntxt(null), .inst_name("*"), .field_name("vp_status_vif"),       .value(vp_status_if)      );
      uvm_config_db#(virtual uvme_cv32e40x_core_cntrl_if     )::set(.cntxt(null), .inst_name("*"), .field_name("core_cntrl_vif"),      .value(core_cntrl_if)     );
      uvm_config_db#(virtual uvmt_cv32e40x_core_status_if    )::set(.cntxt(null), .inst_name("*"), .field_name("core_status_vif"),     .value(core_status_if)    );
-     // FIXME:strichmo:restore as debug is fixed
-     //uvm_config_db#(virtual uvmt_cv32e40x_debug_cov_assert_if)::set(.cntxt(null), .inst_name("*.env"), .field_name("debug_cov_vif"),.value(debug_cov_assert_if));
+     uvm_config_db#(virtual uvmt_cv32e40x_debug_cov_assert_if)::set(.cntxt(null), .inst_name("*.env"), .field_name("debug_cov_vif"),.value(dut_wrap.cv32e40x_wrapper_i.debug_cov_assert_if));
 
      // Make the DUT Wrapper Virtual Peripheral's status outputs available to the base_test
      uvm_config_db#(bit      )::set(.cntxt(null), .inst_name("*"), .field_name("tp"),     .value(1'b0)        );
