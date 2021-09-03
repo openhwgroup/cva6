@@ -165,7 +165,7 @@ package riscv;
     } stype_t;
 
     typedef struct packed {
-        logic [31:12] funct3;
+        logic [31:12] imm;
         logic [11:7]  rd;
         logic [6:0]   opcode;
     } utype_t;
