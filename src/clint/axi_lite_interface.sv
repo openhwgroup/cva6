@@ -18,17 +18,18 @@ module axi_lite_interface #(
     parameter int unsigned AXI_DATA_WIDTH = 64,
     parameter int unsigned AXI_ID_WIDTH   = 10
 ) (
-    input logic                       clk_i,    // Clock
-    input logic                       rst_ni,  // Asynchronous reset active low
+    input logic                               clk_i,    // Clock
+    input logic                               rst_ni,   // Asynchronous reset active low
 
-    input  ariane_axi::req_t          axi_req_i,
-    output ariane_axi::resp_t         axi_resp_o,
+    input  ariane_axi::req_t                  axi_req_i,
+    output ariane_axi::resp_t                 axi_resp_o,
 
-    output logic [AXI_ADDR_WIDTH-1:0] address_o,
-    output logic                      en_o,        // transaction is valid
-    output logic                      we_o,        // write
-    input  logic [AXI_DATA_WIDTH-1:0] data_i,      // data
-    output logic [AXI_DATA_WIDTH-1:0] data_o
+    output logic [AXI_ADDR_WIDTH-1:0]         address_o,
+    output logic                              en_o,        // transaction is valid
+    output logic                              we_o,        // write
+    output logic [(AXI_DATA_WIDTH/8)-1:0]     be_o,        // byte enable write
+    input  logic [AXI_DATA_WIDTH-1:0]         data_i,      // data
+    output logic [AXI_DATA_WIDTH-1:0]         data_o
 );
 
     // The RLAST signal is not required, and is considered asserted for every transfer on the read data channel.
@@ -50,6 +51,7 @@ module axi_lite_interface #(
     assign axi_resp_o.r.resp = 2'b0;
     // output data which we want to write to the slave
     assign data_o = axi_req_i.w.data;
+    assign be_o = axi_req_i.w.strb;
     // ------------------------
     // AXI4-Lite State Machine
     // ------------------------

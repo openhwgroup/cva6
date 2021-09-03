@@ -42,8 +42,10 @@ module clint #(
     logic [AXI_ADDR_WIDTH-1:0] address;
     logic                      en;
     logic                      we;
+    logic [7:0]                be;
     logic [63:0] wdata;
     logic [63:0] rdata;
+
 
     // bit 11 and 10 are determining the address offset
     logic [15:0] register_address;
@@ -70,6 +72,7 @@ module clint #(
         .address_o  ( address    ),
         .en_o       ( en         ),
         .we_o       ( we         ),
+        .be_o       ( be         ),
         .data_i     ( rdata      ),
         .data_o     ( wdata      )
     );
@@ -94,11 +97,28 @@ module clint #(
                 end
 
                 [MTIMECMP_BASE:MTIMECMP_BASE+8*NR_CORES]: begin
-                    mtimecmp_n[$unsigned(address[AddrSelWidth-1+3:3])] = wdata;
-                end
+                    if (riscv::XLEN == 32) begin
+                        if (be[3:0] == 4'hf)
+                            mtimecmp_n[$unsigned(address[AddrSelWidth-1+3:3])][31:0] = wdata[31:0];
+                        else
+                            mtimecmp_n[$unsigned(address[AddrSelWidth-1+3:3])][63:32] = wdata[63:32];
+                            
+                    end else begin
+                        mtimecmp_n[$unsigned(address[AddrSelWidth-1+3:3])] = wdata;
+                    end
+                end              
 
-                MTIME_BASE: begin
-                    mtime_n = wdata;
+                [MTIME_BASE:MTIME_BASE+4]: begin
+                    if (riscv::XLEN == 32) begin
+                        if (address[2:0] == 3'h0)
+                            mtime_n[31:0] = wdata[31:0];
+                        else begin
+                            if (address[2:0] == 3'h4)
+                                mtime_n[63:32] = wdata[63:32];
+                        end
+                    end else begin
+                        mtime_n = wdata;
+                    end
                 end
                 default:;
             endcase
@@ -112,15 +132,37 @@ module clint #(
         if (en && !we) begin
             case (register_address) inside
                 [MSIP_BASE:MSIP_BASE+4*NR_CORES]: begin
-                    rdata = msip_q[$unsigned(address[AddrSelWidth-1+2:2])];
+                    if (riscv::XLEN == 32)
+                        rdata[31:0] =  msip_q[$unsigned(address[AddrSelWidth-1+2:2])];
+                    else
+                        rdata = msip_q[$unsigned(address[AddrSelWidth-1+2:2])];
                 end
 
                 [MTIMECMP_BASE:MTIMECMP_BASE+8*NR_CORES]: begin
-                    rdata = mtimecmp_q[$unsigned(address[AddrSelWidth-1+3:3])];
+                    if (riscv::XLEN == 32) begin
+                        if (address[2:0] == 3'h0)
+                            rdata[31:0] = mtimecmp_q[$unsigned(address[AddrSelWidth-1+3:3])][31:0];
+                        else begin
+                            if (address[2:0] == 3'h4)
+                                rdata[63:32] = mtimecmp_q[$unsigned(address[AddrSelWidth-1+3:3])][63:32];
+                        end
+
+                    end else begin
+                        rdata = mtimecmp_q[$unsigned(address[AddrSelWidth-1+3:3])];
+                    end
                 end
 
-                MTIME_BASE: begin
-                    rdata = mtime_q;
+                [MTIME_BASE:MTIME_BASE+4]: begin
+                    if (riscv::XLEN == 32) begin
+                        if (address[2:0] == 3'h0)
+                            rdata[31:0] = mtime_q[31:0];
+                        else begin
+                            if (address[2:0] == 3'h4)
+                                rdata[63:32] = mtime_q[63:32];
+                        end
+                    end else begin
+                        rdata = mtime_q;
+                    end
                 end
                 default:;
             endcase
