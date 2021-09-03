@@ -48,9 +48,8 @@ module uvmt_cv32e40x_interrupt_assert
     input [31:0] if_stage_instr_rdata_i, // Instruction word data
 
     // Instruction ID stage (determines executed instructions)
-    input        id_stage_instr_valid_i, // instruction word is valid
-    input [31:0] id_stage_instr_rdata_i, // Instruction word data
-    input [4:0]  ctrl_fsm_cs,            // Controller FSM to get hint for interrupt taken
+    input              id_stage_instr_valid_i, // instruction word is valid
+    input [31:0]       id_stage_instr_rdata_i, // Instruction word data
 
     // Determine whether to cancel instruction if branch taken
     input branch_taken_ex,

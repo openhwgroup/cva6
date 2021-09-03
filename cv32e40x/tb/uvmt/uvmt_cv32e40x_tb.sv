@@ -325,7 +325,7 @@ module uvmt_cv32e40x_tb;
 
   // Bind in verification modules to the design
   bind cv32e40x_core
-    uvmt_cv32e40x_interrupt_assert interrupt_assert_i(.mcause_n({cs_registers_i.mcause_n.interrupt, cs_registers_i.mcause_n.exception_code}),
+    uvmt_cv32e40x_interrupt_assert interrupt_assert_i(.mcause_n({cs_registers_i.mcause_n.interrupt, cs_registers_i.mcause_n.exception_code[4:0]}),
                                                       .mip(cs_registers_i.mip),
                                                       .mie_q(cs_registers_i.mie_q),
                                                       .mstatus_mie(cs_registers_i.mstatus_q.mie),
@@ -335,7 +335,6 @@ module uvmt_cv32e40x_tb;
                                                       .id_stage_instr_valid_i(wb_stage_i.instr_valid),
                                                       .id_stage_instr_rdata_i(wb_stage_i.ex_wb_pipe_i.instr.bus_resp.rdata),
                                                       .branch_taken_ex(controller_i.controller_fsm_i.branch_taken_ex),
-                                                      .ctrl_fsm_cs(controller_i.controller_fsm_i.ctrl_fsm_cs),
                                                       .debug_mode_q(controller_i.controller_fsm_i.debug_mode_q),
                                                       .*);
 
