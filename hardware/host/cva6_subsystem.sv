@@ -457,6 +457,16 @@ module cva6_subsytem
     start_addr: ariane_soc::ClusterBase,
     end_addr:   ariane_soc::ClusterBase     + ariane_soc::ClusterLength  
   };
+  assign addr_map[ariane_soc::L2SPM] = '{ 
+    idx:  ariane_soc::L2SPM,
+    start_addr: ariane_soc::L2SPMBase,
+    end_addr:   ariane_soc::L2SPMBase     + ariane_soc::L2SPMLength  
+  };
+  assign addr_map[ariane_soc::APB_SLVS] = '{ 
+    idx:  ariane_soc::APB_SLVS,
+    start_addr: ariane_soc::APB_SLVSBase,
+    end_addr:   ariane_soc::APB_SLVSBase     + ariane_soc::APB_SLVSLength  
+  };
   assign addr_map[ariane_soc::Timer] = '{ 
     idx:  ariane_soc::Timer,
     start_addr: ariane_soc::TimerBase,
@@ -477,16 +487,6 @@ module cva6_subsytem
     start_addr: ariane_soc::HYAXIBase,
     end_addr:   ariane_soc::HYAXIBase     + ariane_soc::HYAXILength  
   }; 
-  assign addr_map[ariane_soc::L2SPM] = '{ 
-    idx:  ariane_soc::L2SPM,
-    start_addr: ariane_soc::L2SPMBase,
-    end_addr:   ariane_soc::L2SPMBase     + ariane_soc::L2SPMLength  
-  };
-  assign addr_map[ariane_soc::APB_SLVS] = '{ 
-    idx:  ariane_soc::APB_SLVS,
-    start_addr: ariane_soc::APB_SLVSBase,
-    end_addr:   ariane_soc::APB_SLVSBase     + ariane_soc::APB_SLVSLength  
-  };
 
 
   axi_xbar_intf #(

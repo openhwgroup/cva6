@@ -37,12 +37,12 @@ package ariane_soc;
   localparam SocToClusterIdWidth = 3;   
    
   typedef enum int unsigned {
-    APB_SLVS = 11,
-    L2SPM    = 10,
-    HYAXI    = 9,
-    Ethernet = 8,
-    SPI      = 7,
-    Timer    = 6,
+    HYAXI    = 11,
+    Ethernet = 10,
+    SPI      = 9,
+    Timer    = 8,
+    APB_SLVS = 7,
+    L2SPM    = 6,
     Cluster  = 5,
     PLIC     = 4,
     CLINT    = 3,
@@ -51,7 +51,7 @@ package ariane_soc;
     Debug    = 0
   } axi_slaves_t;
    
-  localparam NB_PERIPHERALS = APB_SLVS + 1;
+  localparam NB_PERIPHERALS = HYAXI + 1;
 
 
   localparam logic[63:0] DebugLength    = 64'h1000;
@@ -76,12 +76,12 @@ package ariane_soc;
     CLINTBase    = 64'h0200_0000,
     PLICBase     = 64'h0C00_0000,
     ClusterBase  = 64'h1000_0000,
+    APB_SLVSBase = 64'h1A10_0000,
+    L2SPMBase    = 64'h1C00_0000,
     TimerBase    = 64'h1800_0000,
     SPIBase      = 64'h2000_0000,
     EthernetBase = 64'h3000_0000,
-    HYAXIBase    = 64'h8000_0000,
-    L2SPMBase    = 64'hC000_0000,
-    APB_SLVSBase = 64'hC100_0000
+    HYAXIBase    = 64'h8000_0000
   } soc_bus_start_t; 
   // Let x = NB_PERIPHERALS: as long as Base(xth slave)+Length(xth slave) is < 1_0000_0000 we can cut the 32 MSBs addresses without any worries. 
 
@@ -97,9 +97,9 @@ package ariane_soc;
     NrNonIdempotentRules:  1,
     NonIdempotentAddrBase: {64'b0},
     NonIdempotentLength:   {HYAXIBase},
-    NrExecuteRegionRules:  3,
-    ExecuteRegionAddrBase: {HYAXIBase,   ROMBase,   DebugBase},
-    ExecuteRegionLength:   {HYAXILength, ROMLength, DebugLength},
+    NrExecuteRegionRules:  4,
+    ExecuteRegionAddrBase: {HYAXIBase, L2SPMBase,   ROMBase,   DebugBase},
+    ExecuteRegionLength:   {HYAXILength, L2SPMLength, ROMLength, DebugLength},
     // cached region
     NrCachedRegionRules:    1,
     CachedRegionAddrBase:  {HYAXIBase},

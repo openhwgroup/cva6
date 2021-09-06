@@ -157,7 +157,7 @@ module apb_subsystem
    
 
    logic [31:0]                        apb_udma_address;     
-   assign apb_udma_address = apb_udma_master_bus.paddr  - apb_soc_pkg::UDMABase + 32'h1A10_0000 ;
+   assign apb_udma_address = apb_udma_master_bus.paddr ;
                             
    udma_subsystem
      #(

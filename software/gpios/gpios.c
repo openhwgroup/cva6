@@ -23,7 +23,7 @@
 #include "utils.h"
 #include "../common/encoding.h"
 #define BUFFER_SIZE 32
-#define ARCHI_GPIO_ADDR 0xC1002000
+#define ARCHI_GPIO_ADDR 0x1A101000
 #define GPIO_PADDIR_0_31_OFFSET 0x0
 #define GPIO_PADEN_0_31_OFFSET 0x4
 #define GPIO_PADOUT_0_31_OFFSET 0xC

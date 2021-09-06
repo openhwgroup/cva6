@@ -34,12 +34,12 @@ package apb_soc_pkg;
   
    
    typedef enum logic [31:0] {
-     UDMABase     = 32'hC100_0000,
-     GPIOSBase    = 32'hC100_2000,
-     FLLBase      = 32'hC100_3000,
-     HYAXICFGBase = 32'hC100_4000,
-     ADVTIMERBase = 32'hC100_5000,
-     PADFRAMEBase = 32'hC100_6000
+     FLLBase      = 32'h1A10_0000,
+     GPIOSBase    = 32'h1A10_1000,
+     UDMABase     = 32'h1A10_2000,
+     HYAXICFGBase = 32'h1A10_4000,
+     ADVTIMERBase = 32'h1A10_5000,
+     PADFRAMEBase = 32'h1A10_6000
     } soc_apb_bus_start_t;
    
 endpackage
