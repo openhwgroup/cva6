@@ -31,8 +31,8 @@ int main() {
 
     int * tx_buffer;
     int * rx_buffer;
-    tx_buffer = 0xC00007B0;
-    rx_buffer = 0xC0001000;
+    tx_buffer = 0x1C0007B0;
+    rx_buffer = 0x1C001000;
     int a;
     int *p;
     int hyper_addr;
