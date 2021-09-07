@@ -46,6 +46,7 @@ class uvme_cv32e40x_env_c extends uvm_env;
    uvma_obi_memory_agent_c          obi_memory_data_agent ;
    uvma_rvfi_agent_c#(ILEN,XLEN)    rvfi_agent;
    uvma_rvvi_agent_c#(ILEN,XLEN)    rvvi_agent;
+   uvma_fencei_agent_c              fencei_agent ;
 
    `uvm_component_utils_begin(uvme_cv32e40x_env_c)
       `uvm_field_object(cfg  , UVM_DEFAULT)
@@ -345,6 +346,7 @@ function void uvme_cv32e40x_env_c::assign_cfg();
    uvm_config_db#(uvma_obi_memory_cfg_c)::set(this, "obi_memory_data_agent",  "cfg", cfg.obi_memory_data_cfg);
    uvm_config_db#(uvma_rvfi_cfg_c#(ILEN,XLEN))::set(this, "rvfi_agent", "cfg", cfg.rvfi_cfg);
    uvm_config_db#(uvma_rvvi_cfg_c#(ILEN,XLEN))::set(this, "rvvi_agent", "cfg", cfg.rvvi_cfg);
+   uvm_config_db#(uvma_fencei_cfg_c)::set(this, "fencei_agent", "cfg", cfg.fencei_cfg);
 
 endfunction: assign_cfg
 
@@ -359,6 +361,7 @@ function void uvme_cv32e40x_env_c::assign_cntxt();
    uvm_config_db#(uvma_obi_memory_cntxt_c)::set(this, "obi_memory_data_agent",  "cntxt", cntxt.obi_memory_data_cntxt);
    uvm_config_db#(uvma_rvfi_cntxt_c#(ILEN,XLEN))::set(this, "rvfi_agent", "cntxt", cntxt.rvfi_cntxt);
    uvm_config_db#(uvma_rvvi_cntxt_c#(ILEN,XLEN))::set(this, "rvvi_agent", "cntxt", cntxt.rvvi_cntxt);
+   uvm_config_db#(uvma_fencei_cntxt_c)::set(this, "rvvi_agent", "cntxt", cntxt.fencei_cntxt);
 
 endfunction: assign_cntxt
 
@@ -374,6 +377,7 @@ function void uvme_cv32e40x_env_c::create_agents();
    obi_memory_data_agent  = uvma_obi_memory_agent_c::type_id::create("obi_memory_data_agent",  this);
    rvfi_agent = uvma_rvfi_agent_c#(ILEN,XLEN)::type_id::create("rvfi_agent", this);
    rvvi_agent = uvma_rvvi_ovpsim_agent_c#(ILEN,XLEN)::type_id::create("rvvi_agent", this);
+   fencei_agent = uvma_fencei_agent_c::type_id::create("fencei_agent", this);
 
 endfunction: create_agents
 
@@ -454,5 +458,3 @@ endfunction: assemble_vsequencer
 
 
 `endif // __UVME_CV32E40X_ENV_SV__
-
-

@@ -59,7 +59,8 @@ module uvmt_cv32e40x_dut_wrap
     uvme_cv32e40x_core_cntrl_if  core_cntrl_if,
     uvmt_cv32e40x_core_status_if core_status_if,
     uvma_obi_memory_if           obi_instr_if_i,
-    uvma_obi_memory_if           obi_data_if_i
+    uvma_obi_memory_if           obi_data_if_i,
+    uvma_fencei_if               fencei_if_i
   );
 
     import uvm_pkg::*; // needed for the UVM messaging service (`uvm_info(), etc.)
@@ -190,6 +191,9 @@ module uvmt_cv32e40x_dut_wrap
          .irq_i                  ( interrupt_if.irq               ),
          .irq_ack_o              ( irq_ack                        ),
          .irq_id_o               ( irq_id                         ),
+
+         .fencei_flush_req_o     ( fencei_if_i.flush_req          ),
+         .fencei_flush_ack_i     ( fencei_if_i.flush_ack          ),
 
          .debug_req_i            ( debug_if.debug_req             ),
          .debug_havereset_o      ( debug_havereset                ),

@@ -48,6 +48,7 @@ package uvme_cv32e40x_pkg;
    import uvma_rvfi_pkg::*;
    import uvma_rvvi_pkg::*;
    import uvma_rvvi_ovpsim_pkg::*;
+   import uvma_fencei_pkg::*;
 
    // Forward decls
    typedef class uvme_cv32e40x_vsqr_c;
