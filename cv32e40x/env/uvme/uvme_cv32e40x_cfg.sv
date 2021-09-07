@@ -36,8 +36,8 @@ class uvme_cv32e40x_cfg_c extends uvma_core_cntrl_cfg_c;
    rand uvma_debug_cfg_c            debug_cfg;
    rand uvma_obi_memory_cfg_c       obi_memory_instr_cfg;
    rand uvma_obi_memory_cfg_c       obi_memory_data_cfg;
+   rand uvma_fencei_cfg_c           fencei_cfg;
    rand uvma_rvfi_cfg_c#(ILEN,XLEN) rvfi_cfg;
-
    rand uvma_rvvi_cfg_c#(ILEN,XLEN) rvvi_cfg;
 
    `uvm_object_utils_begin(uvme_cv32e40x_cfg_c)
@@ -56,6 +56,7 @@ class uvme_cv32e40x_cfg_c extends uvma_core_cntrl_cfg_c;
       `uvm_field_object(obi_memory_data_cfg  , UVM_DEFAULT)
       `uvm_field_object(rvfi_cfg             , UVM_DEFAULT)
       `uvm_field_object(rvvi_cfg             , UVM_DEFAULT)
+      `uvm_field_object(fencei_cfg           , UVM_DEFAULT)
    `uvm_object_utils_end
 
    constraint defaults_cons {
@@ -140,6 +141,7 @@ class uvme_cv32e40x_cfg_c extends uvma_core_cntrl_cfg_c;
          rvvi_cfg.enabled              == use_iss;
          obi_memory_instr_cfg.enabled  == 1;
          obi_memory_data_cfg.enabled   == 1;
+         fencei_cfg.enabled            == 1;
       }
 
       obi_memory_instr_cfg.version       == UVMA_OBI_MEMORY_VERSION_1P2;
@@ -189,6 +191,7 @@ class uvme_cv32e40x_cfg_c extends uvma_core_cntrl_cfg_c;
          obi_memory_data_cfg.is_active  == UVM_ACTIVE;
          rvfi_cfg.is_active             == UVM_PASSIVE;
          rvvi_cfg.is_active             == UVM_ACTIVE;
+         fencei_cfg.is_active           == UVM_ACTIVE;
       }
 
       if (trn_log_enabled) {
@@ -273,6 +276,7 @@ function uvme_cv32e40x_cfg_c::new(string name="uvme_cv32e40x_cfg");
    obi_memory_data_cfg  = uvma_obi_memory_cfg_c::type_id::create("obi_memory_data_cfg" );
    rvfi_cfg = uvma_rvfi_cfg_c#(ILEN,XLEN)::type_id::create("rvfi_cfg");
    rvvi_cfg = uvma_rvvi_ovpsim_cfg_c#(ILEN,XLEN)::type_id::create("rvvi_cfg");
+   fencei_cfg = uvma_fencei_cfg_c::type_id::create("fencei_cfg");
 
    isacov_cfg.core_cfg = this;
    rvfi_cfg.core_cfg = this;
@@ -358,7 +362,3 @@ endfunction : configure_disable_csr_checks
 
 
 `endif // __UVME_CV32E40X_CFG_SV__
-
-
-
-

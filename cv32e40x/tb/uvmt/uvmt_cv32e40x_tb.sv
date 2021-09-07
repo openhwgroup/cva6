@@ -70,6 +70,10 @@ module uvmt_cv32e40x_tb;
      .clk(clknrst_if.clk),
      .reset_n(clknrst_if.reset_n)
    );
+   uvma_fencei_if               fencei_if_i(
+     .clk(clknrst_if.clk),
+     .reset_n(clknrst_if.reset_n)
+   );
 
    // DUT Wrapper Interfaces
    uvmt_cv32e40x_vp_status_if       vp_status_if(.tests_passed(),
@@ -521,7 +525,9 @@ module uvmt_cv32e40x_tb;
      uvm_config_db#(virtual uvma_interrupt_if           )::set(.cntxt(null), .inst_name("*.env.interrupt_agent"), .field_name("vif"),      .value(interrupt_if));
      uvm_config_db#(virtual uvma_obi_memory_if          )::set(.cntxt(null), .inst_name("*.env.obi_memory_instr_agent"), .field_name("vif"), .value(obi_instr_if_i) );
      uvm_config_db#(virtual uvma_obi_memory_if          )::set(.cntxt(null), .inst_name("*.env.obi_memory_data_agent"),  .field_name("vif"), .value(obi_data_if_i) );
+     uvm_config_db#(virtual uvma_fencei_if              )::set(.cntxt(null), .inst_name("*.env.fencei"),     .field_name("vif"), .value(fencei_if_i));
      uvm_config_db#(virtual uvma_rvfi_instr_if          )::set(.cntxt(null), .inst_name("*.env.rvfi_agent"), .field_name("instr_vif0"),.value(dut_wrap.cv32e40x_wrapper_i.rvfi_instr_if_0_i));
+     uvm_config_db#(virtual uvma_fencei_if              )::set(.cntxt(null), .inst_name("*.env.fencei_agent"), .field_name("fencei_vif"),     .value(fencei_if_i)  );
      uvm_config_db#(virtual uvmt_cv32e40x_vp_status_if  )::set(.cntxt(null), .inst_name("*"),                .field_name("vp_status_vif"),    .value(vp_status_if) );
      uvm_config_db#(virtual uvma_interrupt_if           )::set(.cntxt(null), .inst_name("*.env"),            .field_name("intr_vif"),         .value(interrupt_if) );
      uvm_config_db#(virtual uvma_debug_if               )::set(.cntxt(null), .inst_name("*.env"),            .field_name("debug_vif"),        .value(debug_if)     );
