@@ -21,4 +21,8 @@ _prog_start:
   .globl _dtb
   .align 4, 0
 _dtb:
-  .incbin "ariane.dtb"
+#if __riscv_xlen == 64
+  .incbin "cv64a6.dtb"
+#else
+  .incbin "cv32a6.dtb"
+#endif

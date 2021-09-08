@@ -755,12 +755,21 @@ axi2mem #(
     .data_i ( rom_rdata               )
 );
 
-bootrom i_bootrom (
-    .clk_i   ( clk       ),
-    .req_i   ( rom_req   ),
-    .addr_i  ( rom_addr  ),
-    .rdata_o ( rom_rdata )
-);
+if (riscv::XLEN==32 ) begin
+    bootrom_32 i_bootrom (
+        .clk_i   ( clk       ),
+        .req_i   ( rom_req   ),
+        .addr_i  ( rom_addr  ),
+        .rdata_o ( rom_rdata )
+    );
+end else begin 
+    bootrom_64 i_bootrom (
+        .clk_i   ( clk       ),
+        .req_i   ( rom_req   ),
+        .addr_i  ( rom_addr  ),
+        .rdata_o ( rom_rdata )
+    );
+end
 
 // ---------------
 // Peripherals
