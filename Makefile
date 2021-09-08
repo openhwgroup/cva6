@@ -210,6 +210,7 @@ src :=  $(filter-out core/ariane_regfile.sv, $(wildcard core/*.sv))             
         common/submodules/common_cells/src/rr_arb_tree.sv                            \
         common/submodules/common_cells/src/deprecated/rrarbiter.sv                   \
         common/submodules/common_cells/src/stream_delay.sv                           \
+        common/submodules/common_cells/src/lfsr.sv                                   \
         common/submodules/common_cells/src/lfsr_8bit.sv                              \
         common/submodules/common_cells/src/lfsr_16bit.sv                             \
         common/submodules/common_cells/src/delta_counter.sv                          \
