@@ -41,6 +41,7 @@ class uvme_cv32e40x_cntxt_c extends uvm_object;
    uvma_obi_memory_cntxt_c           obi_memory_data_cntxt;
    uvma_rvfi_cntxt_c#(ILEN,XLEN)     rvfi_cntxt;
    uvma_rvvi_cntxt_c#(ILEN,XLEN)     rvvi_cntxt;
+   uvma_fencei_cntxt_c               fencei_cntxt;
 
    // Memory modelling
    rand uvml_mem_c                   mem;
@@ -88,6 +89,8 @@ function uvme_cv32e40x_cntxt_c::new(string name="uvme_cv32e40x_cntxt");
    obi_memory_data_cntxt  = uvma_obi_memory_cntxt_c::type_id::create("obi_memory_data_cntxt" );
    rvfi_cntxt       = uvma_rvfi_cntxt_c#(ILEN,XLEN)::type_id::create("rvfi_cntxt");
    rvvi_cntxt       = uvma_rvvi_ovpsim_cntxt_c#(ILEN,XLEN)::type_id::create("rvvi_cntxt");
+   fencei_cntxt     = uvma_fencei_cntxt_c::type_id::create("fencei_cntxt");
+
    mem = uvml_mem_c#(XLEN)::type_id::create("mem");
 
    sample_cfg_e   = new("sample_cfg_e"  );
