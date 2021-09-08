@@ -160,6 +160,8 @@ module decoder import ariane_pkg::*; (
                                         // check TVM flag and intercept SFENCE.VMA call if necessary
                                         if (priv_lvl_i == riscv::PRIV_LVL_S && tvm_i)
                                             illegal_instr = 1'b1;
+                                    end else begin
+                                       illegal_instr = 1'b1;
                                     end
                                 end
                             endcase
@@ -229,11 +231,8 @@ module decoder import ariane_pkg::*; (
                         // Currently implemented as a whole DCache flush boldly ignoring other things
                         3'b000: instruction_o.op  = ariane_pkg::FENCE;
                         // FENCE.I
-                        3'b001: begin
-                            if (instr.instr[31:20] != '0)
-                                illegal_instr = 1'b1;
-                            instruction_o.op  = ariane_pkg::FENCE_I;
-                        end
+                        3'b001: instruction_o.op  = ariane_pkg::FENCE_I;
+
                         default: illegal_instr = 1'b1;
                     endcase
 
