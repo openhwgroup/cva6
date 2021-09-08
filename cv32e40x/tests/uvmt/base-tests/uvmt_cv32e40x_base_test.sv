@@ -63,8 +63,12 @@ class uvmt_cv32e40x_base_test_c extends uvm_test;
       env_cfg.rvfi_cfg.nmi_handler_addr        == env_cfg.nmi_addr;
    }
 
+   constraint heartbreat_mon_default_cons {
+      soft test_cfg.heartbeat_mon_enabled == 1;
+   }
+
    constraint test_type_default_cons {
-     soft test_cfg.tpt == NO_TEST_PROGRAM;
+      soft test_cfg.tpt == NO_TEST_PROGRAM;
    }
 
    // Additional, temporary constraints to get around known design bugs/constraints
@@ -400,7 +404,7 @@ endfunction : randomize_test
 
 function void uvmt_cv32e40x_base_test_c::cfg_hrtbt_monitor();
 
-   uvml_default_hrtbt.enabled = 0;
+   uvml_default_hrtbt.enabled = test_cfg.heartbeat_mon_enabled;
    //`uvml_hrtbt_set_cfg(startup_timeout , test_cfg.startup_timeout)
    uvml_default_hrtbt.startup_timeout = test_cfg.startup_timeout; // TODO DOP: Fix heartbeat macros
    //`uvml_hrtbt_set_cfg(heartbeat_period, test_cfg.heartbeat_period)

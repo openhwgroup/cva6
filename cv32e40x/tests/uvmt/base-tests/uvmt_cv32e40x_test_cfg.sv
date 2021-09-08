@@ -23,16 +23,9 @@
  */
 class uvmt_cv32e40x_test_cfg_c extends uvm_object;
 
-   //typedef enum {
-   //              PREEXISTING_SELFCHECKING,
-   //              PREEXISTING_NOTSELFCHECKING,
-   //              GENERATED_SELFCHECKING,
-   //              GENERATED_NOTSELFCHECKING,
-   //              NONE
-   //             } test_program_type;
-
 
    // Knobs for environment control
+   rand bit           heartbeat_mon_enabled;
    rand int unsigned  startup_timeout ; // Specified in nanoseconds (ns)
    rand int unsigned  heartbeat_period; // Specified in nanoseconds (ns)
    rand int unsigned  watchdog_timeout; // Specified in nanoseconds (ns)
@@ -64,8 +57,10 @@ class uvmt_cv32e40x_test_cfg_c extends uvm_object;
    bit    print_uvm_runflow_banner = 0;
 
    `uvm_object_utils_begin(uvmt_cv32e40x_test_cfg_c)
-      `uvm_field_int(heartbeat_period, UVM_DEFAULT)
-      `uvm_field_int(watchdog_timeout, UVM_DEFAULT)
+      `uvm_field_int(heartbeat_mon_enabled, UVM_DEFAULT)
+      `uvm_field_int(startup_timeout,       UVM_DEFAULT | UVM_DEC)
+      `uvm_field_int(heartbeat_period,      UVM_DEFAULT | UVM_DEC)
+      `uvm_field_int(watchdog_timeout,      UVM_DEFAULT | UVM_DEC)
 
       `uvm_field_enum(test_program_type, tpt, UVM_DEFAULT)
 
