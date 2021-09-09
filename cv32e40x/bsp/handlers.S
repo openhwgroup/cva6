@@ -23,6 +23,10 @@
 #define EXCEPTION_ECALL_M 11
 #define EXCEPTION_INSN_BUS_FAULT 48
 
+/* NMI interrupt codes */
+#define INTERRUPT_LOAD_BUS_FAULT  (128 | (0x1 << 31))
+#define INTERRUPT_STORE_BUS_FAULT (129 | (0x1 << 31))
+
 .section .text.handlers
 .global __no_irq_handler
 .global u_sw_irq_handler
@@ -47,6 +51,7 @@
 .global m_fast15_irq_handler
 .global end_handler_ret
 
+.weak __no_irq_handler
 .weak u_sw_irq_handler
 .weak m_software_irq_handler
 .weak m_timer_irq_handler
@@ -232,7 +237,73 @@ end_handler_ret:
 	addi sp,sp,64
 	mret
 
+.weak handle_data_load_bus_fault
+.weak handle_data_store_bus_fault
+
+.section .nmi, "ax"
+.global nmi_handler
+
+nmi_handler:
+	addi sp,sp,-64
+	sw ra, 0(sp)
+	sw a0, 4(sp)
+	sw a1, 8(sp)
+	sw a2, 12(sp)
+	sw a3, 16(sp)
+	sw a4, 20(sp)
+	sw a5, 24(sp)
+	sw a6, 28(sp)
+	sw a7, 32(sp)
+	sw t0, 36(sp)
+	sw t1, 40(sp)
+	sw t2, 44(sp)
+	sw t3, 48(sp)
+	sw t4, 52(sp)
+	sw t5, 56(sp)
+	sw t6, 60(sp)
+	csrr t0, mcause
+	li t1, INTERRUPT_LOAD_BUS_FAULT
+	beq t0, t1, handle_data_load_bus_fault
+	li t1, INTERRUPT_STORE_BUS_FAULT
+	beq t0, t1, handle_data_store_bus_fault
+
+	j nmi_end_handler_ret
+
+handle_data_load_bus_fault:
+	la a0, data_load_bus_fault_msg
+	jal ra, puts
+	j nmi_end_handler_ret
+
+handle_data_store_bus_fault:
+	la a0, data_store_bus_fault_msg
+	jal ra, puts
+	j nmi_end_handler_ret
+
+nmi_end_handler_ret:
+	lw ra, 0(sp)
+	lw a0, 4(sp)
+	lw a1, 8(sp)
+	lw a2, 12(sp)
+	lw a3, 16(sp)
+	lw a4, 20(sp)
+	lw a5, 24(sp)
+	lw a6, 28(sp)
+	lw a7, 32(sp)
+	lw t0, 36(sp)
+	lw t1, 40(sp)
+	lw t2, 44(sp)
+	lw t3, 48(sp)
+	lw t4, 52(sp)
+	lw t5, 56(sp)
+	lw t6, 60(sp)
+	addi sp,sp,64
+	mret
+
 .section .rodata
+data_load_bus_fault_msg:
+	.string "CV32E40X BSP: data load bus fault exception handler entered\n"
+data_store_bus_fault_msg:
+	.string "CV32E40X BSP: data store bus fault exception handler entered\n"
 insn_access_fault_msg:
 	.string "CV32E40X BSP: instruction access fault exception handler entered\n"
 insn_bus_fault_msg:
