@@ -199,15 +199,16 @@ class uvme_cv32e40x_cfg_c extends uvma_core_cntrl_cfg_c;
       }
 
       if (trn_log_enabled) {
-         isacov_cfg.trn_log_enabled            == 1;
-         clknrst_cfg.trn_log_enabled           == 1;
-         interrupt_cfg.trn_log_enabled         == 1;
-         debug_cfg.trn_log_enabled             == 1;
+         // Setting a reasonable set of logs
+         isacov_cfg.trn_log_enabled            == 0;
+         clknrst_cfg.trn_log_enabled           == 0;
+         interrupt_cfg.trn_log_enabled         == 0;
+         debug_cfg.trn_log_enabled             == 0;
          obi_memory_instr_cfg.trn_log_enabled  == 1;
          obi_memory_data_cfg.trn_log_enabled   == 1;
          rvfi_cfg.trn_log_enabled              == 1;
          rvvi_cfg.trn_log_enabled              == 1;
-         isacov_cfg.trn_log_enabled            == 1;
+         isacov_cfg.trn_log_enabled            == 0;
       } else {
          isacov_cfg.trn_log_enabled            == 0;
          clknrst_cfg.trn_log_enabled           == 0;
@@ -305,6 +306,9 @@ function uvme_cv32e40x_cfg_c::new(string name="uvme_cv32e40x_cfg");
    rvfi_cfg = uvma_rvfi_cfg_c#(ILEN,XLEN)::type_id::create("rvfi_cfg");
    rvvi_cfg = uvma_rvvi_ovpsim_cfg_c#(ILEN,XLEN)::type_id::create("rvvi_cfg");
    fencei_cfg = uvma_fencei_cfg_c::type_id::create("fencei_cfg");
+
+   obi_memory_instr_cfg.mon_logger_name = "OBII";
+   obi_memory_data_cfg.mon_logger_name  = "OBID";
 
    isacov_cfg.core_cfg = this;
    rvfi_cfg.core_cfg = this;
