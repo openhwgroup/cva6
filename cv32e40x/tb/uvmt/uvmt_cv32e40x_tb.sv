@@ -428,87 +428,16 @@ module uvmt_cv32e40x_tb;
     * ISS WRAPPER instance:
     */
       uvmt_cv32e40x_iss_wrap  #(
-                                .ID (0)
+                                .ID (0),
+                                .ROM_START_ADDR('h0),
+                                .ROM_BYTE_SIZE('h0),
+                                .RAM_BYTE_SIZE('h1_0000_0000)
                                )
                                iss_wrap ( .clk_period(clknrst_if.clk_period),
                                           .clknrst_if(clknrst_if_iss)
                                  );
 
       assign clknrst_if_iss.reset_n = clknrst_if.reset_n;
-
-      // FIXME:strichmo Must re-enable debug modeling
-      /*
-      // Count number of issued and retired instructions
-      // This makes synchronizing haltreq to RM easier
-      logic [31:0] count_issue;
-      logic [31:0] count_retire;
-
-      always @(posedge clknrst_if.clk or negedge clknrst_if.reset_n) begin
-        if (!clknrst_if.reset_n) begin
-            count_issue <= 32'h0;
-        end else begin
-            if ((dut_wrap.cv32e40x_wrapper_i.core_i.id_stage_i.id_valid_o && dut_wrap.cv32e40x_wrapper_i.core_i.is_decoding && !dut_wrap.cv32e40x_wrapper_i.core_i.id_stage_i.multi_cycle_id_stall &&
-               !dut_wrap.cv32e40x_wrapper_i.core_i.controller_i.controller_fsm_i.illegal_insn_i) ||
-                (dut_wrap.cv32e40x_wrapper_i.core_i.is_decoding && dut_wrap.cv32e40x_wrapper_i.core_i.controller_i.controller_fsm_i.ebrk_insn_i &&
-                 !dut_wrap.cv32e40x_wrapper_i.core_i.controller_i.debug_trigger_match_i &&
-                (dut_wrap.cv32e40x_wrapper_i.core_i.controller_i.controller_fsm_i.ebrk_force_debug_mode || dut_wrap.cv32e40x_wrapper_i.core_i.controller_i.controller_fsm_i.debug_mode_q))) begin
-                count_issue <= count_issue + 1;
-            end
-        end
-      end
-
-      always @(dut_wrap.cv32e40x_wrapper_i.tracer_i.retire or negedge clknrst_if.reset_n) begin
-          if (!clknrst_if.reset_n) begin
-              count_retire <= 32'h0;
-          end else begin
-              count_retire <= count_retire + 1;
-          end
-      end
-
-      // A simple FSM for controlling haltreq into RM
-      typedef enum logic [1:0] {INACTIVE, DBG_TAKEN, DRIVE_REQ} dbg_state_e;
-      dbg_state_e debug_req_state;
-
-      always @(posedge clknrst_if_iss.clk or negedge clknrst_if_iss.reset_n) begin
-        if (!clknrst_if_iss.reset_n) begin
-            iss_wrap.io.haltreq <= 1'b0;
-            debug_req_state <= INACTIVE;
-        end else begin
-            unique case(debug_req_state)
-                INACTIVE: begin
-                    iss_wrap.io.haltreq <= 1'b0;
-
-                    // Only drive haltreq if we have an external request
-                    if (dut_wrap.cv32e40x_wrapper_i.core_i.controller_i.controller_fsm_i.ctrl_fsm_cs inside {cv32e40x_pkg::DBG_TAKEN_ID, cv32e40x_pkg::DBG_TAKEN_IF} &&
-                        dut_wrap.cv32e40x_wrapper_i.core_i.controller_i.controller_fsm_i.debug_req_pending) begin
-
-                        debug_req_state <= DBG_TAKEN;
-                        // Already in sync, assert halreq right away
-                        if (count_retire == count_issue) begin
-                            iss_wrap.io.haltreq <= 1'b1;
-                        end
-                    end
-                end
-                DBG_TAKEN: begin
-                    // Assert haltreq when we are in sync
-                    if (count_retire == count_issue) begin
-                        iss_wrap.io.haltreq <= 1'b1;
-                        debug_req_state <= DRIVE_REQ;
-                    end
-                end
-                DRIVE_REQ: begin
-                    // Deassert haltreq when DM is observed
-                    if(iss_wrap.io.DM == 1'b1) begin
-                        debug_req_state <= INACTIVE;
-                    end
-                end
-                default: begin
-                    debug_req_state <= INACTIVE;
-                end
-            endcase
-        end
-      end
-*/
 
    /**
     * Test bench entry point.
