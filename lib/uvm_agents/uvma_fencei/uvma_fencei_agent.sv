@@ -190,7 +190,7 @@ endfunction : retrieve_vif
 
 function void uvma_fencei_agent_c::create_components();
 
-   monitor         = uvma_fencei_mon_c::type_id::create("monitor`", this);
+   monitor         = uvma_fencei_mon_c::type_id::create("monitor", this);
    mon_trn_logger  = uvma_fencei_mon_trn_logger_c::type_id::create("mon_trn_logger" , this);
    if (cfg.is_active == UVM_ACTIVE) begin
       driver       = uvma_fencei_drv_c::type_id::create("driver", this);

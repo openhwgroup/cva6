@@ -133,7 +133,7 @@ AWORK     = work
 
 ALOG          = vlog
 ALOG_DEBUG    = -dbg
-ALOG_FLAGS    = 
+ALOG_FLAGS    =
 ALOG_UVM      = -uvmver 1.2
 
 ASIM              = vsim
@@ -155,7 +155,7 @@ TBSRC       := $(TBSRC_CORE)/tb_top.sv \
                $(TBSRC_CORE)/tb_riscv/riscv_random_stall.sv \
                $(TBSRC_CORE)/tb_riscv/riscv_random_interrupt_generator.sv \
                $(TBSRC_CORE)/tb_riscv/riscv_rvalid_stall.sv \
-               $(TBSRC_CORE)/tb_riscv/riscv_gnt_stall.sv 
+               $(TBSRC_CORE)/tb_riscv/riscv_gnt_stall.sv
 
 #/tb_riscv/riscv_rvalid_stall.sv
 
@@ -233,12 +233,12 @@ unit-test-gui: $(SIMULATOR)-unit-test-gui
 all: clean_all sanity-veri-run dsim-sanity
 
 ###############################################################################
-# Metrics DSIM 
+# Metrics DSIM
 .PHONY: dsim-comp dsim-comp-rtl-only
 
 MKDIR_P = mkdir -p
 
-mk_results: 
+mk_results:
 	$(MKDIR_P) $(DSIM_RESULTS)
 	$(MKDIR_P) $(DSIM_WORK)
 
@@ -322,11 +322,11 @@ dsim-clean: tc-clean
 		-work $(VWORK) \
 		$(VLOG_FLAGS) \
 		-f $(CV_CORE_MANIFEST) \
-		$(TBSRC_PKG) $(TBSRC) 
-		
+		$(TBSRC_PKG) $(TBSRC)
+
 
 vsim-all:  .opt-rtl
-	
+
 
 .opt-rtl: .build-rtl
 	$(VOPT) -work $(VWORK) $(VOPT_FLAGS) $(RTLSRC_VLOG_TB_TOP) -o $(RTLSRC_VOPT_TB_TOP)
@@ -334,7 +334,7 @@ vsim-all:  .opt-rtl
 
 # run tb and exit
 .PHONY: vsim-run
-vsim-run: ALL_VSIM_FLAGS += -c  
+vsim-run: ALL_VSIM_FLAGS += -c
 vsim-run: vsim-all
 	$(VSIM) -work $(VWORK) $(DPILIB_VSIM_OPT) $(ALL_VSIM_FLAGS)\
 	$(RTLSRC_VOPT_TB_TOP) -do 'source $(VSIM_SCRIPT); exit -f'
@@ -350,7 +350,7 @@ vsim-run-sh: vsim-all
 
 # run tb with simulator gui
 .PHONY: vsim-run-gui
-vsim-run-gui: ALL_VSIM_FLAGS += $(VSIM_GUI_FLAGS) 
+vsim-run-gui: ALL_VSIM_FLAGS += $(VSIM_GUI_FLAGS)
 vsim-run-gui: vsim-all
 	$(VSIM) -work $(VWORK) $(DPILIB_VSIM_OPT) $(ALL_VSIM_FLAGS) \
 	$(RTLSRC_VOPT_TB_TOP) -do $(VSIM_SCRIPT)
@@ -391,15 +391,15 @@ questa-firmware-gui: vsim-all $(FIRMWARE)/firmware.hex
 questa-firmware-gui: ALL_VSIM_FLAGS += +firmware=$(FIRMWARE)/firmware.hex
 questa-firmware-gui: vsim-run-gui
 
-.PHONY: questa-unit-test 
-questa-unit-test:  firmware-unit-test-clean 
-questa-unit-test:  $(FIRMWARE)/firmware_unit_test.hex 
+.PHONY: questa-unit-test
+questa-unit-test:  firmware-unit-test-clean
+questa-unit-test:  $(FIRMWARE)/firmware_unit_test.hex
 questa-unit-test: ALL_VSIM_FLAGS += "+firmware=$(FIRMWARE)/firmware_unit_test.hex"
 questa-unit-test: vsim-run
 
-.PHONY: questa-unit-test-gui 
-questa-unit-test-gui:  firmware-unit-test-clean 
-questa-unit-test-gui:  $(FIRMWARE)/firmware_unit_test.hex 
+.PHONY: questa-unit-test-gui
+questa-unit-test-gui:  firmware-unit-test-clean
+questa-unit-test-gui:  $(FIRMWARE)/firmware_unit_test.hex
 questa-unit-test-gui: ALL_VSIM_FLAGS += "+firmware=$(FIRMWARE)/firmware_unit_test.hex"
 questa-unit-test-gui: vsim-run-gui
 
@@ -557,15 +557,15 @@ vcs-firmware-gui: vcsify $(FIRMWARE)/firmware.hex
 vcs-firmware-gui: ALL_VCS_FLAGS += +firmware=$(FIRMWARE)/firmware.hex
 vcs-firmware-gui: vcs-run-gui
 
-.PHONY: vcs-unit-test 
-vcs-unit-test:  firmware-unit-test-clean 
-vcs-unit-test:  $(FIRMWARE)/firmware_unit_test.hex 
+.PHONY: vcs-unit-test
+vcs-unit-test:  firmware-unit-test-clean
+vcs-unit-test:  $(FIRMWARE)/firmware_unit_test.hex
 vcs-unit-test: ALL_VCS_FLAGS += "+firmware=$(FIRMWARE)/firmware_unit_test.hex"
 vcs-unit-test: vcs-run
 
-.PHONY: vcs-unit-test-gui 
-vcs-unit-test-gui:  firmware-unit-test-clean 
-vcs-unit-test-gui:  $(FIRMWARE)/firmware_unit_test.hex 
+.PHONY: vcs-unit-test-gui
+vcs-unit-test-gui:  firmware-unit-test-clean
+vcs-unit-test-gui:  $(FIRMWARE)/firmware_unit_test.hex
 vcs-unit-test-gui: ALL_VCS_FLAGS += "+firmware=$(FIRMWARE)/firmware_unit_test.hex"
 vcs-unit-test-gui: vcs-run-gui
 
@@ -585,13 +585,13 @@ rvr-build-rtl: .rvrlib-rtl CV_CORE_pkg tbsrc_pkg tbsrc
 		$(ALOG_FLAGS) \
 		$(ALOG_UVM) \
 		-f $(CV_CORE_MANIFEST) \
-		$(TBSRC_PKG) $(TBSRC) 
-		
+		$(TBSRC_PKG) $(TBSRC)
+
 asim-all:  .rvr-build-rtl
-	
+
 # run tb and exit
 .PHONY: asim-run
-asim-run: ALL_ASIM_FLAGS += -c  
+asim-run: ALL_ASIM_FLAGS += -c
 asim-run: rvr-build-rtl
 	$(ASIM) -lib $(AWORK) $(ALL_ASIM_FLAGS)\
 	$(RTLSRC_VLOG_TB_TOP) -do "run -all; endsim; quit -force"
@@ -605,7 +605,7 @@ asim-run-sh: rvr-build-rtl
 
 # run tb with simulator gui
 .PHONY: asim-run-gui
-asim-run-gui: ALL_ASIM_FLAGS += $(ASIM_GUI_FLAGS) 
+asim-run-gui: ALL_ASIM_FLAGS += $(ASIM_GUI_FLAGS)
 asim-run-gui: rvr-build-rtl
 	$(ASIM) -lib $(AWORK) $(ALL_ASIM_FLAGS) \
 	$(RTLSRC_VLOG_TB_TOP) -do "run -all"
@@ -650,13 +650,14 @@ clone_$(CV_CORE_LC)_rtl:
 ###############################################################################
 # general targets
 .PHONY: tc-clean
-	
+
 # clean up toolchain generated files
 clean_test_programs:
 	find $(CORE_V_VERIF)/$(CV_CORE_LC)/tests/programs -name *.o       -exec rm {} \;
 	find $(CORE_V_VERIF)/$(CV_CORE_LC)/tests/programs -name *.hex     -exec rm {} \;
 	find $(CORE_V_VERIF)/$(CV_CORE_LC)/tests/programs -name *.elf     -exec rm {} \;
 	find $(CORE_V_VERIF)/$(CV_CORE_LC)/tests/programs -name *.map     -exec rm {} \;
+	find $(CORE_V_VERIF)/$(CV_CORE_LC)/tests/programs -name *.itb     -exec rm {} \;
 	find $(CORE_V_VERIF)/$(CV_CORE_LC)/tests/programs -name *.readelf -exec rm {} \;
 	find $(CORE_V_VERIF)/$(CV_CORE_LC)/tests/programs -name *.objdump -exec rm {} \;
 	find $(CORE_V_VERIF)/$(CV_CORE_LC)/tests/programs -name corev_*.S -exec rm {} \;

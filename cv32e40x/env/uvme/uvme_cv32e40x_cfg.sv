@@ -28,6 +28,8 @@ class uvme_cv32e40x_cfg_c extends uvma_core_cntrl_cfg_c;
    // Integrals
    rand int unsigned                sys_clk_period;
    cv32e40x_pkg::b_ext_e            b_ext;
+   bit                              obi_memory_instr_random_err_enabled = 0;
+   bit                              obi_memory_data_random_err_enabled  = 0;
 
    // Agent cfg handles
    rand uvma_isacov_cfg_c           isacov_cfg;
@@ -47,6 +49,8 @@ class uvme_cv32e40x_cfg_c extends uvma_core_cntrl_cfg_c;
       `uvm_field_int (                         trn_log_enabled             , UVM_DEFAULT          )
       `uvm_field_int (                         sys_clk_period              , UVM_DEFAULT | UVM_DEC)
       `uvm_field_enum (cv32e40x_pkg::b_ext_e,  b_ext                       , UVM_DEFAULT          )
+      `uvm_field_int (                         obi_memory_instr_random_err_enabled,  UVM_DEFAULT  )
+      `uvm_field_int (                         obi_memory_data_random_err_enabled,   UVM_DEFAULT  )
 
       `uvm_field_object(isacov_cfg           , UVM_DEFAULT)
       `uvm_field_object(clknrst_cfg          , UVM_DEFAULT)
@@ -127,7 +131,7 @@ class uvme_cv32e40x_cfg_c extends uvma_core_cntrl_cfg_c;
       (!hart_id_plusarg_valid)           -> (hart_id           == 'h0000_0000);
       (!boot_addr_plusarg_valid)         -> (boot_addr         == 'h0000_0080);
       (!mtvec_addr_plusarg_valid)        -> (mtvec_addr        == 'h0000_0000);
-      (!nmi_addr_plusarg_valid)          -> (nmi_addr          == 'h2000_0000);
+      (!nmi_addr_plusarg_valid)          -> (nmi_addr          == 'h0010_0000);
       (!dm_halt_addr_plusarg_valid)      -> (dm_halt_addr      == 'h1a11_0800);
       (!dm_exception_addr_plusarg_valid) -> (dm_exception_addr == 'h1a11_1000);
    }
@@ -224,6 +228,26 @@ class uvme_cv32e40x_cfg_c extends uvma_core_cntrl_cfg_c;
       }
    }
 
+   constraint obi_memory_instr_fault_cons {
+      if (!obi_memory_instr_random_err_enabled) {
+         obi_memory_instr_cfg.drv_slv_err_mode == UVMA_OBI_MEMORY_DRV_SLV_ERR_MODE_OK;
+      } else {
+         obi_memory_instr_cfg.drv_slv_err_mode == UVMA_OBI_MEMORY_DRV_SLV_ERR_MODE_RANDOM;
+         obi_memory_instr_cfg.drv_slv_err_ok_wgt inside {[20:40]};
+         obi_memory_instr_cfg.drv_slv_err_fault_wgt == 1;
+      }
+   }
+
+   constraint obi_memory_data_fault_cons {
+      if (!obi_memory_data_random_err_enabled) {
+         obi_memory_data_cfg.drv_slv_err_mode == UVMA_OBI_MEMORY_DRV_SLV_ERR_MODE_OK;
+      } else {
+         obi_memory_data_cfg.drv_slv_err_mode == UVMA_OBI_MEMORY_DRV_SLV_ERR_MODE_RANDOM;
+         obi_memory_data_cfg.drv_slv_err_ok_wgt inside {[20:40]};
+         obi_memory_data_cfg.drv_slv_err_fault_wgt == 1;
+      }
+   }
+
    /**
     * Creates sub-configuration objects.
     */
@@ -267,6 +291,10 @@ function uvme_cv32e40x_cfg_c::new(string name="uvme_cv32e40x_cfg");
       trn_log_enabled = 0;
       trn_log_enabled.rand_mode(0);
    end
+   if ($test$plusargs("obi_memory_instr_random_err"))
+      obi_memory_instr_random_err_enabled = 1;
+   if ($test$plusargs("obi_memory_data_random_err"))
+      obi_memory_data_random_err_enabled = 1;
 
    isacov_cfg = uvma_isacov_cfg_c::type_id::create("isacov_cfg");
    clknrst_cfg  = uvma_clknrst_cfg_c::type_id::create("clknrst_cfg");
