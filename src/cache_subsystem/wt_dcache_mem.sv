@@ -91,7 +91,7 @@ module wt_dcache_mem import ariane_pkg::*; import wt_cache_pkg::*; #(
   logic [DCACHE_WBUF_DEPTH-1:0]                                 wbuffer_hit_oh;
   logic [7:0]                                                   wbuffer_be;
   logic [63:0]                                                  wbuffer_rdata, rdata;
-  logic [63:0]                                                  wbuffer_cmp_addr;
+  logic [riscv::PLEN-1:0]                                       wbuffer_cmp_addr;
 
   logic                                                         cmp_en_d, cmp_en_q;
   logic                                                         rd_acked;

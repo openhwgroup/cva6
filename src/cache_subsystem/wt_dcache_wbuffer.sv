@@ -137,10 +137,10 @@ module wt_dcache_wbuffer import ariane_pkg::*; import wt_cache_pkg::*; #(
   logic is_nc_miss;
   logic is_ni;
   assign miss_tag = miss_paddr_o[ariane_pkg::DCACHE_INDEX_WIDTH+:ariane_pkg::DCACHE_TAG_WIDTH];
-  assign is_nc_miss = !ariane_pkg::is_inside_cacheable_regions(ArianeCfg, {{64-DCACHE_TAG_WIDTH{1'b0}}, miss_tag, {DCACHE_INDEX_WIDTH{1'b0}}});
+  assign is_nc_miss = !ariane_pkg::is_inside_cacheable_regions(ArianeCfg, {{64-DCACHE_TAG_WIDTH-DCACHE_INDEX_WIDTH{1'b0}}, miss_tag, {DCACHE_INDEX_WIDTH{1'b0}}});
   assign miss_nc_o = !cache_en_i || is_nc_miss; 
   // Non-idempotent if request goes to NI region
-  assign is_ni = ariane_pkg::is_inside_nonidempotent_regions(ArianeCfg, {{64-DCACHE_TAG_WIDTH{1'b0}}, req_port_i.address_tag, {DCACHE_INDEX_WIDTH{1'b0}}});
+  assign is_ni = ariane_pkg::is_inside_nonidempotent_regions(ArianeCfg, {{64-DCACHE_TAG_WIDTH-DCACHE_INDEX_WIDTH{1'b0}}, req_port_i.address_tag, {DCACHE_INDEX_WIDTH{1'b0}}});
 
   assign miss_we_o       = 1'b1;
   assign miss_vld_bits_o = '0;
