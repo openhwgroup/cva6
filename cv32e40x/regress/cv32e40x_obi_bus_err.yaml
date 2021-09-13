@@ -14,7 +14,7 @@ builds:
 tests:
   corev_rand_instr_obi_err:
     build: uvmt_cv32e40x
-    description: UVM Hello World Test
+    description: Random OBI instruction bus error test
     dir: cv32e40x/sim/uvmt
     cmd: make gen_corev-dv test COREV=YES TEST=corev_rand_instr_obi_err
     num: 20
