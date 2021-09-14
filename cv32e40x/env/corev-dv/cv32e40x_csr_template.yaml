@@ -294,7 +294,7 @@
       description: >
           Encodes all supported ISA extensions
       type: R
-      reset_val: 0x801104
+      reset_val: 0x001104
       msb: 25
       lsb: 0
 - csr: mie
@@ -479,13 +479,13 @@
       type: R
       reset_val: 0
       msb: 30
-      lsb: 5
+      lsb: 8
     - field_name: ecode
       description: >
           Exception Code
       type: WARL
       reset_val: 0
-      msb: 4
+      msb: 7
       lsb: 0
 - csr: mtval
   description: >

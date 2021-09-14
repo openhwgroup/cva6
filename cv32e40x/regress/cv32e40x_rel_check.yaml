@@ -240,12 +240,11 @@ tests:
     dir: cv32e40x/sim/uvmt
     cmd: make test COREV=YES TEST=isa_fcov_holes
 
-  # FIXME:strichmo: Some instability in this test, not suitable for rel_check yet until 841 is fixed in OVPSIM
-  # cv32e40x_csr_access_test:
-  #   build: uvmt_cv32e40x
-  #   description: Randomly generated CSR access test
-  #   dir: cv32e40x/sim/uvmt
-  #   cmd: make test COREV=YES TEST=cv32e40x_csr_access_test
+  cv32e40x_csr_access_test:
+    build: uvmt_cv32e40x
+    description: Randomly generated CSR access test
+    dir: cv32e40x/sim/uvmt
+    cmd: make test COREV=YES TEST=cv32e40x_csr_access_test
 
   cv32e40x_readonly_csr_access_test:
     build: uvmt_cv32e40x
