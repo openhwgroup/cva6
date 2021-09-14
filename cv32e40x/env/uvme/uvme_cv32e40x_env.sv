@@ -46,6 +46,7 @@ class uvme_cv32e40x_env_c extends uvm_env;
    uvma_obi_memory_agent_c          obi_memory_data_agent ;
    uvma_rvfi_agent_c#(ILEN,XLEN)    rvfi_agent;
    uvma_rvvi_agent_c#(ILEN,XLEN)    rvvi_agent;
+   uvma_fencei_agent_c              fencei_agent ;
 
    `uvm_component_utils_begin(uvme_cv32e40x_env_c)
       `uvm_field_object(cfg  , UVM_DEFAULT)
@@ -324,11 +325,10 @@ function void uvme_cv32e40x_env_c::retrieve_vifs();
       `uvm_info("VIF", $sformatf("Found debug_vif handle of type %s in uvm_config_db", $typename(cntxt.debug_vif)), UVM_DEBUG)
    end
 
-   // FIXME:strichmo:Restore later when debug brought back up
-   // void'(uvm_config_db#(virtual uvmt_cv32e40x_debug_cov_assert_if)::get(this, "", "debug_cov_vif", cntxt.debug_cov_vif));
-   // if (cntxt.debug_cov_vif == null) begin
-   //    `uvm_fatal("UVME_CV32E40X_ENV", $sformatf("No uvmt_cv32e40x_debug_cov_assert_if found in config database"))
-   // end
+   void'(uvm_config_db#(virtual uvmt_cv32e40x_debug_cov_assert_if)::get(this, "", "debug_cov_vif", cntxt.debug_cov_vif));
+   if (cntxt.debug_cov_vif == null) begin
+      `uvm_fatal("CNTXT", $sformatf("No uvmt_cv32e40x_debug_cov_assert_if found in config database"))
+   end
 
 endfunction: retrieve_vifs
 
@@ -345,6 +345,7 @@ function void uvme_cv32e40x_env_c::assign_cfg();
    uvm_config_db#(uvma_obi_memory_cfg_c)::set(this, "obi_memory_data_agent",  "cfg", cfg.obi_memory_data_cfg);
    uvm_config_db#(uvma_rvfi_cfg_c#(ILEN,XLEN))::set(this, "rvfi_agent", "cfg", cfg.rvfi_cfg);
    uvm_config_db#(uvma_rvvi_cfg_c#(ILEN,XLEN))::set(this, "rvvi_agent", "cfg", cfg.rvvi_cfg);
+   uvm_config_db#(uvma_fencei_cfg_c)::set(this, "fencei_agent", "cfg", cfg.fencei_cfg);
 
 endfunction: assign_cfg
 
@@ -359,6 +360,7 @@ function void uvme_cv32e40x_env_c::assign_cntxt();
    uvm_config_db#(uvma_obi_memory_cntxt_c)::set(this, "obi_memory_data_agent",  "cntxt", cntxt.obi_memory_data_cntxt);
    uvm_config_db#(uvma_rvfi_cntxt_c#(ILEN,XLEN))::set(this, "rvfi_agent", "cntxt", cntxt.rvfi_cntxt);
    uvm_config_db#(uvma_rvvi_cntxt_c#(ILEN,XLEN))::set(this, "rvvi_agent", "cntxt", cntxt.rvvi_cntxt);
+   uvm_config_db#(uvma_fencei_cntxt_c)::set(this, "rvvi_agent", "cntxt", cntxt.fencei_cntxt);
 
 endfunction: assign_cntxt
 
@@ -374,6 +376,7 @@ function void uvme_cv32e40x_env_c::create_agents();
    obi_memory_data_agent  = uvma_obi_memory_agent_c::type_id::create("obi_memory_data_agent",  this);
    rvfi_agent = uvma_rvfi_agent_c#(ILEN,XLEN)::type_id::create("rvfi_agent", this);
    rvvi_agent = uvma_rvvi_ovpsim_agent_c#(ILEN,XLEN)::type_id::create("rvvi_agent", this);
+   fencei_agent = uvma_fencei_agent_c::type_id::create("fencei_agent", this);
 
 endfunction: create_agents
 
@@ -399,13 +402,7 @@ function void uvme_cv32e40x_env_c::create_cov_model();
 
    cov_model = uvme_cv32e40x_cov_model_c::type_id::create("cov_model", this);
 
-   // FIXME:strichmo:restore with new controller
-   /*
-   void'(uvm_config_db#(virtual uvmt_cv32e40x_debug_cov_assert_if)::get(this, "", "debug_cov_vif", cntxt.debug_cov_vif));
-   if (cntxt.debug_cov_vif == null) begin
-      `uvm_fatal("CNTXT", $sformatf("No uvmt_cv32e40x_debug_cov_assert_if found in config database"))
-   end
-   */
+
 endfunction: create_cov_model
 
 
@@ -456,5 +453,3 @@ endfunction: assemble_vsequencer
 
 
 `endif // __UVME_CV32E40X_ENV_SV__
-
-

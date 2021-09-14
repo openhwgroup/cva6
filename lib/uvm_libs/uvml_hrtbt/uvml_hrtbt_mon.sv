@@ -29,8 +29,9 @@ class uvml_hrtbt_mon_c extends uvm_component;
    // State
    uvml_hrtbt_entry_struct  timestamps[int unsigned];
    bit                      observed_heartbeat = 0;
+   bit                      phase_heartbeat    = 0;
    
-
+   
    `uvm_component_utils_begin(uvml_hrtbt_mon_c)
       `uvm_field_int(enabled         , UVM_DEFAULT)
       `uvm_field_int(startup_timeout , UVM_DEFAULT)
@@ -233,7 +234,7 @@ task uvml_hrtbt_mon_c::eval_heartbeat();
    realtime  current_maturity;
    
    forever begin
-   	// 1. Wait for the refresh period duration
+      // 1. Wait for the refresh period duration
       #(refresh_period * 1ns);
       
       // 2. Process entries, culling those that have matured
@@ -252,7 +253,12 @@ task uvml_hrtbt_mon_c::eval_heartbeat();
       
       // 3. Exit loop if all entries are gone
       if (timestamps.size() == 0) begin
-         `uvm_info("HRTBT_MON", "Heartbeat count is 0. Dropping objection", UVM_NONE)
+         if (phase_heartbeat) begin
+            `uvm_info("HRTBT_MON", "Heartbeat count is 0. Dropping objection", UVM_NONE)
+         end
+         else begin
+            `uvm_info("HRTBT_MON", "Heartbeat count is 0. Dropping objection", UVM_HIGH)
+         end
          break;
       end
    end
@@ -262,46 +268,50 @@ endtask : eval_heartbeat
 
 function void uvml_hrtbt_mon_c::heartbeat(uvm_component owner, int unsigned id=0);
    
-	bit  pick_new_id = 0;
-	
-	// Must have a unique id
-   if (id == 0) begin
-   	pick_new_id = 1;
-   end
-   else if (timestamps.exists(id)) begin
-   	pick_new_id = 1;
-   	`uvm_warning("HRTBT_MON", $sformatf("Specified heartbeat ID (%0d) is already in use.  A new random ID will be picked.", id))
-   end
-   do begin
-   	id = $urandom();
-   end while (timestamps.exists(id));
+   bit  pick_new_id = 0;
    
-   // Add entry
-   timestamps[id] = '{
-      owner    : owner,
-      id       : id,
-      timestamp: $realtime()
-   };
-   
-   // Allows for non-components to issue heartbeats
-   if (owner == null) begin
-      `uvm_info("HRTBT_MON", $sformatf("Added/updated to heartbeat list: id (%0d)", id), UVM_DEBUG)
+   if (enabled) begin
+      // Must have a unique id
+      if (id == 0) begin
+         pick_new_id = 1;
+      end
+      else if (timestamps.exists(id)) begin
+         pick_new_id = 1;
+         `uvm_warning("HRTBT_MON", $sformatf("Specified heartbeat ID (%0d) is already in use.  A new random ID will be picked.", id))
+      end
+      do begin
+         id = $urandom();
+      end while (timestamps.exists(id));
+      
+      // Add entry
+      timestamps[id] = '{
+         owner    : owner,
+         id       : id,
+         timestamp: $realtime()
+      };
+      
+      // Allows for non-components to issue heartbeats
+      if (owner == null) begin
+         `uvm_info("HRTBT_MON", $sformatf("Added/updated to heartbeat list: id (%0d)", id), UVM_DEBUG)
+      end
+      else begin
+         `uvm_info("HRTBT_MON", $sformatf("Added/updated to heartbeat list: owner (%s), id (%0d)", owner.get_full_name(), id), UVM_DEBUG)
+      end
+      
+      // Latch for startup timeout
+      observed_heartbeat = 1;
+      phase_heartbeat    = 1;
    end
-   else begin
-      `uvm_info("HRTBT_MON", $sformatf("Added/updated to heartbeat list: owner (%s), id (%0d)", owner.get_full_name(), id), UVM_DEBUG)
-   end
-   
-   // Latch for startup timeout
-   observed_heartbeat = 1;
    
 endfunction : heartbeat
 
 
 function void uvml_hrtbt_mon_c::reset();
    
-	`uvm_info("HRTBT_MON", "Heartbeat monitor reset", UVM_DEBUG)
+   `uvm_info("HRTBT_MON", "Heartbeat monitor reset", UVM_DEBUG)
    timestamps.delete();
    //observed_heartbeat = 0;
+   phase_heartbeat = 0;
    
 endfunction : reset
 

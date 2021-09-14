@@ -28,6 +28,8 @@ class uvme_cv32e40x_cfg_c extends uvma_core_cntrl_cfg_c;
    // Integrals
    rand int unsigned                sys_clk_period;
    cv32e40x_pkg::b_ext_e            b_ext;
+   bit                              obi_memory_instr_random_err_enabled = 0;
+   bit                              obi_memory_data_random_err_enabled  = 0;
 
    // Agent cfg handles
    rand uvma_isacov_cfg_c           isacov_cfg;
@@ -36,8 +38,8 @@ class uvme_cv32e40x_cfg_c extends uvma_core_cntrl_cfg_c;
    rand uvma_debug_cfg_c            debug_cfg;
    rand uvma_obi_memory_cfg_c       obi_memory_instr_cfg;
    rand uvma_obi_memory_cfg_c       obi_memory_data_cfg;
+   rand uvma_fencei_cfg_c           fencei_cfg;
    rand uvma_rvfi_cfg_c#(ILEN,XLEN) rvfi_cfg;
-
    rand uvma_rvvi_cfg_c#(ILEN,XLEN) rvvi_cfg;
 
    `uvm_object_utils_begin(uvme_cv32e40x_cfg_c)
@@ -47,6 +49,8 @@ class uvme_cv32e40x_cfg_c extends uvma_core_cntrl_cfg_c;
       `uvm_field_int (                         trn_log_enabled             , UVM_DEFAULT          )
       `uvm_field_int (                         sys_clk_period              , UVM_DEFAULT | UVM_DEC)
       `uvm_field_enum (cv32e40x_pkg::b_ext_e,  b_ext                       , UVM_DEFAULT          )
+      `uvm_field_int (                         obi_memory_instr_random_err_enabled,  UVM_DEFAULT  )
+      `uvm_field_int (                         obi_memory_data_random_err_enabled,   UVM_DEFAULT  )
 
       `uvm_field_object(isacov_cfg           , UVM_DEFAULT)
       `uvm_field_object(clknrst_cfg          , UVM_DEFAULT)
@@ -56,6 +60,7 @@ class uvme_cv32e40x_cfg_c extends uvma_core_cntrl_cfg_c;
       `uvm_field_object(obi_memory_data_cfg  , UVM_DEFAULT)
       `uvm_field_object(rvfi_cfg             , UVM_DEFAULT)
       `uvm_field_object(rvvi_cfg             , UVM_DEFAULT)
+      `uvm_field_object(fencei_cfg           , UVM_DEFAULT)
    `uvm_object_utils_end
 
    constraint defaults_cons {
@@ -126,7 +131,7 @@ class uvme_cv32e40x_cfg_c extends uvma_core_cntrl_cfg_c;
       (!hart_id_plusarg_valid)           -> (hart_id           == 'h0000_0000);
       (!boot_addr_plusarg_valid)         -> (boot_addr         == 'h0000_0080);
       (!mtvec_addr_plusarg_valid)        -> (mtvec_addr        == 'h0000_0000);
-      (!nmi_addr_plusarg_valid)          -> (nmi_addr          == 'h2000_0000);
+      (!nmi_addr_plusarg_valid)          -> (nmi_addr          == 'h0010_0000);
       (!dm_halt_addr_plusarg_valid)      -> (dm_halt_addr      == 'h1a11_0800);
       (!dm_exception_addr_plusarg_valid) -> (dm_exception_addr == 'h1a11_1000);
    }
@@ -140,6 +145,7 @@ class uvme_cv32e40x_cfg_c extends uvma_core_cntrl_cfg_c;
          rvvi_cfg.enabled              == use_iss;
          obi_memory_instr_cfg.enabled  == 1;
          obi_memory_data_cfg.enabled   == 1;
+         fencei_cfg.enabled            == 1;
       }
 
       obi_memory_instr_cfg.version       == UVMA_OBI_MEMORY_VERSION_1P2;
@@ -189,18 +195,20 @@ class uvme_cv32e40x_cfg_c extends uvma_core_cntrl_cfg_c;
          obi_memory_data_cfg.is_active  == UVM_ACTIVE;
          rvfi_cfg.is_active             == UVM_PASSIVE;
          rvvi_cfg.is_active             == UVM_ACTIVE;
+         fencei_cfg.is_active           == UVM_ACTIVE;
       }
 
       if (trn_log_enabled) {
-         isacov_cfg.trn_log_enabled            == 1;
-         clknrst_cfg.trn_log_enabled           == 1;
-         interrupt_cfg.trn_log_enabled         == 1;
-         debug_cfg.trn_log_enabled             == 1;
+         // Setting a reasonable set of logs
+         isacov_cfg.trn_log_enabled            == 0;
+         clknrst_cfg.trn_log_enabled           == 0;
+         interrupt_cfg.trn_log_enabled         == 0;
+         debug_cfg.trn_log_enabled             == 0;
          obi_memory_instr_cfg.trn_log_enabled  == 1;
          obi_memory_data_cfg.trn_log_enabled   == 1;
          rvfi_cfg.trn_log_enabled              == 1;
          rvvi_cfg.trn_log_enabled              == 1;
-         isacov_cfg.trn_log_enabled            == 1;
+         isacov_cfg.trn_log_enabled            == 0;
       } else {
          isacov_cfg.trn_log_enabled            == 0;
          clknrst_cfg.trn_log_enabled           == 0;
@@ -213,13 +221,31 @@ class uvme_cv32e40x_cfg_c extends uvma_core_cntrl_cfg_c;
          isacov_cfg.trn_log_enabled            == 0;
       }
 
-      // FIXME:strichmo:restore when debug coverage model is fixed
-      debug_cfg.cov_model_enabled == 0;
-
       if (cov_model_enabled) {
          isacov_cfg.cov_model_enabled            == 1;
+         debug_cfg.cov_model_enabled             == 1;
          obi_memory_instr_cfg.cov_model_enabled  == 1;
          obi_memory_data_cfg.cov_model_enabled   == 1;
+      }
+   }
+
+   constraint obi_memory_instr_fault_cons {
+      if (!obi_memory_instr_random_err_enabled) {
+         obi_memory_instr_cfg.drv_slv_err_mode == UVMA_OBI_MEMORY_DRV_SLV_ERR_MODE_OK;
+      } else {
+         obi_memory_instr_cfg.drv_slv_err_mode == UVMA_OBI_MEMORY_DRV_SLV_ERR_MODE_RANDOM;
+         obi_memory_instr_cfg.drv_slv_err_ok_wgt inside {[20:40]};
+         obi_memory_instr_cfg.drv_slv_err_fault_wgt == 1;
+      }
+   }
+
+   constraint obi_memory_data_fault_cons {
+      if (!obi_memory_data_random_err_enabled) {
+         obi_memory_data_cfg.drv_slv_err_mode == UVMA_OBI_MEMORY_DRV_SLV_ERR_MODE_OK;
+      } else {
+         obi_memory_data_cfg.drv_slv_err_mode == UVMA_OBI_MEMORY_DRV_SLV_ERR_MODE_RANDOM;
+         obi_memory_data_cfg.drv_slv_err_ok_wgt inside {[20:40]};
+         obi_memory_data_cfg.drv_slv_err_fault_wgt == 1;
       }
    }
 
@@ -266,6 +292,10 @@ function uvme_cv32e40x_cfg_c::new(string name="uvme_cv32e40x_cfg");
       trn_log_enabled = 0;
       trn_log_enabled.rand_mode(0);
    end
+   if ($test$plusargs("obi_memory_instr_random_err"))
+      obi_memory_instr_random_err_enabled = 1;
+   if ($test$plusargs("obi_memory_data_random_err"))
+      obi_memory_data_random_err_enabled = 1;
 
    isacov_cfg = uvma_isacov_cfg_c::type_id::create("isacov_cfg");
    clknrst_cfg  = uvma_clknrst_cfg_c::type_id::create("clknrst_cfg");
@@ -275,6 +305,10 @@ function uvme_cv32e40x_cfg_c::new(string name="uvme_cv32e40x_cfg");
    obi_memory_data_cfg  = uvma_obi_memory_cfg_c::type_id::create("obi_memory_data_cfg" );
    rvfi_cfg = uvma_rvfi_cfg_c#(ILEN,XLEN)::type_id::create("rvfi_cfg");
    rvvi_cfg = uvma_rvvi_ovpsim_cfg_c#(ILEN,XLEN)::type_id::create("rvvi_cfg");
+   fencei_cfg = uvma_fencei_cfg_c::type_id::create("fencei_cfg");
+
+   obi_memory_instr_cfg.mon_logger_name = "OBII";
+   obi_memory_data_cfg.mon_logger_name  = "OBID";
 
    isacov_cfg.core_cfg = this;
    rvfi_cfg.core_cfg = this;
@@ -360,7 +394,3 @@ endfunction : configure_disable_csr_checks
 
 
 `endif // __UVME_CV32E40X_CFG_SV__
-
-
-
-

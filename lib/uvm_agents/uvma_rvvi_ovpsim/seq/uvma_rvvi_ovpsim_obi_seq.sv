@@ -1,12 +1,12 @@
 // Copyright 2020 OpenHW Group
 // Copyright 2020 Datum Technology Corporation
-// 
+//
 // Licensed under the Solderpad Hardware Licence, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
-// 
+//
 //     https://solderpad.org/licenses/
-// 
+//
 // Unless required by applicable law or agreed to in writing, software
 // distributed under the License is distributed on an "AS IS" BASIS,
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -36,7 +36,7 @@ class uvma_rvvi_ovpsim_obi_seq_c#(int ILEN=uvma_rvvi_pkg::DEFAULT_ILEN,
 
    `uvm_object_param_utils(uvma_rvvi_ovpsim_obi_seq_c#(ILEN,XLEN))
    `uvm_declare_p_sequencer(uvma_rvvi_sqr_c#(ILEN,XLEN))
-      
+
    /**
     * Default constructor.
     */
@@ -81,13 +81,13 @@ endclass : uvma_rvvi_ovpsim_obi_seq_c
 
 
 function uvma_rvvi_ovpsim_obi_seq_c::new(string name="uvma_rvvi_ovpsim_obi_seq");
-   
+
    super.new(name);
-   
+
 endfunction : new
 
 task uvma_rvvi_ovpsim_obi_seq_c::body();
-   
+
    if (!$cast(ovpsim_cfg, cfg)) begin
       `uvm_fatal("OBISEQ", $sformatf("Could not cast cfg to an OVPSIM cfg"))
    end
@@ -102,33 +102,19 @@ task uvma_rvvi_ovpsim_obi_seq_c::body();
 
       rvvi_i_mon();
    join
-   
+
 endtask : body
 
 task uvma_rvvi_ovpsim_obi_seq_c::rvvi_i_mon();
 
-   // Maybe the InstructionBusFault is combinatorial?
+   // Model InstructonBusFault generation as a combinatorial decode of IAddr and Ird
    while (1) begin
-      @(ovpsim_cntxt.ovpsim_bus_vif.IAddr);
+      @(ovpsim_cntxt.ovpsim_bus_vif.IAddr or ovpsim_cntxt.ovpsim_bus_vif.Ird);
       if (ovpsim_cntxt.ovpsim_bus_vif.Ird && is_i_error(ovpsim_cntxt.ovpsim_bus_vif.IAddr))
          ovpsim_cntxt.ovpsim_bus_vif.InstructionBusFault = 1'b1;
       else
          ovpsim_cntxt.ovpsim_bus_vif.InstructionBusFault = 1'b0;
    end
-   
-   // while(1) begin
-   //    @(posedge ovpsim_cntxt.ovpsim_bus_vif.Clk);
-
-   //    if (ovpsim_cntxt.ovpsim_bus_vif.Ird && is_i_error(ovpsim_cntxt.ovpsim_bus_vif.IAddr)) begin
-   //       fork 
-   //          begin
-   //             ovpsim_cntxt.ovpsim_bus_vif.InstructionBusFault = 1'b1;
-   //             @(posedge ovpsim_cntxt.ovpsim_bus_vif.Clk);            
-   //             ovpsim_cntxt.ovpsim_bus_vif.InstructionBusFault = 1'b0;
-   //          end
-   //       join_none
-   //    end
-   // end
 
 endtask : rvvi_i_mon
 
@@ -167,7 +153,7 @@ function void uvma_rvvi_ovpsim_obi_seq_c::clear_i_error(bit[XLEN-1:0] byte_addre
 endfunction : clear_i_error
 
 function void uvma_rvvi_ovpsim_obi_seq_c::set_i_error(bit[XLEN-1:0] byte_address);
-   
+
    obi_i_error[byte_address[XLEN-1:2]] = 1;
 
 endfunction : set_i_error

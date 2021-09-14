@@ -156,7 +156,7 @@ module uvmt_cv32e40x_debug_assert
         disable iff(!cov_assert_if.rst_ni)
         $rose(cov_assert_if.is_cebreak) && !cov_assert_if.debug_mode_q
         && !cov_assert_if.dcsr_q[2] && !cov_assert_if.dcsr_q[15]
-        ##0 (!cov_assert_if.debug_req_i && !cov_assert_if.irq_ack_o throughout ##1 cov_assert_if.wb_valid [->1])
+        ##0 (!cov_assert_if.pending_debug && !cov_assert_if.irq_ack_o throughout ##1 cov_assert_if.wb_valid [->1])
         // TODO:ropeders can this specificity be in consequent instead?
         |->
         !cov_assert_if.debug_mode_q && (cov_assert_if.mcause_q[5:0] === cv32e40x_pkg::EXC_CAUSE_BREAKPOINT)
@@ -175,7 +175,7 @@ module uvmt_cv32e40x_debug_assert
         disable iff(!cov_assert_if.rst_ni)
         $rose(cov_assert_if.is_ebreak) && !cov_assert_if.dcsr_q[15]
         && !cov_assert_if.debug_mode_q && !cov_assert_if.dcsr_q[2]
-        ##0 (!cov_assert_if.debug_req_i && !cov_assert_if.irq_ack_o throughout ##1 cov_assert_if.wb_valid [->1])
+        ##0 (!cov_assert_if.pending_debug && !cov_assert_if.irq_ack_o throughout ##1 cov_assert_if.wb_valid [->1])
         // TODO:ropeders can this specificity be in consequent instead?
         |->
         !cov_assert_if.debug_mode_q && (cov_assert_if.mcause_q[5:0] === cv32e40x_pkg::EXC_CAUSE_BREAKPOINT)
@@ -373,10 +373,9 @@ module uvmt_cv32e40x_debug_assert
 
 
     // dret in M-mode will cause illegal instruction
-    // If pending debug req, illegal insn will not assert
-    // until resume
+    // If pending debug req, illegal insn will not assert until resume
     property p_mmode_dret;
-        !cov_assert_if.debug_mode_q && cov_assert_if.is_dret && !cov_assert_if.debug_req_i
+        !cov_assert_if.debug_mode_q && cov_assert_if.is_dret && !cov_assert_if.pending_debug
         |-> cov_assert_if.illegal_insn_i;
     endproperty
 
@@ -388,7 +387,7 @@ module uvmt_cv32e40x_debug_assert
 
     sequence s_dmode_dret_pc_ante;  // Antecedent
         cov_assert_if.debug_mode_q && cov_assert_if.is_dret
-        ##1 (!cov_assert_if.debug_req_i && !cov_assert_if.irq_ack_o throughout cov_assert_if.wb_stage_instr_valid_i[->1]);
+        ##1 (!cov_assert_if.pending_debug && !cov_assert_if.irq_ack_o throughout cov_assert_if.wb_stage_instr_valid_i[->1]);
         // TODO:ropeders can this req/irq clause be in consequent?
     endsequence
 
@@ -424,7 +423,7 @@ module uvmt_cv32e40x_debug_assert
     // Check that trigger regs cannot be written from M-mode
     // TSEL, and TDATA3 are tied to zero, hence no register to check
     property p_mmode_tdata1_write;
-        !cov_assert_if.debug_mode_q && cov_assert_if.csr_access && cov_assert_if.csr_op == 'h1
+        !cov_assert_if.debug_mode_q && cov_assert_if.csr_access && cov_assert_if.csr_op == 'h1  // TODO:ropeders also "set" op?
         && cov_assert_if.wb_stage_instr_rdata_i[31:20] == 'h7A1
         |->
         ##0 $stable(cov_assert_if.tdata1) [*4];
@@ -472,15 +471,15 @@ module uvmt_cv32e40x_debug_assert
             `uvm_error(info_tag, "Minstret not counting when mcountinhibit[2] is cleared!");
 
     // Check debug_req_i and irq on same cycle.
-    // Should result in debug mode with regular pc in depc,
-    // not pc from interrupt handler
+    // Should result in debug mode with regular pc in dpc, not pc from interrupt handler.
     // PC is checked in another assertion
     property p_debug_req_and_irq;
-        cov_assert_if.debug_req_i && (cov_assert_if.pending_enabled_irq != 0)
-        && cov_assert_if.ctrl_fsm_cs == cv32e40x_pkg::FUNCTIONAL
+        ((cov_assert_if.debug_req_i || cov_assert_if.debug_req_q) && !cov_assert_if.debug_mode_q)
+        && (cov_assert_if.pending_enabled_irq != 0)
         |->
         s_conse_next_retire
         ##0 cov_assert_if.debug_mode_q;
+        // TODO:ropeders should dpc be checked here?
     endproperty
 
     a_debug_req_and_irq : assert property(p_debug_req_and_irq)
@@ -504,7 +503,7 @@ module uvmt_cv32e40x_debug_assert
     // comes while flushing due to an illegal insn, causing
     // dpc to be set to the exception handler entry addr
     sequence s_illegal_insn_debug_req_ante;  // Antecedent
-        wb_execs_illegal && !cov_assert_if.debug_mode_q
+        cov_assert_if.wb_illegal && cov_assert_if.wb_valid && !cov_assert_if.debug_mode_q
         ##1 cov_assert_if.debug_req_i && !cov_assert_if.debug_mode_q;
     endsequence
 
@@ -512,9 +511,6 @@ module uvmt_cv32e40x_debug_assert
         s_conse_next_retire
         ##0 cov_assert_if.debug_mode_q && (cov_assert_if.depc_q == mtvec_addr);
     endsequence
-
-    logic wb_execs_illegal;
-    assign wb_execs_illegal = cov_assert_if.wb_illegal && cov_assert_if.wb_valid;
 
     // Need to confirm that the assertion can be reached for non-trivial cases
     cov_illegal_insn_debug_req_nonzero : cover property(
@@ -576,7 +572,7 @@ module uvmt_cv32e40x_debug_assert
     end else begin
       // Enter wfi if we have a valid instruction, and conditions allow it (e.g. no single-step etc)
       if (cov_assert_if.is_wfi && cov_assert_if.wb_valid
-          && !cov_assert_if.debug_req_i && !cov_assert_if.debug_mode_q && !cov_assert_if.dcsr_q[2])
+          && !cov_assert_if.pending_debug && !cov_assert_if.debug_mode_q && !cov_assert_if.dcsr_q[2])
         cov_assert_if.in_wfi <= 1'b1;
       if (cov_assert_if.pending_enabled_irq || cov_assert_if.debug_req_i)
         cov_assert_if.in_wfi <= 1'b0;
@@ -642,12 +638,13 @@ module uvmt_cv32e40x_debug_assert
                     debug_cause_pri <= 3'b010;
                 else if(cov_assert_if.dcsr_q[15] && (cov_assert_if.is_ebreak || cov_assert_if.is_cebreak))
                     debug_cause_pri <= 3'b001;
-                else if(cov_assert_if.debug_req_i)
+                else if(cov_assert_if.debug_req_i || cov_assert_if.debug_req_q)
                     debug_cause_pri <= 3'b011;
                 else if(cov_assert_if.dcsr_q[2])
                     debug_cause_pri <= 3'b100;
                 else
                     debug_cause_pri <= 3'b000;
+                // TODO:ropeders should have cause 5 when RTL is ready
             end
         end
     end
