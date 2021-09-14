@@ -7,20 +7,20 @@ description: Directed and random interrupt tests for CV32E40X
 # List of builds
 builds:
   corev-dv:
-    # required: Make the corev-dv infrastructure    
+    # required: Make the corev-dv infrastructure
     cmd: make comp_corev-dv
     dir: cv32e40x/sim/uvmt
     cov: 0
   uvmt_cv32e40x:
     # required: the make command to create the build
     cmd: make comp
-    dir: cv32e40x/sim/uvmt    
+    dir: cv32e40x/sim/uvmt
 
 # List of tests
 tests:
   interrupt_test:
     build: uvmt_cv32e40x
-    description: Interrupt directed test  
+    description: Interrupt directed test
     dir: cv32e40x/sim/uvmt
     cmd: make test COREV=YES TEST=interrupt_test
 
@@ -54,20 +54,20 @@ tests:
   # corev_rand_interrupt_nested:
   #   build: uvmt_cv32e40x
   #   description: Interrupt random test with nested interrupts and WFI
-  #   dir: cv32e40x/sim/uvmt    
+  #   dir: cv32e40x/sim/uvmt
   #   cmd: make gen_corev-dv test COREV=YES TEST=corev_rand_interrupt_nested
   #   num: 50
 
   corev_rand_interrupt_wfi:
     build: uvmt_cv32e40x
     description: Interrupt random test with WFI
-    dir: cv32e40x/sim/uvmt    
+    dir: cv32e40x/sim/uvmt
     cmd: make gen_corev-dv test COREV=YES TEST=corev_rand_interrupt_wfi
     num: 50
 
   corev_rand_interrupt_wfi_mem_stress:
     build: uvmt_cv32e40x
     description: Interrupt random test with WFI
-    dir: cv32e40x/sim/uvmt    
+    dir: cv32e40x/sim/uvmt
     cmd: make gen_corev-dv test COREV=YES TEST=corev_rand_interrupt_wfi_mem_stress
     num: 50

@@ -28,7 +28,7 @@ class uvma_core_cntrl_sqr_c extends uvm_sequencer;
 
    // Objects
    uvma_core_cntrl_cfg_c    cfg;
-   uvma_core_cntrl_cntxt_c  cntxt;  
+   uvma_core_cntrl_cntxt_c  cntxt;
 
    `uvm_component_utils_begin(uvma_core_cntrl_sqr_c)
       `uvm_field_object(cfg  , UVM_DEFAULT)

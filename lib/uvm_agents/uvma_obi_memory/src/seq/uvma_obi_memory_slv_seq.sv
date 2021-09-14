@@ -45,8 +45,7 @@ class uvma_obi_memory_slv_seq_c extends uvma_obi_memory_slv_base_seq_c;
     * Register sequences with a range of addresses on this OBI
     */
    extern virtual function uvma_obi_memory_vp_base_seq_c register_vp_vseq(string name, 
-                                                                          bit[31:0] start_addr, 
-                                                                          int unsigned num_words,
+                                                                          bit[31:0] start_address,                                                                           
                                                                           uvm_object_wrapper seq_type);
 
    /**
@@ -128,6 +127,7 @@ task uvma_obi_memory_slv_seq_c::do_response(ref uvma_obi_memory_mon_trn_c mon_re
       uvma_obi_memory_slv_seq_item_c  slv_rsp;
 
       `uvm_create(slv_rsp)
+      slv_rsp.orig_trn = mon_req;
 
       `uvm_info("SLV_SEQ", $sformatf("Error!\n%s", mon_req.sprint()), UVM_LOW)
       if (mon_req.access_type == UVMA_OBI_MEMORY_ACCESS_READ) begin
@@ -147,6 +147,7 @@ task uvma_obi_memory_slv_seq_c::do_mem_operation(ref uvma_obi_memory_mon_trn_c m
 
    uvma_obi_memory_slv_seq_item_c  slv_rsp;
    `uvm_create(slv_rsp)
+   slv_rsp.orig_trn = mon_req;
    slv_rsp.access_type = mon_req.access_type;
 
    word_aligned_addr = { mon_req.address[31:2], 2'h0 };
@@ -171,14 +172,11 @@ task uvma_obi_memory_slv_seq_c::do_mem_operation(ref uvma_obi_memory_mon_trn_c m
 
 endtask : do_mem_operation
 
-function uvma_obi_memory_vp_base_seq_c uvma_obi_memory_slv_seq_c::register_vp_vseq(string name, bit[31:0] start_addr, int unsigned num_words, uvm_object_wrapper seq_type);
+function uvma_obi_memory_vp_base_seq_c uvma_obi_memory_slv_seq_c::register_vp_vseq(string name, 
+                                                                                   bit[31:0] start_address,                                                                                   
+                                                                                   uvm_object_wrapper seq_type);
 
    uvma_obi_memory_vp_base_seq_c vp_seq;
-
-   // Sanity check num_words
-   if (num_words == 0) begin
-      `uvm_fatal("OBIVPVSEQ", $sformatf("num_words cannot be zero"))
-   end
 
    // Create an instance of the sequence type passed in,
    // Ensure that the sequence type is derived from uvma_obi_memory_vp_base_seq_c
@@ -186,9 +184,17 @@ function uvma_obi_memory_vp_base_seq_c uvma_obi_memory_slv_seq_c::register_vp_vs
       `uvm_fatal("OBIVPVSEQ", $sformatf("Could not cast seq_type of type name: %s to a uvma_obi_memory_vp_base_seq_c type", seq_type.get_type_name()))
    end
 
+   // Sanity check num_words
+   if (vp_seq.get_num_words() == 0) begin
+      `uvm_fatal("OBIVPVSEQ", $sformatf("num_words for type %s cannot be zero", seq_type.get_type_name()))
+   end
+
+   // Configure fields in the virtual peripheral sequence
+   vp_seq.start_address = start_address;
+
    // Use hash to efficiently look up word-aligned addresses to this handle
-   for (int unsigned word = 0; word < num_words; word++) begin
-      bit[31:0] addr = (start_addr & ~32'h3) + (4 * word);
+   for (int unsigned word = 0; word < vp_seq.get_num_words(); word++) begin
+      bit[31:0] addr = (start_address & ~32'h3) + (4 * word);
 
       // If an address is being claimed twice, then issue a fatal error
       if (vp_seq_table.exists(addr)) begin

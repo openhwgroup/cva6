@@ -18,7 +18,7 @@
 
 //-----------------------------------------------------------------------------------------
 // CV32E40X CORE-V assembly program generator - extension of the RISC-V assembly program generator.
-// 
+//
 // Overrides gen_program_header() and gen_test_done()
 //-----------------------------------------------------------------------------------------
 
@@ -50,22 +50,22 @@ class cv32e40x_asm_program_gen extends corev_asm_program_gen;
                     $sformatf("j %0s%0smode_exception_handler", hart_prefix(hart), mode)};
     // Redirect the interrupt to the corresponding interrupt handler
     for (int i = 1; i < max_interrupt_vector_num; i++) begin
-      instr.push_back($sformatf("j %0s%0smode_intr_vector_%0d", hart_prefix(hart), mode, i));      
+      instr.push_back($sformatf("j %0s%0smode_intr_vector_%0d", hart_prefix(hart), mode, i));
     end
     if (!cfg.disable_compressed_instr) begin
       instr = {instr, ".option rvc;"};
     end
-    for (int i = 1; i < max_interrupt_vector_num; i++) begin      
+    for (int i = 1; i < max_interrupt_vector_num; i++) begin
       string intr_handler[$];
 
       if (corev_cfg.use_fast_intr_handler[i]) begin
         // Emit fast interrupt handler since cv32e40x has hardware interrupt ack
         // If WFIs allow, randomly insert wfi as well
-        if (!cfg.no_wfi) begin         
+        if (!cfg.no_wfi) begin
             randcase
                 2:  intr_handler.push_back("wfi");
                 4: begin /* insert nothing */ end
-            endcase          
+            endcase
         end
         intr_handler.push_back("mret");
       end
@@ -172,7 +172,7 @@ class cv32e40x_asm_program_gen extends corev_asm_program_gen;
       interrupt_handler_instr.push_back($sformatf("add x%0d, x%0d, zero", cfg.tp, cfg.sp));
       interrupt_handler_instr.push_back($sformatf("csrrw x%0d, mscratch, x%0d", cfg.sp, cfg.sp));
 
-      // Re-enable interrupts        
+      // Re-enable interrupts
       case (status)
         MSTATUS: begin
           interrupt_handler_instr.push_back($sformatf("csrsi 0x%0x, 0x%0x", status, 8));
@@ -261,10 +261,10 @@ class cv32e40x_asm_program_gen extends corev_asm_program_gen;
     string nmi_handler_instr[$];
 
     // Insert section info so linker can place
-    // debug code at the correct adress   
+    // debug code at the correct adress
     instr_stream.push_back(".section .nmi, \"ax\"");
-    
-    // read relevant csr's 
+
+    // read relevant csr's
     nmi_handler_instr.push_back($sformatf("csrr x%0d, mepc", cfg.gpr[0]));
     nmi_handler_instr.push_back($sformatf("csrr x%0d, mcause", cfg.gpr[0]));
     nmi_handler_instr.push_back($sformatf("csrr x%0d, mtval", cfg.gpr[0]));
@@ -272,16 +272,16 @@ class cv32e40x_asm_program_gen extends corev_asm_program_gen;
 
     nmi_handler_instr.push_back($sformatf("la x%0d, test_done", cfg.scratch_reg));
     nmi_handler_instr.push_back($sformatf("jr x%0d", cfg.scratch_reg));
-    
-    
+
+
     gen_section(get_label($sformatf("nmi_handler"), hart),
                 nmi_handler_instr);
 
   endfunction : gen_nmi_handler_section
 
-  // Override gen_stack_section to add debugger stack generation section  
+  // Override gen_stack_section to add debugger stack generation section
   // Implmeneted as a post-step to super.gen_stack_section()
-  virtual function void gen_stack_section(int hart);  
+  virtual function void gen_stack_section(int hart);
     super.gen_stack_section(hart);
 
     if (SATP_MODE != BARE) begin
@@ -304,12 +304,12 @@ class cv32e40x_asm_program_gen extends corev_asm_program_gen;
     bit [DATA_WIDTH-1:0] reg_val;
     cv32e40x_instr_gen_config cfg_corev;
 
-    `DV_CHECK($cast(cfg_corev, cfg))    
+    `DV_CHECK($cast(cfg_corev, cfg))
     // Init general purpose registers with random values
     for(int i = 0; i < NUM_GPR; i++) begin
       if (i inside {cfg.sp, cfg.tp}) continue;
       if (cfg.gen_debug_section && (i inside {cfg_corev.dp})) continue;
-      
+
       `DV_CHECK_STD_RANDOMIZE_WITH_FATAL(reg_val,
         reg_val dist {
           'h0                         :/ 1,

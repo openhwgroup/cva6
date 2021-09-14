@@ -10,7 +10,7 @@ plusargs: >
     +no_data_page=1
     +no_branch_jump=0
     +boot_mode=m
-    +no_csr_instr=1
+    +no_csr_instr=0
     +no_wfi=0
     +no_ebreak=0
     +no_dret=1
@@ -19,3 +19,6 @@ plusargs: >
     +set_dcsr_ebreak=1
     +enable_debug_single_step=0
     +gen_debug_section=1
+    +num_debug_sub_program=0
+    +illegal_instr_ratio=2
+    +enable_illegal_csr_instruction=1

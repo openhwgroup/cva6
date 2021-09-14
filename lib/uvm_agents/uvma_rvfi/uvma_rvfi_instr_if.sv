@@ -36,7 +36,8 @@ interface uvma_rvfi_instr_if
     input [ILEN-1:0]           rvfi_insn,
     input                      rvfi_trap,
     input                      rvfi_halt,
-    input                      rvfi_dbg,
+    input [RVFI_DBG_WL-1:0]    rvfi_dbg,
+    input                      rvfi_dbg_mode,
     input                      rvfi_intr,    
     input [MODE_WL-1:0]        rvfi_mode,
     input [IXL_WL-1:0]         rvfi_ixl,
@@ -91,6 +92,7 @@ interface uvma_rvfi_instr_if
         rvfi_trap,
         rvfi_halt,
         rvfi_dbg,
+        rvfi_dbg_mode,
         rvfi_intr,
         rvfi_mode,
         rvfi_ixl,
@@ -119,3 +121,4 @@ endinterface : uvma_rvfi_instr_if
 
 
 `endif // __UVMA_RVFI_INSTR_IF_SV__
+

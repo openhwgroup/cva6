@@ -32,13 +32,13 @@ class cv32e40x_illegal_instr extends riscv_illegal_instr;
     instr_bin[31:20] != 'h7A4; // TINFO
     instr_bin[31:20] != 'h7A5; // TCONTROL
     instr_bin[31:20] != 'h7A8; // MCONTEXT
-    instr_bin[31:20] != 'h7AA; // SCONTEXT    
+    instr_bin[31:20] != 'h7AA; // SCONTEXT
   }
 
   `uvm_object_utils(cv32e40x_illegal_instr);
 
   function new(string name="");
     super.new(name);
-  endfunction  
+  endfunction
 
 endclass : cv32e40x_illegal_instr

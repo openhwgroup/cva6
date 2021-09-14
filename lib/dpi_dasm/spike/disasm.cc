@@ -597,14 +597,14 @@ disassembler_t::disassembler_t(int xlen)
   DEFINE_RTYPE(xnor);
   DEFINE_R1TYPE(sext_b);
   DEFINE_R1TYPE(sext_h);
-  //add_insn(new disasm_insn_t("zext.h", (xlen == 32 ? match_pack : match_packw), mask_pack | mask_rs2, {&xrd, &xrs1}));
+  add_insn(new disasm_insn_t("zext.h", (xlen == 32 ? match_pack : match_packw), mask_pack | mask_rs2, {&xrd, &xrs1}));
   DEFINE_RTYPE(pack);
   DEFINE_RTYPE(packw);
   DEFINE_RTYPE(grev);
-  //add_insn(new disasm_insn_t("rev8", match_grevi | ((xlen == 32 ? 0x18 : 0x38) << imm_shift), mask_grevi | mask_imm, {&xrd, &xrs1}));
+  add_insn(new disasm_insn_t("rev8", match_grevi | ((xlen == 32 ? 0x18 : 0x38) << imm_shift), mask_grevi | mask_imm, {&xrd, &xrs1}));
   DEFINE_ITYPE_SHIFT(grevi);
   DEFINE_RTYPE(gorc);
-  //add_insn(new disasm_insn_t("orc.b", match_gorci | (0x7 << imm_shift), mask_grevi | mask_imm, {&xrd, &xrs1}));
+  add_insn(new disasm_insn_t("orc.b", match_gorci | (0x7 << imm_shift), mask_grevi | mask_imm, {&xrd, &xrs1}));
   DEFINE_ITYPE_SHIFT(gorci);
   DEFINE_RTYPE(xperm_n);
   DEFINE_RTYPE(xperm_b);
