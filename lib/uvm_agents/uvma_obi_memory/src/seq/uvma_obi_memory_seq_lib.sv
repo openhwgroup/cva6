@@ -28,6 +28,7 @@
 `include "uvma_obi_memory_vp_base_seq.sv"
 `include "uvma_obi_memory_vp_cycle_counter_seq.sv"
 `include "uvma_obi_memory_vp_debug_control_seq.sv"
+`include "uvma_obi_memory_vp_directed_slv_resp_seq.sv"
 `include "uvma_obi_memory_vp_interrupt_timer_seq.sv"
 `include "uvma_obi_memory_vp_rand_num_seq.sv"
 `include "uvma_obi_memory_vp_sig_writer_seq.sv"

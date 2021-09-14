@@ -33,7 +33,7 @@ CV_CORE_LC     = $(shell echo $(CV_CORE) | tr A-Z a-z)
 CV_CORE_UC     = $(shell echo $(CV_CORE) | tr a-z A-Z)
 export CV_CORE_LC
 export CV_CORE_UC
-.DEFAULT_GOAL := no_rule 
+.DEFAULT_GOAL := no_rule
 
 # Useful commands
 MKDIR_P = mkdir -p
@@ -116,7 +116,7 @@ RTLSRC_INCDIR := $(RTLSRC_HOME)/include
 ###############################################################################
 # Seed management for constrained-random sims
 SEED    ?= 1
-RNDSEED ?= 
+RNDSEED ?=
 
 ifeq ($(SEED),random)
 RNDSEED = $(shell date +%N)
@@ -233,6 +233,7 @@ clean_test_programs: clean-bsp
 	find $(CORE_V_VERIF)/$(CV_CORE_LC)/tests/programs -name *.hex     -exec rm {} \;
 	find $(CORE_V_VERIF)/$(CV_CORE_LC)/tests/programs -name *.elf     -exec rm {} \;
 	find $(CORE_V_VERIF)/$(CV_CORE_LC)/tests/programs -name *.map     -exec rm {} \;
+	find $(CORE_V_VERIF)/$(CV_CORE_LC)/tests/programs -name *.itb     -exec rm {} \;
 	find $(CORE_V_VERIF)/$(CV_CORE_LC)/tests/programs -name *.readelf -exec rm {} \;
 	find $(CORE_V_VERIF)/$(CV_CORE_LC)/tests/programs -name *.objdump -exec rm {} \;
 	find $(CORE_V_VERIF)/$(CV_CORE_LC)/tests/programs -name corev_*.S -exec rm {} \;

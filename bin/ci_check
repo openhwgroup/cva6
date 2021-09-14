@@ -102,8 +102,20 @@ sim_results_dir = os.path.abspath(os.path.join(uvm_results_dir, '{}_results'.for
 ################################################################################
 # Methods....
 
+# Pretty (or at least, not so ugly) pass/fail summary
+def pr_result(line='/really/long/ugly/path/test.log: SIMULATION PASSED'):
+    rline = line.decode('utf-8').rstrip()     # remove trailing whitespace
+    if not re.search('SIMULATION', rline):
+      print('!!! Unexpected test result: {}'.format(rline))
+      exit(1)
+    plist = rline.split('/')                  # build a list from path
+    res   = plist[-1]                         # result we want is in last entry of list
+    iii   = res.find(':')                     # ":" is delimiter between file name and pass-or-fail
+    rlist = [ res[0:iii], ':', res[-6:] ]     # result list (works becaused "PASSED" and "FAILED" both have 6 chars)
+    print('{: >40} {} {: >6}'.format(*rlist)) # pretty printing: produces "test.log: PASSED" using default value of arg
+
+
 # Check results and print something useful
-# TODO: fix this! (its so ugly I'm embarassed to check it in)
 def check_uvm_results(check_only=0):
     fail_count = 0
     expct_fail = 0
@@ -119,9 +131,9 @@ def check_uvm_results(check_only=0):
                                   stderr=subprocess.STDOUT,
                                   shell="TRUE")
 
+        print ('\n\nCI Check results:')
         for line in fails.stdout.readlines():
-            failed = line.decode('utf-8').rstrip()
-            print (failed)
+            pr_result(line)
             fail_count += 1
             # TODO: make this a list of known failures (hopefully there won't be that many...)
             if (
@@ -131,7 +143,7 @@ def check_uvm_results(check_only=0):
                 expct_fail += 1
 
         for line in passes.stdout.readlines():
-            print (line.decode('utf-8').rstrip())
+            pr_result(line)
             pass_count += 1
 
         if (pass_count == 0):
@@ -165,7 +177,7 @@ def check_core_results(run_count):
             #core_runs = line.decode('utf-8').rstrip()
             print (line.decode('utf-8').rstrip())
             run_count -= 1
-    
+
         if (run_count == 0):
             print ('\nCI Check of CORE testbench PASSED.\nYou must also run the UVM CI regression before submitting a PR.')
         else:

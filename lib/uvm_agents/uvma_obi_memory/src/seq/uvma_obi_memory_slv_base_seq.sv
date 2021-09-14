@@ -120,6 +120,7 @@ function void uvma_obi_memory_slv_base_seq_c::add_r_fields(uvma_obi_memory_mon_t
    // Take care to leave rchk last as it will likely incorporate a checksum of all other response fields
 
    slv_rsp.rid = mon_req.aid;
+   add_latencies(slv_rsp);
    if (cfg.version >= UVMA_OBI_MEMORY_VERSION_1P2) begin
       add_err(slv_rsp);
       add_exokay(mon_req, slv_rsp);
@@ -131,7 +132,7 @@ endfunction : add_r_fields
 
 function void uvma_obi_memory_slv_base_seq_c::add_err(uvma_obi_memory_slv_seq_item_c slv_rsp);
 
-   slv_rsp.err = cfg.calc_random_err();
+   slv_rsp.err = cfg.calc_random_err(slv_rsp.orig_trn.address);
    
 endfunction : add_err
 
@@ -143,7 +144,7 @@ function void uvma_obi_memory_slv_base_seq_c::add_exokay(uvma_obi_memory_mon_trn
       return;
    end
 
-   slv_rsp.exokay = cfg.calc_random_exokay();
+   slv_rsp.exokay = cfg.calc_random_exokay(slv_rsp.orig_trn.address);
    
 endfunction : add_exokay
 
@@ -156,7 +157,8 @@ endfunction : add_ruser
 
 function void uvma_obi_memory_slv_base_seq_c::add_rchk(uvma_obi_memory_slv_seq_item_c slv_rsp);
 
-   slv_rsp.err = '0;
+   // FIXME:strichmo:need to implement this
+   // slv_rsp.rchk = '0;
    
 endfunction : add_rchk
 

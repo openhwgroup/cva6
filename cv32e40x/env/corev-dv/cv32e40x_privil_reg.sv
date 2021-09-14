@@ -33,8 +33,8 @@ class cv32e40x_privil_reg extends riscv_privil_reg;
   // Add fields in privileged registers
   function void init_reg(REG_T reg_name);
     super.init_reg(reg_name);
-    
-    case(reg_name) inside 
+
+    case(reg_name) inside
       // Machine interrupt-enable register
       MIE: begin
         fld.delete();

@@ -23,7 +23,7 @@ MEMORY
 	   sections to ram. */
 
 	ram (rwxai) : ORIGIN = 0x00000000, LENGTH = 0x400000
-	dbg (rwxai) : ORIGIN = 0x1A110800, LENGTH = 0x1000
+  dbg (rwxai) : ORIGIN = 0x1A110800, LENGTH = 0x1000
 }
 
 SECTIONS
@@ -45,16 +45,17 @@ SECTIONS
    . = 0x80;
   } >dbg
 
-  /* CORE-V: we want a fixed entry point */
-  PROVIDE(__boot_address = 0x80);
 
   /* NMI interrupt handler fixed entry point */
-  /* TODO: fix when address is set */
-  .nmi(0x30CAFE):
+  PROVIDE(__nmi_address = 0x100000);
+
+  .nmi (__nmi_address):
   {
-        PROVIDE(nmi_handler = .);
-        KEEP(*(.nmi));
-  } > ram
+    KEEP(*(.nmi));
+  } >ram
+
+  /* CORE-V: we want a fixed entry point */
+  PROVIDE(__boot_address = 0x80);
 
   /* CORE-V: interrupt vectors */
   .vectors (ORIGIN(ram)):
@@ -69,6 +70,7 @@ SECTIONS
     KEEP (*(SORT_NONE(.init)))
     KEEP (*(.text.start))
   } >ram
+
 
   /* Read-only sections, merged into text segment: */
   PROVIDE (__executable_start = SEGMENT_START("text-segment", 0x10000)); . = SEGMENT_START("text-segment", 0x10000) + SIZEOF_HEADERS;
@@ -272,6 +274,9 @@ SECTIONS
    . = __heap_end;
    PROVIDE(__stack_end = .);
   } >ram
+
+
+
 
   /* Stabs debugging sections.  */
   .stab          0 : { *(.stab) }

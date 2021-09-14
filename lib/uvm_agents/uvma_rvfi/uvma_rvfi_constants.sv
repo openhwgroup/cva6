@@ -23,6 +23,7 @@ localparam ORDER_WL         = 64;
 localparam MODE_WL          = 2;
 localparam IXL_WL           = 2;
 localparam GPR_ADDR_WL      = 5;
+localparam RVFI_DBG_WL      = 3;
 
 localparam DEFAULT_ILEN     = 32;
 localparam DEFAULT_XLEN     = 32;

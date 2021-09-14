@@ -8,3 +8,4 @@ description: >
     Debug directed test, debug at reset
 plusargs: >
     +debug_boot_set
+    +fetch_initial_delay
