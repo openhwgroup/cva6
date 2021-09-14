@@ -438,19 +438,24 @@ task uvma_obi_memory_drv_c::drv_mstr_read_req(ref uvma_obi_memory_mstr_seq_item_
 endtask : drv_mstr_read_req
 
 
+// This task has redundant code with drv_mstr_read_req for the request and
+// address phases.  Rather than create a new method for the common code, the
+// waiver pragmas are in place to warn future maintainers of the situation.
 task uvma_obi_memory_drv_c::drv_mstr_write_req(ref uvma_obi_memory_mstr_seq_item_c req);
-   
+
+//@DVT_LINTER_WAIVER_START "MT20210901_3" disable SVTB.33.1.0, SVTB.33.2.0
    // Req Latency cycles
    repeat (req.req_latency) begin
       @(mstr_mp.drv_mstr_cb);
    end
-   
+
    // Address phase
    mstr_mp.drv_mstr_cb.req <= 1'b1;
    mstr_mp.drv_mstr_cb.we  <= req.access_type;
    for (int unsigned ii=0; ii<cfg.addr_width; ii++) begin
       mstr_mp.drv_mstr_cb.addr[ii] <= req.address[ii];
    end
+//@DVT_LINTER_WAIVER_END "MT20210901_3"
    for (int unsigned ii=0; ii<cfg.data_width; ii++) begin
       mstr_mp.drv_mstr_cb.wdata[ii] <= req.wdata[ii];
    end

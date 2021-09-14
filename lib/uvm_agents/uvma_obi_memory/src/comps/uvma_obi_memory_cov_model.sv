@@ -145,6 +145,11 @@ function uvma_obi_memory_cov_model_c::new(string name="uvma_obi_memory_cov_model
 endfunction : new
 
 
+// A significant chunk of the build_phase method is common between this
+// coverage model and the sequencer (uvma_obi_memory_sqr).  This is
+// appropriate so the duplicated code has a lint waiver.
+//
+//@DVT_LINTER_WAIVER_START "MT20210901_1" disable SVTB.33.1.0, SVTB.33.2.0
 function void uvma_obi_memory_cov_model_c::build_phase(uvm_phase phase);
    
    super.build_phase(phase);
@@ -173,6 +178,7 @@ function void uvma_obi_memory_cov_model_c::build_phase(uvm_phase phase);
    end
 
 endfunction : build_phase
+//@DVT_LINTER_WAIVER_END "MT20210901_1"
 
 task uvma_obi_memory_cov_model_c::run_phase(uvm_phase phase);
    

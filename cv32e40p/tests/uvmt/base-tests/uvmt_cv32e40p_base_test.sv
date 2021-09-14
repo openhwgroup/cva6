@@ -441,10 +441,15 @@ function void uvmt_cv32e40p_base_test_c::print_banner(string text);
    
   if (test_cfg != null) begin
     if (test_cfg.print_uvm_runflow_banner) begin
+      // In most other contexts, calls to $display() in a UVM environment are
+      // illegal. Here they are OK because the following is a banner header
+      // with no fatal/error/warning or uvm_info implications.
+      //@DVT_LINTER_WAIVER_START "MT20210909_1" disable SVTB.29.1.7
       $display("");
       $display("*******************************************************************************");
       $display(text.toupper());
       $display("*******************************************************************************");
+      //@DVT_LINTER_WAIVER_END "MT20210909_1"
     end
     else begin
       `uvm_info("BASE_TEST", "Printing of UVM run-flow banner disabled", UVM_HIGH)
