@@ -35,6 +35,11 @@ class uvma_obi_memory_vp_rand_num_seq_c extends uvma_obi_memory_vp_base_seq_c;
    extern function new(string name="uvma_obi_memory_vp_rand_num_seq_c");
    
    /**
+    * Implement number of peripherals
+    */
+   extern virtual function int unsigned get_num_words();
+
+   /**
     * Implement sequence that will return a random number
     */
    extern virtual task vp_body(uvma_obi_memory_mon_trn_c mon_trn);
@@ -48,12 +53,19 @@ function uvma_obi_memory_vp_rand_num_seq_c::new(string name="uvma_obi_memory_vp_
    
 endfunction : new
 
+function int unsigned uvma_obi_memory_vp_rand_num_seq_c::get_num_words();
+
+   return 1;
+
+endfunction : get_num_words
+
 task uvma_obi_memory_vp_rand_num_seq_c::vp_body(uvma_obi_memory_mon_trn_c mon_trn);
    
    uvma_obi_memory_slv_seq_item_c  slv_rsp;   
 
    `uvm_create(slv_rsp)
    
+   slv_rsp.orig_trn = mon_trn;   
    slv_rsp.rdata = $urandom();
    slv_rsp.err = 1'b0;
 

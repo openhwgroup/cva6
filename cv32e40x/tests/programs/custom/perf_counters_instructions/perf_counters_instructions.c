@@ -1,22 +1,22 @@
 /*
 **
 ** Copyright 2020 OpenHW Group
-** 
+**
 ** Licensed under the Solderpad Hardware Licence, Version 2.0 (the "License");
 ** you may not use this file except in compliance with the License.
 ** You may obtain a copy of the License at
-** 
+**
 **     https://solderpad.org/licenses/
-** 
+**
 ** Unless required by applicable law or agreed to in writing, software
 ** distributed under the License is distributed on an "AS IS" BASIS,
 ** WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 ** See the License for the specific language governing permissions and
 ** limitations under the License.
-** 
+**
 *******************************************************************************
 **
-** Performance Counters Basic  test: 
+** Performance Counters Basic  test:
 **
 *******************************************************************************
                     //lw x8, 4(sp)\n\t\
@@ -70,11 +70,11 @@ int main(int argc, char *argv[])
 
   printf("\n\nPerformance Counters Basic Test\n");
 
-  __asm__ volatile("csrr %0, 0xB00" : "=r"(mcycle_rval));         
-  __asm__ volatile("csrr %0, 0xB02" : "=r"(minstret_rval));      
-  
+  __asm__ volatile("csrr %0, 0xB00" : "=r"(mcycle_rval));
+  __asm__ volatile("csrr %0, 0xB02" : "=r"(minstret_rval));
 
-  __asm__ volatile("csrr %0, 0x320" : "=r"(mcountinhibit_rval)); 
+
+  __asm__ volatile("csrr %0, 0x320" : "=r"(mcountinhibit_rval));
 
 
   __asm__ volatile("csrr %0, 0xB03" : "=r"(mhpmcounter_rval[3]));
@@ -145,7 +145,7 @@ int main(int argc, char *argv[])
     printf("ERROR: CSR MHPMEVENT[3..31] not 0x0!\n\n");
     ++err_cnt;
   }
-  
+
 
   sum = 0;
   for (int i=3; i<32; i++) {
@@ -166,7 +166,7 @@ int main(int argc, char *argv[])
     printf("ERROR: CSR MINSTRET not 0x0!\n\n");
     ++err_cnt;
   }
- 
+
   if (mcountinhibit_rval != 0xD) {
     printf("ERROR: CSR MCOUNTINHIBIT not 0xD!\n\n");
     ++err_cnt;
@@ -179,119 +179,119 @@ int main(int argc, char *argv[])
 
 //////////////////////////////////////////////////////////////
   // To complete code coverage try to write all unimplemented HPMEVENT<n> registers
-  for (int i = 3; i <= 31; i++) {      
+  for (int i = 3; i <= 31; i++) {
     volatile unsigned int revent;
     volatile unsigned int wevent = (unsigned int) -1;
-    
-    
+
+
     if (i >= NUM_MHPMCOUNTERS+3) {
       switch (i) {
         case 3:
-          __asm__ volatile("csrw mhpmevent3, %0" : : "r"(wevent)); 
-          __asm__ volatile("csrr %0, mhpmevent3" : "=r"(revent)); 
+          __asm__ volatile("csrw mhpmevent3, %0" : : "r"(wevent));
+          __asm__ volatile("csrr %0, mhpmevent3" : "=r"(revent));
           break;
         case 4:
-          __asm__ volatile("csrw mhpmevent4, %0" : : "r"(wevent)); 
-          __asm__ volatile("csrr %0, mhpmevent4" : "=r"(revent)); 
+          __asm__ volatile("csrw mhpmevent4, %0" : : "r"(wevent));
+          __asm__ volatile("csrr %0, mhpmevent4" : "=r"(revent));
           break;
         case 5:
-          __asm__ volatile("csrw mhpmevent5, %0" : : "r"(wevent)); 
-          __asm__ volatile("csrr %0, mhpmevent5" : "=r"(revent)); 
+          __asm__ volatile("csrw mhpmevent5, %0" : : "r"(wevent));
+          __asm__ volatile("csrr %0, mhpmevent5" : "=r"(revent));
           break;
         case 6:
-          __asm__ volatile("csrw mhpmevent6, %0" : : "r"(wevent)); 
-          __asm__ volatile("csrr %0, mhpmevent6" : "=r"(revent)); 
+          __asm__ volatile("csrw mhpmevent6, %0" : : "r"(wevent));
+          __asm__ volatile("csrr %0, mhpmevent6" : "=r"(revent));
         case 7:
-          __asm__ volatile("csrw mhpmevent7, %0" : : "r"(wevent)); 
-          __asm__ volatile("csrr %0, mhpmevent7" : "=r"(revent)); 
+          __asm__ volatile("csrw mhpmevent7, %0" : : "r"(wevent));
+          __asm__ volatile("csrr %0, mhpmevent7" : "=r"(revent));
         case 8:
-          __asm__ volatile("csrw mhpmevent8, %0" : : "r"(wevent)); 
-          __asm__ volatile("csrr %0, mhpmevent8" : "=r"(revent)); 
+          __asm__ volatile("csrw mhpmevent8, %0" : : "r"(wevent));
+          __asm__ volatile("csrr %0, mhpmevent8" : "=r"(revent));
         case 9:
-          __asm__ volatile("csrw mhpmevent9, %0" : : "r"(wevent)); 
-          __asm__ volatile("csrr %0, mhpmevent9" : "=r"(revent)); 
+          __asm__ volatile("csrw mhpmevent9, %0" : : "r"(wevent));
+          __asm__ volatile("csrr %0, mhpmevent9" : "=r"(revent));
           break;
         case 10:
-          __asm__ volatile("csrw mhpmevent10, %0" : : "r"(wevent)); 
-          __asm__ volatile("csrr %0, mhpmevent10" : "=r"(revent)); 
+          __asm__ volatile("csrw mhpmevent10, %0" : : "r"(wevent));
+          __asm__ volatile("csrr %0, mhpmevent10" : "=r"(revent));
           break;
         case 11:
-          __asm__ volatile("csrw mhpmevent11, %0" : : "r"(wevent)); 
-          __asm__ volatile("csrr %0, mhpmevent11" : "=r"(revent)); 
+          __asm__ volatile("csrw mhpmevent11, %0" : : "r"(wevent));
+          __asm__ volatile("csrr %0, mhpmevent11" : "=r"(revent));
           break;
         case 12:
-          __asm__ volatile("csrw mhpmevent12, %0" : : "r"(wevent)); 
-          __asm__ volatile("csrr %0, mhpmevent12" : "=r"(revent)); 
+          __asm__ volatile("csrw mhpmevent12, %0" : : "r"(wevent));
+          __asm__ volatile("csrr %0, mhpmevent12" : "=r"(revent));
           break;
         case 13:
-          __asm__ volatile("csrw mhpmevent13, %0" : : "r"(wevent)); 
-          __asm__ volatile("csrr %0, mhpmevent13" : "=r"(revent)); 
+          __asm__ volatile("csrw mhpmevent13, %0" : : "r"(wevent));
+          __asm__ volatile("csrr %0, mhpmevent13" : "=r"(revent));
           break;
         case 14:
-          __asm__ volatile("csrw mhpmevent14, %0" : : "r"(wevent)); 
-          __asm__ volatile("csrr %0, mhpmevent14" : "=r"(revent)); 
+          __asm__ volatile("csrw mhpmevent14, %0" : : "r"(wevent));
+          __asm__ volatile("csrr %0, mhpmevent14" : "=r"(revent));
           break;
         case 15:
-          __asm__ volatile("csrw mhpmevent15, %0" : : "r"(wevent)); 
-          __asm__ volatile("csrr %0, mhpmevent15" : "=r"(revent)); 
+          __asm__ volatile("csrw mhpmevent15, %0" : : "r"(wevent));
+          __asm__ volatile("csrr %0, mhpmevent15" : "=r"(revent));
           break;
         case 16:
-          __asm__ volatile("csrw mhpmevent16, %0" : : "r"(wevent)); 
-          __asm__ volatile("csrr %0, mhpmevent16" : "=r"(revent)); 
+          __asm__ volatile("csrw mhpmevent16, %0" : : "r"(wevent));
+          __asm__ volatile("csrr %0, mhpmevent16" : "=r"(revent));
         case 17:
-          __asm__ volatile("csrw mhpmevent17, %0" : : "r"(wevent)); 
-          __asm__ volatile("csrr %0, mhpmevent17" : "=r"(revent)); 
+          __asm__ volatile("csrw mhpmevent17, %0" : : "r"(wevent));
+          __asm__ volatile("csrr %0, mhpmevent17" : "=r"(revent));
         case 18:
-          __asm__ volatile("csrw mhpmevent18, %0" : : "r"(wevent)); 
-          __asm__ volatile("csrr %0, mhpmevent18" : "=r"(revent)); 
+          __asm__ volatile("csrw mhpmevent18, %0" : : "r"(wevent));
+          __asm__ volatile("csrr %0, mhpmevent18" : "=r"(revent));
         case 19:
-          __asm__ volatile("csrw mhpmevent19, %0" : : "r"(wevent)); 
-          __asm__ volatile("csrr %0, mhpmevent19" : "=r"(revent)); 
+          __asm__ volatile("csrw mhpmevent19, %0" : : "r"(wevent));
+          __asm__ volatile("csrr %0, mhpmevent19" : "=r"(revent));
           break;
         case 20:
-          __asm__ volatile("csrw mhpmevent20, %0" : : "r"(wevent)); 
-          __asm__ volatile("csrr %0, mhpmevent20" : "=r"(revent)); 
+          __asm__ volatile("csrw mhpmevent20, %0" : : "r"(wevent));
+          __asm__ volatile("csrr %0, mhpmevent20" : "=r"(revent));
           break;
         case 21:
-          __asm__ volatile("csrw mhpmevent21, %0" : : "r"(wevent)); 
-          __asm__ volatile("csrr %0, mhpmevent21" : "=r"(revent)); 
+          __asm__ volatile("csrw mhpmevent21, %0" : : "r"(wevent));
+          __asm__ volatile("csrr %0, mhpmevent21" : "=r"(revent));
           break;
         case 22:
-          __asm__ volatile("csrw mhpmevent22, %0" : : "r"(wevent)); 
-          __asm__ volatile("csrr %0, mhpmevent22" : "=r"(revent)); 
+          __asm__ volatile("csrw mhpmevent22, %0" : : "r"(wevent));
+          __asm__ volatile("csrr %0, mhpmevent22" : "=r"(revent));
           break;
         case 23:
-          __asm__ volatile("csrw mhpmevent23, %0" : : "r"(wevent)); 
-          __asm__ volatile("csrr %0, mhpmevent23" : "=r"(revent)); 
+          __asm__ volatile("csrw mhpmevent23, %0" : : "r"(wevent));
+          __asm__ volatile("csrr %0, mhpmevent23" : "=r"(revent));
           break;
         case 24:
-          __asm__ volatile("csrw mhpmevent24, %0" : : "r"(wevent)); 
-          __asm__ volatile("csrr %0, mhpmevent24" : "=r"(revent)); 
+          __asm__ volatile("csrw mhpmevent24, %0" : : "r"(wevent));
+          __asm__ volatile("csrr %0, mhpmevent24" : "=r"(revent));
           break;
         case 25:
-          __asm__ volatile("csrw mhpmevent25, %0" : : "r"(wevent)); 
-          __asm__ volatile("csrr %0, mhpmevent25" : "=r"(revent)); 
+          __asm__ volatile("csrw mhpmevent25, %0" : : "r"(wevent));
+          __asm__ volatile("csrr %0, mhpmevent25" : "=r"(revent));
           break;
         case 26:
-          __asm__ volatile("csrw mhpmevent26, %0" : : "r"(wevent)); 
-          __asm__ volatile("csrr %0, mhpmevent26" : "=r"(revent)); 
+          __asm__ volatile("csrw mhpmevent26, %0" : : "r"(wevent));
+          __asm__ volatile("csrr %0, mhpmevent26" : "=r"(revent));
         case 27:
-          __asm__ volatile("csrw mhpmevent27, %0" : : "r"(wevent)); 
-          __asm__ volatile("csrr %0, mhpmevent27" : "=r"(revent)); 
+          __asm__ volatile("csrw mhpmevent27, %0" : : "r"(wevent));
+          __asm__ volatile("csrr %0, mhpmevent27" : "=r"(revent));
         case 28:
-          __asm__ volatile("csrw mhpmevent28, %0" : : "r"(wevent)); 
-          __asm__ volatile("csrr %0, mhpmevent28" : "=r"(revent)); 
+          __asm__ volatile("csrw mhpmevent28, %0" : : "r"(wevent));
+          __asm__ volatile("csrr %0, mhpmevent28" : "=r"(revent));
         case 29:
-          __asm__ volatile("csrw mhpmevent29, %0" : : "r"(wevent)); 
-          __asm__ volatile("csrr %0, mhpmevent29" : "=r"(revent)); 
+          __asm__ volatile("csrw mhpmevent29, %0" : : "r"(wevent));
+          __asm__ volatile("csrr %0, mhpmevent29" : "=r"(revent));
           break;
         case 30:
-          __asm__ volatile("csrw mhpmevent30, %0" : : "r"(wevent)); 
-          __asm__ volatile("csrr %0, mhpmevent30" : "=r"(revent)); 
+          __asm__ volatile("csrw mhpmevent30, %0" : : "r"(wevent));
+          __asm__ volatile("csrr %0, mhpmevent30" : "=r"(revent));
           break;
         case 31:
-          __asm__ volatile("csrw mhpmevent31, %0" : : "r"(wevent)); 
-          __asm__ volatile("csrr %0, mhpmevent31" : "=r"(revent)); 
+          __asm__ volatile("csrw mhpmevent31, %0" : : "r"(wevent));
+          __asm__ volatile("csrr %0, mhpmevent31" : "=r"(revent));
           break;
       }
 
@@ -391,7 +391,7 @@ int main(int argc, char *argv[])
   __asm__ volatile("nop");                                      // do not count nop in instret
   __asm__ volatile("jump_target_memread:");
   __asm__ volatile("lw x4, 0(sp)");                             // count++
-  __asm__ volatile("addi x4, x4, 10");               
+  __asm__ volatile("addi x4, x4, 10");
   __asm__ volatile("csrwi 0x320, 0x1F");                        // Inhibit mcycle, minstret, mhpmcounter3-4
   __asm__ volatile("csrr %0, 0xB02" : "=r"(minstret_rval));          // minstret
   __asm__ volatile("csrr %0, 0xB03" : "=r"(count));             // mhpmcounter3
@@ -456,134 +456,134 @@ int main(int argc, char *argv[])
   __asm__ volatile("csrwi 0xB02, 0x0");                         // minstret = 0
   __asm__ volatile("csrwi 0xB03, 0x0");                         // mhpmcounter3 = 0
   __asm__ volatile("csrwi 0x320, 0x0");                         // Enable counters
-  __asm__ volatile("fence.i");               
+  __asm__ volatile("fence.i");
   __asm__ volatile("j jump_target_5");                          // count++
-  __asm__ volatile("addi x4, x4, 10");               
-  __asm__ volatile("addi x4, x4, 10");               
-  __asm__ volatile("addi x4, x4, 10");               
-  __asm__ volatile("addi x4, x4, 10");               
-  __asm__ volatile("addi x4, x4, 10");               
-  __asm__ volatile("addi x4, x4, 10");               
-  __asm__ volatile("addi x4, x4, 10");               
-  __asm__ volatile("addi x4, x4, 10");               
-  __asm__ volatile("addi x4, x4, 10");               
-  __asm__ volatile("addi x4, x4, 10");               
-  __asm__ volatile("addi x4, x4, 10");               
-  __asm__ volatile("addi x4, x4, 10");               
-  __asm__ volatile("addi x4, x4, 10");               
-  __asm__ volatile("addi x4, x4, 10");               
-  __asm__ volatile("addi x4, x4, 10");               
-  __asm__ volatile("addi x4, x4, 10");               
-  __asm__ volatile("addi x4, x4, 10");               
-  __asm__ volatile("addi x4, x4, 10");               
-  __asm__ volatile("addi x4, x4, 10");               
-  __asm__ volatile("addi x4, x4, 10");               
-  __asm__ volatile("addi x4, x4, 10");               
-  __asm__ volatile("addi x4, x4, 10");               
-  __asm__ volatile("addi x4, x4, 10");               
-  __asm__ volatile("addi x4, x4, 10");               
-  __asm__ volatile("addi x4, x4, 10");               
-  __asm__ volatile("addi x4, x4, 10");               
-  __asm__ volatile("addi x4, x4, 10");               
-  __asm__ volatile("addi x4, x4, 10");               
-  __asm__ volatile("addi x4, x4, 10");               
-  __asm__ volatile("addi x4, x4, 10");               
-  __asm__ volatile("addi x4, x4, 10");               
-  __asm__ volatile("addi x4, x4, 10");               
-  __asm__ volatile("addi x4, x4, 10");               
-  __asm__ volatile("addi x4, x4, 10");               
-  __asm__ volatile("addi x4, x4, 10");               
-  __asm__ volatile("addi x4, x4, 10");               
-  __asm__ volatile("addi x4, x4, 10");               
-  __asm__ volatile("addi x4, x4, 10");               
-  __asm__ volatile("addi x4, x4, 10");               
-  __asm__ volatile("addi x4, x4, 10");               
-  __asm__ volatile("addi x4, x4, 10");               
-  __asm__ volatile("addi x4, x4, 10");               
-  __asm__ volatile("addi x4, x4, 10");               
-  __asm__ volatile("addi x4, x4, 10");               
-  __asm__ volatile("addi x4, x4, 10");               
-  __asm__ volatile("addi x4, x4, 10");               
-  __asm__ volatile("addi x4, x4, 10");               
-  __asm__ volatile("addi x4, x4, 10");               
-  __asm__ volatile("addi x4, x4, 10");               
-  __asm__ volatile("addi x4, x4, 10");               
-  __asm__ volatile("addi x4, x4, 10");               
-  __asm__ volatile("addi x4, x4, 10");               
-  __asm__ volatile("addi x4, x4, 10");               
-  __asm__ volatile("addi x4, x4, 10");               
-  __asm__ volatile("addi x4, x4, 10");               
-  __asm__ volatile("addi x4, x4, 10");               
-  __asm__ volatile("addi x4, x4, 10");               
-  __asm__ volatile("addi x4, x4, 10");               
-  __asm__ volatile("addi x4, x4, 10");               
-  __asm__ volatile("addi x4, x4, 10");               
-  __asm__ volatile("addi x4, x4, 10");               
-  __asm__ volatile("addi x4, x4, 10");               
-  __asm__ volatile("addi x4, x4, 10");               
-  __asm__ volatile("addi x4, x4, 10");               
-  __asm__ volatile("addi x4, x4, 10");               
-  __asm__ volatile("addi x4, x4, 10");               
-  __asm__ volatile("addi x4, x4, 10");               
-  __asm__ volatile("addi x4, x4, 10");               
-  __asm__ volatile("addi x4, x4, 10");               
-  __asm__ volatile("addi x4, x4, 10");               
-  __asm__ volatile("addi x4, x4, 10");               
-  __asm__ volatile("addi x4, x4, 10");               
-  __asm__ volatile("addi x4, x4, 10");               
-  __asm__ volatile("addi x4, x4, 10");               
-  __asm__ volatile("addi x4, x4, 10");               
-  __asm__ volatile("addi x4, x4, 10");               
-  __asm__ volatile("addi x4, x4, 10");               
-  __asm__ volatile("addi x4, x4, 10");               
-  __asm__ volatile("addi x4, x4, 10");               
-  __asm__ volatile("addi x4, x4, 10");               
-  __asm__ volatile("addi x4, x4, 10");               
-  __asm__ volatile("addi x4, x4, 10");               
-  __asm__ volatile("addi x4, x4, 10");               
-  __asm__ volatile("addi x4, x4, 10");               
-  __asm__ volatile("addi x4, x4, 10");               
-  __asm__ volatile("addi x4, x4, 10");               
-  __asm__ volatile("addi x4, x4, 10");               
-  __asm__ volatile("addi x4, x4, 10");               
-  __asm__ volatile("addi x4, x4, 10");               
-  __asm__ volatile("addi x4, x4, 10");               
-  __asm__ volatile("addi x4, x4, 10");               
-  __asm__ volatile("addi x4, x4, 10");               
-  __asm__ volatile("addi x4, x4, 10");               
-  __asm__ volatile("addi x4, x4, 10");               
-  __asm__ volatile("addi x4, x4, 10");               
-  __asm__ volatile("addi x4, x4, 10");               
-  __asm__ volatile("addi x4, x4, 10");               
-  __asm__ volatile("addi x4, x4, 10");               
-  __asm__ volatile("addi x4, x4, 10");               
-  __asm__ volatile("addi x4, x4, 10");               
-  __asm__ volatile("addi x4, x4, 10");               
-  __asm__ volatile("addi x4, x4, 10");               
-  __asm__ volatile("addi x4, x4, 10");               
-  __asm__ volatile("addi x4, x4, 10");               
-  __asm__ volatile("addi x4, x4, 10");               
-  __asm__ volatile("addi x4, x4, 10");               
-  __asm__ volatile("addi x4, x4, 10");               
-  __asm__ volatile("addi x4, x4, 10");               
-  __asm__ volatile("addi x4, x4, 10");               
-  __asm__ volatile("addi x4, x4, 10");               
-  __asm__ volatile("addi x4, x4, 10");               
-  __asm__ volatile("addi x4, x4, 10");               
-  __asm__ volatile("addi x4, x4, 10");               
-  __asm__ volatile("addi x4, x4, 10");               
-  __asm__ volatile("addi x4, x4, 10");               
-  __asm__ volatile("addi x4, x4, 10");               
-  __asm__ volatile("addi x4, x4, 10");               
-  __asm__ volatile("addi x4, x4, 10");               
-  __asm__ volatile("addi x4, x4, 10");               
-  __asm__ volatile("addi x4, x4, 10");               
-  __asm__ volatile("addi x4, x4, 10");               
-  __asm__ volatile("addi x4, x4, 10");               
-  __asm__ volatile("addi x4, x4, 10");               
-  __asm__ volatile("addi x4, x4, 10");               
-  __asm__ volatile("addi x4, x4, 10");               
-  __asm__ volatile("addi x4, x4, 10");               
+  __asm__ volatile("addi x4, x4, 10");
+  __asm__ volatile("addi x4, x4, 10");
+  __asm__ volatile("addi x4, x4, 10");
+  __asm__ volatile("addi x4, x4, 10");
+  __asm__ volatile("addi x4, x4, 10");
+  __asm__ volatile("addi x4, x4, 10");
+  __asm__ volatile("addi x4, x4, 10");
+  __asm__ volatile("addi x4, x4, 10");
+  __asm__ volatile("addi x4, x4, 10");
+  __asm__ volatile("addi x4, x4, 10");
+  __asm__ volatile("addi x4, x4, 10");
+  __asm__ volatile("addi x4, x4, 10");
+  __asm__ volatile("addi x4, x4, 10");
+  __asm__ volatile("addi x4, x4, 10");
+  __asm__ volatile("addi x4, x4, 10");
+  __asm__ volatile("addi x4, x4, 10");
+  __asm__ volatile("addi x4, x4, 10");
+  __asm__ volatile("addi x4, x4, 10");
+  __asm__ volatile("addi x4, x4, 10");
+  __asm__ volatile("addi x4, x4, 10");
+  __asm__ volatile("addi x4, x4, 10");
+  __asm__ volatile("addi x4, x4, 10");
+  __asm__ volatile("addi x4, x4, 10");
+  __asm__ volatile("addi x4, x4, 10");
+  __asm__ volatile("addi x4, x4, 10");
+  __asm__ volatile("addi x4, x4, 10");
+  __asm__ volatile("addi x4, x4, 10");
+  __asm__ volatile("addi x4, x4, 10");
+  __asm__ volatile("addi x4, x4, 10");
+  __asm__ volatile("addi x4, x4, 10");
+  __asm__ volatile("addi x4, x4, 10");
+  __asm__ volatile("addi x4, x4, 10");
+  __asm__ volatile("addi x4, x4, 10");
+  __asm__ volatile("addi x4, x4, 10");
+  __asm__ volatile("addi x4, x4, 10");
+  __asm__ volatile("addi x4, x4, 10");
+  __asm__ volatile("addi x4, x4, 10");
+  __asm__ volatile("addi x4, x4, 10");
+  __asm__ volatile("addi x4, x4, 10");
+  __asm__ volatile("addi x4, x4, 10");
+  __asm__ volatile("addi x4, x4, 10");
+  __asm__ volatile("addi x4, x4, 10");
+  __asm__ volatile("addi x4, x4, 10");
+  __asm__ volatile("addi x4, x4, 10");
+  __asm__ volatile("addi x4, x4, 10");
+  __asm__ volatile("addi x4, x4, 10");
+  __asm__ volatile("addi x4, x4, 10");
+  __asm__ volatile("addi x4, x4, 10");
+  __asm__ volatile("addi x4, x4, 10");
+  __asm__ volatile("addi x4, x4, 10");
+  __asm__ volatile("addi x4, x4, 10");
+  __asm__ volatile("addi x4, x4, 10");
+  __asm__ volatile("addi x4, x4, 10");
+  __asm__ volatile("addi x4, x4, 10");
+  __asm__ volatile("addi x4, x4, 10");
+  __asm__ volatile("addi x4, x4, 10");
+  __asm__ volatile("addi x4, x4, 10");
+  __asm__ volatile("addi x4, x4, 10");
+  __asm__ volatile("addi x4, x4, 10");
+  __asm__ volatile("addi x4, x4, 10");
+  __asm__ volatile("addi x4, x4, 10");
+  __asm__ volatile("addi x4, x4, 10");
+  __asm__ volatile("addi x4, x4, 10");
+  __asm__ volatile("addi x4, x4, 10");
+  __asm__ volatile("addi x4, x4, 10");
+  __asm__ volatile("addi x4, x4, 10");
+  __asm__ volatile("addi x4, x4, 10");
+  __asm__ volatile("addi x4, x4, 10");
+  __asm__ volatile("addi x4, x4, 10");
+  __asm__ volatile("addi x4, x4, 10");
+  __asm__ volatile("addi x4, x4, 10");
+  __asm__ volatile("addi x4, x4, 10");
+  __asm__ volatile("addi x4, x4, 10");
+  __asm__ volatile("addi x4, x4, 10");
+  __asm__ volatile("addi x4, x4, 10");
+  __asm__ volatile("addi x4, x4, 10");
+  __asm__ volatile("addi x4, x4, 10");
+  __asm__ volatile("addi x4, x4, 10");
+  __asm__ volatile("addi x4, x4, 10");
+  __asm__ volatile("addi x4, x4, 10");
+  __asm__ volatile("addi x4, x4, 10");
+  __asm__ volatile("addi x4, x4, 10");
+  __asm__ volatile("addi x4, x4, 10");
+  __asm__ volatile("addi x4, x4, 10");
+  __asm__ volatile("addi x4, x4, 10");
+  __asm__ volatile("addi x4, x4, 10");
+  __asm__ volatile("addi x4, x4, 10");
+  __asm__ volatile("addi x4, x4, 10");
+  __asm__ volatile("addi x4, x4, 10");
+  __asm__ volatile("addi x4, x4, 10");
+  __asm__ volatile("addi x4, x4, 10");
+  __asm__ volatile("addi x4, x4, 10");
+  __asm__ volatile("addi x4, x4, 10");
+  __asm__ volatile("addi x4, x4, 10");
+  __asm__ volatile("addi x4, x4, 10");
+  __asm__ volatile("addi x4, x4, 10");
+  __asm__ volatile("addi x4, x4, 10");
+  __asm__ volatile("addi x4, x4, 10");
+  __asm__ volatile("addi x4, x4, 10");
+  __asm__ volatile("addi x4, x4, 10");
+  __asm__ volatile("addi x4, x4, 10");
+  __asm__ volatile("addi x4, x4, 10");
+  __asm__ volatile("addi x4, x4, 10");
+  __asm__ volatile("addi x4, x4, 10");
+  __asm__ volatile("addi x4, x4, 10");
+  __asm__ volatile("addi x4, x4, 10");
+  __asm__ volatile("addi x4, x4, 10");
+  __asm__ volatile("addi x4, x4, 10");
+  __asm__ volatile("addi x4, x4, 10");
+  __asm__ volatile("addi x4, x4, 10");
+  __asm__ volatile("addi x4, x4, 10");
+  __asm__ volatile("addi x4, x4, 10");
+  __asm__ volatile("addi x4, x4, 10");
+  __asm__ volatile("addi x4, x4, 10");
+  __asm__ volatile("addi x4, x4, 10");
+  __asm__ volatile("addi x4, x4, 10");
+  __asm__ volatile("addi x4, x4, 10");
+  __asm__ volatile("addi x4, x4, 10");
+  __asm__ volatile("addi x4, x4, 10");
+  __asm__ volatile("addi x4, x4, 10");
+  __asm__ volatile("addi x4, x4, 10");
+  __asm__ volatile("addi x4, x4, 10");
+  __asm__ volatile("addi x4, x4, 10");
+  __asm__ volatile("addi x4, x4, 10");
+  __asm__ volatile("addi x4, x4, 10");
+  __asm__ volatile("addi x4, x4, 10");
   __asm__ volatile("jump_target_5:");
   __asm__ volatile("j jump_target_6");                          // count++
   __asm__ volatile("jump_target_6:");

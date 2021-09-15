@@ -46,7 +46,10 @@ package uvma_core_cntrl_pkg;
    // Objects
    `include "uvma_core_cntrl_pma_region.sv"
    `include "uvma_core_cntrl_cntxt.sv"
-   `include "uvma_core_cntrl_cfg.sv"   
+   `include "uvma_core_cntrl_cfg.sv"
+
+   // Sequences
+   `include "seq/uvma_core_cntrl_base_seq.sv"
 
    // High-level transactions
    // `include "seq/uvma_core_cntrl_state_seq_item.sv"

@@ -17,6 +17,12 @@
  */
  
  `include "typedefs.sv"
+ 
+interface RVVI_memory;
+
+    reg [31:0] mem [bit[29:0]];
+
+endinterface
 
 //
 // Memory is an array of words

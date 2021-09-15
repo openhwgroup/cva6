@@ -115,6 +115,8 @@ task uvma_rvvi_ovpsim_drv_c::stepi(REQ req);
    uvma_rvvi_ovpsim_cntxt_c#(ILEN,XLEN)            rvvi_ovpsim_cntxt;   
    uvma_rvvi_ovpsim_control_seq_item_c#(ILEN,XLEN) rvvi_ovpsim_seq_item;
 
+   bit[uvma_rvvi_pkg::ORDER_WL-1:0] prev_order;
+
    // Cast into the OVPSIM context to get access to the BUS interface
    if (!$cast(rvvi_ovpsim_cfg, cfg)) begin
       `uvm_fatal(log_tag, "Failed to cast RVVI cfg to RVVI ovpsim_cfg");
@@ -128,6 +130,9 @@ task uvma_rvvi_ovpsim_drv_c::stepi(REQ req);
 
    // Stop the clock
    stop_clknrst();
+
+   // Sample previous order to step until we get the next instructons
+   prev_order = rvvi_ovpsim_cntxt.state_vif.order;
 
    // Check for read of volatile memory locations, backdoor init the RVVI memory when found to ensure
    // the ISS sees the same data as the DUT
@@ -150,19 +155,12 @@ task uvma_rvvi_ovpsim_drv_c::stepi(REQ req);
       @(posedge rvvi_ovpsim_cntxt.ovpsim_bus_vif.Clk);
    end
 
-   // External halt request to debug mode
-   if (rvvi_ovpsim_seq_item.dbg && rvvi_ovpsim_seq_item.dcsr_cause == CAUSE_HALTREQ) begin
+   // External halt request to debug mode   
+   if (rvvi_ovpsim_seq_item.dbg_req) begin
       rvvi_ovpsim_cntxt.ovpsim_io_vif.haltreq  = 1'b1;
       rvvi_ovpsim_cntxt.control_vif.stepi();
       @(rvvi_ovpsim_cntxt.state_vif.notify);
       rvvi_ovpsim_cntxt.ovpsim_io_vif.haltreq = 1'b0;
-      @(posedge rvvi_ovpsim_cntxt.ovpsim_bus_vif.Clk);
-   end
-
-   // Single-step - debug re-entry seems to need an extra instruction cycle on control interface
-   if (rvvi_ovpsim_seq_item.dbg && rvvi_ovpsim_seq_item.dcsr_cause == CAUSE_STEP) begin
-      rvvi_ovpsim_cntxt.control_vif.stepi();
-      @(rvvi_ovpsim_cntxt.state_vif.notify);
       @(posedge rvvi_ovpsim_cntxt.ovpsim_bus_vif.Clk);
    end
 
@@ -175,8 +173,10 @@ task uvma_rvvi_ovpsim_drv_c::stepi(REQ req);
       rvvi_ovpsim_cntxt.state_vif.GPR_rtl[rvvi_ovpsim_seq_item.rd1_addr] = rvvi_ovpsim_seq_item.rd1_wdata;
    
    // Step the ISS and wait for ISS to complete   
-   rvvi_ovpsim_cntxt.control_vif.stepi();
-   @(rvvi_ovpsim_cntxt.state_vif.notify);
+   while (prev_order == rvvi_ovpsim_cntxt.state_vif.order) begin
+      rvvi_ovpsim_cntxt.control_vif.stepi();
+      @(rvvi_ovpsim_cntxt.state_vif.notify);
+   end
 
    // Restart the clock to the core
    restart_clknrst();

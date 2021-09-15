@@ -1,19 +1,13 @@
-// 
 // Copyright 2020 OpenHW Group
-// Copyright 2020 Datum Technology Corporation
+// Copyright 2021 Datum Technology Corporation
 // 
-// Licensed under the Solderpad Hardware License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-// You may obtain a copy of the License at
-// 
-//     https://solderpad.org/licenses/
-// 
-// Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS IS" BASIS,
-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// See the License for the specific language governing permissions and
-// limitations under the License.
-// 
+// SPDX-License-Identifier: Apache-2.0 WITH SHL-2.1
+// Licensed under the Solderpad Hardware License v 2.1 (the "License"); you may not use this file except in compliance
+// with the License, or, at your option, the Apache License version 2.0.  You may obtain a copy of the License at
+//                                        https://solderpad.org/licenses/SHL-2.1/
+// Unless required by applicable law or agreed to in writing, any work distributed under the License is distributed on
+// an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.  See the License for the
+// specific language governing permissions and limitations under the License.
 
 
 `ifndef __UVML_HRTBT_MON_SV__
@@ -21,21 +15,21 @@
 
 
 /**
- * Component implementing a per-phase timeout that can be reset. Enables test
- * benches to terminate simulation only once the design has achieved a quiet
- * state, without the use of '#' delays.
+ * Component implementing a per-phase timeout that can be reset.  Enables test benches to terminate simulation only once
+ * the design has achieved a quiet state, without the use of '#' delays.
  */
 class uvml_hrtbt_mon_c extends uvm_component;
    
    // Configuration
    bit           enabled          = 1;
-   int unsigned  startup_timeout  = uvml_hrtbt_default_startup_timeout ;
-   int unsigned  heartbeat_period = uvml_hrtbt_default_heartbeat_period;
-   int unsigned  refresh_period   = uvml_hrtbt_default_refresh_period  ;
+   int unsigned  startup_timeout  = uvml_hrtbt_default_startup_timeout ; ///< Time period by which a heartbeat MUST be observed
+   int unsigned  heartbeat_period = uvml_hrtbt_default_heartbeat_period; ///< Timer duration for each component
+   int unsigned  refresh_period   = uvml_hrtbt_default_refresh_period  ; ///< Interval between calls to eval_heartbeat()
    
    // State
-   uvml_hrtbt_entry_struct  timestamps[$];
+   uvml_hrtbt_entry_struct  timestamps[int unsigned];
    bit                      observed_heartbeat = 0;
+   bit                      phase_heartbeat    = 0;
    
    
    `uvm_component_utils_begin(uvml_hrtbt_mon_c)
@@ -73,27 +67,27 @@ class uvml_hrtbt_mon_c extends uvm_component;
    extern virtual task post_shutdown_phase (uvm_phase phase);
    
    /**
-    * 
+    * Holds onto an objection until all registered components' timers elapse.
     */
    extern task phase_loop(uvm_phase phase);
    
    /**
-    * 
+    * Processes heartbeat entries and culls out matured timestamps.
     */
    extern task eval_heartbeat();
    
    /**
-    * 
+    * Adds heartbeat entry for a specific component and ID.
     */
-   extern function void heartbeat(uvm_component owner, int id=0);
+   extern function void heartbeat(uvm_component owner, int unsigned id=0);
    
    /**
-    * 
+    * Returns the monitor to its initialized state. 
     */
    extern function void reset();
    
    /**
-    * 
+    * Prints all the components currently registered with the heartbeat monitor.
     */
    extern function string print_comp_names();
    
@@ -110,7 +104,7 @@ endfunction : new
 task uvml_hrtbt_mon_c::run_phase(uvm_phase phase);
    
    super.run_phase(phase);
-
+   
    if (enabled) begin
       `uvm_info("HRTBT", $sformatf("Starting heartbeat monitor with startup_timeout=%0t, heartbeat_period=%0t, refresh_period=%0t",
          startup_timeout,
@@ -224,7 +218,7 @@ endtask : post_shutdown_phase
 
 
 task uvml_hrtbt_mon_c::phase_loop(uvm_phase phase);
-
+   
    if (enabled) begin
       reset();
       phase.raise_objection(this);
@@ -237,72 +231,87 @@ endtask : phase_loop
 
 task uvml_hrtbt_mon_c::eval_heartbeat();
    
-   uvml_hrtbt_entry_struct  new_timestamps[$];
-   realtime                 current_maturity;
+   realtime  current_maturity;
    
    forever begin
+      // 1. Wait for the refresh period duration
       #(refresh_period * 1ns);
-      new_timestamps.delete();
       
-      // Copy timestamps, culling out those that have matured
+      // 2. Process entries, culling those that have matured
       foreach (timestamps[ii]) begin
          current_maturity = (heartbeat_period * 1ns) + timestamps[ii].timestamp;
          if (current_maturity <= $realtime()) begin
             if (timestamps[ii].owner == null) begin
-               `uvm_info("HRTBT", $sformatf("Removed component from heartbeat list: id (%0d)", timestamps[ii].id), UVM_DEBUG)
+               `uvm_info("HRTBT_MON", $sformatf("Removing component from heartbeat list: id (%0d)", timestamps[ii].id), UVM_DEBUG)
             end
             else begin
-               `uvm_info("HRTBT", $sformatf("Removed component from heartbeat list: owner (%s), id (%0d)", timestamps[ii].owner.get_full_name(), timestamps[ii].id), UVM_DEBUG)
+               `uvm_info("HRTBT_MON", $sformatf("Removing component from heartbeat list: owner (%s), id (%0d)", timestamps[ii].owner.get_full_name(), timestamps[ii].id), UVM_DEBUG)
             end
-         end
-         else begin
-           new_timestamps.push_back(timestamps[ii]);
+            timestamps.delete(ii);
          end
       end
       
-      if (new_timestamps.size() == 0) begin
-         `uvm_info("HRTBT", "Heartbeat count is 0. Dropping objection", UVM_NONE)
-         break;
-      end
-      else begin
-         timestamps.delete();
-         foreach (new_timestamps[ii]) begin
-            timestamps.push_back(new_timestamps[ii]);
+      // 3. Exit loop if all entries are gone
+      if (timestamps.size() == 0) begin
+         if (phase_heartbeat) begin
+            `uvm_info("HRTBT_MON", "Heartbeat count is 0. Dropping objection", UVM_NONE)
          end
+         else begin
+            `uvm_info("HRTBT_MON", "Heartbeat count is 0. Dropping objection", UVM_HIGH)
+         end
+         break;
       end
    end
    
 endtask : eval_heartbeat
 
 
-function void uvml_hrtbt_mon_c::heartbeat(uvm_component owner, int id=0);
+function void uvml_hrtbt_mon_c::heartbeat(uvm_component owner, int unsigned id=0);
    
-   if (id == 0) begin
-      id = $random();
+   bit  pick_new_id = 0;
+   
+   if (enabled) begin
+      // Must have a unique id
+      if (id == 0) begin
+         pick_new_id = 1;
+      end
+      else if (timestamps.exists(id)) begin
+         pick_new_id = 1;
+         `uvm_warning("HRTBT_MON", $sformatf("Specified heartbeat ID (%0d) is already in use.  A new random ID will be picked.", id))
+      end
+      do begin
+         id = $urandom();
+      end while (timestamps.exists(id));
+      
+      // Add entry
+      timestamps[id] = '{
+         owner    : owner,
+         id       : id,
+         timestamp: $realtime()
+      };
+      
+      // Allows for non-components to issue heartbeats
+      if (owner == null) begin
+         `uvm_info("HRTBT_MON", $sformatf("Added/updated to heartbeat list: id (%0d)", id), UVM_DEBUG)
+      end
+      else begin
+         `uvm_info("HRTBT_MON", $sformatf("Added/updated to heartbeat list: owner (%s), id (%0d)", owner.get_full_name(), id), UVM_DEBUG)
+      end
+      
+      // Latch for startup timeout
+      observed_heartbeat = 1;
+      phase_heartbeat    = 1;
    end
-   
-   timestamps.push_back('{
-      owner    : owner,
-      id       : id,
-      timestamp: $realtime()
-   });
-   
-   if (owner == null) begin
-      `uvm_info("HRTBT", $sformatf("Added/updated to heartbeat list: id (%0d)", id), UVM_DEBUG)
-   end
-   else begin
-      `uvm_info("HRTBT", $sformatf("Added/updated to heartbeat list: owner (%s), id (%0d)", owner.get_full_name(), id), UVM_DEBUG)
-   end
-   
-   observed_heartbeat = 1;
    
 endfunction : heartbeat
 
 
 function void uvml_hrtbt_mon_c::reset();
    
+   `uvm_info("HRTBT_MON", "Heartbeat monitor reset", UVM_DEBUG)
    timestamps.delete();
-   `uvm_info("HRTBT", "Heartbeat monitor reset", UVM_DEBUG)
+   //observed_heartbeat = 0;
+   phase_heartbeat = 0;
    
 endfunction : reset
 

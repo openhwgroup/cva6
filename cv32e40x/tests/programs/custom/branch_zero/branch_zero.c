@@ -3,8 +3,8 @@
 #include <stdint.h>
 #include <time.h>
 
-#define TIMER_REG_ADDR         ((volatile uint32_t *) 0x15000000)  
-#define TIMER_VAL_ADDR         ((volatile uint32_t *) 0x15000004) 
+#define TIMER_REG_ADDR         ((volatile uint32_t *) 0x15000000)
+#define TIMER_VAL_ADDR         ((volatile uint32_t *) 0x15000004)
 
 void mm_ram_assert_irq(uint32_t mask, uint32_t cycle_delay) {
     *TIMER_REG_ADDR = mask;

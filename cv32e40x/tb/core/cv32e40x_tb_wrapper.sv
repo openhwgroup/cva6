@@ -89,7 +89,7 @@ module cv32e40x_tb_wrapper
         (
          .clk_i                  ( clk_i                 ),
          .rst_ni                 ( rst_ni                ),
-         
+
          .scan_cg_en_i           ( '0                    ),
 
          .boot_addr_i            ( BOOT_ADDR             ),

@@ -36,7 +36,9 @@ package uvma_rvvi_pkg;
    import uvml_trn_pkg  ::*;
    import uvml_logs_pkg ::*;
    import uvma_core_cntrl_pkg::*;
+   import uvma_obi_memory_pkg::*;
    import uvma_rvfi_pkg ::*;
+   
 
    // Forward decl of sequencer for p_sequencer delcaration
    typedef class uvma_rvvi_sqr_c;

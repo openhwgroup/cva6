@@ -20,6 +20,7 @@
 class uvma_isacov_instr_c extends uvm_object;
   
   instr_name_t  name;
+  instr_ext_t   ext;
   instr_type_t  itype;
   instr_group_t group;
 
@@ -42,19 +43,11 @@ class uvma_isacov_instr_c extends uvm_object;
   bit rs2_valid;
   bit rd_valid;
   
-  bit [2:0] c_rs1p;
-  bit [2:0] c_rs2p;
-  bit [2:0] c_rdp;
-  bit [4:0] c_rdrs1;  // rd/rs1
-  bit [4:0] c_rs2;
-  bit [2:0] c_rdprs1p;  // rd'/rs1'
-  bit [7:0] c_immiw;
-  bit [5:0] c_imml;
-  bit [5:0] c_imms;
-  bit [11:1] c_immj;
-  bit [5:0] c_immi;
-  bit [7:0] c_immb;
-  bit [5:0] c_immss;
+  bit [31:0] c_imm; 
+  bit [5:0]  c_rdrs1; 
+  bit [5:0]  c_rs1s;
+  bit [5:0]  c_rs2s;
+  bit [5:0]  c_rdp;
 
   bit[31:0]     rs1_value;
   instr_value_t rs1_value_type;
@@ -69,11 +62,14 @@ class uvma_isacov_instr_c extends uvm_object;
   instr_value_t immu_value_type;
   instr_value_t immj_value_type;
 
+  instr_value_t c_imm_value_type;
+
   `uvm_object_utils_begin(uvma_isacov_instr_c);
-    `uvm_field_enum(instr_name_t, name, UVM_ALL_ON | UVM_NOPRINT);
-    `uvm_field_enum(instr_type_t, itype, UVM_ALL_ON | UVM_NOPRINT);
+    `uvm_field_enum(instr_name_t,  name, UVM_ALL_ON | UVM_NOPRINT);
+    `uvm_field_enum(instr_ext_t,   ext, UVM_ALL_ON | UVM_NOPRINT);
+    `uvm_field_enum(instr_type_t,  itype, UVM_ALL_ON | UVM_NOPRINT);
     `uvm_field_enum(instr_group_t, group, UVM_ALL_ON | UVM_NOPRINT);
-    `uvm_field_enum(instr_csr_t, csr, UVM_ALL_ON | UVM_NOPRINT);
+    `uvm_field_enum(instr_csr_t,   csr, UVM_ALL_ON | UVM_NOPRINT);
 
     `uvm_field_int(rs1,       UVM_ALL_ON | UVM_NOPRINT);
     `uvm_field_int(rs1_value, UVM_ALL_ON | UVM_NOPRINT);
@@ -99,20 +95,8 @@ class uvma_isacov_instr_c extends uvm_object;
     `uvm_field_int(immj, UVM_ALL_ON | UVM_NOPRINT);
     `uvm_field_enum(instr_value_t, immj_value_type, UVM_ALL_ON | UVM_NOPRINT);
 
-    `uvm_field_int(c_rs1p,    UVM_ALL_ON | UVM_NOPRINT);
-    `uvm_field_int(c_rs2p,    UVM_ALL_ON | UVM_NOPRINT);
-    `uvm_field_int(c_rdp,     UVM_ALL_ON | UVM_NOPRINT);
-    `uvm_field_int(c_rdrs1,   UVM_ALL_ON | UVM_NOPRINT);
-    `uvm_field_int(c_rs2,     UVM_ALL_ON | UVM_NOPRINT);
-    `uvm_field_int(c_rdprs1p, UVM_ALL_ON | UVM_NOPRINT);
-    `uvm_field_int(c_immiw,   UVM_ALL_ON | UVM_NOPRINT);
-    `uvm_field_int(c_imml,    UVM_ALL_ON | UVM_NOPRINT);
-    `uvm_field_int(c_imms,    UVM_ALL_ON | UVM_NOPRINT);
-    `uvm_field_int(c_immj,    UVM_ALL_ON | UVM_NOPRINT);
-    `uvm_field_int(c_immj,    UVM_ALL_ON | UVM_NOPRINT);
-    `uvm_field_int(c_immi,    UVM_ALL_ON | UVM_NOPRINT);
-    `uvm_field_int(c_immb,    UVM_ALL_ON | UVM_NOPRINT);
-    `uvm_field_int(c_immss,   UVM_ALL_ON | UVM_NOPRINT);    
+    `uvm_field_int(c_imm,    UVM_ALL_ON | UVM_NOPRINT);
+    `uvm_field_enum(instr_value_t, c_imm_value_type, UVM_ALL_ON | UVM_NOPRINT);
 
   `uvm_object_utils_end;
 
@@ -136,10 +120,10 @@ endfunction : new
 function string uvma_isacov_instr_c::convert2string();
   // Printing for a few special-formatting cases
   if (name inside {LW, LH, LB, LHU, LBU}) begin
-    return $sformatf("0x%08x %s x%0d, %0d(x%0d)", pc, name.name(), rd, $signed(immi), rs1);
+    return $sformatf("0x%08x %s x%0d, %0d(x%0d)", pc, name.name().tolower(), rd, $signed(immi), rs1);
   end
   if (name inside {SLLI, SRLI, SRAI}) begin
-    return $sformatf("0x%08x %s x%0d, x%0d, 0x%0x", pc, name.name(), rd, rs1, rs2);
+    return $sformatf("0x%08x %s x%0d, x%0d, 0x%0x", pc, name.name().tolower(), rd, rs1, rs2);
   end
   if (name == FENCE_I) begin
     return $sformatf("0x%08x fence.i", pc);
@@ -147,31 +131,59 @@ function string uvma_isacov_instr_c::convert2string();
 
   // Printing based on instruction format type
   if (itype == R_TYPE) begin
-    return $sformatf("0x%08x %s x%0d, x%0d, x%0d", pc, name.name(), rd, rs1, rs2);
+    return $sformatf("0x%08x %s x%0d, x%0d, x%0d", pc, name.name().tolower(), rd, rs1, rs2);
   end
   if (itype == I_TYPE) begin
-    return $sformatf("0x%08x %s x%0d, x%0d, %0d", pc, name.name(), rd, rs1, $signed(immi));
+    return $sformatf("0x%08x %s x%0d, x%0d, %0d", pc, name.name().tolower(), rd, rs1, $signed(immi));
   end
   if (itype == S_TYPE) begin
-    return $sformatf("0x%08x %s x%0d, %0d(x%0d)", pc, name.name(), rs2, $signed(imms), rs1);
+    return $sformatf("0x%08x %s x%0d, %0d(x%0d)", pc, name.name().tolower(), rs2, $signed(imms), rs1);
   end
   if (itype == B_TYPE) begin
-    return $sformatf("0x%08x %s x%0d, x%0d, %0d", pc, name.name(), rs1, rs2, $signed({immb, 1'b0}));
+    return $sformatf("0x%08x %s x%0d, x%0d, %0d", pc, name.name().tolower(), rs1, rs2, $signed({immb, 1'b0}));
   end
   if (itype == U_TYPE) begin
-    return $sformatf("0x%08x %s x%0d, 0x%0x", pc, name.name(), rd, {immu, 12'd0});
+    return $sformatf("0x%08x %s x%0d, 0x%0x", pc, name.name().tolower(), rd, {immu, 12'd0});
   end
   if (itype == J_TYPE) begin
-    return $sformatf("0x%08x %s x%0d, %0d", pc, name.name(), rd, $signed(immj));
+    return $sformatf("0x%08x %s x%0d, %0d", pc, name.name().tolower(), rd, $signed(immj));
   end
   if (itype == CSR_TYPE) begin
-    // TODO should print CSR name like assembly code does?
-    //return $sformatf("%s x%0d, x%0d, %0d", name.name(), rd, rs1, immi);
-    return $sformatf("0x%08x %s x%0d, x%0d, 0x%0x", pc, name.name(), rd, rs1, immi);
+    return $sformatf("0x%08x %s x%0d, x%0d, %s", pc, name.name().tolower(), rd, rs1, csr.name().tolower());
+  end
+  if (itype == CSRI_TYPE) begin
+    return $sformatf("0x%08x %s x%0d, %0d, %s", pc, name.name().tolower(), rd, rs1, csr.name().tolower());
+  end
+  if (itype == CI_TYPE) begin
+    return $sformatf("0x%08x %s x%0d, %0d", pc, name.name().tolower(), rd, c_imm);
+  end
+  if (itype == CR_TYPE) begin
+    return $sformatf("0x%08x %s x%0d, x%0d", pc, name.name().tolower(), rd, rs2);
+  end
+  if (itype == CSS_TYPE) begin
+    return $sformatf("0x%08x %s x%0d, %0d", pc, name.name().tolower(), rs2, c_imm);
+  end
+  if (itype == CIW_TYPE) begin
+    return $sformatf("0x%08x %s x%0d, %0d", pc, name.name().tolower(), rd, c_imm);
+  end
+  if (itype == CL_TYPE) begin
+    return $sformatf("0x%08x %s x%0d, x%0d, %0d", pc, name.name().tolower(), rd, rs1, c_imm);
+  end
+  if (itype == CS_TYPE) begin
+    return $sformatf("0x%08x %s x%0d, x%0d, %0d", pc, name.name().tolower(), rs1, rs2, c_imm);
+  end
+  if (itype == CA_TYPE) begin
+    return $sformatf("0x%08x %s x%0d, x%0d", pc, name.name().tolower(), rd, rs2);
+  end
+  if (itype == CB_TYPE) begin
+    return $sformatf("0x%08x %s x%0d, x%0d", pc, name.name().tolower(), rd, rs2);
+  end
+  if (itype == CJ_TYPE) begin
+    return $sformatf("0x%08x %s x%0d", pc, name.name().tolower(), c_imm);
   end
 
   // Default printing of just the instruction name
-  return $sformatf("0x%08x %s", pc, name.name());
+  return $sformatf("0x%08x %s", pc, name.name().tolower());
 
 endfunction : convert2string
 
@@ -186,33 +198,91 @@ function void uvma_isacov_instr_c::set_valid_flags();
   if (itype == I_TYPE) begin
     rs1_valid = 1;
     rd_valid = 1;
+    return;
   end
 
   if (itype == S_TYPE) begin
     rs1_valid = 1;
     rs2_valid = 1;    
+    return;
   end
 
   if (itype == B_TYPE) begin
     rs1_valid = 1;
     rs2_valid = 1;    
+    return;
   end
 
   if (itype == U_TYPE) begin
     rd_valid = 1;
+    return;
   end
 
   if (itype == J_TYPE) begin
     rd_valid = 1;
+    return;
+  end
+
+  if (itype == CI_TYPE) begin    
+    rd_valid = 1;
+    return;
+  end
+
+  if (itype == CR_TYPE) begin    
+    rs1_valid = 1;
+    rs2_valid = 1;
+    rd_valid = 1;
+    return;
+  end
+
+  if (itype == CSS_TYPE) begin        
+    rs2_valid = 1;
+    return;
+  end
+
+  if (itype == CIW_TYPE) begin        
+    rd_valid = 1;
+    return;
+  end
+
+  if (itype == CL_TYPE) begin
+    rs1_valid = 1;
+    rd_valid = 1;
+    return;
+  end
+
+  if (itype == CS_TYPE) begin
+    rs1_valid = 1;
+    rs2_valid = 1;
+    return;
+  end
+
+  if (itype == CA_TYPE) begin
+    rs1_valid = 1;
+    rs2_valid = 1;
+    rd_valid = 1;
+    return;
+  end
+
+  if (itype == CB_TYPE) begin
+    rs1_valid = 1;
+    return;
   end
 
   if (itype == CSR_TYPE) begin
     rs1_valid = 1;
     rd_valid = 1;
+    return;
   end
 
   if (itype == CSRI_TYPE) begin
     rd_valid = 1;
+    return;
+  end
+
+  if (itype == CSRI_TYPE) begin
+    rd_valid = 1;
+    return;
   end
 
 endfunction : set_valid_flags

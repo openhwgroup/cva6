@@ -5,9 +5,9 @@
 // Licensed under the Solderpad Hardware Licence, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
-// 
+//
 //     https://solderpad.org/licenses/
-// 
+//
 // Unless required by applicable law or agreed to in writing, software
 // distributed under the License is distributed on an "AS IS" BASIS,
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -29,8 +29,8 @@ class uvme_cv32e40x_cntxt_c extends uvm_object;
    // FIXME:strichmo:The debug coverage interface needs to be reimplemented for new controller
    virtual uvmt_cv32e40x_debug_cov_assert_if debug_cov_vif;
    virtual uvmt_cv32e40x_vp_status_if        vp_status_vif; ///< Virtual interface for Virtual Peripherals
-   virtual uvma_interrupt_if                 intr_vif     ; ///< Virtual interface for interrupts 
-   virtual uvma_debug_if                     debug_vif    ; ///< Virtual interface for debug 
+   virtual uvma_interrupt_if                 intr_vif     ; ///< Virtual interface for interrupts
+   virtual uvma_debug_if                     debug_vif    ; ///< Virtual interface for debug
 
    // Agent context handles
    uvma_cv32e40x_core_cntrl_cntxt_c  core_cntrl_cntxt;
@@ -41,9 +41,10 @@ class uvme_cv32e40x_cntxt_c extends uvm_object;
    uvma_obi_memory_cntxt_c           obi_memory_data_cntxt;
    uvma_rvfi_cntxt_c#(ILEN,XLEN)     rvfi_cntxt;
    uvma_rvvi_cntxt_c#(ILEN,XLEN)     rvvi_cntxt;
-  
+   uvma_fencei_cntxt_c               fencei_cntxt;
+
    // Memory modelling
-   rand uvml_mem_c                   mem;   
+   rand uvml_mem_c                   mem;
 
    // Events
    uvm_event  sample_cfg_e;
@@ -63,23 +64,23 @@ class uvme_cv32e40x_cntxt_c extends uvm_object;
       `uvm_field_event(sample_cfg_e  , UVM_DEFAULT)
       `uvm_field_event(sample_cntxt_e, UVM_DEFAULT)
    `uvm_object_utils_end
-   
+
    constraint mem_cfg_cons {
       mem.mem_default == MEM_DEFAULT_0;
    }
-   
+
    /**
     * Builds events and sub-context objects.
     */
    extern function new(string name="uvme_cv32e40x_cntxt");
-   
+
 endclass : uvme_cv32e40x_cntxt_c
 
 
 function uvme_cv32e40x_cntxt_c::new(string name="uvme_cv32e40x_cntxt");
-   
+
    super.new(name);
-   
+
    core_cntrl_cntxt = uvma_cv32e40x_core_cntrl_cntxt_c::type_id::create("core_cntrl_cntxt");
    clknrst_cntxt    = uvma_clknrst_cntxt_c::type_id::create("clknrst_cntxt");
    interrupt_cntxt  = uvma_interrupt_cntxt_c::type_id::create("interrupt_cntxt");
@@ -88,11 +89,13 @@ function uvme_cv32e40x_cntxt_c::new(string name="uvme_cv32e40x_cntxt");
    obi_memory_data_cntxt  = uvma_obi_memory_cntxt_c::type_id::create("obi_memory_data_cntxt" );
    rvfi_cntxt       = uvma_rvfi_cntxt_c#(ILEN,XLEN)::type_id::create("rvfi_cntxt");
    rvvi_cntxt       = uvma_rvvi_ovpsim_cntxt_c#(ILEN,XLEN)::type_id::create("rvvi_cntxt");
+   fencei_cntxt     = uvma_fencei_cntxt_c::type_id::create("fencei_cntxt");
+
    mem = uvml_mem_c#(XLEN)::type_id::create("mem");
 
    sample_cfg_e   = new("sample_cfg_e"  );
    sample_cntxt_e = new("sample_cntxt_e");
-   
+
 endfunction : new
 
 

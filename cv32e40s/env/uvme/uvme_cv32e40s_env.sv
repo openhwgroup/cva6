@@ -253,14 +253,14 @@ task uvme_cv32e40s_env_c::run_phase(uvm_phase phase);
             data_slv_seq = uvma_obi_memory_slv_seq_c::type_id::create("data_slv_seq");
 
             // Install the virtual peripheral registers             
-            void'(data_slv_seq.register_vp_vseq("vp_rand_num", 32'h1500_1000, 1, uvma_obi_memory_vp_rand_num_seq_c::get_type()));
-            void'(data_slv_seq.register_vp_vseq("vp_virtual_printer", 32'h1000_0000, 11, uvma_obi_memory_vp_virtual_printer_seq_c::get_type()));
-            void'(data_slv_seq.register_vp_vseq("vp_sig_writer", 32'h2000_0008, 3, uvma_obi_memory_vp_sig_writer_seq_c::get_type()));
-            void'(data_slv_seq.register_vp_vseq("vp_cycle_counter", 32'h1500_1004, 1, uvma_obi_memory_vp_cycle_counter_seq_c::get_type()));
+            void'(data_slv_seq.register_vp_vseq("vp_rand_num", 32'h1500_1000, uvma_obi_memory_vp_rand_num_seq_c::get_type()));
+            void'(data_slv_seq.register_vp_vseq("vp_virtual_printer", 32'h1000_0000, uvma_obi_memory_vp_virtual_printer_seq_c::get_type()));
+            void'(data_slv_seq.register_vp_vseq("vp_sig_writer", 32'h2000_0008, uvma_obi_memory_vp_sig_writer_seq_c::get_type()));
+            void'(data_slv_seq.register_vp_vseq("vp_cycle_counter", 32'h1500_1004, uvma_obi_memory_vp_cycle_counter_seq_c::get_type()));
 
             begin
                uvme_cv32e40s_vp_status_flags_seq_c vp_seq;
-               if (!$cast(vp_seq, data_slv_seq.register_vp_vseq("vp_status_flags", 32'h2000_0000, 2, uvme_cv32e40s_vp_status_flags_seq_c::get_type()))) begin
+               if (!$cast(vp_seq, data_slv_seq.register_vp_vseq("vp_status_flags", 32'h2000_0000, uvme_cv32e40s_vp_status_flags_seq_c::get_type()))) begin
                   `uvm_fatal("CV32E40SVPSEQ", $sformatf("Could not cast vp_status_flags correctly"));
                end
                vp_seq.cv32e40s_cntxt = cntxt;
@@ -268,7 +268,7 @@ task uvme_cv32e40s_env_c::run_phase(uvm_phase phase);
 
             begin
                uvme_cv32e40s_vp_interrupt_timer_seq_c vp_seq;
-               if (!$cast(vp_seq, data_slv_seq.register_vp_vseq("vp_interrupt_timer", 32'h1500_0000, 2, uvme_cv32e40s_vp_interrupt_timer_seq_c::get_type()))) begin
+               if (!$cast(vp_seq, data_slv_seq.register_vp_vseq("vp_interrupt_timer", 32'h1500_0000, uvme_cv32e40s_vp_interrupt_timer_seq_c::get_type()))) begin
                   `uvm_fatal("CV32E40SVPSEQ", $sformatf("Could not cast vp_interrupt_timer correctly"));
                end
                vp_seq.cv32e40s_cntxt = cntxt;
@@ -276,7 +276,7 @@ task uvme_cv32e40s_env_c::run_phase(uvm_phase phase);
 
             begin
                uvme_cv32e40s_vp_debug_control_seq_c vp_seq;
-               if (!$cast(vp_seq, data_slv_seq.register_vp_vseq("vp_debug_control", 32'h1500_0008, 1, uvme_cv32e40s_vp_debug_control_seq_c::get_type()))) begin
+               if (!$cast(vp_seq, data_slv_seq.register_vp_vseq("vp_debug_control", 32'h1500_0008, uvme_cv32e40s_vp_debug_control_seq_c::get_type()))) begin
                   `uvm_fatal("CV32E40SVPSEQ", $sformatf("Could not cast vp_debug_control correctly"));
                end
                vp_seq.cv32e40s_cntxt = cntxt;

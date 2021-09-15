@@ -1,20 +1,20 @@
-// 
+//
 // Copyright 2021 OpenHW Group
 // Copyright 2021 Datum Technology Corporation
 // SPDX-License-Identifier: Apache-2.0 WITH SHL-2.1
-// 
+//
 // Licensed under the Solderpad Hardware License v 2.1 (the "License"); you may
 // not use this file except in compliance with the License, or, at your option,
 // the Apache License version 2.0. You may obtain a copy of the License at
-// 
+//
 //     https://solderpad.org/licenses/SHL-2.1/
-// 
+//
 // Unless required by applicable law or agreed to in writing, any work
 // distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
 // WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 // License for the specific language governing permissions and limitations
 // under the License.
-// 
+//
 
 
 `ifndef __UVMA_OBI_MEMORY_CFG_SV__
@@ -26,7 +26,7 @@
  * Open Bus Interface agent (uvma_obi_agent_c) components.
  */
 class uvma_obi_memory_cfg_c extends uvm_object;
-   
+
    // Generic options
    rand bit                      enabled;
    rand uvm_active_passive_enum  is_active;
@@ -36,6 +36,8 @@ class uvma_obi_memory_cfg_c extends uvm_object;
 
    bit                           stall_disable;
    bit                           rvalid_singles_stall;
+
+   string                        mon_logger_name = "OBI";
 
    // Protocol parameters
    rand uvma_obi_memory_version_enum    version;
@@ -59,7 +61,7 @@ class uvma_obi_memory_cfg_c extends uvm_object;
    rand int unsigned                              drv_slv_gnt_fixed_latency;
    rand int unsigned                              drv_slv_gnt_random_latency_min;
    rand int unsigned                              drv_slv_gnt_random_latency_max;
-      
+
    rand uvma_obi_memory_drv_slv_rvalid_mode_enum  drv_slv_rvalid_mode;
    rand int unsigned                              drv_slv_rvalid_fixed_latency;
    rand int unsigned                              drv_slv_rvalid_random_latency_min;
@@ -68,11 +70,25 @@ class uvma_obi_memory_cfg_c extends uvm_object;
    rand uvma_obi_memory_drv_slv_err_mode_enum     drv_slv_err_mode;
    rand int unsigned                              drv_slv_err_ok_wgt;
    rand int unsigned                              drv_slv_err_fault_wgt;
-   
+
    rand uvma_obi_memory_drv_slv_exokay_mode_enum drv_slv_exokay_mode;
    rand int unsigned                             drv_slv_exokay_failure_wgt;
    rand int unsigned                             drv_slv_exokay_success_wgt;
-   
+
+   // Directed error generation memory address range
+   // If the valid bit is asserted any address in range will repsond with error = 1
+   bit [31:0]                                    directed_slv_err_addr_min;
+   bit [31:0]                                    directed_slv_err_addr_max;
+   bit                                           directed_slv_err_valid;
+
+   // Directed exokay generation memory address range
+   // if the "valid" bit is asserted any address in range will respond
+   // with exokay == 0
+   bit [31:0]                                    directed_slv_exokay_addr_min;
+   bit [31:0]                                    directed_slv_exokay_addr_max;
+   bit                                           directed_slv_exokay_valid;
+
+
    `uvm_object_utils_begin(uvma_obi_memory_cfg_c)
       `uvm_field_int (                         enabled          , UVM_DEFAULT)
       `uvm_field_enum(uvm_active_passive_enum, is_active        , UVM_DEFAULT)
@@ -82,11 +98,11 @@ class uvma_obi_memory_cfg_c extends uvm_object;
 
       `uvm_field_int (                         stall_disable            , UVM_DEFAULT)
       `uvm_field_int (                         rvalid_singles_stall     , UVM_DEFAULT)
-      
+
       `uvm_field_enum(uvma_obi_memory_version_enum, version, UVM_DEFAULT)
       `uvm_field_int (                        auser_width  , UVM_DEFAULT | UVM_DEC)
       `uvm_field_int (                        wuser_width  , UVM_DEFAULT | UVM_DEC)
-      `uvm_field_int (                        ruser_width  , UVM_DEFAULT | UVM_DEC)      
+      `uvm_field_int (                        ruser_width  , UVM_DEFAULT | UVM_DEC)
       `uvm_field_int (                        addr_width   , UVM_DEFAULT | UVM_DEC)
       `uvm_field_int (                        achk_width   , UVM_DEFAULT | UVM_DEC)
       `uvm_field_int (                        rchk_width   , UVM_DEFAULT | UVM_DEC)
@@ -95,12 +111,12 @@ class uvma_obi_memory_cfg_c extends uvm_object;
       `uvm_field_int (                        read_enabled , UVM_DEFAULT | UVM_DEC)
       `uvm_field_int (                        write_enabled, UVM_DEFAULT | UVM_DEC)
       `uvm_field_enum(uvma_obi_memory_mode_enum               , drv_mode                      , UVM_DEFAULT)
-      `uvm_field_enum(uvma_obi_memory_drv_idle_enum           , drv_idle                      , UVM_DEFAULT)      
+      `uvm_field_enum(uvma_obi_memory_drv_idle_enum           , drv_idle                      , UVM_DEFAULT)
       `uvm_field_int (                                          drv_slv_gnt                   , UVM_DEFAULT)
       `uvm_field_enum(uvma_obi_memory_drv_slv_gnt_mode_enum   , drv_slv_gnt_mode              , UVM_DEFAULT)
       `uvm_field_int (                                          drv_slv_gnt_fixed_latency     , UVM_DEFAULT)
       `uvm_field_int (                                          drv_slv_gnt_random_latency_min, UVM_DEFAULT)
-      `uvm_field_int (                                          drv_slv_gnt_random_latency_max, UVM_DEFAULT)      
+      `uvm_field_int (                                          drv_slv_gnt_random_latency_max, UVM_DEFAULT)
       `uvm_field_enum(uvma_obi_memory_drv_slv_rvalid_mode_enum, drv_slv_rvalid_mode              , UVM_DEFAULT)
       `uvm_field_int (                                          drv_slv_rvalid_fixed_latency     , UVM_DEFAULT)
       `uvm_field_int (                                          drv_slv_rvalid_random_latency_min, UVM_DEFAULT)
@@ -111,15 +127,22 @@ class uvma_obi_memory_cfg_c extends uvm_object;
       `uvm_field_enum(uvma_obi_memory_drv_slv_exokay_mode_enum, drv_slv_exokay_mode        , UVM_DEFAULT)
       `uvm_field_int (                                          drv_slv_exokay_failure_wgt , UVM_DEFAULT | UVM_DEC)
       `uvm_field_int (                                          drv_slv_exokay_success_wgt , UVM_DEFAULT | UVM_DEC)
+
+      `uvm_field_int ( directed_slv_err_addr_min      , UVM_DEFAULT)
+      `uvm_field_int ( directed_slv_err_addr_max      , UVM_DEFAULT)
+      `uvm_field_int ( directed_slv_err_valid         , UVM_DEFAULT)
+      `uvm_field_int ( directed_slv_exokay_addr_min   , UVM_DEFAULT)
+      `uvm_field_int ( directed_slv_exokay_addr_max   , UVM_DEFAULT)
+      `uvm_field_int ( directed_slv_exokay_valid      , UVM_DEFAULT)
    `uvm_object_utils_end
-   
+
    constraint defaults_cons {
       soft enabled              == 1;
       soft is_active            == UVM_PASSIVE;
       soft sqr_arb_mode         == UVM_SEQ_ARB_FIFO;
       soft cov_model_enabled    == 0;
       soft trn_log_enabled      == 1;
-      
+
       soft version                        == UVMA_OBI_MEMORY_VERSION_1P1;
       /*soft*/ ignore_rready              == 1;
       soft auser_width                    == uvma_obi_memory_default_auser_width;
@@ -141,7 +164,7 @@ class uvma_obi_memory_cfg_c extends uvm_object;
       soft drv_slv_rvalid_fixed_latency      == uvma_obi_memory_default_drv_slv_rvalid_fixed_latency;
       soft drv_slv_rvalid_random_latency_min == uvma_obi_memory_default_drv_slv_rvalid_random_latency_min;
       soft drv_slv_rvalid_random_latency_max == uvma_obi_memory_default_drv_slv_rvalid_random_latency_max;
-      soft drv_slv_err_mode               == UVMA_OBI_MEMORY_DRV_SLV_ERR_MODE_OK;      
+      soft drv_slv_err_mode               == UVMA_OBI_MEMORY_DRV_SLV_ERR_MODE_OK;
       soft drv_slv_exokay_mode            == UVMA_OBI_MEMORY_DRV_SLV_EXOKAY_MODE_SUCCESS;
    }
 
@@ -160,17 +183,17 @@ class uvma_obi_memory_cfg_c extends uvm_object;
          drv_slv_gnt_fixed_latency == 0;
 
          drv_slv_rvalid_mode == UVMA_OBI_MEMORY_DRV_SLV_RVALID_MODE_FIXED_LATENCY;
-         drv_slv_rvalid_fixed_latency == 0;
+         drv_slv_rvalid_fixed_latency == 1;
       }
    }
 
    constraint gnt_min_max_cons {
       drv_slv_gnt_random_latency_min <= drv_slv_gnt_random_latency_max;
-   }  
+   }
 
    constraint rvalid_min_max_cons {
       drv_slv_rvalid_random_latency_min <= drv_slv_rvalid_random_latency_max;
-   }  
+   }
 
    constraint err_wgts_cons {
       // Keep the weights for errors within some bounds
@@ -188,7 +211,7 @@ class uvma_obi_memory_cfg_c extends uvm_object;
     * Default constructor.
     */
    extern function new(string name="uvma_obi_memory_cfg");
-   
+
    /**
     * Calculate a new random gnt latency
     */
@@ -202,15 +225,15 @@ class uvma_obi_memory_cfg_c extends uvm_object;
    /**
     * Calculate a random bus error from random knobs
     */
-   extern function bit calc_random_err();
+   extern function bit calc_random_err(bit[31:0] addr);
 
    /**
     * Calculate a random atomic exokay response from random knobs
     */
-   extern function bit calc_random_exokay();   
+   extern function bit calc_random_exokay(bit[31:0] addr);
 
    /**
-    * Returns 1 if this OBI agent supports version 1.2 or higher    
+    * Returns 1 if this OBI agent supports version 1.2 or higher
     */
    extern function bit is_1p2_or_higher();
 
@@ -218,9 +241,9 @@ endclass : uvma_obi_memory_cfg_c
 
 
 function uvma_obi_memory_cfg_c::new(string name="uvma_obi_memory_cfg");
-   
+
    super.new(name);
-   
+
    // Read plusargs to determine any special randomizations
    if ($test$plusargs("rand_stall_obi_disable")) begin
       stall_disable = 1;
@@ -264,9 +287,17 @@ function int unsigned uvma_obi_memory_cfg_c::calc_random_rvalid_latency();
 
 endfunction : calc_random_rvalid_latency
 
-function bit uvma_obi_memory_cfg_c::calc_random_err();
+function bit uvma_obi_memory_cfg_c::calc_random_err(bit[31:0] addr);
 
    bit err;
+
+
+   // Check for a directed error reponse first
+   if (directed_slv_err_valid &&
+       (addr >= directed_slv_err_addr_min) &&
+       (addr <= directed_slv_err_addr_max)) begin
+      return 1;
+   end
 
    case (drv_slv_err_mode)
       UVMA_OBI_MEMORY_DRV_SLV_ERR_MODE_OK      : err = 0;
@@ -282,9 +313,16 @@ function bit uvma_obi_memory_cfg_c::calc_random_err();
 
 endfunction : calc_random_err
 
-function bit uvma_obi_memory_cfg_c::calc_random_exokay();
+function bit uvma_obi_memory_cfg_c::calc_random_exokay(bit[31:0] addr);
 
    bit exokay;
+
+   // Check for a directed error reponse first
+   if (directed_slv_exokay_valid &&
+       (addr <= directed_slv_exokay_addr_min) &&
+       (addr <= directed_slv_exokay_addr_min)) begin
+      return 0;
+   end
 
    case (drv_slv_exokay_mode)
       UVMA_OBI_MEMORY_DRV_SLV_EXOKAY_MODE_SUCCESS : exokay = 1;
@@ -307,4 +345,5 @@ function bit uvma_obi_memory_cfg_c::is_1p2_or_higher();
 endfunction : is_1p2_or_higher
 
 `endif // __UVMA_OBI_MEMORY_CFG_SV__
+
 
