@@ -28,6 +28,10 @@ class uvma_rvvi_base_seq_c#(int ILEN=DEFAULT_ILEN,
    .RSP(uvma_rvvi_control_seq_item_c)
 );
    
+   // Agent handles
+   uvma_rvvi_cfg_c#(ILEN, XLEN)    cfg;
+   uvma_rvvi_cntxt_c#(ILEN, XLEN)  cntxt;
+
    `uvm_object_utils(uvma_rvvi_base_seq_c)
    `uvm_declare_p_sequencer(uvma_rvvi_sqr_c#(ILEN,XLEN))
    
@@ -36,7 +40,12 @@ class uvma_rvvi_base_seq_c#(int ILEN=DEFAULT_ILEN,
     * Default constructor.
     */
    extern function new(string name="uvma_rvvi_base_seq");
-   
+
+   /**
+    * Fills in cfg and cntxt
+    */
+   extern virtual task pre_start();
+
 endclass : uvma_rvvi_base_seq_c
 
 
@@ -49,6 +58,12 @@ function uvma_rvvi_base_seq_c::new(string name="uvma_rvvi_base_seq");
    
 endfunction : new
 
+task uvma_rvvi_base_seq_c::pre_start();
+
+   cfg = p_sequencer.cfg;
+   cntxt = p_sequencer.cntxt;
+
+endtask : pre_start
 
 `pragma protect end
 

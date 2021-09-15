@@ -46,6 +46,11 @@ virtual class uvma_obi_memory_vp_interrupt_timer_seq_c extends uvma_obi_memory_v
    extern virtual task body();
 
    /**
+    * Implement number of peripherals
+    */
+   extern virtual function int unsigned get_num_words();
+
+   /**
     * Implement sequence that will return a random number
     */
    extern virtual task vp_body(uvma_obi_memory_mon_trn_c mon_trn);
@@ -79,20 +84,27 @@ task uvma_obi_memory_vp_interrupt_timer_seq_c::body();
 
 endtask : body
 
+function int unsigned uvma_obi_memory_vp_interrupt_timer_seq_c::get_num_words();
+
+   return 2;
+   
+endfunction : get_num_words
+
 task uvma_obi_memory_vp_interrupt_timer_seq_c::vp_body(uvma_obi_memory_mon_trn_c mon_trn);
    
    uvma_obi_memory_slv_seq_item_c  slv_rsp;
 
-   `uvm_create  (slv_rsp)
+   `uvm_create(slv_rsp)
+   slv_rsp.orig_trn = mon_trn;   
    slv_rsp.err = 1'b0;
 
    if (mon_trn.access_type == UVMA_OBI_MEMORY_ACCESS_WRITE) begin
 
       `uvm_info("VP_VSEQ", $sformatf("Call to virtual peripheral 'interrupt_timer_control':\n%s", mon_trn.sprint()), UVM_HIGH)
-      if (mon_trn.address == 32'h1500_0000) begin
+      if (get_vp_index(mon_trn) == 0) begin
          interrupt_value = mon_trn.data;
       end
-      else if (mon_trn.address == 32'h1500_0004) begin
+      else if (get_vp_index(mon_trn) == 1) begin
          interrupt_timer_value = mon_trn.data;
          ->interrupt_timer_start;
       end

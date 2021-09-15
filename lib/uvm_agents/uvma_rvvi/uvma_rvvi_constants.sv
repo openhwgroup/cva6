@@ -26,4 +26,6 @@ localparam IXL_WL           = 2;
 localparam MODE_WL          = 2;
 localparam ISIZE_WL         = 3;
 
+localparam SQR_MAX_OBI_FIFO_SIZE = 5;
+
 `endif // __UVMA_RVVI_CONSTANTS_SV__

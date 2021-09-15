@@ -26,6 +26,8 @@
  */
 class uvma_obi_memory_vp_sig_writer_seq_c extends uvma_obi_memory_vp_base_seq_c;
 
+   localparam    NUM_WORDS = 3;
+
    bit[31:0]     signature_start_address;
    bit[31:0]     signature_end_address;           
 
@@ -38,7 +40,12 @@ class uvma_obi_memory_vp_sig_writer_seq_c extends uvma_obi_memory_vp_base_seq_c;
     * Default constructor.
     */
    extern function new(string name="uvma_obi_memory_vp_sig_writer_seq_c");
-   
+
+   /**
+    * Implement number of peripherals
+    */
+   extern virtual function int unsigned get_num_words();
+
    /**
     * Implement sequence that will return a random number
     */
@@ -52,6 +59,12 @@ function uvma_obi_memory_vp_sig_writer_seq_c::new(string name="uvma_obi_memory_v
    super.new(name);
    
 endfunction : new
+
+function int unsigned uvma_obi_memory_vp_sig_writer_seq_c::get_num_words();
+
+   return NUM_WORDS;
+
+endfunction : get_num_words
 
 task uvma_obi_memory_vp_sig_writer_seq_c::vp_body(uvma_obi_memory_mon_trn_c mon_trn);
    
@@ -72,33 +85,32 @@ task uvma_obi_memory_vp_sig_writer_seq_c::vp_body(uvma_obi_memory_mon_trn_c mon_
    end
 
    `uvm_create  (slv_rsp)
+   slv_rsp.orig_trn = mon_trn;   
    slv_rsp.err = 1'b0;   
 
-   if (mon_trn.access_type == UVMA_OBI_MEMORY_ACCESS_WRITE) begin
-      
-      if (mon_trn.address == 32'h2000_0008) begin
-         signature_start_address = mon_trn.data;
-      end
-      else if (mon_trn.address == 32'h2000_000C) begin
-         signature_end_address = mon_trn.data;
-      end
-      else if (mon_trn.address == 32'h2000_0010) begin
-         for (int unsigned ii=signature_start_address; ii<signature_end_address; ii++) begin
-            `uvm_info("VP_SIG_WRITER", "Dumping signature", UVM_HIGH/*NONE*/)
-            if (use_sig_file) begin
-               $fdisplay(sig_fd, "%x%x%x%x", cntxt.mem.read(ii+3), 
-                                             cntxt.mem.read(ii+2), 
-                                             cntxt.mem.read(ii+1), 
-                                             cntxt.mem.read(ii+0));
-            end
-            else begin
-               `uvm_info("VP_VSEQ", $sformatf("%x%x%x%x", cntxt.mem.read(ii+3), 
-                                                          cntxt.mem.read(ii+2), 
-                                                          cntxt.mem.read(ii+1), 
-                                                          cntxt.mem.read(ii+0)), UVM_HIGH/*NONE*/)
+   if (mon_trn.access_type == UVMA_OBI_MEMORY_ACCESS_WRITE) begin            
+      case (get_vp_index(mon_trn))
+         0: signature_start_address = mon_trn.data;   
+         1: signature_end_address = mon_trn.data;
+
+         2: begin
+            for (int unsigned ii=signature_start_address; ii<signature_end_address; ii++) begin
+               `uvm_info("VP_SIG_WRITER", "Dumping signature", UVM_HIGH/*NONE*/)
+               if (use_sig_file) begin
+                  $fdisplay(sig_fd, "%x%x%x%x", cntxt.mem.read(ii+3), 
+                                                cntxt.mem.read(ii+2), 
+                                                cntxt.mem.read(ii+1), 
+                                                cntxt.mem.read(ii+0));
+               end
+               else begin
+                  `uvm_info("VP_VSEQ", $sformatf("%x%x%x%x", cntxt.mem.read(ii+3), 
+                                                            cntxt.mem.read(ii+2), 
+                                                            cntxt.mem.read(ii+1), 
+                                                            cntxt.mem.read(ii+0)), UVM_HIGH/*NONE*/)
+               end
             end
          end
-      end
+      endcase
    end
    else if (mon_trn.access_type == UVMA_OBI_MEMORY_ACCESS_READ) begin
       slv_rsp.rdata = 0;

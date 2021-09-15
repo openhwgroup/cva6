@@ -23,7 +23,7 @@ package cv32e40x_instr_test_pkg;
   import corev_instr_test_pkg::*;
 
   // Instruction streams specific to CV32E40X
-  
+
   // RISCV-DV class override definitions
   `include "cv32e40x_compressed_instr.sv"
   `include "cv32e40x_illegal_instr.sv"
@@ -31,9 +31,9 @@ package cv32e40x_instr_test_pkg;
   `include "cv32e40x_privileged_common_seq.sv"
   `include "cv32e40x_instr_gen_config.sv"
   `include "cv32e40x_debug_rom_gen.sv"
-  `include "cv32e40x_asm_program_gen.sv"  
+  `include "cv32e40x_asm_program_gen.sv"
   `include "cv32e40x_instr_base_test.sv"
-  
+
   // Push general purpose register to the debugger stack
   function automatic void push_gpr_to_debugger_stack(cv32e40x_instr_gen_config cfg_corev,
                                                      ref string instr[$]);
@@ -50,7 +50,7 @@ package cv32e40x_instr_test_pkg;
   endfunction : push_gpr_to_debugger_stack
 
     // Pop general purpose register from debugger stack
-  function automatic void pop_gpr_from_debugger_stack(cv32e40x_instr_gen_config cfg_corev,                                                      
+  function automatic void pop_gpr_from_debugger_stack(cv32e40x_instr_gen_config cfg_corev,
                                                       ref string instr[$]);
     string load_instr = (XLEN == 32) ? "lw" : "ld";
     // Pop user mode GPRs from kernel stack

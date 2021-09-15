@@ -26,6 +26,8 @@
  */
 class uvme_cv32e40p_vp_rand_num_seq_c extends uvma_obi_memory_vp_base_seq_c;
 
+   localparam NUM_WORDS = 1;
+
    uvme_cv32e40p_cntxt_c cv32e40p_cntxt;
 
    `uvm_object_utils_begin(uvme_cv32e40p_vp_rand_num_seq_c)
@@ -36,6 +38,11 @@ class uvme_cv32e40p_vp_rand_num_seq_c extends uvma_obi_memory_vp_base_seq_c;
     */
    extern function new(string name="uvme_cv32e40p_vp_rand_num_seq_c");
    
+   /**
+    * Implement number of peripherals
+    */
+   extern virtual function int unsigned get_num_words();
+
    /**
     * Implement sequence that will return a random number
     */
@@ -50,12 +57,19 @@ function uvme_cv32e40p_vp_rand_num_seq_c::new(string name="uvme_cv32e40p_vp_rand
    
 endfunction : new
 
+function int unsigned uvme_cv32e40p_vp_rand_num_seq_c::get_num_words();
+
+   return NUM_WORDS;
+
+endfunction  : get_num_words
+
 task uvme_cv32e40p_vp_rand_num_seq_c::vp_body(uvma_obi_memory_mon_trn_c mon_trn);
    
    uvma_obi_memory_slv_seq_item_c  slv_rsp;   
 
    `uvm_create(slv_rsp)
    
+   slv_rsp.orig_trn = mon_trn;   
    slv_rsp.rdata = $urandom();
    slv_rsp.err = 1'b0;
 

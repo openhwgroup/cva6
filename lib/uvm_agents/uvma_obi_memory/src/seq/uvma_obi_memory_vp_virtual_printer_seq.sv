@@ -26,6 +26,8 @@
  */
 class uvma_obi_memory_vp_virtual_printer_seq_c extends uvma_obi_memory_vp_base_seq_c;
 
+   localparam NUM_WORDS = 11;
+
    `uvm_object_utils_begin(uvma_obi_memory_vp_virtual_printer_seq_c)
    `uvm_object_utils_end
       
@@ -34,6 +36,11 @@ class uvma_obi_memory_vp_virtual_printer_seq_c extends uvma_obi_memory_vp_base_s
     */
    extern function new(string name="uvma_obi_memory_vp_virtual_printer_seq_c");
    
+   /**
+    * Implement number of peripherals
+    */
+   extern virtual function int unsigned get_num_words();
+
    /**
     * Implement sequence that will return a random number
     */
@@ -48,11 +55,18 @@ function uvma_obi_memory_vp_virtual_printer_seq_c::new(string name="uvma_obi_mem
    
 endfunction : new
 
+function int unsigned uvma_obi_memory_vp_virtual_printer_seq_c::get_num_words();
+
+   return NUM_WORDS;
+
+endfunction : get_num_words
+
 task uvma_obi_memory_vp_virtual_printer_seq_c::vp_body(uvma_obi_memory_mon_trn_c mon_trn);
    
    uvma_obi_memory_slv_seq_item_c  slv_rsp;   
 
-   `uvm_create  (slv_rsp)   
+   `uvm_create(slv_rsp)   
+   slv_rsp.orig_trn = mon_trn;   
 
    if (mon_trn.access_type == UVMA_OBI_MEMORY_ACCESS_WRITE) begin
       `uvm_info("VP_VSEQ", $sformatf("Call to virtual peripheral 'virtual_printer':\n%s", mon_trn.sprint()), UVM_DEBUG)

@@ -506,5 +506,17 @@ typedef enum bit[2:0] {
   CAUSE_RSVD7        = 3'h7  
 } dcsr_cause_t;
 
+typedef enum {
+  BITMANIP_VERSION_0P90,
+  BITMANIP_VERSION_0P91,
+  BITMANIP_VERSION_0P92,
+  BITMANIP_VERSION_0P93,
+  BITMANIP_VERSION_0P93_DRAFT,
+  BITMANIP_VERSION_0P94,
+  BITMANIP_VERSION_1P00
+} bitmanip_version_t;
+
 `endif // __UVMA_CORE_CNTRL_TDEFS_SV__
+
+
 

@@ -1,19 +1,19 @@
 ###############################################################################
 #
 # Copyright 2020 OpenHW Group
-# 
+#
 # Licensed under the Solderpad Hardware Licence, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
-# 
+#
 #     https://solderpad.org/licenses/
-# 
+#
 # Unless required by applicable law or agreed to in writing, software
 # distributed under the License is distributed on an "AS IS" BASIS,
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-# 
+#
 # SPDX-License-Identifier: Apache-2.0 WITH SHL-2.0
 #
 ###############################################################################
@@ -22,7 +22,7 @@
 # from the original Makefile for the RI5CY testbench.
 #
 ###############################################################################
-# 
+#
 # Copyright 2019 Claire Wolf
 # Copyright 2019 Robert Balas
 #
@@ -54,7 +54,7 @@ CV_CORE_UC     = $(shell echo $(CV_CORE) | tr a-z A-Z)
 SIMULATOR_UC   = $(shell echo $(SIMULATOR) | tr a-z A-Z)
 export CV_CORE_LC
 export CV_CORE_UC
-.DEFAULT_GOAL := no_rule 
+.DEFAULT_GOAL := no_rule
 
 # Useful commands
 MKDIR_P = mkdir -p
@@ -83,6 +83,8 @@ GEN_NUM_TESTS   ?= 1
 EMB_TYPE           ?= speed
 EMB_TARGET         ?= 0
 EMB_CPU_MHZ        ?= 1
+EMB_TIMEOUT        ?= 3600
+EMB_PARALLEL_ARG    = $(if $(filter $(YES_VALS),$(EMB_PARALLEL)),YES,NO)
 EMB_BUILD_ONLY_ARG  = $(if $(filter $(YES_VALS),$(EMB_BUILD_ONLY)),YES,NO)
 EMB_DEBUG_ARG       = $(if $(filter $(YES_VALS),$(EMB_DEBUG)),YES,NO)
 # Commont test variables
@@ -101,6 +103,7 @@ export DV_UVMA_CLKNRST_PATH     = $(CORE_V_VERIF)/lib/uvm_agents/uvma_clknrst
 export DV_UVMA_INTERRUPT_PATH   = $(CORE_V_VERIF)/lib/uvm_agents/uvma_interrupt
 export DV_UVMA_DEBUG_PATH       = $(CORE_V_VERIF)/lib/uvm_agents/uvma_debug
 export DV_UVMA_OBI_MEMORY_PATH  = $(CORE_V_VERIF)/lib/uvm_agents/uvma_obi_memory
+export DV_UVMA_FENCEI_PATH      = $(CORE_V_VERIF)/lib/uvm_agents/uvma_fencei
 export DV_UVML_TRN_PATH         = $(CORE_V_VERIF)/lib/uvm_libs/uvml_trn
 export DV_UVML_LOGS_PATH        = $(CORE_V_VERIF)/lib/uvm_libs/uvml_logs
 export DV_UVML_SB_PATH          = $(CORE_V_VERIF)/lib/uvm_libs/uvml_sb
@@ -160,7 +163,7 @@ RTLSRC_INCDIR := $(RTLSRC_HOME)/include
 ###############################################################################
 # Seed management for constrained-random sims
 SEED    ?= 1
-RNDSEED ?= 
+RNDSEED ?=
 
 ifeq ($(SEED),random)
 RNDSEED = $(shell date +%N)
@@ -197,7 +200,7 @@ $(CV_CORE_PKG):
 	$(CLONE_CV_CORE_CMD)
 
 $(RISCVDV_PKG):
-	$(CLONE_RISCVDV_CMD)	
+	$(CLONE_RISCVDV_CMD)
 
 $(COMPLIANCE_PKG):
 	$(CLONE_COMPLIANCE_CMD)
@@ -280,18 +283,20 @@ dah:
 ###############################################################################
 # EMBench benchmark
 # 	target to check out and run the EMBench suite for code size and speed
-#		
+#
 
 embench: $(EMBENCH_PKG)
 	$(CORE_V_VERIF)/bin/run_embench.py \
-	-c $(CV_CORE) \
-	-cc $(RISCV_EXE_PREFIX)gcc \
-	-sim $(SIMULATOR) \
-	-t $(EMB_TYPE) \
-	-b $(EMB_BUILD_ONLY_ARG) \
-	-tgt $(EMB_TARGET) \
-	-f $(EMB_CPU_MHZ) \
-	-d $(EMB_DEBUG_ARG) \
+		-c $(CV_CORE) \
+		-cc $(RISCV_EXE_PREFIX)gcc \
+		-sim $(SIMULATOR) \
+		-t $(EMB_TYPE) \
+		--timeout $(EMB_TIMEOUT) \
+		--parallel $(EMB_PARALLEL_ARG) \
+		-b $(EMB_BUILD_ONLY_ARG) \
+		-tgt $(EMB_TARGET) \
+		-f $(EMB_CPU_MHZ) \
+		-d $(EMB_DEBUG_ARG)
 
 ###############################################################################
 # ISACOV (ISA coverage)
@@ -356,9 +361,20 @@ endif
 #   1. Clean all generated files of the C and assembler tests
 #   2. Simulator-specific clean targets are in ./<simulator>.mk
 #   3. clean-bsp target is specified in ../Common.mk
+clean_hex:
+	find $(TEST_TEST_DIR) -name *.o       -exec rm {} \;
+	find $(TEST_TEST_DIR) -name *.hex     -exec rm {} \;
+	find $(TEST_TEST_DIR) -name *.elf     -exec rm {} \;
+	find $(TEST_TEST_DIR) -name *.itb     -exec rm {} \;
+	find $(TEST_TEST_DIR) -name *.map     -exec rm {} \;
+	find $(TEST_TEST_DIR) -name *.readelf -exec rm {} \;
+	find $(TEST_TEST_DIR) -name *.objdump -exec rm {} \;
+	find $(TEST_TEST_DIR) -name corev_*.S -exec rm {} \;
+
 clean_test_programs: clean-bsp
 	find $(CORE_V_VERIF)/$(CV_CORE_LC)/tests/uvmt/test-programs -name *.o       -exec rm {} \;
 	find $(CORE_V_VERIF)/$(CV_CORE_LC)/tests/uvmt/test-programs -name *.hex     -exec rm {} \;
+	find $(CORE_V_VERIF)/$(CV_CORE_LC)/tests/uvmt/test-programs -name *.itb     -exec rm {} \;
 	find $(CORE_V_VERIF)/$(CV_CORE_LC)/tests/uvmt/test-programs -name *.elf     -exec rm {} \;
 	find $(CORE_V_VERIF)/$(CV_CORE_LC)/tests/uvmt/test-programs -name *.map     -exec rm {} \;
 	find $(CORE_V_VERIF)/$(CV_CORE_LC)/tests/uvmt/test-programs -name *.readelf -exec rm {} \;
@@ -367,6 +383,7 @@ clean_test_programs: clean-bsp
 	find $(CORE_V_VERIF)/$(CV_CORE_LC)/tests/programs -name *.hex     -exec rm {} \;
 	find $(CORE_V_VERIF)/$(CV_CORE_LC)/tests/programs -name *.elf     -exec rm {} \;
 	find $(CORE_V_VERIF)/$(CV_CORE_LC)/tests/programs -name *.map     -exec rm {} \;
+	find $(CORE_V_VERIF)/$(CV_CORE_LC)/tests/programs -name *.itb     -exec rm {} \;
 	find $(CORE_V_VERIF)/$(CV_CORE_LC)/tests/programs -name *.readelf -exec rm {} \;
 	find $(CORE_V_VERIF)/$(CV_CORE_LC)/tests/programs -name *.objdump -exec rm {} \;
 	find $(CORE_V_VERIF)/$(CV_CORE_LC)/tests/programs -name corev_*.S -exec rm {} \;

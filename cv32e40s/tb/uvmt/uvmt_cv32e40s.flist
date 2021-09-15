@@ -25,12 +25,12 @@
 
 // Agents
 -f ${DV_UVMA_CORE_CNTRL_PATH}/uvma_core_cntrl_pkg.flist
+-f ${DV_UVMA_OBI_MEMORY_PATH}/src/uvma_obi_memory_pkg.flist
 -f ${DV_UVMA_RVFI_PATH}/uvma_rvfi_pkg.flist
 -f ${DV_UVMA_RVVI_PATH}/uvma_rvvi_pkg.flist
 -f ${DV_UVMA_ISACOV_PATH}/uvma_isacov_pkg.flist
 -f ${DV_UVMA_CLKNRST_PATH}/uvma_clknrst_pkg.flist
 -f ${DV_UVMA_INTERRUPT_PATH}/uvma_interrupt_pkg.flist
--f ${DV_UVMA_OBI_MEMORY_PATH}/src/uvma_obi_memory_pkg.flist
 -f ${DV_UVMA_DEBUG_PATH}/uvma_debug_pkg.flist
 -f ${DV_UVMA_RVVI_OVPSIM_PATH}/uvma_rvvi_ovpsim_pkg.flist
 
