@@ -70,6 +70,12 @@ class uvma_obi_memory_seq_item_logger_c extends uvml_logs_seq_item_logger_c#(
       
    endfunction : write
    
+// A significant chunk of the write_mstr method is common between this
+// sequence item logger and the monitor transaction logger.  Given that
+// much of this code is template generated, and is not expected to be edited
+// further, the duplicated code has a lint waiver.
+//
+//@DVT_LINTER_WAIVER_START "MT20210901_2" disable SVTB.33.1.0, SVTB.33.2.0
    /**
     * Writes contents of mstr t to disk.
     */
@@ -112,6 +118,7 @@ class uvma_obi_memory_seq_item_logger_c extends uvml_logs_seq_item_logger_c#(
       fwrite($sformatf(" %t | %s | %s | %s | %s | %s | %s | %h | %s | %s ", $realtime(), access_str, id_str, auser_str, wuser_str, ruser_str, err_str, t.address, be_str, data_str));
       
    endfunction : write_mstr
+//@DVT_LINTER_WAIVER_END "MT20210901_2"
    
    /**
     * Writes contents of slv t to disk.

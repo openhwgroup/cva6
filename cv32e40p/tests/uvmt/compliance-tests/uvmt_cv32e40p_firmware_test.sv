@@ -209,17 +209,19 @@ task uvmt_cv32e40p_firmware_test_c::bootset_debug();
 endtask
 
 task uvmt_cv32e40p_firmware_test_c::random_debug();
-    `uvm_info("TEST", "Starting random debug in thread UVM test", UVM_NONE); 
+    `uvm_info("TEST", "Starting random debug in thread UVM test", UVM_NONE)
 
     while (1) begin
         uvme_cv32e40p_random_debug_c debug_vseq;
         repeat (100) @(env_cntxt.debug_cntxt.vif.mon_cb);
         debug_vseq = uvme_cv32e40p_random_debug_c::type_id::create("random_debug_vseqr");
-        void'(debug_vseq.randomize());
+        if (!debug_vseq.randomize()) begin
+           `uvm_error("TEST", "Cannot randomize the debug sequence!")
+        end
         debug_vseq.start(vsequencer);
         break;
-    end     
-endtask : random_debug   
+    end
+endtask : random_debug
 
 task uvmt_cv32e40p_firmware_test_c::irq_noise();
   `uvm_info("TEST", "Starting IRQ Noise thread in UVM test", UVM_NONE);
