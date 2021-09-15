@@ -385,22 +385,21 @@ module CPU #(
     
     // shift data based upon byte address
     function automatic Uns32 getData (input int address, input int data);
-        Uns32 addr3 = address & 3;
-        Uns32 sdata = data << (addr3 * 8);
+        Uns32 addr4 = address & 3;
+        Uns32 sdata = data << (addr4 * 8);
         return sdata;
     endfunction
     
     // shift data based upon byte address
     function automatic Uns32 setData (input int address, input int data);
-        Uns32 addr3 = address & 3;
-        Uns32 sdata = data >> (addr3 * 8);
+        Uns32 addr4 = address & 3;
+        Uns32 sdata = data >> (addr4 * 8);
         return sdata;
     endfunction
     
-    function automatic void dmiWrite(input int address, input int size, input int data);
+    function automatic void dmiWrite(input int address, input int ble, input int data);
         Uns32 wValue;
         Uns32 idx    = address >> 2;
-        Uns32 ble    = getBLE(address, size);
         Uns32 dValue = getData(address, data);
         
         msginfo($sformatf("%08X = %02x", address, data));
@@ -422,20 +421,20 @@ module CPU #(
 
         if (artifact) begin
             msginfo($sformatf("[%x]<=(%0d)%x ELF_LOAD", address, size, dValue));
-            dmiWrite(address, size, data);
+            dmiWrite(address, ble, data);
 
         end else begin
             msginfo($sformatf("[%x]<=(%0d)%x Store", address, size, dValue));
-            bus.DAddr  <= address;
-            bus.DSize  <= size;
-            bus.Dwr    <= 1;
-            bus.Dbe    <= ble;
-            bus.DData  <= dValue;
+            bus.DAddr  = address;
+            bus.DSize  = size;
+            bus.Dwr    = 1;
+            bus.Dbe    = ble;
+            bus.DData  = dValue;
             
             // wait for the transfer to complete
             busWait;
-            bus.Dwr    <= 0;
-            fault       = 0; // TODO
+            bus.Dwr    = 0;
+            fault      = bus.StoreBusFaultNMI;
         end
     endtask
      
@@ -478,10 +477,9 @@ module CPU #(
         end
     endtask
 
-    function automatic void dmiRead(input int address, input int size, output int data);
+    function automatic void dmiRead(input int address, input int ble, output int data);
         Uns32 rValue;
         Uns32 idx = address >> 2;
-        Uns32 ble = getBLE(address, size);
         
         rValue = read(idx) & byte2bit(ble);
         
@@ -494,24 +492,23 @@ module CPU #(
         input  int size;
         output int data; 
         input  int artifact; 
-        input  int ifetch;
 
         automatic Uns32 ble = getBLE(address, size);
         
         if (artifact) begin
-            dmiRead(address, size, data);
+            dmiRead(address, ble, data);
 
         end else begin
-            bus.DAddr <= address;
-            bus.DSize <= size;
-            bus.Dbe   <= ble;
-            bus.Drd   <= 1;
+            bus.DAddr = address;
+            bus.DSize = size;
+            bus.Dbe   = ble;
+            bus.Drd   = 1;
             
             // Wait for the transfer to complete & ssmode
             busWait;
-            data = setData(address, bus.DData);
-            fault = 0; // ToDo
-            bus.Drd   <= 0;
+            data      = setData(address, bus.DData);
+            fault     = bus.LoadBusFaultNMI;
+            bus.Drd   = 0;
             
             msginfo($sformatf("[%x]=>(%0d)%x Load", address, size, data));
         end
@@ -533,7 +530,7 @@ module CPU #(
         
         // Aligned access
         if (overflow < 4) begin
-            busLoad32(fault, address, size, data, artifact, 0);
+            busLoad32(fault, address, size, data, artifact);
         
         // Misaligned access
         end else begin
@@ -542,14 +539,18 @@ module CPU #(
             // generate a wide data value
             address_lo = address & ~('h3);
             address_hi = address_lo + 4;
-            busLoad32(fault_lo, address_lo, 4, lo, artifact, 0);
-            busLoad32(fault_hi, address_hi, 4, hi, artifact, 0);
+            busLoad32(fault_lo, address_lo, 4, lo, artifact);
+            busLoad32(fault_hi, address_hi, 4, hi, artifact);
         
             data = {hi, lo} >> ((address & 'h3) * 8);
             fault = fault_lo | fault_hi; // TODO
         end
     endtask
 
+    /* always fetch 32 and cache full word for successive B/HW accesses */
+    reg [31:0] cache_waddr;
+    reg [31:0] cache_wdata;
+    reg        cache_fault;
     task busFetch32;
         output int fault;
         input  int address;
@@ -557,31 +558,47 @@ module CPU #(
         output int data; 
         input  int artifact; 
 
+        // word aligned address
+        automatic Uns32 waddr = address & ~3;
+        automatic Uns32 wdata;
+        
         automatic Uns32 ble = getBLE(address, size);
         
         if (artifact) begin
-            dmiRead(address, size, data);
+            dmiRead(address, ble, data);
 
         end else begin
-            busStep;
-            bus.IAddr <= address;
-            bus.ISize <= size;
-            bus.Ibe   <= ble;
-            bus.Ird   <= 1;
-            
-            // Wait for the transfer to complete & ssmode
-            busWait;
-            data  = setData(address, bus.IData);
-            bus.Ird   <= 0;
-            
-            // TODO manual fault injection
-            if (!artifact) begin
-                fault = 0; // TODO
-                // Info 144: 'root/cpu', 0x0000000000000132(main+6a): 7d6000ef jal     ra,908
-                //if (address == 'h00000132) fault = 1; // TODO
-                bus.InstructionBusFault = fault; // TODO Generate externally
+            if (cache_waddr == waddr) begin
+                wdata  = setData(address, cache_wdata);
+                fault  = cache_fault;
+                
+            end else begin
+                busStep;
+                bus.IAddr = waddr;
+                bus.ISize = 4;
+                bus.Ibe   = 'hF;
+                bus.Ird   = 1;
+                
+                // Wait for the transfer to complete & ssmode
+                busWait;
+                
+                wdata     = setData(address, bus.IData);
+                fault     = bus.InstructionBusFault;
+                bus.Ird   = 0;
+                
             end
+            
             msginfo($sformatf("[%x]=>(%0d)%x Fetch", address, size, data));
+            
+            // Save for next cached access
+            cache_waddr = waddr;
+            cache_wdata = wdata;
+            cache_fault = fault;
+            
+            data = wdata & byte2bit(ble);
+            
+            //$display("busFetch32 address=%08X cache_waddr=%08X : data=%08X cache_wdata=%08X fault=%0d", 
+            //    address, cache_waddr, data, cache_wdata, fault);
         end
     endtask
     

@@ -554,10 +554,10 @@ module uvmt_cv32e40p_tb;
 
       void'(uvm_config_db#(bit)::get(null, "", "sim_finished", sim_finished));
 
-      // In all other contexts, calls to $display() in a UVM environment are
+      // In most other contexts, calls to $display() in a UVM environment are
       // illegal. Here they are OK because the UVM environment has shut down
       // and we are merely dumping a summary to stdout.
-      //@DVT_LINTER_WAIVER_START "MT20210811_3" disable SVTB.29.1.3.1
+      //@DVT_LINTER_WAIVER_START "MT20210811_3" disable SVTB.29.1.7
       $display("\n%m: *** Test Summary ***\n");
 
       if (sim_finished && (err_count == 0) && (fatal_count == 0)) begin

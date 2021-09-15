@@ -9,13 +9,13 @@
 # THe CV32E40X repo also has a variable to clone a specific tag:
 #      *_TAG:    Value of the specific tag you wish to clone;
 #                Will override the HASH unless set to "none".
-#                
+#
 
 export SHELL = /bin/bash
 
 CV_CORE_REPO   ?= https://github.com/openhwgroup/cv32e40x
 CV_CORE_BRANCH ?= master
-CV_CORE_HASH   ?= 252cde8c2e309ead7d48d6519678c7cff2821577
+CV_CORE_HASH   ?= c23c82c2d386f536b5ef1e69d9713c5897da3d69
 CV_CORE_TAG    ?= none
 
 RISCVDV_REPO    ?= https://github.com/google/riscv-dv
@@ -31,7 +31,7 @@ COMPLIANCE_BRANCH ?= strichmo/pr/cv32e40x_initial_old_compliance
 # 2020-08-19
 COMPLIANCE_HASH   ?= cf29051b177ba61b8c39de91c33d20d202697423
 
-# This Spike repo is only cloned when the DPI disassembler needs to be rebuilt 
+# This Spike repo is only cloned when the DPI disassembler needs to be rebuilt
 # Typically users can simply use the checked-in shared library
 DPI_DASM_SPIKE_REPO   ?= https://github.com/riscv/riscv-isa-sim.git
 DPI_DASM_SPIKE_BRANCH ?= master

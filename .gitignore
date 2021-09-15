@@ -2,6 +2,7 @@
 *.nm
 *.elf
 *.hex
+*.itb
 *.map
 *.o
 *.objdump

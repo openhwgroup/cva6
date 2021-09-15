@@ -66,10 +66,13 @@ function void uvma_isacov_agent_c::connect_phase(uvm_phase phase);
 
   super.connect_phase(phase);
 
-  // TODO if cov_model_enabled and if trn_log_enabled
-  mon_ap = monitor.ap;
-  mon_ap.connect(cov_model.mon_trn_fifo.analysis_export);  //TODO if cfg...enabled
-  mon_ap.connect(mon_trn_logger.analysis_export);  // TODO if cfg...enabled
+  if (cfg.enabled) begin
+    mon_ap = monitor.ap;
+    mon_ap.connect(cov_model.mon_trn_fifo.analysis_export);  //TODO if cfg...enabled
+    if (cfg.trn_log_enabled) begin
+      mon_ap.connect(mon_trn_logger.analysis_export);
+    end
+  end
 
 endfunction : connect_phase
 
@@ -114,8 +117,10 @@ endfunction : retrieve_vif
 
 function void uvma_isacov_agent_c::create_components();
 
-  monitor        = uvma_isacov_mon_c#(ILEN,XLEN)::type_id::create("monitor", this);
-  cov_model      = uvma_isacov_cov_model_c::type_id::create("cov_model", this);
-  mon_trn_logger = uvma_isacov_mon_trn_logger_c::type_id::create("mon_trn_logger", this);
+  if (cfg.enabled) begin
+    monitor        = uvma_isacov_mon_c#(ILEN,XLEN)::type_id::create("monitor", this);
+    cov_model      = uvma_isacov_cov_model_c::type_id::create("cov_model", this);
+    mon_trn_logger = uvma_isacov_mon_trn_logger_c::type_id::create("mon_trn_logger", this);
+  end
 
 endfunction : create_components

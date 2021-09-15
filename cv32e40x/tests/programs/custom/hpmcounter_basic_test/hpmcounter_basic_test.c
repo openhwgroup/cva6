@@ -117,7 +117,7 @@ int main(int argc, char *argv[])
   __asm__ volatile("csrwi 0x320, 0x1F");                        // Inhibit mcycle, minstret, mhpmcounter3-4
   __asm__ volatile("csrr %0, 0xB02" : "=r"(minstret));          // minstret
   __asm__ volatile("csrr %0, 0xB03" : "=r"(count));             // mhpmcounter3
-  __asm__ volatile("addi %0, t0, 0" : "=r"(count_while_on));    // 
+  __asm__ volatile("addi %0, t0, 0" : "=r"(count_while_on));    //
 
   printf("\nminstret count while running = %d\n", count_while_on);
   err_cnt += chck(count_while_on, 0xA);

@@ -133,6 +133,7 @@ task uvma_rvfi_instr_mon_c::monitor_rvfi_instr();
          mon_trn.trap     = cntxt.instr_vif[nret_id].mon_cb.rvfi_trap;
          mon_trn.halt     = cntxt.instr_vif[nret_id].mon_cb.rvfi_halt;
          mon_trn.dbg      = cntxt.instr_vif[nret_id].mon_cb.rvfi_dbg;
+         mon_trn.dbg_mode = cntxt.instr_vif[nret_id].mon_cb.rvfi_dbg_mode;
          mon_trn.intr     = cntxt.instr_vif[nret_id].mon_cb.rvfi_intr;
          $cast(mon_trn.mode, cntxt.instr_vif[nret_id].mon_cb.rvfi_mode);
          mon_trn.ixl      = cntxt.instr_vif[nret_id].mon_cb.rvfi_ixl;

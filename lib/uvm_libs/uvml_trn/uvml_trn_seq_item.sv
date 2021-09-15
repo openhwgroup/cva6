@@ -31,7 +31,7 @@ class uvml_trn_seq_item_c extends uvm_sequence_item;
    
    static int unsigned  __last_uid = 0;
    
-  `uvm_object_utils_begin(uvml_trn_mon_trn_c)
+  `uvm_object_utils_begin(uvml_trn_seq_item_c)
       `uvm_field_int(__may_drop , UVM_DEFAULT + UVM_NOPACK + UVM_NOCOMPARE)
       `uvm_field_int(__has_error, UVM_DEFAULT + UVM_NOPACK + UVM_NOCOMPARE)
   `uvm_object_utils_end
