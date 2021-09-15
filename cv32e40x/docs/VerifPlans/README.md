@@ -43,5 +43,6 @@ _Refer to the VerifPlans/ISA/RV32/Simulation directory for specific Verification
 | OBI     | Inomplete | Incomplete | |
 | Sleep Unit | Incomplete | Incomplete | |
 | Pipelines | Incomplete | Incomplete  | |
-| Bus errors | Complete | Ready For Reveiw ||
+| Bus errors | Complete | Complete ||
+| Bus errors | Complete | Complete | Reviewed and Interated on 8/27/21 |
 

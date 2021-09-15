@@ -2,19 +2,19 @@
 // Copyright 2020 OpenHW Group
 // Copyright 2020 Datum Technology Corporation
 // Copyright 2020 Silicon Labs, Inc.
-// 
+//
 // Licensed under the Solderpad Hardware Licence, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
-// 
+//
 //     https://solderpad.org/licenses/
-// 
+//
 // Unless required by applicable law or agreed to in writing, software
 // distributed under the License is distributed on an "AS IS" BASIS,
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
-// 
+//
 // SPDX-License-Identifier: Apache-2.0 WITH SHL-2.0
 //
 
@@ -536,31 +536,30 @@ module uvmt_cv32e40p_tb;
      end
    end
 
-   
+
    /**
     * End-of-test summary printout.
     */
    final begin: end_of_test
-      string             summary_string;
       uvm_report_server  rs;
       int                err_count;
       int                warning_count;
       int                fatal_count;
       static bit         sim_finished = 0;
-      
-      static string  red   = "\033[31m\033[1m";
-      static string  green = "\033[32m\033[1m";
-      static string  reset = "\033[0m";
-      
+
       rs            = uvm_top.get_report_server();
       err_count     = rs.get_severity_count(UVM_ERROR);
       warning_count = rs.get_severity_count(UVM_WARNING);
       fatal_count   = rs.get_severity_count(UVM_FATAL);
-      
+
       void'(uvm_config_db#(bit)::get(null, "", "sim_finished", sim_finished));
 
+      // In most other contexts, calls to $display() in a UVM environment are
+      // illegal. Here they are OK because the UVM environment has shut down
+      // and we are merely dumping a summary to stdout.
+      //@DVT_LINTER_WAIVER_START "MT20210811_3" disable SVTB.29.1.7
       $display("\n%m: *** Test Summary ***\n");
-      
+
       if (sim_finished && (err_count == 0) && (fatal_count == 0)) begin
          $display("    PPPPPPP    AAAAAA    SSSSSS    SSSSSS   EEEEEEEE  DDDDDDD     ");
          $display("    PP    PP  AA    AA  SS    SS  SS    SS  EE        DD    DD    ");
@@ -586,7 +585,7 @@ module uvmt_cv32e40p_tb;
          $display("    FF        AA    AA    II    LL        EE        DD    DD      ");
          $display("    FF        AA    AA    II    LL        EE        DD    DD      ");
          $display("    FF        AA    AA  IIIIII  LLLLLLLL  EEEEEEEE  DDDDDDD       ");
-         
+
          if (sim_finished == 0) begin
             $display("    --------------------------------------------------------");
             $display("                   SIMULATION FAILED - ABORTED              ");
@@ -598,6 +597,7 @@ module uvmt_cv32e40p_tb;
             $display("    --------------------------------------------------------");
          end
       end
+      //@DVT_LINTER_WAIVER_END "MT20210811_3"
    end
 
 endmodule : uvmt_cv32e40p_tb

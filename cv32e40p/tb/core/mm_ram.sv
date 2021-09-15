@@ -15,6 +15,9 @@
 // This maps the dp_ram module to the instruction and data ports of the RI5CY
 // processor core and some pseudo peripherals
 
+// DVT LINTER waivers are fine because this is not a UVM component.
+//@DVT_LINTER_WAIVER_START "MT20210811_1" disable SVTB.29.1.3.1, SVTB.29.1.7
+
 module mm_ram
 `ifndef VERILATOR
   import uvm_pkg::*;
@@ -183,9 +186,31 @@ module mm_ram
     string                         sig_file;
     string                         sig_string;
     bit                            use_sig_file;
-    integer                        sig_fd;
-    integer                        errno;
+    int                            sig_fd;
+    int                            errno;
     string                         error_str;
+
+    // Common code used by both reads and writes
+    function void setup_transaction();
+
+       data_req_dec = data_req_i;
+       if ( (data_addr_i >= dm_halt_addr_i) &&
+            (data_addr_i < (dm_halt_addr_i + (2 ** DBG_ADDR_WIDTH)) )
+          ) begin
+          // remap debug code to end of memory
+          data_addr_dec  = (data_addr_i[RAM_ADDR_WIDTH-1:0] - dm_halt_addr_i[RAM_ADDR_WIDTH-1:0]) +
+                            2**RAM_ADDR_WIDTH - 2**DBG_ADDR_WIDTH;
+       end
+       else begin
+          data_addr_dec  = data_addr_i[RAM_ADDR_WIDTH-1:0];
+       end
+
+       data_wdata_dec = data_wdata_i;
+       data_we_dec    = data_we_i;
+       data_be_dec    = data_be_i;
+       transaction    = T_RAM;
+
+    endfunction: setup_transaction
 
     // uhh, align?
     always_comb data_addr_aligned = {data_addr_i[31:2], 2'b0};
@@ -293,19 +318,7 @@ module mm_ram
                     (data_addr_i < (dm_halt_addr_i + (2 ** DBG_ADDR_WIDTH)) ))
                    )
                 begin
-                    data_req_dec   = data_req_i;
-                    if ( (data_addr_i >= dm_halt_addr_i) &&
-                         (data_addr_i < (dm_halt_addr_i + (2 ** DBG_ADDR_WIDTH)) )
-                         )
-                        // remap debug code to end of memory
-                        data_addr_dec  = (data_addr_i[RAM_ADDR_WIDTH-1:0] - dm_halt_addr_i[RAM_ADDR_WIDTH-1:0]) +
-                                         2**RAM_ADDR_WIDTH - 2**DBG_ADDR_WIDTH;
-                    else
-                        data_addr_dec  = data_addr_i[RAM_ADDR_WIDTH-1:0];
-                    data_wdata_dec = data_wdata_i;
-                    data_we_dec    = data_we_i;
-                    data_be_dec    = data_be_i;
-                    transaction    = T_RAM;
+                    setup_transaction();
                 end else if (data_addr_i == MMADDR_PRINT) begin
                     print_wdata = data_wdata_i;
                     print_valid = '1;
@@ -407,19 +420,7 @@ module mm_ram
                 begin
                     select_rdata_d = RAM;
 
-                    data_req_dec   = data_req_i;
-                    if ( (data_addr_i >= dm_halt_addr_i) &&
-                         (data_addr_i < (dm_halt_addr_i + (2 ** DBG_ADDR_WIDTH)) )
-                       )
-                        // remap debug code to end of memory
-                        data_addr_dec  = (data_addr_i[RAM_ADDR_WIDTH-1:0] - dm_halt_addr_i[RAM_ADDR_WIDTH-1:0]) +
-                                         2**RAM_ADDR_WIDTH - 2**DBG_ADDR_WIDTH;
-                    else
-                        data_addr_dec  = data_addr_i[RAM_ADDR_WIDTH-1:0];
-                    data_wdata_dec = data_wdata_i;
-                    data_we_dec    = data_we_i;
-                    data_be_dec    = data_be_i;
-                    transaction    = T_RAM;
+                    setup_transaction();
                 end else if (data_addr_i[31:16] == MMADDR_RNDSTALL) begin
                     select_rdata_d = RND_STALL;
 
@@ -836,3 +837,5 @@ module mm_ram
 `endif
 
 endmodule // ram
+
+//@DVT_LINTER_WAIVER_END "MT20210811_1"
