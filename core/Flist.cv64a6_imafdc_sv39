@@ -150,4 +150,9 @@ ${CVA6_REPO_DIR}/common/local/util/instr_tracer_if.sv
 ${CVA6_REPO_DIR}/common/local/util/instr_tracer.sv
 ${CVA6_REPO_DIR}/common/local/util/sram.sv
 
+// MMU Sv39
+${CVA6_REPO_DIR}/core/mmu_sv39/mmu.sv
+${CVA6_REPO_DIR}/core/mmu_sv39/ptw.sv
+${CVA6_REPO_DIR}/core/mmu_sv39/tlb.sv
+
 // end of manifest

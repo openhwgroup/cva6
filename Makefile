@@ -152,6 +152,8 @@ src :=  $(filter-out core/ariane_regfile.sv, $(wildcard core/*.sv))             
         $(filter-out core/fpu/src/fpu_div_sqrt_mvp/hdl/defs_div_sqrt_mvp.sv,         \
         $(wildcard core/fpu/src/fpu_div_sqrt_mvp/hdl/*.sv))                          \
         $(wildcard core/frontend/*.sv)                                               \
+        $(wildcard core/mmu_sv32/*.sv)                                               \
+        $(wildcard core/mmu_sv39/*.sv)                                               \
         $(filter-out core/cache_subsystem/std_no_dcache.sv,                          \
         $(wildcard core/cache_subsystem/*.sv))                                       \
         $(wildcard corev_apu/bootrom/*.sv)                                           \
