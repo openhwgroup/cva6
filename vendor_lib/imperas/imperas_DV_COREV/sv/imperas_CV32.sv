@@ -568,7 +568,7 @@ module CPU #(
             dmiRead(address, ble, data);
 
         end else begin
-            if (cache_waddr == waddr) begin
+            if ((cache_waddr == waddr) && (cache_fault == 0)) begin
                 wdata  = setData(address, cache_wdata);
                 fault  = cache_fault;
                 
