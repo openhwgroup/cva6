@@ -105,12 +105,12 @@ ${CVA6_REPO_DIR}/core/issue_read_operands.sv
 ${CVA6_REPO_DIR}/core/issue_stage.sv
 ${CVA6_REPO_DIR}/core/load_unit.sv
 ${CVA6_REPO_DIR}/core/load_store_unit.sv
-${CVA6_REPO_DIR}/core/mmu.sv
+//${CVA6_REPO_DIR}/core/mmu.sv
 ${CVA6_REPO_DIR}/core/mult.sv
 ${CVA6_REPO_DIR}/core/multiplier.sv
 ${CVA6_REPO_DIR}/core/serdiv.sv
 ${CVA6_REPO_DIR}/core/perf_counters.sv
-${CVA6_REPO_DIR}/core/ptw.sv
+//${CVA6_REPO_DIR}/core/ptw.sv
 ${CVA6_REPO_DIR}/core/ariane_regfile_ff.sv
 ${CVA6_REPO_DIR}/core/re_name.sv
 // NOTE: scoreboard.sv modified for DSIM (unchanged for other simulators)
@@ -118,7 +118,7 @@ ${CVA6_REPO_DIR}/core/scoreboard.sv
 ${CVA6_REPO_DIR}/core/store_buffer.sv
 ${CVA6_REPO_DIR}/core/amo_buffer.sv
 ${CVA6_REPO_DIR}/core/store_unit.sv
-${CVA6_REPO_DIR}/core/tlb.sv
+//${CVA6_REPO_DIR}/core/tlb.sv
 ${CVA6_REPO_DIR}/core/commit_stage.sv
 ${CVA6_REPO_DIR}/core/axi_shim.sv
 
@@ -149,5 +149,10 @@ ${CVA6_REPO_DIR}/core/pmp/src/pmp_entry.sv
 ${CVA6_REPO_DIR}/common/local/util/instr_tracer_if.sv
 ${CVA6_REPO_DIR}/common/local/util/instr_tracer.sv
 ${CVA6_REPO_DIR}/common/local/util/sram.sv
+
+// MMU Sv32
+${CVA6_REPO_DIR}/core/mmu_sv32/cva6_mmu_sv32.sv
+${CVA6_REPO_DIR}/core/mmu_sv32/cva6_ptw_sv32.sv
+${CVA6_REPO_DIR}/core/mmu_sv32/cva6_tlb_sv32.sv
 
 // end of manifest
