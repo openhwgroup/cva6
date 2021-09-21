@@ -118,7 +118,7 @@ XRUN_USER_COMPILE_ARGS += $(USER_COMPILE_FLAGS)
 # Coverage options
 # COV=YES generates coverage database, must be specified for comp and run
 IMC_MERGE_ARGS = merge -initial_model union_all -overwrite -message 1
-IMC_REPORT_ARGS = report_metrics -summary -overwrite -out cov_report
+IMC_REPORT_ARGS = -exec $(CORE_V_VERIF)/$(CV_CORE)/sim/tools/xrun/cov_report.tcl
 MERGED_COV_DIR ?= merged_cov
 
 ifeq ($(call IS_YES,$(COV)),YES)
@@ -138,15 +138,15 @@ COV_MERGE =
 endif
 
 ifeq ($(call IS_YES,$(MERGE)),YES)
-COV_ARGS = -load $(XRUN_RESULTS)/$(CFG)/$(MERGED_COV_DIR)/cov_work/scope/merged
+COV_DIR ?= $(XRUN_RESULTS)/$(CFG)/$(MERGED_COV_DIR)/cov_work/scope/merged
 else
-COV_ARGS = -load cov_work/uvmt_$(CV_CORE_LC)_tb/$(TEST_NAME)
+COV_DIR ?= cov_work/uvmt_$(CV_CORE_LC)_tb/$(TEST_NAME)
 endif
 
 ifeq ($(call IS_YES,$(GUI)),YES)
 COV_ARGS += -gui
 else
-COV_ARGS += -execcmd "$(IMC_REPORT_ARGS)"
+COV_ARGS += $(IMC_REPORT_ARGS)
 endif
 
 ################################################################################
@@ -439,7 +439,9 @@ else
 endif
 
 cov: $(COV_MERGE)
-	cd $(COVERAGE_TARGET_DIR) && $(IMC) $(COV_ARGS)
+	cd $(COVERAGE_TARGET_DIR) && \
+		IMC_PAGE_VIEWS_DIR=$(CORE_V_VERIF)/$(CV_CORE)/sim/tools/xrun \
+			$(IMC) -load $(COV_DIR) $(COV_ARGS)
 
 ###############################################################################
 # Clean up your mess!
