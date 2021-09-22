@@ -25,3 +25,6 @@
 
 // write-through cache
 `define WT_DCACHE
+
+// CoreV-eXtension-Interface
+`define CVXIF
