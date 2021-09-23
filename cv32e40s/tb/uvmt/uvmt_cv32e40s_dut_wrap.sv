@@ -44,8 +44,8 @@ module uvmt_cv32e40s_dut_wrap
 
   #(// DUT (riscv_core) parameters.                            
     parameter NUM_MHPMCOUNTERS    =  1,
-    parameter int unsigned PMA_NUM_REGIONS =  0,
-    parameter pma_region_t PMA_CFG[(PMA_NUM_REGIONS ? (PMA_NUM_REGIONS-1) : 0):0] = '{default:PMA_R_DEFAULT},
+    parameter int PMA_NUM_REGIONS =  0,
+    parameter pma_region_t PMA_CFG[PMA_NUM_REGIONS-1:0] = '{default:PMA_R_DEFAULT},
     // Remaining parameters are used by TB components only
               INSTR_ADDR_WIDTH    =  32,
               INSTR_RDATA_WIDTH   =  32,
@@ -199,6 +199,9 @@ module uvmt_cv32e40s_dut_wrap
          .debug_havereset_o      ( debug_havereset                ),
          .debug_running_o        ( debug_running                  ),
          .debug_halted_o         ( debug_halted                   ),
+
+         .fencei_flush_req_o     ( /*TODO: connect to fencei agent*/),
+         .fencei_flush_ack_i     ( 1'b1/*TODO: connect to fencei agent*/),
 
          .fetch_enable_i         ( core_cntrl_if.fetch_en         ),
          .core_sleep_o           ( core_status_if.core_busy       )
