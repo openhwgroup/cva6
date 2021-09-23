@@ -23,7 +23,9 @@ typedef struct {
 
     Uns64 order;
     Uns64 trap;
+} RMData_stateT;
 
+typedef struct {
     // Signals to SV
     Uns64 irq_ack_o;
     Uns64 irq_id_o;
@@ -34,7 +36,13 @@ typedef struct {
     Uns64 LR_address;
     Uns64 SC_address;
     Uns64 AMO_active;
-} RMDataT;
+} RMData_ioT;
+
+
+typedef struct {
+    // Signals from SV
+    Uns64 cycles;
+} SVData_stateT;
 
 typedef struct {
     // Signals from SV
@@ -73,6 +81,4 @@ typedef struct {
     Uns64 LoadBusFaultNMI;
     Uns64 StoreBusFaultNMI;
     Uns64 InstructionBusFault;
-
-    Uns64 cycles;
-} SVDataT;
+} SVData_ioT;
