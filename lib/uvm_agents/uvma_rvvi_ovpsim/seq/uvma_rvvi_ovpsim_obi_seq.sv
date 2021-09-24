@@ -111,9 +111,9 @@ task uvma_rvvi_ovpsim_obi_seq_c::rvvi_i_mon();
    while (1) begin
       @(ovpsim_cntxt.ovpsim_bus_vif.IAddr or ovpsim_cntxt.ovpsim_bus_vif.Ird);
       if (ovpsim_cntxt.ovpsim_bus_vif.Ird && is_i_error(ovpsim_cntxt.ovpsim_bus_vif.IAddr))
-         ovpsim_cntxt.ovpsim_bus_vif.InstructionBusFault = 1'b1;
+         ovpsim_cntxt.ovpsim_io_vif.InstructionBusFault = 1'b1;
       else
-         ovpsim_cntxt.ovpsim_bus_vif.InstructionBusFault = 1'b0;
+         ovpsim_cntxt.ovpsim_io_vif.InstructionBusFault = 1'b0;
    end
 
 endtask : rvvi_i_mon
