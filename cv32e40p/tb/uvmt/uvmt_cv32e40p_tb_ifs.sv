@@ -63,12 +63,12 @@ interface uvmt_cv32e40p_clk_gen_if (output logic core_clock, output logic core_r
    /**
     * Sets clock period in ps.
     */
-   function void set_clk_period ( real clk_period );
+   function static void set_clk_period ( real clk_period );
       core_clock_period = clk_period * 1ps;
    endfunction : set_clk_period
    
    /** Triggers the generation of clk. */
-   function void start();
+   function static void start();
       start_clk = 1;
       `uvm_info("CLK_GEN_IF", "uvmt_cv32e40p_clk_gen_if.start() called", UVM_NONE)
    endfunction : start
@@ -204,7 +204,7 @@ interface uvmt_cv32e40p_core_cntrl_if (
 
   /** Sets fetch_en to the core. */
   //function void go_fetch();
-  task go_fetch();
+  task static go_fetch();
     drv_cb.fetch_en <= 1'b1;
     `uvm_info("CORE_CNTRL_IF", "uvmt_cv32e40p_core_cntrl_if.go_fetch() called", UVM_DEBUG)
     core_cntrl_cg_inst.sample();
@@ -214,17 +214,19 @@ interface uvmt_cv32e40p_core_cntrl_if (
 
   function void stop_fetch();
     drv_cb.fetch_en <= 1'b0;
-	lfsr_reset      <= 1'b1;
+    lfsr_reset      <= 1'b1;
     `uvm_info("CORE_CNTRL_IF", "uvmt_cv32e40p_core_cntrl_if.stop_fetch() called", UVM_DEBUG)
   endfunction : stop_fetch
 
   // LFSR used to "randomly" toggle fetch_en to show that
   // the core ignores fetch_en after its initial assertion.
+  // TODO: Make this constrain-able by a testcase (and get rid of the
+  //       DVT_LINTER waiver.
   assign fb = !(lfsr[15] ^ lfsr[13] ^ lfsr[12] ^ lfsr[10]);
 
   always @(posedge clk) begin
     if (lfsr_reset) begin // active high reset
-      lfsr <= $urandom();
+      lfsr <= $urandom(); //@DVT_LINTER_WAIVER "MT20210811_2" disable SVTB.29.1.3.1
     end
     else begin
       lfsr <= {lfsr[14:0], fb};

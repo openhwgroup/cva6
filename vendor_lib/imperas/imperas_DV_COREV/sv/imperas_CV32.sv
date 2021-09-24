@@ -137,10 +137,9 @@ interface RVVI_bus;
     bit     [2:0]  ISize;   // Instruction Bus Size of transfer 1-4 bytes
     bit            Ird;     // Instruction Bus read
 
-    bit            LoadBusFaultNMI;     // Artifact to signal memory interface error (E40X)
-    bit            StoreBusFaultNMI;    // Artifact to signal memory interface error (E40X)
-    bit            InstructionBusFault; // Artifact to signal memory interface error (E40X)
-
+    bit            LoadBusFaultNMI;     // signal memory interface error (E40X)
+    bit            StoreBusFaultNMI;    // signal memory interface error (E40X)
+    bit            InstructionBusFault; // signal memory interface error (E40X)
 endinterface
 
 module CPU #(
@@ -304,14 +303,18 @@ module CPU #(
         SVData.haltreq             = io.haltreq;
         SVData.resethaltreq        = io.resethaltreq;
         
-        SVData.LoadBusFaultNMI     = bus.LoadBusFaultNMI;
-        SVData.StoreBusFaultNMI    = bus.StoreBusFaultNMI;
-        SVData.InstructionBusFault = bus.InstructionBusFault;
+        //SVData.LoadBusFaultNMI     = bus.LoadBusFaultNMI;
+        //SVData.StoreBusFaultNMI    = bus.StoreBusFaultNMI;
         
+        SVData.InstructionBusFault = bus.InstructionBusFault;
         
         SVData.cycles              = cycles;
         
         svimp_push(SVData);
+        
+        // clear NMI
+        SVData.LoadBusFaultNMI = 0;
+        SVData.StoreBusFaultNMI = 0;
     endfunction
 
     function automatic void svexp_setDECODE (input string value, input int insn, input int isize);
@@ -410,7 +413,6 @@ module CPU #(
     endfunction
     
     task busStore32;
-        output int fault; 
         input  int address;
         input  int size;
         input  int data;
@@ -434,7 +436,7 @@ module CPU #(
             // wait for the transfer to complete
             busWait;
             bus.Dwr    = 0;
-            fault      = bus.StoreBusFaultNMI;
+            SVData.StoreBusFaultNMI      = bus.StoreBusFaultNMI;
         end
     endtask
      
@@ -452,13 +454,15 @@ module CPU #(
         int overflow;
         overflow = (address & 'h3) + (size - 1);
         
+        fault = 0;
+        
         // Aligned access
         if (overflow < 4) begin
-            busStore32(fault, address, size, data, artifact);
+            busStore32(address, size, data, artifact);
         
         // Misaligned access
         end else begin
-            int lo, hi, address_lo, address_hi, size_lo, size_hi, fault_lo, fault_hi;
+            int lo, hi, address_lo, address_hi, size_lo, size_hi;
             
             // generate a data for 2 transactions
             lo = data;
@@ -471,9 +475,8 @@ module CPU #(
             address_lo = address;
             address_hi = (address & ~('h3)) + 4;
              
-            busStore32(fault_lo, address_lo, size_lo, lo, artifact);
-            busStore32(fault_hi, address_hi, size_hi, hi, artifact);
-            fault = fault_lo | fault_hi; // TODO
+            busStore32(address_lo, size_lo, lo, artifact);
+            busStore32(address_hi, size_hi, hi, artifact);
         end
     endtask
 
@@ -487,7 +490,6 @@ module CPU #(
     endfunction
 
     task busLoad32;
-        output int fault;
         input  int address;
         input  int size;
         output int data; 
@@ -507,8 +509,9 @@ module CPU #(
             // Wait for the transfer to complete & ssmode
             busWait;
             data      = setData(address, bus.DData);
-            fault     = bus.LoadBusFaultNMI;
             bus.Drd   = 0;
+
+            SVData.LoadBusFaultNMI = bus.LoadBusFaultNMI;
             
             msginfo($sformatf("[%x]=>(%0d)%x Load", address, size, data));
         end
@@ -528,22 +531,23 @@ module CPU #(
         int overflow;        
         overflow = (address & 'h3) + (size - 1);
         
+        fault = 0;
+        
         // Aligned access
         if (overflow < 4) begin
-            busLoad32(fault, address, size, data, artifact);
+            busLoad32(address, size, data, artifact);
         
         // Misaligned access
         end else begin
-            int lo, hi, address_lo, address_hi, fault_lo, fault_hi;
+            int lo, hi, address_lo, address_hi;
             
             // generate a wide data value
             address_lo = address & ~('h3);
             address_hi = address_lo + 4;
-            busLoad32(fault_lo, address_lo, 4, lo, artifact);
-            busLoad32(fault_hi, address_hi, 4, hi, artifact);
+            busLoad32(address_lo, 4, lo, artifact);
+            busLoad32(address_hi, 4, hi, artifact);
         
             data = {hi, lo} >> ((address & 'h3) * 8);
-            fault = fault_lo | fault_hi; // TODO
         end
     endtask
 
@@ -568,7 +572,7 @@ module CPU #(
             dmiRead(address, ble, data);
 
         end else begin
-            if (cache_waddr == waddr) begin
+            if ((cache_waddr == waddr) && (cache_fault == 0)) begin
                 wdata  = setData(address, cache_wdata);
                 fault  = cache_fault;
                 
