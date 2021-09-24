@@ -8,6 +8,33 @@ It has configurable size, separate TLBs, a hardware PTW and branch-prediction (b
 
 ![](docs/_static/ariane_overview.png)
 
+## New Directory Structure:
+The directory structure has been changed to cleanly separate the [CVA6 RISC-V CPU](#cva6-risc-v-cpu) core from the COREV-APU [FPGA Emulation](#corev-apu-fpga-emulation).
+Files, directories and submodules under `cva6` are for the core _only_ and should not have any dependencies on the APU.
+Files, directories and submodules under `corev_apu` are for the FPGA Emulation platform.
+The CVA6 core can be compiled stand-alone, and obviously the APU is dependent on the core.
+
+#### ci
+Scriptware for CI (unchanged).
+
+#### common
+Source code used by both the CVA6 Core and the COREV APU.
+Subdirectories from here are `local` for common files that are hosted in this repo and `submodules` that are hosted in other repos.
+
+#### core
+Source code for the CVA6 Core only.
+There should be no sources in this directory used to build anything other than the CVA6 core.
+
+#### corev_apu
+Source code for the CVA6 APU, exclusive of the CVA6 core.
+There should be no sources in this directory used to build the CVA6 core.
+
+#### docs
+Documentation (unchanged).
+
+#### scripts
+General scriptware (unchanged).
+
 ## Publication
 
 If you use CVA6 in your academic work you can cite us:
@@ -59,15 +86,17 @@ Created by [gh-md-toc](https://github.com/ekalinin/github-markdown-toc)
 
 ## Getting Started
 
-Go and get the [RISC-V tools](https://github.com/riscv/riscv-tools). Make sure that your `RISCV` environment variable points to your RISC-V installation (see the RISC-V tools and related projects for further information).
-
-Checkout the repository and initialize all submodules
+Go and get the [RISC-V tools](https://github.com/riscv/riscv-tools).
+Make sure that your `RISCV` environment variable points to your RISC-V installation (see the RISC-V tools and related projects for further information).
+<br><br>
+Checkout the repository and initialize all submodules:
 ```
-$ git clone https://github.com/openhwgroup/cva6.git
+$ git clone -b cva6_reorg https://github.com/openhwgroup/cva6.git cva6_reorg
+$ cd cva6_reorg
 $ git submodule update --init --recursive
 ```
 
-Build the Verilator model of CVA6 by using the Makefile:
+Build the Verilator model of the COREV-APU by using the Makefile:
 ```
 $ make verilate
 ```
@@ -77,19 +106,32 @@ To build the verilator model with support for vcd files run
 $ make verilate DEBUG=1
 ```
 
-This will create a C++ model of the core including a SystemVerilog wrapper and link it against a C++ testbench (in the `tb` subfolder). The binary can be found in the `work-ver` and accepts a RISC-V ELF binary as an argument, e.g.:
+This will create a C++ model of the core including a SystemVerilog wrapper and link it against a C++ testbench (in the `tb` subfolder).
+The binary can be found in the `work-ver` and accepts a RISC-V ELF binary as an argument, e.g.:
 
 ```
 $ work-ver/Variane_testharness rv64um-v-divuw
 ```
 
-The Verilator testbench makes use of the `riscv-fesvr`. This means that you can use the `riscv-tests` repository as well as `riscv-pk` out-of-the-box. As a general rule of thumb the Verilator model will behave like Spike (exception for being orders of magnitudes slower).
+The Verilator testbench makes use of the `riscv-fesvr`.
+This means that you can use the `riscv-tests` repository as well as `riscv-pk` out-of-the-box.
+As a general rule of thumb the Verilator model will behave like Spike (exception for being orders of magnitudes slower).
 
-Both, the Verilator model as well as the Questa simulation will produce trace logs. The Verilator trace is more basic but you can feed the log to `spike-dasm` to resolve instructions to mnemonics. Unfortunately value inspection is currently not possible for the Verilator trace file.
+Both the Verilator model as well as the Questa simulation will produce trace logs.
+The Verilator trace is more basic but you can feed the log to `spike-dasm` to resolve instructions to mnemonics.
+Unfortunately value inspection is currently not possible for the Verilator trace file.
 
 ```
 $ spike-dasm < trace_hart_00.dasm > logfile.txt
 ```
+
+To build, compile and run the CVA6 core-only in its example testbench using Verilator (known to work with V4.108):
+```
+$ cd core/example_tb
+$ make veri_run
+```
+`make help` will print all supported targets.
+
 
 ### Running User-Space Applications
 
@@ -128,11 +170,11 @@ $ make sim elf-bin=$RISCV/riscv64-unknown-elf/bin/pk target-options=hello.elf  b
 
 > Be patient! RTL simulation is way slower than Spike. If you think that you ran into problems you can inspect the trace files.
 
-## FPGA Emulation
+## COREV-APU FPGA Emulation
 
 We currently only provide support for the [Genesys 2 board](https://reference.digilentinc.com/reference/programmable-logic/genesys-2/reference-manual). We provide pre-build bitstream and memory configuration files for the Genesys 2 [here](https://github.com/openhwgroup/cva6/releases).
 
-Tested on Vivado 2018.2. The FPGA SoC currently contains the following peripherals:
+Tested on Vivado 2018.2. The FPGA currently contains the following peripherals:
 
 - DDR3 memory controller
 - SPI controller to conncet to an SDCard
