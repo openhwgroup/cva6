@@ -416,7 +416,6 @@ function void uvme_cv32e40x_env_c::connect_rvfi_rvvi();
       rvfi_agent.instr_mon_ap[i].connect(rvvi_agent.sequencer.rvfi_instr_export);
 
    obi_memory_instr_agent.monitor.ap.connect(rvvi_agent.sequencer.obi_i_export);
-   obi_memory_data_agent.monitor.ap.connect(rvvi_agent.sequencer.obi_d_export);
 
 endfunction : connect_rvfi_rvvi
 
