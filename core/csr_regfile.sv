@@ -280,8 +280,10 @@ module csr_regfile import ariane_pkg::*; #(
                 riscv::CSR_DCACHE:           csr_rdata = dcache_q;
                 riscv::CSR_ICACHE:           csr_rdata = icache_q;
                 // PMPs
-                riscv::CSR_PMPCFG0:          csr_rdata = pmpcfg_q[7:0];
-                riscv::CSR_PMPCFG2:          csr_rdata = pmpcfg_q[15:8];
+                riscv::CSR_PMPCFG0:          csr_rdata = pmpcfg_q[riscv::XLEN/8-1:0];
+                riscv::CSR_PMPCFG1:          if (riscv::XLEN == 32) csr_rdata = pmpcfg_q[7:4]; else read_access_exception = 1'b1;
+                riscv::CSR_PMPCFG2:          csr_rdata = pmpcfg_q[8 +: riscv::XLEN/8];
+                riscv::CSR_PMPCFG3:          if (riscv::XLEN == 32) csr_rdata = pmpcfg_q[15:12]; else read_access_exception = 1'b1;
                 // PMPADDR
                 // Important: we only support granularity 8 bytes (G=1)
                 // -> last bit of pmpaddr must be set 0/1 based on the mode:
