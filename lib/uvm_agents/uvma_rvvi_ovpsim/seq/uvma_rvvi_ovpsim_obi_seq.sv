@@ -53,11 +53,6 @@ class uvma_rvvi_ovpsim_obi_seq_c#(int ILEN=uvma_rvvi_pkg::DEFAULT_ILEN,
    extern virtual task obi_i();
 
    /**
-    * Data OBI thread
-    */
-   extern virtual task obi_d();
-
-   /**
      * RVVI monitor thread.  Annotate bus errors on RVVI I fetches when/if necessary
      */
    extern virtual task rvvi_i_mon();
@@ -98,7 +93,6 @@ task uvma_rvvi_ovpsim_obi_seq_c::body();
 
    fork
       obi_i();
-      obi_d();
 
       rvvi_i_mon();
    join
@@ -133,17 +127,6 @@ task uvma_rvvi_ovpsim_obi_seq_c::obi_i();
 
 endtask : obi_i
 
-task uvma_rvvi_ovpsim_obi_seq_c::obi_d();
-
-   while(1) begin
-      uvma_obi_memory_mon_trn_c trn;
-
-      wait (p_sequencer.obi_d_q.size());
-      trn = p_sequencer.obi_d_q.pop_front();
-   end
-
-endtask : obi_d
-
 function void uvma_rvvi_ovpsim_obi_seq_c::clear_i_error(bit[XLEN-1:0] byte_address);
 
    if (obi_i_error.exists(byte_address[XLEN-1:2])) begin
@@ -167,4 +150,3 @@ function bit uvma_rvvi_ovpsim_obi_seq_c::is_i_error(bit[XLEN-1:0] byte_address);
 endfunction : is_i_error
 
 `endif // __UVMA_RVVI_OVPSIM_OBI_SEQ_SV__
-
