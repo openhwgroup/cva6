@@ -341,7 +341,7 @@ include $(GEN_FLAGS_MAKE)
 endif
 
 # If the test target is defined then read in a test specification file
-TEST_YAML_PARSE_TARGETS=test waves cov hex clean_hex veri-test dsim-test
+TEST_YAML_PARSE_TARGETS=test waves cov hex clean_hex veri-test dsim-test xrun-test
 ifneq ($(filter $(TEST_YAML_PARSE_TARGETS),$(MAKECMDGOALS)),)
 ifeq ($(TEST),)
 $(error ERROR! must specify a TEST variable)
