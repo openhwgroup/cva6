@@ -128,17 +128,18 @@ task uvma_rvfi_instr_mon_c::monitor_rvfi_instr();
          mon_trn = uvma_rvfi_instr_seq_item_c#(ILEN,XLEN)::type_id::create("rvfi_instr_mon_trn");
 
          mon_trn.nret_id  = nret_id;
-         mon_trn.order    = cntxt.instr_vif[nret_id].mon_cb.rvfi_order;
-         mon_trn.insn     = cntxt.instr_vif[nret_id].mon_cb.rvfi_insn;
-         mon_trn.trap     = cntxt.instr_vif[nret_id].mon_cb.rvfi_trap;
-         mon_trn.halt     = cntxt.instr_vif[nret_id].mon_cb.rvfi_halt;
-         mon_trn.dbg      = cntxt.instr_vif[nret_id].mon_cb.rvfi_dbg;
-         mon_trn.dbg_mode = cntxt.instr_vif[nret_id].mon_cb.rvfi_dbg_mode;
-         mon_trn.intr     = cntxt.instr_vif[nret_id].mon_cb.rvfi_intr;
+         mon_trn.cycle_cnt = cntxt.instr_vif[nret_id].mon_cb.cycle_cnt;
+         mon_trn.order     = cntxt.instr_vif[nret_id].mon_cb.rvfi_order;
+         mon_trn.insn      = cntxt.instr_vif[nret_id].mon_cb.rvfi_insn;
+         mon_trn.trap      = cntxt.instr_vif[nret_id].mon_cb.rvfi_trap;
+         mon_trn.halt      = cntxt.instr_vif[nret_id].mon_cb.rvfi_halt;
+         mon_trn.dbg       = cntxt.instr_vif[nret_id].mon_cb.rvfi_dbg;
+         mon_trn.dbg_mode  = cntxt.instr_vif[nret_id].mon_cb.rvfi_dbg_mode;
+         mon_trn.intr      = cntxt.instr_vif[nret_id].mon_cb.rvfi_intr;
          $cast(mon_trn.mode, cntxt.instr_vif[nret_id].mon_cb.rvfi_mode);
-         mon_trn.ixl      = cntxt.instr_vif[nret_id].mon_cb.rvfi_ixl;
-         mon_trn.pc_rdata = cntxt.instr_vif[nret_id].mon_cb.rvfi_pc_rdata;
-         mon_trn.pc_wdata = cntxt.instr_vif[nret_id].mon_cb.rvfi_pc_wdata;
+         mon_trn.ixl       = cntxt.instr_vif[nret_id].mon_cb.rvfi_ixl;
+         mon_trn.pc_rdata  = cntxt.instr_vif[nret_id].mon_cb.rvfi_pc_rdata;
+         mon_trn.pc_wdata  = cntxt.instr_vif[nret_id].mon_cb.rvfi_pc_wdata;
 
          mon_trn.rs1_addr   = cntxt.instr_vif[nret_id].mon_cb.rvfi_rs1_addr;
          mon_trn.rs1_rdata  = cntxt.instr_vif[nret_id].mon_cb.rvfi_rs1_rdata;
