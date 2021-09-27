@@ -56,6 +56,10 @@ CV_CORE_UC     = $(shell echo $(CV_CORE) | tr a-z A-Z)
 # Compile compile flags for all simulators
 SV_CMP_FLAGS =
 
+# Default "custom test-program"
+CUSTOM_PROG  ?= requested_csr_por
+TEST         ?= hello-world
+
 ###############################################################################
 # Common Makefiles:
 #  -Variables for RTL and other dependencies (e.g. RISCV-DV)
@@ -186,9 +190,6 @@ CV_CORE_RTLSRC  := $(filter-out $(CV_CORE_PKG)/rtl/$(CV_CORE_LC)_register_file_l
 CV_CORE_MANIFEST    := $(CV_CORE_PKG)/cv32e40p_manifest.flist
 export DESIGN_RTL_DIR = $(CV_CORE_PKG)/rtl
 
-# Default "custom test-program"
-CUSTOM_PROG  ?= requested_csr_por
-
 # Shorthand rules for convience
 CV_CORE_pkg: clone_$(CV_CORE_LC)_rtl
 
@@ -265,34 +266,24 @@ dsim-comp-rtl-only: mk_results $(CV_CORE_PKG)
 # Metrics dsim simulations
 .PHONY: dsim-hello-world dsim-firmware
 
-dsim-sanity: dsim-hello-world
+dsim-sanity: dsim-test
 
-# Runs the hello world test
-dsim-hello-world: dsim-comp $(VERI_CUSTOM)/hello-world/hello-world.hex
+dsim-custom:
+	@echo "This target is depreciated.  Please use 'make dsim-test TEST=<test-program>'"
+	@echo "                             Example:   'make dsim-test TEST=fibonacci'"
+
+dsim-test: dsim-comp $(VERI_CUSTOM)/$(TEST)/$(TEST).hex
 	@echo "$(BANNER)"
 	@echo "* Running with Metrics DSIM"
 	@echo "$(BANNER)"
-	mkdir -p $(DSIM_RESULTS)/hello-world && cd $(DSIM_RESULTS)/hello-world  && \
-	$(DSIM) -l dsim-hello-world.log \
+	mkdir -p $(DSIM_RESULTS)/$(TEST) && cd $(DSIM_RESULTS)/$(TEST)  && \
+	$(DSIM) -l dsim-$(TEST).log \
 		-image $(DSIM_IMAGE) \
 		-work $(DSIM_WORK) \
 		$(DSIM_RUN_FLAGS) \
 		-sv_lib $(UVM_HOME)/src/dpi/libuvm_dpi.so \
 		-sv_lib $(OVP_MODEL_DPI)  \
-		+firmware=../../$(VERI_CUSTOM)/hello-world/hello-world.hex
-
-dsim-custom: dsim-comp $(VERI_CUSTOM)/$(CUSTOM_PROG)/$(CUSTOM_PROG).hex
-	@echo "$(BANNER)"
-	@echo "* Running with Metrics DSIM"
-	@echo "$(BANNER)"
-	mkdir -p $(DSIM_RESULTS)/$(CUSTOM_PROG) && cd $(DSIM_RESULTS)/$(CUSTOM_PROG)  && \
-	$(DSIM) -l dsim-$(CUSTOM_PROG).log \
-		-image $(DSIM_IMAGE) \
-		-work $(DSIM_WORK) \
-		$(DSIM_RUN_FLAGS) \
-		-sv_lib $(UVM_HOME)/src/dpi/libuvm_dpi.so \
-		-sv_lib $(OVP_MODEL_DPI)  \
-		+firmware=../../$(VERI_CUSTOM)/$(CUSTOM_PROG)/$(CUSTOM_PROG).hex
+		+firmware=../../$(VERI_CUSTOM)/$(TEST)/$(TEST).hex
 
 # Metrics dsim cleanup
 .PHONY: dsim-clean
@@ -421,21 +412,33 @@ xrun-all: $(CV_CORE_PKG) $(RTLSRC_PKG) $(RTLSRC) $(TBSRC_PKG) $(TBSRC)
 		-f $(CV_CORE_MANIFEST) \
 		$(TBSRC_PKG) $(TBSRC)
 
-.PHONY: xrun-hello-world
-xrun-hello-world: xrun-all $(VERI_CUSTOM)/hello-world/hello-world.hex
-	$(XRUN) \
-		$(XRUN_FLAGS) \
-		-f $(CV_CORE_MANIFEST) \
-		$(TBSRC_PKG) $(TBSRC) \
-		+firmware=$(VERI_CUSTOM)/hello-world/hello-world.hex
+#.PHONY: xrun-hello-world
+#xrun-hello-world: xrun-all $(VERI_CUSTOM)/hello-world/hello-world.hex
+#	$(XRUN) \
+#		$(XRUN_FLAGS) \
+#		-f $(CV_CORE_MANIFEST) \
+#		$(TBSRC_PKG) $(TBSRC) \
+#		+firmware=$(VERI_CUSTOM)/hello-world/hello-world.hex
+#
+#.PHONY: xrun-custom
+#xrun-custom: xrun-all $(VERI_CUSTOM)/$(CUSTOM_PROG)/$(CUSTOM_PROG).hex
+#	$(XRUN) \
+#		$(XRUN_FLAGS) \
+#		-f $(CV_CORE_MANIFEST) \
+#		$(TBSRC_PKG) $(TBSRC) \
+#		+firmware=$(VERI_CUSTOM)/$(CUSTOM_PROG)/$(CUSTOM_PROG).hex
 
-.PHONY: xrun-custom
-xrun-custom: xrun-all $(VERI_CUSTOM)/$(CUSTOM_PROG)/$(CUSTOM_PROG).hex
+xrun-custom:
+	@echo "This target is depreciated.  Please use 'make xrun-test TEST=<test-program>'"
+	@echo "                             Example:   'make xrun-test TEST=fibonacci'"
+
+.PHONY: xrun-test
+xrun-test: xrun-all $(VERI_CUSTOM)/$(TEST)/$(TEST).hex
 	$(XRUN) \
 		$(XRUN_FLAGS) \
 		-f $(CV_CORE_MANIFEST) \
 		$(TBSRC_PKG) $(TBSRC) \
-		+firmware=$(VERI_CUSTOM)/$(CUSTOM_PROG)/$(CUSTOM_PROG).hex
+		+firmware=$(VERI_CUSTOM)/$(TEST)/$(CUSTOM_PROG).hex
 
 # Cadence Xcelium xrun cleanup
 .PHONY: xrun-clean xrun-clean-all
@@ -464,7 +467,7 @@ endif
 verilate: testbench_verilator
 
 sanity-veri-run:
-	make custom CUSTOM_PROG=hello-world
+	make veri-test TEST=hello-world
 
 testbench_verilator: CV_CORE_pkg $(TBSRC_VERI) $(TBSRC_PKG)
 	@echo "$(BANNER)"
@@ -483,14 +486,14 @@ testbench_verilator: CV_CORE_pkg $(TBSRC_VERI) $(TBSRC_PKG)
 	$(MAKE) -C $(VERI_OBJ_DIR) -f Vtb_top_verilator.mk
 	cp $(VERI_OBJ_DIR)/Vtb_top_verilator testbench_verilator
 
-custom: verilate $(VERI_CUSTOM)/$(CUSTOM_PROG)/$(CUSTOM_PROG).hex
+veri-test: verilate $(VERI_CUSTOM)/$(TEST)/$(TEST).hex
 	@echo "$(BANNER)"
-	@echo "* Running with Verilator: logfile in $(VERI_LOG_DIR)/$(CUSTOM_PROG).log"
+	@echo "* Running with Verilator: logfile in $(VERI_LOG_DIR)/$(TEST).log"
 	@echo "$(BANNER)"
 	mkdir -p $(VERI_LOG_DIR)
 	./testbench_verilator $(VERI_FLAGS) \
-		"+firmware=$(VERI_CUSTOM)/$(CUSTOM_PROG)/$(CUSTOM_PROG).hex" \
-		| tee $(VERI_LOG_DIR)/$(CUSTOM_PROG).log
+		"+firmware=$(VERI_CUSTOM)/$(TEST)/$(TEST).hex" \
+		| tee $(VERI_LOG_DIR)/$(TEST).log
 
 # verilator specific cleanup
 veri-clean: verilate-clean
