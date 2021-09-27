@@ -23,13 +23,18 @@
 
 class cv32e40x_instr_base_test extends corev_instr_base_test;
 
+  cv32e40x_pma_cfg pma_cfg;
+  bit enable_pma;
+
   `uvm_component_utils(cv32e40x_instr_base_test)
+
 
   function new(string name="", uvm_component parent=null);
     super.new(name, parent);
   endfunction
 
   virtual function void build_phase(uvm_phase phase);
+    cv32e40x_ldgen_c linker_generator;
     override_asm_program_gen();
     override_gen_config();
     override_compressed_instr();
@@ -38,6 +43,10 @@ class cv32e40x_instr_base_test extends corev_instr_base_test;
     override_privil_seq();
     override_debug_rom_gen();
     super.build_phase(phase);
+    //if (CORE_PARAM_PMA_NUM_REGIONS) begin
+      linker_generator = new();
+      linker_generator.gen_pma_linker_scripts();
+    //end
   endfunction
 
   virtual function void override_asm_program_gen();

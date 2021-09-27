@@ -257,7 +257,6 @@ task uvme_cv32e40x_env_c::run_phase(uvm_phase phase);
             // Install the virtual peripheral registers
             void'(data_slv_seq.register_vp_vseq("vp_rand_num", 32'h1500_1000,  uvma_obi_memory_vp_rand_num_seq_c::get_type()));
             void'(data_slv_seq.register_vp_vseq("vp_virtual_printer", 32'h1000_0000, uvma_obi_memory_vp_virtual_printer_seq_c::get_type()));
-            void'(data_slv_seq.register_vp_vseq("vp_sig_writer", 32'h2000_0008, uvma_obi_memory_vp_sig_writer_seq_c::get_type()));
             void'(data_slv_seq.register_vp_vseq("vp_cycle_counter", 32'h1500_1004, uvma_obi_memory_vp_cycle_counter_seq_c::get_type()));
 
             begin
@@ -267,6 +266,15 @@ task uvme_cv32e40x_env_c::run_phase(uvm_phase phase);
                end
                vp_seq.obi_cfg[0] = cfg.obi_memory_instr_cfg;
                vp_seq.obi_cfg[1] = cfg.obi_memory_data_cfg;
+            end
+
+            begin
+               uvme_cv32e40x_vp_sig_writer_seq_c vp_seq;
+               $display("here");
+               if (!$cast(vp_seq, data_slv_seq.register_vp_vseq("vp_sig_writer", 32'h2000_0008, uvme_cv32e40x_vp_sig_writer_seq_c::get_type()))) begin
+                  `uvm_fatal("CV32E40XVPSEQ", $sformatf("Could not cast vp_sig_writes correctly"));
+               end
+               vp_seq.cv32e40x_cntxt = cntxt;
             end
 
             begin

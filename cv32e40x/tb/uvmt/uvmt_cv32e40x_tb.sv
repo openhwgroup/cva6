@@ -41,10 +41,6 @@ module uvmt_cv32e40x_tb;
 `else
    parameter int CORE_PARAM_NUM_MHPMCOUNTERS = 1;
 `endif
-
-   parameter int PMA_NUM_REGIONS = 0;
-   parameter cv32e40x_pkg::pma_region_t PMA_CFG[(PMA_NUM_REGIONS-1):0] = '{default:PMA_R_DEFAULT};
-
    // ENV (testbench) parameters
    parameter int ENV_PARAM_INSTR_ADDR_WIDTH  = 32;
    parameter int ENV_PARAM_INSTR_DATA_WIDTH  = 32;
