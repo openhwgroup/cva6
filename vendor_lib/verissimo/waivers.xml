@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<waivers version="7">
+    <waiver apply-on="matched" name="Waive RTL source code">
+        <status>DISABLE</status>
+        <paths regex="simple">
+            <path>*/core-v-cores/*</path>
+        </paths>
+    </waiver>
+</waivers>
