@@ -238,8 +238,7 @@ ASM       ?= ../../tests/asm
 ASM_DIR   ?= $(ASM)
 
 # CORE FIRMWARE vars. All of the C and assembler programs under CORE_TEST_DIR
-# are collectively known as "Core Firmware".  Yes, this is confusing because
-# one of sub-directories of CORE_TEST_DIR is called "firmware".
+# are collectively known as "Core Firmware".
 #
 # Note that the DSIM targets allow for writing the log-files to arbitrary
 # locations, so all of these paths are absolute, except those used by Verilator.
@@ -342,10 +341,10 @@ include $(GEN_FLAGS_MAKE)
 endif
 
 # If the test target is defined then read in a test specification file
-TEST_YAML_PARSE_TARGETS=test waves cov hex clean_hex
+TEST_YAML_PARSE_TARGETS=test waves cov hex clean_hex veri-test dsim-test xrun-test
 ifneq ($(filter $(TEST_YAML_PARSE_TARGETS),$(MAKECMDGOALS)),)
 ifeq ($(TEST),)
-$(error ERROR must specify a TEST variable)
+$(error ERROR! must specify a TEST variable)
 endif
 TEST_FLAGS_MAKE := $(shell $(YAML2MAKE) --test=$(TEST) --yaml=test.yaml  $(YAML2MAKE_DEBUG) --run-index=$(u) --prefix=TEST --core=$(CV_CORE))
 ifeq ($(TEST_FLAGS_MAKE),)
@@ -357,7 +356,7 @@ endif
 # If a test target is defined and a CFG is defined that read in build configuration file
 # CFG is optional
 CFGYAML2MAKE = $(CORE_V_VERIF)/bin/cfgyaml2make
-CFG_YAML_PARSE_TARGETS=comp test hex clean_hex
+CFG_YAML_PARSE_TARGETS=comp test hex clean_hex sanity-veri-run
 ifneq ($(filter $(CFG_YAML_PARSE_TARGETS),$(MAKECMDGOALS)),)
 ifneq ($(CFG),)
 CFG_FLAGS_MAKE := $(shell $(CFGYAML2MAKE) --yaml=$(CFG).yaml $(YAML2MAKE_DEBUG) --prefix=CFG --core=$(CV_CORE))
