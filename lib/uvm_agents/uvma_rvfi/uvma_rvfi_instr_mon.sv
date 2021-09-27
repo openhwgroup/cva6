@@ -187,7 +187,7 @@ task uvma_rvfi_instr_mon_c::monitor_rvfi_instr();
             mon_trn.insn_nmi = 1;
             mon_trn.insn_interrupt_id = { 1'b0, csr_mcause[XLEN-2:0] };
          end
-         else if (mon_trn.intr && !mon_trn.dbg) begin
+         else if (mon_trn.intr) begin
              bit [XLEN-1:0] csr_mcause = mon_trn.csrs["mcause"].get_csr_retirement_data();
 
             if (csr_mcause[31]) begin
