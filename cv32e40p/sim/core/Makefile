@@ -412,22 +412,6 @@ xrun-all: $(CV_CORE_PKG) $(RTLSRC_PKG) $(RTLSRC) $(TBSRC_PKG) $(TBSRC)
 		-f $(CV_CORE_MANIFEST) \
 		$(TBSRC_PKG) $(TBSRC)
 
-#.PHONY: xrun-hello-world
-#xrun-hello-world: xrun-all $(VERI_CUSTOM)/hello-world/hello-world.hex
-#	$(XRUN) \
-#		$(XRUN_FLAGS) \
-#		-f $(CV_CORE_MANIFEST) \
-#		$(TBSRC_PKG) $(TBSRC) \
-#		+firmware=$(VERI_CUSTOM)/hello-world/hello-world.hex
-#
-#.PHONY: xrun-custom
-#xrun-custom: xrun-all $(VERI_CUSTOM)/$(CUSTOM_PROG)/$(CUSTOM_PROG).hex
-#	$(XRUN) \
-#		$(XRUN_FLAGS) \
-#		-f $(CV_CORE_MANIFEST) \
-#		$(TBSRC_PKG) $(TBSRC) \
-#		+firmware=$(VERI_CUSTOM)/$(CUSTOM_PROG)/$(CUSTOM_PROG).hex
-
 xrun-custom:
 	@echo "This target is depreciated.  Please use 'make xrun-test TEST=<test-program>'"
 	@echo "                             Example:   'make xrun-test TEST=fibonacci'"
