@@ -19,13 +19,26 @@
 `uvm_analysis_imp_decl(_rvfi)
 
 
+covergroup cg_exceptions
+  with function sample(uvma_rvfi_instr_seq_item_c#(ILEN, XLEN) rvfi);
+
+  `per_instance_fcov
+
+  cp_trap : coverpoint rvfi.trap;
+
+endgroup : cg_exceptions
+
+
 class uvme_exceptions_covg extends uvm_component;
+
+  cg_exceptions exceptions_cg;
 
   uvm_analysis_imp_rvfi#(uvma_rvfi_instr_seq_item_c#(ILEN, XLEN), uvme_exceptions_covg) rvfi_mon_export;
 
   `uvm_component_utils(uvme_exceptions_covg);
 
   extern function new(string name = "exceptions_covg", uvm_component parent = null);
+  extern function void build_phase(uvm_phase phase);
   extern function void write_rvfi(uvma_rvfi_instr_seq_item_c#(ILEN, XLEN) trn);
 
 endclass : uvme_exceptions_covg
@@ -40,8 +53,17 @@ function uvme_exceptions_covg::new(string name = "exceptions_covg", uvm_componen
 endfunction : new
 
 
+function void uvme_exceptions_covg::build_phase(uvm_phase phase);
+
+  super.build_phase(phase);
+
+  exceptions_cg = new();
+
+endfunction : build_phase
+
+
 function void uvme_exceptions_covg::write_rvfi(uvma_rvfi_instr_seq_item_c#(ILEN, XLEN) trn);
 
-  $display("TODO WRITE RVFI HAPPENED");
+  exceptions_cg.sample(trn);
 
 endfunction : write_rvfi
