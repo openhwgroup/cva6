@@ -134,7 +134,7 @@ uint32_t tx_buffer_cmd_read_WIP[BUFFER_SIZE] = {SPI_CMD_CFG(1,0,0),
 #endif  
   uart_set_cfg(0,(test_freq/baud_rate)>>4);
 
-//for (int u = 0; u<1; u++){
+for (int u = 0; u<1; u++){
 
       printf("[%d, %d] Start test flash page programming over qspi %d\n",  0, 0,u);
      
@@ -180,7 +180,7 @@ uint32_t tx_buffer_cmd_read_WIP[BUFFER_SIZE] = {SPI_CMD_CFG(1,0,0),
         }
       }
     
-//}
+}
 
   if (error == 0)
   {
