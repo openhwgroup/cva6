@@ -1,8 +1,6 @@
 # Verissimo SystemVerilog Testbench Linter
 
-Verissimo SystemVerilog Testbench Linter is a coding guideline and verification methodology compliance checker that enables engineers to perform a thorough audit of their testbenches.
-
-With this tool, users can check for language pitfalls, semantic and style issues, performance issues, dead code, and compliance with the appropriate methodologies.
+Verissimo SystemVerilog Testbench Linter is a coding guideline and verification methodology compliance checker that enables engineers to perform a thorough audit of their testbenches. With this tool, users can check for language pitfalls, semantic and style issues, performance issues, dead code, and compliance with the appropriate methodologies.
 
 
 
