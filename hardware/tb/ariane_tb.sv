@@ -42,7 +42,9 @@ module ariane_tb;
 
     localparam ENABLE_DM_TESTS = 0;
    
-    parameter  USE_HYPER_MODELS    = 1;
+    parameter  USE_HYPER_MODELS     = 1;
+    parameter  USE_24FC1025_MODEL   = 1;
+    parameter  USE_S25FS256S_MODEL  = 1;
 
   `ifdef USE_LOCAL_JTAG 
     parameter  LOCAL_JTAG          = 1;
@@ -119,6 +121,14 @@ module ariane_tb;
     wire                  w_hyper_reset  ;
 
     wire [63:0]           w_gpios        ; 
+
+    wire                  w_i2c_sda      ;
+    wire                  w_i2c_scl      ;
+
+    wire                  w_spim_sck     ; 
+    wire                  w_spim_csn0    ;
+    wire                  w_spim_sdio0   ; 
+    wire                  w_spim_sdio1   ;
 
     wire                  w_cva6_uart_rx ;
     wire                  w_cva6_uart_tx ;
@@ -229,6 +239,7 @@ module ariane_tb;
         .pad_gpio             ( w_gpios                ),
         .cva6_uart_rx_i       ( w_cva6_uart_rx         ),
         .cva6_uart_tx_o       ( w_cva6_uart_tx         ),
+        
         .pad_axi_hyper_dq0        ( w_axi_hyper_dq0            ),
         .pad_axi_hyper_dq1        ( w_axi_hyper_dq1            ),
         .pad_axi_hyper_ck         ( w_axi_hyper_ck             ),
@@ -237,8 +248,66 @@ module ariane_tb;
         .pad_axi_hyper_csn1       ( w_axi_hyper_csn1           ),
         .pad_axi_hyper_rwds0      ( w_axi_hyper_rwds0          ),
         .pad_axi_hyper_rwds1      ( w_axi_hyper_rwds1          ),
-        .pad_axi_hyper_reset      ( w_axi_hyper_reset          )
+        .pad_axi_hyper_reset      ( w_axi_hyper_reset          ),
+        
+        .pad_i2c_sda              ( w_i2c_sda                  ),
+        .pad_i2c_scl              ( w_i2c_scl                  ),
+        
+        .pad_spim_sck             ( w_spim_sck                 ), 
+        .pad_spim_csn0            ( w_spim_csn0                ), 
+        .pad_spim_sdio0           ( w_spim_sdio0               ), 
+        .pad_spim_sdio1           ( w_spim_sdio1               )
+
    );
+
+   generate
+     /* I2C memory models connected on I2C0*/
+     if (USE_24FC1025_MODEL == 1) begin
+        M24FC1025 i_i2c_mem_0 (
+           .A0    ( 1'b0       ),
+           .A1    ( 1'b0       ),
+           .A2    ( 1'b1       ),
+           .WP    ( 1'b0       ),
+           .SDA   ( w_i2c_sda ),
+           .SCL   ( w_i2c_scl ),
+           .RESET ( 1'b0       )
+        );
+       
+        M24FC1025 i_i2c_mem_1 (
+           .A0    ( 1'b1       ),
+           .A1    ( 1'b0       ),
+           .A2    ( 1'b1       ),
+           .WP    ( 1'b0       ),
+           .SDA   ( w_i2c_sda ),
+           .SCL   ( w_i2c_scl ),
+           .RESET ( 1'b0       )
+        );
+
+   end
+
+   endgenerate
+
+   generate
+    /* SPI flash */
+      if(USE_S25FS256S_MODEL == 1) begin
+         s25fs256s #(
+            .TimingModel   ( "S25FS256SAGMFI000_F_30pF" ),
+            .mem_file_name ( "./vectors/qspi_stim.slm" ),
+            .UserPreload   ( 0 )
+         ) i_spi_flash_csn0 (
+            .SI       ( w_spim_sdio0  ),
+            .SO       ( w_spim_sdio1  ),
+            .SCK      ( w_spim_sck    ),
+            .CSNeg    ( w_spim_csn0   ),
+            .WPNeg    (  ),
+            .RESETNeg (  )
+         );
+
+      end
+      else begin
+         assign w_gpio_1 = 'z;
+      end
+   endgenerate
 
    s27ks0641 #(
          .TimingModel   ( "S27KS0641DPBHI020"    ),

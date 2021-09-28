@@ -32,6 +32,17 @@ module pad_frame
      inout wire          pad_hyper_rwds0 ,
      inout wire          pad_hyper_rwds1 ,
      inout wire          pad_hyper_reset ,
+
+     //I2C
+     inout wire          pad_i2c_sda     ,
+     inout wire          pad_i2c_scl     ,
+
+     //SPI MASTER
+     inout wire          pad_spim_sdio0   ,
+     inout wire          pad_spim_sdio1   ,
+     inout wire          pad_spim_csn0    ,
+     inout wire          pad_spim_sck     ,
+
      // HYPERBUS
      input logic [1:0]   axi_hyper_cs_ni ,
      input logic         axi_hyper_ck_i ,
@@ -43,6 +54,27 @@ module pad_frame
      input logic [7:0]   axi_hyper_dq_i ,
      input logic         axi_hyper_dq_oe_i ,
      input logic         axi_hyper_reset_ni ,
+
+     //I2C
+     input logic         i2c_sda_oe_i ,
+     input logic         i2c_scl_oe_i ,
+     input logic         i2c_sda_out_i ,
+     input logic         i2c_scl_out_i ,
+     output logic        i2c_in_sda_o ,
+     output logic        i2c_in_scl_o ,
+
+     //SPI MASTER
+     input logic         oe_spim_sdio0_i  ,
+     input logic         oe_spim_sdio1_i  ,
+
+     output logic        in_spim_sdio0_o  ,
+     output logic        in_spim_sdio1_o  ,
+
+     input logic         out_spim_sdio0_i ,
+     input logic         out_spim_sdio1_i ,
+     input logic         out_spim_csn1_i  ,
+     input logic         out_spim_csn0_i  ,
+     input logic         out_spim_sck_i   ,
                          
      inout wire [7:0]    pad_axi_hyper_dq0 ,
      inout wire [7:0]    pad_axi_hyper_dq1 ,
@@ -62,6 +94,8 @@ module pad_frame
      );
 
 `ifndef FPGA_EMUL  
+
+    //HYPER
     pad_functional_pu padinst_hyper_csno0  (.OEN( 1'b0              ), .I( hyper_cs_ni[0]     ), .O(                   ), .PAD( pad_hyper_csn0    ), .PEN(1'b1 ) );
     pad_functional_pu padinst_hyper_csno1  (.OEN( 1'b0              ), .I( hyper_cs_ni[1]     ), .O(                   ), .PAD( pad_hyper_csn1    ), .PEN(1'b1 ) );
     pad_functional_pu padinst_hyper_ck     (.OEN( 1'b0              ), .I( hyper_ck_i         ), .O(                   ), .PAD( pad_hyper_ck      ), .PEN(1'b1 ) );
@@ -76,6 +110,17 @@ module pad_frame
                 pad_functional_pu padinst_hyper_dqio0  (.OEN(~hyper_dq_oe_i[0]   ), .I( hyper_dq_i[j]   ), .O( hyper_dq_o[j]  ), .PAD( pad_hyper_dq0[j]   ), .PEN(1'b1 ) );
         end
     endgenerate
+
+    //I2C
+    pad_functional_pu padinst_i2c_sda     (.OEN( i2c_sda_oe_i ), .I( i2c_sda_out_i ), .O( i2c_in_sda_o ), .PAD( pad_i2c_sda ), .PEN( 1'b1 ) );
+    pad_functional_pu padinst_i2c_scl     (.OEN( i2c_scl_oe_i ), .I( i2c_scl_out_i ), .O( i2c_in_scl_o ), .PAD( pad_i2c_scl ), .PEN( 1'b1 ) );
+
+    //SPI MASTER
+    pad_functional_pd padinst_spim_sck    (.OEN( 1'b0   ), .I( out_spim_sck_i   ), .O(   ), .PAD( pad_spim_sck   ), .PEN( 1'b1 ) );
+    pad_functional_pd padinst_spim_csn0   (.OEN( 1'b0  ),  .I( out_spim_csn0_i  ), .O(   ), .PAD( pad_spim_csn0  ), .PEN( 1'b1 ) );
+    pad_functional_pd padinst_spim_sdio0  (.OEN( ~oe_spim_sdio0_i ), .I( out_spim_sdio0_i ), .O( in_spim_sdio0_o ), .PAD( pad_spim_sdio0 ), .PEN( 1'b1 ) );
+    pad_functional_pd padinst_spim_sdio1  (.OEN( ~oe_spim_sdio1_i ), .I( out_spim_sdio1_i ), .O( in_spim_sdio1_o ), .PAD( pad_spim_sdio1 ), .PEN( 1'b1 ) );
+
 `endif //  `ifndef FPGA_EMUL
    
     pad_functional_pu padinst_axi_hyper_csno0  (.OEN( 1'b0                  ), .I( axi_hyper_cs_ni[0]  ), .O(                   ), .PAD( pad_axi_hyper_csn0    ), .PEN(1'b1 ) );

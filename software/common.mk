@@ -6,7 +6,7 @@ directories = . drivers/inc drivers/src string_lib/inc string_lib/src
 
 INC=$(foreach d, $(directories), -I$(utils_dir)$d)
 
-inc_dir := /scratch/lvalente/project/arianissimo2/cva6/software/common
+inc_dir := $(SW_HOME)/common/
 
 RISCV_PREFIX ?= riscv$(XLEN)-unknown-elf-
 RISCV_GCC ?= $(RISCV_PREFIX)gcc

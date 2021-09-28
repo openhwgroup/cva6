@@ -88,6 +88,8 @@ sources:
     files:
       - tb/vip/hyperflash_model/s26ks512s.v
       - tb/vip/hyperram_model/s27ks0641.v
+      - tb/vip/i2c_eeprom/24FC1025.v
+      - tb/vip/spi_flash/S25fs256s/model/s25fs256s.v
       
   - target: test
     files:
