@@ -48,8 +48,8 @@ It is the opinion of the author that the list above is sufficient for the addi i
 The key point is that taking the time to specify a Testplan for each feature in the device-under-test forces us to think about what the feature does, what we need to check to ensure its functions correctly and what stimulus and configuration needs to be covered to ensure the feature is tested under all penitent conditions.
 
 The template used for this project attempts to provide an easy-to-use format to capture and review this information for every feature in the design.
-## HOWTO: The CORE-V Verification Plan Template
-The following sub-sections explain each of the columns in the [template spreadsheet](https://github.com/openhwgroup/core-v-docs/blob/master/verif/CV32E40P/VerificationPlan/CORE-V_VerifPlan_Template.xlsx).
+## HOWTO: The CORE-V Simulation Verification Plan Template
+The following sub-sections explain each of the columns in the [simulation verification template spreadsheet](https://github.com/openhwgroup/core-v-verif/blob/master/docs/VerifPlans/templates/CORE-V_Simulation_VerifPlan_Template.xlsx).
 ### Requirement Location
 This is a pointer to the source Requirements document of the Features in question.  It can be a standards document, such as the RISC-V ISA, or a micro-architecture specification.   The CV32E40P [introduction](https://github.com/openhwgroup/core-v-docs/blob/master/cores/cv32e40p/user_manual/source/intro.rst) lists sources of [documentation](https://github.com/openhwgroup/core-v-docs/blob/master/cores/cv32e40p/user_manual/source/intro.rst#standards-compliance) relevant to the CV32E40P.  _Every item in a Verification Plan must be attributed to one or more of these sources_.  Please also include a chapter or section number.  Note that if you are using the [CV32E40P User Manual](https://core-v-docs-verif-strat.readthedocs.io/projects/cv32e40p_um/en/latest/) as a reference, you **must** provide a release/version number as well since this document is currently in active development.
 ### Feature
@@ -92,6 +92,19 @@ How will we know that the Feature is verified (covered)?  There are several choi
 This field is used to link the Feature to coverage data generated in Regression.  Leave this blank for now as this information is tool dependent.
 <br><br><br>
 <sup>1</sup>I know, I know, we _all_ hate spreadsheets, but they really are the best format for this type of data.
+
+## HOWTO: The CORE-V Formal Verification Plan Template
+The following sub-sections explain each of the columns in the [formal verification template spreadsheet](https://github.com/openhwgroup/core-v-verif/blob/master/docs/VerifPlans/templates/CORE-V_Formal_VerifPlan_Template.xlsx).
+For obvious reasons, the **Requirement Location**, **Feature**, **Sub-Feature**, **Feature Description** and **Verification Goals** are the same as as the simulation verification template.
+### Property or Checker
+This is the name of the SystemVerilog _property_ or _checker_ that is used to verify the Feature in question.
+Note that a _checker_ is typically a collection of properties and may also include "helper logic" in the form of synthesizable code.
+### Type
+The field defines how the property is to be used: either as an assertion (something that should never happen), coverage (something that should happen at least once) or an assumption (constraint).
+### Result
+Indicate whether the property or checker achieved a bounded or unbounded proof.
+### Proof Depth
+If the an unbounded proof was not achieved, indicate the number of clock cycles analyzed for the bounded proof.
 
 ## Verification Plan Reviews
 As core-v-verif is an open-source project it is necessary to enable open, comprehensive reviews with a broad set of stakeholders and interested parties in any proposed

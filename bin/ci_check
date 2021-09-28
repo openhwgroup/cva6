@@ -412,11 +412,11 @@ if  (veril):
     if (prcmd or debug):
         print('make')
         for core_test in core_tests:
-            print('make custom CUSTOM_PROG=' + core_test)
+            print('make veri-test TEST=' + core_test)
     if not (prcmd):
         os.system('make')
         for core_test in core_tests:
-            os.system('make custom CUSTOM_PROG=' + core_test)
+            os.system('make veri-test TEST=' + core_test)
     
 os.chdir(topdir)      # cmd in .metrics.json assumes all cmds start from here
 
@@ -429,6 +429,6 @@ if not (prcmd):
     if (uvm):
         check_uvm_results()
     else:
-        print ('UVM CI Regression not run.  You CANNOT issue a pull-request')
+        print ('UVM CI Regression not run. (Please do so before issuing a pull-request.)')
 
 ## end ##
