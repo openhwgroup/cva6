@@ -104,7 +104,7 @@ The field defines how the property is to be used: either as an assertion (someth
 ### Result
 Indicate whether the property or checker achieved a bounded or unbounded proof.
 ### Proof Depth
-If the an unbounded proof was not achieved, indicate the number of clock cycles analyzed for the bounded proof.
+If an unbounded proof was not achieved, indicate the number of clock cycles analyzed for the bounded proof.
 
 ## Verification Plan Reviews
 As core-v-verif is an open-source project it is necessary to enable open, comprehensive reviews with a broad set of stakeholders and interested parties in any proposed
