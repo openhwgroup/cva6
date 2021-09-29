@@ -24,7 +24,31 @@ covergroup cg_exceptions
 
   `per_instance_fcov
 
-  cp_trap : coverpoint rvfi.trap;
+  cp_trap : coverpoint rvfi.trap {
+    bins one = {1};
+  }
+  cp_intr : coverpoint rvfi.intr {
+    bins one = {1};
+  }
+  cp_mcause : coverpoint rvfi.csrs["mcause"].get_csr_retirement_data() {
+    bins reset               = {0};
+    bins ins_acc_fault       = {1};
+    bins illegal_ins         = {2};
+    bins breakpoint          = {3};
+    bins load_acc_fault      = {5};
+    bins store_amo_acc_fault = {7};
+    bins ecall               = {11};
+    bins ins_bus_fault       = {48};
+  }
+  cp_baseaddr : coverpoint (rvfi.pc_rdata[31:2] == rvfi.csrs["mtvec"].get_csr_retirement_data()[31:2]) {
+    bins one = {1};
+    // TODO:ropeders revamp this cp
+  }
+  // TODO:ropeders mepc
+  // TODO:ropeders mtval
+  // TODO:ropeders other covers
+
+  // TODO:ropeders crosses
 
 endgroup : cg_exceptions
 
