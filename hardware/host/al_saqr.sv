@@ -341,8 +341,8 @@ module al_saqr
       .pad_spim_sdio0         ( pad_spim_sdio0                  ),
       .pad_spim_sdio1         ( pad_spim_sdio1                  ),
 
-      .oe_spim_sdio0_i        ( s_qspi_to_pad[0].sd0_oen_o      ),
-      .oe_spim_sdio1_i        ( s_qspi_to_pad[0].sd1_oen_o      ),
+      .oen_spim_sdio0_i        ( s_qspi_to_pad[0].sd0_oen_o      ),
+      .oen_spim_sdio1_i        ( s_qspi_to_pad[0].sd1_oen_o      ),
 
       .out_spim_sck_i         ( s_qspi_to_pad[0].clk_o          ),
       .out_spim_csn0_i        ( s_qspi_to_pad[0].csn0_o         ),

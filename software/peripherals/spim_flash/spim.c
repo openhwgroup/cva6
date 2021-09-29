@@ -98,7 +98,45 @@ int error = 0;
 //--- https://www.cypress.com/file/216421/download
 
 //--- command sequence
-uint32_t tx_buffer_cmd_program[BUFFER_SIZE] = {SPI_CMD_CFG(1,0,0),
+int *tx_buffer_cmd_program = 0x1C0007B0;
+
+
+for (int i=0; i <BUFFER_SIZE; i++){
+  switch (i) {
+  case 0: 
+    tx_buffer_cmd_program[i]= SPI_CMD_CFG(1,0,0);
+    break;
+  case 1: 
+    tx_buffer_cmd_program[i]= SPI_CMD_SOT(0);
+    break;
+  case 2: 
+    tx_buffer_cmd_program[i]= SPI_CMD_SEND_CMD(0x06,8,0);
+    break;
+  case 3: 
+    tx_buffer_cmd_program[i]= SPI_CMD_EOT(0,0);
+    break;
+  case 4: 
+    tx_buffer_cmd_program[i]= SPI_CMD_SOT(0);
+    break;
+  case 5: 
+    tx_buffer_cmd_program[i]= SPI_CMD_SEND_CMD(0x12,8,0);
+    break;
+  case 6: 
+    tx_buffer_cmd_program[i]= SPI_CMD_TX_DATA(4,4,8,0,0);
+    break;
+  case 7: 
+    tx_buffer_cmd_program[i]= SPI_CMD_TX_DATA(TEST_PAGE_SIZE,TEST_PAGE_SIZE,8,0,0);
+    break;
+  case 8: 
+    tx_buffer_cmd_program[i]= SPI_CMD_EOT(0,0);
+    break;
+  case default:
+   tx_buffer_cmd_program[i]= 0;
+    break;
+  }
+}
+
+/*tx_buffer_cmd_program[BUFFER_SIZE] = {SPI_CMD_CFG(1,0,0),
                                           SPI_CMD_SOT(0),
                                           SPI_CMD_SEND_CMD(0x06,8,0),
                                           SPI_CMD_EOT(0,0),
@@ -106,18 +144,18 @@ uint32_t tx_buffer_cmd_program[BUFFER_SIZE] = {SPI_CMD_CFG(1,0,0),
                                           SPI_CMD_SEND_CMD(0x12,8,0),
                                           SPI_CMD_TX_DATA(4,4,8,0,0), //--- write 4B addr to the addr buffer (first 4 bytes of the "page" array)
                                           SPI_CMD_TX_DATA(TEST_PAGE_SIZE,TEST_PAGE_SIZE,8,0,0), //--- write 256B page data to the page buffer
-                                          SPI_CMD_EOT(0,0)}; 
+                                          SPI_CMD_EOT(0,0)}; */
 
-uint32_t addr_buffer[4] = {0x00,0x00,0x00,0x00}; //--- reading address
-uint32_t tx_buffer_cmd_read[BUFFER_SIZE]    = {SPI_CMD_CFG(1,0,0),
+int addr_buffer[4] = {0x00,0x00,0x00,0x00}; //--- reading address
+int tx_buffer_cmd_read[BUFFER_SIZE]    = {SPI_CMD_CFG(1,0,0),
                                           SPI_CMD_SOT(0),
                                           SPI_CMD_SEND_CMD(0x13,8,0), //--- read command
                                           SPI_CMD_TX_DATA(4,4,8,0,0), //--- send the read address
                                           SPI_CMD_RX_DATA(TEST_PAGE_SIZE,TEST_PAGE_SIZE,8,0,0),
                                           SPI_CMD_EOT(0,0)};
 
-uint32_t rx_page[TEST_PAGE_SIZE];
-uint32_t tx_buffer_cmd_read_WIP[BUFFER_SIZE] = {SPI_CMD_CFG(1,0,0),
+int rx_page[TEST_PAGE_SIZE];
+int tx_buffer_cmd_read_WIP[BUFFER_SIZE] = {SPI_CMD_CFG(1,0,0),
                                            SPI_CMD_SOT(0),
                                            SPI_CMD_SEND_CMD(0x07,8,0),
                                            SPI_CMD_RX_DATA(1,1,8,0,0),
@@ -136,7 +174,7 @@ uint32_t tx_buffer_cmd_read_WIP[BUFFER_SIZE] = {SPI_CMD_CFG(1,0,0),
 
 for (int u = 0; u<1; u++){
 
-      printf("[%d, %d] Start test flash page programming over qspi %d\n",  0, 0,u);
+      //printf("[%d, %d] Start test flash page programming over qspi %d\n",  0, 0,u);
      
       //--- enable all the udma channels
       plp_udma_cg_set(plp_udma_cg_get() | (0xffffffff));
@@ -144,13 +182,17 @@ for (int u = 0; u<1; u++){
 
       //--- get the base address of the SPIMx udma channels
       unsigned int udma_spim_channel_base = hal_udma_channel_base(UDMA_CHANNEL_ID(ARCHI_UDMA_SPIM_ID(u)));
-      printf("uDMA spim%d base channel address %8x\n", u,udma_spim_channel_base);
+      //printf("uDMA spim%d base channel address %8x\n", u,udma_spim_channel_base);
       barrier();
 
       //--- write the flash page
 
-      printf("uDMA spim%d TX Saddr: %8x\n", u,UDMA_SPIM_TX_ADDR(u));
+      /*printf("uDMA spim%d TX Saddr: %8x\n", u,UDMA_SPIM_TX_ADDR(u));
+      printf("uDMA spim%d (int)page): %8x\n", u,(int)page);
+
       printf("uDMA spim%d CMD Saddr: %8x\n", u, UDMA_SPIM_CMD_ADDR(u));
+      printf("uDMA spim%d (uint32_t)tx_buffer_cmd_program : %8x\n", u,(int)tx_buffer_cmd_program );*/
+      
 
       plp_udma_enqueue(UDMA_SPIM_TX_ADDR(u) ,  (int)page          ,TEST_PAGE_SIZE*4 + 4*4, UDMA_CHANNEL_CFG_EN | UDMA_CHANNEL_CFG_SIZE_32);
       barrier();
@@ -160,7 +202,15 @@ for (int u = 0; u<1; u++){
       wait_cycles(50000);
       barrier();
 
-      printf("uDMA spim%d RX Saddr: %8x\n", u,UDMA_SPIM_RX_ADDR(u));
+      /*printf("uDMA spim%d RX Saddr: %8x\n", u,UDMA_SPIM_RX_ADDR(u));
+      printf("uDMA spim%d (uint32_t)rx_page: %8x\n", u,(int)rx_page);
+
+      printf("uDMA spim%d TX Saddr: %8x\n", u,UDMA_SPIM_TX_ADDR(u));
+      printf("uDMA spim%d (uint32_t)addr_buffer : %8x\n", u,(int)addr_buffer );
+
+      printf("uDMA spim%d CMD Saddr: %8x\n", u,UDMA_SPIM_CMD_ADDR(u));
+      printf("uDMA spim%d (uint32_t)tx_buffer_cmd_read : %8x\n", u,(int)tx_buffer_cmd_read);*/
+
       //--- try to read back data
       plp_udma_enqueue(UDMA_SPIM_RX_ADDR(u) ,  (int)rx_page     , TEST_PAGE_SIZE*4, UDMA_CHANNEL_CFG_EN | UDMA_CHANNEL_CFG_SIZE_32);
       barrier();
