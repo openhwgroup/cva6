@@ -98,8 +98,8 @@ Note: There is currently a known issue with version 4.106 and 4.108. 4.106 does 
 
 Checkout the repository and initialize all submodules
 ```
-$ git clone https://github.com/openhwgroup/cva6.git
-$ git submodule update --init --recursive
+git clone https://github.com/openhwgroup/cva6.git
+git submodule update --init --recursive
 ```
 
 ### Install Verilator Simulation Flow
@@ -116,19 +116,19 @@ couple of cycles simulation time.)
 
 Build the Verilator model of COREV-APU by using the Makefile:
 ```
-$ make verilate
+make verilate
 ```
 
 To build the verilator model with support for vcd files run
 ```
-$ make verilate DEBUG=1
+make verilate DEBUG=1
 ```
 
 This will create a C++ model of the core including a SystemVerilog wrapper and link it against a C++ testbench (in the `tb` subfolder).
 The binary can be found in the `work-ver` and accepts a RISC-V ELF binary as an argument, e.g.:
 
 ```
-$ work-ver/Variane_testharness rv64um-v-divuw
+work-ver/Variane_testharness rv64um-v-divuw
 ```
 
 The Verilator testbench makes use of the `riscv-fesvr`.
@@ -140,7 +140,7 @@ The Verilator trace is more basic but you can feed the log to `spike-dasm` to re
 Unfortunately value inspection is currently not possible for the Verilator trace file.
 
 ```
-$ spike-dasm < trace_hart_00.dasm > logfile.txt
+spike-dasm < trace_hart_00.dasm > logfile.txt
 ```
 
 To build, compile and run the CVA6 core-only in its example testbench using Verilator (known to work with V4.108):
@@ -156,34 +156,34 @@ $ make veri_run
 It is possible to run user-space binaries on CVA6 with `riscv-pk` ([link](https://github.com/riscv/riscv-pk)).
 
 ```
-$ mkdir build
-$ cd build
-$ ../configure --prefix=$RISCV --host=riscv64-unknown-elf
-$ make
-$ make install
+mkdir build
+cd build
+../configure --prefix=$RISCV --host=riscv64-unknown-elf
+make
+make install
 ```
 
 Then to run a RISC-V ELF using the Verilator model do:
 
 ```
-$ echo '
+echo '
 #include <stdio.h>
 
 int main(int argc, char const *argv[]) {
     printf("Hello CVA6!\\n");
     return 0;
 }' > hello.c
-$ riscv64-unknown-elf-gcc hello.c -o hello.elf
+riscv64-unknown-elf-gcc hello.c -o hello.elf
 ```
 
 ```
-$ make verilate
-$ work-ver/Variane_testharness $RISCV/riscv64-unknown-elf/bin/pk hello.elf
+make verilate
+work-ver/Variane_testharness $RISCV/riscv64-unknown-elf/bin/pk hello.elf
 ```
 
 If you want to use QuestaSim to run it you can use the following command:
 ```
-$ make sim elf-bin=$RISCV/riscv64-unknown-elf/bin/pk target-options=hello.elf  batch-mode=1
+make sim elf-bin=$RISCV/riscv64-unknown-elf/bin/pk target-options=hello.elf  batch-mode=1
 ```
 
 > Be patient! RTL simulation is way slower than Spike. If you think that you ran into problems you can inspect the trace files.
@@ -220,7 +220,7 @@ The first stage bootloader will boot from SD Card by default. Get yourself a sui
 
 Connect a terminal to the USB serial device opened by the FTDI chip e.g.:
 ```
-$ screen /dev/ttyUSB0 115200
+screen /dev/ttyUSB0 115200
 ```
 
 Default baudrate set by the bootlaoder and Linux is `115200`.
@@ -232,7 +232,7 @@ After you've inserted the SD Card and programmed the FPGA you can connect to the
 To generate the FPGA bitstream (and memory configuration) yourself for the Genesys II board run:
 
 ```
-$ make fpga
+make fpga
 ```
 
 This will produce a bitstream file and memory configuration file (in `fpga/work-fpga`) which you can permanently flash by running the above commands.
@@ -257,7 +257,8 @@ Bus 005 Device 019: ID 0403:6010 Future Technology Devices International, Ltd FT
 If this is the case, you can go on and start openocd with the `fpga/ariane.cfg` configuration file:
 
 ```
-$ openocd -f fpga/ariane.cfg
+openocd -f fpga/ariane.cfg
+
 Open On-Chip Debugger 0.10.0+dev-00195-g933cb87 (2018-09-14-19:32)
 Licensed under GNU GPL v2
 For bug reports, read
@@ -279,7 +280,8 @@ Info : accepting 'gdb' connection on tcp/3333
 Then you will be able to either connect through `telnet` or with `gdb`:
 
 ```
-$ riscv64-unknown-elf-gdb /path/to/elf
+riscv64-unknown-elf-gdb /path/to/elf
+
 (gdb) target remote localhost:3333
 (gdb) load
 Loading section .text, size 0x6508 lma 0x80000000
@@ -324,7 +326,7 @@ The core has been developed with a full licensed version of QuestaSim. If you ha
 
 To specify the test to run use (e.g.: you want to run `rv64ui-p-sraw` inside the `tmp/risc-tests/build/isa` folder:
 ```
-$ make sim elf-bin=path/to/rv64ui-p-sraw
+make sim elf-bin=path/to/rv64ui-p-sraw
 ```
 
 If you call `sim` with `batch-mode=1` it will run without the GUI. QuestaSim uses `riscv-fesvr` for communication as well.
@@ -338,17 +340,17 @@ If you would like to run the CI test suites locally on your machine, follow any 
 Once everything is set up and installed, you can run the tests suites as follows (using Verilator):
 
 ```
-$ make verilate
-$ make run-asm-tests-verilator
-$ make run-benchmarks-verilator
+make verilate
+make run-asm-tests-verilator
+make run-benchmarks-verilator
 ```
 
 In order to run randomized Torture tests, you first have to generate the randomized program prior to running the simulation:
 
 ```
-$ ./ci/get-torture.sh
-$ make torture-gen
-$ make torture-rtest-verilator
+./ci/get-torture.sh
+make torture-gen
+make torture-rtest-verilator
 ```
 This runs the randomized program on Spike and on the RTL target, and checks whether the two signatures match. The random instruction mix can be configured in the `./tmp/riscv-torture/config/default.config` file.
 
@@ -363,12 +365,12 @@ This will dump a file called `trace_hart_*_*_commit.log`.
 This can be helpful for debugging long traces (e.g.: torture traces). To compile Spike with the commit log feature do:
 
 ```
-$ apt-get install device-tree-compiler
-$ mkdir build
-$ cd build
-$ ../configure --prefix=$RISCV --with-fesvr=$RISCV --enable-commitlog
-$ make
-$ [sudo] make install
+apt-get install device-tree-compiler
+mkdir build
+cd build
+../configure --prefix=$RISCV --with-fesvr=$RISCV --enable-commitlog
+make
+make install
 ```
 
 ### Memory Preloading
@@ -380,7 +382,7 @@ to a binary which will be preloaded.
 > You will loose all `riscv-fesvr` communcation like sytemcalls and eoc capabilities.
 
 ```
-$ make sim preload=elf
+make sim preload=elf
 ```
 
 <!-- ### Tandem Verification with Spike
