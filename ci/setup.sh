@@ -15,7 +15,10 @@ sudo apt install verilator-4.100 device-tree-compiler
 
 ci/make-tmp.sh
 sudo mkdir -p $RISCV && sudo chmod 777 $RISCV
-wget https://static.dev.sifive.com/dev-tools/riscv64-unknown-elf-gcc-8.3.0-2020.04.0-x86_64-linux-ubuntu14.tar.gz
-tar -x -f riscv64-unknown-elf-gcc-8.3.0-2020.04.0-x86_64-linux-ubuntu14.tar.gz --strip-components=1 -C $RISCV
+RISCV64_UNKNOWN_ELF_GCC=riscv64-unknown-elf-gcc-8.3.0-2020.04.0-x86_64-linux-ubuntu14.tar.gz
+if [ ! -f "$RISCV64_UNKNOWN_ELF_GCC" ]; then
+  wget https://static.dev.sifive.com/dev-tools/$RISCV64_UNKNOWN_ELF_GCC
+fi
+tar -x -f $RISCV64_UNKNOWN_ELF_GCC --strip-components=1 -C $RISCV
 ci/install-fesvr.sh
 ci/build-riscv-tests.sh
