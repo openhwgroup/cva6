@@ -25,10 +25,22 @@ covergroup cg_exceptions
   `per_instance_fcov
 
   cp_trap : coverpoint rvfi.trap {
-    bins one = {1};
+    bins rvfi_trap = {1};
   }
   cp_intr : coverpoint rvfi.intr {
-    bins one = {1};
+    bins rvfi_intr = {1};
+  }
+  cp_imm12 : coverpoint rvfi.insn[31:20] {
+    option.auto_bin_max = 4096;
+  }
+  cp_is_csr : coverpoint ((rvfi.insn[6:0] == 7'b 1110011) && (rvfi.insn[13:12] != 2'b 00)) {
+    bins is_csr = {1};
+  }
+  cp_is_ebreak : coverpoint (rvfi.insn inside {32'h 00100073, 32'h 9002}) {
+    bins is_ebreak = {1};
+  }
+  cp_no_ebreakm : coverpoint (rvfi.csrs["dcsr"].get_csr_retirement_data()[15]) {
+    bins no_ebreakm = {0};
   }
   cp_mcause : coverpoint rvfi.csrs["mcause"].get_csr_retirement_data() {
     bins reset               = {0};
@@ -40,15 +52,29 @@ covergroup cg_exceptions
     bins ecall               = {11};
     bins ins_bus_fault       = {48};
   }
-  cp_baseaddr : coverpoint (rvfi.pc_rdata[31:2] == rvfi.csrs["mtvec"].get_csr_retirement_data()[31:2]) {
+  cp_pcr_mtvec : coverpoint (rvfi.pc_rdata[31:2] == rvfi.csrs["mtvec"].get_csr_retirement_data()[31:2]) {
     bins one = {1};
-    // TODO:ropeders revamp this cp
+  }
+  cp_pcw_mtvec : coverpoint (rvfi.pc_wdata[31:2] == rvfi.csrs["mtvec"].get_csr_retirement_data()[31:2]) {
+    bins one = {1};
   }
   // TODO:ropeders mepc
   // TODO:ropeders mtval
-  // TODO:ropeders other covers
+  // TODO:ropeders all other covers
 
-  // TODO:ropeders crosses
+  // TODO:ropeders all crosses
+  x_all_csrs : cross cp_imm12, cp_is_csr;  // CSR instructions shall try all 2^12 existing/nonexisting CSRs
+  x_trap_to_mtvec : cross cp_trap, cp_pcw_mtvec;  // Trap going to mtvec.base
+  x_trap_in_mtvec : cross cp_intr, cp_pcr_mtvec;  // Trap executing at mtvec.base
+  x_ebreak_trap : cross cp_is_ebreak, cp_no_ebreakm, cp_trap, cp_mcause {
+    ignore_bins ig = ! binsof(cp_mcause) intersect {3};  // Shall hit specifically mcause == breakpoint
+  }
+  x_trap_mcause : cross cp_trap, cp_mcause {
+    ignore_bins ig = binsof(cp_mcause) intersect {0};  // Can't trap with mcause == reset value
+  }
+  x_intr_mcause : cross cp_intr, cp_mcause {
+    ignore_bins ig = binsof(cp_mcause) intersect {0};  // Can't trap with mcause == reset value
+  }
 
 endgroup : cg_exceptions
 
