@@ -101,7 +101,8 @@ spike-dasm < trace_hart_00.dasm > logfile.txt
 
 ### Running User-Space Applications
 
-It is possible to run user-space binaries on CVA6 with `riscv-pk` ([link](https://github.com/riscv/riscv-pk)).
+It is possible to run user-space binaries on CVA6 with ([RISC-V Proxy Kernel and Boot Loader](https://github.com/riscv/riscv-pk)). 
+RISC-V PK can be installed by running: `./ci/install-riscvpk.sh`
 
 ```
 mkdir build
