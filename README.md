@@ -32,10 +32,11 @@ Table of Contents
 
    * [CVA6 RISC-V CPU](#cva6-risc-v-cpu)
    * [Table of Contents](#table-of-contents)
-      * [Installation](#installation) 
-         * [Verilator Simulation Flow](#verilator-simulation-flow) 
       * [Getting Started](#getting-started)
-         * [Running User-Space Applications](#running-user-space-applications)
+        * [Checkout Repo](#checkout-repo)
+        * [Install Verilator Simulation Flow](#install-verilator-simulation-flow)
+        * [Build Model and Run Simulations](#build-model-and-run-simulations)
+        * [Running User-Space Applications](#running-user-space-applications)
       * [FPGA Emulation](#fpga-emulation)
          * [Programming the Memory Configuration File](#programming-the-memory-configuration-file)
          * [Preparing the SD Card](#preparing-the-sd-card)
@@ -52,27 +53,27 @@ Table of Contents
 
 Created by [gh-md-toc](https://github.com/ekalinin/github-markdown-toc)
 
-## Installation 
-
-### Verilator Simulation Flow
-
-1. Setup install directory `RISCV` environment variable i.e. `export RISCV=/YOUR/INSTALLATION/DIRECTORY`
-2. Run `./ci/setup.sh` to install all required tools (i.e. verilator, device-tree-compiler, riscv64-unknown-elf-*, ..)
-3. Build the Verilator model `make verilate` and run simulations e.g. `work-ver/Variane_testharness rv64um-v-divuw`. More information can be found in [Getting Started](#getting-started)
-
-You can install verilator from source using `./ci/install_verilator.sh` or by manually installing `verilator >= 4.002`
-Note: There is currently a known issue with version 4.106 and 4.108. 4.106 does not compile and 4.108 hangs after a couple of cycles simulation time.)
-
-
 ## Getting Started
 
-Go and get the [RISC-V tools](https://github.com/riscv/riscv-tools). Make sure that your `RISCV` environment variable points to your RISC-V installation (see the RISC-V tools and related projects for further information).
+### Checkout Repo
 
 Checkout the repository and initialize all submodules
 ```
 $ git clone https://github.com/openhwgroup/cva6.git
 $ git submodule update --init --recursive
 ```
+
+### Install Verilator Simulation Flow
+
+1. Setup install directory `RISCV` environment variable i.e. `export RISCV=/YOUR/TOOLCHAIN/INSTALLATION/DIRECTORY`
+2. Run `./ci/setup.sh` to install all required tools (i.e. verilator, device-tree-compiler, riscv64-unknown-elf-*, ..)
+
+You can install verilator from source using `./ci/install_verilator.sh` or by manually installing `verilator >= 4.002`
+Note: There is currently a known issue with version 4.106 and 4.108. 4.106 does not compile and 4.108 hangs after a 
+couple of cycles simulation time.)
+
+
+### Build Model and Run Simulations
 
 Build the Verilator model of CVA6 by using the Makefile:
 ```
