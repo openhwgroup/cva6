@@ -2,23 +2,25 @@
 /*
 **
 ** Copyright 2020 OpenHW Group
-** 
+**
 ** Licensed under the Solderpad Hardware Licence, Version 2.0 (the "License");
 ** you may not use this file except in compliance with the License.
 ** You may obtain a copy of the License at
-** 
+**
 **     https://solderpad.org/licenses/
-** 
+**
 ** Unless required by applicable law or agreed to in writing, software
 ** distributed under the License is distributed on an "AS IS" BASIS,
 ** WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 ** See the License for the specific language governing permissions and
 ** limitations under the License.
-** 
+**
 *******************************************************************************
 ** Debugger Exception code
 *******************************************************************************
 */
+
+#include "corev_uvmt.h"
 
 .section .debugger_exception, "ax"
 .global _debugger_exception_start
@@ -28,10 +30,9 @@
 .global glb_expect_debug_exception
 //.global _debugger_fail
 //.global _debugger_end
- .set test_ret_val, 0x20000000
 .set test_fail, 0x1
-     
-_debugger_exception_start:        
+
+_debugger_exception_start:
 	// First check to see if exception was expected
         la a1, glb_expect_debug_exception
 	lw t1, 0(a1)
@@ -49,7 +50,7 @@ _debugger_exception_start:
 
 // Should be exact same function as implmented in debugger.S
 	// I can't seem to point to that symble from this file
-_debugger_exception_end:	
+_debugger_exception_end:
         // Clear debug entry expectation flag
         la a1, glb_expect_debug_entry
         sw x0, 0(a1)
@@ -65,12 +66,12 @@ _debugger_exception_end:
         csrr a0, dscratch
         dret
 // Should be exact same function as implmented in debugger.S
-_debugger_exception_fail: 
-        li a0, test_ret_val
+_debugger_exception_fail:
+        li a0, CV_VP_STATUS_FLAGS_BASE
         li t0, test_fail
         sw t0, 0(a0)
 	nop
         nop
         nop
         nop
-        
+

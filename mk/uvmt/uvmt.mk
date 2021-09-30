@@ -366,13 +366,13 @@ endif
 # Clean up your mess!
 #   1. Clean all generated files of the C and assembler tests
 #   2. Simulator-specific clean targets are in ./<simulator>.mk
-#   3. clean-bsp target is specified in ../Common.mk
+#   3. clean_bsp target is specified in ../Common.mk
 clean_hex:
 	rm -rf $(SIM_TEST_PROGRAM_RESULTS)
 
-clean_test_programs: clean-bsp
+clean_test_programs: clean_bsp
 	if [ -d "$(SIM_RESULTS)" ]; then \
-		find $(SIM_RESULTS) -depth -type d -name test_program -exec rm -rf {} \\; \
+		find $(SIM_RESULTS) -depth -type d -name test_program | xargs rm -rf; \
 	fi
 
 clean_riscv-dv:

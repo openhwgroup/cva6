@@ -430,6 +430,7 @@ else
 	$(RISCV_EXE_PREFIX)gcc $(CFG_CFLAGS) \
 		$(TEST_CFLAGS) \
 		-I $(ASM) \
+		-I $(BSP) \
 		-o $@ \
 		-nostartfiles \
 		$(TEST_FILES) \
@@ -441,7 +442,7 @@ endif
 .PHONY: hex
 
 # Shorthand target to only build the firmware using the hex and elf suffix rules above
-hex: $(SIM_TEST_PROGRAM_RESULTS)/$(TEST_NAME)$(OPT_RUN_INDEX_SUFFIX).hex
+hex: $(SIM_TEST_PROGRAM_RESULTS)/$(TEST_PROGRAM)$(OPT_RUN_INDEX_SUFFIX).hex
 
 bsp:
 	@echo "$(BANNER)"
@@ -454,7 +455,7 @@ bsp:
 vars_bsp:
 	make vars -C $(BSP) RISCV=$(RISCV) RISCV_PREFIX=$(RISCV_PREFIX) RISCV_EXE_PREFIX=$(RISCV_EXE_PREFIX) RISCV_MARCH=$(RISCV_MARCH)
 
-clean-bsp:
+clean_bsp:
 	rm -rf $(SIM_BSP_RESULTS)
 
 

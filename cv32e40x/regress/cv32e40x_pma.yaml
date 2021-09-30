@@ -9,7 +9,7 @@ description: PMA instruction stream tests
 # List of builds
 builds:
   clean_fw:
-    cmd: make clean-bsp clean_test_programs
+    cmd: make clean_bsp clean_test_programs
     dir: cv32e40x/sim/uvmt
 
   corev-dv:

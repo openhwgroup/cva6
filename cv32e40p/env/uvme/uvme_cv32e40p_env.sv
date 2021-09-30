@@ -253,7 +253,6 @@ task uvme_cv32e40p_env_c::run_phase(uvm_phase phase);
 
             begin
                uvme_cv32e40p_vp_sig_writer_seq_c vp_seq;
-               $display("here");
                if (!$cast(vp_seq, data_slv_seq.register_vp_vseq("vp_sig_writer", 32'h2000_0008, uvme_cv32e40p_vp_sig_writer_seq_c::get_type()))) begin
                   `uvm_fatal("CV32E40PVPSEQ", $sformatf("Could not cast vp_sig_writes correctly"));
                end

@@ -1,13 +1,13 @@
 #Copyright 202[x] Silicon Labs, Inc.
-#  
+#
 #This file, and derivatives thereof are licensed under the
 #Solderpad License, Version 2.0 (the "License");
 #Use of this file means you agree to the terms and conditions
 #of the license and are in full compliance with the License.
 #You may obtain a copy of the License at
-#  
+#
 #    https://solderpad.org/licenses/SHL-2.0/
-#  
+#
 #Unless required by applicable law or agreed to in writing, software
 #and hardware implementations thereof
 #distributed under the License is distributed on an "AS IS" BASIS,
@@ -15,12 +15,14 @@
 #See the License for the specific language governing permissions and
 #limitations under the License.
 
+#include "corev_uvmt.h"
+
 .section .trigger_code_sect, "ax"
-.set test_ret_val, 0x20000000
+.set test_ret_val, CV_VP_STATUS_FLAGS_BASE
 .set test_fail, 0x1
-.set timer_reg_addr, 0x15000000
-.set timer_val_addr, 0x15000004
-.set debug_req_reg,  0x15000008
+.set timer_reg_addr, CV_VP_INTR_TIMER_BASE
+.set timer_val_addr, CV_VP_INTR_TIMER_BASE+4
+.set debug_req_reg,  CV_VP_DEBUG_CONTROL_BASE
 .global _trigger_exit
 .global _trigger_test
 .global _trigger_code
@@ -83,7 +85,7 @@ _trigger_test_ebreak:
     mv t1, a0
     li t0, 0
     beq t0, t1, _jmp_ebreak
-    
+
     li t0, 1
     beq t0, t1, _jmp_cebreak
 
@@ -130,7 +132,7 @@ _trigger_setup:
     la a1, glb_expect_debug_entry
     li t0, 1
     sw t0, 0(a1)
-    
+
     # Assert debug_req
     li a1, debug_req_reg
     li t0, 0xc00800c8
@@ -177,11 +179,11 @@ _trigger_test_combo:
     la a1, glb_hart_status
     li t0, 10
     sw t0, 0(a1)
-    
+
     la a1, glb_expect_debug_entry
     li t0, 1
     sw t0, 0(a1)
-    
+
     # execute trigger code
     li a0, 0
     jal ra, _trigger_test
@@ -195,11 +197,11 @@ _trigger_test_combo:
     la a1, glb_hart_status
     li t0, 8
     sw t0, 0(a1)
-    
+
     la a1, glb_expect_debug_entry
     li t0, 1
     sw t0, 0(a1)
-    
+
     # execute trigger code
     li a0, 1
     jal ra, _trigger_test
@@ -208,7 +210,7 @@ _wait2:
     la a1, glb_hart_status
     lw t0, 0(a1)
     la a1, glb_debug_status
-    lw t1, 0(a1)    
+    lw t1, 0(a1)
     bne t0, t1, _wait2
 
     # Setup trigger again
@@ -220,7 +222,7 @@ _wait2:
     la a1, glb_expect_debug_entry
     li t0, 1
     sw t0, 0(a1)
-    
+
     # Assert debug_req
     li a1, debug_req_reg
     li t0, 0xc00800c8
@@ -229,7 +231,7 @@ _wait3:
     la a1, glb_hart_status
     lw t0, 0(a1)
     la a1, glb_debug_status
-    lw t1, 0(a1)    
+    lw t1, 0(a1)
     bne t0, t1, _wait3
 
     # ----------------------------------------------------
@@ -249,7 +251,7 @@ _wait3:
     li a1, debug_req_reg
     li t0, 0xc0050005
     sw t0, 0(a1)
- 
+
     # Call trigger function
     li a0, 1
     jal ra, _trigger_code
@@ -266,7 +268,7 @@ _wait3:
     la a1, glb_expect_debug_entry
     li t0, 1
     sw t0, 0(a1)
-    
+
     # set expected irq
     la a1, glb_expect_irq_entry
     li t0, 1
@@ -276,7 +278,7 @@ _wait3:
     # Enable debug_req in VP
     # ----------------------------------------------------
     li a1, debug_req_reg
-    li t0, 0xc005001a
+    li t0, 0xc005001c
     sw t0, 0(a1)
 
     # Enable interrupt
@@ -303,7 +305,7 @@ _wait3:
     la a1, glb_expect_debug_entry
     li t0, 1
     sw t0, 0(a1)
-    
+
     # set expected irq
     la a1, glb_expect_irq_entry
     li t0, 1
@@ -311,7 +313,7 @@ _wait3:
 
     # Enable debug_req in VP
     li a1, debug_req_reg
-    li t0, 0xc005001b
+    li t0, 0xc005001c
     sw t0, 0(a1)
 
     # Enable interrupt
@@ -338,7 +340,7 @@ _wait3:
     la a1, glb_expect_debug_entry
     li t0, 1
     sw t0, 0(a1)
-    
+
     # set expected irq
     la a1, glb_expect_irq_entry
     li t0, 1
@@ -346,7 +348,7 @@ _wait3:
 
     # Enable debug_req in VP
     li a1, debug_req_reg
-    li t0, 0xc005001f
+    li t0, 0xc0050020
     sw t0, 0(a1)
 
     # Enable interrupt
@@ -373,7 +375,7 @@ _wait3:
     la a1, glb_expect_debug_entry
     li t0, 1
     sw t0, 0(a1)
-    
+
     # set expected irq
     la a1, glb_expect_irq_entry
     li t0, 1
@@ -381,7 +383,7 @@ _wait3:
 
     # Enable debug_req in VP
     li a1, debug_req_reg
-    li t0, 0xc005001f
+    li t0, 0xc0050020
     sw t0, 0(a1)
 
     # Enable interrupt
@@ -408,7 +410,7 @@ _wait3:
     la a1, glb_expect_debug_entry
     li t0, 1
     sw t0, 0(a1)
-    
+
     # set expected irq
     la a1, glb_expect_irq_entry
     li t0, 1
@@ -416,7 +418,7 @@ _wait3:
 
     # Enable debug_req in VP
     li a1, debug_req_reg
-    li t0, 0xc0050023
+    li t0, 0xc0050024
     sw t0, 0(a1)
 
     # Enable interrupt
@@ -439,7 +441,7 @@ _wait3:
     la a1, glb_expect_debug_entry
     li t0, 1
     sw t0, 0(a1)
-    
+
     li a1, debug_req_reg
     li t0, 0xc0050001
     sw t0, 0(a1)
@@ -465,7 +467,7 @@ _wait3:
     la a1, glb_expect_debug_entry
     li t0, 1
     sw t0, 0(a1)
-    
+
     li a1, debug_req_reg
     li t0, 0xc0050001
     sw t0, 0(a1)
@@ -484,12 +486,12 @@ _wait3:
 	// We should not expect the first instruction to execute
 	// The debugger code will move the PC to the trigger_exit_code
      // We will trigger on the _trigger_code addess
-_trigger_code:        
+_trigger_code:
         add a2,a0,a1
         ret
-_trigger_exit:        
+_trigger_exit:
         ret
-_trigger_test:        
+_trigger_test:
         addi sp,sp,-30
         sw t0, 0(sp)
         sw t1, 4(sp)
@@ -506,7 +508,7 @@ _trigger_test:
 	li a1, 1452
 	li a2,  191 // a2 value will be overwrriten by _trigger_code
 	mv t2,  a2  // keep a copy of the value to compare against
-	
+
 	// Call function that will have a trigger match
 	//   If no trigger match, then a2=a0+a1
 	//   Else if trigger matched, then a2 is not modified
@@ -518,13 +520,13 @@ _trigger_test:
 	// trigger match not expected, function executes as normal
 	// set execpted value to t2 = a0 + a1
 	add t2, a0, a1
-__trigger_check:	
+__trigger_check:
 	beq t2,a2,__trigger_done
-__trigger_fail:	
-        li a0, test_ret_val
+__trigger_fail:
+        li a0, CV_VP_STATUS_FLAGS_BASE
         li t0, 1
         sw t0, 0(a0)
-__trigger_done:	
+__trigger_done:
         lw t0, 0(sp)
         lw t1, 4(sp)
         lw a0, 8(sp)

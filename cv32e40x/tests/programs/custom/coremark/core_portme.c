@@ -35,7 +35,7 @@ Original Author: Shay Gal-on
 
 #include "coremark.h"
 
-#define TICKS_ADDR 0x15001004
+#define TICKS_ADDR (CV_VP_CYCLE_COUNTER_BASE + 4)
 
 ee_u32 default_num_contexts = 1;
 

@@ -5658,7 +5658,7 @@ test_done:
 
 csr_pass:
     li x18, 123456789
-    li x17, 0x20000000
+    li x17, CV_VP_STATUS_FLAGS_BASE
     sw x18,0(x17)
     wfi
 
@@ -5689,7 +5689,7 @@ csr_fail:
     sw a1,0(a0)
 
     li x18, 1
-    li x17, 0x20000000
+    li x17, CV_VP_STATUS_FLAGS_BASE
     sw x18,0(x17)
     wfi
 #
