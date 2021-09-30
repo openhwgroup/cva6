@@ -8,6 +8,33 @@ It has configurable size, separate TLBs, a hardware PTW and branch-prediction (b
 
 ![](docs/_static/ariane_overview.png)
 
+## New Directory Structure:
+The directory structure has been changed to cleanly separate the [CVA6 RISC-V CPU](#cva6-risc-v-cpu) core from the COREV-APU [FPGA Emulation](#corev-apu-fpga-emulation).
+Files, directories and submodules under `cva6` are for the core _only_ and should not have any dependencies on the APU.
+Files, directories and submodules under `corev_apu` are for the FPGA Emulation platform.
+The CVA6 core can be compiled stand-alone, and obviously the APU is dependent on the core.
+
+#### ci
+Scriptware for CI (unchanged).
+
+#### common
+Source code used by both the CVA6 Core and the COREV APU.
+Subdirectories from here are `local` for common files that are hosted in this repo and `submodules` that are hosted in other repos.
+
+#### core
+Source code for the CVA6 Core only.
+There should be no sources in this directory used to build anything other than the CVA6 core.
+
+#### corev_apu
+Source code for the CVA6 APU, exclusive of the CVA6 core.
+There should be no sources in this directory used to build the CVA6 core.
+
+#### docs
+Documentation (unchanged).
+
+#### scripts
+General scriptware (unchanged).
+
 ## Publication
 
 If you use CVA6 in your academic work you can cite us:
@@ -99,6 +126,14 @@ Both, the Verilator model as well as the Questa simulation will produce trace lo
 spike-dasm < trace_hart_00.dasm > logfile.txt
 ```
 
+To build, compile and run the CVA6 core-only in its example testbench using Verilator (known to work with V4.108):
+```
+$ cd core/example_tb
+$ make veri_run
+```
+`make help` will print all supported targets.
+
+
 ### Running User-Space Applications
 
 It is possible to run user-space binaries on CVA6 with ([RISC-V Proxy Kernel and Boot Loader](https://github.com/riscv/riscv-pk)). 
@@ -137,11 +172,11 @@ make sim elf-bin=$RISCV/riscv64-unknown-elf/bin/pk target-options=hello.elf  bat
 
 > Be patient! RTL simulation is way slower than Spike. If you think that you ran into problems you can inspect the trace files.
 
-## FPGA Emulation
+## COREV-APU FPGA Emulation
 
 We currently only provide support for the [Genesys 2 board](https://reference.digilentinc.com/reference/programmable-logic/genesys-2/reference-manual). We provide pre-build bitstream and memory configuration files for the Genesys 2 [here](https://github.com/openhwgroup/cva6/releases).
 
-Tested on Vivado 2018.2. The FPGA SoC currently contains the following peripherals:
+Tested on Vivado 2018.2. The FPGA currently contains the following peripherals:
 
 - DDR3 memory controller
 - SPI controller to conncet to an SDCard
