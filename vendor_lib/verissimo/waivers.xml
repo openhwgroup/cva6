@@ -6,4 +6,9 @@
             <path>*/core-v-cores/*</path>
         </paths>
     </waiver>
+    <waiver apply-on="matched" name="Disable SVTB.12.1.2 (Methods defined outside of classes must be explicitly declared automatic or static)">
+        <status>DISABLE</status>
+        <description>Disable all failures of check SVTB.12.1.2</description>
+        <check>SVTB.12.1.2</check>
+    </waiver>
 </waivers>
