@@ -95,7 +95,7 @@ git submodule update --init --recursive
 1. Setup install directory `RISCV` environment variable i.e. `export RISCV=/YOUR/TOOLCHAIN/INSTALLATION/DIRECTORY`
 2. Run `./ci/setup.sh` to install all required tools (i.e. verilator, device-tree-compiler, riscv64-unknown-elf-*, ..)
 
-You can install verilator from source using `./ci/install_verilator.sh` or by manually installing `verilator >= 4.002`
+You can install verilator from source using `./ci/install-verilator.sh` or by manually installing `verilator >= 4.002`
 Note: There is currently a known issue with version 4.106 and 4.108. 4.106 does not compile and 4.108 hangs after a 
 couple of cycles simulation time.)
 
