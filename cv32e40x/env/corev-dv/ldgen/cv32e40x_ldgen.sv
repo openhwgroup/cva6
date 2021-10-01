@@ -115,31 +115,31 @@ import cv32e40x_pkg::pma_region_t;
       pma_adapted_memory.check_regions;
 
       // Use defaults if not overridden by plusargs
-      if (!($value$plusargs("boot_addr=%x", boot_addr))) begin
+      if (!($value$plusargs("boot_addr=0x%x", boot_addr))) begin
         boot_addr = BOOT_ADDR;
       end
-      if (!($value$plusargs("nmi_addr=%x", nmi_addr))) begin
+      if (!($value$plusargs("nmi_addr=0x%x", nmi_addr))) begin
         nmi_addr = NMI_ADDR;
       end
-      if (!($value$plusargs("mtvec_addr=%x", mtvec_addr))) begin
+      if (!($value$plusargs("mtvec_addr=0x%x", mtvec_addr))) begin
         mtvec_addr = MTVEC_ADDR;
       end
-      if (!($value$plusargs("dm_halt_addr=%x", dbg_origin_addr))) begin
+      if (!($value$plusargs("dm_halt_addr=0x%x", dbg_origin_addr))) begin
         dbg_origin_addr = DEBUG_ORIGIN;
       end
-      if (!($value$plusargs("dm_exception_addr=%x", dbg_exception_addr))) begin
+      if (!($value$plusargs("dm_exception_addr=0x%x", dbg_exception_addr))) begin
         dbg_exception_addr = DEBUG_EXCEPTION_ADDR;
       end
-      if (!($value$plusargs("debug_stack_offset=%x", dbg_stack_offset))) begin
+      if (!($value$plusargs("debug_stack_offset=0x%x", dbg_stack_offset))) begin
         dbg_stack_offset = DEBUG_STACK_OFFSET;
       end
-      if (!($value$plusargs("disable_default_ram_region=%x", disable_default_ram_region))) begin
+      if (!($value$plusargs("disable_default_ram_region=%d", disable_default_ram_region))) begin
         disable_default_ram_region = CORE_PARAM_PMA_NUM_REGIONS ? DISABLE_DEFAULT_RAM_REGION : 0;
       end
-      if (!($value$plusargs("disable_default_dbg_region=%x", disable_default_dbg_region))) begin
+      if (!($value$plusargs("disable_default_dbg_region=%d", disable_default_dbg_region))) begin
         disable_default_dbg_region = DISABLE_DEFAULT_DBG_REGION;
       end
-      if (!($value$plusargs("enable_large_mem_support=%x", enable_large_mem_support))) begin
+      if (!($value$plusargs("enable_large_mem_support=%d", enable_large_mem_support))) begin
         enable_large_mem_support = LARGE_MEMORY_SUPPORT;
       end
 
