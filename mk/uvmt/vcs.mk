@@ -275,6 +275,7 @@ comp_corev-dv: $(RISCVDV_PKG) $(CV_CORE_PKG)
 		+incdir+$(COREVDV_PKG) \
 		+incdir+$(CV_CORE_COREVDV_PKG) \
 		-f $(CV_CORE_MANIFEST) \
+		$(CFG_COMPILE_FLAGS) \
 		-f $(COREVDV_PKG)/manifest.f \
 		-l vcs.log
 
@@ -293,6 +294,7 @@ gen_corev-dv:
 			+UVM_TESTNAME=$(GEN_UVM_TEST) \
 			+asm_file_name_opts=$(TEST) \
 			+ldgen_cp_test_path=$(SIM_TEST_RESULTS) \
+			$(CFG_PLUSARGS) \
 			$(GEN_PLUSARGS)
 	for (( idx=${GEN_START_INDEX}; idx < $$((${GEN_START_INDEX} + ${GEN_NUM_TESTS})); idx++ )); do \
 		cp -f ${BSP}/link_pma.ld ${SIM_TEST_RESULTS}/$$idx/test_program/link.ld; \

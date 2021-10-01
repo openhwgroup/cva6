@@ -172,6 +172,7 @@ vlog_corev-dv:
 			+incdir+$(RISCVDV_PKG)/user_extension \
 			+incdir+$(COREVDV_PKG) \
 			+incdir+$(CV_CORE_COREVDV_PKG) \
+			$(CFG_COMPILE_FLAGS) \
 			-f $(CV_CORE_MANIFEST) \
 			-f $(COREVDV_PKG)/manifest.f
 
@@ -193,6 +194,7 @@ gen_corev-dv:
 			+num_of_tests=$(GEN_NUM_TESTS) \
 			+asm_file_name_opts=$(TEST) \
 			+ldgen_cp_test_path=$(GEN_TEST_DIR)/test_build/$(CFG) \
+			$(CFG_PLUSARGS) \
 			$(GEN_PLUSARGS) \
 			-do '$(VRUN_FLAGS)'
 	# Copy out final assembler files to test directory

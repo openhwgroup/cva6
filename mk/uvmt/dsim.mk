@@ -282,7 +282,7 @@ comp_corev-dv: $(CV_CORE_PKG)
 		+incdir+$(COREVDV_PKG) \
 		+incdir+$(CV_CORE_COREVDV_PKG) \
 		$(DSIM_PMA_INC) \
-		$(CFG_COMPILE_ARGS) \
+		$(CFG_COMPILE_FLAGS) \
 		-f $(COREVDV_PKG)/manifest.f \
 		-l $(SIM_COREVDV_RESULTS)/compile.log
 
