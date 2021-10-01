@@ -25,6 +25,8 @@
 #       2. Does not test function - just access.
 #       3. Cannot run with the ISS.
 ###############################################################################
+#include "corev_uvmt.h"
+
 .include "user_define.h"
 .section .text.start
 .globl _start

@@ -385,7 +385,9 @@ clean_compliance:
 clean_embench:
 	rm -rf $(EMBENCH_PKG)
 	cd $(EMBENCH_TESTS) && \
-	find . ! -path . ! -path ./README.md -delete
+		find . ! -path . ! -path ./README.md -delete
+	cd $(SIM_TEST_PROGREAM_RESULTS) && \
+		find $(SIM_RESULTS) -depth -type d -name "emb_*" | xargs rm -rf
 
 clean_dpi_dasm_spike:
 	rm -rf $(DPI_DASM_SPIKE_PKG)

@@ -419,6 +419,7 @@ comp_corev-dv: $(RISCVDV_PKG) $(CV_CORE_PKG)
 		+incdir+$(RISCVDV_PKG)/user_extension \
 		+incdir+$(COREVDV_PKG) \
 		+incdir+$(CV_CORE_COREVDV_PKG) \
+		$(CFG_COMPILE_FLAGS) \
 		-f $(COREVDV_PKG)/manifest.f \
 		-l xrun.log
 
@@ -445,8 +446,8 @@ gen_corev-dv:
 			+asm_file_name_opts=$(TEST) \
 			+ldgen_cp_test_path=$(SIM_TEST_RESULTS) \
 			$(CFG_PLUSARGS) \
-			$(GEN_PLUSARGS) \
-			$(CFG_COMPILE_FLAGS)
+			$(GEN_PLUSARGS)
+
 	for (( idx=${GEN_START_INDEX}; idx < $$((${GEN_START_INDEX} + ${GEN_NUM_TESTS})); idx++ )); do \
 		cp -f ${BSP}/link_corev-dv.ld ${SIM_TEST_RESULTS}/$$idx/test_program/link.ld; \
 		cp ${SIM_COREVDV_RESULTS}/${TEST}/${TEST}_$$idx.S ${SIM_TEST_RESULTS}/$$idx/test_program; \
@@ -469,7 +470,7 @@ cov_merge:
 ifeq ($(call IS_YES,$(MERGE)),YES)
   COVERAGE_TARGET_DIR=$(SIM_CFG_RESULTS)/$(MERGED_COV_DIR)
 else
-  COVERAGE_TARGET_DIR=$(SIM_CFG_RESULTS)/$(TEST_NAME)_$(RUN_INDEX)
+  COVERAGE_TARGET_DIR=$(SIM_CFG_RESULTS)/$(TEST_NAME)/$(RUN_INDEX)
 endif
 
 cov: $(COV_MERGE)

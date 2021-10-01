@@ -31,6 +31,7 @@ class uvme_cv32e40x_cov_model_c extends uvm_component;
 
    uvme_interrupt_covg    interrupt_covg;
    uvme_debug_covg        debug_covg;
+   uvme_pma_covg          pma_covg;
 
    `uvm_component_utils_begin(uvme_cv32e40x_cov_model_c)
       `uvm_field_object(cfg  , UVM_DEFAULT)
@@ -64,9 +65,6 @@ function uvme_cv32e40x_cov_model_c::new(string name="uvme_cv32e40x_cov_model", u
 
    super.new(name, parent);
 
-   // TODO Create coverage groups for uvme_cv32e40x_cov_model_c
-   //      Ex: debug_cg = new();
-
 endfunction : new
 
 function void uvme_cv32e40x_cov_model_c::build_phase(uvm_phase phase);
@@ -88,6 +86,10 @@ function void uvme_cv32e40x_cov_model_c::build_phase(uvm_phase phase);
 
    debug_covg = uvme_debug_covg::type_id::create("debug_covg", this);
    uvm_config_db#(uvme_cv32e40x_cntxt_c)::set(this, "debug_covg", "cntxt", cntxt);
+
+   pma_covg = uvme_pma_covg::type_id::create("pma_covg", this);
+   uvm_config_db#(uvma_core_cntrl_cfg_c)::set(this, "pma_covg", "cfg", cfg);
+
 endfunction : build_phase
 
 function void uvme_cv32e40x_cov_model_c::connect_phase(uvm_phase phase);

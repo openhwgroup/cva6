@@ -20,6 +20,11 @@ builds:
     cmd: make bsp comp_corev-dv comp
     dir: cv32e40x/sim/uvmt
 
+  uvmt_cv32e40x_num_mhpmcounter_29:
+    cmd: make bsp comp_corev-dv comp
+    cfg: num_mhpmcounter_29
+    dir: cv32e40x/sim/uvmt
+
   uvmt_cv32e40x_pma_1:
     cmd: make bsp comp_corev-dv comp
     cfg: pma_test_cfg_1
@@ -114,17 +119,16 @@ tests:
     cmd: make test COREV=YES TEST=perf_counters_instructions
 
   mhpmcounter29_csr_access_test_1:
-    build: uvmt_cv32e40x
+    build: uvmt_cv32e40x_num_mhpmcounter_29
     description: Hardware performance counter full access coverage test 1
     dir: cv32e40x/sim/uvmt
     cmd: make test COREV=YES TEST=mhpmcounter29_csr_access_test_1
 
-#  mhpmcounter29_csr_access_test_2:
-#    build: uvmt_cv32e40x
-#    description: Hardware performance counter full access coverage test 2
-#    dir: cv32e40x/sim/uvmt
-#    cmd: make test COREV=YES TEST=mhpmcounter29_csr_access_test_2
-#    iss: 0
+ mhpmcounter29_csr_access_test_2:
+    build: uvmt_cv32e40x_num_mhpmcounter_29
+    description: Hardware performance counter full access coverage test 2
+    dir: cv32e40x/sim/uvmt
+    cmd: make test COREV=YES TEST=mhpmcounter29_csr_access_test_2
 
   hpmcounter_basic_test:
     build: uvmt_cv32e40x

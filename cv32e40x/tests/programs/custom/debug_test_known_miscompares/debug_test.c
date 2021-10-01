@@ -22,6 +22,7 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include "corev_uvmt.h"
 
 volatile int glb_hart_status  = 0; // Written by main code only, read by debug code
 volatile int glb_debug_status = 0; // Written by debug code only, read by main code

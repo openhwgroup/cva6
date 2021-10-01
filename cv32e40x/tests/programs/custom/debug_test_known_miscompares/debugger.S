@@ -20,6 +20,8 @@
 *******************************************************************************
 */
 
+#include "corev_uvmt.h"
+
 .section .debugger, "ax"
 .global _debugger_start
 .global glb_debug_status

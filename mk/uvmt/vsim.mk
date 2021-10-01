@@ -331,8 +331,10 @@ vlog_corev-dv:
 			+incdir+$(RISCVDV_PKG)/user_extension \
 			+incdir+$(COREVDV_PKG) \
 			+incdir+$(CV_CORE_COREVDV_PKG) \
+			$(CFG_COMPILE_FLAGS) \
 			-f $(CV_CORE_MANIFEST) \
 			-f $(COREVDV_PKG)/manifest.f \
+			$(CFG_PLUSARGS) \
 			-l vlog.log
 
 vopt_corev-dv:
@@ -364,7 +366,9 @@ gen_corev-dv:
 			+UVM_TESTNAME=$(GEN_UVM_TEST) \
 			+asm_file_name_opts=$(TEST) \
 			+ldgen_cp_test_path=$(SIM_TEST_RESULTS) \
+			$(CFG_PLUSARGS) \
 			$(GEN_PLUSARGS)
+
 	# Copy out final assembler files to test directory
 	for (( idx=${GEN_START_INDEX}; idx < $$((${GEN_START_INDEX} + ${GEN_NUM_TESTS})); idx++ )); do \
 		cp -f ${BSP}/link_pma.ld ${SIM_TEST_RESULTS}/$$idx/test_program/link.ld; \

@@ -24,6 +24,8 @@
 #       1. This test requires NUM_MHPMCOUNTERS set to 29.
 #       2. Does not test function - just access.
 ###############################################################################
+#include "corev_uvmt.h"
+
 .globl _start
 .globl main
 .globl exit

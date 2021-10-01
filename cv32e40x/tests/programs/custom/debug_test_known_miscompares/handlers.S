@@ -13,6 +13,7 @@
 * See the License for the specific language governing permissions and
 * limitations under the License.
 */
+#include "corev_uvmt.h"
 
 /* Exception codes */
 #define EXCEPTION_ILLEGAL_INSN 2
