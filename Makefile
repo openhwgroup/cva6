@@ -152,8 +152,6 @@ src :=  $(filter-out core/ariane_regfile.sv, $(wildcard core/*.sv))             
         $(filter-out core/fpu/src/fpu_div_sqrt_mvp/hdl/defs_div_sqrt_mvp.sv,         \
         $(wildcard core/fpu/src/fpu_div_sqrt_mvp/hdl/*.sv))                          \
         $(wildcard core/frontend/*.sv)                                               \
-        $(wildcard core/mmu_sv32/*.sv)                                               \
-        $(wildcard core/mmu_sv39/*.sv)                                               \
         $(filter-out core/cache_subsystem/std_no_dcache.sv,                          \
         $(wildcard core/cache_subsystem/*.sv))                                       \
         $(wildcard corev_apu/bootrom/*.sv)                                           \
@@ -227,6 +225,13 @@ src :=  $(filter-out core/ariane_regfile.sv, $(wildcard core/*.sv))             
         corev_apu/tb/common/uart.sv                                                  \
         corev_apu/tb/common/SimDTM.sv                                                \
         corev_apu/tb/common/SimJTAG.sv
+
+# SV32 MMU for CV32, SV39 MMU for CV64
+ifeq ($(findstring 32, $(variant)),32)
+    src += $(wildcard core/mmu_sv32/*.sv)
+else
+    src += $(wildcard core/mmu_sv39/*.sv)
+endif
 
 src := $(addprefix $(root-dir), $(src))
 
