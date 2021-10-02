@@ -152,7 +152,7 @@ task uvma_obi_idle_vseq_c::do_idle_mstr_r();
    `uvm_create_on(mstr_r_seq_item, p_sequencer.slv_r_sequencer)
    // TODO Add support for cfg.drv_idle
    `uvm_rand_send_pri_with(mstr_r_seq_item, 0, {
-      rready == 0;
+      //rready == 0;
    })
    
 endtask : do_idle_mstr_r
@@ -165,7 +165,7 @@ task uvma_obi_idle_vseq_c::do_idle_slv_a();
    `uvm_create_on(slv_a_seq_item, p_sequencer.slv_a_sequencer)
    // TODO Add support for cfg.drv_idle
    `uvm_rand_send_pri_with(slv_a_seq_item, 0, {
-      gnt == 0;
+      //gnt == 0;
    })
    
 endtask : do_idle_slv_a

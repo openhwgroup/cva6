@@ -53,10 +53,21 @@ task uvma_obi_mstr_vseq_c::body();
    uvma_obi_seq_item_c  seq_item;
    
    forever begin
-      p_sequencer.get_next_item    (seq_item);
-      do_bus_operation             (seq_item);
-      p_sequencer.seq_item_ap.write(seq_item);
-      p_sequencer.item_done();
+      fork
+         begin
+            wait (cntxt.reset_state == UVML_RESET_STATE_POST_RESET) begin
+               p_sequencer.get_next_item    (seq_item);
+               do_bus_operation             (seq_item);
+               p_sequencer.seq_item_ap.write(seq_item);
+               p_sequencer.item_done();
+            end
+         end
+         
+         begin
+            wait (cntxt.reset_state != UVML_RESET_STATE_POST_RESET);
+         end
+      join_any
+      disable fork;
    end
    
 endtask : body

@@ -55,9 +55,19 @@ class uvma_obi_base_vseq_c extends uvm_sequence #(
    extern task get_mstr_a_mon_trn(output uvma_obi_mstr_a_mon_trn_c trn);
    
    /**
+    * TODO Describe uvma_obi_base_vseq_c::peek_mstr_a_mon_trn()
+    */
+   extern task peek_mstr_a_mon_trn(output uvma_obi_mstr_a_mon_trn_c trn);
+   
+   /**
     * TODO Describe uvma_obi_base_vseq_c::get_mstr_r_mon_trn()
     */
    extern task get_mstr_r_mon_trn(output uvma_obi_mstr_r_mon_trn_c trn);
+   
+   /**
+    * TODO Describe uvma_obi_base_vseq_c::peek_mstr_r_mon_trn()
+    */
+   extern task peek_mstr_r_mon_trn(output uvma_obi_mstr_r_mon_trn_c trn);
    
    /**
     * TODO Describe uvma_obi_base_vseq_c::get_slv_a_mon_trn()
@@ -96,28 +106,42 @@ endtask : write_mon_trn
 
 task uvma_obi_base_vseq_c::get_mstr_a_mon_trn(output uvma_obi_mstr_a_mon_trn_c trn);
    
-   trn = p_sequencer.mstr_a_mon_trn_fifo.get(trn);
+   p_sequencer.mstr_a_mon_trn_fifo.get(trn);
    
 endtask : get_mstr_a_mon_trn
 
 
+task uvma_obi_base_vseq_c::peek_mstr_a_mon_trn(output uvma_obi_mstr_a_mon_trn_c trn);
+   
+   p_sequencer.mstr_a_mon_trn_fifo.peek_next_item(trn);
+   
+endtask : peek_mstr_a_mon_trn
+
+
 task uvma_obi_base_vseq_c::get_mstr_r_mon_trn(output uvma_obi_mstr_r_mon_trn_c trn);
    
-   trn = p_sequencer.mstr_r_mon_trn_fifo.get(trn);
+   p_sequencer.mstr_r_mon_trn_fifo.get(trn);
    
 endtask : get_mstr_r_mon_trn
 
 
+task uvma_obi_base_vseq_c::peek_mstr_r_mon_trn(output uvma_obi_mstr_r_mon_trn_c trn);
+   
+   p_sequencer.mstr_r_mon_trn_fifo.peek_next_item(trn);
+   
+endtask : peek_mstr_r_mon_trn
+
+
 task uvma_obi_base_vseq_c::get_slv_a_mon_trn(output uvma_obi_slv_a_mon_trn_c trn);
    
-   trn = p_sequencer.slv_a_mon_trn_fifo.get(trn);
+   p_sequencer.slv_a_mon_trn_fifo.get(trn);
    
 endtask : get_slv_a_mon_trn
 
 
 task uvma_obi_base_vseq_c::get_slv_r_mon_trn(output uvma_obi_slv_r_mon_trn_c trn);
    
-   trn = p_sequencer.slv_r_mon_trn_fifo.get(trn);
+   p_sequencer.slv_r_mon_trn_fifo.get(trn);
    
 endtask : get_slv_r_mon_trn
 
