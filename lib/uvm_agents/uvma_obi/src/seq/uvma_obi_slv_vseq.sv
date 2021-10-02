@@ -36,7 +36,7 @@ class uvma_obi_slv_vseq_c extends uvma_obi_base_vseq_c;
    /**
     * TODO Describe uvma_obi_slv_vseq_c::respond_to_mstr()
     */
-   extern virtual task respond_to_mstr(ref uvma_obi_slv_a_mon_trn_c slv_a_mon_trn);
+   extern virtual task respond_to_mstr(ref uvma_obi_mstr_a_mon_trn_c mon_a_trn);
    
 endclass : uvma_obi_slv_vseq_c
 
@@ -50,32 +50,73 @@ endfunction : new
 
 task uvma_obi_slv_vseq_c::body();
    
-   uvma_obi_slv_a_mon_trn_c  slv_a_mon_trn;
+   uvma_obi_slv_a_mon_trn_c  mon_trn
    
    forever begin
-      p_sequencer.slv_r_mon_trn_fifo.peek_next_item(slv_a_mon_trn);
-      if (slv_a_mon_trn) begin
-         respond_to_mstr(slv_a_mon_trn);
-      end
+      fork
+         begin
+            wait (cntxt.reset_state == UVML_RESET_STATE_POST_RESET) begin
+               do begin
+                  peek_mstr_a_mon_trn(mon_trn);
+                  wait (cntxt.vif.clk == 1'b0);
+                  wait (cntxt.vif.clk == 1'b1);
+               end while ((mon_trn.req !== 1'b1) || (mon_trn.gnt !== 1'b1));
+               respond_to_mstr(mon_trn);
+            end
+         end
+         
+         begin
+            wait (cntxt.reset_state != UVML_RESET_STATE_POST_RESET);
+         end
+      join_any
+      disable fork;
    end
    
 endtask : body
 
 
-task uvma_obi_slv_vseq_c::respond_to_mstr(ref uvma_obi_slv_a_mon_trn_c slv_a_mon_trn);
+task uvma_obi_slv_vseq_c::respond_to_mstr(ref uvma_obi_mstr_a_mon_trn_c mon_a_trn);
    
    uvma_obi_slv_a_seq_item_c  slv_a_seq_item;
    uvma_obi_slv_r_seq_item_c  slv_r_seq_item;
+   uvma_obi_mstr_r_mon_trn_c  mon_r_trn
    
-   /*`uvm_create_on(slv_a_seq_item, p_sequencer.slv_a_sequencer)
+   // TODO Add gnt latency cycles
+   `uvm_create_on(slv_a_seq_item, p_sequencer.slv_a_sequencer)
    `uvm_rand_send_with(slv_a_seq_item, {
-      
+      gnt == 1'b1;
    })
-   p_sequencer.slv_r_mon_trn_fifo.peek_next_item(slv_a_mon_trn);
-   `uvm_create_on(slv_r_seq_item, p_sequencer.slv_r_sequencer)
-   `uvm_rand_send_with(slv_r_seq_item, {
-      
-   })*/
+   
+   // TODO Add response latency cycles
+   
+   do begin
+      `uvm_create_on(slv_r_seq_item, p_sequencer.slv_r_sequencer)
+      if (mon_trn.we === 1'b1) begin
+         cntxt.mem[mon_trn.addr] = mon_trn.wdata;
+         `uvm_rand_send_with(slv_r_seq_item, {
+            rvalid == 1'b1;
+            err    == 1'b0;
+            ruser  == mon_trn.auser;
+            rid    == mon_trn.aid  ;
+            // TODO Implement exokay
+            // TODO Implement rchk
+         })
+      end
+      else begin
+         `uvm_rand_send_with(slv_r_seq_item, {
+            rvalid == 1'b1;
+            rdata  == cntxt.mem[mon_trn.addr];
+            err    == 1'b0;
+            ruser  == mon_trn.auser;
+            rid    == mon_trn.aid  ;
+            // TODO Implement exokay
+            // TODO Implement rchk
+         })
+      end
+      peek_mstr_r_mon_trn(mon_trn);
+   end while (mon_r_trn.rready !== 1'b1);
+   
+   // TODO Add hold and tail cycles
    
 endtask : respond_to_mstr
 

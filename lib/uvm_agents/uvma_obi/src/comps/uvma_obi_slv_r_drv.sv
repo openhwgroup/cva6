@@ -57,24 +57,9 @@ class uvma_obi_drv_slv_r_c extends uvm_driver #(
    extern virtual task run_phase(uvm_phase phase);
    
    /**
-    * Called by run_phase() while agent is in pre-reset state.
-    */
-   extern virtual task drv_pre_reset(uvm_phase phase);
-   
-   /**
-    * Called by run_phase() while agent is in reset state.
-    */
-   extern virtual task drv_in_reset(uvm_phase phase);
-   
-   /**
-    * Called by run_phase() while agent is in post-reset state.
-    */
-   extern virtual task drv_post_reset(uvm_phase phase);
-   
-   /**
     * Appends cfg, prints out trn and issues heartbeat.
     */
-   extern virtual function void process(ref uvma_obi_slv_r_seq_item_c req);
+   extern virtual function void process_req(ref uvma_obi_slv_r_seq_item_c req);
    
    /**
     * Drives the virtual interface's (cntxt.vif) signals using req's contents.

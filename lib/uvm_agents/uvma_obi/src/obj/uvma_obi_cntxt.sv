@@ -27,6 +27,7 @@ class uvma_obi_cntxt_c extends uvm_object;
    virtual uvma_obi_if        vif                          ; ///< Handle to agent interface
    uvml_reset_state_enum      reset_state                  ; ///< TODO Describe uvma_obi_cntxt_c::reset_state
    uvma_obi_mstr_a_mon_trn_c  mon_outstanding_operations[$]; ///< TODO Describe uvma_obi_cntxt_c::mon_outstanding_operations
+   uvml_mem_c                 mem                          ; ///< Handle to memory storage for active slaves
    
    // Events
    uvm_event  sample_cfg_e;
