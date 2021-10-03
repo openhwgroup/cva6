@@ -26,15 +26,27 @@ covergroup cg_counters
 
   cp_inhibit_mcycle : coverpoint rvfi.csrs["mcountinhibit"].get_csr_retirement_data()[0];
   cp_inhibit_minstret : coverpoint rvfi.csrs["mcountinhibit"].get_csr_retirement_data()[2];
+  //cp_inhibit_mhpm : ???;
   cp_is_csr_read : coverpoint ((rvfi.insn[6:0] == 7'b 1110011) && (rvfi.insn[13:12] != 2'b 00) && (rvfi.insn[11:7] != 0)) {
-    bins is_csr = {1};
+    bins is_csr_read = {1};
+  }
+  cp_is_dbg_mode : coverpoint rvfi.dbg_mode {
+    bins dbg_mode = {1};
   }
   cp_mcycle : coverpoint (rvfi.insn[31:20] == 12'h B00);
   cp_minstret : coverpoint (rvfi.insn[31:20] == 12'h B02);
   // TODO:ropeders add all coverpoints
 
-  x_check_inhibit_mcycle : cross cp_inhibit_mcycle, cp_is_csr_read, cp_mcycle {option.at_least = 2;}
-  x_check_inhibit_minstret : cross cp_inhibit_minstret, cp_is_csr_read, cp_minstret {option.at_least = 2;}
+  x_check_inhibit_mcycle : cross cp_inhibit_mcycle, cp_is_csr_read, cp_mcycle {
+    option.at_least = 2;
+  }
+  x_check_inhibit_minstret : cross cp_inhibit_minstret, cp_is_csr_read, cp_minstret {
+    option.at_least = 2;
+  }
+  x_minstret_in_dbg : cross cp_is_dbg_mode, cp_inhibit_mcycle, cp_is_csr_read, cp_minstret {
+    option.at_least = 2;
+    ignore_bins ig = binsof(cp_inhibit_mcycle) intersect {1} || binsof(cp_minstret) intersect {0};
+  }
   // TODO:ropeders add all crosses
 
 endgroup : cg_counters
