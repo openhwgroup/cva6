@@ -17,9 +17,8 @@
 
 
 /**
- * Module encapsulating the Open Bus Interface VIP Self-Test DUT wrapper,
- * agents and clock generating interfaces. The clock and reset interface only
- * feeds into the Open Bus Interface VIP interfaces.
+ * Module encapsulating the Open Bus Interface VIP Self-Test DUT wrapper, agents and clock generating interfaces.  The
+ * clock and reset interface only feeds into the Open Bus Interface VIP interfaces.
  */
 module uvmt_obi_st_tb;
    
@@ -51,8 +50,8 @@ module uvmt_obi_st_tb;
       
       // Add interfaces to uvm_config_db
       uvm_config_db#(virtual uvmt_obi_st_clknrst_gen_if)::set(null, "*"               , "clknrst_gen_vif", clknrst_gen_if);
-      uvm_config_db#(virtual uvma_obi_if        )::set(null, "*.env.mstr_agent", "vif"            , mstr_if       );
-      uvm_config_db#(virtual uvma_obi_if        )::set(null, "*.env.slv_agent" , "vif"            , slv_if        );
+      uvm_config_db#(virtual uvma_obi_if               )::set(null, "*.env.mstr_agent", "vif"            , mstr_if       );
+      uvm_config_db#(virtual uvma_obi_if               )::set(null, "*.env.slv_agent" , "vif"            , slv_if        );
       
       // Run test
       uvm_top.enable_print_topology = 1;

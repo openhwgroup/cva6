@@ -17,15 +17,14 @@
 
 
 /**
- * Component encapsulating AMBA Advanced eXtensible Interface Self-Test Environment functional
- * coverage model.
+ * Component encapsulating AMBA Advanced eXtensible Interface Self-Test Environment functional coverage model.
  */
 class uvme_obi_st_cov_model_c extends uvm_component;
    
    // Coverage targets
    uvme_obi_st_cfg_c         cfg;
    uvme_obi_st_cntxt_c       cntxt;
-   uvma_obi_seq_item_c  mstr_seq_item;
+   uvma_obi_seq_item_c       mstr_seq_item;
    uvma_obi_slv_seq_item_c   slv_seq_item;
    uvma_obi_mon_trn_c        mstr_mon_trn;
    uvma_obi_mon_trn_c        slv_mon_trn;

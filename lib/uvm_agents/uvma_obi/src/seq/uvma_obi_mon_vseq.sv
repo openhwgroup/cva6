@@ -45,10 +45,25 @@ endfunction : new
 
 task uvma_obi_mon_vseq_c::body();
    
-   fork
-      process_chan_a();
-      process_chan_r();
-   join
+   forever begin
+      fork
+         begin : chan_a
+            wait (cntxt.reset_state == UVML_RESET_STATE_POST_RESET);
+            process_chan_a();
+         end
+         
+         begin : chan_r
+            wait (cntxt.reset_state == UVML_RESET_STATE_POST_RESET);
+            process_chan_r();
+         end
+         
+         begin : reset
+            wait (cntxt.reset_state == UVML_RESET_STATE_POST_RESET);
+            wait (cntxt.reset_state != UVML_RESET_STATE_POST_RESET);
+         end
+      join_any
+      disable fork;
+   end
    
 endtask : body
 
@@ -60,12 +75,11 @@ task uvma_obi_mon_vseq_c::process_chan_a();
    
    forever begin
       do begin
-         get_mstr_a_mon_trn(mstr_a_mon_trn);
-      end while (mstr_a_mon_trn.req !== 1'b1);
-      
-      do begin
-         get_slv_a_mon_trn(slv_a_mon_trn);
-      end while (slv_a_mon_trn.gnt !== 1'b1);
+         fork
+            get_mstr_a_mon_trn(mstr_a_mon_trn);
+            get_slv_a_mon_trn (slv_a_mon_trn );
+         join
+      end while ((mstr_a_mon_trn.req !== 1'b1) || (slv_a_mon_trn.gnt !== 1'b1));
       
       cntxt.mon_outstanding_operations.push_back(mstr_a_mon_trn);
       `uvml_hrtbt()
@@ -83,12 +97,11 @@ task uvma_obi_mon_vseq_c::process_chan_r();
    
    forever begin
       do begin
-         get_slv_r_mon_trn(slv_r_mon_trn);
-      end while (slv_r_mon_trn.rvalid !== 1'b1);
-      
-      do begin
-         get_mstr_r_mon_trn(mstr_r_mon_trn);
-      end while (mstr_r_mon_trn.rready !== 1'b1);
+         fork
+            get_slv_r_mon_trn (slv_r_mon_trn );
+            get_mstr_r_mon_trn(mstr_r_mon_trn);
+         join
+      end while (((slv_r_mon_trn.rvalid !== 1'b1)) || (mstr_r_mon_trn.rready !== 1'b1));
       
       mstr_a_mon_trn = cntxt.mon_outstanding_operations.pop_front();
       mon_trn = uvma_obi_mon_trn_c::type_id::create("mon_trn");

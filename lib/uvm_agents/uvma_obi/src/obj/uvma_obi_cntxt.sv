@@ -24,20 +24,25 @@ typedef class uvma_obi_mstr_a_mon_trn_c;
  */
 class uvma_obi_cntxt_c extends uvm_object;
    
-   virtual uvma_obi_if        vif                          ; ///< Handle to agent interface
-   uvml_reset_state_enum      reset_state                  ; ///< TODO Describe uvma_obi_cntxt_c::reset_state
-   uvma_obi_mstr_a_mon_trn_c  mon_outstanding_operations[$]; ///< TODO Describe uvma_obi_cntxt_c::mon_outstanding_operations
-   uvml_mem_c                 mem                          ; ///< Handle to memory storage for active slaves
+   virtual uvma_obi_if               vif                          ; ///< Handle to agent interface
+   uvml_reset_state_enum             reset_state                  ; ///< TODO Describe uvma_obi_cntxt_c::reset_state
+   uvma_obi_mstr_a_mon_trn_c         mon_outstanding_operations[$]; ///< TODO Describe uvma_obi_cntxt_c::mon_outstanding_operations
+   uvml_mem_model_c                  memory                       ; ///< Handle to memory model for active slaves
+   uvma_obi_slv_handler_base_vseq_c  slv_handlers[$]              ; ///< Queue of sequences that can respond to read/write from mstr
    
    // Events
-   uvm_event  sample_cfg_e;
-   uvm_event  sample_cntxt_e;
+   uvm_event#(uvma_obi_mstr_a_mon_trn_c)  mstr_a_req_e  ; ///< 
+   uvm_event                              sample_cfg_e  ; ///< 
+   uvm_event                              sample_cntxt_e; ///< 
    
    
    `uvm_object_utils_begin(uvma_obi_cntxt_c)
       `uvm_field_enum        (uvml_reset_state_enum, reset_state               , UVM_DEFAULT)
       `uvm_field_queue_object(                       mon_outstanding_operations, UVM_DEFAULT)
+      `uvm_field_object      (                       memory                    , UVM_DEFAULT)
+      `uvm_field_queue_object(                       slv_handlers              , UVM_DEFAULT)
       
+      `uvm_field_event(mstr_a_req_e  , UVM_DEFAULT)
       `uvm_field_event(sample_cfg_e  , UVM_DEFAULT)
       `uvm_field_event(sample_cntxt_e, UVM_DEFAULT)
    `uvm_object_utils_end
@@ -60,6 +65,8 @@ function uvma_obi_cntxt_c::new(string name="uvma_obi_cntxt");
    
    super.new(name);
    reset_state    = UVML_RESET_STATE_PRE_RESET
+   memory         = uvml_mem_model_c::type_id::create("memory");
+   mstr_a_req_e   = new("mstr_a_req_e"  );
    sample_cfg_e   = new("sample_cfg_e"  );
    sample_cntxt_e = new("sample_cntxt_e");
    

@@ -17,8 +17,7 @@
 
 
 /**
- * Module encapsulating assertions for Open Bus Interface VIP
- * Self-Testing DUT wrapper (uvmt_obi_st_dut_wrap).
+ * Module encapsulating assertions for Open Bus Interface Agent Self-Testing DUT wrapper (uvmt_obi_st_dut_wrap).
  */
 module uvmt_obi_st_dut_chkr(
    uvma_obi_if  mstr_if,

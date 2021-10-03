@@ -50,7 +50,7 @@ class uvme_obi_st_cfg_c extends uvm_object;
    
    constraint defaults_cons {
       soft enabled                == 0;
-      soft is_active              == UVM_PASSIVE;
+      soft is_active              == UVM_ACTIVE;
       soft scoreboarding_enabled  == 1;
       soft cov_model_enabled      == 0;
       soft trn_log_enabled        == 1;
@@ -93,10 +93,10 @@ class uvme_obi_st_cfg_c extends uvm_object;
       mstr_cfg.data_width  == slv_cfg.data_width ;
       mstr_cfg.id_width    == slv_cfg.id_width   ;
       
-      mstr_cfg.drv_mode == UVMA_obi_MODE_MSTR ;
-      mstr_cfg.drv_idle == UVMA_obi_DRV_IDLE_X;
-      slv_cfg .drv_mode == UVMA_obi_MODE_SLV  ;
-      slv_cfg .drv_idle == UVMA_obi_DRV_IDLE_X;
+      mstr_cfg.drv_mode == UVMA_OBI_MODE_MSTR;
+      mstr_cfg.drv_idle == UVMA_OBI_DRV_ZEROS;
+      slv_cfg .drv_mode == UVMA_OBI_MODE_SLV ;
+      slv_cfg .drv_idle == UVMA_OBI_DRV_ZEROS;
    }
    
    constraint sb_cfg_cons {
@@ -121,7 +121,6 @@ endclass : uvme_obi_st_cfg_c
 function uvme_obi_st_cfg_c::new(string name="uvme_obi_st_cfg");
    
    super.new(name);
-   
    mstr_cfg = uvma_obi_cfg_c::type_id::create("mstr_cfg");
    slv_cfg  = uvma_obi_cfg_c::type_id::create("slv_cfg" );
    sb_cfg   = uvml_sb_cfg_c ::type_id::create("sb_cfg"  );

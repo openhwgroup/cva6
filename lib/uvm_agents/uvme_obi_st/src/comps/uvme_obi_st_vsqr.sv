@@ -25,12 +25,12 @@ class uvme_obi_st_vsqr_c extends uvm_sequencer#(
 );
    
    // Objects
-   uvme_obi_st_cfg_c    cfg;
-   uvme_obi_st_cntxt_c  cntxt;
+   uvme_obi_st_cfg_c    cfg  ; ///< 
+   uvme_obi_st_cntxt_c  cntxt; ///< 
    
    // Sequencer handles
-   uvma_obi_sqr_c  mstr_sequencer;
-   uvma_obi_sqr_c  slv_sequencer ;
+   uvma_obi_sqr_c  mstr_vsequencer; ///< 
+   uvma_obi_sqr_c  slv_vsequencer ; ///< 
    
    
    `uvm_component_utils_begin(uvme_obi_st_vsqr_c)

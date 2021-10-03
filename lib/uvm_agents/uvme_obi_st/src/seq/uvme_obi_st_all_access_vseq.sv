@@ -21,13 +21,11 @@
  */
 class uvme_obi_st_all_access_vseq_c extends uvme_obi_st_base_vseq_c;
    
-   rand uvma_obi_storage_slv_seq_c  slv_seq;
-   rand int unsigned                num_all_access;
+   rand int unsigned  num_all_access;
    
    
    `uvm_object_utils_begin(uvme_obi_st_all_access_vseq_c)
-      `uvm_field_object(slv_seq       , UVM_DEFAULT          )
-      `uvm_field_int   (num_all_access, UVM_DEFAULT + UVM_DEC)
+      `uvm_field_int(num_all_access, UVM_DEFAULT + UVM_DEC)
    `uvm_object_utils_end
    
    
@@ -60,18 +58,9 @@ task uvme_obi_st_all_access_vseq_c::body();
    
    uvma_obi_seq_item_c  _req;
    
-   fork
-      begin
-         `uvm_do_on(slv_seq, p_sequencer.slv_sequencer)
-      end
-      
-      begin
-         repeat (num_all_access) begin
-            `uvm_do_on(_req, p_sequencer.mstr_sequencer)
-         end
-      end
-   join_any
-   disable fork;
+   repeat (num_all_access) begin
+      `uvm_do_on(_req, p_sequencer.mstr_sequencer)
+   end
    
 endtask : body
 

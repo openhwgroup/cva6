@@ -20,14 +20,14 @@
  * Encapsulates all signals and clocking of the Open Bus Interface.
  */
 interface uvma_obi_if #(
-   parameter AUSER_WIDTH = `UVMA_OBI_MEMORY_AUSER_DEFAULT_WIDTH, ///< Width of the auser signal. RI5CY, Ibex, CV32E40* do not have the auser signal.
-   parameter WUSER_WIDTH = `UVMA_OBI_MEMORY_WUSER_DEFAULT_WIDTH, ///< Width of the wuser signal. RI5CY, Ibex, CV32E40* do not have the wuser signal.
-   parameter RUSER_WIDTH = `UVMA_OBI_MEMORY_RUSER_DEFAULT_WIDTH, ///< Width of the ruser signal. RI5CY, Ibex, CV32E40* do not have the ruser signal.
-   parameter ADDR_WIDTH  = `UVMA_OBI_MEMORY_ADDR_DEFAULT_WIDTH , ///< Width of the addr signal.
-   parameter DATA_WIDTH  = `UVMA_OBI_MEMORY_DATA_DEFAULT_WIDTH , ///< Width of the rdata and wdata signals. be width is DATA_WIDTH / 8. Valid DATA_WIDTH settings are 32 and 64.
-   parameter ID_WIDTH    = `UVMA_OBI_MEMORY_ID_DEFAULT_WIDTH   , ///< Width of the aid and rid signals.
-   parameter ACHK_WIDTH  = `UVMA_OBI_MEMORY_ACHK_DEFAULT_WIDTH , ///< Width of the achk signal.
-   parameter RCHK_WIDTH  = `UVMA_OBI_MEMORY_RCHK_DEFAULT_WIDTH   ///< Width of the rchk signal.
+   parameter AUSER_WIDTH = `UVMA_OBI_AUSER_DEFAULT_WIDTH, ///< Width of the auser signal. RI5CY, Ibex, CV32E40* do not have the auser signal.
+   parameter WUSER_WIDTH = `UVMA_OBI_WUSER_DEFAULT_WIDTH, ///< Width of the wuser signal. RI5CY, Ibex, CV32E40* do not have the wuser signal.
+   parameter RUSER_WIDTH = `UVMA_OBI_RUSER_DEFAULT_WIDTH, ///< Width of the ruser signal. RI5CY, Ibex, CV32E40* do not have the ruser signal.
+   parameter ADDR_WIDTH  = `UVMA_OBI_ADDR_DEFAULT_WIDTH , ///< Width of the addr signal.
+   parameter DATA_WIDTH  = `UVMA_OBI_DATA_DEFAULT_WIDTH , ///< Width of the rdata and wdata signals. be width is DATA_WIDTH / 8. Valid DATA_WIDTH settings are 32 and 64.
+   parameter ID_WIDTH    = `UVMA_OBI_ID_DEFAULT_WIDTH   , ///< Width of the aid and rid signals.
+   parameter ACHK_WIDTH  = `UVMA_OBI_ACHK_DEFAULT_WIDTH , ///< Width of the achk signal.
+   parameter RCHK_WIDTH  = `UVMA_OBI_RCHK_DEFAULT_WIDTH   ///< Width of the rchk signal.
 )
 (
    input  clk    , ///< The bus clock times all bus transfers. All signal timings are related to the rising edge of clk.

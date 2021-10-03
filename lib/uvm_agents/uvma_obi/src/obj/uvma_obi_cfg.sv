@@ -16,6 +16,13 @@
 `define __UVMA_OBI_CFG_SV__
 
 
+// Default sequences
+typedef class uvma_obi_mon_vseq_c ;
+typedef class uvma_obi_idle_vseq_c;
+typedef class uvma_obi_mstr_vseq_c;
+typedef class uvma_obi_slv_vseq_c ;
+
+
 /**
  * Object encapsulating all parameters for creating, connecting and running all Open Bus Interface agent
  * (uvma_obi_agent_c) components.
@@ -23,31 +30,31 @@
 class uvma_obi_cfg_c extends uvm_object;
    
    // Generic options
-   rand bit                      enabled          ;
-   rand uvm_active_passive_enum  is_active        ;
-   rand uvml_reset_mode_enum     reset_mode       ;
-   rand uvm_sequencer_arb_mode   sqr_arb_mode     ;
-   rand bit                      cov_model_enabled;
-   rand bit                      trn_log_enabled  ;
+   rand bit                      enabled          ; ///< TODO Describe uvma_obi_cfg_c::enabled
+   rand uvm_active_passive_enum  is_active        ; ///< TODO Describe uvma_obi_cfg_c::is_active
+   rand uvml_reset_mode_enum     reset_mode       ; ///< TODO Describe uvma_obi_cfg_c::reset_mode
+   rand uvm_sequencer_arb_mode   sqr_arb_mode     ; ///< TODO Describe uvma_obi_cfg_c::sqr_arb_mode
+   rand bit                      cov_model_enabled; ///< TODO Describe uvma_obi_cfg_c::cov_model_enabled
+   rand bit                      trn_log_enabled  ; ///< TODO Describe uvma_obi_cfg_c::trn_log_enabled
    
    // Protocol Options
-   rand uvma_obi_version_enum   version    ;
-   rand uvma_obi_mode_enum      drv_mode   ;
-   rand uvma_obi_drv_idle_enum  drv_idle   ;
-   rand int unsigned            auser_width;
-   rand int unsigned            wuser_width;
-   rand int unsigned            ruser_width;
-   rand int unsigned            achk_width ;
-   rand int unsigned            rchk_width ;
-   rand int unsigned            addr_width ;
-   rand int unsigned            data_width ;
-   rand int unsigned            id_width   ;
+   rand uvma_obi_version_enum   version    ; ///< TODO Describe uvma_obi_cfg_c::version
+   rand uvma_obi_mode_enum      drv_mode   ; ///< TODO Describe uvma_obi_cfg_c::drv_mode
+   rand uvma_obi_drv_idle_enum  drv_idle   ; ///< TODO Describe uvma_obi_cfg_c::drv_idle
+   rand int unsigned            auser_width; ///< TODO Describe uvma_obi_cfg_c::auser_width
+   rand int unsigned            wuser_width; ///< TODO Describe uvma_obi_cfg_c::wuser_width
+   rand int unsigned            ruser_width; ///< TODO Describe uvma_obi_cfg_c::ruser_width
+   rand int unsigned            achk_width ; ///< TODO Describe uvma_obi_cfg_c::achk_width
+   rand int unsigned            rchk_width ; ///< TODO Describe uvma_obi_cfg_c::rchk_width
+   rand int unsigned            addr_width ; ///< TODO Describe uvma_obi_cfg_c::addr_width
+   rand int unsigned            data_width ; ///< TODO Describe uvma_obi_cfg_c::data_width
+   rand int unsigned            id_width   ; ///< TODO Describe uvma_obi_cfg_c::id_width
    
    // Sequence Types
-   uvm_object_wrapper  monitor_vseq_type;
-   uvm_object_wrapper  idle_vseq_type   ;
-   uvm_object_wrapper  mstr_vseq_type   ;
-   uvm_object_wrapper  slv_vseq_type    ;
+   uvm_object_wrapper  monitor_vseq_type; ///< TODO Describe uvma_obi_cfg_c::monitor_vseq_type
+   uvm_object_wrapper  idle_vseq_type   ; ///< TODO Describe uvma_obi_cfg_c::idle_vseq_type
+   uvm_object_wrapper  mstr_vseq_type   ; ///< TODO Describe uvma_obi_cfg_c::mstr_vseq_type
+   uvm_object_wrapper  slv_vseq_type    ; ///< TODO Describe uvma_obi_cfg_c::slv_vseq_type
    
    
    `uvm_object_utils_begin(uvma_obi_cfg_c)
@@ -115,6 +122,10 @@ endclass : uvma_obi_cfg_c
 function uvma_obi_cfg_c::new(string name="uvma_obi_cfg");
    
    super.new(name);
+   monitor_vseq_type = uvma_obi_mon_vseq_c ::type_id;
+   idle_vseq_type    = uvma_obi_idle_vseq_c::type_id;
+   mstr_vseq_type    = uvma_obi_mstr_vseq_c::type_id;
+   slv_vseq_type     = uvma_obi_slv_vseq_c ::type_id;
    
 endfunction : new
 
