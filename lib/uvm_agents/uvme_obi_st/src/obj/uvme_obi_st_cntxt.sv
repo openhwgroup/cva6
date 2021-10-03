@@ -1,20 +1,15 @@
-// 
 // Copyright 2021 OpenHW Group
 // Copyright 2021 Datum Technology Corporation
+// Copyright 2021 Silicon Labs
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // SPDX-License-Identifier: Apache-2.0 WITH SHL-2.1
-// 
-// Licensed under the Solderpad Hardware License v 2.1 (the "License"); you may
-// not use this file except in compliance with the License, or, at your option,
-// the Apache License version 2.0. You may obtain a copy of the License at
-// 
-//     https://solderpad.org/licenses/SHL-2.1/
-// 
-// Unless required by applicable law or agreed to in writing, any work
-// distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
-// WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
-// License for the specific language governing permissions and limitations
-// under the License.
-// 
+// Licensed under the Solderpad Hardware License v 2.1 (the "License"); you may not use this file except in compliance
+// with the License, or, at your option, the Apache License version 2.0.  You may obtain a copy of the License at
+//                                        https://solderpad.org/licenses/SHL-2.1/
+// Unless required by applicable law or agreed to in writing, any work distributed under the License is distributed on
+// an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.  See the License for the
+// specific language governing permissions and limitations under the License.
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 
 `ifndef __UVME_OBI_ST_CNTXT_SV__
@@ -22,14 +17,14 @@
 
 
 /**
- * Object encapsulating all state variables for Open Bus Interface VIP
- * Self-Testing environment (uvme_obi_st_env_c) components.
+ * Object encapsulating all state variables for Open Bus Interface VIP Self-Testing environment
+ * (uvme_obi_st_env_c) components.
  */
 class uvme_obi_st_cntxt_c extends uvm_object;
    
    // Agent context handles
-   uvma_obi_memory_cntxt_c  mstr_cntxt;
-   uvma_obi_memory_cntxt_c  slv_cntxt;
+   uvma_obi_cntxt_c  mstr_cntxt;
+   uvma_obi_cntxt_c  slv_cntxt;
    
    // Scoreboard context handle
    uvml_sb_cntxt_c  sb_cntxt;
@@ -62,8 +57,8 @@ function uvme_obi_st_cntxt_c::new(string name="uvme_obi_st_cntxt");
    
    super.new(name);
    
-   mstr_cntxt = uvma_obi_memory_cntxt_c::type_id::create("mstr_cntxt");
-   slv_cntxt  = uvma_obi_memory_cntxt_c::type_id::create("slv_cntxt" );
+   mstr_cntxt = uvma_obi_cntxt_c::type_id::create("mstr_cntxt");
+   slv_cntxt  = uvma_obi_cntxt_c::type_id::create("slv_cntxt" );
    sb_cntxt   = uvml_sb_cntxt_c ::type_id::create("sb_cntxt"  );
    
    sample_cfg_e   = new("sample_cfg_e"  );

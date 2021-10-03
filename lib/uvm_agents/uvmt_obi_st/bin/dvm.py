@@ -173,7 +173,7 @@ def do_paths():
     set_env_var("DV_UVMT_AXIL_ST_SRC_PATH" , dv_imports_path + "/uvmt_axil_st"  + "/src")
     
     # Source
-    set_env_var("DV_UVMA_OBI_MEMORY_SRC_PATH"   , uvm_agents_path + "/uvma_obi_memory"    + "/src")
+    set_env_var("DV_UVMA_obi_SRC_PATH"   , uvm_agents_path + "/uvma_obi"    + "/src")
     set_env_var("DV_UVME_OBI_ST_SRC_PATH", uvm_agents_path + "/uvme_obi_st" + "/src")
     set_env_var("DV_UVMT_OBI_ST_SRC_PATH", uvm_agents_path + "/uvmt_obi_st" + "/src")
 
