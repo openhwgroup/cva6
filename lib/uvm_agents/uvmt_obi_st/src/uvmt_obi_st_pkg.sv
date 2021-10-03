@@ -20,6 +20,7 @@
 `include "uvm_macros.svh"
 `include "uvml_macros.sv"
 `include "uvml_logs_macros.sv"
+`include "uvml_mem_macros.sv"
 `include "uvml_sb_macros.sv"
 `include "uvma_obi_macros.sv"
 `include "uvme_obi_st_macros.sv"
@@ -41,13 +42,14 @@ package uvmt_obi_st_pkg;
    import uvm_pkg        ::*;
    import uvml_pkg       ::*;
    import uvml_logs_pkg  ::*;
+   import uvml_mem_pkg   ::*;
    import uvml_sb_pkg    ::*;
    import uvma_obi_pkg   ::*;
    import uvme_obi_st_pkg::*;
    
    // Constants / Structs / Enums
-   `include "uvmt_obi_st_constants.sv"
    `include "uvmt_obi_st_tdefs.sv"
+   `include "uvmt_obi_st_constants.sv"
    
    // Virtual sequence library
    `include "uvmt_obi_st_vseq_lib.sv"

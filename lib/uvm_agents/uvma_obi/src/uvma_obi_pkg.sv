@@ -97,6 +97,8 @@ package uvma_obi_pkg;
    `include "uvma_obi_idle_vseq.sv"
    `include "uvma_obi_mstr_vseq.sv"
    `include "uvma_obi_slv_vseq.sv"
+   `include "uvma_obi_slv_handler_base_vseq.sv"
+   `include "uvma_obi_slv_handler_mem_vseq.sv"
    
 endpackage : uvma_obi_pkg
 

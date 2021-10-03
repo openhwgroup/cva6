@@ -64,6 +64,7 @@ task uvma_obi_mstr_vseq_c::body();
          end
          
          begin
+            wait (cntxt.reset_state == UVML_RESET_STATE_POST_RESET);
             wait (cntxt.reset_state != UVML_RESET_STATE_POST_RESET);
          end
       join_any

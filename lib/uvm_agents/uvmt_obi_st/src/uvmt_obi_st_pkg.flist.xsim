@@ -15,12 +15,12 @@
 // Libraries
 //-f ${DV_UVM_SRC_PATH}/uvm_pkg.flist
 -f ${DV_UVML_SRC_PATH}/uvml_pkg.flist.xsim
--f ${DV_UVML_RAL_SRC_PATH}/uvml_ral_pkg.flist.xsim
 -f ${DV_UVML_LOGS_SRC_PATH}/uvml_logs_pkg.flist.xsim
+-f ${DV_UVML_MEM_SRC_PATH}/uvml_mem_pkg.flist
 -f ${DV_UVML_SB_SRC_PATH}/uvml_sb_pkg.flist.xsim
 
 // Agents
--f ${DV_UVMA_obi_SRC_PATH}/uvma_obi_pkg.flist.xsim
+-f ${DV_UVMA_OBI_SRC_PATH}/uvma_obi_pkg.flist.xsim
 
 // Environments
 -f ${DV_UVME_OBI_ST_SRC_PATH}/uvme_obi_st_pkg.flist.xsim

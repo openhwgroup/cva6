@@ -111,6 +111,10 @@ task uvme_obi_st_prd_c::run_phase(uvm_phase phase);
       out_trn = uvma_obi_mon_trn_c::type_id::create("out_trn");
       out_trn.copy(in_trn);
       
+      if (cntxt.slv_cntxt.reset_state != UVML_RESET_STATE_POST_RESET) begin
+         out_trn.set_may_drop(1);
+      end
+      
       // Send transaction to analysis port
       out_ap.write(out_trn);
    end

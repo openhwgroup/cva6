@@ -46,9 +46,9 @@ function uvme_obi_st_seq_lib_c::new(string name="uvme_obi_st_seq_lib");
    
    super.new(name);
    init_sequence_library();
-   
-   // TODO Add sequences to uvme_obi_st_seq_lib_c
-   //      Ex: add_sequence(uvme_obi_st_abc_vseq_c::get_type());
+   add_sequence(uvme_obi_st_reads_vseq_c     ::get_type());
+   add_sequence(uvme_obi_st_writes_vseq_c    ::get_type());
+   add_sequence(uvme_obi_st_all_access_vseq_c::get_type());
    
 endfunction : new
 

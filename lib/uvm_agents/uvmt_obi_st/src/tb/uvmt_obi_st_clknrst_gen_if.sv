@@ -17,9 +17,8 @@
 
 
 /**
- * Interface providing clock and reset signals to all other interfaces used by
- * Open Bus Interface VIP Self-Testing Test Bench (uvmt_obi_st_tb).
- * Managed by test cases.
+ * Interface providing clock and reset signals to all other interfaces used by Open Bus Interface Agent Self-Testing
+ * Test Bench (uvmt_obi_st_tb).  Managed by test cases.
  */
 interface uvmt_obi_st_clknrst_gen_if;
    

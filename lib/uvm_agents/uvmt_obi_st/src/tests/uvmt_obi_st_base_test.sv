@@ -17,25 +17,22 @@
 
 
 /**
- * Abstract component from which all other Open Bus Interface test cases must
- * ultimately extend.
- * Subclasses must provide stimulus via the virtual sequencer by implementing
- * UVM runtime phases.
+ * Abstract component from which all other Open Bus Interface test cases must ultimately extend.
+ * Subclasses must provide stimulus via the virtual sequencer by implementing UVM runtime phases.
  */
 class uvmt_obi_st_base_test_c extends uvm_test;
    
    // Objects
-   rand uvmt_obi_st_test_cfg_c  test_cfg ;
-   rand uvme_obi_st_cfg_c       env_cfg  ;
-   uvme_obi_st_cntxt_c          env_cntxt;
-   uvml_logs_rs_text_c          rs       ;
+   rand uvmt_obi_st_test_cfg_c  test_cfg ; ///< 
+   rand uvme_obi_st_cfg_c       env_cfg  ; ///< 
+   uvme_obi_st_cntxt_c          env_cntxt; ///< 
+   uvml_logs_rs_text_c          rs       ; ///< 
    
    // Components
-   uvme_obi_st_env_c   env       ;
-   uvme_obi_st_vsqr_c  vsequencer;
+   uvme_obi_st_env_c   env       ; ///< 
+   uvme_obi_st_vsqr_c  vsequencer; ///< 
    
-   // Handle to clock generation interface
-   virtual uvmt_obi_st_clknrst_gen_if  clknrst_gen_vif;
+   virtual uvmt_obi_st_clknrst_gen_if  clknrst_gen_vif; ///< Handle to clock generation interface
    
    
    `uvm_component_utils_begin(uvmt_obi_st_base_test_c)
@@ -97,8 +94,8 @@ class uvmt_obi_st_base_test_c extends uvm_test;
    extern virtual function void phase_started(uvm_phase phase);
    
    /**
-    * Indicates to the test bench (uvmt_obi_st_tb) that the test has completed.
-    * This is done by checking the properties of the phase argument.
+    * Indicates to the test bench (uvmt_obi_st_tb) that the test has completed.  This is done by checking the
+    * properties of the phase argument.
     */
    extern virtual function void phase_ended(uvm_phase phase);
    
@@ -124,8 +121,7 @@ class uvmt_obi_st_base_test_c extends uvm_test;
    extern function void cfg_hrtbt_monitor();
    
    /**
-    * Assigns environment configuration (env_cfg) handle to environment (env)
-    * using UVM Configuration Database.
+    * Assigns environment configuration (env_cfg) handle to environment (env) using UVM Configuration Database.
     */
    extern function void assign_cfg();
    
@@ -135,8 +131,7 @@ class uvmt_obi_st_base_test_c extends uvm_test;
    extern function void create_cntxt();
    
    /**
-    * Assigns environment context (env_cntxt) handle to environment (env) using
-    * UVM Configuration Database.
+    * Assigns environment context (env_cntxt) handle to environment (env) using UVM Configuration Database.
     */
    extern function void assign_cntxt();
    
@@ -160,11 +155,6 @@ class uvmt_obi_st_base_test_c extends uvm_test;
     */
    extern task start_clk();
    
-   /**
-    * Fatals out after simulation_timeout has elapsed.
-    */
-   extern task simulation_timeout();
-   
 endclass : uvmt_obi_st_base_test_c
 
 
@@ -186,6 +176,7 @@ function void uvmt_obi_st_base_test_c::build_phase(uvm_phase phase);
    create_cfg              ();
    randomize_test          ();
    cfg_hrtbt_monitor       ();
+   cfg_watchdog_timeout    ();
    assign_cfg              ();
    create_cntxt            ();
    assign_cntxt            ();
@@ -198,7 +189,6 @@ endfunction : build_phase
 function void uvmt_obi_st_base_test_c::connect_phase(uvm_phase phase);
    
    super.connect_phase(phase);
-   
    vsequencer = env.vsequencer;
    
 endfunction : connect_phase
@@ -207,7 +197,6 @@ endfunction : connect_phase
 task uvmt_obi_st_base_test_c::run_phase(uvm_phase phase);
    
    super.run_phase(phase);
-   
    start_clk();
    simulation_timeout();
    
@@ -229,11 +218,8 @@ endtask : reset_phase
 
 function void uvmt_obi_st_base_test_c::phase_started(uvm_phase phase);
    
-   string  phase_name = phase.get_name();
-   
    super.phase_started(phase);
-   
-   print_banner($sformatf("start of %s phase", phase_name));
+   print_banner($sformatf("start of %s phase", phase.get_name()));
    
 endfunction : phase_started
 
@@ -241,7 +227,6 @@ endfunction : phase_started
 function void uvmt_obi_st_base_test_c::phase_ended(uvm_phase phase);
    
    super.phase_ended(phase);
-   
    if (phase.is(uvm_final_phase::get())) begin
       uvm_config_db#(bit)::set(null, "", "sim_finished", 1);
       print_banner("test finished");
@@ -287,6 +272,13 @@ function void uvmt_obi_st_base_test_c::cfg_hrtbt_monitor();
    `uvml_hrtbt_set_cfg(heartbeat_period, test_cfg.heartbeat_period)
    
 endfunction : cfg_hrtbt_monitor
+
+
+function void uvmt_obi_st_base_test_c::cfg_watchdog_timeout();
+   
+   `uvml_watchdog_set_cfg(watchdog_timeout, test_cfg.simulation_timeout)
+   
+endfunction : cfg_watchdog_timeout
 
 
 function void uvmt_obi_st_base_test_c::assign_cfg();
@@ -340,18 +332,6 @@ task uvmt_obi_st_base_test_c::start_clk();
    clknrst_gen_vif.start_clk();
    
 endtask : start_clk
-
-
-task uvmt_obi_st_base_test_c::simulation_timeout();
-   
-   fork
-      begin
-         #(test_cfg.simulation_timeout * 1ns);
-         `uvm_fatal("TIMEOUT", $sformatf("Global timeout after %0dns. Heartbeat list:\n%s", test_cfg.simulation_timeout, uvml_default_hrtbt.print_comp_names()))
-      end
-   join_none
-   
-endtask : simulation_timeout
 
 
 `endif // __UVMT_OBI_ST_BASE_TEST_SV__

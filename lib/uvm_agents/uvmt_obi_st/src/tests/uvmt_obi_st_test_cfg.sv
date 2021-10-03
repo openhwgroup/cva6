@@ -17,8 +17,7 @@
 
 
 /**
- * Object encapsulating configuration parameters common to most if not all tests
- * extending from uvmt_obi_st_base_test_c.
+ * Object encapsulating configuration parameters common to most if not all tests extending from uvmt_obi_st_base_test_c.
  */
 class uvmt_obi_st_test_cfg_c extends uvm_object;
    

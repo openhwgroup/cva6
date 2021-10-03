@@ -17,8 +17,8 @@
 
 
 /**
- * Object encapsulating all state variables for Open Bus Interface VIP Self-Testing environment
- * (uvme_obi_st_env_c) components.
+ * Object encapsulating all state variables for Open Bus Interface VIP Self-Testing environment (uvme_obi_st_env_c)
+ * components.
  */
 class uvme_obi_st_cntxt_c extends uvm_object;
    

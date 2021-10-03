@@ -30,7 +30,7 @@ class uvme_obi_st_env_c extends uvm_env;
    uvma_obi_agent_c  slv_agent ;
    
    // Components
-   uvme_obi_st_cov_model_c     cov_model;
+   //uvme_obi_st_cov_model_c     cov_model;
    uvme_obi_st_prd_c           predictor;
    uvme_obi_st_sb_simplex_c    sb;
    uvme_obi_st_vsqr_c          vsequencer;
@@ -63,6 +63,11 @@ class uvme_obi_st_env_c extends uvm_env;
     * 4. Connects agents to coverage model via connect_coverage_model()
     */
    extern virtual function void connect_phase(uvm_phase phase);
+   
+   /**
+    * TODO Describe uvme_obi_st_env_c::run_phase()
+    */
+   extern virtual task run_phase(uvm_phase phase);
    
    /**
     * Assigns configuration handles to components using UVM Configuration Database.
@@ -182,6 +187,17 @@ function void uvme_obi_st_env_c::connect_phase(uvm_phase phase);
 endfunction: connect_phase
 
 
+task uvme_obi_st_env_c::run_phase(uvm_phase phase);
+   
+   uvma_obi_slv_handler_mem_vseq_c  slv_mem_vseq;
+   
+   super.run_phase(phase);
+   slv_mem_vseq = uvma_obi_slv_handler_mem_vseq_c::type_id::create("slv_mem_vseq");
+   slv_mem_vseq.start(vsequencer.slv_vsequencer);
+   
+endtask : run_phase
+
+
 function void uvme_obi_st_env_c::assign_cfg();
    
    uvm_config_db#(uvme_obi_st_cfg_c)::set(this, "*"         , "cfg", cfg         );
@@ -230,7 +246,7 @@ endfunction: create_vsequencer
 
 function void uvme_obi_st_env_c::create_cov_model();
    
-   cov_model = uvme_obi_st_cov_model_c::type_id::create("cov_model", this);
+   //cov_model = uvme_obi_st_cov_model_c::type_id::create("cov_model", this);
    
 endfunction: create_cov_model
 
@@ -257,18 +273,18 @@ endfunction: connect_scoreboard
 
 function void uvme_obi_st_env_c::assemble_vsequencer();
    
-   vsequencer.mstr_sequencer = mstr_agent.sequencer;
-   vsequencer.slv_sequencer  = slv_agent .sequencer;
+   vsequencer.mstr_vsequencer = mstr_agent.vsequencer;
+   vsequencer.slv_vsequencer  = slv_agent .vsequencer;
    
 endfunction: assemble_vsequencer
 
 
 function void uvme_obi_st_env_c::connect_coverage_model();
    
-   mstr_agent.drv_mstr_ap.connect(cov_model.mstr_seq_item_fifo.analysis_export);
-   mstr_agent.mon_ap     .connect(cov_model.mstr_mon_trn_fifo .analysis_export);
-   slv_agent .drv_slv_ap .connect(cov_model.slv_mon_trn_fifo  .analysis_export);
-   slv_agent .mon_ap     .connect(cov_model.slv_mon_trn_fifo  .analysis_export);
+   //mstr_agent.drv_mstr_ap.connect(cov_model.mstr_seq_item_fifo.analysis_export);
+   //mstr_agent.mon_ap     .connect(cov_model.mstr_mon_trn_fifo .analysis_export);
+   //slv_agent .drv_slv_ap .connect(cov_model.slv_mon_trn_fifo  .analysis_export);
+   //slv_agent .mon_ap     .connect(cov_model.slv_mon_trn_fifo  .analysis_export);
    
 endfunction: connect_coverage_model
 

@@ -21,13 +21,11 @@
  */
 class uvme_obi_st_reads_vseq_c extends uvme_obi_st_base_vseq_c;
    
-   rand uvma_obi_storage_slv_seq_c  slv_seq;
-   rand int unsigned                       num_reads;
+   rand int unsigned  num_reads; ///< 
    
    
    `uvm_object_utils_begin(uvme_obi_st_reads_vseq_c)
-      `uvm_field_object(slv_seq  , UVM_DEFAULT          )
-      `uvm_field_int   (num_reads, UVM_DEFAULT + UVM_DEC)
+      `uvm_field_int(num_reads, UVM_DEFAULT + UVM_DEC)
    `uvm_object_utils_end
    
    
@@ -60,20 +58,11 @@ task uvme_obi_st_reads_vseq_c::body();
    
    uvma_obi_seq_item_c  _req;
    
-   fork
-      begin
-         `uvm_do_on(slv_seq, p_sequencer.slv_sequencer)
-      end
-      
-      begin
-         repeat (num_reads) begin
-            `uvm_do_on_with(_req, p_sequencer.mstr_sequencer, {
-               access_type == UVMA_obi_ACCESS_READ;
-            })
-         end
-      end
-   join_any
-   disable fork;
+   repeat (num_reads) begin
+      `uvm_do_on_with(_req, p_sequencer.mstr_sequencer, {
+         access_type == UVMA_OBI_ACCESS_READ;
+      })
+   end
    
 endtask : body
 
