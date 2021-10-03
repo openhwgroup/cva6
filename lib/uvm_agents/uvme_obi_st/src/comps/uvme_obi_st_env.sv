@@ -1,20 +1,15 @@
-// 
 // Copyright 2021 OpenHW Group
 // Copyright 2021 Datum Technology Corporation
+// Copyright 2021 Silicon Labs
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // SPDX-License-Identifier: Apache-2.0 WITH SHL-2.1
-// 
-// Licensed under the Solderpad Hardware License v 2.1 (the "License"); you may
-// not use this file except in compliance with the License, or, at your option,
-// the Apache License version 2.0. You may obtain a copy of the License at
-// 
-//     https://solderpad.org/licenses/SHL-2.1/
-// 
-// Unless required by applicable law or agreed to in writing, any work
-// distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
-// WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
-// License for the specific language governing permissions and limitations
-// under the License.
-// 
+// Licensed under the Solderpad Hardware License v 2.1 (the "License"); you may not use this file except in compliance
+// with the License, or, at your option, the Apache License version 2.0.  You may obtain a copy of the License at
+//                                        https://solderpad.org/licenses/SHL-2.1/
+// Unless required by applicable law or agreed to in writing, any work distributed under the License is distributed on
+// an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.  See the License for the
+// specific language governing permissions and limitations under the License.
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 
 `ifndef __UVME_OBI_ST_ENV_SV__
@@ -22,8 +17,7 @@
 
 
 /**
- * Top-level component that encapsulates, builds and connects all other
- * Open Bus Interface environment components.
+ * Top-level component that encapsulates, builds and connects all other Open Bus Interface environment components.
  */
 class uvme_obi_st_env_c extends uvm_env;
    
@@ -32,8 +26,8 @@ class uvme_obi_st_env_c extends uvm_env;
    uvme_obi_st_cntxt_c  cntxt;
    
    // Agents
-   uvma_obi_memory_agent_c  mstr_agent;
-   uvma_obi_memory_agent_c  slv_agent ;
+   uvma_obi_agent_c  mstr_agent;
+   uvma_obi_agent_c  slv_agent ;
    
    // Components
    uvme_obi_st_cov_model_c     cov_model;
@@ -190,10 +184,10 @@ endfunction: connect_phase
 
 function void uvme_obi_st_env_c::assign_cfg();
    
-   uvm_config_db#(uvme_obi_st_cfg_c       )::set(this, "*"         , "cfg", cfg         );
-   uvm_config_db#(uvma_obi_memory_cfg_c   )::set(this, "mstr_agent", "cfg", cfg.mstr_cfg);
-   uvm_config_db#(uvma_obi_memory_cfg_c   )::set(this, "slv_agent" , "cfg", cfg.slv_cfg );
-   uvm_config_db#(uvml_sb_cfg_c           )::set(this, "sb"        , "cfg", cfg.sb_cfg  );
+   uvm_config_db#(uvme_obi_st_cfg_c)::set(this, "*"         , "cfg", cfg         );
+   uvm_config_db#(uvma_obi_cfg_c   )::set(this, "mstr_agent", "cfg", cfg.mstr_cfg);
+   uvm_config_db#(uvma_obi_cfg_c   )::set(this, "slv_agent" , "cfg", cfg.slv_cfg );
+   uvm_config_db#(uvml_sb_cfg_c    )::set(this, "sb"        , "cfg", cfg.sb_cfg  );
    
 endfunction: assign_cfg
 
@@ -201,8 +195,8 @@ endfunction: assign_cfg
 function void uvme_obi_st_env_c::assign_cntxt();
    
    uvm_config_db#(uvme_obi_st_cntxt_c)::set(this, "*"         , "cntxt", cntxt           );
-   uvm_config_db#(uvma_obi_memory_cntxt_c   )::set(this, "mstr_agent", "cntxt", cntxt.mstr_cntxt);
-   uvm_config_db#(uvma_obi_memory_cntxt_c   )::set(this, "slv_agent" , "cntxt", cntxt.slv_cntxt );
+   uvm_config_db#(uvma_obi_cntxt_c   )::set(this, "mstr_agent", "cntxt", cntxt.mstr_cntxt);
+   uvm_config_db#(uvma_obi_cntxt_c   )::set(this, "slv_agent" , "cntxt", cntxt.slv_cntxt );
    uvm_config_db#(uvml_sb_cntxt_c    )::set(this, "sb"        , "cntxt", cntxt.sb_cntxt  );
    
 endfunction: assign_cntxt
@@ -210,8 +204,8 @@ endfunction: assign_cntxt
 
 function void uvme_obi_st_env_c::create_agents();
    
-   mstr_agent = uvma_obi_memory_agent_c::type_id::create("mstr_agent", this);
-   slv_agent  = uvma_obi_memory_agent_c::type_id::create("slv_agent" , this);
+   mstr_agent = uvma_obi_agent_c::type_id::create("mstr_agent", this);
+   slv_agent  = uvma_obi_agent_c::type_id::create("slv_agent" , this);
    
 endfunction: create_agents
 

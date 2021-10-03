@@ -1,20 +1,15 @@
-// 
 // Copyright 2021 OpenHW Group
 // Copyright 2021 Datum Technology Corporation
+// Copyright 2021 Silicon Labs
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // SPDX-License-Identifier: Apache-2.0 WITH SHL-2.1
-// 
-// Licensed under the Solderpad Hardware License v 2.1 (the "License"); you may
-// not use this file except in compliance with the License, or, at your option,
-// the Apache License version 2.0. You may obtain a copy of the License at
-// 
-//     https://solderpad.org/licenses/SHL-2.1/
-// 
-// Unless required by applicable law or agreed to in writing, any work
-// distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
-// WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
-// License for the specific language governing permissions and limitations
-// under the License.
-// 
+// Licensed under the Solderpad Hardware License v 2.1 (the "License"); you may not use this file except in compliance
+// with the License, or, at your option, the Apache License version 2.0.  You may obtain a copy of the License at
+//                                        https://solderpad.org/licenses/SHL-2.1/
+// Unless required by applicable law or agreed to in writing, any work distributed under the License is distributed on
+// an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.  See the License for the
+// specific language governing permissions and limitations under the License.
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 
 `ifndef __UVME_OBI_ST_CFG_SV__
@@ -22,23 +17,22 @@
 
 
 /**
- * Object encapsulating all parameters for creating, connecting and running
- * Open Bus Interface VIP Self-Testing Environment (uvme_obi_st_env_c)
- * components.
+ * Object encapsulating all parameters for creating, connecting and running Open Bus Interface VIP Self-Testing
+ * Environment (uvme_obi_st_env_c) components.
  */
 class uvme_obi_st_cfg_c extends uvm_object;
    
    // Integrals
-   rand bit                      enabled;
-   rand uvm_active_passive_enum  is_active;
-   rand bit                      scoreboarding_enabled;
-   rand bit                      cov_model_enabled;
-   rand bit                      trn_log_enabled;
+   rand bit                      enabled              ; ///< 
+   rand uvm_active_passive_enum  is_active            ; ///< 
+   rand bit                      scoreboarding_enabled; ///< 
+   rand bit                      cov_model_enabled    ; ///< 
+   rand bit                      trn_log_enabled      ; ///< 
    
    // Objects
-   rand uvma_obi_memory_cfg_c  mstr_cfg;
-   rand uvma_obi_memory_cfg_c  slv_cfg;
-   rand uvml_sb_cfg_c   sb_cfg;
+   rand uvma_obi_cfg_c  mstr_cfg; ///< 
+   rand uvma_obi_cfg_c  slv_cfg ; ///< 
+   rand uvml_sb_cfg_c   sb_cfg  ; ///< 
    
    
    `uvm_object_utils_begin(uvme_obi_st_cfg_c)
@@ -99,10 +93,10 @@ class uvme_obi_st_cfg_c extends uvm_object;
       mstr_cfg.data_width  == slv_cfg.data_width ;
       mstr_cfg.id_width    == slv_cfg.id_width   ;
       
-      mstr_cfg.drv_mode == UVMA_OBI_MEMORY_MODE_MSTR ;
-      mstr_cfg.drv_idle == UVMA_OBI_MEMORY_DRV_IDLE_X;
-      slv_cfg .drv_mode == UVMA_OBI_MEMORY_MODE_SLV  ;
-      slv_cfg .drv_idle == UVMA_OBI_MEMORY_DRV_IDLE_X;
+      mstr_cfg.drv_mode == UVMA_obi_MODE_MSTR ;
+      mstr_cfg.drv_idle == UVMA_obi_DRV_IDLE_X;
+      slv_cfg .drv_mode == UVMA_obi_MODE_SLV  ;
+      slv_cfg .drv_idle == UVMA_obi_DRV_IDLE_X;
    }
    
    constraint sb_cfg_cons {
@@ -128,8 +122,8 @@ function uvme_obi_st_cfg_c::new(string name="uvme_obi_st_cfg");
    
    super.new(name);
    
-   mstr_cfg = uvma_obi_memory_cfg_c::type_id::create("mstr_cfg");
-   slv_cfg  = uvma_obi_memory_cfg_c::type_id::create("slv_cfg" );
+   mstr_cfg = uvma_obi_cfg_c::type_id::create("mstr_cfg");
+   slv_cfg  = uvma_obi_cfg_c::type_id::create("slv_cfg" );
    sb_cfg   = uvml_sb_cfg_c ::type_id::create("sb_cfg"  );
    
 endfunction : new

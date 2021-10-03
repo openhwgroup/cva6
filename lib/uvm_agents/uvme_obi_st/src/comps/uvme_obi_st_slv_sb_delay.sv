@@ -1,20 +1,15 @@
-// 
 // Copyright 2021 OpenHW Group
 // Copyright 2021 Datum Technology Corporation
+// Copyright 2021 Silicon Labs
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // SPDX-License-Identifier: Apache-2.0 WITH SHL-2.1
-// 
-// Licensed under the Solderpad Hardware License v 2.1 (the "License"); you may
-// not use this file except in compliance with the License, or, at your option,
-// the Apache License version 2.0. You may obtain a copy of the License at
-// 
-//     https://solderpad.org/licenses/SHL-2.1/
-// 
-// Unless required by applicable law or agreed to in writing, any work
-// distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
-// WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
-// License for the specific language governing permissions and limitations
-// under the License.
-// 
+// Licensed under the Solderpad Hardware License v 2.1 (the "License"); you may not use this file except in compliance
+// with the License, or, at your option, the Apache License version 2.0.  You may obtain a copy of the License at
+//                                        https://solderpad.org/licenses/SHL-2.1/
+// Unless required by applicable law or agreed to in writing, any work distributed under the License is distributed on
+// an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.  See the License for the
+// specific language governing permissions and limitations under the License.
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 
 `ifndef __UVME_OBI_ST_SLV_SB_DELAY_SV__
@@ -31,9 +26,9 @@ class uvme_obi_st_slv_sb_delay_c extends uvm_component;
    uvme_obi_st_cntxt_c  cntxt;
    
    // TLM
-   uvm_analysis_export  #(uvma_obi_memory_mon_trn_c)  in_export;
-   uvm_tlm_analysis_fifo#(uvma_obi_memory_mon_trn_c)  in_fifo  ;
-   uvm_analysis_port    #(uvma_obi_memory_mon_trn_c)  out_ap   ;
+   uvm_analysis_export  #(uvma_obi_mon_trn_c)  in_export;
+   uvm_tlm_analysis_fifo#(uvma_obi_mon_trn_c)  in_fifo  ;
+   uvm_analysis_port    #(uvma_obi_mon_trn_c)  out_ap   ;
    
    
    `uvm_component_utils_begin(uvme_obi_st_slv_sb_delay_c)
@@ -106,14 +101,14 @@ endfunction: connect_phase
 
 task uvme_obi_st_slv_sb_delay_c::run_phase(uvm_phase phase);
    
-   uvma_obi_memory_mon_trn_c  in_trn, out_trn;
+   uvma_obi_mon_trn_c  in_trn, out_trn;
    
    super.run_phase(phase);
    
    forever begin
       // Get next transaction and copy it
       in_fifo.get(in_trn);
-      out_trn = uvma_obi_memory_mon_trn_c::type_id::create("out_trn");
+      out_trn = uvma_obi_mon_trn_c::type_id::create("out_trn");
       out_trn.copy(in_trn);
       
       // Send transaction to analysis port
