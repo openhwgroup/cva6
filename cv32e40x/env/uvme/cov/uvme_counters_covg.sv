@@ -96,17 +96,52 @@ covergroup cg_mhpm (int idx)
 endgroup : cg_mhpm
 
 
-// TODO cg for inhibit mixes
+covergroup cg_inhibit_mix (int idx)
+  with function sample(uvma_rvfi_instr_seq_item_c#(ILEN, XLEN) rvfi);
+
+  `per_instance_fcov
+
+  cp_inhibit_mcycle : coverpoint rvfi.csrs["mcountinhibit"].get_csr_retirement_data()[0];
+  cp_inhibit_minstret : coverpoint rvfi.csrs["mcountinhibit"].get_csr_retirement_data()[2];
+  cp_is_csr_read : coverpoint ((rvfi.insn[6:0] == 7'b 1110011) && (rvfi.insn[13:12] != 2'b 00) && (rvfi.insn[11:7] != 0)) {
+    bins is_csr_read = {1};
+  }
+  cp_is_event_cycles : coverpoint rvfi.csrs[$sformatf("mhpmevent%0d", idx)].get_csr_retirement_data() {
+    bins event_cycles = {1};  // selector CYCLES is bit 0
+  }
+  cp_is_event_instr : coverpoint rvfi.csrs[$sformatf("mhpmevent%0d", idx)].get_csr_retirement_data() {
+    bins event_instr = {2};  // selector INSTR is bit 1
+  }
+  cp_is_mhpm_idx : coverpoint (rvfi.insn[31:20] == (12'h B00 + idx)) {
+    bins mhpm_idx = {1};
+  }
+
+  x_check_mcycle : cross cp_inhibit_mcycle, cp_is_csr_read, cp_is_event_cycles, cp_is_mhpm_idx {
+    option.at_least = 2;
+  }
+  x_check_minstret : cross cp_inhibit_minstret, cp_is_csr_read, cp_is_event_instr, cp_is_mhpm_idx {
+    option.at_least = 2;
+  }
+
+endgroup : cg_inhibit_mix
 
 
-class cg_mhpm_wrapper extends uvm_component;
 
-  cg_mhpm  cg;
+class cg_idx_wrapper extends uvm_component;
+
+  cg_mhpm  mhpm_cg;
+  cg_inhibit_mix  inhibit_mix_cg;
 
   function new(string name = "cg_mhpm_wrapper", uvm_component parent = null, int idx);
     super.new(name, parent);
-    this.cg = new(idx);
+    this.mhpm_cg = new(idx);
+    this.inhibit_mix_cg = new(idx);
   endfunction : new
+
+  function sample(uvma_rvfi_instr_seq_item_c#(ILEN, XLEN) rvfi);
+    mhpm_cg.sample(rvfi);
+    inhibit_mix_cg.sample(rvfi);
+  endfunction : sample
 
 endclass : cg_mhpm_wrapper
 
@@ -114,7 +149,7 @@ endclass : cg_mhpm_wrapper
 class uvme_counters_covg extends uvm_component;
 
   cg_counters  counters_cg;
-  cg_mhpm_wrapper  mhpm_cgs[3:31];
+  cg_idx_wrapper  idx_cgs[3:31];
   uvm_analysis_imp_rvfi#(uvma_rvfi_instr_seq_item_c#(ILEN, XLEN), uvme_counters_covg)  rvfi_mon_export;
   uvma_core_cntrl_cfg_c  cfg;
 
@@ -144,7 +179,7 @@ function void uvme_counters_covg::build_phase(uvm_phase phase);
   if (!cfg) `uvm_fatal("COUNTERSCOVG", "Configuration handle is null")
 
   counters_cg = new(cfg.num_mhpmcounters);
-  for (int i = 3; i <=31; i++) mhpm_cgs[i] = new(.name($sformatf("cg_mhpm_wrapper_%02d", i)), .parent(this), .idx(i));
+  for (int i = 3; i <=31; i++) idx_cgs[i] = new(.name($sformatf("cg_idx_wrapper_%02d", i)), .parent(this), .idx(i));
 
 endfunction : build_phase
 
@@ -152,6 +187,6 @@ endfunction : build_phase
 function void uvme_counters_covg::write_rvfi(uvma_rvfi_instr_seq_item_c#(ILEN, XLEN) trn);
 
   counters_cg.sample(trn);
-  for (int i = 0; i < cfg.num_mhpmcounters; i++) mhpm_cgs[i + 3].cg.sample(trn);
+  for (int i = 0; i < cfg.num_mhpmcounters; i++) idx_cgs[i + 3].sample(trn);
 
 endfunction : write_rvfi
