@@ -19,7 +19,7 @@
 `uvm_analysis_imp_decl(_rvfi)
 
 
-covergroup cg_counters
+covergroup cg_counters (int num_mhpmcounters)
   with function sample(uvma_rvfi_instr_seq_item_c#(ILEN, XLEN) rvfi);
 
   `per_instance_fcov
@@ -34,7 +34,12 @@ covergroup cg_counters
   }
   cp_mcycle : coverpoint (rvfi.insn[31:20] == 12'h B00);
   cp_minstret : coverpoint (rvfi.insn[31:20] == 12'h B02);
-  // TODO:ropeders add all coverpoints
+  cp_num_mhpmcounters : coverpoint num_mhpmcounters {
+    bins min = {0};
+    bins def = {1};
+    bins any = {[2:28]};
+    bins max = {29};
+  }
 
   x_check_mcycle : cross cp_inhibit_mcycle, cp_is_csr_read, cp_mcycle {
     option.at_least = 2;
@@ -47,7 +52,6 @@ covergroup cg_counters
     option.at_least = 2;
     ignore_bins ig = binsof(cp_inhibit_mcycle) intersect {1} || binsof(cp_minstret) intersect {0};
   }
-  // TODO:ropeders add all crosses
 endgroup : cg_counters
 
 
@@ -77,7 +81,6 @@ covergroup cg_mhpm (int idx)
   cp_is_dbg_mode : coverpoint rvfi.dbg_mode {
     bins dbg_mode = {1};
   }
-  // TODO cp_idx
 
   x_check_mhpm : cross cp_inhibit, cp_event, cp_is_csr_read, cp_is_mhpm_idx {
     option.at_least = 2;
@@ -91,6 +94,9 @@ covergroup cg_mhpm (int idx)
   }
 
 endgroup : cg_mhpm
+
+
+// TODO cg for inhibit mixes
 
 
 class cg_mhpm_wrapper extends uvm_component;
@@ -137,7 +143,7 @@ function void uvme_counters_covg::build_phase(uvm_phase phase);
   void'(uvm_config_db#(uvma_core_cntrl_cfg_c)::get(this, "", "cfg", cfg));
   if (!cfg) `uvm_fatal("COUNTERSCOVG", "Configuration handle is null")
 
-  counters_cg = new();
+  counters_cg = new(cfg.num_mhpmcounters);
   for (int i = 3; i <=31; i++) mhpm_cgs[i] = new(.name($sformatf("cg_mhpm_wrapper_%02d", i)), .parent(this), .idx(i));
 
 endfunction : build_phase
