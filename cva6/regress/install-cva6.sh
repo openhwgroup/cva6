@@ -17,7 +17,7 @@ if ! [ -n "$RISCV" ]; then
   return
 fi
 
-# install Verilator 
+# install Verilator
 if ! [ -n "$VERILATOR_ROOT" ]; then
   export VERILATOR_ROOT=$TOP/verilator-4.110/
 fi
@@ -35,8 +35,8 @@ export NUM_JOBS=24
 # install the required tools for cva6
 if ! [ -n "$CVA6_REPO" ]; then
   CVA6_REPO="https://github.com/openhwgroup/cva6.git"
-  CVA6_BRANCH="cva6_reorg"
-  CVA6_HASH="95b1070a76d2399ff4a95af70082514b0d0c5743"
+  CVA6_BRANCH="master"
+  CVA6_HASH="43677af15159a29bd592d0a98f0bc7e21df5df84"
   CVA6_PATCH=
 fi
 echo $CVA6_REPO
