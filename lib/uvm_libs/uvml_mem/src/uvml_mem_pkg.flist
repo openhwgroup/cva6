@@ -13,7 +13,9 @@
 
 
 // Directories
-+incdir+${DV_UVML_MEM_PATH}
++incdir+${DV_UVML_MEM_SRC_PATH}
++incdir+${DV_UVML_MEM_SRC_PATH}/comps
++incdir+${DV_UVML_MEM_SRC_PATH}/obj
 
 // Files
-${DV_UVML_MEM_PATH}/uvml_mem_pkg.sv
+${DV_UVML_MEM_SRC_PATH}/uvml_mem_pkg.sv

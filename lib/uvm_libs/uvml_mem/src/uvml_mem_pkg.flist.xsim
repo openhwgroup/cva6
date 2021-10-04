@@ -12,20 +12,10 @@
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 
-`ifndef __UVML_MEM_TDEFS_SV__
-`define __UVML_MEM_TDEFS_SV__
+// Directories
+-i ${DV_UVML_MEM_SRC_PATH}
+-i ${DV_UVML_MEM_SRC_PATH}/comps
+-i ${DV_UVML_MEM_SRC_PATH}/obj
 
-
-/**
- * 
- */
-typedef enum {
-    UVML_MEM_DEFAULT_VAL_X     , ///< 
-    UVML_MEM_DEFAULT_VAL_0     , ///< 
-    UVML_MEM_DEFAULT_VAL_CONST , ///< 
-    UVML_MEM_DEFAULT_VAL_INCR  , ///< 
-    UVML_MEM_DEFAULT_VAL_RANDOM  ///< 
-} uvml_mem_default_val_enum;
-
-
-`endif // __UVML_MEM_TDEFS_SV__
+// Files
+${DV_UVML_MEM_SRC_PATH}/uvml_mem_pkg.sv
