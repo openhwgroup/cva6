@@ -402,7 +402,6 @@ function void uvme_cv32e40x_env_c::connect_coverage_model();
    foreach (rvfi_agent.instr_mon_ap[i]) begin
       rvfi_agent.instr_mon_ap[i].connect(isacov_agent.monitor.rvfi_instr_export);
       rvfi_agent.instr_mon_ap[i].connect(cov_model.interrupt_covg.interrupt_mon_export);
-      rvfi_agent.instr_mon_ap[i].connect(cov_model.pma_covg.rvfi_pma_export);
    end
 
 endfunction: connect_coverage_model
