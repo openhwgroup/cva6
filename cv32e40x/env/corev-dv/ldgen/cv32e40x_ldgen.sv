@@ -299,7 +299,7 @@ function void cv32e40x_ldgen_c::create_memory_layout_file(string filepath);
       end
 
       // Write to memory.ld
-      $fdisplay(fhandle_mem, { indent(L1), $sformatf("region_%-2d %-7s : ORIGIN = 0x%08x, LENGTH = 0x%08x",
+      $fdisplay(fhandle_mem, { indent(L1), $sformatf("region_%0d %-7s : ORIGIN = 0x%08x, LENGTH = 0x%08x",
                                                     i, region_attributes, pma_adapted_memory.region[i].cfg.word_addr_low<<2, region_length) });
     end // foreach
 
