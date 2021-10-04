@@ -91,7 +91,7 @@ function void uvme_cv32e40x_cov_model_c::build_phase(uvm_phase phase);
    uvm_config_db#(uvme_cv32e40x_cntxt_c)::set(this, "debug_covg", "cntxt", cntxt);
 
    counters_covg = uvme_counters_covg::type_id::create("counters_covg", this);
-   // TODO:ropeders uvm_config_db#(uvme_cv32e40x_cntxt_c)::set(this, "counters_covg", "cntxt", cntxt);
+   uvm_config_db#(uvma_core_cntrl_cfg_c)::set(this, "counters_covg", "cfg", cfg);
 
 endfunction : build_phase
 
