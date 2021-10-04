@@ -22,19 +22,19 @@
 class uvme_obi_st_env_c extends uvm_env;
    
    // Objects
-   uvme_obi_st_cfg_c    cfg;
-   uvme_obi_st_cntxt_c  cntxt;
+   uvme_obi_st_cfg_c    cfg  ; ///< 
+   uvme_obi_st_cntxt_c  cntxt; ///< 
    
    // Agents
-   uvma_obi_agent_c  mstr_agent;
-   uvma_obi_agent_c  slv_agent ;
+   uvma_obi_agent_c  mstr_agent; ///< 
+   uvma_obi_agent_c  slv_agent ; ///< 
    
    // Components
-   //uvme_obi_st_cov_model_c     cov_model;
-   uvme_obi_st_prd_c           predictor;
-   uvme_obi_st_sb_simplex_c    sb;
-   uvme_obi_st_vsqr_c          vsequencer;
-   uvme_obi_st_slv_sb_delay_c  slv_sb_delay;
+   //uvme_obi_st_cov_model_c     cov_model   ; ///< 
+   uvme_obi_st_prd_c           predictor   ; ///< 
+   uvme_obi_st_sb_simplex_c    sb          ; ///< 
+   uvme_obi_st_vsqr_c          vsequencer  ; ///< 
+   uvme_obi_st_slv_sb_delay_c  slv_sb_delay; ///< 
    
    
    `uvm_component_utils_begin(uvme_obi_st_env_c)
