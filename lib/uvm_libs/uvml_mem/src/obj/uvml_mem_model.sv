@@ -20,7 +20,7 @@
  * Memory model
  */
 class uvml_mem_model_c #(
-   int unsigned XLEN=UVML_MEM_DEFAULT_XLEN
+   int unsigned XLEN = `UVML_MEM_DEFAULT_XLEN
 ) extends uvm_object;
    
    rand      uvml_mem_default_val_enum  mem_default            ; ///< 
