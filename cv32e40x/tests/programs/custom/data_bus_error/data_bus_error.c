@@ -37,14 +37,26 @@ volatile uint32_t  load_bus_fault_count      = 0;
 volatile uint32_t  load_bus_fault_exp        = 0;
 volatile uint32_t  store_bus_fault_count     = 0;
 volatile uint32_t  store_bus_fault_exp       = 0;
-volatile uint32_t  error_word                = 0xbeef1234;
+volatile uint32_t  error_word                = 0x789a1234;
 
 void handle_data_load_bus_fault() {
-  load_bus_fault_count++;
+    __asm__ __volatile__(
+        "la a0, load_bus_fault_count \n"
+        "lw a1, 0(a0) \n"
+        "addi a1,a1,1 \n"
+        "sw a1, 0(a0) \n"
+        "j nmi_end_handler_ret" : : :
+    );
 }
 
 void handle_data_store_bus_fault() {
-  store_bus_fault_count++;
+    __asm__ __volatile__(
+        "la a0, store_bus_fault_count \n"
+        "lw a1, 0(a0) \n"
+        "addi a1,a1,1 \n"
+        "sw a1, 0(a0) \n"
+        "j nmi_end_handler_ret" : : :
+    );
 }
 
 int test_data_load_error() {
@@ -52,7 +64,7 @@ int test_data_load_error() {
 
   printf("Testing data load bus fault injection\n");
 
-  load_bus_fault_exp  = 0;
+  load_bus_fault_exp  = 1;
   store_bus_fault_exp = 0;
 
   if (load_bus_fault_count != 0) {
@@ -76,11 +88,12 @@ int test_data_load_error() {
 
   // Verify we received a fault
   if (load_bus_fault_count != load_bus_fault_exp) {
-    printf("loads: recevied %lu bus faults, expected %lu\n", load_bus_fault_count, load_bus_fault_exp);
+    printf("loads: received %lu bus faults, expected %lu\n", load_bus_fault_count, load_bus_fault_exp);
     return EXIT_FAILURE;
   }
+
   if (store_bus_fault_count != store_bus_fault_exp) {
-    printf("loads: recevied %lu bus faults, expected %lu\n", store_bus_fault_count, store_bus_fault_exp);
+    printf("loads: received %lu bus faults, expected %lu\n", store_bus_fault_count, store_bus_fault_exp);
     return EXIT_FAILURE;
   }
 
@@ -96,7 +109,7 @@ int test_data_store_error() {
   printf("Testing data store bus fault injection\n");
 
   load_bus_fault_exp  = 0;
-  store_bus_fault_exp = 0;
+  store_bus_fault_exp = 1;
 
   if (load_bus_fault_count != 0) {
     printf("test_data_load_error: Received load bus faults before injecting");
@@ -120,11 +133,11 @@ int test_data_store_error() {
 
   // Verify we received a fault
   if (load_bus_fault_count != load_bus_fault_exp) {
-    printf("loads: recevied %lu bus faults, expected %lu\n", load_bus_fault_count, load_bus_fault_exp);
+    printf("loads: received %lu bus faults, expected %lu\n", load_bus_fault_count, load_bus_fault_exp);
     return EXIT_FAILURE;
   }
   if (store_bus_fault_count != store_bus_fault_exp) {
-    printf("loads: recevied %lu bus faults, expected %lu\n", store_bus_fault_count, store_bus_fault_exp);
+    printf("loads: received %lu bus faults, expected %lu\n", store_bus_fault_count, store_bus_fault_exp);
     return EXIT_FAILURE;
   }
 
@@ -134,8 +147,8 @@ int test_data_store_error() {
   return EXIT_SUCCESS;
 }
 
-int main(int argc, char *argv[])
-{
+int main(int argc, char *argv[]) {
+
   printf("Start data_bus_error test\n");
 
   for (int i = 0; i < TEST_LOOPS; i++) {

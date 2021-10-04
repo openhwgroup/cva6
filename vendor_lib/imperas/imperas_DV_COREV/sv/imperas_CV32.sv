@@ -21,7 +21,60 @@
 
 `include "typedefs.sv"
 
-`include "imperas_CV32.h"
+typedef struct {
+    Uns64 reset;
+    Uns64 reset_addr;
+    Uns64 nmi;
+    Uns64 nmi_cause;
+    Uns64 nmi_addr;
+    Uns64 MSWInterrupt;
+    Uns64 MTimerInterrupt;
+    Uns64 MExternalInterrupt;
+    Uns64 LocalInterrupt0;
+    Uns64 LocalInterrupt1;
+    Uns64 LocalInterrupt2;
+    Uns64 LocalInterrupt3;
+    Uns64 LocalInterrupt4;
+    Uns64 LocalInterrupt5;
+    Uns64 LocalInterrupt6;
+    Uns64 LocalInterrupt7;
+    Uns64 LocalInterrupt8;
+    Uns64 LocalInterrupt9;
+    Uns64 LocalInterrupt10;
+    Uns64 LocalInterrupt11;
+    Uns64 LocalInterrupt12;
+    Uns64 LocalInterrupt13;
+    Uns64 LocalInterrupt14;
+    Uns64 LocalInterrupt15;
+    Uns64 haltreq;
+    Uns64 resethaltreq;
+    Uns64 deferint;
+    Uns64 IllegalInstruction;
+    Uns64 LoadBusFaultNMI;
+    Uns64 StoreBusFaultNMI;
+    Uns64 InstructionBusFault;
+} SVData_ioT;
+
+typedef struct {
+    Uns64 irq_ack_o;
+    Uns64 irq_id_o;
+    Uns64 sec_lvl_o;
+    Uns64 DM;
+} RMData_ioT;
+
+typedef struct {
+    Uns64 retPC;
+    Uns64 excPC;
+    Uns64 nextPC;
+
+    Uns64 order;
+    Uns64 trap;
+} RMData_stateT;
+
+typedef struct {
+    // Signals from SV
+    Uns64 cycles;
+} SVData_stateT;
 
 `ifndef DMI_RAM_PATH
   `define DMI_RAM_PATH ram.memory.mem
@@ -300,15 +353,15 @@ module CPU #(
         //SVData_io.LoadBusFaultNMI     = io.LoadBusFaultNMI;
         //SVData_io.StoreBusFaultNMI    = io.StoreBusFaultNMI;
         
-        SVData_io.InstructionBusFault = io.InstructionBusFault;
+        //SVData_io.InstructionBusFault = io.InstructionBusFault;
         
         SVData_state.cycles           = cycles;
         
         svimp_push(SVData_io, SVData_state);
         
         // clear NMI
-        SVData_io.LoadBusFaultNMI = 0;
-        SVData_io.StoreBusFaultNMI = 0;
+        //SVData_io.LoadBusFaultNMI = 0;
+        //SVData_io.StoreBusFaultNMI = 0;
     endfunction
 
     function automatic void svexp_setDECODE (input string value, input int insn, input int isize);
@@ -646,7 +699,7 @@ module CPU #(
         if ($value$plusargs("ovpcfg=%s", ovpcfg)) begin
         end
     endfunction
-    
+        
     initial begin
         if (!$test$plusargs("DISABLE_OVPSIM")) begin
             #1;
