@@ -349,7 +349,7 @@ module uvmt_cv32e40x_tb;
 
   bind cv32e40x_wrapper
     uvmt_cv32e40x_debug_cov_assert_if debug_cov_assert_if (
-      .id_valid(core_i.id_stage_i.id_valid),
+      .id_valid(core_i.id_stage_i.id_valid_o),
       .ex_stage_csr_en(core_i.id_ex_pipe.csr_en),
       .ex_valid(core_i.ex_stage_i.instr_valid),
       .ex_stage_instr_rdata_i(core_i.id_ex_pipe.instr.bus_resp.rdata),
