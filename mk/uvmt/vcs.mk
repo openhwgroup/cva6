@@ -297,7 +297,7 @@ gen_corev-dv:
 			$(CFG_PLUSARGS) \
 			$(GEN_PLUSARGS)
 	for (( idx=${GEN_START_INDEX}; idx < $$((${GEN_START_INDEX} + ${GEN_NUM_TESTS})); idx++ )); do \
-		cp -f ${BSP}/link_pma.ld ${SIM_TEST_RESULTS}/$$idx/test_program/link.ld; \
+		cp -f ${BSP}/link_corev-dv.ld ${SIM_TEST_RESULTS}/$$idx/test_program/link.ld; \
 		cp ${VCS_COREVDV_RESULTS}/${TEST}/${TEST}_$$idx.S ${SIM_TEST_RESULTS}/$$idx/test_program; \
 	done
 
