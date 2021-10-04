@@ -47,7 +47,10 @@ covergroup cg_counters (int num_mhpmcounters)
   x_check_minstret : cross cp_inhibit_minstret, cp_is_csr_read, cp_minstret {
     option.at_least = 2;
   }
-  // x_mcycle_in_dbg
+  x_mcycle_in_dbg : cross cp_is_dbg_mode, cp_inhibit_mcycle, cp_is_csr_read, cp_mcycle {
+    option.at_least = 2;
+    ignore_bins ig = binsof(cp_inhibit_mcycle) intersect {1} || binsof(cp_mcycle) intersect {0};
+  }
   x_minstret_in_dbg : cross cp_is_dbg_mode, cp_inhibit_mcycle, cp_is_csr_read, cp_minstret {
     option.at_least = 2;
     ignore_bins ig = binsof(cp_inhibit_mcycle) intersect {1} || binsof(cp_minstret) intersect {0};
@@ -143,7 +146,7 @@ class cg_idx_wrapper extends uvm_component;
     inhibit_mix_cg.sample(rvfi);
   endfunction : sample
 
-endclass : cg_mhpm_wrapper
+endclass : cg_idx_wrapper
 
 
 class uvme_counters_covg extends uvm_component;
@@ -187,6 +190,6 @@ endfunction : build_phase
 function void uvme_counters_covg::write_rvfi(uvma_rvfi_instr_seq_item_c#(ILEN, XLEN) trn);
 
   counters_cg.sample(trn);
-  for (int i = 0; i < cfg.num_mhpmcounters; i++) idx_cgs[i + 3].sample(trn);
+  for (int i = 0; i < cfg.num_mhpmcounters; i++) void'(idx_cgs[i + 3].sample(trn));
 
 endfunction : write_rvfi
