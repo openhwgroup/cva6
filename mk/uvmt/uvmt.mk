@@ -386,8 +386,9 @@ clean_embench:
 	rm -rf $(EMBENCH_PKG)
 	cd $(EMBENCH_TESTS) && \
 		find . ! -path . ! -path ./README.md -delete
-	cd $(SIM_TEST_PROGREAM_RESULTS) && \
-		find $(SIM_RESULTS) -depth -type d -name "emb_*" | xargs rm -rf
+	if [ -d "$(SIM_RESULTS)" ]; then \
+		cd $(SIM_RESULTS) && find . -depth -type d -name "emb_*" | xargs rm -rf; \
+	fi
 
 clean_dpi_dasm_spike:
 	rm -rf $(DPI_DASM_SPIKE_PKG)
