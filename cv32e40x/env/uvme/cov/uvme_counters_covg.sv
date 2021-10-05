@@ -41,17 +41,17 @@ covergroup cg_counters (int num_mhpmcounters)
     bins max = {29};
   }
 
-  x_check_mcycle : cross cp_inhibit_mcycle, cp_is_csr_read, cp_mcycle {
+  cross_check_mcycle : cross cp_inhibit_mcycle, cp_is_csr_read, cp_mcycle {
     option.at_least = 2;
   }
-  x_check_minstret : cross cp_inhibit_minstret, cp_is_csr_read, cp_minstret {
+  cross_check_minstret : cross cp_inhibit_minstret, cp_is_csr_read, cp_minstret {
     option.at_least = 2;
   }
-  x_mcycle_in_dbg : cross cp_is_dbg_mode, cp_inhibit_mcycle, cp_is_csr_read, cp_mcycle {
+  cross_mcycle_in_dbg : cross cp_is_dbg_mode, cp_inhibit_mcycle, cp_is_csr_read, cp_mcycle {
     option.at_least = 2;
     ignore_bins ig = binsof(cp_inhibit_mcycle) intersect {1} || binsof(cp_mcycle) intersect {0};
   }
-  x_minstret_in_dbg : cross cp_is_dbg_mode, cp_inhibit_mcycle, cp_is_csr_read, cp_minstret {
+  cross_minstret_in_dbg : cross cp_is_dbg_mode, cp_inhibit_mcycle, cp_is_csr_read, cp_minstret {
     option.at_least = 2;
     ignore_bins ig = binsof(cp_inhibit_mcycle) intersect {1} || binsof(cp_minstret) intersect {0};
   }
@@ -85,13 +85,13 @@ covergroup cg_mhpm (int idx)
     bins dbg_mode = {1};
   }
 
-  x_check_mhpm : cross cp_inhibit, cp_event, cp_is_csr_read, cp_is_mhpm_idx {
+  cross_check_mhpm : cross cp_inhibit, cp_event, cp_is_csr_read, cp_is_mhpm_idx {
     option.at_least = 2;
   }
-  x_check_mhpm_h : cross cp_inhibit, cp_event, cp_is_csr_read, cp_is_mhpm_idx_h {
+  cross_check_mhpm_h : cross cp_inhibit, cp_event, cp_is_csr_read, cp_is_mhpm_idx_h {
     option.at_least = 2;
   }
-  x_mhpm_in_dbg: cross cp_is_dbg_mode, cp_inhibit, cp_event, cp_is_csr_read, cp_is_mhpm_idx {
+  cross_mhpm_in_dbg: cross cp_is_dbg_mode, cp_inhibit, cp_event, cp_is_csr_read, cp_is_mhpm_idx {
     option.at_least = 2;
     ignore_bins ig = binsof(cp_inhibit) intersect {1} || binsof(cp_event) intersect{0};
   }
@@ -119,10 +119,10 @@ covergroup cg_inhibit_mix (int idx)
     bins mhpm_idx = {1};
   }
 
-  x_check_mcycle : cross cp_inhibit_mcycle, cp_is_csr_read, cp_is_event_cycles, cp_is_mhpm_idx {
+  cross_check_mcycle : cross cp_inhibit_mcycle, cp_is_csr_read, cp_is_event_cycles, cp_is_mhpm_idx {
     option.at_least = 2;
   }
-  x_check_minstret : cross cp_inhibit_minstret, cp_is_csr_read, cp_is_event_instr, cp_is_mhpm_idx {
+  cross_check_minstret : cross cp_inhibit_minstret, cp_is_csr_read, cp_is_event_instr, cp_is_mhpm_idx {
     option.at_least = 2;
   }
 
