@@ -272,11 +272,7 @@ function void cv32e40x_ldgen_c::create_memory_layout_file(string filepath);
         end
       end else begin
         if (nmi_addr inside  { [pma_adapted_memory.region[i].cfg.word_addr_low << 2: pma_adapted_memory.region[i].cfg.word_addr_high << 2] }) begin
-          //if ((pma_adapted_memory.region[i].cfg.word_addr_high << 2) - (pma_adapted_memory.region[i].cfg.word_addr_low << 2) <= SMALL_MEM_LIMIT) begin
-          //  if (nmi_addr inside  { [pma_adapted_memory.region[i].cfg.word_addr_low << 2: (pma_adapted_memory.region[i].cfg.word_addr_low << 2) + SMALL_MEM_LIMIT] }) begin
-              disable_section_write_nmi = i;
-          //  end
-          //end
+          disable_section_write_nmi = i;
           nmi_region = i;
         end
       end
@@ -491,7 +487,6 @@ function void cv32e40x_ldgen_c::create_fixed_addr_section_file(string filepath);
   $fdisplay(fhandle_fix, { indent(L1), "/* CORE-V: we want a fixed entry point */" });
   $fdisplay(fhandle_fix, { indent(L1), "PROVIDE(__boot_address = ", $sformatf("0x%08x", boot_addr), ");\n" });
   $fdisplay(fhandle_fix, { indent(L1), "/* NMI interrupt handler fixed entry point */" });
-  //$fdisplay(fhandle_fix, { indent(L1), "PROVIDE(__nmi_handler = ", $sformatf("0x%08x", nmi_addr), ");" });
   $fdisplay(fhandle_fix, { indent(L1), "nmi_handler = ABSOLUTE(", $sformatf("0x%08x",  nmi_addr), ");" });
   if (nmi_region != -1) begin
     $fdisplay(fhandle_fix, { indent(L1), ".nmi (", $sformatf("ORIGIN(region_%0d", nmi_region), ")) :" });
@@ -502,8 +497,6 @@ function void cv32e40x_ldgen_c::create_fixed_addr_section_file(string filepath);
   if (nmi_region != -1) begin
     if (nmi_addr < (pma_adapted_memory.region[nmi_region].cfg.word_addr_low << 2) + nmi_region_half_length) begin
       // nmi_address is in first half, safe to place first in region
-      //$fdisplay(fhandle_fix, { indent(L2), "PROVIDE(nmi_handler = .);" });
-      //$fdisplay(fhandle_fix, { indent(L2), "nmi_handler = ABSOLUTE(", $sformatf("0x%08x",  nmi_addr), ".);" });
       $fdisplay(fhandle_fix, { indent(L2), "KEEP(*(.nmi));" });
       $fdisplay(fhandle_fix, { indent(L2), "KEEP(*(.region_", $sformatf("%0d", nmi_region), "));" });
     end
