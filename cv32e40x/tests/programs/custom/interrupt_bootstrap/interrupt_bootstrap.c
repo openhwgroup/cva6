@@ -83,13 +83,13 @@ void mm_ram_assert_irq(uint32_t mask, uint32_t cycle_delay) {
 }
 
 uint32_t random_num(uint32_t upper_bound, uint32_t lower_bound) {
-    uint32_t random_num = *((volatile int *)0x15001000);
+    uint32_t random_num = *((volatile int *) CV_VP_RANDOM_NUM_BASE);
     uint32_t num = (random_num  % (upper_bound - lower_bound + 1)) + lower_bound;
     return num;
 }
 
 uint32_t random_num32() {
-    uint32_t num = *((volatile int *)0x15001000);
+    uint32_t num = *((volatile int *)CV_VP_RANDOM_NUM_BASE);
     return num;
 }
 

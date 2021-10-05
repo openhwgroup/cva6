@@ -22,6 +22,6 @@
 
 #define CPU_MHZ 1
 
-#define TICKS_ADDR (*((volatile uint32_t*)0x15001004))
+#define TICKS_ADDR (*((volatile uint32_t*) (CV_VP_CYCLE_COUNTER_BASE + 0)))
 
 #endif

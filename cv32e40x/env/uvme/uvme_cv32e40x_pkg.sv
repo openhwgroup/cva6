@@ -70,6 +70,7 @@ package uvme_cv32e40x_pkg;
    `include "uvme_cv32e40x_reset_vseq.sv"
    `include "uvme_cv32e40x_vp_debug_control_seq.sv"
    `include "uvme_cv32e40x_vp_interrupt_timer_seq.sv"
+   `include "uvme_cv32e40x_vp_sig_writer_seq.sv"
    `include "uvme_cv32e40x_vp_status_flags_seq.sv"
    `include "uvme_cv32e40x_interrupt_noise_vseq.sv"
    `include "uvme_cv32e40x_vseq_lib.sv"

@@ -46,7 +46,7 @@ module uvmt_cv32e40x_dut_wrap
     parameter NUM_MHPMCOUNTERS    =  1,
     parameter cv32e40x_pkg::b_ext_e B_EXT  = cv32e40x_pkg::NONE,
     parameter int          PMA_NUM_REGIONS =  0,
-    parameter pma_region_t PMA_CFG[PMA_NUM_REGIONS -1 : 0] = '{default:PMA_R_DEFAULT},
+    parameter pma_region_t PMA_CFG[PMA_NUM_REGIONS-1 : 0] = '{default:PMA_R_DEFAULT},
     // Remaining parameters are used by TB components only
               INSTR_ADDR_WIDTH    =  32,
               INSTR_RDATA_WIDTH   =  32,

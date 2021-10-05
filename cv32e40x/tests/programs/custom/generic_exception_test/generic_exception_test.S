@@ -1,18 +1,18 @@
 #
 # Copyright (C) 2020 by EM Microelectronic US Inc.
-# 
+#
 # Licensed under the Solderpad Hardware Licence, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
-# 
+#
 #     https://solderpad.org/licenses/
-# 
+#
 # Unless required by applicable law or agreed to in writing, software
 # distributed under the License is distributed on an "AS IS" BASIS,
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-# 
+#
 # SPDX-License-Identifier: Apache-2.0 WITH SHL-2.0
 #
 ###############################################################################
@@ -24,12 +24,14 @@
 #
 # The pass/fail criteria is determined by checking x26 against MAGIC_NUMBER,
 # the value of which is determined by summing the following:
-#    - Exception code  2 (Illegal Instruction Exceptions (IIE)): 0x1 
+#    - Exception code  2 (Illegal Instruction Exceptions (IIE)): 0x1
 #    - Exception code  3 (Breakpoint):                           0x10
 #    - Exception code 11 (Environment call):                     0x100
 # If the test has one of each exception code, MAGIC_NUMBER is 0x111
 #
 ###############################################################################
+
+#include "corev_uvmt.h"
 
 .globl _start
 .globl main
@@ -208,7 +210,7 @@ main:
     csrrc x14, mstatus, x0
     nop
     nop
- 
+
 added_by_mike:
 ###############################################################################
 # Randomly generated illegal instructions.  Each one adds 0x1 to MAGIC_NUMBER
@@ -395,7 +397,7 @@ exit:
     beq x26, x16, test_end
     li x18, 1
 test_end:
-    li x17, 0x20000000
+    li x17, CV_VP_STATUS_FLAGS_BASE
     sw x18,0(x17)
     j _exit
 
@@ -493,7 +495,7 @@ _end_trap_Generic_Handler_ASM:
     lw      x31,4(sp)
     addi    sp,sp,120
     mret
-    
+
 _exit:
     j _exit
 
