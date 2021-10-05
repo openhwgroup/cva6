@@ -135,7 +135,10 @@ _trigger_setup:
 
     # Assert debug_req
     li a1, debug_req_reg
-    li t0, 0xc00800c8
+    li t0, CV_VP_DEBUG_CONTROL_DBG_REQ(0x1) | \
+           CV_VP_DEBUG_CONTROL_REQ_MODE(0x1) | \
+           CV_VP_DEBUG_CONTROL_PULSE_DURATION(0x8) | \
+           CV_VP_DEBUG_CONTROL_START_DELAY(0xc8)
     sw t0, 0(a1)
 _wait1:
     la a1, glb_hart_status
@@ -225,7 +228,10 @@ _wait2:
 
     # Assert debug_req
     li a1, debug_req_reg
-    li t0, 0xc00800c8
+    li t0, CV_VP_DEBUG_CONTROL_DBG_REQ(0x1) | \
+           CV_VP_DEBUG_CONTROL_REQ_MODE(0x1) | \
+           CV_VP_DEBUG_CONTROL_PULSE_DURATION(0x8) | \
+           CV_VP_DEBUG_CONTROL_START_DELAY(0xc8)
     sw t0, 0(a1)
 _wait3:
     la a1, glb_hart_status
@@ -249,7 +255,10 @@ _wait3:
 
     # Enable debug_req in VP
     li a1, debug_req_reg
-    li t0, 0xc0050005
+    li t0, CV_VP_DEBUG_CONTROL_DBG_REQ(0x1) | \
+           CV_VP_DEBUG_CONTROL_REQ_MODE(0x1) | \
+           CV_VP_DEBUG_CONTROL_PULSE_DURATION(0x5) | \
+           CV_VP_DEBUG_CONTROL_START_DELAY(0x5)
     sw t0, 0(a1)
 
     # Call trigger function
@@ -278,7 +287,10 @@ _wait3:
     # Enable debug_req in VP
     # ----------------------------------------------------
     li a1, debug_req_reg
-    li t0, 0xc005001c
+    li t0, CV_VP_DEBUG_CONTROL_DBG_REQ(0x1) | \
+           CV_VP_DEBUG_CONTROL_REQ_MODE(0x1) | \
+           CV_VP_DEBUG_CONTROL_PULSE_DURATION(0x5) | \
+           CV_VP_DEBUG_CONTROL_START_DELAY(0x1c)
     sw t0, 0(a1)
 
     # Enable interrupt
@@ -313,7 +325,10 @@ _wait3:
 
     # Enable debug_req in VP
     li a1, debug_req_reg
-    li t0, 0xc005001c
+    li t0, CV_VP_DEBUG_CONTROL_DBG_REQ(0x1) | \
+           CV_VP_DEBUG_CONTROL_REQ_MODE(0x1) | \
+           CV_VP_DEBUG_CONTROL_PULSE_DURATION(0x5) | \
+           CV_VP_DEBUG_CONTROL_START_DELAY(0x1c)
     sw t0, 0(a1)
 
     # Enable interrupt
@@ -348,7 +363,10 @@ _wait3:
 
     # Enable debug_req in VP
     li a1, debug_req_reg
-    li t0, 0xc0050020
+    li t0, CV_VP_DEBUG_CONTROL_DBG_REQ(0x1) | \
+           CV_VP_DEBUG_CONTROL_REQ_MODE(0x1) | \
+           CV_VP_DEBUG_CONTROL_PULSE_DURATION(0x5) | \
+           CV_VP_DEBUG_CONTROL_START_DELAY(0x20)
     sw t0, 0(a1)
 
     # Enable interrupt
@@ -383,7 +401,10 @@ _wait3:
 
     # Enable debug_req in VP
     li a1, debug_req_reg
-    li t0, 0xc0050020
+    li t0, CV_VP_DEBUG_CONTROL_DBG_REQ(0x1) | \
+           CV_VP_DEBUG_CONTROL_REQ_MODE(0x1) | \
+           CV_VP_DEBUG_CONTROL_PULSE_DURATION(0x5) | \
+           CV_VP_DEBUG_CONTROL_START_DELAY(0x20)
     sw t0, 0(a1)
 
     # Enable interrupt
@@ -418,7 +439,10 @@ _wait3:
 
     # Enable debug_req in VP
     li a1, debug_req_reg
-    li t0, 0xc0050024
+    li t0, CV_VP_DEBUG_CONTROL_DBG_REQ(0x1) | \
+           CV_VP_DEBUG_CONTROL_REQ_MODE(0x1) | \
+           CV_VP_DEBUG_CONTROL_PULSE_DURATION(0x5) | \
+           CV_VP_DEBUG_CONTROL_START_DELAY(0x24)
     sw t0, 0(a1)
 
     # Enable interrupt
@@ -443,7 +467,10 @@ _wait3:
     sw t0, 0(a1)
 
     li a1, debug_req_reg
-    li t0, 0xc0050001
+    li t0, CV_VP_DEBUG_CONTROL_DBG_REQ(0x1) | \
+           CV_VP_DEBUG_CONTROL_REQ_MODE(0x1) | \
+           CV_VP_DEBUG_CONTROL_PULSE_DURATION(0x5) | \
+           CV_VP_DEBUG_CONTROL_START_DELAY(0x1)
     sw t0, 0(a1)
     nop
     nop
@@ -469,7 +496,10 @@ _wait3:
     sw t0, 0(a1)
 
     li a1, debug_req_reg
-    li t0, 0xc0050001
+    li t0, CV_VP_DEBUG_CONTROL_DBG_REQ(0x1) | \
+           CV_VP_DEBUG_CONTROL_REQ_MODE(0x1) | \
+           CV_VP_DEBUG_CONTROL_PULSE_DURATION(0x5) | \
+           CV_VP_DEBUG_CONTROL_START_DELAY(0x1)
     sw t0, 0(a1)
     nop
     nop
