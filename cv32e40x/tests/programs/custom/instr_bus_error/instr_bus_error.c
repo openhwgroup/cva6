@@ -60,12 +60,20 @@ void bus_error_func_halfword_align() {
   printf("In the halfword-aligned bus error func\n");
 }
 
+__attribute__((aligned(4)))
+void bus_error_prefetch_func() {
+  asm volatile("c.addi x0,0");
+  asm volatile("c.addi x0,0");
+  asm volatile("c.addi x0,0");
+  asm volatile("c.addi x0,0");
+}
+
 int test_word_aligned_i_error() {
   // Call initially without error injection
   bus_error_func_word_align();
 
   if (bus_fault_count != 0) {
-    printf("Received instruction bus faults before injecting");
+    printf("test_word_aligned_i_error(): Received instruction bus faults before injecting\n");
     return EXIT_FAILURE;
   }
 
@@ -80,7 +88,7 @@ int test_word_aligned_i_error() {
 
   // Verify we received number of faults
   if (bus_fault_count != bus_fault_count_exp) {
-    printf("Only recevied %lu bus faults, expected %lu\n", bus_fault_count, bus_fault_count_exp);
+    printf("test_word_aligned_i_error(): Only recevied %lu bus faults, expected %lu\n", bus_fault_count, bus_fault_count_exp);
     return EXIT_FAILURE;
   }
 
@@ -98,7 +106,7 @@ int test_halfword_aligned_i_error() {
   (*bus_error_func_halfword_align_p2)();
 
   if (bus_fault_count != 0) {
-    printf("Received instruction bus faults before injecting");
+    printf("test_halfword_aligned_i_error(): Received instruction bus faults before injecting\n");
     return EXIT_FAILURE;
   }
 
@@ -113,7 +121,7 @@ int test_halfword_aligned_i_error() {
 
   // Verify we received number of faults
   if (bus_fault_count != bus_fault_count_exp) {
-    printf("Only recevied %lu bus faults, expected %lu\n", bus_fault_count, bus_fault_count_exp);
+    printf("test_halfword_aligned_i_error(): Only recevied %lu bus faults, expected %lu\n", bus_fault_count, bus_fault_count_exp);
     return EXIT_FAILURE;
   }
 
@@ -122,8 +130,33 @@ int test_halfword_aligned_i_error() {
   return EXIT_SUCCESS;
 }
 
-int main(int argc, char *argv[])
-{
+int test_prefetch_i_error() {
+
+  if (bus_fault_count != 0) {
+    printf("test_prefetch_i_error(): Received instruction bus faults before injecting\n");
+
+    return EXIT_FAILURE;
+  }
+
+  *(ERR_ADDR_MIN + 6*0) = ((uint32_t) bus_error_prefetch_func) + 4 * 2 + 4;
+  *(ERR_ADDR_MAX + 6*0) = ((uint32_t) bus_error_prefetch_func) + 4 * 2 + 4;
+  *(ERR_VALID + 6*0)    = 1;
+
+  bus_fault_count_exp = 1;
+  bus_error_prefetch_func();
+
+  if (bus_fault_count != 0) {
+    printf("test_prefetch_i_error(): Received instruction bus faults on a prefetched but not executed instruction\n");
+
+    return EXIT_FAILURE;
+  }
+
+  *(ERR_VALID + 6*0)    = 0;
+
+  return EXIT_SUCCESS;
+}
+
+int main(int argc, char *argv[]) {
   printf("Start instr_bus_error test\n");
 
   for (int i = 0; i < TEST_LOOPS; i++) {
@@ -132,6 +165,10 @@ int main(int argc, char *argv[])
     }
 
     if (test_halfword_aligned_i_error() != EXIT_SUCCESS) {
+      return EXIT_FAILURE;
+    }
+
+    if (test_prefetch_i_error() != EXIT_SUCCESS) {
       return EXIT_FAILURE;
     }
   }
