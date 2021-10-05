@@ -2,87 +2,51 @@
 
 # CVA6 RISC-V CPU
 
-CVA6 is a 6-stage, single issue, in-order CPU which implements the 64-bit RISC-V instruction set. It fully implements I, M, A and C extensions as specified in Volume I: User-Level ISA V 2.3 as well as the draft privilege extension 1.10. It implements three privilege levels M, S, U to fully support a Unix-like operating system. Furthermore it is compliant to the draft external debug spec 0.13.
+CVA6 is a 6-stage, single issue, in-order CPU which implements the 32- and
+64-bit RISC-V instruction set. It fully implements I, M, A and C extensions as
+specified in Volume I: User-Level ISA V 2.3 as well as the draft privilege
+extension 1.10. It implements three privilege levels M, S, U to fully support a
+Unix-like operating system. Furthermore it is compliant to the draft external
+debug spec 0.13.
 
-It has configurable size, separate TLBs, a hardware PTW and branch-prediction (branch target buffer and branch history table). The primary design goal was on reducing critical path length.
+It has configurable size, separate TLBs, a hardware PTW and branch-prediction
+(branch target buffer and branch history table). The primary design goal was on
+reducing critical path length.
 
 ![](docs/_static/ariane_overview.png)
 
-## New Directory Structure:
-The directory structure has been changed to cleanly separate the [CVA6 RISC-V CPU](#cva6-risc-v-cpu) core from the COREV-APU [FPGA Emulation](#corev-apu-fpga-emulation).
-Files, directories and submodules under `cva6` are for the core _only_ and should not have any dependencies on the APU.
-Files, directories and submodules under `corev_apu` are for the FPGA Emulation platform.
-The CVA6 core can be compiled stand-alone, and obviously the APU is dependent on the core.
 
-#### ci
-Scriptware for CI (unchanged).
+# Table of Contents
 
-#### common
-Source code used by both the CVA6 Core and the COREV APU.
-Subdirectories from here are `local` for common files that are hosted in this repo and `submodules` that are hosted in other repos.
-
-#### core
-Source code for the CVA6 Core only.
-There should be no sources in this directory used to build anything other than the CVA6 core.
-
-#### corev_apu
-Source code for the CVA6 APU, exclusive of the CVA6 core.
-There should be no sources in this directory used to build the CVA6 core.
-
-#### docs
-Documentation (unchanged).
-
-#### scripts
-General scriptware (unchanged).
-
-## Publication
-
-If you use CVA6 in your academic work you can cite us:
-
-```
-@article{zaruba2019cost,
-   author={F. {Zaruba} and L. {Benini}},
-   journal={IEEE Transactions on Very Large Scale Integration (VLSI) Systems},
-   title={The Cost of Application-Class Processing: Energy and Performance Analysis of a Linux-Ready 1.7-GHz 64-Bit RISC-V Core in 22-nm FDSOI Technology},
-   year={2019},
-   volume={27},
-   number={11},
-   pages={2629-2640},
-   doi={10.1109/TVLSI.2019.2926114},
-   ISSN={1557-9999},
-   month={Nov},
-}
-```
-
-Table of Contents
-=================
-
-   * [CVA6 RISC-V CPU](#cva6-risc-v-cpu)
-   * [Table of Contents](#table-of-contents)
-      * [Getting Started](#getting-started)
-        * [Checkout Repo](#checkout-repo)
-        * [Install Verilator Simulation Flow](#install-verilator-simulation-flow)
-        * [Build Model and Run Simulations](#build-model-and-run-simulations)
-        * [Running User-Space Applications](#running-user-space-applications)
-      * [FPGA Emulation](#fpga-emulation)
-         * [Programming the Memory Configuration File](#programming-the-memory-configuration-file)
-         * [Preparing the SD Card](#preparing-the-sd-card)
-         * [Generating a Bitstream](#generating-a-bitstream)
-         * [Debugging](#debugging)
-         * [Preliminary Support for OpenPiton Cache System](#preliminary-support-for-openpiton-cache-system)
-      * [Planned Improvements](#planned-improvements)
-      * [Going Beyond](#going-beyond)
-         * [CI Testsuites and Randomized Constrained Testing with Torture](#ci-testsuites-and-randomized-constrained-testing-with-torture)
-         * [Re-generating the Bootcode (ZSBL)](#re-generating-the-bootcode-zsbl)
-         * [Co-simulation with Dromajo](#co-simulation-with-dromajo)
-   * [Contributing](#contributing)
-   * [Acknowledgements](#acknowledgements)
+- [CVA6 RISC-V CPU](#cva6-risc-v-cpu)
+- [Table of Contents](#table-of-contents)
+- [Getting Started](#getting-started)
+  - [Checkout Repo](#checkout-repo)
+  - [Install Verilator Simulation Flow](#install-verilator-simulation-flow)
+  - [Build Model and Run Simulations](#build-model-and-run-simulations)
+  - [Running User-Space Applications](#running-user-space-applications)
+- [COREV-APU FPGA Emulation](#corev-apu-fpga-emulation)
+  - [Programming the Memory Configuration File](#programming-the-memory-configuration-file)
+  - [Preparing the SD Card](#preparing-the-sd-card)
+  - [Generating a Bitstream](#generating-a-bitstream)
+  - [Debugging](#debugging)
+  - [Preliminary Support for OpenPiton Cache System](#preliminary-support-for-openpiton-cache-system)
+- [Planned Improvements](#planned-improvements)
+- [Going Beyond](#going-beyond)
+  - [CI Testsuites and Randomized Constrained Testing with Torture](#ci-testsuites-and-randomized-constrained-testing-with-torture)
+  - [Memory Preloading](#memory-preloading)
+  - [Re-generating the Bootcode (ZSBL)](#re-generating-the-bootcode-zsbl)
+  - [Co-simulation with Dromajo](#co-simulation-with-dromajo)
+- [Directory Structure](#directory-structure)
+- [Contributing](#contributing)
+- [Acknowledgements](#acknowledgements)
+- [Publication](#publication)
 
 Created by [gh-md-toc](https://github.com/ekalinin/github-markdown-toc)
 
-## Getting Started
+# Getting Started
 
-### Checkout Repo
+## Checkout Repo
 
 Checkout the repository and initialize all submodules
 ```
@@ -90,17 +54,17 @@ git clone https://github.com/openhwgroup/cva6.git
 git submodule update --init --recursive
 ```
 
-### Install Verilator Simulation Flow
+## Install Verilator Simulation Flow
 
 1. Setup install directory `RISCV` environment variable i.e. `export RISCV=/YOUR/TOOLCHAIN/INSTALLATION/DIRECTORY`
 2. Run `./ci/setup.sh` to install all required tools (i.e. verilator, device-tree-compiler, riscv64-unknown-elf-*, ..)
 
 You can install verilator from source using `./ci/install-verilator.sh` or by manually installing `verilator >= 4.002`
-Note: There is currently a known issue with version 4.106 and 4.108. 4.106 does not compile and 4.108 hangs after a 
+Note: There is currently a known issue with version 4.106 and 4.108. 4.106 does not compile and 4.108 hangs after a
 couple of cycles simulation time.)
 
 
-### Build Model and Run Simulations
+## Build Model and Run Simulations
 
 Build the Verilator model of CVA6 by using the Makefile:
 ```
@@ -134,9 +98,9 @@ $ make veri_run
 `make help` will print all supported targets.
 
 
-### Running User-Space Applications
+## Running User-Space Applications
 
-It is possible to run user-space binaries on CVA6 with ([RISC-V Proxy Kernel and Boot Loader](https://github.com/riscv/riscv-pk)). 
+It is possible to run user-space binaries on CVA6 with ([RISC-V Proxy Kernel and Boot Loader](https://github.com/riscv/riscv-pk)).
 RISC-V PK can be installed by running: `./ci/install-riscvpk.sh`
 
 ```
@@ -172,7 +136,7 @@ make sim elf-bin=$RISCV/riscv64-unknown-elf/bin/pk target-options=hello.elf  bat
 
 > Be patient! RTL simulation is way slower than Spike. If you think that you ran into problems you can inspect the trace files.
 
-## COREV-APU FPGA Emulation
+# COREV-APU FPGA Emulation
 
 We currently only provide support for the [Genesys 2 board](https://reference.digilentinc.com/reference/programmable-logic/genesys-2/reference-manual). We provide pre-build bitstream and memory configuration files for the Genesys 2 [here](https://github.com/openhwgroup/cva6/releases).
 
@@ -188,7 +152,7 @@ Tested on Vivado 2018.2. The FPGA currently contains the following peripherals:
 
 > The ethernet controller and the corresponding network connection is still work in progress and not functional at the moment. Expect some updates soon-ish.
 
-### Programming the Memory Configuration File
+## Programming the Memory Configuration File
 
 - Open Vivado
 - Open the hardware manager and open the target board (Genesys II - `xc7k325t`)
@@ -198,20 +162,20 @@ Tested on Vivado 2018.2. The FPGA currently contains the following peripherals:
 - Press Ok. Flashing will take a couple of minutes.
 - Right click on the FPGA device - Boot from Configuration Memory Device (or press the program button on the FPGA)
 
-### Preparing the SD Card
+## Preparing the SD Card
 
-The first stage bootloader will boot from SD Card by default. Get yourself a suitable SD Card (we use [this](https://www.amazon.com/Kingston-Digital-Mobility-MBLY10G2-32GB/dp/B00519BEQO) one). Either grab a pre-built Linux image from [here](https://github.com/pulp-platform/ariane-sdk/releases) or generate the Linux image yourself following the README in the [ariane-sdk repository](https://github.com/pulp-platform/ariane-sdk). Prepare the SD Card by following the "Booting from SD card" section in the ariane-sdk repository.
+The first stage bootloader will boot from SD Card by default. Get yourself a suitable SD Card (we use [this](https://www.amazon.com/Kingston-Digital-Mobility-MBLY10G2-32GB/dp/B00519BEQO) one). Either grab a pre-built Linux image from [here](https://github.com/openhwgroup/cva6-sdk/releases) or generate the Linux image yourself following the README in the [ariane-sdk repository](https://github.com/pulp-platform/ariane-sdk). Prepare the SD Card by following the "Booting from SD card" section in the ariane-sdk repository.
 
 Connect a terminal to the USB serial device opened by the FTDI chip e.g.:
 ```
 screen /dev/ttyUSB0 115200
 ```
 
-Default baudrate set by the bootlaoder and Linux is `115200`.
+Default baudrate set by the bootloader and Linux is `115200`.
 
 After you've inserted the SD Card and programmed the FPGA you can connect to the serial port of the FPGA and should see the bootloader and afterwards Linux booting. Default username is `root`, no password required.
 
-### Generating a Bitstream
+## Generating a Bitstream
 
 To generate the FPGA bitstream (and memory configuration) yourself for the Genesys II board run:
 
@@ -221,7 +185,7 @@ make fpga
 
 This will produce a bitstream file and memory configuration file (in `fpga/work-fpga`) which you can permanently flash by running the above commands.
 
-### Debugging
+## Debugging
 
 You can debug (and program) the FPGA using [OpenOCD](http://openocd.org/doc/html/Architecture-and-Core-Commands.html). We provide two example scripts for OpenOCD below.
 
@@ -291,7 +255,7 @@ You can read or write device memory by using:
 (gdb) set $pc = 0x1000
 ```
 
-### Preliminary Support for OpenPiton Cache System
+## Preliminary Support for OpenPiton Cache System
 
 CVA6 has preliminary support for the OpenPiton distributed cache system from Princeton University. To this end, a different L1 cache subsystem (`src/cache_subsystem/wt_cache_subsystem.sv`) has been developed that follows a write-through protocol and that has support for cache invalidations and atomics.
 
@@ -299,12 +263,12 @@ The corresponding integration patches will be released on [OpenPiton GitHub repo
 
 To activate the different cache system, compile your code with the macro `WT_DCACHE` (set by default).
 
-## Planned Improvements
+# Planned Improvements
 
 Check-out the issue tab which also loosely tracks planned improvements.
 
 
-## Going Beyond
+# Going Beyond
 
 The core has been developed with a full licensed version of QuestaSim. If you happen to have this simulator available yourself here is how you could run the core with it.
 
@@ -315,7 +279,7 @@ make sim elf-bin=path/to/rv64ui-p-sraw
 
 If you call `sim` with `batch-mode=1` it will run without the GUI. QuestaSim uses `riscv-fesvr` for communication as well.
 
-### CI Testsuites and Randomized Constrained Testing with Torture
+## CI Testsuites and Randomized Constrained Testing with Torture
 
 We provide two CI configuration files for Travis CI and GitLab CI that run the RISCV assembly tests, the RISCV benchmarks and a randomized RISCV Torture test. The difference between the two is that Travis CI runs these tests only on Verilator, whereas GitLab CI runs the same tests on QuestaSim and Verilator.
 
@@ -357,7 +321,7 @@ make
 make install
 ```
 
-### Memory Preloading
+## Memory Preloading
 
 In standard configuration the debug module will take care of loading the memory content. It will also handle communication with `riscv-fesvr`.
 Depending on the scenario this might not be diserable (e.g.: preloading of a large elf or linux boot in simulation). You can use the preload elf flag to specify the path
@@ -369,29 +333,13 @@ to a binary which will be preloaded.
 make sim preload=elf
 ```
 
-<!-- ### Tandem Verification with Spike
-
-```
-$ make sim preload=/home/zarubaf/Downloads/riscv-tests/build/benchmarks/dhrystone.riscv tandem=1
-```
-There are a couple of caveats:
-
-- Memories should be initialized to zero. Random or `x` are not supported.
-- UART needs to be replaced by a mock UART which exhibits always ready behavior.
-- There is no end of test signaling at the moment. You are supposed to kill the simulation when sufficiently long run.
-- You need to use the modified Spike version in the `tb` subdirectory.
-- The RTC clock needs to be sufficiently slow (e.g.: 32 kHz seems to work). This is needed as otherwise there will be a difference when reading the `mtime` register as the RTL simulation takes more time to propagate the information through the system.
-- All traps except memory traps need to zero the `tval` register. There is a switch you can set in `ariane_pkg`.
-- `mcycle` needs to be incremented with `instret` to be similar to the performance counters found in Spike (IPC = 1)
- -->
-
-### Re-generating the Bootcode (ZSBL)
+## Re-generating the Bootcode (ZSBL)
 
 The zero stage bootloader (ZSBL) for RTL simulation lives in `bootrom/` while the bootcode for the FPGA is in `fpga/src/bootrom`. The RTL bootcode simply jumps to the base of the DRAM where the FSBL takes over. For the FPGA the ZSBL performs additional housekeeping. Both bootloader pass the hartid as well as address to the device tree in argumen register `a0` and `a1` respectively.
 
 To re-generate the bootcode you can use the existing makefile within those directories. To generate the SystemVerilog files you will need the `bitstring` python package installed on your system.
 
-### Co-simulation with Dromajo
+## Co-simulation with Dromajo
 CVA6 can be co-simulated with [Dromajo](https://github.com/chipsalliance/dromajo) (currently in the verilator model).
 
 ```
@@ -407,6 +355,21 @@ The co-simulation flow is depicted in the figure below.
 4. Load the checkpoint into the RTL memory and the instance of Dromajo in RTL. Dromajo gets linked to a simulator as a shared library. RTL communicates to Dromajo through set of DPI calls.
 5. Run the RTL simulation and perform co-simulation.
 
+# Directory Structure
+
+> The directory structure has been changed to cleanly separate the [CVA6 RISC-V CPU](#cva6-risc-v-cpu) core from the COREV-APU [FPGA Emulation](#corev-apu-fpga-emulation).
+
+Files, directories and submodules under `cva6` are for the core _only_ and should not have any dependencies on the APU.
+Files, directories and submodules under `corev_apu` are for the FPGA Emulation platform.
+The CVA6 core can be compiled stand-alone, and obviously the APU is dependent on the core.
+
+- `ci`: Scriptware for CI.
+- `common`: Source code used by both the CVA6 Core and the COREV APU. Subdirectories from here are `local` for common files that are hosted in this repo and `submodules` that are hosted in other repos.
+- `core`: Source code for the CVA6 Core only. There should be no sources in this directory used to build anything other than the CVA6 core.
+- `corev_apu`: Source code for the CVA6 APU, exclusive of the CVA6 core. There should be no sources in this directory used to build the CVA6 core.
+- `docs`: Documentation.
+- `scripts`: General scriptware.
+
 # Contributing
 
 Check out the [contribution guide](CONTRIBUTING.md)
@@ -414,3 +377,29 @@ Check out the [contribution guide](CONTRIBUTING.md)
 # Acknowledgements
 
 Thanks to Gian Marti, Thomas Kramer and Thomas E. Benz for implementing the PLIC.
+
+# Publication
+
+If you use CVA6 in your academic work you can cite us:
+
+<details>
+<summary>SSR Publication</summary>
+<p>
+
+```
+@article{zaruba2019cost,
+   author={F. {Zaruba} and L. {Benini}},
+   journal={IEEE Transactions on Very Large Scale Integration (VLSI) Systems},
+   title={The Cost of Application-Class Processing: Energy and Performance Analysis of a Linux-Ready 1.7-GHz 64-Bit RISC-V Core in 22-nm FDSOI Technology},
+   year={2019},
+   volume={27},
+   number={11},
+   pages={2629-2640},
+   doi={10.1109/TVLSI.2019.2926114},
+   ISSN={1557-9999},
+   month={Nov},
+}
+```
+
+</p>
+</details>

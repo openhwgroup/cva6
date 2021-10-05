@@ -6,15 +6,33 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## [Unreleased]
 
+### 4.3.0 - 2021-05-10
+
 ### Added
+
+- 32-bit version (@JeanRochCoulon)
+- Add ASID support (@marcosabatano)
+- NI/NC separation (@morenes)
+- chipyard: Add conditional traceport to top-level (@abejgonzalez)
+- PMP support (@moschn)
+
+## Fixed
+
+- ptw: Kill pending data cache request when flushed
+- WB cache: Fix bugs preventing linux from booting
+- frontend: Fix tval for instruction page fault
+- Compatibility with Riviera-PRO (@danielmlynek)
 
 ### Changed
 
 - Fix non-setable MEIE bit in MIE CSR
 - Bump `fpnew` to `v0.6.2`
-- Restructured directories to separate CVA6 core from CVA6-APU (FPGA emulation platform for the core).  See the [README](README.md#new-directory-structure) for details.
+- Restructured directories to separate CVA6 core from CVA6-APU (FPGA emulation
+  platform for the core).  See the [README](README.md#new-directory-structure)
+  for details.
+- Re-name `fpga` to `core-v-apu`
 
-#### Moved Package files
+#### Moved Package Files
 ```
 include/riscv_pkg.sv                                  ==> core/include/riscv_pkg.sv
 src/riscv-dbg/src/dm_pkg.sv                           ==> corev_apu/riscv-dbg/src/dm_pkg.sv
@@ -32,76 +50,76 @@ src/fpu/src/fpnew_pkg.sv                              ==> core/fpu/src/fpnew_pkg
 src/fpu/src/fpu_div_sqrt_mvp/hdl/defs_div_sqrt_mvp.sv ==> core/fpu/src/fpu_div_sqrt_mvp/hdl/defs_div_sqrt_mvp.sv
 ```
 
-#### Moved standalone components
+#### Moved Standalone Components
 ```
- src/frontend/*.sv                                    ==> core/frontend/*.sv
- src/cache_subsystem/*.sv                             ==> core/cache_subsystem/*.sv (excluding std_no_dcache.sv)
- bootrom/*.sv                                         ==> corev_apu/bootrom/*.sv
- src/clint/*.sv                                       ==> corev_apu/clint/*.sv
- fpga/src/axi2apb/src/*.sv                            ==> corev_apu/fpga/src/axi2apb/src/*.sv
- fpga/src/apb_timer/*.sv                              ==> corev_apu/fpga/src/apb_timer/*.sv
- fpga/src/axi_slice/src/*.sv                          ==> corev_apu/fpga/src/axi_slice/src/*.sv
- src/axi_node/src/*.sv                                ==> corev_apu/axi_node/src/*.sv
- src/axi_riscv_atomics/src/*.sv                       ==> corev_apu/src/axi_riscv_atomics/src/*.sv
- src/axi_mem_if/src/*.sv                              ==> corev_apu/axi_mem_if/src/*.sv
- src/pmp/src/*.sv                                     ==> core/pmp/src/*.sv
- src/rv_plic/rtl/rv_plic_target.sv                    ==> corev_apu/rv_plic/rtl/rv_plic_target.sv
- src/rv_plic/rtl/rv_plic_gateway.sv                   ==> corev_apu/rv_plic/rtl/rv_plic_gateway.sv
- src/rv_plic/rtl/plic_regmap.sv                       ==> corev_apu/rv_plic/rtl/plic_regmap.sv
- src/rv_plic/rtl/plic_top.sv                          ==> corev_apu/rv_plic/rtl/plic_top.sv
- src/riscv-dbg/src/dmi_cdc.sv                         ==> corev_apu/riscv-dbg/src/dmi_cdc.sv
- src/riscv-dbg/src/dmi_jtag.sv                        ==> corev_apu/riscv-dbg/src/dmi_jtag.sv
- src/riscv-dbg/src/dmi_jtag_tap.sv                    ==> corev_apu/riscv-dbg/src/dmi_jtag_tap.sv
- src/riscv-dbg/src/dm_csrs.sv                         ==> corev_apu/riscv-dbg/src/dm_csrs.sv
- src/riscv-dbg/src/dm_mem.sv                          ==> corev_apu/riscv-dbg/src/dm_mem.sv
- src/riscv-dbg/src/dm_sba.sv                          ==> corev_apu/riscv-dbg/src/dm_sba.sv
- src/riscv-dbg/src/dm_top.sv                          ==> corev_apu/riscv-dbg/src/dm_top.sv
- src/riscv-dbg/debug_rom/debug_rom.sv                 ==> corev_apu/riscv-dbg/debug_rom/debug_rom.sv
- src/register_interface/src/apb_to_reg.sv             ==> corev_apu/register_interface/src/apb_to_reg.sv
- src/axi/src/axi_multicut.sv                          ==> corev_apu/axi/src/axi_multicut.sv
- src/common_cells/src/deprecated/generic_fifo.sv      ==> common/submodules/common_cells/src/deprecated/generic_fifo.sv
- src/common_cells/src/deprecated/pulp_sync.sv         ==> common/submodules/common_cells/src/deprecated/pulp_sync.sv
- src/common_cells/src/deprecated/find_first_one.sv    ==> common/submodules/common_cells/src/deprecated/find_first_one.sv
- src/common_cells/src/rstgen_bypass.sv                ==> common/submodules/common_cells/src/rstgen_bypass.sv
- src/common_cells/src/rstgen.sv                       ==> common/submodules/common_cells/src/rstgen.sv
- src/common_cells/src/stream_mux.sv                   ==> common/submodules/common_cells/src/stream_mux.sv
- src/common_cells/src/stream_demux.sv                 ==> common/submodules/common_cells/src/stream_demux.sv
- src/common_cells/src/exp_backoff.sv                  ==> common/submodules/common_cells/src/exp_backoff.sv
- src/util/axi_master_connect.sv                       ==> common/local/util/axi_master_connect.sv
- src/util/axi_slave_connect.sv                        ==> common/local/util/axi_slave_connect.sv
- src/util/axi_master_connect_rev.sv                   ==> common/local/util/axi_master_connect_rev.sv
- src/util/axi_slave_connect_rev.sv                    ==> common/local/util/axi_slave_connect_rev.sv
- src/axi/src/axi_cut.sv                               ==> corev_apu/axi/src/axi_cut.sv
- src/axi/src/axi_join.sv                              ==> corev_apu/axi/src/axi_join.sv
- src/axi/src/axi_delayer.sv                           ==> corev_apu/axi/src/axi_delayer.sv
- src/axi/src/axi_to_axi_lite.sv                       ==> corev_apu/axi/src/axi_to_axi_lite.sv
- src/common_cells/src/unread.sv                       ==> common/submodules/common_cells/src/unread.sv
- src/common_cells/src/sync.sv                         ==> common/submodules/common_cells/src/sync.sv
- src/common_cells/src/cdc_2phase.sv                   ==> common/submodules/common_cells/src/cdc_2phase.sv
- src/common_cells/src/spill_register.sv               ==> common/submodules/common_cells/src/spill_register.sv
- src/common_cells/src/sync_wedge.sv                   ==> common/submodules/common_cells/src/sync_wedge.sv
- src/common_cells/src/edge_detect.sv                  ==> common/submodules/common_cells/src/edge_detect.sv
- src/common_cells/src/stream_arbiter.sv               ==> common/submodules/common_cells/src/stream_arbiter.sv
- src/common_cells/src/stream_arbiter_flushable.sv     ==> common/submodules/common_cells/src/stream_arbiter_flushable.sv
- src/common_cells/src/deprecated/fifo_v1.sv           ==> common/submodules/common_cells/src/deprecated/fifo_v1.sv
- src/common_cells/src/deprecated/fifo_v2.sv           ==> common/submodules/common_cells/src/deprecated/fifo_v2.sv
- src/common_cells/src/fifo_v3.sv                      ==> common/submodules/common_cells/src/fifo_v3.sv
- src/common_cells/src/rr_arb_tree.sv                  ==> common/submodules/common_cells/src/rr_arb_tree.sv
- src/common_cells/src/deprecated/rrarbiter.sv         ==> common/submodules/common_cells/src/deprecated/rrarbiter.sv
- src/common_cells/src/stream_delay.sv                 ==> common/submodules/common_cells/src/stream_delay.sv
- src/common_cells/src/lfsr_8bit.sv                    ==> common/submodules/common_cells/src/lfsr_8bit.sv
- src/common_cells/src/lfsr_16bit.sv                   ==> common/submodules/common_cells/src/lfsr_16bit.sv
- src/common_cells/src/delta_counter.sv                ==> common/submodules/common_cells/src/delta_counter.sv
- src/common_cells/src/counter.sv                      ==> common/submodules/common_cells/src/counter.sv
- src/common_cells/src/shift_reg.sv                    ==> common/submodules/common_cells/src/shift_reg.sv
- src/tech_cells_generic/src/pulp_clock_gating.sv      ==> corev_apu/src/tech_cells_generic/src/pulp_clock_gating.sv
- src/tech_cells_generic/src/cluster_clock_inverter.sv ==> corev_apu/src/tech_cells_generic/src/cluster_clock_inverter.sv
- src/tech_cells_generic/src/pulp_clock_mux2.sv        ==> corev_apu/src/tech_cells_generic/src/pulp_clock_mux2.sv
- tb/ariane_testharness.sv                             ==> corev_apu/tb/ariane_testharness.sv
- tb/ariane_peripherals.sv                             ==> corev_apu/tb/ariane_peripherals.sv
- tb/common/uart.sv                                    ==> corev_apu/tb/common/uart.sv
- tb/common/SimDTM.sv                                  ==> corev_apu/tb/common/SimDTM.sv
- tb/common/SimJTAG.sv                                 ==> corev_apu/tb/common/SimJTAG.sv
+src/frontend/*.sv                                    ==> core/frontend/*.sv
+src/cache_subsystem/*.sv                             ==> core/cache_subsystem/*.sv (excluding std_no_dcache.sv)
+bootrom/*.sv                                         ==> corev_apu/bootrom/*.sv
+src/clint/*.sv                                       ==> corev_apu/clint/*.sv
+fpga/src/axi2apb/src/*.sv                            ==> corev_apu/fpga/src/axi2apb/src/*.sv
+fpga/src/apb_timer/*.sv                              ==> corev_apu/fpga/src/apb_timer/*.sv
+fpga/src/axi_slice/src/*.sv                          ==> corev_apu/fpga/src/axi_slice/src/*.sv
+src/axi_node/src/*.sv                                ==> corev_apu/axi_node/src/*.sv
+src/axi_riscv_atomics/src/*.sv                       ==> corev_apu/src/axi_riscv_atomics/src/*.sv
+src/axi_mem_if/src/*.sv                              ==> corev_apu/axi_mem_if/src/*.sv
+src/pmp/src/*.sv                                     ==> core/pmp/src/*.sv
+src/rv_plic/rtl/rv_plic_target.sv                    ==> corev_apu/rv_plic/rtl/rv_plic_target.sv
+src/rv_plic/rtl/rv_plic_gateway.sv                   ==> corev_apu/rv_plic/rtl/rv_plic_gateway.sv
+src/rv_plic/rtl/plic_regmap.sv                       ==> corev_apu/rv_plic/rtl/plic_regmap.sv
+src/rv_plic/rtl/plic_top.sv                          ==> corev_apu/rv_plic/rtl/plic_top.sv
+src/riscv-dbg/src/dmi_cdc.sv                         ==> corev_apu/riscv-dbg/src/dmi_cdc.sv
+src/riscv-dbg/src/dmi_jtag.sv                        ==> corev_apu/riscv-dbg/src/dmi_jtag.sv
+src/riscv-dbg/src/dmi_jtag_tap.sv                    ==> corev_apu/riscv-dbg/src/dmi_jtag_tap.sv
+src/riscv-dbg/src/dm_csrs.sv                         ==> corev_apu/riscv-dbg/src/dm_csrs.sv
+src/riscv-dbg/src/dm_mem.sv                          ==> corev_apu/riscv-dbg/src/dm_mem.sv
+src/riscv-dbg/src/dm_sba.sv                          ==> corev_apu/riscv-dbg/src/dm_sba.sv
+src/riscv-dbg/src/dm_top.sv                          ==> corev_apu/riscv-dbg/src/dm_top.sv
+src/riscv-dbg/debug_rom/debug_rom.sv                 ==> corev_apu/riscv-dbg/debug_rom/debug_rom.sv
+src/register_interface/src/apb_to_reg.sv             ==> corev_apu/register_interface/src/apb_to_reg.sv
+src/axi/src/axi_multicut.sv                          ==> corev_apu/axi/src/axi_multicut.sv
+src/common_cells/src/deprecated/generic_fifo.sv      ==> common/submodules/common_cells/src/deprecated/generic_fifo.sv
+src/common_cells/src/deprecated/pulp_sync.sv         ==> common/submodules/common_cells/src/deprecated/pulp_sync.sv
+src/common_cells/src/deprecated/find_first_one.sv    ==> common/submodules/common_cells/src/deprecated/find_first_one.sv
+src/common_cells/src/rstgen_bypass.sv                ==> common/submodules/common_cells/src/rstgen_bypass.sv
+src/common_cells/src/rstgen.sv                       ==> common/submodules/common_cells/src/rstgen.sv
+src/common_cells/src/stream_mux.sv                   ==> common/submodules/common_cells/src/stream_mux.sv
+src/common_cells/src/stream_demux.sv                 ==> common/submodules/common_cells/src/stream_demux.sv
+src/common_cells/src/exp_backoff.sv                  ==> common/submodules/common_cells/src/exp_backoff.sv
+src/util/axi_master_connect.sv                       ==> common/local/util/axi_master_connect.sv
+src/util/axi_slave_connect.sv                        ==> common/local/util/axi_slave_connect.sv
+src/util/axi_master_connect_rev.sv                   ==> common/local/util/axi_master_connect_rev.sv
+src/util/axi_slave_connect_rev.sv                    ==> common/local/util/axi_slave_connect_rev.sv
+src/axi/src/axi_cut.sv                               ==> corev_apu/axi/src/axi_cut.sv
+src/axi/src/axi_join.sv                              ==> corev_apu/axi/src/axi_join.sv
+src/axi/src/axi_delayer.sv                           ==> corev_apu/axi/src/axi_delayer.sv
+src/axi/src/axi_to_axi_lite.sv                       ==> corev_apu/axi/src/axi_to_axi_lite.sv
+src/common_cells/src/unread.sv                       ==> common/submodules/common_cells/src/unread.sv
+src/common_cells/src/sync.sv                         ==> common/submodules/common_cells/src/sync.sv
+src/common_cells/src/cdc_2phase.sv                   ==> common/submodules/common_cells/src/cdc_2phase.sv
+src/common_cells/src/spill_register.sv               ==> common/submodules/common_cells/src/spill_register.sv
+src/common_cells/src/sync_wedge.sv                   ==> common/submodules/common_cells/src/sync_wedge.sv
+src/common_cells/src/edge_detect.sv                  ==> common/submodules/common_cells/src/edge_detect.sv
+src/common_cells/src/stream_arbiter.sv               ==> common/submodules/common_cells/src/stream_arbiter.sv
+src/common_cells/src/stream_arbiter_flushable.sv     ==> common/submodules/common_cells/src/stream_arbiter_flushable.sv
+src/common_cells/src/deprecated/fifo_v1.sv           ==> common/submodules/common_cells/src/deprecated/fifo_v1.sv
+src/common_cells/src/deprecated/fifo_v2.sv           ==> common/submodules/common_cells/src/deprecated/fifo_v2.sv
+src/common_cells/src/fifo_v3.sv                      ==> common/submodules/common_cells/src/fifo_v3.sv
+src/common_cells/src/rr_arb_tree.sv                  ==> common/submodules/common_cells/src/rr_arb_tree.sv
+src/common_cells/src/deprecated/rrarbiter.sv         ==> common/submodules/common_cells/src/deprecated/rrarbiter.sv
+src/common_cells/src/stream_delay.sv                 ==> common/submodules/common_cells/src/stream_delay.sv
+src/common_cells/src/lfsr_8bit.sv                    ==> common/submodules/common_cells/src/lfsr_8bit.sv
+src/common_cells/src/lfsr_16bit.sv                   ==> common/submodules/common_cells/src/lfsr_16bit.sv
+src/common_cells/src/delta_counter.sv                ==> common/submodules/common_cells/src/delta_counter.sv
+src/common_cells/src/counter.sv                      ==> common/submodules/common_cells/src/counter.sv
+src/common_cells/src/shift_reg.sv                    ==> common/submodules/common_cells/src/shift_reg.sv
+src/tech_cells_generic/src/pulp_clock_gating.sv      ==> corev_apu/src/tech_cells_generic/src/pulp_clock_gating.sv
+src/tech_cells_generic/src/cluster_clock_inverter.sv ==> corev_apu/src/tech_cells_generic/src/cluster_clock_inverter.sv
+src/tech_cells_generic/src/pulp_clock_mux2.sv        ==> corev_apu/src/tech_cells_generic/src/pulp_clock_mux2.sv
+tb/ariane_testharness.sv                             ==> corev_apu/tb/ariane_testharness.sv
+tb/ariane_peripherals.sv                             ==> corev_apu/tb/ariane_peripherals.sv
+tb/common/uart.sv                                    ==> corev_apu/tb/common/uart.sv
+tb/common/SimDTM.sv                                  ==> corev_apu/tb/common/SimDTM.sv
+tb/common/SimJTAG.sv                                 ==> corev_apu/tb/common/SimJTAG.sv
 ```
 
 ### 4.2.0 - 2019-06-04

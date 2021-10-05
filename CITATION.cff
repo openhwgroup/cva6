@@ -1,0 +1,28 @@
+cff-version: 1.2.0
+message: "If you use CVA6, please cite it as below."
+authors:
+  - family-names: "Zaruba"
+    given-names: "Florian"
+    orcid: "https://orcid.org/0000-0002-8194-6521"
+message: "If you use this software, please cite it using these metadata."
+title: "CVA6 Application-class Processor"
+date-released: 2018-11-29
+url: "https://github.com/openhwgroup/cva6"
+preferred-citation:
+  type: article
+  authors:
+  - family-names: "Zaruba"
+    given-names: "Florian"
+    orcid: "https://orcid.org/0000-0002-8194-6521"
+  - family-names: "Benini"
+    given-names: "Luca"
+    orcid: "https://orcid.org/0000-0001-8068-3806"
+  doi: "10.1109/TVLSI.2019.2926114"
+  journal: "IEEE Transactions on Very Large Scale Integration (VLSI) System"
+  month: 9
+  start: 2629
+  end: 2640
+  title: "The Cost of Application-Class Processing: Energy and Performance Analysis of a Linux-Ready 1.7-GHz 64-Bit RISC-V Core in 22-nm FDSOI Technology"
+  issue: 11
+  volume: 28
+  year: 2019
