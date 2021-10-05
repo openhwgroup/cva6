@@ -35,14 +35,6 @@ class cv32e40x_asm_program_gen extends corev_asm_program_gen;
     string load_instr = (XLEN == 32) ? "lw" : "ld";
     gen_signature_handshake(instr, CORE_STATUS, ILLEGAL_INSTR_EXCEPTION);
     gen_signature_handshake(.instr(instr), .signature_type(WRITE_CSR), .csr(MCAUSE));
-    // if not pma_enable
-    //instr = {instr,
-    //        $sformatf("csrr  x%0d, 0x%0x", cfg.gpr[0], MEPC),
-    //        $sformatf("addi  x%0d, x%0d, 4", cfg.gpr[0], cfg.gpr[0]),
-    //        $sformatf("csrw  0x%0x, x%0d", MEPC, cfg.gpr[0])
-    //};
-    // if pma_enable:
-      // get one of the (potential) pc-values from stack into t4
     instr = {instr,
             // Get the stack pointer from the scratch register
             $sformatf("csrrw x%0d, 0x%0x, x%0d", cfg.sp, MSCRATCH, cfg.sp),
@@ -68,8 +60,6 @@ class cv32e40x_asm_program_gen extends corev_asm_program_gen;
             $sformatf("csrrw x%0d, 0x%0x, x%0d", cfg.sp, MSCRATCH, cfg.sp)
     };
 
-    // endif
-    // regular handling:
     pop_gpr_from_kernel_stack(MSTATUS, MSCRATCH, cfg.mstatus_mprv, cfg.sp, cfg.tp, instr);
     instr.push_back("mret");
     gen_section(get_label("illegal_instr_handler", hart), instr);
@@ -373,37 +363,7 @@ class cv32e40x_asm_program_gen extends corev_asm_program_gen;
     gen_section(get_label($sformatf("%0smode_intr_handler", mode_prefix), hart),
                 interrupt_handler_instr);
 
-
-    //generate nmi section
-    //gen_nmi_handler_section(hart);
-
   endfunction : gen_interrupt_handler_section
-
-  // generate NMI handler.
-  // will be placed at a fixed address in memory, set in linker file
-  //TODO: verify correct functionality when NMI test capability is ready
-  virtual function void gen_nmi_handler_section(int hart);
-    string nmi_handler_instr[$];
-    int unsigned nmi_addr;
-
-    // Insert section info so linker can place
-    // debug code at the correct adress
-    instr_stream.push_back(".section .nmi, \"ax\"");
-
-    // read relevant csr's
-    nmi_handler_instr.push_back($sformatf("csrr x%0d, mepc", cfg.gpr[0]));
-    nmi_handler_instr.push_back($sformatf("csrr x%0d, mcause", cfg.gpr[0]));
-    nmi_handler_instr.push_back($sformatf("csrr x%0d, mtval", cfg.gpr[0]));
-    nmi_handler_instr.push_back($sformatf("csrr x%0d, mie", cfg.gpr[0]));
-
-    nmi_handler_instr.push_back($sformatf("la x%0d, test_done", cfg.scratch_reg));
-    nmi_handler_instr.push_back($sformatf("jr x%0d", cfg.scratch_reg));
-
-
-    gen_section(get_label($sformatf("nmi_handler"), hart),
-                nmi_handler_instr);
-
-  endfunction : gen_nmi_handler_section
 
   // Override gen_stack_section to add debugger stack generation section
   // Implmeneted as a post-step to super.gen_stack_section()

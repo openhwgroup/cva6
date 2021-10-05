@@ -83,6 +83,17 @@ class pma_adapted_memory_regions_c;
     divide_region_in_half(region);
   endfunction : new
 
+  /*
+  * Function: divide_region_in_half
+  *
+  * Inputs: ref classified_region_t region[$] - queue of classified regions
+  *
+  * By default riscv-dv depends on two memory pages - this will function
+  * aims to make sure that we always have two memory regions available.
+  * It takes no action if the number of classified regions are != 1 or
+  * if we for some reason (e.g. manual invocation for directed tests
+  * want to disable the minimum two regions-requirement)
+  */
   virtual function void divide_region_in_half(ref classified_region_t region[$]);
     bit require_min_two_region = 1;
     if (region.size == 1 && require_min_two_region) begin
