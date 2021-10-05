@@ -82,8 +82,6 @@ module uvmt_cv32e40x_dut_wrap
     logic [31:0]                  data_wdata;
 
     logic [31:0]                  irq;
-    logic                         irq_ack;
-    logic [ 4:0]                  irq_id;
 
     logic                         debug_havereset;
     logic                         debug_running;
@@ -122,8 +120,8 @@ module uvmt_cv32e40x_dut_wrap
     // Connect to uvma_interrupt_if
     assign interrupt_if.clk                     = clknrst_if.clk;
     assign interrupt_if.reset_n                 = clknrst_if.reset_n;
-    assign interrupt_if.irq_id                  = irq_id;
-    assign interrupt_if.irq_ack                 = irq_ack;
+    assign interrupt_if.irq_id                  = cv32e40x_wrapper_i.core_i.irq_id;
+    assign interrupt_if.irq_ack                 = cv32e40x_wrapper_i.core_i.irq_ack;
 
     // --------------------------------------------
     // Connect to core_cntrl_if
@@ -189,8 +187,6 @@ module uvmt_cv32e40x_dut_wrap
          .data_exokay_i          ( obi_data_if_i.exokay           ),
 
          .irq_i                  ( interrupt_if.irq               ),
-         .irq_ack_o              ( irq_ack                        ),
-         .irq_id_o               ( irq_id                         ),
 
          .fencei_flush_req_o     ( fencei_if_i.flush_req          ),
          .fencei_flush_ack_i     ( fencei_if_i.flush_ack          ),
