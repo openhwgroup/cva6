@@ -1,21 +1,18 @@
-/*
- * Copyright 2021 Silicon Labs, Inc.
- *
- * This file, and derivatives thereof are licensed under the
- * Solderpad License, Version 2.0 (the "License");
- * Use of this file means you agree to the terms and conditions
- * of the license and are in full compliance with the License.
- * You may obtain a copy of the License at
- *
- *     https://solderpad.org/licenses/SHL-2.0/
- *
- * Unless required by applicable law or agreed to in writing, software
- * and hardware implementations thereof
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, EITHER EXPRESSED OR IMPLIED.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
+// Copyright 2021 OpenHW Group
+// Copyright 2021 Silicon Labs, Inc.
+//
+// Licensed under the Solderpad Hardware Licence, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//     https://solderpad.org/licenses/
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
 
 class pma_adapted_memory_regions_c;
 
@@ -34,6 +31,9 @@ class pma_adapted_memory_regions_c;
   // This should be more than enough to complete in all cases for 16 regions
   // Prevents simulator freeze in case something goes awry and we end up not being able to classify a region
   parameter FSM_TIMEOUT_CYCLES = 100000;
+
+  // Maximum size for the process_stack
+  parameter MAX_PROCESS_STACK_SIZE = 2;
 
   static string info_tag = "pma_adapted_mem_region_c";
 
@@ -431,6 +431,12 @@ class pma_adapted_memory_regions_c;
           break;
         end
       endcase
+      // In lieu of creating a typed queue to restrict size of process_stack, do a check on max size here to ensure the queue
+      // does not grow beyond expected bounds
+      if (process_stack.size() > MAX_PROCESS_STACK_SIZE) begin
+        `uvm_fatal("PMAPROCSTACK", $sformatf("process_stack size of %0d is greater than maximum allowed: %0s", process_stack.size(), MAX_PROCESS_STACK_SIZE));
+      end
+
       fsm_state_transitions;
       state = next_state;
       if (state_behav_ctr >= FSM_TIMEOUT_CYCLES) begin

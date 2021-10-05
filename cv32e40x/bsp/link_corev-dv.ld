@@ -1,4 +1,3 @@
-/* Script for -z combreloc */
 /* Copyright (C) 2014-2020 Free Software Foundation, Inc.
    Copyright (C) 2019 ETH Zürich and University of Bologna
    Copyright (C) 2020 OpenHW Group
