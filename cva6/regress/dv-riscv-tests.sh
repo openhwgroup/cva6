@@ -27,13 +27,13 @@ if ! [ -n "$DV_SIMULATORS" ]; then
 fi
 
 if ! [ -n "$DV_TESTLISTS" ]; then
-  DV_TESTLISTS="../../tests/testlist_riscv-tests-$DV_TARGET-p.yaml \
-                ../../tests/testlist_riscv-tests-$DV_TARGET-v.yaml"
+  DV_TESTLISTS="../tests/testlist_riscv-tests-$DV_TARGET-p.yaml \
+                ../tests/testlist_riscv-tests-$DV_TARGET-v.yaml"
 fi
 
-cd cva6/sim/riscv-dv
+cd cva6/sim
 for TESTLIST in $DV_TESTLISTS
 do
-  python3 run.py --testlist=$TESTLIST --target $DV_TARGET --iss=$DV_SIMULATORS $DV_OPTS
+  python3 cva6.py --testlist=$TESTLIST --target $DV_TARGET --iss=$DV_SIMULATORS --iss_yaml=cva6.yaml $DV_OPTS
 done
-cd ../../..
+cd -

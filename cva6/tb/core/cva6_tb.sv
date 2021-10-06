@@ -37,7 +37,7 @@ module cva6_core_only_tb #(
   localparam CLK_REPORT_COUNT  =  100;
   localparam CLK_TIMEOUT_COUNT = 1000000;
   localparam CLK_PERIOD        =   10;
-  localparam RESET_ASSERT_TIME = 1234;
+  localparam RESET_ASSERT_TIME =  123;
 
   reg     r_tb_clk;
   reg     r_tb_rstn;
@@ -191,7 +191,7 @@ module cva6_core_only_tb #(
   AXI_BUS #(
     .AXI_ADDR_WIDTH ( AXI_ADDRESS_WIDTH        ),
     .AXI_DATA_WIDTH ( AXI_DATA_WIDTH           ),
-    .AXI_ID_WIDTH   ( ariane_soc::DRAM ),
+    .AXI_ID_WIDTH   ( ariane_soc::IdWidthSlave ),
     .AXI_USER_WIDTH ( AXI_USER_WIDTH           )
   ) cva6_axi_bus();
 
@@ -203,7 +203,7 @@ module cva6_core_only_tb #(
   );
 
   axi2mem #(
-    .AXI_ID_WIDTH   ( ariane_soc::DRAM ),
+    .AXI_ID_WIDTH   ( ariane_soc::IdWidthSlave ),
     .AXI_ADDR_WIDTH ( AXI_ADDRESS_WIDTH        ),
     .AXI_DATA_WIDTH ( AXI_DATA_WIDTH           ),
     .AXI_USER_WIDTH ( AXI_USER_WIDTH           )

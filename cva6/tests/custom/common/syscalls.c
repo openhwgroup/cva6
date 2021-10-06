@@ -56,6 +56,7 @@ void setStats(int enable)
 void __attribute__((noreturn)) tohost_exit(uintptr_t code)
 {
   tohost = (code << 1) | 1;
+  __asm__("ecall\t");
   while (1);
 }
 

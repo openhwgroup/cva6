@@ -21,9 +21,9 @@ export TB_PATH=$ROOT_PROJECT/cva6/tb/core
 export TESTS_PATH=$ROOT_PROJECT/cva6/tests
 
 if ! [ -n "$DV_REPO" ]; then
-  export DV_REPO="https://github.com/ThalesGroup/riscv-dv.git"
-  export DV_BRANCH="thales-cva6_reorg"
-  export DV_HASH="969046070a6444b1b6fa55222d18efdfc6dbbbbc"
+  export DV_REPO="https://github.com/google/riscv-dv.git"
+  export DV_BRANCH=master
+  export DV_HASH=0ce85d3187689855cd2b3b9e3fae21ca32de2248
   export DV_PATCH=
 fi
 echo $DV_REPO
@@ -32,9 +32,9 @@ echo $DV_HASH
 echo $DV_PATCH
 
 mkdir -p cva6/sim
-if ! [ -d cva6/sim/riscv-dv ]; then
-  git clone $DV_REPO -b $DV_BRANCH cva6/sim/riscv-dv
-  cd cva6/sim/riscv-dv; git checkout $DV_HASH; 
+if ! [ -d cva6/sim/dv ]; then
+  git clone $DV_REPO -b $DV_BRANCH cva6/sim/dv
+  cd cva6/sim/dv; git checkout $DV_HASH;
   if [ -f "$DV_PATCH" ]; then
     git apply $DV_PATCH
   fi
@@ -42,4 +42,4 @@ if ! [ -d cva6/sim/riscv-dv ]; then
 fi
 
 # install riscv-dv dependencies
-cd cva6/sim/riscv-dv; pip3 install -r requirements.txt; cd -
+cd cva6/sim/dv; pip3 install -r requirements.txt; cd -
