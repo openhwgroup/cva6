@@ -23,13 +23,9 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include "corev_uvmt.h"
 
 #define TEST_LOOPS 6
-
-// Virtual peripheral registers for manipulating the OBI-I error response generation
-#define ERR_ADDR_MIN   ((volatile uint32_t *) 0x15001080)
-#define ERR_ADDR_MAX   ((volatile uint32_t *) 0x15001084)
-#define ERR_VALID      ((volatile uint32_t *) 0x15001088)
 
 // Globals
 volatile uint32_t  bus_fault_count     = 0;
@@ -38,7 +34,7 @@ volatile uint32_t  bus_fault_count_exp = 3;
 // Special handler for instruction bus faults
 void handle_insn_bus_fault(void) {
   if (++bus_fault_count == bus_fault_count_exp) {
-    *(ERR_VALID + 6*0) = 0;
+    *CV_VP_OBI_SLV_RESP_I_ERR_VALID = 0;
 
     asm volatile("fence");
   }
@@ -60,12 +56,15 @@ void bus_error_func_halfword_align() {
   printf("In the halfword-aligned bus error func\n");
 }
 
+// This is a dummy function to exercise bus errors in the prefetcher to ensure they do not
+// propagate to faults.  The caller of this function should setup a bus error to occur 4 instructions
+// beyond the end of this function.  OBI should see the error but the caller should ensure no
+// bus faults are seen (via the handler counter)
 __attribute__((aligned(4)))
 void bus_error_prefetch_func() {
-  asm volatile("c.addi x0,0");
-  asm volatile("c.addi x0,0");
-  asm volatile("c.addi x0,0");
-  asm volatile("c.addi x0,0");
+  asm volatile("addi x0,x20,0");
+  asm volatile("addi x0,x20,0");
+  asm volatile("addi x0,x20,0");
 }
 
 int test_word_aligned_i_error() {
@@ -79,9 +78,9 @@ int test_word_aligned_i_error() {
 
   // Inject errors via OBI VP and call function
   bus_fault_count_exp = 4;
-  *(ERR_ADDR_MIN + 6*0) = (uint32_t) bus_error_func_word_align;
-  *(ERR_ADDR_MAX + 6*0) = (uint32_t) bus_error_func_word_align;
-  *(ERR_VALID + 6*0)    = 1;
+  *CV_VP_OBI_SLV_RESP_I_ERR_ADDR_MIN = (uint32_t) bus_error_func_word_align;
+  *CV_VP_OBI_SLV_RESP_I_ERR_ADDR_MAX = (uint32_t) bus_error_func_word_align;
+  *CV_VP_OBI_SLV_RESP_I_ERR_VALID    = 1;
   asm volatile("fence");
 
   bus_error_func_word_align();
@@ -112,9 +111,9 @@ int test_halfword_aligned_i_error() {
 
   // Inject errors via OBI VP and call function
   bus_fault_count_exp = 5;
-  *(ERR_ADDR_MIN + 6*0) = (uint32_t) bus_error_func_halfword_align;
-  *(ERR_ADDR_MAX + 6*0) = (uint32_t) bus_error_func_halfword_align;
-  *(ERR_VALID + 6*0)    = 1;
+  *CV_VP_OBI_SLV_RESP_I_ERR_ADDR_MIN = (uint32_t) bus_error_func_halfword_align;
+  *CV_VP_OBI_SLV_RESP_I_ERR_ADDR_MAX = (uint32_t) bus_error_func_halfword_align;
+  *CV_VP_OBI_SLV_RESP_I_ERR_VALID    = 1;
   asm volatile("fence");
 
   (*bus_error_func_halfword_align_p2)();
@@ -138,9 +137,10 @@ int test_prefetch_i_error() {
     return EXIT_FAILURE;
   }
 
-  *(ERR_ADDR_MIN + 6*0) = ((uint32_t) bus_error_prefetch_func) + 4 * 2 + 4;
-  *(ERR_ADDR_MAX + 6*0) = ((uint32_t) bus_error_prefetch_func) + 4 * 2 + 4;
-  *(ERR_VALID + 6*0)    = 1;
+  // Seed an OBI I error one instruciton past the end of bus_error_prefetch_func (it should contain 4 32-bit instructions)
+  *CV_VP_OBI_SLV_RESP_I_ERR_ADDR_MIN = ((uint32_t) bus_error_prefetch_func) + 4 * 4;
+  *CV_VP_OBI_SLV_RESP_I_ERR_ADDR_MAX = ((uint32_t) bus_error_prefetch_func) + 4 * 4;
+  *CV_VP_OBI_SLV_RESP_I_ERR_VALID    = 1;
 
   bus_fault_count_exp = 1;
   bus_error_prefetch_func();
@@ -151,7 +151,7 @@ int test_prefetch_i_error() {
     return EXIT_FAILURE;
   }
 
-  *(ERR_VALID + 6*0)    = 0;
+  *CV_VP_OBI_SLV_RESP_I_ERR_VALID = 0;
 
   return EXIT_SUCCESS;
 }
@@ -175,4 +175,5 @@ int main(int argc, char *argv[]) {
 
   return EXIT_SUCCESS;
 }
+
 

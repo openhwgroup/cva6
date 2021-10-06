@@ -24,13 +24,9 @@
 #include <stdio.h>
 #include <stdint.h>
 #include <stdlib.h>
+#include "corev_uvmt.h"
 
 #define TEST_LOOPS 6
-
-// Virtual peripheral registers for manipulating the OBI-I error response generation
-#define ERR_ADDR_MIN   ((volatile uint32_t *) 0x15001080)
-#define ERR_ADDR_MAX   ((volatile uint32_t *) 0x15001084)
-#define ERR_VALID      ((volatile uint32_t *) 0x15001088)
 
 // Globals
 volatile uint32_t  load_bus_fault_count      = 0;
@@ -78,9 +74,9 @@ int test_data_load_error() {
   }
 
   // Write the Virtual Peripheral
-  *(ERR_ADDR_MIN + 6*1) = (uint32_t) &error_word;
-  *(ERR_ADDR_MAX + 6*1) = (uint32_t) &error_word;
-  *(ERR_VALID + 6*1)    = 1;
+  *CV_VP_OBI_SLV_RESP_D_ERR_ADDR_MIN = (uint32_t) &error_word;
+  *CV_VP_OBI_SLV_RESP_D_ERR_ADDR_MAX = (uint32_t) &error_word;
+  *CV_VP_OBI_SLV_RESP_D_ERR_VALID    = 1;
   asm volatile("fence");
 
   // Do the load
@@ -97,6 +93,7 @@ int test_data_load_error() {
     return EXIT_FAILURE;
   }
 
+  *CV_VP_OBI_SLV_RESP_D_ERR_VALID = 0;
   load_bus_fault_count = 0;
   store_bus_fault_count = 0;
 
@@ -122,9 +119,9 @@ int test_data_store_error() {
   }
 
   // Write the Virtual Peripheral
-  *(ERR_ADDR_MIN + 6*1) = (uint32_t) &error_word;
-  *(ERR_ADDR_MAX + 6*1) = (uint32_t) &error_word;
-  *(ERR_VALID + 6*1)    = 1;
+  *CV_VP_OBI_SLV_RESP_D_ERR_ADDR_MIN = (uint32_t) &error_word;
+  *CV_VP_OBI_SLV_RESP_D_ERR_ADDR_MAX = (uint32_t) &error_word;
+  *CV_VP_OBI_SLV_RESP_D_ERR_VALID    = 1;
   asm volatile("fence");
 
   // Do the store
@@ -141,6 +138,7 @@ int test_data_store_error() {
     return EXIT_FAILURE;
   }
 
+  *CV_VP_OBI_SLV_RESP_D_ERR_VALID = 0;
   load_bus_fault_count = 0;
   store_bus_fault_count = 0;
 
