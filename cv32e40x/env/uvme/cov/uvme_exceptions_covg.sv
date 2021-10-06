@@ -58,21 +58,18 @@ covergroup cg_exceptions
   cp_pcw_mtvec : coverpoint (rvfi.pc_wdata[31:2] == rvfi.csrs["mtvec"].get_csr_retirement_data()[31:2]) {
     bins one = {1};
   }
-  // TODO:ropeders mepc
-  // TODO:ropeders mtval
-  // TODO:ropeders all other covers
 
-  // TODO:ropeders all crosses
-  x_all_csrs : cross cp_imm12, cp_is_csr;  // CSR instructions shall try all 2^12 existing/nonexisting CSRs
-  x_trap_to_mtvec : cross cp_trap, cp_pcw_mtvec;  // Trap going to mtvec.base
-  x_trap_in_mtvec : cross cp_intr, cp_pcr_mtvec;  // Trap executing at mtvec.base
-  x_ebreak_trap : cross cp_is_ebreak, cp_no_ebreakm, cp_trap, cp_mcause {
+  cross_all_csrs : cross cp_imm12, cp_is_csr;  // CSR instructions shall try all 2^12 existing/nonexisting CSRs
+  cross_trap_to_mtvec : cross cp_trap, cp_pcw_mtvec;  // Trap going to mtvec.base
+  cross_trap_in_mtvec : cross cp_intr, cp_pcr_mtvec;  // Trap executing at mtvec.base
+  cross_ebreak_trap : cross cp_is_ebreak, cp_no_ebreakm, cp_trap, cp_mcause {
     ignore_bins ig = ! binsof(cp_mcause) intersect {3};  // Shall hit specifically mcause == breakpoint
   }
-  x_trap_mcause : cross cp_trap, cp_mcause {
+  // TODO:ropeders cross mcause==3 and cp for instr/data trigger match with action==0
+  cross_trap_mcause : cross cp_trap, cp_mcause {
     ignore_bins ig = binsof(cp_mcause) intersect {0};  // Can't trap with mcause == reset value
   }
-  x_intr_mcause : cross cp_intr, cp_mcause {
+  cross_intr_mcause : cross cp_intr, cp_mcause {
     ignore_bins ig = binsof(cp_mcause) intersect {0};  // Can't trap with mcause == reset value
   }
 
