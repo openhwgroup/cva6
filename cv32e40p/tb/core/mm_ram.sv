@@ -58,7 +58,7 @@ module mm_ram
      input logic [31:0]                   pc_core_id_i,
 
      output logic                         debug_req_o,
-   
+
      output logic                         tests_passed_o,
      output logic                         tests_failed_o,
      output logic                         exit_valid_o,
@@ -76,7 +76,7 @@ module mm_ram
     localparam int                        RND_STALL_DATA_GNT    = 7;
     localparam int                        RND_STALL_DATA_VALID  = 9;
 
-    localparam int                        RND_IRQ_ID     = 31;    
+    localparam int                        RND_IRQ_ID     = 31;
 
     localparam int                        MMADDR_PRINT      = 32'h1000_0000;
     localparam int                        MMADDR_TESTSTATUS = 32'h2000_0000;
@@ -101,7 +101,7 @@ module mm_ram
     enum logic {T_RAM, T_PER} transaction;
 
 
-    integer                        i;
+    int                            i;
 
     logic [31:0]                   data_addr_aligned;
 
@@ -169,10 +169,10 @@ module mm_ram
     logic [31:0]                   rnd_stall_rdata;
 
     //signal delayed by random stall
-    logic                          rnd_stall_instr_req;    
+    logic                          rnd_stall_instr_req;
     logic                          rnd_stall_instr_gnt;
 
-    logic                          rnd_stall_data_req;    
+    logic                          rnd_stall_data_req;
     logic                          rnd_stall_data_gnt;
 
     // random number generation
@@ -181,7 +181,7 @@ module mm_ram
 
     //random or monitor interrupt request
     logic                          rnd_irq;
-   
+
     // used by dump_signature methods
     string                         sig_file;
     string                         sig_string;
@@ -354,7 +354,7 @@ module mm_ram
                             use_sig_file = 1'b1;
                         end
                     end
-            
+
                     sig_string = "";
                     for (logic [31:0] addr = sig_begin_q; addr < sig_end_q; addr +=4) begin
                         sig_string = {sig_string, $sformatf("%x%x%x%x\n", dp_ram_i.mem[addr+3], dp_ram_i.mem[addr+2],
@@ -375,7 +375,7 @@ module mm_ram
                             use_sig_file = 1'b1;
                         end
                     end
-            
+
                     $display("%m @ %0t: Dumping signature", $time);
                     for (logic [31:0] addr = sig_begin_q; addr < sig_end_q; addr +=4) begin
                         $display("%x%x%x%x", dp_ram_i.mem[addr+3], dp_ram_i.mem[addr+2],
@@ -568,7 +568,7 @@ module mm_ram
           end
         end
     end // block: tb_stall
-  
+
    // -------------------------------------------------------------
    // Generate a random number using the SystemVerilog random number function
    always_ff @(posedge clk_i, negedge rst_ni) begin : rnd_num_gen
@@ -621,7 +621,7 @@ module mm_ram
                  debugger_start_cnt_q <= ~|debugger_wdata[14:0] ? 1 : debugger_wdata[14:0];
 
                debug_req_value_q <= debugger_wdata[31]; // value to be applied to debug_req
-               
+
                if(!debugger_wdata[30]) // If mode is level then set duration to 0
                  debug_req_duration_q <= 'b0;
                else // Else mode is pulse
@@ -637,7 +637,7 @@ module mm_ram
                    // else, the pulse is determined by wdata[28:16]
                    //  note, if wdata[28:16]==0, then set pulse width to 1
                    debug_req_duration_q <= ~|debugger_wdata[28:16] ? 1 : debugger_wdata[28:16];
-                 
+
             end else begin
                 // Count down the delay to start
                 if(debugger_start_cnt_q > 0)begin
@@ -652,11 +652,11 @@ module mm_ram
                    // At count == 1, then de-assert debug_req
                    if(debug_req_duration_q == 1) 
                      debug_req_o <= !debug_req_value_q;
-                end               
+                end
             end
         end
     end
-   
+
     // -------------------------------------------------------------
     // show writes if requested
     always_ff @(posedge clk_i, negedge rst_ni) begin: verbose_writes
@@ -675,10 +675,10 @@ module mm_ram
 
          .en_a_i    ( ram_instr_req   ),
          .addr_a_i  ( ram_instr_addr  ),
-         .wdata_a_i ( '0              ),	// Not writing so ignored
+         .wdata_a_i ( '0              ), // Not writing so ignored
          .rdata_a_o ( ram_instr_rdata ),
          .we_a_i    ( '0              ),
-         .be_a_i    ( 4'b1111         ),	// Always want 32-bits
+         .be_a_i    ( 4'b1111         ), // Always want 32-bits
 
          .en_b_i    ( ram_data_req    ),
          .addr_b_i  ( ram_data_addr   ),
@@ -736,7 +736,7 @@ module mm_ram
 
     assign instr_gnt_o    = ram_instr_gnt;
     assign data_gnt_o     = ram_data_gnt;
-    
+
     // remap debug code to end of memory
     assign instr_addr_remap =  ( (instr_addr_i >= dm_halt_addr_i) &&
                                (instr_addr_i < (dm_halt_addr_i + (2 ** DBG_ADDR_WIDTH)) ) ) ?
@@ -802,7 +802,7 @@ module mm_ram
 
     .grant_mem_i        ( rnd_stall_data_req     ),
     .grant_core_o       ( rnd_stall_data_gnt     ),
-    
+
     .req_core_i         ( data_req_i             ),
     .req_mem_o          ( rnd_stall_data_req     ),
 

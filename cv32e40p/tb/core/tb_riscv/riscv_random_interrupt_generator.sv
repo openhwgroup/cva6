@@ -107,7 +107,7 @@ initial
 begin
     automatic rand_irq_cycles wait_cycles = new();
     automatic rand_irq_id value = new();
-    int temp,i, min_irq_cycles, max_irq_cycles, min_irq_id, max_irq_id;
+    int rs,i, min_irq_cycles, max_irq_cycles, min_irq_id, max_irq_id;
     irq_random = 1'b0;
     irq_id_random  = '0;
 
@@ -124,16 +124,18 @@ begin
         min_irq_cycles = irq_min_cycles_i;
         max_irq_cycles = irq_max_cycles_i;
 
-        temp = 0;
-        temp = value.randomize() with{
+        rs = 0; // "randomize success"
+        rs = value.randomize() with{
             n >= min_irq_id;
             n <= max_irq_id;
         };
-        temp += wait_cycles.randomize() with{
+        if (!rs) `uvm_error("RISCV_RANDOM_INTERRUPT_GENERATOR", "Randomization failure on value.randomize()")
+
+        rs = wait_cycles.randomize() with{
             n >= min_irq_cycles;
             n <= max_irq_cycles;
         };
-        if (temp) `uvm_error("RISCV_RANDOM_INTERRUPT_GENERATOR", "Randomization failure")
+        if (!rs) `uvm_error("RISCV_RANDOM_INTERRUPT_GENERATOR", "Randomization failure on wait_cycles.randomize()")
 
         while(wait_cycles.n != 0) begin
             @(posedge clk_i);
