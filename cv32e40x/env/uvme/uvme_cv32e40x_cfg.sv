@@ -334,8 +334,8 @@ function void uvme_cv32e40x_cfg_c::post_randomize();
    rvfi_cfg.instr_name[0] = "INSTR";
 
    // Set volatile locations for virtual peripherals
-   rvvi_cfg.add_volatile_mem_addr_range(32'h1500_1000, 32'h1500_1007);
-   rvvi_cfg.add_volatile_mem_addr_range(32'h1600_0000, 32'h1600_0fff);
+   rvvi_cfg.add_volatile_mem_addr_range(CV_VP_REGISTER_BASE, CV_VP_REGISTER_BASE + CV_VP_REGISTER_SIZE - 1);
+   //rvvi_cfg.add_volatile_mem_addr_range(32'h1600_0000, 32'h1600_0fff);
 
    // Disable some CSR checks from all tests
    configure_disable_csr_checks();

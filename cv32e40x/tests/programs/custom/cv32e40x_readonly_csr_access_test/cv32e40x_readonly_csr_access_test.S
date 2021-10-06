@@ -21,6 +21,7 @@
 ###############################################################################
 # READ ONLY CSRs: access read-only CSRs and check for side-effects.
 ###############################################################################
+
 .globl _start
 .globl main
 .globl exit
@@ -28,10 +29,11 @@
 .section .text
 .global u_sw_irq_handler
 
+#include "corev_uvmt.h"
 
 #define TEST_PASS                      123456789
 #define TEST_FAIL                              1
-#define VIRT_PERIPH_STATUS_FLAG_ADDR  0x20000000 
+#define VIRT_PERIPH_STATUS_FLAG_ADDR  CV_VP_STATUS_FLAGS_BASE
 #define EXPECTED_ILLEGAL_INSTRUCTIONS         80
 
 main:
@@ -291,7 +293,7 @@ u_sw_irq_handler:
     csrrw x0, mepc, x27
     c.addi x31, 1
     mret
-    
+
 _exit:
     j _exit
 

@@ -1,0 +1,7 @@
+name: pma_test_cfg_2
+description: PMA configuration for the PMA_TEST_CFG_2 test case
+compile_flags:
+   +define+PMA_TEST_CFG_2
+plusargs:
+   +enable_pma=1
+   +fix_sp=1

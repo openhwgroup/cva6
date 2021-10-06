@@ -19,6 +19,7 @@
 
 #include <support.h>
 #include <stdint.h>
+#include "corev_uvmt.h"
 #include "chipsupport.h"
 
 void
