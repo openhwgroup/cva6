@@ -43,6 +43,23 @@
 #define CV_VP_OBI_SLV_RESP_BASE      (CV_VP_REGISTER_BASE + CV_VP_OBI_SLV_RESP_OFFSET)
 #define CV_VP_SIG_WRITER_BASE        (CV_VP_REGISTER_BASE + CV_VP_SIG_WRITER_OFFSET)
 
+// --------------------------------------------------------------------------
+// Registers inside the OBI_SLV_RESP VP
+// --------------------------------------------------------------------------
+#define CV_VP_OBI_SLV_RESP_I_ERR_ADDR_MIN    ((volatile uint32_t*) (CV_VP_OBI_SLV_RESP_BASE + 4*0))
+#define CV_VP_OBI_SLV_RESP_I_ERR_ADDR_MAX    ((volatile uint32_t*) (CV_VP_OBI_SLV_RESP_BASE + 4*1))
+#define CV_VP_OBI_SLV_RESP_I_ERR_VALID       ((volatile uint32_t*) (CV_VP_OBI_SLV_RESP_BASE + 4*2))
+#define CV_VP_OBI_SLV_RESP_I_EXOKAY_ADDR_MIN ((volatile uint32_t*) (CV_VP_OBI_SLV_RESP_BASE + 4*3))
+#define CV_VP_OBI_SLV_RESP_I_EXOKAY_ADDR_MAX ((volatile uint32_t*) (CV_VP_OBI_SLV_RESP_BASE + 4*4))
+#define CV_VP_OBI_SLV_RESP_I_EXOKAY_VALID    ((volatile uint32_t*) (CV_VP_OBI_SLV_RESP_BASE + 4*5))
+
+#define CV_VP_OBI_SLV_RESP_D_ERR_ADDR_MIN    ((volatile uint32_t*) (CV_VP_OBI_SLV_RESP_BASE + 6*4 + 4*0))
+#define CV_VP_OBI_SLV_RESP_D_ERR_ADDR_MAX    ((volatile uint32_t*) (CV_VP_OBI_SLV_RESP_BASE + 6*4 + 4*1))
+#define CV_VP_OBI_SLV_RESP_D_ERR_VALID       ((volatile uint32_t*) (CV_VP_OBI_SLV_RESP_BASE + 6*4 + 4*2))
+#define CV_VP_OBI_SLV_RESP_D_EXOKAY_ADDR_MIN ((volatile uint32_t*) (CV_VP_OBI_SLV_RESP_BASE + 6*4 + 4*3))
+#define CV_VP_OBI_SLV_RESP_D_EXOKAY_ADDR_MAX ((volatile uint32_t*) (CV_VP_OBI_SLV_RESP_BASE + 6*4 + 4*4))
+#define CV_VP_OBI_SLV_RESP_D_EXOKAY_VALID    ((volatile uint32_t*) (CV_VP_OBI_SLV_RESP_BASE + 6*4 + 4*5))
+
 // Bitfields for Debug Control VP register
 #define CV_VP_DEBUG_CONTROL_DBG_REQ(i)             ((i) << 31)
 #define CV_VP_DEBUG_CONTROL_REQ_MODE(i)            ((i) << 30)
