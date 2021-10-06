@@ -26,6 +26,8 @@ class cv32e40x_instr_gen_config extends riscv_instr_gen_config;
 
   // External config control (plusarg) to enable/disable fast_interrupt handlers
   bit enable_fast_interrupt_handler;
+  bit enable_pma;
+  cv32e40x_pma_cfg pma_cfg;
 
   // Knob to set zero fast interrupt handler
   // Knob is needed because FIXED MTVEC mode won't work with fast interrupt handlers
@@ -36,6 +38,8 @@ class cv32e40x_instr_gen_config extends riscv_instr_gen_config;
 
   // Random register for debug stack pointer
   rand riscv_reg_t     dp;
+
+  mem_region_t mem_region_override[$];
 
   constraint dp_c {
     // Debug pointer may not be the return address, stack pointer, nor thread pointer
@@ -80,18 +84,36 @@ class cv32e40x_instr_gen_config extends riscv_instr_gen_config;
   }
 
   `uvm_object_utils_begin(cv32e40x_instr_gen_config)
-    `uvm_field_enum(mtvec_mode_t, mtvec_mode, UVM_DEFAULT)
-    `uvm_field_int(knob_zero_fast_intr_handlers, UVM_DEFAULT)
-    `uvm_field_enum(riscv_reg_t, dp, UVM_DEFAULT)
-    `uvm_field_enum(riscv_reg_t, scratch_reg, UVM_DEFAULT)
+    `uvm_field_enum(mtvec_mode_t, mtvec_mode,     UVM_DEFAULT)
+    `uvm_field_enum(riscv_reg_t, dp,              UVM_DEFAULT)
+    `uvm_field_enum(riscv_reg_t, scratch_reg,     UVM_DEFAULT)
+    `uvm_field_int(knob_zero_fast_intr_handlers,  UVM_DEFAULT)
     `uvm_field_int(enable_fast_interrupt_handler, UVM_DEFAULT)
-    `uvm_field_int(use_fast_intr_handler, UVM_DEFAULT)
+    `uvm_field_int(use_fast_intr_handler,         UVM_DEFAULT)
+    `uvm_field_int(enable_pma,                    UVM_DEFAULT)
   `uvm_object_utils_end
 
   function new(string name="");
     super.new(name);
 
     get_bool_arg_value("+enable_fast_interrupt_handler=", enable_fast_interrupt_handler);
+    get_bool_arg_value("+enable_pma=", enable_pma);
+
+    if (enable_pma) begin
+      pma_cfg = cv32e40x_pma_cfg::type_id::create("pma_cfg");
+      foreach (pma_cfg.regions[i]) begin
+        if (pma_cfg.regions[i].main) begin
+          int size;
+          int min_size;
+
+          size = (pma_cfg.regions[i].word_addr_high - pma_cfg.regions[i].word_addr_low) * 4;
+          min_size = (size < 4096*16) ? size : (4096*16);
+          mem_region_override.push_back('{name:$sformatf("region_%0d", i), size_in_bytes: min_size, xwr: 3'b111});
+        end
+      end
+      super.mem_region = this.mem_region_override;
+    end // if (enable_pma)
+
   endfunction : new
 
   function void post_randomize();

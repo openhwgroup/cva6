@@ -3,12 +3,26 @@ name: cv32e40x_ci_check
 description: Commit sanity for the cv32e40x
 
 builds:
-  corev-dv:
-    cmd: make comp_corev-dv
+  clone_riscv-dv:
+    cmd: make clone_riscv-dv
+    dir: cv32e40x/sim/uvmt
+
+  clone_cv_core_rtl:
+    cmd: make clone_cv_core_rtl
     dir: cv32e40x/sim/uvmt
 
   uvmt_cv32e40x:
-    cmd: make comp
+    cmd: make bsp comp_corev-dv comp
+    dir: cv32e40x/sim/uvmt
+
+  uvmt_cv32e40x_pma_1:
+    cmd: make bsp comp_corev-dv comp
+    cfg: pma_test_cfg_1
+    dir: cv32e40x/sim/uvmt
+
+  uvmt_cv32e40x_pma_2:
+    cmd: make bsp comp_corev-dv comp
+    cfg: pma_test_cfg_2
     dir: cv32e40x/sim/uvmt
 
 tests:
@@ -55,18 +69,24 @@ tests:
     cmd: make test COREV=YES TEST=riscv_arithmetic_basic_test_0
 
   corev_rand_arithmetic_base_test:
-    build: uvmt_cv32e40x
+    builds:
+      - uvmt_cv32e40x
+      - uvmt_cv32e40x_pma_1
+      - uvmt_cv32e40x_pma_2
     description: Generated corev-dv random arithmetic test
     dir: cv32e40x/sim/uvmt
     cmd: make gen_corev-dv test COREV=YES TEST=corev_rand_arithmetic_base_test
-    num: 2
+    num: 1
 
   corev_rand_instr_test:
-    build: uvmt_cv32e40x
+    builds:
+      - uvmt_cv32e40x
+      - uvmt_cv32e40x_pma_1
+      - uvmt_cv32e40x_pma_2
     description: Generated corev-dv random instruction test
     dir: cv32e40x/sim/uvmt
     cmd: make gen_corev-dv test COREV=YES TEST=corev_rand_instr_test
-    num: 2
+    num: 1
 
   corev_rand_jump_stress_test:
     build: uvmt_cv32e40x
@@ -74,4 +94,5 @@ tests:
     dir: cv32e40x/sim/uvmt
     cmd: make gen_corev-dv test COREV=YES TEST=corev_rand_jump_stress_test
     num: 2
+
 

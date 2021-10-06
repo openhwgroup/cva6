@@ -12,6 +12,7 @@
 *.vsif
 *.sve
 *.sdb
+test_build
 dsim.env
 dsim.log
 dsim_results
