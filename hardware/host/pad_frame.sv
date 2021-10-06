@@ -40,6 +40,8 @@ module pad_frame
      //SPI MASTER
      inout wire          pad_spim_sdio0   ,
      inout wire          pad_spim_sdio1   ,
+     inout wire          pad_spim_sdio2   ,
+     inout wire          pad_spim_sdio3   ,
      inout wire          pad_spim_csn0    ,
      inout wire          pad_spim_sck     ,
 
@@ -66,12 +68,19 @@ module pad_frame
      //SPI MASTER
      input logic         oen_spim_sdio0_i  ,
      input logic         oen_spim_sdio1_i  ,
+     input logic         oen_spim_sdio2_i  ,
+     input logic         oen_spim_sdio3_i  ,
 
      output logic        in_spim_sdio0_o  ,
      output logic        in_spim_sdio1_o  ,
+     output logic        in_spim_sdio2_o  ,
+     output logic        in_spim_sdio3_o  ,
 
      input logic         out_spim_sdio0_i ,
      input logic         out_spim_sdio1_i ,
+     input logic         out_spim_sdio2_i ,
+     input logic         out_spim_sdio3_i ,
+
      input logic         out_spim_csn1_i  ,
      input logic         out_spim_csn0_i  ,
      input logic         out_spim_sck_i   ,
@@ -118,8 +127,11 @@ module pad_frame
     //SPI MASTER
     pad_functional_pd padinst_spim_sck    (.OEN( 1'b0   ), .I( out_spim_sck_i   ), .O(   ), .PAD( pad_spim_sck   ), .PEN( 1'b1 ) );
     pad_functional_pd padinst_spim_csn0   (.OEN( 1'b0  ),  .I( out_spim_csn0_i  ), .O(   ), .PAD( pad_spim_csn0  ), .PEN( 1'b1 ) );
-    pad_functional_pd padinst_spim_sdio0  (.OEN( oen_spim_sdio0_i ), .I( out_spim_sdio0_i ), .O( in_spim_sdio0_o ), .PAD( pad_spim_sdio0 ), .PEN( 1'b1 ) );
-    pad_functional_pd padinst_spim_sdio1  (.OEN( oen_spim_sdio1_i ), .I( out_spim_sdio1_i ), .O( in_spim_sdio1_o ), .PAD( pad_spim_sdio1 ), .PEN( 1'b1 ) );
+    pad_functional_pd padinst_spim_sdio0  (.OEN( oen_spim_sdio0_i ), .I( out_spim_sdio0_i ), .O( in_spim_sdio0_o ), .PAD( pad_spim_sdio0 ), .PEN( 1'b0 ) );
+    pad_functional_pd padinst_spim_sdio1  (.OEN( oen_spim_sdio1_i ), .I( out_spim_sdio1_i ), .O( in_spim_sdio1_o ), .PAD( pad_spim_sdio1 ), .PEN( 1'b0 ) );
+    pad_functional_pd padinst_spim_sdio2  (.OEN( oen_spim_sdio2_i ), .I( out_spim_sdio2_i ), .O( in_spim_sdio2_o ), .PAD( pad_spim_sdio2 ), .PEN( 1'b0 ) );
+    pad_functional_pd padinst_spim_sdio3  (.OEN( oen_spim_sdio3_i ), .I( out_spim_sdio3_i ), .O( in_spim_sdio3_o ), .PAD( pad_spim_sdio3 ), .PEN( 1'b0 ) );
+
 
 `endif //  `ifndef FPGA_EMUL
    

@@ -66,6 +66,8 @@ module al_saqr
   //SPI MASTER
   inout wire          pad_spim_sdio0   ,
   inout wire          pad_spim_sdio1   ,
+  inout wire          pad_spim_sdio2   ,
+  inout wire          pad_spim_sdio3   ,
   inout wire          pad_spim_csn0    ,
   inout wire          pad_spim_sck     ,
 
@@ -340,18 +342,27 @@ module al_saqr
       .pad_spim_csn0          ( pad_spim_csn0                   ),
       .pad_spim_sdio0         ( pad_spim_sdio0                  ),
       .pad_spim_sdio1         ( pad_spim_sdio1                  ),
+      .pad_spim_sdio2         ( pad_spim_sdio2                  ),
+      .pad_spim_sdio3         ( pad_spim_sdio3                  ),
 
       .oen_spim_sdio0_i        ( s_qspi_to_pad[0].sd0_oen_o      ),
       .oen_spim_sdio1_i        ( s_qspi_to_pad[0].sd1_oen_o      ),
+      .oen_spim_sdio2_i        ( s_qspi_to_pad[0].sd2_oen_o      ),
+      .oen_spim_sdio3_i        ( s_qspi_to_pad[0].sd3_oen_o      ),
 
       .out_spim_sck_i         ( s_qspi_to_pad[0].clk_o          ),
       .out_spim_csn0_i        ( s_qspi_to_pad[0].csn0_o         ),
+
       .out_spim_sdio0_i       ( s_qspi_to_pad[0].sd0_o          ),
       .out_spim_sdio1_i       ( s_qspi_to_pad[0].sd1_o          ),
+      .out_spim_sdio2_i       ( s_qspi_to_pad[0].sd2_o          ),
+      .out_spim_sdio3_i       ( s_qspi_to_pad[0].sd3_o          ),
       
 
       .in_spim_sdio0_o         ( s_pad_to_qspi[0].sd0_i         ),
       .in_spim_sdio1_o         ( s_pad_to_qspi[0].sd1_i         ),
+      .in_spim_sdio2_o         ( s_pad_to_qspi[0].sd2_i         ),
+      .in_spim_sdio3_o         ( s_pad_to_qspi[0].sd3_i         ),
 
       .axi_hyper_cs_ni        ( s_axi_hyper_cs_n                ),
       .axi_hyper_ck_i         ( s_axi_hyper_ck                  ),

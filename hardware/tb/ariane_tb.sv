@@ -125,10 +125,13 @@ module ariane_tb;
     wire                  w_i2c_sda      ;
     wire                  w_i2c_scl      ;
 
-    wire                  w_spim_sck     ; 
-    wire                  w_spim_csn0    ;
-    wire                  w_spim_sdio0   ; 
-    wire                  w_spim_sdio1   ;
+    tri                  w_spim_sck     ; 
+    tri                  w_spim_csn0    ;
+    tri                  w_spim_sdio0   ; 
+    wire                 w_spim_sdio1   ;
+    wire                 w_spi_flash_so;
+    tri                  w_spim_sdio2   ; 
+    tri                  w_spim_sdio3   ;
 
     wire                  w_cva6_uart_rx ;
     wire                  w_cva6_uart_tx ;
@@ -256,7 +259,9 @@ module ariane_tb;
         .pad_spim_sck             ( w_spim_sck                 ), 
         .pad_spim_csn0            ( w_spim_csn0                ), 
         .pad_spim_sdio0           ( w_spim_sdio0               ), 
-        .pad_spim_sdio1           ( w_spim_sdio1               )
+        .pad_spim_sdio1           ( w_spim_sdio1               ),
+        .pad_spim_sdio2           ( w_spim_sdio2               ), 
+        .pad_spim_sdio3           ( w_spim_sdio3               )
 
    );
 
@@ -287,6 +292,8 @@ module ariane_tb;
 
    endgenerate
 
+   //assign w_spim_sdio1 = w_spi_flash_so? 1:0;
+
    generate
     /* SPI flash */
       if(USE_S25FS256S_MODEL == 1) begin
@@ -302,11 +309,8 @@ module ariane_tb;
             .WPNeg    (  ),
             .RESETNeg (  )
          );
+      end
 
-      end
-      else begin
-         assign w_gpio_1 = 'z;
-      end
    endgenerate
 
    s27ks0641 #(
