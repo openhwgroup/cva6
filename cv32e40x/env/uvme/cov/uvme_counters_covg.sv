@@ -16,24 +16,26 @@
 // SPDX-License-Identifier: Apache-2.0 WITH SHL-2.0
 
 
-`uvm_analysis_imp_decl(_rvfi)
+`uvm_analysis_imp_decl(_isacov)
 
 
 covergroup cg_counters (int num_mhpmcounters)
-  with function sample(uvma_rvfi_instr_seq_item_c#(ILEN, XLEN) rvfi);
+  with function sample(uvma_isacov_mon_trn_c isacov);
 
   `per_instance_fcov
 
-  cp_inhibit_mcycle : coverpoint rvfi.csrs["mcountinhibit"].get_csr_retirement_data()[0];
-  cp_inhibit_minstret : coverpoint rvfi.csrs["mcountinhibit"].get_csr_retirement_data()[2];
-  cp_is_csr_read : coverpoint ((rvfi.insn[6:0] == 7'b 1110011) && (rvfi.insn[13:12] != 2'b 00) && (rvfi.insn[11:7] != 0)) {
+  cp_inhibit_mcycle : coverpoint isacov.rvfi.csrs["mcountinhibit"].get_csr_retirement_data()[0];
+  cp_inhibit_minstret : coverpoint isacov.rvfi.csrs["mcountinhibit"].get_csr_retirement_data()[2];
+  cp_is_csr_read : coverpoint ((isacov.rvfi.insn[6:0] == 7'b 1110011) && (isacov.rvfi.insn[13:12] != 2'b 00)
+    && (isacov.rvfi.insn[11:7] != 0))
+  {
     bins is_csr_read = {1};
   }
-  cp_is_dbg_mode : coverpoint rvfi.dbg_mode {
+  cp_is_dbg_mode : coverpoint isacov.rvfi.dbg_mode {
     bins dbg_mode = {1};
   }
-  cp_mcycle : coverpoint (rvfi.insn[31:20] == 12'h B00);
-  cp_minstret : coverpoint (rvfi.insn[31:20] == 12'h B02);
+  cp_mcycle : coverpoint (isacov.rvfi.insn[31:20] == 12'h B00);
+  cp_minstret : coverpoint (isacov.rvfi.insn[31:20] == 12'h B02);
   cp_num_mhpmcounters : coverpoint num_mhpmcounters {
     bins min = {0};
     bins def = {1};
@@ -60,28 +62,30 @@ endgroup : cg_counters
 
 
 covergroup cg_mhpm (int idx)
-  with function sample(uvma_rvfi_instr_seq_item_c#(ILEN, XLEN) rvfi);
+  with function sample(uvma_isacov_mon_trn_c isacov);
 
   `per_instance_fcov
 
-  cp_inhibit : coverpoint rvfi.csrs["mcountinhibit"].get_csr_retirement_data()[idx] {
+  cp_inhibit : coverpoint isacov.rvfi.csrs["mcountinhibit"].get_csr_retirement_data()[idx] {
     bins inhibit = {1};
     bins no_inhibit = {0};
   }
-  cp_event : coverpoint rvfi.csrs[$sformatf("mhpmevent%0d", idx)].get_csr_retirement_data() {
+  cp_event : coverpoint isacov.rvfi.csrs[$sformatf("mhpmevent%0d", idx)].get_csr_retirement_data() {
     bins events = {[1:$]};
     bins no_events = {0};
   }
-  cp_is_csr_read : coverpoint ((rvfi.insn[6:0] == 7'b 1110011) && (rvfi.insn[13:12] != 2'b 00) && (rvfi.insn[11:7] != 0)) {
+  cp_is_csr_read : coverpoint ((isacov.rvfi.insn[6:0] == 7'b 1110011) && (isacov.rvfi.insn[13:12] != 2'b 00)
+    && (isacov.rvfi.insn[11:7] != 0))
+  {
     bins is_csr_read = {1};
   }
-  cp_is_mhpm_idx : coverpoint (rvfi.insn[31:20] == (12'h B00 + idx)) {
+  cp_is_mhpm_idx : coverpoint (isacov.rvfi.insn[31:20] == (12'h B00 + idx)) {
     bins mhpm_idx = {1};
   }
-  cp_is_mhpm_idx_h : coverpoint (rvfi.insn[31:20] == (12'h B80 + idx)) {
+  cp_is_mhpm_idx_h : coverpoint (isacov.rvfi.insn[31:20] == (12'h B80 + idx)) {
     bins mhpm_idx_h = {1};
   }
-  cp_is_dbg_mode : coverpoint rvfi.dbg_mode {
+  cp_is_dbg_mode : coverpoint isacov.rvfi.dbg_mode {
     bins dbg_mode = {1};
   }
 
@@ -100,22 +104,24 @@ endgroup : cg_mhpm
 
 
 covergroup cg_inhibit_mix (int idx)
-  with function sample(uvma_rvfi_instr_seq_item_c#(ILEN, XLEN) rvfi);
+  with function sample(uvma_isacov_mon_trn_c isacov);
 
   `per_instance_fcov
 
-  cp_inhibit_mcycle : coverpoint rvfi.csrs["mcountinhibit"].get_csr_retirement_data()[0];
-  cp_inhibit_minstret : coverpoint rvfi.csrs["mcountinhibit"].get_csr_retirement_data()[2];
-  cp_is_csr_read : coverpoint ((rvfi.insn[6:0] == 7'b 1110011) && (rvfi.insn[13:12] != 2'b 00) && (rvfi.insn[11:7] != 0)) {
+  cp_inhibit_mcycle : coverpoint isacov.rvfi.csrs["mcountinhibit"].get_csr_retirement_data()[0];
+  cp_inhibit_minstret : coverpoint isacov.rvfi.csrs["mcountinhibit"].get_csr_retirement_data()[2];
+  cp_is_csr_read : coverpoint ((isacov.rvfi.insn[6:0] == 7'b 1110011) && (isacov.rvfi.insn[13:12] != 2'b 00)
+    && (isacov.rvfi.insn[11:7] != 0))
+  {
     bins is_csr_read = {1};
   }
-  cp_is_event_cycles : coverpoint rvfi.csrs[$sformatf("mhpmevent%0d", idx)].get_csr_retirement_data() {
+  cp_is_event_cycles : coverpoint isacov.rvfi.csrs[$sformatf("mhpmevent%0d", idx)].get_csr_retirement_data() {
     bins event_cycles = {1};  // selector CYCLES is bit 0
   }
-  cp_is_event_instr : coverpoint rvfi.csrs[$sformatf("mhpmevent%0d", idx)].get_csr_retirement_data() {
+  cp_is_event_instr : coverpoint isacov.rvfi.csrs[$sformatf("mhpmevent%0d", idx)].get_csr_retirement_data() {
     bins event_instr = {2};  // selector INSTR is bit 1
   }
-  cp_is_mhpm_idx : coverpoint (rvfi.insn[31:20] == (12'h B00 + idx)) {
+  cp_is_mhpm_idx : coverpoint (isacov.rvfi.insn[31:20] == (12'h B00 + idx)) {
     bins mhpm_idx = {1};
   }
 
@@ -141,9 +147,9 @@ class cg_idx_wrapper extends uvm_component;
     this.inhibit_mix_cg = new(idx);
   endfunction : new
 
-  function sample(uvma_rvfi_instr_seq_item_c#(ILEN, XLEN) rvfi);
-    mhpm_cg.sample(rvfi);
-    inhibit_mix_cg.sample(rvfi);
+  function sample(uvma_isacov_mon_trn_c isacov);
+    mhpm_cg.sample(isacov);
+    inhibit_mix_cg.sample(isacov);
   endfunction : sample
 
 endclass : cg_idx_wrapper
@@ -153,14 +159,14 @@ class uvme_counters_covg extends uvm_component;
 
   cg_counters  counters_cg;
   cg_idx_wrapper  idx_cgs[3:31];
-  uvm_analysis_imp_rvfi#(uvma_rvfi_instr_seq_item_c#(ILEN, XLEN), uvme_counters_covg)  rvfi_mon_export;
+  uvm_analysis_imp_isacov#(uvma_isacov_mon_trn_c, uvme_counters_covg)  isacov_mon_export;
   uvma_core_cntrl_cfg_c  cfg;
 
   `uvm_component_utils(uvme_counters_covg);
 
   extern function new(string name = "counters_covg", uvm_component parent = null);
   extern function void build_phase(uvm_phase phase);
-  extern function void write_rvfi(uvma_rvfi_instr_seq_item_c#(ILEN, XLEN) trn);
+  extern function void write_isacov(uvma_isacov_mon_trn_c trn);
 
 endclass : uvme_counters_covg
 
@@ -169,7 +175,7 @@ function uvme_counters_covg::new(string name = "counters_covg", uvm_component pa
 
   super.new(name, parent);
 
-  rvfi_mon_export = new("rvfi_mon_export", this);
+  isacov_mon_export = new("isacov_mon_export", this);
 
 endfunction : new
 
@@ -187,9 +193,9 @@ function void uvme_counters_covg::build_phase(uvm_phase phase);
 endfunction : build_phase
 
 
-function void uvme_counters_covg::write_rvfi(uvma_rvfi_instr_seq_item_c#(ILEN, XLEN) trn);
+function void uvme_counters_covg::write_isacov(uvma_isacov_mon_trn_c trn);
 
   counters_cg.sample(trn);
   for (int i = 0; i < cfg.num_mhpmcounters; i++) void'(idx_cgs[i + 3].sample(trn));
 
-endfunction : write_rvfi
+endfunction : write_isacov
