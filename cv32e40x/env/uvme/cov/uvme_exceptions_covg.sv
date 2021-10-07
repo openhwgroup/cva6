@@ -30,13 +30,13 @@ covergroup cg_exceptions
   cp_intr : coverpoint isacov.rvfi.intr {
     bins intr = {1};
   }
-  cp_imm12 : coverpoint isacov.rvfi.insn[31:20] {
+  cp_imm12 : coverpoint isacov.instr.csr_val {
     option.auto_bin_max = 4096;
   }
-  cp_is_csr : coverpoint ((isacov.rvfi.insn[6:0] == 7'b 1110011) && (isacov.rvfi.insn[13:12] != 2'b 00)) {
+  cp_is_csr : coverpoint (isacov.instr.group == CSR_GROUP) {
     bins is_csr = {1};
   }
-  cp_is_ebreak : coverpoint (isacov.rvfi.insn inside {32'h 00100073, 32'h 9002}) {
+  cp_is_ebreak : coverpoint (isacov.instr.name inside {EBREAK, C_EBREAK}) {
     bins is_ebreak = {1};
   }
   cp_no_ebreakm : coverpoint (isacov.rvfi.csrs["dcsr"].get_csr_retirement_data()[15]) {
