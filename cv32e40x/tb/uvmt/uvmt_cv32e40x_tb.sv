@@ -41,10 +41,6 @@ module uvmt_cv32e40x_tb;
 `else
    parameter int CORE_PARAM_NUM_MHPMCOUNTERS = 1;
 `endif
-
-   parameter int PMA_NUM_REGIONS = 0;
-   parameter cv32e40x_pkg::pma_region_t PMA_CFG[(PMA_NUM_REGIONS-1):0] = '{default:PMA_R_DEFAULT};
-
    // ENV (testbench) parameters
    parameter int ENV_PARAM_INSTR_ADDR_WIDTH  = 32;
    parameter int ENV_PARAM_INSTR_DATA_WIDTH  = 32;
@@ -340,6 +336,8 @@ module uvmt_cv32e40x_tb;
                                                       .id_stage_instr_rdata_i(wb_stage_i.ex_wb_pipe_i.instr.bus_resp.rdata),
                                                       .branch_taken_ex(controller_i.controller_fsm_i.branch_taken_ex),
                                                       .debug_mode_q(controller_i.controller_fsm_i.debug_mode_q),
+                                                      .irq_ack_o(core_i.irq_ack),
+                                                      .irq_id_o(core_i.irq_id),
                                                       .*);
 
 
@@ -349,7 +347,7 @@ module uvmt_cv32e40x_tb;
 
   bind cv32e40x_wrapper
     uvmt_cv32e40x_debug_cov_assert_if debug_cov_assert_if (
-      .id_valid(core_i.id_stage_i.id_valid),
+      .id_valid(core_i.id_stage_i.id_valid_o),
       .ex_stage_csr_en(core_i.id_ex_pipe.csr_en),
       .ex_valid(core_i.ex_stage_i.instr_valid),
       .ex_stage_instr_rdata_i(core_i.id_ex_pipe.instr.bus_resp.rdata),
@@ -394,8 +392,8 @@ module uvmt_cv32e40x_tb;
       .csr_op(core_i.ex_wb_pipe.csr_op),
       .csr_addr(core_i.ex_wb_pipe.csr_addr),
       .csr_we_int(core_i.cs_registers_i.csr_we_int),
-      .irq_ack_o(core_i.irq_ack_o),
-      .irq_id_o(core_i.irq_id_o),
+      .irq_ack_o(core_i.irq_ack),
+      .irq_id_o(core_i.irq_id),
       .dm_halt_addr_i(core_i.dm_halt_addr_i),
       .dm_exception_addr_i(core_i.dm_exception_addr_i),
       .core_sleep_o(core_i.core_sleep_o),
