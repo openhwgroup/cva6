@@ -26,16 +26,14 @@ covergroup cg_counters (int num_mhpmcounters)
 
   cp_inhibit_mcycle : coverpoint isacov.rvfi.csrs["mcountinhibit"].get_csr_retirement_data()[0];
   cp_inhibit_minstret : coverpoint isacov.rvfi.csrs["mcountinhibit"].get_csr_retirement_data()[2];
-  cp_is_csr_read : coverpoint ((isacov.rvfi.insn[6:0] == 7'b 1110011) && (isacov.rvfi.insn[13:12] != 2'b 00)
-    && (isacov.rvfi.insn[11:7] != 0))
-  {
+  cp_is_csr_read : coverpoint (isacov.instr.group == CSR_GROUP) && (isacov.instr.rd != 0) {
     bins is_csr_read = {1};
   }
   cp_is_dbg_mode : coverpoint isacov.rvfi.dbg_mode {
     bins dbg_mode = {1};
   }
-  cp_mcycle : coverpoint (isacov.rvfi.insn[31:20] == 12'h B00);
-  cp_minstret : coverpoint (isacov.rvfi.insn[31:20] == 12'h B02);
+  cp_mcycle : coverpoint (isacov.instr.csr == uvma_isacov_pkg::MCYCLE);
+  cp_minstret : coverpoint (isacov.instr.csr == uvma_isacov_pkg::MINSTRET);
   cp_num_mhpmcounters : coverpoint num_mhpmcounters {
     bins min = {0};
     bins def = {1};
@@ -74,15 +72,13 @@ covergroup cg_mhpm (int idx)
     bins events = {[1:$]};
     bins no_events = {0};
   }
-  cp_is_csr_read : coverpoint ((isacov.rvfi.insn[6:0] == 7'b 1110011) && (isacov.rvfi.insn[13:12] != 2'b 00)
-    && (isacov.rvfi.insn[11:7] != 0))
-  {
+  cp_is_csr_read : coverpoint (isacov.instr.group == CSR_GROUP) && (isacov.instr.rd != 0) {
     bins is_csr_read = {1};
   }
-  cp_is_mhpm_idx : coverpoint (isacov.rvfi.insn[31:20] == (12'h B00 + idx)) {
+  cp_is_mhpm_idx : coverpoint (isacov.instr.csr == (uvma_isacov_pkg::MCYCLE + idx)) {
     bins mhpm_idx = {1};
   }
-  cp_is_mhpm_idx_h : coverpoint (isacov.rvfi.insn[31:20] == (12'h B80 + idx)) {
+  cp_is_mhpm_idx_h : coverpoint (isacov.instr.csr == (uvma_isacov_pkg::MCYCLEH + idx)) {
     bins mhpm_idx_h = {1};
   }
   cp_is_dbg_mode : coverpoint isacov.rvfi.dbg_mode {
@@ -110,9 +106,7 @@ covergroup cg_inhibit_mix (int idx)
 
   cp_inhibit_mcycle : coverpoint isacov.rvfi.csrs["mcountinhibit"].get_csr_retirement_data()[0];
   cp_inhibit_minstret : coverpoint isacov.rvfi.csrs["mcountinhibit"].get_csr_retirement_data()[2];
-  cp_is_csr_read : coverpoint ((isacov.rvfi.insn[6:0] == 7'b 1110011) && (isacov.rvfi.insn[13:12] != 2'b 00)
-    && (isacov.rvfi.insn[11:7] != 0))
-  {
+  cp_is_csr_read : coverpoint (isacov.instr.group == CSR_GROUP) && (isacov.instr.rd != 0) {
     bins is_csr_read = {1};
   }
   cp_is_event_cycles : coverpoint isacov.rvfi.csrs[$sformatf("mhpmevent%0d", idx)].get_csr_retirement_data() {
@@ -121,7 +115,7 @@ covergroup cg_inhibit_mix (int idx)
   cp_is_event_instr : coverpoint isacov.rvfi.csrs[$sformatf("mhpmevent%0d", idx)].get_csr_retirement_data() {
     bins event_instr = {2};  // selector INSTR is bit 1
   }
-  cp_is_mhpm_idx : coverpoint (isacov.rvfi.insn[31:20] == (12'h B00 + idx)) {
+  cp_is_mhpm_idx : coverpoint (isacov.instr.csr == (uvma_isacov_pkg::MCYCLE + idx)) {
     bins mhpm_idx = {1};
   }
 
