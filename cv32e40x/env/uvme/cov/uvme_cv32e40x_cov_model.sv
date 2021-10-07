@@ -64,9 +64,6 @@ function uvme_cv32e40x_cov_model_c::new(string name="uvme_cv32e40x_cov_model", u
 
    super.new(name, parent);
 
-   // TODO Create coverage groups for uvme_cv32e40x_cov_model_c
-   //      Ex: debug_cg = new();
-
 endfunction : new
 
 function void uvme_cv32e40x_cov_model_c::build_phase(uvm_phase phase);
@@ -88,6 +85,7 @@ function void uvme_cv32e40x_cov_model_c::build_phase(uvm_phase phase);
 
    debug_covg = uvme_debug_covg::type_id::create("debug_covg", this);
    uvm_config_db#(uvme_cv32e40x_cntxt_c)::set(this, "debug_covg", "cntxt", cntxt);
+
 endfunction : build_phase
 
 function void uvme_cv32e40x_cov_model_c::connect_phase(uvm_phase phase);

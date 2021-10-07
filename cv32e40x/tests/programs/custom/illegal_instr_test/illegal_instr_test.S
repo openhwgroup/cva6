@@ -15,6 +15,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
+#include "corev_uvmt.h"
+
 .globl _start
 .globl main
 .globl exit
@@ -47696,7 +47698,7 @@ main:
 .word(0x04008033) # p.abs   [31:25]==000_0010, [14:12]==000, [6:0]==011_0011
     nop
 .word(0x040080B3) # p.abs   [31:25]==000_0010, [14:12]==000, [6:0]==011_0011
-    
+
     lw      x5,80(sp)
     bne     x5, x6, fail
     lw      x5,76(sp)
@@ -47744,7 +47746,7 @@ main:
 fail:
     li x18, 1
 test_end:
-    li x17, 0x20000000
+    li x17, CV_VP_STATUS_FLAGS_BASE
     sw x18,0(x17)
     j _exit
 
@@ -47759,7 +47761,7 @@ u_sw_irq_handler:
     csrrw x0, mepc, x27
     c.addi x31, 1
     mret
-    
+
 _exit:
     j _exit
 

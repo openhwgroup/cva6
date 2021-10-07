@@ -33,7 +33,8 @@ typedef enum {
 } instr_ext_t;
 
 typedef enum {
-  UNKNOWN,  // TODO this should not be needed?
+   // Used for an opcode that cannot be decoded
+  UNKNOWN,
 
   // 32I
   LUI, AUIPC, JAL, JALR,
@@ -77,6 +78,9 @@ typedef enum {
 } instr_name_t;
 
 typedef enum {
+  // Used for non-decodable
+  UNKNOWN_TYPE,
+
   // RV32 types
   R_TYPE,
   I_TYPE,
@@ -100,32 +104,37 @@ typedef enum {
   ZBC_TYPE,
   ZBS_TYPE,
 
-  CSR_TYPE,  // CSR* instruction with rs1 operand
-  CSRI_TYPE, // CSR* instruction with immu operand
+  // CSR* instruction with rs1 operand
+  CSR_TYPE,
 
-  UNKNOWN_TYPE // Delete when all are implemented
+  // CSR* instruction with immu operand
+  CSRI_TYPE
+
 } instr_type_t;
 
 typedef enum {
-   LOAD_GROUP,
-   STORE_GROUP,
-   MISALIGN_LOAD_GROUP,
-   MISALIGN_STORE_GROUP,
-   ALU_GROUP,
-   BRANCH_GROUP,
-   JUMP_GROUP,
-   FENCE_GROUP,
-   FENCE_I_GROUP,
-   RET_GROUP,
-   WFI_GROUP,
-   CSR_GROUP,
-   ENV_GROUP,
-   MUL_GROUP,
-   MULTI_MUL_GROUP,
-   DIV_GROUP,
-   ALOAD_GROUP,
-   ASTORE_GROUP,
-   AMEM_GROUP
+  // Use for undecodable instructions
+  UNKNOWN_GROUP,
+
+  LOAD_GROUP,
+  STORE_GROUP,
+  MISALIGN_LOAD_GROUP,
+  MISALIGN_STORE_GROUP,
+  ALU_GROUP,
+  BRANCH_GROUP,
+  JUMP_GROUP,
+  FENCE_GROUP,
+  FENCE_I_GROUP,
+  RET_GROUP,
+  WFI_GROUP,
+  CSR_GROUP,
+  ENV_GROUP,
+  MUL_GROUP,
+  MULTI_MUL_GROUP,
+  DIV_GROUP,
+  ALOAD_GROUP,
+  ASTORE_GROUP,
+  AMEM_GROUP
 } instr_group_t;
 
 typedef enum bit[CSR_ADDR_WL-1:0] {
@@ -613,6 +622,9 @@ endfunction : get_instr_type
 
 // Package level methods to map instruction to type
 function instr_group_t get_instr_group(instr_name_t name, bit[31:0] mem_addr);
+
+  if (name inside {UNKNOWN})
+    return UNKNOWN_GROUP;
 
   if (name inside {LB,LH,LW,LBU,LHU,C_LW,C_LWSP}) begin
     if (name inside {LH, LHU} && mem_addr[0])
