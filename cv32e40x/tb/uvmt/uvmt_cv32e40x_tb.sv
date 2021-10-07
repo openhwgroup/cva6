@@ -342,6 +342,13 @@ module uvmt_cv32e40x_tb;
                                                       .debug_mode_q(controller_i.controller_fsm_i.debug_mode_q),
                                                       .*);
 
+  // Fence.i assertions
+
+  bind cv32e40x_wrapper
+    uvmt_cv32e40x_fencei_assert  fencei_assert_i (
+      .*
+    );
+
 
   // Debug assertion and coverage interface
 
