@@ -81,10 +81,11 @@ package uvme_cv32e40x_pkg;
    `include "uvme_cv32e40x_random_debug_bootset_vseq.sv"
 
    // Environment components
-   `include "uvme_interrupt_covg.sv"
    `include "uvma_cv32e40x_core_cntrl_drv.sv"
    `include "uvma_cv32e40x_core_cntrl_agent.sv"
+   `include "uvme_interrupt_covg.sv"
    `include "uvme_debug_covg.sv"
+   `include "uvme_counters_covg.sv"
    `include "uvme_cv32e40x_cov_model.sv"
    `include "uvme_cv32e40x_sb.sv"
    `include "uvme_cv32e40x_core_sb.sv"

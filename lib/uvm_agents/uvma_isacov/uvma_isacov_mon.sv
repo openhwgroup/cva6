@@ -152,7 +152,7 @@ function void uvma_isacov_mon_c::write_rvfi_instr(uvma_rvfi_instr_seq_item_c#(IL
     end
   end
 
-  mon_trn = uvma_isacov_mon_trn_c::type_id::create("mon_trn");
+  mon_trn = uvma_isacov_mon_trn_c#(.ILEN(ILEN), .XLEN(XLEN))::type_id::create("mon_trn");
   mon_trn.instr = uvma_isacov_instr_c::type_id::create("mon_instr");
 
   instr_name = dasm_name(rvfi_instr.insn);
@@ -317,6 +317,9 @@ function void uvma_isacov_mon_c::write_rvfi_instr(uvma_rvfi_instr_seq_item_c#(IL
   // if (mon_trn.instr.is_conditional_branch()) begin
   //   instr.branch_taken = mon_trn.instr.is_branch_taken();
   // end
+
+  // Attach rvfi trn handle to isacov trn
+  mon_trn.rvfi = rvfi_instr;
 
   // Write to analysis port
   ap.write(mon_trn);
