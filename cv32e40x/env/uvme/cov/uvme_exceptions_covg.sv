@@ -16,9 +16,6 @@
 // SPDX-License-Identifier: Apache-2.0 WITH SHL-2.0
 
 
-`uvm_analysis_imp_decl(_isacov)
-
-
 covergroup cg_exceptions
   with function sample(uvma_isacov_mon_trn_c isacov);
 
@@ -80,8 +77,9 @@ endgroup : cg_exceptions
 
 class uvme_exceptions_covg extends uvm_component;
 
-  cg_exceptions exceptions_cg;
+  `uvm_analysis_imp_decl(_isacov)
 
+  cg_exceptions exceptions_cg;
   uvm_analysis_imp_isacov#(uvma_isacov_mon_trn_c, uvme_exceptions_covg) isacov_mon_export;
 
   `uvm_component_utils(uvme_exceptions_covg);
