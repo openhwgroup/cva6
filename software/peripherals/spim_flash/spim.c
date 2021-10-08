@@ -51,6 +51,8 @@
 #define OUT 1
 #define IN  0
 
+#define N_SPI 1
+
 #define BUFFER_SIZE 16
 
 #define TEST_PAGE_SIZE 256
@@ -89,33 +91,35 @@ static inline void wait_cycles(const unsigned cycles)
   return;
 }
 
-int main()
-{
+int main(){
 
   int u=0;
   int poll_var=0;
 
+  // Store all udma's buffers into the L2 memory
   int *memory_page = (int*) 0x1C003000;
   int *tx_buffer_cmd_program = (int*) 0x1C004000;
   int *addr_buffer = (int*) 0x1C005000;
   int *tx_buffer_cmd_read = (int*) 0x1C006000;
   int *rx_page= (int*) 0x1C007000;
-  int *tx_buffer_cmd_erase= (int*) 0x1C008000;
-  int *tx_buffer_cmd_read_ID= (int*) 0x1C009000;
-  int *tx_buffer_cmd_read_WIP = (int*) 0x1C00A000;
-  int *sr1= (int*) 0x1C00B000;
+  int *tx_buffer_cmd_read_ID= (int*) 0x1C008000;
+  int *tx_buffer_cmd_read_WIP = (int*) 0x1C009000;
+  int *sr1= (int*) 0x1C00A000;
+  
   int *rems_resp= (int*) 0x1C00C000;
-//int *error = 0x1C00A000;
 
-  volatile int error=0;
+
+  int error[N_SPI];
   int temp=0;
-  //volatile int rems_resp[6];
 
-//--- refer to this manual for the commands
-//--- https://www.cypress.com/file/216421/download
+  //--- refer to this manual for the commands
+  //--- https://www.cypress.com/file/216421/download
 
-//int addr_buffer[4] = {0x00,0x00,0x00,0x00}; //--- reading address
+  for(int i=0; i<N_SPI;i++){
+    error[i]=0;
+  }
 
+  // Reading address
   for (int i=0; i <260; i++){
     if(i<4)
       memory_page[i] = 0x00;
@@ -124,17 +128,7 @@ int main()
   }
 
 
-//--- command sequence
-/*tx_buffer_cmd_program[BUFFER_SIZE] = {SPI_CMD_CFG(1,0,0),
-                                          SPI_CMD_SOT(0),
-                                          SPI_CMD_SEND_CMD(0x06,8,0),
-                                          SPI_CMD_EOT(0,0),
-                                          SPI_CMD_SOT(0),
-                                          SPI_CMD_SEND_CMD(0x12,8,0),
-                                          SPI_CMD_TX_DATA(4,4,8,0,0), //--- write 4B addr to the addr buffer (first 4 bytes of the "page" array)
-                                          SPI_CMD_TX_DATA(TEST_PAGE_SIZE,TEST_PAGE_SIZE,8,0,0), //--- write 256B page data to the page buffer
-                                          SPI_CMD_EOT(0,0)}; */
-
+  //--- TX command sequence
   for (int i=0; i <9; i++){
     switch (i) {
       case 0: 
@@ -167,130 +161,66 @@ int main()
       default:
       tx_buffer_cmd_program[i]= 0;
       break;
+    }
   }
-}
 
-//int addr_buffer[4] = {0x00,0x00,0x00,0x00}; //--- reading address
-
-for (int i=0; i <4; i++){
-  addr_buffer[i] = 0x00;
-}
-
-
-
-
-
-/*int tx_buffer_cmd_read[BUFFER_SIZE]    = {SPI_CMD_CFG(1,0,0),
-                                          SPI_CMD_SOT(0),
-                                          SPI_CMD_SEND_CMD(0x13,8,0), //--- read command
-                                          SPI_CMD_TX_DATA(4,4,8,0,0), //--- send the read address
-                                          SPI_CMD_RX_DATA(TEST_PAGE_SIZE,TEST_PAGE_SIZE,8,0,0),
-                                          SPI_CMD_EOT(0,0)};*/
-
-for (int i=0; i <6; i++){
-  switch (i) {
-    case 0: 
-    tx_buffer_cmd_read[i]= SPI_CMD_CFG(1,0,0);
-    break;
-    case 1: 
-    tx_buffer_cmd_read[i]= SPI_CMD_SOT(0);
-    break;
-    case 2: 
-    tx_buffer_cmd_read[i]= SPI_CMD_SEND_CMD(0x13,8,0);
-    break;
-    case 3: 
-    tx_buffer_cmd_read[i]= SPI_CMD_TX_DATA(4,4,8,0,0);
-    break;
-    case 4: 
-    tx_buffer_cmd_read[i]= SPI_CMD_RX_DATA(TEST_PAGE_SIZE,TEST_PAGE_SIZE,8,0,0);
-    break;  
-    case 5:
-    tx_buffer_cmd_read[i]= SPI_CMD_EOT(0,0);
-    break;
-    default:
-    tx_buffer_cmd_read[i]= 0;
-    break;
+  //reading address
+  for (int i=0; i <4; i++){
+    addr_buffer[i] = 0x00;
   }
-}
 
-
-
-/*int tx_buffer_cmd_read_WIP[BUFFER_SIZE] = {SPI_CMD_CFG(1,0,0),
-                                           SPI_CMD_SOT(0),
-                                           SPI_CMD_SEND_CMD(0x07,8,0),
-                                           SPI_CMD_RX_DATA(1,1,8,0,0),
-                                           SPI_CMD_EOT(0,0)};*/
-for (int i=0; i <5; i++){
-  switch (i) {
-    case 0: 
-    tx_buffer_cmd_read_WIP[i]= SPI_CMD_CFG(1,0,0);
-    break;
-    case 1: 
-    tx_buffer_cmd_read_WIP[i]= SPI_CMD_SOT(0);
-    break;
-    case 2: 
-    tx_buffer_cmd_read_WIP[i]= SPI_CMD_SEND_CMD(0x05,8,0);
-    break;
-    case 3: 
-    tx_buffer_cmd_read_WIP[i]= SPI_CMD_RX_DATA(1,0,8,0,0);
-    break;
-    case 4: 
-    tx_buffer_cmd_read_WIP[i]= SPI_CMD_EOT(0,0);
-    break;  
-    default:
-    tx_buffer_cmd_read_WIP[i]= 0;
-    break;
+  // Command sequence to read from SPI flash
+  for (int i=0; i <6; i++){
+    switch (i) {
+      case 0: 
+      tx_buffer_cmd_read[i]= SPI_CMD_CFG(1,0,0);
+      break;
+      case 1: 
+      tx_buffer_cmd_read[i]= SPI_CMD_SOT(0);
+      break;
+      case 2: 
+      tx_buffer_cmd_read[i]= SPI_CMD_SEND_CMD(0x13,8,0); //--- read command
+      break;
+      case 3: 
+      tx_buffer_cmd_read[i]= SPI_CMD_TX_DATA(4,4,8,0,0); //--- send the read address
+      break;
+      case 4: 
+      tx_buffer_cmd_read[i]= SPI_CMD_RX_DATA(TEST_PAGE_SIZE,TEST_PAGE_SIZE,8,0,0);
+      break;  
+      case 5:
+      tx_buffer_cmd_read[i]= SPI_CMD_EOT(0,0);
+      break;
+      default:
+      tx_buffer_cmd_read[i]= 0;
+      break;
+    }
   }
-}
 
-
-/* From corrado test */
-/*volatile int sr1;
-int tx_buffer_cmd_erase[BUFFER_SIZE] = {SPI_CMD_CFG(1,0,0),
-                                           SPI_CMD_SOT(0),
-                                           SPI_CMD_SEND_CMD(0x06,8,0),
-                                           SPI_CMD_EOT(0,0),
-                                           SPI_CMD_SOT(0),
-                                           SPI_CMD_SEND_CMD(0x60,8,0),
-                                           SPI_CMD_EOT(0,0)};*/
-
-for (int i=0; i <7; i++){
-  switch (i) {
-    case 0: 
-    tx_buffer_cmd_erase[i]= SPI_CMD_CFG(1,0,0);
-    break;
-    case 1: 
-    tx_buffer_cmd_erase[i]= SPI_CMD_SOT(0);
-    break;
-    case 2: 
-    tx_buffer_cmd_erase[i]= SPI_CMD_SEND_CMD(0x06,8,0);
-    break;
-    case 3: 
-    tx_buffer_cmd_erase[i]= SPI_CMD_EOT(0,0);
-    break;
-    case 4: 
-    tx_buffer_cmd_erase[i]= SPI_CMD_SOT(0);
-    break;  
-    case 5: 
-    tx_buffer_cmd_erase[i]= SPI_CMD_SEND_CMD(0x60,8,0);
-    break;
-    case 6: 
-    tx_buffer_cmd_erase[i]= SPI_CMD_EOT(0,0);
-    break;  
-    default:
-    tx_buffer_cmd_erase[i]= 0;
-    break;
+  // Command sequence to read the Work-In-Progress satus from FLASH
+  for (int i=0; i <5; i++){
+    switch (i) {
+      case 0: 
+      tx_buffer_cmd_read_WIP[i]= SPI_CMD_CFG(1,0,0);
+      break;
+      case 1: 
+      tx_buffer_cmd_read_WIP[i]= SPI_CMD_SOT(0);
+      break;
+      case 2: 
+      tx_buffer_cmd_read_WIP[i]= SPI_CMD_SEND_CMD(0x05,8,0);
+      break;
+      case 3: 
+      tx_buffer_cmd_read_WIP[i]= SPI_CMD_RX_DATA(1,0,8,0,0);
+      break;
+      case 4: 
+      tx_buffer_cmd_read_WIP[i]= SPI_CMD_EOT(0,0);
+      break;  
+      default:
+      tx_buffer_cmd_read_WIP[i]= 0;
+      break;
+    }
   }
-}
 
-
-
-/*int tx_buffer_cmd_read_ID[BUFFER_SIZE]    = {SPI_CMD_CFG(1,0,0),
-                                          SPI_CMD_SOT(0),
-                                          SPI_CMD_SEND_CMD(0x9F,8,0), //--- read command
-                                          SPI_CMD_RX_DATA(6,0,8,0,0),
-                                          SPI_CMD_EOT(0,0)};*/
-
+  // Read ID command from FLASH
   for (int i=0; i <5; i++){
     switch (i) {
       case 0: 
@@ -300,7 +230,7 @@ for (int i=0; i <7; i++){
       tx_buffer_cmd_read_ID[i]= SPI_CMD_SOT(0);
       break;
       case 2: 
-      tx_buffer_cmd_read_ID[i]= SPI_CMD_SEND_CMD(0x9F,8,0);
+      tx_buffer_cmd_read_ID[i]= SPI_CMD_SEND_CMD(0x9F,8,0); // read command
       break;
       case 3: 
       tx_buffer_cmd_read_ID[i]= SPI_CMD_RX_DATA(6,0,8,0,0);
@@ -314,42 +244,31 @@ for (int i=0; i <7; i++){
     }
   }
 
-//int rx_page[TEST_PAGE_SIZE];
 
+  //FIX PRINTF UART
+  #ifdef FPGA_EMULATION
+      int baud_rate = 9600;
+      int test_freq = 10000000;
+  #else
+      int baud_rate = 115200;
+      int test_freq = 17500000;
+  #endif  
+      uart_set_cfg(0,(test_freq/baud_rate)>>4);
 
-//FIX PRINTF UART
-#ifdef FPGA_EMULATION
-    int baud_rate = 9600;
-    int test_freq = 10000000;
-#else
-    int baud_rate = 115200;
-    int test_freq = 17500000;
-#endif  
-    uart_set_cfg(0,(test_freq/baud_rate)>>4);
+  for (int u = 0; u<N_SPI; u++){
 
-//for (int u = 0; u<1; u++){
+    //printf("[%d, %d] Start test flash page programming over qspi %d\n",  0, 0,u);
 
-      //printf("[%d, %d] Start test flash page programming over qspi %d\n",  0, 0,u);
-
-      //--- enable all the udma channels
+    // Enable all the udma channels
     plp_udma_cg_set(plp_udma_cg_get() | (0xffffffff));
     barrier();
 
-      //--- get the base address of the SPIMx udma channels
+    //--- get the base address of the SPIMx udma channels
     unsigned int udma_spim_channel_base = hal_udma_channel_base(UDMA_CHANNEL_ID(ARCHI_UDMA_SPIM_ID(u)));
-      //printf("uDMA spim%d base channel address %8x\n", u,udma_spim_channel_base);
+    //printf("uDMA spim%d base channel address %8x\n", u,udma_spim_channel_base);
     barrier();
 
-      //--- write the flash page
-
-      /*printf("uDMA spim%d TX Saddr: %8x\n", u,UDMA_SPIM_TX_ADDR(u));
-      printf("uDMA spim%d (int)page): %8x\n", u,(int)page);
-
-      printf("uDMA spim%d CMD Saddr: %8x\n", u, UDMA_SPIM_CMD_ADDR(u));
-      printf("uDMA spim%d (uint32_t)tx_buffer_cmd_program : %8x\n", u,(int)tx_buffer_cmd_program );*/
-
-
-      //--- check flash ID for debugging (refer to the manual)
+    //--- check flash ID for debugging (refer to the manual)
     for(int i = 0; i < 6; i++) {
       rems_resp[i] = 0;
     }
@@ -370,14 +289,11 @@ for (int i=0; i <7; i++){
     barrier();
     plp_udma_enqueue(UDMA_SPIM_CMD_ADDR(u),  (int)tx_buffer_cmd_program , 9*4, UDMA_CHANNEL_CFG_EN | UDMA_CHANNEL_CFG_SIZE_32);
     barrier();
-    printf("write flash, done\n");
-      //--- wait until the page is written (we could use the WIP bit instead of waiting)
-    //wait_cycles(500000);
-      //--- check WIP ("Work-In-Progress" flag of the "Status Register 1" of the flash memory)
+      
+    // Check WIP ("Work-In-Progress" flag of the "Status Register 1" of the flash memory)
     temp=0;
     pulp_write32(sr1,0);
     do {
-      
       plp_udma_enqueue(UDMA_SPIM_RX_ADDR(u) ,  (unsigned int)sr1, 1*4, UDMA_CHANNEL_CFG_EN | UDMA_CHANNEL_CFG_SIZE_32);
       barrier();
       plp_udma_enqueue(UDMA_SPIM_CMD_ADDR(u),  (int)tx_buffer_cmd_read_WIP, 5*4, UDMA_CHANNEL_CFG_EN | UDMA_CHANNEL_CFG_SIZE_32);
@@ -395,23 +311,9 @@ for (int i=0; i <7; i++){
       barrier();
     } while( temp != 0);
 
-
-
-
     barrier();
-    printf ("Ready to read back\n");
 
-
-      /*printf("uDMA spim%d RX Saddr: %8x\n", u,UDMA_SPIM_RX_ADDR(u));
-      printf("uDMA spim%d (uint32_t)rx_page: %8x\n", u,(int)rx_page);
-
-      printf("uDMA spim%d TX Saddr: %8x\n", u,UDMA_SPIM_TX_ADDR(u));
-      printf("uDMA spim%d (uint32_t)addr_buffer : %8x\n", u,(int)addr_buffer );
-
-      printf("uDMA spim%d CMD Saddr: %8x\n", u,UDMA_SPIM_CMD_ADDR(u));
-      printf("uDMA spim%d (uint32_t)tx_buffer_cmd_read : %8x\n", u,(int)tx_buffer_cmd_read);*/
-
-      //--- try to read back data
+    // Read back data
     plp_udma_enqueue(UDMA_SPIM_RX_ADDR(u) ,  (int)rx_page     , TEST_PAGE_SIZE*4, UDMA_CHANNEL_CFG_EN | UDMA_CHANNEL_CFG_SIZE_32);
     barrier();
 
@@ -420,11 +322,8 @@ for (int i=0; i <7; i++){
 
     plp_udma_enqueue(UDMA_SPIM_CMD_ADDR(u),  (int)tx_buffer_cmd_read , 6*4, UDMA_CHANNEL_CFG_EN | UDMA_CHANNEL_CFG_SIZE_32);
     barrier();
-    printf("ok\n");
 
-      //wait_cycles(25000);
-
-      //--- polling to check if the transfer is completed (when the "SADDR" register of the SPI channel is equal to 0)
+    // Polling to check if the transfer is completed (when the "SADDR" register of the SPI channel is equal to 0)
     do {
       poll_var = pulp_read32(UDMA_CHANNEL_SIZE_OFFSET + UDMA_SPIM_RX_ADDR(u));
       barrier();
@@ -432,27 +331,28 @@ for (int i=0; i <7; i++){
       barrier();
     } while(poll_var != 0);
 
-
     barrier();
 
-
-    for (int i = 0; i < TEST_PAGE_SIZE; ++i)
-    {
+    for (int i = 0; i < TEST_PAGE_SIZE; ++i){
       //printf("Index %d: read %8x, expected %8x \n",i,rx_page[i],memory_page[i+4]);
       if (rx_page[i] != memory_page[i+4])
       {
-        error++;
+        error[u]++;
       }
     }
 
-//}
-    if (error == 0)
-    {
-      printf("test passed\n");
+    if (error[u] == 0){
+      printf("Test SPI_%d PASSED\n",u);
     }else{
-      printf("test failed with %d errors\n", error);
+      printf("Test SPI_%d FAILED with %d errors\n", u, error[u]);
     }
     uart_wait_tx_done();
+  }
 
-    return error;
+  temp=0;
+  for(int i=0; i<N_SPI; i++){
+     temp|=error[i];
+  }
+    
+  return temp;
 }
