@@ -31,7 +31,9 @@ covergroup cg_exceptions
     bins intr = {1};
   }
   cp_imm12 : coverpoint isacov.instr.csr_val {
-    option.auto_bin_max = 4096;
+    bins imm12[16] = {[0:$]};
+    bins msb = {12'h 800};
+    bins lsb = {12'h 001};
   }
   cp_is_csr : coverpoint (isacov.instr.group == CSR_GROUP) {
     bins is_csr = {1};
