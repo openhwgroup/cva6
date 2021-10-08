@@ -121,12 +121,12 @@ module pad_frame
     endgenerate
 
     //I2C
-    pad_functional_pu padinst_i2c_sda     (.OEN( i2c_sda_oe_i ), .I( i2c_sda_out_i ), .O( i2c_in_sda_o ), .PAD( pad_i2c_sda ), .PEN( 1'b1 ) );
-    pad_functional_pu padinst_i2c_scl     (.OEN( i2c_scl_oe_i ), .I( i2c_scl_out_i ), .O( i2c_in_scl_o ), .PAD( pad_i2c_scl ), .PEN( 1'b1 ) );
+    pad_functional_pu padinst_i2c_sda     (.OEN( ~i2c_sda_oe_i ), .I( i2c_sda_out_i ), .O( i2c_in_sda_o ), .PAD( pad_i2c_sda ), .PEN( 1'b0 ) );
+    pad_functional_pu padinst_i2c_scl     (.OEN( ~i2c_scl_oe_i ), .I( i2c_scl_out_i ), .O( i2c_in_scl_o ), .PAD( pad_i2c_scl ), .PEN( 1'b0 ) );
 
     //SPI MASTER
-    pad_functional_pd padinst_spim_sck    (.OEN( 1'b0   ), .I( out_spim_sck_i   ), .O(   ), .PAD( pad_spim_sck   ), .PEN( 1'b1 ) );
-    pad_functional_pd padinst_spim_csn0   (.OEN( 1'b0  ),  .I( out_spim_csn0_i  ), .O(   ), .PAD( pad_spim_csn0  ), .PEN( 1'b1 ) );
+    pad_functional_pd padinst_spim_sck    (.OEN( 1'b0   ), .I( out_spim_sck_i   ), .O(   ), .PAD( pad_spim_sck   ), .PEN( 1'b0 ) );
+    pad_functional_pd padinst_spim_csn0   (.OEN( 1'b0  ),  .I( out_spim_csn0_i  ), .O(   ), .PAD( pad_spim_csn0  ), .PEN( 1'b0 ) );
     pad_functional_pd padinst_spim_sdio0  (.OEN( oen_spim_sdio0_i ), .I( out_spim_sdio0_i ), .O( in_spim_sdio0_o ), .PAD( pad_spim_sdio0 ), .PEN( 1'b0 ) );
     pad_functional_pd padinst_spim_sdio1  (.OEN( oen_spim_sdio1_i ), .I( out_spim_sdio1_i ), .O( in_spim_sdio1_o ), .PAD( pad_spim_sdio1 ), .PEN( 1'b0 ) );
     pad_functional_pd padinst_spim_sdio2  (.OEN( oen_spim_sdio2_i ), .I( out_spim_sdio2_i ), .O( in_spim_sdio2_o ), .PAD( pad_spim_sdio2 ), .PEN( 1'b0 ) );

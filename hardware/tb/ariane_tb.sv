@@ -265,6 +265,9 @@ module ariane_tb;
 
    );
 
+   pullup sda0_pullup_i (w_i2c_sda);
+   pullup scl0_pullup_i (w_i2c_scl);
+
    generate
      /* I2C memory models connected on I2C0*/
      if (USE_24FC1025_MODEL == 1) begin
@@ -291,8 +294,6 @@ module ariane_tb;
    end
 
    endgenerate
-
-   //assign w_spim_sdio1 = w_spi_flash_so? 1:0;
 
    generate
     /* SPI flash */

@@ -23,10 +23,21 @@
 #define I2C_CMD_STOP                     (0x2 << I2C_CMD_OFFSET)
 #define I2C_CMD_RD_ACK                   (0x4 << I2C_CMD_OFFSET)
 #define I2C_CMD_RD_NACK                  (0x6 << I2C_CMD_OFFSET)
+#define I2C_CMD_WRB                      (0x7 << I2C_CMD_OFFSET)
 #define I2C_CMD_WR                       (0x8 << I2C_CMD_OFFSET)
 #define I2C_CMD_WAIT                     (0xA << I2C_CMD_OFFSET)
 #define I2C_CMD_RPT                      (0xC << I2C_CMD_OFFSET)
 #define I2C_CMD_CFG                      (0xE << I2C_CMD_OFFSET)
 #define I2C_CMD_WAIT_EV                  (0x1 << I2C_CMD_OFFSET)
+
+
+#define UDMA_I2C_OFFSET(id)           UDMA_PERIPH_OFFSET(ARCHI_UDMA_I2C_ID(id))
+
+#define UDMA_I2C_DATA_ADDR(id)        (ARCHI_UDMA_ADDR + UDMA_I2C_OFFSET(id) + UDMA_CHANNEL_RX_OFFSET)
+#define UDMA_I2C_TX_ADDR(id)         (ARCHI_UDMA_ADDR + UDMA_I2C_OFFSET(id) + UDMA_CHANNEL_TX_OFFSET)
+#define UDMA_I2C_CMD_ADDR(id)         (ARCHI_UDMA_ADDR + UDMA_I2C_OFFSET(id) + UDMA_CHANNEL_CUSTOM_OFFSET)
+#define UDMA_I2C_CUSTOM_ADDR(id)      (ARCHI_UDMA_ADDR + UDMA_I2C_OFFSET(id) + 0x30) // This is probably not correct but works for now. @adimauro-iis please check
+#define ARCHI_SOC_EVENT_I2C_DATA(id)    (ARCHI_SOC_EVENT_PERIPH_FIRST_EVT(ARCHI_UDMA_I2C_ID(id)) + 0)
+#define ARCHI_SOC_EVENT_I2C_CMD(id)    (ARCHI_SOC_EVENT_PERIPH_FIRST_EVT(ARCHI_UDMA_I2C_ID(id)) + 1)
 
 #endif
