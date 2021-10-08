@@ -16,6 +16,24 @@
 // SPDX-License-Identifier: Apache-2.0 WITH SHL-2.0
 
 
-module uvmt_cv32e40x_fencei_assert();
+module uvmt_cv32e40x_fencei_assert
+  import uvm_pkg::*;
+(
+  input clk_i,
+  input rst_ni,
+
+  input fencei_flush_req_o,
+  input fencei_flush_ack_i
+);
+
+  string info_tag = "CV32E40X_FENCEI_ASSERT";
+
+  default clocking cb @(posedge clk_i); endclocking
+
+  a_req_stay_high: assert property(
+    fencei_flush_req_o && !fencei_flush_ack_i
+    |=>
+    fencei_flush_req_o
+  ) else `uvm_error(info_tag, "req must not drop before ack");
 
 endmodule : uvmt_cv32e40x_fencei_assert
