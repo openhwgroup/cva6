@@ -344,6 +344,10 @@ module uvmt_cv32e40x_tb;
 
   bind cv32e40x_wrapper
     uvmt_cv32e40x_fencei_assert  fencei_assert_i (
+      .wb_valid (core_i.wb_stage_i.wb_valid),
+      .wb_rdata (core_i.ex_wb_pipe.instr.bus_resp.rdata),
+      .wb_instr_valid (core_i.ex_wb_pipe.instr_valid),
+      .wb_fencei_insn (core_i.ex_wb_pipe.fencei_insn),
       .*
     );
 
