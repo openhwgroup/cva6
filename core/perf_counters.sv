@@ -67,26 +67,25 @@ module perf_counters import ariane_pkg::*; (
         perf_counter_d[riscv::CSR_MDTLB_MISS] = perf_counter_q[riscv::CSR_MDTLB_MISS] + 1'b1;
 
       // instruction related perf counters
-      for (int unsigned i = 0; i < NR_COMMIT_PORTS-1; i++) begin
+      for (int unsigned i = 0; i < NR_COMMIT_PORTS; i++) begin
         if (commit_ack_i[i]) begin
           if (commit_instr_i[i].fu == LOAD)
-            perf_counter_d[riscv::CSR_MLOAD] = perf_counter_q[riscv::CSR_MLOAD] + 1'b1;
+            perf_counter_d[riscv::CSR_MLOAD]++;
 
           if (commit_instr_i[i].fu == STORE)
-            perf_counter_d[riscv::CSR_MSTORE] = perf_counter_q[riscv::CSR_MSTORE] + 1'b1;
+            perf_counter_d[riscv::CSR_MSTORE]++;
 
           if (commit_instr_i[i].fu == CTRL_FLOW)
-            perf_counter_d[riscv::CSR_MBRANCH_JUMP] = perf_counter_q[riscv::CSR_MBRANCH_JUMP] + 1'b1;
+            perf_counter_d[riscv::CSR_MBRANCH_JUMP]++;
 
           // The standard software calling convention uses register x1 to hold the return address on a call
           // the unconditional jump is decoded as ADD op
-          if (commit_instr_i[i].fu == CTRL_FLOW && commit_instr_i[i].op == '0
-                                                && (commit_instr_i[i].rd == 'd1 || commit_instr_i[i].rd == 'd1))
-            perf_counter_d[riscv::CSR_MCALL] = perf_counter_q[riscv::CSR_MCALL] + 1'b1;
+          if (commit_instr_i[i].fu == CTRL_FLOW && (commit_instr_i[i].op == '0 || commit_instr_i[i].op == JALR) && (commit_instr_i[i].rd == 'd1 || commit_instr_i[i].rd == 'd5) )
+            perf_counter_d[riscv::CSR_MCALL]++;
 
           // Return from call
-          if (commit_instr_i[i].op == JALR && (commit_instr_i[i].rd == 'd1 || commit_instr_i[i].rd == 'd1))
-            perf_counter_d[riscv::CSR_MRET] = perf_counter_q[riscv::CSR_MRET] + 1'b1;
+          if (commit_instr_i[i].op == JALR && (commit_instr_i[i].rd == 'd0))
+            perf_counter_d[riscv::CSR_MRET]++;
         end
       end
 
