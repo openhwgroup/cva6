@@ -680,7 +680,7 @@ module ariane_testharness #(
   // ---------------
   ariane_axi_soc::req_t    axi_ariane_req;
   ariane_axi_soc::resp_t   axi_ariane_resp;
-  rvfi_pkg::rvfi_port_t rvfi;
+  ariane_rvfi_pkg::rvfi_port_t rvfi;
 
   ariane #(
     .ArianeCfg  ( ariane_soc::ArianeSocCfg )

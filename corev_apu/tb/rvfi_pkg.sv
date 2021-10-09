@@ -38,6 +38,5 @@ package rvfi_pkg;
     logic [NRET*riscv::XLEN-1:0]     mem_wdata;
   } rvfi_instr_t;
 
-  typedef rvfi_instr_t [ariane_pkg::NR_COMMIT_PORTS-1:0] rvfi_port_t;
 
 endpackage
