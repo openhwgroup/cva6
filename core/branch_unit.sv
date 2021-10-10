@@ -66,7 +66,7 @@ module branch_unit (
             resolved_branch_o.is_taken = branch_comp_res_i;
             // check the outcome of the branch speculation
             if ( ariane_pkg::op_is_branch(fu_data_i.operator) ) begin
-               //Set the CF_type of the output as Branch -> this allows to update the BHT.
+               // Set the `cf_type` of the output as `branch`, this will update the BHT.
                resolved_branch_o.cf_type = ariane_pkg::Branch;
                //If the alu comparison does not agree with BHT prediction set the resolution as mispredicted.
                resolved_branch_o.is_mispredict  = branch_comp_res_i != (branch_predict_i.cf == ariane_pkg::Branch);
