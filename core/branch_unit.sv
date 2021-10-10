@@ -68,7 +68,7 @@ module branch_unit (
             if ( ariane_pkg::op_is_branch(fu_data_i.operator) ) begin
                // Set the `cf_type` of the output as `branch`, this will update the BHT.
                resolved_branch_o.cf_type = ariane_pkg::Branch;
-               //If the alu comparison does not agree with BHT prediction set the resolution as mispredicted.
+               // If the ALU comparison does not agree with the BHT prediction set the resolution as mispredicted.
                resolved_branch_o.is_mispredict  = branch_comp_res_i != (branch_predict_i.cf == ariane_pkg::Branch);
             end
             if (fu_data_i.operator == ariane_pkg::JALR
