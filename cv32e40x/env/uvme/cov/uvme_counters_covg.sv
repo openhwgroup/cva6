@@ -16,9 +16,6 @@
 // SPDX-License-Identifier: Apache-2.0 WITH SHL-2.0
 
 
-`uvm_analysis_imp_decl(_isacov)
-
-
 covergroup cg_counters (int num_mhpmcounters)
   with function sample(uvma_isacov_mon_trn_c isacov);
 
@@ -150,6 +147,8 @@ endclass : cg_idx_wrapper
 
 
 class uvme_counters_covg extends uvm_component;
+
+  `uvm_analysis_imp_decl(_isacov)
 
   cg_counters  counters_cg;
   cg_idx_wrapper  idx_cgs[3:31];
