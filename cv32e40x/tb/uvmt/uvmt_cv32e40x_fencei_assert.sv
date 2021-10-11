@@ -28,7 +28,18 @@ module uvmt_cv32e40x_fencei_assert
   input        wb_valid,
   input [31:0] wb_rdata,
   input        wb_instr_valid,
-  input        wb_fencei_insn
+  input        wb_fencei_insn,
+  input [31:0] wb_pc,
+
+  input        instr_req_o,
+  input [31:0] instr_addr_o,
+  input        instr_gnt_i,
+
+  input rvfi_valid,
+  input rvfi_intr,
+  input rvfi_dbg_mode
+
+  // TODO:ropeders remove unused signals when assertion-writing is done
 );
 
   default clocking cb @(posedge clk_i); endclocking
@@ -49,7 +60,7 @@ module uvmt_cv32e40x_fencei_assert
   ) else `uvm_error(info_tag, "req must drop after ack");
 
   a_req_rise_before_retire: assert property (
-    $rose(is_fencei_in_wb) && !$rose(fencei_flush_req_o)
+    $rose(is_fencei_in_wb)
     |->
     !wb_valid throughout (
       (is_fencei_in_wb && !$rose(fencei_flush_req_o)) [*1:$]
@@ -57,11 +68,25 @@ module uvmt_cv32e40x_fencei_assert
   ) else `uvm_error(info_tag, "TODO");
 
   a_req_must_retire: assert property (
-    is_fencei_in_wb && fencei_flush_req_o
+    fencei_flush_req_o
     |->
-    is_fencei_in_wb [*1:$]
-    ##0
-    is_fencei_in_wb && wb_valid
+    is_fencei_in_wb until_with wb_valid
   ) else `uvm_error(info_tag, "if there is no retire then there can't be a req");
+
+  property p_fetch_after_retire;
+    int pc_next;
+    (is_fencei_in_wb && wb_valid, pc_next={wb_pc[31:2],2'b00}+4)
+    |->
+    (
+      (instr_req_o && instr_gnt_i) [->1:2]
+      ##0 (instr_addr_o == pc_next)
+    ) or (
+      rvfi_valid [->2]
+      ##0 (rvfi_intr || rvfi_dbg_mode)
+    );
+  endproperty
+  a_fetch_after_retire: assert property (
+    p_fetch_after_retire
+  ) else `uvm_error(info_tag, "TODO");
 
 endmodule : uvmt_cv32e40x_fencei_assert
