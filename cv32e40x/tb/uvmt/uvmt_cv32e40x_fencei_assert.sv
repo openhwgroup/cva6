@@ -35,6 +35,10 @@ module uvmt_cv32e40x_fencei_assert
   input [31:0] instr_addr_o,
   input        instr_gnt_i,
 
+  input        data_req_o,
+  input        data_gnt_i,
+  input        data_rvalid_i,
+
   input rvfi_valid,
   input rvfi_intr,
   input rvfi_dbg_mode
@@ -88,5 +92,51 @@ module uvmt_cv32e40x_fencei_assert
   a_fetch_after_retire: assert property (
     p_fetch_after_retire
   ) else `uvm_error(info_tag, "TODO");
+
+  a_stall_until_ack: assert property (
+    fencei_flush_req_o && !fencei_flush_ack_i
+    |=>
+    !$changed(wb_pc)
+    // TODO:ropeders check more post-conditions? Merge with a_req_stay_high?
+  ) else `uvm_error(info_tag, "TODO");
+
+  property p_branch_after_retire;
+    int pc_next;
+    (fencei_flush_req_o, pc_next=wb_pc+4)
+    ##1 !fencei_flush_req_o
+    |=>
+    (
+      wb_valid [->1:2]
+      ##0 (wb_pc == pc_next)
+    ) or (
+      rvfi_valid [->2]
+      ##0 (rvfi_intr || rvfi_dbg_mode)
+    );
+  endproperty
+  a_branch_after_retire: assert property (
+    p_branch_after_retire
+  ) else `uvm_error(info_tag, "TODO");
+
+  a_supress_datareq: assert property (
+    fencei_flush_req_o
+    |->
+    !data_req_o
+  ) else `uvm_error(info_tag, "TODO");
+
+  a_two_cycle: assert property (
+    // TODO:ropeders refine conditions, add 3cycle prop, confirm spec correctness
+    $rose(is_fencei_in_wb)
+    |->
+    ##2 !is_fencei_in_wb
+  ) else `uvm_error(info_tag, "TODO");
+
+  a_req_wait_bus: assert property (
+    fencei_flush_req_o
+    |->
+    !data_rvalid_i until (
+      $fell(wb_valid) [->1]
+      ##1 (data_req_o && data_gnt_i) [->1]
+    )
+  ) else `uvm_error(info_tag, "flush req shall not come if rvalid is awaited");
 
 endmodule : uvmt_cv32e40x_fencei_assert
