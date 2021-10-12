@@ -187,11 +187,14 @@ endfunction : retrieve_vif
 function void uvma_interrupt_agent_c::create_components();
 
    monitor         = uvma_interrupt_mon_c            ::type_id::create("monitor"        , this);
-   sequencer       = uvma_interrupt_sqr_c            ::type_id::create("sequencer"      , this);
-   driver          = uvma_interrupt_drv_c            ::type_id::create("driver"         , this);
    cov_model       = uvma_interrupt_cov_model_c      ::type_id::create("cov_model"      , this);
    mon_trn_logger  = uvma_interrupt_mon_trn_logger_c ::type_id::create("mon_trn_logger" , this);
-   seq_item_logger = uvma_interrupt_seq_item_logger_c::type_id::create("seq_item_logger", this);
+
+   if (cfg.is_active == UVM_ACTIVE) begin
+      sequencer       = uvma_interrupt_sqr_c            ::type_id::create("sequencer"      , this);
+      driver          = uvma_interrupt_drv_c            ::type_id::create("driver"         , this);
+      seq_item_logger = uvma_interrupt_seq_item_logger_c::type_id::create("seq_item_logger", this);
+   end
 
 endfunction : create_components
 
