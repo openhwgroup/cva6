@@ -612,6 +612,18 @@ module uvmt_cv32e40x_tb;
 
    assign core_cntrl_if.clk = clknrst_if.clk;
 
+   // Informational print message on loading of OVPSIM ISS to benchmark some elf image loading times
+   // OVPSIM runs its initialization at the #1ns timestamp, and should dominate the initial startup time
+   longint start_ovpsim_init_time;
+   longint end_ovpsim_init_time;
+   initial begin
+        if (!$test$plusargs("DISABLE_OVPSIM")) begin
+          start_ovpsim_init_time = svlib_pkg::sys_dayTime();
+          #2;
+          end_ovpsim_init_time = svlib_pkg::sys_dayTime();
+          `uvm_info("OVPSIM", $sformatf("Initialization time: %0d seconds", end_ovpsim_init_time - start_ovpsim_init_time), UVM_LOW)
+        end
+    end
 
    //TODO verify these are correct with regards to isacov function
    always @(dut_wrap.cv32e40x_wrapper_i.rvfi_instr_if_0_i.rvfi_valid) -> isacov_if.retire;

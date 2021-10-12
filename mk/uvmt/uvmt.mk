@@ -124,6 +124,8 @@ export DV_OVPM_MODEL            = $(DV_OVPM_HOME)/imperas_DV_COREV
 
 export DV_OVPM_DESIGN           = $(DV_OVPM_HOME)/design
 
+export DV_SVLIB_PATH            = $(CORE_V_VERIF)/$(CV_CORE_LC)/vendor_lib/verilab
+
 DV_UVMT_SRCS                  = $(wildcard $(DV_UVMT_PATH)/*.sv))
 
 # Testcase name: must be the CLASS name of the testcase (not the filename).
@@ -170,6 +172,9 @@ export DESIGN_RTL_DIR = $(CV_CORE_PKG)/rtl
 RTLSRC_HOME   := $(CV_CORE_PKG)/rtl
 RTLSRC_INCDIR := $(RTLSRC_HOME)/include
 
+# SVLIB
+SVLIB_PKG            := $(CORE_V_VERIF)/$(CV_CORE_LC)/vendor_lib/verilab/svlib
+
 ###############################################################################
 # Seed management for constrained-random sims
 SEED    ?= 1
@@ -204,6 +209,8 @@ clone_compliance: $(COMPLIANCE_PKG)
 clone_dpi_dasm_spike:
 	$(CLONE_DPI_DASM_SPIKE_CMD)
 
+clone_svlib: $(SVLIB_PKG)
+
 $(CV_CORE_PKG):
 	$(CLONE_CV_CORE_CMD)
 
@@ -218,6 +225,9 @@ $(EMBENCH_PKG):
 
 $(DPI_DASM_SPIKE_PKG):
 	$(CLONE_DPI_DASM_SPIKE_CMD)
+
+$(SVLIB_PKG):
+	$(CLONE_SVLIB_CMD)
 
 ###############################################################################
 # RISC-V Compliance Test-suite
@@ -393,3 +403,5 @@ clean_embench:
 clean_dpi_dasm_spike:
 	rm -rf $(DPI_DASM_SPIKE_PKG)
 
+clean_svlib:
+	rm -rf $(SVLIB_PKG)

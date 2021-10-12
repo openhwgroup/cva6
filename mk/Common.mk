@@ -163,6 +163,21 @@ endif
 # DPI_DASM Spike repo var end
 
 ###############################################################################
+# Generate command to clone Spike for the Disassembler DPI (used in the isacov model)
+ifeq ($(SVLIB_BRANCH), master)
+  TMP8 = git clone $(SVLIB_REPO) --recurse $(SVLIB_PKG)
+else
+  TMP8 = git clone -b $(SVLIB_BRANCH) --single-branch $(SVLIB_REPO) --recurse $(SVLIB_PKG)
+endif
+
+ifeq ($(SVLIB_HASH), head)
+  CLONE_SVLIB_CMD = $(TMP8)
+else
+  CLONE_SVLIB_CMD = $(TMP8); cd $(SVLIB_PKG); git checkout $(SVLIB_HASH)
+endif
+# SVLIB repo var end
+
+###############################################################################
 # Imperas Instruction Set Simulator
 
 DV_OVPM_HOME    = $(CORE_V_VERIF)/vendor_lib/imperas
@@ -622,6 +637,17 @@ DPI_DASM_CXX    = g++
 
 dpi_dasm: $(DPI_DASM_SPIKE_PKG)
 	$(DPI_DASM_CXX) $(DPI_DASM_CFLAGS) $(DPI_DASM_INC) $(DPI_DASM_SRC) -o $(DPI_DASM_LIB)
+
+###############################################################################
+# Build SVLIB DPI
+
+SVLIB_SRC    = $(SVLIB_PKG)/svlib/src/dpi/svlib_dpi.c
+SVLIB_CFLAGS = -shared -fPIC
+SVLIB_LIB    = $(SVLIB_PKG)/../svlib_dpi.so
+SVLIB_CXX    = gcc
+
+svlib: $(SVLIB_PKG)
+	$(SVLIB_CXX) $(SVLIB_CFLAGS) $(SVLIB) $(SVLIB_SRC) -I$(DPI_INCLUDE) -o $(SVLIB_LIB)
 
 .PHONY: firmware-clean
 firmware-clean:

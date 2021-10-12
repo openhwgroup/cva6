@@ -36,3 +36,8 @@ COMPLIANCE_HASH   ?= cf29051b177ba61b8c39de91c33d20d202697423
 DPI_DASM_SPIKE_REPO   ?= https://github.com/riscv/riscv-isa-sim.git
 DPI_DASM_SPIKE_BRANCH ?= master
 DPI_DASM_SPIKE_HASH   ?= 8faa928819fb551325e76b463fc0c978e22f5be3
+
+# SVLIB
+SVLIB_REPO       ?= https://bitbucket.org/verilab/svlib/src/master/svlib
+SVLIB_BRANCH     ?= master
+SVLIB_HASH       ?= c25509a7e54a880fe8f58f3daa2f891d6ecf6428

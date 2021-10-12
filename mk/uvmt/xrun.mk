@@ -60,6 +60,7 @@ XRUN_ELAB_COVFILE = -covfile $(abspath $(MAKE_PATH)/../tools/xrun/covfile.tcl)
 XRUN_RUN_COV      = -covscope uvmt_$(CV_CORE_LC)_tb \
 					-nowarn CGDEFN
 XRUN_RUN_BASE_FLAGS += -sv_lib $(DPI_DASM_LIB)
+XRUN_RUN_BASE_FLAGS += -sv_lib $(abspath $(SVLIB_LIB))
 
 XRUN_UVM_VERBOSITY ?= UVM_MEDIUM
 DPI_INCLUDE        ?= $(shell dirname $(shell which xrun))/../include
@@ -281,7 +282,7 @@ XRUN_COMP = $(XRUN_COMP_FLAGS) \
 		$(XRUN_FILE_LIST) \
 		$(UVM_PLUSARGS)
 
-comp: mk_xrun_dir $(CV_CORE_PKG)
+comp: mk_xrun_dir $(CV_CORE_PKG) $(SVLIB_PKG)
 	@echo "$(BANNER)"
 	@echo "* Compiling xrun in $(SIM_CFG_RESULTS)"
 	@echo "* Log: $(SIM_CFG_RESULTS)/xrun.log"
@@ -490,5 +491,5 @@ clean_eclipse:
 	rm  -rf workspace
 
 # All generated files plus the clone of the RTL
-clean_all: clean clean_eclipse clean_riscv-dv clean_test_programs clean_bsp clean_compliance clean_embench clean_dpi_dasm_spike
+clean_all: clean clean_eclipse clean_riscv-dv clean_test_programs clean_bsp clean_compliance clean_embench clean_dpi_dasm_spike clean_svlib
 	rm -rf $(CV_CORE_PKG)
