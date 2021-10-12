@@ -63,7 +63,7 @@ sources:
     - core/mmu_sv39/mmu.sv
     - core/mmu_sv39/ptw.sv
     # - core/mmu_sv39/mult.sv deleted?
-    - core/mult.sv # above replaced with this?
+    - core/mult.sv # above & cva6_mult_sv32.sv replaced with this?
     - core/mmu_sv32/cva6_mmu_sv32.sv
     - core/mmu_sv32/cva6_ptw_sv32.sv
     # - core/mmu_sv32/cva6_mult_sv32.sv deleted?
@@ -184,6 +184,7 @@ sources:
     - corev_apu/axi/src/axi_delayer.sv
     - corev_apu/axi/src/axi_to_axi_lite.sv
     - corev_apu/fpga-support/rtl/SyncSpRamBeNx64.sv
+    - common/submodules/common_cells/src/sync.sv # missing?
     - common/submodules/common_cells/src/popcount.sv
     - common/submodules/common_cells/src/unread.sv
     - common/submodules/common_cells/src/cdc_2phase.sv
