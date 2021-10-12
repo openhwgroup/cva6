@@ -85,6 +85,7 @@ module uvmt_cv32e40x_tb;
    * This is an update of the riscv_wrapper.sv from PULP-Platform RI5CY project with
    * a few mods to bring unused ports from the CORE to this level using SV interfaces.
    */
+   if_xif if_xif();
    uvmt_cv32e40x_dut_wrap  #(
                              .NUM_MHPMCOUNTERS  (CORE_PARAM_NUM_MHPMCOUNTERS),
                              .B_EXT             (uvmt_cv32e40x_pkg::B_EXT),
@@ -94,7 +95,14 @@ module uvmt_cv32e40x_tb;
                              .INSTR_RDATA_WIDTH (ENV_PARAM_INSTR_DATA_WIDTH),
                              .RAM_ADDR_WIDTH    (ENV_PARAM_RAM_ADDR_WIDTH)
                             )
-                            dut_wrap (.*);
+                            dut_wrap (.xif_compressed_if (if_xif.cpu_compressed),
+                                      .xif_issue_if (if_xif.cpu_issue),
+                                      .xif_commit_if (if_xif.cpu_commit),
+                                      .xif_mem_if (if_xif.cpu_mem),
+                                      .xif_mem_result_if (if_xif.cpu_mem_result),
+                                      .xif_result_if (if_xif.cpu_result),
+                                      .*
+                                     );
 
   bind cv32e40x_wrapper
     uvma_rvfi_instr_if#(uvme_cv32e40x_pkg::ILEN,
@@ -348,6 +356,12 @@ module uvmt_cv32e40x_tb;
       .wb_rdata (core_i.ex_wb_pipe.instr.bus_resp.rdata),
       .wb_instr_valid (core_i.ex_wb_pipe.instr_valid),
       .wb_fencei_insn (core_i.ex_wb_pipe.fencei_insn),
+      .wb_pc (core_i.ex_wb_pipe.pc),
+
+      .rvfi_valid (rvfi_i.rvfi_valid),
+      .rvfi_intr (rvfi_i.rvfi_intr),
+      .rvfi_dbg_mode (rvfi_i.rvfi_dbg_mode),
+
       .*
     );
 
