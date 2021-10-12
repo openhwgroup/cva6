@@ -18,33 +18,34 @@
 
 
 class uvma_isacov_instr_c extends uvm_object;
-  
+
   instr_name_t  name;
   instr_ext_t   ext;
   instr_type_t  itype;
   instr_group_t group;
-
   instr_csr_t   csr;
+  bit           illegal;
 
   bit[31:0] pc;
   bit[31:0] mem_addr;
-  
-  bit [4:0] rs1;
-  bit [4:0] rs2;
-  bit [4:0] rd;
-  bit [11:0] immi;
-  bit [11:0] imms;
-  bit [12:1] immb;
+
+  bit [11:0]  csr_val;
+  bit [4:0]   rs1;
+  bit [4:0]   rs2;
+  bit [4:0]   rd;
+  bit [11:0]  immi;
+  bit [11:0]  imms;
+  bit [12:1]  immb;
   bit [31:12] immu;
-  bit [20:1] immj;
+  bit [20:1]  immj;
 
   // Valid flags for fields (to calculate hazards and other coverage)
   bit rs1_valid;
   bit rs2_valid;
   bit rd_valid;
-  
-  bit [31:0] c_imm; 
-  bit [5:0]  c_rdrs1; 
+
+  bit [31:0] c_imm;
+  bit [5:0]  c_rdrs1;
   bit [5:0]  c_rs1s;
   bit [5:0]  c_rs2s;
   bit [5:0]  c_rdp;
@@ -71,6 +72,8 @@ class uvma_isacov_instr_c extends uvm_object;
     `uvm_field_enum(instr_group_t, group, UVM_ALL_ON | UVM_NOPRINT);
     `uvm_field_enum(instr_csr_t,   csr, UVM_ALL_ON | UVM_NOPRINT);
 
+    `uvm_field_int(illegal,   UVM_ALL_ON | UVM_NOPRINT);
+    `uvm_field_int(csr_val,   UVM_ALL_ON | UVM_NOPRINT);
     `uvm_field_int(rs1,       UVM_ALL_ON | UVM_NOPRINT);
     `uvm_field_int(rs1_value, UVM_ALL_ON | UVM_NOPRINT);
     `uvm_field_int(rs1_valid, UVM_ALL_ON | UVM_NOPRINT);
@@ -79,15 +82,15 @@ class uvma_isacov_instr_c extends uvm_object;
     `uvm_field_int(rs2_value, UVM_ALL_ON | UVM_NOPRINT);
     `uvm_field_int(rs2_valid, UVM_ALL_ON | UVM_NOPRINT);
     `uvm_field_enum(instr_value_t, rs2_value_type, UVM_ALL_ON | UVM_NOPRINT);
-    `uvm_field_int(rd,        UVM_ALL_ON | UVM_NOPRINT);    
+    `uvm_field_int(rd,        UVM_ALL_ON | UVM_NOPRINT);
     `uvm_field_int(rd_value,  UVM_ALL_ON | UVM_NOPRINT);
     `uvm_field_int(rd_valid,  UVM_ALL_ON | UVM_NOPRINT);
     `uvm_field_enum(instr_value_t, rd_value_type, UVM_ALL_ON | UVM_NOPRINT);
 
     `uvm_field_int(immi, UVM_ALL_ON | UVM_NOPRINT);
-    `uvm_field_enum(instr_value_t, immi_value_type, UVM_ALL_ON | UVM_NOPRINT);    
+    `uvm_field_enum(instr_value_t, immi_value_type, UVM_ALL_ON | UVM_NOPRINT);
     `uvm_field_int(imms, UVM_ALL_ON | UVM_NOPRINT);
-    `uvm_field_enum(instr_value_t, imms_value_type, UVM_ALL_ON | UVM_NOPRINT);    
+    `uvm_field_enum(instr_value_t, imms_value_type, UVM_ALL_ON | UVM_NOPRINT);
     `uvm_field_int(immb, UVM_ALL_ON | UVM_NOPRINT);
     `uvm_field_enum(instr_value_t, immb_value_type, UVM_ALL_ON | UVM_NOPRINT);
     `uvm_field_int(immu, UVM_ALL_ON | UVM_NOPRINT);
@@ -194,7 +197,7 @@ function void uvma_isacov_instr_c::set_valid_flags();
     rd_valid = 1;
     return;
   end
-  
+
   if (itype == I_TYPE) begin
     rs1_valid = 1;
     rd_valid = 1;
@@ -203,13 +206,13 @@ function void uvma_isacov_instr_c::set_valid_flags();
 
   if (itype == S_TYPE) begin
     rs1_valid = 1;
-    rs2_valid = 1;    
+    rs2_valid = 1;
     return;
   end
 
   if (itype == B_TYPE) begin
     rs1_valid = 1;
-    rs2_valid = 1;    
+    rs2_valid = 1;
     return;
   end
 
@@ -223,24 +226,24 @@ function void uvma_isacov_instr_c::set_valid_flags();
     return;
   end
 
-  if (itype == CI_TYPE) begin    
+  if (itype == CI_TYPE) begin
     rd_valid = 1;
     return;
   end
 
-  if (itype == CR_TYPE) begin    
+  if (itype == CR_TYPE) begin
     rs1_valid = 1;
     rs2_valid = 1;
     rd_valid = 1;
     return;
   end
 
-  if (itype == CSS_TYPE) begin        
+  if (itype == CSS_TYPE) begin
     rs2_valid = 1;
     return;
   end
 
-  if (itype == CIW_TYPE) begin        
+  if (itype == CIW_TYPE) begin
     rd_valid = 1;
     return;
   end
@@ -289,10 +292,10 @@ endfunction : set_valid_flags
 
 function bit uvma_isacov_instr_c::is_csr_write();
   // Using Table 9.1 in RISC-V specification to define a CSR write
-  if (name inside {CSRRW}) 
+  if (name inside {CSRRW})
     return 1;
 
-  if (name inside {CSRRS, CSRRC} && rs1 != 0) 
+  if (name inside {CSRRS, CSRRC} && rs1 != 0)
     return 1;
 
   if (name inside {CSRRWI})
@@ -308,16 +311,16 @@ function instr_value_t uvma_isacov_instr_c::get_instr_value_type(bit[31:0] value
   if (value == 0)
     return ZERO;
 
-  if (is_signed) 
+  if (is_signed)
     return value[width-1] ? NEGATIVE : POSITIVE;
 
   return NON_ZERO;
-  
+
 endfunction : get_instr_value_type
 
 function bit uvma_isacov_instr_c::is_conditional_branch();
 
-  if (name inside {BEQ, BNE, BLT, BGE, BLTU, BGEU, C_BEQZ, C_BNEZ}) 
+  if (name inside {BEQ, BNE, BLT, BGE, BLTU, BGEU, C_BEQZ, C_BNEZ})
     return 1;
 
   return 0;

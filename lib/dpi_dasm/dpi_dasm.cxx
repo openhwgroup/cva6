@@ -38,7 +38,7 @@ uint8_t         gv_xlen;
 uint8_t         gv_is_big_endian;
 
 // Error messages
-const           string errmsg[2] = { /* 0 */ "DPI_ERROR: Invalid arguments in disassembler configuration\n", 
+const           string errmsg[2] = { /* 0 */ "DPI_ERROR: Invalid arguments in disassembler configuration\n",
                                      /* 1 */ "DPI_ERROR: Disassembler config not set\n" };
 
 // Constants
@@ -106,13 +106,22 @@ extern "C" const char* disassemble_insn_str(uint64_t insn) {
 //--------------------------------------------------------------------------------
 
 extern "C" const char* get_insn_name(uint64_t insn) {
+  const disasm_insn_t* the_insn;
+
   if (!gp_disassembler) {
     initialize_disassembler();
   }
 
   insn       = endian_swap(insn, gv_is_big_endian);
-  gs_ret_str = gp_disassembler->lookup(insn & 0xFFFFFFFF)->get_name();
-  
+  the_insn = gp_disassembler->lookup(insn & 0xFFFFFFFF);
+
+  // If the opcode is not valid, then return illegal
+  if (the_insn == NULL) {
+    return "unknown";
+  }
+
+  gs_ret_str = the_insn->get_name();
+
   return gs_ret_str.data();
 }
 
@@ -121,7 +130,7 @@ extern "C" const char* get_insn_name(uint64_t insn) {
 uint64_t endian_swap(uint64_t bits, uint8_t swap_ena) {
   uint64_t temp = bits;
   if (swap_ena) {
-      if (__GNUC__) { 
+      if (__GNUC__) {
         temp = __builtin_bswap64(bits);
       } else {
         temp = ( ((bits >> 56) & 0x00000000000000FF) |
