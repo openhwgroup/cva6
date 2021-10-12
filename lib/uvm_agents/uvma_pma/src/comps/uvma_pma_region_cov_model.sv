@@ -9,14 +9,35 @@
 // specific language governing permissions and limitations under the License.
 
 
-`ifndef __UVMA_PMA_COV_MODEL_SV__
-`define __UVMA_PMA_COV_MODEL_SV__
+`ifndef __UVMA_PMA_REGION_COV_MODEL_SV__
+`define __UVMA_PMA_REGION_COV_MODEL_SV__
 
-covergroup cg_pma_default_access(
+covergroup cg_pma_access(
    string name
-) with function sample(uvma_pma_mon_trn_c           trn);
+) with function sample(uvma_pma_mon_trn_c           trn,
+                       uvma_core_cntrl_pma_region_c pma_region);
    option.name = name;
    `per_instance_fcov
+
+   cp_main: coverpoint (pma_region.main) {
+      bins IO   = {0};
+      bins MAIN = {1};
+   }
+
+   cp_bufferable: coverpoint (pma_region.bufferable) {
+      bins NONBUF = {0};
+      bins BUF    = {1};
+   }
+
+   cp_cacheable: coverpoint (pma_region.cacheable) {
+      bins NONCACHE = {0};
+      bins CACHE    = {1};
+   }
+
+   cp_atomic: coverpoint (pma_region.atomic) {
+      bins NONATOMIC = {0};
+      bins ATOMIC    = {1};
+   }
 
    cp_access: coverpoint(trn.access) {
       bins INSTR = {UVMA_PMA_ACCESS_INSTR};
@@ -28,40 +49,19 @@ covergroup cg_pma_default_access(
       bins WRITE = {UVMA_PMA_RW_WRITE};
    }
 
-   cross_pma: cross cp_access, cp_rw {
+   cross_pma: cross cp_main, cp_bufferable, cp_cacheable, cp_atomic, cp_access, cp_rw {
       ignore_bins IGN_INSTR_WRITE = binsof(cp_rw) intersect {UVMA_PMA_RW_WRITE} &&
                                     binsof(cp_access) intersect {UVMA_PMA_ACCESS_INSTR};
+      ignore_bins IGN_INSTR_IO = binsof(cp_main) intersect {0} &&
+                                 binsof(cp_access) intersect {UVMA_PMA_ACCESS_INSTR};
    }
 
-endgroup :  cg_pma_default_access
-
-covergroup cg_pma_deconfigured_access(
-   string name
-) with function sample(uvma_pma_mon_trn_c           trn);
-   option.name = name;
-   `per_instance_fcov
-
-   cp_access: coverpoint(trn.access) {
-      bins INSTR = {UVMA_PMA_ACCESS_INSTR};
-      bins DATA  = {UVMA_PMA_ACCESS_DATA};
-   }
-
-   cp_rw: coverpoint(trn.rw) {
-      bins READ  = {UVMA_PMA_RW_READ};
-      bins WRITE = {UVMA_PMA_RW_WRITE};
-   }
-
-   cross_pma: cross cp_access, cp_rw {
-      ignore_bins IGN_INSTR_WRITE = binsof(cp_rw) intersect {UVMA_PMA_RW_WRITE} &&
-                                    binsof(cp_access) intersect {UVMA_PMA_ACCESS_INSTR};
-   }
-
-endgroup :  cg_pma_deconfigured_access
+endgroup :  cg_pma_access
 
 /**
- * Component encapsulating PMA agent for OpenHW Group CORE-V verification testbenches functional coverage model.
+ * Component encapsulating PMA coverage model for a single PMA region
  */
-class uvma_pma_cov_model_c extends uvm_component;
+class uvma_pma_region_cov_model_c extends uvm_component;
 
    // Objects
    uvma_pma_cfg_c       cfg;
@@ -70,18 +70,21 @@ class uvma_pma_cov_model_c extends uvm_component;
    // TLM
    uvm_tlm_analysis_fifo#(uvma_pma_mon_trn_c)  mon_trn_fifo;
 
-   // Covergroups
-   cg_pma_default_access      pma_default_access_covg;
-   cg_pma_deconfigured_access pma_deconfigured_access_covg;
+   // Region index for this coverage model index
+   int                  region_index;
 
-   `uvm_component_utils_begin(uvma_pma_cov_model_c)
-      `uvm_field_object(cfg  , UVM_DEFAULT)
+   // Covergroups
+   cg_pma_access        pma_access_covg;
+
+   `uvm_component_utils_begin(uvma_pma_region_cov_model_c)
+      `uvm_field_object(cfg       , UVM_DEFAULT)
+      `uvm_field_int(region_index , UVM_DEFAULT)
    `uvm_component_utils_end
 
    /**
     * Default constructor.
     */
-   extern function new(string name="uvma_pma_cov_model", uvm_component parent=null);
+   extern function new(string name="uvma_pma_region_cov_model", uvm_component parent=null);
 
    /**
     * 1. Ensures cfg handle is not null.
@@ -95,21 +98,21 @@ class uvma_pma_cov_model_c extends uvm_component;
    extern virtual task run_phase(uvm_phase phase);
 
    /**
-    * TODO Describe uvma_pma_cov_model_c::sample_mon_trn()
+    * TODO Describe uvma_pma_region_cov_model_c::sample_mon_trn()
     */
    extern function void sample_mon_trn();
 
-endclass : uvma_pma_cov_model_c
+endclass : uvma_pma_region_cov_model_c
 
 
-function uvma_pma_cov_model_c::new(string name="uvma_pma_cov_model", uvm_component parent=null);
+function uvma_pma_region_cov_model_c::new(string name="uvma_pma_region_cov_model", uvm_component parent=null);
 
    super.new(name, parent);
 
 endfunction : new
 
 
-function void uvma_pma_cov_model_c::build_phase(uvm_phase phase);
+function void uvma_pma_region_cov_model_c::build_phase(uvm_phase phase);
 
    super.build_phase(phase);
 
@@ -120,10 +123,7 @@ function void uvma_pma_cov_model_c::build_phase(uvm_phase phase);
 
    if (cfg.trn_log_enabled && cfg.cov_model_enabled) begin
       if (cfg.regions.size()) begin
-         pma_default_access_covg = new("pma_default_access_covg");
-      end
-      else begin
-         pma_deconfigured_access_covg = new("pma_deconfigured_access_covg");
+         pma_access_covg = new("pma_access_covg");
       end
    end
 
@@ -132,7 +132,7 @@ function void uvma_pma_cov_model_c::build_phase(uvm_phase phase);
 endfunction : build_phase
 
 
-task uvma_pma_cov_model_c::run_phase(uvm_phase phase);
+task uvma_pma_region_cov_model_c::run_phase(uvm_phase phase);
 
    super.run_phase(phase);
 
@@ -150,21 +150,14 @@ task uvma_pma_cov_model_c::run_phase(uvm_phase phase);
 endtask : run_phase
 
 
-function void uvma_pma_cov_model_c::sample_mon_trn();
+function void uvma_pma_region_cov_model_c::sample_mon_trn();
 
-   // This coverage model will only sample for deconfigured PMA or
-   // a PMA access that does not map to a configured region
-   if (mon_trn.is_default) begin
-      if (cfg.regions.size() == 0) begin
-         pma_deconfigured_access_covg.sample(mon_trn);
-      end
-      else begin
-         pma_default_access_covg.sample(mon_trn);
-      end
+   if (!mon_trn.is_default && mon_trn.region_index == this.region_index) begin
+      pma_access_covg.sample(mon_trn, cfg.regions[mon_trn.region_index]);
    end
 
 endfunction : sample_mon_trn
 
 
-`endif // __UVMA_PMA_COV_MODEL_SV__
+`endif // __UVMA_PMA_REGION_COV_MODEL_SV__
 

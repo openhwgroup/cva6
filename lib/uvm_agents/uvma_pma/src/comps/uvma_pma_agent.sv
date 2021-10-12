@@ -28,6 +28,7 @@ class uvma_pma_agent_c#(int ILEN=DEFAULT_ILEN,
    uvma_pma_mon_c#(ILEN,XLEN)  monitor;
    uvma_pma_sb_c               scoreboard;
    uvma_pma_cov_model_c        cov_model;
+   uvma_pma_region_cov_model_c region_cov_model[];
    uvma_pma_mon_trn_logger_c   mon_trn_logger;
 
    // TLM
@@ -153,6 +154,11 @@ function void uvma_pma_agent_c::create_components();
    monitor         = uvma_pma_mon_c#(ILEN,XLEN)           ::type_id::create("monitor"        , this);
    scoreboard      = uvma_pma_sb_c#(ILEN,XLEN)            ::type_id::create("scoreboard"     , this);
    cov_model       = uvma_pma_cov_model_c                 ::type_id::create("cov_model"      , this);
+   region_cov_model = new[cfg.regions.size()];
+   foreach (region_cov_model[i]) begin
+      region_cov_model[i] = uvma_pma_region_cov_model_c   ::type_id::create($sformatf("region_cov_model%0d", i), this);
+      region_cov_model[i].region_index = i;
+   end
    mon_trn_logger  = uvma_pma_mon_trn_logger_c#(ILEN,XLEN)::type_id::create("mon_trn_logger" , this);
 
 endfunction : create_components
@@ -167,7 +173,10 @@ endfunction : connect_analysis_ports
 
 function void uvma_pma_agent_c::connect_cov_model();
 
-   mon_ap.connect(cov_model.mon_trn_fifo .analysis_export);
+   mon_ap.connect(cov_model.mon_trn_fifo.analysis_export);
+   foreach (region_cov_model[i]) begin
+      mon_ap.connect(region_cov_model[i].mon_trn_fifo.analysis_export);
+   end
 
 endfunction : connect_cov_model
 

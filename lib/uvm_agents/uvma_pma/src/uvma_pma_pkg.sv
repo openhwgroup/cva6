@@ -50,6 +50,7 @@ package uvma_pma_pkg;
 
    // Agent components
    `include "uvma_pma_cov_model.sv"
+   `include "uvma_pma_region_cov_model.sv"
    `include "uvma_pma_sb.sv"
    `include "uvma_pma_mon.sv"
    `include "uvma_pma_agent.sv"
