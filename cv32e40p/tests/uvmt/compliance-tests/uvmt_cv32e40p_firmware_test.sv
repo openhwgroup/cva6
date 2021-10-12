@@ -138,7 +138,7 @@ endtask : run_phase
 
 task uvmt_cv32e40p_firmware_test_c::reset_debug();
     uvme_cv32e40p_random_debug_reset_c debug_vseq;
-    debug_vseq = uvme_cv32e40p_random_debug_reset_c::type_id::create("random_debug_reset_vseqr");
+    debug_vseq = uvme_cv32e40p_random_debug_reset_c::type_id::create("random_debug_reset_vseqr", vsequencer);
     `uvm_info("TEST", "Applying debug_req_i at reset", UVM_NONE);
     @(negedge env_cntxt.clknrst_cntxt.vif.reset_n);
 
@@ -149,7 +149,7 @@ endtask
 
 task uvmt_cv32e40p_firmware_test_c::bootset_debug();
     uvme_cv32e40p_random_debug_bootset_c debug_vseq;
-    debug_vseq = uvme_cv32e40p_random_debug_bootset_c::type_id::create("random_debug_bootset_vseqr");
+    debug_vseq = uvme_cv32e40p_random_debug_bootset_c::type_id::create("random_debug_bootset_vseqr", vsequencer);
     `uvm_info("TEST", "Applying single cycle debug_req after reset", UVM_NONE);
     @(negedge env_cntxt.clknrst_cntxt.vif.reset_n);
 
@@ -167,7 +167,7 @@ task uvmt_cv32e40p_firmware_test_c::random_debug();
     while (1) begin
         uvme_cv32e40p_random_debug_c debug_vseq;
         repeat (100) @(env_cntxt.debug_cntxt.vif.mon_cb);
-        debug_vseq = uvme_cv32e40p_random_debug_c::type_id::create("random_debug_vseqr");
+        debug_vseq = uvme_cv32e40p_random_debug_c::type_id::create("random_debug_vseqr", vsequencer);
         if (!debug_vseq.randomize()) begin
            `uvm_error("TEST", "Cannot randomize the debug sequence!")
         end
@@ -181,7 +181,7 @@ task uvmt_cv32e40p_firmware_test_c::irq_noise();
   while (1) begin
     uvme_cv32e40p_interrupt_noise_c interrupt_noise_vseq;
 
-    interrupt_noise_vseq = uvme_cv32e40p_interrupt_noise_c::type_id::create("interrupt_noise_vseqr");
+    interrupt_noise_vseq = uvme_cv32e40p_interrupt_noise_c::type_id::create("interrupt_noise_vseqr", vsequencer);
     assert(interrupt_noise_vseq.randomize() with {
       reserved_irq_mask == 32'h0;
     });
