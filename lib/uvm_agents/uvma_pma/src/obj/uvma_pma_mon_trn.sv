@@ -34,14 +34,22 @@ class uvma_pma_mon_trn_c#(int ILEN=DEFAULT_ILEN,
    // Access type (instruction or data)
    uvma_pma_access_enum access;
 
+   // Set if the first word of the PMA region (for fucntional coverage)
+   bit is_first_word;
+
+   // Set if the last word of the PMA region (for functional coverage)
+   bit is_last_word;
+
    // Read or write
    uvma_pma_rw_enum rw;
 
    `uvm_object_param_utils_begin(uvma_pma_mon_trn_c#(ILEN,XLEN))
-      `uvm_field_int(                       region_index, UVM_DEFAULT)
-      `uvm_field_int(                       is_default,   UVM_DEFAULT)
-      `uvm_field_enum(uvma_pma_access_enum, access,       UVM_DEFAULT)
-      `uvm_field_enum(uvma_pma_rw_enum,     rw,           UVM_DEFAULT)
+      `uvm_field_int(                       region_index,  UVM_DEFAULT)
+      `uvm_field_int(                       is_default,    UVM_DEFAULT)
+      `uvm_field_enum(uvma_pma_access_enum, access,        UVM_DEFAULT)
+      `uvm_field_enum(uvma_pma_rw_enum,     rw,            UVM_DEFAULT)
+      `uvm_field_int(                       is_first_word, UVM_DEFAULT)
+      `uvm_field_int(                       is_last_word,  UVM_DEFAULT)
    `uvm_object_utils_end
 
    /**

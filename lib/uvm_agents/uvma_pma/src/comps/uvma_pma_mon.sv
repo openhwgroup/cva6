@@ -114,6 +114,11 @@ function void uvma_pma_mon_c::write_rvfi_instr(uvma_rvfi_instr_seq_item_c#(ILEN,
    mon_trn.access       = UVMA_PMA_ACCESS_INSTR;
    mon_trn.rw           = UVMA_PMA_RW_READ;
    mon_trn.region_index = cfg.get_pma_region_for_addr(instr.pc_rdata);
+   if (mon_trn.region_index != -1) begin
+      mon_trn.is_first_word = ((instr.pc_rdata >> 2) == (cfg.regions[mon_trn.region_index].word_addr_low)) ? 1 : 0;
+      mon_trn.is_last_word  = ((instr.pc_rdata >> 2) == (cfg.regions[mon_trn.region_index].word_addr_high - 1)) ? 1 : 0;
+   end
+
    if (mon_trn.region_index == -1 && cfg.regions.size() == 0) begin
       mon_trn.is_default = 1;
    end
@@ -127,11 +132,16 @@ function void uvma_pma_mon_c::write_obi_d(uvma_obi_memory_mon_trn_c obi);
    // Create a new monitor transaction with mapped index region
    uvma_pma_mon_trn_c mon_trn;
 
-   mon_trn              = uvma_pma_mon_trn_c#(ILEN,XLEN)::type_id::create("mon_trn");
+   mon_trn               = uvma_pma_mon_trn_c#(ILEN,XLEN)::type_id::create("mon_trn");
    process_trn(mon_trn);
-   mon_trn.access       = UVMA_PMA_ACCESS_DATA;
-   mon_trn.rw           = (obi.access_type == UVMA_OBI_MEMORY_ACCESS_READ) ? UVMA_PMA_RW_READ : UVMA_PMA_RW_WRITE;
-   mon_trn.region_index = cfg.get_pma_region_for_addr(obi.address);
+   mon_trn.access        = UVMA_PMA_ACCESS_DATA;
+   mon_trn.rw            = (obi.access_type == UVMA_OBI_MEMORY_ACCESS_READ) ? UVMA_PMA_RW_READ : UVMA_PMA_RW_WRITE;
+   mon_trn.region_index  = cfg.get_pma_region_for_addr(obi.address);
+   if (mon_trn.region_index != -1) begin
+      mon_trn.is_first_word = ((obi.address >> 2) == (cfg.regions[mon_trn.region_index].word_addr_low)) ? 1 : 0;
+      mon_trn.is_last_word  = ((obi.address >> 2) == (cfg.regions[mon_trn.region_index].word_addr_high - 1)) ? 1 : 0;
+   end
+
    if (mon_trn.region_index == -1) begin
       mon_trn.is_default = 1;
    end
