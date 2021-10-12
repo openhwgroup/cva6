@@ -303,22 +303,17 @@ class uvme_rv32isa_covg extends uvm_component;
     endfunction
 
     function logic c_check_imm(string s, asm);
-      int val;
-        if (s[1] == "x") begin
-            s = s.substr(2,s.len()-1);
-            val = s.atohex ();
-        end else if (s[0] == "-") begin
-            s = s.substr(1,s.len()-1);
-            val = 0 - s.atoi();
-        end else begin
-            val = s.atoi();
-        end
+        int val;
+
+        val = get_imm(s, asm);
+
         if ((val > -127)&&(val < 127)) begin
             return 1;
         end else begin
             `uvm_info("RV32ISA Coverage", $sformatf("c_check_imm(): ins [%0s] not within 16-bit range", s), UVM_HIGH)
             return 0;
         end
+
     endfunction
 
 ///////////////////////////////////////////////////////////////////////////////
