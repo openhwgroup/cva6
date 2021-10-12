@@ -33,13 +33,18 @@
  *
  */
 
+// Thie coverage model works by copying lots of small strings,
+// Not all of these can be converted to const ref, so disable the string-copy performance lint check
+//@DVT_LINTER_WAIVER_START "SR20211012_1" disable SVTB.32.2.0
+
 class uvme_rv32isa_covg extends uvm_component;
 
-    uvme_cv32e40p_cntxt_c  cntxt;
-    
-    uvm_analysis_port#(uvme_rv32isa_covg_trn_c) ap;  
 
-    ins_t ins_prev; // Previous instruction  
+    uvme_cv32e40p_cntxt_c  cntxt;
+
+    uvm_analysis_port#(uvme_rv32isa_covg_trn_c) ap;
+
+    ins_t ins_prev; // Previous instruction
 
     // Instruction display method (for debug)
     function string ins_display(ins_t ins);
@@ -55,7 +60,7 @@ class uvme_rv32isa_covg extends uvm_component;
 
       ins_display = retval;
     endfunction
-    
+
     // The following CSR ABI names are not currently included:
     // fp, pc
     function gpr_name_t get_gpr_name (string s, r, asm);
@@ -241,7 +246,7 @@ class uvme_rv32isa_covg extends uvm_component;
             //"mhpmcounterh31": return csr_name_t'(mhpmcounterh31);
             "dcsr", "dpc"   : begin
                 `uvm_info("RV32ISA Coverage", $sformatf("get_csr_name(): CSR [%0s] not yet in functional coverage model.", s), UVM_DEBUG)
-            end 
+            end
             "marchid"      : return csr_name_t'(marchid);
             "mimpid"       : return csr_name_t'(mimpid);
             // These CSRs are not supported by CV32E40P
@@ -293,7 +298,7 @@ class uvme_rv32isa_covg extends uvm_component;
 
     function int get_pc_imm(string s, bit[31:0] pc, string asm);
         // From the Imperas ISS the string should be a 32-bit unsigend PC
-        get_pc_imm = s.atohex() - pc;        
+        get_pc_imm = s.atohex() - pc;
         `uvm_info("RV32ISA Coverage", $sformatf("get_pc_imm: Convert %s (%s) pc: 0x%08x to %0d", s, asm, pc, get_pc_imm), UVM_DEBUG)
     endfunction
 
@@ -382,7 +387,7 @@ class uvme_rv32isa_covg extends uvm_component;
         cp_rd    : coverpoint get_gpr_name(ins.ops[0].val, ins.ops[0].key, "auipc") {
             bins gprval[] = {[zero:t6]};
         }
-        cp_uimm20   : coverpoint get_imm(ins.ops[1].val,"auipc" ) {            
+        cp_uimm20   : coverpoint get_imm(ins.ops[1].val,"auipc" ) {
             bins zero = {0};
             bins pos  = {[1:$]};
         }
@@ -412,7 +417,7 @@ class uvme_rv32isa_covg extends uvm_component;
             bins gprval[] = {[zero:t6]};
         }
         cp_offset : coverpoint get_pc_imm(ins.ops[2].val, ins.pc, "bge" ) {
-            bins neg  = {[$:-1]};            
+            bins neg  = {[$:-1]};
             bins zero = {0};
             bins pos  = {[1:$]};
         }
@@ -472,7 +477,7 @@ class uvme_rv32isa_covg extends uvm_component;
             bins gprval[] = {[zero:t6]};
         }
         cp_offset : coverpoint get_pc_imm(ins.ops[2].val, ins.pc, "bne" ) {
-            bins neg  = {[$:-1]};            
+            bins neg  = {[$:-1]};
             bins zero = {0};
             bins pos  = {[1:$]};
         }
@@ -546,7 +551,7 @@ class uvme_rv32isa_covg extends uvm_component;
         }
         cp_rs1   : coverpoint get_gpr_name(ins.ops[2].val, ins.ops[2].key, "jalr") {
             bins gprval[] = {[zero:t6]};
-        }        
+        }
         cp_offset: coverpoint get_imm(ins.ops[1].val, "jalr") {
             bins neg  = {[$:-1]};
             bins zero = {0};
@@ -802,7 +807,7 @@ class uvme_rv32isa_covg extends uvm_component;
         cp_rs1    : coverpoint get_gpr_name(ins.ops[1].val, ins.ops[1].key, "srai") {
             bins gprval[] = {[zero:t6]};
         }
-        cp_shamt5   : coverpoint get_imm(ins.ops[2].val,"srai" ){            
+        cp_shamt5   : coverpoint get_imm(ins.ops[2].val,"srai" ){
             bins zero = {0};
             bins pos  = {[1:$]};
         }
@@ -1114,7 +1119,7 @@ class uvme_rv32isa_covg extends uvm_component;
         cp_rd    : coverpoint get_gpr_name(ins.ops[0].val, ins.ops[0].key, "c.lwsp") {
             bins gprval[] = {[ra:t6]};
         }
-        cp_imm6   : coverpoint get_imm(ins.ops[1].val, "c.lwsp") {            
+        cp_imm6   : coverpoint get_imm(ins.ops[1].val, "c.lwsp") {
             bins zero = {0};
             bins pos  = {[1:$]};
         }
@@ -1125,7 +1130,7 @@ class uvme_rv32isa_covg extends uvm_component;
         cp_rs2   : coverpoint get_gpr_name(ins.ops[0].val, ins.ops[0].key, "c.swsp") {
             bins gprval[] = {[ra:t6]};
         }
-        cp_imm6  : coverpoint get_imm(ins.ops[1].val, "c.swsp") {            
+        cp_imm6  : coverpoint get_imm(ins.ops[1].val, "c.swsp") {
             bins zero = {0};
             bins pos  = {[1:$]};
         }
@@ -1136,7 +1141,7 @@ class uvme_rv32isa_covg extends uvm_component;
         cp_rd    : coverpoint get_gpr_name(ins.ops[0].val, ins.ops[0].key, "c.lw") {
             bins gprval[] = {[s0:a5]};
         }
-        cp_imm5   : coverpoint get_imm(ins.ops[1].val, "c.lw") {            
+        cp_imm5   : coverpoint get_imm(ins.ops[1].val, "c.lw") {
             bins zero = {0};
             bins pos  = {[1:$]};
         }
@@ -1150,7 +1155,7 @@ class uvme_rv32isa_covg extends uvm_component;
         cp_rs1     : coverpoint get_gpr_name(ins.ops[0].val, ins.ops[0].key, "c.sw") {
             bins gprval[] = {[s0:a5]};
         }
-        cp_imm5   : coverpoint get_imm(ins.ops[1].val, "c.sw") {            
+        cp_imm5   : coverpoint get_imm(ins.ops[1].val, "c.sw") {
             bins zero = {0};
             bins pos  = {[1:$]};
         }
@@ -1162,17 +1167,17 @@ class uvme_rv32isa_covg extends uvm_component;
     covergroup c_j_cg      with function sample(ins_t ins);
         `per_instance_fcov
         cp_jmp11   : coverpoint get_pc_imm(ins.ops[0].val, ins.pc, "c.j" ) {
-            bins neg  = {[$:-1]};            
+            bins neg  = {[$:-1]};
             bins pos  = {[1:$]};
         }
     endgroup
 
     covergroup c_jal_cg      with function sample(ins_t ins);
         `per_instance_fcov
-        // Note even though by ISA the instruction is c.jal imm, the ISS places ra into operand0 
+        // Note even though by ISA the instruction is c.jal imm, the ISS places ra into operand0
         // in the decode, putting the offset into operand1q
         cp_jmp11   : coverpoint get_pc_imm(ins.ops[1].val, ins.pc, "c.jal" ) {
-            bins neg  = {[$:-1]};        
+            bins neg  = {[$:-1]};
             bins pos  = {[1:$]};
         }
     endgroup
@@ -1193,7 +1198,7 @@ class uvme_rv32isa_covg extends uvm_component;
 
     covergroup c_beqz_cg with function sample(ins_t ins);
         `per_instance_fcov
-        cp_rs1    : coverpoint get_gpr_name(ins.ops[0].val, ins.ops[0].key, "c.beqz") {            
+        cp_rs1    : coverpoint get_gpr_name(ins.ops[0].val, ins.ops[0].key, "c.beqz") {
             bins gprval[] = {[s0:a5]};
         }
         cp_offset : coverpoint get_pc_imm(ins.ops[1].val, ins.pc, "c.beqz" ) {
@@ -1209,7 +1214,7 @@ class uvme_rv32isa_covg extends uvm_component;
             bins gprval[] = {[s0:a5]};
         }
         cp_offset : coverpoint get_pc_imm(ins.ops[1].val, ins.pc, "c.bnez" ) {
-            bins neg  = {[$:-1]};      
+            bins neg  = {[$:-1]};
             bins zero = {0};
             bins pos  = {[1:$]};
         }
@@ -1218,8 +1223,8 @@ class uvme_rv32isa_covg extends uvm_component;
     covergroup c_li_cg       with function sample(ins_t ins);
         `per_instance_fcov
         cp_rd    : coverpoint get_gpr_name(ins.ops[0].val, ins.ops[0].key, "c.li") {
-            bins gprval[] = {zero, [ra:t6]};            
-        }        
+            bins gprval[] = {zero, [ra:t6]};
+        }
         cp_imm6   : coverpoint get_imm(ins.ops[1].val,"c.li" ) {
             bins neg  = {[$:-1]};
             bins zero = {0};
@@ -1230,9 +1235,9 @@ class uvme_rv32isa_covg extends uvm_component;
     covergroup c_lui_cg      with function sample(ins_t ins);
         `per_instance_fcov
         cp_rd    : coverpoint get_gpr_name(ins.ops[0].val, ins.ops[0].key, "c.lui") {
-            bins gprval[] = {zero,ra,[gp:t6]}; // invalid when rd = x2 (sp)            
+            bins gprval[] = {zero,ra,[gp:t6]}; // invalid when rd = x2 (sp)
         }
-        cp_imm6   : coverpoint get_imm(ins.ops[1].val,"c.lui" ) {    
+        cp_imm6   : coverpoint get_imm(ins.ops[1].val,"c.lui" ) {
             // Represents sign-extended negative numbers for nzimm6
             bins neg  = {['hfffe0:'hfffff]};
             // invalid when imm = 0
@@ -1275,7 +1280,7 @@ class uvme_rv32isa_covg extends uvm_component;
         cp_rs1    : coverpoint get_gpr_name(ins.ops[1].val, ins.ops[1].key, "c.addi4spn") {
             bins gprval[] = {sp};
         }
-        cp_nzuimm8   : coverpoint get_imm(ins.ops[2].val,"c.addi4spn" ) {                      
+        cp_nzuimm8   : coverpoint get_imm(ins.ops[2].val,"c.addi4spn" ) {
             bins pos  = {[1:$]};
         }
     endgroup
@@ -1302,7 +1307,7 @@ class uvme_rv32isa_covg extends uvm_component;
         cp_rs1   : coverpoint get_gpr_name(ins.ops[1].val, ins.ops[1].key, "c.srli") {
             bins gprval[] = {[s0:a5]};
         }
-        cp_shamt5   : coverpoint get_imm(ins.ops[2].val, "c.srli" ) {            
+        cp_shamt5   : coverpoint get_imm(ins.ops[2].val, "c.srli" ) {
             bins zero = {0};
             bins pos  = {[1:$]};
         }
@@ -1316,7 +1321,7 @@ class uvme_rv32isa_covg extends uvm_component;
         cp_rs1   : coverpoint get_gpr_name(ins.ops[1].val, ins.ops[1].key, "c.srai") {
             bins gprval[] = {[s0:a5]};
         }
-        cp_shamt5   : coverpoint get_imm(ins.ops[2].val, "c.srai" ) {            
+        cp_shamt5   : coverpoint get_imm(ins.ops[2].val, "c.srai" ) {
             bins zero = {0};
             bins pos  = {[1:$]};
         }
@@ -1464,7 +1469,7 @@ class uvme_rv32isa_covg extends uvm_component;
         lh_cg         = new();
         lhu_cg        = new();
         lui_cg        = new();
-        lw_cg         = new();        
+        lw_cg         = new();
         or_cg         = new();
         ori_cg        = new();
         sb_cg         = new();
@@ -1509,7 +1514,7 @@ class uvme_rv32isa_covg extends uvm_component;
         c_j_cg        = new();
         c_jal_cg      = new();
         c_jr_cg       = new();
-        c_jalr_cg     = new();        
+        c_jalr_cg     = new();
         c_li_cg       = new();
         c_lui_cg      = new();
         c_addi_cg     = new();
@@ -1672,14 +1677,14 @@ class uvme_rv32isa_covg extends uvm_component;
             "mv"          : begin ins.asm=C_MV;     c_mv_cg.sample(ins);     end
 
             // UVM warning on a fall-through
-            default:    `uvm_warning("RV32ISA Coverage", 
-                                     $sformatf("check_compressed(): ins [%0s] not mapped to functional coverage", 
+            default:    `uvm_warning("RV32ISA Coverage",
+                                     $sformatf("check_compressed(): ins [%0s] not mapped to functional coverage",
                                                ins.ins_str))
         endcase
     endfunction: check_compressed
 
     function void sample(input ins_t ins);
-        `uvm_info("RV32ISA", $sformatf("instruction from ISS: %s %s:%s %s:%s %s:%s %s:%s", 
+        `uvm_info("RV32ISA", $sformatf("instruction from ISS: %s %s:%s %s:%s %s:%s %s:%s",
                                         ins.ins_str,
                                         ins.ops[0].key, ins.ops[0].val,
                                         ins.ops[1].key, ins.ops[1].val,
@@ -1691,9 +1696,9 @@ class uvme_rv32isa_covg extends uvm_component;
         else begin
             case (ins.ins_str)
                 "add"       : begin ins.asm=ADD;    add_cg.sample(ins);    end
-                "addi"      : begin 
-                    ins.asm=ADDI;   
-                    addi_cg.sample(ins);                     
+                "addi"      : begin
+                    ins.asm=ADDI;
+                    addi_cg.sample(ins);
                 end
                 "and"       : begin ins.asm=AND;    and_cg.sample(ins);    end
                 "andi"      : begin ins.asm=ANDI;   andi_cg.sample(ins);   end
@@ -1717,7 +1722,7 @@ class uvme_rv32isa_covg extends uvm_component;
                 "jalr"      : begin
                     // Usually the Decoder from ISS presents all three operands such as R1:s6 C:785 R2:s6
                     // However it can present only 2 registers, this indicates a zero offset
-                    if (ins.ops[1].key == "R2") begin                    
+                    if (ins.ops[1].key == "R2") begin
                         ins.ops[2] = ins.ops[1];
                         ins.ops[1].key = "C"; ins.ops[1].val = "0";
                     end
@@ -1732,7 +1737,7 @@ class uvme_rv32isa_covg extends uvm_component;
                 "lh"        : begin ins.asm=LH;     lh_cg.sample(ins);     end
                 "lhu"       : begin ins.asm=LHU;    lhu_cg.sample(ins);    end
                 "lui"       : begin ins.asm=LUI;    lui_cg.sample(ins);    end
-                "lw"        : begin ins.asm=LW;     lw_cg.sample(ins);     end                
+                "lw"        : begin ins.asm=LW;     lw_cg.sample(ins);     end
                 "or"        : begin ins.asm=OR;     or_cg.sample(ins);     end
                 "ori"       : begin ins.asm=ORI;    ori_cg.sample(ins);    end
                 "sb"        : begin ins.asm=SB;     sb_cg.sample(ins);     end
@@ -1757,7 +1762,7 @@ class uvme_rv32isa_covg extends uvm_component;
                 "mulhsu"    : begin ins.asm=MULHSU; mulhsu_cg.sample(ins); end
                 "div"       : begin ins.asm=DIV;    div_cg.sample(ins);    end
                 "rem"       : begin ins.asm=REM;    rem_cg.sample(ins);    end
-                "divu"      : begin ins.asm=DIVU;   divu_cg.sample(ins);   end                
+                "divu"      : begin ins.asm=DIVU;   divu_cg.sample(ins);   end
                 "remu"      : begin ins.asm=REMU;   remu_cg.sample(ins);   end
 
                 "csrrw"     : begin ins.asm=CSRRW;  csrrw_cg.sample(ins);  end
@@ -1770,13 +1775,13 @@ class uvme_rv32isa_covg extends uvm_component;
                   `uvm_info("RV32ISA Functional Coverage", $sformatf("csrrci_cg: ins.ops[0].val = %0s, ins.ops[1].val = %0s, ins.ops[2].val = %0s, imm = %0h",
                                                                      ins.ops[0].val, ins.ops[1].val, ins.ops[2].val, get_imm(ins.ops[2].val,"beq")), UVM_DEBUG)
 			    end
-                "csrrsi"    : begin ins.asm=CSRRSI; csrrsi_cg.sample(ins); end                
+                "csrrsi"    : begin ins.asm=CSRRSI; csrrsi_cg.sample(ins); end
 
                 "csrw"      : begin ins.asm=CSRRW;  ins.ops[2] = ins.ops[1]; ins.ops[1] = ins.ops[0]; ins.ops[0].val = "zero"; csrrw_cg.sample(ins); end
                 "csrr"      : begin ins.asm=CSRRS;  ins.ops[2].val = "zero"; csrrs_cg.sample(ins); end
                 "csrs"      : begin ins.asm=CSRRS;  ins.ops[2] = ins.ops[1]; ins.ops[1] = ins.ops[0]; ins.ops[0].val = "zero"; csrrs_cg.sample(ins);   end
                 "csrc"      : begin ins.asm=CSRRC;  ins.ops[2] = ins.ops[1]; ins.ops[1] = ins.ops[0]; ins.ops[0].val = "zero"; csrrc_cg.sample(ins);   end
-                
+
                 "csrsi"     : begin ins.asm=CSRRSI; ins.ops[2] = ins.ops[1]; ins.ops[1] = ins.ops[0]; ins.ops[0].val = "zero"; csrrsi_cg.sample(ins); end
                 "csrwi"     : begin ins.asm=CSRRWI; ins.ops[2] = ins.ops[1]; ins.ops[1] = ins.ops[0]; ins.ops[0].val = "zero"; csrrwi_cg.sample(ins); end
                 "csrci"     : begin ins.asm=CSRRCI; ins.ops[2] = ins.ops[1]; ins.ops[1] = ins.ops[0]; ins.ops[0].val = "zero"; csrrci_cg.sample(ins); end
@@ -1800,18 +1805,18 @@ class uvme_rv32isa_covg extends uvm_component;
                 // j: convert to jal x0,offset
                 "j"         : begin ins.asm=JAL;    ins.ops[1] = ins.ops[0]; ins.ops[0].val = "zero"; jal_cg.sample(ins);    end
                 // jr: convert to jalr x0,offset(rs) (Technically jr has zero offset but ISS can map a non-zero offset in its decode
-                "jr"        : begin ins.asm=JALR;   
+                "jr"        : begin ins.asm=JALR;
                     if (ins.ops[0].key == "C") begin
                         ins.ops[2] = ins.ops[1];
                         ins.ops[1] = ins.ops[0];
                     end
                     else begin
                         ins.ops[2] = ins.ops[0];
-                        ins.ops[1].key = "C"; ins.ops[1].val = "0";                    
+                        ins.ops[1].key = "C"; ins.ops[1].val = "0";
                     end
                     // rd for "jr" is always x0
                     ins.ops[0].key = "R"; ins.ops[0].val = "zero";
-                    `uvm_info("RV32ISA Functional Coverage", $sformatf("jalr_cg: %s:%s %s:%s %s:%s", 
+                    `uvm_info("RV32ISA Functional Coverage", $sformatf("jalr_cg: %s:%s %s:%s %s:%s",
                         ins.ops[0].key, ins.ops[0].val,
                         ins.ops[1].key, ins.ops[1].val,
                         ins.ops[2].key, ins.ops[2].val),
@@ -1845,30 +1850,30 @@ class uvme_rv32isa_covg extends uvm_component;
                 "seqz"      : begin ins.asm=SLTIU;  ins.ops[2].val = "1";                             sltiu_cg.sample(ins);  end
                 // not:  convert to xor rd, rs, -1
                 "not"       : begin ins.asm=XOR;    ins.ops[2].val = "-1";                            xori_cg.sample(ins);  end
-                // ret: convert to jalr x0,x1(0)                
-                "ret"       : begin ins.asm=JALR;   ins.ops[0].key = "R"; ins.ops[0].val = "zero"; 
-                                                    ins.ops[1].key = "R"; ins.ops[1].val = "ra"; 
-                                                    ins.ops[2].val="0"; 
+                // ret: convert to jalr x0,x1(0)
+                "ret"       : begin ins.asm=JALR;   ins.ops[0].key = "R"; ins.ops[0].val = "zero";
+                                                    ins.ops[1].key = "R"; ins.ops[1].val = "ra";
+                                                    ins.ops[2].val="0";
                                                     jalr_cg.sample(ins);
                 end
 
-                default: begin                    
-                    `uvm_warning("RV32ISA Coverage", 
-                                 $sformatf("instruction [%0s] not mapped to functional coverage", 
-                                           ins.ins_str))                    
+                default: begin
+                    `uvm_warning("RV32ISA Coverage",
+                                 $sformatf("instruction [%0s] not mapped to functional coverage",
+                                           ins.ins_str))
                 end
             endcase
         end // else branch of if (ins.compressed)
-       
+
         // Do not call sample until ins_prev is assigned otherwise
         // get a hit on bin [ADD][1st instruction]
-        if (ins_prev.ins_str != "") 
+        if (ins_prev.ins_str != "")
           instr_cg.sample(ins);
 
         ins_prev = ins; // Save instruction as previous
 
         // Send instruction to analysis port
-        begin             
+        begin
             uvme_rv32isa_covg_trn_c isa_cov_trn;
 
             isa_cov_trn = uvme_rv32isa_covg_trn_c::type_id::create("isa_cov_trn");
@@ -1879,3 +1884,5 @@ class uvme_rv32isa_covg extends uvm_component;
     endfunction: sample
 
 endclass : uvme_rv32isa_covg
+
+//@DVT_LINTER_WAIVER_END "SR20211012_1"
