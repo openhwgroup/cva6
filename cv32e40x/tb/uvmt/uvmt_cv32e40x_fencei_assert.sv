@@ -69,7 +69,7 @@ module uvmt_cv32e40x_fencei_assert
     !wb_valid throughout (
       (is_fencei_in_wb && !$rose(fencei_flush_req_o)) [*1:$]
     )
-  ) else `uvm_error(info_tag, "TODO");
+  ) else `uvm_error(info_tag, "fencei shall not retire without seeing a rising flush req");
 
   a_req_must_retire: assert property (
     fencei_flush_req_o
@@ -91,14 +91,14 @@ module uvmt_cv32e40x_fencei_assert
   endproperty
   a_fetch_after_retire: assert property (
     p_fetch_after_retire
-  ) else `uvm_error(info_tag, "TODO");
+  ) else `uvm_error(info_tag, "after fencei, the next-pc fetching cannot be forgone");
 
   a_stall_until_ack: assert property (
     fencei_flush_req_o && !fencei_flush_ack_i
     |=>
     !$changed(wb_pc)
     // TODO:ropeders check more post-conditions? Merge with a_req_stay_high?
-  ) else `uvm_error(info_tag, "TODO");
+  ) else `uvm_error(info_tag, "WB stage must remain unchanged until the flush req is acked");
 
   property p_branch_after_retire;
     int pc_next;
@@ -115,20 +115,21 @@ module uvmt_cv32e40x_fencei_assert
   endproperty
   a_branch_after_retire: assert property (
     p_branch_after_retire
-  ) else `uvm_error(info_tag, "TODO");
+  ) else `uvm_error(info_tag, "the pc following fencei did not enter WB");
 
   a_supress_datareq: assert property (
     fencei_flush_req_o
     |->
     !data_req_o
-  ) else `uvm_error(info_tag, "TODO");
+  ) else `uvm_error(info_tag, "obi data req shall not happen while fencei is flushing");
 
+/* TODO:ropeders fix when spec is updated, add RVC-cycle property
   a_two_cycle: assert property (
-    // TODO:ropeders refine conditions, add 3cycle prop, confirm spec correctness
     $rose(is_fencei_in_wb)
     |->
     ##2 !is_fencei_in_wb
-  ) else `uvm_error(info_tag, "TODO");
+  ) else `uvm_error(info_tag, "fencei must finish in the expected number of cycles");
+*/
 
   a_req_wait_bus: assert property (
     fencei_flush_req_o
