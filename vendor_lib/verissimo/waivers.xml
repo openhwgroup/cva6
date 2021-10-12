@@ -36,4 +36,12 @@
         </paths>
         <line-range>213</line-range>
     </waiver>
+    <waiver apply-on="matched" name="Disable SVTB.31.1.0.local@imperas_CV32.sv">
+        <status>DISABLE</status>
+        <description>Disable all failures of check SVTB.31.1.0.local in file imperas_CV32.sv</description>
+        <check>SVTB.31.1.0.local</check>
+        <paths regex="simple">
+            <path>vendor_lib/imperas/imperas_DV_COREV/sv/imperas_CV32.sv</path>
+        </paths>
+    </waiver>
 </waivers>

@@ -1,18 +1,18 @@
 //
 // Copyright 2020 OpenHW Group
-// 
+//
 // Licensed under the Solderpad Hardware Licence, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
-// 
+//
 //     https://solderpad.org/licenses/
-// 
+//
 // Unless required by applicable law or agreed to in writing, software
 // distributed under the License is distributed on an "AS IS" BASIS,
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
-// 
+//
 // SPDX-License-Identifier: Apache-2.0 WITH SHL-2.0
 //
 
@@ -55,7 +55,6 @@ import uvm_pkg::*;      // needed for the UVM messaging service (`uvm_info(), et
 `include "uvm_macros.svh"
 `define CV32E40P_CORE   $root.uvmt_cv32e40p_tb.dut_wrap.cv32e40p_wrapper_i.core_i
 `define CV32E40P_TRACER $root.uvmt_cv32e40p_tb.dut_wrap.cv32e40p_wrapper_i.tracer_i
-`define CV32E40P_MMRAM  $root.uvmt_cv32e40p_tb.dut_wrap.ram_i
 
 // TODO change names
 `define CV32E40P_RM              $root.uvmt_cv32e40p_tb.iss_wrap.cpu
@@ -75,9 +74,9 @@ module uvmt_cv32e40p_step_compare
    bit  ignore_dpc_check = 0;
    bit  use_iss = 0;
 
-  // FIXME:strichmo:when running random interrupts and random debug requests it is possible to enter debug mode 
+  // FIXME:strichmo:when running random interrupts and random debug requests it is possible to enter debug mode
   // (while also acking an interrupt) when the debug program counter may or may not yet be pointing to the interrupt
-  // vector (mtvec) upon debug entry.  However the PC stream should verify proper operation (the PC will mismatch when 
+  // vector (mtvec) upon debug entry.  However the PC stream should verify proper operation (the PC will mismatch when
   // the debug ROM eventually executes a dret).  For now we will skip this comparison if the test requests it
   initial begin
     if ($test$plusargs("ignore_dpc_check")) begin
@@ -105,7 +104,7 @@ module uvmt_cv32e40p_step_compare
       is_stall_sim = 1;
     end
   end
-  
+
   always begin
     wait (clknrst_if.reset_n === 1'b0);
     wait (clknrst_if.reset_n === 1'b1);
@@ -135,7 +134,7 @@ module uvmt_cv32e40p_step_compare
       int          insn_regs_write_size;
       string       compared_str;
       bit ignore;
-      
+
       logic [31:0] csr_val;
 
       // Compare PC
@@ -155,7 +154,7 @@ module uvmt_cv32e40p_step_compare
          insn_regs_write_value = `CV32E40P_TRACER.insn_regs_write[0].value;
          `uvm_info("Step-and-Compare", $sformatf("insn_regs_write queue[0] addr=0x%0x, value=0x%0x", insn_regs_write_addr, insn_regs_write_value), UVM_DEBUG)
       end
-      
+
       // Ignore insn_regs_write_addr=0 just like in riscv_tracer.sv
       for (idx=0; idx<32; idx++) begin
          compared_str = $sformatf("GPR[%0d]", idx);
@@ -173,14 +172,14 @@ module uvmt_cv32e40p_step_compare
           step_compare_if.num_csr_checks++;
           ignore = 0;
           csr_val = 0;
-          
+
           // CSR timing at instruction retirement is not completely deterministic in this simple model in presence of OBI stalls
           if (is_stall_sim)
           ignore = 1;
           case (index)
-          
+
             "marchid"       : csr_val = cv32e40p_pkg::MARCHID; // warning!  defined in cv32e40p_pkg
-            
+
             "mcountinhibit" : csr_val = `CV32E40P_CORE.cs_registers_i.mcountinhibit_q;
 
             "mvendorid"     : csr_val = {cv32e40p_pkg::MVENDORID_BANK, cv32e40p_pkg::MVENDORID_OFFSET};
@@ -198,27 +197,27 @@ module uvmt_cv32e40p_step_compare
             "misa"          : csr_val = `CV32E40P_CORE.cs_registers_i.MISA_VALUE;
             "mie"           : csr_val = `CV32E40P_CORE.cs_registers_i.mie_q;
             "mtvec"         : csr_val = {`CV32E40P_CORE.cs_registers_i.mtvec_q, 6'h0, `CV32E40P_CORE.cs_registers_i.mtvec_mode_q};
-            "mscratch"      : csr_val = `CV32E40P_CORE.cs_registers_i.mscratch_q;                          
+            "mscratch"      : csr_val = `CV32E40P_CORE.cs_registers_i.mscratch_q;
             "mepc"          : if (step_compare_if.deferint_prime == 0) ignore = 1;
-                              else csr_val = `CV32E40P_CORE.cs_registers_i.mepc_q;             
+                              else csr_val = `CV32E40P_CORE.cs_registers_i.mepc_q;
             "mcause"        : if (step_compare_if.deferint_prime == 0) ignore = 1;
                               else csr_val = {`CV32E40P_CORE.cs_registers_i.mcause_q[5],
                                               26'b0,
                                               `CV32E40P_CORE.cs_registers_i.mcause_q[4:0]};
           //  "mip"           : if (step_compare_if.deferint_prime == 0 || iss_wrap.io.deferint == 0) ignore = 1;
           //                    else csr_val = `CV32E40P_CORE.cs_registers_i.mip;
-            "mip"           : ignore = 1;      
-            "mhartid"       : csr_val = `CV32E40P_CORE.cs_registers_i.hart_id_i; 
+            "mip"           : ignore = 1;
+            "mhartid"       : csr_val = `CV32E40P_CORE.cs_registers_i.hart_id_i;
 
             // only valid in DEBUG Mode
             "dcsr"          : begin
-                              csr_val = `CV32E40P_CORE.cs_registers_i.dcsr_q;     
+                              csr_val = `CV32E40P_CORE.cs_registers_i.dcsr_q;
                               if (iss_wrap.io.DM==0) ignore = 1;
             end
             "dpc"           : begin
-                              csr_val = `CV32E40P_CORE.cs_registers_i.depc_q;       
+                              csr_val = `CV32E40P_CORE.cs_registers_i.depc_q;
                               if (iss_wrap.io.DM==0) ignore = 1;
-                              if (ignore_dpc_check) ignore = 1;                               
+                              if (ignore_dpc_check) ignore = 1;
             end
 
             "dscratch0"     : csr_val = `CV32E40P_CORE.cs_registers_i.dscratch0_q;
@@ -234,7 +233,7 @@ module uvmt_cv32e40p_step_compare
             "tinfo"         : csr_val = `CV32E40P_CORE.cs_registers_i.tinfo_types;
 
             "time"          : ignore  = 1;
-            
+
             "mcontext"      : ignore  = 1;
             "scontext"      : ignore  = 1;
 
@@ -242,11 +241,11 @@ module uvmt_cv32e40p_step_compare
             "cycleh"        : ignore  = 1;
             "instret"       : ignore  = 1;
             "instreth"      : ignore  = 1;
-            "minstret"      : ignore  = 1;      
+            "minstret"      : ignore  = 1;
             "minstreth"     : ignore  = 1;
-            
+
             "mimpid"        : ignore  = 1;
-            
+
             "hpmcounter3"   : ignore  = 1;
             "hpmcounter4"   : ignore  = 1;
             "hpmcounter5"   : ignore  = 1;
@@ -276,7 +275,7 @@ module uvmt_cv32e40p_step_compare
             "hpmcounter29"  : ignore  = 1;
             "hpmcounter30"  : ignore  = 1;
             "hpmcounter31"  : ignore  = 1;
-            
+
             "hpmcounterh3"  : ignore  = 1;
             "hpmcounterh4"  : ignore  = 1;
             "hpmcounterh5"  : ignore  = 1;
@@ -336,7 +335,7 @@ module uvmt_cv32e40p_step_compare
             "mhpmcounter29" : ignore  = 1;
             "mhpmcounter30" : ignore  = 1;
             "mhpmcounter31" : ignore  = 1;
-            
+
             "mhpmcounterh3" : ignore  = 1;
             "mhpmcounterh4" : ignore  = 1;
             "mhpmcounterh5" : ignore  = 1;
@@ -366,7 +365,7 @@ module uvmt_cv32e40p_step_compare
             "mhpmcounterh29": ignore  = 1;
             "mhpmcounterh30": ignore  = 1;
             "mhpmcounterh31": ignore  = 1;
-            
+
             default: begin
               `uvm_error("STEP_COMPARE", $sformatf("index=%s does not match a CSR name", index))
               ignore = 1;
@@ -376,9 +375,9 @@ module uvmt_cv32e40p_step_compare
           if (!ignore)
             check_32bit(.compared(index), .expected(`CV32E40P_RM_RVVI_STATE.csr[index]), .actual(csr_val));
 
-      end // foreach (ovp.cpu.csr[index])      
+      end // foreach (ovp.cpu.csr[index])
     endfunction // compare
-    
+
     int cycles = 0;
     always @(posedge `CV32E40P_CORE.clk) begin
         cycles++;
@@ -388,7 +387,7 @@ module uvmt_cv32e40p_step_compare
     function automatic void pushRTL2RM(string message);
         logic [ 5:0] gpr_addr;
         logic [31:0] gpr_value;
-      
+
         if (`CV32E40P_TRACER.insn_regs_write.size()) begin
           gpr_addr  = `CV32E40P_TRACER.insn_regs_write[0].addr;
           gpr_value = `CV32E40P_TRACER.insn_regs_write[0].value;
@@ -398,7 +397,7 @@ module uvmt_cv32e40p_step_compare
         `CV32E40P_RM.cycles = cycles;
         cycles = 0;
     endfunction // pushRTL2RM
-    
+
     /*
         The schedule works like this
         1. Run the RTL for 1 instruction retirement
@@ -408,34 +407,34 @@ module uvmt_cv32e40p_step_compare
     */
     event ev_compare;
     static integer instruction_count = 0;
-   
+
     typedef enum {
         INIT,
         IDLE,  // Needed to get an event on state so always block is initially entered
-        
+
         RTL_STEP,
         RTL_VALID,
         RTL_TRAP,
         RTL_HALT,
-        
+
         RM_STEP,
         RM_VALID,
         RM_TRAP,
         RM_HALT,
-        
+
         CMP
-    } state_e; 
+    } state_e;
 
    state_e state = INIT;
    initial state <= IDLE; // cause an event for always @*
-   
+
    always @(*) begin
      if (use_iss) begin
         case (state)
           IDLE: begin
               state <= RTL_STEP;
           end
-          
+
           RTL_STEP: begin
               clknrst_if.start_clk();
               fork
@@ -459,12 +458,12 @@ module uvmt_cv32e40p_step_compare
           RTL_VALID: begin
               state <= RM_STEP;
           end
-          
+
           RTL_TRAP: begin
               //state <= RM_STEP; // TODO: RTL/RVVI needs additional work
               state <= RTL_STEP;
           end
-          
+
           RTL_HALT: begin
               state <= RTL_STEP;
           end
@@ -493,20 +492,20 @@ module uvmt_cv32e40p_step_compare
           RM_VALID: begin
               state <= CMP;
           end
-          
+
           RM_TRAP: begin
               //state <= CMP; // TODO: needs enabling after RTL/RVVI fix
               state <= RM_STEP;
           end
-          
+
           RM_HALT: begin
               state <= RM_STEP;
           end
 
-          CMP: begin 
+          CMP: begin
               compare();
               ->ev_compare;
-              instruction_count += 1;           
+              instruction_count += 1;
               //state <= RTL_STEP;
               state <= IDLE;
           end
@@ -522,7 +521,7 @@ module uvmt_cv32e40p_step_compare
          `uvm_fatal("Step-and-Compare", $sformatf("Compared %0d instructions - that's too long!", instruction_count))
       end
    end
-   
+
 
 `ifdef COVERAGE
    coverage cov1;
