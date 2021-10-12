@@ -15,6 +15,8 @@ sources:
       WT_DCACHE: 1
     files:
     # Packages
+    # - core/include/cv32a6_imac_sv0_config_pkg.sv # new? (required for cva6_config_pkg)
+    - core/include/cv64a6_imacfd_sv39_config_pkg.sv # new? (required for cva6_config_pkg)
     - core/include/riscv_pkg.sv
     - corev_apu/riscv-dbg/src/dm_pkg.sv
     - core/include/ariane_pkg.sv
@@ -61,6 +63,7 @@ sources:
     - core/mmu_sv39/mmu.sv
     - core/mmu_sv39/ptw.sv
     # - core/mmu_sv39/mult.sv deleted?
+    - core/mult.sv # above replaced with this?
     - core/mmu_sv32/cva6_mmu_sv32.sv
     - core/mmu_sv32/cva6_ptw_sv32.sv
     # - core/mmu_sv32/cva6_mult_sv32.sv deleted?
