@@ -617,12 +617,14 @@ module uvmt_cv32e40x_tb;
    longint start_ovpsim_init_time;
    longint end_ovpsim_init_time;
    initial begin
-        if (!$test$plusargs("DISABLE_OVPSIM")) begin
-          start_ovpsim_init_time = svlib_pkg::sys_dayTime();
-          #2;
-          end_ovpsim_init_time = svlib_pkg::sys_dayTime();
-          `uvm_info("OVPSIM", $sformatf("Initialization time: %0d seconds", end_ovpsim_init_time - start_ovpsim_init_time), UVM_LOW)
-        end
+      if (!$test$plusargs("DISABLE_OVPSIM")) begin
+        #0.9ns;
+        `uvm_info("OVPSIM", $sformatf("Start benchmarking OVPSIM initialization"), UVM_LOW)
+        start_ovpsim_init_time = svlib_pkg::sys_dayTime();
+        #1.1ns;
+        end_ovpsim_init_time = svlib_pkg::sys_dayTime();
+        `uvm_info("OVPSIM", $sformatf("Initialization time: %0d seconds", end_ovpsim_init_time - start_ovpsim_init_time), UVM_LOW)
+      end
     end
 
    //TODO verify these are correct with regards to isacov function
