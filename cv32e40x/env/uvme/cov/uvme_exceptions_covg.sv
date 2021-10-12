@@ -16,33 +16,32 @@
 // SPDX-License-Identifier: Apache-2.0 WITH SHL-2.0
 
 
-`uvm_analysis_imp_decl(_rvfi)
-
-
 covergroup cg_exceptions
-  with function sample(uvma_rvfi_instr_seq_item_c#(ILEN, XLEN) rvfi);
+  with function sample(uvma_isacov_mon_trn_c isacov);
 
   `per_instance_fcov
 
-  cp_trap : coverpoint rvfi.trap {
-    bins rvfi_trap = {1};
+  cp_trap : coverpoint isacov.rvfi.trap {
+    bins trap = {1};
   }
-  cp_intr : coverpoint rvfi.intr {
-    bins rvfi_intr = {1};
+  cp_intr : coverpoint isacov.rvfi.intr {
+    bins intr = {1};
   }
-  cp_imm12 : coverpoint rvfi.insn[31:20] {
-    option.auto_bin_max = 4096;
+  cp_imm12 : coverpoint isacov.instr.csr_val {
+    bins imm12[16] = {[0:$]};
+    bins msb = {12'h 800};
+    bins lsb = {12'h 001};
   }
-  cp_is_csr : coverpoint ((rvfi.insn[6:0] == 7'b 1110011) && (rvfi.insn[13:12] != 2'b 00)) {
+  cp_is_csr : coverpoint (isacov.instr.group == CSR_GROUP) {
     bins is_csr = {1};
   }
-  cp_is_ebreak : coverpoint (rvfi.insn inside {32'h 00100073, 32'h 9002}) {
+  cp_is_ebreak : coverpoint (isacov.instr.name inside {EBREAK, C_EBREAK}) {
     bins is_ebreak = {1};
   }
-  cp_no_ebreakm : coverpoint (rvfi.csrs["dcsr"].get_csr_retirement_data()[15]) {
+  cp_no_ebreakm : coverpoint (isacov.rvfi.csrs["dcsr"].get_csr_retirement_data()[15]) {
     bins no_ebreakm = {0};
   }
-  cp_mcause : coverpoint rvfi.csrs["mcause"].get_csr_retirement_data() {
+  cp_mcause : coverpoint isacov.rvfi.csrs["mcause"].get_csr_retirement_data() {
     bins reset               = {0};
     bins ins_acc_fault       = {1};
     bins illegal_ins         = {2};
@@ -52,10 +51,10 @@ covergroup cg_exceptions
     bins ecall               = {11};
     bins ins_bus_fault       = {48};
   }
-  cp_pcr_mtvec : coverpoint (rvfi.pc_rdata[31:2] == rvfi.csrs["mtvec"].get_csr_retirement_data()[31:2]) {
+  cp_pcr_mtvec : coverpoint (isacov.rvfi.pc_rdata[31:2] == isacov.rvfi.csrs["mtvec"].get_csr_retirement_data()[31:2]) {
     bins one = {1};
   }
-  cp_pcw_mtvec : coverpoint (rvfi.pc_wdata[31:2] == rvfi.csrs["mtvec"].get_csr_retirement_data()[31:2]) {
+  cp_pcw_mtvec : coverpoint (isacov.rvfi.pc_wdata[31:2] == isacov.rvfi.csrs["mtvec"].get_csr_retirement_data()[31:2]) {
     bins one = {1};
   }
 
@@ -78,15 +77,16 @@ endgroup : cg_exceptions
 
 class uvme_exceptions_covg extends uvm_component;
 
-  cg_exceptions exceptions_cg;
+  `uvm_analysis_imp_decl(_isacov)
 
-  uvm_analysis_imp_rvfi#(uvma_rvfi_instr_seq_item_c#(ILEN, XLEN), uvme_exceptions_covg) rvfi_mon_export;
+  cg_exceptions exceptions_cg;
+  uvm_analysis_imp_isacov#(uvma_isacov_mon_trn_c, uvme_exceptions_covg) isacov_mon_export;
 
   `uvm_component_utils(uvme_exceptions_covg);
 
   extern function new(string name = "exceptions_covg", uvm_component parent = null);
   extern function void build_phase(uvm_phase phase);
-  extern function void write_rvfi(uvma_rvfi_instr_seq_item_c#(ILEN, XLEN) trn);
+  extern function void write_isacov(uvma_isacov_mon_trn_c isacov);
 
 endclass : uvme_exceptions_covg
 
@@ -95,7 +95,7 @@ function uvme_exceptions_covg::new(string name = "exceptions_covg", uvm_componen
 
   super.new(name, parent);
 
-  rvfi_mon_export = new("rvfi_mon_export", this);
+  isacov_mon_export = new("isacov_mon_export", this);
 
 endfunction : new
 
@@ -109,8 +109,8 @@ function void uvme_exceptions_covg::build_phase(uvm_phase phase);
 endfunction : build_phase
 
 
-function void uvme_exceptions_covg::write_rvfi(uvma_rvfi_instr_seq_item_c#(ILEN, XLEN) trn);
+function void uvme_exceptions_covg::write_isacov(uvma_isacov_mon_trn_c isacov);
 
-  exceptions_cg.sample(trn);
+  exceptions_cg.sample(isacov);
 
-endfunction : write_rvfi
+endfunction : write_isacov

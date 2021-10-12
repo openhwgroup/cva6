@@ -124,7 +124,7 @@ tests:
     dir: cv32e40x/sim/uvmt
     cmd: make test COREV=YES TEST=mhpmcounter29_csr_access_test_1
 
- mhpmcounter29_csr_access_test_2:
+  mhpmcounter29_csr_access_test_2:
     build: uvmt_cv32e40x_num_mhpmcounter_29
     description: Hardware performance counter full access coverage test 2
     dir: cv32e40x/sim/uvmt

@@ -205,7 +205,6 @@ class uvme_cv32e40x_cfg_c extends uvma_core_cntrl_cfg_c;
 
       if (trn_log_enabled) {
          // Setting a reasonable set of logs
-         isacov_cfg.trn_log_enabled            == 0;
          clknrst_cfg.trn_log_enabled           == 0;
          interrupt_cfg.trn_log_enabled         == 0;
          debug_cfg.trn_log_enabled             == 0;
