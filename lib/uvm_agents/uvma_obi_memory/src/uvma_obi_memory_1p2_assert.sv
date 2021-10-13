@@ -1,13 +1,13 @@
 // Copyright 2020 OpenHW Group
 // Copyright 2020 Datum Technology Corporation
 // Copyright 2020 Silicon Labs, Inc.
-// 
+//
 // Licensed under the Solderpad Hardware Licence, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
-// 
+//
 //     https://solderpad.org/licenses/
-// 
+//
 // Unless required by applicable law or agreed to in writing, software
 // distributed under the License is distributed on an "AS IS" BASIS,
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -15,10 +15,12 @@
 // limitations under the License.
 
 module uvma_obi_memory_1p2_assert
+  // Known reuse of port list from uvma_obi_memory_assert
+  //@DVT_LINTER_WAIVER_START "SR20211012_1" disable SVTB.33.1.0
   import uvm_pkg::*;
   #(
     parameter int unsigned ADDR_WIDTH  = 32,
-    parameter int unsigned DATA_WIDTH  = 32,    
+    parameter int unsigned DATA_WIDTH  = 32,
     parameter int unsigned AUSER_WIDTH = 0,
     parameter int unsigned WUSER_WIDTH = 0,
     parameter int unsigned RUSER_WIDTH = 0,
@@ -26,6 +28,7 @@ module uvma_obi_memory_1p2_assert
     parameter int unsigned ACHK_WIDTH  = 0,
     parameter int unsigned RCHK_WIDTH  = 0
   )
+
   (
     input                    clk,
     input                    reset_n,
@@ -73,6 +76,8 @@ module uvma_obi_memory_1p2_assert
   localparam ATOP_LR = {1'b1, 4'h2};
   localparam ATOP_SC = {1'b1, 4'h3};
 
+  //@DVT_LINTER_WAIVER_END "SR2021012_1"
+
   // ---------------------------------------------------------------------------
   // Typedefs
   // ---------------------------------------------------------------------------
@@ -119,31 +124,31 @@ module uvma_obi_memory_1p2_assert
   endproperty : p_addr_signal_stable
 
   a_auser_stable: assert property(p_addr_signal_stable(auser))
-  else 
+  else
     `uvm_error(info_tag, "auser signal not stable in address phase")
 
   a_wuser_stable: assert property(p_addr_signal_stable(wuser))
-  else 
+  else
     `uvm_error(info_tag, "wuser signal not stable in address phase")
 
   a_aid_stable: assert property(p_addr_signal_stable(aid))
-  else 
+  else
     `uvm_error(info_tag, "aid signal not stable in address phase")
 
   a_atop_stable: assert property(p_addr_signal_stable(atop))
-  else 
+  else
     `uvm_error(info_tag, "atop signal not stable in address phase")
 
   a_memtype_stable: assert property(p_addr_signal_stable(memtype))
-  else 
+  else
     `uvm_error(info_tag, "memtype signal not stable in address phase")
 
   a_prot_stable: assert property(p_addr_signal_stable(prot))
-  else 
+  else
     `uvm_error(info_tag, "prot signal not stable in address phase")
 
   a_achk_stable: assert property(p_addr_signal_stable(achk))
-  else 
+  else
     `uvm_error(info_tag, "achk signal not stable in address phase")
 
   // R-3.1.2 : Req may not deassewrt until the gnt is asserted
@@ -160,27 +165,27 @@ module uvma_obi_memory_1p2_assert
   endproperty : p_r_signal_stable
 
   a_rdata_stable: assert property(p_r_signal_stable(rdata))
-  else 
+  else
     `uvm_error(info_tag, "rdata signal not stable in response phase")
 
   a_err_stable: assert property(p_r_signal_stable(err))
-  else 
+  else
     `uvm_error(info_tag, "err signal not stable in response phase")
 
   a_ruser_stable: assert property(p_r_signal_stable(ruser))
-  else 
+  else
     `uvm_error(info_tag, "ruser signal not stable in response phase")
 
   a_rid_stable: assert property(p_r_signal_stable(rid))
-  else 
+  else
     `uvm_error(info_tag, "rid signal not stable in response phase")
 
   a_exokay_stable: assert property(p_r_signal_stable(exokay))
-  else 
+  else
     `uvm_error(info_tag, "exokay signal not stable in response phase")
 
   a_rchk_stable: assert property(p_r_signal_stable(rchk))
-  else 
+  else
     `uvm_error(info_tag, "rchk signal not stable in response phase")
 
   // R-4.1.2 : Req may not deassewrt until the gnt is asserted
@@ -193,7 +198,7 @@ module uvma_obi_memory_1p2_assert
 
   // These next 2 are not strictly a functional requirement, but the testbench should simulate this
   // Therefore these are coded as a set of cover properties
-  
+
   // R-4.2.1 : master shall be allowed to de-assert (retract) rready at any time even if rvalid is deasserted
   property p_rready_assert_no_rvalid;
     !rvalid ##0 !rready ##1 !rvalid ##0 rready;
