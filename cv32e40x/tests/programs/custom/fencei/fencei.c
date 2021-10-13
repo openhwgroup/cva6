@@ -28,6 +28,8 @@ static void assert_or_die(uint32_t actual, uint32_t expect, char *msg) {
 
 int main(void) {
   uint32_t tmpint;
+  register uint32_t reg0;
+  register uint32_t reg1;
   uint32_t tmparr[4];
 
   printf("fencei test\n");
@@ -81,10 +83,27 @@ int main(void) {
   assert_or_die(tmpint, 0x445566DD, "error: a fence.i should not abort a sw\n");
 
   printf("Check self-modifying code\n");
-  //TODO:ropeders
+  reg0 = reg1 = 0;
+  __asm__ volatile(
+    // Overwrite "old" instr with "new" instr
+    "  la %0, new      \n"
+    "  lw %0, 0(%0)    \n"
+    "  la %1, old      \n"
+    "  j run           \n"
+    "new:              \n"
+    "  addi %0, x0, 234\n"
+    "  j end           \n"
+    "run:              \n"
+    "  sw %0, 0(%1)    \n"
+    "  fence.i         \n"  // Can use "nop" instead of fence.i, to see how it otherwise fails
+    "old:              \n"
+    "  addi %0, x0, 123\n"
+    "end:              \n"
+    : "=r"(reg0), "=r"(reg1));
+  assert_or_die(reg0, 234, "overwriting instruction data should be visible after fencei\n");
 
   printf("Check externally modified code\n");
-  //TODO:ropeders
+  // TODO:ropeders write code to test this, after testbench infrastructure has been made
 
   return EXIT_SUCCESS;
 }
