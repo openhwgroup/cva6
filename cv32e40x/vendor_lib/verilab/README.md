@@ -14,7 +14,7 @@ testbench functionality that is not provided by UVM nor SystemVerilog itself con
 For more details on using the SVLIB, please refer to their documentation PDF.  This PDF can be found either on the Verilab website
 or by cloning the Bitbucket SVLIB repository into vendor_lib (`make clone_svlib`) and finding the documenation under `svlib/doc`
 
-## CORE-V_VERIF COmpilation
+## CORE-V_VERIF Compilation
 
 The SVLIB will now be cloned and compiled into every core-v-verif simulation.  The source code is cloned from a checked-in hash
 in Common.mk for the CV_CORE being simulated.  The Makefiles will compile this package into the simulation database automatically.
