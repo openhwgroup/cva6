@@ -12,6 +12,10 @@ builds:
     cmd: make clone_riscv-dv
     dir: cv32e40x/sim/uvmt
 
+  clone_svlib:
+    cmd: make clone_svlib
+    dir: cv32e40x/sim/uvmt
+
   clone_cv_core_rtl:
     cmd: make clone_cv_core_rtl
     dir: cv32e40x/sim/uvmt
@@ -168,7 +172,7 @@ tests:
     builds: [ uvmt_cv32e40x, uvmt_cv32e40x_pma_1, uvmt_cv32e40x_pma_2, uvmt_cv32e40x_pma_3, uvmt_cv32e40x_pma_4, uvmt_cv32e40x_pma_5]
     dir: cv32e40x/sim/uvmt
     cmd: make gen_corev-dv test COREV=YES TEST=corev_rand_arithmetic_base_test
-    num: 20
+    num: 10
 
   corev_rand_instr_test:
     build: uvmt_cv32e40x
@@ -176,7 +180,7 @@ tests:
     builds: [ uvmt_cv32e40x, uvmt_cv32e40x_pma_1, uvmt_cv32e40x_pma_2, uvmt_cv32e40x_pma_3, uvmt_cv32e40x_pma_4, uvmt_cv32e40x_pma_5]
     dir: cv32e40x/sim/uvmt
     cmd: make gen_corev-dv test COREV=YES TEST=corev_rand_instr_test
-    num: 20
+    num: 10
 
   corev_rand_instr_long_stall:
     build: uvmt_cv32e40x
@@ -184,7 +188,7 @@ tests:
     builds: [ uvmt_cv32e40x, uvmt_cv32e40x_pma_1, uvmt_cv32e40x_pma_2, uvmt_cv32e40x_pma_3, uvmt_cv32e40x_pma_4, uvmt_cv32e40x_pma_5]
     dir: cv32e40x/sim/uvmt
     cmd: make gen_corev-dv test COREV=YES TEST=corev_rand_instr_long_stall
-    num: 30
+    num: 10
 
   corev_rand_illegal_instr_test:
     build: uvmt_cv32e40x
@@ -192,7 +196,7 @@ tests:
     builds: [ uvmt_cv32e40x, uvmt_cv32e40x_pma_1, uvmt_cv32e40x_pma_2, uvmt_cv32e40x_pma_3, uvmt_cv32e40x_pma_4, uvmt_cv32e40x_pma_5]
     dir: cv32e40x/sim/uvmt
     cmd: make gen_corev-dv test COREV=YES TEST=corev_rand_illegal_instr_test
-    num: 20
+    num: 10
 
   corev_rand_jump_stress_test:
     build: uvmt_cv32e40x
@@ -200,7 +204,7 @@ tests:
     builds: [ uvmt_cv32e40x, uvmt_cv32e40x_pma_1, uvmt_cv32e40x_pma_2, uvmt_cv32e40x_pma_3, uvmt_cv32e40x_pma_4, uvmt_cv32e40x_pma_5]
     dir: cv32e40x/sim/uvmt
     cmd: make gen_corev-dv test COREV=YES TEST=corev_rand_jump_stress_test
-    num: 20
+    num: 3
 
   corev_rand_interrupt:
     build: uvmt_cv32e40x
@@ -208,7 +212,7 @@ tests:
     builds: [ uvmt_cv32e40x, uvmt_cv32e40x_pma_1, uvmt_cv32e40x_pma_2, uvmt_cv32e40x_pma_3, uvmt_cv32e40x_pma_4, uvmt_cv32e40x_pma_5]
     dir: cv32e40x/sim/uvmt
     cmd: make gen_corev-dv test COREV=YES TEST=corev_rand_interrupt
-    num: 20
+    num: 10
 
   corev_rand_debug:
     build: uvmt_cv32e40x
@@ -216,7 +220,7 @@ tests:
     builds: [ uvmt_cv32e40x, uvmt_cv32e40x_pma_1, uvmt_cv32e40x_pma_2, uvmt_cv32e40x_pma_3, uvmt_cv32e40x_pma_4, uvmt_cv32e40x_pma_5]
     dir: cv32e40x/sim/uvmt
     cmd: make gen_corev-dv test COREV=YES TEST=corev_rand_debug
-    num: 20
+    num: 10
 
   corev_rand_debug_single_step:
     build: uvmt_cv32e40x
@@ -224,7 +228,7 @@ tests:
     builds: [ uvmt_cv32e40x, uvmt_cv32e40x_pma_1, uvmt_cv32e40x_pma_2, uvmt_cv32e40x_pma_3, uvmt_cv32e40x_pma_4, uvmt_cv32e40x_pma_5]
     dir: cv32e40x/sim/uvmt
     cmd: make gen_corev-dv test COREV=YES TEST=corev_rand_debug_single_step
-    num: 20
+    num: 10
 
   corev_rand_debug_ebreak:
     build: uvmt_cv32e40x
@@ -232,7 +236,7 @@ tests:
     builds: [ uvmt_cv32e40x, uvmt_cv32e40x_pma_1, uvmt_cv32e40x_pma_2, uvmt_cv32e40x_pma_3, uvmt_cv32e40x_pma_4, uvmt_cv32e40x_pma_5]
     dir: cv32e40x/sim/uvmt
     cmd: make gen_corev-dv test COREV=YES TEST=corev_rand_debug_ebreak
-    num: 20
+    num: 10
 
   corev_rand_interrupt_wfi:
     build: uvmt_cv32e40x
@@ -240,7 +244,7 @@ tests:
     builds: [ uvmt_cv32e40x, uvmt_cv32e40x_pma_1, uvmt_cv32e40x_pma_2, uvmt_cv32e40x_pma_3, uvmt_cv32e40x_pma_4, uvmt_cv32e40x_pma_5]
     dir: cv32e40x/sim/uvmt
     cmd: make gen_corev-dv test COREV=YES TEST=corev_rand_interrupt_wfi
-    num: 20
+    num: 10
 
   corev_rand_interrupt_wfi_mem_stress:
     build: uvmt_cv32e40x
@@ -248,7 +252,7 @@ tests:
     builds: [ uvmt_cv32e40x, uvmt_cv32e40x_pma_1, uvmt_cv32e40x_pma_2, uvmt_cv32e40x_pma_3, uvmt_cv32e40x_pma_4, uvmt_cv32e40x_pma_5]
     dir: cv32e40x/sim/uvmt
     cmd: make gen_corev-dv test COREV=YES TEST=corev_rand_interrupt_wfi_mem_stress
-    num: 20
+    num: 10
 
   corev_rand_interrupt_debug:
     build: uvmt_cv32e40x
@@ -256,7 +260,7 @@ tests:
     builds: [ uvmt_cv32e40x, uvmt_cv32e40x_pma_1, uvmt_cv32e40x_pma_2, uvmt_cv32e40x_pma_3, uvmt_cv32e40x_pma_4, uvmt_cv32e40x_pma_5]
     dir: cv32e40x/sim/uvmt
     cmd: make gen_corev-dv test COREV=YES TEST=corev_rand_interrupt_debug
-    num: 20
+    num: 10
 
   corev_rand_interrupt_exception:
     build: uvmt_cv32e40x
@@ -264,7 +268,7 @@ tests:
     builds: [ uvmt_cv32e40x, uvmt_cv32e40x_pma_1, uvmt_cv32e40x_pma_2, uvmt_cv32e40x_pma_3, uvmt_cv32e40x_pma_4, uvmt_cv32e40x_pma_5]
     dir: cv32e40x/sim/uvmt
     cmd: make gen_corev-dv test COREV=YES TEST=corev_rand_interrupt_exception
-    num: 20
+    num: 10
 
   corev_rand_interrupt_nested:
     build: uvmt_cv32e40x
@@ -272,7 +276,7 @@ tests:
     builds: [ uvmt_cv32e40x, uvmt_cv32e40x_pma_1, uvmt_cv32e40x_pma_2, uvmt_cv32e40x_pma_3, uvmt_cv32e40x_pma_4, uvmt_cv32e40x_pma_5]
     dir: cv32e40x/sim/uvmt
     cmd: make gen_corev-dv test COREV=YES TEST=corev_rand_interrupt_nested
-    num: 20
+    num: 10
 
   illegal:
     build: uvmt_cv32e40x

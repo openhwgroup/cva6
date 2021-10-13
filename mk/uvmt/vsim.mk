@@ -164,6 +164,7 @@ VSIM_FLAGS += +DISABLE_CSR_CHECK=$(TEST_DISABLE_CSR_CHECK)
 endif
 
 VSIM_FLAGS += -sv_lib $(basename $(DPI_DASM_LIB))
+VSIM_FLAGS += -sv_lib $(basename $(abspath $(SVLIB_LIB)))
 
 # Skip compile if requested (COMP=NO)
 ifneq ($(call IS_NO,$(COMP)),NO)
@@ -275,7 +276,7 @@ help:
 
 ################################################################################
 # ldgen generation targets
-vlog_ldgen: $(CV_CORE_PKG)
+vlog_ldgen: $(CV_CORE_PKG) $(SVLIB_PKG)
 	@echo "$(BANNER)"
 	@echo "* Generating linker scripts in $(SIM_LDGEN_RESULTS)"
 	@echo "$(BANNER)"
@@ -448,7 +449,7 @@ gen_ovpsim_ic:
 export IMPERAS_TOOLS=$(SIM_RUN_RESULTS)/ovpsim.ic
 
 # Target to create work directory in $(VSIM_RESULTS)/
-lib: mk_vsim_dir $(CV_CORE_PKG) $(TBSRC_PKG) $(TBSRC)
+lib: mk_vsim_dir $(CV_CORE_PKG) $(SVLIB_PKG) $(TBSRC_PKG) $(TBSRC)
 	if [ ! -d "$(SIM_CFG_RESULTS)/$(VWORK)" ]; then \
 		$(VLIB) $(SIM_CFG_RESULTS)/$(VWORK); \
 	fi
@@ -553,5 +554,5 @@ clean:
 	rm -rf $(SIM_RESULTS)
 
 # All generated files plus the clone of the RTL
-clean_all: clean clean_riscv-dv clean_test_programs clean_bsp clean_compliance clean_embench clean_dpi_dasm_spike
+clean_all: clean clean_riscv-dv clean_test_programs clean_bsp clean_compliance clean_embench clean_dpi_dasm_spike clean_svlib
 	rm -rf $(CV_CORE_PKG)
