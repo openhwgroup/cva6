@@ -12,7 +12,7 @@
 // Description: Bypass version of data cache
 
 module std_nbdcache #(
-    parameter logic [63:0] CACHE_START_ADDR = 64'h8000_0000
+    parameter ariane_pkg::ariane_cfg_t ArianeCfg = ariane_pkg::ArianeDefaultConfig // contains cacheable regions
 ) (
     input  logic                            clk_i,       // Clock
     input  logic                            rst_ni,      // Asynchronous reset active low

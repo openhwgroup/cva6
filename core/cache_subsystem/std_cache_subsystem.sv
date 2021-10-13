@@ -80,7 +80,7 @@ module std_cache_subsystem import ariane_pkg::*; import std_cache_pkg::*; #(
    // Port 1: Load Unit
    // Port 2: Store Unit
    std_nbdcache #(
-      .CACHE_START_ADDR ( ArianeCfg.CachedRegionAddrBase )
+      .ArianeCfg        ( ArianeCfg          )
    ) i_nbdcache (
       .clk_i,
       .rst_ni,
