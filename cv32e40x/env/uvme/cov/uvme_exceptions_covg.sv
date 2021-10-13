@@ -21,10 +21,10 @@ covergroup cg_exceptions
 
   `per_instance_fcov
 
-  cp_trap : coverpoint isacov.rvfi.trap {
+  cp_trap : coverpoint isacov.instr.rvfi.trap {
     bins trap = {1};
   }
-  cp_intr : coverpoint isacov.rvfi.intr {
+  cp_intr : coverpoint isacov.instr.rvfi.intr {
     bins intr = {1};
   }
   cp_imm12 : coverpoint isacov.instr.csr_val {
@@ -38,10 +38,10 @@ covergroup cg_exceptions
   cp_is_ebreak : coverpoint (isacov.instr.name inside {EBREAK, C_EBREAK}) {
     bins is_ebreak = {1};
   }
-  cp_no_ebreakm : coverpoint (isacov.rvfi.csrs["dcsr"].get_csr_retirement_data()[15]) {
+  cp_no_ebreakm : coverpoint (isacov.instr.rvfi.csrs["dcsr"].get_csr_retirement_data()[15]) {
     bins no_ebreakm = {0};
   }
-  cp_mcause : coverpoint isacov.rvfi.csrs["mcause"].get_csr_retirement_data() {
+  cp_mcause : coverpoint isacov.instr.rvfi.csrs["mcause"].get_csr_retirement_data() {
     bins reset               = {0};
     bins ins_acc_fault       = {1};
     bins illegal_ins         = {2};
@@ -51,10 +51,10 @@ covergroup cg_exceptions
     bins ecall               = {11};
     bins ins_bus_fault       = {48};
   }
-  cp_pcr_mtvec : coverpoint (isacov.rvfi.pc_rdata[31:2] == isacov.rvfi.csrs["mtvec"].get_csr_retirement_data()[31:2]) {
+  cp_pcr_mtvec : coverpoint (isacov.instr.rvfi.pc_rdata[31:2] == isacov.instr.rvfi.csrs["mtvec"].get_csr_retirement_data()[31:2]) {
     bins one = {1};
   }
-  cp_pcw_mtvec : coverpoint (isacov.rvfi.pc_wdata[31:2] == isacov.rvfi.csrs["mtvec"].get_csr_retirement_data()[31:2]) {
+  cp_pcw_mtvec : coverpoint (isacov.instr.rvfi.pc_wdata[31:2] == isacov.instr.rvfi.csrs["mtvec"].get_csr_retirement_data()[31:2]) {
     bins one = {1};
   }
 
