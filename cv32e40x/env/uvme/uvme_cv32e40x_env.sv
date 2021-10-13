@@ -46,7 +46,8 @@ class uvme_cv32e40x_env_c extends uvm_env;
    uvma_obi_memory_agent_c          obi_memory_data_agent ;
    uvma_rvfi_agent_c#(ILEN,XLEN)    rvfi_agent;
    uvma_rvvi_agent_c#(ILEN,XLEN)    rvvi_agent;
-   uvma_fencei_agent_c              fencei_agent ;
+   uvma_fencei_agent_c              fencei_agent;
+   uvma_pma_agent_c#(ILEN,XLEN)     pma_agent;
 
    `uvm_component_utils_begin(uvme_cv32e40x_env_c)
       `uvm_field_object(cfg  , UVM_DEFAULT)
@@ -313,6 +314,7 @@ function void uvme_cv32e40x_env_c::assign_cfg();
    uvm_config_db#(uvma_rvfi_cfg_c#(ILEN,XLEN))::set(this, "rvfi_agent", "cfg", cfg.rvfi_cfg);
    uvm_config_db#(uvma_rvvi_cfg_c#(ILEN,XLEN))::set(this, "rvvi_agent", "cfg", cfg.rvvi_cfg);
    uvm_config_db#(uvma_fencei_cfg_c)::set(this, "fencei_agent", "cfg", cfg.fencei_cfg);
+   uvm_config_db#(uvma_pma_cfg_c)::set(this, "pma_agent", "cfg", cfg.pma_cfg);
 
 endfunction: assign_cfg
 
@@ -344,6 +346,7 @@ function void uvme_cv32e40x_env_c::create_agents();
    rvfi_agent = uvma_rvfi_agent_c#(ILEN,XLEN)::type_id::create("rvfi_agent", this);
    rvvi_agent = uvma_rvvi_ovpsim_agent_c#(ILEN,XLEN)::type_id::create("rvvi_agent", this);
    fencei_agent = uvma_fencei_agent_c::type_id::create("fencei_agent", this);
+   pma_agent = uvma_pma_agent_c#(ILEN,XLEN)::type_id::create("pma_agent", this);
 
 endfunction: create_agents
 
@@ -369,7 +372,6 @@ function void uvme_cv32e40x_env_c::create_cov_model();
 
    cov_model = uvme_cv32e40x_cov_model_c::type_id::create("cov_model", this);
 
-
 endfunction: create_cov_model
 
 
@@ -388,22 +390,33 @@ endfunction : connect_rvfi_rvvi
 
 function void uvme_cv32e40x_env_c::connect_scoreboard();
 
-   // Connect the CORE Scoreboard
-   rvvi_agent.state_mon_ap.connect(core_sb.rvvi_state_export);
-   foreach (rvfi_agent.instr_mon_ap[i])
-      rvfi_agent.instr_mon_ap[i].connect(core_sb.rvfi_instr_export);
+   // Connect the CORE Scoreboard (but only if the ISS is running)
+   if (cfg.use_iss) begin
+      rvvi_agent.state_mon_ap.connect(core_sb.rvvi_state_export);
+      foreach (rvfi_agent.instr_mon_ap[i])
+         rvfi_agent.instr_mon_ap[i].connect(core_sb.rvfi_instr_export);
+   end
+
+   // Connect the PMA scoreboard
+   foreach (rvfi_agent.instr_mon_ap[i]) begin
+      rvfi_agent.instr_mon_ap[i].connect(pma_agent.scoreboard.rvfi_instr_export);
+   end
+   obi_memory_instr_agent.mon_ap.connect(pma_agent.scoreboard.obi_i_export);
+   obi_memory_data_agent.mon_ap.connect(pma_agent.scoreboard.obi_d_export);
 
 endfunction: connect_scoreboard
 
 
 function void uvme_cv32e40x_env_c::connect_coverage_model();
 
-   isacov_agent.monitor.ap.connect(cov_model.interrupt_covg.instr_mon_export);
+   isacov_agent.monitor.ap.connect(cov_model.exceptions_covg.isacov_mon_export);
    isacov_agent.monitor.ap.connect(cov_model.counters_covg.isacov_mon_export);
 
+   obi_memory_data_agent.mon_ap.connect(pma_agent.monitor.obi_d_export);
    foreach (rvfi_agent.instr_mon_ap[i]) begin
       rvfi_agent.instr_mon_ap[i].connect(isacov_agent.monitor.rvfi_instr_export);
       rvfi_agent.instr_mon_ap[i].connect(cov_model.interrupt_covg.interrupt_mon_export);
+      rvfi_agent.instr_mon_ap[i].connect(pma_agent.monitor.rvfi_instr_export);
    end
 
 endfunction: connect_coverage_model

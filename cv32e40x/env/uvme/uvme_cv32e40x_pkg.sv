@@ -49,6 +49,7 @@ package uvme_cv32e40x_pkg;
    import uvma_rvvi_pkg::*;
    import uvma_rvvi_ovpsim_pkg::*;
    import uvma_fencei_pkg::*;
+   import uvma_pma_pkg::*;
 
    // Forward decls
    typedef class uvme_cv32e40x_vsqr_c;
@@ -85,6 +86,7 @@ package uvme_cv32e40x_pkg;
    `include "uvma_cv32e40x_core_cntrl_agent.sv"
    `include "uvme_interrupt_covg.sv"
    `include "uvme_debug_covg.sv"
+   `include "uvme_exceptions_covg.sv"
    `include "uvme_counters_covg.sv"
    `include "uvme_cv32e40x_cov_model.sv"
    `include "uvme_cv32e40x_sb.sv"
@@ -98,4 +100,5 @@ endpackage : uvme_cv32e40x_pkg
 `include "uvme_cv32e40x_core_cntrl_if.sv"
 
 `endif // __UVME_CV32E40X_PKG_SV__
+
 
