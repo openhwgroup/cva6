@@ -46,24 +46,39 @@ int main(void) {
   assert_or_die(tmpint, 0x22334455, "error: a fence.i should not abort a sw\n");
 
   printf("Check multiple stores\n");
-  tmparr[0] = tmparr[1] = tmparr[2] = tmparr[3] = 0;
+  tmpint = tmparr[0] = tmparr[1] = tmparr[2] = tmparr[3] = 0;
   __asm__ volatile("sw %0, 0x0(%1)" : : "r"(0x334455AA), "r"(tmparr[0]));
   __asm__ volatile("sw %0, 0x4(%1)" : : "r"(0x334455BB), "r"(tmparr[0]));
   __asm__ volatile("sw %0, 0x8(%1)" : : "r"(0x334455CC), "r"(tmparr[0]));
   __asm__ volatile("sw %0, 0xC(%1)" : : "r"(0x334455DD), "r"(tmparr[0]));
   __asm__ volatile("fence.i");
-  __asm__ volatile("lw %0, 0x0(%1)" : "=r"(tmpint) : "r"(tmparr[0]));
+  __asm__ volatile("lw %0, 0(%1)" : "=r"(tmpint) : "r"(*tmparr + 0x0));
   assert_or_die(tmpint, 0x334455AA, "error: a fence.i should not abort a sw\n");
-  __asm__ volatile("lw %0, 0x4(%1)" : "=r"(tmpint) : "r"(tmparr[1]));
+  __asm__ volatile("lw %0, 0(%1)" : "=r"(tmpint) : "r"(*tmparr + 0x4));
   assert_or_die(tmpint, 0x334455BB, "error: a fence.i should not abort a sw\n");
-  __asm__ volatile("lw %0, 0x8(%1)" : "=r"(tmpint) : "r"(tmparr[2]));
+  __asm__ volatile("lw %0, 0(%1)" : "=r"(tmpint) : "r"(*tmparr + 0x8));
   assert_or_die(tmpint, 0x334455CC, "error: a fence.i should not abort a sw\n");
-  __asm__ volatile("lw %0, 0xC(%1)" : "=r"(tmpint) : "r"(tmparr[3]));
+  __asm__ volatile("lw %0, 0(%1)" : "=r"(tmpint) : "r"(*tmparr + 0xC));
   assert_or_die(tmpint, 0x334455DD, "error: a fence.i should not abort a sw\n");
 
   printf("Check interdigitated stores\n");
-  tmparr[0] = tmparr[1] = tmparr[2] = tmparr[3] = 0;
-  //TODO:ropeders
+  tmpint = tmparr[0] = tmparr[1] = tmparr[2] = tmparr[3] = 0;
+  __asm__ volatile("sw %0, 0(%1)" : : "r"(0x445566AA), "r"(*tmparr + 0x0));
+  __asm__ volatile("fence.i");
+  __asm__ volatile("sw %0, 0(%1)" : : "r"(0x445566BB), "r"(*tmparr + 0x4));
+  __asm__ volatile("fence.i");
+  __asm__ volatile("sw %0, 0(%1)" : : "r"(0x445566CC), "r"(*tmparr + 0x8));
+  __asm__ volatile("fence.i");
+  __asm__ volatile("sw %0, 0(%1)" : : "r"(0x445566DD), "r"(*tmparr + 0xC));
+  __asm__ volatile("fence.i");
+  __asm__ volatile("lw %0, 0x0(%1)" : "=r"(tmpint) : "r"(*tmparr));
+  assert_or_die(tmpint, 0x445566AA, "error: a fence.i should not abort a sw\n");
+  __asm__ volatile("lw %0, 0x4(%1)" : "=r"(tmpint) : "r"(*tmparr));
+  assert_or_die(tmpint, 0x445566BB, "error: a fence.i should not abort a sw\n");
+  __asm__ volatile("lw %0, 0x8(%1)" : "=r"(tmpint) : "r"(*tmparr));
+  assert_or_die(tmpint, 0x445566CC, "error: a fence.i should not abort a sw\n");
+  __asm__ volatile("lw %0, 0xC(%1)" : "=r"(tmpint) : "r"(*tmparr));
+  assert_or_die(tmpint, 0x445566DD, "error: a fence.i should not abort a sw\n");
 
   printf("Check self-modifying code\n");
   //TODO:ropeders
