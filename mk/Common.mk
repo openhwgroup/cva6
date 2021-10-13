@@ -163,7 +163,7 @@ endif
 # DPI_DASM Spike repo var end
 
 ###############################################################################
-# Generate command to clone Spike for the Disassembler DPI (used in the isacov model)
+# Generate command to clone Verilab SVLIB
 ifeq ($(SVLIB_BRANCH), master)
   TMP8 = git clone $(SVLIB_REPO) --recurse $(SVLIB_PKG)
 else
