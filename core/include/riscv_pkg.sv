@@ -48,7 +48,7 @@ package riscv;
     localparam SV         = (MODE_SV == ModeSv32) ? 32 : 39;
     localparam VPN2       = (VLEN-31 < 8) ? VLEN-31 : 8;
 
-    localparam  FPU_EN     = 1'b1; // This bit is to select FPU in the design, FPU_EN = 1'b0 disables FPU in the design
+    localparam  FPU_EN     = cva6_config_pkg::CVA6ConfigFPU; // This bit is to select FPU in the design, FPU_EN = 1'b0 disables FPU in the design
 
     typedef logic [XLEN-1:0] xlen_t;
 

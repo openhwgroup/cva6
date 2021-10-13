@@ -74,7 +74,7 @@ endif
 # Sources
 # Package files -> compile first
 ifeq ($(findstring 32, $(variant)),32)
-    ariane_pkg := core/include/cv32a6_imac_sv0_config_pkg.sv
+    ariane_pkg := core/include/cv32a6_imac_sv32_config_pkg.sv
 else
     ariane_pkg := core/include/cv64a6_imacfd_sv39_config_pkg.sv
 endif
