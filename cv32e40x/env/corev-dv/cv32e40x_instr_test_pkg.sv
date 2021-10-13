@@ -33,7 +33,6 @@ package cv32e40x_instr_test_pkg;
   // RISCV-DV class override definitions
   `include "cv32e40x_pma_cfg.sv"
   `include "cv32e40x_compressed_instr.sv"
-  `include "cv32e40x_illegal_instr.sv"
   `include "cv32e40x_privil_reg.sv"
   `include "cv32e40x_privileged_common_seq.sv"
   `include "cv32e40x_instr_gen_config.sv"
