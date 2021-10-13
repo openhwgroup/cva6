@@ -146,7 +146,8 @@ endif
 VCS_RUN_BASE_FLAGS   ?= $(VCS_GUI) \
                         $(VCS_PLUSARGS) +ntb_random_seed=$(RNDSEED) \
 						-sv_lib $(VCS_OVP_MODEL_DPI) \
-						-sv_lib $(DPI_DASM_LIB)
+						-sv_lib $(DPI_DASM_LIB) \
+						-sv_lib $(abspath $(SVLIB_LIB))
 
 # Simulate using latest elab
 VCS_RUN_FLAGS        ?=
@@ -184,7 +185,7 @@ VCS_COMP = $(VCS_COMP_FLAGS) \
 		$(VCS_FILE_LIST) \
 		$(UVM_PLUSARGS)
 
-comp: mk_vcs_dir $(CV_CORE_PKG) $(OVP_MODEL_DPI)
+comp: mk_vcs_dir $(CV_CORE_PKG) $(SVLIB_PKG) $(OVP_MODEL_DPI)
 	cd $(SIM_CFG_RESULTS)/$(CFG) && $(VCS) $(VCS_COMP) -top uvmt_$(CV_CORE_LC)_tb
 	@echo "$(BANNER)"
 	@echo "* $(SIMULATOR) compile complete"
@@ -349,5 +350,5 @@ clean_eclipse:
 	rm  -rf workspace
 
 # All generated files plus the clone of the RTL
-clean_all: clean clean_eclipse clean_riscv-dv clean_test_programs clean-bsp clean_compliance clean_embench clean_dpi_dasm_spike
+clean_all: clean clean_eclipse clean_riscv-dv clean_test_programs clean-bsp clean_compliance clean_embench clean_dpi_dasm_spike clean_svlib
 	rm -rf $(CV_CORE_PKG)

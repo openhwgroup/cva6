@@ -124,7 +124,7 @@ mk_results:
 
 ################################################################################
 # DSIM compile target
-comp: mk_results $(CV_CORE_PKG) $(OVP_MODEL_DPI)
+comp: mk_results $(CV_CORE_PKG) $(SVLIB_PKG) $(OVP_MODEL_DPI)
 	$(DSIM) \
 		$(DSIM_CMP_FLAGS) \
 		$(DSIM_UVM_ARGS) \
@@ -175,6 +175,7 @@ test: $(DSIM_SIM_PREREQ) hex gen_ovpsim_ic
 			$(TEST_PLUSARGS) \
 			-sv_lib $(UVM_HOME)/src/dpi/libuvm_dpi.so \
 			-sv_lib $(DPI_DASM_LIB) \
+			-sv_lib $(abspath $(SVLIB_LIB)) \
 			-sv_lib $(OVP_MODEL_DPI) \
 			+UVM_TESTNAME=$(TEST_UVM_TEST) \
 			+firmware=$(SIM_TEST_PROGRAM_RESULTS)/$(TEST_PROGRAM)$(OPT_RUN_INDEX_SUFFIX).hex \
@@ -341,6 +342,6 @@ clean:
 	rm -rf $(SIM_RESULTS)
 
 # All generated files plus the clone of the RTL
-clean_all: clean clean_riscv-dv clean_test_programs clean-bsp clean_compliance clean_embench clean_dpi_dasm_spike
+clean_all: clean clean_riscv-dv clean_test_programs clean-bsp clean_compliance clean_embench clean_dpi_dasm_spike clean_svlib
 	rm -rf $(CV_CORE_PKG)
 

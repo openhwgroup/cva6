@@ -19,6 +19,14 @@ covergroup cg_pma_access(
    option.name = name;
    `per_instance_fcov
 
+   cp_first_word: coverpoint (trn.is_first_word) {
+      bins FIRST = {1};
+   }
+
+   cp_last_word: coverpoint (trn.is_last_word) {
+      bins LAST = {1};
+   }
+
    cp_main: coverpoint (pma_region.main) {
       bins IO   = {0};
       bins MAIN = {1};

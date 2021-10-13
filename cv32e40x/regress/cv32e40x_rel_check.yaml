@@ -10,6 +10,10 @@ builds:
     cmd: make clone_riscv-dv
     dir: cv32e40x/sim/uvmt
 
+  clone_svlib:
+    cmd: make clone_svlib
+    dir: cv32e40x/sim/uvmt
+
   clone_cv_core_rtl:
     cmd: make clone_cv_core_rtl
     dir: cv32e40x/sim/uvmt
