@@ -415,6 +415,7 @@ comp_corev-dv: $(RISCVDV_PKG) $(CV_CORE_PKG)
 		$(XRUN_COMP_COREV_DV_FLAGS) \
 		$(XRUN_UVM_MACROS_INC_FILE) \
 		-f $(CV_CORE_MANIFEST) \
+		-top $(CV_CORE_LC)_instr_gen_tb_top \
 		-elaborate \
 		+incdir+$(CV_CORE_COREVDV_PKG)/target/$(CV_CORE_LC) \
 		+incdir+$(RISCVDV_PKG)/user_extension \

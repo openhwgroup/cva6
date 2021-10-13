@@ -275,6 +275,7 @@ comp_corev-dv: $(CV_CORE_PKG)
 		+incdir+$(UVM_HOME)/src \
 		$(UVM_HOME)/src/uvm_pkg.sv \
 		+define+DSIM \
+		-top $(CV_CORE_LC)_instr_gen_tb_top \
 		-suppress EnumMustBePositive \
 		-suppress SliceOOB \
 		-f $(CV_CORE_MANIFEST) \
