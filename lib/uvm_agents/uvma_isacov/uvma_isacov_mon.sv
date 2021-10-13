@@ -48,7 +48,7 @@ endclass : uvma_isacov_mon_c
 
 function uvma_isacov_mon_c::new(string name = "uvma_isacov_mon", uvm_component parent = null);
 
-  super.new(name, parent);
+super.new(name, parent);
 
   rvfi_instr_export = new("rvfi_instr_export", this);
 endfunction : new
@@ -136,25 +136,16 @@ function void uvma_isacov_mon_c::write_rvfi_instr(uvma_rvfi_instr_seq_item_c#(IL
   string                instr_name;
   bit [63:0]            instr;
 
-  // Some trapped instructions should not be logged in functional coverage
-  // Will use mcause value to determine whether to skip
-  // 1 - Instruction access fault
-  // 3 - Breakpoint
-  // 5 - Load access fault
-  // 7 - Store/AMO Access fault
-  // 48 - Instruction bus fault
+  mon_trn = uvma_isacov_mon_trn_c#(.ILEN(ILEN), .XLEN(XLEN))::type_id::create("mon_trn");
+  mon_trn.instr = uvma_isacov_instr_c#(ILEN,XLEN)::type_id::create("mon_instr");
+  mon_trn.instr.rvfi = rvfi_instr;
+
+  // Mark trapped instructions from RVFI
   if (rvfi_instr.trap) begin
-    if (rvfi_instr.csrs["mcause"].get_csr_retirement_data() inside {1,3,5,7,48}) begin
-      `uvm_info("ISACOV", $sformatf("Skip coverage of trapped instruction: 0x%08x, mcause: 0x%08x",
-                                    rvfi_instr.insn,
-                                    rvfi_instr.csrs["mcause"].get_csr_retirement_data()), UVM_HIGH);
-      return;
-    end
+    mon_trn.instr.trap = 1;
   end
 
-  mon_trn = uvma_isacov_mon_trn_c#(.ILEN(ILEN), .XLEN(XLEN))::type_id::create("mon_trn");
-  mon_trn.instr = uvma_isacov_instr_c::type_id::create("mon_instr");
-
+  // Attempt to decode instruction with Spike DASM
   instr_name = dasm_name(rvfi_instr.insn);
   if (instr_name_lookup.exists(instr_name)) begin
     mon_trn.instr.name = instr_name_lookup[instr_name];
@@ -170,7 +161,6 @@ function void uvma_isacov_mon_c::write_rvfi_instr(uvma_rvfi_instr_seq_item_c#(IL
   mon_trn.instr.itype = get_instr_type(mon_trn.instr.name);
   mon_trn.instr.ext   = get_instr_ext(mon_trn.instr.name);
   mon_trn.instr.group = get_instr_group(mon_trn.instr.name, rvfi_instr.mem_addr);
-
 
   instr = $signed(rvfi_instr.insn);
 
@@ -224,9 +214,6 @@ function void uvma_isacov_mon_c::write_rvfi_instr(uvma_rvfi_instr_seq_item_c#(IL
   // 4. Valid supported instruction with invalid operands
   if (mon_trn.instr.name == C_ADDI4SPN && mon_trn.instr.c_imm == 0)
     mon_trn.instr.illegal = 1;
-
-  mon_trn.instr.pc = rvfi_instr.pc_rdata;
-  mon_trn.instr.mem_addr = rvfi_instr.mem_addr;
 
   // Set enumerations for each immediate value (if applicable)
   if (mon_trn.instr.itype == B_TYPE)
@@ -312,14 +299,6 @@ function void uvma_isacov_mon_c::write_rvfi_instr(uvma_rvfi_instr_seq_item_c#(IL
     mon_trn.instr.rd_value  = rvfi_instr.rd1_wdata;
     mon_trn.instr.rd_value_type = mon_trn.instr.get_instr_value_type(mon_trn.instr.rd_value, 32, rd_is_signed[mon_trn.instr.name]);
   end
-
-  // // For branches determine if the branch was taken by evaluating the instruction
-  // if (mon_trn.instr.is_conditional_branch()) begin
-  //   instr.branch_taken = mon_trn.instr.is_branch_taken();
-  // end
-
-  // Attach rvfi trn handle to isacov trn
-  mon_trn.rvfi = rvfi_instr;
 
   // Write to analysis port
   ap.write(mon_trn);
