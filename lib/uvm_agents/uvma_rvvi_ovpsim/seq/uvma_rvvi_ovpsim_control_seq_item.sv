@@ -1,12 +1,12 @@
 // Copyright 2020 OpenHW Group
 // Copyright 2020 Datum Technology Corporation
-// 
+//
 // Licensed under the Solderpad Hardware Licence, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
-// 
+//
 //     https://solderpad.org/licenses/
-// 
+//
 // Unless required by applicable law or agreed to in writing, software
 // distributed under the License is distributed on an "AS IS" BASIS,
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -34,6 +34,9 @@ class uvma_rvvi_ovpsim_control_seq_item_c#(int ILEN=uvma_rvvi_pkg::DEFAULT_ILEN,
    // Set to signal entry into NMI handler
    rand bit nmi;
 
+   // Set to signal instruction bus error
+   rand bit insn_bus_fault;
+
    // For accuracy of mip model the irq_i inputs for each instrucion
    rand bit[ILEN-1:0] mip;
 
@@ -51,19 +54,20 @@ class uvma_rvvi_ovpsim_control_seq_item_c#(int ILEN=uvma_rvvi_pkg::DEFAULT_ILEN,
 
    static protected string _log_format_string = "0x%08x %s 0x%01x 0x%08x";
 
-   `uvm_object_param_utils_begin(uvma_rvvi_ovpsim_control_seq_item_c#(ILEN,XLEN))      
-      `uvm_field_int(intr,      UVM_DEFAULT)
-      `uvm_field_int(dbg_req,   UVM_DEFAULT)
-      `uvm_field_int(nmi,       UVM_DEFAULT)
-      `uvm_field_int(mip,       UVM_DEFAULT)
-      `uvm_field_int(intr_id,   UVM_DEFAULT)
-      `uvm_field_int(rd1_addr,  UVM_DEFAULT)
-      `uvm_field_int(rd1_wdata, UVM_DEFAULT)
-      `uvm_field_int(mem_addr,  UVM_DEFAULT)
-      `uvm_field_int(mem_rdata, UVM_DEFAULT)
-      `uvm_field_int(mem_rmask, UVM_DEFAULT)
+   `uvm_object_param_utils_begin(uvma_rvvi_ovpsim_control_seq_item_c#(ILEN,XLEN))
+      `uvm_field_int(intr,            UVM_DEFAULT)
+      `uvm_field_int(dbg_req,         UVM_DEFAULT)
+      `uvm_field_int(nmi,             UVM_DEFAULT)
+      `uvm_field_int(insn_bus_fault,  UVM_DEFAULT)
+      `uvm_field_int(mip,             UVM_DEFAULT)
+      `uvm_field_int(intr_id,         UVM_DEFAULT)
+      `uvm_field_int(rd1_addr,        UVM_DEFAULT)
+      `uvm_field_int(rd1_wdata,       UVM_DEFAULT)
+      `uvm_field_int(mem_addr,        UVM_DEFAULT)
+      `uvm_field_int(mem_rdata,       UVM_DEFAULT)
+      `uvm_field_int(mem_rmask,       UVM_DEFAULT)
    `uvm_object_utils_end
-   
+
    /**
     * Default constructor.
     */
@@ -80,15 +84,15 @@ endclass : uvma_rvvi_ovpsim_control_seq_item_c
 
 
 function uvma_rvvi_ovpsim_control_seq_item_c::new(string name="uvma_rvvi_ovpsim_control_seq_item");
-   
+
    super.new(name);
-   
+
 endfunction : new
 
 function string uvma_rvvi_ovpsim_control_seq_item_c::convert2string();
 
    return action.name();
-   
+
 endfunction : convert2string
 
 `pragma protect end

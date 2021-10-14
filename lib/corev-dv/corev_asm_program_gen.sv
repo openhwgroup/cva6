@@ -34,6 +34,13 @@ class corev_asm_program_gen extends riscv_asm_program_gen;
   virtual function void gen_program_header();
     instr_stream.push_back(".include \"user_define.h\"");
     instr_stream.push_back(".section .text.start");
+    instr_stream.push_back("");
+
+    instr_stream.push_back(".section .mtvec_bootstrap, \"ax\"");
+    instr_stream.push_back(".globl _mtvec_bootstrap");
+    instr_stream.push_back("    j mtvec_handler");
+    instr_stream.push_back("");
+
     instr_stream.push_back(".globl _start");
     instr_stream.push_back(".section .init");
     if (cfg.disable_compressed_instr) begin
@@ -46,6 +53,7 @@ class corev_asm_program_gen extends riscv_asm_program_gen;
     instr_stream.push_back("    j _start_main");
     instr_stream.push_back("");
     instr_stream.push_back(".globl _start_main");
+    instr_stream.push_back(".globl mtvec_handler");
     instr_stream.push_back(".section .text");
     instr_stream.push_back("_start_main:");
   endfunction
@@ -60,7 +68,7 @@ class corev_asm_program_gen extends riscv_asm_program_gen;
     `DV_CHECK_STD_RANDOMIZE_WITH_FATAL(td_reg,
       td_reg[0] != td_reg[1];
       foreach (td_reg[i]) {
-        td_reg[i] != ZERO;      
+        td_reg[i] != ZERO;
         foreach (cfg.reserved_regs[j]) {
           td_reg[i] != cfg.reserved_regs[j];
         }

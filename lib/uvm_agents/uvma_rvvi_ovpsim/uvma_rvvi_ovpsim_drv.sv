@@ -150,11 +150,11 @@ task uvma_rvvi_ovpsim_drv_c::stepi(REQ req);
       rvvi_ovpsim_cntxt.ovpsim_io_vif.deferint = 1'b0;
 
       // Map interrupt ID to RVVI IO fault signal
-      if (rvvi_ovpsim_cfg.store_fault_nmi_index_valid &&
-          (rvvi_ovpsim_seq_item.intr_id == rvvi_ovpsim_cfg.store_fault_nmi_index))
+      if (rvvi_ovpsim_cfg.store_fault_nmi_cause_valid &&
+          (rvvi_ovpsim_seq_item.intr_id == rvvi_ovpsim_cfg.store_fault_nmi_cause))
          rvvi_ovpsim_cntxt.ovpsim_io_vif.StoreBusFaultNMI = 1'b1;
-      else if (rvvi_ovpsim_cfg.load_fault_nmi_index_valid &&
-               (rvvi_ovpsim_seq_item.intr_id == rvvi_ovpsim_cfg.load_fault_nmi_index))
+      else if (rvvi_ovpsim_cfg.load_fault_nmi_cause_valid &&
+               (rvvi_ovpsim_seq_item.intr_id == rvvi_ovpsim_cfg.load_fault_nmi_cause))
          rvvi_ovpsim_cntxt.ovpsim_io_vif.LoadBusFaultNMI  = 1'b1;
       else begin
          `uvm_fatal("RVVIDRVNMI", $sformatf("NMI mcause of %0d is not recognized", rvvi_ovpsim_seq_item.intr_id));
@@ -165,6 +165,15 @@ task uvma_rvvi_ovpsim_drv_c::stepi(REQ req);
       rvvi_ovpsim_cntxt.ovpsim_io_vif.deferint         = 1'b1;
       rvvi_ovpsim_cntxt.ovpsim_io_vif.LoadBusFaultNMI  = 1'b0;
       rvvi_ovpsim_cntxt.ovpsim_io_vif.StoreBusFaultNMI = 1'b0;
+      @(posedge rvvi_ovpsim_cntxt.ovpsim_bus_vif.Clk);
+   end
+
+   // Signal instruction bus fault
+   if (rvvi_ovpsim_seq_item.insn_bus_fault) begin
+      rvvi_ovpsim_cntxt.ovpsim_io_vif.InstructionBusFault = 1;
+      rvvi_ovpsim_cntxt.control_vif.stepi();
+      @(rvvi_ovpsim_cntxt.state_vif.notify);
+      rvvi_ovpsim_cntxt.ovpsim_io_vif.InstructionBusFault = 0;
       @(posedge rvvi_ovpsim_cntxt.ovpsim_bus_vif.Clk);
    end
 
