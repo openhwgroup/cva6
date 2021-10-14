@@ -614,14 +614,18 @@ module CPU #(
         automatic Uns32 wdata;
         
         automatic Uns32 ble = getBLE(address, size);
+        automatic int iscache = 0;
         
         if (artifact) begin
+            ble = getBLE(address, size);
             dmiRead(address, ble, data);
 
         end else begin
             if ((cache_waddr == waddr) && (cache_fault == 0)) begin
+                ble = getBLE(cache_waddr, size);
                 wdata  = setData(address, cache_wdata);
                 fault  = cache_fault;
+                iscache = 1;
                 
             end else begin
                 busStep;
@@ -638,7 +642,7 @@ module CPU #(
                 bus.Ird   = 0;
                 
             end
-            
+           
             msginfo($sformatf("[%x]=>(%0d)%x Fetch", address, size, data));
             
             // Save for next cached access
@@ -648,8 +652,8 @@ module CPU #(
             
             data = wdata & byte2bit(ble);
             
-            //$display("busFetch32 address=%08X cache_waddr=%08X : data=%08X cache_wdata=%08X fault=%0d", 
-            //    address, cache_waddr, data, cache_wdata, fault);
+            //$display("busFetch32 address=%08X (iscache=%0d) cache_waddr=%08X : wdata=%08X cache_wdata=%08X data=%08X ble=%08X fault=%0d", 
+            //    address, iscache, cache_waddr, wdata, cache_wdata, data, ble, fault);
         end
     endtask
     
