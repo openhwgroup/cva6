@@ -675,10 +675,10 @@ module mm_ram
 
          .en_a_i    ( ram_instr_req   ),
          .addr_a_i  ( ram_instr_addr  ),
-         .wdata_a_i ( '0              ),	// Not writing so ignored
+         .wdata_a_i ( '0              ), // Not writing so ignored
          .rdata_a_o ( ram_instr_rdata ),
          .we_a_i    ( '0              ),
-         .be_a_i    ( 4'b1111         ),	// Always want 32-bits
+         .be_a_i    ( 4'b1111         ), // Always want 32-bits
 
          .en_b_i    ( ram_data_req    ),
          .addr_b_i  ( ram_data_addr   ),

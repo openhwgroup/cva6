@@ -61,9 +61,8 @@ module riscv_gnt_stall
 logic req_core_i_q;
 logic grant_core_o_q;
 
-int grant_delay_cnt;
-
-int delay_value;
+int   grant_delay_cnt;
+int   delay_value;
 
 // -----------------------------------------------------------------------------------------------
 // Tasks and functions
