@@ -44,3 +44,4 @@ vsim.dbg
 transcript
 .lib-rtl
 .opt-rtl
+/.pydevproject

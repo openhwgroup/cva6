@@ -35,7 +35,7 @@ class uvma_obi_slv_a_mon_trn_logger_c extends uvml_logs_mon_trn_logger_c#(
    /**
     * Writes contents of t to disk
     */
-   extern virtual function void write(uvma_obi_mon_trn_c t);
+   extern virtual function void write(uvma_obi_slv_a_mon_trn_c t);
    
    /**
     * Writes log header to disk
