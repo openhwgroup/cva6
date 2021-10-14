@@ -34,8 +34,9 @@ Original Author: Shay Gal-on
 // SPDX-License-Identifier:Apache-2.0 WITH SHL-2.0
 
 #include "coremark.h"
+#include "corev_uvmt.h"
 
-#define TICKS_ADDR 0x15001004
+#define TICKS_ADDR (CV_VP_CYCLE_COUNTER_BASE)
 
 ee_u32 default_num_contexts = 1;
 

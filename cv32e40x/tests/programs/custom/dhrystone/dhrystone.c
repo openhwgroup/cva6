@@ -16,6 +16,7 @@
  */
 #include "stdio.h"
 #include <stdlib.h>
+#include "corev_uvmt.h"
 
 /*
  ****************************************************************************
@@ -366,8 +367,8 @@
 /* Compiler and system dependent definitions: */
 
 // mm_ram cycle counter address
-#define TICKS_ADDR (*((volatile uint32_t*)0x15001004))
-#define TICKS_PRINT_ADDR (*((volatile uint32_t*)0x15001008))
+#define TICKS_ADDR (*((volatile uint32_t*)      (CV_VP_CYCLE_COUNTER_BASE + 0)))
+#define TICKS_PRINT_ADDR (*((volatile uint32_t*)(CV_VP_CYCLE_COUNTER_BASE + 4)))
 
 #define Mic_secs_Per_Second     1000000.0
                 /* Berkeley UNIX C returns process times in seconds/HZ */

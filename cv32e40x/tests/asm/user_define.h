@@ -1,7 +1,7 @@
 # Google UVM Generated Test
 # Extracted from riscv_compliance_tests/riscv_test.h
-.set print_port, 0x10000000
-.set test_ret_val, 0x20000000
+.set print_port,   0x00800000
+.set test_ret_val, 0x008000c0
 .section .data
 .global test_results
 test_results:
@@ -23,7 +23,7 @@ test_results:
 #                  sw a4,0(a0)
 #                  sw a5,0(a0)
 #
-#                  li a0, test_ret_val
+#                  li a0, CV_VP_STATUS_FLAGS_OFFSET
 #                  lw a1, test_results /* report result */
 #                  sw a1,0(a0)
 #

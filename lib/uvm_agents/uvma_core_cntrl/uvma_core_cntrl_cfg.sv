@@ -173,10 +173,6 @@
       soft trn_log_enabled        == 1;
    }
 
-   constraint scoreboard_cons {
-      (!use_iss) -> (scoreboarding_enabled == 0);
-   }
-
    constraint addr_xlen_align_cons {
       if (xlen == MXL_32) {
          boot_addr[MAX_XLEN-1:32]         == '0;

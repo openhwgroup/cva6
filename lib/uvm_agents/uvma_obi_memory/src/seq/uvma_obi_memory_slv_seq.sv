@@ -1,20 +1,20 @@
-// 
+//
 // Copyright 2021 OpenHW Group
 // Copyright 2021 Datum Technology Corporation
 // SPDX-License-Identifier: Apache-2.0 WITH SHL-2.1
-// 
+//
 // Licensed under the Solderpad Hardware License v 2.1 (the "License"); you may
 // not use this file except in compliance with the License, or, at your option,
 // the Apache License version 2.0. You may obtain a copy of the License at
-// 
+//
 //     https://solderpad.org/licenses/SHL-2.1/
-// 
+//
 // Unless required by applicable law or agreed to in writing, any work
 // distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
 // WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 // License for the specific language governing permissions and limitations
 // under the License.
-// 
+//
 
 
 `ifndef __UVMA_OBI_MEMORY_SLV_SEQ_SV__
@@ -26,16 +26,16 @@
  * TODO Move most of the functionality to a cv32e env base class.
  */
 class uvma_obi_memory_slv_seq_c extends uvma_obi_memory_slv_base_seq_c;
-           
+
    // Queue of virtual peripheral sequences to spawn when this sequence is spawned
    uvma_obi_memory_vp_base_seq_c vp_seq_q[$];
 
    // Lookup table to trigger sequences when bus address is detected
    uvma_obi_memory_vp_base_seq_c vp_seq_table[bit[31:0]];
-   
+
    `uvm_object_utils_begin(uvma_obi_memory_slv_seq_c)
-   `uvm_object_utils_end   
-      
+   `uvm_object_utils_end
+
    /**
     * Default constructor.
     */
@@ -44,8 +44,8 @@ class uvma_obi_memory_slv_seq_c extends uvma_obi_memory_slv_base_seq_c;
    /**
     * Register sequences with a range of addresses on this OBI
     */
-   extern virtual function uvma_obi_memory_vp_base_seq_c register_vp_vseq(string name, 
-                                                                          bit[31:0] start_address,                                                                           
+   extern virtual function uvma_obi_memory_vp_base_seq_c register_vp_vseq(string name,
+                                                                          bit[31:0] start_address,
                                                                           uvm_object_wrapper seq_type);
 
    /**
@@ -62,61 +62,61 @@ class uvma_obi_memory_slv_seq_c extends uvma_obi_memory_slv_base_seq_c;
     * TODO Describe uvma_obi_memory_slv_seq_c::do_response()
     */
    extern virtual task do_response(ref uvma_obi_memory_mon_trn_c mon_req);
-   
+
    /**
     * TODO Describe uvma_obi_memory_slv_seq_c::do_mem_operation()
     */
-   extern virtual task do_mem_operation(ref uvma_obi_memory_mon_trn_c mon_req);   
+   extern virtual task do_mem_operation(ref uvma_obi_memory_mon_trn_c mon_req);
 
 endclass : uvma_obi_memory_slv_seq_c
 
 
 function uvma_obi_memory_slv_seq_c::new(string name="uvma_obi_memory_slv_seq");
-   
+
    super.new(name);
    void'(this.randomize());
-   
+
 endfunction : new
 
 task uvma_obi_memory_slv_seq_c::body();
-   
+
    uvma_obi_memory_mon_trn_c  mon_trn;
-   
+
    // Start the virtual peripheral sequences
    spawn_vp_sequences();
 
    fork
-      begin         
+      begin
          forever begin
             // Wait for the monitor to send us the mstr's "req" with an access request
             p_sequencer.mon_trn_fifo.get(mon_trn);
-            `uvm_info("SLV_SEQ", $sformatf("Got mon_trn:\n%s", mon_trn.sprint()), UVM_DEBUG)            
+            `uvm_info("SLV_SEQ", $sformatf("Got mon_trn:\n%s", mon_trn.sprint()), UVM_DEBUG)
             do_response(mon_trn);
          end
       end
-      
+
    join_none
-   
+
 endtask : body
 
 
 task uvma_obi_memory_slv_seq_c::do_response(ref uvma_obi_memory_mon_trn_c mon_req);
-   
+
    bit  err_req;
    bit  err_siz;
-   
+
    `uvm_info("SLV_SEQ", $sformatf("mon_req.address before data_addr_dec remap: x%h", mon_req.address), UVM_HIGH/*NONE*/)
-   
-   // Check the virtual peripheral address hash table to see if transaction should be sent to a virtual peripheral   
+
+   // Check the virtual peripheral address hash table to see if transaction should be sent to a virtual peripheral
    if (vp_seq_table.exists(mon_req.address)) begin
       vp_seq_table[mon_req.address].mon_trn_q.push_back(mon_req);
       return;
    end
 
-   // If we fell through, then handle the transaction locally   
+   // If we fell through, then handle the transaction locally
    `uvm_info("SLV_SEQ", $sformatf("VP not handled: x%h", mon_req.address), UVM_HIGH)
    err_req  = mon_req.err;
-   if (err_req) `uvm_info("SLV_SEQ", $sformatf("ERROR1: mon_req.err=%0b", mon_req.err), UVM_HIGH/*NONE*/)   
+   if (err_req) `uvm_info("SLV_SEQ", $sformatf("ERROR1: mon_req.err=%0b", mon_req.err), UVM_HIGH/*NONE*/)
    err_siz = 0;
    if (err_siz) `uvm_info("SLV_SEQ", $sformatf("ERROR2: mon_req.address=%0h", mon_req.address), UVM_HIGH/*NONE*/)
 
@@ -138,7 +138,7 @@ task uvma_obi_memory_slv_seq_c::do_response(ref uvma_obi_memory_mon_trn_c mon_re
       slv_rsp.set_sequencer(p_sequencer);
       `uvm_send(slv_rsp)
    end
-   
+
 endtask : do_response
 
 task uvma_obi_memory_slv_seq_c::do_mem_operation(ref uvma_obi_memory_mon_trn_c mon_req);
@@ -165,15 +165,15 @@ task uvma_obi_memory_slv_seq_c::do_mem_operation(ref uvma_obi_memory_mon_trn_c m
       if (mon_req.be[1]) slv_rsp.rdata[15:08] = cntxt.mem.read(word_aligned_addr+1);
       if (mon_req.be[0]) slv_rsp.rdata[07:00] = cntxt.mem.read(word_aligned_addr+0);
    end
-   
+
    add_r_fields(mon_req, slv_rsp);
    slv_rsp.set_sequencer(p_sequencer);
    `uvm_send(slv_rsp)
 
 endtask : do_mem_operation
 
-function uvma_obi_memory_vp_base_seq_c uvma_obi_memory_slv_seq_c::register_vp_vseq(string name, 
-                                                                                   bit[31:0] start_address,                                                                                   
+function uvma_obi_memory_vp_base_seq_c uvma_obi_memory_slv_seq_c::register_vp_vseq(string name,
+                                                                                   bit[31:0] start_address,
                                                                                    uvm_object_wrapper seq_type);
 
    uvma_obi_memory_vp_base_seq_c vp_seq;
@@ -201,6 +201,7 @@ function uvma_obi_memory_vp_base_seq_c uvma_obi_memory_slv_seq_c::register_vp_vs
          `uvm_fatal("OBIVPVSEQ", $sformatf("address: 0x%08x, tried to register vp_vseq [%s], but vp_vseq [%s] already registered",
                                            addr, vp_seq.get_name(), vp_seq_table[addr].get_name()));
       end
+      `uvm_info("OBIVPSEQ", $sformatf("Virtual register: %s, addr: 0x%08x", vp_seq.get_full_name(), addr), UVM_LOW);
 
       vp_seq_table[addr] = vp_seq;
    end

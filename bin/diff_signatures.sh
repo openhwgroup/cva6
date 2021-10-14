@@ -3,19 +3,19 @@
 ###############################################################################
 #
 # Copyright 2020 OpenHW Group
-# 
+#
 # Licensed under the Solderpad Hardware Licence, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
-# 
+#
 #     https://solderpad.org/licenses/
-# 
+#
 # Unless required by applicable law or agreed to in writing, software
 # distributed under the License is distributed on an "AS IS" BASIS,
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-# 
+#
 # SPDX-License-Identifier: Apache-2.0 WITH SHL-2.0
 #
 ###############################################################################
@@ -30,7 +30,7 @@
 #                                  for a specific ISA (as defined by RISCV_ISA)
 #                                  and compares to signatures.
 #
-# ENV: this script needs the following shell environment variables - 
+# ENV: this script needs the following shell environment variables -
 #       SUITEDIR     : path to the compliance test-suite
 #       SIG_ROOT     : path to the signature files
 #       REF          : path to reference file (part of the compliance test-suite)
@@ -51,13 +51,13 @@ declare -i status=0
 
 diff_files() {
     # Ensure both files exist
-    if [ ! -f $1 ]; then 
+    if [ ! -f $1 ]; then
         ref_base=$(basename $1)
         ref_stub=${sig_base//".reference_output"/}
         echo "Reference file for ${ref_base} does not exist ... ERROR!"
         ERROR=$((${ERROR} + 1))
     else
-        if [ ! -f $2 ]; then 
+        if [ ! -f $2 ]; then
             sig_base=$(basename $2)
             sig_stub=${sig_base//".reference_output"/}
             echo "Signature file for ${sig_stub} does not exist ... IGNORE"
@@ -67,9 +67,9 @@ diff_files() {
             sig_stub=${sig_base//".reference_output"/}
             echo -n "Check $(printf %24s ${sig_stub})"
             RUN=$((${RUN} + 1))
-    
+
             diff --ignore-case --strip-trailing-cr $1 $2 #&> /dev/null
-    
+
             if [ $? == 0 ]; then
                 echo " ... OK"
                 OK=$((${OK} + 1))
@@ -108,12 +108,12 @@ if [[ $1 = "" ]]; then
     print_summary
 else
     for ref in ${SUITEDIR}/references/*.reference_output;
-    do 
+    do
         #echo "ref = ${ref}"
         base=$(basename ${ref})
         stub=${base//".reference_output"/}
-        sig=${SIG_ROOT}/${stub}_${RUN_INDEX}/${stub}.signature_output
-    
+        sig=${SIG_ROOT}/${stub}/${RUN_INDEX}/${stub}.signature_output
+
         diff_files ${ref} ${sig}
     done
 

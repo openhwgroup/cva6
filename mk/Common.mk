@@ -163,6 +163,21 @@ endif
 # DPI_DASM Spike repo var end
 
 ###############################################################################
+# Generate command to clone Verilab SVLIB
+ifeq ($(SVLIB_BRANCH), master)
+  TMP8 = git clone $(SVLIB_REPO) --recurse $(SVLIB_PKG)
+else
+  TMP8 = git clone -b $(SVLIB_BRANCH) --single-branch $(SVLIB_REPO) --recurse $(SVLIB_PKG)
+endif
+
+ifeq ($(SVLIB_HASH), head)
+  CLONE_SVLIB_CMD = $(TMP8)
+else
+  CLONE_SVLIB_CMD = $(TMP8); cd $(SVLIB_PKG); git checkout $(SVLIB_HASH)
+endif
+# SVLIB repo var end
+
+###############################################################################
 # Imperas Instruction Set Simulator
 
 DV_OVPM_HOME    = $(CORE_V_VERIF)/vendor_lib/imperas
@@ -243,15 +258,10 @@ ASM_DIR   ?= $(ASM)
 #
 # Note that the DSIM targets allow for writing the log-files to arbitrary
 # locations, so all of these paths are absolute, except those used by Verilator.
-# TODO: clean this mess up!
 CORE_TEST_DIR                        = $(CORE_V_VERIF)/$(CV_CORE_LC)/tests/programs
 BSP                                  = $(CORE_V_VERIF)/$(CV_CORE_LC)/bsp
 FIRMWARE                             = $(CORE_TEST_DIR)/firmware
 VERI_FIRMWARE                        = ../../tests/core/firmware
-CUSTOM                               = $(CORE_TEST_DIR)/custom
-CUSTOM_DIR                          ?= $(CUSTOM)
-CUSTOM_PROG                         ?= my_hello_world
-VERI_CUSTOM                          = ../../tests/programs/custom
 ASM_PROG                            ?= my_hello_world
 CV32_RISCV_TESTS_FIRMWARE            = $(CORE_TEST_DIR)/cv32_riscv_tests_firmware
 CV32_RISCV_COMPLIANCE_TESTS_FIRMWARE = $(CORE_TEST_DIR)/cv32_riscv_compliance_tests_firmware
@@ -346,7 +356,7 @@ endif
 # If a test target is defined and a CFG is defined that read in build configuration file
 # CFG is optional
 CFGYAML2MAKE = $(CORE_V_VERIF)/bin/cfgyaml2make
-CFG_YAML_PARSE_TARGETS=comp test hex clean_hex
+CFG_YAML_PARSE_TARGETS=comp ldgen comp_corev-dv gen_corev-dv test hex clean_hex corev-dv
 ifneq ($(filter $(CFG_YAML_PARSE_TARGETS),$(MAKECMDGOALS)),)
 ifneq ($(CFG),)
 CFG_FLAGS_MAKE := $(shell $(CFGYAML2MAKE) --yaml=$(CFG).yaml $(YAML2MAKE_DEBUG) --prefix=CFG --core=$(CV_CORE))
@@ -364,7 +374,6 @@ endif
 
 ###############################################################################
 # Rule to generate hex (loadable by simulators) from elf
-# Relocate debugger to last 16KB of mm_ram
 #    $@ is the file being generated.
 #    $< is first prerequiste.
 #    $^ is all prerequistes.
@@ -398,7 +407,7 @@ endif
 # For directed tests, TEST_FILES gathers all of the .S and .c files in a test directory
 # For corev_ tests, TEST_FILES will only point to the specific .S for the RUN_INDEX and TEST_NAME provided to make
 ifeq ($(shell echo $(TEST) | head -c 6),corev_)
-TEST_FILES        = $(filter %.c %.S,$(wildcard  $(TEST_TEST_DIR)/$(TEST_NAME)$(OPT_RUN_INDEX_SUFFIX).S))
+TEST_FILES        = $(filter %.c %.S,$(wildcard  $(SIM_TEST_PROGRAM_RESULTS)/$(TEST_NAME)$(OPT_RUN_INDEX_SUFFIX).S))
 else
 TEST_FILES        = $(filter %.c %.S,$(wildcard  $(TEST_TEST_DIR)/*))
 endif
@@ -411,7 +420,24 @@ else
 TEST_CFLAGS += $(CFLAGS)
 endif
 
+# Optionally use linker script provided in test directory
+# this must be evaluated at access time, so ifeq/ifneq does
+# not get parsed correctly
+TEST_LD 	= $(addprefix $(SIM_TEST_PROGRAM_RESULTS)/, link.ld)
+LD_LIBRARY 	= $(if $(wildcard $(TEST_LD)),-L $(SIM_TEST_PROGRAM_RESULTS),)
+LD_FILE 	= $(if $(wildcard $(TEST_LD)),$(TEST_LD),$(BSP)/link.ld)
+LD_LIBRARY += -L $(SIM_BSP_RESULTS)
+
+ifeq ($(TEST_FIXED_ELF),1)
+%.elf:
+	@echo "$(BANNER)"
+	@echo "* Copying fixed ELF test program to $(@)"
+	@echo "$(BANNER)"
+	mkdir -p $(SIM_TEST_PROGRAM_RESULTS)
+	cp $(TEST_TEST_DIR)/$(TEST).elf $@
+else
 %.elf: $(TEST_FILES)
+	mkdir -p $(SIM_TEST_PROGRAM_RESULTS)
 	make bsp
 	@echo "$(BANNER)"
 	@echo "* Compiling test-program $(@)"
@@ -419,28 +445,34 @@ endif
 	$(RISCV_EXE_PREFIX)gcc $(CFG_CFLAGS) \
 		$(TEST_CFLAGS) \
 		-I $(ASM) \
+		-I $(BSP) \
 		-o $@ \
 		-nostartfiles \
 		$(TEST_FILES) \
-		-T $(BSP)/link.ld \
-		-L $(BSP) \
+		-T $(LD_FILE) \
+		$(LD_LIBRARY) \
 		-lcv-verif
+endif
 
-.PHONY: hex clean_hex
+.PHONY: hex
+
 # Shorthand target to only build the firmware using the hex and elf suffix rules above
-hex: $(TEST_TEST_DIR)/$(TEST_NAME)$(OPT_RUN_INDEX_SUFFIX).hex
+hex: $(SIM_TEST_PROGRAM_RESULTS)/$(TEST_PROGRAM)$(OPT_RUN_INDEX_SUFFIX).hex
 
 bsp:
 	@echo "$(BANNER)"
 	@echo "* Compiling BSP"
 	@echo "$(BANNER)"
-	make -C $(BSP) RISCV=$(RISCV) RISCV_PREFIX=$(RISCV_PREFIX) RISCV_EXE_PREFIX=$(RISCV_EXE_PREFIX) RISCV_MARCH=$(RISCV_MARCH)
+	mkdir -p $(SIM_BSP_RESULTS)
+	cp $(BSP)/Makefile $(SIM_BSP_RESULTS)
+	make -C $(SIM_BSP_RESULTS) VPATH=$(BSP) RISCV=$(RISCV) RISCV_PREFIX=$(RISCV_PREFIX) RISCV_EXE_PREFIX=$(RISCV_EXE_PREFIX) RISCV_MARCH=$(RISCV_MARCH) all
 
 vars_bsp:
 	make vars -C $(BSP) RISCV=$(RISCV) RISCV_PREFIX=$(RISCV_PREFIX) RISCV_EXE_PREFIX=$(RISCV_EXE_PREFIX) RISCV_MARCH=$(RISCV_MARCH)
 
-clean-bsp:
-	make clean -C $(BSP)
+clean_bsp:
+	make -C $(BSP) clean
+	rm -rf $(SIM_BSP_RESULTS)
 
 
 # compile and dump RISCV_TESTS only
@@ -607,10 +639,15 @@ dpi_dasm: $(DPI_DASM_SPIKE_PKG)
 	$(DPI_DASM_CXX) $(DPI_DASM_CFLAGS) $(DPI_DASM_INC) $(DPI_DASM_SRC) -o $(DPI_DASM_LIB)
 
 ###############################################################################
-# house-cleaning for unit-testing
-custom-clean:
-	rm -rf $(CUSTOM)/hello_world.elf $(CUSTOM)/hello_world.hex
+# Build SVLIB DPI
 
+SVLIB_SRC    = $(SVLIB_PKG)/svlib/src/dpi/svlib_dpi.c
+SVLIB_CFLAGS = -shared -fPIC
+SVLIB_LIB    = $(SVLIB_PKG)/../svlib_dpi.so
+SVLIB_CXX    = gcc
+
+svlib: $(SVLIB_PKG)
+	$(SVLIB_CXX) $(SVLIB_CFLAGS) $(SVLIB) $(SVLIB_SRC) -I$(DPI_INCLUDE) -o $(SVLIB_LIB)
 
 .PHONY: firmware-clean
 firmware-clean:

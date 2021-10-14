@@ -16,17 +16,18 @@
 // SPDX-License-Identifier: Apache-2.0 WITH SHL-2.0
 
 
-class uvma_isacov_mon_trn_c extends uvml_trn_mon_trn_c;
+class uvma_isacov_mon_trn_c#(int ILEN=DEFAULT_ILEN,
+                             int XLEN=DEFAULT_XLEN) extends uvml_trn_mon_trn_c;
 
-  `uvm_object_utils(uvma_isacov_mon_trn_c)
+  `uvm_object_param_utils(uvma_isacov_mon_trn_c)
 
-  uvma_isacov_instr_c instr;
+  uvma_isacov_instr_c#(ILEN, XLEN) instr;
 
   extern function new(string name = "uvma_isacov_mon_trn");
 
   extern function string convert2string();
-endclass : uvma_isacov_mon_trn_c
 
+endclass : uvma_isacov_mon_trn_c
 
 function uvma_isacov_mon_trn_c::new(string name = "uvma_isacov_mon_trn");
 
@@ -35,5 +36,7 @@ function uvma_isacov_mon_trn_c::new(string name = "uvma_isacov_mon_trn");
 endfunction : new
 
 function string uvma_isacov_mon_trn_c::convert2string();
+
   return instr.convert2string();
+
 endfunction : convert2string

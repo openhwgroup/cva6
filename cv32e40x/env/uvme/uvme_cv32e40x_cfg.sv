@@ -41,6 +41,7 @@ class uvme_cv32e40x_cfg_c extends uvma_core_cntrl_cfg_c;
    rand uvma_fencei_cfg_c           fencei_cfg;
    rand uvma_rvfi_cfg_c#(ILEN,XLEN) rvfi_cfg;
    rand uvma_rvvi_cfg_c#(ILEN,XLEN) rvvi_cfg;
+   rand uvma_pma_cfg_c#(ILEN,XLEN)  pma_cfg;
 
    `uvm_object_utils_begin(uvme_cv32e40x_cfg_c)
       `uvm_field_int (                         enabled                     , UVM_DEFAULT          )
@@ -61,6 +62,7 @@ class uvme_cv32e40x_cfg_c extends uvma_core_cntrl_cfg_c;
       `uvm_field_object(rvfi_cfg             , UVM_DEFAULT)
       `uvm_field_object(rvvi_cfg             , UVM_DEFAULT)
       `uvm_field_object(fencei_cfg           , UVM_DEFAULT)
+      `uvm_field_object(pma_cfg              , UVM_DEFAULT)
    `uvm_object_utils_end
 
    constraint defaults_cons {
@@ -184,7 +186,12 @@ class uvme_cv32e40x_cfg_c extends uvma_core_cntrl_cfg_c;
       isacov_cfg.reg_hazards_enabled        == 1;
 
       rvfi_cfg.nret == uvme_cv32e40x_pkg::RVFI_NRET;
-      rvfi_cfg.nmi_handler_enabled        == 0; // FIXME:strichmo:implement when NMI implemented in e40x
+      rvfi_cfg.nmi_handler_enabled         == 1;
+
+      rvvi_cfg.store_fault_nmi_index       == cv32e40x_pkg::INT_CAUSE_LSU_STORE_FAULT;
+      rvvi_cfg.store_fault_nmi_index_valid == 1;
+      rvvi_cfg.load_fault_nmi_index        == cv32e40x_pkg::INT_CAUSE_LSU_LOAD_FAULT;
+      rvvi_cfg.load_fault_nmi_index_valid  == 1;
 
       if (is_active == UVM_ACTIVE) {
          isacov_cfg.is_active           == UVM_PASSIVE;
@@ -200,7 +207,6 @@ class uvme_cv32e40x_cfg_c extends uvma_core_cntrl_cfg_c;
 
       if (trn_log_enabled) {
          // Setting a reasonable set of logs
-         isacov_cfg.trn_log_enabled            == 0;
          clknrst_cfg.trn_log_enabled           == 0;
          interrupt_cfg.trn_log_enabled         == 0;
          debug_cfg.trn_log_enabled             == 0;
@@ -224,8 +230,13 @@ class uvme_cv32e40x_cfg_c extends uvma_core_cntrl_cfg_c;
       if (cov_model_enabled) {
          isacov_cfg.cov_model_enabled            == 1;
          debug_cfg.cov_model_enabled             == 1;
+         pma_cfg.cov_model_enabled               == 1;
          obi_memory_instr_cfg.cov_model_enabled  == 1;
          obi_memory_data_cfg.cov_model_enabled   == 1;
+      }
+
+      if (!scoreboarding_enabled) {
+         pma_cfg.scoreboard_enabled == 0;
       }
    }
 
@@ -306,6 +317,7 @@ function uvme_cv32e40x_cfg_c::new(string name="uvme_cv32e40x_cfg");
    rvfi_cfg = uvma_rvfi_cfg_c#(ILEN,XLEN)::type_id::create("rvfi_cfg");
    rvvi_cfg = uvma_rvvi_ovpsim_cfg_c#(ILEN,XLEN)::type_id::create("rvvi_cfg");
    fencei_cfg = uvma_fencei_cfg_c::type_id::create("fencei_cfg");
+   pma_cfg = uvma_pma_cfg_c#(ILEN,XLEN)::type_id::create("pma_cfg");
 
    obi_memory_instr_cfg.mon_logger_name = "OBII";
    obi_memory_data_cfg.mon_logger_name  = "OBID";
@@ -329,8 +341,7 @@ function void uvme_cv32e40x_cfg_c::post_randomize();
    rvfi_cfg.instr_name[0] = "INSTR";
 
    // Set volatile locations for virtual peripherals
-   rvvi_cfg.add_volatile_mem_addr_range(32'h1500_1000, 32'h1500_1007);
-   rvvi_cfg.add_volatile_mem_addr_range(32'h1600_0000, 32'h1600_0fff);
+   rvvi_cfg.add_volatile_mem_addr_range(CV_VP_REGISTER_BASE, CV_VP_REGISTER_BASE + CV_VP_REGISTER_SIZE - 1);
 
    // Disable some CSR checks from all tests
    configure_disable_csr_checks();
@@ -358,6 +369,11 @@ function void uvme_cv32e40x_cfg_c::sample_parameters(uvma_core_cntrl_cntxt_c cnt
       pma_regions[i].cacheable      = e40x_cntxt.core_cntrl_vif.pma_cfg[i].cacheable;
       pma_regions[i].atomic         = e40x_cntxt.core_cntrl_vif.pma_cfg[i].atomic;
    end
+
+   // Copy to the pma_configuration
+   pma_cfg.regions = new[pma_regions.size()];
+   foreach (pma_cfg.regions[i])
+      pma_cfg.regions[i] = pma_regions[i];
 
 endfunction : sample_parameters
 

@@ -46,7 +46,7 @@ module uvmt_cv32e40x_dut_wrap
     parameter NUM_MHPMCOUNTERS    =  1,
     parameter cv32e40x_pkg::b_ext_e B_EXT  = cv32e40x_pkg::NONE,
     parameter int          PMA_NUM_REGIONS =  0,
-    parameter pma_region_t PMA_CFG[PMA_NUM_REGIONS -1 : 0] = '{default:PMA_R_DEFAULT},
+    parameter pma_region_t PMA_CFG[PMA_NUM_REGIONS-1 : 0] = '{default:PMA_R_DEFAULT},
     // Remaining parameters are used by TB components only
               INSTR_ADDR_WIDTH    =  32,
               INSTR_RDATA_WIDTH   =  32,
@@ -82,12 +82,16 @@ module uvmt_cv32e40x_dut_wrap
     logic [31:0]                  data_wdata;
 
     logic [31:0]                  irq;
-    logic                         irq_ack;
-    logic [ 4:0]                  irq_id;
 
     logic                         debug_havereset;
     logic                         debug_running;
     logic                         debug_halted;
+
+    // eXtension interface
+    // todo: Connect to TB when implemented.
+    // Included to allow core-v-verif to compile with RTL including
+    // interface definition.
+    if_xif xif();
 
     assign debug_if.clk      = clknrst_if.clk;
     assign debug_if.reset_n  = clknrst_if.reset_n;
@@ -122,8 +126,8 @@ module uvmt_cv32e40x_dut_wrap
     // Connect to uvma_interrupt_if
     assign interrupt_if.clk                     = clknrst_if.clk;
     assign interrupt_if.reset_n                 = clknrst_if.reset_n;
-    assign interrupt_if.irq_id                  = irq_id;
-    assign interrupt_if.irq_ack                 = irq_ack;
+    assign interrupt_if.irq_id                  = cv32e40x_wrapper_i.core_i.irq_id;
+    assign interrupt_if.irq_ack                 = cv32e40x_wrapper_i.core_i.irq_ack;
 
     // --------------------------------------------
     // Connect to core_cntrl_if
@@ -188,9 +192,14 @@ module uvmt_cv32e40x_dut_wrap
          .data_err_i             ( obi_data_if_i.err              ),
          .data_exokay_i          ( obi_data_if_i.exokay           ),
 
+         .xif_compressed_if      ( xif.cpu_compressed             ),
+         .xif_issue_if           ( xif.cpu_issue                  ),
+         .xif_commit_if          ( xif.cpu_commit                 ),
+         .xif_mem_if             ( xif.cpu_mem                    ),
+         .xif_mem_result_if      ( xif.cpu_mem_result             ),
+         .xif_result_if          ( xif.cpu_result                 ),
+
          .irq_i                  ( interrupt_if.irq               ),
-         .irq_ack_o              ( irq_ack                        ),
-         .irq_id_o               ( irq_id                         ),
 
          .fencei_flush_req_o     ( fencei_if_i.flush_req          ),
          .fencei_flush_ack_i     ( fencei_if_i.flush_ack          ),
