@@ -21,6 +21,7 @@
 // Forward decls
 typedef class uvme_cv32e40p_vp_debug_control_seq_c;
 typedef class uvme_cv32e40p_vp_interrupt_timer_seq_c;
+typedef class uvme_cv32e40p_vp_sig_writer_seq_c;
 typedef class uvme_cv32e40p_vp_status_flags_seq_c;
 typedef class uvme_cv32e40p_vp_rand_num_seq_c;
 
@@ -241,7 +242,6 @@ task uvme_cv32e40p_env_c::run_phase(uvm_phase phase);
 
             // Install the virtual peripheral registers
             void'(data_slv_seq.register_vp_vseq("vp_virtual_printer", 32'h1000_0000, uvma_obi_memory_vp_virtual_printer_seq_c::get_type()));
-            void'(data_slv_seq.register_vp_vseq("vp_sig_writer", 32'h2000_0008, uvma_obi_memory_vp_sig_writer_seq_c::get_type()));
             void'(data_slv_seq.register_vp_vseq("vp_cycle_counter", 32'h1500_1004, uvma_obi_memory_vp_cycle_counter_seq_c::get_type()));
 
             // FIXME:strichmo:When RVVI/RVFI ported, the core-specific random number sequence is no longer needed
@@ -251,6 +251,14 @@ task uvme_cv32e40p_env_c::run_phase(uvm_phase phase);
                uvme_cv32e40p_vp_rand_num_seq_c vp_seq;
                if (!$cast(vp_seq, data_slv_seq.register_vp_vseq("vp_rand_num", 32'h1500_1000, uvme_cv32e40p_vp_rand_num_seq_c::get_type()))) begin
                   `uvm_fatal("CV32E40PVPSEQ", $sformatf("Could not cast vp_rand_num correctly"));
+               end
+               vp_seq.cv32e40p_cntxt = cntxt;
+            end
+
+            begin
+               uvme_cv32e40p_vp_sig_writer_seq_c vp_seq;
+               if (!$cast(vp_seq, data_slv_seq.register_vp_vseq("vp_sig_writer", 32'h2000_0008, uvme_cv32e40p_vp_sig_writer_seq_c::get_type()))) begin
+                  `uvm_fatal("CV32E40PVPSEQ", $sformatf("Could not cast vp_sig_writes correctly"));
                end
                vp_seq.cv32e40p_cntxt = cntxt;
             end

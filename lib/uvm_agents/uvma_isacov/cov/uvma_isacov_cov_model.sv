@@ -301,7 +301,7 @@ covergroup cg_rtype_lr_w(
     ignore_bins NON_ZERO_OFF = {NON_ZERO} with (rd_is_signed);
   }
 
-  cp_align_word: coverpoint (instr.mem_addr[1:0]) {
+  cp_align_word: coverpoint (instr.rvfi.mem_addr[1:0]) {
     bins ALIGNED     = {0};
     bins UNALIGNED[] = {[1:3]};
   }
@@ -355,7 +355,7 @@ covergroup cg_rtype_sc_w (
 
   cross_rs1_rs2_value: cross cp_rs1_value, cp_rs2_value;
 
-  cp_align_word: coverpoint (instr.mem_addr[1:0]) {
+  cp_align_word: coverpoint (instr.rvfi.mem_addr[1:0]) {
     bins ALIGNED     = {0};
     bins UNALIGNED[] = {[1:3]};
   }
@@ -403,7 +403,7 @@ covergroup cg_rtype_amo (
     ignore_bins NON_ZERO_OFF = {NON_ZERO} with (rs1_is_signed);
   }
 
-  cp_align_word: coverpoint (instr.mem_addr[1:0]) {
+  cp_align_word: coverpoint (instr.rvfi.mem_addr[1:0]) {
     bins ALIGNED     = {0};
     bins UNALIGNED[] = {[1:3]};
   }
@@ -645,13 +645,13 @@ covergroup cg_itype_load (
   `ISACOV_CP_BITWISE_11_0(cp_imm1_toggle, instr.immi, 1)
   `ISACOV_CP_BITWISE(cp_rd_toggle,   instr.rd_value,  1)
 
-  cp_align_halfword: coverpoint (instr.mem_addr[0]) {
+  cp_align_halfword: coverpoint (instr.rvfi.mem_addr[0]) {
     ignore_bins IGN_OFF = {[0:$]} with (!align_halfword);
     bins ALIGNED  = {0};
     bins UNALIGNED = {1};
   }
 
-  cp_align_word: coverpoint (instr.mem_addr[1:0]) {
+  cp_align_word: coverpoint (instr.rvfi.mem_addr[1:0]) {
     ignore_bins IGN_OFF = {[0:$]} with (!align_word);
     bins ALIGNED     = {0};
     bins UNALIGNED[] = {[1:3]};
@@ -781,13 +781,13 @@ covergroup cg_stype(
   `ISACOV_CP_BITWISE(cp_rs2_toggle, instr.rs2_value, 1)
   `ISACOV_CP_BITWISE_11_0(cp_imms_toggle, instr.imms, 1)
 
-  cp_align_halfword: coverpoint (instr.mem_addr[0]) {
+  cp_align_halfword: coverpoint (instr.rvfi.mem_addr[0]) {
     ignore_bins IGN_OFF = {[0:$]} with (!align_halfword);
     bins ALIGNED  = {0};
     bins UNALIGNED = {1};
   }
 
-  cp_align_word: coverpoint (instr.mem_addr[1:0]) {
+  cp_align_word: coverpoint (instr.rvfi.mem_addr[1:0]) {
     ignore_bins IGN_OFF = {[0:$]} with (!align_word);
     bins ALIGNED     = {0};
     bins UNALIGNED[] = {[1:3]};
@@ -2369,7 +2369,7 @@ function void uvma_isacov_cov_model_c::sample (uvma_isacov_instr_c instr);
 
   logic have_sampled = 0;
 
-  if (!have_sampled && cfg.core_cfg.ext_i_supported) begin
+  if (!have_sampled && !instr.trap && cfg.core_cfg.ext_i_supported) begin
     have_sampled = 1;
     case (instr.name)
       LUI:   rv32i_lui_cg.sample(instr);
@@ -2425,7 +2425,7 @@ function void uvma_isacov_cov_model_c::sample (uvma_isacov_instr_c instr);
     endcase
   end
 
-  if (!have_sampled && cfg.core_cfg.ext_m_supported) begin
+  if (!have_sampled && !instr.trap && cfg.core_cfg.ext_m_supported) begin
     have_sampled = 1;
     case (instr.name)
       MUL:     rv32m_mul_cg.sample(instr);
@@ -2453,7 +2453,7 @@ function void uvma_isacov_cov_model_c::sample (uvma_isacov_instr_c instr);
     endcase
   end
 
-  if (!have_sampled && cfg.core_cfg.ext_c_supported) begin
+  if (!have_sampled && !instr.trap && cfg.core_cfg.ext_c_supported) begin
     have_sampled = 1;
     case (instr.name)
       C_ADDI:     rv32c_addi_cg.sample(instr);
@@ -2496,7 +2496,7 @@ function void uvma_isacov_cov_model_c::sample (uvma_isacov_instr_c instr);
     endcase
   end
 
-  if (!have_sampled && cfg.core_cfg.ext_zicsr_supported) begin
+  if (!have_sampled && !instr.trap && cfg.core_cfg.ext_zicsr_supported) begin
     have_sampled = 1;
     case (instr.name)
       CSRRW:   rv32zicsr_csrrw_cg.sample(instr);
@@ -2509,7 +2509,7 @@ function void uvma_isacov_cov_model_c::sample (uvma_isacov_instr_c instr);
     endcase
   end
 
-  if (!have_sampled && cfg.core_cfg.ext_zifencei_supported) begin
+  if (!have_sampled && !instr.trap && cfg.core_cfg.ext_zifencei_supported) begin
     have_sampled = 1;
     case (instr.name)
       FENCE_I: rv32zifencei_fence_i_cg.sample(instr);
@@ -2517,7 +2517,7 @@ function void uvma_isacov_cov_model_c::sample (uvma_isacov_instr_c instr);
     endcase
   end
 
-  if (!have_sampled && cfg.core_cfg.ext_a_supported) begin
+  if (!have_sampled && !instr.trap && cfg.core_cfg.ext_a_supported) begin
     have_sampled = 1;
     case (instr.name)
       LR_W:      rv32a_lr_w_cg.sample(instr);
@@ -2535,7 +2535,7 @@ function void uvma_isacov_cov_model_c::sample (uvma_isacov_instr_c instr);
     endcase
   end
 
-  if (!have_sampled && cfg.core_cfg.ext_zba_supported) begin
+  if (!have_sampled && !instr.trap && cfg.core_cfg.ext_zba_supported) begin
     have_sampled = 1;
     case (instr.name)
       SH1ADD:  rv32zba_sh1add_cg.sample(instr);
@@ -2545,8 +2545,7 @@ function void uvma_isacov_cov_model_c::sample (uvma_isacov_instr_c instr);
     endcase
   end
 
-
-  if (!have_sampled && cfg.core_cfg.ext_zbb_supported) begin
+  if (!have_sampled && !instr.trap && cfg.core_cfg.ext_zbb_supported) begin
     have_sampled = 1;
     case (instr.name)
       CLZ:     rv32zbb_clz_cg.sample(instr);
@@ -2571,7 +2570,7 @@ function void uvma_isacov_cov_model_c::sample (uvma_isacov_instr_c instr);
     endcase
   end
 
-  if (!have_sampled && cfg.core_cfg.ext_zbc_supported) begin
+  if (!have_sampled && !instr.trap && cfg.core_cfg.ext_zbc_supported) begin
     have_sampled = 1;
     case (instr.name)
       CLMUL:   rv32zbc_clmul_cg.sample(instr);
@@ -2581,7 +2580,7 @@ function void uvma_isacov_cov_model_c::sample (uvma_isacov_instr_c instr);
     endcase
   end
 
-  if (!have_sampled && cfg.core_cfg.ext_zbs_supported) begin
+  if (!have_sampled && !instr.trap && cfg.core_cfg.ext_zbs_supported) begin
     have_sampled = 1;
     case (instr.name)
       BSET:    rv32zbs_bset_cg.sample(instr);
@@ -2596,22 +2595,24 @@ function void uvma_isacov_cov_model_c::sample (uvma_isacov_instr_c instr);
     endcase
   end
 
-  if (!have_sampled) begin
+  if (!have_sampled && !instr.trap && instr.name != UNKNOWN) begin
     `uvm_error("ISACOV", $sformatf("Could not sample instruction: %s", instr.name.name()));
   end
 
-  rv32_seq_cg.sample(instr,
-                     instr_prev,
-                     instr_prev2,
-                     instr_prev3,
-                     .raw_hazard(is_raw_hazard(instr, instr_prev)),
-                     .csr_hazard(is_csr_hazard(instr, instr_prev))
-                     );
+  if (have_sampled) begin
+    rv32_seq_cg.sample(instr,
+                       instr_prev,
+                       instr_prev2,
+                       instr_prev3,
+                       .raw_hazard(is_raw_hazard(instr, instr_prev)),
+                       .csr_hazard(is_csr_hazard(instr, instr_prev))
+                       );
 
-  // Move instructions down the pipeline
-  instr_prev3 = instr_prev2;
-  instr_prev2 = instr_prev;
-  instr_prev  = instr;
+    // Move instructions down the pipeline
+    instr_prev3 = instr_prev2;
+    instr_prev2 = instr_prev;
+    instr_prev  = instr;
+  end
 
 endfunction : sample
 

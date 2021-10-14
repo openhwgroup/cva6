@@ -1,12 +1,12 @@
 // Copyright 2020 OpenHW Group
 // Copyright 2020 Datum Technology Corporation
-// 
+//
 // Licensed under the Solderpad Hardware Licence, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
-// 
+//
 //     https://solderpad.org/licenses/
-// 
+//
 // Unless required by applicable law or agreed to in writing, software
 // distributed under the License is distributed on an "AS IS" BASIS,
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -25,13 +25,14 @@ class uvma_rvfi_instr_seq_item_c#(int ILEN=DEFAULT_ILEN,
                                   int XLEN=DEFAULT_XLEN) extends uvml_trn_seq_item_c;
 
    rand int unsigned             nret_id;
+   rand bit [CYCLE_CNT_WL-1:0]   cycle_cnt;
    rand bit [ORDER_WL-1:0]       order;
    rand bit [ILEN-1:0]           insn;
    rand bit                      trap;
    rand bit                      halt;
    rand bit                      dbg_mode;
    rand bit [RVFI_DBG_WL-1:0]    dbg;
-   rand bit                      intr;   
+   rand bit                      intr;
    rand uvma_rvfi_mode           mode;
    rand bit [IXL_WL-1:0]         ixl;
 
@@ -46,16 +47,16 @@ class uvma_rvfi_instr_seq_item_c#(int ILEN=DEFAULT_ILEN,
    rand bit [XLEN-1:0]           rs1_rdata;
 
    rand bit [GPR_ADDR_WL-1:0]    rs2_addr;
-   rand bit [XLEN-1:0]           rs2_rdata;      
+   rand bit [XLEN-1:0]           rs2_rdata;
 
    rand bit [GPR_ADDR_WL-1:0]    rs3_addr;
-   rand bit [XLEN-1:0]           rs3_rdata;    
+   rand bit [XLEN-1:0]           rs3_rdata;
 
    rand bit [GPR_ADDR_WL-1:0]    rd1_addr;
-   rand bit [XLEN-1:0]           rd1_wdata;  
+   rand bit [XLEN-1:0]           rd1_wdata;
 
    rand bit [GPR_ADDR_WL-1:0]    rd2_addr;
-   rand bit [XLEN-1:0]           rd2_wdata;      
+   rand bit [XLEN-1:0]           rd2_wdata;
 
    rand bit [XLEN-1:0]           mem_addr;
    rand bit [XLEN-1:0]           mem_rdata;
@@ -68,13 +69,14 @@ class uvma_rvfi_instr_seq_item_c#(int ILEN=DEFAULT_ILEN,
    static protected string _log_format_string = "0x%08x %s 0x%01x 0x%08x";
 
    `uvm_object_param_utils_begin(uvma_rvfi_instr_seq_item_c)
+      `uvm_field_int(cycle_cnt, UVM_DEFAULT)
       `uvm_field_int(order, UVM_DEFAULT)
       `uvm_field_int(insn, UVM_DEFAULT)
       `uvm_field_int(trap, UVM_DEFAULT)
       `uvm_field_int(halt, UVM_DEFAULT)
       `uvm_field_int(dbg_mode, UVM_DEFAULT)
       `uvm_field_int(dbg, UVM_DEFAULT)
-      `uvm_field_int(intr, UVM_DEFAULT)      
+      `uvm_field_int(intr, UVM_DEFAULT)
       `uvm_field_enum(uvma_rvfi_mode, mode, UVM_DEFAULT)
       `uvm_field_int(ixl, UVM_DEFAULT)
       `uvm_field_int(pc_rdata, UVM_DEFAULT)
@@ -95,13 +97,13 @@ class uvma_rvfi_instr_seq_item_c#(int ILEN=DEFAULT_ILEN,
       `uvm_field_int(mem_wmask, UVM_DEFAULT)
       `uvm_field_int(mem_wdata, UVM_DEFAULT)
 
-      `uvm_field_int(insn_nmi, UVM_DEFAULT)      
+      `uvm_field_int(insn_nmi, UVM_DEFAULT)
       `uvm_field_int(insn_interrupt, UVM_DEFAULT)
       `uvm_field_int(insn_interrupt_id, UVM_DEFAULT)
 
-      `uvm_field_aa_object_string(csrs, UVM_DEFAULT)      
+      `uvm_field_aa_object_string(csrs, UVM_DEFAULT)
    `uvm_object_utils_end
-   
+
    /**
     * Default constructor.
     */
@@ -132,14 +134,14 @@ endclass : uvma_rvfi_instr_seq_item_c
 `pragma protect begin
 
 function uvma_rvfi_instr_seq_item_c::new(string name="uvma_rvfi_seq_item");
-   
+
    super.new(name);
-   
+
 endfunction : new
 
 function string uvma_rvfi_instr_seq_item_c::convert2string();
 
-   convert2string = $sformatf("Order: %0d, insn: 0x%08x, pc: 0x%08x, nret_id: %0d, mode: %s, ixl: 0x%01x", 
+   convert2string = $sformatf("Order: %0d, insn: 0x%08x, pc: 0x%08x, nret_id: %0d, mode: %s, ixl: 0x%01x",
                               order, insn, pc_rdata, this.nret_id, mode.name(), ixl);
    if (rs1_addr)
       convert2string = $sformatf("%s rs1: x%0d = 0x%08x", convert2string, rs1_addr, rs1_rdata);
@@ -155,20 +157,20 @@ function string uvma_rvfi_instr_seq_item_c::convert2string();
    //    convert2string = $sformatf("%s TRAP", convert2string);
    if (halt)
       convert2string = $sformatf("%s HALT", convert2string);
-   if (insn_interrupt) 
+   if (insn_interrupt)
       convert2string = $sformatf("%s INTR %0d", convert2string, this.insn_interrupt_id);
    if (insn_nmi)
       convert2string = $sformatf("%s NMI", convert2string);
    if (dbg)
       convert2string = $sformatf("%s DEBUG", convert2string);
-   
+
 endfunction : convert2string
 
 function string uvma_rvfi_instr_seq_item_c::get_insn_word_str();
 
    if (is_compressed_insn)
       return $sformatf("----%04x", insn[15:0]);
-   
+
    return $sformatf("%08x", insn);
 
 endfunction : get_insn_word_str

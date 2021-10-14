@@ -59,6 +59,7 @@ export CV_CORE_UC
 # Useful commands
 MKDIR_P = mkdir -p
 
+
 # Compile compile flags for all simulators (careful!)
 WAVES        ?= 0
 SV_CMP_FLAGS ?= "+define+$(CV_CORE_UC)_ASSERT_ON"
@@ -78,6 +79,17 @@ CFG             ?= default
 # Common Generation variables
 GEN_START_INDEX ?= 0
 GEN_NUM_TESTS   ?= 1
+export RUN_INDEX       ?= 0
+
+# Common output directories
+SIM_RESULTS             ?= $(if $(CV_RESULTS),$(abspath $(CV_RESULTS))/$(SIMULATOR)_results,$(MAKE_PATH)/$(SIMULATOR)_results)
+SIM_CFG_RESULTS          = $(SIM_RESULTS)/$(CFG)
+SIM_BSP_RESULTS          = $(SIM_CFG_RESULTS)/bsp
+SIM_COREVDV_RESULTS      = $(SIM_CFG_RESULTS)/corev-dv
+SIM_LDGEN_RESULTS        = $(SIM_CFG_RESULTS)/$(LDGEN)
+SIM_TEST_RESULTS         = $(SIM_CFG_RESULTS)/$(TEST)
+SIM_RUN_RESULTS          = $(SIM_TEST_RESULTS)/$(RUN_INDEX)
+SIM_TEST_PROGRAM_RESULTS = $(SIM_RUN_RESULTS)/test_program
 
 # EMBench options
 EMB_TYPE           ?= speed
@@ -87,8 +99,6 @@ EMB_TIMEOUT        ?= 3600
 EMB_PARALLEL_ARG    = $(if $(filter $(YES_VALS),$(EMB_PARALLEL)),YES,NO)
 EMB_BUILD_ONLY_ARG  = $(if $(filter $(YES_VALS),$(EMB_BUILD_ONLY)),YES,NO)
 EMB_DEBUG_ARG       = $(if $(filter $(YES_VALS),$(EMB_DEBUG)),YES,NO)
-# Commont test variables
-export RUN_INDEX       ?= 0
 
 # UVM Environment
 export DV_UVMT_PATH             = $(CORE_V_VERIF)/$(CV_CORE_LC)/tb/uvmt
@@ -102,6 +112,7 @@ export DV_UVMA_RVVI_OVPSIM_PATH = $(CORE_V_VERIF)/lib/uvm_agents/uvma_rvvi_ovpsi
 export DV_UVMA_CLKNRST_PATH     = $(CORE_V_VERIF)/lib/uvm_agents/uvma_clknrst
 export DV_UVMA_INTERRUPT_PATH   = $(CORE_V_VERIF)/lib/uvm_agents/uvma_interrupt
 export DV_UVMA_DEBUG_PATH       = $(CORE_V_VERIF)/lib/uvm_agents/uvma_debug
+export DV_UVMA_PMA_PATH         = $(CORE_V_VERIF)/lib/uvm_agents/uvma_pma
 export DV_UVMA_OBI_MEMORY_PATH  = $(CORE_V_VERIF)/lib/uvm_agents/uvma_obi_memory
 export DV_UVMA_FENCEI_PATH      = $(CORE_V_VERIF)/lib/uvm_agents/uvma_fencei
 export DV_UVML_TRN_PATH         = $(CORE_V_VERIF)/lib/uvm_libs/uvml_trn
@@ -113,6 +124,8 @@ export DV_OVPM_HOME             = $(CORE_V_VERIF)/vendor_lib/imperas
 export DV_OVPM_MODEL            = $(DV_OVPM_HOME)/imperas_DV_COREV
 
 export DV_OVPM_DESIGN           = $(DV_OVPM_HOME)/design
+
+export DV_SVLIB_PATH            = $(CORE_V_VERIF)/$(CV_CORE_LC)/vendor_lib/verilab
 
 DV_UVMT_SRCS                  = $(wildcard $(DV_UVMT_PATH)/*.sv))
 
@@ -160,6 +173,9 @@ export DESIGN_RTL_DIR = $(CV_CORE_PKG)/rtl
 RTLSRC_HOME   := $(CV_CORE_PKG)/rtl
 RTLSRC_INCDIR := $(RTLSRC_HOME)/include
 
+# SVLIB
+SVLIB_PKG            := $(CORE_V_VERIF)/$(CV_CORE_LC)/vendor_lib/verilab/svlib
+
 ###############################################################################
 # Seed management for constrained-random sims
 SEED    ?= 1
@@ -183,20 +199,20 @@ endif
 include $(CORE_V_VERIF)/mk/Common.mk
 ###############################################################################
 # Clone core RTL and DV dependencies
-clone_cv_core_rtl:
-	$(CLONE_CV_CORE_CMD)
+clone_cv_core_rtl: $(CV_CORE_PKG)
 
-clone_riscv-dv:
-	$(CLONE_RISCVDV_CMD)
+clone_riscv-dv: $(RISCVDV_PKG)
 
-clone_embench:
-	$(CLONE_EMBENCH_CMD)
+clone_embench: $(EMBENCH_PKG)
+
+clone_compliance: $(COMPLIANCE_PKG)
 
 clone_dpi_dasm_spike:
 	$(CLONE_DPI_DASM_SPIKE_CMD)
 
+clone_svlib: $(SVLIB_PKG)
+
 $(CV_CORE_PKG):
-	echo "Cloning"
 	$(CLONE_CV_CORE_CMD)
 
 $(RISCVDV_PKG):
@@ -210,6 +226,9 @@ $(EMBENCH_PKG):
 
 $(DPI_DASM_SPIKE_PKG):
 	$(CLONE_DPI_DASM_SPIKE_CMD)
+
+$(SVLIB_PKG):
+	$(CLONE_SVLIB_CMD)
 
 ###############################################################################
 # RISC-V Compliance Test-suite
@@ -248,7 +267,7 @@ all_compliance: $(COMPLIANCE_PKG)
 	make build_compliance RISCV_ISA=rv32Zifencei
 
 # "compliance" is a simulator-specific target defined in <sim>.mk
-COMPLIANCE_RESULTS = $($(SIMULATOR_UC)_RESULTS)
+COMPLIANCE_RESULTS = $(SIM_RESULTS)
 
 compliance_check_sig: compliance
 	@echo "Checking Compliance Signature for $(RISCV_ISA)/$(COMPLIANCE_PROG)"
@@ -258,7 +277,7 @@ compliance_check_sig: compliance
 	export REF=$(REF) && export SIG=$(SIG) && export COMPL_PROG=$(COMPLIANCE_PROG) && \
 	export RISCV_TARGET=${RISCV_TARGET} && export RISCV_DEVICE=${RISCV_DEVICE} && \
 	export RISCV_ISA=${RISCV_ISA} export SIG_ROOT=${SIG_ROOT} && \
-	$(CORE_V_VERIF)/bin/diff_signatures.sh | tee $(COMPLIANCE_RESULTS)/$(CFG)/$(RISCV_ISA)/$(COMPLIANCE_PROG)_$(RUN_INDEX)/diff_signatures.log
+	$(CORE_V_VERIF)/bin/diff_signatures.sh | tee $(COMPLIANCE_RESULTS)/$(CFG)/$(RISCV_ISA)/$(COMPLIANCE_PROG)/$(RUN_INDEX)/diff_signatures.log
 
 compliance_check_all_sigs:
 	@$(MKDIR_P) $(COMPLIANCE_RESULTS)/$(CFG)/$(RISCV_ISA)
@@ -267,8 +286,6 @@ compliance_check_all_sigs:
 	export RISCV_TARGET=${RISCV_TARGET} && export RISCV_DEVICE=${RISCV_DEVICE} && \
 	export RISCV_ISA=${RISCV_ISA} export SIG_ROOT=${SIG_ROOT} && \
 	$(CORE_V_VERIF)/bin/diff_signatures.sh $(RISCV_ISA) | tee $(COMPLIANCE_RESULTS)/$(CFG)/$(RISCV_ISA)/diff_signatures.log
-
-#	export REF=$(REF) && export SIG=$(SIG) && export COMPL_PROG=$(COMPLIANCE_PROG) && \
 
 compliance_regression:
 	make build_compliance RISCV_ISA=$(RISCV_ISA)
@@ -360,33 +377,14 @@ endif
 # Clean up your mess!
 #   1. Clean all generated files of the C and assembler tests
 #   2. Simulator-specific clean targets are in ./<simulator>.mk
-#   3. clean-bsp target is specified in ../Common.mk
+#   3. clean_bsp target is specified in ../Common.mk
 clean_hex:
-	find $(TEST_TEST_DIR) -name *.o       -exec rm {} \;
-	find $(TEST_TEST_DIR) -name *.hex     -exec rm {} \;
-	find $(TEST_TEST_DIR) -name *.elf     -exec rm {} \;
-	find $(TEST_TEST_DIR) -name *.itb     -exec rm {} \;
-	find $(TEST_TEST_DIR) -name *.map     -exec rm {} \;
-	find $(TEST_TEST_DIR) -name *.readelf -exec rm {} \;
-	find $(TEST_TEST_DIR) -name *.objdump -exec rm {} \;
-	find $(TEST_TEST_DIR) -name corev_*.S -exec rm {} \;
+	rm -rf $(SIM_TEST_PROGRAM_RESULTS)
 
-clean_test_programs: clean-bsp
-	find $(CORE_V_VERIF)/$(CV_CORE_LC)/tests/uvmt/test-programs -name *.o       -exec rm {} \;
-	find $(CORE_V_VERIF)/$(CV_CORE_LC)/tests/uvmt/test-programs -name *.hex     -exec rm {} \;
-	find $(CORE_V_VERIF)/$(CV_CORE_LC)/tests/uvmt/test-programs -name *.itb     -exec rm {} \;
-	find $(CORE_V_VERIF)/$(CV_CORE_LC)/tests/uvmt/test-programs -name *.elf     -exec rm {} \;
-	find $(CORE_V_VERIF)/$(CV_CORE_LC)/tests/uvmt/test-programs -name *.map     -exec rm {} \;
-	find $(CORE_V_VERIF)/$(CV_CORE_LC)/tests/uvmt/test-programs -name *.readelf -exec rm {} \;
-	find $(CORE_V_VERIF)/$(CV_CORE_LC)/tests/uvmt/test-programs -name *.objdump -exec rm {} \;
-	find $(CORE_V_VERIF)/$(CV_CORE_LC)/tests/programs -name *.o       -exec rm {} \;
-	find $(CORE_V_VERIF)/$(CV_CORE_LC)/tests/programs -name *.hex     -exec rm {} \;
-	find $(CORE_V_VERIF)/$(CV_CORE_LC)/tests/programs -name *.elf     -exec rm {} \;
-	find $(CORE_V_VERIF)/$(CV_CORE_LC)/tests/programs -name *.map     -exec rm {} \;
-	find $(CORE_V_VERIF)/$(CV_CORE_LC)/tests/programs -name *.itb     -exec rm {} \;
-	find $(CORE_V_VERIF)/$(CV_CORE_LC)/tests/programs -name *.readelf -exec rm {} \;
-	find $(CORE_V_VERIF)/$(CV_CORE_LC)/tests/programs -name *.objdump -exec rm {} \;
-	find $(CORE_V_VERIF)/$(CV_CORE_LC)/tests/programs -name corev_*.S -exec rm {} \;
+clean_test_programs: clean_bsp
+	if [ -d "$(SIM_RESULTS)" ]; then \
+		find $(SIM_RESULTS) -depth -type d -name test_program | xargs rm -rf; \
+	fi
 
 clean_riscv-dv:
 	rm -rf $(RISCVDV_PKG)
@@ -398,7 +396,13 @@ clean_compliance:
 clean_embench:
 	rm -rf $(EMBENCH_PKG)
 	cd $(EMBENCH_TESTS) && \
-	find . ! -path . ! -path ./README.md -delete
+		find . ! -path . ! -path ./README.md -delete
+	if [ -d "$(SIM_RESULTS)" ]; then \
+		cd $(SIM_RESULTS) && find . -depth -type d -name "emb_*" | xargs rm -rf; \
+	fi
 
 clean_dpi_dasm_spike:
 	rm -rf $(DPI_DASM_SPIKE_PKG)
+
+clean_svlib:
+	rm -rf $(SVLIB_PKG)
