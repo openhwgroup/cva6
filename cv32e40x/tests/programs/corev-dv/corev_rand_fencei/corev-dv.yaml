@@ -1,0 +1,5 @@
+# Test definition YAML for corev-dv test generator
+
+name: corev_rand_fencei
+uvm_test: $(CV_CORE_LC)_instr_base_test
+description: RISCV-DV generated random fencei test
