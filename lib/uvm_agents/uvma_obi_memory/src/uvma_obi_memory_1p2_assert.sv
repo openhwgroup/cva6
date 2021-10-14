@@ -76,7 +76,7 @@ module uvma_obi_memory_1p2_assert
   localparam ATOP_LR = {1'b1, 4'h2};
   localparam ATOP_SC = {1'b1, 4'h3};
 
-  //@DVT_LINTER_WAIVER_END "SR2021012_1"
+  //@DVT_LINTER_WAIVER_END "SR20211012_1"
 
   // ---------------------------------------------------------------------------
   // Typedefs
