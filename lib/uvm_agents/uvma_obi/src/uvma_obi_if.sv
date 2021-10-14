@@ -160,7 +160,7 @@ interface uvma_obi_if #(
               rid,
               exokay,
               rvalidpar,
-              rchk
+              rchk;
    endclocking : drv_mstr_r_cb
    
    /**
@@ -195,7 +195,7 @@ interface uvma_obi_if #(
               rid,
               exokay,
               rvalidpar,
-              rchk
+              rchk;
       input   rready,
               rreadypar;
    endclocking : drv_slv_r_cb
@@ -219,7 +219,7 @@ interface uvma_obi_if #(
              prot,
              reqpar,
              achk;
-   endclocking : mon_mstr_a_cb
+   endclocking : mon_a_cb
    
    /**
     * Used by uvma_obi_mon_c.
@@ -232,17 +232,26 @@ interface uvma_obi_if #(
              rid,
              exokay,
              rvalidpar,
-             rchk
+             rchk,
              rready,
              rreadypar;
-   endclocking : mon_mstr_r_cb
+   endclocking : mon_r_cb
    
    
    /**
     * Used by target DUT.
     */
-   modport dut_mp (
-      clocking dut_cb ,
+   modport dut_mstr_mp (
+      clocking dut_mstr_cb ,
+      input    clk    ,
+      input    reset_n
+   );
+   
+   /**
+    * Used by target DUT.
+    */
+   modport dut_slv_mp (
+      clocking dut_slv_cb ,
       input    clk    ,
       input    reset_n
    );

@@ -21,8 +21,8 @@
  */
 class uvma_obi_slv_r_mon_trn_logger_c extends uvml_logs_mon_trn_logger_c#(
    .T_TRN  (uvma_obi_slv_r_mon_trn_c),
-   .T_CFG  (uvma_obi_cfg_c              ),
-   .T_CNTXT(uvma_obi_cntxt_c            )
+   .T_CFG  (uvma_obi_cfg_c          ),
+   .T_CNTXT(uvma_obi_cntxt_c        )
 );
    
    `uvm_component_utils(uvma_obi_slv_r_mon_trn_logger_c)
@@ -35,7 +35,7 @@ class uvma_obi_slv_r_mon_trn_logger_c extends uvml_logs_mon_trn_logger_c#(
    /**
     * Writes contents of t to disk
     */
-   extern virtual function void write(uvma_obi_mon_trn_c t);
+   extern virtual function void write(uvma_obi_slv_r_mon_trn_c t);
    
    /**
     * Writes log header to disk

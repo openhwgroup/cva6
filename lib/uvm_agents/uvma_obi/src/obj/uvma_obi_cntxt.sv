@@ -64,7 +64,7 @@ endclass : uvma_obi_cntxt_c
 function uvma_obi_cntxt_c::new(string name="uvma_obi_cntxt");
    
    super.new(name);
-   reset_state    = UVML_RESET_STATE_PRE_RESET
+   reset_state    = UVML_RESET_STATE_PRE_RESET;
    memory         = uvml_mem_model_c::type_id::create("memory");
    mstr_a_req_e   = new("mstr_a_req_e"  );
    sample_cfg_e   = new("sample_cfg_e"  );
