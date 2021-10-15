@@ -1,3 +1,4 @@
+#include "corev_uvmt.h"
 .include "user_define.h"
 
 .section .text.start
@@ -45,20 +46,20 @@ _start_main:
                   li x31, 0x5912efde
                   li x4, 0x40001104
                   csrw misa, x4
-kernel_sp:        
+kernel_sp:
                   la x24, _kernel_stack_end
 
-trap_vec_init:    
+trap_vec_init:
                   la x4, mtvec_handler
                   ori x4, x4, 0
                   csrw 0x305, x4 # MTVEC
 
-mepc_setup:       
+mepc_setup:
                   la x4, _init
                   csrw mepc, x4
                   j init_machine_mode
 
-_init:            
+_init:
                   la x2, _user_stack_end
 _main:            la         s1, region_2+5617 #start riscv_load_store_rand_instr_stream_9
                   sb         s5, 64(s1)
@@ -5270,7 +5271,7 @@ main_51_0_t:      srl        gp, s5, t4
                   sub        ra, s5, t0
                   csrrc      ra, 0x340, t1
 3041:             remu       t3, t1, t4
-test_done:        
+test_done:
                   li gp, 1
                   ecall
 sub_2:            c.nop
@@ -16618,11 +16619,11 @@ j_sub_3_sub_4_4:  jalr       gp, s11, -414
                   xori       s2, ra, 102
                   c.slli     a5, 22
 654:              c.jr x3
-write_tohost:     
+write_tohost:
                   sw gp, tohost, t5
 
-_exit:            
-                  li a0, 0x20000004
+_exit:
+                  li a0, CV_VP_STATUS_FLAGS_BASE + 4
                   li a1, 0
                   sw a1, 0(a0)
                   j write_tohost
@@ -17706,7 +17707,7 @@ _user_stack_end:
 _kernel_instr_start: .align 12
 .text
 .align 12
-mtvec_handler:    
+mtvec_handler:
                   csrrw x2, 0x340, x2
                   add x2, x24, zero
                   1: addi x2, x2, -124
@@ -17771,9 +17772,9 @@ mmode_exception_handler:
                   li x7, 0x2 # ILLEGAL_INSTRUCTION
                   beq x4, x7, illegal_instr_handler
                   csrr x7, 0x343 # MTVAL
-                  1: jal x1, test_done 
+                  1: jal x1, test_done
 
-ebreak_handler:   
+ebreak_handler:
                   csrr  x4, mepc
                   addi  x4, x4, 4
                   csrw  mepc, x4
@@ -17813,7 +17814,7 @@ ebreak_handler:
                   csrrw x2, 0x340, x2
                   mret
 
-ecall_handler:    
+ecall_handler:
                   la x4, _start
                   sw x0, 0(x4)
                   sw x1, 4(x4)
@@ -17999,7 +18000,7 @@ store_fault_handler:
                   csrrw x2, 0x340, x2
                   mret
 
-pt_fault_handler: 
+pt_fault_handler:
                   nop
 
 .align 12

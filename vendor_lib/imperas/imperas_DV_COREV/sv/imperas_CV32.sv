@@ -21,7 +21,60 @@
 
 `include "typedefs.sv"
 
-`include "imperas_CV32.h"
+typedef struct {
+    Uns64 reset;
+    Uns64 reset_addr;
+    Uns64 nmi;
+    Uns64 nmi_cause;
+    Uns64 nmi_addr;
+    Uns64 MSWInterrupt;
+    Uns64 MTimerInterrupt;
+    Uns64 MExternalInterrupt;
+    Uns64 LocalInterrupt0;
+    Uns64 LocalInterrupt1;
+    Uns64 LocalInterrupt2;
+    Uns64 LocalInterrupt3;
+    Uns64 LocalInterrupt4;
+    Uns64 LocalInterrupt5;
+    Uns64 LocalInterrupt6;
+    Uns64 LocalInterrupt7;
+    Uns64 LocalInterrupt8;
+    Uns64 LocalInterrupt9;
+    Uns64 LocalInterrupt10;
+    Uns64 LocalInterrupt11;
+    Uns64 LocalInterrupt12;
+    Uns64 LocalInterrupt13;
+    Uns64 LocalInterrupt14;
+    Uns64 LocalInterrupt15;
+    Uns64 haltreq;
+    Uns64 resethaltreq;
+    Uns64 deferint;
+    Uns64 IllegalInstruction;
+    Uns64 LoadBusFaultNMI;
+    Uns64 StoreBusFaultNMI;
+    Uns64 InstructionBusFault;
+} SVData_ioT;
+
+typedef struct {
+    Uns64 irq_ack_o;
+    Uns64 irq_id_o;
+    Uns64 sec_lvl_o;
+    Uns64 DM;
+} RMData_ioT;
+
+typedef struct {
+    Uns64 retPC;
+    Uns64 excPC;
+    Uns64 nextPC;
+
+    Uns64 order;
+    Uns64 trap;
+} RMData_stateT;
+
+typedef struct {
+    // Signals from SV
+    Uns64 cycles;
+} SVData_stateT;
 
 `ifndef DMI_RAM_PATH
   `define DMI_RAM_PATH ram.memory.mem
@@ -118,6 +171,10 @@ interface RVVI_io;
     bit         resethaltreq;
     bit         DM;
     
+    bit         LoadBusFaultNMI;     // signal memory interface error (E40X)
+    bit         StoreBusFaultNMI;    // signal memory interface error (E40X)
+    bit         InstructionBusFault; // signal memory interface error (E40X)
+    
     bit         Shutdown;
 endinterface
 
@@ -136,11 +193,6 @@ interface RVVI_bus;
     bit     [3:0]  Ibe;     // Instruction Bus Lane enables (byte format)
     bit     [2:0]  ISize;   // Instruction Bus Size of transfer 1-4 bytes
     bit            Ird;     // Instruction Bus read
-
-    bit            LoadBusFaultNMI;     // Artifact to signal memory interface error (E40X)
-    bit            StoreBusFaultNMI;    // Artifact to signal memory interface error (E40X)
-    bit            InstructionBusFault; // Artifact to signal memory interface error (E40X)
-
 endinterface
 
 module CPU #(
@@ -156,8 +208,8 @@ module CPU #(
 `endif
 
     import "DPI-C" context task          svimp_entry(input string s1, input string s2, input string s3);
-    import "DPI-C" context function void svimp_pull(output RMDataT RMData);
-    import "DPI-C" context function void svimp_push(input  SVDataT SVData);
+    import "DPI-C" context function void svimp_pull(output RMData_ioT RMData_io, output RMData_stateT RMData_state);
+    import "DPI-C" context function void svimp_push(input  SVData_ioT SVData_io, input  SVData_stateT SVData_state);
     import "DPI-C" context function void svimp_exit();
 
     export "DPI-C" task     svexp_busFetch;
@@ -179,8 +231,10 @@ module CPU #(
     
     bit [31:0] cycles;
 
-    RMDataT RMData;
-    SVDataT SVData;
+    RMData_ioT    RMData_io;
+    SVData_ioT    SVData_io;
+    RMData_stateT RMData_state;
+    SVData_stateT SVData_state;
 
     //
     // Bus direct transactors
@@ -232,39 +286,31 @@ module CPU #(
         busWait;
     endtask
     
-    //
-    // getState values set by RM
-    //
-    function automatic void getState;
-        int i;
-        svimp_pull(RMData);
-
-        io.irq_ack_o = RMData.irq_ack_o;
-        io.irq_id_o  = RMData.irq_id_o;
-        io.DM        = RMData.DM;
-    endfunction
-    
     // Called at end of instruction transaction
     task svexp_setRESULT;
         input int isvalid;
         
         control.idle();
 
-        getState();
+        svimp_pull(RMData_io, RMData_state);
+ 
+        io.irq_ack_o = RMData_io.irq_ack_o;
+        io.irq_id_o  = RMData_io.irq_id_o;
+        io.DM        = RMData_io.DM;
                 
         // RVVI_S
         if (isvalid) begin
             state.valid = 1;
             state.trap  = 0;
-            state.pc    = RMData.retPC;
+            state.pc    = RMData_state.retPC;
         end else begin
             state.valid = 0;
             state.trap  = 1;
-            state.pc    = RMData.excPC;
+            state.pc    = RMData_state.excPC;
         end
         
-        state.pcnext = RMData.nextPC;
-        state.order  = RMData.order;
+        state.pcnext = RMData_state.nextPC;
+        state.order  = RMData_state.order;
         
         ->state.notify;
     endtask
@@ -273,45 +319,49 @@ module CPU #(
     // pack values to be used by RM
     //
     function automatic void svexp_pull;
-        SVData.reset               = io.reset;
-        SVData.reset_addr          = io.reset_addr;
-        SVData.nmi                 = io.nmi;
-        SVData.nmi_cause           = io.nmi_cause;
-        SVData.nmi_addr            = io.nmi_addr;
+        SVData_io.reset               = io.reset;
+        SVData_io.reset_addr          = io.reset_addr;
+        SVData_io.nmi                 = io.nmi;
+        SVData_io.nmi_cause           = io.nmi_cause;
+        SVData_io.nmi_addr            = io.nmi_addr;
         
-        SVData.MSWInterrupt        = io.irq_i[3];
-        SVData.MTimerInterrupt     = io.irq_i[7];
-        SVData.MExternalInterrupt  = io.irq_i[11];
-        SVData.LocalInterrupt0     = io.irq_i[16];
-        SVData.LocalInterrupt1     = io.irq_i[17];
-        SVData.LocalInterrupt2     = io.irq_i[18];
-        SVData.LocalInterrupt3     = io.irq_i[19];
-        SVData.LocalInterrupt4     = io.irq_i[20];
-        SVData.LocalInterrupt5     = io.irq_i[21];
-        SVData.LocalInterrupt6     = io.irq_i[22];
-        SVData.LocalInterrupt7     = io.irq_i[23];
-        SVData.LocalInterrupt8     = io.irq_i[24];
-        SVData.LocalInterrupt9     = io.irq_i[25];
-        SVData.LocalInterrupt10    = io.irq_i[26];
-        SVData.LocalInterrupt11    = io.irq_i[27];
-        SVData.LocalInterrupt12    = io.irq_i[28];
-        SVData.LocalInterrupt13    = io.irq_i[29];
-        SVData.LocalInterrupt14    = io.irq_i[30];
-        SVData.LocalInterrupt15    = io.irq_i[31];
+        SVData_io.MSWInterrupt        = io.irq_i[3];
+        SVData_io.MTimerInterrupt     = io.irq_i[7];
+        SVData_io.MExternalInterrupt  = io.irq_i[11];
+        SVData_io.LocalInterrupt0     = io.irq_i[16];
+        SVData_io.LocalInterrupt1     = io.irq_i[17];
+        SVData_io.LocalInterrupt2     = io.irq_i[18];
+        SVData_io.LocalInterrupt3     = io.irq_i[19];
+        SVData_io.LocalInterrupt4     = io.irq_i[20];
+        SVData_io.LocalInterrupt5     = io.irq_i[21];
+        SVData_io.LocalInterrupt6     = io.irq_i[22];
+        SVData_io.LocalInterrupt7     = io.irq_i[23];
+        SVData_io.LocalInterrupt8     = io.irq_i[24];
+        SVData_io.LocalInterrupt9     = io.irq_i[25];
+        SVData_io.LocalInterrupt10    = io.irq_i[26];
+        SVData_io.LocalInterrupt11    = io.irq_i[27];
+        SVData_io.LocalInterrupt12    = io.irq_i[28];
+        SVData_io.LocalInterrupt13    = io.irq_i[29];
+        SVData_io.LocalInterrupt14    = io.irq_i[30];
+        SVData_io.LocalInterrupt15    = io.irq_i[31];
 
-        SVData.deferint            = io.deferint;
+        SVData_io.deferint            = io.deferint;
 
-        SVData.haltreq             = io.haltreq;
-        SVData.resethaltreq        = io.resethaltreq;
+        SVData_io.haltreq             = io.haltreq;
+        SVData_io.resethaltreq        = io.resethaltreq;
         
-        SVData.LoadBusFaultNMI     = bus.LoadBusFaultNMI;
-        SVData.StoreBusFaultNMI    = bus.StoreBusFaultNMI;
-        SVData.InstructionBusFault = bus.InstructionBusFault;
+        //SVData_io.LoadBusFaultNMI     = io.LoadBusFaultNMI;
+        //SVData_io.StoreBusFaultNMI    = io.StoreBusFaultNMI;
         
+        //SVData_io.InstructionBusFault = io.InstructionBusFault;
         
-        SVData.cycles              = cycles;
+        SVData_state.cycles           = cycles;
         
-        svimp_push(SVData);
+        svimp_push(SVData_io, SVData_state);
+        
+        // clear NMI
+        //SVData_io.LoadBusFaultNMI = 0;
+        //SVData_io.StoreBusFaultNMI = 0;
     endfunction
 
     function automatic void svexp_setDECODE (input string value, input int insn, input int isize);
@@ -410,7 +460,6 @@ module CPU #(
     endfunction
     
     task busStore32;
-        output int fault; 
         input  int address;
         input  int size;
         input  int data;
@@ -434,7 +483,7 @@ module CPU #(
             // wait for the transfer to complete
             busWait;
             bus.Dwr    = 0;
-            fault      = bus.StoreBusFaultNMI;
+            SVData_io.StoreBusFaultNMI = io.StoreBusFaultNMI;
         end
     endtask
      
@@ -452,13 +501,15 @@ module CPU #(
         int overflow;
         overflow = (address & 'h3) + (size - 1);
         
+        fault = 0;
+        
         // Aligned access
         if (overflow < 4) begin
-            busStore32(fault, address, size, data, artifact);
+            busStore32(address, size, data, artifact);
         
         // Misaligned access
         end else begin
-            int lo, hi, address_lo, address_hi, size_lo, size_hi, fault_lo, fault_hi;
+            int lo, hi, address_lo, address_hi, size_lo, size_hi;
             
             // generate a data for 2 transactions
             lo = data;
@@ -471,9 +522,8 @@ module CPU #(
             address_lo = address;
             address_hi = (address & ~('h3)) + 4;
              
-            busStore32(fault_lo, address_lo, size_lo, lo, artifact);
-            busStore32(fault_hi, address_hi, size_hi, hi, artifact);
-            fault = fault_lo | fault_hi; // TODO
+            busStore32(address_lo, size_lo, lo, artifact);
+            busStore32(address_hi, size_hi, hi, artifact);
         end
     endtask
 
@@ -487,7 +537,6 @@ module CPU #(
     endfunction
 
     task busLoad32;
-        output int fault;
         input  int address;
         input  int size;
         output int data; 
@@ -507,8 +556,9 @@ module CPU #(
             // Wait for the transfer to complete & ssmode
             busWait;
             data      = setData(address, bus.DData);
-            fault     = bus.LoadBusFaultNMI;
             bus.Drd   = 0;
+
+            SVData_io.LoadBusFaultNMI = io.LoadBusFaultNMI;
             
             msginfo($sformatf("[%x]=>(%0d)%x Load", address, size, data));
         end
@@ -528,22 +578,23 @@ module CPU #(
         int overflow;        
         overflow = (address & 'h3) + (size - 1);
         
+        fault = 0;
+        
         // Aligned access
         if (overflow < 4) begin
-            busLoad32(fault, address, size, data, artifact);
+            busLoad32(address, size, data, artifact);
         
         // Misaligned access
         end else begin
-            int lo, hi, address_lo, address_hi, fault_lo, fault_hi;
+            int lo, hi, address_lo, address_hi;
             
             // generate a wide data value
             address_lo = address & ~('h3);
             address_hi = address_lo + 4;
-            busLoad32(fault_lo, address_lo, 4, lo, artifact);
-            busLoad32(fault_hi, address_hi, 4, hi, artifact);
+            busLoad32(address_lo, 4, lo, artifact);
+            busLoad32(address_hi, 4, hi, artifact);
         
             data = {hi, lo} >> ((address & 'h3) * 8);
-            fault = fault_lo | fault_hi; // TODO
         end
     endtask
 
@@ -563,14 +614,18 @@ module CPU #(
         automatic Uns32 wdata;
         
         automatic Uns32 ble = getBLE(address, size);
+        automatic int iscache = 0;
         
         if (artifact) begin
+            ble = getBLE(address, size);
             dmiRead(address, ble, data);
 
         end else begin
-            if (cache_waddr == waddr) begin
+            if ((cache_waddr == waddr) && (cache_fault == 0)) begin
+                ble = getBLE(cache_waddr, size);
                 wdata  = setData(address, cache_wdata);
                 fault  = cache_fault;
+                iscache = 1;
                 
             end else begin
                 busStep;
@@ -583,11 +638,11 @@ module CPU #(
                 busWait;
                 
                 wdata     = setData(address, bus.IData);
-                fault     = bus.InstructionBusFault;
+                fault     = io.InstructionBusFault;
                 bus.Ird   = 0;
                 
             end
-            
+           
             msginfo($sformatf("[%x]=>(%0d)%x Fetch", address, size, data));
             
             // Save for next cached access
@@ -597,8 +652,8 @@ module CPU #(
             
             data = wdata & byte2bit(ble);
             
-            //$display("busFetch32 address=%08X cache_waddr=%08X : data=%08X cache_wdata=%08X fault=%0d", 
-            //    address, cache_waddr, data, cache_wdata, fault);
+            //$display("busFetch32 address=%08X (iscache=%0d) cache_waddr=%08X : wdata=%08X cache_wdata=%08X data=%08X ble=%08X fault=%0d", 
+            //    address, iscache, cache_waddr, wdata, cache_wdata, data, ble, fault);
         end
     endtask
     
@@ -648,7 +703,7 @@ module CPU #(
         if ($value$plusargs("ovpcfg=%s", ovpcfg)) begin
         end
     endfunction
-    
+        
     initial begin
         if (!$test$plusargs("DISABLE_OVPSIM")) begin
             #1;

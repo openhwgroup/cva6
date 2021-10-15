@@ -22,6 +22,7 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include "corev_uvmt.h"
 
 volatile int glb_hart_status  = 0; // Written by main code only, read by debug code
 volatile int glb_debug_status = 0; // Written by debug code only, read by main code
@@ -43,8 +44,8 @@ volatile int glb_mcycle_start = 0;
 volatile int glb_mcycle_end = 0;
 volatile int glb_minstret_start = 0;
 volatile int glb_minstret_end = 0;
-#define TEST_FAILED  *(volatile int *)0x20000000 = 1
-#define TEST_PASSED  *(volatile int *)0x20000000 = 123456789
+#define TEST_FAILED  *(volatile int *)CV_VP_STATUS_FLAGS_BASE = 1
+#define TEST_PASSED  *(volatile int *)CV_VP_STATUS_FLAGS_BASE = 123456789
 
 extern int __stack_start;
 extern int _trigger_code;
@@ -65,9 +66,9 @@ typedef union {
   unsigned int bits;
 }  debug_req_control_t;
 
-#define DEBUG_REQ_CONTROL_REG *(volatile int *)0x15000008
-#define TIMER_REG_ADDR         ((volatile uint32_t *) 0x15000000)
-#define TIMER_VAL_ADDR         ((volatile uint32_t *) 0x15000004)
+#define DEBUG_REQ_CONTROL_REG *(volatile int *) CV_VP_DEBUG_CONTROL_BASE
+#define TIMER_REG_ADDR         ((volatile uint32_t *) (CV_VP_INTR_TIMER_BASE+0))
+#define TIMER_VAL_ADDR         ((volatile uint32_t *) (CV_VP_INTR_TIMER_BASE+4))
 
 typedef union {
   struct {

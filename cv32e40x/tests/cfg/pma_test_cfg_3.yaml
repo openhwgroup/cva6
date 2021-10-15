@@ -1,0 +1,11 @@
+name: pma_test_cfg_3
+description: PMA configuration for the PMA_TEST_CFG_3 test case
+compile_flags:
+   +define+PMA_TEST_CFG_3
+plusargs:
+   +enable_pma=1
+   +boot_addr=0xA080
+   +mtvec_addr=0xA000
+   +nmi_addr=0x48000000
+   +enable_large_mem_support=0
+   +fix_sp=1
