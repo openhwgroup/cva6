@@ -6,3 +6,4 @@ description: RISCV-DV generated random fencei test
 plusargs: >
     +instr_cnt=10000
     +directed_instr_0=corev_store_fencei_load_instr_stream,10
+    +directed_instr_1=corev_store_fencei_exec_instr_stream,10
