@@ -102,8 +102,10 @@ module ariane_testharness #(
   // ---------------
   assign init_done = rst_ni;
 
+  logic debug_enable;
   initial begin
     if (!$value$plusargs("jtag_rbb_enable=%b", jtag_enable)) jtag_enable = 'h0;
+    if ($test$plusargs("debug_disable")) debug_enable = 'h0; else debug_enable = 'h1;
     if (riscv::XLEN != 32 & riscv::XLEN != 64) $error("XLEN different from 32 and 64");
   end
 
@@ -187,7 +189,8 @@ module ariane_testharness #(
   int dmi_del_cnt_d, dmi_del_cnt_q;
 
   assign dmi_del_cnt_d  = (dmi_del_cnt_q) ? dmi_del_cnt_q - 1 : 0;
-  assign debug_req_core = (dmi_del_cnt_q) ? 1'b0 : debug_req_core_ungtd;
+  assign debug_req_core = (dmi_del_cnt_q) ? 1'b0 :
+                          (!debug_enable) ? 1'b0 : debug_req_core_ungtd;
 
   always_ff @(posedge clk_i or negedge rst_ni) begin : p_dmi_del_cnt
     if(!rst_ni) begin
@@ -729,7 +732,6 @@ module ariane_testharness #(
   end
 
   rvfi_tracer  #(
-    .SIM_FINISH(2000000),
     .HART_ID(hart_id),
     .DEBUG_START(0),
     .DEBUG_STOP(0)
