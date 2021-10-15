@@ -1,0 +1,23 @@
+# Test definition YAML for corev-dv test generator
+
+name: corev_rand_pma_test
+uvm_test: $(CV_CORE_LC)_instr_base_test
+description: >
+    RISCV-DV generated random PMA test
+plusargs: >
+    +instr_cnt=1000
+    +num_of_sub_program=7
+    +directed_instr_0=corev_load_store_pma_misaligned_instr_stream,20
+    +directed_instr_1=corev_jalr_pma_instr,20
+    +directed_instr_2=corev_load_store_pma_mixed_instr_stream,20
+    +directed_instr_3=corev_jalr_pma_cacheable_instr,20
+    +directed_instr_4=corev_load_pma_instr_stream,20
+    +directed_instr_5=corev_jalr_pma_bufferable_instr,20
+    +directed_instr_6=corev_store_pma_instr_stream,20
+    +directed_instr_7=corev_jalr_pma_undefined_region_instr,20
+    #+directed_instr_10=corev_pma_atomic_random_instr_stream,3
+    #+directed_instr_11=corev_pma_atomic_aligned_instr_stream,3
+    #+directed_instr_12=corev_pma_atomic_misaligned_instr_stream,3
+    #+directed_instr_13=corev_pma_atomic_allowed_instr_stream,3
+    #+directed_instr_14=corev_pma_atomic_disallowed_instr_stream,3
+    #+directed_instr_15=corev_pma_atomic_amo_instr_stream,3

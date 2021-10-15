@@ -91,7 +91,7 @@ parameter int MAX_LMUL = 8;
 parameter int NUM_HARTS = 1;
 
 // ----------------------------------------------------------------------------
-// Previleged CSR implementation
+// Privileged CSR implementation
 // ----------------------------------------------------------------------------
 
 // Implemented previlieged CSR list

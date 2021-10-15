@@ -64,6 +64,10 @@ function uvme_cv32e40x_fetch_toggle_seq_c::new(string name = "");
     fetch_toggle_mode = FETCH_RANDOM_TOGGLE;
     fetch_toggle_mode.rand_mode(0);
   end
+  else if ($test$plusargs("fetch_constant")) begin
+    fetch_toggle_mode = FETCH_CONSTANT;
+    fetch_toggle_mode.rand_mode(0);
+  end
 
 endfunction : new
 

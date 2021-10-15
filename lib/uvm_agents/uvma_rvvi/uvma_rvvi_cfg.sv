@@ -1,4 +1,4 @@
-// 
+//
 // Copyright 2020 OpenHW Group
 // Copyright 2020 Datum Technology Corporation
 // Copyright 2020 Silicon Labs, Inc.
@@ -6,15 +6,15 @@
 // Licensed under the Solderpad Hardware Licence, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
-// 
+//
 //     https://solderpad.org/licenses/
-// 
+//
 // Unless required by applicable law or agreed to in writing, software
 // distributed under the License is distributed on an "AS IS" BASIS,
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
-// 
+//
 
 
 `ifndef __UVMA_RVVI_CFG_SV__
@@ -39,30 +39,44 @@ class uvma_rvvi_cfg_c#(int ILEN=DEFAULT_ILEN,
    // Common options
    rand bit                      enabled;
    rand uvm_active_passive_enum  is_active;
-   
+
    rand bit                      cov_model_enabled;
    rand bit                      trn_log_enabled;
-   
+
+   // Mapping of NMI mcause to interrupt signals
+   rand int unsigned             store_fault_nmi_index;
+   rand bit                      store_fault_nmi_index_valid;
+   rand int unsigned             load_fault_nmi_index;
+   rand bit                      load_fault_nmi_index_valid;
+
    mem_range_t                   volatile_mem_range_q[$];
 
    `uvm_object_utils_begin(uvma_rvvi_cfg_c)
-      `uvm_field_int (                         enabled              , UVM_DEFAULT)
-      `uvm_field_enum(uvm_active_passive_enum, is_active            , UVM_DEFAULT)
-      `uvm_field_int (                         cov_model_enabled    , UVM_DEFAULT)
-      `uvm_field_int (                         trn_log_enabled      , UVM_DEFAULT)      
+      `uvm_field_int (                         enabled                    , UVM_DEFAULT)
+      `uvm_field_enum(uvm_active_passive_enum, is_active                  , UVM_DEFAULT)
+      `uvm_field_int (                         cov_model_enabled          , UVM_DEFAULT)
+      `uvm_field_int (                         trn_log_enabled            , UVM_DEFAULT)
+      `uvm_field_int (                         store_fault_nmi_index      , UVM_DEFAULT)
+      `uvm_field_int (                         store_fault_nmi_index_valid, UVM_DEFAULT)
+      `uvm_field_int (                         load_fault_nmi_index       , UVM_DEFAULT)
+      `uvm_field_int (                         load_fault_nmi_index_valid , UVM_DEFAULT)
    `uvm_object_utils_end
 
-   constraint defaults_cons {   
+   constraint defaults_cons {
       soft enabled           == 1;
       soft is_active         == UVM_PASSIVE;
       soft cov_model_enabled == 0;
       soft trn_log_enabled   == 1;
+      soft store_fault_nmi_index == 0;
+      soft store_fault_nmi_index_valid == 0;
+      soft load_fault_nmi_index == 0;
+      soft load_fault_nmi_index_valid == 0;
    }
-   
+
    /**
     * Default constructor.
     */
-   extern function new(string name="uvma_rvvi_cfg");   
+   extern function new(string name="uvma_rvvi_cfg");
 
    /**
     * Printer extension to support additional fields
@@ -72,7 +86,7 @@ class uvma_rvvi_cfg_c#(int ILEN=DEFAULT_ILEN,
    /**
     * Add a range of addresses to be considered volatile
     */
-   extern function void add_volatile_mem_addr_range(bit [XLEN-1:0] addr_lo, 
+   extern function void add_volatile_mem_addr_range(bit [XLEN-1:0] addr_lo,
                                                     bit [XLEN-1:0] addr_hi);
 
    /**
@@ -83,9 +97,9 @@ class uvma_rvvi_cfg_c#(int ILEN=DEFAULT_ILEN,
 endclass : uvma_rvvi_cfg_c
 
 function uvma_rvvi_cfg_c::new(string name="uvma_rvvi_cfg");
-   
+
    super.new(name);
-   
+
 endfunction : new
 
 function void uvma_rvvi_cfg_c::do_print(uvm_printer printer);
@@ -112,13 +126,13 @@ endfunction : add_volatile_mem_addr_range
 
 function bit uvma_rvvi_cfg_c::is_mem_addr_volatile(bit [XLEN-1:0] mem_addr);
 
-   foreach (volatile_mem_range_q[i]) begin      
+   foreach (volatile_mem_range_q[i]) begin
       if (mem_addr >= volatile_mem_range_q[i].addr_lo && mem_addr <= volatile_mem_range_q[i].addr_hi)
          return 1;
    end
-   
+
    return 0;
-   
+
 endfunction : is_mem_addr_volatile
 
 `endif // __UVMA_RVVI_CFG_SV__

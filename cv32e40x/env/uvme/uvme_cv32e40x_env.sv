@@ -46,7 +46,8 @@ class uvme_cv32e40x_env_c extends uvm_env;
    uvma_obi_memory_agent_c          obi_memory_data_agent ;
    uvma_rvfi_agent_c#(ILEN,XLEN)    rvfi_agent;
    uvma_rvvi_agent_c#(ILEN,XLEN)    rvvi_agent;
-   uvma_fencei_agent_c              fencei_agent ;
+   uvma_fencei_agent_c              fencei_agent;
+   uvma_pma_agent_c#(ILEN,XLEN)     pma_agent;
 
    `uvm_component_utils_begin(uvme_cv32e40x_env_c)
       `uvm_field_object(cfg  , UVM_DEFAULT)
@@ -143,6 +144,11 @@ class uvme_cv32e40x_env_c extends uvm_env;
     */
    extern virtual function void assemble_vsequencer();
 
+   /**
+    * Install virtual peripheral sequences to the OBI data slave sequence
+    */
+   extern virtual function void install_vp_register_seqs(uvma_obi_memory_slv_seq_c data_slv_seq);
+
 endclass : uvme_cv32e40x_env_c
 
 
@@ -230,7 +236,6 @@ function void uvme_cv32e40x_env_c::end_of_elaboration_phase(uvm_phase phase);
 
 endfunction : end_of_elaboration_phase
 
-
 task uvme_cv32e40x_env_c::run_phase(uvm_phase phase);
 
    uvma_obi_memory_fw_preload_seq_c fw_preload_seq;
@@ -254,44 +259,7 @@ task uvme_cv32e40x_env_c::run_phase(uvm_phase phase);
          begin : obi_data_slv_thread
             data_slv_seq = uvma_obi_memory_slv_seq_c::type_id::create("data_slv_seq");
 
-            // Install the virtual peripheral registers
-            void'(data_slv_seq.register_vp_vseq("vp_rand_num", 32'h1500_1000,  uvma_obi_memory_vp_rand_num_seq_c::get_type()));
-            void'(data_slv_seq.register_vp_vseq("vp_virtual_printer", 32'h1000_0000, uvma_obi_memory_vp_virtual_printer_seq_c::get_type()));
-            void'(data_slv_seq.register_vp_vseq("vp_sig_writer", 32'h2000_0008, uvma_obi_memory_vp_sig_writer_seq_c::get_type()));
-            void'(data_slv_seq.register_vp_vseq("vp_cycle_counter", 32'h1500_1004, uvma_obi_memory_vp_cycle_counter_seq_c::get_type()));
-
-            begin
-               uvma_obi_memory_vp_directed_slv_resp_seq_c#(2) vp_seq;
-               if (!$cast(vp_seq, data_slv_seq.register_vp_vseq("vp_directed_slv_resp", 32'h1500_1080, uvma_obi_memory_vp_directed_slv_resp_seq_c#(2)::get_type()))) begin
-                  `uvm_fatal("CV32E40XVPSEQ", $sformatf("Could not cast vp_directed_slv_resp correctly"));
-               end
-               vp_seq.obi_cfg[0] = cfg.obi_memory_instr_cfg;
-               vp_seq.obi_cfg[1] = cfg.obi_memory_data_cfg;
-            end
-
-            begin
-               uvme_cv32e40x_vp_status_flags_seq_c vp_seq;
-               if (!$cast(vp_seq, data_slv_seq.register_vp_vseq("vp_status_flags", 32'h2000_0000, uvme_cv32e40x_vp_status_flags_seq_c::get_type()))) begin
-                  `uvm_fatal("CV32E40XVPSEQ", $sformatf("Could not cast vp_status_flags correctly"));
-               end
-               vp_seq.cv32e40x_cntxt = cntxt;
-            end
-
-            begin
-               uvme_cv32e40x_vp_interrupt_timer_seq_c vp_seq;
-               if (!$cast(vp_seq, data_slv_seq.register_vp_vseq("vp_interrupt_timer", 32'h1500_0000, uvme_cv32e40x_vp_interrupt_timer_seq_c::get_type()))) begin
-                  `uvm_fatal("CV32E40XVPSEQ", $sformatf("Could not cast vp_interrupt_timer correctly"));
-               end
-               vp_seq.cv32e40x_cntxt = cntxt;
-            end
-
-            begin
-               uvme_cv32e40x_vp_debug_control_seq_c vp_seq;
-               if (!$cast(vp_seq, data_slv_seq.register_vp_vseq("vp_debug_control", 32'h1500_0008, uvme_cv32e40x_vp_debug_control_seq_c::get_type()))) begin
-                  `uvm_fatal("CV32E40XVPSEQ", $sformatf("Could not cast vp_debug_control correctly"));
-               end
-               vp_seq.cv32e40x_cntxt = cntxt;
-            end
+            install_vp_register_seqs(data_slv_seq);
 
             void'(data_slv_seq.randomize());
             data_slv_seq.start(obi_memory_data_agent.sequencer);
@@ -346,6 +314,7 @@ function void uvme_cv32e40x_env_c::assign_cfg();
    uvm_config_db#(uvma_rvfi_cfg_c#(ILEN,XLEN))::set(this, "rvfi_agent", "cfg", cfg.rvfi_cfg);
    uvm_config_db#(uvma_rvvi_cfg_c#(ILEN,XLEN))::set(this, "rvvi_agent", "cfg", cfg.rvvi_cfg);
    uvm_config_db#(uvma_fencei_cfg_c)::set(this, "fencei_agent", "cfg", cfg.fencei_cfg);
+   uvm_config_db#(uvma_pma_cfg_c)::set(this, "pma_agent", "cfg", cfg.pma_cfg);
 
 endfunction: assign_cfg
 
@@ -377,6 +346,7 @@ function void uvme_cv32e40x_env_c::create_agents();
    rvfi_agent = uvma_rvfi_agent_c#(ILEN,XLEN)::type_id::create("rvfi_agent", this);
    rvvi_agent = uvma_rvvi_ovpsim_agent_c#(ILEN,XLEN)::type_id::create("rvvi_agent", this);
    fencei_agent = uvma_fencei_agent_c::type_id::create("fencei_agent", this);
+   pma_agent = uvma_pma_agent_c#(ILEN,XLEN)::type_id::create("pma_agent", this);
 
 endfunction: create_agents
 
@@ -402,7 +372,6 @@ function void uvme_cv32e40x_env_c::create_cov_model();
 
    cov_model = uvme_cv32e40x_cov_model_c::type_id::create("cov_model", this);
 
-
 endfunction: create_cov_model
 
 
@@ -416,26 +385,38 @@ function void uvme_cv32e40x_env_c::connect_rvfi_rvvi();
       rvfi_agent.instr_mon_ap[i].connect(rvvi_agent.sequencer.rvfi_instr_export);
 
    obi_memory_instr_agent.monitor.ap.connect(rvvi_agent.sequencer.obi_i_export);
-   obi_memory_data_agent.monitor.ap.connect(rvvi_agent.sequencer.obi_d_export);
 
 endfunction : connect_rvfi_rvvi
 
 function void uvme_cv32e40x_env_c::connect_scoreboard();
 
-   // Connect the CORE Scoreboard
-   rvvi_agent.state_mon_ap.connect(core_sb.rvvi_state_export);
-   foreach (rvfi_agent.instr_mon_ap[i])
-      rvfi_agent.instr_mon_ap[i].connect(core_sb.rvfi_instr_export);
+   // Connect the CORE Scoreboard (but only if the ISS is running)
+   if (cfg.use_iss) begin
+      rvvi_agent.state_mon_ap.connect(core_sb.rvvi_state_export);
+      foreach (rvfi_agent.instr_mon_ap[i])
+         rvfi_agent.instr_mon_ap[i].connect(core_sb.rvfi_instr_export);
+   end
+
+   // Connect the PMA scoreboard
+   foreach (rvfi_agent.instr_mon_ap[i]) begin
+      rvfi_agent.instr_mon_ap[i].connect(pma_agent.scoreboard.rvfi_instr_export);
+   end
+   obi_memory_instr_agent.mon_ap.connect(pma_agent.scoreboard.obi_i_export);
+   obi_memory_data_agent.mon_ap.connect(pma_agent.scoreboard.obi_d_export);
 
 endfunction: connect_scoreboard
 
 
 function void uvme_cv32e40x_env_c::connect_coverage_model();
 
-  isacov_agent.monitor.ap.connect(cov_model.interrupt_covg.instr_mon_export);
+   isacov_agent.monitor.ap.connect(cov_model.exceptions_covg.isacov_mon_export);
+   isacov_agent.monitor.ap.connect(cov_model.counters_covg.isacov_mon_export);
+
+   obi_memory_data_agent.mon_ap.connect(pma_agent.monitor.obi_d_export);
    foreach (rvfi_agent.instr_mon_ap[i]) begin
       rvfi_agent.instr_mon_ap[i].connect(isacov_agent.monitor.rvfi_instr_export);
       rvfi_agent.instr_mon_ap[i].connect(cov_model.interrupt_covg.interrupt_mon_export);
+      rvfi_agent.instr_mon_ap[i].connect(pma_agent.monitor.rvfi_instr_export);
    end
 
 endfunction: connect_coverage_model
@@ -451,5 +432,56 @@ function void uvme_cv32e40x_env_c::assemble_vsequencer();
 
 endfunction: assemble_vsequencer
 
+
+function void uvme_cv32e40x_env_c::install_vp_register_seqs(uvma_obi_memory_slv_seq_c data_slv_seq);
+
+   void'(data_slv_seq.register_vp_vseq("vp_virtual_printer", CV_VP_VIRTUAL_PRINTER_BASE, uvma_obi_memory_vp_virtual_printer_seq_c::get_type()));
+
+   void'(data_slv_seq.register_vp_vseq("vp_rand_num", CV_VP_RANDOM_NUM_BASE,  uvma_obi_memory_vp_rand_num_seq_c::get_type()));
+
+   void'(data_slv_seq.register_vp_vseq("vp_cycle_counter", CV_VP_CYCLE_COUNTER_BASE, uvma_obi_memory_vp_cycle_counter_seq_c::get_type()));
+
+   begin
+      uvma_obi_memory_vp_directed_slv_resp_seq_c#(2) vp_seq;
+      if (!$cast(vp_seq, data_slv_seq.register_vp_vseq("vp_directed_slv_resp", CV_VP_OBI_SLV_RESP_BASE, uvma_obi_memory_vp_directed_slv_resp_seq_c#(2)::get_type()))) begin
+         `uvm_fatal("CV32E40XVPSEQ", $sformatf("Could not cast vp_directed_slv_resp correctly"));
+      end
+      vp_seq.obi_cfg[0] = cfg.obi_memory_instr_cfg;
+      vp_seq.obi_cfg[1] = cfg.obi_memory_data_cfg;
+   end
+
+   begin
+      uvme_cv32e40x_vp_sig_writer_seq_c vp_seq;
+      if (!$cast(vp_seq, data_slv_seq.register_vp_vseq("vp_sig_writer", CV_VP_SIG_WRITER_BASE, uvme_cv32e40x_vp_sig_writer_seq_c::get_type()))) begin
+         `uvm_fatal("CV32E40XVPSEQ", $sformatf("Could not cast vp_sig_writes correctly"));
+      end
+      vp_seq.cv32e40x_cntxt = cntxt;
+   end
+
+   begin
+      uvme_cv32e40x_vp_status_flags_seq_c vp_seq;
+      if (!$cast(vp_seq, data_slv_seq.register_vp_vseq("vp_status_flags", CV_VP_STATUS_FLAGS_BASE, uvme_cv32e40x_vp_status_flags_seq_c::get_type()))) begin
+         `uvm_fatal("CV32E40XVPSEQ", $sformatf("Could not cast vp_status_flags correctly"));
+      end
+      vp_seq.cv32e40x_cntxt = cntxt;
+   end
+
+   begin
+      uvme_cv32e40x_vp_interrupt_timer_seq_c vp_seq;
+      if (!$cast(vp_seq, data_slv_seq.register_vp_vseq("vp_interrupt_timer", CV_VP_INTR_TIMER_BASE, uvme_cv32e40x_vp_interrupt_timer_seq_c::get_type()))) begin
+         `uvm_fatal("CV32E40XVPSEQ", $sformatf("Could not cast vp_interrupt_timer correctly"));
+      end
+      vp_seq.cv32e40x_cntxt = cntxt;
+   end
+
+   begin
+      uvme_cv32e40x_vp_debug_control_seq_c vp_seq;
+      if (!$cast(vp_seq, data_slv_seq.register_vp_vseq("vp_debug_control", CV_VP_DEBUG_CONTROL_BASE, uvme_cv32e40x_vp_debug_control_seq_c::get_type()))) begin
+         `uvm_fatal("CV32E40XVPSEQ", $sformatf("Could not cast vp_debug_control correctly"));
+      end
+      vp_seq.cv32e40x_cntxt = cntxt;
+   end
+
+endfunction : install_vp_register_seqs
 
 `endif // __UVME_CV32E40X_ENV_SV__

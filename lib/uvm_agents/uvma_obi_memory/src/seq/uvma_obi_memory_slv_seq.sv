@@ -203,6 +203,7 @@ function uvma_obi_memory_vp_base_seq_c uvma_obi_memory_slv_seq_c::register_vp_vs
          `uvm_fatal("OBIVPVSEQ", $sformatf("address: 0x%08x, tried to register vp_vseq [%s], but vp_vseq [%s] already registered",
                                            addr, vp_seq.get_name(), vp_seq_table[addr].get_name()));
       end
+      `uvm_info("OBIVPSEQ", $sformatf("Virtual register: %s, addr: 0x%08x", vp_seq.get_full_name(), addr), UVM_LOW);
 
       vp_seq_table[addr] = vp_seq;
    end

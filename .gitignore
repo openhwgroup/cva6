@@ -12,6 +12,7 @@
 *.vsif
 *.sve
 *.sdb
+test_build
 dsim.env
 dsim.log
 dsim_results
@@ -38,6 +39,7 @@ cva6/tests/riscv-tests/
 uvm/riscv-dv/
 riviera_results/
 */vendor_lib/dpi_dasm_spike/
+*/vendor_lib/verilab/svlib/
 work*
 vsim.dbg
 *.wlf
