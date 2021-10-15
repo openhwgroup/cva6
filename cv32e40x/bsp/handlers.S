@@ -242,6 +242,7 @@ end_handler_ret:
 
 .section .nmi, "ax"
 .global nmi_handler
+.global nmi_end_handler_ret
 
 nmi_handler:
 	addi sp,sp,-64

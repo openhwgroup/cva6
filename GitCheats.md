@@ -92,7 +92,6 @@ $ git push --set-upstream origin master<br>
 $ git clone git@github.com:openhwgroup/core-v-verif.git master<br>
 
 ### Metrics CI Cheat Sheet
-
 #### Add GitLab Metrics remote
 $ git remote add metrics git@gitlab.openhwgroup.metrics.ca:cv32e40p_verif/cv32e40p_verif.git
 

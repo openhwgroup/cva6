@@ -158,7 +158,7 @@ module mm_ram
     // debugger control signals
     logic [31:0]                   debugger_wdata;
     logic                          debugger_valid;
- 
+
     // signals to rnd_stall
     logic [31:0]                   rnd_stall_regs [0:RND_STALL_REGS-1];
 
@@ -224,7 +224,7 @@ module mm_ram
             if ($test$plusargs("max_data_zero_instr_stall")) begin
                 `uvm_info(RNDSTALL_TAG, "Max data stall, zero instruction stall configuration", UVM_LOW)
                 // This "knob" creates maximum stalls on data loads/stores, and
-                // no stalls on instruction fetches.  Used for fence.i testing. 
+                // no stalls on instruction fetches.  Used for fence.i testing.
                 rnd_stall_regs[RND_STALL_DATA_EN]     = 1;
                 rnd_stall_regs[RND_STALL_DATA_MODE]   = 2;
                 rnd_stall_regs[RND_STALL_DATA_GNT]    = 2;
@@ -572,7 +572,7 @@ module mm_ram
    // -------------------------------------------------------------
    // Generate a random number using the SystemVerilog random number function
    always_ff @(posedge clk_i, negedge rst_ni) begin : rnd_num_gen
-        if (!rst_ni) 
+        if (!rst_ni)
             rnd_num <= 32'h0;
         else if (rnd_num_req)
 `ifndef VERILATOR
@@ -643,14 +643,14 @@ module mm_ram
                 if(debugger_start_cnt_q > 0)begin
                     debugger_start_cnt_q <= debugger_start_cnt_q - 1;
                    // At count == 1, then assert the debug_req
-                   if(debugger_start_cnt_q == 1) 
+                   if(debugger_start_cnt_q == 1)
                      debug_req_o <= debug_req_value_q;
                 end
                 // Count down debug_req pulse duration
                 else if(debug_req_duration_q > 0)begin
                    debug_req_duration_q <= debug_req_duration_q - 1;
                    // At count == 1, then de-assert debug_req
-                   if(debug_req_duration_q == 1) 
+                   if(debug_req_duration_q == 1)
                      debug_req_o <= !debug_req_value_q;
                 end
             end
@@ -746,7 +746,7 @@ module mm_ram
   always_comb
   begin
     ram_instr_req    = instr_req_i;
-    ram_instr_addr   = instr_addr_remap;    
+    ram_instr_addr   = instr_addr_remap;
     ram_instr_gnt    = instr_req_i ? 1'b1 : $urandom;
     core_instr_rdata = ram_instr_rdata;
 

@@ -1,13 +1,13 @@
 // Copyright 2020 OpenHW Group
 // Copyright 2020 Datum Technology Corporation
 // Copyright 2020 Silicon Labs, Inc.
-// 
+//
 // Licensed under the Solderpad Hardware Licence, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
-// 
+//
 //     https://solderpad.org/licenses/
-// 
+//
 // Unless required by applicable law or agreed to in writing, software
 // distributed under the License is distributed on an "AS IS" BASIS,
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -47,7 +47,7 @@ module uvma_obi_memory_assert
     input [1:0]              memtype,
     input [2:0]              prot,
     input                    reqpar,
-    input                    gntpar,    
+    input                    gntpar,
     input [((ACHK_WIDTH == 0) ? 0 : ACHK_WIDTH - 1) : 0] achk,
 
     // R bus 1P1
@@ -68,8 +68,6 @@ module uvma_obi_memory_assert
   // ---------------------------------------------------------------------------
   // Local parameters
   // ---------------------------------------------------------------------------
-  localparam EFF_ID_WIDTH = ID_WIDTH == 0 ? 1 : ID_WIDTH;
-  localparam ADDR_ALIGN_MASK = (1 << $clog2(DATA_WIDTH)) - 1;
 
   // ---------------------------------------------------------------------------
   // Local variables
@@ -102,7 +100,7 @@ module uvma_obi_memory_assert
       .ID_WIDTH(ID_WIDTH),
       .ACHK_WIDTH(ACHK_WIDTH),
       .RCHK_WIDTH(RCHK_WIDTH)
-    ) u_1p2_assert(.*);    
+    ) u_1p2_assert(.*);
   end
   endgenerate
 
@@ -116,19 +114,19 @@ module uvma_obi_memory_assert
   endproperty : p_addr_signal_stable
 
   a_addr_stable: assert property(p_addr_signal_stable(addr))
-  else 
+  else
     `uvm_error(info_tag, "addr signal not stable in address phase")
 
   a_we_stable: assert property(p_addr_signal_stable(we))
-  else 
+  else
     `uvm_error(info_tag, "we signal not stable in address phase")
 
   a_wdata_stable: assert property(p_addr_signal_stable(wdata))
-  else 
+  else
     `uvm_error(info_tag, "wdata signal not stable in address phase")
 
   a_be_stable: assert property(p_addr_signal_stable(be))
-  else 
+  else
     `uvm_error(info_tag, "be signal not stable in address phase")
 
   // R-3.1.2 : Req may not deassewrt until the gnt is asserted
@@ -141,7 +139,7 @@ module uvma_obi_memory_assert
 
   // These next 2 are not strictly a functional requirement, but the testbench should simulate this
   // Therefore these are coded as a set of cover properties
-  
+
   // R-3.2.1 : slave shall be allowed to de-assert (retract) gnt at any time even if req is deasserted
   property p_gnt_assert_no_req;
     !req ##0 !gnt ##1 !req ##0 gnt;
@@ -159,7 +157,7 @@ module uvma_obi_memory_assert
   bit [3:0] outstanding_trn_cnt;
   always @(posedge clk or negedge reset_n) begin
     if (!reset_n) begin
-      outstanding_trn_cnt <= 0;      
+      outstanding_trn_cnt <= 0;
     end
     else begin
       if (valid_a_phase && !valid_r_phase)
@@ -225,6 +223,6 @@ module uvma_obi_memory_assert
   else
     `uvm_error(info_tag, $sformatf("be of 0x%01x not consistent with addr 0x%08x", $sampled(be), $sampled(addr)));
 
-  
+
 endmodule : uvma_obi_memory_assert
 

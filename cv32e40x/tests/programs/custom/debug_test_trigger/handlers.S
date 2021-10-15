@@ -14,6 +14,8 @@
 * limitations under the License.
 */
 
+#include "corev_uvmt.h"
+
 /* Exception codes */
 #define EXCEPTION_ILLEGAL_INSN 2
 #define EXCEPTION_BREAKPOINT 3
@@ -68,7 +70,6 @@
 .global glb_expect_ebreak_handler
 .global glb_exception_ebreak_status
 .global glb_expect_irq_entry
-.set test_ret_val, 0x20000000
 .set test_fail, 0x1
 
 /* exception handling */
@@ -93,7 +94,7 @@ __no_irq_handler:
 
 	la a0, no_exception_handler_msg
 	jal ra, puts
-    
+
     // Check if we expected to enter irq
     la a1, glb_expect_irq_entry
     lw t0, 0(a1)
@@ -103,7 +104,7 @@ __no_irq_handler:
     li t0, 0
     sw t0, 0(a1)
 	//j __no_irq_handler
-    
+
     // Return
     lw ra, 0(sp)
 	lw a0, 4(sp)
@@ -123,9 +124,9 @@ __no_irq_handler:
 	lw t6, 60(sp)
 	addi sp,sp,64
 	mret
- 
+
 _irq_fail:
-    li a0, test_ret_val
+    li a0, CV_VP_STATUS_FLAGS_BASE
     li t0, test_fail
     sw t0, 0(a0)
     ret
@@ -227,40 +228,40 @@ handle_ebreak:
 	la a0, ebreak_msg
 	jal ra, puts
         // Check if expecting ebreak handler
-        la a0, glb_expect_ebreak_handler 
+        la a0, glb_expect_ebreak_handler
         lw t0, 0(a0)
         bne t0, x0, cont_handle_ebreak
         // Not expecting ebreak, assert test failed
-        li a0, test_ret_val
+        li a0, CV_VP_STATUS_FLAGS_BASE
         li t0, 1
         sw t0, 0(a0)
 	j end_handler_incr_mepc
 cont_handle_ebreak:
-        //increment hart status     
+        //increment hart status
         sw x0, 0(a0)
-        la a0, glb_ebreak_status  
+        la a0, glb_ebreak_status
         lw t0, 0(a0)
         addi t0,t0,1
         sw t0, 0(a0)
 	j end_handler_incr_mepc
 
 
-	
+
 handle_illegal_insn:
 	la a0, illegal_insn_msg
 	jal ra, puts
         // Check if expecting illegal instruction
-        la a0, glb_expect_illegal_insn 
+        la a0, glb_expect_illegal_insn
         lw t0, 0(a0)
-        bne t0, x0, cont_illegal_insn 
-        li a0, test_ret_val
+        bne t0, x0, cont_illegal_insn
+        li a0, CV_VP_STATUS_FLAGS_BASE
         li t0, 1
         sw t0, 0(a0)            //Test Failed
 	j end_handler_incr_mepc
 cont_illegal_insn:
-        //increment hart status     
+        //increment hart status
         sw x0, 0(a0)
-        la a0, glb_illegal_insn_status  
+        la a0, glb_illegal_insn_status
         lw t0, 0(a0)
         addi t0,t0,1
         sw t0, 0(a0)
@@ -270,11 +271,11 @@ cont_illegal_insn:
         lw t0, 0(a0)
         //  End handler if no ebreak is to be executed
         beq t0, x0, end_handler_incr_mepc
-       
+
         // Clear ebreak flag
-        sw x0, 0(a0) 
+        sw x0, 0(a0)
         // Execute ebreak
-        .4byte 0x00100073    
+        .4byte 0x00100073
         // Exit handler
     	j end_handler_incr_mepc
 

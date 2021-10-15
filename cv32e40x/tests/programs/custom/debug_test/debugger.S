@@ -2,23 +2,25 @@
 /*
 **
 ** Copyright 2020 OpenHW Group
-** 
+**
 ** Licensed under the Solderpad Hardware Licence, Version 2.0 (the "License");
 ** you may not use this file except in compliance with the License.
 ** You may obtain a copy of the License at
-** 
+**
 **     https://solderpad.org/licenses/
-** 
+**
 ** Unless required by applicable law or agreed to in writing, software
 ** distributed under the License is distributed on an "AS IS" BASIS,
 ** WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 ** See the License for the specific language governing permissions and
 ** limitations under the License.
-** 
+**
 *******************************************************************************
 ** Debugger code
 *******************************************************************************
 */
+
+#include "corev_uvmt.h"
 
 .section .debugger, "ax"
 .global _debugger_start
@@ -37,10 +39,12 @@
 .global __debugger_stack_start
 .global _debugger_fail
 .global _debugger_end
-.set test_ret_val, 0x20000000
-.set test_fail, 0x1
-        
-_debugger_start:        
+.set timer_reg_addr, CV_VP_INTR_TIMER_BASE+0
+.set timer_val_addr, CV_VP_INTR_TIMER_BASE+4
+.set test_ret_val,   CV_VP_STATUS_FLAGS_BASE
+.set test_fail,      0x1
+
+_debugger_start:
         // Debugger Stack
         csrw dscratch, a0       // dscratch0
         la a0, __debugger_stack_start
@@ -63,7 +67,7 @@ _debugger_start:
         sw t1, 0(a1)
         la a1, glb_minstret_start
         sw t2, 0(a1)
- 
+
         // Determine Test to execute in debugger code based on glb_hart_status
         la a2, glb_hart_status
         lw t2, 0(a2)
@@ -83,7 +87,7 @@ _debugger_start:
 
 	li t0,6
 	beq t2,t0,_debugger_csr    // Test 6
-	
+
     li t0,10
 	beq t2,t0,_debugger_ebreak_entry    // Test 10
 
@@ -99,7 +103,7 @@ _debugger_start:
     li t0,14
     beq t2,t0, _debugger_ebreak_entry // Test 14
 
-    
+
     li t0,17
     beq t2,t0, _debugger_wfi_test // Test 17
 
@@ -142,13 +146,13 @@ _debugger_trigger_regs_access:
     csrw 0x7a0, t0 # tsel
     csrr t0, 0x7a0
     bne t0, x0, _debugger_fail
-    
+
     j _debugger_end
 
- 
+
 _debugger_fence:
     fence
-    nop 
+    nop
     nop
     fence.i
     nop
@@ -170,10 +174,10 @@ _debugger_stopcount:
     j _debugger_end
 _debugger_irq:
     // Assert irq
-    li a1, 0x15000000
+    li a1, timer_reg_addr
     li t0, 0x40000000
     sw t0, 0(a1)
-    li a1, 0x15000004
+    li a1, timer_val_addr
     li t0, 2
     sw t0, 0(a1)
 
@@ -187,14 +191,14 @@ _irq_wait_loop:
     bne t0, x0, _irq_wait_loop
 _irq_loop_end:
     la a1, glb_irq_timeout
-    sw t1, 0(a1) 
+    sw t1, 0(a1)
     j _debugger_end
 
 _debugger_single_step:
     // Copy step_info
     la a1, glb_step_info
     lw t0, 0(a1)
-    
+
     // Check action to take
     li t1, 0
     beq t0, t1, _debugger_single_step_basic
@@ -240,7 +244,7 @@ _debugger_single_step_enable:
     bne t0, t1, _debugger_fail
 
     // Enable step bit in dcsr
-    li t0, 4<<28 | 1<<15 | 1<<2 
+    li t0, 4<<28 | 1<<15 | 1<<2
     csrw dcsr, t0
 
     // ebreak used to enter single step test, incr dpc
@@ -259,7 +263,7 @@ _debugger_single_step_disable:
     la a1, glb_expect_debug_entry
     sw x0, 0(a1)
     j _debugger_end
- 
+
 _debugger_single_step_trig_setup:
     // Set trigger to match on _step_trig_point
     la t0, _step_trig_point
@@ -282,7 +286,7 @@ _debugger_single_step_end:
     lw t0, 0(a1)
     addi t0, t0, 1
     sw t0, 0(a1)
-    
+
     // Clear step info if not 3 (exception) or 5 (irq while stepping)
     // 6, 7 or 8, 9, 10
     // In exception test we expect jumps
@@ -317,7 +321,7 @@ _debugger_single_step_illegal_insn:
     csrr t2, dcsr
     bne t1, t2, _debugger_fail
     // read dpc and mtvec
-    //csrr t0, dpc 
+    //csrr t0, dpc
     //csrr t1, mtvec
     //andi t1, t1, 0xffffff00
     //bne t0, t1, _debugger_fail
@@ -328,14 +332,14 @@ _debugger_step_trig_entry:
     csrr t0, dpc
     la a1, _step_trig_exit
     csrw dpc, a1
-    j _debugger_single_step_end 
+    j _debugger_single_step_end
 
 _debugger_single_step_cebreak:
     # If cause == 1, we need to advance dpc by 2
     li t1, 4<<28 | 1<<15 | 1<<6 | 1<<2 | 3<<0
     csrr t2, dcsr
     beq t1, t2, _inc_dpc_cebreak
-    
+
     j _debugger_single_step_end
 _inc_dpc_cebreak:
     csrr t1, dpc
@@ -348,7 +352,7 @@ _debugger_single_step_ebreak:
     li t1, 4<<28 | 1<<15 | 1<<6 | 1<<2 | 3<<0
     csrr t2, dcsr
     beq t1, t2, _inc_dpc_ebreak
-    
+
     j _debugger_single_step_end
 _inc_dpc_ebreak:
     csrr t1, dpc
@@ -369,7 +373,7 @@ _debugger_single_step_cebreak_exception:
     # set dcsr.ebreakm again
     csrr t0, dpc
     bne t0, x0, _end
-    
+
     li t1, 4<<28 | 1<<15 | 1<<6 | 1<<2 | 3<<0
     csrw dcsr, t1
 
@@ -405,7 +409,7 @@ _debugger_single_step_basic:
     li t1, 3
 //    bne t0, t1, _debugger_fail
     j _debugger_single_step_end
-    
+
 _debugger_csr_exception:
 	csrr t2,0xea8 // illegal insn
 
@@ -431,7 +435,7 @@ _debugger_simple:
     csrr t2,dcsr
     li t1, 4<<28 | 3<<6 | 3<<0
     bne t1, t2, _debugger_fail
- 
+
 	//csrr t2,0xea8 // illegal insn
     li t1, 1
     //sw t1, 0(a1)
@@ -507,7 +511,7 @@ _debugger_csr:
 _debugger_ebreak:
     li t0, 4<<28 | 3<<6 | 3<<0
     csrr t1, dcsr
-    bne t0, t1, _debugger_fail 
+    bne t0, t1, _debugger_fail
         // Increment glb_debug_status
         la a1, glb_debug_status
         lw t1, 0(a1)
@@ -546,20 +550,20 @@ _debugger_trigger_in_debug:
 	li   t1, 2<<28 | 1<<27 | 1<<12 | 1<<6 | 1 <<2
 	csrr t2,tdata1
 	bne  t1,t2,_debugger_fail
-    
+
     // Clear glb_expect_debug_entry
     // If we trig, we'll reenter debug and
     // test will fail due to 0 flag
     la a1, glb_expect_debug_entry
     li t1, 0
     sw t1, 0(a1)
-_debugger_trig_point:     
+_debugger_trig_point:
     // Should _not_trig here
     nop
     // Clear trigger
     li t1, 0<<2
     csrw tdata1, t1
-    j _debugger_end    
+    j _debugger_end
 
 _debugger_trigger_disabled_in_debug:
     // setup address to trigger on
@@ -571,27 +575,27 @@ _debugger_trigger_disabled_in_debug:
 	li   t1, 2<<28 | 1<<27 | 1<<12 | 1<<6 | 0 <<2
 	csrr t2,tdata1
 	bne  t1,t2,_debugger_fail
-    
+
     // Clear glb_expect_debug_entry
     // If we trig, we'll reenter debug and
     // test will fail due to 0 flag
     la a1, glb_expect_debug_entry
     li t1, 0
     sw t1, 0(a1)
-_debugger_trig_point_dis:     
+_debugger_trig_point_dis:
     // Should _not_trig here
     nop
     // Clear trigger
     li t1, 0<<2
     csrw tdata1, t1
-    j _debugger_end    
+    j _debugger_end
 _debugger_wfi_test:
     la a1, glb_debug_status
     csrr t2,dcsr
     // ebreakm is set by previous test
     li t1, 4<<28 | 3<<6 | 3<<0 | 1<<15
     bne t1, t2, _debugger_fail
-        
+
     // If the following wfi is not converted
     // to a nop, test will hang
     wfi
@@ -633,11 +637,11 @@ _debugger_end_continue:
         csrr a0, dscratch
         dret
 _debugger_fail: //Test Failed
-        li a0, test_ret_val
+        li a0, CV_VP_STATUS_FLAGS_BASE
         li t0, test_fail
         sw t0, 0(a0)
 	nop
         nop
         nop
         nop
-        
+

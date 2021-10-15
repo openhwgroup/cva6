@@ -17,34 +17,39 @@
 
 
 
-class uvma_isacov_instr_c extends uvm_object;
-  
+class uvma_isacov_instr_c#(int ILEN=DEFAULT_ILEN,
+                           int XLEN=DEFAULT_XLEN) extends uvm_object;
+
+  // Set for illegal instructions
+  bit           illegal;
+
+  // Set for traped instructions, that should not be considered for coverage
+  bit           trap;
+
+  // Enumeration
   instr_name_t  name;
   instr_ext_t   ext;
   instr_type_t  itype;
   instr_group_t group;
-
   instr_csr_t   csr;
 
-  bit[31:0] pc;
-  bit[31:0] mem_addr;
-  
-  bit [4:0] rs1;
-  bit [4:0] rs2;
-  bit [4:0] rd;
-  bit [11:0] immi;
-  bit [11:0] imms;
-  bit [12:1] immb;
+  bit [11:0]  csr_val;
+  bit [4:0]   rs1;
+  bit [4:0]   rs2;
+  bit [4:0]   rd;
+  bit [11:0]  immi;
+  bit [11:0]  imms;
+  bit [12:1]  immb;
   bit [31:12] immu;
-  bit [20:1] immj;
+  bit [20:1]  immj;
 
   // Valid flags for fields (to calculate hazards and other coverage)
   bit rs1_valid;
   bit rs2_valid;
   bit rd_valid;
-  
-  bit [31:0] c_imm; 
-  bit [5:0]  c_rdrs1; 
+
+  bit [31:0] c_imm;
+  bit [5:0]  c_rdrs1;
   bit [5:0]  c_rs1s;
   bit [5:0]  c_rs2s;
   bit [5:0]  c_rdp;
@@ -64,13 +69,18 @@ class uvma_isacov_instr_c extends uvm_object;
 
   instr_value_t c_imm_value_type;
 
-  `uvm_object_utils_begin(uvma_isacov_instr_c);
+  uvma_rvfi_instr_seq_item_c#(ILEN, XLEN) rvfi;
+
+  `uvm_object_param_utils_begin(uvma_isacov_instr_c#(ILEN,XLEN));
     `uvm_field_enum(instr_name_t,  name, UVM_ALL_ON | UVM_NOPRINT);
     `uvm_field_enum(instr_ext_t,   ext, UVM_ALL_ON | UVM_NOPRINT);
     `uvm_field_enum(instr_type_t,  itype, UVM_ALL_ON | UVM_NOPRINT);
     `uvm_field_enum(instr_group_t, group, UVM_ALL_ON | UVM_NOPRINT);
     `uvm_field_enum(instr_csr_t,   csr, UVM_ALL_ON | UVM_NOPRINT);
 
+    `uvm_field_int(illegal,   UVM_ALL_ON | UVM_NOPRINT);
+    `uvm_field_int(trap,      UVM_ALL_ON | UVM_NOPRINT);
+    `uvm_field_int(csr_val,   UVM_ALL_ON | UVM_NOPRINT);
     `uvm_field_int(rs1,       UVM_ALL_ON | UVM_NOPRINT);
     `uvm_field_int(rs1_value, UVM_ALL_ON | UVM_NOPRINT);
     `uvm_field_int(rs1_valid, UVM_ALL_ON | UVM_NOPRINT);
@@ -79,15 +89,15 @@ class uvma_isacov_instr_c extends uvm_object;
     `uvm_field_int(rs2_value, UVM_ALL_ON | UVM_NOPRINT);
     `uvm_field_int(rs2_valid, UVM_ALL_ON | UVM_NOPRINT);
     `uvm_field_enum(instr_value_t, rs2_value_type, UVM_ALL_ON | UVM_NOPRINT);
-    `uvm_field_int(rd,        UVM_ALL_ON | UVM_NOPRINT);    
+    `uvm_field_int(rd,        UVM_ALL_ON | UVM_NOPRINT);
     `uvm_field_int(rd_value,  UVM_ALL_ON | UVM_NOPRINT);
     `uvm_field_int(rd_valid,  UVM_ALL_ON | UVM_NOPRINT);
     `uvm_field_enum(instr_value_t, rd_value_type, UVM_ALL_ON | UVM_NOPRINT);
 
     `uvm_field_int(immi, UVM_ALL_ON | UVM_NOPRINT);
-    `uvm_field_enum(instr_value_t, immi_value_type, UVM_ALL_ON | UVM_NOPRINT);    
+    `uvm_field_enum(instr_value_t, immi_value_type, UVM_ALL_ON | UVM_NOPRINT);
     `uvm_field_int(imms, UVM_ALL_ON | UVM_NOPRINT);
-    `uvm_field_enum(instr_value_t, imms_value_type, UVM_ALL_ON | UVM_NOPRINT);    
+    `uvm_field_enum(instr_value_t, imms_value_type, UVM_ALL_ON | UVM_NOPRINT);
     `uvm_field_int(immb, UVM_ALL_ON | UVM_NOPRINT);
     `uvm_field_enum(instr_value_t, immb_value_type, UVM_ALL_ON | UVM_NOPRINT);
     `uvm_field_int(immu, UVM_ALL_ON | UVM_NOPRINT);
@@ -118,72 +128,77 @@ function uvma_isacov_instr_c::new(string name = "isacov_instr");
 endfunction : new
 
 function string uvma_isacov_instr_c::convert2string();
-  // Printing for a few special-formatting cases
-  if (name inside {LW, LH, LB, LHU, LBU}) begin
-    return $sformatf("0x%08x %s x%0d, %0d(x%0d)", pc, name.name().tolower(), rd, $signed(immi), rs1);
-  end
-  if (name inside {SLLI, SRLI, SRAI}) begin
-    return $sformatf("0x%08x %s x%0d, x%0d, 0x%0x", pc, name.name().tolower(), rd, rs1, rs2);
-  end
-  if (name == FENCE_I) begin
-    return $sformatf("0x%08x fence.i", pc);
-  end
+
+  string instr_str;
 
   // Printing based on instruction format type
+  if (name inside {LW, LH, LB, LHU, LBU}) begin
+    instr_str = $sformatf("x%0d, %0d(x%0d)", rd, $signed(immi), rs1);
+  end
+  if (name inside {SLLI, SRLI, SRAI}) begin
+    instr_str = $sformatf("x%0d, x%0d, 0x%0x", rd, rs1, rs2);
+  end
   if (itype == R_TYPE) begin
-    return $sformatf("0x%08x %s x%0d, x%0d, x%0d", pc, name.name().tolower(), rd, rs1, rs2);
+    instr_str = $sformatf("x%0d, x%0d, x%0d",  rd, rs1, rs2);
   end
   if (itype == I_TYPE) begin
-    return $sformatf("0x%08x %s x%0d, x%0d, %0d", pc, name.name().tolower(), rd, rs1, $signed(immi));
+    instr_str = $sformatf("x%0d, x%0d, %0d",  rd, rs1, $signed(immi));
   end
   if (itype == S_TYPE) begin
-    return $sformatf("0x%08x %s x%0d, %0d(x%0d)", pc, name.name().tolower(), rs2, $signed(imms), rs1);
+    instr_str = $sformatf("x%0d, %0d(x%0d)",  rs2, $signed(imms), rs1);
   end
   if (itype == B_TYPE) begin
-    return $sformatf("0x%08x %s x%0d, x%0d, %0d", pc, name.name().tolower(), rs1, rs2, $signed({immb, 1'b0}));
+    instr_str = $sformatf("x%0d, x%0d, %0d",  rs1, rs2, $signed({immb, 1'b0}));
   end
   if (itype == U_TYPE) begin
-    return $sformatf("0x%08x %s x%0d, 0x%0x", pc, name.name().tolower(), rd, {immu, 12'd0});
+    instr_str = $sformatf("x%0d, 0x%0x",  rd, {immu, 12'd0});
   end
   if (itype == J_TYPE) begin
-    return $sformatf("0x%08x %s x%0d, %0d", pc, name.name().tolower(), rd, $signed(immj));
+    instr_str = $sformatf("x%0d, %0d",  rd, $signed(immj));
   end
   if (itype == CSR_TYPE) begin
-    return $sformatf("0x%08x %s x%0d, x%0d, %s", pc, name.name().tolower(), rd, rs1, csr.name().tolower());
+    instr_str = $sformatf("x%0d, x%0d, %s",  rd, rs1, csr.name().tolower());
   end
   if (itype == CSRI_TYPE) begin
-    return $sformatf("0x%08x %s x%0d, %0d, %s", pc, name.name().tolower(), rd, rs1, csr.name().tolower());
+    instr_str = $sformatf("x%0d, %0d, %s",  rd, rs1, csr.name().tolower());
   end
   if (itype == CI_TYPE) begin
-    return $sformatf("0x%08x %s x%0d, %0d", pc, name.name().tolower(), rd, c_imm);
+    instr_str = $sformatf("x%0d, %0d",  rd, c_imm);
   end
   if (itype == CR_TYPE) begin
-    return $sformatf("0x%08x %s x%0d, x%0d", pc, name.name().tolower(), rd, rs2);
+    instr_str = $sformatf("x%0d, x%0d",  rd, rs2);
   end
   if (itype == CSS_TYPE) begin
-    return $sformatf("0x%08x %s x%0d, %0d", pc, name.name().tolower(), rs2, c_imm);
+    instr_str = $sformatf("x%0d, %0d",  rs2, c_imm);
   end
   if (itype == CIW_TYPE) begin
-    return $sformatf("0x%08x %s x%0d, %0d", pc, name.name().tolower(), rd, c_imm);
+    instr_str = $sformatf("x%0d, %0d",  rd, c_imm);
   end
   if (itype == CL_TYPE) begin
-    return $sformatf("0x%08x %s x%0d, x%0d, %0d", pc, name.name().tolower(), rd, rs1, c_imm);
+    instr_str = $sformatf("x%0d, x%0d, %0d",  rd, rs1, c_imm);
   end
   if (itype == CS_TYPE) begin
-    return $sformatf("0x%08x %s x%0d, x%0d, %0d", pc, name.name().tolower(), rs1, rs2, c_imm);
+    instr_str = $sformatf("x%0d, x%0d, %0d",  rs1, rs2, c_imm);
   end
   if (itype == CA_TYPE) begin
-    return $sformatf("0x%08x %s x%0d, x%0d", pc, name.name().tolower(), rd, rs2);
+    instr_str = $sformatf("x%0d, x%0d",  rd, rs2);
   end
   if (itype == CB_TYPE) begin
-    return $sformatf("0x%08x %s x%0d, x%0d", pc, name.name().tolower(), rd, rs2);
+    instr_str = $sformatf("x%0d, x%0d",  rd, rs2);
   end
   if (itype == CJ_TYPE) begin
-    return $sformatf("0x%08x %s x%0d", pc, name.name().tolower(), c_imm);
+    instr_str = $sformatf("x%0d",  c_imm);
   end
 
   // Default printing of just the instruction name
-  return $sformatf("0x%08x %s", pc, name.name().tolower());
+  instr_str = $sformatf ("0x%08x %s %s", rvfi.pc_rdata, name.name().tolower(), instr_str);
+
+  if (trap)
+    instr_str = { instr_str, " TRAP" };
+  if (illegal)
+    instr_str = { instr_str, " ILLEGAL" };
+
+  return instr_str;
 
 endfunction : convert2string
 
@@ -194,7 +209,7 @@ function void uvma_isacov_instr_c::set_valid_flags();
     rd_valid = 1;
     return;
   end
-  
+
   if (itype == I_TYPE) begin
     rs1_valid = 1;
     rd_valid = 1;
@@ -203,13 +218,13 @@ function void uvma_isacov_instr_c::set_valid_flags();
 
   if (itype == S_TYPE) begin
     rs1_valid = 1;
-    rs2_valid = 1;    
+    rs2_valid = 1;
     return;
   end
 
   if (itype == B_TYPE) begin
     rs1_valid = 1;
-    rs2_valid = 1;    
+    rs2_valid = 1;
     return;
   end
 
@@ -223,24 +238,24 @@ function void uvma_isacov_instr_c::set_valid_flags();
     return;
   end
 
-  if (itype == CI_TYPE) begin    
+  if (itype == CI_TYPE) begin
     rd_valid = 1;
     return;
   end
 
-  if (itype == CR_TYPE) begin    
+  if (itype == CR_TYPE) begin
     rs1_valid = 1;
     rs2_valid = 1;
     rd_valid = 1;
     return;
   end
 
-  if (itype == CSS_TYPE) begin        
+  if (itype == CSS_TYPE) begin
     rs2_valid = 1;
     return;
   end
 
-  if (itype == CIW_TYPE) begin        
+  if (itype == CIW_TYPE) begin
     rd_valid = 1;
     return;
   end
@@ -289,10 +304,10 @@ endfunction : set_valid_flags
 
 function bit uvma_isacov_instr_c::is_csr_write();
   // Using Table 9.1 in RISC-V specification to define a CSR write
-  if (name inside {CSRRW}) 
+  if (name inside {CSRRW})
     return 1;
 
-  if (name inside {CSRRS, CSRRC} && rs1 != 0) 
+  if (name inside {CSRRS, CSRRC} && rs1 != 0)
     return 1;
 
   if (name inside {CSRRWI})
@@ -308,16 +323,16 @@ function instr_value_t uvma_isacov_instr_c::get_instr_value_type(bit[31:0] value
   if (value == 0)
     return ZERO;
 
-  if (is_signed) 
+  if (is_signed)
     return value[width-1] ? NEGATIVE : POSITIVE;
 
   return NON_ZERO;
-  
+
 endfunction : get_instr_value_type
 
 function bit uvma_isacov_instr_c::is_conditional_branch();
 
-  if (name inside {BEQ, BNE, BLT, BGE, BLTU, BGEU, C_BEQZ, C_BNEZ}) 
+  if (name inside {BEQ, BNE, BLT, BGE, BLTU, BGEU, C_BEQZ, C_BNEZ})
     return 1;
 
   return 0;
