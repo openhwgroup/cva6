@@ -223,13 +223,17 @@ task uvme_cv32e40p_env_c::run_phase(uvm_phase phase);
       fork
          begin : spawn_obi_instr_fw_preload_thread
             fw_preload_seq = uvma_obi_memory_fw_preload_seq_c::type_id::create("fw_preload_seq");
-            void'(fw_preload_seq.randomize());
+            if (!fw_preload_seq.randomize()) begin
+               `uvm_fatal("FWPRELOAD", "Randomize failed");
+            end
             fw_preload_seq.start(obi_memory_instr_agent.sequencer);
          end
 
          begin : obi_instr_slv_thread
             instr_slv_seq = uvma_obi_memory_slv_seq_c::type_id::create("instr_slv_seq");
-            void'(instr_slv_seq.randomize());
+            if (!instr_slv_seq.randomize()) begin
+               `uvm_fatal("INSTRSLVSEQ", "Randomize failed");
+            end
             instr_slv_seq.start(obi_memory_instr_agent.sequencer);
          end
 
@@ -283,7 +287,9 @@ task uvme_cv32e40p_env_c::run_phase(uvm_phase phase);
                vp_seq.cv32e40p_cntxt = cntxt;
             end
 
-            void'(data_slv_seq.randomize());
+            if (!data_slv_seq.randomize()) begin
+               `uvm_fatal("DATASLVSEQ", "Randomize failed");
+            end
             data_slv_seq.start(obi_memory_data_agent.sequencer);
          end
       join_none
