@@ -96,7 +96,7 @@ function logic [FIFO_DELAY_WL-1:0] get_random_delay();
         get_random_delay = valid_stall_i;
     else if (stall_mode_i == perturbation_defines::RANDOM)
         get_random_delay = $urandom_range(max_stall_i, 0);
-    else 
+    else
         get_random_delay = 0;
 endfunction : get_random_delay
 `endif
@@ -129,7 +129,7 @@ always @(posedge clk_i or negedge rst_ni) begin
     end
     else begin
         if (fifo_push) begin
-            fifo[wptr[FIFO_PTR_WL-2:0]] = { 
+            fifo[wptr[FIFO_PTR_WL-2:0]] = {
                 we_i,
 `ifdef VERILATOR
                 4'h0,
@@ -141,7 +141,7 @@ always @(posedge clk_i or negedge rst_ni) begin
             wptr_rdata <= wptr[FIFO_PTR_WL-2:0];
 
             rvalid_i_q <= (!we_i) ? 1 : 0;
-        end 
+        end
         else begin
             rvalid_i_q <= 1'b0;
         end

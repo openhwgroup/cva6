@@ -1,0 +1,157 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ruleset library="UVM" version="2">
+
+	<configuration>
+		<annotation name="Author" show-in="DETAILS, FILTERS, TABLE" type="git" git-field="author" />
+      <failed severity="ERROR" />
+	</configuration>
+
+	<category name="Compilation">
+		<rule id="SYNTACTIC_PROBLEM" />
+		<rule id="SEMANTIC_PROBLEM" />
+		<rule id="NON_STANDARD" />
+	</category>
+
+	<category name="Literal Values">
+		<rule id="SVTB.4.1.7" />
+	</category>
+
+	<category name="Singular Data Types">
+		<rule id="SVTB.5.2.1.1" />
+	</category>
+
+	<category name="Aggregate Data Types">
+		<rule id="SVTB.6.1.2.1" />
+	</category>
+
+	<category name="Classes">
+		<rule id="SVTB.7.1.2" />
+		<rule id="SVTB.7.13" />
+		<rule id="SVTB.7.15" />
+		<rule id="SVTB.7.20" />
+		<rule id="SVTB.7.26" />
+	</category>
+
+	<category name="Operators">
+		<rule id="SVTB.5.11.2.1" />
+		<rule id="SVTB.10.7.3" />
+	</category>
+
+	<category name="Methods and Method Calls">
+		<rule id="SVTB.12.1.2" />
+		<rule id="SVTB.12.2.6.1" />
+	</category>
+
+	<category name="Randomization">
+		<rule id="SVTB.15.4.1.1" >
+			<property key="allowTempVariableChecking" value="true" />
+		</rule>
+		<rule id="SVTB.15.4.9" />
+		<rule id="SVTB.15.5.1" />
+	</category>
+
+	<category name="Direct Programming Interface (DPI)">
+		<rule id="SVTB.23.1" />
+	</category>
+
+	<category name="Global">
+		<rule id="SVTB.28.1" />
+	</category>
+
+	<category name="Banned API">
+		<rule id="SVTB.29.1.1" />
+		<rule id="SVTB.29.1.3.1" />
+		<rule id="SVTB.29.1.3.2" />
+		<rule id="SVTB.29.1.7" />
+	</category>
+
+	<category name="Deprecated API">
+		<rule id="SVTB.30.1.0">
+			<property key="deprecatedComments" value="DEPRECATED" />
+		</rule>
+
+		<rule id="SVTB.30.2.0">
+			<property key="deprecatedComments" value="DEPRECATED" />
+		</rule>
+
+		<rule id="SVTB.30.3.0">
+			<property key="deprecatedComments" value="DEPRECATED" />
+		</rule>
+
+		<rule id="SVTB.30.4.0">
+			<property key="deprecatedComments" value="DEPRECATED" />
+		</rule>
+	</category>
+
+	<category name="Dead Code">
+		<rule id="SVTB.31.1.0" name="SVTB.31.1.0.local">
+			<property key="analyzeTypeParameterAccess" value="true" />
+
+			<property key="skipPublicAPI" value="true" />
+			<property key="skipPublicFunctionArguments" value="true" />
+			<property key="skipProtectedAPI" value="true" />
+			<property key="skipProtectedFunctionArguments" value="true" />
+		</rule>
+
+		<rule id="SVTB.31.2.0" />
+	</category>
+
+	<category name="Performance">
+		<rule id="SVTB.32.1.0" />
+		<rule id="SVTB.32.2.0">
+			<property key="skipConstructors" value="true" />
+		</rule>
+	</category>
+
+	<category name="Duplicate Code">
+		<rule id="SVTB.33.1.0" />
+		<rule id="SVTB.33.2.0" />
+		<rule id="SVTB.33.3.0" />
+	</category>
+
+	<category name="XVM">
+		<rule id="XVM.2.1.17" />
+		<rule id="ARAA" />
+		<rule id="ARSAb" />
+		<rule id="ARIN">
+         <property key="allowIndirectCallInstantiation" value="true" />
+		</rule>
+		
+		<rule id="XVM28">
+         <property key="allowIndirectCallInstantiation" value="true" />
+		</rule>
+		
+		<rule id="ARBF">
+         <property key="allowIndirectCallInstantiation" value="true" />
+		</rule>
+
+		<rule id="ARMN">
+         <property key="allowIndirectCallInstantiation" value="true" />
+      </rule>
+
+		<rule id="ARSAa">
+         <property key="allowIndirectCallInstantiation" value="true" />
+      </rule>
+      
+		<rule id="XVM.2.1.16" />
+		<rule id="XVM2" />
+		<rule id="XVM.3.3.3" >
+		    <property key="allowBeginEndMacros" value="true" />
+		</rule>    
+		<rule id="XVM.2.1.15" />
+		<rule id="XVM.3.3.11" />
+		<rule id="XVM51">
+         <property key="allowIndirectCallInstantiation" value="true" />  
+		</rule>
+		<rule id="XVM.2.1.4.2.8" />
+		<rule id="XVM.2.1.15.1" />
+		<rule id="XVM.3.1.9.2" />
+		<rule id="XVM.3.3.11.1" />
+		<rule id="XVM.2.8.5" />
+		<rule id="XVM3" />
+		<rule id="XVM.3.1.4.1" >
+		    <property key="allowAdditionalStatements" value="true"/>
+		</rule>
+	</category>
+
+</ruleset>

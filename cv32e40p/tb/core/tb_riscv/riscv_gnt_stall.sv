@@ -103,7 +103,7 @@ always @(posedge clk_i or negedge rst_ni) begin
   if (!rst_ni) begin
     grant_core_o <= 1'b0;
     grant_delay_cnt <= 0;
-  end 
+  end
   else begin
 `ifdef VERILATOR
     //#1;

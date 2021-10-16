@@ -9,24 +9,25 @@
     </ccf-files>
   </information>
   <rules>
-    <rule ccType="inst" domain="icc" entityName="uvmt_cv32_tb/debug_if" entityType="inst" excTime="1605577634" name="exclude" recursiveMetrics="overall" reviewer="unknown" user="0" vscope="default"></rule>
-    <rule ccType="inst" comment="1" domain="icc" entityName="uvmt_cv32_tb/iss_wrap" entityType="inst" excTime="1599924424" name="exclude" recursiveMetrics="overall" reviewer="unknown" user="0" vscope="default"></rule>
-    <rule ccType="inst" comment="1" domain="icc" entityName="uvmt_cv32_tb" entityType="inst" excTime="1599924424" name="exclude" reviewer="unknown" user="0" vscope="default"></rule>
-    <rule ccType="inst" comment="1" domain="icc" entityName="uvmt_cv32_tb/dut_wrap/ram_i" entityType="inst" excTime="1599924424" name="exclude" recursiveMetrics="overall" reviewer="unknown" user="0" vscope="default"></rule>
-    <rule ccType="inst" comment="1" domain="icc" entityName="uvmt_cv32_tb/dut_wrap/cv32e40p_wrapper_i" entityType="inst" excTime="1599924424" name="exclude" reviewer="unknown" user="0" vscope="default"></rule>
-    <rule ccType="inst" comment="1" domain="icc" entityName="uvmt_cv32_tb/dut_wrap/cv32e40p_wrapper_i/core_log_i" entityType="inst" excTime="1599924424" name="exclude" recursiveMetrics="overall" reviewer="unknown" user="0" vscope="default"></rule>
-    <rule ccType="inst" comment="1" domain="icc" entityName="uvmt_cv32_tb/clknrst_if" entityType="inst" excTime="1599924424" name="exclude" recursiveMetrics="overall" reviewer="unknown" user="0" vscope="default"></rule>
-    <rule ccType="inst" comment="1" domain="icc" entityName="uvmt_cv32_tb/clknrst_if_iss" entityType="inst" excTime="1599924424" name="exclude" recursiveMetrics="overall" reviewer="unknown" user="0" vscope="default"></rule>
-    <rule ccType="inst" comment="1" domain="icc" entityName="uvmt_cv32_tb/interrupt_if" entityType="inst" excTime="1599924424" name="exclude" recursiveMetrics="overall" reviewer="unknown" user="0" vscope="default"></rule>
-    <rule ccType="inst" comment="1" domain="icc" entityName="uvmt_cv32_tb/vp_status_if" entityType="inst" excTime="1599924424" name="exclude" recursiveMetrics="overall" reviewer="unknown" user="0" vscope="default"></rule>
-    <rule ccType="inst" comment="1" domain="icc" entityName="uvmt_cv32_tb/core_cntrl_if" entityType="inst" excTime="1599924424" name="exclude" recursiveMetrics="overall" reviewer="unknown" user="0" vscope="default"></rule>
-    <rule ccType="inst" comment="1" domain="icc" entityName="uvmt_cv32_tb/step_compare_if" entityType="inst" excTime="1599924424" name="exclude" recursiveMetrics="overall" reviewer="unknown" user="0" vscope="default"></rule>
-    <rule ccType="inst" comment="1" domain="icc" entityName="uvmt_cv32_tb/step_compare" entityType="inst" excTime="1599924424" name="exclude" recursiveMetrics="overall" reviewer="unknown" user="0" vscope="default"></rule>
-    <rule ccType="inst" comment="1" domain="icc" entityName="uvmt_cv32_tb/dut_wrap" entityType="inst" excTime="1599924424" name="exclude" reviewer="unknown" user="0" vscope="default"></rule>
-    <rule ccType="inst" domain="icc" entityName="uvmt_cv32_tb/dut_wrap/cv32e40p_wrapper_i/obi_instr_assert_i/Code" entityType="metrics" excTime="1605217237" name="exclude" recursiveMetrics="overall" reviewer="unknown" user="0" vscope="default"></rule>
-    <rule ccType="inst" domain="icc" entityName="uvmt_cv32_tb/dut_wrap/cv32e40p_wrapper_i/obi_data_assert_i/Code" entityType="metrics" excTime="1605217240" name="exclude" recursiveMetrics="overall" reviewer="unknown" user="0" vscope="default"></rule>
-    <rule ccType="inst" domain="icc" entityName="uvmt_cv32_tb/u_debug_assert/Code" entityType="metrics" excTime="1605217301" name="exclude" recursiveMetrics="overall" reviewer="unknown" user="0" vscope="default"></rule>
-    <rule ccType="inst" domain="icc" entityName="uvmt_cv32_tb/dut_wrap/cv32e40p_wrapper_i/core_i/interrupt_assert_i/Code" entityType="metrics" excTime="1605217310" name="exclude" recursiveMetrics="overall" reviewer="unknown" user="0" vscope="default"></rule>
+    <rule ccType="inst" domain="icc" entityName="uvmt_cv32e40p_tb/debug_if" entityType="inst" excTime="1605577634" name="exclude" recursiveMetrics="overall" reviewer="unknown" user="0" vscope="default"></rule>
+    <rule ccType="inst" comment="1" domain="icc" entityName="uvmt_cv32e40p_tb/iss_wrap" entityType="inst" excTime="1599924424" name="exclude" recursiveMetrics="overall" reviewer="unknown" user="0" vscope="default"></rule>
+    <rule ccType="inst" comment="1" domain="icc" entityName="uvmt_cv32e40p_tb" entityType="inst" excTime="1599924424" name="exclude" reviewer="unknown" user="0" vscope="default"></rule>
+    <rule ccType="inst" comment="1" domain="icc" entityName="uvmt_cv32e40p_tb/dut_wrap/ram_i" entityType="inst" excTime="1599924424" name="exclude" recursiveMetrics="overall" reviewer="unknown" user="0" vscope="default"></rule>
+    <rule ccType="inst" comment="1" domain="icc" entityName="uvmt_cv32e40p_tb/dut_wrap/cv32e40p_wrapper_i" entityType="inst" excTime="1599924424" name="exclude" reviewer="unknown" user="0" vscope="default"></rule>
+    <rule ccType="inst" comment="1" domain="icc" entityName="uvmt_cv32e40p_tb/dut_wrap/cv32e40p_wrapper_i/core_log_i" entityType="inst" excTime="1599924424" name="exclude" recursiveMetrics="overall" reviewer="unknown" user="0" vscope="default"></rule>
+    <rule ccType="inst" comment="1" domain="icc" entityName="uvmt_cv32e40p_tb/clknrst_if" entityType="inst" excTime="1599924424" name="exclude" recursiveMetrics="overall" reviewer="unknown" user="0" vscope="default"></rule>
+    <rule ccType="inst" comment="1" domain="icc" entityName="uvmt_cv32e40p_tb/clknrst_if_iss" entityType="inst" excTime="1599924424" name="exclude" recursiveMetrics="overall" reviewer="unknown" user="0" vscope="default"></rule>
+    <rule ccType="inst" comment="1" domain="icc" entityName="uvmt_cv32e40p_tb/interrupt_if" entityType="inst" excTime="1599924424" name="exclude" recursiveMetrics="overall" reviewer="unknown" user="0" vscope="default"></rule>
+    <rule ccType="inst" comment="1" domain="icc" entityName="uvmt_cv32e40p_tb/vp_interrupt_if" entityType="inst" excTime="1599924424" name="exclude" recursiveMetrics="overall" reviewer="unknown" user="0" vscope="default"></rule>
+    <rule ccType="inst" comment="1" domain="icc" entityName="uvmt_cv32e40p_tb/vp_status_if" entityType="inst" excTime="1599924424" name="exclude" recursiveMetrics="overall" reviewer="unknown" user="0" vscope="default"></rule>
+    <rule ccType="inst" comment="1" domain="icc" entityName="uvmt_cv32e40p_tb/core_cntrl_if" entityType="inst" excTime="1599924424" name="exclude" recursiveMetrics="overall" reviewer="unknown" user="0" vscope="default"></rule>
+    <rule ccType="inst" comment="1" domain="icc" entityName="uvmt_cv32e40p_tb/step_compare_if" entityType="inst" excTime="1599924424" name="exclude" recursiveMetrics="overall" reviewer="unknown" user="0" vscope="default"></rule>
+    <rule ccType="inst" comment="1" domain="icc" entityName="uvmt_cv32e40p_tb/step_compare" entityType="inst" excTime="1599924424" name="exclude" recursiveMetrics="overall" reviewer="unknown" user="0" vscope="default"></rule>
+    <rule ccType="inst" comment="1" domain="icc" entityName="uvmt_cv32e40p_tb/dut_wrap" entityType="inst" excTime="1599924424" name="exclude" reviewer="unknown" user="0" vscope="default"></rule>
+    <rule ccType="inst" domain="icc" entityName="uvmt_cv32e40p_tb/dut_wrap/obi_instr_memory_assert_i/Code" entityType="metrics" excTime="1605217237" name="exclude" recursiveMetrics="overall" reviewer="unknown" user="0" vscope="default"></rule>
+    <rule ccType="inst" domain="icc" entityName="uvmt_cv32e40p_tb/dut_wrap/obi_data_memory_assert_i/Code" entityType="metrics" excTime="1605217240" name="exclude" recursiveMetrics="overall" reviewer="unknown" user="0" vscope="default"></rule>
+    <rule ccType="inst" domain="icc" entityName="uvmt_cv32e40p_tb/u_debug_assert/Code" entityType="metrics" excTime="1605217301" name="exclude" recursiveMetrics="overall" reviewer="unknown" user="0" vscope="default"></rule>
+    <rule ccType="inst" domain="icc" entityName="uvmt_cv32e40p_tb/dut_wrap/cv32e40p_wrapper_i/core_i/interrupt_assert_i/Code" entityType="metrics" excTime="1605217310" name="exclude" recursiveMetrics="overall" reviewer="unknown" user="0" vscope="default"></rule>
   </rules>
   <cache-map>
     <cache-entry key="0" value="strichmo"></cache-entry>

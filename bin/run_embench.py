@@ -126,7 +126,7 @@ def main():
     if args.type == 'speed':
       logger.info(f"Copying files from {paths['bsp']} to {paths['embrd']}")
       for file in os.listdir(paths['bsp']):
-        if file.endswith('.S') or file.endswith('.c'):
+        if file.endswith('.S') or file.endswith('.c') or file.endswith('.h'):
           logger.info(f"Copying {file}")
           try:
             subprocess.run(['cp', paths['bsp']+'/'+file, paths['embrd']])
