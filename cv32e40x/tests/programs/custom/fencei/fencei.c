@@ -102,8 +102,5 @@ int main(void) {
     : "=r"(reg0), "=r"(reg1));
   assert_or_die(reg0, 234, "overwriting instruction data should be visible after fencei\n");
 
-  printf("Check externally modified code\n");
-  // TODO:ropeders write code to test this, after testbench infrastructure has been made
-
   return EXIT_SUCCESS;
 }
