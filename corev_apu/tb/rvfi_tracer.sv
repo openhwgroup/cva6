@@ -8,7 +8,6 @@
 // Original Author: Jean-Roch COULON (jean-roch.coulon@invia.fr)
 
 module rvfi_tracer #(
-  parameter int unsigned SIM_FINISH  = 1000000,
   parameter logic [7:0] HART_ID      = '0,
   parameter int unsigned DEBUG_START = 0,
   parameter int unsigned NR_COMMIT_PORTS = 2,
@@ -20,7 +19,12 @@ module rvfi_tracer #(
 );
 
   int f;
-  initial f = $fopen($sformatf("trace_rvfi_hart_%h.dasm", HART_ID), "w");
+  int unsigned SIM_FINISH;
+  initial begin
+    f = $fopen($sformatf("trace_rvfi_hart_%h.dasm", HART_ID), "w");
+    if (!$value$plusargs("time_out=%d", SIM_FINISH)) SIM_FINISH = 2000000;
+  end
+
   final $fclose(f);
 
   logic [31:0] cycles;
