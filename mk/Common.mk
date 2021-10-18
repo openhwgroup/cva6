@@ -253,8 +253,7 @@ ASM       ?= ../../tests/asm
 ASM_DIR   ?= $(ASM)
 
 # CORE FIRMWARE vars. All of the C and assembler programs under CORE_TEST_DIR
-# are collectively known as "Core Firmware".  Yes, this is confusing because
-# one of sub-directories of CORE_TEST_DIR is called "firmware".
+# are collectively known as "Core Firmware".
 #
 # Note that the DSIM targets allow for writing the log-files to arbitrary
 # locations, so all of these paths are absolute, except those used by Verilator.
@@ -318,6 +317,17 @@ FIRMWARE_UNIT_TEST_OBJS   =  	$(addsuffix .o, \
 # must be able to run (and pass!) prior to generating a pull-request.
 sanity: hello-world
 
+
+###############################################################################
+# Code generators
+new-agent:
+	mkdir -p $(CORE_V_VERIF)/temp
+	wget -q https://github.com/Datum-Technology-Corporation/mio_ip_core/archive/refs/tags/gen_uvm_v1p0.tar.gz -P $(CORE_V_VERIF)/temp
+	tar xzf $(CORE_V_VERIF)/temp/gen_uvm_v1p0.tar.gz -C $(CORE_V_VERIF)/temp
+	cd $(CORE_V_VERIF)/temp/mio_ip_core-gen_uvm_v1p0/tools/gen_uvm/bin && ./new_agent_simplex_no_layers.py $(CORE_V_VERIF)/lib/uvm_agents "OpenHW Group"
+	rm -rf $(CORE_V_VERIF)/temp
+
+
 ###############################################################################
 # Read YAML test specifications
 
@@ -341,10 +351,10 @@ include $(GEN_FLAGS_MAKE)
 endif
 
 # If the test target is defined then read in a test specification file
-TEST_YAML_PARSE_TARGETS=test waves cov hex clean_hex
+TEST_YAML_PARSE_TARGETS=test waves cov hex clean_hex veri-test dsim-test xrun-test
 ifneq ($(filter $(TEST_YAML_PARSE_TARGETS),$(MAKECMDGOALS)),)
 ifeq ($(TEST),)
-$(error ERROR must specify a TEST variable)
+$(error ERROR! must specify a TEST variable)
 endif
 TEST_FLAGS_MAKE := $(shell $(YAML2MAKE) --test=$(TEST) --yaml=test.yaml  $(YAML2MAKE_DEBUG) --run-index=$(u) --prefix=TEST --core=$(CV_CORE))
 ifeq ($(TEST_FLAGS_MAKE),)
@@ -356,7 +366,7 @@ endif
 # If a test target is defined and a CFG is defined that read in build configuration file
 # CFG is optional
 CFGYAML2MAKE = $(CORE_V_VERIF)/bin/cfgyaml2make
-CFG_YAML_PARSE_TARGETS=comp ldgen comp_corev-dv gen_corev-dv test hex clean_hex corev-dv
+CFG_YAML_PARSE_TARGETS=comp ldgen comp_corev-dv gen_corev-dv test hex clean_hex corev-dv sanity-veri-run
 ifneq ($(filter $(CFG_YAML_PARSE_TARGETS),$(MAKECMDGOALS)),)
 ifneq ($(CFG),)
 CFG_FLAGS_MAKE := $(shell $(CFGYAML2MAKE) --yaml=$(CFG).yaml $(YAML2MAKE_DEBUG) --prefix=CFG --core=$(CV_CORE))
