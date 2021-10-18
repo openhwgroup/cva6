@@ -123,13 +123,20 @@ module uvmt_cv32e40x_fencei_assert
     !data_req_o
   ) else `uvm_error(info_tag, "obi data req shall not happen while fencei is flushing");
 
-/* TODO:ropeders fix when spec is updated, add RVC-cycle property
-  a_two_cycle: assert property (
-    $rose(is_fencei_in_wb)
-    |->
-    ##2 !is_fencei_in_wb
+  a_cycle_count: assert property (
+    (
+      (
+        $rose(is_fencei_in_wb)
+      ) and (
+        (!fencei_flush_req_o || fencei_flush_ack_i) [*10]
+      ) and (
+        fencei_flush_req_o within (1 [*3])
+      )
+    ) implies (
+      ##2 is_fencei_in_wb
+      ##1 !is_fencei_in_wb
+    )
   ) else `uvm_error(info_tag, "fencei must finish in the expected number of cycles");
-*/
 
   a_req_wait_bus: assert property (
     fencei_flush_req_o
