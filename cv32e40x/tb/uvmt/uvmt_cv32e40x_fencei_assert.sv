@@ -123,20 +123,25 @@ module uvmt_cv32e40x_fencei_assert
     !data_req_o
   ) else `uvm_error(info_tag, "obi data req shall not happen while fencei is flushing");
 
-  a_cycle_count: assert property (
+  property p_fencei_quick_retire;
     (
-      (
-        $rose(is_fencei_in_wb)
-      ) and (
-        (!fencei_flush_req_o || fencei_flush_ack_i) [*10]
-      ) and (
-        fencei_flush_req_o within (1 [*3])
-      )
-    ) implies (
-      ##2 is_fencei_in_wb
-      ##1 !is_fencei_in_wb
-    )
-  ) else `uvm_error(info_tag, "fencei must finish in the expected number of cycles");
+      $rose(is_fencei_in_wb)
+    ) and (
+      (!fencei_flush_req_o || fencei_flush_ack_i) [*10]
+    ) and (
+      fencei_flush_req_o within (1 [*3])
+    );
+  endproperty
+  a_cycle_count_minimum: assert property (
+    p_fencei_quick_retire
+    implies
+    (##1 !$rose(wb_instr_valid) [*5])  // 6 cycles
+  ) else `uvm_error(info_tag, "fencei shan't finish before the expected number of cycles");
+  c_cycle_count_minimum: cover property (
+    p_fencei_quick_retire
+    and
+    (s_nexttime [6] $rose(wb_instr_valid))
+  );
 
   a_req_wait_bus: assert property (
     fencei_flush_req_o
