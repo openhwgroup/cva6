@@ -1,4 +1,4 @@
-// 
+//
 // Copyright 2020 OpenHW Group
 // Copyright 2020 Datum Technology Corporation
 // Copyright 2020 Silicon Labs, Inc.
@@ -6,15 +6,15 @@
 // Licensed under the Solderpad Hardware Licence, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
-// 
+//
 //     https://solderpad.org/licenses/
-// 
+//
 // Unless required by applicable law or agreed to in writing, software
 // distributed under the License is distributed on an "AS IS" BASIS,
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
-// 
+//
 
 `ifndef __UVMA_CORE_CNTRL_PMA_REGION_SV__
 `define __UVMA_CORE_CNTRL_PMA_REGION_SV__
@@ -41,7 +41,7 @@
 
    // Is this memory bufferable
    rand bit                      bufferable;
-   
+
    // Is this memory cacheable
    rand bit                      cacheable;
 
@@ -57,7 +57,7 @@
       `uvm_field_int(               cacheable       , UVM_DEFAULT | UVM_NOPRINT)
       `uvm_field_int(               atomic          , UVM_DEFAULT | UVM_NOPRINT)
    `uvm_field_utils_end
-   
+
    constraint addr_range_cons {
       word_addr_low <= word_addr_high;
    }
@@ -95,7 +95,7 @@
  endclass : uvma_core_cntrl_pma_region_c
 
 function uvma_core_cntrl_pma_region_c::new(string name="uvma_core_cntrl_pma_region_c");
-   
+
    super.new(name);
 
 endfunction : new
@@ -104,7 +104,7 @@ function void uvma_core_cntrl_pma_region_c::do_print(uvm_printer printer);
 
    super.do_print(printer);
 
-   printer.print_string("xlen", xlen.name());   
+   printer.print_string("xlen", xlen.name());
    printer.print_string("word_addr_low", $sformatf("0x%08x (0x%08x)", word_addr_low, get_byte_addr(word_addr_low)));
    printer.print_string("word_addr_high", $sformatf("0x%08x (0x%08x)", word_addr_high, get_byte_addr(word_addr_high)));
    printer.print_field("main", main, 1);
@@ -116,8 +116,9 @@ endfunction : do_print
 
 function bit uvma_core_cntrl_pma_region_c::is_addr_in_region(bit [MAX_XLEN-1:0] byte_addr);
 
-   if (((byte_addr >> 2) >= word_addr_low) && 
-       ((byte_addr >> 2) <= word_addr_high))
+   // Per User manual, do not include the upper word address
+   if (((byte_addr >> 2) >= word_addr_low) &&
+       ((byte_addr >> 2) < word_addr_high))
       return 1;
 
    return 0;
@@ -131,7 +132,7 @@ function bit [MAX_XLEN-1:0] uvma_core_cntrl_pma_region_c::get_byte_addr(bit [MAX
    MXL_32:  return byte_addr[31:0];
    MXL_64:  return byte_addr[63:0];
    MXL_128: return byte_addr[127:0];
-   endcase  
+   endcase
 
    `uvm_fatal("PMA", "Should not fall through to here");
 

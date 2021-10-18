@@ -15,7 +15,7 @@ export SHELL = /bin/bash
 
 CV_CORE_REPO   ?= https://github.com/openhwgroup/cv32e40x
 CV_CORE_BRANCH ?= master
-CV_CORE_HASH   ?= 933f5aad16d2fa44ab9dacabe03c62fb923ada26
+CV_CORE_HASH   ?= bf832e774a8403c875c8a63db22d186da02d0446
 CV_CORE_TAG    ?= none
 
 RISCVDV_REPO    ?= https://github.com/google/riscv-dv
@@ -24,7 +24,7 @@ RISCVDV_HASH    ?= f255eac0e011a95f1ae9d510adb24458b98600f3
 
 EMBENCH_REPO    ?= https://github.com/embench/embench-iot.git
 EMBENCH_BRANCH  ?= master
-EMBENCH_HASH		?= 6934ddd1ff445245ee032d4258fdeb9828b72af4
+EMBENCH_HASH	?= 6934ddd1ff445245ee032d4258fdeb9828b72af4
 
 COMPLIANCE_REPO   ?= https://github.com/strichmo/riscv-arch-test.git
 COMPLIANCE_BRANCH ?= strichmo/pr/cv32e40x_initial_old_compliance
@@ -36,3 +36,8 @@ COMPLIANCE_HASH   ?= cf29051b177ba61b8c39de91c33d20d202697423
 DPI_DASM_SPIKE_REPO   ?= https://github.com/riscv/riscv-isa-sim.git
 DPI_DASM_SPIKE_BRANCH ?= master
 DPI_DASM_SPIKE_HASH   ?= 8faa928819fb551325e76b463fc0c978e22f5be3
+
+# SVLIB
+SVLIB_REPO       ?= https://bitbucket.org/verilab/svlib/src/master/svlib
+SVLIB_BRANCH     ?= master
+SVLIB_HASH       ?= c25509a7e54a880fe8f58f3daa2f891d6ecf6428

@@ -60,13 +60,7 @@ module uvmt_cv32e40x_dut_wrap
     uvmt_cv32e40x_core_status_if core_status_if,
     uvma_obi_memory_if           obi_instr_if_i,
     uvma_obi_memory_if           obi_data_if_i,
-    uvma_fencei_if               fencei_if_i,
-    if_xif.cpu_compressed   xif_compressed_if,
-    if_xif.cpu_issue        xif_issue_if,
-    if_xif.cpu_commit       xif_commit_if,
-    if_xif.cpu_mem          xif_mem_if,
-    if_xif.cpu_mem_result   xif_mem_result_if,
-    if_xif.cpu_result       xif_result_if
+    uvma_fencei_if               fencei_if_i
   );
 
     import uvm_pkg::*; // needed for the UVM messaging service (`uvm_info(), etc.)
@@ -92,6 +86,12 @@ module uvmt_cv32e40x_dut_wrap
     logic                         debug_havereset;
     logic                         debug_running;
     logic                         debug_halted;
+
+    // eXtension interface
+    // todo: Connect to TB when implemented.
+    // Included to allow core-v-verif to compile with RTL including
+    // interface definition.
+    if_xif xif();
 
     assign debug_if.clk      = clknrst_if.clk;
     assign debug_if.reset_n  = clknrst_if.reset_n;
@@ -192,6 +192,13 @@ module uvmt_cv32e40x_dut_wrap
          .data_err_i             ( obi_data_if_i.err              ),
          .data_exokay_i          ( obi_data_if_i.exokay           ),
 
+         .xif_compressed_if      ( xif.cpu_compressed             ),
+         .xif_issue_if           ( xif.cpu_issue                  ),
+         .xif_commit_if          ( xif.cpu_commit                 ),
+         .xif_mem_if             ( xif.cpu_mem                    ),
+         .xif_mem_result_if      ( xif.cpu_mem_result             ),
+         .xif_result_if          ( xif.cpu_result                 ),
+
          .irq_i                  ( interrupt_if.irq               ),
 
          .fencei_flush_req_o     ( fencei_if_i.flush_req          ),
@@ -203,13 +210,9 @@ module uvmt_cv32e40x_dut_wrap
          .debug_halted_o         ( debug_halted                   ),
 
          .fetch_enable_i         ( core_cntrl_if.fetch_en         ),
-         .core_sleep_o           ( core_status_if.core_busy       ),
-         .*
+         .core_sleep_o           ( core_status_if.core_busy       )
         );
 
 endmodule : uvmt_cv32e40x_dut_wrap
 
 `endif // __UVMT_CV32E40X_DUT_WRAP_SV__
-
-
-
