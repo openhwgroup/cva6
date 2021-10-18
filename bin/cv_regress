@@ -165,9 +165,12 @@ def read_file(args, file):
 
     return regression
 
-# Start of script
-VALID_SIMULATORS = ('dsim', 'vsim', 'vcs', 'xrun')
+# Defaults and globals
+VALID_SIMULATORS  = ('dsim', 'vsim', 'vcs', 'xrun')
 DEFAULT_SIMULATOR = 'dsim'
+VALID_TOOLCHAINS  = ('gnu','llvm','corev','pulp')
+DEFAULT_TOOLCHAIN = 'corev'
+
 VALID_PROJECTS = ('cv32e40p', 'cv32e40x', 'cv32e40s', 'cv64')
 try:
     DEFAULT_PROJECT = os.environ['CV_CORE']
@@ -197,7 +200,7 @@ parser.add_argument('--make', help='Substitute for make command (to use short-cu
 parser.add_argument('--makearg', action='append', help='Arguments to supply to each make command, can be specified multiple times')
 parser.add_argument('--sh', help='Select bash shell script output', action='store_true')
 parser.add_argument('--vsif', help='Select Vmanager VSIF output', action='store_true')
-
+parser.add_argument('--toolchain', help='Select toolchain to build with', choices=VALID_TOOLCHAINS, default=DEFAULT_TOOLCHAIN)
 args = parser.parse_args()
 
 if args.debug:
@@ -278,6 +281,7 @@ if args.vsif:
                                  makeargs=' '.join(args.makearg) if args.makearg else '',
                                  lsf=args.lsf,
                                  sve=os.path.abspath(sve),
+                                 toolchain=args.toolchain,
                                  simulator=args.simulator,
                                  filter_dir=get_filter_dir(),
                                  unique_builds=unique_builds))

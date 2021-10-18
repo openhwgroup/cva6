@@ -43,7 +43,7 @@ group {{project}} {
 {% for r in regressions %}
 {% for b in r.get_builds_with_no_tests() %}
     // Build:{{b.name}} {{b.description}}
-    pre_group_script: 'cd {{b.abs_dir}} && {{b.cmd}} CV_CORE={{project}} CFG={{b.cfg}} CV_SIM_PREFIX= SIMULATOR={{b.simulator}} COV={{regress_macros.yesorno(b.cov)}} {{regress_macros.cv_results(results)}} {{makeargs}}';
+    pre_group_script: 'cd {{b.abs_dir}} && {{b.cmd}} CV_CORE={{project}} CFG={{b.cfg}} CV_SIM_PREFIX= {{toolchain|upper}}=1 SIMULATOR={{b.simulator}} COV={{regress_macros.yesorno(b.cov)}} {{regress_macros.cv_results(results)}} {{makeargs}}';
 
 {% endfor %}
 {% for build in r.get_builds() %}
@@ -53,7 +53,7 @@ group {{project}} {
     group {{build.name}} {
 
         // Build:{{build.name}} {{build.description}}
-        pre_group_script: 'cd {{build.abs_dir}} && {{build.cmd}} CV_CORE={{project}} CFG={{build.cfg}} CV_SIM_PREFIX= SIMULATOR={{build.simulator}} COV={{regress_macros.yesorno(build.cov)}} {{regress_macros.cv_results(results)}} {{makeargs}}';
+        pre_group_script: 'cd {{build.abs_dir}} && {{build.cmd}} CV_CORE={{project}} CFG={{build.cfg}} CV_SIM_PREFIX= {{toolchain|upper}}=1 SIMULATOR={{build.simulator}} COV={{regress_macros.yesorno(build.cov)}} {{regress_macros.cv_results(results)}} {{makeargs}}';
 
 {% for t in r.get_tests_of_build(build.name) %}
 {% set indent = '    '%}
@@ -64,7 +64,7 @@ group {{project}} {
         test precmd {
             sv_seed: gen_random;
             count: 1;
-            run_script: 'cd {{t.abs_dir}} && {{t.precmd}} CV_SIM_PREFIX= CV_CORE={{project}} CFG={{build.cfg}} SIMULATOR={{t.simulator}} RNDSEED=$RUN_ENV(BRUN_SV_SEED) NUM_TESTS={{t.num}} {{regress_macros.cv_results(results)}} {{makeargs}}';
+            run_script: 'cd {{t.abs_dir}} && {{t.precmd}} CV_SIM_PREFIX= CV_CORE={{project}} CFG={{build.cfg}} {{toolchain|upper}}=1 SIMULATOR={{t.simulator}} RNDSEED=$RUN_ENV(BRUN_SV_SEED) NUM_TESTS={{t.num}} {{regress_macros.cv_results(results)}} {{makeargs}}';
         };
 {% else %}
 {% endif %}
@@ -78,7 +78,7 @@ group {{project}} {
 {{indent}}            sv_seed: gen_random;
 {{indent}}            seed: [0..{{t.num-1}}];
 {{indent}}            count: {{t.num}};
-{{indent}}            run_script: 'cd {{t.abs_dir}} && {{t.cmd}} COMP=0 CV_SIM_PREFIX= CV_CORE={{project}} CFG={{build.cfg}} SIMULATOR={{t.simulator}} USE_ISS={{regress_macros.yesorno(t.iss)}} COV={{regress_macros.yesorno(t.cov)}} RUN_INDEX=$RUN_ENV(BRUN_SEED) GEN_START_INDEX=$RUN_ENV(BRUN_SEED) RNDSEED=$RUN_ENV(BRUN_SV_SEED) {{regress_macros.cv_results(results)}} {{makeargs}} {{t.makearg}}';
+{{indent}}            run_script: 'cd {{t.abs_dir}} && {{t.cmd}} COMP=0 CV_SIM_PREFIX= CV_CORE={{project}} {{toolchain|upper}}=1 CFG={{build.cfg}} SIMULATOR={{t.simulator}} USE_ISS={{regress_macros.yesorno(t.iss)}} COV={{regress_macros.yesorno(t.cov)}} RUN_INDEX=$RUN_ENV(BRUN_SEED) GEN_START_INDEX=$RUN_ENV(BRUN_SEED) RNDSEED=$RUN_ENV(BRUN_SV_SEED) {{regress_macros.cv_results(results)}} {{makeargs}} {{t.makearg}}';
 {% if simulator == 'vsim' %}
 {{indent}}            scan_script: 'vm_scan.pl {{filter_dir}}/corev_uvm.flt {{filter_dir}}/vsim_run.flt';
 {% endif %}

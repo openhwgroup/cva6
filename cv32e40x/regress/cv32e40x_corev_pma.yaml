@@ -64,7 +64,7 @@ tests:
   hello-world:
     description: UVM Hello World Test
     dir: cv32e40x/sim/uvmt
-    cmd: make test COREV=YES TEST=hello-world
+    cmd: make test TEST=hello-world
     builds:
       - uvmt_cv32e40x
       - uvmt_cv32e40x_pma_1
@@ -80,13 +80,13 @@ tests:
       - uvmt_cv32e40x_pma_4
       - uvmt_cv32e40x_pma_5
     dir: cv32e40x/sim/uvmt
-    cmd: make gen_corev-dv test COREV=YES TEST=corev_rand_jump_stress_test
+    cmd: make gen_corev-dv test TEST=corev_rand_jump_stress_test
     num: 5
 
   corev_rand_arithmetic_base_test:
     description: Generated corev-dv arithmetic test
     dir: cv32e40x/sim/uvmt
-    cmd: make gen_corev-dv test COREV=YES TEST=corev_rand_arithmetic_base_test
+    cmd: make gen_corev-dv test TEST=corev_rand_arithmetic_base_test
     builds:
       - uvmt_cv32e40x
       - uvmt_cv32e40x_pma_1
@@ -99,7 +99,7 @@ tests:
   corev_rand_instr_test:
     description: Generated corev-dv random instruction test
     dir: cv32e40x/sim/uvmt
-    cmd: make gen_corev-dv test COREV=YES TEST=corev_rand_instr_test
+    cmd: make gen_corev-dv test TEST=corev_rand_instr_test
     builds:
       - uvmt_cv32e40x
       - uvmt_cv32e40x_pma_1
@@ -112,7 +112,7 @@ tests:
   corev_rand_instr_long_stall:
     description: Generated corev-dv random instruction test with long stalls
     dir: cv32e40x/sim/uvmt
-    cmd: make gen_corev-dv test COREV=YES TEST=corev_rand_instr_long_stall
+    cmd: make gen_corev-dv test TEST=corev_rand_instr_long_stall
     builds:
       - uvmt_cv32e40x
       - uvmt_cv32e40x_pma_1
@@ -125,7 +125,7 @@ tests:
   corev_rand_illegal_instr_test:
     description: Generated corev-dv random instruction test with illegal instructions
     dir: cv32e40x/sim/uvmt
-    cmd: make gen_corev-dv test COREV=YES TEST=corev_rand_illegal_instr_test
+    cmd: make gen_corev-dv test TEST=corev_rand_illegal_instr_test
     builds:
       - uvmt_cv32e40x
       - uvmt_cv32e40x_pma_1
@@ -138,7 +138,7 @@ tests:
   corev_rand_jump_stress_test:
     description: Generated corev-dv jump stress test
     dir: cv32e40x/sim/uvmt
-    cmd: make gen_corev-dv test COREV=YES TEST=corev_rand_jump_stress_test
+    cmd: make gen_corev-dv test TEST=corev_rand_jump_stress_test
     builds:
       - uvmt_cv32e40x
       - uvmt_cv32e40x_pma_1
@@ -151,7 +151,7 @@ tests:
   corev_rand_interrupt:
     description: Generated corev-dv random interrupt test
     dir: cv32e40x/sim/uvmt
-    cmd: make gen_corev-dv test COREV=YES TEST=corev_rand_interrupt
+    cmd: make gen_corev-dv test TEST=corev_rand_interrupt
     builds:
       - uvmt_cv32e40x
       - uvmt_cv32e40x_pma_1
@@ -164,7 +164,7 @@ tests:
   corev_rand_debug:
     description: Generated corev-dv random debug test
     dir: cv32e40x/sim/uvmt
-    cmd: make gen_corev-dv test COREV=YES TEST=corev_rand_debug
+    cmd: make gen_corev-dv test TEST=corev_rand_debug
     builds:
       - uvmt_cv32e40x
       - uvmt_cv32e40x_pma_1
@@ -177,7 +177,7 @@ tests:
   corev_rand_debug_single_step:
     description: debug random test with single-stepping
     dir: cv32e40x/sim/uvmt
-    cmd: make gen_corev-dv test COREV=YES TEST=corev_rand_debug_single_step
+    cmd: make gen_corev-dv test TEST=corev_rand_debug_single_step
     builds:
       - uvmt_cv32e40x
       - uvmt_cv32e40x_pma_1
@@ -190,7 +190,7 @@ tests:
   corev_rand_debug_ebreak:
     description: debug random test with ebreaks from ROM
     dir: cv32e40x/sim/uvmt
-    cmd: make gen_corev-dv test COREV=YES TEST=corev_rand_debug_ebreak
+    cmd: make gen_corev-dv test TEST=corev_rand_debug_ebreak
     builds:
       - uvmt_cv32e40x
       - uvmt_cv32e40x_pma_1
@@ -203,7 +203,7 @@ tests:
   corev_rand_interrupt_wfi:
     description: Generated corev-dv random interrupt WFI test
     dir: cv32e40x/sim/uvmt
-    cmd: make gen_corev-dv test COREV=YES TEST=corev_rand_interrupt_wfi
+    cmd: make gen_corev-dv test TEST=corev_rand_interrupt_wfi
     builds:
       - uvmt_cv32e40x
       - uvmt_cv32e40x_pma_1
@@ -216,7 +216,7 @@ tests:
   corev_rand_interrupt_wfi_mem_stress:
     description: Generated corev-dv random interrupt WFI test with memory stress
     dir: cv32e40x/sim/uvmt
-    cmd: make gen_corev-dv test COREV=YES TEST=corev_rand_interrupt_wfi_mem_stress
+    cmd: make gen_corev-dv test TEST=corev_rand_interrupt_wfi_mem_stress
     builds:
       - uvmt_cv32e40x
       - uvmt_cv32e40x_pma_1
@@ -229,7 +229,7 @@ tests:
   corev_rand_interrupt_debug:
     description: Generated corev-dv random interrupt WFI test with debug
     dir: cv32e40x/sim/uvmt
-    cmd: make gen_corev-dv test COREV=YES TEST=corev_rand_interrupt_debug
+    cmd: make gen_corev-dv test TEST=corev_rand_interrupt_debug
     builds:
       - uvmt_cv32e40x
       - uvmt_cv32e40x_pma_1
@@ -242,7 +242,7 @@ tests:
   corev_rand_interrupt_exception:
     description: Generated corev-dv random interrupt WFI test with exceptions
     dir: cv32e40x/sim/uvmt
-    cmd: make gen_corev-dv test COREV=YES TEST=corev_rand_interrupt_exception
+    cmd: make gen_corev-dv test TEST=corev_rand_interrupt_exception
     builds:
       - uvmt_cv32e40x
       - uvmt_cv32e40x_pma_1
@@ -255,7 +255,7 @@ tests:
   corev_rand_interrupt_nested:
     description: Generated corev-dv random interrupt WFI test with random nested interrupts
     dir: cv32e40x/sim/uvmt
-    cmd: make gen_corev-dv test COREV=YES TEST=corev_rand_interrupt_nested
+    cmd: make gen_corev-dv test TEST=corev_rand_interrupt_nested
     builds:
       - uvmt_cv32e40x
       - uvmt_cv32e40x_pma_1
