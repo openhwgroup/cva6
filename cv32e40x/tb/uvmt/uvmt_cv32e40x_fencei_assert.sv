@@ -26,7 +26,6 @@ module uvmt_cv32e40x_fencei_assert
   input fencei_flush_ack_i,
 
   input        wb_valid,
-  input [31:0] wb_rdata,
   input        wb_instr_valid,
   input        wb_fencei_insn,
   input [31:0] wb_pc,
@@ -42,8 +41,6 @@ module uvmt_cv32e40x_fencei_assert
   input rvfi_valid,
   input rvfi_intr,
   input rvfi_dbg_mode
-
-  // TODO:ropeders remove unused signals when assertion-writing is done
 );
 
   default clocking cb @(posedge clk_i); endclocking
@@ -97,7 +94,6 @@ module uvmt_cv32e40x_fencei_assert
     fencei_flush_req_o && !fencei_flush_ack_i
     |=>
     !$changed(wb_pc)
-    // TODO:ropeders check more post-conditions? Merge with a_req_stay_high?
   ) else `uvm_error(info_tag, "WB stage must remain unchanged until the flush req is acked");
 
   property p_branch_after_retire;
