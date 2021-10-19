@@ -83,7 +83,6 @@ module cva6_core_only_tb #(
   //----------------------------------------------------------------------------
 
   rvfi_tracer  #(
-    .SIM_FINISH(2000000),
     .HART_ID(8'h0),
     .DEBUG_START(0),
     .DEBUG_STOP(0),
