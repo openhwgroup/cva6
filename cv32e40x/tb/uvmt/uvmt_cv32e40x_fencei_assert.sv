@@ -142,7 +142,7 @@ module uvmt_cv32e40x_fencei_assert
   a_req_wait_bus: assert property (
     fencei_flush_req_o
     |->
-    !data_rvalid_i until (
+    !data_rvalid_i throughout (
       $fell(wb_valid) [->1]
       ##1 (data_req_o && data_gnt_i) [->1]
     )
