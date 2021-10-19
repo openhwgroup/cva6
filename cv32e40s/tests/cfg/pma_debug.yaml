@@ -2,7 +2,10 @@ name: pma
 description: PMA configuration for pma_debug test
 compile_flags:
     +define+PMA_DEBUG_CFG
-ovpsim: >    
+ovpsim: >
+    --override root/cpu/misa_Extensions=0x001104
+    --override root/cpu/marchid=20
+    --override root/cpu/noinhibit_mask=0xFFFFFFF0
     --override root/cpu/extension/PMA_NUM_REGIONS=2
     --override root/cpu/extension/word_addr_low1=0
     --override root/cpu/extension/word_addr_high1=0xFFFFFFFF

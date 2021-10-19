@@ -33,11 +33,11 @@ module uvmt_cv32e40s_iss_wrap
 
    (
     input realtime                clk_period,
-    uvma_clknrst_if               clknrst_if    
+    uvma_clknrst_if               clknrst_if
    );
-   
-   RVVI_bus    bus();
-   RVVI_io     io();
+
+   RVVI_bus     bus();
+   RVVI_io      io();
 
    MONITOR     mon(bus, io);
    RAM         #(
@@ -48,7 +48,7 @@ module uvmt_cv32e40s_iss_wrap
    CPU #(.ID(ID), .VARIANT("CV32E40S")) cpu(bus, io);
 
    bit use_iss = 0;
-   
+
    assign bus.Clk = clknrst_if.clk;
 
    initial begin

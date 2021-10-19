@@ -2,23 +2,25 @@
 /*
 **
 ** Copyright 2020 OpenHW Group
-** 
+**
 ** Licensed under the Solderpad Hardware Licence, Version 2.0 (the "License");
 ** you may not use this file except in compliance with the License.
 ** You may obtain a copy of the License at
-** 
+**
 **     https://solderpad.org/licenses/
-** 
+**
 ** Unless required by applicable law or agreed to in writing, software
 ** distributed under the License is distributed on an "AS IS" BASIS,
 ** WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 ** See the License for the specific language governing permissions and
 ** limitations under the License.
-** 
+**
 *******************************************************************************
 ** Debugger code
 *******************************************************************************
 */
+
+#include "corev_uvmt.h"
 
 .section .debugger, "ax"
 .global _debugger_start
@@ -38,10 +40,9 @@
 .global __debugger_stack_start
 .global _debugger_fail
 .global _debugger_end
-.set test_ret_val, 0x20000000
 .set test_fail, 0x1
-        
-_debugger_start:        
+
+_debugger_start:
         // Debugger Stack
         csrw dscratch, a0       // dscratch0
         la a0, __debugger_stack_start
@@ -64,7 +65,7 @@ _debugger_start:
         sw t1, 0(a1)
         la a1, glb_minstret_start
         sw t2, 0(a1)
- 
+
         // Determine Test to execute in debugger code based on glb_hart_status
         la a2, glb_hart_status
         lw t2, 0(a2)
@@ -78,6 +79,9 @@ _debugger_start:
 
 	li t0,7
 	beq t2,t0,_debugger_trigger_setup    // Test 7
+
+    li t0,10
+    beq t2,t0, _debugger_trigger_match_no_dpc // Test 10
 
 	li t0,8
 	beq t2,t0,_debugger_trigger_match    // Test 8
@@ -98,14 +102,14 @@ _debugger_start:
     beq t2, t0, _debugger_trigger_match_multicycle_insn
 
 	li t0,9
-	beq t2,t0,_debugger_trigger_disable    // Test 9
+	beq t2,t0, _debugger_trigger_disable    // Test 9
 
 	li t0,13
-	beq t2,t0,_debugger_mret_call    // Test 13
+	beq t2,t0, _debugger_mret_call    // Test 13
 
     li t0,15
     beq t2,t0, _debugger_trigger_in_debug // Test 15
-    
+
 
 _debugger_mret_call:
 	mret // will invoke debugger exception routine
@@ -121,8 +125,24 @@ _debugger_trigger_setup:
 	bne  t1,t2,_debugger_fail
 
    	li   t1, 4<<28 | 2<<6 | 3<<0 | 1<<15
-    csrw dcsr, t1 
+    csrw dcsr, t1
 	j    _debugger_end
+
+_debugger_trigger_match_no_dpc:
+	// Expect DCSR
+	//   31:28 XDEBUGER Version = 4
+	//    8:6   Cause           = 2 Trigger
+	//    1:0   Privelege       = 3 Machine
+	// TBD FIXME BUG documentation update needed
+	li   t1, 4<<28 | 2<<6 | 3<<0 | 1<<15
+	csrr t2,dcsr
+	bne  t1,t2,_debugger_fail
+
+    // Clear the tdata1 execute field (tdata1[2]) to avoid re-entering the trigger when dret executes
+    csrci tdata1, 0x4
+
+    j _debugger_end
+
 _debugger_trigger_match:
 	// Expect DCSR
 	//   31:28 XDEBUGER Version = 4
@@ -138,7 +158,7 @@ _debugger_trigger_match:
 	bne  a1,a2,_debugger_fail
 	la   a1,_trigger_exit
 	csrw dpc,a1
-    
+
     // Setup match addr for next match: ebreak
     la a1, _trigger_code_ebreak
     csrw tdata2, a1
@@ -210,7 +230,7 @@ _debugger_trigger_match_illegal_insn:
     csrw tdata2, a1
 
     j _debugger_end
-    
+
 _debugger_trigger_match_branch_insn:
    	li   t1, 4<<28 | 2<<6 | 3<<0 | 1<<15
 	csrr t2,dcsr
@@ -274,20 +294,20 @@ _debugger_trigger_in_debug:
 	li   t1, 2<<28 | 1<<27 | 1<<12 | 1<<6 | 1 <<2
 	csrr t2,tdata1
 	bne  t1,t2,_debugger_fail
-    
+
     // Clear glb_expect_debug_entry
     // If we trig, we'll reenter debug and
     // test will fail due to 0 flag
     la a1, glb_expect_debug_entry
     li t1, 0
     sw t1, 0(a1)
-_debugger_trig_point:     
+_debugger_trig_point:
     // Should _not_trig here
     nop
     // Clear trigger
     li t1, 0<<2
     csrw tdata1, t1
-    j _debugger_end    
+    j _debugger_end
 
 _debugger_trigger_disabled_in_debug:
     // setup address to trigger on
@@ -299,20 +319,20 @@ _debugger_trigger_disabled_in_debug:
 	li   t1, 2<<28 | 1<<27 | 1<<12 | 1<<6 | 0 <<2
 	csrr t2,tdata1
 	bne  t1,t2,_debugger_fail
-    
+
     // Clear glb_expect_debug_entry
     // If we trig, we'll reenter debug and
     // test will fail due to 0 flag
     la a1, glb_expect_debug_entry
     li t1, 0
     sw t1, 0(a1)
-_debugger_trig_point_dis:     
+_debugger_trig_point_dis:
     // Should _not_trig here
     nop
     // Clear trigger
     li t1, 0<<2
     csrw tdata1, t1
-    j _debugger_end    
+    j _debugger_end
 
 _debugger_end:
     // Check counter values. They should have increased while in debug
@@ -350,11 +370,11 @@ _debugger_end_continue:
         csrr a0, dscratch
         dret
 _debugger_fail: //Test Failed
-        li a0, test_ret_val
+        li a0, CV_VP_STATUS_FLAGS_BASE
         li t0, test_fail
         sw t0, 0(a0)
 	nop
         nop
         nop
         nop
-        
+

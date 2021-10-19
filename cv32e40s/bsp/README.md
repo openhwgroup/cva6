@@ -59,7 +59,7 @@ following interrupt request handlers in `handlers.S`:
     - Currently jumps to `__no_irq_handler`.  Behavior to be defined in future commit.
   * `m_external_irq_handler` - handles machine-mode external interrupts
     - Currently jumps to `__no_irq_handler`.  Behavior to be defined in future commit.
-  * `m_fast0_irq_handler` - handles machine-mode fast external interrupts (platform extension for CV32)  
+  * `m_fast0_irq_handler` - handles machine-mode fast external interrupts (platform extension for CV32)
     - Currently jumps to `__no_irq_handler`.  Behavior to be defined in future commit.
   * `m_fast1_irq_handler` - handles machine-mode fast external interrupts (platform extension for CV32)
     - Currently jumps to `__no_irq_handler`.  Behavior to be defined in future commit.
