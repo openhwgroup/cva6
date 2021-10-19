@@ -246,6 +246,7 @@ if args.sh:
     out_fh.write(template.render(regressions=regressions,
                                  project=args.project,
                                  cfg=args.cfg,
+                                 toolchain=args.toolchain,
                                  results=args.results,
                                  makeargs=' '.join(args.makearg) if args.makearg else '',
                                  session=os.path.splitext(os.path.basename(args.outfile))[0],
@@ -261,6 +262,7 @@ if args.metrics:
     out_fh.write(template.render(regressions=regressions,
                                  project=args.project,
                                  cfg=args.cfg,
+                                 toolchain=args.toolchain,
                                  makeargs=' '.join(args.makearg) if args.makearg else '',
                                  unique_builds=unique_builds))
     out_fh.close()
