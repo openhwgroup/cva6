@@ -34,7 +34,7 @@
   postcmd: >
     <tool_path>/spike-dasm < ./trace_rvfi_hart_00.dasm > log
 
-- iss: veri-uvm
+- iss: veri-core
   path_var: RTL_PATH
   tool_path: SPIKE_PATH
   tb_path: TB_PATH
