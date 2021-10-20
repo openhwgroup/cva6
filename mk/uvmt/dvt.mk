@@ -45,7 +45,7 @@ endif
 create_dvt_build_dir:
 	@ mkdir -p $(CORE_V_VERIF)/.dvt
 
-create_dvt_build_file: create_dvt_build_dir $(CV_CORE_PKG)
+create_dvt_build_file: create_dvt_build_dir $(CV_CORE_PKG) $(SVLIB_PKG)
 	@ echo $(DVT_BUILD_FILE_CONTENT) > $(CORE_V_VERIF)/.dvt/default.build
 
 open_in_dvt_ide: check_dvt_home create_dvt_build_file
