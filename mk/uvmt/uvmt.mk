@@ -305,7 +305,7 @@ dah:
 embench: $(EMBENCH_PKG)
 	$(CORE_V_VERIF)/bin/run_embench.py \
 		-c $(CV_CORE) \
-		-cc $(RISCV_EXE_PREFIX)gcc \
+		-cc $(RISCV_EXE_PREFIX)$(RISCV_CC) \
 		-sim $(SIMULATOR) \
 		-t $(EMB_TYPE) \
 		--timeout $(EMB_TIMEOUT) \
