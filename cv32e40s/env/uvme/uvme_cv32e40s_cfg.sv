@@ -25,7 +25,7 @@
  */
 class uvme_cv32e40s_cfg_c extends uvma_core_cntrl_cfg_c;
 
-   // Integrals   
+   // Integrals
    rand int unsigned                sys_clk_period;
 
    // Agent cfg handles
@@ -37,13 +37,13 @@ class uvme_cv32e40s_cfg_c extends uvma_core_cntrl_cfg_c;
    rand uvma_obi_memory_cfg_c       obi_memory_data_cfg;
    rand uvma_rvfi_cfg_c#(ILEN,XLEN) rvfi_cfg;
    rand uvma_rvvi_cfg_c#(ILEN,XLEN) rvvi_cfg;
-   
+
    `uvm_object_utils_begin(uvme_cv32e40s_cfg_c)
       `uvm_field_int (                         enabled                     , UVM_DEFAULT          )
       `uvm_field_enum(uvm_active_passive_enum, is_active                   , UVM_DEFAULT          )
       `uvm_field_int (                         cov_model_enabled           , UVM_DEFAULT          )
       `uvm_field_int (                         trn_log_enabled             , UVM_DEFAULT          )
-      `uvm_field_int (                         sys_clk_period              , UVM_DEFAULT | UVM_DEC)            
+      `uvm_field_int (                         sys_clk_period              , UVM_DEFAULT | UVM_DEC)
 
       `uvm_field_object(isacov_cfg          , UVM_DEFAULT)
       `uvm_field_object(clknrst_cfg         , UVM_DEFAULT)
@@ -54,14 +54,14 @@ class uvme_cv32e40s_cfg_c extends uvma_core_cntrl_cfg_c;
       `uvm_field_object(rvfi_cfg            , UVM_DEFAULT)
       `uvm_field_object(rvvi_cfg            , UVM_DEFAULT)
    `uvm_object_utils_end
-      
+
    constraint defaults_cons {
       soft enabled                == 0;
       soft is_active              == UVM_PASSIVE;
       soft scoreboarding_enabled  == 1; 
       soft cov_model_enabled      == 1;
       soft trn_log_enabled        == 1;
-      soft sys_clk_period         == uvme_cv32e40s_sys_default_clk_period; // see uvme_cv32e40s_constants.sv      
+      soft sys_clk_period         == uvme_cv32e40s_sys_default_clk_period; // see uvme_cv32e40s_constants.sv
    }
 
    constraint cv32e40s_riscv_cons {
@@ -74,13 +74,16 @@ class uvme_cv32e40s_cfg_c extends uvma_core_cntrl_cfg_c;
       ext_zifencei_supported == 1;
       ext_zicsr_supported   == 1;
 
-      ext_a_supported == 0;
-      ext_p_supported == 0;
-      ext_b_supported == 0;
-      ext_v_supported == 0;
-      ext_f_supported == 0;
-      ext_d_supported == 0;
-      
+      ext_a_supported   == 0;
+      ext_p_supported   == 0;
+      ext_v_supported   == 0;
+      ext_f_supported   == 0;
+      ext_d_supported   == 0;
+      ext_zba_supported == 0;
+      ext_zbb_supported == 0;
+      ext_zbc_supported == 0;
+      ext_zbs_supported == 0;
+
       mode_s_supported == 0;
       mode_u_supported == 0;
       pmp_supported == 0;
@@ -112,7 +115,7 @@ class uvme_cv32e40s_cfg_c extends uvma_core_cntrl_cfg_c;
          debug_cfg.enabled     == 1;
          obi_memory_instr_cfg.enabled  == 1;
          obi_memory_data_cfg.enabled   == 1;
-         rvfi_cfg.enabled      == 1;         
+         rvfi_cfg.enabled      == 1;
          rvvi_cfg.enabled      == use_iss;
       }
 
@@ -131,7 +134,7 @@ class uvme_cv32e40s_cfg_c extends uvma_core_cntrl_cfg_c;
       soft obi_memory_instr_cfg.drv_slv_rvalid_random_latency_max <= 6;
 
       obi_memory_data_cfg.version        == UVMA_OBI_MEMORY_VERSION_1P2;
-      obi_memory_data_cfg.drv_mode       == UVMA_OBI_MEMORY_MODE_SLV;      
+      obi_memory_data_cfg.drv_mode       == UVMA_OBI_MEMORY_MODE_SLV;
       obi_memory_data_cfg.addr_width     == XLEN;
       obi_memory_data_cfg.data_width     == XLEN;
       obi_memory_data_cfg.id_width       == 0;
@@ -160,9 +163,9 @@ class uvme_cv32e40s_cfg_c extends uvma_core_cntrl_cfg_c;
          obi_memory_instr_cfg.is_active == UVM_ACTIVE;
          obi_memory_data_cfg.is_active  == UVM_ACTIVE;
          rvfi_cfg.is_active      == UVM_PASSIVE;
-         rvvi_cfg.is_active      == UVM_ACTIVE;     
+         rvvi_cfg.is_active      == UVM_ACTIVE;
       }
-      
+
       if (trn_log_enabled) {
          isacov_cfg.trn_log_enabled    == 1;
          clknrst_cfg.trn_log_enabled   == 1;
@@ -177,13 +180,13 @@ class uvme_cv32e40s_cfg_c extends uvma_core_cntrl_cfg_c;
       // FIXME:strichmo:restore when debug coverage model is fixed
       debug_cfg.cov_model_enabled == 0;
 
-      if (cov_model_enabled) {         
+      if (cov_model_enabled) {
          isacov_cfg.cov_model_enabled    == 1;
          obi_memory_instr_cfg.cov_model_enabled  == 1;
          obi_memory_data_cfg.cov_model_enabled   == 1;
       }
-   }   
-   
+   }
+
    /**
     * Creates sub-configuration objects.
     */
@@ -218,13 +221,13 @@ class uvme_cv32e40s_cfg_c extends uvma_core_cntrl_cfg_c;
 endclass : uvme_cv32e40s_cfg_c
 
 function uvme_cv32e40s_cfg_c::new(string name="uvme_cv32e40s_cfg");
-   
+
    super.new(name);
 
-   if ($test$plusargs("USE_ISS")) 
+   if ($test$plusargs("USE_ISS"))
       use_iss = 1;
-   
-   isacov_cfg = uvma_isacov_cfg_c::type_id::create("isacov_cfg");   
+
+   isacov_cfg = uvma_isacov_cfg_c::type_id::create("isacov_cfg");
    clknrst_cfg  = uvma_clknrst_cfg_c::type_id::create("clknrst_cfg");
    interrupt_cfg = uvma_interrupt_cfg_c::type_id::create("interrupt_cfg");
    debug_cfg = uvma_debug_cfg_c    ::type_id::create("debug_cfg");
@@ -257,7 +260,7 @@ function void uvme_cv32e40s_cfg_c::post_randomize();
 
    // Disable some CSR checks from all tests
    configure_disable_csr_checks();
-   
+
 endfunction : post_randomize
 
 function void uvme_cv32e40s_cfg_c::sample_parameters(uvma_core_cntrl_cntxt_c cntxt);
@@ -311,7 +314,7 @@ function void uvme_cv32e40s_cfg_c::configure_disable_csr_checks();
    for (int i = 3; i < 32; i++) begin
       disable_csr_check($sformatf("mhpmcounter%0d", i));
       disable_csr_check($sformatf("mhpmcounter%0dh", i));
-      disable_csr_check($sformatf("mhpmevent%0d", i));      
+      disable_csr_check($sformatf("mhpmevent%0d", i));
    end
 endfunction : configure_disable_csr_checks
 

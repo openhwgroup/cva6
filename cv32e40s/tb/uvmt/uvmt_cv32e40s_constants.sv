@@ -20,7 +20,7 @@
 
 
    `ifdef PMA_CUSTOM_CFG
-      parameter int unsigned               CORE_PARAM_PMA_NUM_REGIONS = 3;
+      parameter int                CORE_PARAM_PMA_NUM_REGIONS = 3;
       parameter cv32e40s_pkg::pma_region_t CORE_PARAM_PMA_CFG[CORE_PARAM_PMA_NUM_REGIONS-1:0] = '{
          // Overlap "shadow" of main code (.text), for testing overlap priority
          cv32e40s_pkg::pma_region_t'{
@@ -48,7 +48,7 @@
             atomic         : 1}
          };
    `elsif PMA_DEBUG_CFG
-      parameter int unsigned               CORE_PARAM_PMA_NUM_REGIONS = 2;
+      parameter int                CORE_PARAM_PMA_NUM_REGIONS = 2;
       parameter cv32e40s_pkg::pma_region_t CORE_PARAM_PMA_CFG[CORE_PARAM_PMA_NUM_REGIONS-1:0] = '{
          // Everything is initially executable
          cv32e40s_pkg::pma_region_t'{
@@ -68,8 +68,8 @@
             atomic         : 0}
          };
    `else
-      parameter int unsigned               CORE_PARAM_PMA_NUM_REGIONS = 0;
-      parameter cv32e40s_pkg::pma_region_t CORE_PARAM_PMA_CFG[0:0] = '{'z};
+      parameter int                CORE_PARAM_PMA_NUM_REGIONS = 0;
+      parameter cv32e40s_pkg::pma_region_t CORE_PARAM_PMA_CFG[CORE_PARAM_PMA_NUM_REGIONS-1:0] = '{default:cv32e40s_pkg::PMA_R_DEFAULT};
    `endif
 
 

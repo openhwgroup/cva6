@@ -106,8 +106,11 @@ def read_file(args, file):
         assert 'cmd' in d, 'cmd must be specified in test: ' + b
         assert 'dir' in d, 'dir must be specified in test: ' + b
     for t, d in testlist['tests'].items():
-        assert 'build' in d, 'build must be specified in test: ' + t
-        #assert 'description' in d, 'description must be specified in test: ' + t
+        try:
+            assert type(d['builds']) == list, 'builds must be a list in test: ' + t
+        except KeyError:
+            assert 'build' in d, 'builds or build must be specified in test: ' + t
+
         assert 'cmd' in d, 'cmd must be specified in test: ' + t
         assert 'dir' in d, 'dir must be specified in test: ' + t
 
@@ -123,6 +126,9 @@ def read_file(args, file):
             build.set_cov()
         if args.make:
             build.sub_make(args.make)
+        if args.cfg:
+            build.cfg = args.cfg
+
         regression.add_build(build)
 
     # Create test objects
@@ -141,6 +147,10 @@ def read_file(args, file):
             test.sub_make(args.make)
         if args.iss != None:
             test.iss = args.iss
+        if args.cfg:
+            test.cfg = args.cfg
+        if not test.builds and test.build:
+            test.builds = [ test.build ]
 
         # Determine if a test is valid, skip for compliance tests
         # Since it is not possible to determine apriori if a compliance test is valid
@@ -174,9 +184,10 @@ parser.add_argument('-f', '--file', action='append', help='One or more input reg
 parser.add_argument('-p', '--project', '--core', default=DEFAULT_PROJECT, choices=VALID_PROJECTS, help='Select core for regression')
 parser.add_argument('-o', '--outfile', help='Output file')
 parser.add_argument('-d', '--debug', help='Emit debug messages from logger', action='store_true')
+parser.add_argument('--results', help='Set a non-standard results directory')
 parser.add_argument('-s', '--simulator', help='Select simulator', choices=VALID_SIMULATORS, default=DEFAULT_SIMULATOR)
 parser.add_argument('-c', '--cov', help='Enable coverage', action='store_true')
-parser.add_argument('--cfg', default=DEFAULT_CFG, help='Test configuration to test')
+parser.add_argument('--cfg', default=None, help='Override configuration for all builds and tests in regression')
 parser.add_argument('--iss', default=None, help='Force USE_ISS flag to each test run')
 parser.add_argument('--parallel', default=DEFAULT_PARALLEL, help='For VSIF only, set number of parallel jobs')
 parser.add_argument('-m', '--metrics', help='Select Metrics waves output', action='store_true')
@@ -232,6 +243,7 @@ if args.sh:
     out_fh.write(template.render(regressions=regressions,
                                  project=args.project,
                                  cfg=args.cfg,
+                                 results=args.results,
                                  makeargs=' '.join(args.makearg) if args.makearg else '',
                                  session=os.path.splitext(os.path.basename(args.outfile))[0],
                                  unique_builds=unique_builds))
@@ -261,8 +273,8 @@ if args.vsif:
                                  results_path=get_results_path(args.project),
                                  project=args.project,
                                  parallel=args.parallel,
-                                 cfg=args.cfg,
                                  regressions=regressions,
+                                 results=args.results,
                                  makeargs=' '.join(args.makearg) if args.makearg else '',
                                  lsf=args.lsf,
                                  sve=os.path.abspath(sve),
