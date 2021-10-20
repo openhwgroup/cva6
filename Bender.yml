@@ -15,8 +15,6 @@ sources:
       WT_DCACHE: 1
     files:
     # Packages
-    # - core/include/cv32a6_imac_sv0_config_pkg.sv # new? (required for cva6_config_pkg)
-    - core/include/cv64a6_imacfd_sv39_config_pkg.sv # new? (required for cva6_config_pkg)
     - core/include/riscv_pkg.sv
     - corev_apu/riscv-dbg/src/dm_pkg.sv
     - core/include/ariane_pkg.sv
@@ -26,8 +24,8 @@ sources:
     - corev_apu/register_interface/src/reg_intf.sv
     - corev_apu/register_interface/src/reg_intf_pkg.sv
     - core/include/axi_intf.sv
-    - corev_apu/tb/ariane_soc_pkg.sv # new?
-    - corev_apu/tb/ariane_axi_soc_pkg.sv # new?
+    - corev_apu/tb/ariane_soc_pkg.sv
+    - corev_apu/tb/ariane_axi_soc_pkg.sv
     - core/include/ariane_axi_pkg.sv
     - core/fpu/src/fpnew_pkg.sv
     - core/fpu/src/fpu_div_sqrt_mvp/hdl/defs_div_sqrt_mvp.sv
@@ -44,8 +42,8 @@ sources:
     - core/issue_stage.sv
     - core/re_name.sv
     - core/csr_buffer.sv
-    - core/mmu_sv32/cva6_tlb_sv32.sv # added, 32bit ?
-    - core/mmu_sv39/tlb.sv # added, 64bit ?
+    - core/mmu_sv32/cva6_tlb_sv32.sv
+    - core/mmu_sv39/tlb.sv
     - core/decoder.sv
     - core/scoreboard.sv
     - core/perf_counters.sv
@@ -202,6 +200,12 @@ sources:
     - common/submodules/common_cells/src/exp_backoff.sv
     - corev_apu/src/tech_cells_generic/src/cluster_clock_inverter.sv
     - corev_apu/src/tech_cells_generic/src/pulp_clock_mux2.sv
+    - target: not(cv32a6)
+      files:
+      - core/include/cv64a6_imacfd_sv39_config_pkg.sv
+    - target: cv32a6
+      files:
+      - core/include/cv32a6_imac_sv0_config_pkg.sv
     - target: test
       files:
       - corev_apu/tb/ariane_soc_pkg.sv
