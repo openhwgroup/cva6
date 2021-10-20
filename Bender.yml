@@ -62,16 +62,13 @@ sources:
     - core/ex_stage.sv
     - core/mmu_sv39/mmu.sv
     - core/mmu_sv39/ptw.sv
-    # - core/mmu_sv39/mult.sv deleted?
-    - core/mult.sv # above & cva6_mult_sv32.sv replaced with this?
+    - core/mult.sv
     - core/mmu_sv32/cva6_mmu_sv32.sv
     - core/mmu_sv32/cva6_ptw_sv32.sv
-    # - core/mmu_sv32/cva6_mult_sv32.sv deleted?
     - core/load_unit.sv
     - core/issue_read_operands.sv
     - core/pmp/src/pmp_entry.sv
     - core/pmp/src/pmp.sv
-    # - src/synopsys_sram.sv deleted?
     - core/fpu/src/fpnew_fma.sv
     - core/fpu/src/fpnew_opgroup_fmt_slice.sv
     - core/fpu/src/fpnew_divsqrt_multi.sv
@@ -184,7 +181,7 @@ sources:
     - corev_apu/axi/src/axi_delayer.sv
     - corev_apu/axi/src/axi_to_axi_lite.sv
     - corev_apu/fpga-support/rtl/SyncSpRamBeNx64.sv
-    - common/submodules/common_cells/src/sync.sv # missing?
+    - common/submodules/common_cells/src/sync.sv
     - common/submodules/common_cells/src/popcount.sv
     - common/submodules/common_cells/src/unread.sv
     - common/submodules/common_cells/src/cdc_2phase.sv
@@ -219,11 +216,10 @@ sources:
       - common/local/util/sram.sv
     - target: not(synthesis)
       files:
-        - common/local/util/instr_tracer.sv # before: instruction_tracer.sv ?
-        - common/local/util/instr_tracer_if.sv # before: instruction_tracer_if.sv ?
-        # - common/local/util/instruction_tracer_defines.svh # removed?
-        - common/local/util/instr_trace_item.svh # before: instruction_trace_item.svh ?
-        - common/local/util/ex_trace_item.svh # before: exception_trace_item.svh ?
+        - common/local/util/instr_tracer.sv
+        - common/local/util/instr_tracer_if.sv
+        - common/local/util/instr_trace_item.svh
+        - common/local/util/ex_trace_item.svh
     - target: all(fpga, xilinx)
       files:
       - corev_apu/fpga/src/ariane_peripherals_xilinx.sv
@@ -257,3 +253,4 @@ sources:
       - corev_apu/fpga/src/apb_uart/src/slib_clock_div.vhd
       - corev_apu/fpga/src/apb_uart/src/slib_fifo.vhd
       - corev_apu/fpga/src/apb_uart/src/uart_baudgen.vhd
+
