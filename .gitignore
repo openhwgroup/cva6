@@ -34,5 +34,8 @@ stdout.txt
 cva6/tests/riscv-compliance/
 cva6/tests/riscv-tests/
 cva6/sim/dv/
+cva6/sim/vcs_results
+cva6/sim/verilator_work
+cva6/sim/out_*
 riviera_results/
 */vendor_lib/dpi_dasm_spike/
