@@ -94,7 +94,16 @@ module uvmt_cv32e40s_tb;
                              .INSTR_RDATA_WIDTH (ENV_PARAM_INSTR_DATA_WIDTH),
                              .RAM_ADDR_WIDTH    (ENV_PARAM_RAM_ADDR_WIDTH)
                             )
-                            dut_wrap (.*);
+                            dut_wrap (
+                              .clknrst_if(clknrst_if),
+                              .interrupt_if(interrupt_if),
+                              .vp_status_if(vp_status_if),
+                              .core_cntrl_if(core_cntrl_if),
+                              .core_status_if(core_status_if),
+                              .obi_instr_if_i(obi_instr_if_i),
+                              .obi_data_if_i(obi_data_if_i),
+                              .fencei_if_i(fencei_if_i),
+                              .*);
 
   bind cv32e40s_wrapper
     uvma_rvfi_instr_if#(uvme_cv32e40s_pkg::ILEN,
