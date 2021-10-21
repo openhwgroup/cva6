@@ -1,0 +1,12 @@
+name: pma_test_cfg_4
+description: PMA configuration for the PMA_TEST_CFG_4 test case
+compile_flags:
+   +define+PMA_TEST_CFG_4
+plusargs:
+   +enable_pma=1
+   +boot_addr=0x10080
+   +mtvec_addr=0x10000
+   +nmi_addr=0xbc000100
+   +dm_halt_addr=0x32010000
+   +dm_exception_addr=0x32010800
+   +fix_sp=1
