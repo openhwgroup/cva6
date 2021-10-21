@@ -381,10 +381,9 @@ endfunction: connect_predictor
 
 function void uvme_cv32e40x_env_c::connect_rvfi_rvvi();
 
-   foreach (rvfi_agent.instr_mon_ap[i])
+   foreach (rvfi_agent.instr_mon_ap[i]) begin
       rvfi_agent.instr_mon_ap[i].connect(rvvi_agent.sequencer.rvfi_instr_export);
-
-   obi_memory_instr_agent.monitor.ap.connect(rvvi_agent.sequencer.obi_i_export);
+   end
 
 endfunction : connect_rvfi_rvvi
 
@@ -393,8 +392,9 @@ function void uvme_cv32e40x_env_c::connect_scoreboard();
    // Connect the CORE Scoreboard (but only if the ISS is running)
    if (cfg.use_iss) begin
       rvvi_agent.state_mon_ap.connect(core_sb.rvvi_state_export);
-      foreach (rvfi_agent.instr_mon_ap[i])
+      foreach (rvfi_agent.instr_mon_ap[i]) begin
          rvfi_agent.instr_mon_ap[i].connect(core_sb.rvfi_instr_export);
+      end
    end
 
    // Connect the PMA scoreboard

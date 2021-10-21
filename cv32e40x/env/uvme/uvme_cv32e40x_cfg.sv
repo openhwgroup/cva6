@@ -28,8 +28,10 @@ class uvme_cv32e40x_cfg_c extends uvma_core_cntrl_cfg_c;
    // Integrals
    rand int unsigned                sys_clk_period;
    cv32e40x_pkg::b_ext_e            b_ext;
-   bit                              obi_memory_instr_random_err_enabled = 0;
-   bit                              obi_memory_data_random_err_enabled  = 0;
+   bit                              obi_memory_instr_random_err_enabled   = 0;
+   bit                              obi_memory_instr_one_shot_err_enabled = 0;
+   bit                              obi_memory_data_random_err_enabled    = 0;
+   bit                              obi_memory_data_one_shot_err_enabled  = 0;
 
    // Agent cfg handles
    rand uvma_isacov_cfg_c           isacov_cfg;
@@ -50,8 +52,10 @@ class uvme_cv32e40x_cfg_c extends uvma_core_cntrl_cfg_c;
       `uvm_field_int (                         trn_log_enabled             , UVM_DEFAULT          )
       `uvm_field_int (                         sys_clk_period              , UVM_DEFAULT | UVM_DEC)
       `uvm_field_enum (cv32e40x_pkg::b_ext_e,  b_ext                       , UVM_DEFAULT          )
-      `uvm_field_int (                         obi_memory_instr_random_err_enabled,  UVM_DEFAULT  )
-      `uvm_field_int (                         obi_memory_data_random_err_enabled,   UVM_DEFAULT  )
+      `uvm_field_int (                         obi_memory_instr_random_err_enabled,   UVM_DEFAULT  )
+      `uvm_field_int (                         obi_memory_instr_one_shot_err_enabled, UVM_DEFAULT  )
+      `uvm_field_int (                         obi_memory_data_random_err_enabled,    UVM_DEFAULT  )
+      `uvm_field_int (                         obi_memory_data_one_shot_err_enabled,  UVM_DEFAULT  )
 
       `uvm_field_object(isacov_cfg           , UVM_DEFAULT)
       `uvm_field_object(clknrst_cfg          , UVM_DEFAULT)
@@ -187,11 +191,13 @@ class uvme_cv32e40x_cfg_c extends uvma_core_cntrl_cfg_c;
 
       rvfi_cfg.nret == uvme_cv32e40x_pkg::RVFI_NRET;
       rvfi_cfg.nmi_handler_enabled         == 1;
+      rvfi_cfg.insn_bus_fault_enabled      == 1;
+      rvfi_cfg.insn_bus_fault_cause        == cv32e40x_pkg::EXC_CAUSE_INSTR_BUS_FAULT;
 
-      rvvi_cfg.store_fault_nmi_index       == cv32e40x_pkg::INT_CAUSE_LSU_STORE_FAULT;
-      rvvi_cfg.store_fault_nmi_index_valid == 1;
-      rvvi_cfg.load_fault_nmi_index        == cv32e40x_pkg::INT_CAUSE_LSU_LOAD_FAULT;
-      rvvi_cfg.load_fault_nmi_index_valid  == 1;
+      rvvi_cfg.store_fault_nmi_cause       == cv32e40x_pkg::INT_CAUSE_LSU_STORE_FAULT;
+      rvvi_cfg.store_fault_nmi_cause_valid == 1;
+      rvvi_cfg.load_fault_nmi_cause        == cv32e40x_pkg::INT_CAUSE_LSU_LOAD_FAULT;
+      rvvi_cfg.load_fault_nmi_cause_valid  == 1;
 
       if (is_active == UVM_ACTIVE) {
          isacov_cfg.is_active           == UVM_PASSIVE;
@@ -248,6 +254,8 @@ class uvme_cv32e40x_cfg_c extends uvma_core_cntrl_cfg_c;
          obi_memory_instr_cfg.drv_slv_err_ok_wgt inside {[20:40]};
          obi_memory_instr_cfg.drv_slv_err_fault_wgt == 1;
       }
+
+      obi_memory_instr_cfg.drv_slv_err_one_shot_mode == obi_memory_instr_one_shot_err_enabled;
    }
 
    constraint obi_memory_data_fault_cons {
@@ -255,9 +263,11 @@ class uvme_cv32e40x_cfg_c extends uvma_core_cntrl_cfg_c;
          obi_memory_data_cfg.drv_slv_err_mode == UVMA_OBI_MEMORY_DRV_SLV_ERR_MODE_OK;
       } else {
          obi_memory_data_cfg.drv_slv_err_mode == UVMA_OBI_MEMORY_DRV_SLV_ERR_MODE_RANDOM;
-         obi_memory_data_cfg.drv_slv_err_ok_wgt inside {[20:40]};
+         obi_memory_data_cfg.drv_slv_err_ok_wgt inside {[10:200]};
          obi_memory_data_cfg.drv_slv_err_fault_wgt == 1;
       }
+
+      obi_memory_data_cfg.drv_slv_err_one_shot_mode == obi_memory_data_one_shot_err_enabled;
    }
 
    /**
@@ -285,7 +295,6 @@ class uvme_cv32e40x_cfg_c extends uvma_core_cntrl_cfg_c;
     */
    extern virtual function bit is_csr_check_disabled(string name);
 
-
    /**
     * Configure CSR checks in the scoreboard
     */
@@ -305,8 +314,12 @@ function uvme_cv32e40x_cfg_c::new(string name="uvme_cv32e40x_cfg");
    end
    if ($test$plusargs("obi_memory_instr_random_err"))
       obi_memory_instr_random_err_enabled = 1;
+   if ($test$plusargs("obi_memory_instr_one_shot_err"))
+      obi_memory_instr_one_shot_err_enabled = 1;
    if ($test$plusargs("obi_memory_data_random_err"))
       obi_memory_data_random_err_enabled = 1;
+   if ($test$plusargs("obi_memory_data_one_shot_err"))
+      obi_memory_data_one_shot_err_enabled = 1;
 
    isacov_cfg = uvma_isacov_cfg_c::type_id::create("isacov_cfg");
    clknrst_cfg  = uvma_clknrst_cfg_c::type_id::create("clknrst_cfg");
@@ -410,3 +423,4 @@ endfunction : configure_disable_csr_checks
 
 
 `endif // __UVME_CV32E40X_CFG_SV__
+
