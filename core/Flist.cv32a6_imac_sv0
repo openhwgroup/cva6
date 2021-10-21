@@ -53,7 +53,7 @@ ${CVA6_REPO_DIR}/core/include/instr_tracer_pkg.sv
 
 // Common Cells
 ${CVA6_REPO_DIR}/common/submodules/common_cells/src/fifo_v3.sv
-${CVA6_REPO_DIR}/common/submodules/common_cells/src/lfsr_8bit.sv
+${CVA6_REPO_DIR}/common/submodules/common_cells/src/lfsr.sv
 ${CVA6_REPO_DIR}/common/submodules/common_cells/src/lzc.sv
 ${CVA6_REPO_DIR}/common/submodules/common_cells/src/rr_arb_tree.sv
 ${CVA6_REPO_DIR}/common/submodules/common_cells/src/shift_reg.sv
