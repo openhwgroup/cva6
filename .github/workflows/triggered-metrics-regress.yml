@@ -49,7 +49,7 @@ jobs:
   # ---------------------------------------------------------------------------
   # CV32E40P CI Actions
   # ---------------------------------------------------------------------------
-  cv32e40p_rel_check_master-metrics:    
+  cv32e40p_rel_check_master-metrics:
     runs-on: ubuntu-latest
     if: github.ref == 'refs/heads/master'
     steps:
@@ -62,7 +62,7 @@ jobs:
           PR_NUMBER: ${{ github.event.pull_request.number }}
         shell: bash
 
-  cv32e40p_ci_check_dev-metrics:    
+  cv32e40p_ci_check_dev-metrics:
     runs-on: ubuntu-latest
     if: github.ref == 'refs/heads/cv32e40p/dev'
     steps:
@@ -95,7 +95,7 @@ jobs:
   # ---------------------------------------------------------------------------
   # CV32E40X CI Actions
   # ---------------------------------------------------------------------------
-  cv32e40x_rel_check_master-metrics:    
+  cv32e40x_rel_check_master-metrics:
     runs-on: ubuntu-latest
     if: github.ref == 'refs/heads/master'
     steps:
@@ -108,7 +108,7 @@ jobs:
           PR_NUMBER: ${{ github.event.pull_request.number }}
         shell: bash
 
-  cv32e40x_ci_check_dev-metrics:    
+  cv32e40x_ci_check_dev-metrics:
     runs-on: ubuntu-latest
     if: github.ref == 'refs/heads/cv32e40x/dev'
     steps:
@@ -141,46 +141,45 @@ jobs:
   # ---------------------------------------------------------------------------
   # CV32E40S CI Actions
   # ---------------------------------------------------------------------------
-  # FIXME:strichmo:do not enable cv32e40s CIs until baseline regression with latest ISS and RTL can be established
-  # cv32e40s_rel_check_master-metrics:    
-  #   runs-on: ubuntu-latest
-  #   if: github.ref == 'refs/heads/master'
-  #   steps:
-  #     - uses: actions/checkout@v2
-  #     - run: ./bin/metrics-regress $METRICS_REGRESSION_NAME $METRICS_PROJECT_ID
-  #       env:
-  #         METRICS_CI_TOKEN: ${{ secrets.METRICS_CI_TOKEN }}
-  #         METRICS_REGRESSION_NAME: cv32e40s_rel_check_master
-  #         METRICS_PROJECT_ID: ${{ secrets.METRICS_PROJECT_ID }}
-  #         PR_NUMBER: ${{ github.event.pull_request.number }}
-  #       shell: bash
+  cv32e40s_rel_check_master-metrics:
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/master'
+    steps:
+      - uses: actions/checkout@v2
+      - run: ./bin/metrics-regress $METRICS_REGRESSION_NAME $METRICS_PROJECT_ID
+        env:
+          METRICS_CI_TOKEN: ${{ secrets.METRICS_CI_TOKEN }}
+          METRICS_REGRESSION_NAME: cv32e40s_rel_check_master
+          METRICS_PROJECT_ID: ${{ secrets.METRICS_PROJECT_ID }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+        shell: bash
 
-  # cv32e40s_ci_check_dev-metrics:    
-  #   runs-on: ubuntu-latest
-  #   if: github.ref == 'refs/heads/cv32e40s/dev'
-  #   steps:
-  #     - uses: actions/checkout@v2
-  #       with:
-  #         ref: cv32e40s/dev
-  #     - run: ./bin/metrics-regress $METRICS_REGRESSION_NAME $METRICS_PROJECT_ID
-  #       env:
-  #         METRICS_CI_TOKEN: ${{ secrets.METRICS_CI_TOKEN }}
-  #         METRICS_REGRESSION_NAME: cv32e40s_ci_check_dev
-  #         METRICS_PROJECT_ID: ${{ secrets.METRICS_PROJECT_ID }}
-  #         PR_NUMBER: ${{ github.event.pull_request.number }}
-  #       shell: bash
+  cv32e40s_ci_check_dev-metrics:
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/cv32e40s/dev'
+    steps:
+      - uses: actions/checkout@v2
+        with:
+          ref: cv32e40s/dev
+      - run: ./bin/metrics-regress $METRICS_REGRESSION_NAME $METRICS_PROJECT_ID
+        env:
+          METRICS_CI_TOKEN: ${{ secrets.METRICS_CI_TOKEN }}
+          METRICS_REGRESSION_NAME: cv32e40s_ci_check_dev
+          METRICS_PROJECT_ID: ${{ secrets.METRICS_PROJECT_ID }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+        shell: bash
 
-  # cv32e40s_rel_check_release-metrics:
-  #   runs-on: ubuntu-latest
-  #   if: github.ref == 'refs/heads/cv32e40s/release'
-  #   steps:
-  #     - uses: actions/checkout@v2
-  #       with:
-  #         ref: cv32e40s/release
-  #     - run: ./bin/metrics-regress $METRICS_REGRESSION_NAME $METRICS_PROJECT_ID
-  #       env:
-  #         METRICS_CI_TOKEN: ${{ secrets.METRICS_CI_TOKEN }}
-  #         METRICS_REGRESSION_NAME: cv32e40s_rel_check_release
-  #         METRICS_PROJECT_ID: ${{ secrets.METRICS_PROJECT_ID }}
-  #         PR_NUMBER: ${{ github.event.pull_request.number }}
-  #       shell: bash
+  cv32e40s_rel_check_release-metrics:
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/cv32e40s/release'
+    steps:
+      - uses: actions/checkout@v2
+        with:
+          ref: cv32e40s/release
+      - run: ./bin/metrics-regress $METRICS_REGRESSION_NAME $METRICS_PROJECT_ID
+        env:
+          METRICS_CI_TOKEN: ${{ secrets.METRICS_CI_TOKEN }}
+          METRICS_REGRESSION_NAME: cv32e40s_rel_check_release
+          METRICS_PROJECT_ID: ${{ secrets.METRICS_PROJECT_ID }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+        shell: bash

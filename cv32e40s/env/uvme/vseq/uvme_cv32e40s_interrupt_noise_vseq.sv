@@ -1,12 +1,12 @@
 // Copyright 2020 OpenHW Group
 // Copyright 2020 Datum Technology Corporation
-// 
+//
 // Licensed under the Solderpad Hardware Licence, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
-// 
+//
 //     https://solderpad.org/licenses/
-// 
+//
 // Unless required by applicable law or agreed to in writing, software
 // distributed under the License is distributed on an "AS IS" BASIS,
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -25,16 +25,16 @@ class uvme_cv32e40s_interrupt_noise_c extends uvme_cv32e40s_base_vseq_c;
 
    rand int unsigned short_delay_wgt;
    rand int unsigned med_delay_wgt;
-   rand int unsigned long_delay_wgt;   
+   rand int unsigned long_delay_wgt;
    rand int unsigned initial_delay_assert_until_ack;
    rand int unsigned initial_delay_assert;
    rand int unsigned initial_delay_deassert;
 
    rand bit [31:0]   reserved_irq_mask;
-  
+
    `uvm_object_utils_begin(uvme_cv32e40s_interrupt_noise_c)
    `uvm_object_utils_end
-   
+
    constraint default_delay_c {
      soft short_delay_wgt == 2;
      soft med_delay_wgt == 5;
@@ -62,12 +62,12 @@ class uvme_cv32e40s_interrupt_noise_c extends uvme_cv32e40s_base_vseq_c;
                                    [10:500] :/ 4,
                                    [500:1000] :/ 3};
    }
-   
+
    /**
     * Default constructor.
     */
    extern function new(string name="uvme_cv32e40s_interrupt_noise");
-   
+
    /**
     * Starts the clock, waits, then resets the DUT.
     */
@@ -76,9 +76,9 @@ class uvme_cv32e40s_interrupt_noise_c extends uvme_cv32e40s_base_vseq_c;
 endclass : uvme_cv32e40s_interrupt_noise_c
 
 function uvme_cv32e40s_interrupt_noise_c::new(string name="uvme_cv32e40s_interrupt_noise");
-   
+
    super.new(name);
-   
+
 endfunction : new
 
 task uvme_cv32e40s_interrupt_noise_c::rand_delay();
@@ -98,7 +98,7 @@ task uvme_cv32e40s_interrupt_noise_c::body();
 
       while(1) begin
         uvma_interrupt_seq_item_c irq_req;
-        
+
         `uvm_create_on(irq_req, p_sequencer.interrupt_sequencer);
         start_item(irq_req);
         irq_req.default_repeat_count_c.constraint_mode(0);
@@ -121,15 +121,15 @@ task uvme_cv32e40s_interrupt_noise_c::body();
 
       while(1) begin
         uvma_interrupt_seq_item_c irq_req;
-        
-        `uvm_do_on_with(irq_req, p_sequencer.interrupt_sequencer, {        
+
+        `uvm_do_on_with(irq_req, p_sequencer.interrupt_sequencer, {
           action        == UVMA_INTERRUPT_SEQ_ITEM_ACTION_DEASSERT;
           (irq_mask & local::reserved_irq_mask) == 0;
         })
 
         rand_delay();
 
-      end  
+      end
     end
 
     begin : gen_deassert
@@ -138,15 +138,15 @@ task uvme_cv32e40s_interrupt_noise_c::body();
 
       while(1) begin
         uvma_interrupt_seq_item_c irq_req;
-        
-        `uvm_do_on_with(irq_req, p_sequencer.interrupt_sequencer, {        
+
+        `uvm_do_on_with(irq_req, p_sequencer.interrupt_sequencer, {
           action        == UVMA_INTERRUPT_SEQ_ITEM_ACTION_ASSERT;
           (irq_mask & local::reserved_irq_mask) == 0;
         })
 
         rand_delay();
 
-      end  
+      end
     end
   join
 endtask : body
