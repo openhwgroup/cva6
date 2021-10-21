@@ -298,8 +298,9 @@ function bit uvma_obi_memory_cfg_c::calc_random_err(bit[31:0] addr);
 
    // If we are in "one-shot" mode and have already calculated an error,
    // then skip any new errors (until the code resets the flag)
-   if (drv_slv_err_one_shot_mode && drv_slv_err_one_shot_flag)
+   if (drv_slv_err_one_shot_mode && drv_slv_err_one_shot_flag) begin
       return 0;
+   end
 
    // Check for a directed error reponse first
    if (directed_slv_err_valid &&
