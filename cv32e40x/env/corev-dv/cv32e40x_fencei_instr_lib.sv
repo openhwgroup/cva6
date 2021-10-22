@@ -59,6 +59,14 @@ class corev_store_fencei_load_instr_stream extends riscv_load_store_rand_instr_s
     )
     instr.comment = "store_fencei_load: load";
     instr_list.push_back(instr);
+
+    // Get a nice enumeration label for anything not labeled
+    foreach (instr_list[i]) begin
+      instr_list[i].atomic = 1;
+      if (instr_list[i].label == "") begin
+        instr_list[i].label = $sformatf("%0d", i);
+      end
+    end
   endfunction : post_randomize
 
 endclass : corev_store_fencei_load_instr_stream
@@ -71,10 +79,18 @@ endclass : corev_store_fencei_load_instr_stream
 // Hence, one shall never see random1 execute, but rather 2 consecutive random2.
 class corev_store_fencei_exec_instr_stream extends riscv_load_store_rand_instr_stream;
 
+  static int idx_label;
+
   rand riscv_reg_t addr_reg;
   rand riscv_reg_t data_reg;
 
-  static int       idx_label;
+  constraint dont_overwrite_data_reg {
+    addr_reg != data_reg;  // Don't overwrite the data that is to be written
+  }
+  constraint dont_pollute_reserved_regs {
+    !(addr_reg inside {cfg.reserved_regs});
+    !(data_reg inside {cfg.reserved_regs});
+  }
 
   `uvm_object_utils(corev_store_fencei_exec_instr_stream)
 
@@ -145,17 +161,16 @@ class corev_store_fencei_exec_instr_stream extends riscv_load_store_rand_instr_s
     instr_list.push_back(instr);
 
     // Exec
-    instr = riscv_instr::get_rand_instr();
+    instr = riscv_instr::get_rand_instr(.exclude_group({RV32C}));
     `DV_CHECK_RANDOMIZE_FATAL(instr, "failed to randomize exec instruction");
     instr.comment = "store_fencei_exec: exec";
     instr.label = label_exec;
     instr_list.push_back(instr);
 
     // Dummy, for replacing exec
-    instr = riscv_instr::get_rand_instr(.exclude_category({JUMP, BRANCH}));
+    instr = riscv_instr::get_rand_instr(.exclude_category({JUMP, BRANCH, SYSTEM}), .exclude_group({RV32C}));
     `DV_CHECK_RANDOMIZE_WITH_FATAL(instr,
-      (category != JUMP);
-      (category != BRANCH);
+      !(category inside {JUMP, BRANCH, SYSTEM});
       // Note: Could allow JUMP/BRANCH, but just not backwards jumps
       , "failed to randomize dummy instruction"
     )
@@ -163,6 +178,7 @@ class corev_store_fencei_exec_instr_stream extends riscv_load_store_rand_instr_s
     instr.label = label_dummy;
     instr_list.push_back(instr);
 
+    // Get a nice enumeration label for anything not labeled
     foreach (instr_list[i]) begin
       instr_list[i].atomic = 1;
       if (instr_list[i].label == "") begin
