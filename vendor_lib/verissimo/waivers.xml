@@ -5,7 +5,7 @@
             <path>*/core-v-cores/*</path>
         </paths>
     </pre-waiver>
-    <pre-waiver apply-on="matched" name="Waive RTL source code">
+    <pre-waiver apply-on="matched" name="Waive third-party API source code">
         <paths regex="simple">
             <path>*/vendor_lib/*</path>
         </paths>
