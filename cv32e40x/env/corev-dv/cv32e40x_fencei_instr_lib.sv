@@ -21,8 +21,21 @@
 // Even though fencei meddles with the pipeline, the stores shall come through.
 class corev_store_fencei_load_instr_stream extends riscv_load_store_rand_instr_stream;
 
-  rand riscv_reg_t addr_reg;
   rand bit [31:0]  addr;
+  rand riscv_reg_t addr_reg;
+  rand riscv_reg_t data_reg;
+
+  constraint dont_overwrite_data_reg {
+    addr_reg != data_reg;  // Don't overwrite the data that is to be written
+  }
+  constraint dont_pollute_reserved_regs {
+    !(addr_reg inside {cfg.reserved_regs});
+    !(data_reg inside {cfg.reserved_regs});
+  }
+  constraint dont_store_in_x0 {
+    addr_reg != ZERO;
+    data_reg != ZERO;
+  }
 
   `uvm_object_utils(corev_store_fencei_load_instr_stream)
 
@@ -32,6 +45,18 @@ class corev_store_fencei_load_instr_stream extends riscv_load_store_rand_instr_s
 
   function void post_randomize();
     riscv_instr instr;
+
+    // (Backup existing data)
+    instr = riscv_instr::get_instr(LW);
+    `DV_CHECK_RANDOMIZE_WITH_FATAL(instr,
+      instr_name == LW;
+      rs1 == addr_reg;
+      imm == addr[31:20];
+      rd == data_reg;
+      , "failed to randomize backup"
+    )
+    instr.comment = "store_fencei_load: backup existing";
+    instr_list.push_back(instr);
 
     // Store
     instr = riscv_instr::get_rand_instr(.include_instr({SW, SH, SB}));
@@ -55,9 +80,23 @@ class corev_store_fencei_load_instr_stream extends riscv_load_store_rand_instr_s
       instr_name inside {LW, LH, LHU, LB, LBU};
       rs1 == addr_reg;
       imm == addr[31:20];
+      !(rd inside {addr_reg, data_reg});
+      !(rd inside {cfg.reserved_regs});
       , "failed to randomize load"
     )
     instr.comment = "store_fencei_load: load";
+    instr_list.push_back(instr);
+
+    // (Restore previous data)
+    instr = riscv_instr::get_instr(SW);
+    `DV_CHECK_RANDOMIZE_WITH_FATAL(instr,
+      instr_name == SW;
+      rs1 == addr_reg;
+      imm == addr[31:20];
+      rs2 == data_reg;
+      , "failed to randomize restore"
+    )
+    instr.comment = "store_fencei_load: store previous";
     instr_list.push_back(instr);
 
     // Get a nice enumeration label for anything not labeled
@@ -90,6 +129,10 @@ class corev_store_fencei_exec_instr_stream extends riscv_load_store_rand_instr_s
   constraint dont_pollute_reserved_regs {
     !(addr_reg inside {cfg.reserved_regs});
     !(data_reg inside {cfg.reserved_regs});
+  }
+  constraint dont_store_in_x0 {
+    addr_reg != ZERO;
+    data_reg != ZERO;
   }
 
   `uvm_object_utils(corev_store_fencei_exec_instr_stream)
@@ -161,17 +204,22 @@ class corev_store_fencei_exec_instr_stream extends riscv_load_store_rand_instr_s
     instr_list.push_back(instr);
 
     // Exec
-    instr = riscv_instr::get_rand_instr(.exclude_group({RV32C}));
+    instr = riscv_instr::get_rand_instr(.exclude_instr({NOP}), .exclude_group({RV32C}));
     `DV_CHECK_RANDOMIZE_FATAL(instr, "failed to randomize exec instruction");
+    if (instr.category inside {JUMP, BRANCH}) instr.imm_str = "0";  // Just need it to compile/link, shall never execute
     instr.comment = "store_fencei_exec: exec";
     instr.label = label_exec;
     instr_list.push_back(instr);
 
     // Dummy, for replacing exec
-    instr = riscv_instr::get_rand_instr(.exclude_category({JUMP, BRANCH, SYSTEM}), .exclude_group({RV32C}));
+    instr = riscv_instr::get_rand_instr(
+      .include_category({LOAD, SHIFT, ARITHMETIC, LOGICAL, COMPARE, SYNCH}),
+      .exclude_group({RV32C}));
     `DV_CHECK_RANDOMIZE_WITH_FATAL(instr,
-      !(category inside {JUMP, BRANCH, SYSTEM});
-      // Note: Could allow JUMP/BRANCH, but just not backwards jumps
+      (category inside {LOAD, SHIFT, ARITHMETIC, LOGICAL, COMPARE, SYNCH});
+        // Note: Several of the constraints could be relaxed, but it turns really complicated
+      !(rd inside {cfg.reserved_regs});
+      !((rd == ZERO) && (instr_name inside {ADDI, C_ADDI}));
       , "failed to randomize dummy instruction"
     )
     instr.comment = "store_fencei_exec: dummy";
