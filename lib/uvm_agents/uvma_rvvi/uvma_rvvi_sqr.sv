@@ -21,7 +21,6 @@
 `define __UVMA_RVVI_SQR_SV__
 
 `uvm_analysis_imp_decl(_rvfi_instr)
-`uvm_analysis_imp_decl(_obi_i)
 
 /**
  * Component running Clock & Reset sequences extending uvma_rvvi_seq_base_c.
@@ -38,13 +37,8 @@ class uvma_rvvi_sqr_c#(int ILEN=DEFAULT_ILEN,
 
    uvma_rvfi_instr_seq_item_c#(ILEN,XLEN) rvfi_instr_q[$];
 
-   uvma_obi_memory_mon_trn_c              obi_i_q[$];
-
    // Analysis port to receive retirement events from the RVFI
    uvm_analysis_imp_rvfi_instr#(uvma_rvfi_instr_seq_item_c#(ILEN,XLEN), uvma_rvvi_sqr_c) rvfi_instr_export;
-
-   // Analysis port to receive OBI bus transactions
-   uvm_analysis_imp_obi_i#(uvma_obi_memory_mon_trn_c, uvma_rvvi_sqr_c) obi_i_export;
 
    `uvm_component_utils_begin(uvma_rvvi_sqr_c)
       `uvm_field_object(cfg  , UVM_DEFAULT)
@@ -66,11 +60,6 @@ class uvma_rvvi_sqr_c#(int ILEN=DEFAULT_ILEN,
     */
    extern virtual function void write_rvfi_instr(uvma_rvfi_instr_seq_item_c#(ILEN,XLEN) rvfi_instr);
 
-   /**
-    * Analysis port write from OBI monitors
-    */
-   extern virtual function void write_obi_i(uvma_obi_memory_mon_trn_c trn);
-
 endclass : uvma_rvvi_sqr_c
 
 
@@ -79,7 +68,6 @@ function uvma_rvvi_sqr_c::new(string name="uvma_rvvi_sqr", uvm_component parent=
    super.new(name, parent);
 
    rvfi_instr_export = new("rvfi_instr_export", this);
-   obi_i_export = new("obi_i_export", this);
 
 endfunction : new
 
@@ -107,16 +95,6 @@ function void uvma_rvvi_sqr_c::write_rvfi_instr(uvma_rvfi_instr_seq_item_c#(ILEN
    end
 
 endfunction : write_rvfi_instr
-
-function void uvma_rvvi_sqr_c::write_obi_i(uvma_obi_memory_mon_trn_c trn);
-
-   obi_i_q.push_back(trn);
-
-   if (obi_i_q.size() >= SQR_MAX_OBI_FIFO_SIZE) begin
-      `uvm_fatal("SQR", $sformatf("OBI I FIFO is too large: %0d", obi_i_q.size()));
-   end
-
-endfunction : write_obi_i
 
 `endif // __UVMA_RVVI_SQR_SV__
 

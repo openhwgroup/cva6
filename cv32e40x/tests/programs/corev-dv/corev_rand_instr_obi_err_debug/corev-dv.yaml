@@ -1,9 +1,7 @@
-# Test definition YAML for corev-dv test generator
-
-name: corev_rand_instr_obi_err
+name: corev_rand_instr_obi_err_debug
 uvm_test: $(CV_CORE_LC)_instr_base_test
 description: >
-    RISCV-DV generated random instruction test with OBI instruction bus errors
+    RISCV-DV generated test with OBI instruction bus errors in debug mode
 plusargs: >
     +instr_cnt=10000
     +num_of_sub_program=6
