@@ -140,6 +140,12 @@ tests:
     dir: cv32e40x/sim/uvmt
     cmd: make test COREV=YES TEST=hpmcounter_basic_test
 
+  hpmcounter_basic_nostall_test:
+    build: uvmt_cv32e40x
+    description: Hardware performance counter basic test with no random stalls
+    dir: cv32e40x/sim/uvmt
+    cmd: make test COREV=YES TEST=hpmcounter_basic_nostall_test
+
   hpmcounter_hazard_test:
     build: uvmt_cv32e40x
     description: Hardware performance counter hazard test
