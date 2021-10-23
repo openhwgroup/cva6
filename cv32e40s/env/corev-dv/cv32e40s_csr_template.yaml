@@ -80,7 +80,7 @@
 #  rv32:
 #    - field_name: cycle
 #      description: >
-#        Read-only unprivileged shadow of the lower 32 bits of the 64 bit machine mode cycle counter. 
+#        Read-only unprivileged shadow of the lower 32 bits of the 64 bit machine mode cycle counter.
 #      type: R
 #      reset_val: 0
 #      msb: 31
@@ -93,7 +93,7 @@
 #  rv32:
 #    - field_name: instret
 #      description: >
-#        Read-only unprivileged shadow of the lower 32 bits of the 64 bit machine mode instruction retired counter. 
+#        Read-only unprivileged shadow of the lower 32 bits of the 64 bit machine mode instruction retired counter.
 #      type: R
 #      reset_val: 0
 #      msb: 31
@@ -106,7 +106,7 @@
 #  rv32:
 #    - field_name: counter3
 #      description: >
-#        Read-only unprivileged shadow of the lower 32 bits of the 64 bit machine performance counter. 
+#        Read-only unprivileged shadow of the lower 32 bits of the 64 bit machine performance counter.
 #      type: R
 #      reset_val: 0
 #      msb: 31
@@ -119,7 +119,7 @@
 #  rv32:
 #    - field_name: cycleh
 #      description: >
-#        Read-only unprivileged shadow of the upper 32 bits of the 64 bit machine mode cycle counter. 
+#        Read-only unprivileged shadow of the upper 32 bits of the 64 bit machine mode cycle counter.
 #      type: R
 #      reset_val: 0
 #      msb: 31
@@ -132,7 +132,7 @@
 #  rv32:
 #    - field_name: instreth
 #      description: >
-#        Read-only unprivileged shadow of the upper 32 bits of the 64 bit machine mode instruction retired counter. 
+#        Read-only unprivileged shadow of the upper 32 bits of the 64 bit machine mode instruction retired counter.
 #      type: R
 #      reset_val: 0
 #      msb: 31
@@ -145,7 +145,7 @@
 #  rv32:
 #    - field_name: counter3h
 #      description: >
-#        Read-only unprivileged shadow of the upper 32 bits of the 64 bit machine performance counter. 
+#        Read-only unprivileged shadow of the upper 32 bits of the 64 bit machine performance counter.
 #      type: R
 #      reset_val: 0
 #      msb: 31
@@ -236,47 +236,6 @@
       reset_val: 0
       msb: 31
       lsb: 0
-- csr: mstatus
-  description: >
-    Machine ISA Register
-  address: 0x300
-  privilege_mode: M
-  rv32:
-    - field_name: MPP
-      description: >
-        Machine Previous Privilege mode, hardwired to 3'b11 when User mode not enabled
-      type: R
-      reset_val: 3
-      msb: 12
-      lsb: 11
-    - field_name: PMIE
-      description: >
-          Previous Machine Interrupt Enable
-      type: WARL
-      reset_val: 0
-      msb: 7
-      lsb: 7
-    - field_name: PUIE
-      description: >
-          Previous User Interrupt Enable
-      type: R
-      reset_val: 0
-      msb: 4
-      lsb: 4
-    - field_name: MIE
-      description: >
-          Machine Interrupt Enable
-      type: WARL
-      reset_val: 0
-      msb: 3
-      lsb: 3
-    - field_name: UIE
-      description: >
-          User Interrupt Enable
-      type: R
-      reset_val: 0
-      msb: 0
-      lsb: 0
 - csr: misa
   description: >
     Machine ISA Register
@@ -294,7 +253,7 @@
       description: >
           Encodes all supported ISA extensions
       type: R
-      reset_val: 0x801104
+      reset_val: 0x101104
       msb: 25
       lsb: 0
 - csr: mie
@@ -313,24 +272,24 @@
     - field_name: MEIE
       description: >
         Machine External Interrupt Enable
-      type: WARL 
+      type: WARL
       reset_val: 0
       msb: 11
-      lsb: 11 
+      lsb: 11
     - field_name: MTIE
       description: >
         Machine Timer Interrupt Enable
-      type: WARL 
+      type: WARL
       reset_val: 0
       msb: 7
-      lsb: 7 
+      lsb: 7
     - field_name: MSIE
       description: >
         Machine Software Interrupt Enable
-      type: WARL 
+      type: WARL
       reset_val: 0
       msb: 3
-      lsb: 3 
+      lsb: 3
 - csr: mtvec
   description: >
     Machine Trap-Vector Base Address
@@ -479,13 +438,13 @@
       type: R
       reset_val: 0
       msb: 30
-      lsb: 5
+      lsb: 8
     - field_name: ecode
       description: >
           Exception Code
       type: WARL
       reset_val: 0
-      msb: 4
+      msb: 7
       lsb: 0
 - csr: mtval
   description: >
@@ -576,7 +535,7 @@
       lsb: 27
     - field_name: MaskMax
       description: >
-        Only exact matching supported 
+        Only exact matching supported
       type: R
       reset_val: 0
       msb: 26
@@ -766,7 +725,7 @@
 #  rv32:
 #    - field_name: Bank
 #      description: >
-#       Number of continuation codes in JEDEC manufacturer ID 
+#       Number of continuation codes in JEDEC manufacturer ID
 #      type: R
 #      reset_val: 12
 #      msb: 31

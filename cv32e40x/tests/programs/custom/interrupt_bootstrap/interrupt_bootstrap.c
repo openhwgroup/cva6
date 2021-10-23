@@ -47,34 +47,34 @@ void delay(int count) {
 
 void mstatus_mie_enable() {
     int mie_bit = 0x1 << MSTATUS_MIE_BIT;
-    asm volatile("csrrs x0, mstatus, %0" : : "r" (mie_bit));
+    __asm__ volatile("csrrs x0, mstatus, %0" : : "r" (mie_bit));
 }
 
 void mstatus_mie_disable() {
     int mie_bit = 0x1 << MSTATUS_MIE_BIT;
-    asm volatile("csrrc x0, mstatus, %0" : : "r" (mie_bit));
+    __asm__ volatile("csrrc x0, mstatus, %0" : : "r" (mie_bit));
 }
 
 void mie_enable_all() {
     uint32_t mie_mask = (uint32_t) -1;
-    asm volatile("csrrs x0, mie, %0" : : "r" (mie_mask));
+    __asm__ volatile("csrrs x0, mie, %0" : : "r" (mie_mask));
 }
 
 void mie_disable_all() {
     uint32_t mie_mask = (uint32_t) -1;
-    asm volatile("csrrc x0, mie, %0" : : "r" (mie_mask));
+    __asm__ volatile("csrrc x0, mie, %0" : : "r" (mie_mask));
 }
 
 void mie_enable(uint32_t irq) {
     // Enable the interrupt irq in MIE
     uint32_t mie_bit = 0x1 << irq;
-    asm volatile("csrrs x0, mie, %0" : : "r" (mie_bit));
+    __asm__ volatile("csrrs x0, mie, %0" : : "r" (mie_bit));
 }
 
 void mie_disable(uint32_t irq) {
     // Disable the interrupt irq in MIE
     uint32_t mie_bit = 0x1 << irq;
-    asm volatile("csrrc x0, mie, %0" : : "r" (mie_bit));
+    __asm__ volatile("csrrc x0, mie, %0" : : "r" (mie_bit));
 }
 
 void mm_ram_assert_irq(uint32_t mask, uint32_t cycle_delay) {
@@ -99,9 +99,9 @@ void nested_irq_handler(uint32_t id) {
     // First stack mie, mepc and mstatus
     // Must be done in critical section with MSTATUS.MIE == 0
     volatile uint32_t mie, mepc, mstatus;
-    asm volatile("csrr %0, mie" : "=r" (mie));
-    asm volatile("csrr %0, mepc" :"=r" (mepc));
-    asm volatile("csrr %0, mstatus" : "=r" (mstatus));
+    __asm__ volatile("csrr %0, mie" : "=r" (mie));
+    __asm__ volatile("csrr %0, mepc" :"=r" (mepc));
+    __asm__ volatile("csrr %0, mstatus" : "=r" (mstatus));
 
     // Re enable interrupts and create window to enable nested irqs
     mstatus_mie_enable();
@@ -109,13 +109,13 @@ void nested_irq_handler(uint32_t id) {
 
     // Disable MSTATUS.MIE and restore from critical section
     mstatus_mie_disable();
-    asm volatile("csrw mie, %0" : : "r" (mie));
-    asm volatile("csrw mepc, %0" : : "r" (mepc));
-    asm volatile("csrw mstatus, %0" : : "r" (mstatus));
+    __asm__ volatile("csrw mie, %0" : : "r" (mie));
+    __asm__ volatile("csrw mepc, %0" : : "r" (mepc));
+    __asm__ volatile("csrw mstatus, %0" : : "r" (mstatus));
 }
 
 void generic_irq_handler(uint32_t id) {
-    asm volatile("csrr %0, mcause": "=r" (mmcause));
+    __asm__ volatile("csrr %0, mcause": "=r" (mmcause));
     irq_id = id;
 
     if (active_test == 2 || active_test == 3 || active_test == 4) {
@@ -153,14 +153,14 @@ void m_fast15_irq_handler(void) { generic_irq_handler(FAST15_IRQ_ID); }
 // A Special version of the SW Handler (vector 0) used in the direct mode
 __attribute__((interrupt ("machine"))) void u_sw_direct_irq_handler(void)  {
     in_direct_handler = 1;
-    asm volatile("csrr %0, mcause" : "=r" (mmcause));
+    __asm__ volatile("csrr %0, mcause" : "=r" (mmcause));
 }
 
 int test_mtvec() {
     uint32_t mtvec_act;
     uint32_t mtvec_exp = BOOTSTRAP_MTVEC | 0x1;
 
-    asm volatile("csrr %0, mtvec" : "=r" (mtvec_act));
+    __asm__ volatile("csrr %0, mtvec" : "=r" (mtvec_act));
     if (mtvec_act != mtvec_exp) {
         printf("MTVEC bootstrap failure, exp 0x%08lx, act 0x%08lx\n", mtvec_exp, mtvec_act);
         return 1;
@@ -288,49 +288,3 @@ int test1_impl(int direct_mode) {
     return EXIT_SUCCESS;
 }
 
-    asm (
-        ".global alt_vector_table\n"
-        ".option norvc\n"
-        ".align 8\n"
-        "alt_vector_table:\n"
-	    "j u_sw_irq_handler\n"
-	    "j __no_irq_handler\n"
-	    "j __no_irq_handler\n"
-	    "j m_software_irq_handler\n"
-	    "j __no_irq_handler\n"
-        "j __no_irq_handler\n"
-	    "j __no_irq_handler\n"
-	    "j m_timer_irq_handler\n"
-	    "j __no_irq_handler\n"
-	    "j __no_irq_handler\n"
-	    "j __no_irq_handler\n"
-	    "j m_external_irq_handler\n"
-	    "j __no_irq_handler\n"
-	    "j __no_irq_handler\n"
-	    "j __no_irq_handler\n"
-	    "j __no_irq_handler\n"
-	    "j m_fast0_irq_handler\n"
-	    "j m_fast1_irq_handler\n"
-	    "j m_fast2_irq_handler\n"
-	    "j m_fast3_irq_handler\n"
-	    "j m_fast4_irq_handler\n"
-	    "j m_fast5_irq_handler\n"
-	    "j m_fast6_irq_handler\n"
-	    "j m_fast7_irq_handler\n"
-	    "j m_fast8_irq_handler\n"
-	    "j m_fast9_irq_handler\n"
-	    "j m_fast10_irq_handler\n"
-	    "j m_fast11_irq_handler\n"
-	    "j m_fast12_irq_handler\n"
-	    "j m_fast13_irq_handler\n"
-	    "j m_fast14_irq_handler\n"
-	    "j m_fast15_irq_handler\n"
-    );
-
-    asm (
-        ".global alt_direct_vector_table\n"
-        ".option norvc\n"
-        ".align 8\n"
-        "alt_direct_vector_table:\n"
-	    "j u_sw_direct_irq_handler\n"
-    );
