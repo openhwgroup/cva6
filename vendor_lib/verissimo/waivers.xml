@@ -1,11 +1,15 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <waivers version="7">
-    <waiver apply-on="matched" name="Waive RTL source code">
-        <status>DISABLE</status>
+    <pre-waiver apply-on="matched" name="Waive RTL source code">
         <paths regex="simple">
             <path>*/core-v-cores/*</path>
         </paths>
-    </waiver>
+    </pre-waiver>
+    <pre-waiver apply-on="matched" name="Waive third-party API source code">
+        <paths regex="simple">
+            <path>*/vendor_lib/*</path>
+        </paths>
+    </pre-waiver>
     <waiver apply-on="matched" name="Disable SVTB.12.1.2 (Methods defined outside of classes must be explicitly declared automatic or static)">
         <status>DISABLE</status>
         <description>Disable all failures of check SVTB.12.1.2</description>

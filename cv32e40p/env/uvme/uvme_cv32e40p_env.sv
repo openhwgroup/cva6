@@ -156,7 +156,7 @@ function void uvme_cv32e40p_env_c::build_phase(uvm_phase phase);
    super.build_phase(phase);
 
    void'(uvm_config_db#(uvme_cv32e40p_cfg_c)::get(this, "", "cfg", cfg));
-   if (!cfg) begin
+   if (cfg == null) begin
       `uvm_fatal("UVME_CV32E40P_ENV", "Configuration handle is null")
    end
    else begin
@@ -165,7 +165,7 @@ function void uvme_cv32e40p_env_c::build_phase(uvm_phase phase);
 
    if (cfg.enabled) begin
       void'(uvm_config_db#(uvme_cv32e40p_cntxt_c)::get(this, "", "cntxt", cntxt));
-      if (!cntxt) begin
+      if (cntxt == null) begin
          `uvm_info("UVME_CV32E40P_ENV", "Context handle is null; creating.", UVM_DEBUG)
          cntxt = uvme_cv32e40p_cntxt_c::type_id::create("cntxt");
       end
