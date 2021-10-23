@@ -9,7 +9,7 @@
 # THe CV32E40P repo also has a variable to clone a specific tag:
 #      *_TAG:    Value of the specific tag you wish to clone;
 #                Will override the HASH unless set to "none".
-#                
+#
 
 export SHELL = /bin/bash
 
@@ -35,3 +35,8 @@ COMPLIANCE_REPO   ?= https://github.com/riscv/riscv-compliance
 COMPLIANCE_BRANCH ?= master
 # 2020-08-19
 COMPLIANCE_HASH   ?= c21a2e86afa3f7d4292a2dd26b759f3f29cde497
+
+# SVLIB
+SVLIB_REPO       ?= https://bitbucket.org/verilab/svlib/src/master/svlib
+SVLIB_BRANCH     ?= master
+SVLIB_HASH       ?= c25509a7e54a880fe8f58f3daa2f891d6ecf6428

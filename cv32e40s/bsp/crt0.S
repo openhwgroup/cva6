@@ -11,6 +11,9 @@
 /* Make sure the vector table gets linked into the binary.  */
 .global vector_table
 
+/* Make sure the NMI handler gets linked into the binary. */
+.global nmi_handler
+
 /* Entry point for bare metal programs */
 .section .text.start
 .global _start
