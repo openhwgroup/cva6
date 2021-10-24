@@ -150,7 +150,7 @@ endfunction: connect_phase
 function void uvma_debug_agent_c::get_and_set_cfg();
    
    void'(uvm_config_db#(uvma_debug_cfg_c)::get(this, "", "cfg", cfg));
-   if (!cfg) begin
+   if (cfg == null) begin
       `uvm_fatal("CFG", "Configuration handle is null")
    end
    else begin
@@ -164,7 +164,7 @@ endfunction : get_and_set_cfg
 function void uvma_debug_agent_c::get_and_set_cntxt();
    
    void'(uvm_config_db#(uvma_debug_cntxt_c)::get(this, "", "cntxt", cntxt));
-   if (!cntxt) begin
+   if (cntxt == null) begin
       `uvm_info("CNTXT", "Context handle is null; creating.", UVM_DEBUG)
       cntxt = uvma_debug_cntxt_c::type_id::create("cntxt");
    end

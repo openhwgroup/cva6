@@ -51,11 +51,6 @@ class uvma_debug_mon_c extends uvm_monitor;
    extern virtual function void build_phase(uvm_phase phase);
    
    /**
-    * Oversees monitoring, depending on the reset state, by calling mon_<pre|in|post>_reset() tasks.
-    */
-   extern virtual task run_phase(uvm_phase phase);
-   
-   /**
     * Updates the context's reset state.
     */
    extern virtual task observe_reset();
@@ -103,39 +98,18 @@ function void uvma_debug_mon_c::build_phase(uvm_phase phase);
    super.build_phase(phase);
    
    void'(uvm_config_db#(uvma_debug_cfg_c)::get(this, "", "cfg", cfg));
-   if (!cfg) begin
+   if (cfg == null) begin
       `uvm_fatal("CFG", "Configuration handle is null")
    end
    
    void'(uvm_config_db#(uvma_debug_cntxt_c)::get(this, "", "cntxt", cntxt));
-   if (!cntxt) begin
+   if (cntxt == null) begin
       `uvm_fatal("CNTXT", "Context handle is null")
    end
    
    ap = new("ap", this);
   
 endfunction : build_phase
-
-
-task uvma_debug_mon_c::run_phase(uvm_phase phase);
-   
-   super.run_phase(phase);
-   
-//   if (cfg.enabled) begin
-//      fork
-//         observe_reset();
-//         
-//         forever begin
-//            case (cntxt.reset_state)
-//               UVMA_RESET_STATE_PRE_RESET : mon_pre_reset (phase);
-//               UVMA_RESET_STATE_IN_RESET  : mon_in_reset  (phase);
-//               UVMA_RESET_STATE_POST_RESET: mon_post_reset(phase);
-//            endcase
-//         end
-//      join_none
-//   end
-   
-endtask : run_phase
 
 
 task uvma_debug_mon_c::observe_reset();
