@@ -53,6 +53,11 @@ IS_YES=$(if $(filter $(YES_VALS),$(1)),YES,NO)
 NO_VALS=N NO 0 n no FALSE false
 IS_NO=$(if $(filter $(NO_VALS),$(1)),NO,YES)
 
+# Resolve flags for tool options in precdence order
+# Call as: MY_FLAG=$(call RESOLVE_FLAG3,$(FIRST),$(SECOND))
+# The first resolved variable in order of FIRST,SECOND will be assigned to MY_FLAG
+RESOLVE_FLAG2=$(if $(1),$(1),$(2))
+
 ###############################################################################
 # Common variables
 BANNER=*******************************************************************************************
@@ -178,6 +183,55 @@ endif
 # SVLIB repo var end
 
 ###############################################################################
+# Read YAML test specifications
+
+ifeq ($(VERBOSE),1)
+YAML2MAKE_DEBUG = --debug
+else
+YAML2MAKE_DEBUG =
+endif
+
+# If the gen_corev-dv target is defined then read in a test specification file
+YAML2MAKE = $(CORE_V_VERIF)/bin/yaml2make
+ifneq ($(filter gen_corev-dv,$(MAKECMDGOALS)),)
+ifeq ($(TEST),)
+$(error ERROR must specify a TEST variable with gen_corev-dv target)
+endif
+GEN_FLAGS_MAKE := $(shell $(YAML2MAKE) --test=$(TEST) --yaml=corev-dv.yaml $(YAML2MAKE_DEBUG) --prefix=GEN --core=$(CV_CORE))
+ifeq ($(GEN_FLAGS_MAKE),)
+$(error ERROR Could not find corev-dv.yaml for test: $(TEST))
+endif
+include $(GEN_FLAGS_MAKE)
+endif
+
+# If the test target is defined then read in a test specification file
+TEST_YAML_PARSE_TARGETS=test waves cov hex clean_hex veri-test dsim-test xrun-test bsp
+ifneq ($(filter $(TEST_YAML_PARSE_TARGETS),$(MAKECMDGOALS)),)
+ifeq ($(TEST),)
+$(error ERROR! must specify a TEST variable)
+endif
+TEST_FLAGS_MAKE := $(shell $(YAML2MAKE) --test=$(TEST) --yaml=test.yaml  $(YAML2MAKE_DEBUG) --run-index=$(u) --prefix=TEST --core=$(CV_CORE))
+ifeq ($(TEST_FLAGS_MAKE),)
+$(error ERROR Could not find test.yaml for test: $(TEST))
+endif
+include $(TEST_FLAGS_MAKE)
+endif
+
+# If a test target is defined and a CFG is defined that read in build configuration file
+# CFG is optional
+CFGYAML2MAKE = $(CORE_V_VERIF)/bin/cfgyaml2make
+CFG_YAML_PARSE_TARGETS=comp ldgen comp_corev-dv gen_corev-dv test hex clean_hex corev-dv sanity-veri-run bsp
+ifneq ($(filter $(CFG_YAML_PARSE_TARGETS),$(MAKECMDGOALS)),)
+ifneq ($(CFG),)
+CFG_FLAGS_MAKE := $(shell $(CFGYAML2MAKE) --yaml=$(CFG).yaml $(YAML2MAKE_DEBUG) --prefix=CFG --core=$(CV_CORE))
+ifeq ($(CFG_FLAGS_MAKE),)
+$(error ERROR Error finding or parsing configuration: $(CFG).yaml)
+endif
+include $(CFG_FLAGS_MAKE)
+endif
+endif
+
+###############################################################################
 # Imperas Instruction Set Simulator
 
 DV_OVPM_HOME    = $(CORE_V_VERIF)/vendor_lib/imperas
@@ -188,7 +242,7 @@ OVP_MODEL_DPI   = $(DV_OVPM_MODEL)/bin/Linux64/imperas_CV32.dpi.so
 
 ###############################################################################
 # "Toolchain" to compile 'test-programs' (either C or RISC-V Assember) for the
-# CV32E40P.   This toolchain is used by both the core testbench and UVM
+# CV_CORE being tested.   This toolchain is used by both the core testbench and UVM
 # environment.  The assumption here is that you have installed at least one of
 # the following toolchains:
 #     1. GNU:   https://github.com/riscv/riscv-gnu-toolchain
@@ -206,41 +260,65 @@ OVP_MODEL_DPI   = $(DV_OVPM_MODEL)/bin/Linux64/imperas_CV32.dpi.so
 GNU_SW_TOOLCHAIN    ?= /opt/gnu
 GNU_VENDOR          ?= unknown
 GNU_MARCH           ?= rv32imc
+GNU_CC              ?= gcc
 COREV_SW_TOOLCHAIN  ?= /opt/corev
 COREV_VENDOR        ?= corev
 COREV_MARCH         ?= rv32imc
+COREV_CC            ?= gcc
 PULP_SW_TOOLCHAIN   ?= /opt/pulp
 PULP_VENDOR         ?= unknown
 PULP_MARCH          ?= rv32imcxpulpv2
+PULP_CC             ?= gcc
+LLVM_SW_TOOLCHAIN   ?= /opt/clang
+LLVM_VENDOR         ?= unknown
+LLVM_MARCH          ?= rv32imc
+LLVM_CC             ?= cc
 
 CV_SW_TOOLCHAIN  ?= /opt/riscv
 CV_SW_VENDOR     ?= unknown
 CV_SW_MARCH      ?= rv32imc
 
-RISCV            ?= $(CV_SW_TOOLCHAIN)
-RISCV_PREFIX     ?= riscv32-$(CV_SW_VENDOR)-elf-
-RISCV_EXE_PREFIX ?= $(RISCV)/bin/$(RISCV_PREFIX)
-RISCV_MARCH      ?= $(CV_SW_MARCH)
+RISCV             = $(CV_SW_TOOLCHAIN)
+RISCV_PREFIX      = riscv32-$(CV_SW_VENDOR)-elf-
+RISCV_EXE_PREFIX  = $(RISCV)/bin/$(RISCV_PREFIX)
+RISCV_CC          = gcc
+RISCV_MARCH       = $(call RESOLVE_FLAG2,$(TEST_RISCV_MARCH),$(CV_SW_MARCH))
+RISCV_CFLAGS      = $(TEST_RISCV_CFLAGS)
 
 ifeq ($(call IS_YES,$(GNU)),YES)
 RISCV            = $(GNU_SW_TOOLCHAIN)
 RISCV_PREFIX     = riscv32-$(GNU_VENDOR)-elf-
 RISCV_EXE_PREFIX = $(RISCV)/bin/$(RISCV_PREFIX)
-RISCV_MARCH      = $(GNU_MARCH)
+RISCV_CC         = $(GNU_CC)
+RISCV_MARCH      = $(call RESOLVE_FLAG2,$(TEST_GNU_MARCH),$(GNU_MARCH))
+RISCV_CFLAGS     = $(call RESOLVE_FLAG2,$(TEST_GNU_CFLAGS),$(GNU_CFLAGS))
 endif
 
 ifeq ($(call IS_YES,$(COREV)),YES)
 RISCV            = $(COREV_SW_TOOLCHAIN)
 RISCV_PREFIX     = riscv32-$(COREV_VENDOR)-elf-
 RISCV_EXE_PREFIX = $(RISCV)/bin/$(RISCV_PREFIX)
-RISCV_MARCH      = $(COREV_MARCH)
+RISCV_CC         = $(COREV_CC)
+RISCV_MARCH      = $(call RESOLVE_FLAG2,$(TEST_COREV_MARCH),$(COREV_MARCH))
+RISCV_CFLAGS     = $(call RESOLVE_FLAG2,$(TEST_COREV_CFLAGS),$(COREV_CFLAGS))
 endif
 
 ifeq ($(call IS_YES,$(PULP)),YES)
 RISCV            = $(PULP_SW_TOOLCHAIN)
 RISCV_PREFIX     = riscv32-$(PULP_VENDOR)-elf-
 RISCV_EXE_PREFIX = $(RISCV)/bin/$(RISCV_PREFIX)
-RISCV_MARCH      = $(PULP_MARCH)
+RISCV_CC         = $(PULP_CC)
+RISCV_MARCH      = $(call RESOLVE_FLAG2,$(TEST_PULP_MARCH),$(PULP_MARCH))
+RISCV_CFLAGS     = $(call RESOLVE_FLAG2,$(TEST_PULP_CFLAGS),$(PULP_CFLAGS))
+endif
+
+ifeq ($(call IS_YES,$(LLVM)),YES)
+RISCV            = $(LLVM_SW_TOOLCHAIN)
+RISCV_PREFIX     = riscv32-$(LLVM_VENDOR)-elf-
+RISCV_EXE_PREFIX = $(RISCV)/bin/$(RISCV_PREFIX)
+RISCV_CC         = $(LLVM_CC)
+RISCV_MARCH      = $(call RESOLVE_FLAG2,$(TEST_LLVM_MARCH),$(LLVM_MARCH))
+RISCV_CFLAGS     = $(call RESOLVE_FLAG2,$(TEST_LLVM_CFLAGS),$(LLVM_CFLAGS))
 endif
 
 CFLAGS ?= -Os -g -static -mabi=ilp32 -march=$(RISCV_MARCH) -Wall -pedantic
@@ -328,54 +406,6 @@ new-agent:
 	rm -rf $(CORE_V_VERIF)/temp
 
 
-###############################################################################
-# Read YAML test specifications
-
-ifeq ($(VERBOSE),1)
-YAML2MAKE_DEBUG = --debug
-else
-YAML2MAKE_DEBUG =
-endif
-
-# If the gen_corev-dv target is defined then read in a test specification file
-YAML2MAKE = $(CORE_V_VERIF)/bin/yaml2make
-ifneq ($(filter gen_corev-dv,$(MAKECMDGOALS)),)
-ifeq ($(TEST),)
-$(error ERROR must specify a TEST variable with gen_corev-dv target)
-endif
-GEN_FLAGS_MAKE := $(shell $(YAML2MAKE) --test=$(TEST) --yaml=corev-dv.yaml $(YAML2MAKE_DEBUG) --prefix=GEN --core=$(CV_CORE))
-ifeq ($(GEN_FLAGS_MAKE),)
-$(error ERROR Could not find corev-dv.yaml for test: $(TEST))
-endif
-include $(GEN_FLAGS_MAKE)
-endif
-
-# If the test target is defined then read in a test specification file
-TEST_YAML_PARSE_TARGETS=test waves cov hex clean_hex veri-test dsim-test xrun-test
-ifneq ($(filter $(TEST_YAML_PARSE_TARGETS),$(MAKECMDGOALS)),)
-ifeq ($(TEST),)
-$(error ERROR! must specify a TEST variable)
-endif
-TEST_FLAGS_MAKE := $(shell $(YAML2MAKE) --test=$(TEST) --yaml=test.yaml  $(YAML2MAKE_DEBUG) --run-index=$(u) --prefix=TEST --core=$(CV_CORE))
-ifeq ($(TEST_FLAGS_MAKE),)
-$(error ERROR Could not find test.yaml for test: $(TEST))
-endif
-include $(TEST_FLAGS_MAKE)
-endif
-
-# If a test target is defined and a CFG is defined that read in build configuration file
-# CFG is optional
-CFGYAML2MAKE = $(CORE_V_VERIF)/bin/cfgyaml2make
-CFG_YAML_PARSE_TARGETS=comp ldgen comp_corev-dv gen_corev-dv test hex clean_hex corev-dv sanity-veri-run
-ifneq ($(filter $(CFG_YAML_PARSE_TARGETS),$(MAKECMDGOALS)),)
-ifneq ($(CFG),)
-CFG_FLAGS_MAKE := $(shell $(CFGYAML2MAKE) --yaml=$(CFG).yaml $(YAML2MAKE_DEBUG) --prefix=CFG --core=$(CV_CORE))
-ifeq ($(CFG_FLAGS_MAKE),)
-$(error ERROR Error finding or parsing configuration: $(CFG).yaml)
-endif
-include $(CFG_FLAGS_MAKE)
-endif
-endif
 
 # corev-dv tests needs an added run_index_suffix, blank for other tests
 ifeq ($(shell echo $(TEST) | head -c 6),corev_)
@@ -400,7 +430,8 @@ endif
 		-d \
 		-M no-aliases \
 		-M numeric \
-		-S $*.elf > $*.objdump
+		-S \
+		$*.elf > $*.objdump
 	$(RISCV_EXE_PREFIX)objdump \
     	-d \
         -S \
@@ -433,9 +464,11 @@ endif
 # Optionally use linker script provided in test directory
 # this must be evaluated at access time, so ifeq/ifneq does
 # not get parsed correctly
-TEST_LD 	= $(addprefix $(SIM_TEST_PROGRAM_RESULTS)/, link.ld)
-LD_LIBRARY 	= $(if $(wildcard $(TEST_LD)),-L $(SIM_TEST_PROGRAM_RESULTS),)
-LD_FILE 	= $(if $(wildcard $(TEST_LD)),$(TEST_LD),$(BSP)/link.ld)
+TEST_RESULTS_LD = $(addprefix $(SIM_TEST_PROGRAM_RESULTS)/, link.ld)
+TEST_LD         = $(addprefix $(TEST_TEST_DIR)/, link.ld)
+
+LD_LIBRARY 	= $(if $(wildcard $(TEST_RESULTS_LD)),-L $(SIM_TEST_PROGRAM_RESULTS),$(if $(wildcard $(TEST_LD)),-L $(TEST_TEST_DIR),))
+LD_FILE 	= $(if $(wildcard $(TEST_RESULTS_LD)),$(TEST_RESULTS_LD),$(if $(wildcard $(TEST_LD)),$(TEST_LD),$(BSP)/link.ld))
 LD_LIBRARY += -L $(SIM_BSP_RESULTS)
 
 ifeq ($(TEST_FIXED_ELF),1)
@@ -452,8 +485,10 @@ else
 	@echo "$(BANNER)"
 	@echo "* Compiling test-program $(@)"
 	@echo "$(BANNER)"
-	$(RISCV_EXE_PREFIX)gcc $(CFG_CFLAGS) \
+	$(RISCV_EXE_PREFIX)$(RISCV_CC) \
+		$(CFG_CFLAGS) \
 		$(TEST_CFLAGS) \
+		$(RISCV_CFLAGS) \
 		-I $(ASM) \
 		-I $(BSP) \
 		-o $@ \
@@ -475,7 +510,15 @@ bsp:
 	@echo "$(BANNER)"
 	mkdir -p $(SIM_BSP_RESULTS)
 	cp $(BSP)/Makefile $(SIM_BSP_RESULTS)
-	make -C $(SIM_BSP_RESULTS) VPATH=$(BSP) RISCV=$(RISCV) RISCV_PREFIX=$(RISCV_PREFIX) RISCV_EXE_PREFIX=$(RISCV_EXE_PREFIX) RISCV_MARCH=$(RISCV_MARCH) all
+	make -C $(SIM_BSP_RESULTS) \
+		VPATH=$(BSP) \
+		RISCV=$(RISCV) \
+		RISCV_PREFIX=$(RISCV_PREFIX) \
+		RISCV_EXE_PREFIX=$(RISCV_EXE_PREFIX) \
+		RISCV_MARCH=$(RISCV_MARCH) \
+		RISCV_CC=$(RISCV_CC) \
+		RISCV_CFLAGS="$(RISCV_CFLAGS)" \
+		all
 
 vars_bsp:
 	make vars -C $(BSP) RISCV=$(RISCV) RISCV_PREFIX=$(RISCV_PREFIX) RISCV_EXE_PREFIX=$(RISCV_EXE_PREFIX) RISCV_MARCH=$(RISCV_MARCH)
@@ -670,4 +713,5 @@ firmware-unit-test-clean:
 		$(FIRMWARE_OBJS) $(FIRMWARE_UNIT_TEST_OBJS)
 
 #endend
+
 

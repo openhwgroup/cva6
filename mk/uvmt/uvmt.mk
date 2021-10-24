@@ -84,12 +84,12 @@ export RUN_INDEX       ?= 0
 # Common output directories
 SIM_RESULTS             ?= $(if $(CV_RESULTS),$(abspath $(CV_RESULTS))/$(SIMULATOR)_results,$(MAKE_PATH)/$(SIMULATOR)_results)
 SIM_CFG_RESULTS          = $(SIM_RESULTS)/$(CFG)
-SIM_BSP_RESULTS          = $(SIM_CFG_RESULTS)/bsp
 SIM_COREVDV_RESULTS      = $(SIM_CFG_RESULTS)/corev-dv
 SIM_LDGEN_RESULTS        = $(SIM_CFG_RESULTS)/$(LDGEN)
 SIM_TEST_RESULTS         = $(SIM_CFG_RESULTS)/$(TEST)
 SIM_RUN_RESULTS          = $(SIM_TEST_RESULTS)/$(RUN_INDEX)
 SIM_TEST_PROGRAM_RESULTS = $(SIM_RUN_RESULTS)/test_program
+SIM_BSP_RESULTS          = $(SIM_TEST_PROGRAM_RESULTS)/bsp
 
 # EMBench options
 EMB_TYPE           ?= speed
@@ -305,7 +305,7 @@ dah:
 embench: $(EMBENCH_PKG)
 	$(CORE_V_VERIF)/bin/run_embench.py \
 		-c $(CV_CORE) \
-		-cc $(RISCV_EXE_PREFIX)gcc \
+		-cc $(RISCV_EXE_PREFIX)$(RISCV_CC) \
 		-sim $(SIMULATOR) \
 		-t $(EMB_TYPE) \
 		--timeout $(EMB_TIMEOUT) \
