@@ -157,7 +157,7 @@ endfunction: connect_phase
 function void uvma_obi_memory_agent_c::get_and_set_cfg();
    
    void'(uvm_config_db#(uvma_obi_memory_cfg_c)::get(this, "", "cfg", cfg));
-   if (!cfg) begin
+   if (cfg == null) begin
       `uvm_fatal("CFG", "Configuration handle is null")
    end
    else begin
@@ -171,7 +171,7 @@ endfunction : get_and_set_cfg
 function void uvma_obi_memory_agent_c::get_and_set_cntxt();
    
    void'(uvm_config_db#(uvma_obi_memory_cntxt_c)::get(this, "", "cntxt", cntxt));
-   if (!cntxt) begin
+   if (cntxt == null) begin
       `uvm_info("CNTXT", "Context handle is null; creating.", UVM_DEBUG)
       cntxt = uvma_obi_memory_cntxt_c::type_id::create("cntxt");
    end
@@ -195,55 +195,68 @@ endfunction : retrieve_vif
 function void uvma_obi_memory_agent_c::create_components();
    
    monitor         = uvma_obi_memory_mon_c            ::type_id::create("monitor"        , this);
-   sequencer       = uvma_obi_memory_sqr_c            ::type_id::create("sequencer"      , this);
-   driver          = uvma_obi_memory_drv_c            ::type_id::create("driver"         , this);
    cov_model       = uvma_obi_memory_cov_model_c      ::type_id::create("cov_model"      , this);
    mon_trn_logger  = uvma_obi_memory_mon_trn_logger_c ::type_id::create("mon_trn_logger" , this);
    seq_item_logger = uvma_obi_memory_seq_item_logger_c::type_id::create("seq_item_logger", this);
+   
+   if (cfg.is_active) begin
+      sequencer = uvma_obi_memory_sqr_c::type_id::create("sequencer", this);
+      driver    = uvma_obi_memory_drv_c::type_id::create("driver"   , this);
+   end
    
 endfunction : create_components
 
 
 function void uvma_obi_memory_agent_c::connect_analysis_ports();
    
-   drv_mstr_ap = driver .mstr_ap;
-   drv_slv_ap  = driver .slv_ap ;
-   mon_ap      = monitor.ap     ;
+   if (cfg.is_active) begin
+      drv_mstr_ap = driver .mstr_ap;
+      drv_slv_ap  = driver .slv_ap ;
+   end
+   mon_ap = monitor.ap;
    
 endfunction : connect_analysis_ports
 
 
 function void uvma_obi_memory_agent_c::connect_sequencer_and_driver();
    
-   sequencer.set_arbitration(cfg.sqr_arb_mode);
-   driver.seq_item_port.connect(sequencer.seq_item_export);
+   if (cfg.is_active) begin
+      sequencer.set_arbitration(cfg.sqr_arb_mode);
+      driver.seq_item_port.connect(sequencer.seq_item_export);
+   end
    
 endfunction : connect_sequencer_and_driver
 
 
 function void uvma_obi_memory_agent_c::connect_rsp_path();
    
-   // FIXME:This conenction is a memory leak (driver never drains FIFO)
-   //monitor.ap          .connect(driver   .mon_trn_fifo.analysis_export);
-   monitor.sequencer_ap.connect(sequencer.mon_trn_fifo.analysis_export);
+   if (cfg.is_active) begin
+      // FIXME:This conenction is a memory leak (driver never drains FIFO)
+      //monitor.ap          .connect(driver   .mon_trn_fifo.analysis_export);
+      monitor.sequencer_ap.connect(sequencer.mon_trn_fifo.analysis_export);
+   end
    
 endfunction : connect_rsp_path
 
 
 function void uvma_obi_memory_agent_c::connect_cov_model();
    
-   drv_mstr_ap.connect(cov_model.mstr_seq_item_fifo.analysis_export);
-   drv_slv_ap .connect(cov_model.slv_seq_item_fifo .analysis_export);
-   mon_ap     .connect(cov_model.mon_trn_fifo      .analysis_export);
+   if (cfg.is_active) begin
+      drv_mstr_ap.connect(cov_model.mstr_seq_item_fifo.analysis_export);
+      drv_slv_ap .connect(cov_model.slv_seq_item_fifo .analysis_export);
+   end
+   mon_ap.connect(cov_model.mon_trn_fifo.analysis_export);
    
 endfunction : connect_cov_model
 
 
 function void uvma_obi_memory_agent_c::connect_trn_loggers();
    
-   //drv_mstr_ap.connect(seq_item_logger.analysis_export);
-   //drv_slv_ap .connect(seq_item_logger.analysis_export);
-   mon_ap     .connect(mon_trn_logger .analysis_export);
+   //if (cfg.is_active) begin
+   //   drv_mstr_ap.connect(seq_item_logger.analysis_export);
+   //   drv_slv_ap .connect(seq_item_logger.analysis_export);
+   //end
+   mon_ap.connect(mon_trn_logger.analysis_export);
    
 endfunction : connect_trn_loggers
 

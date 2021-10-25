@@ -162,13 +162,13 @@ function void uvma_obi_memory_drv_c::build_phase(uvm_phase phase);
    super.build_phase(phase);
    
    void'(uvm_config_db#(uvma_obi_memory_cfg_c)::get(this, "", "cfg", cfg));
-   if (!cfg) begin
+   if (cfg == null) begin
       `uvm_fatal("CFG", "Configuration handle is null")
    end
    uvm_config_db#(uvma_obi_memory_cfg_c)::set(this, "*", "cfg", cfg);
    
    void'(uvm_config_db#(uvma_obi_memory_cntxt_c)::get(this, "", "cntxt", cntxt));
-   if (!cntxt) begin
+   if (cntxt == null) begin
       `uvm_fatal("CNTXT", "Context handle is null")
    end
    uvm_config_db#(uvma_obi_memory_cntxt_c)::set(this, "*", "cntxt", cntxt);
