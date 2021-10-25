@@ -3,13 +3,13 @@
 ################################################################################
 #
 # Copyright 2020 OpenHW Group
-# 
+#
 # Licensed under the Solderpad Hardware Licence, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
-# 
+#
 #     https://solderpad.org/licenses/
-# 
+#
 # Unless required by applicable law or agreed to in writing, software
 # distributed under the License is distributed on an "AS IS" BASIS,
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -17,7 +17,7 @@
 # limitations under the License.
 #
 # SPDX-License-Identifier:Apache-2.0 WITH SHL-2.0
-# 
+#
 ################################################################################
 
 #}
@@ -75,11 +75,12 @@ popd > /dev/null
 # --------------------------------------------------------------------------------------
 
 {% for r in regressions %}
-{% for t in r.tests.values() %}
-# --> Test: {{t.name}} : {{t.description}}
+{% for t in r.tests.values()|sort(attribute='name') %}
+{% for build in t.builds %}
+# --> Test: {{t.name}} : Build: {{build}} : {{t.description}}
 {% if t.precmd %}
 #  Test (Precommand): {{t.name}} {{t.description}}
-{% set cmd = t.precmd + ' CV_CORE=' + project + 'CFG=' + t.cfg + ' SIMULATOR=' + t.simulator + ' SEED=random GEN_NUM_TESTS=' + t.num + ' ' + regress_macros.cv_results(results) + ' ' + makeargs + ' ' + t.makearg %}
+{% set cmd = t.precmd + ' CV_CORE=' + project + 'CFG=' + r.builds[build].cfg + ' ' + toolchain|upper + '=1' + ' SIMULATOR=' + t.simulator + ' SEED=random GEN_NUM_TESTS=' + t.num + ' ' + regress_macros.cv_results(results) + ' ' + makeargs + ' ' + t.makearg %}
 echo "{{session}}: Running precmd: [cd {{t.abs_dir}} && {{cmd}}]
 pushd {{t.abs_dir}} > /dev/null
 {{cmd}} >& /dev/null;
@@ -90,7 +91,7 @@ popd > /dev/null
 {% set test_cmd = t.cmd %}
 {% set test_log = t.log %}
 # --> Test (Index: {{run_index}}): {{t.cmd}} : {{t.description}}
-{% set cmd = test_cmd + ' CV_CORE=' + project + ' CFG=' + build.cfg + ' SIMULATOR=' + t.simulator + ' COMP=0 USE_ISS=' + regress_macros.yesorno(t.iss) + ' COV=' + regress_macros.yesorno(t.cov) + ' SEED=random GEN_START_INDEX=' + run_index|string + ' RUN_INDEX=' + run_index|string + ' ' + regress_macros.cv_results(results) + ' ' + makeargs %}
+{% set cmd = test_cmd + ' CV_CORE=' + project + ' CFG=' + r.builds[build].cfg + ' ' + toolchain|upper + '=1' + ' SIMULATOR=' + t.simulator + ' COMP=0 USE_ISS=' + regress_macros.yesorno(t.iss) + ' COV=' + regress_macros.yesorno(t.cov) + ' SEED=random GEN_START_INDEX=' + run_index|string + ' RUN_INDEX=' + run_index|string + ' ' + regress_macros.cv_results(results) + ' ' + makeargs %}
 echo "{{session}}: Running test [cd {{t.abs_dir}} && {{cmd}}]"
 pushd {{t.abs_dir}} > /dev/null
 {{cmd}} >& /dev/null;
@@ -105,9 +106,9 @@ popd > /dev/null
 
 {# Determine log location #}
 {% if t.results %}
-log={{t.abs_dir}}/{{results_dir}}/{{build.cfg}}/{{t.results}}/{{run_index}}/{{t.simulator}}-{{test_log}}.log
+log={{t.abs_dir}}/{{results_dir}}/{{r.builds[build].cfg}}/{{t.results}}/{{run_index}}/{{t.simulator}}-{{test_log}}.log
 {% else %}
-log={{t.abs_dir}}/{{results_dir}}/{{build.cfg}}/{{test_log}}/{{run_index}}/{{t.simulator}}-{{test_log}}.log
+log={{t.abs_dir}}/{{results_dir}}/{{r.builds[build].cfg}}/{{test_log}}/{{run_index}}/{{t.simulator}}-{{test_log}}.log
 {% endif %}
 
 {# Compliance signature check #}
@@ -120,13 +121,14 @@ compliance_diff_log={{t.abs_dir}}/{{results_dir}}/{{cfg}}/{{test_log}}_{{run_ind
 {% endif %}
 
 failed=0
-check_log ${log} "{{t.simulation_passed}}" {{test_log}} 
+check_log ${log} "{{t.simulation_passed}}" {{test_log}}
 {% if 'compliance' in t.cmd %}
 check_log ${compliance_diff_log} "All signatures passed" {{test_log}}
 {% endif %}
 incr_test_counts
 {% endfor %}
 
+{% endfor %}
 {% endfor %}
 {% endfor %}
 

@@ -145,10 +145,16 @@ def main():
   # ----------------------------------------------------------------------------------------------
   # build benchmark object files (build_all.py)
   # ----------------------------------------------------------------------------------------------
-  cmd = ['build_all.py', '--arch=corev32', '--board=corev32',
-         f"--chip={args.type}", f"--cc={args.ccomp}",
-         f"--warmup-heat=0", f"--cpu-mhz={args.cpu_mhz}",
-         f"--ldflags=-T{paths['bsp']}/link.ld", '--clean']
+  cmd = ['build_all.py',
+         '--arch=corev32',
+         '--board=corev32',
+         f'--cflags=-I{paths["bsp"]}',
+         f'--chip={args.type}',
+         f'--cc={args.ccomp}',
+         f'--warmup-heat=0',
+         f'--cpu-mhz={args.cpu_mhz}',
+         f'--ldflags=-T{paths["bsp"]}/link.ld',
+         '--clean']
   logger.info(f"Calling build script: {' '.join(cmd)}")
   try:
     res = subprocess.run(
