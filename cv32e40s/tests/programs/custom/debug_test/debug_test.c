@@ -1,19 +1,19 @@
 /*
 **
 ** Copyright 2020 OpenHW Group
-** 
+**
 ** Licensed under the Solderpad Hardware Licence, Version 2.0 (the "License");
 ** you may not use this file except in compliance with the License.
 ** You may obtain a copy of the License at
-** 
+**
 **     https://solderpad.org/licenses/
-** 
+**
 ** Unless required by applicable law or agreed to in writing, software
 ** distributed under the License is distributed on an "AS IS" BASIS,
 ** WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 ** See the License for the specific language governing permissions and
 ** limitations under the License.
-** 
+**
 *******************************************************************************
 ** Basic debugger test. Needs more work and bugs fixed
 ** It will launch a debug request and have debugger code execute (debugger.S)
@@ -22,6 +22,7 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include "corev_uvmt.h"
 
 volatile int glb_hart_status  = 0; // Written by main code only, read by debug code
 volatile int glb_debug_status = 0; // Written by debug code only, read by main code
@@ -38,7 +39,7 @@ volatile int glb_expect_illegal_insn    = 0;
 volatile int glb_expect_ebreak_handler  = 0;
 volatile int glb_expect_debug_entry     = 0;
 volatile int glb_expect_debug_exception = 0;
-volatile int glb_expect_irq_entry = 0; 
+volatile int glb_expect_irq_entry = 0;
 volatile int glb_irq_timeout = 0;
 // Counter values
 // Checked at start and end of debug code
@@ -47,10 +48,10 @@ volatile int glb_mcycle_start = 0;
 volatile int glb_mcycle_end = 0;
 volatile int glb_minstret_start = 0;
 volatile int glb_minstret_end = 0;
-#define TEST_FAILED  *(volatile int *)0x20000000 = 1
-#define TEST_PASSED  *(volatile int *)0x20000000 = 123456789
+#define TEST_FAILED  *(volatile int *)CV_VP_STATUS_FLAGS_BASE = 1
+#define TEST_PASSED  *(volatile int *)CV_VP_STATUS_FLAGS_BASE = 123456789
 
-extern int __stack_start; 
+extern int __stack_start;
 typedef union {
   struct {
     unsigned int start_delay      : 15; // 14: 0
@@ -63,9 +64,9 @@ typedef union {
   unsigned int bits;
 }  debug_req_control_t;
 
-#define DEBUG_REQ_CONTROL_REG *(volatile int *)0x15000008
-#define TIMER_REG_ADDR         ((volatile uint32_t *) 0x15000000)  
-#define TIMER_VAL_ADDR         ((volatile uint32_t *) 0x15000004) 
+#define DEBUG_REQ_CONTROL_REG *((volatile uint32_t *) (CV_VP_DEBUG_CONTROL_BASE))
+#define TIMER_REG_ADDR         ((volatile uint32_t *) (CV_VP_INTR_TIMER_BASE+0))
+#define TIMER_VAL_ADDR         ((volatile uint32_t *) (CV_VP_INTR_TIMER_BASE+4))
 
 typedef union {
   struct {
@@ -204,7 +205,7 @@ int main(int argc, char *argv[])
     __asm__ volatile("csrw mie, %0 " : "=r"(temp1));
     __asm__ volatile("csrr %0, mie" : "=r"(temp2));
     printf("\tmstats_rval = 0x%0x 0x%0x 0x%0x 0x%0x\n",temp2,mstatus.bits,temp,temp1);
-    
+
     check_debug_status(0,0);
     printf("------------------------\n");
     printf(" Test2.1: check access to Debug and Trigger registers\n");
@@ -399,27 +400,27 @@ int main(int argc, char *argv[])
     glb_exception_ebreak_status = 1;
     glb_expect_debug_entry = 1;
 
-    // DCSR read will cause illegal instruction. 
+    // DCSR read will cause illegal instruction.
     // Exception routine reads glb_exception_ebreak_status=1 and executes c.ebreak
     __asm__ volatile("csrr %0, dcsr"    : "=r"(temp)); // Debug DCSR
 
     while(glb_debug_status != glb_hart_status){
         printf("Wait for Debugger\n");
-    } 
-   
+    }
+
     check_illegal_insn_status(114,temp1++);
     check_debug_status(114, glb_hart_status);
     printf("----------------------\n");
     printf("Test 16: dret in m-mode causes exception\n");
-    
+
     glb_expect_illegal_insn = 1;
     __asm__ volatile("dret");
-    check_illegal_insn_status(16, temp1++); 
+    check_illegal_insn_status(16, temp1++);
 
     printf("------------------------\n");
     printf("Test 17: WFI before debug_req_i and WFI in debug mode\n");
     printf("If test hangs, WFI is NOT converted to NOP\n");
-    
+
     glb_expect_debug_entry = 1;
     glb_hart_status = 17;
     // start_delay is set to 200, should get the wfi executing before dbg request is asserted
@@ -441,13 +442,13 @@ int main(int argc, char *argv[])
     while(glb_expect_irq_entry == 1);
     mm_ram_assert_irq(0,0);
     printf("Irq check done\n");
-    
+
     // Check that stoupcount bit (10) in dcsr has no affect
     printf("-------------------------\n");
     printf("Test 21: Setting stopcount bit=1\n");
     glb_expect_debug_entry = 1;
     glb_hart_status = 21;
-    
+
     DEBUG_REQ_CONTROL_REG = debug_req_control.bits;
      while(glb_debug_status != glb_hart_status){
         printf("Wait for Debugger\n");
@@ -460,14 +461,14 @@ int main(int argc, char *argv[])
     glb_hart_status = 18;
 
     // Run single step code (in single_step.S)
-    _single_step(0); 
+    _single_step(0);
 
     // Single step code should generate 2 illegal insn
     temp1++;
     check_illegal_insn_status(118, temp1++);
     check_debug_status(118, glb_hart_status);
 
-    printf("Stepped %d times\n", glb_step_count);    
+    printf("Stepped %d times\n", glb_step_count);
 
 
     printf("------------------------\n");
@@ -480,17 +481,17 @@ int main(int argc, char *argv[])
     // Timeout added in debug code to check for taken irq or not
     glb_expect_irq_entry = 1;
     DEBUG_REQ_CONTROL_REG=debug_req_control.bits;
-   
+
     while(glb_debug_status != glb_hart_status){
         printf("Wait for Debugger\n");
-    } 
-   
+    }
+
     check_debug_status(119, glb_hart_status);
     if(glb_irq_timeout != 0) {
         printf("glb_irq_timeout != 0, interrupt taken in debug.\n");
         TEST_FAILED;
-    } 
- 
+    }
+
     // Test debug req vs irq timing
     printf("-----------------------\n");
     printf("Test 20: Asserting debug_req and irq at the same cycle\n");
@@ -514,11 +515,11 @@ int main(int argc, char *argv[])
     glb_expect_debug_entry = 1;
     glb_hart_status = 22;
     DEBUG_REQ_CONTROL_REG = debug_req_control.bits;
-    
+
     while(glb_debug_status != glb_hart_status) {
         printf("Wait for debugger\n");
-    }    
-    
+    }
+
     check_debug_status(121, glb_hart_status);
 
     printf("------------------------\n");
@@ -528,11 +529,11 @@ int main(int argc, char *argv[])
 
     // Request debug
     DEBUG_REQ_CONTROL_REG = debug_req_control.bits;
-    
+
     while(glb_debug_status != glb_hart_status){
         printf("Wait for Debugger\n");
-    } 
-    
+    }
+
     check_debug_status(123, glb_hart_status);
     printf("------------------------\n");
     printf("Test 24: trigger register access in D-mode\n");
@@ -541,10 +542,10 @@ int main(int argc, char *argv[])
 
     // Request debug
     DEBUG_REQ_CONTROL_REG = debug_req_control.bits;
-    
+
     while(glb_debug_status != glb_hart_status){
         printf("Wait for Debugger\n");
-    } 
+    }
 
     check_debug_status(124, glb_hart_status);
 

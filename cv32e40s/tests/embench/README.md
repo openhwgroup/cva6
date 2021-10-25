@@ -1,6 +1,6 @@
 # EMBench for Core-V-Verif
 
-[EMBench](https://github.com/embench/embench-iot) has been integrated into Core-V-Verif to allow easy benchmarking of the RISC-V cores supported by 
+[EMBench](https://github.com/embench/embench-iot) has been integrated into Core-V-Verif to allow easy benchmarking of the RISC-V cores supported by
 Core-V-Verif. This document explains the usage and implementation of the EMBench scripts and their integration
 into the makefile environment of Core-V-Verif.<br><br>
 
@@ -22,7 +22,7 @@ should, the tests can be run outside of the benchmarking script, see [this](#sim
 If you want to set a target score for you benchmark, you can set the option EMB_TARGET, like this:
 >% make embench SIMULATOR=\[sim\] EMB_TARGET=\[float\]
 
-The EMBench script will determine if the target has been met, for either a speed or size benchmark, and report 
+The EMBench script will determine if the target has been met, for either a speed or size benchmark, and report
 the result.
 
 To run a size benchmark, set the EMB_TYPE option to *size*:
@@ -30,7 +30,7 @@ To run a size benchmark, set the EMB_TYPE option to *size*:
 
 **Note** that SIMULATOR is not set when running size, as no simulation is necessary. Also note that when building the tests for the size benchmark, they are built without support files and libraries to match EMBench baseline, so any simulation with these files will fail. <br><br>
 
- 
+
 ## Relevant files and directories
 
 - **core-v-verif/bin/run_embench.py**<br>
@@ -50,8 +50,8 @@ with the *make test ..* method.
 Directory where the EMBench repo is cloned when the script runs<br><br>
 
 ## Script options from make environment
-The following table lists the available options, their default values and their function. 
-**Note** that only options unique to the EMBench scripts are included here, other dependencies, like the 
+The following table lists the available options, their default values and their function.
+**Note** that only options unique to the EMBench scripts are included here, other dependencies, like the
 SIMULATOR option, are omitted.
 
 | Option         | Default    | Description                                                                                                                            |
@@ -60,11 +60,13 @@ SIMULATOR option, are omitted.
 | EMB_BUILD_ONLY | NO         | Set this option to "YES" to only build the benchmarks                                                                                  |
 | EMB_TARGET     | 0(not set) | Set a target(float) for your EMBench score<br>Benchmark run will fail if target is not met<br>If no target is set, no checking is done |
 | EMB_CPU_MHZ    | 1          | Set the core frequency in MHz \*                                                                                                       |
+| EMB_PARALLEL   | NO         | Launches simulation jobs in parallel.  The user must set CV_SIM_PREFIX based on any configured jobs manager (e.g. LSF, SLURM, .etc.)   |
 | EMB_DEBUG      | NO         | Set this option to "YES" to increase verbosity of the script                                                                           |
+| EMB_TIMEOUT    | 3600       | Timeout for jobs to complete (in seconds)                                                                                              |
 
 <br>
-* This value is used for calculation in EMBench only. Measurement is done by cycle count, so this does not 
-have to match simulation, but can be used to predict results for a system running the core at a 
+* This value is used for calculation in EMBench only. Measurement is done by cycle count, so this does not
+have to match simulation, but can be used to predict results for a system running the core at a
 specific frequency.<br><br>
 
 ## Simulate an EMBench test outside of the scripted environment
@@ -76,14 +78,14 @@ simulated separately from the benchmark environment. To accomplish this, complet
 2. Run *make test* in the following manner:
    >% make test TEST=emb_\[testname\] SIMULATOR=\[sim\] USE_ISS=NO
 
-This will simulate as any other test. Note that step 1 can be omitted if there has been a previously run 
+This will simulate as any other test. Note that step 1 can be omitted if there has been a previously run
 speed benchmark, and the repository has not been cleaned. At the time of writing, ISS must be disabled
-as the accesses to the cycle counter in the mm_ram causes step and compare mismatches. Simulating with ISS 
+as the accesses to the cycle counter in the mm_ram causes step and compare mismatches. Simulating with ISS
 will also cause a significant increase in runtime.<br><br>
 
 ## Extend EMBench integration to a new core
-As new core designs are added to Core-V-Verif, we will want to run the Benchmarks on these. This section 
-describes the necessary steps to accomplish this. *Note* that this description only includes EMBench 
+As new core designs are added to Core-V-Verif, we will want to run the Benchmarks on these. This section
+describes the necessary steps to accomplish this. *Note* that this description only includes EMBench
 unique files, dependencies in the core specific makefiles also exist.
 
 Copy the embench configuration directory from cv32e40p to the new core:
@@ -105,7 +107,7 @@ Make the following changes to the .gitignore files listed:<br>
 
 
 <br>If there are no differences in configuration necessary compared to the cv32e40p, you are now done, and can
-run the EMBench scripts in the manner described above. However, if there are notable differences, 
+run the EMBench scripts in the manner described above. However, if there are notable differences,
 a quick description on what to check follows. For full details, please check the EMBench [documentation](https://github.com/embench/embench-iot/blob/master/doc/README.md).<br>
 
 For compiler flags, linker flags or library dependencies, check the follwing files:
