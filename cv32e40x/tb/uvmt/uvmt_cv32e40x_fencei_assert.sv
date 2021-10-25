@@ -43,6 +43,7 @@ module uvmt_cv32e40x_fencei_assert
   input rvfi_dbg_mode
 );
 
+  localparam int CYCLE_COUNT = 6;
   default clocking cb @(posedge clk_i); endclocking
   string info_tag = "CV32E40X_FENCEI_ASSERT";
   logic is_fencei_in_wb;
@@ -120,23 +121,18 @@ module uvmt_cv32e40x_fencei_assert
   ) else `uvm_error(info_tag, "obi data req shall not happen while fencei is flushing");
 
   property p_fencei_quick_retire;
-    (
-      $rose(is_fencei_in_wb)
-    ) and (
-      (!fencei_flush_req_o || fencei_flush_ack_i) [*10]
-    ) and (
-      fencei_flush_req_o within (1 [*3])
-    );
+    $rose(is_fencei_in_wb)
+    ##1 (fencei_flush_req_o && fencei_flush_ack_i);
   endproperty
   a_cycle_count_minimum: assert property (
     p_fencei_quick_retire
     implies
-    (##1 !$rose(wb_instr_valid) [*5])  // 6 cycles
+    (##1 !$rose(wb_instr_valid) [*CYCLE_COUNT-1])
   ) else `uvm_error(info_tag, "fencei shan't finish before the expected number of cycles");
   c_cycle_count_minimum: cover property (
     p_fencei_quick_retire
     and
-    (s_nexttime [6] $rose(wb_instr_valid))
+    (s_nexttime [CYCLE_COUNT] $rose(wb_instr_valid))
   );
 
   a_req_wait_bus: assert property (
