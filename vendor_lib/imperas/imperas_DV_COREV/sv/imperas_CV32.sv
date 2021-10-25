@@ -15,7 +15,7 @@
  * for the location of the open source models.
  *
  */
- 
+
 //`define DEBUG
 //`define UVM
 
@@ -211,6 +211,7 @@ module CPU #(
     import "DPI-C" context function void svimp_pull(output RMData_ioT RMData_io, output RMData_stateT RMData_state);
     import "DPI-C" context function void svimp_push(input  SVData_ioT SVData_io, input  SVData_stateT SVData_state);
     import "DPI-C" context function void svimp_exit();
+    import "DPI-C" context function void svimp_netupdate();
 
     export "DPI-C" task     svexp_busFetch;
     export "DPI-C" task     svexp_busLoad;
@@ -230,11 +231,34 @@ module CPU #(
     RVVI_control control();
     
     bit [31:0] cycles;
+    
+    bit initialized = 0;
 
     RMData_ioT    RMData_io;
     SVData_ioT    SVData_io;
     RMData_stateT RMData_state;
     SVData_stateT SVData_state;
+
+    //
+    // PASS IO Asynchronously
+    //
+    always @ (
+        io.reset or
+        io.reset_addr or
+        io.nmi or
+        io.nmi_cause or
+        io.nmi_addr or
+        io.irq_i or
+        io.deferint or
+        io.haltreq or
+        io.resethaltreq or
+        io.LoadBusFaultNMI or
+        io.StoreBusFaultNMI or
+        io.InstructionBusFault or
+        cycles
+    ) begin
+        if (initialized) svimp_netupdate();
+    end
 
     //
     // Bus direct transactors
@@ -350,18 +374,15 @@ module CPU #(
         SVData_io.haltreq             = io.haltreq;
         SVData_io.resethaltreq        = io.resethaltreq;
         
-        //SVData_io.LoadBusFaultNMI     = io.LoadBusFaultNMI;
-        //SVData_io.StoreBusFaultNMI    = io.StoreBusFaultNMI;
+        SVData_io.LoadBusFaultNMI     = io.LoadBusFaultNMI;
+        SVData_io.StoreBusFaultNMI    = io.StoreBusFaultNMI;
         
-        //SVData_io.InstructionBusFault = io.InstructionBusFault;
+        SVData_io.InstructionBusFault = io.InstructionBusFault;
         
         SVData_state.cycles           = cycles;
         
         svimp_push(SVData_io, SVData_state);
-        
-        // clear NMI
-        //SVData_io.LoadBusFaultNMI = 0;
-        //SVData_io.StoreBusFaultNMI = 0;
+        initialized = 1;
     endfunction
 
     function automatic void svexp_setDECODE (input string value, input int insn, input int isize);
