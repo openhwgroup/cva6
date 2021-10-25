@@ -42,34 +42,10 @@
 #include <stdlib.h>
 #include <string.h>
 
-#define MAX_STALL_CYCLES 5
-
 static int chck(unsigned int is, unsigned int should)
 {
   int err;
   err = is == should ? 0 : 1;
-  if (err)
-    printf("fail\n");
-  else
-    printf("pass\n");
-  return err;
-}
-
-static int chck_le(unsigned int is, unsigned int should)
-{
-  int err;
-  err = is <= should ? 0 : 1;
-  if (err)
-    printf("fail\n");
-  else
-    printf("pass\n");
-  return err;
-}
-
-static int chck_with_pos_margin(unsigned int is, unsigned int should, unsigned int margin)
-{
-  int err;
-  err = (is >= should) && (is <= should + margin) ? 0 : 1;
   if (err)
     printf("fail\n");
   else
@@ -145,7 +121,7 @@ int main(int argc, char *argv[])
   printf("\nCycle count while running = %d", count);
   printf("\nMCYCLE counted cycles = %d\n", mcycle_count);
   err_cnt += chck(count, mcycle_count);
-  err_cnt += chck_with_pos_margin(count, 6, 4*MAX_STALL_CYCLES);
+  err_cnt += chck(count, 6);
 
   //////////////////////////////////////////////////////////////
   // IF_INVALID
@@ -169,13 +145,9 @@ int main(int argc, char *argv[])
   __asm__ volatile("csrr %0, 0xB03" : "=r"(count));
 
   printf("\nminstret count = %d\n", minstret);
-  err_cnt += chck(minstret, 4+(2*5));
+  err_cnt += chck(minstret, 4 + (2*5));
   printf("\nUnderutilized cycles on ID-stage due to IF stage = %d\n", count);
-
-  err_cnt += chck_with_pos_margin(count, 4, (4 /*non looped*/ +
-                                             5 /*looped addi*/ +
-                                             4*2 /*taken branches, potenially misaligned*/ +
-                                             2 /*non-taken, potentially misaligned*/)*MAX_STALL_CYCLES);
+  err_cnt += chck(count, 4);
 
   //////////////////////////////////////////////////////////////
   // ID_INVALID - LD_STALL
@@ -199,7 +171,7 @@ int main(int argc, char *argv[])
   printf("\nminstret count = %d\n", minstret);
   err_cnt += chck(minstret, 5);
   printf("\nUnderutilized cycles on EX-stage due to ID stage = %d\n", count);
-  err_cnt += chck_with_pos_margin(count, 2, 5*MAX_STALL_CYCLES);
+  err_cnt += chck(count, 2);
 
   //////////////////////////////////////////////////////////////
   // ID_INVALID - JR STALL
@@ -222,7 +194,7 @@ int main(int argc, char *argv[])
   printf("\nminstret count = %d\n", minstret);
   err_cnt += chck(minstret, 4);
   printf("\nUnderutilized cycles on EX-stage due to ID stage = %d\n", count);
-  err_cnt += chck_with_pos_margin(count, 3, 4*MAX_STALL_CYCLES);
+  err_cnt += chck(count, 3);
 
   //////////////////////////////////////////////////////////////
   // EX_INVALID
@@ -262,8 +234,7 @@ int main(int argc, char *argv[])
   printf("\nminstret count = %d\n", minstret);
   err_cnt += chck(minstret, 21);
   printf("\nUnderutilized cycles on WB-stage due to EX stage = %d\n", count);
-  // -6 due to potential random stalls preventing hazard stalls
-  err_cnt += chck_with_pos_margin(count, 104 - 6, 21*MAX_STALL_CYCLES + 6);
+  err_cnt += chck(count, 104);
 
   //////////////////////////////////////////////////////////////
   // WB_INVALID Write port underutilization
@@ -289,7 +260,7 @@ int main(int argc, char *argv[])
   printf("\nminstret count = %d\n", minstret);
   err_cnt += chck(minstret, 6);
   printf("\nWrite port underutilization cycles: %d\n", count);
-  err_cnt += chck_with_pos_margin(count, 34, 6*MAX_STALL_CYCLES);
+  err_cnt += chck(count, 34);
 
   //////////////////////////////////////////////////////////////
   // WB_DATA_STALL Write port underutilization due to data_rvalid_i (0)
@@ -301,6 +272,8 @@ int main(int argc, char *argv[])
   __asm__ volatile("csrwi 0xB03, 0x0");                         // mhpmcounter3 = 0
   __asm__ volatile("csrwi 0x320, 0x0");                         // Enable counters
 
+  // Do not count stall cycles (WB_INVALID) due to multicycle instructions
+  // and force misaligned store to create data stalls (3 misaligned in the following seq)
   __asm__ volatile("li x31, 7\n\t\
                     li x30, 3\n\t\
                     addi x0, x31, 1\n\t\
@@ -323,7 +296,7 @@ int main(int argc, char *argv[])
   printf("\nminstret count = %d\n", minstret);
   err_cnt += chck(minstret, 14);
   printf("\nWrite port underutilization cycles: %d\n", count);
-  err_cnt += chck_with_pos_margin(count, 3, 14*MAX_STALL_CYCLES);
+  err_cnt += chck(count, 3);
 
   //////////////////////////////////////////////////////////////
   // Retired instruction count (0) - Immediate minstret read
@@ -334,7 +307,6 @@ int main(int argc, char *argv[])
   __asm__ volatile("csrwi 0xB02, 0x0");                         // minstret = 0
   __asm__ volatile("csrwi 0xB03, 0x0");                         // mhpmcounter3 = 0
   __asm__ volatile("csrwi 0x320, 0x0");                         // Enable counters
-
   __asm__ volatile("csrr t0, minstret\n\t\
                     addi t1, x0, 0\n\t\
                     addi t2, x0, 0" \
@@ -432,7 +404,7 @@ int main(int argc, char *argv[])
   err_cnt += chck(minstret, 5);
 
   printf("Load use hazards count = %d\n", count);
-  err_cnt += chck_le(count, 1);                                 // Hazard count is 0 or 1 (0 if due to instruction interface stalls 'use' did not closely follow the load)
+  err_cnt += chck(count, 1);                                 // Hazard count is 1 in the absence of interface stalls
 
   //////////////////////////////////////////////////////////////
   // Count jump register hazards
@@ -455,7 +427,7 @@ int main(int argc, char *argv[])
   err_cnt += chck(minstret, 4);
 
   printf("Jump register hazards count = %d\n", count);
-  err_cnt += chck_le(count, 1);                                 // Hazard count is 0 or 1 (0 if due to instruction interface stalls jalr did not closely follow the addi before it)
+  err_cnt += chck(count, 1);                                 // Hazard count is 1 in the absence of interface stalls
 
   //////////////////////////////////////////////////////////////
   // Count memory read transactions - Read while enabled
