@@ -170,8 +170,9 @@ task uvma_rvvi_ovpsim_drv_c::stepi(REQ req);
 
    // Signal instruction bus fault
    if (rvvi_ovpsim_seq_item.insn_bus_fault) begin
-      rvvi_ovpsim_cntxt.ovpsim_io_vif.InstructionBusFault = 1;
       rvvi_ovpsim_cntxt.control_vif.stepi();
+      @(rvvi_ovpsim_cntxt.ovpsim_bus_vif.Ird);
+      rvvi_ovpsim_cntxt.ovpsim_io_vif.InstructionBusFault = 1;
       @(rvvi_ovpsim_cntxt.state_vif.notify);
       rvvi_ovpsim_cntxt.ovpsim_io_vif.InstructionBusFault = 0;
       @(posedge rvvi_ovpsim_cntxt.ovpsim_bus_vif.Clk);
