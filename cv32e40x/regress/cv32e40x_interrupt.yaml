@@ -22,52 +22,52 @@ tests:
     build: uvmt_cv32e40x
     description: Interrupt directed test
     dir: cv32e40x/sim/uvmt
-    cmd: make test COREV=YES TEST=interrupt_test
+    cmd: make test TEST=interrupt_test
 
   interrupt_bootstrap:
     build: uvmt_cv32e40x
     description: Interrupt directed bootstrap
     dir: cv32e40x/sim/uvmt
-    cmd: make test COREV=YES TEST=interrupt_bootstrap
+    cmd: make test TEST=interrupt_bootstrap
 
   corev_rand_interrupt:
     build: uvmt_cv32e40x
     description: Interrupt random test
     dir: cv32e40x/sim/uvmt
-    cmd: make gen_corev-dv test COREV=YES TEST=corev_rand_interrupt
+    cmd: make gen_corev-dv test TEST=corev_rand_interrupt
     num: 50
 
   # corev_rand_interrupt_debug:
   #   build: uvmt_cv32e40x
   #   description: Interrupt random test with debug
   #   dir: cv32e40x/sim/uvmt
-  #   cmd: make gen_corev-dv test COREV=YES TEST=corev_rand_interrupt_debug
+  #   cmd: make gen_corev-dv test TEST=corev_rand_interrupt_debug
   #   num: 50
 
   # corev_rand_interrupt_exception:
   #   build: uvmt_cv32e40x
   #   description: Interrupt random test with exceptions
   #   dir: cv32e40x/sim/uvmt
-  #   cmd: make gen_corev-dv test COREV=YES TEST=corev_rand_interrupt_exception
+  #   cmd: make gen_corev-dv test TEST=corev_rand_interrupt_exception
   #   num: 50
 
   # corev_rand_interrupt_nested:
   #   build: uvmt_cv32e40x
   #   description: Interrupt random test with nested interrupts and WFI
   #   dir: cv32e40x/sim/uvmt
-  #   cmd: make gen_corev-dv test COREV=YES TEST=corev_rand_interrupt_nested
+  #   cmd: make gen_corev-dv test TEST=corev_rand_interrupt_nested
   #   num: 50
 
   corev_rand_interrupt_wfi:
     build: uvmt_cv32e40x
     description: Interrupt random test with WFI
     dir: cv32e40x/sim/uvmt
-    cmd: make gen_corev-dv test COREV=YES TEST=corev_rand_interrupt_wfi
+    cmd: make gen_corev-dv test TEST=corev_rand_interrupt_wfi
     num: 50
 
   corev_rand_interrupt_wfi_mem_stress:
     build: uvmt_cv32e40x
     description: Interrupt random test with WFI
     dir: cv32e40x/sim/uvmt
-    cmd: make gen_corev-dv test COREV=YES TEST=corev_rand_interrupt_wfi_mem_stress
+    cmd: make gen_corev-dv test TEST=corev_rand_interrupt_wfi_mem_stress
     num: 50

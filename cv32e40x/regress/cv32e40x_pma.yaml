@@ -1,5 +1,5 @@
 # YAML file to specify a regression testlist
-# Note that the COREV=YES is set for all tests in this regression.
+# Note that the is set for all tests in this regression.
 # This means you need to have a toolchain at COREV_SW_TOOLCHAIN (see Common.mk)
 ---
 # Header
@@ -27,5 +27,5 @@ tests:
     build: uvmt_cv32e40x
     description: Generated corev-dv pma test
     dir: cv32e40x/sim/uvmt
-    cmd: make gen_corev-dv test COREV=YES TEST=corev_rand_pma_test
+    cmd: make gen_corev-dv test TEST=corev_rand_pma_test
     num: 20
