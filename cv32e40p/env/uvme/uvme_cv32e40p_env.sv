@@ -156,7 +156,7 @@ function void uvme_cv32e40p_env_c::build_phase(uvm_phase phase);
    super.build_phase(phase);
 
    void'(uvm_config_db#(uvme_cv32e40p_cfg_c)::get(this, "", "cfg", cfg));
-   if (!cfg) begin
+   if (cfg == null) begin
       `uvm_fatal("UVME_CV32E40P_ENV", "Configuration handle is null")
    end
    else begin
@@ -165,7 +165,7 @@ function void uvme_cv32e40p_env_c::build_phase(uvm_phase phase);
 
    if (cfg.enabled) begin
       void'(uvm_config_db#(uvme_cv32e40p_cntxt_c)::get(this, "", "cntxt", cntxt));
-      if (!cntxt) begin
+      if (cntxt == null) begin
          `uvm_info("UVME_CV32E40P_ENV", "Context handle is null; creating.", UVM_DEBUG)
          cntxt = uvme_cv32e40p_cntxt_c::type_id::create("cntxt");
       end
@@ -223,13 +223,17 @@ task uvme_cv32e40p_env_c::run_phase(uvm_phase phase);
       fork
          begin : spawn_obi_instr_fw_preload_thread
             fw_preload_seq = uvma_obi_memory_fw_preload_seq_c::type_id::create("fw_preload_seq");
-            void'(fw_preload_seq.randomize());
+            if (!fw_preload_seq.randomize()) begin
+               `uvm_fatal("FWPRELOAD", "Randomize failed");
+            end
             fw_preload_seq.start(obi_memory_instr_agent.sequencer);
          end
 
          begin : obi_instr_slv_thread
             instr_slv_seq = uvma_obi_memory_slv_seq_c::type_id::create("instr_slv_seq");
-            void'(instr_slv_seq.randomize());
+            if (!instr_slv_seq.randomize()) begin
+               `uvm_fatal("INSTRSLVSEQ", "Randomize failed");
+            end
             instr_slv_seq.start(obi_memory_instr_agent.sequencer);
          end
 
@@ -283,7 +287,9 @@ task uvme_cv32e40p_env_c::run_phase(uvm_phase phase);
                vp_seq.cv32e40p_cntxt = cntxt;
             end
 
-            void'(data_slv_seq.randomize());
+            if (!data_slv_seq.randomize()) begin
+               `uvm_fatal("DATASLVSEQ", "Randomize failed");
+            end
             data_slv_seq.start(obi_memory_data_agent.sequencer);
          end
       join_none

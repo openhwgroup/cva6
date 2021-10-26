@@ -1,20 +1,20 @@
 //
 // Copyright 2020 OpenHW Group
-// Copyright 2020 Datum Technologies
+// Copyright 2020 Datum Technology Corporation
 // Copyright 2020 Silicon Labs, Inc.
-// 
+//
 // Licensed under the Solderpad Hardware Licence, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
-// 
+//
 //     https://solderpad.org/licenses/
-// 
+//
 // Unless required by applicable law or agreed to in writing, software
 // distributed under the License is distributed on an "AS IS" BASIS,
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
-// 
+//
 ///////////////////////////////////////////////////////////////////////////////
 //
 // Modified version of the wrapper for a RI5CY testbench, containing RI5CY,
@@ -39,13 +39,14 @@
 /**
  * Module wrapper for CV32E40S RTL DUT.
  */
-module uvmt_cv32e40s_dut_wrap 
+module uvmt_cv32e40s_dut_wrap
   import cv32e40s_pkg::*;
 
-  #(// DUT (riscv_core) parameters.                            
+  #(// DUT (riscv_core) parameters.
     parameter NUM_MHPMCOUNTERS    =  1,
-    parameter int unsigned PMA_NUM_REGIONS =  0,
-    parameter pma_region_t PMA_CFG[(PMA_NUM_REGIONS ? (PMA_NUM_REGIONS-1) : 0):0] = '{default:PMA_R_DEFAULT},
+    parameter cv32e40s_pkg::b_ext_e B_EXT  = cv32e40s_pkg::NONE,
+    parameter int          PMA_NUM_REGIONS =  0,
+    parameter pma_region_t PMA_CFG[PMA_NUM_REGIONS-1 : 0] = '{default:PMA_R_DEFAULT},
     // Remaining parameters are used by TB components only
               INSTR_ADDR_WIDTH    =  32,
               INSTR_RDATA_WIDTH   =  32,
@@ -58,7 +59,8 @@ module uvmt_cv32e40s_dut_wrap
     uvme_cv32e40s_core_cntrl_if  core_cntrl_if,
     uvmt_cv32e40s_core_status_if core_status_if,
     uvma_obi_memory_if           obi_instr_if_i,
-    uvma_obi_memory_if           obi_data_if_i
+    uvma_obi_memory_if           obi_data_if_i,
+    uvma_fencei_if               fencei_if_i
   );
 
     import uvm_pkg::*; // needed for the UVM messaging service (`uvm_info(), etc.)
@@ -79,26 +81,22 @@ module uvmt_cv32e40s_dut_wrap
     logic [31:0]                  data_rdata;
     logic [31:0]                  data_wdata;
 
-    logic [31:0]                  irq_vp;
-    logic [31:0]                  irq_uvma;
     logic [31:0]                  irq;
-    logic                         irq_ack;
-    logic [ 4:0]                  irq_id;
 
-    logic                         debug_req_vp;
-    logic                         debug_req_uvma;
-    logic                         debug_req;
     logic                         debug_havereset;
     logic                         debug_running;
     logic                         debug_halted;
 
+    // fixme:strichmo:These will need to be checked eventually and perhaps added to an agent/interface
+    logic                         alert_major;
+    logic                         alert_minor;
+
     assign debug_if.clk      = clknrst_if.clk;
     assign debug_if.reset_n  = clknrst_if.reset_n;
-    assign debug_req_uvma    = debug_if.debug_req;
-   
+
     // --------------------------------------------
-    // OBI Instruction agent v1.2 signal tie-offs    
-    assign obi_instr_if_i.we        = 'b0;    
+    // OBI Instruction agent v1.2 signal tie-offs
+    assign obi_instr_if_i.we        = 'b0;
     assign obi_instr_if_i.be        = 'hf; // Always assumes 32-bit full bus reads on instruction OBI
     assign obi_instr_if_i.auser     = 'b0;
     assign obi_instr_if_i.wuser     = 'b0;
@@ -112,7 +110,7 @@ module uvmt_cv32e40s_dut_wrap
     assign obi_instr_if_i.rreadypar = 1'b0;
 
     // --------------------------------------------
-    // OBI Data agent v12.2 signal tie-offs    
+    // OBI Data agent v12.2 signal tie-offs
     assign obi_data_if_i.auser      = 'b0;
     assign obi_data_if_i.wuser      = 'b0;
     assign obi_data_if_i.aid        = 'b0;
@@ -126,15 +124,13 @@ module uvmt_cv32e40s_dut_wrap
     // Connect to uvma_interrupt_if
     assign interrupt_if.clk                     = clknrst_if.clk;
     assign interrupt_if.reset_n                 = clknrst_if.reset_n;
-    assign irq_uvma                             = interrupt_if.irq;
-    assign interrupt_if.irq_id                  = irq_id;
-    assign interrupt_if.irq_ack                 = irq_ack;
-
-    assign irq = irq_uvma | irq_vp;
+    assign interrupt_if.irq_id                  = cv32e40s_wrapper_i.core_i.irq_id;
+    assign interrupt_if.irq_ack                 = cv32e40s_wrapper_i.core_i.irq_ack;
 
     // --------------------------------------------
     // Connect to core_cntrl_if
     assign core_cntrl_if.num_mhpmcounters = NUM_MHPMCOUNTERS;
+    assign core_cntrl_if.b_ext = B_EXT;
     initial begin
       core_cntrl_if.pma_cfg = new[PMA_NUM_REGIONS];
       foreach (core_cntrl_if.pma_cfg[i]) begin
@@ -149,8 +145,11 @@ module uvmt_cv32e40s_dut_wrap
 
     // --------------------------------------------
     // instantiate the core
+    defparam cv32e40s_wrapper_i.core_i.id_stage_i.B_EXT = B_EXT;
     cv32e40s_wrapper #(
                       .NUM_MHPMCOUNTERS (NUM_MHPMCOUNTERS),
+                      // FIXME:strichmo:restore this when the issue with exposing B_EXT parameter is exposed to cv32e40s_wrapper and cv32e40s_core
+                      //.B_EXT            (B_EXT),
                       .PMA_NUM_REGIONS  (PMA_NUM_REGIONS),
                       .PMA_CFG          (PMA_CFG)
                       )
@@ -169,7 +168,7 @@ module uvmt_cv32e40s_dut_wrap
          .dm_exception_addr_i    ( core_cntrl_if.dm_exception_addr),
 
          .instr_req_o            ( obi_instr_if_i.req             ),
-         .instr_gnt_i            ( obi_instr_if_i.gnt             ),         
+         .instr_gnt_i            ( obi_instr_if_i.gnt             ),
          .instr_addr_o           ( obi_instr_if_i.addr            ),
          .instr_prot_o           ( obi_instr_if_i.prot            ),
          .instr_memtype_o        ( obi_instr_if_i.memtype         ),
@@ -192,20 +191,26 @@ module uvmt_cv32e40s_dut_wrap
          .data_exokay_i          ( obi_data_if_i.exokay           ),
 
          .irq_i                  ( interrupt_if.irq               ),
-         .irq_ack_o              ( irq_ack                        ),
-         .irq_id_o               ( irq_id                         ),
+
+         .fencei_flush_req_o     ( fencei_if_i.flush_req          ),
+         .fencei_flush_ack_i     ( fencei_if_i.flush_ack          ),
 
          .debug_req_i            ( debug_if.debug_req             ),
          .debug_havereset_o      ( debug_havereset                ),
          .debug_running_o        ( debug_running                  ),
          .debug_halted_o         ( debug_halted                   ),
 
+         .alert_major_o          ( alert_major                    ),
+         .alert_minor_o          ( alert_minor                    ),
+
          .fetch_enable_i         ( core_cntrl_if.fetch_en         ),
          .core_sleep_o           ( core_status_if.core_busy       )
-        ); //riscv_core_i
+        );
 
 endmodule : uvmt_cv32e40s_dut_wrap
 
 `endif // __UVMT_CV32E40S_DUT_WRAP_SV__
+
+
 
 

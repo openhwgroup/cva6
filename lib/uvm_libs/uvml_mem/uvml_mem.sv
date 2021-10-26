@@ -1,19 +1,19 @@
-// 
+//
 // Copyright 2021 Datum Technology Corporation
 // SPDX-License-Identifier: Apache-2.0 WITH SHL-2.1
-// 
+//
 // Licensed under the Solderpad Hardware License v 2.1 (the "License"); you may
 // not use this file except in compliance with the License, or, at your option,
 // the Apache License version 2.0. You may obtain a copy of the License at
-// 
+//
 //     https://solderpad.org/licenses/SHL-2.1/
-// 
+//
 // Unless required by applicable law or agreed to in writing, any work
 // distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
 // WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 // License for the specific language governing permissions and limitations
 // under the License.
-// 
+//
 
 
 `ifndef __UVML_MEM_SV__
@@ -40,12 +40,12 @@ class uvml_mem_c#(int XLEN=DEFAULT_XLEN) extends uvm_object;
       `uvm_field_enum(uvml_mem_default_enum, mem_default, UVM_DEFAULT)
       `uvm_field_int (mem_default_const_value,            UVM_DEFAULT)
    `uvm_object_utils_end
-  
+
    /**
     * Default constructor
     */
    extern function new(string name="uvml_mem");
-  
+
    /**
     * Write to memory array
     */
@@ -59,15 +59,15 @@ class uvml_mem_c#(int XLEN=DEFAULT_XLEN) extends uvm_object;
    /**
     * Wrapper around readmemh for underlying memory
     */
-   extern function void readmemh(string mem_file_path);
+   extern function void readmemh(const ref string mem_file_path);
 
 endclass : uvml_mem_c
 
 
 function uvml_mem_c::new(string name="uvml_mem");
-   
+
    super.new(name);
-  
+
 endfunction : new
 
 function void uvml_mem_c::write(bit[XLEN-1:0] addr, reg[7:0] data);
@@ -91,7 +91,7 @@ function reg[7:0] uvml_mem_c::read(bit[XLEN-1:0] addr);
 
 endfunction : read
 
-function void uvml_mem_c::readmemh(string mem_file_path);
+function void uvml_mem_c::readmemh(const ref string mem_file_path);
    string error_desc;
    int file = $fopen(mem_file_path, "r");
    int errno = $ferror(file, error_desc);

@@ -110,7 +110,7 @@ int _execve(const char *name, char *const argv[], char *const env[])
 void _exit(int exit_status)
 {
   *(volatile int *)EXIT_REG = exit_status;
-  asm volatile("wfi");
+  __asm__ volatile("wfi");
   /* _exit should not return */
   while (1) {};
 }
@@ -273,9 +273,11 @@ int _brk(void *addr)
 void *_sbrk(ptrdiff_t incr)
 {
   char *old_brk = brk;
-  register long sp asm("sp");
+  volatile uint32_t sp;
 
   char *new_brk = brk += incr;
+  __asm__ volatile("mv %0, x2" : "=r"(sp) : : );
+
   if (new_brk < (char *) sp && new_brk < __heap_end)
     {
       brk = new_brk;

@@ -162,13 +162,13 @@ function void uvma_obi_memory_drv_c::build_phase(uvm_phase phase);
    super.build_phase(phase);
    
    void'(uvm_config_db#(uvma_obi_memory_cfg_c)::get(this, "", "cfg", cfg));
-   if (!cfg) begin
+   if (cfg == null) begin
       `uvm_fatal("CFG", "Configuration handle is null")
    end
    uvm_config_db#(uvma_obi_memory_cfg_c)::set(this, "*", "cfg", cfg);
    
    void'(uvm_config_db#(uvma_obi_memory_cntxt_c)::get(this, "", "cntxt", cntxt));
-   if (!cntxt) begin
+   if (cntxt == null) begin
       `uvm_fatal("CNTXT", "Context handle is null")
    end
    uvm_config_db#(uvma_obi_memory_cntxt_c)::set(this, "*", "cntxt", cntxt);
@@ -377,8 +377,12 @@ task uvma_obi_memory_drv_c::drv_mstr_req(ref uvma_obi_memory_mstr_seq_item_c req
 endtask : drv_mstr_req
 
 
+// This task has redundant code with drv_mstr_write_req for the request and
+// address phases.  Rather than create a new method for the common code, the
+// waiver pragmas (@DVT) are placed to warn future maintainers of the situation.
 task uvma_obi_memory_drv_c::drv_mstr_read_req(ref uvma_obi_memory_mstr_seq_item_c req);
    
+//@DVT_LINTER_WAIVER_START "MT20211004_1" disable SVTB.33.1.0, SVTB.33.2.0
    // Req Latency cycles
    repeat (req.req_latency) begin
       @(mstr_mp.drv_mstr_cb);
@@ -390,6 +394,7 @@ task uvma_obi_memory_drv_c::drv_mstr_read_req(ref uvma_obi_memory_mstr_seq_item_
    for (int unsigned ii=0; ii<cfg.addr_width; ii++) begin
       mstr_mp.drv_mstr_cb.addr[ii] <= req.address[ii];
    end
+//@DVT_LINTER_WAIVER_END "MT20211004_1"
    for (int unsigned ii=0; ii<(cfg.data_width/8); ii++) begin
       mstr_mp.drv_mstr_cb.be[ii] <= req.be[ii];
    end
@@ -440,7 +445,7 @@ endtask : drv_mstr_read_req
 
 // This task has redundant code with drv_mstr_read_req for the request and
 // address phases.  Rather than create a new method for the common code, the
-// waiver pragmas are in place to warn future maintainers of the situation.
+// waiver pragmas (@DVT) are placed to warn future maintainers of the situation.
 task uvma_obi_memory_drv_c::drv_mstr_write_req(ref uvma_obi_memory_mstr_seq_item_c req);
 
 //@DVT_LINTER_WAIVER_START "MT20210901_3" disable SVTB.33.1.0, SVTB.33.2.0

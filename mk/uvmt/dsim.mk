@@ -275,6 +275,7 @@ comp_corev-dv: $(CV_CORE_PKG)
 		+incdir+$(UVM_HOME)/src \
 		$(UVM_HOME)/src/uvm_pkg.sv \
 		+define+DSIM \
+		-top $(CV_CORE_LC)_instr_gen_tb_top \
 		-suppress EnumMustBePositive \
 		-suppress SliceOOB \
 		-f $(CV_CORE_MANIFEST) \
@@ -342,6 +343,6 @@ clean:
 	rm -rf $(SIM_RESULTS)
 
 # All generated files plus the clone of the RTL
-clean_all: clean clean_riscv-dv clean_test_programs clean-bsp clean_compliance clean_embench clean_dpi_dasm_spike clean_svlib
+clean_all: clean clean_riscv-dv clean_test_programs clean_bsp clean_compliance clean_embench clean_dpi_dasm_spike clean_svlib
 	rm -rf $(CV_CORE_PKG)
 

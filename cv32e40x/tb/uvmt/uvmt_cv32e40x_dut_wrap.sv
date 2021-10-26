@@ -87,6 +87,12 @@ module uvmt_cv32e40x_dut_wrap
     logic                         debug_running;
     logic                         debug_halted;
 
+    // eXtension interface
+    // todo: Connect to TB when implemented.
+    // Included to allow core-v-verif to compile with RTL including
+    // interface definition.
+    if_xif xif();
+
     assign debug_if.clk      = clknrst_if.clk;
     assign debug_if.reset_n  = clknrst_if.reset_n;
 
@@ -141,11 +147,9 @@ module uvmt_cv32e40x_dut_wrap
 
     // --------------------------------------------
     // instantiate the core
-    defparam cv32e40x_wrapper_i.core_i.id_stage_i.B_EXT = B_EXT;
     cv32e40x_wrapper #(
                       .NUM_MHPMCOUNTERS (NUM_MHPMCOUNTERS),
-                      // FIXME:strichmo:restore this when the issue with exposing B_EXT parameter is exposed to cv32e40x_wrapper and cv32e40x_core
-                      //.B_EXT            (B_EXT),
+                      .B_EXT            (B_EXT),
                       .PMA_NUM_REGIONS  (PMA_NUM_REGIONS),
                       .PMA_CFG          (PMA_CFG)
                       )
@@ -186,6 +190,13 @@ module uvmt_cv32e40x_dut_wrap
          .data_err_i             ( obi_data_if_i.err              ),
          .data_exokay_i          ( obi_data_if_i.exokay           ),
 
+         .xif_compressed_if      ( xif.cpu_compressed             ),
+         .xif_issue_if           ( xif.cpu_issue                  ),
+         .xif_commit_if          ( xif.cpu_commit                 ),
+         .xif_mem_if             ( xif.cpu_mem                    ),
+         .xif_mem_result_if      ( xif.cpu_mem_result             ),
+         .xif_result_if          ( xif.cpu_result                 ),
+
          .irq_i                  ( interrupt_if.irq               ),
 
          .fencei_flush_req_o     ( fencei_if_i.flush_req          ),
@@ -203,6 +214,3 @@ module uvmt_cv32e40x_dut_wrap
 endmodule : uvmt_cv32e40x_dut_wrap
 
 `endif // __UVMT_CV32E40X_DUT_WRAP_SV__
-
-
-

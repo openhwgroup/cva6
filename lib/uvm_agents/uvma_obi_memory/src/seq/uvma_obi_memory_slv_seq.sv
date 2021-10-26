@@ -74,7 +74,9 @@ endclass : uvma_obi_memory_slv_seq_c
 function uvma_obi_memory_slv_seq_c::new(string name="uvma_obi_memory_slv_seq");
 
    super.new(name);
-   void'(this.randomize());
+   if (!this.randomize()) begin
+      `uvm_fatal("OBIMEMSLVSEQ", "Randomize failed");
+   end
 
 endfunction : new
 

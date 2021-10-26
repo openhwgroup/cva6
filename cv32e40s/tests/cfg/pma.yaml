@@ -2,23 +2,4 @@ name: pma
 description: PMA configuration for regions and attributes
 compile_flags:
     +define+PMA_CUSTOM_CFG
-ovpsim: >
-    --override root/cpu/extension/PMA_NUM_REGIONS=3
-    --override root/cpu/extension/word_addr_low2=0
-    --override root/cpu/extension/word_addr_high2=0x06844204
-    --override root/cpu/extension/main2=0
-    --override root/cpu/extension/bufferable2=0
-    --override root/cpu/extension/cacheable2=0
-    --override root/cpu/extension/atomic2=0
-    --override root/cpu/extension/word_addr_low1=0
-    --override root/cpu/extension/word_addr_high1=0x06844204
-    --override root/cpu/extension/main1=1
-    --override root/cpu/extension/bufferable1=1
-    --override root/cpu/extension/cacheable1=1
-    --override root/cpu/extension/atomic1=1
-    --override root/cpu/extension/word_addr_low0=0x06844400
-    --override root/cpu/extension/word_addr_high0=0xFFFFFFFF
-    --override root/cpu/extension/main0=1
-    --override root/cpu/extension/bufferable0=0
-    --override root/cpu/extension/cacheable0=0
-    --override root/cpu/extension/atomic0=1
+
