@@ -21,10 +21,11 @@
 */
 #include "corev_uvmt.h"
 
+
 .section .debugger, "ax"
 .global _debugger_start
+
 .set test_fail, 0x1
-.set test_debugger_entry, 0x1000
 .set test_debugger_ok, 0xa5
 
 _debugger_start:
@@ -34,11 +35,11 @@ _debugger_start:
     li t2, 0x80 # Boot addr
     bne t1, t2, _debugger_error
 
-    // Write known value to memory@0x1000
+    // Write known value to memory
     // We don't have any globals or pointers
     // at this time, so we must rely on
     // memory (hopefully) not being used
-    li a0, test_debugger_entry
+    la a0, test_debugger_entry
     li t0, test_debugger_ok
     sw t0, 0(a0)
 
@@ -481,3 +482,8 @@ _debugger_error:
     li t0, test_fail
     sw t0, 0(a0)
     dret
+
+.section .data
+.global test_debugger_entry
+test_debugger_entry:
+    .word 0
