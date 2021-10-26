@@ -214,6 +214,3 @@ module uvmt_cv32e40x_dut_wrap
 endmodule : uvmt_cv32e40x_dut_wrap
 
 `endif // __UVMT_CV32E40X_DUT_WRAP_SV__
-
-
-

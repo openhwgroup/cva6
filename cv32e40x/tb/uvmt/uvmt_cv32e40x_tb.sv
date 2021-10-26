@@ -349,6 +349,22 @@ module uvmt_cv32e40x_tb;
                                                       .irq_id_o(core_i.irq_id),
                                                       .*);
 
+  // Fence.i assertions
+
+  bind cv32e40x_wrapper
+    uvmt_cv32e40x_fencei_assert  fencei_assert_i (
+      .wb_valid (core_i.wb_stage_i.wb_valid),
+      .wb_instr_valid (core_i.ex_wb_pipe.instr_valid),
+      .wb_fencei_insn (core_i.ex_wb_pipe.fencei_insn),
+      .wb_pc (core_i.ex_wb_pipe.pc),
+
+      .rvfi_valid (rvfi_i.rvfi_valid),
+      .rvfi_intr (rvfi_i.rvfi_intr),
+      .rvfi_dbg_mode (rvfi_i.rvfi_dbg_mode),
+
+      .*
+    );
+
 
   // Debug assertion and coverage interface
 
@@ -738,5 +754,3 @@ endmodule : uvmt_cv32e40x_tb
 `default_nettype wire
 
 `endif // __UVMT_CV32E40X_TB_SV__
-
-
