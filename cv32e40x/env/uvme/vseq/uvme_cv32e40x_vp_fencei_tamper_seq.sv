@@ -54,8 +54,16 @@ task uvme_cv32e40x_vp_fencei_tamper_seq_c::vp_body(uvma_obi_memory_mon_trn_c mon
   if (mon_trn.access_type == UVMA_OBI_MEMORY_ACCESS_WRITE) begin
     case (get_vp_index(mon_trn))
       0: enabled = | mon_trn.data;
-      1: addr = mon_trn.data;
-      2: data = mon_trn.data;
+      //1: addr = mon_trn.data;
+      1: begin
+        addr = mon_trn.data;
+        $display("TODO wrote addr: 0x%08x", mon_trn.data, $time);
+      end
+      //2: data = mon_trn.data;
+      2: begin
+        data = mon_trn.data;
+        $display("TODO wrote data: 0x%08x", mon_trn.data, $time);
+      end
     endcase
   end
 
@@ -89,7 +97,11 @@ task uvme_cv32e40x_vp_fencei_tamper_seq_c::body();
     while (1) begin
       @(posedge cv32e40x_cntxt.fencei_cntxt.fencei_vif.flush_req);
       if (enabled) begin
-        $display("TODO body fencei req", $time, enabled, addr, data);
+        cntxt.mem.write((addr + 0), data[ 7: 0]);
+        cntxt.mem.write((addr + 1), data[15: 8]);
+        cntxt.mem.write((addr + 2), data[23:16]);
+        cntxt.mem.write((addr + 3), data[31:24]);
+        $display("TODO body fencei req: time=%0t enab=%d addr=0x%08x data=0x%08x", $time, enabled, addr, data);
       end
     end
   join_none
