@@ -124,7 +124,7 @@ class uvme_cv32e40x_cfg_c extends uvma_core_cntrl_cfg_c;
       unaligned_access_supported == 1;
       unaligned_access_amo_supported == 1;
 
-      bitmanip_version        == BITMANIP_VERSION_0P93;
+      bitmanip_version        == BITMANIP_VERSION_1P00;
 
       boot_addr_valid         == 1;
       mtvec_addr_valid        == 1;
