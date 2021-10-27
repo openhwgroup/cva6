@@ -22,6 +22,9 @@
 class uvme_cv32e40x_vp_fencei_tamper_seq_c extends uvma_obi_memory_vp_base_seq_c;
 
   uvme_cv32e40x_cntxt_c cv32e40x_cntxt;
+  bit                   enabled = 0;
+  bit [31:0]            addr;
+  bit [31:0]            data;
 
   `uvm_object_utils(uvme_cv32e40x_vp_fencei_tamper_seq_c)
 
@@ -48,7 +51,13 @@ task uvme_cv32e40x_vp_fencei_tamper_seq_c::vp_body(uvma_obi_memory_mon_trn_c mon
   slv_rsp.orig_trn = mon_trn;
   slv_rsp.err = 1'b0;
 
-  $display("TODO hello from fencei tamper vp_body");
+  if (mon_trn.access_type == UVMA_OBI_MEMORY_ACCESS_WRITE) begin
+    case (get_vp_index(mon_trn))
+      0: enabled = | mon_trn.data;
+      1: addr = mon_trn.data;
+      2: data = mon_trn.data;
+    endcase
+  end
 
   add_r_fields(mon_trn, slv_rsp);
   slv_rsp.set_sequencer(p_sequencer);
@@ -59,7 +68,7 @@ endtask : vp_body
 
 function int unsigned uvme_cv32e40x_vp_fencei_tamper_seq_c::get_num_words();
 
-   return 2;
+   return 3;
 
 endfunction : get_num_words
 
@@ -79,7 +88,9 @@ task uvme_cv32e40x_vp_fencei_tamper_seq_c::body();
   fork
     while (1) begin
       @(posedge cv32e40x_cntxt.fencei_cntxt.fencei_vif.flush_req);
-      $display("TODO body fencei req, at", $time);
+      if (enabled) begin
+        $display("TODO body fencei req", $time, enabled, addr, data);
+      end
     end
   join_none
 
