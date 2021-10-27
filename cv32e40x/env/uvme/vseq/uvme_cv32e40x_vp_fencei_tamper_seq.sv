@@ -35,12 +35,23 @@ endclass : uvme_cv32e40x_vp_fencei_tamper_seq_c
 function uvme_cv32e40x_vp_fencei_tamper_seq_c::new(string name="uvme_cv32e40x_vp_fencei_tamper_seq_c");
 
   super.new(name);
-$display("TODO hello fencei tamper");
 
 endfunction : new
 
 
 task uvme_cv32e40x_vp_fencei_tamper_seq_c::vp_body(uvma_obi_memory_mon_trn_c mon_trn);
+
+  uvma_obi_memory_slv_seq_item_c  slv_rsp;
+
+  `uvm_create(slv_rsp)
+  slv_rsp.orig_trn = mon_trn;
+  slv_rsp.err = 1'b0;
+
+  $display("TODO hello from fencei tamper vp_body");
+
+  add_r_fields(mon_trn, slv_rsp);
+  slv_rsp.set_sequencer(p_sequencer);
+  `uvm_send(slv_rsp)
 
 endtask : vp_body
 

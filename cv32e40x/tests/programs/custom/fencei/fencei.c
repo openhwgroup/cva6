@@ -17,6 +17,7 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include "corev_uvmt.h"
 
 static void assert_or_die(uint32_t actual, uint32_t expect, char *msg) {
   if (actual != expect) {
@@ -31,6 +32,7 @@ int main(void) {
   register uint32_t reg0;
   register uint32_t reg1;
   uint32_t tmparr[4];
+  uint32_t *tmpptr;
 
   printf("fencei test\n");
 
@@ -101,6 +103,11 @@ int main(void) {
     "end:              \n"
     : "=r"(reg0), "=r"(reg1));
   assert_or_die(reg0, 234, "overwriting instruction data should be visible after fencei\n");
+
+  printf("Check env-modifying code\n");
+  tmpptr = CV_VP_FENCEI_TAMPER_BASE;  //TODO volatile global
+  *tmpptr = 0;  // TODO remove
+  //TODO
 
   return EXIT_SUCCESS;
 }
