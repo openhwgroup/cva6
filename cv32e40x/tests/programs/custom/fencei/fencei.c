@@ -19,6 +19,8 @@
 #include <stdlib.h>
 #include "corev_uvmt.h"
 
+static volatile uint32_t *vp_ptr = CV_VP_FENCEI_TAMPER_BASE;
+
 static void assert_or_die(uint32_t actual, uint32_t expect, char *msg) {
   if (actual != expect) {
     printf(msg);
@@ -105,8 +107,8 @@ int main(void) {
   assert_or_die(reg0, 234, "overwriting instruction data should be visible after fencei\n");
 
   printf("Check env-modifying code\n");
-  tmpptr = CV_VP_FENCEI_TAMPER_BASE;  //TODO volatile global
-  *tmpptr = 0;  // TODO remove
+  *vp_ptr = 0;  // TODO remove
+  tmpint = *vp_ptr;
   //TODO
 
   return EXIT_SUCCESS;

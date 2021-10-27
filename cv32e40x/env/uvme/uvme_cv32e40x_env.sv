@@ -304,17 +304,17 @@ function void uvme_cv32e40x_env_c::assign_cfg();
 
    uvm_config_db#(uvme_cv32e40x_cfg_c)::set(this, "*", "cfg", cfg);
 
-   uvm_config_db#(uvma_core_cntrl_cfg_c)::set(this, "*core_cntrl_agent", "cfg", cfg);
-   uvm_config_db#(uvma_isacov_cfg_c)::set(this, "*isacov_agent", "cfg", cfg.isacov_cfg);
    uvm_config_db#(uvma_clknrst_cfg_c)::set(this, "*clknrst_agent", "cfg", cfg.clknrst_cfg);
-   uvm_config_db#(uvma_interrupt_cfg_c)::set(this, "*interrupt_agent", "cfg", cfg.interrupt_cfg);
+   uvm_config_db#(uvma_core_cntrl_cfg_c)::set(this, "*core_cntrl_agent", "cfg", cfg);
    uvm_config_db#(uvma_debug_cfg_c)::set(this, "debug_agent", "cfg", cfg.debug_cfg);
-   uvm_config_db#(uvma_obi_memory_cfg_c)::set(this, "obi_memory_instr_agent", "cfg", cfg.obi_memory_instr_cfg);
+   uvm_config_db#(uvma_fencei_cfg_c)::set(this, "fencei_agent", "cfg", cfg.fencei_cfg);
+   uvm_config_db#(uvma_interrupt_cfg_c)::set(this, "*interrupt_agent", "cfg", cfg.interrupt_cfg);
+   uvm_config_db#(uvma_isacov_cfg_c)::set(this, "*isacov_agent", "cfg", cfg.isacov_cfg);
    uvm_config_db#(uvma_obi_memory_cfg_c)::set(this, "obi_memory_data_agent",  "cfg", cfg.obi_memory_data_cfg);
+   uvm_config_db#(uvma_obi_memory_cfg_c)::set(this, "obi_memory_instr_agent", "cfg", cfg.obi_memory_instr_cfg);
+   uvm_config_db#(uvma_pma_cfg_c)::set(this, "pma_agent", "cfg", cfg.pma_cfg);
    uvm_config_db#(uvma_rvfi_cfg_c#(ILEN,XLEN))::set(this, "rvfi_agent", "cfg", cfg.rvfi_cfg);
    uvm_config_db#(uvma_rvvi_cfg_c#(ILEN,XLEN))::set(this, "rvvi_agent", "cfg", cfg.rvvi_cfg);
-   uvm_config_db#(uvma_fencei_cfg_c)::set(this, "fencei_agent", "cfg", cfg.fencei_cfg);
-   uvm_config_db#(uvma_pma_cfg_c)::set(this, "pma_agent", "cfg", cfg.pma_cfg);
 
 endfunction: assign_cfg
 
@@ -322,14 +322,16 @@ endfunction: assign_cfg
 function void uvme_cv32e40x_env_c::assign_cntxt();
 
    uvm_config_db#(uvme_cv32e40x_cntxt_c)::set(this, "*", "cntxt", cntxt);
+
    uvm_config_db#(uvma_clknrst_cntxt_c)::set(this, "clknrst_agent", "cntxt", cntxt.clknrst_cntxt);
-   uvm_config_db#(uvma_interrupt_cntxt_c)::set(this, "interrupt_agent", "cntxt", cntxt.interrupt_cntxt);
+   //TODO core_cntrl_cntxt?
    uvm_config_db#(uvma_debug_cntxt_c)::set(this, "debug_agent", "cntxt", cntxt.debug_cntxt);
-   uvm_config_db#(uvma_obi_memory_cntxt_c)::set(this, "obi_memory_instr_agent", "cntxt", cntxt.obi_memory_instr_cntxt);
+   uvm_config_db#(uvma_fencei_cntxt_c)::set(this, "fencei_agent", "cntxt", cntxt.fencei_cntxt);
+   uvm_config_db#(uvma_interrupt_cntxt_c)::set(this, "interrupt_agent", "cntxt", cntxt.interrupt_cntxt);
    uvm_config_db#(uvma_obi_memory_cntxt_c)::set(this, "obi_memory_data_agent",  "cntxt", cntxt.obi_memory_data_cntxt);
+   uvm_config_db#(uvma_obi_memory_cntxt_c)::set(this, "obi_memory_instr_agent", "cntxt", cntxt.obi_memory_instr_cntxt);
    uvm_config_db#(uvma_rvfi_cntxt_c#(ILEN,XLEN))::set(this, "rvfi_agent", "cntxt", cntxt.rvfi_cntxt);
    uvm_config_db#(uvma_rvvi_cntxt_c#(ILEN,XLEN))::set(this, "rvvi_agent", "cntxt", cntxt.rvvi_cntxt);
-   uvm_config_db#(uvma_fencei_cntxt_c)::set(this, "rvvi_agent", "cntxt", cntxt.fencei_cntxt);
 
 endfunction: assign_cntxt
 

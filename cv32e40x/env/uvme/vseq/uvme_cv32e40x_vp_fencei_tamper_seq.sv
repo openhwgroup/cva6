@@ -28,6 +28,7 @@ class uvme_cv32e40x_vp_fencei_tamper_seq_c extends uvma_obi_memory_vp_base_seq_c
   extern function new(string name="uvme_cv32e40x_vp_fencei_tamper_seq_c");
   extern virtual task vp_body(uvma_obi_memory_mon_trn_c mon_trn);
   extern virtual function int unsigned get_num_words();
+  extern virtual task body();
 
 endclass : uvme_cv32e40x_vp_fencei_tamper_seq_c
 
@@ -61,6 +62,30 @@ function int unsigned uvme_cv32e40x_vp_fencei_tamper_seq_c::get_num_words();
    return 2;
 
 endfunction : get_num_words
+
+
+task uvme_cv32e40x_vp_fencei_tamper_seq_c::body();
+
+  if (cv32e40x_cntxt == null) begin
+    `uvm_fatal("E40XVPSTATUS", "Must initialize cv32e40x_cntxt in virtual peripheral");
+  end
+  if (cv32e40x_cntxt.fencei_cntxt == null) begin
+    `uvm_fatal("E40XVPSTATUS", "Must initialize fencei_cntxt in virtual peripheral");
+  end
+  if (cv32e40x_cntxt.fencei_cntxt.fencei_vif == null) begin
+    `uvm_fatal("E40XVPSTATUS", "Must initialize fencei_vif in virtual peripheral");
+  end
+
+  fork
+    while (1) begin
+      @(posedge cv32e40x_cntxt.fencei_cntxt.fencei_vif.flush_req);
+      $display("TODO body fencei req, at", $time);
+    end
+  join_none
+
+  super.body();
+
+endtask : body
 
 
 `endif // __UVME_OBI_MEMORY_VP_FENCEI_TAMPER_SEQ_SV__
