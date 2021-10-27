@@ -482,6 +482,14 @@ function void uvme_cv32e40x_env_c::install_vp_register_seqs(uvma_obi_memory_slv_
       vp_seq.cv32e40x_cntxt = cntxt;
    end
 
+   begin
+      uvme_cv32e40x_vp_fencei_tamper_seq_c vp_seq;
+      if (!$cast(vp_seq, data_slv_seq.register_vp_vseq("vp_fencei_tamper", CV_VP_FENCEI_TAMPER_BASE, uvme_cv32e40x_vp_fencei_tamper_seq_c::get_type()))) begin
+         `uvm_fatal("CV32E40XVPSEQ", $sformatf("Could not cast vp_fencei_tamper correctly"));
+      end
+      vp_seq.cv32e40x_cntxt = cntxt;
+   end
+
 endfunction : install_vp_register_seqs
 
 `endif // __UVME_CV32E40X_ENV_SV__
