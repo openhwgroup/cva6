@@ -29,6 +29,7 @@ module uvmt_cv32e40x_fencei_assert
   input        wb_instr_valid,
   input        wb_fencei_insn,
   input [31:0] wb_pc,
+  input [31:0] wb_rdata,
 
   input        instr_req_o,
   input [31:0] instr_addr_o,
@@ -65,7 +66,9 @@ module uvmt_cv32e40x_fencei_assert
     $rose(is_fencei_in_wb)
     |->
     !wb_valid throughout (
-      (is_fencei_in_wb && !$rose(fencei_flush_req_o)) [*1:$]
+      ($rose(fencei_flush_req_o) [->1])
+      or
+      ($fell(is_fencei_in_wb) [->1])
     )
   ) else `uvm_error(info_tag, "fencei shall not retire without seeing a rising flush req");
 
@@ -143,5 +146,64 @@ module uvmt_cv32e40x_fencei_assert
       ##1 (data_req_o && data_gnt_i) [->1]
     )
   ) else `uvm_error(info_tag, "flush req shall not come if rvalid is awaited");
+
+  c_req_wait_obi: cover property (
+    $rose(is_fencei_in_wb)
+    ##1 (is_fencei_in_wb throughout ($rose(data_rvalid_i) [->1]))
+    ##0 (is_fencei_in_wb throughout ($rose(fencei_flush_req_o) [->1]))
+  );
+
+  for (genvar i = 1; i <= 5; i++) begin: gen_ack_delayed
+    // "5" is an appropriate arbitrary upper limit
+    c_ack_delayed: cover property (
+      $rose(fencei_flush_req_o)
+      ##0 (!fencei_flush_ack_i) [*i]
+      ##1 fencei_flush_ack_i
+    );
+  end
+
+  covergroup cg_reqack(string name) @(posedge clk_i);
+    option.per_instance = 1;
+    option.name = name;
+
+    cp_req: coverpoint fencei_flush_req_o {
+      bins hi = {1};
+      bins lo = {0};
+      bins rose = (0 => 1);
+      bins fell = (1 => 0);
+    }
+    cp_ack: coverpoint fencei_flush_ack_i {
+      bins hi = {1};
+      bins lo = {0};
+      bins rose = (0 => 1);
+      bins fell = (1 => 0);
+    }
+    cross_req_ack: cross cp_req, cp_ack {
+      illegal_bins il = binsof(cp_req.fell) && binsof(cp_ack.rose);
+    }
+  endgroup
+  cg_reqack reqack_cg = new("reqack");
+
+  c_no_retire: cover property (
+    $rose(is_fencei_in_wb)
+    ##0 (!wb_valid throughout ($fell(is_fencei_in_wb) [->1]))
+  );
+
+  covergroup cg_reserved(string name) @(posedge clk_i);
+    option.per_instance = 1;
+    option.name = name;
+
+    // Just a handfull of different values for reserved to-be-ignored fields
+    cp_imm: coverpoint wb_rdata[31:20] iff (is_fencei_in_wb && wb_valid) {
+      bins b[4] = {[0:$]};
+    }
+    cp_rs1: coverpoint wb_rdata[19:15] iff (is_fencei_in_wb && wb_valid) {
+      bins b[4] = {[0:$]};
+    }
+    cp_rd: coverpoint wb_rdata[11:7] iff (is_fencei_in_wb && wb_valid) {
+      bins b[4] = {[0:$]};
+    }
+  endgroup
+  cg_reserved reserved_cg = new("reserved");
 
 endmodule : uvmt_cv32e40x_fencei_assert
