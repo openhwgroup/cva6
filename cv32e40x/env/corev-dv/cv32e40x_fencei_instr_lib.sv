@@ -239,10 +239,10 @@ endclass : corev_store_fencei_exec_instr_stream
 
 
 // vp_fencei_exec:
-// 1) Configures and enables the fencei-triggered memory-changing vp.
-// 2) Runs a bunch of random instruction with a fence.i somewhere in between.
-// 3) Lets vp do its thing.
-// 4) Disables vp.
+// 1) Configures and enables the fencei-triggered memory-changing vp (instr_list_pre).
+// 2) Runs a bunch of random instruction with a fence.i somewhere in between (instr_list).
+// 3) (Lets vp do its thing).
+// 4) Disables vp (instr_list_post).
 class corev_vp_fencei_exec_instr_stream extends riscv_load_store_rand_instr_stream;
 
   static int       idx_label;
@@ -295,6 +295,7 @@ class corev_vp_fencei_exec_instr_stream extends riscv_load_store_rand_instr_stre
     // Mark the first instruction as the dummy instr to use later
     instr_list[0].comment = "vp_fencei_exec: dummy";
     instr_list[0].label = label_dummy;
+    instr_list[0].atomic = 1;
 
 
     // Configure the vp addr register
@@ -322,7 +323,7 @@ class corev_vp_fencei_exec_instr_stream extends riscv_load_store_rand_instr_stre
     instr.comment = "vp_fencei_exec: +4";
     instr_list_pre.push_back(instr);
 
-    // Load the addr of the vp's addr register
+    // Load the addr of the vp's register base
     pseudo = riscv_pseudo_instr::type_id::create("LI");
     `DV_CHECK_RANDOMIZE_WITH_FATAL(pseudo,
       pseudo_instr_name == LI;
@@ -348,7 +349,51 @@ class corev_vp_fencei_exec_instr_stream extends riscv_load_store_rand_instr_stre
 
     // Configure the vp data register
 
-    // TODO configure vp data (beginning)
+    // Load address of dummy instruction
+    pseudo = riscv_pseudo_instr::type_id::create("LA");
+    `DV_CHECK_RANDOMIZE_WITH_FATAL(pseudo,
+      pseudo_instr_name == LA;
+      rd == tmp_reg;
+      , "failed to randomize LA, dummy"
+    )
+    pseudo.imm_str = label_dummy;
+    pseudo.comment = "vp_fencei_exec: la dummy";
+    instr_list_pre.push_back(pseudo);
+
+    // Load data of dummy instruction
+    instr = riscv_instr::get_instr(LW);
+    `DV_CHECK_RANDOMIZE_WITH_FATAL(instr,
+      instr_name == LW;
+      rs1 == tmp_reg;
+      imm == 0;
+      rd == tmp_reg;
+      , "failed to randomize LW for dummy instruction"
+    )
+    instr.comment = "vp_fencei_exec: lw dummy";
+    instr_list_pre.push_back(instr);
+
+    // Load the addr of the vp's register base
+    pseudo = riscv_pseudo_instr::type_id::create("LI");
+    `DV_CHECK_RANDOMIZE_WITH_FATAL(pseudo,
+      pseudo_instr_name == LI;
+      rd == vp_reg;
+      , "failed to randomize LI, data"
+    )
+    //TODO pseudo.imm_str = CV_VP_FENCEI_TAMPER_BASE;
+    pseudo.comment = "vp_fencei_exec: LI vp reg base";
+    instr_list_pre.push_back(pseudo);
+
+    // Store the data in the vp's data register
+    instr = riscv_instr::get_instr(SW);
+    `DV_CHECK_RANDOMIZE_WITH_FATAL(instr,
+      instr_name == SW;
+      rs1 == vp_reg;  // addr of mem to put in
+      rs2 == tmp_reg;  // data to put in mem
+      imm == 8;  // 8, to access reg 2 of vp, namely "data"
+      , "failed to randomize SW"
+    )
+    instr.comment = "vp_fencei_exec: dummy -> vpdata";
+    instr_list_pre.push_back(instr);
 
 
     // Enable vp before running the random instructions
