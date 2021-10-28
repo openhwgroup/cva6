@@ -130,7 +130,6 @@ int main(void) {
     : "i"(VP_DATA_ADDR), "i"(VP_ADDR_ADDR), "i"(VP_ENAB_ADDR));
   assert_or_die(reg0, 222, "env should have swapped the exec instruction\n");
   *vp_enab_ptr = 0;  // Disable vp
-  //TODO
 
   return EXIT_SUCCESS;
 }

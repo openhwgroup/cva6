@@ -21,10 +21,12 @@
 
 class uvme_cv32e40x_vp_fencei_tamper_seq_c extends uvma_obi_memory_vp_base_seq_c;
 
-  uvme_cv32e40x_cntxt_c cv32e40x_cntxt;
-  bit                   enabled = 0;
-  bit [31:0]            addr;
-  bit [31:0]            data;
+  uvme_cv32e40x_cntxt_c    cv32e40x_cntxt;
+  uvma_rvvi_ovpsim_cntxt_c rvvi_ovpsim_cntxt;
+
+  bit        enabled = 0;
+  bit [31:0] addr;
+  bit [31:0] data;
 
   `uvm_object_utils(uvme_cv32e40x_vp_fencei_tamper_seq_c)
 
@@ -32,6 +34,8 @@ class uvme_cv32e40x_vp_fencei_tamper_seq_c extends uvma_obi_memory_vp_base_seq_c
   extern virtual task vp_body(uvma_obi_memory_mon_trn_c mon_trn);
   extern virtual function int unsigned get_num_words();
   extern virtual task body();
+  extern function void write_rtl_mem();
+  extern function void write_iss_mem();
 
 endclass : uvme_cv32e40x_vp_fencei_tamper_seq_c
 
@@ -92,16 +96,20 @@ task uvme_cv32e40x_vp_fencei_tamper_seq_c::body();
   if (cv32e40x_cntxt.fencei_cntxt.fencei_vif == null) begin
     `uvm_fatal("E40XVPSTATUS", "Must initialize fencei_vif in virtual peripheral");
   end
+  if (cv32e40x_cntxt.rvvi_cntxt == null) begin
+    `uvm_fatal("E40XVPSTATUS", "Must initialize rvvi_cntxt in virtual peripheral");
+  end
+  if (!$cast(rvvi_ovpsim_cntxt, cv32e40x_cntxt.rvvi_cntxt)) begin
+    `uvm_fatal("E40XVPSTATUS", "Could not cast rvvi_cntxt to rvvi_ovpsim_cntxt");
+  end
 
   fork
     while (1) begin
       @(posedge cv32e40x_cntxt.fencei_cntxt.fencei_vif.flush_req);
       if (enabled) begin
-        cntxt.mem.write((addr + 0), data[ 7: 0]);
-        cntxt.mem.write((addr + 1), data[15: 8]);
-        cntxt.mem.write((addr + 2), data[23:16]);
-        cntxt.mem.write((addr + 3), data[31:24]);
         $display("TODO body fencei req: time=%0t enab=%d addr=0x%08x data=0x%08x", $time, enabled, addr, data);
+        write_rtl_mem();
+        write_iss_mem();
       end
     end
   join_none
@@ -109,6 +117,66 @@ task uvme_cv32e40x_vp_fencei_tamper_seq_c::body();
   super.body();
 
 endtask : body
+
+
+function void uvme_cv32e40x_vp_fencei_tamper_seq_c::write_rtl_mem();
+
+  cntxt.mem.write((addr + 0), data[ 7: 0]);
+  cntxt.mem.write((addr + 1), data[15: 8]);
+  cntxt.mem.write((addr + 2), data[23:16]);
+  cntxt.mem.write((addr + 3), data[31:24]);
+
+endfunction : write_rtl_mem
+
+
+function void uvme_cv32e40x_vp_fencei_tamper_seq_c::write_iss_mem();
+
+  logic [31:0] addr_lo;
+  logic [31:0] addr_hi;
+  int          shamt_lo;
+  int          shamt_hi;
+  logic [31:0] shdata_lo;
+  logic [31:0] shdata_hi;
+  logic [31:0] issmask_lo;
+  logic [31:0] issmask_hi;
+  logic [31:0] issdata_lo;
+  logic [31:0] issdata_hi;
+  logic [31:0] data_lo;
+  logic [31:0] data_hi;
+
+  //TODO:ropeders if (!issenabled) return;?
+
+  // Calculate iss ram addresses
+  addr_lo = addr >> 2;
+  addr_hi = (addr + 4) >> 2;
+
+  // Shift the data to be written
+  shamt_lo = addr[1:0] * 8;
+  shamt_hi = (4 * 8) - shamt_lo;
+  shdata_lo = data >> shamt_lo;
+  shdata_hi = data << shamt_hi;
+$display("TODO shlo=0x%08x shhi=0x%08x shdalo=0x%08x shdahi=0x%08x", shamt_lo, shamt_hi, shdata_lo, shdata_hi);
+
+  // Mask the existing data
+  issmask_lo = 32'h FFFF_FFFF << shamt_hi;
+  issmask_hi = 32'h FFFF_FFFF >> shamt_lo;
+  issdata_lo = rvvi_ovpsim_cntxt.ovpsim_mem_vif.mem[addr_lo] & issmask_lo;
+  issdata_hi = rvvi_ovpsim_cntxt.ovpsim_mem_vif.mem[addr_hi] & issmask_hi;
+
+  // Calculate iss ram data
+  data_lo = shdata_lo | issdata_lo;
+  data_hi = shdata_hi | issdata_hi;
+
+  // Write to iss ram
+$display("TODO write_iss_mem: addr=0x%08x/0x%08x data=0x%08x/0x%08x (before)", addr_lo, addr_hi,
+rvvi_ovpsim_cntxt.ovpsim_mem_vif.mem[addr_lo], rvvi_ovpsim_cntxt.ovpsim_mem_vif.mem[addr_hi]);
+  rvvi_ovpsim_cntxt.ovpsim_mem_vif.mem[addr_lo] = data_lo;
+  rvvi_ovpsim_cntxt.ovpsim_mem_vif.mem[addr_hi] = data_hi;
+$display("TODO write_iss_mem: addr=0x%08x/0x%08x data=0x%08x/0x%08x (after)", addr_lo, addr_hi, data_lo, data_hi);
+
+  //TODO:ropeders this function could be in an agent/cntxt?
+
+endfunction : write_iss_mem
 
 
 `endif // __UVME_OBI_MEMORY_VP_FENCEI_TAMPER_SEQ_SV__
