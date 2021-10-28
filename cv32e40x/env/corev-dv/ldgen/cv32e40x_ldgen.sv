@@ -47,7 +47,7 @@ import cv32e40x_pkg::pma_region_t;
     parameter RAM_ORIGIN           = 32'h0000_0000;
     parameter RAM_LENGTH           = 32'h40_0000;
     parameter BOOT_ADDR            = 32'h80;
-    parameter NMI_ADDR             = 32'h30CAFE;
+    parameter NMI_ADDR             = 32'h0010_0000;
     parameter MTVEC_ADDR           = 32'h0000_0000;
     parameter DEBUG_ORIGIN         = 32'h1A11_0800;
     parameter DEBUG_EXCEPTION_ADDR = 32'h1A11_1000;
