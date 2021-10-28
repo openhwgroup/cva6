@@ -242,6 +242,8 @@ endclass : corev_store_fencei_exec_instr_stream
 // TODO
 class corev_vp_fencei_exec_instr_stream extends riscv_load_store_rand_instr_stream;
 
+  static int idx_label;
+
   `uvm_object_utils(corev_vp_fencei_exec_instr_stream)
 
   function new(string name = "");
@@ -249,7 +251,54 @@ class corev_vp_fencei_exec_instr_stream extends riscv_load_store_rand_instr_stre
   endfunction : new
 
   function void post_randomize();
-    riscv_instr  instr;
+    riscv_instr        instr;
+    riscv_pseudo_instr pseudo;
+    string             label_fencei;
+    string             label_dummy;
+
+    // Calculate labels with right index
+    label_fencei = $sformatf("vp_fencei_exec__fencei_%0d", idx_label);
+    label_dummy = $sformatf("vp_fencei_exec__dummy_%0d", idx_label);
+    idx_label++;
+
+    // Generate a default big chunk of instructions as a "substrate" to work on
+    super.post_randomize();
+
+    // Add a fence.i to a random location
+    instr = riscv_instr::get_instr(FENCE_I);
+    instr.comment = "vp_fencei_exec: fencei";
+    instr.label = label_fencei;
+    insert_instr(instr, $urandom_range(0, instr_list.size() - 1));
+
+    // Mark the instruction following the fencei as the target for vp configuration
+    //TODO?
+
+    // Mark the first instruction as the target for vp configuration
+    instr_list[0].comment = "vp_fencei_exec: dummy";
+    instr_list[0].label = label_dummy;
+
+    // Configure the vp addr
+    // TODO configure vp addr (beginning)
+/*
+    pseudo = riscv_pseudo_instr::type_id::create("LA");
+    `DV_CHECK_RANDOMIZE_WITH_FATAL(pseudo,
+      pseudo_instr_name == LA;
+      rd == addr_reg;
+      , "failed to randomize LA for exec instruction"
+    )
+    pseudo.imm_str = label_exec;
+    pseudo.comment = "store_fencei_exec: la exec";
+    instr_list.push_back(pseudo);
+*/
+
+    // Configure the vp data
+    // TODO configure vp data (beginning)
+
+    // Enable vp before running the random instructions
+    //TODO enable vp (beginning)
+
+    // Disable vp when done
+    //TODO disable vp (end)
   endfunction : post_randomize
 
 endclass : corev_vp_fencei_exec_instr_stream
