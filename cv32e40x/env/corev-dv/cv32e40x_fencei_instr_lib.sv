@@ -236,3 +236,20 @@ class corev_store_fencei_exec_instr_stream extends riscv_load_store_rand_instr_s
   endfunction : post_randomize
 
 endclass : corev_store_fencei_exec_instr_stream
+
+
+// vp_fencei_exec:
+// TODO
+class corev_vp_fencei_exec_instr_stream extends riscv_load_store_rand_instr_stream;
+
+  `uvm_object_utils(corev_vp_fencei_exec_instr_stream)
+
+  function new(string name = "");
+    super.new(name);
+  endfunction : new
+
+  function void post_randomize();
+    riscv_instr  instr;
+  endfunction : post_randomize
+
+endclass : corev_vp_fencei_exec_instr_stream
