@@ -196,6 +196,11 @@ task uvma_rvfi_instr_mon_c::monitor_rvfi_instr();
             end
          end
 
+         // In debug mode, detect NMIP event
+         if (cfg.nmi_handler_enabled && mon_trn.csrs["dcsr"].wmask[3] && mon_trn.csrs["dcsr"].wdata[3]) begin
+            mon_trn.insn_nmi = 1;
+         end
+
          // Detect instruction bus fault
          if (cfg.insn_bus_fault_enabled &&
              mon_trn.trap &&
