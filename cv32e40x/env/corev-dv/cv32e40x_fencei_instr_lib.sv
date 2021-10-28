@@ -239,10 +239,29 @@ endclass : corev_store_fencei_exec_instr_stream
 
 
 // vp_fencei_exec:
-// TODO
+// 1) Configures and enables the fencei-triggered memory-changing vp.
+// 2) Runs a bunch of random instruction with a fence.i somewhere in between.
+// 3) Lets vp do its thing.
+// 4) Disables vp.
 class corev_vp_fencei_exec_instr_stream extends riscv_load_store_rand_instr_stream;
 
-  static int idx_label;
+  static int       idx_label;
+  rand riscv_reg_t vp_reg;
+  rand riscv_reg_t tmp_reg;
+  riscv_instr      instr_list_pre[$];
+  riscv_instr      instr_list_post[$];
+
+  constraint dont_overwrite_regs {
+    vp_reg != tmp_reg;  // Don't overwrite the data that is to be written
+  }
+  constraint dont_pollute_reserved_regs {
+    !(vp_reg inside {cfg.reserved_regs});
+    !(tmp_reg inside {cfg.reserved_regs});
+  }
+  constraint dont_store_in_x0 {
+    vp_reg != ZERO;
+    tmp_reg != ZERO;
+  }
 
   `uvm_object_utils(corev_vp_fencei_exec_instr_stream)
 
@@ -261,44 +280,100 @@ class corev_vp_fencei_exec_instr_stream extends riscv_load_store_rand_instr_stre
     label_dummy = $sformatf("vp_fencei_exec__dummy_%0d", idx_label);
     idx_label++;
 
+
+    // Generate the random code to be executed
+
     // Generate a default big chunk of instructions as a "substrate" to work on
     super.post_randomize();
 
-    // Add a fence.i to a random location
+    // Add a fence.i to a random location, and label it
     instr = riscv_instr::get_instr(FENCE_I);
     instr.comment = "vp_fencei_exec: fencei";
     instr.label = label_fencei;
     insert_instr(instr, $urandom_range(0, instr_list.size() - 1));
 
-    // Mark the instruction following the fencei as the target for vp configuration
-    //TODO?
-
-    // Mark the first instruction as the target for vp configuration
+    // Mark the first instruction as the dummy instr to use later
     instr_list[0].comment = "vp_fencei_exec: dummy";
     instr_list[0].label = label_dummy;
 
-    // Configure the vp addr
-    // TODO configure vp addr (beginning)
-/*
+
+    // Configure the vp addr register
+
+    // Load addr of fencei
     pseudo = riscv_pseudo_instr::type_id::create("LA");
     `DV_CHECK_RANDOMIZE_WITH_FATAL(pseudo,
       pseudo_instr_name == LA;
-      rd == addr_reg;
-      , "failed to randomize LA for exec instruction"
+      rd == tmp_reg;
+      , "failed to randomize LA"
     )
-    pseudo.imm_str = label_exec;
-    pseudo.comment = "store_fencei_exec: la exec";
-    instr_list.push_back(pseudo);
-*/
+    pseudo.imm_str = label_fencei;
+    pseudo.comment = "vp_fencei_exec: la fencei";
+    instr_list_pre.push_back(pseudo);
 
-    // Configure the vp data
+    // Add 4 to get the addr of the instr following fencei
+    instr = riscv_instr::get_instr(ADDI);
+    `DV_CHECK_RANDOMIZE_WITH_FATAL(instr,
+      instr_name == ADDI;
+      rs1 == tmp_reg;
+      rd == tmp_reg;
+      imm == 4;
+      , "failed to randomize addi 4"
+    )
+    instr.comment = "vp_fencei_exec: +4";
+    instr_list_pre.push_back(instr);
+
+    // Load the addr of the vp's addr register
+    pseudo = riscv_pseudo_instr::type_id::create("LI");
+    `DV_CHECK_RANDOMIZE_WITH_FATAL(pseudo,
+      pseudo_instr_name == LI;
+      rd == vp_reg;
+      , "failed to randomize LI"
+    )
+    //TODO pseudo.imm_str = CV_VP_FENCEI_TAMPER_BASE;
+    pseudo.comment = "vp_fencei_exec: LI vp addr reg addr";
+    instr_list_pre.push_back(pseudo);
+
+    // Store the addr in the vp's addr register
+    instr = riscv_instr::get_instr(SW);
+    `DV_CHECK_RANDOMIZE_WITH_FATAL(instr,
+      instr_name == SW;
+      rs1 == vp_reg;  // addr of mem to put in
+      rs2 == tmp_reg;  // data to put in mem
+      imm == 4;  // 4, to access reg 1 of vp, namely "addr"
+      , "failed to randomize SW"
+    )
+    instr.comment = "vp_fencei_exec: fencei+4 -> vpaddr";
+    instr_list_pre.push_back(instr);
+
+
+    // Configure the vp data register
+
     // TODO configure vp data (beginning)
 
+
     // Enable vp before running the random instructions
+
     //TODO enable vp (beginning)
 
+
     // Disable vp when done
+
     //TODO disable vp (end)
+
+
+    // Combine the final instr list
+
+    instr_list = {instr_list_pre, instr_list, instr_list_post};
+
+
+    // Get a nice enumeration label for anything not labeled
+
+    foreach (instr_list[i]) begin
+      instr_list[i].atomic = 1;
+      if (instr_list[i].label == "") begin
+        instr_list[i].label = $sformatf("%0d", i);
+      end
+    end
   endfunction : post_randomize
 
 endclass : corev_vp_fencei_exec_instr_stream
