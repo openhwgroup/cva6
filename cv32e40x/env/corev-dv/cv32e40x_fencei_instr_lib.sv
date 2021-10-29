@@ -297,8 +297,8 @@ class corev_vp_fencei_exec_instr_stream extends riscv_load_store_rand_instr_stre
     instr.comment = "vp_fencei_exec: fencei";
     instr.label = label_fencei;
     idx_fencei = $urandom_range(0, instr_list.size() - 1);
-    while(instr_list[idx_fencei].group == RV32C) begin  //TODO:ropeders or non RVC than can be optimized to RVC?
-      // Note: Could allow replacement of RVC, but that requires more accommodations
+    while(is_16bit(instr_list[idx_fencei])) begin
+      // Note: Could allow 16bit instrs, but that requires more accommodations
       idx_fencei++;
       if (idx_fencei == instr_list.size()) begin
         idx_fencei = 0;
@@ -308,6 +308,7 @@ class corev_vp_fencei_exec_instr_stream extends riscv_load_store_rand_instr_stre
 
     // Add a dummy instr at the top
     instr = riscv_instr::get_rand_instr(
+      .exclude_instr({NOP}),
       .include_category({LOAD, SHIFT, ARITHMETIC, LOGICAL, COMPARE, SYNCH}),
       .exclude_group({RV32C}));
     `DV_CHECK_RANDOMIZE_WITH_FATAL(instr,
@@ -315,6 +316,7 @@ class corev_vp_fencei_exec_instr_stream extends riscv_load_store_rand_instr_stre
         // Note: Several of the constraints could be relaxed, but it turns really complicated
       !(rd inside {cfg.reserved_regs});
       !((rd == ZERO) && (instr_name inside {ADDI, C_ADDI}));
+      instr_name != NOP;
       , "failed to randomize dummy instruction"
     )
     instr.comment = "vp_fencei_exec: dummy";
@@ -497,5 +499,13 @@ class corev_vp_fencei_exec_instr_stream extends riscv_load_store_rand_instr_stre
       end
     end
   endfunction : post_randomize
+
+  function logic is_16bit(riscv_instr instr);
+    return (
+      (instr.group == RV32C)
+      || (instr.instr_name == NOP)
+      || ((instr.rd == ZERO) && (instr.instr_name inside {ADDI, C_ADDI}))
+      );
+  endfunction : is_16bit
 
 endclass : corev_vp_fencei_exec_instr_stream

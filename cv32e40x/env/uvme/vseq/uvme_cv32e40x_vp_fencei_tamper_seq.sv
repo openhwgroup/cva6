@@ -58,16 +58,8 @@ task uvme_cv32e40x_vp_fencei_tamper_seq_c::vp_body(uvma_obi_memory_mon_trn_c mon
   if (mon_trn.access_type == UVMA_OBI_MEMORY_ACCESS_WRITE) begin
     case (get_vp_index(mon_trn))
       0: enabled = | mon_trn.data;
-      //1: addr = mon_trn.data;
-      1: begin
-        addr = mon_trn.data;
-        $display("TODO wrote addr: 0x%08x", mon_trn.data, $time);
-      end
-      //2: data = mon_trn.data;
-      2: begin
-        data = mon_trn.data;
-        $display("TODO wrote data: 0x%08x", mon_trn.data, $time);
-      end
+      1: addr = mon_trn.data;
+      2: data = mon_trn.data;
     endcase
   end
 
@@ -107,7 +99,7 @@ task uvme_cv32e40x_vp_fencei_tamper_seq_c::body();
     while (1) begin
       @(posedge cv32e40x_cntxt.fencei_cntxt.fencei_vif.flush_req);
       if (enabled) begin
-        $display("TODO body fencei req: time=%0t enab=%d addr=0x%08x data=0x%08x", $time, enabled, addr, data);
+$display("TODO body fencei req: time=%0t enab=%d addr=0x%08x data=0x%08x", $time, enabled, addr, data);
         write_rtl_mem();
         write_iss_mem();
       end
@@ -155,7 +147,6 @@ function void uvme_cv32e40x_vp_fencei_tamper_seq_c::write_iss_mem();
   shamt_hi = (4 * 8) - shamt_lo;
   shdata_lo = data << shamt_lo;
   shdata_hi = data >> shamt_hi;
-$display("TODO shlo=0x%08x shhi=0x%08x shdalo=0x%08x shdahi=0x%08x", shamt_lo, shamt_hi, shdata_lo, shdata_hi);
 
   // Mask the existing data
   issmask_lo = 32'h FFFF_FFFF >> shamt_hi;
@@ -168,11 +159,8 @@ $display("TODO shlo=0x%08x shhi=0x%08x shdalo=0x%08x shdahi=0x%08x", shamt_lo, s
   data_hi = shdata_hi | issdata_hi;
 
   // Write to iss ram
-$display("TODO write_iss_mem: addr=0x%08x/0x%08x data=0x%08x/0x%08x (before)", addr_lo, addr_hi,
-rvvi_ovpsim_cntxt.ovpsim_mem_vif.mem[addr_lo], rvvi_ovpsim_cntxt.ovpsim_mem_vif.mem[addr_hi]);
   rvvi_ovpsim_cntxt.ovpsim_mem_vif.mem[addr_lo] = data_lo;
   rvvi_ovpsim_cntxt.ovpsim_mem_vif.mem[addr_hi] = data_hi;
-$display("TODO write_iss_mem: addr=0x%08x/0x%08x data=0x%08x/0x%08x (after)", addr_lo, addr_hi, data_lo, data_hi);
 
   //TODO:ropeders this function could be in an agent/cntxt?
 
