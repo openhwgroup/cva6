@@ -283,7 +283,7 @@ PULP_YES         = $(call IS_YES,$(PULP))
 COREV_YES        = $(call IS_YES,$(COREV))
 LLVM_YES         = $(call IS_YES,$(LLVM))
 
-ifeq ($(shell $(CORE_V_VERIF)/mk/toolchain_check.mk $(GNU_YES) $(PULP_YES) $(COREV_YES) $(LLVM_YES)),1)
+ifeq ($(shell $(CORE_V_VERIF)/mk/toolchain_check.sh $(GNU_YES) $(PULP_YES) $(COREV_YES) $(LLVM_YES)),1)
 $(error Multiple toolchains are enabled: GNU=${GNU_YES} PULP=${PULP_YES} COREV=${COREV_YES} LLVM=${LLVM_YES})
 endif
 
