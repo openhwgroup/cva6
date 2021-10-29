@@ -279,6 +279,7 @@ class corev_vp_fencei_exec_instr_stream extends riscv_load_store_rand_instr_stre
     riscv_pseudo_instr pseudo;
     string             label_fencei;
     string             label_dummy;
+    int                idx_fencei;
 
     // Calculate labels with right index
     label_fencei = $sformatf("vp_fencei_exec__fencei_%0d", idx_label);
@@ -295,7 +296,15 @@ class corev_vp_fencei_exec_instr_stream extends riscv_load_store_rand_instr_stre
     instr = riscv_instr::get_instr(FENCE_I);
     instr.comment = "vp_fencei_exec: fencei";
     instr.label = label_fencei;
-    insert_instr(instr, $urandom_range(0, instr_list.size() - 1));
+    idx_fencei = $urandom_range(0, instr_list.size() - 1);
+    while(instr_list[idx_fencei].group == RV32C) begin  //TODO:ropeders or non RVC than can be optimized to RVC?
+      // Note: Could allow replacement of RVC, but that requires more accommodations
+      idx_fencei++;
+      if (idx_fencei == instr_list.size()) begin
+        idx_fencei = 0;
+      end
+    end
+    instr_list.insert(idx_fencei, instr);
 
     // Add a dummy instr at the top
     instr = riscv_instr::get_rand_instr(
