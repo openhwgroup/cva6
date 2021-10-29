@@ -357,13 +357,6 @@ tests:
     dir: cv32e40x/sim/uvmt
     cmd: make test TEST=debug_test_trigger
 
-  debug_test_known_miscompares:
-    build: uvmt_cv32e40x
-    description: Debug test which contains known miscompares
-    dir: cv32e40x/sim/uvmt
-    cmd: make test TEST=debug_test_known_miscompares
-    iss: 0
-
   debug_test_boot_set:
     build: uvmt_cv32e40x
     description: Debug test target debug_req at BOOT_SET
