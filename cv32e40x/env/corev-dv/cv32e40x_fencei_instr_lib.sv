@@ -291,17 +291,26 @@ class corev_vp_fencei_exec_instr_stream extends riscv_load_store_rand_instr_stre
     // Generate a default big chunk of instructions as a "substrate" to work on
     super.post_randomize();
 
-    // Mark the first instruction as the dummy instr to use later
-    instr_list[0].comment = "vp_fencei_exec: dummy";
-    instr_list[0].label = label_dummy;
-    instr_list[0].atomic = 1;
-    //TODO:ropeders have to generate a dummy manually if this label refuses to show in assembly
-
     // Add a fence.i to a random location, and label it
     instr = riscv_instr::get_instr(FENCE_I);
     instr.comment = "vp_fencei_exec: fencei";
     instr.label = label_fencei;
     insert_instr(instr, $urandom_range(0, instr_list.size() - 1));
+
+    // Add a dummy instr at the top
+    instr = riscv_instr::get_rand_instr(
+      .include_category({LOAD, SHIFT, ARITHMETIC, LOGICAL, COMPARE, SYNCH}),
+      .exclude_group({RV32C}));
+    `DV_CHECK_RANDOMIZE_WITH_FATAL(instr,
+      (category inside {LOAD, SHIFT, ARITHMETIC, LOGICAL, COMPARE, SYNCH});
+        // Note: Several of the constraints could be relaxed, but it turns really complicated
+      !(rd inside {cfg.reserved_regs});
+      !((rd == ZERO) && (instr_name inside {ADDI, C_ADDI}));
+      , "failed to randomize dummy instruction"
+    )
+    instr.comment = "vp_fencei_exec: dummy";
+    instr.label = label_dummy;
+    instr_list.push_front(instr);
 
 
     // Configure the vp addr register
