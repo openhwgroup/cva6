@@ -251,6 +251,11 @@ class corev_vp_fencei_exec_instr_stream extends riscv_load_store_rand_instr_stre
   riscv_instr      instr_list_pre[$];
   riscv_instr      instr_list_post[$];
 
+  localparam CV_VP_REGISTER_BASE = 32'h 00800000;
+  localparam CV_VP_FENCEI_TAMPER_OFFSET = 32'h 00000100;
+  localparam CV_VP_FENCEI_TAMPER_BASE = (CV_VP_REGISTER_BASE + CV_VP_FENCEI_TAMPER_OFFSET);
+  // Note: Would preferably be from uvme_cv32e40x_pkg, which is seemingly not easily available in core-v compilation
+
   constraint dont_overwrite_regs {
     vp_reg != tmp_reg;  // Don't overwrite the data that is to be written
   }
@@ -331,7 +336,7 @@ class corev_vp_fencei_exec_instr_stream extends riscv_load_store_rand_instr_stre
       rd == vp_reg;
       , "failed to randomize LI"
     )
-    //TODO pseudo.imm_str = CV_VP_FENCEI_TAMPER_BASE;
+    pseudo.imm_str = $sformatf("0x%08x", CV_VP_FENCEI_TAMPER_BASE);
     pseudo.comment = "vp_fencei_exec: LI vp addr reg addr";
     instr_list_pre.push_back(pseudo);
 
@@ -380,7 +385,7 @@ class corev_vp_fencei_exec_instr_stream extends riscv_load_store_rand_instr_stre
       rd == vp_reg;
       , "failed to randomize LI, data"
     )
-    //TODO pseudo.imm_str = CV_VP_FENCEI_TAMPER_BASE;
+    pseudo.imm_str = $sformatf("0x%08x", CV_VP_FENCEI_TAMPER_BASE);
     pseudo.comment = "vp_fencei_exec: LI vp reg base";
     instr_list_pre.push_back(pseudo);
 
@@ -417,7 +422,7 @@ class corev_vp_fencei_exec_instr_stream extends riscv_load_store_rand_instr_stre
       rd == vp_reg;
       , "failed to randomize LI, enab"
     )
-    //TODO pseudo.imm_str = CV_VP_FENCEI_TAMPER_BASE;
+    pseudo.imm_str = $sformatf("0x%08x", CV_VP_FENCEI_TAMPER_BASE);
     pseudo.comment = "vp_fencei_exec: LI vp reg base";
     instr_list_pre.push_back(pseudo);
 
@@ -443,7 +448,7 @@ class corev_vp_fencei_exec_instr_stream extends riscv_load_store_rand_instr_stre
       rd == vp_reg;
       , "failed to randomize LI, disab"
     )
-    //TODO pseudo.imm_str = CV_VP_FENCEI_TAMPER_BASE;
+    pseudo.imm_str = $sformatf("0x%08x", CV_VP_FENCEI_TAMPER_BASE);
     pseudo.comment = "vp_fencei_exec: LI vp reg base";
     instr_list_post.push_back(pseudo);
 
