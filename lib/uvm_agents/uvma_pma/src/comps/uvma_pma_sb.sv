@@ -347,12 +347,6 @@ endfunction : check_obi_d_default_region
 
 function void uvma_pma_sb_c::check_obi_d_mapped_region(uvma_obi_memory_mon_trn_c obi, int index);
 
-   // Check: Must be main memory
-   if (!cfg.regions[index].main) begin
-      `uvm_error("PMAOBID", $sformatf("OBI D %s address: 0x%08x, region: %0d  instruction fetch from I/O memory",
-                                       obi.access_type.name(), obi.address, index));
-   end
-
    // Check: Cacheable bit must match mem_type[0] in OBI
    if (obi.memtype[UVMA_OBI_MEMORY_MEMTYPE_BUFFERABLE_BIT] != cfg.regions[index].bufferable) begin
       `uvm_error("PMAOBID", $sformatf("OBI D %s address: 0x%08x, region: %0d bufferable bit mismatch, OBI: %0d, PMA: %0d",

@@ -152,8 +152,6 @@ task uvma_rvvi_ovpsim_drv_c::stepi(REQ req);
       // Map interrupt ID to RVVI IO fault signal
       // If we are in debug mode, then use the mem_wmask for the instruction
       if (rvvi_ovpsim_seq_item.dbg_mode) begin
-         nmip = 0;
-
          if (rvvi_ovpsim_cfg.store_fault_nmi_cause_valid && rvvi_ovpsim_seq_item.mem_wmask) begin
             rvvi_ovpsim_cntxt.ovpsim_io_vif.StoreBusFaultNMI = 1'b1;
          end
