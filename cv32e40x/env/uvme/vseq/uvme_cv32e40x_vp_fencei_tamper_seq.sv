@@ -153,13 +153,13 @@ function void uvme_cv32e40x_vp_fencei_tamper_seq_c::write_iss_mem();
   // Shift the data to be written
   shamt_lo = addr[1:0] * 8;
   shamt_hi = (4 * 8) - shamt_lo;
-  shdata_lo = data >> shamt_lo;
-  shdata_hi = data << shamt_hi;
+  shdata_lo = data << shamt_lo;
+  shdata_hi = data >> shamt_hi;
 $display("TODO shlo=0x%08x shhi=0x%08x shdalo=0x%08x shdahi=0x%08x", shamt_lo, shamt_hi, shdata_lo, shdata_hi);
 
   // Mask the existing data
-  issmask_lo = 32'h FFFF_FFFF << shamt_hi;
-  issmask_hi = 32'h FFFF_FFFF >> shamt_lo;
+  issmask_lo = 32'h FFFF_FFFF >> shamt_hi;
+  issmask_hi = 32'h FFFF_FFFF << shamt_lo;
   issdata_lo = rvvi_ovpsim_cntxt.ovpsim_mem_vif.mem[addr_lo] & issmask_lo;
   issdata_hi = rvvi_ovpsim_cntxt.ovpsim_mem_vif.mem[addr_hi] & issmask_hi;
 
