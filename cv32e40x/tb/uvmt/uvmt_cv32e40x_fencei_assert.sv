@@ -162,7 +162,10 @@ module uvmt_cv32e40x_fencei_assert
     );
   end
 
-  covergroup cg_reqack() @(posedge clk_i);
+  covergroup cg_reqack(string name) @(posedge clk_i);
+    option.per_instance = 1;
+    option.name = name;
+
     cp_req: coverpoint fencei_flush_req_o {
       bins hi = {1};
       bins lo = {0};
@@ -179,14 +182,17 @@ module uvmt_cv32e40x_fencei_assert
       illegal_bins il = binsof(cp_req.fell) && binsof(cp_ack.rose);
     }
   endgroup
-  cg_reqack reqack_cg = new();
+  cg_reqack reqack_cg = new("reqack");
 
   c_no_retire: cover property (
     $rose(is_fencei_in_wb)
     ##0 (!wb_valid throughout ($fell(is_fencei_in_wb) [->1]))
   );
 
-  covergroup cg_reserved() @(posedge clk_i);
+  covergroup cg_reserved(string name) @(posedge clk_i);
+    option.per_instance = 1;
+    option.name = name;
+
     // Just a handfull of different values for reserved to-be-ignored fields
     cp_imm: coverpoint wb_rdata[31:20] iff (is_fencei_in_wb && wb_valid) {
       bins b[4] = {[0:$]};
@@ -198,6 +204,6 @@ module uvmt_cv32e40x_fencei_assert
       bins b[4] = {[0:$]};
     }
   endgroup
-  cg_reserved reserved_cg = new();
+  cg_reserved reserved_cg = new("reserved");
 
 endmodule : uvmt_cv32e40x_fencei_assert
