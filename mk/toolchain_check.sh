@@ -33,32 +33,32 @@ COREV_YES=$3
 LLVM_YES=$4
 
 # Logic to return 1 if any two toolchains are enabled
-if [ ${GNU_YES} == "YES" -a ${PULP_YES} == "YES" ]; then
+if [ ${GNU_YES} = "YES" -a ${PULP_YES} = "YES" ]; then
 	echo "1"
 	exit 0
 fi
 
-if [ ${GNU_YES} == "YES" -a ${COREV_YES} == "YES" ]; then
+if [ ${GNU_YES} = "YES" -a ${COREV_YES} = "YES" ]; then
 	echo "1"
 	exit 0
 fi
 
-if [ ${GNU_YES} == "YES" -a ${LLVM_YES} == "YES" ]; then
+if [ ${GNU_YES} = "YES" -a ${LLVM_YES} = "YES" ]; then
 	echo "1"
 	exit 0
 fi
 
-if [ ${PULP_YES} == "YES" -a ${COREV_YES} == "YES" ]; then
+if [ ${PULP_YES} = "YES" -a ${COREV_YES} = "YES" ]; then
 	echo "1"
 	exit 0
 fi
 
-if [ ${PULP_YES} == "YES" -a ${LLVM_YES} == "YES" ]; then
+if [ ${PULP_YES} = "YES" -a ${LLVM_YES} = "YES" ]; then
 	echo "1"
 	exit 0
 fi
 
-if [ ${COREV_YES} == "YES" -a ${LLVM_YES} == "YES" ]; then
+if [ ${COREV_YES} = "YES" -a ${LLVM_YES} = "YES" ]; then
 	echo "1"
 	exit 0
 fi
