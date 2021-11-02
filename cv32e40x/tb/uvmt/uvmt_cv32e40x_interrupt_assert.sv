@@ -340,11 +340,10 @@ module uvmt_cv32e40x_interrupt_assert
     end
   end
 
-  // WFI assertion will assert core_sleep_o
+  // WFI assertion will assert core_sleep_o (in 2 cycles after wb, given ideal conditions)
   property p_wfi_assert_core_sleep_o;
-    !pending_enabled_irq_q && !in_wfi
-    ##1 !pending_enabled_irq_q
-    ##0 ((!pending_enabled_irq && !debug_mode_q && !debug_req_i) throughout in_wfi[*2])
+    !in_wfi
+    ##1 ((!pending_enabled_irq && !debug_mode_q && !debug_req_i) throughout in_wfi[*2])
     ##0 $past(alignbuf_outstanding == 0)
     |->
     core_sleep_o;
@@ -352,8 +351,22 @@ module uvmt_cv32e40x_interrupt_assert
   a_wfi_assert_core_sleep_o: assert property(p_wfi_assert_core_sleep_o)
     else
       `uvm_error(info_tag,
-                 "Aassertion of core_sleep_o did not occur within 6 clocks")
+                 "Assertion of core_sleep_o did not occur within 2 clocks")
   c_wfi_assert_core_sleep_o: cover property(p_wfi_assert_core_sleep_o);
+
+  // WFI assertion will assert core_sleep_o (after required conditions are met)
+  property p_wfi_assert_core_sleep_o_cond;
+    !in_wfi
+    ##1 (in_wfi && !pending_enabled_irq && !debug_mode_q && !debug_req_i)
+      throughout (##1 ($past(alignbuf_outstanding == 0)[->1]) )
+    |->
+    core_sleep_o;
+  endproperty
+  a_wfi_assert_core_sleep_o_cond: assert property(p_wfi_assert_core_sleep_o_cond)
+    else
+      `uvm_error(info_tag,
+                 "Assertion of core_sleep_o did not occur upon its prerequisite conditions")
+  c_wfi_assert_core_sleep_o_cond: cover property(p_wfi_assert_core_sleep_o_cond);
 
   // core_sleep_o deassertion in wfi should be followed by WFI deassertion
   property p_core_sleep_deassert;
