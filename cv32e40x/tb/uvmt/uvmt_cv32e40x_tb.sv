@@ -342,9 +342,9 @@ module uvmt_cv32e40x_tb;
                                                       .if_stage_instr_rvalid_i(if_stage_i.m_c_obi_instr_if.s_rvalid.rvalid),
                                                       .if_stage_instr_rdata_i(if_stage_i.m_c_obi_instr_if.resp_payload.rdata),
                                                       .alignbuf_outstanding(if_stage_i.prefetch_unit_i.alignment_buffer_i.outstanding_cnt_q),
-                                                      .id_stage_instr_valid_i(wb_stage_i.instr_valid),  // TODO:ropeders rename
-                                                      .id_stage_instr_rdata_i(wb_stage_i.ex_wb_pipe_i.instr.bus_resp.rdata),  // TODO:ropeders rename
-                                                      .id_stage_instr_err_i(wb_stage_i.ex_wb_pipe_i.instr.bus_resp.err),
+                                                      .wb_stage_instr_valid_i(wb_stage_i.instr_valid),
+                                                      .wb_stage_instr_rdata_i(wb_stage_i.ex_wb_pipe_i.instr.bus_resp.rdata),
+                                                      .wb_stage_instr_err_i(wb_stage_i.ex_wb_pipe_i.instr.bus_resp.err),
                                                       .branch_taken_ex(controller_i.controller_fsm_i.branch_taken_ex),
                                                       .debug_mode_q(controller_i.controller_fsm_i.debug_mode_q),
                                                       .irq_ack_o(core_i.irq_ack),
