@@ -46,10 +46,12 @@ module uvmt_cv32e40x_interrupt_assert
     // Instruction fetch stage
     input        if_stage_instr_rvalid_i, // Instruction word is valid
     input [31:0] if_stage_instr_rdata_i, // Instruction word data
+    input [ 1:0] alignbuf_outstanding,  // Alignment buffer's number of outstanding transactions
 
     // Instruction ID stage (determines executed instructions)
     input              id_stage_instr_valid_i, // instruction word is valid
     input [31:0]       id_stage_instr_rdata_i, // Instruction word data
+    input              id_stage_instr_err_i,
 
     // Determine whether to cancel instruction if branch taken
     input branch_taken_ex,
@@ -325,7 +327,8 @@ module uvmt_cv32e40x_interrupt_assert
   // ---------------------------------------------------------------------------
   assign is_wfi = id_stage_instr_valid_i &&
                   ((id_stage_instr_rdata_i & WFI_INSTR_MASK) == WFI_INSTR_DATA) &&
-                  !branch_taken_ex;
+                  !branch_taken_ex &&
+                  !id_stage_instr_err_i;
   always @(posedge clk_i or negedge rst_ni) begin
     if (!rst_ni) begin
       in_wfi <= 1'b0;
@@ -340,9 +343,12 @@ module uvmt_cv32e40x_interrupt_assert
 
   // WFI assertion will assert core_sleep_o in 6 clocks
   property p_wfi_assert_core_sleep_o;
-    !pending_enabled_irq_q ##0 !in_wfi ##1 !pending_enabled_irq_q ##0
-      ((!pending_enabled_irq && !debug_mode_q && !debug_req_i) throughout in_wfi[*38])
-             |-> core_sleep_o;
+    !pending_enabled_irq_q && !in_wfi
+    ##1 !pending_enabled_irq_q
+    ##0 ((!pending_enabled_irq && !debug_mode_q && !debug_req_i) throughout in_wfi[*38])
+    ##0 $past(alignbuf_outstanding == 0)
+    |->
+    core_sleep_o;
   endproperty
   a_wfi_assert_core_sleep_o: assert property(p_wfi_assert_core_sleep_o)
     else
