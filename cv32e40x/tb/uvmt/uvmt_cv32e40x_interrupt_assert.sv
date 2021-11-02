@@ -44,9 +44,13 @@ module uvmt_cv32e40x_interrupt_assert
     input [1:0]  mtvec_mode_q, // machine mode interrupt vector mode
 
     // Instruction fetch stage
+    input        if_stage_instr_req_o,
     input        if_stage_instr_rvalid_i, // Instruction word is valid
     input [31:0] if_stage_instr_rdata_i, // Instruction word data
     input [ 1:0] alignbuf_outstanding, // Alignment buffer's number of outstanding transactions
+
+    // Instruction EX stage
+    input        ex_stage_instr_valid, // EX pipeline stage has valid input
 
     // Instruction WB stage (determines executed instructions)
     input              wb_stage_instr_valid_i, // instruction word is valid
@@ -386,10 +390,14 @@ module uvmt_cv32e40x_interrupt_assert
       `uvm_error(info_tag,
                  "Deassertion of WFI occurred and core is still asleep");
 
-  // WFI wakeup to next instruction fetch
+  // WFI wakeup to next instruction fetch/execution
   property p_wfi_wake_to_instr_fetch;
     disable iff (!rst_ni || !fetch_enable_i || debug_mode_q)
-      core_sleep_o ##0 in_wfi ##1 !in_wfi[->1] |-> ##[1:WFI_WAKEUP_LATENCY] if_stage_instr_rvalid_i;
+    core_sleep_o && in_wfi
+    ##1 !in_wfi[->1]
+    |->
+    ##[0:WFI_WAKEUP_LATENCY]
+      ($rose(ex_stage_instr_valid) || $rose(if_stage_instr_req_o));
   endproperty
   a_wfi_wake_to_instr_fetch: assert property(p_wfi_wake_to_instr_fetch)
     else
