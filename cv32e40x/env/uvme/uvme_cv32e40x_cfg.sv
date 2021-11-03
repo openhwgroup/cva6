@@ -251,7 +251,7 @@ class uvme_cv32e40x_cfg_c extends uvma_core_cntrl_cfg_c;
          obi_memory_instr_cfg.drv_slv_err_mode == UVMA_OBI_MEMORY_DRV_SLV_ERR_MODE_OK;
       } else {
          obi_memory_instr_cfg.drv_slv_err_mode == UVMA_OBI_MEMORY_DRV_SLV_ERR_MODE_RANDOM;
-         obi_memory_instr_cfg.drv_slv_err_ok_wgt inside {[20:40]};
+         obi_memory_instr_cfg.drv_slv_err_ok_wgt inside {[10:200]};
          obi_memory_instr_cfg.drv_slv_err_fault_wgt == 1;
       }
 

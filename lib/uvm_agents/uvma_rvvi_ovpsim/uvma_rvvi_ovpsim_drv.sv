@@ -145,19 +145,36 @@ task uvma_rvvi_ovpsim_drv_c::stepi(REQ req);
       rvvi_ovpsim_cntxt.ovpsim_mem_vif.mem[rvvi_ovpsim_seq_item.mem_addr >> 2] = rvvi_ovpsim_seq_item.mem_rdata;
    end
 
-   // Signal an NMI to the ISS
+   // Signal an NMI to the ISS in M-mode
    if (rvvi_ovpsim_seq_item.nmi) begin
       rvvi_ovpsim_cntxt.ovpsim_io_vif.deferint = 1'b0;
 
       // Map interrupt ID to RVVI IO fault signal
-      if (rvvi_ovpsim_cfg.store_fault_nmi_cause_valid &&
-          (rvvi_ovpsim_seq_item.intr_id == rvvi_ovpsim_cfg.store_fault_nmi_cause))
-         rvvi_ovpsim_cntxt.ovpsim_io_vif.StoreBusFaultNMI = 1'b1;
-      else if (rvvi_ovpsim_cfg.load_fault_nmi_cause_valid &&
-               (rvvi_ovpsim_seq_item.intr_id == rvvi_ovpsim_cfg.load_fault_nmi_cause))
-         rvvi_ovpsim_cntxt.ovpsim_io_vif.LoadBusFaultNMI  = 1'b1;
+      // If we are in debug mode, then use the mem_wmask for the instruction
+      if (rvvi_ovpsim_seq_item.dbg_mode) begin
+         if (rvvi_ovpsim_cfg.store_fault_nmi_cause_valid && rvvi_ovpsim_seq_item.mem_wmask) begin
+            rvvi_ovpsim_cntxt.ovpsim_io_vif.StoreBusFaultNMI = 1'b1;
+         end
+         else if (rvvi_ovpsim_cfg.load_fault_nmi_cause_valid) begin
+            rvvi_ovpsim_cntxt.ovpsim_io_vif.LoadBusFaultNMI  = 1'b1;
+         end
+         else begin
+            `uvm_fatal("RVVIDRVNMI", $sformatf("NMI debug could not be mapped"))
+         end
+      end
+      // Otherwise use the direct value read from mcause (intr_id)
       else begin
-         `uvm_fatal("RVVIDRVNMI", $sformatf("NMI mcause of %0d is not recognized", rvvi_ovpsim_seq_item.intr_id));
+         if (rvvi_ovpsim_cfg.store_fault_nmi_cause_valid &&
+            (rvvi_ovpsim_seq_item.intr_id == rvvi_ovpsim_cfg.store_fault_nmi_cause)) begin
+            rvvi_ovpsim_cntxt.ovpsim_io_vif.StoreBusFaultNMI = 1'b1;
+         end
+         else if (rvvi_ovpsim_cfg.load_fault_nmi_cause_valid &&
+                  (rvvi_ovpsim_seq_item.intr_id == rvvi_ovpsim_cfg.load_fault_nmi_cause)) begin
+            rvvi_ovpsim_cntxt.ovpsim_io_vif.LoadBusFaultNMI  = 1'b1;
+         end
+         else begin
+            `uvm_fatal("RVVIDRVNMI", $sformatf("NMI mcause of %0d is not recognized", rvvi_ovpsim_seq_item.intr_id));
+         end
       end
 
       rvvi_ovpsim_cntxt.control_vif.stepi();

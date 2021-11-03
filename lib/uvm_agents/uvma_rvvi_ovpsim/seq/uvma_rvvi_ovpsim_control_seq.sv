@@ -64,10 +64,9 @@ task uvma_rvvi_ovpsim_control_seq_c::step_rm(uvma_rvfi_instr_seq_item_c#(ILEN,XL
 
       intr == rvfi_instr.insn_interrupt;
 
-      // order is a hack to detect debug out of reset
-      // When the new RVFI debug is released, this should only use those
-      // fields to discern an external request
       dbg_req == (rvfi_instr.dbg_mode && rvfi_instr.dbg inside {3,5});
+
+      dbg_mode == rvfi_instr.dbg_mode;
 
       nmi  == rvfi_instr.insn_nmi;
       intr_id == rvfi_instr.insn_interrupt_id;
@@ -79,6 +78,8 @@ task uvma_rvvi_ovpsim_control_seq_c::step_rm(uvma_rvfi_instr_seq_item_c#(ILEN,XL
       mem_addr == rvfi_instr.mem_addr;
       mem_rdata == rvfi_instr.mem_rdata;
       mem_rmask == rvfi_instr.mem_rmask;
+      mem_wdata == rvfi_instr.mem_wdata;
+      mem_wmask == rvfi_instr.mem_wmask;
 
       insn_bus_fault == rvfi_instr.insn_bus_fault;
    });
