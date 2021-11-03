@@ -275,11 +275,12 @@ class corev_vp_fencei_exec_instr_stream extends riscv_load_store_rand_instr_stre
   endfunction : new
 
   function void post_randomize();
-    riscv_instr        instr;
-    riscv_pseudo_instr pseudo;
-    string             label_fencei;
-    string             label_dummy;
-    int                idx_fencei;
+    riscv_instr           instr;
+    riscv_pseudo_instr    pseudo;
+    corev_directive_instr directive;
+    string                label_fencei;
+    string                label_dummy;
+    int                   idx_fencei;
 
     // Calculate labels with right index
     label_fencei = $sformatf("vp_fencei_exec__fencei_%0d", idx_label);
@@ -321,7 +322,16 @@ class corev_vp_fencei_exec_instr_stream extends riscv_load_store_rand_instr_stre
     )
     instr.comment = "vp_fencei_exec: dummy";
     instr.label = label_dummy;
+    // Add rvc  (nb, reverse order, 3/3)
+    directive = corev_directive_instr::type_id::create("corev_directive_instr");
+    directive.directive = ".option rvc";
+    instr_list.push_front(directive);
+    // Add instr  (nb, reverse order, 2/3)
     instr_list.push_front(instr);
+    // Add norvc  (nb, reverse order, 1/3)
+    directive = corev_directive_instr::type_id::create("corev_directive_instr");
+    directive.directive = ".option norvc";
+    instr_list.push_front(directive);
 
 
     // Configure the vp addr register
