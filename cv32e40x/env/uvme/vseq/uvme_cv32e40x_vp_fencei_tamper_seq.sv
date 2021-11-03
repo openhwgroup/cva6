@@ -99,7 +99,6 @@ task uvme_cv32e40x_vp_fencei_tamper_seq_c::body();
     while (1) begin
       @(posedge cv32e40x_cntxt.fencei_cntxt.fencei_vif.flush_req);
       if (enabled) begin
-$display("TODO body fencei req: time=%0t enab=%d addr=0x%08x data=0x%08x", $time, enabled, addr, data);
         write_rtl_mem();
         write_iss_mem();
       end
@@ -136,8 +135,6 @@ function void uvme_cv32e40x_vp_fencei_tamper_seq_c::write_iss_mem();
   logic [31:0] data_lo;
   logic [31:0] data_hi;
 
-  //TODO:ropeders if (!issenabled) return;?
-
   // Calculate iss ram addresses
   addr_lo = addr >> 2;
   addr_hi = (addr + 4) >> 2;
@@ -161,8 +158,6 @@ function void uvme_cv32e40x_vp_fencei_tamper_seq_c::write_iss_mem();
   // Write to iss ram
   rvvi_ovpsim_cntxt.ovpsim_mem_vif.mem[addr_lo] = data_lo;
   rvvi_ovpsim_cntxt.ovpsim_mem_vif.mem[addr_hi] = data_hi;
-
-  //TODO:ropeders this function could be in an agent/cntxt?
 
 endfunction : write_iss_mem
 
