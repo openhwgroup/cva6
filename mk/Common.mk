@@ -483,7 +483,7 @@ else
 	mkdir -p $(SIM_TEST_PROGRAM_RESULTS)
 	make bsp
 	@echo "$(BANNER)"
-	@echo "* Compiling test-program $(@)"
+	@echo "* Compiling test-program $@"
 	@echo "$(BANNER)"
 	$(RISCV_EXE_PREFIX)$(RISCV_CC) \
 		$(CFG_CFLAGS) \
@@ -506,7 +506,7 @@ hex: $(SIM_TEST_PROGRAM_RESULTS)/$(TEST_PROGRAM)$(OPT_RUN_INDEX_SUFFIX).hex
 
 bsp:
 	@echo "$(BANNER)"
-	@echo "* Compiling BSP"
+	@echo "* Compiling the BSP"
 	@echo "$(BANNER)"
 	mkdir -p $(SIM_BSP_RESULTS)
 	cp $(BSP)/Makefile $(SIM_BSP_RESULTS)
