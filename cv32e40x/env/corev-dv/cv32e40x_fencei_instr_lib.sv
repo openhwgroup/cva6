@@ -306,6 +306,13 @@ class corev_vp_fencei_exec_instr_stream extends riscv_load_store_rand_instr_stre
       end
     end
     instr_list.insert(idx_fencei, instr);
+    // Add norvc/rvc guards around the instr after fencei
+    directive = corev_directive_instr::type_id::create("corev_directive_instr");
+    directive.directive = ".option norvc";
+    instr_list.insert(idx_fencei + 1, directive);
+    directive = corev_directive_instr::type_id::create("corev_directive_instr");
+    directive.directive = ".option rvc";
+    instr_list.insert(idx_fencei + 3, directive);
 
     // Add a dummy instr at the top
     instr = riscv_instr::get_rand_instr(
