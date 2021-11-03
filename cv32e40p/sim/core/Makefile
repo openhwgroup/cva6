@@ -474,8 +474,6 @@ VERI_TRACE="--trace"
 VERI_CFLAGS+="-DVCD_TRACE"
 endif
 
-#SIM_TEST_PROGRAM_RESULTS = "FOOBAR"
-
 verilate: testbench_verilator
 
 sanity-veri-run:
