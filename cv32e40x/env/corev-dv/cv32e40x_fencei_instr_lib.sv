@@ -260,8 +260,8 @@ class corev_vp_fencei_exec_instr_stream extends riscv_load_store_rand_instr_stre
     vp_reg != tmp_reg;  // Don't overwrite the data that is to be written
   }
   constraint dont_pollute_reserved_regs {
-    !(vp_reg inside {cfg.reserved_regs});
-    !(tmp_reg inside {cfg.reserved_regs});
+    !(vp_reg inside {cfg.reserved_regs, reserved_rd});
+    !(tmp_reg inside {cfg.reserved_regs, reserved_rd});
   }
   constraint dont_store_in_x0 {
     vp_reg != ZERO;
@@ -298,8 +298,7 @@ class corev_vp_fencei_exec_instr_stream extends riscv_load_store_rand_instr_stre
     instr.comment = "vp_fencei_exec: fencei";
     instr.label = label_fencei;
     idx_fencei = $urandom_range(0, instr_list.size() - 1);
-    while(is_16bit(instr_list[idx_fencei])) begin
-      // Note: Could allow 16bit instrs, but that requires more accommodations
+    while(!is_ok_target(instr_list[idx_fencei])) begin
       idx_fencei++;
       if (idx_fencei == instr_list.size()) begin
         idx_fencei = 0;
@@ -322,7 +321,7 @@ class corev_vp_fencei_exec_instr_stream extends riscv_load_store_rand_instr_stre
     `DV_CHECK_RANDOMIZE_WITH_FATAL(instr,
       (category inside {LOAD, SHIFT, ARITHMETIC, LOGICAL, COMPARE, SYNCH});
         // Note: Several of the constraints could be relaxed, but it turns really complicated
-      !(rd inside {cfg.reserved_regs});
+      !(rd inside {cfg.reserved_regs, reserved_rd});
       !((rd == ZERO) && (instr_name inside {ADDI, C_ADDI}));
       instr_name != NOP;
       , "failed to randomize dummy instruction"
@@ -517,11 +516,13 @@ class corev_vp_fencei_exec_instr_stream extends riscv_load_store_rand_instr_stre
     end
   endfunction : post_randomize
 
-  function logic is_16bit(riscv_instr instr);
+  function logic is_ok_target(riscv_instr instr);
+    // Note: Could allow 16bit instrs, but that requires more accommodations
     return (
-      (instr.group == RV32C)
-      || (instr.instr_name == NOP)
-      || ((instr.rd == ZERO) && (instr.instr_name inside {ADDI, C_ADDI}))
+      (instr.group != RV32C)
+      && (instr.instr_name != NOP)
+      && !((instr.rd == ZERO) && (instr.instr_name inside {ADDI, C_ADDI}))
+      && !(instr.rd inside {cfg.reserved_regs, reserved_rd})
       );
   endfunction : is_16bit
 
