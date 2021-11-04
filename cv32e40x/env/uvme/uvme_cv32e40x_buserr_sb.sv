@@ -20,11 +20,18 @@
 `define __UVME_CV32E40X_BUSERR_SB_SV__
 
 
+`uvm_analysis_imp_decl(_obid)
+
+
 class uvme_cv32e40x_buserr_sb_c extends uvm_scoreboard;
+
+  uvm_analysis_imp_obid#(uvma_obi_memory_mon_trn_c, uvme_cv32e40x_buserr_sb_c)  obid;
 
   `uvm_component_utils(uvme_cv32e40x_buserr_sb_c)
 
   extern function new(string name="uvme_cv32e40x_buserr_sb", uvm_component parent=null);
+  extern virtual function void write_obid(uvma_obi_memory_mon_trn_c trn);
+  extern virtual function void build_phase(uvm_phase phase);
 
 endclass : uvme_cv32e40x_buserr_sb_c
 
@@ -33,9 +40,23 @@ function uvme_cv32e40x_buserr_sb_c::new(string name="uvme_cv32e40x_buserr_sb", u
 
   super.new(name, parent);
 
-  $display("TODO hello buserr sb");
-
 endfunction : new
+
+
+function void uvme_cv32e40x_buserr_sb_c::write_obid(uvma_obi_memory_mon_trn_c trn);
+
+  $display("TODO write_obid");
+
+endfunction : write_obid
+
+
+function void uvme_cv32e40x_buserr_sb_c::build_phase(uvm_phase phase);
+
+  super.build_phase(phase);
+
+  obid = new("obid", this);
+
+endfunction : build_phase
 
 
 `endif  // __UVME_CV32E40X_BUSERR_SB_SV__

@@ -399,6 +399,9 @@ function void uvme_cv32e40x_env_c::connect_scoreboard();
       end
    end
 
+   // Connect the bus error scoreboard
+   obi_memory_data_agent.mon_ap.connect(buserr_sb.obid);
+
    // Connect the PMA scoreboard
    foreach (rvfi_agent.instr_mon_ap[i]) begin
       rvfi_agent.instr_mon_ap[i].connect(pma_agent.scoreboard.rvfi_instr_export);
