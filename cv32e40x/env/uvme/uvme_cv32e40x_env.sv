@@ -34,6 +34,7 @@ class uvme_cv32e40x_env_c extends uvm_env;
    uvme_cv32e40x_prd_c        predictor;
    uvme_cv32e40x_sb_c         sb;
    uvme_cv32e40x_core_sb_c    core_sb;
+   uvme_cv32e40x_buserr_sb_c  buserr_sb;
    uvme_cv32e40x_vsqr_c       vsequencer;
 
    // Agents
@@ -357,6 +358,7 @@ function void uvme_cv32e40x_env_c::create_env_components();
       predictor = uvme_cv32e40x_prd_c::type_id::create("predictor", this);
       sb        = uvme_cv32e40x_sb_c::type_id::create("sb"       , this);
       core_sb   = uvme_cv32e40x_core_sb_c::type_id::create("core_sb", this);
+      buserr_sb = uvme_cv32e40x_buserr_sb_c::type_id::create("buserr_sb", this);
    end
 
 endfunction: create_env_components
