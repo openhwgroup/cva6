@@ -151,7 +151,7 @@ interface uvmt_cv32e40x_debug_cov_assert_if
     input  [31:0] dm_halt_addr_i,
     input  [31:0] dm_exception_addr_i,
 
-    input  [5:0]  mcause_q,
+    input  [31:0] mcause_q,
     input  [31:0] mtvec,
     input  [31:0] mepc_q,
     input  [31:0] tdata1,

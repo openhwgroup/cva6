@@ -159,7 +159,7 @@ module uvmt_cv32e40x_debug_assert
         ##0 (!cov_assert_if.pending_debug && !cov_assert_if.irq_ack_o throughout ##1 cov_assert_if.wb_valid [->1])
         // TODO:ropeders can this specificity be in consequent instead?
         |->
-        !cov_assert_if.debug_mode_q && (cov_assert_if.mcause_q[5:0] === cv32e40x_pkg::EXC_CAUSE_BREAKPOINT)
+        !cov_assert_if.debug_mode_q && (cov_assert_if.mcause_q[30:0] === cv32e40x_pkg::EXC_CAUSE_BREAKPOINT)
         && (cov_assert_if.mepc_q == pc_at_ebreak) && (cov_assert_if.wb_stage_pc == mtvec_addr);
         // TODO:ropeders need assertions for what happens if cebreak and req/irq?
     endproperty
@@ -178,7 +178,7 @@ module uvmt_cv32e40x_debug_assert
         ##0 (!cov_assert_if.pending_debug && !cov_assert_if.irq_ack_o throughout ##1 cov_assert_if.wb_valid [->1])
         // TODO:ropeders can this specificity be in consequent instead?
         |->
-        !cov_assert_if.debug_mode_q && (cov_assert_if.mcause_q[5:0] === cv32e40x_pkg::EXC_CAUSE_BREAKPOINT)
+        !cov_assert_if.debug_mode_q && (cov_assert_if.mcause_q[30:0] === cv32e40x_pkg::EXC_CAUSE_BREAKPOINT)
         && (cov_assert_if.mepc_q == pc_at_ebreak) && (cov_assert_if.wb_stage_pc == mtvec_addr);
     endproperty
 

@@ -395,7 +395,7 @@ module uvmt_cv32e40x_tb;
       .dcsr_q(core_i.cs_registers_i.dcsr_q),
       .depc_q(core_i.cs_registers_i.dpc_q),
       .depc_n(core_i.cs_registers_i.dpc_n),
-      .mcause_q({core_i.cs_registers_i.mcause_q[31], core_i.cs_registers_i.mcause_q[4:0]}),
+      .mcause_q(core_i.cs_registers_i.mcause_q),
       .mtvec(core_i.cs_registers_i.mtvec_q),
       .mepc_q(core_i.cs_registers_i.mepc_q),
       .tdata1(core_i.cs_registers_i.tmatch_control_q),
