@@ -17,6 +17,13 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include "corev_uvmt.h"
+
+#define VP_ENAB_ADDR (CV_VP_FENCEI_TAMPER_BASE + 0)
+#define VP_ADDR_ADDR (CV_VP_FENCEI_TAMPER_BASE + 4)
+#define VP_DATA_ADDR (CV_VP_FENCEI_TAMPER_BASE + 8)
+
+static volatile uint32_t *vp_enab_ptr = (void *)VP_ENAB_ADDR;
 
 static void assert_or_die(uint32_t actual, uint32_t expect, char *msg) {
   if (actual != expect) {
@@ -101,6 +108,28 @@ int main(void) {
     "end:              \n"
     : "=r"(reg0), "=r"(reg1));
   assert_or_die(reg0, 234, "overwriting instruction data should be visible after fencei\n");
+
+  printf("Check env-modifying code\n");
+  __asm__ volatile(
+    "  li %0, %2           \n"  // Load dummy instr into vp's "data"
+    "  la %1, dummy_instr  \n"
+    "  lw %1, 0(%1)        \n"
+    "  sw %1, 0(%0)        \n"
+    "  li %0, %3           \n"  // Load exec address into vp's "addr"
+    "  la %1, exec_instr   \n"
+    "  sw %1, 0(%0)        \n"
+    "  li %0, %4           \n"  // Enable vp
+    "  li %1, 1            \n"
+    "  sw %1, 0(%0)        \n"
+    "dummy_instr:          \n"  // ...
+    "  addi %0, x0, 222    \n"
+    "  fence.i             \n"  // (Upon this fencei, vp should swap out exec_instr)
+    "exec_instr:           \n"
+    "  addi %0, x0, 111    \n"  // (Should execute dummy_instr instead)
+    : "=r"(reg0), "=r"(reg1)
+    : "i"(VP_DATA_ADDR), "i"(VP_ADDR_ADDR), "i"(VP_ENAB_ADDR));
+  assert_or_die(reg0, 222, "env should have swapped the exec instruction\n");
+  *vp_enab_ptr = 0;  // Disable vp
 
   return EXIT_SUCCESS;
 }
