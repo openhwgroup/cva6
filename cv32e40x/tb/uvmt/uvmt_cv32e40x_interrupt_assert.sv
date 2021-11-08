@@ -397,7 +397,8 @@ module uvmt_cv32e40x_interrupt_assert
     ##1 !in_wfi[->1]
     |->
     ##[0:WFI_WAKEUP_LATENCY]
-      ($rose(ex_stage_instr_valid) || $rose(if_stage_instr_req_o));
+      ($rose(if_stage_instr_req_o)  // IF starts fetching again
+        || $rose(ex_stage_instr_valid));  // Or continue with prefetched data
   endproperty
   a_wfi_wake_to_instr_fetch: assert property(p_wfi_wake_to_instr_fetch)
     else
