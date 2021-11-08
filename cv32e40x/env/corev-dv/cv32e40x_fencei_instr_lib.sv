@@ -524,6 +524,6 @@ class corev_vp_fencei_exec_instr_stream extends riscv_load_store_rand_instr_stre
       && !((instr.rd == ZERO) && (instr.instr_name inside {ADDI, C_ADDI}))
       && !(instr.rd inside {cfg.reserved_regs, reserved_rd})
       );
-  endfunction : is_16bit
+  endfunction : is_ok_target
 
 endclass : corev_vp_fencei_exec_instr_stream
