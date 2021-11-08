@@ -156,8 +156,10 @@ module uvmt_cv32e40x_debug_assert
         disable iff(!cov_assert_if.rst_ni)
         $rose(cov_assert_if.is_cebreak) && !cov_assert_if.debug_mode_q
         && !cov_assert_if.dcsr_q[2] && !cov_assert_if.dcsr_q[15]
-        ##0 (!cov_assert_if.pending_debug && !cov_assert_if.irq_ack_o throughout ##1 cov_assert_if.wb_valid [->1])
-        // TODO:ropeders can this specificity be in consequent instead?
+        ##0 (
+          (!cov_assert_if.pending_debug && !cov_assert_if.irq_ack_o && !cov_assert_if.pending_nmi)
+          throughout (##1 cov_assert_if.wb_valid [->1])
+          )
         |->
         !cov_assert_if.debug_mode_q && (cov_assert_if.mcause_q[30:0] === cv32e40x_pkg::EXC_CAUSE_BREAKPOINT)
         && (cov_assert_if.mepc_q == pc_at_ebreak) && (cov_assert_if.wb_stage_pc == mtvec_addr);
@@ -175,8 +177,10 @@ module uvmt_cv32e40x_debug_assert
         disable iff(!cov_assert_if.rst_ni)
         $rose(cov_assert_if.is_ebreak) && !cov_assert_if.dcsr_q[15]
         && !cov_assert_if.debug_mode_q && !cov_assert_if.dcsr_q[2]
-        ##0 (!cov_assert_if.pending_debug && !cov_assert_if.irq_ack_o throughout ##1 cov_assert_if.wb_valid [->1])
-        // TODO:ropeders can this specificity be in consequent instead?
+        ##0 (
+          (!cov_assert_if.pending_debug && !cov_assert_if.irq_ack_o && !cov_assert_if.pending_nmi)
+          throughout (##1 cov_assert_if.wb_valid [->1])
+          )
         |->
         !cov_assert_if.debug_mode_q && (cov_assert_if.mcause_q[30:0] === cv32e40x_pkg::EXC_CAUSE_BREAKPOINT)
         && (cov_assert_if.mepc_q == pc_at_ebreak) && (cov_assert_if.wb_stage_pc == mtvec_addr);
