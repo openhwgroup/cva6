@@ -18,6 +18,8 @@
 // Not a real instruction but useful for inserting assembler directives into directed instruction streams
 class corev_directive_instr extends riscv_instr;
 
+  // Specify the entire assembler directive in the string variable
+  // e.g. directive = ".option norvc";
   string directive;
 
   `uvm_object_utils(corev_directive_instr)
