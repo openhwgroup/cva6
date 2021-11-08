@@ -361,8 +361,10 @@ module uvmt_cv32e40x_interrupt_assert
   // WFI assertion will assert core_sleep_o (after required conditions are met)
   property p_wfi_assert_core_sleep_o_cond;
     !in_wfi
-    ##1 (in_wfi && !pending_enabled_irq && !debug_mode_q && !debug_req_i)
+    ##1 (
+      (in_wfi && !pending_enabled_irq && !debug_mode_q && !debug_req_i)
       throughout (##1 ($past(alignbuf_outstanding == 0)[->1]) )
+      )
     |->
     core_sleep_o;
   endproperty
