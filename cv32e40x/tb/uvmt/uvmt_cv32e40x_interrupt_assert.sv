@@ -44,12 +44,18 @@ module uvmt_cv32e40x_interrupt_assert
     input [1:0]  mtvec_mode_q, // machine mode interrupt vector mode
 
     // Instruction fetch stage
+    input        if_stage_instr_req_o,
     input        if_stage_instr_rvalid_i, // Instruction word is valid
     input [31:0] if_stage_instr_rdata_i, // Instruction word data
+    input [ 1:0] alignbuf_outstanding, // Alignment buffer's number of outstanding transactions
 
-    // Instruction ID stage (determines executed instructions)
-    input              id_stage_instr_valid_i, // instruction word is valid
-    input [31:0]       id_stage_instr_rdata_i, // Instruction word data
+    // Instruction EX stage
+    input        ex_stage_instr_valid, // EX pipeline stage has valid input
+
+    // Instruction WB stage (determines executed instructions)
+    input              wb_stage_instr_valid_i, // instruction word is valid
+    input [31:0]       wb_stage_instr_rdata_i, // Instruction word data
+    input              wb_stage_instr_err_i, // OBI "err"
 
     // Determine whether to cancel instruction if branch taken
     input branch_taken_ex,
@@ -77,7 +83,6 @@ module uvmt_cv32e40x_interrupt_assert
   wire [31:0] pending_enabled_irq;
   wire [31:0] pending_enabled_irq_q;
 
-  wire id_instr_is_wfi; // ID instruction is a WFI
   reg  in_wfi; // Local model of WFI state of core
 
   reg[31:0] irq_q;
@@ -315,17 +320,18 @@ module uvmt_cv32e40x_interrupt_assert
     if (!rst_ni) begin
       last_instr_rdata <= '0;
     end
-    else if (id_stage_instr_valid_i) begin
-      last_instr_rdata <= id_stage_instr_rdata_i;
+    else if (wb_stage_instr_valid_i) begin
+      last_instr_rdata <= wb_stage_instr_rdata_i;
     end
   end
 
   // ---------------------------------------------------------------------------
   // WFI Checks
   // ---------------------------------------------------------------------------
-  assign is_wfi = id_stage_instr_valid_i &&
-                  ((id_stage_instr_rdata_i & WFI_INSTR_MASK) == WFI_INSTR_DATA) &&
-                  !branch_taken_ex;
+  assign is_wfi = wb_stage_instr_valid_i &&
+                  ((wb_stage_instr_rdata_i & WFI_INSTR_MASK) == WFI_INSTR_DATA) &&
+                  !branch_taken_ex &&
+                  !wb_stage_instr_err_i;
   always @(posedge clk_i or negedge rst_ni) begin
     if (!rst_ni) begin
       in_wfi <= 1'b0;
@@ -338,16 +344,35 @@ module uvmt_cv32e40x_interrupt_assert
     end
   end
 
-  // WFI assertion will assert core_sleep_o in 6 clocks
+  // WFI assertion will assert core_sleep_o (in 2 cycles after wb, given ideal conditions)
   property p_wfi_assert_core_sleep_o;
-    !pending_enabled_irq_q ##0 !in_wfi ##1 !pending_enabled_irq_q ##0
-      ((!pending_enabled_irq && !debug_mode_q && !debug_req_i) throughout in_wfi[*38])
-             |-> core_sleep_o;
+    !in_wfi
+    ##1 ((!pending_enabled_irq && !debug_mode_q && !debug_req_i) throughout in_wfi[*2])
+    ##0 $past(alignbuf_outstanding == 0)
+    |->
+    core_sleep_o;
   endproperty
   a_wfi_assert_core_sleep_o: assert property(p_wfi_assert_core_sleep_o)
     else
       `uvm_error(info_tag,
-                 "Aassertion of core_sleep_o did not occur within 6 clocks")
+                 "Assertion of core_sleep_o did not occur within 2 clocks")
+  c_wfi_assert_core_sleep_o: cover property(p_wfi_assert_core_sleep_o);
+
+  // WFI assertion will assert core_sleep_o (after required conditions are met)
+  property p_wfi_assert_core_sleep_o_cond;
+    !in_wfi
+    ##1 (
+      (in_wfi && !pending_enabled_irq && !debug_mode_q && !debug_req_i)
+      throughout (##1 ($past(alignbuf_outstanding == 0)[->1]) )
+      )
+    |->
+    core_sleep_o;
+  endproperty
+  a_wfi_assert_core_sleep_o_cond: assert property(p_wfi_assert_core_sleep_o_cond)
+    else
+      `uvm_error(info_tag,
+                 "Assertion of core_sleep_o did not occur upon its prerequisite conditions")
+  c_wfi_assert_core_sleep_o_cond: cover property(p_wfi_assert_core_sleep_o_cond);
 
   // core_sleep_o deassertion in wfi should be followed by WFI deassertion
   property p_core_sleep_deassert;
@@ -367,10 +392,15 @@ module uvmt_cv32e40x_interrupt_assert
       `uvm_error(info_tag,
                  "Deassertion of WFI occurred and core is still asleep");
 
-  // WFI wakeup to next instruction fetch
+  // WFI wakeup to next instruction fetch/execution
   property p_wfi_wake_to_instr_fetch;
     disable iff (!rst_ni || !fetch_enable_i || debug_mode_q)
-      core_sleep_o ##0 in_wfi ##1 !in_wfi[->1] |-> ##[1:WFI_WAKEUP_LATENCY] if_stage_instr_rvalid_i;
+    core_sleep_o && in_wfi
+    ##1 !in_wfi[->1]
+    |->
+    ##[0:WFI_WAKEUP_LATENCY]
+      ($rose(if_stage_instr_req_o)  // IF starts fetching again
+        || $rose(ex_stage_instr_valid));  // Or continue with prefetched data
   endproperty
   a_wfi_wake_to_instr_fetch: assert property(p_wfi_wake_to_instr_fetch)
     else
