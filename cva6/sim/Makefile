@@ -102,7 +102,7 @@ vcs_uvm_run:
 		+firmware=$(CORE_V_VERIF)/cva6/sim/hello-world.hex && \
 	mv $(VCS_WORK_DIR)/trace_rvfi_hart_00.dasm $(CORE_V_VERIF)/cva6/sim/
 
-vcs_clean:
+vcs_clean_all:
 	@echo "[VCS] Cleanup (entire vcs_work dir)"
 	rm -rf $(CORE_V_VERIF)/cva6/sim/vcs_results/ simv* *.daidir *.vpd *.db csrc ucli.key vc_hdrs.h
 
@@ -136,27 +136,20 @@ veri_clean_all:
 # Common targets and rules
 ###############################################################################
 
-clean_all: xrun_clean_all dsim_clean_all veri_clean_all
-
+clean_all: vcs_clean_all veri_clean_all
+	rm -f Mem_init.txt
+	rm -f trace*.log
+	rm -f trace*.dasm
 
 help:
 	@echo "Shell environment:"
 	@echo "   CVA6_REPO_DIR    : $(CVA6_REPO_DIR)"
 	@echo "   CVA6_TB_DIR      : $(CVA6_TB_DIR)"
 	@echo "Verilator targets:"
-	@echo "   make verilate    : Builds verilator"
-	@echo "   make veri_comp   : Builds and compiles verilator"
-	@echo "   make veri_run    : Builds, compiles and runs"
-	@echo "DSIM targets:"
-	@echo "   make dsim_comp   : Compiles with DSIM"
-	@echo "   make dsim_run    : Compiles and runs with DSIM"
-	@echo "XRUN targets:"
-	@echo "   make xrun_comp   : Compiles with XRUN"
-	@echo "   make xrun_run    : Compiles and runs with XRUN"
+	@echo "   make veri_comp   : Builds, compiles and runs with verilator"
 	@echo "VCS targets:"
-	@echo "   make vcs_comp    : Compiles with VCS"
-	@echo "   make vcs_run     : Compiles and runs with VCS"
-	@echo "   make vcs_run_gui : Compiles and runs with VCS"
+	@echo "   make vcs_core_comp    : Compiles with VCS"
+	@echo "   make vcs_core_run     : Runs with VCS"
 	@echo "Clean-up targets:"
 	@echo "   make clean_all   : Deletes ALL generated files"
 	@echo "Support for other simulators on the ToDo list..."
