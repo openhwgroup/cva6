@@ -27,6 +27,8 @@
 #   this combination when https://github.com/google/riscv-dv/issues/752
 #   is addressed.
 ################################################################################
+#include "corev_uvmt.h"
+
 .include "user_define.h"
 .section .text.start
 .globl _start
