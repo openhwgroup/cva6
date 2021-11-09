@@ -81,15 +81,15 @@ function uvme_cv32e40x_cntxt_c::new(string name="uvme_cv32e40x_cntxt");
 
    super.new(name);
 
-   core_cntrl_cntxt = uvma_cv32e40x_core_cntrl_cntxt_c::type_id::create("core_cntrl_cntxt");
    clknrst_cntxt    = uvma_clknrst_cntxt_c::type_id::create("clknrst_cntxt");
-   interrupt_cntxt  = uvma_interrupt_cntxt_c::type_id::create("interrupt_cntxt");
+   core_cntrl_cntxt = uvma_cv32e40x_core_cntrl_cntxt_c::type_id::create("core_cntrl_cntxt");
    debug_cntxt      = uvma_debug_cntxt_c::type_id::create("debug_cntxt");
-   obi_memory_instr_cntxt = uvma_obi_memory_cntxt_c::type_id::create("obi_memory_instr_cntxt");
+   fencei_cntxt     = uvma_fencei_cntxt_c::type_id::create("fencei_cntxt");
+   interrupt_cntxt  = uvma_interrupt_cntxt_c::type_id::create("interrupt_cntxt");
    obi_memory_data_cntxt  = uvma_obi_memory_cntxt_c::type_id::create("obi_memory_data_cntxt" );
+   obi_memory_instr_cntxt = uvma_obi_memory_cntxt_c::type_id::create("obi_memory_instr_cntxt");
    rvfi_cntxt       = uvma_rvfi_cntxt_c#(ILEN,XLEN)::type_id::create("rvfi_cntxt");
    rvvi_cntxt       = uvma_rvvi_ovpsim_cntxt_c#(ILEN,XLEN)::type_id::create("rvvi_cntxt");
-   fencei_cntxt     = uvma_fencei_cntxt_c::type_id::create("fencei_cntxt");
 
    mem = uvml_mem_c#(XLEN)::type_id::create("mem");
 
