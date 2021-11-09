@@ -88,7 +88,7 @@ module uvmt_cv32e40x_debug_assert
             ##0 cov_assert_if.wb_valid [->2])  // Go to next two WB done
         or
         (cov_assert_if.wb_valid [->1]  // Go directly to next WB done
-            ##0 (cov_assert_if.dcsr_q[8:6] == 3))  // Need good reason to forgo $fell(instr_valid)
+            ##0 (cov_assert_if.dcsr_q[8:6] inside {3, 4}))  // Need good reason to forgo $fell(instr_valid)
         ;
     endsequence
 
