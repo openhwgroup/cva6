@@ -1,4 +1,18 @@
 name: coremark
 uvm_test: uvmt_cv32e40s_firmware_test_c
+default_cflags: >
+    -O3
+    -mabi=ilp32
+    -march=rv32im
+    -falign-functions=16
+    -funroll-all-loops
+    -falign-jumps=4
+    -finline-functions
+    -Wall
+    -static
+    -pedantic
+    -DPERFORMANCE_RUN=1
+    -DITERATIONS=10
+    -DFLAGS_STR=\""-mabi=ilp32 -O3 -falign-functions=16 -funroll-all-loops -falign-jumps=4 -finline-functions -Wall -pedanic -nostartfiles -static"\"
 description: >
     Runs the CoreMark benchmark
