@@ -136,6 +136,7 @@ interface uvmt_cv32e40x_debug_cov_assert_if
 
     // Core signals
     input  [31:0] boot_addr_i,
+    input  [31:0] nmi_addr_i,
     input         fetch_enable_i,
 
     input         rvfi_valid,
@@ -147,6 +148,7 @@ interface uvmt_cv32e40x_debug_cov_assert_if
     input         debug_req_q, // From controller
     input         pending_debug, // From controller
     input         pending_nmi, // From controller
+    input         nmi_allowed, // From controller
     input         debug_mode_q, // From controller
     input  [31:0] dcsr_q, // From controller
     input  [31:0] depc_q, // From cs regs  //TODO:ropeders rename "dpc_q"

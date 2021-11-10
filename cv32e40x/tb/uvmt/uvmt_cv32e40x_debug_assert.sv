@@ -574,6 +574,13 @@ module uvmt_cv32e40x_debug_assert
                     pc_at_dbg_req <= mtvec_addr + (cov_assert_if.irq_id_o << 2);
                 end
             end
+            if(cov_assert_if.pending_nmi && cov_assert_if.nmi_allowed && (cov_assert_if.ctrl_fsm_cs == cv32e40x_pkg::FUNCTIONAL))
+            begin
+                //TODO:ropeders shouldn't "nmi_allowed" be trustable without "ctrl_fsm_cs"?
+                //TODO:ropeders shouldn't "dcsr.nmip" be usable as a "dpc" pedictor?
+                //TODO:ropeders shouldn't there be an assert for "dpc" not only on first instr in dmode?
+                pc_at_dbg_req <= cov_assert_if.nmi_addr_i;
+            end
             if(cov_assert_if.debug_mode_q && started_decoding_in_debug) begin
                 pc_at_dbg_req <= pc_at_dbg_req;
             end
