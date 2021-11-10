@@ -394,8 +394,10 @@ module uvmt_cv32e40x_debug_assert
 
     sequence s_dmode_dret_pc_ante;  // Antecedent
         cov_assert_if.debug_mode_q && cov_assert_if.is_dret
-        ##1 (!cov_assert_if.pending_debug && !cov_assert_if.irq_ack_o throughout cov_assert_if.wb_stage_instr_valid_i[->1]);
-        // TODO:ropeders can this req/irq clause be in consequent?
+        ##1 (
+          (!cov_assert_if.pending_debug && !cov_assert_if.irq_ack_o && !cov_assert_if.pending_nmi)
+          throughout (cov_assert_if.wb_stage_instr_valid_i [->1])
+          );
     endsequence
 
     property p_dmode_dret_pc;
