@@ -6,7 +6,7 @@
 
 // Per-extension instruction metadata predecoder
 
-// Modified by Guillaume Chauvon <guillaume.chauvon@thalesgroup.com> 
+// Modified by Guillaume Chauvon <guillaume.chauvon@thalesgroup.com>
 // to be aligned on the CoreV-eXtension-Interface
 
 module predecoder import cvxif_pkg::*; #(
@@ -14,7 +14,7 @@ module predecoder import cvxif_pkg::*; #(
    parameter instruction_pkg::copro_issue_resp_t  OffloadInstr[NumInstr] = {0}
 )
 (
-    input   x_issue_req_t      x_issue_req_i,               
+    input   x_issue_req_t      x_issue_req_i,
     output  x_issue_resp_t     x_issue_resp_o
 
 );
@@ -26,7 +26,7 @@ module predecoder import cvxif_pkg::*; #(
     assign instr_sel[i] =
       ((OffloadInstr[i].mask & x_issue_req_i.instr) == OffloadInstr[i].instr);
   end
-  
+
   for (genvar i = 0; i < NumInstr; i++) begin : gen_predecoder_mux
     assign instr_resp[i].accept     = instr_sel[i] ? 1'b1 : 1'b0;
     assign instr_resp[i].writeback  = instr_sel[i] ? OffloadInstr[i].resp.writeback : '0;
@@ -35,7 +35,7 @@ module predecoder import cvxif_pkg::*; #(
     assign instr_resp[i].loadstore  = instr_sel[i] ? OffloadInstr[i].resp.loadstore : '0;
     assign instr_resp[i].exc        = instr_sel[i] ? OffloadInstr[i].resp.exc : '0;
   end
-  
+
    always_comb begin
     x_issue_resp_o.accept     = 1'b0;
     x_issue_resp_o.writeback  = '0;
@@ -52,5 +52,5 @@ module predecoder import cvxif_pkg::*; #(
       x_issue_resp_o.exc        |= instr_resp[i].exc;
     end
   end
-  
+
 endmodule

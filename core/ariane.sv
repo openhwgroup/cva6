@@ -738,7 +738,7 @@ module ariane import ariane_pkg::*; #(
   // CVXIF result combinatorial. Instruction is ILLEGAL_INSTR if it is not accept by the coprocessor
   assign  cvxif_req_o.x_result_ready     = 1;
   always_comb begin
-    if (~cvxif_resp_i.x_issue_resp.accept && cvxif_req_o.x_issue_valid) begin
+    if (~cvxif_resp_i.x_issue_resp.accept && cvxif_req_o.x_issue_valid && cvxif_resp_i.x_issue_ready) begin
       cvxif_trans_id_ex_id          = cvxif_req_o.x_issue_req.id;
       cvxif_result_ex_id            = 0;
       cvxif_valid_ex_id             = 1;

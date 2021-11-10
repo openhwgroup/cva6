@@ -12,40 +12,63 @@ module cvxif_example_coprocessor import cvxif_pkg::*;
                                  import instruction_pkg::*;(
     input   logic                   clk_i,                      // Clock
     input   logic                   rst_ni,                    // Asynchronous reset active low
-    //Compressed interface
-    input   logic                   x_compressed_valid_i,
-    output  logic                   x_compressed_ready_o,
-    input   x_compressed_req_t      x_compressed_req_i,
-    output  x_compressed_resp_t     x_compressed_resp_o,
-    //Issue interface
-    input   logic                   x_issue_valid_i,
-    output  logic                   x_issue_ready_o,
-    input   x_issue_req_t           x_issue_req_i,
-    output  x_issue_resp_t          x_issue_resp_o,
-    //Commit interface
-    input   logic                   x_commit_valid_i,
-    input   x_commit_t              x_commit_i,
-    //Memory interface
-    output  logic                   x_mem_valid_o,
-    input   logic                   x_mem_ready_i,
-    output  x_mem_req_t             x_mem_req_o,
-    input   x_mem_resp_t            x_mem_resp_i,
-    //Memory result interface
-    input   logic                   x_mem_result_valid_i,
-    input   x_mem_result_t          x_mem_result_i,
-    //Result interface
-    output  logic                   x_result_valid_o,
-    input   logic                   x_result_ready_i,
-    output  x_result_t              x_result_o
+    //
+    input   cvxif_req_t             cvxif_req_i,
+    output  cvxif_resp_t            cvxif_resp_o
 );
+
+  //Compressed interface
+  logic                   x_compressed_valid_i;
+  logic                   x_compressed_ready_o;
+  x_compressed_req_t      x_compressed_req_i;
+  x_compressed_resp_t     x_compressed_resp_o;
+  //Issue interface
+  logic                   x_issue_valid_i;
+  logic                   x_issue_ready_o;
+  x_issue_req_t           x_issue_req_i;
+  x_issue_resp_t          x_issue_resp_o;
+  //Commit interface
+  logic                   x_commit_valid_i;
+  x_commit_t              x_commit_i;
+  //Memory interface
+  logic                   x_mem_valid_o;
+  logic                   x_mem_ready_i;
+  x_mem_req_t             x_mem_req_o;
+  x_mem_resp_t            x_mem_resp_i;
+  //Memory result interface
+  logic                   x_mem_result_valid_i;
+  x_mem_result_t          x_mem_result_i;
+  //Result interface
+  logic                   x_result_valid_o;
+  logic                   x_result_ready_i;
+  x_result_t              x_result_o;
+
+  assign x_compressed_valid_i = cvxif_req_i.x_compressed_valid;
+  assign x_compressed_req_i   = cvxif_req_i.x_compressed_req;
+  assign x_issue_valid_i      = cvxif_req_i.x_issue_valid;
+  assign x_issue_req_i        = cvxif_req_i.x_issue_req;
+  assign x_commit_valid_i     = cvxif_req_i.x_commit_valid;
+  assign x_commit_i           = cvxif_req_i.x_commit;
+  assign x_mem_ready_i        = cvxif_req_i.x_mem_ready;
+  assign x_mem_resp_i         = cvxif_req_i.x_mem_resp;
+  assign x_mem_result_valid_i = cvxif_req_i.x_mem_result_valid;
+  assign x_mem_result_i       = cvxif_req_i.x_mem_result;
+  assign x_result_ready_i     = cvxif_req_i.x_result_ready;
+
+  assign cvxif_resp_o.x_compressed_ready = x_compressed_ready_o;
+  assign cvxif_resp_o.x_compressed_resp  = x_compressed_resp_o;
+  assign cvxif_resp_o.x_issue_ready      = x_issue_ready_o;
+  assign cvxif_resp_o.x_issue_resp       = x_issue_resp_o;
+  assign cvxif_resp_o.x_mem_valid        = x_mem_valid_o;
+  assign cvxif_resp_o.x_mem_req          = x_mem_req_o;
+  assign cvxif_resp_o.x_result_valid     = x_result_valid_o;
+  assign cvxif_resp_o.x_result           = x_result_o;
 
   //Compressed interface
   assign x_compressed_ready_o       = '0;
   assign x_compressed_resp_o.instr  = '0;
-  assign x_compressed_resp_o.mode   = '0;
   assign x_compressed_resp_o.accept = '0;
-  
-    
+
   predecoder #(
     .NumInstr     ( instruction_pkg::NumInstr      ),
     .OffloadInstr ( instruction_pkg::OffloadInstr  )
@@ -53,16 +76,24 @@ module cvxif_example_coprocessor import cvxif_pkg::*;
     .x_issue_req_i    ( x_issue_req_i   ),
     .x_issue_resp_o   ( x_issue_resp_o  )
   );
-  
+
  logic fifo_valid;
+ logic x_issue_ready_q;
  logic instr_push, instr_pop;
-  x_issue_req_t  req;
+ x_issue_req_t  req;
 
 
   assign instr_push = x_issue_resp_o.accept ? 1 : 0 ;
   assign instr_pop = (x_commit_i.x_commit_kill && x_commit_valid_i) || x_result_valid_o;
-  assign x_issue_ready_o = ~fifo_valid; 
-
+  assign x_issue_ready_q = ~fifo_valid; // if something is in the fifo, the instruction is being processed
+                                        // so we can't receive anything else
+always_ff @(posedge clk_i or negedge rst_ni) begin : regs
+    if(!rst_ni) begin
+      x_issue_ready_o <= 1;
+    end else begin
+      x_issue_ready_o <= x_issue_ready_q;
+    end
+  end
 
   stream_fifo #(
       .FALL_THROUGH  (1), //data_o ready and pop in the same cycle
@@ -92,7 +123,7 @@ module cvxif_example_coprocessor import cvxif_pkg::*;
     .clk_i      ( clk_i),
     .rst_ni     ( rst_ni),
     .clear_i    ( ~x_commit_i.x_commit_kill && x_commit_valid_i),
-    .en_i       ( 1),
+    .en_i       ( 1'b1),
     .load_i     ( ),
     .down_i     ( ),
     .d_i        ( ),
@@ -105,7 +136,7 @@ module cvxif_example_coprocessor import cvxif_pkg::*;
     x_result_o.id       = req.id;
     x_result_o.data     = req.rs[0] + req.rs[1] + req.rs[2];
     x_result_o.rd       = 17;
-    x_result_o.we       = 0;
+    x_result_o.we       = 1;
     x_result_o.exc      = 0;
     x_result_o.exccode  = 0;
   end

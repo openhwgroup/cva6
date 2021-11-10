@@ -20,12 +20,12 @@ package cvxif_pkg;
 
   typedef struct packed {
     logic  [15:0]            instr;
+    logic  [1:0]             mode;
     logic  [X_ID_WIDTH-1:0]  id;
   } x_compressed_req_t;
 
   typedef struct packed {
     logic  [31:0]        instr;
-    logic  [1:0]         mode;
     logic                accept;
   } x_compressed_resp_t;
 
@@ -56,8 +56,8 @@ package cvxif_pkg;
     logic  [31:0]            addr;
     logic  [1:0]             mode;
     logic                    we;
-    logic                    size;
-    logic                    wdata;
+    logic  [1:0]             size;
+    logic  [X_MEM_WIDTH-1:0] wdata;
     logic                    last;
     logic                    spec;
   } x_mem_req_t;
