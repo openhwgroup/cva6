@@ -20,7 +20,7 @@ package corev_instr_test_pkg;
   import riscv_instr_pkg::*;
   import riscv_instr_test_pkg::*;
   import riscv_signature_pkg::*;
-  
+
   // Instruction streams
   `include "instr_lib/corev_interrupt_csr_instr_stream.sv"
   `include "instr_lib/corev_interrupt_csr_wfi_instr_stream.sv"
@@ -31,9 +31,10 @@ package corev_instr_test_pkg;
   `include "instr_lib/corev_xori_not_instr.sv"
   `include "instr_lib/corev_jal_wfi_instr.sv"
   `include "instr_lib/corev_jalr_wfi_instr.sv"
-  
+
   `include "corev_asm_program_gen.sv"
   `include "corev_report_server.sv"
   `include "corev_instr_base_test.sv"
+  `include "corev_directive_instr.sv"
 
 endpackage : corev_instr_test_pkg;

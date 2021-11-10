@@ -39,6 +39,7 @@ class uvma_rvfi_instr_seq_item_c#(int ILEN=DEFAULT_ILEN,
    rand bit                      insn_nmi;
    rand bit                      insn_interrupt;
    rand int unsigned             insn_interrupt_id;
+   rand bit                      insn_bus_fault;
 
    rand bit [XLEN-1:0]           pc_rdata;
    rand bit [XLEN-1:0]           pc_wdata;
@@ -77,6 +78,7 @@ class uvma_rvfi_instr_seq_item_c#(int ILEN=DEFAULT_ILEN,
       `uvm_field_int(dbg_mode, UVM_DEFAULT)
       `uvm_field_int(dbg, UVM_DEFAULT)
       `uvm_field_int(intr, UVM_DEFAULT)
+      `uvm_field_int(insn_bus_fault, UVM_DEFAULT)
       `uvm_field_enum(uvma_rvfi_mode, mode, UVM_DEFAULT)
       `uvm_field_int(ixl, UVM_DEFAULT)
       `uvm_field_int(pc_rdata, UVM_DEFAULT)
@@ -161,6 +163,8 @@ function string uvma_rvfi_instr_seq_item_c::convert2string();
       convert2string = $sformatf("%s INTR %0d", convert2string, this.insn_interrupt_id);
    if (insn_nmi)
       convert2string = $sformatf("%s NMI", convert2string);
+   if (insn_bus_fault)
+      convert2string = $sformatf("%s INSN_BUS_FAULT", convert2string);
    if (dbg)
       convert2string = $sformatf("%s DEBUG", convert2string);
 

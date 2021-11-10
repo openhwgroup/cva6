@@ -23,13 +23,13 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-#define RND_STALL_REG *(volatile int *)0x1000
+extern volatile uint32_t test_debugger_entry;
 
 #define MACHINE 3
 int main(int argc, char *argv[])
 {
     unsigned int check_reg;
-    check_reg = RND_STALL_REG;
+    check_reg = test_debugger_entry;
 
     printf("Debug reg = %08x\n", check_reg);
     // Debug code will write 0xff to this register

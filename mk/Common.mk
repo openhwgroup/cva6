@@ -278,6 +278,15 @@ CV_SW_TOOLCHAIN  ?= /opt/riscv
 CV_SW_VENDOR     ?= unknown
 CV_SW_MARCH      ?= rv32imc
 
+GNU_YES          = $(call IS_YES,$(GNU))
+PULP_YES         = $(call IS_YES,$(PULP))
+COREV_YES        = $(call IS_YES,$(COREV))
+LLVM_YES         = $(call IS_YES,$(LLVM))
+
+ifeq ($(shell $(CORE_V_VERIF)/mk/toolchain_check.sh $(GNU_YES) $(PULP_YES) $(COREV_YES) $(LLVM_YES)),1)
+$(error Multiple toolchains are enabled: GNU=${GNU_YES} PULP=${PULP_YES} COREV=${COREV_YES} LLVM=${LLVM_YES})
+endif
+
 RISCV             = $(CV_SW_TOOLCHAIN)
 RISCV_PREFIX      = riscv32-$(CV_SW_VENDOR)-elf-
 RISCV_EXE_PREFIX  = $(RISCV)/bin/$(RISCV_PREFIX)
@@ -285,7 +294,10 @@ RISCV_CC          = gcc
 RISCV_MARCH       = $(call RESOLVE_FLAG2,$(TEST_RISCV_MARCH),$(CV_SW_MARCH))
 RISCV_CFLAGS      = $(TEST_RISCV_CFLAGS)
 
-ifeq ($(call IS_YES,$(GNU)),YES)
+ifeq ($(GNU_YES),YES)
+ifeq ($(call IS_YES,$(TEST_GNU_NOT_SUPPORTED)),YES)
+$(error test [$(TEST)] does not support the GNU toolchain)
+endif
 RISCV            = $(GNU_SW_TOOLCHAIN)
 RISCV_PREFIX     = riscv32-$(GNU_VENDOR)-elf-
 RISCV_EXE_PREFIX = $(RISCV)/bin/$(RISCV_PREFIX)
@@ -294,7 +306,10 @@ RISCV_MARCH      = $(call RESOLVE_FLAG2,$(TEST_GNU_MARCH),$(GNU_MARCH))
 RISCV_CFLAGS     = $(call RESOLVE_FLAG2,$(TEST_GNU_CFLAGS),$(GNU_CFLAGS))
 endif
 
-ifeq ($(call IS_YES,$(COREV)),YES)
+ifeq ($(COREV_YES)),YES)
+ifeq ($(call IS_YES,$(TEST_COREV_NOT_SUPPORTED)),YES)
+$(error test [$(TEST)] does not support the COREV toolchain)
+endif
 RISCV            = $(COREV_SW_TOOLCHAIN)
 RISCV_PREFIX     = riscv32-$(COREV_VENDOR)-elf-
 RISCV_EXE_PREFIX = $(RISCV)/bin/$(RISCV_PREFIX)
@@ -303,7 +318,10 @@ RISCV_MARCH      = $(call RESOLVE_FLAG2,$(TEST_COREV_MARCH),$(COREV_MARCH))
 RISCV_CFLAGS     = $(call RESOLVE_FLAG2,$(TEST_COREV_CFLAGS),$(COREV_CFLAGS))
 endif
 
-ifeq ($(call IS_YES,$(PULP)),YES)
+ifeq ($(PULP_YES),YES)
+ifeq ($(call IS_YES,$(TEST_PULP_NOT_SUPPORTED)),YES)
+$(error test [$(TEST)] does not support the PULP toolchain)
+endif
 RISCV            = $(PULP_SW_TOOLCHAIN)
 RISCV_PREFIX     = riscv32-$(PULP_VENDOR)-elf-
 RISCV_EXE_PREFIX = $(RISCV)/bin/$(RISCV_PREFIX)
@@ -312,7 +330,10 @@ RISCV_MARCH      = $(call RESOLVE_FLAG2,$(TEST_PULP_MARCH),$(PULP_MARCH))
 RISCV_CFLAGS     = $(call RESOLVE_FLAG2,$(TEST_PULP_CFLAGS),$(PULP_CFLAGS))
 endif
 
-ifeq ($(call IS_YES,$(LLVM)),YES)
+ifeq ($(LLVM_YES),YES)
+ifeq ($(call IS_YES,$(TEST_LLVM_NOT_SUPPORTED)),YES)
+$(error test [$(TEST)] does not support the LLVM toolchain)
+endif
 RISCV            = $(LLVM_SW_TOOLCHAIN)
 RISCV_PREFIX     = riscv32-$(LLVM_VENDOR)-elf-
 RISCV_EXE_PREFIX = $(RISCV)/bin/$(RISCV_PREFIX)

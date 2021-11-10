@@ -73,6 +73,7 @@ package uvme_cv32e40s_pkg;
    `include "uvme_cv32e40s_vp_interrupt_timer_seq.sv"
    `include "uvme_cv32e40s_vp_sig_writer_seq.sv"
    `include "uvme_cv32e40s_vp_status_flags_seq.sv"
+   `include "uvme_cv32e40s_vp_fencei_tamper_seq.sv"
    `include "uvme_cv32e40s_interrupt_noise_vseq.sv"
    `include "uvme_cv32e40s_vseq_lib.sv"
    `include "uvme_cv32e40s_core_cntrl_base_seq.sv"

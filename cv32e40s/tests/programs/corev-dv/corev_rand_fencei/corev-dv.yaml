@@ -1,0 +1,11 @@
+# Test definition YAML for corev-dv test generator
+
+name: corev_rand_fencei
+uvm_test: $(CV_CORE_LC)_instr_base_test
+description: RISCV-DV generated random fencei test
+plusargs: >
+    +instr_cnt=10000
+    +directed_instr_0=corev_store_fencei_load_instr_stream,10
+    +directed_instr_1=corev_store_fencei_exec_instr_stream,10
+    +directed_instr_2=corev_vp_fencei_exec_instr_stream,10
+    +rand_stall_obi_disable
