@@ -134,7 +134,9 @@ interface uvmt_cv32e40x_debug_cov_assert_if
     input         illegal_insn_i,
     input         ecall_insn_i,
 
+    // Core signals
     input  [31:0] boot_addr_i,
+    input         fetch_enable_i,
 
     input         rvfi_valid,
     input  [31:0] rvfi_pc_wdata,

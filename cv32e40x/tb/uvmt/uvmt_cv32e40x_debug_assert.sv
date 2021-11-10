@@ -527,6 +527,21 @@ module uvmt_cv32e40x_debug_assert
         else `uvm_error(info_tag, "Debug mode not entered correctly while handling illegal instruction!");
 
 
+    // Check that "dm_halt_addr_i" is correct
+
+    // Should be stable after "fetch_enable_i"
+    a_dmhaltaddr_stable : assert property (
+        (cov_assert_if.fetch_enable_i && cov_assert_if.rst_ni)
+        |=>
+        always $stable(cov_assert_if.dm_halt_addr_i)
+        ) else `uvm_error(info_tag, "TODO");
+
+    // Should be word-aligned
+    a_dmhaltaddr_aligned : assert property (
+        cov_assert_if.dm_halt_addr_i[1:0] == 2'b 00
+        ) else `uvm_error(info_tag, "TODO");
+
+
     // -------------------------------------------
     // Capture internal states for use in checking
     // -------------------------------------------
@@ -590,6 +605,7 @@ module uvmt_cv32e40x_debug_assert
   // Capture dm_halt_addr_i value
 
   always@ (posedge cov_assert_if.clk_i or negedge cov_assert_if.rst_ni) begin
+      //TODO:ropeders this should be entirely unnecessary because user manual says it should be stable. Could remove?
       if(!cov_assert_if.rst_ni) begin
           halt_addr_at_entry_flag <= 1'b0;
       end else begin
