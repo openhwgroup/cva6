@@ -42,6 +42,7 @@ module uvmt_cv32e40x_debug_assert
   logic [2:0] debug_cause_pri;
   logic [31:0] boot_addr_at_entry;
   logic [31:0] mtvec_addr;
+  logic        is_trigger_match;
 
   // Locally track pc in ID stage to detect first instruction of debug code
   logic first_debug_ins_flag;
@@ -57,12 +58,12 @@ module uvmt_cv32e40x_debug_assert
   default disable iff !(cov_assert_if.rst_ni);
 
   assign cov_assert_if.is_ebreak =
-    cov_assert_if.wb_stage_instr_valid_i
+    cov_assert_if.wb_valid
     && !cov_assert_if.wb_err
     && (cov_assert_if.wb_stage_instr_rdata_i == 32'h0010_0073);
 
   assign cov_assert_if.is_cebreak =
-    cov_assert_if.wb_stage_instr_valid_i
+    cov_assert_if.wb_valid
     && !cov_assert_if.wb_err
     && (cov_assert_if.wb_stage_instr_rdata_i == 32'h0000_9002);
 
@@ -71,6 +72,8 @@ module uvmt_cv32e40x_debug_assert
     && (cov_assert_if.wb_stage_instr_rdata_i[31:25] == 7'h1)
     && (cov_assert_if.wb_stage_instr_rdata_i[14:12] == 3'b010)
     && (cov_assert_if.wb_stage_instr_rdata_i[6:0]   == 7'h33);
+
+  assign is_trigger_match = cov_assert_if.trigger_match_in_wb && cov_assert_if.wb_valid;
 
   assign mtvec_addr = {cov_assert_if.mtvec[31:2], 2'b00};
 
@@ -221,7 +224,7 @@ module uvmt_cv32e40x_debug_assert
     // Trigger match results in debug mode
 
     property p_trigger_match;
-        cov_assert_if.trigger_match_i ##0 cov_assert_if.tdata1[2] ##0 !cov_assert_if.debug_mode_q
+        is_trigger_match ##0 cov_assert_if.tdata1[2] ##0 !cov_assert_if.debug_mode_q
         |->
         s_conse_next_retire
         ##0 cov_assert_if.debug_mode_q && (cov_assert_if.dcsr_q[8:6] === cv32e40x_pkg::DBG_CAUSE_TRIGGER)
@@ -328,7 +331,7 @@ module uvmt_cv32e40x_debug_assert
     // Exception while single step -> PC is set to exception handler before debug
     property p_single_step_exception;
         !cov_assert_if.debug_mode_q && cov_assert_if.dcsr_q[2]
-        && cov_assert_if.illegal_insn_i && cov_assert_if.wb_valid && !cov_assert_if.trigger_match_i
+        && cov_assert_if.illegal_insn_i && cov_assert_if.wb_valid && !is_trigger_match
         |-> ##[1:20] cov_assert_if.debug_mode_q && (cov_assert_if.depc_q == mtvec_addr);
     endproperty
 
@@ -638,7 +641,7 @@ module uvmt_cv32e40x_debug_assert
             debug_cause_pri <= 3'b000;
         end else begin
             if((cov_assert_if.ctrl_fsm_cs == cv32e40x_pkg::FUNCTIONAL) && !cov_assert_if.debug_mode_q) begin
-                if (cov_assert_if.trigger_match_i)
+                if (is_trigger_match)
                     debug_cause_pri <= 3'b010;
                 else if(cov_assert_if.dcsr_q[15] && (cov_assert_if.is_ebreak || cov_assert_if.is_cebreak))
                     debug_cause_pri <= 3'b001;

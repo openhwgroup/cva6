@@ -157,7 +157,7 @@ interface uvmt_cv32e40x_debug_cov_assert_if
     input  [31:0] mepc_q,
     input  [31:0] tdata1,
     input  [31:0] tdata2,
-    input  trigger_match_i,
+    input  trigger_match_in_wb,
 
     // Counter related input from cs_registers
     input  [31:0] mcountinhibit_q,
@@ -218,7 +218,7 @@ interface uvmt_cv32e40x_debug_cov_assert_if
     mepc_q,
     tdata1,
     tdata2,
-    trigger_match_i,
+    trigger_match_in_wb,
     fence_i,
     mcountinhibit_q,
     mcycle,

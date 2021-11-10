@@ -401,7 +401,7 @@ module uvmt_cv32e40x_tb;
       .mepc_q(core_i.cs_registers_i.mepc_q),
       .tdata1(core_i.cs_registers_i.tmatch_control_q),
       .tdata2(core_i.cs_registers_i.tmatch_value_q),
-      .trigger_match_i(core_i.controller_i.controller_fsm_i.trigger_match_in_wb),  // TODO:ropeders
+      .trigger_match_in_wb(core_i.controller_i.controller_fsm_i.trigger_match_in_wb),
       .mcountinhibit_q(core_i.cs_registers_i.mcountinhibit_q),
       .mcycle(core_i.cs_registers_i.mhpmcounter_q[0]),
       .minstret(core_i.cs_registers_i.mhpmcounter_q[2]),
