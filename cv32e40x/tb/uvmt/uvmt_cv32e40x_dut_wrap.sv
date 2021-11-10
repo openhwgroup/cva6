@@ -147,11 +147,9 @@ module uvmt_cv32e40x_dut_wrap
 
     // --------------------------------------------
     // instantiate the core
-    defparam cv32e40x_wrapper_i.core_i.id_stage_i.B_EXT = B_EXT;
     cv32e40x_wrapper #(
                       .NUM_MHPMCOUNTERS (NUM_MHPMCOUNTERS),
-                      // FIXME:strichmo:restore this when the issue with exposing B_EXT parameter is exposed to cv32e40x_wrapper and cv32e40x_core
-                      //.B_EXT            (B_EXT),
+                      .B_EXT            (B_EXT),
                       .PMA_NUM_REGIONS  (PMA_NUM_REGIONS),
                       .PMA_CFG          (PMA_CFG)
                       )
@@ -216,6 +214,3 @@ module uvmt_cv32e40x_dut_wrap
 endmodule : uvmt_cv32e40x_dut_wrap
 
 `endif // __UVMT_CV32E40X_DUT_WRAP_SV__
-
-
-
