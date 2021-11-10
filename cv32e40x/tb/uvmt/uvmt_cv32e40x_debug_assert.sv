@@ -639,20 +639,18 @@ module uvmt_cv32e40x_debug_assert
     always@ (posedge cov_assert_if.clk_i or negedge cov_assert_if.rst_ni) begin
         if( !cov_assert_if.rst_ni) begin
             debug_cause_pri <= 3'b000;
-        end else begin
-            if((cov_assert_if.ctrl_fsm_cs == cv32e40x_pkg::FUNCTIONAL) && !cov_assert_if.debug_mode_q) begin
-                if (is_trigger_match)
-                    debug_cause_pri <= 3'b010;
-                else if(cov_assert_if.dcsr_q[15] && (cov_assert_if.is_ebreak || cov_assert_if.is_cebreak))
-                    debug_cause_pri <= 3'b001;
-                else if(cov_assert_if.debug_req_i || cov_assert_if.debug_req_q)
-                    debug_cause_pri <= 3'b011;
-                else if(cov_assert_if.dcsr_q[2])
-                    debug_cause_pri <= 3'b100;
-                else
-                    debug_cause_pri <= 3'b000;
-                // TODO:ropeders should have cause 5 when RTL is ready
-            end
+        end else if(!cov_assert_if.debug_mode_q) begin
+            if (is_trigger_match)
+                debug_cause_pri <= 3'b010;
+            else if(cov_assert_if.dcsr_q[15] && (cov_assert_if.is_ebreak || cov_assert_if.is_cebreak))
+                debug_cause_pri <= 3'b001;
+            else if(cov_assert_if.debug_req_i || cov_assert_if.debug_req_q)
+                debug_cause_pri <= 3'b011;
+            else if(cov_assert_if.dcsr_q[2])
+                debug_cause_pri <= 3'b100;
+            else
+                debug_cause_pri <= 3'b000;
+            // TODO:ropeders should have cause 5 when RTL is ready
         end
     end
 
