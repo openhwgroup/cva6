@@ -19,11 +19,13 @@
 # SPDX-License-Identifier: Apache-2.0
 #
 ###############################################################################
-# MHPMCOUNTERS29: access testcase for mhpmcounter3..31 CSRs in cv32e40s.
+# MHPMCOUNTERS29: access testcase for mhpmcounter3..31 CSRs in cv32e40x.
 #     Notes:
 #       1. This test requires NUM_MHPMCOUNTERS set to 29.
 #       2. Does not test function - just access.
 ###############################################################################
+#include "corev_uvmt.h"
+
 .globl _start
 .globl main
 .globl exit
@@ -34,7 +36,7 @@
 
 #define TEST_PASS                      123456789
 #define TEST_FAIL                              1
-#define VIRT_PERIPH_STATUS_FLAG_ADDR  0x20000000 
+#define VIRT_PERIPH_STATUS_FLAG_ADDR  CV_VP_STATUS_FLAGS_BASE
 #define EXPECTED_ILLEGAL_INSTRUCTIONS         24
 
 main:
@@ -102,282 +104,282 @@ main:
 
 	# mhpmevent4
 	csrrci x5,  0x324, 0x0a
-	csrrc  x5,  0x324, x0  
-	csrrc  x0,  0x324, x5  
+	csrrc  x5,  0x324, x0
+	csrrc  x0,  0x324, x5
 	csrrci x5,  0x324, 0x0a
-	csrrs  x0,  0x324, x5  
+	csrrs  x0,  0x324, x5
  	csrrsi x0,  0x324, 0x0a
- 	csrrw  x0,  0x324, x0  
+ 	csrrw  x0,  0x324, x0
 	csrrwi x0,  0x324, 0x0a
 
 	# mhpmevent5
 	csrrci x5,  0x325, 0x0a
-	csrrc  x5,  0x325, x0  
-	csrrc  x0,  0x325, x5  
+	csrrc  x5,  0x325, x0
+	csrrc  x0,  0x325, x5
 	csrrci x5,  0x325, 0x0a
-	csrrs  x0,  0x325, x5  
+	csrrs  x0,  0x325, x5
  	csrrsi x0,  0x325, 0x0a
- 	csrrw  x0,  0x325, x0  
+ 	csrrw  x0,  0x325, x0
 	csrrwi x0,  0x325, 0x0a
 
 	# mhpmevent6
 	csrrci x5,  0x326, 0x0a
-	csrrc  x5,  0x326, x0  
-	csrrc  x0,  0x326, x5  
+	csrrc  x5,  0x326, x0
+	csrrc  x0,  0x326, x5
 	csrrci x5,  0x326, 0x0a
-	csrrs  x0,  0x326, x5  
+	csrrs  x0,  0x326, x5
  	csrrsi x0,  0x326, 0x0a
- 	csrrw  x0,  0x326, x0  
+ 	csrrw  x0,  0x326, x0
 	csrrwi x0,  0x326, 0x0a
 
 	# mhpmevent7
 	csrrci x5,  0x327, 0x0a
-	csrrc  x5,  0x327, x0  
-	csrrc  x0,  0x327, x5  
+	csrrc  x5,  0x327, x0
+	csrrc  x0,  0x327, x5
 	csrrci x5,  0x327, 0x0a
-	csrrs  x0,  0x327, x5  
+	csrrs  x0,  0x327, x5
  	csrrsi x0,  0x327, 0x0a
- 	csrrw  x0,  0x327, x0  
+ 	csrrw  x0,  0x327, x0
 	csrrwi x0,  0x327, 0x0a
 
 	# mhpmevent8
 	csrrci x5,  0x328, 0x0a
-	csrrc  x5,  0x328, x0  
-	csrrc  x0,  0x328, x5  
+	csrrc  x5,  0x328, x0
+	csrrc  x0,  0x328, x5
 	csrrci x5,  0x328, 0x0a
-	csrrs  x0,  0x328, x5  
+	csrrs  x0,  0x328, x5
  	csrrsi x0,  0x328, 0x0a
- 	csrrw  x0,  0x328, x0  
+ 	csrrw  x0,  0x328, x0
 	csrrwi x0,  0x328, 0x0a
 
 	# mhpmevent9
 	csrrci x5,  0x329, 0x0a
-	csrrc  x5,  0x329, x0  
-	csrrc  x0,  0x329, x5  
+	csrrc  x5,  0x329, x0
+	csrrc  x0,  0x329, x5
 	csrrci x5,  0x329, 0x0a
-	csrrs  x0,  0x329, x5  
+	csrrs  x0,  0x329, x5
  	csrrsi x0,  0x329, 0x0a
- 	csrrw  x0,  0x329, x0  
+ 	csrrw  x0,  0x329, x0
 	csrrwi x0,  0x329, 0x0a
 
 	# mhpmevent10
 	csrrci x5,  0x32a, 0x0a
-	csrrc  x5,  0x32a, x0  
-	csrrc  x0,  0x32a, x5  
+	csrrc  x5,  0x32a, x0
+	csrrc  x0,  0x32a, x5
 	csrrci x5,  0x32a, 0x0a
-	csrrs  x0,  0x32a, x5  
+	csrrs  x0,  0x32a, x5
  	csrrsi x0,  0x32a, 0x0a
- 	csrrw  x0,  0x32a, x0  
+ 	csrrw  x0,  0x32a, x0
 	csrrwi x0,  0x32a, 0x0a
 
 	# mhpmevent11
 	csrrci x5,  0x32b, 0x0a
-	csrrc  x5,  0x32b, x0  
-	csrrc  x0,  0x32b, x5  
+	csrrc  x5,  0x32b, x0
+	csrrc  x0,  0x32b, x5
 	csrrci x5,  0x32b, 0x0a
-	csrrs  x0,  0x32b, x5  
+	csrrs  x0,  0x32b, x5
  	csrrsi x0,  0x32b, 0x0a
- 	csrrw  x0,  0x32b, x0  
+ 	csrrw  x0,  0x32b, x0
 	csrrwi x0,  0x32b, 0x0a
 
 	# mhpmevent12
 	csrrci x5,  0x32c, 0x0a
-	csrrc  x5,  0x32c, x0  
-	csrrc  x0,  0x32c, x5  
+	csrrc  x5,  0x32c, x0
+	csrrc  x0,  0x32c, x5
 	csrrci x5,  0x32c, 0x0a
-	csrrs  x0,  0x32c, x5  
+	csrrs  x0,  0x32c, x5
  	csrrsi x0,  0x32c, 0x0a
- 	csrrw  x0,  0x32c, x0  
+ 	csrrw  x0,  0x32c, x0
 	csrrwi x0,  0x32c, 0x0a
 
 	# mhpmevent13
 	csrrci x5,  0x32d, 0x0a
-	csrrc  x5,  0x32d, x0  
-	csrrc  x0,  0x32d, x5  
+	csrrc  x5,  0x32d, x0
+	csrrc  x0,  0x32d, x5
 	csrrci x5,  0x32d, 0x0a
-	csrrs  x0,  0x32d, x5  
+	csrrs  x0,  0x32d, x5
  	csrrsi x0,  0x32d, 0x0a
- 	csrrw  x0,  0x32d, x0  
+ 	csrrw  x0,  0x32d, x0
 	csrrwi x0,  0x32d, 0x0a
 
 	# mhpmevent14
 	csrrci x5,  0x32e, 0x0a
-	csrrc  x5,  0x32e, x0  
-	csrrc  x0,  0x32e, x5  
+	csrrc  x5,  0x32e, x0
+	csrrc  x0,  0x32e, x5
 	csrrci x5,  0x32e, 0x0a
-	csrrs  x0,  0x32e, x5  
+	csrrs  x0,  0x32e, x5
  	csrrsi x0,  0x32e, 0x0a
- 	csrrw  x0,  0x32e, x0  
+ 	csrrw  x0,  0x32e, x0
 	csrrwi x0,  0x32e, 0x0a
 
 	# mhpmevent15
 	csrrci x5,  0x32f, 0x0a
-	csrrc  x5,  0x32f, x0  
-	csrrc  x0,  0x32f, x5  
+	csrrc  x5,  0x32f, x0
+	csrrc  x0,  0x32f, x5
 	csrrci x5,  0x32f, 0x0a
-	csrrs  x0,  0x32f, x5  
+	csrrs  x0,  0x32f, x5
  	csrrsi x0,  0x32f, 0x0a
- 	csrrw  x0,  0x32f, x0  
+ 	csrrw  x0,  0x32f, x0
 	csrrwi x0,  0x32f, 0x0a
 
 	# mhpmevent16
 	csrrci x5,  0x330, 0x0a
-	csrrc  x5,  0x330, x0  
-	csrrc  x0,  0x330, x5  
+	csrrc  x5,  0x330, x0
+	csrrc  x0,  0x330, x5
 	csrrci x5,  0x330, 0x0a
-	csrrs  x0,  0x330, x5  
+	csrrs  x0,  0x330, x5
  	csrrsi x0,  0x330, 0x0a
- 	csrrw  x0,  0x330, x0  
+ 	csrrw  x0,  0x330, x0
 	csrrwi x0,  0x330, 0x0a
 
 	# mhpmevent17
 	csrrci x5,  0x331, 0x0a
-	csrrc  x5,  0x331, x0  
-	csrrc  x0,  0x331, x5  
+	csrrc  x5,  0x331, x0
+	csrrc  x0,  0x331, x5
 	csrrci x5,  0x331, 0x0a
-	csrrs  x0,  0x331, x5  
+	csrrs  x0,  0x331, x5
  	csrrsi x0,  0x331, 0x0a
- 	csrrw  x0,  0x331, x0  
+ 	csrrw  x0,  0x331, x0
 	csrrwi x0,  0x331, 0x0a
 
 	# mhpmevent18
 	csrrci x5,  0x332, 0x0a
-	csrrc  x5,  0x332, x0  
-	csrrc  x0,  0x332, x5  
+	csrrc  x5,  0x332, x0
+	csrrc  x0,  0x332, x5
 	csrrci x5,  0x332, 0x0a
-	csrrs  x0,  0x332, x5  
+	csrrs  x0,  0x332, x5
  	csrrsi x0,  0x332, 0x0a
- 	csrrw  x0,  0x332, x0  
+ 	csrrw  x0,  0x332, x0
 	csrrwi x0,  0x332, 0x0a
 
 	# mhpmevent19
 	csrrci x5,  0x333, 0x0a
-	csrrc  x5,  0x333, x0  
-	csrrc  x0,  0x333, x5  
+	csrrc  x5,  0x333, x0
+	csrrc  x0,  0x333, x5
 	csrrci x5,  0x333, 0x0a
-	csrrs  x0,  0x333, x5  
+	csrrs  x0,  0x333, x5
  	csrrsi x0,  0x333, 0x0a
- 	csrrw  x0,  0x333, x0  
+ 	csrrw  x0,  0x333, x0
 	csrrwi x0,  0x333, 0x0a
 
 	# mhpmevent20
 	csrrci x5,  0x334, 0x0a
-	csrrc  x5,  0x334, x0  
-	csrrc  x0,  0x334, x5  
+	csrrc  x5,  0x334, x0
+	csrrc  x0,  0x334, x5
 	csrrci x5,  0x334, 0x0a
-	csrrs  x0,  0x334, x5  
+	csrrs  x0,  0x334, x5
  	csrrsi x0,  0x334, 0x0a
- 	csrrw  x0,  0x334, x0  
+ 	csrrw  x0,  0x334, x0
 	csrrwi x0,  0x334, 0x0a
 
 	# mhpmevent21
 	csrrci x5,  0x335, 0x0a
-	csrrc  x5,  0x335, x0  
-	csrrc  x0,  0x335, x5  
+	csrrc  x5,  0x335, x0
+	csrrc  x0,  0x335, x5
 	csrrci x5,  0x335, 0x0a
-	csrrs  x0,  0x335, x5  
+	csrrs  x0,  0x335, x5
  	csrrsi x0,  0x335, 0x0a
- 	csrrw  x0,  0x335, x0  
+ 	csrrw  x0,  0x335, x0
 	csrrwi x0,  0x335, 0x0a
 
 	# mhpmevent22
 	csrrci x5,  0x336, 0x0a
-	csrrc  x5,  0x336, x0  
-	csrrc  x0,  0x336, x5  
+	csrrc  x5,  0x336, x0
+	csrrc  x0,  0x336, x5
 	csrrci x5,  0x336, 0x0a
-	csrrs  x0,  0x336, x5  
+	csrrs  x0,  0x336, x5
  	csrrsi x0,  0x336, 0x0a
- 	csrrw  x0,  0x336, x0  
+ 	csrrw  x0,  0x336, x0
 	csrrwi x0,  0x336, 0x0a
 
 	# mhpmevent23
 	csrrci x5,  0x337, 0x0a
-	csrrc  x5,  0x337, x0  
-	csrrc  x0,  0x337, x5  
+	csrrc  x5,  0x337, x0
+	csrrc  x0,  0x337, x5
 	csrrci x5,  0x337, 0x0a
-	csrrs  x0,  0x337, x5  
+	csrrs  x0,  0x337, x5
  	csrrsi x0,  0x337, 0x0a
- 	csrrw  x0,  0x337, x0  
+ 	csrrw  x0,  0x337, x0
 	csrrwi x0,  0x337, 0x0a
 
 	# mhpmevent24
 	csrrci x5,  0x338, 0x0a
-	csrrc  x5,  0x338, x0  
-	csrrc  x0,  0x338, x5  
+	csrrc  x5,  0x338, x0
+	csrrc  x0,  0x338, x5
 	csrrci x5,  0x338, 0x0a
-	csrrs  x0,  0x338, x5  
+	csrrs  x0,  0x338, x5
  	csrrsi x0,  0x338, 0x0a
- 	csrrw  x0,  0x338, x0  
+ 	csrrw  x0,  0x338, x0
 	csrrwi x0,  0x338, 0x0a
 
 	# mhpmevent25
 	csrrci x5,  0x339, 0x0a
-	csrrc  x5,  0x339, x0  
-	csrrc  x0,  0x339, x5  
+	csrrc  x5,  0x339, x0
+	csrrc  x0,  0x339, x5
 	csrrci x5,  0x339, 0x0a
-	csrrs  x0,  0x339, x5  
+	csrrs  x0,  0x339, x5
  	csrrsi x0,  0x339, 0x0a
- 	csrrw  x0,  0x339, x0  
+ 	csrrw  x0,  0x339, x0
 	csrrwi x0,  0x339, 0x0a
 
 	# mhpmevent26
 	csrrci x5,  0x33a, 0x0a
-	csrrc  x5,  0x33a, x0  
-	csrrc  x0,  0x33a, x5  
+	csrrc  x5,  0x33a, x0
+	csrrc  x0,  0x33a, x5
 	csrrci x5,  0x33a, 0x0a
-	csrrs  x0,  0x33a, x5  
+	csrrs  x0,  0x33a, x5
  	csrrsi x0,  0x33a, 0x0a
- 	csrrw  x0,  0x33a, x0  
+ 	csrrw  x0,  0x33a, x0
 	csrrwi x0,  0x33a, 0x0a
 
 	# mhpmevent27
 	csrrci x5,  0x33b, 0x0a
-	csrrc  x5,  0x33b, x0  
-	csrrc  x0,  0x33b, x5  
+	csrrc  x5,  0x33b, x0
+	csrrc  x0,  0x33b, x5
 	csrrci x5,  0x33b, 0x0a
-	csrrs  x0,  0x33b, x5  
+	csrrs  x0,  0x33b, x5
  	csrrsi x0,  0x33b, 0x0a
- 	csrrw  x0,  0x33b, x0  
+ 	csrrw  x0,  0x33b, x0
 	csrrwi x0,  0x33b, 0x0a
 
 	# mhpmevent28
 	csrrci x5,  0x33c, 0x0a
-	csrrc  x5,  0x33c, x0  
-	csrrc  x0,  0x33c, x5  
+	csrrc  x5,  0x33c, x0
+	csrrc  x0,  0x33c, x5
 	csrrci x5,  0x33c, 0x0a
-	csrrs  x0,  0x33c, x5  
+	csrrs  x0,  0x33c, x5
  	csrrsi x0,  0x33c, 0x0a
- 	csrrw  x0,  0x33c, x0  
+ 	csrrw  x0,  0x33c, x0
 	csrrwi x0,  0x33c, 0x0a
 
 	# mhpmevent29
 	csrrci x5,  0x33d, 0x0a
-	csrrc  x5,  0x33d, x0  
-	csrrc  x0,  0x33d, x5  
+	csrrc  x5,  0x33d, x0
+	csrrc  x0,  0x33d, x5
 	csrrci x5,  0x33d, 0x0a
-	csrrs  x0,  0x33d, x5  
+	csrrs  x0,  0x33d, x5
  	csrrsi x0,  0x33d, 0x0a
- 	csrrw  x0,  0x33d, x0  
+ 	csrrw  x0,  0x33d, x0
 	csrrwi x0,  0x33d, 0x0a
 
 	# mhpmevent30
 	csrrci x5,  0x33e, 0x0a
-	csrrc  x5,  0x33e, x0  
-	csrrc  x0,  0x33e, x5  
+	csrrc  x5,  0x33e, x0
+	csrrc  x0,  0x33e, x5
 	csrrci x5,  0x33e, 0x0a
-	csrrs  x0,  0x33e, x5  
+	csrrs  x0,  0x33e, x5
  	csrrsi x0,  0x33e, 0x0a
- 	csrrw  x0,  0x33e, x0  
+ 	csrrw  x0,  0x33e, x0
 	csrrwi x0,  0x33e, 0x0a
 
 	# mhpmevent31
 	csrrci x5,  0x33f, 0x0a
-	csrrc  x5,  0x33f, x0  
-	csrrc  x0,  0x33f, x5  
+	csrrc  x5,  0x33f, x0
+	csrrc  x0,  0x33f, x5
 	csrrci x5,  0x33f, 0x0a
-	csrrs  x0,  0x33f, x5  
+	csrrs  x0,  0x33f, x5
  	csrrsi x0,  0x33f, 0x0a
- 	csrrw  x0,  0x33f, x0  
+ 	csrrw  x0,  0x33f, x0
 	csrrwi x0,  0x33f, 0x0a
 
     ################
@@ -394,282 +396,282 @@ main:
 
 	# mhpmcounter4
 	csrrci x5,  0xB04, 0x0a
-	csrrc  x5,  0xB04, x0  
-	csrrc  x0,  0xB04, x5  
+	csrrc  x5,  0xB04, x0
+	csrrc  x0,  0xB04, x5
 	csrrci x5,  0xB04, 0x0a
-	csrrs  x0,  0xB04, x5  
+	csrrs  x0,  0xB04, x5
  	csrrsi x0,  0xB04, 0x0a
- 	csrrw  x0,  0xB04, x0  
+ 	csrrw  x0,  0xB04, x0
 	csrrwi x0,  0xB04, 0x0a
 
 	# mhpmcounter5
 	csrrci x5,  0xB05, 0x0a
-	csrrc  x5,  0xB05, x0  
-	csrrc  x0,  0xB05, x5  
+	csrrc  x5,  0xB05, x0
+	csrrc  x0,  0xB05, x5
 	csrrci x5,  0xB05, 0x0a
-	csrrs  x0,  0xB05, x5  
+	csrrs  x0,  0xB05, x5
  	csrrsi x0,  0xB05, 0x0a
- 	csrrw  x0,  0xB05, x0  
+ 	csrrw  x0,  0xB05, x0
 	csrrwi x0,  0xB05, 0x0a
 
 	# mhpmcounter6
 	csrrci x5,  0xB06, 0x0a
-	csrrc  x5,  0xB06, x0  
-	csrrc  x0,  0xB06, x5  
+	csrrc  x5,  0xB06, x0
+	csrrc  x0,  0xB06, x5
 	csrrci x5,  0xB06, 0x0a
-	csrrs  x0,  0xB06, x5  
+	csrrs  x0,  0xB06, x5
  	csrrsi x0,  0xB06, 0x0a
- 	csrrw  x0,  0xB06, x0  
+ 	csrrw  x0,  0xB06, x0
 	csrrwi x0,  0xB06, 0x0a
 
 	# mhpmcounter7
 	csrrci x5,  0xB07, 0x0a
-	csrrc  x5,  0xB07, x0  
-	csrrc  x0,  0xB07, x5  
+	csrrc  x5,  0xB07, x0
+	csrrc  x0,  0xB07, x5
 	csrrci x5,  0xB07, 0x0a
-	csrrs  x0,  0xB07, x5  
+	csrrs  x0,  0xB07, x5
  	csrrsi x0,  0xB07, 0x0a
- 	csrrw  x0,  0xB07, x0  
+ 	csrrw  x0,  0xB07, x0
 	csrrwi x0,  0xB07, 0x0a
 
 	# mhpmcounter8
 	csrrci x5,  0xB08, 0x0a
-	csrrc  x5,  0xB08, x0  
-	csrrc  x0,  0xB08, x5  
+	csrrc  x5,  0xB08, x0
+	csrrc  x0,  0xB08, x5
 	csrrci x5,  0xB08, 0x0a
-	csrrs  x0,  0xB08, x5  
+	csrrs  x0,  0xB08, x5
  	csrrsi x0,  0xB08, 0x0a
- 	csrrw  x0,  0xB08, x0  
+ 	csrrw  x0,  0xB08, x0
 	csrrwi x0,  0xB08, 0x0a
 
 	# mhpmcounter9
 	csrrci x5,  0xB09, 0x0a
-	csrrc  x5,  0xB09, x0  
-	csrrc  x0,  0xB09, x5  
+	csrrc  x5,  0xB09, x0
+	csrrc  x0,  0xB09, x5
 	csrrci x5,  0xB09, 0x0a
-	csrrs  x0,  0xB09, x5  
+	csrrs  x0,  0xB09, x5
  	csrrsi x0,  0xB09, 0x0a
- 	csrrw  x0,  0xB09, x0  
+ 	csrrw  x0,  0xB09, x0
 	csrrwi x0,  0xB09, 0x0a
 
 	# mhpmcounter10
 	csrrci x5,  0xB0A, 0x0a
-	csrrc  x5,  0xB0A, x0  
-	csrrc  x0,  0xB0A, x5  
+	csrrc  x5,  0xB0A, x0
+	csrrc  x0,  0xB0A, x5
 	csrrci x5,  0xB0A, 0x0a
-	csrrs  x0,  0xB0A, x5  
+	csrrs  x0,  0xB0A, x5
  	csrrsi x0,  0xB0A, 0x0a
- 	csrrw  x0,  0xB0A, x0  
+ 	csrrw  x0,  0xB0A, x0
 	csrrwi x0,  0xB0A, 0x0a
 
 	# mhpmcounter11
 	csrrci x5,  0xB0B, 0x0a
-	csrrc  x5,  0xB0B, x0  
-	csrrc  x0,  0xB0B, x5  
+	csrrc  x5,  0xB0B, x0
+	csrrc  x0,  0xB0B, x5
 	csrrci x5,  0xB0B, 0x0a
-	csrrs  x0,  0xB0B, x5  
+	csrrs  x0,  0xB0B, x5
  	csrrsi x0,  0xB0B, 0x0a
- 	csrrw  x0,  0xB0B, x0  
+ 	csrrw  x0,  0xB0B, x0
 	csrrwi x0,  0xB0B, 0x0a
 
 	# mhpmcounter12
 	csrrci x5,  0xB0C, 0x0a
-	csrrc  x5,  0xB0C, x0  
-	csrrc  x0,  0xB0C, x5  
+	csrrc  x5,  0xB0C, x0
+	csrrc  x0,  0xB0C, x5
 	csrrci x5,  0xB0C, 0x0a
-	csrrs  x0,  0xB0C, x5  
+	csrrs  x0,  0xB0C, x5
  	csrrsi x0,  0xB0C, 0x0a
- 	csrrw  x0,  0xB0C, x0  
+ 	csrrw  x0,  0xB0C, x0
 	csrrwi x0,  0xB0C, 0x0a
 
 	# mhpmcounter13
 	csrrci x5,  0xB0D, 0x0a
-	csrrc  x5,  0xB0D, x0  
-	csrrc  x0,  0xB0D, x5  
+	csrrc  x5,  0xB0D, x0
+	csrrc  x0,  0xB0D, x5
 	csrrci x5,  0xB0D, 0x0a
-	csrrs  x0,  0xB0D, x5  
+	csrrs  x0,  0xB0D, x5
  	csrrsi x0,  0xB0D, 0x0a
- 	csrrw  x0,  0xB0D, x0  
+ 	csrrw  x0,  0xB0D, x0
 	csrrwi x0,  0xB0D, 0x0a
 
 	# mhpmcounter14
 	csrrci x5,  0xB0E, 0x0a
-	csrrc  x5,  0xB0E, x0  
-	csrrc  x0,  0xB0E, x5  
+	csrrc  x5,  0xB0E, x0
+	csrrc  x0,  0xB0E, x5
 	csrrci x5,  0xB0E, 0x0a
-	csrrs  x0,  0xB0E, x5  
+	csrrs  x0,  0xB0E, x5
  	csrrsi x0,  0xB0E, 0x0a
- 	csrrw  x0,  0xB0E, x0  
+ 	csrrw  x0,  0xB0E, x0
 	csrrwi x0,  0xB0E, 0x0a
 
 	# mhpmcounter15
 	csrrci x5,  0xB0F, 0x0a
-	csrrc  x5,  0xB0F, x0  
-	csrrc  x0,  0xB0F, x5  
+	csrrc  x5,  0xB0F, x0
+	csrrc  x0,  0xB0F, x5
 	csrrci x5,  0xB0F, 0x0a
-	csrrs  x0,  0xB0F, x5  
+	csrrs  x0,  0xB0F, x5
  	csrrsi x0,  0xB0F, 0x0a
- 	csrrw  x0,  0xB0F, x0  
+ 	csrrw  x0,  0xB0F, x0
 	csrrwi x0,  0xB0F, 0x0a
 
 	# mhpmcounter16
 	csrrci x5,  0xB10, 0x0a
-	csrrc  x5,  0xB10, x0  
-	csrrc  x0,  0xB10, x5  
+	csrrc  x5,  0xB10, x0
+	csrrc  x0,  0xB10, x5
 	csrrci x5,  0xB10, 0x0a
-	csrrs  x0,  0xB10, x5  
+	csrrs  x0,  0xB10, x5
  	csrrsi x0,  0xB10, 0x0a
- 	csrrw  x0,  0xB10, x0  
+ 	csrrw  x0,  0xB10, x0
 	csrrwi x0,  0xB10, 0x0a
 
 	# mhpmcounter17
 	csrrci x5,  0xB11, 0x0a
-	csrrc  x5,  0xB11, x0  
-	csrrc  x0,  0xB11, x5  
+	csrrc  x5,  0xB11, x0
+	csrrc  x0,  0xB11, x5
 	csrrci x5,  0xB11, 0x0a
-	csrrs  x0,  0xB11, x5  
+	csrrs  x0,  0xB11, x5
  	csrrsi x0,  0xB11, 0x0a
- 	csrrw  x0,  0xB11, x0  
+ 	csrrw  x0,  0xB11, x0
 	csrrwi x0,  0xB11, 0x0a
 
 	# mhpmcounter18
 	csrrci x5,  0xB12, 0x0a
-	csrrc  x5,  0xB12, x0  
-	csrrc  x0,  0xB12, x5  
+	csrrc  x5,  0xB12, x0
+	csrrc  x0,  0xB12, x5
 	csrrci x5,  0xB12, 0x0a
-	csrrs  x0,  0xB12, x5  
+	csrrs  x0,  0xB12, x5
  	csrrsi x0,  0xB12, 0x0a
- 	csrrw  x0,  0xB12, x0  
+ 	csrrw  x0,  0xB12, x0
 	csrrwi x0,  0xB12, 0x0a
 
 	# mhpmcounter19
 	csrrci x5,  0xB13, 0x0a
-	csrrc  x5,  0xB13, x0  
-	csrrc  x0,  0xB13, x5  
+	csrrc  x5,  0xB13, x0
+	csrrc  x0,  0xB13, x5
 	csrrci x5,  0xB13, 0x0a
-	csrrs  x0,  0xB13, x5  
+	csrrs  x0,  0xB13, x5
  	csrrsi x0,  0xB13, 0x0a
- 	csrrw  x0,  0xB13, x0  
+ 	csrrw  x0,  0xB13, x0
 	csrrwi x0,  0xB13, 0x0a
 
 	# mhpmcounter20
 	csrrci x5,  0xB14, 0x0a
-	csrrc  x5,  0xB14, x0  
-	csrrc  x0,  0xB14, x5  
+	csrrc  x5,  0xB14, x0
+	csrrc  x0,  0xB14, x5
 	csrrci x5,  0xB14, 0x0a
-	csrrs  x0,  0xB14, x5  
+	csrrs  x0,  0xB14, x5
  	csrrsi x0,  0xB14, 0x0a
- 	csrrw  x0,  0xB14, x0  
+ 	csrrw  x0,  0xB14, x0
 	csrrwi x0,  0xB14, 0x0a
 
 	# mhpmcounter21
 	csrrci x5,  0xB15, 0x0a
-	csrrc  x5,  0xB15, x0  
-	csrrc  x0,  0xB15, x5  
+	csrrc  x5,  0xB15, x0
+	csrrc  x0,  0xB15, x5
 	csrrci x5,  0xB15, 0x0a
-	csrrs  x0,  0xB15, x5  
+	csrrs  x0,  0xB15, x5
  	csrrsi x0,  0xB15, 0x0a
- 	csrrw  x0,  0xB15, x0  
+ 	csrrw  x0,  0xB15, x0
 	csrrwi x0,  0xB15, 0x0a
 
 	# mhpmcounter22
 	csrrci x5,  0xB16, 0x0a
-	csrrc  x5,  0xB16, x0  
-	csrrc  x0,  0xB16, x5  
+	csrrc  x5,  0xB16, x0
+	csrrc  x0,  0xB16, x5
 	csrrci x5,  0xB16, 0x0a
-	csrrs  x0,  0xB16, x5  
+	csrrs  x0,  0xB16, x5
  	csrrsi x0,  0xB16, 0x0a
- 	csrrw  x0,  0xB16, x0  
+ 	csrrw  x0,  0xB16, x0
 	csrrwi x0,  0xB16, 0x0a
 
 	# mhpmcounter23
 	csrrci x5,  0xB17, 0x0a
-	csrrc  x5,  0xB17, x0  
-	csrrc  x0,  0xB17, x5  
+	csrrc  x5,  0xB17, x0
+	csrrc  x0,  0xB17, x5
 	csrrci x5,  0xB17, 0x0a
-	csrrs  x0,  0xB17, x5  
+	csrrs  x0,  0xB17, x5
  	csrrsi x0,  0xB17, 0x0a
- 	csrrw  x0,  0xB17, x0  
+ 	csrrw  x0,  0xB17, x0
 	csrrwi x0,  0xB17, 0x0a
 
 	# mhpmcounter24
 	csrrci x5,  0xB18, 0x0a
-	csrrc  x5,  0xB18, x0  
-	csrrc  x0,  0xB18, x5  
+	csrrc  x5,  0xB18, x0
+	csrrc  x0,  0xB18, x5
 	csrrci x5,  0xB18, 0x0a
-	csrrs  x0,  0xB18, x5  
+	csrrs  x0,  0xB18, x5
  	csrrsi x0,  0xB18, 0x0a
- 	csrrw  x0,  0xB18, x0  
+ 	csrrw  x0,  0xB18, x0
 	csrrwi x0,  0xB18, 0x0a
 
 	# mhpmcounter25
 	csrrci x5,  0xB19, 0x0a
-	csrrc  x5,  0xB19, x0  
-	csrrc  x0,  0xB19, x5  
+	csrrc  x5,  0xB19, x0
+	csrrc  x0,  0xB19, x5
 	csrrci x5,  0xB19, 0x0a
-	csrrs  x0,  0xB19, x5  
+	csrrs  x0,  0xB19, x5
  	csrrsi x0,  0xB19, 0x0a
- 	csrrw  x0,  0xB19, x0  
+ 	csrrw  x0,  0xB19, x0
 	csrrwi x0,  0xB19, 0x0a
 
 	# mhpmcounter26
 	csrrci x5,  0xB1A, 0x0a
-	csrrc  x5,  0xB1A, x0  
-	csrrc  x0,  0xB1A, x5  
+	csrrc  x5,  0xB1A, x0
+	csrrc  x0,  0xB1A, x5
 	csrrci x5,  0xB1A, 0x0a
-	csrrs  x0,  0xB1A, x5  
+	csrrs  x0,  0xB1A, x5
  	csrrsi x0,  0xB1A, 0x0a
- 	csrrw  x0,  0xB1A, x0  
+ 	csrrw  x0,  0xB1A, x0
 	csrrwi x0,  0xB1A, 0x0a
 
 	# mhpmcounter27
 	csrrci x5,  0xB1B, 0x0a
-	csrrc  x5,  0xB1B, x0  
-	csrrc  x0,  0xB1B, x5  
+	csrrc  x5,  0xB1B, x0
+	csrrc  x0,  0xB1B, x5
 	csrrci x5,  0xB1B, 0x0a
-	csrrs  x0,  0xB1B, x5  
+	csrrs  x0,  0xB1B, x5
  	csrrsi x0,  0xB1B, 0x0a
- 	csrrw  x0,  0xB1B, x0  
+ 	csrrw  x0,  0xB1B, x0
 	csrrwi x0,  0xB1B, 0x0a
 
 	# mhpmcounter28
 	csrrci x5,  0xB1C, 0x0a
-	csrrc  x5,  0xB1C, x0  
-	csrrc  x0,  0xB1C, x5  
+	csrrc  x5,  0xB1C, x0
+	csrrc  x0,  0xB1C, x5
 	csrrci x5,  0xB1C, 0x0a
-	csrrs  x0,  0xB1C, x5  
+	csrrs  x0,  0xB1C, x5
  	csrrsi x0,  0xB1C, 0x0a
- 	csrrw  x0,  0xB1C, x0  
+ 	csrrw  x0,  0xB1C, x0
 	csrrwi x0,  0xB1C, 0x0a
 
 	# mhpmcounter29
 	csrrci x5,  0xB1D, 0x0a
-	csrrc  x5,  0xB1D, x0  
-	csrrc  x0,  0xB1D, x5  
+	csrrc  x5,  0xB1D, x0
+	csrrc  x0,  0xB1D, x5
 	csrrci x5,  0xB1D, 0x0a
-	csrrs  x0,  0xB1D, x5  
+	csrrs  x0,  0xB1D, x5
  	csrrsi x0,  0xB1D, 0x0a
- 	csrrw  x0,  0xB1D, x0  
+ 	csrrw  x0,  0xB1D, x0
 	csrrwi x0,  0xB1D, 0x0a
 
 	# mhpmcounter30
 	csrrci x5,  0xB1E, 0x0a
-	csrrc  x5,  0xB1E, x0  
-	csrrc  x0,  0xB1E, x5  
+	csrrc  x5,  0xB1E, x0
+	csrrc  x0,  0xB1E, x5
 	csrrci x5,  0xB1E, 0x0a
-	csrrs  x0,  0xB1E, x5  
+	csrrs  x0,  0xB1E, x5
  	csrrsi x0,  0xB1E, 0x0a
- 	csrrw  x0,  0xB1E, x0  
+ 	csrrw  x0,  0xB1E, x0
 	csrrwi x0,  0xB1E, 0x0a
 
 	# mhpmcounter31
 	csrrci x5,  0xB1F, 0x0a
-	csrrc  x5,  0xB1F, x0  
-	csrrc  x0,  0xB1F, x5  
+	csrrc  x5,  0xB1F, x0
+	csrrc  x0,  0xB1F, x5
 	csrrci x5,  0xB1F, 0x0a
-	csrrs  x0,  0xB1F, x5  
+	csrrs  x0,  0xB1F, x5
  	csrrsi x0,  0xB1F, 0x0a
- 	csrrw  x0,  0xB1F, x0  
+ 	csrrw  x0,  0xB1F, x0
 	csrrwi x0,  0xB1F, 0x0a
 
     ################
@@ -696,272 +698,272 @@ main:
 
 	# mhpmcounterh5
 	csrrci x5,  0xB85, 0x0a
-	csrrc  x5,  0xB85, x0  
-	csrrc  x0,  0xB85, x5  
+	csrrc  x5,  0xB85, x0
+	csrrc  x0,  0xB85, x5
 	csrrci x5,  0xB85, 0x0a
-	csrrs  x0,  0xB85, x5  
+	csrrs  x0,  0xB85, x5
  	csrrsi x0,  0xB85, 0x0a
- 	csrrw  x0,  0xB85, x0  
+ 	csrrw  x0,  0xB85, x0
 	csrrwi x0,  0xB85, 0x0a
 
 	# mhpmcounterh6
 	csrrci x5,  0xB86, 0x0a
-	csrrc  x5,  0xB86, x0  
-	csrrc  x0,  0xB86, x5  
+	csrrc  x5,  0xB86, x0
+	csrrc  x0,  0xB86, x5
 	csrrci x5,  0xB86, 0x0a
-	csrrs  x0,  0xB86, x5  
+	csrrs  x0,  0xB86, x5
  	csrrsi x0,  0xB86, 0x0a
- 	csrrw  x0,  0xB86, x0  
+ 	csrrw  x0,  0xB86, x0
 	csrrwi x0,  0xB86, 0x0a
 
 	# mhpmcounterh7
 	csrrci x5,  0xB87, 0x0a
-	csrrc  x5,  0xB87, x0  
-	csrrc  x0,  0xB87, x5  
+	csrrc  x5,  0xB87, x0
+	csrrc  x0,  0xB87, x5
 	csrrci x5,  0xB87, 0x0a
-	csrrs  x0,  0xB87, x5  
+	csrrs  x0,  0xB87, x5
  	csrrsi x0,  0xB87, 0x0a
- 	csrrw  x0,  0xB87, x0  
+ 	csrrw  x0,  0xB87, x0
 	csrrwi x0,  0xB87, 0x0a
 
 	# mhpmcounterh8
 	csrrci x5,  0xB88, 0x0a
-	csrrc  x5,  0xB88, x0  
-	csrrc  x0,  0xB88, x5  
+	csrrc  x5,  0xB88, x0
+	csrrc  x0,  0xB88, x5
 	csrrci x5,  0xB88, 0x0a
-	csrrs  x0,  0xB88, x5  
+	csrrs  x0,  0xB88, x5
  	csrrsi x0,  0xB88, 0x0a
- 	csrrw  x0,  0xB88, x0  
+ 	csrrw  x0,  0xB88, x0
 	csrrwi x0,  0xB88, 0x0a
 
 	# mhpmcounterh9
 	csrrci x5,  0xB89, 0x0a
-	csrrc  x5,  0xB89, x0  
-	csrrc  x0,  0xB89, x5  
+	csrrc  x5,  0xB89, x0
+	csrrc  x0,  0xB89, x5
 	csrrci x5,  0xB89, 0x0a
-	csrrs  x0,  0xB89, x5  
+	csrrs  x0,  0xB89, x5
  	csrrsi x0,  0xB89, 0x0a
- 	csrrw  x0,  0xB89, x0  
+ 	csrrw  x0,  0xB89, x0
 	csrrwi x0,  0xB89, 0x0a
 
 	# mhpmcounterh10
 	csrrci x5,  0xB8A, 0x0a
-	csrrc  x5,  0xB8A, x0  
-	csrrc  x0,  0xB8A, x5  
+	csrrc  x5,  0xB8A, x0
+	csrrc  x0,  0xB8A, x5
 	csrrci x5,  0xB8A, 0x0a
-	csrrs  x0,  0xB8A, x5  
+	csrrs  x0,  0xB8A, x5
  	csrrsi x0,  0xB8A, 0x0a
- 	csrrw  x0,  0xB8A, x0  
+ 	csrrw  x0,  0xB8A, x0
 	csrrwi x0,  0xB8A, 0x0a
 
 	# mhpmcounterh11
 	csrrci x5,  0xB8B, 0x0a
-	csrrc  x5,  0xB8B, x0  
-	csrrc  x0,  0xB8B, x5  
+	csrrc  x5,  0xB8B, x0
+	csrrc  x0,  0xB8B, x5
 	csrrci x5,  0xB8B, 0x0a
-	csrrs  x0,  0xB8B, x5  
+	csrrs  x0,  0xB8B, x5
  	csrrsi x0,  0xB8B, 0x0a
- 	csrrw  x0,  0xB8B, x0  
+ 	csrrw  x0,  0xB8B, x0
 	csrrwi x0,  0xB8B, 0x0a
 
 	# mhpmcounterh12
 	csrrci x5,  0xB8C, 0x0a
-	csrrc  x5,  0xB8C, x0  
-	csrrc  x0,  0xB8C, x5  
+	csrrc  x5,  0xB8C, x0
+	csrrc  x0,  0xB8C, x5
 	csrrci x5,  0xB8C, 0x0a
-	csrrs  x0,  0xB8C, x5  
+	csrrs  x0,  0xB8C, x5
  	csrrsi x0,  0xB8C, 0x0a
- 	csrrw  x0,  0xB8C, x0  
+ 	csrrw  x0,  0xB8C, x0
 	csrrwi x0,  0xB8C, 0x0a
 
 	# mhpmcounterh13
 	csrrci x5,  0xB8D, 0x0a
-	csrrc  x5,  0xB8D, x0  
-	csrrc  x0,  0xB8D, x5  
+	csrrc  x5,  0xB8D, x0
+	csrrc  x0,  0xB8D, x5
 	csrrci x5,  0xB8D, 0x0a
-	csrrs  x0,  0xB8D, x5  
+	csrrs  x0,  0xB8D, x5
  	csrrsi x0,  0xB8D, 0x0a
- 	csrrw  x0,  0xB8D, x0  
+ 	csrrw  x0,  0xB8D, x0
 	csrrwi x0,  0xB8D, 0x0a
 
 	# mhpmcounterh14
 	csrrci x5,  0xB8E, 0x0a
-	csrrc  x5,  0xB8E, x0  
-	csrrc  x0,  0xB8E, x5  
+	csrrc  x5,  0xB8E, x0
+	csrrc  x0,  0xB8E, x5
 	csrrci x5,  0xB8E, 0x0a
-	csrrs  x0,  0xB8E, x5  
+	csrrs  x0,  0xB8E, x5
  	csrrsi x0,  0xB8E, 0x0a
- 	csrrw  x0,  0xB8E, x0  
+ 	csrrw  x0,  0xB8E, x0
 	csrrwi x0,  0xB8E, 0x0a
 
 	# mhpmcounterh15
 	csrrci x5,  0xB8F, 0x0a
-	csrrc  x5,  0xB8F, x0  
-	csrrc  x0,  0xB8F, x5  
+	csrrc  x5,  0xB8F, x0
+	csrrc  x0,  0xB8F, x5
 	csrrci x5,  0xB8F, 0x0a
-	csrrs  x0,  0xB8F, x5  
+	csrrs  x0,  0xB8F, x5
  	csrrsi x0,  0xB8F, 0x0a
- 	csrrw  x0,  0xB8F, x0  
+ 	csrrw  x0,  0xB8F, x0
 	csrrwi x0,  0xB8F, 0x0a
 
 	# mhpmcounterh16
 	csrrci x5,  0xB90, 0x0a
-	csrrc  x5,  0xB90, x0  
-	csrrc  x0,  0xB90, x5  
+	csrrc  x5,  0xB90, x0
+	csrrc  x0,  0xB90, x5
 	csrrci x5,  0xB90, 0x0a
-	csrrs  x0,  0xB90, x5  
+	csrrs  x0,  0xB90, x5
  	csrrsi x0,  0xB90, 0x0a
- 	csrrw  x0,  0xB90, x0  
+ 	csrrw  x0,  0xB90, x0
 	csrrwi x0,  0xB90, 0x0a
 
 	# mhpmcounterh17
 	csrrci x5,  0xB91, 0x0a
-	csrrc  x5,  0xB91, x0  
-	csrrc  x0,  0xB91, x5  
+	csrrc  x5,  0xB91, x0
+	csrrc  x0,  0xB91, x5
 	csrrci x5,  0xB91, 0x0a
-	csrrs  x0,  0xB91, x5  
+	csrrs  x0,  0xB91, x5
  	csrrsi x0,  0xB91, 0x0a
- 	csrrw  x0,  0xB91, x0  
+ 	csrrw  x0,  0xB91, x0
 	csrrwi x0,  0xB91, 0x0a
 
 	# mhpmcounterh18
 	csrrci x5,  0xB92, 0x0a
-	csrrc  x5,  0xB92, x0  
-	csrrc  x0,  0xB92, x5  
+	csrrc  x5,  0xB92, x0
+	csrrc  x0,  0xB92, x5
 	csrrci x5,  0xB92, 0x0a
-	csrrs  x0,  0xB92, x5  
+	csrrs  x0,  0xB92, x5
  	csrrsi x0,  0xB92, 0x0a
- 	csrrw  x0,  0xB92, x0  
+ 	csrrw  x0,  0xB92, x0
 	csrrwi x0,  0xB92, 0x0a
 
 	# mhpmcounterh19
 	csrrci x5,  0xB93, 0x0a
-	csrrc  x5,  0xB93, x0  
-	csrrc  x0,  0xB93, x5  
+	csrrc  x5,  0xB93, x0
+	csrrc  x0,  0xB93, x5
 	csrrci x5,  0xB93, 0x0a
-	csrrs  x0,  0xB93, x5  
+	csrrs  x0,  0xB93, x5
  	csrrsi x0,  0xB93, 0x0a
- 	csrrw  x0,  0xB93, x0  
+ 	csrrw  x0,  0xB93, x0
 	csrrwi x0,  0xB93, 0x0a
 
 	# mhpmcounterh20
 	csrrci x5,  0xB94, 0x0a
-	csrrc  x5,  0xB94, x0  
-	csrrc  x0,  0xB94, x5  
+	csrrc  x5,  0xB94, x0
+	csrrc  x0,  0xB94, x5
 	csrrci x5,  0xB94, 0x0a
-	csrrs  x0,  0xB94, x5  
+	csrrs  x0,  0xB94, x5
  	csrrsi x0,  0xB94, 0x0a
- 	csrrw  x0,  0xB94, x0  
+ 	csrrw  x0,  0xB94, x0
 	csrrwi x0,  0xB94, 0x0a
 
 	# mhpmcounterh21
 	csrrci x5,  0xB95, 0x0a
-	csrrc  x5,  0xB95, x0  
-	csrrc  x0,  0xB95, x5  
+	csrrc  x5,  0xB95, x0
+	csrrc  x0,  0xB95, x5
 	csrrci x5,  0xB95, 0x0a
-	csrrs  x0,  0xB95, x5  
+	csrrs  x0,  0xB95, x5
  	csrrsi x0,  0xB95, 0x0a
- 	csrrw  x0,  0xB95, x0  
+ 	csrrw  x0,  0xB95, x0
 	csrrwi x0,  0xB95, 0x0a
 
 	# mhpmcounterh22
 	csrrci x5,  0xB96, 0x0a
-	csrrc  x5,  0xB96, x0  
-	csrrc  x0,  0xB96, x5  
+	csrrc  x5,  0xB96, x0
+	csrrc  x0,  0xB96, x5
 	csrrci x5,  0xB96, 0x0a
-	csrrs  x0,  0xB96, x5  
+	csrrs  x0,  0xB96, x5
  	csrrsi x0,  0xB96, 0x0a
- 	csrrw  x0,  0xB96, x0  
+ 	csrrw  x0,  0xB96, x0
 	csrrwi x0,  0xB96, 0x0a
 
 	# mhpmcounterh23
 	csrrci x5,  0xB97, 0x0a
-	csrrc  x5,  0xB97, x0  
-	csrrc  x0,  0xB97, x5  
+	csrrc  x5,  0xB97, x0
+	csrrc  x0,  0xB97, x5
 	csrrci x5,  0xB97, 0x0a
-	csrrs  x0,  0xB97, x5  
+	csrrs  x0,  0xB97, x5
  	csrrsi x0,  0xB97, 0x0a
- 	csrrw  x0,  0xB97, x0  
+ 	csrrw  x0,  0xB97, x0
 	csrrwi x0,  0xB97, 0x0a
 
 	# mhpmcounterh24
 	csrrci x5,  0xB98, 0x0a
-	csrrc  x5,  0xB98, x0  
-	csrrc  x0,  0xB98, x5  
+	csrrc  x5,  0xB98, x0
+	csrrc  x0,  0xB98, x5
 	csrrci x5,  0xB98, 0x0a
-	csrrs  x0,  0xB98, x5  
+	csrrs  x0,  0xB98, x5
  	csrrsi x0,  0xB98, 0x0a
- 	csrrw  x0,  0xB98, x0  
+ 	csrrw  x0,  0xB98, x0
 	csrrwi x0,  0xB98, 0x0a
 
 	# mhpmcounterh25
 	csrrci x5,  0xB99, 0x0a
-	csrrc  x5,  0xB99, x0  
-	csrrc  x0,  0xB99, x5  
+	csrrc  x5,  0xB99, x0
+	csrrc  x0,  0xB99, x5
 	csrrci x5,  0xB99, 0x0a
-	csrrs  x0,  0xB99, x5  
+	csrrs  x0,  0xB99, x5
  	csrrsi x0,  0xB99, 0x0a
- 	csrrw  x0,  0xB99, x0  
+ 	csrrw  x0,  0xB99, x0
 	csrrwi x0,  0xB99, 0x0a
 
 	# mhpmcounterh26
 	csrrci x5,  0xB9A, 0x0a
-	csrrc  x5,  0xB9A, x0  
-	csrrc  x0,  0xB9A, x5  
+	csrrc  x5,  0xB9A, x0
+	csrrc  x0,  0xB9A, x5
 	csrrci x5,  0xB9A, 0x0a
-	csrrs  x0,  0xB9A, x5  
+	csrrs  x0,  0xB9A, x5
  	csrrsi x0,  0xB9A, 0x0a
- 	csrrw  x0,  0xB9A, x0  
+ 	csrrw  x0,  0xB9A, x0
 	csrrwi x0,  0xB9A, 0x0a
 
 	# mhpmcounterh27
 	csrrci x5,  0xB9B, 0x0a
-	csrrc  x5,  0xB9B, x0  
-	csrrc  x0,  0xB9B, x5  
+	csrrc  x5,  0xB9B, x0
+	csrrc  x0,  0xB9B, x5
 	csrrci x5,  0xB9B, 0x0a
-	csrrs  x0,  0xB9B, x5  
+	csrrs  x0,  0xB9B, x5
  	csrrsi x0,  0xB9B, 0x0a
- 	csrrw  x0,  0xB9B, x0  
+ 	csrrw  x0,  0xB9B, x0
 	csrrwi x0,  0xB9B, 0x0a
 
 	# mhpmcounterh28
 	csrrci x5,  0xB9C, 0x0a
-	csrrc  x5,  0xB9C, x0  
-	csrrc  x0,  0xB9C, x5  
+	csrrc  x5,  0xB9C, x0
+	csrrc  x0,  0xB9C, x5
 	csrrci x5,  0xB9C, 0x0a
-	csrrs  x0,  0xB9C, x5  
+	csrrs  x0,  0xB9C, x5
  	csrrsi x0,  0xB9C, 0x0a
- 	csrrw  x0,  0xB9C, x0  
+ 	csrrw  x0,  0xB9C, x0
 	csrrwi x0,  0xB9C, 0x0a
 
 	# mhpmcounterh29
 	csrrci x5,  0xB9D, 0x0a
-	csrrc  x5,  0xB9D, x0  
-	csrrc  x0,  0xB9D, x5  
+	csrrc  x5,  0xB9D, x0
+	csrrc  x0,  0xB9D, x5
 	csrrci x5,  0xB9D, 0x0a
-	csrrs  x0,  0xB9D, x5  
+	csrrs  x0,  0xB9D, x5
  	csrrsi x0,  0xB9D, 0x0a
- 	csrrw  x0,  0xB9D, x0  
+ 	csrrw  x0,  0xB9D, x0
 	csrrwi x0,  0xB9D, 0x0a
 
 	# mhpmcounterh30
 	csrrci x5,  0xB9E, 0x0a
-	csrrc  x5,  0xB9E, x0  
-	csrrc  x0,  0xB9E, x5  
+	csrrc  x5,  0xB9E, x0
+	csrrc  x0,  0xB9E, x5
 	csrrci x5,  0xB9E, 0x0a
-	csrrs  x0,  0xB9E, x5  
+	csrrs  x0,  0xB9E, x5
  	csrrsi x0,  0xB9E, 0x0a
- 	csrrw  x0,  0xB9E, x0  
+ 	csrrw  x0,  0xB9E, x0
 	csrrwi x0,  0xB9E, 0x0a
 
 	# mhpmcounterh31
 	csrrci x5,  0xB9F, 0x0a
-	csrrc  x5,  0xB9F, x0  
-	csrrc  x0,  0xB9F, x5  
+	csrrc  x5,  0xB9F, x0
+	csrrc  x0,  0xB9F, x5
 	csrrci x5,  0xB9F, 0x0a
-	csrrs  x0,  0xB9F, x5  
+	csrrs  x0,  0xB9F, x5
  	csrrsi x0,  0xB9F, 0x0a
- 	csrrw  x0,  0xB9F, x0  
+ 	csrrw  x0,  0xB9F, x0
 	csrrwi x0,  0xB9F, 0x0a
 
 ###############################################################################
@@ -991,7 +993,7 @@ main:
 	csrrwi x0,  3858, 0x0a   # illegal instruction: attempt to write RO CSR
 
 	csrrc  x5,  3858, x0     # not illegal
-	li     x30, 0x00000004
+	li     x30, 0x00000014
 	bne    x5,  x30, fail
 
 	# mipmid
@@ -1086,7 +1088,7 @@ u_sw_irq_handler:
     csrrw x0, mepc, x27
     c.addi x31, 1
     mret
-    
+
 _exit:
     j _exit
 

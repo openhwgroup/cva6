@@ -9,5 +9,4 @@ plusargs: >
     +gen_irq_noise
     +reset_debug
     +gen_random_debug
-    +ignore_dpc_check
 
