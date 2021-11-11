@@ -21,19 +21,6 @@
 // Even though fencei meddles with the pipeline, the stores shall come through.
 class corev_store_fencei_load_instr_stream extends riscv_load_store_rand_instr_stream;
 
-  rand bit [31:0]  addr;
-  rand riscv_reg_t data_reg;
-
-  constraint dont_overwrite_data_reg {
-    data_reg != rs1_reg;  // Don't overwrite the data that is to be written
-  }
-  constraint dont_pollute_reserved_regs {
-    !(data_reg inside {cfg.reserved_regs, reserved_rd});
-  }
-  constraint dont_store_in_x0 {
-    data_reg != ZERO;
-  }
-
   `uvm_object_utils(corev_store_fencei_load_instr_stream)
 
   function new(string name = "");
@@ -48,21 +35,7 @@ class corev_store_fencei_load_instr_stream extends riscv_load_store_rand_instr_s
     // Generate a default big chunk of instructions as a "substrate" to work on
     super.post_randomize();
 
-    // The following instrs use "instr_list_new" to be merged into "instr_list" later
-
-/* TODO:ropeders not needed?
-    // (Backup existing data)
-    instr = riscv_instr::get_instr(LW);
-    `DV_CHECK_RANDOMIZE_WITH_FATAL(instr,
-      instr_name == LW;
-      rs1 == rs1_reg;
-      imm == offset[0];
-      rd == data_reg;
-      , "failed to randomize backup"
-    )
-    instr.comment = "store_fencei_load: backup existing";
-    instr_list_new.push_back(instr);
-*/
+    // The following instrs add to "instr_list_new", to be merged into "instr_list" later
 
     // Store
     instr = riscv_instr::get_rand_instr(.include_instr({SW, SH, SB}));
@@ -86,26 +59,12 @@ class corev_store_fencei_load_instr_stream extends riscv_load_store_rand_instr_s
       instr_name inside {LW, LH, LHU, LB, LBU};
       rs1 == rs1_reg;
       imm == offset[0];
-      !(rd inside {rs1_reg, data_reg});
+      rd != rs1_reg;
       !(rd inside {cfg.reserved_regs});
       , "failed to randomize load"
     )
     instr.comment = "store_fencei_load: load";
     instr_list_new.push_back(instr);
-
-/* TODO:ropeders not needed?
-    // (Restore previous data)
-    instr = riscv_instr::get_instr(SW);
-    `DV_CHECK_RANDOMIZE_WITH_FATAL(instr,
-      instr_name == SW;
-      rs1 == rs1_reg;
-      imm == offset[0];
-      rs2 == data_reg;
-      , "failed to randomize restore"
-    )
-    instr.comment = "store_fencei_load: store previous";
-    instr_list_new.push_back(instr);
-*/
 
     // Combine the final instr list
     idx_insert = $urandom_range(1, instr_list.size() - 1);  // Not before the LA
