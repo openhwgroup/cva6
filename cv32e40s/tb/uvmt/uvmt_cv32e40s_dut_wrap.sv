@@ -87,10 +87,6 @@ module uvmt_cv32e40s_dut_wrap
     logic                         debug_running;
     logic                         debug_halted;
 
-    // fixme:strichmo:These will need to be checked eventually and perhaps added to an agent/interface
-    logic                         alert_major;
-    logic                         alert_minor;
-
     assign debug_if.clk      = clknrst_if.clk;
     assign debug_if.reset_n  = clknrst_if.reset_n;
 
@@ -145,11 +141,9 @@ module uvmt_cv32e40s_dut_wrap
 
     // --------------------------------------------
     // instantiate the core
-    defparam cv32e40s_wrapper_i.core_i.id_stage_i.B_EXT = B_EXT;
     cv32e40s_wrapper #(
                       .NUM_MHPMCOUNTERS (NUM_MHPMCOUNTERS),
-                      // FIXME:strichmo:restore this when the issue with exposing B_EXT parameter is exposed to cv32e40s_wrapper and cv32e40s_core
-                      //.B_EXT            (B_EXT),
+                      .B_EXT            (B_EXT),
                       .PMA_NUM_REGIONS  (PMA_NUM_REGIONS),
                       .PMA_CFG          (PMA_CFG)
                       )
@@ -210,7 +204,3 @@ module uvmt_cv32e40s_dut_wrap
 endmodule : uvmt_cv32e40s_dut_wrap
 
 `endif // __UVMT_CV32E40S_DUT_WRAP_SV__
-
-
-
-

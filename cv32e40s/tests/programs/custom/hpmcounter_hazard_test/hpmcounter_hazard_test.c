@@ -25,7 +25,7 @@
 **  - Count load use hazards
 **  - Count jump register hazards
 **
-** Make sure to instantiate cv32e40s_wrapper with the parameter
+** Make sure to instantiate cv32e40x_wrapper with the parameter
 ** NUM_MHPMCOUNTERS = 1 (or higher)
 **
 ** Make sure to only run this test without wait states on instr_gnt_i/
@@ -50,9 +50,37 @@ static int chck(unsigned int is, unsigned int should)
   return err;
 }
 
+static int chck_le(unsigned int is, unsigned int should)
+{
+  int err;
+  err = is <= should ? 0 : 1;
+  if (err)
+    printf("fail\n");
+  else
+    printf("pass\n");
+  return err;
+}
+
 int main(int argc, char *argv[])
 {
   int err_cnt = 0;
+
+  enum event_e { EVENT_CYCLES        = 1 << 0,
+                 EVENT_INSTR         = 1 << 1,
+                 EVENT_COMP_INSTR    = 1 << 2,
+                 EVENT_JUMP          = 1 << 3,
+                 EVENT_BRANCH        = 1 << 4,
+                 EVENT_BRANCH_TAKEN  = 1 << 5,
+                 EVENT_INTR_TAKEN    = 1 << 6,
+                 EVENT_DATA_READ     = 1 << 7,
+                 EVENT_DATA_WRITE    = 1 << 8,
+                 EVENT_IF_INVALID    = 1 << 9,
+                 EVENT_ID_INVALID    = 1 << 10,
+                 EVENT_EX_INVALID    = 1 << 11,
+                 EVENT_WB_INVALID    = 1 << 12,
+                 EVENT_ID_LD_STALL   = 1 << 13,
+                 EVENT_ID_JMP_STALL  = 1 << 14,
+                 EVENT_WB_DATA_STALL = 1 << 15 };
 
   volatile unsigned int event;
   volatile unsigned int count;
@@ -64,7 +92,7 @@ int main(int argc, char *argv[])
   // Count load use hazards
   printf("\nCount load use hazards");
 
-  event = 0x4;                                                  // Trigger on load use hazards
+  event = EVENT_ID_LD_STALL;                                    // Trigger on load use hazards
   __asm__ volatile("csrw 0x323, %0 " :: "r"(event));            // Set mphmevent3
   __asm__ volatile("csrwi 0xB02, 0x0");                         // minstret = 0
   __asm__ volatile("csrwi 0xB03, 0x0");                         // mhpmcounter3 = 0
@@ -82,20 +110,20 @@ int main(int argc, char *argv[])
   err_cnt += chck(minstret, 5);
 
   printf("Load use hazards count = %d\n", count);
-  err_cnt += chck(count, 1);                                    // This check assumes that there are no wait states on instr_gnt_i or instr_rvalid_i
+  err_cnt += chck_le(count, 1);                                    // Interface stalls can cause this to be 0, otherwise 1
 
   //////////////////////////////////////////////////////////////
   // Count jump register hazards
   printf("\nCount Jump register hazards");
 
-  event = 0x8;                                                  // Trigger on jump register hazards
+  event = EVENT_ID_JMP_STALL;                                   // Trigger on jump register hazards
   __asm__ volatile("csrw 0x323, %0 " :: "r"(event));            // Set mphmevent3
   __asm__ volatile("csrwi 0xB02, 0x0");                         // minstret = 0
   __asm__ volatile("csrwi 0xB03, 0x0");                         // mhpmcounter3 = 0
   __asm__ volatile("csrwi 0x320, 0x0");                         // Enable counters
   __asm__ volatile("auipc x4, 0x0\n\t\
                     addi x4, x4, 10\n\t\
-                    jalr x0, x4, 0x0" \
+                    jalr x28, x4, 0x0" \
                     : : : "x4");
   __asm__ volatile("csrwi 0x320, 0x1F");                        // Inhibit mcycle, minstret, mhpmcounter3-4
   __asm__ volatile("csrr %0, 0xB02" : "=r"(minstret));          // minstret
@@ -105,7 +133,7 @@ int main(int argc, char *argv[])
   err_cnt += chck(minstret, 4);
 
   printf("Jump register hazards count = %d\n", count);
-  err_cnt += chck(count, 1);                                    // This check assumes that there are no wait states on instr_gnt_i or instr_rvalid_i
+  err_cnt += chck_le(count, 1);                                    // Interface stalls can cause this to be 0, otherwise 1
 
   //////////////////////////////////////////////////////////////
   // Check for errors
