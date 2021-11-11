@@ -29,8 +29,7 @@ module tb_top_verilator
     logic [31:0]            exit_value;
 
 
-    // we either load the provided firmware or execute a small test program that
-    // doesn't do more than an infinite loop with some I/O
+    // Load the test-program (must be pre-compiled beforehand).
     initial begin: load_prog
         automatic logic [1023:0] firmware;
         automatic int prog_size = 6;
@@ -89,10 +88,9 @@ module tb_top_verilator
         #(.INSTR_RDATA_WIDTH (INSTR_RDATA_WIDTH),
           .RAM_ADDR_WIDTH    (RAM_ADDR_WIDTH),
           .BOOT_ADDR         (BOOT_ADDR),
-          .PULP_CLUSTER      (0),
-          .FPU               (0),
-          .PULP_ZFINX        (0),
-          .DM_HALTADDRESS    (32'h1A110800)
+          .DM_HALTADDRESS    (32'h1A11_0800),
+          .HART_ID           (32'h0000_0000),
+          .NUM_MHPMCOUNTERS  (1)
          )
     cv32e40x_tb_wrapper_i
         (.clk_i          ( clk_i          ),
