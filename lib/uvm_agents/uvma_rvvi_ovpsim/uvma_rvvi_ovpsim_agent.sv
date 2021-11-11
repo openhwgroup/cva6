@@ -249,12 +249,10 @@ task uvma_rvvi_ovpsim_agent_c::run_phase(uvm_phase phase);
 
    if (cfg.is_active == UVM_ACTIVE) begin
       uvma_rvvi_ovpsim_control_seq_c#(ILEN,XLEN) control_seq = uvma_rvvi_ovpsim_control_seq_c#(ILEN, XLEN)::type_id::create("control_seq");
-      uvma_rvvi_ovpsim_obi_seq_c#(ILEN, XLEN) obi_seq = uvma_rvvi_ovpsim_obi_seq_c#(ILEN, XLEN)::type_id::create("obi_seq");
 
       `uvm_info("RVVIOVPAGT", "Starting the RVVI sequences...", UVM_LOW);
       fork
          control_seq.start(sequencer);
-         obi_seq.start(sequencer);
       join_none
    end
 

@@ -70,6 +70,8 @@ class uvma_obi_memory_cfg_c extends uvm_object;
    rand uvma_obi_memory_drv_slv_err_mode_enum     drv_slv_err_mode;
    rand int unsigned                              drv_slv_err_ok_wgt;
    rand int unsigned                              drv_slv_err_fault_wgt;
+   rand bit                                       drv_slv_err_one_shot_mode;
+   bit                                            drv_slv_err_one_shot_flag;
 
    rand uvma_obi_memory_drv_slv_exokay_mode_enum drv_slv_exokay_mode;
    rand int unsigned                             drv_slv_exokay_failure_wgt;
@@ -124,6 +126,8 @@ class uvma_obi_memory_cfg_c extends uvm_object;
       `uvm_field_enum(uvma_obi_memory_drv_slv_err_mode_enum,    drv_slv_err_mode              , UVM_DEFAULT)
       `uvm_field_int (                                          drv_slv_err_ok_wgt            , UVM_DEFAULT | UVM_DEC)
       `uvm_field_int (                                          drv_slv_err_fault_wgt         , UVM_DEFAULT | UVM_DEC)
+      `uvm_field_int (                                          drv_slv_err_one_shot_mode     , UVM_DEFAULT)
+      `uvm_field_int (                                          drv_slv_err_one_shot_flag     , UVM_DEFAULT)
       `uvm_field_enum(uvma_obi_memory_drv_slv_exokay_mode_enum, drv_slv_exokay_mode        , UVM_DEFAULT)
       `uvm_field_int (                                          drv_slv_exokay_failure_wgt , UVM_DEFAULT | UVM_DEC)
       `uvm_field_int (                                          drv_slv_exokay_success_wgt , UVM_DEFAULT | UVM_DEC)
@@ -165,6 +169,7 @@ class uvma_obi_memory_cfg_c extends uvm_object;
       soft drv_slv_rvalid_random_latency_min == uvma_obi_memory_default_drv_slv_rvalid_random_latency_min;
       soft drv_slv_rvalid_random_latency_max == uvma_obi_memory_default_drv_slv_rvalid_random_latency_max;
       soft drv_slv_err_mode               == UVMA_OBI_MEMORY_DRV_SLV_ERR_MODE_OK;
+      soft drv_slv_err_one_shot_mode      == 0;
       soft drv_slv_exokay_mode            == UVMA_OBI_MEMORY_DRV_SLV_EXOKAY_MODE_SUCCESS;
    }
 
@@ -291,11 +296,21 @@ function bit uvma_obi_memory_cfg_c::calc_random_err(bit[31:0] addr);
 
    bit err;
 
+   // If we are in "one-shot" mode and have already calculated an error,
+   // then skip any new errors (until the code resets the flag)
+   if (drv_slv_err_one_shot_mode && drv_slv_err_one_shot_flag) begin
+      return 0;
+   end
 
    // Check for a directed error reponse first
    if (directed_slv_err_valid &&
        (addr >= directed_slv_err_addr_min) &&
        (addr <= directed_slv_err_addr_max)) begin
+
+      if (drv_slv_err_one_shot_mode) begin
+         drv_slv_err_one_shot_flag = 1;
+      end
+
       return 1;
    end
 
@@ -308,6 +323,10 @@ function bit uvma_obi_memory_cfg_c::calc_random_err(bit[31:0] addr);
          endcase
       end
    endcase
+
+   if (err && drv_slv_err_one_shot_mode) begin
+      drv_slv_err_one_shot_flag = 1;
+   end
 
    return err;
 
