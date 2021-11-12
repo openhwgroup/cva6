@@ -363,8 +363,9 @@ function void uvme_cv32e40x_core_sb_c::check_csr(uvma_rvfi_instr_seq_item_c#(ILE
       exp_csr_value = rvfi_instr.csrs[i].get_csr_retirement_data();
 
       if (exp_csr_value != rvvi_state.csr[csr]) begin
-         `uvm_error("CORESB", $sformatf("CSR Mismatch, order: %0d, csr: %s, rvfi = 0x%08x, rvvi = 0x%08x",
+         `uvm_error("CORESB", $sformatf("CSR Mismatch, order: %0d, pc: 0x%08x, csr: %s, rvfi = 0x%08x, rvvi = 0x%08x",
                                         rvfi_instr.order,
+                                        rvfi_instr.pc_rdata,
                                         csr,
                                         exp_csr_value,
                                         rvvi_state.csr[csr]));

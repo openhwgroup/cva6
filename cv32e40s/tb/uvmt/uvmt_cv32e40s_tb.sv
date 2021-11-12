@@ -339,15 +339,36 @@ module uvmt_cv32e40s_tb;
                                                       .mie_q(cs_registers_i.mie_q),
                                                       .mstatus_mie(cs_registers_i.mstatus_q.mie),
                                                       .mtvec_mode_q(cs_registers_i.mtvec_q.mode),
+                                                      .if_stage_instr_req_o(if_stage_i.m_c_obi_instr_if.s_req.req),
                                                       .if_stage_instr_rvalid_i(if_stage_i.m_c_obi_instr_if.s_rvalid.rvalid),
                                                       .if_stage_instr_rdata_i(if_stage_i.m_c_obi_instr_if.resp_payload.rdata),
-                                                      .id_stage_instr_valid_i(wb_stage_i.instr_valid),
-                                                      .id_stage_instr_rdata_i(wb_stage_i.ex_wb_pipe_i.instr.bus_resp.rdata),
+                                                      .alignbuf_outstanding(if_stage_i.prefetch_unit_i.alignment_buffer_i.outstanding_cnt_q),
+                                                      .ex_stage_instr_valid(ex_stage_i.id_ex_pipe_i.instr_valid),
+                                                      .wb_stage_instr_valid_i(wb_stage_i.instr_valid),
+                                                      .wb_stage_instr_rdata_i(wb_stage_i.ex_wb_pipe_i.instr.bus_resp.rdata),
+                                                      .wb_stage_instr_err_i(wb_stage_i.ex_wb_pipe_i.instr.bus_resp.err),
                                                       .branch_taken_ex(controller_i.controller_fsm_i.branch_taken_ex),
                                                       .debug_mode_q(controller_i.controller_fsm_i.debug_mode_q),
                                                       .irq_ack_o(core_i.irq_ack),
                                                       .irq_id_o(core_i.irq_id),
                                                       .*);
+
+  // Fence.i assertions
+
+  bind cv32e40s_wrapper
+    uvmt_cv32e40s_fencei_assert  fencei_assert_i (
+      .wb_valid (core_i.wb_stage_i.wb_valid),
+      .wb_instr_valid (core_i.ex_wb_pipe.instr_valid),
+      .wb_fencei_insn (core_i.ex_wb_pipe.fencei_insn),
+      .wb_pc (core_i.ex_wb_pipe.pc),
+      .wb_rdata (core_i.ex_wb_pipe.instr.bus_resp.rdata),
+
+      .rvfi_valid (rvfi_i.rvfi_valid),
+      .rvfi_intr (rvfi_i.rvfi_intr),
+      .rvfi_dbg_mode (rvfi_i.rvfi_dbg_mode),
+
+      .*
+    );
 
 
   // Debug assertion and coverage interface
@@ -738,5 +759,3 @@ endmodule : uvmt_cv32e40s_tb
 `default_nettype wire
 
 `endif // __UVMT_CV32E40S_TB_SV__
-
-

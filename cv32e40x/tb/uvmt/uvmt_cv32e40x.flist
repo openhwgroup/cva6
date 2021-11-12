@@ -66,3 +66,4 @@ ${TBSRC_HOME}/core/tb_riscv/riscv_random_interrupt_generator.sv
 // FIXME:STR:Find a better location
 ${DV_UVMT_PATH}/uvmt_cv32e40x_interrupt_assert.sv
 ${DV_UVMT_PATH}/uvmt_cv32e40x_debug_assert.sv
+${DV_UVMT_PATH}/uvmt_cv32e40x_fencei_assert.sv

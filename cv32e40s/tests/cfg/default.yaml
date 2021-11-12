@@ -1,7 +1,8 @@
 name: default
 description: Default configuration for CV32E40S simulations
-compile_flags:     
-ovpsim: >        
-#    --trace --tracechange --traceshowicount --monitornets
+compile_flags:
+ovpsim: >
+    # --showoverrides
+    # --trace --tracechange --traceshowicount --monitornets
 cflags: >
 
