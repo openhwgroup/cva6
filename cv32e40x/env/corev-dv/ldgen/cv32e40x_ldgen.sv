@@ -47,7 +47,7 @@ import cv32e40x_pkg::pma_region_t;
     parameter RAM_ORIGIN           = 32'h0000_0000;
     parameter RAM_LENGTH           = 32'h40_0000;
     parameter BOOT_ADDR            = 32'h80;
-    parameter NMI_ADDR             = 32'h30CAFE;
+    parameter NMI_ADDR             = 32'h0010_0000;
     parameter MTVEC_ADDR           = 32'h0000_0000;
     parameter DEBUG_ORIGIN         = 32'h1A11_0800;
     parameter DEBUG_EXCEPTION_ADDR = 32'h1A11_1000;
@@ -480,35 +480,17 @@ function void cv32e40x_ldgen_c::create_fixed_addr_section_file(string filepath);
   $fdisplay(fhandle_fix, "{");
   $fdisplay(fhandle_fix, { indent(L1), "/* CORE-V: interrupt vectors */" });
   $fdisplay(fhandle_fix, { indent(L1), "PROVIDE(__vector_start = ", $sformatf("0x%08x", mtvec_addr), ");" });
-  $fdisplay(fhandle_fix, { indent(L1), ".vectors :" });
+  $fdisplay(fhandle_fix, { indent(L1), ".mtvec_bootstrap :" });
   $fdisplay(fhandle_fix, { indent(L1), "{" });
-  $fdisplay(fhandle_fix, { indent(L2), "KEEP(*(.vectors));" });
+  $fdisplay(fhandle_fix, { indent(L2), "KEEP(*(.mtvec_bootstrap));" });
   $fdisplay(fhandle_fix, { indent(L1), "}", mtvec_memory_area, "\n" });
   $fdisplay(fhandle_fix, { indent(L1), "/* CORE-V: we want a fixed entry point */" });
   $fdisplay(fhandle_fix, { indent(L1), "PROVIDE(__boot_address = ", $sformatf("0x%08x", boot_addr), ");\n" });
   $fdisplay(fhandle_fix, { indent(L1), "/* NMI interrupt handler fixed entry point */" });
   $fdisplay(fhandle_fix, { indent(L1), "nmi_handler = ABSOLUTE(", $sformatf("0x%08x",  nmi_addr), ");" });
-  if (nmi_region != -1) begin
-    $fdisplay(fhandle_fix, { indent(L1), ".nmi (", $sformatf("ORIGIN(region_%0d", nmi_region), ")) :" });
-  end else if (nmi_separate_region) begin
-    $fdisplay(fhandle_fix, { indent(L1), ".nmi (", $sformatf("0x%08x", nmi_addr), ") :" });
-  end
+  $fdisplay(fhandle_fix, { indent(L1), ".nmi (", $sformatf("0x%08x", nmi_addr), ") :" });
   $fdisplay(fhandle_fix, { indent(L1), "{" });
-  if (nmi_region != -1) begin
-    if (nmi_addr < (pma_adapted_memory.region[nmi_region].cfg.word_addr_low << 2) + nmi_region_half_length) begin
-      // nmi_address is in first half, safe to place first in region
-      $fdisplay(fhandle_fix, { indent(L2), "KEEP(*(.nmi));" });
-      $fdisplay(fhandle_fix, { indent(L2), "KEEP(*(.region_", $sformatf("%0d", nmi_region), "));" });
-    end
-    else begin
-      // nmi_address is in latter half of region, place after (potential) code
-      $fdisplay(fhandle_fix, { indent(L2), "KEEP(*(.region_", $sformatf("%0d", nmi_region), "));" });
-      $fdisplay(fhandle_fix, { indent(L2), "KEEP(*(.nmi));" });
-    end
-  end else begin
-      $fdisplay(fhandle_fix, { indent(L2), "KEEP(*(.nmi));" });
-  end
-
+  $fdisplay(fhandle_fix, { indent(L2), "KEEP(*(.nmi));" });
   $fdisplay(fhandle_fix, { indent(L1), "}", nmi_memory_area });
   $fdisplay(fhandle_fix, "}");
 

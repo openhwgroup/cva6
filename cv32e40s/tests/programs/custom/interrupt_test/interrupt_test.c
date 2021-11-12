@@ -12,6 +12,9 @@ volatile uint32_t active_test             = 0;
 volatile uint32_t nested_irq              = 0;
 volatile uint32_t nested_irq_valid        = 0;
 volatile uint32_t in_direct_handler       = 0;
+volatile uint32_t event;
+volatile uint32_t num_taken_interrupts;
+volatile uint32_t num_counted_interrupts;
 
 uint32_t IRQ_ID_PRIORITY [IRQ_NUM] = {
     FAST15_IRQ_ID   ,
@@ -112,7 +115,13 @@ void nested_irq_handler(uint32_t id) {
 
 void generic_irq_handler(uint32_t id) {
     asm volatile("csrr %0, mcause": "=r" (mmcause));
+    asm volatile("csrr %0, 0xB03" : "=r" (num_counted_interrupts));
     irq_id = id;
+
+    // Increment if interrupt
+    if (mmcause >> 31) {
+      num_taken_interrupts++;
+    }
 
     if (active_test == 2 || active_test == 3 || active_test == 4) {
         irq_id_q[irq_id_q_ptr++] = id;
@@ -150,6 +159,9 @@ void m_fast15_irq_handler(void) { generic_irq_handler(FAST15_IRQ_ID); }
 __attribute__((interrupt ("machine"))) void u_sw_direct_irq_handler(void)  {
     in_direct_handler = 1;
     asm volatile("csrr %0, mcause" : "=r" (mmcause));
+    if (mmcause >> 31) {
+      num_taken_interrupts++;
+    }
 }
 
     asm (
@@ -211,53 +223,77 @@ __attribute__((interrupt ("machine"))) void u_sw_direct_irq_handler(void)  {
 int main(int argc, char *argv[]) {
     int retval;
 
-    // Test 1
-    retval = test1();
-    if (retval != EXIT_SUCCESS)
-        return retval;
+    num_counted_interrupts = 0;
+    num_taken_interrupts   = 0;
+
+    // Enable interrupt performance counter (mhpmcounter3)
+    event = EVENT_INTR_TAKEN;
+    __asm__ volatile ("csrw 0x323, %0 " :: "r"(event));
+    __asm__ volatile ("csrwi 0xB03, 0x0");
+    __asm__ volatile ("csrwi 0x320, 0x0");
+
+  // Test 1
+  retval = test1();
+  if (retval != EXIT_SUCCESS) {
+    return retval;
+  }
 
     // Test 2
     retval = test2();
-    if (retval != EXIT_SUCCESS)
-        return retval;
+    if (retval != EXIT_SUCCESS) {
+      return retval;
+    }
 
     // Test 3
     retval = test3();
-    if (retval != EXIT_SUCCESS)
-        return retval;
+    if (retval != EXIT_SUCCESS) {
+      return retval;
+    }
 
     // Test 4
     retval = test4();
-    if (retval != EXIT_SUCCESS)
-        return retval;
+    if (retval != EXIT_SUCCESS) {
+      return retval;
+    }
 
     // Test 5
     retval = test5();
-    if (retval != EXIT_SUCCESS)
-        return retval;
+    if (retval != EXIT_SUCCESS) {
+      return retval;
+    }
 
     // Test 6
     retval = test6();
-    if (retval != EXIT_SUCCESS)
-        return retval;
+    if (retval != EXIT_SUCCESS) {
+      return retval;
+    }
 
     // Repeat test1 (restore vector mode)
     retval = test7();
-    if (retval != EXIT_SUCCESS)
-        return retval;
+    if (retval != EXIT_SUCCESS) {
+      return retval;
+    }
 
     // Try to write mcause (for coverage)
     retval = test8();
-    if (retval != EXIT_SUCCESS)
-        return retval;
+    if (retval != EXIT_SUCCESS) {
+      return retval;
+    }
 
     // Test 9
     retval = test9();
-    if (retval != EXIT_SUCCESS)
-        return retval;
+    if (retval != EXIT_SUCCESS) {
+      return retval;
+    }
 
     // Clear MIE for final WFI
     mie_disable_all();
+
+    // Check that the interrupt taken counter
+    if (num_counted_interrupts != num_taken_interrupts) {
+      printf("mhpmcounter3 (number of events taken) does not match actual interrupts taken: %0d != %0d\n", (int)num_counted_interrupts, (int)num_taken_interrupts);
+      return ERR_CODE_INTR_CNT;
+    }
 
     return EXIT_SUCCESS;
 }

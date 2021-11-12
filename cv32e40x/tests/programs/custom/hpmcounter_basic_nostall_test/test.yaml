@@ -1,0 +1,7 @@
+name: hpmcounter_basic_nostall_test
+uvm_test: uvmt_$(CV_CORE_LC)_firmware_test_c
+description: >
+    HPM Counter Basic Test, no random obi stalls enabled
+plusargs: >
+  +rand_stall_obi_disable
+

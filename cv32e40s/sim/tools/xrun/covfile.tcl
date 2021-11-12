@@ -12,10 +12,10 @@ set_implicit_block_scoring -off
 deselect_coverage -remove_empty_instances
 
 # Enable resilience from code changes
-set_refinement_resilience 
+set_refinement_resilience
 
 # Improve expression coverage performance
-set_optimize -vlog_prune_on 
+set_optimize -vlog_prune_on
 
 # Set glitch strobes
 set_glitch_strobe 1ps
@@ -43,8 +43,12 @@ set_expr_coverable_statements -all
 set_toggle_smart_refinement
 
 # ----------------------------------------------------------------------------------
+# Covergroup coverage configuration
+# ----------------------------------------------------------------------------------
+set_covergroup -new_instance_reporting
+
+# ----------------------------------------------------------------------------------
 # Instances/modules to remove from coverage
 # For performance and to avoid spurious warnings, remove these modules from code coverage collection
 # ----------------------------------------------------------------------------------
-deselect_coverage -all -module riscv_random_interrupt_generator
-deselect_coverage -all -module cv32e40s_tracer
+deselect_coverage -all -instance uvmt_cv32e40s_tb.iss_wrap...
