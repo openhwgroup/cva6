@@ -108,17 +108,25 @@ module uvmt_cv32e40x_debug_assert
         else `uvm_error(info_tag, $sformatf("Debug mode not entered after exepected cause %d", debug_cause_pri));
 
 
-    // Check that depc gets the correct value when debug mode is entered.
+    // Check that dpc gets the correct value when debug mode is entered.
 
-    property p_debug_mode_pc;
+    a_debug_mode_pc: assert property(
         $rose(first_debug_ins)
         |->
-        cov_assert_if.debug_mode_q && (cov_assert_if.wb_stage_pc == halt_addr_at_entry)
-        && (cov_assert_if.depc_q == pc_at_dbg_req);
-    endproperty
+        cov_assert_if.wb_stage_pc == halt_addr_at_entry
+        ) else `uvm_error(info_tag, $sformatf("Debug mode entered with wrong pc. pc==%08x", cov_assert_if.wb_stage_pc));
 
-    a_debug_mode_pc: assert property(p_debug_mode_pc)
-        else `uvm_error(info_tag, $sformatf("Debug mode entered with wrong pc. pc==%08x", cov_assert_if.wb_stage_pc));
+    a_debug_mode_pc_dpc: assert property(
+        $rose(first_debug_ins)
+        |->
+        cov_assert_if.depc_q == pc_at_dbg_req
+        ) else `uvm_error(info_tag, $sformatf("Debug mode entered with wrong dpc. dpc==%08x", cov_assert_if.depc_q));
+
+    a_debug_mode_pc_dmode: assert property(
+        $rose(first_debug_ins)
+        |->
+        cov_assert_if.debug_mode_q
+        ) else `uvm_error(info_tag, "First debug mode instruction predicted wrongly");
 
 
     // Check that dcsr.cause is as expected
@@ -664,16 +672,13 @@ module uvmt_cv32e40x_debug_assert
     always@ (posedge cov_assert_if.clk_i or negedge cov_assert_if.rst_ni) begin
         if( !cov_assert_if.rst_ni) begin
             debug_cause_pri <= 3'b000;
-        //end else if((cov_assert_if.ctrl_fsm_cs == cv32e40x_pkg::FUNCTIONAL) && !cov_assert_if.debug_mode_q) begin
         end else if(!cov_assert_if.debug_mode_q) begin
             if (is_trigger_match) begin
                 debug_cause_pri <= 3'b010;  // Trigger match
             end else if(cov_assert_if.dcsr_q[15] && (cov_assert_if.is_ebreak || cov_assert_if.is_cebreak)) begin
                 debug_cause_pri <= 3'b001;  // Ebreak
             end else if((cov_assert_if.debug_req_i || cov_assert_if.debug_req_q)
-                        && (cov_assert_if.ctrl_fsm_cs == cv32e40x_pkg::FUNCTIONAL))
-                        //)
-            begin
+                        && (cov_assert_if.ctrl_fsm_cs == cv32e40x_pkg::FUNCTIONAL)) begin
                 debug_cause_pri <= 3'b011;  // Haltreq
             end else if((cov_assert_if.dcsr_q[2]) && (debug_cause_pri inside {3'b100, 0})) begin  // "step"
                 debug_cause_pri <= 3'b100;  // Single step
