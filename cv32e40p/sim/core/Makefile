@@ -53,12 +53,38 @@ CV_CORE       ?= CV32E40P
 CV_CORE_LC     = $(shell echo $(CV_CORE) | tr A-Z a-z)
 CV_CORE_UC     = $(shell echo $(CV_CORE) | tr a-z A-Z)
 
+# Source directores
+VERI_CUSTOM = $(CORE_V_VERIF)/$(CV_CORE_LC)/tests/programs/custom
+
+# Common output directories
+SIM_RESULTS              = sim_results
+SIM_TEST_RESULTS         = $(SIM_RESULTS)/$(TEST)
+SIM_RUN_RESULTS          = $(SIM_TEST_RESULTS)/$(RUN_INDEX)
+SIM_TEST_PROGRAM_RESULTS = $(SIM_RUN_RESULTS)/test_program
+SIM_BSP_RESULTS          = $(SIM_TEST_PROGRAM_RESULTS)/bsp
+
 # Compile compile flags for all simulators
 SV_CMP_FLAGS =
 
 # Default "custom test-program"
 CUSTOM_PROG  ?= requested_csr_por
 TEST         ?= hello-world
+
+###############################################################################
+# Generate and include TEST_FLAGS_MAKE, based on the YAML test description.
+# An example of what is generated is below (not all of these flags are used):
+#       TEST_DESCRIPTION=Simple hello-world sanity test
+#       TEST_NAME=hello-world
+#       TEST_PROGRAM=hello-world
+#       TEST_TEST_DIR=/home/mike/GitHubRepos/MikeOpenHWGroup/core-v-verif/master/cv32e40p/tests/programs/custom/hello-world
+#       TEST_UVM_TEST=uvmt_$(CV_CORE_LC)_firmware_test_c
+
+YAML2MAKE = $(CORE_V_VERIF)/bin/yaml2make
+TEST_FLAGS_MAKE := $(shell $(YAML2MAKE) --test=$(TEST) --yaml=test.yaml  $(YAML2MAKE_DEBUG) --run-index=$(u) --prefix=TEST --core=$(CV_CORE))
+ifeq ($(TEST_FLAGS_MAKE),)
+$(error ERROR Could not find test.yaml for test: $(TEST))
+endif
+include $(TEST_FLAGS_MAKE)
 
 ###############################################################################
 # Common Makefiles:
@@ -468,16 +494,18 @@ testbench_verilator: CV_CORE_pkg $(TBSRC_VERI) $(TBSRC_PKG)
 		-CFLAGS "-std=gnu++11 $(VERI_CFLAGS)" \
 		$(VERI_COMPILE_FLAGS)
 	$(MAKE) -C $(VERI_OBJ_DIR) -f Vtb_top_verilator.mk
-	cp $(VERI_OBJ_DIR)/Vtb_top_verilator testbench_verilator
+	mkdir -p $(SIM_RESULTS)
+	mkdir -p $(SIM_TEST_RESULTS)
+	mv $(VERI_OBJ_DIR)/Vtb_top_verilator $(SIM_TEST_RESULTS)/verilator_executable
 
 veri-test: verilate $(VERI_CUSTOM)/$(TEST)/$(TEST).hex
 	@echo "$(BANNER)"
-	@echo "* Running with Verilator: logfile in $(VERI_LOG_DIR)/$(TEST).log"
+	@echo "* Running with Verilator: logfile in $(SIM_TEST_RESULTS)/$(TEST).log"
 	@echo "$(BANNER)"
 	mkdir -p $(VERI_LOG_DIR)
-	./testbench_verilator $(VERI_FLAGS) \
+	$(SIM_TEST_RESULTS)/verilator_executable $(VERI_FLAGS) \
 		"+firmware=$(VERI_CUSTOM)/$(TEST)/$(TEST).hex" \
-		| tee $(VERI_LOG_DIR)/$(TEST).log
+		| tee $(SIM_TEST_RESULTS)/$(TEST).log
 
 # verilator specific cleanup
 veri-clean: verilate-clean
@@ -642,8 +670,12 @@ clone_$(CV_CORE_LC)_rtl:
 # general targets
 .PHONY: tc-clean
 
+# clean up simulation results
+clean-sim-results:
+	rm -rf $(SIM_RESULTS)
+
 # clean up toolchain generated files
-clean_test_programs:
+clean-test-programs:
 	find $(CORE_V_VERIF)/$(CV_CORE_LC)/tests/programs -name *.o       -exec rm {} \;
 	find $(CORE_V_VERIF)/$(CV_CORE_LC)/tests/programs -name *.hex     -exec rm {} \;
 	find $(CORE_V_VERIF)/$(CV_CORE_LC)/tests/programs -name *.elf     -exec rm {} \;
@@ -653,7 +685,7 @@ clean_test_programs:
 	find $(CORE_V_VERIF)/$(CV_CORE_LC)/tests/programs -name corev_*.S -exec rm {} \;
 
 .PHONY: clean clean_all distclean
-clean: clean-test-programs questa-clean verilate-clean vcs-clean firmware-clean custom-clean dsim-clean xrun-clean vcs-clean clean-bsp riviera-clean
+clean: clean-sim-results clean-test-programs questa-clean verilate-clean vcs-clean firmware-clean dsim-clean xrun-clean vcs-clean riviera-clean
 
 distclean: clean
 	rm -rf riscv-fesvr riscv-isa-sim $(CV_CORE_PKG) work
