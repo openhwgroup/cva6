@@ -306,9 +306,11 @@ function void uvme_cv32e40x_core_sb_c::check_instr(uvma_rvfi_instr_seq_item_c#(I
    end
 
    // CHECK: insn
-   if (rvfi_instr.insn != rvvi_state.insn) begin
-      `uvm_error("CORESB", $sformatf("INSN Mismatch, order: %0d, rvfi.insn = 0x%08x, rvvi.insn = 0x%08x",
-                                     rvfi_instr.order, rvfi_instr.insn, rvvi_state.insn));
+   if (!rvfi_instr.trap) begin
+      if (rvfi_instr.insn != rvvi_state.insn) begin
+         `uvm_error("CORESB", $sformatf("INSN Mismatch, order: %0d, rvfi.pc = 0x%08x, rvfi.insn = 0x%08x, rvvi.insn = 0x%08x",
+                                       rvfi_instr.order, rvfi_instr.pc_rdata, rvfi_instr.insn, rvvi_state.insn));
+      end
    end
 
    // Heartbeat message
