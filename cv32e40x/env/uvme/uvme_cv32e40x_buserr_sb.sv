@@ -58,6 +58,7 @@ class uvme_cv32e40x_buserr_sb_c extends uvm_scoreboard;
   extern virtual function void build_phase(uvm_phase phase);
   extern virtual function void check_phase(uvm_phase phase);
   extern function logic        instr_should_err(uvma_rvfi_instr_seq_item_c#(ILEN,XLEN) rvfi_trn);
+  extern function void         clean_errs_queue(uvma_obi_memory_mon_trn_c  trn);
 
 endclass : uvme_cv32e40x_buserr_sb_c
 
@@ -95,6 +96,7 @@ function void uvme_cv32e40x_buserr_sb_c::write_obii(uvma_obi_memory_mon_trn_c tr
   cnt_obii_trn++;
 
   // TODO:ropeders remove from "tainted queue" if addr was now re-fetched
+  clean_errs_queue(trn);
 
   if (trn.err) begin
     cnt_obii_err++;
@@ -102,7 +104,6 @@ function void uvme_cv32e40x_buserr_sb_c::write_obii(uvma_obi_memory_mon_trn_c tr
     // TODO:ropeders save PC (or even more)?
 
     obii_trn_errs.push_back(trn);
-    // TODO:ropeders clear addrs from queue if re-fetched
     // TODO:ropeders assert uvm_warning expecting [1:0] of addr to be zero?
   end
 
@@ -200,8 +201,7 @@ function void uvme_cv32e40x_buserr_sb_c::check_phase(uvm_phase phase);
     else `uvm_error(info_tag, "rvfi 'nmi' transactions counted wrong");
   assert (cnt_rvfi_trn != cnt_rvfi_nmi)
     else `uvm_warning(info_tag, "all the rvfi transactions where nmi entries");
-  `uvm_info(info_tag, $sformatf("received %0d rvfi transactions", cnt_rvfi_trn), UVM_NONE)  // TODO:ropeders remove
-  `uvm_info(info_tag, $sformatf("observed %0d rvfi nmi entries", cnt_rvfi_nmi), UVM_NONE)  // TODO:ropeders change
+  `uvm_info(info_tag, $sformatf("observed %0d rvfi nmi handler entries", cnt_rvfi_nmi), UVM_NONE)  // TODO:ropeders change
 
   // Check OBI D-side vs RVFI counting
   assert (cnt_obid_first == cnt_rvfi_nmi)
@@ -221,18 +221,24 @@ function void uvme_cv32e40x_buserr_sb_c::check_phase(uvm_phase phase);
   `uvm_info(info_tag, $sformatf("received %0d I-side 'err' transactions", cnt_obii_err), UVM_NONE)  // TODO:ropeders change
 
   // Check TODO instr bus fault prediction counting
-  assert (cnt_rvfi_err >= cnt_rvfi_exce)
-    else `uvm_error(info_tag, "more instr fault handler than actual err retirements");
-  `uvm_info(info_tag, $sformatf("retired %0d expectedly err'ed instructions", cnt_rvfi_err), UVM_NONE);  // TODO:ropeders change?
   //TODO:ropeders any more asserts to add?
 
   // Check RVFI I-side counting
   assert (cnt_obii_err >= cnt_rvfi_exce)
     else `uvm_error(info_tag, $sformatf("less I-side 'err' (%0d) than exception handling (%0d)", cnt_obii_err, cnt_rvfi_exce));
   //TODO:ropeders any more asserts to add?
-  `uvm_info(info_tag, $sformatf("received %0d rvfi instr bus fault entries", cnt_rvfi_exce), UVM_NONE)  // TODO:ropeders change
+  `uvm_info(info_tag, $sformatf("observed %0d rvfi instr bus fault entries", cnt_rvfi_exce), UVM_NONE)  // TODO:ropeders change
 
   // Check TODO I-side vs RVFI counting
+  assert (cnt_rvfi_err >= cnt_rvfi_exce)
+    else `uvm_error(info_tag, "more instr fault handler than actual err retirements");
+  assert (cnt_rvfi_err == cnt_rvfi_exce)
+    else `uvm_warning(info_tag, $sformatf("num err retires (%0d) != num handler entries (%0d)", cnt_rvfi_err, cnt_rvfi_exce));
+      // TODO:ropeders is this a correct assumption? ^
+  // TODO:ropeders assert (while running) that diff of ^ is never bigger than 1?
+  assert (cnt_obii_err >= cnt_rvfi_err)
+    else `uvm_warning(info_tag, "more retired errs than fetches");  // TODO:ropeders is this correct?
+  `uvm_info(info_tag, $sformatf("retired %0d expectedly err'ed instructions", cnt_rvfi_err), UVM_NONE);  // TODO:ropeders change?
   //TODO:ropeders assert "cnt_rvfi_exce" vs some I-side prediction
 
   // TODO:ropeders how to check I-side vs D-side, "new bus faults occuring while an NMI is pending will be discarded"
@@ -262,6 +268,18 @@ function logic uvme_cv32e40x_buserr_sb_c::instr_should_err(uvma_rvfi_instr_seq_i
   return 0;  // No match found, rvfi trn not expected to have "err"
 
 endfunction : instr_should_err
+
+
+function void uvme_cv32e40x_buserr_sb_c::clean_errs_queue(uvma_obi_memory_mon_trn_c  trn);
+
+  foreach (obii_trn_errs[i]) begin
+    if (obii_trn_errs[i].address == trn.address) begin
+      obii_trn_errs.delete(i);
+      return;
+    end
+  end
+
+endfunction : clean_errs_queue
 
 
 `endif  // __UVME_CV32E40X_BUSERR_SB_SV__
