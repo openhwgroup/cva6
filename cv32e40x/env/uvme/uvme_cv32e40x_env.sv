@@ -403,6 +403,7 @@ function void uvme_cv32e40x_env_c::connect_scoreboard();
 
    // Connect the bus error scoreboard
    obi_memory_data_agent.mon_ap.connect(buserr_sb.obid);
+   obi_memory_instr_agent.mon_ap.connect(buserr_sb.obii);
    foreach (rvfi_agent.instr_mon_ap[i]) begin
       rvfi_agent.instr_mon_ap[i].connect(buserr_sb.rvfi);
    end
