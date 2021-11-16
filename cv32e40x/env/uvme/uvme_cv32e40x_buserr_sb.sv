@@ -36,7 +36,6 @@ class uvme_cv32e40x_buserr_sb_c extends uvm_scoreboard;
   int cnt_obid_first;  // Count of all first d-side "err", in case of multiple "err" before handler "taken"
   int cnt_rvfi_trn;  // Count of all rvfi transactions
   int cnt_rvfi_nmi;  // Count of all nmi entries
-    // TODO:ropeders count load/store separately?
   int pending_nmi;  // Whether nmi happened and handler is expected
 
   `uvm_component_utils(uvme_cv32e40x_buserr_sb_c)
@@ -63,14 +62,17 @@ function void uvme_cv32e40x_buserr_sb_c::write_obid(uvma_obi_memory_mon_trn_c tr
 
   if (trn.err) begin
     cnt_obid_err++;
-    // TODO:ropeders store in queue for later comparison?
+    // TODO:ropeders store in queue to later compare vs CSRs?
+
+    // TODO:ropeders how to assert when handler must come?
 
     if (!pending_nmi) begin
-      // TODO:ropeders proper filter on actual "first" errs
       cnt_obid_first++;
       pending_nmi = 1;  // TODO:ropeders no race conditions here?
     end
   end
+
+  // TODO:ropeders have count of longest streak of multiple errs?
 
 endfunction : write_obid
 
@@ -81,17 +83,16 @@ function void uvme_cv32e40x_buserr_sb_c::write_rvfi(uvma_rvfi_instr_seq_item_c#(
 
   cnt_rvfi_trn++;
 
-  // TODO:ropeders filter/detect and count "taken" nmis
+  // TODO:ropeders count "at most two instructions may retire before the NMI is taken"?
+
   mcause = trn.csrs["mcause"].get_csr_retirement_data;
   if (trn.intr && mcause[31] && (mcause[30:0] inside {128, 129})) begin
     // TODO:ropeders no magic numbers ^
     // TODO:ropeders make the filter/detection correct ^
-    // TODO:ropeders compare nmi handler address? ^
+    // TODO:ropeders compare pc vs nmi handler address? ^
 
     cnt_rvfi_nmi++;
-    // TODO:ropeders store in queue for later comparison?
 
-    // TODO:ropeders assert that some "pending_nmi" must be high here
     assert (pending_nmi)
       else `uvm_error(info_tag, "nmi handlered entered without sb having seen an 'err' on d-bus");
     pending_nmi = 0;  // TODO:ropeders ensure no race condition with obi analysis port
@@ -104,8 +105,7 @@ function void uvme_cv32e40x_buserr_sb_c::write_rvfi(uvma_rvfi_instr_seq_item_c#(
 
   // TODO:ropeders add checking in other function?
   // TODO:ropeders must check that all obi err has rvfi nmi entry within some max number?
-  // TODO:ropeders must check that nmi entry has a preceding obi err?
-  // TODO:ropeders check match of PC addr etc?
+  // TODO:ropeders check match of PC addr and other CSRs?
 
 endfunction : write_rvfi
 
@@ -147,7 +147,6 @@ function void uvme_cv32e40x_buserr_sb_c::check_phase(uvm_phase phase);
   `uvm_info(info_tag, $sformatf("observed %0d first 'err' and %0d handler entiers", cnt_obid_first, cnt_rvfi_nmi), UVM_NONE)
     // TODO:ropeders change ^
   // TODO:ropeders "cnt_obid_first" could be 1 higher if sim exits early? No more, right?
-  // TODO:ropeders put in the "write_" functions so it checks more often?
 
 endfunction : check_phase
 
