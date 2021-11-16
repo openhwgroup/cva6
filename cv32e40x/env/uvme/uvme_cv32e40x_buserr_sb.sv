@@ -37,6 +37,7 @@ class uvme_cv32e40x_buserr_sb_c extends uvm_scoreboard;
   int cnt_rvfi_trn;  // Count of all rvfi transactions
   int cnt_rvfi_nmi;  // Count of all nmi entries
     // TODO:ropeders count load/store separately?
+  int pending_nmi;  // Whether nmi happened and handler is expected
 
   `uvm_component_utils(uvme_cv32e40x_buserr_sb_c)
 
@@ -63,9 +64,13 @@ function void uvme_cv32e40x_buserr_sb_c::write_obid(uvma_obi_memory_mon_trn_c tr
   if (trn.err) begin
     cnt_obid_err++;
     // TODO:ropeders store in queue for later comparison?
-  end
 
-  // TODO:ropeders count "first" errs
+    if (!pending_nmi) begin
+      // TODO:ropeders proper filter on actual "first" errs
+      cnt_obid_first++;
+      pending_nmi = 1;  // TODO:ropeders no race conditions here?
+    end
+  end
 
 endfunction : write_obid
 
@@ -77,14 +82,22 @@ function void uvme_cv32e40x_buserr_sb_c::write_rvfi(uvma_rvfi_instr_seq_item_c#(
   cnt_rvfi_trn++;
 
   // TODO:ropeders filter/detect and count "taken" nmis
-  if (trn.intr) $display("TODO intr handler rvfi");
   mcause = trn.csrs["mcause"].get_csr_retirement_data;
   if (trn.intr && mcause[31] && (mcause[30:0] inside {128, 129})) begin
     // TODO:ropeders no magic numbers ^
     // TODO:ropeders make the filter/detection correct ^
+    // TODO:ropeders compare nmi handler address? ^
 
     cnt_rvfi_nmi++;
     // TODO:ropeders store in queue for later comparison?
+
+    // TODO:ropeders assert that some "pending_nmi" must be high here
+    assert (pending_nmi)
+      else `uvm_error(info_tag, "nmi handlered entered without sb having seen an 'err' on d-bus");
+    pending_nmi = 0;  // TODO:ropeders ensure no race condition with obi analysis port
+
+    assert (cnt_obid_first == cnt_rvfi_nmi)
+      else `uvm_error(info_tag, "expected D-bus 'err' count equal to handler entry count");
   end
 
   // TODO:ropeders track rvfi_intr and "previous_rvfi"?  (and also check later)
@@ -111,15 +124,30 @@ function void uvme_cv32e40x_buserr_sb_c::check_phase(uvm_phase phase);
 
   super.check_phase(phase);
 
-  assert (cnt_obid_trn > 0) else `uvm_warning(info_tag, "Zero D-side transactions received");
-  assert (cnt_obid_trn >= cnt_obid_err) else `uvm_error(info_tag, "obid 'err' transactions counted wrong");
-  assert (cnt_obid_err >= cnt_obid_first) else `uvm_error(info_tag, "obid 'first' transactions counted wrong");
+  // Check OBI counting
+  assert (cnt_obid_trn > 0)
+    else `uvm_warning(info_tag, "Zero D-side transactions received");
+  assert (cnt_obid_trn >= cnt_obid_err)
+    else `uvm_error(info_tag, "obid 'err' transactions counted wrong");
+  assert (cnt_obid_err >= cnt_obid_first)
+    else `uvm_error(info_tag, "obid 'first' transactions counted wrong");
   `uvm_info(info_tag, $sformatf("received %0d D-side 'err' transactions", cnt_obid_err), UVM_NONE)  // TODO:ropeders change
 
-  assert (cnt_rvfi_trn > 0) else `uvm_warning(info_tag, "Zero rvfi transactions received");
-  assert (cnt_rvfi_trn >= cnt_rvfi_nmi) else `uvm_error(info_tag, "rvfi 'nmi' transactions counted wrong");
+  // Check RVFI counting
+  assert (cnt_rvfi_trn > 0)
+    else `uvm_warning(info_tag, "Zero rvfi transactions received");
+  assert (cnt_rvfi_trn >= cnt_rvfi_nmi)
+    else `uvm_error(info_tag, "rvfi 'nmi' transactions counted wrong");
   `uvm_info(info_tag, $sformatf("received %0d rvfi transactions", cnt_rvfi_trn), UVM_NONE)  // TODO:ropeders remove
   `uvm_info(info_tag, $sformatf("received %0d rvfi nmi entries", cnt_rvfi_nmi), UVM_NONE)  // TODO:ropeders change
+
+  // Check OBI vs RVFI counting
+  assert (cnt_obid_first == cnt_rvfi_nmi)
+    else `uvm_error(info_tag, $sformatf("more/less 'err' (%0d) than nmi handling (%0d)", cnt_obid_first, cnt_rvfi_nmi));
+  `uvm_info(info_tag, $sformatf("observed %0d first 'err' and %0d handler entiers", cnt_obid_first, cnt_rvfi_nmi), UVM_NONE)
+    // TODO:ropeders change ^
+  // TODO:ropeders "cnt_obid_first" could be 1 higher if sim exits early? No more, right?
+  // TODO:ropeders put in the "write_" functions so it checks more often?
 
 endfunction : check_phase
 
