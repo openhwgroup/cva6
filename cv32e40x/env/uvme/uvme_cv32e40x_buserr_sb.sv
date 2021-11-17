@@ -124,10 +124,10 @@ function void uvme_cv32e40x_buserr_sb_c::write_rvfi(uvma_rvfi_instr_seq_item_c#(
   if (should_instr_err(trn)) begin
     cnt_rvfi_errmatch++;
     // TODO:ropeders add asserts
-
     // TODO:ropeders check expected etc
-    // TODO:ropeders clean queue if >depth?
-    // TODO:ropeders assert that rvfi_trap/mcause/etc is on?
+
+    assert (trn.trap)
+      else `uvm_error(info_tag, $sformatf("retire at 0x%08x (expected 'err') lacks 'rvfi_trap'", trn.pc_rdata));
   end
 
   // D-side NMI handler counting
@@ -250,7 +250,6 @@ function void uvme_cv32e40x_buserr_sb_c::check_phase(uvm_phase phase);
   assert (cnt_obii_err >= cnt_rvfi_errmatch)
     else `uvm_warning(info_tag, "more retired errs than fetches");  // TODO:ropeders is this correct?
   `uvm_info(info_tag, $sformatf("retired %0d expectedly err'ed instructions", cnt_rvfi_errmatch), UVM_NONE);  // TODO:ropeders change?
-  //TODO:ropeders assert "cnt_rvfi_ifaulthandl" vs some I-side prediction
 
   // TODO:ropeders how to check I-side vs D-side, "new bus faults occuring while an NMI is pending will be discarded"
 
@@ -265,15 +264,13 @@ function bit uvme_cv32e40x_buserr_sb_c::should_instr_err(uvma_rvfi_instr_seq_ite
   // Extract all addrs from queue of I-side OBI "err" transactions
   foreach (obii_err_queue[i]) err_addrs[i] = obii_err_queue[i].address;
 
-  rvfi_addr = rvfi_trn.pc_wdata;
+  rvfi_addr = rvfi_trn.pc_rdata;
 
-  // TODO return: is rvfi addr in addrs list?
   // TODO:ropeders take heed of compressed/misaligned instrs
   foreach (err_addrs[i]) begin
     if ((err_addrs[i] <= rvfi_addr) && (rvfi_addr < err_addrs[i]+4)) begin
       return 1;
       // TODO:ropeders check "top" of instr too (not just bottom addr)
-      // TODO:ropeders remove found item from queue?
     end
   end
   return 0;  // No match found, rvfi trn not expected to have "err"
