@@ -25,6 +25,15 @@
 `uvm_analysis_imp_decl(_rvfi)
 
 
+// Class: uvme_cv32e40x_buserr_sb_c
+// A scoreboard to check that OBI "err" bus faults arrive at the RVFI.
+// For I-side "err"s, the main mode of checking is to store every err-flagged
+//   OBI transaction in a queue, and then compare the PC addresses of RVFI
+//   retires to see that they have the expected impact.
+// For D-side "err"s, the main mode of checking is to watch for the first "err"
+//   (in, potentially, a series of "err"s) and demand that no more than two
+//   RVFI retires (non-debug/step) happen before we must enter the NMI handler.
+// There are also a couple of other checks to see if all counts are as expected.
 class uvme_cv32e40x_buserr_sb_c extends uvm_scoreboard;
 
   string info_tag = "BUSERRSB";
