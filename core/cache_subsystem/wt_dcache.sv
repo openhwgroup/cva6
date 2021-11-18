@@ -14,6 +14,7 @@
 
 
 module wt_dcache import ariane_pkg::*; import wt_cache_pkg::*; #(
+  parameter int unsigned                 AxiDataWidth       = 0,
   // ID to be used for read and AMO transactions.
   // note that the write buffer uses all IDs up to DCACHE_MAX_TX-1 for write transactions
   parameter logic [CACHE_ID_WIDTH-1:0]   RdAmoTxId          = 1,
@@ -276,6 +277,7 @@ module wt_dcache import ariane_pkg::*; import wt_cache_pkg::*; #(
 
   wt_dcache_mem #(
     .Axi64BitCompliant ( ArianeCfg.Axi64BitCompliant ),
+    .AxiDataWidth      ( AxiDataWidth                ),
     .NumPorts          ( NumPorts                    )
   ) i_wt_dcache_mem (
     .clk_i             ( clk_i              ),
