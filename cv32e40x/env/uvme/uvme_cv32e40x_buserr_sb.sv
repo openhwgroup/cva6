@@ -78,17 +78,12 @@ function void uvme_cv32e40x_buserr_sb_c::write_obid(uvma_obi_memory_mon_trn_c tr
 
   if (trn.err) begin
     cnt_obid_err++;
-    // TODO:ropeders store in queue to later compare vs CSRs?
-
-    // TODO:ropeders how to assert when handler must come?
 
     if (!pending_nmi) begin
       cnt_obid_firsterr++;
-      pending_nmi = 1;  // TODO:ropeders no race conditions here?
+      pending_nmi = 1;
     end
   end
-
-  // TODO:ropeders have count of longest streak of multiple errs?
 
 endfunction : write_obid
 
@@ -99,12 +94,9 @@ function void uvme_cv32e40x_buserr_sb_c::write_obii(uvma_obi_memory_mon_trn_c tr
 
   if (trn.err) begin
     cnt_obii_err++;
-    // TODO:ropeders save PC (or even more)?
-
     add_to_err_queue(trn);
-    // TODO:ropeders assert uvm_warning expecting [1:0] of addr to be zero?
   end else begin
-    // Acquit this address as it was (re)fetched wo/ err
+    // Acquit this address, as it was (re)fetched wo/ err
     remove_from_err_queue(trn);
   end
 
@@ -120,49 +112,35 @@ function void uvme_cv32e40x_buserr_sb_c::write_rvfi(uvma_rvfi_instr_seq_item_c#(
 
   cnt_rvfi_trn++;
 
-  // Expected err retires counting
+  // Expected ifault retires
   if (should_instr_err(trn)) begin
     cnt_rvfi_errmatch++;
-    // TODO:ropeders add asserts
-    // TODO:ropeders check expected etc
 
     assert (trn.trap)
       else `uvm_error(info_tag, $sformatf("retire at 0x%08x (expected 'err') lacks 'rvfi_trap'", trn.pc_rdata));
   end
 
-  // D-side NMI handler counting
+  // D-side NMI handler
   if (trn.intr && mcause[31] && (mcause[30:0] inside {128, 129})) begin
-    // TODO:ropeders no magic numbers ^
-    // TODO:ropeders make the filter/detection correct ^
-    // TODO:ropeders compare pc vs nmi handler address? ^
-
     cnt_rvfi_nmihandl++;
 
     assert (pending_nmi)
       else `uvm_error(info_tag, "nmi handlered entered without sb having seen an 'err' on d-bus");
-    pending_nmi = 0;  // TODO:ropeders ensure no race condition with obi analysis port
+    pending_nmi = 0;
 
     assert (cnt_obid_firsterr == cnt_rvfi_nmihandl)
       else `uvm_error(info_tag, "expected D-bus 'err' count equal to handler entry count");
   end
 
-  // I-side exception handler counting
+  // I-side exception handler
   if (trn.intr && !mcause[31] && (mcause[31:0] == 48)) begin
-    // TODO:ropeders "rvfi_intr" on traps doesn't feel semantically correct vs the signal name ^
-    // TODO:ropeders no magic numbers ^
-
     cnt_rvfi_ifaulthandl++;
 
-    // TODO:ropeders assert that this entry was expected (count vs count)
-    // TODO:ropeders assert that rvfi_trap/mcause/etc was on in the previous/current retire?
+    assert (cnt_rvfi_errmatch == cnt_rvfi_ifaulthandl)
+      else `uvm_error(info_tag, "ifault handler entered without matching an ifault retirement");
   end
 
-  // TODO:ropeders track rvfi_intr and "previous_rvfi"?  (and also check later)
-
-  // TODO:ropeders add checking in other function?
-  // TODO:ropeders check match of PC addr and other CSRs?
-
-  // D-side retires after "first err" counting
+  // Retires after D-side "first err"
   if (pending_nmi && !trn.dbg_mode && !(step && !stepie)) begin
     late_retires++;
     assert (late_retires <= 2 + 1)  // "+1" is for the "rvfi_valid" that belongs to before the nmi
@@ -171,7 +149,6 @@ function void uvme_cv32e40x_buserr_sb_c::write_rvfi(uvma_rvfi_instr_seq_item_c#(
   if (!pending_nmi) begin
     late_retires = 0;
   end
-  // TODO:ropeders ^ have count of difference in nmi vs taken and assert on it? (NB! dmode)
 
 endfunction : write_rvfi
 
@@ -191,7 +168,7 @@ function void uvme_cv32e40x_buserr_sb_c::check_phase(uvm_phase phase);
 
   super.check_phase(phase);
 
-  // Check OBI D-side counting
+  // Check OBI D-side
   assert (cnt_obid_trn > 0)
     else `uvm_warning(info_tag, "zero D-side OBI transactions received");
   assert (cnt_obid_trn >= cnt_obid_err)
@@ -202,26 +179,19 @@ function void uvme_cv32e40x_buserr_sb_c::check_phase(uvm_phase phase);
     else `uvm_error(info_tag, "obid 'first' transactions counted wrong");
   assert (!(cnt_obid_err && !cnt_obid_firsterr))
     else `uvm_error(info_tag, "'first' errs counted wrong");
-  `uvm_info(info_tag, $sformatf("received %0d D-side 'err' transactions", cnt_obid_err), UVM_NONE)  // TODO:ropeders change
-  `uvm_info(info_tag, $sformatf("received %0d D-side 'first' err transactions", cnt_obid_firsterr), UVM_NONE)// TODO:ropeders change
 
-  // Check RVFI
-  assert (cnt_rvfi_trn > 0)
-    else `uvm_warning(info_tag, "zero rvfi transactions received");
-
-  // Check RVFI D-side counting
+  // Check RVFI D-side
   assert (cnt_rvfi_trn >= cnt_rvfi_nmihandl)
     else `uvm_error(info_tag, "rvfi 'nmi' transactions counted wrong");
   assert (cnt_rvfi_trn != cnt_rvfi_nmihandl)
-    else `uvm_warning(info_tag, "all the rvfi transactions where nmi entries");
-  `uvm_info(info_tag, $sformatf("observed %0d rvfi nmi handler entries", cnt_rvfi_nmihandl), UVM_NONE)  // TODO:ropeders change
+    else `uvm_error(info_tag, "all the rvfi transactions where nmi entries");
 
-  // Check OBI D-side vs RVFI counting
+  // Check OBI D-side vs RVFI
   assert (cnt_obid_firsterr == cnt_rvfi_nmihandl)
     else `uvm_error(info_tag, $sformatf("more/less 'err' (%0d) than nmi handling (%0d)", cnt_obid_firsterr, cnt_rvfi_nmihandl));
   // TODO:ropeders "cnt_obid_firsterr" could be 1 higher if sim exits early? No more, right?
 
-  // Check OBI I-side counting
+  // Check OBI I-side
   assert (cnt_obii_trn > 0)
     else `uvm_warning(info_tag, "zero I-side OBI transactions received");
   assert (cnt_obii_trn >= cnt_obii_err)
@@ -229,29 +199,32 @@ function void uvme_cv32e40x_buserr_sb_c::check_phase(uvm_phase phase);
   assert (cnt_obii_trn != cnt_obii_err)
     else `uvm_warning(info_tag, "all the I-side OBI transactions were errs");
   //TODO:ropeders any more asserts to add?
-  `uvm_info(info_tag, $sformatf("received %0d I-side 'err' transactions", cnt_obii_err), UVM_NONE)  // TODO:ropeders change
 
-  // Check TODO instr bus fault prediction counting
-  //TODO:ropeders any more asserts to add?
-
-  // Check RVFI I-side counting
-  assert (cnt_obii_err >= cnt_rvfi_ifaulthandl)
-    else `uvm_error(info_tag, $sformatf("less I-side 'err' (%0d) than exception handling (%0d)", cnt_obii_err, cnt_rvfi_ifaulthandl));
-  //TODO:ropeders any more asserts to add?
-  `uvm_info(info_tag, $sformatf("observed %0d rvfi instr bus fault entries", cnt_rvfi_ifaulthandl), UVM_NONE)  // TODO:ropeders change
-
-  // Check TODO I-side vs RVFI counting
+  // Check RVFI I-side
   assert (cnt_rvfi_errmatch >= cnt_rvfi_ifaulthandl)
     else `uvm_error(info_tag, "more instr fault handler than actual err retirements");
   assert (cnt_rvfi_errmatch == cnt_rvfi_ifaulthandl)
     else `uvm_warning(info_tag, $sformatf("num err retires (%0d) != num handler entries (%0d)", cnt_rvfi_errmatch, cnt_rvfi_ifaulthandl));
       // TODO:ropeders is this a correct assumption? ^
   // TODO:ropeders assert (while running) that diff of ^ is never bigger than 1?
+
+  // Check OBI I-side vs RVFI
+  assert (cnt_obii_err >= cnt_rvfi_ifaulthandl)
+    else `uvm_error(info_tag, $sformatf("less I-side 'err' (%0d) than exception handling (%0d)", cnt_obii_err, cnt_rvfi_ifaulthandl));
   assert (cnt_obii_err >= cnt_rvfi_errmatch)
     else `uvm_warning(info_tag, "more retired errs than fetches");  // TODO:ropeders is this correct?
-  `uvm_info(info_tag, $sformatf("retired %0d expectedly err'ed instructions", cnt_rvfi_errmatch), UVM_NONE);  // TODO:ropeders change?
 
-  // TODO:ropeders how to check I-side vs D-side, "new bus faults occuring while an NMI is pending will be discarded"
+  // Check RVFI (just a sanity check)
+  assert (cnt_rvfi_trn > 0)
+    else `uvm_warning(info_tag, "zero rvfi transactions received");
+
+  // Inform about the end state
+  `uvm_info(info_tag, $sformatf("received %0d D-side 'err' transactions", cnt_obid_err), UVM_NONE)
+  `uvm_info(info_tag, $sformatf("received %0d D-side 'first err' transactions", cnt_obid_firsterr), UVM_NONE)
+  `uvm_info(info_tag, $sformatf("observed %0d rvfi nmi handler entries", cnt_rvfi_nmihandl), UVM_NONE)
+  `uvm_info(info_tag, $sformatf("received %0d I-side 'err' transactions", cnt_obii_err), UVM_NONE)
+  `uvm_info(info_tag, $sformatf("retired %0d expectedly ifault instructions", cnt_rvfi_errmatch), UVM_NONE)
+  `uvm_info(info_tag, $sformatf("observed %0d rvfi ifault handler entries", cnt_rvfi_ifaulthandl), UVM_NONE)
 
 endfunction : check_phase
 
@@ -266,11 +239,11 @@ function bit uvme_cv32e40x_buserr_sb_c::should_instr_err(uvma_rvfi_instr_seq_ite
 
   rvfi_addr = rvfi_trn.pc_rdata;
 
-  // TODO:ropeders take heed of compressed/misaligned instrs
   foreach (err_addrs[i]) begin
     if ((err_addrs[i] <= rvfi_addr) && (rvfi_addr < err_addrs[i]+4)) begin
       return 1;
       // TODO:ropeders check "top" of instr too (not just bottom addr)
+      // TODO:ropeders take heed of compressed/misaligned instrs
     end
   end
   return 0;  // No match found, rvfi trn not expected to have "err"
