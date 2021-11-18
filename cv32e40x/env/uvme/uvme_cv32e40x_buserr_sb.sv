@@ -118,6 +118,8 @@ function void uvme_cv32e40x_buserr_sb_c::write_rvfi(uvma_rvfi_instr_seq_item_c#(
 
     assert (trn.trap)
       else `uvm_error(info_tag, $sformatf("retire at 0x%08x (expected 'err') lacks 'rvfi_trap'", trn.pc_rdata));
+    assert (cnt_rvfi_errmatch - cnt_rvfi_ifaulthandl <= 1)
+      else `uvm_error(info_tag, "too many err retires without ifault handling");
   end
 
   // D-side NMI handler
@@ -187,9 +189,8 @@ function void uvme_cv32e40x_buserr_sb_c::check_phase(uvm_phase phase);
     else `uvm_error(info_tag, "all the rvfi transactions where nmi entries");
 
   // Check OBI D-side vs RVFI
-  assert (cnt_obid_firsterr == cnt_rvfi_nmihandl)
+  assert (cnt_obid_firsterr inside {cnt_rvfi_nmihandl, cnt_rvfi_nmihandl + 1})
     else `uvm_error(info_tag, $sformatf("more/less 'err' (%0d) than nmi handling (%0d)", cnt_obid_firsterr, cnt_rvfi_nmihandl));
-  // TODO:ropeders "cnt_obid_firsterr" could be 1 higher if sim exits early? No more, right?
 
   // Check OBI I-side
   assert (cnt_obii_trn > 0)
@@ -198,21 +199,18 @@ function void uvme_cv32e40x_buserr_sb_c::check_phase(uvm_phase phase);
     else `uvm_error(info_tag, "obii 'err' transactions counted wrong");
   assert (cnt_obii_trn != cnt_obii_err)
     else `uvm_warning(info_tag, "all the I-side OBI transactions were errs");
-  //TODO:ropeders any more asserts to add?
 
   // Check RVFI I-side
   assert (cnt_rvfi_errmatch >= cnt_rvfi_ifaulthandl)
     else `uvm_error(info_tag, "more instr fault handler than actual err retirements");
   assert (cnt_rvfi_errmatch == cnt_rvfi_ifaulthandl)
-    else `uvm_warning(info_tag, $sformatf("num err retires (%0d) != num handler entries (%0d)", cnt_rvfi_errmatch, cnt_rvfi_ifaulthandl));
-      // TODO:ropeders is this a correct assumption? ^
-  // TODO:ropeders assert (while running) that diff of ^ is never bigger than 1?
+    else `uvm_warning(info_tag, $sformatf("err retires (%0d) != handler entries (%0d)", cnt_rvfi_errmatch, cnt_rvfi_ifaulthandl));
 
   // Check OBI I-side vs RVFI
   assert (cnt_obii_err >= cnt_rvfi_ifaulthandl)
-    else `uvm_error(info_tag, $sformatf("less I-side 'err' (%0d) than exception handling (%0d)", cnt_obii_err, cnt_rvfi_ifaulthandl));
+    else `uvm_error(info_tag, $sformatf("less I-side err (%0d) than exception handling (%0d)", cnt_obii_err, cnt_rvfi_ifaulthandl));
   assert (cnt_obii_err >= cnt_rvfi_errmatch)
-    else `uvm_warning(info_tag, "more retired errs than fetches");  // TODO:ropeders is this correct?
+    else `uvm_warning(info_tag, "more retired errs than fetches");
 
   // Check RVFI (just a sanity check)
   assert (cnt_rvfi_trn > 0)
@@ -232,18 +230,20 @@ endfunction : check_phase
 function bit uvme_cv32e40x_buserr_sb_c::should_instr_err(uvma_rvfi_instr_seq_item_c#(ILEN,XLEN) rvfi_trn);
 
   uvma_obi_memory_addr_l_t  err_addrs[$];
-  bit [31:0]                rvfi_addr;
+  bit [31:0]                rvfi_addr = rvfi_trn.pc_rdata;
 
   // Extract all addrs from queue of I-side OBI "err" transactions
   foreach (obii_err_queue[i]) err_addrs[i] = obii_err_queue[i].address;
 
-  rvfi_addr = rvfi_trn.pc_rdata;
-
   foreach (err_addrs[i]) begin
-    if ((err_addrs[i] <= rvfi_addr) && (rvfi_addr < err_addrs[i]+4)) begin
+    bit compressed =
+      (rvfi_trn.insn[1:0] != 2'b 11)
+      && !({rvfi_addr[31:2], 2'b 00} inside {err_addrs});
+    bit [31:0] hi_addr = err_addrs[i] + 4;
+    bit [31:0] lo_addr = err_addrs[i] - (compressed ? 2 : 4);
+
+    if ((lo_addr < rvfi_addr) && (rvfi_addr < hi_addr)) begin
       return 1;
-      // TODO:ropeders check "top" of instr too (not just bottom addr)
-      // TODO:ropeders take heed of compressed/misaligned instrs
     end
   end
   return 0;  // No match found, rvfi trn not expected to have "err"
