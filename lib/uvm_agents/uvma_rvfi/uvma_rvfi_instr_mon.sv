@@ -36,12 +36,16 @@ class uvma_rvfi_instr_mon_c#(int ILEN=DEFAULT_ILEN,
    // TLM
    uvm_analysis_port#(uvma_rvfi_instr_seq_item_c#(ILEN,XLEN))  ap;
 
+   // State of monitor
+   bit                last_dcsr_nmip = 0;
+
    string log_tag = "RVFIMONLOG";
 
    `uvm_component_utils_begin(uvma_rvfi_instr_mon_c)
-      `uvm_field_int(nret_id, UVM_DEFAULT)
-      `uvm_field_object(cfg  , UVM_DEFAULT)
-      `uvm_field_object(cntxt, UVM_DEFAULT)
+      `uvm_field_int(nret_id,        UVM_DEFAULT)
+      `uvm_field_int(last_dcsr_nmip, UVM_DEFAULT)
+      `uvm_field_object(cfg,         UVM_DEFAULT | UVM_REFERENCE)
+      `uvm_field_object(cntxt,       UVM_DEFAULT | UVM_REFERENCE)
    `uvm_component_utils_end
 
    /**
@@ -197,7 +201,11 @@ task uvma_rvfi_instr_mon_c::monitor_rvfi_instr();
          end
 
          // In debug mode, detect NMIP event
-         if (cfg.nmi_handler_enabled && mon_trn.csrs["dcsr"].wmask[3] && mon_trn.csrs["dcsr"].wdata[3]) begin
+         if (cfg.nmi_handler_enabled &&
+             mon_trn.dbg_mode &&
+             !last_dcsr_nmip &&
+             mon_trn.csrs["dcsr"].get_csr_retirement_data()[3]) begin
+            `uvm_info("RVFIMON", $sformatf("Debug NMIP"), UVM_LOW);
             mon_trn.insn_nmi = 1;
          end
 
@@ -207,6 +215,8 @@ task uvma_rvfi_instr_mon_c::monitor_rvfi_instr();
              mon_trn.csrs["mcause"].get_csr_retirement_data() == cfg.insn_bus_fault_cause) begin
             mon_trn.insn_bus_fault = 1;
          end
+
+         last_dcsr_nmip = mon_trn.csrs["dcsr"].get_csr_retirement_data()[3];
 
          `uvm_info(log_tag, $sformatf("%s", mon_trn.convert2string()), UVM_HIGH);
 
