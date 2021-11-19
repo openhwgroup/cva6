@@ -224,6 +224,7 @@
       "tests": {
         "resultsDir": "/mux-flow/build/results",
         "builds":    ["uvmt_cv32e40x", "uvmt_cv32e40x_pma_1", "uvmt_cv32e40x_pma_2" ],
+        "timeout":   "12h",
         "listCmd":   "/mux-flow/build/repo/bin/cv_regress --core=cv32e40x --file=cv32e40x_ci_check --metrics --outfile=/mux-flow/build/repo/cv32e40x_ci_check.json",
         "listFile":  "/mux-flow/build/repo/cv32e40x_ci_check.json"
       }
