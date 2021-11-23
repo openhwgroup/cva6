@@ -966,9 +966,9 @@ module csr_regfile import ariane_pkg::*; #(
     always_comb begin : wfi_ctrl
         // wait for interrupt register
         wfi_d = wfi_q;
-        // if there is any interrupt pending un-stall the core
+        // if there is any (enabled) interrupt pending un-stall the core
         // also un-stall if we want to enter debug mode
-        if (|mip_q || debug_req_i || irq_i[1]) begin
+        if (|(mip_q & mie_q) || debug_req_i || irq_i[1]) begin
             wfi_d = 1'b0;
         // or alternatively if there is no exception pending and we are not in debug mode wait here
         // for the interrupt
