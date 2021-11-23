@@ -49,7 +49,7 @@ extern "C" char get_section (long long* address, long long* len) {
     } else return 0;
 }
 
-extern "C" char read_section (long long address, const svOpenArrayHandle buffer) {
+extern "C" void read_section (long long address, const svOpenArrayHandle buffer) {
     // get actual poitner
     void* buf = svGetArrayPtr(buffer);
     // check that the address points to a section
