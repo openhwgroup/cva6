@@ -49,6 +49,60 @@ vcs_core_comp:
 vcs_core_run:
 	$(VCS_WORK_DIR)/simv $(if $(VERDI), -verdi,)
 
+export CVA6_UVMT_DIR          = $(CORE_V_VERIF)/cva6/tb/uvmt
+export CVA6_UVMT_PATH         = $(CORE_V_VERIF)/cva6/tb/uvmt
+export CVA6_UVME_PATH         = $(CORE_V_VERIF)/cva6/env/uvme
+export CV_CORE_LC             = cva6
+export CV_CORE_UC             = CVA6
+export DV_UVMT_PATH           = $(CORE_V_VERIF)/$(CV_CORE_LC)/tb/uvmt
+export DV_UVME_PATH           = $(CORE_V_VERIF)/$(CV_CORE_LC)/env/uvme
+export DV_UVML_HRTBT_PATH     = $(CORE_V_VERIF)/lib/uvm_libs/uvml_hrtbt
+export DV_UVMA_ISACOV_PATH    = $(CORE_V_VERIF)/lib/uvm_agents/uvma_isacov
+export DV_UVMA_CLKNRST_PATH   = $(CORE_V_VERIF)/lib/uvm_agents/uvma_clknrst
+export DV_UVMA_INTERRUPT_PATH = $(CORE_V_VERIF)/lib/uvm_agents/uvma_interrupt
+export DV_UVMA_DEBUG_PATH     = $(CORE_V_VERIF)/lib/uvm_agents/uvma_debug
+export DV_UVMA_OBI_PATH       = $(CORE_V_VERIF)/lib/uvm_agents/uvma_obi
+export DV_UVML_TRN_PATH       = $(CORE_V_VERIF)/lib/uvm_libs/uvml_trn
+export DV_UVML_LOGS_PATH      = $(CORE_V_VERIF)/lib/uvm_libs/uvml_logs
+export DV_UVML_SB_PATH        = $(CORE_V_VERIF)/lib/uvm_libs/uvml_sb
+export CV_CORE_PKG            = $(CORE_V_VERIF)/core-v-cores/$(CV_CORE_LC)
+export DESIGN_RTL_DIR         = $(CV_CORE_PKG)/rtl
+
+DPI_DASM_PKG                  = $(CORE_V_VERIF)/lib/dpi_dasm
+DPI_DASM_SPIKE_PKG            = $(CORE_V_VERIF)/$(CV_CORE_LC)/vendor_lib/dpi_dasm_spike
+export DPI_DASM_ROOT          = $(DPI_DASM_PKG)
+export DPI_DASM_SPIKE_ROOT    = $(DPI_DASM_SPIKE_PKG)
+export TBSRC_HOME             = $(CORE_V_VERIF)/cva6/tb
+export DV_OVPM_HOME           = $(CORE_V_VERIF)/$(CV_CORE_LC)/vendor_lib/imperas
+export DV_OVPM_MODEL          = $(DV_OVPM_HOME)/riscv_$(CV_CORE_UC)_OVPsim
+export DV_OVPM_DESIGN         = $(DV_OVPM_HOME)/design
+
+ALL_UVM_FLAGS           = -lca -sverilog +incdir+/opt/synopsys/vcs-mx/O-2018.09-SP1-1/etc/uvm/src \
+	  /opt/synopsys/vcs-mx/O-2018.09-SP1-1/etc/uvm/src/uvm_pkg.sv +UVM_VERBOSITY=UVM_MEDIUM -ntb_opts uvm-1.2 -timescale=1ns/1ps \
+	  -assert svaext -race=all -ignore unique_checks -full64 -q +incdir+/opt/synopsys/vcs-mx/O-2018.09-SP1-1/etc/uvm/src \
+	  +incdir+$(CORE_V_VERIF)/$(CV_CORE_LC)/env/uvme +incdir+$(CORE_V_VERIF)/$(CV_CORE_LC)/tb/uvmt \
+	  $(USERDEFINE) $(if $(VERDI), -debug_access+all -kdb,)
+ALL_SIMV_UVM_FLAGS      = -licwait 20 -l vcs-hello-world.log -cm_name hello-world +ntb_random_seed=1 \
+		-sv_lib $(CORE_V_VERIF)/lib/dpi_dasm/lib/Linux64/libdpi_dasm +signature=I-ADD-01.signature_output \
+		+UVM_TESTNAME=uvmt_cva6_firmware_test_c $(if $(VERDI), -gui,)
+
+vcs_uvm_comp:
+	@echo "[VCS] Building Model"
+	mkdir -p $(VCS_WORK_DIR)
+	cd $(VCS_WORK_DIR) && vcs $(ALL_UVM_FLAGS) \
+	  -f $(FLIST_CORE) \
+	  -f $(CVA6_TB_DIR)/Flist.cva6_tb \
+	  -f $(CVA6_UVMT_DIR)/uvmt_cva6.flist \
+	  -top uvmt_cva6_tb
+
+vcs_uvm_run:
+	cp Mem_init.txt $(VCS_WORK_DIR)/
+	cd $(VCS_WORK_DIR)/ && \
+	$(VCS_WORK_DIR)/simv ${ALL_SIMV_UVM_FLAGS} \
+		+elf_file=$(CORE_V_VERIF)/cva6/sim/hello-world.elf \
+		+firmware=$(CORE_V_VERIF)/cva6/sim/hello-world.hex && \
+	mv $(VCS_WORK_DIR)/trace_rvfi_hart_00.dasm $(CORE_V_VERIF)/cva6/sim/
+
 vcs_clean:
 	@echo "[VCS] Cleanup (entire vcs_work dir)"
 	rm -rf $(CORE_V_VERIF)/cva6/sim/vcs_results/ simv* *.daidir *.vpd *.db csrc ucli.key vc_hdrs.h
