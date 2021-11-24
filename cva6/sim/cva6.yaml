@@ -45,6 +45,17 @@
   postcmd: >
     <tool_path>/spike-dasm < ./trace_rvfi_hart_00.dasm > log
 
+- iss: veri-testharness-linux
+  path_var: RTL_PATH
+  tool_path: SPIKE_PATH
+  tb_path: TB_PATH
+  precmd: >
+    make -C <path_var> verilate variant=<variant> user-define="+define+WT_CACHE"
+  cmd: >
+    <path_var>/work-ver/Variane_testharness +time_out=40000000 +debug_disable=1 <elf>
+  postcmd: >
+    <tool_path>/spike-dasm < ./trace_rvfi_hart_00.dasm > log
+
 ###############################################################################
 # Synopsys VCS specific commands, variables
 ###############################################################################
