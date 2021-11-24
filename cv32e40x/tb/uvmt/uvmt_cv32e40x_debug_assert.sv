@@ -543,12 +543,12 @@ module uvmt_cv32e40x_debug_assert
     a_dmhaltaddr_stable : assert property (
         (cov_assert_if.fetch_enable_i && cov_assert_if.rst_ni)
         |=>
-        always $stable(cov_assert_if.dm_halt_addr_i)
+        $stable(cov_assert_if.dm_halt_addr_i)
         ) else `uvm_error(info_tag, "TODO");
 
     // Should be word-aligned
     a_dmhaltaddr_aligned : assert property (
-        cov_assert_if.dm_halt_addr_i[1:0] == 2'b 00
+        cov_assert_if.dm_halt_addr_i[1:0] == 2'b00
         ) else `uvm_error(info_tag, "TODO");
 
 
