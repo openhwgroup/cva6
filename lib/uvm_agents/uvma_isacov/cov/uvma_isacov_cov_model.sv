@@ -855,7 +855,7 @@ covergroup cg_jtype(
 
   cp_rd: coverpoint instr.rd;
 
-  cp_immj_value: coverpoint instr.immu_value_type {
+  cp_immj_value: coverpoint instr.immj_value_type {
     ignore_bins NON_ZERO_OFF = {NON_ZERO};
   }
 
@@ -1811,9 +1811,9 @@ function void uvma_isacov_cov_model_c::build_phase(uvm_phase phase);
       rv32i_sll_cg    = new("rv32i_sll_cg",
                             .reg_crosses_enabled(cfg.reg_crosses_enabled),
                             .reg_hazards_enabled(cfg.reg_hazards_enabled),
-                            .rs1_is_signed(rs1_is_signed[SUB]),
-                            .rs2_is_signed(rs2_is_signed[SUB]),
-                            .rd_is_signed(rd_is_signed[SUB]));
+                            .rs1_is_signed(rs1_is_signed[SLL]),
+                            .rs2_is_signed(rs2_is_signed[SLL]),
+                            .rd_is_signed(rd_is_signed[SLL]));
       rv32i_slt_cg    = new("rv32i_slt_cg",
                             .reg_crosses_enabled(cfg.reg_crosses_enabled),
                             .reg_hazards_enabled(cfg.reg_hazards_enabled),
@@ -2015,15 +2015,15 @@ function void uvma_isacov_cov_model_c::build_phase(uvm_phase phase);
                               .rs1_is_signed(rs1_is_signed[C_BEQZ]),
                               .imm_is_signed(c_imm_is_signed[C_BEQZ]));
       rv32c_bnez_cg     = new("rv32c_bnez_cg",
-                              .rs1_is_signed(rs1_is_signed[C_BEQZ]),
-                              .imm_is_signed(c_imm_is_signed[C_BEQZ]));
+                              .rs1_is_signed(rs1_is_signed[C_BNEZ]),
+                              .imm_is_signed(c_imm_is_signed[C_BNEZ]));
       rv32c_andi_cg     = new("rv32c_andi_cg",
-                              .rs1_is_signed(rs1_is_signed[C_BEQZ]),
-                              .imm_is_signed(c_imm_is_signed[C_BEQZ]));
+                              .rs1_is_signed(rs1_is_signed[C_ANDI]),
+                              .imm_is_signed(c_imm_is_signed[C_ANDI]));
       rv32c_srli_cg     = new("rv32c_srli_cg",
-                              .rs1_is_signed(rs1_is_signed[C_BEQZ]));
+                              .rs1_is_signed(rs1_is_signed[C_SRLI]));
       rv32c_srai_cg     = new("rv32c_srai_cg",
-                              .rs1_is_signed(rs1_is_signed[C_BEQZ]));
+                              .rs1_is_signed(rs1_is_signed[C_SRAI]));
 
       rv32c_j_cg        = new("rv32c_j_cg",
                               .imm_is_signed(rd_is_signed[C_J]));

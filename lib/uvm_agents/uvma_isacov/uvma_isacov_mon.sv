@@ -48,9 +48,9 @@ endclass : uvma_isacov_mon_c
 
 function uvma_isacov_mon_c::new(string name = "uvma_isacov_mon", uvm_component parent = null);
 
-super.new(name, parent);
-
+  super.new(name, parent);
   rvfi_instr_export = new("rvfi_instr_export", this);
+
 endfunction : new
 
 
