@@ -18,14 +18,15 @@
 #
 ###############################################################################
 #
-# DSIM-specific Makefile for the CV32E40P "uvmt_cv32" testbench.
+# DSIM-specific Makefile.
 # DSIM is the Metrics Technologies SystemVerilog simulator  (https://metrics.ca/)
 #
 ###############################################################################
 
 DSIM                    = dsim
 DSIM_HOME              ?= /tools/Metrics/dsim
-DSIM_CMP_FLAGS         ?= $(TIMESCALE) $(SV_CMP_FLAGS) -top uvmt_$(CV_CORE_LC)_tb -suppress MultiBlockWrite
+DSIM_CMP_FLAGS         ?= $(TIMESCALE) $(SV_CMP_FLAGS) -top uvmt_$(CV_CORE_LC)_tb
+DSIM_ERR_SUPPRESS      ?= MultiBlockWrite:ReadingOutputModport
 DSIM_UVM_ARGS          ?= +incdir+$(UVM_HOME)/src $(UVM_HOME)/src/uvm_pkg.sv
 DSIM_WORK              ?= $(SIM_CFG_RESULTS)/dsim_work
 DSIM_IMAGE             ?= dsim.out
@@ -127,6 +128,7 @@ mk_results:
 comp: mk_results $(CV_CORE_PKG) $(SVLIB_PKG) $(OVP_MODEL_DPI)
 	$(DSIM) \
 		$(DSIM_CMP_FLAGS) \
+		-suppress $(DSIM_ERR_SUPPRESS) \
 		$(DSIM_UVM_ARGS) \
 		$(DSIM_ACC_FLAGS) \
 		$(CFG_COMPILE_FLAGS) \
