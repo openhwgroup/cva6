@@ -812,7 +812,7 @@ covergroup cg_btype(
     ignore_bins IGN_OFF = cross_rs1_rs2 with (!reg_crosses_enabled);
   }
 
-  cp_imms_value: coverpoint instr.imms_value_type {
+  cp_immb_value: coverpoint instr.immb_value_type {
     ignore_bins NON_ZERO_OFF = {NON_ZERO};
   }
 

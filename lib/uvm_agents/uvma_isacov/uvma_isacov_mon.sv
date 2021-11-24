@@ -217,7 +217,7 @@ function void uvma_isacov_mon_c::write_rvfi_instr(uvma_rvfi_instr_seq_item_c#(IL
 
   // Set enumerations for each immediate value (if applicable)
   if (mon_trn.instr.itype == B_TYPE)
-    mon_trn.instr.immb_value_type = mon_trn.instr.get_instr_value_type(mon_trn.instr.imms, 13, 1);
+    mon_trn.instr.immb_value_type = mon_trn.instr.get_instr_value_type(mon_trn.instr.immb, 13, 1);
 
   if (mon_trn.instr.itype == S_TYPE)
     mon_trn.instr.imms_value_type = mon_trn.instr.get_instr_value_type(mon_trn.instr.imms, 12, 1);
