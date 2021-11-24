@@ -72,7 +72,7 @@ module issue_stage import ariane_pkg::*; #(
     input logic [NR_WB_PORTS-1:0][riscv::XLEN-1:0]   wbdata_i,
     input exception_t [NR_WB_PORTS-1:0]              ex_ex_i, // exception from execute stage or CVXIF offloaded instruction
     input logic [NR_WB_PORTS-1:0]                    wt_valid_i,
-    input logic [4:0]                                cvxif_rd_i,
+    input logic                                      cvxif_we_i,
 
     // commit port
     input  logic [NR_COMMIT_PORTS-1:0][4:0]          waddr_i,
@@ -214,7 +214,7 @@ module issue_stage import ariane_pkg::*; #(
             x_issue_req_o.rs[2]      = fu_data_o.fu == ariane_pkg::CVXIF && x_issue_valid_o
                                        ? fu_data_o.imm       : 0;
             x_issue_req_o.rs_valid   = 3'b111;
-            x_commit_valid_o         = x_issue_valid_o && x_issue_resp_i.accept; // always commit if accepted (commit can be delayed in the spec)
+            x_commit_valid_o         = x_issue_valid_o; // always commit if accepted (commit can be delayed in the spec)
             x_commit_o.id            = x_issue_req_o.id;
             x_commit_o.x_commit_kill = 1'b0;
         end
