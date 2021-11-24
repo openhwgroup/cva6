@@ -36,7 +36,7 @@ root-dir := $(dir $(mkfile_path))
 
 support_verilator_4 := $(shell ($(verilator) --version | grep '4\.') > /dev/null 2>&1 ; echo $$?)
 ifeq ($(support_verilator_4), 0)
-	verilator_threads := 2
+	verilator_threads := 1
 endif
 
 ifndef RISCV
