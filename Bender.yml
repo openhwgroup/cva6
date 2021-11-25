@@ -202,7 +202,7 @@ sources:
     - corev_apu/src/tech_cells_generic/src/pulp_clock_mux2.sv
     - target: not(cv32a6)
       files:
-      - core/include/cv64a6_imacfd_sv39_config_pkg.sv
+      - core/include/cv64a6_imafdc_sv39_config_pkg.sv
     - target: cv32a6
       files:
       - core/include/cv32a6_imac_sv0_config_pkg.sv

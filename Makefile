@@ -72,8 +72,8 @@ ifdef spike-tandem
 endif
 
 # target takes one of the following cva6 hardware configuration:
-# cv64a6_imacfd_sv39, cv32a6_imac_sv0, cv32a6_imac_sv32, cv32a6_imacf_sv32
-target     ?= cv64a6_imacfd_sv39
+# cv64a6_imafdc_sv39, cv32a6_imac_sv0, cv32a6_imac_sv32, cv32a6_imafc_sv32
+target     ?= cv64a6_imafdc_sv39
 
 # Sources
 # Package files -> compile first
