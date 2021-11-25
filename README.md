@@ -22,6 +22,7 @@
 Functional verification project for the CORE-V family of RISC-V cores.
 
 ## NEWS UPDATES:
+**2021-07-15**: The verificaton environment for the [cv32e40s](https://github.com/openhwgroup/cv32e40s) is up and running.
 **2021-03-23**: The verificaton environment for the [cv32e40x](https://github.com/openhwgroup/cv32e40x) is up and running.
 <br>
 **2020-12-16**: The [cv32e40p_v1.0.0](https://github.com/openhwgroup/core-v-verif/releases/tag/22dc5fc) of core-v-verif is released.
@@ -34,18 +35,22 @@ First, have a look at the [OpenHW Group's website](https://www.openhwgroup.org) 
 <br>
 Reading the [CORE-V-VERIF Verification Strategy](https://core-v-docs-verif-strat.readthedocs.io/en/latest/) is strongly recommended.
 
+<!--
 ### Getting started with CV32E40P
 If you want to run a simulation there are two options:
 1. To run the CORE testbench, go to `cv32e40p/sim/core` and read the README.
 2. To run the CV32E40P UVM environment, go to `cv32e40p/sim/uvmt` and read the README.
+-->
 
 <!--
 #### CV32E40P coverage data
 The most recently published coverage report for the CV32E40P can be found [here](https://openhwgroup.github.io/core-v-verif/).
 -->
 
+<!--
 ### Getting started with CVA6
 To run CVA6 testbench, go to [cva6](cva6) directory and read the README.
+-->
 
 ## Directory Structure of this Repo
 ### bin
@@ -54,15 +59,11 @@ Various utilities for running tests and performing various verification-related 
 ### core-v-cores
 Empty sub-directory into which the RTL from one or more of the [CORE-V-CORES](https://github.com/openhwgroup/core-v-cores) repositories is cloned.
 
-### cv32e40p
-Verification Environments, testbenches, testcases and simulation Makefiles for the CV32E40P core.
-
-### cva6
-Verification Environments, testbenches, testcases and simulation Makefiles for the CVA6 cores.
+### cv32e40p, cv32e40x, cv32e40s, cva6
+Core-specific verification code.
 
 ### docs
-Source for GitHub Pages.
-Contains a pointers to the [Verification Strategy document](https://core-v-docs-verif-strat.readthedocs.io/en/latest/), the [CORE-V-DOCS](https://github.com/openhwgroup/core-v-docs) repository, and available coverage reports.
+Sources for the Verification Strategy document, DV plans, coding style guidelines and available coverage reports.
 
 ### mk
 Common simulation Makefiles that support testbenches for all CORE-V cores.
@@ -79,7 +80,8 @@ We highly appreciate community contributions. You can get a sense of our current
 within a project are defined as [issues](https://github.com/openhwgroup/core-v-verif/issues) with a `task` label.
 <br><br>To ease our work of reviewing your contributions, please:
 
-* Review [CONTRIBUTING](https://github.com/openhwgroup/core-v-verif/blob/master/CONTRIBUTING.md).
+* Review [CONTRIBUTING](https://github.com/openhwgroup/core-v-verif/blob/master/CONTRIBUTING.md)
+and our [SV/UVM coding style guidelines](https://github.com/openhwgroup/core-v-verif/blob/master/doc/CodingStyleGuidelines.md).
 * Split large contributions into smaller commits addressing individual changes or bug fixes.
 Do not mix unrelated changes into the same commit!
 * Write meaningful commit messages.
