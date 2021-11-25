@@ -180,9 +180,9 @@ function void uvma_isacov_mon_c::write_rvfi_instr(uvma_rvfi_instr_seq_item_c#(IL
     mon_trn.instr.rd   = dasm_rd(instr);
     mon_trn.instr.immi = dasm_i_imm(instr);
     mon_trn.instr.imms = dasm_s_imm(instr);
-    mon_trn.instr.immb = dasm_sb_imm(instr) >> 1;
-    mon_trn.instr.immu = dasm_u_imm(instr) >> 12;
-    mon_trn.instr.immj = dasm_uj_imm(instr);
+    mon_trn.instr.immb = dasm_sb_imm(instr) >> 1;  // Because dasm gives [12:0], not [12: 1]
+    mon_trn.instr.immu = dasm_u_imm(instr) >> 12;  // Because dasm gives [31:0], not [31:12]
+    mon_trn.instr.immj = dasm_uj_imm(instr) >> 1;  // because dasm gives [20:0], not [20: 1]
   end
 
   // Make instructions as illegal,
