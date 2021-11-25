@@ -23,6 +23,7 @@ Functional verification project for the CORE-V family of RISC-V cores.
 
 ## NEWS UPDATES:
 **2021-07-15**: The verificaton environment for the [cv32e40s](https://github.com/openhwgroup/cv32e40s) is up and running.
+<br>
 **2021-03-23**: The verificaton environment for the [cv32e40x](https://github.com/openhwgroup/cv32e40x) is up and running.
 <br>
 **2020-12-16**: The [cv32e40p_v1.0.0](https://github.com/openhwgroup/core-v-verif/releases/tag/22dc5fc) of core-v-verif is released.
@@ -81,7 +82,7 @@ within a project are defined as [issues](https://github.com/openhwgroup/core-v-v
 <br><br>To ease our work of reviewing your contributions, please:
 
 * Review [CONTRIBUTING](https://github.com/openhwgroup/core-v-verif/blob/master/CONTRIBUTING.md)
-and our [SV/UVM coding style guidelines](https://github.com/openhwgroup/core-v-verif/blob/master/doc/CodingStyleGuidelines.md).
+and our [SV/UVM coding style guidelines](https://github.com/openhwgroup/core-v-verif/blob/master/docs/CodingStyleGuidelines.md).
 * Split large contributions into smaller commits addressing individual changes or bug fixes.
 Do not mix unrelated changes into the same commit!
 * Write meaningful commit messages.
