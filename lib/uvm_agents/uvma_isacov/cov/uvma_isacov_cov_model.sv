@@ -2418,6 +2418,13 @@ function void uvma_isacov_cov_model_c::sample (uvma_isacov_instr_c instr);
       WFI:    rv32i_wfi_cg.sample(instr);
       MRET:   rv32i_mret_cg.sample(instr);
       DRET:   rv32i_dret_cg.sample(instr);
+
+      default: have_sampled = 0;
+    endcase
+  end else if (!have_sampled && instr.trap && cfg.core_cfg.ext_i_supported) begin
+    have_sampled = 1;
+    case (instr.name)
+      // Ecall and ebreak will trap
       ECALL:  rv32i_ecall_cg.sample(instr);
       EBREAK: rv32i_ebreak_cg.sample(instr);
 
@@ -2490,8 +2497,16 @@ function void uvma_isacov_cov_model_c::sample (uvma_isacov_instr_c instr);
       C_J:        rv32c_j_cg.sample(instr);
       C_JAL:      rv32c_jal_cg.sample(instr);
 
-      C_EBREAK:   rv32c_ebreak_cg.sample(instr);
       C_NOP:      rv32c_nop_cg.sample(instr);
+
+      default: have_sampled = 0;
+    endcase
+  end else if (!have_sampled && instr.trap && cfg.core_cfg.ext_c_supported) begin
+    have_sampled = 1;
+    case (instr.name)
+      // Ebreak will trap
+      C_EBREAK:   rv32c_ebreak_cg.sample(instr);
+
       default: have_sampled = 0;
     endcase
   end
