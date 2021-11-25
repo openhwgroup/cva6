@@ -242,7 +242,9 @@ function bit uvme_cv32e40x_buserr_sb_c::should_instr_err(uvma_rvfi_instr_seq_ite
   bit [31:0]                rvfi_addr = rvfi_trn.pc_rdata;
 
   // Extract all addrs from queue of I-side OBI "err" transactions
-  foreach (obii_err_queue[i]) err_addrs[i] = obii_err_queue[i].address;
+  foreach (obii_err_queue[i]) begin
+    err_addrs[i] = obii_err_queue[i].address;
+  end
 
   foreach (err_addrs[i]) begin
     bit compressed =
