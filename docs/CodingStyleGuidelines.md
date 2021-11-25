@@ -27,7 +27,7 @@
 > ~ pep8
 
 Every organization — even a company of one — should have a set of coding guidelines if for no other reason than to maintain consistency and readability.
-These guidelines are specific to code developed for design verification using SystemVerilog and the Univeral Verification Methodology.
+These guidelines are specific to code developed for design verification using SystemVerilog and the Universal Verification Methodology.
 For RTL code, the OpenHW Group uses the [the lowRISC Verilog coding style guide](https://github.com/lowRISC/style-guides/blob/master/VerilogCodingStyle.md),
 and this may also be used for CORE-V-VERIF code when implementing testbench components from SystemVerilog modules.
 
@@ -35,11 +35,11 @@ The original text of these guidlines is extracted, with permission, from *Advanc
 
 1. **General Conventions**
 
-This document uses specific verbs to have specific meaning, similar to that used by in section 9 of the [IEEE Standards Style Manaul](https://mentor.ieee.org/myproject/Public/mytools/draft/styleman.pdf), with one notible exception.
-**Shall** indicates a mandatory requirement and is the preferred verb for standards.<br><br>
-**Should** indicates a recommendation may be used interchangibly with **Recommended**.<br><br>
-**May** indicates a permissible action and is the preferred verb for guides.<br><br>
-**Can** indicates possibility and capability and is generally used in guides.<br><br>
+This document uses specific verbs to have specific meaning similar, but not identical to, that used by the [IEEE Standards Style Manaul](https://mentor.ieee.org/myproject/Public/mytools/draft/styleman.pdf) (section 9).<br>
+* **Shall** indicates a mandatory requirement and is the preferred verb for standards.
+* **Should** indicates a recommendation may be used interchangibly with the verb **Recommended**.
+* **May** indicates a permissible action and is the preferred verb for guides, and is sometimes used to suggest ways to fulfill a recommendation.
+* **Can** indicates possibility and capability and is generally used in guides.
 
 1.1. **Common Header**
 
