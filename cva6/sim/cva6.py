@@ -868,7 +868,7 @@ def load_config(args, cwd):
       args.isa  = "rv32imac"
     elif args.target == "cv32a6_imafc_sv32":
       args.mabi = "ilp32"
-      args.isa  = "rv32imacf"
+      args.isa  = "rv32imafc"
     elif args.target == "rv32imc":
       args.mabi = "ilp32"
       args.isa  = "rv32imc"
