@@ -53,8 +53,12 @@
     make -C <path_var> verilate target=<target> user-define="+define+WT_CACHE"
   cmd: >
     <path_var>/work-ver/Variane_testharness +time_out=40000000 +debug_disable=1 <elf>
+# Linux BBL is built out line to produce bbl.o
+#   The test consists in executing the first 40M cycles of bbl.o
+#   The grep command checks that "relocate" (vmlinux symbol) address is executed
+#   Of course, the address depends on thr bbl.o, to be added to the TODO list !
   postcmd: >
-    <tool_path>/spike-dasm < ./trace_rvfi_hart_00.dasm > log
+    grep "ffffffe0005e5cd4" ./trace_rvfi_hart_00.dasm
 
 ###############################################################################
 # Synopsys VCS specific commands, variables
