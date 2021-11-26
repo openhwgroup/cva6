@@ -79,7 +79,7 @@ def get_generator_cmd(simulator, simulator_yaml, cov, exp, debug_cmd):
   sys.exit(RET_FAIL)
 
 
-def parse_iss_yaml(iss, iss_yaml, isa, setting_dir, debug_cmd):
+def parse_iss_yaml(iss, iss_yaml, isa, target, setting_dir, debug_cmd):
   """Parse ISS YAML to get the simulation command
 
   Args:
@@ -106,11 +106,7 @@ def parse_iss_yaml(iss, iss_yaml, isa, setting_dir, debug_cmd):
       precmd = re.sub("\<path_var\>", get_env_var(entry['path_var'],), precmd)
       precmd = re.sub("\<tool_path\>", get_env_var(entry['tool_path'],), precmd)
       precmd = re.sub("\<tb_path\>", get_env_var(entry['tb_path'],), precmd)
-      if "32" in isa:
-        precmd = re.sub("FLIST_CORE", "Flist.cv32a6_imac_sv0", precmd)
-      else:
-        precmd = re.sub("FLIST_CORE", "Flist.cv64a6_imafdc_sv39", precmd)
-      if m: precmd = re.sub("\<variant\>", isa, precmd)
+      if m: precmd = re.sub("\<target\>", target, precmd)
 
       cmd = entry['cmd'].rstrip()
       cmd = re.sub("\<path_var\>", get_env_var(entry['path_var'], debug_cmd = debug_cmd), cmd)
@@ -385,7 +381,7 @@ def gcc_compile(test_list, output_dir, isa, mabi, opts, debug_cmd):
       elf2bin(elf, binary, debug_cmd)
 
 
-def run_assembly(asm_test, iss_yaml, isa, mabi, gcc_opts, iss_opts, output_dir,
+def run_assembly(asm_test, iss_yaml, isa, target, mabi, gcc_opts, iss_opts, output_dir,
                  setting_dir, debug_cmd):
   """Run a directed assembly test with ISS
 
@@ -433,7 +429,7 @@ def run_assembly(asm_test, iss_yaml, isa, mabi, gcc_opts, iss_opts, output_dir,
     run_cmd("mkdir -p %s/%s_sim" % (output_dir, iss))
     log = ("%s/%s_sim/%s.log" % (output_dir, iss, asm))
     log_list.append(log)
-    [pre_cmd, base_cmd, post_cmd] = parse_iss_yaml(iss, iss_yaml, isa, setting_dir, debug_cmd)
+    [pre_cmd, base_cmd, post_cmd] = parse_iss_yaml(iss, iss_yaml, isa, target, setting_dir, debug_cmd)
     logging.info("[%0s] Running ISS pre simulation" % (iss))
     if pre_cmd != "": run_cmd(pre_cmd)
     logging.info("[%0s] Running ISS simulation: %s" % (iss, elf))
@@ -469,7 +465,7 @@ def run_assembly_from_dir(asm_test_dir, iss_yaml, isa, mabi, gcc_opts, iss,
     logging.info("Found %0d assembly tests under %s" %
                  (len(asm_list), asm_test_dir))
     for asm_file in asm_list:
-      run_assembly(asm_file, iss_yaml, isa, mabi, gcc_opts, iss, output_dir,
+      run_assembly(asm_file, iss_yaml, isa, target, mabi, gcc_opts, iss, output_dir,
                    setting_dir, debug_cmd)
       if "," in iss:
         report = ("%s/iss_regr.log" % output_dir).rstrip()
@@ -478,7 +474,7 @@ def run_assembly_from_dir(asm_test_dir, iss_yaml, isa, mabi, gcc_opts, iss,
     logging.error("No assembly test(*.S) found under %s" % asm_test_dir)
 
 # python3 run.py --target rv64gc --iss=spike,verilator --elf_tests bbl.o
-def run_elf(c_test, iss_yaml, isa, mabi, gcc_opts, iss_opts, output_dir,
+def run_elf(c_test, iss_yaml, isa, target, mabi, gcc_opts, iss_opts, output_dir,
           setting_dir, debug_cmd):
   """Run a directed c test with ISS
 
@@ -515,7 +511,7 @@ def run_elf(c_test, iss_yaml, isa, mabi, gcc_opts, iss_opts, output_dir,
     run_cmd("mkdir -p %s/%s_sim" % (output_dir, iss))
     log = ("%s/%s_sim/%s.log" % (output_dir, iss, c))
     log_list.append(log)
-    [pre_cmd, base_cmd, post_cmd] = parse_iss_yaml(iss, iss_yaml, isa, setting_dir, debug_cmd)
+    [pre_cmd, base_cmd, post_cmd] = parse_iss_yaml(iss, iss_yaml, isa, target, setting_dir, debug_cmd)
     logging.info("[%0s] Running ISS pre simulation" % (iss))
     if pre_cmd != "": run_cmd(pre_cmd)
     logging.info("[%0s] Running ISS simulation: %s" % (iss, elf))
@@ -532,7 +528,7 @@ def run_elf(c_test, iss_yaml, isa, mabi, gcc_opts, iss_opts, output_dir,
     compare_iss_log(iss_list, log_list, report)
 
 
-def run_c(c_test, iss_yaml, isa, mabi, gcc_opts, iss_opts, output_dir,
+def run_c(c_test, iss_yaml, isa, target, mabi, gcc_opts, iss_opts, output_dir,
           setting_dir, debug_cmd):
   """Run a directed c test with ISS
 
@@ -579,7 +575,7 @@ def run_c(c_test, iss_yaml, isa, mabi, gcc_opts, iss_opts, output_dir,
     run_cmd("mkdir -p %s/%s_sim" % (output_dir, iss))
     log = ("%s/%s_sim/%s.log" % (output_dir, iss, c))
     log_list.append(log)
-    [pre_cmd, base_cmd, post_cmd] = parse_iss_yaml(iss, iss_yaml, isa, setting_dir, debug_cmd)
+    [pre_cmd, base_cmd, post_cmd] = parse_iss_yaml(iss, iss_yaml, isa, target, setting_dir, debug_cmd)
     logging.info("[%0s] Running ISS pre simulation" % (iss))
     if pre_cmd != "": run_cmd(pre_cmd)
     logging.info("[%0s] Running ISS simulation: %s" % (iss, elf))
@@ -615,7 +611,7 @@ def run_c_from_dir(c_test_dir, iss_yaml, isa, mabi, gcc_opts, iss,
     logging.info("Found %0d c tests under %s" %
                  (len(c_list), c_test_dir))
     for c_file in c_list:
-      run_c(c_file, iss_yaml, isa, mabi, gcc_opts, iss, output_dir,
+      run_c(c_file, iss_yaml, isa, target, mabi, gcc_opts, iss, output_dir,
             setting_dir, debug_cmd)
       if "," in iss:
         report = ("%s/iss_regr.log" % output_dir).rstrip()
@@ -625,7 +621,7 @@ def run_c_from_dir(c_test_dir, iss_yaml, isa, mabi, gcc_opts, iss,
 
 
 def iss_sim(test_list, output_dir, iss_list, iss_yaml, iss_opts,
-            isa, setting_dir, timeout_s, debug_cmd):
+            isa, target, setting_dir, timeout_s, debug_cmd):
   """Run ISS simulation with the generated test program
 
   Args:
@@ -641,7 +637,7 @@ def iss_sim(test_list, output_dir, iss_list, iss_yaml, iss_opts,
   """
   for iss in iss_list.split(","):
     log_dir = ("%s/%s_sim" % (output_dir, iss))
-    [pre_cmd, base_cmd, post_cmd] = parse_iss_yaml(iss, iss_yaml, isa, setting_dir, debug_cmd)
+    [pre_cmd, base_cmd, post_cmd] = parse_iss_yaml(iss, iss_yaml, isa, target, setting_dir, debug_cmd)
     logging.info("%s sim log dir: %s" % (iss, log_dir))
     run_cmd_output(["mkdir", "-p", log_dir])
     for test in test_list:
@@ -861,7 +857,19 @@ def load_config(args, cwd):
     if not args.testlist:
       args.testlist = cwd + "/target/"+ args.target +"/testlist.yaml"
     args.core_setting_dir = cwd + "/target/"+ args.target
-    if args.target == "rv32imc":
+    if args.target == "cv64a6_imafdc_sv39":
+      args.mabi = "lp64"
+      args.isa  = "rv64gc"
+    elif args.target == "cv32a6_imac_sv0":
+      args.mabi = "ilp32"
+      args.isa  = "rv32imac"
+    elif args.target == "cv32a6_imac_sv32":
+      args.mabi = "ilp32"
+      args.isa  = "rv32imac"
+    elif args.target == "cv32a6_imafc_sv32":
+      args.mabi = "ilp32"
+      args.isa  = "rv32imacf"
+    elif args.target == "rv32imc":
       args.mabi = "ilp32"
       args.isa  = "rv32imc"
     elif args.target == "rv32imac":
@@ -940,7 +948,7 @@ def main():
                                 args.core_setting_dir, args.debug)
         # path_asm_test is an assembly file
         elif os.path.isfile(full_path) or args.debug:
-          run_assembly(full_path, args.iss_yaml, args.isa, args.mabi, args.gcc_opts,
+          run_assembly(full_path, args.iss_yaml, args.isa, args.target, args.mabi, args.gcc_opts,
                        args.iss, output_dir, args.core_setting_dir, args.debug)
         else:
           logging.error('%s does not exist' % full_path)
@@ -959,7 +967,7 @@ def main():
                          args.core_setting_dir, args.debug)
         # path_c_test is a c file
         elif os.path.isfile(full_path) or args.debug:
-          run_c(full_path, args.iss_yaml, args.isa, args.mabi, args.gcc_opts,
+          run_c(full_path, args.iss_yaml, args.isa, args.target, args.mabi, args.gcc_opts,
                 args.iss, output_dir, args.core_setting_dir, args.debug)
         else:
           logging.error('%s does not exist' % full_path)
@@ -973,7 +981,7 @@ def main():
         full_path = os.path.expanduser(path_elf_test)
         # path_elf_test is an elf file
         if os.path.isfile(full_path) or args.debug:
-          run_elf(full_path, args.iss_yaml, args.isa, args.mabi, args.gcc_opts,
+          run_elf(full_path, args.iss_yaml, args.isa, args.target, args.mabi, args.gcc_opts,
                 args.iss, output_dir, args.core_setting_dir, args.debug)
         else:
           logging.error('%s does not exist' % full_path)
@@ -1030,7 +1038,7 @@ def main():
                                     args.core_setting_dir, args.debug)
             # path_asm_test is an assembly file
             elif os.path.isfile(path_asm_test):
-              run_assembly(path_asm_test, args.iss_yaml, args.isa, args.mabi, gcc_opts,
+              run_assembly(path_asm_test, args.iss_yaml, args.isa, args.target, args.mabi, gcc_opts,
                            args.iss, output_dir, args.core_setting_dir, args.debug)
             else:
               if not args.debug:
@@ -1051,7 +1059,7 @@ def main():
                              args.core_setting_dir, args.debug)
             # path_c_test is a C file
             elif os.path.isfile(path_c_test):
-              run_c(path_c_test, args.iss_yaml, args.isa, args.mabi, gcc_opts,
+              run_c(path_c_test, args.iss_yaml, args.isa, args.target, args.mabi, gcc_opts,
                     args.iss, output_dir, args.core_setting_dir, args.debug)
             else:
               if not args.debug:
@@ -1070,7 +1078,7 @@ def main():
       # Run ISS simulation
       if args.steps == "all" or re.match(".*iss_sim.*", args.steps):
         iss_sim(matched_list, output_dir, args.iss, args.iss_yaml, args.iss_opts,
-                args.isa, args.core_setting_dir, args.iss_timeout, args.debug)
+                args.isa, args.target, args.core_setting_dir, args.iss_timeout, args.debug)
 
       # Compare ISS simulation result
       if args.steps == "all" or re.match(".*iss_cmp.*", args.steps):
