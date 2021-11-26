@@ -71,13 +71,13 @@ ifdef spike-tandem
     endif
 endif
 
+# target takes one of the following cva6 hardware configuration:
+# cv64a6_imafdc_sv39, cv32a6_imac_sv0, cv32a6_imac_sv32, cv32a6_imafc_sv32
+target     ?= cv64a6_imafdc_sv39
+
 # Sources
 # Package files -> compile first
-ifeq ($(findstring 32, $(variant)),32)
-    ariane_pkg := core/include/cv32a6_imac_sv0_config_pkg.sv
-else
-    ariane_pkg := core/include/cv64a6_imacfd_sv39_config_pkg.sv
-endif
+ariane_pkg := core/include/$(target)_config_pkg.sv
 ariane_pkg += core/include/riscv_pkg.sv                              \
               corev_apu/riscv-dbg/src/dm_pkg.sv                      \
               core/include/ariane_pkg.sv                             \
@@ -227,7 +227,7 @@ src :=  $(filter-out core/ariane_regfile.sv, $(wildcard core/*.sv))             
         corev_apu/tb/common/SimJTAG.sv
 
 # SV32 MMU for CV32, SV39 MMU for CV64
-ifeq ($(findstring 32, $(variant)),32)
+ifeq ($(findstring 32, $(target)),32)
     src += $(wildcard core/mmu_sv32/*.sv)
 else
     src += $(wildcard core/mmu_sv39/*.sv)

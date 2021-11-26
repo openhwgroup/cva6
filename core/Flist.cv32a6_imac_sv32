@@ -31,7 +31,7 @@
 +incdir+${CVA6_REPO_DIR}/common/submodules/common_cells/src/
 +incdir+${CVA6_REPO_DIR}/common/local/util/
 
-${CVA6_REPO_DIR}/core/include/cv64a6_imafdc_sv39_config_pkg.sv
+${CVA6_REPO_DIR}/core/include/cv32a6_imac_sv0_config_pkg.sv
 // Broken (?) dependencies in packages:
 //    - include/ariane_pkg.sv is dependent on src/riscv-dbg/src/dm_pkg.sv
 //      (ariane should not depend on debug-module)
@@ -142,9 +142,9 @@ ${CVA6_REPO_DIR}/common/local/util/instr_tracer_if.sv
 ${CVA6_REPO_DIR}/common/local/util/instr_tracer.sv
 ${CVA6_REPO_DIR}/common/local/util/sram.sv
 
-// MMU Sv39
-${CVA6_REPO_DIR}/core/mmu_sv39/mmu.sv
-${CVA6_REPO_DIR}/core/mmu_sv39/ptw.sv
-${CVA6_REPO_DIR}/core/mmu_sv39/tlb.sv
+// MMU Sv32
+${CVA6_REPO_DIR}/core/mmu_sv32/cva6_mmu_sv32.sv
+${CVA6_REPO_DIR}/core/mmu_sv32/cva6_ptw_sv32.sv
+${CVA6_REPO_DIR}/core/mmu_sv32/cva6_tlb_sv32.sv
 
 // end of manifest
