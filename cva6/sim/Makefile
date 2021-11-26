@@ -20,11 +20,10 @@ endif
 .DEFAULT_GOAL := help
 
 FLIST_TB   := $(CVA6_TB_DIR)/Flist.cva6_tb
-ifeq ($(findstring 32, $(variant)),32)
-    FLIST_CORE := $(CVA6_REPO_DIR)/core/Flist.cv32a6_imac_sv0
-else
-    FLIST_CORE := $(CVA6_REPO_DIR)/core/Flist.cv64a6_imafdc_sv39
-endif
+# target takes one of the following cva6 hardware configuration:
+# cv64a6_imafdc_sv39, cv32a6_imac_sv0, cv32a6_imac_sv32, cv32a6_imafc_sv32
+target     ?= cv64a6_imafdc_sv39
+FLIST_CORE := $(CVA6_REPO_DIR)/core/Flist.$(target)
 
 VERDI          ?=
 user-define    ?= +define+WT_CACHE

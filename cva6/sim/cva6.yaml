@@ -28,7 +28,7 @@
   tool_path: SPIKE_PATH
   tb_path: TB_PATH
   precmd: >
-    make -C <path_var> verilate variant=<variant> user-define="+define+WT_CACHE"
+    make -C <path_var> verilate target=<target> user-define="+define+WT_CACHE"
   cmd: >
     <path_var>/work-ver/Variane_testharness <elf>
   postcmd: >
@@ -39,7 +39,7 @@
   tool_path: SPIKE_PATH
   tb_path: TB_PATH
   precmd: >
-    make -f Makefile veri_comp variant=<variant> user-define="+define+WT_CACHE"
+    make -f Makefile veri_comp target=<target> user-define="+define+WT_CACHE"
   cmd: >
     ./verilator_work/Vcva6_core_only_tb
   postcmd: >
@@ -50,7 +50,7 @@
   tool_path: SPIKE_PATH
   tb_path: TB_PATH
   precmd: >
-    make -C <path_var> verilate variant=<variant> user-define="+define+WT_CACHE"
+    make -C <path_var> verilate target=<target> user-define="+define+WT_CACHE"
   cmd: >
     <path_var>/work-ver/Variane_testharness +time_out=40000000 +debug_disable=1 <elf>
   postcmd: >
@@ -65,7 +65,7 @@
   tb_path: TB_PATH
   precmd: >
   cmd: >
-    make -C <path_var> vcs elf-bin=<elf> variant=<variant> user-define="+define+WT_CACHE"
+    make -C <path_var> vcs elf-bin=<elf> target=<target> user-define="+define+WT_CACHE"
   postcmd: >
     <tool_path>/spike-dasm < <path_var>/trace_rvfi_hart_00.dasm > log
 
@@ -74,7 +74,7 @@
   tool_path: SPIKE_PATH
   tb_path: TB_PATH
   precmd: >
-    make -f Makefile vcs_comp variant=<variant> user-define="+define+WT_CACHE"
+    make -f Makefile vcs_comp target=<target> user-define="+define+WT_CACHE"
   cmd: >
     make -f Makefile vcs_run
   postcmd: >
@@ -85,7 +85,7 @@
   tool_path: SPIKE_PATH
   tb_path: TB_PATH
   precmd: >
-    make -f Makefile vcs_comp variant=<variant> user-define="+define+WT_CACHE" VERDI=1
+    make -f Makefile vcs_comp target=<target> user-define="+define+WT_CACHE" VERDI=1
   cmd: >
     make -f Makefile vcs_run
   postcmd: >

@@ -19,7 +19,7 @@ source ./cva6/regress/install-riscv-dv.sh
 source ./cva6/regress/install-riscv-compliance.sh
 
 if ! [ -n "$DV_TARGET" ]; then
-  DV_TARGET=rv64gc
+  DV_TARGET=cv64a6_imafdc_sv39
 fi
 
 if ! [ -n "$DV_SIMULATORS" ]; then
