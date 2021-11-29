@@ -61,10 +61,12 @@ cores currently in development:
 - `CV32E40P user manual <https://cv32e40p.readthedocs.io/en/latest/>`_
 - `CV32E40X RTL source <https://github.com/openhwgroup/cv32e40x>`_
 - `CV32E40X user manual <https://cv32e40x.readthedocs.io/en/latest/>`_
+- `CV32E40S RTL source <https://github.com/openhwgroup/cv32e40s>`_
+- `CV32E40S user manual <https://cv32e40s.readthedocs.io/en/latest/>`_
 - `CVA6 RTL source <https://github.com/openhwgroup/cva6>`_
 - `CVA6 user manual <https://cva6.readthedocs.io/en/latest/intro.html>`_
 
-The OpenHW Group also maintains multiple repositories for stand-alone verification components.
+The OpenHW Group also maintains the following repositories for stand-alone verification components.
 
 - `FORCE-RISCV <https://github.com/openhwgroup/force-riscv>`_ Instruction stream generator denotated by Futurewei.
 
@@ -81,8 +83,11 @@ Definition of Terms
 | (MemberCo)  | infrastructure, software tools etc.) to the CORE-V                 |
 |             | verification project.                                              |
 +-------------+--------------------------------------------------------------------+
-| Active      | An employee of a Member Company that has been assigned to          |
-| Contributor | work on an OpenHW Group project.                                   |
+| Contributor | An employee of a Member Company that has been assigned to          |
+|             | work on an OpenHW Group project.                                   |
++-------------+--------------------------------------------------------------------+
+| Committer   | A Contributor who has privileges to approve and merge              |
+|             | pull-requests into OpenHW Group GitHub repositories.               |
 +-------------+--------------------------------------------------------------------+
 | Instruction | A behavioural model of a CPU. An ISS can execute the same          |
 | Set         | code as a real CPU and will produce the same logical               |
@@ -95,14 +100,11 @@ Definition of Terms
 |             | compiles C and/or RISC-V Assembly source files into ELF            |
 |             | files.                                                             |
 +-------------+--------------------------------------------------------------------+
-| SDK         | Software Developers Toolkit.                                       |
-|             | A set of software tools used to compile C and/or RISC-V            |
+| Toolchain   | A set of software tools used to compile C and/or RISC-V            |
 |             | assembler code into an executable format. In the case of           |
 |             | the CV32E and CVA6, this includes the supported RISC-V             |
 |             | ISA compliant instructions, plus a set of XPULP extended           |
 |             | instructions.                                                      |
-+-------------+--------------------------------------------------------------------+
-| Toolchain   | See SDK.                                                           |
 +-------------+--------------------------------------------------------------------+
 | Test-Program| A software program, written in C or RISC-V assembly, that executes |
 |             | on the simulated RTL model of a core.  Test-Programs may be        |
@@ -129,9 +131,10 @@ Definition of Terms
 | Testcase    | In the context of the CORE-V UVM verification environment, a       |
 |             | a testcase is distinct from a test-program.  A testcase is extended|
 |             | from the `uvm_test` class and is used to control the simulation of |
-|             | the UVM environment.   A test-program is a set of instructions     |
-|             | loaded into the testbench memory and executed by the simulated     |
-|             | core.                                                              |
+|             | the UVM environment.                                               |
++-------------+--------------------------------------------------------------------+
+| Testprogram | A test-program is a set of instructions loaded into the testbench  |
+|             | memory and executed by the simulated core.                         |
 +-------------+--------------------------------------------------------------------+
 | $PROJ_ROOT  | Local path of a cloned copy of a GitHub repository. An             |
 |             | example to illustrate:                                             |
@@ -160,7 +163,7 @@ The first two projects within the OpenHW Group’s CORE-V family of RISC-V cores
 are the CV32E40P and CVA6. Currently, two variants of the CV32E40P are
 defined: the CV32E40X and CV32E40S. The OpenHW Group’s work builds on
 several RISC-V open-source projects, particularly the RI5CY and Ariane
-projects from PULP-Platform. CV32E40P is a derived of the RI5CY
+projects from PULP-Platform. CV32E40P is a derivation of the RI5CY
 project [2]_, and CVA6 is derived from Ariane [3]_. In addition, the
 verification environment for CORE-V leverages previous work done by
 lowRISC and others for the Ibex project, which is a fork of the
