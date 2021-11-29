@@ -49,7 +49,7 @@ class uvma_isacov_instr_c#(int ILEN=DEFAULT_ILEN,
   bit rd_valid;
 
   bit [31:0] c_imm;
-  bit [5:0]  c_rdrs1;
+  bit [4:0]  c_rdrs1;
   bit [5:0]  c_rs1s;
   bit [5:0]  c_rs2s;
   bit [5:0]  c_rdp;
@@ -239,6 +239,7 @@ function void uvma_isacov_instr_c::set_valid_flags();
   end
 
   if (itype == CI_TYPE) begin
+    rs1_valid = 1;
     rd_valid = 1;
     return;
   end

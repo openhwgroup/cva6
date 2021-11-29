@@ -429,11 +429,13 @@ bit immi_is_signed[instr_name_t] = '{
 
 bit c_imm_is_signed[instr_name_t] = '{
   C_ADDI:  1,
-  C_LI:    1,
+  C_ADDI16SP: 1,
+  C_ANDI:  1,
   C_BEQZ:  1,
   C_BNEZ:  1,
   C_J:     1,
   C_JAL:   1,
+  C_LI:    1,
   default: 0
 };
 

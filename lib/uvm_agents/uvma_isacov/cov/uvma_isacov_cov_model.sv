@@ -1027,7 +1027,7 @@ covergroup cg_ci(
   }
 
   `ISACOV_CP_BITWISE(cp_rd_toggle, instr.rd_value, 1)
-  `ISACOV_CP_BITWISE_5_0(cp_imm_toggle, instr.c_imm, 1)
+  `ISACOV_CP_BITWISE_4_0(cp_imm_toggle, instr.c_imm, 1)
 
 endgroup : cg_ci
 
