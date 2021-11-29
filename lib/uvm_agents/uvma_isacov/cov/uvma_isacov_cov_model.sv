@@ -1141,7 +1141,7 @@ covergroup cg_ciw(
   cp_rd: coverpoint instr.rd;
 
   `ISACOV_CP_BITWISE(cp_rd_toggle, instr.rd_value, 1)
-  `ISACOV_CP_BITWISE_9_4(cp_imm_toggle, instr.c_imm, 1)
+  `ISACOV_CP_BITWISE_9_2(cp_imm_toggle, instr.c_imm, 1)
 
 endgroup : cg_ciw
 
