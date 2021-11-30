@@ -550,7 +550,7 @@ module uvmt_cv32e40x_debug_assert
     end
     a_dmhaltaddr_stable : assert property (
         fetch_enable_i_sticky
-        |=>
+        |->
         $stable(cov_assert_if.dm_halt_addr_i)
         ) else `uvm_error(info_tag, "dm_halt_addr_i changed after fetch_enable_i");
 
