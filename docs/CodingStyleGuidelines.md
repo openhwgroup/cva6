@@ -20,15 +20,26 @@
 --->
 
 
-# Suggested Coding Guidelines
+# CORE-V-VERIF Coding Guidelines for SystemVerilog/UVM code
 
 > "Code is read much more often than it is written"
 >
 > ~ pep8
 
-Every company—even a company of one—should have a set of coding guidelines if for no other reason than to maintain consistency and readability. Whether a company chooses something different from what is described here, or picks and chooses from the list below, is entirely up to the company’s needs. The following guidelines have been in use since 2011 at Cavium, and every effort has been made to ensure that the code samples in this text abide by them.
+Every organization — even a company of one — should have a set of coding guidelines if for no other reason than to maintain consistency and readability.
+These guidelines are specific to code developed for design verification using SystemVerilog and the Universal Verification Methodology.
+For RTL code, the OpenHW Group uses the [the lowRISC Verilog coding style guide](https://github.com/lowRISC/style-guides/blob/master/VerilogCodingStyle.md),
+and this may also be used for CORE-V-VERIF code when implementing testbench components from SystemVerilog modules.
+
+The original text of these guidlines is extracted, with permission, from *Advanced UVM*, (c) 2015, 2016 Brian Hunter, who owns all the rights thereto.
 
 1. **General Conventions**
+
+This document uses specific verbs to have specific meaning similar, but not identical to, that used by the [IEEE Standards Style Manaul](https://mentor.ieee.org/myproject/Public/mytools/draft/styleman.pdf) (section 9).<br>
+* **Shall** indicates a mandatory requirement and is the preferred verb for standards.
+* **Should** indicates a recommendation may be used interchangibly with the verb **Recommended**.
+* **May** indicates a permissible action and is the preferred verb for guides, and is sometimes used to suggest ways to fulfill a recommendation.
+* **Can** indicates possibility and capability and is generally used in guides.
 
 1.1. **Common Header**
 
@@ -212,7 +223,14 @@ For example:
   *************************************************************************/
 ```
 
+1.10. **Code blocks**
+
+All code blocks shall be delimited with begin..end keywords.
+
 2. **Verification Kits**
+
+Note: the concept if `Verification Kits` as defined in the `Advanced UVM` textbook is not explicitly supported in CORE-V-VERIF.
+A future reversion of these guidelines will update this section to explain how vkits are implemented in this repo.
 
 2.1. **Organization**
 
@@ -1075,9 +1093,6 @@ Note that adding `uvm_objects` to the configuration database in this fashion wil
 
 
 ---
-
-Original text extracted from *Advanced UVM*, (c) 2015, 2016 Brian Hunter, who owns all the rights thereto.
-
 
 
 [1]: http://www.naturaldocs.org.
