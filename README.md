@@ -64,6 +64,9 @@ Table of Contents
         * [Install Verilator Simulation Flow](#install-verilator-simulation-flow)
         * [Build Model and Run Simulations](#build-model-and-run-simulations)
         * [Running User-Space Applications](#running-user-space-applications)
+      * [Physical Implementation](#physical-implementation)
+         * [ASIC Synthesis](#asic-synthesis)
+         * [ASIC Gate Simulation](#asic-gate-simulation)
       * [FPGA Emulation](#fpga-emulation)
          * [Programming the Memory Configuration File](#programming-the-memory-configuration-file)
          * [Preparing the SD Card](#preparing-the-sd-card)
@@ -171,6 +174,24 @@ make sim elf-bin=$RISCV/riscv64-unknown-elf/bin/pk target-options=hello.elf  bat
 ```
 
 > Be patient! RTL simulation is way slower than Spike. If you think that you ran into problems you can inspect the trace files.
+
+## Physical Implementation
+
+### ASIC Synthesis
+
+How to make cva6 synthesis ?
+- export DV_SIMULATORS=veri-testharness,spike
+- cva6/regress/smoke-tests.sh
+- cd core-v-cores/cva6/pd/synth
+- make cva6_synth FOUNDRY_PATH=/your/techno/path/ TECH_NAME=Yourtechnofilename PERIOD=10 NAND2_AREA=650 TARGET=cv64a6_imafdc_sv39
+- sed 's/module SyncSpRamBeNx64_1/module SyncSpRamBeNx64_2/' ariane_synth.v > ariane_synth_modified.v
+
+### ASIC Gate Simulation
+
+How to execute gate simulation ? To be simulated in core-v-verif repository
+- cd ../../../../cva6/sim
+- make vcs_clean ; python3 cva6.py --testlist=../tests/testlist_riscv-tests-cv64a6_imafdc_sv39-p.yaml --test rv64ui-p-ld --iss_yaml cva6.yaml --target cv64a6_imafdc_sv39 --iss=spike,vcs-core-gate $DV_OPTS
+
 
 ## COREV-APU FPGA Emulation
 
