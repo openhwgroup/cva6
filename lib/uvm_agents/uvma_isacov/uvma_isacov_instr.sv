@@ -119,13 +119,18 @@ class uvma_isacov_instr_c#(int ILEN=DEFAULT_ILEN,
   extern function bit is_conditional_branch();
   extern function bit is_branch_taken();
 
-  extern function instr_value_t get_instr_value_type(bit[31:0] value, int unsigned width, bit is_signed);
+  extern function instr_value_t              get_instr_value_type(bit[31:0] value, int unsigned width, bit is_signed);
+  extern static function instr_value_t_queue get_irrelevant_imm_value_types();
+  extern function instr_value_t              get_imm_value_type();
+  extern function int                        get_imm();
 
 endclass : uvma_isacov_instr_c
+
 
 function uvma_isacov_instr_c::new(string name = "isacov_instr");
   super.new(name);
 endfunction : new
+
 
 function string uvma_isacov_instr_c::convert2string();
 
@@ -201,6 +206,7 @@ function string uvma_isacov_instr_c::convert2string();
   return instr_str;
 
 endfunction : convert2string
+
 
 function void uvma_isacov_instr_c::set_valid_flags();
   if (itype == R_TYPE) begin
@@ -303,6 +309,7 @@ function void uvma_isacov_instr_c::set_valid_flags();
 
 endfunction : set_valid_flags
 
+
 function bit uvma_isacov_instr_c::is_csr_write();
   // Using Table 9.1 in RISC-V specification to define a CSR write
   if (name inside {CSRRW})
@@ -320,6 +327,7 @@ function bit uvma_isacov_instr_c::is_csr_write();
   return 0;
 endfunction : is_csr_write
 
+
 function instr_value_t uvma_isacov_instr_c::get_instr_value_type(bit[31:0] value, int unsigned width, bit is_signed);
   if (value == 0)
     return ZERO;
@@ -330,6 +338,28 @@ function instr_value_t uvma_isacov_instr_c::get_instr_value_type(bit[31:0] value
   return NON_ZERO;
 
 endfunction : get_instr_value_type
+
+
+function  instr_value_t_queue  uvma_isacov_instr_c::get_irrelevant_imm_value_types();
+
+  return {NON_ZERO};  // TODO:ropeders match specific instr (using imm_is_signed)
+
+endfunction : get_irrelevant_imm_value_types
+
+
+function  instr_value_t  uvma_isacov_instr_c::get_imm_value_type();
+
+  return ZERO;  // TODO:ropeders actually derive from imm, based on specific instr
+
+endfunction : get_imm_value_type
+
+
+function  int  uvma_isacov_instr_c::get_imm();
+
+  return 0;  // TODO:ropeders actually derive imm based on specific instr
+
+endfunction : get_imm
+
 
 function bit uvma_isacov_instr_c::is_conditional_branch();
 

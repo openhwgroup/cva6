@@ -1111,22 +1111,20 @@ covergroup cg_css(
   option.per_instance = 1;
   option.name = name;
 
+  cp_rs2: coverpoint instr.rs2;
+
   cp_rs2_value: coverpoint instr.rs2_value_type {
     ignore_bins POS_OFF = {POSITIVE} with (!rs2_is_signed);
     ignore_bins NEG_OFF = {NEGATIVE} with (!rs2_is_signed);
     ignore_bins NON_ZERO_OFF = {NON_ZERO} with (rs2_is_signed);
   }
 
-  cp_imm_value: coverpoint instr.c_imm_value_type {
-    ignore_bins POS_OFF = {POSITIVE} with (!imm_is_signed);
-    ignore_bins NEG_OFF = {NEGATIVE} with (!imm_is_signed);
-    ignore_bins NON_ZERO_OFF = {NON_ZERO} with (imm_is_signed);
+  cp_imm_value: coverpoint instr.get_imm_value_type() {
+    ignore_bins IGNORE = uvma_isacov_instr_c::get_irrelevant_imm_value_types();
   }
 
-  cp_rs2: coverpoint instr.rs2;
-
-  `ISACOV_CP_BITWISE(cp_rs2_toggle, instr.rs2_value, 1)
-  `ISACOV_CP_BITWISE_7_2(cp_imm_toggle, instr.c_imm, 1)
+  `ISACOV_CP_BITWISE    (cp_rs2_toggle, instr.rs2_value, 1)
+  `ISACOV_CP_BITWISE_7_2(cp_imm_toggle, instr.get_imm,   1/*TODO:ropeders make function of instr_c?*/)
 
 endgroup : cg_css
 
