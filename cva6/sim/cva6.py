@@ -581,7 +581,7 @@ def run_c(c_test, iss_yaml, isa, target, mabi, gcc_opts, iss_opts, output_dir,
     if pre_cmd != "": run_cmd(pre_cmd)
     logging.info("[%0s] Running ISS simulation: %s" % (iss, elf))
     cmd = get_iss_cmd(base_cmd, elf, target, log)
-    run_cmd(cmd, 10, debug_cmd = debug_cmd)
+    run_cmd(cmd, 100, debug_cmd = debug_cmd)
     if post_cmd != "":
       post_cmd = re.sub("log", log, post_cmd)
       run_cmd(post_cmd)
