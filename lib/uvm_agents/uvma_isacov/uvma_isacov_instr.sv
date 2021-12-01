@@ -196,7 +196,7 @@ function string uvma_isacov_instr_c::convert2string();
   end
 
   // Default printing of just the instruction name
-  instr_str = $sformatf ("0x%08x %s %s", rvfi.pc_rdata, name.name().tolower(), instr_str);
+  instr_str = $sformatf ("0x%08x\t%s %s", rvfi.pc_rdata, name.name().tolower(), instr_str);
 
   if (trap)
     instr_str = { instr_str, " TRAP" };
