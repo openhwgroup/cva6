@@ -137,12 +137,6 @@ function string uvma_isacov_instr_c::convert2string();
   string instr_str;
 
   // Printing based on instruction format type
-  if (name inside {LW, LH, LB, LHU, LBU}) begin
-    instr_str = $sformatf("x%0d, %0d(x%0d)", rd, $signed(immi), rs1);
-  end
-  if (name inside {SLLI, SRLI, SRAI}) begin
-    instr_str = $sformatf("x%0d, x%0d, 0x%0x", rd, rs1, rs2);
-  end
   if (itype == R_TYPE) begin
     instr_str = $sformatf("x%0d, x%0d, x%0d",  rd, rs1, rs2);
   end
@@ -153,19 +147,19 @@ function string uvma_isacov_instr_c::convert2string();
     instr_str = $sformatf("x%0d, %0d(x%0d)",  rs2, $signed(imms), rs1);
   end
   if (itype == B_TYPE) begin
-    instr_str = $sformatf("x%0d, x%0d, %0d",  rs1, rs2, $signed({immb, 1'b0}));
+    instr_str = $sformatf("x%0d, x%0d, %0x",  rs1, rs2, ($signed(rvfi.pc_rdata) + $signed({immb, 1'b0})));
   end
   if (itype == U_TYPE) begin
-    instr_str = $sformatf("x%0d, 0x%0x",  rd, {immu, 12'd0});
+    instr_str = $sformatf("x%0d, 0x%0x",  rd, immu);
   end
   if (itype == J_TYPE) begin
-    instr_str = $sformatf("x%0d, %0d",  rd, $signed(immj));
+    instr_str = $sformatf("x%0d, %0x", rd, ($signed(rvfi.pc_rdata) + $signed({immj, 1'b0})));
   end
   if (itype == CSR_TYPE) begin
-    instr_str = $sformatf("x%0d, x%0d, %s",  rd, rs1, csr.name().tolower());
+    instr_str = $sformatf("x%0d, %s, x%0d",  rd, csr.name().tolower(), rs1);
   end
   if (itype == CSRI_TYPE) begin
-    instr_str = $sformatf("x%0d, %0d, %s",  rd, rs1, csr.name().tolower());
+    instr_str = $sformatf("x%0d, %s, %0d",  rd, csr.name().tolower(), rs1);
   end
   if (itype == CI_TYPE) begin
     instr_str = $sformatf("x%0d, %0d",  rd, c_imm);
@@ -193,6 +187,13 @@ function string uvma_isacov_instr_c::convert2string();
   end
   if (itype == CJ_TYPE) begin
     instr_str = $sformatf("x%0d",  c_imm);
+  end
+  // Printing for a select few instructions:
+  if (name inside {LW, LH, LB, LHU, LBU, JALR}) begin
+    instr_str = $sformatf("x%0d, %0d(x%0d)", rd, $signed(immi), rs1);
+  end
+  if (name inside {SLLI, SRLI, SRAI}) begin
+    instr_str = $sformatf("x%0d, x%0d, 0x%0x", rd, rs1, rs2);
   end
 
   // Default printing of just the instruction name
