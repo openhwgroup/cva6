@@ -186,7 +186,7 @@ function string uvma_isacov_instr_c::convert2string();
     instr_str = $sformatf("x%0d, x%0d",  rd, rs2);
   end
   if (itype == CJ_TYPE) begin
-    instr_str = $sformatf("x%0d",  c_imm);
+    instr_str = $sformatf("%0x", ($signed(rvfi.pc_rdata) + $signed({this.get_imm(), 1'b0})));
   end
   // Printing for a select few instructions:
   if (name inside {LW, LH, LB, LHU, LBU, JALR}) begin
@@ -357,7 +357,13 @@ endfunction : get_imm_value_type
 
 function  int  uvma_isacov_instr_c::get_imm();
 
-  return 0;  // TODO:ropeders actually derive imm based on specific instr
+  bit [63:0] instr = $signed(this.rvfi.insn);
+
+  if (this.itype == CJ_TYPE) begin
+    return (dasm_rvc_j_imm(instr) >> 1);  // Shift 1 because [11:1] to [10:0]
+  end
+
+  return 0;
 
 endfunction : get_imm
 
