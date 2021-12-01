@@ -22,6 +22,7 @@
 localparam ORDER_WL         = 64;
 localparam MODE_WL          = 2;
 localparam IXL_WL           = 2;
+localparam TRAP_WL          = 12;
 localparam GPR_ADDR_WL      = 5;
 localparam RVFI_DBG_WL      = 3;
 localparam CYCLE_CNT_WL     = 32;
