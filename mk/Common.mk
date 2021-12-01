@@ -421,9 +421,9 @@ sanity: hello-world
 # Code generators
 new-agent:
 	mkdir -p $(CORE_V_VERIF)/temp
-	wget -q https://github.com/Datum-Technology-Corporation/mio_ip_core/archive/refs/tags/gen_uvm_v1p0.tar.gz -P $(CORE_V_VERIF)/temp
-	tar xzf $(CORE_V_VERIF)/temp/gen_uvm_v1p0.tar.gz -C $(CORE_V_VERIF)/temp
-	cd $(CORE_V_VERIF)/temp/mio_ip_core-gen_uvm_v1p0/tools/gen_uvm/bin && ./new_agent_simplex_no_layers.py $(CORE_V_VERIF)/lib/uvm_agents "OpenHW Group"
+	wget --no-check-certificate -q https://mooreio.com/packages/uvm_gen.tgz -P $(CORE_V_VERIF)/temp
+	tar xzf $(CORE_V_VERIF)/temp/uvm_gen.tgz -C $(CORE_V_VERIF)/temp
+	cd $(CORE_V_VERIF)/temp && ./src/new_agent_simplex_no_layers.py $(CORE_V_VERIF)/lib/uvm_agents "OpenHW Group"
 	rm -rf $(CORE_V_VERIF)/temp
 
 
