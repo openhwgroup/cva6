@@ -73,24 +73,13 @@
   postcmd: >
     <tool_path>/spike-dasm < <path_var>/trace_rvfi_hart_00.dasm > log
 
-- iss: vcs-uvm
+- iss: vcs-core
   path_var: RTL_PATH
   tool_path: SPIKE_PATH
   tb_path: TB_PATH
   precmd: >
-    make -f Makefile vcs_comp target=<target> user-define="+define+WT_CACHE"
+    make -f Makefile vcs_core_comp target=<target> user-define="+define+WT_CACHE"
   cmd: >
-    make -f Makefile vcs_run
-  postcmd: >
-    <tool_path>/spike-dasm < ./trace_rvfi_hart_00.dasm > log
-
-- iss: vcs-uvm-verdi
-  path_var: RTL_PATH
-  tool_path: SPIKE_PATH
-  tb_path: TB_PATH
-  precmd: >
-    make -f Makefile vcs_comp target=<target> user-define="+define+WT_CACHE" VERDI=1
-  cmd: >
-    make -f Makefile vcs_run
+    make -f Makefile vcs_core_run
   postcmd: >
     <tool_path>/spike-dasm < ./trace_rvfi_hart_00.dasm > log

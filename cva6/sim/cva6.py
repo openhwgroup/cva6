@@ -133,7 +133,7 @@ def parse_iss_yaml(iss, iss_yaml, isa, target, setting_dir, debug_cmd):
   sys.exit(RET_FAIL)
 
 
-def get_iss_cmd(base_cmd, elf, log):
+def get_iss_cmd(base_cmd, elf, target, log):
   """Get the ISS simulation command
 
   Args:
@@ -145,6 +145,7 @@ def get_iss_cmd(base_cmd, elf, log):
     cmd      : Command for ISS simulation
   """
   cmd = re.sub("\<elf\>", elf, base_cmd)
+  cmd = re.sub("\<target\>", target, cmd)
   cmd += (" &> %s.iss" % log)
   return cmd
 
@@ -433,7 +434,7 @@ def run_assembly(asm_test, iss_yaml, isa, target, mabi, gcc_opts, iss_opts, outp
     logging.info("[%0s] Running ISS pre simulation" % (iss))
     if pre_cmd != "": run_cmd(pre_cmd)
     logging.info("[%0s] Running ISS simulation: %s" % (iss, elf))
-    cmd = get_iss_cmd(base_cmd, elf, log)
+    cmd = get_iss_cmd(base_cmd, elf, target, log)
     run_cmd(cmd, 300, debug_cmd = debug_cmd)
     if post_cmd != "":
       post_cmd = re.sub("log", log, post_cmd)
@@ -515,7 +516,7 @@ def run_elf(c_test, iss_yaml, isa, target, mabi, gcc_opts, iss_opts, output_dir,
     logging.info("[%0s] Running ISS pre simulation" % (iss))
     if pre_cmd != "": run_cmd(pre_cmd)
     logging.info("[%0s] Running ISS simulation: %s" % (iss, elf))
-    cmd = get_iss_cmd(base_cmd, elf, log)
+    cmd = get_iss_cmd(base_cmd, elf, target, log)
     if "veri" in iss: ratio = 35
     else: ratio = 1
     run_cmd(cmd, 50000*ratio, debug_cmd = debug_cmd)
@@ -579,8 +580,8 @@ def run_c(c_test, iss_yaml, isa, target, mabi, gcc_opts, iss_opts, output_dir,
     logging.info("[%0s] Running ISS pre simulation" % (iss))
     if pre_cmd != "": run_cmd(pre_cmd)
     logging.info("[%0s] Running ISS simulation: %s" % (iss, elf))
-    cmd = get_iss_cmd(base_cmd, elf, log)
-    run_cmd(cmd, 10, debug_cmd = debug_cmd)
+    cmd = get_iss_cmd(base_cmd, elf, target, log)
+    run_cmd(cmd, 100, debug_cmd = debug_cmd)
     if post_cmd != "":
       post_cmd = re.sub("log", log, post_cmd)
       run_cmd(post_cmd)
@@ -648,7 +649,7 @@ def iss_sim(test_list, output_dir, iss_list, iss_yaml, iss_opts,
           prefix = ("%s/asm_tests/%s_%d" % (output_dir, test['test'], i))
           elf = prefix + ".o"
           log = ("%s/%s.%d.log" % (log_dir, test['test'], i))
-          cmd = get_iss_cmd(base_cmd, elf, log)
+          cmd = get_iss_cmd(base_cmd, elf, target, log)
           if 'iss_opts' in test:
             cmd += ' '
             cmd += test['iss_opts']
