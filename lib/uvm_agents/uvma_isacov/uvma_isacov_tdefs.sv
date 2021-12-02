@@ -558,7 +558,7 @@ function instr_type_t get_instr_type(instr_name_t name);
   if (name inside {itypes})
     return I_TYPE;
 
-  if (name inside {C_ADDI,C_ADDI16SP,C_LWSP,C_LI,C_LUI,C_SLLI})
+  if (name inside {C_ADDI,C_ADDI16SP,C_LWSP,C_LI,C_LUI,C_SLLI,C_NOP})
     return CI_TYPE;
 
   if (name inside {C_SWSP})

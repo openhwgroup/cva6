@@ -167,19 +167,19 @@ function string uvma_isacov_instr_c::convert2string();
     instr_str = $sformatf("x%0d, %s, %0d",  rd, csr.name().tolower(), rs1);
   end
   if (itype == CI_TYPE) begin
-    instr_str = $sformatf("x%0d, %0d",  rd, this.get_data_imm());
+    instr_str = $sformatf("x%0d, %0d",  this.get_addr_rd(), this.get_data_imm());
   end
   if (itype == CR_TYPE) begin
-    instr_str = $sformatf("x%0d, x%0d", rd, rs2);
+    instr_str = $sformatf("x%0d, x%0d", this.get_addr_rd(), this.get_addr_rs2());
   end
   if (itype == CSS_TYPE) begin
-    instr_str = $sformatf("x%0d, %0d(x2)",  rs2, this.get_data_imm());
+    instr_str = $sformatf("x%0d, %0d(x2)",  this.get_addr_rs2(), this.get_data_imm());
   end
   if (itype == CIW_TYPE) begin
-    instr_str = $sformatf("x%0d, %0d",  rd, this.get_data_imm());
+    instr_str = $sformatf("x%0d, x2, %0d", this.get_addr_rd(), this.get_data_imm());
   end
   if (itype == CL_TYPE) begin
-    instr_str = $sformatf("x%0d, x%0d, %0d",  rd, rs1, get_data_imm());
+    instr_str = $sformatf("x%0d, x%0d, %0d", this.get_addr_rd(), this.get_addr_rs1(), get_data_imm());
   end
   if (itype == CS_TYPE) begin
     instr_str = $sformatf("x%0d, %0d(x%0d)", this.get_addr_rs2, this.get_data_imm(), this.get_addr_rs1);
@@ -201,17 +201,20 @@ function string uvma_isacov_instr_c::convert2string();
     instr_str = $sformatf("x%0d, x%0d, 0x%0x", rd, rs1, rs2);
   end
   if (name inside {C_LUI}) begin
-    instr_str = $sformatf("x%0d, 0x%0x",  rd, this.get_data_imm());
+    instr_str = $sformatf("x%0d, 0x%0x", this.get_addr_rd(), this.get_data_imm());
   end
   if (name inside {C_LWSP}) begin
-    instr_str = $sformatf("x%0d, %0d(x2)",  rd, this.get_data_imm());
+    instr_str = $sformatf("x%0d, %0d(x2)", this.get_addr_rd(), this.get_data_imm());
   end
   if (name inside {C_JR, C_JALR}) begin
-    instr_str = $sformatf("x%0d", rd);
+    instr_str = $sformatf("x%0d", this.get_addr_rd());
   end
 
   // Default printing of just the instruction name
-  instr_str = $sformatf ("0x%08x\t%s %s", rvfi.pc_rdata, name.name().tolower(), instr_str);
+  begin
+    instr_name_t  nm = (name == C_NOP) ? C_ADDI : name;
+    instr_str = $sformatf ("0x%08x\t%s %s", rvfi.pc_rdata, nm.name().tolower(), instr_str);
+  end
 
   if (trap)
     instr_str = { instr_str, " TRAP" };
@@ -384,6 +387,9 @@ function  int  uvma_isacov_instr_c::get_field_imm();
   if (this.itype == CSS_TYPE) begin
     return (dasm_rvc_swsp_imm(instr) >> 2);  // Shift 2 because [7:2] to [5:0]
   end
+  if (this.itype == CIW_TYPE) begin
+    return (dasm_rvc_addi4spn_imm(instr) >> 2);  // Shift 2 because [9:2] to [7:0]
+  end
   if (this.itype == CS_TYPE) begin
     return (dasm_rvc_lw_imm(instr) >> 2);  // Shift 2 because [6:2] to [4:0]
   end
@@ -420,7 +426,13 @@ function  int  uvma_isacov_instr_c::get_field_rd();
   // TODO:ropeders is CA handled properly?
   // TODO:ropeders call dpi_dasm from here, instead of elsewhere?
 
-  return (itype inside {CIW_TYPE, CL_TYPE, CA_TYPE}) ? rd[2:0] : rd;
+  if (itype inside {CA_TYPE}) begin
+    return rd[2:0];
+  end else if (itype inside {CIW_TYPE, CL_TYPE}) begin
+    return rs2[2:0];
+  end else begin
+    return rd;
+  end
 
 endfunction : get_field_rd
 
@@ -472,7 +484,7 @@ function  int  uvma_isacov_instr_c::get_data_imm();
   bit [63:0] instr = $signed(this.rvfi.insn);
   int        imm   = this.get_field_imm();
 
-  if (this.itype inside {CSS_TYPE, CS_TYPE}) begin
+  if (this.itype inside {CSS_TYPE, CIW_TYPE, CS_TYPE}) begin
     return {imm, 2'b 00};
   end
   if (this.itype inside {CB_TYPE, CJ_TYPE}) begin

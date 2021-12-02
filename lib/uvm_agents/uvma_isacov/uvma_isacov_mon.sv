@@ -81,7 +81,6 @@ function void uvma_isacov_mon_c::build_phase(uvm_phase phase);
   repeat(in.num) begin
     string instr_name_key = convert_instr_to_spike_name(in.name());
 
-
     `uvm_info("ISACOV", $sformatf("Converting: %s to %s", in.name(), instr_name_key), UVM_HIGH);
     instr_name_lookup[instr_name_key] = in;
     in = in.next;
@@ -233,6 +232,7 @@ function void uvma_isacov_mon_c::write_rvfi_instr(uvma_rvfi_instr_seq_item_c#(IL
   if (mon_trn.instr.itype == CI_TYPE) begin
     case (mon_trn.instr.name)
       C_ADDI:      mon_trn.instr.c_imm_value_type = mon_trn.instr.get_instr_value_type(mon_trn.instr.get_field_imm(), 6, 1);
+      C_NOP:       mon_trn.instr.c_imm_value_type = mon_trn.instr.get_instr_value_type(mon_trn.instr.get_field_imm(), 6, 1);
       C_ADDI16SP:  mon_trn.instr.c_imm_value_type = mon_trn.instr.get_instr_value_type(mon_trn.instr.get_field_imm(), 10, 1);
       C_LWSP:      mon_trn.instr.c_imm_value_type = mon_trn.instr.get_instr_value_type(mon_trn.instr.get_field_imm(), 8, 1);
       C_SLLI:      mon_trn.instr.c_imm_value_type = mon_trn.instr.get_instr_value_type(mon_trn.instr.get_field_imm(), 6, 0);
