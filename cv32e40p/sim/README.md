@@ -12,7 +12,7 @@ most up-to-date and stable version of the RTL.  Note that this is not always the
 head of the master branch.
 
 ### Simulation Directories
-There is a sub-dir for each supported CV32 verification environment.
+There is a sub-dir for each supported CV32E40P verification environment.
 Each sub-dir has its specific Makefile and both include `Common.mk` from this
 directory.
 
