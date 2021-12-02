@@ -89,8 +89,7 @@ vcs_uvm_comp:
 	@echo "[VCS] Building Model"
 	mkdir -p $(VCS_WORK_DIR)
 	cd $(VCS_WORK_DIR) && vcs $(ALL_UVM_FLAGS) \
-	  -f $(FLIST_CORE) \
-	  -f $(CVA6_TB_DIR)/Flist.cva6_tb \
+	  -f $(FLIST_CORE) -f $(FLIST_TB) \
 	  -f $(CVA6_UVMT_DIR)/uvmt_cva6.flist \
 	  -top uvmt_cva6_tb
 
