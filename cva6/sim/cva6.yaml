@@ -68,10 +68,11 @@
   tool_path: SPIKE_PATH
   tb_path: TB_PATH
   precmd: >
+    make -C <path_var> vcs_build target=<target> user-define="+define+WT_CACHE"
   cmd: >
-    make -C <path_var> vcs elf-bin=<elf> target=<target> user-define="+define+WT_CACHE"
+    <path_var>/work-vcs/simv ${VERDI:+-verdi} +permissive -sv_lib <path_var>/work-dpi/ariane_dpi +debug_disable=1 +PRELOAD=<elf> +permissive-off ++<elf>
   postcmd: >
-    <tool_path>/spike-dasm < <path_var>/trace_rvfi_hart_00.dasm > log
+    <tool_path>/spike-dasm < ./trace_rvfi_hart_00.dasm > log
 
 - iss: vcs-core
   path_var: RTL_PATH
