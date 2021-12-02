@@ -162,22 +162,22 @@ function string uvma_isacov_instr_c::convert2string();
     instr_str = $sformatf("x%0d, %s, %0d",  rd, csr.name().tolower(), rs1);
   end
   if (itype == CI_TYPE) begin
-    instr_str = $sformatf("x%0d, %0d",  rd, c_imm);
+    instr_str = $sformatf("x%0d, %0d",  rd, $signed(this.get_imm));
   end
   if (itype == CR_TYPE) begin
-    instr_str = $sformatf("x%0d, x%0d",  rd, rs2);
+    instr_str = $sformatf("x%0d, x%0d", rd, rs2);
   end
   if (itype == CSS_TYPE) begin
-    instr_str = $sformatf("x%0d, %0d",  rs2, c_imm);
+    instr_str = $sformatf("x%0d, %0d(x2)",  rs2, {this.get_imm(), 2'b00});
   end
   if (itype == CIW_TYPE) begin
-    instr_str = $sformatf("x%0d, %0d",  rd, c_imm);
+    instr_str = $sformatf("x%0d, %0d",  rd, this.get_imm);
   end
   if (itype == CL_TYPE) begin
-    instr_str = $sformatf("x%0d, x%0d, %0d",  rd, rs1, c_imm);
+    instr_str = $sformatf("x%0d, x%0d, %0d",  rd, rs1, this.get_imm);
   end
   if (itype == CS_TYPE) begin
-    instr_str = $sformatf("x%0d, x%0d, %0d",  rs1, rs2, c_imm);
+    instr_str = $sformatf("x%0d, x%0d, %0d",  rs1, rs2, this.get_imm);
   end
   if (itype == CA_TYPE) begin
     instr_str = $sformatf("x%0d, x%0d",  rd, rs2);
@@ -194,6 +194,15 @@ function string uvma_isacov_instr_c::convert2string();
   end
   if (name inside {SLLI, SRLI, SRAI}) begin
     instr_str = $sformatf("x%0d, x%0d, 0x%0x", rd, rs1, rs2);
+  end
+  if (name inside {C_LUI}) begin
+    instr_str = $sformatf("x%0d, 0x%0x",  rd, $signed(this.get_imm));
+  end
+  if (name inside {C_LWSP}) begin
+    instr_str = $sformatf("x%0d, %0d(x2)",  rd, $signed(this.get_imm));
+  end
+  if (name inside {C_JR, C_JALR}) begin
+    instr_str = $sformatf("x%0d", rd);
   end
 
   // Default printing of just the instruction name
@@ -359,9 +368,17 @@ function  int  uvma_isacov_instr_c::get_imm();
 
   bit [63:0] instr = $signed(this.rvfi.insn);
 
+  if (this.itype == CI_TYPE) begin
+    return dasm_rvc_imm(instr);
+  end
+  if (this.itype == CSS_TYPE) begin
+    return (dasm_rvc_swsp_imm(instr) >> 2);  // Shift 2 because [7:2] to [5:0]
+  end
   if (this.itype == CJ_TYPE) begin
     return (dasm_rvc_j_imm(instr) >> 1);  // Shift 1 because [11:1] to [10:0]
   end
+
+  // Note: 64-bit and 128-bit might require refinement of the above filtering
 
   return 0;
 
