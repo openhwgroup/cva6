@@ -1123,8 +1123,8 @@ covergroup cg_css(
     ignore_bins IGNORE = uvma_isacov_instr_c::get_irrelevant_imm_value_types();
   }
 
-  `ISACOV_CP_BITWISE    (cp_rs2_toggle, instr.rs2_value, 1)
-  `ISACOV_CP_BITWISE_7_2(cp_imm_toggle, instr.get_imm,   1/*TODO:ropeders make function of instr_c?*/)
+  `ISACOV_CP_BITWISE    (cp_rs2_toggle, instr.rs2_value,         1)
+  `ISACOV_CP_BITWISE_7_2(cp_imm_toggle, instr.get_field_imm(),   1/*TODO:ropeders make function of instr_c?*/)
 
 endgroup : cg_css
 

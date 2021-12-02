@@ -122,7 +122,9 @@ class uvma_isacov_instr_c#(int ILEN=DEFAULT_ILEN,
   extern function instr_value_t              get_instr_value_type(bit[31:0] value, int unsigned width, bit is_signed);
   extern static function instr_value_t_queue get_irrelevant_imm_value_types();
   extern function instr_value_t              get_imm_value_type();
-  extern function int                        get_imm();
+  extern function int                        get_field_imm();
+  extern function int                        get_field_rs1();
+  extern function int                        get_field_rs2();
 
 endclass : uvma_isacov_instr_c
 
@@ -162,22 +164,22 @@ function string uvma_isacov_instr_c::convert2string();
     instr_str = $sformatf("x%0d, %s, %0d",  rd, csr.name().tolower(), rs1);
   end
   if (itype == CI_TYPE) begin
-    instr_str = $sformatf("x%0d, %0d",  rd, $signed(this.get_imm));
+    instr_str = $sformatf("x%0d, %0d",  rd, $signed(this.get_field_imm()));
   end
   if (itype == CR_TYPE) begin
     instr_str = $sformatf("x%0d, x%0d", rd, rs2);
   end
   if (itype == CSS_TYPE) begin
-    instr_str = $sformatf("x%0d, %0d(x2)",  rs2, {this.get_imm(), 2'b00});
+    instr_str = $sformatf("x%0d, %0d(x2)",  rs2, {this.get_field_imm(), 2'b00});
   end
   if (itype == CIW_TYPE) begin
-    instr_str = $sformatf("x%0d, %0d",  rd, this.get_imm);
+    instr_str = $sformatf("x%0d, %0d",  rd, this.get_field_imm());
   end
   if (itype == CL_TYPE) begin
-    instr_str = $sformatf("x%0d, x%0d, %0d",  rd, rs1, this.get_imm);
+    instr_str = $sformatf("x%0d, x%0d, %0d",  rd, rs1, this.get_field_imm());
   end
   if (itype == CS_TYPE) begin
-    instr_str = $sformatf("x%0d, x%0d, %0d",  rs1, rs2, this.get_imm);
+    instr_str = $sformatf("x%0d, %0d(x%0d)", (this.get_field_rs2 + 8), {this.get_field_imm(), 2'b00}, (this.get_field_rs1 + 8));
   end
   if (itype == CA_TYPE) begin
     instr_str = $sformatf("x%0d, x%0d",  rd, rs2);
@@ -186,7 +188,7 @@ function string uvma_isacov_instr_c::convert2string();
     instr_str = $sformatf("x%0d, x%0d",  rd, rs2);
   end
   if (itype == CJ_TYPE) begin
-    instr_str = $sformatf("%0x", ($signed(rvfi.pc_rdata) + $signed({this.get_imm(), 1'b0})));
+    instr_str = $sformatf("%0x", ($signed(rvfi.pc_rdata) + $signed({this.get_field_imm(), 1'b0})));
   end
   // Printing for a select few instructions:
   if (name inside {LW, LH, LB, LHU, LBU, JALR}) begin
@@ -196,10 +198,10 @@ function string uvma_isacov_instr_c::convert2string();
     instr_str = $sformatf("x%0d, x%0d, 0x%0x", rd, rs1, rs2);
   end
   if (name inside {C_LUI}) begin
-    instr_str = $sformatf("x%0d, 0x%0x",  rd, $signed(this.get_imm));
+    instr_str = $sformatf("x%0d, 0x%0x",  rd, $signed(this.get_field_imm()));
   end
   if (name inside {C_LWSP}) begin
-    instr_str = $sformatf("x%0d, %0d(x2)",  rd, $signed(this.get_imm));
+    instr_str = $sformatf("x%0d, %0d(x2)",  rd, $signed(this.get_field_imm()));
   end
   if (name inside {C_JR, C_JALR}) begin
     instr_str = $sformatf("x%0d", rd);
@@ -364,15 +366,20 @@ function  instr_value_t  uvma_isacov_instr_c::get_imm_value_type();
 endfunction : get_imm_value_type
 
 
-function  int  uvma_isacov_instr_c::get_imm();
+function  int  uvma_isacov_instr_c::get_field_imm();
 
   bit [63:0] instr = $signed(this.rvfi.insn);
+
+  // TODO:ropeders implement for 32-bit formats too?
 
   if (this.itype == CI_TYPE) begin
     return dasm_rvc_imm(instr);
   end
   if (this.itype == CSS_TYPE) begin
     return (dasm_rvc_swsp_imm(instr) >> 2);  // Shift 2 because [7:2] to [5:0]
+  end
+  if (this.itype == CS_TYPE) begin
+    return (dasm_rvc_lw_imm(instr) >> 2);  // Shift 2 because [6:2] to [4:0]
   end
   if (this.itype == CJ_TYPE) begin
     return (dasm_rvc_j_imm(instr) >> 1);  // Shift 1 because [11:1] to [10:0]
@@ -382,7 +389,29 @@ function  int  uvma_isacov_instr_c::get_imm();
 
   return 0;
 
-endfunction : get_imm
+endfunction : get_field_imm
+
+
+function  int  uvma_isacov_instr_c::get_field_rs1();
+
+  if (itype inside {CL_TYPE, CS_TYPE, CA_TYPE, CB_TYPE}) begin
+    return rs1[3:0];
+  end else begin
+    return rs1;
+  end
+
+endfunction : get_field_rs1
+
+
+function  int  uvma_isacov_instr_c::get_field_rs2();
+
+  if (itype inside {CL_TYPE, CS_TYPE, CA_TYPE, CB_TYPE}) begin
+    return rs2[3:0];
+  end else begin
+    return rs2;
+  end
+
+endfunction : get_field_rs2
 
 
 function bit uvma_isacov_instr_c::is_conditional_branch();
