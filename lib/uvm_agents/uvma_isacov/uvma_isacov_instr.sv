@@ -122,9 +122,10 @@ class uvma_isacov_instr_c#(int ILEN=DEFAULT_ILEN,
   extern function instr_value_t              get_instr_value_type(bit[31:0] value, int unsigned width, bit is_signed);
   extern static function instr_value_t_queue get_irrelevant_imm_value_types();
   extern function instr_value_t              get_imm_value_type();
-  extern function int                        get_field_imm();
+  extern function int                        get_field_rd();
   extern function int                        get_field_rs1();
   extern function int                        get_field_rs2();
+  extern function int                        get_field_imm();
 
 endclass : uvma_isacov_instr_c
 
@@ -182,15 +183,16 @@ function string uvma_isacov_instr_c::convert2string();
     instr_str = $sformatf("x%0d, %0d(x%0d)", (this.get_field_rs2 + 8), {this.get_field_imm(), 2'b00}, (this.get_field_rs1 + 8));
   end
   if (itype == CA_TYPE) begin
-    instr_str = $sformatf("x%0d, x%0d",  rd, rs2);
+    instr_str = $sformatf("x%0d, x%0d", (this.get_field_rd() + 8), (this.get_field_rs2() + 8));
   end
   if (itype == CB_TYPE) begin
-    instr_str = $sformatf("x%0d, x%0d",  rd, rs2);
+    instr_str =
+      $sformatf("x%0d, %0x", (this.get_field_rs1() + 8), ($signed(rvfi.pc_rdata) + $signed({this.get_field_imm(), 1'b0})));
   end
   if (itype == CJ_TYPE) begin
     instr_str = $sformatf("%0x", ($signed(rvfi.pc_rdata) + $signed({this.get_field_imm(), 1'b0})));
   end
-  // Printing for a select few instructions:
+  // Special printing for a select few instructions:
   if (name inside {LW, LH, LB, LHU, LBU, JALR}) begin
     instr_str = $sformatf("x%0d, %0d(x%0d)", rd, $signed(immi), rs1);
   end
@@ -214,6 +216,9 @@ function string uvma_isacov_instr_c::convert2string();
     instr_str = { instr_str, " TRAP" };
   if (illegal)
     instr_str = { instr_str, " ILLEGAL" };
+
+  if (instr_str.getc(instr_str.len() - 1) == " ")
+    instr_str = instr_str.substr(0, (instr_str.len() - 2));
 
   return instr_str;
 
@@ -381,6 +386,9 @@ function  int  uvma_isacov_instr_c::get_field_imm();
   if (this.itype == CS_TYPE) begin
     return (dasm_rvc_lw_imm(instr) >> 2);  // Shift 2 because [6:2] to [4:0]
   end
+  if (this.itype == CB_TYPE) begin
+    return (dasm_rvc_b_imm(instr) >> 1);  // Shift 1 because [8:1] to [7:0]
+  end
   if (this.itype == CJ_TYPE) begin
     return (dasm_rvc_j_imm(instr) >> 1);  // Shift 1 because [11:1] to [10:0]
   end
@@ -395,7 +403,7 @@ endfunction : get_field_imm
 function  int  uvma_isacov_instr_c::get_field_rs1();
 
   if (itype inside {CL_TYPE, CS_TYPE, CA_TYPE, CB_TYPE}) begin
-    return rs1[3:0];
+    return rs1[2:0];
   end else begin
     return rs1;
   end
@@ -406,12 +414,23 @@ endfunction : get_field_rs1
 function  int  uvma_isacov_instr_c::get_field_rs2();
 
   if (itype inside {CL_TYPE, CS_TYPE, CA_TYPE, CB_TYPE}) begin
-    return rs2[3:0];
+    return rs2[2:0];
   end else begin
     return rs2;
   end
 
 endfunction : get_field_rs2
+
+
+function  int  uvma_isacov_instr_c::get_field_rd();
+
+  if (itype inside {CL_TYPE, CS_TYPE, CA_TYPE, CB_TYPE}) begin
+    return rd[2:0];
+  end else begin
+    return rd;
+  end
+
+endfunction : get_field_rd
 
 
 function bit uvma_isacov_instr_c::is_conditional_branch();
