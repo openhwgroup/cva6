@@ -48,7 +48,6 @@ class uvma_isacov_instr_c#(int ILEN=DEFAULT_ILEN,
   bit rs2_valid;
   bit rd_valid;
 
-  bit [31:0] c_imm;
   bit [4:0]  c_rdrs1;
   bit [5:0]  c_rs1s;
   bit [5:0]  c_rs2s;
@@ -105,7 +104,6 @@ class uvma_isacov_instr_c#(int ILEN=DEFAULT_ILEN,
     `uvm_field_int(immj, UVM_ALL_ON | UVM_NOPRINT);
     `uvm_field_enum(instr_value_t, immj_value_type, UVM_ALL_ON | UVM_NOPRINT);
 
-    `uvm_field_int(c_imm,    UVM_ALL_ON | UVM_NOPRINT);
     `uvm_field_enum(instr_value_t, c_imm_value_type, UVM_ALL_ON | UVM_NOPRINT);
 
   `uvm_object_utils_end;

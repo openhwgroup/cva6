@@ -172,7 +172,6 @@ function void uvma_isacov_mon_c::write_rvfi_instr(uvma_rvfi_instr_seq_item_c#(IL
     mon_trn.instr.c_rdrs1 = dasm_rd(instr);
     mon_trn.instr.c_rs1s  = dasm_rvc_rs1s(instr);
     mon_trn.instr.c_rs2s  = dasm_rvc_rs2s(instr);
-    mon_trn.instr.c_imm   = dasm_rvc_imm(instr);
   end
   else begin
     mon_trn.instr.rs1  = dasm_rs1(instr);
@@ -212,7 +211,7 @@ function void uvma_isacov_mon_c::write_rvfi_instr(uvma_rvfi_instr_seq_item_c#(IL
     mon_trn.instr.illegal = 1;
   end
   // 4. Valid supported instruction with invalid operands
-  if (mon_trn.instr.name == C_ADDI4SPN && mon_trn.instr.c_imm == 0)
+  if (mon_trn.instr.name == C_ADDI4SPN && mon_trn.instr.get_field_imm() == 0)
     mon_trn.instr.illegal = 1;
 
   // Set enumerations for each immediate value (if applicable)
@@ -233,53 +232,53 @@ function void uvma_isacov_mon_c::write_rvfi_instr(uvma_rvfi_instr_seq_item_c#(IL
 
   if (mon_trn.instr.itype == CI_TYPE) begin
     case (mon_trn.instr.name)
-      C_ADDI:      mon_trn.instr.c_imm_value_type = mon_trn.instr.get_instr_value_type(mon_trn.instr.c_imm, 6, 1);
-      C_ADDI16SP:  mon_trn.instr.c_imm_value_type = mon_trn.instr.get_instr_value_type(mon_trn.instr.c_imm, 10, 1);
-      C_LWSP:      mon_trn.instr.c_imm_value_type = mon_trn.instr.get_instr_value_type(mon_trn.instr.c_imm, 8, 1);
-      C_SLLI:      mon_trn.instr.c_imm_value_type = mon_trn.instr.get_instr_value_type(mon_trn.instr.c_imm, 6, 0);
-      C_LI:        mon_trn.instr.c_imm_value_type = mon_trn.instr.get_instr_value_type(mon_trn.instr.c_imm, 6, 1);
-      C_LUI:       mon_trn.instr.c_imm_value_type = mon_trn.instr.get_instr_value_type(mon_trn.instr.c_imm, 18, 0);
+      C_ADDI:      mon_trn.instr.c_imm_value_type = mon_trn.instr.get_instr_value_type(mon_trn.instr.get_field_imm(), 6, 1);
+      C_ADDI16SP:  mon_trn.instr.c_imm_value_type = mon_trn.instr.get_instr_value_type(mon_trn.instr.get_field_imm(), 10, 1);
+      C_LWSP:      mon_trn.instr.c_imm_value_type = mon_trn.instr.get_instr_value_type(mon_trn.instr.get_field_imm(), 8, 1);
+      C_SLLI:      mon_trn.instr.c_imm_value_type = mon_trn.instr.get_instr_value_type(mon_trn.instr.get_field_imm(), 6, 0);
+      C_LI:        mon_trn.instr.c_imm_value_type = mon_trn.instr.get_instr_value_type(mon_trn.instr.get_field_imm(), 6, 1);
+      C_LUI:       mon_trn.instr.c_imm_value_type = mon_trn.instr.get_instr_value_type(mon_trn.instr.get_field_imm(), 18, 0);
       default:     `uvm_fatal("ISACOV", $sformatf("unhandled CI instruction: %s", mon_trn.instr.name.name()))
     endcase
   end
   if (mon_trn.instr.itype == CSS_TYPE) begin
     case (mon_trn.instr.name)
-      C_SWSP: mon_trn.instr.c_imm_value_type = mon_trn.instr.get_instr_value_type(mon_trn.instr.c_imm, 8, 0);
+      C_SWSP: mon_trn.instr.c_imm_value_type = mon_trn.instr.get_instr_value_type(mon_trn.instr.get_field_imm(), 8, 0);
       default:     `uvm_fatal("ISACOV", $sformatf("unhandled CSS instruction: %s", mon_trn.instr.name.name()))
     endcase
   end
   if (mon_trn.instr.itype == CIW_TYPE) begin
     case (mon_trn.instr.name)
-      C_ADDI4SPN: mon_trn.instr.c_imm_value_type = mon_trn.instr.get_instr_value_type(mon_trn.instr.c_imm, 10, 0);
+      C_ADDI4SPN: mon_trn.instr.c_imm_value_type = mon_trn.instr.get_instr_value_type(mon_trn.instr.get_field_imm(), 10, 0);
       default:     `uvm_fatal("ISACOV", $sformatf("unhandled CIW instruction: %s", mon_trn.instr.name.name()))
     endcase
   end
   if (mon_trn.instr.itype == CL_TYPE) begin
     case (mon_trn.instr.name)
-      C_LW: mon_trn.instr.c_imm_value_type = mon_trn.instr.get_instr_value_type(mon_trn.instr.c_imm, 8, 0);
+      C_LW: mon_trn.instr.c_imm_value_type = mon_trn.instr.get_instr_value_type(mon_trn.instr.get_field_imm(), 8, 0);
       default:     `uvm_fatal("ISACOV", $sformatf("unhandled CL instruction: %s", mon_trn.instr.name.name()))
     endcase
   end
   if (mon_trn.instr.itype == CS_TYPE) begin
     case (mon_trn.instr.name)
-      C_SW: mon_trn.instr.c_imm_value_type = mon_trn.instr.get_instr_value_type(mon_trn.instr.c_imm, 7, 0);
+      C_SW: mon_trn.instr.c_imm_value_type = mon_trn.instr.get_instr_value_type(mon_trn.instr.get_field_imm(), 7, 0);
       default:     `uvm_fatal("ISACOV", $sformatf("unhandled CS instruction: %s", mon_trn.instr.name.name()))
     endcase
   end
   if (mon_trn.instr.itype == CB_TYPE) begin
     case (mon_trn.instr.name)
       C_BEQZ,
-      C_BNEZ: mon_trn.instr.c_imm_value_type = mon_trn.instr.get_instr_value_type(mon_trn.instr.c_imm, 9, 1);
-      C_ANDI: mon_trn.instr.c_imm_value_type = mon_trn.instr.get_instr_value_type(mon_trn.instr.c_imm, 6, 1);
+      C_BNEZ: mon_trn.instr.c_imm_value_type = mon_trn.instr.get_instr_value_type(mon_trn.instr.get_field_imm(), 9, 1);
+      C_ANDI: mon_trn.instr.c_imm_value_type = mon_trn.instr.get_instr_value_type(mon_trn.instr.get_field_imm(), 6, 1);
       C_SRLI,
-      C_SRAI: mon_trn.instr.c_imm_value_type = mon_trn.instr.get_instr_value_type(mon_trn.instr.c_imm, 6, 0);
+      C_SRAI: mon_trn.instr.c_imm_value_type = mon_trn.instr.get_instr_value_type(mon_trn.instr.get_field_imm(), 6, 0);
       default:     `uvm_fatal("ISACOV", $sformatf("unhandled CB instruction: %s", mon_trn.instr.name.name()))
     endcase
   end
   if (mon_trn.instr.itype == CJ_TYPE) begin
     case (mon_trn.instr.name)
       C_J,
-      C_JAL: mon_trn.instr.c_imm_value_type = mon_trn.instr.get_instr_value_type(mon_trn.instr.c_imm, 12, 1);
+      C_JAL: mon_trn.instr.c_imm_value_type = mon_trn.instr.get_instr_value_type(mon_trn.instr.get_field_imm(), 12, 1);
       default:     `uvm_fatal("ISACOV", $sformatf("unhandled CJ instruction: %s", mon_trn.instr.name.name()))
     endcase
   end

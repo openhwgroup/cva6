@@ -1027,7 +1027,7 @@ covergroup cg_ci(
   }
 
   `ISACOV_CP_BITWISE(cp_rd_toggle, instr.rd_value, 1)
-  `ISACOV_CP_BITWISE_4_0(cp_imm_toggle, instr.c_imm, 1)
+  `ISACOV_CP_BITWISE_4_0(cp_imm_toggle, instr.get_field_imm(), 1)
 
 endgroup : cg_ci
 
@@ -1053,7 +1053,7 @@ covergroup cg_ci_shift(
     ignore_bins NON_ZERO_OFF = {NON_ZERO} with (rd_is_signed);
   }
 
-  cp_shamt: coverpoint instr.c_imm {
+  cp_shamt: coverpoint instr.get_field_imm() {
     bins SHAMT[] = {[0:31]};
   }
 
@@ -1062,7 +1062,7 @@ covergroup cg_ci_shift(
   }
 
   `ISACOV_CP_BITWISE(cp_rd_toggle, instr.rd_value, 1)
-  `ISACOV_CP_BITWISE_5_0(cp_imm_toggle, instr.c_imm, 1)
+  `ISACOV_CP_BITWISE_5_0(cp_imm_toggle, instr.get_field_imm(), 1)
 
 endgroup : cg_ci_shift
 
@@ -1079,7 +1079,7 @@ covergroup cg_ci_li(
   }
 
   `ISACOV_CP_BITWISE(cp_rd_toggle, instr.rd_value, 1)
-  `ISACOV_CP_BITWISE_5_0(cp_imm_toggle, instr.c_imm, 1)
+  `ISACOV_CP_BITWISE_5_0(cp_imm_toggle, instr.get_field_imm(), 1)
 
 endgroup : cg_ci_li
 
@@ -1097,7 +1097,8 @@ covergroup cg_ci_lui(
   }
 
   `ISACOV_CP_BITWISE_31_12(cp_rd_toggle, instr.rd_value, 1)
-  `ISACOV_CP_BITWISE_17_12(cp_imm_toggle, instr.c_imm, 1)
+  `ISACOV_CP_BITWISE_17_12(cp_imm_toggle, instr.get_field_imm(), 1)
+  // TODO:ropeders the toggle macros are wrong; must revise
 
 endgroup : cg_ci_lui
 
@@ -1139,7 +1140,7 @@ covergroup cg_ciw(
   cp_rd: coverpoint instr.rd;
 
   `ISACOV_CP_BITWISE(cp_rd_toggle, instr.rd_value, 1)
-  `ISACOV_CP_BITWISE_9_2(cp_imm_toggle, instr.c_imm, 1)
+  `ISACOV_CP_BITWISE_9_2(cp_imm_toggle, instr.get_field_imm(), 1)
 
 endgroup : cg_ciw
 
@@ -1177,7 +1178,7 @@ covergroup cg_cl(
 
   `ISACOV_CP_BITWISE(cp_rs2_toggle, instr.rs2_value, 1)
   `ISACOV_CP_BITWISE(cp_rs1_toggle, instr.rs1_value, 1)
-  `ISACOV_CP_BITWISE_7_2(cp_imm_toggle, instr.c_imm, 1)
+  `ISACOV_CP_BITWISE_7_2(cp_imm_toggle, instr.get_field_imm(), 1)
 
 endgroup : cg_cl
 
@@ -1210,7 +1211,7 @@ covergroup cg_cs(
 
   `ISACOV_CP_BITWISE(cp_rs2_toggle, instr.rs2_value, 1)
   `ISACOV_CP_BITWISE(cp_rs1_toggle, instr.rs1_value, 1)
-  `ISACOV_CP_BITWISE_6_2(cp_imm_toggle, instr.c_imm, 1)
+  `ISACOV_CP_BITWISE_6_2(cp_imm_toggle, instr.get_field_imm(), 1)
 
 endgroup : cg_cs
 
@@ -1284,7 +1285,7 @@ covergroup cg_cb(
   cp_rs1: coverpoint instr.rs1;
 
   `ISACOV_CP_BITWISE(cp_rs1_toggle, instr.rs1_value, 1)
-  `ISACOV_CP_BITWISE_8_1(cp_imm_toggle, instr.c_imm, 1)
+  `ISACOV_CP_BITWISE_8_1(cp_imm_toggle, instr.get_field_imm(), 1)
 
 endgroup : cg_cb
 
@@ -1313,7 +1314,7 @@ covergroup cg_cb_andi(
   cp_rs1: coverpoint instr.rs1;
 
   `ISACOV_CP_BITWISE(cp_rs1_toggle, instr.rs1_value, 1)
-  `ISACOV_CP_BITWISE_5_0(cp_imm_toggle, instr.c_imm, 1)
+  `ISACOV_CP_BITWISE_5_0(cp_imm_toggle, instr.get_field_imm(), 1)
 
 endgroup : cg_cb_andi
 
@@ -1332,14 +1333,14 @@ covergroup cg_cb_shift(
     ignore_bins NON_ZERO_OFF = {NON_ZERO} with (rs1_is_signed);
   }
 
-  cp_shamt: coverpoint instr.c_imm {
+  cp_shamt: coverpoint instr.get_field_imm() {
     bins SHAMT[] = {[0:31]};
   }
 
   cp_rs1: coverpoint instr.rs1;
 
   `ISACOV_CP_BITWISE(cp_rs1_toggle, instr.rs1_value, 1)
-  `ISACOV_CP_BITWISE_8_1(cp_imm_toggle, instr.c_imm, 1)
+  `ISACOV_CP_BITWISE_8_1(cp_imm_toggle, instr.get_field_imm(), 1)
 
 endgroup : cg_cb_shift
 
@@ -1358,7 +1359,7 @@ covergroup cg_cj(
     ignore_bins NON_ZERO_OFF = {NON_ZERO} with (imm_is_signed);
   }
 
-  `ISACOV_CP_BITWISE_11_1(cp_imm_toggle, instr.c_imm, 1)
+  `ISACOV_CP_BITWISE_11_1(cp_imm_toggle, instr.get_field_imm(), 1)
 
 endgroup : cg_cj
 
