@@ -82,6 +82,8 @@ Created by [gh-md-toc](https://github.com/ekalinin/github-markdown-toc)
 
 ## Getting Started
 
+The following instructions will allow you to compile and run a Verilator model of the CVA6 APU (which instantiates the CVA6 core) within the CVA6 APU testbench (corev_apu/tb).
+
 ### Checkout Repo
 
 Checkout the repository and initialize all submodules
