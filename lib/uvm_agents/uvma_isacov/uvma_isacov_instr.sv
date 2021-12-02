@@ -124,6 +124,9 @@ class uvma_isacov_instr_c#(int ILEN=DEFAULT_ILEN,
   extern function int                        get_field_rs1();
   extern function int                        get_field_rs2();
   extern function int                        get_field_imm();
+  extern function int                        get_addr_rd();
+  extern function int                        get_addr_rs1();
+  extern function int                        get_addr_rs2();
   extern function int                        get_data_imm();
 
 endclass : uvma_isacov_instr_c
@@ -179,13 +182,13 @@ function string uvma_isacov_instr_c::convert2string();
     instr_str = $sformatf("x%0d, x%0d, %0d",  rd, rs1, get_data_imm());
   end
   if (itype == CS_TYPE) begin
-    instr_str = $sformatf("x%0d, %0d(x%0d)", (this.get_field_rs2 + 8), this.get_data_imm(), (this.get_field_rs1 + 8));
+    instr_str = $sformatf("x%0d, %0d(x%0d)", this.get_addr_rs2, this.get_data_imm(), this.get_addr_rs1);
   end
   if (itype == CA_TYPE) begin
-    instr_str = $sformatf("x%0d, x%0d", (this.get_field_rd() + 8), (this.get_field_rs2() + 8));
+    instr_str = $sformatf("x%0d, x%0d", this.get_addr_rd(), this.get_addr_rs2());
   end
   if (itype == CB_TYPE) begin
-    instr_str = $sformatf("x%0d, %0x", (this.get_field_rs1() + 8), ($signed(rvfi.pc_rdata) + this.get_data_imm()));
+    instr_str = $sformatf("x%0d, %0x", this.get_addr_rs1(), ($signed(rvfi.pc_rdata) + this.get_data_imm()));
   end
   if (itype == CJ_TYPE) begin
     instr_str = $sformatf("%0x", ($signed(rvfi.pc_rdata) + this.get_data_imm()));
@@ -400,35 +403,68 @@ endfunction : get_field_imm
 
 function  int  uvma_isacov_instr_c::get_field_rs1();
 
-  if (itype inside {CL_TYPE, CS_TYPE, CA_TYPE, CB_TYPE}) begin
-    return rs1[2:0];
-  end else begin
-    return rs1;
-  end
+  return (itype inside {CL_TYPE, CS_TYPE, CA_TYPE, CB_TYPE}) ? rs1[2:0] : rs1;
 
 endfunction : get_field_rs1
 
 
 function  int  uvma_isacov_instr_c::get_field_rs2();
 
-  if (itype inside {CL_TYPE, CS_TYPE, CA_TYPE, CB_TYPE}) begin
-    return rs2[2:0];
-  end else begin
-    return rs2;
-  end
+  return (itype inside {CS_TYPE, CA_TYPE}) ? rs2[2:0] : rs2;
 
 endfunction : get_field_rs2
 
 
 function  int  uvma_isacov_instr_c::get_field_rd();
 
-  if (itype inside {CL_TYPE, CS_TYPE, CA_TYPE, CB_TYPE}) begin
-    return rd[2:0];
+  // TODO:ropeders is CA handled properly?
+  // TODO:ropeders call dpi_dasm from here, instead of elsewhere?
+
+  return (itype inside {CIW_TYPE, CL_TYPE, CA_TYPE}) ? rd[2:0] : rd;
+
+endfunction : get_field_rd
+
+
+function  int  uvma_isacov_instr_c::get_addr_rs1();
+
+  bit [63:0] instr = $signed(this.rvfi.insn);
+  int        rs1   = this.get_field_rs1();
+
+  if (this.itype inside {CL_TYPE, CS_TYPE, CA_TYPE, CB_TYPE}) begin
+    return rs1 + 8;
+  end else begin
+    return rs1;
+  end
+
+endfunction : get_addr_rs1
+
+
+function  int  uvma_isacov_instr_c::get_addr_rs2();
+
+  bit [63:0] instr = $signed(this.rvfi.insn);
+  int        rs2   = this.get_field_rs2();
+
+  if (this.itype inside {CS_TYPE, CA_TYPE}) begin
+    return rs2 + 8;
+  end else begin
+    return rs2;
+  end
+
+endfunction : get_addr_rs2
+
+
+function  int  uvma_isacov_instr_c::get_addr_rd();
+
+  bit [63:0] instr = $signed(this.rvfi.insn);
+  int        rd    = this.get_field_rd();
+
+  if (this.itype inside {CIW_TYPE, CL_TYPE, CA_TYPE}) begin
+    return rd + 8;
   end else begin
     return rd;
   end
 
-endfunction : get_field_rd
+endfunction : get_addr_rd
 
 
 function  int  uvma_isacov_instr_c::get_data_imm();
