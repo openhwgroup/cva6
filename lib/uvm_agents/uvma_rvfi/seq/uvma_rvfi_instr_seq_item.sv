@@ -131,6 +131,31 @@ class uvma_rvfi_instr_seq_item_c#(int ILEN=DEFAULT_ILEN,
     */
    extern function bit is_compressed_insn();
 
+   /**
+    * Decode if instruction is a trap
+    */
+   extern function bit is_trap();
+
+   /*
+    * Decode if instruction is a synchronous trap with debug entry
+    */
+   extern function bit is_debug_entry_trap();
+
+   /*
+    * Decode if instruction is a synchronous trap without debug entry
+    */
+   extern function bit is_nondebug_entry_trap();
+
+   /*
+    * Retrieve trap cause field
+    */
+   extern function bit [TRAP_CAUSE_WL-1:0] get_trap_cause();
+
+   /*
+    * Retrieve trap debug cause
+    */
+   extern function bit [TRAP_DBG_CAUSE_WL-1:0] get_trap_debug_cause();
+
 endclass : uvma_rvfi_instr_seq_item_c
 
 `pragma protect begin
@@ -211,6 +236,36 @@ function bit uvma_rvfi_instr_seq_item_c::is_compressed_insn();
    return 0;
 
 endfunction : is_compressed_insn
+
+function bit uvma_rvfi_instr_seq_item_c::is_trap();
+
+   return trap[TRAP_EXCP_LSB];
+
+endfunction : is_trap
+
+function bit uvma_rvfi_instr_seq_item_c::is_debug_entry_trap();
+
+   return trap[TRAP_DBG_ENTRY_LSB];
+
+endfunction : is_debug_entry_trap
+
+function bit uvma_rvfi_instr_seq_item_c::is_nondebug_entry_trap();
+
+   return trap[TRAP_NONDBG_ENTRY_LSB];
+
+endfunction : is_nondebug_entry_trap
+
+function bit [TRAP_CAUSE_WL-1:0] uvma_rvfi_instr_seq_item_c::get_trap_cause();
+
+   return trap[TRAP_CAUSE_LSB +: TRAP_CAUSE_WL];
+
+endfunction : get_trap_cause
+
+function bit [TRAP_DBG_CAUSE_WL-1:0] uvma_rvfi_instr_seq_item_c::get_trap_debug_cause();
+
+   return trap[TRAP_DBG_CAUSE_LSB +: TRAP_DBG_CAUSE_WL];
+
+endfunction : get_trap_debug_cause
 
 `pragma protect end
 
