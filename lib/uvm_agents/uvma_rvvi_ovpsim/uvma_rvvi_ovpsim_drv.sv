@@ -209,16 +209,6 @@ task uvma_rvvi_ovpsim_drv_c::stepi(REQ req);
       @(posedge rvvi_ovpsim_cntxt.ovpsim_bus_vif.Clk);
    end
 
-   // Signal instruction bus fault
-   if (rvvi_ovpsim_seq_item.insn_bus_fault) begin
-      rvvi_ovpsim_cntxt.control_vif.stepi();
-      wait(rvvi_ovpsim_cntxt.ovpsim_bus_vif.Ird == 1'b1);
-      rvvi_ovpsim_cntxt.ovpsim_io_vif.InstructionBusFault = 1;
-      @(rvvi_ovpsim_cntxt.state_vif.notify);
-      rvvi_ovpsim_cntxt.ovpsim_io_vif.InstructionBusFault = 0;
-      @(posedge rvvi_ovpsim_cntxt.ovpsim_bus_vif.Clk);
-   end
-
    // Signal an interrupt to the ISS if mcause and rvfi_intr signals external interrupt
    if (rvvi_ovpsim_seq_item.intr) begin
       stepi_ext_intr(rvvi_ovpsim_seq_item.intr_id);
@@ -227,6 +217,16 @@ task uvma_rvvi_ovpsim_drv_c::stepi(REQ req);
    // External halt request to debug mode
    if (rvvi_ovpsim_seq_item.dbg_req) begin
       stepi_haltreq();
+   end
+
+   // Signal instruction bus fault
+   if (rvvi_ovpsim_seq_item.insn_bus_fault) begin
+      rvvi_ovpsim_cntxt.control_vif.stepi();
+      wait(rvvi_ovpsim_cntxt.ovpsim_bus_vif.Ird == 1'b1);
+      rvvi_ovpsim_cntxt.ovpsim_io_vif.InstructionBusFault = 1;
+      @(rvvi_ovpsim_cntxt.state_vif.notify);
+      rvvi_ovpsim_cntxt.ovpsim_io_vif.InstructionBusFault = 0;
+      @(posedge rvvi_ovpsim_cntxt.ovpsim_bus_vif.Clk);
    end
 
    // Update irq_i to match mip CSR
@@ -296,6 +296,7 @@ task uvma_rvvi_ovpsim_drv_c::stepi_ext_intr(int unsigned intr_id);
    @(rvvi_ovpsim_cntxt.state_vif.notify);
    rvvi_ovpsim_cntxt.ovpsim_io_vif.deferint = 1'b1;
    @(posedge rvvi_ovpsim_cntxt.ovpsim_bus_vif.Clk);
+   rvvi_ovpsim_cntxt.ovpsim_io_vif.deferint = 1'b1;
 
 endtask : stepi_ext_intr
 
