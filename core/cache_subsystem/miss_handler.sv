@@ -610,8 +610,8 @@ module miss_handler import ariane_pkg::*; import std_cache_pkg::*; #(
         .valid_o             ( valid_miss_fsm     ),
         .rdata_o             ( data_miss_fsm      ),
         .id_o                (                    ),
-        .critical_word_o,
-        .critical_word_valid_o,
+        .critical_word_o     ( critical_word_o    ),
+        .critical_word_valid_o (critical_word_valid_o),
         .axi_req_o           ( axi_data_o         ),
         .axi_resp_i          ( axi_data_i         )
     );
