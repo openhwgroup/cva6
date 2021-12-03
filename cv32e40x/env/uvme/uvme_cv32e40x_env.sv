@@ -360,6 +360,9 @@ function void uvme_cv32e40x_env_c::create_env_components();
       predictor = uvme_cv32e40x_prd_c::type_id::create("predictor", this);
       sb        = uvme_cv32e40x_sb_c::type_id::create("sb"       , this);
       core_sb   = uvme_cv32e40x_core_sb_c::type_id::create("core_sb", this);
+   end
+
+   if (cfg.buserr_scoreboarding_enabled) begin
       buserr_sb = uvme_cv32e40x_buserr_sb_c::type_id::create("buserr_sb", this);
    end
 
@@ -402,10 +405,12 @@ function void uvme_cv32e40x_env_c::connect_scoreboard();
    end
 
    // Connect the bus error scoreboard
-   obi_memory_data_agent.mon_ap.connect(buserr_sb.obid);
-   obi_memory_instr_agent.mon_ap.connect(buserr_sb.obii);
-   foreach (rvfi_agent.instr_mon_ap[i]) begin
-      rvfi_agent.instr_mon_ap[i].connect(buserr_sb.rvfi);
+   if (cfg.buserr_scoreboarding_enabled) begin
+      obi_memory_data_agent.mon_ap.connect(buserr_sb.obid);
+      obi_memory_instr_agent.mon_ap.connect(buserr_sb.obii);
+      foreach (rvfi_agent.instr_mon_ap[i]) begin
+         rvfi_agent.instr_mon_ap[i].connect(buserr_sb.rvfi);
+      end
    end
 
    // Connect the PMA scoreboard
