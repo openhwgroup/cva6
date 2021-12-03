@@ -33,7 +33,7 @@ module issue_read_operands import ariane_pkg::*; #(
     input  riscv::xlen_t                           rs2_i,
     input  logic                                   rs2_valid_i,
     output logic [REG_ADDR_SIZE-1:0]               rs3_o,
-    input  riscv::xlen_t                           rs3_i,
+    input  rs3_len_t  rs3_i,
     input  logic                                   rs3_valid_i,
     // get clobber input
     input  fu_t [2**REG_ADDR_SIZE-1:0]             rd_clobber_gpr_i,
@@ -79,7 +79,7 @@ module issue_read_operands import ariane_pkg::*; #(
     logic stall;   // stall signal, we do not want to fetch any more entries
     logic fu_busy; // functional unit is busy
     riscv::xlen_t    operand_a_regfile, operand_b_regfile;  // operands coming from regfile
-    logic [FLEN-1:0] operand_c_regfile; // third operand only from fp regfile
+    rs3_len_t operand_c_regfile; // third operand only from fp regfile // deprecated comment
     // output flipflop (ID <-> EX)
     riscv::xlen_t operand_a_n, operand_a_q,
                  operand_b_n, operand_b_q,
@@ -197,7 +197,7 @@ module issue_read_operands import ariane_pkg::*; #(
     // Disclaimer : Used but not fully verified.
     // This might need a change to be generic for every instruction.
         if (is_imm_fpr(issue_instr_i.op) ? rd_clobber_fpr_i[issue_instr_i.result[REG_ADDR_SIZE-1:0]] != NONE
-                     : issue_instr_i.op == OFFLOAD ? rd_clobber_gpr_i[issue_instr_i.result[REG_ADDR_SIZE-1:0]] != NONE : 0) begin
+                     : issue_instr_i.op == OFFLOAD && NR_RGPR_PORTS == 3 ? rd_clobber_gpr_i[issue_instr_i.result[REG_ADDR_SIZE-1:0]] != NONE : 0) begin
             // if the operand is available, forward it. CSRs don't write to/from FPR so no need to check
             if (rs3_valid_i) begin
                 forward_rs3 = 1'b1;
@@ -214,7 +214,11 @@ module issue_read_operands import ariane_pkg::*; #(
         operand_b_n = operand_b_regfile;
         // immediates are the third operands in the store case
         // for FP operations, the imm field can also be the third operand from the regfile
-        imm_n      = is_imm_fpr(issue_instr_i.op) ? {{riscv::XLEN-FLEN{1'b0}}, operand_c_regfile} : issue_instr_i.op == OFFLOAD ? operand_c_regfile : issue_instr_i.result;
+        if (NR_RGPR_PORTS == 3)
+            imm_n  = is_imm_fpr(issue_instr_i.op) ? {{riscv::XLEN-FLEN{1'b0}}, operand_c_regfile} :
+                                                    issue_instr_i.op == OFFLOAD ? operand_c_regfile : issue_instr_i.result;
+        else
+            imm_n  = is_imm_fpr(issue_instr_i.op) ? {{riscv::XLEN-FLEN{1'b0}}, operand_c_regfile} : issue_instr_i.result;
         trans_id_n = issue_instr_i.trans_id;
         fu_n       = issue_instr_i.fu;
         operator_n = issue_instr_i.op;
@@ -228,7 +232,7 @@ module issue_read_operands import ariane_pkg::*; #(
         end
 
         if (forward_rs3) begin
-            imm_n  = rs3_i;
+            imm_n  = NR_RGPR_PORTS == 3 ? rs3_i : {{riscv::XLEN-FLEN{1'b0}}, rs3_i};;
         end
 
         // use the PC as operand a
@@ -370,14 +374,15 @@ module issue_read_operands import ariane_pkg::*; #(
     // ----------------------
     // Integer Register File
     // ----------------------
-    logic [2:0][riscv::XLEN-1:0] rdata;
-    logic [2:0][4:0]  raddr_pack;
+    logic [NR_RGPR_PORTS-1:0][riscv::XLEN-1:0] rdata;
+    logic [NR_RGPR_PORTS-1:0][4:0]  raddr_pack;
 
     // pack signals
     logic [NR_COMMIT_PORTS-1:0][4:0]  waddr_pack;
     logic [NR_COMMIT_PORTS-1:0][riscv::XLEN-1:0] wdata_pack;
     logic [NR_COMMIT_PORTS-1:0]       we_pack;
-    assign raddr_pack = {issue_instr_i.result[4:0], issue_instr_i.rs2[4:0], issue_instr_i.rs1[4:0]};
+    assign raddr_pack = NR_RGPR_PORTS == 3 	? {issue_instr_i.result[4:0], issue_instr_i.rs2[4:0], issue_instr_i.rs1[4:0]}
+					                        : {issue_instr_i.rs2[4:0], issue_instr_i.rs1[4:0]};
     for (genvar i = 0; i < NR_COMMIT_PORTS; i++) begin : gen_write_back_port
         assign waddr_pack[i] = waddr_i[i];
         assign wdata_pack[i] = wdata_i[i];
@@ -386,7 +391,7 @@ module issue_read_operands import ariane_pkg::*; #(
 
     ariane_regfile #(
         .DATA_WIDTH     ( riscv::XLEN     ),
-        .NR_READ_PORTS  ( 3               ),
+        .NR_READ_PORTS  ( NR_RGPR_PORTS   ),
         .NR_WRITE_PORTS ( NR_COMMIT_PORTS ),
         .ZERO_REG_ZERO  ( 1               )
     ) i_ariane_regfile (
@@ -436,7 +441,8 @@ module issue_read_operands import ariane_pkg::*; #(
 
     assign operand_a_regfile = is_rs1_fpr(issue_instr_i.op) ? {{riscv::XLEN-FLEN{1'b0}}, fprdata[0]} : rdata[0];
     assign operand_b_regfile = is_rs2_fpr(issue_instr_i.op) ? {{riscv::XLEN-FLEN{1'b0}}, fprdata[1]} : rdata[1];
-    assign operand_c_regfile = is_imm_fpr(issue_instr_i.op) ? {{riscv::XLEN-FLEN{1'b0}}, fprdata[2]} : rdata[2];
+    assign operand_c_regfile = NR_RGPR_PORTS == 3 ? (is_imm_fpr(issue_instr_i.op) ? {{riscv::XLEN-FLEN{1'b0}}, fprdata[2]} : rdata[2])
+                                                  : fprdata[2];
 
     // ----------------------
     // Registers (ID <-> EX)

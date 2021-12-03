@@ -61,7 +61,6 @@ module issue_stage import ariane_pkg::*; #(
     output logic                                     x_issue_valid_o,
     input  logic                                     x_issue_ready_i,
     output cvxif_pkg::x_issue_req_t                  x_issue_req_o,
-    input  cvxif_pkg::x_issue_resp_t                 x_issue_resp_i,
     //Commit interface
     output logic                                     x_commit_valid_o,
     output cvxif_pkg::x_commit_t                     x_commit_o,
@@ -98,7 +97,7 @@ module issue_stage import ariane_pkg::*; #(
     logic                      rs2_valid_iro_sb;
 
     logic [REG_ADDR_SIZE-1:0]  rs3_iro_sb;
-    riscv::xlen_t              rs3_sb_iro;
+    rs3_len_t                  rs3_sb_iro;
     logic                      rs3_valid_iro_sb;
 
     scoreboard_entry_t         issue_instr_rename_sb;
@@ -211,7 +210,8 @@ module issue_stage import ariane_pkg::*; #(
                                        ? fu_data_o.operand_a : 0;
             x_issue_req_o.rs[1]      = fu_data_o.fu == ariane_pkg::CVXIF && x_issue_valid_o
                                        ? fu_data_o.operand_b : 0;
-            x_issue_req_o.rs[2]      = fu_data_o.fu == ariane_pkg::CVXIF && x_issue_valid_o
+            if (cvxif_pkg::X_NUM_RS == 3)
+                x_issue_req_o.rs[2]      = fu_data_o.fu == ariane_pkg::CVXIF && x_issue_valid_o
                                        ? fu_data_o.imm       : 0;
             x_issue_req_o.rs_valid   = 3'b111;
             x_commit_valid_o         = x_issue_valid_o; // always commit if accepted (commit can be delayed in the spec)
@@ -224,7 +224,8 @@ module issue_stage import ariane_pkg::*; #(
             x_issue_req_o.id         = '0;
             x_issue_req_o.rs[0]      = '0;
             x_issue_req_o.rs[1]      = '0;
-            x_issue_req_o.rs[2]      = '0;
+            if (cvxif_pkg::X_NUM_RS == 3)
+                x_issue_req_o.rs[2]      = '0;
             x_issue_req_o.rs_valid   = '0;
             x_commit_valid_o         = '0;
             x_commit_o.id            = '0;

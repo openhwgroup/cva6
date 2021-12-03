@@ -12,7 +12,7 @@
 package cvxif_pkg;
 
   localparam X_DATAWIDTH  = riscv::XLEN;
-  localparam X_NUM_RS     = 3; //2 or 3
+  localparam X_NUM_RS     = ariane_pkg::NR_RGPR_PORTS; //2 or 3
   localparam X_ID_WIDTH   = ariane_pkg::TRANS_ID_BITS;
   localparam X_MEM_WIDTH  = 64;
   localparam X_RFR_WIDTH  = riscv::XLEN;

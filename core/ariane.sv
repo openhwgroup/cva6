@@ -366,7 +366,6 @@ module ariane import ariane_pkg::*; #(
     .x_issue_valid_o            ( x_issue_valid_id_cvxif       ), //( cvxif_req_o.x_issue_valid    ),
     .x_issue_ready_i            ( x_issue_ready_cvxif_id       ), //( cvxif_resp_i.x_issue_ready   ),
     .x_issue_req_o              ( x_issue_req_id_cvxif         ), //( cvxif_req_o.x_issue_req      ),
-    .x_issue_resp_i             ( x_issue_resp_cvxif_id        ), //( cvxif_resp_i.x_issue_resp    ),
     .x_commit_valid_o           ( x_commit_valid_id_cvxif      ), //( cvxif_req_o.x_commit_valid   ),
     .x_commit_o                 ( x_commit_id_cvxif            ), //( cvxif_req_o.x_commit         ),
     // Commit
@@ -758,7 +757,6 @@ module ariane import ariane_pkg::*; #(
     end
   end
   assign  x_issue_ready_cvxif_id         = cvxif_resp_i.x_issue_ready;
-  assign  x_issue_resp_cvxif_id          = cvxif_resp_i.x_issue_resp;
   assign  cvxif_req_o.x_issue_valid      = x_issue_valid_id_cvxif;
   assign  cvxif_req_o.x_issue_req        = x_issue_req_id_cvxif;
   assign  cvxif_req_o.x_commit_valid     = x_commit_valid_id_cvxif;
@@ -772,7 +770,6 @@ module ariane import ariane_pkg::*; #(
     assign  cvxif_exception_ex_id.tval     = '0;
     assign  cvxif_we_ex_id                 = '0;
     assign  x_issue_ready_cvxif_id         = '0;
-    assign  x_issue_resp_cvxif_id          = '0;
 `endif
 
   // -------------------

@@ -222,6 +222,10 @@ package ariane_pkg;
     localparam REG_ADDR_SIZE = 6;
     localparam NR_WB_PORTS = 5;
 
+    // Read ports for general purpose register files
+    localparam NR_RGPR_PORTS = 2;
+    typedef logic [(NR_RGPR_PORTS == 3 ? riscv::XLEN : FLEN)-1:0] rs3_len_t;
+
     // static debug hartinfo
     localparam dm::hartinfo_t DebugHartInfo = '{
                                                 zero1:        '0,

@@ -37,7 +37,7 @@ module scoreboard #(
   output logic                                                  rs2_valid_o,
 
   input  logic [ariane_pkg::REG_ADDR_SIZE-1:0]                  rs3_i,
-  output riscv::xlen_t                                          rs3_o,
+  output ariane_pkg::rs3_len_t                                  rs3_o,
   output logic                                                  rs3_valid_o,
 
   // advertise instruction to commit stage, if commit_ack_i is asserted advance the commit pointer
@@ -291,9 +291,8 @@ module scoreboard #(
   // check whether we are accessing GPR[0]
   assign rs1_valid_o = rs1_valid & ((|rs1_i) | ariane_pkg::is_rs1_fpr(issue_instr_o.op));
   assign rs2_valid_o = rs2_valid & ((|rs2_i) | ariane_pkg::is_rs2_fpr(issue_instr_o.op));
-  assign rs3_valid_o = rs3_valid & ((|rs3_i) | ariane_pkg::is_imm_fpr(issue_instr_o.op));
+  assign rs3_valid_o = ariane_pkg::NR_RGPR_PORTS == 3 ? rs3_valid & ((|rs3_i) | ariane_pkg::is_imm_fpr(issue_instr_o.op)) : rs3_valid;
 
-  // use fixed prio here
   // this implicitly gives higher prio to WB ports
   rr_arb_tree #(
     .NumIn(NR_ENTRIES+NR_WB_PORTS),
@@ -333,6 +332,8 @@ module scoreboard #(
     .idx_o   (             )
   );
 
+  riscv::xlen_t           rs3;
+
   rr_arb_tree #(
     .NumIn(NR_ENTRIES+NR_WB_PORTS),
     .DataWidth(riscv::XLEN),
@@ -348,9 +349,11 @@ module scoreboard #(
     .data_i  ( rs_data     ),
     .gnt_i   ( 1'b1        ),
     .req_o   ( rs3_valid   ),
-    .data_o  ( rs3_o       ),
+    .data_o  ( rs3         ),
     .idx_o   (             )
   );
+
+  assign rs3_o = rs3[ (ariane_pkg::NR_RGPR_PORTS == 3 ? riscv::XLEN : ariane_pkg::FLEN)-1:0];
 
 
   // sequential process
