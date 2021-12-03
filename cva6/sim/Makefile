@@ -104,7 +104,7 @@ vcs_uvm_run:
 
 vcs_clean_all:
 	@echo "[VCS] Cleanup (entire vcs_work dir)"
-	rm -rf $(CORE_V_VERIF)/cva6/sim/vcs_results/ simv* *.daidir *.vpd *.db csrc ucli.key vc_hdrs.h
+	rm -rf $(CORE_V_VERIF)/cva6/sim/vcs_results/ verdiLog/ simv* *.daidir *.vpd *.db csrc ucli.key vc_hdrs.h novas* inter.fsdb uart
 
 ###############################################################################
 # Verilator
