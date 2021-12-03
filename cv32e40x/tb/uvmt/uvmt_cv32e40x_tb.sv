@@ -113,7 +113,7 @@ module uvmt_cv32e40x_tb;
                                                                    .rvfi_valid(rvfi_i.rvfi_valid[0]),
                                                                    .rvfi_order(rvfi_i.rvfi_order[uvma_rvfi_pkg::ORDER_WL*0+:uvma_rvfi_pkg::ORDER_WL]),
                                                                    .rvfi_insn(rvfi_i.rvfi_insn[uvme_cv32e40x_pkg::ILEN*0+:uvme_cv32e40x_pkg::ILEN]),
-                                                                   .rvfi_trap(rvfi_i.rvfi_trap[0]),
+                                                                   .rvfi_trap(rvfi_i.rvfi_trap[11:0]),
                                                                    .rvfi_halt(rvfi_i.rvfi_halt[0]),
                                                                    .rvfi_intr(rvfi_i.rvfi_intr[0]),
                                                                    .rvfi_dbg(rvfi_i.rvfi_dbg),

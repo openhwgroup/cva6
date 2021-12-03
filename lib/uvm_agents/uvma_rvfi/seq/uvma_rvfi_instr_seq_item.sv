@@ -28,13 +28,13 @@ class uvma_rvfi_instr_seq_item_c#(int ILEN=DEFAULT_ILEN,
    rand bit [CYCLE_CNT_WL-1:0]   cycle_cnt;
    rand bit [ORDER_WL-1:0]       order;
    rand bit [ILEN-1:0]           insn;
-   rand bit                      trap;
+   rand bit [TRAP_WL-1:0]        trap;
    rand bit                      halt;
-   rand bit                      dbg_mode;
-   rand bit [RVFI_DBG_WL-1:0]    dbg;
    rand bit                      intr;
    rand uvma_rvfi_mode           mode;
    rand bit [IXL_WL-1:0]         ixl;
+   rand bit [RVFI_DBG_WL-1:0]    dbg;
+   rand bit                      dbg_mode;
 
    rand bit                      insn_nmi;
    rand bit                      insn_interrupt;
@@ -131,6 +131,31 @@ class uvma_rvfi_instr_seq_item_c#(int ILEN=DEFAULT_ILEN,
     */
    extern function bit is_compressed_insn();
 
+   /**
+    * Decode if instruction is a trap
+    */
+   extern function bit is_trap();
+
+   /*
+    * Decode if instruction is a synchronous trap with debug entry
+    */
+   extern function bit is_debug_entry_trap();
+
+   /*
+    * Decode if instruction is a synchronous trap without debug entry
+    */
+   extern function bit is_nondebug_entry_trap();
+
+   /*
+    * Retrieve trap cause field
+    */
+   extern function bit [TRAP_CAUSE_WL-1:0] get_trap_cause();
+
+   /*
+    * Retrieve trap debug cause
+    */
+   extern function bit [TRAP_DBG_CAUSE_WL-1:0] get_trap_debug_cause();
+
 endclass : uvma_rvfi_instr_seq_item_c
 
 `pragma protect begin
@@ -155,8 +180,8 @@ function string uvma_rvfi_instr_seq_item_c::convert2string();
       convert2string = $sformatf("%s rd: x%0d = 0x%08x", convert2string, rd1_addr, rd1_wdata);
    if (rd2_addr)
       convert2string = $sformatf("%s rd2: x%0d = 0x%08x", convert2string, rd2_addr, rd2_wdata);
-   // if (trap)
-   //    convert2string = $sformatf("%s TRAP", convert2string);
+   if (trap)
+      convert2string = $sformatf("%s TRAP %0d", convert2string, trap);
    if (halt)
       convert2string = $sformatf("%s HALT", convert2string);
    if (insn_interrupt)
@@ -211,6 +236,36 @@ function bit uvma_rvfi_instr_seq_item_c::is_compressed_insn();
    return 0;
 
 endfunction : is_compressed_insn
+
+function bit uvma_rvfi_instr_seq_item_c::is_trap();
+
+   return trap[TRAP_EXCP_LSB];
+
+endfunction : is_trap
+
+function bit uvma_rvfi_instr_seq_item_c::is_debug_entry_trap();
+
+   return trap[TRAP_DBG_ENTRY_LSB];
+
+endfunction : is_debug_entry_trap
+
+function bit uvma_rvfi_instr_seq_item_c::is_nondebug_entry_trap();
+
+   return trap[TRAP_NONDBG_ENTRY_LSB];
+
+endfunction : is_nondebug_entry_trap
+
+function bit [TRAP_CAUSE_WL-1:0] uvma_rvfi_instr_seq_item_c::get_trap_cause();
+
+   return trap[TRAP_CAUSE_LSB +: TRAP_CAUSE_WL];
+
+endfunction : get_trap_cause
+
+function bit [TRAP_DBG_CAUSE_WL-1:0] uvma_rvfi_instr_seq_item_c::get_trap_debug_cause();
+
+   return trap[TRAP_DBG_CAUSE_LSB +: TRAP_DBG_CAUSE_WL];
+
+endfunction : get_trap_debug_cause
 
 `pragma protect end
 
