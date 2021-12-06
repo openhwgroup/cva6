@@ -64,22 +64,15 @@ module cv32e40x_tb_wrapper
     // interrupts (only timer for now)
     assign irq_sec     = '0;
 
-//    // core log reports parameter usage and illegal instructions to the logfile
-//    // MIKET: commenting out as the cv32e40x RTL wrapper does this as well.
-//    cv32e40x_core_log
-//     #(
-//          .PULP_XPULP            ( PULP_XPULP            ),
-//          .PULP_CLUSTER          ( PULP_CLUSTER          ),
-//          .FPU                   ( FPU                   ),
-//          .PULP_ZFINX            ( PULP_ZFINX            ),
-//          .NUM_MHPMCOUNTERS      ( NUM_MHPMCOUNTERS      ))
-//    core_log_i(
-//          .clk_i              ( cv32e40x_core_i.id_stage_i.clk              ),
-//          .is_decoding_i      ( cv32e40x_core_i.id_stage_i.is_decoding_o    ),
-//          .illegal_insn_dec_i ( cv32e40x_core_i.id_stage_i.illegal_insn_dec ),
-//          .hart_id_i          ( cv32e40x_core_i.hart_id_i                   ),
-//          .pc_id_i            ( cv32e40x_core_i.pc_id                       )
-//      );
+   // eXtension Interface
+    if_xif #(
+        .X_NUM_RS    ( 2  ),
+        .X_MEM_WIDTH ( 32 ),
+        .X_RFR_WIDTH ( 32 ),
+        .X_RFW_WIDTH ( 32 ),
+        .X_MISA      ( '0 )
+    ) ext_if();
+
 
     // instantiate the core
     cv32e40x_core #(
@@ -87,37 +80,66 @@ module cv32e40x_tb_wrapper
                 )
     cv32e40x_core_i
         (
+         // Clock and Reset
          .clk_i                  ( clk_i                 ),
          .rst_ni                 ( rst_ni                ),
 
          .scan_cg_en_i           ( '0                    ),
 
+         // Control interface: more or less static
          .boot_addr_i            ( BOOT_ADDR             ),
+         .mtvec_addr_i           ( '0                    ), // TODO
          .dm_halt_addr_i         ( DM_HALTADDRESS        ),
          .hart_id_i              ( HART_ID               ),
+         .dm_exception_addr_i    ( '0                    ), // TODO
+         .nmi_addr_i             ( '0                    ), // TODO
 
+         // Instruction memory interface
          .instr_req_o            ( instr_req             ),
          .instr_gnt_i            ( instr_gnt             ),
          .instr_rvalid_i         ( instr_rvalid          ),
          .instr_addr_o           ( instr_addr            ),
+         .instr_memtype_o        (                       ), // TODO: should the core tb check this?
+         .instr_prot_o           (                       ), // TODO: should the core tb check this?
          .instr_rdata_i          ( instr_rdata           ),
+         .instr_err_i            ( 1'b0                  ),
 
+         // Data memory interface
          .data_req_o             ( data_req              ),
          .data_gnt_i             ( data_gnt              ),
          .data_rvalid_i          ( data_rvalid           ),
          .data_we_o              ( data_we               ),
          .data_be_o              ( data_be               ),
          .data_addr_o            ( data_addr             ),
+         .data_memtype_o         (                       ), // TODO: should the core tb check this?
+         .data_prot_o            (                       ), // TODO: should the core tb check this?
          .data_wdata_o           ( data_wdata            ),
          .data_rdata_i           ( data_rdata            ),
+         .data_err_i             ( 1'b0                  ),
+         .data_atop_o            (                       ),
+         .data_exokay_i          ( 1'b1                  ),
 
-         // Interrupts verified in UVM environment
+         // eXtension interface
+         .xif_compressed_if      ( ext_if                ),
+         .xif_issue_if           ( ext_if                ),
+         .xif_commit_if          ( ext_if                ),
+         .xif_mem_if             ( ext_if                ),
+         .xif_mem_result_if      ( ext_if                ),
+         .xif_result_if          ( ext_if                ),
+
+         // Interrupts
          .irq_i                  ( {32{1'b0}}            ),
-         .irq_ack_o              ( irq_ack               ),
-         .irq_id_o               ( irq_id_out            ),
+
+         // Fencei flush handshake
+         .fencei_flush_req_o     (                       ),
+         .fencei_flush_ack_i     ( 1'b0                  ),
 
          .debug_req_i            ( debug_req             ),
+         .debug_havereset_o      (                       ),
+         .debug_running_o        (                       ),
+         .debug_halted_o         (                       ),
 
+         // CPU Control Signals
          .fetch_enable_i         ( fetch_enable_i        ),
          .core_sleep_o           ( core_sleep_o          )
        );

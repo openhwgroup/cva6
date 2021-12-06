@@ -34,7 +34,7 @@ interface uvma_rvfi_instr_if
     input                      rvfi_valid,
     input [ORDER_WL-1:0]       rvfi_order,
     input [ILEN-1:0]           rvfi_insn,
-    input                      rvfi_trap,
+    input [TRAP_WL-1:0]        rvfi_trap,
     input                      rvfi_halt,
     input [RVFI_DBG_WL-1:0]    rvfi_dbg,
     input                      rvfi_dbg_mode,

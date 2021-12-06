@@ -6,7 +6,7 @@ description: >
 # Toolchain configurations
 riscv_march: rv32imc_zba0p93_zbb0p93
 gnu_march:   rv32imc_zba0p93_zbb0p93
-corev_not_supported: 1
+corev_march: rv32imc_zba1p00_zbb1p00_zbc1p00
 pulp_not_supported: 1
-llvm_march:  rv32imc_zba0p93_zbb0p93_zbc0p93_zbs0p93
-llvm_cflags: -menable-experimental-extensions
+llvm_march:  rv32imc_zba1p00_zbb1p00_zbc1p00_zbs1p00
+
