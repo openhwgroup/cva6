@@ -118,7 +118,6 @@ class uvma_isacov_instr_c#(int ILEN=DEFAULT_ILEN,
   extern function bit is_branch_taken();
 
   extern function instr_value_t              get_instr_value_type(bit[31:0] value, int unsigned width, bit is_signed);
-  extern static function instr_value_t_queue get_irrelevant_imm_value_types();
   extern function instr_value_t              get_imm_value_type();
   extern function int                        get_field_rd();
   extern function int                        get_field_rs1();
@@ -368,13 +367,6 @@ function instr_value_t uvma_isacov_instr_c::get_instr_value_type(bit[31:0] value
   return NON_ZERO;
 
 endfunction : get_instr_value_type
-
-
-function  instr_value_t_queue  uvma_isacov_instr_c::get_irrelevant_imm_value_types();
-
-  return {NON_ZERO};  // TODO:ropeders match specific instr (using imm_is_signed)
-
-endfunction : get_irrelevant_imm_value_types
 
 
 function  instr_value_t  uvma_isacov_instr_c::get_imm_value_type();

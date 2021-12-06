@@ -997,7 +997,8 @@ covergroup cg_ci(
     string name,
     bit rs1_is_signed,
     bit imm_is_signed,
-    bit rd_is_signed
+    bit rd_is_signed,
+    bit imm_is_nonzero
 ) with function sample (
     uvma_isacov_instr_c instr
 );
@@ -1011,9 +1012,10 @@ covergroup cg_ci(
   }
 
   cp_imm_value: coverpoint instr.c_imm_value_type {
-    ignore_bins POS_OFF = {POSITIVE} with (!imm_is_signed);
-    ignore_bins NEG_OFF = {NEGATIVE} with (!imm_is_signed);
-    ignore_bins NON_ZERO_OFF = {NON_ZERO} with (imm_is_signed);
+    illegal_bins POS_OFF = {POSITIVE} with (!imm_is_signed);
+    illegal_bins NEG_OFF = {NEGATIVE} with (!imm_is_signed);
+    illegal_bins NON_ZERO_OFF = {NON_ZERO} with (imm_is_signed);
+    illegal_bins ZERO_OFF = {ZERO} with (imm_is_nonzero);
   }
 
   cp_rd_value: coverpoint instr.rd_value_type {
@@ -1121,7 +1123,9 @@ covergroup cg_css(
   }
 
   cp_imm_value: coverpoint instr.get_imm_value_type() {
-    ignore_bins IGNORE = uvma_isacov_instr_c::get_irrelevant_imm_value_types();
+    ignore_bins POS_OFF = {POSITIVE} with (!imm_is_signed);
+    ignore_bins NEG_OFF = {NEGATIVE} with (!imm_is_signed);
+    ignore_bins NON_ZERO_OFF = {NON_ZERO} with (imm_is_signed);
   }
 
   `ISACOV_CP_BITWISE    (cp_rs2_toggle, instr.rs2_value,         1)
@@ -1933,18 +1937,21 @@ function void uvma_isacov_cov_model_c::build_phase(uvm_phase phase);
       rv32c_addi_cg     = new("rv32c_addi_cg",
                               .rs1_is_signed(rs1_is_signed[C_ADDI]),
                               .imm_is_signed(c_imm_is_signed[C_ADDI]),
-                              .rd_is_signed(rd_is_signed[C_ADDI]));
+                              .rd_is_signed(rd_is_signed[C_ADDI]),
+                              .imm_is_nonzero(c_imm_is_nonzero[C_ADDI]));
       rv32c_addi16sp_cg = new("rv32c_addi16sp_cg",
                               .rs1_is_signed(rs1_is_signed[C_ADDI16SP]),
                               .imm_is_signed(c_imm_is_signed[C_ADDI16SP]),
-                              .rd_is_signed(rd_is_signed[C_ADDI16SP]));
+                              .rd_is_signed(rd_is_signed[C_ADDI16SP]),
+                              .imm_is_nonzero(c_imm_is_nonzero[C_ADDI16SP]));
       rv32c_slli_cg     = new("rv32c_slli_cg",
                               .rs1_is_signed(rs1_is_signed[C_SLLI]),
                               .rd_is_signed(rd_is_signed[C_SLLI]));
       rv32c_lwsp_cg     = new("rv32c_lwsp_cg",
-                              .rs1_is_signed(rs1_is_signed[C_LWSP]),
-                              .imm_is_signed(c_imm_is_signed[C_LWSP]),
-                              .rd_is_signed(rd_is_signed[C_LWSP]));
+                              .rs1_is_signed (rs1_is_signed   [C_LWSP]),
+                              .imm_is_signed (c_imm_is_signed [C_LWSP]),
+                              .rd_is_signed  (rd_is_signed    [C_LWSP]),
+                              .imm_is_nonzero(c_imm_is_nonzero[C_LWSP]));
       rv32c_li_cg       = new("rv32c_li_cg");
       rv32c_lui_cg      = new("rv32c_lui_cg");
 

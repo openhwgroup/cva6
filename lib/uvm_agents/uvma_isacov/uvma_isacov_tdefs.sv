@@ -436,6 +436,20 @@ bit c_imm_is_signed[instr_name_t] = '{
   C_J:     1,
   C_JAL:   1,
   C_LI:    1,
+  C_LUI:   1,
+  C_NOP:   1,
+  default: 0
+};
+
+bit c_imm_is_nonzero[instr_name_t] = '{
+  C_ADDI4SPN:1,
+  C_NOP:   1,
+  C_ADDI:  1,
+  C_ADDI16SP:1,
+  C_LUI:   1,
+  C_SRLI:  1,
+  C_SRAI:  1,
+  C_SLLI:  1,
   default: 0
 };
 
@@ -715,5 +729,6 @@ function instr_group_t get_instr_group(instr_name_t name, bit[31:0] mem_addr);
 
   `uvm_fatal("ISACOV", $sformatf("Called get_instr_group with unmapped type: %s", name.name()));
 endfunction : get_instr_group
+
 
 `endif // __UVMA_ISACOV_TDEFS_SV__

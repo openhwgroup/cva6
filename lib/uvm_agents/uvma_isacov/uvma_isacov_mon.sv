@@ -234,7 +234,7 @@ function void uvma_isacov_mon_c::write_rvfi_instr(uvma_rvfi_instr_seq_item_c#(IL
       C_ADDI:      mon_trn.instr.c_imm_value_type = mon_trn.instr.get_instr_value_type(mon_trn.instr.get_field_imm(), 6, 1);
       C_NOP:       mon_trn.instr.c_imm_value_type = mon_trn.instr.get_instr_value_type(mon_trn.instr.get_field_imm(), 6, 1);
       C_ADDI16SP:  mon_trn.instr.c_imm_value_type = mon_trn.instr.get_instr_value_type(mon_trn.instr.get_field_imm(), 10, 1);
-      C_LWSP:      mon_trn.instr.c_imm_value_type = mon_trn.instr.get_instr_value_type(mon_trn.instr.get_field_imm(), 8, 1);
+      C_LWSP:      mon_trn.instr.c_imm_value_type = mon_trn.instr.get_instr_value_type(mon_trn.instr.get_field_imm(), 6, 0);
       C_SLLI:      mon_trn.instr.c_imm_value_type = mon_trn.instr.get_instr_value_type(mon_trn.instr.get_field_imm(), 6, 0);
       C_LI:        mon_trn.instr.c_imm_value_type = mon_trn.instr.get_instr_value_type(mon_trn.instr.get_field_imm(), 6, 1);
       C_LUI:       mon_trn.instr.c_imm_value_type = mon_trn.instr.get_instr_value_type(mon_trn.instr.get_field_imm(), 18, 0);
