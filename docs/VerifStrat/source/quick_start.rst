@@ -56,9 +56,45 @@ The README in the cv32e40p/sim/core directory will explain how to run other test
 Where is the RTL?
 -----------------
 
-As core-v-verif is a repository for multiple CORE-V cores, you will not find the RTL here.
-Each CORE-V core is managed in its own repository, and is cloned into $PROJ_ROOT/cores/<core_name> by the Makefiles.
+As core-v-verif is a single repository for the verification of several different CORE-V cores, you will not find the RTL here.
+Each CORE-V core is managed in its own repository, and is cloned into $CORE_V_VERIF/cores/<core_name> by the Makefiles, as needed.
 
+UVM
+---
+
+The primary verification environments implemented in core-v-verif are all based on the UVM.
+In order to use the UVM environments you will need items 1, 2 and 3 from the list above, plus a SystemVerilog simulator capable of supporting UVM and the Imperas OVPsim Instruction Set Simulator (ISS).
+With these in place you can do the following::
+
+    $ git clone https://github.com/openhwgroup/core-v-verif.git
+    $ cd core-v-verif/cv32e40p/sim/uvmt
+    $ make test TEST=hello-world SIMULATOR=<xrun|vcs|vsim|riveria|dsim>
+
+The above will clone a version of the CV32E40P core RTL from its repository, compile it and the UVM testbench using the selected simulator and run the 'hello-world' test-program.
+Note that this is the same test-program as was used in the Verilator example above.
+The simulation run will produce similar results, with lots of additional UVM messaging thrown in for good measure.
+
+If you do not have access to the Imperas ISS you can disable it at run-time::
+
+    $ make test TEST=hello-world SIMULATOR=<xrun|vcs|vsim|riveria|dsim> USE_ISS=NO
+
+Why UVM?
+~~~~~~~~
+
+Core-v-verif was specifically created to bring industrial practises to bear for CORE-V verification.
+The UVM is by far the most popular methodology used in dynamic (simulation) based verification today.
+
+Do I need an ISS?
+~~~~~~~~~~~~~~~~~
+
+The short answer is an emphatic **yes**.
+Core-v-verif uses an ISS as a reference model of the CORE-V core (the Device Under Test).
+A key feature of the core-v-verif UVM environments is that the state of the DUT is compared to the state of the reference model after each instruction is retired.
+Without a comparison to a reference model, the pass/fail status of a given simulation is mostly vacuous.
+
+There are two popular options for RISC-V ISSs, Spike and Imperas OVPsim.
+At the time of this writting (2021-12-07) core-v-verif supports Imperas OVPsim.
+A contribution which integrated another reference model into core-v-verif would be welcome.
 
 Doing More in CORE-V-VERIF
 --------------------------
@@ -91,7 +127,7 @@ To run the same test with Metrics Dsim::
 
     $ make test TEST=hello-world SIMULATOR=dsim
 
-The variable is used to select one of a set of simulator-specific Makefiles that are located at `$PROJ_ROOT/mk/uvmt <https://github.com/openhwgroup/core-v-verif/tree/master/mk/uvmt>`_.
+The variable is used to select one of a set of simulator-specific Makefiles that are located at `$CORE_V_VERIF/mk/uvmt <https://github.com/openhwgroup/core-v-verif/tree/master/mk/uvmt>`_.
 
 Note that core-v-verif tries to support all simulators and this requires support from OpenHW Group members.
 From time to time a Makefile for a specific simulator will not see a lot of use and will inevidibly suffer from bit-rot.
@@ -100,9 +136,13 @@ If you notice an issue with a simulator-specific Makefile, please do raise an is
 CV32E40P Directory Tree (simplified)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-For example only::
+Below $CORE_V_VERIF you will find a directory named *cv32e40p*.
+This directory contains all of the CV32E40P-specific sources to compile and run simulations on the CV32E40P CORE-V core.
+The tree below is a somewhat simplified expansion of the directory highlighting the names, locations and purposes of key directories and files.
+Other cores, e.g. CV32E40X will implement a similar directory tree.
+::
 
-    cv32e40p
+  cv32e40p
     ├── bsp                                         // Board-support Package
     ├── docs
     │   └── VerifPlans
@@ -134,7 +174,7 @@ For example only::
     │       ├── uvmt_cv32e40p_tb.sv
     │       ├── ...
     │       └── uvmt_cv32e40p_pkg.sv
-    ├── tests                                       // test-programs and testcases.
+    ├── tests                                       // test-programs and UVM testcases.
     │   ├── cfg
     │   │   ├── default.yaml
     │   │   ├── no_pulp.yaml
@@ -146,9 +186,8 @@ For example only::
     │   │   │   ├── corev_rand_arithmetic_base_test
     │   │   │   │   ├── corev-dv.yaml
     │   │   │   │   └── test.yaml
-    │   │   │   ├── corev_rand_debug
-    │   │   │   │   ├── corev-dv.yaml
-    │   │   │   │   └── test.yaml
+    │   │   |   ├── ...
+    │   │   |   |
     │   │   │   └── corev_rand_jump_stress_test
     │   │   │       ├── corev-dv.yaml
     │   │   │       └── test.yaml
@@ -157,22 +196,13 @@ For example only::
     │   │       │   ├── hello-world.c
     │   │       │   └── test.yaml
     │   │       ├── ...
+    │   │       |
     │   │       └── debug_test
-    │   │           ├── debugger_exception.S
-    │   │           ├── debugger.S
     │   │           ├── debug_test.c
-    │   │           ├── handlers.S
-    │   │           ├── single_step.S
-    │   │           ├── test.yaml
-    │   │           └── trigger_code.S
+    │   │           └── test.yaml
     │   └── uvmt                                    // UVM testcase(s) and virtual sequences
-    │       ├── base-tests
-    │       │   ├── uvmt_cv32e40p_base_test.sv
-    │       │   ├── uvmt_cv32e40p_base_test_workarounds.sv
-    │       │   └── uvmt_cv32e40p_test_cfg.sv
-    │       └── vseq
-    │           └── uvmt_cv32e40p_vseq_lib.sv
-    └── vendor_lib
+    │
+    └── vendor_lib                                  // Libraries from third-parties
         ├── README.md
         ├── google
         ├── imperas

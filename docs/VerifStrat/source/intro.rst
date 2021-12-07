@@ -137,7 +137,7 @@ Definition of Terms
 |               |                                                                    |
 |               | In core-v-verif a test-program is not aware of the UVM testcase.   |
 +---------------+--------------------------------------------------------------------+
-| $CORE_V_VERIF | Local path of a cloned working directroy of a GitHub repository.   |
+| $CORE_V_VERIF | Local path of a cloned working directroy of this GitHub repository.|
 |               | An example to illustrate:                                          |
 |               |                                                                    |
 |               | [prompt]$ cd /wrk/rick/openhw                                      |
