@@ -90,7 +90,7 @@ task uvma_rvvi_ovpsim_state_mon_c::monitor_rvvi_state();
       end
 
       // The valid bit is misleading on RVVI.  A better indicator of a "valid" retired instruction
-      // (which should be checked for ISA state)
+      // (which should be checked for ISA state) is that the order field increments
       if (mon_trn.order == rvvi_order) begin
          if (!mon_trn.valid) begin
             `uvm_info(log_tag, $sformatf("Used order proxy: %0d", mon_trn.order), UVM_HIGH);
