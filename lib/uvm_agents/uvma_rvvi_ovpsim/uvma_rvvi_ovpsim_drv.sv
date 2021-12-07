@@ -258,8 +258,10 @@ endtask : restart_clknrst
 task uvma_rvvi_ovpsim_drv_c::stepi_haltreq();
 
    rvvi_ovpsim_cntxt.ovpsim_io_vif.haltreq  = 1'b1;
+
    rvvi_ovpsim_cntxt.control_vif.stepi();
    @(rvvi_ovpsim_cntxt.state_vif.notify);
+
    rvvi_ovpsim_cntxt.ovpsim_io_vif.haltreq = 1'b0;
    @(posedge rvvi_ovpsim_cntxt.ovpsim_bus_vif.Clk);
 
@@ -269,11 +271,12 @@ task uvma_rvvi_ovpsim_drv_c::stepi_ext_intr(int unsigned intr_id);
 
    rvvi_ovpsim_cntxt.ovpsim_io_vif.deferint = 1'b0;
    rvvi_ovpsim_cntxt.ovpsim_io_vif.irq_i    = 1 << (intr_id);
+
    rvvi_ovpsim_cntxt.control_vif.stepi();
    @(rvvi_ovpsim_cntxt.state_vif.notify);
+
    rvvi_ovpsim_cntxt.ovpsim_io_vif.deferint = 1'b1;
    @(posedge rvvi_ovpsim_cntxt.ovpsim_bus_vif.Clk);
-   rvvi_ovpsim_cntxt.ovpsim_io_vif.deferint = 1'b1;
 
 endtask : stepi_ext_intr
 
