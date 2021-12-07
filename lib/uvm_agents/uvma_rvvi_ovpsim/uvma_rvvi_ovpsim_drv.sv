@@ -107,6 +107,11 @@ class uvma_rvvi_ovpsim_drv_c#(int ILEN=uvma_rvvi_pkg::DEFAULT_ILEN,
     */
    extern virtual task stepi_haltreq();
 
+   /**
+    * Special RVVI step to signal an instruction bus fault
+    */
+   extern virtual task stepi_insn_bus_fault();
+
 endclass : uvma_rvvi_ovpsim_drv_c
 
 function uvma_rvvi_ovpsim_drv_c::new(string name="uvma_rvvi_ovpsim_drv", uvm_component parent=null);
@@ -198,12 +203,7 @@ task uvma_rvvi_ovpsim_drv_c::stepi(REQ req);
 
    // Signal instruction bus fault
    if (rvvi_ovpsim_seq_item.insn_bus_fault) begin
-      rvvi_ovpsim_cntxt.control_vif.stepi();
-      wait(rvvi_ovpsim_cntxt.ovpsim_bus_vif.Ird == 1'b1);
-      rvvi_ovpsim_cntxt.ovpsim_io_vif.InstructionBusFault = 1;
-      @(rvvi_ovpsim_cntxt.state_vif.notify);
-      rvvi_ovpsim_cntxt.ovpsim_io_vif.InstructionBusFault = 0;
-      @(posedge rvvi_ovpsim_cntxt.ovpsim_bus_vif.Clk);
+      stepi_insn_bus_fault();
    end
 
    // Update irq_i to match mip CSR
@@ -308,6 +308,18 @@ task uvma_rvvi_ovpsim_drv_c::stepi_nmi_store_fault();
 
 endtask : stepi_nmi_store_fault
 
+task uvma_rvvi_ovpsim_drv_c::stepi_insn_bus_fault();
+
+   rvvi_ovpsim_cntxt.control_vif.stepi();
+
+   wait(rvvi_ovpsim_cntxt.ovpsim_bus_vif.Ird == 1'b1);
+   rvvi_ovpsim_cntxt.ovpsim_io_vif.InstructionBusFault = 1;
+   @(rvvi_ovpsim_cntxt.state_vif.notify);
+
+   rvvi_ovpsim_cntxt.ovpsim_io_vif.InstructionBusFault = 0;
+   @(posedge rvvi_ovpsim_cntxt.ovpsim_bus_vif.Clk);
+
+endtask : stepi_insn_bus_fault
 
 `endif // __UVMA_RVVI_OVPSIM_DRV_SV__
 
