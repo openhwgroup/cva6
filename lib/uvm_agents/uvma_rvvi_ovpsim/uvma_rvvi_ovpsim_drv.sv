@@ -93,6 +93,16 @@ class uvma_rvvi_ovpsim_drv_c#(int ILEN=uvma_rvvi_pkg::DEFAULT_ILEN,
    extern virtual task stepi_ext_intr(int unsigned intr_id);
 
    /**
+    * Special RVVI step to signal a load fault NMI
+    */
+   extern virtual task stepi_nmi_load_fault();
+
+   /**
+    * Special RVVI step to signal a store fault NMI
+    */
+   extern virtual task stepi_nmi_store_fault();
+
+   /**
     * Special RVVI step to signal an external debug request
     */
    extern virtual task stepi_haltreq();
@@ -161,7 +171,6 @@ task uvma_rvvi_ovpsim_drv_c::stepi(REQ req);
    // Check for read of volatile memory locations, backdoor init the RVVI memory when found to ensure
    // the ISS sees the same data as the DUT
    if (rvvi_ovpsim_seq_item.mem_rmask && cfg.is_mem_addr_volatile(rvvi_ovpsim_seq_item.mem_addr)) begin
-
       `uvm_info("RVVIDRV", $sformatf("Setting volatile bus read data @ 0x%08x to 0x%08x",
                                      rvvi_ovpsim_seq_item.mem_addr,
                                      rvvi_ovpsim_seq_item.mem_rdata), UVM_HIGH);
@@ -169,44 +178,12 @@ task uvma_rvvi_ovpsim_drv_c::stepi(REQ req);
       rvvi_ovpsim_cntxt.ovpsim_mem_vif.mem[rvvi_ovpsim_seq_item.mem_addr >> 2] = rvvi_ovpsim_seq_item.mem_rdata;
    end
 
-   // Signal an NMI to the ISS in M-mode
-   if (rvvi_ovpsim_seq_item.nmi) begin
-      rvvi_ovpsim_cntxt.ovpsim_io_vif.deferint = 1'b0;
-
-      // Map interrupt ID to RVVI IO fault signal
-      // If we are in debug mode, then use the mem_wmask for the instruction
-      if (rvvi_ovpsim_seq_item.dbg_mode) begin
-         if (rvvi_ovpsim_cfg.store_fault_nmi_cause_valid && rvvi_ovpsim_seq_item.mem_wmask) begin
-            rvvi_ovpsim_cntxt.ovpsim_io_vif.StoreBusFaultNMI = 1'b1;
-         end
-         else if (rvvi_ovpsim_cfg.load_fault_nmi_cause_valid) begin
-            rvvi_ovpsim_cntxt.ovpsim_io_vif.LoadBusFaultNMI  = 1'b1;
-         end
-         else begin
-            `uvm_fatal("RVVIDRVNMI", $sformatf("NMI debug could not be mapped"))
-         end
-      end
-      // Otherwise use the direct value read from mcause (intr_id)
-      else begin
-         if (rvvi_ovpsim_cfg.store_fault_nmi_cause_valid &&
-            (rvvi_ovpsim_seq_item.intr_id == rvvi_ovpsim_cfg.store_fault_nmi_cause)) begin
-            rvvi_ovpsim_cntxt.ovpsim_io_vif.StoreBusFaultNMI = 1'b1;
-         end
-         else if (rvvi_ovpsim_cfg.load_fault_nmi_cause_valid &&
-                  (rvvi_ovpsim_seq_item.intr_id == rvvi_ovpsim_cfg.load_fault_nmi_cause)) begin
-            rvvi_ovpsim_cntxt.ovpsim_io_vif.LoadBusFaultNMI  = 1'b1;
-         end
-         else begin
-            `uvm_fatal("RVVIDRVNMI", $sformatf("NMI mcause of %0d is not recognized", rvvi_ovpsim_seq_item.intr_id));
-         end
-      end
-
-      rvvi_ovpsim_cntxt.control_vif.stepi();
-      @(rvvi_ovpsim_cntxt.state_vif.notify);
-      rvvi_ovpsim_cntxt.ovpsim_io_vif.deferint         = 1'b1;
-      rvvi_ovpsim_cntxt.ovpsim_io_vif.LoadBusFaultNMI  = 1'b0;
-      rvvi_ovpsim_cntxt.ovpsim_io_vif.StoreBusFaultNMI = 1'b0;
-      @(posedge rvvi_ovpsim_cntxt.ovpsim_bus_vif.Clk);
+   // Signal a NMI to the ISS in M-mode
+   if (rvvi_ovpsim_seq_item.nmi_load_fault) begin
+      stepi_nmi_load_fault();
+   end
+   else if (rvvi_ovpsim_seq_item.nmi_store_fault) begin
+      stepi_nmi_store_fault();
    end
 
    // Signal an interrupt to the ISS if mcause and rvfi_intr signals external interrupt
@@ -299,6 +276,35 @@ task uvma_rvvi_ovpsim_drv_c::stepi_ext_intr(int unsigned intr_id);
    rvvi_ovpsim_cntxt.ovpsim_io_vif.deferint = 1'b1;
 
 endtask : stepi_ext_intr
+
+task uvma_rvvi_ovpsim_drv_c::stepi_nmi_load_fault();
+
+   rvvi_ovpsim_cntxt.ovpsim_io_vif.deferint = 1'b0;
+   rvvi_ovpsim_cntxt.ovpsim_io_vif.LoadBusFaultNMI = 1'b1;
+
+   rvvi_ovpsim_cntxt.control_vif.stepi();
+   @(rvvi_ovpsim_cntxt.state_vif.notify);
+
+   rvvi_ovpsim_cntxt.ovpsim_io_vif.deferint         = 1'b1;
+   rvvi_ovpsim_cntxt.ovpsim_io_vif.LoadBusFaultNMI  = 1'b0;
+   @(posedge rvvi_ovpsim_cntxt.ovpsim_bus_vif.Clk);
+
+endtask : stepi_nmi_load_fault
+
+task uvma_rvvi_ovpsim_drv_c::stepi_nmi_store_fault();
+
+   rvvi_ovpsim_cntxt.ovpsim_io_vif.deferint = 1'b0;
+   rvvi_ovpsim_cntxt.ovpsim_io_vif.StoreBusFaultNMI = 1'b1;
+
+   rvvi_ovpsim_cntxt.control_vif.stepi();
+   @(rvvi_ovpsim_cntxt.state_vif.notify);
+
+   rvvi_ovpsim_cntxt.ovpsim_io_vif.deferint         = 1'b1;
+   rvvi_ovpsim_cntxt.ovpsim_io_vif.StoreBusFaultNMI = 1'b0;
+   @(posedge rvvi_ovpsim_cntxt.ovpsim_bus_vif.Clk);
+
+endtask : stepi_nmi_store_fault
+
 
 `endif // __UVMA_RVVI_OVPSIM_DRV_SV__
 
