@@ -143,6 +143,10 @@ endfunction : end_of_elaboration_phase
 
 task uvma_rvvi_ovpsim_drv_c::stepi(REQ req);
 
+   bit[31:0] mem_val_update = 0;
+   bit[31:0] mem_val_prev = 0;
+   bit[XLEN-1:0] mask = 'h0;
+
    uvma_rvvi_ovpsim_control_seq_item_c#(ILEN,XLEN) rvvi_ovpsim_seq_item;
 
    bit[uvma_rvvi_pkg::ORDER_WL-1:0] prev_order;
@@ -162,11 +166,26 @@ task uvma_rvvi_ovpsim_drv_c::stepi(REQ req);
    // the ISS sees the same data as the DUT
    if (rvvi_ovpsim_seq_item.mem_rmask && cfg.is_mem_addr_volatile(rvvi_ovpsim_seq_item.mem_addr)) begin
 
+      // handle misaligned case
+      mem_val_update = rvvi_ovpsim_seq_item.mem_rdata;
+      if (rvvi_ovpsim_seq_item.mem_addr[1:0] != 0) begin
+         mem_val_update <<= 8*rvvi_ovpsim_seq_item.mem_addr[1:0];
+      end
+
+      for (int i=0; i < XLEN/8; i++)
+      begin
+         bit [7:0] mask_val;
+         mask_val = rvvi_ovpsim_seq_item.mem_rmask[i] ? 8'hFF : 8'h00;
+         mask[(i+1)*8-1-:8] = mask_val;
+      end
+
+      mem_val_prev = rvvi_ovpsim_cntxt.ovpsim_mem_vif.mem[rvvi_ovpsim_seq_item.mem_addr >> 2];
+      rvvi_ovpsim_cntxt.ovpsim_mem_vif.mem[rvvi_ovpsim_seq_item.mem_addr >> 2] = (mem_val_prev & ~mask) | (mem_val_update & mask);
+
       `uvm_info("RVVIDRV", $sformatf("Setting volatile bus read data @ 0x%08x to 0x%08x",
                                      rvvi_ovpsim_seq_item.mem_addr,
-                                     rvvi_ovpsim_seq_item.mem_rdata), UVM_HIGH);
+                                     (mem_val_prev & ~mask) | (mem_val_update & mask)), UVM_HIGH);
 
-      rvvi_ovpsim_cntxt.ovpsim_mem_vif.mem[rvvi_ovpsim_seq_item.mem_addr >> 2] = rvvi_ovpsim_seq_item.mem_rdata;
    end
 
    // Signal an NMI to the ISS in M-mode
