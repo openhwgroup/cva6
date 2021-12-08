@@ -30,7 +30,7 @@
 # gcc_opts        : gcc compile options
 # --------------------------------------------------------------------------------
 
-#- import: <riscv_dv_root>/target/rv32ima/testlist.yaml
+#- import: <riscv_dv_root>/target/rv32imc/testlist.yaml
 
 # ISA tests
 - test: rv32ui-p-add
@@ -358,7 +358,7 @@
   asm_tests: <path_var>/riscv-tests/isa/rv32si/dirty.S
 
 - test: rv32uc-p-rvc
-  iterations: 0
+  iterations: 1
   path_var: TESTS_PATH
   gcc_opts: "-static -mcmodel=medany -fvisibility=hidden -nostdlib -nostartfiles -I<path_var>/riscv-tests/isa/macros/scalar/ -I<path_var>/riscv-tests/env/p/ -I<path_var>/riscv-tests/riscv-target/spike/"
   asm_tests: <path_var>/riscv-tests/isa/rv32uc/rvc.S
