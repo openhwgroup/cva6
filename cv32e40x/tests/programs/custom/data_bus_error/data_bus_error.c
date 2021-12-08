@@ -16,7 +16,7 @@
 **
 *******************************************************************************
 **
-** Basic turnon test for instruction bus faults (errors on OBI-I fetch)
+** Basic turnon test for data bus faults (errors on OBI-D load/store)
 **
 *******************************************************************************
 */

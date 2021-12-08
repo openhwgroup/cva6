@@ -24,3 +24,4 @@ plusargs: >
     +set_dcsr_ebreak=0
     +enable_debug_single_step=1
     +gen_debug_section=1
+    +exit_on_debug_exception=1

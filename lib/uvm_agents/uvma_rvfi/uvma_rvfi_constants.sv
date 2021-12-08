@@ -18,16 +18,30 @@
 `ifndef __UVMA_RVFI_CONSTANTS_SV__
 `define __UVMA_RVFI_CONSTANTS_SV__
 
-
+// RVFI field widths
 localparam ORDER_WL         = 64;
 localparam MODE_WL          = 2;
 localparam IXL_WL           = 2;
+localparam TRAP_WL          = 12;
 localparam GPR_ADDR_WL      = 5;
 localparam RVFI_DBG_WL      = 3;
 localparam CYCLE_CNT_WL     = 32;
 
+// Fields within TRAP
+localparam TRAP_EXCP_LSB         = 0;
+localparam TRAP_EXCP_WL          = 1;
+localparam TRAP_NONDBG_ENTRY_LSB = 1;
+localparam TRAP_NONDBG_ENTRY_WL  = 1;
+localparam TRAP_DBG_ENTRY_LSB    = 2;
+localparam TRAP_DBG_ENTRY_WL     = 1;
+localparam TRAP_CAUSE_LSB        = 3;
+localparam TRAP_CAUSE_WL         = 6;
+localparam TRAP_DBG_CAUSE_LSB    = 9;
+localparam TRAP_DBG_CAUSE_WL     = 3;
+
 localparam DEFAULT_ILEN     = 32;
 localparam DEFAULT_XLEN     = 32;
 localparam DEFAULT_NRET     = 1;
+
 
 `endif // __UVMA_RVFI_CONSTANTS_SV__

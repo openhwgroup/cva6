@@ -306,7 +306,7 @@ RISCV_MARCH      = $(call RESOLVE_FLAG2,$(TEST_GNU_MARCH),$(GNU_MARCH))
 RISCV_CFLAGS     = $(call RESOLVE_FLAG2,$(TEST_GNU_CFLAGS),$(GNU_CFLAGS))
 endif
 
-ifeq ($(COREV_YES)),YES)
+ifeq ($(COREV_YES),YES)
 ifeq ($(call IS_YES,$(TEST_COREV_NOT_SUPPORTED)),YES)
 $(error test [$(TEST)] does not support the COREV toolchain)
 endif
@@ -340,6 +340,7 @@ RISCV_EXE_PREFIX = $(RISCV)/bin/$(RISCV_PREFIX)
 RISCV_CC         = $(LLVM_CC)
 RISCV_MARCH      = $(call RESOLVE_FLAG2,$(TEST_LLVM_MARCH),$(LLVM_MARCH))
 RISCV_CFLAGS     = $(call RESOLVE_FLAG2,$(TEST_LLVM_CFLAGS),$(LLVM_CFLAGS))
+RISCV_CFLAGS    += -menable-experimental-extensions
 endif
 
 CFLAGS ?= -Os -g -static -mabi=ilp32 -march=$(RISCV_MARCH) -Wall -pedantic

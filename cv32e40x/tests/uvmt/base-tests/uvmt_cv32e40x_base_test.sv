@@ -58,9 +58,6 @@ class uvmt_cv32e40x_base_test_c extends uvm_test;
       env_cfg.enabled               == 1;
       env_cfg.is_active             == UVM_ACTIVE;
       env_cfg.trn_log_enabled       == 1;
-
-      // FIXME:STRICHMO:undo temp variable when Issue 675 is solved
-      env_cfg.rvfi_cfg.nmi_handler_addr        == env_cfg.nmi_addr;
    }
 
    constraint heartbreat_mon_default_cons {
