@@ -193,15 +193,12 @@ class uvme_cv32e40x_cfg_c extends uvma_core_cntrl_cfg_c;
       isacov_cfg.reg_hazards_enabled        == 1;
 
       rvfi_cfg.nret == uvme_cv32e40x_pkg::RVFI_NRET;
-      rvfi_cfg.nmi_handler_addr            == nmi_addr;
-      rvfi_cfg.nmi_handler_enabled         == 1;
+      rvfi_cfg.nmi_load_fault_enabled      == 1;
+      rvfi_cfg.nmi_load_fault_cause        == cv32e40x_pkg::INT_CAUSE_LSU_LOAD_FAULT;
+      rvfi_cfg.nmi_store_fault_enabled     == 1;
+      rvfi_cfg.nmi_store_fault_cause       == cv32e40x_pkg::INT_CAUSE_LSU_STORE_FAULT;
       rvfi_cfg.insn_bus_fault_enabled      == 1;
       rvfi_cfg.insn_bus_fault_cause        == cv32e40x_pkg::EXC_CAUSE_INSTR_BUS_FAULT;
-
-      rvvi_cfg.store_fault_nmi_cause       == cv32e40x_pkg::INT_CAUSE_LSU_STORE_FAULT;
-      rvvi_cfg.store_fault_nmi_cause_valid == 1;
-      rvvi_cfg.load_fault_nmi_cause        == cv32e40x_pkg::INT_CAUSE_LSU_LOAD_FAULT;
-      rvvi_cfg.load_fault_nmi_cause_valid  == 1;
 
       if (is_active == UVM_ACTIVE) {
          isacov_cfg.is_active           == UVM_PASSIVE;
