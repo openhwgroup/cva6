@@ -35,8 +35,8 @@ Run one of the shell scripts:
 - `source cva6/regress/dv-riscv-tests.sh`:
 [riscv-tests](https://github.com/riscv/riscv-tests) test suite.
 
-These tests are using [riscv-dv](https://github.com/ThalesGroup/riscv-dv)
-as environment (forked from https://github.com/google/riscv-dv).
+These tests are using [riscv-dv](https://github.com/google/riscv-dv)
+as environment.
 
 ## Environment variables
 Other environment variables can be set to overload default values
@@ -50,8 +50,8 @@ The default values are:
 - `SPIKE_ROOT`: `../tools/spike` to install in core-v-verif/tools
 
 - `CVA6_REPO`: `https://github.com/openhwgroup/cva6.git`
-- `CVA6_BRANCH`: `cva6_reorg`
-- `CVA6_HASH`: `95b1070a76d2399ff4a95af70082514b0d0c5743`
+- `CVA6_BRANCH`: `master`
+- `CVA6_HASH`: see value in `regress/install-cva6.sh`
 - `CVA6_PATCH`: no default value
 - `COMPLIANCE_REPO`: `https://github.com/riscv/riscv-compliance.git`
 - `COMPLIANCE_BRANCH`: `master`
@@ -60,21 +60,21 @@ The default values are:
 - `TESTS_REPO`: `https://github.com/riscv/riscv-tests.git`
 - `TESTS_BRANCH`: `master`
 - `TESTS_HASH`: `f92842f91644092960ac7946a61ec2895e543cec`
-- `DV_REPO`: `https://github.com/ThalesGroup/riscv-dv.git`
-- `DV_BRANCH`: `thales-cva6_reorg`
-- `DV_HASH`: `969046070a6444b1b6fa55222d18efdfc6dbbbbc`
+- `DV_REPO`: `https://github.com/google/riscv-dv.git`
+- `DV_BRANCH`: `master`
+- `DV_HASH`: `0ce85d3187689855cd2b3b9e3fae21ca32de2248`
 - `DV_PATCH`: no default value
-- `DV_TARGET`: `rv64gc`
-- `DV_SIMULATORS`: `veri-uvm,spike`
-- `DV_TESTLISTS`: `../../cva6/tests/testlist_riscv-tests-$DV_TARGET-p.yaml
-../../cva6/tests/testlist_riscv-tests-$DV_TARGET-v.yaml`
+- `DV_TARGET`: `cv64a6_imafdc_sv39`
+- `DV_SIMULATORS`: `veri-core,spike`
+- `DV_TESTLISTS`: `../tests/testlist_riscv-tests-$DV_TARGET-p.yaml
+../tests/testlist_riscv-tests-$DV_TARGET-v.yaml`
 - `DV_OPTS`: no default value
 
 ## 32-bit configuration
 To test the CVA6 in 32-bit configuration, use `DV_TARGET` with
-a 32-bit variant.
+a 32-bit variant (e.g. `cv32a6_imac_sv0`).
 
 The following environment variables have to be modified before executing
 test script.
 
-- `DV_TARGET`: `rv32ima` as C, F, D extensions are not yet supported
+- `DV_TARGET`: `cv32a6_imac_sv0`
