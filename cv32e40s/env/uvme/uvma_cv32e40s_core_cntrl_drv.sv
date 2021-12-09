@@ -16,8 +16,8 @@
 // limitations under the License.
 //
 
-`ifndef __UVMA_CV32E40S_CORE_CNTRL_DRV_SV__
-`define __UVMA_CV32E40S_CORE_CNTRL_DRV_SV__
+`ifndef __UVMA_CV32E40X_CORE_CNTRL_DRV_SV__
+`define __UVMA_CV32E40X_CORE_CNTRL_DRV_SV__
 
 /**
  * Component driving bootstrap pins and other misecllaneous I/O for cv32e40s core
@@ -55,6 +55,7 @@ task uvma_cv32e40s_core_cntrl_drv_c::drive_bootstrap();
    e40s_cntxt.core_cntrl_vif.dm_exception_addr = cfg.dm_exception_addr;
    e40s_cntxt.core_cntrl_vif.hart_id           = cfg.hart_id;
    e40s_cntxt.core_cntrl_vif.fetch_en          = 1'b0;
+   e40s_cntxt.core_cntrl_vif.scan_cg_en        = 1'b0;
 
 endtask : drive_bootstrap
 

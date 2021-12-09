@@ -57,6 +57,9 @@ module uvmt_cv32e40s_interrupt_assert
     input [31:0]       wb_stage_instr_rdata_i, // Instruction word data
     input              wb_stage_instr_err_i, // OBI "err"
 
+    // Load-store unit status
+    input              lsu_busy,
+
     // Determine whether to cancel instruction if branch taken
     input branch_taken_ex,
 
@@ -73,6 +76,7 @@ module uvmt_cv32e40s_interrupt_assert
   localparam WFI_INSTR_MASK = 32'hffffffff;
   localparam WFI_INSTR_DATA = 32'h10500073;
 
+  localparam WFI_TO_CORE_SLEEP_LATENCY = 2;
   localparam WFI_WAKEUP_LATENCY = 40;
 
   // ---------------------------------------------------------------------------
@@ -344,18 +348,23 @@ module uvmt_cv32e40s_interrupt_assert
     end
   end
 
-  // WFI assertion will assert core_sleep_o (in 2 cycles after wb, given ideal conditions)
+  assign pipeline_ready_for_wfi = (alignbuf_outstanding == 0) && !lsu_busy;
+
+  // WFI assertion will assert core_sleep_o (in WFI_TO_CORE_SLEEP_LATENCY cycles after wb, given ideal conditions)
   property p_wfi_assert_core_sleep_o;
     !in_wfi
-    ##1 ((!pending_enabled_irq && !debug_mode_q && !debug_req_i) throughout in_wfi[*2])
-    ##0 $past(alignbuf_outstanding == 0)
+    ##1 (in_wfi && !pending_enabled_irq && !debug_mode_q && !debug_req_i)[*(WFI_TO_CORE_SLEEP_LATENCY-1)]
+    ##1 (
+      (in_wfi && !pending_enabled_irq && !debug_mode_q && !debug_req_i)
+        throughout $past(pipeline_ready_for_wfi)[->1]
+      )
     |->
     core_sleep_o;
   endproperty
   a_wfi_assert_core_sleep_o: assert property(p_wfi_assert_core_sleep_o)
     else
       `uvm_error(info_tag,
-                 "Assertion of core_sleep_o did not occur within 2 clocks")
+                 $sformatf("Assertion of core_sleep_o did not occur within %0d clocks", WFI_TO_CORE_SLEEP_LATENCY))
   c_wfi_assert_core_sleep_o: cover property(p_wfi_assert_core_sleep_o);
 
   // WFI assertion will assert core_sleep_o (after required conditions are met)
@@ -363,7 +372,7 @@ module uvmt_cv32e40s_interrupt_assert
     !in_wfi
     ##1 (
       (in_wfi && !pending_enabled_irq && !debug_mode_q && !debug_req_i)
-      throughout (##1 ($past(alignbuf_outstanding == 0)[->1]) )
+      throughout (##1 ($past(pipeline_ready_for_wfi)[->1]) )
       )
     |->
     core_sleep_o;
