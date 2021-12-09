@@ -82,7 +82,7 @@ typedef struct packed {
   x_issue_resp_t resp;
 } x_issue_t;
 
-logic fifo_valid;
+logic fifo_full, fifo_empty;
 logic x_issue_ready_q;
 logic instr_push, instr_pop;
 x_issue_t  req_i;
@@ -92,7 +92,7 @@ x_issue_t  req_o;
 
   assign instr_push = x_issue_resp_o.accept ? 1 : 0 ;
   assign instr_pop = (x_commit_i.x_commit_kill && x_commit_valid_i) || x_result_valid_o;
-  assign x_issue_ready_q = ~fifo_valid; // if something is in the fifo, the instruction is being processed
+  assign x_issue_ready_q = ~fifo_full; // if something is in the fifo, the instruction is being processed
                                         // so we can't receive anything else
   assign req_i.req = x_issue_req_i;
   assign req_i.resp = x_issue_resp_o;
@@ -105,25 +105,25 @@ x_issue_t  req_o;
     end
   end
 
-  stream_fifo #(
+  fifo_v3 #(
       .FALL_THROUGH  (1), //data_o ready and pop in the same cycle
       .DATA_WIDTH    (64),
       .DEPTH         (8),
-      .T          (x_issue_t)
+      .dtype         (x_issue_t)
     ) fifo_commit_i (
     .clk_i     ( clk_i   ),
     .rst_ni    ( rst_ni  ),
     .flush_i   ( 1'b0    ),
     .testmode_i( 1'b0    ),
+    .full_o    (fifo_full),
+    .empty_o   ( fifo_empty),
     .usage_o   (         ),
 
     .data_i   ( req_i     ),
-    .valid_i  ( instr_push        ),
-    .ready_o  (    ),
+    .push_i  ( instr_push        ),
 
     .data_o   ( req_o  ),
-    .valid_o  ( fifo_valid        ),
-    .ready_i  ( instr_pop         )
+    .pop_i  ( instr_pop         )
   );
 
   logic [3:0] c;
@@ -142,7 +142,7 @@ x_issue_t  req_o;
   );
 
   always_comb begin
-    x_result_valid_o    = (c == x_result_o.data[3:0]) && fifo_valid ? 1 : 0;
+    x_result_valid_o    = (c == x_result_o.data[3:0]) && ~fifo_empty ? 1 : 0;
     x_result_o.id       = req_o.req.id;
     x_result_o.data     = req_o.req.rs[0] + req_o.req.rs[1] + ( X_NUM_RS == 3 ? req_o.req.rs[2] : 0);
     x_result_o.rd       = req_o.req.instr[11:7];
