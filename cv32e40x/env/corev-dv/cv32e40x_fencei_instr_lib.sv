@@ -185,12 +185,18 @@ class corev_store_fencei_exec_instr_stream extends riscv_load_store_rand_instr_s
 
     // Exec
     instr = riscv_instr::get_rand_instr(.exclude_instr({NOP}), .exclude_group({RV32C}));
-    `DV_CHECK_RANDOMIZE_FATAL(instr, "failed to randomize exec instruction");
-    if (instr.instr_name inside {JAL}) begin
-      instr.imm_str = "0b"; // special case for jal, takes symbol, not immediate value
-    end else if (instr.category inside {JUMP, BRANCH}) begin
-      instr.imm_str = "0";  // Just need it to compile/link, shall never execute
-    end
+    instr.imm.rand_mode(0);
+    `DV_CHECK_RANDOMIZE_FATAL(instr, "failed to randomize exec instruction"
+    )
+    case (instr.instr_name)
+      JAL: begin
+        instr.imm_str = "0b";
+      end
+      BEQ, BNE, BLT, BGE, BLTU, BGEU: begin
+        instr.imm_str = "0b";
+        instr.branch_assigned = 1'b1;
+      end
+    endcase
     instr.comment = "store_fencei_exec: exec";
     instr.label = label_exec;
     instr_list.push_back(instr);
