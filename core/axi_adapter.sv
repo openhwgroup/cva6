@@ -27,6 +27,7 @@ module axi_adapter #(
 
   input  logic                             req_i,
   input  ariane_axi::ad_req_t              type_i,
+  input  ariane_pkg::amo_t                 amo_i,
   output logic                             gnt_o,
   output logic [AXI_ID_WIDTH-1:0]          gnt_id_o,
   input  logic [riscv::XLEN-1:0]           addr_i,
@@ -51,7 +52,7 @@ module axi_adapter #(
 
   enum logic [3:0] {
     IDLE, WAIT_B_VALID, WAIT_AW_READY, WAIT_LAST_W_READY, WAIT_LAST_W_READY_AW_READY, WAIT_AW_READY_BURST,
-    WAIT_R_VALID, WAIT_R_VALID_MULTIPLE, COMPLETE_READ
+    WAIT_R_VALID, WAIT_R_VALID_MULTIPLE, COMPLETE_READ, WAIT_AMO_R_VALID
   } state_q, state_d;
 
   // counter for AXI transfers
@@ -61,6 +62,8 @@ module axi_adapter #(
   logic [(DATA_WIDTH/riscv::XLEN)-1:0] addr_offset_d, addr_offset_q;
   logic [AXI_ID_WIDTH-1:0]    id_d, id_q;
   logic [ADDR_INDEX-1:0]      index;
+  // "load" atomics response received flag
+  logic amo_resp_d, amo_resp_q;
 
   always_comb begin : axi_fsm
     // Default assignments
@@ -75,7 +78,7 @@ module axi_adapter #(
     axi_req_o.aw.cache  = 4'b0;
     axi_req_o.aw.qos    = 4'b0;
     axi_req_o.aw.id     = id_i;
-    axi_req_o.aw.atop   = '0; // currently not used
+    axi_req_o.aw.atop   = atop_from_amo(amo_i);
     axi_req_o.aw.user   = '0;
 
     axi_req_o.ar_valid  = 1'b0;
@@ -116,6 +119,7 @@ module axi_adapter #(
     cache_line_d  = cache_line_q;
     addr_offset_d = addr_offset_q;
     id_d          = id_q;
+    amo_resp_d    = amo_resp_q;
     index         = '0;
 
     case (state_q)
@@ -145,6 +149,10 @@ module axi_adapter #(
 
             // its a request for the whole cache line
             end else begin
+              // TODO colluca: bursts of AMOs unsupported
+              assert (amo_i == ariane_pkg::AMO_NONE) 
+                else $fatal("Bursts of atomic operations are not supported");
+
               axi_req_o.aw.len = BURST_SIZE; // number of bursts to do
               axi_req_o.w.data = wdata_i[0];
               axi_req_o.w.strb = be_i[0];
@@ -260,17 +268,63 @@ module axi_adapter #(
         end else if (axi_resp_i.w_ready) begin
           cnt_d = cnt_q - 1;
         end
+
+        // TODO colluca: check amo_i can be considered stable or
+        //               has to be registered
+        // some atomics must wait for read data
+        if (amo_returns_data(amo_i)) begin
+          // no data was received yet
+          if (amo_resp_q == 1'b0) begin
+            // mark data received if r_valid
+            if (axi_resp_i.r_valid) begin
+              axi_req_o.r_ready = 1'b1;
+              amo_resp_d = 1'b1;
+            end
+          end
+        end
       end
 
       // ~> finish write transaction
       WAIT_B_VALID: begin
-        axi_req_o.b_ready = 1'b1;
         id_o = axi_resp_i.b.id;
+
+        // TODO colluca: check amo_i can be considered stable or
+        //               has to be registered
+        // some atomics must wait for read data
+        if (amo_returns_data(amo_i)) begin
+          // no data was received yet
+          if (amo_resp_q == 1'b0) begin
+            // mark data received if r_valid
+            if (axi_resp_i.r_valid) begin
+              axi_req_o.r_ready = 1'b1;
+              amo_resp_d = 1'b1;
+            end
+          end
+        end
 
         // Write is valid
         if (axi_resp_i.b_valid) begin
-          state_d = IDLE;
           valid_o = 1'b1;
+          axi_req_o.b_ready = 1'b1;
+
+          // TODO colluca: check amo_i can be considered stable or
+          //               has to be registered
+          // some atomics must wait for read data
+          if (amo_returns_data(amo_i) && !amo_resp_q && !axi_resp_i.r_valid) begin
+            state_d = WAIT_AMO_R_VALID;
+          end else begin
+            state_d = IDLE;
+            amo_resp_d = 1'b0;
+          end
+        end
+      end
+
+      // ~> some atomics wait for read data
+      WAIT_AMO_R_VALID: begin
+        // acknowledge data and terminate atomic
+        if (axi_resp_i.r_valid) begin
+          axi_req_o.r_ready = 1'b1;
+          state_d = IDLE;
         end
       end
 
@@ -336,13 +390,47 @@ module axi_adapter #(
       cache_line_q  <= '0;
       addr_offset_q <= '0;
       id_q          <= '0;
+      amo_resp_q    <= '0;
     end else begin
       state_q       <= state_d;
       cnt_q         <= cnt_d;
       cache_line_q  <= cache_line_d;
       addr_offset_q <= addr_offset_d;
       id_q          <= id_d;
+      amo_resp_q    <= amo_resp_d;
     end
   end
+
+  function automatic axi_pkg::atop_t atop_from_amo(ariane_pkg::amo_t amo);
+    axi_pkg::atop_t result = 6'b000000;
+
+    // TODO colluca: use macros in axi_pkg
+    unique case(amo)
+      ariane_pkg::AMO_NONE: result = 6'b000000;
+      ariane_pkg::AMO_LR  : result = 6'b000000; // TODO colluca: implement
+      ariane_pkg::AMO_SC  : result = 6'b000000; // TODO colluca: implement
+      ariane_pkg::AMO_SWAP: result = 6'b110000;
+      ariane_pkg::AMO_ADD : result = 6'b010000;
+      ariane_pkg::AMO_AND : result = 6'b010001;
+      ariane_pkg::AMO_OR  : result = 6'b010011;
+      ariane_pkg::AMO_XOR : result = 6'b010010;
+      ariane_pkg::AMO_MAX : result = 6'b010100;
+      ariane_pkg::AMO_MAXU: result = 6'b010110;
+      ariane_pkg::AMO_MIN : result = 6'b010101;
+      ariane_pkg::AMO_MINU: result = 6'b010111;
+      ariane_pkg::AMO_CAS1: result = 6'b000000; // Unsupported
+      ariane_pkg::AMO_CAS2: result = 6'b000000; // Unsupported
+      default: result = 6'b000000;
+    endcase
+
+    return result;
+  endfunction
+
+  function automatic logic amo_returns_data(ariane_pkg::amo_t amo);
+    axi_pkg::atop_t atop           = atop_from_amo(amo);
+    logic           is_load        = atop[5:4] == axi_pkg::ATOP_ATOMICLOAD;
+    logic           is_swap_or_cmp = atop[5:4] == axi_pkg::ATOP_ATOMICSWAP[5:4];
+    return is_load || is_swap_or_cmp;
+  endfunction
 
 endmodule

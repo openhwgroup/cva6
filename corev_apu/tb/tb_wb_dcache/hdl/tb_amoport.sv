@@ -80,7 +80,8 @@ program tb_amoport import ariane_pkg::*; import std_cache_pkg::*; import tb_pkg:
       `APPL_WAIT_CYC(clk_i, delay)
 
       // Apply random stimuli, choose random AMO operand
-      void'(randomize(amo_op) with {!(amo_op inside {AMO_NONE, AMO_CAS1, AMO_CAS2});});
+      // TODO colluca: remove AMO_LR and AMO_SC
+      void'(randomize(amo_op) with {!(amo_op inside {AMO_NONE, AMO_CAS1, AMO_CAS2, AMO_LR, AMO_SC});});
       void'(randomize(data));
       void'(randomize(size) with {size >= 2; size <= 3;});
 

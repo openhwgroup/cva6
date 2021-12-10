@@ -186,6 +186,32 @@ module tb import ariane_pkg::*; import std_cache_pkg::*; import tb_pkg::*; #()()
   tb_mem_port_t data_mem_port;
   tb_mem_port_t bypass_mem_port;
 
+  AXI_BUS #(
+    .AXI_ADDR_WIDTH ( TbAxiAddrWidthFull       ),
+    .AXI_DATA_WIDTH ( TbAxiDataWidthFull       ),
+    .AXI_ID_WIDTH   ( TbAxiIdWidthFull + 32'd1 ),
+    .AXI_USER_WIDTH ( TbAxiUserWidthFull       )
+  ) axi_bypass ();
+
+  AXI_BUS #(
+    .AXI_ADDR_WIDTH ( TbAxiAddrWidthFull       ),
+    .AXI_DATA_WIDTH ( TbAxiDataWidthFull       ),
+    .AXI_ID_WIDTH   ( TbAxiIdWidthFull + 32'd1 ),
+    .AXI_USER_WIDTH ( TbAxiUserWidthFull       )
+  ) axi_bypass_amo_adapter ();
+
+  AXI_BUS_DV #(
+    .AXI_ADDR_WIDTH ( TbAxiAddrWidthFull       ),
+    .AXI_DATA_WIDTH ( TbAxiDataWidthFull       ),
+    .AXI_ID_WIDTH   ( TbAxiIdWidthFull + 32'd1 ),
+    .AXI_USER_WIDTH ( TbAxiUserWidthFull       )
+  ) axi_bypass_amo_adapter_dv (
+    .clk_i ( clk_i )
+  );
+
+  `AXI_ASSIGN(axi_bypass, axi_bypass_dv)
+  `AXI_ASSIGN(axi_bypass_amo_adapter_dv, axi_bypass_amo_adapter)
+
 ///////////////////////////////////////////////////////////////////////////////
 // Helper tasks
 ///////////////////////////////////////////////////////////////////////////////
@@ -361,8 +387,8 @@ module tb import ariane_pkg::*; import std_cache_pkg::*; import tb_pkg::*; #()()
   // Instantiate memory and AXI ports
   initial begin : p_sim_mem
     // Create AXI ports
-    data_mem_port   = new(axi_data_dv  , CACHED);
-    bypass_mem_port = new(axi_bypass_dv, BYPASS);
+    data_mem_port   = new(axi_data_dv              , CACHED);
+    bypass_mem_port = new(axi_bypass_amo_adapter_dv, BYPASS);
 
     // Initialize AXI ports and memory
     data_mem_port.reset();
@@ -400,6 +426,24 @@ module tb import ariane_pkg::*; import std_cache_pkg::*; import tb_pkg::*; #()()
     .axi_bypass_o    ( axi_bypass_o    ),
     .axi_bypass_i    ( axi_bypass_i    )
   );
+
+///////////////////////////////////////////////////////////////////////////////
+// AXI Atomics Adapter
+///////////////////////////////////////////////////////////////////////////////
+
+axi_riscv_atomics_wrap #(
+    .AXI_ADDR_WIDTH     ( TbAxiAddrWidthFull       ),
+    .AXI_DATA_WIDTH     ( TbAxiDataWidthFull       ),
+    .AXI_ID_WIDTH       ( TbAxiIdWidthFull + 32'd1 ),
+    .AXI_USER_WIDTH     ( TbAxiUserWidthFull       ),
+    .AXI_MAX_WRITE_TXNS ( 1                        ),
+    .RISCV_WORD_WIDTH   ( 64                       )
+) i_amo_adapter (
+    .clk_i  ( clk_i                         ),
+    .rst_ni ( rst_ni                        ),
+    .mst    ( axi_bypass_amo_adapter.Master ),
+    .slv    ( axi_bypass.Slave )
+);
 
 ///////////////////////////////////////////////////////////////////////////////
 // port emulation programs
@@ -924,8 +968,8 @@ module tb import ariane_pkg::*; import std_cache_pkg::*; import tb_pkg::*; #()()
     req_rate     = '{50,0,2};
 
     // AMOs should use cache port
-    bypass_mem_port.set_region(0, 0);
-    data_mem_port.set_region(0, MemBytes-1);
+    bypass_mem_port.set_region(0, MemBytes-1);
+    data_mem_port.set_region(0, 0);
 
     runAMOs(nAMOs,1); // Last sequence flag, terminates agents
     flushCache();

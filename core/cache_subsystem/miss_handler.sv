@@ -74,9 +74,8 @@ module miss_handler import ariane_pkg::*; import std_cache_pkg::*; #(
         MISS_REPL,          // 9
         SAVE_CACHELINE,     // A
         INIT,               // B
-        AMO_LOAD,           // C
-        AMO_SAVE_LOAD,      // D
-        AMO_STORE           // E
+        AMO_REQ,            // C
+        AMO_WAIT_RESP       // D
     } state_d, state_q;
 
     // Registers
@@ -95,6 +94,22 @@ module miss_handler import ariane_pkg::*; import std_cache_pkg::*; #(
     logic [NR_PORTS-1:0]                    miss_req_we;
     logic [NR_PORTS-1:0][7:0]               miss_req_be;
     logic [NR_PORTS-1:0][1:0]               miss_req_size;
+
+    // AMO <-> AXI
+    logic                req_amo_bypass_valid;
+    ariane_axi::ad_req_t req_amo_bypass_type;
+    ariane_pkg::amo_t    req_amo_bypass_amo;
+    logic [63:0]         req_amo_bypass_addr;
+    logic                req_amo_bypass_we;
+    logic [63:0]         req_amo_bypass_wdata;
+    logic [7:0]          req_amo_bypass_be;
+    logic [1:0]          req_amo_bypass_size;
+    logic [3:0]          req_amo_bypass_id;
+    logic                resp_bypass_amo_gnt;
+    logic                resp_bypass_amo_valid;
+    logic [63:0]         resp_bypass_amo_data;
+    logic [3:0]          resp_bypass_amo_id;
+    logic [3:0]          resp_bypass_amo_gnt_id;
 
     // Cache Line Refill <-> AXI
     logic                                    req_fsm_miss_valid;
@@ -115,12 +130,8 @@ module miss_handler import ariane_pkg::*; import std_cache_pkg::*; #(
     logic [$clog2(DCACHE_SET_ASSOC-1)-1:0] lfsr_bin;
     // AMOs
     ariane_pkg::amo_t amo_op;
-    logic [63:0] amo_operand_a, amo_operand_b, amo_result_o;
-
-    struct packed {
-        logic [63:3] address;
-        logic        valid;
-    } reservation_d, reservation_q;
+    logic [63:0]      amo_operand_b;
+    logic             bypass_sel_amo;
 
     // ------------------------------
     // Cache Management
@@ -169,14 +180,11 @@ module miss_handler import ariane_pkg::*; import std_cache_pkg::*; #(
         // communicate to the requester which unit we are currently serving
         active_serving_o[mshr_q.id] = mshr_q.valid;
         // AMOs
+        bypass_sel_amo = 1'b0;
         amo_resp_o.ack = 1'b0;
         amo_resp_o.result = '0;
-        // silence the unit when not used
-        amo_op = amo_req_i.amo_op;
-        amo_operand_a = '0;
         amo_operand_b = '0;
 
-        reservation_d = reservation_q;
         case (state_q)
 
             IDLE: begin
@@ -189,7 +197,7 @@ module miss_handler import ariane_pkg::*; import std_cache_pkg::*; #(
                         cnt_d = '0;
                     // 2. Do the AMO
                     end else begin
-                        state_d = AMO_LOAD;
+                        state_d = AMO_REQ;
                         serve_amo_d = 1'b0;
                     end
                 end
@@ -377,90 +385,57 @@ module miss_handler import ariane_pkg::*; import std_cache_pkg::*; #(
             // ----------------------
             // AMOs
             // ----------------------
-            // TODO(zarubaf) Move this closer to memory
             // ~> we are here because we need to do the AMO, the cache is clean at this point
-            // start by executing the load
-            AMO_LOAD: begin
-                req_fsm_miss_valid = 1'b1;
+            AMO_REQ: begin
+                bypass_sel_amo = 1'b1;
+                req_amo_bypass_valid = 1'b1;
+                req_amo_bypass_type  = ariane_axi::SINGLE_REQ;
+                req_amo_bypass_amo   = amo_req_i.amo_op;
                 // address is in operand a
-                req_fsm_miss_addr = amo_req_i.operand_a;
-                req_fsm_miss_req = ariane_axi::SINGLE_REQ;
-                req_fsm_miss_size = amo_req_i.size;
-                // the request has been granted
-                if (gnt_miss_fsm) begin
-                    state_d = AMO_SAVE_LOAD;
-                end
-            end
-            // save the load value
-            AMO_SAVE_LOAD: begin
-                if (valid_miss_fsm) begin
-                    // we are only concerned about the lower 64-bit
-                    mshr_d.wdata = data_miss_fsm[0];
-                    state_d = AMO_STORE;
-                end
-            end
-            // and do the store
-            AMO_STORE: begin
-                automatic logic [63:0] load_data;
-                // re-align load data
-                load_data = data_align(amo_req_i.operand_a[2:0], mshr_q.wdata);
-                // Sign-extend for word operation
-                if (amo_req_i.size == 2'b10) begin
-                    amo_operand_a = sext32(load_data[31:0]);
-                    amo_operand_b = sext32(amo_req_i.operand_b[31:0]);
+                req_amo_bypass_addr  = amo_req_i.operand_a;
+                req_amo_bypass_we    = 1'b1;
+                req_amo_bypass_size  = amo_req_i.size;
+                req_amo_bypass_id    = 4'b1100;
+                // AXI implements CLR op instead of AND, negate operand
+                if (amo_req_i.amo_op == AMO_AND) begin
+                    amo_operand_b = ~amo_req_i.operand_b;
                 end else begin
-                    amo_operand_a = load_data;
                     amo_operand_b = amo_req_i.operand_b;
                 end
-
-                //  we do not need a store request for load reserved or a failing store conditional
-                //  we can bail-out without making any further requests
-                if (amo_req_i.amo_op == AMO_LR ||
-                   (amo_req_i.amo_op == AMO_SC &&
-                   ((reservation_q.valid && reservation_q.address != amo_req_i.operand_a[63:3]) || !reservation_q.valid))) begin
-                    req_fsm_miss_valid = 1'b0;
-                    state_d = IDLE;
-                    amo_resp_o.ack = 1'b1;
-                    // write-back the result
-                    amo_resp_o.result = amo_operand_a;
-                    // we know that the SC failed
-                    if (amo_req_i.amo_op == AMO_SC) begin
-                        amo_resp_o.result = 1'b1;
-                        // also clear the reservation
-                        reservation_d.valid = 1'b0;
-                    end
+                // TODO colluca: write cleaner
+                req_amo_bypass_wdata = amo_operand_b;
+                if (amo_req_i.size == 2'b11) begin
+                    // 64b
+                    req_amo_bypass_be = 8'b11111111;
                 end else begin
-                    req_fsm_miss_valid = 1'b1;
+                    // 32b
+                    if (amo_req_i.operand_a[2:0] == '0) begin
+                        // 64bit aligned
+                        req_amo_bypass_be = 8'b00001111;
+                    end else begin
+                        // unaligned
+                        req_amo_bypass_be = 8'b11110000;
+                        req_amo_bypass_wdata = amo_operand_b[31:0] << 32;
+                    end
                 end
 
-                req_fsm_miss_we   = 1'b1;
-                req_fsm_miss_req  = ariane_axi::SINGLE_REQ;
-                req_fsm_miss_size = amo_req_i.size;
-                req_fsm_miss_addr = amo_req_i.operand_a;
-
-                req_fsm_miss_wdata = data_align(amo_req_i.operand_a[2:0], amo_result_o);
-                req_fsm_miss_be = be_gen(amo_req_i.operand_a[2:0], amo_req_i.size);
-
-                // place a reservation on the memory
-                if (amo_req_i.amo_op == AMO_LR) begin
-                    reservation_d.address = amo_req_i.operand_a[63:3];
-                    reservation_d.valid = 1'b1;
+                // when request is accepted, wait for response
+                if (resp_bypass_amo_gnt) begin
+                    if (resp_bypass_amo_valid) begin
+                        state_d = IDLE;
+                        amo_resp_o.ack = 1'b1;
+                        amo_resp_o.result = resp_bypass_amo_data;
+                    end else begin
+                        state_d = AMO_WAIT_RESP;
+                    end
                 end
-
-                // the request is valid or we didn't need to go for another store
-                if (valid_miss_fsm) begin
+            end
+            AMO_WAIT_RESP: begin
+                bypass_sel_amo = 1'b1;
+                if (resp_bypass_amo_valid) begin
                     state_d = IDLE;
                     amo_resp_o.ack = 1'b1;
-                    // write-back the result
-                    amo_resp_o.result = amo_operand_a;
-
-                    if (amo_req_i.amo_op == AMO_SC) begin
-                        amo_resp_o.result = 1'b0;
-                        // An SC must fail if there is a nother SC (to any address) between the LR and the SC in program
-                        // order (even to the same address).
-                        // in any case destory the reservation
-                        reservation_d.valid = 1'b0;
-                    end
+                    amo_resp_o.result = resp_bypass_amo_data;
                 end
             end
         endcase
@@ -495,7 +470,6 @@ module miss_handler import ariane_pkg::*; import std_cache_pkg::*; #(
             evict_way_q   <= '0;
             evict_cl_q    <= '0;
             serve_amo_q   <= 1'b0;
-            reservation_q <= '0;
         end else begin
             mshr_q        <= mshr_d;
             state_q       <= state_d;
@@ -503,7 +477,6 @@ module miss_handler import ariane_pkg::*; import std_cache_pkg::*; #(
             evict_way_q   <= evict_way_d;
             evict_cl_q    <= evict_cl_d;
             serve_amo_q   <= serve_amo_d;
-            reservation_q <= reservation_d;
         end
     end
 
@@ -517,7 +490,7 @@ module miss_handler import ariane_pkg::*; import std_cache_pkg::*; #(
     // ----------------------
     // Bypass Arbiter
     // ----------------------
-    // Connection Arbiter <-> AXI
+    // Connection Arbiter <-> AXI mux
     logic                        req_fsm_bypass_valid;
     logic [63:0]                 req_fsm_bypass_addr;
     logic [63:0]                 req_fsm_bypass_wdata;
@@ -530,6 +503,21 @@ module miss_handler import ariane_pkg::*; import std_cache_pkg::*; #(
     logic [$clog2(NR_PORTS)-1:0] id_fsm_bypass;
     logic [3:0]                  id_bypass_fsm;
     logic [3:0]                  gnt_id_bypass_fsm;
+    // AXI mux <-> AXI
+    logic                        req_bypass_valid;
+    ariane_axi::ad_req_t         req_bypass_type;
+    ariane_pkg::amo_t            req_bypass_amo;
+    logic [63:0]                 req_bypass_addr;
+    logic [63:0]                 req_bypass_wdata;
+    logic                        req_bypass_we;
+    logic [7:0]                  req_bypass_be;
+    logic [1:0]                  req_bypass_size;
+    logic [3:0]                  req_bypass_id;
+    logic                        resp_bypass_gnt;
+    logic                        resp_bypass_valid;
+    logic [63:0]                 resp_bypass_data;
+    logic [3:0]                  resp_bypass_id;
+    logic [3:0]                  resp_bypass_gnt_id;
 
     arbiter #(
         .NR_PORTS       ( NR_PORTS                                 ),
@@ -561,6 +549,43 @@ module miss_handler import ariane_pkg::*; import std_cache_pkg::*; #(
         .*
     );
 
+    always_comb begin
+        // mux req from arbiter and amo on bypass port
+        if (bypass_sel_amo) begin
+            req_bypass_valid = req_amo_bypass_valid;
+            req_bypass_type  = req_amo_bypass_type;
+            req_bypass_amo   = req_amo_bypass_amo;
+            req_bypass_addr  = req_amo_bypass_addr;
+            req_bypass_wdata = req_amo_bypass_wdata;
+            req_bypass_we    = req_amo_bypass_we;
+            req_bypass_be    = req_amo_bypass_be;
+            req_bypass_size  = req_amo_bypass_size;
+            req_bypass_id    = req_amo_bypass_id;
+        end else begin
+            req_bypass_valid = req_fsm_bypass_valid;
+            req_bypass_type  = ariane_axi::SINGLE_REQ;
+            req_bypass_amo   = AMO_NONE;
+            req_bypass_addr  = req_fsm_bypass_addr;
+            req_bypass_wdata = req_fsm_bypass_wdata;
+            req_bypass_we    = req_fsm_bypass_we;
+            req_bypass_be    = req_fsm_bypass_be;
+            req_bypass_size  = req_fsm_bypass_size;
+            req_bypass_id    = {2'b10, id_fsm_bypass};
+        end
+
+        // demux resp from bypass port to arbiter and amo
+        resp_bypass_amo_gnt    = bypass_sel_amo & resp_bypass_gnt;
+        resp_bypass_amo_valid  = bypass_sel_amo & resp_bypass_valid;
+        resp_bypass_amo_data   = resp_bypass_data;
+        resp_bypass_amo_id     = resp_bypass_id;
+        resp_bypass_amo_gnt_id = resp_bypass_gnt_id;
+        gnt_bypass_fsm         = !bypass_sel_amo & resp_bypass_gnt;
+        valid_bypass_fsm       = !bypass_sel_amo & resp_bypass_valid;
+        data_bypass_fsm        = resp_bypass_data;
+        id_bypass_fsm          = resp_bypass_id;
+        gnt_id_bypass_fsm      = resp_bypass_gnt_id;
+    end
+
     axi_adapter #(
         .DATA_WIDTH            ( 64                 ),
         .AXI_ID_WIDTH          ( 4                  ),
@@ -568,23 +593,24 @@ module miss_handler import ariane_pkg::*; import std_cache_pkg::*; #(
     ) i_bypass_axi_adapter (
         .clk_i,
         .rst_ni,
-        .req_i                 ( req_fsm_bypass_valid   ),
-        .type_i                ( ariane_axi::SINGLE_REQ ),
-        .gnt_o                 ( gnt_bypass_fsm         ),
-        .addr_i                ( req_fsm_bypass_addr    ),
-        .we_i                  ( req_fsm_bypass_we      ),
-        .wdata_i               ( req_fsm_bypass_wdata   ),
-        .be_i                  ( req_fsm_bypass_be      ),
-        .size_i                ( req_fsm_bypass_size    ),
-        .id_i                  ( {2'b10, id_fsm_bypass} ),
-        .valid_o               ( valid_bypass_fsm       ),
-        .rdata_o               ( data_bypass_fsm        ),
-        .gnt_id_o              ( gnt_id_bypass_fsm      ),
-        .id_o                  ( id_bypass_fsm          ),
-        .critical_word_o       (                        ), // not used for single requests
-        .critical_word_valid_o (                        ), // not used for single requests
-        .axi_req_o             ( axi_bypass_o           ),
-        .axi_resp_i            ( axi_bypass_i           )
+        .req_i                 ( req_bypass_valid   ),
+        .type_i                ( req_bypass_type    ),
+        .amo_i                 ( req_bypass_amo     ),
+        .gnt_o                 ( resp_bypass_gnt    ),
+        .addr_i                ( req_bypass_addr    ),
+        .we_i                  ( req_bypass_we      ),
+        .wdata_i               ( req_bypass_wdata   ),
+        .be_i                  ( req_bypass_be      ),
+        .size_i                ( req_bypass_size    ),
+        .id_i                  ( req_bypass_id      ),
+        .valid_o               ( resp_bypass_valid  ),
+        .rdata_o               ( resp_bypass_data   ),
+        .gnt_id_o              ( resp_bypass_gnt_id ),
+        .id_o                  ( resp_bypass_id     ),
+        .critical_word_o       (                    ), // not used for single requests
+        .critical_word_valid_o (                    ), // not used for single requests
+        .axi_req_o             ( axi_bypass_o       ),
+        .axi_resp_i            ( axi_bypass_i       )
     );
 
     // ----------------------
@@ -599,6 +625,7 @@ module miss_handler import ariane_pkg::*; import std_cache_pkg::*; #(
         .rst_ni,
         .req_i               ( req_fsm_miss_valid ),
         .type_i              ( req_fsm_miss_req   ),
+        .amo_i               ( AMO_NONE           ),
         .gnt_o               ( gnt_miss_fsm       ),
         .addr_i              ( req_fsm_miss_addr  ),
         .we_i                ( req_fsm_miss_we    ),
@@ -624,16 +651,6 @@ module miss_handler import ariane_pkg::*; import std_cache_pkg::*; #(
         .refill_way_oh  ( lfsr_oh     ),
         .refill_way_bin ( lfsr_bin    ),
         .*
-    );
-
-    // -----------------
-    // AMO ALU
-    // -----------------
-    amo_alu i_amo_alu (
-        .amo_op_i        ( amo_op        ),
-        .amo_operand_a_i ( amo_operand_a ),
-        .amo_operand_b_i ( amo_operand_b ),
-        .amo_result_o    ( amo_result_o  )
     );
 
     // -----------------
