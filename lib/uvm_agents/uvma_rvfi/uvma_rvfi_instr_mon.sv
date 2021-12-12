@@ -208,7 +208,7 @@ task uvma_rvfi_instr_mon_c::monitor_rvfi_instr();
              !last_dcsr_nmip &&
              mon_trn.csrs["dcsr"].get_csr_retirement_data()[3]) begin
             `uvm_info("RVFIMON", $sformatf("Debug NMIP"), UVM_LOW);
-            // FIXME:strichmo:We need to discern load versus store NMI fault,
+            // FIXME:henrik:We need to discern load versus store NMI fault,
             // currently RVFI doesn't allow that.  Issue #339 of cv32e40x GitHub tracks this
             mon_trn.insn_nmi_load_fault = 1;
          end
