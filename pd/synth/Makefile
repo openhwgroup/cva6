@@ -36,7 +36,7 @@ pre_cva6_synth:
 cva6_synth: pre_cva6_synth
 	@echo $(PERIOD)
 	@export $(EXPORT_LIST); $(DC_SHELL_PATH)/dc_shell -f ./cva6_synth.tcl -output synthesis_batch.log
-	python scripts/gateAnalysis.py '$(DESIGN_NAME)/reports/$(PERIOD)/$(DESIGN_NAME)_$(TECH_NAME)_synth_area.rpt' $(NAND2_AREA)
+	python scripts/gate_analysis.py '$(DESIGN_NAME)/reports/$(PERIOD)/$(DESIGN_NAME)_$(TECH_NAME)_synth_area.rpt' $(NAND2_AREA)
 
 cva6_read:
 	@export $(EXPORT_LIST); $(DC_SHELL_PATH)/dc_shell -f cva6_read.tcl -gui
