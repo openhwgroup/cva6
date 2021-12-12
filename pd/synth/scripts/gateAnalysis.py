@@ -1,4 +1,3 @@
-#
 # Copyright 2021 Thales DIS design services SAS
 #
 # Licensed under the Solderpad Hardware Licence, Version 2.0 (the "License");
