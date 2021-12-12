@@ -186,7 +186,7 @@ make -C pd/synth cva6_synth FOUNDRY_PATH=/your/techno/basepath/ TECH_NAME=yourTe
 Don't forget to escape spaces in lists.
 Reports are under: pd/synth/ariane/reports
 
-### ASIC Gate Simulation with core-v-verif repository
+### ASIC Gate Simulation with `core-v-verif` repository
 
 ```
 export DV_SIMULATORS=veri-testharness,spike
