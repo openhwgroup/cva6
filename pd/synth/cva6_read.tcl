@@ -10,4 +10,3 @@
 
 source -echo -verbose scripts/dc_setup.tcl
 
-#read_ddc ${DCRM_FINAL_DDC_OUTPUT_FILE}
