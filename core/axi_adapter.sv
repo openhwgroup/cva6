@@ -65,7 +65,7 @@ module axi_adapter #(
   // save the atomic operation
   ariane_pkg::amo_t amo_d, amo_q;
   // "load" atomics response received flag
-  logic amo_resp_d, amo_resp_q;
+  logic amo_rvalid_d, amo_rvalid_q;
 
   always_comb begin : axi_fsm
     // Default assignments
@@ -122,7 +122,7 @@ module axi_adapter #(
     addr_offset_d = addr_offset_q;
     id_d          = id_q;
     amo_d         = amo_q;
-    amo_resp_d    = amo_resp_q;
+    amo_rvalid_d  = amo_rvalid_q;
     index         = '0;
 
     case (state_q)
@@ -137,6 +137,8 @@ module axi_adapter #(
             // the data is valid
             axi_req_o.aw_valid = 1'b1;
             axi_req_o.w_valid  = 1'b1;
+            // store-conditional requires exclusive access
+            axi_req_o.aw.lock = amo_i == ariane_pkg::AMO_SC;
             // its a single write
             if (type_i == ariane_axi::SINGLE_REQ) begin
               // only a single write so the data is already the last one
@@ -178,8 +180,14 @@ module axi_adapter #(
           end else begin
 
             axi_req_o.ar_valid = 1'b1;
+            // load-reserved requires exclusive access
+            axi_req_o.ar.lock = amo_i == ariane_pkg::AMO_LR;
+
             gnt_o = axi_resp_i.ar_ready;
             if (type_i != ariane_axi::SINGLE_REQ) begin
+              assert (amo_i == ariane_pkg::AMO_NONE) 
+                else $fatal("Bursts of atomic operations are not supported");
+
               axi_req_o.ar.len = BURST_SIZE;
               cnt_d = BURST_SIZE;
             end
@@ -278,11 +286,11 @@ module axi_adapter #(
         // some atomics must wait for read data
         if (amo_returns_data(amo_q)) begin
           // no data was received yet
-          if (amo_resp_q == 1'b0) begin
+          if (amo_rvalid_q == 1'b0) begin
             // mark data received if r_valid
             if (axi_resp_i.r_valid) begin
               axi_req_o.r_ready = 1'b1;
-              amo_resp_d = 1'b1;
+              amo_rvalid_d = 1'b1;
             end
           end
         end
@@ -295,11 +303,11 @@ module axi_adapter #(
         // some atomics must wait for read data
         if (amo_returns_data(amo_q)) begin
           // no data was received yet
-          if (amo_resp_q == 1'b0) begin
+          if (amo_rvalid_q == 1'b0) begin
             // mark data received if r_valid
             if (axi_resp_i.r_valid) begin
               axi_req_o.r_ready = 1'b1;
-              amo_resp_d = 1'b1;
+              amo_rvalid_d = 1'b1;
             end
           end
         end
@@ -309,12 +317,24 @@ module axi_adapter #(
           valid_o = 1'b1;
           axi_req_o.b_ready = 1'b1;
 
+          // store-conditional response
+          if (amo_q == ariane_pkg::AMO_SC) begin
+            if (axi_resp_i.b.resp == axi_pkg::RESP_EXOKAY) begin
+              // success -> return 0
+              rdata_o  = 1'b0;
+            // TODO colluca: replace with else if (... == RESP_OKAY)?
+            end else begin
+              // failure -> return 1
+              rdata_o  = 1'b1;
+            end
+          end
+
           // some atomics must wait for read data
-          if (amo_returns_data(amo_q) && !amo_resp_q && !axi_resp_i.r_valid) begin
+          if (amo_returns_data(amo_q) && !amo_rvalid_q && !axi_resp_i.r_valid) begin
             state_d = WAIT_AMO_R_VALID;
           end else begin
             state_d = IDLE;
-            amo_resp_d = 1'b0;
+            amo_rvalid_d = 1'b0;
           end
         end
       end
@@ -391,7 +411,7 @@ module axi_adapter #(
       addr_offset_q <= '0;
       id_q          <= '0;
       amo_q         <= ariane_pkg::AMO_NONE;
-      amo_resp_q    <= '0;
+      amo_rvalid_q  <= '0;
     end else begin
       state_q       <= state_d;
       cnt_q         <= cnt_d;
@@ -399,18 +419,15 @@ module axi_adapter #(
       addr_offset_q <= addr_offset_d;
       id_q          <= id_d;
       amo_q         <= amo_d;
-      amo_resp_q    <= amo_resp_d;
+      amo_rvalid_q  <= amo_rvalid_d;
     end
   end
 
   function automatic axi_pkg::atop_t atop_from_amo(ariane_pkg::amo_t amo);
     axi_pkg::atop_t result = 6'b000000;
 
-    // TODO colluca: use macros in axi_pkg
     unique case(amo)
       ariane_pkg::AMO_NONE: result = 6'b000000;
-      ariane_pkg::AMO_LR  : result = 6'b000000; // TODO colluca: implement
-      ariane_pkg::AMO_SC  : result = 6'b000000; // TODO colluca: implement
       ariane_pkg::AMO_SWAP: result = 6'b110000;
       ariane_pkg::AMO_ADD : result = 6'b010000;
       ariane_pkg::AMO_AND : result = 6'b010001;

@@ -80,17 +80,18 @@ program tb_amoport import ariane_pkg::*; import std_cache_pkg::*; import tb_pkg:
       `APPL_WAIT_CYC(clk_i, delay)
 
       // Apply random stimuli, choose random AMO operand
-      // TODO colluca: remove AMO_LR and AMO_SC
-      void'(randomize(amo_op) with {!(amo_op inside {AMO_NONE, AMO_CAS1, AMO_CAS2, AMO_LR, AMO_SC});});
+      void'(randomize(amo_op) with {!(amo_op inside {AMO_NONE, AMO_CAS1, AMO_CAS2});});
       void'(randomize(data));
       void'(randomize(size) with {size >= 2; size <= 3;});
 
       // For LRs/SCs, choose from only 4 adresses,
-      // so that valid LR/SC combinations become more likely
+      // so that valid LR/SC combinations become more likely.
+      // Note: AMOs to address 0 are not supported in axi_riscv_atomics module
+      //       so we start at 8 (for alignment purposes)
       if (amo_op inside {AMO_LR, AMO_SC})
-        void'(randomize(paddr) with {paddr >= 0; paddr < 4;});
+        void'(randomize(paddr) with {paddr >= 8; paddr < 12;});
       else
-        void'(randomize(paddr) with {paddr >= 0; paddr < (MemWords<<3);});
+        void'(randomize(paddr) with {paddr >= 8; paddr < (MemWords<<3);});
 
       // Align adress
       if (size == 2)

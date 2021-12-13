@@ -403,7 +403,9 @@ module miss_handler import ariane_pkg::*; import std_cache_pkg::*; #(
                 req_amo_bypass_amo   = amo_req_i.amo_op;
                 // address is in operand a
                 req_amo_bypass_addr  = amo_req_i.operand_a;
-                req_amo_bypass_we    = 1'b1;
+                if (amo_req_i.amo_op != AMO_LR) begin
+                    req_amo_bypass_we = 1'b1;
+                end
                 req_amo_bypass_size  = amo_req_i.size;
                 req_amo_bypass_id    = 4'b1100;
                 // AXI implements CLR op instead of AND, negate operand
