@@ -47,6 +47,10 @@ module ariane import ariane_pkg::*; #(
   // Can be left open when formal tracing is not needed.
   output ariane_rvfi_pkg::rvfi_port_t  rvfi_o,
 `endif
+`ifdef CVXIF
+	output cvxif_pkg::cvxif_req_t        cvxif_req_o,
+	input  cvxif_pkg::cvxif_resp_t       cvxif_resp_i,
+`endif
 `ifdef PITON_ARIANE
   // L15 (memory side)
   output wt_cache_pkg::l15_req_t       l15_req_o,
@@ -137,6 +141,24 @@ module ariane import ariane_pkg::*; #(
   exception_t               fpu_exception_ex_id;
   // CSR
   logic                     csr_valid_id_ex;
+  // CVXIF
+  logic [TRANS_ID_BITS-1:0] cvxif_trans_id_ex_id;
+  riscv::xlen_t             cvxif_result_ex_id;
+  logic                     cvxif_valid_ex_id;
+  exception_t               cvxif_exception_ex_id;
+  logic[4:0]                cvxif_rd_ex_id;
+  logic                     x_issue_valid_id_cvxif;
+  logic                     x_issue_ready_cvxif_id;
+  cvxif_pkg::x_issue_req_t  x_issue_req_id_cvxif;
+  cvxif_pkg::x_issue_resp_t x_issue_resp_cvxif_id;
+  logic                     x_commit_valid_id_cvxif;
+  cvxif_pkg::x_commit_t     x_commit_id_cvxif;
+
+  // Used in other functionalities of the cvxif specification (not implemented yet)
+  // logic cvxif_loadstore;
+  // logic cvxif_possible_exc;
+
+
   // --------------
   // EX <-> COMMIT
   // --------------
@@ -340,12 +362,20 @@ module ariane import ariane_pkg::*; #(
     .fpu_rm_o                   ( fpu_rm_id_ex                 ),
     // CSR
     .csr_valid_o                ( csr_valid_id_ex              ),
+    // CVXIF
+    .x_issue_valid_o            ( x_issue_valid_id_cvxif       ), //( cvxif_req_o.x_issue_valid    ),
+    .x_issue_ready_i            ( x_issue_ready_cvxif_id       ), //( cvxif_resp_i.x_issue_ready   ),
+    .x_issue_req_o              ( x_issue_req_id_cvxif         ), //( cvxif_req_o.x_issue_req      ),
+    .x_issue_resp_i             ( x_issue_resp_cvxif_id        ), //( cvxif_resp_i.x_issue_resp    ),
+    .x_commit_valid_o           ( x_commit_valid_id_cvxif      ), //( cvxif_req_o.x_commit_valid   ),
+    .x_commit_o                 ( x_commit_id_cvxif            ), //( cvxif_req_o.x_commit         ),
     // Commit
     .resolved_branch_i          ( resolved_branch              ),
-    .trans_id_i                 ( {flu_trans_id_ex_id,  load_trans_id_ex_id,  store_trans_id_ex_id,   fpu_trans_id_ex_id }),
-    .wbdata_i                   ( {flu_result_ex_id,    load_result_ex_id,    store_result_ex_id,       fpu_result_ex_id }),
-    .ex_ex_i                    ( {flu_exception_ex_id, load_exception_ex_id, store_exception_ex_id, fpu_exception_ex_id }),
-    .wt_valid_i                 ( {flu_valid_ex_id,     load_valid_ex_id,     store_valid_ex_id,         fpu_valid_ex_id }),
+    .trans_id_i                 ( {flu_trans_id_ex_id,  load_trans_id_ex_id,  store_trans_id_ex_id,   fpu_trans_id_ex_id, cvxif_trans_id_ex_id}),
+    .wbdata_i                   ( {flu_result_ex_id,    load_result_ex_id,    store_result_ex_id,       fpu_result_ex_id, cvxif_result_ex_id}),
+    .ex_ex_i                    ( {flu_exception_ex_id, load_exception_ex_id, store_exception_ex_id, fpu_exception_ex_id, cvxif_exception_ex_id}),
+    .wt_valid_i                 ( {flu_valid_ex_id,     load_valid_ex_id,     store_valid_ex_id,         fpu_valid_ex_id, cvxif_valid_ex_id}),
+    .cvxif_rd_i                 ( cvxif_rd_ex_id               ),
 
     .waddr_i                    ( waddr_commit_id              ),
     .wdata_i                    ( wdata_commit_id              ),
@@ -700,6 +730,50 @@ module ariane import ariane_pkg::*; #(
   initial ariane_pkg::check_cfg(ArianeCfg);
   `endif
   // pragma translate_on
+
+`ifdef CVXIF
+  // -------------------
+  // CoreV-X-Interface
+  // -------------------
+  // CVXIF result combinatorial. Instruction is ILLEGAL_INSTR if it is not accept by the coprocessor
+  assign  cvxif_req_o.x_result_ready     = 1;
+  always_comb begin
+    if (~cvxif_resp_i.x_issue_resp.accept && cvxif_req_o.x_issue_valid) begin
+      cvxif_trans_id_ex_id          = cvxif_req_o.x_issue_req.id;
+      cvxif_result_ex_id            = 0;
+      cvxif_valid_ex_id             = 1;
+      cvxif_exception_ex_id.cause   = riscv::ILLEGAL_INSTR;
+      cvxif_exception_ex_id.valid   = 1;
+      cvxif_exception_ex_id.tval    = cvxif_req_o.x_issue_req.instr;
+      cvxif_rd_ex_id                = 0;
+    end
+    else begin
+      cvxif_trans_id_ex_id          = cvxif_resp_i.x_result.id;
+      cvxif_result_ex_id            = cvxif_resp_i.x_result.data;
+      cvxif_valid_ex_id             = cvxif_resp_i.x_result_valid;
+      cvxif_exception_ex_id.cause   = cvxif_resp_i.x_result.exccode;
+      cvxif_exception_ex_id.valid   = cvxif_resp_i.x_result.exc;
+      cvxif_exception_ex_id.tval    = 0;
+      cvxif_rd_ex_id                = cvxif_resp_i.x_result.rd;
+    end
+  end
+  assign  x_issue_ready_cvxif_id         = cvxif_resp_i.x_issue_ready;
+  assign  x_issue_resp_cvxif_id          = cvxif_resp_i.x_issue_resp;
+  assign  cvxif_req_o.x_issue_valid      = x_issue_valid_id_cvxif;
+  assign  cvxif_req_o.x_issue_req        = x_issue_req_id_cvxif;
+  assign  cvxif_req_o.x_commit_valid     = x_commit_valid_id_cvxif;
+  assign  cvxif_req_o.x_commit           = x_commit_id_cvxif;
+`else
+    assign  cvxif_trans_id_ex_id           = '0;
+    assign  cvxif_result_ex_id             = '0;
+    assign  cvxif_valid_ex_id              = '0;
+    assign  cvxif_exception_ex_id.cause    = '0;
+    assign  cvxif_exception_ex_id.valid    = '0;
+    assign  cvxif_exception_ex_id.tval     = '0;
+    assign  cvxif_rd_ex_id                 = '0;
+    assign  x_issue_ready_cvxif_id         = '0;
+    assign  x_issue_resp_cvxif_id          = '0;
+`endif
 
   // -------------------
   // Instruction Tracer

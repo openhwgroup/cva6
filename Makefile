@@ -86,6 +86,7 @@ ariane_pkg += core/include/riscv_pkg.sv                              \
               core/include/ariane_rvfi_pkg.sv                        \
               core/include/std_cache_pkg.sv                          \
               core/include/wt_cache_pkg.sv                           \
+              core/include/cvxif_pkg.sv                              \
               corev_apu/axi/src/axi_pkg.sv                           \
               corev_apu/register_interface/src/reg_intf.sv           \
               corev_apu/register_interface/src/reg_intf_pkg.sv       \

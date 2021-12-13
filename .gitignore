@@ -33,3 +33,4 @@ tb/riscv-isa-sim/
 work-*/*
 install/
 xrun_results/
+vcs_result/

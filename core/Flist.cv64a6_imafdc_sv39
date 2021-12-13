@@ -51,6 +51,9 @@ ${CVA6_REPO_DIR}/core/include/std_cache_pkg.sv
 ${CVA6_REPO_DIR}/core/include/axi_intf.sv
 ${CVA6_REPO_DIR}/core/include/instr_tracer_pkg.sv
 
+//CVXIF
+${CVA6_REPO_DIR}/core/include/cvxif_pkg.sv
+
 // Common Cells
 ${CVA6_REPO_DIR}/common/submodules/common_cells/src/fifo_v3.sv
 ${CVA6_REPO_DIR}/common/submodules/common_cells/src/lfsr.sv

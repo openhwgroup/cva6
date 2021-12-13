@@ -56,12 +56,23 @@ module issue_stage import ariane_pkg::*; #(
 
     output logic                                     csr_valid_o,
 
+    // CVXIF
+    //Issue interface
+    output logic                                     x_issue_valid_o,
+    input  logic                                     x_issue_ready_i,
+    output cvxif_pkg::x_issue_req_t                  x_issue_req_o,
+    input  cvxif_pkg::x_issue_resp_t                 x_issue_resp_i,
+    //Commit interface
+    output logic                                     x_commit_valid_o,
+    output cvxif_pkg::x_commit_t                     x_commit_o,
+
     // write back port
     input logic [NR_WB_PORTS-1:0][TRANS_ID_BITS-1:0] trans_id_i,
     input bp_resolve_t                               resolved_branch_i,
     input logic [NR_WB_PORTS-1:0][riscv::XLEN-1:0]   wbdata_i,
-    input exception_t [NR_WB_PORTS-1:0]              ex_ex_i, // exception from execute stage
+    input exception_t [NR_WB_PORTS-1:0]              ex_ex_i, // exception from execute stage or CVXIF offloaded instruction
     input logic [NR_WB_PORTS-1:0]                    wt_valid_i,
+    input logic [4:0]                                cvxif_rd_i,
 
     // commit port
     input  logic [NR_COMMIT_PORTS-1:0][4:0]          waddr_i,
@@ -87,7 +98,7 @@ module issue_stage import ariane_pkg::*; #(
     logic                      rs2_valid_iro_sb;
 
     logic [REG_ADDR_SIZE-1:0]  rs3_iro_sb;
-    logic [FLEN-1:0]           rs3_sb_iro;
+    riscv::xlen_t              rs3_sb_iro;
     logic                      rs3_valid_iro_sb;
 
     scoreboard_entry_t         issue_instr_rename_sb;
@@ -97,6 +108,11 @@ module issue_stage import ariane_pkg::*; #(
     scoreboard_entry_t         issue_instr_sb_iro;
     logic                      issue_instr_valid_sb_iro;
     logic                      issue_ack_iro_sb;
+
+    // ---------------------------------------------------
+    // Issue and Read Operands (IRO) <-> CVXIF
+    // ---------------------------------------------------
+    logic [31:0]  x_issue_req_o_instr;
 
     // ---------------------------------------------------------
     // 1. Re-name
@@ -176,8 +192,44 @@ module issue_stage import ariane_pkg::*; #(
         .alu_valid_o         ( alu_valid_o                     ),
         .branch_valid_o      ( branch_valid_o                  ),
         .csr_valid_o         ( csr_valid_o                     ),
+        .cvxif_valid_o       ( x_issue_valid_o                 ),
+        .cvxif_ready_i       ( x_issue_ready_i                 ),
+        .cvxif_off_instr_o   ( x_issue_req_o_instr             ),
         .mult_valid_o        ( mult_valid_o                    ),
         .*
     );
+
+    //CVXIF combinatorial to generate issue request
+    always_comb begin
+        if (CVXIF_PRESENT) begin
+            x_issue_req_o.instr      = fu_data_o.fu == ariane_pkg::CVXIF && x_issue_valid_o
+                                       ? x_issue_req_o_instr : 32'b0;
+            x_issue_req_o.mode       = 2'b00;
+            x_issue_req_o.id         = fu_data_o.fu == ariane_pkg::CVXIF && x_issue_valid_o
+                                       ? fu_data_o.trans_id  : 0;
+            x_issue_req_o.rs[0]      = fu_data_o.fu == ariane_pkg::CVXIF && x_issue_valid_o
+                                       ? fu_data_o.operand_a : 0;
+            x_issue_req_o.rs[1]      = fu_data_o.fu == ariane_pkg::CVXIF && x_issue_valid_o
+                                       ? fu_data_o.operand_b : 0;
+            x_issue_req_o.rs[2]      = fu_data_o.fu == ariane_pkg::CVXIF && x_issue_valid_o
+                                       ? fu_data_o.imm       : 0;
+            x_issue_req_o.rs_valid   = 3'b111;
+            x_commit_valid_o         = x_issue_valid_o && x_issue_resp_i.accept; // always commit if accepted (commit can be delayed in the spec)
+            x_commit_o.id            = x_issue_req_o.id;
+            x_commit_o.x_commit_kill = 1'b0;
+        end
+        else begin
+            x_issue_req_o.instr      = '0;
+            x_issue_req_o.mode       = '0;
+            x_issue_req_o.id         = '0;
+            x_issue_req_o.rs[0]      = '0;
+            x_issue_req_o.rs[1]      = '0;
+            x_issue_req_o.rs[2]      = '0;
+            x_issue_req_o.rs_valid   = '0;
+            x_commit_valid_o         = '0;
+            x_commit_o.id            = '0;
+            x_commit_o.x_commit_kill = '0;
+        end
+    end
 
 endmodule
