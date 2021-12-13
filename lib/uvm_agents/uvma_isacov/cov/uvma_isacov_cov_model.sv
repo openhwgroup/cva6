@@ -998,7 +998,8 @@ covergroup cg_ci(
     bit rs1_is_signed,
     bit imm_is_signed,
     bit rd_is_signed,
-    bit imm_is_nonzero
+    bit imm_is_nonzero,
+    bit has_rs1
 ) with function sample (
     uvma_isacov_instr_c instr
 );
@@ -1006,9 +1007,10 @@ covergroup cg_ci(
   option.name = name;
 
   cp_rs1_value: coverpoint instr.rs1_value_type {
-    ignore_bins POS_OFF = {POSITIVE} with (!rs1_is_signed);
-    ignore_bins NEG_OFF = {NEGATIVE} with (!rs1_is_signed);
-    ignore_bins NON_ZERO_OFF = {NON_ZERO} with (rs1_is_signed);
+    ignore_bins OFF     = cp_rs1_value    with (!has_rs1);
+    ignore_bins POS_OFF = {POSITIVE}      with (!rs1_is_signed);
+    ignore_bins NEG_OFF = {NEGATIVE}      with (!rs1_is_signed);
+    ignore_bins NON_ZERO_OFF = {NON_ZERO} with ( rs1_is_signed);
   }
 
   cp_imm_value: coverpoint instr.c_imm_value_type {
@@ -1026,6 +1028,7 @@ covergroup cg_ci(
 
   cp_rdrs1: coverpoint instr.c_rdrs1 {
     ignore_bins RD_NOT_ZERO = {0};
+    // TODO rs1_tied_x2
   }
 
   `ISACOV_CP_BITWISE(cp_rd_toggle, instr.rd_value, 1)
@@ -1938,12 +1941,14 @@ function void uvma_isacov_cov_model_c::build_phase(uvm_phase phase);
                               .rs1_is_signed(rs1_is_signed[C_ADDI]),
                               .imm_is_signed(c_imm_is_signed[C_ADDI]),
                               .rd_is_signed(rd_is_signed[C_ADDI]),
-                              .imm_is_nonzero(c_imm_is_nonzero[C_ADDI]));
+                              .imm_is_nonzero(c_imm_is_nonzero[C_ADDI]),
+                              .has_rs1(c_has_rs1[C_ADDI]));
       rv32c_addi16sp_cg = new("rv32c_addi16sp_cg",
                               .rs1_is_signed(rs1_is_signed[C_ADDI16SP]),
                               .imm_is_signed(c_imm_is_signed[C_ADDI16SP]),
                               .rd_is_signed(rd_is_signed[C_ADDI16SP]),
-                              .imm_is_nonzero(c_imm_is_nonzero[C_ADDI16SP]));
+                              .imm_is_nonzero(c_imm_is_nonzero[C_ADDI16SP]),
+                              .has_rs1(c_has_rs1[C_ADDI16SP]));
       rv32c_slli_cg     = new("rv32c_slli_cg",
                               .rs1_is_signed(rs1_is_signed[C_SLLI]),
                               .rd_is_signed(rd_is_signed[C_SLLI]));
@@ -1951,7 +1956,8 @@ function void uvma_isacov_cov_model_c::build_phase(uvm_phase phase);
                               .rs1_is_signed (rs1_is_signed   [C_LWSP]),
                               .imm_is_signed (c_imm_is_signed [C_LWSP]),
                               .rd_is_signed  (rd_is_signed    [C_LWSP]),
-                              .imm_is_nonzero(c_imm_is_nonzero[C_LWSP]));
+                              .imm_is_nonzero(c_imm_is_nonzero[C_LWSP]),
+                              .has_rs1       (c_has_rs1       [C_LWSP]));
       rv32c_li_cg       = new("rv32c_li_cg");
       rv32c_lui_cg      = new("rv32c_lui_cg");
 

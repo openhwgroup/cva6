@@ -474,6 +474,28 @@ bit rd_is_signed[instr_name_t] = '{
   default: 0
 };
 
+bit c_has_rs1[instr_name_t] = '{
+  C_LW   : 1,
+  C_SW   : 1,
+  C_ADDI : 1,
+  C_ADDI16SP:1,
+  C_SRLI : 1,
+  C_SRAI : 1,
+  C_ANDI : 1,
+  C_SUB  : 1,
+  C_XOR  : 1,
+  C_OR   : 1,
+  C_AND  : 1,
+  C_BEQZ : 1,
+  C_BNEZ : 1,
+  C_SLLI : 1,
+  C_JR   : 1,
+  C_MV   : 1,
+  C_JALR : 1,
+  C_ADD  : 1,
+  default: 0
+};
+
 typedef enum {
   ZERO,     // For signed and unsigned values
   NON_ZERO, // For unsigned values
