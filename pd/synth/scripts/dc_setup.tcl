@@ -15,6 +15,8 @@ set TECH                          [getenv TECH_NAME];
 set techno                        [getenv TECH_NAME];
 set FOUNDRY_PATH                  [getenv FOUNDRY_PATH];
 set TARGET_LIBRARY_FILES          [getenv TARGET_LIBRARY_FILES];
+set INPUT_DELAY                   [getenv INPUT_DELAY];
+set OUTPUT_DELAY                  [getenv OUTPUT_DELAY];
 
 set ADDITIONAL_LINK_LIB_FILES     "                                  ";#  Extra link logical libraries not included in TARGET_LIBRARY_FILES
 
@@ -51,7 +53,7 @@ if {$synopsys_program_name == "dc_shell"}  {
   #################################################################################
 
   # Use the set_host_options command to enable multicore optimization to improve runtime.
-  # This feature has special usage and license requirements.  Refer to the 
+  # This feature has special usage and license requirements.  Refer to the
   # "Support for Multicore Technology" section in the Design Compiler User Guide
   # for multicore usage guidelines.
   # Note: This is a DC Ultra feature and is not supported in DC Expert.
@@ -74,25 +76,25 @@ if {$synopsys_program_name == "dc_shell"}  {
     -collapse_name_space -case_insensitive -special verilog \
     -add_dummy_nets \
     -dummy_net_prefix "synp_unconn_%d"
-  
+
   # Eliminate tri-state nets and assign primitives in the output netlist"
   set_app_var verilogout_no_tri true
 
   # Preserve FF with not load used as spare"
-  set_app_var hdlin_preserve_sequential ff+loop_variables  
-  
+  set_app_var hdlin_preserve_sequential ff+loop_variables
+
   ###  Power optim
   set_app_var power_remove_redundant_clock_gates true
   set_app_var power_cg_reconfig_stages true
-  set_app_var compile_clock_gating_through_hierarchy  true 
-  set_app_var power_cg_designware true 
+  set_app_var compile_clock_gating_through_hierarchy  true
+  set_app_var power_cg_designware true
   set_app_var power_cg_derive_related_clock true
   set_app_var do_operand_isolation true
   set_app_var power_low_power_placement true
   set_app_var power_opto_extra_high_dynamic_power_effort true
-  
+
   ### Module name naming style
   set_app_var template_parameter_style "%s"
-  set_app_var template_naming_style "%s" 
+  set_app_var template_naming_style "%s"
 
 }
