@@ -165,6 +165,16 @@ module miss_handler import ariane_pkg::*; import std_cache_pkg::*; #(
         req_fsm_miss_be     = '0;
         req_fsm_miss_req    = ariane_axi::CACHE_LINE_REQ;
         req_fsm_miss_size   = 2'b11;
+        // to AXI bypass
+        req_amo_bypass_valid = 1'b0;
+        req_amo_bypass_type  = ariane_axi::SINGLE_REQ;
+        req_amo_bypass_amo   = ariane_pkg::AMO_NONE;
+        req_amo_bypass_addr  = '0;
+        req_amo_bypass_we    = 1'b0;
+        req_amo_bypass_wdata = '0;
+        req_amo_bypass_be    = '0;
+        req_amo_bypass_size  = 2'b11;
+        req_amo_bypass_id    = 4'b1100;
         // core
         flush_ack_o         = 1'b0;
         miss_o              = 1'b0; // to performance counter
@@ -402,18 +412,18 @@ module miss_handler import ariane_pkg::*; import std_cache_pkg::*; #(
                 end else begin
                     amo_operand_b = amo_req_i.operand_b;
                 end
-                // TODO colluca: write cleaner
+                // align data and byte-enable to correct byte lanes
                 req_amo_bypass_wdata = amo_operand_b;
                 if (amo_req_i.size == 2'b11) begin
-                    // 64b
+                    // 64b transfer
                     req_amo_bypass_be = 8'b11111111;
                 end else begin
-                    // 32b
+                    // 32b transfer
                     if (amo_req_i.operand_a[2:0] == '0) begin
-                        // 64bit aligned
+                        // 64b aligned -> activate lower 4 byte lanes
                         req_amo_bypass_be = 8'b00001111;
                     end else begin
-                        // unaligned
+                        // 64b unaligned -> activate upper 4 byte lanes
                         req_amo_bypass_be = 8'b11110000;
                         req_amo_bypass_wdata = amo_operand_b[31:0] << 32;
                     end

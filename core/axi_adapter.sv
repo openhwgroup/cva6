@@ -62,6 +62,8 @@ module axi_adapter #(
   logic [(DATA_WIDTH/riscv::XLEN)-1:0] addr_offset_d, addr_offset_q;
   logic [AXI_ID_WIDTH-1:0]    id_d, id_q;
   logic [ADDR_INDEX-1:0]      index;
+  // save the atomic operation
+  ariane_pkg::amo_t amo_d, amo_q;
   // "load" atomics response received flag
   logic amo_resp_d, amo_resp_q;
 
@@ -119,6 +121,7 @@ module axi_adapter #(
     cache_line_d  = cache_line_q;
     addr_offset_d = addr_offset_q;
     id_d          = id_q;
+    amo_d         = amo_q;
     amo_resp_d    = amo_resp_q;
     index         = '0;
 
@@ -146,6 +149,8 @@ module axi_adapter #(
                 2'b10: state_d = WAIT_LAST_W_READY;
                 default: state_d = IDLE;
               endcase
+
+              if (axi_resp_i.aw_ready) amo_d = amo_i;
 
             // its a request for the whole cache line
             end else begin
@@ -194,6 +199,7 @@ module axi_adapter #(
         if (axi_resp_i.aw_ready) begin
           gnt_o   = 1'b1;
           state_d = WAIT_B_VALID;
+          amo_d   = amo_i;
         end
       end
 
@@ -269,10 +275,8 @@ module axi_adapter #(
           cnt_d = cnt_q - 1;
         end
 
-        // TODO colluca: check amo_i can be considered stable or
-        //               has to be registered
         // some atomics must wait for read data
-        if (amo_returns_data(amo_i)) begin
+        if (amo_returns_data(amo_q)) begin
           // no data was received yet
           if (amo_resp_q == 1'b0) begin
             // mark data received if r_valid
@@ -288,10 +292,8 @@ module axi_adapter #(
       WAIT_B_VALID: begin
         id_o = axi_resp_i.b.id;
 
-        // TODO colluca: check amo_i can be considered stable or
-        //               has to be registered
         // some atomics must wait for read data
-        if (amo_returns_data(amo_i)) begin
+        if (amo_returns_data(amo_q)) begin
           // no data was received yet
           if (amo_resp_q == 1'b0) begin
             // mark data received if r_valid
@@ -307,10 +309,8 @@ module axi_adapter #(
           valid_o = 1'b1;
           axi_req_o.b_ready = 1'b1;
 
-          // TODO colluca: check amo_i can be considered stable or
-          //               has to be registered
           // some atomics must wait for read data
-          if (amo_returns_data(amo_i) && !amo_resp_q && !axi_resp_i.r_valid) begin
+          if (amo_returns_data(amo_q) && !amo_resp_q && !axi_resp_i.r_valid) begin
             state_d = WAIT_AMO_R_VALID;
           end else begin
             state_d = IDLE;
@@ -390,6 +390,7 @@ module axi_adapter #(
       cache_line_q  <= '0;
       addr_offset_q <= '0;
       id_q          <= '0;
+      amo_q         <= ariane_pkg::AMO_NONE;
       amo_resp_q    <= '0;
     end else begin
       state_q       <= state_d;
@@ -397,6 +398,7 @@ module axi_adapter #(
       cache_line_q  <= cache_line_d;
       addr_offset_q <= addr_offset_d;
       id_q          <= id_d;
+      amo_q         <= amo_d;
       amo_resp_q    <= amo_resp_d;
     end
   end
