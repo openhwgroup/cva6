@@ -190,10 +190,10 @@ class corev_store_fencei_exec_instr_stream extends riscv_load_store_rand_instr_s
     )
     case (instr.instr_name)
       JAL: begin
-        instr.imm_str = "0b";
+        instr.imm_str = "1b";
       end
       BEQ, BNE, BLT, BGE, BLTU, BGEU: begin
-        instr.imm_str = "0b";
+        instr.imm_str = "1b";
         instr.branch_assigned = 1'b1;
       end
     endcase
