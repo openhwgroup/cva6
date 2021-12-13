@@ -684,6 +684,8 @@ module ariane_testharness #(
   ariane_axi_soc::req_t    axi_ariane_req;
   ariane_axi_soc::resp_t   axi_ariane_resp;
   ariane_rvfi_pkg::rvfi_port_t rvfi;
+  cvxif_pkg::cvxif_req_t  cvxif_req;
+  cvxif_pkg::cvxif_resp_t cvxif_resp;
 
   ariane #(
     .ArianeCfg  ( ariane_soc::ArianeSocCfg )
@@ -697,6 +699,9 @@ module ariane_testharness #(
     .time_irq_i           ( timer_irq           ),
 `ifdef RVFI_TRACE
     .rvfi_o               ( rvfi                ),
+`ifdef CVXIF
+    .cvxif_req_o          ( cvxif_req           ),
+    .cvxif_resp_i         ( cvxif_resp          ),
 `endif
 // Disable Debug when simulating with Spike
 `ifdef SPIKE_TANDEM
@@ -713,6 +718,32 @@ module ariane_testharness #(
     .axi_resp_o(axi_ariane_resp),
     .master(slave[0])
   );
+
+`ifdef CVXIF
+  cvxif_example_coprocessor i_cvxif_coprocessor (
+    .clk_i        (clk_i),
+    .rst_ni        (rst_ni),
+    .x_compressed_valid_i ( cvxif_req.x_compressed_valid   ),
+    .x_compressed_ready_o ( cvxif_resp.x_compressed_ready  ),
+    .x_compressed_req_i   ( cvxif_req.x_compressed_req     ),
+    .x_compressed_resp_o  ( cvxif_resp.x_compressed_resp   ),
+    .x_issue_valid_i      ( cvxif_req.x_issue_valid        ),
+    .x_issue_ready_o      ( cvxif_resp.x_issue_ready       ),
+    .x_issue_req_i        ( cvxif_req.x_issue_req          ),
+    .x_issue_resp_o       ( cvxif_resp.x_issue_resp        ),
+    .x_commit_valid_i     ( cvxif_req.x_commit_valid       ),
+    .x_commit_i           ( cvxif_req.x_commit             ),
+    .x_mem_valid_o        ( cvxif_resp.x_mem_valid         ),
+    .x_mem_ready_i        ( cvxif_req.x_mem_ready          ),
+    .x_mem_req_o          ( cvxif_resp.x_mem_req           ),
+    .x_mem_resp_i         ( cvxif_req.x_mem_resp           ),
+    .x_mem_result_valid_i ( cvxif_req.x_mem_result_valid   ),
+    .x_mem_result_i       ( cvxif_req.x_mem_result         ),
+    .x_result_valid_o     ( cvxif_resp.x_result_valid      ),
+    .x_result_ready_i     ( cvxif_req.x_result_ready       ),
+    .x_result_o           ( cvxif_resp.x_result            )
+  );
+`endif
 
   // -------------
   // Simulation Helper Functions

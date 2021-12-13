@@ -53,8 +53,12 @@ ${CVA6_REPO_DIR}/core/include/instr_tracer_pkg.sv
 
 //CVXIF
 ${CVA6_REPO_DIR}/core/include/cvxif_pkg.sv
+${CVA6_REPO_DIR}/corev_apu/cvxif_example/include/instruction_pkg.sv
+${CVA6_REPO_DIR}/corev_apu/cvxif_example/predecoder.sv
+${CVA6_REPO_DIR}/corev_apu/cvxif_example/cvxif_example_coprocessor.sv
 
 // Common Cells
+${CVA6_REPO_DIR}/common/submodules/common_cells/src/cf_math_pkg.sv
 ${CVA6_REPO_DIR}/common/submodules/common_cells/src/fifo_v3.sv
 ${CVA6_REPO_DIR}/common/submodules/common_cells/src/lfsr.sv
 ${CVA6_REPO_DIR}/common/submodules/common_cells/src/lzc.sv
@@ -63,6 +67,11 @@ ${CVA6_REPO_DIR}/common/submodules/common_cells/src/shift_reg.sv
 ${CVA6_REPO_DIR}/common/submodules/common_cells/src/unread.sv
 ${CVA6_REPO_DIR}/common/submodules/common_cells/src/popcount.sv
 ${CVA6_REPO_DIR}/common/submodules/common_cells/src/exp_backoff.sv
+
+// Common Cells dedicated to CVXIF coprocessor example
+${CVA6_REPO_DIR}/common/submodules/common_cells/src/stream_fifo.sv
+${CVA6_REPO_DIR}/common/submodules/common_cells/src/counter.sv
+${CVA6_REPO_DIR}/common/submodules/common_cells/src/delta_counter.sv
 
 // Floating point unit
 ${CVA6_REPO_DIR}/core/fpu/src/fpnew_pkg.sv
