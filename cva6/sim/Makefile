@@ -34,7 +34,7 @@ USERDEFINE      = +define+RVFI_TRACE $(user-define)
 ###############################################################################
 VCS                     = vcs
 ALL_VLOGAN_FLAGS        = $(if $(VERDI), -kdb,) -sverilog -assert svaext $(USERDEFINE) -timescale=1ns/1ns
-ALL_VCS_FLAGS           = $(if $(VERDI), -kdb -debug_access+r -lca,) -full64 -timescale=1ns/1ns
+ALL_VCS_FLAGS           = $(if $(VERDI), -kdb -debug_access+r -lca,) -sverilog -full64 -timescale=1ns/1ns
 VCS_WORK_DIR            = $(CORE_V_VERIF)/cva6/sim/vcs_results/default/vcs.d
 SIMV                    = $(VCS_WORK_DIR)/simv
 
@@ -104,15 +104,11 @@ vcs_uvm_run:
 vcs_gate_comp:
 	@echo "[VCS] Building Model"
 	mkdir -p $(VCS_WORK_DIR)
-	cd $(VCS_WORK_DIR) && vcs $(ALL_UVM_FLAGS) \
-	  -f $(FLIST_CORE)_gate -f $(FLIST_TB) \
-	  -f $(CVA6_UVMT_DIR)/uvmt_cva6.flist \
-	  -top uvmt_cva6_tb
+	cd $(VCS_WORK_DIR) && vcs $(ALL_VCS_FLAGS) -f $(FLIST_CORE)_gate -f $(FLIST_TB)
 
 vcs_gate_run:
 	cp Mem_init.txt $(VCS_WORK_DIR)/
-	cd $(VCS_WORK_DIR)/ && \
-	$(VCS_WORK_DIR)/simv ${ALL_SIMV_UVM_FLAGS} && \
+	cd $(VCS_WORK_DIR)/ && $(VCS_WORK_DIR)/simv && \
 	mv $(VCS_WORK_DIR)/trace_rvfi_hart_00.dasm $(CORE_V_VERIF)/cva6/sim/
 
 vcs_clean_all:
