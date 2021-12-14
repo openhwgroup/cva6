@@ -108,7 +108,7 @@ vcs_gate_comp:
 
 vcs_gate_run:
 	cp Mem_init.txt $(VCS_WORK_DIR)/
-	cd $(VCS_WORK_DIR)/ && $(VCS_WORK_DIR)/simv && \
+	cd $(VCS_WORK_DIR)/ && $(VCS_WORK_DIR)/simv
 	mv $(VCS_WORK_DIR)/trace_rvfi_hart_00.dasm $(CORE_V_VERIF)/cva6/sim/
 
 vcs_clean_all:
