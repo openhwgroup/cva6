@@ -101,6 +101,20 @@ vcs_uvm_run:
 		+firmware=$(CORE_V_VERIF)/cva6/sim/hello-world.hex && \
 	mv $(VCS_WORK_DIR)/trace_rvfi_hart_00.dasm $(CORE_V_VERIF)/cva6/sim/
 
+vcs_gate_comp:
+	@echo "[VCS] Building Model"
+	mkdir -p $(VCS_WORK_DIR)
+	cd $(VCS_WORK_DIR) && vcs $(ALL_UVM_FLAGS) \
+	  -f $(FLIST_CORE)_gate -f $(FLIST_TB) \
+	  -f $(CVA6_UVMT_DIR)/uvmt_cva6.flist \
+	  -top uvmt_cva6_tb
+
+vcs_gate_run:
+	cp Mem_init.txt $(VCS_WORK_DIR)/
+	cd $(VCS_WORK_DIR)/ && \
+	$(VCS_WORK_DIR)/simv ${ALL_SIMV_UVM_FLAGS} && \
+	mv $(VCS_WORK_DIR)/trace_rvfi_hart_00.dasm $(CORE_V_VERIF)/cva6/sim/
+
 vcs_clean_all:
 	@echo "[VCS] Cleanup (entire vcs_work dir)"
 	rm -rf $(CORE_V_VERIF)/cva6/sim/vcs_results/ verdiLog/ simv* *.daidir *.vpd *.db csrc ucli.key vc_hdrs.h novas* inter.fsdb uart
