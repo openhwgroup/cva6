@@ -437,12 +437,10 @@ package ariane_pkg;
 `endif
 
 `ifdef CVXIF
-    localparam bit CVXIF_PRESENT = 1;
+    localparam bit CVXIF_PRESENT = riscv::CVXIF_EN;
 `else
-    localparam bit CVXIF_PRESENT = 0;
+    localparam bit CVXIF_PRESENT = 1b'0;
 `endif
-
-
     // ---------------
     // EX Stage
     // ---------------
