@@ -217,6 +217,9 @@ function string uvma_isacov_instr_c::convert2string();
   if (name == C_ANDI) begin
     instr_str = $sformatf("x%0d, %0d", this.get_addr_rd(), $signed(this.get_data_imm()));
   end
+  if (name == FENCE) begin
+    instr_str = "iorw, iorw";  // Note: This is technically not always true
+  end
 
   // Default printing of just the instruction name
   begin
@@ -380,8 +383,14 @@ function  int  uvma_isacov_instr_c::get_field_imm();
 
   bit [63:0] instr = $signed(this.rvfi.insn);
 
-  // TODO:ropeders implement for 32-bit formats too?
+  // TODO:ropeders implement for 32-bit formats too, or add "c_" to the name
 
+  // Return imm based on specific instruction first
+  if (this.name == C_ADDI16SP) begin
+    return dasm_rvc_addi16sp_imm(instr) >> 4;  // Shift 4 because [9:4] to [5:0]
+  end
+
+  // Return imm based on type
   if (this.itype == CI_TYPE) begin
     return dasm_rvc_imm(instr);
   end
@@ -495,6 +504,12 @@ function  int  uvma_isacov_instr_c::get_data_imm();
   end
   if (this.itype inside {CJ_TYPE} || this.name inside {C_BEQZ, C_BNEZ}) begin
     return {imm, 1'b 0};
+  end
+  if (this.name inside {C_ADDI16SP}) begin
+    return {imm, 4'b 0000};
+  end
+  if (this.name inside {C_LUI}) begin
+    return imm[19:0];  // TODO:ropeders should adhere to "LUI-semantics" or "RVC-semantics"?
   end
 
   return imm;

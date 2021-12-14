@@ -333,13 +333,13 @@ isacov_logdiff:
 	@echo filtering logs...
 		@cat $(ISACOV_TRACELOG)              \
 			| awk -F ' - ' '{print $$2}' \
-			| sed 's/c\./c_/'            \
 			| sed 's/ *#.*//'            \
 			| sed 's/ *<.*//'            \
 			| sed 's/,/, /g'             \
 			| tail -n +4 > trace.tmp
 		@cat $(ISACOV_AGENTLOG) \
 			| awk -F '\t' '{print $$3}' | tr A-Z a-z \
+			| sed 's/_/./'                           \
 			| tail -n +2 > agent.tmp
 	@echo diffing the instruction sequences...
 		@echo saving to $(ISACOV_LOGDIR)/isacov_logdiff
