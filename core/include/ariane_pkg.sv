@@ -436,11 +436,7 @@ package ariane_pkg;
     localparam int unsigned DCACHE_LINE_WIDTH  = 128; // in bit
 `endif
 
-`ifdef CVXIF
     localparam bit CVXIF_PRESENT = riscv::CVXIF_EN;
-`else
-    localparam bit CVXIF_PRESENT = 1b'0;
-`endif
     // ---------------
     // EX Stage
     // ---------------

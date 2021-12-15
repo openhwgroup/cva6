@@ -12,7 +12,6 @@ module cvxif_example_coprocessor import cvxif_pkg::*;
                                  import instruction_pkg::*;(
     input   logic                   clk_i,                      // Clock
     input   logic                   rst_ni,                    // Asynchronous reset active low
-    //
     input   cvxif_req_t             cvxif_req_i,
     output  cvxif_resp_t            cvxif_resp_o
 );

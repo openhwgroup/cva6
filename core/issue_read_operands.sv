@@ -33,7 +33,7 @@ module issue_read_operands import ariane_pkg::*; #(
     input  riscv::xlen_t                           rs2_i,
     input  logic                                   rs2_valid_i,
     output logic [REG_ADDR_SIZE-1:0]               rs3_o,
-    input  rs3_len_t  rs3_i,
+    input  rs3_len_t                               rs3_i,
     input  logic                                   rs3_valid_i,
     // get clobber input
     input  fu_t [2**REG_ADDR_SIZE-1:0]             rd_clobber_gpr_i,
@@ -79,7 +79,7 @@ module issue_read_operands import ariane_pkg::*; #(
     logic stall;   // stall signal, we do not want to fetch any more entries
     logic fu_busy; // functional unit is busy
     riscv::xlen_t    operand_a_regfile, operand_b_regfile;  // operands coming from regfile
-    rs3_len_t operand_c_regfile; // third operand only from fp regfile // deprecated comment
+    rs3_len_t operand_c_regfile; // third operand from fp regfile or gp regfile if NR_RGPR_PORTS == 3
     // output flipflop (ID <-> EX)
     riscv::xlen_t operand_a_n, operand_a_q,
                  operand_b_n, operand_b_q,
@@ -382,7 +382,7 @@ module issue_read_operands import ariane_pkg::*; #(
     logic [NR_COMMIT_PORTS-1:0][riscv::XLEN-1:0] wdata_pack;
     logic [NR_COMMIT_PORTS-1:0]       we_pack;
     assign raddr_pack = NR_RGPR_PORTS == 3 	? {issue_instr_i.result[4:0], issue_instr_i.rs2[4:0], issue_instr_i.rs1[4:0]}
-					                        : {issue_instr_i.rs2[4:0], issue_instr_i.rs1[4:0]};
+                                            : {issue_instr_i.rs2[4:0], issue_instr_i.rs1[4:0]};
     for (genvar i = 0; i < NR_COMMIT_PORTS; i++) begin : gen_write_back_port
         assign waddr_pack[i] = waddr_i[i];
         assign wdata_pack[i] = wdata_i[i];

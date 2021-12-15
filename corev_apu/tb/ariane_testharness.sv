@@ -807,4 +807,3 @@ module ariane_testharness #(
   );
 `endif
 endmodule
-

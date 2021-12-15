@@ -1001,11 +1001,12 @@ module decoder import ariane_pkg::*; (
                     instruction_o.fu      = ALU;
                     instruction_o.rd[4:0] = instr.utype.rd;
                 end
+
                 default: illegal_instr = 1'b1;
             endcase
         end
-        if (is_illegal_i || illegal_instr) begin
-            if (CVXIF_PRESENT) begin
+        if (CVXIF_PRESENT) begin
+            if (is_illegal_i || illegal_instr) begin
                 instruction_o.fu    = CVXIF;
                 instruction_o.rs1   = instr.r4type.rs1;
                 instruction_o.rs2   = instr.r4type.rs2;

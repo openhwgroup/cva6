@@ -57,11 +57,11 @@ module scoreboard #(
 
   // write-back port
   input ariane_pkg::bp_resolve_t                                resolved_branch_i,
-  input logic [NR_WB_PORTS-1:0][ariane_pkg::TRANS_ID_BITS-1:0]  trans_id_i,  // transaction ID at which to write the result back
-  input logic [NR_WB_PORTS-1:0][riscv::XLEN-1:0]                wbdata_i,    // write data in
-  input ariane_pkg::exception_t [NR_WB_PORTS-1:0]               ex_i,        // exception from a functional unit (e.g.: ld/st exception)
+  input logic [NR_WB_PORTS-1:0][ariane_pkg::TRANS_ID_BITS-1:0]  trans_id_i,   // transaction ID at which to write the result back
+  input logic [NR_WB_PORTS-1:0][riscv::XLEN-1:0]                wbdata_i,     // write data in
+  input ariane_pkg::exception_t [NR_WB_PORTS-1:0]               ex_i,         // exception from a functional unit (e.g.: ld/st exception)
   input logic [NR_WB_PORTS-1:0]                                 wt_valid_i,   // data in is valid
-  input logic                                                   cvxif_we_i    // cvxif rd for writeback
+  input logic                                                   cvxif_we_i    // cvxif we for writeback
 );
   localparam int unsigned BITS_ENTRIES = $clog2(NR_ENTRIES);
 
@@ -293,6 +293,7 @@ module scoreboard #(
   assign rs2_valid_o = rs2_valid & ((|rs2_i) | ariane_pkg::is_rs2_fpr(issue_instr_o.op));
   assign rs3_valid_o = ariane_pkg::NR_RGPR_PORTS == 3 ? rs3_valid & ((|rs3_i) | ariane_pkg::is_imm_fpr(issue_instr_o.op)) : rs3_valid;
 
+  // use fixed prio here
   // this implicitly gives higher prio to WB ports
   rr_arb_tree #(
     .NumIn(NR_ENTRIES+NR_WB_PORTS),
@@ -353,7 +354,7 @@ module scoreboard #(
     .idx_o   (             )
   );
 
-  assign rs3_o = rs3[ (ariane_pkg::NR_RGPR_PORTS == 3 ? riscv::XLEN : ariane_pkg::FLEN)-1:0];
+  assign rs3_o = rs3[(ariane_pkg::NR_RGPR_PORTS == 3 ? riscv::XLEN : ariane_pkg::FLEN)-1:0];
 
 
   // sequential process

@@ -47,8 +47,8 @@ module cva6 import ariane_pkg::*; #(
   // Can be left open when formal tracing is not needed.
   output ariane_rvfi_pkg::rvfi_port_t  rvfi_o,
 `endif
-	output cvxif_pkg::cvxif_req_t        cvxif_req_o,
-	input  cvxif_pkg::cvxif_resp_t       cvxif_resp_i,
+  output cvxif_pkg::cvxif_req_t        cvxif_req_o,
+  input  cvxif_pkg::cvxif_resp_t       cvxif_resp_i,
 `ifdef PITON_ARIANE
   // L15 (memory side)
   output wt_cache_pkg::l15_req_t       l15_req_o,
