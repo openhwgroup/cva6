@@ -1015,10 +1015,10 @@ covergroup cg_ci(
   }
 
   cp_imm_value: coverpoint instr.c_imm_value_type {
-    illegal_bins POS_OFF = {POSITIVE} with (!imm_is_signed);
-    illegal_bins NEG_OFF = {NEGATIVE} with (!imm_is_signed);
+    illegal_bins POS_OFF      = {POSITIVE} with (!imm_is_signed);
+    illegal_bins NEG_OFF      = {NEGATIVE} with (!imm_is_signed);
     illegal_bins NON_ZERO_OFF = {NON_ZERO} with (imm_is_signed);
-    illegal_bins ZERO_OFF = {ZERO} with (imm_is_nonzero);
+    ignore_bins  ZERO_OFF     = {ZERO}     with (imm_is_nonzero);  // Not illegal, because of HINT instrs
   }
 
   cp_rd_value: coverpoint instr.rd_value_type {
