@@ -40,7 +40,7 @@ endfunction : new
 
 task uvme_cv32e40p_random_debug_c::rand_delay();
     if (!this.randomize()) begin
-        `uvm_error("RAND_DELAY", "Cannot randomize uvme_cv32e40p_random_debug_c")
+        `uvm_fatal("RAND_DELAY", "Cannot randomize uvme_cv32e40p_random_debug_c")
     end
     #(dly);
 endtask : rand_delay

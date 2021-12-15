@@ -138,7 +138,7 @@ task uvmt_cv32e40p_firmware_test_c::reset_debug();
     @(negedge env_cntxt.clknrst_cntxt.vif.reset_n);
 
     if (!debug_vseq.randomize()) begin
-        `uvm_error("TEST", "Cannot randomize the debug sequence!")
+        `uvm_fatal("TEST", "Cannot randomize the debug sequence!")
     end
     debug_vseq.start(vsequencer);
 
@@ -152,12 +152,12 @@ task uvmt_cv32e40p_firmware_test_c::bootset_debug();
 
     // Delay debug_req_i by up to 35 cycles.Should hit BOOT_SET
     if (!test_randvars.randomize() with { random_int inside {[1:35]}; }) begin
-        `uvm_error("TEST", "Cannot randomize test_randvars for debug_req_delay!")
+        `uvm_fatal("TEST", "Cannot randomize test_randvars for debug_req_delay!")
     end
     repeat(test_randvars.random_int) @(posedge env_cntxt.clknrst_cntxt.vif.clk);
 
     if (!debug_vseq.randomize()) begin
-        `uvm_error("TEST", "Cannot randomize the debug sequence!")
+        `uvm_fatal("TEST", "Cannot randomize the debug sequence!")
     end
     debug_vseq.start(vsequencer);
 
@@ -171,7 +171,7 @@ task uvmt_cv32e40p_firmware_test_c::random_debug();
         repeat (100) @(env_cntxt.debug_cntxt.vif.mon_cb);
         debug_vseq = uvme_cv32e40p_random_debug_c::type_id::create("random_debug_vseqr", vsequencer);
         if (!debug_vseq.randomize()) begin
-           `uvm_error("TEST", "Cannot randomize the debug sequence!")
+           `uvm_fatal("TEST", "Cannot randomize the debug sequence!")
         end
         debug_vseq.start(vsequencer);
         break;

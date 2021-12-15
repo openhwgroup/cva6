@@ -823,8 +823,16 @@ class foo_agent_c extends uvm_agent;
 endclass : foo_agent_c
 ```
 
-5.1.7 Use of random number system functions and methods
-<br><br>
+5.1.7 Randomization results shall be checked and failures shall result in a fatal error
+
+```v
+if (!my_vseq.randomize()) begin
+    `uvm_fatal("TEST", "Cannot randomize my sequence")
+end
+```
+
+5.1.8 Use of random number system functions and methods
+<br>
 Use of $urandom(), $urandom_range(), $random(), $dist_uniform(), $dist_normal(),
 $dist_exponential(), $dist_poisson(), $dist_chi_square(), $dist_t() and
 $dist_erlang() should be avoided because members randomized with these calls

@@ -68,10 +68,8 @@ task uvma_obi_memory_vp_rand_num_seq_c::vp_body(uvma_obi_memory_mon_trn_c mon_tr
    `uvm_create(slv_rsp)
 
    slv_rsp.orig_trn = mon_trn;
-   //slv_rsp.rdata = $urandom();
    if (!this.randomize()) begin
-      `uvm_error("VPRNDSEQ", "Failed to randomize")
-      slv_rsp.rdata = 32'h1234_5678;
+      `uvm_fatal("VPRNDSEQ", "Failed to randomize")
    end
    else begin
       slv_rsp.rdata = this.rdata;
