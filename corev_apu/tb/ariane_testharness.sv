@@ -684,8 +684,6 @@ module ariane_testharness #(
   ariane_axi_soc::req_t    axi_ariane_req;
   ariane_axi_soc::resp_t   axi_ariane_resp;
   ariane_rvfi_pkg::rvfi_port_t rvfi;
-  cvxif_pkg::cvxif_req_t  cvxif_req;
-  cvxif_pkg::cvxif_resp_t cvxif_resp;
 
   ariane #(
     .ArianeCfg  ( ariane_soc::ArianeSocCfg )
@@ -699,10 +697,6 @@ module ariane_testharness #(
     .time_irq_i           ( timer_irq           ),
 `ifdef RVFI_TRACE
     .rvfi_o               ( rvfi                ),
-`endif
-`ifdef CVXIF
-    .cvxif_req_o          ( cvxif_req           ),
-    .cvxif_resp_i         ( cvxif_resp          ),
 `endif
 // Disable Debug when simulating with Spike
 `ifdef SPIKE_TANDEM
@@ -719,15 +713,6 @@ module ariane_testharness #(
     .axi_resp_o(axi_ariane_resp),
     .master(slave[0])
   );
-
-`ifdef CVXIF
-  cvxif_example_coprocessor i_cvxif_coprocessor (
-    .clk_i                ( clk_i                          ),
-    .rst_ni               ( ndmreset_n                     ),
-    .cvxif_req_i          ( cvxif_req                      ),
-    .cvxif_resp_o         ( cvxif_resp                     )
-  );
-`endif
 
   // -------------
   // Simulation Helper Functions

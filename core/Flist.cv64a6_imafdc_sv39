@@ -87,6 +87,7 @@ ${CVA6_REPO_DIR}/core/fpu/src/fpu_div_sqrt_mvp/hdl/preprocess_mvp.sv
 
 // Top-level source files (not necessarily instantiated at the top of the cva6).
 ${CVA6_REPO_DIR}/core/ariane.sv
+${CVA6_REPO_DIR}/core/cva6.sv
 ${CVA6_REPO_DIR}/core/alu.sv
 // Note: depends on fpnew_pkg, above
 ${CVA6_REPO_DIR}/core/fpu_wrap.sv

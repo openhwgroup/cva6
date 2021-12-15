@@ -23,7 +23,7 @@ verilator      ?= verilator
 # traget option
 target-options ?=
 # additional definess
-defines        ?= WT_DCACHE+CVXIF+RVFI_TRACE
+defines        ?= WT_DCACHE+RVFI_TRACE
 # test name for torture runs (binary name)
 test-location  ?= output/test
 # set to either nothing or -log
