@@ -20,19 +20,36 @@
 --->
 
 
-# Suggested Coding Guidelines
+# CORE-V-VERIF Coding Guidelines for SystemVerilog/UVM code
 
 > "Code is read much more often than it is written"
 >
 > ~ pep8
 
-Every company—even a company of one—should have a set of coding guidelines if for no other reason than to maintain consistency and readability. Whether a company chooses something different from what is described here, or picks and chooses from the list below, is entirely up to the company’s needs. The following guidelines have been in use since 2011 at Cavium, and every effort has been made to ensure that the code samples in this text abide by them.
+Every organization — even a company of one — should have a set of coding guidelines if for no other reason than to maintain consistency and readability.
+These guidelines are specific to code developed for design verification using SystemVerilog and the Universal Verification Methodology.
+For RTL code, the OpenHW Group uses the [the lowRISC Verilog coding style guide](https://github.com/lowRISC/style-guides/blob/master/VerilogCodingStyle.md),
+and this may also be used for CORE-V-VERIF code when implementing testbench components from SystemVerilog modules.
+
+The original text of these guidlines is extracted, with permission, from *Advanced UVM*, (c) 2015, 2016 Brian Hunter, who owns all the rights thereto.
 
 1. **General Conventions**
+
+This document uses specific verbs to have specific meaning that is similar, but not identical to, that which is used by the [IEEE Standards Style Manaul](https://mentor.ieee.org/myproject/Public/mytools/draft/styleman.pdf) (section 9).<br>
+* **Shall** indicates a mandatory requirement.
+* **Should** indicates a recommendation may be used interchangibly with the verb **Recommended**.
+* **May** indicates a permissible action, and is sometimes used to suggest ways to fulfill a recommendation.
+* **Can** indicates possibility and/or a capability.
 
 1.1. **Common Header**
 
 1.1.1. All files shall begin with a common header. The initial author, filename, and a brief description shall be filled out as basic documentation.
+All headers shall have an SPDX-License-Identifier comment line such as below:
+```
+// SPDX-License-Identifier: Apache-2.0 WITH SHL-2.0
+```
+Please contract the OpenHW Group for a list of licenses we can accept.
+
 
 1.2. **Indentation**
 
@@ -212,7 +229,14 @@ For example:
   *************************************************************************/
 ```
 
+1.10. **Code blocks**
+
+All code blocks shall be delimited with begin..end keywords.
+
 2. **Verification Kits**
+
+Note: the concept if `Verification Kits` as defined in the `Advanced UVM` textbook is not explicitly supported in CORE-V-VERIF.
+A future reversion of these guidelines will update this section to explain how vkits are implemented in this repo.
 
 2.1. **Organization**
 
@@ -743,7 +767,8 @@ The `UVM_COMPONENT` macro is configured with `UVM_NOCOPY`, `UVM_NOCOMPARE`, and 
 
 A testbench's random configuration variables may control how the testbench is built out, how the DUT is configured, and how random traffic is generated.
 
-Testbench random configuration variables should take advantage of SystemVerilog's powerful constraints and functional coverage as much as possible. They should also be consistently declared from testbench to testbench.
+Testbench random configuration variables should take advantage of SystemVerilog's powerful constraints and functional coverage as much as possible.
+They should also be consistently declared from testbench to testbench.
 
 Tests should constrain random variables through inheritance. Child tests can then control the environment with minimal effort.
 
@@ -798,9 +823,27 @@ class foo_agent_c extends uvm_agent;
 endclass : foo_agent_c
 ```
 
+5.1.7 Use of random number system functions and methods
+<br><br>
+Use of $urandom(), $urandom_range(), $random(), $dist_uniform(), $dist_normal(),
+$dist_exponential(), $dist_poisson(), $dist_chi_square(), $dist_t() and
+$dist_erlang() should be avoided because members randomized with these calls
+cannot be constrained.
+
+This rule may be waived if the randomization of a member using one of these system methods is controlled by a member that is constrainable.
+For example:
+
+```
+    if (cfg.drive_random_rdata) begin
+       slv_mp.drv_slv_cb.rdata <= $urandom();
+    end
+```
+
 5.2. **Test Constraints**
 
-Tests are greatly simplified and highly re-usable when they are primarily composed of configuration and constraint overrides. By instantiating the configuration class as a random field of the base test, derivative tests can add their own constraints and/or disable the base constraints. Disabling constraints is best done by overriding the `randomize_cfg()` function.
+Tests are greatly simplified and highly re-usable when they are primarily composed of configuration and constraint overrides.
+By instantiating the configuration class as a random field of the base test, derivative tests can add their own constraints and/or disable the base constraints.
+Disabling constraints is best done by overriding the `randomize_cfg()` function.
 
 ```v
 class my_test_c extends exer_test_c;
@@ -1075,9 +1118,6 @@ Note that adding `uvm_objects` to the configuration database in this fashion wil
 
 
 ---
-
-Original text extracted from *Advanced UVM*, (c) 2015, 2016 Brian Hunter, who owns all the rights thereto.
-
 
 
 [1]: http://www.naturaldocs.org.

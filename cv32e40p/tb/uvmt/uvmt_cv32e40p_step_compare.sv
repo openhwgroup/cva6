@@ -406,7 +406,7 @@ module uvmt_cv32e40p_step_compare
         3. Compare RTL <-> OVP
     */
     event ev_compare;
-    static integer instruction_count = 0;
+    static int instruction_count = 0;
 
     typedef enum {
         INIT,
