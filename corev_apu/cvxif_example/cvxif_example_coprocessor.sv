@@ -6,12 +6,13 @@
 // You may obtain a copy of the License at https://solderpad.org/licenses/
 //
 // Original Author: Guillaume Chauvon (guillaume.chauvon@thalesgroup.com)
-
+// Example coprocessor adds rs1,rs2(,rs3) together and gives back the result to the CPU via the CoreV-X-Interface.
+// Coprocessor delays the sending of the result depending on result least significant bits.
 
 module cvxif_example_coprocessor import cvxif_pkg::*;
-                                 import instruction_pkg::*;(
+                                 import cvxif_instr_pkg::*;(
     input   logic                   clk_i,                      // Clock
-    input   logic                   rst_ni,                    // Asynchronous reset active low
+    input   logic                   rst_ni,                     // Asynchronous reset active low
     input   cvxif_req_t             cvxif_req_i,
     output  cvxif_resp_t            cvxif_resp_o
 );
@@ -68,24 +69,25 @@ module cvxif_example_coprocessor import cvxif_pkg::*;
   assign x_compressed_resp_o.instr  = '0;
   assign x_compressed_resp_o.accept = '0;
 
-  predecoder #(
-    .NumInstr     ( instruction_pkg::NumInstr      ),
-    .OffloadInstr ( instruction_pkg::OffloadInstr  )
-  ) predecoder_i (
-    .x_issue_req_i    ( x_issue_req_i   ),
-    .x_issue_resp_o   ( x_issue_resp_o  )
+  instr_decoder #(
+    .NbInstr          ( cvxif_instr_pkg::NbInstr    ),
+    .CoproInstr       ( cvxif_instr_pkg::CoproInstr )
+  ) instr_decoder_i (
+    .clk_i            ( clk_i                       ),
+    .x_issue_req_i    ( x_issue_req_i               ),
+    .x_issue_resp_o   ( x_issue_resp_o              )
   );
 
-typedef struct packed {
-  x_issue_req_t  req;
-  x_issue_resp_t resp;
-} x_issue_t;
+  typedef struct packed {
+    x_issue_req_t  req;
+    x_issue_resp_t resp;
+  } x_issue_t;
 
-logic fifo_full, fifo_empty;
-logic x_issue_ready_q;
-logic instr_push, instr_pop;
-x_issue_t  req_i;
-x_issue_t  req_o;
+  logic fifo_full, fifo_empty;
+  logic x_issue_ready_q;
+  logic instr_push, instr_pop;
+  x_issue_t  req_i;
+  x_issue_t  req_o;
 
 
 
@@ -105,24 +107,22 @@ x_issue_t  req_o;
   end
 
   fifo_v3 #(
-      .FALL_THROUGH  (1), //data_o ready and pop in the same cycle
-      .DATA_WIDTH    (64),
-      .DEPTH         (8),
-      .dtype         (x_issue_t)
+      .FALL_THROUGH  ( 1         ), //data_o ready and pop in the same cycle
+      .DATA_WIDTH    ( 64        ),
+      .DEPTH         ( 8         ),
+      .dtype         ( x_issue_t )
     ) fifo_commit_i (
-    .clk_i     ( clk_i   ),
-    .rst_ni    ( rst_ni  ),
-    .flush_i   ( 1'b0    ),
-    .testmode_i( 1'b0    ),
-    .full_o    (fifo_full),
-    .empty_o   ( fifo_empty),
-    .usage_o   (         ),
-
-    .data_i   ( req_i     ),
-    .push_i  ( instr_push        ),
-
-    .data_o   ( req_o  ),
-    .pop_i  ( instr_pop         )
+    .clk_i           ( clk_i      ),
+    .rst_ni          ( rst_ni     ),
+    .flush_i         ( 1'b0       ),
+    .testmode_i      ( 1'b0       ),
+    .full_o          ( fifo_full  ),
+    .empty_o         ( fifo_empty ),
+    .usage_o         (            ),
+    .data_i          ( req_i      ),
+    .push_i          ( instr_push ),
+    .data_o          ( req_o      ),
+    .pop_i           ( instr_pop  )
   );
 
   logic [3:0] c;
@@ -131,13 +131,13 @@ x_issue_t  req_o;
   )counter_i(
     .clk_i      ( clk_i),
     .rst_ni     ( rst_ni),
-    .clear_i    ( ~x_commit_i.x_commit_kill && x_commit_valid_i),
-    .en_i       ( 1'b1),
-    .load_i     ( ),
-    .down_i     ( ),
-    .d_i        ( ),
-    .q_o        (c),
-    .overflow_o ( )
+    .clear_i    ( ~x_commit_i.x_commit_kill && x_commit_valid_i ),
+    .en_i       ( 1'b1 ),
+    .load_i     (      ),
+    .down_i     (      ),
+    .d_i        (      ),
+    .q_o        ( c    ),
+    .overflow_o (      )
   );
 
   always_comb begin

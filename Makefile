@@ -238,7 +238,7 @@ endif
 
 src := $(addprefix $(root-dir), $(src))
 
-copro_src := corev_apu/cvxif_example/include/instruction_pkg.sv \
+copro_src := corev_apu/cvxif_example/include/cvxif_instr_pkg.sv \
              $(wildcard corev_apu/cvxif_example/*.sv)
 copro_src := $(addprefix $(root-dir), $(copro_src))
 

@@ -7,7 +7,7 @@
 //
 // Original Author: Guillaume Chauvon (guillaume.chauvon@thalesgroup.com)
 
-package instruction_pkg;
+package cvxif_instr_pkg;
 
 typedef struct packed {
     logic [31:0]               instr;
@@ -16,8 +16,8 @@ typedef struct packed {
 } copro_issue_resp_t;
 
 // 2 Possible RISCV instructions for Coprocessor
-parameter int unsigned NumInstr = 2;
-parameter copro_issue_resp_t OffloadInstr[NumInstr] = '{
+parameter int unsigned NbInstr = 2;
+parameter copro_issue_resp_t CoproInstr[NbInstr] = '{
   '{
     instr: 32'b 00000_00_00000_00000_0_00_00000_0101011, // custom1 opcode
     mask:  32'b 00000_00_00000_00000_0_00_00000_1111111,

@@ -95,7 +95,6 @@ module issue_read_operands import ariane_pkg::*; #(
     logic       branch_valid_q;
     logic        cvxif_valid_q;
     logic [31:0] cvxif_off_instr_q;
-
     logic [TRANS_ID_BITS-1:0] trans_id_n, trans_id_q;
     fu_op operator_n, operator_q; // operation to perform
     fu_t  fu_n,       fu_q; // functional unit to use
@@ -265,7 +264,7 @@ module issue_read_operands import ariane_pkg::*; #(
         csr_valid_q    <= 1'b0;
         branch_valid_q <= 1'b0;
         cvxif_valid_q  <= 1'b0;
-        cvxif_off_instr_q  <= '0;
+        cvxif_off_instr_q  <= 32'b0;
       end else begin
         alu_valid_q    <= 1'b0;
         lsu_valid_q    <= 1'b0;
@@ -276,7 +275,7 @@ module issue_read_operands import ariane_pkg::*; #(
         csr_valid_q    <= 1'b0;
         branch_valid_q <= 1'b0;
         cvxif_valid_q  <= 1'b0;
-        cvxif_off_instr_q  <= '0;
+        cvxif_off_instr_q  <= 32'b0;
         // Exception pass through:
         // If an exception has occurred simply pass it through
         // we do not want to issue this instruction
@@ -319,7 +318,7 @@ module issue_read_operands import ariane_pkg::*; #(
             csr_valid_q    <= 1'b0;
             branch_valid_q <= 1'b0;
             cvxif_valid_q  <= 1'b0;
-            cvxif_off_instr_q <= '0;
+            cvxif_off_instr_q <= 32'b0;
         end
       end
     end
