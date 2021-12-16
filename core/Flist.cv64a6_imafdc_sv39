@@ -53,6 +53,7 @@ ${CVA6_REPO_DIR}/core/include/instr_tracer_pkg.sv
 
 //CVXIF
 ${CVA6_REPO_DIR}/core/include/cvxif_pkg.sv
+${CVA6_REPO_DIR}/core/cvxif_fu.sv
 
 // Common Cells
 ${CVA6_REPO_DIR}/common/submodules/common_cells/src/fifo_v3.sv

@@ -61,7 +61,7 @@ module scoreboard #(
   input logic [NR_WB_PORTS-1:0][riscv::XLEN-1:0]                wbdata_i,     // write data in
   input ariane_pkg::exception_t [NR_WB_PORTS-1:0]               ex_i,         // exception from a functional unit (e.g.: ld/st exception)
   input logic [NR_WB_PORTS-1:0]                                 wt_valid_i,   // data in is valid
-  input logic                                                   cvxif_we_i    // cvxif we for writeback
+  input logic                                                   x_we_i    // cvxif we for writeback
 );
   localparam int unsigned BITS_ENTRIES = $clog2(NR_ENTRIES);
 
@@ -143,7 +143,7 @@ module scoreboard #(
         // save the target address of a branch (needed for debug in commit stage)
         mem_n[trans_id_i[i]].sbe.bp.predict_address = resolved_branch_i.target_address;
         if (ariane_pkg::CVXIF_PRESENT)
-          if (mem_n[trans_id_i[i]].sbe.fu == ariane_pkg::CVXIF && ~cvxif_we_i)
+          if (mem_n[trans_id_i[i]].sbe.fu == ariane_pkg::CVXIF && ~x_we_i)
             mem_n[trans_id_i[i]].sbe.rd = 5'b0;
         // write the exception back if it is valid
         if (ex_i[i].valid)

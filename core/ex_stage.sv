@@ -78,6 +78,17 @@ module ex_stage import ariane_pkg::*; #(
     output riscv::xlen_t                           fpu_result_o,
     output logic                                   fpu_valid_o,
     output exception_t                             fpu_exception_o,
+    // CoreV-X-Interface
+    input  logic                                   x_valid_i,
+    output logic                                   x_ready_o,
+    input  logic [31:0]                            x_off_instr_i,
+    output logic [TRANS_ID_BITS-1:0]               x_trans_id_o,
+    output exception_t                             x_exception_o,
+    output riscv::xlen_t                           x_result_o,
+    output logic                                   x_valid_o,
+    output logic                                   x_we_o,
+    output cvxif_pkg::cvxif_req_t                  x_req_o,
+    input  cvxif_pkg::cvxif_resp_t                 x_resp_i,
     // Memory Management
     input  logic                                   enable_translation_i,
     input  logic                                   en_ld_st_translation_i,
@@ -317,6 +328,23 @@ module ex_stage import ariane_pkg::*; #(
         .amo_resp_i,
         .pmpcfg_i,
         .pmpaddr_i
+    );
+
+    //CoreV-X-Interface Module
+    cvxif_fu cvxif_fu_i (
+        .clk_i,
+        .rst_ni,
+        .fu_data_i,
+        .x_valid_i,
+        .x_ready_o,
+        .x_off_instr_i,
+        .x_trans_id_o,
+        .x_exception_o,
+        .x_result_o,
+        .x_valid_o,
+        .x_we_o,
+        .x_req_o,
+        .x_resp_i
     );
 
 
