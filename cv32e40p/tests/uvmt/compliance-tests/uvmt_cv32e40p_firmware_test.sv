@@ -16,6 +16,7 @@
 // limitations under the License.
 //
 
+// SPDX-License-Identifier: Apache-2.0 WITH SHL-2.1
 
 
 `ifndef __UVMT_CV32E40P_FIRMWARE_TEST_SV__
@@ -34,18 +35,12 @@
  */
 class uvmt_cv32e40p_firmware_test_c extends uvmt_cv32e40p_base_test_c;
 
-   //constraint env_cfg_cons {
-   //   env_cfg.enabled         == 1;
-   //   env_cfg.is_active       == UVM_ACTIVE;
-   //   env_cfg.trn_log_enabled == 1;
-   //}
-
    constraint test_type_cons {
      test_cfg.tpt == PREEXISTING_SELFCHECKING;
    }
 
-
-   `uvm_component_utils(uvmt_cv32e40p_firmware_test_c)
+   `uvm_component_utils_begin(uvmt_cv32e40p_firmware_test_c)
+   `uvm_object_utils_end
 
    /**
     */
@@ -142,7 +137,9 @@ task uvmt_cv32e40p_firmware_test_c::reset_debug();
     `uvm_info("TEST", "Applying debug_req_i at reset", UVM_NONE);
     @(negedge env_cntxt.clknrst_cntxt.vif.reset_n);
 
-    void'(debug_vseq.randomize());
+    if (!debug_vseq.randomize()) begin
+        `uvm_fatal("TEST", "Cannot randomize the debug sequence!")
+    end
     debug_vseq.start(vsequencer);
 
 endtask
@@ -154,9 +151,14 @@ task uvmt_cv32e40p_firmware_test_c::bootset_debug();
     @(negedge env_cntxt.clknrst_cntxt.vif.reset_n);
 
     // Delay debug_req_i by up to 35 cycles.Should hit BOOT_SET
-    repeat($urandom_range(35,1)) @(posedge env_cntxt.clknrst_cntxt.vif.clk);
+    if (!test_randvars.randomize() with { random_int inside {[1:35]}; }) begin
+        `uvm_fatal("TEST", "Cannot randomize test_randvars for debug_req_delay!")
+    end
+    repeat(test_randvars.random_int) @(posedge env_cntxt.clknrst_cntxt.vif.clk);
 
-    void'(debug_vseq.randomize());
+    if (!debug_vseq.randomize()) begin
+        `uvm_fatal("TEST", "Cannot randomize the debug sequence!")
+    end
     debug_vseq.start(vsequencer);
 
 endtask
@@ -169,7 +171,7 @@ task uvmt_cv32e40p_firmware_test_c::random_debug();
         repeat (100) @(env_cntxt.debug_cntxt.vif.mon_cb);
         debug_vseq = uvme_cv32e40p_random_debug_c::type_id::create("random_debug_vseqr", vsequencer);
         if (!debug_vseq.randomize()) begin
-           `uvm_error("TEST", "Cannot randomize the debug sequence!")
+           `uvm_fatal("TEST", "Cannot randomize the debug sequence!")
         end
         debug_vseq.start(vsequencer);
         break;
@@ -196,6 +198,10 @@ task uvmt_cv32e40p_firmware_test_c::random_fetch_toggle();
     int unsigned fetch_assert_cycles;
     int unsigned fetch_deassert_cycles;
 
+    // SVTB.29.1.3.1 - Banned random number system functions and methods calls
+    // Waive for performance reasons.
+    //@DVT_LINTER_WAIVER_START "MT20211214_4" disable SVTB.29.1.3.1
+
     // Randomly assert for a random number of cycles
     randcase
       9: fetch_assert_cycles = $urandom_range(100_000, 100);
@@ -210,6 +216,8 @@ task uvmt_cv32e40p_firmware_test_c::random_fetch_toggle();
       3: fetch_deassert_cycles = $urandom_range(100, 1);
       1: fetch_deassert_cycles = $urandom_range(3, 1);
     endcase
+    //@DVT_LINTER_WAIVER_END "MT20211214_4"
+
     repeat (fetch_deassert_cycles) @(core_cntrl_vif.drv_cb);
     core_cntrl_vif.go_fetch();
   end

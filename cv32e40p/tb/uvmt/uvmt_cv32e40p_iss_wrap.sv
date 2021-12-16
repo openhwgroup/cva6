@@ -93,8 +93,7 @@ module uvmt_cv32e40p_iss_wrap
                 break;
          end
          if (i==0 ) begin
-            $display("ERROR not : found in split '%0s'", in_s);
-            $finish(-1);
+            `uvm_fatal("ERROR not : found in split '%0s'", in_s);
          end
          s1 = in_s.substr(0,i-1);
          s2 = in_s.substr(i+1,in_s.len()-1);
