@@ -95,6 +95,7 @@ module issue_read_operands import ariane_pkg::*; #(
     logic       branch_valid_q;
     logic        cvxif_valid_q;
     logic [31:0] cvxif_off_instr_q;
+
     logic [TRANS_ID_BITS-1:0] trans_id_n, trans_id_q;
     fu_op operator_n, operator_q; // operation to perform
     fu_t  fu_n,       fu_q; // functional unit to use
@@ -125,8 +126,8 @@ module issue_read_operands import ariane_pkg::*; #(
     assign fpu_valid_o         = fpu_valid_q;
     assign fpu_fmt_o           = fpu_fmt_q;
     assign fpu_rm_o            = fpu_rm_q;
-    assign cvxif_valid_o       = cvxif_valid_q;
-    assign cvxif_off_instr_o   = cvxif_off_instr_q;
+    assign cvxif_valid_o       = CVXIF_PRESENT ? cvxif_valid_q : '0;
+    assign cvxif_off_instr_o   = CVXIF_PRESENT ? cvxif_off_instr_q : '0;
     // ---------------
     // Issue Stage
     // ---------------
@@ -192,9 +193,7 @@ module issue_read_operands import ariane_pkg::*; #(
             end
         end
 
-    // check clobbered gpr for OFFLOADED instruction only.
-    // Disclaimer : Used but not fully verified.
-    // This might need a change to be generic for every instruction.
+    // Only check clobbered gpr for OFFLOADED instruction
         if (is_imm_fpr(issue_instr_i.op) ? rd_clobber_fpr_i[issue_instr_i.result[REG_ADDR_SIZE-1:0]] != NONE
                      : issue_instr_i.op == OFFLOAD && NR_RGPR_PORTS == 3 ? rd_clobber_gpr_i[issue_instr_i.result[REG_ADDR_SIZE-1:0]] != NONE : 0) begin
             // if the operand is available, forward it. CSRs don't write to/from FPR so no need to check
@@ -263,8 +262,6 @@ module issue_read_operands import ariane_pkg::*; #(
         fpu_rm_q       <= 3'b0;
         csr_valid_q    <= 1'b0;
         branch_valid_q <= 1'b0;
-        cvxif_valid_q  <= 1'b0;
-        cvxif_off_instr_q  <= 32'b0;
       end else begin
         alu_valid_q    <= 1'b0;
         lsu_valid_q    <= 1'b0;
@@ -274,8 +271,6 @@ module issue_read_operands import ariane_pkg::*; #(
         fpu_rm_q       <= 3'b0;
         csr_valid_q    <= 1'b0;
         branch_valid_q <= 1'b0;
-        cvxif_valid_q  <= 1'b0;
-        cvxif_off_instr_q  <= 32'b0;
         // Exception pass through:
         // If an exception has occurred simply pass it through
         // we do not want to issue this instruction
@@ -301,10 +296,6 @@ module issue_read_operands import ariane_pkg::*; #(
                     lsu_valid_q    <= 1'b1;
                 CSR:
                     csr_valid_q    <= 1'b1;
-                CVXIF: begin
-                    cvxif_valid_q       <= 1'b1;
-                    cvxif_off_instr_q   <= orig_instr;
-                end
                 default:;
             endcase
         end
@@ -317,11 +308,36 @@ module issue_read_operands import ariane_pkg::*; #(
             fpu_valid_q    <= 1'b0;
             csr_valid_q    <= 1'b0;
             branch_valid_q <= 1'b0;
-            cvxif_valid_q  <= 1'b0;
-            cvxif_off_instr_q <= 32'b0;
         end
       end
     end
+
+    generate
+      if (CVXIF_PRESENT) begin
+        always_ff @(posedge clk_i or negedge rst_ni) begin
+          if (!rst_ni) begin
+              cvxif_valid_q  <= 1'b0;
+              cvxif_off_instr_q  <= 32'b0;
+          end else begin
+              cvxif_valid_q  <= 1'b0;
+              cvxif_off_instr_q  <= 32'b0;
+          end
+          if (!issue_instr_i.ex.valid && issue_instr_valid_i && issue_ack_o) begin
+              case (issue_instr_i.fu)
+              CVXIF: begin
+                  cvxif_valid_q       <= 1'b1;
+                  cvxif_off_instr_q   <= orig_instr;
+              end
+              default:;
+              endcase
+          end
+          if (flush_i) begin
+              cvxif_valid_q  <= 1'b0;
+              cvxif_off_instr_q <= 32'b0;
+          end
+        end
+      end
+    endgenerate
 
     // We can issue an instruction if we do not detect that any other instruction is writing the same
     // destination register.
@@ -380,8 +396,8 @@ module issue_read_operands import ariane_pkg::*; #(
     logic [NR_COMMIT_PORTS-1:0][4:0]  waddr_pack;
     logic [NR_COMMIT_PORTS-1:0][riscv::XLEN-1:0] wdata_pack;
     logic [NR_COMMIT_PORTS-1:0]       we_pack;
-    assign raddr_pack = NR_RGPR_PORTS == 3 	? {issue_instr_i.result[4:0], issue_instr_i.rs2[4:0], issue_instr_i.rs1[4:0]}
-                                            : {issue_instr_i.rs2[4:0], issue_instr_i.rs1[4:0]};
+    assign raddr_pack = NR_RGPR_PORTS == 3 ? {issue_instr_i.result[4:0], issue_instr_i.rs2[4:0], issue_instr_i.rs1[4:0]}
+                                           : {issue_instr_i.rs2[4:0], issue_instr_i.rs1[4:0]};
     for (genvar i = 0; i < NR_COMMIT_PORTS; i++) begin : gen_write_back_port
         assign waddr_pack[i] = waddr_i[i];
         assign wdata_pack[i] = wdata_i[i];

@@ -57,11 +57,11 @@ module scoreboard #(
 
   // write-back port
   input ariane_pkg::bp_resolve_t                                resolved_branch_i,
-  input logic [NR_WB_PORTS-1:0][ariane_pkg::TRANS_ID_BITS-1:0]  trans_id_i,   // transaction ID at which to write the result back
-  input logic [NR_WB_PORTS-1:0][riscv::XLEN-1:0]                wbdata_i,     // write data in
-  input ariane_pkg::exception_t [NR_WB_PORTS-1:0]               ex_i,         // exception from a functional unit (e.g.: ld/st exception)
-  input logic [NR_WB_PORTS-1:0]                                 wt_valid_i,   // data in is valid
-  input logic                                                   x_we_i    // cvxif we for writeback
+  input logic [NR_WB_PORTS-1:0][ariane_pkg::TRANS_ID_BITS-1:0]  trans_id_i,  // transaction ID at which to write the result back
+  input logic [NR_WB_PORTS-1:0][riscv::XLEN-1:0]                wbdata_i,    // write data in
+  input ariane_pkg::exception_t [NR_WB_PORTS-1:0]               ex_i,        // exception from a functional unit (e.g.: ld/st exception)
+  input logic [NR_WB_PORTS-1:0]                                 wt_valid_i,  // data in is valid
+  input logic                                                   x_we_i       // cvxif we for writeback
 );
   localparam int unsigned BITS_ENTRIES = $clog2(NR_ENTRIES);
 
@@ -142,9 +142,8 @@ module scoreboard #(
         mem_n[trans_id_i[i]].sbe.result = wbdata_i[i];
         // save the target address of a branch (needed for debug in commit stage)
         mem_n[trans_id_i[i]].sbe.bp.predict_address = resolved_branch_i.target_address;
-        if (ariane_pkg::CVXIF_PRESENT)
-          if (mem_n[trans_id_i[i]].sbe.fu == ariane_pkg::CVXIF && ~x_we_i)
-            mem_n[trans_id_i[i]].sbe.rd = 5'b0;
+        if (mem_n[trans_id_i[i]].sbe.fu == ariane_pkg::CVXIF && ~x_we_i)
+          mem_n[trans_id_i[i]].sbe.rd = 5'b0;
         // write the exception back if it is valid
         if (ex_i[i].valid)
           mem_n[trans_id_i[i]].sbe.ex = ex_i[i];

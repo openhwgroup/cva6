@@ -56,12 +56,12 @@ module ariane import ariane_pkg::*; #(
   ) i_cva6 (
     .clk_i                ( clk_i                     ),
     .rst_ni               ( rst_ni                    ),
-    .boot_addr_i          ( 64'h0000_0000_8000_0000   ), //ariane_soc::ROMBase
-    .hart_id_i            ( 64'h0000_0000_0000_0000   ), //seriously? 2**64 harts?!?
-    .irq_i                ( 2'b00 /*irqs*/            ),
-    .ipi_i                ( 1'b0  /*ipi*/             ),
-    .time_irq_i           ( 1'b0  /*timer_irq*/       ),
-    .debug_req_i          ( 1'b0                      ),
+    .boot_addr_i          ( boot_addr_i               ),
+    .hart_id_i            ( hart_id_i                 ),
+    .irq_i                ( irq_i                     ),
+    .ipi_i                ( ipi_i                     ),
+    .time_irq_i           ( time_irq_i                ),
+    .debug_req_i          ( debug_req_i               ),
 `ifdef FIRESIME_TRACE
     .trace_o              ( trace_o                   ),
 `endif
@@ -78,11 +78,15 @@ module ariane import ariane_pkg::*; #(
     .axi_resp_i           ( axi_resp_i                )
   );
 
-  cvxif_example_coprocessor i_cvxif_coprocessor (
-    .clk_i                ( clk_i                          ),
-    .rst_ni               ( rst_ni                         ),
-    .cvxif_req_i          ( cvxif_req                      ),
-    .cvxif_resp_o         ( cvxif_resp                     )
-  );
+generate
+  if (ariane_pkg::CVXIF_PRESENT) begin
+    cvxif_example_coprocessor i_cvxif_coprocessor (
+      .clk_i                ( clk_i                          ),
+      .rst_ni               ( rst_ni                         ),
+      .cvxif_req_i          ( cvxif_req                      ),
+      .cvxif_resp_o         ( cvxif_resp                     )
+    );
+  end
+endgenerate
 
 endmodule // ariane

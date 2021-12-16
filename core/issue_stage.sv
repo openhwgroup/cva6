@@ -105,11 +105,6 @@ module issue_stage import ariane_pkg::*; #(
     logic                      issue_instr_valid_sb_iro;
     logic                      issue_ack_iro_sb;
 
-    // ---------------------------------------------------
-    // Issue and Read Operands (IRO) <-> CVXIF
-    // ---------------------------------------------------
-    logic [31:0]  x_issue_req_o_instr;
-
     // ---------------------------------------------------------
     // 1. Re-name
     // ---------------------------------------------------------

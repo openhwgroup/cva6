@@ -10,7 +10,7 @@
 //
 // Author: Florian Zaruba, ETH Zurich
 // Date: 19.03.2017
-// Description: Ariane Top-level module
+// Description: CVA6 Top-level module
 
 `ifdef DROMAJO
 import "DPI-C" function void dromajo_trap(int     hart_id,
@@ -148,12 +148,6 @@ module cva6 import ariane_pkg::*; #(
   logic                     x_issue_valid_id_ex;
   logic                     x_issue_ready_ex_id;
   logic [31:0]              x_off_instr_id_ex;
-
-  // Used in other functionalities of the cvxif specification (not implemented yet)
-  // logic cvxif_loadstore;
-  // logic cvxif_possible_exc;
-
-
   // --------------
   // EX <-> COMMIT
   // --------------
@@ -367,7 +361,7 @@ module cva6 import ariane_pkg::*; #(
     .wbdata_i                   ( {flu_result_ex_id,    load_result_ex_id,    store_result_ex_id,       fpu_result_ex_id, x_result_ex_id}),
     .ex_ex_i                    ( {flu_exception_ex_id, load_exception_ex_id, store_exception_ex_id, fpu_exception_ex_id, x_exception_ex_id}),
     .wt_valid_i                 ( {flu_valid_ex_id,     load_valid_ex_id,     store_valid_ex_id,         fpu_valid_ex_id, x_valid_ex_id}),
-    .x_we_i                 ( x_we_ex_id               ),
+    .x_we_i                     ( x_we_ex_id               ),
 
     .waddr_i                    ( waddr_commit_id              ),
     .wdata_i                    ( wdata_commit_id              ),
@@ -446,16 +440,16 @@ module cva6 import ariane_pkg::*; #(
     .amo_req_o              ( amo_req                     ),
     .amo_resp_i             ( amo_resp                    ),
     // CoreV-X-Interface
-    .x_valid_i          ( x_issue_valid_id_ex             ),
-    .x_ready_o          ( x_issue_ready_ex_id             ),
-    .x_off_instr_i      ( x_off_instr_id_ex               ),
-    .x_trans_id_o       ( x_trans_id_ex_id                ),
-    .x_exception_o      ( x_exception_ex_id               ),
-    .x_result_o         ( x_result_ex_id                  ),
-    .x_valid_o          ( x_valid_ex_id                   ),
-    .x_we_o             ( x_we_ex_id                      ),
-    .x_req_o            ( cvxif_req_o                     ),
-    .x_resp_i           ( cvxif_resp_i                    ),
+    .x_valid_i              ( x_issue_valid_id_ex         ),
+    .x_ready_o              ( x_issue_ready_ex_id         ),
+    .x_off_instr_i          ( x_off_instr_id_ex           ),
+    .x_trans_id_o           ( x_trans_id_ex_id            ),
+    .x_exception_o          ( x_exception_ex_id           ),
+    .x_result_o             ( x_result_ex_id              ),
+    .x_valid_o              ( x_valid_ex_id               ),
+    .x_we_o                 ( x_we_ex_id                  ),
+    .cvxif_req_o            ( cvxif_req_o                   ),
+    .cvxif_resp_i           ( cvxif_resp_i                  ),
     // Performance counters
     .itlb_miss_o            ( itlb_miss_ex_perf           ),
     .dtlb_miss_o            ( dtlb_miss_ex_perf           ),

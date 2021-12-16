@@ -25,47 +25,47 @@ module cvxif_fu import ariane_pkg::*; (
     output logic                              x_valid_o,
     output logic                              x_we_o,
     //to coprocessor
-    output cvxif_pkg::cvxif_req_t             x_req_o,
-    input  cvxif_pkg::cvxif_resp_t            x_resp_i
+    output cvxif_pkg::cvxif_req_t             cvxif_req_o,
+    input  cvxif_pkg::cvxif_resp_t            cvxif_resp_i
 );
 
     always_comb begin
-      x_req_o = '0;
-      x_req_o.x_result_ready = 1;
-      x_ready_o = x_resp_i.x_issue_ready;
+      cvxif_req_o = '0;
+      cvxif_req_o.x_result_ready = 1'b1;
+      x_ready_o = cvxif_resp_i.x_issue_ready;
       if (x_valid_i) begin
-        x_req_o.x_issue_valid          = x_valid_i;
-        x_req_o.x_issue_req.instr      = x_off_instr_i;
-        x_req_o.x_issue_req.id         = fu_data_i.trans_id;
-        x_req_o.x_issue_req.rs[0]      = fu_data_i.operand_a;
-        x_req_o.x_issue_req.rs[1]      = fu_data_i.operand_b;
+        cvxif_req_o.x_issue_valid          = x_valid_i;
+        cvxif_req_o.x_issue_req.instr      = x_off_instr_i;
+        cvxif_req_o.x_issue_req.id         = fu_data_i.trans_id;
+        cvxif_req_o.x_issue_req.rs[0]      = fu_data_i.operand_a;
+        cvxif_req_o.x_issue_req.rs[1]      = fu_data_i.operand_b;
         if (cvxif_pkg::X_NUM_RS == 3)
-          x_req_o.x_issue_req.rs[2]    = fu_data_i.imm;
-        x_req_o.x_issue_req.rs_valid   = cvxif_pkg::X_NUM_RS == 3 ? 3'b111 : 2'b11;
-        x_req_o.x_commit_valid         = x_valid_i;
-        x_req_o.x_commit.id            = fu_data_i.trans_id;
-        x_req_o.x_commit.x_commit_kill = 1'b0;
+          cvxif_req_o.x_issue_req.rs[2]    = fu_data_i.imm;
+        cvxif_req_o.x_issue_req.rs_valid   = cvxif_pkg::X_NUM_RS == 3 ? 3'b111 : 2'b11;
+        cvxif_req_o.x_commit_valid         = x_valid_i;
+        cvxif_req_o.x_commit.id            = fu_data_i.trans_id;
+        cvxif_req_o.x_commit.x_commit_kill = 1'b0;
       end
     end
 
     always_comb begin
-      if (~x_resp_i.x_issue_resp.accept && x_req_o.x_issue_valid && x_resp_i.x_issue_ready) begin
-          x_trans_id_o          = x_req_o.x_issue_req.id;
+      if (~cvxif_resp_i.x_issue_resp.accept && cvxif_req_o.x_issue_valid && cvxif_resp_i.x_issue_ready) begin
+          x_trans_id_o          = cvxif_req_o.x_issue_req.id;
           x_result_o            = 0;
           x_valid_o             = 1;
           x_exception_o.cause   = riscv::ILLEGAL_INSTR;
           x_exception_o.valid   = 1;
-          x_exception_o.tval    = x_req_o.x_issue_req.instr;
+          x_exception_o.tval    = cvxif_req_o.x_issue_req.instr;
           x_we_o                = '0;
       end
       else begin
-          x_valid_o             = x_resp_i.x_result_valid;
-          x_trans_id_o          = x_valid_o ? x_resp_i.x_result.id : '0;
-          x_result_o            = x_valid_o ? x_resp_i.x_result.data : '0;
-          x_exception_o.cause   = x_valid_o ? x_resp_i.x_result.exccode : '0;
-          x_exception_o.valid   = x_valid_o ? x_resp_i.x_result.exc : '0;
+          x_valid_o             = cvxif_resp_i.x_result_valid; //Read result only when CVXIF is enabled
+          x_trans_id_o          = x_valid_o ? cvxif_resp_i.x_result.id : '0;
+          x_result_o            = x_valid_o ? cvxif_resp_i.x_result.data : '0;
+          x_exception_o.cause   = x_valid_o ? cvxif_resp_i.x_result.exccode : '0;
+          x_exception_o.valid   = x_valid_o ? cvxif_resp_i.x_result.exc : '0;
           x_exception_o.tval    = '0;
-          x_we_o                = x_valid_o ? x_resp_i.x_result.we : '0;
+          x_we_o                = x_valid_o ? cvxif_resp_i.x_result.we : '0;
       end
     end
 
