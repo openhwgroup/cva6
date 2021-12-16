@@ -118,7 +118,6 @@ class uvma_isacov_instr_c#(int ILEN=DEFAULT_ILEN,
   extern function bit is_branch_taken();
 
   extern function instr_value_t              get_instr_value_type(bit[31:0] value, int unsigned width, bit is_signed);
-  extern function instr_value_t              get_imm_value_type();
   extern function int                        get_field_rd();
   extern function int                        get_field_rs1();
   extern function int                        get_field_rs2();
@@ -218,7 +217,7 @@ function string uvma_isacov_instr_c::convert2string();
     instr_str = $sformatf("x%0d, %0d", this.get_addr_rd(), $signed(this.get_data_imm()));
   end
   if (name == FENCE) begin
-    instr_str = "iorw, iorw";  // Note: This is technically not always true
+    instr_str = "iorw, iorw";  // Note: If later found necessary, add support for `fence` arguments other than "iorw"
   end
 
   // Default printing of just the instruction name
@@ -370,13 +369,6 @@ function instr_value_t uvma_isacov_instr_c::get_instr_value_type(bit[31:0] value
   return NON_ZERO;
 
 endfunction : get_instr_value_type
-
-
-function  instr_value_t  uvma_isacov_instr_c::get_imm_value_type();
-
-  return ZERO;  // TODO:ropeders actually derive from imm, based on specific instr
-
-endfunction : get_imm_value_type
 
 
 function  int  uvma_isacov_instr_c::get_field_imm();

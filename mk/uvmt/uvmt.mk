@@ -321,26 +321,27 @@ embench: $(EMBENCH_PKG)
 #   This checks that sampling went correctly without false positives/negatives.
 
 ISACOV_LOGDIR = $(SIM_CFG_RESULTS)/$(TEST)/$(RUN_INDEX)
-ISACOV_TRACELOG = $(ISACOV_LOGDIR)/uvm_test_top.env.rvfi_agent.trn.log
-ISACOV_AGENTLOG = $(ISACOV_LOGDIR)/uvm_test_top.env.isacov_agent.trn.log
+ISACOV_RVFILOG = $(ISACOV_LOGDIR)/uvm_test_top.env.rvfi_agent.trn.log
+ISACOV_COVERAGELOG = $(ISACOV_LOGDIR)/uvm_test_top.env.isacov_agent.trn.log
 
 isacov_logdiff:
+	@echo isacov_logdiff:
 	@echo checking that env/dirs/files are as expected...
 		@printenv TEST > /dev/null || (echo specify TEST; false)
 		@ls $(ISACOV_LOGDIR) > /dev/null
-		@ls $(ISACOV_TRACELOG) > /dev/null
-		@ls $(ISACOV_AGENTLOG) > /dev/null
-	@echo filtering logs...
-		@cat $(ISACOV_TRACELOG)              \
-			| awk -F ' - ' '{print $$2}' \
-			| sed 's/ *#.*//'            \
-			| sed 's/ *<.*//'            \
-			| sed 's/,/, /g'             \
-			| tail -n +4 > trace.tmp
-		@cat $(ISACOV_AGENTLOG) \
-			| awk -F '\t' '{print $$3}' | tr A-Z a-z \
-			| sed 's/_/./'                           \
-			| tail -n +2 > agent.tmp
+		@ls $(ISACOV_RVFILOG) > /dev/null
+		@ls $(ISACOV_COVERAGELOG) > /dev/null
+	@echo extracting assembly code from logs...
+		@cat $(ISACOV_RVFILOG)                                                      \
+			| awk -F ' - ' '{print $$2}' `#discard everything but the assembly` \
+			| sed 's/ *#.*//'            `#discard comments`                    \
+			| sed 's/ *<.*//'            `#discard symbol information`          \
+			| sed 's/,/, /g'             `#add space after commas`              \
+			| tail -n +4 > trace.tmp     `#don't include banner`
+		@cat $(ISACOV_COVERAGELOG)                       \
+			| awk -F '\t' '{print $$3}' `#discard everything but the assembly` \
+			| sed 's/_/./'              `#convert "c_addi" to "c.addi" etc`    \
+			| tail -n +2 > agent.tmp    `#don't include banner`
 	@echo diffing the instruction sequences...
 		@echo saving to $(ISACOV_LOGDIR)/isacov_logdiff
 		@rm -rf $(ISACOV_LOGDIR)/isacov_logdiff

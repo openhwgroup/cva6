@@ -1126,7 +1126,7 @@ covergroup cg_css(
     ignore_bins NON_ZERO_OFF = {NON_ZERO} with (rs2_is_signed);
   }
 
-  cp_imm_value: coverpoint instr.get_imm_value_type() {
+  cp_imm_value: coverpoint instr.c_imm_value_type {
     ignore_bins POS_OFF = {POSITIVE} with (!imm_is_signed);
     ignore_bins NEG_OFF = {NEGATIVE} with (!imm_is_signed);
     ignore_bins NON_ZERO_OFF = {NON_ZERO} with (imm_is_signed);

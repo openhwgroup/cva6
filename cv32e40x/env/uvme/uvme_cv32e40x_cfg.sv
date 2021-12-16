@@ -215,23 +215,22 @@ class uvme_cv32e40x_cfg_c extends uvma_core_cntrl_cfg_c;
       if (trn_log_enabled) {
          // Setting a reasonable set of logs
          clknrst_cfg.trn_log_enabled           == 0;
-         interrupt_cfg.trn_log_enabled         == 0;
          debug_cfg.trn_log_enabled             == 0;
-         obi_memory_instr_cfg.trn_log_enabled  == 1;
+         interrupt_cfg.trn_log_enabled         == 0;
+         isacov_cfg.trn_log_enabled            == 0;
          obi_memory_data_cfg.trn_log_enabled   == 1;
+         obi_memory_instr_cfg.trn_log_enabled  == 1;
          rvfi_cfg.trn_log_enabled              == 1;
          rvvi_cfg.trn_log_enabled              == 1;
-         isacov_cfg.trn_log_enabled            == 0;
       } else {
-         isacov_cfg.trn_log_enabled            == 0;
          clknrst_cfg.trn_log_enabled           == 0;
-         interrupt_cfg.trn_log_enabled         == 0;
          debug_cfg.trn_log_enabled             == 0;
-         obi_memory_instr_cfg.trn_log_enabled  == 0;
+         interrupt_cfg.trn_log_enabled         == 0;
+         isacov_cfg.trn_log_enabled            == 0;
          obi_memory_data_cfg.trn_log_enabled   == 0;
+         obi_memory_instr_cfg.trn_log_enabled  == 0;
          rvfi_cfg.trn_log_enabled              == 0;
          rvvi_cfg.trn_log_enabled              == 0;
-         isacov_cfg.trn_log_enabled            == 0;
       }
 
       if (cov_model_enabled) {

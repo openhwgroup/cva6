@@ -503,8 +503,6 @@ typedef enum {
   NEGATIVE  // For signed value
 } instr_value_t;  // TODO:ropeders should be "value_type_t"?
 
-typedef instr_value_t instr_value_t_queue[$];
-
 // Package level methods to map instruction to extension
 function instr_ext_t get_instr_ext(instr_name_t name);
   if (name inside
