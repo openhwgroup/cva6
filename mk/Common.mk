@@ -259,24 +259,24 @@ OVP_MODEL_DPI   = $(DV_OVPM_MODEL)/bin/Linux64/imperas_CV32.dpi.so
 #
 GNU_SW_TOOLCHAIN    ?= /opt/gnu
 GNU_VENDOR          ?= unknown
-GNU_MARCH           ?= rv32imc
+GNU_MARCH           ?= $(call RESOLVE_FLAG2,$(CFG_GNU_MARCH),rv32imc)
 GNU_CC              ?= gcc
 COREV_SW_TOOLCHAIN  ?= /opt/corev
 COREV_VENDOR        ?= corev
-COREV_MARCH         ?= rv32imc
+COREV_MARCH         ?= $(call RESOLVE_FLAG2,$(CFG_COREV_MARCH),rv32imc)
 COREV_CC            ?= gcc
 PULP_SW_TOOLCHAIN   ?= /opt/pulp
 PULP_VENDOR         ?= unknown
-PULP_MARCH          ?= rv32imcxpulpv2
+PULP_MARCH          ?= $(call RESOLVE_FLAG2,$(CFG_PULP_MARCH),rv32imcxpulpv2)
 PULP_CC             ?= gcc
 LLVM_SW_TOOLCHAIN   ?= /opt/clang
 LLVM_VENDOR         ?= unknown
-LLVM_MARCH          ?= rv32imc
+LLVM_MARCH          ?= $(call RESOLVE_FLAG2,$(CFG_LLVM_MARCH),rv32imc)
 LLVM_CC             ?= cc
 
-CV_SW_TOOLCHAIN  ?= /opt/riscv
-CV_SW_VENDOR     ?= unknown
-CV_SW_MARCH      ?= rv32imc
+CV_SW_TOOLCHAIN     ?= /opt/riscv
+CV_SW_VENDOR        ?= unknown
+CV_SW_MARCH         ?= $(call RESOLVE_FLAG2,$(CFG_CV_SW_MARCH),rv32imc)
 
 GNU_YES          = $(call IS_YES,$(GNU))
 PULP_YES         = $(call IS_YES,$(PULP))
