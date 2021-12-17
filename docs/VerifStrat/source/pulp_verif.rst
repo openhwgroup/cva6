@@ -60,15 +60,11 @@ CVA6. This environment will re-use many of the components developed for
 the CV32E verification environment, and will have the same ability to
 run the RISC-V Compliance test-suite.
 
-.. _ri5cy:
-
 RI5CY
 -----
 
 The following is a discussion of the verification environment, testbench
 and testcases developed for RI5CY.
-
-.. _ri5cy_testbench:
 
 RI5CY Testbench
 ~~~~~~~~~~~~~~~
@@ -290,8 +286,6 @@ transition to the UVM environment. The RI5CY environment can be
 maintained as a tool for software developers to try things out, a tool
 for quick-and-easy bug reproduction and a platform for members of the
 open-source community restricted to the use of open-source tools.
-
-.. _ariane:
 
 Ariane
 ------

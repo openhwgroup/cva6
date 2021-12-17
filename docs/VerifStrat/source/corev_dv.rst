@@ -54,7 +54,7 @@ Since each core's verification environment is likely to use a core-specific BSP,
 
 Below is simplifed view of the core-v-verif directory tree showing the locations of riscv-dv and the base corev-dv extensions plus an example of core-specific extensions for the CV32E40P.
 
-::
+..
  $(CORE_V_VERIF)
     ├── docs
     ├── ...

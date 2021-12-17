@@ -24,11 +24,20 @@ CORE-V-VERIF Quick Start Guide
 Many people who come to `core-v-verif <https://github.com/openhwgroup/core-v-verif>`_ for the first time
 are anxious to 'get something running' and this section is written to satisfy that itch.
 
-A good place to start is the CV32E40P core testbench since the CV32E40P is mature, and the core testbench is very simple.
+Note: in several places in this chapter a reference is made to $CORE_V_VERIF.
+This is used as short hand for the absolute path to your local working directory.
+You will not need to set this shell environment variable yourself.
+
+A good place to start is the CV32E40P core testbench since the CV32E40P is mature, and the core testbench is very simple and runs with open-source tools.
 You will need:
 
-1. A Linux machine (core-v-verif has been successfully run under Ubuntu, Debian and CentOS)
-2. Lots of python3 plug-ins.
+1. A Linux machine (core-v-verif has been successfully run under Ubuntu, Debian and CentOS).
+2. Python3 and a set of plug-ins. The current plug-in list is kept in `$CORE_V_VERIF/bin/requirements.txt`.
+   The easiest way to get these requirements installed on your machine is::
+
+   $ cd $CORE_V_VERIF/bin
+   $ pip install -r requirements.txt
+
 3. A GCC cross-compiler (aka "the `Toolchain <https://github.com/openhwgroup/core-v-verif/blob/master/cv32e40p/sim/TOOLCHAIN.md#core-v-toolchain>`_")
 4. `Verilator <https://veripool.org/guide/latest/install.html>`_.
 
@@ -38,7 +47,7 @@ Once the above is in place type the following::
     $ cd core-v-verif/cv32e40p/sim/core
     $ make
 
-The above will clone a version of the CV32E40P core RTL from its repository, compile it and the core testbench using Verilator and run the 'hello-world' test-program.
+The above will compile the RTL and the core testbench using Verilator and run the 'hello-world' test-program.
 The simulation run should produce the following::
 
     HELLO WORLD!!!
@@ -57,26 +66,30 @@ Where is the RTL?
 -----------------
 
 As core-v-verif is a single repository for the verification of several different CORE-V cores, you will not find the RTL here.
-Each CORE-V core is managed in its own repository, and is cloned into $CORE_V_VERIF/cores/<core_name> by the Makefiles, as needed.
+Each CORE-V core is managed in its own repository, and is automatically cloned into $CORE_V_VERIF/cores/<core_name> by the Makefiles, as needed.
+If you have successfully run the hello-world test above, then you may have noticed that the RTL was cloned to $CORE_V_VERIF/cores/cv32e40p/rtl (have a look!).
 
 UVM
 ---
 
+Up to this point, the discussion has been about the "core" testbench, which is intended as demonstration vehicle only.
 The primary verification environments implemented in core-v-verif are all based on the UVM.
+The UVM enviroment for CV32E40P is completely separate from the core testbench and uses a different set of Makefiles.
+
 In order to use the UVM environments you will need items 1, 2 and 3 from the list above, plus a SystemVerilog simulator capable of supporting UVM and the Imperas OVPsim Instruction Set Simulator (ISS).
 With these in place you can do the following::
 
     $ git clone https://github.com/openhwgroup/core-v-verif.git
     $ cd core-v-verif/cv32e40p/sim/uvmt
-    $ make test TEST=hello-world SIMULATOR=<xrun|vcs|vsim|riveria|dsim>
+    $ make test TEST=hello-world CV_SIMULATOR=<xrun|vcs|vsim|riveria|dsim>
 
-The above will clone a version of the CV32E40P core RTL from its repository, compile it and the UVM testbench using the selected simulator and run the 'hello-world' test-program.
-Note that this is the same test-program as was used in the Verilator example above.
-The simulation run will produce similar results, with lots of additional UVM messaging thrown in for good measure.
+The above will compile the RTL and the UVM testbench using the selected simulator and run the 'hello-world' test-program.
+Note that this is the same test-program as was used in the core testbench example above.
+The simulation run will produce similar results, with lots of additional UVM messaging.
 
 If you do not have access to the Imperas ISS you can disable it at run-time::
 
-    $ make test TEST=hello-world SIMULATOR=<xrun|vcs|vsim|riveria|dsim> USE_ISS=NO
+    $ make test TEST=hello-world CV_SIMULATOR=<xrun|vcs|vsim|riveria|dsim> USE_ISS=NO
 
 Why UVM?
 ~~~~~~~~
@@ -88,11 +101,11 @@ Do I need an ISS?
 ~~~~~~~~~~~~~~~~~
 
 The short answer is an emphatic **yes**.
-Core-v-verif uses an ISS as a reference model of the CORE-V core (the Device Under Test).
+Core-v-verif uses an Instruction Set Simulator (ISS) as a reference model of the CORE-V core (the Device Under Test).
 A key feature of the core-v-verif UVM environments is that the state of the DUT is compared to the state of the reference model after each instruction is retired.
 Without a comparison to a reference model, the pass/fail status of a given simulation is mostly vacuous.
 
-There are two popular options for RISC-V ISSs, Spike and Imperas OVPsim.
+There are two popular options for a RISC-V ISS, Spike and Imperas OVPsim.
 At the time of this writting (2021-12-07) core-v-verif supports Imperas OVPsim.
 A contribution which integrated another reference model into core-v-verif would be welcome.
 
@@ -101,7 +114,7 @@ Doing More in CORE-V-VERIF
 
 As far as is practical, core-v-verif maintains "in place" documentation.
 That is, most directries will have a `README.md` that provides information relavent to that directory and/or its sub-directories.
-GitHub renders these to HTML automatically, and so this section of the Verification Strategy will point you to a lot of this type of content.
+GitHub renders these to HTML automatically, and so this document will point you to a lot of this type of content.
 
 At the top-level of core-v-verif, there is a subdirectory for each supported core.
 All of the verification code specific to that core will be in this directory.
@@ -109,8 +122,8 @@ Look at the README in `cv32e40p` to get a sense of the directory structure of th
 The structure of the other cores will be similar, but need not be identical.
 
 The cv32e40p sub-tree supports a simple "core" testbench and a complete UVM verification environment.
-Partial instructions to run the core testbench are provided above; see the README at `cv32e40p/sim/core` for full details.
-To run the CV32E40P UVM environment, go to `cv32e40p/sim/uvmt` and read the README.
+Partial instructions to run the core testbench are provided above; see the README at `$CORE_V_VERIF/cv32e40p/sim/core` for full details.
+To run the CV32E40P UVM environment, go to `$CORE_V_VERIF/cv32e40p/sim/uvmt` and read the README.
 
 This chapter uses the CV32E40P as its example, but there are equivalent READMEs in directories for the other supported cores.
 
@@ -118,7 +131,7 @@ Supported Simulators
 ~~~~~~~~~~~~~~~~~~~~
 
 It is a goal of core-v-verif to support all known SystemVerilog 1800-2017 compliant simulators.
-The Makefiles for the UVM environments have a variable `SIMULATOR` which is used to select the simulator used to compile and run a testcase.
+The Makefiles for the UVM environments have a variable `CV_SIMULATOR` which is used to select the simulator used to compile and run a testcase.
 So you can run hello-world with Cadence Xcelium like this::
 
     $ make test TEST=hello-world SIMULATOR=xrun
@@ -132,6 +145,16 @@ The variable is used to select one of a set of simulator-specific Makefiles that
 Note that core-v-verif tries to support all simulators and this requires support from OpenHW Group members.
 From time to time a Makefile for a specific simulator will not see a lot of use and will inevidibly suffer from bit-rot.
 If you notice an issue with a simulator-specific Makefile, please do raise an issue.
+
+Verifying other Cores
+~~~~~~~~~~~~~~~~~~~~~
+
+At the time of this writting (2021-12-17), core-v-verif supports verification of multiple CORE-V cores:
+
+* **CV32E40P**: UVM environment is stable and v1.0.0 is complete.  Work on v2.0.0 has started.  A simple "core" testbench which can be run with open-source tools is available.
+* **CV32E40X**: UVM environment is stable, and verification is on-going.
+* **CV32E40S**: UVM environment is stable, and verification is on-going.
+* **CVA6**: UVM environment is in the early stages of development.
 
 CV32E40P Directory Tree (simplified)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~

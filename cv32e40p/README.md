@@ -12,3 +12,5 @@ Non-CV32E40P-specific verification components used in this verification environm
 
 There are README files in each directory with additional information.
 
+## Getting Started
+Check out the Quick Start Guide in the [CORE-V-VERIF Verification Strategy](https://core-v-docs-verif-strat.readthedocs.io/en/latest/).

@@ -34,7 +34,7 @@ More news is available in the [archive](https://github.com/openhwgroup/core-v-ve
 ## Getting Started
 First, have a look at the [OpenHW Group's website](https://www.openhwgroup.org) to learn a bit more about who we are and what we are doing.
 <br>
-Reading the [CORE-V-VERIF Verification Strategy](https://core-v-docs-verif-strat.readthedocs.io/en/latest/) is strongly recommended.
+Check out the Quick Start Guide in the [CORE-V-VERIF Verification Strategy](https://core-v-docs-verif-strat.readthedocs.io/en/latest/).
 
 <!--
 ### Getting started with CV32E40P
