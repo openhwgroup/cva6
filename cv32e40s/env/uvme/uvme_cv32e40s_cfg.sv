@@ -15,13 +15,13 @@
 // limitations under the License.
 
 
-`ifndef __UVME_CV32E40X_CFG_SV__
-`define __UVME_CV32E40X_CFG_SV__
+`ifndef __UVME_CV32E40S_CFG_SV__
+`define __UVME_CV32E40S_CFG_SV__
 
 
 /**
  * Object encapsulating all parameters for creating, connecting and running
- * CV32E40X environment (uvme_cv32e40s_env_c) components.
+ * CV32E40S environment (uvme_cv32e40s_env_c) components.
  */
 class uvme_cv32e40s_cfg_c extends uvma_core_cntrl_cfg_c;
 
@@ -409,7 +409,7 @@ function bit uvme_cv32e40s_cfg_c::is_csr_check_disabled(string name);
 
    // Fatal error if passed a CSR check which is non-existent
    if (!csr_name2addr.exists(name)) begin
-      `uvm_fatal("CV32E40XCFG", $sformatf("CSR [%s] does not exist", name));
+      `uvm_fatal("CV32E40SCFG", $sformatf("CSR [%s] does not exist", name));
    end
 
    return disable_csr_check_mask[csr_name2addr[name]];

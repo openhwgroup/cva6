@@ -14,8 +14,8 @@
 // limitations under the License.
 
 
-`ifndef __UVME_CV32E40X_CORE_SB_SV__
-`define __UVME_CV32E40X_CORE_SB_SV__
+`ifndef __UVME_CV32E40S_CORE_SB_SV__
+`define __UVME_CV32E40S_CORE_SB_SV__
 
 `uvm_analysis_imp_decl(_core_sb_rvfi_instr)
 `uvm_analysis_imp_decl(_core_sb_rvvi_state)
@@ -384,4 +384,4 @@ function void uvme_cv32e40s_core_sb_c::check_csr(uvma_rvfi_instr_seq_item_c#(ILE
 
 endfunction : check_csr
 
-`endif // __UVME_CV32E40X_CORE_SB_SV_
+`endif // __UVME_CV32E40S_CORE_SB_SV_

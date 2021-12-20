@@ -16,8 +16,8 @@
 // SPDX-License-Identifier: Apache-2.0 WITH SHL-2.0
 
 
-`ifndef __UVME_CV32E40X_BUSERR_SB_SV__
-`define __UVME_CV32E40X_BUSERR_SB_SV__
+`ifndef __UVME_CV32E40S_BUSERR_SB_SV__
+`define __UVME_CV32E40S_BUSERR_SB_SV__
 
 
 `uvm_analysis_imp_decl(_obid)  // D-side OBI
@@ -282,4 +282,4 @@ function void uvme_cv32e40s_buserr_sb_c::add_to_err_queue(uvma_obi_memory_mon_tr
 endfunction : add_to_err_queue
 
 
-`endif  // __UVME_CV32E40X_BUSERR_SB_SV__
+`endif  // __UVME_CV32E40S_BUSERR_SB_SV__
