@@ -37,7 +37,12 @@ module uvmt_cva6_tb;
 
    // Agent interfaces
    uvma_clknrst_if              clknrst_if(); // clock and resets from the clknrst agent
+      uvma_cvxif_if                cvxif_if
+                                        (.clk(clknrst_if.clk)); // cvxif from the cvxif agent
 
+  bind uvmt_cva6_dut_wrap
+       uvma_cvxif_assert            cvxif_assert(.cvxif_assert(cvxif_if),
+                                                       .clk(clknrst_if.clk));
    // DUT Wrapper Interfaces
    uvmt_rvfi_if                     rvfi_if(
                                                  .rvfi_o()
@@ -54,6 +59,7 @@ module uvmt_cva6_tb;
      .NUM_WORDS         (2**25)
    ) cva6_dut_wrap (
                     .clknrst_if(clknrst_if),
+                    .cvxif_if  (cvxif_if),
                     .tb_exit_o(),
                     .rvfi_o(rvfi_if.rvfi_o)
                     );
@@ -68,8 +74,9 @@ module uvmt_cva6_tb;
      $timeformat(-9, 3, " ns", 8);
 
      // Add interfaces handles to uvm_config_db
-     uvm_config_db#(virtual uvma_clknrst_if             )::set(.cntxt(null), .inst_name("*.env.clknrst_agent"), .field_name("vif"),        .value(clknrst_if));
-     uvm_config_db#(virtual uvmt_rvfi_if                    )::set(.cntxt(null), .inst_name("*"), .field_name("rvfi_vif"),            .value(rvfi_if));
+     uvm_config_db#(virtual uvma_clknrst_if )::set(.cntxt(null), .inst_name("*.env.clknrst_agent"), .field_name("vif"),       .value(clknrst_if));
+     uvm_config_db#(virtual uvma_cvxif_if   )::set(null,         .inst_name("*"),                   .field_name("cvxif_vif"), .value(cvxif_if)  );
+     uvm_config_db#(virtual uvmt_rvfi_if    )::set(.cntxt(null), .inst_name("*"),                   .field_name("rvfi_vif"),  .value(rvfi_if));
 
      // DUT and ENV parameters
      uvm_config_db#(int)::set(.cntxt(null), .inst_name("*"), .field_name("ENV_PARAM_INSTR_ADDR_WIDTH"),  .value(ENV_PARAM_INSTR_ADDR_WIDTH) );

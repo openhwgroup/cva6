@@ -42,6 +42,7 @@ package uvme_cva6_pkg;
    import uvml_sb_pkg     ::*;
    import uvml_trn_pkg    ::*;
    import uvma_clknrst_pkg::*;
+   import uvma_cvxif_pkg::*;
 
    // Constants / Structs / Enums
    `include "uvme_cva6_constants.sv"
