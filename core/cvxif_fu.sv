@@ -39,8 +39,9 @@ module cvxif_fu import ariane_pkg::*; (
         cvxif_req_o.x_issue_req.id         = fu_data_i.trans_id;
         cvxif_req_o.x_issue_req.rs[0]      = fu_data_i.operand_a;
         cvxif_req_o.x_issue_req.rs[1]      = fu_data_i.operand_b;
-        if (cvxif_pkg::X_NUM_RS == 3)
+        if (cvxif_pkg::X_NUM_RS == 3) begin
           cvxif_req_o.x_issue_req.rs[2]    = fu_data_i.imm;
+        end
         cvxif_req_o.x_issue_req.rs_valid   = cvxif_pkg::X_NUM_RS == 3 ? 3'b111 : 2'b11;
         cvxif_req_o.x_commit_valid         = x_valid_i;
         cvxif_req_o.x_commit.id            = fu_data_i.trans_id;
@@ -57,8 +58,7 @@ module cvxif_fu import ariane_pkg::*; (
           x_exception_o.valid   = 1;
           x_exception_o.tval    = cvxif_req_o.x_issue_req.instr;
           x_we_o                = '0;
-      end
-      else begin
+      end else begin
           x_valid_o             = cvxif_resp_i.x_result_valid; //Read result only when CVXIF is enabled
           x_trans_id_o          = x_valid_o ? cvxif_resp_i.x_result.id : '0;
           x_result_o            = x_valid_o ? cvxif_resp_i.x_result.data : '0;

@@ -78,8 +78,7 @@ module ariane import ariane_pkg::*; #(
     .axi_resp_i           ( axi_resp_i                )
   );
 
-generate
-  if (ariane_pkg::CVXIF_PRESENT) begin
+  if (ariane_pkg::CVXIF_PRESENT) begin : gen_example_coprocessor
     cvxif_example_coprocessor i_cvxif_coprocessor (
       .clk_i                ( clk_i                          ),
       .rst_ni               ( rst_ni                         ),
@@ -87,6 +86,5 @@ generate
       .cvxif_resp_o         ( cvxif_resp                     )
     );
   end
-endgenerate
 
 endmodule // ariane

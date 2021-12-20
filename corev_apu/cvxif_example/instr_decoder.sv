@@ -15,7 +15,6 @@ module instr_decoder import cvxif_pkg::*; #(
     input   logic              clk_i,
     input   x_issue_req_t      x_issue_req_i,
     output  x_issue_resp_t     x_issue_resp_o
-
 );
 
   logic [NbInstr-1:0] sel;

@@ -107,28 +107,28 @@ module cvxif_example_coprocessor import cvxif_pkg::*;
   end
 
   fifo_v3 #(
-      .FALL_THROUGH  ( 1         ), //data_o ready and pop in the same cycle
-      .DATA_WIDTH    ( 64        ),
-      .DEPTH         ( 8         ),
-      .dtype         ( x_issue_t )
+    .FALL_THROUGH ( 1         ), //data_o ready and pop in the same cycle
+    .DATA_WIDTH   ( 64        ),
+    .DEPTH        ( 8         ),
+    .dtype        ( x_issue_t )
     ) fifo_commit_i (
-    .clk_i           ( clk_i      ),
-    .rst_ni          ( rst_ni     ),
-    .flush_i         ( 1'b0       ),
-    .testmode_i      ( 1'b0       ),
-    .full_o          ( fifo_full  ),
-    .empty_o         ( fifo_empty ),
-    .usage_o         (            ),
-    .data_i          ( req_i      ),
-    .push_i          ( instr_push ),
-    .data_o          ( req_o      ),
-    .pop_i           ( instr_pop  )
+    .clk_i        ( clk_i      ),
+    .rst_ni       ( rst_ni     ),
+    .flush_i      ( 1'b0       ),
+    .testmode_i   ( 1'b0       ),
+    .full_o       ( fifo_full  ),
+    .empty_o      ( fifo_empty ),
+    .usage_o      (            ),
+    .data_i       ( req_i      ),
+    .push_i       ( instr_push ),
+    .data_o       ( req_o      ),
+    .pop_i        ( instr_pop  )
   );
 
   logic [3:0] c;
   counter #(
     .WIDTH(4)
-  )counter_i(
+  ) counter_i(
     .clk_i      ( clk_i),
     .rst_ni     ( rst_ni),
     .clear_i    ( ~x_commit_i.x_commit_kill && x_commit_valid_i ),

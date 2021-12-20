@@ -330,33 +330,31 @@ module ex_stage import ariane_pkg::*; #(
         .pmpaddr_i
     );
 
-    generate
-        if (CVXIF_PRESENT) begin : cvxif_gen
-            fu_data_t cvxif_data;
-            assign cvxif_data  = x_valid_i ? fu_data_i  : '0;
-            cvxif_fu cvxif_fu_i (
-                .clk_i,
-                .rst_ni,
-                .fu_data_i,
-                .x_valid_i,
-                .x_ready_o,
-                .x_off_instr_i,
-                .x_trans_id_o,
-                .x_exception_o,
-                .x_result_o,
-                .x_valid_o,
-                .x_we_o,
-                .cvxif_req_o,
-                .cvxif_resp_i
-            );
-        end else begin : no_cvxif_gen
-            assign cvxif_req_o   = '0;
-            assign x_trans_id_o  = '0;
-            assign x_exception_o = '0;
-            assign x_result_o    = '0;
-            assign x_valid_o     = '0;
-        end
-    endgenerate
+    if (CVXIF_PRESENT) begin : gen_cvxif
+        fu_data_t cvxif_data;
+        assign cvxif_data  = x_valid_i ? fu_data_i  : '0;
+        cvxif_fu cvxif_fu_i (
+            .clk_i,
+            .rst_ni,
+            .fu_data_i,
+            .x_valid_i,
+            .x_ready_o,
+            .x_off_instr_i,
+            .x_trans_id_o,
+            .x_exception_o,
+            .x_result_o,
+            .x_valid_o,
+            .x_we_o,
+            .cvxif_req_o,
+            .cvxif_resp_i
+        );
+    end else begin : gen_no_cvxif
+        assign cvxif_req_o   = '0;
+        assign x_trans_id_o  = '0;
+        assign x_exception_o = '0;
+        assign x_result_o    = '0;
+        assign x_valid_o     = '0;
+    end
 
 	always_ff @(posedge clk_i or negedge rst_ni) begin
 	    if (~rst_ni) begin

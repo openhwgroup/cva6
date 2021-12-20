@@ -142,8 +142,9 @@ module scoreboard #(
         mem_n[trans_id_i[i]].sbe.result = wbdata_i[i];
         // save the target address of a branch (needed for debug in commit stage)
         mem_n[trans_id_i[i]].sbe.bp.predict_address = resolved_branch_i.target_address;
-        if (mem_n[trans_id_i[i]].sbe.fu == ariane_pkg::CVXIF && ~x_we_i)
+        if (mem_n[trans_id_i[i]].sbe.fu == ariane_pkg::CVXIF && ~x_we_i) begin
           mem_n[trans_id_i[i]].sbe.rd = 5'b0;
+        end
         // write the exception back if it is valid
         if (ex_i[i].valid)
           mem_n[trans_id_i[i]].sbe.ex = ex_i[i];
@@ -353,7 +354,11 @@ module scoreboard #(
     .idx_o   (             )
   );
 
-  assign rs3_o = rs3[(ariane_pkg::NR_RGPR_PORTS == 3 ? riscv::XLEN : ariane_pkg::FLEN)-1:0];
+  if (ariane_pkg::NR_RGPR_PORTS == 3) begin : gen_gp_three_port
+      assign rs3_o = rs3[riscv::XLEN-1:0];
+  end else begin : gen_fp_three_port
+      assign rs3_o = rs3[ariane_pkg::FLEN-1:0];
+  end
 
 
   // sequential process
