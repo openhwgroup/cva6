@@ -312,22 +312,20 @@ module issue_read_operands import ariane_pkg::*; #(
       end
     end
 
-    generate
-      if (CVXIF_PRESENT) begin
-        always_ff @(posedge clk_i or negedge rst_ni) begin
-          if (!rst_ni) begin
-              cvxif_valid_q  <= 1'b0;
-              cvxif_off_instr_q  <= 32'b0;
-          end else begin
-              cvxif_valid_q  <= 1'b0;
-              cvxif_off_instr_q  <= 32'b0;
-          end
+    if (CVXIF_PRESENT) begin
+      always_ff @(posedge clk_i or negedge rst_ni) begin
+        if (!rst_ni) begin
+          cvxif_valid_q  <= 1'b0;
+          cvxif_off_instr_q  <= 32'b0;
+        end else begin
+          cvxif_valid_q  <= 1'b0;
+          cvxif_off_instr_q  <= 32'b0;
           if (!issue_instr_i.ex.valid && issue_instr_valid_i && issue_ack_o) begin
               case (issue_instr_i.fu)
-              CVXIF: begin
-                  cvxif_valid_q       <= 1'b1;
-                  cvxif_off_instr_q   <= orig_instr;
-              end
+                  CVXIF: begin
+                      cvxif_valid_q       <= 1'b1;
+                      cvxif_off_instr_q   <= orig_instr;
+                  end
               default:;
               endcase
           end
@@ -337,7 +335,7 @@ module issue_read_operands import ariane_pkg::*; #(
           end
         end
       end
-    endgenerate
+    end
 
     // We can issue an instruction if we do not detect that any other instruction is writing the same
     // destination register.
@@ -488,6 +486,11 @@ module issue_read_operands import ariane_pkg::*; #(
 
     //pragma translate_off
     `ifndef VERILATOR
+    initial begin
+        assert (NR_RGPR_PORTS == 2 || (NR_RGPR_PORTS == 3 && CVXIF_PRESENT))
+        else $fatal(1, "If CVXIF is enable, ariane regfile can have either 2 or 3 read ports. Else it has 2 read ports.");
+    end
+
      assert property (
         @(posedge clk_i) (branch_valid_q) |-> (!$isunknown(operand_a_q) && !$isunknown(operand_b_q)))
         else $warning ("Got unknown value in one of the operands");
