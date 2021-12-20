@@ -34,7 +34,7 @@ USERDEFINE      = +define+RVFI_TRACE $(user-define)
 ###############################################################################
 VCS                     = vcs
 ALL_VLOGAN_FLAGS        = $(if $(VERDI), -kdb,) -sverilog -assert svaext $(USERDEFINE) -timescale=1ns/1ns
-ALL_VCS_FLAGS           = $(if $(VERDI), -kdb -debug_access+r -lca,) -sverilog -full64 -timescale=1ns/1ns
+ALL_VCS_FLAGS           = $(if $(VERDI), -kdb -debug_access+all -lca,) -sverilog -full64 -timescale=1ns/1ns
 VCS_WORK_DIR            = $(CORE_V_VERIF)/cva6/sim/vcs_results/default/vcs.d
 SIMV                    = $(VCS_WORK_DIR)/simv
 
@@ -162,4 +162,3 @@ help:
 	@echo "Clean-up targets:"
 	@echo "   make clean_all   : Deletes ALL generated files"
 	@echo "Support for other simulators on the ToDo list..."
-
