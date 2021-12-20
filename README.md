@@ -140,13 +140,24 @@ make sim elf-bin=$RISCV/riscv64-unknown-elf/bin/pk target-options=hello.elf  bat
 
 We currently only provide support for the [Genesys 2 board](https://reference.digilentinc.com/reference/programmable-logic/genesys-2/reference-manual). We provide pre-build bitstream and memory configuration files for the Genesys 2 [here](https://github.com/openhwgroup/cva6/releases).
 
-Tested on Vivado 2018.2. The FPGA currently contains the following peripherals:
+
+Tested on Vivado 2020.1. The FPGA currently contains the following peripherals:
 
 - DDR3 memory controller
 - SPI controller to conncet to an SDCard
 - Ethernet controller
 - JTAG port (see debugging section below)
 - Bootrom containing zero stage bootloader and device tree.
+
+If you want to generate bitstream for the 64 bits variant of CVA6  --> `CV64A6`, you can run the following command:
+```
+make fpga
+```
+Ortherwise, if you want to generate bitstream for the 32 bits variant of CVA6  -->  `CV32A6`, you can run the following command:
+```
+make fpga variant=32
+```
+
 
 ![](docs/_static/fpga_bd.png)
 
@@ -164,7 +175,7 @@ Tested on Vivado 2018.2. The FPGA currently contains the following peripherals:
 
 ## Preparing the SD Card
 
-The first stage bootloader will boot from SD Card by default. Get yourself a suitable SD Card (we use [this](https://www.amazon.com/Kingston-Digital-Mobility-MBLY10G2-32GB/dp/B00519BEQO) one). Either grab a pre-built Linux image from [here](https://github.com/openhwgroup/cva6-sdk/releases) or generate the Linux image yourself following the README in the [ariane-sdk repository](https://github.com/pulp-platform/ariane-sdk). Prepare the SD Card by following the "Booting from SD card" section in the ariane-sdk repository.
+The first stage bootloader will boot from SD Card by default. Get yourself a suitable SD Card (we use [this](https://www.amazon.com/Kingston-Digital-Mobility-MBLY10G2-32GB/dp/B00519BEQO) one). Either grab a pre-built Linux image from [here](https://github.com/openhwgroup/cva6-sdk/releases) or generate the Linux image yourself following the README in the [cva6-sdk repository](https://github.com/openhwgroup/cva6-sdk). Prepare the SD Card by following the "Booting from SD card" section in the ariane-sdk repository.
 
 Connect a terminal to the USB serial device opened by the FTDI chip e.g.:
 ```
