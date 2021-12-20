@@ -81,7 +81,7 @@ ALL_UVM_FLAGS           = -lca -sverilog +incdir+/opt/synopsys/vcs-mx/O-2018.09-
 	  -assert svaext -race=all -ignore unique_checks -full64 -q +incdir+/opt/synopsys/vcs-mx/O-2018.09-SP1-1/etc/uvm/src \
 	  +incdir+$(CORE_V_VERIF)/$(CV_CORE_LC)/env/uvme +incdir+$(CORE_V_VERIF)/$(CV_CORE_LC)/tb/uvmt \
 	  $(USERDEFINE) $(if $(VERDI), -debug_access+all -kdb,)
-ALL_SIMV_UVM_FLAGS      = -licwait 20 -l vcs-hello-world.log -cm_name hello-world +ntb_random_seed=1 \
+ALL_SIMV_UVM_FLAGS      = -licwait 20 -l +ntb_random_seed=1 \
 		-sv_lib $(CORE_V_VERIF)/lib/dpi_dasm/lib/Linux64/libdpi_dasm +signature=I-ADD-01.signature_output \
 		+UVM_TESTNAME=uvmt_cva6_firmware_test_c $(if $(VERDI), -gui,)
 
@@ -97,8 +97,7 @@ vcs_uvm_run:
 	cp Mem_init.txt $(VCS_WORK_DIR)/
 	cd $(VCS_WORK_DIR)/ && \
 	$(VCS_WORK_DIR)/simv ${ALL_SIMV_UVM_FLAGS} \
-		+elf_file=$(CORE_V_VERIF)/cva6/sim/hello-world.elf \
-		+firmware=$(CORE_V_VERIF)/cva6/sim/hello-world.hex && \
+	++$(elf-bin)
 	mv $(VCS_WORK_DIR)/trace_rvfi_hart_00.dasm $(CORE_V_VERIF)/cva6/sim/
 
 vcs_gate_comp:
