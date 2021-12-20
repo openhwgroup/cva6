@@ -16,5 +16,3 @@ plusargs: >
     +directed_instr_6=riscv_jal_instr,4
     +directed_instr_7=corev_xori_not_instr,1
     +hint_instr_ratio=2
-    +enable_b_extension=1
-    +enable_bitmanip_groups=zbb
