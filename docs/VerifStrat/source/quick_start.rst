@@ -38,7 +38,8 @@ You will need:
    $ cd $CORE_V_VERIF/bin
    $ pip install -r requirements.txt
 
-3. A GCC cross-compiler (aka "the `Toolchain <https://github.com/openhwgroup/core-v-verif/blob/master/cv32e40p/sim/TOOLCHAIN.md#core-v-toolchain>`_")
+3. A GCC cross-compiler (aka "the `Toolchain <https://github.com/openhwgroup/core-v-verif/blob/master/cv32e40p/sim/TOOLCHAIN.md#core-v-toolchain>`_").
+   Even if you already have a toolchain, please do follow that link and read **TOOLCHAIN.md** for recommended ENV variables to point to it.
 4. `Verilator <https://veripool.org/guide/latest/install.html>`_.
 
 Once the above is in place type the following::
@@ -77,6 +78,7 @@ The primary verification environments implemented in core-v-verif are all based 
 The UVM enviroment for CV32E40P is completely separate from the core testbench and uses a different set of Makefiles.
 
 In order to use the UVM environments you will need items 1, 2 and 3 from the list above, plus a SystemVerilog simulator capable of supporting UVM and the Imperas OVPsim Instruction Set Simulator (ISS).
+You should also review the README in `$CORE_V_VERIF/mk/uvmt` for a description of the `shell ENV vars used by the UVM environment <https://github.com/openhwgroup/core-v-verif/tree/master/mk/uvmt#corev-environment-variables>`_.
 With these in place you can do the following::
 
     $ git clone https://github.com/openhwgroup/core-v-verif.git
@@ -105,9 +107,9 @@ Core-v-verif uses an Instruction Set Simulator (ISS) as a reference model of the
 A key feature of the core-v-verif UVM environments is that the state of the DUT is compared to the state of the reference model after each instruction is retired.
 Without a comparison to a reference model, the pass/fail status of a given simulation is mostly vacuous.
 
-There are two popular options for a RISC-V ISS, Spike and Imperas OVPsim.
-At the time of this writting (2021-12-07) core-v-verif supports Imperas OVPsim.
-A contribution which integrated another reference model into core-v-verif would be welcome.
+There are two popular options for a RISC-V ISS, `Spike <https://github.com/riscv-software-src/riscv-isa-sim>_` and `Imperas OVPsim <https://www.ovpworld.org/technology_ovpsim>_`.
+At the time of this writting (2021-12-07) core-v-verif uses a commerical version iof Imperas OVPsim for the CV32E4 cores.
+A contribution to integrate another reference model into core-v-verif would be welcome.
 
 Doing More in CORE-V-VERIF
 --------------------------
@@ -134,11 +136,11 @@ It is a goal of core-v-verif to support all known SystemVerilog 1800-2017 compli
 The Makefiles for the UVM environments have a variable `CV_SIMULATOR` which is used to select the simulator used to compile and run a testcase.
 So you can run hello-world with Cadence Xcelium like this::
 
-    $ make test TEST=hello-world SIMULATOR=xrun
+    $ make test TEST=hello-world CV_SIMULATOR=xrun
 
 To run the same test with Metrics Dsim::
 
-    $ make test TEST=hello-world SIMULATOR=dsim
+    $ make test TEST=hello-world CV_SIMULATOR=dsim
 
 The variable is used to select one of a set of simulator-specific Makefiles that are located at `$CORE_V_VERIF/mk/uvmt <https://github.com/openhwgroup/core-v-verif/tree/master/mk/uvmt>`_.
 
