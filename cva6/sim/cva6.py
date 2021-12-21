@@ -21,6 +21,8 @@ import os
 import re
 import sys
 import logging
+import time
+import datetime
 
 from dv.scripts.lib import *
 from verilator_log_to_trace_csv import *
@@ -405,7 +407,8 @@ def run_assembly(asm_test, iss_yaml, isa, target, mabi, gcc_opts, iss_opts, outp
   report = ("%s/iss_regr.log" % output_dir).rstrip()
   asm = re.sub(r"^.*\/", "", asm_test)
   asm = re.sub(r"\.S$", "", asm)
-  prefix = ("%s/directed_asm_tests/%s"  % (output_dir, asm))
+  asm = asm + "-" + str(datetime.datetime.now().isoformat()) #to have unique name for tests output files
+  prefix = ("%s/directed_asm_tests/%s" % (output_dir, asm))
   elf = prefix + ".o"
   binary = prefix + ".bin"
   iss_list = iss_opts.split(",")
