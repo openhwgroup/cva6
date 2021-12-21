@@ -29,6 +29,19 @@ VERDI          ?=
 user-define    ?= +define+WT_CACHE
 USERDEFINE      = +define+RVFI_TRACE $(user-define)
 
+TESTNAME := $(shell basename -s .o $(elf-bin))
+#######################################################################################
+#                   Code Coverage
+#######################################################################################
+#code coverage is deactivated by default
+#To activate the code coverage: define the env variable cov with: (export cov=value) , to deactivate it: (unset cov) OR (export cov= )
+ifdef cov
+	cov-comp-opt = -cm line+cond+fsm+tgl+assert
+	cov-run-opt  = -cm line+cond+fsm+tgl+assert -cm_name $(TESTNAME)
+else
+	cov-comp-opt =
+	cov-run-opt  =
+endif
 ###############################################################################
 # Synopsys VCS specific commands, variables
 ###############################################################################
@@ -91,14 +104,19 @@ vcs_uvm_comp:
 	cd $(VCS_WORK_DIR) && vcs $(ALL_UVM_FLAGS) \
 	  -f $(FLIST_CORE) -f $(FLIST_TB) \
 	  -f $(CVA6_UVMT_DIR)/uvmt_cva6.flist \
+	  $(cov-comp-opt) \
 	  -top uvmt_cva6_tb
 
 vcs_uvm_run:
 	cp Mem_init.txt $(VCS_WORK_DIR)/
 	cd $(VCS_WORK_DIR)/ && \
 	$(VCS_WORK_DIR)/simv ${ALL_SIMV_UVM_FLAGS} \
-	++$(elf-bin)
+	++$(elf-bin) \
+	$(cov-run-opt) && \
 	mv $(VCS_WORK_DIR)/trace_rvfi_hart_00.dasm $(CORE_V_VERIF)/cva6/sim/
+
+generate_cov_dash:
+	urg -dir $(VCS_WORK_DIR)/simv.vdb
 
 vcs_gate_comp:
 	@echo "[VCS] Building Model"

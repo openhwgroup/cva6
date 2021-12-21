@@ -101,8 +101,8 @@
   tool_path: SPIKE_PATH
   tb_path: TB_PATH
   precmd: >
-    make -f Makefile vcs_uvm_comp user-define="+define+WT_CACHE"
+    make -f Makefile vcs_uvm_comp cov=${cov} user-define="+define+WT_CACHE"
   cmd: >
-    make -f Makefile vcs_uvm_run elf-bin=<elf>
+    make -f Makefile vcs_uvm_run elf-bin=<elf> cov=${cov}
   postcmd: >
     <tool_path>/spike-dasm < ./trace_rvfi_hart_00.dasm > log
