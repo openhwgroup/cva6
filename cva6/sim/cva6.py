@@ -173,7 +173,7 @@ def do_compile(compile_cmd, test_list, core_setting_dir, cwd, ext_dir,
       cmd = re.sub("<out>", os.path.abspath(output_dir), cmd)
       cmd = re.sub("<setting>", core_setting_dir, cmd)
       if ext_dir == "":
-        cmd = re.sub("<user_extension>", "<cwd>/user_extension", cmd)
+        cmd = re.sub("<user_extension>", "<cwd>/dv/user_extension", cmd)
       else:
         cmd = re.sub("<user_extension>", ext_dir, cmd)
       cmd = re.sub("<cwd>", cwd, cmd)
@@ -365,7 +365,7 @@ def gcc_compile(test_list, output_dir, isa, mabi, opts, debug_cmd):
       cmd = ("%s -static -mcmodel=medany \
              -fvisibility=hidden -nostdlib \
              -nostartfiles %s \
-             -I%s/user_extension \
+             -I%s/dv/user_extension \
              -T%s/link.ld %s -o %s " % \
              (get_env_var("RISCV_GCC", debug_cmd = debug_cmd), asm, cwd, cwd, opts, elf))
       if 'gcc_opts' in test:
@@ -420,7 +420,7 @@ def run_assembly(asm_test, iss_yaml, isa, target, mabi, gcc_opts, iss_opts, outp
   cmd = ("%s -static -mcmodel=medany \
          -fvisibility=hidden -nostdlib \
          -nostartfiles %s \
-         -I%s/user_extension \
+         -I%s/dv/user_extension \
          -T%s/link.ld %s -o %s " % \
          (get_env_var("RISCV_GCC", debug_cmd = debug_cmd), asm_test, cwd,
                       cwd, gcc_opts, elf))
@@ -566,7 +566,7 @@ def run_c(c_test, iss_yaml, isa, target, mabi, gcc_opts, iss_opts, output_dir,
   # gcc compilation
   cmd = ("%s -mcmodel=medany -nostdlib \
          -nostartfiles %s \
-         -I%s/user_extension \
+         -I%s/dv/user_extension \
          -T%s/link.ld %s -o %s " % \
          (get_env_var("RISCV_GCC", debug_cmd = debug_cmd), c_test, cwd,
                       cwd, gcc_opts, elf))
@@ -645,6 +645,9 @@ def iss_sim(test_list, output_dir, iss_list, iss_yaml, iss_opts,
     [pre_cmd, base_cmd, post_cmd] = parse_iss_yaml(iss, iss_yaml, isa, target, setting_dir, debug_cmd)
     logging.info("%s sim log dir: %s" % (iss, log_dir))
     run_cmd_output(["mkdir", "-p", log_dir])
+    if pre_cmd != "":
+       logging.info("[%0s] Running ISS pre simulation" % (iss))
+       run_cmd(pre_cmd)
     for test in test_list:
       if 'no_iss' in test and test['no_iss'] == 1:
         continue
@@ -663,6 +666,12 @@ def iss_sim(test_list, output_dir, iss_list, iss_yaml, iss_opts,
           else:
             run_cmd(cmd, timeout_s, debug_cmd = debug_cmd)
           logging.debug(cmd)
+          if post_cmd != "":
+             post_cmd = re.sub("log", log, post_cmd)
+             run_cmd(post_cmd)
+             logging.info("[%0s] %s ...done" % (iss, post_cmd))
+             logging.info("[%0s] Running ISS simulation: %s ...done" % (iss, elf))
+             post_cmd= re.sub(log, "log", post_cmd)
 
 
 def iss_cmp(test_list, iss, output_dir, stop_on_first_error, exp, debug_cmd):
@@ -848,7 +857,7 @@ def load_config(args, cwd):
     args.iss_yaml = cwd + "/yaml/iss.yaml"
 
   if not args.simulator_yaml:
-    args.simulator_yaml = cwd + "/yaml/simulator.yaml"
+    args.simulator_yaml = cwd + "/cva6-simulator.yaml"
 
   # Keep the core_setting_dir option to be backward compatible, suggest to use
   # --custom_target
@@ -861,7 +870,6 @@ def load_config(args, cwd):
   if not args.custom_target:
     if not args.testlist:
       args.testlist = cwd + "/target/"+ args.target +"/testlist.yaml"
-    args.core_setting_dir = cwd + "/target/"+ args.target
     if args.target == "cv64a6_imafdc_sv39":
       args.mabi = "lp64"
       args.isa  = "rv64gc"
@@ -912,6 +920,7 @@ def load_config(args, cwd):
       args.isa  = "rv64imc"
     else:
       sys.exit("Unsupported pre-defined target: %0s" % args.target)
+    args.core_setting_dir = cwd + "/dv" + "/target/"+ args.isa
   else:
     if re.match(".*gcc_compile.*", args.steps) or re.match(".*iss_sim.*", args.steps):
       if (not args.mabi) or (not args.isa):
@@ -929,7 +938,7 @@ def main():
     parser = setup_parser()
     args = parser.parse_args()
     cwd = os.path.dirname(os.path.realpath(__file__))
-    os.environ["RISCV_DV_ROOT"] = cwd
+    os.environ["RISCV_DV_ROOT"] = cwd + "/dv"
     setup_logging(args.verbose)
     # Load configuration from the command line and the configuration file.
     cfg = load_config(args, cwd)
@@ -1004,8 +1013,11 @@ def main():
     if not args.co:
       process_regression_list(args.testlist, args.test, args.iterations, matched_list, cwd)
       for t in list(matched_list):
-        t['asm_tests'] = re.sub("\<path_var\>", get_env_var(t['path_var']), t['asm_tests'])
-        t['gcc_opts'] = re.sub("\<path_var\>", get_env_var(t['path_var']), t['gcc_opts'])
+        try:
+          t['asm_tests'] = re.sub("\<path_var\>", get_env_var(t['path_var']), t['asm_tests'])
+          t['gcc_opts'] = re.sub("\<path_var\>", get_env_var(t['path_var']), t['gcc_opts'])
+        except KeyError:
+          continue
 
         # Check mutual exclusive between gen_test, asm_tests, and c_tests
         if 'asm_tests' in t:
