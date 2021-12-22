@@ -17,8 +17,12 @@
 
 
 module uvmt_cv32e40x_fencei_assert
+  import cv32e40x_pkg::*;
   import uvm_pkg::*;
-(
+#(
+  parameter int          PMA_NUM_REGIONS              = 0,
+  parameter pma_region_t PMA_CFG[PMA_NUM_REGIONS-1:0] = '{default:'Z}
+)(
   input clk_i,
   input rst_ni,
 
@@ -61,6 +65,15 @@ module uvmt_cv32e40x_fencei_assert
       obi_outstanding <= obi_outstanding - 1;
     end
   end
+
+  function logic bufferable_in_config;
+    bufferable_in_config = 0;
+    foreach (PMA_CFG[i]) begin
+      if (PMA_CFG[i].bufferable) begin
+        bufferable_in_config = 1;
+      end
+    end
+  endfunction
 
   a_req_stay_high: assert property (
     fencei_flush_req_o && !fencei_flush_ack_i
@@ -160,31 +173,35 @@ module uvmt_cv32e40x_fencei_assert
   endproperty
   a_req_wait_bus: assert property (p_req_wait_bus)
     else `uvm_error(info_tag, "flush req shall not come if rvalid is awaited");
-  c_req_wait_bus: cover property (
-    $rose(is_fencei_in_wb)
-    ##1 is_fencei_in_wb throughout (
-      ($rose(data_rvalid_i) [->1])
-      ##0 ($rose(fencei_flush_req_o) [->1])
-    )
-  );
+  if (bufferable_in_config()) begin : gen_c_req_wait_bus
+    c_req_wait_bus: cover property (
+      $rose(is_fencei_in_wb)
+      ##1 is_fencei_in_wb throughout (
+        ($rose(data_rvalid_i) [->1])
+        ##0 ($rose(fencei_flush_req_o) [->1])
+      )
+    );
+  end
 
   property p_req_wait_outstanding;
     fencei_flush_req_o |-> (obi_outstanding == 0);
   endproperty
   a_req_wait_outstanding: assert property (p_req_wait_outstanding)
     else `uvm_error(info_tag, "flush req shall not come if obi has outstanding transactions");
-  c_req_wait_outstanding_1: cover property (
-    is_fencei_in_wb throughout ((obi_outstanding >= 1) ##0 (fencei_flush_req_o [->1]))
-  );
+  if (bufferable_in_config()) begin : gen_c_req_wait_outstanding_1
+    c_req_wait_outstanding_1: cover property (
+      is_fencei_in_wb throughout ((obi_outstanding >= 1) ##0 (fencei_flush_req_o [->1]))
+    );
+  end
 
   a_outstanding_equivalence: assert property (
-    // TODO:ropeders Might want to remove this assertion later. I just want to get insight into the write buffer and these asserts
+    // TODO:ropeders Can remove this assert later. The two asserts are not required to be equivalent.
     p_req_wait_bus  iff  p_req_wait_outstanding
-  ) else `uvm_error(info_tag, "TODO");
+  ) else `uvm_error(info_tag, "the two req-rvalid assertions disagreed");
 
-  // TODO:ropeders assert fencei flush req vs write buffer queue
+  // TODO:ropeders assert fencei flush req explicitly vs write buffer queue (not just vs rvalid)
 
-  // TODO:ropeders assert fencei flush req vs X interface queue
+  // TODO:ropeders assert fencei flush req explicitly vs X interface queue (not just vs rvalid)
 
   for (genvar i = 1; i <= 5; i++) begin: gen_ack_delayed
     // "5" is an appropriate arbitrary upper limit
