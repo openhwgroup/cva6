@@ -41,7 +41,7 @@
   precmd: >
     make -f Makefile veri_comp target=<target> user-define="+define+WT_CACHE"
   cmd: >
-    ./verilator_work/Vcva6_core_only_tb
+    make -f Makefile veri_run elf-bin=<elf>
   postcmd: >
     <tool_path>/spike-dasm < ./trace_rvfi_hart_00.dasm > log
 

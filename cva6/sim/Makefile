@@ -110,7 +110,7 @@ vcs_uvm_comp:
 	  -top uvmt_cva6_tb
 
 vcs_uvm_run:
-	cp Mem_init.txt $(VCS_WORK_DIR)/
+	cp $(TESTNAME).txt $(VCS_WORK_DIR)/Mem_init.txt
 	cd $(VCS_WORK_DIR)/ && \
 	$(VCS_WORK_DIR)/simv ${ALL_SIMV_UVM_FLAGS} \
 	++$(elf-bin) \
@@ -154,6 +154,10 @@ veri_comp:
 		$(CVA6_TB_DIR)/cva6_tb_verilator.cpp
 	@echo "[VERILATOR] Compiling Model"
 	$(MAKE) -C $(VERILATOR_WORK_DIR) -f Vcva6_core_only_tb.mk
+
+veri_run:
+	cp $(TESTNAME).txt Mem_init.txt
+	$(VERILATOR_WORK_DIR)/Vcva6_core_only_tb
 
 veri_clean_all:
 	@echo "[VERILATOR] Cleanup (both work and results dirs)"
