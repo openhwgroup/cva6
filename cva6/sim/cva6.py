@@ -283,6 +283,8 @@ def do_simulate(sim_cmd, test_list, cwd, sim_opts, seed_yaml, seed, csr_file,
   if sim_seed:
     with open(('%s/seed.yaml' % os.path.abspath(output_dir)) , 'w') as outfile:
       yaml.dump(sim_seed, outfile, default_flow_style=False)
+    with open(('seedlist.yaml') , 'a') as seedlist:
+      yaml.dump(sim_seed, seedlist, default_flow_style=False)
   if lsf_cmd:
     run_parallel_cmd(cmd_list, timeout_s, check_return_code = check_return_code,
                      debug_cmd = debug_cmd)
