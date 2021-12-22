@@ -23,7 +23,7 @@ verilator      ?= verilator
 # traget option
 target-options ?=
 # additional definess
-defines        ?= WT_DCACHE
+defines        ?= WT_DCACHE+RVFI_TRACE
 # test name for torture runs (binary name)
 test-location  ?= output/test
 # set to either nothing or -log
@@ -86,6 +86,7 @@ ariane_pkg += core/include/riscv_pkg.sv                              \
               core/include/ariane_rvfi_pkg.sv                        \
               core/include/std_cache_pkg.sv                          \
               core/include/wt_cache_pkg.sv                           \
+              core/include/cvxif_pkg.sv                              \
               corev_apu/axi/src/axi_pkg.sv                           \
               corev_apu/register_interface/src/reg_intf.sv           \
               corev_apu/register_interface/src/reg_intf_pkg.sv       \
@@ -237,6 +238,10 @@ endif
 
 src := $(addprefix $(root-dir), $(src))
 
+copro_src := corev_apu/cvxif_example/include/cvxif_instr_pkg.sv \
+             $(wildcard corev_apu/cvxif_example/*.sv)
+copro_src := $(addprefix $(root-dir), $(copro_src))
+
 uart_src := $(wildcard corev_apu/fpga/src/apb_uart/src/*.vhd)
 uart_src := $(addprefix $(root-dir), $(uart_src))
 
@@ -310,11 +315,12 @@ vcs_build: $(dpi-library)/ariane_dpi.so
 	mkdir -p $(vcs-library)
 	cd $(vcs-library) &&\
 	vlogan $(if $(VERDI), -kdb,) -full64 -nc -sverilog -ntb_opts uvm-1.2 &&\
-	vlogan $(if $(VERDI), -kdb,) -full64 -nc -sverilog -ntb_opts uvm-1.2 +define+WT_CACHE +define+RVFI_TRACE $(filter %.sv,$(ariane_pkg)) +incdir+core/include/+$(VCS_HOME)/etc/uvm-1.2/dpi &&\
-	vlogan $(if $(VERDI), -kdb,) -full64 -nc -sverilog -ntb_opts uvm-1.2 +define+WT_CACHE +define+RVFI_TRACE $(filter %.sv,$(util)) +incdir+../common/local/util+../core/include/+src/util/+$(VCS_HOME)/etc/uvm-1.2/dpi &&\
+	vlogan $(if $(VERDI), -kdb,) -full64 -nc -sverilog -ntb_opts uvm-1.2 +define+$(defines) $(filter %.sv,$(ariane_pkg)) +incdir+core/include/+$(VCS_HOME)/etc/uvm-1.2/dpi &&\
+	vlogan $(if $(VERDI), -kdb,) -full64 -nc -sverilog -ntb_opts uvm-1.2 +define+$(defines) $(filter %.sv,$(util)) +incdir+../common/local/util+../core/include/+src/util/+$(VCS_HOME)/etc/uvm-1.2/dpi &&\
 	vhdlan $(if $(VERDI), -kdb,) -full64 -nc $(filter %.vhd,$(uart_src)) &&\
-	vlogan $(if $(VERDI), -kdb,) -full64 -nc -sverilog -ntb_opts uvm-1.2 -assert svaext +define+WT_CACHE +define+RVFI_TRACE $(filter %.sv,$(src)) +incdir+../core/include/+../common/submodules/common_cells/include/+../common/local/util/+$(VCS_HOME)/etc/uvm-1.2/dpi &&\
-	vlogan $(if $(VERDI), -kdb,) -full64 -nc -sverilog -ntb_opts uvm-1.2 $(tbs) +define+RVFI_TRACE &&\
+	vlogan $(if $(VERDI), -kdb,) -full64 -nc -sverilog -ntb_opts uvm-1.2 $(filter %.sv,$(copro_src)) &&\
+	vlogan $(if $(VERDI), -kdb,) -full64 -nc -sverilog -ntb_opts uvm-1.2 -assert svaext +define+$(defines) $(filter %.sv,$(src)) +incdir+../core/include/+../common/submodules/common_cells/include/+../common/local/util/+$(VCS_HOME)/etc/uvm-1.2/dpi &&\
+	vlogan $(if $(VERDI), -kdb,) -full64 -nc -sverilog -ntb_opts uvm-1.2 $(tbs) +define+$(defines) &&\
 	vcs $(if $(VERDI), -kdb -debug_access+all -lca,) -full64 -timescale=1ns/1ns -ntb_opts uvm-1.2 work.ariane_tb
 
 vcs: vcs_build
@@ -570,7 +576,8 @@ xrun-ci: xrun-asm-tests xrun-amo-tests xrun-mul-tests xrun-fp-tests xrun-benchma
 verilate_command := $(verilator)                                                                                 \
                     $(filter-out %.vhd, $(ariane_pkg))                                                           \
                     $(filter-out core/fpu_wrap.sv, $(filter-out %.vhd, $(src)))                                  \
-                    +define+$(defines) -DRVFI_TRACE=1                                                            \
+                    $(copro_src)                                                                                 \
+                    +define+$(defines)                                                                           \
                     common/local/util/sram.sv                                                                    \
                     corev_apu/tb/common/mock_uart.sv                                                             \
                     +incdir+corev_apu/axi_node                                                                   \
@@ -752,11 +759,12 @@ fpga_filter += $(addprefix $(root-dir), src/util/instr_trace_item.sv)
 fpga_filter += $(addprefix $(root-dir), common/local/util/instr_tracer_if.sv)
 fpga_filter += $(addprefix $(root-dir), common/local/util/instr_tracer.sv)
 
-fpga: $(ariane_pkg) $(util) $(src) $(fpga_src) $(uart_src)
+fpga: $(ariane_pkg) $(util) $(src) $(fpga_src) $(uart_src) $(copro_src)
 	@echo "[FPGA] Generate sources"
 	@echo read_vhdl        {$(uart_src)}    > corev_apu/fpga/scripts/add_sources.tcl
 	@echo read_verilog -sv {$(ariane_pkg)} >> corev_apu/fpga/scripts/add_sources.tcl
 	@echo read_verilog -sv {$(filter-out $(fpga_filter), $(util))}     >> corev_apu/fpga/scripts/add_sources.tcl
+	@echo read_verilog -sv {$(filter-out $(fpga_filter), $(copro_src))} >> corev_apu/fpga/scripts/add_sources.tcl
 	@echo read_verilog -sv {$(filter-out $(fpga_filter), $(src))} 	   >> corev_apu/fpga/scripts/add_sources.tcl
 	@echo read_verilog -sv {$(fpga_src)}   >> corev_apu/fpga/scripts/add_sources.tcl
 	@echo "[FPGA] Generate Bitstream"

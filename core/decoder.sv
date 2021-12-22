@@ -1005,6 +1005,16 @@ module decoder import ariane_pkg::*; (
                 default: illegal_instr = 1'b1;
             endcase
         end
+        if (CVXIF_PRESENT) begin
+            if (is_illegal_i || illegal_instr) begin
+                instruction_o.fu    = CVXIF;
+                instruction_o.rs1   = instr.r4type.rs1;
+                instruction_o.rs2   = instr.r4type.rs2;
+                instruction_o.rd    = instr.r4type.rd;
+                instruction_o.op    = ariane_pkg::OFFLOAD;
+                imm_select          = RS3;
+            end
+        end
     end
 
     // --------------------------------
@@ -1075,7 +1085,7 @@ module decoder import ariane_pkg::*; (
             // check here if we decoded an invalid instruction or if the compressed decoder already decoded
             // a invalid instruction
             if (illegal_instr || is_illegal_i) begin
-                instruction_o.ex.valid = 1'b1;
+                if (!CVXIF_PRESENT) instruction_o.ex.valid = 1'b1;
                 // we decoded an illegal exception here
                 instruction_o.ex.cause = riscv::ILLEGAL_INSTR;
             // we got an ecall, set the correct cause depending on the current privilege level

@@ -51,6 +51,10 @@ ${CVA6_REPO_DIR}/core/include/std_cache_pkg.sv
 ${CVA6_REPO_DIR}/core/include/axi_intf.sv
 ${CVA6_REPO_DIR}/core/include/instr_tracer_pkg.sv
 
+//CVXIF
+${CVA6_REPO_DIR}/core/include/cvxif_pkg.sv
+${CVA6_REPO_DIR}/core/cvxif_fu.sv
+
 // Common Cells
 ${CVA6_REPO_DIR}/common/submodules/common_cells/src/fifo_v3.sv
 ${CVA6_REPO_DIR}/common/submodules/common_cells/src/lfsr.sv
@@ -84,6 +88,7 @@ ${CVA6_REPO_DIR}/core/fpu/src/fpu_div_sqrt_mvp/hdl/preprocess_mvp.sv
 
 // Top-level source files (not necessarily instantiated at the top of the cva6).
 ${CVA6_REPO_DIR}/core/ariane.sv
+${CVA6_REPO_DIR}/core/cva6.sv
 ${CVA6_REPO_DIR}/core/alu.sv
 // Note: depends on fpnew_pkg, above
 ${CVA6_REPO_DIR}/core/fpu_wrap.sv

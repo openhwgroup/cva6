@@ -37,7 +37,7 @@ module scoreboard #(
   output logic                                                  rs2_valid_o,
 
   input  logic [ariane_pkg::REG_ADDR_SIZE-1:0]                  rs3_i,
-  output logic [ariane_pkg::FLEN-1:0]                           rs3_o,
+  output ariane_pkg::rs3_len_t                                  rs3_o,
   output logic                                                  rs3_valid_o,
 
   // advertise instruction to commit stage, if commit_ack_i is asserted advance the commit pointer
@@ -60,7 +60,8 @@ module scoreboard #(
   input logic [NR_WB_PORTS-1:0][ariane_pkg::TRANS_ID_BITS-1:0]  trans_id_i,  // transaction ID at which to write the result back
   input logic [NR_WB_PORTS-1:0][riscv::XLEN-1:0]                wbdata_i,    // write data in
   input ariane_pkg::exception_t [NR_WB_PORTS-1:0]               ex_i,        // exception from a functional unit (e.g.: ld/st exception)
-  input logic [NR_WB_PORTS-1:0]                                 wt_valid_i   // data in is valid
+  input logic [NR_WB_PORTS-1:0]                                 wt_valid_i,  // data in is valid
+  input logic                                                   x_we_i       // cvxif we for writeback
 );
   localparam int unsigned BITS_ENTRIES = $clog2(NR_ENTRIES);
 
@@ -141,6 +142,9 @@ module scoreboard #(
         mem_n[trans_id_i[i]].sbe.result = wbdata_i[i];
         // save the target address of a branch (needed for debug in commit stage)
         mem_n[trans_id_i[i]].sbe.bp.predict_address = resolved_branch_i.target_address;
+        if (mem_n[trans_id_i[i]].sbe.fu == ariane_pkg::CVXIF && ~x_we_i) begin
+          mem_n[trans_id_i[i]].sbe.rd = 5'b0;
+        end
         // write the exception back if it is valid
         if (ex_i[i].valid)
           mem_n[trans_id_i[i]].sbe.ex = ex_i[i];
@@ -268,7 +272,7 @@ module scoreboard #(
   // read operand interface: same logic as register file
   logic [NR_ENTRIES+NR_WB_PORTS-1:0] rs1_fwd_req, rs2_fwd_req, rs3_fwd_req;
   logic [NR_ENTRIES+NR_WB_PORTS-1:0][riscv::XLEN-1:0] rs_data;
-  logic rs1_valid, rs2_valid;
+  logic rs1_valid, rs2_valid, rs3_valid;
 
   // WB ports have higher prio than entries
   for (genvar k = 0; unsigned'(k) < NR_WB_PORTS; k++) begin : gen_rs_wb
@@ -284,9 +288,10 @@ module scoreboard #(
     assign rs_data[k+NR_WB_PORTS]     = mem_q[k].sbe.result;
   end
 
-  // check whether we are accessing GPR[0], rs3 is only used with the FPR!
+  // check whether we are accessing GPR[0]
   assign rs1_valid_o = rs1_valid & ((|rs1_i) | ariane_pkg::is_rs1_fpr(issue_instr_o.op));
   assign rs2_valid_o = rs2_valid & ((|rs2_i) | ariane_pkg::is_rs2_fpr(issue_instr_o.op));
+  assign rs3_valid_o = ariane_pkg::NR_RGPR_PORTS == 3 ? rs3_valid & ((|rs3_i) | ariane_pkg::is_imm_fpr(issue_instr_o.op)) : rs3_valid;
 
   // use fixed prio here
   // this implicitly gives higher prio to WB ports
@@ -344,12 +349,17 @@ module scoreboard #(
     .gnt_o   (             ),
     .data_i  ( rs_data     ),
     .gnt_i   ( 1'b1        ),
-    .req_o   ( rs3_valid_o ),
+    .req_o   ( rs3_valid   ),
     .data_o  ( rs3         ),
     .idx_o   (             )
   );
 
-  assign rs3_o = rs3[ariane_pkg::FLEN-1:0];
+  if (ariane_pkg::NR_RGPR_PORTS == 3) begin : gen_gp_three_port
+      assign rs3_o = rs3[riscv::XLEN-1:0];
+  end else begin : gen_fp_three_port
+      assign rs3_o = rs3[ariane_pkg::FLEN-1:0];
+  end
+
 
   // sequential process
   always_ff @(posedge clk_i or negedge rst_ni) begin : regs

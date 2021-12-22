@@ -33,7 +33,7 @@ module issue_read_operands import ariane_pkg::*; #(
     input  riscv::xlen_t                           rs2_i,
     input  logic                                   rs2_valid_i,
     output logic [REG_ADDR_SIZE-1:0]               rs3_o,
-    input  logic [FLEN-1:0]                        rs3_i,
+    input  rs3_len_t                               rs3_i,
     input  logic                                   rs3_valid_i,
     // get clobber input
     input  fu_t [2**REG_ADDR_SIZE-1:0]             rd_clobber_gpr_i,
@@ -62,6 +62,10 @@ module issue_read_operands import ariane_pkg::*; #(
     output logic [2:0]                             fpu_rm_o,         // FP rm field from instr.
     // CSR
     output logic                                   csr_valid_o,      // Output is valid
+    // CVXIF
+    output logic                                   cvxif_valid_o,
+    input  logic                                   cvxif_ready_i,
+    output logic [31:0]                            cvxif_off_instr_o,
     // commit port
     input  logic [NR_COMMIT_PORTS-1:0][4:0]        waddr_i,
     input  logic [NR_COMMIT_PORTS-1:0][riscv::XLEN-1:0] wdata_i,
@@ -75,7 +79,7 @@ module issue_read_operands import ariane_pkg::*; #(
     logic stall;   // stall signal, we do not want to fetch any more entries
     logic fu_busy; // functional unit is busy
     riscv::xlen_t    operand_a_regfile, operand_b_regfile;  // operands coming from regfile
-    logic [FLEN-1:0] operand_c_regfile; // third operand only from fp regfile
+    rs3_len_t operand_c_regfile; // third operand from fp regfile or gp regfile if NR_RGPR_PORTS == 3
     // output flipflop (ID <-> EX)
     riscv::xlen_t operand_a_n, operand_a_q,
                  operand_b_n, operand_b_q,
@@ -89,6 +93,8 @@ module issue_read_operands import ariane_pkg::*; #(
     logic          lsu_valid_q;
     logic          csr_valid_q;
     logic       branch_valid_q;
+    logic        cvxif_valid_q;
+    logic [31:0] cvxif_off_instr_q;
 
     logic [TRANS_ID_BITS-1:0] trans_id_n, trans_id_q;
     fu_op operator_n, operator_q; // operation to perform
@@ -120,6 +126,8 @@ module issue_read_operands import ariane_pkg::*; #(
     assign fpu_valid_o         = fpu_valid_q;
     assign fpu_fmt_o           = fpu_fmt_q;
     assign fpu_rm_o            = fpu_rm_q;
+    assign cvxif_valid_o       = CVXIF_PRESENT ? cvxif_valid_q : '0;
+    assign cvxif_off_instr_o   = CVXIF_PRESENT ? cvxif_off_instr_q : '0;
     // ---------------
     // Issue Stage
     // ---------------
@@ -136,6 +144,8 @@ module issue_read_operands import ariane_pkg::*; #(
                 fu_busy = ~fpu_ready_i;
             LOAD, STORE:
                 fu_busy = ~lsu_ready_i;
+            CVXIF:
+                fu_busy = ~cvxif_ready_i;
             default:
                 fu_busy = 1'b0;
         endcase
@@ -183,7 +193,9 @@ module issue_read_operands import ariane_pkg::*; #(
             end
         end
 
-        if (is_imm_fpr(issue_instr_i.op) && rd_clobber_fpr_i[issue_instr_i.result[REG_ADDR_SIZE-1:0]] != NONE) begin
+    // Only check clobbered gpr for OFFLOADED instruction
+        if (is_imm_fpr(issue_instr_i.op) ? rd_clobber_fpr_i[issue_instr_i.result[REG_ADDR_SIZE-1:0]] != NONE
+                     : issue_instr_i.op == OFFLOAD && NR_RGPR_PORTS == 3 ? rd_clobber_gpr_i[issue_instr_i.result[REG_ADDR_SIZE-1:0]] != NONE : 0) begin
             // if the operand is available, forward it. CSRs don't write to/from FPR so no need to check
             if (rs3_valid_i) begin
                 forward_rs3 = 1'b1;
@@ -200,7 +212,11 @@ module issue_read_operands import ariane_pkg::*; #(
         operand_b_n = operand_b_regfile;
         // immediates are the third operands in the store case
         // for FP operations, the imm field can also be the third operand from the regfile
-        imm_n      = is_imm_fpr(issue_instr_i.op) ? {{riscv::XLEN-FLEN{1'b0}}, operand_c_regfile} : issue_instr_i.result;
+        if (NR_RGPR_PORTS == 3)
+            imm_n  = is_imm_fpr(issue_instr_i.op) ? {{riscv::XLEN-FLEN{1'b0}}, operand_c_regfile} :
+                                                    issue_instr_i.op == OFFLOAD ? operand_c_regfile : issue_instr_i.result;
+        else
+            imm_n  = is_imm_fpr(issue_instr_i.op) ? {{riscv::XLEN-FLEN{1'b0}}, operand_c_regfile} : issue_instr_i.result;
         trans_id_n = issue_instr_i.trans_id;
         fu_n       = issue_instr_i.fu;
         operator_n = issue_instr_i.op;
@@ -214,7 +230,7 @@ module issue_read_operands import ariane_pkg::*; #(
         end
 
         if (forward_rs3) begin
-            imm_n  = {{riscv::XLEN-FLEN{1'b0}}, rs3_i};
+            imm_n  = NR_RGPR_PORTS == 3 ? rs3_i : {{riscv::XLEN-FLEN{1'b0}}, rs3_i};;
         end
 
         // use the PC as operand a
@@ -296,6 +312,31 @@ module issue_read_operands import ariane_pkg::*; #(
       end
     end
 
+    if (CVXIF_PRESENT) begin
+      always_ff @(posedge clk_i or negedge rst_ni) begin
+        if (!rst_ni) begin
+          cvxif_valid_q  <= 1'b0;
+          cvxif_off_instr_q  <= 32'b0;
+        end else begin
+          cvxif_valid_q  <= 1'b0;
+          cvxif_off_instr_q  <= 32'b0;
+          if (!issue_instr_i.ex.valid && issue_instr_valid_i && issue_ack_o) begin
+              case (issue_instr_i.fu)
+                  CVXIF: begin
+                      cvxif_valid_q       <= 1'b1;
+                      cvxif_off_instr_q   <= orig_instr;
+                  end
+              default:;
+              endcase
+          end
+          if (flush_i) begin
+              cvxif_valid_q  <= 1'b0;
+              cvxif_off_instr_q <= 32'b0;
+          end
+        end
+      end
+    end
+
     // We can issue an instruction if we do not detect that any other instruction is writing the same
     // destination register.
     // We also need to check if there is an unresolved branch in the scoreboard.
@@ -346,14 +387,15 @@ module issue_read_operands import ariane_pkg::*; #(
     // ----------------------
     // Integer Register File
     // ----------------------
-    logic [1:0][riscv::XLEN-1:0] rdata;
-    logic [1:0][4:0]  raddr_pack;
+    logic [NR_RGPR_PORTS-1:0][riscv::XLEN-1:0] rdata;
+    logic [NR_RGPR_PORTS-1:0][4:0]  raddr_pack;
 
     // pack signals
     logic [NR_COMMIT_PORTS-1:0][4:0]  waddr_pack;
     logic [NR_COMMIT_PORTS-1:0][riscv::XLEN-1:0] wdata_pack;
     logic [NR_COMMIT_PORTS-1:0]       we_pack;
-    assign raddr_pack = {issue_instr_i.rs2[4:0], issue_instr_i.rs1[4:0]};
+    assign raddr_pack = NR_RGPR_PORTS == 3 ? {issue_instr_i.result[4:0], issue_instr_i.rs2[4:0], issue_instr_i.rs1[4:0]}
+                                           : {issue_instr_i.rs2[4:0], issue_instr_i.rs1[4:0]};
     for (genvar i = 0; i < NR_COMMIT_PORTS; i++) begin : gen_write_back_port
         assign waddr_pack[i] = waddr_i[i];
         assign wdata_pack[i] = wdata_i[i];
@@ -362,7 +404,7 @@ module issue_read_operands import ariane_pkg::*; #(
 
     ariane_regfile #(
         .DATA_WIDTH     ( riscv::XLEN     ),
-        .NR_READ_PORTS  ( 2               ),
+        .NR_READ_PORTS  ( NR_RGPR_PORTS   ),
         .NR_WRITE_PORTS ( NR_COMMIT_PORTS ),
         .ZERO_REG_ZERO  ( 1               )
     ) i_ariane_regfile (
@@ -412,7 +454,8 @@ module issue_read_operands import ariane_pkg::*; #(
 
     assign operand_a_regfile = is_rs1_fpr(issue_instr_i.op) ? {{riscv::XLEN-FLEN{1'b0}}, fprdata[0]} : rdata[0];
     assign operand_b_regfile = is_rs2_fpr(issue_instr_i.op) ? {{riscv::XLEN-FLEN{1'b0}}, fprdata[1]} : rdata[1];
-    assign operand_c_regfile = fprdata[2];
+    assign operand_c_regfile = NR_RGPR_PORTS == 3 ? (is_imm_fpr(issue_instr_i.op) ? {{riscv::XLEN-FLEN{1'b0}}, fprdata[2]} : rdata[2])
+                                                  : fprdata[2];
 
     // ----------------------
     // Registers (ID <-> EX)
@@ -443,6 +486,11 @@ module issue_read_operands import ariane_pkg::*; #(
 
     //pragma translate_off
     `ifndef VERILATOR
+    initial begin
+        assert (NR_RGPR_PORTS == 2 || (NR_RGPR_PORTS == 3 && CVXIF_PRESENT))
+        else $fatal(1, "If CVXIF is enable, ariane regfile can have either 2 or 3 read ports. Else it has 2 read ports.");
+    end
+
      assert property (
         @(posedge clk_i) (branch_valid_q) |-> (!$isunknown(operand_a_q) && !$isunknown(operand_b_q)))
         else $warning ("Got unknown value in one of the operands");
