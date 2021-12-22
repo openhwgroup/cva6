@@ -19,14 +19,17 @@
 
 
 /**
- * Object created by Rvvi_control agent sequences extending uvma_rvvi_control_seq_base_c.
+ * Object created by RVVI_control agent sequences extending uvma_rvvi_control_seq_base_c.
  */
 class uvma_rvvi_ovpsim_control_seq_item_c#(int ILEN=uvma_rvvi_pkg::DEFAULT_ILEN,
                                            int XLEN=uvma_rvvi_pkg::DEFAULT_XLEN)  extends uvma_rvvi_control_seq_item_c#(ILEN,XLEN);
 
 
-   // Set to signal this instructions is first instruction of interrupt handler
+   // Set to signal this instructions is first instruction of external interrupt handler
    rand bit intr;
+
+   // Hint from RVFI of the "winning" interrupt to determine proper interrupt vector entry
+   rand int unsigned intr_id;
 
    // Set to signa external debug request
    rand bit dbg_req;
@@ -34,8 +37,11 @@ class uvma_rvvi_ovpsim_control_seq_item_c#(int ILEN=uvma_rvvi_pkg::DEFAULT_ILEN,
    // Set to signal in debug mode
    rand bit dbg_mode;
 
-   // Set to signal entry into NMI handler
-   rand bit nmi;
+   // Set to signal nmi load fault
+   rand bit nmi_load_fault;
+
+   // Set to signal nmi store fault
+   rand bit nmi_store_fault;
 
    // Set to signal instruction bus error
    rand bit insn_bus_fault;
@@ -43,8 +49,6 @@ class uvma_rvvi_ovpsim_control_seq_item_c#(int ILEN=uvma_rvvi_pkg::DEFAULT_ILEN,
    // For accuracy of mip model the irq_i inputs for each instrucion
    rand bit[ILEN-1:0] mip;
 
-   // Hint to which instruction "won" the interrupt
-   rand int unsigned intr_id;
 
    // Backdoor hint of register write for testing volatile CSR registers and ensuring RM tracks register value
    rand bit [GPR_ADDR_WL-1:0]    rd1_addr;
@@ -63,7 +67,8 @@ class uvma_rvvi_ovpsim_control_seq_item_c#(int ILEN=uvma_rvvi_pkg::DEFAULT_ILEN,
       `uvm_field_int(intr,            UVM_DEFAULT)
       `uvm_field_int(dbg_req,         UVM_DEFAULT)
       `uvm_field_int(dbg_mode,        UVM_DEFAULT)
-      `uvm_field_int(nmi,             UVM_DEFAULT)
+      `uvm_field_int(nmi_load_fault,  UVM_DEFAULT)
+      `uvm_field_int(nmi_store_fault, UVM_DEFAULT)
       `uvm_field_int(insn_bus_fault,  UVM_DEFAULT)
       `uvm_field_int(mip,             UVM_DEFAULT)
       `uvm_field_int(intr_id,         UVM_DEFAULT)

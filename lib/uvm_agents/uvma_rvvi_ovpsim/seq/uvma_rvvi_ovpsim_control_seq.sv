@@ -63,13 +63,14 @@ task uvma_rvvi_ovpsim_control_seq_c::step_rm(uvma_rvfi_instr_seq_item_c#(ILEN,XL
       action == UVMA_RVVI_STEPI;
 
       intr == rvfi_instr.insn_interrupt;
+      intr_id == rvfi_instr.insn_interrupt_id;
+
+      insn_bus_fault == rvfi_instr.insn_bus_fault;
+      nmi_load_fault == rvfi_instr.insn_nmi_load_fault;
+      nmi_store_fault == rvfi_instr.insn_nmi_store_fault;
 
       dbg_req == (rvfi_instr.dbg_mode && rvfi_instr.dbg inside {3,5});
-
       dbg_mode == rvfi_instr.dbg_mode;
-
-      nmi  == rvfi_instr.insn_nmi;
-      intr_id == rvfi_instr.insn_interrupt_id;
 
       mip == csr_mip;
       rd1_addr == rvfi_instr.rd1_addr;
@@ -80,13 +81,12 @@ task uvma_rvvi_ovpsim_control_seq_c::step_rm(uvma_rvfi_instr_seq_item_c#(ILEN,XL
       mem_rmask == rvfi_instr.mem_rmask;
       mem_wdata == rvfi_instr.mem_wdata;
       mem_wmask == rvfi_instr.mem_wmask;
-
-      insn_bus_fault == rvfi_instr.insn_bus_fault;
    });
    finish_item(step_rm_seq);
 
 endtask : step_rm
 
 `endif // __UVMA_RVVI_OVPSIM_CONTROL_SEQ_SV__
+
 
 

@@ -304,17 +304,17 @@ function void uvme_cv32e40s_env_c::assign_cfg();
 
    uvm_config_db#(uvme_cv32e40s_cfg_c)::set(this, "*", "cfg", cfg);
 
-   uvm_config_db#(uvma_core_cntrl_cfg_c)::set(this, "*core_cntrl_agent", "cfg", cfg);
-   uvm_config_db#(uvma_isacov_cfg_c)::set(this, "*isacov_agent", "cfg", cfg.isacov_cfg);
    uvm_config_db#(uvma_clknrst_cfg_c)::set(this, "*clknrst_agent", "cfg", cfg.clknrst_cfg);
-   uvm_config_db#(uvma_interrupt_cfg_c)::set(this, "*interrupt_agent", "cfg", cfg.interrupt_cfg);
+   uvm_config_db#(uvma_core_cntrl_cfg_c)::set(this, "*core_cntrl_agent", "cfg", cfg);
    uvm_config_db#(uvma_debug_cfg_c)::set(this, "debug_agent", "cfg", cfg.debug_cfg);
-   uvm_config_db#(uvma_obi_memory_cfg_c)::set(this, "obi_memory_instr_agent", "cfg", cfg.obi_memory_instr_cfg);
+   uvm_config_db#(uvma_fencei_cfg_c)::set(this, "fencei_agent", "cfg", cfg.fencei_cfg);
+   uvm_config_db#(uvma_interrupt_cfg_c)::set(this, "*interrupt_agent", "cfg", cfg.interrupt_cfg);
+   uvm_config_db#(uvma_isacov_cfg_c)::set(this, "*isacov_agent", "cfg", cfg.isacov_cfg);
    uvm_config_db#(uvma_obi_memory_cfg_c)::set(this, "obi_memory_data_agent",  "cfg", cfg.obi_memory_data_cfg);
+   uvm_config_db#(uvma_obi_memory_cfg_c)::set(this, "obi_memory_instr_agent", "cfg", cfg.obi_memory_instr_cfg);
+   uvm_config_db#(uvma_pma_cfg_c)::set(this, "pma_agent", "cfg", cfg.pma_cfg);
    uvm_config_db#(uvma_rvfi_cfg_c#(ILEN,XLEN))::set(this, "rvfi_agent", "cfg", cfg.rvfi_cfg);
    uvm_config_db#(uvma_rvvi_cfg_c#(ILEN,XLEN))::set(this, "rvvi_agent", "cfg", cfg.rvvi_cfg);
-   uvm_config_db#(uvma_fencei_cfg_c)::set(this, "fencei_agent", "cfg", cfg.fencei_cfg);
-   uvm_config_db#(uvma_pma_cfg_c)::set(this, "pma_agent", "cfg", cfg.pma_cfg);
 
 endfunction: assign_cfg
 
@@ -322,14 +322,16 @@ endfunction: assign_cfg
 function void uvme_cv32e40s_env_c::assign_cntxt();
 
    uvm_config_db#(uvme_cv32e40s_cntxt_c)::set(this, "*", "cntxt", cntxt);
+
    uvm_config_db#(uvma_clknrst_cntxt_c)::set(this, "clknrst_agent", "cntxt", cntxt.clknrst_cntxt);
-   uvm_config_db#(uvma_interrupt_cntxt_c)::set(this, "interrupt_agent", "cntxt", cntxt.interrupt_cntxt);
+   //TODO core_cntrl_cntxt?
    uvm_config_db#(uvma_debug_cntxt_c)::set(this, "debug_agent", "cntxt", cntxt.debug_cntxt);
-   uvm_config_db#(uvma_obi_memory_cntxt_c)::set(this, "obi_memory_instr_agent", "cntxt", cntxt.obi_memory_instr_cntxt);
+   uvm_config_db#(uvma_fencei_cntxt_c)::set(this, "fencei_agent", "cntxt", cntxt.fencei_cntxt);
+   uvm_config_db#(uvma_interrupt_cntxt_c)::set(this, "interrupt_agent", "cntxt", cntxt.interrupt_cntxt);
    uvm_config_db#(uvma_obi_memory_cntxt_c)::set(this, "obi_memory_data_agent",  "cntxt", cntxt.obi_memory_data_cntxt);
+   uvm_config_db#(uvma_obi_memory_cntxt_c)::set(this, "obi_memory_instr_agent", "cntxt", cntxt.obi_memory_instr_cntxt);
    uvm_config_db#(uvma_rvfi_cntxt_c#(ILEN,XLEN))::set(this, "rvfi_agent", "cntxt", cntxt.rvfi_cntxt);
    uvm_config_db#(uvma_rvvi_cntxt_c#(ILEN,XLEN))::set(this, "rvvi_agent", "cntxt", cntxt.rvvi_cntxt);
-   uvm_config_db#(uvma_fencei_cntxt_c)::set(this, "rvvi_agent", "cntxt", cntxt.fencei_cntxt);
 
 endfunction: assign_cntxt
 
@@ -381,10 +383,9 @@ endfunction: connect_predictor
 
 function void uvme_cv32e40s_env_c::connect_rvfi_rvvi();
 
-   foreach (rvfi_agent.instr_mon_ap[i])
+   foreach (rvfi_agent.instr_mon_ap[i]) begin
       rvfi_agent.instr_mon_ap[i].connect(rvvi_agent.sequencer.rvfi_instr_export);
-
-   obi_memory_instr_agent.monitor.ap.connect(rvvi_agent.sequencer.obi_i_export);
+   end
 
 endfunction : connect_rvfi_rvvi
 
@@ -393,8 +394,9 @@ function void uvme_cv32e40s_env_c::connect_scoreboard();
    // Connect the CORE Scoreboard (but only if the ISS is running)
    if (cfg.use_iss) begin
       rvvi_agent.state_mon_ap.connect(core_sb.rvvi_state_export);
-      foreach (rvfi_agent.instr_mon_ap[i])
+      foreach (rvfi_agent.instr_mon_ap[i]) begin
          rvfi_agent.instr_mon_ap[i].connect(core_sb.rvfi_instr_export);
+      end
    end
 
    // Connect the PMA scoreboard
@@ -478,6 +480,14 @@ function void uvme_cv32e40s_env_c::install_vp_register_seqs(uvma_obi_memory_slv_
       uvme_cv32e40s_vp_debug_control_seq_c vp_seq;
       if (!$cast(vp_seq, data_slv_seq.register_vp_vseq("vp_debug_control", CV_VP_DEBUG_CONTROL_BASE, uvme_cv32e40s_vp_debug_control_seq_c::get_type()))) begin
          `uvm_fatal("CV32E40SVPSEQ", $sformatf("Could not cast vp_debug_control correctly"));
+      end
+      vp_seq.cv32e40s_cntxt = cntxt;
+   end
+
+   begin
+      uvme_cv32e40s_vp_fencei_tamper_seq_c vp_seq;
+      if (!$cast(vp_seq, data_slv_seq.register_vp_vseq("vp_fencei_tamper", CV_VP_FENCEI_TAMPER_BASE, uvme_cv32e40s_vp_fencei_tamper_seq_c::get_type()))) begin
+         `uvm_fatal("CV32E40SVPSEQ", $sformatf("Could not cast vp_fencei_tamper correctly"));
       end
       vp_seq.cv32e40s_cntxt = cntxt;
    end

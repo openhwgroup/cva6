@@ -90,7 +90,7 @@
         '{word_addr_low : 32'h0000_0000>>2, word_addr_high : 32'h1FFF_FFFF>>2, main : 1'b1, bufferable : 1'b1, cacheable : 1'b1, atomic : 1'b1},
         '{word_addr_low : 32'h2000_0000>>2, word_addr_high : 32'h3FFF_FFFF>>2, main : 1'b1, bufferable : 1'b1, cacheable : 1'b0, atomic : 1'b1},
         '{word_addr_low : 32'h4000_0000>>2, word_addr_high : 32'h5FFF_FFFF>>2, main : 1'b0, bufferable : 1'b1, cacheable : 1'b0, atomic : 1'b1},
-        '{word_addr_low : 32'h6000_0000>>2, word_addr_high : 32'h9FFF_FFFF>>2, main : 1'b1, bufferable : 1'b0, cacheable : 1'b0, atomic : 1'b1},
+        '{word_addr_low : 32'h6000_0000>>2, word_addr_high : 32'h9FFF_FFFF>>2, main : 1'b1, bufferable : 1'b0, cacheable : 1'b1, atomic : 1'b1},
         '{word_addr_low : 32'hA000_0000>>2, word_addr_high : 32'hDFFF_FFFF>>2, main : 1'b0, bufferable : 1'b1, cacheable : 1'b0, atomic : 1'b1},
         '{word_addr_low : 32'hE000_0000>>2, word_addr_high : 32'hE00F_FFFF>>2, main : 1'b0, bufferable : 1'b0, cacheable : 1'b0, atomic : 1'b0},
         '{word_addr_low : 32'hE010_0000>>2, word_addr_high : 32'hFFFF_FFFF>>2, main : 1'b0, bufferable : 1'b1, cacheable : 1'b0, atomic : 1'b1}

@@ -15,16 +15,16 @@ export SHELL = /bin/bash
 
 CV_CORE_REPO   ?= https://github.com/openhwgroup/cv32e40x
 CV_CORE_BRANCH ?= master
-CV_CORE_HASH   ?= 46a17d4409e685ff4aad59ffdaa188fa01f0a5e0
+CV_CORE_HASH   ?= feaf14428b48321e7be3184b4924378917183323
 CV_CORE_TAG    ?= none
 
 RISCVDV_REPO    ?= https://github.com/google/riscv-dv
 RISCVDV_BRANCH  ?= master
-RISCVDV_HASH    ?= f255eac0e011a95f1ae9d510adb24458b98600f3
+RISCVDV_HASH    ?= 96c1ee6f371f2754c45b4831fcab95f6671689d9
 
 EMBENCH_REPO    ?= https://github.com/embench/embench-iot.git
 EMBENCH_BRANCH  ?= master
-EMBENCH_HASH	?= 6934ddd1ff445245ee032d4258fdeb9828b72af4
+EMBENCH_HASH    ?= 6934ddd1ff445245ee032d4258fdeb9828b72af4
 
 COMPLIANCE_REPO   ?= https://github.com/strichmo/riscv-arch-test.git
 COMPLIANCE_BRANCH ?= strichmo/pr/cv32e40x_initial_old_compliance

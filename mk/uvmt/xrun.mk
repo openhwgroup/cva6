@@ -40,10 +40,16 @@ IMC               = $(CV_SIM_PREFIX) imc
 XRUN_UVMHOME_ARG     ?= CDNS-1.2-ML
 
 # Flags
-XRUN_COMP_FLAGS  ?= -64bit -disable_sem2009 -access +rwc \
+XRUN_COMP_FLAGS  ?= -64bit \
+					-disable_sem2009 \
+					-access +rwc \
                     -nowarn UEXPSC \
-                    -sv -uvm -uvmhome $(XRUN_UVMHOME_ARG) \
-                    $(TIMESCALE) $(SV_CMP_FLAGS)
+					-lwdgen \
+                    -sv \
+					-uvm \
+					-uvmhome $(XRUN_UVMHOME_ARG) \
+                    $(TIMESCALE) \
+					$(SV_CMP_FLAGS)
 
 XRUN_LDGEN_COMP_FLAGS ?= -64bit -disable_sem2009 -access +rwc \
 												 -nowarn UEXPSC \
@@ -199,6 +205,9 @@ XRUN_RUN_FLAGS  += -nowarn RNDNOXCEL
 
 # Probes
 XRUN_RUN_FLAGS  += -nowarn PRLDYN
+
+# Physical repository related to logical library in a cds.lib does not exist
+XRUN_COMP_FLAGS += -nowarn DLCPTH
 
 # Allow extra semicolons
 XRUN_COMP_FLAGS += -nowarn UEXPSC

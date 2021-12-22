@@ -36,12 +36,16 @@ class uvma_rvfi_instr_mon_c#(int ILEN=DEFAULT_ILEN,
    // TLM
    uvm_analysis_port#(uvma_rvfi_instr_seq_item_c#(ILEN,XLEN))  ap;
 
+   // State of monitor
+   bit                last_dcsr_nmip = 0;
+
    string log_tag = "RVFIMONLOG";
 
    `uvm_component_utils_begin(uvma_rvfi_instr_mon_c)
-      `uvm_field_int(nret_id, UVM_DEFAULT)
-      `uvm_field_object(cfg  , UVM_DEFAULT)
-      `uvm_field_object(cntxt, UVM_DEFAULT)
+      `uvm_field_int(nret_id,        UVM_DEFAULT)
+      `uvm_field_int(last_dcsr_nmip, UVM_DEFAULT)
+      `uvm_field_object(cfg,         UVM_DEFAULT | UVM_REFERENCE)
+      `uvm_field_object(cntxt,       UVM_DEFAULT | UVM_REFERENCE)
    `uvm_component_utils_end
 
    /**
@@ -176,37 +180,49 @@ task uvma_rvfi_instr_mon_c::monitor_rvfi_instr();
             mon_trn.csrs[csr] = csr_trn;
          end
 
-         // Determine if interrupt is nmi or interrupt
-         mon_trn.insn_nmi        = 0;
-         mon_trn.insn_interrupt  = 0;
-
-         // FIXME:strichmo:This should be incorporated into interrupts
-         if (cfg.nmi_handler_enabled && mon_trn.pc_rdata == cfg.nmi_handler_addr) begin
+         // Decode interrupts that need to be communicated to ISS (external or NMI bus faults)
+         if (mon_trn.intr) begin
+            // The cause of the interrupt should be in the "rdata" field of the mcause CSR RVFI port
             bit [XLEN-1:0] csr_mcause = mon_trn.csrs["mcause"].get_csr_retirement_data();
 
-            mon_trn.insn_nmi = 1;
-            mon_trn.insn_interrupt_id = { 1'b0, csr_mcause[XLEN-2:0] };
-         end
-         else if (mon_trn.intr) begin
-             bit [XLEN-1:0] csr_mcause = mon_trn.csrs["mcause"].get_csr_retirement_data();
-
+            // External interrupt
             if (csr_mcause[31]) begin
-               mon_trn.insn_interrupt    = 1;
-               mon_trn.insn_interrupt_id = { 1'b0, csr_mcause[XLEN-2:0] };
+               // NMI - Load fault
+               if (cfg.nmi_load_fault_enabled && csr_mcause[XLEN-2:0] == cfg.nmi_load_fault_cause) begin
+                  mon_trn.insn_nmi_load_fault = 1;
+               end
+               // NMI - Store fault
+               else if (cfg.nmi_store_fault_enabled && csr_mcause[XLEN-2:0] == cfg.nmi_store_fault_cause) begin
+                  mon_trn.insn_nmi_store_fault = 1;
+               end
+               // External interrupt
+               else begin
+                  mon_trn.insn_interrupt    = 1;
+                  mon_trn.insn_interrupt_id = { 1'b0, csr_mcause[XLEN-2:0] };
+               end
             end
          end
 
-         // In debug mode, detect NMIP event
-         if (cfg.nmi_handler_enabled && mon_trn.csrs["dcsr"].wmask[3] && mon_trn.csrs["dcsr"].wdata[3]) begin
-            mon_trn.insn_nmi = 1;
+         // In debug mode, detect NMIP event for a data bus error
+         if (mon_trn.dbg_mode &&
+             !last_dcsr_nmip &&
+             mon_trn.csrs["dcsr"].get_csr_retirement_data()[3]) begin
+            `uvm_info("RVFIMON", $sformatf("Debug NMIP"), UVM_LOW);
+            // FIXME:henrik:We need to discern load versus store NMI fault,
+            // currently RVFI doesn't allow that.  Issue #339 of cv32e40x GitHub tracks this
+            mon_trn.insn_nmi_load_fault = 1;
          end
 
          // Detect instruction bus fault
          if (cfg.insn_bus_fault_enabled &&
-             mon_trn.trap &&
-             mon_trn.csrs["mcause"].get_csr_retirement_data() == cfg.insn_bus_fault_cause) begin
+             mon_trn.is_trap() &&
+             mon_trn.get_trap_cause() == cfg.insn_bus_fault_cause) begin
             mon_trn.insn_bus_fault = 1;
+            `uvm_info("RVFIMON", $sformatf("Detected bus fault"), UVM_LOW)
          end
+
+         // Latch the last DCSR NMIP bit to detect positive assertion of dcsr.nmip
+         last_dcsr_nmip = mon_trn.csrs["dcsr"].get_csr_retirement_data()[3];
 
          `uvm_info(log_tag, $sformatf("%s", mon_trn.convert2string()), UVM_HIGH);
 
