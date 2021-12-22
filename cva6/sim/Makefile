@@ -35,8 +35,10 @@ TESTNAME := $(shell basename -s .o $(elf-bin))
 #######################################################################################
 #code coverage is deactivated by default
 #To activate the code coverage: define the env variable cov with: (export cov=value) , to deactivate it: (unset cov) OR (export cov= )
+cov-exclude-list ?= $(root-dir)/cov-exclude-mod.lst
+
 ifdef cov
-	cov-comp-opt = -cm line+cond+fsm+tgl+assert
+	cov-comp-opt = -cm line+cond+fsm+tgl+assert -cm_hier $(cov-exclude-list)
 	cov-run-opt  = -cm line+cond+fsm+tgl+assert -cm_name $(TESTNAME)
 else
 	cov-comp-opt =
