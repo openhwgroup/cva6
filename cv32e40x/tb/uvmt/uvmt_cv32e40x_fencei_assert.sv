@@ -108,10 +108,12 @@ module uvmt_cv32e40x_fencei_assert
     (is_fencei_in_wb && wb_valid, pc_next={wb_pc[31:2],2'b00}+4)
     |->
     (
-      (instr_req_o && instr_gnt_i) [->1:2]
+      // Normal execution
+      (instr_req_o && instr_gnt_i) [->1:2]  // next req-gnt (or second next, if ongoing req)
       ##0 (instr_addr_o == pc_next)
     ) or (
-      rvfi_valid [->2]
+      // Exception execution
+      rvfi_valid [->2:3]  // retire: fencei, (optionally "rvfi_trap"), interrupt/debug handler
       ##0 (rvfi_intr || rvfi_dbg_mode)
     );
   endproperty
