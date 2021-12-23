@@ -537,7 +537,7 @@ module uvmt_cv32e40x_debug_assert
         else `uvm_error(info_tag, "Debug mode not entered correctly while handling illegal instruction!");
 
 
-    // Check that "dm_halt_addr_i" is correct
+    // Check that "dm_halt_addr_i" is correct  (TODO:ropeders put in another file)
 
     // Should be stable after "fetch_enable_i"
     logic fetch_enable_i_sticky;

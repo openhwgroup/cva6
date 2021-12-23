@@ -374,6 +374,12 @@ module uvmt_cv32e40x_tb;
     );
 
 
+  // Core integration assertions
+
+  bind cv32e40x_wrapper
+    uvmt_cv32e40x_integration_assert  integration_assert_i (.*);
+
+
   // Debug assertion and coverage interface
 
   // Instantiate debug assertions
