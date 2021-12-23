@@ -178,9 +178,11 @@ module uvmt_cv32e40x_fencei_assert
   if (bufferable_in_config()) begin : gen_c_req_wait_bus
     c_req_wait_bus: cover property (
       $rose(is_fencei_in_wb)
-      ##1 is_fencei_in_wb throughout (
-        ($rose(data_rvalid_i) [->1])
-        ##0 ($rose(fencei_flush_req_o) [->1])
+      ##1 (
+        is_fencei_in_wb throughout (
+          ($rose(data_rvalid_i) [->1])
+          ##0 ($rose(fencei_flush_req_o) [->1])
+        )
       )
     );
   end
