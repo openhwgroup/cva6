@@ -56,7 +56,7 @@ if (sys.version_info < (3,0,0)):
 ################################################################################
 # Globals....
 name_of_ci_check_regression = '<core>_ci_check_dev' # must match the name of one regression list in .metrics.json
-core_tests                  = ['misalign', 'illegal', 'dhrystone', 'fibonacci', 'riscv_ebreak_test_0']
+core_tests                  = ['misalign', 'illegal', 'dhrystone', 'fibonacci'] #, 'riscv_ebreak_test_0'] # FIXME: full pathname of this test is too long for Verilator (seriously!)
 try:
     default_core            = os.environ['CV_CORE']
 except KeyError:
@@ -165,7 +165,7 @@ def check_uvm_results(check_only=0):
 
 
 def check_core_results(run_count):
-    core_runs = subprocess.Popen('grep "EXIT SUCCESS" -R -I ../{}/sim/core/cobj_dir/logs'.format(args.core.lower()),
+    core_runs = subprocess.Popen('grep "EXIT SUCCESS" -R -I ../{}/sim/core/simulation_results'.format(args.core.lower()),
                                  stdout=subprocess.PIPE,
                                  stderr=subprocess.STDOUT,
                                  shell="TRUE")
