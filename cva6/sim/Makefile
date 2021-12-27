@@ -34,7 +34,7 @@ USERDEFINE      = +define+RVFI_TRACE $(user-define)
 ###############################################################################
 VCS                     = vcs
 ALL_VLOGAN_FLAGS        = $(if $(VERDI), -kdb,) -sverilog -assert svaext $(USERDEFINE) -timescale=1ns/1ns
-ALL_VCS_FLAGS           = $(if $(VERDI), -kdb -debug_access+r -lca,) -sverilog -full64 -timescale=1ns/1ns
+ALL_VCS_FLAGS           = $(if $(VERDI), -kdb -debug_access+all -lca,) -sverilog -full64 -timescale=1ns/1ns
 VCS_WORK_DIR            = $(CORE_V_VERIF)/cva6/sim/vcs_results/default/vcs.d
 SIMV                    = $(VCS_WORK_DIR)/simv
 
@@ -81,7 +81,7 @@ ALL_UVM_FLAGS           = -lca -sverilog +incdir+/opt/synopsys/vcs-mx/O-2018.09-
 	  -assert svaext -race=all -ignore unique_checks -full64 -q +incdir+/opt/synopsys/vcs-mx/O-2018.09-SP1-1/etc/uvm/src \
 	  +incdir+$(CORE_V_VERIF)/$(CV_CORE_LC)/env/uvme +incdir+$(CORE_V_VERIF)/$(CV_CORE_LC)/tb/uvmt \
 	  $(USERDEFINE) $(if $(VERDI), -debug_access+all -kdb,)
-ALL_SIMV_UVM_FLAGS      = -licwait 20 -l vcs-hello-world.log -cm_name hello-world +ntb_random_seed=1 \
+ALL_SIMV_UVM_FLAGS      = -licwait 20 -l +ntb_random_seed=1 \
 		-sv_lib $(CORE_V_VERIF)/lib/dpi_dasm/lib/Linux64/libdpi_dasm +signature=I-ADD-01.signature_output \
 		+UVM_TESTNAME=uvmt_cva6_firmware_test_c $(if $(VERDI), -gui,)
 
@@ -97,8 +97,7 @@ vcs_uvm_run:
 	cp Mem_init.txt $(VCS_WORK_DIR)/
 	cd $(VCS_WORK_DIR)/ && \
 	$(VCS_WORK_DIR)/simv ${ALL_SIMV_UVM_FLAGS} \
-		+elf_file=$(CORE_V_VERIF)/cva6/sim/hello-world.elf \
-		+firmware=$(CORE_V_VERIF)/cva6/sim/hello-world.hex && \
+	++$(elf-bin)
 	mv $(VCS_WORK_DIR)/trace_rvfi_hart_00.dasm $(CORE_V_VERIF)/cva6/sim/
 
 vcs_gate_comp:
@@ -162,4 +161,3 @@ help:
 	@echo "Clean-up targets:"
 	@echo "   make clean_all   : Deletes ALL generated files"
 	@echo "Support for other simulators on the ToDo list..."
-
