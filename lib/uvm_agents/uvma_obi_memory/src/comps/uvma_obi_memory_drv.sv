@@ -92,18 +92,9 @@ class uvma_obi_memory_drv_c extends uvm_driver#(
 
    /**
     * Drives the virtual interface's (cntxt.vif) signals using req's contents.
+    * This task handles both READ and WRITE transactions.
     */
    extern task drv_mstr_req(ref uvma_obi_memory_mstr_seq_item_c req);
-
-   /**
-    * Drives the virtual interface's (cntxt.vif) signals using req's contents.
-    */
-   extern task drv_mstr_read_req(ref uvma_obi_memory_mstr_seq_item_c req);
-
-   /**
-    * Drives the virtual interface's (cntxt.vif) signals using req's contents.
-    */
-   extern task drv_mstr_write_req(ref uvma_obi_memory_mstr_seq_item_c req);
 
    /**
     * Drives the virtual interface's (cntxt.vif) signals using req's contents.
@@ -357,30 +348,13 @@ task uvma_obi_memory_drv_c::prep_req(ref uvma_obi_memory_base_seq_item_c req);
 
 endtask : prep_req
 
-
+// Both Master READ and WRITE transactions are handled here because the signalling is almost identical.
 task uvma_obi_memory_drv_c::drv_mstr_req(ref uvma_obi_memory_mstr_seq_item_c req);
 
-   case (req.access_type)
-      UVMA_OBI_MEMORY_ACCESS_READ: begin
-         drv_mstr_read_req(req);
-      end
+   if (req.access_type != UVMA_OBI_MEMORY_ACCESS_READ || req.access_type != UVMA_OBI_MEMORY_ACCESS_WRITE) begin
+     `uvm_fatal("OBI_MEMORY_DRV", $sformatf("Invalid access_type: %0d", req.access_type))
+   end
 
-      UVMA_OBI_MEMORY_ACCESS_WRITE: begin
-         drv_mstr_write_req(req);
-      end
-
-      default: `uvm_fatal("OBI_MEMORY_DRV", $sformatf("Invalid access_type: %0d", req.access_type))
-   endcase
-
-endtask : drv_mstr_req
-
-
-// This task has redundant code with drv_mstr_write_req for the request and
-// address phases.  Rather than create a new method for the common code, the
-// waiver pragmas (@DVT) are placed to warn future maintainers of the situation.
-task uvma_obi_memory_drv_c::drv_mstr_read_req(ref uvma_obi_memory_mstr_seq_item_c req);
-
-//@DVT_LINTER_WAIVER_START "MT20211004_1" disable SVTB.33.1.0, SVTB.33.2.0
    // Req Latency cycles
    repeat (req.req_latency) begin
       @(mstr_mp.drv_mstr_cb);
@@ -392,7 +366,6 @@ task uvma_obi_memory_drv_c::drv_mstr_read_req(ref uvma_obi_memory_mstr_seq_item_
    for (int unsigned ii=0; ii<cfg.addr_width; ii++) begin
       mstr_mp.drv_mstr_cb.addr[ii] <= req.address[ii];
    end
-//@DVT_LINTER_WAIVER_END "MT20211004_1"
    for (int unsigned ii=0; ii<(cfg.data_width/8); ii++) begin
       mstr_mp.drv_mstr_cb.be[ii] <= req.be[ii];
    end
@@ -401,6 +374,16 @@ task uvma_obi_memory_drv_c::drv_mstr_read_req(ref uvma_obi_memory_mstr_seq_item_
    end
    for (int unsigned ii=0; ii<cfg.id_width; ii++) begin
       mstr_mp.drv_mstr_cb.aid[ii] <= req.id[ii];
+   end
+
+   // Handle WRITE
+   if (req.access_type == UVMA_OBI_MEMORY_ACCESS_WRITE) begin
+       for (int unsigned ii=0; ii<cfg.data_width; ii++) begin
+          mstr_mp.drv_mstr_cb.wdata[ii] <= req.wdata[ii];
+       end
+       for (int unsigned ii=0; ii<cfg.wuser_width; ii++) begin
+          mstr_mp.drv_mstr_cb.wuser[ii] <= req.wuser[ii];
+       end
    end
 
    // Wait for grant
@@ -438,77 +421,7 @@ task uvma_obi_memory_drv_c::drv_mstr_read_req(ref uvma_obi_memory_mstr_seq_item_
       @(mstr_mp.drv_mstr_cb);
    end
 
-endtask : drv_mstr_read_req
-
-
-// This task has redundant code with drv_mstr_read_req for the request and
-// address phases.  Rather than create a new method for the common code, the
-// waiver pragmas (@DVT) are placed to warn future maintainers of the situation.
-task uvma_obi_memory_drv_c::drv_mstr_write_req(ref uvma_obi_memory_mstr_seq_item_c req);
-
-//@DVT_LINTER_WAIVER_START "MT20210901_3" disable SVTB.33.1.0, SVTB.33.2.0
-   // Req Latency cycles
-   repeat (req.req_latency) begin
-      @(mstr_mp.drv_mstr_cb);
-   end
-
-   // Address phase
-   mstr_mp.drv_mstr_cb.req <= 1'b1;
-   mstr_mp.drv_mstr_cb.we  <= req.access_type;
-   for (int unsigned ii=0; ii<cfg.addr_width; ii++) begin
-      mstr_mp.drv_mstr_cb.addr[ii] <= req.address[ii];
-   end
-//@DVT_LINTER_WAIVER_END "MT20210901_3"
-   for (int unsigned ii=0; ii<cfg.data_width; ii++) begin
-      mstr_mp.drv_mstr_cb.wdata[ii] <= req.wdata[ii];
-   end
-   for (int unsigned ii=0; ii<(cfg.data_width/8); ii++) begin
-      mstr_mp.drv_mstr_cb.be[ii] <= req.be[ii];
-   end
-   for (int unsigned ii=0; ii<cfg.auser_width; ii++) begin
-      mstr_mp.drv_mstr_cb.auser[ii] <= req.auser[ii];
-   end
-   for (int unsigned ii=0; ii<cfg.wuser_width; ii++) begin
-      mstr_mp.drv_mstr_cb.wuser[ii] <= req.wuser[ii];
-   end
-   for (int unsigned ii=0; ii<cfg.id_width; ii++) begin
-      mstr_mp.drv_mstr_cb.aid[ii] <= req.id[ii];
-   end
-
-   // Wait for grant
-   while (mstr_mp.drv_mstr_cb.gnt !== 1'b1) begin
-      @(mstr_mp.drv_mstr_cb);
-   end
-
-   // Wait for rvalid
-   while (mstr_mp.drv_mstr_cb.rvalid !== 1'b1) begin
-      @(mstr_mp.drv_mstr_cb);
-   end
-   repeat (req.rready_latency) begin
-      @(mstr_mp.drv_mstr_cb);
-   end
-
-   // Response phase
-   mstr_mp.drv_mstr_cb.rready <= 1'b1;
-   mstr_mp.drv_mstr_cb.req    <= 1'b0;
-   repeat (req.rready_hold) begin
-      if (mstr_mp.drv_mstr_cb.rvalid !== 1'b1) begin
-         break;
-      end
-      @(mstr_mp.drv_mstr_cb);
-   end
-   while (mstr_mp.drv_mstr_cb.rvalid === 1'b1) begin
-      @(mstr_mp.drv_mstr_cb);
-   end
-
-   // Tail
-   mstr_mp.drv_mstr_cb.rready <= 1'b0;
-   drv_mstr_idle();
-   repeat (req.tail_length) begin
-      @(mstr_mp.drv_mstr_cb);
-   end
-
-endtask : drv_mstr_write_req
+endtask : drv_mstr_req
 
 
 task uvma_obi_memory_drv_c::drv_slv_req(ref uvma_obi_memory_slv_seq_item_c req);

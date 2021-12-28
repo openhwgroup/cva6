@@ -86,7 +86,7 @@ module uvmt_cv32e40p_iss_wrap
        step_compare_if.ovp_cpu_state_cont  = cpu.control.state_cont;
    end
 
-    function void split(input string in_s, output string s1, s2);
+    function automatic void split(ref string in_s, ref string s1, s2);
         automatic int i;
         for (i=0; i<in_s.len(); i++) begin
             if (in_s.getc(i) == ":")

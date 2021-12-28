@@ -65,7 +65,8 @@ class uvml_logs_rs_json_c extends uvm_default_report_server;
    /**
     *
     */
-   extern virtual function string compose_report_message(uvm_report_message report_message, string report_object_name="");
+   // Waiving Verissimo linter SVTB.32.2.0: Pass strings by reference unless otherwise needed
+   extern virtual function string compose_report_message(uvm_report_message report_message, string report_object_name=""); //@DVT_LINTER_WAIVER "MT20211228_6" disable SVTB.32.2.0
 
 endclass : uvml_logs_rs_json_c
 
