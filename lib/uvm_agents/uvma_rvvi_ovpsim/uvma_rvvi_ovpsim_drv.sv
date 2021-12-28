@@ -31,6 +31,10 @@ class uvma_rvvi_ovpsim_drv_c#(int ILEN=uvma_rvvi_pkg::DEFAULT_ILEN,
    // OVPSim-based step-and-compare requires clock management
    uvma_clknrst_sqr_c clknrst_sequencer;
 
+   // Recast handles to configuration and context
+   uvma_rvvi_ovpsim_cfg_c#(ILEN,XLEN)              rvvi_ovpsim_cfg;
+   uvma_rvvi_ovpsim_cntxt_c#(ILEN,XLEN)            rvvi_ovpsim_cntxt;
+
    `uvm_component_utils_begin(uvma_rvvi_ovpsim_drv_c)
    `uvm_component_utils_end
 
@@ -44,6 +48,11 @@ class uvma_rvvi_ovpsim_drv_c#(int ILEN=uvma_rvvi_pkg::DEFAULT_ILEN,
     * 2. Builds ap.
     */
    extern virtual function void build_phase(uvm_phase phase);
+
+   /**
+    * Recast handles for convenience before test start
+    */
+   extern virtual function void end_of_elaboration_phase(uvm_phase phase);
 
    /**
     * Initialize signals
@@ -78,6 +87,16 @@ class uvma_rvvi_ovpsim_drv_c#(int ILEN=uvma_rvvi_pkg::DEFAULT_ILEN,
     */
    extern virtual task halt(REQ req);
 
+   /**
+    * Special RVVI step to signal an external interrupt is to be taken
+    */
+   extern virtual task stepi_ext_intr(int unsigned intr_id);
+
+   /**
+    * Special RVVI step to signal an external debug request
+    */
+   extern virtual task stepi_haltreq();
+
 endclass : uvma_rvvi_ovpsim_drv_c
 
 function uvma_rvvi_ovpsim_drv_c::new(string name="uvma_rvvi_ovpsim_drv", uvm_component parent=null);
@@ -109,21 +128,26 @@ task uvma_rvvi_ovpsim_drv_c::reset_phase(uvm_phase phase);
 
 endtask : reset_phase
 
-task uvma_rvvi_ovpsim_drv_c::stepi(REQ req);
+function void uvma_rvvi_ovpsim_drv_c::end_of_elaboration_phase(uvm_phase phase);
 
-   uvma_rvvi_ovpsim_cfg_c#(ILEN,XLEN)              rvvi_ovpsim_cfg;
-   uvma_rvvi_ovpsim_cntxt_c#(ILEN,XLEN)            rvvi_ovpsim_cntxt;
-   uvma_rvvi_ovpsim_control_seq_item_c#(ILEN,XLEN) rvvi_ovpsim_seq_item;
+   string log_tag = "RVVIOVPSIMCFG";
 
-   bit[uvma_rvvi_pkg::ORDER_WL-1:0] prev_order;
-
-   // Cast into the OVPSIM context to get access to the BUS interface
    if (!$cast(rvvi_ovpsim_cfg, cfg)) begin
       `uvm_fatal(log_tag, "Failed to cast RVVI cfg to RVVI ovpsim_cfg");
    end
    if (!$cast(rvvi_ovpsim_cntxt, cntxt)) begin
       `uvm_fatal(log_tag, "Failed to cast RVVI cntxt to RVVI ovpsim_cntxt");
    end
+
+endfunction : end_of_elaboration_phase
+
+task uvma_rvvi_ovpsim_drv_c::stepi(REQ req);
+
+   uvma_rvvi_ovpsim_control_seq_item_c#(ILEN,XLEN) rvvi_ovpsim_seq_item;
+
+   bit[uvma_rvvi_pkg::ORDER_WL-1:0] prev_order;
+
+   // Cast into the OVPSIM context to get access to the BUS interface
    if (!$cast(rvvi_ovpsim_seq_item, req)) begin
       `uvm_fatal(log_tag, "Failed to cast control_seq_item to ovpsim_control_seq_item");
    end
@@ -185,6 +209,16 @@ task uvma_rvvi_ovpsim_drv_c::stepi(REQ req);
       @(posedge rvvi_ovpsim_cntxt.ovpsim_bus_vif.Clk);
    end
 
+   // Signal an interrupt to the ISS if mcause and rvfi_intr signals external interrupt
+   if (rvvi_ovpsim_seq_item.intr) begin
+      stepi_ext_intr(rvvi_ovpsim_seq_item.intr_id);
+   end
+
+   // External halt request to debug mode
+   if (rvvi_ovpsim_seq_item.dbg_req) begin
+      stepi_haltreq();
+   end
+
    // Signal instruction bus fault
    if (rvvi_ovpsim_seq_item.insn_bus_fault) begin
       rvvi_ovpsim_cntxt.control_vif.stepi();
@@ -192,25 +226,6 @@ task uvma_rvvi_ovpsim_drv_c::stepi(REQ req);
       rvvi_ovpsim_cntxt.ovpsim_io_vif.InstructionBusFault = 1;
       @(rvvi_ovpsim_cntxt.state_vif.notify);
       rvvi_ovpsim_cntxt.ovpsim_io_vif.InstructionBusFault = 0;
-      @(posedge rvvi_ovpsim_cntxt.ovpsim_bus_vif.Clk);
-   end
-
-   // Signal an interrupt to the ISS if mcause and rvfi_intr signals external interrupt
-   if (rvvi_ovpsim_seq_item.intr) begin
-      rvvi_ovpsim_cntxt.ovpsim_io_vif.deferint = 1'b0;
-      rvvi_ovpsim_cntxt.ovpsim_io_vif.irq_i    = 1 << (rvvi_ovpsim_seq_item.intr_id);
-      rvvi_ovpsim_cntxt.control_vif.stepi();
-      @(rvvi_ovpsim_cntxt.state_vif.notify);
-      rvvi_ovpsim_cntxt.ovpsim_io_vif.deferint = 1'b1;
-      @(posedge rvvi_ovpsim_cntxt.ovpsim_bus_vif.Clk);
-   end
-
-   // External halt request to debug mode
-   if (rvvi_ovpsim_seq_item.dbg_req) begin
-      rvvi_ovpsim_cntxt.ovpsim_io_vif.haltreq  = 1'b1;
-      rvvi_ovpsim_cntxt.control_vif.stepi();
-      @(rvvi_ovpsim_cntxt.state_vif.notify);
-      rvvi_ovpsim_cntxt.ovpsim_io_vif.haltreq = 1'b0;
       @(posedge rvvi_ovpsim_cntxt.ovpsim_bus_vif.Clk);
    end
 
@@ -222,7 +237,9 @@ task uvma_rvvi_ovpsim_drv_c::stepi(REQ req);
    if (rvvi_ovpsim_seq_item.rd1_addr != 0)
       rvvi_ovpsim_cntxt.state_vif.GPR_rtl[rvvi_ovpsim_seq_item.rd1_addr] = rvvi_ovpsim_seq_item.rd1_wdata;
 
-   // Step the ISS and wait for ISS to complete
+   // --------------------------------------------------------------------------------
+   // Step the ISS to get to the next instruction and wait for ISS to complete
+   // --------------------------------------------------------------------------------
    while (prev_order == rvvi_ovpsim_cntxt.state_vif.order) begin
       rvvi_ovpsim_cntxt.control_vif.stepi();
       @(rvvi_ovpsim_cntxt.state_vif.notify);
@@ -260,6 +277,28 @@ task uvma_rvvi_ovpsim_drv_c::restart_clknrst();
    restart_clk_seq.start(clknrst_sequencer);
 
 endtask : restart_clknrst
+
+task uvma_rvvi_ovpsim_drv_c::stepi_haltreq();
+
+   rvvi_ovpsim_cntxt.ovpsim_io_vif.haltreq  = 1'b1;
+   rvvi_ovpsim_cntxt.control_vif.stepi();
+   @(rvvi_ovpsim_cntxt.state_vif.notify);
+   rvvi_ovpsim_cntxt.ovpsim_io_vif.haltreq = 1'b0;
+   @(posedge rvvi_ovpsim_cntxt.ovpsim_bus_vif.Clk);
+
+endtask : stepi_haltreq
+
+task uvma_rvvi_ovpsim_drv_c::stepi_ext_intr(int unsigned intr_id);
+
+   rvvi_ovpsim_cntxt.ovpsim_io_vif.deferint = 1'b0;
+   rvvi_ovpsim_cntxt.ovpsim_io_vif.irq_i    = 1 << (intr_id);
+   rvvi_ovpsim_cntxt.control_vif.stepi();
+   @(rvvi_ovpsim_cntxt.state_vif.notify);
+   rvvi_ovpsim_cntxt.ovpsim_io_vif.deferint = 1'b1;
+   @(posedge rvvi_ovpsim_cntxt.ovpsim_bus_vif.Clk);
+   rvvi_ovpsim_cntxt.ovpsim_io_vif.deferint = 1'b1;
+
+endtask : stepi_ext_intr
 
 `endif // __UVMA_RVVI_OVPSIM_DRV_SV__
 

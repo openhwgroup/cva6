@@ -306,9 +306,11 @@ function void uvme_cv32e40s_core_sb_c::check_instr(uvma_rvfi_instr_seq_item_c#(I
    end
 
    // CHECK: insn
-   if (rvfi_instr.insn != rvvi_state.insn) begin
-      `uvm_error("CORESB", $sformatf("INSN Mismatch, order: %0d, rvfi.insn = 0x%08x, rvvi.insn = 0x%08x",
-                                     rvfi_instr.order, rvfi_instr.insn, rvvi_state.insn));
+   if (!rvfi_instr.trap) begin
+      if (rvfi_instr.insn != rvvi_state.insn) begin
+         `uvm_error("CORESB", $sformatf("INSN Mismatch, order: %0d, rvfi.pc = 0x%08x, rvfi.insn = 0x%08x, rvvi.insn = 0x%08x",
+                                       rvfi_instr.order, rvfi_instr.pc_rdata, rvfi_instr.insn, rvvi_state.insn));
+      end
    end
 
    // Heartbeat message
@@ -347,8 +349,9 @@ function void uvme_cv32e40s_core_sb_c::check_csr(uvma_rvfi_instr_seq_item_c#(ILE
                                                  uvma_rvvi_state_seq_item_c#(ILEN,XLEN) rvvi_state);
 
    foreach (rvfi_instr.csrs[i]) begin
-      string csr = rvfi_instr.csrs[i].csr;
       bit[XLEN-1:0] exp_csr_value;
+      bit[XLEN-1:0] csr_mask = {XLEN{1'b1}};
+      string        csr = rvfi_instr.csrs[i].csr;
 
       // Skip disabled CSR checks from configuration object
       if (cfg.is_csr_check_disabled(csr)) continue;
@@ -358,17 +361,24 @@ function void uvme_cv32e40s_core_sb_c::check_csr(uvma_rvfi_instr_seq_item_c#(ILE
          `uvm_fatal("CORESB", $sformatf("CSR %s from RVFI does not exist in RVVI state interface", csr));
       end
 
+      // Adjust CSR mask
+      // Skip dcsr.nmip check in non-debug mode
+      if (csr == "dcsr" && !rvfi_instr.dbg_mode) begin
+         csr_mask[3] = 0;
+      end
+
       csr_checked_cnt++;
 
       exp_csr_value = rvfi_instr.csrs[i].get_csr_retirement_data();
 
-      if (exp_csr_value != rvvi_state.csr[csr]) begin
-         `uvm_error("CORESB", $sformatf("CSR Mismatch, order: %0d, pc: 0x%08x, csr: %s, rvfi = 0x%08x, rvvi = 0x%08x",
+      if ((exp_csr_value & csr_mask) != rvvi_state.csr[csr]) begin
+         `uvm_error("CORESB", $sformatf("CSR Mismatch, order: %0d, pc: 0x%08x, csr: %s, rvfi = 0x%08x, rvvi = 0x%08x, mask = 0x%08x",
                                         rvfi_instr.order,
                                         rvfi_instr.pc_rdata,
                                         csr,
                                         exp_csr_value,
-                                        rvvi_state.csr[csr]));
+                                        rvvi_state.csr[csr],
+                                        csr_mask));
       end
    end
 

@@ -123,7 +123,8 @@ class uvme_debug_covg extends uvm_component;
         en : coverpoint cntxt.debug_cov_vif.mon_cb.tdata1[2] {
             bins active = {1};
         }
-        match: coverpoint cntxt.debug_cov_vif.mon_cb.trigger_match_i {
+        match: coverpoint cntxt.debug_cov_vif.mon_cb.trigger_match_in_wb {
+            //TODO:ropeders should use the wb_valid-qualified "is_trigger_match"?
             bins hit = {1};
         }
         ok_match: cross en, match;
@@ -222,7 +223,7 @@ class uvme_debug_covg extends uvm_component;
         mmode: coverpoint cntxt.debug_cov_vif.mon_cb.debug_mode_q {
             bins hit = {0};
         }
-        trigger : coverpoint cntxt.debug_cov_vif.mon_cb.trigger_match_i {
+        trigger : coverpoint cntxt.debug_cov_vif.mon_cb.trigger_match_in_wb {
             bins hit = {1};
         }
         wfi : coverpoint cntxt.debug_cov_vif.mon_cb.is_wfi {
@@ -262,7 +263,7 @@ class uvme_debug_covg extends uvm_component;
         irq  : coverpoint |cntxt.debug_cov_vif.mon_cb.irq_i {
                 bins trans_active = (1'b0 => 1'b1);
         }
-        trigger : coverpoint cntxt.debug_cov_vif.mon_cb.trigger_match_i {
+        trigger : coverpoint cntxt.debug_cov_vif.mon_cb.trigger_match_in_wb {
             bins hit = {1};
         }
         ill : coverpoint (cntxt.debug_cov_vif.mon_cb.illegal_insn_i && cntxt.debug_cov_vif.mon_cb.wb_valid) {
@@ -391,10 +392,10 @@ class uvme_debug_covg extends uvm_component;
     // Cover that we get all combinations of debug causes
     covergroup cg_debug_causes;
         `per_instance_fcov
-        tmatch : coverpoint cntxt.debug_cov_vif.mon_cb.trigger_match_i {
+        tmatch : coverpoint cntxt.debug_cov_vif.mon_cb.trigger_match_in_wb {
             bins match= {1'b1};
         }
-        tnomatch : coverpoint cntxt.debug_cov_vif.mon_cb.trigger_match_i {
+        tnomatch : coverpoint cntxt.debug_cov_vif.mon_cb.trigger_match_in_wb {
             bins nomatch= {1'b0};
         }
          ebreak : coverpoint cntxt.debug_cov_vif.mon_cb.is_ebreak {

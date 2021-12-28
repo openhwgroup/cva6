@@ -42,6 +42,7 @@ module uvmt_cv32e40x_debug_assert
   logic [2:0] debug_cause_pri;
   logic [31:0] boot_addr_at_entry;
   logic [31:0] mtvec_addr;
+  logic        is_trigger_match;
 
   // Locally track pc in ID stage to detect first instruction of debug code
   logic first_debug_ins_flag;
@@ -57,12 +58,12 @@ module uvmt_cv32e40x_debug_assert
   default disable iff !(cov_assert_if.rst_ni);
 
   assign cov_assert_if.is_ebreak =
-    cov_assert_if.wb_stage_instr_valid_i
+    cov_assert_if.wb_valid
     && !cov_assert_if.wb_err
     && (cov_assert_if.wb_stage_instr_rdata_i == 32'h0010_0073);
 
   assign cov_assert_if.is_cebreak =
-    cov_assert_if.wb_stage_instr_valid_i
+    cov_assert_if.wb_valid
     && !cov_assert_if.wb_err
     && (cov_assert_if.wb_stage_instr_rdata_i == 32'h0000_9002);
 
@@ -71,6 +72,8 @@ module uvmt_cv32e40x_debug_assert
     && (cov_assert_if.wb_stage_instr_rdata_i[31:25] == 7'h1)
     && (cov_assert_if.wb_stage_instr_rdata_i[14:12] == 3'b010)
     && (cov_assert_if.wb_stage_instr_rdata_i[6:0]   == 7'h33);
+
+  assign is_trigger_match = cov_assert_if.trigger_match_in_wb && cov_assert_if.wb_valid;
 
   assign mtvec_addr = {cov_assert_if.mtvec[31:2], 2'b00};
 
@@ -88,7 +91,7 @@ module uvmt_cv32e40x_debug_assert
             ##0 cov_assert_if.wb_valid [->2])  // Go to next two WB done
         or
         (cov_assert_if.wb_valid [->1]  // Go directly to next WB done
-            ##0 (cov_assert_if.dcsr_q[8:6] == 3))  // Need good reason to forgo $fell(instr_valid)
+            ##0 (cov_assert_if.dcsr_q[8:6] inside {3, 4}))  // Need good reason to forgo $fell(instr_valid)
         ;
     endsequence
 
@@ -105,17 +108,25 @@ module uvmt_cv32e40x_debug_assert
         else `uvm_error(info_tag, $sformatf("Debug mode not entered after exepected cause %d", debug_cause_pri));
 
 
-    // Check that depc gets the correct value when debug mode is entered.
+    // Check that dpc gets the correct value when debug mode is entered.
 
-    property p_debug_mode_pc;
+    a_debug_mode_pc: assert property(
         $rose(first_debug_ins)
         |->
-        cov_assert_if.debug_mode_q && (cov_assert_if.wb_stage_pc == halt_addr_at_entry)
-        && (cov_assert_if.depc_q == pc_at_dbg_req);
-    endproperty
+        cov_assert_if.wb_stage_pc == halt_addr_at_entry
+        ) else `uvm_error(info_tag, $sformatf("Debug mode entered with wrong pc. pc==%08x", cov_assert_if.wb_stage_pc));
 
-    a_debug_mode_pc: assert property(p_debug_mode_pc)
-        else `uvm_error(info_tag, $sformatf("Debug mode entered with wrong pc. pc==%08x", cov_assert_if.wb_stage_pc));
+    a_debug_mode_pc_dpc: assert property(
+        $rose(first_debug_ins)
+        |->
+        cov_assert_if.depc_q == pc_at_dbg_req
+        ) else `uvm_error(info_tag, $sformatf("Debug mode entered with wrong dpc. dpc==%08x", cov_assert_if.depc_q));
+
+    a_debug_mode_pc_dmode: assert property(
+        $rose(first_debug_ins)
+        |->
+        cov_assert_if.debug_mode_q
+        ) else `uvm_error(info_tag, "First debug mode instruction predicted wrongly");
 
 
     // Check that dcsr.cause is as expected
@@ -156,10 +167,12 @@ module uvmt_cv32e40x_debug_assert
         disable iff(!cov_assert_if.rst_ni)
         $rose(cov_assert_if.is_cebreak) && !cov_assert_if.debug_mode_q
         && !cov_assert_if.dcsr_q[2] && !cov_assert_if.dcsr_q[15]
-        ##0 (!cov_assert_if.pending_debug && !cov_assert_if.irq_ack_o throughout ##1 cov_assert_if.wb_valid [->1])
-        // TODO:ropeders can this specificity be in consequent instead?
+        ##0 (
+          (!cov_assert_if.pending_debug && !cov_assert_if.irq_ack_o && !cov_assert_if.pending_nmi)
+          throughout (##1 cov_assert_if.wb_valid [->1])
+          )
         |->
-        !cov_assert_if.debug_mode_q && (cov_assert_if.mcause_q[5:0] === cv32e40x_pkg::EXC_CAUSE_BREAKPOINT)
+        !cov_assert_if.debug_mode_q && (cov_assert_if.mcause_q[30:0] === cv32e40x_pkg::EXC_CAUSE_BREAKPOINT)
         && (cov_assert_if.mepc_q == pc_at_ebreak) && (cov_assert_if.wb_stage_pc == mtvec_addr);
         // TODO:ropeders need assertions for what happens if cebreak and req/irq?
     endproperty
@@ -175,10 +188,12 @@ module uvmt_cv32e40x_debug_assert
         disable iff(!cov_assert_if.rst_ni)
         $rose(cov_assert_if.is_ebreak) && !cov_assert_if.dcsr_q[15]
         && !cov_assert_if.debug_mode_q && !cov_assert_if.dcsr_q[2]
-        ##0 (!cov_assert_if.pending_debug && !cov_assert_if.irq_ack_o throughout ##1 cov_assert_if.wb_valid [->1])
-        // TODO:ropeders can this specificity be in consequent instead?
+        ##0 (
+          (!cov_assert_if.pending_debug && !cov_assert_if.irq_ack_o && !cov_assert_if.pending_nmi)
+          throughout (##1 cov_assert_if.wb_valid [->1])
+          )
         |->
-        !cov_assert_if.debug_mode_q && (cov_assert_if.mcause_q[5:0] === cv32e40x_pkg::EXC_CAUSE_BREAKPOINT)
+        !cov_assert_if.debug_mode_q && (cov_assert_if.mcause_q[30:0] === cv32e40x_pkg::EXC_CAUSE_BREAKPOINT)
         && (cov_assert_if.mepc_q == pc_at_ebreak) && (cov_assert_if.wb_stage_pc == mtvec_addr);
     endproperty
 
@@ -217,7 +232,7 @@ module uvmt_cv32e40x_debug_assert
     // Trigger match results in debug mode
 
     property p_trigger_match;
-        cov_assert_if.trigger_match_i ##0 cov_assert_if.tdata1[2] ##0 !cov_assert_if.debug_mode_q
+        is_trigger_match ##0 cov_assert_if.tdata1[2] ##0 !cov_assert_if.debug_mode_q
         |->
         s_conse_next_retire
         ##0 cov_assert_if.debug_mode_q && (cov_assert_if.dcsr_q[8:6] === cv32e40x_pkg::DBG_CAUSE_TRIGGER)
@@ -324,7 +339,7 @@ module uvmt_cv32e40x_debug_assert
     // Exception while single step -> PC is set to exception handler before debug
     property p_single_step_exception;
         !cov_assert_if.debug_mode_q && cov_assert_if.dcsr_q[2]
-        && cov_assert_if.illegal_insn_i && cov_assert_if.wb_valid && !cov_assert_if.trigger_match_i
+        && cov_assert_if.illegal_insn_i && cov_assert_if.wb_valid && !is_trigger_match
         |-> ##[1:20] cov_assert_if.debug_mode_q && (cov_assert_if.depc_q == mtvec_addr);
     endproperty
 
@@ -387,8 +402,10 @@ module uvmt_cv32e40x_debug_assert
 
     sequence s_dmode_dret_pc_ante;  // Antecedent
         cov_assert_if.debug_mode_q && cov_assert_if.is_dret
-        ##1 (!cov_assert_if.pending_debug && !cov_assert_if.irq_ack_o throughout cov_assert_if.wb_stage_instr_valid_i[->1]);
-        // TODO:ropeders can this req/irq clause be in consequent?
+        ##1 (
+          (!cov_assert_if.pending_debug && !cov_assert_if.irq_ack_o && !cov_assert_if.pending_nmi)
+          throughout (cov_assert_if.wb_stage_instr_valid_i [->1])
+          );
     endsequence
 
     property p_dmode_dret_pc;
@@ -520,6 +537,29 @@ module uvmt_cv32e40x_debug_assert
         else `uvm_error(info_tag, "Debug mode not entered correctly while handling illegal instruction!");
 
 
+    // Check that "dm_halt_addr_i" is correct
+
+    // Should be stable after "fetch_enable_i"
+    logic fetch_enable_i_sticky;
+    always @(posedge cov_assert_if.clk_i or negedge cov_assert_if.rst_ni) begin
+        if (!cov_assert_if.rst_ni) begin
+            fetch_enable_i_sticky <= 0;
+        end else if (cov_assert_if.fetch_enable_i) begin
+            fetch_enable_i_sticky <= 1;
+        end
+    end
+    a_dmhaltaddr_stable : assert property (
+        fetch_enable_i_sticky
+        |->
+        $stable(cov_assert_if.dm_halt_addr_i)
+        ) else `uvm_error(info_tag, "dm_halt_addr_i changed after fetch_enable_i");
+
+    // Should be word-aligned
+    a_dmhaltaddr_aligned : assert property (
+        cov_assert_if.dm_halt_addr_i[1:0] == 2'b00
+        ) else `uvm_error(info_tag, "TODO");
+
+
     // -------------------------------------------
     // Capture internal states for use in checking
     // -------------------------------------------
@@ -552,6 +592,13 @@ module uvmt_cv32e40x_debug_assert
                     pc_at_dbg_req <= mtvec_addr + (cov_assert_if.irq_id_o << 2);
                 end
             end
+            if(cov_assert_if.pending_nmi && cov_assert_if.nmi_allowed && (cov_assert_if.ctrl_fsm_cs == cv32e40x_pkg::FUNCTIONAL))
+            begin
+                //TODO:ropeders shouldn't "nmi_allowed" be trustable without "ctrl_fsm_cs"?
+                //TODO:ropeders shouldn't "dcsr.nmip" be usable as a "dpc" pedictor?
+                //TODO:ropeders shouldn't there be an assert for "dpc" not only on first instr in dmode?
+                pc_at_dbg_req <= cov_assert_if.nmi_addr_i;
+            end
             if(cov_assert_if.debug_mode_q && started_decoding_in_debug) begin
                 pc_at_dbg_req <= pc_at_dbg_req;
             end
@@ -583,6 +630,7 @@ module uvmt_cv32e40x_debug_assert
   // Capture dm_halt_addr_i value
 
   always@ (posedge cov_assert_if.clk_i or negedge cov_assert_if.rst_ni) begin
+      //TODO:ropeders this should be entirely unnecessary because user manual says it should be stable. Could remove?
       if(!cov_assert_if.rst_ni) begin
           halt_addr_at_entry_flag <= 1'b0;
       end else begin
@@ -632,20 +680,20 @@ module uvmt_cv32e40x_debug_assert
     always@ (posedge cov_assert_if.clk_i or negedge cov_assert_if.rst_ni) begin
         if( !cov_assert_if.rst_ni) begin
             debug_cause_pri <= 3'b000;
-        end else begin
-            if((cov_assert_if.ctrl_fsm_cs == cv32e40x_pkg::FUNCTIONAL) && !cov_assert_if.debug_mode_q) begin
-                if (cov_assert_if.trigger_match_i)
-                    debug_cause_pri <= 3'b010;
-                else if(cov_assert_if.dcsr_q[15] && (cov_assert_if.is_ebreak || cov_assert_if.is_cebreak))
-                    debug_cause_pri <= 3'b001;
-                else if(cov_assert_if.debug_req_i || cov_assert_if.debug_req_q)
-                    debug_cause_pri <= 3'b011;
-                else if(cov_assert_if.dcsr_q[2])
-                    debug_cause_pri <= 3'b100;
-                else
-                    debug_cause_pri <= 3'b000;
-                // TODO:ropeders should have cause 5 when RTL is ready
+        end else if(!cov_assert_if.debug_mode_q) begin
+            if (is_trigger_match) begin
+                debug_cause_pri <= 3'b010;  // Trigger match
+            end else if(cov_assert_if.dcsr_q[15] && (cov_assert_if.is_ebreak || cov_assert_if.is_cebreak)) begin
+                debug_cause_pri <= 3'b001;  // Ebreak
+            end else if((cov_assert_if.debug_req_i || cov_assert_if.debug_req_q)
+                        && (cov_assert_if.ctrl_fsm_cs == cv32e40x_pkg::FUNCTIONAL)) begin
+                debug_cause_pri <= 3'b011;  // Haltreq
+            end else if((cov_assert_if.dcsr_q[2]) && (debug_cause_pri inside {3'b100, 0})) begin  // "step"
+                debug_cause_pri <= 3'b100;  // Single step
+            end else if(cov_assert_if.ctrl_fsm_cs == cv32e40x_pkg::FUNCTIONAL) begin
+                debug_cause_pri <= 3'b000;  // (not a cause)
             end
+            // TODO:ropeders should have cause 5 when RTL is ready
         end
     end
 

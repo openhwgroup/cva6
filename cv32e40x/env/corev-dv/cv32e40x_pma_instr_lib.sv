@@ -148,6 +148,25 @@ class corev_load_pma_instr_stream extends corev_load_store_pma_base_stream;
     end
   endfunction : add_pma_load
 
+  function void post_randomize();
+    // Cannot call super.randomize() because the parent class will add more instructions
+    // that can corrupt this stream, this is a replication of the base class post_randomze()
+    // This needs a better solution, file Issue on this
+    add_mixed_instr(num_mixed_instr);
+
+    foreach(instr_list[i]) begin
+      instr_list[i].has_label = 1'b0;
+      instr_list[i].atomic = 1'b1;
+    end
+    instr_list[0].comment = $sformatf("Start %0s", get_name());
+    instr_list[$].comment = $sformatf("End %0s", get_name());
+    if(label!= "") begin
+      instr_list[0].label = label;
+      instr_list[0].has_label = 1'b1;
+    end
+
+  endfunction : post_randomize
+
 endclass : corev_load_pma_instr_stream
 
 // -----------------------------------------------------------------------------
@@ -282,6 +301,10 @@ class corev_load_store_pma_mixed_instr_stream extends corev_load_store_pma_base_
 
 
   function void post_randomize();
+    // Cannot call super.randomize() because the parent class will add more instructions
+    // that can corrupt this stream, this is a replication of the base class post_randomze()
+    // This needs a better solution, file Issue on this
+
     randomize_offset();
     // rs1 cannot be modified by other instructions
     if(!(rs1_reg inside {reserved_rd})) begin
@@ -290,8 +313,20 @@ class corev_load_store_pma_mixed_instr_stream extends corev_load_store_pma_base_
     add_pma_load_store_mixed(cnt);
     add_mixed_instr(num_mixed_instr);
     add_rs1_init_la_instr(rs1_reg, data_page_id, base);
-    super.post_randomize();
+
+    foreach(instr_list[i]) begin
+      instr_list[i].has_label = 1'b0;
+      instr_list[i].atomic = 1'b1;
+    end
+    instr_list[0].comment = $sformatf("Start %0s", get_name());
+    instr_list[$].comment = $sformatf("End %0s", get_name());
+    if(label!= "") begin
+      instr_list[0].label = label;
+      instr_list[0].has_label = 1'b1;
+    end
+
   endfunction
+
 endclass : corev_load_store_pma_mixed_instr_stream
 
 // -----------------------------------------------------------------------------
@@ -340,6 +375,10 @@ class corev_load_store_pma_misaligned_instr_stream extends corev_load_store_pma_
   endfunction : add_pma_load_store_mixed
 
   function void post_randomize();
+    // Cannot call super.randomize() because the parent class will add more instructions
+    // that can corrupt this stream, this is a replication of the base class post_randomze()
+    // This needs a better solution, file Issue on this
+
     randomize_offset();
     // rs1 cannot be modified by other instructions
     if(!(rs1_reg inside {reserved_rd})) begin
@@ -348,8 +387,19 @@ class corev_load_store_pma_misaligned_instr_stream extends corev_load_store_pma_
     add_pma_load_store_mixed(cnt);
     add_mixed_instr(num_mixed_instr);
     add_rs1_init_la_instr(rs1_reg, data_page_id, base);
-    super.post_randomize();
+
+    foreach(instr_list[i]) begin
+      instr_list[i].has_label = 1'b0;
+      instr_list[i].atomic = 1'b1;
+    end
+    instr_list[0].comment = $sformatf("Start %0s", get_name());
+    instr_list[$].comment = $sformatf("End %0s", get_name());
+    if(label!= "") begin
+      instr_list[0].label = label;
+      instr_list[0].has_label = 1'b1;
+    end
   endfunction
+
 endclass : corev_load_store_pma_misaligned_instr_stream
 
 // #############################################################################
@@ -395,6 +445,12 @@ class corev_jalr_pma_instr extends riscv_jal_instr;
 
   constraint valid_region_c {
     fwd_addr inside {[(pma_cfg.regions[index].word_addr_low)<<2:pma_cfg.regions[index].word_addr_high<<2]};
+
+  }
+
+  constraint fwd_addr_max_c {
+    // OVPSim cannot fetch instructions at end of its memory
+    fwd_addr <= 32'hffff_fff0;
   }
 
   constraint instr_c {
