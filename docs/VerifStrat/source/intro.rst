@@ -66,7 +66,7 @@ cores currently in development:
 - `CVA6 RTL source <https://github.com/openhwgroup/cva6>`_
 - `CVA6 user manual <https://cva6.readthedocs.io/en/latest/intro.html>`_
 
-The OpenHW Group also maintains the following repositories for stand-alone verification components.
+The OpenHW Group also maintains the following repositories for stand-alone verification components:
 
 - `FORCE-RISCV <https://github.com/openhwgroup/force-riscv>`_ Instruction stream generator denotated by Futurewei.
 
@@ -76,18 +76,23 @@ Definition of Terms
 +---------------+--------------------------------------------------------------------+
 | Term          | Defintion                                                          |
 +===============+====================================================================+
-| CORE-V        | A family of RISC-V cores developed by the OpenHW Group.            |
+| BSP           | Board Support Package. A set of support files, such as a C         |
+|               | runtime configuration (crt0.S), linker control script (link.ld),   |
+|               | etc. that are used to define the software envrionment used by a    |
+|               | test-program.                                                      |
 +---------------+--------------------------------------------------------------------+
-| Member        | A company or organization that signs-on with the OpenHW            |
-| Company       | Group and contributes resources (capital, people,                  |
-| (MemberCo)    | infrastructure, software tools etc.) to the CORE-V                 |
-|               | verification project.                                              |
+| Committer     | A Contributor who has privileges to approve and merge              |
+|               | pull-requests into OpenHW Group GitHub repositories.               |
 +---------------+--------------------------------------------------------------------+
 | Contributor   | An employee of a Member Company that has been assigned to          |
 |               | work on an OpenHW Group project.                                   |
 +---------------+--------------------------------------------------------------------+
-| Committer     | A Contributor who has privileges to approve and merge              |
-|               | pull-requests into OpenHW Group GitHub repositories.               |
+| CORE-V        | A family of RISC-V cores developed by the OpenHW Group.            |
++---------------+--------------------------------------------------------------------+
+| ELF           | Executable and Linkable Format, is a common standard file          |
+|               | format for executable files. The RISC-V GCC toolchain              |
+|               | compiles C and/or RISC-V Assembly source files into ELF            |
+|               | files.                                                             |
 +---------------+--------------------------------------------------------------------+
 | Instruction   | A behavioural model of a CPU. An ISS can execute the same          |
 | Set           | code as a real CPU and will produce the same logical               |
@@ -95,28 +100,13 @@ Definition of Terms
 | (ISS)         | state, such as GPRs and CSRs are modelled, and any                 |
 |               | internal pipelines of the CPU are abstracted away.                 |
 +---------------+--------------------------------------------------------------------+
-| ELF           | Executable and Linkable Format, is a common standard file          |
-|               | format for executable files. The RISC-V GCC toolchain              |
-|               | compiles C and/or RISC-V Assembly source files into ELF            |
-|               | files.                                                             |
+| Member        | A company or organization that signs-on with the OpenHW            |
+| Company       | Group and contributes resources (capital, people,                  |
+| (MemberCo)    | infrastructure, software tools etc.) to the CORE-V                 |
+|               | verification project.                                              |
 +---------------+--------------------------------------------------------------------+
 | Toolchain     | A set of software tools used to compile C and/or RISC-V            |
-|               | assembler code into an executable format. In the case of           |
-|               | the CV32E and CVA6, this includes the supported RISC-V             |
-|               | ISA compliant instructions, plus a set of XPULP extended           |
-|               | instructions.                                                      |
-+---------------+--------------------------------------------------------------------+
-| BSP           | Board Support Package. A set of support files, such as a C         |
-|               | runtime configuration (crt0.S), linker control script (link.ld),   |
-|               | etc. that are used to define the software envrionment used by a    |
-|               | test-program.                                                      |
-+---------------+--------------------------------------------------------------------+
-| TPE           | Test-program Environment.  A less widely used term for BSP.        |
-+---------------+--------------------------------------------------------------------+
-| Verification  | Code, scripts, configuration files and Makefiles used in           |
-| Environment   | pre-silicon verification. Typically a testbench is a               |
-|               | component of the verification environment, but the terms           |
-|               | are often used interchangeably.                                    |
+|               | assembler code into an executable format.                          |
 +---------------+--------------------------------------------------------------------+
 | Testbench     | In UVM verification environments, a testbench is a                 |
 |               | SystemVerilog module that instantiates the device under            |
@@ -137,7 +127,14 @@ Definition of Terms
 |               |                                                                    |
 |               | In core-v-verif a test-program is not aware of the UVM testcase.   |
 +---------------+--------------------------------------------------------------------+
-| $CORE_V_VERIF | Local path of a cloned working directroy of this GitHub repository.|
+| TPE           | Test-program Environment.  A less widely used term for BSP.        |
++---------------+--------------------------------------------------------------------+
+| Verification  | An object constructed from a SystemVerilog class that is an        |
+| Environment   | extension of `uvm_environment`.  In common usage "verification     |
+|               | environment" can also mean the environment object plus all of its  |
+|               | members.                                                           |
++---------------+--------------------------------------------------------------------+
+| $CORE_V_VERIF | Local path of a cloned working directory of this GitHub repository.|
 |               | An example to illustrate:                                          |
 |               |                                                                    |
 |               | [prompt]$ cd /wrk/rick/openhw                                      |
@@ -146,8 +143,8 @@ Definition of Terms
 |               |                                                                    |
 |               | Here $CORE_V_VERIF is /wrk/rick/openhw/core-v-verif. Note          |
 |               | that this is not a variable the user is required to set. Its use   |
-|               | in this document is merely as a reference point for an absolute    |
-|               | path to your working directory.                                    |
+|               | in this document is merely used as a reference point for an        |
+|               | absolute path to your working directory.                           |
 +---------------+--------------------------------------------------------------------+
 | $COREV_CORE   | Shell and Make variable identifying a specific CORE-V core.        |
 |               | The most often used example in this document is CV32E40P.          |

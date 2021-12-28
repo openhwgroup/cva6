@@ -28,10 +28,8 @@ core, such as the CV32E40P, this chapter details how the components,
 structure and organization of core-v-verif are used to implement and deploy a
 complete simulation verification environment for any core in the CORE-V family.
 
-.. Note::
-   This chapter of the Verification Strategy is a work-in-progress.  It contains
-   several forward looking statements about verification components that are
-   defined, but yet to be implemented.
+**Note:** This chapter of the Verification Strategy is a work-in-progress.
+It contains several forward looking statements about verification components that are defined, but yet to be implemented.
 
 The core-v-verif project is not a single verification environment that is
 capbable of supporting any-and-all CORE-V cores. Rather, core-v-verif supports
@@ -148,34 +146,6 @@ modifying a Testbench module from a previous generation.   The SystemVerilog
 interfaces for Clocks and Resets, Configuration, Interrupts, Trace, Debug,
 plus Special Status and Control are generic enough to be fully re-used.
 
-Abstraction Layer
-~~~~~~~~~~~~~~~~~
-
-Instruction Set Generators
-^^^^^^^^^^^^^^^^^^^^^^^^^^
-
-Reference Models
-^^^^^^^^^^^^^^^^
-
-Functional Coverage Models
-^^^^^^^^^^^^^^^^^^^^^^^^^^
-
-CORE-V UVM Agents
-^^^^^^^^^^^^^^^^^
-
-Test Program Environment
-^^^^^^^^^^^^^^^^^^^^^^^^
-
-Test Layer
-~~~~~~~~~~
-
-TODO
-
-Verification Plans
-------------------
-
-TODO
-
 Repository Structure
 --------------------
 
@@ -184,7 +154,7 @@ support multiple verification environments. The directory structure below
 shows a version of core-v-verif that supports multiple CORE-V cores.  What
 follows is a brief discription of the purpose of each top-level directory.
 Refer to the README files at each of these locations for additional information.
-If you read nothing else, *please* read *$PROJ\_ROOT/<core>/sim/README.md*.
+If you read nothing else, *please* read *$CORE\_V\_VERIF/mk/uvmt/README.md*.
 
 - **core-v-cores**: the the Makefiles in the <core>/sim directory will clone
   the RTL for <core> into core-v-cores/<core>/rtl.  This structure allows for
@@ -202,7 +172,7 @@ If you read nothing else, *please* read *$PROJ\_ROOT/<core>/sim/README.md*.
 
 ::
 
-    $PROJ\_ROOT/
+  $CORE_V_VERIF
     ├── core-v-cores
     │   ├── <core1>
     │   ├── <core2>
@@ -223,7 +193,3 @@ If you read nothing else, *please* read *$PROJ\_ROOT/<core>/sim/README.md*.
         ├── uvm_tests
         ├── uvm_agents
         └── uvm_libs
-
-Getting to There from Here
---------------------------
-
