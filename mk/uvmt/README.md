@@ -230,7 +230,7 @@ the following equation `CoreMark/MHz = iterations / (totalticks / 1e6)`.
 
 COREV-DV Generated Tests
 ---------------
-The CV32 UVM environment uses the [Google riscv-dv](https://github.com/google/riscv-dv)
+The core-v-verif UVM environment uses the [Google riscv-dv](https://github.com/google/riscv-dv)
 generator to automate the generation of test-programs.  The generator
 is cloned by the Makefiles to `$(CV_CORE)/vendor_lib/google` as needed.  Specific
 classes ar extended to create a `corev-dv` generator that is specific to this environment.
@@ -251,7 +251,7 @@ make gen_corev-dv test TEST=corev_rand_jump_stress_test
 
 RISC-V Compliance Test-suite and Regressions
 ---------------
-The CV32 UVM environment is able to run the [RISC-V compliance](https://github.com/riscv/riscv-compliance)
+The CV32E40\* UVM environments are able to run the [RISC-V compliance](https://github.com/riscv/riscv-compliance)
 test-suite in step-and-compare mode with the ISS Reference Model, and can optionally dump and check a signature
 file against a reference signature.  As with riscv-dv, the compliance test-suite
 is cloned by the Makefiles to `$(CV_CORE)/vendor_lib/riscv` as needed.  The form of the target to run a single test-program
