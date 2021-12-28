@@ -55,8 +55,10 @@ CV_CORE_UC     = $(shell echo $(CV_CORE) | tr a-z A-Z)
 
 SIMULATOR     ?= $(CV_SIMULATOR)
 
-# Source directores
-VERI_CUSTOM = $(CORE_V_VERIF)/$(CV_CORE_LC)/tests/programs/custom
+# Test-Program directores.
+# Relative path is used for Verilator which cannot seem to handle loooong pathnames.
+TEST_PROGRAM_PATH    = $(CORE_V_VERIF)/$(CV_CORE_LC)/tests/programs/custom
+TEST_PROGRAM_RELPATH = ../../tests/programs/custom
 
 # Common output directories
 RUN_INDEX               ?= 0
@@ -285,7 +287,7 @@ dsim-custom:
 	@echo "This target is depreciated.  Please use 'make dsim-test TEST=<test-program>'"
 	@echo "                             Example:   'make dsim-test TEST=fibonacci'"
 
-dsim-test: dsim-comp $(VERI_CUSTOM)/$(TEST)/$(TEST).hex
+dsim-test: dsim-comp $(TEST_PROGRAM_PATH)/$(TEST)/$(TEST).hex
 	@echo "$(BANNER)"
 	@echo "* Running with Metrics DSIM"
 	@echo "$(BANNER)"
@@ -296,7 +298,7 @@ dsim-test: dsim-comp $(VERI_CUSTOM)/$(TEST)/$(TEST).hex
 		$(DSIM_RUN_FLAGS) \
 		-sv_lib $(UVM_HOME)/src/dpi/libuvm_dpi.so \
 		-sv_lib $(OVP_MODEL_DPI)  \
-		+firmware=$(VERI_CUSTOM)/$(TEST)/$(TEST).hex
+		+firmware=$(TEST_PROGRAM_PATH)/$(TEST)/$(TEST).hex
 
 # Metrics dsim cleanup
 .PHONY: dsim-clean
@@ -431,12 +433,12 @@ xrun-custom:
 	@echo "                             Example:   'make xrun-test TEST=fibonacci'"
 
 .PHONY: xrun-test
-xrun-test: xrun-all $(VERI_CUSTOM)/$(TEST)/$(TEST).hex
+xrun-test: xrun-all $(TEST_PROGRAM_PATH)/$(TEST)/$(TEST).hex
 	$(XRUN) \
 		$(XRUN_FLAGS) \
 		-f $(CV_CORE_MANIFEST) \
 		$(TBSRC_PKG) $(TBSRC) \
-		+firmware=$(VERI_CUSTOM)/$(TEST)/$(CUSTOM_PROG).hex
+		+firmware=$(TEST_PROGRAM_PATH)/$(TEST)/$(CUSTOM_PROG).hex
 
 # Cadence Xcelium xrun cleanup
 .PHONY: xrun-clean xrun-clean-all
@@ -484,13 +486,13 @@ testbench_verilator: CV_CORE_pkg $(TBSRC_VERI) $(TBSRC_PKG)
 	$(MAKE) -C $(VERI_OBJ_DIR) -f Vtb_top_verilator.mk
 	cp $(VERI_OBJ_DIR)/Vtb_top_verilator testbench_verilator
 
-veri-test: verilate $(VERI_CUSTOM)/$(TEST)/$(TEST).hex
+veri-test: verilate $(TEST_PROGRAM_PATH)/$(TEST)/$(TEST).hex
 	@echo "$(BANNER)"
 	@echo "* Running with Verilator: logfile in $(VERI_LOG_DIR)/$(TEST).log"
 	@echo "$(BANNER)"
 	mkdir -p $(VERI_LOG_DIR)
 	./testbench_verilator $(VERI_FLAGS) \
-		"+firmware=$(VERI_CUSTOM)/$(TEST)/$(TEST).hex" \
+		"+firmware=$(TEST_PROGRAM_RELPATH)/$(TEST)/$(TEST).hex" \
 		| tee $(VERI_LOG_DIR)/$(TEST).log
 
 # verilator specific cleanup

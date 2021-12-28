@@ -56,7 +56,7 @@ if (sys.version_info < (3,0,0)):
 ################################################################################
 # Globals....
 name_of_ci_check_regression = '<core>_ci_check_dev' # must match the name of one regression list in .metrics.json
-core_tests                  = ['misalign', 'illegal', 'dhrystone', 'fibonacci'] #, 'riscv_ebreak_test_0'] # FIXME: full pathname of this test is too long for Verilator (seriously!)
+core_tests                  = ['misalign', 'illegal', 'dhrystone', 'fibonacci', 'riscv_ebreak_test_0']
 try:
     default_core            = os.environ['CV_CORE']
 except KeyError:
