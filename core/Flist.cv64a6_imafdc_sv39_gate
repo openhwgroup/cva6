@@ -14,6 +14,7 @@ ${CVA6_REPO_DIR}/corev_apu/riscv-dbg/src/dm_pkg.sv
 ${CVA6_REPO_DIR}/core/include/ariane_pkg.sv
 ${CVA6_REPO_DIR}/corev_apu/axi/src/axi_pkg.sv
 ${CVA6_REPO_DIR}/core/include/ariane_rvfi_pkg.sv
+${CVA6_REPO_DIR}/core/include/cvxif_pkg.sv
 
 ${CVA6_REPO_DIR}/core/include/ariane_axi_pkg.sv
 ${CVA6_REPO_DIR}/core/include/wt_cache_pkg.sv
