@@ -238,8 +238,8 @@ endif
 
 src := $(addprefix $(root-dir), $(src))
 
-copro_src := corev_apu/cvxif_example/include/cvxif_instr_pkg.sv \
-             $(wildcard corev_apu/cvxif_example/*.sv)
+copro_src := core/cvxif_example/include/cvxif_instr_pkg.sv \
+             $(wildcard core/cvxif_example/*.sv)
 copro_src := $(addprefix $(root-dir), $(copro_src))
 
 uart_src := $(wildcard corev_apu/fpga/src/apb_uart/src/*.vhd)
