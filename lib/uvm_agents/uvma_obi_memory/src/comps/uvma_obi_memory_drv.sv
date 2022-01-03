@@ -349,9 +349,10 @@ task uvma_obi_memory_drv_c::prep_req(ref uvma_obi_memory_base_seq_item_c req);
 endtask : prep_req
 
 // Both Master READ and WRITE transactions are handled here because the signalling is almost identical.
+// TODO: this task is yet to be fully tested as the CV32E4 cores are always the OBI bus master.
 task uvma_obi_memory_drv_c::drv_mstr_req(ref uvma_obi_memory_mstr_seq_item_c req);
 
-   if (req.access_type != UVMA_OBI_MEMORY_ACCESS_READ || req.access_type != UVMA_OBI_MEMORY_ACCESS_WRITE) begin
+   if (req.access_type != UVMA_OBI_MEMORY_ACCESS_READ && req.access_type != UVMA_OBI_MEMORY_ACCESS_WRITE) begin
      `uvm_fatal("OBI_MEMORY_DRV", $sformatf("Invalid access_type: %0d", req.access_type))
    end
 
