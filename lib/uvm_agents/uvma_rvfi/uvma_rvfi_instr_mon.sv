@@ -139,6 +139,7 @@ task uvma_rvfi_instr_mon_c::monitor_rvfi_instr();
          mon_trn.halt      = cntxt.instr_vif[nret_id].mon_cb.rvfi_halt;
          mon_trn.dbg       = cntxt.instr_vif[nret_id].mon_cb.rvfi_dbg;
          mon_trn.dbg_mode  = cntxt.instr_vif[nret_id].mon_cb.rvfi_dbg_mode;
+         mon_trn.nmip      = cntxt.instr_vif[nret_id].mon_cb.rvfi_nmip;
          mon_trn.intr      = cntxt.instr_vif[nret_id].mon_cb.rvfi_intr;
          $cast(mon_trn.mode, cntxt.instr_vif[nret_id].mon_cb.rvfi_mode);
          mon_trn.ixl       = cntxt.instr_vif[nret_id].mon_cb.rvfi_ixl;
@@ -206,11 +207,16 @@ task uvma_rvfi_instr_mon_c::monitor_rvfi_instr();
          // In debug mode, detect NMIP event for a data bus error
          if (mon_trn.dbg_mode &&
              !last_dcsr_nmip &&
-             mon_trn.csrs["dcsr"].get_csr_retirement_data()[3]) begin
+             mon_trn.nmip[0] &&
+             mon_trn.csrs["dcsr"].get_csr_retirement_data()[3])
+         begin
             `uvm_info("RVFIMON", $sformatf("Debug NMIP"), UVM_LOW);
-            // FIXME:henrik:We need to discern load versus store NMI fault,
-            // currently RVFI doesn't allow that.  Issue #339 of cv32e40x GitHub tracks this
-            mon_trn.insn_nmi_load_fault = 1;
+
+            if (mon_trn.nmip[1] == 0) begin
+               mon_trn.insn_nmi_load_fault = 1;
+            end else begin
+               mon_trn.insn_nmi_store_fault = 1;
+            end
          end
 
          // Detect instruction bus fault
