@@ -34,7 +34,8 @@ module uvmt_cv32e40x_integration_assert
   input [31:0] nmi_addr_i
 );
 
-  default clocking cb @(posedge clk_i); endclocking
+  default clocking @(posedge clk_i); endclocking
+  default disable iff !rst_ni;
   string info_tag = "CV32E40X_INTEGRATION_ASSERT";
 
   logic fetch_enable_i_sticky;

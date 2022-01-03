@@ -49,7 +49,8 @@ module uvmt_cv32e40x_fencei_assert
 );
 
   localparam int CYCLE_COUNT = 6;
-  default clocking cb @(posedge clk_i); endclocking
+  default clocking @(posedge clk_i); endclocking
+  default disable iff !rst_ni;
   string info_tag = "CV32E40X_FENCEI_ASSERT";
 
   logic is_fencei_in_wb;
