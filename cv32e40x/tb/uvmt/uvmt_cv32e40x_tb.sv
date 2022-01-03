@@ -357,19 +357,28 @@ module uvmt_cv32e40x_tb;
   // Fence.i assertions
 
   bind cv32e40x_wrapper
-    uvmt_cv32e40x_fencei_assert  fencei_assert_i (
-      .wb_valid (core_i.wb_stage_i.wb_valid),
+    uvmt_cv32e40x_fencei_assert #(
+      .PMA_NUM_REGIONS (uvmt_cv32e40x_pkg::CORE_PARAM_PMA_NUM_REGIONS),
+      .PMA_CFG         (uvmt_cv32e40x_pkg::CORE_PARAM_PMA_CFG)
+    ) fencei_assert_i (
+      .wb_valid       (core_i.wb_stage_i.wb_valid),
       .wb_instr_valid (core_i.ex_wb_pipe.instr_valid),
       .wb_fencei_insn (core_i.ex_wb_pipe.fencei_insn),
-      .wb_pc (core_i.ex_wb_pipe.pc),
-      .wb_rdata (core_i.ex_wb_pipe.instr.bus_resp.rdata),
+      .wb_pc          (core_i.ex_wb_pipe.pc),
+      .wb_rdata       (core_i.ex_wb_pipe.instr.bus_resp.rdata),
 
-      .rvfi_valid (rvfi_i.rvfi_valid),
-      .rvfi_intr (rvfi_i.rvfi_intr),
+      .rvfi_valid    (rvfi_i.rvfi_valid),
+      .rvfi_intr     (rvfi_i.rvfi_intr),
       .rvfi_dbg_mode (rvfi_i.rvfi_dbg_mode),
 
       .*
     );
+
+
+  // Core integration assertions
+
+  bind cv32e40x_wrapper
+    uvmt_cv32e40x_integration_assert  integration_assert_i (.*);
 
 
   // Debug assertion and coverage interface
