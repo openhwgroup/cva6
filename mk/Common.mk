@@ -183,8 +183,32 @@ endif
 # SVLIB repo var end
 
 ###############################################################################
-# Read YAML test specifications
+# Imperas Instruction Set Simulator
 
+DV_OVPM_HOME    = $(CORE_V_VERIF)/vendor_lib/imperas
+DV_OVPM_MODEL   = $(DV_OVPM_HOME)/imperas_DV_COREV
+DV_OVPM_DESIGN  = $(DV_OVPM_HOME)/design
+OVP_MODEL_DPI   = $(DV_OVPM_MODEL)/bin/Linux64/imperas_CV32.dpi.so
+#OVP_CTRL_FILE   = $(DV_OVPM_DESIGN)/riscv_CV32E40P.ic
+
+###############################################################################
+# Read YAML test-program specification
+#    Each manualy written (custom) test-program is required to have a test.yaml
+#    in its directory.  See $(CORE_V_VERIF)/$(CORE_V_CORE)/tests/programs/custom/hello-world/test.yaml
+#    for an example.
+#
+#    Similarly, each pseudo-random (corev-dv) test-program is also required to
+#    have a test.yaml in its directory.
+#    See $(CORE_V_VERIF)/$(CORE_V_CORE)/tests/programs/corev-dv/corev_rand_arithmetic_base_test/test.yaml
+#
+#    The script YAML2MAKE will parse that test.yaml and create a set of
+#    variables that are used by this Makefile to:
+#       * Compile the test-program.
+#       * Compile UVM environment.
+#       * Pass as run-time arguments to the SystemVerilog simulator.
+#
+#   The variables created by YAML2MAKE all have a "TEST_" prefix.
+#
 ifeq ($(VERBOSE),1)
 YAML2MAKE_DEBUG = --debug
 else
@@ -217,8 +241,14 @@ endif
 include $(TEST_FLAGS_MAKE)
 endif
 
-# If a test target is defined and a CFG is defined that read in build configuration file
-# CFG is optional
+###############################################################################
+# Read YAML configuration specification
+#   In $(CORE_V_VERIF)/$(CORE_V_CORE)/tests/cfg is a set of yaml can be used to
+#   define a set of CFG_ flags.  The script that does this is CFGYAML2MAKE.  Use
+#   of these CFG_ parameters is optional.
+#
+#   The variables created by CFGYAML2MAKE all have a "CFG_" prefix.
+#
 CFGYAML2MAKE = $(CORE_V_VERIF)/bin/cfgyaml2make
 CFG_YAML_PARSE_TARGETS=comp ldgen comp_corev-dv gen_corev-dv test hex clean_hex corev-dv sanity-veri-run bsp
 ifneq ($(filter $(CFG_YAML_PARSE_TARGETS),$(MAKECMDGOALS)),)
@@ -231,123 +261,157 @@ include $(CFG_FLAGS_MAKE)
 endif
 endif
 
+###START#REFRACTOR##START#REFRACTOR##START#REFRACTOR##START#REFRACTOR##START###
+#
+#################################################################################
+## "Toolchain" to compile 'test-programs' (either C or RISC-V Assember) for the
+## CV_CORE being tested.   This toolchain is used by both the core testbench and UVM
+## environment.  The assumption here is that you have installed at least one of
+## the following toolchains:
+##     1. GNU:   https://github.com/riscv/riscv-gnu-toolchain
+##               Assumed to be installed at /opt/gnu.
+##
+##     2. COREV: https://www.embecosm.com/resources/tool-chain-downloads/#corev
+##               Assumed to be installed at /opt/corev.
+##
+##     3. PULP:  https://github.com/pulp-platform/pulp-riscv-gnu-toolchain
+##               Assumed to be installed at /opt/pulp.
+##
+## If you do not select one of the above options, compilation will be attempted
+## using whatever is found at /opt/riscv using arch=unknown.
+##
+#GNU_SW_TOOLCHAIN    ?= /opt/gnu
+#GNU_VENDOR          ?= unknown
+#GNU_MARCH           ?= $(call RESOLVE_FLAG2,$(CFG_GNU_MARCH),rv32imc)
+#GNU_CC              ?= gcc
+#COREV_SW_TOOLCHAIN  ?= /opt/corev
+#COREV_VENDOR        ?= corev
+#COREV_MARCH         ?= $(call RESOLVE_FLAG2,$(CFG_COREV_MARCH),rv32imc)
+#COREV_CC            ?= gcc
+#PULP_SW_TOOLCHAIN   ?= /opt/pulp
+#PULP_VENDOR         ?= unknown
+#PULP_MARCH          ?= $(call RESOLVE_FLAG2,$(CFG_PULP_MARCH),rv32imcxpulpv2)
+#PULP_CC             ?= gcc
+#LLVM_SW_TOOLCHAIN   ?= /opt/clang
+#LLVM_VENDOR         ?= unknown
+#LLVM_MARCH          ?= $(call RESOLVE_FLAG2,$(CFG_LLVM_MARCH),rv32imc)
+#LLVM_CC             ?= cc
+#
+#CV_SW_TOOLCHAIN     ?= /opt/riscv
+#CV_SW_VENDOR        ?= unknown
+#CV_SW_MARCH         ?= $(call RESOLVE_FLAG2,$(CFG_CV_SW_MARCH),rv32imc)
+#
+#GNU_YES          = $(call IS_YES,$(GNU))
+#PULP_YES         = $(call IS_YES,$(PULP))
+#COREV_YES        = $(call IS_YES,$(COREV))
+#LLVM_YES         = $(call IS_YES,$(LLVM))
+#
+#ifeq ($(shell $(CORE_V_VERIF)/mk/toolchain_check.sh $(GNU_YES) $(PULP_YES) $(COREV_YES) $(LLVM_YES)),1)
+#$(error Multiple toolchains are enabled: GNU=${GNU_YES} PULP=${PULP_YES} COREV=${COREV_YES} LLVM=${LLVM_YES})
+#endif
+
 ###############################################################################
-# Imperas Instruction Set Simulator
-
-DV_OVPM_HOME    = $(CORE_V_VERIF)/vendor_lib/imperas
-DV_OVPM_MODEL   = $(DV_OVPM_HOME)/imperas_DV_COREV
-DV_OVPM_DESIGN  = $(DV_OVPM_HOME)/design
-OVP_MODEL_DPI   = $(DV_OVPM_MODEL)/bin/Linux64/imperas_CV32.dpi.so
-#OVP_CTRL_FILE   = $(DV_OVPM_DESIGN)/riscv_CV32E40P.ic
-
-###############################################################################
-# "Toolchain" to compile 'test-programs' (either C or RISC-V Assember) for the
-# CV_CORE being tested.   This toolchain is used by both the core testbench and UVM
-# environment.  The assumption here is that you have installed at least one of
-# the following toolchains:
-#     1. GNU:   https://github.com/riscv/riscv-gnu-toolchain
-#               Assumed to be installed at /opt/gnu.
+# The so-called "COREV Environment Variables".
 #
-#     2. COREV: https://www.embecosm.com/resources/tool-chain-downloads/#corev
-#               Assumed to be installed at /opt/corev.
+# First, check that the COREV environment variables have been defined.
+ifndef CV_SW_TOOLCHAIN
+$(error Must define CV_SW_TOOLCHAIN)
+endif
+ifndef CV_SW_PREFIX
+$(error Must define CV_SW_PREFIX)
+endif
+ifndef CV_SW_MARCH
+$(error Must define CV_SW_MARCH)
+endif
+#ifndef CV_SW_CFLAGS
+#$(warning CV_SW_CFLAGS is optional)
+#endif
+
+# Use these to set defaults for toolchain vars. A few typical examples...
+#RISCV            = /opt/riscv
+#RISCV_PREFIX     = riscv32-unknown-elf-
+#RISCV_EXE_PREFIX = $(RISCV)/bin/$(RISCV_PREFIX)
+#RISCV_CFLAGS     =
+RISCV            = $(CV_SW_TOOLCHAIN)
+RISCV_PREFIX     = $(CV_SW_PREFIX)
+RISCV_EXE_PREFIX = $(RISCV)/bin/$(RISCV_PREFIX)
+
+RISCV_CC         = gcc
+RISCV_MARCH      = rv32imc
+
+RISCV_MARCH      = $(call RESOLVE_FLAG2,$(TEST_RISCV_MARCH),$(COREV_SW_MARCH))
+RISCV_MARCH      = $(call RESOLVE_FLAG2,$(CFG_COREV_MARCH),$(TEST_RISCV_MARCH))
+
+RISCV_CFLAGS     = $(call RESOLVE_FLAG2,$(CFG_RISCV_CFLAGS),$(TEST_RISCV_CFLAGS))
+RISCV_CFLAGS     = $(call RESOLVE_FLAG2,$(TEST_RISCV_CFLAGS),$(COREV_SW_CFLAGS))
+
+CFLAGS ?= -Os -g -static -mabi=ilp32 -march=$(RISCV_MARCH) -Wall -pedantic $(RISCV_CFLAGS)
+
 #
-#     3. PULP:  https://github.com/pulp-platform/pulp-riscv-gnu-toolchain
-#               Assumed to be installed at /opt/pulp.
+#RISCV             = $(CV_SW_TOOLCHAIN)
+#RISCV_PREFIX      = riscv32-$(CV_SW_VENDOR)-elf-
+#RISCV_EXE_PREFIX  = $(RISCV)/bin/$(RISCV_PREFIX)
+#RISCV_CC          = gcc
+#RISCV_MARCH       = $(call RESOLVE_FLAG2,$(TEST_RISCV_MARCH),$(CV_SW_MARCH))
+#RISCV_CFLAGS      = $(TEST_RISCV_CFLAGS)
 #
-# If you do not select one of the above options, compilation will be attempted
-# using whatever is found at /opt/riscv using arch=unknown.
+#ifeq ($(GNU_YES),YES)
+#ifeq ($(call IS_YES,$(TEST_GNU_NOT_SUPPORTED)),YES)
+#$(error test [$(TEST)] does not support the GNU toolchain)
+#endif
+#RISCV            = $(GNU_SW_TOOLCHAIN)
+#RISCV_PREFIX     = riscv32-$(GNU_VENDOR)-elf-
+#RISCV_EXE_PREFIX = $(RISCV)/bin/$(RISCV_PREFIX)
+#RISCV_CC         = $(GNU_CC)
+#RISCV_MARCH      = $(call RESOLVE_FLAG2,$(TEST_GNU_MARCH),$(GNU_MARCH))
+#RISCV_CFLAGS     = $(call RESOLVE_FLAG2,$(TEST_GNU_CFLAGS),$(GNU_CFLAGS))
+#endif
 #
-GNU_SW_TOOLCHAIN    ?= /opt/gnu
-GNU_VENDOR          ?= unknown
-GNU_MARCH           ?= $(call RESOLVE_FLAG2,$(CFG_GNU_MARCH),rv32imc)
-GNU_CC              ?= gcc
-COREV_SW_TOOLCHAIN  ?= /opt/corev
-COREV_VENDOR        ?= corev
-COREV_MARCH         ?= $(call RESOLVE_FLAG2,$(CFG_COREV_MARCH),rv32imc)
-COREV_CC            ?= gcc
-PULP_SW_TOOLCHAIN   ?= /opt/pulp
-PULP_VENDOR         ?= unknown
-PULP_MARCH          ?= $(call RESOLVE_FLAG2,$(CFG_PULP_MARCH),rv32imcxpulpv2)
-PULP_CC             ?= gcc
-LLVM_SW_TOOLCHAIN   ?= /opt/clang
-LLVM_VENDOR         ?= unknown
-LLVM_MARCH          ?= $(call RESOLVE_FLAG2,$(CFG_LLVM_MARCH),rv32imc)
-LLVM_CC             ?= cc
+#ifeq ($(COREV_YES),YES)
+#ifeq ($(call IS_YES,$(TEST_COREV_NOT_SUPPORTED)),YES)
+#$(error test [$(TEST)] does not support the COREV toolchain)
+#endif
+#RISCV            = $(COREV_SW_TOOLCHAIN)
+#RISCV_PREFIX     = riscv32-$(COREV_VENDOR)-elf-
+#RISCV_EXE_PREFIX = $(RISCV)/bin/$(RISCV_PREFIX)
+#RISCV_CC         = $(COREV_CC)
+#RISCV_MARCH      = $(call RESOLVE_FLAG2,$(TEST_COREV_MARCH),$(COREV_MARCH))
+#RISCV_CFLAGS     = $(call RESOLVE_FLAG2,$(TEST_COREV_CFLAGS),$(COREV_CFLAGS))
+#endif
+#
+#ifeq ($(PULP_YES),YES)
+#ifeq ($(call IS_YES,$(TEST_PULP_NOT_SUPPORTED)),YES)
+#$(error test [$(TEST)] does not support the PULP toolchain)
+#endif
+#RISCV            = $(PULP_SW_TOOLCHAIN)
+#RISCV_PREFIX     = riscv32-$(PULP_VENDOR)-elf-
+#RISCV_EXE_PREFIX = $(RISCV)/bin/$(RISCV_PREFIX)
+#RISCV_CC         = $(PULP_CC)
+#RISCV_MARCH      = $(call RESOLVE_FLAG2,$(TEST_PULP_MARCH),$(PULP_MARCH))
+#RISCV_CFLAGS     = $(call RESOLVE_FLAG2,$(TEST_PULP_CFLAGS),$(PULP_CFLAGS))
+#endif
+#
+#ifeq ($(LLVM_YES),YES)
+#ifeq ($(call IS_YES,$(TEST_LLVM_NOT_SUPPORTED)),YES)
+#$(error test [$(TEST)] does not support the LLVM toolchain)
+#endif
+#RISCV            = $(LLVM_SW_TOOLCHAIN)
+#RISCV_PREFIX     = riscv32-$(LLVM_VENDOR)-elf-
+#RISCV_EXE_PREFIX = $(RISCV)/bin/$(RISCV_PREFIX)
+#RISCV_CC         = $(LLVM_CC)
+#RISCV_MARCH      = $(call RESOLVE_FLAG2,$(TEST_LLVM_MARCH),$(LLVM_MARCH))
+#RISCV_CFLAGS     = $(call RESOLVE_FLAG2,$(TEST_LLVM_CFLAGS),$(LLVM_CFLAGS))
+#RISCV_CFLAGS    += -menable-experimental-extensions
+#endif
+#
+#CFLAGS ?= -Os -g -static -mabi=ilp32 -march=$(RISCV_MARCH) -Wall -pedantic
+#
+#ifeq ($(firstword $(subst _, ,$(TEST))),pulp)
+  #CFLAGS = -Os -g -D__riscv__=1 -D__LITTLE_ENDIAN__=1 -march=rv32imcxpulpv2 -Wa,-march=rv32imcxpulpv2 -fdata-sections -ffunction-sections -fdiagnostics-color=always
+#endif
 
-CV_SW_TOOLCHAIN     ?= /opt/riscv
-CV_SW_VENDOR        ?= unknown
-CV_SW_MARCH         ?= $(call RESOLVE_FLAG2,$(CFG_CV_SW_MARCH),rv32imc)
-
-GNU_YES          = $(call IS_YES,$(GNU))
-PULP_YES         = $(call IS_YES,$(PULP))
-COREV_YES        = $(call IS_YES,$(COREV))
-LLVM_YES         = $(call IS_YES,$(LLVM))
-
-ifeq ($(shell $(CORE_V_VERIF)/mk/toolchain_check.sh $(GNU_YES) $(PULP_YES) $(COREV_YES) $(LLVM_YES)),1)
-$(error Multiple toolchains are enabled: GNU=${GNU_YES} PULP=${PULP_YES} COREV=${COREV_YES} LLVM=${LLVM_YES})
-endif
-
-RISCV             = $(CV_SW_TOOLCHAIN)
-RISCV_PREFIX      = riscv32-$(CV_SW_VENDOR)-elf-
-RISCV_EXE_PREFIX  = $(RISCV)/bin/$(RISCV_PREFIX)
-RISCV_CC          = gcc
-RISCV_MARCH       = $(call RESOLVE_FLAG2,$(TEST_RISCV_MARCH),$(CV_SW_MARCH))
-RISCV_CFLAGS      = $(TEST_RISCV_CFLAGS)
-
-ifeq ($(GNU_YES),YES)
-ifeq ($(call IS_YES,$(TEST_GNU_NOT_SUPPORTED)),YES)
-$(error test [$(TEST)] does not support the GNU toolchain)
-endif
-RISCV            = $(GNU_SW_TOOLCHAIN)
-RISCV_PREFIX     = riscv32-$(GNU_VENDOR)-elf-
-RISCV_EXE_PREFIX = $(RISCV)/bin/$(RISCV_PREFIX)
-RISCV_CC         = $(GNU_CC)
-RISCV_MARCH      = $(call RESOLVE_FLAG2,$(TEST_GNU_MARCH),$(GNU_MARCH))
-RISCV_CFLAGS     = $(call RESOLVE_FLAG2,$(TEST_GNU_CFLAGS),$(GNU_CFLAGS))
-endif
-
-ifeq ($(COREV_YES),YES)
-ifeq ($(call IS_YES,$(TEST_COREV_NOT_SUPPORTED)),YES)
-$(error test [$(TEST)] does not support the COREV toolchain)
-endif
-RISCV            = $(COREV_SW_TOOLCHAIN)
-RISCV_PREFIX     = riscv32-$(COREV_VENDOR)-elf-
-RISCV_EXE_PREFIX = $(RISCV)/bin/$(RISCV_PREFIX)
-RISCV_CC         = $(COREV_CC)
-RISCV_MARCH      = $(call RESOLVE_FLAG2,$(TEST_COREV_MARCH),$(COREV_MARCH))
-RISCV_CFLAGS     = $(call RESOLVE_FLAG2,$(TEST_COREV_CFLAGS),$(COREV_CFLAGS))
-endif
-
-ifeq ($(PULP_YES),YES)
-ifeq ($(call IS_YES,$(TEST_PULP_NOT_SUPPORTED)),YES)
-$(error test [$(TEST)] does not support the PULP toolchain)
-endif
-RISCV            = $(PULP_SW_TOOLCHAIN)
-RISCV_PREFIX     = riscv32-$(PULP_VENDOR)-elf-
-RISCV_EXE_PREFIX = $(RISCV)/bin/$(RISCV_PREFIX)
-RISCV_CC         = $(PULP_CC)
-RISCV_MARCH      = $(call RESOLVE_FLAG2,$(TEST_PULP_MARCH),$(PULP_MARCH))
-RISCV_CFLAGS     = $(call RESOLVE_FLAG2,$(TEST_PULP_CFLAGS),$(PULP_CFLAGS))
-endif
-
-ifeq ($(LLVM_YES),YES)
-ifeq ($(call IS_YES,$(TEST_LLVM_NOT_SUPPORTED)),YES)
-$(error test [$(TEST)] does not support the LLVM toolchain)
-endif
-RISCV            = $(LLVM_SW_TOOLCHAIN)
-RISCV_PREFIX     = riscv32-$(LLVM_VENDOR)-elf-
-RISCV_EXE_PREFIX = $(RISCV)/bin/$(RISCV_PREFIX)
-RISCV_CC         = $(LLVM_CC)
-RISCV_MARCH      = $(call RESOLVE_FLAG2,$(TEST_LLVM_MARCH),$(LLVM_MARCH))
-RISCV_CFLAGS     = $(call RESOLVE_FLAG2,$(TEST_LLVM_CFLAGS),$(LLVM_CFLAGS))
-RISCV_CFLAGS    += -menable-experimental-extensions
-endif
-
-CFLAGS ?= -Os -g -static -mabi=ilp32 -march=$(RISCV_MARCH) -Wall -pedantic
-
-ifeq ($(firstword $(subst _, ,$(TEST))),pulp)
-  CFLAGS = -Os -g -D__riscv__=1 -D__LITTLE_ENDIAN__=1 -march=rv32imcxpulpv2 -Wa,-march=rv32imcxpulpv2 -fdata-sections -ffunction-sections -fdiagnostics-color=always
-endif
+#
+###END#REFRACTOR##END#REFRACTOR##END#REFRACTOR##END#REFRACTOR##END#REFRACTOR###
 
 ASM       ?= ../../tests/asm
 ASM_DIR   ?= $(ASM)
