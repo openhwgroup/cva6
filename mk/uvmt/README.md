@@ -15,18 +15,9 @@ To run the UVM environment you will need:
 - the RISC-V GCC compiler, and
 - at least some familiarity with [Make](https://www.gnu.org/software/make/manual/) and Makefiles.
 
-COREV Environment Variables
-----------------------------------------
-The following environment variables may be set for any `make` invocation to run tests or set in the user's environment to customize setting.
-
-| Environment Variable | Description  |
-|----------------------|--------------|
-| CV_SIM_PREFIX        | Prepended to all simulation compile and/or execution invocations.  Can be used to invoke job-scheduling tool (e.g. LSF). |
-| CV_TOOL_PREFIX       | Prepended to all standalone tool (i.e. non-interacitive) simulation tool invocations such as coverage tools and waveform viewers.  Can be used to invoke job-scheduling tool (e.g. LSF). |
-| CV_SIMULATOR         | The default simulator to use for all tools (dsim, vcs, xrun, vsim, riviera).  Can be overridden on any make invocation. |
-| CV_RESULTS           | Optional simulator output redirection path. Defaults to blank, i.e. simulation outputs will be located in <i>&lt;core></i>/mk/uvmt/<i>&lt;simulator></i>\_results if a relative path is given.  Optionally an absolute path can be used as well and simulation outputs will be located in  $(CV\_RESULTS)/<i>&lt;simulator></i>\_results |
-<br>
-The following environment variables *must* be set for any `make` invocation to run tests or set in the user's environment to customize setting.
+Required COREV Environment Variables
+------------------------------------
+The following environment variables **must** be set for any `make` invocation to run tests or set in the user's environment to customize setting.
 
 | Environment Variable | Description  |
 |----------------------|--------------|
@@ -35,11 +26,22 @@ The following environment variables *must* be set for any `make` invocation to r
 | CV_SW_TOOLCHAIN      | Points to SW toolchain installation for compiling, assembling, and/or linking test programs. |
 | CV_SW_PREFIX         | Prefix of the SW toolchain installation. |
 | CV_SW_MARCH          | Architecture of tool chain to invoke. The default is `rv32imc`. |
-<br>
+
 **Note:** a toolchain is required for running any tests in the core-v-verif environments.
-<br>
+
 A toolchain is comprised of a set of executables (e.g. gcc, objcopy, etc.) each of which typically has a path of the form `$(CV_SW_TOOLCHAIN)/bin/$(CV_SW_PREFIX)`.
-For example, if your toolchain executables are at `/opt/riscv/bin/riscv32-unknown-elf-`, then you woudl set `CV_SW_TOOLCHAIN` to /opt/riscv and `CV_SW_PREFIX` to riscv32-unknown-elf-.
+For example, if your toolchain executables are at `/opt/riscv/bin/riscv32-unknown-elf-`, then you would set `CV_SW_TOOLCHAIN` to **_/opt/riscv_** and `CV_SW_PREFIX` to **_riscv32-unknown-elf-_**.
+
+Optional COREV Environment Variables
+----------------------------------------
+The Makefile use a set of common shell environment variables to control individual simulations and/or regressions.
+The following environment variables may be set for any `make` invocation to run tests or set in the user's environment to customize setting.
+
+| Environment Variable | Description  |
+|----------------------|--------------|
+| CV_SIM_PREFIX        | Prepended to all simulation compile and/or execution invocations.  Can be used to invoke job-scheduling tool (e.g. LSF). |
+| CV_TOOL_PREFIX       | Prepended to all standalone tool (i.e. non-interacitive) simulation tool invocations such as coverage tools and waveform viewers.  Can be used to invoke job-scheduling tool (e.g. LSF). |
+| CV_RESULTS           | Optional simulator output redirection path. Defaults to blank, i.e. simulation outputs will be located in <i>&lt;core></i>/mk/uvmt/<i>&lt;simulator></i>\_results if a relative path is given.  Optionally an absolute path can be used as well and simulation outputs will be located in  $(CV\_RESULTS)/<i>&lt;simulator></i>\_results |
 
 Imperas OVPsim Instruction Set Simulator
 ----------------------------------------
