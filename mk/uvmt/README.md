@@ -27,6 +27,7 @@ The following environment variables may be set for any `make` invocation to run 
 | CV_RESULTS           | Optional simulator output redirection path. Defaults to blank, i.e. simulation outputs will be located in <i>&lt;core></i>/mk/uvmt/<i>&lt;simulator></i>\_results if a relative path is given.  Optionally an absolute path can be used as well and simulation outputs will be located in  $(CV\_RESULTS)/<i>&lt;simulator></i>\_results |
 <br>
 The following environment variables *must* be set for any `make` invocation to run tests or set in the user's environment to customize setting.
+
 | Environment Variable | Description  |
 |----------------------|--------------|
 | CV_SIMULATOR         | The default simulator to use for all tools (dsim, vcs, xrun, vsim, riviera).  Can be overridden on any make invocation. |
