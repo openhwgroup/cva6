@@ -176,8 +176,9 @@ class uvmt_cv32e40p_base_test_c extends uvm_test;
 
    /**
     * Prints overlined and underlined text in uppercase.
+    * Waiving Verissimo SVTB.32.2.0: Pass strings by reference unless otherwise needed
     */
-   extern function void print_banner(string text);
+   extern function void print_banner(string text); //@DVT_LINTER_WAIVER "MT20211228_3" disable SVTB.32.2.0
 
    /**
     * Fatals out after watchdog_timeout has elapsed.

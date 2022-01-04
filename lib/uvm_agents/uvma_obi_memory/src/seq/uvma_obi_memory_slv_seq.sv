@@ -43,8 +43,9 @@ class uvma_obi_memory_slv_seq_c extends uvma_obi_memory_slv_base_seq_c;
 
    /**
     * Register sequences with a range of addresses on this OBI
+    * Waiving Verissimo SVTB.32.2.0: Pass strings by reference unless otherwise needed
     */
-   extern virtual function uvma_obi_memory_vp_base_seq_c register_vp_vseq(string name,
+   extern virtual function uvma_obi_memory_vp_base_seq_c register_vp_vseq(string name,                  //@DVT_LINTER_WAIVER "MT20211228_9" disable SVTB.32.2.0
                                                                           bit[31:0] start_address,
                                                                           uvm_object_wrapper seq_type);
 
