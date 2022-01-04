@@ -537,29 +537,6 @@ module uvmt_cv32e40x_debug_assert
         else `uvm_error(info_tag, "Debug mode not entered correctly while handling illegal instruction!");
 
 
-    // Check that "dm_halt_addr_i" is correct
-
-    // Should be stable after "fetch_enable_i"
-    logic fetch_enable_i_sticky;
-    always @(posedge cov_assert_if.clk_i or negedge cov_assert_if.rst_ni) begin
-        if (!cov_assert_if.rst_ni) begin
-            fetch_enable_i_sticky <= 0;
-        end else if (cov_assert_if.fetch_enable_i) begin
-            fetch_enable_i_sticky <= 1;
-        end
-    end
-    a_dmhaltaddr_stable : assert property (
-        fetch_enable_i_sticky
-        |->
-        $stable(cov_assert_if.dm_halt_addr_i)
-        ) else `uvm_error(info_tag, "dm_halt_addr_i changed after fetch_enable_i");
-
-    // Should be word-aligned
-    a_dmhaltaddr_aligned : assert property (
-        cov_assert_if.dm_halt_addr_i[1:0] == 2'b00
-        ) else `uvm_error(info_tag, "TODO");
-
-
     // -------------------------------------------
     // Capture internal states for use in checking
     // -------------------------------------------

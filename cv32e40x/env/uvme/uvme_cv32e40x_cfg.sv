@@ -409,9 +409,6 @@ endfunction : is_csr_check_disabled
 
 function void uvme_cv32e40x_cfg_c::configure_disable_csr_checks();
 
-   // Need to check
-   disable_csr_check("mcountinhibit");
-
    // Not possible to test on a cycle-by-cycle basis
    disable_csr_check("mip");
 
