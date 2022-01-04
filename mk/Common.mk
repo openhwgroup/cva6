@@ -264,7 +264,7 @@ endif
 ###START#REFRACTOR##START#REFRACTOR##START#REFRACTOR##START#REFRACTOR##START###
 #
 #################################################################################
-## "Toolchain" to compile 'test-programs' (either C or RISC-V Assember) for the
+## "Toolchain" to compile 'test-programs' (either C or RISC-V Assembler) for the
 ## CV_CORE being tested.   This toolchain is used by both the core testbench and UVM
 ## environment.  The assumption here is that you have installed at least one of
 ## the following toolchains:
