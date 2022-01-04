@@ -10,4 +10,5 @@ riscv_march: rv32imc_zba1p00_zbb1p00_zbs1p00
 gnu_march:   rv32imc_zba1p00_zbb1p00_zbs1p00
 corev_march: rv32imc_zba1p00_zbb1p00_zbs1p00
 llvm_march:  rv32imc_zba1p00_zbb1p00_zbs1p00
+cv_sw_march: rv32imc_zba1p00_zbb1p00_zbs1p00
 
