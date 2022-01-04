@@ -47611,6 +47611,7 @@ finalize:
     beq x20,x19,set_exp_bitmanip
     li x16, 47595      # this is the number of EXPECTED illegal instructions
     beq x31, x16, test_end
+    j fail
 set_exp_bitmanip:
     li x16, 47518      # this is the number of EXPECTED instructions if Zba,Zbb,Zbc and Zbs are enabled
     beq x31, x16, test_end
