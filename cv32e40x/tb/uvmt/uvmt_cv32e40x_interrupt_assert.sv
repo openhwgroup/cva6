@@ -402,6 +402,12 @@ module uvmt_cv32e40x_interrupt_assert
       `uvm_error(info_tag,
                  "Deassertion of WFI occurred and core is still asleep");
 
+  // Outside of WFI, the core should not sleep
+  a_wfi_deny_core_sleep_o: assert property (
+    !in_wfi |-> !core_sleep_o
+  ) else
+    `uvm_error(info_tag, "Only WFI should trigger core sleep");
+
   // WFI wakeup to next instruction fetch/execution
   property p_wfi_wake_to_instr_fetch;
     disable iff (!rst_ni || !fetch_enable_i || debug_mode_q)
