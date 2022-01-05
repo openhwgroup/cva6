@@ -191,23 +191,62 @@ DV_OVPM_DESIGN  = $(DV_OVPM_HOME)/design
 OVP_MODEL_DPI   = $(DV_OVPM_MODEL)/bin/Linux64/imperas_CV32.dpi.so
 #OVP_CTRL_FILE   = $(DV_OVPM_DESIGN)/riscv_CV32E40P.ic
 
+###START#REFRACTOR##START#REFRACTOR##START#REFRACTOR##START#REFRACTOR##START###
+
 ###############################################################################
-# Read YAML test-program specification
-#    Each manualy written (custom) test-program is required to have a test.yaml
-#    in its directory.  See $(CORE_V_VERIF)/$(CORE_V_CORE)/tests/programs/custom/hello-world/test.yaml
-#    for an example.
+# Read YAML test-program defintions
 #
-#    Similarly, each pseudo-random (corev-dv) test-program is also required to
-#    have a test.yaml in its directory.
-#    See $(CORE_V_VERIF)/$(CORE_V_CORE)/tests/programs/corev-dv/corev_rand_arithmetic_base_test/test.yaml
+#    In core-v-verif, all test-programs are compiled into machine code using a
+#    software toolchain, and loaded into a memory model in a testbench which is
+#    compiled and executed by a SystemVerilog simulator. Some test-program are
+#    manually written and others are machine generated, typically by "corev-dv",
+#    a UVM program implemented as class extensions of Google's "riscv-dv".  All
+#    of these activities - generating the test-program, compiling the test-program,
+#    compiling and simulating the SystemVerilog testbench are all controlled by
+#    a set of variables captured in YAML files and collectively known as the
+#    test-program defintions.
 #
-#    The script YAML2MAKE will parse that test.yaml and create a set of
+#    A set of common "cfg" test-program defintions can be found in
+#    $(CORE_V_VERIF)/$(CORE_V_CORE)/tests/cfg/*.yaml. Use of these are optional.
+#
+#    Each manually written (custom) test-program is required to have a
+#    test-program defintions called "test.yaml" in its directory.
+#    This test-program defintions contains variables used by the software
+#    toolchain and SystemVerilog simulator. For an example see:
+#    $(CORE_V_VERIF)/$(CORE_V_CORE)/tests/programs/custom/hello-world/test.yaml
+#
+#    Each pseudo-random (corev-dv) test-program is required to have two YAML
+#    files: (1) "corev-dv.yaml" is the test-program defintions for the corev-dv
+#    instruction generator.  (2) "test.yaml" is the test-program defintions
+#    for the toolchain and SystemVerilog simulator. For examples see:
+#    $(CORE_V_VERIF)/$(CORE_V_CORE)/tests/programs/corev-dv/corev_rand_arithmetic_base_test/corev-dv.yaml
+#    $(CORE_V_VERIF)/$(CORE_V_CORE)/tests/programs/corev-dv/corev_rand_arithmetic_base_test/test.yaml
+#
+#    The script YAML2MAKE will parse test.yaml and create a set of
 #    variables that are used by this Makefile to:
 #       * Compile the test-program.
 #       * Compile UVM environment.
-#       * Pass as run-time arguments to the SystemVerilog simulator.
+#       * Pass run-time arguments to the SystemVerilog simulator.
+#    These variables all have a "TEST_" prefix.
 #
-#   The variables created by YAML2MAKE all have a "TEST_" prefix.
+#    Similarily, YAML2MAKE parses corev-dv.yaml and create a set of
+#    variables that are used by the corev-dv to pass run-time arguments to the
+#    SystemVerilog simulator, typically as plusagrs to control how corev-dv
+#    generate the pseudo-random test-program. These variables all have a "GEN_"
+#    prefix. NOTE: defining toolchain parameters in corev-dv is not recommended
+#    as this Makefile does not use variables prefixed with "GEN_" to access or
+#    control the toolchain.
+#
+#    Lastly, if the "CFG" variable is set, CFGYAML2MAKE parses a specific YAML
+#    file in $(CORE_V_VERIF)/$(CORE_V_CORE)/tests/cfg.  "CFG" must be set to
+#    the filename (no extension) of a yaml file in that directory.  Note that
+#    "CFG" can be a shell environment variable or passed to "make" on the comand
+#    line:
+#         make test TEST=my_test_program CFG=my_cfg
+#
+#    Note: if CFG is not defined, then $(CORE_V_VERIF)/$(CORE_V_CORE)/tests/cfg/default.yaml
+#    is used.
+#
 #
 ifeq ($(VERBOSE),1)
 YAML2MAKE_DEBUG = --debug
@@ -215,7 +254,7 @@ else
 YAML2MAKE_DEBUG =
 endif
 
-# If the gen_corev-dv target is defined then read in a test specification file
+# If the gen_corev-dv target is defined then read in a test defintions file
 YAML2MAKE = $(CORE_V_VERIF)/bin/yaml2make
 ifneq ($(filter gen_corev-dv,$(MAKECMDGOALS)),)
 ifeq ($(TEST),)
@@ -228,7 +267,7 @@ endif
 include $(GEN_FLAGS_MAKE)
 endif
 
-# If the test target is defined then read in a test specification file
+# If the test target is defined then read in a test defintions file
 TEST_YAML_PARSE_TARGETS=test waves cov hex clean_hex veri-test dsim-test xrun-test bsp
 ifneq ($(filter $(TEST_YAML_PARSE_TARGETS),$(MAKECMDGOALS)),)
 ifeq ($(TEST),)
@@ -242,13 +281,7 @@ include $(TEST_FLAGS_MAKE)
 endif
 
 ###############################################################################
-# Read YAML configuration specification
-#   In $(CORE_V_VERIF)/$(CORE_V_CORE)/tests/cfg is a set of yaml can be used to
-#   define a set of CFG_ flags.  The script that does this is CFGYAML2MAKE.  Use
-#   of these CFG_ parameters is optional.
-#
-#   The variables created by CFGYAML2MAKE all have a "CFG_" prefix.
-#
+# cfg
 CFGYAML2MAKE = $(CORE_V_VERIF)/bin/cfgyaml2make
 CFG_YAML_PARSE_TARGETS=comp ldgen comp_corev-dv gen_corev-dv test hex clean_hex corev-dv sanity-veri-run bsp
 ifneq ($(filter $(CFG_YAML_PARSE_TARGETS),$(MAKECMDGOALS)),)
@@ -261,8 +294,6 @@ include $(CFG_FLAGS_MAKE)
 endif
 endif
 
-###START#REFRACTOR##START#REFRACTOR##START#REFRACTOR##START#REFRACTOR##START###
-#
 #################################################################################
 ## "Toolchain" to compile 'test-programs' (either C or RISC-V Assembler) for the
 ## CV_CORE being tested.   This toolchain is used by both the core testbench and UVM
@@ -313,19 +344,83 @@ endif
 ###############################################################################
 # The so-called "COREV Environment Variables".
 #
-# First, check that the COREV environment variables have been defined.
+# First, we determine the values of the CV_SW_ variables.  The priority order
+# is ENV > TEST > CFG.
 ifndef CV_SW_TOOLCHAIN
-$(error Must define CV_SW_TOOLCHAIN)
+ifdef  TEST_CV_SW_TOOLCHAIN
+CV_SW_TOOLCHAIN = $(TEST_CV_SW_TOOLCHAIN)
+else
+ifdef  CFG_CV_SW_TOOLCHAIN
+CV_SW_TOOLCHAIN = $(CFG_CV_SW_TOOLCHAIN)
+else
+$(error CV_SW_TOOLCHAIN not defined in either the shell environment, test.yaml or cfg.yaml)
 endif
+endif
+endif
+
 ifndef CV_SW_PREFIX
-$(error Must define CV_SW_PREFIX)
+ifdef  TEST_CV_SW_PREFIX
+CV_SW_PREFIX = $(TEST_CV_SW_PREFIX)
+else
+ifdef  CFG_CV_SW_PREFIX
+CV_SW_PREFIX = $(CFG_CV_SW_PREFIX)
+else
+$(error CV_SW_PREFIX not defined in either the shell environment, test.yaml or cfg.yaml)
 endif
+endif
+endif
+
 ifndef CV_SW_MARCH
-$(error Must define CV_SW_MARCH)
+ifdef  TEST_CV_SW_MARCH
+CV_SW_MARCH = $(TEST_CV_SW_MARCH)
+else
+ifdef  CFG_CV_SW_MARCH
+CV_SW_MARCH = $(CFG_CV_SW_MARCH)
+else
+CV_SW_MARCH = rv32imc
+$(warning CV_SW_MARCH not defined in either the shell environment, test.yaml or cfg.yaml)
 endif
-#ifndef CV_SW_CFLAGS
-#$(warning CV_SW_CFLAGS is optional)
+endif
+endif
+
+ifndef CV_SW_CC
+ifdef  TEST_CV_SW_CC
+CV_SW_CC = $(TEST_CV_SW_CC)
+else
+ifdef  CFG_CV_SW_CC
+CV_SW_CC = $(CFG_CV_SW_CC)
+else
+CV_SW_CC = gcc
+$(warning CV_SW_CC not defined in either the shell environment, test.yaml or cfg.yaml)
+endif
+endif
+endif
+
+ifndef CV_SW_FLAGS
+ifdef  TEST_CV_SW_FLAGS
+CV_SW_FLAGS = $(TEST_CV_SW_FLAGS)
+else
+ifdef  CFG_CV_SW_FLAGS
+CV_SW_FLAGS = $(CFG_CV_SW_FLAGS)
+else
+$(warning CV_SW_FLAGS not defined in either the shell environment, test.yaml or cfg.yaml)
+endif
+endif
+endif
+
+## First, check that the COREV environment variables have been defined.
+#ifndef CV_SW_TOOLCHAIN
+#$(error Must define CV_SW_TOOLCHAIN)
 #endif
+#ifndef CV_SW_PREFIX
+#$(error Must define CV_SW_PREFIX)
+#endif
+#ifndef CV_SW_MARCH
+#$(error Must define CV_SW_MARCH)
+#endif
+##ifndef CV_SW_CFLAGS
+##$(warning CV_SW_CFLAGS is optional)
+##endif
 
 # Use these to set defaults for toolchain vars. A few typical examples...
 #RISCV            = /opt/riscv
@@ -336,16 +431,25 @@ RISCV            = $(CV_SW_TOOLCHAIN)
 RISCV_PREFIX     = $(CV_SW_PREFIX)
 RISCV_EXE_PREFIX = $(RISCV)/bin/$(RISCV_PREFIX)
 
-RISCV_CC         = gcc
-RISCV_MARCH      = rv32imc
+RISCV_MARCH      = $(CV_SW_MARCH)
+RISCV_CC         = $(CV_SW_CC)
+RISCV_FLAGS      = $(CV_SW_FLAGS)
 
-RISCV_MARCH      = $(call RESOLVE_FLAG2,$(TEST_RISCV_MARCH),$(COREV_SW_MARCH))
-RISCV_MARCH      = $(call RESOLVE_FLAG2,$(CFG_COREV_MARCH),$(TEST_RISCV_MARCH))
+#RISCV_MARCH      = $(call RESOLVE_FLAG2,$(TEST_RISCV_MARCH),$(COREV_SW_MARCH))
+#RISCV_MARCH      = $(call RESOLVE_FLAG2,$(CFG_COREV_MARCH),$(TEST_RISCV_MARCH))
 
-RISCV_CFLAGS     = $(call RESOLVE_FLAG2,$(CFG_RISCV_CFLAGS),$(TEST_RISCV_CFLAGS))
-RISCV_CFLAGS     = $(call RESOLVE_FLAG2,$(TEST_RISCV_CFLAGS),$(COREV_SW_CFLAGS))
+#RISCV_CFLAGS     = $(call RESOLVE_FLAG2,$(CFG_RISCV_CFLAGS),$(TEST_RISCV_CFLAGS))
+#RISCV_CFLAGS     = $(call RESOLVE_FLAG2,$(TEST_RISCV_CFLAGS),$(COREV_SW_CFLAGS))
 
 CFLAGS ?= -Os -g -static -mabi=ilp32 -march=$(RISCV_MARCH) -Wall -pedantic $(RISCV_CFLAGS)
+
+$(warning RISCV set to $(RISCV))
+$(warning RISCV_PREFIX set to $(RISCV_PREFIX))
+$(warning RISCV_EXE_PREFIX set to $(RISCV_EXE_PREFIX))
+$(warning RISCV_MARCH set to $(RISCV_MARCH))
+$(warning RISCV_CC set to $(RISCV_CC))
+$(warning RISCV_FLAGS set to $(RISCV_FLAGS))
+#$(error STOP IT!)
 
 #
 #RISCV             = $(CV_SW_TOOLCHAIN)

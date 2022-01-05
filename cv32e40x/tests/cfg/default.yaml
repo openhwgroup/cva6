@@ -11,6 +11,7 @@ plusargs: >
     +enable_zbb_extension=1
     +enable_zbc_extension=1
     +enable_zbs_extension=1
+cv_sw_march: rv32imc_zba1p00_zbb1p00_zbc1p00_zbs1p00
 riscv_march: rv32imc_zba1p00_zbb1p00_zbc1p00_zbs1p00
 gnu_march:   rv32imc_zba1p00_zbb1p00_zbc1p00_zbs1p00
 corev_march: rv32imc_zba1p00_zbb1p00_zbc1p00_zbs1p00
