@@ -53,9 +53,10 @@ module uvmt_cv32e40x_interrupt_assert
     input        ex_stage_instr_valid, // EX pipeline stage has valid input
 
     // Instruction WB stage (determines executed instructions)
-    input              wb_stage_instr_valid_i, // instruction word is valid
-    input [31:0]       wb_stage_instr_rdata_i, // Instruction word data
-    input              wb_stage_instr_err_i, // OBI "err"
+    input              wb_stage_instr_valid_i,    // instruction word is valid
+    input [31:0]       wb_stage_instr_rdata_i,    // Instruction word data
+    input              wb_stage_instr_err_i,      // OBI "err"
+    input mpu_status_e wb_stage_instr_mpu_status, // MPU read/write errors
 
     // Load-store unit status
     input              lsu_busy,
@@ -73,7 +74,6 @@ module uvmt_cv32e40x_interrupt_assert
   localparam NUM_IRQ        = 32;
   localparam VALID_IRQ_MASK = 32'hffff_0888; // Valid external interrupt signals
 
-  localparam WFI_INSTR_MASK = 32'hffffffff;
   localparam WFI_INSTR_DATA = 32'h10500073;
 
   localparam WFI_TO_CORE_SLEEP_LATENCY = 2;
@@ -332,10 +332,11 @@ module uvmt_cv32e40x_interrupt_assert
   // ---------------------------------------------------------------------------
   // WFI Checks
   // ---------------------------------------------------------------------------
-  assign is_wfi = wb_stage_instr_valid_i &&
-                  ((wb_stage_instr_rdata_i & WFI_INSTR_MASK) == WFI_INSTR_DATA) &&
-                  !branch_taken_ex &&
-                  !wb_stage_instr_err_i;
+  assign is_wfi = wb_stage_instr_valid_i                     &&
+                  (wb_stage_instr_rdata_i == WFI_INSTR_DATA) &&
+                  !branch_taken_ex                           &&
+                  !wb_stage_instr_err_i                      &&
+                  !wb_stage_instr_mpu_status;
   always @(posedge clk_i or negedge rst_ni) begin
     if (!rst_ni) begin
       in_wfi <= 1'b0;
