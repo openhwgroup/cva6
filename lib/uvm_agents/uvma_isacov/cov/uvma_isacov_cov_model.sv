@@ -2384,8 +2384,16 @@ endtask : run_phase
 function void uvma_isacov_cov_model_c::sample (uvma_isacov_instr_c instr);
 
   logic have_sampled = 0;
+  logic is_ecall_or_ebreak =
+    ( instr.trap[ 8:3] ==  8)                              ||  // Ecall U-mode
+    ( instr.trap[ 8:3] == 11)                              ||  // Ecall M-mode
+    ((instr.trap[ 8:3] ==  3) && (instr.trap[13:12] == 0)) ||  // Ebreak (ebreakm==0)
+    ( instr.trap[11:9] ==  1);                                 // Ebreak to* or in D-mode (* ebreakm==1)
+  logic is_normal_instr =
+    (instr.trap[0] == 0) ||                              // No rvfi_trap
+    ((instr.trap[11:9] == 4) && (instr.trap[1] == 0));   // Single-step, without any exception
 
-  if (!have_sampled && !instr.trap && cfg.core_cfg.ext_i_supported) begin
+  if (!have_sampled && is_normal_instr && cfg.core_cfg.ext_i_supported) begin
     have_sampled = 1;
     case (instr.name)
       LUI:   rv32i_lui_cg.sample(instr);
@@ -2437,7 +2445,7 @@ function void uvma_isacov_cov_model_c::sample (uvma_isacov_instr_c instr);
 
       default: have_sampled = 0;
     endcase
-  end else if (!have_sampled && instr.trap && cfg.core_cfg.ext_i_supported) begin
+  end else if (!have_sampled && is_ecall_or_ebreak && cfg.core_cfg.ext_i_supported) begin
     have_sampled = 1;
     case (instr.name)
       // Ecall and ebreak will trap
@@ -2448,7 +2456,7 @@ function void uvma_isacov_cov_model_c::sample (uvma_isacov_instr_c instr);
     endcase
   end
 
-  if (!have_sampled && !instr.trap && cfg.core_cfg.ext_m_supported) begin
+  if (!have_sampled && is_normal_instr && cfg.core_cfg.ext_m_supported) begin
     have_sampled = 1;
     case (instr.name)
       MUL:     rv32m_mul_cg.sample(instr);
@@ -2476,7 +2484,7 @@ function void uvma_isacov_cov_model_c::sample (uvma_isacov_instr_c instr);
     endcase
   end
 
-  if (!have_sampled && !instr.trap && cfg.core_cfg.ext_c_supported) begin
+  if (!have_sampled && is_normal_instr && cfg.core_cfg.ext_c_supported) begin
     have_sampled = 1;
     case (instr.name)
       C_ADDI:     rv32c_addi_cg.sample(instr);
@@ -2517,7 +2525,7 @@ function void uvma_isacov_cov_model_c::sample (uvma_isacov_instr_c instr);
 
       default: have_sampled = 0;
     endcase
-  end else if (!have_sampled && instr.trap && cfg.core_cfg.ext_c_supported) begin
+  end else if (!have_sampled && is_ecall_or_ebreak && cfg.core_cfg.ext_c_supported) begin
     have_sampled = 1;
     case (instr.name)
       // Ebreak will trap
@@ -2527,7 +2535,7 @@ function void uvma_isacov_cov_model_c::sample (uvma_isacov_instr_c instr);
     endcase
   end
 
-  if (!have_sampled && !instr.trap && cfg.core_cfg.ext_zicsr_supported) begin
+  if (!have_sampled && is_normal_instr && cfg.core_cfg.ext_zicsr_supported) begin
     have_sampled = 1;
     case (instr.name)
       CSRRW:   rv32zicsr_csrrw_cg.sample(instr);
@@ -2540,7 +2548,7 @@ function void uvma_isacov_cov_model_c::sample (uvma_isacov_instr_c instr);
     endcase
   end
 
-  if (!have_sampled && !instr.trap && cfg.core_cfg.ext_zifencei_supported) begin
+  if (!have_sampled && is_normal_instr && cfg.core_cfg.ext_zifencei_supported) begin
     have_sampled = 1;
     case (instr.name)
       FENCE_I: rv32zifencei_fence_i_cg.sample(instr);
@@ -2548,7 +2556,7 @@ function void uvma_isacov_cov_model_c::sample (uvma_isacov_instr_c instr);
     endcase
   end
 
-  if (!have_sampled && !instr.trap && cfg.core_cfg.ext_a_supported) begin
+  if (!have_sampled && is_normal_instr && cfg.core_cfg.ext_a_supported) begin
     have_sampled = 1;
     case (instr.name)
       LR_W:      rv32a_lr_w_cg.sample(instr);
@@ -2566,7 +2574,7 @@ function void uvma_isacov_cov_model_c::sample (uvma_isacov_instr_c instr);
     endcase
   end
 
-  if (!have_sampled && !instr.trap && cfg.core_cfg.ext_zba_supported) begin
+  if (!have_sampled && is_normal_instr && cfg.core_cfg.ext_zba_supported) begin
     have_sampled = 1;
     case (instr.name)
       SH1ADD:  rv32zba_sh1add_cg.sample(instr);
@@ -2576,7 +2584,7 @@ function void uvma_isacov_cov_model_c::sample (uvma_isacov_instr_c instr);
     endcase
   end
 
-  if (!have_sampled && !instr.trap && cfg.core_cfg.ext_zbb_supported) begin
+  if (!have_sampled && is_normal_instr && cfg.core_cfg.ext_zbb_supported) begin
     have_sampled = 1;
     case (instr.name)
       CLZ:     rv32zbb_clz_cg.sample(instr);
@@ -2601,7 +2609,7 @@ function void uvma_isacov_cov_model_c::sample (uvma_isacov_instr_c instr);
     endcase
   end
 
-  if (!have_sampled && !instr.trap && cfg.core_cfg.ext_zbc_supported) begin
+  if (!have_sampled && is_normal_instr && cfg.core_cfg.ext_zbc_supported) begin
     have_sampled = 1;
     case (instr.name)
       CLMUL:   rv32zbc_clmul_cg.sample(instr);
@@ -2611,7 +2619,7 @@ function void uvma_isacov_cov_model_c::sample (uvma_isacov_instr_c instr);
     endcase
   end
 
-  if (!have_sampled && !instr.trap && cfg.core_cfg.ext_zbs_supported) begin
+  if (!have_sampled && is_normal_instr && cfg.core_cfg.ext_zbs_supported) begin
     have_sampled = 1;
     case (instr.name)
       BSET:    rv32zbs_bset_cg.sample(instr);
@@ -2626,7 +2634,7 @@ function void uvma_isacov_cov_model_c::sample (uvma_isacov_instr_c instr);
     endcase
   end
 
-  if (!have_sampled && !instr.trap && instr.name != UNKNOWN) begin
+  if (!have_sampled && is_normal_instr && instr.name != UNKNOWN) begin
     `uvm_error("ISACOV", $sformatf("Could not sample instruction: %s", instr.name.name()));
   end
 
