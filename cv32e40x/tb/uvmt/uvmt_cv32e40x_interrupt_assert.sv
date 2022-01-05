@@ -336,7 +336,7 @@ module uvmt_cv32e40x_interrupt_assert
                   (wb_stage_instr_rdata_i == WFI_INSTR_DATA) &&
                   !branch_taken_ex                           &&
                   !wb_stage_instr_err_i                      &&
-                  !wb_stage_instr_mpu_status;
+                  (wb_stage_instr_mpu_status == MPU_OK);
   always @(posedge clk_i or negedge rst_ni) begin
     if (!rst_ni) begin
       in_wfi <= 1'b0;

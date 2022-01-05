@@ -349,9 +349,9 @@ module uvmt_cv32e40x_tb;
 
       .ex_stage_instr_valid (ex_stage_i.id_ex_pipe_i.instr_valid),
 
-      .wb_stage_instr_valid_i (wb_stage_i.instr_valid),
-      .wb_stage_instr_rdata_i (wb_stage_i.ex_wb_pipe_i.instr.bus_resp.rdata),
-      .wb_stage_instr_err_i   (wb_stage_i.ex_wb_pipe_i.instr.bus_resp.err),
+      .wb_stage_instr_valid_i    (wb_stage_i.instr_valid),
+      .wb_stage_instr_rdata_i    (wb_stage_i.ex_wb_pipe_i.instr.bus_resp.rdata),
+      .wb_stage_instr_err_i      (wb_stage_i.ex_wb_pipe_i.instr.bus_resp.err),
       .wb_stage_instr_mpu_status (wb_stage_i.ex_wb_pipe_i.instr.mpu_status),
 
       .branch_taken_ex (controller_i.controller_fsm_i.branch_taken_ex),
@@ -396,27 +396,32 @@ module uvmt_cv32e40x_tb;
 
   bind cv32e40x_wrapper
     uvmt_cv32e40x_debug_cov_assert_if debug_cov_assert_if (
-      .id_valid(core_i.id_stage_i.id_valid_o),
-      .ex_stage_csr_en(core_i.id_ex_pipe.csr_en),
-      .ex_valid(core_i.ex_stage_i.instr_valid),
-      .ex_stage_instr_rdata_i(core_i.id_ex_pipe.instr.bus_resp.rdata),
-      .ex_stage_pc(core_i.id_ex_pipe.pc),
-      .wb_stage_instr_rdata_i(core_i.ex_wb_pipe.instr.bus_resp.rdata),
-      .wb_stage_instr_valid_i(core_i.ex_wb_pipe.instr_valid),
-      .wb_stage_pc           (core_i.wb_stage_i.ex_wb_pipe_i.pc),
-      .wb_err                (core_i.ex_wb_pipe.instr.bus_resp.err),
+      .id_valid (core_i.id_stage_i.id_valid_o),
+
+      .ex_stage_csr_en        (core_i.id_ex_pipe.csr_en),
+      .ex_valid               (core_i.ex_stage_i.instr_valid),
+      .ex_stage_instr_rdata_i (core_i.id_ex_pipe.instr.bus_resp.rdata),
+      .ex_stage_pc            (core_i.id_ex_pipe.pc),
+
+      .wb_stage_instr_rdata_i (core_i.ex_wb_pipe.instr.bus_resp.rdata),
+      .wb_stage_instr_valid_i (core_i.ex_wb_pipe.instr_valid),
+      .wb_stage_pc            (core_i.ex_wb_pipe.pc),
+      .wb_err                 (core_i.ex_wb_pipe.instr.bus_resp.err),
+      .illegal_insn_i         (core_i.ex_wb_pipe.illegal_insn),
+      .wb_illegal             (core_i.ex_wb_pipe.illegal_insn),
+      .wb_valid               (core_i.wb_stage_i.wb_valid_o),
+      .ecall_insn_i           (core_i.ex_wb_pipe.ecall_insn),
+      .wb_mpu_status          (core_i.ex_wb_pipe.instr.mpu_status),
+
+      .ctrl_fsm_cs   (core_i.controller_i.controller_fsm_i.ctrl_fsm_cs),
+      .debug_req_i   (core_i.controller_i.controller_fsm_i.debug_req_i),
+      .debug_req_q   (core_i.controller_i.controller_fsm_i.debug_req_q),
+      .pending_debug (core_i.controller_i.controller_fsm_i.pending_debug),
+      .pending_nmi   (core_i.controller_i.controller_fsm_i.pending_nmi),
+      .nmi_allowed   (core_i.controller_i.controller_fsm_i.nmi_allowed),
+      .debug_mode_q  (core_i.controller_i.controller_fsm_i.debug_mode_q),
+
       .mie_q(core_i.cs_registers_i.mie_q),
-      .ctrl_fsm_cs(core_i.controller_i.controller_fsm_i.ctrl_fsm_cs),
-      .illegal_insn_i(core_i.ex_wb_pipe.illegal_insn),
-      .wb_illegal(core_i.ex_wb_pipe.illegal_insn),
-      .wb_valid(core_i.wb_stage_i.wb_valid_o),
-      .ecall_insn_i(core_i.ex_wb_pipe.ecall_insn),
-      .debug_req_i(core_i.controller_i.controller_fsm_i.debug_req_i),
-      .debug_req_q(core_i.controller_i.controller_fsm_i.debug_req_q),
-      .pending_debug(core_i.controller_i.controller_fsm_i.pending_debug),
-      .pending_nmi(core_i.controller_i.controller_fsm_i.pending_nmi),
-      .nmi_allowed(core_i.controller_i.controller_fsm_i.nmi_allowed),
-      .debug_mode_q(core_i.controller_i.controller_fsm_i.debug_mode_q),
       .dcsr_q(core_i.cs_registers_i.dcsr_q),
       .depc_q(core_i.cs_registers_i.dpc_q),
       .depc_n(core_i.cs_registers_i.dpc_n),
@@ -425,10 +430,11 @@ module uvmt_cv32e40x_tb;
       .mepc_q(core_i.cs_registers_i.mepc_q),
       .tdata1(core_i.cs_registers_i.tmatch_control_q),
       .tdata2(core_i.cs_registers_i.tmatch_value_q),
-      .trigger_match_in_wb(core_i.controller_i.controller_fsm_i.trigger_match_in_wb),
       .mcountinhibit_q(core_i.cs_registers_i.mcountinhibit_q),
       .mcycle(core_i.cs_registers_i.mhpmcounter_q[0]),
       .minstret(core_i.cs_registers_i.mhpmcounter_q[2]),
+
+      .trigger_match_in_wb(core_i.controller_i.controller_fsm_i.trigger_match_in_wb),
       .fence_i(core_i.id_stage_i.decoder_i.fencei_insn_o),
       // TODO: review this change from CV32E40X_HASH f6196bf to a26b194. It should be logically equivalent.
       //assign debug_cov_assert_if.inst_ret = core_i.cs_registers_i.inst_ret;
