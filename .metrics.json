@@ -2,8 +2,8 @@
   "variables": {
     "LM_LICENSE_FILE": "2700@license-1",
     "IMPERAS_QUEUE_LICENSE" : "1",
-    "CV_SW_TOOLCHAIN" : "/opt/corev",
-    "CV_SW_PREFIX" : "riscv32-corev-elf-",
+    "CV_SW_TOOLCHAIN" : "/opt/riscv",
+    "CV_SW_PREFIX" : "riscv32-unknown-elf-",
     "CV_SIMULATOR" : "dsim"
   },
   "builds": {
