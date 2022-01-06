@@ -18,8 +18,7 @@
 #
 ###############################################################################
 #
-# Common code for simulation Makefiles.  Intended to be included by the
-# Makefiles in the "core" and "uvmt_cv32" dirs.
+# Common code for simulation Makefiles.
 #
 ###############################################################################
 #
@@ -191,63 +190,9 @@ DV_OVPM_DESIGN  = $(DV_OVPM_HOME)/design
 OVP_MODEL_DPI   = $(DV_OVPM_MODEL)/bin/Linux64/imperas_CV32.dpi.so
 #OVP_CTRL_FILE   = $(DV_OVPM_DESIGN)/riscv_CV32E40P.ic
 
-###START#REFRACTOR##START#REFRACTOR##START#REFRACTOR##START#REFRACTOR##START###
-
 ###############################################################################
-# Read YAML test-program defintions
-#
-#    In core-v-verif, all test-programs are compiled into machine code using a
-#    software toolchain, and loaded into a memory model in a testbench which is
-#    compiled and executed by a SystemVerilog simulator. Some test-program are
-#    manually written and others are machine generated, typically by "corev-dv",
-#    a UVM program implemented as class extensions of Google's "riscv-dv".  All
-#    of these activities - generating the test-program, compiling the test-program,
-#    compiling and simulating the SystemVerilog testbench are all controlled by
-#    a set of variables captured in YAML files and collectively known as the
-#    test-program defintions.
-#
-#    A set of common "cfg" test-program defintions can be found in
-#    $(CORE_V_VERIF)/$(CORE_V_CORE)/tests/cfg/*.yaml. Use of these are optional.
-#
-#    Each manually written (custom) test-program is required to have a
-#    test-program defintions called "test.yaml" in its directory.
-#    This test-program defintions contains variables used by the software
-#    toolchain and SystemVerilog simulator. For an example see:
-#    $(CORE_V_VERIF)/$(CORE_V_CORE)/tests/programs/custom/hello-world/test.yaml
-#
-#    Each pseudo-random (corev-dv) test-program is required to have two YAML
-#    files: (1) "corev-dv.yaml" is the test-program defintions for the corev-dv
-#    instruction generator.  (2) "test.yaml" is the test-program defintions
-#    for the toolchain and SystemVerilog simulator. For examples see:
-#    $(CORE_V_VERIF)/$(CORE_V_CORE)/tests/programs/corev-dv/corev_rand_arithmetic_base_test/corev-dv.yaml
-#    $(CORE_V_VERIF)/$(CORE_V_CORE)/tests/programs/corev-dv/corev_rand_arithmetic_base_test/test.yaml
-#
-#    The script YAML2MAKE will parse test.yaml and create a set of
-#    variables that are used by this Makefile to:
-#       * Compile the test-program.
-#       * Compile UVM environment.
-#       * Pass run-time arguments to the SystemVerilog simulator.
-#    These variables all have a "TEST_" prefix.
-#
-#    Similarily, YAML2MAKE parses corev-dv.yaml and create a set of
-#    variables that are used by the corev-dv to pass run-time arguments to the
-#    SystemVerilog simulator, typically as plusagrs to control how corev-dv
-#    generate the pseudo-random test-program. These variables all have a "GEN_"
-#    prefix. NOTE: defining toolchain parameters in corev-dv is not recommended
-#    as this Makefile does not use variables prefixed with "GEN_" to access or
-#    control the toolchain.
-#
-#    Lastly, if the "CFG" variable is set, CFGYAML2MAKE parses a specific YAML
-#    file in $(CORE_V_VERIF)/$(CORE_V_CORE)/tests/cfg.  "CFG" must be set to
-#    the filename (no extension) of a yaml file in that directory.  Note that
-#    "CFG" can be a shell environment variable or passed to "make" on the comand
-#    line:
-#         make test TEST=my_test_program CFG=my_cfg
-#
-#    Note: if CFG is not defined, then $(CORE_V_VERIF)/$(CORE_V_CORE)/tests/cfg/default.yaml
-#    is used.
-#
-#
+# Run the yaml2make scripts
+
 ifeq ($(VERBOSE),1)
 YAML2MAKE_DEBUG = --debug
 else
@@ -294,58 +239,10 @@ include $(CFG_FLAGS_MAKE)
 endif
 endif
 
-#################################################################################
-## "Toolchain" to compile 'test-programs' (either C or RISC-V Assembler) for the
-## CV_CORE being tested.   This toolchain is used by both the core testbench and UVM
-## environment.  The assumption here is that you have installed at least one of
-## the following toolchains:
-##     1. GNU:   https://github.com/riscv/riscv-gnu-toolchain
-##               Assumed to be installed at /opt/gnu.
-##
-##     2. COREV: https://www.embecosm.com/resources/tool-chain-downloads/#corev
-##               Assumed to be installed at /opt/corev.
-##
-##     3. PULP:  https://github.com/pulp-platform/pulp-riscv-gnu-toolchain
-##               Assumed to be installed at /opt/pulp.
-##
-## If you do not select one of the above options, compilation will be attempted
-## using whatever is found at /opt/riscv using arch=unknown.
-##
-#GNU_SW_TOOLCHAIN    ?= /opt/gnu
-#GNU_VENDOR          ?= unknown
-#GNU_MARCH           ?= $(call RESOLVE_FLAG2,$(CFG_GNU_MARCH),rv32imc)
-#GNU_CC              ?= gcc
-#COREV_SW_TOOLCHAIN  ?= /opt/corev
-#COREV_VENDOR        ?= corev
-#COREV_MARCH         ?= $(call RESOLVE_FLAG2,$(CFG_COREV_MARCH),rv32imc)
-#COREV_CC            ?= gcc
-#PULP_SW_TOOLCHAIN   ?= /opt/pulp
-#PULP_VENDOR         ?= unknown
-#PULP_MARCH          ?= $(call RESOLVE_FLAG2,$(CFG_PULP_MARCH),rv32imcxpulpv2)
-#PULP_CC             ?= gcc
-#LLVM_SW_TOOLCHAIN   ?= /opt/clang
-#LLVM_VENDOR         ?= unknown
-#LLVM_MARCH          ?= $(call RESOLVE_FLAG2,$(CFG_LLVM_MARCH),rv32imc)
-#LLVM_CC             ?= cc
-#
-#CV_SW_TOOLCHAIN     ?= /opt/riscv
-#CV_SW_VENDOR        ?= unknown
-#CV_SW_MARCH         ?= $(call RESOLVE_FLAG2,$(CFG_CV_SW_MARCH),rv32imc)
-#
-#GNU_YES          = $(call IS_YES,$(GNU))
-#PULP_YES         = $(call IS_YES,$(PULP))
-#COREV_YES        = $(call IS_YES,$(COREV))
-#LLVM_YES         = $(call IS_YES,$(LLVM))
-#
-#ifeq ($(shell $(CORE_V_VERIF)/mk/toolchain_check.sh $(GNU_YES) $(PULP_YES) $(COREV_YES) $(LLVM_YES)),1)
-#$(error Multiple toolchains are enabled: GNU=${GNU_YES} PULP=${PULP_YES} COREV=${COREV_YES} LLVM=${LLVM_YES})
-#endif
-
 ###############################################################################
-# The so-called "COREV Environment Variables".
-#
-# First, we determine the values of the CV_SW_ variables.  The priority order
-# is ENV > TEST > CFG.
+# Determine the values of the CV_SW_ variables.
+# The priority order is ENV > TEST > CFG.
+
 ifndef CV_SW_TOOLCHAIN
 ifdef  TEST_CV_SW_TOOLCHAIN
 CV_SW_TOOLCHAIN = $(TEST_CV_SW_TOOLCHAIN)
@@ -408,25 +305,6 @@ endif
 endif
 endif
 
-## First, check that the COREV environment variables have been defined.
-#ifndef CV_SW_TOOLCHAIN
-#$(error Must define CV_SW_TOOLCHAIN)
-#endif
-#ifndef CV_SW_PREFIX
-#$(error Must define CV_SW_PREFIX)
-#endif
-#ifndef CV_SW_MARCH
-#$(error Must define CV_SW_MARCH)
-#endif
-##ifndef CV_SW_CFLAGS
-##$(warning CV_SW_CFLAGS is optional)
-##endif
-
-# Use these to set defaults for toolchain vars. A few typical examples...
-#RISCV            = /opt/riscv
-#RISCV_PREFIX     = riscv32-unknown-elf-
-#RISCV_EXE_PREFIX = $(RISCV)/bin/$(RISCV_PREFIX)
-#RISCV_CFLAGS     =
 RISCV            = $(CV_SW_TOOLCHAIN)
 RISCV_PREFIX     = $(CV_SW_PREFIX)
 RISCV_EXE_PREFIX = $(RISCV)/bin/$(RISCV_PREFIX)
@@ -434,12 +312,6 @@ RISCV_EXE_PREFIX = $(RISCV)/bin/$(RISCV_PREFIX)
 RISCV_MARCH      = $(CV_SW_MARCH)
 RISCV_CC         = $(CV_SW_CC)
 RISCV_FLAGS      = $(CV_SW_FLAGS)
-
-#RISCV_MARCH      = $(call RESOLVE_FLAG2,$(TEST_RISCV_MARCH),$(COREV_SW_MARCH))
-#RISCV_MARCH      = $(call RESOLVE_FLAG2,$(CFG_COREV_MARCH),$(TEST_RISCV_MARCH))
-
-#RISCV_CFLAGS     = $(call RESOLVE_FLAG2,$(CFG_RISCV_CFLAGS),$(TEST_RISCV_CFLAGS))
-#RISCV_CFLAGS     = $(call RESOLVE_FLAG2,$(TEST_RISCV_CFLAGS),$(COREV_SW_CFLAGS))
 
 CFLAGS ?= -Os -g -static -mabi=ilp32 -march=$(RISCV_MARCH) -Wall -pedantic $(RISCV_CFLAGS)
 
@@ -451,77 +323,16 @@ $(warning RISCV_CC set to $(RISCV_CC))
 $(warning RISCV_FLAGS set to $(RISCV_FLAGS))
 #$(error STOP IT!)
 
-#
-#RISCV             = $(CV_SW_TOOLCHAIN)
-#RISCV_PREFIX      = riscv32-$(CV_SW_VENDOR)-elf-
-#RISCV_EXE_PREFIX  = $(RISCV)/bin/$(RISCV_PREFIX)
-#RISCV_CC          = gcc
-#RISCV_MARCH       = $(call RESOLVE_FLAG2,$(TEST_RISCV_MARCH),$(CV_SW_MARCH))
-#RISCV_CFLAGS      = $(TEST_RISCV_CFLAGS)
-#
-#ifeq ($(GNU_YES),YES)
-#ifeq ($(call IS_YES,$(TEST_GNU_NOT_SUPPORTED)),YES)
-#$(error test [$(TEST)] does not support the GNU toolchain)
-#endif
-#RISCV            = $(GNU_SW_TOOLCHAIN)
-#RISCV_PREFIX     = riscv32-$(GNU_VENDOR)-elf-
-#RISCV_EXE_PREFIX = $(RISCV)/bin/$(RISCV_PREFIX)
-#RISCV_CC         = $(GNU_CC)
-#RISCV_MARCH      = $(call RESOLVE_FLAG2,$(TEST_GNU_MARCH),$(GNU_MARCH))
-#RISCV_CFLAGS     = $(call RESOLVE_FLAG2,$(TEST_GNU_CFLAGS),$(GNU_CFLAGS))
-#endif
-#
-#ifeq ($(COREV_YES),YES)
-#ifeq ($(call IS_YES,$(TEST_COREV_NOT_SUPPORTED)),YES)
-#$(error test [$(TEST)] does not support the COREV toolchain)
-#endif
-#RISCV            = $(COREV_SW_TOOLCHAIN)
-#RISCV_PREFIX     = riscv32-$(COREV_VENDOR)-elf-
-#RISCV_EXE_PREFIX = $(RISCV)/bin/$(RISCV_PREFIX)
-#RISCV_CC         = $(COREV_CC)
-#RISCV_MARCH      = $(call RESOLVE_FLAG2,$(TEST_COREV_MARCH),$(COREV_MARCH))
-#RISCV_CFLAGS     = $(call RESOLVE_FLAG2,$(TEST_COREV_CFLAGS),$(COREV_CFLAGS))
-#endif
-#
-#ifeq ($(PULP_YES),YES)
-#ifeq ($(call IS_YES,$(TEST_PULP_NOT_SUPPORTED)),YES)
-#$(error test [$(TEST)] does not support the PULP toolchain)
-#endif
-#RISCV            = $(PULP_SW_TOOLCHAIN)
-#RISCV_PREFIX     = riscv32-$(PULP_VENDOR)-elf-
-#RISCV_EXE_PREFIX = $(RISCV)/bin/$(RISCV_PREFIX)
-#RISCV_CC         = $(PULP_CC)
-#RISCV_MARCH      = $(call RESOLVE_FLAG2,$(TEST_PULP_MARCH),$(PULP_MARCH))
-#RISCV_CFLAGS     = $(call RESOLVE_FLAG2,$(TEST_PULP_CFLAGS),$(PULP_CFLAGS))
-#endif
-#
-#ifeq ($(LLVM_YES),YES)
-#ifeq ($(call IS_YES,$(TEST_LLVM_NOT_SUPPORTED)),YES)
-#$(error test [$(TEST)] does not support the LLVM toolchain)
-#endif
-#RISCV            = $(LLVM_SW_TOOLCHAIN)
-#RISCV_PREFIX     = riscv32-$(LLVM_VENDOR)-elf-
-#RISCV_EXE_PREFIX = $(RISCV)/bin/$(RISCV_PREFIX)
-#RISCV_CC         = $(LLVM_CC)
-#RISCV_MARCH      = $(call RESOLVE_FLAG2,$(TEST_LLVM_MARCH),$(LLVM_MARCH))
-#RISCV_CFLAGS     = $(call RESOLVE_FLAG2,$(TEST_LLVM_CFLAGS),$(LLVM_CFLAGS))
-#RISCV_CFLAGS    += -menable-experimental-extensions
-#endif
-#
-#CFLAGS ?= -Os -g -static -mabi=ilp32 -march=$(RISCV_MARCH) -Wall -pedantic
-#
+# Keeping this around just in case it is needed again
 #ifeq ($(firstword $(subst _, ,$(TEST))),pulp)
-  #CFLAGS = -Os -g -D__riscv__=1 -D__LITTLE_ENDIAN__=1 -march=rv32imcxpulpv2 -Wa,-march=rv32imcxpulpv2 -fdata-sections -ffunction-sections -fdiagnostics-color=always
+#  CFLAGS = -Os -g -D__riscv__=1 -D__LITTLE_ENDIAN__=1 -march=rv32imcxpulpv2 -Wa,-march=rv32imcxpulpv2 -fdata-sections -ffunction-sections -fdiagnostics-color=always
 #endif
-
-#
-###END#REFRACTOR##END#REFRACTOR##END#REFRACTOR##END#REFRACTOR##END#REFRACTOR###
 
 ASM       ?= ../../tests/asm
 ASM_DIR   ?= $(ASM)
 
-# CORE FIRMWARE vars. All of the C and assembler programs under CORE_TEST_DIR
-# are collectively known as "Core Firmware".
+# CORE FIRMWARE vars. The C and assembler test-programs
+# were once collectively known as "Core Firmware".
 #
 # Note that the DSIM targets allow for writing the log-files to arbitrary
 # locations, so all of these paths are absolute, except those used by Verilator.

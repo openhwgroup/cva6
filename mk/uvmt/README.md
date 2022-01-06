@@ -30,7 +30,7 @@ Note that `CV_CORE` is infered by the Makefiles if you launch a test from a `uvm
 | CV_SW_PREFIX         | Prefix of the SW toolchain installation. |
 
 **Notes:**
-1. A toolchain is required for running any tests in the core-v-verif environments.
+1. A toolchain is required for running any tests in the core-v-verif environments, see below for more detail.
 2. If CV_CORE is not set, running a simulation from the `<core>/sim/uvmt` directory will automatically set it to "core".
 
 A toolchain is comprised of a set of executables (e.g. gcc, objcopy, etc.) each of which typically has a path of the form `$(CV_SW_TOOLCHAIN)/bin/$(CV_SW_PREFIX)`.
@@ -74,24 +74,20 @@ Alternately, you can download the source code from
 [Accellera](https://www.accellera.org/downloads/standards/uvm).  The UVM LRM (IEEE-1800.2) can be obtained
 from the [IEEE Standards Association](https://standards.ieee.org/).
 
-RISC-V GCC Compilers
---------------------
-Compiling the test-programs requires a RISC-V cross-compiler,
-often refered to as the "toolchain".
-See [TOOLCHAIN](https://github.com/openhwgroup/core-v-verif/blob/master/cv32e40p/sim/TOOLCHAIN.md)
+Toolchains
+----------
+Compiling the test-programs requires a RISC-V cross-compiler, often refered to as the "toolchain".
+See [TOOLCHAIN](https://github.com/openhwgroup/core-v-verif/blob/master/mk/TOOLCHAIN.md)
 for detailed installation instructions.
-<br><br>
-**IMPORTANT:** The shell environment variable `CV_SW_TOOLCHAIN` must point to the path of your
-toolchain (e.g. `export CV_SW_TOOLCHAIN=/opt/riscv`). By default the Makefiles will attempt to compile
-your test-program using whatever is found at /opt/riscv using march=unknown.
 
 Makefiles
 -----------
 `Make` is used to generate the command-lines that compile and run simulations.<br>
-- `CV_CORE/sim/uvmt/Makefile` is the
-'root' Makefile from which users can invoke simulations.  This makefile includes the common uvmt simulation makefile at `mk/uvmt/uvmt.mk`
+- `CV_CORE/sim/uvmt/Makefile` is the 'root' Makefile from which users can invoke simulations.
+This makefile includes the common uvmt simulation makefile at `mk/uvmt/uvmt.mk`
 which implements simulation execution targets (described below.)
-- `CV_CORE/sim/Common.mk` should be used to define variables to point to third-party libraries.  This include the RTL repo to simulate, Google riscv-dv, RISCV compliance suite and other external repositories.
+- `CV_CORE/sim/ExternalRepos.mk` should be used to define variables to point to third-party libraries.
+This include the RTL repo to simulate; Google riscv-dv; RISCV compliance suite and other external repositories.
 - The common makefile in `mk/Common.mk` supports all common variables, rules
 and targets, including specific targets to clone the RTL from
 [cv32e40p](https://github.com/openhwgroup/cv32e40p). 
