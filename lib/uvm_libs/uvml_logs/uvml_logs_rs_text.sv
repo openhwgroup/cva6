@@ -34,7 +34,8 @@ class uvml_logs_rs_text_c extends uvm_default_report_server;
    /**
     * 
     */
-   extern virtual function string compose_report_message(uvm_report_message report_message, string report_object_name="");
+   // Waiving Verissimo linter SVTB.32.2.0: Pass strings by reference unless otherwise needed
+   extern virtual function string compose_report_message(uvm_report_message report_message, string report_object_name=""); //@DVT_LINTER_WAIVER "MT20211228_5" disable SVTB.32.2.0
    
    /**
     * 

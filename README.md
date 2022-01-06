@@ -32,12 +32,12 @@ More news is available in the [archive](https://github.com/openhwgroup/core-v-ve
 ## Getting Started
 First, have a look at the [OpenHW Group's website](https://www.openhwgroup.org) to learn a bit more about who we are and what we are doing.
 <br>
-Reading the [CORE-V-VERIF Verification Strategy](https://core-v-docs-verif-strat.readthedocs.io/en/latest/) is strongly recommended.
+For first time users of CORE-V-VERIF, the **Quick Start Guide** in the [CORE-V-VERIF Verification Strategy](https://core-v-docs-verif-strat.readthedocs.io/en/latest/) is the best place to start.
 
-### Getting started with CV32E40P
+### Getting started with CV32E4\* cores
 If you want to run a simulation there are two options:
-1. To run the CORE testbench, go to `cv32e40p/sim/core` and read the README.
-2. To run the CV32E40P UVM environment, go to `cv32e40p/sim/uvmt` and read the README.
+1. To run the CORE testbench for the CV32E40P, go to `cv32e40p/sim/core` and read the README.
+2. To run any of the CV32E4\* UVM environment go to `mk/uvmt` and read the README.
 
 <!--
 #### CV32E40P coverage data
