@@ -1,4 +1,4 @@
-Common Makefiles for Core-V UVM Verification Environment
+Common Makefile for the CORE-V-VERIF UVM Verification Environment
 ==================================
 This directory contains the _Common_ makefiles for the UVM and Core testbenches to perform common functionality: <br>
 - Cloning third party repositories (Core RTL, libraries, ISGs, RISC-V compliance library, etc.)
@@ -6,16 +6,20 @@ This directory contains the _Common_ makefiles for the UVM and Core testbenches 
 - Invoking the toolchain to compile compliance test programs for simulation
 - Importing the source code in DVT Eclipse IDE (https://dvteclipse.com/)
 
-The UVM testcases are at `CV_CORE/tests/uvmt`.
+In the core-v-verif UVM environment, the distinction between a **_testcases_** and **_test-program_** is important.
+* **testcase**: a SystemVerilog class extended from uvm_test that instantiates and controls the UVM environment.
+A testcase will control things like whether or not, and when, an interrupt is asserted and randomization of cycle timing on the external memory interfaces.
+* **test-program**: a C or assembler program that is executed by the core RTL model.
+<br><br>
+There may be only one testcase, but typically there are many test-programs.
+For more information please refer to the [Verification Strategy](https://core-v-docs-verif-strat.readthedocs.io/en/latest/intro.html)
+<br><br>
+The testcases are at located at `CV_CORE/tests/uvmt`.
 Test-programs can be found in `CV_CORE/tests/program`.
 See the README in those directories for more information.
 <br><br>
-Please refer to the [Verification Strategy](https://core-v-verif-verification-strategy.readthedocs.io/en/master/)
-for a discussion on the distinction between a _testcase_ (a SystemVerilog class extended from uvm_test that instantiates and controls the UVM environment) and a _test-program_ (a C or assembler program that runs on the core RTL model) in this environment.
-<br><br>
 To run the UVM environment you will need:
 - a run-time license for the Imperas OVPsim Instruction Set Simulator
-(free to OpenHW Group Contributors),
 - a SystemVerilog simulator,
 - the UVM-1.2 library,
 - the RISC-V GCC compiler, and
@@ -53,6 +57,7 @@ The following environment variables may be set for any `make` invocation to run 
 | CV_TOOL_PREFIX       | Prepended to all standalone tool (i.e. non-interacitive) simulation tool invocations such as coverage tools and waveform viewers.  Can be used to invoke job-scheduling tool (e.g. LSF). |
 | CV_RESULTS           | Optional simulator output redirection path. Defaults to blank, i.e. simulation outputs will be located in <i>&lt;core></i>/mk/uvmt/<i>&lt;simulator></i>\_results if a relative path is given.  Optionally an absolute path can be used as well and simulation outputs will be located in  $(CV\_RESULTS)/<i>&lt;simulator></i>\_results |
 | CV_SW_MARCH          | Architecture of tool chain to invoke. The default is `rv32imc`. |
+| CV_SW_CFLAGS         | Optional command-line arguments (flags) passed to $(CV_SW_CC). |
 | CV_SW_CC             | Postfix name of the C compiler used to compile the test-program. The default is `gcc`. If you are using an LLVM toolchain, this would typically be set to `cc`. |
 
 Imperas OVPsim Instruction Set Simulator
@@ -83,8 +88,7 @@ from the [IEEE Standards Association](https://standards.ieee.org/).
 Toolchains
 ----------
 Compiling the test-programs requires a RISC-V cross-compiler, often refered to as the "toolchain".
-See [TOOLCHAIN](https://github.com/openhwgroup/core-v-verif/blob/master/mk/TOOLCHAIN.md)
-for detailed installation instructions.
+See [TOOLCHAIN](./TOOLCHAIN.md) for detailed installation instructions.
 
 Makefiles
 -----------
@@ -100,7 +104,7 @@ and targets, including specific targets to clone the RTL from
 - Simulator-specific Makefiles are used to build the command-line to run a specific test with a specific
 simulator.  These files are organized as shown below:
 ```
-mk/
+     mk/
       +--- Common.mk                        # Common variables and targets
       +--- uvmt/
               +--- uvmt.mk                  # Simulation makefile

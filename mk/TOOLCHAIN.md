@@ -13,7 +13,7 @@ As detailed in [README](./README.md#required-corev-environment-variables), you w
 $ export CV_SW_TOOLCHAIN="/opt/riscv"
 ```
 
-### RSIC-V Toolchain
+### RISC-V Toolchain
 For many CORE-V cores, the standard RISC-V toolchain will work. You can obtain pre-built version for various platforms from Embecosm
 [here](https://www.embecosm.com/resources/tool-chain-downloads/#riscv).
 It is recommended that you install this at `/opt/riscv` and define a shell variable to point to it:

@@ -293,14 +293,14 @@ endif
 endif
 endif
 
-ifndef CV_SW_FLAGS
-ifdef  TEST_CV_SW_FLAGS
-CV_SW_FLAGS = $(TEST_CV_SW_FLAGS)
+ifndef CV_SW_CFLAGS
+ifdef  TEST_CV_SW_CFLAGS
+CV_SW_CFLAGS = $(TEST_CV_SW_CFLAGS)
 else
-ifdef  CFG_CV_SW_FLAGS
-CV_SW_FLAGS = $(CFG_CV_SW_FLAGS)
+ifdef  CFG_CV_SW_CFLAGS
+CV_SW_CFLAGS = $(CFG_CV_SW_CFLAGS)
 else
-$(warning CV_SW_FLAGS not defined in either the shell environment, test.yaml or cfg.yaml)
+$(warning CV_SW_CFLAGS not defined in either the shell environment, test.yaml or cfg.yaml)
 endif
 endif
 endif
@@ -320,7 +320,7 @@ $(warning RISCV_PREFIX set to $(RISCV_PREFIX))
 $(warning RISCV_EXE_PREFIX set to $(RISCV_EXE_PREFIX))
 $(warning RISCV_MARCH set to $(RISCV_MARCH))
 $(warning RISCV_CC set to $(RISCV_CC))
-$(warning RISCV_FLAGS set to $(RISCV_FLAGS))
+$(warning RISCV_CFLAGS set to $(RISCV_CFLAGS))
 #$(error STOP IT!)
 
 # Keeping this around just in case it is needed again
