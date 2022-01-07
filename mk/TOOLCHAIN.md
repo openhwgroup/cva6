@@ -2,7 +2,7 @@
 
 The following are instructions for obtaining and installing a toolchain on your system.
 Please refer to the [README](./README.md) in this directory for instructions on setting up the core-v-verif to use your Toolchain.
-Please refer to [CV_SW](./CV_SW.md) in this directory for an explainer on how to select from multiple toolchains on a per-test-program basis.
+[Toolchain Parameters Example](#toolchain-parameters-example), below, provides an explainer on how to select from multiple toolchain parameters on a per-test-program basis.
 
 ### CORE-V Toolchain
 The recommended toolchain for all CORE-V cores is available from Embecosm
@@ -84,20 +84,24 @@ $ sudo make
 Events such as generating a test-program, compiling the test-program
 and compiling/simulating the SystemVerilog testbench are all controlled by
 a the set of environment variables described in the [README](./README.md), plus
-a set of YAML files and collectively known as the _test-program defintions_.
+a set of YAML files collectively known as the _test-program defintions_.
 
 The YAML files allow for fine-grained control of the
 [required](./README.md#required-corev-environment-variables) and
-[optional](./README.md#optional-corev-environment-variables) COREV environment variables,
+[optional](./README.md#optional-corev-environment-variables) CORE-V-VERIF environment variables,
 plus a host of other variables such as SystemVerilog "plusargs".
+Each test-program will have its own test-program defintion, _test.yaml_,
+which resides in the same directory as the test-program sources,
+plus a configuration-level test-program defintion that resides in `tests/cfg`.
+If a configuration-level test-program defintion is not specfied then _default.yaml_ is used.
+
 The following describes how this works in core-v-verif.
 
-Each manually written (custom) test-program is required to have a
-test-program defintion called "test.yaml" in its directory.
-This test-program defintion contains variables used by the software
-toolchain and SystemVerilog simulator. For an example see:
+In core-v-verif each test-program has its own directory and the test-program defintion, _test.yaml_ is required to exist in that directory.
+This test-program defintion contains variables used by the software toolchain and SystemVerilog simulator.
+For an example see:
 $(CORE_V_VERIF)/$(CORE_V_CORE)/tests/programs/custom/hello-world/test.yaml
-The test-program defintion could overload the defintion of the CV_SW_TOOLCHAIN and CV_SW_PREXFIX, if required.
+The test-program defintion can overload the defintion of the CV_SW_TOOLCHAIN and CV_SW_PREXFIX, if required.
 For example:
 ```
 cv_sw_toolchain: /opt/llvm
@@ -105,14 +109,14 @@ cv_sw_prefix: riscv-openhw-elf-
 ```
 
 Similarily, each pseudo-random (corev-dv) test-program is required to have two YAML files:
-1. "corev-dv.yaml" is the test-program defintions for the corev-dv instruction generator.
-2. "test.yaml" is the test-program defintion for the toolchain and SystemVerilog simulator. This test.yaml serves the same function as for manually written test-programs.
+1. _corev-dv.yaml_ is the test-program defintion for the corev-dv instruction generator.
+2. _test.yaml_ is the test-program defintion for the toolchain and SystemVerilog simulator. This test.yaml serves the same function as for manually written test-programs.
 
 For examples see:
 $(CORE_V_VERIF)/$(CORE_V_CORE)/tests/programs/corev-dv/corev_rand_arithmetic_base_test/corev-dv.yaml
 $(CORE_V_VERIF)/$(CORE_V_CORE)/tests/programs/corev-dv/corev_rand_arithmetic_base_test/test.yaml
 
-The script [YAML2MAKE](../bin/yaml2make) will parse test.yaml and create a set of variables that are used by the Makefile to:
+The script [YAML2MAKE](../bin/yaml2make) will parse test.yaml and create a set of Makefile variables that are used by the Makefile to:
 * Compile the test-program.
 * Compile UVM environment.
 * Pass run-time arguments to the SystemVerilog simulator.
@@ -120,8 +124,8 @@ These variables all have a "TEST\_" prefix.
 
 Similarily, [YAML2MAKE](../bin/yaml2make) also parses corev-dv.yaml and create a set of
 variables that are used by the corev-dv to pass run-time arguments to the
-SystemVerilog simulator, typically as plusagrs to control how corev-dv
-generate the pseudo-random test-program. These variables all have a "GEN\_"
+SystemVerilog simulator, typically as plusargs to control how corev-dv
+generates the pseudo-random test-program. These variables all have a "GEN\_"
 prefix. NOTE: defining toolchain parameters in corev-dv is not required
 as the Makefile does not use variables prefixed with "GEN\_" to access or control the toolchain.
 
@@ -136,14 +140,23 @@ Note: if "CFG" is not defined, then $(CORE_V_VERIF)/$(CORE_V_CORE)/tests/cfg/def
 The common Makefile, ([Common.mk](./Common.mk)), will launch the yaml2make and cfgyaml2make scripts to generate the TEST\*, GEN\* and CFG\* variables.
 These are then used to set the appropriate parameters for generating the test-program, compiling the test-program, compiling and simulating the SystemVerilog testbench.
 
-Let's take, as an example, the selection of a toolchain to compile a test-program.
-This is determined by the values of the CV_SW_TOOLCHAIN.
-Typically this is determined by defining a shell environment variable CV_SW_TOOLCHAIN as shown above.
-If the test-program definition and default configuration definitions do not set this variable, then the toolchain used is determined by the shell variable.
-However, if either the test-program definition or default configuration definitions set this variable, they will override the environment variable.
-Suppose `$(CORE_V_VERIF)/$(CORE_V_CORE)/tests/cfg/default.yaml` contains the following line:
+### Toolchain Parameter Example
+
+Let's take, as an example, setting of the `march` argument for gcc.
+This is determined by the value of CV_SW_MARCH.
+This could be determined by defining a shell environment variable CV_SW_MARCH, as discussed at the top of this document.
+If the test-program definition and default configuration definitions do not define this variable, then the value of `march` used is determined by the shell variable.
+However, if _either_ the test-program definition or default configuration definition set this variable, that will override the environment variable.
+Suppose the default configuration test-program defintion,`$(CORE_V_VERIF)/$(CORE_V_CORE)/tests/cfg/default.yaml`, contains the following line:
 ```
-cv_sw_toolchain: /opt/llvm
+cv_sw_march: rv32imc_zba1p00_zbb1p00_zbc1p00_zbs1p00
 ```
-This would set CV_SW_TOOLCHAIN for all tests for the $(CORE_V_CORE) (e.g. cv32e40x).
+This would set CV_SW_MARCH for all tests that use cfg/default.yaml.
 The priority order for controlling variables is ENV > TEST > CFG.
+
+### Non-defaults
+
+Recall that the toolchain selection variables, CV_SW_TOOLCHAIN and CV_SW_PREFIX are not optional.
+These shell environment variables must be set, or the Makefiles will fatal-out and terminate execution immediately.
+Due to the priority ordering of toolchain selection variables discussed above,
+this means that the value of CV_SW_TOOLCHAIN and CV_SW_PREFIX cannot be set in either the test-program definition or the default configuration definition.
