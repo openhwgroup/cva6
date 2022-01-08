@@ -19,7 +19,7 @@
 
 
 module cache_ctrl import ariane_pkg::*; import std_cache_pkg::*; #(
-    parameter logic [63:0] CACHE_START_ADDR  = 64'h4000_0000
+    parameter ariane_cfg_t ArianeCfg = ArianeDefaultConfig // contains cacheable regions
 ) (
     input  logic                                 clk_i,     // Clock
     input  logic                                 rst_ni,    // Asynchronous reset active low
@@ -250,7 +250,7 @@ module cache_ctrl import ariane_pkg::*; import std_cache_pkg::*; #(
                     // -------------------------
                     // Check for cache-ability
                     // -------------------------
-                    if (tag_o < CACHE_START_ADDR[DCACHE_TAG_WIDTH+DCACHE_INDEX_WIDTH-1:DCACHE_INDEX_WIDTH]) begin
+                    if (!is_inside_cacheable_regions(ArianeCfg, {{{64-riscv::PLEN}{1'b0}}, tag_o, {DCACHE_INDEX_WIDTH{1'b0}}})) begin
                         mem_req_d.bypass = 1'b1;
                         state_d = WAIT_REFILL_GNT;
                     end
