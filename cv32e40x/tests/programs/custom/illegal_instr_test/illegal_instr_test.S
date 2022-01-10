@@ -47607,13 +47607,13 @@ main:
 finalize:
     li x18, 123456789
     li x19, 0xa55a5aa5
-    lw x20,4(sp)
+    lw x20,-8(sp)      # Attempt to get bitmanip enabled-signature
     beq x20,x19,set_exp_bitmanip
-    li x16, 47595      # this is the number of EXPECTED illegal instructions
+    li x16, 47595      # This is the number of EXPECTED illegal instructions
     beq x31, x16, test_end
     j fail
 set_exp_bitmanip:
-    li x16, 47518      # this is the number of EXPECTED instructions if Zba,Zbb,Zbc and Zbs are enabled
+    li x16, 47518      # This is the number of EXPECTED instructions if Zba,Zbb,Zbc and Zbs are enabled
     beq x31, x16, test_end
 fail:
     li x18, 1
@@ -47801,11 +47801,10 @@ test_bitmanip:
     .word(0x0a5eff33) // Zbb maxu
     .word(0x68779c93) // Zbs binvi
     li x16, 77
-    beq x31, x16, bitmanip_not_detected
+    beq x31, x16, return_to_main // jump if we encountered 77 invalid (bitmanip) instructions)
     li x4, 0xa55a5aa5
     sw      x4,84(sp)
     j return_to_main
-bitmanip_not_detected:
 return_to_main:
     jal restore_volatile_gpr_stack
     add x1, x3, zero // restore return address
