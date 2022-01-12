@@ -311,7 +311,7 @@ RISCV_EXE_PREFIX = $(RISCV)/bin/$(RISCV_PREFIX)
 
 RISCV_MARCH      = $(CV_SW_MARCH)
 RISCV_CC         = $(CV_SW_CC)
-RISCV_FLAGS      = $(CV_SW_FLAGS)
+RISCV_CFLAGS     = $(CV_SW_CFLAGS)
 
 CFLAGS ?= -Os -g -static -mabi=ilp32 -march=$(RISCV_MARCH) -Wall -pedantic $(RISCV_CFLAGS)
 
