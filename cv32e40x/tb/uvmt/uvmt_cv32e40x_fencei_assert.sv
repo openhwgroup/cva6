@@ -31,7 +31,7 @@ module uvmt_cv32e40x_fencei_assert
 
   input        wb_valid,
   input        wb_instr_valid,
-  input        wb_fencei_insn,
+  input        wb_sys_fencei_insn,
   input [31:0] wb_pc,
   input [31:0] wb_rdata,
 
@@ -54,7 +54,7 @@ module uvmt_cv32e40x_fencei_assert
   string info_tag = "CV32E40X_FENCEI_ASSERT";
 
   logic is_fencei_in_wb;
-  assign is_fencei_in_wb = wb_fencei_insn && wb_instr_valid;
+  assign is_fencei_in_wb = wb_sys_fencei_insn && wb_instr_valid;
 
   int obi_outstanding;
   always @(posedge clk_i, negedge rst_ni) begin
