@@ -162,45 +162,33 @@ module uvmt_cv32e40x_debug_assert
         else `uvm_error(info_tag,$sformatf("Debug mode with wrong cause after ebreak, case = %d",cov_assert_if.dcsr_q[8:6]));
 
 
-    // c.ebreak without dcsr.ebreakm results in exception at mtvec
-    // Exclude single stepping as the sequence gets very complicated
+    // ebreak / c.ebreak without dcsr.ebreakm results in exception at mtvec
+    // (Exclude single stepping as the sequence gets very complicated)
 
-    property p_cebreak_exception;
-        disable iff(!cov_assert_if.rst_ni)
-        $rose(cov_assert_if.is_cebreak) && !cov_assert_if.debug_mode_q
-        && !cov_assert_if.dcsr_q[2] && !cov_assert_if.dcsr_q[15]
+    property p_general_ebreak_exception(ebreak);
+        $rose(ebreak)
+        && !cov_assert_if.debug_mode_q
+        && !cov_assert_if.dcsr_q[2]
+        && !cov_assert_if.dcsr_q[15]
         ##0 (
           (!cov_assert_if.pending_debug && !cov_assert_if.irq_ack_o && !cov_assert_if.pending_nmi)
           throughout (##1 cov_assert_if.wb_valid [->1])
           )
         |->
-        !cov_assert_if.debug_mode_q && (cov_assert_if.mcause_q[30:0] === cv32e40x_pkg::EXC_CAUSE_BREAKPOINT)
-        && (cov_assert_if.mepc_q == pc_at_ebreak) && (cov_assert_if.wb_stage_pc == mtvec_addr);
+        !cov_assert_if.debug_mode_q
+        && (cov_assert_if.mcause_q[30:0] === cv32e40x_pkg::EXC_CAUSE_BREAKPOINT)
+        && (cov_assert_if.mepc_q == pc_at_ebreak)
+        && (cov_assert_if.wb_stage_pc == mtvec_addr);
         // TODO:ropeders need assertions for what happens if cebreak and req/irq?
     endproperty
 
-    a_cebreak_exception: assert property(p_cebreak_exception)
-        else `uvm_error(info_tag,$sformatf("Exception not entered correctly after c.ebreak with dcsr.ebreak=0"));
+    a_cebreak_exception: assert property(
+        p_general_ebreak_exception(cov_assert_if.is_cebreak)
+        ) else `uvm_error(info_tag, $sformatf("Exception not entered correctly after c.ebreak with dcsr.ebreak=0"));
 
-
-    // ebreak without dcsr.ebreakm results in exception at mtvec
-    // Exclude single stepping as the sequence gets very complicated
-
-    property p_ebreak_exception;
-        disable iff(!cov_assert_if.rst_ni)
-        $rose(cov_assert_if.is_ebreak) && !cov_assert_if.dcsr_q[15]
-        && !cov_assert_if.debug_mode_q && !cov_assert_if.dcsr_q[2]
-        ##0 (
-          (!cov_assert_if.pending_debug && !cov_assert_if.irq_ack_o && !cov_assert_if.pending_nmi)
-          throughout (##1 cov_assert_if.wb_valid [->1])
-          )
-        |->
-        !cov_assert_if.debug_mode_q && (cov_assert_if.mcause_q[30:0] === cv32e40x_pkg::EXC_CAUSE_BREAKPOINT)
-        && (cov_assert_if.mepc_q == pc_at_ebreak) && (cov_assert_if.wb_stage_pc == mtvec_addr);
-    endproperty
-
-    a_ebreak_exception: assert property(p_ebreak_exception)
-        else `uvm_error(info_tag,$sformatf("Exception not entered correctly after ebreak with dcsr.ebreak=0"));
+    a_ebreak_exception: assert property(
+        p_general_ebreak_exception(cov_assert_if.is_ebreak)
+        ) else `uvm_error(info_tag, $sformatf("Exception not entered correctly after ebreak with dcsr.ebreak=0"));
 
 
     // c.ebreak during debug mode results in relaunch of debug mode
