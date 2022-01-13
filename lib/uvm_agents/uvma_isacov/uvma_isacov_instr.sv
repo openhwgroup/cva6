@@ -23,8 +23,8 @@ class uvma_isacov_instr_c#(int ILEN=DEFAULT_ILEN,
   // Set for illegal instructions
   bit           illegal;
 
-  // Set for traped instructions, that should not be considered for coverage
-  bit           trap;
+  // Set for traped instructions, determines what should not be considered for coverage
+  bit [13:0]    trap;
 
   // Enumeration
   instr_name_t  name;

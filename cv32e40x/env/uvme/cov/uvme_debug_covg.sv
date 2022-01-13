@@ -172,7 +172,7 @@ class uvme_debug_covg extends uvm_component;
         dm : coverpoint cntxt.debug_cov_vif.mon_cb.debug_mode_q {
             bins hit  = {1};
         }
-        ill : coverpoint cntxt.debug_cov_vif.mon_cb.ecall_insn_i {
+        ill : coverpoint cntxt.debug_cov_vif.mon_cb.sys_ecall_insn_i {
             bins hit = {1};
         }
         ex_in_debug : cross dm, ill;
@@ -383,7 +383,7 @@ class uvme_debug_covg extends uvm_component;
         mode : coverpoint cntxt.debug_cov_vif.mon_cb.debug_mode_q {
             bins debug= {1'b1};
         }
-        fence : coverpoint cntxt.debug_cov_vif.mon_cb.fence_i {
+        fence : coverpoint cntxt.debug_cov_vif.mon_cb.sys_fence_insn_i {
             bins active= {1'b1};
         }
         fence_in_debug : cross mode, fence;
