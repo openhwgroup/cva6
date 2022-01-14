@@ -168,7 +168,6 @@ src :=  $(filter-out core/ariane_regfile.sv, $(wildcard core/*.sv))             
         $(wildcard corev_apu/fpga/src/axi2apb/src/*.sv)                              \
         $(wildcard corev_apu/fpga/src/apb_timer/*.sv)                                \
         $(wildcard corev_apu/fpga/src/axi_slice/src/*.sv)                            \
-        $(wildcard corev_apu/axi_node/src/*.sv)                                      \
         $(wildcard corev_apu/src/axi_riscv_atomics/src/*.sv)                         \
         $(wildcard corev_apu/axi_mem_if/src/*.sv)                                    \
         $(wildcard core/pmp/src/*.sv)                                                \
@@ -195,6 +194,8 @@ src :=  $(filter-out core/ariane_regfile.sv, $(wildcard core/*.sv))             
         common/submodules/common_cells/src/stream_mux.sv                             \
         common/submodules/common_cells/src/stream_demux.sv                           \
         common/submodules/common_cells/src/exp_backoff.sv                            \
+        common/submodules/common_cells/src/addr_decode.sv                            \
+        common/submodules/common_cells/src/stream_register.sv                        \
         common/local/util/axi_master_connect.sv                                      \
         common/local/util/axi_slave_connect.sv                                       \
         common/local/util/axi_master_connect_rev.sv                                  \
@@ -203,10 +204,17 @@ src :=  $(filter-out core/ariane_regfile.sv, $(wildcard core/*.sv))             
         corev_apu/axi/src/axi_join.sv                                                \
         corev_apu/axi/src/axi_delayer.sv                                             \
         corev_apu/axi/src/axi_to_axi_lite.sv                                         \
+        corev_apu/axi/src/axi_id_prepend.sv                                          \
+        corev_apu/axi/src/axi_atop_filter.sv                                         \
+        corev_apu/axi/src/axi_err_slv.sv                                             \
+        corev_apu/axi/src/axi_mux.sv                                                 \
+        corev_apu/axi/src/axi_demux.sv                                               \
+        corev_apu/axi/src/axi_xbar.sv                                                \
         corev_apu/fpga-support/rtl/SyncSpRamBeNx64.sv                                \
         common/submodules/common_cells/src/unread.sv                                 \
         common/submodules/common_cells/src/sync.sv                                   \
         common/submodules/common_cells/src/cdc_2phase.sv                             \
+        common/submodules/common_cells/src/spill_register_flushable.sv               \
         common/submodules/common_cells/src/spill_register.sv                         \
         common/submodules/common_cells/src/sync_wedge.sv                             \
         common/submodules/common_cells/src/edge_detect.sv                            \
@@ -275,7 +283,7 @@ riscv-fp-tests            := $(shell xargs printf '\n%s' < $(riscv-fp-tests-list
 riscv-benchmarks          := $(shell xargs printf '\n%s' < $(riscv-benchmarks-list) | cut -b 1-)
 
 # Search here for include files (e.g.: non-standalone components)
-incdir := common/submodules/common_cells/include/
+incdir := common/submodules/common_cells/include/ corev_apu/axi/include/
 
 # Compile and sim flags
 compile_flag     += +cover=bcfst+/dut -incr -64 -nologo -quiet -suppress 13262 -permissive +define+$(defines)
@@ -352,7 +360,7 @@ $(library)/.build-srcs: $(util) $(library)
 # build TBs
 $(library)/.build-tb: $(dpi)
 	# Compile top level
-	$(VLOG) $(compile_flag) -timescale "1ns / 1ns" -sv $(tbs) -work $(library)
+	$(VLOG) $(compile_flag) -timescale "1ns / 1ns" -sv $(tbs) -work $(library) $(list_incdir)
 	touch $(library)/.build-tb
 
 $(library):

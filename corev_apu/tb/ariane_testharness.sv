@@ -13,6 +13,8 @@
 // Description: Test-harness for Ariane
 //              Instantiates an AXI-Bus and memories
 
+`include "axi/assign.svh"
+
 module ariane_testharness #(
   parameter int unsigned AXI_USER_WIDTH    = 1,
   parameter int unsigned AXI_ADDRESS_WIDTH = 64,
@@ -281,7 +283,8 @@ module ariane_testharness #(
   );
 
   axi_adapter #(
-    .DATA_WIDTH            ( AXI_DATA_WIDTH            )
+    .DATA_WIDTH            ( AXI_DATA_WIDTH            ),
+    .AXI_ID_WIDTH          ( ariane_soc::IdWidth       )
   ) i_dm_axi_master (
     .clk_i                 ( clk_i                     ),
     .rst_ni                ( rst_ni                    ),
@@ -344,6 +347,30 @@ module ariane_testharness #(
     .rdata_o    ( rom_rdata )
   );
 `endif
+
+  // ------------------------------
+  // GPIO
+  // ------------------------------
+
+  // GPIO not implemented, adding an error slave here
+
+  ariane_axi_soc::req_t  gpio_req;
+  ariane_axi_soc::resp_t gpio_resp;
+  `AXI_ASSIGN_TO_REQ(gpio_req, master[ariane_soc::GPIO])
+  `AXI_ASSIGN_FROM_RESP(master[ariane_soc::GPIO], gpio_resp)
+  axi_err_slv #(
+    .AxiIdWidth ( ariane_soc::IdWidthSlave ),
+    .req_t      ( ariane_axi_soc::req_t    ),
+    .resp_t     ( ariane_axi_soc::resp_t   )
+  ) i_gpio_err_slv (
+    .clk_i      ( clk_i      ),
+    .rst_ni     ( ndmreset_n ),
+    .test_i     ( test_en    ),
+    .slv_req_i  ( gpio_req ),
+    .slv_resp_o ( gpio_resp )
+  );
+
+
   // ------------------------------
   // Memory + Exclusive Access
   // ------------------------------
@@ -382,136 +409,21 @@ module ariane_testharness #(
     .AXI_USER_WIDTH ( AXI_USER_WIDTH           )
   ) dram_delayed();
 
-  ariane_axi_soc::aw_chan_slv_t aw_chan_i;
-  ariane_axi_soc::w_chan_t      w_chan_i;
-  ariane_axi_soc::b_chan_slv_t  b_chan_o;
-  ariane_axi_soc::ar_chan_slv_t ar_chan_i;
-  ariane_axi_soc::r_chan_slv_t  r_chan_o;
-  ariane_axi_soc::aw_chan_slv_t aw_chan_o;
-  ariane_axi_soc::w_chan_t      w_chan_o;
-  ariane_axi_soc::b_chan_slv_t  b_chan_i;
-  ariane_axi_soc::ar_chan_slv_t ar_chan_o;
-  ariane_axi_soc::r_chan_slv_t  r_chan_i;
-
-  axi_delayer #(
-    .aw_t              ( ariane_axi_soc::aw_chan_slv_t ),
-    .w_t               ( ariane_axi_soc::w_chan_t      ),
-    .b_t               ( ariane_axi_soc::b_chan_slv_t  ),
-    .ar_t              ( ariane_axi_soc::ar_chan_slv_t ),
-    .r_t               ( ariane_axi_soc::r_chan_slv_t  ),
-    .StallRandomOutput ( StallRandomOutput         ),
-    .StallRandomInput  ( StallRandomInput          ),
-    .FixedDelayInput   ( 0                         ),
-    .FixedDelayOutput  ( 0                         )
+  axi_delayer_intf #(
+    .AXI_ID_WIDTH        ( ariane_soc::IdWidthSlave ),
+    .AXI_ADDR_WIDTH      ( AXI_ADDRESS_WIDTH        ),
+    .AXI_DATA_WIDTH      ( AXI_DATA_WIDTH           ),
+    .AXI_USER_WIDTH      ( AXI_USER_WIDTH           ),
+    .STALL_RANDOM_INPUT  ( StallRandomInput         ),
+    .STALL_RANDOM_OUTPUT ( StallRandomOutput        ),
+    .FIXED_DELAY_INPUT   ( 0                        ),
+    .FIXED_DELAY_OUTPUT  ( 0                        )
   ) i_axi_delayer (
-    .clk_i      ( clk_i                 ),
-    .rst_ni     ( ndmreset_n            ),
-    .aw_valid_i ( dram.aw_valid         ),
-    .aw_chan_i  ( aw_chan_i             ),
-    .aw_ready_o ( dram.aw_ready         ),
-    .w_valid_i  ( dram.w_valid          ),
-    .w_chan_i   ( w_chan_i              ),
-    .w_ready_o  ( dram.w_ready          ),
-    .b_valid_o  ( dram.b_valid          ),
-    .b_chan_o   ( b_chan_o              ),
-    .b_ready_i  ( dram.b_ready          ),
-    .ar_valid_i ( dram.ar_valid         ),
-    .ar_chan_i  ( ar_chan_i             ),
-    .ar_ready_o ( dram.ar_ready         ),
-    .r_valid_o  ( dram.r_valid          ),
-    .r_chan_o   ( r_chan_o              ),
-    .r_ready_i  ( dram.r_ready          ),
-    .aw_valid_o ( dram_delayed.aw_valid ),
-    .aw_chan_o  ( aw_chan_o             ),
-    .aw_ready_i ( dram_delayed.aw_ready ),
-    .w_valid_o  ( dram_delayed.w_valid  ),
-    .w_chan_o   ( w_chan_o              ),
-    .w_ready_i  ( dram_delayed.w_ready  ),
-    .b_valid_i  ( dram_delayed.b_valid  ),
-    .b_chan_i   ( b_chan_i              ),
-    .b_ready_o  ( dram_delayed.b_ready  ),
-    .ar_valid_o ( dram_delayed.ar_valid ),
-    .ar_chan_o  ( ar_chan_o             ),
-    .ar_ready_i ( dram_delayed.ar_ready ),
-    .r_valid_i  ( dram_delayed.r_valid  ),
-    .r_chan_i   ( r_chan_i              ),
-    .r_ready_o  ( dram_delayed.r_ready  )
+    .clk_i  ( clk_i        ),
+    .rst_ni ( ndmreset_n   ),
+    .slv    ( dram         ),
+    .mst    ( dram_delayed )
   );
-
-  assign aw_chan_i.atop = dram.aw_atop;
-  assign aw_chan_i.id = dram.aw_id;
-  assign aw_chan_i.addr = dram.aw_addr;
-  assign aw_chan_i.len = dram.aw_len;
-  assign aw_chan_i.size = dram.aw_size;
-  assign aw_chan_i.burst = dram.aw_burst;
-  assign aw_chan_i.lock = dram.aw_lock;
-  assign aw_chan_i.cache = dram.aw_cache;
-  assign aw_chan_i.prot = dram.aw_prot;
-  assign aw_chan_i.qos = dram.aw_qos;
-  assign aw_chan_i.region = dram.aw_region;
-
-  assign ar_chan_i.id = dram.ar_id;
-  assign ar_chan_i.addr = dram.ar_addr;
-  assign ar_chan_i.len = dram.ar_len;
-  assign ar_chan_i.size = dram.ar_size;
-  assign ar_chan_i.burst = dram.ar_burst;
-  assign ar_chan_i.lock = dram.ar_lock;
-  assign ar_chan_i.cache = dram.ar_cache;
-  assign ar_chan_i.prot = dram.ar_prot;
-  assign ar_chan_i.qos = dram.ar_qos;
-  assign ar_chan_i.region = dram.ar_region;
-
-  assign w_chan_i.data = dram.w_data;
-  assign w_chan_i.strb = dram.w_strb;
-  assign w_chan_i.last = dram.w_last;
-
-  assign dram.r_id = r_chan_o.id;
-  assign dram.r_data = r_chan_o.data;
-  assign dram.r_resp = r_chan_o.resp;
-  assign dram.r_last = r_chan_o.last;
-
-  assign dram.b_id = b_chan_o.id;
-  assign dram.b_resp = b_chan_o.resp;
-
-  assign dram_delayed.aw_id = aw_chan_o.id;
-  assign dram_delayed.aw_addr = aw_chan_o.addr;
-  assign dram_delayed.aw_len = aw_chan_o.len;
-  assign dram_delayed.aw_size = aw_chan_o.size;
-  assign dram_delayed.aw_burst = aw_chan_o.burst;
-  assign dram_delayed.aw_lock = aw_chan_o.lock;
-  assign dram_delayed.aw_cache = aw_chan_o.cache;
-  assign dram_delayed.aw_prot = aw_chan_o.prot;
-  assign dram_delayed.aw_qos = aw_chan_o.qos;
-  assign dram_delayed.aw_atop = aw_chan_o.atop;
-  assign dram_delayed.aw_region = aw_chan_o.region;
-  assign dram_delayed.aw_user = '0;
-
-  assign dram_delayed.ar_id = ar_chan_o.id;
-  assign dram_delayed.ar_addr = ar_chan_o.addr;
-  assign dram_delayed.ar_len = ar_chan_o.len;
-  assign dram_delayed.ar_size = ar_chan_o.size;
-  assign dram_delayed.ar_burst = ar_chan_o.burst;
-  assign dram_delayed.ar_lock = ar_chan_o.lock;
-  assign dram_delayed.ar_cache = ar_chan_o.cache;
-  assign dram_delayed.ar_prot = ar_chan_o.prot;
-  assign dram_delayed.ar_qos = ar_chan_o.qos;
-  assign dram_delayed.ar_region = ar_chan_o.region;
-  assign dram_delayed.ar_user = '0;
-
-  assign dram_delayed.w_data = w_chan_o.data;
-  assign dram_delayed.w_strb = w_chan_o.strb;
-  assign dram_delayed.w_last = w_chan_o.last;
-  assign dram_delayed.w_user = '0;
-
-  assign r_chan_i.id = dram_delayed.r_id;
-  assign r_chan_i.data = dram_delayed.r_data;
-  assign r_chan_i.resp = dram_delayed.r_resp;
-  assign r_chan_i.last = dram_delayed.r_last;
-  assign dram.r_user = '0;
-
-  assign b_chan_i.id = dram_delayed.b_id;
-  assign b_chan_i.resp = dram_delayed.b_resp;
-  assign dram.b_user = '0;
 
   axi2mem #(
     .AXI_ID_WIDTH   ( ariane_soc::IdWidthSlave ),
@@ -550,49 +462,50 @@ module ariane_testharness #(
   // ---------------
   // AXI Xbar
   // ---------------
-  typedef logic [ariane_soc::NrRegion-1:0][ariane_soc::NB_PERIPHERALS-1:0][AXI_ADDRESS_WIDTH-1:0] addr_map_t;
-  
-  axi_node_intf_wrap #(
-    .NB_SLAVE           ( ariane_soc::NrSlaves       ),
-    .NB_MASTER          ( ariane_soc::NB_PERIPHERALS ),
-    .NB_REGION          ( ariane_soc::NrRegion       ),
-    .AXI_ADDR_WIDTH     ( AXI_ADDRESS_WIDTH          ),
-    .AXI_DATA_WIDTH     ( AXI_DATA_WIDTH             ),
-    .AXI_USER_WIDTH     ( AXI_USER_WIDTH             ),
-    .AXI_ID_WIDTH       ( ariane_soc::IdWidth        )
-    // .MASTER_SLICE_DEPTH ( 0                          ),
-    // .SLAVE_SLICE_DEPTH  ( 0                          )
+
+  axi_pkg::xbar_rule_64_t [ariane_soc::NB_PERIPHERALS-1:0] addr_map;
+
+  assign addr_map = '{
+    '{ idx: ariane_soc::Debug,    start_addr: ariane_soc::DebugBase,    end_addr: ariane_soc::DebugBase + ariane_soc::DebugLength       },
+    '{ idx: ariane_soc::ROM,      start_addr: ariane_soc::ROMBase,      end_addr: ariane_soc::ROMBase + ariane_soc::ROMLength           },
+    '{ idx: ariane_soc::CLINT,    start_addr: ariane_soc::CLINTBase,    end_addr: ariane_soc::CLINTBase + ariane_soc::CLINTLength       },
+    '{ idx: ariane_soc::PLIC,     start_addr: ariane_soc::PLICBase,     end_addr: ariane_soc::PLICBase + ariane_soc::PLICLength         },
+    '{ idx: ariane_soc::UART,     start_addr: ariane_soc::UARTBase,     end_addr: ariane_soc::UARTBase + ariane_soc::UARTLength         },
+    '{ idx: ariane_soc::Timer,    start_addr: ariane_soc::TimerBase,    end_addr: ariane_soc::TimerBase + ariane_soc::TimerLength       },
+    '{ idx: ariane_soc::SPI,      start_addr: ariane_soc::SPIBase,      end_addr: ariane_soc::SPIBase + ariane_soc::SPILength           },
+    '{ idx: ariane_soc::Ethernet, start_addr: ariane_soc::EthernetBase, end_addr: ariane_soc::EthernetBase + ariane_soc::EthernetLength },
+    '{ idx: ariane_soc::GPIO,     start_addr: ariane_soc::GPIOBase,     end_addr: ariane_soc::GPIOBase + ariane_soc::GPIOLength         },
+    '{ idx: ariane_soc::DRAM,     start_addr: ariane_soc::DRAMBase,     end_addr: ariane_soc::DRAMBase + ariane_soc::DRAMLength         }
+  };
+
+  localparam axi_pkg::xbar_cfg_t AXI_XBAR_CFG = '{
+    NoSlvPorts: ariane_soc::NrSlaves,
+    NoMstPorts: ariane_soc::NB_PERIPHERALS,
+    MaxMstTrans: 1, // Probably requires update
+    MaxSlvTrans: 1, // Probably requires update
+    FallThrough: 1'b0,
+    LatencyMode: axi_pkg::NO_LATENCY,
+    AxiIdWidthSlvPorts: ariane_soc::IdWidth,
+    AxiIdUsedSlvPorts: ariane_soc::IdWidth,
+    UniqueIds: 1'b0,
+    AxiAddrWidth: AXI_ADDRESS_WIDTH,
+    AxiDataWidth: AXI_DATA_WIDTH,
+    NoAddrRules: ariane_soc::NB_PERIPHERALS
+  };
+
+  axi_xbar_intf #(
+    .AXI_USER_WIDTH ( AXI_USER_WIDTH          ),
+    .Cfg            ( AXI_XBAR_CFG            ),
+    .rule_t         ( axi_pkg::xbar_rule_64_t )
   ) i_axi_xbar (
-    .clk          ( clk_i      ),
-    .rst_n        ( ndmreset_n ),
-    .test_en_i    ( test_en    ),
-    .slave        ( slave      ),
-    .master       ( master     ),
-    .start_addr_i ({
-      ariane_soc::DebugBase,
-      ariane_soc::ROMBase,
-      ariane_soc::CLINTBase,
-      ariane_soc::PLICBase,
-      ariane_soc::UARTBase,
-      ariane_soc::TimerBase,
-      ariane_soc::SPIBase,
-      ariane_soc::EthernetBase,
-      ariane_soc::GPIOBase,
-      ariane_soc::DRAMBase
-    }),
-    .end_addr_i   ({
-      ariane_soc::DebugBase    + ariane_soc::DebugLength - 1,
-      ariane_soc::ROMBase      + ariane_soc::ROMLength - 1,
-      ariane_soc::CLINTBase    + ariane_soc::CLINTLength - 1,
-      ariane_soc::PLICBase     + ariane_soc::PLICLength - 1,
-      ariane_soc::UARTBase     + ariane_soc::UARTLength - 1,
-      ariane_soc::TimerBase    + ariane_soc::TimerLength - 1,
-      ariane_soc::SPIBase      + ariane_soc::SPILength - 1,
-      ariane_soc::EthernetBase + ariane_soc::EthernetLength -1,
-      ariane_soc::GPIOBase     + ariane_soc::GPIOLength - 1,
-      ariane_soc::DRAMBase     + ariane_soc::DRAMLength - 1
-    }),
-    .valid_rule_i (ariane_soc::ValidRule)
+    .clk_i                 ( clk_i      ),
+    .rst_ni                ( ndmreset_n ),
+    .test_i                ( test_en    ),
+    .slv_ports             ( slave      ),
+    .mst_ports             ( master     ),
+    .addr_map_i            ( addr_map   ),
+    .en_default_mst_port_i ( '0         ),
+    .default_mst_port_i    ( '0         )
   );
 
   // ---------------
