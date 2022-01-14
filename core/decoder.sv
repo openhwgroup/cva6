@@ -70,14 +70,13 @@ module decoder import ariane_pkg::*; (
         is_control_flow_instr_o     = 1'b0;
         illegal_instr               = 1'b0;
         instruction_o.pc            = pc_i;
-        instruction_o.trans_id      = 5'b0;
+        instruction_o.trans_id      = '0;
         instruction_o.fu            = NONE;
         instruction_o.op            = ariane_pkg::ADD;
         instruction_o.rs1           = '0;
         instruction_o.rs2           = '0;
         instruction_o.rd            = '0;
         instruction_o.use_pc        = 1'b0;
-        instruction_o.trans_id      = '0;
         instruction_o.is_compressed = is_compressed_i;
         instruction_o.use_zimm      = 1'b0;
         instruction_o.bp            = branch_predict_i;
