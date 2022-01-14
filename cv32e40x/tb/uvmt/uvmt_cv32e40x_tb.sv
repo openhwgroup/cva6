@@ -363,6 +363,7 @@ module uvmt_cv32e40x_tb;
     ) fencei_assert_i (
       .wb_valid           (core_i.wb_stage_i.wb_valid),
       .wb_instr_valid     (core_i.ex_wb_pipe.instr_valid),
+      .wb_sys_en          (core_i.ex_wb_pipe.sys_en),
       .wb_sys_fencei_insn (core_i.ex_wb_pipe.sys_fencei_insn),
       .wb_pc              (core_i.ex_wb_pipe.pc),
       .wb_rdata           (core_i.ex_wb_pipe.instr.bus_resp.rdata),
@@ -401,6 +402,7 @@ module uvmt_cv32e40x_tb;
       .illegal_insn_i         (core_i.ex_wb_pipe.illegal_insn),
       .wb_illegal             (core_i.ex_wb_pipe.illegal_insn),
       .wb_valid               (core_i.wb_stage_i.wb_valid_o),
+      .sys_en_i               (core_i.ex_wb_pipe.sys_en),
       .sys_ecall_insn_i       (core_i.ex_wb_pipe.sys_ecall_insn),
       .debug_req_i            (core_i.controller_i.controller_fsm_i.debug_req_i),
       .debug_req_q            (core_i.controller_i.controller_fsm_i.debug_req_q),
