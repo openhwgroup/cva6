@@ -366,6 +366,7 @@ module uvmt_cv32e40x_tb;
       .wb_sys_fencei_insn (core_i.ex_wb_pipe.sys_fencei_insn),
       .wb_pc              (core_i.ex_wb_pipe.pc),
       .wb_rdata           (core_i.ex_wb_pipe.instr.bus_resp.rdata),
+      .wb_buffer_state    (core_i.load_store_unit_i.write_buffer_i.state),
 
       .rvfi_valid         (rvfi_i.rvfi_valid),
       .rvfi_intr          (rvfi_i.rvfi_intr),
