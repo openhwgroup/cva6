@@ -135,6 +135,7 @@ interface uvmt_cv32e40x_debug_cov_assert_if
     input         id_valid,
     input wire ctrl_state_e  ctrl_fsm_cs,            // Controller FSM states with debug_req
     input         illegal_insn_i,
+    input         sys_en_i,
     input         sys_ecall_insn_i,
 
     // Core signals
@@ -209,6 +210,7 @@ interface uvmt_cv32e40x_debug_cov_assert_if
 
     ctrl_fsm_cs,
     illegal_insn_i,
+    sys_en_i,
     sys_ecall_insn_i,
     boot_addr_i,
     rvfi_pc_wdata,
