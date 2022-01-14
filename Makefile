@@ -779,6 +779,7 @@ clean:
 	rm -rf $(riscv-torture-dir)/output/test*
 	rm -rf $(library)/ $(dpi-library)/ $(ver-library)/ $(vcs-library)/
 	rm -f tmp/*.ucdb tmp/*.log *.wlf *vstf wlft* *.ucdb
+	cd corev_apu/fpga && make clean && cd ../..
 
 .PHONY:
 	build sim sim-verilate clean                                              \
