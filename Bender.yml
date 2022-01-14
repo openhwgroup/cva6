@@ -161,6 +161,7 @@ sources:
     - corev_apu/riscv-dbg/debug_rom/debug_rom.sv
     - corev_apu/register_interface/src/apb_to_reg.sv
     - corev_apu/axi/src/axi_multicut.sv
+    - common/submodules/common_cells/src/cf_math_pkg.sv
     - common/submodules/common_cells/src/deprecated/generic_fifo.sv
     - common/submodules/common_cells/src/deprecated/pulp_sync.sv
     - common/submodules/common_cells/src/deprecated/find_first_one.sv
