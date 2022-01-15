@@ -13,6 +13,9 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 - Fix non-setable MEIE bit in MIE CSR
 - Bump `fpnew` to `v0.6.2`
 - Restructured directories to separate CVA6 core from CVA6-APU (FPGA emulation platform for the core).  See the [README](README.md#new-directory-structure) for details.
+- Bump `common_cells` to `v1.23.0`
+- Bump `axi` to `v0.31.0`
+- Remove `axi_node` dependency, replace with `axi_xbar` from `axi` repository
 
 #### Moved Package files
 ```
