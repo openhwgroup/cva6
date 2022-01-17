@@ -35,6 +35,7 @@ module uvmt_cv32e40x_fencei_assert
   input        wb_sys_fencei_insn,
   input [31:0] wb_pc,
   input [31:0] wb_rdata,
+  input        wb_buffer_state,
 
   input        instr_req_o,
   input [31:0] instr_addr_o,
@@ -205,7 +206,16 @@ module uvmt_cv32e40x_fencei_assert
     p_req_wait_bus  iff  p_req_wait_outstanding
   ) else `uvm_error(info_tag, "the two req-rvalid assertions disagreed");
 
-  // TODO:ropeders assert fencei flush req explicitly vs write buffer queue (not just vs rvalid)
+  
+  property p_req_wait_buffer;
+    is_fencei_in_wb && (wb_buffer_state == WBUF_FULL) |->
+      !fencei_flush_req_o throughout(
+        (data_rvalid_i && (wb_buffer_state == WBUF_EMPTY)) [->1]
+      );
+  endproperty
+
+  a_req_wait_buffer: assert property(p_req_wait_buffer) 
+    else `uvm_error(info_tag, "fencei_flush_req_o should be held low until write buffer is empty");
 
   // TODO:ropeders assert fencei flush req explicitly vs X interface queue (not just vs rvalid)
 
