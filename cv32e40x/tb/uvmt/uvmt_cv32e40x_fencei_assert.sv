@@ -200,11 +200,6 @@ module uvmt_cv32e40x_fencei_assert
     );
   end
 
-  a_outstanding_equivalence: assert property (
-    // TODO:ropeders Can remove this assert later. The two asserts are not required to be equivalent.
-    p_req_wait_bus  iff  p_req_wait_outstanding
-  ) else `uvm_error(info_tag, "the two req-rvalid assertions disagreed");
-
   // TODO:ropeders assert fencei flush req explicitly vs write buffer queue (not just vs rvalid)
 
   // TODO:ropeders assert fencei flush req explicitly vs X interface queue (not just vs rvalid)
