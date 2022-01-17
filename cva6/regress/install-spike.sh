@@ -8,7 +8,7 @@
 # Original Author: Jean-Roch COULON (jean-roch.coulon@thalesgroup.fr)
 
 set -e
-VERSION="59a9277ac1e3f9aca630fb035d1dbacaa091e375"
+VERSION="e93b9cbbbcd3ad0a02ae298e9f1a2d98d3ac0153"
 
 if [ -z ${NUM_JOBS} ]; then
     NUM_JOBS=1
