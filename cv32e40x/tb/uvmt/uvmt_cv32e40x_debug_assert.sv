@@ -25,8 +25,12 @@ module uvmt_cv32e40x_debug_assert
   // ---------------------------------------------------------------------------
   // Local parameters
   // ---------------------------------------------------------------------------
-    localparam WFI_INSTR_MASK = 32'hffffffff;
-    localparam WFI_INSTR_DATA = 32'h10500073;
+  localparam WFI_INSTR_MASK     = 32'h ffff_ffff;
+  localparam WFI_INSTR_OPCODE     = 32'h 1050_0073;
+  localparam EBREAK_INSTR_OPCODE  = 32'h 0010_0073;
+  localparam CEBREAK_INSTR_OPCODE = 32'h 0000_9002;
+  localparam DRET_INSTR_OPCODE    = 32'h 7B20_0073;
+
   // ---------------------------------------------------------------------------
   // Local variables
   // ---------------------------------------------------------------------------
@@ -59,13 +63,13 @@ module uvmt_cv32e40x_debug_assert
 
   assign cov_assert_if.is_ebreak =
     cov_assert_if.wb_valid
-    && (cov_assert_if.wb_stage_instr_rdata_i == 32'h0010_0073)
+    && (cov_assert_if.wb_stage_instr_rdata_i == EBREAK_INSTR_OPCODE)
     && !cov_assert_if.wb_err
     && (cov_assert_if.wb_mpu_status == MPU_OK);
 
   assign cov_assert_if.is_cebreak =
     cov_assert_if.wb_valid
-    && (cov_assert_if.wb_stage_instr_rdata_i == 32'h0000_9002)
+    && (cov_assert_if.wb_stage_instr_rdata_i == CEBREAK_INSTR_OPCODE)
     && !cov_assert_if.wb_err
     && (cov_assert_if.wb_mpu_status == MPU_OK);
 
@@ -634,12 +638,12 @@ module uvmt_cv32e40x_debug_assert
     assign cov_assert_if.pending_enabled_irq = |(cov_assert_if.irq_i & cov_assert_if.mie_q);
     assign cov_assert_if.is_wfi =
         cov_assert_if.wb_valid
-        && ((cov_assert_if.wb_stage_instr_rdata_i & WFI_INSTR_MASK) == WFI_INSTR_DATA)
+        && ((cov_assert_if.wb_stage_instr_rdata_i & WFI_INSTR_MASK) == WFI_INSTR_OPCODE)
         && !cov_assert_if.wb_err
         && (cov_assert_if.wb_mpu_status == MPU_OK);
     assign cov_assert_if.is_dret =
         cov_assert_if.wb_valid
-        && (cov_assert_if.wb_stage_instr_rdata_i == 32'h 7B20_0073)
+        && (cov_assert_if.wb_stage_instr_rdata_i == DRET_INSTR_OPCODE)
         && !cov_assert_if.wb_err
         && (cov_assert_if.wb_mpu_status == MPU_OK);
 
