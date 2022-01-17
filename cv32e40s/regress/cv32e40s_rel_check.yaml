@@ -279,12 +279,13 @@ tests:
     cmd: make gen_corev-dv test TEST=corev_rand_interrupt_wfi
     num: 1
 
-  corev_rand_interrupt_debug:
-    build: uvmt_cv32e40s
-    description: Generated corev-dv random interrupt WFI test with debug
-    dir: cv32e40s/sim/uvmt
-    cmd: make gen_corev-dv test TEST=corev_rand_interrupt_debug
-    num: 1
+  # TODO:ropeders Comment back in when merge procedure is done
+  #corev_rand_interrupt_debug:
+  #  build: uvmt_cv32e40s
+  #  description: Generated corev-dv random interrupt WFI test with debug
+  #  dir: cv32e40s/sim/uvmt
+  #  cmd: make gen_corev-dv test TEST=corev_rand_interrupt_debug
+  #  num: 1
 
   corev_rand_interrupt_exception:
     build: uvmt_cv32e40s
