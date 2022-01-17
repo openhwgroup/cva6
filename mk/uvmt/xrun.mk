@@ -206,6 +206,9 @@ XRUN_RUN_FLAGS  += -nowarn RNDNOXCEL
 # Probes
 XRUN_RUN_FLAGS  += -nowarn PRLDYN
 
+# Physical repository related to logical library in a cds.lib does not exist
+XRUN_COMP_FLAGS += -nowarn DLCPTH
+
 # Allow extra semicolons
 XRUN_COMP_FLAGS += -nowarn UEXPSC
 

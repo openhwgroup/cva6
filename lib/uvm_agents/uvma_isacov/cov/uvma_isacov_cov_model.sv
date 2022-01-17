@@ -812,7 +812,7 @@ covergroup cg_btype(
     ignore_bins IGN_OFF = cross_rs1_rs2 with (!reg_crosses_enabled);
   }
 
-  cp_imms_value: coverpoint instr.imms_value_type {
+  cp_immb_value: coverpoint instr.immb_value_type {
     ignore_bins NON_ZERO_OFF = {NON_ZERO};
   }
 
@@ -855,7 +855,7 @@ covergroup cg_jtype(
 
   cp_rd: coverpoint instr.rd;
 
-  cp_immj_value: coverpoint instr.immu_value_type {
+  cp_immj_value: coverpoint instr.immj_value_type {
     ignore_bins NON_ZERO_OFF = {NON_ZERO};
   }
 
@@ -997,7 +997,10 @@ covergroup cg_ci(
     string name,
     bit rs1_is_signed,
     bit imm_is_signed,
-    bit rd_is_signed
+    bit rd_is_signed,
+    bit imm_is_nonzero,
+    bit has_rs1,
+    bit tie_rdrs1_x2
 ) with function sample (
     uvma_isacov_instr_c instr
 );
@@ -1005,29 +1008,32 @@ covergroup cg_ci(
   option.name = name;
 
   cp_rs1_value: coverpoint instr.rs1_value_type {
-    ignore_bins POS_OFF = {POSITIVE} with (!rs1_is_signed);
-    ignore_bins NEG_OFF = {NEGATIVE} with (!rs1_is_signed);
-    ignore_bins NON_ZERO_OFF = {NON_ZERO} with (rs1_is_signed);
+    ignore_bins  OFF     = cp_rs1_value    with (!has_rs1);
+    illegal_bins POS_OFF = {POSITIVE}      with (!rs1_is_signed);
+    illegal_bins NEG_OFF = {NEGATIVE}      with (!rs1_is_signed);
+    illegal_bins NON_ZERO_OFF = {NON_ZERO} with ( rs1_is_signed);
   }
 
   cp_imm_value: coverpoint instr.c_imm_value_type {
-    ignore_bins POS_OFF = {POSITIVE} with (!imm_is_signed);
-    ignore_bins NEG_OFF = {NEGATIVE} with (!imm_is_signed);
-    ignore_bins NON_ZERO_OFF = {NON_ZERO} with (imm_is_signed);
+    illegal_bins POS_OFF      = {POSITIVE} with (!imm_is_signed);
+    illegal_bins NEG_OFF      = {NEGATIVE} with (!imm_is_signed);
+    illegal_bins NON_ZERO_OFF = {NON_ZERO} with (imm_is_signed);
+    ignore_bins  ZERO_OFF     = {ZERO}     with (imm_is_nonzero);  // Not illegal, because of HINT instrs
   }
 
   cp_rd_value: coverpoint instr.rd_value_type {
-    ignore_bins POS_OFF = {POSITIVE} with (!rd_is_signed);
-    ignore_bins NEG_OFF = {NEGATIVE} with (!rd_is_signed);
-    ignore_bins NON_ZERO_OFF = {NON_ZERO} with (rd_is_signed);
+    illegal_bins POS_OFF = {POSITIVE} with (!rd_is_signed);
+    illegal_bins NEG_OFF = {NEGATIVE} with (!rd_is_signed);
+    illegal_bins NON_ZERO_OFF = {NON_ZERO} with (rd_is_signed);
   }
 
   cp_rdrs1: coverpoint instr.c_rdrs1 {
-    ignore_bins RD_NOT_ZERO = {0};
+    illegal_bins RD_NOT_ZERO = {0};
+    illegal_bins NON_X2      = cp_rdrs1 with ((item != 2) && tie_rdrs1_x2);
   }
 
   `ISACOV_CP_BITWISE(cp_rd_toggle, instr.rd_value, 1)
-  `ISACOV_CP_BITWISE_5_0(cp_imm_toggle, instr.c_imm, 1)
+  `ISACOV_CP_BITWISE_4_0(cp_imm_toggle, instr.get_field_imm(), 1)
 
 endgroup : cg_ci
 
@@ -1053,7 +1059,7 @@ covergroup cg_ci_shift(
     ignore_bins NON_ZERO_OFF = {NON_ZERO} with (rd_is_signed);
   }
 
-  cp_shamt: coverpoint instr.c_imm {
+  cp_shamt: coverpoint instr.get_field_imm() {
     bins SHAMT[] = {[0:31]};
   }
 
@@ -1062,7 +1068,7 @@ covergroup cg_ci_shift(
   }
 
   `ISACOV_CP_BITWISE(cp_rd_toggle, instr.rd_value, 1)
-  `ISACOV_CP_BITWISE_5_0(cp_imm_toggle, instr.c_imm, 1)
+  `ISACOV_CP_BITWISE_5_0(cp_imm_toggle, instr.get_field_imm(), 1)
 
 endgroup : cg_ci_shift
 
@@ -1079,7 +1085,7 @@ covergroup cg_ci_li(
   }
 
   `ISACOV_CP_BITWISE(cp_rd_toggle, instr.rd_value, 1)
-  `ISACOV_CP_BITWISE_5_0(cp_imm_toggle, instr.c_imm, 1)
+  `ISACOV_CP_BITWISE_5_0(cp_imm_toggle, instr.get_field_imm(), 1)
 
 endgroup : cg_ci_li
 
@@ -1097,7 +1103,8 @@ covergroup cg_ci_lui(
   }
 
   `ISACOV_CP_BITWISE_31_12(cp_rd_toggle, instr.rd_value, 1)
-  `ISACOV_CP_BITWISE_17_12(cp_imm_toggle, instr.c_imm, 1)
+  `ISACOV_CP_BITWISE_17_12(cp_imm_toggle, instr.get_field_imm(), 1)
+  // TODO:ropeders the toggle macros are wrong; must revise
 
 endgroup : cg_ci_lui
 
@@ -1111,6 +1118,8 @@ covergroup cg_css(
   option.per_instance = 1;
   option.name = name;
 
+  cp_rs2: coverpoint instr.rs2;
+
   cp_rs2_value: coverpoint instr.rs2_value_type {
     ignore_bins POS_OFF = {POSITIVE} with (!rs2_is_signed);
     ignore_bins NEG_OFF = {NEGATIVE} with (!rs2_is_signed);
@@ -1123,10 +1132,8 @@ covergroup cg_css(
     ignore_bins NON_ZERO_OFF = {NON_ZERO} with (imm_is_signed);
   }
 
-  cp_rs2: coverpoint instr.rs2;
-
-  `ISACOV_CP_BITWISE(cp_rs2_toggle, instr.rs2_value, 1)
-  `ISACOV_CP_BITWISE_7_2(cp_imm_toggle, instr.c_imm, 1)
+  `ISACOV_CP_BITWISE    (cp_rs2_toggle, instr.rs2_value,         1)
+  `ISACOV_CP_BITWISE_7_2(cp_imm_toggle, instr.get_field_imm(),   1/*TODO:ropeders make function of instr_c?*/)
 
 endgroup : cg_css
 
@@ -1141,7 +1148,7 @@ covergroup cg_ciw(
   cp_rd: coverpoint instr.rd;
 
   `ISACOV_CP_BITWISE(cp_rd_toggle, instr.rd_value, 1)
-  `ISACOV_CP_BITWISE_9_4(cp_imm_toggle, instr.c_imm, 1)
+  `ISACOV_CP_BITWISE_9_2(cp_imm_toggle, instr.get_field_imm(), 1)
 
 endgroup : cg_ciw
 
@@ -1179,7 +1186,7 @@ covergroup cg_cl(
 
   `ISACOV_CP_BITWISE(cp_rs2_toggle, instr.rs2_value, 1)
   `ISACOV_CP_BITWISE(cp_rs1_toggle, instr.rs1_value, 1)
-  `ISACOV_CP_BITWISE_7_2(cp_imm_toggle, instr.c_imm, 1)
+  `ISACOV_CP_BITWISE_7_2(cp_imm_toggle, instr.get_field_imm(), 1)
 
 endgroup : cg_cl
 
@@ -1212,7 +1219,7 @@ covergroup cg_cs(
 
   `ISACOV_CP_BITWISE(cp_rs2_toggle, instr.rs2_value, 1)
   `ISACOV_CP_BITWISE(cp_rs1_toggle, instr.rs1_value, 1)
-  `ISACOV_CP_BITWISE_6_2(cp_imm_toggle, instr.c_imm, 1)
+  `ISACOV_CP_BITWISE_6_2(cp_imm_toggle, instr.get_field_imm(), 1)
 
 endgroup : cg_cs
 
@@ -1286,7 +1293,7 @@ covergroup cg_cb(
   cp_rs1: coverpoint instr.rs1;
 
   `ISACOV_CP_BITWISE(cp_rs1_toggle, instr.rs1_value, 1)
-  `ISACOV_CP_BITWISE_8_1(cp_imm_toggle, instr.c_imm, 1)
+  `ISACOV_CP_BITWISE_8_1(cp_imm_toggle, instr.get_field_imm(), 1)
 
 endgroup : cg_cb
 
@@ -1315,7 +1322,7 @@ covergroup cg_cb_andi(
   cp_rs1: coverpoint instr.rs1;
 
   `ISACOV_CP_BITWISE(cp_rs1_toggle, instr.rs1_value, 1)
-  `ISACOV_CP_BITWISE_5_0(cp_imm_toggle, instr.c_imm, 1)
+  `ISACOV_CP_BITWISE_5_0(cp_imm_toggle, instr.get_field_imm(), 1)
 
 endgroup : cg_cb_andi
 
@@ -1334,14 +1341,14 @@ covergroup cg_cb_shift(
     ignore_bins NON_ZERO_OFF = {NON_ZERO} with (rs1_is_signed);
   }
 
-  cp_shamt: coverpoint instr.c_imm {
+  cp_shamt: coverpoint instr.get_field_imm() {
     bins SHAMT[] = {[0:31]};
   }
 
   cp_rs1: coverpoint instr.rs1;
 
   `ISACOV_CP_BITWISE(cp_rs1_toggle, instr.rs1_value, 1)
-  `ISACOV_CP_BITWISE_8_1(cp_imm_toggle, instr.c_imm, 1)
+  `ISACOV_CP_BITWISE_8_1(cp_imm_toggle, instr.get_field_imm(), 1)
 
 endgroup : cg_cb_shift
 
@@ -1360,7 +1367,7 @@ covergroup cg_cj(
     ignore_bins NON_ZERO_OFF = {NON_ZERO} with (imm_is_signed);
   }
 
-  `ISACOV_CP_BITWISE_11_1(cp_imm_toggle, instr.c_imm, 1)
+  `ISACOV_CP_BITWISE_11_1(cp_imm_toggle, instr.get_field_imm(), 1)
 
 endgroup : cg_cj
 
@@ -1811,9 +1818,9 @@ function void uvma_isacov_cov_model_c::build_phase(uvm_phase phase);
       rv32i_sll_cg    = new("rv32i_sll_cg",
                             .reg_crosses_enabled(cfg.reg_crosses_enabled),
                             .reg_hazards_enabled(cfg.reg_hazards_enabled),
-                            .rs1_is_signed(rs1_is_signed[SUB]),
-                            .rs2_is_signed(rs2_is_signed[SUB]),
-                            .rd_is_signed(rd_is_signed[SUB]));
+                            .rs1_is_signed(rs1_is_signed[SLL]),
+                            .rs2_is_signed(rs2_is_signed[SLL]),
+                            .rd_is_signed(rd_is_signed[SLL]));
       rv32i_slt_cg    = new("rv32i_slt_cg",
                             .reg_crosses_enabled(cfg.reg_crosses_enabled),
                             .reg_hazards_enabled(cfg.reg_hazards_enabled),
@@ -1934,18 +1941,27 @@ function void uvma_isacov_cov_model_c::build_phase(uvm_phase phase);
       rv32c_addi_cg     = new("rv32c_addi_cg",
                               .rs1_is_signed(rs1_is_signed[C_ADDI]),
                               .imm_is_signed(c_imm_is_signed[C_ADDI]),
-                              .rd_is_signed(rd_is_signed[C_ADDI]));
+                              .rd_is_signed(rd_is_signed[C_ADDI]),
+                              .imm_is_nonzero(c_imm_is_nonzero[C_ADDI]),
+                              .has_rs1(c_has_rs1[C_ADDI]),
+                              .tie_rdrs1_x2(0));
       rv32c_addi16sp_cg = new("rv32c_addi16sp_cg",
                               .rs1_is_signed(rs1_is_signed[C_ADDI16SP]),
                               .imm_is_signed(c_imm_is_signed[C_ADDI16SP]),
-                              .rd_is_signed(rd_is_signed[C_ADDI16SP]));
+                              .rd_is_signed(rd_is_signed[C_ADDI16SP]),
+                              .imm_is_nonzero(c_imm_is_nonzero[C_ADDI16SP]),
+                              .has_rs1(c_has_rs1[C_ADDI16SP]),
+                              .tie_rdrs1_x2(1));
       rv32c_slli_cg     = new("rv32c_slli_cg",
                               .rs1_is_signed(rs1_is_signed[C_SLLI]),
                               .rd_is_signed(rd_is_signed[C_SLLI]));
       rv32c_lwsp_cg     = new("rv32c_lwsp_cg",
-                              .rs1_is_signed(rs1_is_signed[C_LWSP]),
-                              .imm_is_signed(c_imm_is_signed[C_LWSP]),
-                              .rd_is_signed(rd_is_signed[C_LWSP]));
+                              .rs1_is_signed (rs1_is_signed   [C_LWSP]),
+                              .imm_is_signed (c_imm_is_signed [C_LWSP]),
+                              .rd_is_signed  (rd_is_signed    [C_LWSP]),
+                              .imm_is_nonzero(c_imm_is_nonzero[C_LWSP]),
+                              .has_rs1       (c_has_rs1       [C_LWSP]),
+                              .tie_rdrs1_x2(0));
       rv32c_li_cg       = new("rv32c_li_cg");
       rv32c_lui_cg      = new("rv32c_lui_cg");
 
@@ -2015,15 +2031,15 @@ function void uvma_isacov_cov_model_c::build_phase(uvm_phase phase);
                               .rs1_is_signed(rs1_is_signed[C_BEQZ]),
                               .imm_is_signed(c_imm_is_signed[C_BEQZ]));
       rv32c_bnez_cg     = new("rv32c_bnez_cg",
-                              .rs1_is_signed(rs1_is_signed[C_BEQZ]),
-                              .imm_is_signed(c_imm_is_signed[C_BEQZ]));
+                              .rs1_is_signed(rs1_is_signed[C_BNEZ]),
+                              .imm_is_signed(c_imm_is_signed[C_BNEZ]));
       rv32c_andi_cg     = new("rv32c_andi_cg",
-                              .rs1_is_signed(rs1_is_signed[C_BEQZ]),
-                              .imm_is_signed(c_imm_is_signed[C_BEQZ]));
+                              .rs1_is_signed(rs1_is_signed[C_ANDI]),
+                              .imm_is_signed(c_imm_is_signed[C_ANDI]));
       rv32c_srli_cg     = new("rv32c_srli_cg",
-                              .rs1_is_signed(rs1_is_signed[C_BEQZ]));
+                              .rs1_is_signed(rs1_is_signed[C_SRLI]));
       rv32c_srai_cg     = new("rv32c_srai_cg",
-                              .rs1_is_signed(rs1_is_signed[C_BEQZ]));
+                              .rs1_is_signed(rs1_is_signed[C_SRAI]));
 
       rv32c_j_cg        = new("rv32c_j_cg",
                               .imm_is_signed(rd_is_signed[C_J]));
@@ -2368,8 +2384,16 @@ endtask : run_phase
 function void uvma_isacov_cov_model_c::sample (uvma_isacov_instr_c instr);
 
   logic have_sampled = 0;
+  logic is_ecall_or_ebreak =
+    ( instr.trap[ 8:3] ==  8)                              ||  // Ecall U-mode
+    ( instr.trap[ 8:3] == 11)                              ||  // Ecall M-mode
+    ((instr.trap[ 8:3] ==  3) && (instr.trap[13:12] == 0)) ||  // Ebreak (ebreakm==0)
+    ( instr.trap[11:9] ==  1);                                 // Ebreak to* or in D-mode (* ebreakm==1)
+  logic is_normal_instr =
+    (instr.trap[0] == 0) ||                              // No rvfi_trap
+    ((instr.trap[11:9] == 4) && (instr.trap[1] == 0));   // Single-step, without any exception
 
-  if (!have_sampled && !instr.trap && cfg.core_cfg.ext_i_supported) begin
+  if (!have_sampled && is_normal_instr && cfg.core_cfg.ext_i_supported) begin
     have_sampled = 1;
     case (instr.name)
       LUI:   rv32i_lui_cg.sample(instr);
@@ -2418,6 +2442,13 @@ function void uvma_isacov_cov_model_c::sample (uvma_isacov_instr_c instr);
       WFI:    rv32i_wfi_cg.sample(instr);
       MRET:   rv32i_mret_cg.sample(instr);
       DRET:   rv32i_dret_cg.sample(instr);
+
+      default: have_sampled = 0;
+    endcase
+  end else if (!have_sampled && is_ecall_or_ebreak && cfg.core_cfg.ext_i_supported) begin
+    have_sampled = 1;
+    case (instr.name)
+      // Ecall and ebreak will trap
       ECALL:  rv32i_ecall_cg.sample(instr);
       EBREAK: rv32i_ebreak_cg.sample(instr);
 
@@ -2425,7 +2456,7 @@ function void uvma_isacov_cov_model_c::sample (uvma_isacov_instr_c instr);
     endcase
   end
 
-  if (!have_sampled && !instr.trap && cfg.core_cfg.ext_m_supported) begin
+  if (!have_sampled && is_normal_instr && cfg.core_cfg.ext_m_supported) begin
     have_sampled = 1;
     case (instr.name)
       MUL:     rv32m_mul_cg.sample(instr);
@@ -2453,7 +2484,7 @@ function void uvma_isacov_cov_model_c::sample (uvma_isacov_instr_c instr);
     endcase
   end
 
-  if (!have_sampled && !instr.trap && cfg.core_cfg.ext_c_supported) begin
+  if (!have_sampled && is_normal_instr && cfg.core_cfg.ext_c_supported) begin
     have_sampled = 1;
     case (instr.name)
       C_ADDI:     rv32c_addi_cg.sample(instr);
@@ -2490,13 +2521,21 @@ function void uvma_isacov_cov_model_c::sample (uvma_isacov_instr_c instr);
       C_J:        rv32c_j_cg.sample(instr);
       C_JAL:      rv32c_jal_cg.sample(instr);
 
-      C_EBREAK:   rv32c_ebreak_cg.sample(instr);
       C_NOP:      rv32c_nop_cg.sample(instr);
+
+      default: have_sampled = 0;
+    endcase
+  end else if (!have_sampled && is_ecall_or_ebreak && cfg.core_cfg.ext_c_supported) begin
+    have_sampled = 1;
+    case (instr.name)
+      // Ebreak will trap
+      C_EBREAK:   rv32c_ebreak_cg.sample(instr);
+
       default: have_sampled = 0;
     endcase
   end
 
-  if (!have_sampled && !instr.trap && cfg.core_cfg.ext_zicsr_supported) begin
+  if (!have_sampled && is_normal_instr && cfg.core_cfg.ext_zicsr_supported) begin
     have_sampled = 1;
     case (instr.name)
       CSRRW:   rv32zicsr_csrrw_cg.sample(instr);
@@ -2509,7 +2548,7 @@ function void uvma_isacov_cov_model_c::sample (uvma_isacov_instr_c instr);
     endcase
   end
 
-  if (!have_sampled && !instr.trap && cfg.core_cfg.ext_zifencei_supported) begin
+  if (!have_sampled && is_normal_instr && cfg.core_cfg.ext_zifencei_supported) begin
     have_sampled = 1;
     case (instr.name)
       FENCE_I: rv32zifencei_fence_i_cg.sample(instr);
@@ -2517,7 +2556,7 @@ function void uvma_isacov_cov_model_c::sample (uvma_isacov_instr_c instr);
     endcase
   end
 
-  if (!have_sampled && !instr.trap && cfg.core_cfg.ext_a_supported) begin
+  if (!have_sampled && is_normal_instr && cfg.core_cfg.ext_a_supported) begin
     have_sampled = 1;
     case (instr.name)
       LR_W:      rv32a_lr_w_cg.sample(instr);
@@ -2535,7 +2574,7 @@ function void uvma_isacov_cov_model_c::sample (uvma_isacov_instr_c instr);
     endcase
   end
 
-  if (!have_sampled && !instr.trap && cfg.core_cfg.ext_zba_supported) begin
+  if (!have_sampled && is_normal_instr && cfg.core_cfg.ext_zba_supported) begin
     have_sampled = 1;
     case (instr.name)
       SH1ADD:  rv32zba_sh1add_cg.sample(instr);
@@ -2545,7 +2584,7 @@ function void uvma_isacov_cov_model_c::sample (uvma_isacov_instr_c instr);
     endcase
   end
 
-  if (!have_sampled && !instr.trap && cfg.core_cfg.ext_zbb_supported) begin
+  if (!have_sampled && is_normal_instr && cfg.core_cfg.ext_zbb_supported) begin
     have_sampled = 1;
     case (instr.name)
       CLZ:     rv32zbb_clz_cg.sample(instr);
@@ -2570,7 +2609,7 @@ function void uvma_isacov_cov_model_c::sample (uvma_isacov_instr_c instr);
     endcase
   end
 
-  if (!have_sampled && !instr.trap && cfg.core_cfg.ext_zbc_supported) begin
+  if (!have_sampled && is_normal_instr && cfg.core_cfg.ext_zbc_supported) begin
     have_sampled = 1;
     case (instr.name)
       CLMUL:   rv32zbc_clmul_cg.sample(instr);
@@ -2580,7 +2619,7 @@ function void uvma_isacov_cov_model_c::sample (uvma_isacov_instr_c instr);
     endcase
   end
 
-  if (!have_sampled && !instr.trap && cfg.core_cfg.ext_zbs_supported) begin
+  if (!have_sampled && is_normal_instr && cfg.core_cfg.ext_zbs_supported) begin
     have_sampled = 1;
     case (instr.name)
       BSET:    rv32zbs_bset_cg.sample(instr);
@@ -2595,7 +2634,7 @@ function void uvma_isacov_cov_model_c::sample (uvma_isacov_instr_c instr);
     endcase
   end
 
-  if (!have_sampled && !instr.trap && instr.name != UNKNOWN) begin
+  if (!have_sampled && is_normal_instr && instr.name != UNKNOWN) begin
     `uvm_error("ISACOV", $sformatf("Could not sample instruction: %s", instr.name.name()));
   end
 
