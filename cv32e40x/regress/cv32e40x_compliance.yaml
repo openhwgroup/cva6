@@ -8,10 +8,12 @@ description: Runs all RISCV compliance tests on the CV32E40X
 builds:
   uvmt_cv32e40x:
     cmd: make comp
+    cfg: no_bitmanip
     dir: cv32e40x/sim/uvmt
 
   uvmt_cv32e40x_compliance_build:
     cmd: make all_compliance
+    cfg: no_bitmanip
     dir: cv32e40x/sim/uvmt
 
 # List of tests

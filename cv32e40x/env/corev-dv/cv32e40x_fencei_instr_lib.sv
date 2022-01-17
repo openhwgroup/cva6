@@ -115,6 +115,7 @@ class corev_store_fencei_exec_instr_stream extends riscv_load_store_rand_instr_s
   function void post_randomize();
     riscv_instr        instr;
     riscv_pseudo_instr pseudo;
+    corev_directive_instr directive;
     string             label_exec;
     string             label_dummy;
 
@@ -174,10 +175,28 @@ class corev_store_fencei_exec_instr_stream extends riscv_load_store_rand_instr_s
     instr.comment = "store_fencei_exec: fencei";
     instr_list.push_back(instr);
 
+    // Add norvc/rvc guards around the instr after fencei
+    directive = corev_directive_instr::type_id::create("corev_directive_instr");
+    directive.directive = ".option push";
+    instr_list.push_back(directive);
+    directive = corev_directive_instr::type_id::create("corev_directive_instr");
+    directive.directive = ".option norvc";
+    instr_list.push_back(directive);
+
     // Exec
     instr = riscv_instr::get_rand_instr(.exclude_instr({NOP}), .exclude_group({RV32C}));
-    `DV_CHECK_RANDOMIZE_FATAL(instr, "failed to randomize exec instruction");
-    if (instr.category inside {JUMP, BRANCH}) instr.imm_str = "0";  // Just need it to compile/link, shall never execute
+    instr.imm.rand_mode(0);
+    `DV_CHECK_RANDOMIZE_FATAL(instr, "failed to randomize exec instruction"
+    )
+    case (instr.instr_name)
+      JAL: begin
+        instr.imm_str = "1b";
+      end
+      BEQ, BNE, BLT, BGE, BLTU, BGEU: begin
+        instr.imm_str = "1b";
+        instr.branch_assigned = 1'b1;
+      end
+    endcase
     instr.comment = "store_fencei_exec: exec";
     instr.label = label_exec;
     instr_list.push_back(instr);
@@ -193,9 +212,15 @@ class corev_store_fencei_exec_instr_stream extends riscv_load_store_rand_instr_s
       !((rd == ZERO) && (instr_name inside {ADDI, C_ADDI}));
       , "failed to randomize dummy instruction"
     )
+
+    // restore compiler options
     instr.comment = "store_fencei_exec: dummy";
     instr.label = label_dummy;
     instr_list.push_back(instr);
+
+    directive = corev_directive_instr::type_id::create("corev_directive_instr");
+    directive.directive = ".option pop";
+    instr_list.push_back(directive);
 
     // Get a nice enumeration label for anything not labeled
     foreach (instr_list[i]) begin

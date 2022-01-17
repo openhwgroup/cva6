@@ -67,11 +67,12 @@ tests:
     dir: cv32e40x/sim/uvmt
     cmd: make test TEST=generic_exception_test
 
-  illegal_instr_test:
-    build: uvmt_cv32e40x
-    description: Illegal instruction test
-    dir: cv32e40x/sim/uvmt
-    cmd: make test TEST=illegal_instr_test
+  # TODO:ropeders Comment back in when merge procedure is done
+  #illegal_instr_test:
+  #  build: uvmt_cv32e40x
+  #  description: Illegal instruction test
+  #  dir: cv32e40x/sim/uvmt
+  #  cmd: make test TEST=illegal_instr_test
 
   requested_csr_por:
     build: uvmt_cv32e40x
@@ -265,12 +266,13 @@ tests:
     cmd: make gen_corev-dv test TEST=corev_rand_debug_single_step
     num: 1
 
-  corev_rand_debug_ebreak:
-    build: uvmt_cv32e40x
-    description: debug random test with ebreaks from ROM
-    dir: cv32e40x/sim/uvmt
-    cmd: make gen_corev-dv test TEST=corev_rand_debug_ebreak
-    num: 2
+  # TODO:ropeders Comment back in when merge procedure is done
+  #corev_rand_debug_ebreak:
+  #  build: uvmt_cv32e40x
+  #  description: debug random test with ebreaks from ROM
+  #  dir: cv32e40x/sim/uvmt
+  #  cmd: make gen_corev-dv test TEST=corev_rand_debug_ebreak
+  #  num: 2
 
   corev_rand_interrupt_wfi:
     build: uvmt_cv32e40x

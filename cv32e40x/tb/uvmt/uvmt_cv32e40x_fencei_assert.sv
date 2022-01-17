@@ -17,8 +17,12 @@
 
 
 module uvmt_cv32e40x_fencei_assert
+  import cv32e40x_pkg::*;
   import uvm_pkg::*;
-(
+#(
+  parameter int          PMA_NUM_REGIONS              = 0,
+  parameter pma_region_t PMA_CFG[PMA_NUM_REGIONS-1:0] = '{default:'Z}
+)(
   input clk_i,
   input rst_ni,
 
@@ -27,9 +31,11 @@ module uvmt_cv32e40x_fencei_assert
 
   input        wb_valid,
   input        wb_instr_valid,
-  input        wb_fencei_insn,
+  input        wb_sys_en,
+  input        wb_sys_fencei_insn,
   input [31:0] wb_pc,
   input [31:0] wb_rdata,
+  input        wb_buffer_state,
 
   input        instr_req_o,
   input [31:0] instr_addr_o,
@@ -45,10 +51,32 @@ module uvmt_cv32e40x_fencei_assert
 );
 
   localparam int CYCLE_COUNT = 6;
-  default clocking cb @(posedge clk_i); endclocking
+  default clocking @(posedge clk_i); endclocking
+  default disable iff !rst_ni;
   string info_tag = "CV32E40X_FENCEI_ASSERT";
+
   logic is_fencei_in_wb;
-  assign is_fencei_in_wb = wb_fencei_insn && wb_instr_valid;
+  assign is_fencei_in_wb = wb_sys_fencei_insn && wb_sys_en && wb_instr_valid;
+
+  int obi_outstanding;
+  always @(posedge clk_i, negedge rst_ni) begin
+    if (~rst_ni) begin
+      obi_outstanding <= 0;
+    end else if (data_req_o && data_gnt_i && !data_rvalid_i) begin
+      obi_outstanding <= obi_outstanding + 1;
+    end else if (data_rvalid_i && !(data_req_o && data_gnt_i)) begin
+      obi_outstanding <= obi_outstanding - 1;
+    end
+  end
+
+  function logic bufferable_in_config;
+    bufferable_in_config = 0;
+    foreach (PMA_CFG[i]) begin
+      if (PMA_CFG[i].bufferable) begin
+        bufferable_in_config = 1;
+      end
+    end
+  endfunction
 
   a_req_stay_high: assert property (
     fencei_flush_req_o && !fencei_flush_ack_i
@@ -83,10 +111,12 @@ module uvmt_cv32e40x_fencei_assert
     (is_fencei_in_wb && wb_valid, pc_next={wb_pc[31:2],2'b00}+4)
     |->
     (
-      (instr_req_o && instr_gnt_i) [->1:2]
+      // Normal execution
+      (instr_req_o && instr_gnt_i) [->1:2]  // next req-gnt (or second next, if ongoing req)
       ##0 (instr_addr_o == pc_next)
     ) or (
-      rvfi_valid [->2]
+      // Exception execution
+      rvfi_valid [->2:3]  // retire: fencei, (optionally "rvfi_trap"), interrupt/debug handler
       ##0 (rvfi_intr || rvfi_dbg_mode)
     );
   endproperty
@@ -138,20 +168,53 @@ module uvmt_cv32e40x_fencei_assert
     (s_nexttime [CYCLE_COUNT] $rose(wb_instr_valid))
   );
 
-  a_req_wait_bus: assert property (
+  property p_req_wait_bus;
     fencei_flush_req_o
     |->
     !data_rvalid_i throughout (
       $fell(wb_valid) [->1]
       ##1 (data_req_o && data_gnt_i) [->1]
-    )
-  ) else `uvm_error(info_tag, "flush req shall not come if rvalid is awaited");
+    );
+  endproperty
+  a_req_wait_bus: assert property (p_req_wait_bus)
+    else `uvm_error(info_tag, "flush req shall not come if rvalid is awaited");
+  if (bufferable_in_config()) begin : gen_c_req_wait_bus
+    c_req_wait_bus: cover property (
+      $rose(is_fencei_in_wb)
+      ##1 (
+        is_fencei_in_wb throughout (
+          ($rose(data_rvalid_i) [->1])
+          ##0 ($rose(fencei_flush_req_o) [->1])
+        )
+      )
+    );
+  end
 
-  c_req_wait_obi: cover property (
-    $rose(is_fencei_in_wb)
-    ##1 (is_fencei_in_wb throughout ($rose(data_rvalid_i) [->1]))
-    ##0 (is_fencei_in_wb throughout ($rose(fencei_flush_req_o) [->1]))
-  );
+  property p_req_wait_outstanding;
+    fencei_flush_req_o |-> (obi_outstanding == 0);
+  endproperty
+  a_req_wait_outstanding: assert property (p_req_wait_outstanding)
+    else `uvm_error(info_tag, "flush req shall not come if obi has outstanding transactions");
+  if (bufferable_in_config()) begin : gen_c_req_wait_outstanding_1
+    c_req_wait_outstanding_1: cover property (
+      is_fencei_in_wb throughout ((obi_outstanding >= 1) ##0 (fencei_flush_req_o [->1]))
+    );
+  end
+
+  
+  property p_req_wait_buffer;
+    is_fencei_in_wb && (wb_buffer_state == WBUF_FULL) |->
+      !fencei_flush_req_o throughout(
+        (data_rvalid_i && (wb_buffer_state == WBUF_EMPTY)) [->1]
+      );
+  endproperty
+
+  a_req_wait_buffer: assert property(p_req_wait_buffer) 
+    else `uvm_error(info_tag, "fencei_flush_req_o should be held low until write buffer is empty");
+
+
+  // TODO:ropeders assert fencei flush req explicitly vs X interface queue (not just vs rvalid)
+
 
   for (genvar i = 1; i <= 5; i++) begin: gen_ack_delayed
     // "5" is an appropriate arbitrary upper limit
