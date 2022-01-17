@@ -59,6 +59,7 @@ ${CVA6_REPO_DIR}/core/cvxif_example/cvxif_example_coprocessor.sv
 ${CVA6_REPO_DIR}/core/cvxif_example/instr_decoder.sv
 
 // Common Cells
+${CVA6_REPO_DIR}/common/submodules/common_cells/src/cf_math_pkg.sv
 ${CVA6_REPO_DIR}/common/submodules/common_cells/src/fifo_v3.sv
 ${CVA6_REPO_DIR}/common/submodules/common_cells/src/lfsr.sv
 ${CVA6_REPO_DIR}/common/submodules/common_cells/src/lzc.sv
