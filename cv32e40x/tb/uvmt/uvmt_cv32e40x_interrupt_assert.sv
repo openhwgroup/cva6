@@ -202,7 +202,7 @@ module uvmt_cv32e40x_interrupt_assert
     s_irq_taken(irq) ##0 mtvec_mode_q == mtvec;
   endproperty
 // DSIM-specific workaround: see github issue #1122
-`ifdef DSIM
+`ifndef DSIM
   generate for(genvar gv_i = 0; gv_i < NUM_IRQ; gv_i++) begin : gen_irq_cov
     if (VALID_IRQ_MASK[gv_i]) begin : gen_valid
       c_irq_masked: cover property(p_irq_masked(gv_i));
@@ -430,7 +430,7 @@ module uvmt_cv32e40x_interrupt_assert
     $fell(in_wfi) ##0 irq_i[irq] ##0 mie_q[irq] ##0 mstatus_mie == mie;
   endproperty
 // DSIM-specific workaround: see github issue #1122
-`ifdef DSIM
+`ifndef DSIM
   generate for(genvar gv_i = 0; gv_i < 32; gv_i++) begin : gen_wfi_cov
     if (VALID_IRQ_MASK[gv_i]) begin
       c_wfi_wake_mstatus_mie_0: cover property(p_wfi_wake_mstatus_mie(gv_i, 0));
