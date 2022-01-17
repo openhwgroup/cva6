@@ -335,24 +335,33 @@ module uvmt_cv32e40x_tb;
 
   // Bind in verification modules to the design
   bind cv32e40x_core
-    uvmt_cv32e40x_interrupt_assert interrupt_assert_i(.mcause_n({cs_registers_i.mcause_n.interrupt, cs_registers_i.mcause_n.exception_code[4:0]}),
-                                                      .mip(cs_registers_i.mip),
-                                                      .mie_q(cs_registers_i.mie_q),
-                                                      .mstatus_mie(cs_registers_i.mstatus_q.mie),
-                                                      .mtvec_mode_q(cs_registers_i.mtvec_q.mode),
-                                                      .if_stage_instr_req_o(if_stage_i.m_c_obi_instr_if.s_req.req),
-                                                      .if_stage_instr_rvalid_i(if_stage_i.m_c_obi_instr_if.s_rvalid.rvalid),
-                                                      .if_stage_instr_rdata_i(if_stage_i.m_c_obi_instr_if.resp_payload.rdata),
-                                                      .alignbuf_outstanding(if_stage_i.prefetch_unit_i.alignment_buffer_i.outstanding_cnt_q),
-                                                      .ex_stage_instr_valid(ex_stage_i.id_ex_pipe_i.instr_valid),
-                                                      .wb_stage_instr_valid_i(wb_stage_i.instr_valid),
-                                                      .wb_stage_instr_rdata_i(wb_stage_i.ex_wb_pipe_i.instr.bus_resp.rdata),
-                                                      .wb_stage_instr_err_i(wb_stage_i.ex_wb_pipe_i.instr.bus_resp.err),
-                                                      .branch_taken_ex(controller_i.controller_fsm_i.branch_taken_ex),
-                                                      .debug_mode_q(controller_i.controller_fsm_i.debug_mode_q),
-                                                      .irq_ack_o(core_i.irq_ack),
-                                                      .irq_id_o(core_i.irq_id),
-                                                      .*);
+    uvmt_cv32e40x_interrupt_assert interrupt_assert_i(
+      .mcause_n     ({cs_registers_i.mcause_n.interrupt, cs_registers_i.mcause_n.exception_code[4:0]}),
+      .mip          (cs_registers_i.mip),
+      .mie_q        (cs_registers_i.mie_q),
+      .mstatus_mie  (cs_registers_i.mstatus_q.mie),
+      .mtvec_mode_q (cs_registers_i.mtvec_q.mode),
+
+      .if_stage_instr_req_o    (if_stage_i.m_c_obi_instr_if.s_req.req),
+      .if_stage_instr_rvalid_i (if_stage_i.m_c_obi_instr_if.s_rvalid.rvalid),
+      .if_stage_instr_rdata_i  (if_stage_i.m_c_obi_instr_if.resp_payload.rdata),
+      .alignbuf_outstanding    (if_stage_i.prefetch_unit_i.alignment_buffer_i.outstanding_cnt_q),
+
+      .ex_stage_instr_valid (ex_stage_i.id_ex_pipe_i.instr_valid),
+
+      .wb_stage_instr_valid_i    (wb_stage_i.instr_valid),
+      .wb_stage_instr_rdata_i    (wb_stage_i.ex_wb_pipe_i.instr.bus_resp.rdata),
+      .wb_stage_instr_err_i      (wb_stage_i.ex_wb_pipe_i.instr.bus_resp.err),
+      .wb_stage_instr_mpu_status (wb_stage_i.ex_wb_pipe_i.instr.mpu_status),
+
+      .branch_taken_ex (controller_i.controller_fsm_i.branch_taken_ex),
+      .debug_mode_q    (controller_i.controller_fsm_i.debug_mode_q),
+
+      .irq_ack_o (core_i.irq_ack),
+      .irq_id_o  (core_i.irq_id),
+
+      .*
+    );
 
   // Fence.i assertions
 
@@ -390,27 +399,35 @@ module uvmt_cv32e40x_tb;
   bind cv32e40x_wrapper
     uvmt_cv32e40x_debug_cov_assert_if debug_cov_assert_if (
       .id_valid               (core_i.id_stage_i.id_valid_o),
+      .sys_fence_insn_i       (core_i.id_stage_i.decoder_i.sys_fencei_insn_o),
+
       .ex_stage_csr_en        (core_i.id_ex_pipe.csr_en),
       .ex_valid               (core_i.ex_stage_i.instr_valid),
       .ex_stage_instr_rdata_i (core_i.id_ex_pipe.instr.bus_resp.rdata),
       .ex_stage_pc            (core_i.id_ex_pipe.pc),
+
       .wb_stage_instr_rdata_i (core_i.ex_wb_pipe.instr.bus_resp.rdata),
       .wb_stage_instr_valid_i (core_i.ex_wb_pipe.instr_valid),
       .wb_stage_pc            (core_i.wb_stage_i.ex_wb_pipe_i.pc),
       .wb_err                 (core_i.ex_wb_pipe.instr.bus_resp.err),
-      .mie_q                  (core_i.cs_registers_i.mie_q),
-      .ctrl_fsm_cs            (core_i.controller_i.controller_fsm_i.ctrl_fsm_cs),
-      .illegal_insn_i         (core_i.ex_wb_pipe.illegal_insn),
       .wb_illegal             (core_i.ex_wb_pipe.illegal_insn),
       .wb_valid               (core_i.wb_stage_i.wb_valid_o),
+      .wb_mpu_status          (core_i.ex_wb_pipe.instr.mpu_status),
+      .illegal_insn_i         (core_i.ex_wb_pipe.illegal_insn),
       .sys_en_i               (core_i.ex_wb_pipe.sys_en),
       .sys_ecall_insn_i       (core_i.ex_wb_pipe.sys_ecall_insn),
+
+      .ctrl_fsm_cs            (core_i.controller_i.controller_fsm_i.ctrl_fsm_cs),
       .debug_req_i            (core_i.controller_i.controller_fsm_i.debug_req_i),
       .debug_req_q            (core_i.controller_i.controller_fsm_i.debug_req_q),
       .pending_debug          (core_i.controller_i.controller_fsm_i.pending_debug),
       .pending_nmi            (core_i.controller_i.controller_fsm_i.pending_nmi),
       .nmi_allowed            (core_i.controller_i.controller_fsm_i.nmi_allowed),
       .debug_mode_q           (core_i.controller_i.controller_fsm_i.debug_mode_q),
+      .trigger_match_in_wb    (core_i.controller_i.controller_fsm_i.trigger_match_in_wb),
+      .branch_in_ex           (core_i.controller_i.controller_fsm_i.branch_in_ex),
+
+      .mie_q                  (core_i.cs_registers_i.mie_q),
       .dcsr_q                 (core_i.cs_registers_i.dcsr_q),
       .depc_q                 (core_i.cs_registers_i.dpc_q),
       .depc_n                 (core_i.cs_registers_i.dpc_n),
@@ -419,11 +436,11 @@ module uvmt_cv32e40x_tb;
       .mepc_q                 (core_i.cs_registers_i.mepc_q),
       .tdata1                 (core_i.cs_registers_i.tmatch_control_q),
       .tdata2                 (core_i.cs_registers_i.tmatch_value_q),
-      .trigger_match_in_wb    (core_i.controller_i.controller_fsm_i.trigger_match_in_wb),
       .mcountinhibit_q        (core_i.cs_registers_i.mcountinhibit_q),
       .mcycle                 (core_i.cs_registers_i.mhpmcounter_q[0]),
       .minstret               (core_i.cs_registers_i.mhpmcounter_q[2]),
-      .sys_fence_insn_i       (core_i.id_stage_i.decoder_i.sys_fencei_insn_o),
+      .csr_we_int             (core_i.cs_registers_i.csr_we_int),
+
       // TODO: review this change from CV32E40X_HASH f6196bf to a26b194. It should be logically equivalent.
       //assign debug_cov_assert_if.inst_ret = core_i.cs_registers_i.inst_ret;
       // First attempt: this causes unexpected failures of a_minstret_count
@@ -436,7 +453,6 @@ module uvmt_cv32e40x_tb;
       .csr_access             (core_i.ex_wb_pipe.csr_en),
       .csr_op                 (core_i.ex_wb_pipe.csr_op),
       .csr_addr               (core_i.ex_wb_pipe.csr_addr),
-      .csr_we_int             (core_i.cs_registers_i.csr_we_int),
       .irq_ack_o              (core_i.irq_ack),
       .irq_id_o               (core_i.irq_id),
       .dm_halt_addr_i         (core_i.dm_halt_addr_i),
@@ -446,7 +462,6 @@ module uvmt_cv32e40x_tb;
       .irq_i                  (core_i.irq_i),
       .pc_set                 (core_i.ctrl_fsm.pc_set),
       .boot_addr_i            (core_i.boot_addr_i),
-      .branch_in_ex           (core_i.controller_i.controller_fsm_i.branch_in_ex),
 
       .rvfi_valid             (rvfi_i.rvfi_valid),
       .rvfi_pc_wdata          (rvfi_i.rvfi_pc_wdata),
