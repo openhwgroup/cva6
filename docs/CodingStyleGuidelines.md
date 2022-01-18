@@ -35,15 +35,21 @@ The original text of these guidlines is extracted, with permission, from *Advanc
 
 1. **General Conventions**
 
-This document uses specific verbs to have specific meaning similar, but not identical to, that used by the [IEEE Standards Style Manaul](https://mentor.ieee.org/myproject/Public/mytools/draft/styleman.pdf) (section 9).<br>
-* **Shall** indicates a mandatory requirement and is the preferred verb for standards.
+This document uses specific verbs to have specific meaning that is similar, but not identical to, that which is used by the [IEEE Standards Style Manaul](https://mentor.ieee.org/myproject/Public/mytools/draft/styleman.pdf) (section 9).<br>
+* **Shall** indicates a mandatory requirement.
 * **Should** indicates a recommendation may be used interchangibly with the verb **Recommended**.
-* **May** indicates a permissible action and is the preferred verb for guides, and is sometimes used to suggest ways to fulfill a recommendation.
-* **Can** indicates possibility and capability and is generally used in guides.
+* **May** indicates a permissible action, and is sometimes used to suggest ways to fulfill a recommendation.
+* **Can** indicates possibility and/or a capability.
 
 1.1. **Common Header**
 
 1.1.1. All files shall begin with a common header. The initial author, filename, and a brief description shall be filled out as basic documentation.
+All headers shall have an SPDX-License-Identifier comment line such as below:
+```
+// SPDX-License-Identifier: Apache-2.0 WITH SHL-2.0
+```
+Please contract the OpenHW Group for a list of licenses we can accept.
+
 
 1.2. **Indentation**
 
@@ -761,7 +767,8 @@ The `UVM_COMPONENT` macro is configured with `UVM_NOCOPY`, `UVM_NOCOMPARE`, and 
 
 A testbench's random configuration variables may control how the testbench is built out, how the DUT is configured, and how random traffic is generated.
 
-Testbench random configuration variables should take advantage of SystemVerilog's powerful constraints and functional coverage as much as possible. They should also be consistently declared from testbench to testbench.
+Testbench random configuration variables should take advantage of SystemVerilog's powerful constraints and functional coverage as much as possible.
+They should also be consistently declared from testbench to testbench.
 
 Tests should constrain random variables through inheritance. Child tests can then control the environment with minimal effort.
 
@@ -816,9 +823,35 @@ class foo_agent_c extends uvm_agent;
 endclass : foo_agent_c
 ```
 
+5.1.7 Randomization results shall be checked and failures shall result in a fatal error
+
+```v
+if (!my_vseq.randomize()) begin
+    `uvm_fatal("TEST", "Cannot randomize my sequence")
+end
+```
+
+5.1.8 Use of random number system functions and methods
+<br>
+Use of $urandom(), $urandom_range(), $random(), $dist_uniform(), $dist_normal(),
+$dist_exponential(), $dist_poisson(), $dist_chi_square(), $dist_t() and
+$dist_erlang() should be avoided because members randomized with these calls
+cannot be constrained.
+
+This rule may be waived if the randomization of a member using one of these system methods is controlled by a member that is constrainable.
+For example:
+
+```
+    if (cfg.drive_random_rdata) begin
+       slv_mp.drv_slv_cb.rdata <= $urandom();
+    end
+```
+
 5.2. **Test Constraints**
 
-Tests are greatly simplified and highly re-usable when they are primarily composed of configuration and constraint overrides. By instantiating the configuration class as a random field of the base test, derivative tests can add their own constraints and/or disable the base constraints. Disabling constraints is best done by overriding the `randomize_cfg()` function.
+Tests are greatly simplified and highly re-usable when they are primarily composed of configuration and constraint overrides.
+By instantiating the configuration class as a random field of the base test, derivative tests can add their own constraints and/or disable the base constraints.
+Disabling constraints is best done by overriding the `randomize_cfg()` function.
 
 ```v
 class my_test_c extends exer_test_c;

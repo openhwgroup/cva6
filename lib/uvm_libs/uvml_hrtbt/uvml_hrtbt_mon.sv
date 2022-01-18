@@ -280,7 +280,7 @@ function void uvml_hrtbt_mon_c::heartbeat(uvm_component owner, int unsigned id=0
          `uvm_warning("HRTBT_MON", $sformatf("Specified heartbeat ID (%0d) is already in use.  A new random ID will be picked.", id))
       end
       do begin
-         id = $urandom();
+         id = $urandom(); //@DVT_LINTER_WAIVER "MT20211214_12" disable SVTB.29.1.3.1
       end while (timestamps.exists(id));
       
       // Add entry
