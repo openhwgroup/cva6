@@ -82,7 +82,8 @@ module serdiv import ariane_pkg::*; #(
   assign op_a_sign = op_a_i[$high(op_a_i)];
   assign op_b_sign = op_b_i[$high(op_b_i)];
 
-  assign lzc_a_input = (opcode_i[0] & op_a_sign) ? {~op_a_i, 1'b0} : op_a_i;
+  assign lzc_a_input = (opcode_i[0] & op_a_sign & (op_a_i == -$signed(1)))? {~op_a_i, 1'b1} : (opcode_i[0] & op_a_sign) ? {~op_a_i, 1'b0} : op_a_i; 
+  // This change in lzc_a_input equation helps to fix erronous results for DIV and REM for -1/1.
   assign lzc_b_input = (opcode_i[0] & op_b_sign) ? ~op_b_i         : op_b_i;
 
   lzc #(
