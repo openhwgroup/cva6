@@ -71,10 +71,10 @@ class pma_adapted_memory_regions_c;
   * and initializes FSM
   */
   function new(pma_region_t pma_region[]);
-    foreach (pma_region[i]) begin
+    for (int i = pma_region.size() - 1; i >= 0; i--) begin
       // Skip zero-length regions
       if (pma_region[i].word_addr_low < pma_region[i].word_addr_high) begin
-        add_region(pma_region[i], i, UNCHECKED);
+        add_region(pma_region[i], pma_region.size() - i, UNCHECKED);
       end
     end
     state      = S_INIT;
@@ -96,7 +96,7 @@ class pma_adapted_memory_regions_c;
   */
   virtual function void divide_region_in_half(ref classified_region_t region[$]);
     bit require_min_two_region = 1;
-    if (region.size == 1 && require_min_two_region) begin
+    if (region.size() == 1 && require_min_two_region) begin
       region.push_back(region[0]);
       region[1].cfg.word_addr_low  = region[0].cfg.word_addr_high / 2;
       region[0].cfg.word_addr_high = region[1].cfg.word_addr_low  - 1;
