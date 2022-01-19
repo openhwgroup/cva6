@@ -122,7 +122,7 @@ main:
 	csrrwi x0,  3858, 0x0a   # illegal instruction: attempt to write RO CSR
 
 	csrrc  x5,  3858, x0     # not illegal
-	li     x30, 0x00000015
+	li     x30, 0x00000014
 	bne    x5,  x30, fail
 
 	# mipmid
