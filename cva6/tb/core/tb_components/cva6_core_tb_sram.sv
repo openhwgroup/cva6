@@ -64,6 +64,97 @@ logic [DATA_WIDTH_ALIGNED-1:0]  wdata_aligned;
 logic [BE_WIDTH_ALIGNED-1:0]    be_aligned;
 logic [DATA_WIDTH_ALIGNED-1:0]  rdata_aligned;
 
+
+
+////////////////////////////////////////////////////////////////////////////////
+//Addition of Virtual Peripheral details for CVA6:START
+////////////////////////////////////////////////////////////////////////////////
+
+
+    localparam int                        MMADDR_PRINT      = 32'h5000_0000;
+    localparam int                        MMADDR_TESTSTATUS = 32'h6000_0000;
+   // localparam int                        MMADDR_EXIT       = 32'h6000_0004;
+   // localparam int                        MMADDR_SIGBEGIN   = 32'h6000_0008;
+   // localparam int                        MMADDR_SIGEND     = 32'h6000_000C;
+   // localparam int                        MMADDR_SIGDUMP    = 32'h6000_0010;
+   // localparam int                        MMADDR_TIMERREG   = 32'h5500_0000;
+   // localparam int                        MMADDR_TIMERVAL   = 32'h5500_0004;
+   // localparam int                        MMADDR_DBG        = 32'h5500_0008;
+   // localparam int                        MMADDR_RNDSTALL   = 16'h5600;
+   // localparam int                        MMADDR_RNDNUM     = 32'h5500_1000;
+   // localparam int                        MMADDR_TICKS      = 32'h5500_1004;
+
+/* Memory used in e40 
+
+    localparam int                        MMADDR_PRINT      = 32'h1000_0000;
+    localparam int                        MMADDR_TESTSTATUS = 32'h2000_0000;
+    localparam int                        MMADDR_EXIT       = 32'h2000_0004;
+    localparam int                        MMADDR_SIGBEGIN   = 32'h2000_0008;
+    localparam int                        MMADDR_SIGEND     = 32'h2000_000C;
+    localparam int                        MMADDR_SIGDUMP    = 32'h2000_0010;
+    localparam int                        MMADDR_TIMERREG   = 32'h1500_0000;
+    localparam int                        MMADDR_TIMERVAL   = 32'h1500_0004;
+    localparam int                        MMADDR_DBG        = 32'h1500_0008;
+    localparam int                        MMADDR_RNDSTALL   = 16'h1600;
+    localparam int                        MMADDR_RNDNUM     = 32'h1500_1000;
+    localparam int                        MMADDR_TICKS      = 32'h1500_1004;
+
+*/
+
+
+// signals to print peripheral
+    logic [31:0]                   print_wdata;
+    logic                          print_valid;
+
+ // handle the mapping of read and writes to either memory or pseudo
+    // peripherals (currently just a redirection of writes to stdout)
+    always_comb begin
+        tests_passed_o      = '0;
+        tests_failed_o      = '0;
+        exit_value_o        =  0;
+        exit_valid_o        = '0;
+       //transaction         = T_PER;
+
+	   if (we_i) begin
+		if (addr_i == MMADDR_PRINT) begin
+                    print_wdata = wdata_i;
+                    print_valid = '1;
+		end else if (addr_i == MMADDR_TESTSTATUS) begin
+                    if (wdata_i == 123456789)
+                        tests_passed_o = '1;
+                    else if (wdata_i == 1)
+                        tests_failed_o = '1;
+           end
+        end
+    end
+
+
+
+ // print to stdout pseudo peripheral
+    always_ff @(posedge clk_i, negedge rst_ni) begin: print_peripheral
+        if(print_valid) begin
+            if ($test$plusargs("verbose")) begin
+                if (32 <= print_wdata && print_wdata < 128)
+                    $display("OUT: '%c'", print_wdata[7:0]);
+                else
+                    $display("OUT: %3d", print_wdata);
+
+            end else begin
+                $write("%c", print_wdata[7:0]);
+`ifndef VERILATOR
+                $fflush();
+`endif
+            end
+        end
+    end
+
+
+////////////////////////////////////////////////////////////////////////////////
+//Addition of Virtual Peripheral details for CVA6:END
+////////////////////////////////////////////////////////////////////////////////
+
+
+
 // align to 64 bits for inferrable macro below
 always_comb begin : p_align
     wdata_aligned                    ='0;
