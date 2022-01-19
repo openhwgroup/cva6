@@ -26,7 +26,7 @@ import datetime
 
 from dv.scripts.lib import *
 from verilator_log_to_trace_csv import *
-from spike_log_to_trace_csv import *
+from cva6 spike_log_to_trace_csv import *
 from dv.scripts.ovpsim_log_to_trace_csv import *
 from dv.scripts.whisper_log_trace_csv import *
 from dv.scripts.sail_log_to_trace_csv import *

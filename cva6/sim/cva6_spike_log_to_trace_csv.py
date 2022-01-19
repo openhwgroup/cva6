@@ -28,7 +28,7 @@ from riscv_trace_csv import *
 from lib import *
 
 RD_RE = re.compile(r"(core\s+\d+:\s+)?(?P<pri>\d) 0x(?P<addr>[a-f0-9]+?) " \
-                   "\((?P<bin>.*?)\)( (?P<csr_name>c\S*) 0x(?P<csr_value>[a-f0-9]+))? (?P<reg>[xf]\s*\d*?) 0x(?P<val>[a-f0-9]+)")
+                   "\((?P<bin>.*?)\)(( c\S* 0x[a-f0-9]+)*) (?P<reg>[xf]\s*\d*?) 0x(?P<val>[a-f0-9]+)")
 
 CORE_RE = re.compile(
     r"core\s+\d+:\s+0x(?P<addr>[a-f0-9]+?) \(0x(?P<bin>.*?)\) (?P<instr>.*?)$")
@@ -77,9 +77,6 @@ def read_spike_instr(match, full_trace):
     instr.pc = match.group('addr')
     instr.instr_str = disasm
     instr.binary = match.group('bin')
-    #print("pc :", instr.pc)
-    #print("instr_str :", instr.instr_str)
-    #print("binary :", instr.binary)
     if full_trace:
         opcode = disasm.split(' ')[0]
         operand = disasm[len(opcode):].replace(' ', '')
@@ -174,7 +171,6 @@ def read_spike_trace(path, full_trace):
             # The instruction seems to have been fine. Do we have commit data (from
             # the --log-commits Spike option)?
             commit_match = RD_RE.match(line)
-            #print(commit_match)
             if commit_match:
                 instr.gpr.append(gpr_to_abi(commit_match.group('reg')
                                             .replace(' ', '')) +
@@ -204,7 +200,6 @@ def process_spike_sim_log(spike_log, csv, full_trace=0):
 
         for (entry, illegal) in read_spike_trace(spike_log, full_trace):
             instrs_in += 1
-
             if illegal and full_trace:
                 logging.debug("Illegal instruction: {}, opcode:{}"
                               .format(entry.instr_str, entry.binary))
