@@ -13,5 +13,10 @@ if { [find -scope uvmt_cv32e40s_tb -instance iss_wrap] != ""} {
     ida_probe -wave -wave_probe_args="uvmt_cv32e40s_tb.iss_wrap.cpu.state.decode -depth 1"    
 }
 
-run
-exit
+# Only execute if we are not in interactive mode 
+# When in interactive (gui) mode the env variable INDAGO_ENABLE_INTERACTIVE_DEBUG will exist
+if { ![info exists ::env(INDAGO_ENABLE_INTERACTIVE_DEBUG)] } {
+    run
+    exit
+}
+
