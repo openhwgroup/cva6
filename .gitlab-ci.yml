@@ -1,256 +1,121 @@
-before_script:
-  # paths to local or network installations (the riscv toolchain and
-  # verilator are not built in the ci job as in travis)
-  - export QUESTASIM_HOME=/usr/pack/modelsim-10.6b-kgf/questasim/
-  - export QUESTASIM_VERSION=-10.6b
-  - export QUESTASIM_FLAGS=-noautoldlibpath
-  - export CXX=g++-7.2.0 CC=gcc-7.2.0
-  - export RISCV=/scratch2/gitlabci/riscv_install
-  - export VERILATOR_ROOT=/scratch2/gitlabci/verilator-4.014
-  # setup dependent paths
-  - export PATH=${RISCV}/bin:$VERILATOR_ROOT/bin:${PATH}
-  - export LIBRARY_PATH=$RISCV/lib
-  - export LD_LIBRARY_PATH=$RISCV/lib:/usr/pack/gcc-7.2.0-af/linux-x64/lib64/
-  - export C_INCLUDE_PATH=$RISCV/include:$VERILATOR_ROOT/include:/usr/pack/gcc-7.2.0-af/linux-x64/include
-  - export CPLUS_INCLUDE_PATH=$RISCV/include:$VERILATOR_ROOT/include:/usr/pack/gcc-7.2.0-af/linux-x64/include
-  # number of parallel jobs to use for make commands and simulation
-  - export NUM_JOBS=4
-  - which java
-  - java -version
-  - which git
-  - git --version
-  - ci/make-tmp.sh
-  - git submodule init
-  - git submodule update --recursive
+# Copyright 2022 Thales DIS design services SAS
+#
+# Licensed under the Solderpad Hardware Licence, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# SPDX-License-Identifier: Apache-2.0 WITH SHL-2.0
+# You may obtain a copy of the License at https://solderpad.org/licenses/
+#
+# Original Author: Yannick Casamatta (yannick.casamatta@thalesgroup.com)
+
+# Project maintainers must define following variables to adapt this CI to their runtime environment (Settings > CI/CD > Variables)
+# - RUN_CORE_CI: 'true'/'false'
+# - RUN_CORE_V_VERIF_CI: 'true'/'false'
+# - CORE_V_VERIF_REPO: https://github.com/openhwgroup/core-v-verif
+# - CORE_V_VERIF_BRANCH: master
+# - RUN_EXTERNAL_CI: 'true'/'false'
+# - EXTERNAL_CI_PROJECT_PATH: custom-group/custom-repo
+# - EXTERNAL_CI_PROJECT_BRANCH: dev/mybranch
+# - EXTERNAL_CI_YML_PATH: .gitlab-ci/my_custom_ci.yml
+# - TAGS_RUNNER: arch,shell  #no space!
+# Others users can manually trigger pipelines with overridden variables (CI/CD > Pipeline > Run Pipeline)
+
+# Guidelines:
+
+# - Prefer the use of parent-child pipelines instead of including yml for ease of maintenance.
+# - Specific elements should be defined in the triggered yml to avoid conflicts between pipelines.
+# - In this file, only generic job/variables should be declared.
+
 
 variables:
-  GIT_SUBMODULE_STRATEGY: recursive
+  # Issue gitlab-ci: variables defined here can't be overriden when pipeline is triggered manually or by schedule 
+
 
 stages:
-  - build
-  - write-back
-  - write-through
+   - build
+   - test
 
-###################################
-# prepare
-build:
+
+check_env:
+  variables:
+    GIT_STRATEGY: none
+  tags: [$TAGS_RUNNER]
+  before_script:
+  after_script:
   stage: build
   script:
-    - ci/build-riscv-tests.sh
-    - ci/get-torture.sh
-    - make clean
-    # this currently does not work with the current runner version...
-    #- make torture-gen
+    - echo $RUN_CORE_CI
+    - echo $RUN_CORE_V_VERIF_CI
+    - echo $CORE_V_VERIF_REPO
+    - echo $CORE_V_VERIF_BRANCH
+    - echo $RUN_EXTERNAL_CI
+    - echo $EXTERNAL_CI_PROJECT_PATH
+    - echo $EXTERNAL_CI_PROJECT_BRANCH
+    - echo $EXTERNAL_CI_YML_PATH
+
+# core testbench downstream pipeline 
+# If enabled by RUN_CORE_CI, additionnal variables may be necessary and should be declared by project maintainers.
+# Please read .gitlab-ci/cva6.yml
+cva6:
+  trigger:
+    include: .gitlab-ci/cva6.yml
+  rules:
+    - if: $RUN_CORE_CI == "true"
+      when: always
+    - when: never
+
+# core-v-verif testbench downstream pipeline 
+# If enabled by RUN_CORE_V_VERIF_CI, additionnal variables may be necessary and should be declared by project maintainers.
+# Please read .gitlab-ci/cva6.yml in core-v-verif repository
+# core-v-verif Build job (see next core-v-verif-run job)
+core-v-verif-build:
+  variables:
+    GIT_STRATEGY: none
+  tags: [$TAGS_RUNNER]
+  stage: build
+  script:
+    - '[[ -e ./core-v-verif ]] && rm -rf core-v-verif'
+    - git clone $CORE_V_VERIF_REPO -b $CORE_V_VERIF_BRANCH --depth 1 core-v-verif 
+    - echo "before_script:" >> core-v-verif/.gitlab-ci/cva6.yml
+    - echo "  - '[[ -e ./core-v-verif ]] && rm -rf core-v-verif'" >> core-v-verif/.gitlab-ci/cva6.yml
+    - echo "  - git clone $CORE_V_VERIF_REPO -b $CORE_V_VERIF_BRANCH --depth 1 core-v-verif" >> core-v-verif/.gitlab-ci/cva6.yml
+    - echo "  - ln -rs ./ core-v-verif/core-v-cores/cva6" >> core-v-verif/.gitlab-ci/cva6.yml
+    - echo "  - '[[ -e ./artifacts ]] && mv ./artifacts ./core-v-verif/artifacts'" >> core-v-verif/.gitlab-ci/cva6.yml
+    - echo "  - cd core-v-verif" >> core-v-verif/.gitlab-ci/cva6.yml
+    - echo "after_script:" >> core-v-verif/.gitlab-ci/cva6.yml
+    - echo "  - '[[ -e ./core-v-verif/artifacts ]] && mv ./core-v-verif/artifacts ./artifacts'" >> core-v-verif/.gitlab-ci/cva6.yml
+  rules:
+    - if: '$RUN_CORE_V_VERIF_CI == "true"'
+      when: always
+    - when: never
   artifacts:
       paths:
-        - tmp
+        - core-v-verif/.gitlab-ci/cva6.yml
 
-###################################
-# tests with write-back cache system
 
-# rv64ui-p-* and rv64ui-v-* tests
-asm-quest:
-  stage: write-back
-  script:
-    - make -j${NUM_JOBS} run-asm-tests batch-mode=1 defines=WB_DCACHE
-  dependencies:
-    - build
+# core-v-verif trigger job (see previous core-v-verif-build job)
+core-v-verif-run:
+  trigger:
+    include: 
+      - artifact: core-v-verif/.gitlab-ci/cva6.yml
+        job: core-v-verif-build
+  rules:
+    - if: '$RUN_CORE_V_VERIF_CI == "true"'
+      when: always
+    - when: never
 
-amo-quest:
-  stage: write-back
-  script:
-    - make -j${NUM_JOBS} run-amo-tests batch-mode=1 defines=WB_DCACHE
-  dependencies:
-    - build
 
-# floating point
-fp-quest:
-  stage: write-back
-  script:
-    - make -j${NUM_JOBS} run-fp-tests batch-mode=1 defines=WB_DCACHE
-  dependencies:
-    - build
 
-bench-quest:
-  stage: write-back
-  script:
-    - make -j${NUM_JOBS} run-benchmarks batch-mode=1 defines=WB_DCACHE
-  dependencies:
-    - build
 
-# rv64ui-p-* tests
-asm1-ver:
-  stage: write-back
-  script:
-    - make -j${NUM_JOBS} run-asm-tests1-verilator defines=WB_DCACHE
-  dependencies:
-    - build
+# Use this entry point to run a pipeline from another repository (hosted on the same gitlab server)
+# If enabled by RUN_EXTERNAL_CI, additionnal variables may be necessary and should be declared by project maintainers.
+external:
+  trigger:
+    include:
+      - project: $EXTERNAL_CI_PROJECT_PATH
+        ref: $EXTERNAL_CI_PROJECT_BRANCH
+        file: $EXTERNAL_CI_YML_PATH
+  rules:
+    - if: '$RUN_EXTERNAL_CI == "true"'
+      when: always
+    - when: never
 
-# rv64ui-v-* tests
-asm2-ver:
-  stage: write-back
-  script:
-    - make -j${NUM_JOBS} run-asm-tests2-verilator defines=WB_DCACHE
-  dependencies:
-    - build
-
-# rv64um-*-* tests
-mul-ver:
-  stage: write-back
-  script:
-    - make -j${NUM_JOBS} run-mul-verilator defines=WB_DCACHE
-  dependencies:
-    - build
-
-# atomics
-amo-ver:
-  stage: write-back
-  script:
-    - make -j${NUM_JOBS} run-amo-verilator defines=WB_DCACHE
-  dependencies:
-    - build
-
-# floating point
-fp-ver:
-  stage: write-back
-  script:
-    - make -j${NUM_JOBS} run-fp-verilator defines=WB_DCACHE
-  dependencies:
-    - build
-
-bench-ver:
-  stage: write-back
-  script:
-    - make -j${NUM_JOBS} run-benchmarks-verilator defines=WB_DCACHE
-  dependencies:
-    - build
-
-bench-ver:
-  stage: write-back
-  script:
-    - make -j${NUM_JOBS} run-benchmarks-verilator defines=WB_DCACHE
-  dependencies:
-    - build
-
-# torture:
-#   stage: write-back
-#   script:
-#     - make torture-rtest batch-mode=1
-#     - make torture-rtest-verilator
-#   dependencies:
-#     - build
-
-serdiv-quest:
-  stage: write-back
-  script:
-    - cd tb/tb_serdiv/
-    - make simc
-    - "grep 'CI: PASSED' summary.rep"
-  dependencies:
-    - build
-
-###################################
-# tests with write-through cache system
-
-s-asm-quest:
-  stage: write-through
-  script:
-    - make -j${NUM_JOBS} run-asm-tests defines=WT_DCACHE batch-mode=1
-  dependencies:
-    - build
-
-# atomics
-s-amo-quest:
-  stage: write-through
-  script:
-    - make -j${NUM_JOBS} run-amo-tests defines=WT_DCACHE batch-mode=1
-  dependencies:
-    - build
-
-# floating point
-s-fp-quest:
-  stage: write-through
-  script:
-    - make -j${NUM_JOBS} run-fp-tests defines=WT_DCACHE batch-mode=1
-  dependencies:
-    - build
-
-s-bench-quest:
-  stage: write-through
-  script:
-    - make -j${NUM_JOBS} run-benchmarks defines=WT_DCACHE batch-mode=1
-  dependencies:
-    - build
-
-# rv64ui-p-* tests
-s-asm1-ver:
-  stage: write-through
-  script:
-    - make -j${NUM_JOBS} run-asm-tests1-verilator defines=WT_DCACHE
-  dependencies:
-    - build
-
-# rv64ui-v-* tests
-s-asm2-ver:
-  stage: write-through
-  script:
-    - make -j${NUM_JOBS} run-asm-tests2-verilator defines=WT_DCACHE
-  dependencies:
-    - build
-
-# rv64um-*-* tests
-mul-ver:
-  stage: write-through
-  script:
-    - make -j${NUM_JOBS} run-mul-verilator defines=WT_DCACHE
-  dependencies:
-    - build
-
-# atomics
-amo-ver:
-  stage: write-through
-  script:
-    - make -j${NUM_JOBS} run-amo-verilator defines=WT_DCACHE
-  dependencies:
-    - build
-
-# floating point
-s-fp-ver:
-  stage: write-through
-  script:
-    - make -j${NUM_JOBS} run-fp-verilator defines=WT_DCACHE
-  dependencies:
-    - build
-
-s-bench-ver:
-  stage: write-through
-  script:
-    - make -j${NUM_JOBS} run-benchmarks-verilator defines=WT_DCACHE
-  dependencies:
-    - build
-
-s-icache-quest:
-  stage: write-through
-  script:
-    - cd tb/tb_icache/
-    - make simc
-    - "grep 'CI: PASSED' summary.rep"
-
-s-dcache-quest:
-  stage: write-through
-  script:
-    - cd tb/tb_wt_dcache/
-    - make simc
-    - "grep 'CI: PASSED' RD0_summary.rep"
-    - "grep 'CI: PASSED' RD1_summary.rep"
-    - "grep 'CI: PASSED' TB_MEM_summary.rep"
-  dependencies:
-    - build
-
-# s-torture:
-#   stage: write-through
-#   script:
-#     - make torture-rtest           defines=WT_DCACHE batch-mode=1
-#     - make torture-rtest-verilator defines=WT_DCACHE
-#   dependencies:
-#     - build
