@@ -1,5 +1,4 @@
 name: mhpmcounter29_csr_access_test_2
 uvm_test: uvmt_$(CV_CORE_LC)_firmware_test_c
 description: >
-    CSR access test with NUM_MHPMCOUNTER = 29 (CANNOT run with ISS)
-
+  CSR access test with NUM_MHPMCOUNTER = 29 (FIXME ISS does not set correct reset value for mcountinhibit)
