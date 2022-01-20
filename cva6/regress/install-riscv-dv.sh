@@ -23,7 +23,7 @@ export TESTS_PATH=$ROOT_PROJECT/cva6/tests
 if ! [ -n "$DV_REPO" ]; then
   export DV_REPO="https://github.com/google/riscv-dv.git"
   export DV_BRANCH=master
-  export DV_HASH=0ce85d3187689855cd2b3b9e3fae21ca32de2248
+  export DV_HASH=96c1ee6f371f2754c45b4831fcab95f6671689d9
   export DV_PATCH=
 fi
 echo $DV_REPO
