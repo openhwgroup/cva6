@@ -156,14 +156,14 @@ tests:
   mhpmcounter29_csr_access_test_1:
     build: uvmt_cv32e40x_num_mhpmcounter_29
     description: Hardware performance counter full access coverage test 1
-    builds: [ uvmt_cv32e40x, uvmt_cv32e40x_no_bitmanip]
+    builds: [ uvmt_cv32e40x_num_mhpmcounter_29 ]
     dir: cv32e40x/sim/uvmt
     cmd: make test TEST=mhpmcounter29_csr_access_test_1
 
   mhpmcounter29_csr_access_test_2:
     build: uvmt_cv32e40x_num_mhpmcounter_29
     description: Hardware performance counter full access coverage test 2
-    builds: [ uvmt_cv32e40x, uvmt_cv32e40x_no_bitmanip]
+    builds: [ uvmt_cv32e40x_num_mhpmcounter_29 ]
     dir: cv32e40x/sim/uvmt
     cmd: make test TEST=mhpmcounter29_csr_access_test_2
 
