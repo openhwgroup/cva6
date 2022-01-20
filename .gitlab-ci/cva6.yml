@@ -1,0 +1,270 @@
+# Copyright 2022 Thales DIS design services SAS
+#
+# Licensed under the Solderpad Hardware Licence, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# SPDX-License-Identifier: Apache-2.0 WITH SHL-2.0
+# You may obtain a copy of the License at https://solderpad.org/licenses/
+#
+# Original Author: Yannick Casamatta (yannick.casamatta@thalesgroup.com)
+
+# Project maintainers must define following variables to adapt this CI to their runtime environment (Settings > CI/CD > Variables)
+# - RISCV: /opt/common/tools/gcc-10.2.0
+# - VERILATOR_ROOT: /opt/common/tools/verilator-4.110
+# - SPIKE_ROOT: /opt/common/tools/spike
+# - BBL_ROOT: /opt/common/tools/Linux-ariane-sdk
+# - SYN_VCS_BASHRC: /opt/synopsys/vcs/xxxx/setup/bashrc
+# - SYN_DCSHELL_BASHRC: /opt/synopsys/vcs/xxxx/setup/bashrc
+# - QUESTA_BASHRC: /opt/questa/questa_sim.xxxx/setup/bashrc
+# - VIVALDO_SETUP: /opt/xilinx/Vivado/xxxx/settings64.sh
+# - CVA6_REPO: https://github.com/openhwgroup/cva6
+# - CVA6_BRANCH: master
+# - RISCV_GCC: $RISCV/bin/riscv-none-elf-gcc
+# - RISCV_OBJCOPY: $RISCV/bin/riscv-none-elf-objcopy
+# - COMPLIANCE_REPO: https://github.com/riscv/riscv-compliance.git
+# - COMPLIANCE_BRANCH: master
+# - COMPLIANCE_HASH: ""
+# - COMPLIANCE_PATCH: ""
+# - TESTS_REPO: https://github.com/riscv/riscv-tests.git
+# - TESTS_BRANCH: master
+# - TESTS_HASH: ""
+# - DV_REPO: https://github.com/google/riscv-dv.git
+# - DV_BRANCH: master
+# - DV_HASH: ""
+# - DV_PATCH: ""
+# - TAGS_RUNNER: debian10,shell  #no space!
+# - NUM_JOBS: 24
+# - CVA6_FOUNDRY_PATH: /techno/lib/stdcellxxxx
+# - CVA6_TECH_NAME: "core_xxxx05v25c"
+# - CVA6_SYNTH_PERIOD : 30
+# - CVA6_LIB_VERILOG: /techno/lib/verilog_xxxx/xxxx.v
+
+# Guidlines:
+
+# This pipeline is triggerd underneath by CI of CVA6 repository, this requires to respected some rules:
+# - In this pipeline, job artifacts must be only defined in a folder named "artifacts" at the root of the job's workdir.
+# - In this pipeline, do not define before_script and after_script in the global section (avoid in job too).
+
+
+variables:
+  GIT_STRATEGY: fetch
+  GIT_SUBMODULE_STRATEGY: recursive
+  # Issue gitlab-ci: variables defined here can't be overriden when pipeline is triggered manually or by schedule.
+  # Until fix, Avoid setting variables here and prefer set variables in project settings.
+
+
+stages:
+  - pre
+  - lite
+  - full
+  - post
+
+
+check_env:
+  stage: pre
+  variables:
+    GIT_STRATEGY: none
+  tags: [$TAGS_RUNNER]
+  before_script:
+    - echo "No before script"
+  after_script:
+    - echo "No end script"
+  needs: []
+  script:
+    - echo $RISCV
+    - echo $VERILATOR_ROOT
+    - echo $SPIKE_ROOT
+    - echo $BBL_ROOT
+    - echo $SYN_VCS_BASHRC
+    - echo $SYN_DCSHELL_BASHRC
+    - echo $QUESTA_BASHRC
+    - echo $VIVALDO_SETUP
+    - echo $CVA6_REPO
+    - echo $CVA6_BRANCH
+    - echo $CORE_V_VERIF_REPO
+    - echo $CORE_V_VERIF_BRANCH
+    - echo $RISCV_GCC
+    - echo $RISCV_OBJCOPY
+    - echo $COMPLIANCE_REPO
+    - echo $COMPLIANCE_BRANCH
+    - echo $COMPLIANCE_HASH
+    - echo $COMPLIANCE_PATCH
+    - echo $TESTS_REPO
+    - echo $TESTS_BRANCH
+    - echo $TESTS_HASH
+    - echo $DV_REPO
+    - echo $DV_BRANCH
+    - echo $DV_HASH
+    - echo $DV_PATCH
+    - echo $NUM_JOBS
+    - echo $TAGS_RUNNER
+
+
+smoke:
+  stage: pre
+  tags: [$TAGS_RUNNER]
+  needs: []
+  parallel:
+    matrix:
+      - DV_SIMULATORS: ["veri-core,spike", "veri-testharness,spike"]
+  script:
+    - source cva6/regress/smoke-tests.sh
+
+
+compliance:
+  stage: lite
+  tags: [$TAGS_RUNNER]
+  needs:
+    - job: smoke
+      artifacts: false
+  parallel:
+    matrix:
+      - DV_TARGET: [cv64a6_imafdc_sv39, cv32a6_imac_sv0]
+        DV_SIMULATORS: ["veri-testharness,spike", "veri-core,spike"]
+  script:
+    - source cva6/regress/dv-riscv-compliance.sh
+
+
+tests-v:
+  stage: lite
+  tags: [$TAGS_RUNNER]
+  needs:
+    - job: smoke
+      artifacts: false
+  parallel:
+    matrix:
+      - DV_SIMULATORS: ["veri-testharness,spike", "veri-core,spike"]
+  variables:
+    DV_TARGET: cv64a6_imafdc_sv39
+    DV_TESTLISTS: "../tests/testlist_riscv-tests-$DV_TARGET-v.yaml"
+  script:
+    - source cva6/regress/dv-riscv-tests.sh
+
+
+tests-p:
+  stage: lite
+  tags: [$TAGS_RUNNER]
+  needs:
+    - job: smoke
+      artifacts: false
+  parallel:
+    matrix:
+      - DV_TARGET: [cv64a6_imafdc_sv39, cv32a6_imac_sv0]
+        DV_SIMULATORS: ["veri-testharness,spike", "veri-core,spike"]
+  variables:
+    DV_TESTLISTS: "../tests/testlist_riscv-tests-$DV_TARGET-p.yaml"
+  script:
+    - source cva6/regress/dv-riscv-tests.sh
+
+
+linux:
+  stage: full
+  tags: [$TAGS_RUNNER]
+  needs:
+    - job: compliance
+      artifacts: false
+  rules:
+    - when: manual
+  allow_failure: true
+  script:
+    - source cva6/regress/linux.sh
+  timeout: 2h 30m
+
+
+fpga-build:
+  stage: full
+  tags: [$TAGS_RUNNER]
+  needs:
+    - job: compliance
+      artifacts: false
+  script:
+    - source $VIVALDO_SETUP
+    - source cva6/regress/install-cva6.sh
+    - make -C core-v-cores/cva6 fpga
+
+
+synthesis:
+  stage: full
+  tags: [$TAGS_RUNNER]
+  needs:
+    - job: smoke
+      artifacts: false
+  rules:
+    - when: manual
+  allow_failure: true
+  variables:
+    PERIOD: $CVA6_SYNTH_PERIOD
+    NAND2_AREA: "1000"
+    FOUNDRY_PATH: $CVA6_FOUNDRY_PATH
+    TECH_NAME: $CVA6_TECH_NAME
+    INPUT_DELAY: "0.46"
+    OUTPUT_DELAY: "0.11"
+  script:
+    - source ./cva6/regress/install-cva6.sh
+    - echo $SYN_DCSHELL_BASHRC; source $SYN_DCSHELL_BASHRC
+    - make -C core-v-cores/cva6/pd/synth cva6_synth PERIOD=$PERIOD NAND2_AREA=$NAND2_AREA FOUNDRY_PATH=$FOUNDRY_PATH TECH_NAME=$TECH_NAME INPUT_DELAY=$INPUT_DELAY OUTPUT_DELAY=$OUTPUT_DELAY
+    - sed 's/module SyncSpRamBeNx64_1/module SyncSpRamBeNx64_2/' core-v-cores/cva6/pd/synth/ariane_synth.v > core-v-cores/cva6/pd/synth/ariane_synth_modified.v
+    - mkdir artifacts
+    - mv core-v-cores/cva6/pd/synth/ariane_synth_modified.v artifacts/ariane_synth_modified.v
+    - mv core-v-cores/cva6/pd/synth/ariane_synth.v artifacts/ariane_synth.v
+  artifacts:
+    paths:
+      - artifacts/ariane_synth_modified.v
+      - artifacts/ariane_synth.v
+
+
+smoke-gate:
+  stage: post
+  tags: [$TAGS_RUNNER]
+  needs:
+    - job: synthesis
+      artifacts: true
+  rules:
+    - when: manual
+  allow_failure: true
+  variables:
+    LIB_VERILOG: $CVA6_LIB_VERILOG
+  script:
+    - source ./cva6/regress/install-cva6.sh
+    - source ./cva6/regress/install-riscv-dv.sh
+    - source ./cva6/regress/install-riscv-tests.sh
+    - mv artifacts/ariane_synth_modified.v core-v-cores/cva6/pd/synth/ariane_synth_modified.v 
+    - mv artifacts/ariane_synth.v core-v-cores/cva6/pd/synth/ariane_synth.v 
+    - echo $SYN_VCS_BASHRC; source $SYN_VCS_BASHRC
+    - cd cva6/sim
+    - make vcs_clean_all
+    - python3 cva6.py --testlist=../tests/testlist_riscv-tests-cv64a6_imafdc_sv39-p.yaml --test rv64ui-p-ld --iss_yaml cva6.yaml --target cv64a6_imafdc_sv39 --iss=spike,vcs-gate $DV_OPTS
+    - cd ../..
+
+#Workaround gitlab-ci, this dummy job avoid pipeline to be stucked if all jobs in a stage are defined in manual & allow failure
+bypass_full_stage:
+  stage: full
+  variables:
+    GIT_STRATEGY: none
+  tags: [$TAGS_RUNNER]
+  before_script:
+    - echo "No before script"
+  after_script:
+    - echo "No end script"
+  needs:
+    - job: smoke
+      artifacts: false
+  script:
+    - echo "bypass"
+
+#Workaround gitlab-ci, this dummy job avoid pipeline to be stucked if all jobs in a stage are defined in manual & allow failure
+bypass_post_stage:
+  stage: post
+  variables:
+    GIT_STRATEGY: none
+  tags: [$TAGS_RUNNER]
+  before_script:
+    - echo "No before script"
+  after_script:
+    - echo "No end script"
+  needs:
+    - job: smoke
+      artifacts: false
+  script:
+    - echo "bypass"
+
+

@@ -1,0 +1,12 @@
+
+stages:
+   - test
+
+riscv_tests_cv32:
+   stage: test
+   script:
+      - curl -H 'Private-Token:'$METRICS_CI_SERVICE
+             -H 'Content-Type:application/json' 
+             -d '{"projectId":"cv32e40p_verif-core-v-verif-cv32", "regressionName":"cv32_sanity_regression", 
+             "branch":"'$CI_COMMIT_REF_NAME'"}' 
+             -X POST 'https://openhwgroup.metrics.ca/api/jobs/v1/runRegression'
