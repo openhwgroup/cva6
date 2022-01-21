@@ -96,7 +96,7 @@ class uvme_cv32e40x_cfg_c extends uvma_core_cntrl_cfg_c;
       ext_f_supported        == 0;
       ext_d_supported        == 0;
 
-      if (b_ext == cv32e40x_pkg::NONE) {
+      if (b_ext == cv32e40x_pkg::B_NONE) {
          ext_zba_supported == 0;
          ext_zbb_supported == 0;
          ext_zbc_supported == 0;
