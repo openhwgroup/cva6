@@ -1,12 +1,94 @@
+# Copyright 2022 Thales DIS design services SAS
+#
+# Licensed under the Solderpad Hardware Licence, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# SPDX-License-Identifier: Apache-2.0 WITH SHL-2.0
+# You may obtain a copy of the License at https://solderpad.org/licenses/
+#
+# Original Author: Yannick Casamatta (yannick.casamatta@thalesgroup.com)
+
+# Project maintainers must define following variables to adapt this CI to their runtime environment (Settings > CI/CD > Variables)
+# - RISCV: /opt/common/tools/gcc-10.2.0
+# - RISCV_CV32: /opt/xxxx <-- This is a workaround, some path and variables in mk/Common.mk are hardcoded
+# - SPIKE_ROOT: /opt/common/tools/spike
+# - BBL_ROOT: /opt/common/tools/Linux-ariane-sdk
+# - SYN_VCS_BASHRC: /opt/synopsys/vcs/xxxx/setup/bashrc
+# - SYN_DCSHELL_BASHRC: /opt/synopsys/vcs/xxxx/setup/bashrc
+# - QUESTA_BASHRC: /opt/questa/questa_sim.xxxx/setup/bashrc
+# - VIVALDO_SETUP: /opt/xilinx/Vivado/xxxx/settings64.sh
+# - CVA6_REPO: https://github.com/openhwgroup/cva6
+# - CVA6_BRANCH: master
+# - COMPLIANCE_REPO: https://github.com/riscv/riscv-compliance.git
+# - COMPLIANCE_BRANCH: master
+# - COMPLIANCE_HASH: ""
+# - COMPLIANCE_PATCH: ""
+# - TESTS_REPO: https://github.com/riscv/riscv-tests.git
+# - TESTS_BRANCH: master
+# - TESTS_HASH: ""
+# - DV_REPO: https://github.com/google/riscv-dv.git
+# - DV_BRANCH: master
+# - DV_HASH: ""
+# - DV_PATCH: ""
+# - TAGS_RUNNER: debian10,shell  #no space!
+# - NUM_JOBS: 24
+
+variables:
+  GIT_STRATEGY: fetch
+  GIT_SUBMODULE_STRATEGY: recursive
+  # Issue gitlab-ci: variables defined here can't be overriden when pipeline is triggered manually or by schedule.
+  # Until fix, Avoid setting variables here and prefer set variables in project settings.
+
 
 stages:
-   - test
+  - pre
+  - lite
+  - full
+  - post
 
-riscv_tests_cv32:
-   stage: test
-   script:
-      - curl -H 'Private-Token:'$METRICS_CI_SERVICE
-             -H 'Content-Type:application/json' 
-             -d '{"projectId":"cv32e40p_verif-core-v-verif-cv32", "regressionName":"cv32_sanity_regression", 
-             "branch":"'$CI_COMMIT_REF_NAME'"}' 
-             -X POST 'https://openhwgroup.metrics.ca/api/jobs/v1/runRegression'
+
+check_env:
+  stage: pre
+  variables:
+    GIT_STRATEGY: none
+  tags: [$TAGS_RUNNER]
+  before_script:
+    - echo "No before script"
+  after_script:
+    - echo "No end script"
+  needs: []
+  script:
+    - echo $RISCV
+    - echo $RISCV_CV32
+    - echo $VERILATOR_ROOT
+    - echo $SPIKE_ROOT
+    - echo $BBL_ROOT
+    - echo $SYN_VCS_BASHRC
+    - echo $SYN_DCSHELL_BASHRC
+    - echo $QUESTA_BASHRC
+    - echo $VIVALDO_SETUP
+    - echo $CVA6_REPO
+    - echo $CVA6_BRANCH
+    - echo $COMPLIANCE_REPO
+    - echo $COMPLIANCE_BRANCH
+    - echo $COMPLIANCE_HASH
+    - echo $COMPLIANCE_PATCH
+    - echo $TESTS_REPO
+    - echo $TESTS_BRANCH
+    - echo $TESTS_HASH
+    - echo $DV_REPO
+    - echo $DV_BRANCH
+    - echo $DV_HASH
+    - echo $DV_PATCH
+    - echo $NUM_JOBS
+    - echo $TAGS_RUNNER
+
+# cv32e40p Quick start  
+quickstart:
+  stage: pre
+  tags: [$TAGS_RUNNER]
+  needs: []
+  variables:
+    RISCV: $RISCV_CV32
+  script:
+    - make -C cv32e40p/sim/core
+
