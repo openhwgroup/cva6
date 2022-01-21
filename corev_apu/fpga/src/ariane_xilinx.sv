@@ -289,7 +289,7 @@ axi_xbar_intf #(
   .Cfg            ( AXI_XBAR_CFG            ),
   .rule_t         ( axi_pkg::xbar_rule_64_t )
 ) i_axi_xbar (
-  .clk_i                 ( clk_i      ),
+  .clk_i                 ( clk        ),
   .rst_ni                ( ndmreset_n ),
   .test_i                ( test_en    ),
   .slv_ports             ( slave      ),
