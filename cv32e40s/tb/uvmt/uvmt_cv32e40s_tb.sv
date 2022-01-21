@@ -359,7 +359,8 @@ module uvmt_cv32e40s_tb;
     uvmt_cv32e40s_fencei_assert  fencei_assert_i (
       .wb_valid (core_i.wb_stage_i.wb_valid),
       .wb_instr_valid (core_i.ex_wb_pipe.instr_valid),
-      .wb_fencei_insn (core_i.ex_wb_pipe.fencei_insn),
+      .wb_sys_en(core_i.ex_wb_pipe.sys_en),
+      .wb_sys_fencei_insn (core_i.ex_wb_pipe.sys_fencei_insn),
       .wb_pc (core_i.ex_wb_pipe.pc),
       .wb_rdata (core_i.ex_wb_pipe.instr.bus_resp.rdata),
 
@@ -391,7 +392,8 @@ module uvmt_cv32e40s_tb;
       .illegal_insn_i(core_i.ex_wb_pipe.illegal_insn),
       .wb_illegal(core_i.ex_wb_pipe.illegal_insn),
       .wb_valid(core_i.wb_stage_i.wb_valid_o),
-      .ecall_insn_i(core_i.ex_wb_pipe.ecall_insn),
+      .sys_en_i(core_i.ex_wb_pipe.sys_en),
+      .sys_ecall_insn_i(core_i.ex_wb_pipe.sys_ecall_insn),
       .debug_req_i(core_i.controller_i.controller_fsm_i.debug_req_i),
       .debug_req_q(core_i.controller_i.controller_fsm_i.debug_req_q),
       .pending_debug(core_i.controller_i.controller_fsm_i.pending_debug),
@@ -408,7 +410,7 @@ module uvmt_cv32e40s_tb;
       .mcountinhibit_q(core_i.cs_registers_i.mcountinhibit_q),
       .mcycle(core_i.cs_registers_i.mhpmcounter_q[0]),
       .minstret(core_i.cs_registers_i.mhpmcounter_q[2]),
-      .fence_i(core_i.id_stage_i.decoder_i.fencei_insn_o),
+      .sys_fence_insn_i(core_i.id_stage_i.decoder_i.sys_fencei_insn_o),
       // TODO: review this change from CV32E40S_HASH f6196bf to a26b194. It should be logically equivalent.
       //assign debug_cov_assert_if.inst_ret = core_i.cs_registers_i.inst_ret;
       // First attempt: this causes unexpected failures of a_minstret_count

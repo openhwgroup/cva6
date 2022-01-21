@@ -256,7 +256,7 @@ module uvmt_cv32e40s_debug_assert
 
     // ECALL in debug mode results in pc->dm_exception_addr_i
     property p_debug_mode_ecall;
-        $rose(cov_assert_if.ecall_insn_i) && cov_assert_if.debug_mode_q
+        $rose(cov_assert_if.sys_ecall_insn_i && cov_assert_if.sys_en_i) && cov_assert_if.debug_mode_q
         |->
         s_conse_next_retire
         ##0 cov_assert_if.debug_mode_q && (cov_assert_if.wb_stage_pc == exception_addr_at_entry);
@@ -607,7 +607,7 @@ module uvmt_cv32e40s_debug_assert
       end
   end
   always@ (posedge cov_assert_if.clk_i)  begin
-      if ((cov_assert_if.illegal_insn_i || cov_assert_if.ecall_insn_i)
+      if ((cov_assert_if.illegal_insn_i || (cov_assert_if.sys_ecall_insn_i && cov_assert_if.sys_en_i))
           && cov_assert_if.pc_set && cov_assert_if.debug_mode_q && cov_assert_if.wb_valid)
       begin
           exception_addr_at_entry = {cov_assert_if.dm_exception_addr_i[31:2], 2'b00};
