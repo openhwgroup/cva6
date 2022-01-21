@@ -513,9 +513,12 @@ module uvmt_cv32e40x_debug_assert
     // Check that we cover the case where a debug_req_i
     // comes while flushing due to an illegal insn, causing
     // dpc to be set to the exception handler entry addr
+
+    // TODO We have excluded the case where an nmi is taken in the second stage of the antecedent. 
+    //      Make sure this is covered in a debug vs nmi assertion when it is written 
     sequence s_illegal_insn_debug_req_ante;  // Antecedent
         cov_assert_if.wb_illegal && cov_assert_if.wb_valid && !cov_assert_if.debug_mode_q
-        ##1 cov_assert_if.debug_req_i && !cov_assert_if.debug_mode_q;
+        ##1 cov_assert_if.debug_req_i && !cov_assert_if.debug_mode_q && !cov_assert_if.pending_nmi;
     endsequence
 
     sequence s_illegal_insn_debug_req_conse;  // Consequent
