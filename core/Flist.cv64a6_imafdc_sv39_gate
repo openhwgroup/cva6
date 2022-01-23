@@ -22,6 +22,6 @@ ${CVA6_REPO_DIR}/core/include/std_cache_pkg.sv
 ${CVA6_REPO_DIR}/core/include/axi_intf.sv
 ${CVA6_REPO_DIR}/core/include/instr_tracer_pkg.sv
 
-${CVA6_REPO_DIR}/${LIB_VERILOG}
+${LIB_VERILOG}
 ${CVA6_REPO_DIR}/pd/synth/ariane_synth_modified.v
 ${CVA6_REPO_DIR}/pd/synth/SyncSpRamBeNx64_1.sv
