@@ -74,14 +74,14 @@ module scoreboard #(
   sb_mem_t [NR_ENTRIES-1:0] mem_q, mem_n;
 
   logic                    issue_full, issue_en;
-  logic [BITS_ENTRIES-1:0] issue_cnt_n,      issue_cnt_q;
+  logic [BITS_ENTRIES:0]   issue_cnt_n,      issue_cnt_q;
   logic [BITS_ENTRIES-1:0] issue_pointer_n,  issue_pointer_q;
   logic [NR_COMMIT_PORTS-1:0][BITS_ENTRIES-1:0] commit_pointer_n, commit_pointer_q;
   logic [$clog2(NR_COMMIT_PORTS):0] num_commit;
 
   // the issue queue is full don't issue any new instructions
   // works since aligned to power of 2
-  assign issue_full = &issue_cnt_q;
+  assign issue_full = (issue_cnt_q[BITS_ENTRIES] == 1'b1);
 
   assign sb_full_o = issue_full;
 
