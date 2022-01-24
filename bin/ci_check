@@ -165,7 +165,7 @@ def check_uvm_results(check_only=0):
 
 
 def check_core_results(run_count):
-    core_runs = subprocess.Popen('grep "EXIT SUCCESS" -R -I ../{}/sim/core/cobj_dir/logs'.format(args.core.lower()),
+    core_runs = subprocess.Popen('grep "EXIT SUCCESS" -R -I ../{}/sim/core/simulation_results'.format(args.core.lower()),
                                  stdout=subprocess.PIPE,
                                  stderr=subprocess.STDOUT,
                                  shell="TRUE")

@@ -9,7 +9,7 @@ If the CV_CORE_PATH is set, a symlink to this path will be created in `../../cor
 This allows for working on the RTL in a separate environment.
 <br><br>
 There are user variables
-in `./Common.mk` that control the URL, branch and hash of the cloned code - see
+in `./ExternalRepos.mk` that control the URL, branch and hash of the cloned code - see
 the comment header for examples.  The defaults for these variables will clone the
 most up-to-date and stable version of the RTL.  Note that this is not always the
 head of the master branch.

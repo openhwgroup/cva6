@@ -193,15 +193,12 @@ class uvme_cv32e40x_cfg_c extends uvma_core_cntrl_cfg_c;
       isacov_cfg.reg_hazards_enabled        == 1;
 
       rvfi_cfg.nret == uvme_cv32e40x_pkg::RVFI_NRET;
-      rvfi_cfg.nmi_handler_addr            == nmi_addr;
-      rvfi_cfg.nmi_handler_enabled         == 1;
+      rvfi_cfg.nmi_load_fault_enabled      == 1;
+      rvfi_cfg.nmi_load_fault_cause        == cv32e40x_pkg::INT_CAUSE_LSU_LOAD_FAULT;
+      rvfi_cfg.nmi_store_fault_enabled     == 1;
+      rvfi_cfg.nmi_store_fault_cause       == cv32e40x_pkg::INT_CAUSE_LSU_STORE_FAULT;
       rvfi_cfg.insn_bus_fault_enabled      == 1;
       rvfi_cfg.insn_bus_fault_cause        == cv32e40x_pkg::EXC_CAUSE_INSTR_BUS_FAULT;
-
-      rvvi_cfg.store_fault_nmi_cause       == cv32e40x_pkg::INT_CAUSE_LSU_STORE_FAULT;
-      rvvi_cfg.store_fault_nmi_cause_valid == 1;
-      rvvi_cfg.load_fault_nmi_cause        == cv32e40x_pkg::INT_CAUSE_LSU_LOAD_FAULT;
-      rvvi_cfg.load_fault_nmi_cause_valid  == 1;
 
       if (is_active == UVM_ACTIVE) {
          isacov_cfg.is_active           == UVM_PASSIVE;
@@ -218,23 +215,22 @@ class uvme_cv32e40x_cfg_c extends uvma_core_cntrl_cfg_c;
       if (trn_log_enabled) {
          // Setting a reasonable set of logs
          clknrst_cfg.trn_log_enabled           == 0;
-         interrupt_cfg.trn_log_enabled         == 0;
          debug_cfg.trn_log_enabled             == 0;
-         obi_memory_instr_cfg.trn_log_enabled  == 1;
+         interrupt_cfg.trn_log_enabled         == 0;
+         isacov_cfg.trn_log_enabled            == 0;
          obi_memory_data_cfg.trn_log_enabled   == 1;
+         obi_memory_instr_cfg.trn_log_enabled  == 1;
          rvfi_cfg.trn_log_enabled              == 1;
          rvvi_cfg.trn_log_enabled              == 1;
-         isacov_cfg.trn_log_enabled            == 0;
       } else {
-         isacov_cfg.trn_log_enabled            == 0;
          clknrst_cfg.trn_log_enabled           == 0;
-         interrupt_cfg.trn_log_enabled         == 0;
          debug_cfg.trn_log_enabled             == 0;
-         obi_memory_instr_cfg.trn_log_enabled  == 0;
+         interrupt_cfg.trn_log_enabled         == 0;
+         isacov_cfg.trn_log_enabled            == 0;
          obi_memory_data_cfg.trn_log_enabled   == 0;
+         obi_memory_instr_cfg.trn_log_enabled  == 0;
          rvfi_cfg.trn_log_enabled              == 0;
          rvvi_cfg.trn_log_enabled              == 0;
-         isacov_cfg.trn_log_enabled            == 0;
       }
 
       if (cov_model_enabled) {
@@ -412,9 +408,6 @@ function bit uvme_cv32e40x_cfg_c::is_csr_check_disabled(string name);
 endfunction : is_csr_check_disabled
 
 function void uvme_cv32e40x_cfg_c::configure_disable_csr_checks();
-
-   // Need to check
-   disable_csr_check("mcountinhibit");
 
    // Not possible to test on a cycle-by-cycle basis
    disable_csr_check("mip");

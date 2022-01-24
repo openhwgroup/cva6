@@ -236,6 +236,47 @@
       reset_val: 0
       msb: 31
       lsb: 0
+- csr: mstatus
+  description: >
+    Machine ISA Register
+  address: 0x300
+  privilege_mode: M
+  rv32:
+    - field_name: MPP
+      description: >
+        Machine Previous Privilege mode, hardwired to 3'b11 when User mode not enabled
+      type: R
+      reset_val: 3
+      msb: 12
+      lsb: 11
+    - field_name: PMIE
+      description: >
+          Previous Machine Interrupt Enable
+      type: WARL
+      reset_val: 0
+      msb: 7
+      lsb: 7
+    - field_name: PUIE
+      description: >
+          Previous User Interrupt Enable
+      type: R
+      reset_val: 0
+      msb: 4
+      lsb: 4
+    - field_name: MIE
+      description: >
+          Machine Interrupt Enable
+      type: WARL
+      reset_val: 0
+      msb: 3
+      lsb: 3
+    - field_name: UIE
+      description: >
+          User Interrupt Enable
+      type: R
+      reset_val: 0
+      msb: 0
+      lsb: 0
 - csr: misa
   description: >
     Machine ISA Register

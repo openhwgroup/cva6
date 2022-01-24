@@ -86,15 +86,14 @@ module uvmt_cv32e40p_iss_wrap
        step_compare_if.ovp_cpu_state_cont  = cpu.control.state_cont;
    end
 
-    function void split(input string in_s, output string s1, s2);
+    function automatic void split(ref string in_s, ref string s1, s2);
         automatic int i;
         for (i=0; i<in_s.len(); i++) begin
             if (in_s.getc(i) == ":")
                 break;
          end
          if (i==0 ) begin
-            $display("ERROR not : found in split '%0s'", in_s);
-            $finish(-1);
+            `uvm_fatal("ERROR not : found in split '%0s'", in_s);
          end
          s1 = in_s.substr(0,i-1);
          s2 = in_s.substr(i+1,in_s.len()-1);

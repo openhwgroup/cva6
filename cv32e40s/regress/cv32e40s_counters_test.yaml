@@ -1,0 +1,68 @@
+# YAML file to specify a regression testlist
+# Note that the COREV=YES is set for all tests in this regression.
+# This means you need to have a toolchain at COREV_SW_TOOLCHAIN (see Common.mk)
+---
+# Header
+name: cv32_counters
+description: Performance counters test
+
+# List of builds
+builds:
+  clone_cv_core_rtl:
+    cmd: make clone_cv_core_rtl
+    dir: cv32e40s/sim/uvmt
+
+  uvmt_cv32e40s:
+    cmd: make bsp comp
+    dir: cv32e40s/sim/uvmt
+
+  uvmt_cv32e40s_num_mhpmcounter_29:
+    cmd: make bsp comp
+    cfg: num_mhpmcounter_29
+    dir: cv32e40s/sim/uvmt
+
+# List of tests
+tests:
+  perf_counters_instructions:
+    build: uvmt_cv32e40s
+    description: Performance counter test
+    dir: cv32e40s/sim/uvmt
+    cmd: make test COREV=YES TEST=perf_counters_instructions
+    num: 40
+
+  mhpmcounter29_csr_access_test_1:
+    build: uvmt_cv32e40s_num_mhpmcounter_29
+    description: Hardware performance counter full access coverage test 1
+    builds: [ uvmt_cv32e40s_num_mhpmcounter_29]
+    dir: cv32e40s/sim/uvmt
+    cmd: make test COREV=YES TEST=mhpmcounter29_csr_access_test_1
+    num: 40
+
+  mhpmcounter29_csr_access_test_2:
+    build: uvmt_cv32e40s_num_mhpmcounter_29
+    description: Hardware performance counter full access coverage test 2
+    builds: [ uvmt_cv32e40s_num_mhpmcounter_29]
+    dir: cv32e40s/sim/uvmt
+    cmd: make test COREV=YES TEST=mhpmcounter29_csr_access_test_2
+    num: 40
+
+  hpmcounter_basic_test:
+    build: uvmt_cv32e40s
+    description: Hardware performance counter basic test
+    dir: cv32e40s/sim/uvmt
+    cmd: make test COREV=YES TEST=hpmcounter_basic_test
+    num: 40
+
+  hpmcounter_basic_nostall_test:
+    build: uvmt_cv32e40s
+    description: Hardware performance counter basic test - no stalls
+    dir: cv32e40s/sim/uvmt
+    cmd: make test COREV=YES TEST=hpmcounter_basic_nostall_test
+    num: 40
+
+  hpmcounter_hazard_test:
+    build: uvmt_cv32e40s
+    description: Hardware performance counter hazard test
+    dir: cv32e40s/sim/uvmt
+    cmd: make test COREV=YES TEST=hpmcounter_hazard_test
+    num: 40

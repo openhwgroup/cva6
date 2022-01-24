@@ -123,16 +123,20 @@ interface uvmt_cv32e40s_debug_cov_assert_if
     input         ex_valid,
     input  [31:0] ex_stage_instr_rdata_i,
     input  [31:0] ex_stage_pc,
-    input         wb_stage_instr_valid_i,
-    input  [31:0] wb_stage_instr_rdata_i,
-    input  [31:0] wb_stage_pc, // Program counter in writeback
-    input         wb_illegal,
-    input         wb_valid,
-    input         wb_err,
+
+    input              wb_stage_instr_valid_i,
+    input  [31:0]      wb_stage_instr_rdata_i,
+    input  [31:0]      wb_stage_pc, // Program counter in writeback
+    input              wb_illegal,
+    input              wb_valid,
+    input              wb_err,
+    input mpu_status_e wb_mpu_status,
+
     input         id_valid,
     input wire ctrl_state_e  ctrl_fsm_cs,            // Controller FSM states with debug_req
     input         illegal_insn_i,
-    input         ecall_insn_i,
+    input         sys_en_i,
+    input         sys_ecall_insn_i,
 
     // Core signals
     input  [31:0] boot_addr_i,
@@ -172,7 +176,7 @@ interface uvmt_cv32e40s_debug_cov_assert_if
     // WFI Interface
     input  core_sleep_o,
 
-    input  fence_i,
+    input  sys_fence_insn_i,
 
     input  csr_access,
     input  [1:0] csr_op,
@@ -206,7 +210,8 @@ interface uvmt_cv32e40s_debug_cov_assert_if
 
     ctrl_fsm_cs,
     illegal_insn_i,
-    ecall_insn_i,
+    sys_en_i,
+    sys_ecall_insn_i,
     boot_addr_i,
     rvfi_pc_wdata,
     rvfi_pc_rdata,
@@ -223,7 +228,7 @@ interface uvmt_cv32e40s_debug_cov_assert_if
     tdata1,
     tdata2,
     trigger_match_in_wb,
-    fence_i,
+    sys_fence_insn_i,
     mcountinhibit_q,
     mcycle,
     minstret,

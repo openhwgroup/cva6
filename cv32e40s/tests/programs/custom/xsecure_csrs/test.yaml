@@ -1,0 +1,4 @@
+name: xsecure_csrs
+uvm_test: uvmt_$(CV_CORE_LC)_firmware_test_c
+description: >
+    Testing accesses to the custom CSRs in Xsecure
