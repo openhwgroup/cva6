@@ -36,6 +36,7 @@ class uvme_cva6_vsqr_c extends uvm_sequencer#(
 
    // Sequencer handles
    uvma_clknrst_sqr_c    clknrst_sequencer;
+   uvma_cvxif_sqr_c      cvxif_sequencer;
 
 
    `uvm_component_utils_begin(uvme_cva6_vsqr_c)

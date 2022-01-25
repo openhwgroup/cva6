@@ -22,6 +22,7 @@ module uvmt_cva6_dut_wrap # ( parameter int unsigned AXI_USER_WIDTH    = 1,
 
                            (
                             uvma_clknrst_if                     clknrst_if,
+                            uvma_cvxif_if                       cvxif_if,
                             output wire                         tb_exit_o,
                             output ariane_rvfi_pkg::rvfi_port_t rvfi_o
                            );
@@ -34,8 +35,22 @@ module uvmt_cva6_dut_wrap # ( parameter int unsigned AXI_USER_WIDTH    = 1,
     cva6_tb_wrapper_i        (
          .clk_i                  ( clknrst_if.clk                 ),
          .rst_ni                 ( clknrst_if.reset_n             ),
-         .tb_exit_o              ( tb_exit_o),
-         .rvfi_o                 ( rvfi_o)
-         );
+         .cvxif_resp             ( cvxif_if.cvxif_resp_o          ),
+         .cvxif_req              ( cvxif_if.cvxif_req_i           ),
+         .tb_exit_o              ( tb_exit_o                      ),
+         .rvfi_o                 ( rvfi_o                         )
+);
+
+  assign cvxif_if.cvxif_resp_o.x_compressed_ready = 0;
+  assign cvxif_if.cvxif_resp_o.x_compressed_resp  = 0;
+  assign cvxif_if.cvxif_resp_o.x_issue_ready      = 1;
+  assign cvxif_if.cvxif_resp_o.x_issue_resp       = 0;
+  assign cvxif_if.cvxif_resp_o.x_result_valid     = 0;
+  assign cvxif_if.cvxif_resp_o.x_result.id        = 0;
+  assign cvxif_if.cvxif_resp_o.x_result.data      = 0;
+  assign cvxif_if.cvxif_resp_o.x_result.rd        = 0;
+  assign cvxif_if.cvxif_resp_o.x_result.we        = 0;
+  assign cvxif_if.cvxif_resp_o.x_result.exc       = 0;
+  assign cvxif_if.cvxif_resp_o.x_result.exccode   = 0;
 
 endmodule
