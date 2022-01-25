@@ -34,7 +34,7 @@
 #define TEST_PASS                      123456789
 #define TEST_FAIL                              1
 #define VIRT_PERIPH_STATUS_FLAG_ADDR  CV_VP_STATUS_FLAGS_BASE
-#define EXPECTED_ILLEGAL_INSTRUCTIONS         92
+#define EXPECTED_ILLEGAL_INSTRUCTIONS         86
 
 main:
     li        t0, (0x1 << 3)
@@ -161,19 +161,6 @@ main:
   csrrwi x0,  0xF15, 0x0a   # illegal instruction: attempt to write RO CSR
 
   csrrc  x5,  0xF15, x0     # not illegal
-  li     x30, 0x00000000
-  bne    x5,  x30, fail
-
-  # tcontrol
-  csrrc  x5,  0x7A5, x0     # not illegal instruction: no attempt to write RO CSR
-  csrrc  x0,  0x7A5, x5     # illegal instruction: attempt to write RO CSR
-  csrrci x0,  0x7A5, 0x0a   # illegal instruction: attempt to write RO CSR
-  csrrs  x0,  0x7A5, x5     # illegal instruction: attempt to write RO CSR
-  csrrsi x0,  0x7A5, 0x0a   # illegal instruction: attempt to write RO CSR
-  csrrw  x0,  0x7A5, x0     # illegal instruction: attempt to write RO CSR
-  csrrwi x0,  0x7A5, 0x0a   # illegal instruction: attempt to write RO CSR
-
-  csrrc  x5,  0x7A5, x0     # not illegal
   li     x30, 0x00000000
   bne    x5,  x30, fail
 
