@@ -61,7 +61,9 @@ vcs_core_comp:
 	cd $(VCS_WORK_DIR) && vcs $(ALL_VCS_FLAGS) work.cva6_core_only_tb
 
 vcs_core_run:
-	$(VCS_WORK_DIR)/simv $(if $(VERDI), -verdi,)
+	cp $(TESTNAME).txt $(VCS_WORK_DIR)/Mem_init.txt
+	cd $(VCS_WORK_DIR) && $(VCS_WORK_DIR)/simv $(if $(VERDI), -verdi,)
+	mv $(VCS_WORK_DIR)/trace_rvfi_hart_00.dasm $(CORE_V_VERIF)/cva6/sim/
 
 export CVA6_UVMT_DIR          = $(CORE_V_VERIF)/cva6/tb/uvmt
 export CVA6_UVMT_PATH         = $(CORE_V_VERIF)/cva6/tb/uvmt
@@ -127,7 +129,7 @@ vcs_gate_comp:
 	cd $(VCS_WORK_DIR) && vcs $(ALL_VCS_FLAGS) -f $(FLIST_CORE)_gate -f $(FLIST_TB)
 
 vcs_gate_run:
-	cp Mem_init.txt $(VCS_WORK_DIR)/
+	cp $(TESTNAME).txt $(VCS_WORK_DIR)/Mem_init.txt
 	cd $(VCS_WORK_DIR)/ && $(VCS_WORK_DIR)/simv
 	mv $(VCS_WORK_DIR)/trace_rvfi_hart_00.dasm $(CORE_V_VERIF)/cva6/sim/
 
@@ -170,7 +172,7 @@ veri_clean_all:
 ###############################################################################
 
 clean_all: vcs_clean_all veri_clean_all
-	rm -f Mem_init.txt
+	rm -f *.txt
 	rm -f trace*.log
 	rm -f trace*.dasm
 

@@ -81,7 +81,7 @@
   precmd: >
     make -f Makefile vcs_core_comp target=<target> user-define="+define+WT_CACHE"
   cmd: >
-    make -f Makefile vcs_core_run
+    make -f Makefile vcs_core_run elf-bin=<elf>
   postcmd: >
     <tool_path>/spike-dasm < ./trace_rvfi_hart_00.dasm > log
 
@@ -92,7 +92,7 @@
   precmd: >
     make -f Makefile vcs_gate_comp target=<target> user-define="+define+WT_CACHE"
   cmd: >
-    make -f Makefile vcs_gate_run
+    make -f Makefile vcs_gate_run elf-bin=<elf>
   postcmd: >
     <tool_path>/spike-dasm < ./trace_rvfi_hart_00.dasm > log
 
