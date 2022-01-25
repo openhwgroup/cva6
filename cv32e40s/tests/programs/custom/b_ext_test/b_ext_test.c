@@ -310,13 +310,7 @@ int test_bset(void){
   __asm__ volatile("addi t3, zero, 5"); // Store 5 in t3
   __asm__ volatile("addi t4, zero, 1"); // Store 1 in t4
 
-  // FIXME:strichmo:When gcc supports zbs add this, otherwise clang/LLVM only compilker
-#ifdef __clang__
   __asm__ volatile("bset t5, t3, t4"); // Set bit 1
-#else
-  __asm__ volatile(".word 0b00101001110111100001111100110011"); // bset t5, t3, t4
-#endif
-
   __asm__ volatile("sw t5, test, t0");  // Store t5 to test
 
   if (test != 7 ) {
@@ -331,12 +325,7 @@ int test_bseti(void){
  int failures = 0;
 
   __asm__ volatile("addi t3, zero, 5"); // Store 5 in t3
-  // FIXME:strichmo:When gcc supports zbs add this, otherwise clang/LLVM only compilker
-#ifdef __clang__
   __asm__ volatile("bseti t5, t3, 3"); // Set bit 3
-#else
-  __asm__ volatile(".word 0b00101000001111100001111100010011"); // bseti t5, t3, 3
-#endif
   __asm__ volatile("sw t5, test, t0");  // Store t5 to test
 
   if (test != 13 ) {
@@ -352,12 +341,7 @@ int test_bclr(void){
 
   __asm__ volatile("addi t3, zero, 7"); // Store 7 in t3
   __asm__ volatile("addi t4, zero, 1"); // Store 1 in t4
-  // FIXME:strichmo:When gcc supports zbs add this, otherwise clang/LLVM only compilker
-#ifdef __clang__
   __asm__ volatile("bclr t5, t3, t4"); // Clear bit 1
-#else
-  __asm__ volatile(".word 0b01001001110111100001111100110011"); // bclr t5, t3, t4
-#endif
   __asm__ volatile("sw t5, test, t0");   // Store t5 to test
 
   if (test != 5 ) {
@@ -371,12 +355,7 @@ int test_bclri(void){
  int failures = 0;
 
   __asm__ volatile("addi t3, zero, 15"); // Store 15 in t3
-  // FIXME:strichmo:When gcc supports zbs add this, otherwise clang/LLVM only compilker
-#ifdef __clang__
   __asm__ volatile("bclri t5, t3, 3");  // Clear bit 3
-#else
-  __asm__ volatile(".word 0b01001000001111100001111100010011"); // bclri t5, t3, 3
-#endif
   __asm__ volatile("sw t5, test, t0");   // Store t5 to test
 
   if (test != 7 ) {
@@ -390,12 +369,7 @@ int test_bext(void){
 
   __asm__ volatile("addi t3, zero, 8"); // Store 8 in t3
   __asm__ volatile("addi t4, zero, 3"); // Store 3 in t4
-  // FIXME:strichmo:When gcc supports zbs add this, otherwise clang/LLVM only compilker
-#ifdef __clang__
   __asm__ volatile("bext t5, t3, t4"); // Extract bit 3
-#else
-  __asm__ volatile(".word 0b01001001110111100101111100110011"); // bext t5, t3, t4
-#endif
   __asm__ volatile("sw t5, test, t0");   // Store t5 to test
 
   if (test != 1 ) {
@@ -409,12 +383,7 @@ int test_bexti(void){
  int failures = 0;
 
   __asm__ volatile("addi t3, zero, 7"); // Store 7 in t3
-  // FIXME:strichmo:When gcc supports zbs add this, otherwise clang/LLVM only compilker
-#ifdef __clang__
   __asm__ volatile("bexti t5, t3, 3"); // Extract bit 3
-#else
-  __asm__ volatile(".word 0b01001000001111100101111100010011"); // bexti t5, t3, 3
-#endif
   __asm__ volatile("sw t5, test, t0");  // Store t5 to test
 
   if (test != 0 ) {
@@ -429,12 +398,7 @@ int test_binv(void){
 
   __asm__ volatile("addi t3, zero, 10"); // Store 10 in t3
   __asm__ volatile("addi t4, zero, 2");  // Store 2 in t4
-  // FIXME:strichmo:When gcc supports zbs add this, otherwise clang/LLVM only compilker
-#ifdef __clang__
   __asm__ volatile("binv t5, t3, t4");   // Invert bit 2
-#else
-  __asm__ volatile(".word 0b01101001110111100001111100110011"); // binv t5, t3, t4
-#endif
   __asm__ volatile("sw t5, test, t0");   // Store t5 to test
 
   if (test != 14 ) {
@@ -448,12 +412,7 @@ int test_binvi(void){
  int failures = 0;
 
   __asm__ volatile("addi t3, zero, 5"); // Store 5 in t3
-  // FIXME:strichmo:When gcc supports zbs add this, otherwise clang/LLVM only compilker
-#ifdef __clang__
   __asm__ volatile("binvi t5, t3, 3");  // Invert bit 3
-#else
-  __asm__ volatile(".word 0b01101000001111100001111100010011"); // binvi t5, t3, 3
-#endif
   __asm__ volatile("sw t5, test, t0");  // Store t5 to test
 
   if (test != 13 ) {

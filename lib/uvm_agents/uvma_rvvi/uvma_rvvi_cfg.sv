@@ -43,12 +43,6 @@ class uvma_rvvi_cfg_c#(int ILEN=DEFAULT_ILEN,
    rand bit                      cov_model_enabled;
    rand bit                      trn_log_enabled;
 
-   // Mapping of NMI mcause to interrupt signals
-   rand int unsigned             store_fault_nmi_cause;
-   rand bit                      store_fault_nmi_cause_valid;
-   rand int unsigned             load_fault_nmi_cause;
-   rand bit                      load_fault_nmi_cause_valid;
-
    mem_range_t                   volatile_mem_range_q[$];
 
    `uvm_object_utils_begin(uvma_rvvi_cfg_c)
@@ -56,10 +50,6 @@ class uvma_rvvi_cfg_c#(int ILEN=DEFAULT_ILEN,
       `uvm_field_enum(uvm_active_passive_enum, is_active                  , UVM_DEFAULT)
       `uvm_field_int (                         cov_model_enabled          , UVM_DEFAULT)
       `uvm_field_int (                         trn_log_enabled            , UVM_DEFAULT)
-      `uvm_field_int (                         store_fault_nmi_cause      , UVM_DEFAULT)
-      `uvm_field_int (                         store_fault_nmi_cause_valid, UVM_DEFAULT)
-      `uvm_field_int (                         load_fault_nmi_cause       , UVM_DEFAULT)
-      `uvm_field_int (                         load_fault_nmi_cause_valid , UVM_DEFAULT)
    `uvm_object_utils_end
 
    constraint defaults_cons {
@@ -67,10 +57,6 @@ class uvma_rvvi_cfg_c#(int ILEN=DEFAULT_ILEN,
       soft is_active         == UVM_PASSIVE;
       soft cov_model_enabled == 0;
       soft trn_log_enabled   == 1;
-      soft store_fault_nmi_cause == 0;
-      soft store_fault_nmi_cause_valid == 0;
-      soft load_fault_nmi_cause == 0;
-      soft load_fault_nmi_cause_valid == 0;
    }
 
    /**

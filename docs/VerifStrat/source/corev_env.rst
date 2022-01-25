@@ -1,18 +1,18 @@
 ..
    Copyright (c) 2020 OpenHW Group
-   
+
    Licensed under the Solderpad Hardware Licence, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
    You may obtain a copy of the License at
-  
+
    https://solderpad.org/licenses/
-  
+
    Unless required by applicable law or agreed to in writing, software
    distributed under the License is distributed on an "AS IS" BASIS,
    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
    See the License for the specific language governing permissions and
    limitations under the License.
-  
+
    SPDX-License-Identifier: Apache-2.0 WITH SHL-2.0
 
 
@@ -21,17 +21,15 @@
 CORE-V Verification Environment
 ===============================
 
-A previously stated goal of the core-v-verif project is to produce a unified
+A goal of the core-v-verif project is to produce a unified
 verification environment for all CORE-V cores supported by the OpenHW.  While
 several of the chapters of this document focus on the specifics of a single
 core, such as the CV32E40P, this chapter details how the components,
 structure and organization of core-v-verif are used to implement and deploy a
 complete simulation verification environment for any core in the CORE-V family.
 
-.. Note::
-   This chapter of the Verification Strategy is a work-in-progress.  It contains
-   several forward looking statements about verification components that are
-   defined, but yet to be implemented.
+**Note:** This chapter of the Verification Strategy is a work-in-progress.
+It contains several forward looking statements about verification components that are defined, but yet to be implemented.
 
 The core-v-verif project is not a single verification environment that is
 capbable of supporting any-and-all CORE-V cores. Rather, core-v-verif supports
@@ -148,34 +146,6 @@ modifying a Testbench module from a previous generation.   The SystemVerilog
 interfaces for Clocks and Resets, Configuration, Interrupts, Trace, Debug,
 plus Special Status and Control are generic enough to be fully re-used.
 
-Abstraction Layer
-~~~~~~~~~~~~~~~~~
-
-Instruction Set Generators
-^^^^^^^^^^^^^^^^^^^^^^^^^^
-
-Reference Models
-^^^^^^^^^^^^^^^^
-
-Functional Coverage Models
-^^^^^^^^^^^^^^^^^^^^^^^^^^
-
-CORE-V UVM Agents
-^^^^^^^^^^^^^^^^^
-
-Test Program Environment
-^^^^^^^^^^^^^^^^^^^^^^^^
-
-Test Layer
-~~~~~~~~~~
-
-TODO
-
-Verification Plans
-------------------
-
-TODO
-
 Repository Structure
 --------------------
 
@@ -184,7 +154,7 @@ support multiple verification environments. The directory structure below
 shows a version of core-v-verif that supports multiple CORE-V cores.  What
 follows is a brief discription of the purpose of each top-level directory.
 Refer to the README files at each of these locations for additional information.
-If you read nothing else, *please* read *$PROJ\_ROOT/<core>/sim/README.md*.
+If you read nothing else, *please* read *$CORE\_V\_VERIF/mk/uvmt/README.md*.
 
 - **core-v-cores**: the the Makefiles in the <core>/sim directory will clone
   the RTL for <core> into core-v-cores/<core>/rtl.  This structure allows for
@@ -202,7 +172,7 @@ If you read nothing else, *please* read *$PROJ\_ROOT/<core>/sim/README.md*.
 
 ::
 
-    $PROJ\_ROOT/
+  $CORE_V_VERIF
     ├── core-v-cores
     │   ├── <core1>
     │   ├── <core2>
@@ -223,7 +193,3 @@ If you read nothing else, *please* read *$PROJ\_ROOT/<core>/sim/README.md*.
         ├── uvm_tests
         ├── uvm_agents
         └── uvm_libs
-
-Getting to There from Here
---------------------------
-

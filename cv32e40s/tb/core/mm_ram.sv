@@ -55,7 +55,7 @@ module mm_ram
      input logic [31:0]                   pc_core_id_i,
 
      output logic                         debug_req_o,
-   
+
      output logic                         tests_passed_o,
      output logic                         tests_failed_o,
      output logic                         exit_valid_o,
@@ -73,7 +73,7 @@ module mm_ram
     localparam int                        RND_STALL_DATA_GNT    = 7;
     localparam int                        RND_STALL_DATA_VALID  = 9;
 
-    localparam int                        RND_IRQ_ID     = 31;    
+    localparam int                        RND_IRQ_ID     = 31;
 
     localparam int                        MMADDR_PRINT          = 32'h1000_0000;
     localparam int                        MMADDR_TESTSTATUS     = 32'h2000_0000;
@@ -157,7 +157,7 @@ module mm_ram
     // debugger control signals
     logic [31:0]                   debugger_wdata;
     logic                          debugger_valid;
- 
+
     // signals to rnd_stall
     logic [31:0]                   rnd_stall_regs [0:RND_STALL_REGS-1];
 
@@ -168,10 +168,10 @@ module mm_ram
     logic [31:0]                   rnd_stall_rdata;
 
     //signal delayed by random stall
-    logic                          rnd_stall_instr_req;    
+    logic                          rnd_stall_instr_req;
     logic                          rnd_stall_instr_gnt;
 
-    logic                          rnd_stall_data_req;    
+    logic                          rnd_stall_data_req;
     logic                          rnd_stall_data_gnt;
 
     // random number generation
@@ -180,7 +180,7 @@ module mm_ram
 
     //random or monitor interrupt request
     logic                          rnd_irq;
-   
+
     // used by dump_signature methods
     string                         sig_file;
     string                         sig_string;
@@ -201,7 +201,7 @@ module mm_ram
             if ($test$plusargs("max_data_zero_instr_stall")) begin
                 `uvm_info(RNDSTALL_TAG, "Max data stall, zero instruction stall configuration", UVM_LOW)
                 // This "knob" creates maximum stalls on data loads/stores, and
-                // no stalls on instruction fetches.  Used for fence.i testing. 
+                // no stalls on instruction fetches.  Used for fence.i testing.
                 rnd_stall_regs[RND_STALL_DATA_EN]     = 1;
                 rnd_stall_regs[RND_STALL_DATA_MODE]   = 2;
                 rnd_stall_regs[RND_STALL_DATA_GNT]    = 2;
@@ -359,7 +359,7 @@ module mm_ram
                             use_sig_file = 1'b1;
                         end
                     end
-            
+
                     sig_string = "";
                     for (logic [31:0] addr = sig_begin_q; addr < sig_end_q; addr +=4) begin
                         sig_string = {sig_string, $sformatf("%x%x%x%x\n", dp_ram_i.mem[addr+3], dp_ram_i.mem[addr+2],
@@ -380,7 +380,7 @@ module mm_ram
                             use_sig_file = 1'b1;
                         end
                     end
-            
+
                     $display("%m @ %0t: Dumping signature", $time);
                     for (logic [31:0] addr = sig_begin_q; addr < sig_end_q; addr +=4) begin
                         $display("%x%x%x%x", dp_ram_i.mem[addr+3], dp_ram_i.mem[addr+2],
@@ -596,11 +596,11 @@ module mm_ram
           end
         end
     end // block: tb_stall
-  
+
    // -------------------------------------------------------------
    // Generate a random number using the SystemVerilog random number function
    always_ff @(posedge clk_i, negedge rst_ni) begin : rnd_num_gen
-        if (!rst_ni) 
+        if (!rst_ni)
             rnd_num <= 32'h0;
         else if (rnd_num_req)
 `ifndef VERILATOR
@@ -649,7 +649,7 @@ module mm_ram
                  debugger_start_cnt_q <= ~|debugger_wdata[14:0] ? 1 : debugger_wdata[14:0];
 
                debug_req_value_q <= debugger_wdata[31]; // value to be applied to debug_req
-               
+
                if(!debugger_wdata[30]) // If mode is level then set duration to 0
                  debug_req_duration_q <= 'b0;
                else // Else mode is pulse
@@ -665,26 +665,26 @@ module mm_ram
                    // else, the pulse is determined by wdata[28:16]
                    //  note, if wdata[28:16]==0, then set pulse width to 1
                    debug_req_duration_q <= ~|debugger_wdata[28:16] ? 1 : debugger_wdata[28:16];
-                 
+
             end else begin
                 // Count down the delay to start
                 if(debugger_start_cnt_q > 0)begin
                     debugger_start_cnt_q <= debugger_start_cnt_q - 1;
                    // At count == 1, then assert the debug_req
-                   if(debugger_start_cnt_q == 1) 
+                   if(debugger_start_cnt_q == 1)
                      debug_req_o <= debug_req_value_q;
                 end
                 // Count down debug_req pulse duration
                 else if(debug_req_duration_q > 0)begin
                    debug_req_duration_q <= debug_req_duration_q - 1;
                    // At count == 1, then de-assert debug_req
-                   if(debug_req_duration_q == 1) 
+                   if(debug_req_duration_q == 1)
                      debug_req_o <= !debug_req_value_q;
-                end               
+                end
             end
         end
     end
-   
+
     // -------------------------------------------------------------
     // show writes if requested
     always_ff @(posedge clk_i, negedge rst_ni) begin: verbose_writes
@@ -764,7 +764,7 @@ module mm_ram
 
     assign instr_gnt_o    = ram_instr_gnt;
     assign data_gnt_o     = ram_data_gnt;
-    
+
     // remap debug code to end of memory
     assign instr_addr_remap =  ( (instr_addr_i >= dm_halt_addr_i) &&
                                (instr_addr_i < (dm_halt_addr_i + (2 ** DBG_ADDR_WIDTH)) ) ) ?
@@ -774,7 +774,7 @@ module mm_ram
   always_comb
   begin
     ram_instr_req    = instr_req_i;
-    ram_instr_addr   = instr_addr_remap;    
+    ram_instr_addr   = instr_addr_remap;
     ram_instr_gnt    = instr_req_i ? 1'b1 : $urandom;
     core_instr_rdata = ram_instr_rdata;
 
@@ -830,7 +830,7 @@ module mm_ram
 
     .grant_mem_i        ( rnd_stall_data_req     ),
     .grant_core_o       ( rnd_stall_data_gnt     ),
-    
+
     .req_core_i         ( data_req_i             ),
     .req_mem_o          ( rnd_stall_data_req     ),
 
