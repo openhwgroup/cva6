@@ -99,7 +99,8 @@ class uvml_logs_mon_trn_logger_c#(
    /**
     * Writes msg to disk
     */
-   extern function void fwrite(string msg);
+   // Waiving Verissimo linter SVTB.32.2.0: Pass strings by reference unless otherwise needed
+   extern function void fwrite(string msg); //@DVT_LINTER_WAIVER "MT20211228_8" disable SVTB.32.2.0
    
 endclass : uvml_logs_mon_trn_logger_c
 

@@ -23,7 +23,11 @@
 
 class cv32e40s_instr_base_test extends corev_instr_base_test;
 
+  cv32e40s_pma_cfg pma_cfg;
+  bit enable_pma;
+
   `uvm_component_utils(cv32e40s_instr_base_test)
+
 
   function new(string name="", uvm_component parent=null);
     super.new(name, parent);

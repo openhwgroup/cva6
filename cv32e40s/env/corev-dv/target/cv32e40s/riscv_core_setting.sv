@@ -30,7 +30,7 @@ privileged_mode_t supported_privileged_mode[] = {MACHINE_MODE};
 riscv_instr_name_t unsupported_instr[];
 
 // ISA supported by the processor
-riscv_instr_group_t supported_isa[$] = {RV32I, RV32M, RV32C};
+riscv_instr_group_t supported_isa[$] = {RV32I, RV32M, RV32C, RV32ZBA, RV32ZBB, RV32ZBC, RV32ZBS};
 
 // Interrupt mode support
 mtvec_mode_t supported_interrupt_mode[$] = {DIRECT, VECTORED};
@@ -91,7 +91,7 @@ parameter int MAX_LMUL = 8;
 parameter int NUM_HARTS = 1;
 
 // ----------------------------------------------------------------------------
-// Previleged CSR implementation
+// Privileged CSR implementation
 // ----------------------------------------------------------------------------
 
 // Implemented previlieged CSR list

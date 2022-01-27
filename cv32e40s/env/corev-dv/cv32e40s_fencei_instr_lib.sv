@@ -21,22 +21,6 @@
 // Even though fencei meddles with the pipeline, the stores shall come through.
 class corev_store_fencei_load_instr_stream extends riscv_load_store_rand_instr_stream;
 
-  rand bit [31:0]  addr;
-  rand riscv_reg_t addr_reg;
-  rand riscv_reg_t data_reg;
-
-  constraint dont_overwrite_data_reg {
-    addr_reg != data_reg;  // Don't overwrite the data that is to be written
-  }
-  constraint dont_pollute_reserved_regs {
-    !(addr_reg inside {cfg.reserved_regs});
-    !(data_reg inside {cfg.reserved_regs});
-  }
-  constraint dont_store_in_x0 {
-    addr_reg != ZERO;
-    data_reg != ZERO;
-  }
-
   `uvm_object_utils(corev_store_fencei_load_instr_stream)
 
   function new(string name = "");
@@ -45,59 +29,46 @@ class corev_store_fencei_load_instr_stream extends riscv_load_store_rand_instr_s
 
   function void post_randomize();
     riscv_instr instr;
+    riscv_instr instr_list_new[$];
+    int         idx_insert;
 
-    // (Backup existing data)
-    instr = riscv_instr::get_instr(LW);
-    `DV_CHECK_RANDOMIZE_WITH_FATAL(instr,
-      instr_name == LW;
-      rs1 == addr_reg;
-      imm == addr[31:20];
-      rd == data_reg;
-      , "failed to randomize backup"
-    )
-    instr.comment = "store_fencei_load: backup existing";
-    instr_list.push_back(instr);
+    // Generate a default big chunk of instructions as a "substrate" to work on
+    super.post_randomize();
+
+    // The following instrs add to "instr_list_new", to be merged into "instr_list" later
 
     // Store
     instr = riscv_instr::get_rand_instr(.include_instr({SW, SH, SB}));
     `DV_CHECK_RANDOMIZE_WITH_FATAL(instr,
       instr_name inside {SW, SH, SB};
-      rs1 == addr_reg;
-      imm == addr[31:20];
+      rs1 == rs1_reg;
+      imm == offset[0];
       , "failed to randomize store"
     )
     instr.comment = "store_fencei_load: store";
-    instr_list.push_back(instr);
+    instr_list_new.push_back(instr);
 
     // Fence.i
     instr = riscv_instr::get_instr(FENCE_I);
     instr.comment = "store_fencei_load: fencei";
-    instr_list.push_back(instr);
+    instr_list_new.push_back(instr);
 
     // Load
     instr = riscv_instr::get_rand_instr(.include_instr({LW, LH, LHU, LB, LBU}));
     `DV_CHECK_RANDOMIZE_WITH_FATAL(instr,
       instr_name inside {LW, LH, LHU, LB, LBU};
-      rs1 == addr_reg;
-      imm == addr[31:20];
-      !(rd inside {addr_reg, data_reg});
+      rs1 == rs1_reg;
+      imm == offset[0];
+      rd != rs1_reg;
       !(rd inside {cfg.reserved_regs});
       , "failed to randomize load"
     )
     instr.comment = "store_fencei_load: load";
-    instr_list.push_back(instr);
+    instr_list_new.push_back(instr);
 
-    // (Restore previous data)
-    instr = riscv_instr::get_instr(SW);
-    `DV_CHECK_RANDOMIZE_WITH_FATAL(instr,
-      instr_name == SW;
-      rs1 == addr_reg;
-      imm == addr[31:20];
-      rs2 == data_reg;
-      , "failed to randomize restore"
-    )
-    instr.comment = "store_fencei_load: store previous";
-    instr_list.push_back(instr);
+    // Combine the final instr list
+    idx_insert = $urandom_range(1, instr_list.size() - 1);  // Not before the LA
+    instr_list = {instr_list[0:idx_insert-1], instr_list_new, instr_list[idx_insert:$]};
 
     // Get a nice enumeration label for anything not labeled
     foreach (instr_list[i]) begin
@@ -144,6 +115,7 @@ class corev_store_fencei_exec_instr_stream extends riscv_load_store_rand_instr_s
   function void post_randomize();
     riscv_instr        instr;
     riscv_pseudo_instr pseudo;
+    corev_directive_instr directive;
     string             label_exec;
     string             label_dummy;
 
@@ -203,10 +175,28 @@ class corev_store_fencei_exec_instr_stream extends riscv_load_store_rand_instr_s
     instr.comment = "store_fencei_exec: fencei";
     instr_list.push_back(instr);
 
+    // Add norvc/rvc guards around the instr after fencei
+    directive = corev_directive_instr::type_id::create("corev_directive_instr");
+    directive.directive = ".option push";
+    instr_list.push_back(directive);
+    directive = corev_directive_instr::type_id::create("corev_directive_instr");
+    directive.directive = ".option norvc";
+    instr_list.push_back(directive);
+
     // Exec
     instr = riscv_instr::get_rand_instr(.exclude_instr({NOP}), .exclude_group({RV32C}));
-    `DV_CHECK_RANDOMIZE_FATAL(instr, "failed to randomize exec instruction");
-    if (instr.category inside {JUMP, BRANCH}) instr.imm_str = "0";  // Just need it to compile/link, shall never execute
+    instr.imm.rand_mode(0);
+    `DV_CHECK_RANDOMIZE_FATAL(instr, "failed to randomize exec instruction"
+    )
+    case (instr.instr_name)
+      JAL: begin
+        instr.imm_str = "1b";
+      end
+      BEQ, BNE, BLT, BGE, BLTU, BGEU: begin
+        instr.imm_str = "1b";
+        instr.branch_assigned = 1'b1;
+      end
+    endcase
     instr.comment = "store_fencei_exec: exec";
     instr.label = label_exec;
     instr_list.push_back(instr);
@@ -222,9 +212,15 @@ class corev_store_fencei_exec_instr_stream extends riscv_load_store_rand_instr_s
       !((rd == ZERO) && (instr_name inside {ADDI, C_ADDI}));
       , "failed to randomize dummy instruction"
     )
+
+    // restore compiler options
     instr.comment = "store_fencei_exec: dummy";
     instr.label = label_dummy;
     instr_list.push_back(instr);
+
+    directive = corev_directive_instr::type_id::create("corev_directive_instr");
+    directive.directive = ".option pop";
+    instr_list.push_back(directive);
 
     // Get a nice enumeration label for anything not labeled
     foreach (instr_list[i]) begin

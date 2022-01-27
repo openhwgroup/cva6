@@ -15,6 +15,7 @@
 // limitations under the License.
 //
 
+// SPDX-License-Identifier: Apache-2.0 WITH SHL-2.1
 
 
 `ifndef __UVMT_CV32E40P_BASE_TEST_SV__
@@ -30,11 +31,12 @@
 class uvmt_cv32e40p_base_test_c extends uvm_test;
 
    // Objects
-   rand uvmt_cv32e40p_test_cfg_c   test_cfg ;
-   rand uvme_cv32e40p_cfg_c        env_cfg  ;
-   rand uvme_cv32e40p_cntxt_c      env_cntxt;
-   uvml_logs_rs_text_c             rs       ;
-   uvml_logs_reg_logger_cbs_c      reg_cbs  ;
+   rand uvmt_cv32e40p_test_cfg_c      test_cfg      ;
+   rand uvmt_cv32e40p_test_randvars_c test_randvars ;
+   rand uvme_cv32e40p_cfg_c           env_cfg       ;
+   rand uvme_cv32e40p_cntxt_c         env_cntxt     ;
+   uvml_logs_rs_text_c                rs            ;
+   uvml_logs_reg_logger_cbs_c         reg_cbs       ;
 
    // Components
    uvme_cv32e40p_env_c   env       ;
@@ -50,9 +52,10 @@ class uvmt_cv32e40p_base_test_c extends uvm_test;
 
 
    `uvm_component_utils_begin(uvmt_cv32e40p_base_test_c)
-      `uvm_field_object(test_cfg , UVM_DEFAULT)
-      `uvm_field_object(env_cfg  , UVM_DEFAULT)
-      `uvm_field_object(env_cntxt, UVM_DEFAULT)
+      `uvm_field_object(test_cfg      , UVM_DEFAULT)
+      `uvm_field_object(test_randvars , UVM_DEFAULT)
+      `uvm_field_object(env_cfg       , UVM_DEFAULT)
+      `uvm_field_object(env_cntxt     , UVM_DEFAULT)
    `uvm_component_utils_end
 
 
@@ -173,8 +176,9 @@ class uvmt_cv32e40p_base_test_c extends uvm_test;
 
    /**
     * Prints overlined and underlined text in uppercase.
+    * Waiving Verissimo SVTB.32.2.0: Pass strings by reference unless otherwise needed
     */
-   extern function void print_banner(string text);
+   extern function void print_banner(string text); //@DVT_LINTER_WAIVER "MT20211228_3" disable SVTB.32.2.0
 
    /**
     * Fatals out after watchdog_timeout has elapsed.

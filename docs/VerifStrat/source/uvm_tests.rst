@@ -150,7 +150,7 @@ Illustration 8 shows how the CORE-V UVM base test supports a type 1 test program
 .. figure:: ../images/type1.png
    :name: TYPE1_Test_Program
    :align: center
-   :alt: 
+   :alt:
 
    Illustration 8: Preexisting, Self-checking Test Program (type 1) in a
    CORE-V UVM test
@@ -178,7 +178,7 @@ will terminate the simulation and is, by definition, a failure.
 .. figure:: ../images/type4.png
    :name: TYPE4_Test_Program
    :align: center
-   :alt: 
+   :alt:
 
    Illustration 9: Generated, non-self-checking (type 4) Test Program in
    a CORE-V UVM test
@@ -187,7 +187,7 @@ The flow for a type 4 (generated, non-self checking) test program is
 only slightly different as shown in Illustration 9. In these tests the configure phase
 will invoke the generator to produce a test program and the toolchain to
 compile it before signalling the TB to load the machine code into
-*dp_mem*. As before, the run phase will assert fetch_en to the core
+testbench memory. As before, the run phase will assert fetch_en to the core
 and the program begins execution.
 
 Recall that a type 4 test program will not use the status flags virtual
@@ -208,53 +208,6 @@ CORE-V Testcase Writer’s Guide
 ------------------------------
 TODO
 
-File Structure of the Test Programs and UVM Tests
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-Below is a somewhat simplified view of the CV32 tests directory tree.
-The test programs are in cv32/tests/core. (This should probably be
-cv32/tests/programs, but is named “core” for historical reasons.)
-Sub-directories below core contain a number of type 1 test programs.
-
-The UVM tests are located at cv32/tests/uvmt_cv32. It is a very good
-idea to review the code in the base-tests sub-directory. In
-“core-program-tests” is the type 1 and type 4 testcases (types 2 and 3
-may be added at a later date). These ca be used as examples and are also
-production level tests for either type 1 or type 4 test programs. An up
-to date description of the testcases under uvmt\_cv32 can be found in
-the associated README.
-
-Lastly, the cv32/tests/vseq directory is where you will be (and should
-add) virtual sequences for any new testcases you develop.  ::
-
-    $PROJ\_ROOT/
-    └── cv32/
-         └── tests/
-               ├── core/
-               │    ├── README.md
-               │    ├── custom/
-               │    │ ├── hello_world.c
-               │    │ └── <etc>
-               │    ├── riscv_compliance_tests_firmware/
-               │    │ ├── addi.S
-               │    │ └── <etc>
-               │    ├── riscv_tests_firmware/
-               │    │ └── <etc>
-               │    └── firmware/
-               │    └── <etc>
-               └── uvmt_cv32/
-                     ├── base-tests/
-                     │    ├── uvmt_cv32_base_test.sv
-                     │    ├── uvmt_cv32_base_test_workarounds.sv
-                     │    └── uvmt_cv32_test_cfg.sv
-                     ├── core-program-tests/
-                     │    ├── README.md
-                     │    └── uvmt_cv32_type1_test.sv
-                     │    └── uvmt_cv32_type4_test.sv
-                     └── vseq/
-                          └── uvmt_cv32_vseq_lib.sv
-
-
 Writing a Test Program
 ~~~~~~~~~~~~~~~~~~~~~~
 
@@ -262,12 +215,12 @@ This document will probably never include a detailed description for
 writing a test program. The core’s ISA is well documented and the
 execution environment supported by the testbench is trivial. The best
 thing to do is check out the examples at
-**$PROJ_ROOT/cv32/tests/core**.
+**$CORE_V_VERIF/cv32e40p/tests/programs**.
 
 Writing a UVM Test to run a Test Program
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-The CV32 base test, *uvmt_cv32_base_test_c*, has been written to
+The CV32E40P base test, *uvmt_cv32e40p_base_test_c*, has been written to
 support all five of the test program types discussed above.
 
 There are pre-existing UVM tests for type 1 (pre-existing,
@@ -278,7 +231,7 @@ test, have a look at these and it should be obvious what to do.
 Testcase Scriptware
 ^^^^^^^^^^^^^^^^^^^
 
-At **$PROJ_ROOT/cv32/tests/uvmt_cv32/bin/test_template** you will
+At **$CORE_V_VERIF/cv32e40p/tests/uvmt_cv32e40p/bin/test_template** you will
 find a shell script that will generate the shell of a testcase that is
 compatible with the base test. This will save you a bit of typing.
 
@@ -286,8 +239,5 @@ Running the testcase
 ~~~~~~~~~~~~~~~~~~~~
 
 Testcases are intended to be launched from
-**$PROJ_ROOT/cv32/sim/uvmt_cv32**. The README at this location is
-intended to provide you with everything you need to know to run an
-existing testcase or a new testcase. If this is not the case, please
-create a GitHub issue and assign it to @mikeopenhwgroup.
+**$CORE_V_VERIF/cv32e40p/sim/uvmt**.
 

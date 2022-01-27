@@ -348,7 +348,7 @@ function void cv32e40x_ldgen_c::create_pma_section_file(string filepath);
         $fdisplay(fhandle_pma, { indent(L1), ".region_", $sformatf("%0d %0s", i, section_location), ":" });
         $fdisplay(fhandle_pma, { indent(L1), "{" });
         $fdisplay(fhandle_pma, { indent(L2), "KEEP(*(.region_", $sformatf("%0d", i), "));" });
-        $fdisplay(fhandle_pma, { indent(L1), "} > region_", $sformatf("%0d", i) });
+        $fdisplay(fhandle_pma, { indent(L1), "}"});
       end
     end
     $fdisplay(fhandle_pma, "}");
@@ -480,7 +480,7 @@ function void cv32e40x_ldgen_c::create_fixed_addr_section_file(string filepath);
   $fdisplay(fhandle_fix, "{");
   $fdisplay(fhandle_fix, { indent(L1), "/* CORE-V: interrupt vectors */" });
   $fdisplay(fhandle_fix, { indent(L1), "PROVIDE(__vector_start = ", $sformatf("0x%08x", mtvec_addr), ");" });
-  $fdisplay(fhandle_fix, { indent(L1), ".mtvec_bootstrap :" });
+  $fdisplay(fhandle_fix, { indent(L1), ".mtvec_bootstrap (__vector_start) :" });
   $fdisplay(fhandle_fix, { indent(L1), "{" });
   $fdisplay(fhandle_fix, { indent(L2), "KEEP(*(.mtvec_bootstrap));" });
   $fdisplay(fhandle_fix, { indent(L1), "}", mtvec_memory_area, "\n" });

@@ -31,7 +31,7 @@ class cv32e40s_C_LUI_instr extends riscv_C_LUI_instr;
     if(imm_type inside {NZIMM, NZUIMM}) {
       imm[5:0] != 0;
       if (instr_name == C_LUI) {
-        // Original: imm[31:5] == 0;        
+        // Original: imm[31:5] == 0;
         imm[31:6] == 0;
       }
       if (instr_name inside {C_SRAI, C_SRLI, C_SLLI}) {
@@ -57,8 +57,8 @@ class cv32e40s_C_LUI_instr extends riscv_C_LUI_instr;
     imm = imm >> (32 - imm_len);
     imm_mask = imm_mask << imm_len;
     if (sign) begin
-      imm |= imm_mask;      
-    end   
+      imm |= imm_mask;
+    end
   endfunction : extend_imm
 
   virtual function void update_imm_str();

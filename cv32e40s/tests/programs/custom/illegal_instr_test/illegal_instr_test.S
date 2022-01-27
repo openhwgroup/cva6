@@ -56,27 +56,8 @@ main:
     li x29, 0x1d
     li x30, 0x1e
     li x31, 0x0
-    addi    sp,sp,-84
-    sw      x6,80(sp)
-    sw      x7,76(sp)
-    sw      x8,72(sp)
-    sw      x9,68(sp)
-    sw      x10,64(sp)
-    sw      x11,60(sp)
-    sw      x12,56(sp)
-    sw      x13,52(sp)
-    sw      x14,48(sp)
-    sw      x15,44(sp)
-    sw      x16,40(sp)
-    sw      x17,36(sp)
-    sw      x18,32(sp)
-    sw      x19,28(sp)
-    sw      x20,24(sp)
-    sw      x21,20(sp)
-    sw      x22,16(sp)
-    sw      x23,12(sp)
-    sw      x24,8(sp)
-    sw      x25,4(sp)
+    jal test_bitmanip
+    jal push_volatile_gpr_stack
 .word(0x9d5b136b)
 .word(0xfed5cfcb)
 .word(0x3d65f2b3)
@@ -385,7 +366,6 @@ main:
 .word(0xfec76487)
 .word(0xbd1e312b)
 .word(0x700e3223)
-.word(0x612ed793)
 .word(0x2ebe41f7)
 .word(0xb0d3ed9b)
 .word(0x4cb5bf2b)
@@ -1178,7 +1158,6 @@ main:
 .word(0x2f5bb87b)
 .word(0x9e55624f)
 .word(0xf1f24367)
-.word(0x4088e233)
 .word(0x7fe7a0bb)
 .word(0x36452b4b)
 .word(0x558e4da7)
@@ -1933,7 +1912,6 @@ main:
 .word(0x56ccfb0b)
 .word(0x8cc94be7)
 .word(0xc604eca7)
-.word(0x0a9e15b3)
 .word(0xd8644c07)
 .word(0xc6b07a27)
 .word(0x758b718b)
@@ -2210,7 +2188,6 @@ main:
 .word(0x74fae57b)
 .word(0x89e9d7f7)
 .word(0x3f21e4cf)
-.word(0x411f61b3)
 .word(0xc61598cb)
 .word(0x23db9933)
 .word(0x74a1bcfb)
@@ -3796,7 +3773,6 @@ main:
 .word(0x8c5fe53b)
 .word(0x1d2fbdfb)
 .word(0x51015f87)
-.word(0x0b8bbd33)
 .word(0x2f3dfeab)
 .word(0xbd9c30d7)
 .word(0x22fd6177)
@@ -3897,7 +3873,6 @@ main:
 .word(0x5a8dbefb)
 .word(0x56276787)
 .word(0xb802cc07)
-.word(0x6174ddb3)
 .word(0x09c62a9b)
 .word(0x9868767b)
 .word(0x02545cab)
@@ -3967,7 +3942,6 @@ main:
 .word(0x42c4891b)
 .word(0xca5e12bb)
 .word(0xe406ea9b)
-.word(0x69e11d93)
 .word(0x8d141cbb)
 .word(0x82aa973b)
 .word(0x566cb9cf)
@@ -4010,7 +3984,6 @@ main:
 .word(0x1b845be7)
 .word(0x06d40a73)
 .word(0x1e106f7b)
-.word(0x69041db3)
 .word(0xb7ecc7eb)
 .word(0xd7041207)
 .word(0x0c6cb4d7)
@@ -4412,7 +4385,6 @@ main:
 .word(0x69f1bfa3)
 .word(0x7a20cc3b)
 .word(0x2f44426b)
-.word(0x28ef9093)
 .word(0xac47b053)
 .word(0xcf95b5d3)
 .word(0x8f8ae1f7)
@@ -4626,7 +4598,6 @@ main:
 .word(0xa276c39b)
 .word(0x3f7c5887)
 .word(0xe3e772b3)
-.word(0x6108d693)
 .word(0x0ebe94e7)
 .word(0x3d04b99b)
 .word(0xf3afcc27)
@@ -5308,7 +5279,6 @@ main:
 .word(0xbefa2847)
 .word(0x62407727)
 .word(0xa13d159b)
-.word(0x49031f13)
 .word(0x6fe91e53)
 .word(0xb6b74dc7)
 .word(0x7424576b)
@@ -5975,7 +5945,6 @@ main:
 .word(0xac68043b)
 .word(0xa752ef27)
 .word(0x39eefcf7)
-.word(0x29ab9db3)
 .word(0x7bb2d0e7)
 .word(0xc9325853)
 .word(0xdc82678b)
@@ -6320,7 +6289,6 @@ main:
 .word(0x9d2c3753)
 .word(0x95381eeb)
 .word(0xa58245f3)
-.word(0x6089d413)
 .word(0x0b9ba01b)
 .word(0x379f02cb)
 .word(0x0694333b)
@@ -6331,7 +6299,6 @@ main:
 .word(0xf0a84c67)
 .word(0xeb3a436b)
 .word(0x34ff679b)
-.word(0x0a202d33)
 .word(0xf795b06b)
 .word(0x16bf3c2f)
 .word(0x31ccdfb3)
@@ -6465,7 +6432,6 @@ main:
 .word(0x8995dcaf)
 .word(0xce918d53)
 .word(0x074efb33)
-.word(0x0a5393b3)
 .word(0x211eba03)
 .word(0x26ff4d2b)
 .word(0xd4371587)
@@ -6683,7 +6649,6 @@ main:
 .word(0x35e774b3)
 .word(0x2eb17cbb)
 .word(0xebd2d66b)
-.word(0x48eb9293)
 .word(0x7e1cbefb)
 .word(0x126f289b)
 .word(0xf0a650e7)
@@ -6718,7 +6683,6 @@ main:
 .word(0x34e55733)
 .word(0x0e24d8a3)
 .word(0xf4cbb5db)
-.word(0x48849613)
 .word(0x81c32beb)
 .word(0x8db53733)
 .word(0xb31396e7)
@@ -6777,7 +6741,6 @@ main:
 .word(0x6cd99887)
 .word(0x6011812f)
 .word(0x60efd5ab)
-.word(0x60355893)
 .word(0x47237f77)
 .word(0x64c5bb83)
 .word(0xc47f11e7)
@@ -6923,7 +6886,6 @@ main:
 .word(0xcf827bc3)
 .word(0x61273767)
 .word(0xbddc5beb)
-.word(0x40fd7e33)
 .word(0x42fbf8a3)
 .word(0xa60d96d7)
 .word(0xfb3da62f)
@@ -7269,7 +7231,6 @@ main:
 .word(0x9e3e6b77)
 .word(0xd4522c1b)
 .word(0xb5816823)
-.word(0x600b1793)
 .word(0x070297af)
 .word(0x671bb5bb)
 .word(0x6ed02fc7)
@@ -7553,7 +7514,6 @@ main:
 .word(0x6fe86dc7)
 .word(0xcf0836d3)
 .word(0xbf5562cf)
-.word(0x48085c33)
 .word(0x1d39b457)
 .word(0x054e156b)
 .word(0x3f9a411b)
@@ -8067,7 +8027,6 @@ main:
 .word(0xdfdfea4f)
 .word(0x3ddf3f3b)
 .word(0x76fc61e7)
-.word(0x21b1c833)
 .word(0x3696b7d7)
 .word(0x6f697acf)
 .word(0x57513ed7)
@@ -8721,7 +8680,6 @@ main:
 .word(0xe4f2d033)
 .word(0xa8906c6b)
 .word(0x73785cf7)
-.word(0x207fe233)
 .word(0xf33f74af)
 .word(0xea7d7f1b)
 .word(0x608e912f)
@@ -9696,7 +9654,6 @@ main:
 .word(0xeb8b21db)
 .word(0xcc4a7deb)
 .word(0x7148c9a3)
-.word(0x48d59eb3)
 .word(0xd99cabfb)
 .word(0xc5bee0fb)
 .word(0x8c3d43f7)
@@ -9930,7 +9887,6 @@ main:
 .word(0x4e88f2e7)
 .word(0x6f057aa3)
 .word(0x0a39f377)
-.word(0x0a0c2a33)
 .word(0xc69aa777)
 .word(0x868be5d3)
 .word(0x14abf6f7)
@@ -10830,7 +10786,6 @@ main:
 .word(0x65d4c9a7)
 .word(0xb59306bb)
 .word(0x0fae8e87)
-.word(0x29139693)
 .word(0xe8dc6f87)
 .word(0x635f5827)
 .word(0xfdf7c9d7)
@@ -10933,7 +10888,6 @@ main:
 .word(0x73e6e307)
 .word(0x5d254f07)
 .word(0x66729067)
-.word(0x492a9c93)
 .word(0xbaa890bb)
 .word(0x96c428d3)
 .word(0x0d559ce7)
@@ -11104,7 +11058,6 @@ main:
 .word(0xbd4e93e7)
 .word(0x4f19e04f)
 .word(0xad14c26b)
-.word(0x40c3fdb3)
 .word(0x432f87af)
 .word(0x1c4dbe1b)
 .word(0xf3497f2b)
@@ -11430,7 +11383,6 @@ main:
 .word(0x83941d93)
 .word(0x63061cf7)
 .word(0x19c339a3)
-.word(0x40756233)
 .word(0xc554d527)
 .word(0xb4f72db3)
 .word(0xe3b6f38b)
@@ -11552,7 +11504,6 @@ main:
 .word(0xb1fee967)
 .word(0x89759a77)
 .word(0xbe0b6753)
-.word(0x492ad313)
 .word(0x9bb1c3eb)
 .word(0xe45c98fb)
 .word(0x7fb7e5a3)
@@ -11710,7 +11661,6 @@ main:
 .word(0x92a8cc33)
 .word(0xc398ac53)
 .word(0x3673b59b)
-.word(0x48535833)
 .word(0x2f506bbb)
 .word(0x2dbe631b)
 .word(0xc84409f3)
@@ -12754,7 +12704,6 @@ main:
 .word(0xaa195977)
 .word(0x17bbf0b3)
 .word(0x5a3d780b)
-.word(0x214840b3)
 .word(0x4ad29b57)
 .word(0x31d1e1a3)
 .word(0x7791342b)
@@ -13058,7 +13007,6 @@ main:
 .word(0xc68986f3)
 .word(0xb90c666b)
 .word(0x47765c1b)
-.word(0x494cd493)
 .word(0xd56a7e53)
 .word(0xbc17c3b3)
 .word(0x11a70cb3)
@@ -14036,7 +13984,6 @@ main:
 .word(0x72cc4323)
 .word(0xbb5a2353)
 .word(0x96aa1987)
-.word(0x219963b3)
 .word(0x4ed9366b)
 .word(0xacc868f7)
 .word(0x4f3da4cb)
@@ -14164,7 +14111,6 @@ main:
 .word(0x8d6c4e77)
 .word(0x5e265f43)
 .word(0x902e4267)
-.word(0x0af1b3b3)
 .word(0xae9986d3)
 .word(0x329e7ea7)
 .word(0x9de7246b)
@@ -14848,7 +14794,6 @@ main:
 .word(0x98a90c87)
 .word(0x67c767c7)
 .word(0xe6014187)
-.word(0x40234433)
 .word(0xac88d23b)
 .word(0x6b0a269b)
 .word(0x042deb27)
@@ -15146,7 +15091,6 @@ main:
 .word(0xb785a4fb)
 .word(0x0b55f477)
 .word(0xdf1e85eb)
-.word(0x20836cb3)
 .word(0x26e8ce2f)
 .word(0x97d13bab)
 .word(0xdcd5b80b)
@@ -15882,7 +15826,6 @@ main:
 .word(0x59ea22e7)
 .word(0x6ab24a23)
 .word(0x250b9b33)
-.word(0x0a099e33)
 .word(0x540856a3)
 .word(0xcecb7c33)
 .word(0xcd8f2d1b)
@@ -16323,7 +16266,6 @@ main:
 .word(0x8a8f05af)
 .word(0x9669366b)
 .word(0xd44f5993)
-.word(0x20e86233)
 .word(0x8dc47577)
 .word(0x90bf0007)
 .word(0x537c52f7)
@@ -18015,7 +17957,6 @@ main:
 .word(0xcef01acf)
 .word(0x29d4827b)
 .word(0xec41bea3)
-.word(0x21e1e5b3)
 .word(0xc4d12457)
 .word(0x490bccab)
 .word(0x4ccdf0bb)
@@ -21214,7 +21155,6 @@ main:
 .word(0xd030512f)
 .word(0xfc3a1b13)
 .word(0x49e1291b)
-.word(0x0ac23233)
 .word(0x8180bb77)
 .word(0xf6c0fd87)
 .word(0x8e1c75b3)
@@ -22827,7 +22767,6 @@ main:
 .word(0x4187f87b)
 .word(0x91c9532b)
 .word(0x064e9ec7)
-.word(0x20c0a133)
 .word(0xebf76b57)
 .word(0x11de628b)
 .word(0x787aa32f)
@@ -23862,7 +23801,6 @@ main:
 .word(0xf4435aa3)
 .word(0xaef8e533)
 .word(0x205bbe53)
-.word(0x49b5df33)
 .word(0x9c6e9487)
 .word(0x7f917bf7)
 .word(0xfd9fbcf7)
@@ -24478,7 +24416,6 @@ main:
 .word(0xccdff92f)
 .word(0xb19b7b9b)
 .word(0xb892193b)
-.word(0x408b7133)
 .word(0xc022b1e7)
 .word(0xd92f79e7)
 .word(0x9533269b)
@@ -24845,14 +24782,12 @@ main:
 .word(0x7958e1af)
 .word(0x8956ba8b)
 .word(0xad23d307)
-.word(0x0a5e3133)
 .word(0xd2138173)
 .word(0xcb6af607)
 .word(0xf22d5cb3)
 .word(0x4e0039c3)
 .word(0x275cb357)
 .word(0xb61875cb)
-.word(0x61b591b3)
 .word(0xc84f8f1b)
 .word(0x67d9f1fb)
 .word(0x80c5dbf7)
@@ -25815,7 +25750,6 @@ main:
 .word(0x37b18633)
 .word(0x8f5a9a77)
 .word(0x7721370b)
-.word(0x0bad5d33)
 .word(0x85e0de27)
 .word(0x059fb9bb)
 .word(0x3345fb87)
@@ -26676,7 +26610,6 @@ main:
 .word(0x385e5aeb)
 .word(0x00d41af7)
 .word(0x1f505133)
-.word(0x40f5fcb3)
 .word(0x43b85a33)
 .word(0x95e45393)
 .word(0x5f6a65d3)
@@ -27924,7 +27857,6 @@ main:
 .word(0xbfd33baf)
 .word(0xbfa4444b)
 .word(0x1aa11957)
-.word(0x407342b3)
 .word(0xb67b1b2f)
 .word(0x843cda77)
 .word(0xd293d1a7)
@@ -28694,7 +28626,6 @@ main:
 .word(0x740c7f6b)
 .word(0xd38e44ab)
 .word(0xf65e2043)
-.word(0x203dc9b3)
 .word(0x4e98113b)
 .word(0x221fd86b)
 .word(0x61b6d067)
@@ -29984,7 +29915,6 @@ main:
 .word(0xffcec6a3)
 .word(0xeea6aeeb)
 .word(0x766669fb)
-.word(0x60e45633)
 .word(0xfbc23a8b)
 .word(0x6af7eb0b)
 .word(0x96fd1b43)
@@ -30150,7 +30080,6 @@ main:
 .word(0x5609b27b)
 .word(0xe108e4fb)
 .word(0x8c66f9a7)
-.word(0x49305a93)
 .word(0x8851c187)
 .word(0x7450a85b)
 .word(0x2b64cbd7)
@@ -30437,7 +30366,6 @@ main:
 .word(0xac115e07)
 .word(0xd045a95b)
 .word(0xc0a67f6b)
-.word(0x0a1537b3)
 .word(0x13ae9d27)
 .word(0x7a753aeb)
 .word(0x28982abb)
@@ -30445,7 +30373,6 @@ main:
 .word(0x32818277)
 .word(0x0d4df6af)
 .word(0x49c6c307)
-.word(0x0aa1ef33)
 .word(0x9f28dfa7)
 .word(0x58226fa3)
 .word(0x0c571f87)
@@ -30532,7 +30459,6 @@ main:
 .word(0xb8841b3b)
 .word(0xd7e3ad7b)
 .word(0xbd25d6a7)
-.word(0x692f92b3)
 .word(0x12b487f7)
 .word(0xf566502b)
 .word(0x89cd652f)
@@ -31878,7 +31804,6 @@ main:
 .word(0xa0d30827)
 .word(0x10f5d887)
 .word(0xe5d3bbdb)
-.word(0x0b0d5e33)
 .word(0x5cfdfea3)
 .word(0x1ddf233b)
 .word(0x638b708b)
@@ -32066,7 +31991,6 @@ main:
 .word(0xbd9a0abb)
 .word(0xa691a147)
 .word(0xb4a4f9a3)
-.word(0x0bd49a33)
 .word(0xb4ada933)
 .word(0xc03a3b83)
 .word(0xa7a37d7b)
@@ -32093,7 +32017,6 @@ main:
 .word(0xbf671553)
 .word(0xe23cd877)
 .word(0x6240d987)
-.word(0x48da5233)
 .word(0x0c0ee277)
 .word(0x4de1466b)
 .word(0x86d3ec2b)
@@ -32867,7 +32790,6 @@ main:
 .word(0x7237602b)
 .word(0x6bbef53b)
 .word(0xa37fea3b)
-.word(0x2177c1b3)
 .word(0xdf28234b)
 .word(0xc9c904d3)
 .word(0x3b58e567)
@@ -35921,7 +35843,6 @@ main:
 .word(0xecef6367)
 .word(0x8f35798b)
 .word(0x6e1df1a3)
-.word(0x61cb5c93)
 .word(0xa1b0462b)
 .word(0xfcfd4b2b)
 .word(0x8eace333)
@@ -36708,7 +36629,6 @@ main:
 .word(0xc703da9b)
 .word(0x70577eab)
 .word(0x6c5dc473)
-.word(0x21a2e433)
 .word(0xae18c827)
 .word(0x46f6e06b)
 .word(0x0bd7e323)
@@ -37194,7 +37114,6 @@ main:
 .word(0x68b5ca33)
 .word(0xc5a435af)
 .word(0xb0412cd7)
-.word(0x41f8f8b3)
 .word(0x5dbf469b)
 .word(0x5b9eb02b)
 .word(0x0f91eca3)
@@ -37254,7 +37173,6 @@ main:
 .word(0x771c133b)
 .word(0x707eb1af)
 .word(0xcb5b4dbb)
-.word(0x29ce18b3)
 .word(0x9fd1f4cf)
 .word(0xe0b5f29b)
 .word(0x771e6ed7)
@@ -37685,7 +37603,6 @@ main:
 .word(0x38da77b3)
 .word(0x77887da3)
 .word(0x4e012453)
-.word(0x284a1193)
 .word(0x51d5abb3)
 .word(0xe4c29fbb)
 .word(0xd3b0a8db)
@@ -38435,7 +38352,6 @@ main:
 .word(0x8ea9bec3)
 .word(0x17516e3b)
 .word(0xe6078bd7)
-.word(0x0bffc233)
 .word(0xff657c57)
 .word(0x9ed9eefb)
 .word(0x0cc43957)
@@ -39191,7 +39107,6 @@ main:
 .word(0x7dc75233)
 .word(0x773de97b)
 .word(0x8e1b5777)
-.word(0x0bda4533)
 .word(0x26d12647)
 .word(0x76dff933)
 .word(0x874576a7)
@@ -39372,7 +39287,6 @@ main:
 .word(0x2506f10b)
 .word(0xc7ce671b)
 .word(0x609243b3)
-.word(0x0b59a333)
 .word(0x8f69ea33)
 .word(0x447ee567)
 .word(0xb24815d7)
@@ -39874,7 +39788,6 @@ main:
 .word(0x833e46d3)
 .word(0x257019bb)
 .word(0x97bdc523)
-.word(0x402e60b3)
 .word(0xef1c112f)
 .word(0x600a243b)
 .word(0x8205f4b3)
@@ -41205,7 +41118,6 @@ main:
 .word(0xf4839407)
 .word(0xb19bb4eb)
 .word(0x34b0f3bb)
-.word(0x2024abb3)
 .word(0x86820e27)
 .word(0x3e3f1353)
 .word(0x00fe8d3b)
@@ -41519,7 +41431,6 @@ main:
 .word(0xafcbcd33)
 .word(0xdf98432f)
 .word(0xf50531eb)
-.word(0x0afe5db3)
 .word(0x461a69af)
 .word(0xf3f14853)
 .word(0xa3265a2b)
@@ -41969,7 +41880,6 @@ main:
 .word(0xb1dcdb3b)
 .word(0x6ee9c723)
 .word(0xd0e24207)
-.word(0x409d63b3)
 .word(0xd9f50a9b)
 .word(0x82696deb)
 .word(0xb26c24bb)
@@ -42110,7 +42020,6 @@ main:
 .word(0x4a06f083)
 .word(0x930f14d3)
 .word(0xdf7e612f)
-.word(0x499cd093)
 .word(0x0078fa3b)
 .word(0xa9f2522b)
 .word(0x16f25243)
@@ -43278,7 +43187,6 @@ main:
 .word(0x5055cd6b)
 .word(0x8eef7e03)
 .word(0x33430fbb)
-.word(0x0b646433)
 .word(0x706ee2eb)
 .word(0x0644dc93)
 .word(0x09c8bc8b)
@@ -43296,7 +43204,6 @@ main:
 .word(0x90259577)
 .word(0x3fa2ad43)
 .word(0x5c3460d7)
-.word(0x49a99d33)
 .word(0xa1033233)
 .word(0x3b054b07)
 .word(0xec1f7383)
@@ -43542,7 +43449,6 @@ main:
 .word(0x3070f807)
 .word(0x4d7b6487)
 .word(0x096549f3)
-.word(0x0a5eff33)
 .word(0x2eb2de3b)
 .word(0x2d1264a7)
 .word(0x2326fc03)
@@ -45220,7 +45126,6 @@ main:
 .word(0xe4d188d3)
 .word(0x71eace2b)
 .word(0xa49065a3)
-.word(0x68779c93)
 .word(0x3ab28607)
 .word(0x977cce23)
 .word(0xf21aefbb)
@@ -46982,7 +46887,6 @@ main:
 .word(0x9cf00127)
 .word(0x4e7e426b)
 .word(0xa6bf3067)
-.word(0x485b5733)
 .word(0x2ce970e7)
 .word(0x493ef427)
 .word(0x9d4df567)
@@ -47699,6 +47603,80 @@ main:
     nop
 .word(0x040080B3) # p.abs   [31:25]==000_0010, [14:12]==000, [6:0]==011_0011
 
+    jal check_gpr_integrity
+finalize:
+    li x18, 123456789
+    li x19, 0xa55a5aa5
+    lw x20,-8(sp)      # Attempt to get bitmanip enabled-signature
+    beq x20,x19,set_exp_bitmanip
+    li x16, 47595      # This is the number of EXPECTED illegal instructions
+    beq x31, x16, test_end
+    j fail
+set_exp_bitmanip:
+    li x16, 47518      # This is the number of EXPECTED instructions if Zba,Zbb,Zbc and Zbs are enabled
+    beq x31, x16, test_end
+fail:
+    li x18, 1
+test_end:
+    li x17, CV_VP_STATUS_FLAGS_BASE
+    sw x18,0(x17)
+    j _exit
+
+push_volatile_gpr_stack:
+    addi    sp,sp,-92
+    sw      x3,88(sp)
+    sw      x4,84(sp)
+    sw      x7,76(sp)
+    sw      x8,72(sp)
+    sw      x9,68(sp)
+    sw      x10,64(sp)
+    sw      x11,60(sp)
+    sw      x12,56(sp)
+    sw      x13,52(sp)
+    sw      x14,48(sp)
+    sw      x15,44(sp)
+    sw      x16,40(sp)
+    sw      x17,36(sp)
+    sw      x18,32(sp)
+    sw      x19,28(sp)
+    sw      x20,24(sp)
+    sw      x21,20(sp)
+    sw      x22,16(sp)
+    sw      x23,12(sp)
+    sw      x24,8(sp)
+    sw      x25,4(sp)
+    ret
+
+restore_volatile_gpr_stack:
+    lw      x3,88(sp)
+    lw      x4,84(sp)
+    lw      x6,80(sp)
+    lw      x7,76(sp)
+    lw      x8,72(sp)
+    lw      x9,68(sp)
+    lw      x10,64(sp)
+    lw      x11,60(sp)
+    lw      x12,56(sp)
+    lw      x13,52(sp)
+    lw      x14,48(sp)
+    lw      x15,44(sp)
+    lw      x16,40(sp)
+    lw      x17,36(sp)
+    lw      x18,32(sp)
+    lw      x19,28(sp)
+    lw      x20,24(sp)
+    lw      x21,20(sp)
+    lw      x22,16(sp)
+    lw      x23,12(sp)
+    lw      x24,8(sp)
+    lw      x25,4(sp)
+    addi    sp,sp,92
+    ret
+
+check_gpr_integrity:
+    // The first two are deliberately not checked but popped for consistency
+    lw      x5,88(sp)
+    lw      x5,84(sp)
     lw      x5,80(sp)
     bne     x5, x6, fail
     lw      x5,76(sp)
@@ -47739,16 +47717,98 @@ main:
     bne     x5, x24, fail
     lw      x5,4(sp)
     bne     x5, x25, fail
-    addi    sp,sp,84
-    li x18, 123456789
-    li x16, 47595      # this is the number of EXPECTED illegal instructions
-    beq x31, x16, test_end
-fail:
-    li x18, 1
-test_end:
-    li x17, CV_VP_STATUS_FLAGS_BASE
-    sw x18,0(x17)
-    j _exit
+    addi    sp,sp,92
+    ret
+
+test_bitmanip:
+    add x3, x1, zero // backup return address
+    jal push_volatile_gpr_stack
+    .word(0x612ed793) // Zbb rori
+    .word(0x4088e233) // Zbb orn
+    .word(0x0a9e15b3) // Zbc clmul
+    .word(0x411f61b3) // Zbb orn
+    .word(0x0b8bbd33) // Zbc clmulh
+    .word(0x485b5733) // Zbs bext
+    .word(0x6174ddb3) // Zbb ror
+    .word(0x69e11d93) // Zbs binvi
+    .word(0x69041db3) // Zbs binv
+    .word(0x28ef9093) // Zbs bseti
+    .word(0x6108d693) // Zbb rori
+    .word(0x49031f13) // Zbs bclri
+    .word(0x29ab9db3) // Zbs bset
+    .word(0x6089d413) // Zbb rori
+    .word(0x0a202d33) // Zbc clmulr
+    .word(0x0a5393b3) // Zbc clmul
+    .word(0x48eb9293) // Zbs bclri
+    .word(0x48849613) // Zbs bclri
+    .word(0x60355893) // Zbb rori
+    .word(0x40fd7e33) // Zbb andn
+    .word(0x600b1793) // Zbb clz
+    .word(0x48085c33) // Zbs bext
+    .word(0x21b1c833) // Zba sh2add
+    .word(0x207fe233) // Zba sh3add
+    .word(0x48d59eb3) // Zbs bclr
+    .word(0x0a0c2a33) // Zbc clmulr
+    .word(0x29139693) // Zbs bseti
+    .word(0x492a9c93) // Zbs bclri
+    .word(0x40c3fdb3) // Zbb andn
+    .word(0x40756233) // Zbb orn
+    .word(0x492ad313) // Zbs bexti
+    .word(0x48535833) // Zbs bext
+    .word(0x214840b3) // Zba sh2add
+    .word(0x494cd493) // Zbs bexti
+    .word(0x219963b3) // Zba sh3add
+    .word(0x0af1b3b3) // Zbc clmulh
+    .word(0x40234433) // Zbb xnor
+    .word(0x20836cb3) // Zba sh3add
+    .word(0x0a099e33) // Zbc clmul
+    .word(0x20e86233) // Zba sh3add
+    .word(0x21e1e5b3) // Zba sh3add
+    .word(0x0ac23233) // Zbc clmulh
+    .word(0x20c0a333) // Zba sh1add
+    .word(0x49b5df33) // Zbs bext
+    .word(0x408b7533) // Zbb andn
+    .word(0x0a5e3933) // Zbc clmulh
+    .word(0x61b591b3) // Zbb rol
+    .word(0x0bad5d33) // Zbb minu
+    .word(0x40f5fcb3) // Zbb andn
+    .word(0x407342b3) // Zbb xnor
+    .word(0x203dc9b3) // Zba sh2add
+    .word(0x60e45633) // Zbb ror
+    .word(0x49305a93) // Zbs bexti
+    .word(0x0a1537b3) // Zbc clmulh
+    .word(0x0aa1ef33) // Zbb max
+    .word(0x692f92b3) // Zbs binv
+    .word(0x0b0d5e33) // Zbb minu
+    .word(0x0bd49a33) // Zbc clmul
+    .word(0x48da5233) // Zbs bext
+    .word(0x2177c1b3) // Zba sh2add
+    .word(0x61cb5c93) // Zbb rori
+    .word(0x21a2e433) // Zba sh3add
+    .word(0x41f8f8b3) // Zbb andn
+    .word(0x29ce18b3) // Zbs bset
+    .word(0x284a1193) // Zbs bseti
+    .word(0x0bffc233) // Zbb min
+    .word(0x0bda4533) // Zbb min
+    .word(0x0b59a333) // Zbc clmulr
+    .word(0x402e60b3) // Zbb orn
+    .word(0x2024abb3) // Zba sh1add
+    .word(0x0afe5db3) // Zbb minu
+    .word(0x409d63b3) // Zbb orn
+    .word(0x499cd093) // Zbs bexti
+    .word(0x0b646433) // Zbb max
+    .word(0x49a99d33) // Zbs bclr
+    .word(0x0a5eff33) // Zbb maxu
+    .word(0x68779c93) // Zbs binvi
+    li x16, 77
+    beq x31, x16, return_to_main // jump if we encountered 77 invalid (bitmanip) instructions)
+    li x4, 0xa55a5aa5
+    sw      x4,84(sp)
+    j return_to_main
+return_to_main:
+    jal restore_volatile_gpr_stack
+    add x1, x3, zero // restore return address
+    ret
 
 u_sw_irq_handler:
     li x30, 0xf
