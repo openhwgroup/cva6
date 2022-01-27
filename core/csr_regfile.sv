@@ -990,10 +990,14 @@ module csr_regfile import ariane_pkg::*; #(
             trap_vector_base_o = DmBaseAddress[riscv::VLEN-1:0] + dm::ExceptionAddress[riscv::VLEN-1:0];
         end
 
-        // check if we are in vectored mode, if yes then do BASE + 4 * cause
-        // we are imposing an additional alignment-constraint of 64 * 4 bytes since
-        // we want to spare the costly addition
-        if ((mtvec_q[0] || stvec_q[0]) && ex_i.cause[riscv::XLEN-1]) begin
+        // check if we are in vectored mode, if yes then do BASE + 4 * cause we
+        // are imposing an additional alignment-constraint of 64 * 4 bytes since
+        // we want to spare the costly addition. Furthermore check to which
+        // privilege level we are jumping and whether the vectored mode is
+        // activated for _that_ privilege level.
+        if (ex_i.cause[riscv::XLEN-1] &&
+                ((trap_to_priv_lvl == riscv::PRIV_LVL_M && mtvec_q[0])
+               || trap_to_priv_lvl == riscv::PRIV_LVL_S && stvec_q[0])) begin
             trap_vector_base_o[7:2] = ex_i.cause[5:0];
         end
 
@@ -1156,7 +1160,7 @@ module csr_regfile import ariane_pkg::*; #(
             for(int i = 0; i < 16; i++) begin
                 if(i < NrPMPEntries) begin
                     // We only support >=8-byte granularity, NA4 is disabled
-                    if(pmpcfg_d[i].addr_mode != riscv::NA4) 
+                    if(pmpcfg_d[i].addr_mode != riscv::NA4)
                         pmpcfg_q[i] <= pmpcfg_d[i];
                     else
                         pmpcfg_q[i] <= pmpcfg_q[i];
