@@ -1,0 +1,257 @@
+
+before_script:
+  # paths to local or network installations (the riscv toolchain and
+  # verilator are not built in the ci job as in travis)
+  - export QUESTASIM_HOME=/usr/pack/modelsim-10.6b-kgf/questasim/
+  - export QUESTASIM_VERSION=-10.6b
+  - export QUESTASIM_FLAGS=-noautoldlibpath
+  - export CXX=g++-7.2.0 CC=gcc-7.2.0
+  - export RISCV=/scratch2/gitlabci/riscv_install
+  - export VERILATOR_ROOT=/scratch2/gitlabci/verilator-4.014
+  # setup dependent paths
+  - export PATH=${RISCV}/bin:$VERILATOR_ROOT/bin:${PATH}
+  - export LIBRARY_PATH=$RISCV/lib
+  - export LD_LIBRARY_PATH=$RISCV/lib:/usr/pack/gcc-7.2.0-af/linux-x64/lib64/
+  - export C_INCLUDE_PATH=$RISCV/include:$VERILATOR_ROOT/include:/usr/pack/gcc-7.2.0-af/linux-x64/include
+  - export CPLUS_INCLUDE_PATH=$RISCV/include:$VERILATOR_ROOT/include:/usr/pack/gcc-7.2.0-af/linux-x64/include
+  # number of parallel jobs to use for make commands and simulation
+  - export NUM_JOBS=4
+  - which java
+  - java -version
+  - which git
+  - git --version
+  - ci/make-tmp.sh
+  - git submodule init
+  - git submodule update --recursive
+
+variables:
+  GIT_SUBMODULE_STRATEGY: recursive
+
+stages:
+  - build
+  - write-back
+  - write-through
+
+###################################
+# prepare
+build:
+  stage: build
+  script:
+    - ci/build-riscv-tests.sh
+    - ci/get-torture.sh
+    - make clean
+    # this currently does not work with the current runner version...
+    #- make torture-gen
+  artifacts:
+      paths:
+        - tmp
+
+###################################
+# tests with write-back cache system
+
+# rv64ui-p-* and rv64ui-v-* tests
+asm-quest:
+  stage: write-back
+  script:
+    - make -j${NUM_JOBS} run-asm-tests batch-mode=1 defines=WB_DCACHE
+  dependencies:
+    - build
+
+amo-quest:
+  stage: write-back
+  script:
+    - make -j${NUM_JOBS} run-amo-tests batch-mode=1 defines=WB_DCACHE
+  dependencies:
+    - build
+
+# floating point
+fp-quest:
+  stage: write-back
+  script:
+    - make -j${NUM_JOBS} run-fp-tests batch-mode=1 defines=WB_DCACHE
+  dependencies:
+    - build
+
+bench-quest:
+  stage: write-back
+  script:
+    - make -j${NUM_JOBS} run-benchmarks batch-mode=1 defines=WB_DCACHE
+  dependencies:
+    - build
+
+# rv64ui-p-* tests
+asm1-ver:
+  stage: write-back
+  script:
+    - make -j${NUM_JOBS} run-asm-tests1-verilator defines=WB_DCACHE
+  dependencies:
+    - build
+
+# rv64ui-v-* tests
+asm2-ver:
+  stage: write-back
+  script:
+    - make -j${NUM_JOBS} run-asm-tests2-verilator defines=WB_DCACHE
+  dependencies:
+    - build
+
+# rv64um-*-* tests
+mul-ver:
+  stage: write-back
+  script:
+    - make -j${NUM_JOBS} run-mul-verilator defines=WB_DCACHE
+  dependencies:
+    - build
+
+# atomics
+amo-ver:
+  stage: write-back
+  script:
+    - make -j${NUM_JOBS} run-amo-verilator defines=WB_DCACHE
+  dependencies:
+    - build
+
+# floating point
+fp-ver:
+  stage: write-back
+  script:
+    - make -j${NUM_JOBS} run-fp-verilator defines=WB_DCACHE
+  dependencies:
+    - build
+
+bench-ver:
+  stage: write-back
+  script:
+    - make -j${NUM_JOBS} run-benchmarks-verilator defines=WB_DCACHE
+  dependencies:
+    - build
+
+bench-ver:
+  stage: write-back
+  script:
+    - make -j${NUM_JOBS} run-benchmarks-verilator defines=WB_DCACHE
+  dependencies:
+    - build
+
+# torture:
+#   stage: write-back
+#   script:
+#     - make torture-rtest batch-mode=1
+#     - make torture-rtest-verilator
+#   dependencies:
+#     - build
+
+serdiv-quest:
+  stage: write-back
+  script:
+    - cd tb/tb_serdiv/
+    - make simc
+    - "grep 'CI: PASSED' summary.rep"
+  dependencies:
+    - build
+
+###################################
+# tests with write-through cache system
+
+s-asm-quest:
+  stage: write-through
+  script:
+    - make -j${NUM_JOBS} run-asm-tests defines=WT_DCACHE batch-mode=1
+  dependencies:
+    - build
+
+# atomics
+s-amo-quest:
+  stage: write-through
+  script:
+    - make -j${NUM_JOBS} run-amo-tests defines=WT_DCACHE batch-mode=1
+  dependencies:
+    - build
+
+# floating point
+s-fp-quest:
+  stage: write-through
+  script:
+    - make -j${NUM_JOBS} run-fp-tests defines=WT_DCACHE batch-mode=1
+  dependencies:
+    - build
+
+s-bench-quest:
+  stage: write-through
+  script:
+    - make -j${NUM_JOBS} run-benchmarks defines=WT_DCACHE batch-mode=1
+  dependencies:
+    - build
+
+# rv64ui-p-* tests
+s-asm1-ver:
+  stage: write-through
+  script:
+    - make -j${NUM_JOBS} run-asm-tests1-verilator defines=WT_DCACHE
+  dependencies:
+    - build
+
+# rv64ui-v-* tests
+s-asm2-ver:
+  stage: write-through
+  script:
+    - make -j${NUM_JOBS} run-asm-tests2-verilator defines=WT_DCACHE
+  dependencies:
+    - build
+
+# rv64um-*-* tests
+mul-ver:
+  stage: write-through
+  script:
+    - make -j${NUM_JOBS} run-mul-verilator defines=WT_DCACHE
+  dependencies:
+    - build
+
+# atomics
+amo-ver:
+  stage: write-through
+  script:
+    - make -j${NUM_JOBS} run-amo-verilator defines=WT_DCACHE
+  dependencies:
+    - build
+
+# floating point
+s-fp-ver:
+  stage: write-through
+  script:
+    - make -j${NUM_JOBS} run-fp-verilator defines=WT_DCACHE
+  dependencies:
+    - build
+
+s-bench-ver:
+  stage: write-through
+  script:
+    - make -j${NUM_JOBS} run-benchmarks-verilator defines=WT_DCACHE
+  dependencies:
+    - build
+
+s-icache-quest:
+  stage: write-through
+  script:
+    - cd tb/tb_icache/
+    - make simc
+    - "grep 'CI: PASSED' summary.rep"
+
+s-dcache-quest:
+  stage: write-through
+  script:
+    - cd tb/tb_wt_dcache/
+    - make simc
+    - "grep 'CI: PASSED' RD0_summary.rep"
+    - "grep 'CI: PASSED' RD1_summary.rep"
+    - "grep 'CI: PASSED' TB_MEM_summary.rep"
+  dependencies:
+    - build
+
+# s-torture:
+#   stage: write-through
+#   script:
+#     - make torture-rtest           defines=WT_DCACHE batch-mode=1
+#     - make torture-rtest-verilator defines=WT_DCACHE
+#   dependencies:
+#     - build
