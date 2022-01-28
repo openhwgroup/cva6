@@ -510,6 +510,33 @@ module uvmt_cv32e40x_debug_assert
         else `uvm_error(info_tag, "Debug mode not entered correctly at reset!");
 
 
+    // Debug vs reset
+
+    a_debug_state_onehot : assert property (
+      $onehot({cov_assert_if.debug_havereset, cov_assert_if.debug_running, cov_assert_if.debug_halted})
+      ) else `uvm_error(info_tag, "Should have exactly 1 of havereset/running/halted");
+
+    cov_havereset_to_running : cover property (
+      (cov_assert_if.debug_havereset  == 1)
+      && (cov_assert_if.debug_running == 0)
+      && (cov_assert_if.debug_halted  == 0)
+      #=#
+      (cov_assert_if.debug_havereset  == 0)
+      && (cov_assert_if.debug_running == 1)
+      && (cov_assert_if.debug_halted  == 0)
+      );
+
+    cov_havereset_to_halted : cover property (
+      (cov_assert_if.debug_havereset  == 1)
+      && (cov_assert_if.debug_running == 0)
+      && (cov_assert_if.debug_halted  == 0)
+      #=#
+      (cov_assert_if.debug_havereset  == 0)
+      && (cov_assert_if.debug_running == 0)
+      && (cov_assert_if.debug_halted  == 1)
+      );
+
+
     // Check that we cover the case where a debug_req_i
     // comes while flushing due to an illegal insn, causing
     // dpc to be set to the exception handler entry addr
