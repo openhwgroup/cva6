@@ -1,7 +1,7 @@
-Board Support Package (BSP) for CV32 Verification
-=================================================
+Board Support Package (BSP) for CV32E40P Verification
+=====================================================
 
-This BSP provides the code to support running programs on the CV32 verification
+This BSP provides the code to support running programs on the CV32E40P verification
 target. It performs initialization tasks (`crt0.S`), handles
 interrupts/exceptions (`vectors.S`, `handlers.S`), provides syscall
 implementations (`syscalls.c`) and includes a linker script (`link.ld`) to
@@ -138,7 +138,7 @@ The linker script defines the memory layout and controls the mapping of input
 sections from object files to output sections in the output binary.
 
 The `link.ld` script is based on the standard upstream RV32 linker script, with
-some changes required for CV32:
+some changes required for CV32E40P:
   * Memory layout is defined as follows:
     * `ram` start=0x0, length=4MB
     * `dbg` start=0x1A110800, length=2KB

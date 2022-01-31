@@ -54,11 +54,12 @@ tests:
     dir: cv32e40s/sim/uvmt
     cmd: make test TEST=illegal
 
-  debug_test:
-    build: uvmt_cv32e40s
-    dir: cv32e40s/sim/uvmt
-    cmd: make test TEST=debug_test
-    makearg: USER_RUN_FLAGS=+rand_stall_obi_disable
+# FIXME: temporarily remove this test from ci_check: see issue #1031.
+#  debug_test:
+#    build: uvmt_cv32e40s
+#    dir: cv32e40s/sim/uvmt
+#    cmd: make test TEST=debug_test
+#    makearg: USER_RUN_FLAGS=+rand_stall_obi_disable
 
   csr_instructions:
     build: uvmt_cv32e40s

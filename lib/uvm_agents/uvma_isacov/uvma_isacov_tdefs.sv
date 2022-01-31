@@ -429,11 +429,27 @@ bit immi_is_signed[instr_name_t] = '{
 
 bit c_imm_is_signed[instr_name_t] = '{
   C_ADDI:  1,
-  C_LI:    1,
+  C_ADDI16SP: 1,
+  C_ANDI:  1,
   C_BEQZ:  1,
   C_BNEZ:  1,
   C_J:     1,
   C_JAL:   1,
+  C_LI:    1,
+  C_LUI:   1,
+  C_NOP:   1,
+  default: 0
+};
+
+bit c_imm_is_nonzero[instr_name_t] = '{
+  C_ADDI4SPN:1,
+  C_NOP:   1,
+  C_ADDI:  1,
+  C_ADDI16SP:1,
+  C_LUI:   1,
+  C_SRLI:  1,
+  C_SRAI:  1,
+  C_SLLI:  1,
   default: 0
 };
 
@@ -458,12 +474,34 @@ bit rd_is_signed[instr_name_t] = '{
   default: 0
 };
 
+bit c_has_rs1[instr_name_t] = '{
+  C_LW   : 1,
+  C_SW   : 1,
+  C_ADDI : 1,
+  C_ADDI16SP:1,
+  C_SRLI : 1,
+  C_SRAI : 1,
+  C_ANDI : 1,
+  C_SUB  : 1,
+  C_XOR  : 1,
+  C_OR   : 1,
+  C_AND  : 1,
+  C_BEQZ : 1,
+  C_BNEZ : 1,
+  C_SLLI : 1,
+  C_JR   : 1,
+  C_MV   : 1,
+  C_JALR : 1,
+  C_ADD  : 1,
+  default: 0
+};
+
 typedef enum {
   ZERO,     // For signed and unsigned values
   NON_ZERO, // For unsigned values
   POSITIVE, // For signed values
   NEGATIVE  // For signed value
-} instr_value_t;
+} instr_value_t;  // TODO:ropeders should be "value_type_t"?
 
 // Package level methods to map instruction to extension
 function instr_ext_t get_instr_ext(instr_name_t name);
@@ -554,7 +592,7 @@ function instr_type_t get_instr_type(instr_name_t name);
   if (name inside {itypes})
     return I_TYPE;
 
-  if (name inside {C_ADDI,C_ADDI16SP,C_LWSP,C_LI,C_LUI,C_SLLI})
+  if (name inside {C_ADDI,C_ADDI16SP,C_LWSP,C_LI,C_LUI,C_SLLI,C_NOP})
     return CI_TYPE;
 
   if (name inside {C_SWSP})
@@ -711,5 +749,6 @@ function instr_group_t get_instr_group(instr_name_t name, bit[31:0] mem_addr);
 
   `uvm_fatal("ISACOV", $sformatf("Called get_instr_group with unmapped type: %s", name.name()));
 endfunction : get_instr_group
+
 
 `endif // __UVMA_ISACOV_TDEFS_SV__

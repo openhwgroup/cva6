@@ -123,19 +123,25 @@ interface uvmt_cv32e40s_debug_cov_assert_if
     input         ex_valid,
     input  [31:0] ex_stage_instr_rdata_i,
     input  [31:0] ex_stage_pc,
-    input         wb_stage_instr_valid_i,
-    input  [31:0] wb_stage_instr_rdata_i,
-    input  [31:0] wb_stage_pc, // Program counter in writeback
-    input         wb_illegal,
-    input         wb_valid,
-    input         wb_err,
+
+    input              wb_stage_instr_valid_i,
+    input  [31:0]      wb_stage_instr_rdata_i,
+    input  [31:0]      wb_stage_pc, // Program counter in writeback
+    input              wb_illegal,
+    input              wb_valid,
+    input              wb_err,
+    input mpu_status_e wb_mpu_status,
+
     input         id_valid,
     input wire ctrl_state_e  ctrl_fsm_cs,            // Controller FSM states with debug_req
     input         illegal_insn_i,
     input         sys_en_i,
     input         sys_ecall_insn_i,
 
+    // Core signals
     input  [31:0] boot_addr_i,
+    input  [31:0] nmi_addr_i,
+    input         fetch_enable_i,
 
     input         rvfi_valid,
     input  [31:0] rvfi_pc_wdata,
@@ -145,6 +151,8 @@ interface uvmt_cv32e40s_debug_cov_assert_if
     input         debug_req_i, // From controller
     input         debug_req_q, // From controller
     input         pending_debug, // From controller
+    input         pending_nmi, // From controller
+    input         nmi_allowed, // From controller
     input         debug_mode_q, // From controller
     input  [31:0] dcsr_q, // From controller
     input  [31:0] depc_q, // From cs regs  //TODO:ropeders rename "dpc_q"
@@ -152,12 +160,12 @@ interface uvmt_cv32e40s_debug_cov_assert_if
     input  [31:0] dm_halt_addr_i,
     input  [31:0] dm_exception_addr_i,
 
-    input  [5:0]  mcause_q,
+    input  [31:0] mcause_q,
     input  [31:0] mtvec,
     input  [31:0] mepc_q,
     input  [31:0] tdata1,
     input  [31:0] tdata2,
-    input  trigger_match_i,
+    input  trigger_match_in_wb,
 
     // Counter related input from cs_registers
     input  [31:0] mcountinhibit_q,
@@ -219,7 +227,7 @@ interface uvmt_cv32e40s_debug_cov_assert_if
     mepc_q,
     tdata1,
     tdata2,
-    trigger_match_i,
+    trigger_match_in_wb,
     sys_fence_insn_i,
     mcountinhibit_q,
     mcycle,

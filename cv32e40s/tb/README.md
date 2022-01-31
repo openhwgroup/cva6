@@ -12,7 +12,7 @@ support here.  Note that `tb_riscv` is now a sub-directory of `core`.
 ### uvmt
 The testbench and testharness for the CV32E40S UVM verification
 environments.  This tb/th maintains support for all features of the `core`
-testbench.  This testbench must be run with a SystemVerilog 1800-compliant simulator, 
+testbench.  This testbench must be run with a SystemVerilog 1800-compliant simulator,
 i.e. it cannot be run with Verilator.
 
 ## Retired Testbenches

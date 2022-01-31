@@ -148,12 +148,24 @@ class cv32e40x_debug_rom_gen extends riscv_debug_rom_gen;
     endfunction : gen_program
 
     virtual function void gen_debug_exception_handler();
+
+        cv32e40x_instr_gen_config cfg_corev;
+
+        // CORE-V Addition
+        // Cast CORE-V derived handle to enable fetching core-v config fields
+        `DV_CHECK($cast(cfg_corev, cfg))
+
         // Insert section info so linker can place
         // debug exception code at the correct adress
         instr_stream.push_back(".section .debugger_exception, \"ax\"");
-        //super.gen_debug_exception_handler();
 
-        str = {"ebreak"};
+        if (cfg_corev.exit_on_debug_exception) begin
+            str = {"la x1, test_done", "jr x1"};
+        end
+        else begin
+            str = {"ebreak"};
+        end
+
         gen_section($sformatf("%0sdebug_exception", hart_prefix(hart)), str);
 
         // Insert section info to place remaining code in the

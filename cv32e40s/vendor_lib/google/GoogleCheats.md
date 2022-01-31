@@ -21,7 +21,7 @@ riscv_unaligned_load_store_test
 ### Useful (?) examples
 
 ```
-$ rm -rf out_2020-07-03 metrics* dsim.env 
+$ rm -rf out_2020-07-03 metrics* dsim.env
 $ python3 ./run.py -si dsim --target rv32imc --steps gen --test riscv_arithmetic_basic_test
 $ python3 ./run.py -si dsim --target rv32imc --steps gen --test riscv_rand_instr_test
 $ python3 ./run.py -si dsim --target rv32imc --steps gen -v --test riscv_rand_instr_test

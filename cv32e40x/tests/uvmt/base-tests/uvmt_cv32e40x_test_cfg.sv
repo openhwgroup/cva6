@@ -97,6 +97,10 @@ function uvmt_cv32e40x_test_cfg_c::new(string name="uvmt_cv32e40x_test_cfg");
 
    super.new(name);
 
+   if ($value$plusargs("timeout=%d", watchdog_timeout)) begin
+      watchdog_timeout.rand_mode(0);
+   end
+
 endfunction : new
 
 
