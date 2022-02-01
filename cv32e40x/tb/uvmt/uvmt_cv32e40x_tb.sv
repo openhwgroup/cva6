@@ -468,8 +468,15 @@ module uvmt_cv32e40x_tb;
       .boot_addr_i            (core_i.boot_addr_i),
 
       .rvfi_valid             (rvfi_i.rvfi_valid),
+      .rvfi_insn              (rvfi_i.rvfi_insn),
+      .rvfi_intr              (rvfi_i.rvfi_intr),
+      .rvfi_dbg               (rvfi_i.rvfi_dbg),
+      .rvfi_dbg_mode          (rvfi_i.rvfi_dbg_mode),
       .rvfi_pc_wdata          (rvfi_i.rvfi_pc_wdata),
       .rvfi_pc_rdata          (rvfi_i.rvfi_pc_rdata),
+      .rvfi_csr_dpc_rdata     (rvfi_i.rvfi_csr_dpc_rdata),
+      .rvfi_csr_mepc_wdata    (rvfi_i.rvfi_csr_mepc_wdata),
+      .rvfi_csr_mepc_wmask    (rvfi_i.rvfi_csr_mepc_wmask),
 
       .is_wfi                 (),
       .in_wfi                 (),
