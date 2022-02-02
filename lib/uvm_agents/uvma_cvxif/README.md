@@ -1,3 +1,6 @@
+- The agent is developed referring to the Spec in the link below:
+  - https://github.com/openhwgroup/core-v-xif/blob/43dc03563e0c79cc55922f653406a9f122f61e80/docs/source/x_ext.rst
+
 - Instructions supported by the agent:
   - CUS-ADD: does rs1 + rs2, and writeback the result
   - CUS-ADD-RS3: if X_NUM_RS==3, it does rs1 + rs2 + rs3 else it does rs1 + rs2, and writeback the result
@@ -14,4 +17,3 @@
 - Test example for CVA6:
   - cvxif.S offloads CUS-ADD, CUS-ADD-RS3 and an illegal instruction in a row
   - to execute the test, use testlist_cvxif.yaml
-
