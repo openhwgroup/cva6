@@ -23,6 +23,7 @@ class uvma_cvxif_resp_item_c extends uvm_sequence_item;
   rand result_t result;
 
   rand  logic  result_valid;
+  rand  logic  result_ready;
 
   `uvm_object_utils(uvma_cvxif_resp_item_c)
 
