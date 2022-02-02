@@ -135,16 +135,16 @@ SIMV                    = ./simv
 DSIM                    = dsim
 DSIM_HOME               = /tools/Metrics/dsim
 DSIM_CMP_FLAGS          = +define+CORE_TB -timescale 1ns/1ps $(SV_CMP_FLAGS) -suppress MultiBlockWrite +define+CV32E40P_APU_TRACE
-DSIM_RUN_FLAGS          = -write-sql
+DSIM_RUN_FLAGS          =
 DSIM_UVM_ARGS           = +incdir+$(UVM_HOME)/src $(UVM_HOME)/src/uvm_pkg.sv
 DSIM_RESULTS           ?= $(PWD)/dsim_results
 DSIM_WORK              ?= $(DSIM_RESULTS)/dsim_work
 DSIM_IMAGE              = dsim.out
 
 ifneq (${WAVES}, 0)
-  DSIM_CMP_FLAGS += +acc+b
+  DSIM_CMP_FLAGS += +acc
   DSIM_DMP_FILE  ?= dsim.fst
-  DSIM_RUN_FLAGS += -waves $(DSIM_DMP_FILE) +disass +disass_display
+  DSIM_RUN_FLAGS += -waves $(DSIM_DMP_FILE)
 endif
 
 # xrun is the Cadence xcelium SystemVerilog simulator (https://cadence.com/)
@@ -313,8 +313,7 @@ dsim-test: dsim-comp $(TEST_PROGRAM_PATH)/$(TEST)/$(TEST).hex
 		-work $(DSIM_WORK) \
 		$(DSIM_RUN_FLAGS) \
 		-sv_lib $(UVM_HOME)/src/dpi/libuvm_dpi.so \
-		-sv_lib $(OVP_MODEL_DPI)  \
-		+firmware=$(TEST_PROGRAM_PATH)/$(TEST)/$(TEST).hex
+		+firmware=$(VERI_CUSTOM)/$(TEST)/$(TEST).hex
 
 # Metrics dsim cleanup
 .PHONY: dsim-clean
@@ -509,7 +508,8 @@ veri-test: verilate $(TEST_PROGRAM_PATH)/$(TEST)/$(TEST).hex
 	@echo "* Running with Verilator: logfile in $(SIM_TEST_RESULTS)/$(TEST).log"
 	@echo "$(BANNER)"
 	mkdir -p $(VERI_LOG_DIR)
-	./testbench_verilator $(VERI_FLAGS) \
+	$(SIM_TEST_RESULTS)/verilator_executable \
+		$(VERI_FLAGS) \
 		"+firmware=$(TEST_PROGRAM_RELPATH)/$(TEST)/$(TEST).hex" \
 		| tee $(VERI_LOG_DIR)/$(TEST).log
 
