@@ -17,18 +17,6 @@
  */
 class uvma_cvxif_req_item_c extends uvm_sequence_item;
 
-  typedef struct packed {
-    logic [31:0]      instr;
-    logic  [3:0]      id;
-    logic  [1:0]      mode;
-    logic [2:0][31:0] rs;
-  } x_issue_req;
-
-  typedef struct packed {
-    logic  [3:0]      id;
-    logic             commit_kill;
-  } x_commit;
-
   rand x_issue_req issue_req;
   rand x_commit commit_req;
 

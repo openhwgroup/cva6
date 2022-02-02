@@ -18,24 +18,6 @@
 
 class uvma_cvxif_resp_item_c extends uvm_sequence_item;
 
-  typedef struct packed {
-    logic    accept;
-    logic    writeback;
-    logic    dualwrite;
-    logic    dualread;
-    logic    loadstore;
-    logic    exc;
-  } issue_resp_t;
-
-  typedef struct packed {
-    logic  [3:0]   id;
-    logic  [31:0]  data;
-    logic  [4:0]   rd;
-    logic          we;
-    logic          exc;
-    logic  [5:0]   exccode;
-  } result_t ;
-
   rand issue_resp_t issue_resp;
 
   rand result_t result;
