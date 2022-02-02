@@ -10,7 +10,7 @@
 /**
  * Encapsulates assertions targeting uvma_cvxif_if.
  */
-module uvma_cvxif_assert #(parameter X_ID_WIDTH = ariane_pkg::TRANS_ID_BITS)
+module uvma_cvxif_assert #(parameter X_ID_WIDTH = cvxif_pkg::X_ID_WIDTH)
    (uvma_cvxif_if cvxif_assert,
     input bit clk
    );

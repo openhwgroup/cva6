@@ -1,6 +1,9 @@
 - The agent is developed referring to the Spec in the link below:
   - https://github.com/openhwgroup/core-v-xif/blob/43dc03563e0c79cc55922f653406a9f122f61e80/docs/source/x_ext.rst
 
+- cvxif_pkg.sv is a package, in the core directory, where the cvxif interface signals are described.
+  So, to be able to use the cvxif agent you need to have this package.
+
 - Instructions supported by the agent:
   - CUS-ADD: does rs1 + rs2, and writeback the result
   - CUS-ADD-RS3: if X_NUM_RS==3, it does rs1 + rs2 + rs3 else it does rs1 + rs2, and writeback the result
