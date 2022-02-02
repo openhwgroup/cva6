@@ -106,6 +106,6 @@ A few plusarg options are supported:
 
 Examples
 --------
-Run all riscv_tests to completion with **dsim**:  
+Run all riscv_tests to completion with **dsim**:
 `make dsim-cv32_riscv_tests`
 

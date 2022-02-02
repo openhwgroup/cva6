@@ -61,90 +61,94 @@ cores currently in development:
 - `CV32E40P user manual <https://cv32e40p.readthedocs.io/en/latest/>`_
 - `CV32E40X RTL source <https://github.com/openhwgroup/cv32e40x>`_
 - `CV32E40X user manual <https://cv32e40x.readthedocs.io/en/latest/>`_
+- `CV32E40S RTL source <https://github.com/openhwgroup/cv32e40s>`_
+- `CV32E40S user manual <https://cv32e40s.readthedocs.io/en/latest/>`_
 - `CVA6 RTL source <https://github.com/openhwgroup/cva6>`_
 - `CVA6 user manual <https://cva6.readthedocs.io/en/latest/intro.html>`_
 
-The OpenHW Group also maintains multiple repositories for stand-alone verification components.
+The OpenHW Group also maintains the following repositories for stand-alone verification components:
 
 - `FORCE-RISCV <https://github.com/openhwgroup/force-riscv>`_ Instruction stream generator denotated by Futurewei.
 
 Definition of Terms
 -------------------
 
-+-------------+--------------------------------------------------------------------+
-| Term        | Defintion                                                          |
-+=============+====================================================================+
-| CORE-V      | A family of RISC-V cores developed by the OpenHW Group.            |
-+-------------+--------------------------------------------------------------------+
-| Member      | A company or organization that signs-on with the OpenHW            |
-| Company     | Group and contributes resources (capital, people,                  |
-| (MemberCo)  | infrastructure, software tools etc.) to the CORE-V                 |
-|             | verification project.                                              |
-+-------------+--------------------------------------------------------------------+
-| Active      | An employee of a Member Company that has been assigned to          |
-| Contributor | work on an OpenHW Group project.                                   |
-+-------------+--------------------------------------------------------------------+
-| Instruction | A behavioural model of a CPU. An ISS can execute the same          |
-| Set         | code as a real CPU and will produce the same logical               |
-| Simulator   | results as the real thing. Typically only “ISA visible”            |
-| (ISS)       | state, such as GPRs and CSRs are modelled, and any                 |
-|             | internal pipelines of the CPU are abstracted away.                 |
-+-------------+--------------------------------------------------------------------+
-| ELF         | Executable and Linkable Format, is a common standard file          |
-|             | format for executable files. The RISC-V GCC toolchain              |
-|             | compiles C and/or RISC-V Assembly source files into ELF            |
-|             | files.                                                             |
-+-------------+--------------------------------------------------------------------+
-| SDK         | Software Developers Toolkit.                                       |
-|             | A set of software tools used to compile C and/or RISC-V            |
-|             | assembler code into an executable format. In the case of           |
-|             | the CV32E and CVA6, this includes the supported RISC-V             |
-|             | ISA compliant instructions, plus a set of XPULP extended           |
-|             | instructions.                                                      |
-+-------------+--------------------------------------------------------------------+
-| Toolchain   | See SDK.                                                           |
-+-------------+--------------------------------------------------------------------+
-| Test-Program| A software program, written in C or RISC-V assembly, that executes |
-|             | on the simulated RTL model of a core.  Test-Programs may be        |
-|             | manually written or machine generated (e.g. riscv-dv).             |
-+-------------+--------------------------------------------------------------------+
-| BSP         | Board Support Package. A set of support files, such as a C         |
-|             | runtime configuration (crt0.S), linker control script (link.ld),   |
-|             | etc. that are used to define the software envrionment used by a    |
-|             | test-program.                                                      |
-+-------------+--------------------------------------------------------------------+
-| TPE         | Test Program Environment.  A less widely used term for BSP.        |
-+-------------+--------------------------------------------------------------------+
-| Verification| Code, scripts, configuration files and Makefiles used in           |
-| Environment | pre-silicon verification. Typically a testbench is a               |
-|             | component of the verification environment, but the terms           |
-|             | are often used interchangeably.                                    |
-+-------------+--------------------------------------------------------------------+
-| Testbench   | In UVM verification environments, a testbench is a                 |
-|             | SystemVerilog module that instantiates the device under            |
-|             | test plus the SystemVerilog Interfaces that connect to the         |
-|             | environment object. In common usage “testbench” can also           |
-|             | have the same meaning as verification environment.                 |
-+-------------+--------------------------------------------------------------------+
-| Testcase    | In the context of the CORE-V UVM verification environment, a       |
-|             | a testcase is distinct from a test-program.  A testcase is extended|
-|             | from the `uvm_test` class and is used to control the simulation of |
-|             | the UVM environment.   A test-program is a set of instructions     |
-|             | loaded into the testbench memory and executed by the simulated     |
-|             | core.                                                              |
-+-------------+--------------------------------------------------------------------+
-| $PROJ_ROOT  | Local path of a cloned copy of a GitHub repository. An             |
-|             | example to illustrate:                                             |
-|             |                                                                    |
-|             | [prompt]$ cd /wrk/greg/openhw                                      |
-|             |                                                                    |
-|             | [prompt]$ git clone https://github.com/openhwgroup/core-v-verif    |
-|             |                                                                    |
-|             | Here $PROJ_ROOT is /wrk/greg/openhw/core-v-verif. Note             |
-|             | that this is not a required shell variable – its use in this       |
-|             | document is merely as a reference point for an absolute path to    |
-|             | your working copy.                                                 |
-+-------------+--------------------------------------------------------------------+
++---------------+--------------------------------------------------------------------+
+| Term          | Defintion                                                          |
++===============+====================================================================+
+| BSP           | Board Support Package. A set of support files, such as a C         |
+|               | runtime configuration (crt0.S), linker control script (link.ld),   |
+|               | etc. that are used to define the software envrionment used by a    |
+|               | test-program.                                                      |
++---------------+--------------------------------------------------------------------+
+| Committer     | A Contributor who has privileges to approve and merge              |
+|               | pull-requests into OpenHW Group GitHub repositories.               |
++---------------+--------------------------------------------------------------------+
+| Contributor   | An employee of a Member Company that has been assigned to          |
+|               | work on an OpenHW Group project.                                   |
++---------------+--------------------------------------------------------------------+
+| CORE-V        | A family of RISC-V cores developed by the OpenHW Group.            |
++---------------+--------------------------------------------------------------------+
+| ELF           | Executable and Linkable Format, is a common standard file          |
+|               | format for executable files. The RISC-V GCC toolchain              |
+|               | compiles C and/or RISC-V Assembly source files into ELF            |
+|               | files.                                                             |
++---------------+--------------------------------------------------------------------+
+| Instruction   | A behavioural model of a CPU. An ISS can execute the same          |
+| Set           | code as a real CPU and will produce the same logical               |
+| Simulator     | results as the real thing. Typically only “ISA visible”            |
+| (ISS)         | state, such as GPRs and CSRs are modelled, and any                 |
+|               | internal pipelines of the CPU are abstracted away.                 |
++---------------+--------------------------------------------------------------------+
+| Member        | A company or organization that signs-on with the OpenHW            |
+| Company       | Group and contributes resources (capital, people,                  |
+| (MemberCo)    | infrastructure, software tools etc.) to the CORE-V                 |
+|               | verification project.                                              |
++---------------+--------------------------------------------------------------------+
+| Toolchain     | A set of software tools used to compile C and/or RISC-V            |
+|               | assembler code into an executable format.                          |
++---------------+--------------------------------------------------------------------+
+| Testbench     | In UVM verification environments, a testbench is a                 |
+|               | SystemVerilog module that instantiates the device under            |
+|               | test plus the SystemVerilog Interfaces that connect to the         |
+|               | environment object. In common usage “testbench” can also           |
+|               | have the same meaning as verification environment.                 |
++---------------+--------------------------------------------------------------------+
+| Testcase      | In the context of the CORE-V UVM verification environment, a       |
+|               | a testcase is distinct from a test-program.  A testcase is extended|
+|               | from the `uvm_test` class and is used to control the the UVM       |
+|               | environment at run-time.                                           |
+|               |                                                                    |
+|               | In core-v-verif a testcase _may_ be aware of the test-program.     |
++---------------+--------------------------------------------------------------------+
+| Test-Program  | A software program, written in C or RISC-V assembly, that executes |
+|               | on the simulated RTL model of a core.  Test-Programs may be        |
+|               | manually written or machine generated (e.g. riscv-dv).             |
+|               |                                                                    |
+|               | In core-v-verif a test-program is not aware of the UVM testcase.   |
++---------------+--------------------------------------------------------------------+
+| TPE           | Test-program Environment.  A less widely used term for BSP.        |
++---------------+--------------------------------------------------------------------+
+| Verification  | An object constructed from a SystemVerilog class that is an        |
+| Environment   | extension of `uvm_environment`.  In common usage "verification     |
+|               | environment" can also mean the environment object plus all of its  |
+|               | members.                                                           |
++---------------+--------------------------------------------------------------------+
+| $CORE_V_VERIF | Local path of a cloned working directory of this GitHub repository.|
+|               | An example to illustrate:                                          |
+|               |                                                                    |
+|               | [prompt]$ cd /wrk/rick/openhw                                      |
+|               |                                                                    |
+|               | [prompt]$ git clone https://github.com/openhwgroup/core-v-verif    |
+|               |                                                                    |
+|               | Here $CORE_V_VERIF is /wrk/rick/openhw/core-v-verif. Note          |
+|               | that this is not a variable the user is required to set. Its use   |
+|               | in this document is merely used as a reference point for an        |
+|               | absolute path to your working directory.                           |
++---------------+--------------------------------------------------------------------+
+| $COREV_CORE   | Shell and Make variable identifying a specific CORE-V core.        |
+|               | The most often used example in this document is CV32E40P.          |
++---------------+--------------------------------------------------------------------+
 
 Conventions Used in this Document
 ---------------------------------
@@ -160,7 +164,7 @@ The first two projects within the OpenHW Group’s CORE-V family of RISC-V cores
 are the CV32E40P and CVA6. Currently, two variants of the CV32E40P are
 defined: the CV32E40X and CV32E40S. The OpenHW Group’s work builds on
 several RISC-V open-source projects, particularly the RI5CY and Ariane
-projects from PULP-Platform. CV32E40P is a derived of the RI5CY
+projects from PULP-Platform. CV32E40P is a derivation of the RI5CY
 project [2]_, and CVA6 is derived from Ariane [3]_. In addition, the
 verification environment for CORE-V leverages previous work done by
 lowRISC and others for the Ibex project, which is a fork of the

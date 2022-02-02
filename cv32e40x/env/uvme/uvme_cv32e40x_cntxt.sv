@@ -26,7 +26,6 @@
 class uvme_cv32e40x_cntxt_c extends uvm_object;
 
    // Virtual interface for Debug coverage
-   // FIXME:strichmo:The debug coverage interface needs to be reimplemented for new controller
    virtual uvmt_cv32e40x_debug_cov_assert_if debug_cov_vif;
    virtual uvmt_cv32e40x_vp_status_if        vp_status_vif; ///< Virtual interface for Virtual Peripherals
    virtual uvma_interrupt_if                 intr_vif     ; ///< Virtual interface for interrupts

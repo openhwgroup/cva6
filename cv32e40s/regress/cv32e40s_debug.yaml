@@ -7,7 +7,7 @@ description: Directed and random debug tests for CV32E40S
 # List of builds
 builds:
   corev-dv:
-    # required: Make the corev-dv infrastructure    
+    # required: Make the corev-dv infrastructure
     cmd: make comp_corev-dv
     dir: cv32e40s/sim/uvmt
     cov: 0
@@ -20,16 +20,24 @@ builds:
 tests:
   debug_test:
     build: uvmt_cv32e40s
-    description: Debug directed test  
+    description: Debug directed test
     dir: cv32e40s/sim/uvmt
     cmd: make test TEST=debug_test
-    num: 20
+    num: 10
 
   debug_test_reset:
     build: uvmt_cv32e40s
-    description: Debug reset test  
+    description: Debug reset test
     dir: cv32e40s/sim/uvmt
     cmd: make test TEST=debug_test_reset
+    num: 10
+
+  debug_test_trigger:
+    build: uvmt_cv32e40s
+    description: Debug trigger test
+    dir: cv32e40s/sim/uvmt
+    cmd: make test TEST=debug_test_trigger
+    num: 10
 
   debug_test_boot_set:
     build: uvmt_cv32e40s

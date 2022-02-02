@@ -8,17 +8,19 @@ description: Runs all RISCV compliance tests on the CV32E40S
 builds:
   uvmt_cv32e40s:
     cmd: make comp
+    cfg: no_bitmanip
     dir: cv32e40s/sim/uvmt
 
   uvmt_cv32e40s_compliance_build:
     cmd: make all_compliance
+    cfg: no_bitmanip
     dir: cv32e40s/sim/uvmt
 
 # List of tests
 tests:
   # -------------------------------------------------------------------------
   # RV32IMC tests
-  # -------------------------------------------------------------------------  
+  # -------------------------------------------------------------------------
   C-ADD:
     build: uvmt_cv32e40s_compliance_build
     description: RISCV_COMPLIANCE_C-ADD
@@ -95,7 +97,7 @@ tests:
     dir: cv32e40s/sim/uvmt
     cmd: make compliance_check_sig RISCV_ISA=rv32imc COMPLIANCE_PROG=C-JALR
     results: rv32imc/C-JALR
-    
+
   C-JR:
     build: uvmt_cv32e40s_compliance_build
     description: RISCV_COMPLIANCE_C-JR
@@ -196,7 +198,7 @@ tests:
 
   # -------------------------------------------------------------------------
   # RV32IMC tests
-  # -------------------------------------------------------------------------  
+  # -------------------------------------------------------------------------
 
   I-ADD-01:
     build: uvmt_cv32e40s_compliance_build
@@ -239,7 +241,7 @@ tests:
     dir: cv32e40s/sim/uvmt
     cmd: make compliance_check_sig RISCV_ISA=rv32i COMPLIANCE_PROG=I-BEQ-01
     results: rv32i/I-BEQ-01
-  
+
   I-BGE-01:
     build: uvmt_cv32e40s_compliance_build
     description: RISCV_COMPLIANCE_I-BGE-01
@@ -267,7 +269,7 @@ tests:
     dir: cv32e40s/sim/uvmt
     cmd: make compliance_check_sig RISCV_ISA=rv32i COMPLIANCE_PROG=I-BLTU-01
     results: rv32i/I-BLTU-01
-    
+
   I-BNE-01:
     build: uvmt_cv32e40s_compliance_build
     description: RISCV_COMPLIANCE_I-BNE-01
@@ -295,7 +297,7 @@ tests:
   #   description: RISCV_COMPLIANCE_I-ECALL-01
   #   dir: cv32e40s/sim/uvmt
   #   cmd: make compliance_check_sig RISCV_ISA=rv32i COMPLIANCE_PROG=I-ECALL-01
-  
+
   I-ENDIANESS-01:
     build: uvmt_cv32e40s_compliance_build
     description: RISCV_COMPLIANCE_I-ENDIANESS-01
@@ -316,7 +318,7 @@ tests:
     dir: cv32e40s/sim/uvmt
     cmd: make compliance_check_sig RISCV_ISA=rv32i COMPLIANCE_PROG=I-JAL-01
     results: rv32i/I-JAL-01
-  
+
   I-JALR-01:
     build: uvmt_cv32e40s_compliance_build
     description: RISCV_COMPLIANCE_I-JALR-01

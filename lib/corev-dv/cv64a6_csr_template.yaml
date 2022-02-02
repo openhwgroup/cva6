@@ -1,0 +1,1908 @@
+# Copyright 2020 OpenHW Group
+# Copyright 2019 Google LLC
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#      http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#
+# SPDX-License-Identifier: Apache-2.0 WITH SHL-2.0
+#
+################################################################################
+#
+# CSR definitions for the CV64A6 CORE-V proessor core (an RV32IMCZ machine).
+#
+# This file can be used as input to "gen_csr_test.py" delivered as part of
+# Google's riscv-dv project.  Assuming you are running this from
+# core-v-verif/vendor_lib/google/corev-dv and you've cloned riscv-dv, then the
+# following command-line should work for you:
+#
+#    python3 ../riscv-dv/scripts/gen_csr_test.py \
+#            --csr_file cv64a6_csr_template.yaml \
+#            --xlen 64
+#
+# Source document is the CV64A6 user Manual:
+# https://core-v-docs-verif-strat.readthedocs.io/projects/cv64a6_um/en/latest/index.html
+# Revision 62f0d86b
+#
+# Assumptions:
+#       1. Configuration core input mtvec_addr_i == 32'h0000_0000
+#       2. Configuration core input hart_id_i == 32'h0000_0000
+#       3. Core RTL parameters set as per User Manual defaults.
+################################################################################
+#- csr: CSR_NAME
+#  description: >
+#    BRIEF_DESCRIPTION
+#  address: 0x###
+#  privilege_mode: MODE (D/M/S/H/U)
+#  rv32:
+#    - MSB_FIELD_NAME:
+#      - description: >
+#          BRIEF_DESCRIPTION
+#      - type: TYPE (WPRI/WLRL/WARL/R)
+#      - reset_val: RESET_VAL
+#      - msb: MSB_POS
+#      - lsb: LSB_POS
+#    - ...
+#    - ...
+#    - LSB_FIELD_NAME:
+#      - description: ...
+#      - type: ...
+#      - ...
+#  rv64:
+#    - MSB_FIELD_NAME:
+#      - description: >
+#          BRIEF_DESCRIPTION
+#      - type: TYPE (WPRI/WLRL/WARL/R)
+#      - reset_val: RESET_VAL
+#      - msb: MSB_POS
+#      - lsb: LSB_POS
+#    - ...
+#    - ...
+#    - LSB_FIELD_NAME:
+#      - description: ...
+#      - type: ...
+#      - ...
+
+#- csr: cycle
+#  description: >
+#    (HPM) Cycle Counter
+#  address: 0xC00
+#  privilege_mode: M
+#  rv32:
+#    - field_name: cycle
+#      description: >
+#        Read-only unprivileged shadow of the lower 32 bits of the 64 bit machine mode cycle counter. 
+#      type: R
+#      reset_val: 0
+#      msb: 31
+#      lsb: 0
+#- csr: instret
+#  description: >
+#    (HPM) Instruction-Retired Counter
+#  address: 0xC02
+#  privilege_mode: M
+#  rv32:
+#    - field_name: instret
+#      description: >
+#        Read-only unprivileged shadow of the lower 32 bits of the 64 bit machine mode instruction retired counter. 
+#      type: R
+#      reset_val: 0
+#      msb: 31
+#      lsb: 0
+#- csr: hpmcounter3
+#  description: >
+#    (HPM) Performance-Monitoring Counter3
+#  address: 0xC03
+#  privilege_mode: M
+#  rv32:
+#    - field_name: counter3
+#      description: >
+#        Read-only unprivileged shadow of the lower 32 bits of the 64 bit machine performance counter. 
+#      type: R
+#      reset_val: 0
+#      msb: 31
+#      lsb: 0
+#- csr: cycleh
+#  description: >
+#    (HPM) Upper 32 Cycle Counter
+#  address: 0xC80
+#  privilege_mode: M
+#  rv32:
+#    - field_name: cycleh
+#      description: >
+#        Read-only unprivileged shadow of the upper 32 bits of the 64 bit machine mode cycle counter. 
+#      type: R
+#      reset_val: 0
+#      msb: 31
+#      lsb: 0
+#- csr: instreth
+#  description: >
+#    (HPM) Upper 32 Instruction-Retired Counter
+#  address: 0xC82
+#  privilege_mode: M
+#  rv32:
+#    - field_name: instreth
+#      description: >
+#        Read-only unprivileged shadow of the upper 32 bits of the 64 bit machine mode instruction retired counter. 
+#      type: R
+#      reset_val: 0
+#      msb: 31
+#      lsb: 0
+#- csr: hpmcounter3h
+#  description: >
+#    (HPM) Upper 32 Performance-Monitoring Counter3
+#  address: 0xC83
+#  privilege_mode: M
+#  rv32:
+#    - field_name: counter3h
+#      description: >
+#        Read-only unprivileged shadow of the upper 32 bits of the 64 bit machine performance counter. 
+#      type: R
+#      reset_val: 0
+#      msb: 31
+#      lsb: 0
+
+
+#Debug
+- csr: CSR_DCSR
+  description: >
+    Debug control and status register
+  address: 0x7b0
+  privilege_mode: D
+  rv64:
+    - field_name: debugver
+      description: >
+        0(No debug support), 4(Debug support exists), 15(there is debug support, but it doesnt conform to any available version)
+      type: R
+      reset_val: 0
+      msb: 31
+      lsb: 28
+    - field_name: ebreakm
+      description: >
+        0: ebreak instructions in M-mode behave as described in the Privileged Spec.1: ebreak instructions in M-mode enter Debug Mode.
+      type: RW
+      reset_val: 0
+      msb: 15
+      lsb: 15
+    - field_name: ebreaks
+      description: >
+        0: ebreak instructions in S-mode behave as described in the Privileged Spec.1: ebreak instructions in S-mode enter Debug Mode.
+      type: RW
+      reset_val: 0
+      msb: 13
+      lsb: 13
+    - field_name: ebreaku
+      description: >
+        0: ebreak instructions in U-mode behave as described in the Privileged Spec. 1: ebreak instructions in U-mode enter Debug
+      type: RW
+      reset_val: 0
+      msb: 12
+      lsb: 12
+    - field_name: stepie
+      description: >
+        (0) Interrupts (including NMI) are disabled during single stepping. (1) Interrupts (including NMI) are enabled during single stepping.
+      type: WARL
+      reset_val: 0
+      msb: 11
+      lsb: 11
+    - field_name: Stopcount
+      description: >
+        (0) Increment counters as usual. (1) increment any hart-local counters while in Debug Mode or on ebreak instructions that cause entry into Debug Mode.
+      type: WARL
+      reset_val: 0
+      msb: 10
+      lsb: 10
+    - field_name: stoptime
+      description: >
+        (0) Increment timers as usual. (1) increment any hart-local timers while in Debug Mode.
+      type: WARL
+      reset_val: 0
+      msb: 9
+      lsb: 9
+    - field_name: cause
+      description: >
+       Explains why Debug Mode was entered
+      type: RW
+      reset_val: 0
+      msb: 8
+      lsb: 6
+    - field_name: mprven
+      description: >
+        (0) MPRV in mstatus is ignored in Debug Mode.(1) MPRV in mstatus takes effect in Debug Mode.
+      type: WARL
+      reset_val: 0
+      msb: 4
+      lsb: 4
+    - field_name: nmip
+      description: >
+        When set, there is a Non-Maskable-Interrupt (NMI) pending for the hart.
+      type: R
+      reset_val: 0
+      msb: 3
+      lsb: 3
+    - field_name: step
+      description: >
+        When set and not in Debug Mode, the hart will only execute a single instruction and then enter Debug Mode.
+      type: RW
+      reset_val: 0
+      msb: 2
+      lsb: 2
+    - field_name: prv
+      description: >
+        When set and not in Debug Mode, the hart will only execute a single instruction and then enter Debug Mode.
+      type: RW
+      reset_val: 0
+      msb: 1
+      lsb: 1
+
+- csr: CSR_DPC
+  description: >
+    Debug PC
+  address: 0x7b1
+  privilege_mode: D
+  rv64:
+    - field_name: dpc
+      description: >
+        update with the virtual address of the next instruction to be executed        
+      type: RW
+      reset_val: 0
+      msb: 63
+      lsb: 0
+
+- csr: CSR_DSCRATCH0
+  description: >
+    Debug scratch register 0
+  address: 0x7b2
+  privilege_mode: D
+  rv64:
+    - field_name: DSCRATCH0
+      description: >
+        Optional scratch register
+      type: RW
+      reset_val: 0
+      msb: 63
+      lsb: 0
+
+- csr: CSR_DSCRATCH1
+  description: >
+    Debug scratch register 1
+  address: 0x7b3
+  privilege_mode: D
+  rv64:
+    - field_name: DSCRATCH1
+      description: >
+        Optional scratch register
+      type: RW
+      reset_val: 0
+      msb: 63
+      lsb: 0
+      
+ #Supervisor
+ 
+- csr: CSR_SSTATUS
+  description: >
+    Supervisor status register
+  address: 0x100
+  privilege_mode: S
+  rv64:
+    - field_name: SD
+      description: >
+        SD
+      type: RW
+      reset_val: 0
+      msb: 63
+      lsb: 63
+    - field_name: UXL
+      description: >
+       UXL 
+      type: RW
+      reset_val: 0
+      msb: 33
+      lsb: 32
+    - field_name: WPRI
+      description: >
+       reserved for future use 
+      type: WPRI
+      reset_val: 0
+      msb: 31
+      lsb: 20
+    - field_name: MXR
+      description: >
+        The MXR bit modifies the privilege with which loads access virtual memory
+      type: RW
+      reset_val: 0
+      msb: 19
+      lsb: 19
+    - field_name: SUM
+      description: >
+        The SUM bit modifies the privilege with which S-mode loads and stores access virtual memory.
+      type: RW
+      reset_val: 0
+      msb: 18
+      lsb: 18
+    - field_name: WPRI
+      description: >
+       reserved for future use 
+      type: WPRI
+      reset_val: 0
+      msb: 17
+      lsb: 17
+    - field_name: XS
+      description: >
+       XS 
+      type: RW
+      reset_val: 0
+      msb: 16
+      lsb: 15
+    - field_name: FS
+      description: >
+       FS 
+      type: RW
+      reset_val: 0
+      msb: 14
+      lsb: 13
+    - field_name: WPRI
+      description: >
+       reserved for future use 
+      type: WPRI
+      reset_val: 0
+      msb: 12
+      lsb: 9
+    - field_name: SPP
+      description: >
+        SPP bit indicates the privilege level at which a hart was executing before entering supervisor mode.
+      type: RW
+      reset_val: 0
+      msb: 8
+      lsb: 8
+    - field_name: WPRI
+      description: >
+        reserved for future use
+      type: WPRI
+      reset_val: 0
+      msb: 7
+      lsb: 6
+    - field_name: SPIE
+      description: >
+        The SPIE bit indicates whether supervisor interrupts were enabled prior to trappin into supervisor mode.
+      type: RW
+      reset_val: 0
+      msb: 5
+      lsb: 5
+    - field_name: UPIE
+      description: >
+        When a URET instruction is executed, UIE is set to UPIE, and UPIE is set to 1. 
+      type: RW
+      reset_val: 0
+      msb: 4
+      lsb: 4
+    - field_name: WPRI
+      description: >
+        reserved for future use
+      type: WPRI
+      reset_val: 0
+      msb: 3
+      lsb: 2
+    - field_name: SIE
+      description: >
+        The SIE bit enables or disables all interrupts in supervisor mode. 
+      type: RW
+      reset_val: 0
+      msb: 1
+      lsb: 1
+    - field_name: UIE
+      description: >
+        The UIE bit enables or disables user-mode interrupts.
+      type: RW
+      reset_val: 0
+      msb: 0
+      lsb: 0
+
+- csr: CSR_SIE
+  description: >
+    Supervisor Interrupt enable register
+  address: 0x104
+  privilege_mode: S
+  rv64:
+    - field_name: WPRI 
+      description: >
+        reserved for future use
+      type: RW
+      reset_val: 0
+      msb: 63
+      lsb: 10
+    - field_name: SEIE 
+      description: >
+        Supervisorlevel external interrupts are disabled when the SEIE bit        
+      type: RW
+      reset_val: 0
+      msb: 9
+      lsb: 9
+    - field_name: UEIE 
+      description: >
+        User-level external interrupts are disabled when the UEIE bit in the sie register is clear.
+      type: RW
+      reset_val: 0
+      msb: 8
+      lsb: 8
+    - field_name: WPRI
+      description: >
+        reserved for future use
+      type: RW
+      reset_val: 0
+      msb: 7
+      lsb: 6
+    - field_name: STIE
+      description: >
+        Supervisorlevel timer interrupts are disabled when the STIE bit in the sie register is clear.        
+      type: RW
+      reset_val: 0
+      msb: 5
+      lsb: 5
+    - field_name: UTIE
+      description: >
+        User-level timer interrupts are disabled when the UTIE bit in the sie register is clear.        
+      type: RW
+      reset_val: 0
+      msb: 4
+      lsb: 4
+    - field_name: WPRI 
+      description: >
+        reserved for future use
+      type: RW
+      reset_val: 0
+      msb: 3
+      lsb: 2
+    - field_name: SSIE 
+      description: >
+        Supervisor-level software interrupts are disabled when the SSIE bit in the sie register is clear.
+      type: RW
+      reset_val: 0
+      msb: 1
+      lsb: 1
+    - field_name: USIE 
+      description: >
+        User-level software interrupts are disabled when the USIE bit in the sie register is clear        
+      type: RW
+      reset_val: 0
+      msb: 0
+      lsb: 0
+
+- csr: CSR_SIP
+  description: >
+    Supervisor interrupt pending
+  address: 0x144
+  privilege_mode: S
+  rv64:
+    - field_name: WPRI
+      description: >
+        reserved for future use
+      type: RW
+      reset_val: 0
+      msb: 63
+      lsb: 10
+    - field_name: SEIP
+      description: >
+        A supervisor-level external interrupt is pending if the SEIP bit in the sip register is set.
+      type: RW
+      reset_val: 0
+      msb: 9
+      lsb: 9
+    - field_name: UEIP
+      description: >
+        UEIP may be written by S-mode software to indicate to U-mode that an external interrupt is pending.        
+      type: RW
+      reset_val: 0
+      msb: 8
+      lsb: 8
+    - field_name: WPRI
+      description: >
+        reserved for future use
+      type: RW
+      reset_val: 0
+      msb: 7
+      lsb: 6
+    - field_name: STIP
+      description: >
+        A supervisor-level timer interrupt is pending if the STIP bit in the sip register is set
+      type: RW
+      reset_val: 0
+      msb: 5
+      lsb: 5
+    - field_name: UTIP
+      description: >
+        A user-level timer interrupt is pending if the UTIP bit in the sip register is set
+      type: RW
+      reset_val: 0
+      msb: 4
+      lsb: 4
+    - field_name: WPRI
+      description: >
+        reserved for future use
+      type: RW
+      reset_val: 0
+      msb: 3
+      lsb: 2
+    - field_name: SSIP
+      description: >
+        A supervisor-level software interrupt is triggered on the current hart by writing 1 to its supervisor software interrupt-pending (SSIP) bit 
+      type: RW
+      reset_val: 0
+      msb: 1
+      lsb: 1
+    - field_name: USIP
+      description: >
+        A user-level software interrupt is triggered on the current hart by  riting 1 to its user software interrupt-pending (USIP) bit 
+      type: RW
+      reset_val: 0
+      msb: 0
+      lsb: 0
+
+- csr: CSR_STVEC
+  description: >
+    Supervisor trap handler base address
+  address: 0x105
+  privilege_mode: S
+  rv64:
+    - field_name: BASE
+      description: >
+        The BASE field in stvec is a WARL field that can hold any valid virtual or physical address, subject to alignment constraints
+      type: WARL
+      reset_val: 0
+      msb: 63
+      lsb: 2
+    - field_name: MODE
+      description: >
+        When MODE=Direct, all traps into supervisor mode cause the pc to be set to the address in the BASE field. When MODE=Vectored, all synchronous exceptions into supervisor mode cause the pc to be set to the address in the BASE field, whereas interrupts cause the pc to be set to the address in the BASE field plus four times the interrupt cause number.
+      type: WARL
+      reset_val: 0
+      msb: 1
+      lsb: 0
+
+- csr: CSR_SCOUNTEREN
+  description: >
+    Supervisor counter enable
+  address: 0x106
+  privilege_mode: S
+  rv64:
+    - field_name: HPMn
+      description: >
+        When its is clear, attempts to read the cycle,time, instret, or hpmcountern register while executing in U-mode will cause an illegal instruction exception. When one of these bits is set, access to the corresponding register is permitted.
+      type: RW
+      reset_val: 0
+      msb: 31
+      lsb: 3
+    - field_name: IR
+      description: >
+         When its is clear, attempts to read the cycle,time, instret, or hpmcountern register while executing in U-mode will cause an illegal instruction exception. When one of these bits is set, access to the corresponding register is permitted
+      type: RW
+      reset_val: 0
+      msb: 2
+      lsb: 2
+    - field_name: TM
+      description: >
+         When its is clear, attempts to read the cycle,time, instret, or hpmcountern register while executing in U-mode will cause an illegal instruction exception. When one of these bits is set, access to the corresponding register is permitted        
+      type: RW
+      reset_val: 0
+      msb: 1
+      lsb: 1
+    - field_name: CY
+      description: >
+         When its is clear, attempts to read the cycle,time, instret, or hpmcountern register while executing in U-mode will cause an illegal instruction exception. When one of these bits is set, access to the corresponding register is permitted
+      type: RW
+      reset_val: 0
+      msb: 0
+      lsb: 0
+
+- csr: CSR_SSCRATCH
+  description: >
+    Scartch Register for supervisor trap handlers
+  address: 0x140
+  privilege_mode: S
+  rv64:
+    - field_name: SSCRATCH
+      description: >
+        it is used to hold a pointer to the hart-local supervisor context while the hart is executing user code.
+      type: RW
+      reset_val: 0
+      msb: 63
+      lsb: 0
+
+- csr: CSR_SEPC
+  description: >
+    Supervisor exception program counter
+  address: 0x141
+  privilege_mode: S
+  rv64:
+    - field_name: SEPC
+      description: >
+        On implementations that support only IALIGN=32, the two low bits (sepc[1:0]) are always zero
+        
+      type: RW
+      reset_val: 0
+      msb: 63
+      lsb: 0
+
+- csr: CSR_SCAUSE
+  description: >
+    Supervisor trap cause
+  address: 0x142
+  privilege_mode: S
+  rv64:
+    - field_name: Interrupt
+      description: >
+        The Interrupt bit in the scause register is set if the trap was caused by an interrupt.
+      type: RW
+      reset_val: 0
+      msb: 63
+      lsb: 63
+    - field_name: Exception Code
+      description: >
+        The Exception Code field contains a code identifying the last exception     
+      type: WLRL
+      reset_val: 0
+      msb: 62
+      lsb: 0
+- csr: CSR_STVAL
+  description: >
+    Supervisor bad address or instruction
+  address: 0x143
+  privilege_mode: S
+  rv64:
+    - field_name: Count
+      description: >
+        when a trap is taken into S-mode, stval is written with exception-specific information to assist software in handling the trap. 
+      type: RW
+      reset_val: 0
+      msb: 63
+      lsb: 0
+
+- csr: CSR_SATP
+  description: >
+    Supervisor address translation and protection
+  address: 0x180
+  privilege_mode: S
+  rv64:
+    - field_name: MODE
+      description: >
+        this selects the current address-translation scheme.        
+      type: WARL
+      reset_val: 0
+      msb: 63
+      lsb: 60
+    - field_name: ASID
+      description: >
+       address space identifier, which facilitates address-translation fences on a per-address-space basis
+      type: WARL
+      reset_val: 0
+      msb: 59
+      lsb: 44
+    - field_name: PPN
+      description: >
+        physical page number (PPN), this holds the root page table 
+      type: WARL
+      reset_val: 0
+      msb: 43
+      lsb: 0
+#Machine
+
+- csr: CSR_MSTATUS
+  description: >
+    Machine Status Register
+  address: 0x300
+  privilege_mode: M
+  rv64:
+    - field_name: SD
+      description: >
+       SD 
+      type: RW
+      reset_val: 0
+      msb: 63
+      lsb: 63
+    - field_name: WPRI
+      description: >
+       reserved for future use 
+      type: WPRI
+      reset_val: 0
+      msb: 62
+      lsb: 36 
+    - field_name: SXL
+      description: >
+       SXL 
+      type: RW
+      reset_val: 0
+      msb: 35
+      lsb: 34
+    - field_name: UXL
+      description: >
+       UXL 
+      type: RW
+      reset_val: 0
+      msb: 33
+      lsb: 32
+    - field_name: WPRI
+      description: >
+       reserved for future use 
+      type: WPRI
+      reset_val: 0
+      msb: 31
+      lsb: 23
+    - field_name: TSR
+      description: >
+       Trap SRET: supports intercepting the supervisor exception return instruction
+      type: RW
+      reset_val: 0
+      msb: 22
+      lsb: 22
+    - field_name: TW
+      description: >
+       Timeout Wait: supports intercepting the WFI instruction 
+      type: RW
+      reset_val: 0
+      msb: 21
+      lsb: 21
+    - field_name: TVM
+      description: >
+        Trap Virtual Memory,supports intercepting supervisor virtual-memory management operations.
+      type: RW
+      reset_val: 0
+      msb: 20
+      lsb: 20
+    - field_name: MXR
+      description: >
+        Make eXecutable Readable: modifies the privilege with which loads access virtual memory.        
+      type: RW
+      reset_val: 0
+      msb: 19
+      lsb: 19
+    - field_name: SUM
+      description: >
+        permit Supervisor User Memory access
+      type: RW
+      reset_val: 0
+      msb: 18
+      lsb: 18
+    - field_name: MPRV
+      description: >
+       Modify PRiVilege 
+      type: RW
+      reset_val: 0
+      msb: 17
+      lsb: 17
+    - field_name: XS
+      description: >
+        use to reduce the cost of context save and restore by setting and tracking the current state
+      type: RW
+      reset_val: 0
+      msb: 16
+      lsb: 15
+    - field_name: FS
+      description: >
+       use to reduce the cost of context save and restore by setting and tracking the current state 
+      type: RW
+      reset_val: 0
+      msb: 14
+      lsb: 13
+    - field_name: MPP
+      description: >
+        xPP fields can only hold privilege modes up to x, so MPP is two bits wide, SPP is one bit wide, and UPP is implicitly zero 
+      type: RW
+      reset_val: 0
+      msb: 12
+      lsb: 11
+    - field_name: WPRI
+      description: >
+       reserved for future use 
+      type: WPRI
+      reset_val: 0
+      msb: 10
+      lsb: 9
+    - field_name: SPP
+      description: >
+       xPP fields can only hold privilege modes up to x, so MPP is two bits wide, SPP is one bit wide, and UPP is implicitly zero  
+      type: RW
+      reset_val: 0
+      msb: 8
+      lsb: 8
+    - field_name: MPIE
+      description: >
+        MPIE       
+      type: RW
+      reset_val: 0
+      msb: 7
+      lsb: 7
+    - field_name: WPRI
+      description: >
+       reserved for future use 
+      type: WPRI
+      reset_val: 0
+      msb: 6
+      lsb: 6
+    - field_name: SPIE
+      description: >
+        indicates whether supervisor interrupts were enabled prior to trapping into supervisor mode        
+      type: RW
+      reset_val: 0
+      msb: 5
+      lsb: 5
+    - field_name: UPIE
+      description: >
+        indicates whether user-level interrupts were enabled prior to taking a user-level trap
+      type: RW
+      reset_val: 0
+      msb: 4
+      lsb: 4
+    - field_name: MIE
+      description: >
+       Global interrupt-enable bits 
+      type: RW
+      reset_val: 0
+      msb: 3
+      lsb: 3
+    - field_name: WPRI
+      description: >
+       reserved for future use 
+      type: WPRI
+      reset_val: 0
+      msb: 2
+      lsb: 2
+    - field_name: SIE
+      description: >
+       Global interrupt-enable bits 
+      type: RW
+      reset_val: 0
+      msb: 1
+      lsb: 1
+    - field_name: UIE
+      description: >
+       Global interrupt-enable bits 
+      type: RW
+      reset_val: 0
+      msb: 0
+      lsb: 0
+
+- csr: CSR_MISA
+  description: >
+    ISA and extensions
+  address: 0x301
+  privilege_mode: M
+  rv64:
+    - field_name: MXL
+      description: > 
+        Machine XLEN, field encodes the native base integer ISA width
+      type: WARL
+      reset_val: 0
+      msb: 63
+      lsb: 62
+    - field_name: Extensions
+      description: >
+        this encodes the presence of the standard extensions, with a single bit per letter of the alphabet
+      type: WARL
+      reset_val: 0
+      msb: 25
+      lsb: 0
+
+- csr: CSR_MEDELEG
+  description: >
+    Machine exception delegation register
+  address: 0x302
+  privilege_mode: M
+  rv64:
+    - field_name: Synchronous Exceptions
+      description: >
+       It has a bit position allocated for every synchronous exception` 
+      type: WARL
+      reset_val: 0
+      msb: 63
+      lsb: 0
+
+- csr: CSR_MIDELEG
+  description: >
+    Machine interrupt delegation register
+  address: 0x303
+  privilege_mode: M
+  rv64:
+    - field_name: Interrupts
+      description: >
+       holds trap delegation bits for individual interrupts 
+      type: RW
+      reset_val: 0
+      msb: 63
+      lsb: 0
+
+- csr: CSR_MIE
+  description: >
+    Machine Interrupt enable register
+  address: 0x304
+  privilege_mode: M
+  rv64:
+    - field_name: MEIE 
+      description: >
+       enables machine external interrupts when set 
+      type: WARL
+      reset_val: 0
+      msb: 11
+      lsb: 11
+    - field_name: SEIE  
+      description: >
+       enable S-mode external interrupts,        
+      type: WARL
+      reset_val: 0
+      msb: 9
+      lsb: 9
+
+    - field_name: UEIE 
+      description: >
+       enables U-mode external interrupts
+      type: WARL
+      reset_val: 0
+      msb: 8
+      lsb: 8
+
+    - field_name: MTIE 
+      description: >
+       timer interrupt-enable bit for M-mode 
+      type: WARL
+      reset_val: 0
+      msb: 7
+      lsb: 7
+    
+    - field_name: STIE 
+      description: >
+        timer interrupt-enable bit for S-mode
+      type: WARL
+      reset_val: 0
+      msb: 5
+      lsb: 5
+    
+    - field_name: UTIE 
+      description: >
+        timer interrupt-enable bit for U-mode
+      type: WARL
+      reset_val: 0
+      msb: 4
+      lsb: 4
+
+    - field_name: MSIE 
+      description: >
+       enable M-mode Software interrupts 
+      type: RW 
+      reset_val: 0
+      msb: 3
+      lsb: 3
+    - field_name: SSIE 
+      description: >
+        enable S-mode software interrupts
+      type: WARL
+      reset_val: 0
+      msb: 1
+      lsb: 1
+    - field_name: USIE 
+      description: >
+        enable U-mode software interrrupts 
+      type: WARL
+      reset_val: 0
+      msb: 0
+      lsb: 0
+
+
+- csr: CSR_MTVEC
+  description: >
+    Machine trap-handler base address
+  address: 0x305
+  privilege_mode: M
+  rv64:
+    - field_name: BASE
+      description: >
+       holds trap vector configuration, 
+      type: WARL
+      reset_val: 0
+      msb: 63
+      lsb: 2
+    - field_name: MODE
+      description: >
+        impose additional alignment constraints on the value in the BASE field        
+      type: WARL
+      reset_val: 0
+      msb: 1
+      lsb: 0
+
+- csr: CSR_MCOUNTEREN
+  description: >
+    Machine counter enable
+  address: 0x306
+  privilege_mode: M
+  rv64:
+    - field_name: HPMn
+      description: >
+        When its is clear, attempts to read the cycle,time, instret, or hpmcountern register while executing in U-mode will cause an illegal instruction exception. When one of these bits is set, access to the corresponding register is permitted.
+      type: WARL
+      reset_val: 0
+      msb: 31
+      lsb: 3
+    - field_name: IR
+      description: >
+         When its is clear, attempts to read the cycle,time, instret, or hpmcountern register while executing in U-mode will cause an illegal instruction exception. When one of these bits is set, access to the corresponding register is permitted
+      type: WARL
+      reset_val: 0
+      msb: 2
+      lsb: 2
+    - field_name: TM
+      description: >
+         When its is clear, attempts to read the cycle,time, instret, or hpmcountern register while executing in U-mode will cause an illegal instruction exception. When one of these bits is set, access to the corresponding register is permitted        
+      type: WARL
+      reset_val: 0
+      msb: 1
+      lsb: 1
+    - field_name: CY
+      description: >
+         When its is clear, attempts to read the cycle,time, instret, or hpmcountern register while executing in U-mode will cause an illegal instruction exception. When one of these bits is set, access to the corresponding register is permitted
+      type: WARL
+      reset_val: 0
+      msb: 0
+      lsb: 0
+
+- csr: CSR_MSCRATCH
+  description: >
+    Scratch register for machine trap handlers
+  address: 0x340
+  privilege_mode: M
+  rv64:
+    - field_name: mscratch
+      description: >
+        hold a pointer to a machine-mode hart-local context space and swapped with a user register upon entry to an M-mode trap handler
+      type: RW
+      reset_val: 0
+      msb: 63
+      lsb: 0
+
+- csr: CSR_MEPC
+  description: >
+    Machine exception program counter
+  address: 0x341
+  privilege_mode: M
+  rv64:
+    - field_name: mepc
+      description: >
+       holds all valid physical and virtual addresses 
+      type: WARL
+      reset_val: 0
+      msb: 63
+      lsb: 0
+
+- csr: CSR_MCAUSE
+  description: >
+    Machine Trap cause
+  address: 0x342
+  privilege_mode: M
+  rv64:
+    - field_name: Interrupt
+      description: >
+       its set if the trap was caused by an interrupt 
+      type: RW
+      reset_val: 0
+      msb: 63
+      lsb: 63
+    - field_name: exception code
+      description: >
+        hold supported exception codes        
+      type: WLRL
+      reset_val: 0
+      msb: 62
+      lsb: 0
+
+- csr: CSR_MTVAL
+  description: >
+    Machine bad address or Instruction
+  address: 0x343
+  privilege_mode: M
+  rv64:
+    - field_name: mtval
+      description: >
+        When a trap is taken into M-mode, mtval is either set to zero or written with exception-specific information to assist software in handling the trap.        
+      type: RW
+      reset_val: 0
+      msb: 63
+      lsb: 0
+
+- csr: CSR_MIP
+  description: >
+    Machine Interrupt Pending
+  address: 0x344
+  privilege_mode: M
+  rv64:
+    - field_name: MEIP 
+      description: >
+       indicate external interrupts pending
+      type: R
+      reset_val: 0
+      msb: 11
+      lsb: 11
+    - field_name: SEIP  
+      description: >
+        SEIP may be written by M-mode software to indicate to S-mode that an external interrupt is pending               
+      type: RW
+      reset_val: 0
+      msb: 9
+      lsb: 9
+    - field_name: UEIP 
+      description: >
+       enables external interrupts
+      type: RW
+      reset_val: 0
+      msb: 8
+      lsb: 8
+    - field_name: MTIP 
+      description: >
+       Correspond to timer interrupt-pending bits for machine interrupt 
+      type: R
+      reset_val: 0
+      msb: 7
+      lsb: 7
+    - field_name: STIP 
+      description: >
+        Correspond to timer interrupt-pending bits for Supervisor interrupt  
+      type: RW
+      reset_val: 0
+      msb: 5
+      lsb: 5
+    - field_name: UTIP 
+      description: >
+         Correspond to timer interrupt-pending bits for user interrupt 
+      type: RW
+      reset_val: 0
+      msb: 4
+      lsb: 4
+    - field_name: MSIP 
+      description: >
+       use for remote harts to provide machine-mode interprocessor interrupts 
+      type: R
+      reset_val: 0
+      msb: 3
+      lsb: 3
+    - field_name: SSIP 
+      description: >
+        A hart to directly write its own SSIP bits when running in the appropriate mode
+      type: RW
+      reset_val: 0
+      msb: 1
+      lsb: 1
+    - field_name: USIP 
+      description: >
+        A hart to directly write its own USIP bits when running in the appropriate mode 
+      type: RW
+      reset_val: 0
+      msb: 0
+      lsb: 0
+
+- csr: CSR_MVENDORID
+  description: >
+    Vendor ID
+  address: 0xF11
+  privilege_mode: M
+  rv64:
+    - field_name: Bank
+      description: >
+       Contain encoding for number of one-byte continuation codes discarding the parity bit 
+      type: R
+      reset_val: 0
+      msb: 31
+      lsb: 7
+    - field_name: offset
+      description: >
+       Contain encording for the final byte discarding the parity bit
+      type: R
+      reset_val: 0
+      msb: 6
+      lsb: 0
+
+- csr: CSR_MARCHID
+  description: >
+    Architecture ID
+  address: 0xF12
+  privilege_mode: M
+  rv64:
+    - field_name: Architecture ID
+      description: >
+        Provide Encoding the base microarchitecture of the hart        
+      type: R
+      reset_val: 3
+      msb: 63
+      lsb: 0
+
+- csr: CSR_MIMPID
+  description: >
+    Implementation ID
+  address: 0xF13
+  privilege_mode: M
+  rv64:
+    - field_name: Implementation
+      description: >
+        Provides unique encoding of the version of the processor implementation
+      type: R
+      reset_val: 0
+      msb: 63
+      lsb: 0
+
+- csr: CSR_MHARTID
+  description: >
+    Hardware Thread ID
+  address: 0xF14
+  privilege_mode: M
+  rv64:
+    - field_name: Hart ID
+      description: >
+        contains the integer ID of the hardware thread running the code
+      type: R
+      reset_val: 0
+      msb: 63
+      lsb: 0
+
+- csr: CSR_MCYCLE
+  description: >
+    Machine Cycle counter
+  address: 0xB00
+  privilege_mode: M
+  rv64:
+    - field_name: Count
+      description: >
+        counts the number of clock cycles executed by the processor core        
+      type: RW
+      reset_val: 0
+      msb: 63
+      lsb: 0
+
+- csr: CSR_MINSTRET
+  description: >
+    Machine Instruction retired counter
+  address: 0xB02
+  privilege_mode: M
+  rv64:
+    - field_name: Count
+      description: >
+        counts the number of instructions the hart has retired
+      type: RW
+      reset_val: 0
+      msb: 63
+      lsb: 0
+
+- csr: CSR_GPC1
+  description: >
+    GPC1-64bits
+  address: 0xB03
+  privilege_mode: M
+  rv64:
+    - field_name: Count
+      description: >
+        64-bits of GPC1
+      type: RW
+      reset_val: 0
+      msb: 63
+      lsb: 0
+
+- csr: CSR_GPC2
+  description: >
+    GPC2-64bits
+  address: 0xB04
+  privilege_mode: M
+  rv64:
+    - field_name: Count
+      description: >
+        64-bits of GPC2
+      type: RW
+      reset_val: 0
+      msb: 63
+      lsb: 0
+
+- csr: CSR_GPC3
+  description: >
+    GPC3-64bits
+  address: 0xB05
+  privilege_mode: M
+  rv64:
+    - field_name: Count
+      description: >
+        64-bits of GPC3
+      type: RW
+      reset_val: 0
+      msb: 63
+      lsb: 0
+
+- csr: CSR_GPC4
+  description: >
+    GPC4-64bits
+  address: 0xB06
+  privilege_mode: M
+  rv64:
+    - field_name: Count
+      description: >
+        64-bits of GPC4
+      type: RW
+      reset_val: 0
+      msb: 63
+      lsb: 0
+
+- csr: CSR_GPC5
+  description: >
+    GPC5-64bits
+  address: 0xB07
+  privilege_mode: M
+  rv64:
+    - field_name: Count
+      description: >
+        64-bits of GPC5
+      type: RW
+      reset_val: 0
+      msb: 63
+      lsb: 0
+
+- csr: CSR_GPC6
+  description: >
+    GPC6-64bits
+  address: 0xB08
+  privilege_mode: M
+  rv64:
+    - field_name: Count
+      description: >
+        64-bits of GPC6
+      type: RW
+      reset_val: 0
+      msb: 63
+      lsb: 0
+
+
+- csr: CSR_GPC1_PMES
+  description: >
+    Machine performance-monitoring event selector
+  address: 0x323
+  privilege_mode: M
+  rv64:
+    - field_name: mhpmevent3
+      description: >
+        event selector CSRs
+      type: RW
+      reset_val: 0
+      msb: 4
+      lsb: 0
+
+- csr: CSR_GPC2_PMES
+  description: >
+    Machine performance-monitoring event selector
+  address: 0x324
+  privilege_mode: M
+  rv64:
+    - field_name: mhpmevent4
+      description: >
+        event selector CSRs
+      type: RW
+      reset_val: 0
+      msb: 4
+      lsb: 0
+
+- csr: CSR_GPC3_PMES
+  description: >
+    Machine performance-monitoring event selector
+  address: 0x325
+  privilege_mode: M
+  rv64:
+    - field_name: mhpmevent5
+      description: >
+        event selector CSRs
+      type: RW
+      reset_val: 0
+      msb: 4
+      lsb: 0
+
+- csr: CSR_GPC4_PMES
+  description: >
+    Machine performance-monitoring event selector
+  address: 0x326
+  privilege_mode: M
+  rv64:
+    - field_name: mhpmevent6
+      description: >
+        event selector CSRs
+      type: RW
+      reset_val: 0
+      msb: 4
+      lsb: 0
+
+- csr: CSR_GPC5_PMES
+  description: >
+    Machine performance-monitoring event selector
+  address: 0x327
+  privilege_mode: M
+  rv64:
+    - field_name: mhpmevent7
+      description: >
+        event selector CSRs
+      type: RW
+      reset_val: 0
+      msb: 4
+      lsb: 0
+
+- csr: CSR_GPC6_PMES
+  description: >
+   Machine performance-monitoring event selector
+  address: 0x328
+  privilege_mode: M
+  rv64:
+    - field_name: mhpmevent8
+      description: >
+        event selector CSRs
+      type: RW
+      reset_val: 0
+      msb: 4
+      lsb: 0
+
+- csr: CSR_ICACHE
+  description: >
+   Custom Register to enable/disable for Icache [bit 0]  
+  address: 0x7C0
+  privilege_mode: M
+  rv64:
+    - field_name: ICACHE
+      description: >
+       Custom Register 
+      type: RW
+      reset_val: 1
+      msb: 0
+      lsb: 0
+
+- csr: CSR_DCACHE
+  description: >
+   Custom Register to enable/disable for Dcache [bit 0]
+  address: 0x7c1
+  privilege_mode: M
+  rv64:
+    - field_name: DCACHE
+      description: >
+        Custom Register
+      type: RW
+      reset_val: 1
+      msb: 0
+      lsb: 0
+
+- csr: CSR_PMPCFG0
+  description: >
+   Physical Memory Protection CSRs
+  address: 0x3A0
+  privilege_mode: M
+  rv64:
+    - field_name: pmp7cfg
+      description: >
+       hold the configurations 
+      type: RW
+      reset_val: 0
+      msb: 63
+      lsb: 56
+    - field_name: pmp6cfg
+      description: >
+        hold the configurations
+      type: RW
+      reset_val: 0
+      msb: 55
+      lsb: 48
+    - field_name: pmp5cfg
+      description: >
+        hold the configurations
+      type: RW
+      reset_val: 0
+      msb: 47
+      lsb: 40
+    - field_name: pmp4cfg
+      description: >
+        hold the configurations
+      type: RW
+      reset_val: 0
+      msb: 39
+      lsb: 32 
+    - field_name: pmp3cfg
+      description: >
+       hold the configurations 
+      type: RW
+      reset_val: 0
+      msb: 31
+      lsb: 24
+    - field_name: pmp2cfg
+      description: >
+        hold the configurations
+      type: RW
+      reset_val: 0
+      msb: 23
+      lsb: 16
+    - field_name: pmp1cfg
+      description: >
+        hold the configurations
+      type: RW
+      reset_val: 0
+      msb: 15
+      lsb: 8
+    - field_name: pmp0cfg
+      description: >
+        hold the configurations
+      type: RW
+      reset_val: 0
+      msb: 7
+      lsb: 0
+
+- csr: CSR_PMPCFG2
+  description: >
+   Physical Memory Protection CSRs
+  address: 0x3A2
+  privilege_mode: M
+  rv64:
+    - field_name: pmp15cfg
+      description: >
+       hold the configurations 
+      type: RW
+      reset_val: 0
+      msb: 63
+      lsb: 56
+    - field_name: pmp14cfg
+      description: >
+        hold the configurations
+      type: RW
+      reset_val: 0
+      msb: 55
+      lsb: 48
+    - field_name: pmp13cfg
+      description: >
+        hold the configurations
+      type: RW
+      reset_val: 0
+      msb: 47
+      lsb: 40
+    - field_name: pmp12cfg
+      description: >
+        hold the configurations
+      type: RW
+      reset_val: 0
+      msb: 39
+      lsb: 32 
+    - field_name: pmp11cfg
+      description: >
+       hold the configurations 
+      type: RW
+      reset_val: 0
+      msb: 31
+      lsb: 24
+    - field_name: pmp10cfg
+      description: >
+        hold the configurations
+      type: RW
+      reset_val: 0
+      msb: 23
+      lsb: 16
+    - field_name: pmp9cfg
+      description: >
+        hold the configurations
+      type: RW
+      reset_val: 0
+      msb: 15
+      lsb: 8
+    - field_name: pmp8cfg
+      description: >
+        hold the configurations
+      type: RW
+      reset_val: 0
+      msb: 7
+      lsb: 0 
+
+- csr: CSR_PMPADDR0
+  description: >
+   PMP address registers
+  address: 0x3B0
+  privilege_mode: M
+  rv64:
+    - field_name: address
+      description: >
+        encodes bits 55-2 of a 56-bit physical address
+      type: RW
+      reset_val: 0
+      msb: 63
+      lsb: 0
+
+- csr: CSR_PMPADDR1
+  description: >
+   PMP address registers
+  address: 0x3B1
+  privilege_mode: M
+  rv64:
+    - field_name: address
+      description: >
+        encodes bits 55-2 of a 56-bit physical address
+      type: RW
+      reset_val: 0
+      msb: 63
+      lsb: 0
+
+- csr: CSR_PMPADDR2
+  description: >
+   PMP address registers
+  address: 0x3B2
+  privilege_mode: M
+  rv64:
+    - field_name: address
+      description: >
+        encodes bits 55-2 of a 56-bit physical address
+      type: RW
+      reset_val: 0
+      msb: 63
+      lsb: 0
+
+- csr: CSR_PMPADDR3
+  description: >
+   PMP address registers
+  address: 0x3B3
+  privilege_mode: M
+  rv64:
+    - field_name: address
+      description: >
+        encodes bits 55-2 of a 56-bit physical address
+      type: RW
+      reset_val: 0
+      msb: 63
+      lsb: 0
+
+- csr: CSR_PMPADDR4
+  description: >
+   PMP address registers
+  address: 0x3B4
+  privilege_mode: M
+  rv64:
+    - field_name: address
+      description: >
+        encodes bits 55-2 of a 56-bit physical address
+      type: RW
+      reset_val: 0
+      msb: 63
+      lsb: 0
+
+- csr: CSR_PMPADDR5
+  description: >
+   PMP address registers
+  address: 0x3B5
+  privilege_mode: M
+  rv64:
+    - field_name: address
+      description: >
+        encodes bits 55-2 of a 56-bit physical address
+      type: RW
+      reset_val: 0
+      msb: 63
+      lsb: 0
+
+- csr: CSR_PMPADDR6
+  description: >
+   PMP address registers
+  address: 0x3B6
+  privilege_mode: M
+  rv64:
+    - field_name: address
+      description: >
+        encodes bits 55-2 of a 56-bit physical address
+      type: RW
+      reset_val: 0
+      msb: 63
+      lsb: 0
+
+- csr: CSR_PMPADDR7
+  description: >
+   PMP address registers
+  address: 0x3B7
+  privilege_mode: M
+  rv64:
+    - field_name: address
+      description: >
+        encodes bits 55-2 of a 56-bit physical address
+      type: RW
+      reset_val: 0
+      msb: 63
+      lsb: 0
+
+- csr: CSR_PMPADDR8
+  description: >
+   PMP address registers
+  address: 0x3B8
+  privilege_mode: M
+  rv64:
+    - field_name: address
+      description: >
+        encodes bits 55-2 of a 56-bit physical address
+      type: RW
+      reset_val: 0
+      msb: 63
+      lsb: 0
+
+- csr: CSR_PMPADDR9
+  description: >
+   PMP address registers
+  address: 0x3B9
+  privilege_mode: M
+  rv64:
+    - field_name: address
+      description: >
+        encodes bits 55-2 of a 56-bit physical address
+      type: RW
+      reset_val: 0
+      msb: 63
+      lsb: 0
+
+- csr: CSR_PMPADDR10
+  description: >
+   PMP address registers
+  address: 0x3BA
+  privilege_mode: M
+  rv64:
+    - field_name: address
+      description: >
+        encodes bits 55-2 of a 56-bit physical address
+      type: RW
+      reset_val: 0
+      msb: 63
+      lsb: 0
+
+- csr: CSR_PMPADDR11
+  description: >
+   PMP address registers
+  address: 0x3BB
+  privilege_mode: M
+  rv64:
+    - field_name: address
+      description: >
+        encodes bits 55-2 of a 56-bit physical address
+      type: RW
+      reset_val: 0
+      msb: 63
+      lsb: 0
+
+- csr: CSR_PMPADDR12
+  description: >
+   PMP address registers
+  address: 0x3BC
+  privilege_mode: M
+  rv64:
+    - field_name: address
+      description: >
+        encodes bits 55-2 of a 56-bit physical address
+      type: RW
+      reset_val: 0
+      msb: 63
+      lsb: 0
+
+- csr: CSR_PMPADDR13
+  description: >
+   PMP address registers
+  address: 0x3BD
+  privilege_mode: M
+  rv64:
+    - field_name: address
+      description: >
+        encodes bits 55-2 of a 56-bit physical address
+      type: RW
+      reset_val: 0
+      msb: 63
+      lsb: 0
+
+- csr: CSR_PMPADDR14
+  description: >
+   PMP address registers
+  address: 0x3BE
+  privilege_mode: M
+  rv64:
+    - field_name: address
+      description: >
+        encodes bits 55-2 of a 56-bit physical address
+      type: RW
+      reset_val: 0
+      msb: 63
+      lsb: 0
+
+- csr: CSR_PMPADDR15
+  description: >
+   PMP address registers
+  address: 0x3BF
+  privilege_mode: M
+  rv64:
+    - field_name: address
+      description: >
+        encodes bits 55-2 of a 56-bit physical address
+      type: RW
+      reset_val: 0
+      msb: 63
+      lsb: 0
+
+#USER
+
+- csr: CSR_FFLAGS
+  description: >
+    Floating point Accrued Exceptions
+  address: 0x001
+  privilege_mode: U
+  rv64:
+    - field_name: FFLAGS
+      description: >
+        Floating point Accrued Exceptions
+      type: RW
+      reset_val: 0
+      msb: 4
+      lsb: 0
+- csr: CSR_FRM
+  description: >
+   Floating point dynamic rounding mode
+  address: 0x002
+  privilege_mode: U
+  rv64:
+    - field_name: FRM
+      description: >
+        Floating point dynamic rounding mod
+      type: RW
+      reset_val: 0
+      msb: 2
+      lsb: 0
+
+- csr: CSR_FCSR
+  description: >
+    Floating point Control and Status Register
+  address: 0x003
+  privilege_mode: U
+  rv64:
+    - field_name: FCSR
+      description: >
+        Floating-Point Control and Status Register
+      type: RW
+      reset_val: 0
+      msb: 7
+      lsb: 0
+
+- csr: CSR_FTRAN
+  description: >
+    Floating Point Custom CSR
+  address: 0x800
+  privilege_mode: U
+  rv64:
+    - field_name: FTRAN
+      description: >
+        Floating Point Custom CSR
+      type: RW
+      reset_val: 0
+      msb: 6
+      lsb: 0
+
+- csr: CSR_CYCLE
+  description: >
+   Cycle counter for RDCYCLE instruction
+  address: 0xC00
+  privilege_mode: U
+  rv64:
+    - field_name: CYCLE
+      description: >
+        64 bits of cycle,
+      type: R
+      reset_val: 0
+      msb: 63
+      lsb: 0
+      
+- csr: CSR_INSTRET
+  description: >
+   Instructions-retired counter for RDINSTRET instruction
+  address: 0xC02
+  privilege_mode: U
+  rv64:
+    - field_name: INSTRET
+      description: >
+        64 bits of instret
+      type: R
+      reset_val: 0
+      msb: 63
+      lsb: 0
+
