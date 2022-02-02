@@ -21,6 +21,7 @@ class uvma_cvxif_req_item_c extends uvm_sequence_item;
   rand x_commit commit_req;
 
   rand logic issue_valid;
+  rand logic issue_ready;
   rand logic commit_valid;
   rand logic result_ready;
 

@@ -74,24 +74,37 @@ endtask
 
 task uvma_cvxif_drv_c::run_phase(uvm_phase phase);
 
-    forever begin
-      // 1. Get the response item from sequencer
-      seq_item_port.get_next_item(resp_item);
+   fork
+      begin
+         forever begin
+            repeat($urandom_range(uvma_cvxif_issue_ready_min,uvma_cvxif_issue_ready_max)) @(posedge cvxif_vif.clk);
+               cvxif_vif.cvxif_resp_o.x_issue_ready <= 0;
+            repeat($urandom_range(uvma_cvxif_issue_not_ready_min,uvma_cvxif_issue_not_ready_max)) @(posedge cvxif_vif.clk);
+               cvxif_vif.cvxif_resp_o.x_issue_ready <= 1;
+         end
+      end
 
-      // 2. Drive the response on the vif
-      fork
-        begin
-          drive_issue_resp(resp_item);
-        end
-        begin
-          drive_result_resp(resp_item);
-        end
-      join_any
+      begin
+         forever begin
+            // 1. Get the response item from sequencer
+            seq_item_port.get_next_item(resp_item);
 
-      // 3. Tell sequencer we're ready for the next sequence item
-      seq_item_port.item_done();
-      `uvm_info(info_tag, $sformatf("item_done"), UVM_LOW);
-    end
+            // 2. Drive the response on the vif
+            fork
+               begin
+                  drive_issue_resp(resp_item);
+               end
+               begin
+                  drive_result_resp(resp_item);
+               end
+            join_any
+
+            // 3. Tell sequencer we're ready for the next sequence item
+            seq_item_port.item_done();
+            `uvm_info(info_tag, $sformatf("item_done"), UVM_LOW);
+         end
+      end
+   join_any
 
 endtask
 

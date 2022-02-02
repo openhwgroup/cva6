@@ -73,7 +73,7 @@ task uvma_cvxif_seq_c::body();
     end
 
     else begin
-      if (req_item.issue_valid==1) begin
+      if (req_item.issue_valid && req_item.issue_ready) begin
          //issue_resp
          do_issue_resp();
          //result_resp
