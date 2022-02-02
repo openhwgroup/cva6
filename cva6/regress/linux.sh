@@ -26,5 +26,5 @@ source ./cva6/regress/install-riscv-dv.sh
 
 cd cva6/sim
 cp $BBL_ROOT/bbl bbl.o
-python3 cva6.py --target cv64a6_imafdc_sv39 --iss=veri-testharness-linux --iss_yaml=cva6.yaml --elf_tests bbl.o
+python3 cva6.py --target cv64a6_imafdc_sv39 --iss=$DV_SIMULATORS --iss_yaml=cva6.yaml --elf_tests bbl.o
 cd -
