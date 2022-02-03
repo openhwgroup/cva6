@@ -14,8 +14,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 //
+// SPDX-License-Identifier: Apache-2.0 WITH SHL-2.1
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-//
 //
 // riscv_rvalid_stall.sv
 //
@@ -95,7 +95,7 @@ function logic [FIFO_DELAY_WL-1:0] get_random_delay();
     else if (stall_mode_i == perturbation_defines::STANDARD)
         get_random_delay = valid_stall_i;
     else if (stall_mode_i == perturbation_defines::RANDOM)
-        get_random_delay = $urandom_range(max_stall_i, 0);
+        get_random_delay = $urandom_range(max_stall_i, 0); //@DVT_LINTER_WAIVER "MT20211214_3" disable SVTB.29.1.3.1
     else
         get_random_delay = 0;
 endfunction : get_random_delay

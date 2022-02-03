@@ -31,6 +31,7 @@ Editor: **Michael Thompson**
    :caption: Contents:
 
    intro
+   quick_start
    planning_requirements
    corev_env
    cv32_env

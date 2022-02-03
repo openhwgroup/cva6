@@ -47,14 +47,8 @@ ${DV_UVMT_PATH}/uvmt_cv32e40p_pkg.sv
 // CV32E40P test bench files
 ${DV_UVMT_PATH}/uvmt_cv32e40p_dut_wrap.sv
 ${DV_UVMT_PATH}/uvmt_cv32e40p_tb.sv
-${TBSRC_HOME}/core/tb_riscv/include/perturbation_defines.sv
 ${TBSRC_HOME}/uvmt/uvmt_cv32e40p_tb.sv
 ${TBSRC_HOME}/uvmt/uvmt_cv32e40p_dut_wrap.sv
-${TBSRC_HOME}/core/mm_ram.sv
-${TBSRC_HOME}/core/dp_ram.sv
-${TBSRC_HOME}/core/tb_riscv/riscv_gnt_stall.sv
-${TBSRC_HOME}/core/tb_riscv/riscv_rvalid_stall.sv
-${TBSRC_HOME}/core/tb_riscv/riscv_random_interrupt_generator.sv
 
 // FIXME:STR:Find a better location
 ${DV_UVMT_PATH}/uvmt_cv32e40p_interrupt_assert.sv

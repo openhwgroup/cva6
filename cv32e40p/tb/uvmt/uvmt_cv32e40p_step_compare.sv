@@ -113,7 +113,8 @@ module uvmt_cv32e40p_step_compare
     end
   end
 
-  function void check_32bit(input string compared, input bit [31:0] expected, input logic [31:0] actual);
+                                                                                                          // Waiving Verissimo SVTB.32.2.0: Pass strings by reference unless otherwise needed
+  function void check_32bit(input string compared, input bit [31:0] expected, input logic [31:0] actual); //@DVT_LINTER_WAIVER "MT20211228_1" disable SVTB.32.2.0
       static int now = 0;
       if (now != $time) begin
         miscompare = 0;
@@ -384,7 +385,8 @@ module uvmt_cv32e40p_step_compare
     end
 
     // RTL->RM CSR : mcycle, minstret, mcycleh, minstreth
-    function automatic void pushRTL2RM(string message);
+                                                         // Waiving Verissimo SVTB.32.2.0: Pass strings by reference unless otherwise needed
+    function automatic void pushRTL2RM(string message);  //@DVT_LINTER_WAIVER "MT20211228_2" disable SVTB.32.2.0
         logic [ 5:0] gpr_addr;
         logic [31:0] gpr_value;
 
@@ -406,7 +408,7 @@ module uvmt_cv32e40p_step_compare
         3. Compare RTL <-> OVP
     */
     event ev_compare;
-    static integer instruction_count = 0;
+    static int instruction_count = 0;
 
     typedef enum {
         INIT,

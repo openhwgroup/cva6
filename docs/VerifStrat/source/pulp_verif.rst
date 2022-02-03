@@ -21,9 +21,11 @@
 PULP-Platform Simulation Verification
 =====================================
 
-OpenHW's starting point was the RI5CY (CV32E40) and Ariane (CVA6) cores from PULP-Platform.
+OpenHW's starting point was the RI5CY (CV32E40P) and Ariane (CVA6) cores from PULP-Platform.
 The structure of the testbenches for these projects had a direct influence on the architecture of CORE-V-VERIF, so it's help to review these.
 It is also informative to consider the Ibex project, another open-source RISC-V project derived from the ‘zero-riscy’ PULP-Platform core.
+The reader should keep in mind that this chapter was written in the early days of core-v-verif and will now be out of date in many places.
+Nevertheless, it is a useful historical document that captures the initial conditions of the project.
 
 For those without the need or interest to delve into history of these
 projects, the Executive Summary below provides a (very) quick summary.
@@ -40,7 +42,7 @@ environments.
 Executive Summary
 -----------------
 
-In the case of the CV32E, we have an existing testbench developed for
+In the case of the CV32E40P, we have an existing testbench developed for
 RI5CY. This testbench is useful, but insufficient to execute a complete,
 industrial grade pre-silicon verification and achieve the goal of
 ‘production ready’ RTL. Therefore, a two-pronged approach will be
@@ -48,7 +50,7 @@ followed whereby the existing RI5CY testbench will be updated to create
 a CV32E40P “core” testbench. New testcases will be developed for this
 core testbench in parallel with the development of a single UVM
 environment capable of supporting the existing RI5CY testcases and fully
-verifying the CV32E cores. The UVM environment will be loosely based on
+verifying the CV32E4 cores. The UVM environment will be loosely based on
 the verification environment developed for the Ibex core and will also
 be able to run hand-coded code-segments (programs) such as those
 developed by the RISC-V Compliance Task Group.
@@ -57,18 +59,14 @@ In the case of CVA6, the existing verification environment developed
 for Ariane is not yet mature enough for OpenHW to use. The
 recommendation here is to build a UVM environment from scratch for the
 CVA6. This environment will re-use many of the components developed for
-the CV32E verification environment, and will have the same ability to
+the CV32E verification environments, and will have the same ability to
 run the RISC-V Compliance test-suite.
-
-.. _ri5cy:
 
 RI5CY
 -----
 
 The following is a discussion of the verification environment, testbench
 and testcases developed for RI5CY.
-
-.. _ri5cy_testbench:
 
 RI5CY Testbench
 ~~~~~~~~~~~~~~~
@@ -129,13 +127,7 @@ registers.
 The testcases are broadly divided into two categories, **riscv_tests** and
 **riscv_compliance_tests**. In the RI5CY repository these were located in
 the *tb/core/riscv_tests* and *tb/core/ riscv_compliance_tests*
-respectively. By cloning the
-`core-v-verif <https://github.com/openhwgroup/core-v-verif>`__
-repository, these original RI5CY tests can be found at
-*$PROJ_ROOT/cv32/tests/core/riscv_tests* and
-*$PROJ_ROOT/cv32/tests/core/riscv_compliance_tests*.  Updated versions of these
-tests for CV32 are located at *$PROJ_ROOT/cv32/tests/core/cv32_riscv_tests* and
-*$PROJ_ROOT/cv32/tests/core/cv32_riscv_compliance_tests*.
+respectively. [7]_
 
 RISC-V Tests
 ^^^^^^^^^^^^
@@ -148,7 +140,7 @@ coverage the PULP defined ISA extensions have received.
 
 Each of the sub-directories contains one or more assembly source
 programs to exercise a given instruction. For example the code segments
-above were drawn from the **addi.S**\  [7]_, a program that exercises
+above were drawn from the **addi.S**, a program that exercises
 the *add immediate* instruction. The testcase exercises the addi
 instruction with a set of 24 calls to *TEST\_\** macros as shown above.
 
@@ -290,8 +282,6 @@ transition to the UVM environment. The RI5CY environment can be
 maintained as a tool for software developers to try things out, a tool
 for quick-and-easy bug reproduction and a platform for members of the
 open-source community restricted to the use of open-source tools.
-
-.. _ariane:
 
 Ariane
 ------
@@ -465,8 +455,7 @@ as above has many benefits:
    debug aids not shown here.
 
 .. [7]
-   **$PROJ_ROOT/cv32/tests/core/riscv_tests/rv64ui/addi.S** in your
-   local copy of the core-v-verif repository.
+   These tests have been deprecated and are no longer part of the core-v-verif repository.
 
 .. [8]
    Anyone with access to GitHub will be able to see the coverage results
