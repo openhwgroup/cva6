@@ -289,7 +289,6 @@ module ariane_testharness #(
     .type_i                ( ariane_axi::SINGLE_REQ    ),
     .amo_i                 ( ariane_pkg::AMO_NONE      ),
     .gnt_o                 ( dm_master_gnt             ),
-    .gnt_id_o              (                           ),
     .addr_i                ( dm_master_add             ),
     .we_i                  ( dm_master_we              ),
     .wdata_i               ( dm_master_wdata           ),

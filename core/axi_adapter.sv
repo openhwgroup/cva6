@@ -29,7 +29,6 @@ module axi_adapter #(
   input  ariane_axi::ad_req_t              type_i,
   input  ariane_pkg::amo_t                 amo_i,
   output logic                             gnt_o,
-  output logic [AXI_ID_WIDTH-1:0]          gnt_id_o,
   input  logic [riscv::XLEN-1:0]           addr_i,
   input  logic                             we_i,
   input  logic [(DATA_WIDTH/riscv::XLEN)-1:0][riscv::XLEN-1:0] wdata_i,
@@ -108,7 +107,6 @@ module axi_adapter #(
     axi_req_o.r_ready   = 1'b0;
 
     gnt_o    = 1'b0;
-    gnt_id_o = id_i;
     valid_o  = 1'b0;
     id_o     = axi_resp_i.r.id;
 

@@ -59,6 +59,9 @@ module miss_handler import ariane_pkg::*; import std_cache_pkg::*; #(
     input  cache_line_t [DCACHE_SET_ASSOC-1:0]          data_i,
     output logic                                        we_o
 );
+  
+    // Three MSHR ports + AMO port
+    parameter NR_BYPASS_PORTS = NR_PORTS + 1;
 
     // FSM states
     enum logic [3:0] {
@@ -95,21 +98,17 @@ module miss_handler import ariane_pkg::*; import std_cache_pkg::*; #(
     logic [NR_PORTS-1:0][7:0]               miss_req_be;
     logic [NR_PORTS-1:0][1:0]               miss_req_size;
 
-    // AMO <-> AXI
-    logic                req_amo_bypass_valid;
-    ariane_axi::ad_req_t req_amo_bypass_type;
-    ariane_pkg::amo_t    req_amo_bypass_amo;
-    logic [63:0]         req_amo_bypass_addr;
-    logic                req_amo_bypass_we;
-    logic [63:0]         req_amo_bypass_wdata;
-    logic [7:0]          req_amo_bypass_be;
-    logic [1:0]          req_amo_bypass_size;
-    logic [3:0]          req_amo_bypass_id;
-    logic                resp_bypass_amo_gnt;
-    logic                resp_bypass_amo_valid;
-    logic [63:0]         resp_bypass_amo_data;
-    logic [3:0]          resp_bypass_amo_id;
-    logic [3:0]          resp_bypass_amo_gnt_id;
+    // Bypass AMO port
+    bypass_req_t amo_bypass_req;
+    bypass_rsp_t amo_bypass_rsp;
+
+    // Bypass ports <-> Arbiter
+    bypass_req_t [NR_BYPASS_PORTS-1:0] bypass_ports_req;
+    bypass_rsp_t [NR_BYPASS_PORTS-1:0] bypass_ports_rsp;
+
+    // Arbiter <-> Bypass AXI adapter
+    bypass_req_t bypass_adapter_req;
+    bypass_rsp_t bypass_adapter_rsp;
 
     // Cache Line Refill <-> AXI
     logic                                    req_fsm_miss_valid;
@@ -131,7 +130,6 @@ module miss_handler import ariane_pkg::*; import std_cache_pkg::*; #(
     // AMOs
     ariane_pkg::amo_t amo_op;
     logic [63:0]      amo_operand_b;
-    logic             bypass_sel_amo;
 
     // ------------------------------
     // Cache Management
@@ -166,15 +164,15 @@ module miss_handler import ariane_pkg::*; import std_cache_pkg::*; #(
         req_fsm_miss_req    = ariane_axi::CACHE_LINE_REQ;
         req_fsm_miss_size   = 2'b11;
         // to AXI bypass
-        req_amo_bypass_valid = 1'b0;
-        req_amo_bypass_type  = ariane_axi::SINGLE_REQ;
-        req_amo_bypass_amo   = ariane_pkg::AMO_NONE;
-        req_amo_bypass_addr  = '0;
-        req_amo_bypass_we    = 1'b0;
-        req_amo_bypass_wdata = '0;
-        req_amo_bypass_be    = '0;
-        req_amo_bypass_size  = 2'b11;
-        req_amo_bypass_id    = 4'b1100;
+        amo_bypass_req.req     = 1'b0;
+        amo_bypass_req.reqtype = ariane_axi::SINGLE_REQ;
+        amo_bypass_req.amo     = ariane_pkg::AMO_NONE;
+        amo_bypass_req.addr    = '0;
+        amo_bypass_req.we      = 1'b0;
+        amo_bypass_req.wdata   = '0;
+        amo_bypass_req.be      = '0;
+        amo_bypass_req.size    = 2'b11;
+        amo_bypass_req.id      = 4'b1100;
         // core
         flush_ack_o         = 1'b0;
         miss_o              = 1'b0; // to performance counter
@@ -190,7 +188,6 @@ module miss_handler import ariane_pkg::*; import std_cache_pkg::*; #(
         // communicate to the requester which unit we are currently serving
         active_serving_o[mshr_q.id] = mshr_q.valid;
         // AMOs
-        bypass_sel_amo = 1'b0;
         amo_resp_o.ack = 1'b0;
         amo_resp_o.result = '0;
         amo_operand_b = '0;
@@ -397,17 +394,15 @@ module miss_handler import ariane_pkg::*; import std_cache_pkg::*; #(
             // ----------------------
             // ~> we are here because we need to do the AMO, the cache is clean at this point
             AMO_REQ: begin
-                bypass_sel_amo = 1'b1;
-                req_amo_bypass_valid = 1'b1;
-                req_amo_bypass_type  = ariane_axi::SINGLE_REQ;
-                req_amo_bypass_amo   = amo_req_i.amo_op;
+                amo_bypass_req.req     = 1'b1;
+                amo_bypass_req.reqtype = ariane_axi::SINGLE_REQ;
+                amo_bypass_req.amo     = amo_req_i.amo_op;
                 // address is in operand a
-                req_amo_bypass_addr  = amo_req_i.operand_a;
+                amo_bypass_req.addr = amo_req_i.operand_a;
                 if (amo_req_i.amo_op != AMO_LR) begin
-                    req_amo_bypass_we = 1'b1;
+                    amo_bypass_req.we = 1'b1;
                 end
-                req_amo_bypass_size  = amo_req_i.size;
-                req_amo_bypass_id    = 4'b1100;
+                amo_bypass_req.size  = amo_req_i.size;
                 // AXI implements CLR op instead of AND, negate operand
                 if (amo_req_i.amo_op == AMO_AND) begin
                     amo_operand_b = ~amo_req_i.operand_b;
@@ -415,39 +410,38 @@ module miss_handler import ariane_pkg::*; import std_cache_pkg::*; #(
                     amo_operand_b = amo_req_i.operand_b;
                 end
                 // align data and byte-enable to correct byte lanes
-                req_amo_bypass_wdata = amo_operand_b;
+                amo_bypass_req.wdata = amo_operand_b;
                 if (amo_req_i.size == 2'b11) begin
                     // 64b transfer
-                    req_amo_bypass_be = 8'b11111111;
+                    amo_bypass_req.be = 8'b11111111;
                 end else begin
                     // 32b transfer
                     if (amo_req_i.operand_a[2:0] == '0) begin
                         // 64b aligned -> activate lower 4 byte lanes
-                        req_amo_bypass_be = 8'b00001111;
+                        amo_bypass_req.be = 8'b00001111;
                     end else begin
                         // 64b unaligned -> activate upper 4 byte lanes
-                        req_amo_bypass_be = 8'b11110000;
-                        req_amo_bypass_wdata = amo_operand_b[31:0] << 32;
+                        amo_bypass_req.be = 8'b11110000;
+                        amo_bypass_req.wdata = amo_operand_b[31:0] << 32;
                     end
                 end
 
                 // when request is accepted, wait for response
-                if (resp_bypass_amo_gnt) begin
-                    if (resp_bypass_amo_valid) begin
+                if (amo_bypass_rsp.gnt) begin
+                    if (amo_bypass_rsp.rvalid) begin
                         state_d = IDLE;
                         amo_resp_o.ack = 1'b1;
-                        amo_resp_o.result = resp_bypass_amo_data;
+                        amo_resp_o.result = amo_bypass_rsp.rdata;
                     end else begin
                         state_d = AMO_WAIT_RESP;
                     end
                 end
             end
             AMO_WAIT_RESP: begin
-                bypass_sel_amo = 1'b1;
-                if (resp_bypass_amo_valid) begin
+                if (amo_bypass_rsp.rvalid) begin
                     state_d = IDLE;
                     amo_resp_o.ack = 1'b1;
-                    amo_resp_o.result = resp_bypass_amo_data;
+                    amo_resp_o.result = amo_bypass_rsp.rdata;
                 end
             end
         endcase
@@ -499,130 +493,80 @@ module miss_handler import ariane_pkg::*; import std_cache_pkg::*; #(
       @(posedge clk_i) $onehot0(evict_way_q)) else $warning("Evict-way should be one-hot encoded");
     `endif
     //pragma translate_on
-    // ----------------------
-    // Bypass Arbiter
-    // ----------------------
-    // Connection Arbiter <-> AXI mux
-    logic                        req_fsm_bypass_valid;
-    logic [63:0]                 req_fsm_bypass_addr;
-    logic [63:0]                 req_fsm_bypass_wdata;
-    logic                        req_fsm_bypass_we;
-    logic [7:0]                  req_fsm_bypass_be;
-    logic [1:0]                  req_fsm_bypass_size;
-    logic                        gnt_bypass_fsm;
-    logic                        valid_bypass_fsm;
-    logic [63:0]                 data_bypass_fsm;
-    logic [$clog2(NR_PORTS)-1:0] id_fsm_bypass;
-    logic [3:0]                  id_bypass_fsm;
-    logic [3:0]                  gnt_id_bypass_fsm;
-    // AXI mux <-> AXI
-    logic                        req_bypass_valid;
-    ariane_axi::ad_req_t         req_bypass_type;
-    ariane_pkg::amo_t            req_bypass_amo;
-    logic [63:0]                 req_bypass_addr;
-    logic [63:0]                 req_bypass_wdata;
-    logic                        req_bypass_we;
-    logic [7:0]                  req_bypass_be;
-    logic [1:0]                  req_bypass_size;
-    logic [3:0]                  req_bypass_id;
-    logic                        resp_bypass_gnt;
-    logic                        resp_bypass_valid;
-    logic [63:0]                 resp_bypass_data;
-    logic [3:0]                  resp_bypass_id;
-    logic [3:0]                  resp_bypass_gnt_id;
 
-    arbiter #(
-        .NR_PORTS       ( NR_PORTS                                 ),
-        .DATA_WIDTH     ( 64                                       )
-    ) i_bypass_arbiter (
-        // Master Side
-        .data_req_i     ( miss_req_valid & miss_req_bypass         ),
-        .address_i      ( miss_req_addr                            ),
-        .data_wdata_i   ( miss_req_wdata                           ),
-        .data_we_i      ( miss_req_we                              ),
-        .data_be_i      ( miss_req_be                              ),
-        .data_size_i    ( miss_req_size                            ),
-        .data_gnt_o     ( bypass_gnt_o                             ),
-        .data_rvalid_o  ( bypass_valid_o                           ),
-        .data_rdata_o   ( bypass_data_o                            ),
-        // Slave Sid
-        .id_i           ( id_bypass_fsm[$clog2(NR_PORTS)-1:0]      ),
-        .id_o           ( id_fsm_bypass                            ),
-        .gnt_id_i       ( gnt_id_bypass_fsm[$clog2(NR_PORTS)-1:0]  ),
-        .address_o      ( req_fsm_bypass_addr                      ),
-        .data_wdata_o   ( req_fsm_bypass_wdata                     ),
-        .data_req_o     ( req_fsm_bypass_valid                     ),
-        .data_we_o      ( req_fsm_bypass_we                        ),
-        .data_be_o      ( req_fsm_bypass_be                        ),
-        .data_size_o    ( req_fsm_bypass_size                      ),
-        .data_gnt_i     ( gnt_bypass_fsm                           ),
-        .data_rvalid_i  ( valid_bypass_fsm                         ),
-        .data_rdata_i   ( data_bypass_fsm                          ),
-        .*
-    );
-
+    // ----------------------
+    // Pack bypass ports
+    // ----------------------
     always_comb begin
-        // mux req from arbiter and amo on bypass port
-        if (bypass_sel_amo) begin
-            req_bypass_valid = req_amo_bypass_valid;
-            req_bypass_type  = req_amo_bypass_type;
-            req_bypass_amo   = req_amo_bypass_amo;
-            req_bypass_addr  = req_amo_bypass_addr;
-            req_bypass_wdata = req_amo_bypass_wdata;
-            req_bypass_we    = req_amo_bypass_we;
-            req_bypass_be    = req_amo_bypass_be;
-            req_bypass_size  = req_amo_bypass_size;
-            req_bypass_id    = req_amo_bypass_id;
-        end else begin
-            req_bypass_valid = req_fsm_bypass_valid;
-            req_bypass_type  = ariane_axi::SINGLE_REQ;
-            req_bypass_amo   = AMO_NONE;
-            req_bypass_addr  = req_fsm_bypass_addr;
-            req_bypass_wdata = req_fsm_bypass_wdata;
-            req_bypass_we    = req_fsm_bypass_we;
-            req_bypass_be    = req_fsm_bypass_be;
-            req_bypass_size  = req_fsm_bypass_size;
-            req_bypass_id    = {2'b10, id_fsm_bypass};
+        logic[$clog2(NR_BYPASS_PORTS)-1:0] id;
+
+        // Pack MHSR ports first
+        for (id=0; id<NR_PORTS; id++) begin
+            bypass_ports_req[id].req     = miss_req_valid[id] & miss_req_bypass[id];
+            bypass_ports_req[id].reqtype = ariane_axi::SINGLE_REQ;
+            bypass_ports_req[id].amo     = AMO_NONE;
+            bypass_ports_req[id].id      = {2'b10, id};
+            bypass_ports_req[id].addr    = miss_req_addr[id];
+            bypass_ports_req[id].wdata   = miss_req_wdata[id];
+            bypass_ports_req[id].we      = miss_req_we[id];
+            bypass_ports_req[id].be      = miss_req_be[id];
+            bypass_ports_req[id].size    = miss_req_size[id];
+
+            bypass_gnt_o[id]   = bypass_ports_rsp[id].gnt;
+            bypass_valid_o[id] = bypass_ports_rsp[id].rvalid;
+            bypass_data_o[id]  = bypass_ports_rsp[id].rdata;
         end
 
-        // demux resp from bypass port to arbiter and amo
-        resp_bypass_amo_gnt    = bypass_sel_amo & resp_bypass_gnt;
-        resp_bypass_amo_valid  = bypass_sel_amo & resp_bypass_valid;
-        resp_bypass_amo_data   = resp_bypass_data;
-        resp_bypass_amo_id     = resp_bypass_id;
-        resp_bypass_amo_gnt_id = resp_bypass_gnt_id;
-        gnt_bypass_fsm         = !bypass_sel_amo & resp_bypass_gnt;
-        valid_bypass_fsm       = !bypass_sel_amo & resp_bypass_valid;
-        data_bypass_fsm        = resp_bypass_data;
-        id_bypass_fsm          = resp_bypass_id;
-        gnt_id_bypass_fsm      = resp_bypass_gnt_id;
+        // AMO port has lowest priority
+        bypass_ports_req[id] = amo_bypass_req;
+        amo_bypass_rsp       = bypass_ports_rsp[id];
     end
 
+    // ----------------------
+    // Arbitrate bypass ports
+    // ----------------------
+    axi_adapter_arbiter #(
+        .NR_PORTS(NR_BYPASS_PORTS),
+        .req_t   (bypass_req_t),
+        .rsp_t   (bypass_rsp_t)
+    ) i_bypass_arbiter (
+        .clk_i (clk_i),
+        .rst_ni(rst_ni),
+        // Master Side
+        .req_i (bypass_ports_req),
+        .rsp_o (bypass_ports_rsp),
+        // Slave Side
+        .req_o (bypass_adapter_req),
+        .rsp_i (bypass_adapter_rsp)
+    );
+
+    // ----------------------
+    // Bypass AXI Interface
+    // ----------------------
     axi_adapter #(
-        .DATA_WIDTH            ( 64                 ),
-        .AXI_ID_WIDTH          ( 4                  ),
-        .CACHELINE_BYTE_OFFSET ( DCACHE_BYTE_OFFSET )
+        .DATA_WIDTH           (64),
+        .AXI_ID_WIDTH         (4),
+        .CACHELINE_BYTE_OFFSET(DCACHE_BYTE_OFFSET)
     ) i_bypass_axi_adapter (
-        .clk_i,
-        .rst_ni,
-        .req_i                 ( req_bypass_valid   ),
-        .type_i                ( req_bypass_type    ),
-        .amo_i                 ( req_bypass_amo     ),
-        .gnt_o                 ( resp_bypass_gnt    ),
-        .addr_i                ( req_bypass_addr    ),
-        .we_i                  ( req_bypass_we      ),
-        .wdata_i               ( req_bypass_wdata   ),
-        .be_i                  ( req_bypass_be      ),
-        .size_i                ( req_bypass_size    ),
-        .id_i                  ( req_bypass_id      ),
-        .valid_o               ( resp_bypass_valid  ),
-        .rdata_o               ( resp_bypass_data   ),
-        .gnt_id_o              ( resp_bypass_gnt_id ),
-        .id_o                  ( resp_bypass_id     ),
-        .critical_word_o       (                    ), // not used for single requests
-        .critical_word_valid_o (                    ), // not used for single requests
-        .axi_req_o             ( axi_bypass_o       ),
-        .axi_resp_i            ( axi_bypass_i       )
+        .clk_i                (clk_i),
+        .rst_ni               (rst_ni),
+        .req_i                (bypass_adapter_req.req),
+        .type_i               (bypass_adapter_req.reqtype),
+        .amo_i                (bypass_adapter_req.amo),
+        .id_i                 (bypass_adapter_req.id),
+        .addr_i               (bypass_adapter_req.addr),
+        .wdata_i              (bypass_adapter_req.wdata),
+        .we_i                 (bypass_adapter_req.we),
+        .be_i                 (bypass_adapter_req.be),
+        .size_i               (bypass_adapter_req.size),
+        .gnt_o                (bypass_adapter_rsp.gnt),
+        .valid_o              (bypass_adapter_rsp.rvalid),
+        .rdata_o              (bypass_adapter_rsp.rdata),
+        .id_o                 (), // not used, single outstanding request in arbiter
+        .critical_word_o      (), // not used for single requests
+        .critical_word_valid_o(), // not used for single requests
+        .axi_req_o            (axi_bypass_o),
+        .axi_resp_i           (axi_bypass_i)
     );
 
     // ----------------------
@@ -645,7 +589,6 @@ module miss_handler import ariane_pkg::*; import std_cache_pkg::*; #(
         .be_i                ( req_fsm_miss_be    ),
         .size_i              ( req_fsm_miss_size  ),
         .id_i                ( 4'b1100            ),
-        .gnt_id_o            (                    ), // open
         .valid_o             ( valid_miss_fsm     ),
         .rdata_o             ( data_miss_fsm      ),
         .id_o                (                    ),
@@ -687,105 +630,61 @@ endmodule
 
 // --------------
 // AXI Arbiter
-// --------------s
+// --------------
 //
 // Description: Arbitrates access to AXI refill/bypass
 //
-module arbiter #(
-        parameter int unsigned NR_PORTS   = 3,
-        parameter int unsigned DATA_WIDTH = 64
+module axi_adapter_arbiter #(
+    parameter NR_PORTS = 4,
+    parameter type req_t = std_cache_pkg::bypass_req_t,
+    parameter type rsp_t = std_cache_pkg::bypass_rsp_t
 )(
-    input  logic                                   clk_i,          // Clock
-    input  logic                                   rst_ni,         // Asynchronous reset active low
-    // master ports
-    input  logic [NR_PORTS-1:0]                    data_req_i,
-    input  logic [NR_PORTS-1:0][63:0]              address_i,
-    input  logic [NR_PORTS-1:0][DATA_WIDTH-1:0]    data_wdata_i,
-    input  logic [NR_PORTS-1:0]                    data_we_i,
-    input  logic [NR_PORTS-1:0][DATA_WIDTH/8-1:0]  data_be_i,
-    input  logic [NR_PORTS-1:0][1:0]               data_size_i,
-    output logic [NR_PORTS-1:0]                    data_gnt_o,
-    output logic [NR_PORTS-1:0]                    data_rvalid_o,
-    output logic [NR_PORTS-1:0][DATA_WIDTH-1:0]    data_rdata_o,
-    // slave port
-    input  logic [$clog2(NR_PORTS)-1:0]            id_i,
-    output logic [$clog2(NR_PORTS)-1:0]            id_o,
-    input  logic [$clog2(NR_PORTS)-1:0]            gnt_id_i,
-    output logic                                   data_req_o,
-    output logic [63:0]                            address_o,
-    output logic [DATA_WIDTH-1:0]                  data_wdata_o,
-    output logic                                   data_we_o,
-    output logic [DATA_WIDTH/8-1:0]                data_be_o,
-    output logic [1:0]                             data_size_o,
-    input  logic                                   data_gnt_i,
-    input  logic                                   data_rvalid_i,
-    input  logic [DATA_WIDTH-1:0]                  data_rdata_i
+    input  logic                clk_i,  // Clock
+    input  logic                rst_ni, // Asynchronous reset active low
+    // Master ports
+    input  req_t [NR_PORTS-1:0] req_i,
+    output rsp_t [NR_PORTS-1:0] rsp_o,
+    // Slave port
+    output req_t                req_o,
+    input  rsp_t                rsp_i
 );
 
-    enum logic [1:0] { IDLE, REQ, SERVING } state_d, state_q;
+    enum logic { IDLE, SERVING } state_d, state_q;
 
-    struct packed {
-        logic [$clog2(NR_PORTS)-1:0] id;
-        logic [63:0]                 address;
-        logic [63:0]                 data;
-        logic [1:0]                  size;
-        logic [DATA_WIDTH/8-1:0]     be;
-        logic                        we;
-    } req_d, req_q;
+    req_t req_d, req_q;
+    logic [NR_PORTS-1:0] sel_d, sel_q;
 
     always_comb begin
-        automatic logic [$clog2(NR_PORTS)-1:0] request_index;
-        request_index = 0;
+        sel_d = sel_q;
 
         state_d = state_q;
         req_d   = req_q;
-        // request port
-        data_req_o                = 1'b0;
-        address_o                 = req_q.address;
-        data_wdata_o              = req_q.data;
-        data_be_o                 = req_q.be;
-        data_size_o               = req_q.size;
-        data_we_o                 = req_q.we;
-        id_o                      = req_q.id;
-        data_gnt_o                = '0;
-        // read port
-        data_rvalid_o             = '0;
-        data_rdata_o              = '0;
-        data_rdata_o[req_q.id]    = data_rdata_i;
+
+        req_o = req_q;
+
+        rsp_o = '0;
+        rsp_o[sel_q].rdata = rsp_i.rdata;
 
         case (state_q)
 
             IDLE: begin
                 // wait for incoming requests
                 for (int unsigned i = 0; i < NR_PORTS; i++) begin
-                    if (data_req_i[i] == 1'b1) begin
-                        data_req_o    = data_req_i[i];
-                        data_gnt_o[i] = data_req_i[i];
-                        request_index = i[$bits(request_index)-1:0];
-                        // save the request
-                        req_d.address = address_i[i];
-                        req_d.id = i[$bits(req_q.id)-1:0];
-                        req_d.data = data_wdata_i[i];
-                        req_d.size = data_size_i[i];
-                        req_d.be = data_be_i[i];
-                        req_d.we = data_we_i[i];
+                    if (req_i[i].req == 1'b1) begin
+                        sel_d   = i[$bits(sel_d)-1:0];
                         state_d = SERVING;
-                        break; // break here as this is a priority select
+                        break;
                     end
                 end
 
-                address_o                 = address_i[request_index];
-                data_wdata_o              = data_wdata_i[request_index];
-                data_be_o                 = data_be_i[request_index];
-                data_size_o               = data_size_i[request_index];
-                data_we_o                 = data_we_i[request_index];
-                id_o                      = request_index;
+                req_d = req_i[sel_d];
+                req_o = req_i[sel_d];
+                rsp_o[sel_d].gnt = req_i[sel_d].req;
             end
 
             SERVING: begin
-                data_req_o = 1'b1;
-                if (data_rvalid_i) begin
-                    data_rvalid_o[req_q.id] = 1'b1;
+                if (rsp_i.rvalid) begin
+                    rsp_o[sel_q].rvalid = 1'b1;
                     state_d = IDLE;
                 end
             end
@@ -797,9 +696,11 @@ module arbiter #(
     always_ff @(posedge clk_i or negedge rst_ni) begin
         if (~rst_ni) begin
             state_q <= IDLE;
+            sel_q   <= '0;
             req_q   <= '0;
         end else begin
             state_q <= state_d;
+            sel_q   <= sel_d;
             req_q   <= req_d;
         end
     end
@@ -810,13 +711,13 @@ module arbiter #(
     //pragma translate_off
     `ifndef VERILATOR
     // make sure that we eventually get an rvalid after we received a grant
-    assert property (@(posedge clk_i) data_gnt_i |-> ##[1:$] data_rvalid_i )
+    assert property (@(posedge clk_i) rsp_i.gnt |-> ##[1:$] rsp_i.rvalid )
         else begin $error("There was a grant without a rvalid"); $stop(); end
     // assert that there is no grant without a request
-    assert property (@(negedge clk_i) data_gnt_i |-> data_req_o)
+    assert property (@(negedge clk_i) rsp_i.gnt |-> req_o.req)
         else begin $error("There was a grant without a request."); $stop(); end
     // assert that the address does not contain X when request is sent
-    assert property ( @(posedge clk_i) (data_req_o) |-> (!$isunknown(address_o)) )
+    assert property ( @(posedge clk_i) (req_o.req) |-> (!$isunknown(req_o.addr)) )
       else begin $error("address contains X when request is set"); $stop(); end
 
     `endif

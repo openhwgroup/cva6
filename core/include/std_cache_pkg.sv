@@ -43,6 +43,24 @@ package std_cache_pkg;
     } miss_req_t;
 
     typedef struct packed {
+        logic                req;
+        ariane_axi::ad_req_t reqtype;
+        ariane_pkg::amo_t    amo;
+        logic [3:0]          id;
+        logic [63:0]         addr;
+        logic [63:0]         wdata;
+        logic                we;
+        logic [7:0]          be;
+        logic [1:0]          size;
+    } bypass_req_t;
+
+    typedef struct packed {
+        logic        gnt;
+        logic        rvalid;
+        logic [63:0] rdata;
+    } bypass_rsp_t;
+
+    typedef struct packed {
         logic [ariane_pkg::DCACHE_TAG_WIDTH-1:0]  tag;    // tag array
         logic [ariane_pkg::DCACHE_LINE_WIDTH-1:0] data;   // data array
         logic                                     valid;  // state array
