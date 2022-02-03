@@ -107,14 +107,12 @@
       {
         "name":     "uvmt_cv32e40s_pma_5",
         "image":    "gcr.io/openhwgroup-metrics-project/cv32-simulation-tools:20211122.7.0-02Feb2022",
-        "image":    "gcr.io/openhwgroup-metrics-project/cv32-simulation-tools:20211122.2.0-7Dec2021",
         "cmd":      "cd cv32e40s/sim/uvmt; make corev-dv CV_CORE=cv32e40s SIMULATOR=dsim CFG=pma_test_cfg_5 DSIM_WORK=/mux-flow/build/repo/dsim_work SIM_RESULTS=/mux-flow/build/results; make comp CV_CORE=cv32e40s CFG=pma_test_cfg_5 SIMULATOR=dsim DSIM_WORK=/mux-flow/build/repo/dsim_work SIM_RESULTS=/mux-flow/build/results",
         "wavesCmd": "cd cv32e40s/sim/uvmt; make corev-dv CV_CORE=cv32e40s SIMULATOR=dsim CFG=pma_test_cfg_5 DSIM_WORK=/mux-flow/build/repo/dsim_work SIM_RESULTS=/mux-flow/build/results; make comp CV_CORE=cv32e40s CFG=pma_test_cfg_5 SIMULATOR=dsim DSIM_WORK=/mux-flow/build/repo/dsim_work SIM_RESULTS=/mux-flow/build/results WAVES=1"
       },
       {
         "name":     "uvmt_cv32e40s_compliance_build",
         "image":    "gcr.io/openhwgroup-metrics-project/cv32-simulation-tools:20211122.7.0-02Feb2022",
-        "image":    "gcr.io/openhwgroup-metrics-project/cv32-simulation-tools:20211122.2.0-7Dec2021",
         "cmd":      "cd cv32e40s/sim/uvmt; make all_compliance; make comp CV_CORE=cv32e40s SIMULATOR=dsim DSIM_WORK=/mux-flow/build/repo/dsim_work SIM_RESULTS=/mux-flow/build/results",
         "wavesCmd": "cd cv32e40s/sim/uvmt; make all_compliance; make comp CV_CORE=cv32e40s SIMULATOR=dsim DSIM_WORK=/mux-flow/build/repo/dsim_work SIM_RESULTS=/mux-flow/build/results WAVES=1"
       }
