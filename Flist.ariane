@@ -67,10 +67,6 @@ include/instr_tracer_pkg.sv
 src/util/instr_tracer_if.sv
 src/util/instr_tracer.sv
 src/util/sram.sv
-src/util/axi_master_connect.sv
-src/util/axi_master_connect_rev.sv
-src/util/axi_slave_connect.sv
-src/util/axi_slave_connect_rev.sv
 src/fpga-support/rtl/SyncSpRamBeNx64.sv
 src/dromajo_ram.sv
 src/axi_mem_if/src/axi2mem.sv

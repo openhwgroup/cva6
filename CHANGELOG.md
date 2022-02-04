@@ -70,10 +70,6 @@ src/fpu/src/fpu_div_sqrt_mvp/hdl/defs_div_sqrt_mvp.sv ==> core/fpu/src/fpu_div_s
  src/common_cells/src/stream_mux.sv                   ==> common/submodules/common_cells/src/stream_mux.sv
  src/common_cells/src/stream_demux.sv                 ==> common/submodules/common_cells/src/stream_demux.sv
  src/common_cells/src/exp_backoff.sv                  ==> common/submodules/common_cells/src/exp_backoff.sv
- src/util/axi_master_connect.sv                       ==> common/local/util/axi_master_connect.sv
- src/util/axi_slave_connect.sv                        ==> common/local/util/axi_slave_connect.sv
- src/util/axi_master_connect_rev.sv                   ==> common/local/util/axi_master_connect_rev.sv
- src/util/axi_slave_connect_rev.sv                    ==> common/local/util/axi_slave_connect_rev.sv
  src/axi/src/axi_cut.sv                               ==> corev_apu/axi/src/axi_cut.sv
  src/axi/src/axi_join.sv                              ==> corev_apu/axi/src/axi_join.sv
  src/axi/src/axi_delayer.sv                           ==> corev_apu/axi/src/axi_delayer.sv
@@ -105,6 +101,14 @@ src/fpu/src/fpu_div_sqrt_mvp/hdl/defs_div_sqrt_mvp.sv ==> core/fpu/src/fpu_div_s
  tb/common/uart.sv                                    ==> corev_apu/tb/common/uart.sv
  tb/common/SimDTM.sv                                  ==> corev_apu/tb/common/SimDTM.sv
  tb/common/SimJTAG.sv                                 ==> corev_apu/tb/common/SimJTAG.sv
+```
+
+#### Removed standalone components
+```
+src/util/axi_master_connect.sv
+src/util/axi_slave_connect.sv
+src/util/axi_master_connect_rev.sv
+src/util/axi_slave_connect_rev.sv
 ```
 
 ### 4.2.0 - 2019-06-04
