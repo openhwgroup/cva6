@@ -23,6 +23,11 @@
 # Usage: make SIMULATOR=<simulator> open_in_dvt_ide
 ###############################################################################
 
+# Start: shell and/or Makefile variables required by core-v-verif Makefiles; not used by DVT
+DPI_DASM_SPIKE_REPO   ?= https://github.com/riscv/riscv-isa-sim.git
+CV_SW_TOOLCHAIN       ?= /opt/riscv
+# End: shell and/or Makefile variables required by core-v-verif Makefiles; not used by DVT
+
 DVT_COMMAND=$(DVT_HOME)/bin/dvt_cli.sh createProject $(CORE_V_VERIF) -force -lang vlog -build default $(DVT_CLI_ARGS)
 DVT_BUILD_FILE_CONTENT_HEADER="+dvt_enable_elaboration +dvt_enable_elaboration_incremental+FULL"
 
