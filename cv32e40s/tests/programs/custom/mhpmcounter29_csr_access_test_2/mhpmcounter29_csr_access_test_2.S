@@ -19,7 +19,7 @@
 # SPDX-License-Identifier: Apache-2.0
 #
 ###############################################################################
-# MHPMCOUNTERS29: access testcase for mhpmcounter3..31 CSRs in cv32e40x.
+# MHPMCOUNTERS29: access testcase for mhpmcounter3..31 CSRs in cv32e40s.
 #     Notes:
 #       1. This test requires NUM_MHPMCOUNTERS set to 29.
 #       2. Does not test function - just access.

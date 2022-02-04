@@ -1,0 +1,86 @@
+# Copyright 2021 Thales DIS design services SAS
+#
+# Licensed under the Solderpad Hardware Licence, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# SPDX-License-Identifier: Apache-2.0 WITH SHL-2.0
+# You may obtain a copy of the License at https://solderpad.org/licenses/
+#
+# Original Author: Jean-Roch COULON (jean-roch.coulon@thalesgroup.fr)
+
+###############################################################################
+# Spike
+###############################################################################
+- iss: spike
+  path_var: RTL_PATH
+  tool_path: SPIKE_PATH
+  tb_path: TB_PATH
+  precmd: >
+  cmd: >
+    <tool_path>/spike --log-commits --isa=<variant> -l <elf>
+  postcmd: >
+    mv log.iss log
+
+###############################################################################
+# Verilator
+###############################################################################
+- iss: veri-testharness
+  path_var: RTL_PATH
+  tool_path: SPIKE_PATH
+  tb_path: TB_PATH
+  precmd: >
+    make -C <path_var> verilate target=<target> user-define="+define+WT_CACHE"
+  cmd: >
+    <path_var>/work-ver/Variane_testharness <elf>
+  postcmd: >
+    <tool_path>/spike-dasm < ./trace_rvfi_hart_00.dasm > log
+
+- iss: veri-core
+  path_var: RTL_PATH
+  tool_path: SPIKE_PATH
+  tb_path: TB_PATH
+  precmd: >
+    make -f Makefile veri_comp target=<target> user-define="+define+WT_CACHE"
+  cmd: >
+    ./verilator_work/Vcva6_core_only_tb
+  postcmd: >
+    <tool_path>/spike-dasm < ./trace_rvfi_hart_00.dasm > log
+
+- iss: veri-testharness-linux
+  path_var: RTL_PATH
+  tool_path: SPIKE_PATH
+  tb_path: TB_PATH
+  precmd: >
+    make -C <path_var> verilate target=<target> user-define="+define+WT_CACHE"
+  cmd: >
+    <path_var>/work-ver/Variane_testharness +time_out=40000000 +debug_disable=1 <elf>
+# Linux BBL is built out line to produce bbl.o
+#   The test consists in executing the first 40M cycles of bbl.o
+#   The grep command checks that "relocate" (vmlinux symbol) address is executed
+#   Of course, the address depends on thr bbl.o, to be added to the TODO list !
+  postcmd: >
+    grep "ffffffe0005e5cd4" ./trace_rvfi_hart_00.dasm
+
+###############################################################################
+# Synopsys VCS specific commands, variables
+###############################################################################
+- iss: vcs-testharness
+  path_var: RTL_PATH
+  tool_path: SPIKE_PATH
+  tb_path: TB_PATH
+  precmd: >
+    make -C <path_var> vcs_build target=<target> user-define="+define+WT_CACHE"
+  cmd: >
+    <path_var>/work-vcs/simv ${VERDI:+-verdi} +permissive -sv_lib <path_var>/work-dpi/ariane_dpi +debug_disable=1 +PRELOAD=<elf> +permissive-off ++<elf>
+  postcmd: >
+    <tool_path>/spike-dasm < ./trace_rvfi_hart_00.dasm > log
+
+- iss: vcs-core
+  path_var: RTL_PATH
+  tool_path: SPIKE_PATH
+  tb_path: TB_PATH
+  precmd: >
+    make -f Makefile vcs_core_comp target=<target> user-define="+define+WT_CACHE"
+  cmd: >
+    make -f Makefile vcs_core_run
+  postcmd: >
+    <tool_path>/spike-dasm < ./trace_rvfi_hart_00.dasm > log

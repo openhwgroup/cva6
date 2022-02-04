@@ -15,7 +15,7 @@ most up-to-date and stable version of the RTL.  Note that this is not always the
 head of the master branch.
 
 ### Simulation Directories
-There is a sub-dir for each supported CV32 verification environment.
+There is a sub-dir for each supported CV32E40X verification environment.
 Each sub-dir has its specific Makefile and both include `Common.mk` from this
 directory.
 
@@ -29,5 +29,5 @@ The Makefile will run the SystemVerilog/UVM verification environment found in
 `../tb/uvmt` and the associated tests from `../tests/uvmt`.
 
 #### tools
-Tool specific sub-dirs for some of the tools used in the CV32E40X.  For example,
-Tcl control files for waveform viewing support.
+Tool specific sub-dirs for some of the tools used in the CV32E40X.
+For example, Tcl control files for waveform viewing support.

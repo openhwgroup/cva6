@@ -92,6 +92,7 @@ package uvme_cv32e40s_pkg;
    `include "uvme_cv32e40s_cov_model.sv"
    `include "uvme_cv32e40s_sb.sv"
    `include "uvme_cv32e40s_core_sb.sv"
+   `include "uvme_cv32e40s_buserr_sb.sv"
    `include "uvme_cv32e40s_vsqr.sv"
    `include "uvme_cv32e40s_env.sv"
 

@@ -1,5 +1,5 @@
-Simulation Directory for CV32E Core Testbench
-==================================
+Simulation Directory for CV32E40P Core Testbench
+================================================
 This is the directory in which you should run all tests of the Core Testbench.
 The testbench itself is located at `../../tb/core` and the test-programs are at
 `../../tests`.  See the README in those directories for more information.
@@ -19,7 +19,7 @@ Pointers to the recommended toolchain for CV32E40P are in `../TOOLCHAIN`.
 
 Running your own C programs
 ---------------------
-A hello world program is available and you can run it in the CV32E Core testbench.
+A hello world program is available and you can run it in the CV32E40P Core testbench.
 Invoke the `dsim-hello_world` or `hello-world-veri-run` makefile rules to run it with
 `dsim` or `verilator` respectively.
 

@@ -103,7 +103,7 @@ SIMV                    = ./simv
 # dsim is the Metrics Technologies SystemVerilog simulator  (https://metrics.ca/)
 DSIM                    = dsim
 DSIM_HOME               = /tools/Metrics/dsim
-DSIM_CMP_FLAGS          = +define+CORE_TB+COREV_ASSERT_OFF -timescale 1ns/1ps $(SV_CMP_FLAGS) -suppress MultiBlockWrite +define+CV32E40P_APU_TRACE
+DSIM_CMP_FLAGS          = +define+CORE_TB+COREV_ASSERT_OFF -timescale 1ns/1ps $(SV_CMP_FLAGS) -suppress MultiBlockWrite +define+CV32E40X_APU_TRACE
 DSIM_RUN_FLAGS          = -write-sql
 DSIM_UVM_ARGS           = +incdir+$(UVM_HOME)/src $(UVM_HOME)/src/uvm_pkg.sv
 DSIM_RESULTS           ?= $(PWD)/dsim_results
@@ -118,7 +118,7 @@ endif
 
 # xrun is the Cadence xcelium SystemVerilog simulator (https://cadence.com/)
 XRUN              = xrun
-XRUN_FLAGS        = -clean -smartorder -sv -top worklib.tb_top -timescale 1ns/1ps +define+CV32E40P_APU_TRACE -uvmhome CDNS-1.2-ML
+XRUN_FLAGS        = -clean -smartorder -sv -top worklib.tb_top -timescale 1ns/1ps +define+CV32E40X_APU_TRACE -uvmhome CDNS-1.2-ML
 XRUN_DIR          = xcelium.d
 
 # verilator configuration
@@ -455,7 +455,7 @@ sanity-veri-run:
 
 testbench_verilator: CV_CORE_pkg $(TBSRC_VERI) $(TBSRC_PKG)
 	@echo "$(BANNER)"
-	@echo "* Compiling CORE TB and CV32E40P with Verilator"
+	@echo "* Compiling CORE TB and CV32E40X with Verilator"
 	@echo "$(BANNER)"
 	$(VERILATOR) --cc --sv --exe \
 		$(VERI_TRACE) \
@@ -631,7 +631,7 @@ riviera-clean:
 
 clone_$(CV_CORE_LC)_rtl:
 	@echo "$(BANNER)"
-	@echo "* Cloning CV32E40P RTL model"
+	@echo "* Cloning CV32E40X RTL model"
 	@echo "$(BANNER)"
 	$(CLONE_CV_CORE_CMD)
 

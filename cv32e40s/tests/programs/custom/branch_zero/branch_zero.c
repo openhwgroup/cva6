@@ -2,9 +2,10 @@
 #include <stdlib.h>
 #include <stdint.h>
 #include <time.h>
+#include "corev_uvmt.h"
 
-#define TIMER_REG_ADDR         ((volatile uint32_t *) 0x15000000)  
-#define TIMER_VAL_ADDR         ((volatile uint32_t *) 0x15000004) 
+#define TIMER_REG_ADDR         ((volatile uint32_t *) (CV_VP_INTR_TIMER_BASE + 0))
+#define TIMER_VAL_ADDR         ((volatile uint32_t *) (CV_VP_INTR_TIMER_BASE + 4))
 
 void mm_ram_assert_irq(uint32_t mask, uint32_t cycle_delay) {
     *TIMER_REG_ADDR = mask;

@@ -87,6 +87,24 @@ $ git checkout master<br>
 $ git merge upstream/master<br>
 $ git push --set-upstream origin master<br>
 
+## Importing a new upstream branch onto your fork
+
+* Make sure you've pulled the new upstream branch into your local repo:
+* First, ensure your working tree is clean (commit/stash/revert any changes), then:
+
+$ git fetch upstream to retrieve the new upstream branch
+
+* Create and switch to a local version of the new upstream branch (newbranch):
+
+$ git checkout -b newbranch upstream/newbranch
+
+* When you're ready to push the new branch to origin:
+
+$ git push -u origin newbranch
+<br>
+The -u switch sets up tracking to the specified remote (in this example, origin).
+
+
 ## Using ssh (need to set-up ssh keys first)
 \# git remote set-url origin git@github.com:username/your-repository.git<br>
 $ git clone git@github.com:openhwgroup/core-v-verif.git master<br>

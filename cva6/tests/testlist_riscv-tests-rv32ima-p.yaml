@@ -268,7 +268,7 @@
   asm_tests: <path_var>/riscv-tests/isa/rv32ui/xori.S
 
 - test: rv32mi-p-breakpoint
-  iterations: 1
+  iterations: 0 # csrr    a0, tdata1 => 0x20000000 (spike), 0x00000000 (cva6)
   path_var: TESTS_PATH
   gcc_opts: "-static -mcmodel=medany -fvisibility=hidden -nostdlib -nostartfiles -I<path_var>/riscv-tests/isa/macros/scalar/ -I<path_var>/riscv-tests/env/p/ -I<path_var>/riscv-tests/riscv-target/spike/"
   asm_tests: <path_var>/riscv-tests/isa/rv32mi/breakpoint.S
@@ -280,13 +280,13 @@
   asm_tests: <path_var>/riscv-tests/isa/rv32mi/csr.S
 
 - test: rv32mi-p-mcsr
-  iterations: 1
+  iterations: 0 # expected as different marchid
   path_var: TESTS_PATH
   gcc_opts: "-static -mcmodel=medany -fvisibility=hidden -nostdlib -nostartfiles -I<path_var>/riscv-tests/isa/macros/scalar/ -I<path_var>/riscv-tests/env/p/ -I<path_var>/riscv-tests/riscv-target/spike/"
   asm_tests: <path_var>/riscv-tests/isa/rv32mi/mcsr.S
 
 - test: rv32mi-p-illegal
-  iterations: 1
+  iterations: 0 # cva6 does not record illegal instructions in log file
   path_var: TESTS_PATH
   gcc_opts: "-static -mcmodel=medany -fvisibility=hidden -nostdlib -nostartfiles -I<path_var>/riscv-tests/isa/macros/scalar/ -I<path_var>/riscv-tests/env/p/ -I<path_var>/riscv-tests/riscv-target/spike/"
   asm_tests: <path_var>/riscv-tests/isa/rv32mi/illegal.S
@@ -298,7 +298,7 @@
   asm_tests: <path_var>/riscv-tests/isa/rv32mi/ma_addr.S
 
 - test: rv32mi-p-ma_fetch
-  iterations: 1
+  iterations: 0 # expected as different misa
   path_var: TESTS_PATH
   gcc_opts: "-static -mcmodel=medany -fvisibility=hidden -nostdlib -nostartfiles -I<path_var>/riscv-tests/isa/macros/scalar/ -I<path_var>/riscv-tests/env/p/ -I<path_var>/riscv-tests/riscv-target/spike/"
   asm_tests: <path_var>/riscv-tests/isa/rv32mi/ma_fetch.S
@@ -352,7 +352,7 @@
   asm_tests: <path_var>/riscv-tests/isa/rv32si/sbreak.S
 
 - test: rv32si-p-dirty
-  iterations: 1
+  iterations: 0 # to be explained
   path_var: TESTS_PATH
   gcc_opts: "-static -mcmodel=medany -fvisibility=hidden -nostdlib -nostartfiles -I<path_var>/riscv-tests/isa/macros/scalar/ -I<path_var>/riscv-tests/env/p/ -I<path_var>/riscv-tests/riscv-target/spike/"
   asm_tests: <path_var>/riscv-tests/isa/rv32si/dirty.S

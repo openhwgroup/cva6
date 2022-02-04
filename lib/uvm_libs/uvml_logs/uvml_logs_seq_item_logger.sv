@@ -98,8 +98,9 @@ class uvml_logs_seq_item_logger_c#(
    
    /**
     * Writes msg to disk
+    * Waiving Verissimo SVTB.32.2.0: Pass strings by reference unless otherwise needed
     */
-   extern function void fwrite(string msg);
+   extern function void fwrite(string msg); //@DVT_LINTER_WAIVER "MT20211228_4" disable SVTB.32.2.0
    
 endclass : uvml_logs_seq_item_logger_c
 

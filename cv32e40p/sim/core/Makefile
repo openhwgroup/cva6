@@ -53,6 +53,21 @@ CV_CORE       ?= CV32E40P
 CV_CORE_LC     = $(shell echo $(CV_CORE) | tr A-Z a-z)
 CV_CORE_UC     = $(shell echo $(CV_CORE) | tr a-z A-Z)
 
+SIMULATOR     ?= $(CV_SIMULATOR)
+
+# Test-Program directores.
+# Relative path is used for Verilator which cannot seem to handle loooong pathnames.
+TEST_PROGRAM_PATH    = $(CORE_V_VERIF)/$(CV_CORE_LC)/tests/programs/custom
+TEST_PROGRAM_RELPATH = ../../tests/programs/custom
+
+# Common output directories
+RUN_INDEX               ?= 0
+SIM_RESULTS              = simulation_results
+SIM_TEST_RESULTS         = $(SIM_RESULTS)/$(TEST)
+SIM_RUN_RESULTS          = $(SIM_TEST_RESULTS)/$(RUN_INDEX)
+SIM_TEST_PROGRAM_RESULTS = $(SIM_RUN_RESULTS)/test_program
+SIM_BSP_RESULTS          = $(SIM_TEST_PROGRAM_RESULTS)/bsp
+
 # Compile compile flags for all simulators
 SV_CMP_FLAGS =
 
@@ -61,9 +76,25 @@ CUSTOM_PROG  ?= requested_csr_por
 TEST         ?= hello-world
 
 ###############################################################################
+# Generate and include TEST_FLAGS_MAKE, based on the YAML test description.
+# An example of what is generated is below (not all of these flags are used):
+#       TEST_DESCRIPTION=Simple hello-world sanity test
+#       TEST_NAME=hello-world
+#       TEST_PROGRAM=hello-world
+#       TEST_TEST_DIR=/home/mike/GitHubRepos/MikeOpenHWGroup/core-v-verif/master/cv32e40p/tests/programs/custom/hello-world
+#       TEST_UVM_TEST=uvmt_$(CV_CORE_LC)_firmware_test_c
+
+YAML2MAKE = $(CORE_V_VERIF)/bin/yaml2make
+TEST_FLAGS_MAKE := $(shell $(YAML2MAKE) --test=$(TEST) --yaml=test.yaml  $(YAML2MAKE_DEBUG) --run-index=$(u) --prefix=TEST --core=$(CV_CORE))
+ifeq ($(TEST_FLAGS_MAKE),)
+$(error ERROR Could not find test.yaml for test: $(TEST))
+endif
+include $(TEST_FLAGS_MAKE)
+
+###############################################################################
 # Common Makefiles:
 #  -Variables for RTL and other dependencies (e.g. RISCV-DV)
-include ../Common.mk
+include ../ExternalRepos.mk
 #  -Core Firmware and the RISCV GCC Toolchain (SDK)
 include $(CORE_V_VERIF)/mk/Common.mk
 
@@ -127,7 +158,8 @@ VERI_FLAGS         +=
 VERI_COMPILE_FLAGS += -Wno-BLKANDNBLK $(SV_CMP_FLAGS) # hope this doesn't hurt us in the long run
 VERI_TRACE         ?=
 VERI_OBJ_DIR       ?= cobj_dir
-VERI_LOG_DIR       ?= cobj_dir/logs
+#VERI_LOG_DIR       ?= cobj_dir/logs
+VERI_LOG_DIR       ?= $(SIM_TEST_PROGRAM_RESULTS)
 VERI_CFLAGS        += -O2
 
 #riviera configuration
@@ -199,7 +231,6 @@ tbsrc: $(TBSRC)
 
 ###############################################################################
 
-SIMULATOR ?= vcs
 
 .PHONY: hello-world
 hello-world: $(SIMULATOR)-hello-world
@@ -272,7 +303,7 @@ dsim-custom:
 	@echo "This target is depreciated.  Please use 'make dsim-test TEST=<test-program>'"
 	@echo "                             Example:   'make dsim-test TEST=fibonacci'"
 
-dsim-test: dsim-comp $(VERI_CUSTOM)/$(TEST)/$(TEST).hex
+dsim-test: dsim-comp $(TEST_PROGRAM_PATH)/$(TEST)/$(TEST).hex
 	@echo "$(BANNER)"
 	@echo "* Running with Metrics DSIM"
 	@echo "$(BANNER)"
@@ -283,7 +314,7 @@ dsim-test: dsim-comp $(VERI_CUSTOM)/$(TEST)/$(TEST).hex
 		$(DSIM_RUN_FLAGS) \
 		-sv_lib $(UVM_HOME)/src/dpi/libuvm_dpi.so \
 		-sv_lib $(OVP_MODEL_DPI)  \
-		+firmware=../../$(VERI_CUSTOM)/$(TEST)/$(TEST).hex
+		+firmware=$(TEST_PROGRAM_PATH)/$(TEST)/$(TEST).hex
 
 # Metrics dsim cleanup
 .PHONY: dsim-clean
@@ -297,7 +328,8 @@ dsim-clean: tc-clean
 	rm -rf dsim_work
 	rm -f dsim.env
 	rm -f $(DSIM_IMAGE)
-	rm -rf $(uIM_RESULTS)
+	rm -rf $(DSIM_RESULTS)
+	rm -rf $(SIM_RESULTS)
 
 ###############################################################################
 # Mentor Questasim
@@ -417,12 +449,12 @@ xrun-custom:
 	@echo "                             Example:   'make xrun-test TEST=fibonacci'"
 
 .PHONY: xrun-test
-xrun-test: xrun-all $(VERI_CUSTOM)/$(TEST)/$(TEST).hex
+xrun-test: xrun-all $(TEST_PROGRAM_PATH)/$(TEST)/$(TEST).hex
 	$(XRUN) \
 		$(XRUN_FLAGS) \
 		-f $(CV_CORE_MANIFEST) \
 		$(TBSRC_PKG) $(TBSRC) \
-		+firmware=$(VERI_CUSTOM)/$(TEST)/$(CUSTOM_PROG).hex
+		+firmware=$(TEST_PROGRAM_PATH)/$(TEST)/$(CUSTOM_PROG).hex
 
 # Cadence Xcelium xrun cleanup
 .PHONY: xrun-clean xrun-clean-all
@@ -468,22 +500,24 @@ testbench_verilator: CV_CORE_pkg $(TBSRC_VERI) $(TBSRC_PKG)
 		-CFLAGS "-std=gnu++11 $(VERI_CFLAGS)" \
 		$(VERI_COMPILE_FLAGS)
 	$(MAKE) -C $(VERI_OBJ_DIR) -f Vtb_top_verilator.mk
-	cp $(VERI_OBJ_DIR)/Vtb_top_verilator testbench_verilator
+	mkdir -p $(SIM_RESULTS)
+	mkdir -p $(SIM_TEST_RESULTS)
+	mv $(VERI_OBJ_DIR)/Vtb_top_verilator $(SIM_TEST_RESULTS)/verilator_executable
 
-veri-test: verilate $(VERI_CUSTOM)/$(TEST)/$(TEST).hex
+veri-test: verilate $(TEST_PROGRAM_PATH)/$(TEST)/$(TEST).hex
 	@echo "$(BANNER)"
-	@echo "* Running with Verilator: logfile in $(VERI_LOG_DIR)/$(TEST).log"
+	@echo "* Running with Verilator: logfile in $(SIM_TEST_RESULTS)/$(TEST).log"
 	@echo "$(BANNER)"
 	mkdir -p $(VERI_LOG_DIR)
 	./testbench_verilator $(VERI_FLAGS) \
-		"+firmware=$(VERI_CUSTOM)/$(TEST)/$(TEST).hex" \
+		"+firmware=$(TEST_PROGRAM_RELPATH)/$(TEST)/$(TEST).hex" \
 		| tee $(VERI_LOG_DIR)/$(TEST).log
 
 # verilator specific cleanup
 veri-clean: verilate-clean
 
 verilate-clean: tc-clean
-	if [ -d $(VERI_LOG_DIR) ]; then rm -r $(VERI_LOG_DIR); fi
+	if [ -d $(SIM_RESULTS) ]; then rm -r $(SIM_RESULTS); fi
 	if [ -d $(VERI_OBJ_DIR) ]; then rm -r $(VERI_OBJ_DIR); fi
 	rm -rf testbench_verilator
 	if [ -e memory_dump.bin ]; then rm memory_dump.bin; fi
@@ -642,8 +676,12 @@ clone_$(CV_CORE_LC)_rtl:
 # general targets
 .PHONY: tc-clean
 
+# clean up simulation results
+clean-sim-results:
+	rm -rf $(SIM_RESULTS)
+
 # clean up toolchain generated files
-clean_test_programs:
+clean-test-programs:
 	find $(CORE_V_VERIF)/$(CV_CORE_LC)/tests/programs -name *.o       -exec rm {} \;
 	find $(CORE_V_VERIF)/$(CV_CORE_LC)/tests/programs -name *.hex     -exec rm {} \;
 	find $(CORE_V_VERIF)/$(CV_CORE_LC)/tests/programs -name *.elf     -exec rm {} \;
@@ -653,7 +691,7 @@ clean_test_programs:
 	find $(CORE_V_VERIF)/$(CV_CORE_LC)/tests/programs -name corev_*.S -exec rm {} \;
 
 .PHONY: clean clean_all distclean
-clean: clean-test-programs questa-clean verilate-clean vcs-clean firmware-clean custom-clean dsim-clean xrun-clean vcs-clean clean-bsp riviera-clean
+clean: clean-sim-results clean-test-programs questa-clean verilate-clean vcs-clean firmware-clean dsim-clean xrun-clean vcs-clean riviera-clean
 
 distclean: clean
 	rm -rf riscv-fesvr riscv-isa-sim $(CV_CORE_PKG) work
