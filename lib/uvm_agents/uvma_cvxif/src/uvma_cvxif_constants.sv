@@ -12,10 +12,6 @@
 `define __UVMA_CVXIF_CONSTANTS_SV__
 
 
-const int unsigned  uvma_cvxif_issue_ready_min     = 4;
-const int unsigned  uvma_cvxif_issue_ready_max     = 10;
-const int unsigned  uvma_cvxif_issue_not_ready_min = 1;
-const int unsigned  uvma_cvxif_issue_not_ready_max = 2;
 
 
 `endif //__UVMA_CVXIF_CONSTANTS_SV__

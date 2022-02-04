@@ -39,5 +39,10 @@ typedef struct packed {
     logic                        commit_kill;
   } x_commit;
 
+typedef enum {
+   UVMA_CVXIF_ISSUE_READY_FIX,
+   UVMA_CVXIF_ISSUE_READY_RANDOMIZED
+} uvma_cvxif_ready_mode_enum;
+
 
 `endif //__UVMA_CVXIF_TDEFS_SV__

@@ -14,12 +14,21 @@
 
 class uvma_cvxif_drv_c extends uvm_driver #(uvma_cvxif_resp_item_c);
 
-   `uvm_component_utils(uvma_cvxif_drv_c)
-
    uvma_cvxif_resp_item_c resp_item;
 
+   // Objects
+   uvma_cvxif_cfg_c    cfg;
+
+   // Handles to virtual interface
    virtual uvma_cvxif_if  cvxif_vif;
 
+   `uvm_component_utils_begin(uvma_cvxif_drv_c)
+      `uvm_field_object(cfg  , UVM_DEFAULT)
+   `uvm_component_utils_end
+
+   string info_tag = "CVXIF_DRV";
+
+   uvma_cvxif_resp_item_c resp_item;
    string info_tag = "CVXIF_DRV";
 
    extern function new(string name="uvma_cvxif_drv", uvm_component parent=null);
@@ -30,7 +39,10 @@ class uvma_cvxif_drv_c extends uvm_driver #(uvma_cvxif_resp_item_c);
 
    extern virtual task run_phase(uvm_phase phase);
 
+   extern virtual task gen_random_ready();
+
    extern virtual task drive_issue_resp(input uvma_cvxif_resp_item_c item);
+
    extern virtual task drive_result_resp(input uvma_cvxif_resp_item_c item);
 
 endclass : uvma_cvxif_drv_c
@@ -44,6 +56,12 @@ endfunction : new
 function void uvma_cvxif_drv_c::build_phase(uvm_phase phase);
 
    super.build_phase(phase);
+
+   void'(uvm_config_db#(uvma_cvxif_cfg_c)::get(this, "", "cfg", cfg));
+   if (cfg == null) begin
+      `uvm_fatal("CFG", "Configuration handle is null")
+   end
+   uvm_config_db#(uvma_cvxif_cfg_c)::set(this, "*", "cfg", cfg);
 
   //Get the virtual interface handle from the configuration db
    if (! uvm_config_db#(virtual uvma_cvxif_if)::get(this, "", "cvxif_vif", cvxif_vif)) begin
@@ -77,10 +95,11 @@ task uvma_cvxif_drv_c::run_phase(uvm_phase phase);
    fork
       begin
          forever begin
-            repeat($urandom_range(uvma_cvxif_issue_ready_min,uvma_cvxif_issue_ready_max)) @(posedge cvxif_vif.clk);
-               cvxif_vif.cvxif_resp_o.x_issue_ready <= 0;
-            repeat($urandom_range(uvma_cvxif_issue_not_ready_min,uvma_cvxif_issue_not_ready_max)) @(posedge cvxif_vif.clk);
-               cvxif_vif.cvxif_resp_o.x_issue_ready <= 1;
+            if (cfg.ready_mode == UVMA_CVXIF_ISSUE_READY_FIX) begin
+               @(posedge cvxif_vif.clk);
+               break;
+            end
+            else gen_random_ready();
          end
       end
 
@@ -105,6 +124,17 @@ task uvma_cvxif_drv_c::run_phase(uvm_phase phase);
          end
       end
    join_any
+
+endtask
+
+task uvma_cvxif_drv_c::gen_random_ready();
+
+      cfg.randomize(uvma_cvxif_issue_ready);
+      cfg.randomize(uvma_cvxif_issue_not_ready);
+      repeat(cfg.uvma_cvxif_issue_ready) @(posedge cvxif_vif.clk);
+         cvxif_vif.cvxif_resp_o.x_issue_ready <= 0;
+      repeat(cfg.uvma_cvxif_issue_not_ready) @(posedge cvxif_vif.clk);
+         cvxif_vif.cvxif_resp_o.x_issue_ready <= 1;
 
 endtask
 

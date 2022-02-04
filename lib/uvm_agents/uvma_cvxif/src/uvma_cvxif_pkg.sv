@@ -27,9 +27,14 @@ package uvma_cvxif_pkg;
    import uvm_pkg       ::*;
    import instr_pkg     ::*;
 
+
    // Constants / Structs / Enums
-   `include "uvma_cvxif_tdefs.sv"
    `include "uvma_cvxif_constants.sv"
+   `include "uvma_cvxif_tdefs.sv"
+
+
+   // Objects
+   `include "uvma_cvxif_cfg.sv"
 
    // High-level transactions
    `include "uvma_cvxif_req_item.sv"

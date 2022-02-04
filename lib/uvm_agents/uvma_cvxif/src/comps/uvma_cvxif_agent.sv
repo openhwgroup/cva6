@@ -19,12 +19,16 @@ class uvma_cvxif_agent_c extends uvm_agent;
    uvma_cvxif_sqr_c    sequencer;
    uvma_cvxif_drv_c    driver;
 
+   // Objects
+   uvma_cvxif_cfg_c    cfg;
+
    virtual uvma_cvxif_if cvxif_vif;
 
    string info_tag = "CVXIF_AGENT";
 
-   `uvm_component_utils(uvma_cvxif_agent_c)
-
+   `uvm_component_utils_begin(uvma_cvxif_agent_c)
+      `uvm_field_object(cfg, UVM_DEFAULT)
+   `uvm_component_utils_end
    /**
     * Default constructor.
     */
@@ -40,6 +44,8 @@ class uvma_cvxif_agent_c extends uvm_agent;
     * Links agent's analysis ports to sub-components'
     */
    extern virtual function void connect_phase(uvm_phase phase);
+
+   extern virtual function void get_and_set_cfg();
 
    /**
     * Uses uvm_config_db to retrieve the Virtual Interface (vif) associated with this
@@ -74,6 +80,7 @@ function void uvma_cvxif_agent_c::build_phase(uvm_phase phase);
 
    super.build_phase(phase);
 
+   get_and_set_cfg  ();
    retrieve_vif     ();
    create_components();
 
@@ -88,6 +95,19 @@ function void uvma_cvxif_agent_c::connect_phase(uvm_phase phase);
    connect_sequencer_and_driver();
 
 endfunction: connect_phase
+
+function void uvma_cvxif_agent_c::get_and_set_cfg();
+
+   void'(uvm_config_db#(uvma_cvxif_cfg_c)::get(this, "", "cfg", cfg));
+   if (cfg == null) begin
+      `uvm_fatal("CFG", "Configuration handle is null")
+   end
+   else begin
+      `uvm_info("CFG", $sformatf("Found configuration handle:\n%s", cfg.sprint()), UVM_DEBUG)
+      uvm_config_db#(uvma_cvxif_cfg_c)::set(this, "*", "cfg", cfg);
+   end
+
+endfunction : get_and_set_cfg
 
 function void uvma_cvxif_agent_c::retrieve_vif();
 
