@@ -268,7 +268,11 @@ function int unsigned uvma_obi_memory_cfg_c::calc_random_gnt_latency();
       UVMA_OBI_MEMORY_DRV_SLV_GNT_MODE_CONSTANT      : effective_latency = 0;
       UVMA_OBI_MEMORY_DRV_SLV_GNT_MODE_FIXED_LATENCY : effective_latency = drv_slv_gnt_fixed_latency;
       UVMA_OBI_MEMORY_DRV_SLV_GNT_MODE_RANDOM_LATENCY: begin
+         // SVTB.29.1.3.1 - Banned random number system functions and methods calls
+         // Waive-abe because drv_slv_gnt_* are constrainable.
+         //@DVT_LINTER_WAIVER_START "MT20211214_7" disable SVTB.29.1.3.1
          effective_latency = $urandom_range(drv_slv_gnt_random_latency_min, drv_slv_gnt_random_latency_max);
+         //@DVT_LINTER_WAIVER_END "MT20211214_7"
       end
    endcase
 
@@ -284,7 +288,9 @@ function int unsigned uvma_obi_memory_cfg_c::calc_random_rvalid_latency();
       UVMA_OBI_MEMORY_DRV_SLV_RVALID_MODE_CONSTANT      : effective_latency = 0;
       UVMA_OBI_MEMORY_DRV_SLV_RVALID_MODE_FIXED_LATENCY : effective_latency = drv_slv_rvalid_fixed_latency;
       UVMA_OBI_MEMORY_DRV_SLV_RVALID_MODE_RANDOM_LATENCY: begin
+         //@DVT_LINTER_WAIVER_START "MT20211214_8" disable SVTB.29.1.3.1
          effective_latency = $urandom_range(drv_slv_rvalid_random_latency_min, drv_slv_rvalid_random_latency_max);
+         //@DVT_LINTER_WAIVER_END "MT20211214_8"
       end
    endcase
 

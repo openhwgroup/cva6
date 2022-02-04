@@ -1,19 +1,19 @@
 /*
 **
 ** Copyright 2020 OpenHW Group
-** 
+**
 ** Licensed under the Solderpad Hardware Licence, Version 2.0 (the "License");
 ** you may not use this file except in compliance with the License.
 ** You may obtain a copy of the License at
-** 
+**
 **     https://solderpad.org/licenses/
-** 
+**
 ** Unless required by applicable law or agreed to in writing, software
 ** distributed under the License is distributed on an "AS IS" BASIS,
 ** WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 ** See the License for the specific language governing permissions and
 ** limitations under the License.
-** 
+**
 *******************************************************************************
 **
 ** CSR power-on-reset test:   Reads the CSRs and prints some useful (?)
@@ -58,81 +58,6 @@ int main(int argc, char *argv[])
   sum     = 0;
 
 	printf("\n\n");
-
-  // These CSRs only exist if FPU=1 at RTL compile-time.
-  // Reading these when FPU=0 yields an illegal instruction exception (which is not tested here).
-  /*
-  __asm__ volatile("csrr %0, 0x001" : "=r"(fflags_rval));
-  __asm__ volatile("csrr %0, 0x002" : "=r"(frm_rval));
-  __asm__ volatile("csrr %0, 0x003" : "=r"(fcsr_rval));
-  __asm__ volatile("csrr %0, 0x006" : "=r"(fprec_rval));
-
-  if (fflags_rval != 0x0) {
-    printf("ERROR: CSR FFLAGS not zero!\n\n");
-    ++err_cnt;
-  }
-  if (frm_rval != 0x0) {
-    printf("ERROR: CSR FRM not zero!\n\n");
-    ++err_cnt;
-  }
-  if (fcsr_rval != 0x0) {
-    printf("ERROR: CSR FCSR not zero!\n\n");
-    ++err_cnt;
-  }
-
-  if (fprec_rval != 0x0) {
-    printf("ERROR: CSR FPREC not zero!\n\n");
-    ++err_cnt;
-  }
-  */
-
-  /*
-  // These CSRs are present in the RTL, but will not be modeled in the RM
-  // as they are XPULP-specific.
-  // lpstat0/1, lpend0/1 and lpcount0/1 present when PULP_XPULP=1
-  __asm__ volatile("csrr %0, 0x7C0" : "=r"(lpstart0_rval));
-  __asm__ volatile("csrr %0, 0x7C1" : "=r"(lpend0_rval));
-  __asm__ volatile("csrr %0, 0x7C2" : "=r"(lpcount0_rval));
-  __asm__ volatile("csrr %0, 0x7C4" : "=r"(lpstart1_rval));
-  __asm__ volatile("csrr %0, 0x7C5" : "=r"(lpend1_rval));
-  __asm__ volatile("csrr %0, 0x7C6" : "=r"(lpcount1_rval));
-  __asm__ volatile("csrr %0, 0xC10" : "=r"(privlv_rval));
-  __asm__ volatile("csrr %0, 0x014" : "=r"(uhartid_rval));
- 
-  if (lpstart0_rval != 0x0) {
-    printf("ERROR: CSR LPSTART0 not zero!\n\n");
-    ++err_cnt;
-  }
-  if (lpend0_rval != 0x0) {
-    printf("ERROR: CSR LPEND0 not zero!\n\n");
-    ++err_cnt;
-  }
-  if (lpcount0_rval != 0x0) {
-    printf("ERROR: CSR LPCOUNT0 not zero!\n\n");
-    ++err_cnt;
-  }
-  if (lpstart1_rval != 0x0) {
-    printf("ERROR: CSR LPSTART1 not zero!\n\n");
-    ++err_cnt;
-  }
-  if (lpend1_rval != 0x0) {
-    printf("ERROR: CSR LPEND1 not zero!\n\n");
-    ++err_cnt;
-  }
-  if (lpcount1_rval != 0x0) {
-    printf("ERROR: CSR LPCOUNT1 not zero!\n\n");
-    ++err_cnt;
-  }
-
-  if (privlv_rval != 0x3) {
-    printf("ERROR: CSR PRIVLV not 0x3!\n\n");
-    ++err_cnt;
-  }
-  if (uhartid_rval != 0x0) {
-    printf("ERROR: CSR UHARTID not equal to hart_id_i!\n\n");
-    ++err_cnt;
-  }
-  */
 
   __asm__ volatile("csrr %0, 0x300" : "=r"(mstatus_rval));
   __asm__ volatile("csrr %0, 0x301" : "=r"(misa_rval));
@@ -412,7 +337,7 @@ int main(int argc, char *argv[])
     printf("ERROR: CSR MCOUNTINHIBIT not 0xD!\n\n");
     ++err_cnt;
   }
- 
+
   //__asm__ volatile("csrr %0, 0x306" : "=r"(mcounteren_rval));    // Not currently modeled
 
   //if (mcounteren_rval != 0x0) {

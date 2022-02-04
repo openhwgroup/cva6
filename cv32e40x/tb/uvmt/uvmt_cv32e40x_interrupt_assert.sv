@@ -201,7 +201,6 @@ module uvmt_cv32e40x_interrupt_assert
   property p_irq_in_mtvec(irq, mtvec);
     s_irq_taken(irq) ##0 mtvec_mode_q == mtvec;
   endproperty
-
   generate for(genvar gv_i = 0; gv_i < NUM_IRQ; gv_i++) begin : gen_irq_cov
     if (VALID_IRQ_MASK[gv_i]) begin : gen_valid
       c_irq_masked: cover property(p_irq_masked(gv_i));

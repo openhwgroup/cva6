@@ -113,35 +113,40 @@ task uvma_obi_memory_vp_debug_control_seq_c::debug(bit dbg_req_value,
                                                    int unsigned dbg_pulse_duration,
                                                    int unsigned start_delay);
 
+   // SVTB.29.1.3.1 - Banned random number system functions and methods calls
+   // Waive-abe because we just do not need the fine tune control of
+   // constraints in this situation.
+   //@DVT_LINTER_WAIVER_START "MT20211214_9" disable SVTB.29.1.3.1
    fork
       begin
          if (rand_start_delay) begin
-            wait_n_clocks($urandom_range(start_delay, 0));            
+            wait_n_clocks($urandom_range(start_delay, 0));
          end
          else begin
             wait_n_clocks(start_delay);
          end
-         
+
          if (request_mode) begin
             set_debug_req(dbg_req_value);
-            
+
             if (rand_pulse_duration) begin
                if (dbg_pulse_duration == 0)
                   wait_n_clocks($urandom_range(128,1));
                else
-                  wait_n_clocks($urandom_range(dbg_pulse_duration, 1));               
+                  wait_n_clocks($urandom_range(dbg_pulse_duration, 1));
             end
             else begin
-               wait_n_clocks(dbg_pulse_duration);               
+               wait_n_clocks(dbg_pulse_duration);
             end
-            set_debug_req(!dbg_req_value);            
+            set_debug_req(!dbg_req_value);
          end
          else begin
-            set_debug_req(dbg_req_value);            
+            set_debug_req(dbg_req_value);
          end
       end
    join_none
-   
+   //@DVT_LINTER_WAIVER_END "MT20211214_9"
+
 endtask : debug
 
 `endif // __UVMA_OBI_MEMORY_VP_DEBUG_CONTROL_SEQ_SV__

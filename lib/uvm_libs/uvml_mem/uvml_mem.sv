@@ -83,7 +83,7 @@ function reg[7:0] uvml_mem_c::read(bit[XLEN-1:0] addr);
          MEM_DEFAULT_0:      _mem[addr] = '0;
          MEM_DEFAULT_CONST:  _mem[addr] = mem_default_const_value;
          MEM_DEFAULT_INCR:   _mem[addr] = addr[7:0];
-         MEM_DEFAULT_RANDOM: _mem[addr] = $urandom();
+         MEM_DEFAULT_RANDOM: _mem[addr] = $urandom(); //@DVT_LINTER_WAIVER "MT20211214_11" disable SVTB.29.1.3.1
       endcase
    end
 
