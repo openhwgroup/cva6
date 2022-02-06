@@ -276,11 +276,8 @@ module ariane_testharness #(
     .data_i     ( dm_slave_rdata            )
   );
 
-  axi_master_connect i_dm_axi_master_connect (
-    .axi_req_i(dm_axi_m_req),
-    .axi_resp_o(dm_axi_m_resp),
-    .master(slave[1])
-  );
+  `AXI_ASSIGN_FROM_REQ(slave[1], dm_axi_m_req)
+  `AXI_ASSIGN_TO_RESP(dm_axi_m_resp, slave[1])
 
   axi_adapter #(
     .DATA_WIDTH            ( AXI_DATA_WIDTH            ),
@@ -354,14 +351,14 @@ module ariane_testharness #(
 
   // GPIO not implemented, adding an error slave here
 
-  ariane_axi_soc::req_t  gpio_req;
-  ariane_axi_soc::resp_t gpio_resp;
+  ariane_axi_soc::req_slv_t  gpio_req;
+  ariane_axi_soc::resp_slv_t gpio_resp;
   `AXI_ASSIGN_TO_REQ(gpio_req, master[ariane_soc::GPIO])
   `AXI_ASSIGN_FROM_RESP(master[ariane_soc::GPIO], gpio_resp)
   axi_err_slv #(
-    .AxiIdWidth ( ariane_soc::IdWidthSlave ),
-    .req_t      ( ariane_axi_soc::req_t    ),
-    .resp_t     ( ariane_axi_soc::resp_t   )
+    .AxiIdWidth ( ariane_soc::IdWidthSlave   ),
+    .req_t      ( ariane_axi_soc::req_slv_t  ),
+    .resp_t     ( ariane_axi_soc::resp_slv_t )
   ) i_gpio_err_slv (
     .clk_i      ( clk_i      ),
     .rst_ni     ( ndmreset_n ),
@@ -514,14 +511,16 @@ module ariane_testharness #(
   logic ipi;
   logic timer_irq;
 
-  ariane_axi_soc::req_t    axi_clint_req;
-  ariane_axi_soc::resp_t   axi_clint_resp;
+  ariane_axi_soc::req_slv_t  axi_clint_req;
+  ariane_axi_soc::resp_slv_t axi_clint_resp;
 
   clint #(
-    .AXI_ADDR_WIDTH ( AXI_ADDRESS_WIDTH        ),
-    .AXI_DATA_WIDTH ( AXI_DATA_WIDTH           ),
-    .AXI_ID_WIDTH   ( ariane_soc::IdWidthSlave ),
-    .NR_CORES       ( 1                        )
+    .AXI_ADDR_WIDTH ( AXI_ADDRESS_WIDTH          ),
+    .AXI_DATA_WIDTH ( AXI_DATA_WIDTH             ),
+    .AXI_ID_WIDTH   ( ariane_soc::IdWidthSlave   ),
+    .NR_CORES       ( 1                          ),
+    .axi_req_t      ( ariane_axi_soc::req_slv_t  ),
+    .axi_resp_t     ( ariane_axi_soc::resp_slv_t )
   ) i_clint (
     .clk_i       ( clk_i          ),
     .rst_ni      ( ndmreset_n     ),
@@ -533,11 +532,8 @@ module ariane_testharness #(
     .ipi_o       ( ipi            )
   );
 
-  axi_slave_connect i_axi_slave_connect_clint (
-    .axi_req_o(axi_clint_req),
-    .axi_resp_i(axi_clint_resp),
-    .slave(master[ariane_soc::CLINT])
-  );
+  `AXI_ASSIGN_TO_REQ(axi_clint_req, master[ariane_soc::CLINT])
+  `AXI_ASSIGN_FROM_RESP(master[ariane_soc::CLINT], axi_clint_resp)
 
   // ---------------
   // Peripherals
@@ -621,11 +617,8 @@ module ariane_testharness #(
     .axi_resp_i           ( axi_ariane_resp     )
   );
 
-  axi_master_connect i_axi_master_connect_ariane (
-    .axi_req_i(axi_ariane_req),
-    .axi_resp_o(axi_ariane_resp),
-    .master(slave[0])
-  );
+  `AXI_ASSIGN_FROM_REQ(slave[0], axi_ariane_req)
+  `AXI_ASSIGN_TO_RESP(axi_ariane_resp, slave[0])
 
   // -------------
   // Simulation Helper Functions

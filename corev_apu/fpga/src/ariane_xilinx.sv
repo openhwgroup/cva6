@@ -161,6 +161,13 @@ localparam AxiIdWidthMaster = 4;
 localparam AxiIdWidthSlaves = AxiIdWidthMaster + $clog2(NBSlave); // 5
 localparam AxiUserWidth = 1;
 
+`AXI_TYPEDEF_ALL(axi_slave,
+                 logic [    AxiAddrWidth-1:0],
+                 logic [AxiIdWidthSlaves-1:0],
+                 logic [    AxiDataWidth-1:0],
+                 logic [(AxiDataWidth/8)-1:0],
+                 logic [    AxiUserWidth-1:0])
+
 AXI_BUS #(
     .AXI_ADDR_WIDTH ( AxiAddrWidth     ),
     .AXI_DATA_WIDTH ( AxiDataWidth     ),
@@ -673,11 +680,8 @@ if (riscv::XLEN==32 ) begin
         .m_axi_rready(slave[1].r_ready)
       );
 end else begin
-    axi_master_connect i_dm_axi_master_connect (
-      .axi_req_i(dm_axi_m_req),
-      .axi_resp_o(dm_axi_m_resp),
-      .master(slave[1])
-     );
+    `AXI_ASSIGN_FROM_REQ(slave[1], dm_axi_m_req)
+    `AXI_ASSIGN_TO_RESP(dm_axi_m_resp, slave[1])
 end
 
 
@@ -702,7 +706,8 @@ ariane #(
     .axi_resp_i   ( axi_ariane_resp     )
 );
 
-axi_master_connect i_axi_master_connect_ariane (.axi_req_i(axi_ariane_req), .axi_resp_o(axi_ariane_resp), .master(slave[0]));
+`AXI_ASSIGN_FROM_REQ(slave[0], axi_ariane_req)
+`AXI_ASSIGN_TO_RESP(axi_ariane_resp, slave[0])
 
 // ---------------
 // CLINT
@@ -716,14 +721,16 @@ always_ff @(posedge clk or negedge ndmreset_n) begin
   end
 end
 
-ariane_axi::req_t    axi_clint_req;
-ariane_axi::resp_t   axi_clint_resp;
+axi_slave_req_t  axi_clint_req;
+axi_slave_resp_t axi_clint_resp;
 
 clint #(
     .AXI_ADDR_WIDTH ( AxiAddrWidth     ),
     .AXI_DATA_WIDTH ( AxiDataWidth     ),
     .AXI_ID_WIDTH   ( AxiIdWidthSlaves ),
-    .NR_CORES       ( 1                )
+    .NR_CORES       ( 1                ),
+    .axi_req_t      ( axi_slave_req_t  ),
+    .axi_resp_t     ( axi_slave_resp_t )
 ) i_clint (
     .clk_i       ( clk            ),
     .rst_ni      ( ndmreset_n     ),
@@ -735,7 +742,8 @@ clint #(
     .ipi_o       ( ipi            )
 );
 
-axi_slave_connect i_axi_slave_connect_clint (.axi_req_o(axi_clint_req), .axi_resp_i(axi_clint_resp), .slave(master[ariane_soc::CLINT]));
+`AXI_ASSIGN_TO_REQ(axi_clint_req, master[ariane_soc::CLINT])
+`AXI_ASSIGN_FROM_RESP(master[ariane_soc::CLINT], axi_clint_resp)
 
 // ---------------
 // ROM
