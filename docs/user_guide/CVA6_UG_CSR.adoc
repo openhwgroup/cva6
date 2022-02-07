@@ -18,7 +18,8 @@ To anticipate future evolutions of the specification, for each custom CSR range 
 
 * Consider that the lower half is reserved for OpenHW Group (and not implement custom registers in this space).
 * Consider that the higher half is unused (i.e. left for custom variations of CVA6) and not use it in future CORE-V specifications.
-This is illustrated below for the 12'h7C0-12'h7FF range.
+This is illustrated below for the `12'h7C0`-`12'h7FF` range.
+
 |===
 |*NAME*|*ADDR*|*Description*|*Implemented*|*Mandatory CSR*|*Mode*
 
