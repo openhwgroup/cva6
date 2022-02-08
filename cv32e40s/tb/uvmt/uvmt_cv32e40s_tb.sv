@@ -336,7 +336,7 @@ module uvmt_cv32e40s_tb;
   // Bind in verification modules to the design
   bind cv32e40s_core
     uvmt_cv32e40s_interrupt_assert interrupt_assert_i(
-      .mcause_n     ({cs_registers_i.mcause_n.interrupt, cs_registers_i.mcause_n.exception_code[4:0]}),
+      .mcause_n     ({cs_registers_i.mcause_n.irq, cs_registers_i.mcause_n.exception_code[4:0]}),
       .mip          (cs_registers_i.mip),
       .mie_q        (cs_registers_i.mie_q),
       .mstatus_mie  (cs_registers_i.mstatus_q.mie),
