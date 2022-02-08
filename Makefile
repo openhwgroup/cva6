@@ -101,6 +101,7 @@ ariane_pkg += core/include/riscv_pkg.sv                              \
               corev_apu/tb/ariane_axi_soc_pkg.sv                     \
               core/include/ariane_axi_pkg.sv                         \
               core/fpu/src/fpnew_pkg.sv                              \
+	         common/submodules/common_cells/src/cf_math_pkg.sv       \
               core/fpu/src/fpu_div_sqrt_mvp/hdl/defs_div_sqrt_mvp.sv
 ariane_pkg := $(addprefix $(root-dir), $(ariane_pkg))
 
@@ -184,7 +185,6 @@ src :=  $(filter-out core/ariane_regfile.sv, $(wildcard core/*.sv))             
         corev_apu/riscv-dbg/debug_rom/debug_rom.sv                                   \
         corev_apu/register_interface/src/apb_to_reg.sv                               \
         corev_apu/axi/src/axi_multicut.sv                                            \
-        common/submodules/common_cells/src/cf_math_pkg.sv                            \
         common/submodules/common_cells/src/deprecated/generic_fifo.sv                \
         common/submodules/common_cells/src/deprecated/pulp_sync.sv                   \
         common/submodules/common_cells/src/deprecated/find_first_one.sv              \
@@ -278,7 +278,7 @@ riscv-fp-tests            := $(shell xargs printf '\n%s' < $(riscv-fp-tests-list
 riscv-benchmarks          := $(shell xargs printf '\n%s' < $(riscv-benchmarks-list) | cut -b 1-)
 
 # Search here for include files (e.g.: non-standalone components)
-incdir := common/submodules/common_cells/include/ corev_apu/axi/include/
+incdir := common/submodules/common_cells/include/ corev_apu/axi/include/ corev_apu/register_interface/include/
 
 # Compile and sim flags
 compile_flag     += +cover=bcfst+/dut -incr -64 -nologo -quiet -suppress 13262 -permissive +define+$(defines)
