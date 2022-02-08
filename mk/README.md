@@ -94,26 +94,33 @@ Makefiles
 -----------
 `Make` is used to generate the command-lines that compile and run simulations.<br>
 - `CV_CORE/sim/uvmt/Makefile` is the 'root' Makefile from which users can invoke simulations.
-This makefile includes the common uvmt simulation makefile at `mk/uvmt/uvmt.mk`
-which implements simulation execution targets (described below.)
+This Makefile is largely empty and include:
 - `CV_CORE/sim/ExternalRepos.mk` should be used to define variables to point to third-party libraries.
 This include the RTL repo to simulate; Google riscv-dv; RISCV compliance suite and other external repositories.
-- The common makefile in `mk/Common.mk` supports all common variables, rules
-and targets, including specific targets to clone the RTL from
-[cv32e40p](https://github.com/openhwgroup/cv32e40p). 
-- Simulator-specific Makefiles are used to build the command-line to run a specific test with a specific
+- `CORE-V-VERIF/mk/uvmt/uvmt.mk`, which implements simulation execution targets and:
+- `CORE-V-VERIF/mk/Common.mk` supports all common variables, rules and targets, including specific targets to clone the RTL.
+<br><br> 
+Simulator-specific Makefiles are used to build the command-line to run a specific test with a specific
 simulator.  These files are organized as shown below:
 ```
-     mk/
-      +--- Common.mk                        # Common variables and targets
-      +--- uvmt/
-              +--- uvmt.mk                  # Simulation makefile
-              +--- vcs.mk                   # Synopsys VCS
-              +--- vsim.mk                  # Mentor Questa
-              +--- dsim.mk                  # Metrics dsim
-              +--- xrun.mk                  # Cadance Xcelium
-              +--- riviera.mk               # Aldec Riviera-PRO
-              +--- <other_simulators>.mk
+CORE-V-VERIF/
+     |
+     +--- mk/
+     |     +--- Common.mk                       # Common variables and targets
+     |     +--- uvmt/
+     |            +--- uvmt.mk                  # Simulation makefile (includes ../Common.mk and simulator-specific mk)
+     |            +--- vcs.mk                   # Synopsys VCS
+     |            +--- vsim.mk                  # Mentor Questa
+     |            +--- dsim.mk                  # Metrics dsim
+     |            +--- xrun.mk                  # Cadance Xcelium
+     |            +--- riviera.mk               # Aldec Riviera-PRO
+     |            +--- <other_simulators>.mk
+     +--- CV_CORE/
+            +--- sim/
+                   +--- ExternalRepos.mk         # URLs, hashes to external repos (RTL, riscv-dv, etc.)
+                   +--- uvmt/
+                          +--- Makefile          # "root" Makefile
+                                                 # includes ../ExternalRepos.mk and CORE-V-VERIF/mk/uvmt/uvmt.mk
 ```
 The goal of this structure is to minimize the amount of redundant code in the
 Makefiles, maintain common look-and-feel across all cores and ease the maintance of a given simulator's specific variables,

@@ -1,8 +1,14 @@
 name: num_mhpmcounters_29
 description: Configuration for CV32E40X simulations with NUM_MHPMCOUNTER set to 29
 compile_flags:
+    +define+ZBA_ZBB_ZBC_ZBS
     +define+SET_NUM_MHPMCOUNTERS=29
-ovpsim: >
-    --override root/cpu/misa_Extensions=0x001104
-    --override root/cpu/marchid=20
-cflags: >
+plusargs: >
+    +enable_zba_extension=1
+    +enable_zbb_extension=1
+    +enable_zbc_extension=1
+    +enable_zbs_extension=1
+    +DISABLE_CSR_CHECK=mcountinhibit
+    # FIXME: Remove the DISABLE_CSR_CHECK when correct reset value is implemented in the ISS
+cv_sw_march: >
+    rv32imc_zba1p00_zbb1p00_zbc1p00_zbs1p00

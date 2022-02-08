@@ -63,7 +63,7 @@ TEST         ?= hello-world
 ###############################################################################
 # Common Makefiles:
 #  -Variables for RTL and other dependencies (e.g. RISCV-DV)
-include ../Common.mk
+include ../ExternalRepos.mk
 #  -Core Firmware and the RISCV GCC Toolchain (SDK)
 include $(CORE_V_VERIF)/mk/Common.mk
 
