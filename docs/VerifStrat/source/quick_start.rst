@@ -38,7 +38,7 @@ You will need:
    $ cd $CORE_V_VERIF/bin
    $ pip install -r requirements.txt
 
-3. A GCC cross-compiler (aka "the `Toolchain <https://github.com/openhwgroup/core-v-verif/blob/master/cv32e40p/sim/TOOLCHAIN.md#core-v-toolchain>`_").
+3. A GCC cross-compiler (aka "the `Toolchain <https://github.com/openhwgroup/core-v-verif/blob/master/mk/TOOLCHAIN.md#core-v-toolchain>`_").
    Even if you already have a toolchain, please do follow that link and read **TOOLCHAIN.md** for recommended ENV variables to point to it.
 4. `Verilator <https://veripool.org/guide/latest/install.html>`_.
 
