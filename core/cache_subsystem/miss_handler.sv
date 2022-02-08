@@ -172,7 +172,7 @@ module miss_handler import ariane_pkg::*; import std_cache_pkg::*; #(
         amo_bypass_req.wdata   = '0;
         amo_bypass_req.be      = '0;
         amo_bypass_req.size    = 2'b11;
-        amo_bypass_req.id      = 4'b1100;
+        amo_bypass_req.id      = 4'b1011;
         // core
         flush_ack_o         = 1'b0;
         miss_o              = 1'b0; // to performance counter
@@ -428,7 +428,7 @@ module miss_handler import ariane_pkg::*; import std_cache_pkg::*; #(
 
                 // when request is accepted, wait for response
                 if (amo_bypass_rsp.gnt) begin
-                    if (amo_bypass_rsp.rvalid) begin
+                    if (amo_bypass_rsp.valid) begin
                         state_d = IDLE;
                         amo_resp_o.ack = 1'b1;
                         amo_resp_o.result = amo_bypass_rsp.rdata;
@@ -438,7 +438,7 @@ module miss_handler import ariane_pkg::*; import std_cache_pkg::*; #(
                 end
             end
             AMO_WAIT_RESP: begin
-                if (amo_bypass_rsp.rvalid) begin
+                if (amo_bypass_rsp.valid) begin
                     state_d = IDLE;
                     amo_resp_o.ack = 1'b1;
                     amo_resp_o.result = amo_bypass_rsp.rdata;
@@ -513,7 +513,7 @@ module miss_handler import ariane_pkg::*; import std_cache_pkg::*; #(
             bypass_ports_req[id].size    = miss_req_size[id];
 
             bypass_gnt_o[id]   = bypass_ports_rsp[id].gnt;
-            bypass_valid_o[id] = bypass_ports_rsp[id].rvalid;
+            bypass_valid_o[id] = bypass_ports_rsp[id].valid;
             bypass_data_o[id]  = bypass_ports_rsp[id].rdata;
         end
 
@@ -560,7 +560,7 @@ module miss_handler import ariane_pkg::*; import std_cache_pkg::*; #(
         .be_i                 (bypass_adapter_req.be),
         .size_i               (bypass_adapter_req.size),
         .gnt_o                (bypass_adapter_rsp.gnt),
-        .valid_o              (bypass_adapter_rsp.rvalid),
+        .valid_o              (bypass_adapter_rsp.valid),
         .rdata_o              (bypass_adapter_rsp.rdata),
         .id_o                 (), // not used, single outstanding request in arbiter
         .critical_word_o      (), // not used for single requests
@@ -683,8 +683,8 @@ module axi_adapter_arbiter #(
             end
 
             SERVING: begin
-                if (rsp_i.rvalid) begin
-                    rsp_o[sel_q].rvalid = 1'b1;
+                if (rsp_i.valid) begin
+                    rsp_o[sel_q].valid = 1'b1;
                     state_d = IDLE;
                 end
             end
@@ -711,7 +711,7 @@ module axi_adapter_arbiter #(
     //pragma translate_off
     `ifndef VERILATOR
     // make sure that we eventually get an rvalid after we received a grant
-    assert property (@(posedge clk_i) rsp_i.gnt |-> ##[1:$] rsp_i.rvalid )
+    assert property (@(posedge clk_i) rsp_i.gnt |-> ##[1:$] rsp_i.valid )
         else begin $error("There was a grant without a rvalid"); $stop(); end
     // assert that there is no grant without a request
     assert property (@(negedge clk_i) rsp_i.gnt |-> req_o.req)

@@ -56,7 +56,7 @@ package std_cache_pkg;
 
     typedef struct packed {
         logic        gnt;
-        logic        rvalid;
+        logic        valid;
         logic [63:0] rdata;
     } bypass_rsp_t;
 
