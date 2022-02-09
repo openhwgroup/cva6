@@ -165,7 +165,7 @@ module ariane_peripherals #(
     `REG_BUS_ASSIGN_TO_REQ(plic_req, reg_bus)
     `REG_BUS_ASSIGN_FROM_RSP(reg_bus, plic_rsp)
 
-     plic_top #(
+    plic_top #(
       .N_SOURCE    ( ariane_soc::NumSources  ),
       .N_TARGET    ( ariane_soc::NumTargets  ),
       .MAX_PRIO    ( ariane_soc::MaxPriority ),
