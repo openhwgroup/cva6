@@ -409,14 +409,14 @@ module axi_adapter #(
     unique case(amo)
       ariane_pkg::AMO_NONE: result = 6'b000000;
       ariane_pkg::AMO_SWAP: result = 6'b110000;
-      ariane_pkg::AMO_ADD : result = 6'b010000;
-      ariane_pkg::AMO_AND : result = 6'b010001;
-      ariane_pkg::AMO_OR  : result = 6'b010011;
-      ariane_pkg::AMO_XOR : result = 6'b010010;
-      ariane_pkg::AMO_MAX : result = 6'b010100;
-      ariane_pkg::AMO_MAXU: result = 6'b010110;
-      ariane_pkg::AMO_MIN : result = 6'b010101;
-      ariane_pkg::AMO_MINU: result = 6'b010111;
+      ariane_pkg::AMO_ADD : result = 6'b100000;
+      ariane_pkg::AMO_AND : result = 6'b100001;
+      ariane_pkg::AMO_OR  : result = 6'b100011;
+      ariane_pkg::AMO_XOR : result = 6'b100010;
+      ariane_pkg::AMO_MAX : result = 6'b100100;
+      ariane_pkg::AMO_MAXU: result = 6'b100110;
+      ariane_pkg::AMO_MIN : result = 6'b100101;
+      ariane_pkg::AMO_MINU: result = 6'b100111;
       ariane_pkg::AMO_CAS1: result = 6'b000000; // Unsupported
       ariane_pkg::AMO_CAS2: result = 6'b000000; // Unsupported
       default: result = 6'b000000;
