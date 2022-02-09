@@ -100,7 +100,7 @@ ariane_pkg += core/include/riscv_pkg.sv                              \
               corev_apu/tb/ariane_soc_pkg.sv                         \
               corev_apu/tb/ariane_axi_soc_pkg.sv                     \
               core/include/ariane_axi_pkg.sv                         \
-	          core/fpu/src/fpnew_pkg.sv                              \
+              core/fpu/src/fpnew_pkg.sv                              \
               common/submodules/common_cells/src/cf_math_pkg.sv      \
               core/fpu/src/fpu_div_sqrt_mvp/hdl/defs_div_sqrt_mvp.sv
 ariane_pkg := $(addprefix $(root-dir), $(ariane_pkg))
