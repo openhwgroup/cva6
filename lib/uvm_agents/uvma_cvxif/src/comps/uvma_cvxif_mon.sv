@@ -89,6 +89,7 @@ task uvma_cvxif_mon_c::run_phase(uvm_phase phase);
         req_tr.issue_req.instr = cvxif_vif.cvxif_req_i.x_issue_req.instr;
         req_tr.issue_req.id = cvxif_vif.cvxif_req_i.x_issue_req.id;
         req_tr.issue_req.mode = cvxif_vif.cvxif_req_i.x_issue_req.mode;
+        req_tr.issue_ready = cvxif_vif.cvxif_resp_o.x_issue_ready;
         for (int i=0; i<3; i++) begin
           if (cvxif_vif.cvxif_req_i.x_issue_req.rs_valid[i]) begin
             req_tr.issue_req.rs[i] = cvxif_vif.cvxif_req_i.x_issue_req.rs[i];

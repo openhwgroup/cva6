@@ -191,6 +191,8 @@ function void uvme_cva6_env_c::assign_cfg();
 
    uvm_config_db#(uvma_clknrst_cfg_c)::set(this, "*clknrst_agent", "cfg", cfg.clknrst_cfg);
 
+   uvm_config_db#(uvma_cvxif_cfg_c)::set(this, "*cvxif_agent", "cfg", cfg.cvxif_cfg);
+
 endfunction: assign_cfg
 
 

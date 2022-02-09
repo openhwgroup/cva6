@@ -14,12 +14,21 @@
 
 class uvma_cvxif_drv_c extends uvm_driver #(uvma_cvxif_resp_item_c);
 
-   `uvm_component_utils(uvma_cvxif_drv_c)
-
    uvma_cvxif_resp_item_c resp_item;
 
+   // Objects
+   uvma_cvxif_cfg_c    cfg;
+
+   // Handles to virtual interface
    virtual uvma_cvxif_if  cvxif_vif;
 
+   `uvm_component_utils_begin(uvma_cvxif_drv_c)
+      `uvm_field_object(cfg  , UVM_DEFAULT)
+   `uvm_component_utils_end
+
+   string info_tag = "CVXIF_DRV";
+
+   uvma_cvxif_resp_item_c resp_item;
    string info_tag = "CVXIF_DRV";
 
    extern function new(string name="uvma_cvxif_drv", uvm_component parent=null);
@@ -30,7 +39,10 @@ class uvma_cvxif_drv_c extends uvm_driver #(uvma_cvxif_resp_item_c);
 
    extern virtual task run_phase(uvm_phase phase);
 
+   extern virtual task gen_random_ready();
+
    extern virtual task drive_issue_resp(input uvma_cvxif_resp_item_c item);
+
    extern virtual task drive_result_resp(input uvma_cvxif_resp_item_c item);
 
 endclass : uvma_cvxif_drv_c
@@ -44,6 +56,12 @@ endfunction : new
 function void uvma_cvxif_drv_c::build_phase(uvm_phase phase);
 
    super.build_phase(phase);
+
+   void'(uvm_config_db#(uvma_cvxif_cfg_c)::get(this, "", "cfg", cfg));
+   if (cfg == null) begin
+      `uvm_fatal("CFG", "Configuration handle is null")
+   end
+   uvm_config_db#(uvma_cvxif_cfg_c)::set(this, "*", "cfg", cfg);
 
   //Get the virtual interface handle from the configuration db
    if (! uvm_config_db#(virtual uvma_cvxif_if)::get(this, "", "cvxif_vif", cvxif_vif)) begin
@@ -74,24 +92,49 @@ endtask
 
 task uvma_cvxif_drv_c::run_phase(uvm_phase phase);
 
-    forever begin
-      // 1. Get the response item from sequencer
-      seq_item_port.get_next_item(resp_item);
+   fork
+      begin
+         forever begin
+            if (cfg.ready_mode == UVMA_CVXIF_ISSUE_READY_FIX) begin
+               @(posedge cvxif_vif.clk);
+               break;
+            end
+            else gen_random_ready();
+         end
+      end
 
-      // 2. Drive the response on the vif
-      fork
-        begin
-          drive_issue_resp(resp_item);
-        end
-        begin
-          drive_result_resp(resp_item);
-        end
-      join_any
+      begin
+         forever begin
+            // 1. Get the response item from sequencer
+            seq_item_port.get_next_item(resp_item);
 
-      // 3. Tell sequencer we're ready for the next sequence item
-      seq_item_port.item_done();
-      `uvm_info(info_tag, $sformatf("item_done"), UVM_LOW);
-    end
+            // 2. Drive the response on the vif
+            fork
+               begin
+                  drive_issue_resp(resp_item);
+               end
+               begin
+                  drive_result_resp(resp_item);
+               end
+            join_any
+
+            // 3. Tell sequencer we're ready for the next sequence item
+            seq_item_port.item_done();
+            `uvm_info(info_tag, $sformatf("item_done"), UVM_LOW);
+         end
+      end
+   join_any
+
+endtask
+
+task uvma_cvxif_drv_c::gen_random_ready();
+
+      cfg.randomize(uvma_cvxif_issue_ready);
+      cfg.randomize(uvma_cvxif_issue_not_ready);
+      repeat(cfg.uvma_cvxif_issue_ready) @(posedge cvxif_vif.clk);
+         cvxif_vif.cvxif_resp_o.x_issue_ready <= 0;
+      repeat(cfg.uvma_cvxif_issue_not_ready) @(posedge cvxif_vif.clk);
+         cvxif_vif.cvxif_resp_o.x_issue_ready <= 1;
 
 endtask
 
@@ -125,7 +168,8 @@ task uvma_cvxif_drv_c::drive_result_resp(input uvma_cvxif_resp_item_c item);
      cvxif_vif.cvxif_resp_o.x_result.we <= item.result.we;
      cvxif_vif.cvxif_resp_o.x_result.exccode <= item.result.exccode;
      `uvm_info(info_tag, $sformatf("Driving result_resp, id = %d", item.result.id), UVM_LOW);
-     @(posedge cvxif_vif.clk);
+     do @(posedge cvxif_vif.clk);
+     while (!item.result_ready);
      cvxif_vif.cvxif_resp_o.x_result_valid <= 0;
      cvxif_vif.cvxif_resp_o.x_result.id <= 0;
      cvxif_vif.cvxif_resp_o.x_result.exc <= 0;

@@ -73,13 +73,11 @@ task uvma_cvxif_seq_c::body();
     end
 
     else begin
-      if (req_item.issue_valid==1) begin
+      if (req_item.issue_valid && req_item.issue_ready) begin
          //issue_resp
          do_issue_resp();
-         if (req_item.result_ready==1) begin
-           //result_resp
-           do_result_resp();
-         end
+         //result_resp
+         do_result_resp();
          //send resp to sqr
          send_resp(resp_item);
       end
@@ -124,6 +122,7 @@ task uvma_cvxif_seq_c::do_result_resp();
      resp_item.result.id=req_item.commit_req.id;
      resp_item.result.rd=req_item.issue_req.instr[11:7];
      resp_item.result.we=resp_item.issue_resp.writeback;
+     resp_item.result_ready=req_item.result_ready;
      do_instr_result();
    end
    else begin
