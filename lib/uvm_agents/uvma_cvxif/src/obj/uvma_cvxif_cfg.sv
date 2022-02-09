@@ -26,6 +26,11 @@ class uvma_cvxif_cfg_c extends uvm_object;
     soft uvma_cvxif_issue_not_ready inside {[1:2]};
    }
 
+   constraint issue_ready {
+      if (uvma_cvxif_issue_ready == 0   || uvma_cvxif_issue_not_ready==0)
+          uvma_cvxif_issue_not_ready!=0 ||  uvma_cvxif_issue_ready != 0;
+   }
+
    constraint defaults_val {
       soft ready_mode == UVMA_CVXIF_ISSUE_READY_RANDOMIZED; //issue_ready is randomized by default
    }
