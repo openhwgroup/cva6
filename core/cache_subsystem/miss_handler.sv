@@ -172,7 +172,7 @@ module miss_handler import ariane_pkg::*; import std_cache_pkg::*; #(
         amo_bypass_req.wdata   = '0;
         amo_bypass_req.be      = '0;
         amo_bypass_req.size    = 2'b11;
-        amo_bypass_req.id      = 4'b1100;
+        amo_bypass_req.id      = 4'b1011;
         // core
         flush_ack_o         = 1'b0;
         miss_o              = 1'b0; // to performance counter
