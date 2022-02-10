@@ -67,6 +67,7 @@ module wt_dcache_wbuffer import ariane_pkg::*; import wt_cache_pkg::*; #(
   output logic                               miss_req_o,
   output logic                               miss_we_o,       // always 1 here
   output riscv::xlen_t                       miss_wdata_o,
+  output logic [DCACHE_USER_WIDTH-1:0]       miss_wuser_o,
   output logic [DCACHE_SET_ASSOC-1:0]        miss_vld_bits_o, // unused here (set to 0)
   output logic                               miss_nc_o,       // request to I/O space
   output logic [2:0]                         miss_size_o,     //
@@ -94,6 +95,7 @@ module wt_dcache_wbuffer import ariane_pkg::*; import wt_cache_pkg::*; #(
   output logic [DCACHE_OFFSET_WIDTH-1:0]     wr_off_o,
   output riscv::xlen_t                       wr_data_o,
   output logic [(riscv::XLEN/8)-1:0]         wr_data_be_o,
+  output logic [DCACHE_USER_WIDTH-1:0]       wr_user_o,
   // to forwarding logic and miss unit
   output wbuffer_t  [DCACHE_WBUF_DEPTH-1:0]  wbuffer_data_o,
   output logic [DCACHE_MAX_TX-1:0][riscv::PLEN-1:0]     tx_paddr_o,      // used to check for address collisions with read operations
@@ -139,7 +141,7 @@ module wt_dcache_wbuffer import ariane_pkg::*; import wt_cache_pkg::*; #(
   logic is_ni;
   assign miss_tag = miss_paddr_o[ariane_pkg::DCACHE_INDEX_WIDTH+:ariane_pkg::DCACHE_TAG_WIDTH];
   assign is_nc_miss = !ariane_pkg::is_inside_cacheable_regions(ArianeCfg, {{64-DCACHE_TAG_WIDTH-DCACHE_INDEX_WIDTH{1'b0}}, miss_tag, {DCACHE_INDEX_WIDTH{1'b0}}});
-  assign miss_nc_o = !cache_en_i || is_nc_miss; 
+  assign miss_nc_o = !cache_en_i || is_nc_miss;
   // Non-idempotent if request goes to NI region
   assign is_ni = ariane_pkg::is_inside_nonidempotent_regions(ArianeCfg, {{64-DCACHE_TAG_WIDTH-DCACHE_INDEX_WIDTH{1'b0}}, req_port_i.address_tag, {DCACHE_INDEX_WIDTH{1'b0}}});
 
@@ -183,13 +185,15 @@ module wt_dcache_wbuffer import ariane_pkg::*; import wt_cache_pkg::*; #(
   // note: openpiton can only handle aligned offsets + size, and hence
   // we have to split unaligned data into multiple transfers (see toSize64)
   // e.g. if we have the following valid bytes: 0011_1001 -> TX0: 0000_0001, TX1: 0000_1000, TX2: 0011_0000
-  
+
   assign miss_size_o = riscv::IS_XLEN64 ? toSize64(bdirty[dirty_ptr]):
                                           toSize32(bdirty[dirty_ptr]);
 
   // replicate transfers shorter than a dword
   assign miss_wdata_o = riscv::IS_XLEN64 ? repData64(wbuffer_dirty_mux.data, bdirty_off, miss_size_o[1:0]):
                                            repData32(wbuffer_dirty_mux.data, bdirty_off, miss_size_o[1:0]);
+  assign miss_wuser_o = riscv::IS_XLEN64 ? repData64(wbuffer_dirty_mux.user, bdirty_off, miss_size_o[1:0]):
+                                           repData32(wbuffer_dirty_mux.user, bdirty_off, miss_size_o[1:0]);
 
   assign tx_be        = riscv::IS_XLEN64 ? to_byte_enable8(bdirty_off, miss_size_o[1:0]):
                                            to_byte_enable4(bdirty_off, miss_size_o[1:0]);
@@ -291,6 +295,7 @@ module wt_dcache_wbuffer import ariane_pkg::*; import wt_cache_pkg::*; #(
   assign wr_idx_o     = wr_paddr[DCACHE_INDEX_WIDTH-1:DCACHE_OFFSET_WIDTH];
   assign wr_off_o     = wr_paddr[DCACHE_OFFSET_WIDTH-1:0];
   assign wr_data_o    = wbuffer_q[rtrn_ptr].data;
+  assign wr_user_o    = wbuffer_q[rtrn_ptr].user;
 
 
 ///////////////////////////////////////////////////////
@@ -391,10 +396,11 @@ module wt_dcache_wbuffer import ariane_pkg::*; import wt_cache_pkg::*; #(
 
   assign req_port_o.data_rvalid = '0;
   assign req_port_o.data_rdata  = '0;
+  assign req_port_o.data_ruser  = '0;
 
   assign rd_hit_oh_d = rd_hit_oh_i;
- 
-  logic ni_inside,ni_conflict; 
+
+  logic ni_inside,ni_conflict;
   assign ni_inside = |ni_pending_q;
   assign ni_conflict = is_ni && ni_inside;
   assign not_ni_o = !ni_inside;
@@ -471,11 +477,14 @@ module wt_dcache_wbuffer import ariane_pkg::*; import wt_cache_pkg::*; #(
         wbuffer_d[wr_ptr].wtag    = {req_port_i.address_tag, req_port_i.address_index[DCACHE_INDEX_WIDTH-1:riscv::XLEN_ALIGN_BYTES]};
 
         // mark bytes as dirty
+        wbuffer_d[wr_ptr].user    = '0;
         for (int k=0; k<(riscv::XLEN/8); k++) begin
           if (req_port_i.data_be[k]) begin
             wbuffer_d[wr_ptr].valid[k]       = 1'b1;
             wbuffer_d[wr_ptr].dirty[k]       = 1'b1;
             wbuffer_d[wr_ptr].data[k*8 +: 8] = req_port_i.data_wdata[k*8 +: 8];
+            if (ariane_pkg::DATA_USER_EN)
+              wbuffer_d[wr_ptr].user[k*8 +: 8] = req_port_i.data_wuser[k*8 +: 8];
           end
         end
       end

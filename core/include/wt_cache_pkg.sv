@@ -77,6 +77,7 @@ package wt_cache_pkg;
   typedef struct packed {
     logic [ariane_pkg::DCACHE_TAG_WIDTH+(ariane_pkg::DCACHE_INDEX_WIDTH-riscv::XLEN_ALIGN_BYTES)-1:0] wtag;
     riscv::xlen_t                                                                           data;
+    logic [ariane_pkg::DCACHE_USER_WIDTH-1:0]                                               user;
     logic [(riscv::XLEN/8)-1:0]                                                             dirty;   // byte is dirty
     logic [(riscv::XLEN/8)-1:0]                                                             valid;   // byte is valid
     logic [(riscv::XLEN/8)-1:0]                                                             txblock; // byte is part of transaction in-flight
@@ -87,7 +88,7 @@ package wt_cache_pkg;
   // TX status registers are indexed with the transaction ID
   // they basically store which bytes from which buffer entry are part
   // of that transaction
-  
+
   typedef struct packed {
     logic                                 vld;
     logic [(riscv::XLEN/8)-1:0]           be;
@@ -133,6 +134,7 @@ package wt_cache_pkg;
   typedef struct packed {
     icache_in_t                                      rtype;       // see definitions above
     logic [ariane_pkg::ICACHE_LINE_WIDTH-1:0]        data;        // full cache line width
+    logic [ariane_pkg::ICACHE_USER_LINE_WIDTH-1:0]   user;        // user bits
     icache_inval_t                                   inv;         // invalidation vector
     logic [CACHE_ID_WIDTH-1:0]                       tid;         // threadi id (used as transaction id in Ariane)
   } icache_rtrn_t;
@@ -151,6 +153,7 @@ package wt_cache_pkg;
     logic [L1D_WAY_WIDTH-1:0]                        way;         // way to replace
     logic [riscv::PLEN-1:0]                          paddr;       // physical address
     riscv::xlen_t                                    data;        // word width of processor (no block stores at the moment)
+    logic [ariane_pkg::DATA_USER_WIDTH-1:0]          user;        // user width of processor (no block stores at the moment)
     logic                                            nc;          // noncacheable
     logic [CACHE_ID_WIDTH-1:0]                       tid;         // threadi id (used as transaction id in Ariane)
     ariane_pkg::amo_t                                amo_op;      // amo opcode
@@ -159,6 +162,7 @@ package wt_cache_pkg;
   typedef struct packed {
     dcache_in_t                                      rtype;       // see definitions above
     logic [ariane_pkg::DCACHE_LINE_WIDTH-1:0]        data;        // full cache line width
+    logic [ariane_pkg::DCACHE_USER_LINE_WIDTH-1:0]   user;        // user bits
     dcache_inval_t                                   inv;         // invalidation vector
     logic [CACHE_ID_WIDTH-1:0]                       tid;         // threadi id (used as transaction id in Ariane)
   } dcache_rtrn_t;
@@ -311,7 +315,7 @@ package wt_cache_pkg;
     endcase // size
     return be;
   endfunction : to_byte_enable8
-  
+
   function automatic logic [3:0] to_byte_enable4(
     input logic [1:0] offset,
     input logic [1:0] size
@@ -341,7 +345,7 @@ package wt_cache_pkg;
     endcase // size
     return out;
   endfunction : repData64
-  
+
   function automatic logic [31:0] repData32(
     input logic [31:0] data,
     input logic [1:0]  offset,
@@ -371,8 +375,8 @@ package wt_cache_pkg;
     endcase // be
     return size;
   endfunction : toSize64
-  
-  
+
+
   function automatic logic [1:0] toSize32(
     input logic  [3:0] be
   );
