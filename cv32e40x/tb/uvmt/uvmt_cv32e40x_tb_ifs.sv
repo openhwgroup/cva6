@@ -146,7 +146,7 @@ interface uvmt_cv32e40x_debug_cov_assert_if
     input         rvfi_valid,
     input  [31:0] rvfi_insn,
     input         rvfi_intr,
-    input         rvfi_dbg,
+    input  [2:0]  rvfi_dbg,
     input         rvfi_dbg_mode,
     input  [31:0] rvfi_pc_wdata,
     input  [31:0] rvfi_pc_rdata,
