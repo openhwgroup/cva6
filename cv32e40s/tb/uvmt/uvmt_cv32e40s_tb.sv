@@ -90,6 +90,7 @@ module uvmt_cv32e40s_tb;
                              .B_EXT             (uvmt_cv32e40s_pkg::B_EXT),
                              .PMA_NUM_REGIONS   (uvmt_cv32e40s_pkg::CORE_PARAM_PMA_NUM_REGIONS),
                              .PMA_CFG           (uvmt_cv32e40s_pkg::CORE_PARAM_PMA_CFG),
+                             .PMP_NUM_REGIONS   (CORE_PARAM_PMP_NUM_REGIONS),
                              .INSTR_ADDR_WIDTH  (ENV_PARAM_INSTR_ADDR_WIDTH),
                              .INSTR_RDATA_WIDTH (ENV_PARAM_INSTR_DATA_WIDTH),
                              .RAM_ADDR_WIDTH    (ENV_PARAM_RAM_ADDR_WIDTH)
