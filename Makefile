@@ -102,6 +102,7 @@ ariane_pkg += core/include/riscv_pkg.sv                              \
               core/include/ariane_axi_pkg.sv                         \
               core/fpu/src/fpnew_pkg.sv                              \
               common/submodules/common_cells/src/cf_math_pkg.sv      \
+              core/cvxif_example/include/cvxif_instr_pkg.sv          \
               core/fpu/src/fpu_div_sqrt_mvp/hdl/defs_div_sqrt_mvp.sv
 ariane_pkg := $(addprefix $(root-dir), $(ariane_pkg))
 
@@ -171,6 +172,7 @@ src :=  $(filter-out core/ariane_regfile.sv, $(wildcard core/*.sv))             
         $(wildcard corev_apu/src/axi_riscv_atomics/src/*.sv)                         \
         $(wildcard corev_apu/axi_mem_if/src/*.sv)                                    \
         $(wildcard core/pmp/src/*.sv)                                                \
+        $(wildcard core/cvxif_example/*.sv)                                          \
         corev_apu/rv_plic/rtl/rv_plic_target.sv                                      \
         corev_apu/rv_plic/rtl/rv_plic_gateway.sv                                     \
         corev_apu/rv_plic/rtl/plic_regmap.sv                                         \
