@@ -26,6 +26,12 @@
       parameter cv32e40s_pkg::b_ext_e B_EXT = cv32e40s_pkg::B_NONE;
    `endif
 
+   `ifdef PMP_ENABLE_2
+     parameter int CORE_PARAM_PMP_NUM_REGIONS = 2;
+   `else
+     parameter int CORE_PARAM_PMP_NUM_REGIONS = 0;
+   `endif
+
    `ifdef PMA_CUSTOM_CFG
       const string pma_cfg_name = "pma_custom_cfg";
       parameter int unsigned               CORE_PARAM_PMA_NUM_REGIONS = 3;
