@@ -27,10 +27,11 @@ module uvmt_cva6_dut_wrap # ( parameter int unsigned AXI_USER_WIDTH    = 1,
                             output ariane_rvfi_pkg::rvfi_port_t rvfi_o
                            );
 
-    cva6_tb_wrapper #(     .AXI_USER_WIDTH    (1),
-     .AXI_ADDRESS_WIDTH (64),
-     .AXI_DATA_WIDTH    (64),
-     .NUM_WORDS         (2**25)
+    cva6_tb_wrapper #(
+     .AXI_USER_WIDTH    (AXI_USER_WIDTH),
+     .AXI_ADDRESS_WIDTH (AXI_ADDRESS_WIDTH),
+     .AXI_DATA_WIDTH    (AXI_DATA_WIDTH),
+     .NUM_WORDS         (NUM_WORDS)
 )
     cva6_tb_wrapper_i        (
          .clk_i                  ( clknrst_if.clk                 ),
