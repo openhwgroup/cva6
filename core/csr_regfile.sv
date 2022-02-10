@@ -1159,8 +1159,9 @@ module csr_regfile import ariane_pkg::*; #(
             // pmp
             for(int i = 0; i < 16; i++) begin
                 if(i < NrPMPEntries) begin
-                    // We only support >=8-byte granularity, NA4 is disabled
-                    if(pmpcfg_d[i].addr_mode != riscv::NA4)
+                    // We only support >=8-byte granularity, NA4 is disabled.
+                    // Because the X,W,R combination of bits of the pmpcfg registers is WARL, we do not write the reserved combination R=0, W=1.
+                    if(pmpcfg_d[i].addr_mode != riscv::NA4 && !(pmpcfg_d[i].access_type.r == '0 && pmpcfg_d[i].access_type.w == '1)
                         pmpcfg_q[i] <= pmpcfg_d[i];
                     else
                         pmpcfg_q[i] <= pmpcfg_q[i];
