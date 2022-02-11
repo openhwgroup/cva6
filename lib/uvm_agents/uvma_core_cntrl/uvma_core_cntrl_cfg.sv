@@ -91,8 +91,11 @@
 
    // Common bootstrap addresses
    // The valid bits should be constrained if the bootstrap signal is not valid for this core configuration
-   rand bit [MAX_XLEN-1:0]       hart_id;
-   bit                           hart_id_plusarg_valid;
+   rand bit [MAX_XLEN-1:0]       mhartid;
+   bit                           mhartid_plusarg_valid;
+
+   rand bit [MAX_XLEN-1:0]       mimpid;
+   bit                           mimpid_plusarg_valid;
 
    rand bit [MAX_XLEN-1:0]       boot_addr;
    rand bit                      boot_addr_valid;
@@ -155,7 +158,8 @@
       `uvm_field_enum(endianness_t,            endianness                     , UVM_DEFAULT          )
       `uvm_field_int(                          num_mhpmcounters               , UVM_DEFAULT          )
       `uvm_field_array_object(                 pma_regions                    , UVM_DEFAULT          )
-      `uvm_field_int(                          hart_id                        , UVM_DEFAULT          )
+      `uvm_field_int(                          mhartid                        , UVM_DEFAULT          )
+      `uvm_field_int(                          mimpid                         , UVM_DEFAULT          )
       `uvm_field_int(                          boot_addr                      , UVM_DEFAULT          )
       `uvm_field_int(                          boot_addr_valid                , UVM_DEFAULT          )
       `uvm_field_int(                          boot_addr_plusarg_valid        , UVM_DEFAULT          )
@@ -274,9 +278,14 @@ function uvma_core_cntrl_cfg_c::new(string name="uvme_cv_base_cfg");
       use_iss = 1;
 
    // Read plusargs for defaults
-   if (read_cfg_plusarg_xlen("hart_id", hart_id)) begin
-      hart_id_plusarg_valid = 1;
-      hart_id.rand_mode(0);
+   if (read_cfg_plusarg_xlen("mhartid", mhartid)) begin
+      mhartid_plusarg_valid = 1;
+      mhartid.rand_mode(0);
+   end
+
+   if (read_cfg_plusarg_xlen("mimpid", mimpid)) begin
+      mimpid_plusarg_valid = 1;
+      mimpid.rand_mode(0);
    end
 
    if (read_cfg_plusarg_xlen("boot_addr", boot_addr)) begin

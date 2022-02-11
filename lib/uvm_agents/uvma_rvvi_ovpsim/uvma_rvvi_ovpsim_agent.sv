@@ -159,7 +159,8 @@ function void uvma_rvvi_ovpsim_agent_c::configure_iss();
    // -------------------------------------------------------------------------------------
    // Boot strap pins
    // -------------------------------------------------------------------------------------
-   $fwrite(fh, $sformatf("--override root/cpu/mhartid=%0d\n", cfg.core_cfg.hart_id));
+   $fwrite(fh, $sformatf("--override root/cpu/mhartid=%0d\n", cfg.core_cfg.mhartid));
+   $fwrite(fh, $sformatf("--override root/cpu/mimpid=%0d\n", cfg.core_cfg.mimpid));
    $fwrite(fh, $sformatf("--override root/cpu/startaddress=0x%08x\n", cfg.core_cfg.boot_addr));
    // Specification forces mtvec[0] high at reset regardless of bootstrap pin state of mtvec_addr_i]0]
    $fwrite(fh, $sformatf("--override root/cpu/mtvec=0x%08x\n", cfg.core_cfg.mtvec_addr| 32'h1));
