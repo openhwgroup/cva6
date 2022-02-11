@@ -42,7 +42,7 @@ module uvmt_cva6_tb;
 
    // Agent interfaces
    uvma_clknrst_if              clknrst_if(); // clock and resets from the clknrst agent
-      uvma_cvxif_if                cvxif_if
+      uvma_cvxif_intf                cvxif_if
                                         (.clk(clknrst_if.clk)); // cvxif from the cvxif agent
 
   bind uvmt_cva6_dut_wrap
@@ -80,7 +80,7 @@ module uvmt_cva6_tb;
 
      // Add interfaces handles to uvm_config_db
      uvm_config_db#(virtual uvma_clknrst_if )::set(.cntxt(null), .inst_name("*.env.clknrst_agent"), .field_name("vif"),       .value(clknrst_if));
-     uvm_config_db#(virtual uvma_cvxif_if   )::set(null,         .inst_name("*"),                   .field_name("cvxif_vif"), .value(cvxif_if)  );
+     uvm_config_db#(virtual uvma_cvxif_intf   )::set(null,         .inst_name("*"),                   .field_name("cvxif_vif"), .value(cvxif_if)  );
      uvm_config_db#(virtual uvmt_rvfi_if    )::set(.cntxt(null), .inst_name("*"),                   .field_name("rvfi_vif"),  .value(rvfi_if));
 
      // DUT and ENV parameters

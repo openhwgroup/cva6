@@ -22,7 +22,7 @@ class uvma_cvxif_agent_c extends uvm_agent;
    // Objects
    uvma_cvxif_cfg_c    cfg;
 
-   virtual uvma_cvxif_if cvxif_vif;
+   virtual uvma_cvxif_intf cvxif_vif;
 
    string info_tag = "CVXIF_AGENT";
 
@@ -111,7 +111,7 @@ endfunction : get_and_set_cfg
 
 function void uvma_cvxif_agent_c::retrieve_vif();
 
-   if (!uvm_config_db#(virtual uvma_cvxif_if)::get(this, "", "cvxif_vif", cvxif_vif)) begin
+   if (!uvm_config_db#(virtual uvma_cvxif_intf)::get(this, "", "cvxif_vif", cvxif_vif)) begin
       `uvm_fatal(info_tag, $sformatf("Could not find vif handle in uvm_config_db"))
    end
 

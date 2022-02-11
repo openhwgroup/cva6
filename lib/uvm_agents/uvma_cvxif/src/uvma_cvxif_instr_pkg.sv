@@ -8,11 +8,11 @@
 // Original Author: Zineb EL KACIMI (zineb.el-kacimi@external.thalesgroup.com)
 
 
-`ifndef __UVMA_INSTR_CVXIF_PKG_SV__
-`define __UVMA_INSTR_CVXIF_PKG_SV__
+`ifndef __UVMA_CVXIF_INSTR_PKG_SV__
+`define __UVMA_CVXIF_INSTR_PKG_SV__
 
 
-package instr_pkg;
+package uvma_cvxif_instr_pkg;
 
 typedef struct packed {
     logic [31:0]               instr;
@@ -52,4 +52,4 @@ parameter copro_issue_resp_t OffloadInstr[NumInstr] = '{
 endpackage
 
 
-`endif //__UVMA_INSTR_CVXIF_PKG_SV__
+`endif //__UVMA_CVXIF_INSTR_PKG_SV__

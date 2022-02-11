@@ -11,7 +11,7 @@
  * Encapsulates assertions targeting uvma_cvxif_if.
  */
 module uvma_cvxif_assert #(parameter X_ID_WIDTH = cvxif_pkg::X_ID_WIDTH)
-   (uvma_cvxif_if cvxif_assert,
+   (uvma_cvxif_intf cvxif_assert,
     input bit clk
    );
 

@@ -8,21 +8,21 @@
 // Original Author: Zineb EL KACIMI (zineb.el-kacimi@external.thalesgroup.com)
 
 
-`ifndef __UVMA_CVXIF_IF_SV__
-`define __UVMA_CVXIF_IF_SV__
+`ifndef __UVMA_CVXIF_INTF_SV__
+`define __UVMA_CVXIF_INTF_SV__
 
 
 //the CoreV-X-Interface for the CVA6
-interface uvma_cvxif_if import cvxif_pkg::*;
+interface uvma_cvxif_intf import cvxif_pkg::*;
 (input bit clk);
 
     cvxif_req_t   cvxif_req_i;
     cvxif_resp_t  cvxif_resp_o;
 
 
-     /**
+   /**
     * Used by the monitor.
-    */
+   */
    clocking monitor_cb @(posedge clk);
       input cvxif_resp_o,
             cvxif_req_i;
@@ -31,4 +31,4 @@ interface uvma_cvxif_if import cvxif_pkg::*;
 endinterface;
 
 
-`endif //__UVMA_CVXIF_IF_SV__
+`endif //__UVMA_CVXIF_INTF_SV__

@@ -20,7 +20,7 @@ class uvma_cvxif_drv_c extends uvm_driver #(uvma_cvxif_resp_item_c);
    uvma_cvxif_cfg_c    cfg;
 
    // Handles to virtual interface
-   virtual uvma_cvxif_if  cvxif_vif;
+   virtual uvma_cvxif_intf  cvxif_vif;
 
    `uvm_component_utils_begin(uvma_cvxif_drv_c)
       `uvm_field_object(cfg  , UVM_DEFAULT)
@@ -64,7 +64,7 @@ function void uvma_cvxif_drv_c::build_phase(uvm_phase phase);
    uvm_config_db#(uvma_cvxif_cfg_c)::set(this, "*", "cfg", cfg);
 
   //Get the virtual interface handle from the configuration db
-   if (! uvm_config_db#(virtual uvma_cvxif_if)::get(this, "", "cvxif_vif", cvxif_vif)) begin
+   if (! uvm_config_db#(virtual uvma_cvxif_intf)::get(this, "", "cvxif_vif", cvxif_vif)) begin
      `uvm_fatal (get_type_name (), "DUT interface not found")
    end
 

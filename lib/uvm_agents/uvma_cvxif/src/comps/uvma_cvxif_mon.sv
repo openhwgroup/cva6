@@ -16,7 +16,7 @@ class uvma_cvxif_mon_c extends uvm_monitor;
     // add to factory
    `uvm_component_utils(uvma_cvxif_mon_c)
 
-   virtual uvma_cvxif_if cvxif_vif;
+   virtual uvma_cvxif_intf cvxif_vif;
 
    string info_tag = "CVXIF_MONITOR";
 
@@ -61,7 +61,7 @@ function void uvma_cvxif_mon_c::build_phase(uvm_phase phase);
    super.build_phase(phase);
 
    //Get the virtual interface handle from the configuration db
-   if (! uvm_config_db#(virtual uvma_cvxif_if)::get(this, "", "cvxif_vif", cvxif_vif)) begin
+   if (! uvm_config_db#(virtual uvma_cvxif_intf)::get(this, "", "cvxif_vif", cvxif_vif)) begin
    `uvm_fatal (get_type_name (), "CVXIF VIF handle not found")
    end
 
