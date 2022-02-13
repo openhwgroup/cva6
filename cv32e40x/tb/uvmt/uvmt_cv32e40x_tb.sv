@@ -397,7 +397,7 @@ module uvmt_cv32e40x_tb;
   // Instantiate debug assertions
 
   bind cv32e40x_wrapper
-    uvmt_cv32e40x_debug_cov_assert_if debug_cov_assert_if (
+    uvmt_cv32e40x_debug_cov_assert_if  debug_cov_assert_if (
       .id_valid               (core_i.id_stage_i.id_valid_o),
       .sys_fence_insn_i       (core_i.id_stage_i.decoder_i.sys_fencei_insn_o),
 
@@ -419,6 +419,10 @@ module uvmt_cv32e40x_tb;
 
       .ctrl_fsm_cs            (core_i.controller_i.controller_fsm_i.ctrl_fsm_cs),
       .debug_req_i            (core_i.controller_i.controller_fsm_i.debug_req_i),
+      .debug_havereset        (core_i.debug_havereset_o),
+      .debug_running          (core_i.debug_running_o),
+      .debug_halted           (core_i.debug_halted_o),
+
       .debug_req_q            (core_i.controller_i.controller_fsm_i.debug_req_q),
       .pending_debug          (core_i.controller_i.controller_fsm_i.pending_debug),
       .pending_nmi            (core_i.controller_i.controller_fsm_i.pending_nmi),
