@@ -32,7 +32,8 @@ class uvma_cvxif_cfg_c extends uvm_object;
    }
 
    constraint defaults_val {
-      soft ready_mode == UVMA_CVXIF_ISSUE_READY_RANDOMIZED; //issue_ready is randomized by default
+      soft ready_mode == UVMA_CVXIF_ISSUE_READY_FIX; // issue_ready is not randomized => the agent is always ready by default,
+                                                     // you can randomize it by giving "UVMA_CVXIF_ISSUE_READY_RANDOMIZED" to "ready_mode"
    }
 
    `uvm_object_utils_begin(uvma_cvxif_cfg_c)
