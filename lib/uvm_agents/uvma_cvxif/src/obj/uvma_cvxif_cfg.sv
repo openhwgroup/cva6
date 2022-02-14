@@ -22,8 +22,8 @@ class uvma_cvxif_cfg_c extends uvm_object;
    rand uvma_cvxif_ready_mode_enum ready_mode;
 
    constraint reasonable_values {
-    soft uvma_cvxif_issue_ready inside     {[4:10]};
-    soft uvma_cvxif_issue_not_ready inside {[1:2]};
+      soft uvma_cvxif_issue_ready inside     {[4:10]};
+      soft uvma_cvxif_issue_not_ready inside {[1:2]};
    }
 
    constraint issue_ready {

@@ -24,14 +24,12 @@
 
 package uvma_cvxif_pkg;
 
-   import uvm_pkg       ::*;
+   import uvm_pkg ::*;
    import uvma_cvxif_instr_pkg ::*;
-
 
    // Constants / Structs / Enums
    `include "uvma_cvxif_constants.sv"
    `include "uvma_cvxif_tdefs.sv"
-
 
    // Objects
    `include "uvma_cvxif_cfg.sv"

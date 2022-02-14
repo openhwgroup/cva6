@@ -16,9 +16,8 @@
 interface uvma_cvxif_intf import cvxif_pkg::*;
 (input bit clk);
 
-    cvxif_req_t   cvxif_req_i;
-    cvxif_resp_t  cvxif_resp_o;
-
+   cvxif_req_t   cvxif_req_i;
+   cvxif_resp_t  cvxif_resp_o;
 
    /**
     * Used by the monitor.

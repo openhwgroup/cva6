@@ -31,13 +31,13 @@ class uvma_cvxif_agent_c extends uvm_agent;
    `uvm_component_utils_end
    /**
     * Default constructor.
-    */
+   */
    extern function new(string name="uvma_cvxif_agent", uvm_component parent=null);
 
    /**
     * 1. Ensures vif handle is not null
     * 2. Builds all components
-    */
+   */
    extern virtual function void build_phase(uvm_phase phase);
 
    /**
@@ -50,7 +50,7 @@ class uvma_cvxif_agent_c extends uvm_agent;
    /**
     * Uses uvm_config_db to retrieve the Virtual Interface (vif) associated with this
     * agent.
-    */
+   */
    extern function void retrieve_vif();
 
    /**
@@ -65,7 +65,7 @@ class uvma_cvxif_agent_c extends uvm_agent;
 
    /**
     * Connects agent's TLM ports to driver's and monitor's.
-    */
+   */
    extern function void connect_analysis_ports();
 
 endclass : uvma_cvxif_agent_c
@@ -85,7 +85,6 @@ function void uvma_cvxif_agent_c::build_phase(uvm_phase phase);
    create_components();
 
 endfunction : build_phase
-
 
 function void uvma_cvxif_agent_c::connect_phase(uvm_phase phase);
 
@@ -133,7 +132,7 @@ endfunction : connect_sequencer_and_driver
 
 function void uvma_cvxif_agent_c::connect_analysis_ports();
 
-    monitor.req_ap.connect(sequencer.mm_req_fifo.analysis_export);
+   monitor.req_ap.connect(sequencer.mm_req_fifo.analysis_export);
 
 endfunction : connect_analysis_ports
 

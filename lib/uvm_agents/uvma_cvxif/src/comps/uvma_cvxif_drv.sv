@@ -28,9 +28,6 @@ class uvma_cvxif_drv_c extends uvm_driver #(uvma_cvxif_resp_item_c);
 
    string info_tag = "CVXIF_DRV";
 
-   uvma_cvxif_resp_item_c resp_item;
-   string info_tag = "CVXIF_DRV";
-
    extern function new(string name="uvma_cvxif_drv", uvm_component parent=null);
 
    extern virtual function void build_phase(uvm_phase phase);
@@ -129,54 +126,54 @@ endtask
 
 task uvma_cvxif_drv_c::gen_random_ready();
 
-      cfg.randomize(uvma_cvxif_issue_ready);
-      cfg.randomize(uvma_cvxif_issue_not_ready);
-      repeat(cfg.uvma_cvxif_issue_ready) @(posedge cvxif_vif.clk);
-         cvxif_vif.cvxif_resp_o.x_issue_ready <= 0;
-      repeat(cfg.uvma_cvxif_issue_not_ready) @(posedge cvxif_vif.clk);
-         cvxif_vif.cvxif_resp_o.x_issue_ready <= 1;
+   cfg.randomize(uvma_cvxif_issue_ready);
+   cfg.randomize(uvma_cvxif_issue_not_ready);
+   repeat(cfg.uvma_cvxif_issue_ready) @(posedge cvxif_vif.clk);
+      cvxif_vif.cvxif_resp_o.x_issue_ready <= 0;
+   repeat(cfg.uvma_cvxif_issue_not_ready) @(posedge cvxif_vif.clk);
+      cvxif_vif.cvxif_resp_o.x_issue_ready <= 1;
 
 endtask
 
 task uvma_cvxif_drv_c::drive_issue_resp(input uvma_cvxif_resp_item_c item);
 
-     //issue_resp in same cycle as issue_req
-     cvxif_vif.cvxif_resp_o.x_issue_resp.accept <= item.issue_resp.accept;
-     cvxif_vif.cvxif_resp_o.x_issue_resp.writeback <= item.issue_resp.writeback;
-     cvxif_vif.cvxif_resp_o.x_issue_resp.dualwrite <= item.issue_resp.dualwrite;
-     cvxif_vif.cvxif_resp_o.x_issue_resp.dualread <= item.issue_resp.dualread;
-     cvxif_vif.cvxif_resp_o.x_issue_resp.exc <= item.issue_resp.exc;
-     `uvm_info(info_tag, $sformatf("Driving issue_resp, accept = %d", item.issue_resp.accept), UVM_LOW);
-     @(posedge cvxif_vif.clk);
-     cvxif_vif.cvxif_resp_o.x_issue_resp.accept <= 0;
-     cvxif_vif.cvxif_resp_o.x_issue_resp.writeback <= 0;
-     cvxif_vif.cvxif_resp_o.x_issue_resp.dualwrite <= 0;
-     cvxif_vif.cvxif_resp_o.x_issue_resp.dualread <= 0;
-     cvxif_vif.cvxif_resp_o.x_issue_resp.exc <= 0;
+   //issue_resp in same cycle as issue_req
+   cvxif_vif.cvxif_resp_o.x_issue_resp.accept    <= item.issue_resp.accept;
+   cvxif_vif.cvxif_resp_o.x_issue_resp.writeback <= item.issue_resp.writeback;
+   cvxif_vif.cvxif_resp_o.x_issue_resp.dualwrite <= item.issue_resp.dualwrite;
+   cvxif_vif.cvxif_resp_o.x_issue_resp.dualread  <= item.issue_resp.dualread;
+   cvxif_vif.cvxif_resp_o.x_issue_resp.exc       <= item.issue_resp.exc;
+   `uvm_info(info_tag, $sformatf("Driving issue_resp, accept = %d", item.issue_resp.accept), UVM_LOW);
+   @(posedge cvxif_vif.clk);
+   cvxif_vif.cvxif_resp_o.x_issue_resp.accept    <= 0;
+   cvxif_vif.cvxif_resp_o.x_issue_resp.writeback <= 0;
+   cvxif_vif.cvxif_resp_o.x_issue_resp.dualwrite <= 0;
+   cvxif_vif.cvxif_resp_o.x_issue_resp.dualread  <= 0;
+   cvxif_vif.cvxif_resp_o.x_issue_resp.exc       <= 0;
 
 endtask
 
 task uvma_cvxif_drv_c::drive_result_resp(input uvma_cvxif_resp_item_c item);
 
-     //drive resul_resp after one clk cycle
-     @(posedge cvxif_vif.clk);
-     cvxif_vif.cvxif_resp_o.x_result_valid <= item.result_valid;
-     cvxif_vif.cvxif_resp_o.x_result.id <= item.result.id;
-     cvxif_vif.cvxif_resp_o.x_result.exc <= item.result.exc;
-     cvxif_vif.cvxif_resp_o.x_result.rd <= item.result.rd;
-     cvxif_vif.cvxif_resp_o.x_result.data <= item.result.data;
-     cvxif_vif.cvxif_resp_o.x_result.we <= item.result.we;
-     cvxif_vif.cvxif_resp_o.x_result.exccode <= item.result.exccode;
-     `uvm_info(info_tag, $sformatf("Driving result_resp, id = %d", item.result.id), UVM_LOW);
-     do @(posedge cvxif_vif.clk);
-     while (!item.result_ready);
-     cvxif_vif.cvxif_resp_o.x_result_valid <= 0;
-     cvxif_vif.cvxif_resp_o.x_result.id <= 0;
-     cvxif_vif.cvxif_resp_o.x_result.exc <= 0;
-     cvxif_vif.cvxif_resp_o.x_result.rd <= 0;
-     cvxif_vif.cvxif_resp_o.x_result.data <= 0;
-     cvxif_vif.cvxif_resp_o.x_result.we <= 0;
-     cvxif_vif.cvxif_resp_o.x_result.exccode <= 0;
+   //drive resul_resp after one clk cycle
+   @(posedge cvxif_vif.clk);
+   cvxif_vif.cvxif_resp_o.x_result_valid   <= item.result_valid;
+   cvxif_vif.cvxif_resp_o.x_result.id      <= item.result.id;
+   cvxif_vif.cvxif_resp_o.x_result.exc     <= item.result.exc;
+   cvxif_vif.cvxif_resp_o.x_result.rd      <= item.result.rd;
+   cvxif_vif.cvxif_resp_o.x_result.data    <= item.result.data;
+   cvxif_vif.cvxif_resp_o.x_result.we      <= item.result.we;
+   cvxif_vif.cvxif_resp_o.x_result.exccode <= item.result.exccode;
+   `uvm_info(info_tag, $sformatf("Driving result_resp, id = %d", item.result.id), UVM_LOW);
+   do @(posedge cvxif_vif.clk);
+   while (!item.result_ready);
+   cvxif_vif.cvxif_resp_o.x_result_valid   <= 0;
+   cvxif_vif.cvxif_resp_o.x_result.id      <= 0;
+   cvxif_vif.cvxif_resp_o.x_result.exc     <= 0;
+   cvxif_vif.cvxif_resp_o.x_result.rd      <= 0;
+   cvxif_vif.cvxif_resp_o.x_result.data    <= 0;
+   cvxif_vif.cvxif_resp_o.x_result.we      <= 0;
+   cvxif_vif.cvxif_resp_o.x_result.exccode <= 0;
 
 endtask
 
