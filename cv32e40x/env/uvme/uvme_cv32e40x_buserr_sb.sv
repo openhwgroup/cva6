@@ -114,7 +114,7 @@ endfunction : write_obii
 
 function void uvme_cv32e40x_buserr_sb_c::write_rvfi(uvma_rvfi_instr_seq_item_c#(ILEN,XLEN) trn);
 
-  bit [31:0] mcause = trn.csrs["mcause"].get_csr_retirement_data;
+  bit [31:0] mcause = trn.csrs["mcause"].rdata;
   bit [31:0] dcsr = trn.csrs["dcsr"].get_csr_retirement_data;
   bit step = dcsr[2];
   bit stepie = dcsr[11];

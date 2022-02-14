@@ -9,4 +9,3 @@ plusargs: >
     +obi_memory_data_one_shot_err_enabled
     +gen_irq_noise
     +gen_random_debug
-    +buserr_sb_disabled
