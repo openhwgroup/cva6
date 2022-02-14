@@ -30,6 +30,11 @@ module uvmt_cva6_tb;
    import uvmt_cva6_pkg::*;
    import uvme_cva6_pkg::*;
 
+   localparam AXI_USER_WIDTH    = 1;
+   localparam AXI_ADDRESS_WIDTH = 64;
+   localparam AXI_DATA_WIDTH    = 64;
+   localparam NUM_WORDS         = 2**24;
+
    // ENV (testbench) parameters
    parameter int ENV_PARAM_INSTR_ADDR_WIDTH  = 32;
    parameter int ENV_PARAM_INSTR_DATA_WIDTH  = 32;
@@ -53,10 +58,10 @@ module uvmt_cva6_tb;
    */
 
    uvmt_cva6_dut_wrap #(
-     .AXI_USER_WIDTH    (1),
-     .AXI_ADDRESS_WIDTH (64),
-     .AXI_DATA_WIDTH    (64),
-     .NUM_WORDS         (2**25)
+     .AXI_USER_WIDTH    (AXI_USER_WIDTH),
+     .AXI_ADDRESS_WIDTH (AXI_ADDRESS_WIDTH),
+     .AXI_DATA_WIDTH    (AXI_DATA_WIDTH),
+     .NUM_WORDS         (NUM_WORDS)
    ) cva6_dut_wrap (
                     .clknrst_if(clknrst_if),
                     .cvxif_if  (cvxif_if),
