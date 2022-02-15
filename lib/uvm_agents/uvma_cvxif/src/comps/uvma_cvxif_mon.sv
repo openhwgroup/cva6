@@ -76,7 +76,7 @@ task uvma_cvxif_mon_c::run_phase(uvm_phase phase);
    forever begin
       `uvm_info(info_tag, $sformatf("Waiting for a new transaction"), UVM_HIGH);
       // wait for a transaction
-      wait (cvxif_vif.cvxif_req_i.x_issue_valid && cvxif_vif.cvxif_req_i.x_commit_valid);
+      wait (cvxif_vif.cvxif_req_i.x_issue_valid || cvxif_vif.cvxif_req_i.x_commit_valid);
       req_tr = uvma_cvxif_req_item_c::type_id::create("req_tr");
       `uvm_info(info_tag, $sformatf("New transaction received"), UVM_HIGH);
 
