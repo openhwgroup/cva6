@@ -23,7 +23,7 @@
    `elsif ZBA_ZBB_ZBC_ZBS
       parameter cv32e40x_pkg::b_ext_e B_EXT = cv32e40x_pkg::ZBA_ZBB_ZBC_ZBS;
    `else
-      parameter cv32e40x_pkg::b_ext_e B_EXT = cv32e40x_pkg::NONE;
+      parameter cv32e40x_pkg::b_ext_e B_EXT = cv32e40x_pkg::B_NONE;
    `endif
 
    `ifdef PMA_CUSTOM_CFG
