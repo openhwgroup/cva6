@@ -137,7 +137,8 @@ class uvme_cv32e40s_cfg_c extends uvma_core_cntrl_cfg_c;
    }
 
    constraint default_cv32e40s_boot_cons {
-      (!hart_id_plusarg_valid)           -> (hart_id           == 'h0000_0000);
+      (!mhartid_plusarg_valid)           -> (mhartid           == 'h0000_0000);
+      (!mimpid_plusarg_valid)            -> (mimpid            == 'h0000_0000);
       (!boot_addr_plusarg_valid)         -> (boot_addr         == 'h0000_0080);
       (!mtvec_addr_plusarg_valid)        -> (mtvec_addr        == 'h0000_0000);
       (!nmi_addr_plusarg_valid)          -> (nmi_addr          == 'h0010_0000);

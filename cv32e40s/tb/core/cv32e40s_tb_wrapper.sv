@@ -22,6 +22,7 @@ module cv32e40s_tb_wrapper
                 BOOT_ADDR         = 'h80,
                 DM_HALTADDRESS    = 32'h1A11_0800,
                 HART_ID           = 32'h0000_0000,
+                IMP_ID            = 32'h0000_0000,
                 // Parameters used by DUT
                 NUM_MHPMCOUNTERS  = 1
     )
@@ -77,7 +78,7 @@ module cv32e40s_tb_wrapper
 //          .clk_i              ( cv32e40s_core_i.id_stage_i.clk              ),
 //          .is_decoding_i      ( cv32e40s_core_i.id_stage_i.is_decoding_o    ),
 //          .illegal_insn_dec_i ( cv32e40s_core_i.id_stage_i.illegal_insn_dec ),
-//          .hart_id_i          ( cv32e40s_core_i.hart_id_i                   ),
+//          .mhartid_i          ( cv32e40s_core_i.mhartid_i                   ),
 //          .pc_id_i            ( cv32e40s_core_i.pc_id                       )
 //      );
 
@@ -94,7 +95,8 @@ module cv32e40s_tb_wrapper
 
          .boot_addr_i            ( BOOT_ADDR             ),
          .dm_halt_addr_i         ( DM_HALTADDRESS        ),
-         .hart_id_i              ( HART_ID               ),
+         .mhartid_i              ( HART_ID               ),
+         .mimpid_i               ( IMP_ID                ),
 
          .instr_req_o            ( instr_req             ),
          .instr_gnt_i            ( instr_gnt             ),

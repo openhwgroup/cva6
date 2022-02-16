@@ -130,7 +130,7 @@ int main(int argc, char *argv[])
     ++err_cnt;
   }
   if (uhartid_rval != 0x0) {
-    printf("ERROR: CSR UHARTID not equal to hart_id_i!\n\n");
+    printf("ERROR: CSR UHARTID not equal to mhartid_i!\n\n");
     ++err_cnt;
   }
 	*/
@@ -452,7 +452,7 @@ int main(int argc, char *argv[])
   }
 
   if (mhartid_rval != 0x0) {
-    printf("ERROR: CSR MHARTID not equal to hart_id_i!\n\n");
+    printf("ERROR: CSR MHARTID not equal to mhartid_i!\n\n");
     ++err_cnt;
   }
 

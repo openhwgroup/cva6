@@ -53,7 +53,8 @@ task uvma_cv32e40s_core_cntrl_drv_c::drive_bootstrap();
    e40s_cntxt.core_cntrl_vif.mtvec_addr        = cfg.mtvec_addr;
    e40s_cntxt.core_cntrl_vif.dm_halt_addr      = cfg.dm_halt_addr;
    e40s_cntxt.core_cntrl_vif.dm_exception_addr = cfg.dm_exception_addr;
-   e40s_cntxt.core_cntrl_vif.hart_id           = cfg.hart_id;
+   e40s_cntxt.core_cntrl_vif.mhartid           = cfg.mhartid;
+   e40s_cntxt.core_cntrl_vif.mimpid            = cfg.mimpid;
    e40s_cntxt.core_cntrl_vif.fetch_en          = 1'b0;
    e40s_cntxt.core_cntrl_vif.scan_cg_en        = 1'b0;
 
