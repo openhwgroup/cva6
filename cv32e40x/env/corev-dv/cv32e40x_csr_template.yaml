@@ -34,8 +34,9 @@
 #
 # Assumptions:
 #       1. Configuration core input mtvec_addr_i == 32'h0000_0000
-#       2. Configuration core input hart_id_i == 32'h0000_0000
-#       3. Core RTL parameters set as per User Manual defaults.
+#       2. Configuration core input mhartid_i == 32'h0000_0000
+#       3. Configuration core input mimpid_i == 32'h0000_0000
+#       4. Core RTL parameters set as per User Manual defaults.
 ################################################################################
 #- csr: CSR_NAME
 #  description: >
@@ -1008,7 +1009,7 @@
 #  rv32:
 #    - field_name: Hart
 #      description: >
-#        hart_id_i
+#        mhartid_i
 #      type: R
 #      reset_val: 0
 #      msb: 31

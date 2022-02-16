@@ -22,6 +22,7 @@ module cv32e40x_tb_wrapper
                 BOOT_ADDR         = 'h80,
                 DM_HALTADDRESS    = 32'h1A11_0800,
                 HART_ID           = 32'h0000_0000,
+                IMP_ID            = 32'h0000_0000,
                 // Parameters used by DUT
                 NUM_MHPMCOUNTERS  = 1
     )
@@ -90,7 +91,8 @@ module cv32e40x_tb_wrapper
          .boot_addr_i            ( BOOT_ADDR             ),
          .mtvec_addr_i           ( '0                    ), // TODO
          .dm_halt_addr_i         ( DM_HALTADDRESS        ),
-         .hart_id_i              ( HART_ID               ),
+         .mhartid_i              ( HART_ID               ),
+         .mimpid_i               ( IMP_ID                ),
          .dm_exception_addr_i    ( '0                    ), // TODO
          .nmi_addr_i             ( '0                    ), // TODO
 
@@ -101,6 +103,7 @@ module cv32e40x_tb_wrapper
          .instr_addr_o           ( instr_addr            ),
          .instr_memtype_o        (                       ), // TODO: should the core tb check this?
          .instr_prot_o           (                       ), // TODO: should the core tb check this?
+         .instr_dbg_o            (                       ), // TODO: should the core tb check this?
          .instr_rdata_i          ( instr_rdata           ),
          .instr_err_i            ( 1'b0                  ),
 
@@ -113,11 +116,13 @@ module cv32e40x_tb_wrapper
          .data_addr_o            ( data_addr             ),
          .data_memtype_o         (                       ), // TODO: should the core tb check this?
          .data_prot_o            (                       ), // TODO: should the core tb check this?
-         .data_wdata_o           ( data_wdata            ),
-         .data_rdata_i           ( data_rdata            ),
+         .data_dbg_o             (                       ), // TODO
          .data_err_i             ( 1'b0                  ),
          .data_atop_o            (                       ),
          .data_exokay_i          ( 1'b1                  ),
+
+         // Cycle Count
+         .mcycle_o               (                       ), // TODO
 
          // eXtension interface
          .xif_compressed_if      ( ext_if                ),
@@ -130,6 +135,17 @@ module cv32e40x_tb_wrapper
          // Interrupts
          .irq_i                  ( {32{1'b0}}            ),
 
+         .clic_irq_i             (  1'b0                 ), // TODO
+         .clic_irq_id_i          ( 12'h0                 ), // TODO
+         .clic_irq_il_i          (  8'h0                 ), // TODO
+         .clic_irq_priv_i        (  2'h0                 ), // TODO
+         .clic_irq_hv_i          (  1'b0                 ), // TODO
+         .clic_irq_id_o          (                       ), // TODO
+         .clic_irq_mode_o        (                       ),
+         .clic_irq_exit_o        (                       ),
+
+
+         
          // Fencei flush handshake
          .fencei_flush_req_o     (                       ),
          .fencei_flush_ack_i     ( 1'b0                  ),
