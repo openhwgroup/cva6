@@ -101,7 +101,7 @@ ALL_UVM_FLAGS           = -lca -sverilog +incdir+/opt/synopsys/vcs-mx/O-2018.09-
 	  $(USERDEFINE) $(if $(VERDI), -debug_access+all -kdb,)
 ALL_SIMV_UVM_FLAGS      = -licwait 20 -l +ntb_random_seed=1 \
 		-sv_lib $(CORE_V_VERIF)/lib/dpi_dasm/lib/Linux64/libdpi_dasm +signature=I-ADD-01.signature_output \
-		+UVM_TESTNAME=uvmt_cva6_firmware_test_c $(if $(VERDI), -gui,)
+		+UVM_TESTNAME=uvmt_cva6_firmware_test_c $(if $(VERDI), -gui -do $(CORE_V_VERIF)/cva6/sim/init_uvm.do,)
 
 vcs_uvm_comp:
 	@echo "[VCS] Building Model"
