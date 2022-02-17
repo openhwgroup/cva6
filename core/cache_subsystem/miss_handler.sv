@@ -441,7 +441,23 @@ module miss_handler import ariane_pkg::*; import std_cache_pkg::*; #(
                 if (amo_bypass_rsp.valid) begin
                     state_d = IDLE;
                     amo_resp_o.ack = 1'b1;
-                    amo_resp_o.result = amo_bypass_rsp.rdata;
+                    // Request is assumed to be still valid (ack not granted yet)
+                    if (amo_req_i.size == 2'b10) begin
+                        // 32b request
+                        logic [31:0] halfword;
+                        if (amo_req_i.operand_a[2:0] == '0) begin
+                            // 64b aligned -> activate lower 4 byte lanes
+                            halfword = amo_bypass_rsp.rdata[31:0];
+                        end else begin
+                            // 64b unaligned -> activate upper 4 byte lanes
+                            halfword = amo_bypass_rsp.rdata[63:32];
+                        end
+                        // Sign-extend 32b requests as per RISC-V spec
+                        amo_resp_o.result = {{32{halfword[31]}}, halfword};
+                    end else begin
+                        // 64b request
+                        amo_resp_o.result = amo_bypass_rsp.rdata;
+                    end
                 end
             end
         endcase
