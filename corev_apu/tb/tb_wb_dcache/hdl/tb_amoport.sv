@@ -183,6 +183,8 @@ program tb_amoport import ariane_pkg::*; import std_cache_pkg::*; import tb_pkg:
       for (int k=0;k<seq_num_amo_i;k++) begin
         `ACQ_WAIT_SIG(clk_i, dut_amo_resp_port_i.ack)
 
+        // Assert expected data is not 'x, protects against ineffective ==? comparisons
+        assert(exp_result_i !== 'x) else $error("Expected result is unknown");
         // note: wildcard as defined in right operand!
         ok=(dut_amo_resp_port_i.result ==? exp_result_i) && (act_mem_i == exp_mem_i);
 

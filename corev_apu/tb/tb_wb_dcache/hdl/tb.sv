@@ -284,8 +284,8 @@ module tb import ariane_pkg::*; import std_cache_pkg::*; import tb_pkg::*; #()()
     `APPL_WAIT_CYC(clk_i, 1)
 
     forever begin
-      amo_exp_result = 'x;
       `ACQ_WAIT_CYC(clk_i, 1)
+      amo_exp_result = 'x;
 
       // Regular stores. These are directly written to shadow memory.
       if(write_en) begin
@@ -311,7 +311,8 @@ module tb import ariane_pkg::*; import std_cache_pkg::*; import tb_pkg::*; #()()
 
           // The result that is expected to be returned by AMO and evantually to be stored in rd.
           // For most AMOs, this is the previous memory content.
-          amo_exp_result[31:0] = amo_shadow[31:0];
+          // RISC-V spec requires: "For RV64, 32-bit AMOs always sign-extend the value placed in rd."
+          amo_exp_result = amo_op_a;
 
         // 64-bit AMO
         end else begin
