@@ -98,7 +98,6 @@ module uvmt_cv32e40s_dut_wrap
     assign obi_instr_if_i.auser     = 'b0;
     assign obi_instr_if_i.wuser     = 'b0;
     assign obi_instr_if_i.aid       = 'b0;
-    assign obi_instr_if_i.atop      = 'b0;
     assign obi_instr_if_i.wdata     = 'b0;
     assign obi_instr_if_i.reqpar    = ~obi_instr_if_i.req;
     assign obi_instr_if_i.achk      = 'b0;
@@ -136,7 +135,6 @@ module uvmt_cv32e40s_dut_wrap
         core_cntrl_if.pma_cfg[i].main           = PMA_CFG[i].main;
         core_cntrl_if.pma_cfg[i].bufferable     = PMA_CFG[i].bufferable;
         core_cntrl_if.pma_cfg[i].cacheable      = PMA_CFG[i].cacheable;
-        core_cntrl_if.pma_cfg[i].atomic         = PMA_CFG[i].atomic;
       end
     end
 
@@ -185,9 +183,7 @@ module uvmt_cv32e40s_dut_wrap
          .data_dbg_o             ( /* obi_data_if_i.dbg */        ), // todo: Support OBI 1.3
          .data_memtype_o         ( obi_data_if_i.memtype          ),
          .data_rdata_i           ( obi_data_if_i.rdata            ),
-         .data_atop_o            ( obi_data_if_i.atop             ),
          .data_err_i             ( obi_data_if_i.err              ),
-         .data_exokay_i          ( obi_data_if_i.exokay           ),
 
          .mcycle_o               ( /*todo: connect */             ),
 
