@@ -96,6 +96,7 @@ pub_check_env:
   script:
     - echo $CI_WEIGHT
     - echo $RISCV
+    - echo $RISCV_PREFIX
     - echo $VERILATOR_ROOT
     - echo $SPIKE_ROOT
     - echo $BBL_ROOT
@@ -282,6 +283,32 @@ pub_smoke-gate:
     paths:
       - "artifacts/reports/*.yml"
 
+pub_benchmarks:
+  stage: three
+  extends:
+    - .template_job_always_manual
+  variables:
+    DV_TARGET: "cv64a6_imafdc_sv39"
+    DV_SIMULATORS: "veri-testharness,spike"
+  needs: []
+  script:
+    - source ./cva6/regress/install-cva6.sh
+    - source ./cva6/regress/install-riscv-dv.sh
+    - source ./cva6/regress/install-riscv-tests.sh
+    - source ./cva6/regress/benchmark.sh
+
+pub_wb_dcache:
+  stage: three
+  extends:
+    - .template_job_always_manual
+  needs: []
+  script:
+    - source ./cva6/regress/install-cva6.sh
+    - cd core-v-cores/cva6
+    - source ci/make-tmp.sh
+    - source ci/build-riscv-tests.sh
+    - cd ../../../
+    - make run-asm-tests-verilator defines=WB_DCACHE
 
 pub_linux:
   stage: three
