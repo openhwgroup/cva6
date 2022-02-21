@@ -43,7 +43,6 @@ module uvmt_cv32e40s_dut_wrap
   import cv32e40s_pkg::*;
 
   #(// DUT (riscv_core) parameters.
-    parameter NUM_MHPMCOUNTERS    =  1,
     parameter cv32e40s_pkg::b_ext_e B_EXT  = cv32e40s_pkg::B_NONE,
     parameter int          PMA_NUM_REGIONS =  0,
     parameter pma_region_t PMA_CFG[PMA_NUM_REGIONS-1 : 0] = '{default:PMA_R_DEFAULT},
@@ -125,7 +124,7 @@ module uvmt_cv32e40s_dut_wrap
 
     // --------------------------------------------
     // Connect to core_cntrl_if
-    assign core_cntrl_if.num_mhpmcounters = NUM_MHPMCOUNTERS;
+    assign core_cntrl_if.num_mhpmcounters = 1;
     assign core_cntrl_if.b_ext = B_EXT;
     initial begin
       core_cntrl_if.pma_cfg = new[PMA_NUM_REGIONS];
@@ -141,7 +140,6 @@ module uvmt_cv32e40s_dut_wrap
     // --------------------------------------------
     // instantiate the core
     cv32e40s_wrapper #(
-                      .NUM_MHPMCOUNTERS (NUM_MHPMCOUNTERS),
                       .B_EXT            (B_EXT),
                       .PMA_NUM_REGIONS  (PMA_NUM_REGIONS),
                       .PMA_CFG          (PMA_CFG),
@@ -163,26 +161,36 @@ module uvmt_cv32e40s_dut_wrap
          .dm_exception_addr_i    ( core_cntrl_if.dm_exception_addr),
 
          .instr_req_o            ( obi_instr_if_i.req             ),
+         .instr_reqpar_o         (      /* todo: connect */       ),
          .instr_gnt_i            ( obi_instr_if_i.gnt             ),
+         .instr_gntpar_i         ( 1'b0 /* todo: connect */       ),
          .instr_addr_o           ( obi_instr_if_i.addr            ),
+         .instr_achk_o           (      /* todo: connect */       ),
          .instr_prot_o           ( obi_instr_if_i.prot            ),
          .instr_dbg_o            ( /* obi_instr_if_i.dbg */       ), // todo: Support OBI 1.3
          .instr_memtype_o        ( obi_instr_if_i.memtype         ),
          .instr_rdata_i          ( obi_instr_if_i.rdata           ),
+         .instr_rchk_i           ( '0   /* todo: connect */       ),
          .instr_rvalid_i         ( obi_instr_if_i.rvalid          ),
+         .instr_rvalidpar_i      ( 1'b0 /* todo: connect */       ),
          .instr_err_i            ( obi_instr_if_i.err             ),
 
          .data_req_o             ( obi_data_if_i.req              ),
+         .data_reqpar_o          (      /* todo: connect */       ),
          .data_gnt_i             ( obi_data_if_i.gnt              ),
+         .data_gntpar_i          ( 1'b0 /* todo: connect */       ),
          .data_rvalid_i          ( obi_data_if_i.rvalid           ),
+         .data_rvalidpar_i       ( 1'b0 /* todo: connect */       ),
          .data_we_o              ( obi_data_if_i.we               ),
          .data_be_o              ( obi_data_if_i.be               ),
          .data_addr_o            ( obi_data_if_i.addr             ),
+         .data_achk_o            (      /* todo: connect */       ),
          .data_wdata_o           ( obi_data_if_i.wdata            ),
          .data_prot_o            ( obi_data_if_i.prot             ),
          .data_dbg_o             ( /* obi_data_if_i.dbg */        ), // todo: Support OBI 1.3
          .data_memtype_o         ( obi_data_if_i.memtype          ),
          .data_rdata_i           ( obi_data_if_i.rdata            ),
+         .data_rchk_i            ( '0   /* todo: connect */       ),
          .data_err_i             ( obi_data_if_i.err              ),
 
          .mcycle_o               ( /*todo: connect */             ),
