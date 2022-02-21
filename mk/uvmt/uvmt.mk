@@ -377,6 +377,19 @@ endif
 endif
 #endif
 
+################################################################################
+# Open a DVT Eclipse IDE instance with the project imported automatically
+ifeq ($(MAKECMDGOALS), open_in_dvt_ide)
+include $(CORE_V_VERIF)/mk/uvmt/dvt.mk
+else
+ifeq ($(MAKECMDGOALS), create_dvt_build_file)
+include $(CORE_V_VERIF)/mk/uvmt/dvt.mk
+else
+ifeq ($(MAKECMDGOALS), dvt_dump_env_vars)
+include $(CORE_V_VERIF)/mk/uvmt/dvt.mk
+endif
+endif
+endif
 
 ###############################################################################
 # Clean up your mess!
