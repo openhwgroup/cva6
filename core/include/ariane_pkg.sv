@@ -155,7 +155,7 @@ package ariane_pkg;
     // allocate more space for the commit buffer to be on the save side, this needs to be a power of two
     localparam int unsigned DEPTH_COMMIT = 8;
 `endif
-    localparam bit RVC = 1'b0; // Is C extension enabled
+    localparam bit RVC = 1'b1; // Is C extension enabled
 
 `ifdef PITON_ARIANE
     // Floating-point extensions configuration
