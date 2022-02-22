@@ -23,24 +23,18 @@
 # Usage: make SIMULATOR=<simulator> open_in_dvt_ide
 ###############################################################################
 
-# Start: shell and/or Makefile variables required by core-v-verif Makefiles; not used by DVT
-DPI_DASM_SPIKE_REPO   ?= https://github.com/riscv/riscv-isa-sim.git
-CV_SW_TOOLCHAIN       ?= /opt/riscv
-# End: shell and/or Makefile variables required by core-v-verif Makefiles; not used by DVT
-
 DVT_COMMAND=$(DVT_HOME)/bin/dvt_cli.sh createProject $(CORE_V_VERIF) -force -lang vlog -build default $(DVT_CLI_ARGS)
-DVT_BUILD_FILE_CONTENT_HEADER="+dvt_enable_elaboration +dvt_enable_elaboration_incremental+FULL"
 
 ifeq ($(SIMULATOR), xrun)
-	DVT_BUILD_FILE_CONTENT=$(DVT_BUILD_FILE_CONTENT_HEADER)" +dvt_init+xcelium.xrun $(XRUN_COMP) -top $(RTLSRC_VLOG_TB_TOP)"
+	DVT_BUILD_FILE_CONTENT="+dvt_init+xcelium.xrun\n$(XRUN_COMP)\n-top $(RTLSRC_VLOG_TB_TOP)"
 else
 ifeq ($(SIMULATOR), vcs)
-	DVT_BUILD_FILE_CONTENT=$(DVT_BUILD_FILE_CONTENT_HEADER)" +dvt_init+vcs.vlogan $(VCS_COMP) -top $(RTLSRC_VLOG_TB_TOP)"
+	DVT_BUILD_FILE_CONTENT="+dvt_init+vcs.vlogan\n$(VCS_COMP)\n-top $(RTLSRC_VLOG_TB_TOP)"
 else
 ifeq ($(SIMULATOR), vsim)
-	DVT_BUILD_FILE_CONTENT=$(DVT_BUILD_FILE_CONTENT_HEADER)" +dvt_init+questa.vlog -work $(VWORK) $(VLOG_FLAGS)	+incdir+$(DV_UVME_PATH) +incdir+$(DV_UVMT_PATH) +incdir+$(UVM_HOME) $(UVM_HOME)/uvm_pkg.sv -f $(CV_CORE_MANIFEST) $(VLOG_FILE_LIST) $(TBSRC_PKG) -top $(RTLSRC_VLOG_TB_TOP)"
+	DVT_BUILD_FILE_CONTENT="+dvt_init+questa.vlog\n-work $(VWORK) $(VLOG_FLAGS)	+incdir+$(DV_UVME_PATH) +incdir+$(DV_UVMT_PATH) +incdir+$(UVM_HOME) $(UVM_HOME)/uvm_pkg.sv -f $(CV_CORE_MANIFEST) $(VLOG_FILE_LIST) $(TBSRC_PKG) -top $(RTLSRC_VLOG_TB_TOP)"
 else
-	DVT_BUILD_FILE_CONTENT=$(DVT_BUILD_FILE_CONTENT_HEADER)" +dvt_init+dvt -uvm	+define+CV32E40P_ASSERT_ON +define+ISS+CV32E40P_TRACE_EXECUTION +incdir+$(DV_UVME_PATH) +incdir+$(DV_UVMT_PATH) -f $(CV_CORE_MANIFEST) -f $(DV_UVMT_PATH)/uvmt_$(CV_CORE_LC).flist -f $(DV_UVMT_PATH)/imperas_iss.flist -top $(RTLSRC_VLOG_TB_TOP)"
+	DVT_BUILD_FILE_CONTENT="+dvt_init+dvt\n-uvm\n+define+CV32E40P_ASSERT_ON\n+define+ISS+CV32E40P_TRACE_EXECUTION\n+incdir+$(DV_UVME_PATH)\n+incdir+$(DV_UVMT_PATH)\n-f $(CV_CORE_MANIFEST)\n-f $(DV_UVMT_PATH)/uvmt_$(CV_CORE_LC).flist\n-f $(DV_UVMT_PATH)/imperas_iss.flist\n-top $(RTLSRC_VLOG_TB_TOP)"
 endif
 endif
 endif
@@ -51,7 +45,7 @@ create_dvt_build_dir:
 	@ mkdir -p $(CORE_V_VERIF)/.dvt
 
 create_dvt_build_file: create_dvt_build_dir $(CV_CORE_PKG) $(SVLIB_PKG)
-	@ echo $(DVT_BUILD_FILE_CONTENT) > $(CORE_V_VERIF)/.dvt/default.build
+	@ printf $(DVT_BUILD_FILE_CONTENT) > $(CORE_V_VERIF)/.dvt/default.build
 
 open_in_dvt_ide: check_dvt_home create_dvt_build_file
 	$(DVT_COMMAND)
