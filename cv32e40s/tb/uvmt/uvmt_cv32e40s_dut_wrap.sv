@@ -43,7 +43,6 @@ module uvmt_cv32e40s_dut_wrap
   import cv32e40s_pkg::*;
 
   #(// DUT (riscv_core) parameters.
-    parameter NUM_MHPMCOUNTERS    =  1,
     parameter cv32e40s_pkg::b_ext_e B_EXT  = cv32e40s_pkg::B_NONE,
     parameter int          PMA_NUM_REGIONS =  0,
     parameter pma_region_t PMA_CFG[PMA_NUM_REGIONS-1 : 0] = '{default:PMA_R_DEFAULT},
@@ -125,7 +124,6 @@ module uvmt_cv32e40s_dut_wrap
 
     // --------------------------------------------
     // Connect to core_cntrl_if
-    assign core_cntrl_if.num_mhpmcounters = NUM_MHPMCOUNTERS;
     assign core_cntrl_if.b_ext = B_EXT;
     initial begin
       core_cntrl_if.pma_cfg = new[PMA_NUM_REGIONS];
@@ -141,7 +139,6 @@ module uvmt_cv32e40s_dut_wrap
     // --------------------------------------------
     // instantiate the core
     cv32e40s_wrapper #(
-                      .NUM_MHPMCOUNTERS (NUM_MHPMCOUNTERS),
                       .B_EXT            (B_EXT),
                       .PMA_NUM_REGIONS  (PMA_NUM_REGIONS),
                       .PMA_CFG          (PMA_CFG),
