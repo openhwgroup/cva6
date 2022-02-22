@@ -124,7 +124,6 @@ module uvmt_cv32e40s_dut_wrap
 
     // --------------------------------------------
     // Connect to core_cntrl_if
-    assign core_cntrl_if.num_mhpmcounters = 1;
     assign core_cntrl_if.b_ext = B_EXT;
     initial begin
       core_cntrl_if.pma_cfg = new[PMA_NUM_REGIONS];
