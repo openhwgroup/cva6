@@ -34,8 +34,9 @@
 #
 # Assumptions:
 #       1. Configuration core input mtvec_addr_i == 32'h0000_0000
-#       2. Configuration core input hart_id_i == 32'h0000_0000
-#       3. Core RTL parameters set as per User Manual defaults.
+#       2. Configuration core input mhartid_i == 32'h0000_0000
+#       3. Configuration core input mimpid_i == 32'h0000_0000
+#       4. Core RTL parameters set as per User Manual defaults.
 ################################################################################
 #- csr: CSR_NAME
 #  description: >
@@ -365,6 +366,79 @@
       reset_val: 1
       msb: 0
       lsb: 0
+
+### Not supported in CV32E40X ###
+#- csr: menvcfg
+#  description: >
+#    Machine Environment Configuration Register
+#  address: 0x30A
+#  privilege_mode: M
+#  rv32:
+#    - field_name: FIOM
+#      description: >
+#        Fence of IO Implies Memory
+#      type: RW
+#      reset_val: 0
+#      msb: 0
+#      lsb: 0
+#    - field_name: CBIE
+#      description: >
+#        Cache Block Invalidate Instruction Enable
+#      type: RW
+#      reset_val: 0
+#      msb: 5
+#      lsb: 4
+#    - field_name: CBCFE
+#      description: >
+#        Cache Block Clean and Flush Instruction Enable
+#      type: RW
+#      reset_val: 0
+#      msb: 6
+#      lsb: 6
+#    - field_name: CBZE
+#      description: >
+#        Cache Block Zero Instruction Enable
+#      type: RW
+#      reset_val: 0
+#      msb: 7
+#      lsb: 7
+
+- csr: mstatush
+  description: >
+    Machine ISA register
+  address: 0x310
+  privilege_mode: M
+  rv32:
+    - field_name: SBE
+      description: >
+        Supervisor Big Endian Memory Access (Always zero)
+      type: R
+      reset_val: 0
+      msb: 4
+      lsb: 4
+    - field_name: MBE
+      description: >
+        Machine Mode Big Endian Memory Access (Always zero)
+      type: R
+      reset_val: 0
+      msb: 5
+      lsb: 5
+
+### Not supported in CV32E40x ###
+#- csr: menvcfgh
+#  description: >
+#    Machine Environment Configuration (h)
+#  address: 0x31A
+#  privilege_mode: M
+#  rv32:
+#    - field_name: STCE
+#      description: >
+#        STimecmp Enable
+#      type: RW
+#      reset_val: 0
+#      msb: 31
+#      lsb: 31
+
 - csr: mcountinhibit
   description: >
     Machine Counter-Inhibit
@@ -541,6 +615,116 @@
       reset_val: 0
       msb: 3
       lsb: 3
+
+### Not Supported in CV32E40X ###
+#- csr: henvcfg
+#  description: >
+#    Hypervisor Environment Configuration Register
+#  address: 0x61A
+#  privilege_mode: M
+#  rv32:
+#    - field_name: FIOM
+#      description: >
+#        Fence of IO Implies Memory
+#      type: R
+#      reset_val: 0
+#      msb: 0
+#      lsb: 0
+#    - field_name: CBIE
+#      description: >
+#        Cache Block Invalidate Instruction Enable
+#      type: R
+#      reset_val: 0
+#      msb: 5
+#      lsb: 4
+#    - field_name: CBCFE
+#      description: >
+#        Cache Block Clean and Flush Instruction Enable
+#      type: R
+#      reset_val: 0
+#      msb: 6
+#      lsb: 6
+#    - field_name: CBZE
+#      description: >
+#        Cache Block Zero Instruction Enable
+#      type: R
+#      reset_val: 0
+#      msb: 7
+#      lsb: 7
+
+### Not Supported in CV32E40X ###
+#- csr: henvcfgh
+#  description: >
+#    Hypervisor Environment Configuration (h)
+#  address: 0x31A
+#  privilege_mode: M
+#  rv32:
+#    - field_name: STCE
+#      description: >
+#        STimecmp Enable
+#      type: R
+#      reset_val: 0
+#      msb: 31
+#      lsb: 31
+
+### Not Supported in CV32E40X ###
+#- csr: mseccfg
+#  description: >
+#    Machine Security Configuration
+#  address: 0x747
+#  privilege_mode: M
+#  rv32:
+#    - field_name: MML
+#      description: >
+#        Machine Mode Lockdown
+#      type: RW
+#      reset_val: 0
+#      msb: 0
+#      lsb: 0
+#    - field_name: MMWP
+#      description: >
+#        Machine Mode Whitelist Policy
+#      type: RW
+#      reset_val: 0
+#      msb: 1
+#      lsb: 1
+#    - field_name: RLB
+#      description: >
+#        Rule Locking Bypass
+#      type: RW
+#      reset_val: 0
+#      msb: 2
+#      lsb: 2
+#    - field_name: USEED
+#      description: >
+#        User Mode Seed Access (Always Zero on cv32e40x)
+#      type: R
+#      reset_val: 0
+#      msb: 8
+#      lsb: 8
+#    - field_name: SSEED
+#      description: >
+#        Supervisor Mode Seed Access (Always zero on cv32e40x)
+#      type: R
+#      reset_val: 0
+#      msb: 9
+#      lsb: 9
+
+### Not supported in CV32E40X ###
+#- csr: mseccfgh
+#  description: >
+#    Machine Security Configuration (h)
+#  address: 0x757
+#  privilege_mode: M
+#  rv32:
+#    - field_name: Zero
+#      description: >
+#        Always zero
+#      type: R
+#      reset_val: 0
+#      msb: 31
+#      lsb: 0
+
 - csr: tselect
   description: >
     Trigger Select Register
@@ -738,7 +922,7 @@
       reset_val: 0
       msb: 31
       lsb: 0
-- csr: scontext
+- csr: mscontext
   description: >
     Supervisor Context Register
   address: 0x7AA
@@ -751,12 +935,25 @@
       reset_val: 0
       msb: 31
       lsb: 0
-
+- csr: tcontrol
+  description: >
+    Trigger control
+  address: 0x7A5
+  privilege_mode: M
+  rv32:
+    - field_name: zero (reserved)
+      description: >
+        Always return zero
+      type: R
+      reset_val: 0
+      msb: 31
+      lsb: 0
 ###############################################################################
-# mvendorid, marchid, mimpid and mhartid are temporarily excluded from auto-
-# generation of access testing as all bits in these CSRs are RO, so any attempt
-# to write them causes an illegal instruction exception.  Access modes to these
-# CSRs is tested in a separate, manually written test-program.
+# mvendorid, marchid, mimpid, mhartid and mconfigptr are temporarily
+# excluded from auto-generation of access testing as all bits in these CSRs are
+# RO, so any attempt to write them causes an illegal instruction exception.
+# Access modes to these CSRs is tested in a separate, manually written test-
+# program.
 #
 #- csr: mvendorid
 #  description: >
@@ -812,8 +1009,21 @@
 #  rv32:
 #    - field_name: Hart
 #      description: >
-#        hart_id_i
+#        mhartid_i
 #      type: R
 #      reset_val: 0
 #      msb: 31
 #      lsb: 0
+#- csr: mconfigptr
+#  description: >
+#    Machine configuration pointer
+#  address: 0xF15
+#  privilege_mode: M
+#  rv32:
+#    -field_name: zero (reserved)
+#    description: >
+#      Always return zero
+#    type: R
+#    reset_val: 0
+#    msb: 31
+#    lsb: 0

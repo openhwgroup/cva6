@@ -71,6 +71,7 @@ class uvme_cv32e40x_cfg_c extends uvma_core_cntrl_cfg_c;
       `uvm_field_object(pma_cfg              , UVM_DEFAULT)
    `uvm_object_utils_end
 
+
    constraint defaults_cons {
       soft enabled                      == 0;
       soft is_active                    == UVM_PASSIVE;
@@ -128,6 +129,8 @@ class uvme_cv32e40x_cfg_c extends uvma_core_cntrl_cfg_c;
       unaligned_access_amo_supported == 1;
 
       bitmanip_version        == BITMANIP_VERSION_1P00;
+      priv_spec_version       == PRIV_VERSION_MASTER;
+      endianness              == ENDIAN_LITTLE;
 
       boot_addr_valid         == 1;
       mtvec_addr_valid        == 1;
@@ -137,7 +140,8 @@ class uvme_cv32e40x_cfg_c extends uvma_core_cntrl_cfg_c;
    }
 
    constraint default_cv32e40x_boot_cons {
-      (!hart_id_plusarg_valid)           -> (hart_id           == 'h0000_0000);
+      (!mhartid_plusarg_valid)           -> (mhartid           == 'h0000_0000);
+      (!mimpid_plusarg_valid)            -> (mimpid            == 'h0000_0000);
       (!boot_addr_plusarg_valid)         -> (boot_addr         == 'h0000_0080);
       (!mtvec_addr_plusarg_valid)        -> (mtvec_addr        == 'h0000_0000);
       (!nmi_addr_plusarg_valid)          -> (nmi_addr          == 'h0010_0000);
@@ -306,6 +310,8 @@ endclass : uvme_cv32e40x_cfg_c
 function uvme_cv32e40x_cfg_c::new(string name="uvme_cv32e40x_cfg");
 
    super.new(name);
+
+   core_name = "CV32E40X";
 
    if ($test$plusargs("USE_ISS"))
       use_iss = 1;

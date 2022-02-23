@@ -184,7 +184,7 @@ task uvma_rvfi_instr_mon_c::monitor_rvfi_instr();
          // Decode interrupts that need to be communicated to ISS (external or NMI bus faults)
          if (mon_trn.intr) begin
             // The cause of the interrupt should be in the "rdata" field of the mcause CSR RVFI port
-            bit [XLEN-1:0] csr_mcause = mon_trn.csrs["mcause"].get_csr_retirement_data();
+            bit [XLEN-1:0] csr_mcause = mon_trn.csrs["mcause"].rdata;
 
             // External interrupt
             if (csr_mcause[31]) begin
