@@ -35,21 +35,27 @@ class cv32e40x_privil_reg extends riscv_privil_reg;
     super.init_reg(reg_name);
 
     case(reg_name) inside
+      MSTATUS: begin
+        fld.delete();
+        add_field("WPRI0",  3, WPRI);
+        add_field("MIE",    1, WARL);
+        add_field("WPRI1",  3, WPRI);
+        add_field("MPIE",   1, WARL);
+        add_field("WPRI2",  3, WPRI);
+        add_field("MPP",    2, WARL);
+        add_field("WPRI3",  3, WPRI);
+        add_field("MPRV",   2, WARL);
+        add_field("WPRI4", 14, WPRI);
+      end
       // Machine interrupt-enable register
       MIE: begin
         fld.delete();
 
-        add_field("USIE",   1,  WARL);
-        add_field("SSIE",   1,  WARL);
-        add_field("WPRI0",  1,  WPRI);
+        add_field("WPRI0",  3,  WARL);
         add_field("MSIE",   1,  WARL);
-        add_field("UTIE",   1,  WARL);
-        add_field("STIE",   1,  WARL);
-        add_field("WPRI1",  1,  WPRI);
+        add_field("WPRI1",  3,  WPRI);
         add_field("MTIE",   1,  WARL);
-        add_field("UEIE",   1,  WARL);
-        add_field("SEIE",   1,  WARL);
-        add_field("WPRI2",  1,  WPRI);
+        add_field("WPRI2",  3,  WPRI);
         add_field("MEIE",   1,  WARL);
         add_field("WPRI3",  4,  WPRI);
         for (int i = 0; i < 16; i++) begin
@@ -59,17 +65,11 @@ class cv32e40x_privil_reg extends riscv_privil_reg;
       MIP: begin
         fld.delete();
 
-        add_field("USIP",   1,  WARL);
-        add_field("SSIP",   1,  WARL);
-        add_field("WPRI0",  1,  WPRI);
+        add_field("WPRI0",  3,  WPRI);
         add_field("MSIP",   1,  WARL);
-        add_field("UTIP",   1,  WARL);
-        add_field("STIP",   1,  WARL);
-        add_field("WPRI1",  1,  WPRI);
+        add_field("WPRI1",  3,  WPRI);
         add_field("MTIP",   1,  WARL);
-        add_field("UEIP",   1,  WARL);
-        add_field("SEIP",   1,  WARL);
-        add_field("WPRI2",  1,  WPRI);
+        add_field("WPRI2",  3,  WPRI);
         add_field("MEIP",   1,  WARL);
         add_field("WPRI3",  4,  WPRI);
         for (int i = 0; i < 16; i++) begin

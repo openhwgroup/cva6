@@ -54,6 +54,7 @@ class uvme_cv32e40x_buserr_sb_c extends uvm_scoreboard;
   int cnt_rvfi_nmihandl;    // Count of all nmi handler entries
   int cnt_rvfi_ifaulthandl; // Count of all instr bus fault handler entries
   int cnt_rvfi_errmatch;    // Count of all retires matched with expected I-side "err"
+  int cnt_rvfi_errmatch_debug; // Count of all errmatch that happens under debug
   // Expectations variables:
   bit                       pending_nmi;       // Whether nmi happened and handler is expected
   int                       late_retires;      // Number of non-debug/step/handler retires since "pending_nmi"
@@ -114,7 +115,7 @@ endfunction : write_obii
 
 function void uvme_cv32e40x_buserr_sb_c::write_rvfi(uvma_rvfi_instr_seq_item_c#(ILEN,XLEN) trn);
 
-  bit [31:0] mcause = trn.csrs["mcause"].get_csr_retirement_data;
+  bit [31:0] mcause = trn.csrs["mcause"].rdata;
   bit [31:0] dcsr = trn.csrs["dcsr"].get_csr_retirement_data;
   bit step = dcsr[2];
   bit stepie = dcsr[11];
@@ -125,13 +126,19 @@ function void uvme_cv32e40x_buserr_sb_c::write_rvfi(uvma_rvfi_instr_seq_item_c#(
   if (should_instr_err(trn)) begin
     cnt_rvfi_errmatch++;
 
+    //TODO:mateilga remove this separate counter when RVFI is updated with an intr cause field
+    if (trn.dbg_mode) begin
+      cnt_rvfi_errmatch_debug++;
+    end
+
     assert (trn.trap)
       else `uvm_error(info_tag, $sformatf("retire at 0x%08x (expected 'err') lacks 'rvfi_trap'", trn.pc_rdata));
-    assert (cnt_rvfi_errmatch - cnt_rvfi_ifaulthandl <= 1)
+    assert ((cnt_rvfi_errmatch - cnt_rvfi_errmatch_debug) - cnt_rvfi_ifaulthandl <= 1)
       else `uvm_error(info_tag, "too many err retires without ifault handling");
   end
 
   // D-side NMI handler
+  //TODO:mateilga update this to check the new intr cause field when RVFI is updated
   if (trn.intr && mcause[31] && (mcause[30:0] inside {128, 129})) begin
     cnt_rvfi_nmihandl++;
 
@@ -144,10 +151,11 @@ function void uvme_cv32e40x_buserr_sb_c::write_rvfi(uvma_rvfi_instr_seq_item_c#(
   end
 
   // I-side exception handler
+  //TODO:mateilga update this to check the new intr cause field when RVFI is updated. This will allow for counting handler entries during debug
   if (trn.intr && !mcause[31] && (mcause[31:0] == 48)) begin
     cnt_rvfi_ifaulthandl++;
 
-    assert (cnt_rvfi_errmatch == cnt_rvfi_ifaulthandl)
+    assert ((cnt_rvfi_errmatch - cnt_rvfi_errmatch_debug) == cnt_rvfi_ifaulthandl)
       else `uvm_error(info_tag, "ifault handler entered without matching an ifault retirement");
   end
 
@@ -210,10 +218,10 @@ function void uvme_cv32e40x_buserr_sb_c::check_phase(uvm_phase phase);
     else `uvm_warning(info_tag, "all the I-side OBI transactions were errs");
 
   // Check RVFI I-side
-  assert (cnt_rvfi_errmatch >= cnt_rvfi_ifaulthandl)
+  assert ((cnt_rvfi_errmatch - cnt_rvfi_errmatch_debug) >= cnt_rvfi_ifaulthandl)
     else `uvm_error(info_tag, "more instr fault handler than actual err retirements");
-  assert (cnt_rvfi_errmatch == cnt_rvfi_ifaulthandl)
-    else `uvm_warning(info_tag, $sformatf("err retires (%0d) != handler entries (%0d)", cnt_rvfi_errmatch, cnt_rvfi_ifaulthandl));
+  assert ((cnt_rvfi_errmatch - cnt_rvfi_errmatch_debug) == cnt_rvfi_ifaulthandl)
+    else `uvm_warning(info_tag, $sformatf("err retires (%0d) != handler entries (%0d)", (cnt_rvfi_errmatch - cnt_rvfi_errmatch_debug), cnt_rvfi_ifaulthandl));
 
   // Check OBI I-side vs RVFI
   assert (cnt_obii_err >= cnt_rvfi_ifaulthandl)
@@ -231,6 +239,7 @@ function void uvme_cv32e40x_buserr_sb_c::check_phase(uvm_phase phase);
   `uvm_info(info_tag, $sformatf("observed %0d rvfi nmi handler entries", cnt_rvfi_nmihandl), UVM_NONE)
   `uvm_info(info_tag, $sformatf("received %0d I-side 'err' transactions", cnt_obii_err), UVM_NONE)
   `uvm_info(info_tag, $sformatf("retired %0d expectedly ifault instructions", cnt_rvfi_errmatch), UVM_NONE)
+  `uvm_info(info_tag, $sformatf("retired %0d expectedly ifault instructions during debug", cnt_rvfi_errmatch_debug), UVM_NONE)
   `uvm_info(info_tag, $sformatf("observed %0d rvfi ifault handler entries", cnt_rvfi_ifaulthandl), UVM_NONE)
 
 endfunction : check_phase

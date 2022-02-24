@@ -164,13 +164,15 @@ module uvmt_cv32e40x_dut_wrap
          .mtvec_addr_i           ( core_cntrl_if.mtvec_addr       ),
          .dm_halt_addr_i         ( core_cntrl_if.dm_halt_addr     ),
          .nmi_addr_i             ( core_cntrl_if.nmi_addr         ),
-         .hart_id_i              ( core_cntrl_if.hart_id          ),
+         .mhartid_i              ( core_cntrl_if.mhartid          ),
+         .mimpid_i               ( core_cntrl_if.mimpid           ),
          .dm_exception_addr_i    ( core_cntrl_if.dm_exception_addr),
 
          .instr_req_o            ( obi_instr_if_i.req             ),
          .instr_gnt_i            ( obi_instr_if_i.gnt             ),
          .instr_addr_o           ( obi_instr_if_i.addr            ),
          .instr_prot_o           ( obi_instr_if_i.prot            ),
+         .instr_dbg_o            ( /* obi_instr_if_i.dbg */       ), // todo: Support OBI 1.3
          .instr_memtype_o        ( obi_instr_if_i.memtype         ),
          .instr_rdata_i          ( obi_instr_if_i.rdata           ),
          .instr_rvalid_i         ( obi_instr_if_i.rvalid          ),
@@ -184,11 +186,14 @@ module uvmt_cv32e40x_dut_wrap
          .data_addr_o            ( obi_data_if_i.addr             ),
          .data_wdata_o           ( obi_data_if_i.wdata            ),
          .data_prot_o            ( obi_data_if_i.prot             ),
+         .data_dbg_o             ( /* obi_data_if_i.dbg */        ), // todo: Support OBI 1.3
          .data_memtype_o         ( obi_data_if_i.memtype          ),
          .data_rdata_i           ( obi_data_if_i.rdata            ),
          .data_atop_o            ( obi_data_if_i.atop             ),
          .data_err_i             ( obi_data_if_i.err              ),
          .data_exokay_i          ( obi_data_if_i.exokay           ),
+
+         .mcycle_o               (      /*todo: connect */        ),
 
          .xif_compressed_if      ( xif.cpu_compressed             ),
          .xif_issue_if           ( xif.cpu_issue                  ),
@@ -198,6 +203,15 @@ module uvmt_cv32e40x_dut_wrap
          .xif_result_if          ( xif.cpu_result                 ),
 
          .irq_i                  ( interrupt_if.irq               ),
+
+         .clic_irq_i             ( '0   /*todo: connect */        ),
+         .clic_irq_id_i          ( '0   /*todo: connect */        ),
+         .clic_irq_il_i          ( '0   /*todo: connect */        ),
+         .clic_irq_priv_i        ( '0   /*todo: connect */        ),
+         .clic_irq_hv_i          ( '0   /*todo: connect */        ),
+         .clic_irq_id_o          (      /*todo: connect */        ),
+         .clic_irq_mode_o        (      /*todo: connect */        ),
+         .clic_irq_exit_o        (      /*todo: connect */        ),
 
          .fencei_flush_req_o     ( fencei_if_i.flush_req          ),
          .fencei_flush_ack_i     ( fencei_if_i.flush_ack          ),
