@@ -34,6 +34,7 @@ package cv32e40s_instr_test_pkg;
   `include "cv32e40s_pma_cfg.sv"
   `include "cv32e40s_compressed_instr.sv"
   `include "cv32e40s_privil_reg.sv"
+  `include "cv32e40s_privileged_common_seq.sv"
   `include "cv32e40s_instr_gen_config.sv"
   `include "cv32e40s_debug_rom_gen.sv"
   `include "cv32e40s_asm_program_gen.sv"

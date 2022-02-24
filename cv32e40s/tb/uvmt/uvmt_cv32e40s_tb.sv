@@ -161,7 +161,6 @@ module uvmt_cv32e40s_tb;
   `RVFI_CSR_BIND(dpc)
   `RVFI_CSR_BIND(tselect)
   `RVFI_CSR_BIND(tinfo)
-  `RVFI_CSR_BIND(tcontrol)
 
   `RVFI_CSR_IDX_BIND(mhpmcounter,,3)
   `RVFI_CSR_IDX_BIND(mhpmcounter,,4)
@@ -561,7 +560,6 @@ module uvmt_cv32e40s_tb;
      `RVFI_CSR_UVM_CONFIG_DB_SET(tdata2)
      `RVFI_CSR_UVM_CONFIG_DB_SET(tdata3)
      `RVFI_CSR_UVM_CONFIG_DB_SET(tinfo)
-     `RVFI_CSR_UVM_CONFIG_DB_SET(tcontrol)
 
      `RVFI_CSR_UVM_CONFIG_DB_SET(mhpmevent3)
      `RVFI_CSR_UVM_CONFIG_DB_SET(mhpmevent4)
