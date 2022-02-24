@@ -138,6 +138,7 @@ module uvmt_cv32e40s_tb;
   `RVFI_CSR_BIND(marchid)
   `RVFI_CSR_BIND(mcountinhibit)
   `RVFI_CSR_BIND(mstatus)
+  `RVFI_CSR_BIND(mstatush)
   `RVFI_CSR_BIND(mvendorid)
   `RVFI_CSR_BIND(misa)
   `RVFI_CSR_BIND(mtvec)
@@ -160,6 +161,7 @@ module uvmt_cv32e40s_tb;
   `RVFI_CSR_BIND(dpc)
   `RVFI_CSR_BIND(tselect)
   `RVFI_CSR_BIND(tinfo)
+  `RVFI_CSR_BIND(tcontrol)
 
   `RVFI_CSR_IDX_BIND(mhpmcounter,,3)
   `RVFI_CSR_IDX_BIND(mhpmcounter,,4)
@@ -250,6 +252,9 @@ module uvmt_cv32e40s_tb;
   `RVFI_CSR_IDX_BIND(mhpmcounter,h,29)
   `RVFI_CSR_IDX_BIND(mhpmcounter,h,30)
   `RVFI_CSR_IDX_BIND(mhpmcounter,h,31)
+
+  `RVFI_CSR_BIND(mconfigptr)
+
 
   // dscratch0
   bind cv32e40s_wrapper
@@ -462,8 +467,15 @@ module uvmt_cv32e40s_tb;
       .boot_addr_i            (core_i.boot_addr_i),
 
       .rvfi_valid             (rvfi_i.rvfi_valid),
+      .rvfi_insn              (rvfi_i.rvfi_insn),
+      .rvfi_intr              (rvfi_i.rvfi_intr),
+      .rvfi_dbg               (rvfi_i.rvfi_dbg),
+      .rvfi_dbg_mode          (rvfi_i.rvfi_dbg_mode),
       .rvfi_pc_wdata          (rvfi_i.rvfi_pc_wdata),
       .rvfi_pc_rdata          (rvfi_i.rvfi_pc_rdata),
+      .rvfi_csr_dpc_rdata     (rvfi_i.rvfi_csr_dpc_rdata),
+      .rvfi_csr_mepc_wdata    (rvfi_i.rvfi_csr_mepc_wdata),
+      .rvfi_csr_mepc_wmask    (rvfi_i.rvfi_csr_mepc_wmask),
 
       .is_wfi                 (),
       .in_wfi                 (),
@@ -521,6 +533,7 @@ module uvmt_cv32e40s_tb;
      `RVFI_CSR_UVM_CONFIG_DB_SET(marchid)
      `RVFI_CSR_UVM_CONFIG_DB_SET(mcountinhibit)
      `RVFI_CSR_UVM_CONFIG_DB_SET(mstatus)
+     `RVFI_CSR_UVM_CONFIG_DB_SET(mstatush)
      `RVFI_CSR_UVM_CONFIG_DB_SET(misa)
      `RVFI_CSR_UVM_CONFIG_DB_SET(mtvec)
      `RVFI_CSR_UVM_CONFIG_DB_SET(mtval)
@@ -548,6 +561,7 @@ module uvmt_cv32e40s_tb;
      `RVFI_CSR_UVM_CONFIG_DB_SET(tdata2)
      `RVFI_CSR_UVM_CONFIG_DB_SET(tdata3)
      `RVFI_CSR_UVM_CONFIG_DB_SET(tinfo)
+     `RVFI_CSR_UVM_CONFIG_DB_SET(tcontrol)
 
      `RVFI_CSR_UVM_CONFIG_DB_SET(mhpmevent3)
      `RVFI_CSR_UVM_CONFIG_DB_SET(mhpmevent4)
@@ -638,6 +652,7 @@ module uvmt_cv32e40s_tb;
      `RVFI_CSR_UVM_CONFIG_DB_SET(mhpmcounter29h)
      `RVFI_CSR_UVM_CONFIG_DB_SET(mhpmcounter30h)
      `RVFI_CSR_UVM_CONFIG_DB_SET(mhpmcounter31h)
+     `RVFI_CSR_UVM_CONFIG_DB_SET(mconfigptr)
 
      uvm_config_db#(virtual RVVI_state#(.ILEN(uvme_cv32e40s_pkg::ILEN),
                                         .XLEN(uvme_cv32e40s_pkg::XLEN)

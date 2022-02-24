@@ -60,4 +60,4 @@ task uvma_cv32e40x_core_cntrl_drv_c::drive_bootstrap();
 
 endtask : drive_bootstrap
 
-`endif // __UVMA_CV32E40x_CORE_CNTRL_DRV_SV__
+`endif // __UVMA_CV32E40X_CORE_CNTRL_DRV_SV__
