@@ -22,7 +22,6 @@ class cv32e40s_pma_cfg extends uvm_object;
   constraint attr_comb_c {
     foreach (regions[i]) {
       regions[i].cacheable == 1'b1 -> regions[i].main   == 1'b1;
-      regions[i].main      == 1'b1 -> regions[i].atomic == 1'b1;
     }
   }
 
