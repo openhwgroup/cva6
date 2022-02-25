@@ -407,18 +407,18 @@ module axi_adapter #(
     axi_pkg::atop_t result = 6'b000000;
 
     unique case(amo)
-      ariane_pkg::AMO_NONE: result = 6'b000000;
-      ariane_pkg::AMO_SWAP: result = 6'b110000;
-      ariane_pkg::AMO_ADD : result = 6'b100000;
-      ariane_pkg::AMO_AND : result = 6'b100001;
-      ariane_pkg::AMO_OR  : result = 6'b100011;
-      ariane_pkg::AMO_XOR : result = 6'b100010;
-      ariane_pkg::AMO_MAX : result = 6'b100100;
-      ariane_pkg::AMO_MAXU: result = 6'b100110;
-      ariane_pkg::AMO_MIN : result = 6'b100101;
-      ariane_pkg::AMO_MINU: result = 6'b100111;
-      ariane_pkg::AMO_CAS1: result = 6'b000000; // Unsupported
-      ariane_pkg::AMO_CAS2: result = 6'b000000; // Unsupported
+      ariane_pkg::AMO_NONE: result = {axi_pkg::ATOP_NONE, 4'b0000};
+      ariane_pkg::AMO_SWAP: result = {axi_pkg::ATOP_ATOMICSWAP};
+      ariane_pkg::AMO_ADD : result = {axi_pkg::ATOP_ATOMICLOAD, axi_pkg::ATOP_LITTLE_END, axi_pkg::ATOP_ADD};
+      ariane_pkg::AMO_AND : result = {axi_pkg::ATOP_ATOMICLOAD, axi_pkg::ATOP_LITTLE_END, axi_pkg::ATOP_CLR};
+      ariane_pkg::AMO_OR  : result = {axi_pkg::ATOP_ATOMICLOAD, axi_pkg::ATOP_LITTLE_END, axi_pkg::ATOP_SET};
+      ariane_pkg::AMO_XOR : result = {axi_pkg::ATOP_ATOMICLOAD, axi_pkg::ATOP_LITTLE_END, axi_pkg::ATOP_EOR};
+      ariane_pkg::AMO_MAX : result = {axi_pkg::ATOP_ATOMICLOAD, axi_pkg::ATOP_LITTLE_END, axi_pkg::ATOP_SMAX};
+      ariane_pkg::AMO_MAXU: result = {axi_pkg::ATOP_ATOMICLOAD, axi_pkg::ATOP_LITTLE_END, axi_pkg::ATOP_UMAX};
+      ariane_pkg::AMO_MIN : result = {axi_pkg::ATOP_ATOMICLOAD, axi_pkg::ATOP_LITTLE_END, axi_pkg::ATOP_SMIN};
+      ariane_pkg::AMO_MINU: result = {axi_pkg::ATOP_ATOMICLOAD, axi_pkg::ATOP_LITTLE_END, axi_pkg::ATOP_UMIN};
+      ariane_pkg::AMO_CAS1: result = {axi_pkg::ATOP_NONE, 4'b0000}; // Unsupported
+      ariane_pkg::AMO_CAS2: result = {axi_pkg::ATOP_NONE, 4'b0000}; // Unsupported
       default: result = 6'b000000;
     endcase
 
