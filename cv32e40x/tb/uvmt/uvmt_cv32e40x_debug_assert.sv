@@ -394,28 +394,40 @@ module uvmt_cv32e40x_debug_assert
 
     // dret in D-mode will restore pc (if no re-entry or interrupt intervenes)
 
-    sequence s_dmode_dret_pc_ante;  // Antecedent
-        cov_assert_if.debug_mode_q && cov_assert_if.is_dret
-        ##1 (
-          (!cov_assert_if.pending_debug && !cov_assert_if.irq_ack_o && !cov_assert_if.pending_nmi)
-          throughout (cov_assert_if.wb_stage_instr_valid_i [->1])
-          );
-    endsequence
-
     property p_dmode_dret_pc;
-        int dpc; (1, dpc =cov_assert_if.depc_q) ##0
-        s_dmode_dret_pc_ante
-        |->
-        !cov_assert_if.debug_mode_q && (cov_assert_if.wb_stage_pc == dpc)
-        ##0 (cov_assert_if.wb_valid
-            or ##1 (!$changed(cov_assert_if.wb_stage_pc) throughout (cov_assert_if.wb_valid [->1])));
-    endproperty
+        int dpc; (1, dpc =cov_assert_if.rvfi_csr_dpc_rdata)
+        ##0(cov_assert_if.rvfi_valid && cov_assert_if.rvfi_dbg_mode && cov_assert_if.rvfi_insn == DRET_INSTR_OPCODE)
 
-    cov_dmode_dret_pc : cover property(s_dmode_dret_pc_ante |-> (cov_assert_if.depc_q != 0));
+        ##1 cov_assert_if.rvfi_valid[->1] 
+        ##0 (!cov_assert_if.rvfi_intr && !cov_assert_if.rvfi_dbg_mode)
+        |->
+
+        cov_assert_if.rvfi_pc_rdata == dpc;
+    endproperty
 
     a_dmode_dret_pc : assert property(p_dmode_dret_pc)
         else `uvm_error(info_tag, "Dret did not cause correct return from debug mode");
 
+    // dret in D-mode will place dpc in mepc if re-entry is interrupted
+
+    /*
+    //TODO:mateilga reinstate this when the "kill" signal sensitivity in RVFI has been added
+    property p_dmode_dret_pc_int;
+        int dpc; (1, dpc =cov_assert_if.rvfi_csr_dpc_rdata)
+        ##0(cov_assert_if.rvfi_valid && cov_assert_if.rvfi_dbg_mode && cov_assert_if.rvfi_insn == DRET_INSTR_OPCODE)
+
+        ##1 cov_assert_if.rvfi_valid[->1] 
+        ##0 (cov_assert_if.rvfi_intr && !cov_assert_if.rvfi_dbg_mode)
+        |->
+
+        (cov_assert_if.rvfi_csr_mepc_wdata & cov_assert_if.rvfi_csr_mepc_wmask) == dpc;
+
+    endproperty
+
+    a_dmode_dret_pc_int : assert property(p_dmode_dret_pc_int)
+        else `uvm_error(info_tag, "Dret did not save dpc to mepc when return from debug mode was interrupted");
+
+    */
 
     // dret in D-mode will exit D-mode
 

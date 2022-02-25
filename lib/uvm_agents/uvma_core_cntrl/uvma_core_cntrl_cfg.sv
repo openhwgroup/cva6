@@ -27,6 +27,7 @@
 
  virtual class uvma_core_cntrl_cfg_c extends uvm_object;
 
+   string                        core_name;
     // Major mode enable controls
    rand bit                      enabled;
    rand uvm_active_passive_enum  is_active;
@@ -73,6 +74,10 @@
 
    rand bitmanip_version_t       bitmanip_version;
 
+   rand priv_spec_version_t      priv_spec_version;
+
+   rand endianness_t             endianness;
+
    rand bit                      unaligned_access_supported;
    rand bit                      unaligned_access_amo_supported;
 
@@ -86,8 +91,11 @@
 
    // Common bootstrap addresses
    // The valid bits should be constrained if the bootstrap signal is not valid for this core configuration
-   rand bit [MAX_XLEN-1:0]       hart_id;
-   bit                           hart_id_plusarg_valid;
+   rand bit [MAX_XLEN-1:0]       mhartid;
+   bit                           mhartid_plusarg_valid;
+
+   rand bit [MAX_XLEN-1:0]       mimpid;
+   bit                           mimpid_plusarg_valid;
 
    rand bit [MAX_XLEN-1:0]       boot_addr;
    rand bit                      boot_addr_valid;
@@ -146,9 +154,12 @@
       `uvm_field_int(                          unaligned_access_supported     , UVM_DEFAULT          )
       `uvm_field_int(                          unaligned_access_amo_supported , UVM_DEFAULT          )
       `uvm_field_enum(bitmanip_version_t,      bitmanip_version               , UVM_DEFAULT          )
+      `uvm_field_enum(priv_spec_version_t,     priv_spec_version              , UVM_DEFAULT          )
+      `uvm_field_enum(endianness_t,            endianness                     , UVM_DEFAULT          )
       `uvm_field_int(                          num_mhpmcounters               , UVM_DEFAULT          )
       `uvm_field_array_object(                 pma_regions                    , UVM_DEFAULT          )
-      `uvm_field_int(                          hart_id                        , UVM_DEFAULT          )
+      `uvm_field_int(                          mhartid                        , UVM_DEFAULT          )
+      `uvm_field_int(                          mimpid                         , UVM_DEFAULT          )
       `uvm_field_int(                          boot_addr                      , UVM_DEFAULT          )
       `uvm_field_int(                          boot_addr_valid                , UVM_DEFAULT          )
       `uvm_field_int(                          boot_addr_plusarg_valid        , UVM_DEFAULT          )
@@ -171,6 +182,11 @@
       soft is_active              == UVM_PASSIVE;
       soft cov_model_enabled      == 1;
       soft trn_log_enabled        == 1;
+   }
+
+   constraint riscv_cons_soft {
+     soft priv_spec_version == PRIV_VERSION_1_11;
+     soft endianness        == ENDIAN_LITTLE;
    }
 
    constraint addr_xlen_align_cons {
@@ -262,9 +278,14 @@ function uvma_core_cntrl_cfg_c::new(string name="uvme_cv_base_cfg");
       use_iss = 1;
 
    // Read plusargs for defaults
-   if (read_cfg_plusarg_xlen("hart_id", hart_id)) begin
-      hart_id_plusarg_valid = 1;
-      hart_id.rand_mode(0);
+   if (read_cfg_plusarg_xlen("mhartid", mhartid)) begin
+      mhartid_plusarg_valid = 1;
+      mhartid.rand_mode(0);
+   end
+
+   if (read_cfg_plusarg_xlen("mimpid", mimpid)) begin
+      mimpid_plusarg_valid = 1;
+      mimpid.rand_mode(0);
    end
 
    if (read_cfg_plusarg_xlen("boot_addr", boot_addr)) begin
@@ -403,6 +424,8 @@ function void uvma_core_cntrl_cfg_c::set_unsupported_csr_mask();
       unsupported_csr_mask[TIMEH] = 1;
       unsupported_csr_mask[INSTRETH] = 1;
       unsupported_csr_mask[SCOUNTEREN] = 1;
+      unsupported_csr_mask[MENVCFG] = 1;
+      unsupported_csr_mask[MENVCFGH] = 1;
 
       for (int i = 0; i < MAX_NUM_HPMCOUNTERS; i++) begin
          unsupported_csr_mask[HPMCOUNTER3+i] = 1;
@@ -417,6 +440,7 @@ function void uvma_core_cntrl_cfg_c::set_unsupported_csr_mask();
       unsupported_csr_mask[TDATA2] = 1;
       unsupported_csr_mask[TDATA3] = 1;
       unsupported_csr_mask[TINFO] = 1;
+      unsupported_csr_mask[TCONTROL] = 1;
       unsupported_csr_mask[MCONTEXT] = 1;
       unsupported_csr_mask[SCONTEXT] = 1;
       unsupported_csr_mask[DCSR] = 1;
@@ -438,6 +462,20 @@ function void uvma_core_cntrl_cfg_c::set_unsupported_csr_mask();
       unsupported_csr_mask[PMPCFG1] = 1;
       unsupported_csr_mask[PMPCFG2] = 1;
       unsupported_csr_mask[PMPCFG3] = 1;
+      if (priv_spec_version == PRIV_VERSION_MASTER) begin
+         unsupported_csr_mask[PMPCFG4] = 1;
+         unsupported_csr_mask[PMPCFG5] = 1;
+         unsupported_csr_mask[PMPCFG6] = 1;
+         unsupported_csr_mask[PMPCFG7] = 1;
+         unsupported_csr_mask[PMPCFG8] = 1;
+         unsupported_csr_mask[PMPCFG9] = 1;
+         unsupported_csr_mask[PMPCFG10] = 1;
+         unsupported_csr_mask[PMPCFG11] = 1;
+         unsupported_csr_mask[PMPCFG12] = 1;
+         unsupported_csr_mask[PMPCFG13] = 1;
+         unsupported_csr_mask[PMPCFG14] = 1;
+         unsupported_csr_mask[PMPCFG15] = 1;
+      end
       unsupported_csr_mask[PMPADDR0] = 1;
       unsupported_csr_mask[PMPADDR1] = 1;
       unsupported_csr_mask[PMPADDR2] = 1;
@@ -454,6 +492,56 @@ function void uvma_core_cntrl_cfg_c::set_unsupported_csr_mask();
       unsupported_csr_mask[PMPADDR13] = 1;
       unsupported_csr_mask[PMPADDR14] = 1;
       unsupported_csr_mask[PMPADDR15] = 1;
+      if (priv_spec_version == PRIV_VERSION_MASTER) begin
+        unsupported_csr_mask[PMPADDR16] = 1;
+        unsupported_csr_mask[PMPADDR17] = 1;
+        unsupported_csr_mask[PMPADDR18] = 1;
+        unsupported_csr_mask[PMPADDR19] = 1;
+        unsupported_csr_mask[PMPADDR20] = 1;
+        unsupported_csr_mask[PMPADDR21] = 1;
+        unsupported_csr_mask[PMPADDR22] = 1;
+        unsupported_csr_mask[PMPADDR23] = 1;
+        unsupported_csr_mask[PMPADDR24] = 1;
+        unsupported_csr_mask[PMPADDR25] = 1;
+        unsupported_csr_mask[PMPADDR26] = 1;
+        unsupported_csr_mask[PMPADDR27] = 1;
+        unsupported_csr_mask[PMPADDR28] = 1;
+        unsupported_csr_mask[PMPADDR29] = 1;
+        unsupported_csr_mask[PMPADDR30] = 1;
+        unsupported_csr_mask[PMPADDR31] = 1;
+        unsupported_csr_mask[PMPADDR32] = 1;
+        unsupported_csr_mask[PMPADDR33] = 1;
+        unsupported_csr_mask[PMPADDR34] = 1;
+        unsupported_csr_mask[PMPADDR35] = 1;
+        unsupported_csr_mask[PMPADDR36] = 1;
+        unsupported_csr_mask[PMPADDR37] = 1;
+        unsupported_csr_mask[PMPADDR38] = 1;
+        unsupported_csr_mask[PMPADDR39] = 1;
+        unsupported_csr_mask[PMPADDR40] = 1;
+        unsupported_csr_mask[PMPADDR41] = 1;
+        unsupported_csr_mask[PMPADDR42] = 1;
+        unsupported_csr_mask[PMPADDR43] = 1;
+        unsupported_csr_mask[PMPADDR44] = 1;
+        unsupported_csr_mask[PMPADDR45] = 1;
+        unsupported_csr_mask[PMPADDR46] = 1;
+        unsupported_csr_mask[PMPADDR47] = 1;
+        unsupported_csr_mask[PMPADDR48] = 1;
+        unsupported_csr_mask[PMPADDR49] = 1;
+        unsupported_csr_mask[PMPADDR50] = 1;
+        unsupported_csr_mask[PMPADDR51] = 1;
+        unsupported_csr_mask[PMPADDR52] = 1;
+        unsupported_csr_mask[PMPADDR53] = 1;
+        unsupported_csr_mask[PMPADDR54] = 1;
+        unsupported_csr_mask[PMPADDR55] = 1;
+        unsupported_csr_mask[PMPADDR56] = 1;
+        unsupported_csr_mask[PMPADDR57] = 1;
+        unsupported_csr_mask[PMPADDR58] = 1;
+        unsupported_csr_mask[PMPADDR59] = 1;
+        unsupported_csr_mask[PMPADDR60] = 1;
+        unsupported_csr_mask[PMPADDR61] = 1;
+        unsupported_csr_mask[PMPADDR62] = 1;
+        unsupported_csr_mask[PMPADDR63] = 1;
+      end
    end
 
    // Remove vector-mode CSRs
@@ -472,6 +560,15 @@ function void uvma_core_cntrl_cfg_c::set_unsupported_csr_mask();
       unsupported_csr_mask[MHPMCOUNTER3+i] = 1;
       unsupported_csr_mask[MHPMCOUNTER3H+i] = 1;
    end
+
+  if (priv_spec_version != PRIV_VERSION_MASTER) begin
+    unsupported_csr_mask[MSTATUSH] = 1;
+    unsupported_csr_mask[MCONFIGPTR] = 1;
+  end
+
+  // TODO: These needs inclusion parameter classification
+  unsupported_csr_mask[MSECCFG] = 1;
+  unsupported_csr_mask[MSECCFGH] = 1;
 
 endfunction : set_unsupported_csr_mask
 

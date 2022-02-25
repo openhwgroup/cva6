@@ -100,7 +100,9 @@ module uvma_obi_memory_assert
       .ID_WIDTH(ID_WIDTH),
       .ACHK_WIDTH(ACHK_WIDTH),
       .RCHK_WIDTH(RCHK_WIDTH)
-    ) u_1p2_assert(.*);
+    ) u_1p2_assert(.atop   ('0), // todo: remove a-ext related signals
+                   .exokay ('0), //
+                   .*);
   end
   endgenerate
 

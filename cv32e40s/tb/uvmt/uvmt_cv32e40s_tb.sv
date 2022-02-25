@@ -35,12 +35,6 @@ module uvmt_cv32e40s_tb;
    import uvmt_cv32e40s_pkg::*;
    import uvme_cv32e40s_pkg::*;
 
-   // CORE parameters
-`ifdef SET_NUM_MHPMCOUNTERS
-   parameter int CORE_PARAM_NUM_MHPMCOUNTERS = `SET_NUM_MHPMCOUNTERS;
-`else
-   parameter int CORE_PARAM_NUM_MHPMCOUNTERS = 1;
-`endif
    // ENV (testbench) parameters
    parameter int ENV_PARAM_INSTR_ADDR_WIDTH  = 32;
    parameter int ENV_PARAM_INSTR_DATA_WIDTH  = 32;
@@ -86,10 +80,10 @@ module uvmt_cv32e40s_tb;
    * a few mods to bring unused ports from the CORE to this level using SV interfaces.
    */
    uvmt_cv32e40s_dut_wrap  #(
-                             .NUM_MHPMCOUNTERS  (CORE_PARAM_NUM_MHPMCOUNTERS),
                              .B_EXT             (uvmt_cv32e40s_pkg::B_EXT),
                              .PMA_NUM_REGIONS   (uvmt_cv32e40s_pkg::CORE_PARAM_PMA_NUM_REGIONS),
                              .PMA_CFG           (uvmt_cv32e40s_pkg::CORE_PARAM_PMA_CFG),
+                             .PMP_NUM_REGIONS   (CORE_PARAM_PMP_NUM_REGIONS),
                              .INSTR_ADDR_WIDTH  (ENV_PARAM_INSTR_ADDR_WIDTH),
                              .INSTR_RDATA_WIDTH (ENV_PARAM_INSTR_DATA_WIDTH),
                              .RAM_ADDR_WIDTH    (ENV_PARAM_RAM_ADDR_WIDTH)
@@ -144,6 +138,7 @@ module uvmt_cv32e40s_tb;
   `RVFI_CSR_BIND(marchid)
   `RVFI_CSR_BIND(mcountinhibit)
   `RVFI_CSR_BIND(mstatus)
+  `RVFI_CSR_BIND(mstatush)
   `RVFI_CSR_BIND(mvendorid)
   `RVFI_CSR_BIND(misa)
   `RVFI_CSR_BIND(mtvec)
@@ -257,6 +252,9 @@ module uvmt_cv32e40s_tb;
   `RVFI_CSR_IDX_BIND(mhpmcounter,h,30)
   `RVFI_CSR_IDX_BIND(mhpmcounter,h,31)
 
+  `RVFI_CSR_BIND(mconfigptr)
+
+
   // dscratch0
   bind cv32e40s_wrapper
     uvma_rvfi_csr_if#(uvme_cv32e40s_pkg::XLEN) rvfi_csr_dscratch0_if_0_i(.clk(clk_i),
@@ -336,7 +334,7 @@ module uvmt_cv32e40s_tb;
   // Bind in verification modules to the design
   bind cv32e40s_core
     uvmt_cv32e40s_interrupt_assert interrupt_assert_i(
-      .mcause_n     ({cs_registers_i.mcause_n.interrupt, cs_registers_i.mcause_n.exception_code[4:0]}),
+      .mcause_n     ({cs_registers_i.mcause_n.irq, cs_registers_i.mcause_n.exception_code[4:0]}),
       .mip          (cs_registers_i.mip),
       .mie_q        (cs_registers_i.mie_q),
       .mstatus_mie  (cs_registers_i.mstatus_q.mie),
@@ -468,8 +466,15 @@ module uvmt_cv32e40s_tb;
       .boot_addr_i            (core_i.boot_addr_i),
 
       .rvfi_valid             (rvfi_i.rvfi_valid),
+      .rvfi_insn              (rvfi_i.rvfi_insn),
+      .rvfi_intr              (rvfi_i.rvfi_intr),
+      .rvfi_dbg               (rvfi_i.rvfi_dbg),
+      .rvfi_dbg_mode          (rvfi_i.rvfi_dbg_mode),
       .rvfi_pc_wdata          (rvfi_i.rvfi_pc_wdata),
       .rvfi_pc_rdata          (rvfi_i.rvfi_pc_rdata),
+      .rvfi_csr_dpc_rdata     (rvfi_i.rvfi_csr_dpc_rdata),
+      .rvfi_csr_mepc_wdata    (rvfi_i.rvfi_csr_mepc_wdata),
+      .rvfi_csr_mepc_wmask    (rvfi_i.rvfi_csr_mepc_wmask),
 
       .is_wfi                 (),
       .in_wfi                 (),
@@ -527,6 +532,7 @@ module uvmt_cv32e40s_tb;
      `RVFI_CSR_UVM_CONFIG_DB_SET(marchid)
      `RVFI_CSR_UVM_CONFIG_DB_SET(mcountinhibit)
      `RVFI_CSR_UVM_CONFIG_DB_SET(mstatus)
+     `RVFI_CSR_UVM_CONFIG_DB_SET(mstatush)
      `RVFI_CSR_UVM_CONFIG_DB_SET(misa)
      `RVFI_CSR_UVM_CONFIG_DB_SET(mtvec)
      `RVFI_CSR_UVM_CONFIG_DB_SET(mtval)
@@ -644,6 +650,7 @@ module uvmt_cv32e40s_tb;
      `RVFI_CSR_UVM_CONFIG_DB_SET(mhpmcounter29h)
      `RVFI_CSR_UVM_CONFIG_DB_SET(mhpmcounter30h)
      `RVFI_CSR_UVM_CONFIG_DB_SET(mhpmcounter31h)
+     `RVFI_CSR_UVM_CONFIG_DB_SET(mconfigptr)
 
      uvm_config_db#(virtual RVVI_state#(.ILEN(uvme_cv32e40s_pkg::ILEN),
                                         .XLEN(uvme_cv32e40s_pkg::XLEN)
@@ -664,7 +671,6 @@ module uvmt_cv32e40s_tb;
      uvm_config_db#(bit[31:0])::set(.cntxt(null), .inst_name("*"), .field_name("evalue"), .value(32'h00000000));
 
 	 // DUT and ENV parameters
-     uvm_config_db#(int)::set(.cntxt(null), .inst_name("*"), .field_name("CORE_PARAM_NUM_MHPMCOUNTERS"), .value(CORE_PARAM_NUM_MHPMCOUNTERS));
      uvm_config_db#(int)::set(.cntxt(null), .inst_name("*"), .field_name("ENV_PARAM_INSTR_ADDR_WIDTH"),  .value(ENV_PARAM_INSTR_ADDR_WIDTH) );
      uvm_config_db#(int)::set(.cntxt(null), .inst_name("*"), .field_name("ENV_PARAM_INSTR_DATA_WIDTH"),  .value(ENV_PARAM_INSTR_DATA_WIDTH) );
      uvm_config_db#(int)::set(.cntxt(null), .inst_name("*"), .field_name("ENV_PARAM_RAM_ADDR_WIDTH"),    .value(ENV_PARAM_RAM_ADDR_WIDTH)   );
