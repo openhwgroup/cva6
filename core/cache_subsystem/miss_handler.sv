@@ -59,7 +59,7 @@ module miss_handler import ariane_pkg::*; import std_cache_pkg::*; #(
     input  cache_line_t [DCACHE_SET_ASSOC-1:0]          data_i,
     output logic                                        we_o
 );
-  
+
     // Three MSHR ports + AMO port
     parameter NR_BYPASS_PORTS = NR_PORTS + 1;
 
