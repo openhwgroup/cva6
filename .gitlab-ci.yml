@@ -9,25 +9,52 @@
 
 # Project maintainers must define following variables to adapt this CI to their runtime environment (Settings > CI/CD > Variables)
 # - RUN_CORE_CI: 'true'/'false'
+# - SETUP_CI_CORE_BRANCH: master
 # - RUN_CORE_V_VERIF_CI: 'true'/'false'
-# - CORE_V_VERIF_REPO: https://github.com/openhwgroup/core-v-verif
-# - CORE_V_VERIF_BRANCH: master
+# - SETUP_CI_CVV_BRANCH: master
 # - RUN_EXTERNAL_CI: 'true'/'false'
-# - EXTERNAL_CI_PROJECT_PATH: custom-group/custom-repo
-# - EXTERNAL_CI_PROJECT_BRANCH: dev/mybranch
-# - EXTERNAL_CI_YML_PATH: .gitlab-ci/my_custom_ci.yml
-# - TAGS_RUNNER: arch,shell  #no space!
-# Others users can manually trigger pipelines with overridden variables (CI/CD > Pipeline > Run Pipeline)
+# - SETUP_CI_BRANCH: master
+
+
+# A git repository named "setup-ci" must be created in the same namespace as cva6 and must contain the following files:
+# - 'cva6/cva6.yml' (if RUN_CORE_CI == 'true')
+# - 'cva6/core-v-verif-cva6.yml' (if RUN_CVV_CI == 'true')
+# - 'common/cva6.yml' (if $RUN_EXTERNAL_CI == 'true')
+# Each of these files must at least contain the variables necessary for the execution of the associated downstream pipeline. 
+# Other elements such as new jobs can be added to overload the associated downstream pipeline included in this repository.
+# Example for core-v-verif can be found in repository core-v-verif, path ".gitlab-ci/setup-ci-example/"
 
 # Guidelines:
-
-# - Prefer the use of parent-child pipelines instead of including yml for ease of maintenance.
+# - Prefer using parent-child pipelines instead of including yml for ease of maintenance.
 # - Specific elements should be defined in the triggered yml to avoid conflicts between pipelines.
 # - In this file, only generic job/variables should be declared.
 
 
-variables:
-  # Issue gitlab-ci: variables defined here can't be overriden when pipeline is triggered manually or by schedule 
+include: 
+  - project: '$CI_PROJECT_NAMESPACE/setup-ci'
+    ref: '$SETUP_CI_CVV_BRANCH'
+    file: 'cva6/cva6-core-v-verif.yml'
+    rules:
+      - if: '$RUN_CORE_V_VERIF_CI == "true"'
+
+
+workflow:
+  rules:
+    - if: '$CI_COMMIT_REF_NAME =~ /^master.*/ || $CI_COMMIT_REF_NAME =~ /^hotfix.*/ || $CI_COMMIT_REF_NAME =~ /^rc.*/'
+      variables:
+        CI_WEIGHT: "full"
+    - if: '$CI_COMMIT_REF_NAME =~ /^dev.*/ || $CI_COMMIT_REF_NAME =~ /^feature.*/'
+      variables:
+        CI_WEIGHT: "lite"
+    - if: '$CI_COMMIT_REF_NAME =~ /^cvvdev\/master.*/ || $CI_COMMIT_REF_NAME =~ /^cvvdev\/hotfix.*/ || $CI_COMMIT_REF_NAME =~ /^cvvdev\/rc.*/'
+      variables:
+        CI_WEIGHT: "full"
+        CORE_V_VERIF_BRANCH: $CI_COMMIT_REF_NAME
+    - if: '$CI_COMMIT_REF_NAME =~ /^cvvdev\/dev.*/ || $CI_COMMIT_REF_NAME =~ /^cvvdev\/feature.*/'
+      variables:
+        CI_WEIGHT: "lite"
+        CORE_V_VERIF_BRANCH: $CI_COMMIT_REF_NAME
+    - when: never
 
 
 stages:
@@ -43,80 +70,104 @@ check_env:
   after_script:
   stage: build
   script:
+    - echo $TAGS_RUNNER
     - echo $RUN_CORE_CI
+    - echo $SETUP_CI_CORE_BRANCH
     - echo $RUN_CORE_V_VERIF_CI
+    - echo $SETUP_CI_CVV_BRANCH
+    - echo $RUN_EXTERNAL_CI
+    - echo $SETUP_CI_EXTERNAL_BRANCH
     - echo $CORE_V_VERIF_REPO
     - echo $CORE_V_VERIF_BRANCH
-    - echo $RUN_EXTERNAL_CI
-    - echo $EXTERNAL_CI_PROJECT_PATH
-    - echo $EXTERNAL_CI_PROJECT_BRANCH
-    - echo $EXTERNAL_CI_YML_PATH
+    - echo $CI_COMMIT_REF_NAME
+    - echo $CI_COMMIT_BRANCH
 
-# core testbench downstream pipeline 
-# If enabled by RUN_CORE_CI, additionnal variables may be necessary and should be declared by project maintainers.
-# Please read .gitlab-ci/cva6.yml
+
+# core testbench downstream pipeline describes in '.gitlab-ci/cva6.yml' + 'cva6/cva6.yml' of 'setup-ci' repository
+# If enabled by RUN_CORE_CI
 cva6:
+  stage: test
   trigger:
-    include: .gitlab-ci/cva6.yml
+    include: 
+      - local: .gitlab-ci/cva6.yml
+      - project: '$CI_PROJECT_NAMESPACE/setup-ci'
+        ref: '$SETUP_CI_CORE_BRANCH'
+        file: 'cva6/cva6.yml'
+    strategy: depend
+  variables:
+    TAGS_RUNNER: $TAGS_RUNNER
+    SETUP_CI_BRANCH: $SETUP_CI_CORE_BRANCH
+    CI_PROJECT_NAMESPACE: $CI_PROJECT_NAMESPACE
   rules:
     - if: $RUN_CORE_CI == "true"
       when: always
     - when: never
 
-# core-v-verif testbench downstream pipeline 
-# If enabled by RUN_CORE_V_VERIF_CI, additionnal variables may be necessary and should be declared by project maintainers.
+
 # Please read .gitlab-ci/cva6.yml in core-v-verif repository
-# core-v-verif Build job (see next core-v-verif-run job)
+# core testbench downstream pipeline describes in '.gitlab-ci/core-v-verif-cva6.yml' + 'cva6/core-v-verif-cva6.yml' of 'setup-ci' repository
+# If enabled by RUN_CORE_V_VERIF_CI
+# core-v-verif trigger job (see previous core-v-verif-build job)
 core-v-verif-build:
+  stage: build
   variables:
     GIT_STRATEGY: none
   tags: [$TAGS_RUNNER]
-  stage: build
   script:
+    - echo $CORE_V_VERIF_REPO
+    - echo $CORE_V_VERIF_BRANCH
     - '[[ -e ./core-v-verif ]] && rm -rf core-v-verif'
-    - git clone $CORE_V_VERIF_REPO -b $CORE_V_VERIF_BRANCH --depth 1 core-v-verif 
-    - echo "before_script:" >> core-v-verif/.gitlab-ci/cva6.yml
-    - echo "  - '[[ -e ./core-v-verif ]] && rm -rf core-v-verif'" >> core-v-verif/.gitlab-ci/cva6.yml
-    - echo "  - git clone $CORE_V_VERIF_REPO -b $CORE_V_VERIF_BRANCH --depth 1 core-v-verif" >> core-v-verif/.gitlab-ci/cva6.yml
-    - echo "  - ln -rs ./ core-v-verif/core-v-cores/cva6" >> core-v-verif/.gitlab-ci/cva6.yml
-    - echo "  - '[[ -e ./artifacts ]] && mv ./artifacts ./core-v-verif/artifacts'" >> core-v-verif/.gitlab-ci/cva6.yml
-    - echo "  - cd core-v-verif" >> core-v-verif/.gitlab-ci/cva6.yml
-    - echo "after_script:" >> core-v-verif/.gitlab-ci/cva6.yml
-    - echo "  - '[[ -e ./core-v-verif/artifacts ]] && mv ./core-v-verif/artifacts ./artifacts'" >> core-v-verif/.gitlab-ci/cva6.yml
-    - mkdir -p artifacts/.gitlab-ci
-    - mv core-v-verif/.gitlab-ci/cva6.yml artifacts/.gitlab-ci/core_v_verif_cva6.yml
+    - git clone $CORE_V_VERIF_REPO -b $CORE_V_VERIF_BRANCH --depth=1 core-v-verif 
+    - cd core-v-verif 
+    - echo CORE_V_VERIF_HASH=$(git rev-parse origin/$CORE_V_VERIF_BRANCH)
+    - echo CORE_V_VERIF_HASH=$(git rev-parse origin/$CORE_V_VERIF_BRANCH) > ../.env
+    - cd ..
+    - mkdir -p artifacts/.gitlab-ci/core_v_verif
+    - mv core-v-verif/.gitlab-ci/cva6.yml artifacts/.gitlab-ci/core_v_verif/cva6.yml
   rules:
     - if: '$RUN_CORE_V_VERIF_CI == "true"'
       when: always
     - when: never
   artifacts:
       paths:
-        - artifacts/.gitlab-ci/core_v_verif_cva6.yml
+        - artifacts/.gitlab-ci/core_v_verif/cva6.yml
+      reports:
+        dotenv: .env
 
-        
 
 # core-v-verif trigger job (see previous core-v-verif-build job)
-core-v-verif-run:
+core-v-verif:
+  stage: test
   trigger:
     include: 
-      - artifact: artifacts/.gitlab-ci/core_v_verif_cva6.yml
+      - artifact: artifacts/.gitlab-ci/core_v_verif/cva6.yml
         job: core-v-verif-build
+      - project: '$CI_PROJECT_NAMESPACE/setup-ci'
+        ref: '$SETUP_CI_CVV_BRANCH'
+        file: 'cva6/core-v-verif-cva6.yml'
+      - local: .gitlab-ci/core-v-verif-cva6.yml
+    strategy: depend
+  variables:
+    TAGS_RUNNER: $TAGS_RUNNER
+    SCOPE_CVV: "false"
+    CORE_V_VERIF_HASH: $CORE_V_VERIF_HASH
   rules:
     - if: '$RUN_CORE_V_VERIF_CI == "true"'
       when: always
     - when: never
 
 
-
-
 # Use this entry point to run a pipeline from another repository (hosted on the same gitlab server)
-# If enabled by RUN_EXTERNAL_CI, additionnal variables may be necessary and should be declared by project maintainers.
+# If enabled by RUN_SETUP_CI, additionnal variables may be necessary and should be declared by project maintainers.
 external:
   trigger:
     include:
-      - project: $EXTERNAL_CI_PROJECT_PATH
-        ref: $EXTERNAL_CI_PROJECT_BRANCH
-        file: $EXTERNAL_CI_YML_PATH
+      - project: '$CI_PROJECT_NAMESPACE/setup-ci'
+        ref: '$SETUP_CI_EXTERNAL_BRANCH'
+        file: 'common/cva6.yml'
+    strategy: depend
+  variables:
+    TAGS_RUNNER: $TAGS_RUNNER
   rules:
     - if: '$RUN_EXTERNAL_CI == "true"'
       when: always
