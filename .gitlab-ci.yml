@@ -8,69 +8,122 @@
 # Original Author: Yannick Casamatta (yannick.casamatta@thalesgroup.com)
 
 # Project maintainers must define following variables to adapt this CI to their runtime environment (Settings > CI/CD > Variables)
+# - TAGS_RUNNER: shell,debian10
 # - RUN_CV32_CI: 'true'/'false'
+# - SETUP_CI_CV32_BRANCH: master
 # - RUN_CVA6_CI: 'true'/'false'
+# - SETUP_CI_CVA6_BRANCH: master
 # - RUN_EXTERNAL_CI: 'true'/'false'
-# - EXTERNAL_CI_PROJECT_PATH: custom-group/custom-repo
-# - EXTERNAL_CI_PROJECT_BRANCH: dev/mybranch
-# - EXTERNAL_CI_YML_PATH: .gitlab-ci/my_custom_ci.yml
-# Others users can manually trigger pipelines with overridden variables (CI/CD > Pipeline > Run Pipeline)
+# - SETUP_CI_EXTERNALBRANCH: dev/mybranch
+
+# A git repository named "setup-ci" must be created in the same namespace as core-v-verif and must contain the following files:
+# - 'cv32/core-v-verif-cv32.yml' (if RUN_CV32_CI == 'true')
+# - 'cva6/core-v-verif-cva6.yml' (if RUN_CVA6_CI == 'true')
+# - 'common/core-v-verif.yml' (if $RUN_EXTERNAL_CI == 'true')
+# Each of these files must at least contain the variables necessary for the execution of the associated downstream pipeline. 
+# Other elements such as new jobs can be added to overload the associated downstream pipeline included in this repository.
+# Example can be found in ".gitlab-ci/setup-ci-example/"
 
 # Guidelines:
-
-# - Prefer the use of parent-child pipelines instead of including yml for ease of maintenance.
+# - Prefer using parent-child pipelines instead of including yml for ease of maintenance.
 # - Specific elements should be defined in the triggered yml to avoid conflicts between pipelines.
 # - In this file, only generic job/variables should be declared.
 
 
 variables:
-  # Issue gitlab-ci: variables defined here can't be overriden when pipeline is triggered manually or by schedule.
-  # Until fix, Avoid setting variables here and prefer set variables in project settings.
+  # variables defined here can't be overriden in downstream pipeline when upstream pipeline is triggered manually or by schedule.
 
 
-# cv32 downstream pipeline 
-# If enabled by RUN_CV32_CI, additionnal variables may be necessary and should be declared by project maintainers.
-# Please read .gitlab-ci/cv32.yml.
+workflow:
+  rules:
+    - if: '$CI_COMMIT_REF_NAME =~ /^master.*/ || $CI_COMMIT_REF_NAME =~ /^hotfix.*/ || $CI_COMMIT_REF_NAME =~ /^rc.*/ || $CI_COMMIT_REF_NAME =~ /^cva6\/dev.*/'
+      variables:
+        CI_WEIGHT: "full"
+    - if: '$CI_COMMIT_REF_NAME =~ /^dev.*/ || $CI_COMMIT_REF_NAME =~ /^feature.*/'
+      variables:
+        CI_WEIGHT: "short"
+    - if: '$CI_COMMIT_REF_NAME =~ /^cvvdev\/master.*/ || $CI_COMMIT_REF_NAME =~ /^cvvdev\/hotfix.*/ || $CI_COMMIT_REF_NAME =~ /^cvvdev\/rc.*/ || $CI_COMMIT_REF_NAME =~ /^cva6\/dev.*/'
+      variables:
+        CI_WEIGHT: "full"
+        CVA6_BRANCH: $CI_COMMIT_REF_NAME
+    - if: '$CI_COMMIT_REF_NAME =~ /^cvvdev\/dev.*/ || $CI_COMMIT_REF_NAME =~ /^cvvdev\/feature.*/'
+      variables:
+        CI_WEIGHT: "lite"
+        CVA6_BRANCH: $CI_COMMIT_REF_NAME
+    - when: never
+
+
+check_env:
+  variables:
+    GIT_STRATEGY: none
+  tags: [$TAGS_RUNNER]
+  before_script:
+  after_script:
+  script:
+    - echo $TAGS_RUNNER
+    - echo $RUN_CV32_CI
+    - echo $SETUP_CI_CV32_BRANCH
+    - echo $RUN_CVA6_CI
+    - echo $SETUP_CI_CVA6_BRANCH
+    - echo $RUN_EXTERNAL_CI
+    - echo $SETUP_CI_EXTERNAL_BRANCH
+    - echo $CI_COMMIT_REF_NAME
+    - echo $CI_COMMIT_BRANCH
+    - echo $CVA6_BRANCH
+
+
+# cv32 downstream pipeline describes in '.gitlab-ci/cv32.yml' + 'cv32/core-v-verif-cv32.yml' of 'setup-ci' repository
+# If enabled by RUN_CV32_CI
 cv32:
   trigger:
-    include: .gitlab-ci/cv32.yml
+    include: 
+      - local: .gitlab-ci/cv32.yml
+      - project: '$CI_PROJECT_NAMESPACE/setup-ci'
+        ref: '$SETUP_CI_CV32_BRANCH'
+        file: 'cv32/core-v-verif-cv32.yml'
+    strategy: depend
+  variables:
+    TAGS_RUNNER: $TAGS_RUNNER
+    SCOPE_CVV: "true"
   rules:
     - if: '$RUN_CV32_CI == "true"'
       when: always
     - when: never
 
 
-# cva6 downstream pipeline
-# If enabled by RUN_CVA6_CI, additionnal variables may be necessary and should be declared by project maintainers.
-# Please read .gitlab-ci/cva6.yml.
+# cva6 downstream pipeline describes in '.gitlab-ci/cva6.yml' + 'cva6/core-v-verif-cva6.yml' of 'setup-ci' repository
+# If enabled by RUN_CVA6_CI
 cva6:
   trigger:
-    include: .gitlab-ci/cva6.yml
+    include: 
+      - local: .gitlab-ci/cva6.yml
+      - project: '$CI_PROJECT_NAMESPACE/setup-ci'
+        ref: '$SETUP_CI_CVA6_BRANCH'
+        file: 'cva6/core-v-verif-cva6.yml'
+    strategy: depend
+  variables:
+    TAGS_RUNNER: $TAGS_RUNNER
+    SCOPE_CVV: "true"
   rules:
     - if: '$RUN_CVA6_CI == "true"'
       when: always
     - when: never
 
 
-#Use this entry point to run a pipeline from another repository (hosted on the same gitlab server)
-# If enabled by RUN_EXTERNAL_CI, additionnal variables may be necessary and should be declared by project maintainers.
+# If enabled by RUN_EXTERNAL_CI 
+# Use this entry point to run a pipeline describes in 'common/core-v-verif.yml' of 'setup-ci' repository
 external:
   trigger:
     include:
-      - project: '$EXTERNAL_CI_PROJECT_PATH'
-        ref: '$EXTERNAL_CI_PROJECT_BRANCH'
-        file: '$EXTERNAL_CI_YML_PATH'
+      - project: '$CI_PROJECT_NAMESPACE/setup-ci'
+        ref: '$SETUP_CI_EXTERNAL_BRANCH'
+        file: 'common/core-v-verif.yml'
+    strategy: depend
   variables:
-    CVA6_REPO: $CVA6_REPO
-    CVA6_BRANCH: $CVA6_BRANCH
-    COMPLIANCE_REPO: $COMPLIANCE_REPO
-    COMPLIANCE_BRANCH: $COMPLIANCE_BRANCH
-    TESTS_REPO: $TESTS_REPO
-    TESTS_BRANCH: $TESTS_BRANCH
-    TESTS_HASH: $TESTS_HASH
-    DV_REPO: $DV_REPO
-    DV_BRANCH: $DV_BRANCH
+    TAGS_RUNNER: $TAGS_RUNNER
+    SCOPE_CVV: "true"
   rules:
     - if: '$RUN_EXTERNAL_CI == "true"'
       when: always
     - when: never
+

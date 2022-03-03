@@ -1,0 +1,26 @@
+
+variables:
+  RISCV: /opt/common/tools/gcc-10.2.0
+  VERILATOR_ROOT: /opt/common/tools/verilator-4.110
+  SPIKE_ROOT: /opt/common/tools/spike
+  BBL_ROOT: /opt/common/tools/Linux-ariane-sdk
+  SYN_VCS_BASHRC: /opt/synopsys/vcs/XXXX/setup/bashrc.example
+  SYN_DCSHELL_BASHRC: /opt/synopsys/syn/XXXX/setup/bashrc
+  QUESTA_BASHRC: /opt/questa/XXXX/setup/bashrc
+  VIVALDO_SETUP: /opt/xilinx/Vivado/XXXX/settings64.sh
+  CV32_REPO: to be define
+  CV32_BRANCH:  to be define
+  COMPLIANCE_REPO: https://github.com/riscv/riscv-compliance.git
+  COMPLIANCE_BRANCH: master
+  COMPLIANCE_HASH: 220e78542da4510e40eac31e31fdd4e77cdae437
+  COMPLIANCE_PATCH: ../../../cva6/riscv-compliance.patch
+  TESTS_REPO: https://github.com/riscv/riscv-tests.git
+  TEST_BRANCH: master
+  TEST_HASH: f92842f91644092960ac7946a61ec2895e543cec
+  DV_REPO: https://github.com/google/riscv-dv.git
+  DV_BRANCH: master
+  NUM_JOBS: 24
+  FOUNDRY_PATH: /techno/lib/stdcellXXXX
+  TECH_NAME: core_XXXX05v25c
+  SYNTH_PERIOD : 30
+  LIB_VERILOG: /techno/lib/verilog_XXXX/XXXX.v
