@@ -1,0 +1,19 @@
+before_script:
+  - '[[ -e ./core-v-verif ]] && rm -rf core-v-verif'
+  - mkdir core-v-verif
+  - cd core-v-verif
+  - echo $CORE_V_VERIF_REPO
+  - echo $CORE_V_VERIF_HASH
+  - git init
+  - git remote add origin $CORE_V_VERIF_REPO
+  - git fetch --depth=1 origin $CORE_V_VERIF_HASH
+  - git reset --hard $CORE_V_VERIF_HASH
+  - git submodule update --init --recursive --depth=1
+  - cd ..
+  - ln -rs ./ core-v-verif/core-v-cores/cva6
+  - '[[ -e ./artifacts ]] && mv ./artifacts ./core-v-verif/artifacts'
+  - cd core-v-verif
+
+after_script:
+  - '[[ -e ./core-v-verif/artifacts ]] && mv ./core-v-verif/artifacts ./artifacts'
+  - cd ..
