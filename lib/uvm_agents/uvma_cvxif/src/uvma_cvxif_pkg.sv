@@ -33,6 +33,7 @@ package uvma_cvxif_pkg;
 
    // Objects
    `include "uvma_cvxif_cfg.sv"
+   `include "uvma_cvxif_cntxt.sv"
 
    // High-level transactions
    `include "uvma_cvxif_req_item.sv"

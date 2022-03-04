@@ -21,13 +21,13 @@ class uvma_cvxif_agent_c extends uvm_agent;
 
    // Objects
    uvma_cvxif_cfg_c    cfg;
-
-   virtual uvma_cvxif_intf cvxif_vif;
+   uvma_cvxif_cntxt_c  cntxt;
 
    string info_tag = "CVXIF_AGENT";
 
    `uvm_component_utils_begin(uvma_cvxif_agent_c)
       `uvm_field_object(cfg, UVM_DEFAULT)
+      `uvm_field_object(cntxt, UVM_DEFAULT)
    `uvm_component_utils_end
    /**
     * Default constructor.
@@ -46,6 +46,8 @@ class uvma_cvxif_agent_c extends uvm_agent;
    extern virtual function void connect_phase(uvm_phase phase);
 
    extern virtual function void get_and_set_cfg();
+
+   extern virtual function void get_and_set_cntxt();
 
    /**
     * Uses uvm_config_db to retrieve the Virtual Interface (vif) associated with this
@@ -81,6 +83,7 @@ function void uvma_cvxif_agent_c::build_phase(uvm_phase phase);
    super.build_phase(phase);
 
    get_and_set_cfg  ();
+   get_and_set_cntxt();
    retrieve_vif     ();
    create_components();
 
@@ -94,6 +97,17 @@ function void uvma_cvxif_agent_c::connect_phase(uvm_phase phase);
    connect_sequencer_and_driver();
 
 endfunction: connect_phase
+
+function void uvma_cvxif_agent_c::get_and_set_cntxt();
+
+   void'(uvm_config_db#(uvma_cvxif_cntxt_c)::get(this, "", "cntxt", cntxt));
+   if (cntxt == null) begin
+      `uvm_info("CNTXT", "Context handle is null; creating.", UVM_DEBUG)
+      cntxt = uvma_cvxif_cntxt_c::type_id::create("cntxt");
+   end
+   uvm_config_db#(uvma_cvxif_cntxt_c)::set(this, "*", "cntxt", cntxt);
+
+endfunction : get_and_set_cntxt
 
 function void uvma_cvxif_agent_c::get_and_set_cfg();
 
@@ -110,10 +124,12 @@ endfunction : get_and_set_cfg
 
 function void uvma_cvxif_agent_c::retrieve_vif();
 
-   if (!uvm_config_db#(virtual uvma_cvxif_intf)::get(this, "", "cvxif_vif", cvxif_vif)) begin
-      `uvm_fatal(info_tag, $sformatf("Could not find vif handle in uvm_config_db"))
+   if (!uvm_config_db#(virtual uvma_cvxif_intf)::get(this, "", "vif", cntxt.vif)) begin
+      `uvm_fatal("VIF", $sformatf("Could not find vif handle of type %s in uvm_config_db", $typename(cntxt.vif)))
    end
-
+   else begin
+      `uvm_info("VIF", $sformatf("Found vif handle of type %s in uvm_config_db", $typename(cntxt.vif)), UVM_DEBUG)
+   end
 endfunction : retrieve_vif
 
 function void uvma_cvxif_agent_c::create_components();
