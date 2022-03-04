@@ -7,58 +7,70 @@
 #
 # Original Author: Yannick Casamatta (yannick.casamatta@thalesgroup.com)
 
-# Project maintainers must define following variables to adapt this CI to their runtime environment (Settings > CI/CD > Variables)
-# - RISCV: /opt/common/tools/gcc-10.2.0
-# - RISCV_CV32: /opt/xxxx <-- This is a workaround, some path and variables in mk/Common.mk are hardcoded
-# - SPIKE_ROOT: /opt/common/tools/spike
-# - BBL_ROOT: /opt/common/tools/Linux-ariane-sdk
-# - SYN_VCS_BASHRC: /opt/synopsys/vcs/xxxx/setup/bashrc
-# - SYN_DCSHELL_BASHRC: /opt/synopsys/vcs/xxxx/setup/bashrc
-# - QUESTA_BASHRC: /opt/questa/questa_sim.xxxx/setup/bashrc
-# - VIVALDO_SETUP: /opt/xilinx/Vivado/xxxx/settings64.sh
-# - CVA6_REPO: https://github.com/openhwgroup/cva6
-# - CVA6_BRANCH: master
-# - COMPLIANCE_REPO: https://github.com/riscv/riscv-compliance.git
-# - COMPLIANCE_BRANCH: master
-# - COMPLIANCE_HASH: ""
-# - COMPLIANCE_PATCH: ""
-# - TESTS_REPO: https://github.com/riscv/riscv-tests.git
-# - TESTS_BRANCH: master
-# - TESTS_HASH: ""
-# - DV_REPO: https://github.com/google/riscv-dv.git
-# - DV_BRANCH: master
-# - DV_HASH: ""
-# - DV_PATCH: ""
-# - TAGS_RUNNER: debian10,shell  #no space!
-# - NUM_JOBS: 24
+# Guidlines:
+
+# This pipeline can be also be triggerd underneath by CI of CV32 repository, this requires to respected some rules:
+# - In this pipeline, job artifacts must be only defined in a folder named "artifacts" at the root of the job's workdir.
+# - In this pipeline, do not define before_script and after_script in the global section (avoid in job too).
+# - Please prefix all jobs in this file with "pub_" which stands for "public" job.
+
 
 variables:
   GIT_STRATEGY: fetch
   GIT_SUBMODULE_STRATEGY: recursive
-  # Issue gitlab-ci: variables defined here can't be overriden when pipeline is triggered manually or by schedule.
-  # Until fix, Avoid setting variables here and prefer set variables in project settings.
+
+
+.template_job_low_footprint:
+  variables:
+    GIT_STRATEGY: none
+  before_script:
+    - echo 'nothing'
+  after_script:
+    - echo 'nothing'
+
+.template_job_init_cva6:
+  tags: [$TAGS_RUNNER]
+  rules:
+    - if: '$SCOPE_CVV == "true"'
+      when: on_success
+    - when: never
+
+.template_job_full_ci:
+  tags: [$TAGS_RUNNER]
+  rules:
+    - when: on_success
+
+.template_job_short_ci:
+  tags: [$TAGS_RUNNER]
+  rules:
+    - if: '$CI_WEIGHT == "full"'
+      when: on_success
+    - when: manual
+      allow_failure: true
+
+.template_job_always_manual:
+  tags: [$TAGS_RUNNER]
+  rules:
+    - when: manual
+      allow_failure: true
 
 
 stages:
-  - pre
-  - lite
-  - full
-  - post
+  - .pre
+  - one
+  - two
+  - three
 
 
-check_env:
-  stage: pre
-  variables:
-    GIT_STRATEGY: none
-  tags: [$TAGS_RUNNER]
-  before_script:
-    - echo "No before script"
-  after_script:
-    - echo "No end script"
+pub_check_env:
+  stage: one
+  extends:
+    - .template_job_low_footprint
+    - .template_job_full_ci
   needs: []
   script:
+    - echo $CI_WEIGHT
     - echo $RISCV
-    - echo $RISCV_CV32
     - echo $VERILATOR_ROOT
     - echo $SPIKE_ROOT
     - echo $BBL_ROOT
@@ -66,8 +78,12 @@ check_env:
     - echo $SYN_DCSHELL_BASHRC
     - echo $QUESTA_BASHRC
     - echo $VIVALDO_SETUP
-    - echo $CVA6_REPO
-    - echo $CVA6_BRANCH
+    - echo $CV32_REPO
+    - echo $CV32_BRANCH
+    - echo $CV32_HASH
+    - echo $CORE_V_VERIF_REPO
+    - echo $CORE_V_VERIF_BRANCH
+    - echo $CORE_V_VERIF_HASH
     - echo $COMPLIANCE_REPO
     - echo $COMPLIANCE_BRANCH
     - echo $COMPLIANCE_HASH
@@ -79,16 +95,25 @@ check_env:
     - echo $DV_BRANCH
     - echo $DV_HASH
     - echo $DV_PATCH
-    - echo $NUM_JOBS
     - echo $TAGS_RUNNER
+    - echo $NUM_JOBS
+    - echo $FOUNDRY_PATH
+    - echo $TECH_NAME
+    - echo $SYNTH_PERIOD
+    - echo $LIB_VERILOG
+
 
 # cv32e40p Quick start  
-quickstart:
-  stage: pre
-  tags: [$TAGS_RUNNER]
+pub_quickstart:
+  stage: one
+  extends:
+    - .template_job_full_ci
   needs: []
-  variables:
-    RISCV: $RISCV_CV32
+  rules:
+    - if: '$CI_WEIGHT == "full"'
+      when: on_success
+    - when: manual
+      allow_failure: true
   script:
     - make -C cv32e40p/sim/core
 

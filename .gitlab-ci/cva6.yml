@@ -7,69 +7,94 @@
 #
 # Original Author: Yannick Casamatta (yannick.casamatta@thalesgroup.com)
 
-# Project maintainers must define following variables to adapt this CI to their runtime environment (Settings > CI/CD > Variables)
-# - RISCV: /opt/common/tools/gcc-10.2.0
-# - VERILATOR_ROOT: /opt/common/tools/verilator-4.110
-# - SPIKE_ROOT: /opt/common/tools/spike
-# - BBL_ROOT: /opt/common/tools/Linux-ariane-sdk
-# - SYN_VCS_BASHRC: /opt/synopsys/vcs/xxxx/setup/bashrc
-# - SYN_DCSHELL_BASHRC: /opt/synopsys/vcs/xxxx/setup/bashrc
-# - QUESTA_BASHRC: /opt/questa/questa_sim.xxxx/setup/bashrc
-# - VIVALDO_SETUP: /opt/xilinx/Vivado/xxxx/settings64.sh
-# - CVA6_REPO: https://github.com/openhwgroup/cva6
-# - CVA6_BRANCH: master
-# - RISCV_GCC: $RISCV/bin/riscv-none-elf-gcc
-# - RISCV_OBJCOPY: $RISCV/bin/riscv-none-elf-objcopy
-# - COMPLIANCE_REPO: https://github.com/riscv/riscv-compliance.git
-# - COMPLIANCE_BRANCH: master
-# - COMPLIANCE_HASH: ""
-# - COMPLIANCE_PATCH: ""
-# - TESTS_REPO: https://github.com/riscv/riscv-tests.git
-# - TESTS_BRANCH: master
-# - TESTS_HASH: ""
-# - DV_REPO: https://github.com/google/riscv-dv.git
-# - DV_BRANCH: master
-# - DV_HASH: ""
-# - DV_PATCH: ""
-# - TAGS_RUNNER: debian10,shell  #no space!
-# - NUM_JOBS: 24
-# - CVA6_FOUNDRY_PATH: /techno/lib/stdcellxxxx
-# - CVA6_TECH_NAME: "core_xxxx05v25c"
-# - CVA6_SYNTH_PERIOD : 30
-# - CVA6_LIB_VERILOG: /techno/lib/verilog_xxxx/xxxx.v
-
 # Guidlines:
 
-# This pipeline is triggerd underneath by CI of CVA6 repository, this requires to respected some rules:
+# This pipeline can be also be triggerd underneath by CI of CVA6 repository, this requires to respected some rules:
 # - In this pipeline, job artifacts must be only defined in a folder named "artifacts" at the root of the job's workdir.
 # - In this pipeline, do not define before_script and after_script in the global section (avoid in job too).
+# - Please prefix all jobs in this file with "pub_" which stands for "public" job.
 
 
 variables:
   GIT_STRATEGY: fetch
   GIT_SUBMODULE_STRATEGY: recursive
-  # Issue gitlab-ci: variables defined here can't be overriden when pipeline is triggered manually or by schedule.
-  # Until fix, Avoid setting variables here and prefer set variables in project settings.
+
+
+# macro: job that does not require cloning anythings
+.template_job_low_footprint:
+  variables:
+    GIT_STRATEGY: none
+  before_script:
+    - echo 'nothing'
+  after_script:
+    - echo 'nothing'
+
+# macro: job launched only in case of CI triggered by core-v-verif repository (not included by cva6 CI)
+.template_job_init_cva6:
+  tags: [$TAGS_RUNNER]
+  rules:
+    - if: '$SCOPE_CVV == "true"'
+      when: on_success
+    - when: never
+
+# macro: job always launched (if pipeline is created)
+.template_job_full_ci:
+  tags: [$TAGS_RUNNER]
+  rules:
+    - when: on_success
+
+# macro: job launched only on main branches, other case set to manual (if pipeline is created)
+.template_job_short_ci:
+  tags: [$TAGS_RUNNER]
+  rules:
+    - if: '$CI_WEIGHT == "full"'
+      when: on_success
+    - when: manual
+      allow_failure: true
+
+# macro: job set to manual (if pipeline is created)
+.template_job_always_manual:
+  tags: [$TAGS_RUNNER]
+  rules:
+    - when: manual
+      allow_failure: true
 
 
 stages:
-  - pre
-  - lite
-  - full
-  - post
+  - .pre
+  - one
+  - two
+  - three
 
 
-check_env:
-  stage: pre
-  variables:
-    GIT_STRATEGY: none
-  tags: [$TAGS_RUNNER]
-  before_script:
-    - echo "No before script"
-  after_script:
-    - echo "No end script"
+# In the scope of a CI triggered by core-v-verif repository:
+# This job will get the HASH of the given CVA6 branch
+# This HASH will be used by the next jobs instead of the CVA6 given BRANCH name
+# This prevents CI to not use the same version of CVA6 in case of new commit in CVA6 branch during the execution of the CI
+initjob:
+  stage: .pre
+  extends:
+    - .template_job_low_footprint
+    - .template_job_init_cva6
   needs: []
   script:
+    - '[[ -e ./cva6 ]] && rm -rf cva6'
+    - git clone $CVA6_REPO -b $CVA6_BRANCH --depth=1 cva6
+    - cd cva6
+    - echo CVA6_HASH=$(git rev-parse origin/$CVA6_BRANCH) > ../.env
+    - cd ..
+  artifacts:
+    reports:
+      dotenv: .env
+
+
+pub_check_env:
+  stage: one
+  extends:
+    - .template_job_low_footprint
+    - .template_job_full_ci
+  script:
+    - echo $CI_WEIGHT
     - echo $RISCV
     - echo $VERILATOR_ROOT
     - echo $SPIKE_ROOT
@@ -80,10 +105,10 @@ check_env:
     - echo $VIVALDO_SETUP
     - echo $CVA6_REPO
     - echo $CVA6_BRANCH
+    - echo $CVA6_HASH
     - echo $CORE_V_VERIF_REPO
     - echo $CORE_V_VERIF_BRANCH
-    - echo $RISCV_GCC
-    - echo $RISCV_OBJCOPY
+    - echo $CORE_V_VERIF_HASH
     - echo $COMPLIANCE_REPO
     - echo $COMPLIANCE_BRANCH
     - echo $COMPLIANCE_HASH
@@ -95,107 +120,93 @@ check_env:
     - echo $DV_BRANCH
     - echo $DV_HASH
     - echo $DV_PATCH
-    - echo $NUM_JOBS
     - echo $TAGS_RUNNER
+    - echo $NUM_JOBS
+    - echo $FOUNDRY_PATH
+    - echo $NAND2_AREA
+    - echo $TECH_NAME
+    - echo $SYNTH_PERIOD
+    - echo $LIB_VERILOG
 
 
-smoke:
-  stage: pre
-  tags: [$TAGS_RUNNER]
+pub_smoke:
+  stage: one
+  extends:
+    - .template_job_full_ci
   needs: []
   parallel:
     matrix:
-      - DV_SIMULATORS: ["veri-core,spike", "veri-testharness,spike"]
+      - DV_SIMULATORS: ["veri-testharness,spike","vcs-testharness,spike","vcs-uvm,spike" ]
   script:
+    - echo $SYN_VCS_BASHRC; source $SYN_VCS_BASHRC
     - source cva6/regress/smoke-tests.sh
 
 
-compliance:
-  stage: lite
-  tags: [$TAGS_RUNNER]
+pub_compliance:
+  stage: two
+  extends:
+    - .template_job_short_ci
   needs:
-    - job: smoke
+    - job: pub_smoke
       artifacts: false
   parallel:
     matrix:
       - DV_TARGET: [cv64a6_imafdc_sv39, cv32a6_imac_sv0]
-        DV_SIMULATORS: ["veri-testharness,spike", "veri-core,spike"]
+  variables:
+    DV_SIMULATOR: "veri-testharness,spike"
   script:
+    - echo $SYN_VCS_BASHRC; source $SYN_VCS_BASHRC
     - source cva6/regress/dv-riscv-compliance.sh
 
 
-tests-v:
-  stage: lite
-  tags: [$TAGS_RUNNER]
+pub_tests-v:
+  stage: two
+  extends:
+    - .template_job_short_ci
   needs:
-    - job: smoke
-      artifacts: false
-  parallel:
-    matrix:
-      - DV_SIMULATORS: ["veri-testharness,spike", "veri-core,spike"]
-  variables:
-    DV_TARGET: cv64a6_imafdc_sv39
-    DV_TESTLISTS: "../tests/testlist_riscv-tests-$DV_TARGET-v.yaml"
-  script:
-    - source cva6/regress/dv-riscv-tests.sh
-
-
-tests-p:
-  stage: lite
-  tags: [$TAGS_RUNNER]
-  needs:
-    - job: smoke
+    - job: pub_smoke
       artifacts: false
   parallel:
     matrix:
       - DV_TARGET: [cv64a6_imafdc_sv39, cv32a6_imac_sv0]
-        DV_SIMULATORS: ["veri-testharness,spike", "veri-core,spike"]
   variables:
-    DV_TESTLISTS: "../tests/testlist_riscv-tests-$DV_TARGET-p.yaml"
+    DV_SIMULATOR: "veri-testharness,spike"
+    DV_TESTLISTS: "../tests/testlist_riscv-tests-$DV_TARGET-v.yaml"
   script:
+    - echo $SYN_VCS_BASHRC; source $SYN_VCS_BASHRC
     - source cva6/regress/dv-riscv-tests.sh
 
 
-linux:
-  stage: full
-  tags: [$TAGS_RUNNER]
+pub_tests-p:
+  stage: two
+  extends:
+    - .template_job_short_ci
   needs:
-    - job: compliance
+    - job: pub_smoke
       artifacts: false
-  rules:
-    - when: manual
-  allow_failure: true
-  script:
-    - source cva6/regress/linux.sh
-  timeout: 2h 30m
-
-
-fpga-build:
-  stage: full
-  tags: [$TAGS_RUNNER]
-  needs:
-    - job: compliance
-      artifacts: false
-  script:
-    - source $VIVALDO_SETUP
-    - source cva6/regress/install-cva6.sh
-    - make -C core-v-cores/cva6 fpga
-
-
-synthesis:
-  stage: full
-  tags: [$TAGS_RUNNER]
-  needs:
-    - job: smoke
-      artifacts: false
-  rules:
-    - when: manual
-  allow_failure: true
+  parallel:
+    matrix:
+      - DV_TARGET: [cv64a6_imafdc_sv39, cv32a6_imac_sv0]
   variables:
-    PERIOD: $CVA6_SYNTH_PERIOD
-    NAND2_AREA: "1000"
-    FOUNDRY_PATH: $CVA6_FOUNDRY_PATH
-    TECH_NAME: $CVA6_TECH_NAME
+    DV_SIMULATOR: "veri-testharness,spike"
+    DV_TESTLISTS: "../tests/testlist_riscv-tests-$DV_TARGET-p.yaml"
+  script:
+    - echo $SYN_VCS_BASHRC; source $SYN_VCS_BASHRC
+    - source cva6/regress/dv-riscv-tests.sh
+
+
+pub_synthesis:
+  stage: two
+  extends:
+    - .template_job_always_manual
+  needs:
+    - job: pub_smoke
+      artifacts: false
+  variables:
+    PERIOD: $SYNTH_PERIOD
+    NAND2_AREA: $NAND2_AREA
+    FOUNDRY_PATH: $FOUNDRY_PATH
+    TECH_NAME: $TECH_NAME
     INPUT_DELAY: "0.46"
     OUTPUT_DELAY: "0.11"
   script:
@@ -212,59 +223,50 @@ synthesis:
       - artifacts/ariane_synth.v
 
 
-smoke-gate:
-  stage: post
-  tags: [$TAGS_RUNNER]
+pub_smoke-gate:
+  stage: three
+  extends:
+    - .template_job_always_manual
   needs:
-    - job: synthesis
+    - job: pub_synthesis
       artifacts: true
-  rules:
-    - when: manual
-  allow_failure: true
   variables:
-    LIB_VERILOG: $CVA6_LIB_VERILOG
+    LIB_VERILOG: $LIB_VERILOG
   script:
     - source ./cva6/regress/install-cva6.sh
     - source ./cva6/regress/install-riscv-dv.sh
     - source ./cva6/regress/install-riscv-tests.sh
-    - mv artifacts/ariane_synth_modified.v core-v-cores/cva6/pd/synth/ariane_synth_modified.v 
-    - mv artifacts/ariane_synth.v core-v-cores/cva6/pd/synth/ariane_synth.v 
+    - mv artifacts/ariane_synth_modified.v core-v-cores/cva6/pd/synth/ariane_synth_modified.v
+    - mv artifacts/ariane_synth.v core-v-cores/cva6/pd/synth/ariane_synth.v
     - echo $SYN_VCS_BASHRC; source $SYN_VCS_BASHRC
     - cd cva6/sim
     - make vcs_clean_all
     - python3 cva6.py --testlist=../tests/testlist_riscv-tests-cv64a6_imafdc_sv39-p.yaml --test rv64ui-p-ld --iss_yaml cva6.yaml --target cv64a6_imafdc_sv39 --iss=spike,vcs-gate $DV_OPTS
     - cd ../..
 
-#Workaround gitlab-ci, this dummy job avoid pipeline to be stucked if all jobs in a stage are defined in manual & allow failure
-bypass_full_stage:
-  stage: full
-  variables:
-    GIT_STRATEGY: none
-  tags: [$TAGS_RUNNER]
-  before_script:
-    - echo "No before script"
-  after_script:
-    - echo "No end script"
-  needs:
-    - job: smoke
-      artifacts: false
-  script:
-    - echo "bypass"
 
-#Workaround gitlab-ci, this dummy job avoid pipeline to be stucked if all jobs in a stage are defined in manual & allow failure
-bypass_post_stage:
-  stage: post
-  variables:
-    GIT_STRATEGY: none
-  tags: [$TAGS_RUNNER]
-  before_script:
-    - echo "No before script"
-  after_script:
-    - echo "No end script"
+pub_linux:
+  stage: three
+  extends:
+    - .template_job_short_ci
   needs:
-    - job: smoke
+    - job: pub_compliance
       artifacts: false
   script:
-    - echo "bypass"
+    - source cva6/regress/linux.sh
+  timeout: 2h 30m
+
+
+pub_fpga-build:
+  stage: three
+  extends:
+    - .template_job_short_ci
+  needs:
+    - job: pub_compliance
+      artifacts: false
+  script:
+    - source $VIVALDO_SETUP
+    - source cva6/regress/install-cva6.sh
+    - make -C core-v-cores/cva6 fpga
 
 
