@@ -157,6 +157,11 @@ task uvma_cvxif_seq_c::do_instr_result();
          end
          else begin
             cfg.instr_delayed = 0;
+            if (req_item.issue_req.instr[31:25] == 7'b0000011) begin
+               resp_item.result.exc=1;
+               resp_item.result.exccode = $urandom();
+               resp_item.result.we=0;
+            end
          end
       end
       2: begin
