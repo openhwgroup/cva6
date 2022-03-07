@@ -53,5 +53,17 @@ typedef enum {
    UVMA_CVXIF_ISSUE_READY_RANDOMIZED
 } uvma_cvxif_ready_mode_enum;
 
+typedef struct packed {
+   logic                     result_valid;
+   logic  [X_ID_WIDTH-1:0]   id;
+   logic  [X_DATAWIDTH-1:0]  data;
+   logic  [4:0]              rd;
+   logic  [X_RFW_WIDTH-1:0]  we;
+   logic                     exc;
+   logic  [5:0]              exccode;
+   logic                     result_ready;
+   int                       rnd_delay;
+  } drv_result;
+
 
 `endif //__UVMA_CVXIF_TDEFS_SV__

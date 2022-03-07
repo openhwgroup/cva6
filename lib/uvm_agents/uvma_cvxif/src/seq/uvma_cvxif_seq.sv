@@ -152,12 +152,19 @@ task uvma_cvxif_seq_c::do_instr_result();
          `uvm_info(info_tag, $sformatf("Response data: %h", resp_item.result.data), UVM_HIGH);
          resp_item.result.exc=0;
          resp_item.result.exccode=0;
+         if (req_item.issue_req.instr[31:25]==7'b0000001) begin
+            cfg.instr_delayed = 1;
+         end
+         else begin
+            cfg.instr_delayed = 0;
+         end
       end
       2: begin
          resp_item.result.data=req_item.issue_req.rs[0] + req_item.issue_req.rs[1] + ( cvxif_pkg::X_NUM_RS == 3 ? req_item.issue_req.rs[2] : 0);
          `uvm_info(info_tag, $sformatf("Response data: %h", resp_item.result.data), UVM_HIGH);
          resp_item.result.exc=0;
          resp_item.result.exccode=0;
+         cfg.instr_delayed = 0;
       end
    endcase
 

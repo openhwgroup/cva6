@@ -20,6 +20,8 @@ class uvma_cvxif_base_seq_c extends uvm_sequence #(uvma_cvxif_resp_item_c);
    uvma_cvxif_resp_item_c   resp_item;
    uvma_cvxif_req_item_c    req_item;
 
+   uvma_cvxif_cfg_c    cfg;
+
    int instr_num;
    string info_tag = "CVXIF_BASE_SEQ";
 
@@ -41,6 +43,8 @@ task uvma_cvxif_base_seq_c::pre_body();
 
    req_item  = uvma_cvxif_req_item_c::type_id::create("req_item");
    resp_item = uvma_cvxif_resp_item_c::type_id::create("resp_item");
+
+   cfg   = p_sequencer.cfg;
 
 endtask
 
