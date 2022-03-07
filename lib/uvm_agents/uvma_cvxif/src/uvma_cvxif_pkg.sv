@@ -43,6 +43,7 @@ package uvma_cvxif_pkg;
    `include "uvma_cvxif_mon.sv"
    `include "uvma_cvxif_sqr.sv"
    `include "uvma_cvxif_drv.sv"
+   `include "uvma_cvxif_cov_model.sv"
    `include "uvma_cvxif_agent.sv"
 
    // Sequences

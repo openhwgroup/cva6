@@ -23,6 +23,13 @@ class uvma_cvxif_cfg_c extends uvm_object;
    rand logic instr_delayed;
    rand int rnd_delay;
    rand bit in_order;
+   rand bit   cov_model_enabled;
+   rand bit   enabled;
+   rand logic machine;
+   rand logic user;
+   rand logic supervisor;
+   rand logic debug;
+
 
    constraint reasonable_values {
       soft uvma_cvxif_issue_ready inside     {[4:10]};
@@ -36,10 +43,19 @@ class uvma_cvxif_cfg_c extends uvm_object;
    }
 
    constraint defaults_val {
-      soft ready_mode    == UVMA_CVXIF_ISSUE_READY_FIX; // issue_ready is not randomized => the agent is always ready by default,
-                                                        // you can randomize it by giving "UVMA_CVXIF_ISSUE_READY_RANDOMIZED" to "ready_mode"
-      soft instr_delayed == 0;
-      soft in_order     == 0;
+      soft ready_mode        == UVMA_CVXIF_ISSUE_READY_FIX; // issue_ready is not randomized => the agent is always ready by default,
+                                                            // you can randomize it by giving "UVMA_CVXIF_ISSUE_READY_RANDOMIZED" to "ready_mode"
+      soft instr_delayed     == 0;
+      soft in_order          == 0;
+      soft cov_model_enabled == 1;
+      soft enabled           == 1;
+   }
+
+   constraint supported_modes {
+      soft machine    == 1;
+      soft user       == 1;
+      soft supervisor == 1;
+      soft debug      == 0;
    }
 
    `uvm_object_utils_begin(uvma_cvxif_cfg_c)
@@ -49,6 +65,12 @@ class uvma_cvxif_cfg_c extends uvm_object;
       `uvm_field_int ( instr_delayed,                  UVM_DEFAULT)
       `uvm_field_int ( rnd_delay,                      UVM_DEFAULT)
       `uvm_field_int ( in_order,                       UVM_DEFAULT)
+      `uvm_field_int ( cov_model_enabled,              UVM_DEFAULT)
+      `uvm_field_int ( enabled,                        UVM_DEFAULT)
+      `uvm_field_int ( machine,                        UVM_DEFAULT)
+      `uvm_field_int ( user,                           UVM_DEFAULT)
+      `uvm_field_int ( supervisor,                     UVM_DEFAULT)
+      `uvm_field_int ( debug,                          UVM_DEFAULT)
    `uvm_object_utils_end
 
    /**

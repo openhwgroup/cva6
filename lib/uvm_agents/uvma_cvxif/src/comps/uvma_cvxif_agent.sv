@@ -15,9 +15,10 @@
 class uvma_cvxif_agent_c extends uvm_agent;
 
    // Components
-   uvma_cvxif_mon_c    monitor;
-   uvma_cvxif_sqr_c    sequencer;
-   uvma_cvxif_drv_c    driver;
+   uvma_cvxif_mon_c          monitor;
+   uvma_cvxif_sqr_c          sequencer;
+   uvma_cvxif_drv_c          driver;
+   uvma_cvxif_cov_model_c    cov_model;
 
    // Objects
    uvma_cvxif_cfg_c    cfg;
@@ -44,6 +45,8 @@ class uvma_cvxif_agent_c extends uvm_agent;
     * Links agent's analysis ports to sub-components'
     */
    extern virtual function void connect_phase(uvm_phase phase);
+
+   extern function void connect_cov_model();
 
    extern virtual function void get_and_set_cfg();
 
@@ -95,6 +98,7 @@ function void uvma_cvxif_agent_c::connect_phase(uvm_phase phase);
 
    connect_analysis_ports();
    connect_sequencer_and_driver();
+   connect_cov_model();
 
 endfunction: connect_phase
 
@@ -137,6 +141,7 @@ function void uvma_cvxif_agent_c::create_components();
    monitor   = uvma_cvxif_mon_c ::type_id::create("monitor"  , this);
    sequencer = uvma_cvxif_sqr_c ::type_id::create("sequencer", this);
    driver    = uvma_cvxif_drv_c ::type_id::create("driver"   , this);
+   cov_model = uvma_cvxif_cov_model_c ::type_id::create("cov_model"   , this);
 
 endfunction : create_components
 
@@ -151,6 +156,12 @@ function void uvma_cvxif_agent_c::connect_analysis_ports();
    monitor.req_ap.connect(sequencer.mm_req_fifo.analysis_export);
 
 endfunction : connect_analysis_ports
+
+function void uvma_cvxif_agent_c::connect_cov_model();
+
+   monitor.req_ap.connect(cov_model.req_item_fifo.analysis_export);
+
+endfunction : connect_cov_model
 
 
 `endif // __UVMA_CVXIF_AGENT_SV__

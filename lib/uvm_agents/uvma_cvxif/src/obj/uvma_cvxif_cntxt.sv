@@ -21,7 +21,14 @@ class uvma_cvxif_cntxt_c extends uvm_object;
    // Handle to agent interface
    virtual uvma_cvxif_intf  vif;
 
-   `uvm_object_utils(uvma_cvxif_cntxt_c)
+   // Events
+   uvm_event  sample_cfg_e;
+   uvm_event  sample_cntxt_e;
+
+   `uvm_object_utils_begin(uvma_cvxif_cntxt_c)
+      `uvm_field_event(sample_cfg_e  , UVM_DEFAULT)
+      `uvm_field_event(sample_cntxt_e, UVM_DEFAULT)
+   `uvm_object_utils_end
 
    /**
     * Builds events.
@@ -34,6 +41,9 @@ endclass : uvma_cvxif_cntxt_c
 function uvma_cvxif_cntxt_c::new(string name="uvma_cvxif_cntxt");
 
    super.new(name);
+
+   sample_cfg_e   = new("sample_cfg_e"  );
+   sample_cntxt_e = new("sample_cntxt_e");
 
 endfunction : new
 
