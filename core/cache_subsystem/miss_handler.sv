@@ -514,10 +514,10 @@ module miss_handler import ariane_pkg::*; import std_cache_pkg::*; #(
     // Pack bypass ports
     // ----------------------
     always_comb begin
-        logic[$clog2(NR_BYPASS_PORTS)-1:0] id;
+        logic [$clog2(NR_BYPASS_PORTS)-1:0] id;
 
         // Pack MHSR ports first
-        for (id=0; id<NR_PORTS; id++) begin
+        for (id = 0; id < NR_PORTS; id++) begin
             bypass_ports_req[id].req     = miss_req_valid[id] & miss_req_bypass[id];
             bypass_ports_req[id].reqtype = ariane_axi::SINGLE_REQ;
             bypass_ports_req[id].amo     = AMO_NONE;
