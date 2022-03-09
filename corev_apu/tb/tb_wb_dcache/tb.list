@@ -35,6 +35,12 @@
 ../../../common/submodules/common_cells/src/stream_demux.sv
 ../../../core/axi_adapter.sv
 ../../../common/local/util/sram.sv
+../../src/axi_riscv_atomics/src/axi_res_tbl.sv
+../../src/axi_riscv_atomics/src/axi_riscv_amos.sv
+../../src/axi_riscv_atomics/src/axi_riscv_amos_alu.sv
+../../src/axi_riscv_atomics/src/axi_riscv_lrsc.sv
+../../src/axi_riscv_atomics/src/axi_riscv_atomics.sv
+../../src/axi_riscv_atomics/src/axi_riscv_atomics_wrap.sv
 
 ../common/tb_dcache_pkg.sv
 ../common/tb_readport.sv
