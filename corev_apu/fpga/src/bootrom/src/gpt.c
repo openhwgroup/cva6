@@ -4,7 +4,7 @@
 #include "uart.h"
 #include <stddef.h>
 
-int gpt_find_boot_partition(uint8_t* dest, uint32_t size)
+int gpt_find_boot_partition(uint8_t* dest)
 {
     int ret = init_sd();
     if (ret != 0) {
