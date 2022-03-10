@@ -23,7 +23,7 @@ if ! [ -n "$DV_TARGET" ]; then
 fi
 
 if ! [ -n "$DV_SIMULATORS" ]; then
-  DV_SIMULATORS=veri-core,spike
+  DV_SIMULATORS=veri-testharness,spike
 fi
 
 if ! [ -n "$DV_TESTLISTS" ]; then
