@@ -153,7 +153,7 @@ pub_compliance:
     matrix:
       - DV_TARGET: [cv64a6_imafdc_sv39, cv32a6_imac_sv0]
   variables:
-    DV_SIMULATOR: "veri-testharness,spike"
+    DV_SIMULATORS: "veri-testharness,spike"
   script:
     - echo $SYN_VCS_BASHRC; source $SYN_VCS_BASHRC
     - source cva6/regress/dv-riscv-compliance.sh
@@ -170,7 +170,7 @@ pub_tests-v:
     matrix:
       - DV_TARGET: [cv64a6_imafdc_sv39, cv32a6_imac_sv0]
   variables:
-    DV_SIMULATOR: "veri-testharness,spike"
+    DV_SIMULATORS: "veri-testharness,spike"
     DV_TESTLISTS: "../tests/testlist_riscv-tests-$DV_TARGET-v.yaml"
   script:
     - echo $SYN_VCS_BASHRC; source $SYN_VCS_BASHRC
@@ -188,7 +188,7 @@ pub_tests-p:
     matrix:
       - DV_TARGET: [cv64a6_imafdc_sv39, cv32a6_imac_sv0]
   variables:
-    DV_SIMULATOR: "veri-testharness,spike"
+    DV_SIMULATORS: "veri-testharness,spike"
     DV_TESTLISTS: "../tests/testlist_riscv-tests-$DV_TARGET-p.yaml"
   script:
     - echo $SYN_VCS_BASHRC; source $SYN_VCS_BASHRC
