@@ -119,7 +119,7 @@ module instr_queue import ariane_pkg::*; (
 
   assign ready_o = ~(|instr_queue_full) & ~full_address;
   
-  if (ariane_pkg::RVC == 1'b1) begin : gen_multiple_instr_per_fetch_with_C
+  if (ariane_pkg::RVC) begin : gen_multiple_instr_per_fetch_with_C
   
     for (genvar i = 0; i < ariane_pkg::INSTR_PER_FETCH; i++) begin : gen_unpack_taken
       assign taken[i] = cf_type_i[i] != ariane_pkg::NoCF;
@@ -237,7 +237,7 @@ module instr_queue import ariane_pkg::*; (
   assign address_overflow = full_address & push_address;
   assign replay_o = instr_overflow | address_overflow;
 
-  if (ariane_pkg::RVC == 1'b1) begin : gen_replay_addr_o_with_C
+  if (ariane_pkg::RVC) begin : gen_replay_addr_o_with_c
     // select the address, in the case of an address fifo overflow just
     // use the base of this package
     // if we successfully pushed some instructions we can output the next instruction
@@ -253,7 +253,7 @@ module instr_queue import ariane_pkg::*; (
   // as long as there is at least one queue which can take the value we have a valid instruction
   assign fetch_entry_valid_o = ~(&instr_queue_empty);
   
-  if (ariane_pkg::RVC == 1'b1) begin : gen_downstream_itf_with_C
+  if (ariane_pkg::RVC) begin : gen_downstream_itf_with_c
     always_comb begin
       idx_ds_d = idx_ds_q;
 
@@ -287,7 +287,7 @@ module instr_queue import ariane_pkg::*; (
         idx_ds_d = {idx_ds_q[ariane_pkg::INSTR_PER_FETCH-2:0], idx_ds_q[ariane_pkg::INSTR_PER_FETCH-1]};
       end
     end
-  end else begin : gen_downstream_itf_without_C
+  end else begin : gen_downstream_itf_without_c
     always_comb begin
       idx_ds_d = '0;
       idx_is_d = '0;
@@ -394,7 +394,7 @@ module instr_queue import ariane_pkg::*; (
   unread i_unread_fifo_pos (.d_i(|fifo_pos_extended)); // we don't care about the lower signals
   unread i_unread_instr_fifo (.d_i(|instr_queue_usage));
 
-  if (ariane_pkg::RVC == 1'b1) begin : gen_pc_q_with_C
+  if (ariane_pkg::RVC) begin : gen_pc_q_with_c
     always_ff @(posedge clk_i or negedge rst_ni) begin
       if (!rst_ni) begin
         idx_ds_q        <= 'b1;

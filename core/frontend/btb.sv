@@ -49,7 +49,7 @@ module btb #(
 
     assign index     = vpc_i[PREDICTION_BITS - 1:ROW_ADDR_BITS + OFFSET];
     assign update_pc = btb_update_i.pc[PREDICTION_BITS - 1:ROW_ADDR_BITS + OFFSET];
-    if (ariane_pkg::RVC == 1'b1) begin : gen_update_row_index
+    if (ariane_pkg::RVC) begin : gen_update_row_index
       assign update_row_index = btb_update_i.pc[ROW_ADDR_BITS + OFFSET - 1:OFFSET];
     end else begin
       assign update_row_index = '0;

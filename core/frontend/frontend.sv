@@ -68,7 +68,7 @@ module frontend import ariane_pkg::*; #(
     // shift amount
     logic [$clog2(ariane_pkg::INSTR_PER_FETCH)-1:0] shamt;
     // address will always be 16 bit aligned, make this explicit here
-    if (ariane_pkg::RVC == 1'b1) begin : gen_shamt
+    if (ariane_pkg::RVC) begin : gen_shamt
       assign shamt = icache_dreq_i.vaddr[$clog2(ariane_pkg::INSTR_PER_FETCH):1];
     end else begin
       assign shamt = 1'b0;
@@ -130,7 +130,7 @@ module frontend import ariane_pkg::*; #(
     assign bht_prediction_shifted[0] = (serving_unaligned) ? bht_q : bht_prediction[addr[0][1]];
     assign btb_prediction_shifted[0] = (serving_unaligned) ? btb_q : btb_prediction[addr[0][1]];
     
-    if (ariane_pkg::RVC == 1'b1) begin : gen_btb_prediction_shifted
+    if (ariane_pkg::RVC) begin : gen_btb_prediction_shifted
       // for all other predictions we can use the generated address to index
       // into the branch prediction data structures
       for (genvar i = 1; i < INSTR_PER_FETCH; i++) begin : gen_prediction_address
