@@ -99,6 +99,13 @@ task uvma_cvxif_seq_c::do_default();
       resp_item.issue_resp.dualwrite=0;
       resp_item.issue_resp.dualread=0;
       resp_item.issue_resp.exc=0;
+      resp_item.result_valid=0;
+      resp_item.result.id=0;
+      resp_item.result.exc=0;
+      resp_item.result.data=0;
+      resp_item.result.rd=0;
+      resp_item.result.we=0;
+      resp_item.result.exccode=0;
       `uvm_info(info_tag, $sformatf("Sending default sequence response to sqr, accept = %d, result_valid = %d", resp_item.issue_resp.accept, resp_item.result_valid), UVM_HIGH);
       send_resp(resp_item);
 
