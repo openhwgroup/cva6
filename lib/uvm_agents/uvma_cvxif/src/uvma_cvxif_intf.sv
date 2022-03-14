@@ -14,7 +14,8 @@
 
 //the CoreV-X-Interface for the CVA6
 interface uvma_cvxif_intf import cvxif_pkg::*;
-(input bit clk);
+(input logic  clk,
+ input logic  reset_n);
 
    cvxif_req_t   cvxif_req_i;
    cvxif_resp_t  cvxif_resp_o;

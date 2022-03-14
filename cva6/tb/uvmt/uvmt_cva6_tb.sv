@@ -43,13 +43,15 @@ module uvmt_cva6_tb;
    // Agent interfaces
    uvma_clknrst_if              clknrst_if(); // clock and resets from the clknrst agent
    uvma_cvxif_intf              cvxif_if(
-                                         .clk(clknrst_if.clk)
+                                         .clk(clknrst_if.clk),
+                                         .reset_n(clknrst_if.reset_n)
                                         ); // cvxif from the cvxif agent
 
    //bind assertion module for cvxif interface
    bind uvmt_cva6_dut_wrap
       uvma_cvxif_assert          cvxif_assert(.cvxif_assert(cvxif_if),
-                                              .clk(clknrst_if.clk)
+                                              .clk(clknrst_if.clk),
+                                              .reset_n(clknrst_if.reset_n)
                                              );
    // DUT Wrapper Interfaces
    uvmt_rvfi_if                     rvfi_if(
