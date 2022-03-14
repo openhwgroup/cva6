@@ -22,6 +22,7 @@ class uvma_cvxif_cfg_c extends uvm_object;
    rand uvma_cvxif_ready_mode_enum ready_mode;
    rand logic instr_delayed;
    rand int rnd_delay;
+   rand bit in_order;
 
    constraint reasonable_values {
       soft uvma_cvxif_issue_ready inside     {[4:10]};
@@ -35,9 +36,10 @@ class uvma_cvxif_cfg_c extends uvm_object;
    }
 
    constraint defaults_val {
-      soft ready_mode == UVMA_CVXIF_ISSUE_READY_FIX; // issue_ready is not randomized => the agent is always ready by default,
-                                                     // you can randomize it by giving "UVMA_CVXIF_ISSUE_READY_RANDOMIZED" to "ready_mode"
+      soft ready_mode    == UVMA_CVXIF_ISSUE_READY_FIX; // issue_ready is not randomized => the agent is always ready by default,
+                                                        // you can randomize it by giving "UVMA_CVXIF_ISSUE_READY_RANDOMIZED" to "ready_mode"
       soft instr_delayed == 0;
+      soft in_order     == 0;
    }
 
    `uvm_object_utils_begin(uvma_cvxif_cfg_c)
@@ -46,6 +48,7 @@ class uvma_cvxif_cfg_c extends uvm_object;
       `uvm_field_int ( uvma_cvxif_issue_not_ready,     UVM_DEFAULT)
       `uvm_field_int ( instr_delayed,                  UVM_DEFAULT)
       `uvm_field_int ( rnd_delay,                      UVM_DEFAULT)
+      `uvm_field_int ( in_order,                       UVM_DEFAULT)
    `uvm_object_utils_end
 
    /**

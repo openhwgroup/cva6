@@ -28,7 +28,7 @@ class uvma_cvxif_drv_c extends uvm_driver #(uvma_cvxif_resp_item_c);
    string info_tag = "CVXIF_DRV";
 
    drv_result resp_queue [$], res_resp, aux_item;
-   logic go=1;
+   logic go=1, res_ready;
 
    extern function new(string name="uvma_cvxif_drv", uvm_component parent=null);
 
@@ -55,6 +55,9 @@ class uvma_cvxif_drv_c extends uvm_driver #(uvma_cvxif_resp_item_c);
 
    //drive results in order fashion
    extern virtual task drv_slv_result_in_order_proc();
+
+   //drive results in out of order fashion
+   extern virtual task drv_slv_result_out_of_order_proc();
 
    //drive result response
    extern virtual task drv_slv_result_resp(input drv_result item);
@@ -130,7 +133,12 @@ task uvma_cvxif_drv_c::run_phase(uvm_phase phase);
                   slv_get_item_proc();
                end
                begin
-                  drv_slv_result_in_order_proc();
+                  if (cfg.in_order) begin
+                     drv_slv_result_in_order_proc();
+                  end
+                  else begin
+                     drv_slv_result_out_of_order_proc();
+                  end
                end
             join_any
          end
@@ -219,6 +227,58 @@ task uvma_cvxif_drv_c::drv_slv_result_in_order_proc();
          go=1;
          break;
       end
+   end
+
+endtask
+
+task uvma_cvxif_drv_c::drv_slv_result_out_of_order_proc();
+
+   while (!go) begin
+     @(posedge cntxt.vif.clk);
+   end
+   forever begin
+
+     if (resp_queue.size()==0) begin
+       @(posedge cntxt.vif.clk);
+       go=1;
+       break;
+     end
+     else begin
+       fork
+         //ctrl_process()
+         begin
+           for (int i=0; i<resp_queue.size(); i++) begin
+              if ( resp_queue[i].rnd_delay==0 ) begin
+                 go=0;
+                 drv_slv_result_resp(resp_queue[i]);
+                 res_ready = resp_queue[i].result_ready;
+                 resp_queue.delete(i);
+                 do @(posedge cntxt.vif.clk);
+                 while (!res_ready);
+                 break;
+              end
+           end
+         end
+
+         //decr_process()
+         begin
+           @(posedge cntxt.vif.clk);
+           for (int i=0; i<resp_queue.size(); i++) begin
+             if (resp_queue[i].rnd_delay!=0) begin
+                resp_queue[i].rnd_delay = (resp_queue[i].rnd_delay)-1;
+                aux_item = resp_queue[i];
+                resp_queue.delete(i);
+                resp_queue.push_back(aux_item);
+             end
+           end
+         end
+
+       join
+     end
+     deassert_slv_result;
+     go=1;
+     break;
+
    end
 
 endtask
