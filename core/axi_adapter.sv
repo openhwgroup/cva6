@@ -61,8 +61,9 @@ module axi_adapter #(
   logic [(DATA_WIDTH/riscv::XLEN)-1:0] addr_offset_d, addr_offset_q;
   logic [AXI_ID_WIDTH-1:0]    id_d, id_q;
   logic [ADDR_INDEX-1:0]      index;
-  // save the atomic operation
+  // save the atomic operation and size
   ariane_pkg::amo_t amo_d, amo_q;
+  logic [1:0] size_d, size_q;
 
   always_comb begin : axi_fsm
     // Default assignments
@@ -118,6 +119,7 @@ module axi_adapter #(
     addr_offset_d = addr_offset_q;
     id_d          = id_q;
     amo_d         = amo_q;
+    size_d        = size_q;
     index         = '0;
 
     case (state_q)
@@ -147,11 +149,14 @@ module axi_adapter #(
                 default: state_d = IDLE;
               endcase
 
-              if (axi_resp_i.aw_ready) amo_d = amo_i;
+              if (axi_resp_i.aw_ready) begin
+                amo_d  = amo_i;
+                size_d = size_i;
+              end
 
             // its a request for the whole cache line
             end else begin
-              // TODO colluca: bursts of AMOs unsupported
+              // bursts of AMOs unsupported
               assert (amo_i == ariane_pkg::AMO_NONE) 
                 else $fatal("Bursts of atomic operations are not supported");
 
@@ -203,6 +208,7 @@ module axi_adapter #(
           gnt_o   = 1'b1;
           state_d = WAIT_B_VALID;
           amo_d   = amo_i;
+          size_d  = size_i;
         end
       end
 
@@ -309,10 +315,12 @@ module axi_adapter #(
               if (axi_resp_i.b.resp == axi_pkg::RESP_EXOKAY) begin
                 // success -> return 0
                 rdata_o = 1'b0;
-              // TODO colluca: replace with else if (... == RESP_OKAY)?
               end else begin
-                // failure -> return 1
-                rdata_o = 1'b1;
+                // failure -> when request is 64-bit, return 1;
+                // when request is 32-bit place a 1 in both upper
+                // and lower half words. The right word will be
+                // realigned/masked externally
+                rdata_o = size_q == 2'b10 ? (1'b1 << 32) | 64'b1 : 64'b1;
               end
             end
           end
@@ -393,6 +401,7 @@ module axi_adapter #(
       addr_offset_q <= '0;
       id_q          <= '0;
       amo_q         <= ariane_pkg::AMO_NONE;
+      size_q        <= '0;
     end else begin
       state_q       <= state_d;
       cnt_q         <= cnt_d;
@@ -400,6 +409,7 @@ module axi_adapter #(
       addr_offset_q <= addr_offset_d;
       id_q          <= id_d;
       amo_q         <= amo_d;
+      size_q        <= size_d;
     end
   end
 
