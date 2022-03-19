@@ -1,5 +1,5 @@
 ..
-   Copyright (c) 2020, 2021 OpenHW Group
+   Copyright (c) 2020, 2021, 2022 OpenHW Group
 
    Licensed under the Solderpad Hardware Licence, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -78,7 +78,7 @@ The primary verification environments implemented in core-v-verif are all based 
 The UVM enviroment for CV32E40P is completely separate from the core testbench and uses a different set of Makefiles.
 
 In order to use the UVM environments you will need items 1, 2 and 3 from the list above, plus a SystemVerilog simulator capable of supporting UVM and the Imperas OVPsim Instruction Set Simulator (ISS).
-You should also review the README in `$CORE_V_VERIF/mk/uvmt` for a description of the `shell ENV vars used by the UVM environment <https://github.com/openhwgroup/core-v-verif/tree/master/mk/uvmt#corev-environment-variables>`_.
+You should also review the README in `$CORE_V_VERIF/mk/uvmt` for a description of the `shell ENV vars used by the UVM environment <https://github.com/openhwgroup/core-v-verif/blob/master/mk/README.md#required-corev-environment-variables>`_.
 With these in place you can do the following::
 
     $ git clone https://github.com/openhwgroup/core-v-verif.git
@@ -96,19 +96,21 @@ If you do not have access to the Imperas ISS you can disable it at run-time::
 Why UVM?
 ~~~~~~~~
 
-Core-v-verif was specifically created to bring industrial practises to bear for CORE-V verification.
-The UVM is by far the most popular methodology used in dynamic (simulation) based verification today.
+There are three reasons why the UVM was selected as the verification methodology used by core-v-verif:
+1. Using a standard methodology provides a common framework making it practical for verification IP from multiple and diverse teams to inter-operate.
+2. To date, all of the cores in the OpenHW Group CORE-V family are implemented in SystemVerilog and the SystemVerilog implementation of the UVM is both complete and robust.
+3. Core-v-verif was specifically created to bring industrial practises to bear for CORE-V verification, and the UVM is by far the most popular methodology used in dynamic (simulation) based verification today.
 
 Do I need an ISS?
 ~~~~~~~~~~~~~~~~~
 
-The short answer is an emphatic **yes**.
+The short answer is **yes**.
 Core-v-verif uses an Instruction Set Simulator (ISS) as a reference model of the CORE-V core (the Device Under Test).
 A key feature of the core-v-verif UVM environments is that the state of the DUT is compared to the state of the reference model after each instruction is retired.
 Without a comparison to a reference model, the pass/fail status of a given simulation is mostly vacuous.
 
-There are two popular options for a RISC-V ISS, `Spike <https://github.com/riscv-software-src/riscv-isa-sim>_` and `Imperas OVPsim <https://www.ovpworld.org/technology_ovpsim>_`.
-At the time of this writting (2021-12-07) core-v-verif uses a commerical version iof Imperas OVPsim for the CV32E4 cores.
+There are two popular options for a RISC-V ISS, `Spike <https://github.com/riscv-software-src/riscv-isa-sim>`_ and `Imperas OVPsim <https://www.ovpworld.org/technology_ovpsim>`_.
+At the time of this writting (2021-12-07) core-v-verif uses a commerical version of Imperas OVPsim for the CV32E4 cores.
 A contribution to integrate another reference model into core-v-verif would be welcome.
 
 Doing More in CORE-V-VERIF
@@ -146,7 +148,7 @@ The variable is used to select one of a set of simulator-specific Makefiles that
 
 Note that core-v-verif tries to support all simulators and this requires support from OpenHW Group members.
 From time to time a Makefile for a specific simulator will not see a lot of use and will inevidibly suffer from bit-rot.
-If you notice an issue with a simulator-specific Makefile, please do raise an issue.
+If you notice an issue with a simulator-specific Makefile, please either raise a GitHub issue, or better yet, a pull-request with a fix.
 
 Verifying other Cores
 ~~~~~~~~~~~~~~~~~~~~~
@@ -157,6 +159,7 @@ At the time of this writting (2021-12-17), core-v-verif supports verification of
 * **CV32E40X**: UVM environment is stable, and verification is on-going.
 * **CV32E40S**: UVM environment is stable, and verification is on-going.
 * **CVA6**: UVM environment is in the early stages of development.
+* **CVE2**: Coming soon!
 
 CV32E40P Directory Tree (simplified)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
