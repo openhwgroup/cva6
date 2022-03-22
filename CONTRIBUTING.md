@@ -8,7 +8,7 @@ Contributors are encouraged, but not required, to be a [member](https://www.open
 1. From GitHub: [fork](https://help.github.com/articles/fork-a-repo/) the [cva6](https://github.com/openhwgroup/cva6) repository
 2. Clone repository: `git clone https://github.com/[your_github_username]/cva6`
 3. Create your feature branch: `git checkout -b <my_branch>.`<br> Please uniquify your branch name.
-See the [Git Cheats](https://github.com/openhwgroup/core-v-verif/blob/master/GitCheats.md) for a useful nominclature.
+See the [Git Cheats](https://github.com/openhwgroup/core-v-verif/blob/master/GitCheats.md) for a useful nomenclature.
 4. Make your edits...
 5. Commit your changes: `git commit -m 'Add some feature'`
 6. Push feature branch: `git push origin <my_branch>`
