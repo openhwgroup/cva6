@@ -1,0 +1,112 @@
+= CVA6 CSR
+
+== License
+
+Copyright 2022 OpenHW Group and Thales +
+Copyright 2018 ETH Zürich and University of Bologna +
+SPDX-License-Identifier: Apache-2.0 WITH SHL-2.1 +
+Licensed under the Solderpad Hardware License v 2.1 (the “License”); you may not use this file except in compliance with the License, or, at your option, the Apache License version 2.0. You may obtain a copy of the License at https://solderpad.org/licenses/SHL-2.1/[https://solderpad.org/licenses/SHL-2.1/].  +
+Unless required by applicable law or agreed to in writing, any work distributed under the License is distributed on an “AS IS” BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for the specific language governing permissions and limitations under the License.
+
+== Foreword
+
+This is a chapter that will later be integrated in CVA6 users’ guide.
+
+== CSR in CVA6
+
+To anticipate future evolutions of the specification, for each custom CSR range defined in RISC-V specifications, it is recommended to:
+
+* Consider that the lower half is reserved for OpenHW Group (and not implement custom registers in this space).
+* Consider that the higher half is unused (i.e. left for custom variations of CVA6) and not use it in future CORE-V specifications.
+This is illustrated below for the `12'h7C0`-`12'h7FF` range.
+
+|===
+|*NAME*|*ADDR*|*Description*|*Implemented*|*Mandatory CSR*|*Mode*
+
+|`CSR_FFLAGS`|`12’h001`|Floating point Accrued Exceptions|Yes|Yes|User
+|`CSR_FRM`|`12’h002`|Floating point dynamic rounding mode|Yes|Yes|User
+|`CSR_FCSR`|`12’h003`|Floating point Control and Status Register|Yes|Yes|User
+|`CSR_FTRAN`|`12’h800`|Floating point custom CSR|Yes|No|User
+|`CSR_DCSR`|`12'h7b0`|Debug control and status register|Yes|Yes|Debug
+|`CSR_DPC`|`12'h7b1`|Debug PC|Yes|Yes|Debug
+|`CSR_DSCRATCH0`|`12'h7b2`|Debug scratch register 0|Yes|Yes|Debug
+|`CSR_DSCRATCH1`|`12'h7b3`|Debug scratch register 1|Yes|Yes|Debug
+|`CSR_SSTATUS`|`12’h100`|Supervisor status register|Yes|Yes|Supervisor
+|`CSR_SIE`|`12’h104`|Supervisor Interrupt enable register|Yes|Yes|Supervisor
+|`CSR_SIP`|`12’h144`|Supervisor interrupt pending|Yes|Yes|Supervisor
+|`CSR_STVEC`|`12’h105`|Supervisor trap handler base address|Yes|Yes|Supervisor
+|`CSR_SCOUNTEREN`|`12’h106`|Supervisor counter enable|Yes|Yes|Supervisor
+|`CSR_SSCRATCH`|`12’h140`|Scartch Register for supervisor trap handlers|Yes|Yes|Supervisor
+|`CSR_SEPC`|`12’h141`|Supervisor exception program counter|Yes|Yes|Supervisor
+|`CSR_SCAUSE`|`12’h142`|Supervisor trap cause|Yes|Yes|Supervisor
+|`CSR_STVAL`|`12’h143`|Supervisor bad address or instruction|Yes|Yes|Supervisor
+|`CSR_SATP`|`12’h180`|Supervisor address translation and protection|Yes|Yes|Supervisor
+|`CSR_MSTATUS`|`12’h300`|Machine Status Register|Yes|Yes|Machine
+|`CSR_MISA`|`12’h301`|ISA and extensions|Yes|Yes|Machine
+|`CSR_MEDELEG`|`12’h302`|Machine exception delegation register|Yes|Yes|Machine
+|`CSR_MIDELEG`|`12’h303`|Machine interrupt delegation register|Yes|Yes|Machine
+|`CSR_MIE`|`12’h304`|Machine Interrupt enable register|Yes|Yes|Machine
+|`CSR_MTVEC`|`12’h305`|Machine trap-handler base address|Yes|Yes|Machine
+|`CSR_MCOUNTEREN`|`12’h306`|Machine counter enable|Yes|Yes|Machine
+|`CSR_MSCRATCH`|`12’h340`|Scratch register for machine trap handlers|Yes|Yes|Machine
+|`CSR_MEPC`|`12’h341`|Machine exception program counter|Yes|Yes|Machine
+|`CSR_MCAUSE`|`12’h342`|Machine Trap cause|Yes|Yes|Machine
+|`CSR_MTVAL`|`12’h343`|Machine bad address or Instruction|Yes|Yes|Machine
+|`CSR_MIP`|`12’h344`|Machine Interrupt Pending|Yes|Yes|Machine
+|`CSR_MVENDORID`|`12’hF11`|Vendor ID|Yes|Yes|Machine
+|`CSR_MARCHID`|`12’hF12`|Architecture ID|Yes|Yes|Machine
+|`CSR_MIMPID`|`12’hF13`|Implementation ID|Yes|Yes|Machine
+|`CSR_MHARTID`|`12’hF14`|Hardware Thread ID|Yes|Yes|Machine
+|`CSR_MCYCLE`|`12’hB00`|Machine Cycle counter|Yes|Yes|Machine
+|`CSR_MCYCLE_H`|`12'hB80`|Upper 32 bits of mcycle,RV32I only|*No*|Yes|Machine
+|NA|`12'hB01`|NA|NA|NA|Machine
+|`CSR_MINSTRET`|`12’hB02`|Machine Instruction retired counter|Yes|Yes|Machine
+|`CSR_MINSTRET_H`|`12'hB82`|Upper 32 bits of minstret,RV32I only|*No*|Yes|Machine
+|`CSR_GPC1` [mhpmcounter3]|`12'hB03`|GPC1-Lower 32 bits|Yes|Yes|Machine
+|`CSR_GPC1H` [mhpmcounter3h]|`12'hB83`|GPC1-Upper 32 bits|*No*|Yes|Machine
+|`CSR_GPC2` [mhpmcounter4]|`12'hB04`|GPC2-Lower 32 bits|Yes|Yes|Machine
+|`CSR_GPC2H` [mhpmcounter4h]|`12'hB84`|GPC2-Upper 32 bits|*No*|Yes|Machine
+|`CSR_GPC3` [mhpmcounter5]|`12'hB05`|GPC3-Lower 32 bits|Yes|Yes|Machine
+|`CSR_GPC3H` [mhpmcounter5h]|`12'hB85`|GPC3-Upper 32 bits|*No*|Yes|Machine
+|`CSR_GPC4` [mhpmcounter6]|`12'hB06`|GPC4-Lower 32 bits|Yes|Yes|Machine
+|`CSR_GPC4H` [mhpmcounter6h]|`12'hB86`|GPC4-Upper 32 bits|*No*|Yes|Machine
+|`CSR_GPC5` [mhpmcounter7]|`12'hB07`|GPC5-Lower 32 bits|Yes|Yes|Machine
+|`CSR_GPC5H` [mhpmcounter7h]|`12'hB87`|GPC5-Upper 32 bits|*No*|Yes|Machine
+|`CSR_GPC6` [mhpmcounter8]|`12'hB08`|GPC6-Lower 32 bits|Yes|Yes|Machine
+|`CSR_GPC6H` [mhpmcounter8h]|`12'hB88`|GPC6-Upper 32 bits|*No*|Yes|Machine
+|`CSR_GPC1_PMES` [mhpmevent3]|`12'h323`|Machine performance-monitoring event selector|*No*|Yes|Machine
+|`CSR_GPC2_PMES` [mhpmevent4]|`12'h324`|Machine performance-monitoring event selector|*No*|Yes|Machine
+|`CSR_GPC3_PMES` [mhpmevent5]|`12'h325`|Machine performance-monitoring event selector|*No*|Yes|Machine
+|`CSR_GPC4_PMES` [mhpmevent6]|`12'h326`|Machine performance-monitoring event selector|*No*|Yes|Machine
+|`CSR_GPC5_PMES` [mhpmevent7]|`12'h327`|Machine performance-monitoring event selector|*No*|Yes|Machine
+|`CSR_GPC6_PMES` [mhpmevent8]|`12'h328`|Machine performance-monitoring event selector|*No*|Yes|Machine
+|`CSR_CYCLE`|`12’hC00`|Cycle counter for RDCYCLE instruction|Yes|Yes|User
+|`CSR_CYCLE_H`|`12’hC80`|Upper 32 bits RDCYCLE|*No*|Yes|User
+|`CSR_INSTRET`|`12’hC02`|Instructions-retired counter for RDINSTRET instruction|Yes|Yes|User
+|`CSR_INSTRET_H`|`12’hC82`|Upper 32 bits RDINSTRET|*No*|Yes|User
+|`CSR_ICACHE`|`12'h7C0`|Custom Register to enable/disable for |Yes|Yes|Machine
+|`CSR_DCACHE`|`*12'h7C***1**`|Custom Register to enable/disable for |Yes|Yes|Machine
+|Reserved for OpenHW|`*12'h7C2`-`12'h7DF*`|Reserved for Future Use by OpenHW Group|No|No|Machine
+|Empty Space|`12'h7E0`-`12'h7FF`|Unused|No|No|Machine
+|`CSR_PMPCFG0`|`12’h3A0`|PMPC|Yes|Yes|Machine
+|`CSR_PMPCFG1`|`12’h3A1`|PMPC|Yes|Yes|Machine
+|`CSR_PMPCFG2`|`12’h3A2`|PMPC|Yes|Yes|Machine
+|`CSR_PMPCFG3`|`12’h3A3`|PMPC|Yes|Yes|Machine
+|`CSR_PMPADDR0`|`12'h3B0`|PMPAR|Yes|Yes|Machine
+|`CSR_PMPADDR1`|`12'h3B1`|PMPAR|Yes|Yes|Machine
+|`CSR_PMPADDR2`|`12'h3B2`|PMPAR|Yes|Yes|Machine
+|`CSR_PMPADDR3`|`12'h3B3`|PMPAR|Yes|Yes|Machine
+|`CSR_PMPADDR4`|`12'h3B4`|PMPAR|Yes|Yes|Machine
+|`CSR_PMPADDR5`|`12'h3B5`|PMPAR|Yes|Yes|Machine
+|`CSR_PMPADDR6`|`12'h3B6`|PMPAR|Yes|Yes|Machine
+|`CSR_PMPADDR7`|`12'h3B7`|PMPAR|Yes|Yes|Machine
+|`CSR_PMPADDR8`|`12'h3B8`|PMPAR|Yes|Yes|Machine
+|`CSR_PMPADDR9`|`12'h3B9`|PMPAR|Yes|Yes|Machine
+|`CSR_PMPADDR10`|`12'h3BA`|PMPAR|Yes|Yes|Machine
+|`CSR_PMPADDR11`|`12'h3BB`|PMPAR|Yes|Yes|Machine
+|`CSR_PMPADDR12`|`12'h3BC`|PMPAR|Yes|Yes|Machine
+|`CSR_PMPADDR13`|`12'h3BD`|PMPAR|Yes|Yes|Machine
+|`CSR_PMPADDR14`|`12'h3BE`|PMPAR|Yes|Yes|Machine
+|`CSR_PMPADDR15`|`12'h3BF`|PMPAR|Yes|Yes|Machine
+|===
+

@@ -62,14 +62,17 @@
       riscv,max-priority = <7>;
       riscv,ndev = <30>;
     };
-    debug-controller@0 {
-      compatible = "riscv,debug-013";
-      interrupts-extended = <&CPU0_intc 65535>;
-      reg = <0x0 0x0 0x0 0x1000>;
-      reg-names = "control";
-    };
+    // Specifying the interrupt controller in the devicetree is not necessary.
+    // Furthermore, the IRQ 65535 will cause a `hwirq 0xffff is too large` during
+    // Linux boot (occured with mainline linux 5.14.0).
+    // debug-controller@0 {
+    //   compatible = "riscv,debug-013";
+    //   interrupts-extended = <&CPU0_intc 65535>;
+    //   reg = <0x0 0x0 0x0 0x1000>;
+    //   reg-names = "control";
+    // };
     uart@10000000 {
-      compatible = "ns16750";
+      compatible = "ns16550a";
       reg = <0x0 0x10000000 0x0 0x1000>;
       clock-frequency = <50000000>;
       current-speed = <115200>;

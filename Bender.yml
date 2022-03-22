@@ -9,6 +9,7 @@ package:
 
 export_include_dirs:
   - common/submodules/common_cells/include/
+  - corev_apu/axi/include/
 
 sources:
   - defines:
@@ -18,7 +19,6 @@ sources:
     - core/include/riscv_pkg.sv
     - corev_apu/riscv-dbg/src/dm_pkg.sv
     - core/include/ariane_pkg.sv
-    - core/include/std_cache_pkg.sv
     - core/include/wt_cache_pkg.sv
     - corev_apu/axi/src/axi_pkg.sv
     - corev_apu/register_interface/src/reg_intf.sv
@@ -27,6 +27,7 @@ sources:
     - corev_apu/tb/ariane_soc_pkg.sv
     - corev_apu/tb/ariane_axi_soc_pkg.sv
     - core/include/ariane_axi_pkg.sv
+    - core/include/std_cache_pkg.sv
     - core/fpu/src/fpnew_pkg.sv
     - core/fpu/src/fpu_div_sqrt_mvp/hdl/defs_div_sqrt_mvp.sv
     # Stand-alone source files
@@ -120,25 +121,6 @@ sources:
     - corev_apu/fpga/src/axi_slice/src/axi_aw_buffer.sv
     - corev_apu/fpga/src/apb_timer/apb_timer.sv
     - corev_apu/fpga/src/apb_timer/timer.sv
-    - corev_apu/axi_node/src/axi_regs_top.sv
-    - corev_apu/axi_node/src/axi_BR_allocator.sv
-    - corev_apu/axi_node/src/axi_BW_allocator.sv
-    - corev_apu/axi_node/src/axi_address_decoder_BR.sv
-    - corev_apu/axi_node/src/axi_DW_allocator.sv
-    - corev_apu/axi_node/src/axi_address_decoder_BW.sv
-    - corev_apu/axi_node/src/axi_address_decoder_DW.sv
-    - corev_apu/axi_node/src/axi_node_arbiter.sv
-    - corev_apu/axi_node/src/axi_response_block.sv
-    - corev_apu/axi_node/src/axi_request_block.sv
-    - corev_apu/axi_node/src/axi_AR_allocator.sv
-    - corev_apu/axi_node/src/axi_AW_allocator.sv
-    - corev_apu/axi_node/src/axi_address_decoder_AR.sv
-    - corev_apu/axi_node/src/axi_address_decoder_AW.sv
-    - corev_apu/axi_node/src/apb_regs_top.sv
-    - corev_apu/axi_node/src/axi_node_intf_wrap.sv
-    - corev_apu/axi_node/src/axi_node.sv
-    - corev_apu/axi_node/src/axi_node_wrap_with_slices.sv
-    - corev_apu/axi_node/src/axi_multiplexer.sv
     - corev_apu/src/axi_riscv_atomics/src/axi_riscv_amos.sv
     - corev_apu/src/axi_riscv_atomics/src/axi_riscv_atomics.sv
     - corev_apu/src/axi_riscv_atomics/src/axi_res_tbl.sv
@@ -161,6 +143,7 @@ sources:
     - corev_apu/riscv-dbg/debug_rom/debug_rom.sv
     - corev_apu/register_interface/src/apb_to_reg.sv
     - corev_apu/axi/src/axi_multicut.sv
+    - common/submodules/common_cells/src/cf_math_pkg.sv
     - common/submodules/common_cells/src/deprecated/generic_fifo.sv
     - common/submodules/common_cells/src/deprecated/pulp_sync.sv
     - common/submodules/common_cells/src/deprecated/find_first_one.sv
@@ -170,19 +153,22 @@ sources:
     - common/submodules/common_cells/src/stream_demux.sv
     - common/submodules/common_cells/src/stream_arbiter.sv
     - common/submodules/common_cells/src/stream_arbiter_flushable.sv
-    - common/local/util/axi_master_connect.sv
-    - common/local/util/axi_slave_connect.sv
-    - common/local/util/axi_master_connect_rev.sv
-    - common/local/util/axi_slave_connect_rev.sv
     - corev_apu/axi/src/axi_cut.sv
     - corev_apu/axi/src/axi_join.sv
     - corev_apu/axi/src/axi_delayer.sv
     - corev_apu/axi/src/axi_to_axi_lite.sv
+    - corev_apu/axi/src/axi_id_prepend.sv
+    - corev_apu/axi/src/axi_atop_filter.sv
+    - corev_apu/axi/src/axi_err_slv.sv
+    - corev_apu/axi/src/axi_mux.sv
+    - corev_apu/axi/src/axi_demux.sv
+    - corev_apu/axi/src/axi_xbar.sv
     - corev_apu/fpga-support/rtl/SyncSpRamBeNx64.sv
     - common/submodules/common_cells/src/sync.sv
     - common/submodules/common_cells/src/popcount.sv
     - common/submodules/common_cells/src/unread.sv
     - common/submodules/common_cells/src/cdc_2phase.sv
+    - common/submodules/common_cells/src/spill_register_flushable.sv
     - common/submodules/common_cells/src/spill_register.sv
     - common/submodules/common_cells/src/edge_detect.sv
     - common/submodules/common_cells/src/fifo_v3.sv
@@ -198,6 +184,8 @@ sources:
     - common/submodules/common_cells/src/counter.sv
     - common/submodules/common_cells/src/shift_reg.sv
     - common/submodules/common_cells/src/exp_backoff.sv
+    - common/submodules/common_cells/src/addr_decode.sv
+    - common/submodules/common_cells/src/stream_register.sv
     - corev_apu/src/tech_cells_generic/src/cluster_clock_inverter.sv
     - corev_apu/src/tech_cells_generic/src/pulp_clock_mux2.sv
     - target: not(cv32a6)

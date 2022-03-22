@@ -30,6 +30,30 @@ module tb import ariane_pkg::*; import std_cache_pkg::*; import tb_pkg::*; #()()
   parameter logic [63:0] CachedAddrBeg = MemBytes>>3;//1/8th of the memory is NC
   parameter logic [63:0] CachedAddrEnd = 64'hFFFF_FFFF_FFFF_FFFF;
 
+  localparam ariane_cfg_t ArianeDefaultConfig = '{
+    RASDepth: 2,
+    BTBEntries: 32,
+    BHTEntries: 128,
+    // idempotent region
+    NrNonIdempotentRules:  0,
+    NonIdempotentAddrBase: {64'b0},
+    NonIdempotentLength:   {64'b0},
+    // executable region
+    NrExecuteRegionRules:  0,
+    ExecuteRegionAddrBase: {64'h0},
+    ExecuteRegionLength:   {64'h0},
+    // cached region
+    NrCachedRegionRules:   1,
+    CachedRegionAddrBase:  {CachedAddrBeg},//1/8th of the memory is NC
+    CachedRegionLength:    {CachedAddrEnd-CachedAddrBeg+64'b1},
+    // cache config
+    Axi64BitCompliant:     1'b1,
+    SwapEndianess:         1'b0,
+    // debug
+    DmBaseAddress:         64'h0,
+    NrPMPEntries:          0
+  };
+
   // contention and invalidation rates (in %)
   parameter MemRandHitRate   = 75;
   parameter MemRandInvRate   = 10;
@@ -162,6 +186,32 @@ module tb import ariane_pkg::*; import std_cache_pkg::*; import tb_pkg::*; #()()
   tb_mem_port_t data_mem_port;
   tb_mem_port_t bypass_mem_port;
 
+  AXI_BUS #(
+    .AXI_ADDR_WIDTH ( TbAxiAddrWidthFull       ),
+    .AXI_DATA_WIDTH ( TbAxiDataWidthFull       ),
+    .AXI_ID_WIDTH   ( TbAxiIdWidthFull + 32'd1 ),
+    .AXI_USER_WIDTH ( TbAxiUserWidthFull       )
+  ) axi_bypass ();
+
+  AXI_BUS #(
+    .AXI_ADDR_WIDTH ( TbAxiAddrWidthFull       ),
+    .AXI_DATA_WIDTH ( TbAxiDataWidthFull       ),
+    .AXI_ID_WIDTH   ( TbAxiIdWidthFull + 32'd1 ),
+    .AXI_USER_WIDTH ( TbAxiUserWidthFull       )
+  ) axi_bypass_amo_adapter ();
+
+  AXI_BUS_DV #(
+    .AXI_ADDR_WIDTH ( TbAxiAddrWidthFull       ),
+    .AXI_DATA_WIDTH ( TbAxiDataWidthFull       ),
+    .AXI_ID_WIDTH   ( TbAxiIdWidthFull + 32'd1 ),
+    .AXI_USER_WIDTH ( TbAxiUserWidthFull       )
+  ) axi_bypass_amo_adapter_dv (
+    .clk_i ( clk_i )
+  );
+
+  `AXI_ASSIGN(axi_bypass, axi_bypass_dv)
+  `AXI_ASSIGN(axi_bypass_amo_adapter_dv, axi_bypass_amo_adapter)
+
 ///////////////////////////////////////////////////////////////////////////////
 // Helper tasks
 ///////////////////////////////////////////////////////////////////////////////
@@ -234,8 +284,8 @@ module tb import ariane_pkg::*; import std_cache_pkg::*; import tb_pkg::*; #()()
     `APPL_WAIT_CYC(clk_i, 1)
 
     forever begin
-      amo_exp_result = 'x;
       `ACQ_WAIT_CYC(clk_i, 1)
+      amo_exp_result = 'x;
 
       // Regular stores. These are directly written to shadow memory.
       if(write_en) begin
@@ -261,7 +311,8 @@ module tb import ariane_pkg::*; import std_cache_pkg::*; import tb_pkg::*; #()()
 
           // The result that is expected to be returned by AMO and evantually to be stored in rd.
           // For most AMOs, this is the previous memory content.
-          amo_exp_result[31:0] = amo_shadow[31:0];
+          // RISC-V spec requires: "For RV64, 32-bit AMOs always sign-extend the value placed in rd."
+          amo_exp_result = amo_op_a;
 
         // 64-bit AMO
         end else begin
@@ -337,8 +388,8 @@ module tb import ariane_pkg::*; import std_cache_pkg::*; import tb_pkg::*; #()()
   // Instantiate memory and AXI ports
   initial begin : p_sim_mem
     // Create AXI ports
-    data_mem_port   = new(axi_data_dv  , CACHED);
-    bypass_mem_port = new(axi_bypass_dv, BYPASS);
+    data_mem_port   = new(axi_data_dv              , CACHED);
+    bypass_mem_port = new(axi_bypass_amo_adapter_dv, BYPASS);
 
     // Initialize AXI ports and memory
     data_mem_port.reset();
@@ -359,7 +410,7 @@ module tb import ariane_pkg::*; import std_cache_pkg::*; import tb_pkg::*; #()()
 ///////////////////////////////////////////////////////////////////////////////
 
   std_nbdcache  #(
-    .CACHE_START_ADDR ( CachedAddrBeg )
+    .ArianeCfg ( ArianeDefaultConfig )
   ) i_dut (
     .clk_i           ( clk_i           ),
     .rst_ni          ( rst_ni          ),
@@ -376,6 +427,24 @@ module tb import ariane_pkg::*; import std_cache_pkg::*; import tb_pkg::*; #()()
     .axi_bypass_o    ( axi_bypass_o    ),
     .axi_bypass_i    ( axi_bypass_i    )
   );
+
+///////////////////////////////////////////////////////////////////////////////
+// AXI Atomics Adapter
+///////////////////////////////////////////////////////////////////////////////
+
+axi_riscv_atomics_wrap #(
+    .AXI_ADDR_WIDTH     ( TbAxiAddrWidthFull       ),
+    .AXI_DATA_WIDTH     ( TbAxiDataWidthFull       ),
+    .AXI_ID_WIDTH       ( TbAxiIdWidthFull + 32'd1 ),
+    .AXI_USER_WIDTH     ( TbAxiUserWidthFull       ),
+    .AXI_MAX_WRITE_TXNS ( 1                        ),
+    .RISCV_WORD_WIDTH   ( 64                       )
+) i_amo_adapter (
+    .clk_i  ( clk_i                         ),
+    .rst_ni ( rst_ni                        ),
+    .mst    ( axi_bypass_amo_adapter.Master ),
+    .slv    ( axi_bypass.Slave )
+);
 
 ///////////////////////////////////////////////////////////////////////////////
 // port emulation programs
@@ -900,8 +969,8 @@ module tb import ariane_pkg::*; import std_cache_pkg::*; import tb_pkg::*; #()()
     req_rate     = '{50,0,2};
 
     // AMOs should use cache port
-    bypass_mem_port.set_region(0, 0);
-    data_mem_port.set_region(0, MemBytes-1);
+    bypass_mem_port.set_region(0, MemBytes-1);
+    data_mem_port.set_region(0, 0);
 
     runAMOs(nAMOs,1); // Last sequence flag, terminates agents
     flushCache();

@@ -1,9 +1,6 @@
 [submodule "corev_apu/axi_mem_if"]
 	path = corev_apu/axi_mem_if
 	url = https://github.com/pulp-platform/axi_mem_if.git
-[submodule "corev_apu/axi_node"]
-	path = corev_apu/axi_node
-	url = https://github.com/pulp-platform/axi_node.git
 [submodule "corev_apu/fpga-support"]
 	path = corev_apu/fpga-support
 	url = https://github.com/pulp-platform/fpga-support.git

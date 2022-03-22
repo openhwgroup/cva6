@@ -161,6 +161,13 @@ localparam AxiIdWidthMaster = 4;
 localparam AxiIdWidthSlaves = AxiIdWidthMaster + $clog2(NBSlave); // 5
 localparam AxiUserWidth = 1;
 
+`AXI_TYPEDEF_ALL(axi_slave,
+                 logic [    AxiAddrWidth-1:0],
+                 logic [AxiIdWidthSlaves-1:0],
+                 logic [    AxiDataWidth-1:0],
+                 logic [(AxiDataWidth/8)-1:0],
+                 logic [    AxiUserWidth-1:0])
+
 AXI_BUS #(
     .AXI_ADDR_WIDTH ( AxiAddrWidth     ),
     .AXI_DATA_WIDTH ( AxiDataWidth     ),
@@ -253,48 +260,50 @@ assign rst = ddr_sync_reset;
 // ---------------
 // AXI Xbar
 // ---------------
-axi_node_wrap_with_slices #(
-    // three ports from Ariane (instruction, data and bypass)
-    .NB_SLAVE           ( NBSlave                    ),
-    .NB_MASTER          ( ariane_soc::NB_PERIPHERALS ),
-    .NB_REGION          ( ariane_soc::NrRegion       ),
-    .AXI_ADDR_WIDTH     ( AxiAddrWidth               ),
-    .AXI_DATA_WIDTH     ( AxiDataWidth               ),
-    .AXI_USER_WIDTH     ( AxiUserWidth               ),
-    .AXI_ID_WIDTH       ( AxiIdWidthMaster           ),
-    .MASTER_SLICE_DEPTH ( 2                          ),
-    .SLAVE_SLICE_DEPTH  ( 2                          )
+
+axi_pkg::xbar_rule_64_t [ariane_soc::NB_PERIPHERALS-1:0] addr_map;
+
+assign addr_map = '{
+  '{ idx: ariane_soc::Debug,    start_addr: ariane_soc::DebugBase,    end_addr: ariane_soc::DebugBase + ariane_soc::DebugLength       },
+  '{ idx: ariane_soc::ROM,      start_addr: ariane_soc::ROMBase,      end_addr: ariane_soc::ROMBase + ariane_soc::ROMLength           },
+  '{ idx: ariane_soc::CLINT,    start_addr: ariane_soc::CLINTBase,    end_addr: ariane_soc::CLINTBase + ariane_soc::CLINTLength       },
+  '{ idx: ariane_soc::PLIC,     start_addr: ariane_soc::PLICBase,     end_addr: ariane_soc::PLICBase + ariane_soc::PLICLength         },
+  '{ idx: ariane_soc::UART,     start_addr: ariane_soc::UARTBase,     end_addr: ariane_soc::UARTBase + ariane_soc::UARTLength         },
+  '{ idx: ariane_soc::Timer,    start_addr: ariane_soc::TimerBase,    end_addr: ariane_soc::TimerBase + ariane_soc::TimerLength       },
+  '{ idx: ariane_soc::SPI,      start_addr: ariane_soc::SPIBase,      end_addr: ariane_soc::SPIBase + ariane_soc::SPILength           },
+  '{ idx: ariane_soc::Ethernet, start_addr: ariane_soc::EthernetBase, end_addr: ariane_soc::EthernetBase + ariane_soc::EthernetLength },
+  '{ idx: ariane_soc::GPIO,     start_addr: ariane_soc::GPIOBase,     end_addr: ariane_soc::GPIOBase + ariane_soc::GPIOLength         },
+  '{ idx: ariane_soc::DRAM,     start_addr: ariane_soc::DRAMBase,     end_addr: ariane_soc::DRAMBase + ariane_soc::DRAMLength         }
+};
+
+localparam axi_pkg::xbar_cfg_t AXI_XBAR_CFG = '{
+  NoSlvPorts:         ariane_soc::NrSlaves,
+  NoMstPorts:         ariane_soc::NB_PERIPHERALS,
+  MaxMstTrans:        1, // Probably requires update
+  MaxSlvTrans:        1, // Probably requires update
+  FallThrough:        1'b0,
+  LatencyMode:        axi_pkg::CUT_ALL_PORTS,
+  AxiIdWidthSlvPorts: AxiIdWidthMaster,
+  AxiIdUsedSlvPorts:  AxiIdWidthMaster,
+  UniqueIds:          1'b0,
+  AxiAddrWidth:       AxiAddrWidth,
+  AxiDataWidth:       AxiDataWidth,
+  NoAddrRules:        ariane_soc::NB_PERIPHERALS
+};
+
+axi_xbar_intf #(
+  .AXI_USER_WIDTH ( AxiUserWidth            ),
+  .Cfg            ( AXI_XBAR_CFG            ),
+  .rule_t         ( axi_pkg::xbar_rule_64_t )
 ) i_axi_xbar (
-    .clk          ( clk        ),
-    .rst_n        ( ndmreset_n ),
-    .test_en_i    ( test_en    ),
-    .slave        ( slave      ),
-    .master       ( master     ),
-    .start_addr_i ({
-        ariane_soc::DebugBase,
-        ariane_soc::ROMBase,
-        ariane_soc::CLINTBase,
-        ariane_soc::PLICBase,
-        ariane_soc::UARTBase,
-        ariane_soc::TimerBase,
-        ariane_soc::SPIBase,
-        ariane_soc::EthernetBase,
-        ariane_soc::GPIOBase,
-        ariane_soc::DRAMBase
-    }),
-    .end_addr_i   ({
-        ariane_soc::DebugBase    + ariane_soc::DebugLength - 1,
-        ariane_soc::ROMBase      + ariane_soc::ROMLength - 1,
-        ariane_soc::CLINTBase    + ariane_soc::CLINTLength - 1,
-        ariane_soc::PLICBase     + ariane_soc::PLICLength - 1,
-        ariane_soc::UARTBase     + ariane_soc::UARTLength - 1,
-        ariane_soc::TimerBase    + ariane_soc::TimerLength - 1,
-        ariane_soc::SPIBase      + ariane_soc::SPILength - 1,
-        ariane_soc::EthernetBase + ariane_soc::EthernetLength -1,
-        ariane_soc::GPIOBase     + ariane_soc::GPIOLength - 1,
-        ariane_soc::DRAMBase     + ariane_soc::DRAMLength - 1
-    }),
-    .valid_rule_i (ariane_soc::ValidRule)
+  .clk_i                 ( clk        ),
+  .rst_ni                ( ndmreset_n ),
+  .test_i                ( test_en    ),
+  .slv_ports             ( slave      ),
+  .mst_ports             ( master     ),
+  .addr_map_i            ( addr_map   ),
+  .en_default_mst_port_i ( '0         ),
+  .default_mst_port_i    ( '0         )
 );
 
 // ---------------
@@ -556,8 +565,8 @@ axi_adapter #(
     .rst_ni                ( rst_n                     ),
     .req_i                 ( dm_master_req             ),
     .type_i                ( ariane_axi::SINGLE_REQ    ),
+    .amo_i                 ( ariane_pkg::AMO_NONE      ),
     .gnt_o                 ( dm_master_gnt             ),
-    .gnt_id_o              (                           ),
     .addr_i                ( dm_master_add             ),
     .we_i                  ( dm_master_we              ),
     .wdata_i               ( dm_master_wdata           ),
@@ -671,11 +680,8 @@ if (riscv::XLEN==32 ) begin
         .m_axi_rready(slave[1].r_ready)
       );
 end else begin
-    axi_master_connect i_dm_axi_master_connect (
-      .axi_req_i(dm_axi_m_req),
-      .axi_resp_o(dm_axi_m_resp),
-      .master(slave[1])
-     );
+    `AXI_ASSIGN_FROM_REQ(slave[1], dm_axi_m_req)
+    `AXI_ASSIGN_TO_RESP(dm_axi_m_resp, slave[1])
 end
 
 
@@ -700,7 +706,8 @@ ariane #(
     .axi_resp_i   ( axi_ariane_resp     )
 );
 
-axi_master_connect i_axi_master_connect_ariane (.axi_req_i(axi_ariane_req), .axi_resp_o(axi_ariane_resp), .master(slave[0]));
+`AXI_ASSIGN_FROM_REQ(slave[0], axi_ariane_req)
+`AXI_ASSIGN_TO_RESP(axi_ariane_resp, slave[0])
 
 // ---------------
 // CLINT
@@ -714,14 +721,16 @@ always_ff @(posedge clk or negedge ndmreset_n) begin
   end
 end
 
-ariane_axi::req_t    axi_clint_req;
-ariane_axi::resp_t   axi_clint_resp;
+axi_slave_req_t  axi_clint_req;
+axi_slave_resp_t axi_clint_resp;
 
 clint #(
     .AXI_ADDR_WIDTH ( AxiAddrWidth     ),
     .AXI_DATA_WIDTH ( AxiDataWidth     ),
     .AXI_ID_WIDTH   ( AxiIdWidthSlaves ),
-    .NR_CORES       ( 1                )
+    .NR_CORES       ( 1                ),
+    .axi_req_t      ( axi_slave_req_t  ),
+    .axi_resp_t     ( axi_slave_resp_t )
 ) i_clint (
     .clk_i       ( clk            ),
     .rst_ni      ( ndmreset_n     ),
@@ -733,7 +742,8 @@ clint #(
     .ipi_o       ( ipi            )
 );
 
-axi_slave_connect i_axi_slave_connect_clint (.axi_req_o(axi_clint_req), .axi_resp_i(axi_clint_resp), .slave(master[ariane_soc::CLINT]));
+`AXI_ASSIGN_TO_REQ(axi_clint_req, master[ariane_soc::CLINT])
+`AXI_ASSIGN_FROM_RESP(master[ariane_soc::CLINT], axi_clint_resp)
 
 // ---------------
 // ROM

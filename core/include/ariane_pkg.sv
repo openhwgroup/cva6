@@ -96,7 +96,7 @@ package ariane_pkg;
 
     function automatic logic range_check(logic[63:0] base, logic[63:0] len, logic[63:0] address);
       // if len is a power of two, and base is properly aligned, this check could be simplified
-      return (address >= base) && (address < (base+len));
+      return (address >= base) && (address < (65'(base)+len));
     endfunction : range_check
 
     function automatic logic is_inside_nonidempotent_regions (ariane_cfg_t Cfg, logic[63:0] address);
@@ -220,7 +220,11 @@ package ariane_pkg;
 
     // 32 registers + 1 bit for re-naming = 6
     localparam REG_ADDR_SIZE = 6;
-    localparam NR_WB_PORTS = 4;
+    localparam NR_WB_PORTS = 5;
+
+    // Read ports for general purpose register files
+    localparam NR_RGPR_PORTS = 2;
+    typedef logic [(NR_RGPR_PORTS == 3 ? riscv::XLEN : FLEN)-1:0] rs3_len_t;
 
     // static debug hartinfo
     localparam dm::hartinfo_t DebugHartInfo = '{
@@ -357,7 +361,8 @@ package ariane_pkg;
         MULT,      // 5
         CSR,       // 6
         FPU,       // 7
-        FPU_VEC    // 8
+        FPU_VEC,   // 8
+        CVXIF      // 9
     } fu_t;
 
     localparam EXC_OFF_RST      = 8'h80;
@@ -431,6 +436,7 @@ package ariane_pkg;
     localparam int unsigned DCACHE_LINE_WIDTH  = 128; // in bit
 `endif
 
+    localparam bit CVXIF_PRESENT = cva6_config_pkg::CVA6ConfigCvxifEn;
     // ---------------
     // EX Stage
     // ---------------
@@ -469,7 +475,9 @@ package ariane_pkg;
                                // Floating-Point Classify Instruction
                                FCLASS,
                                // Vectorial Floating-Point Instructions that don't directly map onto the scalar ones
-                               VFMIN, VFMAX, VFSGNJ, VFSGNJN, VFSGNJX, VFEQ, VFNE, VFLT, VFGE, VFLE, VFGT, VFCPKAB_S, VFCPKCD_S, VFCPKAB_D, VFCPKCD_D
+                               VFMIN, VFMAX, VFSGNJ, VFSGNJN, VFSGNJX, VFEQ, VFNE, VFLT, VFGE, VFLE, VFGT, VFCPKAB_S, VFCPKCD_S, VFCPKAB_D, VFCPKCD_D,
+                               // Offload Instructions to be directed into cv_x_if
+                               OFFLOAD
                              } fu_op;
 
     typedef struct packed {

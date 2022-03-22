@@ -64,6 +64,9 @@ Table of Contents
         * [Install Verilator Simulation Flow](#install-verilator-simulation-flow)
         * [Build Model and Run Simulations](#build-model-and-run-simulations)
         * [Running User-Space Applications](#running-user-space-applications)
+      * [Physical Implementation](#physical-implementation)
+         * [ASIC Synthesis](#asic-synthesis)
+         * [ASIC Gate Simulation with core-v-verif repository](#asic-gate-simulation-with-core-v-verif-repository)
       * [FPGA Emulation](#fpga-emulation)
          * [Programming the Memory Configuration File](#programming-the-memory-configuration-file)
          * [Preparing the SD Card](#preparing-the-sd-card)
@@ -173,6 +176,29 @@ make sim elf-bin=$RISCV/riscv64-unknown-elf/bin/pk target-options=hello.elf  bat
 ```
 
 > Be patient! RTL simulation is way slower than Spike. If you think that you ran into problems you can inspect the trace files.
+
+## Physical Implementation
+
+### ASIC Synthesis
+
+How to make cva6 synthesis ?
+```
+make -C pd/synth cva6_synth FOUNDRY_PATH=/your/techno/basepath/ TECH_NAME=yourTechnoName TARGET_LIBRARY_FILES="yourLib1.db\ yourLib2.db" PERIOD=10 NAND2_AREA=650 TARGET=cv64a6_imafdc_sv39 ADDITIONAL_SEARCH_PATH="others/libs/paths/one\ others/libs/paths/two"
+```
+Don't forget to escape spaces in lists.
+Reports are under: pd/synth/ariane/reports
+
+### ASIC Gate Simulation with `core-v-verif` repository
+
+```
+export DV_SIMULATORS=veri-testharness,spike
+cva6/regress/smoke-tests.sh
+make -C core-v-cores/cva6/pd/synth cva6_synth FOUNDRY_PATH=/your/techno/basepath/ TECH_NAME=yourTechnoName TARGET_LIBRARY_FILES="yourLib1.db\ yourLib2.db" PERIOD=10 NAND2_AREA=650 TARGET=cv64a6_imafdc_sv39 ADDITIONAL_SEARCH_PATH="others/libs/paths/one\ others/libs/paths/two"
+sed 's/module SyncSpRamBeNx64_1/module SyncSpRamBeNx64_2/' core-v-cores/cva6/pd/synth/ariane_synth.v > core-v-cores/cva6/pd/synth/ariane_synth_modified.v
+cd cva6/sim
+make vcs_clean
+python3 cva6.py --testlist=../tests/testlist_riscv-tests-cv64a6_imafdc_sv39-p.yaml --test rv64ui-p-ld --iss_yaml cva6.yaml --target cv64a6_imafdc_sv39 --iss=spike,vcs-core-gate $DV_OPTS
+```
 
 ## COREV-APU FPGA Emulation
 

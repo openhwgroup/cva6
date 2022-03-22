@@ -285,26 +285,33 @@ module csr_regfile import ariane_pkg::*; #(
                 riscv::CSR_PMPCFG2:          csr_rdata = pmpcfg_q[8 +: riscv::XLEN/8];
                 riscv::CSR_PMPCFG3:          if (riscv::XLEN == 32) csr_rdata = pmpcfg_q[15:12]; else read_access_exception = 1'b1;
                 // PMPADDR
-                // Important: we only support granularity 8 bytes (G=1)
-                // -> last bit of pmpaddr must be set 0/1 based on the mode:
-                // NA4, NAPOT: 1
-                // TOR, OFF:   0
-                riscv::CSR_PMPADDR0:         csr_rdata = {10'b0, pmpaddr_q[ 0][riscv::PLEN-3:1], (pmpcfg_q[ 0].addr_mode[1] == 1'b1 ? pmpaddr_q[ 0][0] : 1'b0)};
-                riscv::CSR_PMPADDR1:         csr_rdata = {10'b0, pmpaddr_q[ 1][riscv::PLEN-3:1], (pmpcfg_q[ 1].addr_mode[1] == 1'b1 ? pmpaddr_q[ 1][0] : 1'b0)};
-                riscv::CSR_PMPADDR2:         csr_rdata = {10'b0, pmpaddr_q[ 2][riscv::PLEN-3:1], (pmpcfg_q[ 2].addr_mode[1] == 1'b1 ? pmpaddr_q[ 2][0] : 1'b0)};
-                riscv::CSR_PMPADDR3:         csr_rdata = {10'b0, pmpaddr_q[ 3][riscv::PLEN-3:1], (pmpcfg_q[ 3].addr_mode[1] == 1'b1 ? pmpaddr_q[ 3][0] : 1'b0)};
-                riscv::CSR_PMPADDR4:         csr_rdata = {10'b0, pmpaddr_q[ 4][riscv::PLEN-3:1], (pmpcfg_q[ 4].addr_mode[1] == 1'b1 ? pmpaddr_q[ 4][0] : 1'b0)};
-                riscv::CSR_PMPADDR5:         csr_rdata = {10'b0, pmpaddr_q[ 5][riscv::PLEN-3:1], (pmpcfg_q[ 5].addr_mode[1] == 1'b1 ? pmpaddr_q[ 5][0] : 1'b0)};
-                riscv::CSR_PMPADDR6:         csr_rdata = {10'b0, pmpaddr_q[ 6][riscv::PLEN-3:1], (pmpcfg_q[ 6].addr_mode[1] == 1'b1 ? pmpaddr_q[ 6][0] : 1'b0)};
-                riscv::CSR_PMPADDR7:         csr_rdata = {10'b0, pmpaddr_q[ 7][riscv::PLEN-3:1], (pmpcfg_q[ 7].addr_mode[1] == 1'b1 ? pmpaddr_q[ 7][0] : 1'b0)};
-                riscv::CSR_PMPADDR8:         csr_rdata = {10'b0, pmpaddr_q[ 8][riscv::PLEN-3:1], (pmpcfg_q[ 8].addr_mode[1] == 1'b1 ? pmpaddr_q[ 8][0] : 1'b0)};
-                riscv::CSR_PMPADDR9:         csr_rdata = {10'b0, pmpaddr_q[ 9][riscv::PLEN-3:1], (pmpcfg_q[ 9].addr_mode[1] == 1'b1 ? pmpaddr_q[ 9][0] : 1'b0)};
-                riscv::CSR_PMPADDR10:        csr_rdata = {10'b0, pmpaddr_q[10][riscv::PLEN-3:1], (pmpcfg_q[10].addr_mode[1] == 1'b1 ? pmpaddr_q[10][0] : 1'b0)};
-                riscv::CSR_PMPADDR11:        csr_rdata = {10'b0, pmpaddr_q[11][riscv::PLEN-3:1], (pmpcfg_q[11].addr_mode[1] == 1'b1 ? pmpaddr_q[11][0] : 1'b0)};
-                riscv::CSR_PMPADDR12:        csr_rdata = {10'b0, pmpaddr_q[12][riscv::PLEN-3:1], (pmpcfg_q[12].addr_mode[1] == 1'b1 ? pmpaddr_q[12][0] : 1'b0)};
-                riscv::CSR_PMPADDR13:        csr_rdata = {10'b0, pmpaddr_q[13][riscv::PLEN-3:1], (pmpcfg_q[13].addr_mode[1] == 1'b1 ? pmpaddr_q[13][0] : 1'b0)};
-                riscv::CSR_PMPADDR14:        csr_rdata = {10'b0, pmpaddr_q[14][riscv::PLEN-3:1], (pmpcfg_q[14].addr_mode[1] == 1'b1 ? pmpaddr_q[14][0] : 1'b0)};
-                riscv::CSR_PMPADDR15:        csr_rdata = {10'b0, pmpaddr_q[15][riscv::PLEN-3:1], (pmpcfg_q[15].addr_mode[1] == 1'b1 ? pmpaddr_q[15][0] : 1'b0)};
+                riscv::CSR_PMPADDR0,
+                riscv::CSR_PMPADDR1,
+                riscv::CSR_PMPADDR2,
+                riscv::CSR_PMPADDR3,
+                riscv::CSR_PMPADDR4,
+                riscv::CSR_PMPADDR5,
+                riscv::CSR_PMPADDR6,
+                riscv::CSR_PMPADDR7,
+                riscv::CSR_PMPADDR8,
+                riscv::CSR_PMPADDR9,
+                riscv::CSR_PMPADDR10,
+                riscv::CSR_PMPADDR11,
+                riscv::CSR_PMPADDR12,
+                riscv::CSR_PMPADDR13,
+                riscv::CSR_PMPADDR14,
+                riscv::CSR_PMPADDR15: begin
+                    // index is specified by the last byte in the address
+                    automatic int index = csr_addr.csr_decode.address[3:0];
+                    // Important: we only support granularity 8 bytes (G=1)
+                    // -> last bit of pmpaddr must be set 0/1 based on the mode:
+                    // NA4, NAPOT: 1
+                    // TOR, OFF:   0
+                    if (pmpcfg_q[index].addr_mode[1] == 1'b1)
+                        csr_rdata = {10'b0, pmpaddr_q[index][riscv::PLEN-3:0]};
+                    else
+                        csr_rdata = {10'b0, pmpaddr_q[index][riscv::PLEN-3:1], 1'b0};
+                end
                 default: read_access_exception = 1'b1;
             endcase
         end
@@ -610,22 +617,29 @@ module csr_regfile import ariane_pkg::*; #(
                         for (int i = 0; i < 4; i++) if (!pmpcfg_q[i+12].locked) pmpcfg_d[i+12]  = csr_wdata[i*8+:8];
                     end
                 end
-                riscv::CSR_PMPADDR0:   if (!pmpcfg_q[ 0].locked && !(pmpcfg_q[ 1].locked && pmpcfg_q[ 1].addr_mode == riscv::TOR))  pmpaddr_d[0]   = csr_wdata[riscv::PLEN-3:0];
-                riscv::CSR_PMPADDR1:   if (!pmpcfg_q[ 1].locked && !(pmpcfg_q[ 2].locked && pmpcfg_q[ 2].addr_mode == riscv::TOR))  pmpaddr_d[1]   = csr_wdata[riscv::PLEN-3:0];
-                riscv::CSR_PMPADDR2:   if (!pmpcfg_q[ 2].locked && !(pmpcfg_q[ 3].locked && pmpcfg_q[ 3].addr_mode == riscv::TOR))  pmpaddr_d[2]   = csr_wdata[riscv::PLEN-3:0];
-                riscv::CSR_PMPADDR3:   if (!pmpcfg_q[ 3].locked && !(pmpcfg_q[ 4].locked && pmpcfg_q[ 4].addr_mode == riscv::TOR))  pmpaddr_d[3]   = csr_wdata[riscv::PLEN-3:0];
-                riscv::CSR_PMPADDR4:   if (!pmpcfg_q[ 4].locked && !(pmpcfg_q[ 5].locked && pmpcfg_q[ 5].addr_mode == riscv::TOR))  pmpaddr_d[4]   = csr_wdata[riscv::PLEN-3:0];
-                riscv::CSR_PMPADDR5:   if (!pmpcfg_q[ 5].locked && !(pmpcfg_q[ 6].locked && pmpcfg_q[ 6].addr_mode == riscv::TOR))  pmpaddr_d[5]   = csr_wdata[riscv::PLEN-3:0];
-                riscv::CSR_PMPADDR6:   if (!pmpcfg_q[ 6].locked && !(pmpcfg_q[ 7].locked && pmpcfg_q[ 7].addr_mode == riscv::TOR))  pmpaddr_d[6]   = csr_wdata[riscv::PLEN-3:0];
-                riscv::CSR_PMPADDR7:   if (!pmpcfg_q[ 7].locked && !(pmpcfg_q[ 8].locked && pmpcfg_q[ 8].addr_mode == riscv::TOR))  pmpaddr_d[7]   = csr_wdata[riscv::PLEN-3:0];
-                riscv::CSR_PMPADDR8:   if (!pmpcfg_q[ 8].locked && !(pmpcfg_q[ 9].locked && pmpcfg_q[ 9].addr_mode == riscv::TOR))  pmpaddr_d[8]   = csr_wdata[riscv::PLEN-3:0];
-                riscv::CSR_PMPADDR9:   if (!pmpcfg_q[ 9].locked && !(pmpcfg_q[10].locked && pmpcfg_q[10].addr_mode == riscv::TOR))  pmpaddr_d[9]   = csr_wdata[riscv::PLEN-3:0];
-                riscv::CSR_PMPADDR10:  if (!pmpcfg_q[10].locked && !(pmpcfg_q[11].locked && pmpcfg_q[11].addr_mode == riscv::TOR))  pmpaddr_d[10]  = csr_wdata[riscv::PLEN-3:0];
-                riscv::CSR_PMPADDR11:  if (!pmpcfg_q[11].locked && !(pmpcfg_q[12].locked && pmpcfg_q[12].addr_mode == riscv::TOR))  pmpaddr_d[11]  = csr_wdata[riscv::PLEN-3:0];
-                riscv::CSR_PMPADDR12:  if (!pmpcfg_q[12].locked && !(pmpcfg_q[13].locked && pmpcfg_q[13].addr_mode == riscv::TOR))  pmpaddr_d[12]  = csr_wdata[riscv::PLEN-3:0];
-                riscv::CSR_PMPADDR13:  if (!pmpcfg_q[13].locked && !(pmpcfg_q[14].locked && pmpcfg_q[14].addr_mode == riscv::TOR))  pmpaddr_d[13]  = csr_wdata[riscv::PLEN-3:0];
-                riscv::CSR_PMPADDR14:  if (!pmpcfg_q[14].locked && !(pmpcfg_q[15].locked && pmpcfg_q[15].addr_mode == riscv::TOR))  pmpaddr_d[14]  = csr_wdata[riscv::PLEN-3:0];
-                riscv::CSR_PMPADDR15:  if (!pmpcfg_q[15].locked)  pmpaddr_d[15]  = csr_wdata[riscv::PLEN-3:0];
+                riscv::CSR_PMPADDR0,
+                riscv::CSR_PMPADDR1,
+                riscv::CSR_PMPADDR2,
+                riscv::CSR_PMPADDR3,
+                riscv::CSR_PMPADDR4,
+                riscv::CSR_PMPADDR5,
+                riscv::CSR_PMPADDR6,
+                riscv::CSR_PMPADDR7,
+                riscv::CSR_PMPADDR8,
+                riscv::CSR_PMPADDR9,
+                riscv::CSR_PMPADDR10,
+                riscv::CSR_PMPADDR11,
+                riscv::CSR_PMPADDR12,
+                riscv::CSR_PMPADDR13,
+                riscv::CSR_PMPADDR14,
+                riscv::CSR_PMPADDR15:  begin
+                    // index is specified by the last byte in the address
+                    automatic int index = csr_addr.csr_decode.address[3:0];
+                    // check if the entry or the entry above is locked
+                    if (!pmpcfg_q[index].locked && !(pmpcfg_q[index].locked && pmpcfg_q[index].addr_mode == riscv::TOR)) begin
+                        pmpaddr_d[index] = csr_wdata[riscv::PLEN-3:0];
+                    end
+                end
                 default: update_access_exception = 1'b1;
             endcase
         end
@@ -990,10 +1004,14 @@ module csr_regfile import ariane_pkg::*; #(
             trap_vector_base_o = DmBaseAddress[riscv::VLEN-1:0] + dm::ExceptionAddress[riscv::VLEN-1:0];
         end
 
-        // check if we are in vectored mode, if yes then do BASE + 4 * cause
-        // we are imposing an additional alignment-constraint of 64 * 4 bytes since
-        // we want to spare the costly addition
-        if ((mtvec_q[0] || stvec_q[0]) && ex_i.cause[riscv::XLEN-1]) begin
+        // check if we are in vectored mode, if yes then do BASE + 4 * cause we
+        // are imposing an additional alignment-constraint of 64 * 4 bytes since
+        // we want to spare the costly addition. Furthermore check to which
+        // privilege level we are jumping and whether the vectored mode is
+        // activated for _that_ privilege level.
+        if (ex_i.cause[riscv::XLEN-1] &&
+                ((trap_to_priv_lvl == riscv::PRIV_LVL_M && mtvec_q[0])
+               || trap_to_priv_lvl == riscv::PRIV_LVL_S && stvec_q[0])) begin
             trap_vector_base_o[7:2] = ex_i.cause[5:0];
         end
 
@@ -1156,7 +1174,7 @@ module csr_regfile import ariane_pkg::*; #(
             for(int i = 0; i < 16; i++) begin
                 if(i < NrPMPEntries) begin
                     // We only support >=8-byte granularity, NA4 is disabled
-                    if(pmpcfg_d[i].addr_mode != riscv::NA4) 
+                    if(pmpcfg_d[i].addr_mode != riscv::NA4 && !(pmpcfg_d[i].access_type.r == '0 && pmpcfg_d[i].access_type.w == '1)) 
                         pmpcfg_q[i] <= pmpcfg_d[i];
                     else
                         pmpcfg_q[i] <= pmpcfg_q[i];

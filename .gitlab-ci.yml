@@ -1,256 +1,175 @@
-before_script:
-  # paths to local or network installations (the riscv toolchain and
-  # verilator are not built in the ci job as in travis)
-  - export QUESTASIM_HOME=/usr/pack/modelsim-10.6b-kgf/questasim/
-  - export QUESTASIM_VERSION=-10.6b
-  - export QUESTASIM_FLAGS=-noautoldlibpath
-  - export CXX=g++-7.2.0 CC=gcc-7.2.0
-  - export RISCV=/scratch2/gitlabci/riscv_install
-  - export VERILATOR_ROOT=/scratch2/gitlabci/verilator-4.014
-  # setup dependent paths
-  - export PATH=${RISCV}/bin:$VERILATOR_ROOT/bin:${PATH}
-  - export LIBRARY_PATH=$RISCV/lib
-  - export LD_LIBRARY_PATH=$RISCV/lib:/usr/pack/gcc-7.2.0-af/linux-x64/lib64/
-  - export C_INCLUDE_PATH=$RISCV/include:$VERILATOR_ROOT/include:/usr/pack/gcc-7.2.0-af/linux-x64/include
-  - export CPLUS_INCLUDE_PATH=$RISCV/include:$VERILATOR_ROOT/include:/usr/pack/gcc-7.2.0-af/linux-x64/include
-  # number of parallel jobs to use for make commands and simulation
-  - export NUM_JOBS=4
-  - which java
-  - java -version
-  - which git
-  - git --version
-  - ci/make-tmp.sh
-  - git submodule init
-  - git submodule update --recursive
+# Copyright 2022 Thales DIS design services SAS
+#
+# Licensed under the Solderpad Hardware Licence, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# SPDX-License-Identifier: Apache-2.0 WITH SHL-2.0
+# You may obtain a copy of the License at https://solderpad.org/licenses/
+#
+# Original Author: Yannick Casamatta (yannick.casamatta@thalesgroup.com)
 
-variables:
-  GIT_SUBMODULE_STRATEGY: recursive
+# Project maintainers must define following variables to adapt this CI to their runtime environment (Settings > CI/CD > Variables)
+# - RUN_CORE_CI: 'true'/'false'
+# - SETUP_CI_CORE_BRANCH: master
+# - RUN_CORE_V_VERIF_CI: 'true'/'false'
+# - SETUP_CI_CVV_BRANCH: master
+# - RUN_EXTERNAL_CI: 'true'/'false'
+# - SETUP_CI_BRANCH: master
+
+
+# A git repository named "setup-ci" must be created in the same namespace as cva6 and must contain the following files:
+# - 'cva6/cva6.yml' (if RUN_CORE_CI == 'true')
+# - 'cva6/core-v-verif-cva6.yml' (if RUN_CVV_CI == 'true')
+# - 'common/cva6.yml' (if $RUN_EXTERNAL_CI == 'true')
+# Each of these files must at least contain the variables necessary for the execution of the associated downstream pipeline. 
+# Other elements such as new jobs can be added to overload the associated downstream pipeline included in this repository.
+# Example for core-v-verif can be found in repository core-v-verif, path ".gitlab-ci/setup-ci-example/"
+
+# Guidelines:
+# - Prefer using parent-child pipelines instead of including yml for ease of maintenance.
+# - Specific elements should be defined in the triggered yml to avoid conflicts between pipelines.
+# - In this file, only generic job/variables should be declared.
+
+
+include: 
+  - project: '$CI_PROJECT_NAMESPACE/setup-ci'
+    ref: '$SETUP_CI_CVV_BRANCH'
+    file: 'cva6/cva6-core-v-verif.yml'
+    rules:
+      - if: '$RUN_CORE_V_VERIF_CI == "true"'
+
+
+workflow:
+  rules:
+    - if: '$CI_COMMIT_REF_NAME =~ /^master.*/ || $CI_COMMIT_REF_NAME =~ /^hotfix.*/ || $CI_COMMIT_REF_NAME =~ /^rc.*/'
+      variables:
+        CI_WEIGHT: "full"
+    - if: '$CI_COMMIT_REF_NAME =~ /^dev.*/ || $CI_COMMIT_REF_NAME =~ /^feature.*/'
+      variables:
+        CI_WEIGHT: "lite"
+    - if: '$CI_COMMIT_REF_NAME =~ /^cvvdev\/master.*/ || $CI_COMMIT_REF_NAME =~ /^cvvdev\/hotfix.*/ || $CI_COMMIT_REF_NAME =~ /^cvvdev\/rc.*/'
+      variables:
+        CI_WEIGHT: "full"
+        CORE_V_VERIF_BRANCH: $CI_COMMIT_REF_NAME
+    - if: '$CI_COMMIT_REF_NAME =~ /^cvvdev\/dev.*/ || $CI_COMMIT_REF_NAME =~ /^cvvdev\/feature.*/'
+      variables:
+        CI_WEIGHT: "lite"
+        CORE_V_VERIF_BRANCH: $CI_COMMIT_REF_NAME
+    - when: never
+
 
 stages:
-  - build
-  - write-back
-  - write-through
+   - build
+   - test
 
-###################################
-# prepare
-build:
+
+check_env:
+  variables:
+    GIT_STRATEGY: none
+  tags: [$TAGS_RUNNER]
+  before_script:
+  after_script:
   stage: build
   script:
-    - ci/build-riscv-tests.sh
-    - ci/get-torture.sh
-    - make clean
-    # this currently does not work with the current runner version...
-    #- make torture-gen
+    - echo $TAGS_RUNNER
+    - echo $RUN_CORE_CI
+    - echo $SETUP_CI_CORE_BRANCH
+    - echo $RUN_CORE_V_VERIF_CI
+    - echo $SETUP_CI_CVV_BRANCH
+    - echo $RUN_EXTERNAL_CI
+    - echo $SETUP_CI_EXTERNAL_BRANCH
+    - echo $CORE_V_VERIF_REPO
+    - echo $CORE_V_VERIF_BRANCH
+    - echo $CI_COMMIT_REF_NAME
+    - echo $CI_COMMIT_BRANCH
+
+
+# core testbench downstream pipeline describes in '.gitlab-ci/cva6.yml' + 'cva6/cva6.yml' of 'setup-ci' repository
+# If enabled by RUN_CORE_CI
+cva6:
+  stage: test
+  trigger:
+    include: 
+      - local: .gitlab-ci/cva6.yml
+      - project: '$CI_PROJECT_NAMESPACE/setup-ci'
+        ref: '$SETUP_CI_CORE_BRANCH'
+        file: 'cva6/cva6.yml'
+    strategy: depend
+  variables:
+    TAGS_RUNNER: $TAGS_RUNNER
+    SETUP_CI_BRANCH: $SETUP_CI_CORE_BRANCH
+    CI_PROJECT_NAMESPACE: $CI_PROJECT_NAMESPACE
+  rules:
+    - if: $RUN_CORE_CI == "true"
+      when: always
+    - when: never
+
+
+# Please read .gitlab-ci/cva6.yml in core-v-verif repository
+# core testbench downstream pipeline describes in '.gitlab-ci/core-v-verif-cva6.yml' + 'cva6/core-v-verif-cva6.yml' of 'setup-ci' repository
+# If enabled by RUN_CORE_V_VERIF_CI
+# core-v-verif trigger job (see previous core-v-verif-build job)
+core-v-verif-build:
+  stage: build
+  variables:
+    GIT_STRATEGY: none
+  tags: [$TAGS_RUNNER]
+  script:
+    - echo $CORE_V_VERIF_REPO
+    - echo $CORE_V_VERIF_BRANCH
+    - '[[ -e ./core-v-verif ]] && rm -rf core-v-verif'
+    - git clone $CORE_V_VERIF_REPO -b $CORE_V_VERIF_BRANCH --depth=1 core-v-verif 
+    - cd core-v-verif 
+    - echo CORE_V_VERIF_HASH=$(git rev-parse origin/$CORE_V_VERIF_BRANCH)
+    - echo CORE_V_VERIF_HASH=$(git rev-parse origin/$CORE_V_VERIF_BRANCH) > ../.env
+    - cd ..
+    - mkdir -p artifacts/.gitlab-ci/core_v_verif
+    - mv core-v-verif/.gitlab-ci/cva6.yml artifacts/.gitlab-ci/core_v_verif/cva6.yml
+  rules:
+    - if: '$RUN_CORE_V_VERIF_CI == "true"'
+      when: always
+    - when: never
   artifacts:
       paths:
-        - tmp
+        - artifacts/.gitlab-ci/core_v_verif/cva6.yml
+      reports:
+        dotenv: .env
 
-###################################
-# tests with write-back cache system
 
-# rv64ui-p-* and rv64ui-v-* tests
-asm-quest:
-  stage: write-back
-  script:
-    - make -j${NUM_JOBS} run-asm-tests batch-mode=1 defines=WB_DCACHE
-  dependencies:
-    - build
+# core-v-verif trigger job (see previous core-v-verif-build job)
+core-v-verif:
+  stage: test
+  trigger:
+    include: 
+      - artifact: artifacts/.gitlab-ci/core_v_verif/cva6.yml
+        job: core-v-verif-build
+      - project: '$CI_PROJECT_NAMESPACE/setup-ci'
+        ref: '$SETUP_CI_CVV_BRANCH'
+        file: 'cva6/core-v-verif-cva6.yml'
+      - local: .gitlab-ci/core-v-verif-cva6.yml
+    strategy: depend
+  variables:
+    TAGS_RUNNER: $TAGS_RUNNER
+    SCOPE_CVV: "false"
+    CORE_V_VERIF_HASH: $CORE_V_VERIF_HASH
+  rules:
+    - if: '$RUN_CORE_V_VERIF_CI == "true"'
+      when: always
+    - when: never
 
-amo-quest:
-  stage: write-back
-  script:
-    - make -j${NUM_JOBS} run-amo-tests batch-mode=1 defines=WB_DCACHE
-  dependencies:
-    - build
 
-# floating point
-fp-quest:
-  stage: write-back
-  script:
-    - make -j${NUM_JOBS} run-fp-tests batch-mode=1 defines=WB_DCACHE
-  dependencies:
-    - build
+# Use this entry point to run a pipeline from another repository (hosted on the same gitlab server)
+# If enabled by RUN_SETUP_CI, additionnal variables may be necessary and should be declared by project maintainers.
+external:
+  trigger:
+    include:
+      - project: '$CI_PROJECT_NAMESPACE/setup-ci'
+        ref: '$SETUP_CI_EXTERNAL_BRANCH'
+        file: 'common/cva6.yml'
+    strategy: depend
+  variables:
+    TAGS_RUNNER: $TAGS_RUNNER
+  rules:
+    - if: '$RUN_EXTERNAL_CI == "true"'
+      when: always
+    - when: never
 
-bench-quest:
-  stage: write-back
-  script:
-    - make -j${NUM_JOBS} run-benchmarks batch-mode=1 defines=WB_DCACHE
-  dependencies:
-    - build
-
-# rv64ui-p-* tests
-asm1-ver:
-  stage: write-back
-  script:
-    - make -j${NUM_JOBS} run-asm-tests1-verilator defines=WB_DCACHE
-  dependencies:
-    - build
-
-# rv64ui-v-* tests
-asm2-ver:
-  stage: write-back
-  script:
-    - make -j${NUM_JOBS} run-asm-tests2-verilator defines=WB_DCACHE
-  dependencies:
-    - build
-
-# rv64um-*-* tests
-mul-ver:
-  stage: write-back
-  script:
-    - make -j${NUM_JOBS} run-mul-verilator defines=WB_DCACHE
-  dependencies:
-    - build
-
-# atomics
-amo-ver:
-  stage: write-back
-  script:
-    - make -j${NUM_JOBS} run-amo-verilator defines=WB_DCACHE
-  dependencies:
-    - build
-
-# floating point
-fp-ver:
-  stage: write-back
-  script:
-    - make -j${NUM_JOBS} run-fp-verilator defines=WB_DCACHE
-  dependencies:
-    - build
-
-bench-ver:
-  stage: write-back
-  script:
-    - make -j${NUM_JOBS} run-benchmarks-verilator defines=WB_DCACHE
-  dependencies:
-    - build
-
-bench-ver:
-  stage: write-back
-  script:
-    - make -j${NUM_JOBS} run-benchmarks-verilator defines=WB_DCACHE
-  dependencies:
-    - build
-
-# torture:
-#   stage: write-back
-#   script:
-#     - make torture-rtest batch-mode=1
-#     - make torture-rtest-verilator
-#   dependencies:
-#     - build
-
-serdiv-quest:
-  stage: write-back
-  script:
-    - cd tb/tb_serdiv/
-    - make simc
-    - "grep 'CI: PASSED' summary.rep"
-  dependencies:
-    - build
-
-###################################
-# tests with write-through cache system
-
-s-asm-quest:
-  stage: write-through
-  script:
-    - make -j${NUM_JOBS} run-asm-tests defines=WT_DCACHE batch-mode=1
-  dependencies:
-    - build
-
-# atomics
-s-amo-quest:
-  stage: write-through
-  script:
-    - make -j${NUM_JOBS} run-amo-tests defines=WT_DCACHE batch-mode=1
-  dependencies:
-    - build
-
-# floating point
-s-fp-quest:
-  stage: write-through
-  script:
-    - make -j${NUM_JOBS} run-fp-tests defines=WT_DCACHE batch-mode=1
-  dependencies:
-    - build
-
-s-bench-quest:
-  stage: write-through
-  script:
-    - make -j${NUM_JOBS} run-benchmarks defines=WT_DCACHE batch-mode=1
-  dependencies:
-    - build
-
-# rv64ui-p-* tests
-s-asm1-ver:
-  stage: write-through
-  script:
-    - make -j${NUM_JOBS} run-asm-tests1-verilator defines=WT_DCACHE
-  dependencies:
-    - build
-
-# rv64ui-v-* tests
-s-asm2-ver:
-  stage: write-through
-  script:
-    - make -j${NUM_JOBS} run-asm-tests2-verilator defines=WT_DCACHE
-  dependencies:
-    - build
-
-# rv64um-*-* tests
-mul-ver:
-  stage: write-through
-  script:
-    - make -j${NUM_JOBS} run-mul-verilator defines=WT_DCACHE
-  dependencies:
-    - build
-
-# atomics
-amo-ver:
-  stage: write-through
-  script:
-    - make -j${NUM_JOBS} run-amo-verilator defines=WT_DCACHE
-  dependencies:
-    - build
-
-# floating point
-s-fp-ver:
-  stage: write-through
-  script:
-    - make -j${NUM_JOBS} run-fp-verilator defines=WT_DCACHE
-  dependencies:
-    - build
-
-s-bench-ver:
-  stage: write-through
-  script:
-    - make -j${NUM_JOBS} run-benchmarks-verilator defines=WT_DCACHE
-  dependencies:
-    - build
-
-s-icache-quest:
-  stage: write-through
-  script:
-    - cd tb/tb_icache/
-    - make simc
-    - "grep 'CI: PASSED' summary.rep"
-
-s-dcache-quest:
-  stage: write-through
-  script:
-    - cd tb/tb_wt_dcache/
-    - make simc
-    - "grep 'CI: PASSED' RD0_summary.rep"
-    - "grep 'CI: PASSED' RD1_summary.rep"
-    - "grep 'CI: PASSED' TB_MEM_summary.rep"
-  dependencies:
-    - build
-
-# s-torture:
-#   stage: write-through
-#   script:
-#     - make torture-rtest           defines=WT_DCACHE batch-mode=1
-#     - make torture-rtest-verilator defines=WT_DCACHE
-#   dependencies:
-#     - build
