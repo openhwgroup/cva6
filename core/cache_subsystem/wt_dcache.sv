@@ -66,7 +66,6 @@ module wt_dcache import ariane_pkg::*; import wt_cache_pkg::*; #(
   logic                           wr_ack;
   logic [DCACHE_CL_IDX_WIDTH-1:0] wr_idx;
   logic [DCACHE_OFFSET_WIDTH-1:0] wr_off;
-  logic [7:0]                     wr_data_be;*/
   riscv::xlen_t                   wr_data;
   logic [(riscv::XLEN/8)-1:0]     wr_data_be;
 
