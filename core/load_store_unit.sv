@@ -89,10 +89,10 @@ module load_store_unit import ariane_pkg::*; #(
     // Address Generation Unit (AGU)
     // ------------------------------
     // virtual address as calculated by the AGU in the first cycle
-    logic [riscv::VLEN-1:0]   vaddr_i;
-    riscv::xlen_t             vaddr_xlen;
-    logic                     overflow;
-    logic [7:0]               be_i;
+    logic [riscv::VLEN-1:0]           vaddr_i;
+    riscv::xlen_t                     vaddr_xlen;
+    logic                             overflow;
+    logic [(riscv::XLEN/8)-1:0]       be_i;
 
     assign vaddr_xlen = $unsigned($signed(fu_data_i.imm) + $signed(fu_data_i.operand_a));
     assign vaddr_i = vaddr_xlen[riscv::VLEN-1:0];
@@ -195,9 +195,9 @@ module load_store_unit import ariane_pkg::*; #(
 
         assign dcache_req_ports_o[0].address_index = '0;
         assign dcache_req_ports_o[0].address_tag   = '0;
-        assign dcache_req_ports_o[0].data_wdata    = 64'b0;
+        assign dcache_req_ports_o[0].data_wdata    = '0;
         assign dcache_req_ports_o[0].data_req      = 1'b0;
-        assign dcache_req_ports_o[0].data_be       = 8'hFF;
+        assign dcache_req_ports_o[0].data_be       = '1;
         assign dcache_req_ports_o[0].data_size     = 2'b11;
         assign dcache_req_ports_o[0].data_we       = 1'b0;
         assign dcache_req_ports_o[0].kill_req      = '0;
@@ -352,7 +352,8 @@ module load_store_unit import ariane_pkg::*; #(
     // we can generate the byte enable from the virtual address since the last
     // 12 bit are the same anyway
     // and we can always generate the byte enable from the address at hand
-    assign be_i = be_gen(vaddr_i[2:0], extract_transfer_size(fu_data_i.operator));
+    assign be_i = riscv::IS_XLEN64 ? be_gen(vaddr_i[2:0], extract_transfer_size(fu_data_i.operator)):
+                                     be_gen_32(vaddr_i[1:0], extract_transfer_size(fu_data_i.operator));
 
     // ------------------------
     // Misaligned Exception
@@ -446,7 +447,7 @@ module load_store_unit import ariane_pkg::*; #(
     // new data arrives here
     lsu_ctrl_t lsu_req_i;
 
-    assign lsu_req_i = {lsu_valid_i, vaddr_i, overflow, {{64-riscv::XLEN{1'b0}}, fu_data_i.operand_b}, be_i, fu_data_i.fu, fu_data_i.operator, fu_data_i.trans_id};
+    assign lsu_req_i = {lsu_valid_i, vaddr_i, overflow, fu_data_i.operand_b, be_i, fu_data_i.fu, fu_data_i.operator, fu_data_i.trans_id};
 
     lsu_bypass lsu_bypass_i (
         .lsu_req_i          ( lsu_req_i   ),

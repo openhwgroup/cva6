@@ -75,21 +75,22 @@ package wt_cache_pkg;
 
 
   typedef struct packed {
-    logic [ariane_pkg::DCACHE_TAG_WIDTH+(ariane_pkg::DCACHE_INDEX_WIDTH-3)-1:0] wtag;
-    logic [63:0]                                                            data;
-    logic [7:0]                                                             dirty;   // byte is dirty
-    logic [7:0]                                                             valid;   // byte is valid
-    logic [7:0]                                                             txblock; // byte is part of transaction in-flight
-    logic                                                                   checked; // if cache state of this word has been checked
-    logic [ariane_pkg::DCACHE_SET_ASSOC-1:0]                                hit_oh;  // valid way in the cache
+    logic [ariane_pkg::DCACHE_TAG_WIDTH+(ariane_pkg::DCACHE_INDEX_WIDTH-$clog2(riscv::XLEN/8))-1:0] wtag;
+    riscv::xlen_t                                                                           data;
+    logic [(riscv::XLEN/8)-1:0]                                                             dirty;   // byte is dirty
+    logic [(riscv::XLEN/8)-1:0]                                                             valid;   // byte is valid
+    logic [(riscv::XLEN/8)-1:0]                                                             txblock; // byte is part of transaction in-flight
+    logic                                                                                   checked; // if cache state of this word has been checked
+    logic [ariane_pkg::DCACHE_SET_ASSOC-1:0]                                                hit_oh;  // valid way in the cache
   } wbuffer_t;
 
   // TX status registers are indexed with the transaction ID
   // they basically store which bytes from which buffer entry are part
   // of that transaction
+  
   typedef struct packed {
     logic                                 vld;
-    logic [7:0]                           be;
+    logic [(riscv::XLEN/8)-1:0]           be;
     logic [$clog2(DCACHE_WBUF_DEPTH)-1:0] ptr;
   } tx_stat_t;
 
@@ -149,7 +150,7 @@ package wt_cache_pkg;
     logic [2:0]                                      size;        // transaction size: 000=Byte 001=2Byte; 010=4Byte; 011=8Byte; 111=Cache line (16/32Byte)
     logic [L1D_WAY_WIDTH-1:0]                        way;         // way to replace
     logic [riscv::PLEN-1:0]                          paddr;       // physical address
-    logic [63:0]                                     data;        // word width of processor (no block stores at the moment)
+    riscv::xlen_t                                    data;        // word width of processor (no block stores at the moment)
     logic                                            nc;          // noncacheable
     logic [CACHE_ID_WIDTH-1:0]                       tid;         // threadi id (used as transaction id in Ariane)
     ariane_pkg::amo_t                                amo_op;      // amo opcode
@@ -310,6 +311,20 @@ package wt_cache_pkg;
     endcase // size
     return be;
   endfunction : toByteEnable8
+  
+  function automatic logic [3:0] toByteEnable4(
+    input logic [1:0] offset,
+    input logic [1:0] size
+  );
+    logic [3:0] be;
+    be = '0;
+    unique case(size)
+      2'b00:   be[offset]       = '1; // byte
+      2'b01:   be[offset +:2 ]  = '1; // hword
+      default: be               = '1; // word
+    endcase // size
+    return be;
+  endfunction : toByteEnable4
 
   // openpiton requires the data to be replicated in case of smaller sizes than dwords
   function automatic logic [63:0] repData64(
@@ -326,6 +341,20 @@ package wt_cache_pkg;
     endcase // size
     return out;
   endfunction : repData64
+  
+  function automatic logic [31:0] repData32(
+    input logic [31:0] data,
+    input logic [1:0]  offset,
+    input logic [1:0]  size
+  );
+    logic [31:0] out;
+    unique case(size)
+      2'b00:   for(int k=0; k<4; k++) out[k*8  +: 8]    = data[offset*8 +: 8];  // byte
+      2'b01:   for(int k=0; k<2; k++) out[k*16 +: 16]   = data[offset*8 +: 16]; // hword
+      default: out   = data; // word
+    endcase // size
+    return out;
+  endfunction : repData32
 
   // note: this is openpiton specific. cannot transmit unaligned words.
   // hence we default to individual bytes in that case, and they have to be transmitted
@@ -342,6 +371,19 @@ package wt_cache_pkg;
     endcase // be
     return size;
   endfunction : toSize64
+  
+  
+  function automatic logic [1:0] toSize32(
+    input logic  [3:0] be
+  );
+    logic [1:0] size;
+    unique case(be)
+      4'b1111:                             size = 2'b10; // word
+      4'b1100, 4'b0011:                    size = 2'b01; // hword
+      default:                             size = 2'b00; // individual bytes
+    endcase // be
+    return size;
+  endfunction : toSize32
 
   // align the physical address to the specified size:
   // 000: bytes
