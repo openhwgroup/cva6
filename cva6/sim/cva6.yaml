@@ -41,7 +41,7 @@
   precmd: >
     make -f Makefile veri_comp target=<target> user-define="+define+WT_CACHE"
   cmd: >
-    ./verilator_work/Vcva6_core_only_tb
+    make -f Makefile veri_run elf-bin=<elf>
   postcmd: >
     <tool_path>/spike-dasm < ./trace_rvfi_hart_00.dasm > log
 
@@ -81,6 +81,28 @@
   precmd: >
     make -f Makefile vcs_core_comp target=<target> user-define="+define+WT_CACHE"
   cmd: >
-    make -f Makefile vcs_core_run
+    make -f Makefile vcs_core_run elf-bin=<elf>
+  postcmd: >
+    <tool_path>/spike-dasm < ./trace_rvfi_hart_00.dasm > log
+
+- iss: vcs-gate
+  path_var: RTL_PATH
+  tool_path: SPIKE_PATH
+  tb_path: TB_PATH
+  precmd: >
+    make -f Makefile vcs_gate_comp target=<target> user-define="+define+WT_CACHE"
+  cmd: >
+    make -f Makefile vcs_gate_run elf-bin=<elf>
+  postcmd: >
+    <tool_path>/spike-dasm < ./trace_rvfi_hart_00.dasm > log
+
+- iss: vcs-uvm
+  path_var: RTL_PATH
+  tool_path: SPIKE_PATH
+  tb_path: TB_PATH
+  precmd: >
+    make -f Makefile vcs_uvm_comp target=<target> cov=${cov} user-define="+define+WT_CACHE"
+  cmd: >
+    make -f Makefile vcs_uvm_run elf-bin=<elf> cov=${cov}
   postcmd: >
     <tool_path>/spike-dasm < ./trace_rvfi_hart_00.dasm > log

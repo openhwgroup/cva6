@@ -39,6 +39,7 @@ class uvme_cva6_env_c extends uvm_env;
 
    // Agents
    uvma_clknrst_agent_c   clknrst_agent;
+   uvma_cvxif_agent_c     cvxif_agent;
 
 
 
@@ -71,6 +72,11 @@ class uvme_cva6_env_c extends uvm_env;
     * Print out final elaboration
     */
    extern virtual function void end_of_elaboration_phase(uvm_phase phase);
+
+   /**
+    * Creates and starts the instruction and virtual peripheral sequences in active mode.
+    */
+   extern virtual task run_phase(uvm_phase phase);
 
    /**
     * Assigns configuration handles to components using UVM Configuration Database.
@@ -185,6 +191,8 @@ function void uvme_cva6_env_c::assign_cfg();
 
    uvm_config_db#(uvma_clknrst_cfg_c)::set(this, "*clknrst_agent", "cfg", cfg.clknrst_cfg);
 
+   uvm_config_db#(uvma_cvxif_cfg_c)::set(this, "*cvxif_agent", "cfg", cfg.cvxif_cfg);
+
 endfunction: assign_cfg
 
 
@@ -199,6 +207,7 @@ endfunction: assign_cntxt
 function void uvme_cva6_env_c::create_agents();
 
    clknrst_agent = uvma_clknrst_agent_c::type_id::create("clknrst_agent", this);
+   cvxif_agent   = uvma_cvxif_agent_c::type_id::create("cvxif_agent", this);
 
 endfunction: create_agents
 
@@ -243,8 +252,17 @@ endfunction: connect_scoreboard
 function void uvme_cva6_env_c::assemble_vsequencer();
 
    vsequencer.clknrst_sequencer   = clknrst_agent.sequencer;
+   vsequencer.cvxif_sequencer     = cvxif_agent.sequencer;
 
 endfunction: assemble_vsequencer
 
+
+task uvme_cva6_env_c::run_phase(uvm_phase phase);
+
+            uvma_cvxif_seq_c        cvxif_seq;
+            cvxif_seq = uvma_cvxif_seq_c::type_id::create("cvxif_seq");
+            cvxif_seq.start(cvxif_agent.sequencer);
+
+endtask
 
 `endif // __UVME_CVA6_ENV_SV__

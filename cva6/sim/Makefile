@@ -29,12 +29,27 @@ VERDI          ?=
 user-define    ?= +define+WT_CACHE
 USERDEFINE      = +define+RVFI_TRACE $(user-define)
 
+TESTNAME := $(shell basename -s .o $(elf-bin))
+#######################################################################################
+#                   Code Coverage
+#######################################################################################
+#code coverage is deactivated by default
+#To activate the code coverage: define the env variable cov with: (export cov=value) , to deactivate it: (unset cov) OR (export cov= )
+cov-exclude-list ?= $(root-dir)/cov-exclude-mod.lst
+
+ifdef cov
+	cov-comp-opt = -cm line+cond+fsm+tgl+assert -cm_hier $(cov-exclude-list)
+	cov-run-opt  = -cm line+cond+fsm+tgl+assert -cm_name $(TESTNAME)
+else
+	cov-comp-opt =
+	cov-run-opt  =
+endif
 ###############################################################################
 # Synopsys VCS specific commands, variables
 ###############################################################################
 VCS                     = vcs
 ALL_VLOGAN_FLAGS        = $(if $(VERDI), -kdb,) -sverilog -assert svaext $(USERDEFINE) -timescale=1ns/1ns
-ALL_VCS_FLAGS           = $(if $(VERDI), -kdb -debug_access+r -lca,) -full64 -timescale=1ns/1ns
+ALL_VCS_FLAGS           = $(if $(VERDI), -kdb -debug_access+all -lca,) -sverilog -full64 -timescale=1ns/1ns
 VCS_WORK_DIR            = $(CORE_V_VERIF)/cva6/sim/vcs_results/default/vcs.d
 SIMV                    = $(VCS_WORK_DIR)/simv
 
@@ -46,7 +61,9 @@ vcs_core_comp:
 	cd $(VCS_WORK_DIR) && vcs $(ALL_VCS_FLAGS) work.cva6_core_only_tb
 
 vcs_core_run:
-	$(VCS_WORK_DIR)/simv $(if $(VERDI), -verdi,)
+	cp $(TESTNAME).txt $(VCS_WORK_DIR)/Mem_init.txt
+	cd $(VCS_WORK_DIR) && $(VCS_WORK_DIR)/simv $(if $(VERDI), -verdi,)
+	mv $(VCS_WORK_DIR)/trace_rvfi_hart_00.dasm $(CORE_V_VERIF)/cva6/sim/
 
 export CVA6_UVMT_DIR          = $(CORE_V_VERIF)/cva6/tb/uvmt
 export CVA6_UVMT_PATH         = $(CORE_V_VERIF)/cva6/tb/uvmt
@@ -58,6 +75,7 @@ export DV_UVME_PATH           = $(CORE_V_VERIF)/$(CV_CORE_LC)/env/uvme
 export DV_UVML_HRTBT_PATH     = $(CORE_V_VERIF)/lib/uvm_libs/uvml_hrtbt
 export DV_UVMA_ISACOV_PATH    = $(CORE_V_VERIF)/lib/uvm_agents/uvma_isacov
 export DV_UVMA_CLKNRST_PATH   = $(CORE_V_VERIF)/lib/uvm_agents/uvma_clknrst
+export DV_UVMA_CVXIF_PATH     = $(CORE_V_VERIF)/lib/uvm_agents/uvma_cvxif
 export DV_UVMA_INTERRUPT_PATH = $(CORE_V_VERIF)/lib/uvm_agents/uvma_interrupt
 export DV_UVMA_DEBUG_PATH     = $(CORE_V_VERIF)/lib/uvm_agents/uvma_debug
 export DV_UVMA_OBI_PATH       = $(CORE_V_VERIF)/lib/uvm_agents/uvma_obi
@@ -81,25 +99,38 @@ ALL_UVM_FLAGS           = -lca -sverilog +incdir+/opt/synopsys/vcs-mx/O-2018.09-
 	  -assert svaext -race=all -ignore unique_checks -full64 -q +incdir+/opt/synopsys/vcs-mx/O-2018.09-SP1-1/etc/uvm/src \
 	  +incdir+$(CORE_V_VERIF)/$(CV_CORE_LC)/env/uvme +incdir+$(CORE_V_VERIF)/$(CV_CORE_LC)/tb/uvmt \
 	  $(USERDEFINE) $(if $(VERDI), -debug_access+all -kdb,)
-ALL_SIMV_UVM_FLAGS      = -licwait 20 -l vcs-hello-world.log -cm_name hello-world +ntb_random_seed=1 \
+ALL_SIMV_UVM_FLAGS      = -licwait 20 -l +ntb_random_seed=1 \
 		-sv_lib $(CORE_V_VERIF)/lib/dpi_dasm/lib/Linux64/libdpi_dasm +signature=I-ADD-01.signature_output \
-		+UVM_TESTNAME=uvmt_cva6_firmware_test_c $(if $(VERDI), -gui,)
+		+UVM_TESTNAME=uvmt_cva6_firmware_test_c $(if $(VERDI), -gui -do $(CORE_V_VERIF)/cva6/sim/init_uvm.do,)
 
 vcs_uvm_comp:
 	@echo "[VCS] Building Model"
 	mkdir -p $(VCS_WORK_DIR)
 	cd $(VCS_WORK_DIR) && vcs $(ALL_UVM_FLAGS) \
-	  -f $(FLIST_CORE) \
-	  -f $(CVA6_TB_DIR)/Flist.cva6_tb \
+	  -f $(FLIST_CORE) -f $(FLIST_TB) \
 	  -f $(CVA6_UVMT_DIR)/uvmt_cva6.flist \
+	  $(cov-comp-opt) \
 	  -top uvmt_cva6_tb
 
 vcs_uvm_run:
-	cp Mem_init.txt $(VCS_WORK_DIR)/
+	cp $(TESTNAME).txt $(VCS_WORK_DIR)/Mem_init.txt
 	cd $(VCS_WORK_DIR)/ && \
 	$(VCS_WORK_DIR)/simv ${ALL_SIMV_UVM_FLAGS} \
-		+elf_file=$(CORE_V_VERIF)/cva6/sim/hello-world.elf \
-		+firmware=$(CORE_V_VERIF)/cva6/sim/hello-world.hex && \
+	++$(elf-bin) \
+	$(cov-run-opt) && \
+	mv $(VCS_WORK_DIR)/trace_rvfi_hart_00.dasm $(CORE_V_VERIF)/cva6/sim/
+
+generate_cov_dash:
+	urg -dir $(VCS_WORK_DIR)/simv.vdb
+
+vcs_gate_comp:
+	@echo "[VCS] Building Model"
+	mkdir -p $(VCS_WORK_DIR)
+	cd $(VCS_WORK_DIR) && vcs $(ALL_VCS_FLAGS) -f $(FLIST_CORE)_gate -f $(FLIST_TB)
+
+vcs_gate_run:
+	cp $(TESTNAME).txt $(VCS_WORK_DIR)/Mem_init.txt
+	cd $(VCS_WORK_DIR)/ && $(VCS_WORK_DIR)/simv
 	mv $(VCS_WORK_DIR)/trace_rvfi_hart_00.dasm $(CORE_V_VERIF)/cva6/sim/
 
 vcs_clean_all:
@@ -127,6 +158,10 @@ veri_comp:
 	@echo "[VERILATOR] Compiling Model"
 	$(MAKE) -C $(VERILATOR_WORK_DIR) -f Vcva6_core_only_tb.mk
 
+veri_run:
+	cp $(TESTNAME).txt Mem_init.txt
+	$(VERILATOR_WORK_DIR)/Vcva6_core_only_tb
+
 veri_clean_all:
 	@echo "[VERILATOR] Cleanup (both work and results dirs)"
 	rm -rf $(VERILATOR_WORK_DIR)
@@ -137,7 +172,7 @@ veri_clean_all:
 ###############################################################################
 
 clean_all: vcs_clean_all veri_clean_all
-	rm -f Mem_init.txt
+	rm -f *.txt
 	rm -f trace*.log
 	rm -f trace*.dasm
 
@@ -153,4 +188,3 @@ help:
 	@echo "Clean-up targets:"
 	@echo "   make clean_all   : Deletes ALL generated files"
 	@echo "Support for other simulators on the ToDo list..."
-

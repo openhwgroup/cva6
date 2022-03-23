@@ -22,6 +22,7 @@
 
 // Agents
 -f ${DV_UVMA_CLKNRST_PATH}/uvma_clknrst_pkg.flist
+-f ${DV_UVMA_CVXIF_PATH}/src/uvma_cvxif_pkg.flist
 
 // Environments
 -f ${CVA6_UVME_PATH}/uvme_cva6_pkg.flist
