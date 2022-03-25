@@ -136,8 +136,8 @@ module csr_regfile import ariane_pkg::*; #(
 
     logic        wfi_d,       wfi_q;
 
-    riscv::xlen_t cycle_q,     cycle_d;
-    riscv::xlen_t instret_q,   instret_d;
+    riscv::xlen64_t cycle_q,     cycle_d;
+    riscv::xlen64_t instret_q,   instret_d;
 
     riscv::pmpcfg_t [15:0]    pmpcfg_q,  pmpcfg_d;
     logic [15:0][riscv::PLEN-3:0]        pmpaddr_q,  pmpaddr_d;
@@ -242,11 +242,15 @@ module csr_regfile import ariane_pkg::*; #(
                 riscv::CSR_MARCHID:            csr_rdata = ARIANE_MARCHID;
                 riscv::CSR_MIMPID:             csr_rdata = '0; // not implemented
                 riscv::CSR_MHARTID:            csr_rdata = hart_id_i;
-                riscv::CSR_MCYCLE:             csr_rdata = cycle_q;
-                riscv::CSR_MINSTRET:           csr_rdata = instret_q;
+                riscv::CSR_MCYCLE:             csr_rdata = riscv::IS_XLEN32 ? cycle_q[31:0] : cycle_q;
+                riscv::CSR_MCYCLE_H:           csr_rdata = riscv::IS_XLEN32 ? cycle_q[63:32]: '0;
+                riscv::CSR_MINSTRET:           csr_rdata = riscv::IS_XLEN32 ? instret_q[31:0] : instret_q;
+                riscv::CSR_MINSTRET_H:         csr_rdata = riscv::IS_XLEN32 ? instret_q[63:32]:'0;
                 // Counters and Timers
-                riscv::CSR_CYCLE:              csr_rdata = cycle_q;
-                riscv::CSR_INSTRET:            csr_rdata = instret_q;
+                riscv::CSR_CYCLE:              csr_rdata = riscv::IS_XLEN32 ? cycle_q[31:0] : cycle_q;  
+                riscv::CSR_CYCLE_H:            csr_rdata = riscv::IS_XLEN32 ? cycle_q[63:32]: '0;
+                riscv::CSR_INSTRET:            csr_rdata = riscv::IS_XLEN32 ? instret_q[31:0] : instret_q;
+                riscv::CSR_INSTRET_H:          csr_rdata = riscv::IS_XLEN32 ? instret_q[63:32]:'0; 
                 riscv::CSR_ML1_ICACHE_MISS,
                 riscv::CSR_ML1_DCACHE_MISS,
                 riscv::CSR_MITLB_MISS,
@@ -322,7 +326,7 @@ module csr_regfile import ariane_pkg::*; #(
     riscv::xlen_t mask;
     always_comb begin : csr_update
         automatic riscv::satp_t satp;
-        automatic riscv::xlen_t instret;
+        automatic riscv::xlen64_t instret;
 
 
         satp = satp_q;
@@ -564,8 +568,10 @@ module csr_regfile import ariane_pkg::*; #(
                     mip_d = (mip_q & ~mask) | (csr_wdata & mask);
                 end
                 // performance counters
-                riscv::CSR_MCYCLE:             cycle_d     = csr_wdata;
-                riscv::CSR_MINSTRET:           instret     = csr_wdata;
+                riscv::CSR_MCYCLE:             cycle_d[31:0]  = csr_wdata; 
+                riscv::CSR_MCYCLE_H:           cycle_d[63:32] = riscv::IS_XLEN32 ? csr_wdata : '0 ; 
+                riscv::CSR_MINSTRET:           instret[31:0]  = csr_wdata; 
+                riscv::CSR_MINSTRET_H:         instret[63:32] = riscv::IS_XLEN32 ? csr_wdata : '0 ;
                 riscv::CSR_ML1_ICACHE_MISS,
                 riscv::CSR_ML1_DCACHE_MISS,
                 riscv::CSR_MITLB_MISS,
@@ -1121,8 +1127,8 @@ module csr_regfile import ariane_pkg::*; #(
             stval_q                <= {riscv::XLEN{1'b0}};
             satp_q                 <= {riscv::XLEN{1'b0}};
             // timer and counters
-            cycle_q                <= {riscv::XLEN{1'b0}};
-            instret_q              <= {riscv::XLEN{1'b0}};
+            cycle_q                <= '0;
+            instret_q              <= '0;
             // aux registers
             en_ld_st_translation_q <= 1'b0;
             // wait for interrupt

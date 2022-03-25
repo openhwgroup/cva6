@@ -50,7 +50,7 @@ package riscv;
     localparam VPN2       = (VLEN-31 < 8) ? VLEN-31 : 8;
 
     typedef logic [XLEN-1:0] xlen_t;
-
+    typedef logic [63:0] xlen64_t;
     // --------------------
     // Privilege Spec
     // --------------------
@@ -397,7 +397,9 @@ package riscv;
         CSR_MIMPID         = 12'hF13,
         CSR_MHARTID        = 12'hF14,
         CSR_MCYCLE         = 12'hB00,
-        CSR_MINSTRET       = 12'hB02,
+        CSR_MCYCLE_H       = 12'hB80,   // Upper 32 bit of the counter when XLEN=32
+        CSR_MINSTRET       = 12'hB02,   
+        CSR_MINSTRET_H     = 12'hB82,   // Upper 32 bit of the counter when XLEN=32
         // Performance counters (Machine Mode)
         CSR_ML1_ICACHE_MISS = 12'hB03,  // L1 Instr Cache Miss
         CSR_ML1_DCACHE_MISS = 12'hB04,  // L1 Data Cache Miss
@@ -444,8 +446,10 @@ package riscv;
         CSR_DSCRATCH1      = 12'h7b3, // optional
         // Counters and Timers (User Mode - R/O Shadows)
         CSR_CYCLE          = 12'hC00,
+        CSR_CYCLE_H        = 12'hC80,  // Upper 32 bit of the counter when XLEN=32
         CSR_TIME           = 12'hC01,
         CSR_INSTRET        = 12'hC02,
+        CSR_INSTRET_H      = 12'hC82,  // Upper 32 bit of the counter when XLEN=32
         // Performance counters (User Mode - R/O Shadows)
         CSR_L1_ICACHE_MISS = 12'hC03,  // L1 Instr Cache Miss
         CSR_L1_DCACHE_MISS = 12'hC04,  // L1 Data Cache Miss

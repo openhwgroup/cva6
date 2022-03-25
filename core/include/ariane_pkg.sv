@@ -136,6 +136,7 @@ package ariane_pkg;
     localparam NR_COMMIT_PORTS = 2;
 
     localparam ENABLE_RENAME = 1'b0;
+    localparam ENABLE_PERFCOUNTER =1'b1;    // This makes perf_counters optional. 1 = to add perf_counters, 0 = to remove perf_counters from cva6
 
     localparam ISSUE_WIDTH = 1;
     // amount of pipeline registers inserted for load/store return path

@@ -582,6 +582,8 @@ module cva6 import ariane_pkg::*; #(
   // ------------------------
   // Performance Counters
   // ------------------------
+  generate
+  if (ENABLE_PERFCOUNTER) begin : perfcount_gen
   perf_counters i_perf_counters (
     .clk_i             ( clk_i                  ),
     .rst_ni            ( rst_ni                 ),
@@ -603,6 +605,11 @@ module cva6 import ariane_pkg::*; #(
     .eret_i            ( eret                   ),
     .resolved_branch_i ( resolved_branch        )
   );
+ end
+ else begin 
+    assign data_perf_csr    = '0;
+ end
+ endgenerate
 
   // ------------
   // Controller
