@@ -53,15 +53,21 @@ module id_stage (
     logic                [31:0] instruction;
     logic                is_compressed;
 
-    // ---------------------------------------------------------
-    // 1. Check if they are compressed and expand in case they are
-    // ---------------------------------------------------------
-    compressed_decoder compressed_decoder_i (
-        .instr_i                 ( fetch_entry_i.instruction   ),
-        .instr_o                 ( instruction                 ),
-        .illegal_instr_o         ( is_illegal                  ),
-        .is_compressed_o         ( is_compressed               )
-    );
+    if (ariane_pkg::RVC) begin
+      // ---------------------------------------------------------
+      // 1. Check if they are compressed and expand in case they are
+      // ---------------------------------------------------------
+      compressed_decoder compressed_decoder_i (
+          .instr_i                 ( fetch_entry_i.instruction   ),
+          .instr_o                 ( instruction                 ),
+          .illegal_instr_o         ( is_illegal                  ),
+          .is_compressed_o         ( is_compressed               )
+      );
+    end else begin
+      assign instruction = fetch_entry_i.instruction;
+      assign is_illegal = '0;
+      assign is_compressed = '0;
+    end
     // ---------------------------------------------------------
     // 2. Decode and emit instruction to issue stage
     // ---------------------------------------------------------

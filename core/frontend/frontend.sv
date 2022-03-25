@@ -68,7 +68,11 @@ module frontend import ariane_pkg::*; #(
     // shift amount
     logic [$clog2(ariane_pkg::INSTR_PER_FETCH)-1:0] shamt;
     // address will always be 16 bit aligned, make this explicit here
-    assign shamt = icache_dreq_i.vaddr[$clog2(ariane_pkg::INSTR_PER_FETCH):1];
+    if (ariane_pkg::RVC) begin : gen_shamt
+      assign shamt = icache_dreq_i.vaddr[$clog2(ariane_pkg::INSTR_PER_FETCH):1];
+    end else begin
+      assign shamt = 1'b0;
+    end
 
     // -----------------------
     // Ctrl Flow Speculation
@@ -125,12 +129,16 @@ module frontend import ariane_pkg::*; #(
     // the prediction we saved from the previous fetch
     assign bht_prediction_shifted[0] = (serving_unaligned) ? bht_q : bht_prediction[addr[0][1]];
     assign btb_prediction_shifted[0] = (serving_unaligned) ? btb_q : btb_prediction[addr[0][1]];
-    // for all other predictions we can use the generated address to index
-    // into the branch prediction data structures
-    for (genvar i = 1; i < INSTR_PER_FETCH; i++) begin : gen_prediction_address
-      assign bht_prediction_shifted[i] = bht_prediction[addr[i][$clog2(INSTR_PER_FETCH):1]];
-      assign btb_prediction_shifted[i] = btb_prediction[addr[i][$clog2(INSTR_PER_FETCH):1]];
-    end
+    
+    if (ariane_pkg::RVC) begin : gen_btb_prediction_shifted
+      // for all other predictions we can use the generated address to index
+      // into the branch prediction data structures
+      for (genvar i = 1; i < INSTR_PER_FETCH; i++) begin : gen_prediction_address
+        assign bht_prediction_shifted[i] = bht_prediction[addr[i][$clog2(INSTR_PER_FETCH):1]];
+        assign btb_prediction_shifted[i] = btb_prediction[addr[i][$clog2(INSTR_PER_FETCH):1]];
+      end
+    end;
+    
     // for the return address stack it doens't matter as we have the
     // address of the call/return already
     logic bp_valid;

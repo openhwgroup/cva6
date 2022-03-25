@@ -155,6 +155,7 @@ package ariane_pkg;
     // allocate more space for the commit buffer to be on the save side, this needs to be a power of two
     localparam int unsigned DEPTH_COMMIT = 8;
 `endif
+    localparam bit RVC = cva6_config_pkg::CVA6ConfigCExtEn; // Is C extension configuration
 
 `ifdef PITON_ARIANE
     // Floating-point extensions configuration
@@ -207,7 +208,7 @@ package ariane_pkg;
     localparam riscv::xlen_t ARIANE_MARCHID = {{riscv::XLEN-32{1'b0}}, 32'd3};
 
     localparam riscv::xlen_t ISA_CODE = (RVA <<  0)  // A - Atomic Instructions extension
-                                     | (1   <<  2)  // C - Compressed extension
+                                     | (RVC <<  2)  // C - Compressed extension
                                      | (RVD <<  3)  // D - Double precsision floating-point extension
                                      | (RVF <<  5)  // F - Single precsision floating-point extension
                                      | (1   <<  8)  // I - RV32I/64I/128I base ISA
@@ -285,7 +286,8 @@ package ariane_pkg;
     localparam int unsigned FETCH_FIFO_DEPTH  = 4;
     localparam int unsigned FETCH_WIDTH       = 32;
     // maximum instructions we can fetch on one request (we support compressed instructions)
-    localparam int unsigned INSTR_PER_FETCH = FETCH_WIDTH / 16;
+    localparam int unsigned INSTR_PER_FETCH = RVC == 1'b1 ? (FETCH_WIDTH / 16) : 1;
+    localparam int unsigned LOG2_INSTR_PER_FETCH = RVC == 1'b1 ? 1 : $clog2(ariane_pkg::INSTR_PER_FETCH);
 
     // Only use struct when signals have same direction
     // exception
