@@ -9,7 +9,7 @@ It has configurable size, separate TLBs, a hardware PTW and branch-prediction (b
 ![](docs/_static/ariane_overview.png)
 
 ## Directory Structure:
-The directory structure separates the [CVA6 RISC-V CPU](#cva6-risc-v-cpu) core from the COREV-APU [FPGA Emulation](#corev-apu-fpga-emulation).
+The directory structure separates the [CVA6 RISC-V CPU](#cva6-risc-v-cpu) core from the [CORE-V-APU FPGA Emulation Platform](#corev-apu-fpga-emulation).
 Files, directories and submodules under `cva6` are for the core _only_ and should not have any dependencies on the APU.
 Files, directories and submodules under `corev_apu` are for the FPGA Emulation platform.
 The CVA6 core can be compiled stand-alone, and obviously the APU is dependent on the core.
@@ -32,7 +32,7 @@ The Makefiles supported in the **core-v-verif** project automatically clone the 
 
 ## Contributing
 We highly appreciate community contributions.
-<br><br>To ease our work of reviewing your contributions, please review [CONTRIBUTING](https://github.com/openhwgroup/cva6/blob/master/CONTRIBUTING.md).
+<br><br>To ease the work of reviewing contributions, please review [CONTRIBUTING](https://github.com/openhwgroup/cva6/blob/master/CONTRIBUTING.md).
 
 ## Issues and Troubleshooting
 If you find any problems or issues with CVA6 or the documentation, please check out the [issue tracker](https://github.com/openhwgroup/cva6/issues)
