@@ -582,7 +582,6 @@ module cva6 import ariane_pkg::*; #(
   // ------------------------
   // Performance Counters
   // ------------------------
-  generate
   if (ENABLE_PERFCOUNTER) begin : gen_perfcount_gen
   perf_counters i_perf_counters (
     .clk_i             ( clk_i                  ),
