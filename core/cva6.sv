@@ -609,7 +609,6 @@ module cva6 import ariane_pkg::*; #(
  else begin 
     assign data_perf_csr    = '0;
  end
- endgenerate
 
   // ------------
   // Controller
