@@ -136,8 +136,8 @@ module csr_regfile import ariane_pkg::*; #(
 
     logic        wfi_d,       wfi_q;
 
-    riscv::xlen_t cycle_q,     cycle_d;
-    riscv::xlen_t instret_q,   instret_d;
+    logic [63:0] cycle_q,     cycle_d;
+    logic [63:0] instret_q,   instret_d;
 
     riscv::pmpcfg_t [15:0]    pmpcfg_q,  pmpcfg_d;
     logic [15:0][riscv::PLEN-3:0]        pmpaddr_q,  pmpaddr_d;
@@ -242,11 +242,15 @@ module csr_regfile import ariane_pkg::*; #(
                 riscv::CSR_MARCHID:            csr_rdata = ARIANE_MARCHID;
                 riscv::CSR_MIMPID:             csr_rdata = '0; // not implemented
                 riscv::CSR_MHARTID:            csr_rdata = hart_id_i;
-                riscv::CSR_MCYCLE:             csr_rdata = cycle_q;
-                riscv::CSR_MINSTRET:           csr_rdata = instret_q;
                 // Counters and Timers
-                riscv::CSR_CYCLE:              csr_rdata = cycle_q;
-                riscv::CSR_INSTRET:            csr_rdata = instret_q;
+                riscv::CSR_MCYCLE:             csr_rdata = cycle_q[riscv::XLEN-1:0];
+                riscv::CSR_MCYCLEH:            if (riscv::XLEN == 32) csr_rdata = cycle_q[63:32]; else read_access_exception = 1'b1;
+                riscv::CSR_MINSTRET:           csr_rdata = instret_q[riscv::XLEN-1:0];
+                riscv::CSR_MINSTRETH:          if (riscv::XLEN == 32) csr_rdata = instret_q[63:32]; else read_access_exception = 1'b1;
+                riscv::CSR_CYCLE:              csr_rdata = cycle_q[riscv::XLEN-1:0];
+                riscv::CSR_CYCLEH:             if (riscv::XLEN == 32) csr_rdata = cycle_q[63:32]; else read_access_exception = 1'b1;
+                riscv::CSR_INSTRET:            csr_rdata = instret_q[riscv::XLEN-1:0];
+                riscv::CSR_INSTRETH:           if (riscv::XLEN == 32) csr_rdata = instret_q[63:32]; else read_access_exception = 1'b1;
                 riscv::CSR_ML1_ICACHE_MISS,
                 riscv::CSR_ML1_DCACHE_MISS,
                 riscv::CSR_MITLB_MISS,
