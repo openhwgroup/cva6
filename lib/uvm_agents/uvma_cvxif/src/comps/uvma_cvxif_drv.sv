@@ -218,10 +218,7 @@ task uvma_cvxif_drv_c::drv_slv_result_in_order_proc();
       end
       else begin
          go=0;
-         if (cfg.instr_delayed) begin
-            cfg.randomize(rnd_delay);
-            repeat(cfg.rnd_delay) @(posedge cntxt.vif.clk);
-         end
+         repeat(resp_queue[0].rnd_delay) @(posedge cntxt.vif.clk);
          drv_slv_result_resp(resp_queue[0]);
          resp_queue.pop_front();
          do @(posedge cntxt.vif.clk);
@@ -313,12 +310,6 @@ endtask
 
 task uvma_cvxif_drv_c::fill_slv_res_resp(input uvma_cvxif_resp_item_c res_item);
 
-   if (cfg.instr_delayed) begin
-     cfg.randomize(rnd_delay);
-     res_resp.rnd_delay = cfg.rnd_delay;
-   end
-   else res_resp.rnd_delay = 0;
-
    res_resp.result_valid = res_item.result_valid;
    res_resp.id           = res_item.result.id;
    res_resp.data         = res_item.result.data;
@@ -327,6 +318,7 @@ task uvma_cvxif_drv_c::fill_slv_res_resp(input uvma_cvxif_resp_item_c res_item);
    res_resp.exc          = res_item.result.exc;
    res_resp.exccode      = res_item.result.exccode;
    res_resp.result_ready = res_item.result_ready;
+   res_resp.rnd_delay    = res_item.rnd_delay;
 
 endtask
 

@@ -130,6 +130,13 @@ task uvma_cvxif_seq_c::do_result_resp();
       resp_item.result.we=resp_item.issue_resp.writeback;
       resp_item.result_ready=req_item.result_ready;
       do_instr_result();
+      if (cfg.instr_delayed) begin
+         cfg.randomize(rnd_delay);
+         resp_item.rnd_delay = cfg.rnd_delay;
+      end
+      else begin
+         resp_item.rnd_delay = 0;
+      end
    end
    else begin
       resp_item.result_valid=0;
@@ -139,6 +146,7 @@ task uvma_cvxif_seq_c::do_result_resp();
       resp_item.result.rd=0;
       resp_item.result.we=0;
       resp_item.result.exccode=0;
+      resp_item.rnd_delay = 0;
    end
 
 endtask
