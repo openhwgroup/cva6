@@ -173,7 +173,7 @@ module uvma_cvxif_assert #(parameter X_ID_WIDTH    = cvxif_pkg::X_ID_WIDTH,
       end
    end
    property p_result_dualwrite;
-      (cvxif_assert.cvxif_resp_o.x_result_valid && (cvxif_assert.cvxif_resp_o.x_result.we[X_RFW_WIDTH/riscv::XLEN-1])) |-> cvxif_assert.cvxif_resp_o.x_result.we;
+      (cvxif_assert.cvxif_resp_o.x_result_valid && (cvxif_assert.cvxif_resp_o.x_result.we[X_RFW_WIDTH/riscv::XLEN-1])) |-> cvxif_assert.cvxif_resp_o.x_result.we[0];
    endproperty
 
 endmodule : uvma_cvxif_assert
