@@ -27,11 +27,14 @@ class uvma_cvxif_mon_c extends uvm_monitor;
 
    string info_tag = "CVXIF_MONITOR";
 
-   int req_valid,
-       passed_id;
+   int req_valid;
+   int passed_id;
 
-   int commit_id_lst[$], issue_id_lst[int], accepted_issue_id[int];
-   int c, r;
+   int commit_id_lst[$];
+   int issue_id_lst[int];
+   int accepted_issue_id[int];
+   int c;
+   int r;
 
    uvm_analysis_port#(uvma_cvxif_req_item_c)  req_ap;
 

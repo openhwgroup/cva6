@@ -27,8 +27,11 @@ class uvma_cvxif_drv_c extends uvm_driver #(uvma_cvxif_resp_item_c);
 
    string info_tag = "CVXIF_DRV";
 
-   drv_result resp_queue [$], res_resp, aux_item;
-   logic go=1, res_ready;
+   drv_result resp_queue [$];
+   drv_result res_resp;
+   drv_result aux_item;
+   logic go=1;
+   logic res_ready;
 
    extern function new(string name="uvma_cvxif_drv", uvm_component parent=null);
 
