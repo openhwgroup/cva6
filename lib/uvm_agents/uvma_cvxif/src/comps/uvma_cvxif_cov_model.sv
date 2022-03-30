@@ -17,22 +17,6 @@
    * Decalred at package-level to enable mutliple instances per monitor class (e.g. read/write)
    */
 
-covergroup mode_cg(bit machine,
-                   bit user,
-                   bit debug,
-                   bit supervisor)
-                  with function sample(uvma_cvxif_req_item_c req_item);
-   mode_cp: coverpoint (req_item.issue_req.mode)
-      {
-       ignore_bins u_mode      = {2'b00} iff(!user);
-       ignore_bins s_mode      = {2'b01} iff(!supervisor);
-       ignore_bins debug_mode  = {2'b10} iff(!debug);
-       ignore_bins m_mode      = {2'b11} iff(!machine);
-       //'with' could be used; "iff" is used instead, due to vcs problem with the use of 'with' clause in some cases
-      }
-
-endgroup : mode_cg
-
 class uvma_cvxif_cov_model_c extends uvm_component;
 
    // Objects
@@ -46,7 +30,7 @@ class uvma_cvxif_cov_model_c extends uvm_component;
    uvm_tlm_analysis_fifo#(uvma_cvxif_resp_item_c)  resp_item_fifo;
 
    //covergroup instances
-   mode_cg mode_covg;
+    // TODO
 
    `uvm_component_utils_begin(uvma_cvxif_cov_model_c)
       `uvm_field_object(cfg  , UVM_DEFAULT)
@@ -117,11 +101,6 @@ function void uvma_cvxif_cov_model_c::build_phase(uvm_phase phase);
    req_item_fifo   = new("req_item_fifo" , this);
    resp_item_fifo  = new("resp_item_fifo", this);
 
-   mode_covg = new(.machine(cfg.machine),
-                 .user(cfg.user),
-                 .debug(cfg.debug),
-                 .supervisor(cfg.supervisor));
-
 endfunction : build_phase
 
 
@@ -142,12 +121,6 @@ task uvma_cvxif_cov_model_c::run_phase(uvm_phase phase);
             sample_cntxt();
          end
 
-        // Monitor transactions
-         /* forever begin
-            mon_trn_fifo.get(mon_trn);
-            sample_mon_trn();
-         end*/
-
          // 'mstr' sequence items
          forever begin
             req_item_fifo.get(req_item);
@@ -167,28 +140,28 @@ endtask : run_phase
 
 function void uvma_cvxif_cov_model_c::sample_cfg();
 
-   // TODO Implement uvma_obi_memory_cov_model_c::sample_cfg();
+   // TODO Implement uvma_cvxif_cov_model_c::sample_cfg();
 
 endfunction : sample_cfg
 
 
 function void uvma_cvxif_cov_model_c::sample_cntxt();
 
-   // TODO Implement uvma_obi_memory_cov_model_c::sample_cntxt();
+   // TODO Implement uvma_cvxif_cov_model_c::sample_cntxt();
 
 endfunction : sample_cntxt
 
 
 function void uvma_cvxif_cov_model_c::sample_req_item(uvma_cvxif_req_item_c req_item);
 
-  mode_covg.sample(req_item);
+  // TODO Implement uvma_cvxif_cov_model_c::sample_req_item();
 
 endfunction : sample_req_item
 
 
 function void uvma_cvxif_cov_model_c::sample_resp_item();
 
-   // TODO Implement uvma_obi_memory_cov_model_c::sample_resp_item();
+   // TODO Implement uvma_cvxif_cov_model_c::sample_resp_item();
 
 endfunction : sample_resp_item
 

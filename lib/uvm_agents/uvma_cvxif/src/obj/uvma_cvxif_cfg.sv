@@ -25,10 +25,6 @@ class uvma_cvxif_cfg_c extends uvm_object;
    rand bit in_order;
    rand bit   cov_model_enabled;
    rand bit   enabled;
-   rand logic machine;
-   rand logic user;
-   rand logic supervisor;
-   rand logic debug;
 
 
    constraint reasonable_values {
@@ -47,15 +43,8 @@ class uvma_cvxif_cfg_c extends uvm_object;
                                                             // you can randomize it by giving "UVMA_CVXIF_ISSUE_READY_RANDOMIZED" to "ready_mode"
       soft instr_delayed     == 0;
       soft in_order          == 0;
-      soft cov_model_enabled == 1;
+      soft cov_model_enabled == 0;
       soft enabled           == 1;
-   }
-
-   constraint supported_modes {
-      soft machine    == 1;
-      soft user       == 1;
-      soft supervisor == 1;
-      soft debug      == 0;
    }
 
    `uvm_object_utils_begin(uvma_cvxif_cfg_c)
@@ -67,10 +56,6 @@ class uvma_cvxif_cfg_c extends uvm_object;
       `uvm_field_int ( in_order,                       UVM_DEFAULT)
       `uvm_field_int ( cov_model_enabled,              UVM_DEFAULT)
       `uvm_field_int ( enabled,                        UVM_DEFAULT)
-      `uvm_field_int ( machine,                        UVM_DEFAULT)
-      `uvm_field_int ( user,                           UVM_DEFAULT)
-      `uvm_field_int ( supervisor,                     UVM_DEFAULT)
-      `uvm_field_int ( debug,                          UVM_DEFAULT)
    `uvm_object_utils_end
 
    /**
