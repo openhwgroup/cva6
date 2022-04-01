@@ -321,43 +321,43 @@ test36:
 test37:
     li x17, 0xf14b3729
     li x18, 0xa6dffa04
-    .word 0x5d28b9d7    #pv.add.div2 x19, x17, x18
+    .word 0x7528a9d7    #pv.add.div2 x19, x17, x18
     li x20, 0x4c151896
     beq x20, x19, test38
     c.addi x15, 0x1
 test38:
     li x17, 0x615a3814
     li x18, 0x0b218a1d
-    .word 0x5d28b9d7    #pv.add.div2 x19, x17, x18
+    .word 0x7528a9d7    #pv.add.div2 x19, x17, x18
     li x20, 0x363d6118
     beq x20, x19, test39
     c.addi x15, 0x1
 test39:
     li x17, 0x899b9daa
     li x18, 0xc799bf72
-    .word 0x5d28b9d7    #pv.add.div2 x19, x17, x18
+    .word 0x7528a9d7    #pv.add.div2 x19, x17, x18
     li x20, 0x289a2e8e
     beq x20, x19, test40
     c.addi x15, 0x1
 test40:
     li x17, 0x784a98e3
     li x18, 0xa5385e64
-    .word 0x5d28b9d7    #pv.add.div2 x19, x17, x18
-    li x20, 0x1d827ba3
+    .word 0x7528a9d7    #pv.add.div2 x19, x17, x18
+    li x20, 0x0ec17ba3
     beq x20, x19, test41
     c.addi x15, 0x1
 test41:
     li x17, 0xa80f53e9
     li x18, 0xe3e07c1e
-    .word 0x5d28b9d7    #pv.add.div2 x19, x17, x18
-    li x20, 0x45f77c1f
+    .word 0x7528a9d7    #pv.add.div2 x19, x17, x18
+    li x20, 0x45f76803
     beq x20, x19, test42
     c.addi x15, 0x1
 test42:
     li x17, 0x721f17b7
     li x18, 0xca3256f2
-    .word 0x5d28b9d7    #pv.add.div2 x19, x17, x18
-    li x20, 0x1e286ea9
+    .word 0x7528a9d7    #pv.add.div2 x19, x17, x18
+    li x20, 0x1e283754
     beq x20, x19, test43
     c.addi x15, 0x1
 #tests43-48 test the pv.add.div4 instruction. values loaded in and compared to are expected output values
@@ -366,42 +366,42 @@ test42:
 test43:
     li x17, 0xf996c75d
     li x18, 0x6fcc0d8b
-    .word 0x5d28c9d7    #pv.add.div4 x19, x17, x18
+    .word 0x7528c9d7    #pv.add.div4 x19, x17, x18
     li x20, 0x1a58353a
     beq x20, x19, test44
     c.addi x15, 0x1
 test44:
     li x17, 0x1ace57a3
     li x18, 0x5a105f37
-    .word 0x5d28c9d7    #pv.add.div4 x19, x17, x18
+    .word 0x7528c9d7    #pv.add.div4 x19, x17, x18
     li x20, 0x1d372db6
     beq x20, x19, test45
     c.addi x15, 0x1
 test45:
     li x17, 0xa4a93062
     li x18, 0x2f1a9732
-    .word 0x5d28c9d7    #pv.add.div4 x19, x17, x18
+    .word 0x7528c9d7    #pv.add.div4 x19, x17, x18
     li x20, 0x34f031e5
     beq x20, x19, test46
     c.addi x15, 0x1
 test46:
     li x17, 0x842aeebb
     li x18, 0xf8ec8340
-    .word 0x5d28c9d7    #pv.add.div4 x19, x17, x18
+    .word 0x7528c9d7    #pv.add.div4 x19, x17, x18
     li x20, 0x1f451c7e
     beq x20, x19, test47
     c.addi x15, 0x1
 test47:
     li x17, 0xae2beb6d
     li x18, 0x2881cd1c
-    .word 0x5d28c9d7    #pv.add.div4 x19, x17, x18
+    .word 0x7528c9d7    #pv.add.div4 x19, x17, x18
     li x20, 0x35ab2e22
     beq x20, x19, test48
     c.addi x15, 0x1
 test48:
     li x17, 0xe0de49ca
     li x18, 0xeda89810
-    .word 0x5d28c9d7    #pv.add.div4 x19, x17, x18
+    .word 0x7528c9d7    #pv.add.div4 x19, x17, x18
     li x20, 0x33a13876
     beq x20, x19, test49
     c.addi x15, 0x1
@@ -411,42 +411,42 @@ test48:
 test49:
     li x17, 0x00f0091b
     li x18, 0x04868a8f
-    .word 0x5d28e9d7    #pv.add.div8 x19, x17, x18
+    .word 0x7528e9d7    #pv.add.div8 x19, x17, x18
     li x20, 0x00ae1275
     beq x20, x19, test50
     c.addi x15, 0x1
 test50:
     li x17, 0x349f1c44
     li x18, 0xde7a69e0
-    .word 0x5d28e9d7    #pv.add.div8 x19, x17, x18
+    .word 0x7528e9d7    #pv.add.div8 x19, x17, x18
     li x20, 0x026310c4
     beq x20, x19, test51
     c.addi x15, 0x1
 test51:
     li x17, 0x453011b7
     li x18, 0x855ce1b1
-    .word 0x5d28e9d7    #pv.add.div8 x19, x17, x18
+    .word 0x7528e9d7    #pv.add.div8 x19, x17, x18
     li x20, 0x19511e6d
     beq x20, x19, test52
     c.addi x15, 0x1
 test52:
     li x17, 0x4e544def
     li x18, 0xf63d2d7f
-    .word 0x5d28e9d7    #pv.add.div8 x19, x17, x18
+    .word 0x7528e9d7    #pv.add.div8 x19, x17, x18
     li x20, 0x08920f6d
     beq x20, x19, test53
     c.addi x15, 0x1
 test53:
     li x17, 0x751ed585
     li x18, 0xed1fed20
-    .word 0x5d28e9d7    #pv.add.div8 x19, x17, x18
+    .word 0x7528e9d7    #pv.add.div8 x19, x17, x18
     li x20, 0x0c471854
     beq x20, x19, test54
     c.addi x15, 0x1
 test54:
     li x17, 0x1b1b67d7
     li x18, 0xf758297f
-    .word 0x5d28e9d7    #pv.add.div8 x19, x17, x18
+    .word 0x7528e9d7    #pv.add.div8 x19, x17, x18
     li x20, 0x024e122a
     beq x20, x19, test55
     c.addi x15, 0x1
