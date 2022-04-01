@@ -138,7 +138,7 @@ To ease tracing to verification, the extensions have been split in independent r
 |ISA&#8209;80|CVA6 shall support the **C** extension (compressed instructions), version 2.0 as an *option*.
 |ISA&#8209;90|CVA6 shall support the *Zicsr* extension (CSR instructions), version 2.0.
 |ISA&#8209;100|CVA6 shall support the *Zifencei* extension, version 2.0.
-|ISA-&#8209110|As an *option*, the duration of instructions shall be independent from the operand values.
+|ISA&#8209;110|As an *option*, the duration of instructions shall be independent from the operand values.
 |===
 
 Note to ISA-110: In the current design, the duration of the division is data-dependent, which can be a security issue.
@@ -169,32 +169,32 @@ Performance counters are important features for safety-critical applications.
 |HPM&#8209;10|CVA6 shall implement the 64-bit `mcycle` and `minstret` standard performance counters (including their upper 32 bits counterparts `mcycleh` and `minstreth` in CV32A6) as per [RVpriv].
 |HPM&#8209;20|CVA6 shall implement as an *option* six generic 64-bit performance counters located in `hpmcounter3` to `hpmcounter8` (including their upper 32 bits counterparts in CV32A6: `hpmcounter3h` to `hpmcounter8h`).
 |HPM&#8209;30|Each of the six generic performance counters shall be able to count events from one of these sources: +
-- L1 I-Cache misses +
-- L1 D-Cache misses +
-- ITLB misses +
-- DTLB misses +
-- Load accesses + 
-- Store accesses +
-- Exceptions +
-- Exception handler returns +
-- Branch instructions +
-- Branch mispredicts + 
-- Branch exceptions + 
-- Call +
-- Return +
-- MSB Full +
-- Instruction fetch Empty +
-- L1 I-Cache accesses + 
-- L1 D-Cache accesses +
-- L1$ line invalidation +
-- I-TLB flush +
-- Integer instructions + 
-- Floating point instructions +
-- Pipeline bubbles
+1. L1 I-Cache misses +
+2. L1 D-Cache misses +
+3. ITLB misses +
+4. DTLB misses +
+5. Load accesses + 
+6. Store accesses +
+7. Exceptions +
+8. Exception handler returns +
+9. Branch instructions +
+10. Branch mispredicts + 
+11. Branch exceptions + 
+12. Call +
+13. Return +
+14. MSB Full +
+15. Instruction fetch Empty +
+16. L1 I-Cache accesses + 
+17. L1 D-Cache accesses +
+18. L1$ line invalidation +
+19. I-TLB flush +
+20. Integer instructions + 
+21. Floating point instructions +
+22. Pipeline bubbles
 |HPM&#8209;40|The source of events counted by the six generic performance counters shall be selected by the `mhpmevent3` to `mhpmevent8` CSRs.
 |HPM&#8209;50|CVA6 shall allow the supervisor access of performance counters through enabling of `mcounteren` CSR.
 |HPM&#8209;60|CVA6 shall allow the user access of performance counters through enabling of `scounteren` CSR.
-|HPM&#8209;70|CVA6 shall implement the +mcountinhibit `counter-inhibit` register.
+|HPM&#8209;70|CVA6 shall implement the `mcountinhibit` counter-inhibit register.
 |HPM&#8209;80|CVA6 shall implement the read-only `cycle`, `instret`, `hpmcounter3` to `hpmcounter8` access to counters (and their upper 32-bit counterparts in CV32A6).
 |===
 
