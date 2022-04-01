@@ -217,42 +217,42 @@ test24:
 #pv.insert.h is of the form "pv.insert.h rD, rs1, rs2". rD[31:24] = rs1[31:24] >> rs2[7:0],
 #rD[23:16] = rs1[23:16] >> rs2[7:0], rD[15:8] = rs1[15:8] >> rs2[7:0], rD[7:0] = rs1[7:0] >> rs2[7:0]
 test25:
-    li x20, 0x626ef04f
+    li x19, 0x626ef04f
     li x17, 0x8ac2523d
     pv.insert.h x19, x17, 0x1
     li x20, 0x523df04f
     beq x20, x19, test26
     c.addi x15, 0x1
 test26:
-    li x20, 0x88fbb7a1
+    li x19, 0x88fbb7a1
     li x17, 0xd08380a0
     pv.insert.h x19, x17, 0x1
     li x20, 0x80a0b7a1
     beq x20, x19, test27
     c.addi x15, 0x1
 test27:
-    li x20, 0xbfbacff4
+    li x19, 0xbfbacff4
     li x17, 0xdc33ba16
     pv.insert.h x19, x17, 0x1
     li x20, 0xba16cff4
     beq x20, x19, test28
     c.addi x15, 0x1
 test28:
-    li x20, 0x990fc831
+    li x19, 0x990fc831
     li x17, 0x600419c0
     pv.insert.h x19, x17, 0x0
     li x20, 0x990f19c0
     beq x20, x19, test29
     c.addi x15, 0x1
 test29:
-    li x20, 0x044da5f9
+    li x19, 0x044da5f9
     li x17, 0x2cddf91e
     pv.insert.h x19, x17, 0x0
     li x20, 0x044df91e
     beq x20, x19, test30
     c.addi x15, 0x1
 test30:
-    li x20, 0x5a626f2a
+    li x19, 0x5a626f2a
     li x17, 0xe571bb0d
     pv.insert.h x19, x17, 0x0 #.word 0xb00889d7
     li x20, 0x5a62bb0d
@@ -262,42 +262,42 @@ test30:
 #pv.insert.b is of the form "pv.insert.b rD, rs1, Imm6". rD[31:24] = rs1[31:24] >> Imm6,
 #rD[23:16] = rs1[23:16] >> Imm6, rD[15:8] = rs1[15:8] >> Imm6, rD[7:0] = rs1[7:0] >> Imm6
 test31:
-    li x20, 0xe67cfd8a
+    li x19, 0xe67cfd8a
     li x17, 0xb589205f
     pv.insert.b x19, x17, 0x1
     li x20, 0xe67c5f8a
     beq x20, x19, test32
     c.addi x15, 0x1
 test32:
-    li x20, 0xef58b0a8
+    li x19, 0xef58b0a8
     li x17, 0x161409d6
     pv.insert.b x19, x17, 0x3
     li x20, 0xd658b0a8
     beq x20, x19, test33
     c.addi x15, 0x1
 test33:
-    li x20, 0x1d06993b
+    li x19, 0x1d06993b
     li x17, 0xfde810b0
     pv.insert.b x19, x17, 0x0
-    li x20, 0x1d06993b
+    li x20, 0x1d0699b0
     beq x20, x19, test34
     c.addi x15, 0x1
 test34:
-    li x20, 0xc536517f
+    li x19, 0xc536517f
     li x17, 0x8ffba9b9
     pv.insert.b x19, x17, 0x2
     li x20, 0xc5b9517f
     beq x20, x19, test35
     c.addi x15, 0x1
 test35:
-    li x20, 0xda47d50c
+    li x19, 0xda47d50c
     li x17, 0x8b13650e
     pv.insert.b x19, x17, 0x3
     li x20, 0x0e47d50c
     beq x20, x19, test36
     c.addi x15, 0x1
 test36:
-    li x20, 0x4724b9d9
+    li x19, 0x4724b9d9
     li x17, 0x8fdfaefe
     pv.insert.b x19, x17, 0x2 #.word 0xb02899d7
     li x20, 0x47feb9d9
