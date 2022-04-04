@@ -18,7 +18,7 @@
 `ifndef __UVMA_ISACOV_CONSTANTS_SV__
 `define __UVMA_ISACOV_CONSTANTS_SV__
 
-localparam CSR_ADDR_WL = 12;
-localparam CSR_MASK_WL = (1 << CSR_ADDR_WL);
+localparam DEFAULT_ILEN     = 32;
+localparam DEFAULT_XLEN     = 32;
 
 `endif // __UVMA_ISACOV_CONSTANTS_SV__

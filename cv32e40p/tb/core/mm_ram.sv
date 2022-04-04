@@ -15,6 +15,9 @@
 // This maps the dp_ram module to the instruction and data ports of the RI5CY
 // processor core and some pseudo peripherals
 
+// DVT LINTER waivers are fine because this is not a UVM component.
+//@DVT_LINTER_WAIVER_START "MT20210811_1" disable SVTB.29.1.3.1, SVTB.29.1.7
+
 module mm_ram
 `ifndef VERILATOR
   import uvm_pkg::*;
@@ -55,7 +58,7 @@ module mm_ram
      input logic [31:0]                   pc_core_id_i,
 
      output logic                         debug_req_o,
-   
+
      output logic                         tests_passed_o,
      output logic                         tests_failed_o,
      output logic                         exit_valid_o,
@@ -73,7 +76,7 @@ module mm_ram
     localparam int                        RND_STALL_DATA_GNT    = 7;
     localparam int                        RND_STALL_DATA_VALID  = 9;
 
-    localparam int                        RND_IRQ_ID     = 31;    
+    localparam int                        RND_IRQ_ID     = 31;
 
     localparam int                        MMADDR_PRINT      = 32'h1000_0000;
     localparam int                        MMADDR_TESTSTATUS = 32'h2000_0000;
@@ -98,7 +101,7 @@ module mm_ram
     enum logic {T_RAM, T_PER} transaction;
 
 
-    integer                        i;
+    int                            i;
 
     logic [31:0]                   data_addr_aligned;
 
@@ -155,7 +158,7 @@ module mm_ram
     // debugger control signals
     logic [31:0]                   debugger_wdata;
     logic                          debugger_valid;
- 
+
     // signals to rnd_stall
     logic [31:0]                   rnd_stall_regs [0:RND_STALL_REGS-1];
 
@@ -166,10 +169,10 @@ module mm_ram
     logic [31:0]                   rnd_stall_rdata;
 
     //signal delayed by random stall
-    logic                          rnd_stall_instr_req;    
+    logic                          rnd_stall_instr_req;
     logic                          rnd_stall_instr_gnt;
 
-    logic                          rnd_stall_data_req;    
+    logic                          rnd_stall_data_req;
     logic                          rnd_stall_data_gnt;
 
     // random number generation
@@ -178,14 +181,36 @@ module mm_ram
 
     //random or monitor interrupt request
     logic                          rnd_irq;
-   
+
     // used by dump_signature methods
     string                         sig_file;
     string                         sig_string;
     bit                            use_sig_file;
-    integer                        sig_fd;
-    integer                        errno;
+    int                            sig_fd;
+    int                            errno;
     string                         error_str;
+
+    // Common code used by both reads and writes
+    function void setup_transaction();
+
+       data_req_dec = data_req_i;
+       if ( (data_addr_i >= dm_halt_addr_i) &&
+            (data_addr_i < (dm_halt_addr_i + (2 ** DBG_ADDR_WIDTH)) )
+          ) begin
+          // remap debug code to end of memory
+          data_addr_dec  = (data_addr_i[RAM_ADDR_WIDTH-1:0] - dm_halt_addr_i[RAM_ADDR_WIDTH-1:0]) +
+                            2**RAM_ADDR_WIDTH - 2**DBG_ADDR_WIDTH;
+       end
+       else begin
+          data_addr_dec  = data_addr_i[RAM_ADDR_WIDTH-1:0];
+       end
+
+       data_wdata_dec = data_wdata_i;
+       data_we_dec    = data_we_i;
+       data_be_dec    = data_be_i;
+       transaction    = T_RAM;
+
+    endfunction: setup_transaction
 
     // uhh, align?
     always_comb data_addr_aligned = {data_addr_i[31:2], 2'b0};
@@ -199,7 +224,7 @@ module mm_ram
             if ($test$plusargs("max_data_zero_instr_stall")) begin
                 `uvm_info(RNDSTALL_TAG, "Max data stall, zero instruction stall configuration", UVM_LOW)
                 // This "knob" creates maximum stalls on data loads/stores, and
-                // no stalls on instruction fetches.  Used for fence.i testing. 
+                // no stalls on instruction fetches.  Used for fence.i testing.
                 rnd_stall_regs[RND_STALL_DATA_EN]     = 1;
                 rnd_stall_regs[RND_STALL_DATA_MODE]   = 2;
                 rnd_stall_regs[RND_STALL_DATA_GNT]    = 2;
@@ -293,19 +318,7 @@ module mm_ram
                     (data_addr_i < (dm_halt_addr_i + (2 ** DBG_ADDR_WIDTH)) ))
                    )
                 begin
-                    data_req_dec   = data_req_i;
-                    if ( (data_addr_i >= dm_halt_addr_i) &&
-                         (data_addr_i < (dm_halt_addr_i + (2 ** DBG_ADDR_WIDTH)) )
-                         )
-                        // remap debug code to end of memory
-                        data_addr_dec  = (data_addr_i[RAM_ADDR_WIDTH-1:0] - dm_halt_addr_i[RAM_ADDR_WIDTH-1:0]) +
-                                         2**RAM_ADDR_WIDTH - 2**DBG_ADDR_WIDTH;
-                    else
-                        data_addr_dec  = data_addr_i[RAM_ADDR_WIDTH-1:0];
-                    data_wdata_dec = data_wdata_i;
-                    data_we_dec    = data_we_i;
-                    data_be_dec    = data_be_i;
-                    transaction    = T_RAM;
+                    setup_transaction();
                 end else if (data_addr_i == MMADDR_PRINT) begin
                     print_wdata = data_wdata_i;
                     print_valid = '1;
@@ -341,7 +354,7 @@ module mm_ram
                             use_sig_file = 1'b1;
                         end
                     end
-            
+
                     sig_string = "";
                     for (logic [31:0] addr = sig_begin_q; addr < sig_end_q; addr +=4) begin
                         sig_string = {sig_string, $sformatf("%x%x%x%x\n", dp_ram_i.mem[addr+3], dp_ram_i.mem[addr+2],
@@ -362,7 +375,7 @@ module mm_ram
                             use_sig_file = 1'b1;
                         end
                     end
-            
+
                     $display("%m @ %0t: Dumping signature", $time);
                     for (logic [31:0] addr = sig_begin_q; addr < sig_end_q; addr +=4) begin
                         $display("%x%x%x%x", dp_ram_i.mem[addr+3], dp_ram_i.mem[addr+2],
@@ -407,19 +420,7 @@ module mm_ram
                 begin
                     select_rdata_d = RAM;
 
-                    data_req_dec   = data_req_i;
-                    if ( (data_addr_i >= dm_halt_addr_i) &&
-                         (data_addr_i < (dm_halt_addr_i + (2 ** DBG_ADDR_WIDTH)) )
-                       )
-                        // remap debug code to end of memory
-                        data_addr_dec  = (data_addr_i[RAM_ADDR_WIDTH-1:0] - dm_halt_addr_i[RAM_ADDR_WIDTH-1:0]) +
-                                         2**RAM_ADDR_WIDTH - 2**DBG_ADDR_WIDTH;
-                    else
-                        data_addr_dec  = data_addr_i[RAM_ADDR_WIDTH-1:0];
-                    data_wdata_dec = data_wdata_i;
-                    data_we_dec    = data_we_i;
-                    data_be_dec    = data_be_i;
-                    transaction    = T_RAM;
+                    setup_transaction();
                 end else if (data_addr_i[31:16] == MMADDR_RNDSTALL) begin
                     select_rdata_d = RND_STALL;
 
@@ -472,23 +473,19 @@ module mm_ram
         end else if(select_rdata_q == RND_STALL) begin
             data_rdata_mux = rnd_stall_rdata;
 `ifndef VERILATOR
-            uvmt_cv32e40p_tb.iss_wrap.ram.RND_STALL = data_rdata_mux;
             `uvm_fatal(MM_RAM_TAG, $sformatf("out of bounds read from %08x\nRandom stall generator is not supported with Verilator", data_addr_i));
 `endif
         end else if (select_rdata_q == RND_NUM) begin
             data_rdata_mux = rnd_num;
-`ifndef VERILATOR
-            uvmt_cv32e40p_tb.iss_wrap.ram.RND_NUM = data_rdata_mux;
-`endif
         end else if (select_rdata_q == TICKS) begin
             data_rdata_mux = cycle_count_q;
 `ifndef VERILATOR
-            uvmt_cv32e40p_tb.iss_wrap.ram.TICKS = data_rdata_mux;
             if (cycle_count_overflow_q) begin
                 `uvm_fatal(MM_RAM_TAG, "cycle counter read after overflow");
             end
         end else if (select_rdata_q == ERR) begin
-            `uvm_fatal(MM_RAM_TAG, $sformatf("out of bounds read from %08x", data_addr_i));
+            `uvm_error(MM_RAM_TAG, $sformatf("out of bounds read from %08x (RAM_ADDR_WIDTH=%0d; dm_halt_addri=%08x, DBG_ADDR_WIDTH=%0d)",
+                                             data_addr_i, RAM_ADDR_WIDTH, dm_halt_addr_i, DBG_ADDR_WIDTH))
 `endif
         end
     end
@@ -571,11 +568,11 @@ module mm_ram
           end
         end
     end // block: tb_stall
-  
+
    // -------------------------------------------------------------
    // Generate a random number using the SystemVerilog random number function
    always_ff @(posedge clk_i, negedge rst_ni) begin : rnd_num_gen
-        if (!rst_ni) 
+        if (!rst_ni)
             rnd_num <= 32'h0;
         else if (rnd_num_req)
 `ifndef VERILATOR
@@ -624,7 +621,7 @@ module mm_ram
                  debugger_start_cnt_q <= ~|debugger_wdata[14:0] ? 1 : debugger_wdata[14:0];
 
                debug_req_value_q <= debugger_wdata[31]; // value to be applied to debug_req
-               
+
                if(!debugger_wdata[30]) // If mode is level then set duration to 0
                  debug_req_duration_q <= 'b0;
                else // Else mode is pulse
@@ -640,26 +637,26 @@ module mm_ram
                    // else, the pulse is determined by wdata[28:16]
                    //  note, if wdata[28:16]==0, then set pulse width to 1
                    debug_req_duration_q <= ~|debugger_wdata[28:16] ? 1 : debugger_wdata[28:16];
-                 
+
             end else begin
                 // Count down the delay to start
                 if(debugger_start_cnt_q > 0)begin
                     debugger_start_cnt_q <= debugger_start_cnt_q - 1;
                    // At count == 1, then assert the debug_req
-                   if(debugger_start_cnt_q == 1) 
+                   if(debugger_start_cnt_q == 1)
                      debug_req_o <= debug_req_value_q;
                 end
                 // Count down debug_req pulse duration
                 else if(debug_req_duration_q > 0)begin
                    debug_req_duration_q <= debug_req_duration_q - 1;
                    // At count == 1, then de-assert debug_req
-                   if(debug_req_duration_q == 1) 
+                   if(debug_req_duration_q == 1)
                      debug_req_o <= !debug_req_value_q;
-                end               
+                end
             end
         end
     end
-   
+
     // -------------------------------------------------------------
     // show writes if requested
     always_ff @(posedge clk_i, negedge rst_ni) begin: verbose_writes
@@ -678,10 +675,10 @@ module mm_ram
 
          .en_a_i    ( ram_instr_req   ),
          .addr_a_i  ( ram_instr_addr  ),
-         .wdata_a_i ( '0              ),	// Not writing so ignored
+         .wdata_a_i ( '0              ), // Not writing so ignored
          .rdata_a_o ( ram_instr_rdata ),
          .we_a_i    ( '0              ),
-         .be_a_i    ( 4'b1111         ),	// Always want 32-bits
+         .be_a_i    ( 4'b1111         ), // Always want 32-bits
 
          .en_b_i    ( ram_data_req    ),
          .addr_b_i  ( ram_data_addr   ),
@@ -739,7 +736,7 @@ module mm_ram
 
     assign instr_gnt_o    = ram_instr_gnt;
     assign data_gnt_o     = ram_data_gnt;
-    
+
     // remap debug code to end of memory
     assign instr_addr_remap =  ( (instr_addr_i >= dm_halt_addr_i) &&
                                (instr_addr_i < (dm_halt_addr_i + (2 ** DBG_ADDR_WIDTH)) ) ) ?
@@ -749,7 +746,7 @@ module mm_ram
   always_comb
   begin
     ram_instr_req    = instr_req_i;
-    ram_instr_addr   = instr_addr_remap;    
+    ram_instr_addr   = instr_addr_remap;
     ram_instr_gnt    = instr_req_i ? 1'b1 : $urandom;
     core_instr_rdata = ram_instr_rdata;
 
@@ -805,7 +802,7 @@ module mm_ram
 
     .grant_mem_i        ( rnd_stall_data_req     ),
     .grant_core_o       ( rnd_stall_data_gnt     ),
-    
+
     .req_core_i         ( data_req_i             ),
     .req_mem_o          ( rnd_stall_data_req     ),
 
@@ -840,3 +837,5 @@ module mm_ram
 `endif
 
 endmodule // ram
+
+//@DVT_LINTER_WAIVER_END "MT20210811_1"

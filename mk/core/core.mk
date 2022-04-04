@@ -33,7 +33,7 @@ CV_CORE_LC     = $(shell echo $(CV_CORE) | tr A-Z a-z)
 CV_CORE_UC     = $(shell echo $(CV_CORE) | tr a-z A-Z)
 export CV_CORE_LC
 export CV_CORE_UC
-.DEFAULT_GOAL := no_rule 
+.DEFAULT_GOAL := no_rule
 
 # Useful commands
 MKDIR_P = mkdir -p
@@ -69,13 +69,12 @@ export DV_UVMA_ISACOV_PATH    = $(CORE_V_VERIF)/lib/uvm_agents/uvma_isacov
 export DV_UVMA_CLKNRST_PATH   = $(CORE_V_VERIF)/lib/uvm_agents/uvma_clknrst
 export DV_UVMA_INTERRUPT_PATH = $(CORE_V_VERIF)/lib/uvm_agents/uvma_interrupt
 export DV_UVMA_DEBUG_PATH     = $(CORE_V_VERIF)/lib/uvm_agents/uvma_debug
-export DV_UVMA_OBI_PATH       = $(CORE_V_VERIF)/lib/uvm_agents/uvma_obi
 export DV_UVML_TRN_PATH       = $(CORE_V_VERIF)/lib/uvm_libs/uvml_trn
 export DV_UVML_LOGS_PATH      = $(CORE_V_VERIF)/lib/uvm_libs/uvml_logs
 export DV_UVML_SB_PATH        = $(CORE_V_VERIF)/lib/uvm_libs/uvml_sb
 
-export DV_OVPM_HOME           = $(CORE_V_VERIF)/$(CV_CORE_LC)/vendor_lib/imperas
-export DV_OVPM_MODEL          = $(DV_OVPM_HOME)/riscv_$(CV_CORE_UC)_OVPsim
+export DV_OVPM_HOME           = $(CORE_V_VERIF)/vendor_lib/imperas
+export DV_OVPM_MODEL          = $(DV_OVPM_HOME)/imperas_DV_COREV
 export DV_OVPM_DESIGN         = $(DV_OVPM_HOME)/design
 
 DV_UVMT_SRCS                  = $(wildcard $(DV_UVMT_PATH)/*.sv))
@@ -117,7 +116,7 @@ RTLSRC_INCDIR := $(RTLSRC_HOME)/include
 ###############################################################################
 # Seed management for constrained-random sims
 SEED    ?= 1
-RNDSEED ?= 
+RNDSEED ?=
 
 ifeq ($(SEED),random)
 RNDSEED = $(shell date +%N)
@@ -234,6 +233,7 @@ clean_test_programs: clean-bsp
 	find $(CORE_V_VERIF)/$(CV_CORE_LC)/tests/programs -name *.hex     -exec rm {} \;
 	find $(CORE_V_VERIF)/$(CV_CORE_LC)/tests/programs -name *.elf     -exec rm {} \;
 	find $(CORE_V_VERIF)/$(CV_CORE_LC)/tests/programs -name *.map     -exec rm {} \;
+	find $(CORE_V_VERIF)/$(CV_CORE_LC)/tests/programs -name *.itb     -exec rm {} \;
 	find $(CORE_V_VERIF)/$(CV_CORE_LC)/tests/programs -name *.readelf -exec rm {} \;
 	find $(CORE_V_VERIF)/$(CV_CORE_LC)/tests/programs -name *.objdump -exec rm {} \;
 	find $(CORE_V_VERIF)/$(CV_CORE_LC)/tests/programs -name corev_*.S -exec rm {} \;

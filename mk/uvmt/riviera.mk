@@ -1,20 +1,20 @@
 ###############################################################################
 #
 # Copyright 2020 OpenHW Group
-# 
+#
 # Licensed under the Solderpad Hardware Licence, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
-# 
+#
 #     https://solderpad.org/licenses/
-# 
+#
 # Unless required by applicable law or agreed to in writing, software
 # distributed under the License is distributed on an "AS IS" BASIS,
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # SPDX-License-Identifier: Apache-2.0 WITH SHL-2.0
-# 
+#
 ###############################################################################
 #
 # Riviera-PRO-specific Makefile for the Core-V-Verif "uvmt" testbench.
@@ -40,8 +40,8 @@ USES_DPI = 1
 VLOG_COV                ?= -coverage sbecam
 VSIM_USER_FLAGS         ?=
 VSIM_COV 		?= -acdb -acdb_cov sbfectapm -acdb_file $(VSIM_TEST).acdb
-VSIM_WAVES_ADV_DEBUG    ?= 
-VSIM_WAVES_DO           ?= 
+VSIM_WAVES_ADV_DEBUG    ?=
+VSIM_WAVES_DO           ?=
 
 # Common QUIET flag defaults to -quiet unless VERBOSE is set
 ifeq ($(call IS_YES,$(VERBOSE)),YES)
@@ -51,12 +51,12 @@ QUIET=-quiet
 endif
 
 ifeq ($(USES_DPI),1)
-  DPILIB_VLOG_OPT = 
+  DPILIB_VLOG_OPT =
   DPILIB_VSIM_OPT = -sv_lib "$(ALDEC_PATH)/bin/uvm_1_2_dpi"
   DPILIB_TARGET = dpi_lib$(BITS)
 else
-  DPILIB_VLOG_OPT = +define+UVM_NO_DPI 
-  DPILIB_VSIM_OPT = 
+  DPILIB_VLOG_OPT = +define+UVM_NO_DPI
+  DPILIB_VSIM_OPT =
   DPILIB_TARGET =
 endif
 
@@ -92,14 +92,22 @@ VSIM_FLAGS += -sv_lib $(basename $(OVP_MODEL_DPI))
 
 ifeq ($(call IS_YES,$(USE_ISS)),YES)
 VSIM_FLAGS += +USE_ISS
+else
+VSIM_FLAGS += +DISABLE_OVPSIM
 endif
 
 VSIM_FLAGS += -sv_lib $(basename $(DPI_DASM_LIB))
+VSIM_FLAGS += -sv_lib $(basename $(abspath $(SVLIB_LIB)))
 
 # Skip compile if requested (COMP=NO)
 ifneq ($(call IS_NO,$(COMP)),NO)
 VSIM_RUN_PREREQ = comp
 endif
+
+VSIM_PMA_INC += +incdir+$(TBSRC_HOME)/uvmt \
+                +incdir+$(CV_CORE_PKG)/rtl/include \
+                +incdir+$(CV_CORE_COREVDV_PKG)/ldgen \
+                +incdir+$(abspath $(MAKE_PATH)/../../../lib/mem_region_gen)
 
 ################################################################################
 # Coverage database generation
@@ -159,18 +167,20 @@ vlog_corev-dv:
 	cd $(VSIM_COREVDV_RESULTS) && \
 		$(VLOG) \
 			$(VLOG_FLAGS) \
+			$(VSIM_PMA_INC) \
 			-uvmver 1.2 \
 			+incdir+$(CV_CORE_COREVDV_PKG)/target/$(CV_CORE_LC) \
 			+incdir+$(RISCVDV_PKG)/user_extension \
 			+incdir+$(COREVDV_PKG) \
 			+incdir+$(CV_CORE_COREVDV_PKG) \
-			-f $(COREVDV_PKG)/manifest.f 
+			$(CFG_COMPILE_FLAGS) \
+			-f $(CV_CORE_MANIFEST) \
+			-f $(COREVDV_PKG)/manifest.f
 
-gen_corev-dv: 
+gen_corev-dv:
 	mkdir -p $(VSIM_COREVDV_RESULTS)/$(TEST)
-	# Clean old assembler generated tests in results
 	for (( idx=${GEN_START_INDEX}; idx < $$((${GEN_START_INDEX} + ${GEN_NUM_TESTS})); idx++ )); do \
-		rm -f ${VSIM_COREVDV_RESULTS}/${TEST}/${TEST}_$$idx.S; \
+		mkdir -p $(GEN_TEST_DIR)/test_build/$(CFG)/$$idx; \
 	done
 	cd  $(VSIM_COREVDV_RESULTS)/$(TEST) && \
 		$(VSIM) \
@@ -184,14 +194,17 @@ gen_corev-dv:
 			+start_idx=$(GEN_START_INDEX) \
 			+num_of_tests=$(GEN_NUM_TESTS) \
 			+asm_file_name_opts=$(TEST) \
+			+ldgen_cp_test_path=$(GEN_TEST_DIR)/test_build/$(CFG) \
+			$(CFG_PLUSARGS) \
 			$(GEN_PLUSARGS) \
 			-do '$(VRUN_FLAGS)'
 	# Copy out final assembler files to test directory
 	for (( idx=${GEN_START_INDEX}; idx < $$((${GEN_START_INDEX} + ${GEN_NUM_TESTS})); idx++ )); do \
-		cp ${VSIM_COREVDV_RESULTS}/${TEST}/${TEST}_$$idx.S ${GEN_TEST_DIR}; \
+		cp -f ${BSP}/link_pma.ld ${GEN_TEST_DIR}/test_build/${CFG}/$$idx/link.ld; \
+		cp ${VSIM_COREVDV_RESULTS}/${TEST}/${TEST}_$$idx.S ${GEN_TEST_DIR}/test_build/$(CFG)/$$idx; \
 	done
 
-comp_corev-dv: $(RISCVDV_PKG) vlog_corev-dv
+comp_corev-dv: $(RISCVDV_PKG) $(CV_CORE_PKG) vlog_corev-dv
 
 corev-dv: clean_riscv-dv \
 	clone_riscv-dv \
@@ -200,7 +213,7 @@ corev-dv: clean_riscv-dv \
 ################################################################################
 # Riviera-PRO simulation targets
 
-mk_vsim_dir: 
+mk_vsim_dir:
 	$(MKDIR_P) $(VSIM_RESULTS)
 
 ###############################################################################
@@ -215,7 +228,7 @@ mk_vsim_dir:
 #                make compliance RISCV_ISA=rv32i COMPLIANCE_PROG=I-ADD-01
 # But this does not:
 #                make compliance RISCV_ISA=rv32imc COMPLIANCE_PROG=I-ADD-01
-# 
+#
 RISCV_ISA       ?= rv32i
 COMPLIANCE_PROG ?= I-ADD-01
 
@@ -240,16 +253,16 @@ compliance: export IMPERAS_TOOLS=$(CORE_V_VERIF)/$(CV_CORE_LC)/tests/cfg/ovpsim_
 # If the configuration specified OVPSIM arguments, generate an ovpsim.ic file and
 # set IMPERAS_TOOLS to point to it
 gen_ovpsim_ic:
+	@rm -f $(VSIM_RESULTS)/$(CFG)/$(TEST_NAME)_$(RUN_INDEX)/ovpsim.ic
+	@mkdir -p $(VSIM_RESULTS)/$(CFG)/$(TEST_NAME)_$(RUN_INDEX)
+	@touch $(VSIM_RESULTS)/$(CFG)/$(TEST_NAME)_$(RUN_INDEX)/ovpsim.ic
 	@if [ ! -z "$(CFG_OVPSIM)" ]; then \
-		mkdir -p $(VSIM_RESULTS)/$(CFG)/$(TEST_NAME)_$(RUN_INDEX); \
 		echo "$(CFG_OVPSIM)" > $(VSIM_RESULTS)/$(CFG)/$(TEST_NAME)_$(RUN_INDEX)/ovpsim.ic; \
 	fi
-ifneq ($(CFG_OVPSIM),)
 export IMPERAS_TOOLS=$(VSIM_RESULTS)/$(CFG)/$(TEST_NAME)_$(RUN_INDEX)/ovpsim.ic
-endif
 
 # Target to create work directory in $(VSIM_RESULTS)/
-lib: mk_vsim_dir $(CV_CORE_PKG) $(TBSRC_PKG) $(TBSRC)
+lib: mk_vsim_dir $(CV_CORE_PKG) $(SVLIB_PKG) $(TBSRC_PKG) $(TBSRC)
 	if [ ! -d "$(VSIM_RESULTS)/$(CFG)/$(VWORK)" ]; then \
 		$(VLIB) "$(VSIM_RESULTS)/$(CFG)/$(VWORK)"; \
 	fi
@@ -288,34 +301,21 @@ run: $(VSIM_RUN_PREREQ) gen_ovpsim_ic
 			-lib $(VSIM_RESULTS)/$(CFG)/work \
 			+UVM_TESTNAME=$(TEST_UVM_TEST)\
 			$(RTLSRC_VLOG_TB_TOP) \
+			$(CFG_PLUSARGS) \
 			$(TEST_PLUSARGS) \
 			-do '$(VRUN_FLAGS)'
 
 ################################################################################
 # Test targets
 
-.PHONY: hello-world
-
-# This special target is to support the special sanity target in the Common Makefile
-hello-world:
-	$(MAKE) test TEST=hello-world
-
-custom: VSIM_TEST=$(CUSTOM_PROG)
-custom: VSIM_FLAGS += +firmware=$(CUSTOM_DIR)/$(CUSTOM_PROG).hex +elf_file=$(CUSTOM_DIR)/$(CUSTOM_PROG).elf
-custom: TEST_UVM_TEST=uvmt_$(CV_CORE_LC)_firmware_test_c
-custom: $(CUSTOM_DIR)/$(CUSTOM_PROG).hex run
-
 ################################################################################
 # The new general test target
 
-# corev-dv tests needs an added run_index suffix
-ifeq ($(shell echo $(TEST) | head -c 6),corev_)
-  OPT_RUN_INDEX_SUFFIX=_$(RUN_INDEX)
-endif
-
 test: VSIM_TEST=$(TEST_PROGRAM)
-test: VSIM_FLAGS += +firmware=$(TEST_TEST_DIR)/$(TEST_PROGRAM)$(OPT_RUN_INDEX_SUFFIX).hex +elf_file=$(TEST_TEST_DIR)/$(TEST_PROGRAM)$(OPT_RUN_INDEX_SUFFIX).elf
-test: $(TEST_TEST_DIR)/$(TEST_PROGRAM)$(OPT_RUN_INDEX_SUFFIX).hex run
+test: VSIM_FLAGS += +firmware=$(TEST_TEST_DIR)/test_build/$(CFG)/$(RUN_INDEX)/$(TEST_PROGRAM)$(OPT_RUN_INDEX_SUFFIX).hex
+test: VSIM_FLAGS += +elf_file=$(TEST_TEST_DIR)/test_build/$(CFG)/$(RUN_INDEX)/$(TEST_PROGRAM)$(OPT_RUN_INDEX_SUFFIX).elf
+test: VSIM_FLAGS += +itb_file=$(TEST_TEST_DIR)/test_build/$(CFG)/$(RUN_INDEX)/$(TEST_PROGRAM)$(OPT_RUN_INDEX_SUFFIX).itb
+test: $(TEST_TEST_DIR)/test_build/$(CFG)/$(RUN_INDEX)/$(TEST_PROGRAM)$(OPT_RUN_INDEX_SUFFIX).hex run
 
 ################################################################################
 # Invoke post-process waveform viewer
@@ -332,5 +332,5 @@ clean:
 	rm -rf $(VSIM_RESULTS) library.cfg $(VWORK)
 
 # All generated files plus the clone of the RTL
-clean_all: clean clean_riscv-dv clean_test_programs clean-bsp clean_compliance clean_embench clean_dpi_dasm_spike
+clean_all: clean clean_riscv-dv clean_test_programs clean-bsp clean_compliance clean_embench clean_dpi_dasm_spike clean_gen_linker_files clean_svlib
 	rm -rf $(CV_CORE_PKG)

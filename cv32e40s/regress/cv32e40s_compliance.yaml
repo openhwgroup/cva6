@@ -1,0 +1,645 @@
+# YAML file to specify a regression testlist
+---
+# Header
+name: cv32_compliance
+description: Runs all RISCV compliance tests on the CV32E40S
+
+# List of builds
+builds:
+  uvmt_cv32e40s:
+    cmd: make comp
+    cfg: no_bitmanip
+    dir: cv32e40s/sim/uvmt
+
+  uvmt_cv32e40s_compliance_build:
+    cmd: make all_compliance
+    cfg: no_bitmanip
+    dir: cv32e40s/sim/uvmt
+
+# List of tests
+tests:
+  # -------------------------------------------------------------------------
+  # RV32IMC tests
+  # -------------------------------------------------------------------------
+  C-ADD:
+    build: uvmt_cv32e40s_compliance_build
+    description: RISCV_COMPLIANCE_C-ADD
+    dir: cv32e40s/sim/uvmt
+    cmd: make compliance_check_sig RISCV_ISA=rv32imc COMPLIANCE_PROG=C-ADD
+    results: rv32imc/C-ADD
+
+  C-ADDI:
+    build: uvmt_cv32e40s_compliance_build
+    description: RISCV_COMPLIANCE_C-ADDI
+    dir: cv32e40s/sim/uvmt
+    cmd: make compliance_check_sig RISCV_ISA=rv32imc COMPLIANCE_PROG=C-ADDI
+    results: rv32imc/C-ADDI
+
+  C-ADDI16SP:
+    build: uvmt_cv32e40s_compliance_build
+    description: RISCV_COMPLIANCE_C-ADDI16SP
+    dir: cv32e40s/sim/uvmt
+    cmd: make compliance_check_sig RISCV_ISA=rv32imc COMPLIANCE_PROG=C-ADDI16SP
+    results: rv32imc/C-ADDI16SP
+
+  C-ADDI4SPN:
+    build: uvmt_cv32e40s_compliance_build
+    description: RISCV_COMPLIANCE_C-ADDI4SPN
+    dir: cv32e40s/sim/uvmt
+    cmd: make compliance_check_sig RISCV_ISA=rv32imc COMPLIANCE_PROG=C-ADDI4SPN
+    results: rv32imc/C-ADDI4SPN
+
+  C-AND:
+    build: uvmt_cv32e40s_compliance_build
+    description: RISCV_COMPLIANCE_C-AND
+    dir: cv32e40s/sim/uvmt
+    cmd: make compliance_check_sig RISCV_ISA=rv32imc COMPLIANCE_PROG=C-AND
+    results: rv32imc/C-AND
+
+  C-ANDI:
+    build: uvmt_cv32e40s_compliance_build
+    description: RISCV_COMPLIANCE_C-ANDI
+    dir: cv32e40s/sim/uvmt
+    cmd: make compliance_check_sig RISCV_ISA=rv32imc COMPLIANCE_PROG=C-ANDI
+    results: rv32imc/C-ANDI
+
+  C-BEQZ:
+    build: uvmt_cv32e40s_compliance_build
+    description: RISCV_COMPLIANCE_C-BEQZ
+    dir: cv32e40s/sim/uvmt
+    cmd: make compliance_check_sig RISCV_ISA=rv32imc COMPLIANCE_PROG=C-BEQZ
+    results: rv32imc/C-BEQZ
+
+  C-BNEZ:
+    build: uvmt_cv32e40s_compliance_build
+    description: RISCV_COMPLIANCE_C-BNEZ
+    dir: cv32e40s/sim/uvmt
+    cmd: make compliance_check_sig RISCV_ISA=rv32imc COMPLIANCE_PROG=C-BNEZ
+    results: rv32imc/C-BNEZ
+
+  C-J:
+    build: uvmt_cv32e40s_compliance_build
+    description: RISCV_COMPLIANCE_C-J
+    dir: cv32e40s/sim/uvmt
+    cmd: make compliance_check_sig RISCV_ISA=rv32imc COMPLIANCE_PROG=C-J
+    results: rv32imc/C-J
+
+  C-JAL:
+    build: uvmt_cv32e40s_compliance_build
+    description: RISCV_COMPLIANCE_C-JAL
+    dir: cv32e40s/sim/uvmt
+    cmd: make compliance_check_sig RISCV_ISA=rv32imc COMPLIANCE_PROG=C-JAL
+    results: rv32imc/C-JAL
+
+  C-JALR:
+    build: uvmt_cv32e40s_compliance_build
+    description: RISCV_COMPLIANCE_C-JALR
+    dir: cv32e40s/sim/uvmt
+    cmd: make compliance_check_sig RISCV_ISA=rv32imc COMPLIANCE_PROG=C-JALR
+    results: rv32imc/C-JALR
+
+  C-JR:
+    build: uvmt_cv32e40s_compliance_build
+    description: RISCV_COMPLIANCE_C-JR
+    dir: cv32e40s/sim/uvmt
+    cmd: make compliance_check_sig RISCV_ISA=rv32imc COMPLIANCE_PROG=C-JR
+    results: rv32imc/C-JR
+
+  C-LI:
+    build: uvmt_cv32e40s_compliance_build
+    description: RISCV_COMPLIANCE_C-LI
+    dir: cv32e40s/sim/uvmt
+    cmd: make compliance_check_sig RISCV_ISA=rv32imc COMPLIANCE_PROG=C-LI
+    results: rv32imc/C-LI
+
+  C-LUI:
+    build: uvmt_cv32e40s_compliance_build
+    description: RISCV_COMPLIANCE_C-LUI
+    dir: cv32e40s/sim/uvmt
+    cmd: make compliance_check_sig RISCV_ISA=rv32imc COMPLIANCE_PROG=C-LUI
+    results: rv32imc/C-LUI
+
+  C-LW:
+    build: uvmt_cv32e40s_compliance_build
+    description: RISCV_COMPLIANCE_C-LW
+    dir: cv32e40s/sim/uvmt
+    cmd: make compliance_check_sig RISCV_ISA=rv32imc COMPLIANCE_PROG=C-LW
+    results: rv32imc/C-LW
+
+  C-LWSP:
+    build: uvmt_cv32e40s_compliance_build
+    description: RISCV_COMPLIANCE_C-LWSP
+    dir: cv32e40s/sim/uvmt
+    cmd: make compliance_check_sig RISCV_ISA=rv32imc COMPLIANCE_PROG=C-LWSP
+    results: rv32imc/C-LWSP
+
+  C-MV:
+    build: uvmt_cv32e40s_compliance_build
+    description: RISCV_COMPLIANCE_C-MV
+    dir: cv32e40s/sim/uvmt
+    cmd: make compliance_check_sig RISCV_ISA=rv32imc COMPLIANCE_PROG=C-MV
+    results: rv32imc/C-MV
+
+  C-OR:
+    build: uvmt_cv32e40s_compliance_build
+    description: RISCV_COMPLIANCE_C-OR
+    dir: cv32e40s/sim/uvmt
+    cmd: make compliance_check_sig RISCV_ISA=rv32imc COMPLIANCE_PROG=C-OR
+    results: rv32imc/C-OR
+
+  C-SLLI:
+    build: uvmt_cv32e40s_compliance_build
+    description: RISCV_COMPLIANCE_C-SLLI
+    dir: cv32e40s/sim/uvmt
+    cmd: make compliance_check_sig RISCV_ISA=rv32imc COMPLIANCE_PROG=C-SLLI
+    results: rv32imc/C-SLLI
+
+  C-SRAI:
+    build: uvmt_cv32e40s_compliance_build
+    description: RISCV_COMPLIANCE_C-SRAI
+    dir: cv32e40s/sim/uvmt
+    cmd: make compliance_check_sig RISCV_ISA=rv32imc COMPLIANCE_PROG=C-SRAI
+    results: rv32imc/C-SRAI
+
+  C-SRLI:
+    build: uvmt_cv32e40s_compliance_build
+    description: RISCV_COMPLIANCE_C-SRLI
+    dir: cv32e40s/sim/uvmt
+    cmd: make compliance_check_sig RISCV_ISA=rv32imc COMPLIANCE_PROG=C-SRLI
+    results: rv32imc/C-SRLI
+
+  C-SUB:
+    build: uvmt_cv32e40s_compliance_build
+    description: RISCV_COMPLIANCE_C-SUB
+    dir: cv32e40s/sim/uvmt
+    cmd: make compliance_check_sig RISCV_ISA=rv32imc COMPLIANCE_PROG=C-SUB
+    results: rv32imc/C-SUB
+
+  C-SW:
+    build: uvmt_cv32e40s_compliance_build
+    description: RISCV_COMPLIANCE_C-SW
+    dir: cv32e40s/sim/uvmt
+    cmd: make compliance_check_sig RISCV_ISA=rv32imc COMPLIANCE_PROG=C-SW
+    results: rv32imc/C-SW
+
+  C-SWSP:
+    build: uvmt_cv32e40s_compliance_build
+    description: RISCV_COMPLIANCE_C-SWSP
+    dir: cv32e40s/sim/uvmt
+    cmd: make compliance_check_sig RISCV_ISA=rv32imc COMPLIANCE_PROG=C-SWSP
+    results: rv32imc/C-SWSP
+
+  C-XOR:
+    build: uvmt_cv32e40s_compliance_build
+    description: RISCV_COMPLIANCE_C-XOR
+    dir: cv32e40s/sim/uvmt
+    cmd: make compliance_check_sig RISCV_ISA=rv32imc COMPLIANCE_PROG=C-XOR
+    results: rv32imc/C-XOR
+
+  # -------------------------------------------------------------------------
+  # RV32IMC tests
+  # -------------------------------------------------------------------------
+
+  I-ADD-01:
+    build: uvmt_cv32e40s_compliance_build
+    description: RISCV_COMPLIANCE_I-ADD-01
+    dir: cv32e40s/sim/uvmt
+    cmd: make compliance_check_sig RISCV_ISA=rv32i COMPLIANCE_PROG=I-ADD-01
+    results: rv32i/I-ADD-01
+
+  I-ADDI-01:
+    build: uvmt_cv32e40s_compliance_build
+    description: RISCV_COMPLIANCE_I-ADDI-01
+    dir: cv32e40s/sim/uvmt
+    cmd: make compliance_check_sig RISCV_ISA=rv32i COMPLIANCE_PROG=I-ADDI-01
+    results: rv32i/I-ADDI-01
+
+  I-AND-01:
+    build: uvmt_cv32e40s_compliance_build
+    description: RISCV_COMPLIANCE_I-AND-01
+    dir: cv32e40s/sim/uvmt
+    cmd: make compliance_check_sig RISCV_ISA=rv32i COMPLIANCE_PROG=I-AND-01
+    results: rv32i/I-AND-01
+
+  I-ANDI-01:
+    build: uvmt_cv32e40s_compliance_build
+    description: RISCV_COMPLIANCE_I-ANDI-01
+    dir: cv32e40s/sim/uvmt
+    cmd: make compliance_check_sig RISCV_ISA=rv32i COMPLIANCE_PROG=I-ANDI-01
+    results: rv32i/I-ANDI-01
+
+  I-AUIPC-01:
+    build: uvmt_cv32e40s_compliance_build
+    description: RISCV_COMPLIANCE_I-AUIPC-01
+    dir: cv32e40s/sim/uvmt
+    cmd: make compliance_check_sig RISCV_ISA=rv32i COMPLIANCE_PROG=I-AUIPC-01
+    results: rv32i/I-AUIPC-01
+
+  I-BEQ-01:
+    build: uvmt_cv32e40s_compliance_build
+    description: RISCV_COMPLIANCE_I-BEQ-01
+    dir: cv32e40s/sim/uvmt
+    cmd: make compliance_check_sig RISCV_ISA=rv32i COMPLIANCE_PROG=I-BEQ-01
+    results: rv32i/I-BEQ-01
+
+  I-BGE-01:
+    build: uvmt_cv32e40s_compliance_build
+    description: RISCV_COMPLIANCE_I-BGE-01
+    dir: cv32e40s/sim/uvmt
+    cmd: make compliance_check_sig RISCV_ISA=rv32i COMPLIANCE_PROG=I-BGE-01
+    results: rv32i/I-BGE-01
+
+  I-BGEU-01:
+    build: uvmt_cv32e40s_compliance_build
+    description: RISCV_COMPLIANCE_I-BGEU-01
+    dir: cv32e40s/sim/uvmt
+    cmd: make compliance_check_sig RISCV_ISA=rv32i COMPLIANCE_PROG=I-BGEU-01
+    results: rv32i/I-BGEU-01
+
+  I-BLT-01:
+    build: uvmt_cv32e40s_compliance_build
+    description: RISCV_COMPLIANCE_I-BLT-01
+    dir: cv32e40s/sim/uvmt
+    cmd: make compliance_check_sig RISCV_ISA=rv32i COMPLIANCE_PROG=I-BLT-01
+    results: rv32i/I-BLT-01
+
+  I-BLTU-01:
+    build: uvmt_cv32e40s_compliance_build
+    description: RISCV_COMPLIANCE_I-BLTU-01
+    dir: cv32e40s/sim/uvmt
+    cmd: make compliance_check_sig RISCV_ISA=rv32i COMPLIANCE_PROG=I-BLTU-01
+    results: rv32i/I-BLTU-01
+
+  I-BNE-01:
+    build: uvmt_cv32e40s_compliance_build
+    description: RISCV_COMPLIANCE_I-BNE-01
+    dir: cv32e40s/sim/uvmt
+    cmd: make compliance_check_sig RISCV_ISA=rv32i COMPLIANCE_PROG=I-BNE-01
+    results: rv32i/I-BNE-01
+
+  I-DELAY_SLOTS-01:
+    build: uvmt_cv32e40s_compliance_build
+    description: RISCV_COMPLIANCE_I-DELAY_SLOTS-01
+    dir: cv32e40s/sim/uvmt
+    cmd: make compliance_check_sig RISCV_ISA=rv32i COMPLIANCE_PROG=I-DELAY_SLOTS-01
+    results: rv32i/I-DELAY_SLOTS-01
+
+  # Not running for cv32e40s
+  # I-EBREAK-01:
+  #   build: uvmt_cv32e40s_compliance_build
+  #   description: RISCV_COMPLIANCE_I-EBREAK-01
+  #   dir: cv32e40s/sim/uvmt
+  #   cmd: make compliance_check_sig RISCV_ISA=rv32i COMPLIANCE_PROG=I-EBREAK-01
+
+  # Not running for cv32e40s
+  # I-ECALL-01:
+  #   build: uvmt_cv32e40s_compliance_build
+  #   description: RISCV_COMPLIANCE_I-ECALL-01
+  #   dir: cv32e40s/sim/uvmt
+  #   cmd: make compliance_check_sig RISCV_ISA=rv32i COMPLIANCE_PROG=I-ECALL-01
+
+  I-ENDIANESS-01:
+    build: uvmt_cv32e40s_compliance_build
+    description: RISCV_COMPLIANCE_I-ENDIANESS-01
+    dir: cv32e40s/sim/uvmt
+    cmd: make compliance_check_sig RISCV_ISA=rv32i COMPLIANCE_PROG=I-ENDIANESS-01
+    results: rv32i/I-ENDIANESS-01
+
+  I-IO-01:
+    build: uvmt_cv32e40s_compliance_build
+    description: RISCV_COMPLIANCE_I-IO-01
+    dir: cv32e40s/sim/uvmt
+    cmd: make compliance_check_sig RISCV_ISA=rv32i COMPLIANCE_PROG=I-IO-01
+    results: rv32i/I-IO-01
+
+  I-JAL-01:
+    build: uvmt_cv32e40s_compliance_build
+    description: RISCV_COMPLIANCE_I-JAL-01
+    dir: cv32e40s/sim/uvmt
+    cmd: make compliance_check_sig RISCV_ISA=rv32i COMPLIANCE_PROG=I-JAL-01
+    results: rv32i/I-JAL-01
+
+  I-JALR-01:
+    build: uvmt_cv32e40s_compliance_build
+    description: RISCV_COMPLIANCE_I-JALR-01
+    dir: cv32e40s/sim/uvmt
+    cmd: make compliance_check_sig RISCV_ISA=rv32i COMPLIANCE_PROG=I-JALR-01
+    results: rv32i/I-JALR-01
+
+  I-LB-01:
+    build: uvmt_cv32e40s_compliance_build
+    description: RISCV_COMPLIANCE_I-LB-01
+    dir: cv32e40s/sim/uvmt
+    cmd: make compliance_check_sig RISCV_ISA=rv32i COMPLIANCE_PROG=I-LB-01
+    results: rv32i/I-LB-01
+
+  I-LBU-01:
+    build: uvmt_cv32e40s_compliance_build
+    description: RISCV_COMPLIANCE_I-LBU-01
+    dir: cv32e40s/sim/uvmt
+    cmd: make compliance_check_sig RISCV_ISA=rv32i COMPLIANCE_PROG=I-LBU-01
+    results: rv32i/I-LBU-01
+
+  I-LH-01:
+    build: uvmt_cv32e40s_compliance_build
+    description: RISCV_COMPLIANCE_I-LH-01
+    dir: cv32e40s/sim/uvmt
+    cmd: make compliance_check_sig RISCV_ISA=rv32i COMPLIANCE_PROG=I-LH-01
+    results: rv32i/I-LH-01
+
+  I-LHU-01:
+    build: uvmt_cv32e40s_compliance_build
+    description: RISCV_COMPLIANCE_I-LHU-01
+    dir: cv32e40s/sim/uvmt
+    cmd: make compliance_check_sig RISCV_ISA=rv32i COMPLIANCE_PROG=I-LHU-01
+    results: rv32i/I-LHU-01
+
+  I-LUI-01:
+    build: uvmt_cv32e40s_compliance_build
+    description: RISCV_COMPLIANCE_I-LUI-01
+    dir: cv32e40s/sim/uvmt
+    cmd: make compliance_check_sig RISCV_ISA=rv32i COMPLIANCE_PROG=I-LUI-01
+    results: rv32i/I-LUI-01
+
+  I-LW-01:
+    build: uvmt_cv32e40s_compliance_build
+    description: RISCV_COMPLIANCE_I-LW-01
+    dir: cv32e40s/sim/uvmt
+    cmd: make compliance_check_sig RISCV_ISA=rv32i COMPLIANCE_PROG=I-LW-01
+    results: rv32i/I-LW-01
+
+  # Not running for cv32e40s
+  # I-MISALIGN_JMP-01:
+  #   build: uvmt_cv32e40s_compliance_build
+  #   description: RISCV_COMPLIANCE_I-MISALIGN_JMP-01
+  #   dir: cv32e40s/sim/uvmt
+  #   cmd: make compliance_check_sig RISCV_ISA=rv32i COMPLIANCE_PROG=I-MISALIGN_JMP-01
+
+  # Not running for cv32e40s
+  # I-MISALIGN_LDST-01:
+  #   build: uvmt_cv32e40s_compliance_build
+  #   description: RISCV_COMPLIANCE_I-MISALIGN_LDST-01
+  #   dir: cv32e40s/sim/uvmt
+  #   cmd: make compliance_check_sig RISCV_ISA=rv32i COMPLIANCE_PROG=I-MISALIGN_LDST-01
+
+  I-OR-01:
+    build: uvmt_cv32e40s_compliance_build
+    description: RISCV_COMPLIANCE_I-OR-01
+    dir: cv32e40s/sim/uvmt
+    cmd: make compliance_check_sig RISCV_ISA=rv32i COMPLIANCE_PROG=I-OR-01
+    results: rv32i/I-OR-01
+
+  I-ORI-01:
+    build: uvmt_cv32e40s_compliance_build
+    description: RISCV_COMPLIANCE_I-ORI-01
+    dir: cv32e40s/sim/uvmt
+    cmd: make compliance_check_sig RISCV_ISA=rv32i COMPLIANCE_PROG=I-ORI-01
+    results: rv32i/I-ORI-01
+
+  I-RF_size-01:
+    build: uvmt_cv32e40s_compliance_build
+    description: RISCV_COMPLIANCE_I-RF_size-01
+    dir: cv32e40s/sim/uvmt
+    cmd: make compliance_check_sig RISCV_ISA=rv32i COMPLIANCE_PROG=I-RF_size-01
+    results: rv32i/I-RF_size-01
+
+  I-RF_width-01:
+    build: uvmt_cv32e40s_compliance_build
+    description: RISCV_COMPLIANCE_I-RF_width-01
+    dir: cv32e40s/sim/uvmt
+    cmd: make compliance_check_sig RISCV_ISA=rv32i COMPLIANCE_PROG=I-RF_width-01
+    results: rv32i/I-RF_width-01
+
+  I-RF_x0-01:
+    build: uvmt_cv32e40s_compliance_build
+    description: RISCV_COMPLIANCE_I-RF_x0-01
+    dir: cv32e40s/sim/uvmt
+    cmd: make compliance_check_sig RISCV_ISA=rv32i COMPLIANCE_PROG=I-RF_x0-01
+    results: rv32i/I-RF_x0-01
+
+  I-SB-01:
+    build: uvmt_cv32e40s_compliance_build
+    description: RISCV_COMPLIANCE_I-SB-01
+    dir: cv32e40s/sim/uvmt
+    cmd: make compliance_check_sig RISCV_ISA=rv32i COMPLIANCE_PROG=I-SB-01
+    results: rv32i/I-SB-01
+
+  I-SH-01:
+    build: uvmt_cv32e40s_compliance_build
+    description: RISCV_COMPLIANCE_I-SH-01
+    dir: cv32e40s/sim/uvmt
+    cmd: make compliance_check_sig RISCV_ISA=rv32i COMPLIANCE_PROG=I-SH-01
+    results: rv32i/I-SH-01
+
+  I-SLL-01:
+    build: uvmt_cv32e40s_compliance_build
+    description: RISCV_COMPLIANCE_I-SLL-01
+    dir: cv32e40s/sim/uvmt
+    cmd: make compliance_check_sig RISCV_ISA=rv32i COMPLIANCE_PROG=I-SLL-01
+    results: rv32i/I-SLL-01
+
+  I-SLLI-01:
+    build: uvmt_cv32e40s_compliance_build
+    description: RISCV_COMPLIANCE_I-SLLI-01
+    dir: cv32e40s/sim/uvmt
+    cmd: make compliance_check_sig RISCV_ISA=rv32i COMPLIANCE_PROG=I-SLLI-01
+    results: rv32i/I-SLLI-01
+
+  I-SLT-01:
+    build: uvmt_cv32e40s_compliance_build
+    description: RISCV_COMPLIANCE_I-SLT-01
+    dir: cv32e40s/sim/uvmt
+    cmd: make compliance_check_sig RISCV_ISA=rv32i COMPLIANCE_PROG=I-SLT-01
+    results: rv32i/I-SLT-01
+
+  I-SLTI-01:
+    build: uvmt_cv32e40s_compliance_build
+    description: RISCV_COMPLIANCE_I-SLTI-01
+    dir: cv32e40s/sim/uvmt
+    cmd: make compliance_check_sig RISCV_ISA=rv32i COMPLIANCE_PROG=I-SLTI-01
+    results: rv32i/I-SLTI-01
+
+  I-SLTIU-01:
+    build: uvmt_cv32e40s_compliance_build
+    description: RISCV_COMPLIANCE_I-SLTIU-01
+    dir: cv32e40s/sim/uvmt
+    cmd: make compliance_check_sig RISCV_ISA=rv32i COMPLIANCE_PROG=I-SLTIU-01
+    results: rv32i/I-SLTIU-01
+
+  I-SLTU-01:
+    build: uvmt_cv32e40s_compliance_build
+    description: RISCV_COMPLIANCE_I-SLTU-01
+    dir: cv32e40s/sim/uvmt
+    cmd: make compliance_check_sig RISCV_ISA=rv32i COMPLIANCE_PROG=I-SLTU-01
+    results: rv32i/I-SLTU-01
+
+  I-SRA-01:
+    build: uvmt_cv32e40s_compliance_build
+    description: RISCV_COMPLIANCE_I-SRA-01
+    dir: cv32e40s/sim/uvmt
+    cmd: make compliance_check_sig RISCV_ISA=rv32i COMPLIANCE_PROG=I-SRA-01
+    results: rv32i/I-SRA-01
+
+  I-SRAI-01:
+    build: uvmt_cv32e40s_compliance_build
+    description: RISCV_COMPLIANCE_I-SRAI-01
+    dir: cv32e40s/sim/uvmt
+    cmd: make compliance_check_sig RISCV_ISA=rv32i COMPLIANCE_PROG=I-SRAI-01
+    results: rv32i/I-SRAI-01
+
+  I-SRL-01:
+    build: uvmt_cv32e40s_compliance_build
+    description: RISCV_COMPLIANCE_I-SRL-01
+    dir: cv32e40s/sim/uvmt
+    cmd: make compliance_check_sig RISCV_ISA=rv32i COMPLIANCE_PROG=I-SRL-01
+    results: rv32i/I-SRL-01
+
+  I-SRLI-01:
+    build: uvmt_cv32e40s_compliance_build
+    description: RISCV_COMPLIANCE_I-SRLI-01
+    dir: cv32e40s/sim/uvmt
+    cmd: make compliance_check_sig RISCV_ISA=rv32i COMPLIANCE_PROG=I-SRLI-01
+    results: rv32i/I-SRLI-01
+
+  I-SUB-01:
+    build: uvmt_cv32e40s_compliance_build
+    description: RISCV_COMPLIANCE_I-SUB-01
+    dir: cv32e40s/sim/uvmt
+    cmd: make compliance_check_sig RISCV_ISA=rv32i COMPLIANCE_PROG=I-SUB-01
+    results: rv32i/I-SUB-01
+
+  I-SW-01:
+    build: uvmt_cv32e40s_compliance_build
+    description: RISCV_COMPLIANCE_I-SW-01
+    dir: cv32e40s/sim/uvmt
+    cmd: make compliance_check_sig RISCV_ISA=rv32i COMPLIANCE_PROG=I-SW-01
+    results: rv32i/I-SW-01
+
+  I-XOR-01:
+    build: uvmt_cv32e40s_compliance_build
+    description: RISCV_COMPLIANCE_I-XOR-01
+    dir: cv32e40s/sim/uvmt
+    cmd: make compliance_check_sig RISCV_ISA=rv32i COMPLIANCE_PROG=I-XOR-01
+    results: rv32i/I-XOR-01
+
+  I-XORI-01:
+    build: uvmt_cv32e40s_compliance_build
+    description: RISCV_COMPLIANCE_I-XORI-01
+    dir: cv32e40s/sim/uvmt
+    cmd: make compliance_check_sig RISCV_ISA=rv32i COMPLIANCE_PROG=I-XORI-01
+    results: rv32i/I-XORI-01
+
+  # -------------------------------------------------------------------------
+  # RV32IM tests
+  # -------------------------------------------------------------------------
+  MUL:
+    build: uvmt_cv32e40s_compliance_build
+    description: RISCV_COMPLIANCE_MUL
+    dir: cv32e40s/sim/uvmt
+    cmd: make compliance_check_sig RISCV_ISA=rv32im COMPLIANCE_PROG=MUL
+    results: rv32im/MUL
+
+  MULH:
+    build: uvmt_cv32e40s_compliance_build
+    description: RISCV_COMPLIANCE_MULH
+    dir: cv32e40s/sim/uvmt
+    cmd: make compliance_check_sig RISCV_ISA=rv32im COMPLIANCE_PROG=MULH
+    results: rv32im/MULH
+
+  MULHSU:
+    build: uvmt_cv32e40s_compliance_build
+    description: RISCV_COMPLIANCE_MULHSU
+    dir: cv32e40s/sim/uvmt
+    cmd: make compliance_check_sig RISCV_ISA=rv32im COMPLIANCE_PROG=MULHSU
+    results: rv32im/MULHSU
+
+  MULHU:
+    build: uvmt_cv32e40s_compliance_build
+    description: RISCV_COMPLIANCE_MULHU
+    dir: cv32e40s/sim/uvmt
+    cmd: make compliance_check_sig RISCV_ISA=rv32im COMPLIANCE_PROG=MULHU
+    results: rv32im/MULHU
+
+  REM:
+    build: uvmt_cv32e40s_compliance_build
+    description: RISCV_COMPLIANCE_REM
+    dir: cv32e40s/sim/uvmt
+    cmd: make compliance_check_sig RISCV_ISA=rv32im COMPLIANCE_PROG=REM
+    results: rv32im/REM
+
+  REMU:
+    build: uvmt_cv32e40s_compliance_build
+    description: RISCV_COMPLIANCE_REMU
+    dir: cv32e40s/sim/uvmt
+    cmd: make compliance_check_sig RISCV_ISA=rv32im COMPLIANCE_PROG=REMU
+    results: rv32im/REMU
+
+  DIV:
+    build: uvmt_cv32e40s_compliance_build
+    description: RISCV_COMPLIANCE_DIV
+    dir: cv32e40s/sim/uvmt
+    cmd: make compliance_check_sig RISCV_ISA=rv32im COMPLIANCE_PROG=DIV
+    results: rv32im/DIV
+
+  DIVU:
+    build: uvmt_cv32e40s_compliance_build
+    description: RISCV_COMPLIANCE_DIVU
+    dir: cv32e40s/sim/uvmt
+    cmd: make compliance_check_sig RISCV_ISA=rv32im COMPLIANCE_PROG=DIVU
+    results: rv32im/DIVU
+
+  # -------------------------------------------------------------------------
+  # RV32ZICSR tests
+  # -------------------------------------------------------------------------
+  I-CSRRC-01:
+    build: uvmt_cv32e40s_compliance_build
+    description: RISCV_COMPLIANCE_I-CSRRC-01
+    dir: cv32e40s/sim/uvmt
+    cmd: make compliance_check_sig RISCV_ISA=rv32Zicsr COMPLIANCE_PROG=I-CSRRC-01
+    results: rv32Zicsr/I-CSRRC-01
+
+  I-CSRRCI-01:
+    build: uvmt_cv32e40s_compliance_build
+    description: RISCV_COMPLIANCE_I-CSRRCI-01
+    dir: cv32e40s/sim/uvmt
+    cmd: make compliance_check_sig RISCV_ISA=rv32Zicsr COMPLIANCE_PROG=I-CSRRCI-01
+    results: rv32Zicsr/I-CSRRCI-01
+
+  I-CSRRS-01:
+    build: uvmt_cv32e40s_compliance_build
+    description: RISCV_COMPLIANCE_I-CSRRS-01
+    dir: cv32e40s/sim/uvmt
+    cmd: make compliance_check_sig RISCV_ISA=rv32Zicsr COMPLIANCE_PROG=I-CSRRS-01
+    results: rv32Zicsr/I-CSRRS-01
+
+  I-CSRRSI-01:
+    build: uvmt_cv32e40s_compliance_build
+    description: RISCV_COMPLIANCE_I-CSRRSI-01
+    dir: cv32e40s/sim/uvmt
+    cmd: make compliance_check_sig RISCV_ISA=rv32Zicsr COMPLIANCE_PROG=I-CSRRSI-01
+    results: rv32Zicsr/I-CSRRSI-01
+
+  I-CSRRW-01:
+    build: uvmt_cv32e40s_compliance_build
+    description: RISCV_COMPLIANCE_I-CSRRW-01
+    dir: cv32e40s/sim/uvmt
+    cmd: make compliance_check_sig RISCV_ISA=rv32Zicsr COMPLIANCE_PROG=I-CSRRW-01
+    results: rv32Zicsr/I-CSRRW-01
+
+  I-CSRRWI-01:
+    build: uvmt_cv32e40s_compliance_build
+    description: RISCV_COMPLIANCE_I-CSRRWI-01
+    dir: cv32e40s/sim/uvmt
+    cmd: make compliance_check_sig RISCV_ISA=rv32Zicsr COMPLIANCE_PROG=I-CSRRWI-01
+    results: rv32Zicsr/I-CSRRWI-01
+
+  # -------------------------------------------------------------------------
+  # RV32ZIFENCEI tests
+  # -------------------------------------------------------------------------
+  I-FENCE.I-01:
+    build: uvmt_cv32e40s_compliance_build
+    description: RISCV_COMPLIANCE_I-FENCE.I-01
+    dir: cv32e40s/sim/uvmt
+    cmd: make compliance_check_sig RISCV_ISA=rv32Zifencei COMPLIANCE_PROG=I-FENCE.I-01
+    results: rv32Zifencei/I-FENCE.I-01
+

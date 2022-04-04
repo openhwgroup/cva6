@@ -2,6 +2,7 @@
 *.nm
 *.elf
 *.hex
+*.itb
 *.map
 *.o
 *.objdump
@@ -10,6 +11,8 @@
 *.vcd
 *.vsif
 *.sve
+*.sdb
+test_build
 dsim.env
 dsim.log
 dsim_results
@@ -49,3 +52,10 @@ cva6/sim/verdiLog
 cva6/sim/Verdi.ses*
 riviera_results/
 */vendor_lib/dpi_dasm_spike/
+*/vendor_lib/verilab/svlib/
+work*
+vsim.dbg
+*.wlf
+transcript
+.lib-rtl
+.opt-rtl

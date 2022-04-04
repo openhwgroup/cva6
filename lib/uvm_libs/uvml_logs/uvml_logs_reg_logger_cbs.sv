@@ -81,7 +81,8 @@ class uvml_logs_reg_logger_cbs_c extends uvm_reg_cbs;
    /**
     * Writes msg to disk
     */
-   extern function void fwrite(string msg);
+   // Waiving Verissimo linter SVTB.32.2.0: Pass strings by reference unless otherwise needed
+   extern function void fwrite(string msg); //@DVT_LINTER_WAIVER "MT20211228_7" disable SVTB.32.2.0
    
 endclass
 

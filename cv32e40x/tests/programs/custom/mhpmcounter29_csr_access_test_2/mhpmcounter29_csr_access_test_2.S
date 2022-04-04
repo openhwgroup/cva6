@@ -23,8 +23,12 @@
 #     Notes:
 #       1. This test requires NUM_MHPMCOUNTERS set to 29.
 #       2. Does not test function - just access.
-#       3. Cannot run with the ISS.
+#       3. FIXME: ISS currently does not set mcountinhibit correctly on reset
+#          for non-default number of registers, RVVI and RVFI will mismatch if
+#          sb checking is enabled.
 ###############################################################################
+#include "corev_uvmt.h"
+
 .include "user_define.h"
 .section .text.start
 .globl _start
@@ -39,11 +43,7 @@ _start:
 .section .text
 _start_main:
 
-	#ifdef NO_PULP
 	#define EXP_MISA 0x40001104
-	#else
-	#define EXP_MISA 0x40801104
-	#endif
 
 
 ###############################################################################
@@ -5662,7 +5662,7 @@ test_done:
 
 csr_pass:
     li x18, 123456789
-    li x17, 0x20000000
+    li x17, CV_VP_STATUS_FLAGS_BASE
     sw x18,0(x17)
     wfi
 
@@ -5693,7 +5693,7 @@ csr_fail:
     sw a1,0(a0)
 
     li x18, 1
-    li x17, 0x20000000
+    li x17, CV_VP_STATUS_FLAGS_BASE
     sw x18,0(x17)
     wfi
 #

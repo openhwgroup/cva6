@@ -1,0 +1,14 @@
+name: b_ext_all
+description: Enables the B extensions ZBA_ZBB_ZBC_ZBS in the cv32e40x
+compile_flags: 
+    +define+ZBA_ZBB_ZBC_ZBS
+ovpsim: >
+#    --showoverrides
+#    --trace --tracechange --traceshowicount --monitornets
+cflags: >
+riscv_march: rv32imc_zba1p00_zbb1p00_zbc1p00_zbs1p00
+gnu_march:   rv32imc_zba1p00_zbb1p00_zbc1p00_zbs1p00
+corev_march: rv32imc_zba1p00_zbb1p00_zbc1p00_zbs1p00
+llvm_march:  rv32imc_zba1p00_zbb1p00_zbc1p00_zbs1p00
+cv_sw_march: rv32imc_zba1p00_zbb1p00_zbc1p00_zbs1p00
+

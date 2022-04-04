@@ -1,0 +1,20 @@
+name: default
+description: Default configuration for CV32E40S simulations
+compile_flags:
+#TODO:ropeders un-comment when ISS is patched  +define+ZBA_ZBB_ZBC_ZBS
+ovpsim: >
+    # --showoverrides
+    # --trace --tracechange --traceshowicount --monitornets
+cflags: >
+plusargs: >
+    #TODO:ropeders un-comment when ISS is patched  +enable_zba_extension=1
+    #TODO:ropeders un-comment when ISS is patched  +enable_zbb_extension=1
+    #TODO:ropeders un-comment when ISS is patched  +enable_zbc_extension=1
+    #TODO:ropeders un-comment when ISS is patched  +enable_zbs_extension=1
+cv_sw_march: rv32imc
+#TODO:ropeders un-comment when ISS is patched  cv_sw_march: rv32imc_zba1p00_zbb1p00_zbc1p00_zbs1p00
+# Note: the following are depreciated
+#riscv_march: rv32imc_zba1p00_zbb1p00_zbc1p00_zbs1p00
+#gnu_march:   rv32imc_zba1p00_zbb1p00_zbc1p00_zbs1p00
+#corev_march: rv32imc_zba1p00_zbb1p00_zbc1p00_zbs1p00
+#llvm_march:  rv32imc_zba1p00_zbb1p00_zbc1p00_zbs1p00

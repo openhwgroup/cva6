@@ -1,0 +1,4 @@
+name: pma
+description: PMA configuration for pma_debug test
+compile_flags:
+    +define+PMA_DEBUG_CFG

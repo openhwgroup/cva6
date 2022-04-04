@@ -1,0 +1,11 @@
+name: b_ext_test
+uvm_test: uvmt_$(CV_CORE_LC)_firmware_test_c
+description: >
+    Simple sanity check for B extension instructions
+
+# Toolchain configurations
+riscv_march: rv32imc_zba1p00_zbb1p00_zbc1p00_zbs1p00
+gnu_march:   rv32imc_zba1p00_zbb1p00_zbc1p00_zbs1p00
+corev_march: rv32imc_zba1p00_zbb1p00_zbc1p00_zbs1p00
+pulp_not_supported: 1
+llvm_march:  rv32imc_zba1p00_zbb1p00_zbc1p00_zbs1p00

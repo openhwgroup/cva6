@@ -1,19 +1,19 @@
 /*
 **
 ** Copyright 2020 OpenHW Group
-** 
+**
 ** Licensed under the Solderpad Hardware Licence, Version 2.0 (the "License");
 ** you may not use this file except in compliance with the License.
 ** You may obtain a copy of the License at
-** 
+**
 **     https://solderpad.org/licenses/
-** 
+**
 ** Unless required by applicable law or agreed to in writing, software
 ** distributed under the License is distributed on an "AS IS" BASIS,
 ** WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 ** See the License for the specific language governing permissions and
 ** limitations under the License.
-** 
+**
 *******************************************************************************
 **
 ** Modeled CSR power-on-reset test:
@@ -33,11 +33,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-#ifdef NO_PULP
 #define EXP_MISA 0x40001104
-#else 
-#define EXP_MISA 0x40801104
-#endif
 
 int main(int argc, char *argv[])
 {
@@ -93,7 +89,7 @@ int main(int argc, char *argv[])
   __asm__ volatile("csrr %0, 0x7C4" : "=r"(lpstart1_rval));
   __asm__ volatile("csrr %0, 0x7C5" : "=r"(lpend1_rval));
   __asm__ volatile("csrr %0, 0x7C6" : "=r"(lpcount1_rval));
- 
+
   if (lpstart0_rval != 0x0) {
     printf("ERROR: CSR LPSTART0 not zero!\n\n");
     ++err_cnt;
@@ -134,7 +130,7 @@ int main(int argc, char *argv[])
     ++err_cnt;
   }
   if (uhartid_rval != 0x0) {
-    printf("ERROR: CSR UHARTID not equal to hart_id_i!\n\n");
+    printf("ERROR: CSR UHARTID not equal to mhartid_i!\n\n");
     ++err_cnt;
   }
 	*/
@@ -162,7 +158,7 @@ int main(int argc, char *argv[])
   }
 
 	//__asm__ volatile("csrr %0, 0x306" : "=r"(mcounteren_rval));    // Not currently modeled
-  //__asm__ volatile("csrr %0, 0x320" : "=r"(mcountinhibit_rval)); // Modeled, but cannot override PoR 
+  //__asm__ volatile("csrr %0, 0x320" : "=r"(mcountinhibit_rval)); // Modeled, but cannot override PoR
 
   //if (mcounteren_rval != 0x0) {
   //  printf("ERROR: CSR MCOUNTEREN not 0x0!\n\n");
@@ -445,8 +441,8 @@ int main(int argc, char *argv[])
     ++err_cnt;
   }
 
-  if (marchid_rval != 0x4) {
-    printf("ERROR: CSR MARCHID not 0x4!\n\n");
+  if (marchid_rval != 0x14) {
+    printf("ERROR: CSR MARCHID not 0x14!\n\n");
     ++err_cnt;
   }
 
@@ -456,7 +452,7 @@ int main(int argc, char *argv[])
   }
 
   if (mhartid_rval != 0x0) {
-    printf("ERROR: CSR MHARTID not equal to hart_id_i!\n\n");
+    printf("ERROR: CSR MHARTID not equal to mhartid_i!\n\n");
     ++err_cnt;
   }
 

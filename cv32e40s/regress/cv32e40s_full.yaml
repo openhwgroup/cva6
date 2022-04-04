@@ -1,0 +1,431 @@
+# YAML file to specify a regression testlist
+# Note that the is set for all tests in this regression.
+# This means you need to have a toolchain at COREV_SW_TOOLCHAIN (see Common.mk)
+---
+# Header
+name: cv32_full_covg
+description: Full regression (all tests) for CV32E40S with step-and-compare against RM"
+
+# List of builds
+builds:
+  clone_riscv-dv:
+    cmd: make clone_riscv-dv
+    dir: cv32e40s/sim/uvmt
+
+  clone_svlib:
+    cmd: make clone_svlib
+    dir: cv32e40s/sim/uvmt
+
+  clone_cv_core_rtl:
+    cmd: make clone_cv_core_rtl
+    dir: cv32e40s/sim/uvmt
+
+  uvmt_cv32e40s:
+    cmd: make comp_corev-dv comp
+    dir: cv32e40s/sim/uvmt
+
+  uvmt_cv32e40s_b_ext_abs:
+    cmd: make comp_corev-dv comp
+    cfg: b_ext_abs
+    dir: cv32e40s/sim/uvmt
+
+  uvmt_cv32e40s_b_ext_all:
+    cmd: make comp_corev-dv comp
+    cfg: b_ext_all
+    dir: cv32e40s/sim/uvmt
+
+  uvmt_cv32e40s_pma:
+    cmd: make comp_corev-dv comp
+    cfg: pma
+    dir: cv32e40s/sim/uvmt
+
+  uvmt_cv32e40s_num_mhpmcounter_29:
+    cmd: make comp_corev-dv comp
+    cfg: num_mhpmcounter_29
+    dir: cv32e40s/sim/uvmt
+
+  uvmt_cv32e40s_pma_1:
+    cmd: make comp_corev-dv comp
+    cfg: pma_test_cfg_1
+    dir: cv32e40s/sim/uvmt
+
+  uvmt_cv32e40s_pma_2:
+    cmd: make comp_corev-dv comp
+    cfg: pma_test_cfg_2
+    dir: cv32e40s/sim/uvmt
+
+  uvmt_cv32e40s_pma_3:
+    cmd: make comp_corev-dv comp
+    cfg: pma_test_cfg_3
+    dir: cv32e40s/sim/uvmt
+
+  uvmt_cv32e40s_pma_4:
+    cmd: make comp_corev-dv comp
+    cfg: pma_test_cfg_4
+    dir: cv32e40s/sim/uvmt
+
+  uvmt_cv32e40s_pma_5:
+    cmd: make comp_corev-dv comp
+    cfg: pma_test_cfg_5
+    dir: cv32e40s/sim/uvmt
+
+  uvmt_cv32e40s_no_bitmanip:
+    cmd: make comp_corev-dv comp
+    cfg: no_bitmanip
+    dir: cv32e40s/sim/uvmt
+
+# List of tests
+tests:
+  hello-world:
+    description: uvm_hello_world_test
+    builds: [ uvmt_cv32e40s, uvmt_cv32e40s_no_bitmanip]
+    dir: cv32e40s/sim/uvmt
+    cmd: make test TEST=hello-world
+
+  csr_instructions:
+    description: CSR instruction test
+    builds: [ uvmt_cv32e40s, uvmt_cv32e40s_no_bitmanip]
+    dir: cv32e40s/sim/uvmt
+    cmd: make test TEST=csr_instructions
+
+  generic_exception_test:
+    description: Generic exception test
+    builds: [ uvmt_cv32e40s, uvmt_cv32e40s_no_bitmanip]
+    dir: cv32e40s/sim/uvmt
+    cmd: make test TEST=generic_exception_test
+
+  illegal_instr_test:
+    description: Illegal instruction test
+    builds: [ uvmt_cv32e40s, uvmt_cv32e40s_no_bitmanip]
+    dir: cv32e40s/sim/uvmt
+    cmd: make test TEST=illegal_instr_test
+
+  branch_zero:
+    description: Branch test with zero offsets
+    builds: [ uvmt_cv32e40s, uvmt_cv32e40s_no_bitmanip]
+    dir: cv32e40s/sim/uvmt
+    cmd: make test TEST=branch_zero
+
+  cv32e40s_csr_access_test:
+    description: CSR Access Mode Test
+    builds: [ uvmt_cv32e40s, uvmt_cv32e40s_no_bitmanip]
+    dir: cv32e40s/sim/uvmt
+    cmd: make test TEST=cv32e40s_csr_access_test
+
+  cv32e40s_readonly_csr_access_test:
+    description: CSR Read-only Access Mode Test
+    builds: [ uvmt_cv32e40s, uvmt_cv32e40s_no_bitmanip]
+    dir: cv32e40s/sim/uvmt
+    cmd: make test TEST=cv32e40s_readonly_csr_access_test
+
+  requested_csr_por:
+    description: CSR PoR test
+    builds: [ uvmt_cv32e40s, uvmt_cv32e40s_no_bitmanip]
+    dir: cv32e40s/sim/uvmt
+    cmd: make test TEST=requested_csr_por
+
+  modeled_csr_por:
+    description: Modeled CSR PoR test
+    builds: [ uvmt_cv32e40s, uvmt_cv32e40s_no_bitmanip]
+    dir: cv32e40s/sim/uvmt
+    cmd: make test TEST=modeled_csr_por
+
+  csr_instr_asm:
+    description: CSR instruction assembly test
+    builds: [ uvmt_cv32e40s, uvmt_cv32e40s_no_bitmanip]
+    dir: cv32e40s/sim/uvmt
+    cmd: make test TEST=csr_instr_asm
+
+  perf_counters_instructions:
+    description: Performance counter test
+    builds: [ uvmt_cv32e40s, uvmt_cv32e40s_no_bitmanip]
+    dir: cv32e40s/sim/uvmt
+    cmd: make test TEST=perf_counters_instructions
+
+  mhpmcounter29_csr_access_test_1:
+    description: Hardware performance counter full access coverage test 1
+    builds: [ uvmt_cv32e40s_num_mhpmcounter_29 ]
+    dir: cv32e40s/sim/uvmt
+    cmd: make test TEST=mhpmcounter29_csr_access_test_1
+
+  mhpmcounter29_csr_access_test_2:
+    description: Hardware performance counter full access coverage test 2
+    builds: [ uvmt_cv32e40s_num_mhpmcounter_29 ]
+    dir: cv32e40s/sim/uvmt
+    cmd: make test TEST=mhpmcounter29_csr_access_test_2
+
+  hpmcounter_basic_test:
+    description: Hardware performance counter basic test
+    builds: [ uvmt_cv32e40s, uvmt_cv32e40s_no_bitmanip]
+    dir: cv32e40s/sim/uvmt
+    cmd: make test TEST=hpmcounter_basic_test
+
+  hpmcounter_basic_nostall_test:
+    description: Hardware performance counter basic test with no random stalls
+    builds: [ uvmt_cv32e40s, uvmt_cv32e40s_no_bitmanip]
+    dir: cv32e40s/sim/uvmt
+    cmd: make test TEST=hpmcounter_basic_nostall_test
+
+  hpmcounter_hazard_test:
+    description: Hardware performance counter hazard test
+    builds: [ uvmt_cv32e40s, uvmt_cv32e40s_no_bitmanip]
+    dir: cv32e40s/sim/uvmt
+    cmd: make test TEST=hpmcounter_hazard_test
+
+  riscv_ebreak_test_0:
+    description: Static corev-dv ebreak
+    builds: [ uvmt_cv32e40s, uvmt_cv32e40s_no_bitmanip]
+    dir: cv32e40s/sim/uvmt
+    cmd: make test TEST=riscv_ebreak_test_0
+
+  riscv_arithmetic_basic_test_0:
+    description: Static riscv-dv arithmetic test 0
+    builds: [ uvmt_cv32e40s, uvmt_cv32e40s_no_bitmanip]
+    dir: cv32e40s/sim/uvmt
+    cmd: make test TEST=riscv_arithmetic_basic_test_0
+    num: 1
+
+  riscv_arithmetic_basic_test_1:
+    description: Static riscv-dv arithmetic test 1
+    builds: [ uvmt_cv32e40s, uvmt_cv32e40s_no_bitmanip]
+    dir: cv32e40s/sim/uvmt
+    cmd: make test TEST=riscv_arithmetic_basic_test_1
+    num: 1
+
+  corev_rand_arithmetic_base_test:
+    description: Generated corev-dv arithmetic test
+    builds: [ uvmt_cv32e40s, uvmt_cv32e40s_pma_1, uvmt_cv32e40s_pma_2, uvmt_cv32e40s_pma_3, uvmt_cv32e40s_pma_4, uvmt_cv32e40s_pma_5, uvmt_cv32e40s_no_bitmanip]
+    dir: cv32e40s/sim/uvmt
+    cmd: make gen_corev-dv test TEST=corev_rand_arithmetic_base_test
+    num: 4
+
+  corev_rand_instr_test:
+    description: Generated corev-dv random instruction test
+    builds: [ uvmt_cv32e40s, uvmt_cv32e40s_pma_1, uvmt_cv32e40s_pma_2, uvmt_cv32e40s_pma_3, uvmt_cv32e40s_pma_4, uvmt_cv32e40s_pma_5, uvmt_cv32e40s_no_bitmanip]
+    dir: cv32e40s/sim/uvmt
+    cmd: make gen_corev-dv test TEST=corev_rand_instr_test
+    num: 5
+
+  corev_rand_instr_long_stall:
+    description: Generated corev-dv random instruction test with long stalls
+    builds: [ uvmt_cv32e40s, uvmt_cv32e40s_pma_1, uvmt_cv32e40s_pma_2, uvmt_cv32e40s_pma_3, uvmt_cv32e40s_pma_4, uvmt_cv32e40s_pma_5, uvmt_cv32e40s_no_bitmanip]
+    dir: cv32e40s/sim/uvmt
+    cmd: make gen_corev-dv test TEST=corev_rand_instr_long_stall
+    num: 2
+
+  corev_rand_illegal_instr_test:
+    description: Generated corev-dv random instruction test with illegal instructions
+    builds: [ uvmt_cv32e40s, uvmt_cv32e40s_pma_1, uvmt_cv32e40s_pma_2, uvmt_cv32e40s_pma_3, uvmt_cv32e40s_pma_4, uvmt_cv32e40s_pma_5, uvmt_cv32e40s_no_bitmanip, uvmt_cv32e40s_no_bitmanip]
+    dir: cv32e40s/sim/uvmt
+    cmd: make gen_corev-dv test TEST=corev_rand_illegal_instr_test
+    num: 5
+
+  corev_rand_jump_stress_test:
+    description: Generated corev-dv jump stress test
+    builds: [ uvmt_cv32e40s, uvmt_cv32e40s_pma_1, uvmt_cv32e40s_pma_2, uvmt_cv32e40s_pma_3, uvmt_cv32e40s_pma_4, uvmt_cv32e40s_pma_5, uvmt_cv32e40s_no_bitmanip]
+    dir: cv32e40s/sim/uvmt
+    cmd: make gen_corev-dv test TEST=corev_rand_jump_stress_test
+    num: 5
+
+  corev_rand_interrupt:
+    description: Generated corev-dv random interrupt test
+    builds: [ uvmt_cv32e40s, uvmt_cv32e40s_pma_1, uvmt_cv32e40s_pma_2, uvmt_cv32e40s_pma_3, uvmt_cv32e40s_pma_4, uvmt_cv32e40s_pma_5, uvmt_cv32e40s_no_bitmanip]
+    dir: cv32e40s/sim/uvmt
+    cmd: make gen_corev-dv test TEST=corev_rand_interrupt
+    num: 5
+
+  corev_rand_debug:
+    description: Generated corev-dv random debug test
+    builds: [ uvmt_cv32e40s, uvmt_cv32e40s_pma_1, uvmt_cv32e40s_pma_2, uvmt_cv32e40s_pma_3, uvmt_cv32e40s_pma_4, uvmt_cv32e40s_pma_5, uvmt_cv32e40s_no_bitmanip]
+    dir: cv32e40s/sim/uvmt
+    cmd: make gen_corev-dv test TEST=corev_rand_debug
+    num: 5
+
+  corev_rand_debug_single_step:
+    description: debug random test with single-stepping
+    builds: [ uvmt_cv32e40s, uvmt_cv32e40s_pma_1, uvmt_cv32e40s_pma_2, uvmt_cv32e40s_pma_3, uvmt_cv32e40s_pma_4, uvmt_cv32e40s_pma_5, uvmt_cv32e40s_no_bitmanip]
+    dir: cv32e40s/sim/uvmt
+    cmd: make gen_corev-dv test TEST=corev_rand_debug_single_step
+    num: 5
+
+  corev_rand_debug_ebreak:
+    description: debug random test with ebreaks from ROM
+    builds: [ uvmt_cv32e40s, uvmt_cv32e40s_pma_1, uvmt_cv32e40s_pma_2, uvmt_cv32e40s_pma_3, uvmt_cv32e40s_pma_4, uvmt_cv32e40s_pma_5, uvmt_cv32e40s_no_bitmanip]
+    dir: cv32e40s/sim/uvmt
+    cmd: make gen_corev-dv test TEST=corev_rand_debug_ebreak
+    num: 5
+
+  corev_rand_interrupt_wfi:
+    description: Generated corev-dv random interrupt WFI test
+    builds: [ uvmt_cv32e40s, uvmt_cv32e40s_pma_1, uvmt_cv32e40s_pma_2, uvmt_cv32e40s_pma_3, uvmt_cv32e40s_pma_4, uvmt_cv32e40s_pma_5, uvmt_cv32e40s_no_bitmanip]
+    dir: cv32e40s/sim/uvmt
+    cmd: make gen_corev-dv test TEST=corev_rand_interrupt_wfi
+    num: 5
+
+  corev_rand_fencei:
+    description: Generated corev-dv random fence,i test
+    builds: [ uvmt_cv32e40s, uvmt_cv32e40s_pma_1, uvmt_cv32e40s_pma_2, uvmt_cv32e40s_pma_3, uvmt_cv32e40s_pma_4, uvmt_cv32e40s_pma_5, uvmt_cv32e40s_no_bitmanip]
+    dir: cv32e40s/sim/uvmt
+    cmd: make gen_corev-dv test TEST=corev_rand_fencei
+    num: 2
+
+  corev_rand_interrupt_wfi_mem_stress:
+    description: Generated corev-dv random interrupt WFI test with memory stress
+    builds: [ uvmt_cv32e40s, uvmt_cv32e40s_pma_1, uvmt_cv32e40s_pma_2, uvmt_cv32e40s_pma_3, uvmt_cv32e40s_pma_4, uvmt_cv32e40s_pma_5, uvmt_cv32e40s_no_bitmanip]
+    dir: cv32e40s/sim/uvmt
+    cmd: make gen_corev-dv test TEST=corev_rand_interrupt_wfi_mem_stress
+    num: 5
+
+  corev_rand_interrupt_debug:
+    description: Generated corev-dv random interrupt WFI test with debug
+    builds: [ uvmt_cv32e40s, uvmt_cv32e40s_pma_1, uvmt_cv32e40s_pma_2, uvmt_cv32e40s_pma_3, uvmt_cv32e40s_pma_4, uvmt_cv32e40s_pma_5, uvmt_cv32e40s_no_bitmanip]
+    dir: cv32e40s/sim/uvmt
+    cmd: make gen_corev-dv test TEST=corev_rand_interrupt_debug
+    num: 5
+
+  corev_rand_interrupt_exception:
+    description: Generated corev-dv random interrupt WFI test with exceptions
+    builds: [ uvmt_cv32e40s, uvmt_cv32e40s_pma_1, uvmt_cv32e40s_pma_2, uvmt_cv32e40s_pma_3, uvmt_cv32e40s_pma_4, uvmt_cv32e40s_pma_5, uvmt_cv32e40s_no_bitmanip]
+    dir: cv32e40s/sim/uvmt
+    cmd: make gen_corev-dv test TEST=corev_rand_interrupt_exception
+    num: 5
+
+  corev_rand_interrupt_nested:
+    description: Generated corev-dv random interrupt WFI test with random nested interrupts
+    builds: [ uvmt_cv32e40s, uvmt_cv32e40s_pma_1, uvmt_cv32e40s_pma_2, uvmt_cv32e40s_pma_3, uvmt_cv32e40s_pma_4, uvmt_cv32e40s_pma_5, uvmt_cv32e40s_no_bitmanip]
+    dir: cv32e40s/sim/uvmt
+    cmd: make gen_corev-dv test TEST=corev_rand_interrupt_nested
+    num: 5
+
+  corev_rand_pma_test:
+    description: Generated corev-dv random PMA test
+    builds: [ uvmt_cv32e40s_pma_1, uvmt_cv32e40s_pma_2, uvmt_cv32e40s_pma_3, uvmt_cv32e40s_pma_4, uvmt_cv32e40s_pma_5]
+    dir: cv32e40s/sim/uvmt
+    cmd: make gen_corev-dv test TEST=corev_rand_pma_test
+    num: 3
+
+  corev_rand_instr_obi_err:
+    description: Random OBI instruction bus error test
+    builds: [ uvmt_cv32e40s_pma_1, uvmt_cv32e40s_pma_2, uvmt_cv32e40s_pma_3, uvmt_cv32e40s_pma_4, uvmt_cv32e40s_pma_5, uvmt_cv32e40s_no_bitmanip]
+    dir: cv32e40s/sim/uvmt
+    cmd: make gen_corev-dv test TEST=corev_rand_instr_obi_err
+    num: 6
+
+  corev_rand_instr_obi_err_debug:
+    description: Random OBI instruction bus error test with debug
+    builds: [ uvmt_cv32e40s_pma_1, uvmt_cv32e40s_pma_2, uvmt_cv32e40s_pma_3, uvmt_cv32e40s_pma_4, uvmt_cv32e40s_pma_5, uvmt_cv32e40s_no_bitmanip]
+    dir: cv32e40s/sim/uvmt
+    cmd: make gen_corev-dv test TEST=corev_rand_instr_obi_err_debug
+    num: 6
+
+  corev_rand_data_obi_err:
+    description: Random OBI data bus error test
+    builds: [ uvmt_cv32e40s_pma_1, uvmt_cv32e40s_pma_2, uvmt_cv32e40s_pma_3, uvmt_cv32e40s_pma_4, uvmt_cv32e40s_pma_5, uvmt_cv32e40s_no_bitmanip]
+    dir: cv32e40s/sim/uvmt
+    cmd: make gen_corev-dv test TEST=corev_rand_data_obi_err
+    num: 6
+
+  corev_rand_data_obi_err_debug:
+    description: Random OBI data bus error test with debug
+    builds: [ uvmt_cv32e40s_pma_1, uvmt_cv32e40s_pma_2, uvmt_cv32e40s_pma_3, uvmt_cv32e40s_pma_4, uvmt_cv32e40s_pma_5, uvmt_cv32e40s_no_bitmanip]
+    dir: cv32e40s/sim/uvmt
+    cmd: make gen_corev-dv test TEST=corev_rand_data_obi_err_debug
+    num: 6
+
+  illegal:
+    description: Illegal-riscv-tests
+    builds: [ uvmt_cv32e40s, uvmt_cv32e40s_no_bitmanip]
+    dir: cv32e40s/sim/uvmt
+    cmd: make test TEST=illegal
+
+  fibonacci:
+    description: Fibonacci test
+    builds: [ uvmt_cv32e40s, uvmt_cv32e40s_no_bitmanip]
+    dir: cv32e40s/sim/uvmt
+    cmd: make test TEST=fibonacci
+
+  misalign:
+    description: Misalign test
+    builds: [ uvmt_cv32e40s, uvmt_cv32e40s_no_bitmanip]
+    dir: cv32e40s/sim/uvmt
+    cmd: make test TEST=misalign
+
+  dhrystone:
+    description: Dhrystone test
+    builds: [ uvmt_cv32e40s, uvmt_cv32e40s_no_bitmanip]
+    dir: cv32e40s/sim/uvmt
+    cmd: make test TEST=dhrystone
+
+  debug_test:
+    description: Debug Test 1
+    builds: [ uvmt_cv32e40s, uvmt_cv32e40s_no_bitmanip]
+    dir: cv32e40s/sim/uvmt
+    cmd: make test TEST=debug_test
+
+  debug_test_reset:
+    description: Debug reset test
+    builds: [ uvmt_cv32e40s, uvmt_cv32e40s_no_bitmanip]
+    dir: cv32e40s/sim/uvmt
+    cmd: make test TEST=debug_test_reset
+
+  debug_test_trigger:
+    description: Debug trigger test
+    builds: [ uvmt_cv32e40s, uvmt_cv32e40s_no_bitmanip]
+    dir: cv32e40s/sim/uvmt
+    cmd: make test TEST=debug_test_trigger
+
+  debug_test_boot_set:
+    description: Debug test target debug_req at BOOT_SET
+    builds: [ uvmt_cv32e40s, uvmt_cv32e40s_no_bitmanip]
+    dir: cv32e40s/sim/uvmt
+    cmd: make test TEST=debug_test_boot_set
+    num: 10
+
+  interrupt_bootstrap:
+    description: Interrupt bootstrap test
+    builds: [ uvmt_cv32e40s, uvmt_cv32e40s_no_bitmanip]
+    dir: cv32e40s/sim/uvmt
+    cmd: make test TEST=interrupt_bootstrap
+
+  interrupt_test:
+    description: Interrupt test
+    builds: [ uvmt_cv32e40s, uvmt_cv32e40s_no_bitmanip]
+    dir: cv32e40s/sim/uvmt
+    cmd: make test TEST=interrupt_test
+
+  isa_fcov_holes:
+    description: ISA function coverage test
+    builds: [ uvmt_cv32e40s, uvmt_cv32e40s_no_bitmanip]
+    dir: cv32e40s/sim/uvmt
+    cmd: make test TEST=isa_fcov_holes
+
+  instr_bus_error:
+    description: Directed instruction bus error test
+    builds: [ uvmt_cv32e40s, uvmt_cv32e40s_no_bitmanip]
+    dir: cv32e40s/sim/uvmt
+    cmd: make test TEST=instr_bus_error
+
+  data_bus_error:
+    description: Directed data bus error test
+    builds: [ uvmt_cv32e40s, uvmt_cv32e40s_no_bitmanip]
+    dir: cv32e40s/sim/uvmt
+    cmd: make test TEST=data_bus_error
+
+  load_store_rs1_zero:
+    description: Directed rs1 coverage test
+    builds: [ uvmt_cv32e40s, uvmt_cv32e40s_no_bitmanip]
+    dir: cv32e40s/sim/uvmt
+    cmd: make test TEST=load_store_rs1_zero
+
+  pma:
+    description: ISA function coverage test
+    builds: [ uvmt_cv32e40s_pma]
+    dir: cv32e40s/sim/uvmt
+    cmd: make test TEST=isa_fcov_holes
+
+  b_ext_test:
+    description: Directed Zb extension test
+    builds: [ uvmt_cv32e40s_b_ext_abs, uvmt_cv32e40s_b_ext_all]
+    dir: cv32e40s/sim/uvmt
+    cmd: make test TEST=b_ext_test
+

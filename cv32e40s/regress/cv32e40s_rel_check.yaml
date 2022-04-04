@@ -1,0 +1,301 @@
+# YAML file to specify a regression testlist
+---
+# Header
+name: cv32e40s_full
+description: Release regression for CV32E40S
+
+# List of builds
+builds:
+  clone_riscv-dv:
+    cmd: make clone_riscv-dv
+    dir: cv32e40s/sim/uvmt
+
+  clone_svlib:
+    cmd: make clone_svlib
+    dir: cv32e40s/sim/uvmt
+
+  clone_cv_core_rtl:
+    cmd: make clone_cv_core_rtl
+    dir: cv32e40s/sim/uvmt
+
+  uvmt_cv32e40s:
+    cmd: make comp_corev-dv comp
+    dir: cv32e40s/sim/uvmt
+
+  uvmt_cv32e40s_pma_1:
+    cmd: make comp_corev-dv comp
+    cfg: pma_test_cfg_1
+    dir: cv32e40s/sim/uvmt
+
+  uvmt_cv32e40s_pma_2:
+    cmd: make comp_corev-dv comp
+    cfg: pma_test_cfg_2
+    dir: cv32e40s/sim/uvmt
+
+  uvmt_cv32e40s_pma_3:
+    cmd: make comp_corev-dv comp
+    cfg: pma_test_cfg_3
+    dir: cv32e40s/sim/uvmt
+
+  uvmt_cv32e40s_pma_4:
+    cmd: make comp_corev-dv comp
+    cfg: pma_test_cfg_4
+    dir: cv32e40s/sim/uvmt
+
+  uvmt_cv32e40s_pma_5:
+    cmd: make comp_corev-dv comp
+    cfg: pma_test_cfg_5
+    dir: cv32e40s/sim/uvmt
+
+# List of tests
+tests:
+  hello-world:
+    build: uvmt_cv32e40s
+    description: uvm_hello_world_test
+    dir: cv32e40s/sim/uvmt
+    cmd: make test TEST=hello-world
+
+  csr_instructions:
+    build: uvmt_cv32e40s
+    description: CSR instruction test
+    dir: cv32e40s/sim/uvmt
+    cmd: make test TEST=csr_instructions
+
+  generic_exception_test:
+    build: uvmt_cv32e40s
+    description: Generic exception test
+    dir: cv32e40s/sim/uvmt
+    cmd: make test TEST=generic_exception_test
+
+  illegal_instr_test:
+    build: uvmt_cv32e40s
+    description: Illegal instruction test
+    dir: cv32e40s/sim/uvmt
+    cmd: make test TEST=illegal_instr_test
+
+  requested_csr_por:
+    build: uvmt_cv32e40s
+    description: CSR PoR test
+    dir: cv32e40s/sim/uvmt
+    cmd: make test TEST=requested_csr_por
+
+  modeled_csr_por:
+    build: uvmt_cv32e40s
+    description: Modeled CSR PoR test
+    dir: cv32e40s/sim/uvmt
+    cmd: make test TEST=modeled_csr_por
+
+  csr_instr_asm:
+    build: uvmt_cv32e40s
+    description: CSR instruction assembly test
+    dir: cv32e40s/sim/uvmt
+    cmd: make test TEST=csr_instr_asm
+
+  perf_counters_instructions:
+    build: uvmt_cv32e40s
+    description: Performance counter test
+    dir: cv32e40s/sim/uvmt
+    cmd: make test TEST=perf_counters_instructions
+
+  hpmcounter_basic_test:
+    build: uvmt_cv32e40s
+    description: Hardware performance counter basic test
+    dir: cv32e40s/sim/uvmt
+    cmd: make test TEST=hpmcounter_basic_test
+    makearg: USER_RUN_FLAGS=+rand_stall_obi_disable
+
+  hpmcounter_hazard_test:
+    build: uvmt_cv32e40s
+    description: Hardware performance counter hazard test
+    dir: cv32e40s/sim/uvmt
+    cmd: make test TEST=hpmcounter_hazard_test
+    makearg: USER_RUN_FLAGS=+rand_stall_obi_disable
+
+  riscv_ebreak_test_0:
+    build: uvmt_cv32e40s
+    description: Static corev-dv ebreak
+    dir: cv32e40s/sim/uvmt
+    cmd: make test TEST=riscv_ebreak_test_0
+
+  riscv_arithmetic_basic_test_0:
+    build: uvmt_cv32e40s
+    description: Static riscv-dv arithmetic test 0
+    dir: cv32e40s/sim/uvmt
+    cmd: make test TEST=riscv_arithmetic_basic_test_0
+    num: 1
+
+  riscv_arithmetic_basic_test_1:
+    build: uvmt_cv32e40s
+    description: Static riscv-dv arithmetic test 1
+    dir: cv32e40s/sim/uvmt
+    cmd: make test TEST=riscv_arithmetic_basic_test_1
+    num: 1
+
+  illegal:
+    build: uvmt_cv32e40s
+    description: Illegal-riscv-tests
+    dir: cv32e40s/sim/uvmt
+    cmd: make test TEST=illegal
+
+  fibonacci:
+    build: uvmt_cv32e40s
+    description: Fibonacci test
+    dir: cv32e40s/sim/uvmt
+    cmd: make test TEST=fibonacci
+
+  misalign:
+    build: uvmt_cv32e40s
+    description: Misalign test
+    dir: cv32e40s/sim/uvmt
+    cmd: make test TEST=misalign
+
+  dhrystone:
+    build: uvmt_cv32e40s
+    description: Dhrystone test
+    dir: cv32e40s/sim/uvmt
+    cmd: make test TEST=dhrystone
+
+  debug_test:
+    build: uvmt_cv32e40s
+    description: Debug Test 1
+    dir: cv32e40s/sim/uvmt
+    cmd: make test TEST=debug_test
+    makearg: USER_RUN_FLAGS=+rand_stall_obi_disable
+
+  debug_test_reset:
+    build: uvmt_cv32e40s
+    description: Debug reset test
+    dir: cv32e40s/sim/uvmt
+    cmd: make test TEST=debug_test_reset
+
+  interrupt_bootstrap:
+    build: uvmt_cv32e40s
+    description: Interrupt bootstrap test
+    dir: cv32e40s/sim/uvmt
+    cmd: make test TEST=interrupt_bootstrap
+
+  interrupt_test:
+    build: uvmt_cv32e40s
+    description: Interrupt test
+    dir: cv32e40s/sim/uvmt
+    cmd: make test TEST=interrupt_test
+
+  isa_fcov_holes:
+    build: uvmt_cv32e40s
+    description: ISA function coverage test
+    dir: cv32e40s/sim/uvmt
+    cmd: make test TEST=isa_fcov_holes
+
+  cv32e40s_csr_access_test:
+    build: uvmt_cv32e40s
+    description: Randomly generated CSR access test
+    dir: cv32e40s/sim/uvmt
+    cmd: make test TEST=cv32e40s_csr_access_test
+
+  cv32e40s_readonly_csr_access_test:
+    build: uvmt_cv32e40s
+    description: Manually generated CSR access test of RO CSRs
+    dir: cv32e40s/sim/uvmt
+    cmd: make test TEST=cv32e40s_readonly_csr_access_test
+
+  corev_rand_arithmetic_base_test:
+    build: uvmt_cv32e40s
+    description: Generated corev-dv arithmetic test
+    dir: cv32e40s/sim/uvmt
+    cmd: make gen_corev-dv test TEST=corev_rand_arithmetic_base_test
+    num: 2
+
+  corev_rand_instr_test:
+    builds:
+      - uvmt_cv32e40s
+      - uvmt_cv32e40s_pma_1
+      - uvmt_cv32e40s_pma_2
+      - uvmt_cv32e40s_pma_3
+      - uvmt_cv32e40s_pma_4
+      - uvmt_cv32e40s_pma_5
+    description: Generated corev-dv random instruction test
+    dir: cv32e40s/sim/uvmt
+    cmd: make gen_corev-dv test TEST=corev_rand_instr_test
+    num: 1
+
+  corev_rand_illegal_instr_test:
+    build: uvmt_cv32e40s
+    description: Generated corev-dv random instruction test with illegal instructions
+    dir: cv32e40s/sim/uvmt
+    cmd: make gen_corev-dv test TEST=corev_rand_illegal_instr_test
+    num: 2
+
+  corev_rand_jump_stress_test:
+    builds:
+      - uvmt_cv32e40s
+      - uvmt_cv32e40s_pma_1
+      - uvmt_cv32e40s_pma_2
+      - uvmt_cv32e40s_pma_3
+      - uvmt_cv32e40s_pma_4
+      - uvmt_cv32e40s_pma_5
+    description: Generated corev-dv jump stress test
+    dir: cv32e40s/sim/uvmt
+    cmd: make gen_corev-dv test TEST=corev_rand_jump_stress_test
+    num: 1
+
+  corev_rand_interrupt:
+    build: uvmt_cv32e40s
+    description: Generated corev-dv random interrupt test
+    dir: cv32e40s/sim/uvmt
+    cmd: make gen_corev-dv test TEST=corev_rand_interrupt
+    num: 2
+
+  corev_rand_debug:
+    builds:
+      - uvmt_cv32e40s
+      - uvmt_cv32e40s_pma_1
+      - uvmt_cv32e40s_pma_2
+      - uvmt_cv32e40s_pma_3
+      - uvmt_cv32e40s_pma_4
+      - uvmt_cv32e40s_pma_5
+    description: Generated corev-dv random debug test
+    dir: cv32e40s/sim/uvmt
+    cmd: make gen_corev-dv test TEST=corev_rand_debug
+    num: 1
+
+  corev_rand_debug_single_step:
+    build: uvmt_cv32e40s
+    description: debug random test with single-stepping
+    dir: cv32e40s/sim/uvmt
+    cmd: make gen_corev-dv test TEST=corev_rand_debug_single_step
+    num: 1
+
+  corev_rand_debug_ebreak:
+    build: uvmt_cv32e40s
+    description: debug random test with ebreaks from ROM
+    dir: cv32e40s/sim/uvmt
+    cmd: make gen_corev-dv test TEST=corev_rand_debug_ebreak
+    num: 2
+
+  corev_rand_interrupt_wfi:
+    build: uvmt_cv32e40s
+    description: Generated corev-dv random interrupt WFI test
+    dir: cv32e40s/sim/uvmt
+    cmd: make gen_corev-dv test TEST=corev_rand_interrupt_wfi
+    num: 1
+
+  corev_rand_interrupt_debug:
+    build: uvmt_cv32e40s
+    description: Generated corev-dv random interrupt WFI test with debug
+    dir: cv32e40s/sim/uvmt
+    cmd: make gen_corev-dv test TEST=corev_rand_interrupt_debug
+    num: 1
+
+  corev_rand_interrupt_exception:
+    build: uvmt_cv32e40s
+    description: Generated corev-dv random interrupt WFI test with exceptions
+    dir: cv32e40s/sim/uvmt
+    cmd: make gen_corev-dv test TEST=corev_rand_interrupt_exception
+    num: 1
+
+  corev_rand_interrupt_nested:
+    build: uvmt_cv32e40s
+    description: Generated corev-dv random interrupt WFI test with random nested interrupts
+    dir: cv32e40s/sim/uvmt
+    cmd: make gen_corev-dv test TEST=corev_rand_interrupt_nested
+    num: 1

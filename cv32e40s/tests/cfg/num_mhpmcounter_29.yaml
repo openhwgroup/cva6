@@ -1,0 +1,6 @@
+name: num_mhpmcounters_29
+description: Configuration for CV32E40S simulations with NUM_MHPMCOUNTER set to 29
+compile_flags: 
+    +define+SET_NUM_MHPMCOUNTERS=29
+ovpsim: >
+cflags: >

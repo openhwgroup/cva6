@@ -1,13 +1,13 @@
 // Copyright 2020 OpenHW Group
 // Copyright 2020 Datum Technology Corporation
 // Copyright 2020 Silicon Labs, Inc.
-// 
+//
 // Licensed under the Solderpad Hardware Licence, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
-// 
+//
 //     https://solderpad.org/licenses/
-// 
+//
 // Unless required by applicable law or agreed to in writing, software
 // distributed under the License is distributed on an "AS IS" BASIS,
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -18,9 +18,23 @@
 `ifndef __UVMA_ISACOV_TDEFS_SV__
 `define __UVMA_ISACOV_TDEFS_SV__
 
+typedef enum {
+  A_EXT,
+  B_EXT,
+  C_EXT,
+  F_EXT,
+  I_EXT,
+  M_EXT,
+  P_EXT,
+  Q_EXT,
+  ZIFENCEI_EXT,
+  ZICSR_EXT,
+  ZCE_EXT
+} instr_ext_t;
 
 typedef enum {
-  UNKNOWN,  // TODO this should not be needed?
+   // Used for an opcode that cannot be decoded
+  UNKNOWN,
 
   // 32I
   LUI, AUIPC, JAL, JALR,
@@ -35,15 +49,25 @@ typedef enum {
   DIV, DIVU, REM, REMU,
 
   // 32C
-  C_ADDI4SPN, C_LW, C_SW,
+  C_ADDI4SPN, C_LW, C_SW, C_NOP,
   C_ADDI, C_JAL, C_LI, C_ADDI16SP, C_LUI, C_SRLI, C_SRAI,
   C_ANDI, C_SUB, C_XOR, C_OR, C_AND, C_J, C_BEQZ, C_BNEZ,
   C_SLLI, C_LWSP, C_JR, C_MV, C_EBREAK, C_JALR, C_ADD, C_SWSP,
 
   // 32A
   LR_W, SC_W,
-  AMOSWAP_W, AMOADD_W, AMOXOW_W, AMOAND_W,
+  AMOSWAP_W, AMOADD_W, AMOXOR_W, AMOAND_W,
   AMOOR_W, AMOMIN_W, AMOMAX_W, AMOMINU_W, AMOMAXU_W,
+
+  // 32B
+  SH1ADD, SH2ADD, SH3ADD,
+  CLZ, CTZ, CPOP,
+  MIN, MAX, MINU, MAXU,
+  SEXT_B, SEXT_H, ZEXT_H,
+  ANDN, ORN, XNOR, ROR, RORI, ROL,
+  REV8, ORC_B,
+  CLMUL, CLMULH, CLMULR,
+  BSET, BSETI, BCLR, BCLRI, BINV, BINVI, BEXT, BEXTI,
 
   // Zicsr
   CSRRW, CSRRS, CSRRC,
@@ -54,6 +78,9 @@ typedef enum {
 } instr_name_t;
 
 typedef enum {
+  // Used for non-decodable
+  UNKNOWN_TYPE,
+
   // RV32 types
   R_TYPE,
   I_TYPE,
@@ -62,32 +89,52 @@ typedef enum {
   U_TYPE,
   J_TYPE,
 
-  CSR_TYPE,  // CSR* instruction with rs1 operand
-  CSRI_TYPE, // CSR* instruction with immu operand
+  CI_TYPE,
+  CR_TYPE,
+  CSS_TYPE,
+  CIW_TYPE,
+  CL_TYPE,
+  CS_TYPE,
+  CA_TYPE,
+  CB_TYPE,
+  CJ_TYPE,
 
-  UNKNOWN_TYPE // Delete when all are implemented
+  ZBA_TYPE,
+  ZBB_TYPE,
+  ZBC_TYPE,
+  ZBS_TYPE,
+
+  // CSR* instruction with rs1 operand
+  CSR_TYPE,
+
+  // CSR* instruction with immu operand
+  CSRI_TYPE
+
 } instr_type_t;
 
-typedef enum {  
-   LOAD_GROUP,
-   STORE_GROUP, 
-   MISALIGN_LOAD_GROUP,
-   MISALIGN_STORE_GROUP,
-   ALU_GROUP,
-   BRANCH_GROUP,
-   JUMP_GROUP,
-   FENCE_GROUP,
-   FENCE_I_GROUP,
-   RET_GROUP,
-   WFI_GROUP,
-   CSR_GROUP,
-   ENV_GROUP,
-   MUL_GROUP,
-   MULTI_MUL_GROUP,
-   DIV_GROUP,
-   ALOAD_GROUP,
-   ASTORE_GROUP,
-   AMEM_GROUP
+typedef enum {
+  // Use for undecodable instructions
+  UNKNOWN_GROUP,
+
+  LOAD_GROUP,
+  STORE_GROUP,
+  MISALIGN_LOAD_GROUP,
+  MISALIGN_STORE_GROUP,
+  ALU_GROUP,
+  BRANCH_GROUP,
+  JUMP_GROUP,
+  FENCE_GROUP,
+  FENCE_I_GROUP,
+  RET_GROUP,
+  WFI_GROUP,
+  CSR_GROUP,
+  ENV_GROUP,
+  MUL_GROUP,
+  MULTI_MUL_GROUP,
+  DIV_GROUP,
+  ALOAD_GROUP,
+  ASTORE_GROUP,
+  AMEM_GROUP
 } instr_group_t;
 
 typedef enum bit[CSR_ADDR_WL-1:0] {
@@ -189,6 +236,9 @@ typedef enum bit[CSR_ADDR_WL-1:0] {
   MIE            = 'h304,
   MTVEC          = 'h305,
   MCOUNTEREN     = 'h306,
+  MENVCFG        = 'h30A,
+  MSTATUSH       = 'h310,
+  MENVCFGH       = 'h31A,
   MSCRATCH       = 'h340,
   MEPC           = 'h341,
   MCAUSE         = 'h342,
@@ -198,6 +248,18 @@ typedef enum bit[CSR_ADDR_WL-1:0] {
   PMPCFG1        = 'h3A1,
   PMPCFG2        = 'h3A2,
   PMPCFG3        = 'h3A3,
+  PMPCFG4        = 'h3A4,
+  PMPCFG5        = 'h3A5,
+  PMPCFG6        = 'h3A6,
+  PMPCFG7        = 'h3A7,
+  PMPCFG8        = 'h3A8,
+  PMPCFG9        = 'h3A9,
+  PMPCFG10       = 'h3AA,
+  PMPCFG11       = 'h3AB,
+  PMPCFG12       = 'h3AC,
+  PMPCFG13       = 'h3AD,
+  PMPCFG14       = 'h3AE,
+  PMPCFG15       = 'h3AF,
   PMPADDR0       = 'h3B0,
   PMPADDR1       = 'h3B1,
   PMPADDR2       = 'h3B2,
@@ -214,6 +276,54 @@ typedef enum bit[CSR_ADDR_WL-1:0] {
   PMPADDR13      = 'h3BD,
   PMPADDR14      = 'h3BE,
   PMPADDR15      = 'h3BF,
+  PMPADDR16      = 'h3C0,
+  PMPADDR17      = 'h3C1,
+  PMPADDR18      = 'h3C2,
+  PMPADDR19      = 'h3C3,
+  PMPADDR20      = 'h3C4,
+  PMPADDR21      = 'h3C5,
+  PMPADDR22      = 'h3C6,
+  PMPADDR23      = 'h3C7,
+  PMPADDR24      = 'h3C8,
+  PMPADDR25      = 'h3C9,
+  PMPADDR26      = 'h3CA,
+  PMPADDR27      = 'h3CB,
+  PMPADDR28      = 'h3CC,
+  PMPADDR29      = 'h3CD,
+  PMPADDR30      = 'h3CE,
+  PMPADDR31      = 'h3CF,
+  PMPADDR32      = 'h3D0,
+  PMPADDR33      = 'h3D1,
+  PMPADDR34      = 'h3D2,
+  PMPADDR35      = 'h3D3,
+  PMPADDR36      = 'h3D4,
+  PMPADDR37      = 'h3D5,
+  PMPADDR38      = 'h3D6,
+  PMPADDR39      = 'h3D7,
+  PMPADDR40      = 'h3D8,
+  PMPADDR41      = 'h3D9,
+  PMPADDR42      = 'h3DA,
+  PMPADDR43      = 'h3DB,
+  PMPADDR44      = 'h3DC,
+  PMPADDR45      = 'h3DD,
+  PMPADDR46      = 'h3DE,
+  PMPADDR47      = 'h3DF,
+  PMPADDR48      = 'h3E0,
+  PMPADDR49      = 'h3E1,
+  PMPADDR50      = 'h3E2,
+  PMPADDR51      = 'h3E3,
+  PMPADDR52      = 'h3E4,
+  PMPADDR53      = 'h3E5,
+  PMPADDR54      = 'h3E6,
+  PMPADDR55      = 'h3E7,
+  PMPADDR56      = 'h3E8,
+  PMPADDR57      = 'h3E9,
+  PMPADDR58      = 'h3EA,
+  PMPADDR59      = 'h3EB,
+  PMPADDR60      = 'h3EC,
+  PMPADDR61      = 'h3ED,
+  PMPADDR62      = 'h3EE,
+  PMPADDR63      = 'h3EF,
   MCYCLE         = 'hB00,
   MINSTRET       = 'hB02,
   MHPMCOUNTER3   = 'hB03,
@@ -260,21 +370,22 @@ typedef enum bit[CSR_ADDR_WL-1:0] {
   MHPMCOUNTER13H = 'hB8D,
   MHPMCOUNTER14H = 'hB8E,
   MHPMCOUNTER15H = 'hB8F,
-  MHPMCOUNTER17H = 'hB90,
-  MHPMCOUNTER18H = 'hB91,
-  MHPMCOUNTER19H = 'hB92,
-  MHPMCOUNTER20H = 'hB93,
-  MHPMCOUNTER21H = 'hB94,
-  MHPMCOUNTER22H = 'hB95,
-  MHPMCOUNTER23H = 'hB96,
-  MHPMCOUNTER24H = 'hB97,
-  MHPMCOUNTER25H = 'hB98,
-  MHPMCOUNTER26H = 'hB99,
-  MHPMCOUNTER27H = 'hB9A,
-  MHPMCOUNTER28H = 'hB9B,
-  MHPMCOUNTER29H = 'hB9C,
-  MHPMCOUNTER30H = 'hB9D,
-  MHPMCOUNTER31H = 'hB9E,
+  MHPMCOUNTER16H = 'hB90,
+  MHPMCOUNTER17H = 'hB91,
+  MHPMCOUNTER18H = 'hB92,
+  MHPMCOUNTER19H = 'hB93,
+  MHPMCOUNTER20H = 'hB94,
+  MHPMCOUNTER21H = 'hB95,
+  MHPMCOUNTER22H = 'hB96,
+  MHPMCOUNTER23H = 'hB97,
+  MHPMCOUNTER24H = 'hB98,
+  MHPMCOUNTER25H = 'hB99,
+  MHPMCOUNTER26H = 'hB9A,
+  MHPMCOUNTER27H = 'hB9B,
+  MHPMCOUNTER28H = 'hB9C,
+  MHPMCOUNTER29H = 'hB9D,
+  MHPMCOUNTER30H = 'hB9E,
+  MHPMCOUNTER31H = 'hB9F,
   MCOUNTINHIBIT  = 'h320,
   MHPMEVENT3     = 'h323,
   MHPMEVENT4     = 'h324,
@@ -305,13 +416,15 @@ typedef enum bit[CSR_ADDR_WL-1:0] {
   MHPMEVENT29    = 'h33D,
   MHPMEVENT30    = 'h33E,
   MHPMEVENT31    = 'h33F,
+  MSECCFG        = 'h747,
+  MSECCFGH       = 'h757,
   TSELECT        = 'h7A0,
   TDATA1         = 'h7A1,
   TDATA2         = 'h7A2,
   TDATA3         = 'h7A3,
   TINFO          = 'h7A4,
   MCONTEXT       = 'h7A8,
-  SMCONTEXT      = 'h7AA,
+  SCONTEXT       = 'h7AA,
   DCSR           = 'h7B0,
   DPC            = 'h7B1,
   DSCRATCH0      = 'h7B2,
@@ -321,22 +434,222 @@ typedef enum bit[CSR_ADDR_WL-1:0] {
   VXRM           = 'h00A,
   VL             = 'hC20,
   VTYPE          = 'hC21,
-  VLENB          = 'hC22
+  VLENB          = 'hC22,
+  MCONFIGPTR     = 'hF15
 } instr_csr_t;
+
+bit rs1_is_signed[instr_name_t] = '{
+  MULH   : 1,
+  MULHSU : 1,
+  DIV    : 1,
+  REM    : 1,
+  ADDI   : 1,
+  SLTI   : 1,
+  SRA    : 1,
+  ADD    : 1,
+  SUB    : 1,
+  SLT    : 1,
+  C_ADDI : 1,
+  C_ADDI16SP : 1,
+  C_ADD  : 1,
+  C_SUB  : 1,
+  SH1ADD : 1,
+  SH2ADD : 1,
+  SH3ADD : 1,
+  default: 0
+};
+
+bit rs2_is_signed[instr_name_t] = '{
+  MULH   : 1,
+  DIV    : 1,
+  REM    : 1,
+  ADD    : 1,
+  SUB    : 1,
+  SLT    : 1,
+  C_ADD  : 1,
+  C_SUB  : 1,
+  SH1ADD : 1,
+  SH2ADD : 1,
+  SH3ADD : 1,
+  default: 0
+};
+
+bit immi_is_signed[instr_name_t] = '{
+  JALR   : 1,
+  LB     : 1,
+  LH     : 1,
+  LW     : 1,
+  LBU    : 1,
+  LHU    : 1,
+  SLTI   : 1,
+  SLTIU  : 1,
+  XORI   : 1,
+  ORI    : 1,
+  ANDI   : 1,
+  ADDI   : 1,
+  SLLI   : 0,
+  SRLI   : 0,
+  SRAI   : 0,
+  default: 0
+};
+
+bit c_imm_is_signed[instr_name_t] = '{
+  C_ADDI:  1,
+  C_ADDI16SP: 1,
+  C_ANDI:  1,
+  C_BEQZ:  1,
+  C_BNEZ:  1,
+  C_J:     1,
+  C_JAL:   1,
+  C_LI:    1,
+  C_LUI:   1,
+  C_NOP:   1,
+  default: 0
+};
+
+bit c_imm_is_nonzero[instr_name_t] = '{
+  C_ADDI4SPN:1,
+  C_NOP:   1,
+  C_ADDI:  1,
+  C_ADDI16SP:1,
+  C_LUI:   1,
+  C_SRLI:  1,
+  C_SRAI:  1,
+  C_SLLI:  1,
+  default: 0
+};
+
+bit rd_is_signed[instr_name_t] = '{
+  MULH   : 1,
+  MULHSU : 1,
+  DIV    : 1,
+  REM    : 1,
+  LH     : 1,
+  LB     : 1,
+  ADD    : 1,
+  SRA    : 1,
+  SUB    : 1,
+  ADDI   : 1,
+  C_ADDI : 1,
+  C_ADDI16SP: 1,
+  C_ADD  : 1,
+  C_SUB  : 1,
+  SH1ADD : 1,
+  SH2ADD : 1,
+  SH3ADD : 1,
+  default: 0
+};
+
+bit c_has_rs1[instr_name_t] = '{
+  C_LW   : 1,
+  C_SW   : 1,
+  C_ADDI : 1,
+  C_ADDI16SP:1,
+  C_SRLI : 1,
+  C_SRAI : 1,
+  C_ANDI : 1,
+  C_SUB  : 1,
+  C_XOR  : 1,
+  C_OR   : 1,
+  C_AND  : 1,
+  C_BEQZ : 1,
+  C_BNEZ : 1,
+  C_SLLI : 1,
+  C_JR   : 1,
+  C_MV   : 1,
+  C_JALR : 1,
+  C_ADD  : 1,
+  default: 0
+};
+
+typedef enum {
+  ZERO,     // For signed and unsigned values
+  NON_ZERO, // For unsigned values
+  POSITIVE, // For signed values
+  NEGATIVE  // For signed value
+} instr_value_t;  // TODO:ropeders should be "value_type_t"?
+
+// Package level methods to map instruction to extension
+function instr_ext_t get_instr_ext(instr_name_t name);
+  if (name inside
+    {
+      LUI, AUIPC, JAL, JALR,
+      BEQ, BNE, BLT, BGE, BLTU, BGEU,
+      LB, LH, LW, LBU, LHU, SB, SH, SW,
+      ADDI, SLTI, SLTIU, XORI, ORI, ANDI, SLLI, SRLI, SRAI,
+      ADD, SUB, SLL, SLT, SLTU, XOR, SRL, SRA, OR, AND,
+      FENCE, ECALL, EBREAK, DRET, MRET, WFI
+    })
+    return I_EXT;
+
+  if (name inside
+    {
+      MUL, MULH, MULHSU, MULHU,
+      DIV, DIVU, REM, REMU
+    })
+    return M_EXT;
+
+  if (name inside
+    {
+      C_ADDI4SPN, C_LW, C_SW, C_NOP,
+      C_ADDI, C_JAL, C_LI, C_ADDI16SP, C_LUI, C_SRLI, C_SRAI,
+      C_ANDI, C_SUB, C_XOR, C_OR, C_AND, C_J, C_BEQZ, C_BNEZ,
+      C_SLLI, C_LWSP, C_JR, C_MV, C_EBREAK, C_JALR, C_ADD, C_SWSP
+    })
+    return C_EXT;
+
+  if (name inside
+    {
+      LR_W, SC_W,
+      AMOSWAP_W, AMOADD_W, AMOXOR_W, AMOAND_W,
+      AMOOR_W, AMOMIN_W, AMOMAX_W, AMOMINU_W, AMOMAXU_W
+    })
+    return A_EXT;
+
+  if (name inside
+    {
+      SH1ADD, SH2ADD, SH3ADD,
+      CLZ, CTZ, CPOP,
+      MIN, MAX, MINU, MAXU,
+      SEXT_B, SEXT_H, ZEXT_H,
+      ANDN, ORN, XNOR, ROR, RORI, ROL,
+      REV8, ORC_B,
+      CLMUL, CLMULH, CLMULR,
+      BSET, BSETI, BCLR, BCLRI, BINV, BINVI, BEXT, BEXTI
+    })
+    return B_EXT;
+
+  if (name inside
+    {
+      CSRRW, CSRRS, CSRRC,
+      CSRRWI, CSRRSI, CSRRCI
+    })
+    return ZICSR_EXT;
+
+  if (name inside
+    {
+      FENCE_I
+    })
+    return ZIFENCEI_EXT;
+
+endfunction : get_instr_ext
 
 
 // Package level methods to map instruction to type
 function instr_type_t get_instr_type(instr_name_t name);
-  instr_name_t itypes[] = '{
+  static instr_name_t itypes[] = '{
     LB, LH, LW, LBU, LHU,
     ADDI, SLTI, SLTIU, XORI, ORI, ANDI, SLLI, SRLI, SRAI,
     JALR
     };
-  instr_name_t rtypes[] = '{
+  static instr_name_t rtypes[] = '{
     // I-ext
     ADD, SUB, SLL, SLT, SLTU, XOR, SRL, SRA, OR, AND,
     // M-ext
-    MUL, MULH, MULHSU, MULHU, DIV, DIVU, REM, REMU
+    MUL, MULH, MULHSU, MULHU, DIV, DIVU, REM, REMU,
+    // A-ext
+    LR_W, SC_W, AMOSWAP_W, AMOADD_W, AMOXOR_W, AMOAND_W,
+    AMOOR_W, AMOMIN_W, AMOMAX_W, AMOMINU_W, AMOMAXU_W
     };
 
   if (name inside {rtypes})
@@ -344,6 +657,33 @@ function instr_type_t get_instr_type(instr_name_t name);
 
   if (name inside {itypes})
     return I_TYPE;
+
+  if (name inside {C_ADDI,C_ADDI16SP,C_LWSP,C_LI,C_LUI,C_SLLI,C_NOP})
+    return CI_TYPE;
+
+  if (name inside {C_SWSP})
+    return CSS_TYPE;
+
+  if (name inside {C_MV, C_ADD, C_JR, C_JALR})
+    return CR_TYPE;
+
+  if (name inside {C_ADDI4SPN})
+    return CIW_TYPE;
+
+  if (name inside {C_LW})
+    return CL_TYPE;
+
+  if (name inside {C_SW})
+    return CS_TYPE;
+
+  if (name inside {C_AND, C_OR, C_XOR, C_SUB})
+    return CA_TYPE;
+
+  if (name inside {C_BEQZ, C_BNEZ, C_ANDI, C_SRAI, C_SRLI})
+    return CB_TYPE;
+
+  if (name inside {C_J, C_JAL})
+    return CJ_TYPE;
 
   if (name inside {SB,SH,SW})
     return S_TYPE;
@@ -363,6 +703,21 @@ function instr_type_t get_instr_type(instr_name_t name);
   if (name inside {CSRRWI,CSRRSI,CSRRCI})
     return CSRI_TYPE;
 
+  if (name inside {SH1ADD,SH2ADD,SH3ADD})
+    return ZBA_TYPE;
+
+  if (name inside {CLZ,CTZ,CPOP,MIN,MINU,MAX,MAXU,
+                   SEXT_B,SEXT_H,ZEXT_H,ANDN,ORN,XNOR,
+                   ROL,ROR,RORI,REV8,ORC_B})
+    return ZBB_TYPE;
+
+  if (name inside {CLMUL,CLMULH,CLMULR})
+    return ZBC_TYPE;
+
+  if (name inside {BSET,BSETI,BCLR,BCLRI,
+                   BINV,BINVI,BEXT,BEXTI})
+    return ZBS_TYPE;
+
   if (name inside {JAL})
     return J_TYPE;
 
@@ -370,21 +725,47 @@ function instr_type_t get_instr_type(instr_name_t name);
 endfunction : get_instr_type
 
 // Package level methods to map instruction to type
-function instr_group_t get_instr_group(instr_name_t name);
-  if (name inside {LB,LH,LW,LBU,LHU,C_LW,C_LWSP})
+function instr_group_t get_instr_group(instr_name_t name, bit[31:0] mem_addr);
+
+  if (name inside {UNKNOWN})
+    return UNKNOWN_GROUP;
+
+  if (name inside {LB,LH,LW,LBU,LHU,C_LW,C_LWSP}) begin
+    if (name inside {LH, LHU} && mem_addr[0])
+      return MISALIGN_LOAD_GROUP;
+
+    if (name inside {LW, C_LW, C_LWSP} && mem_addr[1:0])
+      return MISALIGN_LOAD_GROUP;
+
     return LOAD_GROUP;
+  end
 
-  if (name inside {SB,SH,SW,C_SW,C_SWSP})
+  if (name inside {SB,SH,SW,C_SW,C_SWSP}) begin
+    if (name inside {SH} && mem_addr[0])
+      return MISALIGN_STORE_GROUP;
+
+    if (name inside {SW, C_SW, C_SWSP} && mem_addr[1:0])
+      return MISALIGN_STORE_GROUP;
+
     return STORE_GROUP;
-
-  // FIXME: Need to implement unaligned access
+  end
 
   if (name inside {SLL,SLLI,SRL,SRLI,SRA,SRAI,
                    ADD,ADDI,SUB,LUI,AUIPC,
                    XOR,XORI,OR,ORI,AND,ANDI,
                    SLT,SLTI,SLTU,SLTIU,
                    C_ADD,C_ADDI,C_ADDI16SP,
-                   C_ADDI4SPN,C_SLLI}) 
+                   C_LI,C_LUI,C_MV,C_NOP,
+                   C_XOR,C_SRLI,C_AND,C_ANDI,C_OR,
+                   C_SUB,C_ADDI4SPN,C_SLLI,C_SRAI,
+                   SH1ADD, SH2ADD, SH3ADD,
+                   CLZ, CTZ, CPOP,
+                   MIN, MAX, MINU, MAXU,
+                   SEXT_B, SEXT_H, ZEXT_H,
+                   ANDN, ORN, XNOR, ROR, RORI, ROL,
+                   REV8, ORC_B,
+                   CLMUL, CLMULH, CLMULR,
+                   BSET, BSETI, BCLR, BCLRI, BINV, BINVI, BEXT, BEXTI})
     return ALU_GROUP;
 
   if (name inside {BEQ,BNE,BLT,BGE,BLTU,BGEU,
@@ -397,11 +778,11 @@ function instr_group_t get_instr_group(instr_name_t name);
 
   if (name inside {FENCE})
     return FENCE_GROUP;
-  
+
   if (name inside {FENCE_I})
     return FENCE_I_GROUP;
-  
-  if (name inside {ECALL, EBREAK, C_EBREAK}) 
+
+  if (name inside {ECALL, EBREAK, C_EBREAK})
     return ENV_GROUP;
 
   if (name inside {DRET, MRET})
@@ -428,11 +809,12 @@ function instr_group_t get_instr_group(instr_name_t name);
   if (name inside {SC_W})
     return ASTORE_GROUP;
 
-  if (name inside {AMOSWAP_W,AMOADD_W,AMOXOW_W,AMOAND_W,
+  if (name inside {AMOSWAP_W,AMOADD_W,AMOXOR_W,AMOAND_W,
                    AMOOR_W,AMOMIN_W,AMOMAX_W,AMOMINU_W,AMOMAXU_W})
     return AMEM_GROUP;
-  
+
   `uvm_fatal("ISACOV", $sformatf("Called get_instr_group with unmapped type: %s", name.name()));
 endfunction : get_instr_group
+
 
 `endif // __UVMA_ISACOV_TDEFS_SV__

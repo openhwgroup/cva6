@@ -1,0 +1,22 @@
+name: pma_test_cfg_3
+description: PMA configuration for the PMA_TEST_CFG_3 test case
+compile_flags:
+   +define+PMA_TEST_CFG_3
+   #TODO:ropeders un-comment when ISS is patched  +define+ZBA_ZBB_ZBC_ZBS
+plusargs:
+   +enable_pma=1
+   +boot_addr=0x48000080
+   +mtvec_addr=0x48000000
+   +nmi_addr=0x48100000
+   +enable_large_mem_support=0
+   +fix_sp=1
+   #TODO:ropeders un-comment when ISS is patched  +enable_zba_extension=1
+   #TODO:ropeders un-comment when ISS is patched  +enable_zbb_extension=1
+   #TODO:ropeders un-comment when ISS is patched  +enable_zbc_extension=1
+   #TODO:ropeders un-comment when ISS is patched  +enable_zbs_extension=1
+riscv_march: rv32imc_zba1p00_zbb1p00_zbc1p00_zbs1p00
+gnu_march:   rv32imc_zba1p00_zbb1p00_zbc1p00_zbs1p00
+corev_march: rv32imc_zba1p00_zbb1p00_zbc1p00_zbs1p00
+llvm_march:  rv32imc_zba1p00_zbb1p00_zbc1p00_zbs1p00
+#TODO:ropeders un-comment when ISS is patched  cv_sw_march: rv32imc_zba1p00_zbb1p00_zbc1p00_zbs1p00
+cv_sw_march: rv32imc

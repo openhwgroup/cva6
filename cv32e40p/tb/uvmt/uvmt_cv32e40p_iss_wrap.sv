@@ -37,18 +37,19 @@ module uvmt_cv32e40p_iss_wrap
     uvmt_cv32e40p_isa_covg_if     isa_covg_if
    );
 
-    BUS         b1();
+    RVVI_bus    bus();
+    RVVI_io     io();
 
-    MONITOR     mon(b1);
+    MONITOR     mon(bus, io);
     RAM         #(
                 .ROM_START_ADDR(ROM_START_ADDR),
                 .ROM_BYTE_SIZE(ROM_BYTE_SIZE),
-                .RAM_BYTE_SIZE(RAM_BYTE_SIZE)) ram(b1);
+                .RAM_BYTE_SIZE(RAM_BYTE_SIZE)) ram(bus);
 
-    CPU #(.ID(ID)) cpu(b1);
+    CPU #(.ID(ID), .VARIANT("CV32E40P")) cpu(bus, io);
 
-   assign b1.Clk = clknrst_if.clk;
-   
+   assign bus.Clk = clknrst_if.clk;
+
    // monitor rvvi updates
    always @(cpu.state.notify) begin
        int i;
@@ -60,11 +61,21 @@ module uvmt_cv32e40p_iss_wrap
        if (cpu.state.valid) begin
            // $display("Instruction Retired %08X %08X", cpu.state.pc, cpu.state.pcw);
            -> step_compare_if.ovp_cpu_valid;
+       end else if (cpu.state.trap &&
+                    cpu.state.decode == "ecall" &&
+                    cpu.io.irq_ack_o == 0 &&
+                    (!cpu.io.DM || !cpu.state.csr["dcsr"][2])) begin
+           // With introduction of OVPSIM model v20200821.377
+           // the valid behavior was changed, the above clause was introduced to all signal valid
+           // instruction on valid ecalls, which must be checked out by the step and compare interface
+           // Eventually this module should be replaced by a RVFI/RVVI UVM scoreboard which will not rely on this
+           // $display("Instruction Retired %08X %08X", cpu.state.pc, cpu.state.pcw);
+           -> step_compare_if.ovp_cpu_valid;
        end else if (cpu.state.trap) begin
            // $display("Instruction Fault %08X %08X", cpu.state.pc, cpu.state.pcw);
            -> step_compare_if.ovp_cpu_trap;
        end
-       
+
    end
 
    // monitor debug control updates
@@ -75,15 +86,14 @@ module uvmt_cv32e40p_iss_wrap
        step_compare_if.ovp_cpu_state_cont  = cpu.control.state_cont;
    end
 
-    function void split(input string in_s, output string s1, s2);
+    function automatic void split(ref string in_s, ref string s1, s2);
         automatic int i;
         for (i=0; i<in_s.len(); i++) begin
             if (in_s.getc(i) == ":")
                 break;
          end
          if (i==0 ) begin
-            $display("ERROR not : found in split '%0s'", in_s);
-            $finish(-1);
+            `uvm_fatal("ERROR not : found in split '%0s'", in_s);
          end
          s1 = in_s.substr(0,i-1);
          s2 = in_s.substr(i+1,in_s.len()-1);
@@ -103,10 +113,10 @@ module uvmt_cv32e40p_iss_wrap
             isa_covg_if.ins.ops[i].key=key;
             isa_covg_if.ins.ops[i].val=val;
         end
-        `uvm_info("OVPSIM", $sformatf("Decoded instr: %s%s pc: 0x%08x",                                       
+        `uvm_info("OVPSIM", $sformatf("Decoded instr: %s%s pc: 0x%08x",
                                       isa_covg_if.ins.compressed ? "c." : "",
                                       decode,
-                                      isa_covg_if.ins.pc), 
+                                      isa_covg_if.ins.pc),
                             UVM_DEBUG)
         ->isa_covg_if.ins_valid;
     endfunction

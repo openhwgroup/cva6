@@ -1,21 +1,21 @@
-// 
+//
 // Copyright 2020 OpenHW Group
 // Copyright 2020 Silicon Labs, Inc.
 //
 // Licensed under the Solderpad Hardware Licence, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
-// 
+//
 //     https://solderpad.org/licenses/
-// 
+//
 // Unless required by applicable law or agreed to in writing, software
 // distributed under the License is distributed on an "AS IS" BASIS,
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
-// 
+//
+// SPDX-License-Identifier: Apache-2.0 WITH SHL-2.1
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-//                                                                                                              
 //
 // riscv_gnt_stall.sv
 //
@@ -23,7 +23,7 @@
 //
 // Author: Steve Richmond
 //   email: steve.richmond@silabs.com
-// 
+//
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 
@@ -61,9 +61,8 @@ module riscv_gnt_stall
 logic req_core_i_q;
 logic grant_core_o_q;
 
-integer grant_delay_cnt;
-
-integer delay_value;
+int   grant_delay_cnt;
+int   delay_value;
 
 // -----------------------------------------------------------------------------------------------
 // Tasks and functions
@@ -104,7 +103,7 @@ always @(posedge clk_i or negedge rst_ni) begin
   if (!rst_ni) begin
     grant_core_o <= 1'b0;
     grant_delay_cnt <= 0;
-  end 
+  end
   else begin
 `ifdef VERILATOR
     //#1;
@@ -114,7 +113,7 @@ always @(posedge clk_i or negedge rst_ni) begin
 
     // When request is removed, randomize gnt
     if (!req_core_i) begin
-      grant_core_o <= $urandom;
+      grant_core_o <= $urandom; //@DVT_LINTER_WAIVER "MT20211214_2" disable SVTB.29.1.3.1
     end
 
     // New request coming in
@@ -127,15 +126,15 @@ always @(posedge clk_i or negedge rst_ni) begin
       end
       else begin
         grant_delay_cnt <= delay_value;
-        grant_core_o <= 1'b0;        
-      end      
+        grant_core_o <= 1'b0;
+      end
     end
     else if (grant_delay_cnt == 1) begin
       grant_delay_cnt <= 0;
       grant_core_o <= 1'b1;
     end
     else begin
-      grant_delay_cnt <= grant_delay_cnt - 1;    
+      grant_delay_cnt <= grant_delay_cnt - 1;
     end
   end
 end

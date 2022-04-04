@@ -1,19 +1,19 @@
 ###############################################################################
 #
 # Copyright 2020 OpenHW Group
-# 
+#
 # Licensed under the Solderpad Hardware Licence, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
-# 
+#
 #     https://solderpad.org/licenses/
-# 
+#
 # Unless required by applicable law or agreed to in writing, software
 # distributed under the License is distributed on an "AS IS" BASIS,
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-# 
+#
 ###############################################################################
 #
 # VCS-specific Makefile for the Core-V-Verif "uvmt" testbench.
@@ -25,20 +25,18 @@
 #
 OS_IS_UBUNTU = $(findstring Ubuntu,$(shell lsb_release -d))
 ifeq ($(OS_IS_UBUNTU),Ubuntu)
-    .IGNORE: hello-world comp test custom compliance comp_corev-dv corev-dv gen_corev-dv
+    .IGNORE: hello-world comp test compliance comp_corev-dv corev-dv gen_corev-dv
 endif
 
 # Executables
-VCS              = $(CV_SIM_PREFIX)vcs
-SIMV             = $(CV_TOOL_PREFIX)simv -licwait 20
-DVE              = $(CV_TOOL_PREFIX)dve
+VCS              = $(CV_SIM_PREFIX) vcs
+SIMV             = $(CV_TOOL_PREFIX) simv -licwait 20
+DVE              = $(CV_TOOL_PREFIX) dve
 #VERDI            = $(CV_TOOL_PREFIX)verdi
-URG               = $(CV_SIM_PREFIX)urg
+URG               = $(CV_SIM_PREFIX) urg
 
 # Paths
-VCS_RESULTS     ?= $(if $(CV_RESULTS),$(abspath $(CV_RESULTS))/vcs_results,$(MAKE_PATH)/vcs_results)
-VCS_COREVDV_RESULTS ?= $(VCS_RESULTS)/corev-dv
-VCS_DIR         ?= $(VCS_RESULTS)/$(CFG)/vcs.d
+VCS_DIR         ?= $(SIM_CFG_RESULTS)/vcs.d
 VCS_ELAB_COV     = -cm line+cond+tgl+fsm+branch+assert  -cm_dir $(MAKECMDGOALS)/$(MAKECMDGOALS).vdb
 
 # modifications to already defined variables to take into account VCS
@@ -57,6 +55,12 @@ VCS_COMP_FLAGS  ?= -lca -sverilog \
 										-assert svaext -race=all -ignore unique_checks -full64
 VCS_GUI         ?=
 VCS_RUN_COV      = -cm line+cond+tgl+fsm+branch+assert -cm_dir $(MAKECMDGOALS).vdb
+
+# Necessary libraries for the PMA generator class
+VCS_PMA_INC += +incdir+$(TBSRC_HOME)/uvmt \
+               +incdir+$(CV_CORE_PKG)/rtl/include \
+               +incdir+$(CV_CORE_COREVDV_PKG)/ldgen \
+               +incdir+$(abspath $(MAKE_PATH)/../../../lib/mem_region_gen)
 
 ###############################################################################
 # Common QUIET flag defaults to -quiet unless VERBOSE is set
@@ -95,9 +99,9 @@ endif
 # Waveform (post-process) command line
 ifeq ($(call IS_YES,$(ADV_DEBUG)),YES)
 $(error ADV_DEBUG not yet supported by VCS )
-WAVES_CMD = cd $(VCS_RESULTS)/$(CFG)/$(TEST_NAME)_$(RUN_INDEX) && $(DVE) -vpd vcdplus.vpd 
+WAVES_CMD = cd $(SIM_RUN_RESULTS) && $(DVE) -vpd vcdplus.vpd
 else
-WAVES_CMD = cd $(VCS_RESULTS)/$(CFG)/$(TEST_NAME)_$(RUN_INDEX) && $(DVE) -vpd vcdplus.vpd 
+WAVES_CMD = cd $(SIM_RUN_RESULTS) && $(DVE) -vpd vcdplus.vpd
 endif
 
 ################################################################################
@@ -112,7 +116,7 @@ VCS_RUN_COV_FLAGS += $(VCS_RUN_COV)
 endif
 
 # list all vbd files
-COV_RESULTS_LIST = $(wildcard $(VCS_RESULTS)/*/*.vdb)
+COV_RESULTS_LIST = $(wildcard $(SIM_RESULTS)/*/*.vdb)
 
 ifeq ($(call IS_YES,$(MERGE)),YES)
 COV_MERGE = cov_merge
@@ -127,22 +131,26 @@ else
 COV_ARGS = -dir $(TEST_NAME).vdb
 endif
 
+
 ################################################################################
 
 VCS_FILE_LIST ?= -f $(DV_UVMT_PATH)/uvmt_$(CV_CORE_LC).flist
 VCS_FILE_LIST += -f $(DV_UVMT_PATH)/imperas_iss.flist
 VCS_USER_COMPILE_ARGS += +define+$(CV_CORE_UC)_TRACE_EXECUTION
 ifeq ($(call IS_YES,$(USE_ISS)),YES)
-    VCS_PLUSARGS +="+USE_ISS"
+    VCS_PLUSARGS += +USE_ISS
+else
+	VCS_PLUSARGS += +DISABLE_OVPSIM
 endif
 
 VCS_RUN_BASE_FLAGS   ?= $(VCS_GUI) \
                         $(VCS_PLUSARGS) +ntb_random_seed=$(RNDSEED) \
 						-sv_lib $(VCS_OVP_MODEL_DPI) \
-						-sv_lib $(DPI_DASM_LIB)
+						-sv_lib $(DPI_DASM_LIB) \
+						-sv_lib $(abspath $(SVLIB_LIB))
 
 # Simulate using latest elab
-VCS_RUN_FLAGS        ?= 
+VCS_RUN_FLAGS        ?=
 VCS_RUN_FLAGS        += $(VCS_RUN_BASE_FLAGS)
 VCS_RUN_FLAGS        += $(VCS_RUN_WAVES_FLAGS)
 VCS_RUN_FLAGS        += $(VCS_RUN_COV_FLAGS)
@@ -177,11 +185,11 @@ VCS_COMP = $(VCS_COMP_FLAGS) \
 		$(VCS_FILE_LIST) \
 		$(UVM_PLUSARGS)
 
-comp: mk_vcs_dir $(CV_CORE_PKG) $(OVP_MODEL_DPI)
-	cd $(VCS_RESULTS)/$(CFG) && $(VCS) $(VCS_COMP) -top uvmt_$(CV_CORE_LC)_tb
+comp: mk_vcs_dir $(CV_CORE_PKG) $(SVLIB_PKG) $(OVP_MODEL_DPI)
+	cd $(SIM_CFG_RESULTS)/$(CFG) && $(VCS) $(VCS_COMP) -top uvmt_$(CV_CORE_LC)_tb
 	@echo "$(BANNER)"
 	@echo "* $(SIMULATOR) compile complete"
-	@echo "* Log: $(VCS_RESULTS)/$(CFG)/vcs.log"
+	@echo "* Log: $(SIM_CFG_RESULTS)/vcs.log"
 	@echo "$(BANNER)"
 
 ifneq ($(call IS_NO,$(COMP)),NO)
@@ -197,42 +205,30 @@ endif
 # If the configuration specified OVPSIM arguments, generate an ovpsim.ic file and
 # set IMPERAS_TOOLS to point to it
 gen_ovpsim_ic:
+	@rm -f $(SIM_RUN_RESULTS)/ovpsim.ic
+	@mkdir -p $(SIM_RUN_RESULTS)
+	@touch $(SIM_RUN_RESULTS)/ovpsim.ic
 	@if [ ! -z "$(CFG_OVPSIM)" ]; then \
-		mkdir -p $(VCS_RESULTS)/$(CFG)/$(TEST_NAME)_$(RUN_INDEX); \
-		echo "$(CFG_OVPSIM)" > $(VCS_RESULTS)/$(CFG)/$(TEST_NAME)_$(RUN_INDEX)/ovpsim.ic; \
+		echo "$(CFG_OVPSIM)" > $(SIM_RUN_RESULTS)/ovpsim.ic; \
 	fi
-ifneq ($(CFG_OVPSIM),)
-export IMPERAS_TOOLS=$(VCS_RESULTS)/$(CFG)/$(TEST_NAME)_$(RUN_INDEX)/ovpsim.ic
-endif
+export IMPERAS_TOOLS=$(SIM_RUN_RESULTS)/ovpsim.ic
 
 ################################################################################
 # The new general test target
 
-# corev-dv tests needs an added run_index suffix
-ifeq ($(shell echo $(TEST) | head -c 6),corev_)
-  OPT_RUN_INDEX_SUFFIX=_$(RUN_INDEX)
-endif
-
-test: $(VCS_SIM_PREREQ) $(TEST_TEST_DIR)/$(TEST_PROGRAM)$(OPT_RUN_INDEX_SUFFIX).hex gen_ovpsim_ic
+test: $(VCS_SIM_PREREQ) hex gen_ovpsim_ic
 	echo $(IMPERAS_TOOLS)
-	mkdir -p $(VCS_RESULTS)/$(CFG)/$(TEST_NAME)_$(RUN_INDEX) && \
-	cd $(VCS_RESULTS)/$(CFG)/$(TEST_NAME)_$(RUN_INDEX) && \
+	mkdir -p $(SIM_RUN_RESULTS)
+	cd $(SIM_RUN_RESULTS) && \
 		$(VCS_RESULTS)/$(CFG)/$(SIMV) \
 			-l vcs-$(TEST_NAME).log \
 			-cm_name $(TEST_NAME) $(VCS_RUN_FLAGS) \
+			$(CFG_PLUSARGS) \
 			$(TEST_PLUSARGS) \
 			+UVM_TESTNAME=$(TEST_UVM_TEST) \
-			+elf_file=$(TEST_TEST_DIR)/$(TEST_PROGRAM)$(OPT_RUN_INDEX_SUFFIX).elf \
-			+firmware=$(TEST_TEST_DIR)/$(TEST_PROGRAM)$(OPT_RUN_INDEX_SUFFIX).hex
-
-################################################################################
-# Custom test-programs.  See comment in dsim.mk for more info
-custom: $(VCS_SIM_PREREQ) $(CUSTOM_DIR)/$(CUSTOM_PROG).hex
-	mkdir -p $(VCS_RESULTS)/$(CFG)/$(CUSTOM_PROG)_$(RUN_INDEX) && cd $(VCS_RESULTS)/$(CFG)/$(CUSTOM_PROG)_$(RUN_INDEX) && \
-	$(VCS_RESULTS)/$(CFG)/$(SIMV) -l vcs-$(CUSTOM_PROG).log -cm_test $(CUSTOM_PROG) $(VCS_RUN_FLAGS) \
-		+UVM_TESTNAME=uvmt_$(CV_CORE_LC)_firmware_test_c \
-		+elf_file=$(CUSTOM_DIR)/$(CUSTOM_PROG).elf \
-		+firmware=$(CUSTOM_DIR)/$(CUSTOM_PROG).hex
+    		+elf_file=$(SIM_TEST_PROGRAM_RESULTS)/$(TEST_PROGRAM)$(OPT_RUN_INDEX_SUFFIX).elf \
+			+firmware=$(SIM_TEST_PROGRAM_RESULTS)/$(TEST_PROGRAM)$(OPT_RUN_INDEX_SUFFIX).hex \
+			+itb_file=$(SIM_TEST_PROGRAM_RESULTS)/$(TEST_PROGRAM)$(OPT_RUN_INDEX_SUFFIX).itb
 
 ###############################################################################
 # Run a single test-program from the RISC-V Compliance Test-suite. The parent
@@ -246,12 +242,12 @@ custom: $(VCS_SIM_PREREQ) $(CUSTOM_DIR)/$(CUSTOM_PROG).hex
 #                make compliance RISCV_ISA=rv32i COMPLIANCE_PROG=I-ADD-01
 # But this does not:
 #                make compliance RISCV_ISA=rv32imc COMPLIANCE_PROG=I-ADD-01
-# 
+#
 RISCV_ISA       ?= rv32i
 COMPLIANCE_PROG ?= I-ADD-01
 
-SIG_ROOT      ?= $(VCS_RESULTS)/$(CFG)/$(RISCV_ISA)
-SIG           ?= $(VCS_RESULTS)/$(CFG)/$(RISCV_ISA)/$(COMPLIANCE_PROG)_$(RUN_INDEX)/$(COMPLIANCE_PROG).signature_output
+SIG_ROOT      ?= $(SIM_CFG_RESULTS)/$(RISCV_ISA)
+SIG           ?= $(SIM_CFG_RESULTS)/$(RISCV_ISA)/$(COMPLIANCE_PROG)_$(RUN_INDEX)/$(COMPLIANCE_PROG).signature_output
 REF           ?= $(COMPLIANCE_PKG)/riscv-test-suite/$(RISCV_ISA)/references/$(COMPLIANCE_PROG).reference_output
 TEST_PLUSARGS ?= +signature=$(COMPLIANCE_PROG).signature_output
 
@@ -260,49 +256,50 @@ VCS_COMPLIANCE_PREREQ = comp build_compliance
 endif
 
 compliance: $(VCS_COMPLIANCE_PREREQ)
-	mkdir -p $(VCS_RESULTS)/$(COMPLIANCE_PROG)_$(RUN_INDEX) && cd $(VCS_RESULTS)/$(COMPLIANCE_PROG)_$(RUN_INDEX)  && \
+	mkdir -p $(SIM_RESULTS)/$(COMPLIANCE_PROG)_$(RUN_INDEX) && cd $(SIM_RESULTS)/$(COMPLIANCE_PROG)_$(RUN_INDEX)  && \
 	export IMPERAS_TOOLS=$(CORE_V_VERIF)/$(CV_CORE_LC)/tests/cfg/ovpsim_no_pulp.ic && \
-	$(VCS_RESULTS)/$(SIMV) -l vcs-$(COMPLIANCE_PROG).log -cm_test riscv-compliance $(VCS_COMP_RUN) $(TEST_PLUSARGS) \
+	$(SIM_RESULTS)/$(SIMV) -l vcs-$(COMPLIANCE_PROG).log -cm_test riscv-compliance $(VCS_COMP_RUN) $(TEST_PLUSARGS) \
 		+UVM_TESTNAME=uvmt_$(CV_CORE_LC)_firmware_test_c \
 		+firmware=$(COMPLIANCE_PKG)/work/$(RISCV_ISA)/$(COMPLIANCE_PROG).hex \
 		+elf_file=$(COMPLIANCE_PKG)/work/$(RISCV_ISA)/$(COMPLIANCE_PROG).elf
 
 ###############################################################################
 # Use Google instruction stream generator (RISCV-DV) to create new test-programs
-comp_corev-dv: $(RISCVDV_PKG)
-	mkdir -p $(VCS_COREVDV_RESULTS)
-	cd $(VCS_COREVDV_RESULTS) && \
+comp_corev-dv: $(RISCVDV_PKG) $(CV_CORE_PKG)
+	mkdir -p $(SIM_COREVDV_RESULTS)
+	cd $(SIM_COREVDV_RESULTS) && \
 	$(VCS) $(VCS_COMP_FLAGS) \
 		$(QUIET) $(VCS_USER_COMPILE_ARGS) \
+		$(VCS_PMA_INC) \
 		+incdir+$(CV_CORE_COREVDV_PKG)/target/$(CV_CORE_LC) \
 		+incdir+$(RISCVDV_PKG)/user_extension \
 		+incdir+$(COREVDV_PKG) \
 		+incdir+$(CV_CORE_COREVDV_PKG) \
+		-f $(CV_CORE_MANIFEST) \
+		$(CFG_COMPILE_FLAGS) \
 		-f $(COREVDV_PKG)/manifest.f \
 		-l vcs.log
 
-corev-dv: clean_riscv-dv \
-          clone_riscv-dv \
-		  comp_corev-dv
+corev-dv: clean_riscv-dv clone_riscv-dv comp_corev-dv
 
-gen_corev-dv: 
-	mkdir -p $(VCS_COREVDV_RESULTS)/$(TEST)
-	# Clean old assembler generated tests in results
+gen_corev-dv:
+	mkdir -p $(SIM_COREVDV_RESULTS)/$(TEST)
 	for (( idx=${GEN_START_INDEX}; idx < $$((${GEN_START_INDEX} + ${GEN_NUM_TESTS})); idx++ )); do \
-		rm -f ${VCS_COREVDV_RESULTS}/${TEST}/${TEST}_$$idx.S; \
+		mkdir -p $(SIM_TEST_RESULTS)/$$idx/test_program; \
 	done
-	cd  $(VCS_COREVDV_RESULTS)/$(TEST) && \
-	../$(SIMV) -R $(VCS_RUN_FLAGS) \
-		-l $(TEST)_$(GEN_START_INDEX)_$(GEN_NUM_TESTS).log \
-		+start_idx=$(GEN_START_INDEX) \
-		+num_of_tests=$(GEN_NUM_TESTS) \
-		+UVM_TESTNAME=$(GEN_UVM_TEST) \
-		+asm_file_name_opts=$(TEST) \
-		$(GEN_PLUSARGS)
-	# Copy out final assembler files to test directory
+	cd  $(SIM_COREVDV_RESULTS)/$(TEST) && \
+		../$(SIMV) -R $(VCS_RUN_FLAGS) \
+			-l $(TEST)_$(GEN_START_INDEX)_$(GEN_NUM_TESTS).log \
+			+start_idx=$(GEN_START_INDEX) \
+			+num_of_tests=$(GEN_NUM_TESTS) \
+			+UVM_TESTNAME=$(GEN_UVM_TEST) \
+			+asm_file_name_opts=$(TEST) \
+			+ldgen_cp_test_path=$(SIM_TEST_RESULTS) \
+			$(CFG_PLUSARGS) \
+			$(GEN_PLUSARGS)
 	for (( idx=${GEN_START_INDEX}; idx < $$((${GEN_START_INDEX} + ${GEN_NUM_TESTS})); idx++ )); do \
-		ls -l ${VCS_COREVDV_RESULTS}/${TEST} > /dev/null; \
-		cp ${VCS_COREVDV_RESULTS}/${TEST}/${TEST}_$$idx.S ${GEN_TEST_DIR}; \
+		cp -f ${BSP}/link_corev-dv.ld ${SIM_TEST_RESULTS}/$$idx/test_program/link.ld; \
+		cp ${VCS_COREVDV_RESULTS}/${TEST}/${TEST}_$$idx.S ${SIM_TEST_RESULTS}/$$idx/test_program; \
 	done
 
 ################################################################################
@@ -313,20 +310,20 @@ waves:
 ################################################################################
 # Invoke post-process coverage viewer
 cov_merge:
-	$(MKDIR_P) $(VCS_RESULTS)/$(CFG)/$(MERGED_COV_DIR)
-	rm -rf $(VCS_RESULTS)/$(CFG)/$(MERGED_COV_DIR)/*
-	cd $(VCS_RESULTS)/$(CFG)/$(MERGED_COV_DIR)
+	$(MKDIR_P) $(SIM_CFG_RESULTS)/$(MERGED_COV_DIR)
+	rm -rf $(SIM_CFG_RESULTS)/$(MERGED_COV_DIR)/*
+	cd $(SIM_CFG_RESULTS)/$(MERGED_COV_DIR)
 
 ifeq ($(call IS_YES,$(MERGE)),YES)
-  COVERAGE_TARGET_DIR=$(VCS_RESULTS)/$(CFG)/$(MERGED_COV_DIR)
+  COVERAGE_TARGET_DIR=$(SIM_CFG_RESULTS)/$(MERGED_COV_DIR)
 else
-  COVERAGE_TARGET_DIR=$(VCS_RESULTS)/$(CFG)/$(TEST_NAME)
+  COVERAGE_TARGET_DIR=$(SIM_CFG_RESULTS)/$(TEST_NAME)
 endif
 
 ifeq ($(call IS_YES,$(MERGE)),YES)
-  COVERAGE_TARGET_DIR=$(VCS_RESULTS)/$(MERGED_COV_DIR)
+  COVERAGE_TARGET_DIR=$(SIM_RESULTS)/$(MERGED_COV_DIR)
 else
-  COVERAGE_TARGET_DIR=$(VCS_RESULTS)/$(TEST_NAME)_$(RUN_INDEX)
+  COVERAGE_TARGET_DIR=$(SIM_RESULTS)/$(TEST_NAME)_$(RUN_INDEX)
 endif
 
 # the report is in html format: use a browser to access it when GUI mode is selected
@@ -341,9 +338,9 @@ endif
 ###############################################################################
 # Clean up your mess!
 
-clean:	
+clean:
 	@echo "$(MAKEFILE_LIST)"
-	rm -rf $(VCS_RESULTS)	
+	rm -rf $(SIM_RESULTS)
 
 # Files created by Eclipse when using the Imperas ISS + debugger
 clean_eclipse:
@@ -353,5 +350,5 @@ clean_eclipse:
 	rm  -rf workspace
 
 # All generated files plus the clone of the RTL
-clean_all: clean clean_eclipse clean_riscv-dv clean_test_programs clean-bsp clean_compliance clean_embench clean_dpi_dasm_spike
+clean_all: clean clean_eclipse clean_riscv-dv clean_test_programs clean-bsp clean_compliance clean_embench clean_dpi_dasm_spike clean_svlib
 	rm -rf $(CV_CORE_PKG)

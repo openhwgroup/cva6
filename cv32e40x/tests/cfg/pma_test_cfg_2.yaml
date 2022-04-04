@@ -1,0 +1,17 @@
+name: pma_test_cfg_2
+description: PMA configuration for the PMA_TEST_CFG_2 test case
+compile_flags:
+   +define+PMA_TEST_CFG_2
+   +define+ZBA_ZBB_ZBC_ZBS
+plusargs:
+   +enable_pma=1
+   +fix_sp=1
+    +enable_zba_extension=1
+    +enable_zbb_extension=1
+    +enable_zbc_extension=1
+    +enable_zbs_extension=1
+riscv_march: rv32imc_zba1p00_zbb1p00_zbc1p00_zbs1p00
+gnu_march:   rv32imc_zba1p00_zbb1p00_zbc1p00_zbs1p00
+corev_march: rv32imc_zba1p00_zbb1p00_zbc1p00_zbs1p00
+llvm_march:  rv32imc_zba1p00_zbb1p00_zbc1p00_zbs1p00
+cv_sw_march: rv32imc_zba1p00_zbb1p00_zbc1p00_zbs1p00

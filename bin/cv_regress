@@ -3,13 +3,13 @@
 ################################################################################
 #
 # Copyright 2020 OpenHW Group
-# 
+#
 # Licensed under the Solderpad Hardware Licence, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
-# 
+#
 #     https://solderpad.org/licenses/
-# 
+#
 # Unless required by applicable law or agreed to in writing, software
 # distributed under the License is distributed on an "AS IS" BASIS,
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -17,19 +17,17 @@
 # limitations under the License.
 #
 # SPDX-License-Identifier:Apache-2.0 WITH SHL-2.0
-# 
+#
 ################################################################################
 #
-# cv32_regress: python script to generate a tool-specific regression based
-#               upon YAML specifications of regressions
+# cv_regress: python script to generate a tool-specific regression based
+#             upon YAML specifications of regressions
 #
 # Author: Steve Richmond
 #  email: steve.richmond@silabs.com
 #
 # Written with Python 3.5.1 on RHEL 7.7.  Your python mileage may vary.
 #
-# Restriction:
-#     - Needs to be launched from the ci directory.
 #
 # TODO:
 ################################################################################
@@ -59,13 +57,14 @@ def get_project_path(project):
 
 def check_valid_test(project, name):
     '''Validation step to determine if a testname in a regression is valid.
-       Some regression tools will fail if test name does not match make TEST variable.'''    
+       Some regression tools will fail if test name does not match make TEST variable.'''
     test_dirs = (os.path.join(get_project_path(project), 'tests/programs/corev-dv'),
                  os.path.join(get_project_path(project), 'tests/programs/custom'),
+                 os.path.join(get_project_path(project), 'tests/programs/embench'),
     )
-    
+
     for t in test_dirs:
-        if os.path.isdir(os.path.join(t, name)):            
+        if os.path.isdir(os.path.join(t, name)):
             return True
 
     logger.fatal('Test name: {} is not valid'.format(name))
@@ -86,7 +85,7 @@ def read_file(args, file):
     '''Read a YAML definition filelist'''
     full_regress_file = os.path.join(get_regress_path(args.project), file)
     stream = open(full_regress_file, 'r')
-    logger.info('Reading regression: {}'.format(full_regress_file))    
+    logger.info('Reading regression: {}'.format(full_regress_file))
     # Newer PyYAMLs must specify explicit loader (policy) or will issue warnings
     # Older PyYAMLs will not support the Loader argument
     # So try the new way first, then catch to the old way
@@ -105,31 +104,37 @@ def read_file(args, file):
     assert 'tests' in testlist, 'A test section with at least one test must be defined'
     for b, d in testlist['builds'].items():
         assert 'cmd' in d, 'cmd must be specified in test: ' + b
-        assert 'dir' in d, 'dir must be specified in test: ' + b        
+        assert 'dir' in d, 'dir must be specified in test: ' + b
     for t, d in testlist['tests'].items():
-        assert 'build' in d, 'build must be specified in test: ' + t
-        #assert 'description' in d, 'description must be specified in test: ' + t
+        try:
+            assert type(d['builds']) == list, 'builds must be a list in test: ' + t
+        except KeyError:
+            assert 'build' in d, 'builds or build must be specified in test: ' + t
+
         assert 'cmd' in d, 'cmd must be specified in test: ' + t
         assert 'dir' in d, 'dir must be specified in test: ' + t
-        
+
     # Construct a proper regression object
     regression = cv_regression.Regression(name=testlist['name'],
                                           description=testlist['description'])
 
     # Create build objects
     for k in testlist['builds']:
-        b = testlist['builds'][k]    
+        b = testlist['builds'][k]
         build = cv_regression.Build(name=k, simulator=args.simulator, **b)
         if args.cov:
             build.set_cov()
         if args.make:
             build.sub_make(args.make)
+        if args.cfg:
+            build.cfg = args.cfg
+
         regression.add_build(build)
 
     # Create test objects
     for k in testlist['tests']:
         t = testlist['tests'][k]
-        
+
         try:
             if args.simulator in t['skip_sim']:
                 continue
@@ -140,8 +145,12 @@ def read_file(args, file):
             test.set_cov()
         if args.make:
             test.sub_make(args.make)
-        if args.iss != None:            
+        if args.iss != None:
             test.iss = args.iss
+        if args.cfg:
+            test.cfg = args.cfg
+        if not test.builds and test.build:
+            test.builds = [ test.build ]
 
         # Determine if a test is valid, skip for compliance tests
         # Since it is not possible to determine apriori if a compliance test is valid
@@ -156,13 +165,16 @@ def read_file(args, file):
 
     return regression
 
-# Start of script
-VALID_SIMULATORS = ('dsim', 'vsim', 'vcs', 'xrun')
+# Defaults and globals
+VALID_SIMULATORS  = ('dsim', 'vsim', 'vcs', 'xrun')
 DEFAULT_SIMULATOR = 'dsim'
-VALID_PROJECTS = ('cv32e40p', 'cv32e40x', 'cv64')
+VALID_TOOLCHAINS  = ('gnu','llvm','corev','pulp')
+DEFAULT_TOOLCHAIN = 'corev'
+
+VALID_PROJECTS = ('cv32e40p', 'cv32e40x', 'cv32e40s', 'cv64')
 try:
-    DEFAULT_PROJECT = os.environ['CV_CORE'] 
-except KeyError:    
+    DEFAULT_PROJECT = os.environ['CV_CORE']
+except KeyError:
     DEFAULT_PROJECT = 'cv32e40p'
 DEFAULT_CFG = 'default'
 DEFAULT_PARALLEL = '30'
@@ -175,9 +187,10 @@ parser.add_argument('-f', '--file', action='append', help='One or more input reg
 parser.add_argument('-p', '--project', '--core', default=DEFAULT_PROJECT, choices=VALID_PROJECTS, help='Select core for regression')
 parser.add_argument('-o', '--outfile', help='Output file')
 parser.add_argument('-d', '--debug', help='Emit debug messages from logger', action='store_true')
+parser.add_argument('--results', help='Set a non-standard results directory')
 parser.add_argument('-s', '--simulator', help='Select simulator', choices=VALID_SIMULATORS, default=DEFAULT_SIMULATOR)
 parser.add_argument('-c', '--cov', help='Enable coverage', action='store_true')
-parser.add_argument('--cfg', default=DEFAULT_CFG, help='Test configuration to test')
+parser.add_argument('--cfg', default=None, help='Override configuration for all builds and tests in regression')
 parser.add_argument('--iss', default=None, help='Force USE_ISS flag to each test run')
 parser.add_argument('--parallel', default=DEFAULT_PARALLEL, help='For VSIF only, set number of parallel jobs')
 parser.add_argument('-m', '--metrics', help='Select Metrics waves output', action='store_true')
@@ -187,7 +200,7 @@ parser.add_argument('--make', help='Substitute for make command (to use short-cu
 parser.add_argument('--makearg', action='append', help='Arguments to supply to each make command, can be specified multiple times')
 parser.add_argument('--sh', help='Select bash shell script output', action='store_true')
 parser.add_argument('--vsif', help='Select Vmanager VSIF output', action='store_true')
-
+parser.add_argument('--toolchain', help='Select toolchain to build with', choices=VALID_TOOLCHAINS, default=DEFAULT_TOOLCHAIN)
 args = parser.parse_args()
 
 if args.debug:
@@ -221,11 +234,11 @@ for f in args.file:
             unique_builds[b.name] = b
 
 # Generate output product
-env = jinja2.Environment(loader=jinja2.FileSystemLoader(os.path.join(os.path.dirname(__file__),                                                         
+env = jinja2.Environment(loader=jinja2.FileSystemLoader(os.path.join(os.path.dirname(__file__),
                                                         'templates')), trim_blocks=True)
 
 # Output generation
-if args.sh: 
+if args.sh:
     # Generate shell script (--script)
     template = env.get_template('regress_sh.j2')
     logger.info('Rendering template: regress_sh.j2 into: {}'.format(args.outfile))
@@ -233,6 +246,8 @@ if args.sh:
     out_fh.write(template.render(regressions=regressions,
                                  project=args.project,
                                  cfg=args.cfg,
+                                 toolchain=args.toolchain,
+                                 results=args.results,
                                  makeargs=' '.join(args.makearg) if args.makearg else '',
                                  session=os.path.splitext(os.path.basename(args.outfile))[0],
                                  unique_builds=unique_builds))
@@ -247,6 +262,7 @@ if args.metrics:
     out_fh.write(template.render(regressions=regressions,
                                  project=args.project,
                                  cfg=args.cfg,
+                                 toolchain=args.toolchain,
                                  makeargs=' '.join(args.makearg) if args.makearg else '',
                                  unique_builds=unique_builds))
     out_fh.close()
@@ -262,18 +278,19 @@ if args.vsif:
                                  results_path=get_results_path(args.project),
                                  project=args.project,
                                  parallel=args.parallel,
-                                 cfg=args.cfg,
                                  regressions=regressions,
+                                 results=args.results,
                                  makeargs=' '.join(args.makearg) if args.makearg else '',
                                  lsf=args.lsf,
                                  sve=os.path.abspath(sve),
+                                 toolchain=args.toolchain,
                                  simulator=args.simulator,
                                  filter_dir=get_filter_dir(),
                                  unique_builds=unique_builds))
     out_fh.close()
-    
+
     # Generate a Vmanager-compatible SVE
-    template = env.get_template('regress_sve.j2')    
+    template = env.get_template('regress_sve.j2')
     logger.info('Rendering template: regress_sve.j2 into: {}'.format(sve))
     out_fh = open(sve, 'w')
     out_fh.write(template.render(env=os.environ))

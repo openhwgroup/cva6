@@ -18,7 +18,7 @@
 
 //-----------------------------------------------------------------------------------------
 // CV32E40X CORE-V assembly program generator - extension of the RISC-V assembly program generator.
-// 
+//
 // Overrides gen_program_header() and gen_test_done()
 //-----------------------------------------------------------------------------------------
 
@@ -28,6 +28,121 @@ class cv32e40x_asm_program_gen extends corev_asm_program_gen;
 
   function new (string name = "");
     super.new(name);
+  endfunction
+
+  virtual function void gen_illegal_instr_handler(int hart);
+    string instr[$];
+    string load_instr = (XLEN == 32) ? "lw" : "ld";
+    gen_signature_handshake(instr, CORE_STATUS, ILLEGAL_INSTR_EXCEPTION);
+    gen_signature_handshake(.instr(instr), .signature_type(WRITE_CSR), .csr(MCAUSE));
+    instr = {instr,
+            // Get the stack pointer from the scratch register
+            $sformatf("csrrw x%0d, 0x%0x, x%0d", cfg.sp, MSCRATCH, cfg.sp),
+            $sformatf("%0s x%0d, %0d(x%0d)", load_instr, cfg.gpr[1], 0 * (XLEN/8), cfg.sp),
+            // if zero, jump to end
+            $sformatf("beq x%0d, x%0d, non_pma_handler_illegal_instr", cfg.gpr[1], 0),
+            // else get the other (potential) pc_value from stack
+            $sformatf("%0s x%0d, %0d(x%0d)", load_instr, cfg.gpr[0], 1 * (XLEN/8), cfg.sp),
+            // check if these are equal (nonzero implied from check above)
+            $sformatf("bne x%0d, x%0d, non_pma_handler_illegal_instr", cfg.gpr[1], cfg.gpr[0]),
+            $sformatf("csrw 0x%0x, x%0d", MEPC, cfg.gpr[1]),
+            $sformatf("la x%0d, pop_gpr_illegal_instr_handler", cfg.gpr[0]),
+            $sformatf("jalr x%0d, x%0d", 0, cfg.gpr[0]),
+
+            // original handler code start
+            $sformatf("non_pma_handler_illegal_instr: csrr  x%0d, 0x%0x", cfg.gpr[0], MEPC),
+            $sformatf("addi  x%0d, x%0d, 4", cfg.gpr[0], cfg.gpr[0]),
+            $sformatf("csrw  0x%0x, x%0d", MEPC, cfg.gpr[0]),
+            // original handler code end
+
+            $sformatf("pop_gpr_illegal_instr_handler:"),
+            // Swap back stack pointer to restore condition prior to handler
+            $sformatf("csrrw x%0d, 0x%0x, x%0d", cfg.sp, MSCRATCH, cfg.sp)
+    };
+
+    pop_gpr_from_kernel_stack(MSTATUS, MSCRATCH, cfg.mstatus_mprv, cfg.sp, cfg.tp, instr);
+    instr.push_back("mret");
+    gen_section(get_label("illegal_instr_handler", hart), instr);
+  endfunction
+
+  virtual function void gen_instr_fault_handler(int hart);
+    string instr[$];
+    string load_instr = (XLEN == 32) ? "lw" : "ld";
+    gen_signature_handshake(instr, CORE_STATUS, INSTR_FAULT_EXCEPTION);
+    gen_signature_handshake(.instr(instr), .signature_type(WRITE_CSR), .csr(MCAUSE));
+    //if (cfg.pmp_cfg.enable_pmp_exception_handler) begin
+    //  cfg.pmp_cfg.gen_pmp_exception_routine({cfg.gpr, cfg.scratch_reg, cfg.pmp_reg},
+    //                                        INSTRUCTION_ACCESS_FAULT,
+    //                                        instr);
+    //end
+    instr = {instr,
+            // Get the stack pointer from the scratch register
+            $sformatf("csrrw x%0d, 0x%0x, x%0d", cfg.sp, MSCRATCH, cfg.sp),
+            $sformatf("%0s x%0d, %0d(x%0d)", load_instr, cfg.gpr[1], 0 * (XLEN/8), cfg.sp),
+            // if zero, jump to end
+            $sformatf("beq x%0d, x%0d, non_pma_handler_instr_fault", cfg.gpr[1], 0),
+            // else get the other (potential) pc_value from stack
+            $sformatf("%0s x%0d, %0d(x%0d)", load_instr, cfg.gpr[0], 1 * (XLEN/8), cfg.sp),
+            // check if these are equal (nonzero implied from check above)
+            $sformatf("bne x%0d, x%0d, non_pma_handler_instr_fault", cfg.gpr[1], cfg.gpr[0]),
+            $sformatf("csrw 0x%0x, x%0d", MEPC, cfg.gpr[1]),
+            $sformatf("la x%0d, pop_gpr_instr_fault_handler", cfg.gpr[0]),
+            $sformatf("jalr x%0d, x%0d", 0, cfg.gpr[0]),
+
+            // original handler code start
+            $sformatf("non_pma_handler_instr_fault: csrr  x%0d, 0x%0x", cfg.gpr[0], MEPC),
+            $sformatf("addi  x%0d, x%0d, 4", cfg.gpr[0], cfg.gpr[0]),
+            $sformatf("csrw  0x%0x, x%0d", MEPC, cfg.gpr[0]),
+            // original handler code end
+
+            $sformatf("pop_gpr_instr_fault_handler:"),
+            // Swap back stack pointer to restore condition prior to handler
+            $sformatf("csrrw x%0d, 0x%0x, x%0d", cfg.sp, MSCRATCH, cfg.sp)
+    };
+    pop_gpr_from_kernel_stack(MSTATUS, MSCRATCH, cfg.mstatus_mprv, cfg.sp, cfg.tp, instr);
+    instr.push_back("mret");
+    gen_section(get_label("instr_fault_handler", hart), instr);
+  endfunction
+
+  // TODO: handshake correct csr based on delegation
+  virtual function void gen_load_fault_handler(int hart);
+    string instr[$];
+    gen_signature_handshake(instr, CORE_STATUS, LOAD_FAULT_EXCEPTION);
+    gen_signature_handshake(.instr(instr), .signature_type(WRITE_CSR), .csr(MCAUSE));
+    //if (cfg.pmp_cfg.enable_pmp_exception_handler) begin
+    //  cfg.pmp_cfg.gen_pmp_exception_routine({cfg.gpr, cfg.scratch_reg, cfg.pmp_reg},
+    //                                        LOAD_ACCESS_FAULT,
+    //                                        instr);
+    //end
+    // Increase mepc by 4
+    instr = { instr,
+              $sformatf("csrrw x%0d, 0x%0x, x%0d", cfg.gpr[0], MEPC, cfg.gpr[0]),
+              $sformatf("addi x%0d, x%0d, %0d", cfg.gpr[0], cfg.gpr[0], (XLEN/8)),
+              $sformatf("csrrw x%0d, 0x%0x, x%0d", cfg.gpr[0], MEPC, cfg.gpr[0])
+    };
+    pop_gpr_from_kernel_stack(MSTATUS, MSCRATCH, cfg.mstatus_mprv, cfg.sp, cfg.tp, instr);
+    instr.push_back("mret");
+    gen_section(get_label("load_fault_handler", hart), instr);
+  endfunction
+
+  // TODO: handshake correct csr based on delegation
+  virtual function void gen_store_fault_handler(int hart);
+    string instr[$];
+    gen_signature_handshake(instr, CORE_STATUS, STORE_FAULT_EXCEPTION);
+    gen_signature_handshake(.instr(instr), .signature_type(WRITE_CSR), .csr(MCAUSE));
+    //if (cfg.pmp_cfg.enable_pmp_exception_handler) begin
+    //  cfg.pmp_cfg.gen_pmp_exception_routine({cfg.gpr, cfg.scratch_reg, cfg.pmp_reg},
+    //                                        STORE_AMO_ACCESS_FAULT,
+    //                                        instr);
+    //end
+    instr = { instr,
+              $sformatf("csrrw x%0d, 0x%0x, x%0d", cfg.gpr[0], MEPC, cfg.gpr[0]),
+              $sformatf("addi x%0d, x%0d, %0d", cfg.gpr[0], cfg.gpr[0], (XLEN/8)),
+              $sformatf("csrrw x%0d, 0x%0x, x%0d", cfg.gpr[0], MEPC, cfg.gpr[0])
+    };
+    pop_gpr_from_kernel_stack(MSTATUS, MSCRATCH, cfg.mstatus_mprv, cfg.sp, cfg.tp, instr);
+    instr.push_back("mret");
+    gen_section(get_label("store_fault_handler", hart), instr);
   endfunction
 
   virtual function void gen_interrupt_vector_table(int              hart,
@@ -50,22 +165,22 @@ class cv32e40x_asm_program_gen extends corev_asm_program_gen;
                     $sformatf("j %0s%0smode_exception_handler", hart_prefix(hart), mode)};
     // Redirect the interrupt to the corresponding interrupt handler
     for (int i = 1; i < max_interrupt_vector_num; i++) begin
-      instr.push_back($sformatf("j %0s%0smode_intr_vector_%0d", hart_prefix(hart), mode, i));      
+      instr.push_back($sformatf("j %0s%0smode_intr_vector_%0d", hart_prefix(hart), mode, i));
     end
     if (!cfg.disable_compressed_instr) begin
       instr = {instr, ".option rvc;"};
     end
-    for (int i = 1; i < max_interrupt_vector_num; i++) begin      
+    for (int i = 1; i < max_interrupt_vector_num; i++) begin
       string intr_handler[$];
 
       if (corev_cfg.use_fast_intr_handler[i]) begin
         // Emit fast interrupt handler since cv32e40x has hardware interrupt ack
         // If WFIs allow, randomly insert wfi as well
-        if (!cfg.no_wfi) begin         
+        if (!cfg.no_wfi) begin
             randcase
                 2:  intr_handler.push_back("wfi");
                 4: begin /* insert nothing */ end
-            endcase          
+            endcase
         end
         intr_handler.push_back("mret");
       end
@@ -172,7 +287,7 @@ class cv32e40x_asm_program_gen extends corev_asm_program_gen;
       interrupt_handler_instr.push_back($sformatf("add x%0d, x%0d, zero", cfg.tp, cfg.sp));
       interrupt_handler_instr.push_back($sformatf("csrrw x%0d, mscratch, x%0d", cfg.sp, cfg.sp));
 
-      // Re-enable interrupts        
+      // Re-enable interrupts
       case (status)
         MSTATUS: begin
           interrupt_handler_instr.push_back($sformatf("csrsi 0x%0x, 0x%0x", status, 8));
@@ -247,11 +362,14 @@ class cv32e40x_asm_program_gen extends corev_asm_program_gen;
     end
     gen_section(get_label($sformatf("%0smode_intr_handler", mode_prefix), hart),
                 interrupt_handler_instr);
+
+    gen_nmi_handler_section(hart);
+
   endfunction : gen_interrupt_handler_section
 
-  // Override gen_stack_section to add debugger stack generation section  
+  // Override gen_stack_section to add debugger stack generation section
   // Implmeneted as a post-step to super.gen_stack_section()
-  virtual function void gen_stack_section(int hart);  
+  virtual function void gen_stack_section(int hart);
     super.gen_stack_section(hart);
 
     if (SATP_MODE != BARE) begin
@@ -274,12 +392,12 @@ class cv32e40x_asm_program_gen extends corev_asm_program_gen;
     bit [DATA_WIDTH-1:0] reg_val;
     cv32e40x_instr_gen_config cfg_corev;
 
-    `DV_CHECK($cast(cfg_corev, cfg))    
+    `DV_CHECK($cast(cfg_corev, cfg))
     // Init general purpose registers with random values
     for(int i = 0; i < NUM_GPR; i++) begin
       if (i inside {cfg.sp, cfg.tp}) continue;
       if (cfg.gen_debug_section && (i inside {cfg_corev.dp})) continue;
-      
+
       `DV_CHECK_STD_RANDOMIZE_WITH_FATAL(reg_val,
         reg_val dist {
           'h0                         :/ 1,
@@ -292,5 +410,28 @@ class cv32e40x_asm_program_gen extends corev_asm_program_gen;
       instr_stream.push_back(str);
     end
   endfunction
+
+  // generate NMI handler.
+  // will be placed at a fixed address in memory, set in linker file
+  //TODO: verify correct functionality when NMI test capability is ready
+  virtual function void gen_nmi_handler_section(int hart);
+    string nmi_handler_instr[$];
+
+    // Insert section info so linker can place
+    // debug code at the correct adress
+    instr_stream.push_back(".section .nmi, \"ax\"");
+
+    // read relevant csr's
+    nmi_handler_instr.push_back($sformatf("csrr x%0d, mepc", cfg.gpr[0]));
+    nmi_handler_instr.push_back($sformatf("csrr x%0d, mcause", cfg.gpr[0]));
+    nmi_handler_instr.push_back($sformatf("csrr x%0d, mtval", cfg.gpr[0]));
+    nmi_handler_instr.push_back($sformatf("csrr x%0d, mie", cfg.gpr[0]));
+
+    nmi_handler_instr.push_back($sformatf("la x%0d, test_done", cfg.scratch_reg));
+    nmi_handler_instr.push_back($sformatf("jr x%0d", cfg.scratch_reg));
+
+    gen_section(get_label($sformatf("nmi_handler"), hart),
+                nmi_handler_instr);
+  endfunction : gen_nmi_handler_section
 
 endclass : cv32e40x_asm_program_gen

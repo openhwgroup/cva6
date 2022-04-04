@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<waivers version="7">
+    <pre-waiver apply-on="matched" name="Waive RTL source code">
+        <paths regex="simple">
+            <path>*/core-v-cores/*</path>
+        </paths>
+    </pre-waiver>
+    <pre-waiver apply-on="matched" name="Waive third-party API source code">
+        <paths regex="simple">
+            <path>*/vendor_lib/*</path>
+        </paths>
+    </pre-waiver>
+    <waiver apply-on="matched" name="Disable SVTB.12.1.2 (Methods defined outside of classes must be explicitly declared automatic or static)">
+        <status>DISABLE</status>
+        <description>Disable all failures of check SVTB.12.1.2</description>
+        <check>SVTB.12.1.2</check>
+    </waiver>
+    <waiver apply-on="matched" name="Disable SVTB.29.1.7@imperas_CV32.sv">
+        <status>DISABLE</status>
+        <description>Disable all failures of check SVTB.29.1.7 in file imperas_CV32.sv</description>
+        <check>SVTB.29.1.7</check>
+        <paths regex="simple">
+            <path>vendor_lib/imperas/imperas_DV_COREV/sv/imperas_CV32.sv</path>
+        </paths>
+    </waiver>
+    <waiver apply-on="matched" name="Disable SVTB.28.1@imperas_CV32.sv">
+        <status>DISABLE</status>
+        <description>Disable all failures of check SVTB.28.1 in file imperas_CV32.sv</description>
+        <check>SVTB.28.1</check>
+        <paths regex="simple">
+            <path>vendor_lib/imperas/imperas_DV_COREV/sv/imperas_CV32.sv</path>
+        </paths>
+    </waiver>
+    <waiver apply-on="matched" name="Disable SVTB.29.1.7@imperas_CV32.sv-213">
+        <status>DISABLE</status>
+        <description>Disable all failures of check SVTB.29.1.7 in file imperas_CV32.sv at line 213</description>
+        <check>SVTB.29.1.7</check>
+        <paths regex="simple">
+            <path>vendor_lib/imperas/imperas_DV_COREV/sv/imperas_CV32.sv</path>
+        </paths>
+        <line-range>213</line-range>
+    </waiver>
+    <waiver apply-on="matched" name="Disable SVTB.31.1.0.local@imperas_CV32.sv">
+        <status>DISABLE</status>
+        <description>Disable all failures of check SVTB.31.1.0.local in file imperas_CV32.sv</description>
+        <check>SVTB.31.1.0.local</check>
+        <paths regex="simple">
+            <path>vendor_lib/imperas/imperas_DV_COREV/sv/imperas_CV32.sv</path>
+        </paths>
+    </waiver>
+</waivers>

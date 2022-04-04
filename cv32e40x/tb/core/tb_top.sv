@@ -83,7 +83,7 @@ module tb_top
             #CLK_PHASE_LO core_clk = 1'b1;
         end
     end: clock_gen
-   
+
 
     // timing format, reset generation and parameter check
     initial begin

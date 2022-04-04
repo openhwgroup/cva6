@@ -102,8 +102,20 @@ sim_results_dir = os.path.abspath(os.path.join(uvm_results_dir, '{}_results'.for
 ################################################################################
 # Methods....
 
+# Pretty (or at least, not so ugly) pass/fail summary
+def pr_result(line='/really/long/ugly/path/test.log: SIMULATION PASSED'):
+    rline = line.decode('utf-8').rstrip()     # remove trailing whitespace
+    if not re.search('SIMULATION', rline):
+      print('!!! Unexpected test result: {}'.format(rline))
+      exit(1)
+    plist = rline.split('/')                  # build a list from path
+    res   = plist[-1]                         # result we want is in last entry of list
+    iii   = res.find(':')                     # ":" is delimiter between file name and pass-or-fail
+    rlist = [ res[0:iii], ':', res[-7:] ]     # result list (works becaused " PASSED", " FAILED" and "ABORTED" all have 7 chars)
+    print('{: >40} {} {: >7}'.format(*rlist)) # pretty printing: produces "test.log:  PASSED" using default value of arg
+
+
 # Check results and print something useful
-# TODO: fix this! (its so ugly I'm embarassed to check it in)
 def check_uvm_results(check_only=0):
     fail_count = 0
     expct_fail = 0
@@ -119,19 +131,19 @@ def check_uvm_results(check_only=0):
                                   stderr=subprocess.STDOUT,
                                   shell="TRUE")
 
+        print ('\n\nCI Check results:')
         for line in fails.stdout.readlines():
-            failed = line.decode('utf-8').rstrip()
-            print (failed)
+            pr_result(line)
             fail_count += 1
             # TODO: make this a list of known failures (hopefully there won't be that many...)
             if (
-                (re.search('riscv_compliance', failed))
-                # or (re.search('riscv_ebreak', failed))
+                (re.search('riscv_compliance', line.decode('utf-8')))
+                # or (re.search('riscv_ebreak', line.decode('utf-8')))
                ):
                 expct_fail += 1
 
         for line in passes.stdout.readlines():
-            print (line.decode('utf-8').rstrip())
+            pr_result(line)
             pass_count += 1
 
         if (pass_count == 0):
@@ -142,7 +154,7 @@ def check_uvm_results(check_only=0):
             print ('\nCI Check PASSED with no failures.')
             print ('OK to issue a pull-request.\n')
         elif (fail_count == expct_fail):
-            print ('\nCI Check PASSED with known failure(s).')
+            print ('\nCI Check PASSED with KNOWN failure(s).')
             print ('OK to issue a pull-request.\n')
         else:
             print ('\nCI Check FAILED with unknown failures.')
@@ -153,7 +165,7 @@ def check_uvm_results(check_only=0):
 
 
 def check_core_results(run_count):
-    core_runs = subprocess.Popen('grep "EXIT SUCCESS" -R -I ../{}/sim/core/cobj_dir/logs'.format(args.core.lower()),
+    core_runs = subprocess.Popen('grep "EXIT SUCCESS" -R -I ../{}/sim/core/simulation_results'.format(args.core.lower()),
                                  stdout=subprocess.PIPE,
                                  stderr=subprocess.STDOUT,
                                  shell="TRUE")
@@ -165,7 +177,7 @@ def check_core_results(run_count):
             #core_runs = line.decode('utf-8').rstrip()
             print (line.decode('utf-8').rstrip())
             run_count -= 1
-    
+
         if (run_count == 0):
             print ('\nCI Check of CORE testbench PASSED.\nYou must also run the UVM CI regression before submitting a PR.')
         else:
@@ -270,7 +282,7 @@ os.chdir(topdir)
 # Step 1: Run the User Regression for the UVM verification environment.
 #
 # .metrics.json is the CI regression config used by Metrics CI tools.
-if (uvm):    
+if (uvm):
     with open(os.path.join(topdir, '.metrics.json')) as f:
       metrics_dict = json.load(f)
 
@@ -291,7 +303,7 @@ if (uvm):
                 build_cmd_list = (key['cmd']).split()
                 build_cmd = ' '.join(build_cmd_list[0:-1])
                 build_cmd = build_cmd.replace(' DSIM_WORK=/mux-flow/build/repo/dsim_work', '')
-                build_cmd = build_cmd.replace(' DSIM_RESULTS=/mux-flow/build/results', '')
+                build_cmd = build_cmd.replace(' SIM_RESULTS=/mux-flow/build/results', '')
                 if (build_cmd != ''):
                     build_cmd = build_cmd.replace('dsim', svtool)
                     if (args.repo):
@@ -308,7 +320,7 @@ if (uvm):
                 else:
                     print ('ERROR: cannot find build command in .metrics.json')
                     exit(0)
-    
+
     # Get the simulation command(s)
     for key in metrics_dict:
         if (key == 'regressions'):
@@ -331,11 +343,11 @@ if (uvm):
 
                 if (debug):
                     pprint.pprint(lists_dict)
-                
+
                 num_tests = 0
-                for key in lists_dict.values():                
+                for key in lists_dict.values():
                     run_cmd = key['cmd']
-                    
+
                     if run_cmd == '':
                         print ('ERROR: cannot find run command in .metrics.json')
                         exit(1)
@@ -348,16 +360,16 @@ if (uvm):
 
                     # The iss command-line switch takes precedence,
                     # Otherwise use what is in the regression yaml if defined
-                    # Otherwise set to 1                    
+                    # Otherwise set to 1
                     if args.iss != None:
                         iss = int(args.iss)
                     else:
-                        try:                    
+                        try:
                             iss = key['iss']
                         except KeyError:
                             iss = 1
 
-                    for n in range(num):                    
+                    for n in range(num):
                         # Add directory
                         full_run_cmd = 'cd {}; {}'.format(key['dir'], run_cmd)
                         # Add SIMULATOR
@@ -400,12 +412,12 @@ if  (veril):
     if (prcmd or debug):
         print('make')
         for core_test in core_tests:
-            print('make custom CUSTOM_PROG=' + core_test)
+            print('make veri-test TEST=' + core_test)
     if not (prcmd):
         os.system('make')
         for core_test in core_tests:
-            os.system('make custom CUSTOM_PROG=' + core_test)
-    
+            os.system('make veri-test TEST=' + core_test)
+
 os.chdir(topdir)      # cmd in .metrics.json assumes all cmds start from here
 
 # Unless this is just a run to dump simulation commands (--print_commands),
@@ -417,6 +429,6 @@ if not (prcmd):
     if (uvm):
         check_uvm_results()
     else:
-        print ('UVM CI Regression not run.  You CANNOT issue a pull-request')
+        print ('UVM CI Regression not run. (Please do so before issuing a pull-request.)')
 
 ## end ##

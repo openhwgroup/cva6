@@ -1,0 +1,4 @@
+name: riscv_ebreak_test_0
+uvm_test: uvmt_$(CV_CORE_LC)_firmware_test_c
+description: >
+    Static EBREAK test generated from riscv-dv

@@ -1,0 +1,107 @@
+# Indago Command Script (Wed, 12 May 2021 09:29:06 -0500)
+#
+# Version 21.02.001-a
+
+#
+# Signal List
+#
+waveform group add {OBI I}
+waveform add -in_group {OBI I} -radix h {uvmt_cv32e40x_tb.dut_wrap.cv32e40x_wrapper_i.core_i.instr_req_o}
+waveform add -in_group {OBI I} -radix h {uvmt_cv32e40x_tb.dut_wrap.cv32e40x_wrapper_i.core_i.instr_gnt_i}
+waveform add -in_group {OBI I} -radix h {uvmt_cv32e40x_tb.dut_wrap.cv32e40x_wrapper_i.core_i.instr_rvalid_i}
+waveform add -in_group {OBI I} -radix h {uvmt_cv32e40x_tb.dut_wrap.cv32e40x_wrapper_i.core_i.instr_addr_o}
+waveform add -in_group {OBI I} -radix h {uvmt_cv32e40x_tb.dut_wrap.cv32e40x_wrapper_i.core_i.instr_rdata_i}
+waveform add -in_group {OBI I} -radix h {uvmt_cv32e40x_tb.dut_wrap.cv32e40x_wrapper_i.core_i.instr_err_i}
+waveform group add {OBI D}
+waveform add -in_group {OBI D} -radix h {uvmt_cv32e40x_tb.dut_wrap.cv32e40x_wrapper_i.core_i.data_req_o}
+waveform add -in_group {OBI D} -radix h {uvmt_cv32e40x_tb.dut_wrap.cv32e40x_wrapper_i.core_i.data_gnt_i}
+waveform add -in_group {OBI D} -radix h {uvmt_cv32e40x_tb.dut_wrap.cv32e40x_wrapper_i.core_i.data_rvalid_i}
+waveform add -in_group {OBI D} -radix h {uvmt_cv32e40x_tb.dut_wrap.cv32e40x_wrapper_i.core_i.data_we_o}
+waveform add -in_group {OBI D} -radix h {uvmt_cv32e40x_tb.dut_wrap.cv32e40x_wrapper_i.core_i.data_be_o}
+waveform add -in_group {OBI D} -radix h {uvmt_cv32e40x_tb.dut_wrap.cv32e40x_wrapper_i.core_i.data_addr_o}
+waveform add -in_group {OBI D} -radix h {uvmt_cv32e40x_tb.dut_wrap.cv32e40x_wrapper_i.core_i.data_wdata_o}
+waveform add -in_group {OBI D} -radix h {uvmt_cv32e40x_tb.dut_wrap.cv32e40x_wrapper_i.core_i.data_rdata_i}
+waveform add -in_group {OBI D} -radix h {uvmt_cv32e40x_tb.dut_wrap.cv32e40x_wrapper_i.core_i.data_err_i}
+waveform add -in_group {OBI D} -radix h {uvmt_cv32e40x_tb.dut_wrap.cv32e40x_wrapper_i.core_i.data_atop_o}
+waveform add -in_group {OBI D} -radix h {uvmt_cv32e40x_tb.dut_wrap.cv32e40x_wrapper_i.core_i.data_exokay_i}
+waveform group add {Imperas  ISS D RAM}
+waveform add -in_group {Imperas  ISS D RAM} -radix h {uvmt_cv32e40x_tb.iss_wrap.b1.Clk}
+waveform add -in_group {Imperas  ISS D RAM} -radix h {uvmt_cv32e40x_tb.iss_wrap.b1.DAddr}
+waveform add -in_group {Imperas  ISS D RAM} -radix h {uvmt_cv32e40x_tb.iss_wrap.b1.DData}
+waveform add -in_group {Imperas  ISS D RAM} -radix h {uvmt_cv32e40x_tb.iss_wrap.b1.DM}
+waveform add -in_group {Imperas  ISS D RAM} -radix h {uvmt_cv32e40x_tb.iss_wrap.b1.DSize}
+waveform add -in_group {Imperas  ISS D RAM} -radix h {uvmt_cv32e40x_tb.iss_wrap.b1.Dbe}
+waveform add -in_group {Imperas  ISS D RAM} -radix h {uvmt_cv32e40x_tb.iss_wrap.b1.Drd}
+waveform add -in_group {Imperas  ISS D RAM} -radix h {uvmt_cv32e40x_tb.iss_wrap.b1.Dwr}
+waveform add -in_group {Imperas  ISS D RAM} -radix h {uvmt_cv32e40x_tb.iss_wrap.cpu.state.pc}
+waveform group add {IRQ}
+waveform add -in_group {IRQ} -radix h {uvmt_cv32e40x_tb.dut_wrap.cv32e40x_wrapper_i.core_i.irq_i}
+waveform add -in_group {IRQ} -radix h {uvmt_cv32e40x_tb.dut_wrap.cv32e40x_wrapper_i.core_i.irq_ack_o}
+waveform add -in_group {IRQ} -radix h {uvmt_cv32e40x_tb.dut_wrap.cv32e40x_wrapper_i.core_i.irq_id_o}
+waveform group add {RVFI 0}
+waveform add -in_group {RVFI 0} -radix h {uvmt_cv32e40x_tb.dut_wrap.cv32e40x_wrapper_i.rvfi_i.clk_i}
+waveform group add -in_group {RVFI 0} {INSTR}
+waveform add -in_group {RVFI 0>INSTR} -radix h {uvmt_cv32e40x_tb.dut_wrap.cv32e40x_wrapper_i.rvfi_instr_if_0_i.rvfi_valid}
+waveform add -in_group {RVFI 0>INSTR} -radix h {uvmt_cv32e40x_tb.dut_wrap.cv32e40x_wrapper_i.rvfi_instr_if_0_i.rvfi_halt}
+waveform add -in_group {RVFI 0>INSTR} -radix h {uvmt_cv32e40x_tb.dut_wrap.cv32e40x_wrapper_i.rvfi_instr_if_0_i.rvfi_insn}
+waveform add -in_group {RVFI 0>INSTR} -radix h {uvmt_cv32e40x_tb.dut_wrap.cv32e40x_wrapper_i.rvfi_instr_if_0_i.rvfi_intr}
+waveform add -in_group {RVFI 0>INSTR} -radix h {uvmt_cv32e40x_tb.dut_wrap.cv32e40x_wrapper_i.rvfi_instr_if_0_i.rvfi_ixl}
+waveform add -in_group {RVFI 0>INSTR} -radix h {uvmt_cv32e40x_tb.dut_wrap.cv32e40x_wrapper_i.rvfi_instr_if_0_i.rvfi_mode}
+waveform add -in_group {RVFI 0>INSTR} -radix d {uvmt_cv32e40x_tb.dut_wrap.cv32e40x_wrapper_i.rvfi_instr_if_0_i.rvfi_order}
+waveform add -in_group {RVFI 0>INSTR} -radix h {uvmt_cv32e40x_tb.dut_wrap.cv32e40x_wrapper_i.rvfi_instr_if_0_i.rvfi_trap}
+waveform add -in_group {RVFI 0>INSTR} -radix h {uvmt_cv32e40x_tb.dut_wrap.cv32e40x_wrapper_i.rvfi_instr_if_0_i.rvfi_pc_wdata}
+waveform add -in_group {RVFI 0>INSTR} -radix h {uvmt_cv32e40x_tb.dut_wrap.cv32e40x_wrapper_i.rvfi_instr_if_0_i.rvfi_pc_rdata}
+waveform group add -in_group {RVFI 0} {REG}
+waveform add -in_group {RVFI 0>REG} -radix h {uvmt_cv32e40x_tb.dut_wrap.cv32e40x_wrapper_i.rvfi_instr_if_0_i.rvfi_rs1_addr}
+waveform add -in_group {RVFI 0>REG} -radix h {uvmt_cv32e40x_tb.dut_wrap.cv32e40x_wrapper_i.rvfi_instr_if_0_i.rvfi_rs1_rdata}
+waveform add -in_group {RVFI 0>REG} -radix h {uvmt_cv32e40x_tb.dut_wrap.cv32e40x_wrapper_i.rvfi_instr_if_0_i.rvfi_rs2_addr}
+waveform add -in_group {RVFI 0>REG} -radix h {uvmt_cv32e40x_tb.dut_wrap.cv32e40x_wrapper_i.rvfi_instr_if_0_i.rvfi_rs2_rdata}
+waveform add -in_group {RVFI 0>REG} -radix h {uvmt_cv32e40x_tb.dut_wrap.cv32e40x_wrapper_i.rvfi_instr_if_0_i.rvfi_rd1_addr}
+waveform add -in_group {RVFI 0>REG} -radix h {uvmt_cv32e40x_tb.dut_wrap.cv32e40x_wrapper_i.rvfi_instr_if_0_i.rvfi_rd1_wdata}
+waveform group add -in_group {RVFI 0} {MEM}
+waveform add -in_group {RVFI 0>MEM} -radix h {uvmt_cv32e40x_tb.dut_wrap.cv32e40x_wrapper_i.rvfi_instr_if_0_i.rvfi_mem_addr}
+waveform add -in_group {RVFI 0>MEM} -radix h {uvmt_cv32e40x_tb.dut_wrap.cv32e40x_wrapper_i.rvfi_instr_if_0_i.rvfi_mem_rdata}
+waveform add -in_group {RVFI 0>MEM} -radix h {uvmt_cv32e40x_tb.dut_wrap.cv32e40x_wrapper_i.rvfi_instr_if_0_i.rvfi_mem_rmask}
+waveform add -in_group {RVFI 0>MEM} -radix h {uvmt_cv32e40x_tb.dut_wrap.cv32e40x_wrapper_i.rvfi_instr_if_0_i.rvfi_mem_wdata}
+waveform add -in_group {RVFI 0>MEM} -radix h {uvmt_cv32e40x_tb.dut_wrap.cv32e40x_wrapper_i.rvfi_instr_if_0_i.rvfi_mem_wmask}
+waveform group add {RVVI Control}
+waveform add -in_group {RVVI Control} {uvmt_cv32e40x_tb.iss_wrap.cpu.control.cmd}
+waveform add -in_group {RVVI Control} -radix h {uvmt_cv32e40x_tb.iss_wrap.cpu.control.ssmode}
+waveform add -in_group {RVVI Control} -radix h {uvmt_cv32e40x_tb.iss_wrap.cpu.control.state_cont}
+waveform add -in_group {RVVI Control} -radix h {uvmt_cv32e40x_tb.iss_wrap.cpu.control.state_idle}
+waveform add -in_group {RVVI Control} -radix h {uvmt_cv32e40x_tb.iss_wrap.cpu.control.state_stepi}
+waveform add -in_group {RVVI Control} -radix h {uvmt_cv32e40x_tb.iss_wrap.cpu.control.state_stop}
+waveform group add {RVVI State}
+waveform add -in_group {RVVI State} -radix a {uvmt_cv32e40x_tb.iss_wrap.cpu.state.decode}
+waveform add -in_group {RVVI State} -radix h {uvmt_cv32e40x_tb.iss_wrap.cpu.state.notify}
+waveform add -in_group {RVVI State} -radix h {uvmt_cv32e40x_tb.iss_wrap.cpu.state.halt}
+waveform add -in_group {RVVI State} -radix h {uvmt_cv32e40x_tb.iss_wrap.cpu.state.insn}
+waveform add -in_group {RVVI State} -radix h {uvmt_cv32e40x_tb.iss_wrap.cpu.state.isize}
+waveform add -in_group {RVVI State} -radix h {uvmt_cv32e40x_tb.iss_wrap.cpu.state.ixl}
+waveform add -in_group {RVVI State} -radix h {uvmt_cv32e40x_tb.iss_wrap.cpu.state.mode}
+waveform add -in_group {RVVI State} -radix h {uvmt_cv32e40x_tb.iss_wrap.cpu.state.pc}
+waveform add -in_group {RVVI State} -radix h {uvmt_cv32e40x_tb.iss_wrap.cpu.state.pcnext}
+waveform add -in_group {RVVI State} -radix h {uvmt_cv32e40x_tb.iss_wrap.cpu.state.x}
+waveform group add {Core}
+waveform group add -in_group {Core} {IRQ}
+waveform add -in_group {Core>IRQ} -radix h {uvmt_cv32e40x_tb.dut_wrap.cv32e40x_wrapper_i.core_i.irq_i}
+waveform add -in_group {Core>IRQ} -radix h {uvmt_cv32e40x_tb.dut_wrap.cv32e40x_wrapper_i.core_i.irq_id_o}
+waveform add -in_group {Core>IRQ} -radix h {uvmt_cv32e40x_tb.dut_wrap.cv32e40x_wrapper_i.core_i.irq_ack_o}
+waveform add -in_group {Core} -radix h {uvmt_cv32e40x_tb.dut_wrap.cv32e40x_wrapper_i.core_i.register_file_wrapper_i.register_file_i.mem}
+waveform add -in_group {Core} -radix h {uvmt_cv32e40x_tb.dut_wrap.cv32e40x_wrapper_i.core_i.cs_registers_i.pc_ex_i}
+waveform add -in_group {Core} -radix h {uvmt_cv32e40x_tb.dut_wrap.cv32e40x_wrapper_i.core_i.cs_registers_i.mstatus_q}
+waveform add -in_group {Core} -radix h {uvmt_cv32e40x_tb.dut_wrap.cv32e40x_wrapper_i.core_i.cs_registers_i.mcause_q}
+waveform add -in_group {Core} -radix h {uvmt_cv32e40x_tb.dut_wrap.cv32e40x_wrapper_i.core_i.cs_registers_i.mscratch_q}
+waveform add -in_group {Core} -radix h {uvmt_cv32e40x_tb.dut_wrap.cv32e40x_wrapper_i.core_i.cs_registers_i.mip}
+waveform add -in_group {Core} -radix h {uvmt_cv32e40x_tb.dut_wrap.cv32e40x_wrapper_i.core_i.cs_registers_i.mie_q}
+waveform add -in_group {Core} -radix h {uvmt_cv32e40x_tb.dut_wrap.cv32e40x_wrapper_i.core_i.cs_registers_i.mepc_q}
+
+#
+# Visible Time Range
+#
+waveform xview limits -win Waveform 345,256.343982ns 345,426.3ns
+#
+# Insertion Point
+#
+waveform insertion -win Waveform {6,1}
+waveform scroll -win Waveform -vertical 0.0

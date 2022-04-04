@@ -1,5 +1,5 @@
-Simulation Directory for CV32E Core Testbench
-==================================
+Simulation Directory for CV32E40P Core Testbench
+================================================
 This is the directory in which you should run all tests of the Core Testbench.
 The testbench itself is located at `../../tb/core` and the test-programs are at
 `../../tests`.  See the README in those directories for more information.
@@ -19,7 +19,7 @@ Pointers to the recommended toolchain for CV32E40P are in `../TOOLCHAIN`.
 
 Running your own C programs
 ---------------------
-A hello world program is available and you can run it in the CV32E Core testbench.
+A hello world program is available and you can run it in the CV32E40P Core testbench.
 Invoke the `dsim-hello_world` or `hello-world-veri-run` makefile rules to run it with
 `dsim` or `verilator` respectively.
 
@@ -34,22 +34,31 @@ Point your environment variable `RISCV` to your RISC-V toolchain. Call `make`
 to run the default test (hello_world).
 
 Running your own Assembler programs
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-Admittedly, this needs work. If you have a C or assembly program in `../../tests/core/custom`
+-----------------------------
+If you have a C or assembly program in `../../tests/core/custom`
 then the following will work with Verilator:<br>
 ```
-make custom CUSTOM_PROG=dhrystone
-make custom CUSTOM_PROG=misalign
-make custom CUSTOM_PROG=fibonacci
-make custom CUSTOM_PROG=illegal
-make custom CUSTOM_PROG=riscv_ebreak_test_0
+make veri-test TEST=dhrystone
+make veri-test TEST=misalign
+make veri-test TEST=fibonacci
+make veri-test TEST=illegal
+make veri-test TEST=riscv_ebreak_test_0
 ```
 
 Running the testbench with Metrics [dsim](https://metrics.ca)
 ----------------------
 Point your environment variable `RISCV` to your RISC-V toolchain. Call
-`make dsim-hello_world` to build and run the testbench with the hello_world
-test in the custom directory. Other rules of interest:
+`make dsim-sanity` to build and run the testbench with the hello_world
+test in the custom directory. Other test targets of interest:<br>
+```
+make dsim-test TEST=dhrystone
+make dsim-test TEST=misalign
+make dsim-test TEST=fibonacci
+make dsim-test TEST=illegal
+make dsim-test TEST=riscv_ebreak_test_0
+```
+<!--
+FIXME
 * `make dsim-cv32_riscv_tests` to build and run the testbench with all the testcases in the riscv_tests directory.
 * `make dsim-cv32_riscv_compliance_tests` to build and run the tests in riscv_compliance_tests.
 * `make dsim-firmware` to build and run the testbench with all the testcases in the riscv_tests and riscv_compliance_tests directories.
@@ -59,18 +68,26 @@ the riscv_tests or riscv_compliance_tests directories. For example, to run the A
 <br>To run I-LBU-01.S from the riscv_compliance_tests:
 * `make dsim-unit-test I_LBU_01`
 <br>You can clean up the mess you made with `make dsim-clean`.
+-->
 
 Running the testbench with Cadence Xcelium [xrun](https://www.cadence.com/en_US/home/tools/system-design-and-verification/simulation-and-testbench-verification/xcelium-parallel-simulator.html)
 ----------------------
 **Note:** This testbench is known to require Xcelium 19.09 or later.  See [Issue 11](https://github.com/openhwgroup/core-v-verif/issues/11) for more info.
 Point your environment variable `RISCV` to your RISC-V toolchain. Call
-`make xrun-hello_world` to build and run the testbench with the hello_world
-test in the custom directory. Other rules of interest:
+`make xrun-test` to build and run the testbench with the hello_world
+test in the custom directory, or you can provide the TEST variable on the
+command line as shown for the dsim targets (e.g. make xrun-test TEST=misalign).
+<!--
+FIXME
+Other rules of interest:
 * `make xrun-firmware` to build and run the testbench with all the testcases in the riscv_tests/ and riscv_compliance_tests/ directories.
 * Clean up your mess: `make xsim-clean` (deletes xsim intermediate files) and `xrun-clean-all` (deletes xsim intermedaites and all testcase object files).
+-->
 
 Running the testbench with Questa (vsim)
 ---------------------------------------------------------
+<!--
+FIXME
 Point your environment variable `RISCV` to your RISC-V toolchain. Call `make
 firmware-vsim-run` to build the testbench and the firmware, and run it. Use
 `VSIM_FLAGS` to configure the simulator e.g. `make firmware-vsim-run
@@ -81,6 +98,17 @@ to run the ADD IMMEDIATE test from riscv_tests:
 * `make questa-unit-test addi`
 <br>To run I-LBU-01.S from the riscv_compliance_tests:
 * `make questa-unit-test I_LBU_01`
+-->
+
+If you have a C or assembly program in `../../tests/programs/custom`
+then the following _should_ work with Questa (note that this
+has not been tested):<br>
+```
+make questa-test TEST=hello-world
+make questa-test TEST=dhrystone
+make questa-test TEST=coremark
+make questa-test TEST=fibonacci
+```
 
 Running the testbench with VCS (vcs)
 ----------------------

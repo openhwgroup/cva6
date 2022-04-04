@@ -1,0 +1,69 @@
+# YAML file to specify a regression testlist
+---
+# Header
+name: cv32_debug_regression
+description: Directed and random debug tests for CV32E40S
+
+# List of builds
+builds:
+  corev-dv:
+    # required: Make the corev-dv infrastructure
+    cmd: make comp_corev-dv
+    dir: cv32e40s/sim/uvmt
+    cov: 0
+  uvmt_cv32e40s:
+    # required: the make command to create the build
+    cmd: make comp
+    dir: cv32e40s/sim/uvmt
+
+# List of tests
+tests:
+  debug_test:
+    build: uvmt_cv32e40s
+    description: Debug directed test
+    dir: cv32e40s/sim/uvmt
+    cmd: make test TEST=debug_test
+    num: 10
+
+  debug_test_reset:
+    build: uvmt_cv32e40s
+    description: Debug reset test
+    dir: cv32e40s/sim/uvmt
+    cmd: make test TEST=debug_test_reset
+    num: 10
+
+  debug_test_trigger:
+    build: uvmt_cv32e40s
+    description: Debug trigger test
+    dir: cv32e40s/sim/uvmt
+    cmd: make test TEST=debug_test_trigger
+    num: 10
+
+  debug_test_boot_set:
+    build: uvmt_cv32e40s
+    description: Debug reset test with random boot set
+    dir: cv32e40s/sim/uvmt
+    cmd: make test TEST=debug_test_boot_set
+    num: 50
+
+  corev_rand_debug:
+    build: uvmt_cv32e40s
+    description: debug random test
+    dir: cv32e40s/sim/uvmt
+    cmd: make gen_corev-dv test TEST=corev_rand_debug
+    num: 50
+
+  corev_rand_debug_single_step:
+    build: uvmt_cv32e40s
+    description: debug random test
+    dir: cv32e40s/sim/uvmt
+    cmd: make gen_corev-dv test TEST=corev_rand_debug_single_step
+    num: 50
+
+  corev_rand_debug_ebreak:
+    build: uvmt_cv32e40s
+    description: debug random test
+    dir: cv32e40s/sim/uvmt
+    cmd: make gen_corev-dv test TEST=corev_rand_debug_ebreak
+    num: 50
+

@@ -1,0 +1,31 @@
+# YAML file to specify a regression testlist
+# Note that the is set for all tests in this regression.
+# This means you need to have a toolchain at COREV_SW_TOOLCHAIN (see Common.mk)
+---
+# Header
+name: cv32e40x_pma
+description: PMA instruction stream tests
+
+# List of builds
+builds:
+  clean_fw:
+    cmd: make clean_bsp clean_test_programs
+    dir: cv32e40x/sim/uvmt
+
+  corev-dv:
+    cmd: make clean_riscv-dv comp_corev-dv
+    dir: cv32e40x/sim/uvmt
+    cov: 0
+  uvmt_cv32e40x:
+    cmd: make comp
+    dir: cv32e40x/sim/uvmt
+
+
+# List of tests
+tests:
+  corev_rand_pma_test:
+    build: uvmt_cv32e40x
+    description: Generated corev-dv pma test
+    dir: cv32e40x/sim/uvmt
+    cmd: make gen_corev-dv test TEST=corev_rand_pma_test
+    num: 20

@@ -1,0 +1,41 @@
+# YAML file to specify the ci_check regression testlist.
+name: cv32e40x_obi_bus_err
+description: OBI bus error regression
+
+builds:
+  corev-dv:
+    cmd: make comp_corev-dv
+    dir: cv32e40x/sim/uvmt
+
+  uvmt_cv32e40x:
+    cmd: make comp
+    dir: cv32e40x/sim/uvmt
+
+tests:
+  corev_rand_instr_obi_err:
+    build: uvmt_cv32e40x
+    description: Random OBI instruction bus error test
+    dir: cv32e40x/sim/uvmt
+    cmd: make gen_corev-dv test TEST=corev_rand_instr_obi_err
+    num: 20
+
+  corev_rand_instr_obi_err_debug:
+    build: uvmt_cv32e40x
+    description: Random OBI instruction bus error test with debug
+    dir: cv32e40x/sim/uvmt
+    cmd: make gen_corev-dv test COREV=YES TEST=corev_rand_instr_obi_err_debug
+    num: 20
+
+  corev_rand_data_obi_err:
+    build: uvmt_cv32e40x
+    description: Random OBI data bus error test
+    dir: cv32e40x/sim/uvmt
+    cmd: make gen_corev-dv test TEST=corev_rand_data_obi_err
+    num: 20
+
+  corev_rand_data_obi_err_debug:
+    build: uvmt_cv32e40x
+    description: Random OBI data bus error test with debug
+    dir: cv32e40x/sim/uvmt
+    cmd: make gen_corev-dv test TEST=corev_rand_data_obi_err_debug
+    num: 20

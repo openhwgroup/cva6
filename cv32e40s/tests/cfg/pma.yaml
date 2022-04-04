@@ -1,0 +1,5 @@
+name: pma
+description: PMA configuration for regions and attributes
+compile_flags:
+    +define+PMA_CUSTOM_CFG
+

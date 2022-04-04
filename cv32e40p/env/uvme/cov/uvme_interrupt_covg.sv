@@ -73,7 +73,6 @@ class uvme_interrupt_covg extends uvm_component;
     `uvm_component_utils(uvme_interrupt_covg);
 
     extern function new(string name = "interrupt_covg", uvm_component parent = null);
-    extern function void build_phase(uvm_phase phase);
     extern task run_phase(uvm_phase phase);
 
     extern function void write_interrupt(uvma_interrupt_mon_trn_c trn);
@@ -93,11 +92,6 @@ function uvme_interrupt_covg::new(string name = "interrupt_covg", uvm_component 
     interrupt_mon_export = new("interrupt_mon_export", this);
     rv32isa_export = new("rv32isa_export", this);
 endfunction : new
-
-function void uvme_interrupt_covg::build_phase(uvm_phase phase);
-    super.build_phase(phase);
-
-endfunction : build_phase
 
 task uvme_interrupt_covg::run_phase(uvm_phase phase);
     super.run_phase(phase);
@@ -128,7 +122,7 @@ function void uvme_interrupt_covg::write_rv32isa(uvme_rv32isa_covg_trn_c trn);
     end
 
     // For each mret decrement the interrupt count
-    if (last_instr_trn != null && last_instr_trn.ins.asm == MRET && irq_nested_count) begin    
+    if (last_instr_trn != null && last_instr_trn.ins.asm == MRET && irq_nested_count) begin
         `uvm_info("INTERRUPTCOVG", $sformatf("IRQ exited to %s", trn.ins.asm.name()), UVM_DEBUG)
         cg_irq_exit.sample(trn.ins);
         irq_nested_count--;

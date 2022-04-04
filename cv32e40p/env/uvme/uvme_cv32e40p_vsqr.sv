@@ -32,9 +32,11 @@ class uvme_cv32e40p_vsqr_c extends uvm_sequencer#(
    uvme_cv32e40p_cntxt_c  cntxt;
    
    // Sequencer handles
-   uvma_clknrst_sqr_c    clknrst_sequencer;
-   uvma_interrupt_sqr_c  interrupt_sequencer;
-   uvma_debug_sqr_c    debug_sequencer;
+   uvma_clknrst_sqr_c     clknrst_sequencer         ;
+   uvma_interrupt_sqr_c   interrupt_sequencer       ;
+   uvma_debug_sqr_c       debug_sequencer           ;
+   uvma_obi_memory_sqr_c  obi_memory_instr_sequencer;
+   uvma_obi_memory_sqr_c  obi_memory_data_sequencer ;
    
    
    `uvm_component_utils_begin(uvme_cv32e40p_vsqr_c)
@@ -68,12 +70,12 @@ function void uvme_cv32e40p_vsqr_c::build_phase(uvm_phase phase);
    super.build_phase(phase);
    
    void'(uvm_config_db#(uvme_cv32e40p_cfg_c)::get(this, "", "cfg", cfg));
-   if (!cfg) begin
+   if (cfg == null) begin
       `uvm_fatal("CFG", "Configuration handle is null")
    end
    
    void'(uvm_config_db#(uvme_cv32e40p_cntxt_c)::get(this, "", "cntxt", cntxt));
-   if (!cntxt) begin
+   if (cntxt == null) begin
       `uvm_fatal("CNTXT", "Context handle is null")
    end
    

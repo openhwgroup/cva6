@@ -1,20 +1,20 @@
 //
 // Copyright 2020 OpenHW Group
-// Copyright 2020 Datum Technologies
+// Copyright 2020 Datum Technology Corporation
 // Copyright 2020 Silicon Labs, Inc.
-// 
+//
 // Licensed under the Solderpad Hardware Licence, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
-// 
+//
 //     https://solderpad.org/licenses/
-// 
+//
 // Unless required by applicable law or agreed to in writing, software
 // distributed under the License is distributed on an "AS IS" BASIS,
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
-// 
+//
 ///////////////////////////////////////////////////////////////////////////////
 //
 // Modified version of the wrapper for a RI5CY testbench, containing RI5CY,
@@ -39,21 +39,29 @@
 /**
  * Module wrapper for CV32E40X RTL DUT.
  */
-module uvmt_cv32e40x_dut_wrap #(// DUT (riscv_core) parameters.                            
-                            parameter NUM_MHPMCOUNTERS    =  1,
-                            // Remaining parameters are used by TB components only
-                                      INSTR_ADDR_WIDTH    =  32,
-                                      INSTR_RDATA_WIDTH   =  32,
-                                      RAM_ADDR_WIDTH      =  20
-                           )
+module uvmt_cv32e40x_dut_wrap
+  import cv32e40x_pkg::*;
 
-                           (
-                            uvma_clknrst_if              clknrst_if,
-                            uvma_interrupt_if            interrupt_if,
-                            uvmt_cv32e40x_vp_status_if       vp_status_if,
-                            uvmt_cv32e40x_core_cntrl_if      core_cntrl_if,
-                            uvmt_cv32e40x_core_status_if     core_status_if                            
-                           );
+  #(// DUT (riscv_core) parameters.
+    parameter NUM_MHPMCOUNTERS    =  1,
+    parameter cv32e40x_pkg::b_ext_e B_EXT  = cv32e40x_pkg::B_NONE,
+    parameter int          PMA_NUM_REGIONS =  0,
+    parameter pma_region_t PMA_CFG[PMA_NUM_REGIONS-1 : 0] = '{default:PMA_R_DEFAULT},
+    // Remaining parameters are used by TB components only
+              INSTR_ADDR_WIDTH    =  32,
+              INSTR_RDATA_WIDTH   =  32,
+              RAM_ADDR_WIDTH      =  20
+   )
+  (
+    uvma_clknrst_if              clknrst_if,
+    uvma_interrupt_if            interrupt_if,
+    uvmt_cv32e40x_vp_status_if   vp_status_if,
+    uvme_cv32e40x_core_cntrl_if  core_cntrl_if,
+    uvmt_cv32e40x_core_status_if core_status_if,
+    uvma_obi_memory_if           obi_instr_if_i,
+    uvma_obi_memory_if           obi_data_if_i,
+    uvma_fencei_if               fencei_if_i
+  );
 
     import uvm_pkg::*; // needed for the UVM messaging service (`uvm_info(), etc.)
 
@@ -73,90 +81,77 @@ module uvmt_cv32e40x_dut_wrap #(// DUT (riscv_core) parameters.
     logic [31:0]                  data_rdata;
     logic [31:0]                  data_wdata;
 
-    logic [31:0]                  irq_vp;
-    logic [31:0]                  irq_uvma;
     logic [31:0]                  irq;
-    logic                         irq_ack;
-    logic [ 4:0]                  irq_id;
 
-    logic                         debug_req_vp;
-    logic                         debug_req_uvma;
-    logic                         debug_req;
     logic                         debug_havereset;
     logic                         debug_running;
     logic                         debug_halted;
 
+    // eXtension interface
+    // todo: Connect to TB when implemented.
+    // Included to allow core-v-verif to compile with RTL including
+    // interface definition.
+    if_xif xif();
+
     assign debug_if.clk      = clknrst_if.clk;
     assign debug_if.reset_n  = clknrst_if.reset_n;
-    assign debug_req_uvma    = debug_if.debug_req;
 
-    assign debug_req = debug_req_vp | debug_req_uvma;
-   
+    // --------------------------------------------
+    // OBI Instruction agent v1.2 signal tie-offs
+    assign obi_instr_if_i.we        = 'b0;
+    assign obi_instr_if_i.be        = 'hf; // Always assumes 32-bit full bus reads on instruction OBI
+    assign obi_instr_if_i.auser     = 'b0;
+    assign obi_instr_if_i.wuser     = 'b0;
+    assign obi_instr_if_i.aid       = 'b0;
+    assign obi_instr_if_i.atop      = 'b0;
+    assign obi_instr_if_i.wdata     = 'b0;
+    assign obi_instr_if_i.reqpar    = ~obi_instr_if_i.req;
+    assign obi_instr_if_i.achk      = 'b0;
+    assign obi_instr_if_i.rchk      = 'b0;
+    assign obi_instr_if_i.rready    = 1'b1;
+    assign obi_instr_if_i.rreadypar = 1'b0;
 
-    // Load the Instruction Memory 
-    initial begin: load_instruction_memory
-      string firmware;
-      int    fd;
-       int   fill_cnt;
-       bit [7:0] rnd_byte;
-      `uvm_info("DUT_WRAP", "waiting for load_instr_mem to be asserted.", UVM_DEBUG)
-      wait(core_cntrl_if.load_instr_mem !== 1'bX);
-      if(core_cntrl_if.load_instr_mem === 1'b1) begin
-        `uvm_info("DUT_WRAP", "load_instr_mem asserted!", UVM_NONE)
-
-        // Load the pre-compiled firmware
-        if($value$plusargs("firmware=%s", firmware)) begin
-          // First, check if it exists...
-          fd = $fopen (firmware, "r");   
-          if (fd)  `uvm_info ("DUT_WRAP", $sformatf("%s was opened successfully : (fd=%0d)", firmware, fd), UVM_DEBUG)
-          else     `uvm_fatal("DUT_WRAP", $sformatf("%s was NOT opened successfully : (fd=%0d)", firmware, fd))
-          $fclose(fd);
-          // Now load it...
-          `uvm_info("DUT_WRAP", $sformatf("loading firmware %0s", firmware), UVM_NONE)
-          $readmemh(firmware, uvmt_cv32e40x_tb.dut_wrap.ram_i.dp_ram_i.mem);
-          // Initialize RTL and ISS memory with (the same) random value to
-          // prevent X propagation through the core RTL.
-          fill_cnt = 0;
-          for (int index=0; index < 2**RAM_ADDR_WIDTH; index++) begin
-             if (uvmt_cv32e40x_tb.dut_wrap.ram_i.dp_ram_i.mem[index] === 8'hXX) begin
-                 fill_cnt++;
-                rnd_byte = $random();
-                uvmt_cv32e40x_tb.dut_wrap.ram_i.dp_ram_i.mem[index]=rnd_byte;
-                if ($test$plusargs("USE_ISS")) begin
-                  uvmt_cv32e40x_tb.iss_wrap.ram.mem[index/4][((((index%4)+1)*8)-1)-:8]=rnd_byte; // convert byte to 32-bit addressing
-                end                
-             end
-          end
-          if ($test$plusargs("USE_ISS")) begin
-             `uvm_info("DUT_WRAP", $sformatf("Filled 0d%0d RTL and ISS memory bytes with random values", fill_cnt), UVM_LOW)
-          end
-          else begin
-             `uvm_info("DUT_WRAP", $sformatf("Filled 0d%0d RTL memory bytes with random values", fill_cnt), UVM_LOW)
-          end
-        end
-        else begin
-          `uvm_error("DUT_WRAP", "No firmware specified!")
-        end
-      end
-      else begin
-        `uvm_info("DUT_WRAP", "NO TEST PROGRAM", UVM_NONE)
-      end
-    end
+    // --------------------------------------------
+    // OBI Data agent v12.2 signal tie-offs
+    assign obi_data_if_i.auser      = 'b0;
+    assign obi_data_if_i.wuser      = 'b0;
+    assign obi_data_if_i.aid        = 'b0;
+    assign obi_data_if_i.reqpar     = ~obi_data_if_i.req;
+    assign obi_data_if_i.achk       = 'b0;
+    assign obi_data_if_i.rchk       = 'b0;
+    assign obi_data_if_i.rready     = 1'b1;
+    assign obi_data_if_i.rreadypar  = 1'b0;
 
     // --------------------------------------------
     // Connect to uvma_interrupt_if
     assign interrupt_if.clk                     = clknrst_if.clk;
     assign interrupt_if.reset_n                 = clknrst_if.reset_n;
-    assign irq_uvma                             = interrupt_if.irq;
-    assign interrupt_if.irq_id                  = irq_id;
-    assign interrupt_if.irq_ack                 = irq_ack;
+    assign interrupt_if.irq_id                  = cv32e40x_wrapper_i.core_i.irq_id;
+    assign interrupt_if.irq_ack                 = cv32e40x_wrapper_i.core_i.irq_ack;
 
-    assign irq = irq_uvma | irq_vp;
+    // --------------------------------------------
+    // Connect to core_cntrl_if
+    assign core_cntrl_if.num_mhpmcounters = NUM_MHPMCOUNTERS;
+    assign core_cntrl_if.b_ext = B_EXT;
+    initial begin
+      core_cntrl_if.pma_cfg = new[PMA_NUM_REGIONS];
+      foreach (core_cntrl_if.pma_cfg[i]) begin
+        core_cntrl_if.pma_cfg[i].word_addr_low  = PMA_CFG[i].word_addr_low;
+        core_cntrl_if.pma_cfg[i].word_addr_high = PMA_CFG[i].word_addr_high;
+        core_cntrl_if.pma_cfg[i].main           = PMA_CFG[i].main;
+        core_cntrl_if.pma_cfg[i].bufferable     = PMA_CFG[i].bufferable;
+        core_cntrl_if.pma_cfg[i].cacheable      = PMA_CFG[i].cacheable;
+        core_cntrl_if.pma_cfg[i].atomic         = PMA_CFG[i].atomic;
+      end
+    end
 
     // --------------------------------------------
     // instantiate the core
-    cv32e40x_wrapper #(                 
-                      .NUM_MHPMCOUNTERS (NUM_MHPMCOUNTERS)
+    cv32e40x_wrapper #(
+                      .NUM_MHPMCOUNTERS (NUM_MHPMCOUNTERS),
+                      .B_EXT            (B_EXT),
+                      .PMA_NUM_REGIONS  (PMA_NUM_REGIONS),
+                      .PMA_CFG          (PMA_CFG)
                       )
     cv32e40x_wrapper_i
         (
@@ -168,81 +163,68 @@ module uvmt_cv32e40x_dut_wrap #(// DUT (riscv_core) parameters.
          .boot_addr_i            ( core_cntrl_if.boot_addr        ),
          .mtvec_addr_i           ( core_cntrl_if.mtvec_addr       ),
          .dm_halt_addr_i         ( core_cntrl_if.dm_halt_addr     ),
-         .hart_id_i              ( core_cntrl_if.hart_id          ),
+         .nmi_addr_i             ( core_cntrl_if.nmi_addr         ),
+         .mhartid_i              ( core_cntrl_if.mhartid          ),
+         .mimpid_i               ( core_cntrl_if.mimpid           ),
          .dm_exception_addr_i    ( core_cntrl_if.dm_exception_addr),
 
-         .instr_req_o            ( instr_req                      ),
-         .instr_gnt_i            ( instr_gnt                      ),
-         .instr_rvalid_i         ( instr_rvalid                   ),
-         .instr_addr_o           ( instr_addr                     ),
-         .instr_rdata_i          ( instr_rdata                    ),
-         .instr_err_i            ( '0                             ), //TODO: Temp tie off to get "debug_test" to pass
+         .instr_req_o            ( obi_instr_if_i.req             ),
+         .instr_gnt_i            ( obi_instr_if_i.gnt             ),
+         .instr_addr_o           ( obi_instr_if_i.addr            ),
+         .instr_prot_o           ( obi_instr_if_i.prot            ),
+         .instr_dbg_o            ( /* obi_instr_if_i.dbg */       ), // todo: Support OBI 1.3
+         .instr_memtype_o        ( obi_instr_if_i.memtype         ),
+         .instr_rdata_i          ( obi_instr_if_i.rdata           ),
+         .instr_rvalid_i         ( obi_instr_if_i.rvalid          ),
+         .instr_err_i            ( obi_instr_if_i.err             ),
 
-         .data_req_o             ( data_req                       ),
-         .data_gnt_i             ( data_gnt                       ),
-         .data_rvalid_i          ( data_rvalid                    ),
-         .data_we_o              ( data_we                        ),
-         .data_be_o              ( data_be                        ),
-         .data_addr_o            ( data_addr                      ),
-         .data_wdata_o           ( data_wdata                     ),
-         .data_rdata_i           ( data_rdata                     ),
-         .data_atop_o            (                                ), //TODO: Temp ignore
-         .data_err_i             ( '0                             ), //TODO: Temp tie off
-         .data_exokay_i          ( '0                             ), //TODO: Temp tie off
+         .data_req_o             ( obi_data_if_i.req              ),
+         .data_gnt_i             ( obi_data_if_i.gnt              ),
+         .data_rvalid_i          ( obi_data_if_i.rvalid           ),
+         .data_we_o              ( obi_data_if_i.we               ),
+         .data_be_o              ( obi_data_if_i.be               ),
+         .data_addr_o            ( obi_data_if_i.addr             ),
+         .data_wdata_o           ( obi_data_if_i.wdata            ),
+         .data_prot_o            ( obi_data_if_i.prot             ),
+         .data_dbg_o             ( /* obi_data_if_i.dbg */        ), // todo: Support OBI 1.3
+         .data_memtype_o         ( obi_data_if_i.memtype          ),
+         .data_rdata_i           ( obi_data_if_i.rdata            ),
+         .data_atop_o            ( obi_data_if_i.atop             ),
+         .data_err_i             ( obi_data_if_i.err              ),
+         .data_exokay_i          ( obi_data_if_i.exokay           ),
 
-         .irq_i                  ( irq                            ),
-         .irq_ack_o              ( irq_ack                        ),
-         .irq_id_o               ( irq_id                         ),
+         .mcycle_o               (      /*todo: connect */        ),
 
-         .debug_req_i            ( debug_req                      ),
+         .xif_compressed_if      ( xif.cpu_compressed             ),
+         .xif_issue_if           ( xif.cpu_issue                  ),
+         .xif_commit_if          ( xif.cpu_commit                 ),
+         .xif_mem_if             ( xif.cpu_mem                    ),
+         .xif_mem_result_if      ( xif.cpu_mem_result             ),
+         .xif_result_if          ( xif.cpu_result                 ),
+
+         .irq_i                  ( interrupt_if.irq               ),
+
+         .clic_irq_i             ( '0   /*todo: connect */        ),
+         .clic_irq_id_i          ( '0   /*todo: connect */        ),
+         .clic_irq_il_i          ( '0   /*todo: connect */        ),
+         .clic_irq_priv_i        ( '0   /*todo: connect */        ),
+         .clic_irq_hv_i          ( '0   /*todo: connect */        ),
+         .clic_irq_id_o          (      /*todo: connect */        ),
+         .clic_irq_mode_o        (      /*todo: connect */        ),
+         .clic_irq_exit_o        (      /*todo: connect */        ),
+
+         .fencei_flush_req_o     ( fencei_if_i.flush_req          ),
+         .fencei_flush_ack_i     ( fencei_if_i.flush_ack          ),
+
+         .debug_req_i            ( debug_if.debug_req             ),
          .debug_havereset_o      ( debug_havereset                ),
          .debug_running_o        ( debug_running                  ),
          .debug_halted_o         ( debug_halted                   ),
 
          .fetch_enable_i         ( core_cntrl_if.fetch_en         ),
          .core_sleep_o           ( core_status_if.core_busy       )
-        ); //riscv_core_i
-
-    // this handles read to RAM and memory mapped virtual (pseudo) peripherals
-    mm_ram #(.RAM_ADDR_WIDTH    (RAM_ADDR_WIDTH),
-             .INSTR_RDATA_WIDTH (INSTR_RDATA_WIDTH)
-            )
-    ram_i
-        (.clk_i          ( clknrst_if.clk                  ),
-         .rst_ni         ( clknrst_if.reset_n              ),
-         .dm_halt_addr_i ( core_cntrl_if.dm_halt_addr      ),
-
-         .instr_req_i    ( instr_req                       ),
-         .instr_addr_i   ( instr_addr                      ),
-         .instr_rdata_o  ( instr_rdata                     ),
-         .instr_rvalid_o ( instr_rvalid                    ),
-         .instr_gnt_o    ( instr_gnt                       ),
-
-         .data_req_i     ( data_req                        ),
-         .data_addr_i    ( data_addr                       ),
-         .data_we_i      ( data_we                         ),
-         .data_be_i      ( data_be                         ),
-         .data_wdata_i   ( data_wdata                      ),
-         .data_rdata_o   ( data_rdata                      ),
-         .data_rvalid_o  ( data_rvalid                     ),
-         .data_gnt_o     ( data_gnt                        ),
-
-         .irq_id_i       ( irq_id                          ),
-         .irq_ack_i      ( irq_ack                         ),
-         .irq_o          ( irq_vp                          ),
-
-         .debug_req_o    ( debug_req_vp                       ),
-
-         .pc_core_id_i   ( cv32e40x_wrapper_i.core_i.if_id_pipe.pc ),
-
-         .tests_passed_o ( vp_status_if.tests_passed       ),
-         .tests_failed_o ( vp_status_if.tests_failed       ),
-         .exit_valid_o   ( vp_status_if.exit_valid         ),
-         .exit_value_o   ( vp_status_if.exit_value         )
-        ); //ram_i
+        );
 
 endmodule : uvmt_cv32e40x_dut_wrap
 
 `endif // __UVMT_CV32E40X_DUT_WRAP_SV__
-
-
