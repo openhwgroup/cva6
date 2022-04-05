@@ -47,6 +47,7 @@ As displayed in the picture above, the IP comprises:
 * Optional PMP;
 * CSR;
 * Performance counters;
+* AXI interface;
 * Interface with the P-Mesh coherence system of OpenPiton.
 
 These are not part of the IP (several solutions can be used):
@@ -65,12 +66,12 @@ These are not in the scope of this specification:
 
 * SW layers, such as compiler and OSes (that can however be part of the OpenHW Group CVA6 project);
 * SW emulation of RISC-V optional extensions ( feasible but the scope of the IP is the core hardware);
-* Other features included in the testbench (main memory, firmware, interconnect…), the coverage of which will not be measured;
+* Other features included in the testbench (main memory, firmware, interconnect…), the verification coverage of which will not be measured;
 * The vector coprocessor (CV-VEC) that is planned to interface with CV64A6.
 
 === Verified configurations
 
-It is not possible to verify all 2^n^ combinations of parameters. Below is the list of configurations that will undergo verification in the project and their main parameters. The full list of parameters for each configuration will be detailed in the users’ guide.
+It is not possible to verify all possible combinations of parameters. Below is the list of configurations that will undergo verification in the project and their main parameters. The full list of parameters for each configuration will be detailed in the users’ guide.
 
 |===
 |Config#|Target|32/64|FPU|MMU|L1 D$|L1 I$
@@ -101,7 +102,7 @@ To ease the reading, the reference to these specifications can be implicit in th
 
 [OpenPiton] “OpenPiton Microarchitecture Specification”, Princeton University, https://parallel.princeton.edu/openpiton/docs/micro_arch.pdf[https://parallel.princeton.edu/openpiton/docs/micro_arch.pdf]. +
 
-== Reference specifications
+== Reference documents
 
 [RVcmo] “RISC-V Base Cache Management Operation ISA Extensions, version 1.0-fd39d01, 2022-01-12” +
 
@@ -121,7 +122,7 @@ To ease the reading, the reference to these specifications can be implicit in th
 
 |===
 
-As the RISC-V specification leaves space for options, this specification is a place where to specify these options.
+As the RISC-V specification leaves space for variations, this specification specificies some of these variations.
 
 === RISC-V standard instructions
 
@@ -135,12 +136,14 @@ To ease tracing to verification, the extensions have been split in independent r
 |ISA&#8209;50|CV32A6 shall support as an *option* the **F** extension (single-precision floating-point), version 2.2.
 |ISA&#8209;60|CV64A6 shall support as an *option* the **F** and **D** extensions (single- and double-precision floating-point), version 2.2.
 |ISA&#8209;70|CV64A6 shall support as an *option* the **F** extension (single-precision without double-precision floating-point), version 2.2.
-|ISA&#8209;80|CVA6 shall support the **C** extension (compressed instructions), version 2.0 as an *option*.
+|ISA&#8209;80|CVA6 shall support as an *option* the **C** extension (compressed instructions), version 2.0.
 |ISA&#8209;90|CVA6 shall support the *Zicsr* extension (CSR instructions), version 2.0.
 |ISA&#8209;100|CVA6 shall support the *Zifencei* extension, version 2.0.
-|ISA&#8209;110|As an *option*, the duration of instructions shall be independent from the operand values.
+|ISA&#8209;110|As an *option*, the duration of instructions shall be independent from the operand values. +
+_Unlike other options, this one can be design-time (selected before compiling the RTL) or run-time (selected through a register)._
 |===
 
+Note to ISA-60 and ISA-70: CV64A6 cannot support the D extension with the F extension. +
 Note to ISA-110: In the current design, the duration of the division is data-dependent, which can be a security issue.
 
 === Privileges and virtual memory
@@ -214,7 +217,7 @@ The first two requirements express the write-through feature. Some requirements 
 
 |===
 
-|L1W&#8209;10|L1WTD shall reflect all write accesses (stores) by the CVA6 core to the external memory after an upper-bounded number of cycles.
+|L1W&#8209;10|L1WTD shall reflect all write accesses (stores) by the CVA6 core to the external memory within an upper-bounded number of cycles.
 |L1W&#8209;20|L1WTD shall not change the order of write accesses to the external memory with respect to the order of write accesses (stores) received from the CVA6 core.
 |L1W&#8209;30|L1WTD should offer the following size/ways configurations: +
 - 0 kbyte (no cache), +
@@ -302,7 +305,7 @@ These PPA targets will likely be updated when performance monitoring is integrat
 |MEM&#8209;20|CVA6 AXI memory interface shall feature user bit extensions on the data bus (`WUSER` and `RUSER` as per [AXI]) in connection with the L1I and L1WTD datasize extensions, with a number of user bits greater or equal to 0.
 |===
 
-The interface usually complies with AXI4. However, Atomic_Transactions is only defined in AXI5. For the sake of clarity, we do not use the AXI5-Lite interface.
+The interface complies with AXI4. However, Atomic_Transactions is only defined in AXI5. For the sake of clarity, we do not use the AXI5-Lite interface.
 
 === Debug
 
