@@ -203,16 +203,20 @@ pub_synthesis:
     - job: pub_smoke
       artifacts: false
   variables:
-    PERIOD: $SYNTH_PERIOD
-    NAND2_AREA: $NAND2_AREA
-    FOUNDRY_PATH: $FOUNDRY_PATH
-    TECH_NAME: $TECH_NAME
     INPUT_DELAY: "0.46"
     OUTPUT_DELAY: "0.11"
   script:
+    #ack trick to manage float gitlab-ci variables that seems to support only string or integer
+    - echo $(echo $SYNTH_PERIOD)
+    - echo $(echo $INPUT_DELAY)
+    - echo $(echo $OUTPUT_DELAY)
+    - echo $(echo $NAND2_AREA)
+    - echo $FOUNDRY_PATH
+    - echo $SYNTH_PERIOD
+    - echo $TECH_NAME
     - source ./cva6/regress/install-cva6.sh
     - echo $SYN_DCSHELL_BASHRC; source $SYN_DCSHELL_BASHRC
-    - make -C core-v-cores/cva6/pd/synth cva6_synth PERIOD=$PERIOD NAND2_AREA=$NAND2_AREA FOUNDRY_PATH=$FOUNDRY_PATH TECH_NAME=$TECH_NAME INPUT_DELAY=$INPUT_DELAY OUTPUT_DELAY=$OUTPUT_DELAY
+    - make -C core-v-cores/cva6/pd/synth cva6_synth PERIOD=$(echo $SYNTH_PERIOD) NAND2_AREA=$(echo $NAND2_AREA) FOUNDRY_PATH=$FOUNDRY_PATH TECH_NAME=$TECH_NAME INPUT_DELAY=$(echo $INPUT_DELAY) OUTPUT_DELAY=$(echo $OUTPUT_DELAY)
     - sed 's/module SyncSpRamBeNx64_1/module SyncSpRamBeNx64_2/' core-v-cores/cva6/pd/synth/ariane_synth.v > core-v-cores/cva6/pd/synth/ariane_synth_modified.v
     - mkdir artifacts
     - mv core-v-cores/cva6/pd/synth/ariane_synth_modified.v artifacts/ariane_synth_modified.v
