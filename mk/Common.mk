@@ -399,6 +399,7 @@ sanity: hello-world
 
 ###############################################################################
 # Code generators
+# New agent is pulled from moore.io temp site
 new-agent:
 	mkdir -p $(CORE_V_VERIF)/temp
 	wget --no-check-certificate -q https://mooreio.com/packages/uvm_gen.tgz -P $(CORE_V_VERIF)/temp
