@@ -29,6 +29,14 @@ def setup_parser_config_generator():
                       help="CoreV-X-Interface enable ? 1 : enable, 0 : disable")
   parser.add_argument("--c_ext", type=int, default=None, choices=[0,1],
                       help="C extension enable ? 1 : enable, 0 : disable")
+  parser.add_argument("--iuser_en", type=int, default=None, choices=[0,1],
+                      help="Fetch User enable ? 1 : enable, 0 : disable")
+  parser.add_argument("--iuser_w", type=int, default=None, choices=list(range(1,64)),
+                      help="Fetch User Width ? [1-64]")
+  parser.add_argument("--duser_en", type=int, default=None, choices=[0,1],
+                      help="Data User enable ? 1 : enable, 0 : disable")
+  parser.add_argument("--duser_w", type=int, default=None, choices=list(range(1,64)),
+                      help="Data User Width ? [1-64]")
   return parser
 
 ISA = ""
@@ -39,7 +47,11 @@ MapArgsToParameter={
   "xlen" : "CVA6ConfigXlen",
   "fpu" : "CVA6ConfigFpuEn",
   "cvxif" : "CVA6ConfigCvxifEn",
-  "c_ext" : "CVA6ConfigCExtEn"
+  "c_ext" : "CVA6ConfigCExtEn",
+  "iuser_en" : "CVA6ConfigFetchUserEn",
+  "iuser_w" : "CVA6ConfigFetchUserWidth",
+  "duser_en" : "CVA6ConfigDataUserEn",
+  "duser_w" : "CVA6ConfigDataUserWidth"
 }
 MapParametersToArgs = {i:k for k, i in MapArgsToParameter.items()} #reverse map
 
@@ -75,13 +87,15 @@ def generate_config(argv):
       if Args[i] != None:
         print("setting", i, "to", Args[i])
         alllines = []
+        lineXlen = None
         for line in configfile :
+          lineXlen = re.match(r"(    localparam CVA6ConfigXlen = )(?P<value>.*)(;)", line) if lineXlen == None else lineXlen
           line = re.sub(r"(    localparam "+MapArgsToParameter[i]+" = )(.*)(;)", r"\g<1>"+str(Args[i])+"\g<3>", line) # change parameter if required by Args
           alllines.append(line)
           linematch = re.match(r"(    localparam (CVA6Config)(?P<param>.*) = )(?P<value>.*)(;)", line) # and read the modified line to know which configuration we are creating
           if linematch:
             Param = MapParametersToArgs['CVA6Config'+linematch.group('param')]
-            Config[Param] = linematch.group('value')
+            Config[Param] = lineXlen.group('value') if linematch.group('value') == "CVA6ConfigXlen" else linematch.group('value')
             for k in Config.keys():
               Config[k] = int(Config[k]) # Convert value from str to int
         configfile = open("core/include/"+gen+"_config_pkg.sv", "w")
