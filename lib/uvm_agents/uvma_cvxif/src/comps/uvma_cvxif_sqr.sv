@@ -20,7 +20,12 @@ class uvma_cvxif_sqr_c extends uvm_sequencer#(uvma_cvxif_resp_item_c);
    // Analysis port to receive retirement events from monitor
    uvm_tlm_analysis_fifo #(uvma_cvxif_req_item_c) mm_req_fifo;
 
-   `uvm_component_utils(uvma_cvxif_sqr_c)
+   // Objects
+   uvma_cvxif_cfg_c    cfg;
+
+   `uvm_component_utils_begin (uvma_cvxif_sqr_c)
+      `uvm_field_object(cfg  , UVM_DEFAULT)
+   `uvm_object_utils_end
 
    /**
     * Default constructor.
@@ -40,6 +45,11 @@ endfunction : new
 function void uvma_cvxif_sqr_c::build_phase(uvm_phase phase);
 
    super.build_phase(phase);
+
+   void'(uvm_config_db#(uvma_cvxif_cfg_c)::get(this, "", "cfg", cfg));
+   if (cfg == null) begin
+      `uvm_fatal("CFG", "Configuration handle is null")
+   end
 
    mm_req_fifo = new("mm_req_fifo", this);
 

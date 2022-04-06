@@ -22,7 +22,7 @@ module uvmt_cva6_dut_wrap # ( parameter int unsigned AXI_USER_WIDTH    = 1,
 
                            (
                             uvma_clknrst_if                     clknrst_if,
-                            uvma_cvxif_if                       cvxif_if,
+                            uvma_cvxif_intf                     cvxif_if,
                             output wire                         tb_exit_o,
                             output ariane_rvfi_pkg::rvfi_port_t rvfi_o
                            );

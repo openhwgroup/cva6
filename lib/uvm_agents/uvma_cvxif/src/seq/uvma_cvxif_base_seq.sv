@@ -17,8 +17,10 @@ class uvma_cvxif_base_seq_c extends uvm_sequence #(uvma_cvxif_resp_item_c);
    `uvm_object_utils (uvma_cvxif_base_seq_c)
    `uvm_declare_p_sequencer (uvma_cvxif_sqr_c)
 
-   uvma_cvxif_resp_item_c        resp_item;
-   uvma_cvxif_req_item_c         req_item;
+   uvma_cvxif_resp_item_c   resp_item;
+   uvma_cvxif_req_item_c    req_item;
+
+   uvma_cvxif_cfg_c    cfg;
 
    int instr_num;
    string info_tag = "CVXIF_BASE_SEQ";
@@ -39,25 +41,28 @@ endfunction : new
 
 task uvma_cvxif_base_seq_c::pre_body();
 
-    req_item= uvma_cvxif_req_item_c::type_id::create("req_item");
-    resp_item= uvma_cvxif_resp_item_c::type_id::create("resp_item");
+   req_item  = uvma_cvxif_req_item_c::type_id::create("req_item");
+   resp_item = uvma_cvxif_resp_item_c::type_id::create("resp_item");
+
+   cfg   = p_sequencer.cfg;
 
 endtask
 
 function int uvma_cvxif_base_seq_c::decode(input logic [31:0] instr);
 
    int instr_num = 0;
-   logic [31:0] copro_instr = 0;
+   logic [31:0] cvxif_instr = 0;
 
    for (int i=0; i<NumInstr; i++) begin
-     copro_instr = instr & OffloadInstr[i].mask;
-     if (OffloadInstr[i].instr == copro_instr) begin
+      cvxif_instr = instr & OffloadInstr[i].mask;
+      if (OffloadInstr[i].instr == cvxif_instr) begin
          instr_num = i+1;
          return (instr_num);
-     end
-     else continue;
+      end
+      else continue;
    end
    return (instr_num);
+
 endfunction
 
 

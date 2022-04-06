@@ -15,29 +15,30 @@
 class uvma_cvxif_agent_c extends uvm_agent;
 
    // Components
-   uvma_cvxif_mon_c    monitor;
-   uvma_cvxif_sqr_c    sequencer;
-   uvma_cvxif_drv_c    driver;
+   uvma_cvxif_mon_c          monitor;
+   uvma_cvxif_sqr_c          sequencer;
+   uvma_cvxif_drv_c          driver;
+   uvma_cvxif_cov_model_c    cov_model;
 
    // Objects
    uvma_cvxif_cfg_c    cfg;
-
-   virtual uvma_cvxif_if cvxif_vif;
+   uvma_cvxif_cntxt_c  cntxt;
 
    string info_tag = "CVXIF_AGENT";
 
    `uvm_component_utils_begin(uvma_cvxif_agent_c)
       `uvm_field_object(cfg, UVM_DEFAULT)
+      `uvm_field_object(cntxt, UVM_DEFAULT)
    `uvm_component_utils_end
    /**
     * Default constructor.
-    */
+   */
    extern function new(string name="uvma_cvxif_agent", uvm_component parent=null);
 
    /**
     * 1. Ensures vif handle is not null
     * 2. Builds all components
-    */
+   */
    extern virtual function void build_phase(uvm_phase phase);
 
    /**
@@ -45,12 +46,16 @@ class uvma_cvxif_agent_c extends uvm_agent;
     */
    extern virtual function void connect_phase(uvm_phase phase);
 
+   extern function void connect_cov_model();
+
    extern virtual function void get_and_set_cfg();
+
+   extern virtual function void get_and_set_cntxt();
 
    /**
     * Uses uvm_config_db to retrieve the Virtual Interface (vif) associated with this
     * agent.
-    */
+   */
    extern function void retrieve_vif();
 
    /**
@@ -65,7 +70,7 @@ class uvma_cvxif_agent_c extends uvm_agent;
 
    /**
     * Connects agent's TLM ports to driver's and monitor's.
-    */
+   */
    extern function void connect_analysis_ports();
 
 endclass : uvma_cvxif_agent_c
@@ -81,11 +86,11 @@ function void uvma_cvxif_agent_c::build_phase(uvm_phase phase);
    super.build_phase(phase);
 
    get_and_set_cfg  ();
+   get_and_set_cntxt();
    retrieve_vif     ();
    create_components();
 
 endfunction : build_phase
-
 
 function void uvma_cvxif_agent_c::connect_phase(uvm_phase phase);
 
@@ -93,8 +98,20 @@ function void uvma_cvxif_agent_c::connect_phase(uvm_phase phase);
 
    connect_analysis_ports();
    connect_sequencer_and_driver();
+   connect_cov_model();
 
 endfunction: connect_phase
+
+function void uvma_cvxif_agent_c::get_and_set_cntxt();
+
+   void'(uvm_config_db#(uvma_cvxif_cntxt_c)::get(this, "", "cntxt", cntxt));
+   if (cntxt == null) begin
+      `uvm_info("CNTXT", "Context handle is null; creating.", UVM_DEBUG)
+      cntxt = uvma_cvxif_cntxt_c::type_id::create("cntxt");
+   end
+   uvm_config_db#(uvma_cvxif_cntxt_c)::set(this, "*", "cntxt", cntxt);
+
+endfunction : get_and_set_cntxt
 
 function void uvma_cvxif_agent_c::get_and_set_cfg();
 
@@ -111,10 +128,12 @@ endfunction : get_and_set_cfg
 
 function void uvma_cvxif_agent_c::retrieve_vif();
 
-   if (!uvm_config_db#(virtual uvma_cvxif_if)::get(this, "", "cvxif_vif", cvxif_vif)) begin
-      `uvm_fatal(info_tag, $sformatf("Could not find vif handle in uvm_config_db"))
+   if (!uvm_config_db#(virtual uvma_cvxif_intf)::get(this, "", "vif", cntxt.vif)) begin
+      `uvm_fatal("VIF", $sformatf("Could not find vif handle of type %s in uvm_config_db", $typename(cntxt.vif)))
    end
-
+   else begin
+      `uvm_info("VIF", $sformatf("Found vif handle of type %s in uvm_config_db", $typename(cntxt.vif)), UVM_DEBUG)
+   end
 endfunction : retrieve_vif
 
 function void uvma_cvxif_agent_c::create_components();
@@ -122,6 +141,7 @@ function void uvma_cvxif_agent_c::create_components();
    monitor   = uvma_cvxif_mon_c ::type_id::create("monitor"  , this);
    sequencer = uvma_cvxif_sqr_c ::type_id::create("sequencer", this);
    driver    = uvma_cvxif_drv_c ::type_id::create("driver"   , this);
+   cov_model = uvma_cvxif_cov_model_c ::type_id::create("cov_model"   , this);
 
 endfunction : create_components
 
@@ -133,9 +153,15 @@ endfunction : connect_sequencer_and_driver
 
 function void uvma_cvxif_agent_c::connect_analysis_ports();
 
-    monitor.req_ap.connect(sequencer.mm_req_fifo.analysis_export);
+   monitor.req_ap.connect(sequencer.mm_req_fifo.analysis_export);
 
 endfunction : connect_analysis_ports
+
+function void uvma_cvxif_agent_c::connect_cov_model();
+
+   monitor.req_ap.connect(cov_model.req_item_fifo.analysis_export);
+
+endfunction : connect_cov_model
 
 
 `endif // __UVMA_CVXIF_AGENT_SV__

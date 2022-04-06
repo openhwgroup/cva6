@@ -8,21 +8,21 @@
 // Original Author: Zineb EL KACIMI (zineb.el-kacimi@external.thalesgroup.com)
 
 
-`ifndef __UVMA_INSTR_CVXIF_PKG_SV__
-`define __UVMA_INSTR_CVXIF_PKG_SV__
+`ifndef __UVMA_CVXIF_INSTR_PKG_SV__
+`define __UVMA_CVXIF_INSTR_PKG_SV__
 
 
-package instr_pkg;
+package uvma_cvxif_instr_pkg;
 
 typedef struct packed {
     logic [31:0]               instr;
     logic [31:0]               mask;
     cvxif_pkg::x_issue_resp_t  resp;
-} copro_issue_resp_t;
+} cvxif_issue_resp_t;
 
 // RISCV instructions supported by CVXIF Agent
 parameter int unsigned NumInstr = 2;
-parameter copro_issue_resp_t OffloadInstr[NumInstr] = '{
+parameter cvxif_issue_resp_t OffloadInstr[NumInstr] = '{
   '{
     instr: 32'b 00000_00_00000_00000_0_00_00000_0101011, // custom1 opcode
     mask:  32'b 00000_00_00000_00000_0_00_00000_1111111,
@@ -52,4 +52,4 @@ parameter copro_issue_resp_t OffloadInstr[NumInstr] = '{
 endpackage
 
 
-`endif //__UVMA_INSTR_CVXIF_PKG_SV__
+`endif //__UVMA_CVXIF_INSTR_PKG_SV__

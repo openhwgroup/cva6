@@ -18,14 +18,15 @@
 
 class uvma_cvxif_resp_item_c extends uvm_sequence_item;
 
-  rand issue_resp_t issue_resp;
+   rand issue_resp_t issue_resp;
 
-  rand result_t result;
+   rand result_t result;
 
-  rand  logic  result_valid;
-  rand  logic  result_ready;
+   rand  logic  result_valid;
+   rand  logic  result_ready;
+   rand  int    rnd_delay;
 
-  `uvm_object_utils(uvma_cvxif_resp_item_c)
+   `uvm_object_utils(uvma_cvxif_resp_item_c)
 
    /**
     * Default constructor.
