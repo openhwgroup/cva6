@@ -1,6 +1,6 @@
 = CVA6 requirement specification
 
-Revision 0
+Revision 1.0.0
 
 == License
 
@@ -22,7 +22,7 @@ The requirement list is to be approved by the OpenHW Group Technical Work Group 
 
 The specification will be complemented by a user’s guide.
 
-Revision 0 refers to the product of the first CVA6 project led at OpenHW Group. It is a placeholder in case of future evolutions after project freeze (PF gate).
+Revision 1.0.0 refers to the product of the first CVA6 project led at OpenHW Group. It is a placeholder in case of future evolutions after project freeze (PF gate).
 
 A list of abbreviations is available at the end of this document.
 
@@ -217,7 +217,7 @@ The first two requirements express the write-through feature. Some requirements 
 
 |===
 
-|L1W&#8209;10|L1WTD shall reflect all write accesses (stores) by the CVA6 core to the external memory within an upper-bounded number of cycles.
+|L1W&#8209;10|L1WTD shall reflect all write accesses (stores) by the CVA6 core to the external memory within an upper-bounded number of cycles. The upper-bound is fixed but not specified here.
 |L1W&#8209;20|L1WTD shall not change the order of write accesses to the external memory with respect to the order of write accesses (stores) received from the CVA6 core.
 |L1W&#8209;30|L1WTD should offer the following size/ways configurations: +
 - 0 kbyte (no cache), +
@@ -225,7 +225,7 @@ The first two requirements express the write-through feature. Some requirements 
 - 8 kbytes (4, 8 or 16 ways), + 
 - 16 kbytes (4, 8 or 16 ways), +
 - 32 kbytes (8 or 16 ways).
-|L1W&#8209;40|L1WTD shall support datasize extension to store EDC, ECC or other information.
+|L1W&#8209;40|L1WTD shall support datasize extension to store EDC, ECC or other information. The numbers of bits of the extension is defined by a compile-time parameter.
 |L1W&#8209;50|To interface with the P-Mesh coherence system of OpenPiton, L1WTD shall have a line invalidate external command that invalidates the content of a line upon request.
 |L1W&#8209;60|Some physical memory regions shall be configurable as not L1WTD cacheable at design time.
 |L1W&#8209;70|It shall be possible to invalidate L1WTD content with the `FENCE.T` command.
@@ -253,7 +253,7 @@ Some requirements are useful for security- and safety-critical applications wher
 - 8 kbytes: 4, 8, or 16 ways, +
 - 16 kbytes: 4, 8 or 16 ways, +
 - 32 kbytes: 8 or 16 ways.
-|L1I&#8209;20|L1I shall support datasize extension to store EDC, ECC or other information.
+|L1I&#8209;20|L1I shall support datasize extension to store EDC, ECC or other information. The numbers of bits of the extension is defined by a compile-time parameter.
 |L1I&#8209;30|To interface with the P-Mesh coherence system of OpenPiton, L1I shall have a line invalidate external command that invalidates the content of a line upon request.
 |L1I&#8209;40|It shall be possible to invalidate L1I content with the `FENCE.T` command.
 |L1I&#8209;50|The replacement policy of L1I shall be LFSR (pseudo-random) or LRU (least recently used).
