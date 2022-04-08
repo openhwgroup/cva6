@@ -79,12 +79,12 @@ $ sudo make
 # Wait about 2 hours (seriously, it takes that long)
 ```
 
-## Toolchain Selection
+## Test-Program Definitions
 
 Events such as generating a test-program, compiling the test-program
 and compiling/simulating the SystemVerilog testbench are all controlled by
 a the set of environment variables described in the [README](./README.md), plus
-a set of YAML files collectively known as the _test-program defintions_.
+a set of YAML files collectively known as the _test-program definitions_.
 
 The YAML files allow for fine-grained control of the
 [required](./README.md#required-corev-environment-variables) and
