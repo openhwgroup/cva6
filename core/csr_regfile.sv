@@ -568,8 +568,10 @@ module csr_regfile import ariane_pkg::*; #(
                     mip_d = (mip_q & ~mask) | (csr_wdata & mask);
                 end
                 // performance counters
-                riscv::CSR_MCYCLE:             cycle_d     = csr_wdata;
-                riscv::CSR_MINSTRET:           instret     = csr_wdata;
+                riscv::CSR_MCYCLE:             cycle_d[riscv::XLEN-1:0] = csr_wdata;
+                riscv::CSR_MCYCLEH:            if (riscv::XLEN == 32) cycle_d[63:32] = csr_wdata; else update_access_exception = 1'b1;
+                riscv::CSR_MINSTRET:           instret[riscv::XLEN-1:0] = csr_wdata;
+                riscv::CSR_MINSTRETH:          if (riscv::XLEN == 32) instret[63:32] = csr_wdata; else update_access_exception = 1'b1;
                 riscv::CSR_ML1_ICACHE_MISS,
                 riscv::CSR_ML1_DCACHE_MISS,
                 riscv::CSR_MITLB_MISS,
