@@ -191,7 +191,7 @@ Editors Tim Newsome and Megan Wachs, RISC-V Foundation, March 22, 2019.
 .. __reference_documents:
 
 Reference documents
-===================
+-------------------
 
 | [RVcmo] “RISC-V Base Cache Management Operation ISA Extensions,
   version 1.0-fd39d01, 2022-01-12”
@@ -199,15 +199,6 @@ Reference documents
 | [CLINT] Core-Local Interruptor (CLINT), “SiFive E31 Core Complex
   Manual v2p0”, chapter 6,
   https://static.dev.sifive.com/SiFive-E31-Manual-v2p0.pdf
-
-.. __other_documents:
-
-Other documents
-===============
-
-| [FPGAreset] Ken Chapman, “Get Smart About Reset: Think Local, Not
-  Global”, Xilinx WP272 white paper,
-  https://www.xilinx.com/support/documentation/white_papers/wp272.pdf.
 
 .. __functional_requirements:
 
@@ -747,7 +738,7 @@ Multi-core interface
 .. __design_rules:
 
 Design rules
-------------
+============
 
 As different teams have different design rules and to ease the
 integration in FPGA and ASIC design flows:
@@ -758,17 +749,13 @@ integration in FPGA and ASIC design flows:
 |                                   | synchronous/asynchronous, active  |
 |                                   | on high or low levels.            |
 +-----------------------------------+-----------------------------------+
-| RUL‑20                            | For certain FPGA targets, CVA6    |
-|                                   | should as an **option** remove    |
-|                                   | the reset in the RTL code.        |
-+-----------------------------------+-----------------------------------+
-| RUL‑30                            | CVA6 shall be a super-synchronous |
+| RUL‑20                            | CVA6 shall be a super-synchronous |
 |                                   | design with a single clock input. |
 +-----------------------------------+-----------------------------------+
-| RUL‑40                            | CVA6 should not include           |
+| RUL‑30                            | CVA6 should not include           |
 |                                   | multi-cycle paths.                |
 +-----------------------------------+-----------------------------------+
-| RUL‑50                            | CVA6 should not include           |
+| RUL‑40                            | CVA6 should not include           |
 |                                   | technology-dependent blocks.      |
 +-----------------------------------+-----------------------------------+
 
