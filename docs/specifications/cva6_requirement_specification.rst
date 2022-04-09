@@ -109,7 +109,7 @@ be present in the netlist after synthesis.
 
 The reader’s attention is drawn to the difference between an optional
 feature (“…​shall support as an option…​”) and a desired goal (“…​should
-support…​”, “…​.should reduce latency…​”).
+support…​”, “…​should reduce latency…​”).
 
 These are not in the scope of this specification:
 
@@ -762,9 +762,6 @@ integration in FPGA and ASIC design flows:
 | RUL‑40                            | CVA6 should not include           |
 |                                   | technology-dependent blocks.      |
 +-----------------------------------+-----------------------------------+
-
-[FPGAreset] provides background information about the RUL-20
-requirement.
 
 If technology-dependent blocks are used, e.g. to improve PPA on certain
 targets, the equivalent technology-independent block should be
