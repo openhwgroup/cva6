@@ -1,6 +1,22 @@
-# Styleguides
+# Contributing
+New Contributors are always welcome.
 
-See [style-guidlines](https://github.com/pulp-platform/style-guidelines)
+Note that Contributors are required to be covered by an [Eclipse Contributor Agreement](https://www.eclipse.org/legal/ECA.php).
+Contributors are encouraged, but not required, to be a [member](https://www.openhwgroup.org/membership/) of the OpenHW Group.
+
+## The Mechanics
+1. From GitHub: [fork](https://help.github.com/articles/fork-a-repo/) the [cva6](https://github.com/openhwgroup/cva6) repository
+2. Clone repository: `git clone https://github.com/[your_github_username]/cva6`
+3. Create your feature branch: `git checkout -b <my_branch>.`<br> Please uniquify your branch name.
+See the [Git Cheats](https://github.com/openhwgroup/core-v-verif/blob/master/GitCheats.md) for a useful nomenclature.
+4. Make your edits...
+5. Commit your changes: `git commit -m 'Add some feature'`
+6. Push feature branch: `git push origin <my_branch>`
+7. From GitHub: submit a pull request
+
+## Coding Style
+
+For RTL coding, the OpenHW Group has adopted the [lowRISC Style Guides](https://github.com/lowRISC/style-guides/).
 
 ## Git Considerations
 
