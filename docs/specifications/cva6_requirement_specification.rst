@@ -174,31 +174,31 @@ Asanović and John Hauser, RISC-V Foundation, December 4, 2021.
 [RVdbg] “RISC-V External Debug Support, Document Version 0.13.2”,
 Editors Tim Newsome and Megan Wachs, RISC-V Foundation, March 22, 2019.
 
-| [RVcompat] “RISC-V Architectural Compatibility Test Framework”,
-  https://github.com/riscv-non-isa/riscv-arch-test.
+[RVcompat] “RISC-V Architectural Compatibility Test Framework”,
+https://github.com/riscv-non-isa/riscv-arch-test.
 
-| [AXI] AXI Specification,
-  https://developer.arm.com/documentation/ihi0022/hc.
+[AXI] AXI Specification,
+https://developer.arm.com/documentation/ihi0022/hc.
 
-| [CV-X-IF] Placeholder for the CV-X-IF coprocessor interface currently
-  prepared at OpenHW Group; current version in
-  https://docs.openhwgroup.org/projects/openhw-group-core-v-xif/.
+[CV-X-IF] Placeholder for the CV-X-IF coprocessor interface currently
+prepared at OpenHW Group; current version in
+https://docs.openhwgroup.org/projects/openhw-group-core-v-xif/.
 
-| [OpenPiton] “OpenPiton Microarchitecture Specification”, Princeton
-  University,
-  https://parallel.princeton.edu/openpiton/docs/micro_arch.pdf.
+[OpenPiton] “OpenPiton Microarchitecture Specification”, Princeton
+University,
+https://parallel.princeton.edu/openpiton/docs/micro_arch.pdf.
 
 .. __reference_documents:
 
 Reference documents
 -------------------
 
-| [RVcmo] “RISC-V Base Cache Management Operation ISA Extensions,
-  version 1.0-fd39d01, 2022-01-12”
+[RVcmo] “RISC-V Base Cache Management Operation ISA Extensions,
+version 1.0-fd39d01, 2022-01-12”
 
-| [CLINT] Core-Local Interruptor (CLINT), “SiFive E31 Core Complex
-  Manual v2p0”, chapter 6,
-  https://static.dev.sifive.com/SiFive-E31-Manual-v2p0.pdf
+[CLINT] Core-Local Interruptor (CLINT), “SiFive E31 Core Complex
+Manual v2p0”, chapter 6,
+https://static.dev.sifive.com/SiFive-E31-Manual-v2p0.pdf
 
 .. __functional_requirements:
 
@@ -290,10 +290,11 @@ independent requirements.
 |                                   |   register).*                     |
 +-----------------------------------+-----------------------------------+
 
-| Note to ISA-60 and ISA-70: CV64A6 cannot support the D extension with
-  the F extension.
-| Note to ISA-110: In the current design, the duration of the division
-  is data-dependent, which can be a security issue.
+Note to ISA-60 and ISA-70: CV64A6 cannot support the D extension with
+the F extension.
+
+Note to ISA-110: In the current design, the duration of the division
+is data-dependent, which can be a security issue.
 
 .. __privileges_and_virtual_memory:
 
@@ -363,32 +364,33 @@ applications.
 |                                   | CV32A6: ``hpmcounter3h`` to       |
 |                                   | ``hpmcounter8h``).                |
 +-----------------------------------+-----------------------------------+
-| HPM‑30                            | | Each of the six generic         |
-|                                   |   performance counters shall be   |
-|                                   |   able to count events from one   |
-|                                   |   of these sources:               |
-|                                   | | 1. L1 I-Cache misses            |
-|                                   | | 2. L1 D-Cache misses            |
-|                                   | | 3. ITLB misses                  |
-|                                   | | 4. DTLB misses                  |
-|                                   | | 5. Load accesses                |
-|                                   | | 6. Store accesses               |
-|                                   | | 7. Exceptions                   |
-|                                   | | 8. Exception handler returns    |
-|                                   | | 9. Branch instructions          |
-|                                   | | 10. Branch mispredicts          |
-|                                   | | 11. Branch exceptions           |
-|                                   | | 12. Call                        |
-|                                   | | 13. Return                      |
-|                                   | | 14. MSB Full                    |
-|                                   | | 15. Instruction fetch Empty     |
-|                                   | | 16. L1 I-Cache accesses         |
-|                                   | | 17. L1 D-Cache accesses         |
-|                                   | | 18. L1$ line invalidation       |
-|                                   | | 19. I-TLB flush                 |
-|                                   | | 20. Integer instructions        |
-|                                   | | 21. Floating point instructions |
-|                                   | | 22. Pipeline bubbles            |
+| HPM‑30                            | Each of the six generic           |
+|                                   | performance counters shall be     |
+|                                   | able to count events from one     |
+|                                   | of these sources:                 |
+|                                   |                                   |
+|                                   | #. L1 I-Cache misses              |
+|                                   | #. L1 D-Cache misses              |
+|                                   | #. ITLB misses                    |
+|                                   | #. DTLB misses                    |
+|                                   | #. Load accesses                  |
+|                                   | #. Store accesses                 |
+|                                   | #. Exceptions                     |
+|                                   | #. Exception handler returns      |
+|                                   | #. Branch instructions            |
+|                                   | #. Branch mispredicts             |
+|                                   | #. Branch exceptions              |
+|                                   | #. Call                           |
+|                                   | #. Return                         |
+|                                   | #. MSB Full                       |
+|                                   | #. Instruction fetch Empty        |
+|                                   | #. L1 I-Cache accesses            |
+|                                   | #. L1 D-Cache accesses            |
+|                                   | #. L1$ line invalidation          |
+|                                   | #. I-TLB flush                    |
+|                                   | #. Integer instructions           |
+|                                   | #. Floating point instructions    |
+|                                   | #. Pipeline bubbles               |
 +-----------------------------------+-----------------------------------+
 | HPM‑40                            | The source of events counted by   |
 |                                   | the six generic performance       |
@@ -460,14 +462,15 @@ where a high level of timing predictability is needed.
 |                                   | of write accesses (stores)        |
 |                                   | received from the CVA6 core.      |
 +-----------------------------------+-----------------------------------+
-| L1W‑30                            | | L1WTD should offer the          |
-|                                   |   following size/ways             |
-|                                   |   configurations:                 |
-|                                   | | - 0 kbyte (no cache),           |
-|                                   | | - 4 kbytes (4 or 8 ways),       |
-|                                   | | - 8 kbytes (4, 8 or 16 ways),   |
-|                                   | | - 16 kbytes (4, 8 or 16 ways),  |
-|                                   | | - 32 kbytes (8 or 16 ways).     |
+| L1W‑30                            | L1WTD should offer the            |
+|                                   | following size/ways               |
+|                                   | configurations:                   |
+|                                   |                                   |
+|                                   | - 0 kbyte (no cache),             |
+|                                   | - 4 kbytes (4 or 8 ways),         |
+|                                   | - 8 kbytes (4, 8 or 16 ways),     |
+|                                   | - 16 kbytes (4, 8 or 16 ways),    |
+|                                   | - 32 kbytes (8 or 16 ways).       |
 +-----------------------------------+-----------------------------------+
 | L1W‑40                            | L1WTD shall support datasize      |
 |                                   | extension to store EDC, ECC or    |
@@ -521,12 +524,13 @@ Some requirements are useful for security- and safety-critical
 applications where a high level of timing predictability is needed.
 
 +-----------------------------------+-----------------------------------+
-| L1I‑10                            | | L1I should offer the following  |
-|                                   |   size/ways configurations:       |
-|                                   | | - 4 kbytes: 3, 4 or 8 ways,     |
-|                                   | | - 8 kbytes: 4, 8, or 16 ways,   |
-|                                   | | - 16 kbytes: 4, 8 or 16 ways,   |
-|                                   | | - 32 kbytes: 8 or 16 ways.      |
+| L1I‑10                            | L1I should offer the following    |
+|                                   | size/ways configurations:         |
+|                                   |                                   |
+|                                   | - 4 kbytes: 3, 4 or 8 ways,       |
+|                                   | - 8 kbytes: 4, 8, or 16 ways,     |
+|                                   | - 16 kbytes: 4, 8 or 16 ways,     |
+|                                   | - 32 kbytes: 8 or 16 ways.        |
 +-----------------------------------+-----------------------------------+
 | L1I‑20                            | L1I shall support datasize        |
 |                                   | extension to store EDC, ECC or    |
