@@ -112,7 +112,7 @@ module wt_dcache_wbuffer import ariane_pkg::*; import wt_cache_pkg::*; #(
   logic [$clog2(DCACHE_WBUF_DEPTH)-1:0] next_ptr, dirty_ptr, hit_ptr, wr_ptr, check_ptr_d, check_ptr_q, check_ptr_q1, rtrn_ptr;
   logic [CACHE_ID_WIDTH-1:0] tx_id, rtrn_id;
 
-  logic [$clog2(riscv::XLEN/8)-1:0] bdirty_off;
+  logic [riscv::XLEN_ALIGN_BYTES-1:0] bdirty_off;
   logic [(riscv::XLEN/8)-1:0] tx_be;
   logic [riscv::PLEN-1:0] wr_paddr, rd_paddr;
   logic [DCACHE_TAG_WIDTH-1:0] rd_tag_d, rd_tag_q;
@@ -149,7 +149,7 @@ module wt_dcache_wbuffer import ariane_pkg::*; import wt_cache_pkg::*; #(
 
   for (genvar k=0; k<DCACHE_MAX_TX;k++) begin : gen_tx_vld
     assign tx_vld_o[k]   = tx_stat_q[k].vld;
-    assign tx_paddr_o[k] = wbuffer_q[tx_stat_q[k].ptr].wtag<<$clog2(riscv::XLEN/8);
+    assign tx_paddr_o[k] = wbuffer_q[tx_stat_q[k].ptr].wtag<<riscv::XLEN_ALIGN_BYTES;
   end
 
 ///////////////////////////////////////////////////////
@@ -191,8 +191,8 @@ module wt_dcache_wbuffer import ariane_pkg::*; import wt_cache_pkg::*; #(
   assign miss_wdata_o = riscv::IS_XLEN64 ? repData64(wbuffer_dirty_mux.data, bdirty_off, miss_size_o[1:0]):
                                            repData32(wbuffer_dirty_mux.data, bdirty_off, miss_size_o[1:0]);
 
-  assign tx_be        = riscv::IS_XLEN64 ? toByteEnable8(bdirty_off, miss_size_o[1:0]):
-                                           toByteEnable4(bdirty_off, miss_size_o[1:0]);
+  assign tx_be        = riscv::IS_XLEN64 ? to_byte_enable8(bdirty_off, miss_size_o[1:0]):
+                                           to_byte_enable4(bdirty_off, miss_size_o[1:0]);
 
 ///////////////////////////////////////////////////////
 // TX status registers and ID counters
@@ -275,7 +275,7 @@ module wt_dcache_wbuffer import ariane_pkg::*; import wt_cache_pkg::*; #(
 
   // trigger TAG readout in cache
   assign rd_tag_only_o = 1'b1;
-  assign rd_paddr   = wbuffer_check_mux.wtag<<$clog2(riscv::XLEN/8);
+  assign rd_paddr   = wbuffer_check_mux.wtag<<riscv::XLEN_ALIGN_BYTES;
   assign rd_req_o   = |tocheck;
   assign rd_tag_o   = rd_tag_q;//delay by one cycle
   assign rd_idx_o   = rd_paddr[DCACHE_INDEX_WIDTH-1:DCACHE_OFFSET_WIDTH];
@@ -287,7 +287,7 @@ module wt_dcache_wbuffer import ariane_pkg::*; import wt_cache_pkg::*; #(
   // if we wrote into a word while it was in-flight, we cannot write the dirty bytes to the cache
   // when the TX returns
   assign wr_data_be_o = tx_stat_q[rtrn_id].be & (~wbuffer_q[rtrn_ptr].dirty);
-  assign wr_paddr     = wbuffer_q[rtrn_ptr].wtag<<$clog2(riscv::XLEN/8);
+  assign wr_paddr     = wbuffer_q[rtrn_ptr].wtag<<riscv::XLEN_ALIGN_BYTES;
   assign wr_idx_o     = wr_paddr[DCACHE_INDEX_WIDTH-1:DCACHE_OFFSET_WIDTH];
   assign wr_off_o     = wr_paddr[DCACHE_OFFSET_WIDTH-1:0];
   assign wr_data_o    = wbuffer_q[rtrn_ptr].data;
@@ -304,7 +304,7 @@ module wt_dcache_wbuffer import ariane_pkg::*; import wt_cache_pkg::*; #(
 
   for (genvar k=0; k<DCACHE_WBUF_DEPTH; k++) begin : gen_flags
     // only for debug, will be pruned
-    assign debug_paddr[k] = wbuffer_q[k].wtag << $clog2(riscv::XLEN/8);
+    assign debug_paddr[k] = wbuffer_q[k].wtag << riscv::XLEN_ALIGN_BYTES;
 
     // dirty bytes that are ready for transmission.
     // note that we cannot retransmit a word that is already in-flight
@@ -314,12 +314,12 @@ module wt_dcache_wbuffer import ariane_pkg::*; import wt_cache_pkg::*; #(
 
     assign dirty[k]          = |bdirty[k];
     assign valid[k]          = |wbuffer_q[k].valid;
-    assign wbuffer_hit_oh[k] = valid[k] & (wbuffer_q[k].wtag == {req_port_i.address_tag, req_port_i.address_index[DCACHE_INDEX_WIDTH-1:$clog2(riscv::XLEN/8)]});
+    assign wbuffer_hit_oh[k] = valid[k] & (wbuffer_q[k].wtag == {req_port_i.address_tag, req_port_i.address_index[DCACHE_INDEX_WIDTH-1:riscv::XLEN_ALIGN_BYTES]});
 
     // checks if an invalidation/cache refill hits a particular word
     // note: an invalidation can hit multiple words!
     // need to respect previous cycle, too, since we add a cycle of latency to the rd_hit_oh_i signal...
-    assign wtag_comp[k] = wbuffer_q[k].wtag[DCACHE_INDEX_WIDTH-$clog2(riscv::XLEN/8)-1:DCACHE_OFFSET_WIDTH-$clog2(riscv::XLEN/8)];
+    assign wtag_comp[k] = wbuffer_q[k].wtag[DCACHE_INDEX_WIDTH-riscv::XLEN_ALIGN_BYTES-1:DCACHE_OFFSET_WIDTH-riscv::XLEN_ALIGN_BYTES];
     assign inval_hit[k]  = (wr_cl_vld_d & valid[k] & (wtag_comp[k] == wr_cl_idx_d)) |
                            (wr_cl_vld_q & valid[k] & (wtag_comp[k] == wr_cl_idx_q));
 
@@ -468,7 +468,7 @@ module wt_dcache_wbuffer import ariane_pkg::*; import wt_cache_pkg::*; #(
         ni_pending_d[wr_ptr]      = is_ni;
 
         wbuffer_d[wr_ptr].checked = 1'b0;
-        wbuffer_d[wr_ptr].wtag    = {req_port_i.address_tag, req_port_i.address_index[DCACHE_INDEX_WIDTH-1:$clog2(riscv::XLEN/8)]};
+        wbuffer_d[wr_ptr].wtag    = {req_port_i.address_tag, req_port_i.address_index[DCACHE_INDEX_WIDTH-1:riscv::XLEN_ALIGN_BYTES]};
 
         // mark bytes as dirty
         for (int k=0; k<(riscv::XLEN/8); k++) begin

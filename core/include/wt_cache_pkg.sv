@@ -75,7 +75,7 @@ package wt_cache_pkg;
 
 
   typedef struct packed {
-    logic [ariane_pkg::DCACHE_TAG_WIDTH+(ariane_pkg::DCACHE_INDEX_WIDTH-$clog2(riscv::XLEN/8))-1:0] wtag;
+    logic [ariane_pkg::DCACHE_TAG_WIDTH+(ariane_pkg::DCACHE_INDEX_WIDTH-riscv::XLEN_ALIGN_BYTES)-1:0] wtag;
     riscv::xlen_t                                                                           data;
     logic [(riscv::XLEN/8)-1:0]                                                             dirty;   // byte is dirty
     logic [(riscv::XLEN/8)-1:0]                                                             valid;   // byte is valid
@@ -297,7 +297,7 @@ package wt_cache_pkg;
     return cnt;
   endfunction : popcnt64
 
-  function automatic logic [7:0] toByteEnable8(
+  function automatic logic [7:0] to_byte_enable8(
     input logic [2:0] offset,
     input logic [1:0] size
   );
@@ -310,9 +310,9 @@ package wt_cache_pkg;
       default: be               = '1; // dword
     endcase // size
     return be;
-  endfunction : toByteEnable8
+  endfunction : to_byte_enable8
   
-  function automatic logic [3:0] toByteEnable4(
+  function automatic logic [3:0] to_byte_enable4(
     input logic [1:0] offset,
     input logic [1:0] size
   );
@@ -324,7 +324,7 @@ package wt_cache_pkg;
       default: be               = '1; // word
     endcase // size
     return be;
-  endfunction : toByteEnable4
+  endfunction : to_byte_enable4
 
   // openpiton requires the data to be replicated in case of smaller sizes than dwords
   function automatic logic [63:0] repData64(

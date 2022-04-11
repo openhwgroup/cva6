@@ -176,7 +176,7 @@ module wt_axi_adapter import ariane_pkg::*; import wt_cache_pkg::*; #(
           //////////////////////////////////////
           wt_cache_pkg::DCACHE_STORE_REQ: begin
             axi_wr_req   = 1'b1;
-            axi_wr_be    = wt_cache_pkg::toByteEnable8(dcache_data.paddr[2:0], dcache_data.size[1:0]);
+            axi_wr_be    = wt_cache_pkg::to_byte_enable8(dcache_data.paddr[2:0], dcache_data.size[1:0]);
           end
           //////////////////////////////////////
           wt_cache_pkg::DCACHE_ATOMIC_REQ: begin
@@ -187,7 +187,7 @@ module wt_axi_adapter import ariane_pkg::*; import wt_cache_pkg::*; #(
             // an atomic, this is safe.
             invalidate   = arb_gnt;
             axi_wr_req   = 1'b1;
-            axi_wr_be    = wt_cache_pkg::toByteEnable8(dcache_data.paddr[2:0], dcache_data.size[1:0]);
+            axi_wr_be    = wt_cache_pkg::to_byte_enable8(dcache_data.paddr[2:0], dcache_data.size[1:0]);
             amo_gen_r_d  = 1'b1;
             // need to use a separate ID here, so concat an additional bit
             axi_wr_id_in[1] = 1'b1;

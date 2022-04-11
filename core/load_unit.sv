@@ -53,7 +53,7 @@ module load_unit import ariane_pkg::*; #(
     // a queue which can hold all outstanding memory requests
     struct packed {
         logic [TRANS_ID_BITS-1:0]         trans_id;
-        logic [$clog2(riscv::XLEN/8)-1:0] address_offset;
+        logic [riscv::XLEN_ALIGN_BYTES-1:0] address_offset;
         fu_op                             operator;
     } load_data_d, load_data_q, in_data;
 
@@ -65,7 +65,7 @@ module load_unit import ariane_pkg::*; #(
     assign req_port_o.data_we = 1'b0;
     assign req_port_o.data_wdata = '0;
     // compose the queue data, control is handled in the FSM
-    assign in_data = {lsu_ctrl_i.trans_id, lsu_ctrl_i.vaddr[$clog2(riscv::XLEN/8)-1:0], lsu_ctrl_i.operator};
+    assign in_data = {lsu_ctrl_i.trans_id, lsu_ctrl_i.vaddr[riscv::XLEN_ALIGN_BYTES-1:0], lsu_ctrl_i.operator};
     // output address
     // we can now output the lower 12 bit as the index to the cache
     assign req_port_o.address_index = lsu_ctrl_i.vaddr[ariane_pkg::DCACHE_INDEX_WIDTH-1:0];
@@ -334,7 +334,7 @@ module load_unit import ariane_pkg::*; #(
 
     // result mux fast
     logic [(riscv::XLEN/8)-1:0]  sign_bits;
-    logic [$clog2(riscv::XLEN/8)-1:0]  idx_d, idx_q;
+    logic [riscv::XLEN_ALIGN_BYTES-1:0]  idx_d, idx_q;
     logic        sign_bit, signed_d, signed_q, fp_sign_d, fp_sign_q;
 
 
