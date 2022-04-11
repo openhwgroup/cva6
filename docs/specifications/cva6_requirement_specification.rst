@@ -805,4 +805,3 @@ List of abbreviations
 | WT: Write-Through
 
 .. |cva6 scope| image:: images/cva6_scope.png
-
