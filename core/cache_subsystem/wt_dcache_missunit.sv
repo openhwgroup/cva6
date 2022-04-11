@@ -37,7 +37,7 @@ module wt_dcache_missunit import ariane_pkg::*; import wt_cache_pkg::*; #(
   output logic [NumPorts-1:0]                        miss_ack_o,
   input  logic [NumPorts-1:0]                        miss_nc_i,
   input  logic [NumPorts-1:0]                        miss_we_i,
-  input  logic [NumPorts-1:0][63:0]                  miss_wdata_i,
+  input  logic [NumPorts-1:0][riscv::XLEN-1:0]       miss_wdata_i,
   input  logic [NumPorts-1:0][riscv::PLEN-1:0]       miss_paddr_i,
   input  logic [NumPorts-1:0][DCACHE_SET_ASSOC-1:0]  miss_vld_bits_i,
   input  logic [NumPorts-1:0][2:0]                   miss_size_i,
@@ -95,7 +95,8 @@ module wt_dcache_missunit import ariane_pkg::*; import wt_cache_pkg::*; #(
   logic mask_reads, lock_reqs;
   logic amo_sel, miss_is_write;
   logic amo_req_d, amo_req_q;
-  logic [63:0] amo_data, amo_rtrn_mux;
+  logic [63:0] amo_rtrn_mux;
+  riscv::xlen_t amo_data;
   logic [riscv::PLEN-1:0] tmp_paddr;
   logic [$clog2(NumPorts)-1:0] miss_port_idx;
   logic [DCACHE_CL_IDX_WIDTH-1:0] cnt_d, cnt_q;
@@ -151,7 +152,7 @@ module wt_dcache_missunit import ariane_pkg::*; import wt_cache_pkg::*; #(
 
   // generate random cacheline index
   lfsr #(
-    .LfsrWidth  ( ariane_pkg::DCACHE_SET_ASSOC        ),
+    .LfsrWidth  ( 8        ),
     .OutWidth   ( $clog2(ariane_pkg::DCACHE_SET_ASSOC))
   ) i_lfsr_inv (
     .clk_i          ( clk_i       ),
@@ -200,9 +201,9 @@ module wt_dcache_missunit import ariane_pkg::*; import wt_cache_pkg::*; #(
 ///////////////////////////////////////////////////////
 
   // if size = 32bit word, select appropriate offset, replicate for openpiton...
-  assign amo_data = (amo_req_i.size==2'b10) ? {amo_req_i.operand_b[0 +: 32],
-                                               amo_req_i.operand_b[0 +: 32]} :
-                                               amo_req_i.operand_b;
+  assign amo_data = riscv::IS_XLEN64 ? (amo_req_i.size==2'b10) ? {amo_req_i.operand_b[0 +: 32],amo_req_i.operand_b[0 +: 32]} : amo_req_i.operand_b :
+                                       amo_req_i.operand_b[0 +: 32];
+                                                                  
 
   // note: openpiton returns a full cacheline!
   if (Axi64BitCompliant) begin : gen_axi_rtrn_mux
@@ -212,9 +213,10 @@ module wt_dcache_missunit import ariane_pkg::*; import wt_cache_pkg::*; #(
   end
 
   // always sign extend 32bit values
-  assign amo_resp_o.result = (amo_req_i.size==2'b10) ? {{32{amo_rtrn_mux[amo_req_i.operand_a[2]*32 + 31]}},
-                                                            amo_rtrn_mux[amo_req_i.operand_a[2]*32 +: 32]} :
-                                                       amo_rtrn_mux;
+  assign amo_resp_o.result = (amo_req_i.size==2'b10) ? {{32{amo_rtrn_mux[amo_req_i.operand_a[2]*32 + 31]}},amo_rtrn_mux[amo_req_i.operand_a[2]*32 +: 32]} :
+                                                       amo_rtrn_mux ;
+                                                
+  
 
   assign amo_req_d = amo_req_i.req;
 

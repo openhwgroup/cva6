@@ -119,7 +119,6 @@ module wt_axi_adapter import ariane_pkg::*; import wt_cache_pkg::*; #(
   always_comb begin : p_axi_req
     // write channel
     axi_wr_id_in = arb_idx;
-    axi_wr_data  = dcache_data.data;
     axi_wr_addr  = {{64-riscv::PLEN{1'b0}}, dcache_data.paddr};
     axi_wr_size  = dcache_data.size[1:0];
     axi_wr_req   = 1'b0;
@@ -135,6 +134,12 @@ module wt_axi_adapter import ariane_pkg::*; import wt_cache_pkg::*; #(
     axi_rd_req   = 1'b0;
     axi_rd_lock  = '0;
     axi_rd_blen  = '0;
+    
+    if (dcache_data.paddr[2] == 1'b0) begin
+      axi_wr_data  = {{64-riscv::XLEN{1'b0}}, dcache_data.data};
+    end else begin
+      axi_wr_data  = {dcache_data.data, {64-riscv::XLEN{1'b0}}};
+    end
 
     // arbiter mux
     if (arb_idx) begin
@@ -171,7 +176,7 @@ module wt_axi_adapter import ariane_pkg::*; import wt_cache_pkg::*; #(
           //////////////////////////////////////
           wt_cache_pkg::DCACHE_STORE_REQ: begin
             axi_wr_req   = 1'b1;
-            axi_wr_be    = wt_cache_pkg::toByteEnable8(dcache_data.paddr[2:0], dcache_data.size[1:0]);
+            axi_wr_be    = wt_cache_pkg::to_byte_enable8(dcache_data.paddr[2:0], dcache_data.size[1:0]);
           end
           //////////////////////////////////////
           wt_cache_pkg::DCACHE_ATOMIC_REQ: begin
@@ -182,7 +187,7 @@ module wt_axi_adapter import ariane_pkg::*; import wt_cache_pkg::*; #(
             // an atomic, this is safe.
             invalidate   = arb_gnt;
             axi_wr_req   = 1'b1;
-            axi_wr_be    = wt_cache_pkg::toByteEnable8(dcache_data.paddr[2:0], dcache_data.size[1:0]);
+            axi_wr_be    = wt_cache_pkg::to_byte_enable8(dcache_data.paddr[2:0], dcache_data.size[1:0]);
             amo_gen_r_d  = 1'b1;
             // need to use a separate ID here, so concat an additional bit
             axi_wr_id_in[1] = 1'b1;
@@ -212,7 +217,11 @@ module wt_axi_adapter import ariane_pkg::*; import wt_cache_pkg::*; #(
               AMO_ADD:  axi_wr_atop  = {axi_pkg::ATOP_ATOMICLOAD, axi_pkg::ATOP_LITTLE_END, axi_pkg::ATOP_ADD};
               AMO_AND:  begin
                 // in this case we need to invert the data to get a "CLR"
-                axi_wr_data  = ~dcache_data.data;
+                if (dcache_data.paddr[2] == 1'b0) begin
+                  axi_wr_data  = {{64-riscv::XLEN{1'b1}}, ~dcache_data.data};
+                end else begin
+                  axi_wr_data  = {~dcache_data.data, {64-riscv::XLEN{1'b1}}};
+                end
                 axi_wr_atop  = {axi_pkg::ATOP_ATOMICLOAD, axi_pkg::ATOP_LITTLE_END, axi_pkg::ATOP_CLR};
               end
               AMO_OR:   axi_wr_atop  = {axi_pkg::ATOP_ATOMICLOAD, axi_pkg::ATOP_LITTLE_END, axi_pkg::ATOP_SET};
