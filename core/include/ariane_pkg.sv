@@ -572,16 +572,16 @@ package ariane_pkg;
             default: return 1'b0;
         endcase
     endfunction
-
+    
     typedef struct packed {
-        logic                     valid;
-        logic [riscv::VLEN-1:0]   vaddr;
-        logic                     overflow;
-        logic [63:0]              data;
-        logic [7:0]               be;
-        fu_t                      fu;
-        fu_op                     operator;
-        logic [TRANS_ID_BITS-1:0] trans_id;
+        logic                           valid;
+        logic [riscv::VLEN-1:0]         vaddr;
+        logic                           overflow;
+        riscv::xlen_t                   data;
+        logic [(riscv::XLEN/8)-1:0]     be;
+        fu_t                            fu;
+        fu_op                           operator;
+        logic [TRANS_ID_BITS-1:0]       trans_id;
     } lsu_ctrl_t;
 
     // ---------------
@@ -723,14 +723,14 @@ package ariane_pkg;
         logic [63:0] result; // sign-extended, result
     } amo_resp_t;
 
-    // D$ data requests
+    // D$ data requests    
     typedef struct packed {
         logic [DCACHE_INDEX_WIDTH-1:0] address_index;
         logic [DCACHE_TAG_WIDTH-1:0]   address_tag;
-        logic [63:0]                   data_wdata;
+        riscv::xlen_t                  data_wdata;
         logic                          data_req;
         logic                          data_we;
-        logic [7:0]                    data_be;
+        logic [(riscv::XLEN/8)-1:0]    data_be;
         logic [1:0]                    data_size;
         logic                          kill_req;
         logic                          tag_valid;
@@ -739,7 +739,7 @@ package ariane_pkg;
     typedef struct packed {
         logic                          data_gnt;
         logic                          data_rvalid;
-        logic [63:0]                   data_rdata;
+        riscv::xlen_t                  data_rdata;
     } dcache_req_o_t;
 
     // ----------------------
@@ -825,6 +825,32 @@ package ariane_pkg;
             end
         endcase
         return 8'b0;
+    endfunction
+    
+    function automatic logic [3:0] be_gen_32(logic [1:0] addr, logic [1:0] size);
+        case (size)
+            2'b10: begin
+                return 4'b1111;
+            end
+            2'b01: begin
+                case (addr[1:0])
+                    2'b00: return 4'b0011;
+                    2'b01: return 4'b0110;
+                    2'b10: return 4'b1100;
+
+                endcase
+            end
+            2'b00: begin
+                case (addr[1:0])
+                    2'b00: return 4'b0001;
+                    2'b01: return 4'b0010;
+                    2'b10: return 4'b0100;
+                    2'b11: return 4'b1000;
+                endcase
+            end
+            default: return 4'b0;
+        endcase
+        return 4'b0;
     endfunction
 
     // ----------------------

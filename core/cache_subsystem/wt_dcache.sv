@@ -66,15 +66,15 @@ module wt_dcache import ariane_pkg::*; import wt_cache_pkg::*; #(
   logic                           wr_ack;
   logic [DCACHE_CL_IDX_WIDTH-1:0] wr_idx;
   logic [DCACHE_OFFSET_WIDTH-1:0] wr_off;
-  logic [63:0]                    wr_data;
-  logic [7:0]                     wr_data_be;
+  riscv::xlen_t                   wr_data;
+  logic [(riscv::XLEN/8)-1:0]     wr_data_be;
 
   // miss unit <-> controllers/wbuffer
   logic [NumPorts-1:0]                          miss_req;
   logic [NumPorts-1:0]                          miss_ack;
   logic [NumPorts-1:0]                          miss_nc;
   logic [NumPorts-1:0]                          miss_we;
-  logic [NumPorts-1:0][63:0]                    miss_wdata;
+  logic [NumPorts-1:0][riscv::XLEN-1:0]         miss_wdata;
   logic [NumPorts-1:0][riscv::PLEN-1:0]         miss_paddr;
   logic [NumPorts-1:0][DCACHE_SET_ASSOC-1:0]    miss_vld_bits;
   logic [NumPorts-1:0][2:0]                     miss_size;
@@ -91,7 +91,7 @@ module wt_dcache import ariane_pkg::*; import wt_cache_pkg::*; #(
   logic [NumPorts-1:0][DCACHE_TAG_WIDTH-1:0]    rd_tag;
   logic [NumPorts-1:0][DCACHE_CL_IDX_WIDTH-1:0] rd_idx;
   logic [NumPorts-1:0][DCACHE_OFFSET_WIDTH-1:0] rd_off;
-  logic [63:0]                                  rd_data;
+  riscv::xlen_t                                 rd_data;
   logic [DCACHE_SET_ASSOC-1:0]                  rd_vld_bits;
   logic [DCACHE_SET_ASSOC-1:0]                  rd_hit_oh;
 
