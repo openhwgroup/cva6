@@ -234,9 +234,8 @@ pub_smoke-gate:
   needs:
     - job: pub_synthesis
       artifacts: true
-  variables:
-    LIB_VERILOG: $LIB_VERILOG
   script:
+    - echo $LIB_VERILOG
     - source ./cva6/regress/install-cva6.sh
     - source ./cva6/regress/install-riscv-dv.sh
     - source ./cva6/regress/install-riscv-tests.sh
