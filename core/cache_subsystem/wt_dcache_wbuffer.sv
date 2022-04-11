@@ -552,7 +552,7 @@ module wt_dcache_wbuffer import ariane_pkg::*; import wt_cache_pkg::*; #(
       else $fatal(1,"[l1 dcache wbuffer] req_port_i.kill_req should not be asserted");
 
   for (genvar k=0; k<DCACHE_WBUF_DEPTH; k++) begin : gen_assert1
-    for (genvar j=0; j<8; j++) begin : gen_assert2
+    for (genvar j=0; j<(riscv::XLEN/8); j++) begin : gen_assert2
       byteStates: assert property (
         @(posedge clk_i) disable iff (!rst_ni) {wbuffer_q[k].valid[j], wbuffer_q[k].dirty[j], wbuffer_q[k].txblock[j]} inside {3'b000, 3'b110, 3'b101, 3'b111} )
           else $fatal(1,"[l1 dcache wbuffer] byte %02d of wbuffer entry %02d has invalid state: valid=%01b, dirty=%01b, txblock=%01b",
