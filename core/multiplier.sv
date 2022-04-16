@@ -43,7 +43,12 @@ module multiplier import ariane_pkg::*; (
     assign mult_trans_id_o = trans_id_q;
     assign mult_ready_o    = 1'b1;
 
+`ifndef BITMANIP
     assign mult_valid      = mult_valid_i && (operator_i inside {MUL, MULH, MULHU, MULHSU, MULW});
+`else
+    assign mult_valid      = mult_valid_i && (operator_i inside {MUL, MULH, MULHU, MULHSU, MULW, CLMUL, CLMULH, CLMULR});
+`endif
+
     // datapath
     logic [riscv::XLEN*2-1:0] mult_result;
     assign mult_result   = $signed({operand_a_i[riscv::XLEN-1] & sign_a, operand_a_i}) * $signed({operand_b_i[riscv::XLEN-1] & sign_b, operand_b_i});
@@ -74,6 +79,8 @@ module multiplier import ariane_pkg::*; (
 
 
     assign operator_d = operator_i;
+
+`ifndef BITMANIP
     always_comb begin : p_selmux
         unique case (operator_q)
             MULH, MULHU, MULHSU: result_o = mult_result_q[riscv::XLEN*2-1:riscv::XLEN];
@@ -82,6 +89,19 @@ module multiplier import ariane_pkg::*; (
             default:             result_o = mult_result_q[riscv::XLEN-1:0];// including MUL
         endcase
     end
+`else
+    always_comb begin : p_selmux
+        unique case (operator_q)
+            MULH, MULHU, MULHSU: result_o = mult_result_q[riscv::XLEN*2-1:riscv::XLEN];
+            MULW:                result_o = sext32(mult_result_q[31:0]);
+            CLMUL:               result_o = mult_result_q[riscv::XLEN-1:0];
+            CLMULH:              result_o = mult_result_q[riscv::XLEN*2-1:riscv::XLEN];
+            CLMULR:              result_o = mult_result_q[riscv::XLEN*2-1:riscv::XLEN] << 1;
+            // MUL performs an XLEN-bit×XLEN-bit multiplication and places the lower XLEN bits in the destination register
+            default:             result_o = mult_result_q[riscv::XLEN-1:0];// including MUL
+        endcase
+    end
+`endif
 
     // -----------------------
     // Output pipeline register
