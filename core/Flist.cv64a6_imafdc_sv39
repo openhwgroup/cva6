@@ -25,6 +25,8 @@
 //
 ///////////////////////////////////////////////////////////////////////////////
 
++define+BITMANIP
+
 +define+WT_DCACHE
 
 +incdir+${CVA6_REPO_DIR}/common/submodules/common_cells/include/
