@@ -29,14 +29,14 @@ ifndef TECH_NAME
 endif
 
 pre_cva6_synth:
-	grep "CVA6_REPO_DIR\}" ../../core/Flist.$(TARGET)|grep -v "instr_tracer"|grep -v "incdir"|grep -v "SyncSpRamBeNx64" > Flist.cva6_synth
+	grep "CVA6_REPO_DIR\}" ../../core/Flist.$(TARGET)|grep -v "instr_tracer"|grep -v "incdir" > Flist.cva6_synth
 	sed -i "s/^/analyze -f sverilog -define {WT_DCACHE,RVFI_TRACE} -lib ariane_lib /" Flist.cva6_synth
-	echo "analyze -f sverilog -define WT_DCACHE -lib ariane_lib SyncSpRamBeNx64.sv" >> Flist.cva6_synth
 
 cva6_synth: pre_cva6_synth
 	@echo $(PERIOD)
 	@export $(EXPORT_LIST); $(DC_SHELL_PATH)/dc_shell -f ./cva6_synth.tcl -output synthesis_batch.log
 	python scripts/gate_analysis.py '$(DESIGN_NAME)/reports/$(PERIOD)/$(DESIGN_NAME)_$(TECH_NAME)_synth_area.rpt' $(NAND2_AREA)
+	sed 's/tc_sram_256_64_00000008_00000001_00000001_none_0 gen/tc_sram gen/' ariane_synth.v > ariane_synth_modified.v
 
 cva6_read:
 	@export $(EXPORT_LIST); $(DC_SHELL_PATH)/dc_shell -f cva6_read.tcl -gui
