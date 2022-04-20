@@ -169,7 +169,7 @@ int main(int argc, char **argv) {
       case 'V': verbose = true;             break;
       case 'p': perf = true;                break;
 #ifdef DROMAJO
-			case 'D': break;
+            case 'D': break;
 #endif
 #if VM_TRACE
       case 'v': {
@@ -321,6 +321,7 @@ done_processing:
   // Preload memory.
   size_t mem_size = 0xFFFFFF;
   memif.read(0x80000000, mem_size, (void *)top->ariane_testharness__DOT__i_sram__DOT__gen_cut__BRA__0__KET____DOT__gen_mem__DOT__i_ram__DOT__Mem_DP);
+  // memif.read(0x84000000, mem_size, (void *)top->ariane_testharness__DOT__i_sram__DOT__gen_cut__BRA__0__KET____DOT__gen_mem__DOT__gen_mem_user__DOT__i_ram_user__DOT__Mem_DP);
 
 #ifndef DROMAJO
   while (!dtm->done() && !jtag->done()) {

@@ -20,6 +20,8 @@
 
 module sram #(
     parameter DATA_WIDTH = 64,
+    parameter USER_WIDTH = 1,
+    parameter USER_EN    = 0,
     parameter NUM_WORDS  = 1024,
     parameter OUT_REGS   = 0,    // enables output registers in FPGA macro (read lat = 2)
     parameter DROMAJO_RAM  = 0
@@ -29,26 +31,34 @@ module sram #(
    input  logic                          req_i,
    input  logic                          we_i,
    input  logic [$clog2(NUM_WORDS)-1:0]  addr_i,
+   input  logic [USER_WIDTH-1:0]         wuser_i,
    input  logic [DATA_WIDTH-1:0]         wdata_i,
    input  logic [(DATA_WIDTH+7)/8-1:0]   be_i,
+   output logic [USER_WIDTH-1:0]         ruser_o,
    output logic [DATA_WIDTH-1:0]         rdata_o
 );
 
 localparam DATA_WIDTH_ALIGNED = ((DATA_WIDTH+63)/64)*64;
+localparam USER_WIDTH_ALIGNED = DATA_WIDTH_ALIGNED; // To be fine tuned to reduce memory size
 localparam BE_WIDTH_ALIGNED   = (((DATA_WIDTH+7)/8+7)/8)*8;
 
 logic [DATA_WIDTH_ALIGNED-1:0]  wdata_aligned;
+logic [USER_WIDTH_ALIGNED-1:0]  wuser_aligned;
 logic [BE_WIDTH_ALIGNED-1:0]    be_aligned;
 logic [DATA_WIDTH_ALIGNED-1:0]  rdata_aligned;
+logic [USER_WIDTH_ALIGNED-1:0]  ruser_aligned;
 
 // align to 64 bits for inferrable macro below
 always_comb begin : p_align
     wdata_aligned                    ='0;
+    wuser_aligned                    ='0;
     be_aligned                       ='0;
     wdata_aligned[DATA_WIDTH-1:0]    = wdata_i;
+    wuser_aligned[USER_WIDTH-1:0]    = wuser_i;
     be_aligned[BE_WIDTH_ALIGNED-1:0] = be_i;
 
     rdata_o = rdata_aligned[DATA_WIDTH-1:0];
+    ruser_o = ruser_aligned[USER_WIDTH-1:0];
 end
 
   for (genvar k = 0; k<(DATA_WIDTH+63)/64; k++) begin : gen_cut
@@ -67,6 +77,22 @@ end
           .Addr_DI   ( addr_i                    ),
           .RdData_DO ( rdata_aligned[k*64 +: 64] )
       );
+      if (USER_EN) begin : gen_dromajo_user
+        dromajo_ram #(
+          .ADDR_WIDTH($clog2(NUM_WORDS)),
+          .DATA_DEPTH(NUM_WORDS),
+          .OUT_REGS (0)
+        ) i_ram_user (
+            .Clk_CI    ( clk_i                     ),
+            .Rst_RBI   ( rst_ni                    ),
+            .CSel_SI   ( req_i                     ),
+            .WrEn_SI   ( we_i                      ),
+            .BEn_SI    ( be_aligned[k*8 +: 8]      ),
+            .WrData_DI ( wuser_aligned[k*64 +: 64] ),
+            .Addr_DI   ( addr_i                    ),
+            .RdData_DO ( ruser_aligned[k*64 +: 64] )
+        );
+      end
     end else begin : gen_mem
       // unused byte-enable segments (8bits) are culled by the tool
       SyncSpRamBeNx64 #(
@@ -86,6 +112,25 @@ end
           .Addr_DI   ( addr_i                    ),
           .RdData_DO ( rdata_aligned[k*64 +: 64] )
       );
+      if (USER_EN) begin : gen_mem_user
+        SyncSpRamBeNx64 #(
+          .ADDR_WIDTH($clog2(NUM_WORDS)),
+          .DATA_DEPTH(NUM_WORDS),
+          .OUT_REGS (0),
+          // this initializes the memory with 0es. adjust to taste...
+          // 0: no init, 1: zero init, 2: random init, 3: deadbeef init
+          .SIM_INIT (1)
+        ) i_ram_user (
+            .Clk_CI    ( clk_i                     ),
+            .Rst_RBI   ( rst_ni                    ),
+            .CSel_SI   ( req_i                     ),
+            .WrEn_SI   ( we_i                      ),
+            .BEn_SI    ( be_aligned[k*8 +: 8]      ),
+            .WrData_DI ( wuser_aligned[k*64 +: 64] ),
+            .Addr_DI   ( addr_i                    ),
+            .RdData_DO ( ruser_aligned[k*64 +: 64] )
+        );
+      end
     end
   end
 endmodule : sram

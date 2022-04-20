@@ -20,6 +20,7 @@
 
 
 module axi_shim #(
+  parameter int unsigned AxiUserWidth = 64, // data width in dwords, this is also the maximum burst length, must be >=2
   parameter int unsigned AxiNumWords = 4, // data width in dwords, this is also the maximum burst length, must be >=2
   parameter int unsigned AxiIdWidth  = 4  // stick to the spec
 ) (
@@ -39,6 +40,7 @@ module axi_shim #(
   output logic                            rd_last_o,
   output logic                            rd_valid_o,
   output logic [63:0]                     rd_data_o,
+  output logic [AxiUserWidth-1:0]         rd_user_o,
   output logic [AxiIdWidth-1:0]           rd_id_o,
   output logic                            rd_exokay_o, // indicates whether exclusive tx succeeded
   // write channel
@@ -46,6 +48,7 @@ module axi_shim #(
   output logic                            wr_gnt_o,
   input  logic [63:0]                     wr_addr_i,
   input  logic [AxiNumWords-1:0][63:0]    wr_data_i,
+  input  logic [AxiNumWords-1:0][AxiUserWidth-1:0] wr_user_i,
   input  logic [AxiNumWords-1:0][7:0]     wr_be_i,
   input  logic [$clog2(AxiNumWords)-1:0]  wr_blen_i, // axi convention: LEN-1
   input  logic [1:0]                      wr_size_i,
@@ -91,6 +94,7 @@ module axi_shim #(
   assign axi_req_o.aw.atop   = wr_atop_i;
   // data
   assign axi_req_o.w.data    = wr_data_i[wr_cnt_q];
+  assign axi_req_o.w.user    = wr_user_i[wr_cnt_q];
   assign axi_req_o.w.strb    = wr_be_i[wr_cnt_q];
   assign axi_req_o.w.last    = wr_cnt_done;
 
@@ -252,6 +256,7 @@ module axi_shim #(
   // return path
   assign axi_req_o.r_ready   = rd_rdy_i;
   assign rd_data_o           = axi_resp_i.r.data;
+  assign rd_user_o           = axi_resp_i.r.user;
   assign rd_last_o           = axi_resp_i.r.last;
   assign rd_valid_o          = axi_resp_i.r_valid;
   assign rd_id_o             = axi_resp_i.r.id;

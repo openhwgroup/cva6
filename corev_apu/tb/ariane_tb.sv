@@ -20,6 +20,7 @@ import uvm_pkg::*;
 `include "uvm_macros.svh"
 
 `define MAIN_MEM(P) dut.i_sram.gen_cut[0].gen_mem.i_ram.Mem_DP[(``P``)]
+// `define USER_MEM(P) dut.i_sram.gen_user_cut[0].gen_user_mem.i_ram_user.Mem_DP[(``P``)]
 
 import "DPI-C" function read_elf(input string filename);
 import "DPI-C" function byte get_section(output longint address, output longint len);
@@ -146,7 +147,7 @@ UVM_LOW)
                     for (int j = 0; j < 8; j++) begin
                         mem_row[j] = buffer[i*8 + j];
                     end
-                    `MAIN_MEM((address[28:0] >> 3) + i) = mem_row;
+                    `MAIN_MEM((address[23:0] >> 3) + i) = mem_row;
                 end
             end
         end

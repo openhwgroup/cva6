@@ -118,6 +118,7 @@ module cva6_icache_axi_wrapper import ariane_pkg::*; import wt_cache_pkg::*; #(
   // AXI shim
   // --------
     axi_shim #(
+    .AxiUserWidth    ( AXI_USER_WIDTH         ),
     .AxiNumWords     ( AxiNumWords            ),
     .AxiIdWidth      ( $size(axi_resp_i.r.id) )
   ) i_axi_shim (
@@ -134,12 +135,14 @@ module cva6_icache_axi_wrapper import ariane_pkg::*; import wt_cache_pkg::*; #(
     .rd_last_o       ( axi_rd_last       ),
     .rd_valid_o      ( axi_rd_valid      ),
     .rd_data_o       ( axi_rd_data       ),
+    .rd_user_o       (                   ),
     .rd_id_o         ( axi_rd_id_out     ),
     .rd_exokay_o     ( axi_rd_exokay     ),
     .wr_req_i        ( '0                ),
     .wr_gnt_o        (                   ),
     .wr_addr_i       ( '0                ),
     .wr_data_i       ( '0                ),
+    .wr_user_i       ( '0                ),
     .wr_be_i         ( '0                ),
     .wr_blen_i       ( '0                ),
     .wr_size_i       ( '0                ),
