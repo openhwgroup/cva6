@@ -17,17 +17,18 @@ if ! [ -n "$RISCV" ]; then
   return
 fi
 
-# install Verilator
-if ! [ -n "$VERILATOR_ROOT" ]; then
-  export VERILATOR_ROOT=$TOP/verilator-4.110/
-fi
-cva6/regress/install-verilator.sh
+# install Verilator ### It is recommended to use the version of verilator which is compliant with latest CVA6 i.e 4.200
 
-export PATH=$RISCV/bin:$VERILATOR_ROOT/bin:$PATH
+#if ! [ -n "$VERILATOR_ROOT" ]; then
+#  export VERILATOR_ROOT=$TOP/verilator-4.110/
+#fi
+#cva6/regress/install-verilator.sh
+
+export PATH=$RISCV/bin:/bin:$PATH
 export LIBRARY_PATH=$RISCV/lib
 export LD_LIBRARY_PATH=$RISCV/lib
-export C_INCLUDE_PATH=$RISCV/include:$VERILATOR_ROOT/include
-export CPLUS_INCLUDE_PATH=$RISCV/include:$VERILATOR_ROOT/include
+export C_INCLUDE_PATH=$RISCV/include
+export CPLUS_INCLUDE_PATH=$RISCV/include
 
 # number of parallel jobs to use for make commands and simulation
 export NUM_JOBS=24
