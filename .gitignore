@@ -34,6 +34,7 @@ waves.shm/
 *.log
 stdout.txt
 .vscode
+tools/
 cva6/tests/riscv-compliance/
 cva6/tests/riscv-tests/
 cva6/tests/riscv-isa-sim/

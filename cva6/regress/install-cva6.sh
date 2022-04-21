@@ -19,10 +19,10 @@ fi
 
 # install Verilator ### It is recommended to use the version of verilator which is compliant with latest CVA6 i.e 4.200
 
-#if ! [ -n "$VERILATOR_ROOT" ]; then
-#  export VERILATOR_ROOT=$TOP/verilator-4.110/
-#fi
-#cva6/regress/install-verilator.sh
+if ! [ -n "$VERILATOR_ROOT" ]; then
+  export VERILATOR_ROOT=$TOP/verilator-4.200/
+fi
+cva6/regress/install-verilator.sh
 
 export PATH=$RISCV/bin:/bin:$PATH
 export LIBRARY_PATH=$RISCV/lib
