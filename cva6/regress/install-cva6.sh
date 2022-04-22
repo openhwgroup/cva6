@@ -17,10 +17,10 @@ if ! [ -n "$RISCV" ]; then
   return
 fi
 
-# install Verilator ### It is recommended to use the version of verilator which is compliant with latest CVA6 i.e 4.200
+# install Verilator
 
 if ! [ -n "$VERILATOR_ROOT" ]; then
-  export VERILATOR_ROOT=$TOP/verilator-4.200/
+  export VERILATOR_ROOT=$TOP/verilator-4.110/
 fi
 cva6/regress/install-verilator.sh
 

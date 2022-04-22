@@ -18,10 +18,10 @@ if [ ! -f "$VERILATOR_ROOT/bin/verilator" ]; then
     mkdir -p $VERILATOR_ROOT
     cd $VERILATOR_ROOT
     rm -f verilator*.tgz v4.*.tar.gz
-    wget https://github.com/verilator/verilator/archive/refs/tags/v4.200.tar.gz
+    wget https://github.com/verilator/verilator/archive/refs/tags/v4.110.tar.gz
     tar xzf v4.*.tar.gz
     rm -f v4.*.tar.gz
-    cd verilator-4.200
+    cd verilator-4.110
     mkdir -p $VERILATOR_ROOT
     # copy scripts
     autoconf && ./configure --prefix="$VERILATOR_ROOT" && make -j${NUM_JOBS}
