@@ -13,27 +13,6 @@ if ! [ -n "$RISCV" ]; then
   return
 fi
 
-export RISCV_GCC=$RISCV/bin/riscv64-unknown-elf-gcc-10.2.0
-export RISCV_OBJCOPY=$RISCV/riscv64-unknown-elf/bin/objcopy
-
-export SPIKE_ROOT=$RISCV
-
-#export CVA6_REPO=https://github.com/openhwgroup/cva6.git
-#export CVA6_BRANCH=master
-#export CVA6_HASH=34f63b44873148d371133bfa8642d2b7d388f39b
-
-#export ARCH_TEST_REPO=https://github.com/riscv-non-isa/riscv-arch-test
-#export ARCH_TEST_BRANCH=riscof-dev
-#export ARCH_TEST_HASH=7907c462c700279c5d75ec5e6042f762dcb95a25
-
-#export DV_REPO=https://github.com/google/riscv-dv.git
-#export DV_BRANCH=master
-#export DV_HASH=0ce85d3187689855cd2b3b9e3fae21ca32de2248
-
-#export RISCV_ISA_SIM=https://github.com/riscv-software-src/riscv-isa-sim.git
-#export RISCV_ISA_SIM_BRANCH=master
-#export RISCV_ISA_SIM_HASH=b9fc8e4e9087a6064dfcc627efabbe3fd4bdc309
-
 # install the required tools
 source ./cva6/regress/install-cva6.sh
 source ./cva6/regress/install-riscv-dv.sh
