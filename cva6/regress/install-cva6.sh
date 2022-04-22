@@ -24,11 +24,11 @@ if ! [ -n "$VERILATOR_ROOT" ]; then
 fi
 cva6/regress/install-verilator.sh
 
-export PATH=$RISCV/bin:/bin:$PATH
+export PATH=$RISCV/bin:$VERILATOR_ROOT/bin:$PATH
 export LIBRARY_PATH=$RISCV/lib
 export LD_LIBRARY_PATH=$RISCV/lib
-export C_INCLUDE_PATH=$RISCV/include
-export CPLUS_INCLUDE_PATH=$RISCV/include
+export C_INCLUDE_PATH=$RISCV/include:$VERILATOR_ROOT/include
+export CPLUS_INCLUDE_PATH=$RISCV/include:$VERILATOR_ROOT/include
 
 # number of parallel jobs to use for make commands and simulation
 export NUM_JOBS=24
@@ -37,7 +37,7 @@ export NUM_JOBS=24
 if ! [ -n "$CVA6_REPO" ]; then
   CVA6_REPO="https://github.com/openhwgroup/cva6.git"
   CVA6_BRANCH="master"
-  CVA6_HASH="00236be3d8552f93a0bebda8f9820ec54b64a000"
+  CVA6_HASH="34f63b44873148d371133bfa8642d2b7d388f39b"
   CVA6_PATCH=
 fi
 echo $CVA6_REPO

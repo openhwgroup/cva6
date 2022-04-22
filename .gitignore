@@ -36,6 +36,7 @@ stdout.txt
 .vscode
 tools/
 cva6/tests/riscv-compliance/
+cva6/tests/riscv-arch-test/
 cva6/tests/riscv-tests/
 cva6/tests/riscv-isa-sim/
 cva6/sim/dv/
@@ -43,6 +44,7 @@ cva6/sim/vcs_results
 cva6/sim/verilator_work
 cva6/sim/out_*
 cva6/sim/Mem_init.txt
+cva6/sim/*.txt
 cva6/sim/trace*
 cva6/sim/simv*
 cva6/sim/ucli.key
