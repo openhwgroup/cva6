@@ -102,7 +102,7 @@ pub_check_env:
     - echo $SYN_VCS_BASHRC
     - echo $SYN_DCSHELL_BASHRC
     - echo $QUESTA_BASHRC
-    - echo $VIVALDO_SETUP
+    - echo $VIVADO_SETUP
     - echo $CVA6_REPO
     - echo $CVA6_BRANCH
     - echo $CVA6_HASH
@@ -202,6 +202,12 @@ pub_synthesis:
   needs:
     - job: pub_smoke
       artifacts: false
+  parallel:
+    matrix:
+      - TARGET: [cv64a6_imafdc_sv39]
+        PERIOD: "1.1"
+      - TARGET: [cv32a6_imac_sv0]
+        PERIOD: ["0.95"]
   variables:
     INPUT_DELAY: "0.46"
     OUTPUT_DELAY: "0.11"
@@ -212,25 +218,26 @@ pub_synthesis:
     - echo $(echo $OUTPUT_DELAY)
     - echo $(echo $NAND2_AREA)
     - echo $FOUNDRY_PATH
-    - echo $SYNTH_PERIOD
     - echo $TECH_NAME
+    - echo $TARGET
     - source ./cva6/regress/install-cva6.sh
     - echo $SYN_DCSHELL_BASHRC; source $SYN_DCSHELL_BASHRC
-    - make -C core-v-cores/cva6/pd/synth cva6_synth PERIOD=$(echo $SYNTH_PERIOD) NAND2_AREA=$(echo $NAND2_AREA) FOUNDRY_PATH=$FOUNDRY_PATH TECH_NAME=$TECH_NAME INPUT_DELAY=$(echo $INPUT_DELAY) OUTPUT_DELAY=$(echo $OUTPUT_DELAY)
-    - sed 's/module SyncSpRamBeNx64_1/module SyncSpRamBeNx64_2/' core-v-cores/cva6/pd/synth/ariane_synth.v > core-v-cores/cva6/pd/synth/ariane_synth_modified.v
+    - make -C core-v-cores/cva6/pd/synth cva6_synth PERIOD=$(echo $PERIOD) NAND2_AREA=$(echo $NAND2_AREA) FOUNDRY_PATH=$FOUNDRY_PATH TECH_NAME=$TECH_NAME INPUT_DELAY=$(echo $INPUT_DELAY) OUTPUT_DELAY=$(echo $OUTPUT_DELAY) TARGET=$TARGET
     - mkdir artifacts
-    - mv core-v-cores/cva6/pd/synth/ariane_synth_modified.v artifacts/ariane_synth_modified.v
-    - mv core-v-cores/cva6/pd/synth/ariane_synth.v artifacts/ariane_synth.v
+    - mv core-v-cores/cva6/pd/synth/ariane_synth_modified.v artifacts/ariane_synth_modified_$TARGET.v
+    - mv core-v-cores/cva6/pd/synth/ariane_synth.v artifacts/ariane_synth_$TARGET.v
   artifacts:
     paths:
-      - artifacts/ariane_synth_modified.v
-      - artifacts/ariane_synth.v
+      - artifacts/ariane_synth_modified_$TARGET.v
+      - artifacts/ariane_synth_$TARGET.v
 
 
 pub_smoke-gate:
   stage: three
   extends:
     - .template_job_always_manual
+  variables:
+    DV_TARGET: "cv64a6_imafdc_sv39"
   needs:
     - job: pub_synthesis
       artifacts: true
@@ -239,8 +246,8 @@ pub_smoke-gate:
     - source ./cva6/regress/install-cva6.sh
     - source ./cva6/regress/install-riscv-dv.sh
     - source ./cva6/regress/install-riscv-tests.sh
-    - mv artifacts/ariane_synth_modified.v core-v-cores/cva6/pd/synth/ariane_synth_modified.v
-    - mv artifacts/ariane_synth.v core-v-cores/cva6/pd/synth/ariane_synth.v
+    - mv artifacts/ariane_synth_modified_$DV_TARGET.v core-v-cores/cva6/pd/synth/ariane_synth_modified.v
+    - mv artifacts/ariane_synth_$DV_TARGET.v core-v-cores/cva6/pd/synth/ariane_synth.v
     - echo $SYN_VCS_BASHRC; source $SYN_VCS_BASHRC
     - cd cva6/sim
     - make vcs_clean_all
@@ -268,7 +275,7 @@ pub_fpga-build:
     - job: pub_compliance
       artifacts: false
   script:
-    - source $VIVALDO_SETUP
+    - source $VIVADO_SETUP
     - source cva6/regress/install-cva6.sh
     - make -C core-v-cores/cva6 fpga
 
