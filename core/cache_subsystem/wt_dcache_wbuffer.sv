@@ -477,7 +477,6 @@ module wt_dcache_wbuffer import ariane_pkg::*; import wt_cache_pkg::*; #(
         wbuffer_d[wr_ptr].wtag    = {req_port_i.address_tag, req_port_i.address_index[DCACHE_INDEX_WIDTH-1:riscv::XLEN_ALIGN_BYTES]};
 
         // mark bytes as dirty
-        wbuffer_d[wr_ptr].user    = '0;
         for (int k=0; k<(riscv::XLEN/8); k++) begin
           if (req_port_i.data_be[k]) begin
             wbuffer_d[wr_ptr].valid[k]       = 1'b1;
