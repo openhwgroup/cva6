@@ -499,7 +499,7 @@ package ariane_pkg;
                                OFFLOAD
                              } fu_op;
 `else
-    typedef enum logic [6:0] { // basic ALU op
+    typedef enum logic [7:0] { // basic ALU op
                                ADD, SUB, ADDW, SUBW,
                                // logic operations
                                XORL, ORL, ANDL,
