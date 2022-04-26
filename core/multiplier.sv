@@ -28,6 +28,40 @@ module multiplier import ariane_pkg::*; (
     output logic                     mult_ready_o,
     output logic [TRANS_ID_BITS-1:0] mult_trans_id_o
 );
+`ifdef BITMANIP
+    // Carry-less multiplication
+    logic [riscv::XLEN-1:0] clmul_q, clmul_d, clmulr_q, clmulr_d, operand_a, operand_b, operand_a_rev, operand_b_rev;
+    logic clmul_rmode, clmul_hmode;
+
+    // checking for clmul_rmode and clmul_hmode
+    assign clmul_rmode = (operator_i == CLMULR);
+    assign clmul_hmode = (operator_i == CLMULH);
+
+    // operand_a and b reverse generator
+    for (genvar i=0; i<64; i++) begin
+        assign operand_a_rev[i] = operand_a_i[63-i];
+        assign operand_b_rev[i] = operand_b_i[63-i];
+    end
+
+    // operand_a and operand_b selection
+    assign operand_a = clmul_rmode | clmul_hmode ? operand_a_rev : operand_a_i;
+    assign operand_b = clmul_rmode | clmul_hmode ? operand_b_rev : operand_b_i;
+
+    // implementation
+    integer i;
+    always @* begin
+        clmul_d = '0;
+        for (i=0; i<=64; i++) begin
+            clmul_d = ((operand_b >> i) & 1) ? clmul_d ^ (operand_a << i) : clmul_d;
+        end
+    end
+
+    // clmulr + clmulh result generator
+    for (genvar i=0; i<64; i++) begin
+        assign clmulr_d[i] = clmul_d[63-i];
+    end
+`endif
+
     // Pipeline register
     logic [TRANS_ID_BITS-1:0]    trans_id_q;
     logic                        mult_valid_q;
@@ -94,9 +128,9 @@ module multiplier import ariane_pkg::*; (
         unique case (operator_q)
             MULH, MULHU, MULHSU: result_o = mult_result_q[riscv::XLEN*2-1:riscv::XLEN];
             MULW:                result_o = sext32(mult_result_q[31:0]);
-            CLMUL:               result_o = mult_result_q[riscv::XLEN-1:0];
-            CLMULH:              result_o = mult_result_q[riscv::XLEN*2-1:riscv::XLEN];
-            CLMULR:              result_o = mult_result_q[riscv::XLEN*2-1:riscv::XLEN] << 1;
+            CLMUL:               result_o = clmul_q;
+            CLMULH:              result_o = clmulr_q >> 1;
+            CLMULR:              result_o = clmulr_q;
             // MUL performs an XLEN-bit×XLEN-bit multiplication and places the lower XLEN bits in the destination register
             default:             result_o = mult_result_q[riscv::XLEN-1:0];// including MUL
         endcase
@@ -106,6 +140,7 @@ module multiplier import ariane_pkg::*; (
     // -----------------------
     // Output pipeline register
     // -----------------------
+`ifndef BITMANIP
     always_ff @(posedge clk_i or negedge rst_ni) begin
         if (~rst_ni) begin
             mult_valid_q    <= '0;
@@ -121,4 +156,25 @@ module multiplier import ariane_pkg::*; (
             mult_result_q   <= mult_result_d;
          end
     end
+`else
+    always_ff @(posedge clk_i or negedge rst_ni) begin
+        if (~rst_ni) begin
+            mult_valid_q    <= '0;
+            trans_id_q      <= '0;
+            operator_q      <=  MUL;
+            mult_result_q   <= '0;
+            clmul_q         <= '0;
+            clmulr_q        <= '0;
+         end else begin
+            // Input silencing
+            trans_id_q   <= trans_id_i;
+            // Output Register
+            mult_valid_q    <= mult_valid;
+            operator_q      <= operator_d;
+            mult_result_q   <= mult_result_d;
+            clmul_q         <= clmul_d;
+            clmulr_q        <= clmulr_d;
+         end
+    end
+`endif
 endmodule
