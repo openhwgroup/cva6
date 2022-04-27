@@ -1,4 +1,3 @@
-
 variables:
   RISCV: /opt/common/tools/gcc-10.2.0
   VERILATOR_ROOT: /opt/common/tools/verilator-4.110
@@ -24,3 +23,5 @@ variables:
   TECH_NAME: core_XXXX05v25c
   SYNTH_PERIOD : 30
   LIB_VERILOG: /techno/lib/verilog_XXXX/XXXX.v
+  USER_DASHBOARD_EMAIL: dashboard@example.com
+  USER_DASHBOARD_NAME: "dashboard"

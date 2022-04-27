@@ -943,6 +943,17 @@ def main():
     cwd = os.path.dirname(os.path.realpath(__file__))
     os.environ["RISCV_DV_ROOT"] = cwd + "/dv"
     setup_logging(args.verbose)
+    logg = logging.getLogger()
+    # create file handler which logs even debug messages
+    fh = logging.FileHandler('logfile.log')
+    fh.setLevel(logging.DEBUG)
+    # create formatter and add it to the handlers
+    formatter = logging.Formatter('%(asctime)s %(levelname)-8s %(message)s',datefmt='%a, %d %b %Y %H:%M:%S')
+    fh.setFormatter(formatter)
+    logg.addHandler(fh)
+
+    logging.info("Arguments: \n" + str(args))
+    
     # Load configuration from the command line and the configuration file.
     cfg = load_config(args, cwd)
     # Create output directory

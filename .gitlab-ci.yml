@@ -104,6 +104,8 @@ cva6:
   variables:
     TAGS_RUNNER: $TAGS_RUNNER
     SCOPE_CVV: "true"
+    DASHBOARD: "cvv"
+    WORKFLOW_EVENT: $CI_PIPELINE_SOURCE
   rules:
     - if: '$RUN_CVA6_CI == "true"'
       when: always
