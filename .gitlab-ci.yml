@@ -98,6 +98,8 @@ cva6:
     TAGS_RUNNER: $TAGS_RUNNER
     SETUP_CI_BRANCH: $SETUP_CI_CORE_BRANCH
     CI_PROJECT_NAMESPACE: $CI_PROJECT_NAMESPACE
+    DASHBOARD: "cva6"
+    WORKFLOW_EVENT: $CI_PIPELINE_SOURCE
   rules:
     - if: $RUN_CORE_CI == "true"
       when: always
@@ -151,6 +153,8 @@ core-v-verif:
     TAGS_RUNNER: $TAGS_RUNNER
     SCOPE_CVV: "false"
     CORE_V_VERIF_HASH: $CORE_V_VERIF_HASH
+    DASHBOARD: "cva6"
+    WORKFLOW_EVENT: $CI_PIPELINE_SOURCE
   rules:
     - if: '$RUN_CORE_V_VERIF_CI == "true"'
       when: always
