@@ -23,6 +23,7 @@ module sram #(
     parameter USER_WIDTH = 1,
     parameter USER_EN    = 0,
     parameter NUM_WORDS  = 1024,
+    parameter SIM_INIT   = "none",
     parameter OUT_REGS   = 0,    // enables output registers in FPGA macro (read lat = 2)
     parameter DROMAJO_RAM  = 0
 )(
@@ -95,40 +96,42 @@ end
       end
     end else begin : gen_mem
       // unused byte-enable segments (8bits) are culled by the tool
-      SyncSpRamBeNx64 #(
-        .ADDR_WIDTH($clog2(NUM_WORDS)),
-        .DATA_DEPTH(NUM_WORDS),
-        .OUT_REGS (0),
-        // this initializes the memory with 0es. adjust to taste...
-        // 0: no init, 1: zero init, 2: random init, 3: deadbeef init
-        .SIM_INIT (1)
-      ) i_ram (
-          .Clk_CI    ( clk_i                     ),
-          .Rst_RBI   ( rst_ni                    ),
-          .CSel_SI   ( req_i                     ),
-          .WrEn_SI   ( we_i                      ),
-          .BEn_SI    ( be_aligned[k*8 +: 8]      ),
-          .WrData_DI ( wdata_aligned[k*64 +: 64] ),
-          .Addr_DI   ( addr_i                    ),
-          .RdData_DO ( rdata_aligned[k*64 +: 64] )
+      tc_sram_wrapper #(
+        .NumWords(NUM_WORDS),           // Number of Words in data array
+        .DataWidth(64),                 // Data signal width
+        .ByteWidth(32'd8),              // Width of a data byte
+        .NumPorts(32'd1),               // Number of read and write ports
+        .Latency(32'd1),                // Latency when the read data is available
+        .SimInit(SIM_INIT),             // Simulation initialization
+        .PrintSimCfg(1'b0)              // Print configuration
+      ) i_tc_sram_wrapper (
+          .clk_i    ( clk_i                     ),
+          .rst_ni   ( rst_ni                    ),
+          .req_i    ( req_i                     ),
+          .we_i     ( we_i                      ),
+          .be_i     ( be_aligned[k*8 +: 8]      ),
+          .wdata_i  ( wdata_aligned[k*64 +: 64] ),
+          .addr_i   ( addr_i                    ),
+          .rdata_o  ( rdata_aligned[k*64 +: 64] )
       );
       if (USER_EN) begin : gen_mem_user
-        SyncSpRamBeNx64 #(
-          .ADDR_WIDTH($clog2(NUM_WORDS)),
-          .DATA_DEPTH(NUM_WORDS),
-          .OUT_REGS (0),
-          // this initializes the memory with 0es. adjust to taste...
-          // 0: no init, 1: zero init, 2: random init, 3: deadbeef init
-          .SIM_INIT (1)
-        ) i_ram_user (
-            .Clk_CI    ( clk_i                     ),
-            .Rst_RBI   ( rst_ni                    ),
-            .CSel_SI   ( req_i                     ),
-            .WrEn_SI   ( we_i                      ),
-            .BEn_SI    ( be_aligned[k*8 +: 8]      ),
-            .WrData_DI ( wuser_aligned[k*64 +: 64] ),
-            .Addr_DI   ( addr_i                    ),
-            .RdData_DO ( ruser_aligned[k*64 +: 64] )
+        tc_sram_wrapper #(
+          .NumWords(NUM_WORDS),           // Number of Words in data array
+          .DataWidth(64),                 // Data signal width
+          .ByteWidth(32'd8),              // Width of a data byte
+          .NumPorts(32'd1),               // Number of read and write ports
+          .Latency(32'd1),                // Latency when the read data is available
+          .SimInit(SIM_INIT),             // Simulation initialization
+          .PrintSimCfg(1'b0)              // Print configuration
+        ) i_tc_sram_wrapper_user (
+            .clk_i    ( clk_i                     ),
+            .rst_ni   ( rst_ni                    ),
+            .req_i    ( req_i                     ),
+            .we_i     ( we_i                      ),
+            .be_i     ( be_aligned[k*8 +: 8]      ),
+            .wdata_i  ( wuser_aligned[k*64 +: 64] ),
+            .addr_i   ( addr_i                    ),
+            .rdata_o  ( ruser_aligned[k*64 +: 64] )
         );
       end
     end

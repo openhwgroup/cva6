@@ -19,8 +19,8 @@ import uvm_pkg::*;
 
 `include "uvm_macros.svh"
 
-`define MAIN_MEM(P) dut.i_sram.gen_cut[0].gen_mem.i_ram.Mem_DP[(``P``)]
-// `define USER_MEM(P) dut.i_sram.gen_user_cut[0].gen_user_mem.i_ram_user.Mem_DP[(``P``)]
+`define MAIN_MEM(P) dut.i_sram.gen_cut[0].gen_mem.i_tc_sram_wrapper.i_tc_sram.init_val[(``P``)]
+// `define USER_MEM(P) dut.i_sram.gen_user_cut[0].gen_user_mem.i_ram_user.sram[(``P``)]
 
 import "DPI-C" function read_elf(input string filename);
 import "DPI-C" function byte get_section(output longint address, output longint len);
@@ -34,7 +34,7 @@ module ariane_tb;
     // toggle with RTC period
     localparam int unsigned RTC_CLOCK_PERIOD = 30.517us;
 
-    localparam NUM_WORDS = 2**25;
+    localparam NUM_WORDS = 2**16;
     logic clk_i;
     logic rst_ni;
     logic rtc_i;
@@ -131,7 +131,7 @@ module ariane_tb;
 
             void'(read_elf(binary));
             // wait with preloading, otherwise randomization will overwrite the existing value
-            wait(rst_ni);
+            wait(clk_i);
 
             // while there are more sections to process
             while (get_section(address, len)) begin
