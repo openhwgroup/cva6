@@ -140,6 +140,11 @@ pub_smoke:
   script:
     - echo $SYN_VCS_BASHRC; source $SYN_VCS_BASHRC
     - source cva6/regress/smoke-tests.sh
+    - mkdir -p artifacts/reports
+    - python3 .gitlab-ci/scripts/report_simu.py cva6/sim/logfile.log "Smoke test $DV_SIMULATORS" "In this section we challenge all target architecture with all simulator" "artifacts/reports/$CI_JOB_NAME.yml"
+  artifacts:
+    paths:
+      - artifacts/reports/*.yml
 
 
 pub_compliance:
@@ -157,6 +162,11 @@ pub_compliance:
   script:
     - echo $SYN_VCS_BASHRC; source $SYN_VCS_BASHRC
     - source cva6/regress/dv-riscv-compliance.sh
+    - mkdir -p artifacts/reports
+    - python3 .gitlab-ci/scripts/report_simu.py cva6/sim/logfile.log "Compliance" "This is the regression Compliance" "artifacts/reports/$CI_JOB_NAME.yml"
+  artifacts:
+    paths:
+      - "artifacts/reports/*.yml"
 
 
 pub_tests-v:
@@ -175,6 +185,11 @@ pub_tests-v:
   script:
     - echo $SYN_VCS_BASHRC; source $SYN_VCS_BASHRC
     - source cva6/regress/dv-riscv-tests.sh
+    - mkdir -p artifacts/reports
+    - python3 .gitlab-ci/scripts/report_simu.py cva6/sim/logfile.log "Riscv-test V" "This is the regression riscv-test (virtual)" "artifacts/reports/$CI_JOB_NAME.yml"
+  artifacts:
+    paths:
+      - "artifacts/reports/*.yml"
 
 
 pub_tests-p:
@@ -193,6 +208,11 @@ pub_tests-p:
   script:
     - echo $SYN_VCS_BASHRC; source $SYN_VCS_BASHRC
     - source cva6/regress/dv-riscv-tests.sh
+    - mkdir -p artifacts/reports
+    - python3 .gitlab-ci/scripts/report_simu.py cva6/sim/logfile.log "Riscv-test P" "This is the regression riscv-test (physical)" "artifacts/reports/$CI_JOB_NAME.yml"
+  artifacts:
+    paths:
+      - "artifacts/reports/*.yml"
 
 
 pub_synthesis:
@@ -205,7 +225,7 @@ pub_synthesis:
   parallel:
     matrix:
       - TARGET: [cv64a6_imafdc_sv39]
-        PERIOD: "1.1"
+        PERIOD: ["1.1"]
       - TARGET: [cv32a6_imac_sv0]
         PERIOD: ["0.95"]
   variables:
@@ -218,18 +238,21 @@ pub_synthesis:
     - echo $(echo $OUTPUT_DELAY)
     - echo $(echo $NAND2_AREA)
     - echo $FOUNDRY_PATH
+    - echo $PERIOD
     - echo $TECH_NAME
     - echo $TARGET
     - source ./cva6/regress/install-cva6.sh
     - echo $SYN_DCSHELL_BASHRC; source $SYN_DCSHELL_BASHRC
     - make -C core-v-cores/cva6/pd/synth cva6_synth PERIOD=$(echo $PERIOD) NAND2_AREA=$(echo $NAND2_AREA) FOUNDRY_PATH=$FOUNDRY_PATH TECH_NAME=$TECH_NAME INPUT_DELAY=$(echo $INPUT_DELAY) OUTPUT_DELAY=$(echo $OUTPUT_DELAY) TARGET=$TARGET
-    - mkdir artifacts
+    - mkdir -p artifacts/reports
     - mv core-v-cores/cva6/pd/synth/ariane_synth_modified.v artifacts/ariane_synth_modified_$TARGET.v
     - mv core-v-cores/cva6/pd/synth/ariane_synth.v artifacts/ariane_synth_$TARGET.v
+    - python3 .gitlab-ci/scripts/report_synth.py core-v-cores/cva6/pd/synth/ariane/reports/$PERIOD/ariane_$(echo $TECH_NAME)_synth_area.rpt "ASIC Synthesis" "Synthesis indicator with specific Techno" "$NAND2_AREA" "artifacts/reports/$CI_JOB_NAME.yml"
   artifacts:
     paths:
       - artifacts/ariane_synth_modified_$TARGET.v
       - artifacts/ariane_synth_$TARGET.v
+      - "artifacts/reports/*.yml"
 
 
 pub_smoke-gate:
@@ -253,6 +276,11 @@ pub_smoke-gate:
     - make vcs_clean_all
     - python3 cva6.py --testlist=../tests/testlist_riscv-tests-cv64a6_imafdc_sv39-p.yaml --test rv64ui-p-ld --iss_yaml cva6.yaml --target cv64a6_imafdc_sv39 --iss=spike,vcs-gate $DV_OPTS
     - cd ../..
+    - mkdir -p artifacts/reports
+    - python3 .gitlab-ci/scripts/report_simu.py cva6/sim/logfile.log "Smoke Gate" "Just one test to check netlist" "artifacts/reports/$CI_JOB_NAME.yml"
+  artifacts:
+    paths:
+      - "artifacts/reports/*.yml"
 
 
 pub_linux:
@@ -279,4 +307,18 @@ pub_fpga-build:
     - source cva6/regress/install-cva6.sh
     - make -C core-v-cores/cva6 fpga
 
+
+merge_report:
+  stage: .post
+  tags: [$TAGS_RUNNER]
+  rules:
+    - if: '$DASHBOARD_URL'
+      when: always
+    - when: never
+  script:
+    - ls -al artifacts/reports
+    - python3 .gitlab-ci/scripts/merge_job_reports.py artifacts/reports pipeline_report_$CI_PIPELINE_ID.yml
+  artifacts:
+    paths:
+      - "artifacts/reports/pipeline_report_$CI_PIPELINE_ID.yml"
 

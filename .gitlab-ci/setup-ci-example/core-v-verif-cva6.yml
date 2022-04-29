@@ -1,4 +1,3 @@
-
 variables:
   RISCV: /opt/common/tools/gcc-10.2.0
   VERILATOR_ROOT: /opt/common/tools/verilator-4.110
@@ -7,7 +6,7 @@ variables:
   SYN_VCS_BASHRC: /opt/synopsys/vcs/XXXX/setup/bashrc.example
   SYN_DCSHELL_BASHRC: /opt/synopsys/syn/XXXX/setup/bashrc
   QUESTA_BASHRC: /opt/questa/XXXX/setup/bashrc
-  VIVALDO_SETUP: /opt/xilinx/Vivado/XXXX/settings64.sh
+  VIVADO_SETUP: /opt/xilinx/Vivado/XXXX/settings64.sh
   CVA6_REPO: https://github.com/openhwgroup/cva6
   CVA6_BRANCH: master
   COMPLIANCE_REPO: https://github.com/riscv/riscv-compliance.git
@@ -24,3 +23,6 @@ variables:
   TECH_NAME: core_XXXX05v25c
   SYNTH_PERIOD : 30
   LIB_VERILOG: /techno/lib/verilog_XXXX/XXXX.v
+  DASHBOARD_USER_EMAIL: user@example.com
+  DASHBOARD_USER_NAME: "user"
+  DASHBOARD_URL: "git@example.com:namespace/repo_name.git"
