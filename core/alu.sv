@@ -35,7 +35,6 @@ module alu import ariane_pkg::*;(
 `ifdef BITMANIP
     logic [riscv::XLEN-1:0] cpop;  // Count Population
     logic [riscv::XLEN-1:0] cpopw; // Count Population Word
-    logic [riscv::XLEN-1:0] rev8;  // Byte Reverse Register
     logic [riscv::XLEN-33:0] rolw; // Rotate Left Word
     logic [riscv::XLEN-33:0] rorw; // Rotate Right Word
 
