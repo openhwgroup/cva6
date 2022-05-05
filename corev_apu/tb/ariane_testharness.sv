@@ -16,7 +16,8 @@
 `include "axi/assign.svh"
 
 module ariane_testharness #(
-  parameter int unsigned AXI_USER_WIDTH    = 1,
+  parameter int unsigned AXI_USER_WIDTH    = ariane_pkg::AXI_USER_WIDTH,
+  parameter int unsigned AXI_USER_EN       = ariane_pkg::AXI_USER_EN,
   parameter int unsigned AXI_ADDRESS_WIDTH = 64,
   parameter int unsigned AXI_DATA_WIDTH    = 64,
 `ifdef DROMAJO
@@ -272,7 +273,9 @@ module ariane_testharness #(
     .we_o       ( dm_slave_we               ),
     .addr_o     ( dm_slave_addr             ),
     .be_o       ( dm_slave_be               ),
+    .user_o     (                           ),
     .data_o     ( dm_slave_wdata            ),
+    .user_i     ( '0                        ),
     .data_i     ( dm_slave_rdata            )
   );
 
@@ -325,7 +328,9 @@ module ariane_testharness #(
     .we_o   (                         ),
     .addr_o ( rom_addr                ),
     .be_o   (                         ),
+    .user_o (                         ),
     .data_o (                         ),
+    .user_i ( '0                      ),
     .data_i ( rom_rdata               )
   );
 
@@ -384,6 +389,8 @@ module ariane_testharness #(
   logic [AXI_DATA_WIDTH/8-1:0]  be;
   logic [AXI_DATA_WIDTH-1:0]    wdata;
   logic [AXI_DATA_WIDTH-1:0]    rdata;
+  logic [AXI_USER_WIDTH-1:0]    wuser;
+  logic [AXI_USER_WIDTH-1:0]    ruser;
 
   axi_riscv_atomics_wrap #(
     .AXI_ADDR_WIDTH ( AXI_ADDRESS_WIDTH        ),
@@ -435,12 +442,21 @@ module ariane_testharness #(
     .we_o   ( we           ),
     .addr_o ( addr         ),
     .be_o   ( be           ),
+    .user_o ( wuser        ),
     .data_o ( wdata        ),
+    .user_i ( ruser        ),
     .data_i ( rdata        )
   );
 
   sram #(
     .DATA_WIDTH ( AXI_DATA_WIDTH ),
+    .USER_WIDTH ( AXI_USER_WIDTH ),
+    .USER_EN    ( AXI_USER_EN    ),
+`ifdef VERILATOR
+    .SIM_INIT   ( "none"         ),
+`else
+    .SIM_INIT   ( "zeros"        ),
+`endif
 `ifdef DROMAJO
     .DROMAJO_RAM (1),
 `endif
@@ -451,8 +467,10 @@ module ariane_testharness #(
     .req_i      ( req                                                                         ),
     .we_i       ( we                                                                          ),
     .addr_i     ( addr[$clog2(NUM_WORDS)-1+$clog2(AXI_DATA_WIDTH/8):$clog2(AXI_DATA_WIDTH/8)] ),
+    .wuser_i    ( wuser                                                                       ),
     .wdata_i    ( wdata                                                                       ),
     .be_i       ( be                                                                          ),
+    .ruser_o    ( ruser                                                                       ),
     .rdata_o    ( rdata                                                                       )
   );
 

@@ -81,7 +81,9 @@ module cva6_icache import ariane_pkg::*; import wt_cache_pkg::*; #(
   logic [ICACHE_TAG_WIDTH-1:0]          cl_tag_d, cl_tag_q;           // this is the cache tag
   logic [ICACHE_TAG_WIDTH-1:0]          cl_tag_rdata [ICACHE_SET_ASSOC-1:0]; // these are the tags coming from the tagmem
   logic [ICACHE_LINE_WIDTH-1:0]         cl_rdata     [ICACHE_SET_ASSOC-1:0]; // these are the cachelines coming from the cache
+  logic [ICACHE_USER_LINE_WIDTH-1:0]    cl_ruser[ICACHE_SET_ASSOC-1:0]; // these are the cachelines coming from the user cache
   logic [ICACHE_SET_ASSOC-1:0][FETCH_WIDTH-1:0]cl_sel;                // selected word from each cacheline
+  logic [ICACHE_SET_ASSOC-1:0][FETCH_USER_WIDTH-1:0] cl_user;         // selected word from each cacheline
   logic [ICACHE_SET_ASSOC-1:0]          vld_req;                      // bit enable for valid regs
   logic                                 vld_we;                       // valid bits write enable
   logic [ICACHE_SET_ASSOC-1:0]          vld_wdata;                    // valid bits to write
@@ -389,6 +391,7 @@ end else begin : gen_piton_offset
   for (genvar i=0;i<ICACHE_SET_ASSOC;i++) begin : gen_tag_cmpsel
     assign cl_hit[i] = (cl_tag_rdata[i] == cl_tag_d) & vld_rdata[i];
     assign cl_sel[i] = cl_rdata[i][{cl_offset_q,3'b0} +: FETCH_WIDTH];
+    assign cl_user[i] = cl_ruser[i][{cl_offset_q,3'b0} +: FETCH_USER_WIDTH];
   end
 
 
@@ -400,8 +403,15 @@ end else begin : gen_piton_offset
     .empty_o (         )
   );
 
-  assign dreq_o.data = (cmp_en_q) ? cl_sel[hit_idx] :
-                                    mem_rtrn_i.data[{cl_offset_q,3'b0} +: FETCH_WIDTH];
+  always_comb begin
+    if (cmp_en_q) begin
+      dreq_o.data = cl_sel[hit_idx];
+      dreq_o.user = cl_user[hit_idx];
+    end else begin
+      dreq_o.data = mem_rtrn_i.data[{cl_offset_q,3'b0} +: FETCH_WIDTH];
+      dreq_o.user = mem_rtrn_i.user[{cl_offset_q,3'b0} +: FETCH_USER_WIDTH];
+    end
+  end
 
 ///////////////////////////////////////////////////////
 // memory arrays and regs
@@ -424,8 +434,10 @@ end else begin : gen_piton_offset
       .addr_i    ( vld_addr                 ),
       // we can always use the saved tag here since it takes a
       // couple of cycle until we write to the cache upon a miss
+      .wuser_i   ( '0                       ),
       .wdata_i   ( {vld_wdata[i], cl_tag_q} ),
       .be_i      ( '1                       ),
+      .ruser_o   (                          ),
       .rdata_o   ( cl_tag_valid_rdata[i]    )
     );
 
@@ -434,7 +446,9 @@ end else begin : gen_piton_offset
 
     // Data RAM
     sram #(
+      .USER_WIDTH ( ICACHE_USER_LINE_WIDTH ),
       .DATA_WIDTH ( ICACHE_LINE_WIDTH ),
+      .USER_EN    ( ariane_pkg::FETCH_USER_EN ),
       .NUM_WORDS  ( ICACHE_NUM_WORDS  )
     ) data_sram (
       .clk_i     ( clk_i               ),
@@ -442,8 +456,10 @@ end else begin : gen_piton_offset
       .req_i     ( cl_req[i]           ),
       .we_i      ( cl_we               ),
       .addr_i    ( cl_index            ),
+      .wuser_i   ( mem_rtrn_i.user     ),
       .wdata_i   ( mem_rtrn_i.data     ),
       .be_i      ( '1                  ),
+      .ruser_o   ( cl_ruser[i]         ),
       .rdata_o   ( cl_rdata[i]         )
     );
   end

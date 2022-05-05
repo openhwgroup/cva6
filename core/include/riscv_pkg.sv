@@ -37,17 +37,18 @@ package riscv;
 
     // Warning: When using STD_CACHE, configuration must be PLEN=56 and VLEN=64
     // Warning: VLEN must be superior or equal to PLEN
-    localparam VLEN       = (XLEN == 32) ? 32 : 64;    // virtual address length
-    localparam PLEN       = (XLEN == 32) ? 34 : 56;    // physical address length
+    localparam VLEN             = (XLEN == 32) ? 32 : 64;    // virtual address length
+    localparam PLEN             = (XLEN == 32) ? 34 : 56;    // physical address length
 
-    localparam IS_XLEN32  = (XLEN == 32) ? 1'b1 : 1'b0;
-    localparam IS_XLEN64  = (XLEN == 32) ? 1'b0 : 1'b1;
-    localparam ModeW      = (XLEN == 32) ? 1 : 4;
-    localparam ASIDW      = (XLEN == 32) ? 9 : 16;
-    localparam PPNW       = (XLEN == 32) ? 22 : 44;
-    localparam vm_mode_t MODE_SV = (XLEN == 32) ? ModeSv32 : ModeSv39;
-    localparam SV         = (MODE_SV == ModeSv32) ? 32 : 39;
-    localparam VPN2       = (VLEN-31 < 8) ? VLEN-31 : 8;
+    localparam IS_XLEN32        = (XLEN == 32) ? 1'b1 : 1'b0;
+    localparam IS_XLEN64        = (XLEN == 32) ? 1'b0 : 1'b1;
+    localparam ModeW            = (XLEN == 32) ? 1 : 4;
+    localparam ASIDW            = (XLEN == 32) ? 9 : 16;
+    localparam PPNW             = (XLEN == 32) ? 22 : 44;
+    localparam vm_mode_t        MODE_SV = (XLEN == 32) ? ModeSv32 : ModeSv39;
+    localparam SV               = (MODE_SV == ModeSv32) ? 32 : 39;
+    localparam VPN2             = (VLEN-31 < 8) ? VLEN-31 : 8;
+    localparam XLEN_ALIGN_BYTES = $clog2(XLEN/8);
 
     typedef logic [XLEN-1:0] xlen_t;
     typedef logic [63:0] xlen64_t;

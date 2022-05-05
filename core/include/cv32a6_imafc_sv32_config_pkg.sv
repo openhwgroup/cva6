@@ -13,5 +13,11 @@ package cva6_config_pkg;
     localparam CVA6ConfigXlen = 32;
     localparam CVA6ConfigFpuEn = 1;
     localparam CVA6ConfigCvxifEn = 0;
+    localparam CVA6ConfigCExtEn = 1;
+
+    localparam CVA6ConfigFetchUserEn = 0;
+    localparam CVA6ConfigFetchUserWidth = CVA6ConfigXlen;
+    localparam CVA6ConfigDataUserEn = 0;
+    localparam CVA6ConfigDataUserWidth = CVA6ConfigXlen;
 
 endpackage

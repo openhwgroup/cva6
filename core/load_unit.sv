@@ -52,9 +52,9 @@ module load_unit import ariane_pkg::*; #(
     // in order to decouple the response interface from the request interface we need a
     // a queue which can hold all outstanding memory requests
     struct packed {
-        logic [TRANS_ID_BITS-1:0] trans_id;
-        logic [2:0]               address_offset;
-        fu_op                     operator;
+        logic [TRANS_ID_BITS-1:0]         trans_id;
+        logic [riscv::XLEN_ALIGN_BYTES-1:0] address_offset;
+        fu_op                             operator;
     } load_data_d, load_data_q, in_data;
 
     // page offset is defined as the lower 12 bits, feed through for address checker
@@ -65,7 +65,7 @@ module load_unit import ariane_pkg::*; #(
     assign req_port_o.data_we = 1'b0;
     assign req_port_o.data_wdata = '0;
     // compose the queue data, control is handled in the FSM
-    assign in_data = {lsu_ctrl_i.trans_id, lsu_ctrl_i.vaddr[2:0], lsu_ctrl_i.operator};
+    assign in_data = {lsu_ctrl_i.trans_id, lsu_ctrl_i.vaddr[riscv::XLEN_ALIGN_BYTES-1:0], lsu_ctrl_i.operator};
     // output address
     // we can now output the lower 12 bit as the index to the cache
     assign req_port_o.address_index = lsu_ctrl_i.vaddr[ariane_pkg::DCACHE_INDEX_WIDTH-1:0];
@@ -313,7 +313,7 @@ module load_unit import ariane_pkg::*; #(
     // ---------------
     // Sign Extend
     // ---------------
-    logic [63:0] shifted_data;
+    riscv::xlen_t shifted_data;
 
     // realign as needed
     assign shifted_data   = req_port_i.data_rdata >> {load_data_q.address_offset, 3'b000};
@@ -333,27 +333,24 @@ module load_unit import ariane_pkg::*; #(
     end  */
 
     // result mux fast
-    logic [7:0]  sign_bits;
-    logic [2:0]  idx_d, idx_q;
+    logic [(riscv::XLEN/8)-1:0]  sign_bits;
+    logic [riscv::XLEN_ALIGN_BYTES-1:0]  idx_d, idx_q;
     logic        sign_bit, signed_d, signed_q, fp_sign_d, fp_sign_q;
 
 
     // prepare these signals for faster selection in the next cycle
     assign signed_d  = load_data_d.operator  inside {ariane_pkg::LW,  ariane_pkg::LH,  ariane_pkg::LB};
     assign fp_sign_d = load_data_d.operator  inside {ariane_pkg::FLW, ariane_pkg::FLH, ariane_pkg::FLB};
-    assign idx_d     = (load_data_d.operator inside {ariane_pkg::LW,  ariane_pkg::FLW}) ? load_data_d.address_offset + 3 :
+    
+    assign idx_d     = ((load_data_d.operator inside {ariane_pkg::LW,  ariane_pkg::FLW}) & riscv::IS_XLEN64) ? load_data_d.address_offset + 3 :
                        (load_data_d.operator inside {ariane_pkg::LH,  ariane_pkg::FLH}) ? load_data_d.address_offset + 1 :
                                                                                           load_data_d.address_offset;
 
 
-    assign sign_bits = { req_port_i.data_rdata[63],
-                         req_port_i.data_rdata[55],
-                         req_port_i.data_rdata[47],
-                         req_port_i.data_rdata[39],
-                         req_port_i.data_rdata[31],
-                         req_port_i.data_rdata[23],
-                         req_port_i.data_rdata[15],
-                         req_port_i.data_rdata[7]  };
+    for (genvar i = 0; i < (riscv::XLEN/8); i++) begin : gen_sign_bits
+        assign sign_bits[i] = req_port_i.data_rdata[(i+1)*8-1]; 
+    end
+    
 
     // select correct sign bit in parallel to result shifter above
     // pull to 0 if unsigned

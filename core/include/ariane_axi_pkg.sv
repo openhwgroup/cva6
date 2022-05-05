@@ -21,7 +21,7 @@ package ariane_axi;
     typedef enum logic { SINGLE_REQ, CACHE_LINE_REQ } ad_req_t;
 
     localparam IdWidth   = 4; // Recommended by AXI standard
-    localparam UserWidth = 1;
+    localparam UserWidth = ariane_pkg::AXI_USER_WIDTH;
     localparam AddrWidth = 64;
     localparam DataWidth = 64;
     localparam StrbWidth = DataWidth / 8;
