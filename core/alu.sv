@@ -33,40 +33,15 @@ module alu import ariane_pkg::*;(
     logic        less;  // handles both signed and unsigned forms
 
 `ifdef BITMANIP
-    logic [riscv::XLEN-1:0] cpop;  // Count Population
-    logic [riscv::XLEN-1:0] cpopw; // Count Population Word
-    logic [riscv::XLEN-33:0] rolw; // Rotate Left Word
-    logic [riscv::XLEN-33:0] rorw; // Rotate Right Word
-
-    // ctz variables
-    logic [riscv::XLEN-1:0] ctz;   // Count Trailing Zeros
-    logic [31:0] tmp32;
-    logic [15:0] tmp16;
-    logic [7:0] tmp8;
-    logic [3:0] tmp4;
-    logic [1:0] tmp2;
-
-    // clz variables
-    logic [riscv::XLEN-1:0] clz;   // Count Leading Zeros
-    logic [31:0] temp32;
-    logic [15:0] temp16;
-    logic [7:0] temp8;
-    logic [3:0] temp4;
-    logic [1:0] temp2;
-
-    // clzw variables
-    logic [riscv::XLEN-1:0] clzw;  // Count Leading Zeros Word
-    logic [15:0] tem16;
-    logic [7:0] tem8;
-    logic [3:0] tem4;
-    logic [1:0] tem2;
-
-    // ctzw variables
-    logic [riscv::XLEN-1:0] ctzw;  // Count Training Zeros Word
-    logic [15:0] tm16;
-    logic [7:0] tm8;
-    logic [3:0] tm4;
-    logic [1:0] tm2;
+    logic [riscv::XLEN-33:0] rolw;        // Rotate Left Word
+    logic [riscv::XLEN-33:0] rorw;        // Rotate Right Word
+    logic [riscv::XLEN-59:0] cpop;        // Count Population
+    logic [riscv::XLEN-1:0] bit_operand;  // Count Leading/Trailing Zeros operand_a
+    logic [riscv::XLEN-59:0] lzcount;     // Count Leading Zeros
+    logic [riscv::XLEN-60:0] lzwcount;    // Count Leading Zeros Word
+    logic [riscv::XLEN-59:0] tzcount;     // Count Trailing Zeros
+    logic [riscv::XLEN-60:0] tzwcount;    // Count Trailing Zeros Word
+    logic empty_o;
 `endif
 
     // bit reverse operand_a for left shifts and bit counting
@@ -195,201 +170,63 @@ module alu import ariane_pkg::*;(
         less = ($signed({sgn & fu_data_i.operand_a[riscv::XLEN-1], fu_data_i.operand_a})  <  $signed({sgn & fu_data_i.operand_b[riscv::XLEN-1], fu_data_i.operand_b}));
     end
 `ifdef BITMANIP
-    // Count Leading/Trailing Zeros
-    integer a;
-
-    // Count Leading Zeros (clz)
-    always @ * begin
-      clz = 0;
-      if(~(|fu_data_i.operand_a[63:32])) begin
-        temp32 = fu_data_i.operand_a[31:0];
-        clz += 32;
-      end
-      else 
-        temp32 = fu_data_i.operand_a[63:32];
-      if(~(|temp32[31:16])) begin
-        temp16 = temp32[15:0];
-        clz += 16;
-      end
-      else 
-        temp16 = temp32[31:16];
-      if(~(|temp16[15:8])) begin
-        temp8 = temp16[7:0];
-        clz += 8;
-      end
-      else 
-        temp8 = temp16[15:8];
-      if(~(|temp8[7:4])) begin
-        temp4 = temp8[3:0];
-        clz += 4;
-      end
-      else 
-        temp4 = temp8[7:4];
-      if(~(|temp4[3:2])) begin
-        temp2 = temp4[1:0];
-        clz += 2;
-      end
-      else
-        temp2 = temp4[3:2];
-      if(~temp2[1]) begin
-        clz += 1;
-        if(~temp2[0]) begin
-          clz += 1;
-        end
-        else 		
-          clz += 0;
-      end
-      else 		
-        clz += 0;
-    end
-
-    // Count Trailing Zeros (ctz)
-    always @ * begin
-      ctz = 64;
-      if(~(|fu_data_i.operand_a[31:0])) begin
-        tmp32 = fu_data_i.operand_a[63:32];
-      end
-      else begin
-        tmp32 = fu_data_i.operand_a[31:0];
-        ctz -= 32;
-      end
-      if(~(|tmp32[15:0])) begin
-        tmp16 = tmp32[31:16];
-      end
-      else begin
-        tmp16 = tmp32[15:0];
-        ctz -= 16;
-      end
-      if(~(|tmp16[7:0])) begin
-        tmp8 = tmp16[15:8];
-      end
-      else begin
-        tmp8 = tmp16[7:0];
-        ctz -= 8;
-      end
-      if(~(|tmp8[3:0])) begin
-        tmp4 = tmp8[7:4];
-      end
-      else begin
-        tmp4 = tmp8[3:0];
-        ctz -= 4;
-      end
-      if(~(|tmp4[1:0])) begin
-        tmp2 = tmp4[3:2];
-      end
-      else begin
-        tmp2 = tmp4[1:0];
-        ctz -= 2;
-      end
-      if(~tmp2[0]) begin
-        if(~tmp2[1]) begin
-          ctz -= 0;
-        end
-        else 		
-          ctz -= 1;
-      end
-      else begin
-        ctz -= 2;
-      end
-    end
-
-    // Count Leading Zeros Word (clzw)
-    always @ * begin
-      clzw = 0;
-      if(~(|fu_data_i.operand_a[31:16])) begin
-        tem16 = fu_data_i.operand_a[15:0];
-        clzw += 16;
-      end
-      else 
-        tem16 = fu_data_i.operand_a[31:16];
-      if(~(|tem16[15:8])) begin
-        tem8 = tem16[7:0];
-        clzw += 8;
-      end
-      else 
-        tem8 = tem16[15:8];
-      if(~(|tem8[7:4])) begin
-        tem4 = tem8[3:0];
-        clzw += 4;
-      end
-      else 
-        tem4 = tem8[7:4];
-      if(~(|tem4[3:2])) begin
-        tem2 = tem4[1:0];
-        clzw += 2;
-      end
-      else 
-        tem2 = tem4[3:2];
-      if(~tem2[1]) begin
-        clzw += 1;
-        if(~tem2[0]) begin
-          clzw += 1;
-        end
-        else 		
-          clzw += 0;
-      end
-      else
-        clzw += 0;
-    end
-
-    // Count Trailing Zeros Word (ctzw)
-    always @ * begin
-      ctzw = 32;
-      if(~(|fu_data_i.operand_a[15:0])) begin
-        tm16 = fu_data_i.operand_a[31:16];
-      end
-      else begin
-        tm16 = fu_data_i.operand_a[15:0];
-        ctzw -= 16;
-      end
-      if(~(|tm16[7:0])) begin
-        tm8 = tm16[15:8];
-      end
-      else begin
-        tm8 = tm16[7:0];
-        ctzw -= 8;
-      end
-      if(~(|tm8[3:0])) begin
-        tm4 = tm8[7:4];
-      end
-      else begin
-        tm4 = tm8[3:0];
-        ctzw -= 4;
-      end
-      if(~(|tm4[1:0])) begin
-        tm2 = tm4[3:2];
-      end
-      else begin
-        tm2 = tm4[1:0];
-        ctzw -= 2;
-      end
-      if(~tm2[0]) begin
-        if(~tm2[1]) begin
-          ctzw -= 0;
-        end
-        else 		
-          ctzw -= 1;
-      end
-      else 		
-        ctzw -= 2;
-    end
-
-    // Count Population
-    // cpop, cpopw
-    integer c;
-    always@ * begin
-      cpop = 0;
-      c = (fu_data_i.operator == CPOP) ? 64 : 32; 
-      for (a=0; a<c; a++) begin
-        cpop += fu_data_i.operand_a[a];
-      end
-    end
     // Bitwise Rotation
     // rolw, roriw, rorw
     always @* begin
       rolw = ({{32{1'b0}},fu_data_i.operand_a[31:0]} << fu_data_i.operand_b[4:0]) | ({{32{1'b0}},fu_data_i.operand_a[31:0]} >> (riscv::XLEN-32-fu_data_i.operand_b[4:0]));
       rorw = ({{32{1'b0}},fu_data_i.operand_a[31:0]} >> fu_data_i.operand_b[4:0]) | ({{32{1'b0}},fu_data_i.operand_a[31:0]} << (riscv::XLEN-32-fu_data_i.operand_b[4:0]));
     end
+    // Count Population + Count population Word
+    assign bit_operand = (fu_data_i.operator == CPOPW | fu_data_i.operator == CLZW | fu_data_i.operator == CTZW) ? fu_data_i.operand_a[31:0] : fu_data_i.operand_a[63:0];
+    popcount i_popcount (
+      .data_i           (bit_operand),
+      .popcount_o       (cpop)
+    );
+
+    // Count Leading/Trailing Zeros
+    // Count Leading Zeros
+    lzc #(
+      .WIDTH(64),
+      .MODE (1)
+    ) lzc_1
+    (
+      .in_i (bit_operand),
+      .cnt_o (lzcount),
+      .empty_o (empty_o)
+    );
+
+    // Count Leading Zeros Word
+    lzc #(
+      .WIDTH(32),
+      .MODE (1)
+    ) lzc_2
+    (
+      .in_i (bit_operand),
+      .cnt_o (lzwcount),
+      .empty_o (empty_o)
+    );
+
+    // Count Trailing Zeros
+    lzc #(
+      .WIDTH(64),
+      .MODE (0)
+    ) lzc_3
+    (
+      .in_i (bit_operand),
+      .cnt_o (tzcount),
+      .empty_o (empty_o)
+    );
+
+    // Count Trailing Zeros Word
+    lzc #(
+      .WIDTH(32),
+      .MODE (0)
+    ) lzc_4
+    (
+      .in_i (bit_operand),
+      .cnt_o (tzwcount),
+      .empty_o (empty_o)
+    );
 `endif
 
     // -----------
@@ -472,11 +309,11 @@ module alu import ariane_pkg::*;(
             BINV, BINVI: result_o = fu_data_i.operand_a ^ (1 << (fu_data_i.operand_b & (riscv::XLEN-1)));
             BSET, BSETI: result_o = fu_data_i.operand_a | (1 << (fu_data_i.operand_b & (riscv::XLEN-1)));
 
-            // Count Leading/Training Zeros
-            CLZ:  result_o = clz;
-            CLZW: result_o = clzw;
-            CTZ:  result_o = ctz;
-            CTZW: result_o = ctzw;
+            // Count Leading/Trailing Zeros
+            CLZ:   result_o = ~(|bit_operand) ? 64 : lzcount;
+            CLZW:  result_o = ~(|bit_operand[31:0]) ? 32 : lzwcount;
+            CTZ:   result_o = ~(|bit_operand) ? 64 : tzcount;
+            CTZW:  result_o = ~(|bit_operand[31:0]) ? 32 : tzwcount;
 
             // Count population
             CPOP, CPOPW: result_o = cpop;
