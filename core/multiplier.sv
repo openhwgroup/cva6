@@ -44,8 +44,8 @@ module multiplier import ariane_pkg::*; (
     end
 
     // operand_a and operand_b selection
-    assign operand_a = clmul_rmode | clmul_hmode ? operand_a_rev : operand_a_i;
-    assign operand_b = clmul_rmode | clmul_hmode ? operand_b_rev : operand_b_i;
+    assign operand_a = (clmul_rmode | clmul_hmode) ? operand_a_rev : operand_a_i;
+    assign operand_b = (clmul_rmode | clmul_hmode) ? operand_b_rev : operand_b_i;
 
     // implementation
     integer i;
@@ -136,45 +136,33 @@ module multiplier import ariane_pkg::*; (
         endcase
     end
 `endif
-
-    // -----------------------
-    // Output pipeline register
-    // -----------------------
-`ifndef BITMANIP
+`ifdef BITMANIP
     always_ff @(posedge clk_i or negedge rst_ni) begin
         if (~rst_ni) begin
-            mult_valid_q    <= '0;
-            trans_id_q      <= '0;
-            operator_q      <=  MUL;
-            mult_result_q   <= '0;
+            clmul_q    	  <= '0;
+            clmulr_q      <= '0;
          end else begin
-            // Input silencing
-            trans_id_q   <= trans_id_i;
-            // Output Register
-            mult_valid_q    <= mult_valid;
-            operator_q      <= operator_d;
-            mult_result_q   <= mult_result_d;
-         end
-    end
-`else
-    always_ff @(posedge clk_i or negedge rst_ni) begin
-        if (~rst_ni) begin
-            mult_valid_q    <= '0;
-            trans_id_q      <= '0;
-            operator_q      <=  MUL;
-            mult_result_q   <= '0;
-            clmul_q         <= '0;
-            clmulr_q        <= '0;
-         end else begin
-            // Input silencing
-            trans_id_q   <= trans_id_i;
-            // Output Register
-            mult_valid_q    <= mult_valid;
-            operator_q      <= operator_d;
-            mult_result_q   <= mult_result_d;
-            clmul_q         <= clmul_d;
-            clmulr_q        <= clmulr_d;
+            clmul_q    	  <= clmul_d;
+            clmulr_q      <= clmulr_d;
          end
     end
 `endif
+    // -----------------------
+    // Output pipeline register
+    // -----------------------
+    always_ff @(posedge clk_i or negedge rst_ni) begin
+        if (~rst_ni) begin
+            mult_valid_q    <= '0;
+            trans_id_q      <= '0;
+            operator_q      <=  MUL;
+            mult_result_q   <= '0;
+         end else begin
+            // Input silencing
+            trans_id_q   <= trans_id_i;
+            // Output Register
+            mult_valid_q    <= mult_valid;
+            operator_q      <= operator_d;
+            mult_result_q   <= mult_result_d;
+         end
+    end
 endmodule
