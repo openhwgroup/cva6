@@ -15,6 +15,7 @@
 // SPDX-License-Identifier: Apache-2.0 WITH SHL-2.0
 
 module uvmt_cva6_dut_wrap # ( parameter int unsigned AXI_USER_WIDTH    = 1,
+  parameter int unsigned AXI_USER_EN       = 0,
   parameter int unsigned AXI_ADDRESS_WIDTH = 64,
   parameter int unsigned AXI_DATA_WIDTH    = 64,
   parameter int unsigned NUM_WORDS         = 2**25
@@ -29,6 +30,7 @@ module uvmt_cva6_dut_wrap # ( parameter int unsigned AXI_USER_WIDTH    = 1,
 
     cva6_tb_wrapper #(
      .AXI_USER_WIDTH    (AXI_USER_WIDTH),
+     .AXI_USER_EN       (AXI_USER_EN),
      .AXI_ADDRESS_WIDTH (AXI_ADDRESS_WIDTH),
      .AXI_DATA_WIDTH    (AXI_DATA_WIDTH),
      .NUM_WORDS         (NUM_WORDS)

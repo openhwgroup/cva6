@@ -103,7 +103,15 @@ ALL_SIMV_UVM_FLAGS      = -licwait 20 -l +ntb_random_seed=1 \
 		-sv_lib $(CORE_V_VERIF)/lib/dpi_dasm/lib/Linux64/libdpi_dasm +signature=I-ADD-01.signature_output \
 		+UVM_TESTNAME=uvmt_cva6_firmware_test_c $(if $(VERDI), -gui -do $(CORE_V_VERIF)/cva6/sim/init_uvm.do,)
 
-vcs_uvm_comp:
+dpi-library = $(VCS_WORK_DIR)/work-dpi
+dpi_build:
+	mkdir -p $(dpi-library)
+	g++ -shared -fPIC -std=c++0x -Bsymbolic -std=c++11 -I../corev_apu/tb/dpi -O3 -I$(SPIKE_ROOT)/include \
+	-I$(VCS_HOME)/include -I$(RISCV)/include -c $(CVA6_REPO_DIR)/corev_apu/tb/dpi/elfloader.cc \
+	-o $(dpi-library)/elfloader.o
+	g++ -shared -m64 -o $(dpi-library)/ariane_dpi.so $(dpi-library)/elfloader.o -L$(RISCV)/lib -Wl,-rpath,$(RISCV)/lib
+
+vcs_uvm_comp: dpi_build
 	@echo "[VCS] Building Model"
 	mkdir -p $(VCS_WORK_DIR)
 	cd $(VCS_WORK_DIR) && vcs $(ALL_UVM_FLAGS) \
@@ -113,10 +121,11 @@ vcs_uvm_comp:
 	  -top uvmt_cva6_tb
 
 vcs_uvm_run:
-	cp $(TESTNAME).txt $(VCS_WORK_DIR)/Mem_init.txt
 	cd $(VCS_WORK_DIR)/ && \
 	$(VCS_WORK_DIR)/simv ${ALL_SIMV_UVM_FLAGS} \
 	++$(elf-bin) \
+	+PRELOAD=$(elf-bin) \
+	-sv_lib $(dpi-library)/ariane_dpi $(if $(DO_SIM), -ucli -do $(CORE_V_VERIF)/cva6/sim/sim.do,) \
 	$(cov-run-opt) && \
 	mv $(VCS_WORK_DIR)/trace_rvfi_hart_00.dasm $(CORE_V_VERIF)/cva6/sim/
 
@@ -129,7 +138,6 @@ vcs_gate_comp:
 	cd $(VCS_WORK_DIR) && vcs $(ALL_VCS_FLAGS) -f $(FLIST_CORE)_gate -f $(FLIST_TB)
 
 vcs_gate_run:
-	cp $(TESTNAME).txt $(VCS_WORK_DIR)/Mem_init.txt
 	cd $(VCS_WORK_DIR)/ && $(VCS_WORK_DIR)/simv
 	mv $(VCS_WORK_DIR)/trace_rvfi_hart_00.dasm $(CORE_V_VERIF)/cva6/sim/
 

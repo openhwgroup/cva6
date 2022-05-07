@@ -35,7 +35,7 @@ module axi_master_connect (
     assign master.w_data        = axi_req_i.w.data;
     assign master.w_strb        = axi_req_i.w.strb;
     assign master.w_last        = axi_req_i.w.last;
-    assign master.w_user        = '0;
+    assign master.w_user        = axi_req_i.w.user;
     assign master.w_valid       = axi_req_i.w_valid;
     assign axi_resp_o.w_ready   = master.w_ready;
 
@@ -60,6 +60,7 @@ module axi_master_connect (
 
     assign axi_resp_o.r.id      = master.r_id;
     assign axi_resp_o.r.data    = master.r_data;
+    assign axi_resp_o.r.user    = master.r_user;
     assign axi_resp_o.r.resp    = master.r_resp;
     assign axi_resp_o.r.last    = master.r_last;
     assign axi_resp_o.r_valid   = master.r_valid;
