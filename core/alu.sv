@@ -33,15 +33,14 @@ module alu import ariane_pkg::*;(
     logic        less;  // handles both signed and unsigned forms
 
 `ifdef BITMANIP
-    logic [riscv::XLEN-33:0] rolw;        // Rotate Left Word
-    logic [riscv::XLEN-33:0] rorw;        // Rotate Right Word
-    logic [riscv::XLEN-59:0] cpop;        // Count Population
-    logic [riscv::XLEN-1:0] bit_operand;  // Count Leading/Trailing Zeros operand_a
-    logic [riscv::XLEN-59:0] lzcount;     // Count Leading Zeros
-    logic [riscv::XLEN-60:0] lzwcount;    // Count Leading Zeros Word
-    logic [riscv::XLEN-59:0] tzcount;     // Count Trailing Zeros
-    logic [riscv::XLEN-60:0] tzwcount;    // Count Trailing Zeros Word
-    logic empty_o;
+    logic [31:0] rolw;                    // Rotate Left Word
+    logic [31:0] rorw;                    // Rotate Right Word
+    logic [$clog2(riscv::XLEN)-1:0] cpop; // Count Population
+    logic [riscv::XLEN-1:0] src_operand;  // Count Leading/Trailing Zeros operand_a
+    logic [5:0] lzcount;                  // Count Leading Zeros
+    logic [4:0] lzwcount;                 // Count Leading Zeros Word
+    logic [5:0] tzcount;                  // Count Trailing Zeros
+    logic [4:0] tzwcount;                 // Count Trailing Zeros Word
 `endif
 
     // bit reverse operand_a for left shifts and bit counting
@@ -171,61 +170,64 @@ module alu import ariane_pkg::*;(
     end
 `ifdef BITMANIP
     // Bitwise Rotation
+
     // rolw, roriw, rorw
     always @* begin
       rolw = ({{32{1'b0}},fu_data_i.operand_a[31:0]} << fu_data_i.operand_b[4:0]) | ({{32{1'b0}},fu_data_i.operand_a[31:0]} >> (riscv::XLEN-32-fu_data_i.operand_b[4:0]));
       rorw = ({{32{1'b0}},fu_data_i.operand_a[31:0]} >> fu_data_i.operand_b[4:0]) | ({{32{1'b0}},fu_data_i.operand_a[31:0]} << (riscv::XLEN-32-fu_data_i.operand_b[4:0]));
     end
+    
     // Count Population + Count population Word
-    assign bit_operand = (fu_data_i.operator == CPOPW | fu_data_i.operator == CLZW | fu_data_i.operator == CTZW) ? fu_data_i.operand_a[31:0] : fu_data_i.operand_a[63:0];
-    popcount i_popcount (
-      .data_i           (bit_operand),
+    assign src_operand = (fu_data_i.operator == CPOPW) ? fu_data_i.operand_a[31:0] : fu_data_i.operand_a[63:0];
+    popcount i_cpop_count (
+      .data_i           (src_operand),
       .popcount_o       (cpop)
     );
 
     // Count Leading/Trailing Zeros
+
     // Count Leading Zeros
     lzc #(
       .WIDTH(64),
       .MODE (1)
-    ) lzc_1
+    ) i_clz_64b
     (
-      .in_i (bit_operand),
+      .in_i (fu_data_i.operand_a),
       .cnt_o (lzcount),
-      .empty_o (empty_o)
+      .empty_o ()
     );
 
     // Count Leading Zeros Word
     lzc #(
       .WIDTH(32),
       .MODE (1)
-    ) lzc_2
+    ) i_clz_32b
     (
-      .in_i (bit_operand),
+      .in_i (fu_data_i.operand_a),
       .cnt_o (lzwcount),
-      .empty_o (empty_o)
+      .empty_o ()
     );
 
     // Count Trailing Zeros
     lzc #(
       .WIDTH(64),
       .MODE (0)
-    ) lzc_3
+    ) i_ctz_64b
     (
-      .in_i (bit_operand),
+      .in_i (fu_data_i.operand_a),
       .cnt_o (tzcount),
-      .empty_o (empty_o)
+      .empty_o ()
     );
 
     // Count Trailing Zeros Word
     lzc #(
       .WIDTH(32),
       .MODE (0)
-    ) lzc_4
+    ) i_ctz_32b
     (
-      .in_i (bit_operand),
+      .in_i (fu_data_i.operand_a),
       .cnt_o (tzwcount),
-      .empty_o (empty_o)
+      .empty_o ()
     );
 `endif
 
@@ -310,10 +312,10 @@ module alu import ariane_pkg::*;(
             BSET, BSETI: result_o = fu_data_i.operand_a | (1 << (fu_data_i.operand_b & (riscv::XLEN-1)));
 
             // Count Leading/Trailing Zeros
-            CLZ:   result_o = ~(|bit_operand) ? 64 : lzcount;
-            CLZW:  result_o = ~(|bit_operand[31:0]) ? 32 : lzwcount;
-            CTZ:   result_o = ~(|bit_operand) ? 64 : tzcount;
-            CTZW:  result_o = ~(|bit_operand[31:0]) ? 32 : tzwcount;
+            CLZ:   result_o = ~(|fu_data_i.operand_a) ? 64 : lzcount;
+            CLZW:  result_o = ~(|fu_data_i.operand_a[31:0]) ? 32 : lzwcount;
+            CTZ:   result_o = ~(|fu_data_i.operand_a) ? 64 : tzcount;
+            CTZW:  result_o = ~(|fu_data_i.operand_a[31:0]) ? 32 : tzwcount;
 
             // Count population
             CPOP, CPOPW: result_o = cpop;
