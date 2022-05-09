@@ -28,39 +28,39 @@ pipeline_end_timestamp = int(datetime.datetime.now().timestamp())
 pipeline_duration = pipeline_end_timestamp - pipeline_creation_timestamp
 
 try:
-    workflow_type = os.environ['WORKFLOW_TYPE']
+    workflow_type = os.environ['WORKFLOW_TYPE'].strip('\'\"')
 except KeyError:
     workflow_type = "gitlab"
 
-workflow_action = os.environ['WORKFLOW_EVENT']
+workflow_action = os.environ['WORKFLOW_EVENT'].strip('\'\"')
 
 if workflow_type == 'github':  # (from wrapper)
     
-    workflow_uid = os.environ['WORKFLOW_RUN_ID']
-    workflow_repo_owner = os.environ['WORKFLOW_REPO_OWNER']
-    workflow_repo = os.environ['WORKFLOW_REPO']  # cvv or cva6
-    workflow_commit_subject = os.environ['WORKFLOW_COMMIT_MESSAGE']
-    workflow_commit_author = os.environ['WORKFLOW_COMMIT_AUTHOR']
-    cvv_branch = os.environ['CORE_V_VERIF_BRANCH']
-    cvv_sha = os.environ['CORE_V_VERIF_HASH']
-    cva6_branch = os.environ['CVA6_BRANCH']
-    cva6_sha = os.environ['CVA6_HASH']
+    workflow_uid = os.environ['WORKFLOW_RUN_ID'].strip('\'\"')
+    workflow_repo_owner = os.environ['WORKFLOW_REPO_OWNER'].strip('\'\"')
+    workflow_repo = os.environ['WORKFLOW_REPO'].strip('\'\"')  # cvv or cva6
+    workflow_commit_subject = os.environ['WORKFLOW_COMMIT_MESSAGE'].strip('\'\"')
+    workflow_commit_author = os.environ['WORKFLOW_COMMIT_AUTHOR'].strip('\'\"')
+    cvv_branch = os.environ['CORE_V_VERIF_BRANCH'].strip('\'\"')
+    cvv_sha = os.environ['CORE_V_VERIF_HASH'].strip('\'\"')
+    cva6_branch = os.environ['CVA6_BRANCH'].strip('\'\"')
+    cva6_sha = os.environ['CVA6_HASH'].strip('\'\"')
 else:  # gitlab (from core-v-verif or cva6 repositories)
-    workflow_uid = os.environ['CI_PIPELINE_ID']
+    workflow_uid = os.environ['CI_PIPELINE_ID'].strip('\'\"')
     if os.environ['SCOPE_CVV'] == 'true':
         workflow_repo = 'core-v-verif'
-        cvv_branch = os.environ['CI_COMMIT_REF_NAME']
-        cvv_sha = os.environ['CI_COMMIT_SHA']
-        cva6_branch = os.environ['CVA6_BRANCH']
-        cva6_sha = os.environ['CVA6_HASH']
+        cvv_branch = os.environ['CI_COMMIT_REF_NAME'].strip('\'\"')
+        cvv_sha = os.environ['CI_COMMIT_SHA'].strip('\'\"')
+        cva6_branch = os.environ['CVA6_BRANCH'].strip('\'\"')
+        cva6_sha = os.environ['CVA6_HASH'].strip('\'\"')
     else:
         workflow_repo = 'cva6'
-        cvv_branch = os.environ['CORE_V_VERIF_BRANCH']
-        cvv_sha = os.environ['CORE_V_VERIF_HASH']
-        cva6_branch = os.environ['CI_COMMIT_REF_NAME']
-        cva6_sha = os.environ['CI_COMMIT_SHA']
-    workflow_commit_subject = os.environ['CI_COMMIT_MESSAGE']
-    workflow_commit_author = os.environ['CI_COMMIT_AUTHOR']
+        cvv_branch = os.environ['CORE_V_VERIF_BRANCH'].strip('\'\"')
+        cvv_sha = os.environ['CORE_V_VERIF_HASH'].strip('\'\"')
+        cva6_branch = os.environ['CI_COMMIT_REF_NAME'].strip('\'\"')
+        cva6_sha = os.environ['CI_COMMIT_SHA'].strip('\'\"')
+    workflow_commit_subject = os.environ['CI_COMMIT_MESSAGE'].strip('\'\"')
+    workflow_commit_author = os.environ['CI_COMMIT_AUTHOR'].strip('\'\"')
 
 if len(workflow_commit_subject) > 60:
     title = workflow_commit_subject[0:60] + '...'
@@ -121,18 +121,18 @@ print(filename)
 with open(f'{sys.argv[1]}/{filename}', 'w+') as f:
     yaml.dump(pipeline, f)
 
-
-
 try:
   print(subprocess.check_output(f'''
+rm -r .gitlab-ci/dashboard_tmp || echo "nothing to do"
 git clone {dashboard_url} .gitlab-ci/dashboard_tmp
 mkdir -p .gitlab-ci/dashboard_tmp/pipelines_{workflow_repo}
+ls -al {sys.argv[1]}
 cp {sys.argv[1]}/{filename} .gitlab-ci/dashboard_tmp/pipelines_{workflow_repo}/
 cd .gitlab-ci/dashboard_tmp
 git config user.email {git_email}
 git config user.name {git_name}
 git add pipelines_{workflow_repo}/{filename}
-git commit -m  "{workflow_repo}: {title}"
+git commit -m  "{workflow_repo}: {title.replace('"',"'")}" || echo "commit fail"
 git push
 cd -
 ''', shell=True))
