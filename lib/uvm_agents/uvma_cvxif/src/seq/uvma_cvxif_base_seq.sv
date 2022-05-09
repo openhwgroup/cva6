@@ -22,14 +22,13 @@ class uvma_cvxif_base_seq_c extends uvm_sequence #(uvma_cvxif_resp_item_c);
 
    uvma_cvxif_cfg_c    cfg;
 
-   int instr_num;
    string info_tag = "CVXIF_BASE_SEQ";
 
    extern function new(string name="uvma_cvxif_base_seq");
 
    extern virtual task pre_body();
 
-   extern function int decode(input logic [31:0] instr);
+   extern function string decode(input logic [31:0] instr);
 
 endclass
 
@@ -48,20 +47,52 @@ task uvma_cvxif_base_seq_c::pre_body();
 
 endtask
 
-function int uvma_cvxif_base_seq_c::decode(input logic [31:0] instr);
+function string uvma_cvxif_base_seq_c::decode(input logic [31:0] instr);
 
-   int instr_num = 0;
-   logic [31:0] cvxif_instr = 0;
+   bit [6:0] opcode    = instr [6:0];
+   bit [6:0] custom3   = 7'b1111011;
+   bit [6:0] func7     = instr [31:25];
+   bit [1:0] func2     = instr [26:25];
+   bit [1:0] func3     = instr [14:12];
+   bit [4:0] rd        = instr [11:7];
+   bit [4:0] rs1       = instr [19:15];
+   bit [4:0] rs2       = instr [24:20];
 
-   for (int i=0; i<NumInstr; i++) begin
-      cvxif_instr = instr & OffloadInstr[i].mask;
-      if (OffloadInstr[i].instr == cvxif_instr) begin
-         instr_num = i+1;
-         return (instr_num);
-      end
-      else continue;
+   if (opcode != custom3 ) begin
+      return ("illegal");
    end
-   return (instr_num);
+   else begin
+      if (func3 == 0) begin
+         if (rd == 0) begin
+             if (func7 == 0 && rs1 == 0 && rs2 == 0) begin
+                return ("CUS_NOP");
+             end
+             if (func7 == 7'b1000000 && rs2 == 0) begin
+                return ("CUS_EXC");
+             end
+         end
+         else begin
+            if (func7 == 0) begin
+              return ("CUS_ADD");
+            end
+            if (func2==2'b01) begin
+               return ("CUS_ADD_RS3");
+            end
+            if (func7==7'b0001000) begin
+               return ("CUS_ADD_MULTI");
+            end
+            if (func7==7'b0000010) begin
+               return ("CUS_M_ADD");
+            end
+            if (func7==7'b0000110) begin
+               return ("CUS_S_ADD");
+            end
+         end
+      end
+      else begin
+        return ("illegal");
+      end
+   end
 
 endfunction
 

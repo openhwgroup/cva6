@@ -17,7 +17,7 @@ class uvma_cvxif_seq_c extends uvma_cvxif_base_seq_c#(uvma_cvxif_resp_item_c);
    `uvm_declare_p_sequencer (uvma_cvxif_sqr_c)
 
    string info_tag = "CVXIF_SEQ_RESP";
-   int instr_num;
+   string instr;
 
    /**
     * Default constructor.
@@ -65,10 +65,10 @@ task uvma_cvxif_seq_c::body();
       p_sequencer.mm_req_fifo.get(req_item);
 
       //Decode the instruction received
-      instr_num = decode(req_item.issue_req.instr);
+      instr = decode(req_item.issue_req.instr);
 
       // generate response based on observed request, e.g:
-      if (!instr_num) begin
+      if (instr == "illegal" || instr == "") begin
          do_default();
       end
       else begin
@@ -112,11 +112,40 @@ endtask
 
 task uvma_cvxif_seq_c::do_issue_resp();
 
-   resp_item.issue_resp.accept    = OffloadInstr[instr_num-1].resp.accept;
-   resp_item.issue_resp.writeback = OffloadInstr[instr_num-1].resp.writeback;
-   resp_item.issue_resp.dualwrite = OffloadInstr[instr_num-1].resp.dualwrite;
-   resp_item.issue_resp.dualread  = OffloadInstr[instr_num-1].resp.dualread;
-   resp_item.issue_resp.exc       = OffloadInstr[instr_num-1].resp.exc;
+   resp_item.issue_resp.dualwrite  = 0;
+   resp_item.issue_resp.dualread   = 0;
+   resp_item.issue_resp.exc        = 0;
+   case (instr) inside
+      "CUS_ADD", "CUS_ADD_MULTI", "CUS_ADD_RS3"   : begin
+          resp_item.issue_resp.writeback  = 1;
+          resp_item.issue_resp.accept     = 1;
+        end
+      "CUS_EXC", "CUS_NOP"            : begin
+          resp_item.issue_resp.writeback  = 0;
+          resp_item.issue_resp.accept     = 1;
+        end
+      "CUS_M_ADD" : begin
+          if (req_item.issue_req.mode == 2'b11) begin
+             resp_item.issue_resp.writeback  = 1;
+             resp_item.issue_resp.accept     = 1;
+          end
+          else begin
+             resp_item.issue_resp.writeback  = 0;
+             resp_item.issue_resp.accept     = 0;
+          end
+        end
+      "CUS_S_ADD" : begin
+          if (req_item.issue_req.mode == 2'b01) begin
+             resp_item.issue_resp.writeback  = 1;
+             resp_item.issue_resp.accept     = 1;
+          end
+          else begin
+             resp_item.issue_resp.writeback  = 0;
+             resp_item.issue_resp.accept     = 0;
+          end
+        end
+   endcase
+   `uvm_info(info_tag, $sformatf("instr =  %s", instr), UVM_LOW);
 
 endtask
 
@@ -128,6 +157,7 @@ task uvma_cvxif_seq_c::do_result_resp();
       resp_item.result.id=req_item.commit_req.id;
       resp_item.result.rd=req_item.issue_req.instr[11:7];
       resp_item.result.we=resp_item.issue_resp.writeback;
+      resp_item.result.data=0;
       resp_item.result_ready=req_item.result_ready;
       do_instr_result();
       if (cfg.instr_delayed) begin
@@ -154,31 +184,36 @@ endtask
 task uvma_cvxif_seq_c::do_instr_result();
 
    //result response depend on instruction
-   case (instr_num)
-      1:begin
+   resp_item.result.exc=0;
+   resp_item.result.exccode=0;
+   cfg.instr_delayed = 0;
+   case (instr)
+      "CUS_ADD": begin
          resp_item.result.data=req_item.issue_req.rs[0] + req_item.issue_req.rs[1];
-         `uvm_info(info_tag, $sformatf("Response data: %h", resp_item.result.data), UVM_HIGH);
-         resp_item.result.exc=0;
-         resp_item.result.exccode=0;
-         if (req_item.issue_req.instr[31:25]==7'b0000001) begin
-            cfg.instr_delayed = 1;
-         end
-         else begin
-            cfg.instr_delayed = 0;
-            if (req_item.issue_req.instr[31:25] == 7'b0000011) begin
-               resp_item.result.exc=1;
-               resp_item.result.exccode = $urandom();
-               resp_item.result.we=0;
-            end
-         end
-      end
-      2: begin
+        end
+      "CUS_ADD_MULTI": begin
+         resp_item.result.data=req_item.issue_req.rs[0] + req_item.issue_req.rs[1];
+         cfg.instr_delayed = 1;
+        end
+      "CUS_EXC":  begin
+         resp_item.result.exc=1;
+         resp_item.result.exccode[4:0] = req_item.issue_req.instr[19:15];
+         resp_item.result.exccode[5] = req_item.issue_req.instr[20];
+         `uvm_info(info_tag, $sformatf("EXCCODE: %d", resp_item.result.exccode), UVM_HIGH);
+        end
+      "CUS_ADD_RS3": begin
          resp_item.result.data=req_item.issue_req.rs[0] + req_item.issue_req.rs[1] + ( cvxif_pkg::X_NUM_RS == 3 ? req_item.issue_req.rs[2] : 0);
-         `uvm_info(info_tag, $sformatf("Response data: %h", resp_item.result.data), UVM_HIGH);
-         resp_item.result.exc=0;
-         resp_item.result.exccode=0;
-         cfg.instr_delayed = 0;
-      end
+        end
+      "CUS_M_ADD": begin
+          if (req_item.issue_req.mode == 2'b11) begin
+             resp_item.result.data=req_item.issue_req.rs[0] + req_item.issue_req.rs[1];
+          end
+        end
+      "CUS_S_ADD": begin
+          if (req_item.issue_req.mode == 2'b01 || req_item.issue_req.mode == 2'b11) begin
+             resp_item.result.data=req_item.issue_req.rs[0] + req_item.issue_req.rs[1];
+          end
+        end
    endcase
 
 endtask
