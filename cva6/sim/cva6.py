@@ -356,7 +356,7 @@ def gcc_compile(test_list, output_dir, isa, mabi, opts, debug_cmd):
       cmd = ("%s -static -mcmodel=medany \
              -fvisibility=hidden -nostdlib \
              -nostartfiles %s \
-             -I%s/dv/user_extension \
+             -I%s/../env/corev-dv/user_extension \
              -T%s/link.ld %s -o %s " % \
              (get_env_var("RISCV_GCC", debug_cmd = debug_cmd), asm, cwd, cwd, opts, elf))
       if 'gcc_opts' in test:
@@ -926,6 +926,7 @@ def main():
     isscomp_opts = "\""+args.isscomp_opts+"\""
     cwd = os.path.dirname(os.path.realpath(__file__))
     os.environ["RISCV_DV_ROOT"] = cwd + "/dv"
+    os.environ["CVA6_DV_ROOT"]  = cwd + "/../env/corev-dv"
     setup_logging(args.verbose)
     logg = logging.getLogger()
     # create file handler which logs even debug messages
