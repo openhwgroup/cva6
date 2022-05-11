@@ -30,18 +30,7 @@
   precmd: >
     make -C <path_var> verilate target=<target> user-define="+define+WT_CACHE"
   cmd: >
-    <path_var>/work-ver/Variane_testharness <elf>
-  postcmd: >
-    <tool_path>/spike-dasm < ./trace_rvfi_hart_00.dasm > log
-
-- iss: veri-core
-  path_var: RTL_PATH
-  tool_path: SPIKE_PATH
-  tb_path: TB_PATH
-  precmd: >
-    make -f Makefile veri_comp target=<target> user-define="+define+WT_CACHE"
-  cmd: >
-    make -f Makefile veri_run elf-bin=<elf>
+    <path_var>/work-ver/Variane_testharness +debug_disable=1 <elf>
   postcmd: >
     <tool_path>/spike-dasm < ./trace_rvfi_hart_00.dasm > log
 
@@ -71,17 +60,6 @@
     make -C <path_var> vcs_build target=<target> user-define="+define+WT_CACHE"
   cmd: >
     <path_var>/work-vcs/simv ${VERDI:+-verdi} +permissive -sv_lib <path_var>/work-dpi/ariane_dpi +debug_disable=1 +PRELOAD=<elf> +permissive-off ++<elf>
-  postcmd: >
-    <tool_path>/spike-dasm < ./trace_rvfi_hart_00.dasm > log
-
-- iss: vcs-core
-  path_var: RTL_PATH
-  tool_path: SPIKE_PATH
-  tb_path: TB_PATH
-  precmd: >
-    make -f Makefile vcs_core_comp target=<target> user-define="+define+WT_CACHE"
-  cmd: >
-    make -f Makefile vcs_core_run elf-bin=<elf>
   postcmd: >
     <tool_path>/spike-dasm < ./trace_rvfi_hart_00.dasm > log
 

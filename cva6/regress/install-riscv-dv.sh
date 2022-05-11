@@ -39,7 +39,7 @@ if ! [ -d cva6/sim/dv ]; then
     git apply $DV_PATCH
   fi
   cd -
+  # install riscv-dv dependencies
+  cd cva6/sim/dv; pip3 install -r requirements.txt; cd -
 fi
 
-# install riscv-dv dependencies
-cd cva6/sim/dv; pip3 install -r requirements.txt; cd -
