@@ -478,7 +478,7 @@ module decoder import ariane_pkg::*; (
 `ifndef BITMANIP
                         instruction_o.fu  = (instr.rtype.funct7 == 7'b000_0001) ? MULT : ALU;
 `else
-                        instruction_o.fu  = (instr.rtype.funct7 == 7'b000_0001 || ((instr.rtype.funct7 == 7'b000_0101) && (instr.rtype.funct3 < 4))) ? MULT : ALU;
+                        instruction_o.fu  = (instr.rtype.funct7 == 7'b000_0001 || ((instr.rtype.funct7 == 7'b000_0101) && !(instr.rtype.funct3[14]))) ? MULT : ALU;
 `endif
                         instruction_o.rs1 = instr.rtype.rs1;
                         instruction_o.rs2 = instr.rtype.rs2;
