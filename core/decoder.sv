@@ -766,7 +766,7 @@ module decoder import ariane_pkg::*; (
                                 instruction_o.op = ariane_pkg::SRLW;  // Shift Right Logical by Immediate
                             else if (instr.instr[31:25] == 7'b010_0000)
                                 instruction_o.op = ariane_pkg::SRAW;  // Shift Right Arithmetically by Immediate
-                            if ((instr.instr[31:25] == 7'b011_0000))
+                            else if (instr.instr[31:25] == 7'b011_0000)
                                 instruction_o.op = ariane_pkg::RORIW;
                             else
                                 illegal_instr = 1'b1;
