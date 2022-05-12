@@ -147,6 +147,22 @@ pub_smoke:
     paths:
       - artifacts/reports/*.yml
 
+pub_hwconfig:
+  stage: two
+  extends:
+    - .template_job_short_ci
+  needs:
+    - job: pub_smoke
+      artifacts: false
+  parallel:
+    matrix:
+      - DV_SIMULATORS: ["vcs-uvm,spike", "veri-testharness,spike"]
+        DV_HWCONFIG_OPTS: ["--default_config=cv64a6_imafdc_sv39 --isa=rv64imac --fpu=0",
+                           "--default_config=cv64a6_imafdc_sv39 --isa=rv64g --c_ext=0",
+                           "--default_config=cv64a6_imafdc_sv39 --isa=rv64gc --duser_en=1"]
+  script:
+    - echo $SYN_VCS_BASHRC; source $SYN_VCS_BASHRC
+    - source ./cva6/regress/hwconfig_tests.sh
 
 pub_compliance:
   stage: two

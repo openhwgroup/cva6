@@ -841,6 +841,8 @@ def setup_parser():
                       help="Run verilog style check")
   parser.add_argument("-d", "--debug", type=str, default="",
                       help="Generate debug command log file")
+  parser.add_argument("--hwconfig_opts", type=str, default="",
+                      help="custom configuration options, to be passed in config_pkg_generator.py in cva6")
   return parser
 
 
@@ -922,6 +924,10 @@ def load_config(args, cwd):
     elif args.target == "ml":
       args.mabi = "lp64"
       args.isa  = "rv64imc"
+    elif args.target == "hwconfig":
+      os.chdir(os.getcwd()+"/../../core-v-cores/cva6")
+      [args.isa,args.mabi, args.target, args.hwconfig_opts] = generate_config(args.hwconfig_opts.split())
+      os.chdir(os.getcwd()+"/../../cva6/sim")
     else:
       sys.exit("Unsupported pre-defined target: %0s" % args.target)
     args.core_setting_dir = cwd + "/dv" + "/target/"+ args.isa
@@ -1027,6 +1033,18 @@ def main():
 
     if not args.co:
       process_regression_list(args.testlist, args.test, args.iterations, matched_list, cwd)
+      logging.info('CVA6 Configuration is %s'% cfg["hwconfig_opts"])
+      for entry in list(matched_list):
+        yaml_needs = entry["needs"] if "needs" in entry else []
+        if yaml_needs:
+          needs = dict()
+          for i in range(len(yaml_needs)):
+            needs.update(yaml_needs[i])
+          for keys in needs.keys():
+            if cfg["hwconfig_opts"][keys] != needs[keys]:
+              logging.info('Removing test %s CVA6 configuration can not run it' % entry['test'])
+              matched_list.remove(entry)
+              break
       for t in list(matched_list):
         try:
           t['asm_tests'] = re.sub("\<path_var\>", get_env_var(t['path_var']), t['asm_tests'])
@@ -1123,4 +1141,6 @@ def main():
     sys.exit(130)
 
 if __name__ == "__main__":
+  sys.path.append(os.getcwd()+"/../../core-v-cores/cva6")
+  from config_pkg_generator import *
   main()
