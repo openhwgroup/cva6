@@ -398,7 +398,9 @@ package riscv;
         CSR_MIMPID         = 12'hF13,
         CSR_MHARTID        = 12'hF14,
         CSR_MCYCLE         = 12'hB00,
+        CSR_MCYCLEH        = 12'hB80,
         CSR_MINSTRET       = 12'hB02,
+        CSR_MINSTRETH      = 12'hB82,
         // Performance counters (Machine Mode)
         CSR_ML1_ICACHE_MISS = 12'hB03,  // L1 Instr Cache Miss
         CSR_ML1_DCACHE_MISS = 12'hB04,  // L1 Data Cache Miss
@@ -445,8 +447,11 @@ package riscv;
         CSR_DSCRATCH1      = 12'h7b3, // optional
         // Counters and Timers (User Mode - R/O Shadows)
         CSR_CYCLE          = 12'hC00,
+        CSR_CYCLEH         = 12'hC80,
         CSR_TIME           = 12'hC01,
+        CSR_TIMEH          = 12'hC81,
         CSR_INSTRET        = 12'hC02,
+        CSR_INSTRETH       = 12'hC82,
         // Performance counters (User Mode - R/O Shadows)
         CSR_L1_ICACHE_MISS = 12'hC03,  // L1 Instr Cache Miss
         CSR_L1_DCACHE_MISS = 12'hC04,  // L1 Data Cache Miss
