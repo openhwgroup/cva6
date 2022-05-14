@@ -9,8 +9,8 @@
 
 if ! [ -n "$ARCH_TEST_REPO" ]; then
   ARCH_TEST_REPO=https://github.com/riscv-non-isa/riscv-arch-test
-  ARCH_TEST_BRANCH=riscof-dev
-  ARCH_TEST_HASH=7907c462c700279c5d75ec5e6042f762dcb95a25
+  ARCH_TEST_BRANCH=main
+  ARCH_TEST_HASH=ad04e119a5d846a1c11159786ad3382cf5ad3649
 fi
 echo $ARCH_TEST_REPO
 echo $ARCH_TEST_BRANCH
