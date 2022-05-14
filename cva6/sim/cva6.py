@@ -329,7 +329,7 @@ def elf2bin(elf, binary, debug_cmd):
   run_cmd_output(cmd.split(), debug_cmd = debug_cmd)
 
 
-def gcc_compile(test_list, output_dir, isa, mabi, opts, debug_cmd):
+def gcc_compile(test_list, output_dir, isa, mabi, opts, debug_cmd, linker):
   """Use riscv gcc toolchain to compile the assembly program
 
   Args:
@@ -338,6 +338,7 @@ def gcc_compile(test_list, output_dir, isa, mabi, opts, debug_cmd):
     isa        : ISA variant passed to GCC
     mabi       : MABI variant passed to GCC
     debug_cmd  : Produce the debug cmd log without running
+    linker     : Path to the linker
   """
   cwd = os.path.dirname(os.path.realpath(__file__))
   for test in test_list:
@@ -357,8 +358,8 @@ def gcc_compile(test_list, output_dir, isa, mabi, opts, debug_cmd):
              -fvisibility=hidden -nostdlib \
              -nostartfiles %s \
              -I%s/../env/corev-dv/user_extension \
-             -T%s/link.ld %s -o %s " % \
-             (get_env_var("RISCV_GCC", debug_cmd = debug_cmd), asm, cwd, cwd, opts, elf))
+             -T%s %s -o %s " % \
+             (get_env_var("RISCV_GCC", debug_cmd = debug_cmd), asm, cwd, linker, opts, elf))
       if 'gcc_opts' in test:
         cmd += test['gcc_opts']
       if 'gen_opts' in test:
@@ -377,7 +378,7 @@ def gcc_compile(test_list, output_dir, isa, mabi, opts, debug_cmd):
 
 
 def run_assembly(asm_test, iss_yaml, isa, target, mabi, gcc_opts, iss_opts, output_dir,
-                 setting_dir, debug_cmd):
+                 setting_dir, debug_cmd, linker):
   """Run a directed assembly test with ISS
 
   Args:
@@ -390,6 +391,7 @@ def run_assembly(asm_test, iss_yaml, isa, target, mabi, gcc_opts, iss_opts, outp
     output_dir  : Output directory of compiled test files
     setting_dir : Generator setting directory
     debug_cmd   : Produce the debug cmd log without running
+    linker      : Path to the linker
   """
   if not asm_test.endswith(".S"):
     logging.error("%s is not an assembly .S file" % asm_test)
@@ -413,9 +415,9 @@ def run_assembly(asm_test, iss_yaml, isa, target, mabi, gcc_opts, iss_opts, outp
          -fvisibility=hidden -nostdlib \
          -nostartfiles %s \
          -I%s/dv/user_extension \
-         -T%s/link.ld %s -o %s " % \
-         (get_env_var("RISCV_GCC", debug_cmd = debug_cmd), asm_test, cwd,
-                      cwd, gcc_opts, elf))
+         -T%s %s -o %s " % \
+         (get_env_var("RISCV_GCC", debug_cmd = debug_cmd), asm_test, cwd, linker,
+                      gcc_opts, elf))
   cmd += (" -march=%s" % isa)
   cmd += (" -mabi=%s" % mabi)
   run_cmd_output(cmd.split(), debug_cmd = debug_cmd)
@@ -457,7 +459,7 @@ def run_assembly_from_dir(asm_test_dir, iss_yaml, isa, mabi, gcc_opts, iss,
                  (len(asm_list), asm_test_dir))
     for asm_file in asm_list:
       run_assembly(asm_file, iss_yaml, isa, target, mabi, gcc_opts, iss, output_dir,
-                   setting_dir, debug_cmd)
+                   setting_dir, debug_cmd, linker)
       if "," in iss:
         report = ("%s/iss_regr.log" % output_dir).rstrip()
         save_regr_report(report)
@@ -514,7 +516,7 @@ def run_elf(c_test, iss_yaml, isa, target, mabi, gcc_opts, iss_opts, output_dir,
 
 
 def run_c(c_test, iss_yaml, isa, target, mabi, gcc_opts, iss_opts, output_dir,
-          setting_dir, debug_cmd):
+          setting_dir, debug_cmd, linker):
   """Run a directed c test with ISS
 
   Args:
@@ -527,6 +529,7 @@ def run_c(c_test, iss_yaml, isa, target, mabi, gcc_opts, iss_opts, output_dir,
     output_dir  : Output directory of compiled test files
     setting_dir : Generator setting directory
     debug_cmd   : Produce the debug cmd log without running
+    linker      : Path to the linker
   """
   if not c_test.endswith(".c"):
     logging.error("%s is not a .c file" % c_test)
@@ -547,9 +550,9 @@ def run_c(c_test, iss_yaml, isa, target, mabi, gcc_opts, iss_opts, output_dir,
   cmd = ("%s -mcmodel=medany -nostdlib \
          -nostartfiles %s \
          -I%s/dv/user_extension \
-         -T%s/link.ld %s -o %s " % \
+         -T%s %s -o %s " % \
          (get_env_var("RISCV_GCC", debug_cmd = debug_cmd), c_test, cwd,
-                      cwd, gcc_opts, elf))
+                      linker, gcc_opts, elf))
   cmd += (" -march=%s" % isa)
   cmd += (" -mabi=%s" % mabi)
   run_cmd_output(cmd.split(), debug_cmd = debug_cmd)
@@ -591,7 +594,7 @@ def run_c_from_dir(c_test_dir, iss_yaml, isa, mabi, gcc_opts, iss,
                  (len(c_list), c_test_dir))
     for c_file in c_list:
       run_c(c_file, iss_yaml, isa, target, mabi, gcc_opts, iss, output_dir,
-            setting_dir, debug_cmd)
+            setting_dir, debug_cmd, linker)
       if "," in iss:
         report = ("%s/iss_regr.log" % output_dir).rstrip()
         save_regr_report(report)
@@ -811,6 +814,8 @@ def setup_parser():
                       help="Generate debug command log file")
   parser.add_argument("--hwconfig_opts", type=str, default="",
                       help="custom configuration options, to be passed in config_pkg_generator.py in cva6")
+  parser.add_argument("-l", "--linker", type=str, default="",
+                      help="Path for the link.ld")
   return parser
 
 
@@ -832,6 +837,9 @@ def load_config(args, cwd):
 
   if not args.simulator_yaml:
     args.simulator_yaml = cwd + "/cva6-simulator.yaml"
+
+  if not args.linker:
+    args.linker = cwd + "/link.ld"
 
   # Keep the core_setting_dir option to be backward compatible, suggest to use
   # --custom_target
@@ -963,7 +971,7 @@ def main():
         # path_asm_test is an assembly file
         elif os.path.isfile(full_path) or args.debug:
           run_assembly(full_path, args.iss_yaml, args.isa, args.target, args.mabi, args.gcc_opts,
-                       args.iss, output_dir, args.core_setting_dir, args.debug)
+                       args.iss, output_dir, args.core_setting_dir, args.debug, args.linker)
         else:
           logging.error('%s does not exist' % full_path)
           sys.exit(RET_FAIL)
@@ -982,7 +990,7 @@ def main():
         # path_c_test is a c file
         elif os.path.isfile(full_path) or args.debug:
           run_c(full_path, args.iss_yaml, args.isa, args.target, args.mabi, args.gcc_opts,
-                args.iss, output_dir, args.core_setting_dir, args.debug)
+                args.iss, output_dir, args.core_setting_dir, args.debug, args.linker)
         else:
           logging.error('%s does not exist' % full_path)
           sys.exit(RET_FAIL)
@@ -1073,7 +1081,7 @@ def main():
             # path_asm_test is an assembly file
             elif os.path.isfile(path_asm_test):
               run_assembly(path_asm_test, args.iss_yaml, args.isa, args.target, args.mabi, gcc_opts,
-                           args.iss, output_dir, args.core_setting_dir, args.debug)
+                           args.iss, output_dir, args.core_setting_dir, args.debug, args.linker)
             else:
               if not args.debug:
                 logging.error('%s does not exist' % path_asm_test)
@@ -1094,7 +1102,7 @@ def main():
             # path_c_test is a C file
             elif os.path.isfile(path_c_test):
               run_c(path_c_test, args.iss_yaml, args.isa, args.target, args.mabi, gcc_opts,
-                    args.iss, output_dir, args.core_setting_dir, args.debug)
+                    args.iss, output_dir, args.core_setting_dir, args.debug, args.linker)
             else:
               if not args.debug:
                 logging.error('%s does not exist' % path_c_test)
@@ -1107,7 +1115,7 @@ def main():
       # Compile the assembly program to ELF, convert to plain binary
       if args.steps == "all" or re.match(".*gcc_compile.*", args.steps):
         gcc_compile(matched_list, output_dir, args.isa, args.mabi,
-                    args.gcc_opts, args.debug)
+                    args.gcc_opts, args.debug, args.linker)
 
       # Run ISS simulation
       if args.steps == "all" or re.match(".*iss_sim.*", args.steps):

@@ -14,7 +14,7 @@
 */
 
 OUTPUT_ARCH( "riscv" )
-ENTRY(rvtest_entry_point)
+ENTRY(_start)
 
 SECTIONS
 {
@@ -30,8 +30,6 @@ SECTIONS
   .kernel_data : { *(.kernel_data) }
   .kernel_stack : { *(.kernel_stack) }
   .data : { *(.data) }
-  .data.string : { *(.data.string)}
   .bss : { *(.bss) }
   _end = .;
 }
-
