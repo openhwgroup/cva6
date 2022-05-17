@@ -1,0 +1,28 @@
+name: core-v-verif Project Task
+description: Create a core-v-verif Project Task intended for inclusion on an OpenHW project board
+title: "[TASK] title"
+labels: ["task"]
+body:
+- type: checkboxes
+  attributes:
+    label: Is there an existing core-v-verif task for this?
+    description: Please search to see if a task issue already exists for the task you need to create
+    options:
+    - label: I have searched the existing task issues
+      required: true
+- type: textarea
+  attributes:
+    label: Task Description
+    description: A concise description of what needs to be done (user story)
+  validations:
+    required: true
+- type: textarea
+  attributes:
+    label: Description of Done
+    description: What are the criteria for completion of this task?
+  validations:
+    required: true
+- type: markdown
+  attributes:
+    value: |
+      **Keep task progress up to date by adding comments to the task as it progresses.**
