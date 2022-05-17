@@ -104,16 +104,13 @@ def parse_iss_yaml(iss, iss_yaml, isa, target, setting_dir, debug_cmd):
       if m: logging.info("ISA %0s" % isa)
       else: logging.error("Illegal ISA %0s" % isa)
 
-      precmd = entry['precmd'].rstrip()
-      precmd = re.sub("\<path_var\>", get_env_var(entry['path_var'],), precmd)
-      precmd = re.sub("\<tool_path\>", get_env_var(entry['tool_path'],), precmd)
-      precmd = re.sub("\<tb_path\>", get_env_var(entry['tb_path'],), precmd)
-      if m: precmd = re.sub("\<target\>", target, precmd)
-
       cmd = entry['cmd'].rstrip()
       cmd = re.sub("\<path_var\>", get_env_var(entry['path_var'], debug_cmd = debug_cmd), cmd)
       cmd = re.sub("\<tool_path\>", get_env_var(entry['tool_path'], debug_cmd = debug_cmd), cmd)
       cmd = re.sub("\<tb_path\>", get_env_var(entry['tb_path'], debug_cmd = debug_cmd), cmd)
+      cmd = re.sub("\<isscomp_opts\>", isscomp_opts, cmd)
+      cmd = re.sub("\<issrun_opts\>", issrun_opts, cmd)
+      cmd = re.sub("\<isspostrun_opts\>", isspostrun_opts, cmd)
       if m: cmd = re.sub("\<xlen\>", m.group('xlen'), cmd)
       if iss == "ovpsim":
         cmd = re.sub("\<cfg_path\>", setting_dir, cmd)
@@ -125,12 +122,7 @@ def parse_iss_yaml(iss, iss_yaml, isa, target, setting_dir, debug_cmd):
       else:
         cmd = re.sub("\<variant\>", isa, cmd)
 
-      postcmd = entry['postcmd'].rstrip()
-      postcmd = re.sub("\<path_var\>", get_env_var(entry['path_var'],), postcmd)
-      postcmd = re.sub("\<tool_path\>", get_env_var(entry['tool_path'],), postcmd)
-      postcmd = re.sub("\<tb_path\>", get_env_var(entry['tb_path'],), postcmd)
-
-      return [precmd, cmd, postcmd]
+      return cmd
   logging.error("Cannot find ISS %0s" % iss)
   sys.exit(RET_FAIL)
 
@@ -148,6 +140,7 @@ def get_iss_cmd(base_cmd, elf, target, log):
   """
   cmd = re.sub("\<elf\>", elf, base_cmd)
   cmd = re.sub("\<target\>", target, cmd)
+  cmd = re.sub("\<log\>", log, cmd)
   cmd += (" &> %s.iss" % log)
   return cmd
 
@@ -437,16 +430,10 @@ def run_assembly(asm_test, iss_yaml, isa, target, mabi, gcc_opts, iss_opts, outp
     run_cmd("mkdir -p %s/%s_sim" % (output_dir, iss))
     log = ("%s/%s_sim/%s.log" % (output_dir, iss, asm))
     log_list.append(log)
-    [pre_cmd, base_cmd, post_cmd] = parse_iss_yaml(iss, iss_yaml, isa, target, setting_dir, debug_cmd)
-    logging.info("[%0s] Running ISS pre simulation" % (iss))
-    if pre_cmd != "": run_cmd(pre_cmd)
-    logging.info("[%0s] Running ISS simulation: %s" % (iss, elf))
+    base_cmd = parse_iss_yaml(iss, iss_yaml, isa, target, setting_dir, debug_cmd)
     cmd = get_iss_cmd(base_cmd, elf, target, log)
+    logging.info("[%0s] Running ISS simulation: %s, %s" % (iss, cmd, elf))
     run_cmd(cmd, 300, debug_cmd = debug_cmd)
-    if post_cmd != "":
-      post_cmd = re.sub("log", log, post_cmd)
-      run_cmd(post_cmd)
-      logging.info("[%0s] %s ...done" % (iss, post_cmd))
     logging.info("[%0s] Running ISS simulation: %s ...done" % (iss, elf))
   if len(iss_list) == 2:
     compare_iss_log(iss_list, log_list, report)
@@ -519,19 +506,13 @@ def run_elf(c_test, iss_yaml, isa, target, mabi, gcc_opts, iss_opts, output_dir,
     run_cmd("mkdir -p %s/%s_sim" % (output_dir, iss))
     log = ("%s/%s_sim/%s.log" % (output_dir, iss, c))
     log_list.append(log)
-    [pre_cmd, base_cmd, post_cmd] = parse_iss_yaml(iss, iss_yaml, isa, target, setting_dir, debug_cmd)
-    logging.info("[%0s] Running ISS pre simulation" % (iss))
-    if pre_cmd != "": run_cmd(pre_cmd)
+    base_cmd = parse_iss_yaml(iss, iss_yaml, isa, target, setting_dir, debug_cmd)
     logging.info("[%0s] Running ISS simulation: %s" % (iss, elf))
     cmd = get_iss_cmd(base_cmd, elf, target, log)
     if "veri" in iss: ratio = 35
     else: ratio = 1
     run_cmd(cmd, 50000*ratio, debug_cmd = debug_cmd)
     logging.info("[%0s] Running ISS simulation: %s ...done" % (iss, elf))
-    if post_cmd != "":
-      post_cmd = re.sub("log", log, post_cmd)
-      run_cmd(post_cmd)
-      logging.info("[%0s] %s ...done" % (iss, post_cmd))
   if len(iss_list) == 2:
     compare_iss_log(iss_list, log_list, report)
 
@@ -583,16 +564,10 @@ def run_c(c_test, iss_yaml, isa, target, mabi, gcc_opts, iss_opts, output_dir,
     run_cmd("mkdir -p %s/%s_sim" % (output_dir, iss))
     log = ("%s/%s_sim/%s.log" % (output_dir, iss, c))
     log_list.append(log)
-    [pre_cmd, base_cmd, post_cmd] = parse_iss_yaml(iss, iss_yaml, isa, target, setting_dir, debug_cmd)
-    logging.info("[%0s] Running ISS pre simulation" % (iss))
-    if pre_cmd != "": run_cmd(pre_cmd)
+    base_cmd = parse_iss_yaml(iss, iss_yaml, isa, target, setting_dir, debug_cmd)
     logging.info("[%0s] Running ISS simulation: %s" % (iss, elf))
     cmd = get_iss_cmd(base_cmd, elf, target, log)
     run_cmd(cmd, 100, debug_cmd = debug_cmd)
-    if post_cmd != "":
-      post_cmd = re.sub("log", log, post_cmd)
-      run_cmd(post_cmd)
-      logging.info("[%0s] %s ...done" % (iss, post_cmd))
     logging.info("[%0s] Running ISS simulation: %s ...done" % (iss, elf))
   if len(iss_list) == 2:
     compare_iss_log(iss_list, log_list, report)
@@ -645,12 +620,9 @@ def iss_sim(test_list, output_dir, iss_list, iss_yaml, iss_opts,
   """
   for iss in iss_list.split(","):
     log_dir = ("%s/%s_sim" % (output_dir, iss))
-    [pre_cmd, base_cmd, post_cmd] = parse_iss_yaml(iss, iss_yaml, isa, target, setting_dir, debug_cmd)
+    base_cmd = parse_iss_yaml(iss, iss_yaml, isa, target, setting_dir, debug_cmd)
     logging.info("%s sim log dir: %s" % (iss, log_dir))
     run_cmd_output(["mkdir", "-p", log_dir])
-    if pre_cmd != "":
-       logging.info("[%0s] Running ISS pre simulation" % (iss))
-       run_cmd(pre_cmd)
     for test in test_list:
       if 'no_iss' in test and test['no_iss'] == 1:
         continue
@@ -669,12 +641,6 @@ def iss_sim(test_list, output_dir, iss_list, iss_yaml, iss_opts,
           else:
             run_cmd(cmd, timeout_s, debug_cmd = debug_cmd)
           logging.debug(cmd)
-          if post_cmd != "":
-             post_cmd = re.sub("log", log, post_cmd)
-             run_cmd(post_cmd)
-             logging.info("[%0s] %s ...done" % (iss, post_cmd))
-             logging.info("[%0s] Running ISS simulation: %s ...done" % (iss, elf))
-             post_cmd= re.sub(log, "log", post_cmd)
 
 
 def iss_cmp(test_list, iss, output_dir, stop_on_first_error, exp, debug_cmd):
@@ -787,6 +753,12 @@ def setup_parser():
                       help="Simulation options for the generator")
   parser.add_argument("--gcc_opts", type=str, default="",
                       help="GCC compile options")
+  parser.add_argument("--issrun_opts", type=str, default="+debug_disable=1",
+                      help="simulation run options")
+  parser.add_argument("--isscomp_opts", type=str, default="+define+WT_DCACHE+RVFI_TRACE",
+                      help="simulation comp options")
+  parser.add_argument("--isspostrun_opts", type=str, default="0x0000000080000000",
+                      help="simulation post run options")
   parser.add_argument("-s", "--steps", type=str, default="all",
                       help="Run steps: gen,gcc_compile,iss_sim,iss_cmp", dest="steps")
   parser.add_argument("--lsf_cmd", type=str, default="",
@@ -947,6 +919,12 @@ def main():
   try:
     parser = setup_parser()
     args = parser.parse_args()
+    global issrun_opts
+    issrun_opts = args.issrun_opts
+    global isspostrun_opts
+    isspostrun_opts = args.isspostrun_opts
+    global isscomp_opts
+    isscomp_opts = args.isscomp_opts
     cwd = os.path.dirname(os.path.realpath(__file__))
     os.environ["RISCV_DV_ROOT"] = cwd + "/dv"
     setup_logging(args.verbose)
@@ -960,7 +938,7 @@ def main():
     logg.addHandler(fh)
 
     logging.info("Arguments: \n" + str(args))
-    
+
     # Load configuration from the command line and the configuration file.
     cfg = load_config(args, cwd)
     # Create output directory

@@ -25,11 +25,24 @@ FLIST_TB   := $(CVA6_TB_DIR)/Flist.cva6_tb
 target     ?= cv64a6_imafdc_sv39
 FLIST_CORE := $(CVA6_REPO_DIR)/core/Flist.$(target)
 
-VERDI          ?=
-user-define    ?= +define+WT_CACHE
-USERDEFINE      = +define+RVFI_TRACE $(user-define)
+VERDI           ?=
+path-var        ?=
+tool_path       ?=
+isscomp_opts    ?=
+issrun_opts     ?=
+isspostrun_opts ?=
+log             ?=
+variant         ?=
 
 TESTNAME := $(shell basename -s .o $(elf-bin))
+
+ifeq ($(isspostrun_opts), "")
+grep_address:
+	grep $(isspostrun_opts) ./trace_rvfi_hart_00.dasm
+else
+grep_address:
+endif
+
 #######################################################################################
 #                   Code Coverage
 #######################################################################################
@@ -44,8 +57,31 @@ else
 	cov-comp-opt =
 	cov-run-opt  =
 endif
+
 ###############################################################################
-# Synopsys VCS specific commands, variables
+# Spike specific commands, variables
+###############################################################################
+spike:
+	$(tool_path)/spike --log-commits --isa=$(variant) -l $(elf)
+	cp $(log).iss $(log)
+
+###############################################################################
+# testharness specific commands, variables
+###############################################################################
+vcs-testharness:
+	make -C $(path_var) vcs_build target=$(target) defines=$(subst +define+,,$(isscomp_opts))
+	$(path_var)/work-vcs/simv ${VERDI:+-verdi} +permissive -sv_lib $(path_var)/work-dpi/ariane_dpi +PRELOAD=$(elf) +permissive-off ++$(elf) $(issrun_opts)
+	$(tool_path)/spike-dasm < ./trace_rvfi_hart_00.dasm > $(log)
+	grep $(isspostrun_opts) ./trace_rvfi_hart_00.dasm
+
+veri-testharness:
+	make -C $(path_var) verilate target=$(target) defines=$(subst +define+,,$(isscomp_opts))
+	$(path_var)/work-ver/Variane_testharness $(elf) $(issrun_opts)
+	$(tool_path)/spike-dasm < ./trace_rvfi_hart_00.dasm > $(log)
+	grep $(isspostrun_opts) ./trace_rvfi_hart_00.dasm
+
+###############################################################################
+# UVM specific commands, variables
 ###############################################################################
 ALL_VCS_FLAGS           = $(if $(VERDI), -kdb -debug_access+all -lca,) -sverilog -full64 -timescale=1ns/1ns
 VCS_WORK_DIR            = $(CORE_V_VERIF)/cva6/sim/vcs_results/default/vcs.d
@@ -84,7 +120,7 @@ ALL_UVM_FLAGS           = -lca -sverilog +incdir+/opt/synopsys/vcs-mx/O-2018.09-
 	  /opt/synopsys/vcs-mx/O-2018.09-SP1-1/etc/uvm/src/uvm_pkg.sv +UVM_VERBOSITY=UVM_MEDIUM -ntb_opts uvm-1.2 -timescale=1ns/1ps \
 	  -assert svaext -race=all -ignore unique_checks -full64 -q +incdir+/opt/synopsys/vcs-mx/O-2018.09-SP1-1/etc/uvm/src \
 	  +incdir+$(CORE_V_VERIF)/$(CV_CORE_LC)/env/uvme +incdir+$(CORE_V_VERIF)/$(CV_CORE_LC)/tb/uvmt \
-	  $(USERDEFINE) $(if $(VERDI), -debug_access+all -kdb,)
+	  $(if $(VERDI), -debug_access+all -kdb,)
 ALL_SIMV_UVM_FLAGS      = -licwait 20 -l +ntb_random_seed=1 \
 		-sv_lib $(CORE_V_VERIF)/lib/dpi_dasm/lib/Linux64/libdpi_dasm +signature=I-ADD-01.signature_output \
 		+UVM_TESTNAME=uvmt_cva6_firmware_test_c $(if $(VERDI), -gui -do $(CORE_V_VERIF)/cva6/sim/init_uvm.do,)
@@ -103,17 +139,23 @@ vcs_uvm_comp: dpi_build
 	cd $(VCS_WORK_DIR) && vcs $(ALL_UVM_FLAGS) \
 	  -f $(FLIST_CORE) -f $(FLIST_TB) \
 	  -f $(CVA6_UVMT_DIR)/uvmt_cva6.flist \
-	  $(cov-comp-opt) \
+	  $(cov-comp-opt) $(isscomp_opts)\
 	  -top uvmt_cva6_tb
 
 vcs_uvm_run:
 	cd $(VCS_WORK_DIR)/ && \
 	$(VCS_WORK_DIR)/simv ${ALL_SIMV_UVM_FLAGS} \
-	++$(elf-bin) \
-	+PRELOAD=$(elf-bin) \
+	++$(elf) \
+	+PRELOAD=$(elf) \
 	-sv_lib $(dpi-library)/ariane_dpi $(if $(DO_SIM), -ucli -do $(CORE_V_VERIF)/cva6/sim/sim.do,) \
-	$(cov-run-opt) && \
+	$(cov-run-opt) $(issrun_opts)&& \
 	mv $(VCS_WORK_DIR)/trace_rvfi_hart_00.dasm $(CORE_V_VERIF)/cva6/sim/
+
+vcs-uvm:
+	make vcs_uvm_comp
+	make vcs_uvm_run
+	$(tool_path)/spike-dasm < ./trace_rvfi_hart_00.dasm > $(log)
+	grep $(isspostrun_opts) ./trace_rvfi_hart_00.dasm
 
 generate_cov_dash:
 	urg -dir $(VCS_WORK_DIR)/simv.vdb
@@ -121,16 +163,20 @@ generate_cov_dash:
 vcs_gate_comp:
 	@echo "[VCS] Building Model"
 	mkdir -p $(VCS_WORK_DIR)
-	cd $(VCS_WORK_DIR) && vcs $(ALL_VCS_FLAGS) -f $(FLIST_CORE)_gate -f $(FLIST_TB)
+	cd $(VCS_WORK_DIR) && vcs $(ALL_VCS_FLAGS) -f $(FLIST_CORE)_gate -f $(FLIST_TB) $(isscomp_opts)
 
 vcs_gate_run:
-	cd $(VCS_WORK_DIR)/ && $(VCS_WORK_DIR)/simv
+	cd $(VCS_WORK_DIR)/ && $(VCS_WORK_DIR)/simv $(issrun_opts)
 	mv $(VCS_WORK_DIR)/trace_rvfi_hart_00.dasm $(CORE_V_VERIF)/cva6/sim/
 
 vcs_clean_all:
 	@echo "[VCS] Cleanup (entire vcs_work dir)"
 	rm -rf $(CORE_V_VERIF)/cva6/sim/vcs_results/ verdiLog/ simv* *.daidir *.vpd *.db csrc ucli.key vc_hdrs.h novas* inter.fsdb uart
 
+vcs-gate:
+	make vcs_gate_comp
+	make vcs_gate_run
+	$(tool_path)/spike-dasm < ./trace_rvfi_hart_00.dasm > $(log)
 
 ###############################################################################
 # Common targets and rules

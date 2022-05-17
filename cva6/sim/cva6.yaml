@@ -14,11 +14,8 @@
   path_var: RTL_PATH
   tool_path: SPIKE_PATH
   tb_path: TB_PATH
-  precmd: >
   cmd: >
-    <tool_path>/spike --log-commits --isa=<variant> -l <elf>
-  postcmd: >
-    mv log.iss log
+    make spike variant=<variant> elf=<elf> tool_path=<tool_path> log=<log>
 
 ###############################################################################
 # Verilator
@@ -27,27 +24,8 @@
   path_var: RTL_PATH
   tool_path: SPIKE_PATH
   tb_path: TB_PATH
-  precmd: >
-    make -C <path_var> verilate target=<target> user-define="+define+WT_CACHE"
   cmd: >
-    <path_var>/work-ver/Variane_testharness +debug_disable=1 <elf>
-  postcmd: >
-    <tool_path>/spike-dasm < ./trace_rvfi_hart_00.dasm > log
-
-- iss: veri-testharness-linux
-  path_var: RTL_PATH
-  tool_path: SPIKE_PATH
-  tb_path: TB_PATH
-  precmd: >
-    make -C <path_var> verilate target=<target> user-define="+define+WT_CACHE"
-  cmd: >
-    <path_var>/work-ver/Variane_testharness +time_out=40000000 +debug_disable=1 <elf>
-# Linux BBL is built out line to produce bbl.o
-#   The test consists in executing the first 40M cycles of bbl.o
-#   The grep command checks that "relocate" (vmlinux symbol) address is executed
-#   Of course, the address depends on thr bbl.o, to be added to the TODO list !
-  postcmd: >
-    grep "ffffffe0005e5cd4" ./trace_rvfi_hart_00.dasm
+    make veri-testharness target=<target> elf=<elf> path_var=<path_var> tool_path=<tool_path> isscomp_opts=<isscomp_opts> issrun_opts=<issrun_opts> isspostrun_opts=<isspostrun_opts> log=<log>
 
 ###############################################################################
 # Synopsys VCS specific commands, variables
@@ -56,31 +34,19 @@
   path_var: RTL_PATH
   tool_path: SPIKE_PATH
   tb_path: TB_PATH
-  precmd: >
-    make -C <path_var> vcs_build target=<target> user-define="+define+WT_CACHE"
   cmd: >
-    <path_var>/work-vcs/simv ${VERDI:+-verdi} +permissive -sv_lib <path_var>/work-dpi/ariane_dpi +debug_disable=1 +PRELOAD=<elf> +permissive-off ++<elf>
-  postcmd: >
-    <tool_path>/spike-dasm < ./trace_rvfi_hart_00.dasm > log
+    make vcs-testharness target=<target> elf=<elf> path_var=<path_var> tool_path=<tool_path> isscomp_opts=<isscomp_opts> issrun_opts=<issrun_opts> isspostrun_opts=<isspostrun_opts> log=<log>
 
 - iss: vcs-gate
   path_var: RTL_PATH
   tool_path: SPIKE_PATH
   tb_path: TB_PATH
-  precmd: >
-    make -f Makefile vcs_gate_comp target=<target> user-define="+define+WT_CACHE"
   cmd: >
-    make -f Makefile vcs_gate_run elf-bin=<elf>
-  postcmd: >
-    <tool_path>/spike-dasm < ./trace_rvfi_hart_00.dasm > log
+    make vcs-gate target=<target> cov=${cov} elf=<elf> tool_path=<tool_path> isscomp_opts=<isscomp_opts> issrun_opts=<issrun_opts> isspostrun_opts=<isspostrun_opts> log=<log>
 
 - iss: vcs-uvm
   path_var: RTL_PATH
   tool_path: SPIKE_PATH
   tb_path: TB_PATH
-  precmd: >
-    make -f Makefile vcs_uvm_comp target=<target> cov=${cov} user-define="+define+WT_CACHE"
   cmd: >
-    make -f Makefile vcs_uvm_run elf-bin=<elf> cov=${cov}
-  postcmd: >
-    <tool_path>/spike-dasm < ./trace_rvfi_hart_00.dasm > log
+    make vcs-uvm target=<target> cov=${cov} elf=<elf> tool_path=<tool_path> isscomp_opts=<isscomp_opts> issrun_opts=<issrun_opts> isspostrun_opts=<isspostrun_opts> log=<log>

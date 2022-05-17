@@ -25,10 +25,11 @@ source ./cva6/regress/install-cva6.sh
 source ./cva6/regress/install-riscv-dv.sh
 
 if ! [ -n "$DV_SIMULATORS" ]; then
-  DV_SIMULATORS=veri-testharness-linux
+  DV_SIMULATORS=veri-testharness
 fi
 
 cd cva6/sim
 cp $BBL_ROOT/bbl bbl.o
-python3 cva6.py --target cv64a6_imafdc_sv39 --iss=$DV_SIMULATORS --iss_yaml=cva6.yaml --elf_tests bbl.o
+python3 cva6.py --target cv64a6_imafdc_sv39 --iss=$DV_SIMULATORS --iss_yaml=cva6.yaml --elf_tests bbl.o\
+  --issrun_opts="+time_out=40000000 +debug_disable=1" --isspostrun_opts="ffffffe0005e5cd4"
 cd -
