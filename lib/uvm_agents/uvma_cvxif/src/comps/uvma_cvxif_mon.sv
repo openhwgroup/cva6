@@ -37,8 +37,10 @@ class uvma_cvxif_mon_c extends uvm_monitor;
    int r;
 
    uvm_analysis_port#(uvma_cvxif_req_item_c)  req_ap;
+   uvm_analysis_port#(uvma_cvxif_resp_item_c) resp_ap;
 
    uvma_cvxif_req_item_c req_tr;
+   uvma_cvxif_resp_item_c resp_tr;
 
    /**
     * Default constructor.
@@ -51,6 +53,7 @@ class uvma_cvxif_mon_c extends uvm_monitor;
    */
    extern virtual function void build_phase(uvm_phase phase);
 
+
    /**
     * Monitoring transaction
    */
@@ -60,6 +63,11 @@ class uvma_cvxif_mon_c extends uvm_monitor;
     * Send transaction request to sequencer
    */
    extern task send_req_to_sqr(uvma_cvxif_req_item_c req);
+
+   /**
+    * Collect and send response items to coverage model
+   */
+   extern task collect_and_send_resp(uvma_cvxif_resp_item_c resp_tr);
 
    /**
     * Protocol checkers for id used in each interface
@@ -90,6 +98,7 @@ function void uvma_cvxif_mon_c::build_phase(uvm_phase phase);
    end
 
    req_ap = new("req_ap", this);
+   resp_ap = new("resp_ap", this);
 
 endfunction : build_phase
 
@@ -100,6 +109,9 @@ task uvma_cvxif_mon_c::run_phase(uvm_phase phase);
    fork
       begin
          chk_id_result();
+      end
+      begin
+         collect_and_send_resp(resp_tr);
       end
       begin
       forever begin
@@ -175,6 +187,37 @@ task uvma_cvxif_mon_c::send_req_to_sqr(uvma_cvxif_req_item_c req);
    req_ap.write(req);
 
 endtask : send_req_to_sqr
+
+task uvma_cvxif_mon_c::collect_and_send_resp(uvma_cvxif_resp_item_c resp_tr);
+
+   forever begin
+      fork
+         begin
+            wait (cntxt.vif.cvxif_resp_o.x_issue_ready && cntxt.vif.cvxif_req_i.x_issue_valid);
+               resp_tr = uvma_cvxif_resp_item_c::type_id::create("resp_tr");
+               resp_tr.issue_resp.accept    = cntxt.vif.cvxif_resp_o.x_issue_resp.accept;
+               resp_tr.issue_resp.writeback = cntxt.vif.cvxif_resp_o.x_issue_resp.writeback;
+               resp_tr.issue_resp.exc       = cntxt.vif.cvxif_resp_o.x_issue_resp.exc;
+               resp_tr.issue_resp.loadstore = cntxt.vif.cvxif_resp_o.x_issue_resp.loadstore;
+               resp_tr.issue_resp.dualwrite = cntxt.vif.cvxif_resp_o.x_issue_resp.dualwrite;
+               resp_tr.issue_resp.dualread  = cntxt.vif.cvxif_resp_o.x_issue_resp.dualread;
+         end
+         begin
+            wait (cntxt.vif.cvxif_resp_o.x_result_valid && cntxt.vif.cvxif_req_i.x_result_ready);
+               resp_tr.result_valid     = cntxt.vif.cvxif_resp_o.x_result_valid;
+               resp_tr.result.id        = cntxt.vif.cvxif_resp_o.x_result.id;
+               resp_tr.result.data      = cntxt.vif.cvxif_resp_o.x_result.data;
+               resp_tr.result.rd        = cntxt.vif.cvxif_resp_o.x_result.rd;
+               resp_tr.result.we        = cntxt.vif.cvxif_resp_o.x_result.we;
+               resp_tr.result.exc       = cntxt.vif.cvxif_resp_o.x_result.exc;
+               resp_tr.result.exccode   = cntxt.vif.cvxif_resp_o.x_result.exccode;
+         end
+      join_any
+      resp_ap.write(resp_tr);
+      @(cntxt.vif.monitor_cb);
+   end
+
+endtask
 
 task uvma_cvxif_mon_c::chk_id_issue_commit(bit [ID_WIDTH-1:0] id);
 

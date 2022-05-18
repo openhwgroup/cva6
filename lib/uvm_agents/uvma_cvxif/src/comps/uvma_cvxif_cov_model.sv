@@ -30,7 +30,45 @@ class uvma_cvxif_cov_model_c extends uvm_component;
    uvm_tlm_analysis_fifo#(uvma_cvxif_resp_item_c)  resp_item_fifo;
 
    //covergroup instances
-    // TODO
+   covergroup result(string name)
+                  with function sample(uvma_cvxif_resp_item_c resp_item);
+
+   we_cp: coverpoint (resp_item.result.we)
+      {
+       bins we_0  = {0};
+       bins we_1  = {1};
+      }
+
+   exc_cp: coverpoint (resp_item.result.exc)
+      {
+       bins exc_0  = {0};
+       bins exc_1  = {1};
+      }
+
+endgroup : result
+
+covergroup issue(string name)
+                  with function sample(uvma_cvxif_resp_item_c resp_item);
+
+   writeback_cp: coverpoint (resp_item.issue_resp.writeback)
+      {
+       bins writeback_0  = {0};
+       bins writeback_1  = {1};
+      }
+
+   accept_cp: coverpoint (resp_item.issue_resp.accept)
+      {
+       bins accept_0  = {0};
+       bins accept_1  = {1};
+      }
+
+   exc_cp: coverpoint (resp_item.issue_resp.exc)
+      {
+       bins exc_0  = {0};
+       bins exc_1  = {1};
+      }
+
+endgroup: issue
 
    `uvm_component_utils_begin(uvma_cvxif_cov_model_c)
       `uvm_field_object(cfg  , UVM_DEFAULT)
@@ -80,6 +118,9 @@ endclass : uvma_cvxif_cov_model_c
 function uvma_cvxif_cov_model_c::new(string name="uvma_cvxif_cov_model", uvm_component parent=null);
 
    super.new(name, parent);
+
+   result = new("result");
+   issue = new("issue");
 
 endfunction : new
 
@@ -162,6 +203,8 @@ endfunction : sample_req_item
 function void uvma_cvxif_cov_model_c::sample_resp_item();
 
    // TODO Implement uvma_cvxif_cov_model_c::sample_resp_item();
+   result.sample(resp_item);
+   issue.sample(resp_item);
 
 endfunction : sample_resp_item
 

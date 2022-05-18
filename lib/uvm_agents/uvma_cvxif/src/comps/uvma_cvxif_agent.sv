@@ -160,6 +160,7 @@ endfunction : connect_analysis_ports
 function void uvma_cvxif_agent_c::connect_cov_model();
 
    monitor.req_ap.connect(cov_model.req_item_fifo.analysis_export);
+   monitor.resp_ap.connect(cov_model.resp_item_fifo.analysis_export);
 
 endfunction : connect_cov_model
 
