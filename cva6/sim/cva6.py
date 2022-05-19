@@ -1025,7 +1025,6 @@ def main():
               break
       for t in list(matched_list):
         try:
-          t['asm_tests'] = re.sub("\<path_var\>", get_env_var(t['path_var']), t['asm_tests'])
           t['gcc_opts'] = re.sub("\<path_var\>", get_env_var(t['path_var']), t['gcc_opts'])
         except KeyError:
           continue
@@ -1036,6 +1035,7 @@ def main():
             logging.error('asm_tests must not be defined in the testlist '
                           'together with the gen_test or c_tests field')
             sys.exit(RET_FATAL)
+          t['asm_tests'] = re.sub("\<path_var\>", get_env_var(t['path_var']), t['asm_tests'])
           asm_directed_list.append(t)
           matched_list.remove(t)
 
@@ -1044,12 +1044,17 @@ def main():
             logging.error('c_tests must not be defined in the testlist '
                           'together with the gen_test or asm_tests field')
             sys.exit(RET_FATAL)
+          t['c_tests'] = re.sub("\<path_var\>", get_env_var(t['path_var']), t['c_tests'])
           c_directed_list.append(t)
           matched_list.remove(t)
 
       if len(matched_list) == 0 and len(asm_directed_list) == 0 and len(c_directed_list) == 0:
         sys.exit("Cannot find %s in %s" % (args.test, args.testlist))
 
+      for t in c_directed_list:
+        copy = re.sub(r'(.*)\/(.*).c$', r'cp \1/\2.c \1/', t['c_tests'])+t['test']+'.c'
+        run_cmd("%s" % copy)
+        t['c_tests'] = re.sub(r'(.*)\/(.*).c$', r'\1/', t['c_tests'])+t['test']+'.c'
     # Run instruction generator
     if args.steps == "all" or re.match(".*gen.*", args.steps):
       # Run any handcoded/directed assembly tests specified in YAML format
