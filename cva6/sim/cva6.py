@@ -920,11 +920,11 @@ def main():
     parser = setup_parser()
     args = parser.parse_args()
     global issrun_opts
-    issrun_opts = args.issrun_opts
+    issrun_opts = "\""+args.issrun_opts+"\""
     global isspostrun_opts
-    isspostrun_opts = args.isspostrun_opts
+    isspostrun_opts = "\""+args.isspostrun_opts+"\""
     global isscomp_opts
-    isscomp_opts = args.isscomp_opts
+    isscomp_opts = "\""+args.isscomp_opts+"\""
     cwd = os.path.dirname(os.path.realpath(__file__))
     os.environ["RISCV_DV_ROOT"] = cwd + "/dv"
     setup_logging(args.verbose)
