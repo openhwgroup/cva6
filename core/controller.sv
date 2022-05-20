@@ -132,7 +132,7 @@ module controller import ariane_pkg::*; (
             flush_unissued_instr_o = 1'b1;
             flush_id_o             = 1'b1;
             flush_ex_o             = 1'b1;
-            if(v_i)
+            if(ariane_pkg::RVH && v_i)
                 flush_tlb_vvma_o       = 1'b1;
             else
                 flush_tlb_o            = 1'b1;
@@ -141,7 +141,7 @@ module controller import ariane_pkg::*; (
         // ---------------------------------
         // HFENCE.VVMA
         // ---------------------------------
-        if (hfence_vvma_i) begin
+        if (ariane_pkg::RVH && hfence_vvma_i) begin
             set_pc_commit_o        = 1'b1;
             flush_if_o             = 1'b1;
             flush_unissued_instr_o = 1'b1;
@@ -154,7 +154,7 @@ module controller import ariane_pkg::*; (
         // ---------------------------------
         // HFENCE.GVMA
         // ---------------------------------
-        if (hfence_gvma_i) begin
+        if (ariane_pkg::RVH && hfence_gvma_i) begin
             set_pc_commit_o        = 1'b1;
             flush_if_o             = 1'b1;
             flush_unissued_instr_o = 1'b1;

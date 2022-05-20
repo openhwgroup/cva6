@@ -180,7 +180,7 @@ module commit_stage import ariane_pkg::*; #(
             // hfence.vvma is idempotent so we can safely re-execute it after returning
             // from interrupt service routine
             // check if this instruction was a HFENCE_VVMA
-            if (commit_instr_i[0].op == HFENCE_VVMA) begin
+            if (ariane_pkg::RVH && commit_instr_i[0].op == HFENCE_VVMA) begin
                 // no store pending so we can flush the TLBs and pipeline
                 hfence_vvma_o = no_st_pending_i;
                 // wait for the store buffer to drain until flushing the pipeline
@@ -192,7 +192,7 @@ module commit_stage import ariane_pkg::*; #(
             // hfence.gvma is idempotent so we can safely re-execute it after returning
             // from interrupt service routine
             // check if this instruction was a HFENCE_GVMA
-            if (commit_instr_i[0].op == HFENCE_GVMA) begin
+            if (ariane_pkg::RVH && commit_instr_i[0].op == HFENCE_GVMA) begin
                 // no store pending so we can flush the TLBs and pipeline
                 hfence_gvma_o = no_st_pending_i;
                 // wait for the store buffer to drain until flushing the pipeline
@@ -303,9 +303,11 @@ module commit_stage import ariane_pkg::*; #(
                 // the instruction bits from the ID stage. If a earlier exception happened we don't care
                 // as we will overwrite it anyway in the next IF bl
                 exception_o.tval  = commit_instr_i[0].ex.tval;
-                exception_o.tinst = commit_instr_i[0].ex.tinst;
-                exception_o.tval2 = commit_instr_i[0].ex.tval2;
-                exception_o.gva   = commit_instr_i[0].ex.gva;
+                if(ariane_pkg::RVH) begin 
+                    exception_o.tinst = commit_instr_i[0].ex.tinst;
+                    exception_o.tval2 = commit_instr_i[0].ex.tval2;
+                    exception_o.gva   = commit_instr_i[0].ex.gva;
+                end
             end
             // ------------------------
             // Earlier Exceptions

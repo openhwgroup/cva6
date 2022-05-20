@@ -166,6 +166,7 @@ package ariane_pkg;
     localparam bit RVD = (riscv::IS_XLEN64 ? 1:0) & riscv::FPU_EN;              // Is D extension enabled for only 64 bit CPU
 `endif
     localparam bit RVA = cva6_config_pkg::CVA6ConfigAExtEn; // Is A extension enabled
+    localparam bit RVH = cva6_config_pkg::CVA6ConfigHExtEn; // Is H extension enabled (disabled by default)
 
     // Transprecision floating-point extensions configuration
     localparam bit XF16    = cva6_config_pkg::CVA6ConfigF16En; // Is half-precision float extension (Xf16) enabled
@@ -211,7 +212,7 @@ package ariane_pkg;
                                       | (riscv::XLEN'(RVC) <<  2)                         // C - Compressed extension
                                       | (riscv::XLEN'(RVD) <<  3)                         // D - Double precsision floating-point extension
                                       | (riscv::XLEN'(RVF) <<  5)                         // F - Single precsision floating-point extension
-                                      | (riscv::XLEN'(1  ) <<  7)                         // H - Hypervisor mode implemented
+                                      | (riscv::XLEN'(RVH) <<  7)                         // H - Hypervisor mode implemented
                                       | (riscv::XLEN'(1  ) <<  8)                         // I - RV32I/64I/128I base ISA
                                       | (riscv::XLEN'(1  ) << 12)                         // M - Integer Multiply/Divide extension
                                       | (riscv::XLEN'(0  ) << 13)                         // N - User level interrupts supported
