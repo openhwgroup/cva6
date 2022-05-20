@@ -30,14 +30,18 @@ module id_stage (
     input  logic                          issue_instr_ack_i,   // issue stage acknowledged sampling of instructions
     // from CSR file
     input  riscv::priv_lvl_t              priv_lvl_i,          // current privilege level
+    input  logic                          v_i,                 // current virtualization mode
     input  riscv::xs_t                    fs_i,                // floating point extension status
+    input  riscv::xs_t                    vfs_i,               // floating point extension virtual status
     input  logic [2:0]                    frm_i,               // floating-point dynamic rounding mode
     input  logic [1:0]                    irq_i,
     input  ariane_pkg::irq_ctrl_t         irq_ctrl_i,
     input  logic                          debug_mode_i,        // we are in debug mode
     input  logic                          tvm_i,
     input  logic                          tw_i,
-    input  logic                          tsr_i
+    input  logic                          vtw_i,
+    input  logic                          tsr_i,
+    input  logic                          hu_i                 // hypervisor user mode
 );
     // ID/ISSUE register stage
     typedef struct packed {
@@ -84,12 +88,16 @@ module id_stage (
         .branch_predict_i        ( fetch_entry_i.branch_predict    ),
         .ex_i                    ( fetch_entry_i.ex                ),
         .priv_lvl_i              ( priv_lvl_i                      ),
+        .v_i                     ( v_i                             ),
         .debug_mode_i            ( debug_mode_i                    ),
         .fs_i,
+        .vfs_i,
         .frm_i,
         .tvm_i,
         .tw_i,
+        .vtw_i,
         .tsr_i,
+        .hu_i,
         .instruction_o           ( decoded_instruction          ),
         .is_control_flow_instr_o ( is_control_flow_instr        )
     );

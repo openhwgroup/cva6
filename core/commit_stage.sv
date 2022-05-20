@@ -260,6 +260,7 @@ module commit_stage import ariane_pkg::*; #(
         exception_o.valid = 1'b0;
         exception_o.cause = '0;
         exception_o.tval  = '0;
+        exception_o.tinst = '0;
         // we need a valid instruction in the commit stage
         if (commit_instr_i[0].valid) begin
             // ------------------------
