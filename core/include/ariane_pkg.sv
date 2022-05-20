@@ -293,6 +293,8 @@ package ariane_pkg;
                                                     | riscv::HSTATUS_VTW
                                                     | riscv::HSTATUS_VTSR;
 
+    localparam logic [63:0] ENVCFG_WRITE_MASK       = riscv::MENVCFG_FIOM;
+
     // hypervisor delegable interrupts
     localparam logic [63:0] HS_DELEG_INTERRUPTS     = riscv::MIP_VSSIP
                                                     | riscv::MIP_VSTIP
