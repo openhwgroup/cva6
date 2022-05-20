@@ -31,6 +31,9 @@ sources:
           - core/mmu_sv39/tlb.sv
           - core/mmu_sv39/mmu.sv
           - core/mmu_sv39/ptw.sv
+          - core/mmu_sv39x4/cva6_tlb_sv39x4.sv
+          - core/mmu_sv39x4/cva6_mmu_sv39x4.sv
+          - core/mmu_sv39x4/cva6_ptw_sv39x4.sv
 
       - target: cv32a6_imac_sv0
         files:

@@ -61,12 +61,22 @@ module csr_regfile import ariane_pkg::*; #(
     output irq_ctrl_t             irq_ctrl_o,                 // interrupt management to id stage
     // MMU
     output logic                  en_translation_o,           // enable VA translation
+    output logic                  en_g_translation_o,         // enable G-Stage translation
     output logic                  en_ld_st_translation_o,     // enable VA translation for load and stores
+    output logic                  en_ld_st_g_translation_o,   // enable G-Stage translation for load and stores
     output riscv::priv_lvl_t      ld_st_priv_lvl_o,           // Privilege level at which load and stores should happen
+    output logic                  ld_st_v_o,                  // Virtualization mode at which load and stores should happen
+    input  logic                  csr_hs_ld_st_inst_i,        // Current instruction is a Hypervisor Load/Store Instruction
     output logic                  sum_o,
+    output logic                  vs_sum_o,
     output logic                  mxr_o,
+    output logic                  vmxr_o,
     output logic[riscv::PPNW-1:0] satp_ppn_o,
-    output logic [AsidWidth-1:0] asid_o,
+    output logic [AsidWidth-1:0]  asid_o,
+    output logic[riscv::PPNW-1:0] vsatp_ppn_o,
+    output logic [AsidWidth-1:0]  vs_asid_o,
+    output logic[riscv::PPNW-1:0] hgatp_ppn_o,
+    output logic [VmidWidth-1:0]  vmid_o,
     // external interrupts
     input  logic [1:0]            irq_i,                      // external interrupt in
     input  logic                  ipi_i,                      // inter processor interrupt -> connected to machine mode sw
@@ -101,6 +111,7 @@ module csr_regfile import ariane_pkg::*; #(
     logic               trap_to_v;
     // register for enabling load store address translation, this is critical, hence the register
     logic        en_ld_st_translation_d, en_ld_st_translation_q;
+    logic        en_ld_st_g_translation_d, en_ld_st_g_translation_q;
     logic  mprv;
     logic  mret;  // return from M-mode exception
     logic  sret;  // return from S-mode exception
@@ -139,6 +150,7 @@ module csr_regfile import ariane_pkg::*; #(
     riscv::xlen_t mcause_q,    mcause_d;
     riscv::xlen_t mtval_q,     mtval_d;
     riscv::xlen_t mtinst_q,    mtinst_d;
+    riscv::xlen_t mtval2_q,    mtval2_d;
 
     riscv::xlen_t stvec_q,     stvec_d;
     riscv::xlen_t scounteren_q,scounteren_d;
@@ -150,6 +162,7 @@ module csr_regfile import ariane_pkg::*; #(
     riscv::xlen_t hideleg_q,   hideleg_d;
     riscv::xlen_t hcounteren_q,hcounteren_d;
     riscv::xlen_t hgeie_q,     hgeie_d;
+    riscv::xlen_t htval_q,     htval_d;
     riscv::xlen_t htinst_q,    htinst_d;
 
     riscv::xlen_t vstvec_q,    vstvec_d;
@@ -319,7 +332,8 @@ module csr_regfile import ariane_pkg::*; #(
                 riscv::CSR_HIP:                csr_rdata = mip_q & HS_DELEG_INTERRUPTS;
                 riscv::CSR_HVIP:               csr_rdata = mip_q & VS_DELEG_INTERRUPTS;
                 riscv::CSR_HCOUNTEREN:         csr_rdata = hcounteren_q;
-                riscv::CSR_HTINST:;            //TODO: implement htinst
+                riscv::CSR_HTVAL:              csr_rdata = htval_q;
+                riscv::CSR_HTINST:             csr_rdata = htinst_q;
                 riscv::CSR_HGEIE:              csr_rdata = '0;
                 riscv::CSR_HGEIP:              csr_rdata = '0;
                 riscv::CSR_HGATP: begin
@@ -349,6 +363,7 @@ module csr_regfile import ariane_pkg::*; #(
                 riscv::CSR_MIMPID:             csr_rdata = '0; // not implemented
                 riscv::CSR_MHARTID:            csr_rdata = hart_id_i;
                 riscv::CSR_MTINST:             csr_rdata = mtinst_q;
+                riscv::CSR_MTVAL2:             csr_rdata = mtval2_q;
                 // Counters and Timers
                 riscv::CSR_MCYCLE:             csr_rdata = cycle_q[riscv::XLEN-1:0];
                 riscv::CSR_MCYCLEH:            if (riscv::XLEN == 32) csr_rdata = cycle_q[63:32]; else read_access_exception = 1'b1;
@@ -542,6 +557,7 @@ module csr_regfile import ariane_pkg::*; #(
         mscratch_d              = mscratch_q;
         mtval_d                 = mtval_q;
         mtinst_d                = mtinst_q;
+        mtval2_d                = mtval2_q;
         dcache_d                = dcache_q;
         icache_d                = icache_q;
 
@@ -565,9 +581,11 @@ module csr_regfile import ariane_pkg::*; #(
         hgeie_d                 = hgeie_q;
         hgatp_d                 = hgatp_q;
         hcounteren_d            = hcounteren_q;
+        htval_d                 = htval_q;
         htinst_d                = htinst_q;
 
         en_ld_st_translation_d  = en_ld_st_translation_q;
+        en_ld_st_g_translation_d = en_ld_st_g_translation_q;
         dirty_fp_state_csr      = 1'b0;
 
         pmpcfg_d                = pmpcfg_q;
@@ -811,6 +829,7 @@ module csr_regfile import ariane_pkg::*; #(
                     mip_d = (mip_q & ~mask) | (csr_wdata & mask);
                 end
                 riscv::CSR_HCOUNTEREN:         hcounteren_d = {{riscv::XLEN-32{1'b0}}, csr_wdata[31:0]};
+                riscv::CSR_HTVAL:              htval_d = csr_wdata;
                 riscv::CSR_HTINST:             htinst_d = {{riscv::XLEN-32{1'b0}}, csr_wdata[31:0]};
                 riscv::CSR_HGEIE:; //TODO: implement htinst write
                 riscv::CSR_HGATP: begin
@@ -891,7 +910,8 @@ module csr_regfile import ariane_pkg::*; #(
                 riscv::CSR_MEPC:               mepc_d      = {csr_wdata[riscv::XLEN-1:1], 1'b0};
                 riscv::CSR_MCAUSE:             mcause_d    = csr_wdata;
                 riscv::CSR_MTVAL:              mtval_d     = csr_wdata;
-                riscv::CSR_MTINST:             mtinst_d = {{riscv::XLEN-32{1'b0}}, csr_wdata[31:0]};
+                riscv::CSR_MTINST:             mtinst_d    = {{riscv::XLEN-32{1'b0}}, csr_wdata[31:0]};
+                riscv::CSR_MTVAL2:             mtval2_d    = csr_wdata;
                 riscv::CSR_MIP: begin
                     mask = riscv::MIP_SSIP | riscv::MIP_STIP | riscv::MIP_SEIP | riscv::MIP_VSSIP;
                     mip_d = (mip_q & ~mask) | (csr_wdata & mask);
@@ -1127,7 +1147,8 @@ module csr_regfile import ariane_pkg::*; #(
                                     riscv::VIRTUAL_INSTRUCTION
                                   } || ex_i.cause[riscv::XLEN-1])) ? '0 : ex_i.tinst;
                 hstatus_d.spvp = v_q ? priv_lvl_q[0] : hstatus_d.spvp;
-                // TODO: set GVA bit
+                htval_d        = ex_i.tval2 >> 2;
+                hstatus_d.gva  = ex_i.gva;
                 hstatus_d.spv  = v_q;
                 end
             // trap to machine mode
@@ -1153,6 +1174,8 @@ module csr_regfile import ariane_pkg::*; #(
                                   } || ex_i.cause[riscv::XLEN-1])) ? '0 : ex_i.tval;
                 mtinst_d       = (ariane_pkg::ZERO_TVAL
                                   && (ex_i.cause inside {
+                                    riscv::INSTR_ADDR_MISALIGNED,
+                                    riscv::INSTR_ACCESS_FAULT,
                                     riscv::ILLEGAL_INSTR,
                                     riscv::BREAKPOINT,
                                     riscv::ENV_CALL_UMODE,
@@ -1162,6 +1185,8 @@ module csr_regfile import ariane_pkg::*; #(
                                     riscv::INSTR_GUEST_PAGE_FAULT,
                                     riscv::VIRTUAL_INSTRUCTION
                                   } || ex_i.cause[riscv::XLEN-1])) ? '0 : ex_i.tinst;
+                mtval2_d       = ex_i.tval2 >> 2;
+                mstatus_d.gva  = ex_i.gva;
             end
 
             priv_lvl_d = trap_to_priv_lvl;
@@ -1251,13 +1276,38 @@ module csr_regfile import ariane_pkg::*; #(
         // ------------------------------
         // Set the address translation at which the load and stores should occur
         // we can use the previous values since changing the address translation will always involve a pipeline flush
-        if (mprv && riscv::vm_mode_t'(satp_q.mode) == riscv::MODE_SV && (mstatus_q.mpp != riscv::PRIV_LVL_M))
+        if (mprv && (mstatus_q.mpv == 1'b0) && (riscv::vm_mode_t'(satp_q.mode) == riscv::MODE_SV) && (mstatus_q.mpp != riscv::PRIV_LVL_M)) begin
             en_ld_st_translation_d = 1'b1;
-        else // otherwise we go with the regular settings
+        end else if (mprv && (mstatus_q.mpv == 1'b1)) begin
+            if (riscv::vm_mode_t'(vsatp_q.mode) == riscv::MODE_SV) begin
+                en_ld_st_translation_d = 1'b1;
+            end else begin
+                en_ld_st_translation_d = 1'b0;
+            end
+        end else begin // otherwise we go with the regular settings
             en_ld_st_translation_d = en_translation_o;
+        end
 
-        ld_st_priv_lvl_o = (mprv) ? mstatus_q.mpp : priv_lvl_o;
-        en_ld_st_translation_o = en_ld_st_translation_q;
+        if(mprv && (mstatus_q.mpv == 1'b1)) begin
+            if(riscv::vm_mode_t'(hgatp_q.mode) == riscv::MODE_SV) begin
+                en_ld_st_g_translation_d = 1'b1;
+            end else begin
+                en_ld_st_g_translation_d = 1'b0;
+            end
+        end else begin
+            en_ld_st_g_translation_d = en_g_translation_o;
+        end
+
+        if(csr_hs_ld_st_inst_i)
+            ld_st_priv_lvl_o = riscv::priv_lvl_t'(hstatus_q.spvp);
+        else
+            ld_st_priv_lvl_o = (mprv) ? mstatus_q.mpp : priv_lvl_o;
+
+        ld_st_v_o = ((mprv ? mstatus_q.mpv : v_q ) || (csr_hs_ld_st_inst_i));
+
+        en_ld_st_translation_o = (en_ld_st_translation_q && !csr_hs_ld_st_inst_i) || (riscv::vm_mode_t'(vsatp_q.mode) == riscv::MODE_SV && csr_hs_ld_st_inst_i);
+
+        en_ld_st_g_translation_o = (en_ld_st_g_translation_q && !csr_hs_ld_st_inst_i) || (csr_hs_ld_st_inst_i && riscv::vm_mode_t'(hgatp_q.mode) == riscv::MODE_SV && csr_hs_ld_st_inst_i);
         // ------------------------------
         // Return from Environment
         // ------------------------------
@@ -1432,7 +1482,7 @@ module csr_regfile import ariane_pkg::*; #(
     // ----------------------
     always_comb begin : exception_ctrl
         csr_exception_o = {
-            '0, '0, '0, 1'b0
+            '0, '0, '0, '0, 1'b0, 1'b0
         };
         // ----------------------------------
         // Illegal Access (decode exception)
@@ -1554,14 +1604,24 @@ module csr_regfile import ariane_pkg::*; #(
     assign fprec_o          = fcsr_q.fprec;
     // MMU outputs
     assign satp_ppn_o       = satp_q.ppn;
+    assign vsatp_ppn_o      = vsatp_q.ppn;
+    assign hgatp_ppn_o      = hgatp_q.ppn;
     assign asid_o           = satp_q.asid[AsidWidth-1:0];
-    assign sum_o            = v_q ? vsstatus_q.sum : mstatus_q.sum;
+    assign vs_asid_o        = vsatp_q.asid[AsidWidth-1:0];
+    assign vmid_o           = hgatp_q.vmid[VmidWidth-1:0];
+    assign sum_o            = mstatus_q.sum;
+    assign vs_sum_o         = vsstatus_q.sum;
     // we support bare memory addressing and SV39
-    assign en_translation_o = (riscv::vm_mode_t'(satp_q.mode) == riscv::MODE_SV &&
+    assign en_translation_o = ((((riscv::vm_mode_t'(satp_q.mode) == riscv::MODE_SV && !v_q) || (riscv::vm_mode_t'(vsatp_q.mode) == riscv::MODE_SV && v_q)) &&
                                priv_lvl_o != riscv::PRIV_LVL_M)
                               ? 1'b1
+                              : 1'b0);
+    assign en_g_translation_o = (riscv::vm_mode_t'(hgatp_q.mode) == riscv::MODE_SV &&
+                               priv_lvl_o != riscv::PRIV_LVL_M && v_q)
+                              ? 1'b1
                               : 1'b0;
-    assign mxr_o            = v_q ? vsstatus_q.mxr : mstatus_q.mxr;
+    assign mxr_o            = mstatus_q.mxr;
+    assign vmxr_o           = vsstatus_q.mxr;
     assign tvm_o            = v_q ? hstatus_q.vtvm : mstatus_q.tvm;
     assign tw_o             = mstatus_q.tw;
     assign vtw_o            = hstatus_q.vtw;
@@ -1608,6 +1668,7 @@ module csr_regfile import ariane_pkg::*; #(
             mcounteren_q           <= {riscv::XLEN{1'b0}};
             mscratch_q             <= {riscv::XLEN{1'b0}};
             mtval_q                <= {riscv::XLEN{1'b0}};
+            mtval2_q               <= {riscv::XLEN{1'b0}};
             mtinst_q               <= {riscv::XLEN{1'b0}};
             dcache_q               <= {{riscv::XLEN-1{1'b0}}, 1'b1};
             icache_q               <= {{riscv::XLEN-1{1'b0}}, 1'b1};
@@ -1625,6 +1686,7 @@ module csr_regfile import ariane_pkg::*; #(
             hgeie_q                <= {riscv::XLEN{1'b0}};
             hgatp_q                <= {riscv::XLEN{1'b0}};
             hcounteren_q           <= {riscv::XLEN{1'b0}};
+            htval_q                <= {riscv::XLEN{1'b0}};
             htinst_q               <= {riscv::XLEN{1'b0}};
             // virtual supervisor mode registers
             vsstatus_q              <= 64'b0;
@@ -1639,6 +1701,7 @@ module csr_regfile import ariane_pkg::*; #(
             instret_q              <= {riscv::XLEN{1'b0}};
             // aux registers
             en_ld_st_translation_q <= 1'b0;
+            en_ld_st_g_translation_q <= 1'b0;
             // wait for interrupt
             wfi_q                  <= 1'b0;
             // pmp
@@ -1668,6 +1731,7 @@ module csr_regfile import ariane_pkg::*; #(
             mcounteren_q           <= mcounteren_d;
             mscratch_q             <= mscratch_d;
             mtval_q                <= mtval_d;
+            mtval2_q               <= mtval2_d;
             mtinst_q               <= mtinst_d;
             dcache_q               <= dcache_d;
             icache_q               <= icache_d;
@@ -1686,6 +1750,7 @@ module csr_regfile import ariane_pkg::*; #(
             hgeie_q                <= hgeie_d;
             hgatp_q                <= hgatp_d;
             hcounteren_q           <= hcounteren_d;
+            htval_q                <= htval_d;
             htinst_q               <= htinst_d;
             // virtual supervisor mode registers
             vsstatus_q              <= vsstatus_d;
@@ -1700,6 +1765,7 @@ module csr_regfile import ariane_pkg::*; #(
             instret_q              <= instret_d;
             // aux registers
             en_ld_st_translation_q <= en_ld_st_translation_d;
+            en_ld_st_g_translation_q <= en_ld_st_g_translation_d;
             // wait for interrupt
             wfi_q                  <= wfi_d;
             // pmp

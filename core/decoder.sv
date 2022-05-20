@@ -57,6 +57,8 @@ module decoder import ariane_pkg::*; (
     logic check_fprm;
     riscv::instruction_t instr;
     assign instr = riscv::instruction_t'(instruction_i);
+    // transformed instruction
+    riscv::xlen_t tinst;
     // --------------------
     // Immediate select
     // --------------------
@@ -90,7 +92,7 @@ module decoder import ariane_pkg::*; (
         instruction_o.is_compressed = is_compressed_i;
         instruction_o.use_zimm      = 1'b0;
         instruction_o.bp            = branch_predict_i;
-        instruction_o.ex.tinst      = '0;
+        tinst                       = '0;
         ecall                       = 1'b0;
         ebreak                      = 1'b0;
         check_fprm                  = 1'b0;
@@ -173,8 +175,10 @@ module decoder import ariane_pkg::*; (
                                     end
                                     // we don't support U mode interrupts so WFI is illegal in this context
                                     if (priv_lvl_i == riscv::PRIV_LVL_U) begin
-                                        virtual_illegal_instr = v_i;
-                                        illegal_instr = !v_i;
+                                        if(v_i)
+                                          virtual_illegal_instr = 1'b1;
+                                        else
+                                          illegal_instr = 1'b1;
                                         instruction_o.op = ariane_pkg::ADD;
                                     end
                                 end
@@ -191,8 +195,10 @@ module decoder import ariane_pkg::*; (
                                         instruction_o.op = ariane_pkg::SFENCE_VMA;
                                         // check TVM flag and intercept SFENCE.VMA call if necessary
                                         if (priv_lvl_i == riscv::PRIV_LVL_S && tvm_i) begin
-                                            virtual_illegal_instr = v_i;
-                                            illegal_instr = !v_i;
+                                            if(v_i)
+                                              virtual_illegal_instr = 1'b1;
+                                            else
+                                              illegal_instr = 1'b1;
                                         end
                                     end
                                     if (instr.instr[31:25] == 7'b10001) begin
@@ -277,7 +283,7 @@ module decoder import ariane_pkg::*; (
                             7'b011_0111: instruction_o.op = ariane_pkg::HSV_D;
 
                             endcase
-                            instruction_o.ex.tinst = {instr.rtype.funct7,instr.rtype.rs2,5'b0,instr.rtype.funct3,instr.rtype.rd,instr.rtype.opcode};
+                            tinst = {instr.rtype.funct7, instr.rtype.rs2, 5'b0, instr.rtype.funct3, instr.rtype.rd, instr.rtype.opcode};
                         end
                         // atomically swaps values in the CSR and integer register
                         3'b001: begin// CSRRW
@@ -843,8 +849,8 @@ module decoder import ariane_pkg::*; (
                                 else illegal_instr = 1'b1;
                         default: illegal_instr = 1'b1;
                     endcase
-                    instruction_o.ex.tinst = {7'b0,instr.stype.rs2,5'b0,instr.stype.funct3,5'b0,instr.stype.opcode};
-                    instruction_o.ex.tinst[1] = is_compressed_i ? 1'b1 : 'b0;
+                    tinst = {7'b0,instr.stype.rs2,5'b0,instr.stype.funct3,5'b0,instr.stype.opcode};
+                    tinst[1] = is_compressed_i ? 1'b0 : 'b1;
                 end
 
                 riscv::OpcodeLoad: begin
@@ -864,8 +870,8 @@ module decoder import ariane_pkg::*; (
                                 else illegal_instr = 1'b1;
                         default: illegal_instr = 1'b1;
                     endcase
-                    instruction_o.ex.tinst = {17'b0,instr.itype.funct3,instr.itype.rd,instr.itype.opcode};
-                    instruction_o.ex.tinst[1] = is_compressed_i ? 1'b1 : 'b0;
+                    tinst = {17'b0,instr.itype.funct3,instr.itype.rd,instr.itype.opcode};
+                    tinst[1] = is_compressed_i ? 1'b0 : 'b1;
                 end
 
                 // --------------------------------
@@ -890,8 +896,8 @@ module decoder import ariane_pkg::*; (
                                     else illegal_instr = 1'b1;
                             default: illegal_instr = 1'b1;
                         endcase
-                        instruction_o.ex.tinst = {7'b0,instr.stype.rs2,5'b0,instr.stype.funct3,5'b0,instr.stype.opcode};
-                        instruction_o.ex.tinst[1] = is_compressed_i ? 1'b1 : 'b0;
+                        tinst = {7'b0,instr.stype.rs2,5'b0,instr.stype.funct3,5'b0,instr.stype.opcode};
+                        tinst[1] = is_compressed_i ? 1'b0 : 'b1;
                     end else
                         illegal_instr = 1'b1;
                 end
@@ -915,8 +921,8 @@ module decoder import ariane_pkg::*; (
                                     else illegal_instr = 1'b1;
                             default: illegal_instr = 1'b1;
                         endcase
-                        instruction_o.ex.tinst = {17'b0,instr.itype.funct3,instr.itype.rd,instr.itype.opcode};
-                        instruction_o.ex.tinst[1] = is_compressed_i ? 1'b1 : 'b0;
+                        tinst = {17'b0,instr.itype.funct3,instr.itype.rd,instr.itype.opcode};
+                        tinst[1] = is_compressed_i ? 1'b0 : 'b1;
                     end else
                         illegal_instr = 1'b1;
                 end
@@ -1178,8 +1184,7 @@ module decoder import ariane_pkg::*; (
                     end else begin
                         illegal_instr = 1'b1;
                     end
-                    instruction_o.ex.tinst = {instr.instr[31:25],instr.atype.rs2,5'b0,instr.stype.funct3,instr.atype.rd,instr.atype.opcode};
-                    instruction_o.ex.tinst[1] = is_compressed_i ? 1'b1 : 1'b0;
+                    tinst = {instr.atype.funct5, instr.atype.aq, instr.atype.rl, instr.atype.rs2, 5'b0, instr.atype.funct3, instr.atype.rd, instr.atype.opcode};
                 end
 
                 // --------------------------------
@@ -1316,6 +1321,7 @@ module decoder import ariane_pkg::*; (
             // if we didn't already get an exception save the instruction here as we may need it
             // in the commit stage if we got a access exception to one of the CSR registers
             instruction_o.ex.tval  = (is_compressed_i) ? {{riscv::XLEN-16{1'b0}}, compressed_instr_i} : {{riscv::XLEN-32{1'b0}}, instruction_i};
+            instruction_o.ex.tinst = tinst;
             // instructions which will throw an exception are marked as valid
             // e.g.: they can be committed anytime and do not need to wait for any functional unit
             // check here if we decoded an invalid instruction or if the compressed decoder already decoded
@@ -1344,6 +1350,8 @@ module decoder import ariane_pkg::*; (
                 instruction_o.ex.valid = 1'b1;
                 // set breakpoint cause
                 instruction_o.ex.cause = riscv::BREAKPOINT;
+                // set gva bit
+                instruction_o.ex.gva   = v_i;
             end
             // -----------------
             // Interrupt Control

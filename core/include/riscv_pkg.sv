@@ -39,6 +39,7 @@ package riscv;
     // Warning: VLEN must be superior or equal to PLEN
     localparam VLEN             = (XLEN == 32) ? 32 : 64;    // virtual address length
     localparam PLEN             = (XLEN == 32) ? 34 : 56;    // physical address length
+    localparam GPLEN            = (XLEN == 32) ? 34 : 41;    // guest physical address length
 
     localparam IS_XLEN32        = (XLEN == 32) ? 1'b1 : 1'b0;
     localparam IS_XLEN64        = (XLEN == 32) ? 1'b0 : 1'b1;
@@ -46,9 +47,12 @@ package riscv;
     localparam ASIDW            = (XLEN == 32) ? 9 : 16;
     localparam VMIDW            = (XLEN == 32) ? 7 : 14;
     localparam PPNW             = (XLEN == 32) ? 22 : 44;
+    localparam GPPNW            = (XLEN == 32) ? 22 : 29;
     localparam vm_mode_t        MODE_SV = (XLEN == 32) ? ModeSv32 : ModeSv39;
     localparam SV               = (MODE_SV == ModeSv32) ? 32 : 39;
+    localparam SVX              = (MODE_SV == ModeSv32) ? 34 : 41;
     localparam VPN2             = (VLEN-31 < 8) ? VLEN-31 : 8;
+    localparam GPPN2            = (XLEN == 32) ? riscv::VLEN-33 : 10;
     localparam XLEN_ALIGN_BYTES = $clog2(XLEN/8);
 
     typedef logic [XLEN-1:0] xlen_t;
@@ -388,6 +392,14 @@ package riscv;
     localparam logic [XLEN-1:0] M_EXT_INTERRUPT    = (1 << (XLEN-1)) | XLEN'(IRQ_M_EXT);
     localparam logic [XLEN-1:0] HS_EXT_INTERRUPT   = (1 << (XLEN-1)) | XLEN'(IRQ_HS_EXT);
 
+    // ----------------------
+    // PseudoInstructions Codes
+    // ----------------------
+    localparam logic [XLEN-1:0] READ_32_PSEUDOINSTRUCTION  = 32'h00002000;
+    localparam logic [XLEN-1:0] WRITE_32_PSEUDOINSTRUCTION = 32'h00002020;
+    localparam logic [XLEN-1:0] READ_64_PSEUDOINSTRUCTION  = 64'h00003000;
+    localparam logic [XLEN-1:0] WRITE_64_PSEUDOINSTRUCTION = 64'h00003020;
+
     // -----
     // CSRs
     // -----
@@ -454,6 +466,7 @@ package riscv;
         CSR_MTVAL          = 12'h343,
         CSR_MIP            = 12'h344,
         CSR_MTINST         = 12'h34A,
+        CSR_MTVAL2         = 12'h34B,
         CSR_PMPCFG0        = 12'h3A0,
         CSR_PMPCFG1        = 12'h3A1,
         CSR_PMPCFG2        = 12'h3A2,

@@ -15,6 +15,7 @@
 
 module load_store_unit import ariane_pkg::*; #(
     parameter int unsigned ASID_WIDTH = 1,
+    parameter int unsigned VMID_WIDTH = 1,
     parameter ariane_pkg::ariane_cfg_t ArianeCfg = ariane_pkg::ArianeDefaultConfig
 )(
     input  logic                     clk_i,
@@ -22,6 +23,7 @@ module load_store_unit import ariane_pkg::*; #(
     input  logic                     flush_i,
     output logic                     no_st_pending_o,
     input  logic                     amo_valid_commit_i,
+    input  riscv::xlen_t             tinst_i,
 
     input  fu_data_t                 fu_data_i,
     output logic                     lsu_ready_o,              // FU is ready e.g. not busy
@@ -42,21 +44,36 @@ module load_store_unit import ariane_pkg::*; #(
     input  logic [TRANS_ID_BITS-1:0] commit_tran_id_i,
 
     input  logic                     enable_translation_i,     // enable virtual memory translation
+    input  logic                     enable_g_translation_i,   // enable G-Stage translation
     input  logic                     en_ld_st_translation_i,   // enable virtual memory translation for load/stores
+    input  logic                     en_ld_st_g_translation_i, // enable G-stage translation for load/stores
 
     // icache translation requests
     input  icache_areq_o_t           icache_areq_i,
     output icache_areq_i_t           icache_areq_o,
 
     input  riscv::priv_lvl_t         priv_lvl_i,               // From CSR register file
+    input logic                      v_i,                      // From CSR register file
     input  riscv::priv_lvl_t         ld_st_priv_lvl_i,         // From CSR register file
+    input  logic                     ld_st_v_i,                // From CSR register file
+    output logic                     csr_hs_ld_st_inst_o,
     input  logic                     sum_i,                    // From CSR register file
+    input  logic                     vs_sum_i,                    // From CSR register file
     input  logic                     mxr_i,                    // From CSR register file
+    input  logic                     vmxr_i,                   // From CSR register file
     input  logic [riscv::PPNW-1:0]   satp_ppn_i,               // From CSR register file
     input  logic [ASID_WIDTH-1:0]    asid_i,                   // From CSR register file
+    input  logic [riscv::PPNW-1:0]   vsatp_ppn_i,              // From CSR register file
+    input  logic [ASID_WIDTH-1:0]    vs_asid_i,                // From CSR register file
     input  logic [ASID_WIDTH-1:0]    asid_to_be_flushed_i,
+    input  logic [riscv::PPNW-1:0]   hgatp_ppn_i,              // From CSR register file
+    input  logic [VMID_WIDTH-1:0]    vmid_i,                   // From CSR register file
+    input  logic [VMID_WIDTH-1:0]    vmid_to_be_flushed_i,
     input  logic [riscv::VLEN-1:0]   vaddr_to_be_flushed_i,
+    input  logic [riscv::GPLEN-1:0]  gpaddr_to_be_flushed_i,
     input  logic                     flush_tlb_i,
+    input  logic                     flush_tlb_vvma_i,
+    input  logic                     flush_tlb_gvma_i,
     // Performance counters
     output logic                     itlb_miss_o,
     output logic                     dtlb_miss_o,
@@ -98,24 +115,34 @@ module load_store_unit import ariane_pkg::*; #(
     // virtual address as calculated by the AGU in the first cycle
     logic [riscv::VLEN-1:0]           vaddr_i;
     riscv::xlen_t                     vaddr_xlen;
-    logic                             overflow;
+    logic                             overflow, g_overflow;
     logic [(riscv::XLEN/8)-1:0]       be_i;
 
     assign vaddr_xlen = $unsigned($signed(fu_data_i.imm) + $signed(fu_data_i.operand_a));
     assign vaddr_i = vaddr_xlen[riscv::VLEN-1:0];
     // we work with SV39 or SV32, so if VM is enabled, check that all bits [XLEN-1:38] or [XLEN-1:31] are equal
     assign overflow = !((&vaddr_xlen[riscv::XLEN-1:riscv::SV-1]) == 1'b1 || (|vaddr_xlen[riscv::XLEN-1:riscv::SV-1]) == 1'b0);
+    assign g_overflow = !((|vaddr_xlen[riscv::XLEN-1:riscv::SVX]) == 1'b0);
 
     logic                     st_valid_i;
     logic                     ld_valid_i;
     logic                     ld_translation_req;
     logic                     st_translation_req;
     logic [riscv::VLEN-1:0]   ld_vaddr;
+    logic [riscv::XLEN-1:0]   ld_tinst;
+    logic                     ld_hs_ld_st_inst;
+    logic                     ld_hlvx_inst;
     logic [riscv::VLEN-1:0]   st_vaddr;
+    logic [riscv::XLEN-1:0]   st_tinst;
+    logic                     st_hs_ld_st_inst;
+    logic                     st_hlvx_inst;
     logic                     translation_req;
     logic                     translation_valid;
     logic [riscv::VLEN-1:0]   mmu_vaddr;
     logic [riscv::PLEN-1:0]   mmu_paddr, mmu_vaddr_plen, fetch_vaddr_plen;
+    logic [riscv::XLEN-1:0]   mmu_tinst;
+    logic                     mmu_hs_ld_st_inst;
+    logic                     mmu_hlvx_inst;
     exception_t               mmu_exception;
     logic                     dtlb_hit;
     logic [riscv::PPNW-1:0]   dtlb_ppn;
@@ -134,6 +161,8 @@ module load_store_unit import ariane_pkg::*; #(
     exception_t               ld_ex;
     exception_t               st_ex;
 
+    logic                     hs_ld_st_inst;
+    logic                     hlvx_inst;
     // -------------------
     // MMU e.g.: TLBs/PTW
     // -------------------
@@ -142,6 +171,7 @@ module load_store_unit import ariane_pkg::*; #(
             .INSTR_TLB_ENTRIES      ( ariane_pkg::INSTR_TLB_ENTRIES ),
             .DATA_TLB_ENTRIES       ( ariane_pkg::DATA_TLB_ENTRIES ),
             .ASID_WIDTH             ( ASID_WIDTH             ),
+            .VMID_WIDTH             ( VMID_WIDTH             ),
             .ArianeCfg              ( ArianeCfg              )
         ) i_cva6_mmu (
             // misaligned bypass
@@ -149,6 +179,7 @@ module load_store_unit import ariane_pkg::*; #(
             .lsu_is_store_i         ( st_translation_req     ),
             .lsu_req_i              ( translation_req        ),
             .lsu_vaddr_i            ( mmu_vaddr              ),
+            .lsu_tinst_i            ( mmu_tinst              ),
             .lsu_valid_o            ( translation_valid      ),
             .lsu_paddr_o            ( mmu_paddr              ),
             .lsu_exception_o        ( mmu_exception          ),
@@ -160,10 +191,15 @@ module load_store_unit import ariane_pkg::*; #(
             // icache address translation requests
             .icache_areq_i          ( icache_areq_i          ),
             .asid_to_be_flushed_i,
+            .vmid_to_be_flushed_i,
             .vaddr_to_be_flushed_i,
+            .gpaddr_to_be_flushed_i,
             .icache_areq_o          ( icache_areq_o          ),
             .pmpcfg_i,
             .pmpaddr_i,
+            // Hypervisor load/store signals
+            .hlvx_inst_i            ( mmu_hlvx_inst          ),
+            .hs_ld_st_inst_i        ( mmu_hs_ld_st_inst      ),
             .*
         );
     end else if (MMU_PRESENT && (riscv::XLEN == 32)) begin : gen_mmu_sv32
@@ -264,6 +300,9 @@ module load_store_unit import ariane_pkg::*; #(
         .translation_req_o     ( st_translation_req   ),
         .vaddr_o               ( st_vaddr             ),
         .mem_paddr_o           ( mem_paddr_o          ),
+        .tinst_o               ( st_tinst             ),
+        .hs_ld_st_inst_o       ( st_hs_ld_st_inst     ),
+        .hlvx_inst_o           ( st_hlvx_inst         ),
         .paddr_i               ( mmu_paddr            ),
         .ex_i                  ( mmu_exception        ),
         .dtlb_hit_i            ( dtlb_hit             ),
@@ -295,6 +334,9 @@ module load_store_unit import ariane_pkg::*; #(
         // MMU port
         .translation_req_o     ( ld_translation_req   ),
         .vaddr_o               ( ld_vaddr             ),
+        .tinst_o               ( ld_tinst             ),
+        .hs_ld_st_inst_o       ( ld_hs_ld_st_inst     ),
+        .hlvx_inst_o           ( ld_hlvx_inst         ),
         .paddr_i               ( mmu_paddr            ),
         .ex_i                  ( mmu_exception        ),
         .dtlb_hit_i            ( dtlb_hit             ),
@@ -346,6 +388,9 @@ module load_store_unit import ariane_pkg::*; #(
 
         translation_req      = 1'b0;
         mmu_vaddr            = {riscv::VLEN{1'b0}};
+        mmu_tinst            = {riscv::XLEN{1'b0}};
+        mmu_hs_ld_st_inst    = 1'b0;
+        mmu_hlvx_inst        = 1'b0;
 
         // check the operation to activate the right functional unit accordingly
         unique case (lsu_ctrl.fu)
@@ -354,18 +399,46 @@ module load_store_unit import ariane_pkg::*; #(
                 ld_valid_i           = lsu_ctrl.valid;
                 translation_req      = ld_translation_req;
                 mmu_vaddr            = ld_vaddr;
+                mmu_tinst            = ld_tinst;
+                mmu_hs_ld_st_inst    = ld_hs_ld_st_inst;
+                mmu_hlvx_inst        = ld_hlvx_inst;
             end
             // all stores go here
             STORE: begin
                 st_valid_i           = lsu_ctrl.valid;
                 translation_req      = st_translation_req;
                 mmu_vaddr            = st_vaddr;
+                mmu_tinst            = st_tinst;
+                mmu_hs_ld_st_inst    = st_hs_ld_st_inst;
+                mmu_hlvx_inst        = st_hlvx_inst;
             end
             // not relevant for the LSU
             default: ;
         endcase
     end
 
+    // ------------------------
+    // Hypervisor Load/Store
+    // ------------------------
+    // determine whether this is a hypervisor load or store
+    always_comb begin : hyp_ld_st
+        // check the operator to activate the right functional unit accordingly
+        hs_ld_st_inst = 1'b0;
+        hlvx_inst     = 1'b0;
+        case (lsu_ctrl.operator)
+            // all loads go here
+            HLV_B, HLV_BU, HLV_H, HLV_HU,
+            HLV_W, HSV_B, HSV_H, HSV_W,
+            HLV_WU, HLV_D, HSV_D: begin
+                    hs_ld_st_inst = 1'b1;
+            end
+            HLVX_WU, HLVX_HU: begin
+                    hs_ld_st_inst = 1'b1;
+                    hlvx_inst     = 1'b1;
+            end
+            default:;
+        endcase
+    end
 
     // ---------------
     // Byte Enable
@@ -383,13 +456,14 @@ module load_store_unit import ariane_pkg::*; #(
     // the misaligned exception is passed to the functional unit via the MMU, which in case
     // can augment the exception if other memory related exceptions like a page fault or access errors
     always_comb begin : data_misaligned_detection
-
         misaligned_exception = {
             {riscv::XLEN{1'b0}},
             {riscv::XLEN{1'b0}},
+            {riscv::XLEN{1'b0}},
+            {riscv::XLEN{1'b0}},
+            1'b0,
             1'b0
         };
-
         data_misaligned = 1'b0;
 
         if (lsu_ctrl.valid) begin
@@ -399,7 +473,7 @@ module load_store_unit import ariane_pkg::*; #(
                 AMO_LRD, AMO_SCD,
                 AMO_SWAPD, AMO_ADDD, AMO_ANDD, AMO_ORD,
                 AMO_XORD, AMO_MAXD, AMO_MAXDU, AMO_MIND,
-                AMO_MINDU: begin
+                AMO_MINDU, HLV_D, HSV_D: begin
                     if (lsu_ctrl.vaddr[2:0] != 3'b000) begin
                         data_misaligned = 1'b1;
                     end
@@ -409,13 +483,13 @@ module load_store_unit import ariane_pkg::*; #(
                 AMO_LRW, AMO_SCW,
                 AMO_SWAPW, AMO_ADDW, AMO_ANDW, AMO_ORW,
                 AMO_XORW, AMO_MAXW, AMO_MAXWU, AMO_MINW,
-                AMO_MINWU: begin
+                AMO_MINWU, HLV_W, HLV_WU, HLVX_WU, HSV_W: begin
                     if (lsu_ctrl.vaddr[1:0] != 2'b00) begin
                         data_misaligned = 1'b1;
                     end
                 end
                 // half word
-                LH, LHU, SH, FLH, FSH: begin
+                LH, LHU, SH, FLH, FSH, HLV_H, HLV_HU, HLVX_HU, HSV_H: begin
                     if (lsu_ctrl.vaddr[0] != 1'b0) begin
                         data_misaligned = 1'b1;
                     end
@@ -431,6 +505,9 @@ module load_store_unit import ariane_pkg::*; #(
                 misaligned_exception = {
                     riscv::LD_ADDR_MISALIGNED,
                     {{riscv::XLEN-riscv::VLEN{1'b0}},lsu_ctrl.vaddr},
+                    {riscv::XLEN{1'b0}},
+                    lsu_ctrl.tinst,
+                    ld_st_v_i,
                     1'b1
                 };
 
@@ -438,6 +515,9 @@ module load_store_unit import ariane_pkg::*; #(
                 misaligned_exception = {
                     riscv::ST_ADDR_MISALIGNED,
                     {{riscv::XLEN-riscv::VLEN{1'b0}},lsu_ctrl.vaddr},
+                    {riscv::XLEN{1'b0}},
+                    lsu_ctrl.tinst,
+                    ld_st_v_i,
                     1'b1
                 };
             end
@@ -449,6 +529,9 @@ module load_store_unit import ariane_pkg::*; #(
                 misaligned_exception = {
                     riscv::LD_ACCESS_FAULT,
                     {{riscv::XLEN-riscv::VLEN{1'b0}},lsu_ctrl.vaddr},
+                    {riscv::XLEN{1'b0}},
+                    lsu_ctrl.tinst,
+                    ld_st_v_i,
                     1'b1
                 };
 
@@ -456,6 +539,33 @@ module load_store_unit import ariane_pkg::*; #(
                 misaligned_exception = {
                     riscv::ST_ACCESS_FAULT,
                     {{riscv::XLEN-riscv::VLEN{1'b0}},lsu_ctrl.vaddr},
+                    {riscv::XLEN{1'b0}},
+                    lsu_ctrl.tinst,
+                    ld_st_v_i,
+                    1'b1
+                };
+            end
+        end
+
+        if (en_ld_st_g_translation_i && !en_ld_st_translation_i && lsu_ctrl.g_overflow) begin
+
+            if (lsu_ctrl.fu == LOAD) begin
+                misaligned_exception = {
+                    riscv::LOAD_GUEST_PAGE_FAULT,
+                    {{riscv::XLEN-riscv::VLEN{1'b0}},lsu_ctrl.vaddr},
+                    {riscv::XLEN{1'b0}},
+                    lsu_ctrl.tinst,
+                    ld_st_v_i,
+                    1'b1
+                };
+
+            end else if (lsu_ctrl.fu == STORE) begin
+                misaligned_exception = {
+                    riscv::STORE_GUEST_PAGE_FAULT,
+                    {{riscv::XLEN-riscv::VLEN{1'b0}},lsu_ctrl.vaddr},
+                    {riscv::XLEN{1'b0}},
+                    lsu_ctrl.tinst,
+                    ld_st_v_i,
                     1'b1
                 };
             end
@@ -468,7 +578,7 @@ module load_store_unit import ariane_pkg::*; #(
     // new data arrives here
     lsu_ctrl_t lsu_req_i;
 
-    assign lsu_req_i = {lsu_valid_i, vaddr_i, overflow, fu_data_i.operand_b, be_i, fu_data_i.fu, fu_data_i.operation, fu_data_i.trans_id};
+    assign lsu_req_i = {lsu_valid_i, vaddr_i, tinst_i, hs_ld_st_inst, hlvx_inst, overflow, g_overflow, fu_data_i.operand_b, be_i, fu_data_i.fu, fu_data_i.operation, fu_data_i.trans_id};
 
     lsu_bypass lsu_bypass_i (
         .lsu_req_i          ( lsu_req_i   ),
@@ -487,4 +597,3 @@ module load_store_unit import ariane_pkg::*; #(
     assign lsu_addr_trans_id_o = lsu_ctrl.trans_id;
 
 endmodule
-
