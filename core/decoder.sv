@@ -475,91 +475,71 @@ module decoder import ariane_pkg::*; (
                     // Integer Reg-Reg Operations
                     // ---------------------------
                     end else begin
-`ifndef BITMANIP
-                        instruction_o.fu  = (instr.rtype.funct7 == 7'b000_0001) ? MULT : ALU;
-`else
-                        instruction_o.fu  = (instr.rtype.funct7 == 7'b000_0001 || ((instr.rtype.funct7 == 7'b000_0101) && !(instr.rtype.funct3[14]))) ? MULT : ALU;
-`endif
+                        if (ariane_pkg::BITMANIP)
+                            instruction_o.fu  = (instr.rtype.funct7 == 7'b000_0001 || ((instr.rtype.funct7 == 7'b000_0101) && !(instr.rtype.funct3[14]))) ? MULT : ALU;
+                        else
+                            instruction_o.fu  = (instr.rtype.funct7 == 7'b000_0001) ? MULT : ALU;
+
                         instruction_o.rs1 = instr.rtype.rs1;
                         instruction_o.rs2 = instr.rtype.rs2;
                         instruction_o.rd  = instr.rtype.rd;
-`ifndef BITMANIP
-                        unique case ({instr.rtype.funct7, instr.rtype.funct3})
-                            {7'b000_0000, 3'b000}: instruction_o.op = ariane_pkg::ADD;   // Add
-                            {7'b010_0000, 3'b000}: instruction_o.op = ariane_pkg::SUB;   // Sub
-                            {7'b000_0000, 3'b010}: instruction_o.op = ariane_pkg::SLTS;  // Set Lower Than
-                            {7'b000_0000, 3'b011}: instruction_o.op = ariane_pkg::SLTU;  // Set Lower Than Unsigned
-                            {7'b000_0000, 3'b100}: instruction_o.op = ariane_pkg::XORL;  // Xor
-                            {7'b000_0000, 3'b110}: instruction_o.op = ariane_pkg::ORL;   // Or
-                            {7'b000_0000, 3'b111}: instruction_o.op = ariane_pkg::ANDL;  // And
-                            {7'b000_0000, 3'b001}: instruction_o.op = ariane_pkg::SLL;   // Shift Left Logical
-                            {7'b000_0000, 3'b101}: instruction_o.op = ariane_pkg::SRL;   // Shift Right Logical
-                            {7'b010_0000, 3'b101}: instruction_o.op = ariane_pkg::SRA;   // Shift Right Arithmetic
-                            // Multiplications
-                            {7'b000_0001, 3'b000}: instruction_o.op = ariane_pkg::MUL;
-                            {7'b000_0001, 3'b001}: instruction_o.op = ariane_pkg::MULH;
-                            {7'b000_0001, 3'b010}: instruction_o.op = ariane_pkg::MULHSU;
-                            {7'b000_0001, 3'b011}: instruction_o.op = ariane_pkg::MULHU;
-                            {7'b000_0001, 3'b100}: instruction_o.op = ariane_pkg::DIV;
-                            {7'b000_0001, 3'b101}: instruction_o.op = ariane_pkg::DIVU;
-                            {7'b000_0001, 3'b110}: instruction_o.op = ariane_pkg::REM;
-                            {7'b000_0001, 3'b111}: instruction_o.op = ariane_pkg::REMU;
-                            default: begin
-                                illegal_instr = 1'b1;
-                            end
-                        endcase
-`else
-                        unique case ({instr.rtype.funct7, instr.rtype.funct3})
-                            {7'b000_0000, 3'b000}: instruction_o.op = ariane_pkg::ADD;   // Add
-                            {7'b010_0000, 3'b000}: instruction_o.op = ariane_pkg::SUB;   // Sub
-                            {7'b000_0000, 3'b010}: instruction_o.op = ariane_pkg::SLTS;  // Set Lower Than
-                            {7'b000_0000, 3'b011}: instruction_o.op = ariane_pkg::SLTU;  // Set Lower Than Unsigned
-                            {7'b000_0000, 3'b100}: instruction_o.op = ariane_pkg::XORL;  // Xor
-                            {7'b000_0000, 3'b110}: instruction_o.op = ariane_pkg::ORL;   // Or
-                            {7'b000_0000, 3'b111}: instruction_o.op = ariane_pkg::ANDL;  // And
-                            {7'b000_0000, 3'b001}: instruction_o.op = ariane_pkg::SLL;   // Shift Left Logical
-                            {7'b000_0000, 3'b101}: instruction_o.op = ariane_pkg::SRL;   // Shift Right Logical
-                            {7'b010_0000, 3'b101}: instruction_o.op = ariane_pkg::SRA;   // Shift Right Arithmetic
-                            // Multiplications
-                            {7'b000_0001, 3'b000}: instruction_o.op = ariane_pkg::MUL;
-                            {7'b000_0001, 3'b001}: instruction_o.op = ariane_pkg::MULH;
-                            {7'b000_0001, 3'b010}: instruction_o.op = ariane_pkg::MULHSU;
-                            {7'b000_0001, 3'b011}: instruction_o.op = ariane_pkg::MULHU;
-                            {7'b000_0001, 3'b100}: instruction_o.op = ariane_pkg::DIV;
-                            {7'b000_0001, 3'b101}: instruction_o.op = ariane_pkg::DIVU;
-                            {7'b000_0001, 3'b110}: instruction_o.op = ariane_pkg::REM;
-                            {7'b000_0001, 3'b111}: instruction_o.op = ariane_pkg::REMU;
 
-                            //Logical with Negate
-                            {7'b010_0000, 3'b111}: instruction_o.op = ariane_pkg::ANDN;     // Andn
-                            {7'b010_0000, 3'b110}: instruction_o.op = ariane_pkg::ORN;      // Orn
-                            {7'b010_0000, 3'b100}: instruction_o.op = ariane_pkg::XNOR;     // Xnor
-                            //Shift and Add (Bitmanip)
-                            {7'b001_0000, 3'b010}: instruction_o.op = ariane_pkg::SH1ADD;   // Sh1add
-                            {7'b001_0000, 3'b100}: instruction_o.op = ariane_pkg::SH2ADD;   // Sh2add
-                            {7'b001_0000, 3'b110}: instruction_o.op = ariane_pkg::SH3ADD;   // Sh3add
-                            // Integer maximum/minimum
-                            {7'b000_0101, 3'b110}: instruction_o.op = ariane_pkg::MAX;      // max
-                            {7'b000_0101, 3'b111}: instruction_o.op = ariane_pkg::MAXU;     // maxu
-                            {7'b000_0101, 3'b100}: instruction_o.op = ariane_pkg::MIN;      // min
-                            {7'b000_0101, 3'b101}: instruction_o.op = ariane_pkg::MINU;     // minu
-                            // Single bit instructions
-                            {7'b010_0100, 3'b001}: instruction_o.op = ariane_pkg::BCLR;     // bclr
-                            {7'b010_0100, 3'b101}: instruction_o.op = ariane_pkg::BEXT;     // bext
-                            {7'b011_0100, 3'b001}: instruction_o.op = ariane_pkg::BINV;     // binv
-                            {7'b001_0100, 3'b001}: instruction_o.op = ariane_pkg::BSET;     // bset
-                            // Carry-Less-Multiplication (clmul, clmulh, clmulr)
-                            {7'b000_0101, 3'b001}: instruction_o.op = ariane_pkg::CLMUL;    // clmul
-                            {7'b000_0101, 3'b011}: instruction_o.op = ariane_pkg::CLMULH;   // clmulh
-                            {7'b000_0101, 3'b010}: instruction_o.op = ariane_pkg::CLMULR;   // clmulr
-                            // Bitwise Shifting
-                            {7'b011_0000, 3'b001}: instruction_o.op = ariane_pkg::ROL;      // rol
-                            {7'b011_0000, 3'b101}: instruction_o.op = ariane_pkg::ROR;      // ror
+                        unique case ({instr.rtype.funct7, instr.rtype.funct3})
+                            {7'b000_0000, 3'b000}: instruction_o.op = ariane_pkg::ADD;   // Add
+                            {7'b010_0000, 3'b000}: instruction_o.op = ariane_pkg::SUB;   // Sub
+                            {7'b000_0000, 3'b010}: instruction_o.op = ariane_pkg::SLTS;  // Set Lower Than
+                            {7'b000_0000, 3'b011}: instruction_o.op = ariane_pkg::SLTU;  // Set Lower Than Unsigned
+                            {7'b000_0000, 3'b100}: instruction_o.op = ariane_pkg::XORL;  // Xor
+                            {7'b000_0000, 3'b110}: instruction_o.op = ariane_pkg::ORL;   // Or
+                            {7'b000_0000, 3'b111}: instruction_o.op = ariane_pkg::ANDL;  // And
+                            {7'b000_0000, 3'b001}: instruction_o.op = ariane_pkg::SLL;   // Shift Left Logical
+                            {7'b000_0000, 3'b101}: instruction_o.op = ariane_pkg::SRL;   // Shift Right Logical
+                            {7'b010_0000, 3'b101}: instruction_o.op = ariane_pkg::SRA;   // Shift Right Arithmetic
+                            // Multiplications
+                            {7'b000_0001, 3'b000}: instruction_o.op = ariane_pkg::MUL;
+                            {7'b000_0001, 3'b001}: instruction_o.op = ariane_pkg::MULH;
+                            {7'b000_0001, 3'b010}: instruction_o.op = ariane_pkg::MULHSU;
+                            {7'b000_0001, 3'b011}: instruction_o.op = ariane_pkg::MULHU;
+                            {7'b000_0001, 3'b100}: instruction_o.op = ariane_pkg::DIV;
+                            {7'b000_0001, 3'b101}: instruction_o.op = ariane_pkg::DIVU;
+                            {7'b000_0001, 3'b110}: instruction_o.op = ariane_pkg::REM;
+                            {7'b000_0001, 3'b111}: instruction_o.op = ariane_pkg::REMU;
                             default: begin
                                 illegal_instr = 1'b1;
                             end
                         endcase
-`endif
+                        if (ariane_pkg::BITMANIP) begin
+                            unique case ({instr.rtype.funct7, instr.rtype.funct3})
+                                //Logical with Negate
+                                {7'b010_0000, 3'b111}: instruction_o.op = ariane_pkg::ANDN;     // Andn
+                                {7'b010_0000, 3'b110}: instruction_o.op = ariane_pkg::ORN;      // Orn
+                                {7'b010_0000, 3'b100}: instruction_o.op = ariane_pkg::XNOR;     // Xnor
+                                //Shift and Add (Bitmanip)
+                                {7'b001_0000, 3'b010}: instruction_o.op = ariane_pkg::SH1ADD;   // Sh1add
+                                {7'b001_0000, 3'b100}: instruction_o.op = ariane_pkg::SH2ADD;   // Sh2add
+                                {7'b001_0000, 3'b110}: instruction_o.op = ariane_pkg::SH3ADD;   // Sh3add
+                                // Integer maximum/minimum
+                                {7'b000_0101, 3'b110}: instruction_o.op = ariane_pkg::MAX;      // max
+                                {7'b000_0101, 3'b111}: instruction_o.op = ariane_pkg::MAXU;     // maxu
+                                {7'b000_0101, 3'b100}: instruction_o.op = ariane_pkg::MIN;      // min
+                                {7'b000_0101, 3'b101}: instruction_o.op = ariane_pkg::MINU;     // minu
+                                // Single bit instructions
+                                {7'b010_0100, 3'b001}: instruction_o.op = ariane_pkg::BCLR;     // bclr
+                                {7'b010_0100, 3'b101}: instruction_o.op = ariane_pkg::BEXT;     // bext
+                                {7'b011_0100, 3'b001}: instruction_o.op = ariane_pkg::BINV;     // binv
+                                {7'b001_0100, 3'b001}: instruction_o.op = ariane_pkg::BSET;     // bset
+                                // Carry-Less-Multiplication (clmul, clmulh, clmulr)
+                                {7'b000_0101, 3'b001}: instruction_o.op = ariane_pkg::CLMUL;    // clmul
+                                {7'b000_0101, 3'b011}: instruction_o.op = ariane_pkg::CLMULH;   // clmulh
+                                {7'b000_0101, 3'b010}: instruction_o.op = ariane_pkg::CLMULR;   // clmulr
+                                // Bitwise Shifting
+                                {7'b011_0000, 3'b001}: instruction_o.op = ariane_pkg::ROL;      // rol
+                                {7'b011_0000, 3'b101}: instruction_o.op = ariane_pkg::ROR;      // ror
+                                default: begin
+                                    illegal_instr = 1'b1;
+                                end
+                            endcase
+                        end
                     end
                 end
 
@@ -572,7 +552,6 @@ module decoder import ariane_pkg::*; (
                     instruction_o.rs2[4:0] = instr.rtype.rs2;
                     instruction_o.rd[4:0]  = instr.rtype.rd;
                       if (riscv::IS_XLEN64) begin
-`ifndef BITMANIP
                         unique case ({instr.rtype.funct7, instr.rtype.funct3})
                             {7'b000_0000, 3'b000}: instruction_o.op = ariane_pkg::ADDW; // addw
                             {7'b010_0000, 3'b000}: instruction_o.op = ariane_pkg::SUBW; // subw
@@ -587,34 +566,22 @@ module decoder import ariane_pkg::*; (
                             {7'b000_0001, 3'b111}: instruction_o.op = ariane_pkg::REMUW;
                             default: illegal_instr = 1'b1;
                         endcase
-`else
-                        unique case ({instr.rtype.funct7, instr.rtype.funct3})
-                            {7'b000_0000, 3'b000}: instruction_o.op = ariane_pkg::ADDW; // addw
-                            {7'b010_0000, 3'b000}: instruction_o.op = ariane_pkg::SUBW; // subw
-                            {7'b000_0000, 3'b001}: instruction_o.op = ariane_pkg::SLLW; // sllw
-                            {7'b000_0000, 3'b101}: instruction_o.op = ariane_pkg::SRLW; // srlw
-                            {7'b010_0000, 3'b101}: instruction_o.op = ariane_pkg::SRAW; // sraw
-                            // Multiplications
-                            {7'b000_0001, 3'b000}: instruction_o.op = ariane_pkg::MULW;
-                            {7'b000_0001, 3'b100}: instruction_o.op = ariane_pkg::DIVW;
-                            {7'b000_0001, 3'b101}: instruction_o.op = ariane_pkg::DIVUW;
-                            {7'b000_0001, 3'b110}: instruction_o.op = ariane_pkg::REMW;
-                            {7'b000_0001, 3'b111}: instruction_o.op = ariane_pkg::REMUW;
-
-                            // Shift with Add (Unsigned Word)
-                            {7'b001_0000, 3'b010}: instruction_o.op = ariane_pkg::SH1ADDUW; // sh1add.uw
-                            {7'b001_0000, 3'b100}: instruction_o.op = ariane_pkg::SH2ADDUW; // sh2add.uw
-                            {7'b001_0000, 3'b110}: instruction_o.op = ariane_pkg::SH3ADDUW; // sh3add.uw
-                            // Unsigned word Op's
-                            {7'b000_0100, 3'b000}: instruction_o.op = ariane_pkg::ADDUW;    // add.uw
-                            // Zero Extend Op
-                            {7'b000_0100, 3'b100}: instruction_o.op = ariane_pkg::ZEXTH;    // zext
-                            // Bitwise Shifting
-                            {7'b011_0000, 3'b001}: instruction_o.op = ariane_pkg::ROLW;     // rolw
-                            {7'b011_0000, 3'b101}: instruction_o.op = ariane_pkg::RORW;     // rorw
-                            default: illegal_instr = 1'b1;
-                        endcase
-`endif
+                        if (ariane_pkg::BITMANIP) begin
+                            unique case ({instr.rtype.funct7, instr.rtype.funct3})
+                                // Shift with Add (Unsigned Word)
+                                {7'b001_0000, 3'b010}: instruction_o.op = ariane_pkg::SH1ADDUW; // sh1add.uw
+                                {7'b001_0000, 3'b100}: instruction_o.op = ariane_pkg::SH2ADDUW; // sh2add.uw
+                                {7'b001_0000, 3'b110}: instruction_o.op = ariane_pkg::SH3ADDUW; // sh3add.uw
+                                // Unsigned word Op's
+                                {7'b000_0100, 3'b000}: instruction_o.op = ariane_pkg::ADDUW;    // add.uw
+                                // Zero Extend Op
+                                {7'b000_0100, 3'b100}: instruction_o.op = ariane_pkg::ZEXTH;    // zext
+                                // Bitwise Shifting
+                                {7'b011_0000, 3'b001}: instruction_o.op = ariane_pkg::ROLW;     // rolw
+                                {7'b011_0000, 3'b101}: instruction_o.op = ariane_pkg::RORW;     // rorw
+                                default: illegal_instr = 1'b1;
+                            endcase
+                        end
                       end else illegal_instr = 1'b1;
                 end
                 // --------------------------------
@@ -625,7 +592,6 @@ module decoder import ariane_pkg::*; (
                     imm_select = IIMM;
                     instruction_o.rs1[4:0] = instr.itype.rs1;
                     instruction_o.rd[4:0]  = instr.itype.rd;
-`ifndef BITMANIP
                     unique case (instr.itype.funct3)
                         3'b000: instruction_o.op = ariane_pkg::ADD;   // Add Immediate
                         3'b010: instruction_o.op = ariane_pkg::SLTS;  // Set to one if Lower Than Immediate
@@ -651,61 +617,44 @@ module decoder import ariane_pkg::*; (
                             if (instr.instr[25] != 1'b0 && riscv::XLEN==32) illegal_instr = 1'b1;
                         end
                     endcase
-`else
-                    unique case (instr.itype.funct3)
-                        3'b000: instruction_o.op = ariane_pkg::ADD;   // Add Immediate
-                        3'b010: instruction_o.op = ariane_pkg::SLTS;  // Set to one if Lower Than Immediate
-                        3'b011: instruction_o.op = ariane_pkg::SLTU;  // Set to one if Lower Than Immediate Unsigned
-                        3'b100: instruction_o.op = ariane_pkg::XORL;  // Exclusive Or with Immediate
-                        3'b110: instruction_o.op = ariane_pkg::ORL;   // Or with Immediate
-                        3'b111: instruction_o.op = ariane_pkg::ANDL;  // And with Immediate
-
-                        3'b001: begin
-                            if (instr.instr[31:25] == 7'b0110000) begin
-                                if (instr.instr[22:20] == 3'b100)
-                                    instruction_o.op = ariane_pkg::SEXTB;
-                                else if (instr.instr[22:20] == 3'b101)
-                                    instruction_o.op = ariane_pkg::SEXTH;
-                                else if (instr.instr[22:20] == 3'b010)
-                                    instruction_o.op = ariane_pkg::CPOP;
-                                else if (instr.instr[22:20] == 3'b000)
-                                    instruction_o.op = ariane_pkg::CLZ;
-                                else if (instr.instr[22:20] == 3'b001)
-                                    instruction_o.op = ariane_pkg::CTZ;
-                            end
-                            else if (instr.instr[31:26] == 6'b010010)
-                                instruction_o.op = ariane_pkg::BCLRI;
-                            else if (instr.instr[31:26] == 6'b011010)
-                                instruction_o.op = ariane_pkg::BINVI;
-                            else if (instr.instr[31:26] == 6'b001010)
-                                instruction_o.op = ariane_pkg::BSETI;
-                            else begin
-                                instruction_o.op = ariane_pkg::SLL;  // Shift Left Logical by Immediate
-                                if (instr.instr[31:26] != 6'b0)
+                    if (ariane_pkg::BITMANIP) begin
+                        unique case (instr.itype.funct3)
+                            3'b001: begin
+                                if (instr.instr[31:25] == 7'b0110000) begin
+                                    if (instr.instr[22:20] == 3'b100)
+                                        instruction_o.op = ariane_pkg::SEXTB;
+                                    else if (instr.instr[22:20] == 3'b101)
+                                        instruction_o.op = ariane_pkg::SEXTH;
+                                    else if (instr.instr[22:20] == 3'b010)
+                                        instruction_o.op = ariane_pkg::CPOP;
+                                    else if (instr.instr[22:20] == 3'b000)
+                                        instruction_o.op = ariane_pkg::CLZ;
+                                    else if (instr.instr[22:20] == 3'b001)
+                                        instruction_o.op = ariane_pkg::CTZ;
+                                end
+                                else if (instr.instr[31:26] == 6'b010010)
+                                    instruction_o.op = ariane_pkg::BCLRI;
+                                else if (instr.instr[31:26] == 6'b011010)
+                                    instruction_o.op = ariane_pkg::BINVI;
+                                else if (instr.instr[31:26] == 6'b001010)
+                                    instruction_o.op = ariane_pkg::BSETI;
+                                else
                                     illegal_instr = 1'b1;
-                                if (instr.instr[25] != 1'b0 && riscv::XLEN==32) illegal_instr = 1'b1;
                             end
-                        end
-
-                        3'b101: begin
-                            if (instr.instr[31:26] == 6'b0)
-                                instruction_o.op = ariane_pkg::SRL;  // Shift Right Logical by Immediate
-                            else if (instr.instr[31:26] == 6'b010_000)
-                                instruction_o.op = ariane_pkg::SRA;  // Shift Right Arithmetically by Immediate
-                            else if (instr.instr[31:20] == 12'b001010000111)
-                                instruction_o.op = ariane_pkg::ORCB;
-                            else if (instr.instr[31:20] == 12'b011010111000)
-                                instruction_o.op = ariane_pkg::REV8;
-                            else if (instr.instr[31:26] == 6'b010_010)
-                                instruction_o.op = ariane_pkg::BEXTI;
-                            else if (instr.instr[31:26] == 6'b011_000)
-                                instruction_o.op = ariane_pkg::RORI;
-                            else
-                                illegal_instr = 1'b1;
-                            if (instr.instr[25] != 1'b0 && riscv::XLEN==32) illegal_instr = 1'b1;
-                        end
-                    endcase
-`endif
+                            3'b101: begin
+                                if (instr.instr[31:20] == 12'b001010000111)
+                                    instruction_o.op = ariane_pkg::ORCB;
+                                else if (instr.instr[31:20] == 12'b011010111000)
+                                    instruction_o.op = ariane_pkg::REV8;
+                                else if (instr.instr[31:26] == 6'b010_010)
+                                    instruction_o.op = ariane_pkg::BEXTI;
+                                else if (instr.instr[31:26] == 6'b011_000)
+                                    instruction_o.op = ariane_pkg::RORI;
+                                else
+                                    illegal_instr = 1'b1;
+                            end
+                        endcase
+                    end
                 end
 
                 // --------------------------------
@@ -717,16 +666,13 @@ module decoder import ariane_pkg::*; (
                     instruction_o.rs1[4:0] = instr.itype.rs1;
                     instruction_o.rd[4:0]  = instr.itype.rd;
                     if (riscv::IS_XLEN64)
-`ifndef BITMANIP
                     unique case (instr.itype.funct3)
                         3'b000: instruction_o.op = ariane_pkg::ADDW;  // Add Immediate
-
                         3'b001: begin
                           instruction_o.op = ariane_pkg::SLLW;  // Shift Left Logical by Immediate
                           if (instr.instr[31:25] != 7'b0)
                               illegal_instr = 1'b1;
                         end
-
                         3'b101: begin
                             if (instr.instr[31:25] == 7'b0)
                                 instruction_o.op = ariane_pkg::SRLW;  // Shift Right Logical by Immediate
@@ -735,46 +681,31 @@ module decoder import ariane_pkg::*; (
                             else
                                 illegal_instr = 1'b1;
                         end
-
                         default: illegal_instr = 1'b1;
                     endcase
-`else
-                    unique case (instr.itype.funct3)
-                        3'b000: instruction_o.op = ariane_pkg::ADDW;  // Add Immediate
-
-                        3'b001: begin
-                            if (instr.instr[31:25] == 7'b0110000) begin
-                                if (instr.instr[21:20] == 2'b10)
-                                    instruction_o.op = ariane_pkg::CPOPW;
-                                else if (instr.instr[21:20] == 2'b00)
-                                    instruction_o.op = ariane_pkg::CLZW;
-                                else if (instr.instr[21:20] == 2'b01)
-                                    instruction_o.op = ariane_pkg::CTZW;
+                    if (ariane_pkg::BITMANIP) begin
+                        unique case (instr.itype.funct3)
+                            3'b001: begin
+                                if (instr.instr[31:25] == 7'b0110000) begin
+                                    if (instr.instr[21:20] == 2'b10)
+                                        instruction_o.op = ariane_pkg::CPOPW;
+                                    else if (instr.instr[21:20] == 2'b00)
+                                        instruction_o.op = ariane_pkg::CLZW;
+                                    else if (instr.instr[21:20] == 2'b01)
+                                        instruction_o.op = ariane_pkg::CTZW;
+                                end else begin
+                                    instruction_o.op = ariane_pkg::SLLIUW; // Shift Left Logic by Immediate (Unsigned Word)
+                                end
                             end
-                            else if (instr.instr[31:26] != 6'b000010) begin
-                                instruction_o.op = ariane_pkg::SLLW;  // Shift Left Logical by Immediate
-                                if (instr.instr[31:25] != 7'b0)
+                            3'b101: begin
+                                if (instr.instr[31:25] == 7'b011_0000)
+                                    instruction_o.op = ariane_pkg::RORIW;
+                                else
                                     illegal_instr = 1'b1;
                             end
-                            else begin
-                                instruction_o.op = ariane_pkg::SLLIUW; // Shift Left Logic by Immediate (Unsigned Word)
-                            end
-                        end
-
-                        3'b101: begin
-                            if (instr.instr[31:25] == 7'b0)
-                                instruction_o.op = ariane_pkg::SRLW;  // Shift Right Logical by Immediate
-                            else if (instr.instr[31:25] == 7'b010_0000)
-                                instruction_o.op = ariane_pkg::SRAW;  // Shift Right Arithmetically by Immediate
-                            else if (instr.instr[31:25] == 7'b011_0000)
-                                instruction_o.op = ariane_pkg::RORIW;
-                            else
-                                illegal_instr = 1'b1;
-                        end
-
-                        default: illegal_instr = 1'b1;
-                    endcase
-`endif
+                            default: illegal_instr = 1'b1;
+                        endcase
+                    end
                     else illegal_instr = 1'b1;
                 end
                 // --------------------------------
