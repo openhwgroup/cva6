@@ -327,10 +327,6 @@ def elf2bin(elf, binary, debug_cmd):
   logging.info("Converting to %s" % binary)
   cmd = ("%s -O binary %s %s" % (get_env_var("RISCV_OBJCOPY", debug_cmd = debug_cmd), elf, binary))
   run_cmd_output(cmd.split(), debug_cmd = debug_cmd)
-  logging.info("Converting to Mem_init.txt")
-  Mem_init =  os.path.splitext(os.path.basename(elf))[0]
-  cmd = ("%s -O verilog --change-addresses -0x80000000 %s %s.txt" % (get_env_var("RISCV_OBJCOPY", debug_cmd = debug_cmd), elf, Mem_init))
-  run_cmd_output(cmd.split(), debug_cmd = debug_cmd)
 
 
 def gcc_compile(test_list, output_dir, isa, mabi, opts, debug_cmd):
