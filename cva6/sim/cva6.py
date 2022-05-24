@@ -327,10 +327,6 @@ def elf2bin(elf, binary, debug_cmd):
   logging.info("Converting to %s" % binary)
   cmd = ("%s -O binary %s %s" % (get_env_var("RISCV_OBJCOPY", debug_cmd = debug_cmd), elf, binary))
   run_cmd_output(cmd.split(), debug_cmd = debug_cmd)
-  logging.info("Converting to Mem_init.txt")
-  Mem_init =  os.path.splitext(os.path.basename(elf))[0]
-  cmd = ("%s -O verilog --change-addresses -0x80000000 %s %s.txt" % (get_env_var("RISCV_OBJCOPY", debug_cmd = debug_cmd), elf, Mem_init))
-  run_cmd_output(cmd.split(), debug_cmd = debug_cmd)
 
 
 def gcc_compile(test_list, output_dir, isa, mabi, opts, debug_cmd):
@@ -920,11 +916,11 @@ def main():
     parser = setup_parser()
     args = parser.parse_args()
     global issrun_opts
-    issrun_opts = args.issrun_opts
+    issrun_opts = "\""+args.issrun_opts+"\""
     global isspostrun_opts
-    isspostrun_opts = args.isspostrun_opts
+    isspostrun_opts = "\""+args.isspostrun_opts+"\""
     global isscomp_opts
-    isscomp_opts = args.isscomp_opts
+    isscomp_opts = "\""+args.isscomp_opts+"\""
     cwd = os.path.dirname(os.path.realpath(__file__))
     os.environ["RISCV_DV_ROOT"] = cwd + "/dv"
     setup_logging(args.verbose)
@@ -1025,7 +1021,6 @@ def main():
               break
       for t in list(matched_list):
         try:
-          t['asm_tests'] = re.sub("\<path_var\>", get_env_var(t['path_var']), t['asm_tests'])
           t['gcc_opts'] = re.sub("\<path_var\>", get_env_var(t['path_var']), t['gcc_opts'])
         except KeyError:
           continue
@@ -1036,6 +1031,7 @@ def main():
             logging.error('asm_tests must not be defined in the testlist '
                           'together with the gen_test or c_tests field')
             sys.exit(RET_FATAL)
+          t['asm_tests'] = re.sub("\<path_var\>", get_env_var(t['path_var']), t['asm_tests'])
           asm_directed_list.append(t)
           matched_list.remove(t)
 
@@ -1044,12 +1040,17 @@ def main():
             logging.error('c_tests must not be defined in the testlist '
                           'together with the gen_test or asm_tests field')
             sys.exit(RET_FATAL)
+          t['c_tests'] = re.sub("\<path_var\>", get_env_var(t['path_var']), t['c_tests'])
           c_directed_list.append(t)
           matched_list.remove(t)
 
       if len(matched_list) == 0 and len(asm_directed_list) == 0 and len(c_directed_list) == 0:
         sys.exit("Cannot find %s in %s" % (args.test, args.testlist))
 
+      for t in c_directed_list:
+        copy = re.sub(r'(.*)\/(.*).c$', r'cp \1/\2.c \1/', t['c_tests'])+t['test']+'.c'
+        run_cmd("%s" % copy)
+        t['c_tests'] = re.sub(r'(.*)\/(.*).c$', r'\1/', t['c_tests'])+t['test']+'.c'
     # Run instruction generator
     if args.steps == "all" or re.match(".*gen.*", args.steps):
       # Run any handcoded/directed assembly tests specified in YAML format
