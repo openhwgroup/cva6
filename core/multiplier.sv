@@ -129,10 +129,10 @@ module multiplier import ariane_pkg::*; (
     if (ariane_pkg::BITMANIP) begin : gen_bitmanip
         always_ff @(posedge clk_i or negedge rst_ni) begin
             if (~rst_ni) begin
-                clmul_q    	  <= '0;
+                clmul_q       <= '0;
                 clmulr_q      <= '0;
              end else begin
-                clmul_q    	  <= clmul_d;
+                clmul_q       <= clmul_d;
                 clmulr_q      <= clmulr_d;
              end
         end

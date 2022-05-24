@@ -223,7 +223,7 @@ module alu import ariane_pkg::*;(
           .cnt_o (tzwcount),
           .empty_o ()
         );
-end
+    end
 
     // -----------
     // Result MUX

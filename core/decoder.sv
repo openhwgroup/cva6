@@ -475,11 +475,11 @@ module decoder import ariane_pkg::*; (
                     // Integer Reg-Reg Operations
                     // ---------------------------
                     end else begin
-                        if (ariane_pkg::BITMANIP)
+                        if (ariane_pkg::BITMANIP) begin
                             instruction_o.fu  = (instr.rtype.funct7 == 7'b000_0001 || ((instr.rtype.funct7 == 7'b000_0101) && !(instr.rtype.funct3[14]))) ? MULT : ALU;
-                        else
+                        end else begin
                             instruction_o.fu  = (instr.rtype.funct7 == 7'b000_0001) ? MULT : ALU;
-
+                        end
                         instruction_o.rs1 = instr.rtype.rs1;
                         instruction_o.rs2 = instr.rtype.rs2;
                         instruction_o.rd  = instr.rtype.rd;
