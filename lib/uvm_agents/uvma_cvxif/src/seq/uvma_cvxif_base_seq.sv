@@ -70,6 +70,12 @@ function string uvma_cvxif_base_seq_c::decode(input logic [31:0] instr);
              if (func7 == 7'b1000000 && rs2 == 0) begin
                 return ("CUS_EXC");
              end
+             if (func7 == 7'b0100000 && rs1 == 0 && rs2 == 0) begin
+                return ("CUS_NOP_EXC");
+             end
+             if (func7 == 7'b1100000 && rs1 == 0 && rs2 == 0) begin
+                return ("CUS_ISS_EXC");
+             end
          end
          else begin
             if (func7 == 0) begin
