@@ -616,21 +616,21 @@ verilate_command := $(verilator)                                                
                     corev_apu/tb/dpi/remote_bitbang.cc corev_apu/tb/dpi/msim_helper.cc $(if $(DROMAJO), corev_apu/tb/dpi/dromajo_cosim_dpi.cc,)
 
 dromajo:
-	cd ./tb/dromajo/src && make
+	cd ./corev_apu/tb/dromajo/src && make
 
 run-dromajo-verilator:
 	$(if $(BIN), $(MAKE) checkpoint_dromajo, $(error "Please provide absolute path to the binary. Usage: make run_dromajo BIN=/absolute/path/to/binary"))
 
 checkpoint_dromajo:
-	cd ./tb/dromajo/run/checkpoints/ && \
+	cd ./corev_apu/tb/dromajo/run/checkpoints/ && \
 	rm -rf $(notdir $(BIN)) && mkdir $(notdir $(BIN)) && cd $(notdir $(BIN)) && \
   cp $(BIN) . && \
-	echo -e "\
+	echo "\
 	{\n\
     \"version\":1,\n\
     \"machine\":\"riscv64\",\n\
     \"memory_size\":256,\n\
-    \"bios\":\"$(shell pwd)/tb/dromajo/run/checkpoints/$(notdir $(BIN))/$(notdir $(BIN))\",\n\
+    \"bios\":\"$(shell pwd)/corev_apu/tb/dromajo/run/checkpoints/$(notdir $(BIN))/$(notdir $(BIN))\",\n\
     \"memory_base_addr\":0x80000000,\n\
     \"missing_csrs\": [0x323, 0x324, 0x325, 0x326, //mhpmevent csrs\n\
                      0x327, 0x328, 0x329, 0x32a,\n\
@@ -640,13 +640,8 @@ checkpoint_dromajo:
                      0x337, 0x338, 0x339, 0x33a,\n\
                      0x33b, 0x33c, 0x33d, 0x33e,\n\
                      0x33f,\n\
-                     0x3a0, 0x3a1, 0x3a2, 0x3a3, //pmp csrs\n\
-                     0x3b0, 0x3b1, 0x3b2, 0x3b3,\n\
-                     0x3b4, 0x3b5, 0x3b6, 0x3b7,\n\
-                     0x3b8, 0x3b9, 0x3ba, 0x3bb,\n\
-                     0x3bc, 0x3bd, 0x3be, 0x3bf,\n\
                      0x320], //mcountinhibit\n\
-    \"maxinsns\": 100,\n\
+    \"maxinsns\": 80,\n\
 		\"clint_base_addr\": 0x02000000,\n\
 	  \"clint_size\": 0xC0000,\n\
 	  \"plic_base_addr\": 0x0C000000,\n\
@@ -654,13 +649,13 @@ checkpoint_dromajo:
 	  \"uart_base_addr\": 0x10000000,\n\
 	  \"uart_size\": 0x1000\n\
   }" > "$(notdir $(BIN))_boot.cfg" && \
-	echo -e "\
+	echo "\
 	{\n\
     \"version\":1,\n\
     \"machine\":\"riscv64\",\n\
     \"memory_size\":256,\n\
-    \"bios\":\"$(shell pwd)/tb/dromajo/run/checkpoints/$(notdir $(BIN))/$(notdir $(BIN))\",\n\
-    \"load\":\"$(shell pwd)/tb/dromajo/run/checkpoints/$(notdir $(BIN))/$(notdir $(BIN))\",\n\
+    \"bios\":\"$(shell pwd)/corev_apu/tb/dromajo/run/checkpoints/$(notdir $(BIN))/$(notdir $(BIN))\",\n\
+    \"load\":\"$(shell pwd)/corev_apu/tb/dromajo/run/checkpoints/$(notdir $(BIN))/$(notdir $(BIN))\",\n\
     \"skip_commit\": [0x73, 0x9002, 0x100073],\n\
     \"memory_base_addr\":0x80000000,\n\
 		\"clint_base_addr\": 0x02000000,\n\
@@ -671,8 +666,8 @@ checkpoint_dromajo:
 	  \"uart_size\": 0x1000\n\
   }" > "$(notdir $(BIN)).cfg" && \
   ../../../src/dromajo --save=$(notdir $(BIN)) --save_format=1 ./$(notdir $(BIN))_boot.cfg && \
-  cd ../../../../../ && \
-	./work-ver/Variane_testharness +checkpoint=$(shell pwd)/tb/dromajo/run/checkpoints/$(notdir $(BIN))/$(notdir $(BIN))
+  cd ../../../../../../ && \
+	./work-ver/Variane_testharness +checkpoint=$(shell pwd)/corev_apu/tb/dromajo/run/checkpoints/$(notdir $(BIN))/$(notdir $(BIN))
 
 
 # User Verilator, at some point in the future this will be auto-generated

@@ -285,12 +285,6 @@ done_processing:
 
   std::unique_ptr<Variane_testharness> top(new Variane_testharness);
 
-  // Use an hitf hexwriter to read the binary data.
-  htif_hexwriter_t htif(0x0, 1, -1);
-  memif_t memif(&htif);
-  reg_t entry;
-  load_elf(htif_argv[1], &memif, &entry);
-
 #if VM_TRACE
   Verilated::traceEverOn(true); // Verilator must compute traced signals
   std::unique_ptr<VerilatedVcdFILE> vcdfd(new VerilatedVcdFILE(vcdfile));
@@ -318,12 +312,18 @@ done_processing:
   }
   top->rst_ni = 1;
 
+#ifndef DROMAJO
+  // Use an hitf hexwriter to read the binary data.
+  htif_hexwriter_t htif(0x0, 1, -1);
+  memif_t memif(&htif);
+  reg_t entry;
+  load_elf(htif_argv[1], &memif, &entry);
+
   // Preload memory.
   size_t mem_size = 0xFFFFFF;
   memif.read(0x80000000, mem_size, (void *)top->ariane_testharness__DOT__i_sram__DOT__gen_cut__BRA__0__KET____DOT__gen_mem__DOT__i_tc_sram_wrapper__DOT__i_tc_sram__DOT__sram);
   // memif.read(0x84000000, mem_size, (void *)top->ariane_testharness__DOT__i_sram__DOT__gen_cut__BRA__0__KET____DOT__gen_mem__DOT__gen_mem_user__DOT__i_ram_user__DOT__sram);
 
-#ifndef DROMAJO
   while (!dtm->done() && !jtag->done()) {
 #else
   // the simulation gets killed by dromajo
