@@ -422,21 +422,31 @@ The zero stage bootloader (ZSBL) for RTL simulation lives in `bootrom/` while th
 
 To re-generate the bootcode you can use the existing makefile within those directories. To generate the SystemVerilog files you will need the `bitstring` python package installed on your system.
 
-### Co-simulation with Dromajo
-CVA6 can be co-simulated with [Dromajo](https://github.com/chipsalliance/dromajo) (currently in the verilator model).
+### Co-simulation/Tandem simulation with Dromajo
+CVA6 can be co-simulated with [Dromajo](https://github.com/chipsalliance/dromajo) (currently in the verilator model). To build the verilator model with Dromajo enabled, do the following:
 
 ```
 make verilate DROMAJO=1
 make run-dromajo-verilator BIN=/path/to/elf
 ```
 
+The co-simulation (a.k.a tandem simulation) is the verification setup when RTL simulation and the golden model are run simultaneously. The interaction between two systems is depicted in the picture below.
+
+![cva6_dromajo_interaction](https://user-images.githubusercontent.com/8511359/170225745-ee9eaedb-07eb-409a-910f-796bb77e1e5c.png)
+
+Note that Dromajo support asynchronous interrupts. When an CVA6 RTL will get an interrupt, it signals Dromajo to steer its execution flow into the interrupt handling routine to proceed the co-simulation (the feature not supported by many co-simulation infrastructures). 
+
 The co-simulation flow is depicted in the figure below.
-![image](https://user-images.githubusercontent.com/8511359/84510824-7ceb3b80-ac7a-11ea-9530-24c428ee87d9.png)
+
+![cva6_dromajo](https://user-images.githubusercontent.com/8511359/170223963-2f69ffa6-7302-4996-80fd-6ea27c7eb797.png)
+
 1. Load the binary of interest into Dromajo.
 2. Run Dromajo stand alone and let a couple of instructions to complete.
 3. Dump the checkpoint. This is the whole architectural state of the reference model. Dromajo dumps the main and boot memories. In addition, it generates a boot code. If you were to run that code it will restore the whole architectural state. This means that you can bring any two or more cores into complete synced architectural state by running this piece of code.
 4. Load the checkpoint into the RTL memory and the instance of Dromajo in RTL. Dromajo gets linked to a simulator as a shared library. RTL communicates to Dromajo through set of DPI calls.
 5. Run the RTL simulation and perform co-simulation.
+
+Note that checkpoint based co-simulation allows to create portable stimulus and increases productivity without the need to recompile various benchmarks. A common use is to split the Linux boot sequence in several checkpoints to speed up verification. Other advantages of using checkpoints include: (a) apply concepts of phase analysis and simulation points to capture important phases in a portable format; and (b) allows a long-running program to be checkpointed and run in parallel which reduces the simulation costs.
 
 # Contributing
 
