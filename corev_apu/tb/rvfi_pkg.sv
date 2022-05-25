@@ -17,6 +17,7 @@ package rvfi_pkg;
     logic [NRET*63:0]                order;
     logic [NRET*ILEN-1:0]            insn;
     logic [NRET-1:0]                 trap;
+    logic [NRET*riscv::XLEN-1:0]     cause;
     logic [NRET-1:0]                 halt;
     logic [NRET-1:0]                 intr;
     logic [NRET*2-1:0]               mode;
@@ -27,6 +28,7 @@ package rvfi_pkg;
     logic [NRET*riscv::XLEN-1:0]     rs2_rdata;
     logic [NRET*5-1:0]               rd_addr;
     logic [NRET*riscv::XLEN-1:0]     rd_wdata;
+    logic [NRET*ariane_pkg::DATA_USER_WIDTH-1:0] rd_wuser;
 
     logic [NRET*riscv::XLEN-1:0]     pc_rdata;
     logic [NRET*riscv::XLEN-1:0]     pc_wdata;
@@ -36,6 +38,8 @@ package rvfi_pkg;
     logic [NRET*(riscv::XLEN/8)-1:0] mem_wmask;
     logic [NRET*riscv::XLEN-1:0]     mem_rdata;
     logic [NRET*riscv::XLEN-1:0]     mem_wdata;
+    logic [NRET*ariane_pkg::DATA_USER_WIDTH-1:0] mem_ruser;
+    logic [NRET*ariane_pkg::DATA_USER_WIDTH-1:0] mem_wuser;
   } rvfi_instr_t;
 
 
