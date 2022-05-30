@@ -52,10 +52,10 @@ set_input_delay -clock main_clk -max $input_delay i_cva6/i_cache_subsystem/i_wt_
 set_input_delay -clock main_clk -max $input_delay i_cva6/i_cache_subsystem/i_cva6_icache/gen_sram_*__data_sram/gen_cut_*__gen_mem_i_tc_sram_wrapper/rdata_o[*]
 set_input_delay -clock main_clk -max $input_delay i_cva6/i_cache_subsystem/i_cva6_icache/gen_sram_*__tag_sram/gen_cut_*__gen_mem_i_tc_sram_wrapper/rdata_o[*]
 
-set_output_delay $output_delay -max -clock main_clk i_cva6/i_cache_subsystem/i_wt_dcache/i_wt_dcache_mem/gen_tag_srams_*__i_tag_sram/addr_i[*]
-set_output_delay $output_delay -max -clock main_clk i_cva6/i_cache_subsystem/i_wt_dcache/i_wt_dcache_mem/gen_data_banks_*__i_data_sram/addr_i[*]
-set_output_delay $output_delay -max -clock main_clk i_cva6/i_cache_subsystem/i_cva6_icache/gen_sram_*__data_sram/addr_i[*]
-set_output_delay $output_delay -max -clock main_clk i_cva6/i_cache_subsystem/i_cva6_icache/gen_sram_*__tag_sram/addr_i[*]
+set_output_delay $output_delay -max -clock main_clk i_cva6/i_cache_subsystem/i_wt_dcache/i_wt_dcache_mem/gen_tag_srams_*__i_tag_sram/gen_cut_*__gen_mem_i_tc_sram_wrapper/addr_i[*]
+set_output_delay $output_delay -max -clock main_clk i_cva6/i_cache_subsystem/i_wt_dcache/i_wt_dcache_mem/gen_data_banks_*__i_data_sram/gen_cut_*__gen_mem_i_tc_sram_wrapper/addr_i[*]
+set_output_delay $output_delay -max -clock main_clk i_cva6/i_cache_subsystem/i_cva6_icache/gen_sram_*__data_sram/gen_cut_*__gen_mem_i_tc_sram_wrapper/addr_i[*]
+set_output_delay $output_delay -max -clock main_clk i_cva6/i_cache_subsystem/i_cva6_icache/gen_sram_*__tag_sram/gen_cut_*__gen_mem_i_tc_sram_wrapper/addr_i[*]
 
 # Check the current design for consistency
 check_design -summary > ${DCRM_CHECK_DESIGN_REPORT}

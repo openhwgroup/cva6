@@ -20,7 +20,7 @@ import uvm_pkg::*;
 `include "uvm_macros.svh"
 
 `define MAIN_MEM(P) dut.i_sram.gen_cut[0].gen_mem.i_tc_sram_wrapper.i_tc_sram.init_val[(``P``)]
-// `define USER_MEM(P) dut.i_sram.gen_user_cut[0].gen_user_mem.i_ram_user.sram[(``P``)]
+// `define USER_MEM(P) dut.i_sram.gen_cut[0].gen_mem.gen_mem_user.i_tc_sram_wrapper_user.i_tc_sram.init_val[(``P``)]
 
 import "DPI-C" function read_elf(input string filename);
 import "DPI-C" function byte get_section(output longint address, output longint len);
