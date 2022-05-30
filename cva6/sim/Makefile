@@ -34,7 +34,7 @@ isspostrun_opts ?=
 log             ?=
 variant         ?=
 
-TESTNAME := $(shell basename -s .o $(elf-bin))
+TESTNAME := $(shell basename -s .o $(elf))
 
 ifeq ($(isspostrun_opts), "")
 grep_address:
