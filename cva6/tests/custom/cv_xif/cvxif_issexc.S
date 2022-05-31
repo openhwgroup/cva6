@@ -1,7 +1,7 @@
 # See LICENSE for license details.
 
 #*****************************************************************************
-# Copyright 2021 Thales DIS design services SAS
+# Copyright 2022 Thales DIS design services SAS
 #
 # Licensed under the Solderpad Hardware Licence, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -25,11 +25,13 @@ main:
     LOAD_RS(a1, 0xDEADBEEF);
     LOAD_RS(a2, 0xDEADBEEF);
 
-   CUS_ADD(01010,01010,01010,01011);
-   CUS_EXC(01111,00000,00000,00000);
-   CUS_ADD(01111,00111,00111,00011);
-   CUS_EXC(01111,00000,00000,00000);
-   CUS_ADD(01111,00111,00111,00011);
+    CUS_ADD(01010,01010,01010,01011);
+    CUS_ISS_EXC(00000,00000,00000,00000);
+    CUS_ADD(01010,01010,01010,01011);
+    CUS_ADD(01010,01010,01010,01011);
+    CUS_ISS_EXC(00000,00000,00000,00000);
+    CUS_ADD(11110,11000,11100,00001);
+    CUS_ADD(01111,00111,00111,00011);
 
 # (example of) final self-check test
   li a0, 0xCAFE;

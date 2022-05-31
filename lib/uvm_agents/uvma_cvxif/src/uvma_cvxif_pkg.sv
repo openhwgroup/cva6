@@ -15,7 +15,6 @@
 // Interface(s) / Module(s) / Checker(s)
 `include "uvma_cvxif_intf.sv"
 `include "uvma_cvxif_assert.sv"
-`include "uvma_cvxif_instr_pkg.sv"
 
 /**
  * Encapsulates all the types needed for an UVM agent capable of driving and/or
@@ -25,7 +24,6 @@
 package uvma_cvxif_pkg;
 
    import uvm_pkg ::*;
-   import uvma_cvxif_instr_pkg ::*;
 
    // Constants / Structs / Enums
    `include "uvma_cvxif_constants.sv"

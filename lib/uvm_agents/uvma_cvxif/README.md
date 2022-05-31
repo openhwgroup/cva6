@@ -5,18 +5,30 @@
   So, to be able to use the cvxif agent you need to have this package.
 
 - Instructions supported by the agent:
-  - CUS-ADD: does rs1 + rs2, and writeback the result
-  - CUS-ADD-RS3: if X_NUM_RS==3, it does rs1 + rs2 + rs3 else it does rs1 + rs2, and writeback the result
+  - CUS-ADD     : does rs1 + rs2, and writeback the result.
+  - CUS-ADD-RS3 : if X_NUM_RS==3, it does rs1 + rs2 + rs3 else it does rs1 + rs2, and writeback the result.
+  - CUS-NOP     : does nothing on CPU side, cus-nop doesn't require a writeback.
+  - CUS-M-ADD   : does RISC-V ADD if CPU is in Machine mode else illegal instruction.
+  - CUS-S-ADD   : does RISC-V ADD if CPU is in Supervisor or Machine mode else illegal instruction.
+  - CUS-ADD-MULT: does a multi-cycle RISCV ADD.
+  - CUS-EXC     : does nothing but raises an exception in the coprocessor (result.exc=1).
+  - CUS-NOP-EXC : does nothing but informe that the copro can have an exception (issue_resp.exc=1).
+  - CUS-ISS-EXC : does nothing but raises an exception in the coprocessor, after signaling via issue_resp the possibility to have the exception.
+Note: This custom XIF Instructions are used to test different functionalities of the interface itself (used just for test; they are not specific for a coprocessor).
 
 - Issue response:
-  - agent's issue response of each instruction is described in instr_pkg.sv
+  - the issue response of each instruction is generated in the sequence (uvma_cvxif_seq.sv).
   - issue response is driven at the same clk cycle as the issue request
 
 - Result response:
   - the agent drives the result response one clk cycle after the issue request
   - the result response is generated in uvma_cvxif_seq.sv
-  - synchronous exception is not generated
 
 - Test example for CVA6:
-  - cvxif.S offloads CUS-ADD, CUS-ADD-RS3 and an illegal instruction in a row
-  - to execute the test, use testlist_cvxif.yaml
+  - in cva6/tests/custom/cv_xif example of tests that offload the different custom xif instructions described above.
+  - to execute a test, use testlist_cvxif.yaml
+
+- Functional coverage is supported, the coverage of some scenarios are measured with assertion coverage,
+  and the toggle of some signals are measured in covergroups (at uvma_cvxif_cov_model_c component).
+
+- Compressed Interface, Memory Interface and Memory Result Interface are not supported.
