@@ -135,7 +135,7 @@ package ariane_pkg;
     localparam BITS_SATURATION_COUNTER = 2;
     localparam NR_COMMIT_PORTS = 2;
 
-    localparam ENABLE_RENAME = 1'b0;
+    localparam ENABLE_RENAME = cva6_config_pkg::CVA6ConfigRenameEn;
 
     localparam ISSUE_WIDTH = 1;
     // amount of pipeline registers inserted for load/store return path
@@ -166,13 +166,13 @@ package ariane_pkg;
     localparam bit RVF = (riscv::IS_XLEN64 | riscv::IS_XLEN32) & riscv::FPU_EN; // Is F extension enabled for both 32 Bit and 64 bit CPU
     localparam bit RVD = (riscv::IS_XLEN64 ? 1:0) & riscv::FPU_EN;              // Is D extension enabled for only 64 bit CPU
 `endif
-    localparam bit RVA = 1'b1; // Is A extension enabled
+    localparam bit RVA = cva6_config_pkg::CVA6ConfigAExtEn; // Is A extension enabled
 
     // Transprecision floating-point extensions configuration
-    localparam bit XF16    = 1'b0; // Is half-precision float extension (Xf16) enabled
-    localparam bit XF16ALT = 1'b0; // Is alternative half-precision float extension (Xf16alt) enabled
-    localparam bit XF8     = 1'b0; // Is quarter-precision float extension (Xf8) enabled
-    localparam bit XFVEC   = 1'b0; // Is vectorial float extension (Xfvec) enabled
+    localparam bit XF16    = cva6_config_pkg::CVA6ConfigF16En; // Is half-precision float extension (Xf16) enabled
+    localparam bit XF16ALT = cva6_config_pkg::CVA6ConfigF16AltEn; // Is alternative half-precision float extension (Xf16alt) enabled
+    localparam bit XF8     = cva6_config_pkg::CVA6ConfigF8En; // Is quarter-precision float extension (Xf8) enabled
+    localparam bit XFVEC   = cva6_config_pkg::CVA6ConfigFVecEn; // Is vectorial float extension (Xfvec) enabled
 
     // Transprecision float unit
     localparam int unsigned LAT_COMP_FP32    = 'd2;
