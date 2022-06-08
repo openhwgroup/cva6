@@ -13,7 +13,7 @@ version: 2
 sphinx:
   configuration: docs/VerifStrat/source/conf.py
 
-# Explicitly set the version of Python and its requirements
-#python:
-#  install:
-#    - requirements: docs/VerifStrat/requirements.txt
+# Explicitly set the Python requirements
+python:
+  install:
+    - requirements: docs/VerifStrat/requirements.txt
