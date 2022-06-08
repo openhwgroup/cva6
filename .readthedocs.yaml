@@ -9,10 +9,10 @@ build:
     python: "3.9"
 
 # Build from the docs/ directory with Sphinx
-sphinx:
-  configuration: docs/VerifStrat/source/conf.py
+#sphinx:
+#  configuration: docs/VerifStrat/source/conf.py
 
 # Explicitly set the version of Python and its requirements
-python:
-  install:
-    - requirements: docs/VerifStrat/requirements.txt
+#python:
+#  install:
+#    - requirements: docs/VerifStrat/requirements.txt
