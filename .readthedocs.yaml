@@ -9,9 +9,9 @@ version: 2
 #  tools:
 #    python: "3.9"
 
-# Build from the docs/ directory with Sphinx
-#sphinx:
-#  configuration: docs/VerifStrat/source/conf.py
+# Build from the docs/VerifStrat/source directory with Sphinx
+sphinx:
+  configuration: docs/VerifStrat/source/conf.py
 
 # Explicitly set the version of Python and its requirements
 #python:
