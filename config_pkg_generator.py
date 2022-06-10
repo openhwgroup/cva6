@@ -18,17 +18,27 @@ def setup_parser_config_generator():
   parser = argparse.ArgumentParser()
 
   parser.add_argument("--default_config", type=str, default="cv64a6_imafdc_sv39", required=True,
-                      choices=["cv32a6_imac_sv0","cv32a6_imac_sv32","cv32a6_imafc_sv32","cv64a6_imafdc_sv39"],
+                      choices=["cv32a6_imac_sv0","cv32a6_imac_sv32","cv32a6_imafc_sv32","cv64a6_imafdc_sv39","cv32a60x"],
                       help="Default configuration is one of the 4 preexisting configuration: \
                             cv32a6_imac_sv0, cv32a6_imac_sv32, cv32a6_imafc_sv32, cv64a6_imafdc_sv39")
   parser.add_argument("--isa", type=str, default=None, required=True,
                       help="RISC-V ISA subset")
   parser.add_argument("--fpu", type=int, default=None, choices=[0,1],
                       help="FPU enable ? 1 : enable, 0 : disable")
+  parser.add_argument("--F16En", type=int, default=None, choices=[0,1],
+                      help="F16En enable ? 1 : enable, 0 : disable")
+  parser.add_argument("--F16AltEn", type=int, default=None, choices=[0,1],
+                      help="F16AltEn enable ? 1 : enable, 0 : disable")
+  parser.add_argument("--F8En", type=int, default=None, choices=[0,1],
+                      help="F8En enable ? 1 : enable, 0 : disable")
+  parser.add_argument("--FVecEn", type=int, default=None, choices=[0,1],
+                      help="FVecEn enable ? 1 : enable, 0 : disable")
   parser.add_argument("--cvxif", type=int, default=None, choices=[0,1],
                       help="CoreV-X-Interface enable ? 1 : enable, 0 : disable")
   parser.add_argument("--c_ext", type=int, default=None, choices=[0,1],
                       help="C extension enable ? 1 : enable, 0 : disable")
+  parser.add_argument("--a_ext", type=int, default=None, choices=[0,1],
+                      help="A extension enable ? 1 : enable, 0 : disable")
   parser.add_argument("--iuser_en", type=int, default=None, choices=[0,1],
                       help="Fetch User enable ? 1 : enable, 0 : disable")
   parser.add_argument("--iuser_w", type=int, default=None, choices=list(range(1,64)),
@@ -37,6 +47,8 @@ def setup_parser_config_generator():
                       help="Data User enable ? 1 : enable, 0 : disable")
   parser.add_argument("--duser_w", type=int, default=None, choices=list(range(1,64)),
                       help="Data User Width ? [1-64]")
+  parser.add_argument("--RenameEn", type=int, default=None, choices=[0,1],
+                      help="RenameEn ? 1 : enable, 0 : disable")
   return parser
 
 ISA = ""
@@ -46,12 +58,18 @@ Config = dict()
 MapArgsToParameter={
   "xlen" : "CVA6ConfigXlen",
   "fpu" : "CVA6ConfigFpuEn",
+  "F16En" : "CVA6ConfigF16En",
+  "F16AltEn" : "CVA6ConfigF16AltEn",
+  "F8En" : "CVA6ConfigF8En",
+  "FVecEn" : "CVA6ConfigFVecEn",
   "cvxif" : "CVA6ConfigCvxifEn",
   "c_ext" : "CVA6ConfigCExtEn",
+  "a_ext" : "CVA6ConfigAExtEn",
   "iuser_en" : "CVA6ConfigFetchUserEn",
   "iuser_w" : "CVA6ConfigFetchUserWidth",
   "duser_en" : "CVA6ConfigDataUserEn",
-  "duser_w" : "CVA6ConfigDataUserWidth"
+  "duser_w" : "CVA6ConfigDataUserWidth",
+  "RenameEn" : "CVA6ConfigRenameEn",
 }
 MapParametersToArgs = {i:k for k, i in MapArgsToParameter.items()} #reverse map
 
