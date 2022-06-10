@@ -157,9 +157,8 @@ pub_hwconfig:
   parallel:
     matrix:
       - DV_SIMULATORS: ["vcs-uvm,spike", "veri-testharness,spike"]
-        DV_HWCONFIG_OPTS: ["--default_config=cv64a6_imafdc_sv39 --isa=rv64imac --fpu=0",
-                           "--default_config=cv64a6_imafdc_sv39 --isa=rv64g --c_ext=0",
-                           "--default_config=cv64a6_imafdc_sv39 --isa=rv64gc --duser_en=1"]
+        DV_HWCONFIG_OPTS: ["--default_config=cv32a60x --isa=rv32imac --a_ext=1",
+                           "--default_config=cv32a60x --isa=rv32imc --RenameEn=1"]
   script:
     - echo $SYN_VCS_BASHRC; source $SYN_VCS_BASHRC
     - source ./cva6/regress/hwconfig_tests.sh
@@ -173,7 +172,7 @@ pub_compliance:
       artifacts: false
   parallel:
     matrix:
-      - DV_TARGET: [cv64a6_imafdc_sv39, cv32a6_imac_sv0]
+      - DV_TARGET: [cv64a6_imafdc_sv39, cv32a60x]
   variables:
     DV_SIMULATORS: "veri-testharness,spike"
   script:
@@ -195,7 +194,7 @@ pub_tests-v:
       artifacts: false
   parallel:
     matrix:
-      - DV_TARGET: [cv64a6_imafdc_sv39, cv32a6_imac_sv0]
+      - DV_TARGET: [cv64a6_imafdc_sv39, cv32a60x]
   variables:
     DV_SIMULATORS: "veri-testharness,spike"
     DV_TESTLISTS: "../tests/testlist_riscv-tests-$DV_TARGET-v.yaml"
@@ -218,7 +217,7 @@ pub_tests-p:
       artifacts: false
   parallel:
     matrix:
-      - DV_TARGET: [cv64a6_imafdc_sv39, cv32a6_imac_sv0]
+      - DV_TARGET: [cv64a6_imafdc_sv39, cv32a60x]
   variables:
     DV_SIMULATORS: "veri-testharness,spike"
     DV_TESTLISTS: "../tests/testlist_riscv-tests-$DV_TARGET-p.yaml"
@@ -243,7 +242,7 @@ pub_synthesis:
     matrix:
       - TARGET: [cv64a6_imafdc_sv39]
         PERIOD: ["1.1"]
-      - TARGET: [cv32a6_imac_sv0]
+      - TARGET: [cv32a60x]
         PERIOD: ["0.95"]
   variables:
     INPUT_DELAY: "0.46"
