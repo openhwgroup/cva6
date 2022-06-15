@@ -326,7 +326,7 @@ module csr_regfile import ariane_pkg::*; #(
     riscv::xlen_t mask;
     always_comb begin : csr_update
         automatic riscv::satp_t satp;
-        automatic riscv::xlen_t instret;
+        automatic logic [63:0] instret;
 
 
         satp = satp_q;
