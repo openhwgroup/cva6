@@ -36,17 +36,17 @@ variables:
 
 workflow:
   rules:
-    - if: '$CI_COMMIT_REF_NAME =~ /^master.*/ || $CI_COMMIT_REF_NAME =~ /^hotfix.*/ || $CI_COMMIT_REF_NAME =~ /^rc.*/ || $CI_COMMIT_REF_NAME =~ /^cva6\/dev.*/'
+    - if: '$CI_COMMIT_REF_NAME =~ /^master.*|^hotfix.*|^rc.*|^cva6\/dev.*|^github-pr.*/'
       variables:
         CI_WEIGHT: "full"
-    - if: '$CI_COMMIT_REF_NAME =~ /^dev.*/ || $CI_COMMIT_REF_NAME =~ /^feature.*/'
+    - if: '$CI_COMMIT_REF_NAME =~ /^dev.*|^feature.*/'
       variables:
         CI_WEIGHT: "short"
-    - if: '$CI_COMMIT_REF_NAME =~ /^cvvdev\/master.*/ || $CI_COMMIT_REF_NAME =~ /^cvvdev\/hotfix.*/ || $CI_COMMIT_REF_NAME =~ /^cvvdev\/rc.*/ || $CI_COMMIT_REF_NAME =~ /^cva6\/dev.*/'
+    - if: '$CI_COMMIT_REF_NAME =~ /^cvvdev\/master.*|^cvvdev\/hotfix.*|^cvvdev\/rc.*/'
       variables:
         CI_WEIGHT: "full"
         CVA6_BRANCH: $CI_COMMIT_REF_NAME
-    - if: '$CI_COMMIT_REF_NAME =~ /^cvvdev\/dev.*/ || $CI_COMMIT_REF_NAME =~ /^cvvdev\/feature.*/'
+    - if: '$CI_COMMIT_REF_NAME =~ /^cvvdev\/dev.*|^cvvdev\/feature.*/'
       variables:
         CI_WEIGHT: "lite"
         CVA6_BRANCH: $CI_COMMIT_REF_NAME
