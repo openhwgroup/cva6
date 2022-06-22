@@ -276,12 +276,15 @@ module issue_read_operands import ariane_pkg::*; #(
         // we do not want to issue this instruction
         if (!issue_instr_i.ex.valid && issue_instr_valid_i && issue_ack_o) begin
             case (issue_instr_i.fu)
-                ALU:
+                ALU: begin
                     alu_valid_q    <= 1'b1;
-                CTRL_FLOW:
+                end
+                CTRL_FLOW: begin
                     branch_valid_q <= 1'b1;
-                MULT:
+                end
+                MULT: begin
                     mult_valid_q   <= 1'b1;
+                end
                 FPU : begin
                     fpu_valid_q    <= 1'b1;
                     fpu_fmt_q      <= orig_instr.rftype.fmt; // fmt bits from instruction
@@ -292,10 +295,12 @@ module issue_read_operands import ariane_pkg::*; #(
                     fpu_fmt_q      <= orig_instr.rvftype.vfmt;         // vfmt bits from instruction
                     fpu_rm_q       <= {2'b0, orig_instr.rvftype.repl}; // repl bit from instruction
                 end
-                LOAD, STORE:
+                LOAD, STORE: begin
                     lsu_valid_q    <= 1'b1;
-                CSR:
+                end
+                CSR: begin
                     csr_valid_q    <= 1'b1;
+                end
                 default:;
             endcase
         end
