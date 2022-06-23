@@ -927,7 +927,7 @@ module cva6 import ariane_pkg::*; #(
 //pragma translate_on
 
 `ifdef RVFI_TRACE
-  always_comb
+  always_comb begin
     for (int i = 0; i < NR_COMMIT_PORTS; i++) begin
       logic exception, mem_exception;
       exception = commit_instr_id_commit[i].valid && ex_commit.valid;
@@ -958,6 +958,7 @@ module cva6 import ariane_pkg::*; #(
       rvfi_o[i].rd_wdata = ariane_pkg::is_rd_fpr(commit_instr_id_commit[i].op) == 0 ? wdata_commit_id[i] : commit_instr_id_commit[i].result;
       rvfi_o[i].pc_rdata = commit_instr_id_commit[i].pc;
     end
+  end
 `endif
 
 endmodule // ariane

@@ -212,11 +212,12 @@ module issue_read_operands import ariane_pkg::*; #(
         operand_b_n = operand_b_regfile;
         // immediates are the third operands in the store case
         // for FP operations, the imm field can also be the third operand from the regfile
-        if (NR_RGPR_PORTS == 3)
+        if (NR_RGPR_PORTS == 3) begin
             imm_n  = is_imm_fpr(issue_instr_i.op) ? {{riscv::XLEN-FLEN{1'b0}}, operand_c_regfile} :
                                                     issue_instr_i.op == OFFLOAD ? operand_c_regfile : issue_instr_i.result;
-        else
+        end else begin
             imm_n  = is_imm_fpr(issue_instr_i.op) ? {{riscv::XLEN-FLEN{1'b0}}, operand_c_regfile} : issue_instr_i.result;
+        end
         trans_id_n = issue_instr_i.trans_id;
         fu_n       = issue_instr_i.fu;
         operator_n = issue_instr_i.op;
@@ -448,7 +449,7 @@ module issue_read_operands import ariane_pkg::*; #(
                 .raddr_i   ( fp_raddr_pack ),
                 .rdata_o   ( fprdata       ),
                 .waddr_i   ( waddr_pack    ),
-                .wdata_i   ( wdata_pack    ),
+                .wdata_i   ( fp_wdata_pack ),
                 .we_i      ( we_fpr_i      ),
                 .*
             );
