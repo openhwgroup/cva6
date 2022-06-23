@@ -234,9 +234,6 @@ module decoder import ariane_pkg::*; (
 
                         default: illegal_instr = 1'b1;
                     endcase
-
-                    if (instr.stype.rs1 != '0 || instr.stype.imm0 != '0 || instr.instr[31:28] != '0)
-                        illegal_instr = 1'b1;
                 end
 
                 // --------------------------
