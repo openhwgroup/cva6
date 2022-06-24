@@ -1,4 +1,4 @@
-# Copyright 2022 Thales DIS design services SAS
+# Copyright 2022 Thales Silicon Security
 #
 # Licensed under the Solderpad Hardware Licence, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -79,6 +79,7 @@ else:  # workflow_repo == "cvv":
 
 pipeline = {
     'token': 'YC' + str(pipeline_creation_timestamp).replace('.', ''),
+    'pipeline_url': os.environ["CI_PIPELINE_URL"],
     'timestamp': pipeline_creation_timestamp,
     'runtime': pipeline_duration,
     'workflow_action': workflow_action,

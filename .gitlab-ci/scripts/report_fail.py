@@ -1,4 +1,4 @@
-# Copyright 2022 Thales DIS design services SAS
+# Copyright 2022 Thales Silicon Security
 #
 # Licensed under the Solderpad Hardware Licence, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -15,6 +15,12 @@ import os
 
 report = {'title': os.environ["DASHBOARD_JOB_TITLE"],
           'description': os.environ["DASHBOARD_JOB_DESCRIPTION"],
+          'category': os.environ["DASHBOARD_JOB_CATEGORY"],
+          'job_id': os.environ["CI_JOB_ID"],
+          'job_url': os.environ["CI_JOB_URL"],
+          'job_stage_name': os.environ["CI_JOB_STAGE"],
+          'job_started_at': int(datetime.datetime.strptime(os.environ['CI_JOB_STARTED_AT'], '%Y-%m-%dT%H:%M:%S%z').timestamp()),
+          'job_end_at': int(datetime.datetime.now().timestamp()),
           'token': 'YC' + str(datetime.datetime.now().timestamp()).replace('.', ''),
           'status': "fail",
           'label': "FAIL",
@@ -24,7 +30,7 @@ report = {'title': os.environ["DASHBOARD_JOB_TITLE"],
               'value': [{
                   'status': 'fail',
                   'label': 'FAIL',
-                  'col': ['Job has fail before end of script'],
+                  'col': ['Job has failed before end of script'],
               }],
           }],
          }
