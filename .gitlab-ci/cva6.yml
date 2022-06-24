@@ -166,6 +166,7 @@ pub_hwconfig:
     - python3 .gitlab-ci/scripts/report_fail.py "HW config $DV_SIMULATORS $DV_HWCONFIG_OPTS" "Short tests to challenge target configurations" "artifacts/reports/$CI_JOB_NAME.yml"
     - echo $SYN_VCS_BASHRC; source $SYN_VCS_BASHRC
     - source ./cva6/regress/hwconfig_tests.sh
+    - python3 .gitlab-ci/scripts/report_pass.py "HW config $DV_SIMULATORS $DV_HWCONFIG_OPTS" "Short tests to challenge target configurations" "artifacts/reports/$CI_JOB_NAME.yml"
 
 pub_compliance:
   stage: two
@@ -327,6 +328,7 @@ pub_benchmarks:
     - source ./cva6/regress/install-riscv-dv.sh
     - source ./cva6/regress/install-riscv-tests.sh
     - source ./cva6/regress/benchmark.sh
+    - python3 .gitlab-ci/scripts/report_pass.py "BenchMark $DV_TARGET" "Performance indicator of some benchmark" "artifacts/reports/$CI_JOB_NAME.yml"
   artifacts:
     when: always
     paths:
@@ -346,6 +348,7 @@ pub_wb_dcache:
     - source ci/build-riscv-tests.sh
     - cd ../../../
     - make run-asm-tests-verilator defines=WB_DCACHE
+    - python3 .gitlab-ci/scripts/report_pass.py "Writeback Data Cache test" "Test of IP wb_dcache" "artifacts/reports/$CI_JOB_NAME.yml"
   artifacts:
     when: always
     paths:
@@ -362,6 +365,7 @@ pub_linux:
     - mkdir -p artifacts/reports
     - python3 .gitlab-ci/scripts/report_fail.py "Linux Test" "Simulation of Boot Linux" "artifacts/reports/$CI_JOB_NAME.yml"
     - source cva6/regress/linux.sh
+    - python3 .gitlab-ci/scripts/report_pass.py "Linux Test" "Simulation of Boot Linux" "artifacts/reports/$CI_JOB_NAME.yml"
   timeout: 2h 30m
   artifacts:
     when: always
@@ -382,6 +386,7 @@ pub_fpga-build:
     - source $VIVADO_SETUP
     - source cva6/regress/install-cva6.sh
     - make -C core-v-cores/cva6 fpga
+    - python3 .gitlab-ci/scripts/report_pass.py "FPGA Build" "Test of FPGA build flow" "artifacts/reports/$CI_JOB_NAME.yml"
   artifacts:
     when: always
     paths:
