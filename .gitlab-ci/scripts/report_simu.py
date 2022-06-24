@@ -12,14 +12,15 @@ from pprint import pprint
 import yaml
 import datetime
 import sys
+import os
 
 with open(str(sys.argv[1]), 'r') as f:
     log = f.read()
 
 global_pass = "pass"
 
-report = {'title': sys.argv[2],
-          'description': sys.argv[3],
+report = {'title': os.environ["DASHBOARD_JOB_TITLE"],
+          'description': os.environ["DASHBOARD_JOB_DESCRIPTION"],
           'token': 'YC' + str(datetime.datetime.now().timestamp()).replace('.', ''),
           'status': "pass",
           'metrics': []
@@ -65,8 +66,8 @@ report['label'] = f'{job_test_pass}/{job_test_total}'
 
 pprint(report)
 
-filename = re.sub('[^\w\.\\\/]', '_', sys.argv[4])
+filename = re.sub('[^\w\.\\\/]', '_', os.environ["CI_JOB_NAME"])
 print(filename)
 
-with open(filename, 'w+') as f:
+with open('artifacts/reports/'+filename+'.yml', 'w+') as f:
     yaml.dump(report, f)

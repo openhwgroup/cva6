@@ -11,12 +11,10 @@ import re
 from pprint import pprint
 import yaml
 import datetime
-import sys
+import os
 
-global_pass = "pass"
-
-report = {'title': sys.argv[1],
-          'description': sys.argv[2],
+report = {'title': os.environ["DASHBOARD_JOB_TITLE"],
+          'description': os.environ["DASHBOARD_JOB_DESCRIPTION"],
           'token': 'YC' + str(datetime.datetime.now().timestamp()).replace('.', ''),
           'status': "fail",
           'label': "FAIL",
@@ -33,8 +31,8 @@ report = {'title': sys.argv[1],
 
 pprint(report)
 
-filename = re.sub('[^\w\.\\\/]', '_', sys.argv[3])
+filename = re.sub('[^\w\.\\\/]', '_', os.environ["CI_JOB_NAME"])
 print(filename)
 
-with open(filename, 'w+') as f:
+with open('artifacts/reports/'+filename+'.yml', 'w+') as f:
     yaml.dump(report, f)
