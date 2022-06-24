@@ -896,9 +896,10 @@ def load_config(args, cwd):
       args.mabi = "lp64"
       args.isa  = "rv64imc"
     elif args.target == "hwconfig":
+      current_path = os.getcwd()
       os.chdir(os.getcwd()+"/../../core-v-cores/cva6")
       [args.isa,args.mabi, args.target, args.hwconfig_opts] = generate_config(args.hwconfig_opts.split())
-      os.chdir(os.getcwd()+"/../../cva6/sim")
+      os.chdir(current_path)
     else:
       sys.exit("Unsupported pre-defined target: %0s" % args.target)
     args.core_setting_dir = cwd + "/dv" + "/target/"+ args.isa
