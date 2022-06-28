@@ -1,0 +1,31 @@
+diff --git a/customext/customext.mk.in b/customext/customext.mk.in
+index a14e771c..888634b4 100644
+--- a/customext/customext.mk.in
++++ b/customext/customext.mk.in
+@@ -7,5 +7,6 @@ customext_subproject_deps = \
+ customext_srcs = \
+ 	dummy_rocc.cc \
+ 	cflush.cc \
++	cvxif.cc \
+ 
+ customext_install_shared_lib = yes
+diff --git a/riscv/riscv.mk.in b/riscv/riscv.mk.in
+index 56014662..3da5f6d8 100644
+--- a/riscv/riscv.mk.in
++++ b/riscv/riscv.mk.in
+@@ -26,6 +26,7 @@ riscv_hdrs = \
+ 	tracer.h \
+ 	extension.h \
+ 	rocc.h \
++	cvxif.h \
+ 	insn_template.h \
+ 	debug_module.h \
+ 	debug_rom_defines.h \
+@@ -51,6 +52,7 @@ riscv_srcs = \
+ 	extension.cc \
+ 	extensions.cc \
+ 	rocc.cc \
++	cvxif_base.cc \
+ 	devices.cc \
+ 	rom.cc \
+ 	clint.cc \
