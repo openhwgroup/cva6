@@ -40,11 +40,12 @@ module id_stage (
     input  logic                          tsr_i
 );
     // ID/ISSUE register stage
-    struct packed {
+    typedef struct packed {
         logic                          valid;
         ariane_pkg::scoreboard_entry_t sbe;
         logic                          is_ctrl_flow;
-    } issue_n, issue_q;
+    } issue_struct_t;
+    issue_struct_t issue_n, issue_q;
 
     logic                            is_control_flow_instr;
     ariane_pkg::scoreboard_entry_t   decoded_instruction;

@@ -112,6 +112,7 @@ ${CVA6_REPO_DIR}/core/issue_read_operands.sv
 ${CVA6_REPO_DIR}/core/issue_stage.sv
 ${CVA6_REPO_DIR}/core/load_unit.sv
 ${CVA6_REPO_DIR}/core/load_store_unit.sv
+${CVA6_REPO_DIR}/core/lsu_bypass.sv
 ${CVA6_REPO_DIR}/core/mult.sv
 ${CVA6_REPO_DIR}/core/multiplier.sv
 ${CVA6_REPO_DIR}/core/serdiv.sv

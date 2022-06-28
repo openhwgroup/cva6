@@ -129,7 +129,7 @@ module frontend import ariane_pkg::*; #(
     // the prediction we saved from the previous fetch
     assign bht_prediction_shifted[0] = (serving_unaligned) ? bht_q : bht_prediction[addr[0][1]];
     assign btb_prediction_shifted[0] = (serving_unaligned) ? btb_q : btb_prediction[addr[0][1]];
-    
+
     if (ariane_pkg::RVC) begin : gen_btb_prediction_shifted
       // for all other predictions we can use the generated address to index
       // into the branch prediction data structures
@@ -138,7 +138,7 @@ module frontend import ariane_pkg::*; #(
         assign btb_prediction_shifted[i] = btb_prediction[addr[i][$clog2(INSTR_PER_FETCH):1]];
       end
     end;
-    
+
     // for the return address stack it doens't matter as we have the
     // address of the call/return already
     logic bp_valid;
@@ -361,7 +361,9 @@ module frontend import ariane_pkg::*; #(
             icache_ex_valid_q <= ariane_pkg::FE_INSTR_PAGE_FAULT;
           end else if (icache_dreq_i.ex.cause == riscv::INSTR_ACCESS_FAULT) begin
             icache_ex_valid_q <= ariane_pkg::FE_INSTR_ACCESS_FAULT;
-          end else icache_ex_valid_q <= ariane_pkg::FE_NONE;
+          end else begin
+            icache_ex_valid_q <= ariane_pkg::FE_NONE;
+          end
           // save the uppermost prediction
           btb_q                <= btb_prediction[INSTR_PER_FETCH-1];
           bht_q                <= bht_prediction[INSTR_PER_FETCH-1];
