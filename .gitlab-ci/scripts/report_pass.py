@@ -22,15 +22,15 @@ report = {'title': os.environ["DASHBOARD_JOB_TITLE"],
           'job_started_at': int(datetime.datetime.strptime(os.environ['CI_JOB_STARTED_AT'], '%Y-%m-%dT%H:%M:%S%z').timestamp()),
           'job_end_at': int(datetime.datetime.now().timestamp()),
           'token': 'YC' + str(datetime.datetime.now().timestamp()).replace('.', ''),
-          'status': "fail",
-          'label': "FAIL",
+          'status': "pass",
+          'label': "PASS",
           'metrics': [{'display_name': '',
               'type': 'table_status',
               'status': "fail",
               'value': [{
-                  'status': 'fail',
-                  'label': 'FAIL',
-                  'col': ['Job has failed before end of script'],
+                  'status': 'pass',
+                  'label': 'PASS',
+                  'col': ['Job completed without error. No metric extraction is configured'],
               }],
           }],
          }
@@ -42,3 +42,4 @@ print(filename)
 
 with open('artifacts/reports/'+filename+'.yml', 'w+') as f:
     yaml.dump(report, f)
+

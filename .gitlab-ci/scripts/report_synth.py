@@ -1,4 +1,4 @@
-# Copyright 2022 Thales DIS design services SAS
+# Copyright 2022 Thales Silicon Security
 #
 # Licensed under the Solderpad Hardware Licence, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -12,16 +12,23 @@ from pprint import pprint
 import yaml
 import datetime
 import sys
+import os
 
 with open(str(sys.argv[1]), 'r') as f:
     log = f.read()
 
-kgate_ratio = int(sys.argv[4])
+kgate_ratio = int(os.environ["NAND2_AREA"])
 
 global_pass = "pass"
 
-report = {'title': sys.argv[2],
-          'description': sys.argv[3],
+report = {'title': os.environ["DASHBOARD_JOB_TITLE"],
+          'description': os.environ["DASHBOARD_JOB_DESCRIPTION"],
+          'category': os.environ["DASHBOARD_JOB_CATEGORY"],
+          'job_id': os.environ["CI_JOB_ID"],
+          'job_url': os.environ["CI_JOB_URL"],
+          'job_stage_name': os.environ["CI_JOB_STAGE"],
+          'job_started_at': int(datetime.datetime.strptime(os.environ['CI_JOB_STARTED_AT'], '%Y-%m-%dT%H:%M:%S%z').timestamp()),
+          'job_end_at': int(datetime.datetime.now().timestamp()),
           'token': 'YC' + str(datetime.datetime.now().timestamp()).replace('.', ''),
           'status': "pass",
           'metrics': []
@@ -81,8 +88,8 @@ report['label'] = f'{int(total_area/kgate_ratio)} kGates'
 
 pprint(report)
 
-filename = re.sub('[^\w\.\\\/]', '_', sys.argv[5])
+filename = re.sub('[^\w\.\\\/]', '_', os.environ["CI_JOB_NAME"])
 print(filename)
 
-with open(filename, 'w+') as f:
+with open('artifacts/reports/'+filename+'.yml', 'w+') as f:
     yaml.dump(report, f)
