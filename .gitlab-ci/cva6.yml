@@ -162,7 +162,7 @@ pub_hwconfig:
       artifacts: false
   parallel:
     matrix:
-      - DV_SIMULATORS: ["vcs-uvm,spike", "veri-testharness,spike"]
+      - DV_SIMULATORS: ["veri-testharness,spike"]
         DV_HWCONFIG_OPTS: ["--default_config=cv32a60x --isa=rv32imac --a_ext=1",
                            "--default_config=cv32a60x --isa=rv32imc --RenameEn=1"]
   variables:
@@ -175,6 +175,10 @@ pub_hwconfig:
     - echo $SYN_VCS_BASHRC; source $SYN_VCS_BASHRC
     - source ./cva6/regress/hwconfig_tests.sh
     - python3 .gitlab-ci/scripts/report_pass.py
+  artifacts:
+    when: always
+    paths:
+      - artifacts/reports/*.yml
 
 pub_compliance:
   stage: two
@@ -212,7 +216,7 @@ pub_tests-v:
       artifacts: false
   parallel:
     matrix:
-      - DV_TARGET: [cv64a6_imafdc_sv39, cv32a60x]
+      - DV_TARGET: [cv64a6_imafdc_sv39]
   variables:
     DV_SIMULATORS: "veri-testharness,spike"
     DV_TESTLISTS: "../tests/testlist_riscv-tests-$DV_TARGET-v.yaml"
