@@ -2,7 +2,7 @@
 CVA6 requirement specification
 ==============================
 
-Revision 1.0.0
+Revision 1.0.1
 
 .. __license:
 
@@ -128,25 +128,39 @@ These are not in the scope of this specification:
 
 .. __verified_configurations:
 
-Verified configurations
------------------------
+Initial Release
+---------------
 
-It is not possible to verify all possible combinations of parameters.
-Below is the list of configurations that will undergo verification in
-the project and their main parameters. The full list of parameters for
-each configuration will be detailed in the users’ guide.
+The CVA6 is highly configurable via SystemVerilog parameters.
+It is not practical to fully document and verify all possible combinations of parameters, so a set of "viable IP configurations" has been defined.
+The full list of parameters for this configuration will be detailed in the users’ guide.
 
-+--------------------+---------+---------+---------+---------+---------+---------+
-| Config#            | Target  | 32/64   | FPU     | MMU     | L1 D$   | L1 I$   |
-+====================+=========+=========+=========+=========+=========+=========+
-| cv32a6_imacf_sv32  | FPGA    | CV32A6  | F       | Sv32    | 32 kB   | 16 kB   |
-+--------------------+---------+---------+---------+---------+---------+---------+
-| cv32a6_imac_sv32   | FPGA    | CV32A6  | None    | Sv32    | 32 kB   | 16 kB   |
-+--------------------+---------+---------+---------+---------+---------+---------+
-| cv64a6_imacfd_sv39 | ASIC    | CV64A6  | FD      | Sv39    | 16 kB   | 16 kB   |
-+--------------------+---------+---------+---------+---------+---------+---------+
-| cv32a6_imac_sv0    | ASIC    | CV32A6  | None    | None    | None    | 4 kB    |
-+--------------------+---------+---------+---------+---------+---------+---------+
+Below is the configuration of the first release of the CVA6.
+
++--------------------+---------+---------+------+-------+---------+---------+---------+---------+
+| Release ID         | Target  | ISA     | XLEN | FPU   | CV-X-IF | MMU     | L1 D$   | L1 I$   |
++====================+=========+=========+======+=======+=========+=========+=========+=========+
+| CV32A60X           | ASIC    | IMC     |  32  | No    | Yes     | Sv32    | None    | 16 kB   |
++--------------------+---------+---------+------+-------+---------+---------+---------+---------+
+
+
+Possible Future Releases
+------------------------
+
+Below is a proposed list of configurations that could undergo verification and their main parameters.
+The full list of parameters for these configurations will be detailed in the users’ guide if and when these configurations are fully verified.
+
++--------------------+---------+--------+------+-------+---------+---------+---------+---------+
+| Configuation ID    | Target  | ISA    | XLEN | FPU   | CV-X-IF | MMU     | L1 D$   | L1 I$   |
++====================+=========+========+======+=======+=========+=========+=========+=========+
+| cv32a6_imacf_sv32  | FPGA    | IMACF  |  32  | Yes   | TBD     | Sv32    | 32 kB   | 16 kB   |
++--------------------+---------+--------+------+-------+---------+---------+---------+---------+
+| cv32a6_imac_sv32   | FPGA    | IMAC   |  32  | No    | TBD     | Sv32    | 32 kB   | 16 kB   |
++--------------------+---------+--------+------+-------+---------+---------+---------+---------+
+| cv64a6_imacfd_sv39 | ASIC    | IMACFD |  64  | Yes   | Yes     | Sv39    | 16 kB   | 16 kB   |
++--------------------+---------+--------+------+-------+---------+---------+---------+---------+
+| cv32a6_imac_sv0    | ASIC    | IMAC   |  32  | No    | Yes     | None    | None    | 4 kB    |
++--------------------+---------+--------+------+-------+---------+---------+---------+---------+
 
 .. __references:
 
