@@ -388,29 +388,6 @@ pub_wb_dcache:
     paths:
       - "artifacts/reports/*.yml"
 
-pub_linux:
-  stage: three
-  extends:
-    - .template_job_short_ci
-  needs:
-    - job: pub_compliance
-      artifacts: false
-  variables:
-    DASHBOARD_JOB_TITLE: "Linux Test"
-    DASHBOARD_JOB_DESCRIPTION: "Simulation of Boot Linux"
-    DASHBOARD_JOB_CATEGORY: "Test suites"
-  script:
-    - mkdir -p artifacts/reports
-    - python3 .gitlab-ci/scripts/report_fail.py
-    - source cva6/regress/linux.sh
-    - python3 .gitlab-ci/scripts/report_pass.py
-  timeout: 2h 30m
-  artifacts:
-    when: always
-    paths:
-      - "artifacts/reports/*.yml"
-
-
 pub_fpga-build:
   stage: two
   extends:
