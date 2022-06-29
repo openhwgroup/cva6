@@ -40,6 +40,7 @@ include:
 
 workflow:
   rules:
+    - if: '$CI_WEIGHT == "forced"' #bypass workflow
     - if: '$CI_COMMIT_REF_NAME =~ /^master.*|^hotfix.*|^rc.*|^github-pr.*/'
       variables:
         CI_WEIGHT: "full"
