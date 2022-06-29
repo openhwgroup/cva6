@@ -41,10 +41,10 @@ report = {'title': os.environ["DASHBOARD_JOB_TITLE"],
 #Compile & elaborate log:
 
 metric = {'display_name': 'Synthesis full log',
-          'sort_index: 3',
+          'sort_index': 3,
           'type': 'log',
           'status': "pass",
-          'value': ""
+          'value': []
          }
 
 error_log = []
