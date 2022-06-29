@@ -27,6 +27,7 @@ global_pass = "pass"
 report = {'title': os.environ["DASHBOARD_JOB_TITLE"],
           'description': os.environ["DASHBOARD_JOB_DESCRIPTION"],
           'category': os.environ["DASHBOARD_JOB_CATEGORY"],
+          'sort_index': os.environ["DASHBOARD_SORT_INDEX"],
           'job_id': os.environ["CI_JOB_ID"],
           'job_url': os.environ["CI_JOB_URL"],
           'job_stage_name': os.environ["CI_JOB_STAGE"],
@@ -79,6 +80,7 @@ total_area = float(hier[0][1])
 
 
 metric = {'display_name': 'Global results',
+          'sort_index': 1,
           'type': 'table',
           'status': "pass",
           'value': []
@@ -102,6 +104,7 @@ for i in global_val:
 report['metrics'].append(metric)
 
 metric = {'display_name': 'Hierarchies details',
+          'sort_index': 2,
           'type': 'table',
           'status': "pass",
           'value': []
