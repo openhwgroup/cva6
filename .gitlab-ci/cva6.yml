@@ -388,52 +388,59 @@ pub_wb_dcache:
     paths:
       - "artifacts/reports/*.yml"
 
-pub_linux:
-  stage: three
-  extends:
-    - .template_job_short_ci
-  needs:
-    - job: pub_compliance
-      artifacts: false
-  variables:
-    DASHBOARD_JOB_TITLE: "Linux Test"
-    DASHBOARD_JOB_DESCRIPTION: "Simulation of Boot Linux"
-    DASHBOARD_JOB_CATEGORY: "Test suites"
-  script:
-    - mkdir -p artifacts/reports
-    - python3 .gitlab-ci/scripts/report_fail.py
-    - source cva6/regress/linux.sh
-    - python3 .gitlab-ci/scripts/report_pass.py
-  timeout: 2h 30m
-  artifacts:
-    when: always
-    paths:
-      - "artifacts/reports/*.yml"
-
-
 pub_fpga-build:
-  stage: three
+  stage: two
   extends:
     - .template_job_short_ci
   needs:
-    - job: pub_compliance
+    - job: pub_smoke
       artifacts: false
   variables:
-    DASHBOARD_JOB_TITLE: "FPGA Build"
+    DASHBOARD_JOB_TITLE: "FPGA Build $TARGET"
     DASHBOARD_JOB_DESCRIPTION: "Test of FPGA build flow"
     DASHBOARD_JOB_CATEGORY: "Synthesis"
+  parallel:
+    matrix:
+      - TARGET: [cv64a6_imafdc_sv39, cv32a60x]
   script:
     - mkdir -p artifacts/reports
     - python3 .gitlab-ci/scripts/report_fail.py
     - source $VIVADO_SETUP
     - source cva6/regress/install-cva6.sh
-    - make -C core-v-cores/cva6 fpga
-    - python3 .gitlab-ci/scripts/report_pass.py
+    - make -C core-v-cores/cva6 fpga target=$TARGET
+    - mkdir -p artifacts/reports
+    - mv core-v-cores/cva6/corev_apu/fpga/work-fpga/ariane_xilinx.bit artifacts/ariane_xilinx_$TARGET.bit
+    - python3 .gitlab-ci/scripts/report_fpga.py core-v-cores/cva6/corev_apu/fpga/reports/ariane.utilization.rpt
   artifacts:
     when: always
     paths:
+      - "artifacts/ariane_xilinx_$TARGET.bit"
       - "artifacts/reports/*.yml"
 
+pub_fpga-boot:
+  stage: three
+  tags: [fpga,shell]
+  needs: [pub_fpga-build]
+  variables:
+    VERILATOR_ROOT: "/shares/tools/dummy/verilator" # to avoid install of verilator
+    SPIKE_ROOT: "/shares/tools/dummy/spike"  # to avoid install of spike
+    DASHBOARD_JOB_TITLE: "FPGA Linux64 Boot "
+    DASHBOARD_JOB_DESCRIPTION: "Test of Linux 64 bits boot on FPGA Genesys2"
+    DASHBOARD_JOB_CATEGORY: "Synthesis"
+  script:
+    - mkdir -p artifacts/reports
+    - python3 .gitlab-ci/scripts/report_fail.py
+    - source cva6/regress/install-cva6.sh
+    - source $VIVADO2022_SETUP
+    - mkdir -p core-v-cores/cva6/corev_apu/fpga/work-fpga
+    - mv artifacts/ariane_xilinx_cv64a6_imafdc_sv39.bit core-v-cores/cva6/corev_apu/fpga/work-fpga/ariane_xilinx.bit
+    - cd core-v-cores/cva6/corev_apu/fpga/scripts
+    - source check_fpga_boot.sh
+    - cd -
+    - python3 .gitlab-ci/scripts/report_fpga_boot.py core-v-cores/cva6/corev_apu/fpga/scripts/fpga_boot.rpt
+  artifacts:
+    paths:
+      - "artifacts/reports/*.yml"
 
 merge_report:
   stage: .post
