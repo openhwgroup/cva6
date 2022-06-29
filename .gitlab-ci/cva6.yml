@@ -47,6 +47,8 @@ variables:
 .template_job_short_ci:
   tags: [$TAGS_RUNNER]
   rules:
+    - if: '$CI_WEIGHT == "forced"'
+      when: on_success
     - if: '$CI_WEIGHT == "full"'
       when: on_success
     - when: manual
@@ -56,6 +58,8 @@ variables:
 .template_job_always_manual:
   tags: [$TAGS_RUNNER]
   rules:
+    - if: '$CI_WEIGHT == "forced"'
+      when: on_success
     - when: manual
       allow_failure: true
 
