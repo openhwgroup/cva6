@@ -47,6 +47,8 @@ variables:
 .template_job_short_ci:
   tags: [$TAGS_RUNNER]
   rules:
+    - if: '$CI_WEIGHT == "forced"'
+      when: on_success
     - if: '$CI_WEIGHT == "full"'
       when: on_success
     - when: manual
@@ -56,6 +58,8 @@ variables:
 .template_job_always_manual:
   tags: [$TAGS_RUNNER]
   rules:
+    - if: '$CI_WEIGHT == "forced"'
+      when: on_success
     - when: manual
       allow_failure: true
 
@@ -141,6 +145,7 @@ pub_smoke:
   variables:
     DASHBOARD_JOB_TITLE: "Smoke test $DV_SIMULATORS"
     DASHBOARD_JOB_DESCRIPTION: "Short tests to challenge most architectures with most testbenchs configurations"
+    DASHBOARD_SORT_INDEX: 0
     DASHBOARD_JOB_CATEGORY: "Basic"
   script:
     - mkdir -p artifacts/reports
@@ -168,6 +173,7 @@ pub_hwconfig:
   variables:
     DASHBOARD_JOB_TITLE: "HW config $DV_SIMULATORS $DV_HWCONFIG_OPTS"
     DASHBOARD_JOB_DESCRIPTION: "Short tests to challenge target configurations"
+    DASHBOARD_SORT_INDEX: 1
     DASHBOARD_JOB_CATEGORY: "Basic"
   script:
     - mkdir -p artifacts/reports
@@ -194,6 +200,7 @@ pub_compliance:
     DV_SIMULATORS: "veri-testharness,spike"
     DASHBOARD_JOB_TITLE: "Compliance $DV_TARGET"
     DASHBOARD_JOB_DESCRIPTION: "Compliance regression suite"
+    DASHBOARD_SORT_INDEX: 2
     DASHBOARD_JOB_CATEGORY: "Test suites"
   script:
     - mkdir -p artifacts/reports
@@ -222,6 +229,7 @@ pub_tests-v:
     DV_TESTLISTS: "../tests/testlist_riscv-tests-$DV_TARGET-v.yaml"
     DASHBOARD_JOB_TITLE: "Riscv-test $DV_TARGET (virtual)"
     DASHBOARD_JOB_DESCRIPTION: "Riscv-test regression suite (virtual)"
+    DASHBOARD_SORT_INDEX: 3
     DASHBOARD_JOB_CATEGORY: "Test suites"
   script:
     - mkdir -p artifacts/reports
@@ -250,6 +258,7 @@ pub_tests-p:
     DV_TESTLISTS: "../tests/testlist_riscv-tests-$DV_TARGET-p.yaml"
     DASHBOARD_JOB_TITLE: "Riscv-test $DV_TARGET (physical)"
     DASHBOARD_JOB_DESCRIPTION: "Riscv-test regression suite (physical)"
+    DASHBOARD_SORT_INDEX: 4
     DASHBOARD_JOB_CATEGORY: "Test suites"
   script:
     - mkdir -p artifacts/reports
@@ -281,6 +290,7 @@ pub_synthesis:
     OUTPUT_DELAY: "0.11"
     DASHBOARD_JOB_TITLE: "ASIC Synthesis $TARGET"
     DASHBOARD_JOB_DESCRIPTION: "Synthesis indicator with specific Techno"
+    DASHBOARD_SORT_INDEX: 5
     DASHBOARD_JOB_CATEGORY: "Synthesis"
   script:
     - mkdir -p artifacts/reports
@@ -299,7 +309,7 @@ pub_synthesis:
     - make -C core-v-cores/cva6/pd/synth cva6_synth PERIOD=$(echo $PERIOD) NAND2_AREA=$(echo $NAND2_AREA) FOUNDRY_PATH=$FOUNDRY_PATH TECH_NAME=$TECH_NAME INPUT_DELAY=$(echo $INPUT_DELAY) OUTPUT_DELAY=$(echo $OUTPUT_DELAY) TARGET=$TARGET
     - mv core-v-cores/cva6/pd/synth/ariane_synth_modified.v artifacts/ariane_synth_modified_$TARGET.v
     - mv core-v-cores/cva6/pd/synth/ariane_synth.v artifacts/ariane_synth_$TARGET.v
-    - python3 .gitlab-ci/scripts/report_synth.py core-v-cores/cva6/pd/synth/ariane/reports/$PERIOD/ariane_$(echo $TECH_NAME)_synth_area.rpt
+    - python3 .gitlab-ci/scripts/report_synth.py core-v-cores/cva6/pd/synth/ariane/reports/$PERIOD/ariane_$(echo $TECH_NAME)_synth_area.rpt core-v-cores/cva6/pd/synth/synthesis_batch.log
   artifacts:
     when: always
     paths:
@@ -319,6 +329,7 @@ pub_smoke-gate:
     DV_TARGET: "cv64a6_imafdc_sv39"
     DASHBOARD_JOB_TITLE: "Smoke Gate $DV_TARGET"
     DASHBOARD_JOB_DESCRIPTION: "Simple test to check netlist from ASIC synthesis"
+    DASHBOARD_SORT_INDEX: 6
     DASHBOARD_JOB_CATEGORY: "Post Synthesis"
   script:
     - mkdir -p artifacts/reports
@@ -349,6 +360,7 @@ pub_benchmarks:
     DV_SIMULATORS: "veri-testharness,spike"
     DASHBOARD_JOB_TITLE: "BenchMark $DV_TARGET"
     DASHBOARD_JOB_DESCRIPTION: "Performance indicator of some benchmark"
+    DASHBOARD_SORT_INDEX: 7
     DASHBOARD_JOB_CATEGORY: "Test suites"
   needs: []
   script:
@@ -372,6 +384,7 @@ pub_wb_dcache:
   variables:
     DASHBOARD_JOB_TITLE: "Writeback Data Cache test"
     DASHBOARD_JOB_DESCRIPTION: "Test of IP wb_dcache"
+    DASHBOARD_SORT_INDEX: 8
     DASHBOARD_JOB_CATEGORY: "Test suites"
   script:
     - mkdir -p artifacts/reports
@@ -398,6 +411,7 @@ pub_fpga-build:
   variables:
     DASHBOARD_JOB_TITLE: "FPGA Build $TARGET"
     DASHBOARD_JOB_DESCRIPTION: "Test of FPGA build flow"
+    DASHBOARD_SORT_INDEX: 9
     DASHBOARD_JOB_CATEGORY: "Synthesis"
   parallel:
     matrix:
@@ -426,6 +440,7 @@ pub_fpga-boot:
     SPIKE_ROOT: "/shares/tools/dummy/spike"  # to avoid install of spike
     DASHBOARD_JOB_TITLE: "FPGA Linux64 Boot "
     DASHBOARD_JOB_DESCRIPTION: "Test of Linux 64 bits boot on FPGA Genesys2"
+    DASHBOARD_SORT_INDEX: 10
     DASHBOARD_JOB_CATEGORY: "Synthesis"
   script:
     - mkdir -p artifacts/reports

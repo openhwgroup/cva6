@@ -706,7 +706,7 @@ def save_regr_report(report):
     failed_details = run_cmd("sed -e 's,.*_sim/,,' %s | grep '\(csv\|matched\)' | uniq | sed -e 'N;s/\\n/ /g' | grep '\[FAILED\]'" % report).strip()
     logging.info(failed_details)
     run_cmd(("echo %s >> %s" % (failed_details, report)))
-    sys.exit(RET_FAIL)
+    #sys.exit(RET_FAIL) #Do not return error code in case of test fail.
   logging.info("ISS regression report is saved to %s" % report)
 
 

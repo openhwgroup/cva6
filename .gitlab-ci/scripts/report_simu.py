@@ -22,6 +22,7 @@ global_pass = "pass"
 report = {'title': os.environ["DASHBOARD_JOB_TITLE"],
           'description': os.environ["DASHBOARD_JOB_DESCRIPTION"],
           'category': os.environ["DASHBOARD_JOB_CATEGORY"],
+          'sort_index': os.environ["DASHBOARD_SORT_INDEX"],
           'job_id': os.environ["CI_JOB_ID"],
           'job_url': os.environ["CI_JOB_URL"],
           'job_stage_name': os.environ["CI_JOB_STAGE"],
@@ -42,6 +43,7 @@ job_test_pass = 0
 job_test_total = 0
 
 metric = {'display_name': '',
+          'sort_index': 1,
           'type': 'table_status',
           'status': "pass",
           'value': []

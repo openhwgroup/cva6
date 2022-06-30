@@ -23,9 +23,10 @@ with open(str(sys.argv[1]), "r") as f:
 global_pass = "pass"
 
 report = {
-    "title": os.environ["DASHBOARD_JOB_TITLE"],
-    "description": os.environ["DASHBOARD_JOB_DESCRIPTION"],
+    'title': os.environ["DASHBOARD_JOB_TITLE"],
+    'description': os.environ["DASHBOARD_JOB_DESCRIPTION"],
     'category': os.environ["DASHBOARD_JOB_CATEGORY"],
+    'sort_index': os.environ["DASHBOARD_SORT_INDEX"],
     'job_id': os.environ["CI_JOB_ID"],
     'job_url': os.environ["CI_JOB_URL"],
     'job_stage_name': os.environ["CI_JOB_STAGE"],
@@ -37,10 +38,11 @@ report = {
 }
 
 metric = {
-    "display_name": "Linux boot log",
-    "type": "table_status",
-    "status": "pass",
-    "value": [],
+    'display_name': 'Linux boot log',
+    'sort_index': 1,
+    'type': 'table_status',
+    'status': 'pass',
+    'value': [],
 }
 
 value = {}

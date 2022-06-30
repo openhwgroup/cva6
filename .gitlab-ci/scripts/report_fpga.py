@@ -20,9 +20,10 @@ with open(str(sys.argv[1]), "r") as f:
 global_pass = "pass"
 
 report = {
-    "title": os.environ["DASHBOARD_JOB_TITLE"],
-    "description": os.environ["DASHBOARD_JOB_DESCRIPTION"],
+    'title': os.environ["DASHBOARD_JOB_TITLE"],
+    'description': os.environ["DASHBOARD_JOB_DESCRIPTION"],
     'category': os.environ["DASHBOARD_JOB_CATEGORY"],
+    'sort_index': os.environ["DASHBOARD_SORT_INDEX"],
     'job_id': os.environ["CI_JOB_ID"],
     'job_url': os.environ["CI_JOB_URL"],
     'job_stage_name': os.environ["CI_JOB_STAGE"],
@@ -46,10 +47,11 @@ for line in pattern.finditer(log):
 
 
 metric = {
-    "display_name": "Utilization Results",
-    "type": "table",
-    "status": "pass",
-    "value": [],
+    'display_name': 'Utilization Results',
+    'sort_index': 1,
+    'type': 'table',
+    'status': 'pass',
+    'value': [],
 }
 
 for i in data:
