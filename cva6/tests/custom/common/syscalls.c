@@ -75,6 +75,11 @@ void setStats(int enable)
 #undef READ_CTR
 }
 
+uintptr_t getStats(int counterid)
+{
+  return counters[counterid];
+}
+
 void __attribute__((noreturn)) tohost_exit(uintptr_t code)
 {
   // Simply write PASS/FAIL result into 'tohost'.
