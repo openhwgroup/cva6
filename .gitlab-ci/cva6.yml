@@ -1,4 +1,4 @@
-# Copyright 2022 Thales DIS design services SAS
+# Copyright 2022 Thales Silicon Security
 #
 # Licensed under the Solderpad Hardware Licence, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -47,6 +47,8 @@ variables:
 .template_job_short_ci:
   tags: [$TAGS_RUNNER]
   rules:
+    - if: '$CI_WEIGHT == "forced"'
+      when: on_success
     - if: '$CI_WEIGHT == "full"'
       when: on_success
     - when: manual
@@ -56,6 +58,8 @@ variables:
 .template_job_always_manual:
   tags: [$TAGS_RUNNER]
   rules:
+    - if: '$CI_WEIGHT == "forced"'
+      when: on_success
     - when: manual
       allow_failure: true
 
@@ -96,13 +100,14 @@ pub_check_env:
   script:
     - echo $CI_WEIGHT
     - echo $RISCV
+    - echo $RISCV_PREFIX
     - echo $VERILATOR_ROOT
     - echo $SPIKE_ROOT
     - echo $BBL_ROOT
     - echo $SYN_VCS_BASHRC
     - echo $SYN_DCSHELL_BASHRC
     - echo $QUESTA_BASHRC
-    - echo $VIVALDO_SETUP
+    - echo $VIVADO_SETUP
     - echo $CVA6_REPO
     - echo $CVA6_BRANCH
     - echo $CVA6_HASH
@@ -137,10 +142,49 @@ pub_smoke:
   parallel:
     matrix:
       - DV_SIMULATORS: ["veri-testharness,spike","vcs-testharness,spike","vcs-uvm,spike" ]
+  variables:
+    DASHBOARD_JOB_TITLE: "Smoke test $DV_SIMULATORS"
+    DASHBOARD_JOB_DESCRIPTION: "Short tests to challenge most architectures with most testbenchs configurations"
+    DASHBOARD_SORT_INDEX: 0
+    DASHBOARD_JOB_CATEGORY: "Basic"
   script:
+    - mkdir -p artifacts/reports
+    - python3 .gitlab-ci/scripts/report_fail.py
     - echo $SYN_VCS_BASHRC; source $SYN_VCS_BASHRC
     - source cva6/regress/smoke-tests.sh
+    - python3 .gitlab-ci/scripts/report_simu.py cva6/sim/logfile.log
+  artifacts:
+    when: always
+    paths:
+      - artifacts/reports/*.yml
 
+pub_hwconfig:
+  stage: two
+  extends:
+    - .template_job_short_ci
+  needs:
+    - job: pub_smoke
+      artifacts: false
+  parallel:
+    matrix:
+      - DV_SIMULATORS: ["veri-testharness,spike"]
+        DV_HWCONFIG_OPTS: ["--default_config=cv32a60x --isa=rv32imac --a_ext=1",
+                           "--default_config=cv32a60x --isa=rv32imc --RenameEn=1"]
+  variables:
+    DASHBOARD_JOB_TITLE: "HW config $DV_SIMULATORS $DV_HWCONFIG_OPTS"
+    DASHBOARD_JOB_DESCRIPTION: "Short tests to challenge target configurations"
+    DASHBOARD_SORT_INDEX: 1
+    DASHBOARD_JOB_CATEGORY: "Basic"
+  script:
+    - mkdir -p artifacts/reports
+    - python3 .gitlab-ci/scripts/report_fail.py
+    - echo $SYN_VCS_BASHRC; source $SYN_VCS_BASHRC
+    - source ./cva6/regress/hwconfig_tests.sh
+    - python3 .gitlab-ci/scripts/report_pass.py
+  artifacts:
+    when: always
+    paths:
+      - artifacts/reports/*.yml
 
 pub_compliance:
   stage: two
@@ -151,12 +195,23 @@ pub_compliance:
       artifacts: false
   parallel:
     matrix:
-      - DV_TARGET: [cv64a6_imafdc_sv39, cv32a6_imac_sv0]
+      - DV_TARGET: [cv64a6_imafdc_sv39, cv32a60x]
   variables:
     DV_SIMULATORS: "veri-testharness,spike"
+    DASHBOARD_JOB_TITLE: "Compliance $DV_TARGET"
+    DASHBOARD_JOB_DESCRIPTION: "Compliance regression suite"
+    DASHBOARD_SORT_INDEX: 2
+    DASHBOARD_JOB_CATEGORY: "Test suites"
   script:
+    - mkdir -p artifacts/reports
+    - python3 .gitlab-ci/scripts/report_fail.py
     - echo $SYN_VCS_BASHRC; source $SYN_VCS_BASHRC
     - source cva6/regress/dv-riscv-compliance.sh
+    - python3 .gitlab-ci/scripts/report_simu.py cva6/sim/logfile.log
+  artifacts:
+    when: always
+    paths:
+      - "artifacts/reports/*.yml"
 
 
 pub_tests-v:
@@ -168,13 +223,24 @@ pub_tests-v:
       artifacts: false
   parallel:
     matrix:
-      - DV_TARGET: [cv64a6_imafdc_sv39, cv32a6_imac_sv0]
+      - DV_TARGET: [cv64a6_imafdc_sv39]
   variables:
     DV_SIMULATORS: "veri-testharness,spike"
     DV_TESTLISTS: "../tests/testlist_riscv-tests-$DV_TARGET-v.yaml"
+    DASHBOARD_JOB_TITLE: "Riscv-test $DV_TARGET (virtual)"
+    DASHBOARD_JOB_DESCRIPTION: "Riscv-test regression suite (virtual)"
+    DASHBOARD_SORT_INDEX: 3
+    DASHBOARD_JOB_CATEGORY: "Test suites"
   script:
+    - mkdir -p artifacts/reports
+    - python3 .gitlab-ci/scripts/report_fail.py
     - echo $SYN_VCS_BASHRC; source $SYN_VCS_BASHRC
     - source cva6/regress/dv-riscv-tests.sh
+    - python3 .gitlab-ci/scripts/report_simu.py cva6/sim/logfile.log
+  artifacts:
+    when: always
+    paths:
+      - "artifacts/reports/*.yml"
 
 
 pub_tests-p:
@@ -186,13 +252,24 @@ pub_tests-p:
       artifacts: false
   parallel:
     matrix:
-      - DV_TARGET: [cv64a6_imafdc_sv39, cv32a6_imac_sv0]
+      - DV_TARGET: [cv64a6_imafdc_sv39, cv32a60x]
   variables:
     DV_SIMULATORS: "veri-testharness,spike"
     DV_TESTLISTS: "../tests/testlist_riscv-tests-$DV_TARGET-p.yaml"
+    DASHBOARD_JOB_TITLE: "Riscv-test $DV_TARGET (physical)"
+    DASHBOARD_JOB_DESCRIPTION: "Riscv-test regression suite (physical)"
+    DASHBOARD_SORT_INDEX: 4
+    DASHBOARD_JOB_CATEGORY: "Test suites"
   script:
+    - mkdir -p artifacts/reports
+    - python3 .gitlab-ci/scripts/report_fail.py
     - echo $SYN_VCS_BASHRC; source $SYN_VCS_BASHRC
     - source cva6/regress/dv-riscv-tests.sh
+    - python3 .gitlab-ci/scripts/report_simu.py cva6/sim/logfile.log
+  artifacts:
+    when: always
+    paths:
+      - "artifacts/reports/*.yml"
 
 
 pub_synthesis:
@@ -202,25 +279,43 @@ pub_synthesis:
   needs:
     - job: pub_smoke
       artifacts: false
+  parallel:
+    matrix:
+      - TARGET: [cv64a6_imafdc_sv39]
+        PERIOD: ["1.1"]
+      - TARGET: [cv32a60x]
+        PERIOD: ["0.95"]
   variables:
-    PERIOD: $SYNTH_PERIOD
-    NAND2_AREA: $NAND2_AREA
-    FOUNDRY_PATH: $FOUNDRY_PATH
-    TECH_NAME: $TECH_NAME
     INPUT_DELAY: "0.46"
     OUTPUT_DELAY: "0.11"
+    DASHBOARD_JOB_TITLE: "ASIC Synthesis $TARGET"
+    DASHBOARD_JOB_DESCRIPTION: "Synthesis indicator with specific Techno"
+    DASHBOARD_SORT_INDEX: 5
+    DASHBOARD_JOB_CATEGORY: "Synthesis"
   script:
+    - mkdir -p artifacts/reports
+    - python3 .gitlab-ci/scripts/report_fail.py
+    #ack trick to manage float gitlab-ci variables that seems to support only string or integer
+    - echo $(echo $SYNTH_PERIOD)
+    - echo $(echo $INPUT_DELAY)
+    - echo $(echo $OUTPUT_DELAY)
+    - echo $(echo $NAND2_AREA)
+    - echo $FOUNDRY_PATH
+    - echo $PERIOD
+    - echo $TECH_NAME
+    - echo $TARGET
     - source ./cva6/regress/install-cva6.sh
     - echo $SYN_DCSHELL_BASHRC; source $SYN_DCSHELL_BASHRC
-    - make -C core-v-cores/cva6/pd/synth cva6_synth PERIOD=$PERIOD NAND2_AREA=$NAND2_AREA FOUNDRY_PATH=$FOUNDRY_PATH TECH_NAME=$TECH_NAME INPUT_DELAY=$INPUT_DELAY OUTPUT_DELAY=$OUTPUT_DELAY
-    - sed 's/module SyncSpRamBeNx64_1/module SyncSpRamBeNx64_2/' core-v-cores/cva6/pd/synth/ariane_synth.v > core-v-cores/cva6/pd/synth/ariane_synth_modified.v
-    - mkdir artifacts
-    - mv core-v-cores/cva6/pd/synth/ariane_synth_modified.v artifacts/ariane_synth_modified.v
-    - mv core-v-cores/cva6/pd/synth/ariane_synth.v artifacts/ariane_synth.v
+    - make -C core-v-cores/cva6/pd/synth cva6_synth PERIOD=$(echo $PERIOD) NAND2_AREA=$(echo $NAND2_AREA) FOUNDRY_PATH=$FOUNDRY_PATH TECH_NAME=$TECH_NAME INPUT_DELAY=$(echo $INPUT_DELAY) OUTPUT_DELAY=$(echo $OUTPUT_DELAY) TARGET=$TARGET
+    - mv core-v-cores/cva6/pd/synth/ariane_synth_modified.v artifacts/ariane_synth_modified_$TARGET.v
+    - mv core-v-cores/cva6/pd/synth/ariane_synth.v artifacts/ariane_synth_$TARGET.v
+    - python3 .gitlab-ci/scripts/report_synth.py core-v-cores/cva6/pd/synth/ariane/reports/$PERIOD/ariane_$(echo $TECH_NAME)_synth_area.rpt core-v-cores/cva6/pd/synth/synthesis_batch.log
   artifacts:
+    when: always
     paths:
-      - artifacts/ariane_synth_modified.v
-      - artifacts/ariane_synth.v
+      - artifacts/ariane_synth_modified_$TARGET.v
+      - artifacts/ariane_synth_$TARGET.v
+      - "artifacts/reports/*.yml"
 
 
 pub_smoke-gate:
@@ -231,42 +326,150 @@ pub_smoke-gate:
     - job: pub_synthesis
       artifacts: true
   variables:
-    LIB_VERILOG: $LIB_VERILOG
+    DV_TARGET: "cv64a6_imafdc_sv39"
+    DASHBOARD_JOB_TITLE: "Smoke Gate $DV_TARGET"
+    DASHBOARD_JOB_DESCRIPTION: "Simple test to check netlist from ASIC synthesis"
+    DASHBOARD_SORT_INDEX: 6
+    DASHBOARD_JOB_CATEGORY: "Post Synthesis"
   script:
+    - mkdir -p artifacts/reports
+    - python3 .gitlab-ci/scripts/report_fail.py
+    - echo $LIB_VERILOG
     - source ./cva6/regress/install-cva6.sh
     - source ./cva6/regress/install-riscv-dv.sh
     - source ./cva6/regress/install-riscv-tests.sh
-    - mv artifacts/ariane_synth_modified.v core-v-cores/cva6/pd/synth/ariane_synth_modified.v
-    - mv artifacts/ariane_synth.v core-v-cores/cva6/pd/synth/ariane_synth.v
+    - mv artifacts/ariane_synth_modified_$DV_TARGET.v core-v-cores/cva6/pd/synth/ariane_synth_modified.v
+    - mv artifacts/ariane_synth_$DV_TARGET.v core-v-cores/cva6/pd/synth/ariane_synth.v
     - echo $SYN_VCS_BASHRC; source $SYN_VCS_BASHRC
     - cd cva6/sim
     - make vcs_clean_all
     - python3 cva6.py --testlist=../tests/testlist_riscv-tests-cv64a6_imafdc_sv39-p.yaml --test rv64ui-p-ld --iss_yaml cva6.yaml --target cv64a6_imafdc_sv39 --iss=spike,vcs-gate $DV_OPTS
     - cd ../..
+    - python3 .gitlab-ci/scripts/report_simu.py cva6/sim/logfile.log
+  artifacts:
+    when: always
+    paths:
+      - "artifacts/reports/*.yml"
 
-
-pub_linux:
+pub_benchmarks:
   stage: three
   extends:
-    - .template_job_short_ci
-  needs:
-    - job: pub_compliance
-      artifacts: false
+    - .template_job_always_manual
+  variables:
+    DV_TARGET: "cv64a6_imafdc_sv39"
+    DV_SIMULATORS: "veri-testharness,spike"
+    DASHBOARD_JOB_TITLE: "BenchMark $DV_TARGET"
+    DASHBOARD_JOB_DESCRIPTION: "Performance indicator of some benchmark"
+    DASHBOARD_SORT_INDEX: 7
+    DASHBOARD_JOB_CATEGORY: "Test suites"
+  needs: []
   script:
-    - source cva6/regress/linux.sh
-  timeout: 2h 30m
+    - mkdir -p artifacts/reports
+    - python3 .gitlab-ci/scripts/report_fail.py
+    - source ./cva6/regress/install-cva6.sh
+    - source ./cva6/regress/install-riscv-dv.sh
+    - source ./cva6/regress/install-riscv-tests.sh
+    - source ./cva6/regress/benchmark.sh
+    - python3 .gitlab-ci/scripts/report_pass.py
+  artifacts:
+    when: always
+    paths:
+      - "artifacts/reports/*.yml"
 
+pub_wb_dcache:
+  stage: three
+  extends:
+    - .template_job_always_manual
+  needs: []
+  variables:
+    DASHBOARD_JOB_TITLE: "Writeback Data Cache test"
+    DASHBOARD_JOB_DESCRIPTION: "Test of IP wb_dcache"
+    DASHBOARD_SORT_INDEX: 8
+    DASHBOARD_JOB_CATEGORY: "Test suites"
+  script:
+    - mkdir -p artifacts/reports
+    - python3 .gitlab-ci/scripts/report_fail.py
+    - source ./cva6/regress/install-cva6.sh
+    - cd core-v-cores/cva6
+    - source ci/make-tmp.sh
+    - source ci/build-riscv-tests.sh
+    - cd ../../../
+    - make run-asm-tests-verilator defines=WB_DCACHE
+    - python3 .gitlab-ci/scripts/report_pass.py
+  artifacts:
+    when: always
+    paths:
+      - "artifacts/reports/*.yml"
 
 pub_fpga-build:
-  stage: three
+  stage: two
   extends:
     - .template_job_short_ci
   needs:
-    - job: pub_compliance
+    - job: pub_smoke
       artifacts: false
+  variables:
+    DASHBOARD_JOB_TITLE: "FPGA Build $TARGET"
+    DASHBOARD_JOB_DESCRIPTION: "Test of FPGA build flow"
+    DASHBOARD_SORT_INDEX: 9
+    DASHBOARD_JOB_CATEGORY: "Synthesis"
+  parallel:
+    matrix:
+      - TARGET: [cv64a6_imafdc_sv39, cv32a60x]
   script:
-    - source $VIVALDO_SETUP
+    - mkdir -p artifacts/reports
+    - python3 .gitlab-ci/scripts/report_fail.py
+    - source $VIVADO_SETUP
     - source cva6/regress/install-cva6.sh
-    - make -C core-v-cores/cva6 fpga
+    - make -C core-v-cores/cva6 fpga target=$TARGET
+    - mkdir -p artifacts/reports
+    - mv core-v-cores/cva6/corev_apu/fpga/work-fpga/ariane_xilinx.bit artifacts/ariane_xilinx_$TARGET.bit
+    - python3 .gitlab-ci/scripts/report_fpga.py core-v-cores/cva6/corev_apu/fpga/reports/ariane.utilization.rpt
+  artifacts:
+    when: always
+    paths:
+      - "artifacts/ariane_xilinx_$TARGET.bit"
+      - "artifacts/reports/*.yml"
 
+pub_fpga-boot:
+  stage: three
+  tags: [fpga,shell]
+  needs: [pub_fpga-build]
+  variables:
+    VERILATOR_ROOT: "/shares/tools/dummy/verilator" # to avoid install of verilator
+    SPIKE_ROOT: "/shares/tools/dummy/spike"  # to avoid install of spike
+    DASHBOARD_JOB_TITLE: "FPGA Linux64 Boot "
+    DASHBOARD_JOB_DESCRIPTION: "Test of Linux 64 bits boot on FPGA Genesys2"
+    DASHBOARD_SORT_INDEX: 10
+    DASHBOARD_JOB_CATEGORY: "Synthesis"
+  script:
+    - mkdir -p artifacts/reports
+    - python3 .gitlab-ci/scripts/report_fail.py
+    - source cva6/regress/install-cva6.sh
+    - source $VIVADO2022_SETUP
+    - mkdir -p core-v-cores/cva6/corev_apu/fpga/work-fpga
+    - mv artifacts/ariane_xilinx_cv64a6_imafdc_sv39.bit core-v-cores/cva6/corev_apu/fpga/work-fpga/ariane_xilinx.bit
+    - cd core-v-cores/cva6/corev_apu/fpga/scripts
+    - source check_fpga_boot.sh
+    - cd -
+    - python3 .gitlab-ci/scripts/report_fpga_boot.py core-v-cores/cva6/corev_apu/fpga/scripts/fpga_boot.rpt
+  artifacts:
+    paths:
+      - "artifacts/reports/*.yml"
+
+merge_report:
+  stage: .post
+  tags: [$TAGS_RUNNER]
+  rules:
+    - if: '$DASHBOARD_URL'
+      when: always
+    - when: never
+  script:
+    - mkdir -p artifacts/reports
+    - ls -al artifacts/reports
+    - python3 .gitlab-ci/scripts/merge_job_reports.py artifacts/reports pipeline_report_$CI_PIPELINE_ID.yml
+  artifacts:
+    when: always
+    paths:
+      - "artifacts/reports/pipeline_report_$CI_PIPELINE_ID.yml"
 

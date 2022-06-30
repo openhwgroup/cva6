@@ -8,20 +8,13 @@
 # SPDX-License-Identifier: Apache-2.0 WITH SHL-2.0
 # You may obtain a copy of the License at https:#solderpad.org/licenses/
 #
-# Original Author: Zineb EL KACIMI (zineb.el-kacimi@external.thalesgroup.com)
-
 #----------------------------------------------------------------------------------
 
-
-#include "copro_macros.h"
-
-
-#------------------------------------------------------------------------------------------------------------------
+#include "cvxif_macros.h"
 
   #-------------------------------------------------------------
   # Custom tests
   #-------------------------------------------------------------
-
 
   .globl main
 main:
@@ -32,11 +25,11 @@ main:
     LOAD_RS(a1, 0xDEADBEEF);
     LOAD_RS(a2, 0xDEADBEEF);
 
-
-    CUS_ADD(01010,01010,01010,01011);
-    CUS_ADD_RS3(01010,01010,01010,01011);
-    .word 0xffff;
-
+   CUS_ADD(01010,01010,01010,01011);
+   CUS_EXC(01111,00000,00000,00000);
+   CUS_ADD(01111,00111,00111,00011);
+   CUS_EXC(01111,00000,00000,00000);
+   CUS_ADD(01111,00111,00111,00011);
 
 # (example of) final self-check test
   li a0, 0xCAFE;
@@ -45,7 +38,7 @@ main:
   beqz a2, pass;
 
 fail:
-  # Failure post²-processing (messages, ecall setup etc.)
+  # Failure post-processing (messages, ecall setup etc.)
   li a0, 0x0;
   jal exit;
 

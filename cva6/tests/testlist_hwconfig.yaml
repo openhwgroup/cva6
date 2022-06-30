@@ -1,0 +1,186 @@
+# Copyright Google LLC
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#      http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+# ================================================================================
+#                  Regression test list format
+# --------------------------------------------------------------------------------
+# test            : Assembly test name
+# description     : Description of this test
+# gen_opts        : Instruction generator options
+# iterations      : Number of iterations of this test
+# no_iss          : Enable/disable ISS simulator (Optional)
+# gen_test        : Test name used by the instruction generator
+# asm_tests       : Path to directed, hand-coded assembly test file or directory
+# rtl_test        : RTL simulation test name
+# cmp_opts        : Compile options passed to the instruction generator
+# sim_opts        : Simulation options passed to the instruction generator
+# no_post_compare : Enable/disable comparison of trace log and ISS log (Optional)
+# compare_opts    : Options for the RTL & ISS trace comparison
+# gcc_opts        : gcc compile options
+# --------------------------------------------------------------------------------
+
+#- import: <riscv_dv_root>/target/rv64imc/testlist.yaml
+
+# ISA tests
+- test: rv64ui-p-add
+  iterations: 1
+  needs:
+    - xlen: 64
+  path_var: TESTS_PATH
+  gcc_opts: "-static -mcmodel=medany -fvisibility=hidden -nostdlib -nostartfiles -I<path_var>/riscv-tests/isa/macros/scalar/ -I<path_var>/riscv-tests/env/p/ -I<path_var>/riscv-tests/riscv-target/spike/"
+  asm_tests: <path_var>/riscv-tests/isa/rv64ui/add.S
+
+- test: rv32ui-p-add
+  iterations: 1
+  needs:
+    - xlen: 32
+  path_var: TESTS_PATH
+  gcc_opts: "-static -mcmodel=medany -fvisibility=hidden -nostdlib -nostartfiles -I<path_var>/riscv-tests/isa/macros/scalar/ -I<path_var>/riscv-tests/env/p/ -I<path_var>/riscv-tests/riscv-target/spike/"
+  asm_tests: <path_var>/riscv-tests/isa/rv32ui/add.S
+
+- test: rv64ui-v-add
+  iterations: 1
+  needs:
+    - xlen: 64
+    - fpu: 1
+    - c_ext: 1
+  path_var: TESTS_PATH
+  gcc_opts: "-DENTROPY=0x1 -static -mcmodel=medany -fvisibility=hidden -nostdlib -nostartfiles -I<path_var>/riscv-tests/isa/macros/scalar/ <path_var>/riscv-tests/env/v/entry.S <path_var>/riscv-tests/env/v/vm.c <path_var>/riscv-tests/env/v/string.c -I<path_var>/riscv-tests/env/v/ -I<path_var>/riscv-tests/riscv-target/spike/"
+  asm_tests: <path_var>/riscv-tests/isa/rv64ui/add.S
+
+- test: rv32ui-v-add
+  iterations: 1
+  needs:
+    - xlen: 32
+    - fpu: 1
+    - c_ext: 1
+  path_var: TESTS_PATH
+  gcc_opts: "-DENTROPY=0x1 -static -mcmodel=medany -fvisibility=hidden -nostdlib -nostartfiles -I<path_var>/riscv-tests/isa/macros/scalar/ <path_var>/riscv-tests/env/v/entry.S <path_var>/riscv-tests/env/v/vm.c <path_var>/riscv-tests/env/v/string.c -I<path_var>/riscv-tests/env/v/ -I<path_var>/riscv-tests/riscv-target/spike/"
+  asm_tests: <path_var>/riscv-tests/isa/rv32ui/add.S
+
+- test: rv64ui-p-sw
+  iterations: 1
+  needs:
+    - xlen: 64
+  path_var: TESTS_PATH
+  gcc_opts: "-static -mcmodel=medany -fvisibility=hidden -nostdlib -nostartfiles -I<path_var>/riscv-tests/isa/macros/scalar/ -I<path_var>/riscv-tests/env/p/ -I<path_var>/riscv-tests/riscv-target/spike/"
+  asm_tests: <path_var>/riscv-tests/isa/rv64ui/sw.S
+
+- test: rv32ui-p-sw
+  iterations: 1
+  needs:
+    - xlen: 32
+  path_var: TESTS_PATH
+  gcc_opts: "-static -mcmodel=medany -fvisibility=hidden -nostdlib -nostartfiles -I<path_var>/riscv-tests/isa/macros/scalar/ -I<path_var>/riscv-tests/env/p/ -I<path_var>/riscv-tests/riscv-target/spike/"
+  asm_tests: <path_var>/riscv-tests/isa/rv32ui/sw.S
+
+- test: rv64ui-p-lw
+  iterations: 1
+  needs:
+    - xlen: 64
+  path_var: TESTS_PATH
+  gcc_opts: "-static -mcmodel=medany -fvisibility=hidden -nostdlib -nostartfiles -I<path_var>/riscv-tests/isa/macros/scalar/ -I<path_var>/riscv-tests/env/p/ -I<path_var>/riscv-tests/riscv-target/spike/"
+  asm_tests: <path_var>/riscv-tests/isa/rv64ui/lw.S
+
+- test: rv32ui-p-lw
+  iterations: 1
+  needs:
+    - xlen: 32
+  path_var: TESTS_PATH
+  gcc_opts: "-static -mcmodel=medany -fvisibility=hidden -nostdlib -nostartfiles -I<path_var>/riscv-tests/isa/macros/scalar/ -I<path_var>/riscv-tests/env/p/ -I<path_var>/riscv-tests/riscv-target/spike/"
+  asm_tests: <path_var>/riscv-tests/isa/rv32ui/lw.S
+
+- test: rv64um-p-div
+  iterations: 1
+  needs:
+    - xlen: 64
+  path_var: TESTS_PATH
+  gcc_opts: "-static -mcmodel=medany -fvisibility=hidden -nostdlib -nostartfiles -I<path_var>/riscv-tests/isa/macros/scalar/ -I<path_var>/riscv-tests/env/p/ -I<path_var>/riscv-tests/riscv-target/spike/"
+  asm_tests: <path_var>/riscv-tests/isa/rv64um/div.S
+
+- test: rv32um-p-div
+  iterations: 1
+  needs:
+    - xlen: 32
+  path_var: TESTS_PATH
+  gcc_opts: "-static -mcmodel=medany -fvisibility=hidden -nostdlib -nostartfiles -I<path_var>/riscv-tests/isa/macros/scalar/ -I<path_var>/riscv-tests/env/p/ -I<path_var>/riscv-tests/riscv-target/spike/"
+  asm_tests: <path_var>/riscv-tests/isa/rv32um/div.S
+
+- test: rv64um-p-mul
+  iterations: 1
+  needs:
+    - xlen: 64
+  path_var: TESTS_PATH
+  gcc_opts: "-static -mcmodel=medany -fvisibility=hidden -nostdlib -nostartfiles -I<path_var>/riscv-tests/isa/macros/scalar/ -I<path_var>/riscv-tests/env/p/ -I<path_var>/riscv-tests/riscv-target/spike/"
+  asm_tests: <path_var>/riscv-tests/isa/rv64um/mul.S
+
+- test: rv32um-p-mul
+  iterations: 1
+  needs:
+    - xlen: 32
+  path_var: TESTS_PATH
+  gcc_opts: "-static -mcmodel=medany -fvisibility=hidden -nostdlib -nostartfiles -I<path_var>/riscv-tests/isa/macros/scalar/ -I<path_var>/riscv-tests/env/p/ -I<path_var>/riscv-tests/riscv-target/spike/"
+  asm_tests: <path_var>/riscv-tests/isa/rv32um/mul.S
+
+- test: rv64uf-p-fcmp
+  iterations: 1
+  needs:
+    - xlen: 64
+    - fpu: 1
+  path_var: TESTS_PATH
+  gcc_opts: "-static -mcmodel=medany -fvisibility=hidden -nostdlib -nostartfiles -I<path_var>/riscv-tests/isa/macros/scalar/ -I<path_var>/riscv-tests/env/p/ -I<path_var>/riscv-tests/riscv-target/spike/"
+  asm_tests: <path_var>/riscv-tests/isa/rv64uf/fcmp.S
+
+- test: rv32uf-p-fcmp
+  iterations: 1
+  needs:
+    - xlen: 32
+    - fpu: 1
+  path_var: TESTS_PATH
+  gcc_opts: "-static -mcmodel=medany -fvisibility=hidden -nostdlib -nostartfiles -I<path_var>/riscv-tests/isa/macros/scalar/ -I<path_var>/riscv-tests/env/p/ -I<path_var>/riscv-tests/riscv-target/spike/"
+  asm_tests: <path_var>/riscv-tests/isa/rv32uf/fcmp.S
+
+- test: rv64ua-p-amomax_d
+  iterations: 1
+  needs:
+    - xlen: 64
+    - a_ext: 1
+  path_var: TESTS_PATH
+  gcc_opts: "-static -mcmodel=medany -fvisibility=hidden -nostdlib -nostartfiles -I<path_var>/riscv-tests/isa/macros/scalar/ -I<path_var>/riscv-tests/env/p/ -I<path_var>/riscv-tests/riscv-target/spike/"
+  asm_tests: <path_var>/riscv-tests/isa/rv64ua/amomax_d.S
+
+- test: rv32ua-p-amomax_w
+  iterations: 1
+  needs:
+    - xlen: 32
+    - a_ext: 1
+  path_var: TESTS_PATH
+  gcc_opts: "-static -mcmodel=medany -fvisibility=hidden -nostdlib -nostartfiles -I<path_var>/riscv-tests/isa/macros/scalar/ -I<path_var>/riscv-tests/env/p/ -I<path_var>/riscv-tests/riscv-target/spike/"
+  asm_tests: <path_var>/riscv-tests/isa/rv32ua/amomax_w.S
+
+- test: rv64mi-p-csr
+  iterations: 1
+  needs:
+    - xlen: 64
+  path_var: TESTS_PATH
+  gcc_opts: "-static -mcmodel=medany -fvisibility=hidden -nostdlib -nostartfiles -I<path_var>/riscv-tests/isa/macros/scalar/ -I<path_var>/riscv-tests/env/p/ -I<path_var>/riscv-tests/riscv-target/spike/"
+  asm_tests: <path_var>/riscv-tests/isa/rv64mi/csr.S
+
+- test: rv32mi-p-csr
+  iterations: 1
+  needs:
+    - xlen: 32
+  path_var: TESTS_PATH
+  gcc_opts: "-static -mcmodel=medany -fvisibility=hidden -nostdlib -nostartfiles -I<path_var>/riscv-tests/isa/macros/scalar/ -I<path_var>/riscv-tests/env/p/ -I<path_var>/riscv-tests/riscv-target/spike/"
+  asm_tests: <path_var>/riscv-tests/isa/rv32mi/csr.S

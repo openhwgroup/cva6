@@ -1,4 +1,5 @@
-// Copyright 2021 Thales DIS design services SAS
+// Copyright 2022 Thales DIS design services SAS
+// Copyright 2022 OpenHW Group
 //
 // Licensed under the Solderpad Hardware Licence, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -6,9 +7,13 @@
 // You may obtain a copy of the License at https://solderpad.org/licenses/
 //
 // Original Author: Zineb EL KACIMI (zineb.el-kacimi@external.thalesgroup.com)
+// ------------------------------------------------------------------------------ //
 
+package cva6_instr_test_pkg;
 
-#define LOAD_RS(rs,value) li rs, value
-#define COMP_RS(rs1,rs2,rd) xor rd, rs1, rs2
-#define CUS_ADD(rs1,rs2,rs3,rd) .word 0b##0000000##rs2####rs1##000##rd##0101011
-#define CUS_ADD_RS3(rs1,rs2,rs3,rd) .word 0b##rs3##00##rs2####rs1##000##rd##1011011
+   import uvm_pkg::*;
+   import riscv_instr_pkg::*;
+   import riscv_instr_test_pkg::*;
+   import cva6_instr_pkg::*;
+
+endpackage : cva6_instr_test_pkg;

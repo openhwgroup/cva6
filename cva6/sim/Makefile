@@ -25,11 +25,24 @@ FLIST_TB   := $(CVA6_TB_DIR)/Flist.cva6_tb
 target     ?= cv64a6_imafdc_sv39
 FLIST_CORE := $(CVA6_REPO_DIR)/core/Flist.$(target)
 
-VERDI          ?=
-user-define    ?= +define+WT_CACHE
-USERDEFINE      = +define+RVFI_TRACE $(user-define)
+VERDI           ?=
+path-var        ?=
+tool_path       ?=
+isscomp_opts    ?=
+issrun_opts     ?=
+isspostrun_opts ?=
+log             ?=
+variant         ?=
 
-TESTNAME := $(shell basename -s .o $(elf-bin))
+TESTNAME := $(shell basename -s .o $(elf))
+
+ifeq ($(isspostrun_opts), "")
+grep_address:
+	grep $(isspostrun_opts) ./trace_rvfi_hart_00.dasm
+else
+grep_address:
+endif
+
 #######################################################################################
 #                   Code Coverage
 #######################################################################################
@@ -44,26 +57,35 @@ else
 	cov-comp-opt =
 	cov-run-opt  =
 endif
+
 ###############################################################################
-# Synopsys VCS specific commands, variables
+# Spike specific commands, variables
 ###############################################################################
-VCS                     = vcs
-ALL_VLOGAN_FLAGS        = $(if $(VERDI), -kdb,) -sverilog -assert svaext $(USERDEFINE) -timescale=1ns/1ns
+spike:
+	$(tool_path)/spike --log-commits --isa=$(variant) -l $(elf)
+	cp $(log).iss $(log)
+
+###############################################################################
+# testharness specific commands, variables
+###############################################################################
+vcs-testharness:
+	make -C $(path_var) vcs_build target=$(target) defines=$(subst +define+,,$(isscomp_opts))
+	$(path_var)/work-vcs/simv $(if $(VERDI), -verdi -do $(path_var)/init_testharness.do,) +permissive -sv_lib $(path_var)/work-dpi/ariane_dpi +PRELOAD=$(elf) +permissive-off ++$(elf) $(issrun_opts)
+	$(tool_path)/spike-dasm < ./trace_rvfi_hart_00.dasm > $(log)
+	grep $(isspostrun_opts) ./trace_rvfi_hart_00.dasm
+
+veri-testharness:
+	make -C $(path_var) verilate target=$(target) defines=$(subst +define+,,$(isscomp_opts))
+	$(path_var)/work-ver/Variane_testharness $(elf) $(issrun_opts)
+	$(tool_path)/spike-dasm < ./trace_rvfi_hart_00.dasm > $(log)
+	grep $(isspostrun_opts) ./trace_rvfi_hart_00.dasm
+
+###############################################################################
+# UVM specific commands, variables
+###############################################################################
 ALL_VCS_FLAGS           = $(if $(VERDI), -kdb -debug_access+all -lca,) -sverilog -full64 -timescale=1ns/1ns
 VCS_WORK_DIR            = $(CORE_V_VERIF)/cva6/sim/vcs_results/default/vcs.d
 SIMV                    = $(VCS_WORK_DIR)/simv
-
-vcs_core_comp:
-	@echo "[VCS] Building Model"
-	mkdir -p $(VCS_WORK_DIR)
-	cd $(VCS_WORK_DIR) && vlogan $(ALL_VLOGAN_FLAGS) -f $(FLIST_CORE)
-	cd $(VCS_WORK_DIR) && vlogan $(ALL_VLOGAN_FLAGS) -f $(FLIST_TB)
-	cd $(VCS_WORK_DIR) && vcs $(ALL_VCS_FLAGS) work.cva6_core_only_tb
-
-vcs_core_run:
-	cp $(TESTNAME).txt $(VCS_WORK_DIR)/Mem_init.txt
-	cd $(VCS_WORK_DIR) && $(VCS_WORK_DIR)/simv $(if $(VERDI), -verdi,)
-	mv $(VCS_WORK_DIR)/trace_rvfi_hart_00.dasm $(CORE_V_VERIF)/cva6/sim/
 
 export CVA6_UVMT_DIR          = $(CORE_V_VERIF)/cva6/tb/uvmt
 export CVA6_UVMT_PATH         = $(CORE_V_VERIF)/cva6/tb/uvmt
@@ -98,27 +120,42 @@ ALL_UVM_FLAGS           = -lca -sverilog +incdir+/opt/synopsys/vcs-mx/O-2018.09-
 	  /opt/synopsys/vcs-mx/O-2018.09-SP1-1/etc/uvm/src/uvm_pkg.sv +UVM_VERBOSITY=UVM_MEDIUM -ntb_opts uvm-1.2 -timescale=1ns/1ps \
 	  -assert svaext -race=all -ignore unique_checks -full64 -q +incdir+/opt/synopsys/vcs-mx/O-2018.09-SP1-1/etc/uvm/src \
 	  +incdir+$(CORE_V_VERIF)/$(CV_CORE_LC)/env/uvme +incdir+$(CORE_V_VERIF)/$(CV_CORE_LC)/tb/uvmt \
-	  $(USERDEFINE) $(if $(VERDI), -debug_access+all -kdb,)
+	  $(if $(VERDI), -debug_access+all -kdb,)
 ALL_SIMV_UVM_FLAGS      = -licwait 20 -l +ntb_random_seed=1 \
 		-sv_lib $(CORE_V_VERIF)/lib/dpi_dasm/lib/Linux64/libdpi_dasm +signature=I-ADD-01.signature_output \
 		+UVM_TESTNAME=uvmt_cva6_firmware_test_c $(if $(VERDI), -gui -do $(CORE_V_VERIF)/cva6/sim/init_uvm.do,)
 
-vcs_uvm_comp:
+dpi-library = $(VCS_WORK_DIR)/work-dpi
+dpi_build:
+	mkdir -p $(dpi-library)
+	g++ -shared -fPIC -std=c++0x -Bsymbolic -std=c++11 -I../corev_apu/tb/dpi -O3 -I$(SPIKE_ROOT)/include \
+	-I$(VCS_HOME)/include -I$(RISCV)/include -c $(CVA6_REPO_DIR)/corev_apu/tb/dpi/elfloader.cc \
+	-o $(dpi-library)/elfloader.o
+	g++ -shared -m64 -o $(dpi-library)/ariane_dpi.so $(dpi-library)/elfloader.o -L$(RISCV)/lib -Wl,-rpath,$(RISCV)/lib
+
+vcs_uvm_comp: dpi_build
 	@echo "[VCS] Building Model"
 	mkdir -p $(VCS_WORK_DIR)
 	cd $(VCS_WORK_DIR) && vcs $(ALL_UVM_FLAGS) \
 	  -f $(FLIST_CORE) -f $(FLIST_TB) \
 	  -f $(CVA6_UVMT_DIR)/uvmt_cva6.flist \
-	  $(cov-comp-opt) \
+	  $(cov-comp-opt) $(isscomp_opts)\
 	  -top uvmt_cva6_tb
 
 vcs_uvm_run:
-	cp $(TESTNAME).txt $(VCS_WORK_DIR)/Mem_init.txt
 	cd $(VCS_WORK_DIR)/ && \
 	$(VCS_WORK_DIR)/simv ${ALL_SIMV_UVM_FLAGS} \
-	++$(elf-bin) \
-	$(cov-run-opt) && \
+	++$(elf) \
+	+PRELOAD=$(elf) \
+	-sv_lib $(dpi-library)/ariane_dpi $(if $(DO_SIM), -ucli -do $(CORE_V_VERIF)/cva6/sim/sim.do,) \
+	$(cov-run-opt) $(issrun_opts)&& \
 	mv $(VCS_WORK_DIR)/trace_rvfi_hart_00.dasm $(CORE_V_VERIF)/cva6/sim/
+
+vcs-uvm:
+	make vcs_uvm_comp
+	make vcs_uvm_run
+	$(tool_path)/spike-dasm < ./trace_rvfi_hart_00.dasm > $(log)
+	grep $(isspostrun_opts) ./trace_rvfi_hart_00.dasm
 
 generate_cov_dash:
 	urg -dir $(VCS_WORK_DIR)/simv.vdb
@@ -126,52 +163,26 @@ generate_cov_dash:
 vcs_gate_comp:
 	@echo "[VCS] Building Model"
 	mkdir -p $(VCS_WORK_DIR)
-	cd $(VCS_WORK_DIR) && vcs $(ALL_VCS_FLAGS) -f $(FLIST_CORE)_gate -f $(FLIST_TB)
+	cd $(VCS_WORK_DIR) && vcs $(ALL_VCS_FLAGS) -f $(FLIST_CORE)_gate -f $(FLIST_TB) $(isscomp_opts)
 
 vcs_gate_run:
-	cp $(TESTNAME).txt $(VCS_WORK_DIR)/Mem_init.txt
-	cd $(VCS_WORK_DIR)/ && $(VCS_WORK_DIR)/simv
+	cd $(VCS_WORK_DIR)/ && $(VCS_WORK_DIR)/simv $(issrun_opts)
 	mv $(VCS_WORK_DIR)/trace_rvfi_hart_00.dasm $(CORE_V_VERIF)/cva6/sim/
 
 vcs_clean_all:
 	@echo "[VCS] Cleanup (entire vcs_work dir)"
 	rm -rf $(CORE_V_VERIF)/cva6/sim/vcs_results/ verdiLog/ simv* *.daidir *.vpd *.db csrc ucli.key vc_hdrs.h novas* inter.fsdb uart
 
-###############################################################################
-# Verilator
-###############################################################################
-
-VERILATOR             ?= verilator
-ALL_VERILATOR_FLAGS   ?= -Werror-PINMISSING -Werror-IMPLICIT -Wno-fatal \
-    -Wno-PINCONNECTEMPTY -Wno-ASSIGNDLY -Wno-DECLFILENAME -Wno-UNUSED \
-    -Wno-UNOPTFLAT -Wno-BLKANDNBLK -Wno-style -Wall --cc  --vpi --exe \
-    --Mdir $(VERILATOR_WORK_DIR) -O3 $(USERDEFINE)
-VERILATOR_WORK_DIR    ?= verilator_work
-VERILATOR_RESULTS_DIR ?= verilator_results
-
-veri_comp:
-	@echo "[VERILATOR] Building Model"
-	$(VERILATOR) \
-	    $(ALL_VERILATOR_FLAGS) --top-module cva6_core_only_tb \
-		-f $(FLIST_CORE) -f $(FLIST_TB) \
-		$(CVA6_TB_DIR)/cva6_tb_verilator.cpp
-	@echo "[VERILATOR] Compiling Model"
-	$(MAKE) -C $(VERILATOR_WORK_DIR) -f Vcva6_core_only_tb.mk
-
-veri_run:
-	cp $(TESTNAME).txt Mem_init.txt
-	$(VERILATOR_WORK_DIR)/Vcva6_core_only_tb
-
-veri_clean_all:
-	@echo "[VERILATOR] Cleanup (both work and results dirs)"
-	rm -rf $(VERILATOR_WORK_DIR)
-	rm -rf $(VERILATOR_RESULTS_DIR)
+vcs-gate:
+	make vcs_gate_comp
+	make vcs_gate_run
+	$(tool_path)/spike-dasm < ./trace_rvfi_hart_00.dasm > $(log)
 
 ###############################################################################
 # Common targets and rules
 ###############################################################################
 
-clean_all: vcs_clean_all veri_clean_all
+clean_all: vcs_clean_all
 	rm -f *.txt
 	rm -f trace*.log
 	rm -f trace*.dasm
@@ -180,11 +191,9 @@ help:
 	@echo "Shell environment:"
 	@echo "   CVA6_REPO_DIR    : $(CVA6_REPO_DIR)"
 	@echo "   CVA6_TB_DIR      : $(CVA6_TB_DIR)"
-	@echo "Verilator targets:"
-	@echo "   make veri_comp   : Builds, compiles and runs with verilator"
 	@echo "VCS targets:"
-	@echo "   make vcs_core_comp    : Compiles with VCS"
-	@echo "   make vcs_core_run     : Runs with VCS"
+	@echo "   make vcs_uvm_comp    : Compiles with VCS"
+	@echo "   make vcs_uvm_run     : Runs with VCS"
 	@echo "Clean-up targets:"
 	@echo "   make clean_all   : Deletes ALL generated files"
 	@echo "Support for other simulators on the ToDo list..."

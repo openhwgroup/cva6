@@ -15,6 +15,7 @@
 // SPDX-License-Identifier: Apache-2.0 WITH SHL-2.0
 
 module uvmt_cva6_dut_wrap # ( parameter int unsigned AXI_USER_WIDTH    = 1,
+  parameter int unsigned AXI_USER_EN       = 0,
   parameter int unsigned AXI_ADDRESS_WIDTH = 64,
   parameter int unsigned AXI_DATA_WIDTH    = 64,
   parameter int unsigned NUM_WORDS         = 2**25
@@ -22,13 +23,14 @@ module uvmt_cva6_dut_wrap # ( parameter int unsigned AXI_USER_WIDTH    = 1,
 
                            (
                             uvma_clknrst_if                     clknrst_if,
-                            uvma_cvxif_if                       cvxif_if,
+                            uvma_cvxif_intf                     cvxif_if,
                             output wire                         tb_exit_o,
                             output ariane_rvfi_pkg::rvfi_port_t rvfi_o
                            );
 
     cva6_tb_wrapper #(
      .AXI_USER_WIDTH    (AXI_USER_WIDTH),
+     .AXI_USER_EN       (AXI_USER_EN),
      .AXI_ADDRESS_WIDTH (AXI_ADDRESS_WIDTH),
      .AXI_DATA_WIDTH    (AXI_DATA_WIDTH),
      .NUM_WORDS         (NUM_WORDS)

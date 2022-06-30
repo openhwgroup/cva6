@@ -58,6 +58,8 @@ package uvme_cva6_pkg;
    // Environment components
    `include "uvme_cva6_sb.sv"
    `include "uvme_cva6_vsqr.sv"
+   `include "uvme_cvxif_covg.sv"
+   `include "uvme_cva6_cov_model.sv"
    `include "uvme_cva6_env.sv"
 
    // Virtual sequences

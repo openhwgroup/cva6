@@ -20,10 +20,17 @@ class uvma_cvxif_cfg_c extends uvm_object;
    rand int unsigned uvma_cvxif_issue_ready;
    rand int unsigned uvma_cvxif_issue_not_ready;
    rand uvma_cvxif_ready_mode_enum ready_mode;
+   rand logic instr_delayed;
+   rand int rnd_delay;
+   rand bit in_order;
+   rand bit   cov_model_enabled;
+   rand bit   enabled;
+
 
    constraint reasonable_values {
-    soft uvma_cvxif_issue_ready inside     {[4:10]};
-    soft uvma_cvxif_issue_not_ready inside {[1:2]};
+      soft uvma_cvxif_issue_ready inside     {[4:10]};
+      soft uvma_cvxif_issue_not_ready inside {[1:2]};
+      soft rnd_delay inside {[2:4]};
    }
 
    constraint issue_ready {
@@ -32,14 +39,23 @@ class uvma_cvxif_cfg_c extends uvm_object;
    }
 
    constraint defaults_val {
-      soft ready_mode == UVMA_CVXIF_ISSUE_READY_FIX; // issue_ready is not randomized => the agent is always ready by default,
-                                                     // you can randomize it by giving "UVMA_CVXIF_ISSUE_READY_RANDOMIZED" to "ready_mode"
+      soft ready_mode        == UVMA_CVXIF_ISSUE_READY_FIX; // issue_ready is not randomized => the agent is always ready by default,
+                                                            // you can randomize it by giving "UVMA_CVXIF_ISSUE_READY_RANDOMIZED" to "ready_mode"
+      soft instr_delayed     == 0;
+      soft in_order          == 0;
+      soft cov_model_enabled == 0;
+      soft enabled           == 1;
    }
 
    `uvm_object_utils_begin(uvma_cvxif_cfg_c)
       `uvm_field_int ( ready_mode,                     UVM_DEFAULT)
       `uvm_field_int ( uvma_cvxif_issue_ready,         UVM_DEFAULT)
       `uvm_field_int ( uvma_cvxif_issue_not_ready,     UVM_DEFAULT)
+      `uvm_field_int ( instr_delayed,                  UVM_DEFAULT)
+      `uvm_field_int ( rnd_delay,                      UVM_DEFAULT)
+      `uvm_field_int ( in_order,                       UVM_DEFAULT)
+      `uvm_field_int ( cov_model_enabled,              UVM_DEFAULT)
+      `uvm_field_int ( enabled,                        UVM_DEFAULT)
    `uvm_object_utils_end
 
    /**
