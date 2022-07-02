@@ -33,12 +33,11 @@ module alu import ariane_pkg::*;(
     logic        less;  // handles both signed and unsigned forms
     logic [31:0] rolw;                    // Rotate Left Word
     logic [31:0] rorw;                    // Rotate Right Word
+    logic [31:0] orcbw, rev8w;
     logic [$clog2(riscv::XLEN)-1:0] cpop; // Count Population
     logic [riscv::XLEN-1:0] src_operand;  // Count Leading/Trailing Zeros operand_a
-    logic [5:0] lzcount;                  // Count Leading Zeros
-    logic [4:0] lzwcount;                 // Count Leading Zeros Word
-    logic [5:0] tzcount;                  // Count Trailing Zeros
-    logic [4:0] tzwcount;                 // Count Trailing Zeros Word
+    logic [5:0] lz_tz_count;              // Count Leading Zeros
+    logic [4:0] lz_tz_wcount;             // Count Leading Zeros Word
 
     // bit reverse operand_a for left shifts and bit counting
     generate
@@ -57,6 +56,7 @@ module alu import ariane_pkg::*;(
     logic        adder_z_flag;
     logic [riscv::XLEN:0] adder_in_a, adder_in_b;
     riscv::xlen_t adder_result;
+    logic [riscv::XLEN-1:0] operand_a_sh, bit_indx, lzc_src_operand;
 
     always_comb begin
       adder_op_b_negate = 1'b0;
@@ -64,14 +64,31 @@ module alu import ariane_pkg::*;(
       unique case (fu_data_i.operator)
         // ADDER OPS
         EQ,  NE,
-        SUB, SUBW: adder_op_b_negate = 1'b1;
-
+        SUB, SUBW,
+        ANDN, ORN, XNOR: adder_op_b_negate = 1'b1;
         default: ;
       endcase
     end
 
+    always_comb begin
+      operand_a_sh = fu_data_i.operand_a;
+
+      if (ariane_pkg::BITMANIP) begin
+        unique case (fu_data_i.operator)
+          SH1ADD   : operand_a_sh = fu_data_i.operand_a << 1;
+          SH2ADD   : operand_a_sh = fu_data_i.operand_a << 2;
+          SH3ADD   : operand_a_sh = fu_data_i.operand_a << 3;
+          SH1ADDUW : operand_a_sh = fu_data_i.operand_a[31:0] << 1;
+          SH2ADDUW : operand_a_sh = fu_data_i.operand_a[31:0] << 2;
+          SH3ADDUW : operand_a_sh = fu_data_i.operand_a[31:0] << 3;
+          ADDUW    : operand_a_sh = fu_data_i.operand_a[31:0];
+          default  : ;
+        endcase
+      end
+    end
+
     // prepare operand a
-    assign adder_in_a    = {fu_data_i.operand_a, 1'b1};
+    assign adder_in_a    = {operand_a_sh, 1'b1};
 
     // prepare operand b
     assign operand_b_neg = {fu_data_i.operand_b, 1'b0} ^ {riscv::XLEN+1{adder_op_b_negate}};
@@ -160,67 +177,41 @@ module alu import ariane_pkg::*;(
 
         if ((fu_data_i.operator == SLTS) ||
             (fu_data_i.operator == LTS)  ||
-            (fu_data_i.operator == GES))
+            (fu_data_i.operator == GES)  ||
+            (fu_data_i.operator == MAX)  ||
+            (fu_data_i.operator == MIN))
             sgn = 1'b1;
 
         less = ($signed({sgn & fu_data_i.operand_a[riscv::XLEN-1], fu_data_i.operand_a})  <  $signed({sgn & fu_data_i.operand_b[riscv::XLEN-1], fu_data_i.operand_b}));
     end
 
     if (ariane_pkg::BITMANIP) begin : gen_bitmanip
-        // Bitwise Rotation
-
-        // rolw, roriw, rorw
-        always_comb begin
-          rolw = ({{32{1'b0}},fu_data_i.operand_a[31:0]} << fu_data_i.operand_b[4:0]) | ({{32{1'b0}},fu_data_i.operand_a[31:0]} >> (riscv::XLEN-32-fu_data_i.operand_b[4:0]));
-          rorw = ({{32{1'b0}},fu_data_i.operand_a[31:0]} >> fu_data_i.operand_b[4:0]) | ({{32{1'b0}},fu_data_i.operand_a[31:0]} << (riscv::XLEN-32-fu_data_i.operand_b[4:0]));
-        end
-
         // Count Population + Count population Word
-        assign src_operand = (fu_data_i.operator == CPOPW) ? fu_data_i.operand_a[31:0] : fu_data_i.operand_a[63:0];
+        assign src_operand     = (fu_data_i.operator == CPOPW) ? fu_data_i.operand_a[31:0] : fu_data_i.operand_a;
+        assign lzc_src_operand = (fu_data_i.operator == CTZ) ? operand_a_rev : (fu_data_i.operator == CTZW) ? operand_a_rev32 : fu_data_i.operand_a;
+
         popcount i_cpop_count (
           .data_i           (src_operand),
           .popcount_o       (cpop)
         );
 
         // Count Leading/Trailing Zeros
-
-        // Count Leading Zeros
+        // 64b
         lzc #(
           .WIDTH(64),
           .MODE (1)
         ) i_clz_64b (
-          .in_i (fu_data_i.operand_a),
-          .cnt_o (lzcount),
+          .in_i (lzc_src_operand),
+          .cnt_o (lz_tz_count),
           .empty_o ()
         );
-
-        // Count Leading Zeros Word
+        // 32b
         lzc #(
           .WIDTH(32),
           .MODE (1)
         ) i_clz_32b (
-          .in_i (fu_data_i.operand_a),
-          .cnt_o (lzwcount),
-          .empty_o ()
-        );
-
-        // Count Trailing Zeros
-        lzc #(
-          .WIDTH(64),
-          .MODE (0)
-        ) i_ctz_64b (
-          .in_i (fu_data_i.operand_a),
-          .cnt_o (tzcount),
-          .empty_o ()
-        );
-
-        // Count Trailing Zeros Word
-        lzc #(
-          .WIDTH(32),
-          .MODE (0)
-        ) i_ctz_32b (
-          .in_i (fu_data_i.operand_a),
-          .cnt_o (tzwcount),
+          .in_i (lzc_src_operand),
+          .cnt_o (lz_tz_wcount),
           .empty_o ()
         );
     end
@@ -232,12 +223,15 @@ module alu import ariane_pkg::*;(
         result_o   = '0;
         unique case (fu_data_i.operator)
             // Standard Operations
-            ANDL:  result_o = fu_data_i.operand_a & fu_data_i.operand_b;
-            ORL:   result_o = fu_data_i.operand_a | fu_data_i.operand_b;
-            XORL:  result_o = fu_data_i.operand_a ^ fu_data_i.operand_b;
+            ANDL, ANDN: result_o = fu_data_i.operand_a & operand_b_neg[riscv::XLEN:1];
+            ORL, ORN  : result_o = fu_data_i.operand_a | operand_b_neg[riscv::XLEN:1];
+            XORL, XNOR: result_o = fu_data_i.operand_a ^ operand_b_neg[riscv::XLEN:1];
 
             // Adder Operations
-            ADD, SUB: result_o = adder_result;
+            ADD, SUB,
+            ADDUW,
+            SH1ADD, SH2ADD, SH3ADD,
+            SH1ADDUW, SH2ADDUW, SH3ADDUW: result_o = adder_result;
             // Add word: Ignore the upper bits and sign extend to 64 bit
             ADDW, SUBW: result_o = {{riscv::XLEN-32{adder_result[31]}}, adder_result[31:0]};
             // Shift Operations
@@ -252,44 +246,33 @@ module alu import ariane_pkg::*;(
 
             default: ; // default case to suppress unique warning
         endcase
+
         if (ariane_pkg::BITMANIP) begin
+            // Index for Bitwise Rotation
+            bit_indx = 1 << (fu_data_i.operand_b & (riscv::XLEN-1));
+            orcbw = {{8{|fu_data_i.operand_a[31:24]}}, {8{|fu_data_i.operand_a[23:16]}}, {8{|fu_data_i.operand_a[15:8]}}, {8{|fu_data_i.operand_a[7:0]}}};
+            rev8w = {{fu_data_i.operand_a[7:0]}, {fu_data_i.operand_a[15:8]}, {fu_data_i.operand_a[23:16]}, {fu_data_i.operand_a[31:24]}};
+            // rolw, roriw, rorw
+            rolw = ({{riscv::XLEN-32{1'b0}},fu_data_i.operand_a[31:0]} << fu_data_i.operand_b[4:0]) | ({{riscv::XLEN-32{1'b0}},fu_data_i.operand_a[31:0]} >> (riscv::XLEN-32-fu_data_i.operand_b[4:0]));
+            rorw = ({{riscv::XLEN-32{1'b0}},fu_data_i.operand_a[31:0]} >> fu_data_i.operand_b[4:0]) | ({{riscv::XLEN-32{1'b0}},fu_data_i.operand_a[31:0]} << (riscv::XLEN-32-fu_data_i.operand_b[4:0]));
             unique case (fu_data_i.operator)
-                // Bitmanip Logical with Negate operations
-                ANDN: result_o = fu_data_i.operand_a & ~fu_data_i.operand_b;
-                ORN:  result_o = fu_data_i.operand_a | ~fu_data_i.operand_b;
-                XNOR: result_o = ~(fu_data_i.operand_a ^ fu_data_i.operand_b);
-
-                // Bitmanip Shift with Add operations
-                SH1ADD: result_o = (fu_data_i.operand_a << 1) + fu_data_i.operand_b;
-                SH2ADD: result_o = (fu_data_i.operand_a << 2) + fu_data_i.operand_b;
-                SH3ADD: result_o = (fu_data_i.operand_a << 3) + fu_data_i.operand_b;
-
-                // Bitmanip Shift with Add operations (Unsigned Word)
-                SH1ADDUW: result_o = ({{32{1'b0}}, fu_data_i.operand_a[31:0]} << 1) + fu_data_i.operand_b;
-                SH2ADDUW: result_o = ({{32{1'b0}}, fu_data_i.operand_a[31:0]} << 2) + fu_data_i.operand_b;
-                SH3ADDUW: result_o = ({{32{1'b0}}, fu_data_i.operand_a[31:0]} << 3) + fu_data_i.operand_b;
-
-                // Unsigned word operations
-                ADDUW:  result_o = ({{32{1'b0}}, fu_data_i.operand_a[31:0]}) + fu_data_i.operand_b;
-                SLLIUW: result_o = ({{32{1'b0}}, fu_data_i.operand_a[31:0]} << fu_data_i.operand_b[5:0]);
-
+                // Left Shift 32 bit unsigned
+                SLLIUW: result_o = {{riscv::XLEN-32{1'b0}}, fu_data_i.operand_a[31:0]} << fu_data_i.operand_b[5:0];
                 // Integer minimum/maximum
-                MAX:  result_o = ($signed(fu_data_i.operand_a) < $signed(fu_data_i.operand_b)) ? fu_data_i.operand_b : fu_data_i.operand_a;
-                MAXU: result_o = ($unsigned(fu_data_i.operand_a) < $unsigned(fu_data_i.operand_b)) ? fu_data_i.operand_b : fu_data_i.operand_a;
-                MIN:  result_o = ($signed(fu_data_i.operand_a) > $signed(fu_data_i.operand_b)) ? fu_data_i.operand_b : fu_data_i.operand_a;
-                MINU: result_o = ($unsigned(fu_data_i.operand_a) > $unsigned(fu_data_i.operand_b)) ? fu_data_i.operand_b : fu_data_i.operand_a;
+                MAX:  result_o = less ? fu_data_i.operand_b : fu_data_i.operand_a;
+                MAXU: result_o = less ? fu_data_i.operand_b : fu_data_i.operand_a;
+                MIN:  result_o = ~less ? fu_data_i.operand_b : fu_data_i.operand_a;
+                MINU: result_o = ~less ? fu_data_i.operand_b : fu_data_i.operand_a;
 
                 // Single bit instructions operations
-                BCLR, BCLRI: result_o = fu_data_i.operand_a & ~(1 << (fu_data_i.operand_b & (riscv::XLEN-1)));
-                BEXT, BEXTI: result_o = (fu_data_i.operand_a >> (fu_data_i.operand_b & (riscv::XLEN-1))) & 1;
-                BINV, BINVI: result_o = fu_data_i.operand_a ^ (1 << (fu_data_i.operand_b & (riscv::XLEN-1)));
-                BSET, BSETI: result_o = fu_data_i.operand_a | (1 << (fu_data_i.operand_b & (riscv::XLEN-1)));
+                BCLR, BCLRI: result_o = fu_data_i.operand_a & ~bit_indx;
+                BEXT, BEXTI: result_o = |(fu_data_i.operand_a & bit_indx);
+                BINV, BINVI: result_o = fu_data_i.operand_a ^ bit_indx;
+                BSET, BSETI: result_o = fu_data_i.operand_a | bit_indx;
 
                 // Count Leading/Trailing Zeros
-                CLZ:   result_o = ~(|fu_data_i.operand_a) ? 64 : lzcount;
-                CLZW:  result_o = ~(|fu_data_i.operand_a[31:0]) ? 32 : lzwcount;
-                CTZ:   result_o = ~(|fu_data_i.operand_a) ? 64 : tzcount;
-                CTZW:  result_o = ~(|fu_data_i.operand_a[31:0]) ? 32 : tzwcount;
+                CLZ, CTZ  :  result_o = ~(|fu_data_i.operand_a) ? 64 : lz_tz_count;
+                CLZW, CTZW:  result_o = ~(|fu_data_i.operand_a[31:0]) ? 32 : lz_tz_wcount;
 
                 // Count population
                 CPOP, CPOPW: result_o = cpop;
@@ -304,8 +287,8 @@ module alu import ariane_pkg::*;(
                 ROLW:         result_o = {{riscv::XLEN-32{rolw[31]}}, rolw};
                 ROR, RORI:    result_o = (fu_data_i.operand_a >> fu_data_i.operand_b[5:0]) | (fu_data_i.operand_a << (riscv::XLEN-fu_data_i.operand_b[5:0]));
                 RORW, RORIW:  result_o = {{riscv::XLEN-32{rorw[31]}}, rorw};
-                ORCB:         result_o = {{8{|fu_data_i.operand_a[63:56]}}, {8{|fu_data_i.operand_a[55:48]}}, {8{|fu_data_i.operand_a[47:40]}}, {8{|fu_data_i.operand_a[39:32]}}, {8{|fu_data_i.operand_a[31:24]}}, {8{|fu_data_i.operand_a[23:16]}}, {8{|fu_data_i.operand_a[15:8]}}, {8{|fu_data_i.operand_a[7:0]}}};
-                REV8:         result_o = {{fu_data_i.operand_a[7:0]}, {fu_data_i.operand_a[15:8]}, {fu_data_i.operand_a[23:16]}, {fu_data_i.operand_a[31:24]}, {fu_data_i.operand_a[39:32]}, {fu_data_i.operand_a[47:40]}, {fu_data_i.operand_a[55:48]}, {fu_data_i.operand_a[63:56]}};
+                ORCB:         result_o = (riscv::XLEN == 64) ? ({{8{|fu_data_i.operand_a[63:56]}}, {8{|fu_data_i.operand_a[55:48]}}, {8{|fu_data_i.operand_a[47:40]}}, {8{|fu_data_i.operand_a[39:32]}}, orcbw}) : orcbw;
+                REV8:         result_o = (riscv::XLEN == 64) ? ({rev8w , {fu_data_i.operand_a[39:32]}, {fu_data_i.operand_a[47:40]}, {fu_data_i.operand_a[55:48]}, {fu_data_i.operand_a[63:56]}}) : rev8w;
 
                 default: ; // default case to suppress unique warning
             endcase

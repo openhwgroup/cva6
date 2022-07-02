@@ -113,20 +113,14 @@ module multiplier import ariane_pkg::*; (
         unique case (operator_q)
             MULH, MULHU, MULHSU: result_o = mult_result_q[riscv::XLEN*2-1:riscv::XLEN];
             MULW:                result_o = sext32(mult_result_q[31:0]);
+            CLMUL:               result_o = clmul_q;
+            CLMULH:              result_o = clmulr_q >> 1;
+            CLMULR:              result_o = clmulr_q;
             // MUL performs an XLEN-bit×XLEN-bit multiplication and places the lower XLEN bits in the destination register
             default:             result_o = mult_result_q[riscv::XLEN-1:0];// including MUL
         endcase
-        if (ariane_pkg::BITMANIP) begin
-            unique case (operator_q)
-                CLMUL:               result_o = clmul_q;
-                CLMULH:              result_o = clmulr_q >> 1;
-                CLMULR:              result_o = clmulr_q;
-                // MUL performs an XLEN-bit×XLEN-bit multiplication and places the lower XLEN bits in the destination register
-                default:             result_o = mult_result_q[riscv::XLEN-1:0];// including MUL
-            endcase
-        end
     end
-    if (ariane_pkg::BITMANIP) begin : gen_bitmanip
+    if (ariane_pkg::BITMANIP) begin
         always_ff @(posedge clk_i or negedge rst_ni) begin
             if (~rst_ni) begin
                 clmul_q       <= '0;
