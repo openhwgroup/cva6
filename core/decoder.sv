@@ -508,6 +508,7 @@ module decoder import ariane_pkg::*; (
                             {7'b000_0001, 3'b101}: instruction_o.op = ariane_pkg::DIVU;
                             {7'b000_0001, 3'b110}: instruction_o.op = ariane_pkg::REM;
                             {7'b000_0001, 3'b111}: instruction_o.op = ariane_pkg::REMU;
+                            {7'b000_0100, 3'b100}: instruction_o.op = ariane_pkg::ZEXTH;
                             default: begin
                                 illegal_instr_non_bm = 1'b1;
                             end
@@ -650,7 +651,7 @@ module decoder import ariane_pkg::*; (
                             3'b101: begin
                                 if (instr.instr[31:20] == 12'b001010000111)
                                     instruction_o.op = ariane_pkg::ORCB;
-                                else if (instr.instr[31:20] == 12'b011010111000)
+                                else if (instr.instr[31:20] == 12'b011010111000 || instr.instr[31:20] == 12'b011010011000)
                                     instruction_o.op = ariane_pkg::REV8;
                                 else if (instr.instr[31:26] == 6'b010_010)
                                     instruction_o.op = ariane_pkg::BEXTI;

@@ -38,9 +38,9 @@ module multiplier import ariane_pkg::*; (
         assign clmul_hmode = (operator_i == CLMULH);
 
         // operand_a and b reverse generator
-        for (genvar i = 0; i < 64; i++) begin
-            assign operand_a_rev[i] = operand_a_i[63-i];
-            assign operand_b_rev[i] = operand_b_i[63-i];
+        for (genvar i = 0; i < riscv::XLEN; i++) begin
+            assign operand_a_rev[i] = operand_a_i[(riscv::XLEN-1) -i];
+            assign operand_b_rev[i] = operand_b_i[(riscv::XLEN-1) -i];
         end
 
         // operand_a and operand_b selection
@@ -50,14 +50,14 @@ module multiplier import ariane_pkg::*; (
         // implementation
         always_comb begin
             clmul_d = '0;
-            for (int i = 0; i <= 64; i++) begin
+            for (int i = 0; i <= riscv::XLEN; i++) begin
                 clmul_d = ((operand_b >> i) & 1) ? clmul_d ^ (operand_a << i) : clmul_d;
             end
         end
 
         // clmulr + clmulh result generator
-        for (genvar i = 0; i < 64; i++) begin
-            assign clmulr_d[i] = clmul_d[63-i];
+        for (genvar i = 0; i < riscv::XLEN; i++) begin
+            assign clmulr_d[i] = clmul_d[(riscv::XLEN-1)-i];
         end
     end
 
