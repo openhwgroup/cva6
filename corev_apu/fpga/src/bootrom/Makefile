@@ -1,12 +1,21 @@
 XLEN ?= 64
 CROSSCOMPILE ?= riscv64-unknown-elf-
+DRAM_SIZE_64 ?= 0x40000000# 1GB
+DRAM_SIZE_32 ?= 0x08000000# 128MB
+CLOCK_FREQUENCY ?= 50000000# 50MHz
+HALF_CLOCK_FREQUENCY ?= 25000000# 25MHz
+UART_BITRATE ?= 115200
+HAS_ETHERNET ?= 1
 CC = ${CROSSCOMPILE}gcc
-PYTHON=python
+SED = sed
+PYTHON ?= python
+
+PLATFORM_DEFINES = -DCLOCK_FREQUENCY=$(CLOCK_FREQUENCY) -DUART_BITRATE=$(UART_BITRATE)
 
 ifeq ($(XLEN), 64)
-CFLAGS = -Os -ggdb -march=rv64imac -mabi=lp64 -Wall -mcmodel=medany -mexplicit-relocs
+CFLAGS = $(PLATFORM_DEFINES) -Os -ggdb -march=rv64imac -mabi=lp64 -Wall -mcmodel=medany -mexplicit-relocs -ffreestanding
 else
-CFLAGS = -O2 -ggdb  -march=rv32im -mabi=ilp32 -W -Wall -mcmodel=medany -mexplicit-relocs -fno-builtin
+CFLAGS = $(PLATFORM_DEFINES) -O2 -ggdb  -march=rv32im -mabi=ilp32 -W -Wall -mcmodel=medany -mexplicit-relocs -ffreestanding -fno-builtin
 endif
 
 CCASFLAGS = -mcmodel=medany -mexplicit-relocs
@@ -25,6 +34,13 @@ MAIN_IMG = $(MAIN:.elf=.img)
 MAIN_SV = $(MAIN:.elf=.sv)
 
 DTB = cv$(XLEN)a6.dtb
+
+ifeq ($(HAS_ETHERNET), 1)
+SED_DELETE_OPT = -e "/DELETE_ETH/d"
+else
+SED_DELETE_OPT =
+endif
+
 
 #.PHONY: clean
 
@@ -46,6 +62,15 @@ $(MAIN): $(DTB) $(OBJS_C) $(OBJS_S) linker.lds
 	@$(CC) $(CFLAGS) $(CCASFLAGS) $(INCLUDES) -c $<  -o $@
 	@echo "CC    <= $<"
 
+%.dts: %.dts.in
+	$(SED) -e "s/DRAM_SIZE_64/$(DRAM_SIZE_64)/g" \
+	       -e "s/DRAM_SIZE_32/$(DRAM_SIZE_32)/g" \
+	       -e "s/HALF_CLOCK_FREQUENCY/$(HALF_CLOCK_FREQUENCY)/g" \
+	       -e "s/CLOCK_FREQUENCY/$(CLOCK_FREQUENCY)/g" \
+	       -e "s/UART_BITRATE/$(UART_BITRATE)/g" \
+	       $(SED_DELETE_OPT) $< > $@
+	cat $@
+
 %.dtb: %.dts
 	dtc -I dts $< -O dtb -o $@
 
@@ -54,7 +79,7 @@ $(MAIN): $(DTB) $(OBJS_C) $(OBJS_S) linker.lds
 	@echo "PYTHON >= $(MAIN_SV)"
 
 clean:
-	$(RM) $(OBJS_C) $(OBJS_S) $(MAIN) $(MAIN_BIN) $(MAIN_IMG) *.dtb
+	$(RM) $(OBJS_C) $(OBJS_S) $(MAIN) $(MAIN_BIN) $(MAIN_IMG) *.dtb *.dts
 
 all: $(MAIN) $(MAIN_BIN) $(MAIN_IMG) $(MAIN_SV)
 	@echo "zero stage bootloader has been compiled!"

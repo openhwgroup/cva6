@@ -137,6 +137,38 @@ module ariane_xilinx (
   input  wire [7:0]    pci_exp_rxp     ,
   input  wire [7:0]    pci_exp_rxn     ,
   input  logic         trst_n          ,
+`elsif NEXYS_VIDEO
+  input  logic         sys_clk_i   ,
+  input  logic         cpu_resetn  ,
+
+  inout  wire [15:0]   ddr3_dq     ,
+  inout  wire [ 1:0]   ddr3_dqs_n  ,
+  inout  wire [ 1:0]   ddr3_dqs_p  ,
+  output wire [14:0]   ddr3_addr   ,
+  output wire [ 2:0]   ddr3_ba     ,
+  output wire          ddr3_ras_n  ,
+  output wire          ddr3_cas_n  ,
+  output wire          ddr3_we_n   ,
+  output wire          ddr3_reset_n,
+  output wire [ 0:0]   ddr3_ck_p   ,
+  output wire [ 0:0]   ddr3_ck_n   ,
+  output wire [ 0:0]   ddr3_cke    ,
+  output wire [ 1:0]   ddr3_dm     ,
+  output wire [ 0:0]   ddr3_odt    ,
+
+  output wire          eth_rst_n   ,
+  input  wire          eth_rxck    ,
+  input  wire          eth_rxctl   ,
+  input  wire [3:0]    eth_rxd     ,
+  output wire          eth_txck    ,
+  output wire          eth_txctl   ,
+  output wire [3:0]    eth_txd     ,
+  inout  wire          eth_mdio    ,
+  output logic         eth_mdc     ,
+  output logic [ 7:0]  led         ,
+  input  logic [ 7:0]  sw          ,
+  output logic         fan_pwm     ,
+  input  logic         trst_n      ,
 `endif
   // SPI
   output logic        spi_mosi    ,
@@ -221,6 +253,9 @@ assign cpu_resetn = ~cpu_reset;
 `elsif VC707
 assign cpu_resetn = ~cpu_reset;
 assign trst_n = ~trst;
+`elsif NEXYS_VIDEO
+logic cpu_reset;
+assign cpu_reset  = ~cpu_resetn;
 `endif
 
 logic pll_locked;
@@ -789,6 +824,8 @@ end
   logic [3:0] unused_switches = 4'b0000;
 `endif
 
+logic clk_200MHz_ref;
+
 ariane_peripherals #(
     .AxiAddrWidth ( AxiAddrWidth     ),
     .AxiDataWidth ( AxiDataWidth     ),
@@ -808,10 +845,13 @@ ariane_peripherals #(
     `elsif VCU118
     .InclSPI      ( 1'b0         ),
     .InclEthernet ( 1'b0         )
+    `elsif NEXYS_VIDEO
+    .InclSPI      ( 1'b1         ),
+    .InclEthernet ( 1'b0         ) // Ethernet can have timing violations on Artix-7 200T
     `endif
 ) i_ariane_peripherals (
     .clk_i        ( clk                          ),
-    .clk_200MHz_i ( ddr_clock_out                ),
+    .clk_200MHz_i ( clk_200MHz_ref               ),
     .rst_ni       ( ndmreset_n                   ),
     .plic         ( master[ariane_soc::PLIC]     ),
     .uart         ( master[ariane_soc::UART]     ),
@@ -1059,6 +1099,25 @@ xlnx_axi_clock_converter i_xlnx_axi_clock_converter_ddr (
   .m_axi_rready   ( s_axi_rready     )
 );
 
+`ifdef NEXYS_VIDEO
+// Nexys video board only have a single 100MHz on-board clock
+// and memory can run at 400MHz and controller can run at 1/4 frequency at most
+// therefore clk_gen needs another 200MHz output clock for peripheral
+
+xlnx_clk_gen i_xlnx_clk_gen (
+  .clk_out1 ( clk             ), // 25 MHz
+  .clk_out2 ( phy_tx_clk      ), // 125 MHz (for RGMII PHY)
+  .clk_out3 ( eth_clk         ), // 125 MHz quadrature (90 deg phase shift)
+  .clk_out4 ( sd_clk_sys      ), // 50 MHz clock
+  .clk_out5 ( clk_200MHz_ref  ), // 200 MHz clock
+  .reset    ( cpu_reset       ),
+  .locked   ( pll_locked      ),
+  .clk_in1  ( ddr_clock_out   )  // 100MHz input clock
+);
+
+`else
+// boards on which memory controllers can run at 200MHz
+
 xlnx_clk_gen i_xlnx_clk_gen (
   .clk_out1 ( clk           ), // 50 MHz
   .clk_out2 ( phy_tx_clk    ), // 125 MHz (for RGMII PHY)
@@ -1068,6 +1127,9 @@ xlnx_clk_gen i_xlnx_clk_gen (
   .locked   ( pll_locked    ),
   .clk_in1  ( ddr_clock_out )
 );
+assign clk_200MHz_ref = ddr_clock_out;
+
+`endif // NEXYS_VIDEO
 
 `ifdef KINTEX7
 fan_ctrl i_fan_ctrl (
@@ -1736,6 +1798,83 @@ axi_clock_converter_0 pcie_axi_clock_converter (
   .s_axi_rlast    ( pcie_dwidth_axi_rlast    ),
   .s_axi_rvalid   ( pcie_dwidth_axi_rvalid   ),
   .s_axi_rready   ( pcie_dwidth_axi_rready   )
+);
+`elsif NEXYS_VIDEO
+
+fan_ctrl i_fan_ctrl (
+    .clk_i         ( clk        ),
+    .rst_ni        ( ndmreset_n ),
+    .pwm_setting_i ( '1         ),
+    .fan_pwm_o     ( fan_pwm    )
+);
+
+xlnx_mig_7_ddr3 i_ddr (
+    .sys_clk_i       ( sys_clk_i      ),
+    .clk_ref_i       ( clk_200MHz_ref ),
+    .ddr3_dq,
+    .ddr3_dqs_n,
+    .ddr3_dqs_p,
+    .ddr3_addr,
+    .ddr3_ba,
+    .ddr3_ras_n,
+    .ddr3_cas_n,
+    .ddr3_we_n,
+    .ddr3_reset_n,
+    .ddr3_ck_p,
+    .ddr3_ck_n,
+    .ddr3_cke,
+    .ddr3_dm,
+    .ddr3_odt,
+    .mmcm_locked     (                ), // keep open
+    .app_sr_req      ( '0             ),
+    .app_ref_req     ( '0             ),
+    .app_zq_req      ( '0             ),
+    .app_sr_active   (                ), // keep open
+    .app_ref_ack     (                ), // keep open
+    .app_zq_ack      (                ), // keep open
+    .ui_clk          ( ddr_clock_out  ),
+    .ui_clk_sync_rst ( ddr_sync_reset ),
+    .aresetn         ( ndmreset_n     ),
+    .s_axi_awid,
+    .s_axi_awaddr    ( s_axi_awaddr[28:0] ),
+    .s_axi_awlen,
+    .s_axi_awsize,
+    .s_axi_awburst,
+    .s_axi_awlock,
+    .s_axi_awcache,
+    .s_axi_awprot,
+    .s_axi_awqos,
+    .s_axi_awvalid,
+    .s_axi_awready,
+    .s_axi_wdata,
+    .s_axi_wstrb,
+    .s_axi_wlast,
+    .s_axi_wvalid,
+    .s_axi_wready,
+    .s_axi_bready,
+    .s_axi_bid,
+    .s_axi_bresp,
+    .s_axi_bvalid,
+    .s_axi_arid,
+    .s_axi_araddr     ( s_axi_araddr[28:0] ),
+    .s_axi_arlen,
+    .s_axi_arsize,
+    .s_axi_arburst,
+    .s_axi_arlock,
+    .s_axi_arcache,
+    .s_axi_arprot,
+    .s_axi_arqos,
+    .s_axi_arvalid,
+    .s_axi_arready,
+    .s_axi_rready,
+    .s_axi_rid,
+    .s_axi_rdata,
+    .s_axi_rresp,
+    .s_axi_rlast,
+    .s_axi_rvalid,
+    .init_calib_complete (            ), // keep open
+    .device_temp         (            ), // keep open
+    .sys_rst             ( cpu_resetn )
 );
 `endif
 

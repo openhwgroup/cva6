@@ -1,25 +1,25 @@
 /dts-v1/;
 
 / {
-  #address-cells = <1>;
-  #size-cells = <1>;
+  #address-cells = <2>;
+  #size-cells = <2>;
   compatible = "eth,ariane-bare-dev";
   model = "eth,ariane-bare";
   chosen {
-    stdout-path = "/soc/uart@10000000:115200";
+    stdout-path = "/soc/uart@10000000:UART_BITRATE";
   };
   cpus {
     #address-cells = <1>;
     #size-cells = <0>;
-    timebase-frequency = <25000000>; // 25 MHz
+    timebase-frequency = <HALF_CLOCK_FREQUENCY>;
     CPU0: cpu@0 {
-      clock-frequency = <50000000>; // 50 MHz
+      clock-frequency = <CLOCK_FREQUENCY>;
       device_type = "cpu";
       reg = <0>;
       status = "okay";
       compatible = "eth, ariane", "riscv";
-      riscv,isa = "rv32ima";
-      mmu-type = "riscv,sv32";
+      riscv,isa = "rv64imafdc";
+      mmu-type = "riscv,sv39";
       tlb-split;
       // HLIC - hart local interrupt controller
       CPU0_intc: interrupt-controller {
@@ -31,7 +31,7 @@
   };
   memory@80000000 {
     device_type = "memory";
-    reg = <0x80000000 0x08000000>;
+    reg = <0x0 0x80000000 0x0 DRAM_SIZE_64>;
   };
   leds {
     compatible = "gpio-leds";
@@ -42,14 +42,14 @@
     };
   };
   L26: soc {
-    #address-cells = <1>;
-    #size-cells = <1>;
+    #address-cells = <2>;
+    #size-cells = <2>;
     compatible = "eth,ariane-bare-soc", "simple-bus";
     ranges;
     clint@2000000 {
       compatible = "riscv,clint0";
       interrupts-extended = <&CPU0_intc 3 &CPU0_intc 7>;
-      reg = <0x2000000 0xc0000>;
+      reg = <0x0 0x2000000 0x0 0xc0000>;
       reg-names = "control";
     };
     PLIC0: interrupt-controller@c000000 {
@@ -58,7 +58,7 @@
       compatible = "riscv,plic0";
       interrupt-controller;
       interrupts-extended = <&CPU0_intc 11 &CPU0_intc 9>;
-      reg = <0xc000000 0x4000000>;
+      reg = <0x0 0xc000000 0x0 0x4000000>;
       riscv,max-priority = <7>;
       riscv,ndev = <30>;
     };
@@ -68,14 +68,14 @@
     // debug-controller@0 {
     //   compatible = "riscv,debug-013";
     //   interrupts-extended = <&CPU0_intc 65535>;
-    //   reg = <0x0 0x1000>;
+    //   reg = <0x0 0x0 0x0 0x1000>;
     //   reg-names = "control";
     // };
     uart@10000000 {
       compatible = "ns16550a";
-      reg = < 0x10000000 0x1000>;
-      clock-frequency = <50000000>;
-      current-speed = <115200>;
+      reg = <0x0 0x10000000 0x0 0x1000>;
+      clock-frequency = <CLOCK_FREQUENCY>;
+      current-speed = <UART_BITRATE>;
       interrupt-parent = <&PLIC0>;
       interrupts = <1>;
       reg-shift = <2>; // regs are spaced on 32 bit boundary
@@ -84,7 +84,7 @@
     timer@18000000 {
       compatible = "pulp,apb_timer";
       interrupts = <0x00000004 0x00000005 0x00000006 0x00000007>;
-      reg = <0x18000000 0x00001000>;
+      reg = <0x00000000 0x18000000 0x00000000 0x00001000>;
       interrupt-parent = <&PLIC0>;
       reg-names = "control";
     };
@@ -94,7 +94,7 @@
       #size-cells = <0>;
       interrupt-parent = <&PLIC0>;
       interrupts = < 2 2 >;
-      reg = < 0x20000000 0x1000 >;
+      reg = < 0x0 0x20000000 0x0 0x1000 >;
       xlnx,family = "kintex7";
       xlnx,fifo-exist = <0x1>;
       xlnx,num-ss-bits = <0x1>;
@@ -124,13 +124,13 @@
       interrupt-parent = <&PLIC0>;
       interrupts = <3 0>;
       local-mac-address = [00 18 3e 02 e3 7f]; // This needs to change if more than one GenesysII on a VLAN
-      reg = <0x30000000 0x8000>;
+      reg = <0x0 0x30000000 0x0 0x8000>;
     };
     xlnx_gpio: gpio@40000000 {
       #gpio-cells = <2>;
       compatible = "xlnx,xps-gpio-1.00.a";
       gpio-controller ;
-      reg = <0x40000000 0x10000 >;
+      reg = <0x0 0x40000000 0x0 0x10000 >;
       xlnx,all-inputs = <0x0>;
       xlnx,all-inputs-2 = <0x0>;
       xlnx,dout-default = <0x0>;
@@ -144,3 +144,6 @@
     };
   };
 };
+// delete ethernet device if disabled
+/delete-node/ &eth; // DELETE_ETH
+

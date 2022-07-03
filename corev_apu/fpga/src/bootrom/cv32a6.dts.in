@@ -6,14 +6,14 @@
   compatible = "eth,ariane-bare-dev";
   model = "eth,ariane-bare";
   chosen {
-    stdout-path = "/soc/uart@10000000:115200";
+    stdout-path = "/soc/uart@10000000:UART_BITRATE";
   };
   cpus {
     #address-cells = <1>;
     #size-cells = <0>;
-    timebase-frequency = <25000000>; // 25 MHz
+    timebase-frequency = <HALF_CLOCK_FREQUENCY>;
     CPU0: cpu@0 {
-      clock-frequency = <50000000>; // 50 MHz
+      clock-frequency = <CLOCK_FREQUENCY>;
       device_type = "cpu";
       reg = <0>;
       status = "okay";
@@ -31,7 +31,7 @@
   };
   memory@80000000 {
     device_type = "memory";
-    reg = <0x80000000 0x08000000>;
+    reg = <0x80000000 DRAM_SIZE_32>;
   };
   leds {
     compatible = "gpio-leds";
@@ -74,8 +74,8 @@
     uart@10000000 {
       compatible = "ns16550a";
       reg = < 0x10000000 0x1000>;
-      clock-frequency = <50000000>;
-      current-speed = <115200>;
+      clock-frequency = <CLOCK_FREQUENCY>;
+      current-speed = <UART_BITRATE>;
       interrupt-parent = <&PLIC0>;
       interrupts = <1>;
       reg-shift = <2>; // regs are spaced on 32 bit boundary
@@ -144,3 +144,6 @@
     };
   };
 };
+// delete ethernet device if disabled
+/delete-node/ &eth; // DELETE_ETH
+
