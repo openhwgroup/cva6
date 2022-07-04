@@ -1,7 +1,7 @@
 name: CVA6 bug
 description: Create a CVA6 bug
 title: "[BUG] <title>"
-labels: ["type:bug"]
+labels: ["Type:Bug"]
 body:
 - type: checkboxes
   attributes:
