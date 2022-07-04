@@ -6,7 +6,7 @@ body:
 - type: checkboxes
   attributes:
     label: Is there an existing CVA6 bug for this?
-    description: Please search to see if an issur already exists for the bug you need to create
+    description: Please search to see if an issue already exist for the bug you need to create
     options:
     - label: I have searched the existing bug issues
       required: true
