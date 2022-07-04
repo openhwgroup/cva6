@@ -22,6 +22,10 @@ body:
     description: What are the criteria for completion of this task?
   validations:
     required: true
+- type: textarea
+  attributes:
+    label: Associated PRs
+    description: Use this area to provide a link to PRs used to complete this task.
 - type: markdown
   attributes:
     value: |
