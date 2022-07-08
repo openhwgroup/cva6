@@ -61,7 +61,7 @@ The key Python variables are:
 * `PROJECT_NAME`: a free-form string that identifies the project targeted by the verification plan
 * `SAVED_DB_LOCATION`: path to the databases (either a file name, or a directory name).  It is constructed
   from the value of `PLATFORM_TOP_DIR` in `vptool/vp_config.py` so that it can be tailored to any
-  organizaion- or site-specific directory naming conventions.
+  organization- or site-specific directory naming conventions.
 * `SPLIT_SAVE`: if set to 'True', then verification plan data associated with each Feature is stored
   in separate `VP_IPnnn.pck` files in the directory designated by `SAVED_IP_LOCATION`.
   If `SPLIT_SAVE` is set to `False`, the verification plan data for **ALL** Features will be stored
@@ -84,11 +84,11 @@ shell script named `vptool-example.sh` which can be invoked from any location.
 - vptool                      the code of `VPTOOL`
 - vptool-example              an example of `VPTOOL` configuration with a verification database
   - runme.sh                  a shell script to run `VPTOOL` with the example database
-  - example_database          Verification Plan data and `VPTOOL` administrative files for the example
+  - example-database          Verification Plan data and `VPTOOL` administrative files for the example
     - vptool                  location of `VPTOOL` configuration and lock files
       - vp_config.py          `VPTOOL` configuration file for the example
-      - 
-    - ip_dir                  directory holding the verification Plan data
+      - locked_ip.pick        `VPTOOL` lock file (identifies which user has exclusive access to which feature)
+    - ip_dir                  directory holding the Verification Plan database
       - core-v                arbitrary subdirectory level (to accommodate site/organization conventions)
         - cva6                another arbitrary subdirectory level
           - VP_IP000.pck      database file of first feature
@@ -99,11 +99,11 @@ shell script named `vptool-example.sh` which can be invoked from any location.
 
 - Start VPTOOL:
 
-    sh vptool-example.sh
+    sh vptool-example/runme.sh
 
   This will load all per-feature Verification Plans present in the `SAVED_DB_LOCATION` variable.
-  The corresponding path is `vplan_database/ip_dir/*.pck` as defined in the configuration file
-  `vptool-0.8.0/vp_config.py`.
+  The corresponding path is `vptool-example/example-database/ip_dir/core-v/cva6/*.pck` as defined
+  in the configuration file `vptool-example/example-database/vptool/vp_config.py`.
 
   The New and Delete buttons at the bottom of the Feature, Sub-Feature and Verification Item selectors
   are greyed out except for the `New` button of the Feature selector.  This indicates that the user does
