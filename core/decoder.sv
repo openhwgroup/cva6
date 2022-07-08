@@ -136,7 +136,7 @@ module decoder import ariane_pkg::*; (
                                 12'b111_1011_0010: begin
                                     instruction_o.op = ariane_pkg::DRET;
                                     // check that we are in debug mode when executing this instruction
-                                    illegal_instr = (!debug_mode_i) ? 1'b1 : 1'b0;
+                                    illegal_instr = (!debug_mode_i) ? 1'b1 : illegal_instr;
                                 end
                                 // WFI
                                 12'b1_0000_0101: begin
