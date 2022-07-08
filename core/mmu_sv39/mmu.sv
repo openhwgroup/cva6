@@ -397,8 +397,12 @@ module mmu import ariane_pkg::*; #(
                 if (ptw_access_exception) begin
                     // an error makes the translation valid
                     lsu_valid_o = 1'b1;
-                    // the page table walker can only throw page faults
-                    lsu_exception_o = {riscv::LD_ACCESS_FAULT, {{riscv::XLEN-riscv::PLEN{1'b0}}, ptw_bad_paddr}, 1'b1};
+                    // Any fault of the page table walk should be based of the original access type
+                    if (lsu_is_store_q) begin
+                        lsu_exception_o = {riscv::ST_ACCESS_FAULT, {{riscv::XLEN-riscv::VLEN{1'b0}}, lsu_vaddr_n}, 1'b1};
+                    end else begin
+                        lsu_exception_o = {riscv::LD_ACCESS_FAULT, {{riscv::XLEN-riscv::VLEN{1'b0}}, lsu_vaddr_n}, 1'b1};
+                    end
                 end
             end
         end
