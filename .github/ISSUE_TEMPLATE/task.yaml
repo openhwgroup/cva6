@@ -1,11 +1,11 @@
 name: CVA6 Task
-description: Create a CVA6-SDK Project Task
+description: Create a CVA6 Project Task
 title: "[TASK] <title>"
 labels: ["task"]
 body:
 - type: checkboxes
   attributes:
-    label: Is there an existing CVA6-SDK task for this?
+    label: Is there an existing CVA6 task for this?
     description: Please search to see if a task issue already exists for the task you need to create
     options:
     - label: I have searched the existing task issues
@@ -22,6 +22,10 @@ body:
     description: What are the criteria for completion of this task?
   validations:
     required: true
+- type: textarea
+  attributes:
+    label: Associated PRs
+    description: Use this area to provide a link to PRs used to complete this task.
 - type: markdown
   attributes:
     value: |
