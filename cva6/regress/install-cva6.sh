@@ -18,7 +18,6 @@ if ! [ -n "$RISCV" ]; then
 fi
 
 # install Verilator
-
 if ! [ -n "$VERILATOR_ROOT" ]; then
   export VERILATOR_ROOT=$TOP/verilator-4.110/
 fi
