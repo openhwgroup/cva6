@@ -114,7 +114,7 @@ def read_verilator_trace(path, full_trace):
   # true. Otherwise, we are in state EFFECT if instr is not None, otherwise we
   # are in state INSTR.
 
-  end_trampoline_re = re.compile(r'core.*: 0x0000000000010014 ')
+  end_trampoline_re = re.compile(r'core.*: 0x0000000080000000 ')
   start_debug_it_re = re.compile(r'core.*: 0x0000000000000800 ')
   stop_debug_it_re  = re.compile(r'core.*: 0x0000000000000890 ')
 
@@ -128,7 +128,6 @@ def read_verilator_trace(path, full_trace):
         # The TRAMPOLINE state
         if end_trampoline_re.match(line):
           in_trampoline = False
-        continue
 
       if not in_trampoline:
         if in_debug:
