@@ -430,7 +430,7 @@ def run_assembly(asm_test, iss_yaml, isa, target, mabi, gcc_opts, iss_opts, outp
     log_list.append(log)
     base_cmd = parse_iss_yaml(iss, iss_yaml, isa, target, setting_dir, debug_cmd)
     cmd = get_iss_cmd(base_cmd, elf, target, log)
-    logging.info("[%0s] Running ISS simulation: %s, %s" % (iss, cmd, elf))
+    logging.info("[%0s] Running ISS simulation: %s" % (iss, cmd))
     run_cmd(cmd, 300, debug_cmd = debug_cmd)
     logging.info("[%0s] Running ISS simulation: %s ...done" % (iss, elf))
   if len(iss_list) == 2:
@@ -505,8 +505,8 @@ def run_elf(c_test, iss_yaml, isa, target, mabi, gcc_opts, iss_opts, output_dir,
     log = ("%s/%s_sim/%s.log" % (output_dir, iss, c))
     log_list.append(log)
     base_cmd = parse_iss_yaml(iss, iss_yaml, isa, target, setting_dir, debug_cmd)
-    logging.info("[%0s] Running ISS simulation: %s" % (iss, elf))
     cmd = get_iss_cmd(base_cmd, elf, target, log)
+    logging.info("[%0s] Running ISS simulation: %s" % (iss, cmd))
     if "veri" in iss: ratio = 35
     else: ratio = 1
     run_cmd(cmd, 50000*ratio, debug_cmd = debug_cmd)
@@ -564,8 +564,8 @@ def run_c(c_test, iss_yaml, isa, target, mabi, gcc_opts, iss_opts, output_dir,
     log = ("%s/%s_sim/%s.log" % (output_dir, iss, c))
     log_list.append(log)
     base_cmd = parse_iss_yaml(iss, iss_yaml, isa, target, setting_dir, debug_cmd)
-    logging.info("[%0s] Running ISS simulation: %s" % (iss, elf))
     cmd = get_iss_cmd(base_cmd, elf, target, log)
+    logging.info("[%0s] Running ISS simulation: %s" % (iss, cmd))
     run_cmd(cmd, 100, debug_cmd = debug_cmd)
     logging.info("[%0s] Running ISS simulation: %s ...done" % (iss, elf))
   if len(iss_list) == 2:
@@ -946,8 +946,6 @@ def main():
     fh.setFormatter(formatter)
     logg.addHandler(fh)
 
-    logging.info("Arguments: \n" + str(args))
-
     # Load configuration from the command line and the configuration file.
     cfg = load_config(args, cwd)
     # Create output directory
@@ -1092,6 +1090,14 @@ def main():
         for test_entry in c_directed_list:
           gcc_opts = args.gcc_opts
           gcc_opts += test_entry.get('gcc_opts', '')
+
+          if 'sim_do' in test_entry:
+            sim_do = test_entry['sim_do'].split(';')
+            with open("sim.do", "w") as fd:
+              for cmd in sim_do:
+                fd.write(cmd + "\n")
+            logging.info('sim.do: %s' % sim_do)
+
           path_c_test = os.path.expanduser(test_entry.get('c_tests'))
           if path_c_test:
             # path_c_test is a directory
