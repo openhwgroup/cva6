@@ -158,7 +158,7 @@ module decoder import ariane_pkg::*; (
                                     if (instr.instr[31:25] == 7'b1001) begin
                                         // check privilege level, SFENCE.VMA can only be executed in M/S mode
                                         // otherwise decode an illegal instruction
-                                        illegal_instr    = (priv_lvl_i inside {riscv::PRIV_LVL_M, riscv::PRIV_LVL_S}) ? illegal_instr : 1'b1;
+                                        illegal_instr    = ((priv_lvl_i inside {riscv::PRIV_LVL_M, riscv::PRIV_LVL_S}) && instr.itype.rd == '0) ? 1'b0 : 1'b1;
                                         instruction_o.op = ariane_pkg::SFENCE_VMA;
                                         // check TVM flag and intercept SFENCE.VMA call if necessary
                                         if (priv_lvl_i == riscv::PRIV_LVL_S && tvm_i)
