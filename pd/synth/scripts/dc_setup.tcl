@@ -11,6 +11,7 @@
 # Variables common to all reference methodology scripts
 set PERIOD                        [getenv PERIOD];
 set DESIGN_NAME                   [getenv DESIGN_NAME]  ;#  The name of the top-level design
+set TARGET                        [getenv TARGET];
 set TECH                          [getenv TECH_NAME];
 set techno                        [getenv TECH_NAME];
 set FOUNDRY_PATH                  [getenv FOUNDRY_PATH];

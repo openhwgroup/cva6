@@ -34,10 +34,10 @@ link
 create_clock [get_ports $clk_port] -name $clk_name -period $clk_period
 
 #set_dont_touch to keep sram as black boxes
-set_dont_touch i_cva6/i_cache_subsystem/i_wt_dcache/i_wt_dcache_mem/gen_tag_srams[*].i_tag_sram
-set_dont_touch i_cva6/i_cache_subsystem/i_wt_dcache/i_wt_dcache_mem/gen_data_banks[*].i_data_sram
-set_dont_touch i_cva6/i_cache_subsystem/i_cva6_icache/gen_sram[*].data_sram
-set_dont_touch i_cva6/i_cache_subsystem/i_cva6_icache/gen_sram[*].tag_sram
+set_dont_touch i_cache_subsystem/i_wt_dcache/i_wt_dcache_mem/gen_tag_srams[*].i_tag_sram
+set_dont_touch i_cache_subsystem/i_wt_dcache/i_wt_dcache_mem/gen_data_banks[*].i_data_sram
+set_dont_touch i_cache_subsystem/i_cva6_icache/gen_sram[*].data_sram
+set_dont_touch i_cache_subsystem/i_cva6_icache/gen_sram[*].tag_sram
 
 write -hierarchy -format ddc -output ${DCRM_ELABORATED_DESIGN_DDC_OUTPUT_FILE}
 
@@ -47,15 +47,15 @@ change_name -rule verilog -hier
 set_fix_multiple_port_nets -all -buffer_constants
 
 #constraint the timing to and from the sram black boxes
-set_input_delay -clock main_clk -max $input_delay i_cva6/i_cache_subsystem/i_wt_dcache/i_wt_dcache_mem/gen_tag_srams_*__i_tag_sram/gen_cut_*__gen_mem_i_tc_sram_wrapper/rdata_o[*]
-set_input_delay -clock main_clk -max $input_delay i_cva6/i_cache_subsystem/i_wt_dcache/i_wt_dcache_mem/gen_data_banks_*__i_data_sram/gen_cut_*__gen_mem_i_tc_sram_wrapper/rdata_o[*]
-set_input_delay -clock main_clk -max $input_delay i_cva6/i_cache_subsystem/i_cva6_icache/gen_sram_*__data_sram/gen_cut_*__gen_mem_i_tc_sram_wrapper/rdata_o[*]
-set_input_delay -clock main_clk -max $input_delay i_cva6/i_cache_subsystem/i_cva6_icache/gen_sram_*__tag_sram/gen_cut_*__gen_mem_i_tc_sram_wrapper/rdata_o[*]
+set_input_delay -clock main_clk -max $input_delay i_cache_subsystem/i_wt_dcache/i_wt_dcache_mem/gen_tag_srams_*__i_tag_sram/gen_cut_*__gen_mem_i_tc_sram_wrapper/rdata_o[*]
+set_input_delay -clock main_clk -max $input_delay i_cache_subsystem/i_wt_dcache/i_wt_dcache_mem/gen_data_banks_*__i_data_sram/gen_cut_*__gen_mem_i_tc_sram_wrapper/rdata_o[*]
+set_input_delay -clock main_clk -max $input_delay i_cache_subsystem/i_cva6_icache/gen_sram_*__data_sram/gen_cut_*__gen_mem_i_tc_sram_wrapper/rdata_o[*]
+set_input_delay -clock main_clk -max $input_delay i_cache_subsystem/i_cva6_icache/gen_sram_*__tag_sram/gen_cut_*__gen_mem_i_tc_sram_wrapper/rdata_o[*]
 
-set_output_delay $output_delay -max -clock main_clk i_cva6/i_cache_subsystem/i_wt_dcache/i_wt_dcache_mem/gen_tag_srams_*__i_tag_sram/gen_cut_*__gen_mem_i_tc_sram_wrapper/addr_i[*]
-set_output_delay $output_delay -max -clock main_clk i_cva6/i_cache_subsystem/i_wt_dcache/i_wt_dcache_mem/gen_data_banks_*__i_data_sram/gen_cut_*__gen_mem_i_tc_sram_wrapper/addr_i[*]
-set_output_delay $output_delay -max -clock main_clk i_cva6/i_cache_subsystem/i_cva6_icache/gen_sram_*__data_sram/gen_cut_*__gen_mem_i_tc_sram_wrapper/addr_i[*]
-set_output_delay $output_delay -max -clock main_clk i_cva6/i_cache_subsystem/i_cva6_icache/gen_sram_*__tag_sram/gen_cut_*__gen_mem_i_tc_sram_wrapper/addr_i[*]
+set_output_delay $output_delay -max -clock main_clk i_cache_subsystem/i_wt_dcache/i_wt_dcache_mem/gen_tag_srams_*__i_tag_sram/gen_cut_*__gen_mem_i_tc_sram_wrapper/addr_i[*]
+set_output_delay $output_delay -max -clock main_clk i_cache_subsystem/i_wt_dcache/i_wt_dcache_mem/gen_data_banks_*__i_data_sram/gen_cut_*__gen_mem_i_tc_sram_wrapper/addr_i[*]
+set_output_delay $output_delay -max -clock main_clk i_cache_subsystem/i_cva6_icache/gen_sram_*__data_sram/gen_cut_*__gen_mem_i_tc_sram_wrapper/addr_i[*]
+set_output_delay $output_delay -max -clock main_clk i_cache_subsystem/i_cva6_icache/gen_sram_*__tag_sram/gen_cut_*__gen_mem_i_tc_sram_wrapper/addr_i[*]
 
 # Check the current design for consistency
 check_design -summary > ${DCRM_CHECK_DESIGN_REPORT}
@@ -69,17 +69,18 @@ write -format verilog -hierarchy -output ${DESIGN_NAME}_synth.v
 write -format ddc     -hierarchy -output ${DCRM_FINAL_DDC_OUTPUT_FILE}
 
 report_timing -nworst 10  >  ${DCRM_FINAL_TIMING_REPORT}
-report_timing -through i_cva6/i_cache_subsystem/i_wt_dcache/i_wt_dcache_mem/gen_tag_srams_*__i_tag_sram/gen_cut_*__gen_mem_i_ram/rdata_o[*] >>  ${DCRM_FINAL_TIMING_REPORT}
-report_timing -through i_cva6/i_cache_subsystem/i_wt_dcache/i_wt_dcache_mem/gen_data_banks_*__i_data_sram/gen_cut_*__gen_mem_i_ram/rdata_o[*] >>  ${DCRM_FINAL_TIMING_REPORT}
-report_timing -through i_cva6/i_cache_subsystem/i_cva6_icache/gen_sram_*__data_sram/gen_cut_*__gen_mem_i_ram/rdata_o[*] >>  ${DCRM_FINAL_TIMING_REPORT}
-report_timing -through i_cva6/i_cache_subsystem/i_cva6_icache/gen_sram_*__tag_sram/gen_cut_*__gen_mem_i_ram/rdata_o[*] >>  ${DCRM_FINAL_TIMING_REPORT}
-report_timing -through i_cva6/i_cache_subsystem/i_wt_dcache/i_wt_dcache_mem/gen_tag_srams_*__i_tag_sram/addr_i[*] >>  ${DCRM_FINAL_TIMING_REPORT}
-report_timing -through i_cva6/i_cache_subsystem/i_wt_dcache/i_wt_dcache_mem/gen_data_banks_*__i_data_sram/addr_i[*] >>  ${DCRM_FINAL_TIMING_REPORT}
-report_timing -through i_cva6/i_cache_subsystem/i_cva6_icache/gen_sram_*__data_sram/addr_i[*] >>  ${DCRM_FINAL_TIMING_REPORT}
-report_timing -through i_cva6/i_cache_subsystem/i_cva6_icache/gen_sram_*__tag_sram/addr_i[*] >>  ${DCRM_FINAL_TIMING_REPORT}
+report_timing -through i_cache_subsystem/i_wt_dcache/i_wt_dcache_mem/gen_tag_srams_*__i_tag_sram/gen_cut_*__gen_mem_i_ram/rdata_o[*] >>  ${DCRM_FINAL_TIMING_REPORT}
+report_timing -through i_cache_subsystem/i_wt_dcache/i_wt_dcache_mem/gen_data_banks_*__i_data_sram/gen_cut_*__gen_mem_i_ram/rdata_o[*] >>  ${DCRM_FINAL_TIMING_REPORT}
+report_timing -through i_cache_subsystem/i_cva6_icache/gen_sram_*__data_sram/gen_cut_*__gen_mem_i_ram/rdata_o[*] >>  ${DCRM_FINAL_TIMING_REPORT}
+report_timing -through i_cache_subsystem/i_cva6_icache/gen_sram_*__tag_sram/gen_cut_*__gen_mem_i_ram/rdata_o[*] >>  ${DCRM_FINAL_TIMING_REPORT}
+report_timing -through i_cache_subsystem/i_wt_dcache/i_wt_dcache_mem/gen_tag_srams_*__i_tag_sram/addr_i[*] >>  ${DCRM_FINAL_TIMING_REPORT}
+report_timing -through i_cache_subsystem/i_wt_dcache/i_wt_dcache_mem/gen_data_banks_*__i_data_sram/addr_i[*] >>  ${DCRM_FINAL_TIMING_REPORT}
+report_timing -through i_cache_subsystem/i_cva6_icache/gen_sram_*__data_sram/addr_i[*] >>  ${DCRM_FINAL_TIMING_REPORT}
+report_timing -through i_cache_subsystem/i_cva6_icache/gen_sram_*__tag_sram/addr_i[*] >>  ${DCRM_FINAL_TIMING_REPORT}
 
 report_area -hier -nosplit > ${DCRM_FINAL_AREA_REPORT}
 write_parasitics -output ${DCRM_FINAL_SPEF_OUTPUT_FILE}
 write_sdc ${DCRM_FINAL_SDC_OUTPUT_FILE}
+write_sdf ${DESIGN_NAME}_synth.v.sdf
 
 exit
