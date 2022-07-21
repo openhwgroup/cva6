@@ -160,23 +160,9 @@ vcs-uvm:
 generate_cov_dash:
 	urg -dir $(VCS_WORK_DIR)/simv.vdb
 
-vcs_gate_comp:
-	@echo "[VCS] Building Model"
-	mkdir -p $(VCS_WORK_DIR)
-	cd $(VCS_WORK_DIR) && vcs $(ALL_VCS_FLAGS) -f $(FLIST_CORE)_gate -f $(FLIST_TB) $(isscomp_opts)
-
-vcs_gate_run:
-	cd $(VCS_WORK_DIR)/ && $(VCS_WORK_DIR)/simv $(issrun_opts)
-	mv $(VCS_WORK_DIR)/trace_rvfi_hart_00.dasm $(CORE_V_VERIF)/cva6/sim/
-
 vcs_clean_all:
 	@echo "[VCS] Cleanup (entire vcs_work dir)"
 	rm -rf $(CORE_V_VERIF)/cva6/sim/vcs_results/ verdiLog/ simv* *.daidir *.vpd *.db csrc ucli.key vc_hdrs.h novas* inter.fsdb uart
-
-vcs-gate:
-	make vcs_gate_comp
-	make vcs_gate_run
-	$(tool_path)/spike-dasm < ./trace_rvfi_hart_00.dasm > $(log)
 
 ###############################################################################
 # Common targets and rules

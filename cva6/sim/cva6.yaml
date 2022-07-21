@@ -42,7 +42,7 @@
   tool_path: SPIKE_PATH
   tb_path: TB_PATH
   cmd: >
-    make vcs-gate target=<target> cov=${cov} elf=<elf> tool_path=<tool_path> isscomp_opts=<isscomp_opts> issrun_opts=<issrun_opts> isspostrun_opts=<isspostrun_opts> log=<log>
+    make vcs-uvm target=<target>_gate cov=${cov} elf=<elf> tool_path=<tool_path> isscomp_opts=<isscomp_opts> issrun_opts=<issrun_opts> isspostrun_opts=<isspostrun_opts> log=<log>
 
 - iss: vcs-uvm
   path_var: RTL_PATH
