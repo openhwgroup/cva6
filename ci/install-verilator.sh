@@ -7,13 +7,14 @@ if [ -z ${NUM_JOBS} ]; then
     NUM_JOBS=1
 fi
 
+VERSION="4.224"
+
 if [ ! -e "$VERILATOR_ROOT/bin/verilator" ]; then
     echo "Installing Verilator"
-    rm -f verilator*.tgz
-    wget https://www.veripool.org/ftp/verilator-4.014.tgz
-    tar xzf verilator*.tgz
-    rm -f verilator*.tgz
-    cd verilator-4.014
+    wget https://github.com/verilator/verilator/archive/refs/tags/v${VERSION}.tar.gz
+    tar xzf v${VERSION}.tar.gz
+    rm -f v${VERSION}.tar.gz
+    cd verilator-${VERSION}
     mkdir -p $VERILATOR_ROOT
     # copy scripts
     autoconf && ./configure --prefix="$VERILATOR_ROOT" && make -j${NUM_JOBS}

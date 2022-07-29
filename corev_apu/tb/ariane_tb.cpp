@@ -20,6 +20,7 @@
 #include "verilated.h"
 #include "verilated_vcd_c.h"
 #include "Variane_testharness__Dpi.h"
+#include "Variane_testharness___024root.h"
 
 #include <stdio.h>
 #include <iostream>
@@ -320,7 +321,7 @@ done_processing:
 
   // Preload memory.
   size_t mem_size = 0xFFFFFF;
-  memif.read(0x80000000, mem_size, (void *)top->ariane_testharness__DOT__i_sram__DOT__gen_cut__BRA__0__KET____DOT__gen_mem__DOT__i_tc_sram_wrapper__DOT__i_tc_sram__DOT__sram);
+  memif.read(0x80000000, mem_size, (void *)top->rootp->ariane_testharness__DOT__i_sram__DOT__gen_cut__BRA__0__KET____DOT__gen_mem__DOT__i_tc_sram_wrapper__DOT__i_tc_sram__DOT__sram.m_storage);
   // memif.read(0x84000000, mem_size, (void *)top->ariane_testharness__DOT__i_sram__DOT__gen_cut__BRA__0__KET____DOT__gen_mem__DOT__gen_mem_user__DOT__i_tc_sram_wrapper_user__DOT__i_tc_sram__DOT__sram);
 
 #ifndef DROMAJO
