@@ -147,7 +147,7 @@ vcs_uvm_run:
 	$(VCS_WORK_DIR)/simv ${ALL_SIMV_UVM_FLAGS} \
 	++$(elf) \
 	+PRELOAD=$(elf) \
-	-sv_lib $(dpi-library)/ariane_dpi\
+	-sv_lib $(dpi-library)/ariane_dpi \
 	$(cov-run-opt) $(issrun_opts)&& \
 	mv $(VCS_WORK_DIR)/trace_rvfi_hart_00.dasm $(CORE_V_VERIF)/cva6/sim/
 
