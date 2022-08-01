@@ -78,10 +78,6 @@ module multiplier import ariane_pkg::*; (
 
     assign mult_valid      = mult_valid_i && (operator_i inside {MUL, MULH, MULHU, MULHSU, MULW, CLMUL, CLMULH, CLMULR});
 
-    // datapath
-    logic [riscv::XLEN*2-1:0] mult_result;
-    assign mult_result   = $signed({operand_a_i[riscv::XLEN-1] & sign_a, operand_a_i}) * $signed({operand_b_i[riscv::XLEN-1] & sign_b, operand_b_i});
-
     // Sign Select MUX
     always_comb begin
         sign_a = 1'b0;
