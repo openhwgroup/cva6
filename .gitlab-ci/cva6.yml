@@ -307,14 +307,12 @@ pub_synthesis:
     - source ./cva6/regress/install-cva6.sh
     - echo $SYN_DCSHELL_BASHRC; source $SYN_DCSHELL_BASHRC
     - make -C core-v-cores/cva6/pd/synth cva6_synth PERIOD=$(echo $PERIOD) NAND2_AREA=$(echo $NAND2_AREA) FOUNDRY_PATH=$FOUNDRY_PATH TECH_NAME=$TECH_NAME INPUT_DELAY=$(echo $INPUT_DELAY) OUTPUT_DELAY=$(echo $OUTPUT_DELAY) TARGET=$TARGET
-    - mv core-v-cores/cva6/pd/synth/ariane_synth_modified.v artifacts/ariane_synth_modified_$TARGET.v
-    - mv core-v-cores/cva6/pd/synth/ariane_synth.v artifacts/ariane_synth_$TARGET.v
-    - python3 .gitlab-ci/scripts/report_synth.py core-v-cores/cva6/pd/synth/ariane/reports/$PERIOD/ariane_$(echo $TECH_NAME)_synth_area.rpt core-v-cores/cva6/pd/synth/synthesis_batch.log
+    - mv core-v-cores/cva6/pd/synth/cva6_${TARGET}_synth_modified.v artifacts/cva6_${TARGET}_synth_modified.v
+    - python3 .gitlab-ci/scripts/report_synth.py core-v-cores/cva6/pd/synth/cva6_${TARGET}/reports/$PERIOD/cva6_$(echo $TECH_NAME)_synth_area.rpt core-v-cores/cva6/pd/synth/synthesis_batch.log
   artifacts:
     when: always
     paths:
-      - artifacts/ariane_synth_modified_$TARGET.v
-      - artifacts/ariane_synth_$TARGET.v
+      - artifacts/cva6_${TARGET}_synth_modified.v
       - "artifacts/reports/*.yml"
 
 
@@ -325,9 +323,11 @@ pub_smoke-gate:
   needs:
     - job: pub_synthesis
       artifacts: true
+  parallel:
+    matrix:
+      - TARGET: [cv64a6_imafdc_sv39, cv32a60x]
   variables:
-    DV_TARGET: "cv64a6_imafdc_sv39"
-    DASHBOARD_JOB_TITLE: "Smoke Gate $DV_TARGET"
+    DASHBOARD_JOB_TITLE: "Smoke Gate $TARGET"
     DASHBOARD_JOB_DESCRIPTION: "Simple test to check netlist from ASIC synthesis"
     DASHBOARD_SORT_INDEX: 6
     DASHBOARD_JOB_CATEGORY: "Post Synthesis"
@@ -335,15 +335,17 @@ pub_smoke-gate:
     - mkdir -p artifacts/reports
     - python3 .gitlab-ci/scripts/report_fail.py
     - echo $LIB_VERILOG
+    - echo $FOUNDRY_PATH
+    - echo $PERIOD
+    - echo $TECH_NAME
     - source ./cva6/regress/install-cva6.sh
     - source ./cva6/regress/install-riscv-dv.sh
     - source ./cva6/regress/install-riscv-tests.sh
-    - mv artifacts/ariane_synth_modified_$DV_TARGET.v core-v-cores/cva6/pd/synth/ariane_synth_modified.v
-    - mv artifacts/ariane_synth_$DV_TARGET.v core-v-cores/cva6/pd/synth/ariane_synth.v
+    - mv artifacts/cva6_${TARGET}_synth_modified.v core-v-cores/cva6/pd/synth/cva6_${TARGET}_synth_modified.v
     - echo $SYN_VCS_BASHRC; source $SYN_VCS_BASHRC
     - cd cva6/sim
     - make vcs_clean_all
-    - python3 cva6.py --testlist=../tests/testlist_riscv-tests-cv64a6_imafdc_sv39-p.yaml --test rv64ui-p-ld --iss_yaml cva6.yaml --target cv64a6_imafdc_sv39 --iss=spike,vcs-gate $DV_OPTS
+    - python3 cva6.py --testlist=../tests/testlist_riscv-tests-cv32a60x-p.yaml --test rv32ui-p-lw --iss_yaml cva6.yaml --target $TARGET --iss=spike,vcs-gate $DV_OPTS
     - cd ../..
     - python3 .gitlab-ci/scripts/report_simu.py cva6/sim/logfile.log
   artifacts:
