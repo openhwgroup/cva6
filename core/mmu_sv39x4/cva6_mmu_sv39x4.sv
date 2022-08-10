@@ -98,7 +98,6 @@ module cva6_mmu_sv39x4 import ariane_pkg::*; #(
     logic                   ptw_error_at_g_st;    // PTW threw an exception at the G-Stage
     logic                   ptw_err_at_g_int_st;  // PTW threw an exception at the G-Stage during S-Stage translation
     logic                   ptw_access_exception; // PTW threw an access exception (PMPs)
-    logic [riscv::PLEN-1:0] ptw_bad_paddr; // PTW PMP exception bad physical addr
     logic [riscv::GPLEN-1:0] ptw_bad_gpaddr; // PTW guest page fault bad guest physical addr
 
     logic [riscv::VLEN-1:0] update_vaddr;
@@ -232,7 +231,6 @@ module cva6_mmu_sv39x4 import ariane_pkg::*; #(
         .req_port_o             ( req_port_o            ),
         .pmpcfg_i,
         .pmpaddr_i,
-        .bad_paddr_o            ( ptw_bad_paddr         ),
         .bad_gpaddr_o           ( ptw_bad_gpaddr        ),
         .*
     );
