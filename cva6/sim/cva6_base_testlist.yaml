@@ -1,0 +1,411 @@
+# Copyright 2022 Thales DIS SAS
+#
+# CVA6-specific testlist.  Written in the same format as riscv-dv testlists.
+#
+# Licensed under the Solderpad Hardware Licence, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# SPDX-License-Identifier: Apache-2.0 WITH SHL-2.0
+# You may obtain a copy of the License at https://solderpad.org/licenses/
+#
+# Original Author: Ayoub JALALI (ayoub.jalali@external.thalesgroup.com)
+
+# ================================================================================
+#                  Regression test list format
+# --------------------------------------------------------------------------------
+# test            : Assembly test name
+# description     : Description of this test
+# gen_opts        : Instruction generator options
+# iterations      : Number of iterations of this test
+# no_iss          : Enable/disable ISS simulator (Optional)
+# gen_test        : Test name used by the instruction generator
+# asm_tests       : Path to directed, hand-coded assembly test file or directory
+# c_tests         : Path to directed, hand-coded C test file or directory
+# rtl_test        : RTL simulation test name
+# cmp_opts        : Compile options passed to the instruction generator
+# sim_opts        : Simulation options passed to the instruction generator
+# no_post_compare : Enable/disable comparison of trace log and ISS log (Optional)
+# compare_opts    : Options for the RTL & ISS trace comparison
+# gcc_opts        : gcc compile options
+# --------------------------------------------------------------------------------
+
+- test: riscv_arithmetic_basic_test_no_comp
+  description: >
+    Arithmetic instruction test, no load/store/branch instructions no compressed
+  gen_opts: >
+    +instr_cnt=500
+    +num_of_sub_program=0
+    +directed_instr_0=riscv_int_numeric_corner_stream,4
+    +no_fence=1
+    +no_data_page=1
+    +no_branch_jump=1
+    +boot_mode=m
+    +no_csr_instr=1
+    +disable_compressed_instr=1
+  iterations: 2
+  gen_test: riscv_instr_base_test
+  rtl_test: core_base_test
+
+- test: riscv_arithmetic_basic_csr_test
+  description: >
+    Arithmetic instruction test, with CSR instructions
+  gen_opts: >
+    +instr_cnt=300
+    +num_of_sub_program=0
+    +directed_instr_0=riscv_int_numeric_corner_stream,5
+    +no_fence=1
+    +no_data_page=0
+    +use_push_data_section=1
+    +no_branch_jump=1
+    +boot_mode=m
+    +no_csr_instr=0
+    +enable_illegal_csr_instruction=1
+  iterations: 2
+  gen_test: riscv_instr_base_test
+  rtl_test: core_base_test
+
+- test: riscv_arithmetic_basic_rand_prvl
+  description: >
+    Arithmetic instruction test, no load/store/branch instructions
+  gen_opts: >
+    +instr_cnt=500
+    +num_of_sub_program=5
+    +directed_instr_0=riscv_int_numeric_corner_stream,4
+    +no_data_page=1
+    +no_branch_jump=1
+    +boot_mode=m
+    +enable_dummy_csr_write=1
+    +enable_access_invalid_csr_level=1
+  iterations: 2
+  gen_test: riscv_instr_base_test
+  rtl_test: core_base_test
+
+- test: riscv_arithmetic_basic_hint_csr_test
+  description: >
+    Arithmetic instruction test, no load/store/branch instructions
+  gen_opts: >
+    +instr_cnt=500
+    +num_of_sub_program=5
+    +directed_instr_0=riscv_int_numeric_corner_stream,4
+    +no_data_page=1
+    +no_branch_jump=1
+    +boot_mode=m
+    +no_csr_instr=0
+    +enable_illegal_csr_instruction=1
+    +hint_instr_ratio=500
+  iterations: 2
+  gen_test: riscv_instr_base_test
+  rtl_test: core_base_test
+
+- test: riscv_arithmetic_basic_illegal_csr
+  description: >
+    Arithmetic instruction test, no load/store/branch instructions
+  gen_opts: >
+    +instr_cnt=500
+    +num_of_sub_program=5
+    +directed_instr_0=riscv_int_numeric_corner_stream,4
+    +no_data_page=1
+    +no_branch_jump=1
+    +boot_mode=m
+    +no_csr_instr=0
+    +enable_illegal_csr_instruction=1
+    +illegal_instr_ratio=100
+  iterations: 2
+  gen_test: riscv_instr_base_test
+  rtl_test: core_base_test
+  
+- test: riscv_arithmetic_basic_comp_csr
+  description: >
+    Arithmetic instruction test, no load/store/branch instructions
+  gen_opts: >
+    +instr_cnt=500
+    +num_of_sub_program=5
+    +directed_instr_0=riscv_int_numeric_corner_stream,4
+    +no_data_page=1
+    +no_branch_jump=1
+    +boot_mode=m
+    +no_csr_instr=0
+    +enable_illegal_csr_instruction=1
+    +disable_compressed_instr=1
+  iterations: 2
+  gen_test: riscv_instr_base_test
+  rtl_test: core_base_test
+
+- test: riscv_arithmetic_basic_csr_dummy
+  description: >
+    Arithmetic instruction test, no load/store/branch instructions
+  gen_opts: >
+    +instr_cnt=500
+    +num_of_sub_program=5
+    +directed_instr_0=riscv_int_numeric_corner_stream,4
+    +no_data_page=1
+    +no_branch_jump=1
+    +boot_mode=m
+    +enable_dummy_csr_write=1
+    +no_csr_instr=0
+  iterations: 2
+  gen_test: riscv_instr_base_test
+  rtl_test: core_base_test
+
+- test: riscv_arithmetic_basic_dret
+  description: >
+    Arithmetic instruction test, no load/store/branch instructions
+  gen_opts: >
+    +instr_cnt=500
+    +num_of_sub_program=10
+    +directed_instr_0=riscv_int_numeric_corner_stream,4
+    +no_fence=1
+    +no_data_page=1
+    +no_branch_jump=1
+    +boot_mode=m
+    +no_csr_instr=1
+    +no_dret=0
+  iterations: 2
+  gen_test: riscv_instr_base_test
+  rtl_test: core_base_test
+  
+- test: riscv_arithmetic_basic_Randcsr_test
+  description: >
+    Arithmetic instruction test, no load/store/branch instructions
+  gen_opts: >
+    +instr_cnt=500
+    +num_of_sub_program=0
+    +directed_instr_0=riscv_int_numeric_corner_stream,10
+    +no_fence=0
+    +no_data_page=1
+    +no_branch_jump=1
+    +boot_mode=m
+    +no_csr_instr=0
+    +randomize_csr=1
+    +enable_acess_invalid_csr_level=1
+  iterations: 2
+  gen_test: riscv_instr_base_test
+  rtl_test: core_base_test
+  
+- test: riscv_arithmetic_basic_illegal_test
+  description: >
+    Arithmetic instruction test, no load/store/branch instructions
+  gen_opts: >
+    +instr_cnt=300
+    +num_of_sub_program=0
+    +directed_instr_0=riscv_int_numeric_corner_stream,4
+    +no_fence=1
+    +no_data_page=1
+    +no_branch_jump=1
+    +boot_mode=m
+    +no_csr_instr=1
+    +illegal_instr_ratio=100
+  iterations: 2
+  gen_test: riscv_instr_base_test
+  rtl_test: core_base_test
+
+- test: riscv_arithmetic_basic_illegal_fP
+  description: >
+    Arithmetic instruction test, no load/store/branch instructions
+  gen_opts: >
+    +instr_cnt=200
+    +num_of_sub_program=2
+    +directed_instr_0=riscv_int_numeric_corner_stream,5
+    +no_fence=1
+    +no_data_page=1
+    +no_branch_jump=1
+    +boot_mode=m
+    +no_csr_instr=1
+    +enable_floating_point=1
+    +illegal_instr_ratio=50
+  iterations: 2
+  gen_test: riscv_instr_base_test
+  rtl_test: core_base_test
+  
+- test: riscv_arithmetic_basic_floating_test
+  description: >
+    Arithmetic instruction test, no load/store/branch instructions
+  gen_opts: >
+    +instr_cnt=500
+    +num_of_sub_program=0
+    +directed_instr_0=riscv_int_numeric_corner_stream,5
+    +no_fence=0
+    +no_data_page=1
+    +no_branch_jump=1
+    +boot_mode=m
+    +no_csr_instr=1
+    +enable_floating_point=1	
+  iterations: 2
+  gen_test: riscv_instr_base_test
+  rtl_test: core_base_test
+
+- test: riscv_arithmetic_basic_csr_exp_fp
+  description: >
+    Arithmetic instruction test, no load/store/branch instructions
+  gen_opts: >
+    +instr_cnt=500
+    +num_of_sub_program=0
+    +directed_instr_0=riscv_int_numeric_corner_stream,5
+    +no_fence=0
+    +no_data_page=1
+    +no_branch_jump=1
+    +boot_mode=m
+    +no_csr_instr=0
+    +enable_illegal_csr_instruction=1
+    +enable_page_table_exception=1
+    +enable_floating_point=1
+  iterations: 2
+  gen_test: riscv_instr_base_test
+  rtl_test: core_base_test  
+
+- test: riscv_arithmetic_basic_hint_exp_fp
+  description: >
+    Arithmetic instruction test, no load/store/branch instructions
+  gen_opts: >
+    +instr_cnt=500
+    +num_of_sub_program=0
+    +directed_instr_0=riscv_int_numeric_corner_stream,5
+    +no_fence=0
+    +no_data_page=1
+    +no_branch_jump=1
+    +boot_mode=m
+    +no_csr_instr=0
+    +enable_illegal_csr_instruction=1
+    +enable_page_table_exception=1
+    +enable_floating_point=1
+    +hint_instr_ratio=500
+  iterations: 2
+  gen_test: riscv_instr_base_test
+  rtl_test: core_base_test  
+
+- test: riscv_arithmetic_basic_exp_csr
+  description: >
+    Arithmetic instruction test, no load/store/branch instructions
+  gen_opts: >
+    +instr_cnt=500
+    +num_of_sub_program=0
+    +directed_instr_0=riscv_int_numeric_corner_stream,5
+    +no_fence=0
+    +no_data_page=1
+    +no_branch_jump=1
+    +boot_mode=m
+    +no_csr_instr=0
+    +enable_illegal_csr_instruction=1
+    +enable_page_table_exception=1
+  iterations: 2
+  gen_test: riscv_instr_base_test
+  rtl_test: core_base_test  
+
+- test: riscv_arithmetic_basic_hint_illegal_csr
+  description: >
+    Arithmetic instruction test, no load/store/branch instructions
+  gen_opts: >
+    +instr_cnt=500
+    +num_of_sub_program=0
+    +directed_instr_0=riscv_int_numeric_corner_stream,5
+    +no_fence=0
+    +no_data_page=1
+    +no_branch_jump=1
+    +boot_mode=m
+    +no_csr_instr=0
+    +enable_illegal_csr_instruction=1
+    +illegal_instr_ratio=50
+    +hint_instr_ratio=150
+  iterations: 2
+  gen_test: riscv_instr_base_test
+  rtl_test: core_base_test 
+
+- test: riscv_arithmetic_basic_illegal_hint_test
+  description: >
+    Arithmetic instruction test, no load/store/branch instructions
+  gen_opts: >
+    +instr_cnt=500
+    +num_of_sub_program=5
+    +directed_instr_0=riscv_int_numeric_corner_stream,4
+    +no_fence=1
+    +no_data_page=1
+    +no_branch_jump=1
+    +no_load_store=1
+    +boot_mode=m
+    +no_csr_instr=1
+    +illegal_instr_ratio=200
+    +hint_instr_ratio=500
+  iterations: 2
+  gen_test: riscv_instr_base_test
+  rtl_test: core_base_test
+
+- test: riscv_arithmetic_basic_hint_test
+  description: >
+    Arithmetic instruction test, no load/store/branch instructions
+  gen_opts: >
+    +instr_cnt=500
+    +num_of_sub_program=15
+    +directed_instr_0=riscv_int_numeric_corner_stream,4
+    +no_fence=1
+    +no_data_page=1
+    +no_branch_jump=1
+    +boot_mode=m
+    +no_csr_instr=1
+    +hint_instr_ratio=500
+  iterations: 2
+  gen_test: riscv_instr_base_test
+  rtl_test: core_base_test
+ 
+- test: riscv_arithmetic_basic_illegal_hint_floating_test
+  description: >
+    Arithmetic instruction test, no load/store/branch instructions
+  gen_opts: >
+    +instr_cnt=300
+    +num_of_sub_program=10
+    +directed_instr_0=riscv_int_numeric_corner_stream,4
+    +no_fence=1
+    +no_data_page=1
+    +no_branch_jump=1
+    +boot_mode=m
+    +no_csr_instr=1
+    +enable_floating_point=1
+    +illegal_instr_ratio=100
+    +hint_instr_ratio=200
+  iterations: 2
+  gen_test: riscv_instr_base_test
+  rtl_test: core_base_test
+
+- test: riscv_arithmetic_basic_illegal_no_comp_test
+  description: >
+    Arithmetic instruction test, no load/store/branch instructions
+  gen_opts: >
+    +instr_cnt=500
+    +num_of_sub_program=10
+    +directed_instr_0=riscv_int_numeric_corner_stream,4
+    +no_fence=1
+    +no_data_page=1
+    +no_branch_jump=1
+    +boot_mode=m
+    +no_csr_instr=1
+    +hint_instr_ratio=200
+    +illegal_instr_ratio=50 
+    +disable_compressed_instr=1
+  iterations: 2
+  gen_test: riscv_instr_base_test
+  rtl_test: core_base_test
+
+- test: riscv_rand_data_obi_err
+  description: >
+    RISCV-DV generated random debug tests
+  gen_opts: >
+    +instr_cnt=200
+    +num_of_sub_program=5
+    +directed_instr_0=riscv_load_store_rand_instr_stream,4
+    +directed_instr_1=riscv_loop_instr,4
+    +directed_instr_2=riscv_hazard_instr_stream,4
+    +directed_instr_3=riscv_load_store_hazard_instr_stream,4
+    +directed_instr_4=riscv_multi_page_load_store_instr_stream,4
+    +directed_instr_5=riscv_mem_region_stress_test,4
+    +directed_instr_6=riscv_jal_instr,4
+    +hint_instr_ratio=20
+    +randomize_csr=1
+    +boot_mode=m
+    +no_csr_instr=0
+    +enable_interrupt=1
+    +enable_fast_interrupt_handler=1
+    +no_wfi=0
+    +enable_ebreak_in_debug_rom=0
+    +set_dcsr_ebreak=0
+    +enable_debug_single_step=1
+  iterations: 1
+  gen_test: riscv_instr_base_test
+  rtl_test: core_base_test
