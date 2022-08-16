@@ -657,6 +657,7 @@ module decoder import ariane_pkg::*; (
                                 else
                                     illegal_instr_bm = 1'b1;
                             end
+                            default: illegal_instr_bm = 1'b1;
                         endcase
                     end
                     illegal_instr = (ariane_pkg::BITMANIP) ? (illegal_instr_non_bm & illegal_instr_bm) : illegal_instr_non_bm;
