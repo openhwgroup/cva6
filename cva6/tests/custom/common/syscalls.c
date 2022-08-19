@@ -15,9 +15,20 @@
 extern volatile uint64_t tohost;
 extern volatile uint64_t fromhost;
 
-static uintptr_t syscall(uintptr_t which, uint64_t arg0, uint64_t arg1, uint64_t arg2)
+// tohost is 64 bits wide, irrespective of XLEN.  The structure expected in Spike is:
+// - tohost[63:56] == device (syscall: 0)
+// - tohost[55:48] == command (syscall: 0)
+// - tohost[47:0]  == payload (syscall: address of magic_mem)
+//
+// magic_mem for a syscall contains the following elements (XLEN bits each)
+// - syscall index (93 dec for syscall_exit, cf. Spike values in
+//   riscv-isa-sim/fesvr/syscall.cc:140 and ff.)
+// - syscall args in the declaration order of the given syscall
+
+static uintptr_t syscall(uintptr_t which, uintptr_t arg0, uintptr_t arg1, uintptr_t arg2)
 {
-  volatile uint64_t magic_mem[8] __attribute__((aligned(64)));
+  // Arguments in magic_mem have XLEN bits each.
+  volatile uintptr_t magic_mem[8] __attribute__((aligned(64)));
   magic_mem[0] = which;
   magic_mem[1] = arg0;
   magic_mem[2] = arg1;
@@ -26,7 +37,14 @@ static uintptr_t syscall(uintptr_t which, uint64_t arg0, uint64_t arg1, uint64_t
   __sync_synchronize();
 #endif
 
-  tohost = (uintptr_t)magic_mem;
+  // A WRITE_MEM transaction writing non-zero value to TOHOST triggers
+  // the environment (Spike or RTL harness).
+  // - here tohost is guaranteed non-NULL because magic_mem is a valid RISC-V
+  //   pointer.
+  // - the environment acknowledges the env request by writing 0 into tohost.
+  // - the completion of the request is signalled by the environment through
+  //   a write of a non-zero value into fromhost.
+  tohost = (((uint64_t) magic_mem) << 16) >> 16;    // clear the DEV and CMD bytes, clip payload.
   while (fromhost == 0)
     ;
   fromhost = 0;
@@ -59,8 +77,12 @@ void setStats(int enable)
 
 void __attribute__((noreturn)) tohost_exit(uintptr_t code)
 {
-  tohost = (code << 1) | 1;
-  __asm__("ecall\t");
+  // Simply write PASS/FAIL result into 'tohost'.
+  // Left shift 'code' by 1 and set bit 0 to 1, but leave the 16 uppermost bits clear
+  // so that the syscall is properly recognized even if 'code' value is very large.
+  tohost = ((((uint64_t) code) << 17) >> 16) | 1;
+
+  // Don't care about the value returned by host...
   while (1);
 }
 
