@@ -69,6 +69,12 @@ module load_store_unit import ariane_pkg::*; #(
     // AMO interface
     output amo_req_t                 amo_req_o,
     input  amo_resp_t                amo_resp_i,
+    // RVFI
+    output logic [riscv::XLEN-1:0]   rvfi_mem_addr_o,
+    output logic [(riscv::XLEN/8)-1:0] rvfi_mem_rmask_o,
+    output logic [riscv::XLEN-1:0]     rvfi_mem_rdata_o,
+    output logic [(riscv::XLEN/8)-1:0] rvfi_mem_wmask_o,
+    output logic [riscv::XLEN-1:0]     rvfi_mem_wdata_o,
     // PMP
     input  riscv::pmpcfg_t [15:0]    pmpcfg_i,
     input  logic [15:0][riscv::PLEN-3:0] pmpaddr_i
@@ -126,6 +132,9 @@ module load_store_unit import ariane_pkg::*; #(
     exception_t               misaligned_exception;
     exception_t               ld_ex;
     exception_t               st_ex;
+
+    // RVFI
+    assign rvfi_mem_addr_o = {'0, mmu_paddr};
 
     // -------------------
     // MMU e.g.: TLBs/PTW
@@ -256,6 +265,9 @@ module load_store_unit import ariane_pkg::*; #(
         // AMOs
         .amo_req_o,
         .amo_resp_i,
+        // RFVI
+        .rvfi_mem_wmask_o,
+        .rvfi_mem_wdata_o,
         // to memory arbiter
         .req_port_i             ( dcache_req_ports_i [2] ),
         .req_port_o             ( dcache_req_ports_o [2] )

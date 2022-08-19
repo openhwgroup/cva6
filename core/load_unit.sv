@@ -43,6 +43,9 @@ module load_unit import ariane_pkg::*; #(
     // D$ interface
     input dcache_req_o_t             req_port_i,
     output dcache_req_i_t            req_port_o,
+    // RVFI
+    output logic [(riscv::XLEN/8)-1:0] rvfi_mem_rmask_o,
+    output logic [riscv::XLEN-1:0]   rvfi_mem_rdata_o,
     input  logic                     dcache_wbuffer_not_ni_i
 );
     enum logic [3:0] { IDLE, WAIT_GNT, SEND_TAG, WAIT_PAGE_OFFSET,
@@ -57,6 +60,8 @@ module load_unit import ariane_pkg::*; #(
         fu_op                             operator;
     } load_data_d, load_data_q, in_data;
 
+    // RVFI
+    assign rvfi_mem_rmask_o = state_q == 4'b10 ? 1'b1 : 1'b0;
     // page offset is defined as the lower 12 bits, feed through for address checker
     assign page_offset_o = lsu_ctrl_i.vaddr[11:0];
     // feed-through the virtual address for VA translation
@@ -365,6 +370,8 @@ module load_unit import ariane_pkg::*; #(
             default:    result_o = shifted_data[riscv::XLEN-1:0];
         endcase
     end
+
+    assign rvfi_mem_rdata_o = result_o;
 
     always_ff @(posedge clk_i or negedge rst_ni) begin : p_regs
         if (~rst_ni) begin

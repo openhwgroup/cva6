@@ -43,6 +43,9 @@ module store_unit import ariane_pkg::*; (
     // D$ interface
     output amo_req_t                 amo_req_o,
     input  amo_resp_t                amo_resp_i,
+    // RVFI
+    output logic [(riscv::XLEN/8)-1:0] rvfi_mem_wmask_o,
+    output logic [riscv::XLEN-1:0]     rvfi_mem_wdata_o,
     input  dcache_req_o_t            req_port_i,
     output dcache_req_i_t            req_port_o
 );
@@ -202,6 +205,9 @@ module store_unit import ariane_pkg::*; (
 
     logic store_buffer_valid, amo_buffer_valid;
     logic store_buffer_ready, amo_buffer_ready;
+
+    assign rvfi_mem_wmask_o = store_buffer_valid;
+    assign rvfi_mem_wdata_o = st_data_q;
 
     // multiplex between store unit and amo buffer
     assign store_buffer_valid = st_valid & (amo_op_q == AMO_NONE);

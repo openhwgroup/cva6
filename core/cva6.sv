@@ -71,6 +71,13 @@ module cva6 import ariane_pkg::*; #(
   logic                       eret;
   logic [NR_COMMIT_PORTS-1:0] commit_ack;
 
+  // RVFI
+  logic [riscv::XLEN-1:0]                               rvfi_mem_addr_o;
+  logic [(riscv::XLEN/8)-1:0]                           rvfi_mem_rmask_o;
+  logic [(riscv::XLEN/8)-1:0]                           rvfi_mem_rdata_o;
+  logic [(riscv::XLEN/8)-1:0]                           rvfi_mem_wmask_o;
+  logic [riscv::XLEN-1:0]                               rvfi_mem_wdata_o;
+
   // --------------
   // PCGEN <-> CSR
   // --------------
@@ -470,6 +477,11 @@ module cva6 import ariane_pkg::*; #(
     .dcache_req_ports_o     ( dcache_req_ports_ex_cache   ),
     .dcache_wbuffer_empty_i ( dcache_commit_wbuffer_empty ),
     .dcache_wbuffer_not_ni_i ( dcache_commit_wbuffer_not_ni ),
+    .rvfi_mem_addr_o        ( rvfi_mem_addr_o             ),
+    .rvfi_mem_rmask_o       ( rvfi_mem_rmask_o            ),
+    .rvfi_mem_rdata_o       ( rvfi_mem_rdata_o            ),
+    .rvfi_mem_wmask_o       ( rvfi_mem_wmask_o            ),
+    .rvfi_mem_wdata_o       ( rvfi_mem_wdata_o            ),
     // PMP
     .pmpcfg_i               ( pmpcfg                      ),
     .pmpaddr_i              ( pmpaddr                     )
@@ -957,6 +969,14 @@ module cva6 import ariane_pkg::*; #(
       rvfi_o[i].rd_addr  = commit_instr_id_commit[i].rd;
       rvfi_o[i].rd_wdata = ariane_pkg::is_rd_fpr(commit_instr_id_commit[i].op) == 0 ? wdata_commit_id[i] : commit_instr_id_commit[i].result;
       rvfi_o[i].pc_rdata = commit_instr_id_commit[i].pc;
+      rvfi_o[i].mem_addr  = rvfi_mem_addr_o;
+
+      rvfi_o[i].mem_wmask = rvfi_mem_wmask_o;
+      rvfi_o[i].mem_wdata = rvfi_mem_wdata_o;
+
+      rvfi_o[i].mem_rmask = rvfi_mem_rmask_o;
+      rvfi_o[i].mem_rdata = rvfi_mem_rdata_o;
+
     end
   end
 `endif

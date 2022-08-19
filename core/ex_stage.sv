@@ -114,6 +114,12 @@ module ex_stage import ariane_pkg::*; #(
     // Performance counters
     output logic                                   itlb_miss_o,
     output logic                                   dtlb_miss_o,
+    // RVFI
+    output logic [riscv::XLEN-1:0]                 rvfi_mem_addr_o,
+    output logic [(riscv::XLEN/8)-1:0]             rvfi_mem_rmask_o,
+    output logic [riscv::XLEN-1:0]                 rvfi_mem_rdata_o,
+    output logic [(riscv::XLEN/8)-1:0]             rvfi_mem_wmask_o,
+    output logic [riscv::XLEN-1:0]                 rvfi_mem_wdata_o,
     // PMPs
     input  riscv::pmpcfg_t [15:0]                  pmpcfg_i,
     input  logic[15:0][riscv::PLEN-3:0]            pmpaddr_i
@@ -326,6 +332,11 @@ module ex_stage import ariane_pkg::*; #(
         .amo_valid_commit_i,
         .amo_req_o,
         .amo_resp_i,
+        .rvfi_mem_addr_o,
+        .rvfi_mem_rmask_o,
+        .rvfi_mem_rdata_o,
+        .rvfi_mem_wmask_o,
+        .rvfi_mem_wdata_o,
         .pmpcfg_i,
         .pmpaddr_i
     );
