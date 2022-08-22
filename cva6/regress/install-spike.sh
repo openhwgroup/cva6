@@ -26,6 +26,7 @@ if [ ! -f "$SPIKE_ROOT/bin/spike"  ]; then
     git apply $PATCH_DIR/spike/patches/spike-shared-fesvr-lib.patch
     git apply $PATCH_DIR/spike/patches/spike-cvxif-extension.patch
     git apply $PATCH_DIR/spike/patches/spike-dlopen-diagnostics.patch
+    git apply $PATCH_DIR/spike/patches/rtl-termination-hooks.patch
     # Recursively copy Spike files related to CVXIF extension into current
     # directory.
     cp -rpa $PATCH_DIR/spike/cvxif-ext-files/* .
