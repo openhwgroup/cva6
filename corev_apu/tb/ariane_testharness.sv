@@ -76,6 +76,21 @@ module ariane_testharness #(
   dm::dmi_req_t  debug_req;
   dm::dmi_resp_t debug_resp;
 
+`ifdef VERILATOR
+`ifdef VM_TRACE
+// VL-specific dump control (until fixed on C++ side)
+  initial begin
+    $display("Setting up waveform dump");
+`ifdef VM_TRACE_FST
+    $dumpfile("verilator.fst");
+`else
+    $dumpfile("verilator.vcd");
+`endif
+    $dumpvars(3, dut);
+  end
+`endif
+`endif
+
   assign test_en = 1'b0;
 
   AXI_BUS #(
@@ -731,3 +746,10 @@ module ariane_testharness #(
   );
 `endif
 endmodule
+
+`ifdef VERILATOR
+`ifdef VM_TRACE
+`verilator_config
+tracing_on
+`endif
+`endif
