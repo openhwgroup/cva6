@@ -41,7 +41,8 @@ module rvfi_tracer #(
         // Destination register information
         $fwrite(f, "%h 0x%h (0x%h)",
           rvfi_i[i].mode, pc64, rvfi_i[i].insn);
-        // Decode instruction to know if destination register is FP register
+        // Decode instruction to know if destination register is FP register.
+        // Handle both uncompressed and compressed instructions.
         if ( rvfi_i[i].insn[6:0] == 7'b1001111 ||
              rvfi_i[i].insn[6:0] == 7'b1001011 ||
              rvfi_i[i].insn[6:0] == 7'b1000111 ||
@@ -49,7 +50,13 @@ module rvfi_tracer #(
              rvfi_i[i].insn[6:0] == 7'b0000111 ||
             (rvfi_i[i].insn[6:0] == 7'b1010011 && rvfi_i[i].insn[31:26] != 6'b111000
                                                && rvfi_i[i].insn[31:26] != 6'b101000
-                                               && rvfi_i[i].insn[31:26] != 6'b110000) )
+                                               && rvfi_i[i].insn[31:26] != 6'b110000) ||
+            // Compressed instructions: FP loads are at the same positions in quadrants 0 and 2.
+            // Func3==3'b001, valid for RV64, RV32 w/FLEN==64: C.FLD (Q0), C.FLDSP (Q2)
+            // Func3==3'b011, valid only for RV32 ISA:         C.FLW (Q0), C.FLWSP (Q2)
+            // CVA6 has no configuration with XLEN==32 and FLEN==64 ==> C.FLD* only with 64b.
+            (rvfi_i[i].insn[0] == 1'b0 && ((rvfi_i[i].insn[15:13] == 3'b001 && riscv::XLEN == 64) ||
+                                           (rvfi_i[i].insn[15:13] == 3'b011 && riscv::XLEN == 32) )))
           $fwrite(f, " f%d 0x%h\n",
             rvfi_i[i].rd_addr, rvfi_i[i].rd_wdata);
         else if (rvfi_i[i].rd_addr != 0) begin
