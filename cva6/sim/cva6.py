@@ -853,7 +853,7 @@ def load_config(args, cwd):
     if not args.testlist:
       args.testlist = cwd + "/target/"+ args.target +"/testlist.yaml"
     if args.target == "cv64a6_imafdc_sv39":
-      args.mabi = "lp64"
+      args.mabi = "lp64d"
       args.isa  = "rv64gc"
     elif args.target == "cv32a60x":
       args.mabi = "ilp32"
@@ -865,7 +865,7 @@ def load_config(args, cwd):
       args.mabi = "ilp32"
       args.isa  = "rv32imac"
     elif args.target == "cv32a6_imafc_sv32":
-      args.mabi = "ilp32"
+      args.mabi = "ilp32f"
       args.isa  = "rv32imafc"
     elif args.target == "rv32imc":
       args.mabi = "ilp32"
@@ -877,10 +877,10 @@ def load_config(args, cwd):
       args.mabi = "ilp32"
       args.isa  = "rv32ima"
     elif args.target == "rv32gc":
-      args.mabi = "ilp32"
+      args.mabi = "ilp32f"
       args.isa  = "rv32gc"
     elif args.target == "multi_harts":
-      args.mabi = "ilp32"
+      args.mabi = "ilp32f"
       args.isa  = "rv32gc"
     elif args.target == "rv32imcb":
       args.mabi = "ilp32"
@@ -892,13 +892,13 @@ def load_config(args, cwd):
       args.mabi = "lp64"
       args.isa  = "rv64imc"
     elif args.target == "rv64gc":
-      args.mabi = "lp64"
+      args.mabi = "lp64d"
       args.isa  = "rv64gc"
     elif args.target == "rv64imac":
       args.mabi = "lp64"
       args.isa = "rv64imac"
     elif args.target == "rv64gcv":
-      args.mabi = "lp64"
+      args.mabi = "lp64d"
       args.isa  = "rv64gcv"
     elif args.target == "ml":
       args.mabi = "lp64"
