@@ -18,7 +18,7 @@ from tkinter.filedialog import asksaveasfilename
 import tkinter.colorchooser
 from inspect import ismethod
 import pickle
-from typing import OrderedDict
+from collections import OrderedDict
 
 # import cPickle as pickle
 # Configuration (env + Python + Yaml) is imported indirectly via vp_pack.
