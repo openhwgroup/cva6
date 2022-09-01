@@ -63,3 +63,5 @@ vsim.dbg
 transcript
 .lib-rtl
 .opt-rtl
+tools/spike
+tools/verilator*

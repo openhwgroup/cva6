@@ -1,0 +1,132 @@
+#############################################################################
+# Copyright (C) 2022 Thales DIS France SAS
+#
+# SPDX-License-Identifier: Apache-2.0 WITH SHL-2.0.
+#
+# Original Author: Zbigniew Chamski (zbigniew.chamski@thalesgroup.com)
+#############################################################################
+
+gui:
+  title: CORE-V Verification Plan tool
+  theme: arc
+  ip:
+    label: Feature
+  property:
+    label: Sub-feature
+  item:
+    label: Verification Item
+  test_descr:
+    label: Item Description
+  requirement_loc:
+    label: Requirement Location
+    cue_text: This is a pointer to the source Requirements document of the Features in question.  The pointer should state the version of the target document.  It is free-form, so it can also indicate the specific section/page/paragraph.
+  feature_descr:
+    label: Feature Description
+    cue_text: A summary of what the feature does. It should be a summary, not a verbatim copy-n-paste from the Requirements Document.
+  verif_goals:
+    label: Verification Goals
+    cue_text: A summary of what stimulus and/or configuration needs to be generated/checked/covered to ensure sufficient testing of the Feature.
+  coverage_loc:
+    label: Link to Coverage (test outcomes)
+    cue_text: Link to Feature coverage data generated in Regression.
+  comments:
+    label: Comments
+    cue_text: Any additional information you may consider relevant...
+  pfc:
+    label: Pass/Fail Criteria
+    cue_text: Here we attempt to answer the question, "how will the testbench know the test passed?"
+    default:
+      label: Select a PFC...
+      value: -1
+    values:
+    -
+      label: Other
+      value: 11
+    -
+      label: Any/All
+      value: 0
+    -
+      label: Self-Check
+      value: 1
+    -
+      label: Signature
+      value: 2
+    -
+      label: Check RM
+      value: 3
+    -
+      label: Assertion
+      value: 4
+
+  test_type:
+    label: Test Type
+    cue_text: Type of test (origin, kind, and/or value generation method)
+    default:
+      label: Select a Test Type...
+      value: -1
+    values:
+    -
+      label: Other
+      value: 10
+    -
+      label: RISC-V Compliance
+      value: 0
+    -
+      label: Directed SelfChk
+      value: 1
+    -
+      label: Directed Non-SelfChk
+      value: 2
+    -
+      label: Constrained Random
+      value: 3
+    -
+      label: ENV Capability
+      value: 4
+
+  cov_method:
+    label: Coverage Method
+    cue_text: How will we know that the Feature is verified (covered)?
+    default:
+      label: Select a Coverage Method...
+      value: -1
+    values:
+    -
+      label: N/A
+      value: 10
+    -
+      label: Testcase
+      value: 0
+    -
+      label: Functional Coverage
+      value: 1
+    -
+      label: Assertion Coverage
+      value: 2
+    -
+      label: Code Coverage
+      value: 3
+
+cores:
+  default:
+    label: All
+    value: -1
+  values: # Values are bit masks.
+    -
+      label: CV32E40P
+      value: 1
+    -
+      label: CV32E40S
+      value: 2
+    -
+      label: CV32E40X
+      value: 4
+    -
+      label: CV32A6
+      value: 8
+    -
+      label: CV64A6
+      value: 16
+    -
+      label: CV32A60X
+      value: 32
