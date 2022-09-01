@@ -128,7 +128,8 @@ def read_verilator_trace(path, full_trace):
         # The TRAMPOLINE state
         if end_trampoline_re.match(line):
           in_trampoline = False
-        continue
+        else :
+          continue
 
       if not in_trampoline:
         if in_debug:

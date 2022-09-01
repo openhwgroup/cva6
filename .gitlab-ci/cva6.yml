@@ -353,6 +353,7 @@ pub_smoke-gate:
 
 pub_benchmarks:
   stage: three
+  timeout: 2 hours
   extends:
     - .template_job_always_manual
   variables:
@@ -395,6 +396,7 @@ pub_wb_dcache:
     - source ci/build-riscv-tests.sh
     - cd ../../../
     - make run-asm-tests-verilator defines=WB_DCACHE
+    - cd ../..
     - python3 .gitlab-ci/scripts/report_pass.py
   artifacts:
     when: always
@@ -454,6 +456,7 @@ pub_fpga-boot:
     - cd -
     - python3 .gitlab-ci/scripts/report_fpga_boot.py core-v-cores/cva6/corev_apu/fpga/scripts/fpga_boot.rpt
   artifacts:
+    when: always
     paths:
       - "artifacts/reports/*.yml"
 
