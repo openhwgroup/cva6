@@ -405,6 +405,7 @@ pub_wb_dcache:
 
 pub_fpga-build:
   stage: two
+  timeout: 90 minutes
   extends:
     - .template_job_short_ci
   needs:
