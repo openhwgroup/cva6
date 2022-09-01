@@ -8,7 +8,7 @@
 # Original Author: Jean-Roch COULON (jean-roch.coulon@thalesgroup.com)
 #
 
-DESIGN_NAME           = ariane
+DESIGN_NAME           = cva6
 PERIOD               ?= 17
 FOUNDRY_PATH         ?=
 TECH_NAME            ?=
@@ -19,7 +19,7 @@ DC_SHELL_PATH        ?= /opt/synopsys/syn/Q-2019.12/bin/
 NAND2_AREA           ?= 1120
 TARGET               ?= cv64a6_imafdc_sv39
 
-EXPORT_LIST=SNPSLMD_QUEUE=TRUE TECH_NAME=$(TECH_NAME) DESIGN_NAME=$(DESIGN_NAME) TERM=vt100 PERIOD=$(PERIOD) FOUNDRY_PATH=$(FOUNDRY_PATH) TARGET_LIBRARY_FILES=$(TARGET_LIBRARY_FILES) INPUT_DELAY=$(INPUT_DELAY) OUTPUT_DELAY=$(OUTPUT_DELAY)
+EXPORT_LIST=SNPSLMD_QUEUE=TRUE TECH_NAME=$(TECH_NAME) DESIGN_NAME=$(DESIGN_NAME) TARGET=$(TARGET) TERM=vt100 PERIOD=$(PERIOD) FOUNDRY_PATH=$(FOUNDRY_PATH) TARGET_LIBRARY_FILES=$(TARGET_LIBRARY_FILES) INPUT_DELAY=$(INPUT_DELAY) OUTPUT_DELAY=$(OUTPUT_DELAY)
 
 ifndef FOUNDRY_PATH
   $(error "Please provide FOUNDRY techno")
@@ -35,11 +35,14 @@ pre_cva6_synth:
 cva6_synth: pre_cva6_synth
 	@echo $(PERIOD)
 	@export $(EXPORT_LIST); $(DC_SHELL_PATH)/dc_shell -f ./cva6_synth.tcl -output synthesis_batch.log
-	python scripts/gate_analysis.py '$(DESIGN_NAME)/reports/$(PERIOD)/$(DESIGN_NAME)_$(TECH_NAME)_synth_area.rpt' $(NAND2_AREA)
-	sed 's/tc_sram_wrapper_256_64_00000008_00000001_00000001_none_0 gen/tc_sram_wrapper gen/' ariane_synth.v > ariane_synth_modified.v
+	python scripts/gate_analysis.py '$(DESIGN_NAME)_$(TARGET)/reports/$(PERIOD)/$(DESIGN_NAME)_$(TECH_NAME)_synth_area.rpt' $(NAND2_AREA)
+	mv $(DESIGN_NAME)_synth.v $(DESIGN_NAME)_$(TARGET)_synth.v
+	mv $(DESIGN_NAME)_synth.v.sdf $(DESIGN_NAME)_$(TARGET)_synth.v.sdf
+	sed -n -e '/module tc_sram_wrapper_256_64_00000008_00000001_00000001_none_0/,/endmodule/!p' $(DESIGN_NAME)_$(TARGET)_synth.v > $(DESIGN_NAME)_$(TARGET)_synth_modified.v
+	sed -i 's/cva6_ /cva6 /g' $(DESIGN_NAME)_$(TARGET)_synth_modified.v
 
 cva6_read:
 	@export $(EXPORT_LIST); $(DC_SHELL_PATH)/dc_shell -f cva6_read.tcl -gui
 
 clean:
-	@rm -rf work alib* *_LIB *log *svf netlist reports ${DESIGN_NAME}
+	@rm -rf work alib* *_LIB *log *svf netlist reports ${DESIGN_NAME}_${TARGET}
