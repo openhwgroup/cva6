@@ -30,7 +30,7 @@ The CVA6 architecture is illustrated in the following figure extracted from a pa
 License
 -------
 
-| Copyright 2022 OpenHW Group and Thales
+| Copyright 2022 Thales
 | Copyright 2018 ETH Zürich and University of Bologna
 | SPDX-License-Identifier: Apache-2.0 WITH SHL-2.1
 | Licensed under the Solderpad Hardware License v 2.1 (the “License”);

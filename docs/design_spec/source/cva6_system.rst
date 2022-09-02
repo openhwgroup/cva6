@@ -172,23 +172,23 @@ CV32A6-step1 implements a configuration which allows to connect coprocessor thro
      - Specification
      - Configurability
 
-   * - **I$**: Instruction cache micro-architecture
+   * - **I$**: Instruction cache
      - current spec
      - ON
 
-   * - **D$**: Data cache micro-architecture
+   * - **D$**: Data cache
      - current spec
      - OFF
 
-   * - **Rename**: register Renaming to increase perf
+   * - **Rename**: register Renaming
      - current spec
      - OFF
 
-   * - **Double Commit**: pipeline micro-architecture
+   * - **Double Commit**: out of order pipeline execute stage
      - current spec
      - ON
 
-   * - **BP**: Branch Prediction micro-architecture
+   * - **BP**: Branch Prediction
      - current spec
      - ON with no info storage
 

@@ -167,11 +167,11 @@ PC gen generates the next program counter. The next PC can originate from the fo
 
 * **Branch Predict:** Fetched instruction is predecoded thanks to instr_scan module. When instruction is a control flow, three cases need to be considered:
 
-  + 1) If instruction is a JALR and BTB (Branch Target Buffer) gets a valid address, next PC is predicted by BTB. Else JALR is not considered as a control flow instruction, which will generate a mispredict.
+  + 1) If instruction is a JALR and BTB (Branch Target Buffer) returns a valid address, next PC is predicted by BTB. Else JALR is not considered as a control flow instruction, which will generate a mispredict.
 
-  + 2) If instruction is a branch and BTH (Branch History table) gets a valid address, next PC is predicted by BHT. Else branch is not considered as an control flow instruction, which will generate a mispredict.
+  + 2) If instruction is a branch and BTH (Branch History table) returns a valid address, next PC is predicted by BHT. Else branch is not considered as an control flow instruction, which will generate a mispredict when branch is taken.
 
-  + 3) If instruction is a RET and RAS (Return Address Stack) gets a valid address and RET has already been consummed by instruction queue. Else RET is considered as a control flow instruction which will not generate a branch prediction. [TO BE COMPLETED: how RET is executed in this case?].
+  + 3) If instruction is a RET and RAS (Return Address Stack) returns a valid address and RET has already been consummed by instruction queue. Else RET is considered as a control flow instruction but next PC is not predicted. A mispredict wil be generated.
 
   Then the PC gen informs the Fetch stage that it performed a prediction on the PC. *In CV32A6-step1, Branch Prediction is simplified: no information is stored in BTB, BHT and RAS. JALR and branch instructions are not considered as control flow instruction and will generates mispredict [TO BE COMPLETE for RET instruction case].*
 
