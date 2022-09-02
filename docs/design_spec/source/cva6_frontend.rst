@@ -173,7 +173,7 @@ PC gen generates the next program counter. The next PC can originate from the fo
 
   + 3) If instruction is a RET and RAS (Return Address Stack) returns a valid address and RET has already been consummed by instruction queue. Else RET is considered as a control flow instruction but next PC is not predicted. A mispredict wil be generated.
 
-  Then the PC gen informs the Fetch stage that it performed a prediction on the PC. *In CV32A6-step1, Branch Prediction is simplified: no information is stored in BTB, BHT and RAS. JALR and branch instructions are not considered as control flow instruction and will generates mispredict [TO BE COMPLETE for RET instruction case].*
+  Then the PC gen informs the Fetch stage that it performed a prediction on the PC. *In CV32A6-step1, Branch Prediction is simplified: no information is stored in BTB, BHT and RAS. JALR, branch and RET instructions are not considered as control flow instruction and will generates mispredict.*
 
 * **Default:** PC + 4 is fetched. PC Gen always fetches on a word boundary (32-bit). Compressed instructions are handled by fetch stage.
 
