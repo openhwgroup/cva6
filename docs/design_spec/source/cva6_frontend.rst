@@ -408,13 +408,15 @@ Instr_queue
      -  Handshake's ready between FRONTEND (fetch stage) and DECODE
 
 
-The instr_queue receives 32bit block from CACHES to create a valid stream of instructions to be decoded (by DECODE), to be issued (by ISSUE) and executed (by EXECUTE). FRONTEND pushes in FIFO to store the instructions and related information needed in case of mispredict or exception: instructions, instruction control flow type, exception, exception address and preicted address. DECODE pops them when decode stage is ready and indicates to the FRONTEND the instruction has been consummed.
+The instr_queue receives 32bit block from CACHES to create a valid stream of instructions to be decoded (by DECODE), to be issued (by ISSUE) and executed (by EXECUTE). FRONTEND pushes in FIFO to store the instructions and related information needed in case of mispredict or exception: instructions, instruction control flow type, exception, exception address and predicted address. DECODE pops them when decode stage is ready and indicates to the FRONTEND the instruction has been consummed.
+
+The instruction queue contains max 4 instructions.
 
 In instruction queue, exception can only correspond to page-fault exception.
 
 If the instruction queue is full, a replay request is sent to inform the fetch mechanism to replay the fetch.
 
-The instruction queue can be flushed.
+The instruction queue can be flushed by CONTROLLER.
 
 
 
@@ -575,7 +577,9 @@ BHT - Branch History Table
 
 When a branch instruction is resolved by the EXECUTE, the relative information is stored in the Branch History Table.
 
-The Branch History table is a two-bit saturation counter that takes the virtual address of the current fetched instruction by the CACHE. It states whether the current branch request should be taken or not. The two bit counter is updated by the successive execution of the current instructions as shown in the following figure. The BHT is not updated if processor is in debug mode.
+The information is stored in a 1024 entry table.
+
+The Branch History table is a two-bit saturation counter that takes the virtual address of the current fetched instruction by the CACHE. It states whether the current branch request should be taken or not. The two bit counter is updated by the successive execution of the current instructions as shown in the following figure.
 
 .. figure:: ../images/bht.png
    :name: BHT saturation
@@ -583,6 +587,8 @@ The Branch History table is a two-bit saturation counter that takes the virtual 
    :alt:
 
    BHT saturation
+
+The BHT is not updated if processor is in debug mode.
 
 When a branch instruction is pre-decoded by instr_scan module, the BHT informs whether the PC address is in the BHT. In this case, the BHT predicts whether the branch is taken and provides the corresponding target address.
 
@@ -644,7 +650,11 @@ BTB - Branch Target Buffer
      -  BTB Prediction
 
 
-When a unconditional jumps to a register (JALR instruction) is mispredicted by the EXECUTE, the relative information is stored into the BTB, that is to say the JALR PC and the target address. The BTB is not updated if processor is in debug mode.
+When a unconditional jumps to a register (JALR instruction) is mispredicted by the EXECUTE, the relative information is stored into the BTB, that is to say the JALR PC and the target address.
+
+The information is stored in a 8 entry table.
+
+The BTB is not updated if processor is in debug mode.
 
 When a branch instruction is pre-decoded by instr_scan module, the BTB informs whether the input PC address is in BTB. In this case, the BTB provides the corresponding target address.
 
@@ -707,7 +717,9 @@ RAS - Return Address Stack
      -  Popped data
 
 
-When an unconditional jumps to a known target address (JAL instruction) is consummed by the instr_queue, the next pc after the JAL instruction and the return address are stored into the RAS.
+When an unconditional jumps to a known target address (JAL instruction) is consummed by the instr_queue, the next pc after the JAL instruction and the return address are stored into a FIFO.
+
+The RAS FIFO depth is 2.
 
 When a branch instruction is pre-decoded by instr_scan module, the RAS informs whether the input PC address is in RAS. In this case, the RAS provides the corresponding target address.
 
