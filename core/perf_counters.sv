@@ -108,7 +108,7 @@ module perf_counters import ariane_pkg::*; (
     end
 
     // write after read
-    if ({RegOffset,addr_i} >= riscv::CSR_ML1_ICACHE_MISS && {RegOffset,addr_i} <= riscv::CSR_MIF_EMPTY) begin
+    if (riscv::csr_reg_t'({RegOffset,addr_i}) >= riscv::CSR_ML1_ICACHE_MISS && riscv::csr_reg_t'({RegOffset,addr_i}) <= riscv::CSR_MIF_EMPTY) begin
       data_o = perf_counter_q[{RegOffset,addr_i}];
     end else begin
       // unimplemented counters are read-only 0
