@@ -18,7 +18,7 @@ Description
 
 The CV32A6-step1 is a system composed of the subsystems and protocol interfaces as illustrated in the figure. The processor is a Harvard-based modern architecture. Instructions are issued in-order through the DECODE stage and executed out-of-order but committed in-order. The processor is Single issue, that means that at maximum one instruction per cycle can be issued to the EXECUTE stage.
 
-The CV32A6-step1 implements a 6-stage pipeline composed of PC Generation, Instruction Detch, Instruction Decode, Issue stage, Execute stage and Commit stage. At least 6 cycles are needed to execute one instruction.
+The CV32A6 implements a 6-stage pipeline composed of PC Generation, Instruction Detch, Instruction Decode, Issue stage, Execute stage and Commit stage. At least 6 cycles are needed to execute one instruction.
 
 
 .. list-table:: cv32a6-step1 interface signals

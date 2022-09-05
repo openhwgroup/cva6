@@ -14,7 +14,7 @@ Introduction
 
 The objective of this document is to provide enough information to allow the RTL modification (by designers) and the RTL verification (by verificators). This document is not dedicated to CVA6 users looking at information to develop software like instructions or registers.
 
-CVA6 is a 6-stage in-order and single issue processor core which implements the RISC-V instruction set. Many features in the RISC-V specification are optional, and CVA6 can be parameterized to enable or disable some of them. CVA6 can be configured as a 32- or 64-bit core (RV32 or RV64), called CV32A6 or CV64A6. This document describes the CV32A6 configuration which allows to connect coprocessor through CV-X-IF but without Linux support, called CV32A6-step1.
+CVA6 is a 6-stage in-order and single issue processor core which implements the RISC-V instruction set. Many features in the RISC-V specification are optional, and CVA6 can be parameterized to enable or disable some of them. CVA6 can be configured as a 32- or 64-bit core (RV32 or RV64), called CV32A6 or CV64A6. This document describes the CV32A6 processor configuration which allows to connect coprocessor through CV-X-IF but without Linux support, called CV32A6-step1. It is a first step towards the verification of CV32A6.
 
 
 The CVA6 architecture is illustrated in the following figure extracted from a paper written by F.Zaruba and L.Benini.
@@ -58,7 +58,7 @@ To ease the reading, the reference to these specifications can be implicit in th
 * **[CV-X-IF]** Placeholder for the CV-X-IF coprocessor interface currently prepared at OpenHW Group; current version in https://docs.openhwgroup.org/projects/openhw-group-core-v-xif/.
 * **[OpenPiton]** “OpenPiton Microarchitecture Specification”, Princeton University, https://parallel.princeton.edu/openpiton/docs/micro_arch.pdf.
 
-CV32A6-step1 is a standards-compliant 32-bit processor fully compliant with RISC-V specifications: [RVunpriv], [RVpriv] and [RVdbg] and passes [RVcompat] compatibility tests, as requested by [GEN-10] in [CVA6req].
+CV32A6 is a standards-compliant 32-bit processor fully compliant with RISC-V specifications: [RVunpriv], [RVpriv] and [RVdbg] and passes [RVcompat] compatibility tests, as requested by [GEN-10] in [CVA6req].
 
 
 Documentation framework
