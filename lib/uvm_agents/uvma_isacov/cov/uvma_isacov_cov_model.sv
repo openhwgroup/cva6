@@ -1684,7 +1684,7 @@ function void uvma_isacov_cov_model_c::build_phase(uvm_phase phase);
                             .reg_hazards_enabled(cfg.reg_hazards_enabled),
                             .rs1_is_signed(rs1_is_signed[JALR]),
                             .immi_is_signed(immi_is_signed[JALR]),
-                            .rd_is_signed(rs1_is_signed[JALR]));
+                            .rd_is_signed(rd_is_signed[JALR]));
 
       rv32i_beq_cg    = new("rv32i_beq_cg", .reg_crosses_enabled(cfg.reg_crosses_enabled));
       rv32i_bne_cg    = new("rv32i_bne_cg", .reg_crosses_enabled(cfg.reg_crosses_enabled));
@@ -1753,7 +1753,7 @@ function void uvma_isacov_cov_model_c::build_phase(uvm_phase phase);
                             .reg_hazards_enabled(cfg.reg_hazards_enabled),
                             .rs1_is_signed(rs1_is_signed[ADDI]),
                             .immi_is_signed(immi_is_signed[ADDI]),
-                            .rd_is_signed(rs1_is_signed[ADDI]));
+                            .rd_is_signed(rd_is_signed[ADDI]));
       rv32i_slti_cg   = new("rv32i_slti_cg",
                             .reg_crosses_enabled(cfg.reg_crosses_enabled),
                             .reg_hazards_enabled(cfg.reg_hazards_enabled),
@@ -1765,43 +1765,43 @@ function void uvma_isacov_cov_model_c::build_phase(uvm_phase phase);
                             .reg_hazards_enabled(cfg.reg_hazards_enabled),
                             .rs1_is_signed(rs1_is_signed[SLTIU]),
                             .immi_is_signed(immi_is_signed[SLTIU]),
-                            .rd_is_signed(rs1_is_signed[SLTIU]));
+                            .rd_is_signed(rd_is_signed[SLTIU]));
       rv32i_xori_cg   = new("rv32i_xori_cg",
                             .reg_crosses_enabled(cfg.reg_crosses_enabled),
                             .reg_hazards_enabled(cfg.reg_hazards_enabled),
                             .rs1_is_signed(rs1_is_signed[XORI]),
                             .immi_is_signed(immi_is_signed[XORI]),
-                            .rd_is_signed(rs1_is_signed[XORI]));
+                            .rd_is_signed(rd_is_signed[XORI]));
       rv32i_ori_cg    = new("rv32i_ori_cg",
                             .reg_crosses_enabled(cfg.reg_crosses_enabled),
                             .reg_hazards_enabled(cfg.reg_hazards_enabled),
                             .rs1_is_signed(rs1_is_signed[ORI]),
                             .immi_is_signed(immi_is_signed[ORI]),
-                            .rd_is_signed(rs1_is_signed[ORI]));
+                            .rd_is_signed(rd_is_signed[ORI]));
       rv32i_andi_cg   = new("rv32i_andi_cg",
                             .reg_crosses_enabled(cfg.reg_crosses_enabled),
                             .reg_hazards_enabled(cfg.reg_hazards_enabled),
                             .rs1_is_signed(rs1_is_signed[ANDI]),
                             .immi_is_signed(immi_is_signed[ANDI]),
-                            .rd_is_signed(rs1_is_signed[ANDI]));
+                            .rd_is_signed(rd_is_signed[ANDI]));
       rv32i_slli_cg   = new("rv32i_slli_cg",
                             .reg_crosses_enabled(cfg.reg_crosses_enabled),
                             .reg_hazards_enabled(cfg.reg_hazards_enabled),
                             .rs1_is_signed(rs1_is_signed[SLLI]),
                             .immi_is_signed(immi_is_signed[SLLI]),
-                            .rd_is_signed(rs1_is_signed[SLLI]));
+                            .rd_is_signed(rd_is_signed[SLLI]));
       rv32i_srli_cg   = new("rv32i_srli_cg",
                             .reg_crosses_enabled(cfg.reg_crosses_enabled),
                             .reg_hazards_enabled(cfg.reg_hazards_enabled),
                             .rs1_is_signed(rs1_is_signed[SRLI]),
                             .immi_is_signed(immi_is_signed[SRLI]),
-                            .rd_is_signed(rs1_is_signed[SRLI]));
+                            .rd_is_signed(rd_is_signed[SRLI]));
       rv32i_srai_cg   = new("rv32i_srai_cg",
                             .reg_crosses_enabled(cfg.reg_crosses_enabled),
                             .reg_hazards_enabled(cfg.reg_hazards_enabled),
                             .rs1_is_signed(rs1_is_signed[SRAI]),
                             .immi_is_signed(immi_is_signed[SRAI]),
-                            .rd_is_signed(rs1_is_signed[SRAI]));
+                            .rd_is_signed(rd_is_signed[SRAI]));
 
       rv32i_add_cg    = new("rv32i_add_cg",
                             .reg_crosses_enabled(cfg.reg_crosses_enabled),
@@ -2042,9 +2042,9 @@ function void uvma_isacov_cov_model_c::build_phase(uvm_phase phase);
                               .rs1_is_signed(rs1_is_signed[C_SRAI]));
 
       rv32c_j_cg        = new("rv32c_j_cg",
-                              .imm_is_signed(rd_is_signed[C_J]));
+                              .imm_is_signed(c_imm_is_signed[C_J]));
       rv32c_jal_cg      = new("rv32c_jal_cg",
-                              .imm_is_signed(rd_is_signed[C_JAL]));
+                              .imm_is_signed(c_imm_is_signed[C_JAL]));
 
       rv32c_ebreak_cg   = new("rv32c_ebreak_cg", C_EBREAK);
       rv32c_nop_cg      = new("rv32c_nop_cg", C_NOP);
