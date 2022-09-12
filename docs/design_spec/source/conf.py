@@ -37,7 +37,7 @@
 
 # -- Project information -----------------------------------------------------
 
-project = u'CORE-V CV32A6-step1 Design Specification'
+project = u'CORE-V CV32A6-step1 Design Document'
 copyright = u'2022, Thales Group'
 author = u'Thales and OpenHW Group'
 
@@ -134,7 +134,7 @@ html_static_path = []
 # -- Options for HTMLHelp output ---------------------------------------------
 
 # Output file base name for HTML help builder.
-htmlhelp_basename = 'CORE-V_CV32A6-step1_DESIGN_SPEC'
+htmlhelp_basename = 'CORE-V_CV32A6-step1_DESIGN_DOC'
 
 
 # -- Options for LaTeX output ------------------------------------------------
