@@ -68,13 +68,13 @@ The framework of this document is inspired by the Common Criteria. The Common Cr
 
 Description of the framework:
 
-* Processor is split into subsystem corresponding to the main modules of the design
-* Subsystems can contain several modules
-* Each subsystem is described in a chapter, which contains the following subchapters: “Description”, “Functionalities”, “Architecture and Modules” and "Registers" (if any)
-* The subchapter “Description” describes the main features of the submodule, the interconnections between the current subsystem and the others and the inputs/outputs interface.
-* The subchapter “Functionality” lists in details the subsystem functionalities. Please avoid using the RTL signal names to explain the functionalities.
-* The subchapter “Architecture and Modules” provides a drawing to present the module hierarchy, then the functionalities covered by the module
-* The subchapter “Registers” specifies the subsystem registers if any
+* Processor is split into module corresponding to the main modules of the design
+* Modules can contain several modules
+* Each module is described in a chapter, which contains the following subchapters: *Description*, *Functionalities*, *Architecture and Modules* and *Registers* (if any)
+* The subchapter *Description* describes the main features of the submodule, the interconnections between the current module and the others and the inputs/outputs interface.
+* The subchapter *Functionality* lists in details the module functionalities. Please avoid using the RTL signal names to explain the functionalities.
+* The subchapter *Architecture and Modules* provides a drawing to present the module hierarchy, then the functionalities covered by the module
+* The subchapter *Registers* specifies the module registers if any
 
 
 Contributors

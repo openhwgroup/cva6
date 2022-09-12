@@ -9,25 +9,25 @@
 
 .. _CVA6_FRONTEND:
 
-FRONTEND Sub-System
-===================
+FRONTEND Module
+===============
 
 Description
 -----------
 
-The FRONTEND sub-system implements two first stages of the cva6 pipeline, PC gen and Fetch stages.
+The FRONTEND module implements two first stages of the cva6 pipeline, PC gen and Fetch stages.
 
 PC gen stage is responsible for generating the next program counter hosting a Branch Target Buffer (BTB) a Branch History Table (BHT) and a Return Address Stack (RAS) to speculate on the branch target address.
 
-Fetch stage requests data to the CACHE sub-system, realigns the data to store them in instruction queue and transmits the instructions to the DECODE sub-system. FRONTEND can fetch up to 2 instructions per cycles when C extension instructions is used, but as instruction queue limits the data rate, up to one instruction per cycle can be sent to DECODE.
+Fetch stage requests data to the CACHE module, realigns the data to store them in instruction queue and transmits the instructions to the DECODE module. FRONTEND can fetch up to 2 instructions per cycles when C extension instructions is used, but as instruction queue limits the data rate, up to one instruction per cycle can be sent to DECODE.
 
-The system is connected to:
+The module is connected to:
 
-* CACHES Sub-System provides fethed instructions to FRONTEND.
-* DECODE Sub-System receives instructions from FRONTEND.
-* CONTROLLER Sub-System can flush FRONTEND PC gen stage
-* EXECUTE, CONTROLLER, CSR and COMMIT Sub-systems triggers PC jumping due to a branch mispredict, an exception, a return from exception, a debug entry or pipeline flush. They provides related PC next value.
-* CSR Sub-system states about debug mode.
+* CACHES module provides fethed instructions to FRONTEND.
+* DECODE module receives instructions from FRONTEND.
+* CONTROLLER module can flush FRONTEND PC gen stage
+* EXECUTE, CONTROLLER, CSR and COMMIT modules triggers PC jumping due to a branch mispredict, an exception, a return from exception, a debug entry or pipeline flush. They provides related PC next value.
+* CSR module states about debug mode.
 
 
 .. list-table:: FRONTEND interface signals
@@ -41,13 +41,13 @@ The system is connected to:
 
    * - ``clk_i``
      - in
-     - SYSTEM
+     - SUBSYSTEM
      - logic
-     - System Clock
+     - Subsystem Clock
 
    * - ``rst_ni``
      - in
-     - SYSTEM
+     - SUBSYSTEM
      - logic
      - Asynchronous reset active low
 
@@ -65,13 +65,13 @@ The system is connected to:
 
    * - ``flush_bp_i``
      - in
-     - stuck at zero
+     - tied at zero
      - logic
      - flush branch prediction
 
    * - ``boot_addr_i``
      - in
-     - SYSTEM
+     - SUBSYSTEM
      - logic[VLEN-1:0]
      - Next PC when reset
 
@@ -165,7 +165,7 @@ PC gen generates the next program counter. The next PC can originate from the fo
 
 * **Reset state:** At reset, the PC is assigned to the boot address.
 
-* **Branch Predict:** Fetched instruction is predecoded thanks to instr_scan module. When instruction is a control flow, three cases need to be considered:
+* **Branch Predict:** Fetched instruction is predecoded thanks to instr_scan submodule. When instruction is a control flow, three cases need to be considered:
 
   + 1) If instruction is a JALR and BTB (Branch Target Buffer) returns a valid address, next PC is predicted by BTB. Else JALR is not considered as a control flow instruction, which will generate a mispredict.
 
@@ -179,11 +179,11 @@ PC gen generates the next program counter. The next PC can originate from the fo
 
 * **Mispredict:** When a branch prediction is mispredicted, the EXECUTE feedbacks a misprediction. This can either be a 'real' mis-prediction or a branch which was not recognized as one. In any case we need to correct our action and start fetching from the correct address.
 
-* **Replay instruction fetch:** When the instruction queue is full, the instr_queue module asks the fetch replay and provides the address to be replayed.
+* **Replay instruction fetch:** When the instruction queue is full, the instr_queue submodule asks the fetch replay and provides the address to be replayed.
 
 * **Return from environment call:** When CSR asks a return from an environment call, the PC is assigned to the successive PC to the one stored in the CSR [m-s]epc register.
 
-* **Exception/Interrupt:** If an exception (or interrupt, which is in the context of RISC-V systems quite similar) is triggered by the COMMIT, the next PC Gen is assigned to the CSR trap vector base address. The trap vector base address can be different depending on whether the exception traps to S-Mode or M-Mode (user mode exceptions are currently not supported). It is the purpose of the CSR Unit to figure out where to trap to and present the correct address to PC Gen.
+* **Exception/Interrupt:** If an exception (or interrupt, which is in the context of RISC-V subsystems quite similar) is triggered by the COMMIT, the next PC Gen is assigned to the CSR trap vector base address. The trap vector base address can be different depending on whether the exception traps to S-Mode or M-Mode (user mode exceptions are currently not supported). It is the purpose of the CSR Unit to figure out where to trap to and present the correct address to PC Gen.
 
 * **Pipeline Flush:** When a CSR with side-effects gets written the whole pipeline is flushed by CONTROLLER and FRONTEND starts fetching from the next instruction again in order to take the up-dated information into account (for example virtual memory base pointer changes). The PC related to the flush action is provided by the COMMIT. Moreover flush is also transmitted to the CACHES through the next fetch CACHES access and instruction queue is reset.
 
@@ -196,7 +196,7 @@ All program counters are logical addressed. If the logical to physical mapping c
 Fetch Stage
 ~~~~~~~~~~~
 
-Fetch stage controls by handshake protocol the CACHE sub-system. Fetched data are 32-bit block with word aligned address. A granted fetch is realigned into instr_realign module to produce instructions. Then instructions are pushed into an internal instruction FIFO called instruction queue (instr_queue module). This module stores the instructions and related information which allow to identify the outstanding transactions. In the case CONTROLLER decides to flush the instruction queue, the outstanding transactions are discarded.
+Fetch stage controls by handshake protocol the CACHE module. Fetched data are 32-bit block with word aligned address. A granted fetch is realigned into instr_realign submodule to produce instructions. Then instructions are pushed into an internal instruction FIFO called instruction queue (instr_queue submodule). This submodule stores the instructions and related information which allow to identify the outstanding transactions. In the case CONTROLLER decides to flush the instruction queue, the outstanding transactions are discarded.
 
 *The Fetch stage asks the MMU (MMU is not enabled in CV32A6-step1) to translate the requested address.*
 
@@ -204,19 +204,19 @@ Memory *and MMU (MMU is not enabled in CV32A6-step1)* can feedback potential exc
 
 
 
-Architecture and Modules
-------------------------
+Architecture and Submodules
+---------------------------
 
 .. figure:: ../images/frontend_modules.png
-   :name: FRONTEND modules
+   :name: FRONTEND submodules
    :align: center
    :alt:
 
-   FRONTEND modules
+   FRONTEND submodules
 
 
-Instr_realign
-~~~~~~~~~~~~~
+Instr_realign submodule
+~~~~~~~~~~~~~~~~~~~~~~~
 
 .. list-table:: instr_realign interface signals
    :header-rows: 1
@@ -229,13 +229,13 @@ Instr_realign
 
    * - ``clk_i``
      - in
-     - SYSTEM
+     - SUBSYSTEM
      - logic
-     - System Clock
+     - Subystem Clock
 
    * - ``rst_ni``
      - in
-     - SYSTEM
+     - SUBSYSTEM
      - logic
      - Asynchronous reset active low
 
@@ -288,13 +288,13 @@ Instr_realign
      - Instruction is unaligned
 
 
-The 32-bit aligned block coming from the CACHE sub-system enters the instr_realign module. This module extracts the instructions from the 32-bit blocks, up to two instructions because it is possible to fetch two instructions when C extension is used. If the instructions are not compressed, it is possible that the instruction is not aligned on the block size but rather interleaved with two cache blocks. In that case, two cache accesses are needed. The instr_realign module provides at maximum one instruction per cycle. Not complete instruction is stored in instr_realign module before being provided in the next cycles.
+The 32-bit aligned block coming from the CACHE module enters the instr_realign submodule. This submodule extracts the instructions from the 32-bit blocks, up to two instructions because it is possible to fetch two instructions when C extension is used. If the instructions are not compressed, it is possible that the instruction is not aligned on the block size but rather interleaved with two cache blocks. In that case, two cache accesses are needed. The instr_realign submodule provides at maximum one instruction per cycle. Not complete instruction is stored in instr_realign submodule before being provided in the next cycles.
 
 In case of mispredict, flush, replay or branch predict, the instr_realign is re-initialized, the internal register storing the instruction alignment state is reset.
 
 
-Instr_queue
-~~~~~~~~~~~
+Instr_queue submodule
+~~~~~~~~~~~~~~~~~~~~~
 
 .. list-table:: instr_realign interface signals
    :header-rows: 1
@@ -307,13 +307,13 @@ Instr_queue
 
    * - ``clk_i``
      - in
-     - SYSTEM
+     - SUBSYSTEM
      - logic
-     - System Clock
+     - Subystem Clock
 
    * - ``rst_ni``
      - in
-     - SYSTEM
+     - SUBSYSTEM
      - logic
      - Asynchronous reset active low
 
@@ -420,8 +420,8 @@ The instruction queue can be flushed by CONTROLLER.
 
 
 
-Instr_scan
-~~~~~~~~~~
+Instr_scan submodule
+~~~~~~~~~~~~~~~~~~~~
 
 .. list-table:: instr_scan interface signals
    :header-rows: 1
@@ -517,11 +517,11 @@ Instr_scan
      -  Instruction compressed immediat
 
 
-The instr_scan module pre-decodes the fetched instructions, instructions could be compressed or not. The outputs are used by the branch prediction feature. The instr_scan module tells if the instruction is compressed and provides the intruction type: branch, jump, return, jalr, imm, call or others.
+The instr_scan submodule pre-decodes the fetched instructions, instructions could be compressed or not. The outputs are used by the branch prediction feature. The instr_scan submodule tells if the instruction is compressed and provides the intruction type: branch, jump, return, jalr, imm, call or others.
 
 
-BHT - Branch History Table
-~~~~~~~~~~~~~~~~~~~~~~~~~~
+BHT (Branch History Table) submodule
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 .. list-table:: BHT interface signals
    :header-rows: 1
@@ -534,19 +534,19 @@ BHT - Branch History Table
 
    * - ``clk_i``
      -  in
-     -  SYSTEM
+     -  SUBSYSTEM
      -  logic
-     -  System clock
+     -  Subystem clock
 
    * - ``rst_ni``
      -  in
-     -  SYSTEM
+     -  SUBSYSTEM
      -  logic
      -  Asynchronous reset active low
 
    * - ``flush_i``
      -  in
-     -  stuck at zero
+     -  tied at zero
      -  logic
      -  Flush request
 
@@ -590,13 +590,13 @@ The Branch History table is a two-bit saturation counter that takes the virtual 
 
 The BHT is not updated if processor is in debug mode.
 
-When a branch instruction is pre-decoded by instr_scan module, the BHT informs whether the PC address is in the BHT. In this case, the BHT predicts whether the branch is taken and provides the corresponding target address.
+When a branch instruction is pre-decoded by instr_scan submodule, the BHT informs whether the PC address is in the BHT. In this case, the BHT predicts whether the branch is taken and provides the corresponding target address.
 
 The BTB is never flushed.
 
 
-BTB - Branch Target Buffer
-~~~~~~~~~~~~~~~~~~~~~~~~~~
+BTB (Branch Target Buffer) submodule
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 .. list-table:: BTB interface signals
    :header-rows: 1
@@ -609,19 +609,19 @@ BTB - Branch Target Buffer
 
    * - ``clk_i``
      -  in
-     -  SYSTEM
+     -  SUBSYSTEM
      -  logic
-     -  System clock
+     -  Subystem clock
 
    * - ``rst_ni``
      -  in
-     -  SYSTEM
+     -  SUBSYSTEM
      -  logic
      -  Asynchronous reset active low
 
    * - ``flush_i``
      -  in
-     -  stuck at zero
+     -  tied at zero
      -  logic
      -  Flush request state
 
@@ -656,14 +656,14 @@ The information is stored in a 8 entry table.
 
 The BTB is not updated if processor is in debug mode.
 
-When a branch instruction is pre-decoded by instr_scan module, the BTB informs whether the input PC address is in BTB. In this case, the BTB provides the corresponding target address.
+When a branch instruction is pre-decoded by instr_scan submodule, the BTB informs whether the input PC address is in BTB. In this case, the BTB provides the corresponding target address.
 
 The BTB is never flushed.
 
 
 
-RAS - Return Address Stack
-~~~~~~~~~~~~~~~~~~~~~~~~~~
+RAS (Return Address Stack) submodule
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 .. list-table:: RAS interface signals
    :header-rows: 1
@@ -676,19 +676,19 @@ RAS - Return Address Stack
 
    * - ``clk_i``
      -  in
-     -  SYSTEM
+     -  SUBSYSTEM
      -  logic
-     -  System clock
+     -  Subystem clock
 
    * - ``rst_ni``
      -  in
-     -  SYSTEM
+     -  SUBSYSTEM
      -  logic
      -  Asynchronous reset active low
 
    * - ``flush_i``
      -  in
-     -  Stuck at zero
+     -  tied at zero
      -  logic
      -  Flush request
 
@@ -721,7 +721,7 @@ When an unconditional jumps to a known target address (JAL instruction) is consu
 
 The RAS FIFO depth is 2.
 
-When a branch instruction is pre-decoded by instr_scan module, the RAS informs whether the input PC address is in RAS. In this case, the RAS provides the corresponding target address.
+When a branch instruction is pre-decoded by instr_scan submodule, the RAS informs whether the input PC address is in RAS. In this case, the RAS provides the corresponding target address.
 
 The RAS is never flushed.
 
