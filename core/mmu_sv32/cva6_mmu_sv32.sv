@@ -285,7 +285,14 @@ module cva6_mmu_sv32 import ariane_pkg::*; #(
         if (enable_translation_i) begin
             // we work with SV32, so if VM is enabled, check that all bits [riscv::VLEN-1:riscv::SV-1] are equal
             if (icache_areq_i.fetch_req && !((&icache_areq_i.fetch_vaddr[riscv::VLEN-1:riscv::SV-1]) == 1'b1 || (|icache_areq_i.fetch_vaddr[riscv::VLEN-1:riscv::SV-1]) == 1'b0)) begin
-                icache_areq_o.fetch_exception = {riscv::INSTR_ACCESS_FAULT, {{riscv::XLEN-riscv::VLEN{1'b0}}, icache_areq_i.fetch_vaddr}, 1'b1};
+                icache_areq_o.fetch_exception = {
+                    riscv::INSTR_ACCESS_FAULT,
+                    {{riscv::XLEN-riscv::VLEN{1'b0}}, icache_areq_i.fetch_vaddr},
+                    {riscv::XLEN{1'b0}},
+                    {riscv::XLEN{1'b0}},
+                    1'b0,
+                    1'b1
+                };
             end
 
             icache_areq_o.fetch_valid = 1'b0;
@@ -307,9 +314,25 @@ module cva6_mmu_sv32 import ariane_pkg::*; #(
                 // we got an access error
                 if (iaccess_err) begin
                     // throw a page fault
-                    icache_areq_o.fetch_exception = {riscv::INSTR_PAGE_FAULT, {{riscv::XLEN-riscv::VLEN{1'b0}}, icache_areq_i.fetch_vaddr}, 1'b1};//to check on wave --> not connected
+                    //to check on wave --> not connected
+                    icache_areq_o.fetch_exception = {
+                        riscv::INSTR_PAGE_FAULT,
+                        {{riscv::XLEN-riscv::VLEN{1'b0}}, icache_areq_i.fetch_vaddr},
+                        {riscv::XLEN{1'b0}},
+                        {riscv::XLEN{1'b0}},
+                        1'b0,
+                        1'b1
+                    };
                 end else if (!pmp_instr_allow) begin
-                    icache_areq_o.fetch_exception = {riscv::INSTR_ACCESS_FAULT, icache_areq_i.fetch_vaddr, 1'b1};//to check on wave --> not connected
+                    //to check on wave --> not connected
+                    icache_areq_o.fetch_exception = {
+                        riscv::INSTR_ACCESS_FAULT,
+                        icache_areq_i.fetch_vaddr,
+                        {riscv::XLEN{1'b0}},
+                        {riscv::XLEN{1'b0}},
+                        1'b0,
+                        1'b1
+                    };
                 end
             end else
             // ---------
@@ -318,15 +341,39 @@ module cva6_mmu_sv32 import ariane_pkg::*; #(
             // watch out for exceptions happening during walking the page table
             if (ptw_active && walking_instr) begin
                 icache_areq_o.fetch_valid = ptw_error | ptw_access_exception;
-                if (ptw_error) icache_areq_o.fetch_exception = {riscv::INSTR_PAGE_FAULT, {{riscv::XLEN-riscv::VLEN{1'b0}}, update_vaddr}, 1'b1};//to check on wave
+                //to check on wave
+                if (ptw_error) icache_areq_o.fetch_exception = {
+                                    riscv::INSTR_PAGE_FAULT,
+                                    {{riscv::XLEN-riscv::VLEN{1'b0}}, update_vaddr},
+                                    {riscv::XLEN{1'b0}},
+                                    {riscv::XLEN{1'b0}},
+                                    1'b0,
+                                    1'b1
+                                };
                 // TODO(moschn,zarubaf): What should the value of tval be in this case?
-                else icache_areq_o.fetch_exception = {riscv::INSTR_ACCESS_FAULT, ptw_bad_paddr[riscv::PLEN-1:2], 1'b1};//to check on wave --> not connected
+                //to check on wave --> not connected
+                else icache_areq_o.fetch_exception = {
+                        riscv::INSTR_ACCESS_FAULT,
+                        ptw_bad_paddr[riscv::PLEN-1:2],
+                        {riscv::XLEN{1'b0}},
+                        {riscv::XLEN{1'b0}},
+                        1'b0,
+                        1'b1
+                    };
             end
         end
         // if it didn't match any execute region throw an `Instruction Access Fault`
         // or: if we are not translating, check PMPs immediately on the paddr
         if (!match_any_execute_region || (!enable_translation_i && !pmp_instr_allow)) begin
-          icache_areq_o.fetch_exception = {riscv::INSTR_ACCESS_FAULT, icache_areq_o.fetch_paddr[riscv::PLEN-1:2], 1'b1};//to check on wave --> not connected
+            //to check on wave --> not connected
+            icache_areq_o.fetch_exception = {
+                riscv::INSTR_ACCESS_FAULT,
+                icache_areq_o.fetch_paddr[riscv::PLEN-1:2],
+                {riscv::XLEN{1'b0}},
+                {riscv::XLEN{1'b0}},
+                1'b0,
+                1'b1
+            };
         end
     end
 
@@ -417,20 +464,51 @@ module cva6_mmu_sv32 import ariane_pkg::*; #(
                     // check if the page is write-able and we are not violating privileges
                     // also check if the dirty flag is set
                     if (!dtlb_pte_q.w || daccess_err || !dtlb_pte_q.d) begin
-                        lsu_exception_o = {riscv::STORE_PAGE_FAULT, {{riscv::XLEN-riscv::VLEN{lsu_vaddr_q[riscv::VLEN-1]}},lsu_vaddr_q}, 1'b1}; //to check on wave
+                        //to check on wave
+                        lsu_exception_o = {
+                            riscv::STORE_PAGE_FAULT,
+                            {{riscv::XLEN-riscv::VLEN{lsu_vaddr_q[riscv::VLEN-1]}},lsu_vaddr_q},
+                            {riscv::XLEN{1'b0}},
+                            {riscv::XLEN{1'b0}},
+                            1'b0,
+                            1'b1
+                        };
                     // Check if any PMPs are violated
                     end else if (!pmp_data_allow) begin
-                        lsu_exception_o = {riscv::ST_ACCESS_FAULT, lsu_paddr_o[riscv::PLEN-1:2], 1'b1}; //only 32 bits on 34b of lsu_paddr_o are returned.
+                        //only 32 bits on 34b of lsu_paddr_o are returned.
+                        lsu_exception_o = {
+                            riscv::ST_ACCESS_FAULT,
+                            lsu_paddr_o[riscv::PLEN-1:2],
+                            {riscv::XLEN{1'b0}},
+                            {riscv::XLEN{1'b0}},
+                            1'b0,
+                            1'b1
+                        };
                     end
 
                 // this is a load
                 end else begin
                     // check for sufficient access privileges - throw a page fault if necessary
                     if (daccess_err) begin
-                        lsu_exception_o = {riscv::LOAD_PAGE_FAULT, {{riscv::XLEN-riscv::VLEN{lsu_vaddr_q[riscv::VLEN-1]}},lsu_vaddr_q}, 1'b1};
+                        lsu_exception_o = {
+                            riscv::LOAD_PAGE_FAULT,
+                            {{riscv::XLEN-riscv::VLEN{lsu_vaddr_q[riscv::VLEN-1]}},lsu_vaddr_q},
+                            {riscv::XLEN{1'b0}},
+                            {riscv::XLEN{1'b0}},
+                            1'b0,
+                            1'b1
+                        };
                     // Check if any PMPs are violated
                     end else if (!pmp_data_allow) begin
-                        lsu_exception_o = {riscv::LD_ACCESS_FAULT, lsu_paddr_o[riscv::PLEN-1:2], 1'b1}; //only 32 bits on 34b of lsu_paddr_o are returned.
+                        //only 32 bits on 34b of lsu_paddr_o are returned.
+                        lsu_exception_o = {
+                            riscv::LD_ACCESS_FAULT,
+                            lsu_paddr_o[riscv::PLEN-1:2],
+                            {riscv::XLEN{1'b0}},
+                            {riscv::XLEN{1'b0}},
+                            1'b0,
+                            1'b1
+                        };
                     end
                 end
             end else
@@ -446,9 +524,23 @@ module cva6_mmu_sv32 import ariane_pkg::*; #(
                     lsu_valid_o = 1'b1;
                     // the page table walker can only throw page faults
                     if (lsu_is_store_q) begin
-                        lsu_exception_o = {riscv::STORE_PAGE_FAULT, {{riscv::XLEN-riscv::VLEN{lsu_vaddr_q[riscv::VLEN-1]}},update_vaddr}, 1'b1};
+                        lsu_exception_o = {
+                            riscv::STORE_PAGE_FAULT,
+                            {{riscv::XLEN-riscv::VLEN{lsu_vaddr_q[riscv::VLEN-1]}},update_vaddr},
+                            {riscv::XLEN{1'b0}},
+                            {riscv::XLEN{1'b0}},
+                            1'b0,
+                            1'b1
+                        };
                     end else begin
-                        lsu_exception_o = {riscv::LOAD_PAGE_FAULT, {{riscv::XLEN-riscv::VLEN{lsu_vaddr_q[riscv::VLEN-1]}},update_vaddr}, 1'b1};
+                        lsu_exception_o = {
+                            riscv::LOAD_PAGE_FAULT,
+                            {{riscv::XLEN-riscv::VLEN{lsu_vaddr_q[riscv::VLEN-1]}},update_vaddr},
+                            {riscv::XLEN{1'b0}},
+                            {riscv::XLEN{1'b0}},
+                            1'b0,
+                            1'b1
+                        };
                     end
                 end
 
@@ -456,16 +548,37 @@ module cva6_mmu_sv32 import ariane_pkg::*; #(
                     // an error makes the translation valid
                     lsu_valid_o = 1'b1;
                     // the page table walker can only throw page faults
-                    lsu_exception_o = {riscv::LD_ACCESS_FAULT, ptw_bad_paddr[riscv::PLEN-1:2], 1'b1};
+                    lsu_exception_o = {
+                        riscv::LD_ACCESS_FAULT,
+                        ptw_bad_paddr[riscv::PLEN-1:2],
+                        {riscv::XLEN{1'b0}},
+                        {riscv::XLEN{1'b0}},
+                        1'b0,
+                        1'b1
+                    };
                 end
             end
         end
         // If translation is not enabled, check the paddr immediately against PMPs
         else if (lsu_req_q && !misaligned_ex_q.valid && !pmp_data_allow) begin
             if (lsu_is_store_q) begin
-                lsu_exception_o = {riscv::ST_ACCESS_FAULT, lsu_paddr_o[riscv::PLEN-1:2], 1'b1};
+                lsu_exception_o = {
+                    riscv::ST_ACCESS_FAULT,
+                    lsu_paddr_o[riscv::PLEN-1:2],
+                    {riscv::XLEN{1'b0}},
+                    {riscv::XLEN{1'b0}},
+                    1'b0,
+                    1'b1
+                };
             end else begin
-                lsu_exception_o = {riscv::LD_ACCESS_FAULT, lsu_paddr_o[riscv::PLEN-1:2], 1'b1};
+                lsu_exception_o = {
+                    riscv::LD_ACCESS_FAULT,
+                    lsu_paddr_o[riscv::PLEN-1:2],
+                    {riscv::XLEN{1'b0}},
+                    {riscv::XLEN{1'b0}},
+                    1'b0,
+                    1'b1
+                };
             end
         end
     end
