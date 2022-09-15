@@ -25,6 +25,9 @@ FLIST_TB   := $(CVA6_TB_DIR)/Flist.cva6_tb
 target     ?= cv64a6_imafdc_sv39
 FLIST_CORE := $(CVA6_REPO_DIR)/core/Flist.$(target)
 
+# Convert target name to a valid ISA name for DASM.
+target_isa ?= $(shell echo $(target) | cut -d_ -f1,2 | sed -e 's/^cv\(32\|64\)/rv\1/')
+
 VERDI           ?=
 path-var        ?=
 tool_path       ?=
@@ -71,13 +74,13 @@ spike:
 vcs-testharness:
 	make -C $(path_var) vcs_build target=$(target) defines=$(subst +define+,,$(isscomp_opts))
 	$(path_var)/work-vcs/simv $(if $(VERDI), -verdi -do $(path_var)/init_testharness.do,) +permissive -sv_lib $(path_var)/work-dpi/ariane_dpi +PRELOAD=$(elf) +permissive-off ++$(elf) $(issrun_opts)
-	$(tool_path)/spike-dasm < ./trace_rvfi_hart_00.dasm > $(log)
+	$(tool_path)/spike-dasm --isa=$(target_isa) < ./trace_rvfi_hart_00.dasm > $(log)
 	grep $(isspostrun_opts) ./trace_rvfi_hart_00.dasm
 
 veri-testharness:
 	make -C $(path_var) verilate target=$(target) defines=$(subst +define+,,$(isscomp_opts))
 	$(path_var)/work-ver/Variane_testharness $(elf) $(issrun_opts)
-	$(tool_path)/spike-dasm < ./trace_rvfi_hart_00.dasm > $(log)
+	$(tool_path)/spike-dasm --isa=$(target_isa) < ./trace_rvfi_hart_00.dasm > $(log)
 	grep $(isspostrun_opts) ./trace_rvfi_hart_00.dasm
 
 ###############################################################################
@@ -154,7 +157,7 @@ vcs_uvm_run:
 vcs-uvm:
 	make vcs_uvm_comp
 	make vcs_uvm_run
-	$(tool_path)/spike-dasm < ./trace_rvfi_hart_00.dasm > $(log)
+	$(tool_path)/spike-dasm --isa=$(target_isa) < ./trace_rvfi_hart_00.dasm > $(log)
 	grep $(isspostrun_opts) ./trace_rvfi_hart_00.dasm
 
 generate_cov_dash:
