@@ -164,6 +164,8 @@ module issue_stage import ariane_pkg::*; #(
         .lsu_rmask_i,
         .lsu_wmask_i,
         .lsu_addr_trans_id_i,
+        .rs1_forwarding_i      ( rs1_forwarding_o                          ),
+        .rs2_forwarding_i      ( rs2_forwarding_o                          ),
         .*
     );
 

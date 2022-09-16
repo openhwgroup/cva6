@@ -459,6 +459,8 @@ package ariane_pkg;
 `endif
 
     localparam bit CVXIF_PRESENT = cva6_config_pkg::CVA6ConfigCvxifEn;
+    localparam bit RVFI_PRESENT = cva6_config_pkg::CVA6ConfigRvfiEn;
+
     // ---------------
     // EX Stage
     // ---------------
@@ -668,7 +670,6 @@ package ariane_pkg;
         logic [riscv::XLEN-1:0]     lsu_addr;
         logic [(riscv::XLEN/8)-1:0] lsu_rmask;
         logic [(riscv::XLEN/8)-1:0] lsu_wmask;
-        logic [riscv::XLEN-1:0]     lsu_rdata;
         logic [riscv::XLEN-1:0]     lsu_wdata;
 
     } scoreboard_entry_t;
