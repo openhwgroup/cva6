@@ -69,7 +69,7 @@ module compressed_decoder
                             instr_o = {4'b0, instr_i[6:5], instr_i[12:10], 3'b000, 2'b01, instr_i[9:7], 3'b011, 2'b01, instr_i[4:2], riscv::OpcodeLoad};
                         end else begin
                             // CFLW: | funct3 (change to LW) | imm[5:3] | rs1' | imm[2|6] | rd' | C0 |
-                            instr_o = {5'b0, instr_i[5], instr_i[12:10], instr[6], 2'b00, 2'b01, instr_i[9:7], 3'b010, 2'b01, instr_i[4:2], riscv::OpcodeLoadFp};
+                            instr_o = {5'b0, instr_i[5], instr_i[12:10], instr_i[6], 2'b00, 2'b01, instr_i[9:7], 3'b010, 2'b01, instr_i[4:2], riscv::OpcodeLoadFp};
                         end
                     end
 
