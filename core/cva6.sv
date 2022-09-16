@@ -981,6 +981,8 @@ module cva6 import ariane_pkg::*; #(
       rvfi_o[i].mem_wdata = commit_instr_id_commit[i].lsu_wdata;
       rvfi_o[i].mem_rmask = commit_instr_id_commit[i].lsu_rmask;
       rvfi_o[i].mem_rdata = commit_instr_id_commit[i].lsu_rdata;
+      rvfi_o[i].rs1_rdata = fu_data_id_ex.operand_a;
+      rvfi_o[i].rs2_rdata = fu_data_id_ex.operand_b;
     end
   end
 `endif
