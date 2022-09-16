@@ -116,7 +116,13 @@ module ex_stage import ariane_pkg::*; #(
     output logic                                   dtlb_miss_o,
     // PMPs
     input  riscv::pmpcfg_t [15:0]                  pmpcfg_i,
-    input  logic[15:0][riscv::PLEN-3:0]            pmpaddr_i
+    input  logic[15:0][riscv::PLEN-3:0]            pmpaddr_i,
+
+    //RVFI
+    output [riscv::XLEN-1:0]                       lsu_addr_o,
+    output [(riscv::XLEN/8)-1:0]                   lsu_rmask_o,
+    output [(riscv::XLEN/8)-1:0]                   lsu_wmask_o,
+    output [ariane_pkg::TRANS_ID_BITS-1:0]         lsu_addr_trans_id_o
 );
 
     // -------------------------
@@ -327,7 +333,11 @@ module ex_stage import ariane_pkg::*; #(
         .amo_req_o,
         .amo_resp_i,
         .pmpcfg_i,
-        .pmpaddr_i
+        .pmpaddr_i,
+        .lsu_addr_o,
+        .lsu_rmask_o,
+        .lsu_wmask_o,
+        .lsu_addr_trans_id_o
     );
 
     if (CVXIF_PRESENT) begin : gen_cvxif

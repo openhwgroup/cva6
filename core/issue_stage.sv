@@ -77,7 +77,13 @@ module issue_stage import ariane_pkg::*; #(
     input  logic [NR_COMMIT_PORTS-1:0]               we_fpr_i,
 
     output scoreboard_entry_t [NR_COMMIT_PORTS-1:0]  commit_instr_o,
-    input  logic              [NR_COMMIT_PORTS-1:0]  commit_ack_i
+    input  logic              [NR_COMMIT_PORTS-1:0]  commit_ack_i,
+
+    //RVFI
+    input [riscv::XLEN-1:0]                          lsu_addr_i,
+    input [(riscv::XLEN/8)-1:0]                      lsu_rmask_i,
+    input [(riscv::XLEN/8)-1:0]                      lsu_wmask_i,
+    input [ariane_pkg::TRANS_ID_BITS-1:0]            lsu_addr_trans_id_i
 );
     // ---------------------------------------------------
     // Scoreboard (SB) <-> Issue and Read Operands (IRO)
@@ -154,6 +160,10 @@ module issue_stage import ariane_pkg::*; #(
         .trans_id_i            ( trans_id_i                                ),
         .wbdata_i              ( wbdata_i                                  ),
         .ex_i                  ( ex_ex_i                                   ),
+        .lsu_addr_i,
+        .lsu_rmask_i,
+        .lsu_wmask_i,
+        .lsu_addr_trans_id_i,
         .*
     );
 

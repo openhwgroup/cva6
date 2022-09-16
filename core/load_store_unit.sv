@@ -71,7 +71,13 @@ module load_store_unit import ariane_pkg::*; #(
     input  amo_resp_t                amo_resp_i,
     // PMP
     input  riscv::pmpcfg_t [15:0]    pmpcfg_i,
-    input  logic [15:0][riscv::PLEN-3:0] pmpaddr_i
+    input  logic [15:0][riscv::PLEN-3:0] pmpaddr_i,
+
+    //RVFI
+    output [riscv::XLEN-1:0]         lsu_addr_o,
+    output [(riscv::XLEN/8)-1:0]     lsu_rmask_o,
+    output [(riscv::XLEN/8)-1:0]     lsu_wmask_o,
+    output [ariane_pkg::TRANS_ID_BITS-1:0] lsu_addr_trans_id_o
 );
     // data is misaligned
     logic data_misaligned;
@@ -459,6 +465,11 @@ module load_store_unit import ariane_pkg::*; #(
         .ready_o            ( lsu_ready_o ),
         .*
     );
+
+    assign lsu_addr_o = lsu_ctrl.vaddr;
+    assign lsu_rmask_o = lsu_ctrl.fu == LOAD ? lsu_ctrl.be : '0;
+    assign lsu_wmask_o = lsu_ctrl.fu == STORE ? lsu_ctrl.be : '0;
+    assign lsu_addr_trans_id_o = lsu_ctrl.trans_id;
 
 endmodule
 

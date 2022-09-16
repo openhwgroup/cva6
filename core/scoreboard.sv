@@ -61,7 +61,13 @@ module scoreboard #(
   input logic [NR_WB_PORTS-1:0][riscv::XLEN-1:0]                wbdata_i,    // write data in
   input ariane_pkg::exception_t [NR_WB_PORTS-1:0]               ex_i,        // exception from a functional unit (e.g.: ld/st exception)
   input logic [NR_WB_PORTS-1:0]                                 wt_valid_i,  // data in is valid
-  input logic                                                   x_we_i       // cvxif we for writeback
+  input logic                                                   x_we_i,      // cvxif we for writeback
+
+  // RVFI
+  input [riscv::XLEN-1:0]                                       lsu_addr_i,
+  input [(riscv::XLEN/8)-1:0]                                   lsu_rmask_i,
+  input [(riscv::XLEN/8)-1:0]                                   lsu_wmask_i,
+  input [ariane_pkg::TRANS_ID_BITS-1:0]                         lsu_addr_trans_id_i
 );
   localparam int unsigned BITS_ENTRIES = $clog2(NR_ENTRIES);
 
@@ -134,6 +140,18 @@ module scoreboard #(
     // ------------
     // Write Back
     // ------------
+`ifdef RVFI_TRACE
+    if (lsu_rmask_i != 0) begin
+      mem_n[lsu_addr_trans_id_i].sbe.lsu_addr = lsu_addr_i;
+      mem_n[lsu_addr_trans_id_i].sbe.lsu_rmask = lsu_rmask_i;
+    end
+    if (lsu_wmask_i != 0) begin
+      mem_n[lsu_addr_trans_id_i].sbe.lsu_addr = lsu_addr_i;
+      mem_n[lsu_addr_trans_id_i].sbe.lsu_wmask = lsu_wmask_i;
+      mem_n[lsu_addr_trans_id_i].sbe.lsu_wdata = wbdata_i[2];
+    end
+`endif
+
     for (int unsigned i = 0; i < NR_WB_PORTS; i++) begin
       // check if this instruction was issued (e.g.: it could happen after a flush that there is still
       // something in the pipeline e.g. an incomplete memory operation)

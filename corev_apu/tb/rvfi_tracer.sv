@@ -39,8 +39,13 @@ module rvfi_tracer #(
         $fwrite(f, "core   0: 0x%h (0x%h) DASM(%h)\n",
           pc64, rvfi_i[i].insn, rvfi_i[i].insn);
         // Destination register information
-        $fwrite(f, "%h 0x%h (0x%h)",
-          rvfi_i[i].mode, pc64, rvfi_i[i].insn);
+        if (rvfi_i[i].insn[1:0] != 2'b11) begin
+          $fwrite(f, "%h 0x%h (0x%h)",
+            rvfi_i[i].mode, pc64, rvfi_i[i].insn[15:0]);
+        end else begin
+          $fwrite(f, "%h 0x%h (0x%h)",
+            rvfi_i[i].mode, pc64, rvfi_i[i].insn);
+        end
         // Decode instruction to know if destination register is FP register.
         // Handle both uncompressed and compressed instructions.
         if ( rvfi_i[i].insn[6:0] == 7'b1001111 ||
@@ -56,9 +61,21 @@ module rvfi_tracer #(
           $fwrite(f, " f%d 0x%h\n",
             rvfi_i[i].rd_addr, rvfi_i[i].rd_wdata);
         else if (rvfi_i[i].rd_addr != 0) begin
-          $fwrite(f, " x%d 0x%h\n",
-            rvfi_i[i].rd_addr, rvfi_i[i].rd_wdata);
-        end else $fwrite(f, "\n");
+          if (rvfi_i[i].mem_rmask != 0) begin
+            $fwrite(f, " x%d 0x%h mem 0x%h\n",
+              rvfi_i[i].rd_addr, rvfi_i[i].rd_wdata, rvfi_i[i].mem_addr);
+          end else begin
+            $fwrite(f, " x%d 0x%h\n",
+              rvfi_i[i].rd_addr, rvfi_i[i].rd_wdata);
+          end
+        end else begin
+          if (rvfi_i[i].mem_wmask != 0) begin
+            $fwrite(f, " mem 0x%h 0x%h\n",
+              rvfi_i[i].mem_addr, rvfi_i[i].mem_wdata);
+          end else begin
+            $fwrite(f, "\n");
+          end
+        end
         if (rvfi_i[i].insn == 32'h00000073) begin
           $finish(1);
           $finish(1);
