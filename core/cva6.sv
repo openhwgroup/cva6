@@ -973,9 +973,6 @@ module cva6 import ariane_pkg::*; #(
       rvfi_o[i].rd_wdata = ariane_pkg::is_rd_fpr(commit_instr_id_commit[i].op) == 0 ? wdata_commit_id[i] : commit_instr_id_commit[i].result;
       rvfi_o[i].pc_rdata = commit_instr_id_commit[i].pc;
 
-      rvfi_o[i].rs1_rdata = ex_stage_i.lsu_i.mmu_vaddr;
-      rvfi_o[i].rs2_rdata = ex_stage_i.lsu_i.mmu_vaddr;
-
       rvfi_o[i].mem_addr  = commit_instr_id_commit[i].lsu_addr;
       rvfi_o[i].mem_wmask = commit_instr_id_commit[i].lsu_wmask;
       rvfi_o[i].mem_wdata = commit_instr_id_commit[i].lsu_wdata;
