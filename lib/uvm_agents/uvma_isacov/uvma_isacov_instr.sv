@@ -53,11 +53,11 @@ class uvma_isacov_instr_c#(int ILEN=DEFAULT_ILEN,
   bit [5:0]  c_rs2s;
   bit [5:0]  c_rdp;
 
-  bit[31:0]     rs1_value;
+  bit[XLEN-1:0]     rs1_value;
   instr_value_t rs1_value_type;
-  bit[31:0]     rs2_value;
+  bit[XLEN-1:0]     rs2_value;
   instr_value_t rs2_value_type;
-  bit[31:0]     rd_value;
+  bit[XLEN-1:0]     rd_value;
   instr_value_t rd_value_type;
 
   instr_value_t immi_value_type;
@@ -117,7 +117,7 @@ class uvma_isacov_instr_c#(int ILEN=DEFAULT_ILEN,
   extern function bit is_conditional_branch();
   extern function bit is_branch_taken();
 
-  extern function instr_value_t              get_instr_value_type(bit[31:0] value, int unsigned width, bit is_signed);
+  extern function instr_value_t              get_instr_value_type(bit[XLEN-1:0] value, int unsigned width, bit is_signed);
   extern function int                        get_field_rd();
   extern function int                        get_field_rs1();
   extern function int                        get_field_rs2();
@@ -359,7 +359,7 @@ function bit uvma_isacov_instr_c::is_csr_write();
 endfunction : is_csr_write
 
 
-function instr_value_t uvma_isacov_instr_c::get_instr_value_type(bit[31:0] value, int unsigned width, bit is_signed);
+function instr_value_t uvma_isacov_instr_c::get_instr_value_type(bit[XLEN-1:0] value, int unsigned width, bit is_signed);
   if (value == 0)
     return ZERO;
 
