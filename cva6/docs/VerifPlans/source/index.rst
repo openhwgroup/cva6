@@ -23,4 +23,5 @@ CV32A6-step1 Design Verification Plan
    :caption: Contents:
 
    dvplan_intro
+   dvplan_FRONTEND
 
