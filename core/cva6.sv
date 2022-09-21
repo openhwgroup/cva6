@@ -972,7 +972,7 @@ module cva6 import ariane_pkg::*; #(
       rvfi_o[i].rd_addr  = commit_instr_id_commit[i].rd;
       rvfi_o[i].rd_wdata = ariane_pkg::is_rd_fpr(commit_instr_id_commit[i].op) == 0 ? wdata_commit_id[i] : commit_instr_id_commit[i].result;
       rvfi_o[i].pc_rdata = commit_instr_id_commit[i].pc;
-
+`ifdef RVFI_MEM
       rvfi_o[i].mem_addr  = commit_instr_id_commit[i].lsu_addr;
       rvfi_o[i].mem_wmask = commit_instr_id_commit[i].lsu_wmask;
       rvfi_o[i].mem_wdata = commit_instr_id_commit[i].lsu_wdata;
@@ -980,6 +980,7 @@ module cva6 import ariane_pkg::*; #(
       rvfi_o[i].mem_rdata = commit_instr_id_commit[i].result;
       rvfi_o[i].rs1_rdata = commit_instr_id_commit[i].rs1_rdata;
       rvfi_o[i].rs2_rdata = commit_instr_id_commit[i].rs2_rdata;
+`endif
     end
   end
 `endif
