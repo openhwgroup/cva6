@@ -57,25 +57,19 @@ module rvfi_tracer #(
                                                && rvfi_i[i].insn[31:26] != 6'b101000
                                                && rvfi_i[i].insn[31:26] != 6'b110000) ||
             (rvfi_i[i].insn[0] == 1'b0 && ((rvfi_i[i].insn[15:13] == 3'b001 && riscv::XLEN == 64) ||
-                                           (rvfi_i[i].insn[15:13] == 3'b011 && riscv::XLEN == 32) )))
-          $fwrite(f, " f%d 0x%h\n",
-            rvfi_i[i].rd_addr, rvfi_i[i].rd_wdata);
-        else if (rvfi_i[i].rd_addr != 0) begin
+                                           (rvfi_i[i].insn[15:13] == 3'b011 && riscv::XLEN == 32) ))) begin
+          $fwrite(f, " f%d 0x%h", rvfi_i[i].rd_addr, rvfi_i[i].rd_wdata);
+        end else if (rvfi_i[i].rd_addr != 0) begin
+          $fwrite(f, " x%d 0x%h", rvfi_i[i].rd_addr, rvfi_i[i].rd_wdata);
           if (rvfi_i[i].mem_rmask != 0) begin
-            $fwrite(f, " x%d 0x%h mem 0x%h\n",
-              rvfi_i[i].rd_addr, rvfi_i[i].rd_wdata, rvfi_i[i].mem_addr);
-          end else begin
-            $fwrite(f, " x%d 0x%h\n",
-              rvfi_i[i].rd_addr, rvfi_i[i].rd_wdata);
+            $fwrite(f, " mem 0x%h", rvfi_i[i].mem_addr);
           end
         end else begin
           if (rvfi_i[i].mem_wmask != 0) begin
-            $fwrite(f, " mem 0x%h 0x%h\n",
-              rvfi_i[i].mem_addr, rvfi_i[i].mem_wdata);
-          end else begin
-            $fwrite(f, "\n");
+            $fwrite(f, " mem 0x%h 0x%h", rvfi_i[i].mem_addr, rvfi_i[i].mem_wdata);
           end
         end
+        $fwrite(f, "\n");
         if (rvfi_i[i].insn == 32'h00000073) begin
           $finish(1);
           $finish(1);
