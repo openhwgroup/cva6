@@ -141,7 +141,7 @@ class MyListWidget(ttk.LabelFrame):
         # self.spin = ttk.Spinbox(self,values=spin_value)
         # Set the default value of the Spinbox to the first value in list if available.
         # if self.spin_value and isinstance(self.spin_value, tuple) and len(self.spin_value) > 0:
-        # 	self.spin.set(self.spin_value[0])
+        #   self.spin.set(self.spin_value[0])
         # self.spin.icursor(0)
         # self.spin.configure(state='readonly',command=self.spin_action)
         # self.spin.bind('<ButtonRelease-1>',self.spin_action)
@@ -149,7 +149,7 @@ class MyListWidget(ttk.LabelFrame):
         self.spin_vip_value = spin_vip_value
         # self.spin_vip = ttk.Spinbox(self,values=spin_vip_value)
         # if self.spin_vip_value and isinstance(self.spin_vip_value, tuple) and len(self.spin_vip_value) > 0:
-        # 	self.spin_vip.set(self.spin_vip_value[0])
+        #   self.spin_vip.set(self.spin_vip_value[0])
         # self.spin_vip.icursor(0)
         # self.spin_vip.configure(state='readonly',command=self.spin_action)
         ## config & pack
@@ -300,13 +300,13 @@ class MyListWidget(ttk.LabelFrame):
 
     def get_filter(self):
         # if self.spin_value:
-        # 	return self.spin.get()
+        #   return self.spin.get()
         # else:
         return "ALL"
 
     def get_filter_vip(self):
         # if self.spin_vip_value:
-        # 	return self.spin_vip.get()
+        #   return self.spin_vip.get()
         # else:
         return "ALL"
 
@@ -480,8 +480,8 @@ class MyMenuWidget(tk.Menu):
             self.MasterClass.prop_widget.unset_reordering()
 
     # def export_ip_stat(self):
-    # 	if ismethod(self.exportIpStatfunc):
-    # 		self.exportIpStatfunc()
+    #   if ismethod(self.exportIpStatfunc):
+    #       self.exportIpStatfunc()
     def lockfunc(self):
         if ismethod(self.lockfunc):
             self.lockfunc()
@@ -976,9 +976,9 @@ class MyTextWidget(ttk.LabelFrame):
         # self.proptag.configure(state='normal')
         # self.proptag.delete(0,tk.END)
         # if in_text:
-        # 	self.proptag.insert(1,"\\"+LATEX_INSERT_MACRO+"{"+in_text+"}")
+        #   self.proptag.insert(1,"\\"+LATEX_INSERT_MACRO+"{"+in_text+"}")
         # else:
-        # 	self.proptag.insert(1,in_text)
+        #   self.proptag.insert(1,in_text)
         # self.proptag.configure(state='readonly')
         pass
 
@@ -1219,7 +1219,7 @@ class MyMain:
             self.top.quit()
 
     #####################################
-    ### IP Section	#Note ip_list could be a class
+    ### IP Section  #Note ip_list could be a class
     def create_ip(self):
         field_name = vp_config.yaml_config["gui"]["ip"]["label"]
         ip_name = tkinter.simpledialog.askstring(
@@ -1229,7 +1229,7 @@ class MyMain:
         )
         ip_index = ""
         # if STANDALONE_VERIF:
-        # 	ip_index = tkinter.simpledialog.askstring('%s Index' % field_name,prompt='Enter %s index' % field_index.lower(),parent=self.top)
+        #   ip_index = tkinter.simpledialog.askstring('%s Index' % field_name,prompt='Enter %s index' % field_index.lower(),parent=self.top)
         # check name doesn't exist yet
         if ip_name in list(self.ip_list.keys()) or ip_name == "":
             tkinter.messagebox.showwarning(
@@ -1726,6 +1726,19 @@ class MyMain:
                     pickle_ip_list = sorted(
                         list(self.ip_list.items()), key=lambda key: key[1].ip_num
                     )
+                    # Create DVPLAN in Markdown format
+                    with open(
+                        "../source/dvplan_" + vp_config.PROJECT_NAME + ".md", "w"
+                    ) as md_file:
+                        md_file.write("# %s module\n\n" % (vp_config.PROJECT_NAME))
+                        for ip_elt in pickle_ip_list:
+                            md_file.write(str(ip_elt[1]))
+                            for rfu1_elt in ip_elt[1].rfu_list:
+                                md_file.write(str(rfu1_elt[1]))
+                                for rfu2_elt in rfu1_elt[1].rfu_list:
+                                    # Generate only when cores = cv32a6-step1
+                                    if rfu2_elt[1].cores == 8:
+                                        md_file.write(str(rfu2_elt[1]))
                     if self.split_save:
                         save_dir = os.path.dirname(vp_config.SAVED_DB_LOCATION)
                         saved_ip_str = ""
