@@ -754,7 +754,7 @@ def setup_parser():
                       help="GCC compile options")
   parser.add_argument("--issrun_opts", type=str, default="+debug_disable=1",
                       help="simulation run options")
-  parser.add_argument("--isscomp_opts", type=str, default="+define+WT_DCACHE+RVFI_TRACE",
+  parser.add_argument("--isscomp_opts", type=str, default="+define+WT_DCACHE+RVFI_TRACE+RVFI_MEM",
                       help="simulation comp options")
   parser.add_argument("--isspostrun_opts", type=str, default="0x0000000080000000",
                       help="simulation post run options")
