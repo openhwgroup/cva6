@@ -39,8 +39,13 @@ module rvfi_tracer #(
         $fwrite(f, "core   0: 0x%h (0x%h) DASM(%h)\n",
           pc64, rvfi_i[i].insn, rvfi_i[i].insn);
         // Destination register information
-        $fwrite(f, "%h 0x%h (0x%h)",
-          rvfi_i[i].mode, pc64, rvfi_i[i].insn);
+        if (rvfi_i[i].insn[1:0] != 2'b11) begin
+          $fwrite(f, "%h 0x%h (0x%h)",
+            rvfi_i[i].mode, pc64, rvfi_i[i].insn[15:0]);
+        end else begin
+          $fwrite(f, "%h 0x%h (0x%h)",
+            rvfi_i[i].mode, pc64, rvfi_i[i].insn);
+        end
         // Decode instruction to know if destination register is FP register.
         // Handle both uncompressed and compressed instructions.
         if ( rvfi_i[i].insn[6:0] == 7'b1001111 ||
@@ -52,13 +57,19 @@ module rvfi_tracer #(
                                                && rvfi_i[i].insn[31:26] != 6'b101000
                                                && rvfi_i[i].insn[31:26] != 6'b110000) ||
             (rvfi_i[i].insn[0] == 1'b0 && ((rvfi_i[i].insn[15:13] == 3'b001 && riscv::XLEN == 64) ||
-                                           (rvfi_i[i].insn[15:13] == 3'b011 && riscv::XLEN == 32) )))
-          $fwrite(f, " f%d 0x%h\n",
-            rvfi_i[i].rd_addr, rvfi_i[i].rd_wdata);
-        else if (rvfi_i[i].rd_addr != 0) begin
-          $fwrite(f, " x%d 0x%h\n",
-            rvfi_i[i].rd_addr, rvfi_i[i].rd_wdata);
-        end else $fwrite(f, "\n");
+                                           (rvfi_i[i].insn[15:13] == 3'b011 && riscv::XLEN == 32) ))) begin
+          $fwrite(f, " f%d 0x%h", rvfi_i[i].rd_addr, rvfi_i[i].rd_wdata);
+        end else if (rvfi_i[i].rd_addr != 0) begin
+          $fwrite(f, " x%d 0x%h", rvfi_i[i].rd_addr, rvfi_i[i].rd_wdata);
+          if (rvfi_i[i].mem_rmask != 0) begin
+            $fwrite(f, " mem 0x%h", rvfi_i[i].mem_addr);
+          end
+        end else begin
+          if (rvfi_i[i].mem_wmask != 0) begin
+            $fwrite(f, " mem 0x%h 0x%h", rvfi_i[i].mem_addr, rvfi_i[i].mem_wdata);
+          end
+        end
+        $fwrite(f, "\n");
         if (rvfi_i[i].insn == 32'h00000073) begin
           $finish(1);
           $finish(1);

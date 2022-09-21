@@ -47,7 +47,7 @@ module store_unit import ariane_pkg::*; (
     output dcache_req_i_t            req_port_o
 );
     // it doesn't matter what we are writing back as stores don't return anything
-    assign result_o = '0;
+    assign result_o = lsu_ctrl_i.data;
 
     enum logic [1:0] {
         IDLE,
