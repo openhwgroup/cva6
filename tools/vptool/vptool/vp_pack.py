@@ -72,6 +72,20 @@ class Item:
         self.rfu_dict = {}  # used as lock. will be updated with class update
         self.rfu_dict["lock_status"] = 0
 
+    def __str__(self):
+        return0 = ""
+        return0 += format("#### %s item\n\n" % self.name)
+        return0 += format("* **Requirement location:** %s\n" % self.purpose)
+        return0 += format("* **Feature Description:** %s\n" % self.description)
+        return0 += format("* **Verification goals:** %s\n" % self.verif_goals)
+        return0 += format("* **Pass/Fail Criteria:** %s\n" % self.pfc)
+        return0 += format("* **Test Type:** %s\n" % self.test_type)
+        return0 += format("* **Coverage Method:** %s\n" % self.cov_method)
+        return0 += format("* **Applicable Cores:** %s\n" % self.cores)
+        return0 += format("* **Link to Coverage:** %s\n" % self.tag)
+        return0 += format("* **Comments:** %s\n\n" % self.comments)
+        return return0
+
     def __del__(self):
         self.__class__.count -= 1
 
@@ -125,6 +139,9 @@ class Prop:
         self.rfu_list_1 = []
         self.rfu_list_2 = []
         self.rfu_dict = {}
+
+    def __str__(self):
+        return format("### %s sub-feature\n\n" % (self.name))
 
     def prop_clone(self):
         new_prop = Prop()
@@ -244,6 +261,9 @@ class Ip:
         self.rfu_list = []
         self.rfu_list_0 = []
         self.rfu_list_1 = []
+
+    def __str__(self):
+        return format("## %s feature\n\n" % (self.name))
 
     def add_property(self, name, tag="", custom_num=""):  # adds an Prop instance to Ip
         if name in list(self.prop_list.keys()):
