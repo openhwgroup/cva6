@@ -74,7 +74,7 @@ module load_store_unit import ariane_pkg::*; #(
     input  logic [15:0][riscv::PLEN-3:0] pmpaddr_i,
 
     //RVFI
-    output [riscv::XLEN-1:0]         lsu_addr_o,
+    output [riscv::VLEN-1:0]         lsu_addr_o,
     output [(riscv::XLEN/8)-1:0]     lsu_rmask_o,
     output [(riscv::XLEN/8)-1:0]     lsu_wmask_o,
     output [ariane_pkg::TRANS_ID_BITS-1:0] lsu_addr_trans_id_o

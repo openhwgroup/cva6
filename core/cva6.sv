@@ -252,7 +252,7 @@ module cva6 import ariane_pkg::*; #(
   logic                     dcache_commit_wbuffer_empty;
   logic                     dcache_commit_wbuffer_not_ni;
 
-  logic [riscv::XLEN-1:0]               lsu_addr;
+  logic [riscv::VLEN-1:0]               lsu_addr;
   logic [(riscv::XLEN/8)-1:0]           lsu_rmask;
   logic [(riscv::XLEN/8)-1:0]           lsu_wmask;
   logic [ariane_pkg::TRANS_ID_BITS-1:0] lsu_addr_trans_id;

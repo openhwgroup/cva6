@@ -118,8 +118,8 @@ module ex_stage import ariane_pkg::*; #(
     input  riscv::pmpcfg_t [15:0]                  pmpcfg_i,
     input  logic[15:0][riscv::PLEN-3:0]            pmpaddr_i,
 
-    //RVFI
-    output [riscv::XLEN-1:0]                       lsu_addr_o,
+    // RVFI
+    output [riscv::VLEN-1:0]                       lsu_addr_o,
     output [(riscv::XLEN/8)-1:0]                   lsu_rmask_o,
     output [(riscv::XLEN/8)-1:0]                   lsu_wmask_o,
     output [ariane_pkg::TRANS_ID_BITS-1:0]         lsu_addr_trans_id_o

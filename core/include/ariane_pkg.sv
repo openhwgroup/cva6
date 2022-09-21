@@ -664,12 +664,12 @@ package ariane_pkg;
         logic                     is_compressed; // signals a compressed instructions, we need this information at the commit stage if
                                                  // we want jump accordingly e.g.: +4, +2
 `ifdef RVFI_MEM
-        logic [riscv::XLEN-1:0]     rs1_rdata;
-        logic [riscv::XLEN-1:0]     rs2_rdata;
-        logic [riscv::XLEN-1:0]     lsu_addr;
+        riscv::xlen_t               rs1_rdata;
+        riscv::xlen_t               rs2_rdata;
+        logic [riscv::VLEN-1:0]     lsu_addr;
         logic [(riscv::XLEN/8)-1:0] lsu_rmask;
         logic [(riscv::XLEN/8)-1:0] lsu_wmask;
-        logic [riscv::XLEN-1:0]     lsu_wdata;
+        riscv::xlen_t               lsu_wdata;
 `endif
     } scoreboard_entry_t;
 
