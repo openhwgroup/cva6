@@ -241,13 +241,11 @@ package riscv;
     localparam OpcodeC0Addi4spn     = 3'b000;
     localparam OpcodeC0Fld          = 3'b001;
     localparam OpcodeC0Lw           = 3'b010;
-    localparam OpcodeC0Ld           = 3'b011; // for RV64 only
-    localparam OpcodeC0Flw          = 3'b011; // for RV32 only
+    localparam OpcodeC0Ld           = 3'b011;
     localparam OpcodeC0Rsrvd        = 3'b100;
     localparam OpcodeC0Fsd          = 3'b101;
     localparam OpcodeC0Sw           = 3'b110;
-    localparam OpcodeC0Sd           = 3'b111; // for RV64 only
-    localparam OpcodeC0Fsw          = 3'b111; // for RV32 only
+    localparam OpcodeC0Sd           = 3'b111;
     // Quadrant 1
     localparam OpcodeC1             = 2'b01;
     localparam OpcodeC1Addi         = 3'b000;
@@ -264,13 +262,11 @@ package riscv;
     localparam OpcodeC2Slli         = 3'b000;
     localparam OpcodeC2Fldsp        = 3'b001;
     localparam OpcodeC2Lwsp         = 3'b010;
-    localparam OpcodeC2Ldsp         = 3'b011; // for RV64 only
-    localparam OpcodeC2Flwsp        = 3'b011; // for RV32(F) only
+    localparam OpcodeC2Ldsp         = 3'b011;
     localparam OpcodeC2JalrMvAdd    = 3'b100;
     localparam OpcodeC2Fsdsp        = 3'b101;
     localparam OpcodeC2Swsp         = 3'b110;
-    localparam OpcodeC2Sdsp         = 3'b111; // for RV64 only
-    localparam OpcodeC2Fswsp        = 3'b111; // for RV32(F) only
+    localparam OpcodeC2Sdsp         = 3'b111;
 
     // ----------------------
     // Virtual Memory
