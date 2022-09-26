@@ -31,7 +31,7 @@
 +incdir+${CVA6_REPO_DIR}/common/submodules/common_cells/src/
 +incdir+${CVA6_REPO_DIR}/common/local/util/
 
-${CVA6_REPO_DIR}/core/include/cv32a6_imac_sv0_config_pkg.sv
+${CVA6_REPO_DIR}/core/include/cv32a60x_config_pkg.sv
 // Broken (?) dependencies in packages:
 //    - include/ariane_pkg.sv is dependent on src/riscv-dbg/src/dm_pkg.sv
 //      (ariane should not depend on debug-module)
