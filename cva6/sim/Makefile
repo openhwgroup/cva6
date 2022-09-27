@@ -28,6 +28,8 @@ FLIST_CORE := $(CVA6_REPO_DIR)/core/Flist.$(target)
 # Convert target name to a valid ISA name for DASM.
 target_isa ?= $(shell echo $(target) | cut -d_ -f1,2 | sed -e 's/^cv\(32\|64\)/rv\1/')
 
+TRACE_FAST      ?=
+TRACE_COMPACT   ?=
 VERDI           ?=
 path-var        ?=
 tool_path       ?=
@@ -36,6 +38,40 @@ issrun_opts     ?=
 isspostrun_opts ?=
 log             ?=
 variant         ?=
+
+# TRACE_FAST, TRACE_COMPACT and VERDI are mutually exclusive and imply non-empty DEBUG.
+ifneq ($(TRACE_FAST),)
+ifneq ($(TRACE_COMPACT),)
+$(error Variables TRACE_FAST and TRACE_COMPACT are mutually exclusive, please unset one of them)
+endif
+ifneq ($(VERDI),)
+$(error Variables TRACE_FAST and VERDI are mutually exclusive, please unset one of them)
+endif
+DEBUG=1
+endif
+
+ifneq ($(TRACE_COMPACT),)
+ifneq ($(TRACE_FAST),)
+$(error Variables TRACE_COMPACT and TRACE_FAST are mutually exclusive, please unset one of them)
+endif
+ifneq ($(VERDI),)
+$(error Variables TRACE_COMPACT and VERDI are mutually exclusive, please unset one of them)
+endif
+DEBUG=1
+endif
+
+ifneq ($(VERDI),)
+ifneq ($(TRACE_COMPACT),)
+$(error Variables VERDI and TRACE_COMPACT are mutually exclusive, please unset one of them)
+endif
+ifneq ($(TRACE_FAST),)
+$(error Variables VERDI and TRACE_FAST are mutually exclusive, please unset one of them)
+endif
+DEBUG=1
+endif
+
+# Make these variables available to sub-Makefiles.
+export DEBUG TRACE_FAST TRACE_COMPACT
 
 TESTNAME := $(shell basename -s .o $(elf))
 
@@ -79,8 +115,11 @@ vcs-testharness:
 
 veri-testharness:
 	make -C $(path_var) verilate target=$(target) defines=$(subst +define+,,$(isscomp_opts))
-	$(path_var)/work-ver/Variane_testharness $(elf) $(issrun_opts)
+	$(path_var)/work-ver/Variane_testharness $(if $(TRACE_COMPACT), -f verilator.fst) $(if $(TRACE_FAST), -v verilator.vcd) $(elf) $(issrun_opts)
 	$(tool_path)/spike-dasm --isa=$(target_isa) < ./trace_rvfi_hart_00.dasm > $(log)
+	# If present, move default trace files to per-test directory.
+	[ ! -f verilator.fst ] || mv verilator.fst `dirname $(log)`/`basename $(log) .log`.$(target).fst
+	[ ! -f verilator.vcd ] || mv verilator.vcd `dirname $(log)`/`basename $(log) .log`.$(target).vcd
 	grep $(isspostrun_opts) ./trace_rvfi_hart_00.dasm
 
 ###############################################################################
@@ -123,10 +162,29 @@ ALL_UVM_FLAGS           = -lca -sverilog +incdir+/opt/synopsys/vcs-mx/O-2018.09-
 	  /opt/synopsys/vcs-mx/O-2018.09-SP1-1/etc/uvm/src/uvm_pkg.sv +UVM_VERBOSITY=UVM_MEDIUM -ntb_opts uvm-1.2 -timescale=1ns/1ps \
 	  -assert svaext -race=all -ignore unique_checks -full64 -q +incdir+/opt/synopsys/vcs-mx/O-2018.09-SP1-1/etc/uvm/src \
 	  +incdir+$(CORE_V_VERIF)/$(CV_CORE_LC)/env/uvme +incdir+$(CORE_V_VERIF)/$(CV_CORE_LC)/tb/uvmt \
-	  $(if $(VERDI), -debug_access+all -kdb,)
+	  $(if $(DEBUG), -debug_access+all $(if $(VERDI), -kdb) $(if $(TRACE_COMPACT),+vcs+fsdbon))
+
 ALL_SIMV_UVM_FLAGS      = -licwait 20 -l +ntb_random_seed=1 \
 		-sv_lib $(CORE_V_VERIF)/lib/dpi_dasm/lib/Linux64/libdpi_dasm +signature=I-ADD-01.signature_output \
-		+UVM_TESTNAME=uvmt_cva6_firmware_test_c $(if $(VERDI), -gui -do $(CORE_V_VERIF)/cva6/sim/init_uvm.do,)
+		+UVM_TESTNAME=uvmt_cva6_firmware_test_c
+
+ifneq ($(DEBUG),)               # If RTL DEBUG support requested
+  ifneq ($(VERDI),)             #   If VERDI interactive mode requested, use GUI and do not run simulation
+  ALL_SIMV_UVM_FLAGS       += \
+                 -gui -do $(CORE_V_VERIF)/cva6/sim/init_uvm.do
+  else                          #   else: *not* VERDI, use CLI mode and appropriate batch dump controls
+    ifneq ($(TRACE_FAST),)      #     TRACE_FAST: Generate waveform trace in VPD format
+      ALL_SIMV_UVM_FLAGS   += \
+                 -ucli -do $(CORE_V_VERIF)/cva6/sim/init_run_uvm_vpd.do
+      SIMV_TRACE_EXTN      = vpd
+    endif
+    ifneq ($(TRACE_COMPACT),)   #     TRACE_COMPACT: Generate waveform trace in FSDB format
+      ALL_SIMV_UVM_FLAGS   += \
+                 -ucli -do $(CORE_V_VERIF)/cva6/sim/init_run_uvm_fsdb.do
+      SIMV_TRACE_EXTN      = fsdb
+    endif
+  endif
+endif
 
 dpi-library = $(VCS_WORK_DIR)/work-dpi
 dpi_build:
@@ -146,26 +204,32 @@ vcs_uvm_comp: dpi_build
 	  -top uvmt_cva6_tb
 
 vcs_uvm_run:
+	$(if $(TRACE_FAST), unset VERDI_HOME ;) \
 	cd $(VCS_WORK_DIR)/ && \
 	$(VCS_WORK_DIR)/simv ${ALL_SIMV_UVM_FLAGS} \
 	++$(elf) \
 	+PRELOAD=$(elf) \
 	-sv_lib $(dpi-library)/ariane_dpi \
-	$(cov-run-opt) $(issrun_opts)&& \
-	mv $(VCS_WORK_DIR)/trace_rvfi_hart_00.dasm $(CORE_V_VERIF)/cva6/sim/
+	$(cov-run-opt) $(issrun_opts) && \
+	mv $(VCS_WORK_DIR)/trace_rvfi_hart_00.dasm $(CORE_V_VERIF)/cva6/sim/ && \
+	{ [ -z "`ls $(VCS_WORK_DIR)/*.$(SIMV_TRACE_EXTN)`" ] || \
+	  for i in `ls $(VCS_WORK_DIR)/*.$(SIMV_TRACE_EXTN)` ; do mv $$i $(CORE_V_VERIF)/cva6/sim/`basename $$i` ; done || \
+	  true ; }
 
 vcs-uvm:
 	make vcs_uvm_comp
 	make vcs_uvm_run
 	$(tool_path)/spike-dasm --isa=$(target_isa) < ./trace_rvfi_hart_00.dasm > $(log)
 	grep $(isspostrun_opts) ./trace_rvfi_hart_00.dasm
+	[ -z "`ls *.$(SIMV_TRACE_EXTN)`" ] || \
+          for i in `ls *.$(SIMV_TRACE_EXTN)` ; do mv $$i `dirname $(log)`/`basename $(log) .log`.$(target).$$i ; done || true
 
 generate_cov_dash:
 	urg -dir $(VCS_WORK_DIR)/simv.vdb
 
 vcs_clean_all:
 	@echo "[VCS] Cleanup (entire vcs_work dir)"
-	rm -rf $(CORE_V_VERIF)/cva6/sim/vcs_results/ verdiLog/ simv* *.daidir *.vpd *.db csrc ucli.key vc_hdrs.h novas* inter.fsdb uart
+	rm -rf $(CORE_V_VERIF)/cva6/sim/vcs_results/ verdiLog/ simv* *.daidir *.vpd *.fsdb *.db csrc ucli.key vc_hdrs.h novas* inter.fsdb uart
 
 ###############################################################################
 # Common targets and rules
@@ -175,6 +239,7 @@ clean_all: vcs_clean_all
 	rm -f *.txt
 	rm -f trace*.log
 	rm -f trace*.dasm
+	rm -f *.vpd *.fsdb *.vcd *.fst
 
 help:
 	@echo "Shell environment:"
