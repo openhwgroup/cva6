@@ -364,7 +364,7 @@ def gcc_compile(test_list, output_dir, isa, mabi, opts, debug_cmd, linker):
         cmd += test['gcc_opts']
       if 'gen_opts' in test:
         # Disable compressed instruction
-        if re.search('disable_compressed_instr', test['gen_opts']):
+        if re.search('disable_compressed_instr=1', test['gen_opts']):
           test_isa = re.sub("c",  "", test_isa)
       # If march/mabi is not defined in the test gcc_opts, use the default
       # setting from the command line.
