@@ -36,7 +36,6 @@ key_word="Mismatch[1]:"
 #Read from the iss_regr.log to detect the failed tests
 logfile=out_$dd/iss_regr.log      
 j=0;
-make clean_all
 rm -rf out_$dd
 
 if [[ "$list_num" = 0 ]];then
@@ -106,7 +105,6 @@ while [[ $j -lt ${#TEST_NAME[@]} ]];do
       fi
     done
   done < $logfile
-  make clean_all
   rm -rf out_$dd
   j=$((j+1))
 done
