@@ -7,16 +7,16 @@
 
    Original Author: Jean-Roch COULON (jean-roch.coulon@thalesgroup.com)
 
-.. _CVA6_SYSTEM:
+.. _CVA6_SUBSYSTEM:
 
 
-CV32A6-step1 System
-===================
+CV32A6-step1 Subsystem
+======================
 
 Description
 -----------
 
-The CV32A6-step1 is a system composed of the subsystems and protocol interfaces as illustrated in the figure. The processor is a Harvard-based modern architecture. Instructions are issued in-order through the DECODE stage and executed out-of-order but committed in-order. The processor is Single issue, that means that at maximum one instruction per cycle can be issued to the EXECUTE stage.
+The CV32A6-step1 is a subsystem composed of the modules and protocol interfaces as illustrated in the figure. The processor is a Harvard-based modern architecture. Instructions are issued in-order through the DECODE stage and executed out-of-order but committed in-order. The processor is Single issue, that means that at maximum one instruction per cycle can be issued to the EXECUTE stage.
 
 The CV32A6 implements a 6-stage pipeline composed of PC Generation, Instruction Detch, Instruction Decode, Issue stage, Execute stage and Commit stage. At least 6 cycles are needed to execute one instruction.
 
@@ -32,7 +32,7 @@ The CV32A6 implements a 6-stage pipeline composed of PC Generation, Instruction 
    * - ``clk_i``
      - in
      - logic
-     - system clock
+     - subsystem clock
 
    * - ``rst_ni``
      - in
@@ -202,13 +202,24 @@ The CV32A4-step1 core is fully synthesizable. It has been designed mainly for AS
 For ASIC synthesis, the whole design is completely synchronous and uses positive-edge triggered flip-flops. The core occupies an area of about 80 kGE. The clock frequency can be more than 1GHz depending of technology.
 
 
-Architecture
-------------
+Architecture and Modules
+----------------------------
 
-.. figure:: ../images/CVA6_subsystems.png
-   :name: CVA6 System
+The cv32a6-step1 subsystem is composed of 8 modules.
+
+.. figure:: ../images/subsystems.png
+   :name: CVA6 modules
    :align: center
    :alt:
 
-   CV32A6-step1 System
+   CV32A6-step1 modules
+
+Connections between modules are illustrated in the following block diagram. FRONTEND, DECODE, ISSUE, EXECUTE, COMMIT and CONTROLLER are part of the pipeline. And CACHES implements the instruction and data caches and CSRFILE contains registers.
+
+.. figure:: ../images/CVA6_subsystems.png
+   :name: CVA6 subsystem
+   :align: center
+   :alt:
+
+   CV32A6-step1 pipeline and modules
 
