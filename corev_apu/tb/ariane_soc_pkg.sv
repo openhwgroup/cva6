@@ -89,7 +89,8 @@ package ariane_soc;
     SwapEndianess:          1'b0,
     // debug
     DmBaseAddress:          DebugBase,
-    NrPMPEntries:           8
+    NrPMPEntries:           8,
+    AccessRegionLength:     64'hC000_0000
   };
 
 endpackage

@@ -196,6 +196,7 @@ module mmu import ariane_pkg::*; #(
     //-----------------------
     logic match_any_execute_region;
     logic pmp_instr_allow;
+    logic is_fetch_access_ex;
 
     // The instruction interface is a simple request response interface
     always_comb begin : instr_interface
@@ -259,15 +260,17 @@ module mmu import ariane_pkg::*; #(
                 else icache_areq_o.fetch_exception = {riscv::INSTR_ACCESS_FAULT, {{riscv::XLEN-riscv::PLEN{1'b0}}, ptw_bad_paddr}, 1'b1};
             end
         end
-        // if it didn't match any execute region throw an `Instruction Access Fault`
+        // if it didn't match any execute region or access region throw an `Instruction Access Fault`
         // or: if we are not translating, check PMPs immediately on the paddr
         if ((!match_any_execute_region && !ptw_error) || (!enable_translation_i && !pmp_instr_allow)) begin
+        if ((!match_any_execute_region && !ptw_error) || (!enable_translation_i && !pmp_instr_allow) || !is_fetch_access_ex) begin
           icache_areq_o.fetch_exception = {riscv::INSTR_ACCESS_FAULT, {{riscv::XLEN-riscv::PLEN{1'b0}}, icache_areq_o.fetch_paddr}, 1'b1};
         end
     end
 
     // check for execute flag on memory
     assign match_any_execute_region = ariane_pkg::is_inside_execute_regions(ArianeCfg, {{64-riscv::PLEN{1'b0}}, icache_areq_o.fetch_paddr});
+    assign is_fetch_access_ex = ariane_pkg::is_inside_access_regions(ArianeCfg, {{64-riscv::PLEN{1'b0}}, icache_areq_o.fetch_paddr});
 
     // Instruction fetch
     pmp #(
@@ -291,6 +294,7 @@ module mmu import ariane_pkg::*; #(
     logic [riscv::VLEN-1:0] lsu_vaddr_n,     lsu_vaddr_q;
     riscv::pte_t dtlb_pte_n,      dtlb_pte_q;
     exception_t  misaligned_ex_n, misaligned_ex_q;
+    logic        is_data_access_ex;
     logic        lsu_req_n,       lsu_req_q;
     logic        lsu_is_store_n,  lsu_is_store_q;
     logic        dtlb_hit_n,      dtlb_hit_q;
@@ -299,6 +303,7 @@ module mmu import ariane_pkg::*; #(
 
     // check if we need to do translation or if we are always ready (e.g.: we are not translating anything)
     assign lsu_dtlb_hit_o = (en_ld_st_translation_i) ? dtlb_lu_hit :  1'b1;
+    assign is_data_access_ex = ariane_pkg::is_inside_access_regions(ArianeCfg, {{64-riscv::PLEN{1'b0}}, lsu_paddr_o});
 
     // Wires to PMP checks
     riscv::pmp_access_t pmp_access_type;
@@ -361,8 +366,8 @@ module mmu import ariane_pkg::*; #(
                     // also check if the dirty flag is set
                     if (!dtlb_pte_q.w || daccess_err || !dtlb_pte_q.d) begin
                         lsu_exception_o = {riscv::STORE_PAGE_FAULT, {{riscv::XLEN-riscv::VLEN{lsu_vaddr_q[riscv::VLEN-1]}},lsu_vaddr_q}, 1'b1};
-                    // Check if any PMPs are violated
-                    end else if (!pmp_data_allow) begin
+                    // Check if any PMPs are violated or data is not in access range
+                    end else if (!pmp_data_allow ||!is_data_access_ex) begin
                         lsu_exception_o = {riscv::ST_ACCESS_FAULT, {{riscv::XLEN-riscv::PLEN{1'b0}}, lsu_paddr_o}, 1'b1};
                     end
 
@@ -371,8 +376,8 @@ module mmu import ariane_pkg::*; #(
                     // check for sufficient access privileges - throw a page fault if necessary
                     if (daccess_err) begin
                         lsu_exception_o = {riscv::LOAD_PAGE_FAULT, {{riscv::XLEN-riscv::VLEN{lsu_vaddr_q[riscv::VLEN-1]}},lsu_vaddr_q}, 1'b1};
-                    // Check if any PMPs are violated
-                    end else if (!pmp_data_allow) begin
+                    // Check if any PMPs are violated or data is not in access range
+                    end else if (!pmp_data_allow || !is_data_access_ex) begin
                         lsu_exception_o = {riscv::LD_ACCESS_FAULT, {{riscv::XLEN-riscv::PLEN{1'b0}}, lsu_paddr_o}, 1'b1};
                     end
                 end
@@ -407,8 +412,8 @@ module mmu import ariane_pkg::*; #(
                 end
             end
         end
-        // If translation is not enabled, check the paddr immediately against PMPs
-        else if (lsu_req_q && !misaligned_ex_q.valid && !pmp_data_allow) begin
+        // If translation is not enabled, check the paddr immediately against PMPs and check that data is in access range
+        else if (lsu_req_q && !misaligned_ex_q.valid && !pmp_data_allow || (lsu_req_q && !is_data_access_ex)) begin
             if (lsu_is_store_q) begin
                 lsu_exception_o = {riscv::ST_ACCESS_FAULT, {{riscv::XLEN-riscv::PLEN{1'b0}}, lsu_paddr_o}, 1'b1};
             end else begin

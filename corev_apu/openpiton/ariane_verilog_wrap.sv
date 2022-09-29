@@ -37,7 +37,8 @@ module ariane_verilog_wrap
   parameter logic [NrMaxRules*64-1:0]  CachedRegionAddrBase  = '0,
   parameter logic [NrMaxRules*64-1:0]  CachedRegionLength    = '0,
   // PMP
-  parameter int unsigned               NrPMPEntries          =  8
+  parameter int unsigned               NrPMPEntries          =  8,
+  parameter logic [63:0]               AccessRegionLength    =  64'h0
 ) (
   input                       clk_i,
   input                       reset_l,      // this is an openpiton-specific name, do not change (hier. paths in TB use this)
@@ -190,7 +191,9 @@ module ariane_verilog_wrap
     SwapEndianess:         SwapEndianess,
     // debug
     DmBaseAddress:         DmBaseAddress,
-    NrPMPEntries:          NrPMPEntries
+    NrPMPEntries:          NrPMPEntries,
+    //Access Region
+    AccessRegionLength:    AccessRegionLength
   };
 
   ariane #(

@@ -51,7 +51,8 @@ module tb import ariane_pkg::*; import std_cache_pkg::*; import tb_pkg::*; #()()
     SwapEndianess:         1'b0,
     // debug
     DmBaseAddress:         64'h0,
-    NrPMPEntries:          0
+    NrPMPEntries:          0,
+    AccessRegionLength:    64'hC000_0000
   };
 
   // contention and invalidation rates (in %)

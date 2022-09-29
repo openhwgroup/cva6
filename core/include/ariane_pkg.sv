@@ -53,6 +53,7 @@ package ariane_pkg;
       //
       logic [63:0]                      DmBaseAddress;         // offset of the debug module
       int unsigned                      NrPMPEntries;          // Number of PMP entries
+      logic [63:0]                      AccessRegionLength;
     } ariane_cfg_t;
 
     localparam ariane_cfg_t ArianeDefaultConfig = '{
@@ -76,7 +77,9 @@ package ariane_pkg;
       SwapEndianess:          1'b0,
       // debug
       DmBaseAddress:          64'h0,
-      NrPMPEntries:           8
+      NrPMPEntries:           8,
+      //Access Region
+      AccessRegionLength:     64'hC000_0000
     };
 
     // Function being called to check parameters
@@ -126,6 +129,13 @@ package ariane_pkg;
       end
       return |pass;
     endfunction : is_inside_cacheable_regions
+
+    function automatic logic is_inside_access_regions (ariane_cfg_t Cfg, logic[63:0] address);
+      automatic logic pass;
+      pass = '0;
+      pass = range_check(Cfg.DmBaseAddress, Cfg.AccessRegionLength, address);
+      return |pass;
+    endfunction : is_inside_access_regions
 
     // TODO: Slowly move those parameters to the new system.
     localparam NR_SB_ENTRIES = 8; // number of scoreboard entries
