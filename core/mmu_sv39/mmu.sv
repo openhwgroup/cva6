@@ -208,7 +208,7 @@ module mmu import ariane_pkg::*; #(
         icache_areq_o.fetch_exception      = '0;
         // Check whether we are allowed to access this memory region from a fetch perspective
         iaccess_err   = icache_areq_i.fetch_req && enable_translation_i
-												 && (((priv_lvl_i == riscv::PRIV_LVL_U) && ~itlb_content.u)
+                                                 && (((priv_lvl_i == riscv::PRIV_LVL_U) && ~itlb_content.u)
                                                  || ((priv_lvl_i == riscv::PRIV_LVL_S) && itlb_content.u));
 
         // MMU enabled: address from TLB, request delayed until hit. Error when TLB

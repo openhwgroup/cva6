@@ -746,7 +746,7 @@ module riscv_peripherals #(
   plic_top #(
     .N_SOURCE    ( NumSources      ),
     .N_TARGET    ( 2*NumHarts      ),
-	.MAX_PRIO    ( PlicMaxPriority ),
+    .MAX_PRIO    ( PlicMaxPriority ),
     .reg_req_t   ( plic_req_t      ),
     .reg_rsp_t   ( plic_rsp_t      )
   ) i_plic (
