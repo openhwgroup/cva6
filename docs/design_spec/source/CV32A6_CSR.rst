@@ -117,14 +117,14 @@ Floating-Point Accrued Exceptions (``fflags``)
 .. csv-table::
    :widths: auto
    :align: left
-   :header: "Bits", "Name", "Display Name", "Access Type", "Read Behavior", "Write Behavior", "Reset"
+   :header: "Bits", "Name", "Display Name", "Access Type", "Reset"
 
-   "[31:5]", "``reserved_0``", "Reserved", "RO", "R", "W", "0b0"
-   "[4]", "``NV``", "Invalid Operation", "RW", "R", "W", "0b0"
-   "[3]", "``DZ``", "Divide by Zero", "RW", "R", "W", "0b0"
-   "[2]", "``OF``", "Overflow", "RW", "R", "W", "0b0"
-   "[1]", "``UF``", "Underflow", "RW", "R", "W", "0b0"
-   "[0]", "``NX``", "Inexact", "RW", "R", "W", "0b0"
+   "[31:5]", "``reserved_0``", "Reserved", "RO", "0b0"
+   "[4]", "``NV``", "Invalid Operation", "RW", "0b0"
+   "[3]", "``DZ``", "Divide by Zero", "RW", "0b0"
+   "[2]", "``OF``", "Overflow", "RW", "0b0"
+   "[1]", "``UF``", "Underflow", "RW", "0b0"
+   "[0]", "``NX``", "Inexact", "RW", "0b0"
 
 :Invalid Operation (``NV``): The accrued exception flags indicate the exception conditions that have arisen on any floating-point arithmetic instruction since the field was last reset by software. The base RISC-V ISA does not support generating a trap on the setting of a floating-point exception flag.
 
@@ -149,10 +149,10 @@ Floating-Point Dynamic Rounding Mode (``frm``)
 .. csv-table::
    :widths: auto
    :align: left
-   :header: "Bits", "Name", "Display Name", "Access Type", "Read Behavior", "Write Behavior", "Reset"
+   :header: "Bits", "Name", "Display Name", "Access Type", "Reset"
 
-   "[31:3]", "``reserved_0``", "Reserved", "RO", "R", "W", "0b0"
-   "[2:0]", "``FRM``", "Floating-Point Rounding Mode", "RW", "R", "W", "0b0"
+   "[31:3]", "``reserved_0``", "Reserved", "RO", "0b0"
+   "[2:0]", "``FRM``", "Floating-Point Rounding Mode", "RW", "0b0"
 
 :Floating-Point Rounding Mode (``FRM``): Floating-point operations use either a static rounding mode encoded in the instruction, or a dynamic rounding mode held in ``frm``. Rounding modes are encoded as shown in the enumerated value. A value of 111 in
     the instruction’s *rm* field selects the dynamic rounding mode held in ``frm``. If ``frm`` is set to an invalid value (101–111), any subsequent attempt to execute a floating-point operation with a dynamic rounding mode will raise an illegal instruction exception. Some instructions, including widening conversions, have the *rm* field but are nevertheless unaffected by the rounding mode; software should set their *rm* field to RNE (000).
@@ -188,15 +188,15 @@ Floating-Point Control and Status Register (``fcsr``)
 .. csv-table::
    :widths: auto
    :align: left
-   :header: "Bits", "Name", "Display Name", "Access Type", "Read Behavior", "Write Behavior", "Reset"
+   :header: "Bits", "Name", "Display Name", "Access Type", "Reset"
 
-   "[31:8]", "``reserved_0``", "Reserved", "RO", "R", "W", "0b0"
-   "[7:5]", "``FRM``", "Floating-Point Rounding Mode", "RW", "R", "W", "0b0"
-   "[4]", "``NV``", "Invalid Operation", "RW", "R", "W", "0b0"
-   "[3]", "``DZ``", "Divide by Zero", "RW", "R", "W", "0b0"
-   "[2]", "``OF``", "Overflow", "RW", "R", "W", "0b0"
-   "[1]", "``UF``", "Underflow", "RW", "R", "W", "0b0"
-   "[0]", "``NX``", "Inexact", "RW", "R", "W", "0b0"
+   "[31:8]", "``reserved_0``", "Reserved", "RO", "0b0"
+   "[7:5]", "``FRM``", "Floating-Point Rounding Mode", "RW", "0b0"
+   "[4]", "``NV``", "Invalid Operation", "RW", "0b0"
+   "[3]", "``DZ``", "Divide by Zero", "RW", "0b0"
+   "[2]", "``OF``", "Overflow", "RW", "0b0"
+   "[1]", "``UF``", "Underflow", "RW", "0b0"
+   "[0]", "``NX``", "Inexact", "RW", "0b0"
 
 :Floating-Point Rounding Mode (``FRM``): Floating-point operations use either a static rounding mode encoded in the instruction, or a dynamic rounding mode held in ``frm``. Rounding modes are encoded as shown in the enumerated value. A value of 111 in
     the instruction’s *rm* field selects the dynamic rounding mode held in ``frm``. If ``frm`` is set to an invalid value (101–111), any subsequent attempt to execute a floating-point operation with a dynamic rounding mode will raise an illegal instruction exception. Some instructions, including widening conversions, have the *rm* field but are nevertheless unaffected by the rounding mode; software should set their *rm* field to RNE (000).
@@ -239,23 +239,23 @@ Supervisor Status (``sstatus``)
 .. csv-table::
    :widths: auto
    :align: left
-   :header: "Bits", "Name", "Display Name", "Access Type", "Read Behavior", "Write Behavior", "Reset"
+   :header: "Bits", "Name", "Display Name", "Access Type", "Reset"
 
-   "[31]", "``SD``", "State Dirty", "RO", "R", "NA", "0b0"
-   "[30:20]", "``reserved_0``", "Reserved", "RO", "R", "W", "0b0"
-   "[19]", "``MXR``", "Make eXecutable Readable", "RW", "R", "W", "0b0"
-   "[18]", "``SUM``", "Supervisor User Memory", "RW", "R", "W", "0b0"
-   "[17]", "``reserved_1``", "Reserved", "RO", "R", "W", "0b0"
-   "[16:15]", "``XS``", "Extension State", "RO", "R", "NA", "0b0"
-   "[14:13]", "``FS``", "Floating-point unit State", "RW", "R", "W", "0b0"
-   "[12:9]", "``reserved_2``", "Reserved", "RO", "R", "W", "0b0"
-   "[8]", "``SPP``", "Supervisor mode Prior Privilege", "RW", "R", "W", "0b0"
-   "[7:6]", "``reserved_3``", "Reserved", "RO", "R", "W", "0b0"
-   "[5]", "``SPIE``", "Supervisor mode Prior Interrupt Enable", "RW", "R", "W", "0b0"
-   "[4]", "``UPIE``", "", "RW", "R", "W", "0b0"
-   "[3:2]", "``reserved_4``", "Reserved", "RO", "R", "W", "0b0"
-   "[1]", "``SIE``", "Supervisor mode Interrupt Enable", "RW", "R", "W", "0b0"
-   "[0]", "``UIE``", "", "RW", "R", "W", "0b0"
+   "[31]", "``SD``", "State Dirty", "RO", "0b0"
+   "[30:20]", "``reserved_0``", "Reserved", "RO", "0b0"
+   "[19]", "``MXR``", "Make eXecutable Readable", "RW", "0b0"
+   "[18]", "``SUM``", "Supervisor User Memory", "RW", "0b0"
+   "[17]", "``reserved_1``", "Reserved", "RO", "0b0"
+   "[16:15]", "``XS``", "Extension State", "RO", "0b0"
+   "[14:13]", "``FS``", "Floating-point unit State", "RW", "0b0"
+   "[12:9]", "``reserved_2``", "Reserved", "RO", "0b0"
+   "[8]", "``SPP``", "Supervisor mode Prior Privilege", "RW", "0b0"
+   "[7:6]", "``reserved_3``", "Reserved", "RO", "0b0"
+   "[5]", "``SPIE``", "Supervisor mode Prior Interrupt Enable", "RW", "0b0"
+   "[4]", "``UPIE``", "", "RW", "0b0"
+   "[3:2]", "``reserved_4``", "Reserved", "RO", "0b0"
+   "[1]", "``SIE``", "Supervisor mode Interrupt Enable", "RW", "0b0"
+   "[0]", "``UIE``", "", "RW", "0b0"
 
 :State Dirty (``SD``): The SD bit is a read-only bit that summarizes whether either the FS, VS, or XS fields signal the presence of some dirty state that will require saving extended user context to memory. If FS, XS, and VS are all read-only zero, then SD is also always zero.
 
@@ -313,17 +313,17 @@ Supervisor Interrupt Enable (``sie``)
 .. csv-table::
    :widths: auto
    :align: left
-   :header: "Bits", "Name", "Display Name", "Access Type", "Read Behavior", "Write Behavior", "Reset"
+   :header: "Bits", "Name", "Display Name", "Access Type", "Reset"
 
-   "[31:10]", "``reserved_0``", "Reserved", "RO", "R", "W", "0b0"
-   "[9]", "``SEIE``", "Supervisor-level External Interrupt Enable", "RW", "R", "W", "0b0"
-   "[8]", "``UEIE``", "", "RW", "R", "W", "0b0"
-   "[7:6]", "``reserved_1``", "Reserved", "RO", "R", "W", "0b0"
-   "[5]", "``STIE``", "Supervisor-level Timer Interrupt Enable", "RW", "R", "W", "0b0"
-   "[4]", "``UTIE``", "", "RW", "R", "W", "0b0"
-   "[3:2]", "``reserved_2``", "Reserved", "RO", "R", "W", "0b0"
-   "[1]", "``SSIE``", "Supervisor-level Software Interrupt Enable", "RW", "R", "W", "0b0"
-   "[0]", "``USIE``", "", "RW", "R", "W", "0b0"
+   "[31:10]", "``reserved_0``", "Reserved", "RO", "0b0"
+   "[9]", "``SEIE``", "Supervisor-level External Interrupt Enable", "RW", "0b0"
+   "[8]", "``UEIE``", "", "RW", "0b0"
+   "[7:6]", "``reserved_1``", "Reserved", "RO", "0b0"
+   "[5]", "``STIE``", "Supervisor-level Timer Interrupt Enable", "RW", "0b0"
+   "[4]", "``UTIE``", "", "RW", "0b0"
+   "[3:2]", "``reserved_2``", "Reserved", "RO", "0b0"
+   "[1]", "``SSIE``", "Supervisor-level Software Interrupt Enable", "RW", "0b0"
+   "[0]", "``USIE``", "", "RW", "0b0"
 
 :Supervisor-level External Interrupt Enable (``SEIE``): SEIE is the interrupt-enable bit for supervisor-level external interrupts.
 
@@ -350,10 +350,10 @@ Supervisor Trap Vector Base Address (``stvec``)
 .. csv-table::
    :widths: auto
    :align: left
-   :header: "Bits", "Name", "Display Name", "Access Type", "Read Behavior", "Write Behavior", "Reset"
+   :header: "Bits", "Name", "Display Name", "Access Type", "Reset"
 
-   "[31:2]", "``BASE``", "", "RW", "R", "W", "0b0"
-   "[1:0]", "``MODE``", "", "RW", "R", "W", "0b0"
+   "[31:2]", "``BASE``", "", "RW", "0b0"
+   "[1:0]", "``MODE``", "", "RW", "0b0"
 
 :``BASE``: The BASE field in stvec is a WARL field that can hold any valid virtual or physical address, subject to the following alignment constraints: the address must be 4-byte aligned, and MODE settings other than Direct might impose additional alignment constraints on the value in the BASE field.
 
@@ -380,12 +380,12 @@ Supervisor Counter Enable (``scounteren``)
 .. csv-table::
    :widths: auto
    :align: left
-   :header: "Bits", "Name", "Display Name", "Access Type", "Read Behavior", "Write Behavior", "Reset"
+   :header: "Bits", "Name", "Display Name", "Access Type", "Reset"
 
-   "[31:3]", "``HPMn``", "Hpmcountern", "RW", "R", "W", "0b0"
-   "[2]", "``IR``", "Instret", "RW", "R", "W", "0b0"
-   "[1]", "``TM``", "Time", "RW", "R", "W", "0b0"
-   "[0]", "``CY``", "Cycle", "RW", "R", "W", "0b0"
+   "[31:3]", "``HPMn``", "Hpmcountern", "RW", "0b0"
+   "[2]", "``IR``", "Instret", "RW", "0b0"
+   "[1]", "``TM``", "Time", "RW", "0b0"
+   "[0]", "``CY``", "Cycle", "RW", "0b0"
 
 :Hpmcountern (``HPMn``): When HPMn is clear, attempts to read the ``hpmcountern`` register while executing in U-mode will cause an illegal instruction exception. When this bit is set, access to the corresponding register is permitted.
 
@@ -408,9 +408,9 @@ Supervisor Scratch (``sscratch``)
 .. csv-table::
    :widths: auto
    :align: left
-   :header: "Bits", "Name", "Display Name", "Access Type", "Read Behavior", "Write Behavior", "Reset"
+   :header: "Bits", "Name", "Display Name", "Access Type", "Reset"
 
-   "[31:0]", "``SSCRATCH``", "Supervisor Scratch", "RW", "R", "W", "0b0"
+   "[31:0]", "``SSCRATCH``", "Supervisor Scratch", "RW", "0b0"
 
 :Supervisor Scratch (``SSCRATCH``): Typically, ``sscratch`` is used to hold a pointer to the hart-local supervisor context while the hart is executing user code. At the beginning of a trap handler, ``sscratch`` is swapped with a user register to provide an initial working register.
 
@@ -427,9 +427,9 @@ Supervisor Exception Program Counter (``sepc``)
 .. csv-table::
    :widths: auto
    :align: left
-   :header: "Bits", "Name", "Display Name", "Access Type", "Read Behavior", "Write Behavior", "Reset"
+   :header: "Bits", "Name", "Display Name", "Access Type", "Reset"
 
-   "[31:0]", "``SEPC``", "Supervisor Exception Program Counter", "RW", "R", "W", "0b0"
+   "[31:0]", "``SEPC``", "Supervisor Exception Program Counter", "RW", "0b0"
 
 :Supervisor Exception Program Counter (``SEPC``): The low bit of SEPC (SEPC[0]) is always zero. On implementations that support only IALIGN=32, the two low bits (SEPC[1:0]) are always zero.
 
@@ -482,10 +482,10 @@ Supervisor Cause (``scause``)
 .. csv-table::
    :widths: auto
    :align: left
-   :header: "Bits", "Name", "Display Name", "Access Type", "Read Behavior", "Write Behavior", "Reset"
+   :header: "Bits", "Name", "Display Name", "Access Type", "Reset"
 
-   "[31]", "``Interrupt``", "", "RW", "R", "W", "0b0"
-   "[30:0]", "``Exception_Code``", "Exception Code", "RW", "R", "W", "0b0"
+   "[31]", "``Interrupt``", "", "RW", "0b0"
+   "[30:0]", "``Exception_Code``", "Exception Code", "RW", "0b0"
 
 :``Interrupt``: The Interrupt bit in the ``scause`` register is set if the trap was caused by an interrupt.
 
@@ -504,9 +504,9 @@ Supervisor Trap Value (``stval``)
 .. csv-table::
    :widths: auto
    :align: left
-   :header: "Bits", "Name", "Display Name", "Access Type", "Read Behavior", "Write Behavior", "Reset"
+   :header: "Bits", "Name", "Display Name", "Access Type", "Reset"
 
-   "[31:0]", "``STVAL``", "Supervisor Trap Value", "RW", "R", "W", "0b0"
+   "[31:0]", "``STVAL``", "Supervisor Trap Value", "RW", "0b0"
 
 :Supervisor Trap Value (``STVAL``): If ``stval`` is written with a nonzero value when a breakpoint, address-misaligned, access-fault, or page-fault exception occurs on an instruction fetch, load, or store, then ``stval`` will contain the faulting virtual address.
     
@@ -535,17 +535,17 @@ Supervisor Interrupt Pending (``sip``)
 .. csv-table::
    :widths: auto
    :align: left
-   :header: "Bits", "Name", "Display Name", "Access Type", "Read Behavior", "Write Behavior", "Reset"
+   :header: "Bits", "Name", "Display Name", "Access Type", "Reset"
 
-   "[31:10]", "``reserved_0``", "Reserved", "RO", "R", "W", "0b0"
-   "[9]", "``SEIP``", "Supervisor-level External Interrupt Pending", "RO", "R", "NA", "0b0"
-   "[8]", "``UEIP``", "", "RW", "R", "W", "0b0"
-   "[7:6]", "``reserved_1``", "Reserved", "RO", "R", "W", "0b0"
-   "[5]", "``STIP``", "Supervisor-level Timer Interrupt Pending", "RO", "R", "NA", "0b0"
-   "[4]", "``UTIP``", "", "RW", "R", "W", "0b0"
-   "[3:2]", "``reserved_2``", "Reserved", "RO", "R", "W", "0b0"
-   "[1]", "``SSIP``", "Supervisor-level Software Interrupt Pending", "RO", "R", "NA", "0b0"
-   "[0]", "``USIP``", "", "RW", "R", "W", "0b0"
+   "[31:10]", "``reserved_0``", "Reserved", "RO", "0b0"
+   "[9]", "``SEIP``", "Supervisor-level External Interrupt Pending", "RO", "0b0"
+   "[8]", "``UEIP``", "", "RW", "0b0"
+   "[7:6]", "``reserved_1``", "Reserved", "RO", "0b0"
+   "[5]", "``STIP``", "Supervisor-level Timer Interrupt Pending", "RO", "0b0"
+   "[4]", "``UTIP``", "", "RW", "0b0"
+   "[3:2]", "``reserved_2``", "Reserved", "RO", "0b0"
+   "[1]", "``SSIP``", "Supervisor-level Software Interrupt Pending", "RO", "0b0"
+   "[0]", "``USIP``", "", "RW", "0b0"
 
 :Supervisor-level External Interrupt Pending (``SEIP``): SEIP is the interrupt-pending bit for supervisor-level external interrupts.
 
@@ -577,11 +577,11 @@ Supervisor Address Translation and Protection (``satp``)
 .. csv-table::
    :widths: auto
    :align: left
-   :header: "Bits", "Name", "Display Name", "Access Type", "Read Behavior", "Write Behavior", "Reset"
+   :header: "Bits", "Name", "Display Name", "Access Type", "Reset"
 
-   "[31]", "``MODE``", "Mode", "RW", "R", "W", "0b0"
-   "[30:22]", "``ASID``", "Address Space Identifier", "RW", "R", "W", "0b0"
-   "[21:0]", "``PPN``", "Physical Page Number", "RW", "R", "W", "0b0"
+   "[31]", "``MODE``", "Mode", "RW", "0b0"
+   "[30:22]", "``ASID``", "Address Space Identifier", "RW", "0b0"
+   "[21:0]", "``PPN``", "Physical Page Number", "RW", "0b0"
 
 :Mode (``MODE``): This bitfield selects the current address-translation scheme.
     
@@ -613,29 +613,29 @@ Machine Status (``mstatus``)
 .. csv-table::
    :widths: auto
    :align: left
-   :header: "Bits", "Name", "Display Name", "Access Type", "Read Behavior", "Write Behavior", "Reset"
+   :header: "Bits", "Name", "Display Name", "Access Type", "Reset"
 
-   "[31]", "``SD``", "State Dirty", "RO", "R", "NA", "0b0"
-   "[30:23]", "``reserved_0``", "Reserved", "RO", "R", "W", "0b0"
-   "[22]", "``TSR``", "Trap SRET", "RW", "R", "W", "0b0"
-   "[21]", "``TW``", "Timeout Wait", "RW", "R", "W", "0b0"
-   "[20]", "``TVM``", "Trap Virtual Memory", "RW", "R", "W", "0b0"
-   "[19]", "``MXR``", "Make eXecutable Readable", "RW", "R", "W", "0b0"
-   "[18]", "``SUM``", "Supervisor User Memory", "RW", "R", "W", "0b0"
-   "[17]", "``MPRV``", "Modify Privilege", "RW", "R", "W", "0b0"
-   "[16:15]", "``XS``", "Extension State", "RO", "R", "NA", "0b0"
-   "[14:13]", "``FS``", "Floating-point unit State", "RW", "R", "W", "0b0"
-   "[12:11]", "``MPP``", "Machine mode Prior Privilege", "RW", "R", "W", "0b0"
-   "[10:9]", "``reserved_1``", "Reserved", "RO", "R", "W", "0b0"
-   "[8]", "``SPP``", "Supervisor mode Prior Privilege", "RW", "R", "W", "0b0"
-   "[7]", "``MPIE``", "Machine mode Prior Interrupt Enable", "RW", "R", "W", "0b0"
-   "[6]", "``reserved_2``", "Reserved", "RO", "R", "W", "0b0"
-   "[5]", "``SPIE``", "Supervisor mode Prior Interrupt Enable", "RW", "R", "W", "0b0"
-   "[4]", "``UPIE``", "", "RW", "R", "W", "0b0"
-   "[3]", "``MIE``", "Machine mode Interrupt Enable", "RW", "R", "W", "0b0"
-   "[2]", "``reserved_3``", "Reserved", "RO", "R", "W", "0b0"
-   "[1]", "``SIE``", "Supervisor mode Interrupt Enable", "RW", "R", "W", "0b0"
-   "[0]", "``UIE``", "", "RW", "R", "W", "0b0"
+   "[31]", "``SD``", "State Dirty", "RO", "0b0"
+   "[30:23]", "``reserved_0``", "Reserved", "RO", "0b0"
+   "[22]", "``TSR``", "Trap SRET", "RW", "0b0"
+   "[21]", "``TW``", "Timeout Wait", "RW", "0b0"
+   "[20]", "``TVM``", "Trap Virtual Memory", "RW", "0b0"
+   "[19]", "``MXR``", "Make eXecutable Readable", "RW", "0b0"
+   "[18]", "``SUM``", "Supervisor User Memory", "RW", "0b0"
+   "[17]", "``MPRV``", "Modify Privilege", "RW", "0b0"
+   "[16:15]", "``XS``", "Extension State", "RO", "0b0"
+   "[14:13]", "``FS``", "Floating-point unit State", "RW", "0b0"
+   "[12:11]", "``MPP``", "Machine mode Prior Privilege", "RW", "0b0"
+   "[10:9]", "``reserved_1``", "Reserved", "RO", "0b0"
+   "[8]", "``SPP``", "Supervisor mode Prior Privilege", "RW", "0b0"
+   "[7]", "``MPIE``", "Machine mode Prior Interrupt Enable", "RW", "0b0"
+   "[6]", "``reserved_2``", "Reserved", "RO", "0b0"
+   "[5]", "``SPIE``", "Supervisor mode Prior Interrupt Enable", "RW", "0b0"
+   "[4]", "``UPIE``", "", "RW", "0b0"
+   "[3]", "``MIE``", "Machine mode Interrupt Enable", "RW", "0b0"
+   "[2]", "``reserved_3``", "Reserved", "RO", "0b0"
+   "[1]", "``SIE``", "Supervisor mode Interrupt Enable", "RW", "0b0"
+   "[0]", "``UIE``", "", "RW", "0b0"
 
 :State Dirty (``SD``): The SD bit is a read-only bit that summarizes whether either the FS, VS, or XS fields signal the presence of some dirty state that will require saving extended user context to memory. If FS, XS, and VS are all read-only zero, then SD is also always zero.
 
@@ -706,11 +706,11 @@ Machine ISA (``misa``)
 .. csv-table::
    :widths: auto
    :align: left
-   :header: "Bits", "Name", "Display Name", "Access Type", "Read Behavior", "Write Behavior", "Reset"
+   :header: "Bits", "Name", "Display Name", "Access Type", "Reset"
 
-   "[31:30]", "``MXL``", "Machine XLEN", "RW", "R", "W", "0b0"
-   "[29:26]", "``reserved_0``", "Reserved", "RO", "R", "W", "0b0"
-   "[25:0]", "``Extensions``", "Extensions", "RW", "R", "W", "0b0"
+   "[31:30]", "``MXL``", "Machine XLEN", "RW", "0b0"
+   "[29:26]", "``reserved_0``", "Reserved", "RO", "0b0"
+   "[25:0]", "``Extensions``", "Extensions", "RW", "0b0"
 
 :Machine XLEN (``MXL``): The MXL field encodes the native base integer ISA width.
 
@@ -768,9 +768,9 @@ Machine Exception Delegation (``medeleg``)
 .. csv-table::
    :widths: auto
    :align: left
-   :header: "Bits", "Name", "Display Name", "Access Type", "Read Behavior", "Write Behavior", "Reset"
+   :header: "Bits", "Name", "Display Name", "Access Type", "Reset"
 
-   "[31:0]", "``Synchronous_Exceptions``", "Synchronous Exceptions", "RW", "R", "W", "0b0"
+   "[31:0]", "``Synchronous_Exceptions``", "Synchronous Exceptions", "RW", "0b0"
 
 :Synchronous Exceptions (``Synchronous_Exceptions``): There is a bit position allocated for every synchronous exception,
     with the index of the bit position equal to the value returned in the ``mcause`` register.
@@ -788,9 +788,9 @@ Machine Interrupt Delegation (``mideleg``)
 .. csv-table::
    :widths: auto
    :align: left
-   :header: "Bits", "Name", "Display Name", "Access Type", "Read Behavior", "Write Behavior", "Reset"
+   :header: "Bits", "Name", "Display Name", "Access Type", "Reset"
 
-   "[31:0]", "``Interrupts``", "Interrupts", "RW", "R", "W", "0b0"
+   "[31:0]", "``Interrupts``", "Interrupts", "RW", "0b0"
 
 :Interrupts (``Interrupts``): This bitfield holds trap delegation bits for individual interrupts, with the layout of bits matching those in the ``mip`` register.
 
@@ -807,21 +807,21 @@ Machine Interrupt Enable (``mie``)
 .. csv-table::
    :widths: auto
    :align: left
-   :header: "Bits", "Name", "Display Name", "Access Type", "Read Behavior", "Write Behavior", "Reset"
+   :header: "Bits", "Name", "Display Name", "Access Type", "Reset"
 
-   "[31:12]", "``reserved_0``", "Reserved", "RO", "R", "W", "0b0"
-   "[11]", "``MEIE``", "M-mode External Interrupt Enable", "RW", "R", "W", "0b0"
-   "[10]", "``reserved_1``", "Reserved", "RO", "R", "W", "0b0"
-   "[9]", "``SEIE``", "S-mode External Interrupt Enable", "RW", "R", "W", "0b0"
-   "[8]", "``UEIE``", "", "RW", "R", "W", "0b0"
-   "[7]", "``MTIE``", "M-mode Timer Interrupt Enable", "RW", "R", "W", "0b0"
-   "[6]", "``reserved_2``", "Reserved", "RO", "R", "W", "0b0"
-   "[5]", "``STIE``", "S-mode Timer Interrupt Enable", "RW", "R", "W", "0b0"
-   "[4]", "``UTIE``", "", "RW", "R", "W", "0b0"
-   "[3]", "``MSIE``", "M-mode Software Interrupt Enable", "RW", "R", "W", "0b0"
-   "[2]", "``reserved_3``", "Reserved", "RO", "R", "W", "0b0"
-   "[1]", "``SSIE``", "S-mode Software Interrupt Enable", "RW", "R", "W", "0b0"
-   "[0]", "``USIE``", "", "RW", "R", "W", "0b0"
+   "[31:12]", "``reserved_0``", "Reserved", "RO", "0b0"
+   "[11]", "``MEIE``", "M-mode External Interrupt Enable", "RW", "0b0"
+   "[10]", "``reserved_1``", "Reserved", "RO", "0b0"
+   "[9]", "``SEIE``", "S-mode External Interrupt Enable", "RW", "0b0"
+   "[8]", "``UEIE``", "", "RW", "0b0"
+   "[7]", "``MTIE``", "M-mode Timer Interrupt Enable", "RW", "0b0"
+   "[6]", "``reserved_2``", "Reserved", "RO", "0b0"
+   "[5]", "``STIE``", "S-mode Timer Interrupt Enable", "RW", "0b0"
+   "[4]", "``UTIE``", "", "RW", "0b0"
+   "[3]", "``MSIE``", "M-mode Software Interrupt Enable", "RW", "0b0"
+   "[2]", "``reserved_3``", "Reserved", "RO", "0b0"
+   "[1]", "``SSIE``", "S-mode Software Interrupt Enable", "RW", "0b0"
+   "[0]", "``USIE``", "", "RW", "0b0"
 
 :M-mode External Interrupt Enable (``MEIE``): Enables machine mode external interrupts.
 
@@ -854,10 +854,10 @@ Machine Trap Vector (``mtvec``)
 .. csv-table::
    :widths: auto
    :align: left
-   :header: "Bits", "Name", "Display Name", "Access Type", "Read Behavior", "Write Behavior", "Reset"
+   :header: "Bits", "Name", "Display Name", "Access Type", "Reset"
 
-   "[31:2]", "``BASE``", "", "RW", "R", "W", "0b0"
-   "[1:0]", "``MODE``", "", "RW", "R", "W", "0b0"
+   "[31:2]", "``BASE``", "", "RW", "0b0"
+   "[1:0]", "``MODE``", "", "RW", "0b0"
 
 :``BASE``: Holds the vector base address. The value in the BASE field must always be aligned on a 4-byte boundary.
 
@@ -884,12 +884,12 @@ Machine Counter Enable (``mcountern``)
 .. csv-table::
    :widths: auto
    :align: left
-   :header: "Bits", "Name", "Display Name", "Access Type", "Read Behavior", "Write Behavior", "Reset"
+   :header: "Bits", "Name", "Display Name", "Access Type", "Reset"
 
-   "[31:3]", "``HPMn``", "Hpmcountern", "RW", "R", "W", "0b0"
-   "[2]", "``IR``", "Instret", "RW", "R", "W", "0b0"
-   "[1]", "``TM``", "Time", "RW", "R", "W", "0b0"
-   "[0]", "``CY``", "Cycle", "RW", "R", "W", "0b0"
+   "[31:3]", "``HPMn``", "Hpmcountern", "RW", "0b0"
+   "[2]", "``IR``", "Instret", "RW", "0b0"
+   "[1]", "``TM``", "Time", "RW", "0b0"
+   "[0]", "``CY``", "Cycle", "RW", "0b0"
 
 :Hpmcountern (``HPMn``): When HPMn is clear, attempts to read the ``hpmcountern`` register while executing in S-mode or U-mode will cause an illegal instruction exception. When this bit is set, access to the corresponding register is permitted in the next implemented privilege mode.
 
@@ -912,10 +912,10 @@ Hardware Performance-Monitoring Event Selector (``hpmevent[6]``)
 .. csv-table::
    :widths: auto
    :align: left
-   :header: "Bits", "Name", "Display Name", "Access Type", "Read Behavior", "Write Behavior", "Reset"
+   :header: "Bits", "Name", "Display Name", "Access Type", "Reset"
 
-   "[31:5]", "``reserved_0``", "Reserved", "RO", "R", "W", "0b0"
-   "[4:0]", "``mhpmevent``", "", "RW", "R", "W", "0b0"
+   "[31:5]", "``reserved_0``", "Reserved", "RO", "0b0"
+   "[4:0]", "``mhpmevent``", "", "RW", "0b0"
 
 :``mhpmevent``: event selector CSRs
 
@@ -932,9 +932,9 @@ Machine Scratch (``mscratch``)
 .. csv-table::
    :widths: auto
    :align: left
-   :header: "Bits", "Name", "Display Name", "Access Type", "Read Behavior", "Write Behavior", "Reset"
+   :header: "Bits", "Name", "Display Name", "Access Type", "Reset"
 
-   "[31:0]", "``mscratch``", "Machine Scratch", "RW", "R", "W", "0b0"
+   "[31:0]", "``mscratch``", "Machine Scratch", "RW", "0b0"
 
 :Machine Scratch (``mscratch``): Holds a pointer to a machine-mode hart-local context space and swapped with a user register upon entry to an M-mode trap handler.
 
@@ -951,9 +951,9 @@ Machine Exception Program Counter (``mepc``)
 .. csv-table::
    :widths: auto
    :align: left
-   :header: "Bits", "Name", "Display Name", "Access Type", "Read Behavior", "Write Behavior", "Reset"
+   :header: "Bits", "Name", "Display Name", "Access Type", "Reset"
 
-   "[31:0]", "``mepc``", "Machine Exception Program Counter", "RW", "R", "W", "0b0"
+   "[31:0]", "``mepc``", "Machine Exception Program Counter", "RW", "0b0"
 
 :Machine Exception Program Counter (``mepc``): When a trap is taken into M-mode, ``mepc`` is written with the virtual address of the instruction that was interrupted or that encountered the exception.
 
@@ -1005,10 +1005,10 @@ Machine Cause (``mcause``)
 .. csv-table::
    :widths: auto
    :align: left
-   :header: "Bits", "Name", "Display Name", "Access Type", "Read Behavior", "Write Behavior", "Reset"
+   :header: "Bits", "Name", "Display Name", "Access Type", "Reset"
 
-   "[31]", "``Interrupt``", "Interrupt", "RW", "R", "W", "0b0"
-   "[30:0]", "``exception_code``", "Exception Code", "RW", "R", "W", "0b0"
+   "[31]", "``Interrupt``", "Interrupt", "RW", "0b0"
+   "[30:0]", "``exception_code``", "Exception Code", "RW", "0b0"
 
 :Interrupt (``Interrupt``): This bit is set if the trap was caused by an interrupt.
 
@@ -1027,9 +1027,9 @@ Machine Trap Value (``mtval``)
 .. csv-table::
    :widths: auto
    :align: left
-   :header: "Bits", "Name", "Display Name", "Access Type", "Read Behavior", "Write Behavior", "Reset"
+   :header: "Bits", "Name", "Display Name", "Access Type", "Reset"
 
-   "[31:0]", "``mtval``", "Machine Trap Value", "RW", "R", "W", "0b0"
+   "[31:0]", "``mtval``", "Machine Trap Value", "RW", "0b0"
 
 :Machine Trap Value (``mtval``): If ``mtval`` is written with a nonzero value when a breakpoint, address-misaligned, access-fault, or page-fault exception occurs on an instruction fetch, load, or store, then mtval will contain the faulting virtual address.
     
@@ -1050,21 +1050,21 @@ Machine Interrupt Pending (``mip``)
 .. csv-table::
    :widths: auto
    :align: left
-   :header: "Bits", "Name", "Display Name", "Access Type", "Read Behavior", "Write Behavior", "Reset"
+   :header: "Bits", "Name", "Display Name", "Access Type", "Reset"
 
-   "[31:12]", "``reserved_0``", "Reserved", "RO", "R", "W", "0b0"
-   "[11]", "``MEIP``", "M-mode External Interrupt Pending", "RO", "R", "NA", "0b0"
-   "[10]", "``reserved_1``", "Reserved", "RO", "R", "W", "0b0"
-   "[9]", "``SEIP``", "S-mode External Interrupt Pending", "RW", "R", "W", "0b0"
-   "[8]", "``UEIP``", "", "RW", "R", "W", "0b0"
-   "[7]", "``MTIP``", "M-mode Timer Interrupt Pending", "RO", "R", "NA", "0b0"
-   "[6]", "``reserved_2``", "Reserved", "RO", "R", "W", "0b0"
-   "[5]", "``STIP``", "S-mode Timer Interrupt Pending", "RW", "R", "W", "0b0"
-   "[4]", "``UTIP``", "", "RW", "R", "W", "0b0"
-   "[3]", "``MSIP``", "M-mode Software Interrupt Pending", "RO", "R", "NA", "0b0"
-   "[2]", "``reserved_3``", "Reserved", "RO", "R", "W", "0b0"
-   "[1]", "``SSIP``", "S-mode Software Interrupt Pending", "RW", "R", "W", "0b0"
-   "[0]", "``USIP``", "", "RW", "R", "W", "0b0"
+   "[31:12]", "``reserved_0``", "Reserved", "RO", "0b0"
+   "[11]", "``MEIP``", "M-mode External Interrupt Pending", "RO", "0b0"
+   "[10]", "``reserved_1``", "Reserved", "RO", "0b0"
+   "[9]", "``SEIP``", "S-mode External Interrupt Pending", "RW", "0b0"
+   "[8]", "``UEIP``", "", "RW", "0b0"
+   "[7]", "``MTIP``", "M-mode Timer Interrupt Pending", "RO", "0b0"
+   "[6]", "``reserved_2``", "Reserved", "RO", "0b0"
+   "[5]", "``STIP``", "S-mode Timer Interrupt Pending", "RW", "0b0"
+   "[4]", "``UTIP``", "", "RW", "0b0"
+   "[3]", "``MSIP``", "M-mode Software Interrupt Pending", "RO", "0b0"
+   "[2]", "``reserved_3``", "Reserved", "RO", "0b0"
+   "[1]", "``SSIP``", "S-mode Software Interrupt Pending", "RW", "0b0"
+   "[0]", "``USIP``", "", "RW", "0b0"
 
 :M-mode External Interrupt Pending (``MEIP``): The interrupt-pending bit for machine-level external interrupts.
 
@@ -1097,12 +1097,12 @@ Physical Memory Protection Config 0 (``pmpcfg0``)
 .. csv-table::
    :widths: auto
    :align: left
-   :header: "Bits", "Name", "Display Name", "Access Type", "Read Behavior", "Write Behavior", "Reset"
+   :header: "Bits", "Name", "Display Name", "Access Type", "Reset"
 
-   "[31:24]", "``pmp3cfg``", "Physical Memory Protection 3 Config", "RW", "R", "W", "0b0"
-   "[23:16]", "``pmp2cfg``", "Physical Memory Protection 2 Config", "RW", "R", "W", "0b0"
-   "[15:8]", "``pmp1cfg``", "Physical Memory Protection 1 Config", "RW", "R", "W", "0b0"
-   "[7:0]", "``pmp0cfg``", "Physical Memory Protection 0 Config", "RW", "R", "W", "0b0"
+   "[31:24]", "``pmp3cfg``", "Physical Memory Protection 3 Config", "RW", "0b0"
+   "[23:16]", "``pmp2cfg``", "Physical Memory Protection 2 Config", "RW", "0b0"
+   "[15:8]", "``pmp1cfg``", "Physical Memory Protection 1 Config", "RW", "0b0"
+   "[7:0]", "``pmp0cfg``", "Physical Memory Protection 0 Config", "RW", "0b0"
 
 :Physical Memory Protection 3 Config (``pmp3cfg``): Holds the configuration.
 
@@ -1125,12 +1125,12 @@ Physical Memory Protection Config 1 (``pmpcfg1``)
 .. csv-table::
    :widths: auto
    :align: left
-   :header: "Bits", "Name", "Display Name", "Access Type", "Read Behavior", "Write Behavior", "Reset"
+   :header: "Bits", "Name", "Display Name", "Access Type", "Reset"
 
-   "[31:24]", "``pmp7cfg``", "Physical Memory Protection 7 Config", "RW", "R", "W", "0b0"
-   "[23:16]", "``pmp6cfg``", "Physical Memory Protection 6 Config", "RW", "R", "W", "0b0"
-   "[15:8]", "``pmp5cfg``", "Physical Memory Protection 5 Config", "RW", "R", "W", "0b0"
-   "[7:0]", "``pmp4cfg``", "Physical Memory Protection 4 Config", "RW", "R", "W", "0b0"
+   "[31:24]", "``pmp7cfg``", "Physical Memory Protection 7 Config", "RW", "0b0"
+   "[23:16]", "``pmp6cfg``", "Physical Memory Protection 6 Config", "RW", "0b0"
+   "[15:8]", "``pmp5cfg``", "Physical Memory Protection 5 Config", "RW", "0b0"
+   "[7:0]", "``pmp4cfg``", "Physical Memory Protection 4 Config", "RW", "0b0"
 
 :Physical Memory Protection 7 Config (``pmp7cfg``): Holds the configuration.
 
@@ -1153,12 +1153,12 @@ Physical Memory Protection Config 2 (``pmpcfg2``)
 .. csv-table::
    :widths: auto
    :align: left
-   :header: "Bits", "Name", "Display Name", "Access Type", "Read Behavior", "Write Behavior", "Reset"
+   :header: "Bits", "Name", "Display Name", "Access Type", "Reset"
 
-   "[31:24]", "``pmp11cfg``", "Physical Memory Protection 11 Config", "RW", "R", "W", "0b0"
-   "[23:16]", "``pmp10cfg``", "Physical Memory Protection 10 Config", "RW", "R", "W", "0b0"
-   "[15:8]", "``pmp9cfg``", "Physical Memory Protection 9 Config", "RW", "R", "W", "0b0"
-   "[7:0]", "``pmp8cfg``", "Physical Memory Protection 8 Config", "RW", "R", "W", "0b0"
+   "[31:24]", "``pmp11cfg``", "Physical Memory Protection 11 Config", "RW", "0b0"
+   "[23:16]", "``pmp10cfg``", "Physical Memory Protection 10 Config", "RW", "0b0"
+   "[15:8]", "``pmp9cfg``", "Physical Memory Protection 9 Config", "RW", "0b0"
+   "[7:0]", "``pmp8cfg``", "Physical Memory Protection 8 Config", "RW", "0b0"
 
 :Physical Memory Protection 11 Config (``pmp11cfg``): Holds the configuration.
 
@@ -1181,12 +1181,12 @@ Physical Memory Protection Config 3 (``pmpcfg3``)
 .. csv-table::
    :widths: auto
    :align: left
-   :header: "Bits", "Name", "Display Name", "Access Type", "Read Behavior", "Write Behavior", "Reset"
+   :header: "Bits", "Name", "Display Name", "Access Type", "Reset"
 
-   "[31:24]", "``pmp15cfg``", "Physical Memory Protection 15 Config", "RW", "R", "W", "0b0"
-   "[23:16]", "``pmp14cfg``", "Physical Memory Protection 14 Config", "RW", "R", "W", "0b0"
-   "[15:8]", "``pmp13cfg``", "Physical Memory Protection 13 Config", "RW", "R", "W", "0b0"
-   "[7:0]", "``pmp12cfg``", "Physical Memory Protection 12 Config", "RW", "R", "W", "0b0"
+   "[31:24]", "``pmp15cfg``", "Physical Memory Protection 15 Config", "RW", "0b0"
+   "[23:16]", "``pmp14cfg``", "Physical Memory Protection 14 Config", "RW", "0b0"
+   "[15:8]", "``pmp13cfg``", "Physical Memory Protection 13 Config", "RW", "0b0"
+   "[7:0]", "``pmp12cfg``", "Physical Memory Protection 12 Config", "RW", "0b0"
 
 :Physical Memory Protection 15 Config (``pmp15cfg``): Holds the configuration.
 
@@ -1209,9 +1209,9 @@ Physical Memory Protection Address (``pmpaddr[16]``)
 .. csv-table::
    :widths: auto
    :align: left
-   :header: "Bits", "Name", "Display Name", "Access Type", "Read Behavior", "Write Behavior", "Reset"
+   :header: "Bits", "Name", "Display Name", "Access Type", "Reset"
 
-   "[31:0]", "``address``", "Address", "RW", "R", "W", "0b0"
+   "[31:0]", "``address``", "Address", "RW", "0b0"
 
 :Address (``address``): Encodes bits 33-2 of a 34-bit physical address.
 
@@ -1228,10 +1228,10 @@ Instuction Cache (``icache``)
 .. csv-table::
    :widths: auto
    :align: left
-   :header: "Bits", "Name", "Display Name", "Access Type", "Read Behavior", "Write Behavior", "Reset"
+   :header: "Bits", "Name", "Display Name", "Access Type", "Reset"
 
-   "[31:1]", "``reserved_0``", "Reserved", "RO", "R", "W", "0b0"
-   "[0]", "``icache``", "Instruction Cache", "RW", "R", "W", "0b1"
+   "[31:1]", "``reserved_0``", "Reserved", "RO", "0b0"
+   "[0]", "``icache``", "Instruction Cache", "RW", "0b1"
 
 :Instruction Cache (``icache``): Custom Register
 
@@ -1248,10 +1248,10 @@ Data Cache (``dcache``)
 .. csv-table::
    :widths: auto
    :align: left
-   :header: "Bits", "Name", "Display Name", "Access Type", "Read Behavior", "Write Behavior", "Reset"
+   :header: "Bits", "Name", "Display Name", "Access Type", "Reset"
 
-   "[31:1]", "``reserved_0``", "Reserved", "RO", "R", "W", "0b0"
-   "[0]", "``dcache``", "Data Cache", "RW", "R", "W", "0b1"
+   "[31:1]", "``reserved_0``", "Reserved", "RO", "0b0"
+   "[0]", "``dcache``", "Data Cache", "RW", "0b1"
 
 :Data Cache (``dcache``): Custom Register
 
@@ -1268,9 +1268,9 @@ Trigger Select (``tselect``)
 .. csv-table::
    :widths: auto
    :align: left
-   :header: "Bits", "Name", "Display Name", "Access Type", "Read Behavior", "Write Behavior", "Reset"
+   :header: "Bits", "Name", "Display Name", "Access Type", "Reset"
 
-   "[31:0]", "``index``", "Index", "RW", "R", "W", "0b0"
+   "[31:0]", "``index``", "Index", "RW", "0b0"
 
 :Index (``index``): The set of accessible triggers must start at 0, and be contiguous.
     
@@ -1291,11 +1291,11 @@ Trigger Data 1 (``tdata1``)
 .. csv-table::
    :widths: auto
    :align: left
-   :header: "Bits", "Name", "Display Name", "Access Type", "Read Behavior", "Write Behavior", "Reset"
+   :header: "Bits", "Name", "Display Name", "Access Type", "Reset"
 
-   "[31:28]", "``type``", "Type", "RW", "R", "W", "0b0"
-   "[27]", "``dmode``", "Debug Mode", "RW", "R", "W", "0b0"
-   "[26:0]", "``data``", "Data", "RW", "R", "W", "0b0"
+   "[31:28]", "``type``", "Type", "RW", "0b0"
+   "[27]", "``dmode``", "Debug Mode", "RW", "0b0"
+   "[26:0]", "``data``", "Data", "RW", "0b0"
 
 :Type (``type``): Type of trigger.
 
@@ -1336,9 +1336,9 @@ Trigger Data 2 (``tdata2``)
 .. csv-table::
    :widths: auto
    :align: left
-   :header: "Bits", "Name", "Display Name", "Access Type", "Read Behavior", "Write Behavior", "Reset"
+   :header: "Bits", "Name", "Display Name", "Access Type", "Reset"
 
-   "[31:0]", "``data``", "Data", "RW", "R", "W", "0b0"
+   "[31:0]", "``data``", "Data", "RW", "0b0"
 
 :Data (``data``): Trigger-specific data.
 
@@ -1355,9 +1355,9 @@ Trigger Data 3 (``tdata3``)
 .. csv-table::
    :widths: auto
    :align: left
-   :header: "Bits", "Name", "Display Name", "Access Type", "Read Behavior", "Write Behavior", "Reset"
+   :header: "Bits", "Name", "Display Name", "Access Type", "Reset"
 
-   "[31:0]", "``data``", "Data", "RW", "R", "W", "0b0"
+   "[31:0]", "``data``", "Data", "RW", "0b0"
 
 :Data (``data``): Trigger-specific data.
 
@@ -1374,10 +1374,10 @@ Trigger Info (``tinfo``)
 .. csv-table::
    :widths: auto
    :align: left
-   :header: "Bits", "Name", "Display Name", "Access Type", "Read Behavior", "Write Behavior", "Reset"
+   :header: "Bits", "Name", "Display Name", "Access Type", "Reset"
 
-   "[31:16]", "``reserved_0``", "Reserved", "RO", "R", "W", "0b0"
-   "[15:0]", "``info``", "Info", "RO", "R", "NA", "0b0"
+   "[31:16]", "``reserved_0``", "Reserved", "RO", "0b0"
+   "[15:0]", "``info``", "Info", "RO", "0b0"
 
 :Info (``info``): One bit for each possible ``type`` enumerated in ``tdata1``. Bit N corresponds to type N. If the bit is set, then that type is supported by the currently selected trigger.
     
@@ -1398,23 +1398,23 @@ Debug Control and Status (``dcsr``)
 .. csv-table::
    :widths: auto
    :align: left
-   :header: "Bits", "Name", "Display Name", "Access Type", "Read Behavior", "Write Behavior", "Reset"
+   :header: "Bits", "Name", "Display Name", "Access Type", "Reset"
 
-   "[31:28]", "``xdebugver``", "Debug Version", "RO", "R", "NA", "0b0"
-   "[27:16]", "``reserved_0``", "Reserved", "RO", "R", "W", "0b0"
-   "[15]", "``ebreakm``", "Environment Breakpoint M-mode", "RW", "R", "W", "0b0"
-   "[14]", "``reserved_1``", "Reserved", "RO", "R", "W", "0b0"
-   "[13]", "``ebreaks``", "Environment Breakpoint S-mode", "RW", "R", "W", "0b0"
-   "[12]", "``ebreaku``", "Environment Breakpoint U-mode", "RW", "R", "W", "0b0"
-   "[11]", "``stepie``", "Stepping Interrupt Enable", "RW", "R", "W", "0b0"
-   "[10]", "``stopcount``", "Stop Counters", "RW", "R", "W", "0b0"
-   "[9]", "``stoptime``", "Stop Timers", "RW", "R", "W", "0b0"
-   "[8:6]", "``cause``", "Cause", "RW", "R", "W", "0b0"
-   "[5]", "``reserved_2``", "Reserved", "RO", "R", "W", "0b0"
-   "[4]", "``mprven``", "Modify Privilege Enable", "RW", "R", "W", "0b0"
-   "[3]", "``nmip``", "Non-Maskable Interrupt Pending", "RO", "R", "NA", "0b0"
-   "[2]", "``step``", "Step", "RW", "R", "W", "0b0"
-   "[1:0]", "``prv``", "Privilege level", "RW", "R", "W", "0b0"
+   "[31:28]", "``xdebugver``", "Debug Version", "RO", "0b0"
+   "[27:16]", "``reserved_0``", "Reserved", "RO", "0b0"
+   "[15]", "``ebreakm``", "Environment Breakpoint M-mode", "RW", "0b0"
+   "[14]", "``reserved_1``", "Reserved", "RO", "0b0"
+   "[13]", "``ebreaks``", "Environment Breakpoint S-mode", "RW", "0b0"
+   "[12]", "``ebreaku``", "Environment Breakpoint U-mode", "RW", "0b0"
+   "[11]", "``stepie``", "Stepping Interrupt Enable", "RW", "0b0"
+   "[10]", "``stopcount``", "Stop Counters", "RW", "0b0"
+   "[9]", "``stoptime``", "Stop Timers", "RW", "0b0"
+   "[8:6]", "``cause``", "Cause", "RW", "0b0"
+   "[5]", "``reserved_2``", "Reserved", "RO", "0b0"
+   "[4]", "``mprven``", "Modify Privilege Enable", "RW", "0b0"
+   "[3]", "``nmip``", "Non-Maskable Interrupt Pending", "RO", "0b0"
+   "[2]", "``step``", "Step", "RW", "0b0"
+   "[1:0]", "``prv``", "Privilege level", "RW", "0b0"
 
 :Debug Version (``xdebugver``): Shows the version of the debug support.
 
@@ -1534,9 +1534,9 @@ Debug PC (``dpc``)
 .. csv-table::
    :widths: auto
    :align: left
-   :header: "Bits", "Name", "Display Name", "Access Type", "Read Behavior", "Write Behavior", "Reset"
+   :header: "Bits", "Name", "Display Name", "Access Type", "Reset"
 
-   "[31:0]", "``dpc``", "", "RW", "R", "W", "0b0"
+   "[31:0]", "``dpc``", "", "RW", "0b0"
 
 :``dpc``: The ``dpc`` behavior is described in more detail in the table below.
     
@@ -1561,9 +1561,9 @@ Debug Scratch Register (``dscratch[2]``)
 .. csv-table::
    :widths: auto
    :align: left
-   :header: "Bits", "Name", "Display Name", "Access Type", "Read Behavior", "Write Behavior", "Reset"
+   :header: "Bits", "Name", "Display Name", "Access Type", "Reset"
 
-   "[31:0]", "``dscratch``", "", "RW", "R", "W", "0b0"
+   "[31:0]", "``dscratch``", "", "RW", "0b0"
 
 
 ``ftran``
@@ -1578,10 +1578,10 @@ Debug Scratch Register (``dscratch[2]``)
 .. csv-table::
    :widths: auto
    :align: left
-   :header: "Bits", "Name", "Display Name", "Access Type", "Read Behavior", "Write Behavior", "Reset"
+   :header: "Bits", "Name", "Display Name", "Access Type", "Reset"
 
-   "[31:7]", "``reserved_0``", "Reserved", "RO", "R", "W", "0b0"
-   "[6:0]", "``ftran``", "", "RW", "R", "W", "0b0"
+   "[31:7]", "``reserved_0``", "Reserved", "RO", "0b0"
+   "[6:0]", "``ftran``", "", "RW", "0b0"
 
 :``ftran``: Floating Point Custom CSR
 
@@ -1598,9 +1598,9 @@ M-mode Cycle counter (``mcycle``)
 .. csv-table::
    :widths: auto
    :align: left
-   :header: "Bits", "Name", "Display Name", "Access Type", "Read Behavior", "Write Behavior", "Reset"
+   :header: "Bits", "Name", "Display Name", "Access Type", "Reset"
 
-   "[31:0]", "``count``", "Count", "RW", "R", "W", "0b0"
+   "[31:0]", "``count``", "Count", "RW", "0b0"
 
 :Count (``count``): Counts the number of clock cycles executed by the processor core.
 
@@ -1617,9 +1617,9 @@ Machine Instruction Retired counter (``minstret``)
 .. csv-table::
    :widths: auto
    :align: left
-   :header: "Bits", "Name", "Display Name", "Access Type", "Read Behavior", "Write Behavior", "Reset"
+   :header: "Bits", "Name", "Display Name", "Access Type", "Reset"
 
-   "[31:0]", "``count``", "Count", "RW", "R", "W", "0b0"
+   "[31:0]", "``count``", "Count", "RW", "0b0"
 
 :Count (``count``): Counts the number of instructions the hart has retired.
 
@@ -1636,9 +1636,9 @@ L1 Inst Cache Miss (``ml1_icache_miss``)
 .. csv-table::
    :widths: auto
    :align: left
-   :header: "Bits", "Name", "Display Name", "Access Type", "Read Behavior", "Write Behavior", "Reset"
+   :header: "Bits", "Name", "Display Name", "Access Type", "Reset"
 
-   "[31:0]", "``count``", "Count", "RW", "R", "W", "0b0"
+   "[31:0]", "``count``", "Count", "RW", "0b0"
 
 
 L1 Data Cache Miss (``ml1_dcache_miss``)
@@ -1653,9 +1653,9 @@ L1 Data Cache Miss (``ml1_dcache_miss``)
 .. csv-table::
    :widths: auto
    :align: left
-   :header: "Bits", "Name", "Display Name", "Access Type", "Read Behavior", "Write Behavior", "Reset"
+   :header: "Bits", "Name", "Display Name", "Access Type", "Reset"
 
-   "[31:0]", "``count``", "Count", "RW", "R", "W", "0b0"
+   "[31:0]", "``count``", "Count", "RW", "0b0"
 
 
 ITLB Miss (``mitlb_miss``)
@@ -1670,9 +1670,9 @@ ITLB Miss (``mitlb_miss``)
 .. csv-table::
    :widths: auto
    :align: left
-   :header: "Bits", "Name", "Display Name", "Access Type", "Read Behavior", "Write Behavior", "Reset"
+   :header: "Bits", "Name", "Display Name", "Access Type", "Reset"
 
-   "[31:0]", "``count``", "Count", "RW", "R", "W", "0b0"
+   "[31:0]", "``count``", "Count", "RW", "0b0"
 
 
 DTLB Miss (``mdtlb_miss``)
@@ -1687,9 +1687,9 @@ DTLB Miss (``mdtlb_miss``)
 .. csv-table::
    :widths: auto
    :align: left
-   :header: "Bits", "Name", "Display Name", "Access Type", "Read Behavior", "Write Behavior", "Reset"
+   :header: "Bits", "Name", "Display Name", "Access Type", "Reset"
 
-   "[31:0]", "``count``", "Count", "RW", "R", "W", "0b0"
+   "[31:0]", "``count``", "Count", "RW", "0b0"
 
 
 Loads (``mload``)
@@ -1704,9 +1704,9 @@ Loads (``mload``)
 .. csv-table::
    :widths: auto
    :align: left
-   :header: "Bits", "Name", "Display Name", "Access Type", "Read Behavior", "Write Behavior", "Reset"
+   :header: "Bits", "Name", "Display Name", "Access Type", "Reset"
 
-   "[31:0]", "``count``", "Count", "RW", "R", "W", "0b0"
+   "[31:0]", "``count``", "Count", "RW", "0b0"
 
 
 Stores (``mstore``)
@@ -1721,9 +1721,9 @@ Stores (``mstore``)
 .. csv-table::
    :widths: auto
    :align: left
-   :header: "Bits", "Name", "Display Name", "Access Type", "Read Behavior", "Write Behavior", "Reset"
+   :header: "Bits", "Name", "Display Name", "Access Type", "Reset"
 
-   "[31:0]", "``count``", "Count", "RW", "R", "W", "0b0"
+   "[31:0]", "``count``", "Count", "RW", "0b0"
 
 
 Taken Exceptions (``mexception``)
@@ -1738,9 +1738,9 @@ Taken Exceptions (``mexception``)
 .. csv-table::
    :widths: auto
    :align: left
-   :header: "Bits", "Name", "Display Name", "Access Type", "Read Behavior", "Write Behavior", "Reset"
+   :header: "Bits", "Name", "Display Name", "Access Type", "Reset"
 
-   "[31:0]", "``count``", "Count", "RW", "R", "W", "0b0"
+   "[31:0]", "``count``", "Count", "RW", "0b0"
 
 
 Exception Return (``mexception_ret``)
@@ -1755,9 +1755,9 @@ Exception Return (``mexception_ret``)
 .. csv-table::
    :widths: auto
    :align: left
-   :header: "Bits", "Name", "Display Name", "Access Type", "Read Behavior", "Write Behavior", "Reset"
+   :header: "Bits", "Name", "Display Name", "Access Type", "Reset"
 
-   "[31:0]", "``count``", "Count", "RW", "R", "W", "0b0"
+   "[31:0]", "``count``", "Count", "RW", "0b0"
 
 
 Software Change of PC (``mbranch_jump``)
@@ -1772,9 +1772,9 @@ Software Change of PC (``mbranch_jump``)
 .. csv-table::
    :widths: auto
    :align: left
-   :header: "Bits", "Name", "Display Name", "Access Type", "Read Behavior", "Write Behavior", "Reset"
+   :header: "Bits", "Name", "Display Name", "Access Type", "Reset"
 
-   "[31:0]", "``count``", "Count", "RW", "R", "W", "0b0"
+   "[31:0]", "``count``", "Count", "RW", "0b0"
 
 
 Procedure Call (``mcall``)
@@ -1789,9 +1789,9 @@ Procedure Call (``mcall``)
 .. csv-table::
    :widths: auto
    :align: left
-   :header: "Bits", "Name", "Display Name", "Access Type", "Read Behavior", "Write Behavior", "Reset"
+   :header: "Bits", "Name", "Display Name", "Access Type", "Reset"
 
-   "[31:0]", "``count``", "Count", "RW", "R", "W", "0b0"
+   "[31:0]", "``count``", "Count", "RW", "0b0"
 
 
 Procedure Return (``mret``)
@@ -1806,9 +1806,9 @@ Procedure Return (``mret``)
 .. csv-table::
    :widths: auto
    :align: left
-   :header: "Bits", "Name", "Display Name", "Access Type", "Read Behavior", "Write Behavior", "Reset"
+   :header: "Bits", "Name", "Display Name", "Access Type", "Reset"
 
-   "[31:0]", "``count``", "Count", "RW", "R", "W", "0b0"
+   "[31:0]", "``count``", "Count", "RW", "0b0"
 
 
 Branch mis-predicted (``mmis_predict``)
@@ -1823,9 +1823,9 @@ Branch mis-predicted (``mmis_predict``)
 .. csv-table::
    :widths: auto
    :align: left
-   :header: "Bits", "Name", "Display Name", "Access Type", "Read Behavior", "Write Behavior", "Reset"
+   :header: "Bits", "Name", "Display Name", "Access Type", "Reset"
 
-   "[31:0]", "``count``", "Count", "RW", "R", "W", "0b0"
+   "[31:0]", "``count``", "Count", "RW", "0b0"
 
 
 Scoreboard Full (``msb_full``)
@@ -1840,9 +1840,9 @@ Scoreboard Full (``msb_full``)
 .. csv-table::
    :widths: auto
    :align: left
-   :header: "Bits", "Name", "Display Name", "Access Type", "Read Behavior", "Write Behavior", "Reset"
+   :header: "Bits", "Name", "Display Name", "Access Type", "Reset"
 
-   "[31:0]", "``count``", "Count", "RW", "R", "W", "0b0"
+   "[31:0]", "``count``", "Count", "RW", "0b0"
 
 
 Instruction Fetch Queue Empty (``mif_empty``)
@@ -1857,9 +1857,9 @@ Instruction Fetch Queue Empty (``mif_empty``)
 .. csv-table::
    :widths: auto
    :align: left
-   :header: "Bits", "Name", "Display Name", "Access Type", "Read Behavior", "Write Behavior", "Reset"
+   :header: "Bits", "Name", "Display Name", "Access Type", "Reset"
 
-   "[31:0]", "``count``", "Count", "RW", "R", "W", "0b0"
+   "[31:0]", "``count``", "Count", "RW", "0b0"
 
 
 Upper 32-bits of M-mode Cycle counter (``mcycleh``)
@@ -1874,9 +1874,9 @@ Upper 32-bits of M-mode Cycle counter (``mcycleh``)
 .. csv-table::
    :widths: auto
    :align: left
-   :header: "Bits", "Name", "Display Name", "Access Type", "Read Behavior", "Write Behavior", "Reset"
+   :header: "Bits", "Name", "Display Name", "Access Type", "Reset"
 
-   "[31:0]", "``count``", "Count", "RW", "R", "W", "0b0"
+   "[31:0]", "``count``", "Count", "RW", "0b0"
 
 :Count (``count``): Counts the number of clock cycles executed by the processor core.
 
@@ -1893,9 +1893,9 @@ Upper 32-bits of Machine Instruction Retired counter (``minstreth``)
 .. csv-table::
    :widths: auto
    :align: left
-   :header: "Bits", "Name", "Display Name", "Access Type", "Read Behavior", "Write Behavior", "Reset"
+   :header: "Bits", "Name", "Display Name", "Access Type", "Reset"
 
-   "[31:0]", "``count``", "Count", "RW", "R", "W", "0b0"
+   "[31:0]", "``count``", "Count", "RW", "0b0"
 
 :Count (``count``): Counts the number of instructions the hart has retired.
 
@@ -1912,9 +1912,9 @@ Upper 32-bits of Machine Hardware Performance Monitoring Counter (``mhpmcounterh
 .. csv-table::
    :widths: auto
    :align: left
-   :header: "Bits", "Name", "Display Name", "Access Type", "Read Behavior", "Write Behavior", "Reset"
+   :header: "Bits", "Name", "Display Name", "Access Type", "Reset"
 
-   "[31:0]", "``count``", "Count", "RW", "R", "W", "0b0"
+   "[31:0]", "``count``", "Count", "RW", "0b0"
 
 
 Cycle counter (``cycle``)
@@ -1929,9 +1929,9 @@ Cycle counter (``cycle``)
 .. csv-table::
    :widths: auto
    :align: left
-   :header: "Bits", "Name", "Display Name", "Access Type", "Read Behavior", "Write Behavior", "Reset"
+   :header: "Bits", "Name", "Display Name", "Access Type", "Reset"
 
-   "[31:0]", "``count``", "Count", "RO", "R", "NA", "0b0"
+   "[31:0]", "``count``", "Count", "RO", "0b0"
 
 
 Timer (``time``)
@@ -1946,9 +1946,9 @@ Timer (``time``)
 .. csv-table::
    :widths: auto
    :align: left
-   :header: "Bits", "Name", "Display Name", "Access Type", "Read Behavior", "Write Behavior", "Reset"
+   :header: "Bits", "Name", "Display Name", "Access Type", "Reset"
 
-   "[31:0]", "``count``", "Count", "RO", "R", "NA", "0b0"
+   "[31:0]", "``count``", "Count", "RO", "0b0"
 
 
 Instruction Retired counter (``instret``)
@@ -1963,9 +1963,9 @@ Instruction Retired counter (``instret``)
 .. csv-table::
    :widths: auto
    :align: left
-   :header: "Bits", "Name", "Display Name", "Access Type", "Read Behavior", "Write Behavior", "Reset"
+   :header: "Bits", "Name", "Display Name", "Access Type", "Reset"
 
-   "[31:0]", "``count``", "Count", "RO", "R", "NA", "0b0"
+   "[31:0]", "``count``", "Count", "RO", "0b0"
 
 
 L1 Inst Cache Miss (``l1_icache_miss``)
@@ -1980,9 +1980,9 @@ L1 Inst Cache Miss (``l1_icache_miss``)
 .. csv-table::
    :widths: auto
    :align: left
-   :header: "Bits", "Name", "Display Name", "Access Type", "Read Behavior", "Write Behavior", "Reset"
+   :header: "Bits", "Name", "Display Name", "Access Type", "Reset"
 
-   "[31:0]", "``count``", "Count", "RO", "R", "NA", "0b0"
+   "[31:0]", "``count``", "Count", "RO", "0b0"
 
 
 L1 Data Cache Miss (``l1_dcache_miss``)
@@ -1997,9 +1997,9 @@ L1 Data Cache Miss (``l1_dcache_miss``)
 .. csv-table::
    :widths: auto
    :align: left
-   :header: "Bits", "Name", "Display Name", "Access Type", "Read Behavior", "Write Behavior", "Reset"
+   :header: "Bits", "Name", "Display Name", "Access Type", "Reset"
 
-   "[31:0]", "``count``", "Count", "RO", "R", "NA", "0b0"
+   "[31:0]", "``count``", "Count", "RO", "0b0"
 
 
 ITLB Miss (``itlb_miss``)
@@ -2014,9 +2014,9 @@ ITLB Miss (``itlb_miss``)
 .. csv-table::
    :widths: auto
    :align: left
-   :header: "Bits", "Name", "Display Name", "Access Type", "Read Behavior", "Write Behavior", "Reset"
+   :header: "Bits", "Name", "Display Name", "Access Type", "Reset"
 
-   "[31:0]", "``count``", "Count", "RO", "R", "NA", "0b0"
+   "[31:0]", "``count``", "Count", "RO", "0b0"
 
 
 DTLB Miss (``dtlb_miss``)
@@ -2031,9 +2031,9 @@ DTLB Miss (``dtlb_miss``)
 .. csv-table::
    :widths: auto
    :align: left
-   :header: "Bits", "Name", "Display Name", "Access Type", "Read Behavior", "Write Behavior", "Reset"
+   :header: "Bits", "Name", "Display Name", "Access Type", "Reset"
 
-   "[31:0]", "``count``", "Count", "RO", "R", "NA", "0b0"
+   "[31:0]", "``count``", "Count", "RO", "0b0"
 
 
 Loads (``load``)
@@ -2048,9 +2048,9 @@ Loads (``load``)
 .. csv-table::
    :widths: auto
    :align: left
-   :header: "Bits", "Name", "Display Name", "Access Type", "Read Behavior", "Write Behavior", "Reset"
+   :header: "Bits", "Name", "Display Name", "Access Type", "Reset"
 
-   "[31:0]", "``count``", "Count", "RO", "R", "NA", "0b0"
+   "[31:0]", "``count``", "Count", "RO", "0b0"
 
 
 Stores (``store``)
@@ -2065,9 +2065,9 @@ Stores (``store``)
 .. csv-table::
    :widths: auto
    :align: left
-   :header: "Bits", "Name", "Display Name", "Access Type", "Read Behavior", "Write Behavior", "Reset"
+   :header: "Bits", "Name", "Display Name", "Access Type", "Reset"
 
-   "[31:0]", "``count``", "Count", "RO", "R", "NA", "0b0"
+   "[31:0]", "``count``", "Count", "RO", "0b0"
 
 
 Taken Exceptions (``exception``)
@@ -2082,9 +2082,9 @@ Taken Exceptions (``exception``)
 .. csv-table::
    :widths: auto
    :align: left
-   :header: "Bits", "Name", "Display Name", "Access Type", "Read Behavior", "Write Behavior", "Reset"
+   :header: "Bits", "Name", "Display Name", "Access Type", "Reset"
 
-   "[31:0]", "``count``", "Count", "RO", "R", "NA", "0b0"
+   "[31:0]", "``count``", "Count", "RO", "0b0"
 
 
 Exception Return (``exception_ret``)
@@ -2099,9 +2099,9 @@ Exception Return (``exception_ret``)
 .. csv-table::
    :widths: auto
    :align: left
-   :header: "Bits", "Name", "Display Name", "Access Type", "Read Behavior", "Write Behavior", "Reset"
+   :header: "Bits", "Name", "Display Name", "Access Type", "Reset"
 
-   "[31:0]", "``count``", "Count", "RO", "R", "NA", "0b0"
+   "[31:0]", "``count``", "Count", "RO", "0b0"
 
 
 Software Change of PC (``branch_jump``)
@@ -2116,9 +2116,9 @@ Software Change of PC (``branch_jump``)
 .. csv-table::
    :widths: auto
    :align: left
-   :header: "Bits", "Name", "Display Name", "Access Type", "Read Behavior", "Write Behavior", "Reset"
+   :header: "Bits", "Name", "Display Name", "Access Type", "Reset"
 
-   "[31:0]", "``count``", "Count", "RO", "R", "NA", "0b0"
+   "[31:0]", "``count``", "Count", "RO", "0b0"
 
 
 Procedure Call (``call``)
@@ -2133,9 +2133,9 @@ Procedure Call (``call``)
 .. csv-table::
    :widths: auto
    :align: left
-   :header: "Bits", "Name", "Display Name", "Access Type", "Read Behavior", "Write Behavior", "Reset"
+   :header: "Bits", "Name", "Display Name", "Access Type", "Reset"
 
-   "[31:0]", "``count``", "Count", "RO", "R", "NA", "0b0"
+   "[31:0]", "``count``", "Count", "RO", "0b0"
 
 
 Procedure Return (``ret``)
@@ -2150,9 +2150,9 @@ Procedure Return (``ret``)
 .. csv-table::
    :widths: auto
    :align: left
-   :header: "Bits", "Name", "Display Name", "Access Type", "Read Behavior", "Write Behavior", "Reset"
+   :header: "Bits", "Name", "Display Name", "Access Type", "Reset"
 
-   "[31:0]", "``count``", "Count", "RO", "R", "NA", "0b0"
+   "[31:0]", "``count``", "Count", "RO", "0b0"
 
 
 Branch mis-predicted (``mis_predict``)
@@ -2167,9 +2167,9 @@ Branch mis-predicted (``mis_predict``)
 .. csv-table::
    :widths: auto
    :align: left
-   :header: "Bits", "Name", "Display Name", "Access Type", "Read Behavior", "Write Behavior", "Reset"
+   :header: "Bits", "Name", "Display Name", "Access Type", "Reset"
 
-   "[31:0]", "``count``", "Count", "RO", "R", "NA", "0b0"
+   "[31:0]", "``count``", "Count", "RO", "0b0"
 
 
 Scoreboard Full (``sb_full``)
@@ -2184,9 +2184,9 @@ Scoreboard Full (``sb_full``)
 .. csv-table::
    :widths: auto
    :align: left
-   :header: "Bits", "Name", "Display Name", "Access Type", "Read Behavior", "Write Behavior", "Reset"
+   :header: "Bits", "Name", "Display Name", "Access Type", "Reset"
 
-   "[31:0]", "``count``", "Count", "RO", "R", "NA", "0b0"
+   "[31:0]", "``count``", "Count", "RO", "0b0"
 
 
 Instruction Fetch Queue Empty (``if_empty``)
@@ -2201,9 +2201,9 @@ Instruction Fetch Queue Empty (``if_empty``)
 .. csv-table::
    :widths: auto
    :align: left
-   :header: "Bits", "Name", "Display Name", "Access Type", "Read Behavior", "Write Behavior", "Reset"
+   :header: "Bits", "Name", "Display Name", "Access Type", "Reset"
 
-   "[31:0]", "``count``", "Count", "RO", "R", "NA", "0b0"
+   "[31:0]", "``count``", "Count", "RO", "0b0"
 
 
 Upper 32-bits of Cycle counter (``cycleh``)
@@ -2218,9 +2218,9 @@ Upper 32-bits of Cycle counter (``cycleh``)
 .. csv-table::
    :widths: auto
    :align: left
-   :header: "Bits", "Name", "Display Name", "Access Type", "Read Behavior", "Write Behavior", "Reset"
+   :header: "Bits", "Name", "Display Name", "Access Type", "Reset"
 
-   "[31:0]", "``count``", "Count", "RO", "R", "NA", "0b0"
+   "[31:0]", "``count``", "Count", "RO", "0b0"
 
 
 Upper 32-bit of Timer (``timeh``)
@@ -2235,9 +2235,9 @@ Upper 32-bit of Timer (``timeh``)
 .. csv-table::
    :widths: auto
    :align: left
-   :header: "Bits", "Name", "Display Name", "Access Type", "Read Behavior", "Write Behavior", "Reset"
+   :header: "Bits", "Name", "Display Name", "Access Type", "Reset"
 
-   "[31:0]", "``count``", "Count", "RO", "R", "NA", "0b0"
+   "[31:0]", "``count``", "Count", "RO", "0b0"
 
 
 Upper 32-bits of Instruction Retired counter (``instreth``)
@@ -2252,9 +2252,9 @@ Upper 32-bits of Instruction Retired counter (``instreth``)
 .. csv-table::
    :widths: auto
    :align: left
-   :header: "Bits", "Name", "Display Name", "Access Type", "Read Behavior", "Write Behavior", "Reset"
+   :header: "Bits", "Name", "Display Name", "Access Type", "Reset"
 
-   "[31:0]", "``count``", "Count", "RO", "R", "NA", "0b0"
+   "[31:0]", "``count``", "Count", "RO", "0b0"
 
 
 Machine Vendor ID (``mvendorid``)
@@ -2269,10 +2269,10 @@ Machine Vendor ID (``mvendorid``)
 .. csv-table::
    :widths: auto
    :align: left
-   :header: "Bits", "Name", "Display Name", "Access Type", "Read Behavior", "Write Behavior", "Reset"
+   :header: "Bits", "Name", "Display Name", "Access Type", "Reset"
 
-   "[31:7]", "``bank``", "Bank", "RO", "R", "NA", "0b0"
-   "[6:0]", "``offset``", "Offset", "RO", "R", "NA", "0b0"
+   "[31:7]", "``bank``", "Bank", "RO", "0b0"
+   "[6:0]", "``offset``", "Offset", "RO", "0b0"
 
 :Bank (``bank``): Contain encoding for number of one-byte continuation codes discarding the parity bit.
 
@@ -2291,9 +2291,9 @@ Machine Architecture ID (``marchid``)
 .. csv-table::
    :widths: auto
    :align: left
-   :header: "Bits", "Name", "Display Name", "Access Type", "Read Behavior", "Write Behavior", "Reset"
+   :header: "Bits", "Name", "Display Name", "Access Type", "Reset"
 
-   "[31:0]", "``architecture_id``", "Architecture ID", "RO", "R", "NA", "0b11"
+   "[31:0]", "``architecture_id``", "Architecture ID", "RO", "0b11"
 
 :Architecture ID (``architecture_id``): Provide Encoding the base microarchitecture of the hart.
 
@@ -2310,9 +2310,9 @@ Machine Implementation ID (``mimpid``)
 .. csv-table::
    :widths: auto
    :align: left
-   :header: "Bits", "Name", "Display Name", "Access Type", "Read Behavior", "Write Behavior", "Reset"
+   :header: "Bits", "Name", "Display Name", "Access Type", "Reset"
 
-   "[31:0]", "``implementation``", "Implementation", "RO", "R", "NA", "0b0"
+   "[31:0]", "``implementation``", "Implementation", "RO", "0b0"
 
 :Implementation (``implementation``): Provides unique encoding of the version of the processor implementation.
 
@@ -2329,9 +2329,9 @@ Machine Hardware Thread ID (``mhartid``)
 .. csv-table::
    :widths: auto
    :align: left
-   :header: "Bits", "Name", "Display Name", "Access Type", "Read Behavior", "Write Behavior", "Reset"
+   :header: "Bits", "Name", "Display Name", "Access Type", "Reset"
 
-   "[31:0]", "``hart_id``", "Hart ID", "RO", "R", "NA", "0b0"
+   "[31:0]", "``hart_id``", "Hart ID", "RO", "0b0"
 
 :Hart ID (``hart_id``): Contains the integer ID of the hardware thread running the code.
 
