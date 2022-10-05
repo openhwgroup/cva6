@@ -284,7 +284,7 @@ package ariane_pkg;
 
     localparam FETCH_USER_WIDTH = (cva6_config_pkg::CVA6ConfigFetchUserEn == 0) ? 1: cva6_config_pkg::CVA6ConfigFetchUserWidth;  // Possible cases: between 1 and 64
     localparam DATA_USER_WIDTH = (cva6_config_pkg::CVA6ConfigDataUserEn == 0) ? 1: cva6_config_pkg::CVA6ConfigDataUserWidth;    // Possible cases: between 1 and 64
-    localparam AXI_USER_WIDTH = DATA_USER_WIDTH > FETCH_USER_WIDTH ? DATA_USER_WIDTH : FETCH_USER_WIDTH;
+    localparam AXI_USER_WIDTH = DATA_USER_WIDTH > FETCH_USER_WIDTH*2 ? DATA_USER_WIDTH : FETCH_USER_WIDTH*2;
     localparam DATA_USER_EN = cva6_config_pkg::CVA6ConfigDataUserEn;
     localparam FETCH_USER_EN = cva6_config_pkg::CVA6ConfigFetchUserEn;
     localparam AXI_USER_EN = cva6_config_pkg::CVA6ConfigDataUserEn | cva6_config_pkg::CVA6ConfigFetchUserEn;
@@ -459,6 +459,7 @@ package ariane_pkg;
 `endif
 
     localparam bit CVXIF_PRESENT = cva6_config_pkg::CVA6ConfigCvxifEn;
+
     // ---------------
     // EX Stage
     // ---------------
@@ -662,6 +663,14 @@ package ariane_pkg;
         branchpredict_sbe_t       bp;            // branch predict scoreboard data structure
         logic                     is_compressed; // signals a compressed instructions, we need this information at the commit stage if
                                                  // we want jump accordingly e.g.: +4, +2
+`ifdef RVFI_MEM
+        riscv::xlen_t               rs1_rdata;
+        riscv::xlen_t               rs2_rdata;
+        logic [riscv::VLEN-1:0]     lsu_addr;
+        logic [(riscv::XLEN/8)-1:0] lsu_rmask;
+        logic [(riscv::XLEN/8)-1:0] lsu_wmask;
+        riscv::xlen_t               lsu_wdata;
+`endif
     } scoreboard_entry_t;
 
     // ---------------
