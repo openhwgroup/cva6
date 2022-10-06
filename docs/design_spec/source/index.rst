@@ -25,4 +25,5 @@ OpenHW Group CV32A6-step1 design Document
    cva6_intro
    cva6_system
    cva6_frontend
+   CV32A6_CSR
    cva6_glossary
