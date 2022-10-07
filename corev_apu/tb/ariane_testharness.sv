@@ -284,7 +284,11 @@ module ariane_testharness #(
 
   axi_adapter #(
     .DATA_WIDTH            ( AXI_DATA_WIDTH            ),
-    .AXI_ID_WIDTH          ( ariane_soc::IdWidth       )
+    .AXI_ADDR_WIDTH        ( ariane_axi_soc::AddrWidth ),
+    .AXI_DATA_WIDTH        ( ariane_axi_soc::DataWidth ),
+    .AXI_ID_WIDTH          ( ariane_soc::IdWidth       ),
+    .axi_req_t             ( ariane_axi_soc::req_t     ),
+    .axi_rsp_t             ( ariane_axi_soc::resp_t    )
   ) i_dm_axi_master (
     .clk_i                 ( clk_i                     ),
     .rst_ni                ( rst_ni                    ),
