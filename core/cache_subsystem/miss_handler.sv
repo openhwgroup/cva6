@@ -578,7 +578,7 @@ module miss_handler import ariane_pkg::*; import std_cache_pkg::*; #(
         .req_i                (bypass_adapter_req.req),
         .type_i               (bypass_adapter_req.reqtype),
         .amo_i                (bypass_adapter_req.amo),
-        .id_i                 ({{AXI_ID_WIDTH-4{1'b0}}, bypass_adapter_req.id)},
+        .id_i                 ({{AXI_ID_WIDTH-4{1'b0}}, bypass_adapter_req.id}),
         .addr_i               (bypass_adapter_req.addr),
         .wdata_i              (bypass_adapter_req.wdata),
         .we_i                 (bypass_adapter_req.we),
