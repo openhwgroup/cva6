@@ -20,6 +20,7 @@ src          := $(shell xargs printf '\n%s' < $(src-list)  | cut -b 1-)
 compile_flag += +cover+i_dut -incr -64 -nologo -svinputport=compat -override_timescale 1ns/1ps -suppress 2583 -suppress 13262 +cover
 sim_opts     += -64 -coverage -classdebug -voptargs="+acc"
 incdir       += ../common/
+incdir       += ../../axi/include/
 
 # Iterate over all include directories and write them with +incdir+ prefixed
 # +incdir+ works for Verilator and QuestaSim

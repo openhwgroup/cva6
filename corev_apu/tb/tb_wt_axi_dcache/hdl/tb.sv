@@ -51,7 +51,7 @@ module tb import ariane_pkg::*; import wt_cache_pkg::*; import tb_pkg::*; #()();
   /// Address width of the full AXI bus
   parameter int unsigned  TbAxiAddrWidthFull = 32'd64;
   /// Data width of the full AXI bus
-  parameter int unsigned  TbAxiDataWidthFull = 32'd512;
+  parameter int unsigned  TbAxiDataWidthFull = 32'd64;
   localparam int unsigned TbAxiUserWidthFull = 32'd1;
   /// Application time to the DUT
   parameter time          TbApplTime         = 2ns;
@@ -394,10 +394,7 @@ module tb import ariane_pkg::*; import wt_cache_pkg::*; import tb_pkg::*; #()();
     .wbuffer_empty_o    (             ),
     .wbuffer_not_ni_o   (             ),
     .axi_req_o          ( axi_data_o  ),
-    .axi_resp_i         ( axi_data_i  ),
-    .inval_addr_i       ( '0          ),
-    .inval_valid_i      ( '0          ),
-    .inval_ready_o      (             )
+    .axi_resp_i         ( axi_data_i  )
   );
 
 ///////////////////////////////////////////////////////////////////////////////
