@@ -271,7 +271,6 @@ import std_cache_pkg::*;
 
 //pragma translate_off
     initial begin
-        // assert ($bits(axi_data_o.aw.addr) == 64) else $fatal(1, "Ariane needs a 64-bit bus");
         assert (DCACHE_LINE_WIDTH/AXI_DATA_WIDTH inside {2, 4, 8, 16}) else $fatal(1, "Cache line size needs to be a power of two multiple of AXI_DATA_WIDTH");
     end
 //pragma translate_on

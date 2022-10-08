@@ -293,8 +293,6 @@ module axi_shim #(
    initial begin
     assert (AxiNumWords >= 1) else
      $fatal(1, "[axi adapter] AxiNumWords must be >= 1");
-    // assert (AxiDataWidth == 64) else
-    //  $fatal(1, "[axi adapter] AXI data width must be 64");
     assert (AxiIdWidth >= 2) else
      $fatal(1, "[axi adapter] AXI id width must be at least 2 bit wide");
    end
