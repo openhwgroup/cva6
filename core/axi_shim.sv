@@ -103,7 +103,6 @@ module axi_shim #(
   assign axi_req_o.w.user    = wr_user_i[wr_cnt_q];
   assign axi_req_o.w.strb    = wr_be_i[wr_cnt_q];
   assign axi_req_o.w.last    = wr_cnt_done;
-  assign axi_req_o.w.user   = '0;
 
   // write response
   assign wr_exokay_o         = (axi_resp_i.b.resp == axi_pkg::RESP_EXOKAY);
