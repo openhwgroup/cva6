@@ -221,6 +221,9 @@ package ariane_pkg;
 
     // 32 registers + 1 bit for re-naming = 6
     localparam REG_ADDR_SIZE = 6;
+
+    localparam bit CVXIF_PRESENT = cva6_config_pkg::CVA6ConfigCvxifEn;
+
     // when cvx interface is present, use an additional writeback port
     localparam NR_WB_PORTS = CVXIF_PRESENT ? 5 : 4;
 
@@ -462,7 +465,6 @@ package ariane_pkg;
     localparam int unsigned DCACHE_USER_WIDTH  = DATA_USER_WIDTH;
 `endif
 
-    localparam bit CVXIF_PRESENT = cva6_config_pkg::CVA6ConfigCvxifEn;
     // ---------------
     // EX Stage
     // ---------------
