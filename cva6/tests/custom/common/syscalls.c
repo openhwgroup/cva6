@@ -44,7 +44,7 @@ static uintptr_t syscall(uintptr_t which, uintptr_t arg0, uintptr_t arg1, uintpt
   // - the environment acknowledges the env request by writing 0 into tohost.
   // - the completion of the request is signalled by the environment through
   //   a write of a non-zero value into fromhost.
-  tohost = (((uint64_t) magic_mem) << 16) >> 16;    // clear the DEV and CMD bytes, clip payload.
+  tohost = (((uint64_t) ((unsigned long int) magic_mem)) << 16) >> 16;    // clear the DEV and CMD bytes, clip payload.
   while (fromhost == 0)
     ;
   fromhost = 0;
