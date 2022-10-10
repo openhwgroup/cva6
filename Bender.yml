@@ -9,7 +9,9 @@ package:
 
 export_include_dirs:
   - common/submodules/common_cells/include/
+  - common/local/util/
   - corev_apu/axi/include/
+  - corev_apu/register_interface/include/
 
 sources:
   - defines:
@@ -22,22 +24,24 @@ sources:
     - core/include/wt_cache_pkg.sv
     - corev_apu/axi/src/axi_pkg.sv
     - corev_apu/register_interface/src/reg_intf.sv
-    - corev_apu/register_interface/src/reg_intf_pkg.sv
     - core/include/axi_intf.sv
     - corev_apu/tb/ariane_soc_pkg.sv
     - corev_apu/tb/ariane_axi_soc_pkg.sv
     - core/include/ariane_axi_pkg.sv
     - core/include/std_cache_pkg.sv
+    - core/include/cvxif_pkg.sv
     - core/fpu/src/fpnew_pkg.sv
     - core/fpu/src/fpu_div_sqrt_mvp/hdl/defs_div_sqrt_mvp.sv
     # Stand-alone source files
     - core/ariane.sv
+    - core/cva6.sv
     - core/serdiv.sv
     - core/ariane_regfile_ff.sv
     - core/amo_buffer.sv
     - core/id_stage.sv
     - core/branch_unit.sv
     - core/instr_realign.sv
+    - core/lsu_bypass.sv
     - core/load_store_unit.sv
     - core/controller.sv
     - core/issue_stage.sv
@@ -58,6 +62,10 @@ sources:
     - core/store_buffer.sv
     - core/compressed_decoder.sv
     - core/axi_shim.sv
+    - core/cvxif_fu.sv
+    - core/cvxif_example/include/cvxif_instr_pkg.sv
+    - core/cvxif_example/instr_decoder.sv
+    - core/cvxif_example/cvxif_example_coprocessor.sv
     - core/ex_stage.sv
     - core/mmu_sv39/mmu.sv
     - core/mmu_sv39/ptw.sv
@@ -181,13 +189,14 @@ sources:
     - common/submodules/common_cells/src/lfsr.sv
     - common/submodules/common_cells/src/lfsr_8bit.sv
     - common/submodules/common_cells/src/lfsr_16bit.sv
+    - common/submodules/common_cells/src/delta_counter.sv
     - common/submodules/common_cells/src/counter.sv
     - common/submodules/common_cells/src/shift_reg.sv
     - common/submodules/common_cells/src/exp_backoff.sv
     - common/submodules/common_cells/src/addr_decode.sv
     - common/submodules/common_cells/src/stream_register.sv
-    - corev_apu/src/tech_cells_generic/src/cluster_clock_inverter.sv
-    - corev_apu/src/tech_cells_generic/src/pulp_clock_mux2.sv
+    - corev_apu/src/tech_cells_generic/src/deprecated/cluster_clk_cells.sv
+    - corev_apu/src/tech_cells_generic/src/deprecated/pulp_clk_cells.sv
     - target: not(cv32a6)
       files:
       - core/include/cv64a6_imafdc_sv39_config_pkg.sv
@@ -196,8 +205,6 @@ sources:
       - core/include/cv32a6_imac_sv0_config_pkg.sv
     - target: test
       files:
-      - corev_apu/tb/ariane_soc_pkg.sv
-      - corev_apu/tb/ariane_axi_soc_pkg.sv
       - corev_apu/tb/ariane_testharness.sv
       - corev_apu/tb/ariane_peripherals.sv
       - corev_apu/tb/common/uart.sv
@@ -245,4 +252,3 @@ sources:
       - corev_apu/fpga/src/apb_uart/src/slib_clock_div.vhd
       - corev_apu/fpga/src/apb_uart/src/slib_fifo.vhd
       - corev_apu/fpga/src/apb_uart/src/uart_baudgen.vhd
-
