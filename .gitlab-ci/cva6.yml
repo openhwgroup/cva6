@@ -436,6 +436,39 @@ pub_fpga-build:
       - "artifacts/ariane_xilinx_$TARGET.bit"
       - "artifacts/reports/*.yml"
 
+pub_generated_tests:
+  stage: two
+  tags: [shell,debian10]
+  needs: [pub_smoke]
+  variables:
+    DASHBOARD_SORT_INDEX: 11
+    DASHBOARD_JOB_CATEGORY: "Code Coverage"
+  parallel:
+    matrix:
+      - list_num: 0
+        DASHBOARD_JOB_TITLE: "Generated Random tests"
+        DASHBOARD_JOB_DESCRIPTION: "Generate Random tests using the RISCV-DV"
+      - list_num: 1
+        DASHBOARD_JOB_TITLE: "Generated Arithmetic tests"
+        DASHBOARD_JOB_DESCRIPTION: "Generate Random Arithmetic tests using the RISCV-DV"
+      - list_num: 2
+        DASHBOARD_JOB_TITLE: "Generated CSR tests"
+        DASHBOARD_JOB_DESCRIPTION: "Generate Random CSR tests using the RISCV-DV"
+  script:
+    - echo $SYN_VCS_BASHRC; source $SYN_VCS_BASHRC
+    - echo $SYN_VERDI_BASHRC; source $SYN_VERDI_BASHRC
+    - DV_TARGET=cv64a6_imafdc_sv39 #Specification target
+    - source ./cva6/regress/dv-generated-tests.sh
+  rules:
+    - when: manual
+      allow_failure: true
+  timeout: 4h
+  artifacts:
+      paths:
+          - cva6/sim/vcs_results/default/vcs.d/simv.vdb
+          - cva6/sim/seedlist.yaml
+      expire_in: 3 week
+
 pub_fpga-boot:
   stage: three
   tags: [fpga,shell]
@@ -462,6 +495,25 @@ pub_fpga-boot:
     when: always
     paths:
       - "artifacts/reports/*.yml"
+
+code_coverage-report:
+  stage: three
+  tags: [shell,debian10]
+  needs:
+    - job: pub_generated_tests
+  script:
+    - mkdir -p artifacts/reports
+    - echo $SYN_VCS_BASHRC; source $SYN_VCS_BASHRC
+    - echo $SYN_VERDI_BASHRC; source $SYN_VERDI_BASHRC
+    - make -C cva6/sim generate_cov_dash
+    - mv cva6/sim/urgReport artifacts/reports/
+  rules:
+    - when: on_success
+  artifacts:
+    when: always
+    paths:
+      - "artifacts/reports/urgReport"
+    expire_in: 3 week
 
 merge_report:
   stage: .post
