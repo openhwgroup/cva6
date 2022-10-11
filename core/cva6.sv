@@ -357,10 +357,14 @@ module cva6 import ariane_pkg::*; #(
     .x_off_instr_o              ( x_off_instr_id_ex            ),
     // Commit
     .resolved_branch_i          ( resolved_branch              ),
-    .trans_id_i                 ( {flu_trans_id_ex_id,  load_trans_id_ex_id,  store_trans_id_ex_id,   fpu_trans_id_ex_id, x_trans_id_ex_id}),
-    .wbdata_i                   ( {flu_result_ex_id,    load_result_ex_id,    store_result_ex_id,       fpu_result_ex_id, x_result_ex_id}),
-    .ex_ex_i                    ( {flu_exception_ex_id, load_exception_ex_id, store_exception_ex_id, fpu_exception_ex_id, x_exception_ex_id}),
-    .wt_valid_i                 ( {flu_valid_ex_id,     load_valid_ex_id,     store_valid_ex_id,         fpu_valid_ex_id, x_valid_ex_id}),
+    .trans_id_i                 ( CVXIF_PRESENT ? {x_trans_id_ex_id, flu_trans_id_ex_id, load_trans_id_ex_id, store_trans_id_ex_id, fpu_trans_id_ex_id}:
+                                                  {flu_trans_id_ex_id, load_trans_id_ex_id, store_trans_id_ex_id, fpu_trans_id_ex_id}),
+    .wbdata_i                   ( CVXIF_PRESENT ? {x_result_ex_id, flu_result_ex_id, load_result_ex_id, store_result_ex_id, fpu_result_ex_id}:
+                                                  {flu_result_ex_id, load_result_ex_id, store_result_ex_id, fpu_result_ex_id}),
+    .ex_ex_i                    ( CVXIF_PRESENT ? {x_exception_ex_id, flu_exception_ex_id, load_exception_ex_id, store_exception_ex_id, fpu_exception_ex_id}:
+                                                  {flu_exception_ex_id, load_exception_ex_id, store_exception_ex_id, fpu_exception_ex_id}),
+    .wt_valid_i                 ( CVXIF_PRESENT ? {x_valid_ex_id, flu_valid_ex_id, load_valid_ex_id, store_valid_ex_id, fpu_valid_ex_id}:
+                                                  {flu_valid_ex_id, load_valid_ex_id, store_valid_ex_id, fpu_valid_ex_id}),
     .x_we_i                     ( x_we_ex_id               ),
 
     .waddr_i                    ( waddr_commit_id              ),
