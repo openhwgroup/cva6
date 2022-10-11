@@ -556,7 +556,6 @@ bit c_has_rs1[instr_name_t] = '{
   C_BNEZ : 1,
   C_SLLI : 1,
   C_JR   : 1,
-  C_MV   : 1,
   C_JALR : 1,
   C_ADD  : 1,
   default: 0

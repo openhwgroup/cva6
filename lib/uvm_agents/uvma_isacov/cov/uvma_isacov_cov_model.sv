@@ -913,6 +913,7 @@ covergroup cg_cr(
     bit reg_crosses_enabled,
     bit reg_hazards_enabled,
     bit rdrs1_is_signed,
+    bit has_rs1,
     bit rs2_is_signed
 ) with function sample (
     uvma_isacov_instr_c instr
@@ -928,6 +929,7 @@ covergroup cg_cr(
   }
 
   cp_rs1_value: coverpoint instr.rs1_value_type {
+    ignore_bins  OFF     = cp_rs1_value    with (!has_rs1);
     ignore_bins POS_OFF = {POSITIVE} with (!rdrs1_is_signed);
     ignore_bins NEG_OFF = {NEGATIVE} with (!rdrs1_is_signed);
     ignore_bins NON_ZERO_OFF = {NON_ZERO} with (rdrs1_is_signed);
@@ -1969,11 +1971,13 @@ function void uvma_isacov_cov_model_c::build_phase(uvm_phase phase);
                               .reg_crosses_enabled(cfg.reg_crosses_enabled),
                               .reg_hazards_enabled(cfg.reg_hazards_enabled),
                               .rdrs1_is_signed(0),
+                              .has_rs1(c_has_rs1[C_MV]),
                               .rs2_is_signed(0));
       rv32c_add_cg      = new("rv32c_add_cg",
                               .reg_crosses_enabled(cfg.reg_crosses_enabled),
                               .reg_hazards_enabled(cfg.reg_hazards_enabled),
                               .rdrs1_is_signed(1),
+                              .has_rs1(c_has_rs1[C_ADD]),
                               .rs2_is_signed(1));
       rv32c_jr_cg       = new("rv32c_jr_cg",
                               .reg_crosses_enabled(cfg.reg_crosses_enabled),
