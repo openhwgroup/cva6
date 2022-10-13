@@ -252,6 +252,11 @@ module cva6 import ariane_pkg::*; #(
   logic                     dcache_commit_wbuffer_empty;
   logic                     dcache_commit_wbuffer_not_ni;
 
+  logic [riscv::VLEN-1:0]               lsu_addr;
+  logic [(riscv::XLEN/8)-1:0]           lsu_rmask;
+  logic [(riscv::XLEN/8)-1:0]           lsu_wmask;
+  logic [ariane_pkg::TRANS_ID_BITS-1:0] lsu_addr_trans_id;
+
   // --------------
   // Frontend
   // --------------
@@ -385,6 +390,11 @@ module cva6 import ariane_pkg::*; #(
     .we_fpr_i                   ( we_fpr_commit_id             ),
     .commit_instr_o             ( commit_instr_id_commit       ),
     .commit_ack_i               ( commit_ack                   ),
+    //RVFI
+    .lsu_addr_i                 ( lsu_addr                     ),
+    .lsu_rmask_i                ( lsu_rmask                    ),
+    .lsu_wmask_i                ( lsu_wmask                    ),
+    .lsu_addr_trans_id_i        ( lsu_addr_trans_id            ),
     .*
   );
 
@@ -488,7 +498,12 @@ module cva6 import ariane_pkg::*; #(
     .dcache_wbuffer_not_ni_i ( dcache_commit_wbuffer_not_ni ),
     // PMP
     .pmpcfg_i               ( pmpcfg                      ),
-    .pmpaddr_i              ( pmpaddr                     )
+    .pmpaddr_i              ( pmpaddr                     ),
+    //RVFI
+    .lsu_addr_o             ( lsu_addr                    ),
+    .lsu_rmask_o            ( lsu_rmask                   ),
+    .lsu_wmask_o            ( lsu_wmask                   ),
+    .lsu_addr_trans_id_o    ( lsu_addr_trans_id           )
   );
 
   // ---------
@@ -966,6 +981,7 @@ module cva6 import ariane_pkg::*; #(
       rvfi_o[i].insn     = ex_commit.valid ? ex_commit.tval[31:0] : commit_instr_id_commit[i].ex.tval[31:0];
       // when trap, the instruction is not executed
       rvfi_o[i].trap     = mem_exception;
+      rvfi_o[i].cause    = ex_commit.cause;
       rvfi_o[i].mode     = debug_mode ? 2'b10 : priv_lvl;
       rvfi_o[i].ixl      = riscv::XLEN == 64 ? 2 : 1;
       rvfi_o[i].rs1_addr = commit_instr_id_commit[i].rs1;
@@ -973,6 +989,15 @@ module cva6 import ariane_pkg::*; #(
       rvfi_o[i].rd_addr  = commit_instr_id_commit[i].rd;
       rvfi_o[i].rd_wdata = ariane_pkg::is_rd_fpr(commit_instr_id_commit[i].op) == 0 ? wdata_commit_id[i] : commit_instr_id_commit[i].result;
       rvfi_o[i].pc_rdata = commit_instr_id_commit[i].pc;
+`ifdef RVFI_MEM
+      rvfi_o[i].mem_addr  = commit_instr_id_commit[i].lsu_addr;
+      rvfi_o[i].mem_wmask = commit_instr_id_commit[i].lsu_wmask;
+      rvfi_o[i].mem_wdata = commit_instr_id_commit[i].lsu_wdata;
+      rvfi_o[i].mem_rmask = commit_instr_id_commit[i].lsu_rmask;
+      rvfi_o[i].mem_rdata = commit_instr_id_commit[i].result;
+      rvfi_o[i].rs1_rdata = commit_instr_id_commit[i].rs1_rdata;
+      rvfi_o[i].rs2_rdata = commit_instr_id_commit[i].rs2_rdata;
+`endif
     end
   end
 `endif

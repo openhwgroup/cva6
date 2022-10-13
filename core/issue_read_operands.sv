@@ -40,8 +40,8 @@ module issue_read_operands import ariane_pkg::*; #(
     input  fu_t [2**REG_ADDR_SIZE-1:0]             rd_clobber_fpr_i,
     // To FU, just single issue for now
     output fu_data_t                               fu_data_o,
-    output logic [riscv::VLEN-1:0]                 rs1_forwarding_o,  // unregistered version of fu_data_o.operanda
-    output logic [riscv::VLEN-1:0]                 rs2_forwarding_o,  // unregistered version of fu_data_o.operandb
+    output riscv::xlen_t                           rs1_forwarding_o,  // unregistered version of fu_data_o.operanda
+    output riscv::xlen_t                           rs2_forwarding_o,  // unregistered version of fu_data_o.operandb
     output logic [riscv::VLEN-1:0]                 pc_o,
     output logic                                   is_compressed_instr_o,
     // ALU 1

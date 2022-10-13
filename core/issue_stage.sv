@@ -77,7 +77,13 @@ module issue_stage import ariane_pkg::*; #(
     input  logic [NR_COMMIT_PORTS-1:0]               we_fpr_i,
 
     output scoreboard_entry_t [NR_COMMIT_PORTS-1:0]  commit_instr_o,
-    input  logic              [NR_COMMIT_PORTS-1:0]  commit_ack_i
+    input  logic              [NR_COMMIT_PORTS-1:0]  commit_ack_i,
+
+    //RVFI
+    input [riscv::VLEN-1:0]                          lsu_addr_i,
+    input [(riscv::XLEN/8)-1:0]                      lsu_rmask_i,
+    input [(riscv::XLEN/8)-1:0]                      lsu_wmask_i,
+    input [ariane_pkg::TRANS_ID_BITS-1:0]            lsu_addr_trans_id_i
 );
     // ---------------------------------------------------
     // Scoreboard (SB) <-> Issue and Read Operands (IRO)
@@ -104,6 +110,12 @@ module issue_stage import ariane_pkg::*; #(
     scoreboard_entry_t         issue_instr_sb_iro;
     logic                      issue_instr_valid_sb_iro;
     logic                      issue_ack_iro_sb;
+
+    riscv::xlen_t              rs1_forwarding_xlen;
+    riscv::xlen_t              rs2_forwarding_xlen;
+
+    assign rs1_forwarding_o = rs1_forwarding_xlen[riscv::VLEN-1:0];
+    assign rs2_forwarding_o = rs2_forwarding_xlen[riscv::VLEN-1:0];
 
     // ---------------------------------------------------------
     // 1. Re-name
@@ -154,6 +166,12 @@ module issue_stage import ariane_pkg::*; #(
         .trans_id_i            ( trans_id_i                                ),
         .wbdata_i              ( wbdata_i                                  ),
         .ex_i                  ( ex_ex_i                                   ),
+        .lsu_addr_i            ( lsu_addr_i                                ),
+        .lsu_rmask_i           ( lsu_rmask_i                               ),
+        .lsu_wmask_i           ( lsu_wmask_i                               ),
+        .lsu_addr_trans_id_i   ( lsu_addr_trans_id_i                       ),
+        .rs1_forwarding_i      ( rs1_forwarding_xlen                       ),
+        .rs2_forwarding_i      ( rs2_forwarding_xlen                       ),
         .*
     );
 
@@ -187,6 +205,8 @@ module issue_stage import ariane_pkg::*; #(
         .cvxif_ready_i       ( x_issue_ready_i                 ),
         .cvxif_off_instr_o   ( x_off_instr_o                   ),
         .mult_valid_o        ( mult_valid_o                    ),
+        .rs1_forwarding_o    ( rs1_forwarding_xlen             ),
+        .rs2_forwarding_o    ( rs2_forwarding_xlen             ),
         .*
     );
 

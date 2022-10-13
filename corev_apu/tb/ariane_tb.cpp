@@ -18,7 +18,11 @@
 #include "Variane_testharness.h"
 #include "verilator.h"
 #include "verilated.h"
+#if VM_TRACE_FST
+#include "verilated_fst_c.h"
+#else
 #include "verilated_vcd_c.h"
+#endif
 #include "Variane_testharness__Dpi.h"
 
 #include <stdio.h>
@@ -82,6 +86,7 @@ EMULATOR DEBUG OPTIONS (only supported in debug build -- try `make debug`)\n",
 #endif
   fputs("\
   -v, --vcd=FILE,          Write vcd trace to FILE (or '-' for stdout)\n\
+  -f, --fst=FILE,          Write fst trace to FILE\n\
   -p,                      Print performance statistic at end of test\n\
 ", stdout);
   // fputs("\n" PLUSARG_USAGE_OPTIONS, stdout);
@@ -95,12 +100,14 @@ EMULATOR DEBUG OPTIONS (only supported in debug build -- try `make debug`)\n",
 #if VM_TRACE
 "  - run a bare metal test to generate a VCD waveform:\n"
 "    %s -v rv64ui-p-add.vcd $RISCV/riscv64-unknown-elf/share/riscv-tests/isa/rv64ui-p-add\n"
+"  - run a bare metal test to generate an FST waveform:\n"
+"    %s -f rv64ui-p-add.fst $RISCV/riscv64-unknown-elf/share/riscv-tests/isa/rv64ui-p-add\n"
 #endif
 "  - run an ELF (you wrote, called 'hello') using the proxy kernel:\n"
 "    %s pk hello\n",
          program_name, program_name, program_name
 #if VM_TRACE
-         , program_name
+         , program_name, program_name
 #endif
          );
 }
@@ -131,6 +138,7 @@ int main(int argc, char **argv) {
   uint16_t rbb_port = 0;
 #if VM_TRACE
   FILE * vcdfile = NULL;
+  char * fst_fname = NULL;
   uint64_t start = 0;
 #endif
   char ** htif_argv = NULL;
@@ -147,12 +155,13 @@ int main(int argc, char **argv) {
 #if VM_TRACE
       {"vcd",         required_argument, 0, 'v' },
       {"dump-start",  required_argument, 0, 'x' },
+      {"fst",         required_argument, 0, 'f' },
 #endif
       HTIF_LONG_OPTIONS
     };
     int option_index = 0;
 #if VM_TRACE
-    int c = getopt_long(argc, argv, "-chpm:s:r:v:Vx:", long_options, &option_index);
+    int c = getopt_long(argc, argv, "-chpm:s:r:v:f:Vx:", long_options, &option_index);
 #else
     int c = getopt_long(argc, argv, "-chpm:s:r:V", long_options, &option_index);
 #endif
@@ -178,6 +187,10 @@ int main(int argc, char **argv) {
           std::cerr << "Unable to open " << optarg << " for VCD write\n";
           return 1;
         }
+        break;
+      }
+      case 'f': {
+        fst_fname = optarg;
         break;
       }
       case 'x': start = atoll(optarg);      break;
@@ -293,12 +306,26 @@ done_processing:
 
 #if VM_TRACE
   Verilated::traceEverOn(true); // Verilator must compute traced signals
+#if VM_TRACE_FST
+  std::unique_ptr<VerilatedFstC> tfp(new VerilatedFstC());
+  if (fst_fname) {
+    std::cerr << "Starting FST waveform dump into file '" << fst_fname << "'...\n";
+    top->trace(tfp.get(), 99);  // Trace 99 levels of hierarchy
+    tfp->open(fst_fname);
+  }
+  else
+    std::cerr << "No explicit FST file name supplied, using RTL defaults.\n";
+#else
   std::unique_ptr<VerilatedVcdFILE> vcdfd(new VerilatedVcdFILE(vcdfile));
   std::unique_ptr<VerilatedVcdC> tfp(new VerilatedVcdC(vcdfd.get()));
   if (vcdfile) {
+    std::cerr << "Starting VCD waveform dump ...\n";
     top->trace(tfp.get(), 99);  // Trace 99 levels of hierarchy
     tfp->open("");
   }
+  else
+    std::cerr << "No explicit VCD file name supplied, using RTL defaults.\n";
+#endif
 #endif
 
   for (int i = 0; i < 10; i++) {
@@ -307,11 +334,13 @@ done_processing:
     top->rtc_i = 0;
     top->eval();
 #if VM_TRACE
+    if (vcdfile || fst_fname)
       tfp->dump(static_cast<vluint64_t>(main_time * 2));
 #endif
     top->clk_i = 1;
     top->eval();
 #if VM_TRACE
+    if (vcdfile || fst_fname)
       tfp->dump(static_cast<vluint64_t>(main_time * 2 + 1));
 #endif
     main_time++;
@@ -332,15 +361,14 @@ done_processing:
     top->clk_i = 0;
     top->eval();
 #if VM_TRACE
-    // dump = tfp && trace_count >= start;
-    // if (dump)
+    if (vcdfile || fst_fname)
       tfp->dump(static_cast<vluint64_t>(main_time * 2));
 #endif
 
     top->clk_i = 1;
     top->eval();
 #if VM_TRACE
-    // if (dump)
+    if (vcdfile || fst_fname)
       tfp->dump(static_cast<vluint64_t>(main_time * 2 + 1));
 #endif
     // toggle RTC
