@@ -965,6 +965,7 @@ module cva6 import ariane_pkg::*; #(
       rvfi_o[i].insn     = ex_commit.valid ? ex_commit.tval[31:0] : commit_instr_id_commit[i].ex.tval[31:0];
       // when trap, the instruction is not executed
       rvfi_o[i].trap     = mem_exception;
+      rvfi_o[i].cause    = ex_commit.cause;
       rvfi_o[i].mode     = debug_mode ? 2'b10 : priv_lvl;
       rvfi_o[i].ixl      = riscv::XLEN == 64 ? 2 : 1;
       rvfi_o[i].rs1_addr = commit_instr_id_commit[i].rs1;

@@ -30,6 +30,7 @@ module rvfi_tracer #(
   logic [31:0] cycles;
   // Generate the trace based on RVFI
   logic [63:0] pc64;
+  string cause;
   always_ff @(posedge clk_i) begin
     for (int i = 0; i < NR_COMMIT_PORTS; i++) begin
       pc64 = {{riscv::XLEN-riscv::VLEN{rvfi_i[i].pc_rdata[riscv::VLEN-1]}}, rvfi_i[i].pc_rdata};
@@ -74,8 +75,21 @@ module rvfi_tracer #(
           $finish(1);
           $finish(1);
         end
-      end else if (rvfi_i[i].trap)
-        $fwrite(f, "exception : 0x%h\n", pc64);
+      end else begin
+        if (rvfi_i[i].trap) begin
+          case (rvfi_i[i].cause)
+            32'h0: cause = "INSTR_ADDR_MISALIGNED";
+            32'h1: cause = "INSTR_ACCESS_FAULT";
+            32'h2: cause = "ILLEGAL_INSTR";
+            32'h3: cause = "BREAKPOINT";
+            32'h4: cause = "LD_ADDR_MISALIGNED";
+            32'h5: cause = "LD_ACCESS_FAULT";
+            32'h6: cause = "ST_ADDR_MISALIGNED";
+            32'h7: cause = "ST_ACCESS_FAULT";
+          endcase;
+          $fwrite(f, "%s exception @ 0x%h\n", cause, pc64);
+        end
+      end
     end
     if (cycles > SIM_FINISH) $finish(1);
   end
