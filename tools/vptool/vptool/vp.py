@@ -1745,8 +1745,8 @@ class MyMain:
                                 for rfu1_elt in ip_elt[1].rfu_list:
                                     md_file.write(str(rfu1_elt[1]))
                                     for rfu2_elt in rfu1_elt[1].rfu_list:
-                                        # FORNOW Generate only when cores = cv32a6-step1
-                                        if rfu2_elt[1].cores == 8:
+                                        # FORNOW Generate only when 'cores' include cv32a6-step1
+                                        if rfu2_elt[1].cores & 8 != 0:
                                             md_file.write(str(rfu2_elt[1]))
                     if self.split_save:
                         save_dir = os.path.dirname(vp_config.SAVED_DB_LOCATION)
